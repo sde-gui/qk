@@ -10,7 +10,7 @@ Libs=
 PrivateResource=
 ResourceIncludes=
 MakeIncludes=medit-before.mak
-Compiler=-I../moo_@@_-I../moo/mooutils_@@_-I._@@_-D__MOO___@@_-DHAVE_CONFIG_H_@@_-mms-bitfields_@@_
+Compiler=-I../../moo_@@_-I../../moo/mooutils_@@_-I._@@_-D__MOO___@@_-DHAVE_CONFIG_H_@@_-mms-bitfields_@@_-mwindows_@@_
 CppCompiler=
 Linker=-lgtk-win32-2.0_@@_-lgdk-win32-2.0_@@_-latk-1.0_@@_-lgdk_pixbuf-2.0_@@_-lpangowin32-1.0_@@_-lgdi32_@@_-lpangocairo-1.0_@@_-lpango-1.0_@@_-lcairo_@@_-lgobject-2.0_@@_-lgmodule-2.0_@@_-lglib-2.0_@@_-lintl_@@_-liconv_@@_-lxml2_@@_
 IsCpp=0
@@ -27,10 +27,10 @@ CustomMakefile=
 IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=0000000000000000000000
+CompilerSettings=0000000000000100000000
 
 [Unit1]
-FileName=..\tests\medit-app.c
+FileName=..\..\tests\medit-app.c
 CompileCpp=0
 Folder=medit
 Compile=1
@@ -58,7 +58,7 @@ ProductVersion=
 AutoIncBuildNr=0
 
 [Unit2]
-FileName=..\moo\mooapp\moohtml.h
+FileName=..\..\moo\mooapp\moohtml.h
 CompileCpp=0
 Folder=mooapp
 Compile=1
@@ -68,7 +68,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit3]
-FileName=..\moo\mooapp\mooapp.h
+FileName=..\..\moo\mooapp\mooapp.h
 CompileCpp=0
 Folder=mooapp
 Compile=1
@@ -78,7 +78,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit4]
-FileName=..\moo\mooapp\mooappabout.c
+FileName=..\..\moo\mooapp\mooappabout.c
 CompileCpp=0
 Folder=mooapp
 Compile=1
@@ -88,7 +88,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit5]
-FileName=..\moo\mooapp\mooappabout.h
+FileName=..\..\moo\mooapp\mooappabout.h
 CompileCpp=0
 Folder=mooapp
 Compile=1
@@ -98,7 +98,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit6]
-FileName=..\moo\mooapp\mooappinput.c
+FileName=..\..\moo\mooapp\mooappinput.c
 CompileCpp=0
 Folder=mooapp
 Compile=1
@@ -108,7 +108,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit7]
-FileName=..\moo\mooapp\mooappinput.h
+FileName=..\..\moo\mooapp\mooappinput.h
 CompileCpp=0
 Folder=mooapp
 Compile=1
@@ -118,7 +118,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit8]
-FileName=..\moo\mooapp\moohtml.c
+FileName=..\..\moo\mooapp\moohtml.c
 CompileCpp=0
 Folder=mooapp
 Compile=1
@@ -128,7 +128,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit9]
-FileName=..\moo\mooapp\mooapp.c
+FileName=..\..\moo\mooapp\mooapp.c
 CompileCpp=0
 Folder=mooapp
 Compile=1
@@ -138,7 +138,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit10]
-FileName=..\moo\mooedit\mooedit.h
+FileName=..\..\moo\mooedit\mooedit.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -148,7 +148,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit11]
-FileName=..\moo\mooedit\gtksourceiter.h
+FileName=..\..\moo\mooedit\gtksourceiter.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -158,7 +158,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit12]
-FileName=..\moo\mooedit\moocmdview.c
+FileName=..\..\moo\mooedit\moocmdview.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -168,7 +168,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit13]
-FileName=..\moo\mooedit\moocmdview.h
+FileName=..\..\moo\mooedit\moocmdview.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -178,7 +178,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit14]
-FileName=..\moo\mooedit\moocompletion.c
+FileName=..\..\moo\mooedit\moocompletion.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -188,7 +188,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit15]
-FileName=..\moo\mooedit\moocompletion.h
+FileName=..\..\moo\mooedit\moocompletion.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -198,7 +198,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit16]
-FileName=..\moo\mooedit\mooedit.c
+FileName=..\..\moo\mooedit\mooedit.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -208,7 +208,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit17]
-FileName=..\moo\mooedit\gtksourceiter.c
+FileName=..\..\moo\mooedit\gtksourceiter.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -218,7 +218,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit18]
-FileName=..\moo\mooedit\mooedit-actions.c
+FileName=..\..\moo\mooedit\mooedit-actions.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -228,7 +228,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit19]
-FileName=..\moo\mooedit\mooedit-actions.h
+FileName=..\..\moo\mooedit\mooedit-actions.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -238,7 +238,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit20]
-FileName=..\moo\mooedit\mooeditconfig.c
+FileName=..\..\moo\mooedit\mooeditconfig.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -248,7 +248,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit21]
-FileName=..\moo\mooedit\mooeditconfig.h
+FileName=..\..\moo\mooedit\mooeditconfig.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -258,7 +258,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit22]
-FileName=..\moo\mooedit\mooeditdialogs.c
+FileName=..\..\moo\mooedit\mooeditdialogs.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -268,7 +268,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit23]
-FileName=..\moo\mooedit\mooeditdialogs.h
+FileName=..\..\moo\mooedit\mooeditdialogs.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -278,7 +278,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit24]
-FileName=..\moo\mooedit\mooeditfileops.c
+FileName=..\..\moo\mooedit\mooeditfileops.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -288,7 +288,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit25]
-FileName=..\moo\mooedit\mooeditfileops.h
+FileName=..\..\moo\mooedit\mooeditfileops.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -298,7 +298,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit26]
-FileName=..\moo\mooedit\mooeditinput.c
+FileName=..\..\moo\mooedit\mooeditinput.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -308,7 +308,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit27]
-FileName=..\moo\mooedit\mooeditor.c
+FileName=..\..\moo\mooedit\mooeditor.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -318,7 +318,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit28]
-FileName=..\moo\mooedit\mooeditor.h
+FileName=..\..\moo\mooedit\mooeditor.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -328,7 +328,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit29]
-FileName=..\moo\mooedit\mooeditprefs.c
+FileName=..\..\moo\mooedit\mooeditprefs.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -338,7 +338,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit30]
-FileName=..\moo\mooedit\mooeditprefs.h
+FileName=..\..\moo\mooedit\mooeditprefs.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -348,7 +348,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit31]
-FileName=..\moo\mooedit\mooeditprefspage.c
+FileName=..\..\moo\mooedit\mooeditprefspage.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -358,7 +358,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit32]
-FileName=..\moo\mooedit\mooedit-private.h
+FileName=..\..\moo\mooedit\mooedit-private.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -368,7 +368,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit33]
-FileName=..\moo\mooedit\mooedit-script.c
+FileName=..\..\moo\mooedit\mooedit-script.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -378,7 +378,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit34]
-FileName=..\moo\mooedit\mooedit-script.h
+FileName=..\..\moo\mooedit\mooedit-script.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -388,7 +388,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit35]
-FileName=..\moo\mooedit\mooeditsession.c
+FileName=..\..\moo\mooedit\mooeditsession.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -398,7 +398,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit36]
-FileName=..\moo\mooedit\mooeditsession.h
+FileName=..\..\moo\mooedit\mooeditsession.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -408,7 +408,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit37]
-FileName=..\moo\mooedit\mooeditsession-private.h
+FileName=..\..\moo\mooedit\mooeditsession-private.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -418,7 +418,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit38]
-FileName=..\moo\mooedit\mooeditwindow.c
+FileName=..\..\moo\mooedit\mooeditwindow.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -428,7 +428,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit39]
-FileName=..\moo\mooedit\mooeditwindow.h
+FileName=..\..\moo\mooedit\mooeditwindow.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -438,7 +438,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit40]
-FileName=..\moo\mooedit\moofold.c
+FileName=..\..\moo\mooedit\moofold.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -448,7 +448,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit41]
-FileName=..\moo\mooedit\moofold.h
+FileName=..\..\moo\mooedit\moofold.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -458,7 +458,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit42]
-FileName=..\moo\mooedit\moohighlighter.c
+FileName=..\..\moo\mooedit\moohighlighter.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -468,7 +468,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit43]
-FileName=..\moo\mooedit\moohighlighter.h
+FileName=..\..\moo\mooedit\moohighlighter.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -478,7 +478,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit44]
-FileName=..\moo\mooedit\mooindenter.c
+FileName=..\..\moo\mooedit\mooindenter.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -488,7 +488,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit45]
-FileName=..\moo\mooedit\mooindenter.h
+FileName=..\..\moo\mooedit\mooindenter.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -498,7 +498,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit46]
-FileName=..\moo\mooedit\moolang.c
+FileName=..\..\moo\mooedit\moolang.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -508,7 +508,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit47]
-FileName=..\moo\mooedit\moolang.h
+FileName=..\..\moo\mooedit\moolang.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -518,7 +518,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit48]
-FileName=..\moo\mooedit\moolang-aux.h
+FileName=..\..\moo\mooedit\moolang-aux.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -528,7 +528,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit49]
-FileName=..\moo\mooedit\moolangmgr.c
+FileName=..\..\moo\mooedit\moolangmgr.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -538,7 +538,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit50]
-FileName=..\moo\mooedit\moolangmgr.h
+FileName=..\..\moo\mooedit\moolangmgr.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -548,7 +548,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit51]
-FileName=..\moo\mooedit\moolang-parser.c
+FileName=..\..\moo\mooedit\moolang-parser.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -558,7 +558,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit52]
-FileName=..\moo\mooedit\moolang-parser.h
+FileName=..\..\moo\mooedit\moolang-parser.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -568,7 +568,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit53]
-FileName=..\moo\mooedit\moolang-private.h
+FileName=..\..\moo\mooedit\moolang-private.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -578,7 +578,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit54]
-FileName=..\moo\mooedit\moolang-rules.c
+FileName=..\..\moo\mooedit\moolang-rules.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -588,7 +588,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit55]
-FileName=..\moo\mooedit\moolang-rules.h
+FileName=..\..\moo\mooedit\moolang-rules.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -598,7 +598,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit56]
-FileName=..\moo\mooedit\moolang-strings.h
+FileName=..\..\moo\mooedit\moolang-strings.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -608,7 +608,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit57]
-FileName=..\moo\mooedit\moolinebuffer.c
+FileName=..\..\moo\mooedit\moolinebuffer.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -618,7 +618,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit58]
-FileName=..\moo\mooedit\moolinebuffer.h
+FileName=..\..\moo\mooedit\moolinebuffer.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -628,7 +628,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit59]
-FileName=..\moo\mooedit\moolinemark.c
+FileName=..\..\moo\mooedit\moolinemark.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -638,7 +638,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit60]
-FileName=..\moo\mooedit\moolinemark.h
+FileName=..\..\moo\mooedit\moolinemark.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -648,7 +648,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit61]
-FileName=..\moo\mooedit\moolineview.c
+FileName=..\..\moo\mooedit\moolineview.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -658,7 +658,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit62]
-FileName=..\moo\mooedit\moolineview.h
+FileName=..\..\moo\mooedit\moolineview.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -668,7 +668,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit63]
-FileName=..\moo\mooedit\mooplugin.c
+FileName=..\..\moo\mooedit\mooplugin.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -678,7 +678,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit64]
-FileName=..\moo\mooedit\mooplugin.h
+FileName=..\..\moo\mooedit\mooplugin.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -688,7 +688,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit65]
-FileName=..\moo\mooedit\mooplugin-macro.h
+FileName=..\..\moo\mooedit\mooplugin-macro.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -698,7 +698,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit66]
-FileName=..\moo\mooedit\mootextbox.c
+FileName=..\..\moo\mooedit\mootextbox.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -708,7 +708,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit67]
-FileName=..\moo\mooedit\mootextbox.h
+FileName=..\..\moo\mooedit\mootextbox.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -718,7 +718,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit68]
-FileName=..\moo\mooedit\mootextbtree.c
+FileName=..\..\moo\mooedit\mootextbtree.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -728,7 +728,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit69]
-FileName=..\moo\mooedit\mootextbtree.h
+FileName=..\..\moo\mooedit\mootextbtree.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -738,7 +738,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit70]
-FileName=..\moo\mooedit\mootextbuffer.c
+FileName=..\..\moo\mooedit\mootextbuffer.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -748,7 +748,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit71]
-FileName=..\moo\mooedit\mootextbuffer.h
+FileName=..\..\moo\mooedit\mootextbuffer.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -758,7 +758,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit72]
-FileName=..\moo\mooedit\mootextfind.c
+FileName=..\..\moo\mooedit\mootextfind.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -768,7 +768,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit73]
-FileName=..\moo\mooedit\mootextfind.h
+FileName=..\..\moo\mooedit\mootextfind.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -778,7 +778,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit74]
-FileName=..\moo\mooedit\mootextiter.h
+FileName=..\..\moo\mooedit\mootextiter.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -788,7 +788,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit75]
-FileName=..\moo\mooedit\mootextpopup.c
+FileName=..\..\moo\mooedit\mootextpopup.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -798,7 +798,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit76]
-FileName=..\moo\mooedit\mootextpopup.h
+FileName=..\..\moo\mooedit\mootextpopup.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -808,7 +808,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit78]
-FileName=..\moo\mooedit\mootextsearch.c
+FileName=..\..\moo\mooedit\mootextsearch.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -818,7 +818,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit79]
-FileName=..\moo\mooedit\mootextsearch.h
+FileName=..\..\moo\mooedit\mootextsearch.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -828,7 +828,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit80]
-FileName=..\moo\mooedit\mootextstyle.c
+FileName=..\..\moo\mooedit\mootextstyle.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -838,7 +838,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit81]
-FileName=..\moo\mooedit\mootextstyle.h
+FileName=..\..\moo\mooedit\mootextstyle.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -848,7 +848,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit82]
-FileName=..\moo\mooedit\mootextstylescheme.c
+FileName=..\..\moo\mooedit\mootextstylescheme.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -858,7 +858,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit83]
-FileName=..\moo\mooedit\mootextstylescheme.h
+FileName=..\..\moo\mooedit\mootextstylescheme.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -868,7 +868,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit84]
-FileName=..\moo\mooedit\mootextview.c
+FileName=..\..\moo\mooedit\mootextview.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -878,7 +878,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit85]
-FileName=..\moo\mooedit\mootextview.h
+FileName=..\..\moo\mooedit\mootextview.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -888,7 +888,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit86]
-FileName=..\moo\mooedit\mootextview-private.h
+FileName=..\..\moo\mooedit\mootextview-private.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -898,7 +898,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit87]
-FileName=..\moo\mooedit\moousertools.c
+FileName=..\..\moo\mooedit\moousertools.c
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -908,7 +908,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit88]
-FileName=..\moo\mooedit\moousertools.h
+FileName=..\..\moo\mooedit\moousertools.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -918,7 +918,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit89]
-FileName=..\moo\mooutils\eggregex.c
+FileName=..\..\moo\mooutils\eggregex.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -928,7 +928,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit90]
-FileName=..\moo\mooutils\eggregex.h
+FileName=..\..\moo\mooutils\eggregex.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -938,7 +938,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit91]
-FileName=..\moo\mooutils\mooaccel.c
+FileName=..\..\moo\mooutils\mooaccel.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -948,7 +948,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit92]
-FileName=..\moo\mooutils\mooaccel.h
+FileName=..\..\moo\mooutils\mooaccel.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -958,7 +958,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit93]
-FileName=..\moo\mooutils\mooaccelbutton.c
+FileName=..\..\moo\mooutils\mooaccelbutton.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -968,7 +968,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit94]
-FileName=..\moo\mooutils\mooaccelbutton.h
+FileName=..\..\moo\mooutils\mooaccelbutton.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -978,7 +978,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit95]
-FileName=..\moo\mooutils\mooaction.c
+FileName=..\..\moo\mooutils\mooaction.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -988,7 +988,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit96]
-FileName=..\moo\mooutils\mooaction.h
+FileName=..\..\moo\mooutils\mooaction.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -998,7 +998,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit97]
-FileName=..\moo\mooutils\mooactionfactory.c
+FileName=..\..\moo\mooutils\mooactionfactory.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1008,7 +1008,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit98]
-FileName=..\moo\mooutils\mooactionfactory.h
+FileName=..\..\moo\mooutils\mooactionfactory.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1018,7 +1018,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit99]
-FileName=..\moo\mooutils\moobigpaned.c
+FileName=..\..\moo\mooutils\moobigpaned.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1028,7 +1028,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit100]
-FileName=..\moo\mooutils\moobigpaned.h
+FileName=..\..\moo\mooutils\moobigpaned.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1038,7 +1038,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit101]
-FileName=..\moo\mooutils\mooclosure.c
+FileName=..\..\moo\mooutils\mooclosure.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1048,7 +1048,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit102]
-FileName=..\moo\mooutils\mooclosure.h
+FileName=..\..\moo\mooutils\mooclosure.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1058,7 +1058,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit103]
-FileName=..\moo\mooutils\moocmd.c
+FileName=..\..\moo\mooutils\moocmd.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1068,7 +1068,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit104]
-FileName=..\moo\mooutils\moocmd.h
+FileName=..\..\moo\mooutils\moocmd.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1078,7 +1078,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit105]
-FileName=..\moo\mooutils\moocombo.c
+FileName=..\..\moo\mooutils\moocombo.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1088,7 +1088,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit106]
-FileName=..\moo\mooutils\moocombo.h
+FileName=..\..\moo\mooutils\moocombo.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1098,7 +1098,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit107]
-FileName=..\moo\mooutils\moocommand.c
+FileName=..\..\moo\mooutils\moocommand.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1108,7 +1108,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit108]
-FileName=..\moo\mooutils\moocommand.h
+FileName=..\..\moo\mooutils\moocommand.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1118,7 +1118,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit109]
-FileName=..\moo\mooutils\moocompat.c
+FileName=..\..\moo\mooutils\moocompat.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1128,7 +1128,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit110]
-FileName=..\moo\mooutils\moocompat.h
+FileName=..\..\moo\mooutils\moocompat.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1138,7 +1138,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit111]
-FileName=..\moo\mooutils\mooconfig.c
+FileName=..\..\moo\mooutils\mooconfig.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1148,7 +1148,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit112]
-FileName=..\moo\mooutils\mooconfig.h
+FileName=..\..\moo\mooutils\mooconfig.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1158,7 +1158,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit113]
-FileName=..\moo\mooutils\moodialogs.c
+FileName=..\..\moo\mooutils\moodialogs.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1168,7 +1168,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit114]
-FileName=..\moo\mooutils\moodialogs.h
+FileName=..\..\moo\mooutils\moodialogs.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1178,7 +1178,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit115]
-FileName=..\moo\mooutils\mooentry.c
+FileName=..\..\moo\mooutils\mooentry.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1188,7 +1188,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit116]
-FileName=..\moo\mooutils\mooentry.h
+FileName=..\..\moo\mooutils\mooentry.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1198,7 +1198,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit117]
-FileName=..\moo\mooutils\moofiledialog.c
+FileName=..\..\moo\mooutils\moofiledialog.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1208,7 +1208,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit118]
-FileName=..\moo\mooutils\moofiledialog.h
+FileName=..\..\moo\mooutils\moofiledialog.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1218,7 +1218,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit119]
-FileName=..\moo\mooutils\moofilewatch.c
+FileName=..\..\moo\mooutils\moofilewatch.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1228,7 +1228,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit120]
-FileName=..\moo\mooutils\moofilewatch.h
+FileName=..\..\moo\mooutils\moofilewatch.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1238,7 +1238,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit121]
-FileName=..\moo\mooutils\moofiltermgr.c
+FileName=..\..\moo\mooutils\moofiltermgr.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1248,7 +1248,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit122]
-FileName=..\moo\mooutils\moofiltermgr.h
+FileName=..\..\moo\mooutils\moofiltermgr.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1258,7 +1258,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit123]
-FileName=..\moo\mooutils\mooglade.c
+FileName=..\..\moo\mooutils\mooglade.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1268,7 +1268,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit124]
-FileName=..\moo\mooutils\mooglade.h
+FileName=..\..\moo\mooutils\mooglade.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1278,7 +1278,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit125]
-FileName=..\moo\mooutils\moohistoryentry.c
+FileName=..\..\moo\mooutils\moohistoryentry.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1288,7 +1288,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit126]
-FileName=..\moo\mooutils\moohistoryentry.h
+FileName=..\..\moo\mooutils\moohistoryentry.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1298,7 +1298,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit127]
-FileName=..\moo\mooutils\moohistorylist.c
+FileName=..\..\moo\mooutils\moohistorylist.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1308,7 +1308,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit128]
-FileName=..\moo\mooutils\moohistorylist.h
+FileName=..\..\moo\mooutils\moohistorylist.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1318,7 +1318,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit129]
-FileName=..\moo\mooutils\moolinklabel.c
+FileName=..\..\moo\mooutils\moolinklabel.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1328,7 +1328,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit130]
-FileName=..\moo\mooutils\moolinklabel.h
+FileName=..\..\moo\mooutils\moolinklabel.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1338,7 +1338,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit131]
-FileName=..\moo\mooutils\moomarkup.c
+FileName=..\..\moo\mooutils\moomarkup.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1348,7 +1348,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit132]
-FileName=..\moo\mooutils\moomarkup.h
+FileName=..\..\moo\mooutils\moomarkup.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1358,7 +1358,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit133]
-FileName=..\moo\mooutils\moomenuaction.c
+FileName=..\..\moo\mooutils\moomenuaction.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1368,7 +1368,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit134]
-FileName=..\moo\mooutils\moomenuaction.h
+FileName=..\..\moo\mooutils\moomenuaction.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1378,7 +1378,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit135]
-FileName=..\moo\mooutils\moomenumgr.c
+FileName=..\..\moo\mooutils\moomenumgr.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1388,7 +1388,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit136]
-FileName=..\moo\mooutils\moomenumgr.h
+FileName=..\..\moo\mooutils\moomenumgr.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1398,7 +1398,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit137]
-FileName=..\moo\mooutils\moomenutoolbutton.c
+FileName=..\..\moo\mooutils\moomenutoolbutton.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1408,7 +1408,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit138]
-FileName=..\moo\mooutils\moomenutoolbutton.h
+FileName=..\..\moo\mooutils\moomenutoolbutton.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1418,7 +1418,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit139]
-FileName=..\moo\mooutils\moonotebook.c
+FileName=..\..\moo\mooutils\moonotebook.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1428,7 +1428,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit140]
-FileName=..\moo\mooutils\moonotebook.h
+FileName=..\..\moo\mooutils\moonotebook.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1438,7 +1438,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit141]
-FileName=..\moo\mooutils\moopaned.c
+FileName=..\..\moo\mooutils\moopaned.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1448,7 +1448,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit142]
-FileName=..\moo\mooutils\moopaned.h
+FileName=..\..\moo\mooutils\moopaned.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1458,7 +1458,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit143]
-FileName=..\moo\mooutils\mooprefs.c
+FileName=..\..\moo\mooutils\mooprefs.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1468,7 +1468,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit144]
-FileName=..\moo\mooutils\mooprefs.h
+FileName=..\..\moo\mooutils\mooprefs.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1478,7 +1478,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit145]
-FileName=..\moo\mooutils\mooprefsdialog.c
+FileName=..\..\moo\mooutils\mooprefsdialog.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1488,7 +1488,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit146]
-FileName=..\moo\mooutils\mooprefsdialog.h
+FileName=..\..\moo\mooutils\mooprefsdialog.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1498,7 +1498,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit147]
-FileName=..\moo\mooutils\mooprefsdialogpage.c
+FileName=..\..\moo\mooutils\mooprefsdialogpage.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1508,7 +1508,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit148]
-FileName=..\moo\mooutils\mooprefsdialogpage.h
+FileName=..\..\moo\mooutils\mooprefsdialogpage.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1518,7 +1518,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit149]
-FileName=..\moo\mooutils\moopython.c
+FileName=..\..\moo\mooutils\moopython.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1528,7 +1528,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit150]
-FileName=..\moo\mooutils\moopython.h
+FileName=..\..\moo\mooutils\moopython.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1538,7 +1538,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit151]
-FileName=..\moo\mooutils\moostock.c
+FileName=..\..\moo\mooutils\moostock.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1548,7 +1548,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit152]
-FileName=..\moo\mooutils\moostock.h
+FileName=..\..\moo\mooutils\moostock.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1558,7 +1558,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit153]
-FileName=..\moo\mooutils\moouixml.c
+FileName=..\..\moo\mooutils\moouixml.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1568,7 +1568,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit154]
-FileName=..\moo\mooutils\moouixml.h
+FileName=..\..\moo\mooutils\moouixml.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1578,7 +1578,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit155]
-FileName=..\moo\mooutils\mooundo.c
+FileName=..\..\moo\mooutils\mooundo.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1588,7 +1588,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit156]
-FileName=..\moo\mooutils\mooundo.h
+FileName=..\..\moo\mooutils\mooundo.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1598,7 +1598,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit157]
-FileName=..\moo\mooutils\mooutils-fs.c
+FileName=..\..\moo\mooutils\mooutils-fs.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1608,7 +1608,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit158]
-FileName=..\moo\mooutils\mooutils-fs.h
+FileName=..\..\moo\mooutils\mooutils-fs.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1618,7 +1618,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit159]
-FileName=..\moo\mooutils\mooutils-gobject.c
+FileName=..\..\moo\mooutils\mooutils-gobject.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1628,7 +1628,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit160]
-FileName=..\moo\mooutils\mooutils-gobject.h
+FileName=..\..\moo\mooutils\mooutils-gobject.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1638,7 +1638,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit161]
-FileName=..\moo\mooutils\mooutils-misc.c
+FileName=..\..\moo\mooutils\mooutils-misc.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1648,7 +1648,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit162]
-FileName=..\moo\mooutils\mooutils-misc.h
+FileName=..\..\moo\mooutils\mooutils-misc.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1658,7 +1658,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit163]
-FileName=..\moo\mooutils\mooutils-treeview.c
+FileName=..\..\moo\mooutils\mooutils-treeview.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1668,7 +1668,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit164]
-FileName=..\moo\mooutils\mooutils-treeview.h
+FileName=..\..\moo\mooutils\mooutils-treeview.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1678,7 +1678,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit165]
-FileName=..\moo\mooutils\moowindow.c
+FileName=..\..\moo\mooutils\moowindow.c
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1688,7 +1688,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit166]
-FileName=..\moo\mooutils\moowindow.h
+FileName=..\..\moo\mooutils\moowindow.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -1698,7 +1698,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit167]
-FileName=..\moo\mooutils\pcre\pcre.h
+FileName=..\..\moo\mooutils\pcre\pcre.h
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1708,7 +1708,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit168]
-FileName=..\moo\mooutils\pcre\pcre_chartables.c
+FileName=..\..\moo\mooutils\pcre\pcre_chartables.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1718,7 +1718,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit169]
-FileName=..\moo\mooutils\pcre\pcre_compile.c
+FileName=..\..\moo\mooutils\pcre\pcre_compile.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1728,7 +1728,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit170]
-FileName=..\moo\mooutils\pcre\pcre_config.c
+FileName=..\..\moo\mooutils\pcre\pcre_config.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1738,7 +1738,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit171]
-FileName=..\moo\mooutils\pcre\pcre_exec.c
+FileName=..\..\moo\mooutils\pcre\pcre_exec.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1748,7 +1748,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit172]
-FileName=..\moo\mooutils\pcre\pcre_fullinfo.c
+FileName=..\..\moo\mooutils\pcre\pcre_fullinfo.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1758,7 +1758,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit173]
-FileName=..\moo\mooutils\pcre\pcre_get.c
+FileName=..\..\moo\mooutils\pcre\pcre_get.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1768,7 +1768,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit174]
-FileName=..\moo\mooutils\pcre\pcre_globals.c
+FileName=..\..\moo\mooutils\pcre\pcre_globals.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1778,7 +1778,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit175]
-FileName=..\moo\mooutils\pcre\pcre_info.c
+FileName=..\..\moo\mooutils\pcre\pcre_info.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1788,7 +1788,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit176]
-FileName=..\moo\mooutils\pcre\pcre_internal.h
+FileName=..\..\moo\mooutils\pcre\pcre_internal.h
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1798,7 +1798,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit177]
-FileName=..\moo\mooutils\pcre\pcre_maketables.c
+FileName=..\..\moo\mooutils\pcre\pcre_maketables.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1808,7 +1808,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit178]
-FileName=..\moo\mooutils\pcre\pcre_ord2utf8.c
+FileName=..\..\moo\mooutils\pcre\pcre_ord2utf8.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1818,7 +1818,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit179]
-FileName=..\moo\mooutils\pcre\pcre_refcount.c
+FileName=..\..\moo\mooutils\pcre\pcre_refcount.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1828,7 +1828,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit180]
-FileName=..\moo\mooutils\pcre\pcre_study.c
+FileName=..\..\moo\mooutils\pcre\pcre_study.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1838,7 +1838,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit181]
-FileName=..\moo\mooutils\pcre\pcre_tables.c
+FileName=..\..\moo\mooutils\pcre\pcre_tables.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1848,7 +1848,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit182]
-FileName=..\moo\mooutils\pcre\pcre_try_flipped.c
+FileName=..\..\moo\mooutils\pcre\pcre_try_flipped.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1858,7 +1858,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit183]
-FileName=..\moo\mooutils\pcre\pcre_ucp_findchar.c
+FileName=..\..\moo\mooutils\pcre\pcre_ucp_findchar.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1868,7 +1868,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit184]
-FileName=..\moo\mooutils\pcre\pcre_valid_utf8.c
+FileName=..\..\moo\mooutils\pcre\pcre_valid_utf8.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1878,7 +1878,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit185]
-FileName=..\moo\mooutils\pcre\pcre_version.c
+FileName=..\..\moo\mooutils\pcre\pcre_version.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1888,7 +1888,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit186]
-FileName=..\moo\mooutils\pcre\pcre_xclass.c
+FileName=..\..\moo\mooutils\pcre\pcre_xclass.c
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1898,7 +1898,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit187]
-FileName=..\moo\mooutils\pcre\ucp.h
+FileName=..\..\moo\mooutils\pcre\ucp.h
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1908,7 +1908,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit188]
-FileName=..\moo\mooutils\pcre\ucpinternal.h
+FileName=..\..\moo\mooutils\pcre\ucpinternal.h
 CompileCpp=0
 Folder=mooutils/pcre
 Compile=1
@@ -1918,7 +1918,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit189]
-FileName=..\moo\mooutils\moofileview\moobookmarkmgr.c
+FileName=..\..\moo\mooutils\moofileview\moobookmarkmgr.c
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -1928,7 +1928,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit190]
-FileName=..\moo\mooutils\moofileview\moobookmarkmgr.h
+FileName=..\..\moo\mooutils\moofileview\moobookmarkmgr.h
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -1938,7 +1938,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit191]
-FileName=..\moo\mooutils\moofileview\moobookmarkview.c
+FileName=..\..\moo\mooutils\moofileview\moobookmarkview.c
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -1948,7 +1948,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit192]
-FileName=..\moo\mooutils\moofileview\moobookmarkview.h
+FileName=..\..\moo\mooutils\moofileview\moobookmarkview.h
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -1958,7 +1958,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit193]
-FileName=..\moo\mooutils\moofileview\moofile.c
+FileName=..\..\moo\mooutils\moofileview\moofile.c
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -1968,7 +1968,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit194]
-FileName=..\moo\mooutils\moofileview\moofile.h
+FileName=..\..\moo\mooutils\moofileview\moofile.h
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -1978,7 +1978,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit195]
-FileName=..\moo\mooutils\moofileview\moofileentry.c
+FileName=..\..\moo\mooutils\moofileview\moofileentry.c
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -1988,7 +1988,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit196]
-FileName=..\moo\mooutils\moofileview\moofileentry.h
+FileName=..\..\moo\mooutils\moofileview\moofileentry.h
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -1998,7 +1998,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit197]
-FileName=..\moo\mooutils\moofileview\moofilesystem.c
+FileName=..\..\moo\mooutils\moofileview\moofilesystem.c
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -2008,7 +2008,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit198]
-FileName=..\moo\mooutils\moofileview\moofilesystem.h
+FileName=..\..\moo\mooutils\moofileview\moofilesystem.h
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -2018,7 +2018,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit199]
-FileName=..\moo\mooutils\moofileview\moofileview.c
+FileName=..\..\moo\mooutils\moofileview\moofileview.c
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -2028,7 +2028,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit200]
-FileName=..\moo\mooutils\moofileview\moofileview.h
+FileName=..\..\moo\mooutils\moofileview\moofileview.h
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -2038,7 +2038,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit201]
-FileName=..\moo\mooutils\moofileview\moofileview-dialogs.c
+FileName=..\..\moo\mooutils\moofileview\moofileview-dialogs.c
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -2048,7 +2048,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit202]
-FileName=..\moo\mooutils\moofileview\moofileview-dialogs.h
+FileName=..\..\moo\mooutils\moofileview\moofileview-dialogs.h
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -2058,7 +2058,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit203]
-FileName=..\moo\mooutils\moofileview\moofileview-private.h
+FileName=..\..\moo\mooutils\moofileview\moofileview-private.h
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -2068,7 +2068,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit204]
-FileName=..\moo\mooutils\moofileview\moofileview-tools.c
+FileName=..\..\moo\mooutils\moofileview\moofileview-tools.c
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -2078,7 +2078,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit205]
-FileName=..\moo\mooutils\moofileview\moofileview-tools.h
+FileName=..\..\moo\mooutils\moofileview\moofileview-tools.h
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -2088,7 +2088,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit206]
-FileName=..\moo\mooutils\moofileview\moofoldermodel.c
+FileName=..\..\moo\mooutils\moofileview\moofoldermodel.c
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -2098,7 +2098,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit207]
-FileName=..\moo\mooutils\moofileview\moofoldermodel.h
+FileName=..\..\moo\mooutils\moofileview\moofoldermodel.h
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -2108,7 +2108,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit208]
-FileName=..\moo\mooutils\moofileview\moofoldermodel-private.h
+FileName=..\..\moo\mooutils\moofileview\moofoldermodel-private.h
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -2118,7 +2118,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit209]
-FileName=..\moo\mooutils\moofileview\mooiconview.c
+FileName=..\..\moo\mooutils\moofileview\mooiconview.c
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -2128,7 +2128,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit210]
-FileName=..\moo\mooutils\moofileview\mooiconview.h
+FileName=..\..\moo\mooutils\moofileview\mooiconview.h
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -2138,7 +2138,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit211]
-FileName=..\moo\mooutils\moofileview\mootreeview.c
+FileName=..\..\moo\mooutils\moofileview\mootreeview.c
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -2148,7 +2148,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit212]
-FileName=..\moo\mooutils\moofileview\mootreeview.h
+FileName=..\..\moo\mooutils\moofileview\mootreeview.h
 CompileCpp=0
 Folder=mooutils/moofileview
 Compile=1
@@ -2158,7 +2158,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit213]
-FileName=..\moo\mooutils\mooscript\mooscript-builtin.c
+FileName=..\..\moo\mooutils\mooscript\mooscript-builtin.c
 CompileCpp=0
 Folder=mooutils/mooscript
 Compile=1
@@ -2168,7 +2168,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit214]
-FileName=..\moo\mooutils\mooscript\mooscript-context.c
+FileName=..\..\moo\mooutils\mooscript\mooscript-context.c
 CompileCpp=0
 Folder=mooutils/mooscript
 Compile=1
@@ -2178,7 +2178,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit215]
-FileName=..\moo\mooutils\mooscript\mooscript-context.h
+FileName=..\..\moo\mooutils\mooscript\mooscript-context.h
 CompileCpp=0
 Folder=mooutils/mooscript
 Compile=1
@@ -2188,7 +2188,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit216]
-FileName=..\moo\mooutils\mooscript\mooscript-func.c
+FileName=..\..\moo\mooutils\mooscript\mooscript-func.c
 CompileCpp=0
 Folder=mooutils/mooscript
 Compile=1
@@ -2198,7 +2198,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit217]
-FileName=..\moo\mooutils\mooscript\mooscript-func.h
+FileName=..\..\moo\mooutils\mooscript\mooscript-func.h
 CompileCpp=0
 Folder=mooutils/mooscript
 Compile=1
@@ -2208,7 +2208,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit218]
-FileName=..\moo\mooutils\mooscript\mooscript-node.c
+FileName=..\..\moo\mooutils\mooscript\mooscript-node.c
 CompileCpp=0
 Folder=mooutils/mooscript
 Compile=1
@@ -2218,7 +2218,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit219]
-FileName=..\moo\mooutils\mooscript\mooscript-node.h
+FileName=..\..\moo\mooutils\mooscript\mooscript-node.h
 CompileCpp=0
 Folder=mooutils/mooscript
 Compile=1
@@ -2228,7 +2228,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit220]
-FileName=..\moo\mooutils\mooscript\mooscript-parser.c
+FileName=..\..\moo\mooutils\mooscript\mooscript-parser.c
 CompileCpp=0
 Folder=mooutils/mooscript
 Compile=1
@@ -2238,7 +2238,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit221]
-FileName=..\moo\mooutils\mooscript\mooscript-parser.h
+FileName=..\..\moo\mooutils\mooscript\mooscript-parser.h
 CompileCpp=0
 Folder=mooutils/mooscript
 Compile=1
@@ -2248,7 +2248,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit222]
-FileName=..\moo\mooutils\mooscript\mooscript-parser-priv.h
+FileName=..\..\moo\mooutils\mooscript\mooscript-parser-priv.h
 CompileCpp=0
 Folder=mooutils/mooscript
 Compile=1
@@ -2258,7 +2258,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit223]
-FileName=..\moo\mooutils\mooscript\mooscript-value.c
+FileName=..\..\moo\mooutils\mooscript\mooscript-value.c
 CompileCpp=0
 Folder=mooutils/mooscript
 Compile=1
@@ -2268,7 +2268,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit224]
-FileName=..\moo\mooutils\mooscript\mooscript-value.h
+FileName=..\..\moo\mooutils\mooscript\mooscript-value.h
 CompileCpp=0
 Folder=mooutils/mooscript
 Compile=1
@@ -2278,7 +2278,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit225]
-FileName=..\moo\mooutils\mooscript\mooscript-yacc.c
+FileName=..\..\moo\mooutils\mooscript\mooscript-yacc.c
 CompileCpp=0
 Folder=mooutils/mooscript
 Compile=1
@@ -2288,7 +2288,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit226]
-FileName=..\moo\mooutils\mooscript\mooscript-yacc.h
+FileName=..\..\moo\mooutils\mooscript\mooscript-yacc.h
 CompileCpp=0
 Folder=mooutils/mooscript
 Compile=1
@@ -2298,7 +2298,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit227]
-FileName=..\moo\mooutils\mooscript\mooscript-zenity.c
+FileName=..\..\moo\mooutils\mooscript\mooscript-zenity.c
 CompileCpp=0
 Folder=mooutils/mooscript
 Compile=1
@@ -2308,7 +2308,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit228]
-FileName=..\moo\mooutils\mooscript\mooscript-zenity.h
+FileName=..\..\moo\mooutils\mooscript\mooscript-zenity.h
 CompileCpp=0
 Folder=mooutils/mooscript
 Compile=1
@@ -2318,7 +2318,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit229]
-FileName=..\moo\mooedit\plugins\mooeditplugins.h
+FileName=..\..\moo\mooedit\plugins\mooeditplugins.h
 CompileCpp=0
 Folder=mooedit/plugins
 Compile=1
@@ -2328,7 +2328,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit231]
-FileName=..\moo\mooedit\plugins\completion\completion.h
+FileName=..\..\moo\mooedit\plugins\completion\completion.h
 CompileCpp=0
 Folder=mooedit/plugins/completion
 Compile=1
@@ -2338,7 +2338,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit232]
-FileName=..\moo\mooedit\plugins\completion\completion-plugin.c
+FileName=..\..\moo\mooedit\plugins\completion\completion-plugin.c
 CompileCpp=0
 Folder=mooedit/plugins/completion
 Compile=1
@@ -2348,7 +2348,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit77]
-FileName=..\moo\mooedit\mootext-private.h
+FileName=..\..\moo\mooedit\mootext-private.h
 CompileCpp=0
 Folder=mooedit
 Compile=1
@@ -2358,7 +2358,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit233]
-FileName=..\moo\mooedit\plugins\activestrings\as-plugin.c
+FileName=..\..\moo\mooedit\plugins\activestrings\as-plugin.c
 CompileCpp=0
 Folder=mooedit/plugins/activestrings
 Compile=1
@@ -2368,7 +2368,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit234]
-FileName=..\moo\mooedit\plugins\activestrings\as-plugin.h
+FileName=..\..\moo\mooedit\plugins\activestrings\as-plugin.h
 CompileCpp=0
 Folder=mooedit/plugins/activestrings
 Compile=1
@@ -2378,7 +2378,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit235]
-FileName=..\moo\mooedit\plugins\activestrings\as-plugin-prefs.c
+FileName=..\..\moo\mooedit\plugins\activestrings\as-plugin-prefs.c
 CompileCpp=0
 Folder=mooedit/plugins/activestrings
 Compile=1
@@ -2388,7 +2388,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit236]
-FileName=..\moo\mooedit\plugins\activestrings\as-plugin-script.c
+FileName=..\..\moo\mooedit\plugins\activestrings\as-plugin-script.c
 CompileCpp=0
 Folder=mooedit/plugins/activestrings
 Compile=1
@@ -2398,7 +2398,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit237]
-FileName=..\moo\mooedit\plugins\activestrings\as-plugin-script.h
+FileName=..\..\moo\mooedit\plugins\activestrings\as-plugin-script.h
 CompileCpp=0
 Folder=mooedit/plugins/activestrings
 Compile=1
@@ -2408,7 +2408,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit238]
-FileName=..\moo\mooedit\plugins\fileselector\moofileselector.c
+FileName=..\..\moo\mooedit\plugins\fileselector\moofileselector.c
 CompileCpp=0
 Folder=mooedit/plugins/fileselector
 Compile=1
@@ -2418,7 +2418,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit239]
-FileName=..\moo\mooedit\plugins\fileselector\moofileselector.h
+FileName=..\..\moo\mooedit\plugins\fileselector\moofileselector.h
 CompileCpp=0
 Folder=mooedit/plugins/fileselector
 Compile=1
@@ -2428,7 +2428,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit240]
-FileName=..\moo\mooedit\plugins\fileselector\moofileselector-prefs.c
+FileName=..\..\moo\mooedit\plugins\fileselector\moofileselector-prefs.c
 CompileCpp=0
 Folder=mooedit/plugins/fileselector
 Compile=1
@@ -2438,7 +2438,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit241]
-FileName=..\moo\mooutils\moomarshals.h
+FileName=..\..\moo\mooutils\moomarshals.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
@@ -2448,7 +2448,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit230]
-FileName=..\moo\mooedit\plugins\completion\completion.c
+FileName=..\..\moo\mooedit\plugins\completion\completion.c
 CompileCpp=0
 Folder=mooedit/plugins/completion
 Compile=1
@@ -2458,7 +2458,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit242]
-FileName=..\moo\mooutils\moomarshals.c
+FileName=..\..\moo\mooutils\moomarshals.c
 CompileCpp=0
 Folder=mooutils
 Compile=1

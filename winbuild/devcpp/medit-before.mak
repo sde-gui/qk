@@ -1,12 +1,13 @@
-MOO = ../moo
-MOO_W = ..\moo
+MOO = ../../moo
+MOO_W = ..\..\moo
 XML2H = $(MOO)/mooutils/xml2h.py
 
 mooutils = $(MOO)/mooutils
 mooutils_srcdir = $(MOO)/mooutils
 mooedit = $(MOO)/mooedit
 mooedit_srcdir = $(MOO)/mooedit
-tests = ../tests
+tests = ../../tests
+tests_w = ..\..\tests
 moofileview = $(mooutils)/moofileview
 moofileview_srcdir = $(moofileview)
 mooedit_plugins = $(mooedit)/plugins
@@ -47,6 +48,8 @@ GENERATED =                                 \
 
 all-before: $(GENERATED)
 
+LINKOBJ = *.o $(RES)
+
 ##############################################################
 # Marshalers
 #
@@ -60,8 +63,8 @@ $(MOO)/mooutils/moomarshals.c: $(MOO)/mooutils/moomarshals.list
 ##############################################################
 # config.h
 #
-config.h: ../config.h.win32
-	copy /Y ..\config.h.win32 config.h
+config.h: ../../config.h.win32
+	copy /Y ..\..\config.h.win32 config.h
 
 
 ##############################################################
@@ -171,8 +174,7 @@ $(mooutils)/stock-moo.h: $(mooutils_pixmaps)
 			> $(mooutils)/stock-moo.h
 
 
-##############################################################
-# xml
-#
 $(tests)/medit-ui.h: $(tests)/medit-ui.xml $(XML2H)
 	python $(XML2H) MEDIT_UI $(tests)/medit-ui.xml > $(tests)/medit-ui.h
+$(tests)/medit-app.c: $(tests)/medit-app.opag
+	opag -f _medit_parse_options -O _medit_opt_ -A _medit_arg_ $(tests_w)\medit-app.opag $(tests_w)\medit-app.c

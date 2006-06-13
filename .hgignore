@@ -5,7 +5,7 @@
 ^berlios-hg.state$
 ^berlios-hg.state.old$
 ^berlios-hg.state.journal$
-build/.*
+^build/.*
 Makefile\.in$
 aclocal\.m4
 autom4te.*
@@ -17,11 +17,6 @@ ltmain\.sh
 missing
 .*\.o
 .*\.exe
-devcpp.*_private\.*
-devcpp.*\.ico
-devcpp.*Makefile\.win
-devcpp.*\.layout
-devcpp/config\.h$
 .*\.pyc
 .*~
 .*\.pcs
@@ -34,3 +29,7 @@ tests.*-ui\.h
 moo/mooutils/moofileview/moofileview-ui\.h
 moo/mooutils/moofileview/symlink\.h
 moo/mooutils/stock-moo.h
+^winbuild/ms/Release/
+^winbuild/ms/Debug/
+devcpp/Makefile\.win$
+devcpp/medit\.layout$
