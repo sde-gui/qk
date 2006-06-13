@@ -722,7 +722,7 @@ attr_compose (MooHtmlAttr       *dest,
     else if (dest->mask & (MOO_HTML_LARGER | MOO_HTML_SMALLER))
     {
         int size = 3;
-        int scale = (dest->mask & MOO_HTML_LARGER) ? dest->scale : -dest->scale;
+        int scale = (dest->mask & MOO_HTML_LARGER) ? (int)dest->scale : -((int)dest->scale);
 
         if (src->mask & (MOO_HTML_LARGER | MOO_HTML_SMALLER))
         {

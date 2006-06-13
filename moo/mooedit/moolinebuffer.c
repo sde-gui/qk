@@ -100,9 +100,9 @@ _moo_line_buffer_delete (LineBuffer *line_buf,
         old_marks = line->marks;
         n_old_marks = line->n_marks;
         line->marks = NULL;
-
+ 
         if (n_old_marks)
-            _moo_text_btree_update_n_marks (line_buf->tree, line, -n_old_marks);
+            _moo_text_btree_update_n_marks (line_buf->tree, line, -((int) n_old_marks));
 
         g_assert (line->n_marks == 0);
     }
