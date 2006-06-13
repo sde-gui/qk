@@ -16,6 +16,13 @@
 
 #include <glib.h>
 
+/* MSVC */
+#if defined(MSVC) && !defined(__GNUC__)
+#include <syd/stat.h>
+#define S_ISREG(m) (((m) & (_S_IFMT)) == (_S_IFREG))
+#define S_ISDIR(m) (((m) & (_S_IFMT)) == (_S_IFDIR))
+#endif
+
 G_BEGIN_DECLS
 
 
