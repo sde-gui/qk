@@ -14,6 +14,7 @@
 #include "completion.h"
 #include "mooedit/moocompletion.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-fs.h"
 #include "mooutils/mooconfig.h"
 #include <sys/stat.h>
 #include <errno.h>

@@ -31,5 +31,7 @@ moo/mooutils/moofileview/symlink\.h
 moo/mooutils/stock-moo.h
 ^winbuild/ms/Release/
 ^winbuild/ms/Debug/
+.*\.ncb$
+.*\.suo$
 devcpp/Makefile\.win$
 devcpp/medit\.layout$
