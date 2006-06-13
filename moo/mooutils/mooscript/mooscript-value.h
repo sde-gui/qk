@@ -109,11 +109,6 @@ void         ms_value_add_method        (MSValue        *value,
 MSValue     *ms_value_get_method        (MSValue        *value,
                                          const char     *name);
 
-const char  *ms_binary_op_name          (MSBinaryOp      op);
-gpointer     ms_binary_op_cfunc         (MSBinaryOp      op);
-const char  *ms_unary_op_name           (MSUnaryOp       op);
-gpointer     ms_unary_op_cfunc          (MSUnaryOp       op);
-
 MSValue     *ms_value_none              (void);
 MSValue     *ms_value_false             (void);
 MSValue     *ms_value_true              (void);

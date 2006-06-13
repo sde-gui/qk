@@ -512,7 +512,7 @@ ms_value_get_int (MSValue    *val,
             return FALSE;
     }
 
-    return FALSE;
+    g_assert_not_reached ();
 }
 
 
@@ -931,7 +931,9 @@ func_div (MSValue *a, MSValue *b, MSContext *ctx)
 
 
 static MSValue *
-func_and (MSValue *a, MSValue *b)
+func_and (MSValue *a,
+          MSValue *b,
+          G_GNUC_UNUSED MSContext *ctx)
 {
     if (ms_value_get_bool (a) && ms_value_get_bool (b))
         return ms_value_ref (b);
@@ -941,7 +943,9 @@ func_and (MSValue *a, MSValue *b)
 
 
 static MSValue *
-func_or (MSValue *a, MSValue *b)
+func_or (MSValue *a,
+         MSValue *b,
+         G_GNUC_UNUSED MSContext *ctx)
 {
     if (ms_value_get_bool (a))
         return ms_value_ref (a);
@@ -1128,39 +1132,51 @@ ms_value_cmp (MSValue *a, MSValue *b)
 
 
 static MSValue *
-func_eq (MSValue *a, MSValue *b)
+func_eq (MSValue *a,
+         MSValue *b,
+         G_GNUC_UNUSED MSContext *ctx)
 {
     return ms_value_bool (ms_value_equal (a, b));
 }
 
 
 static MSValue *
-func_neq (MSValue *a, MSValue *b)
+func_neq (MSValue *a,
+          MSValue *b,
+          G_GNUC_UNUSED MSContext *ctx)
 {
     return ms_value_bool (!ms_value_equal (a, b));
 }
 
 
 static MSValue *
-func_lt (MSValue *a, MSValue *b)
+func_lt (MSValue *a,
+         MSValue *b,
+         G_GNUC_UNUSED MSContext *ctx)
 {
     return ms_value_bool (ms_value_cmp (a, b) < 0);
 }
 
 static MSValue *
-func_gt (MSValue *a, MSValue *b)
+func_gt (MSValue *a,
+         MSValue *b,
+         G_GNUC_UNUSED MSContext *ctx)
 {
     return ms_value_bool (ms_value_cmp (a, b) > 0);
 }
 
 static MSValue *
-func_le (MSValue *a, MSValue *b)
+func_le (MSValue *a,
+         MSValue *b,
+         G_GNUC_UNUSED MSContext *ctx)
 {
     return ms_value_bool (ms_value_cmp (a, b) <= 0);
 }
 
 static MSValue *
-func_ge (MSValue *a, MSValue *b)
+func_ge (MSValue *a,
+         MSValue *b,
+         G_GNUC_UNUSED MSContext *ctx)
 {
     return ms_value_bool (ms_value_cmp (a, b) >= 0);
 }
@@ -1336,10 +1352,10 @@ func_format (MSValue *format, MSValue *tuple, MSContext *ctx)
 }
 
 
-gpointer
+MSCFunc_2
 ms_binary_op_cfunc (MSBinaryOp op)
 {
-    static gpointer funcs[MS_BINARY_OP_LAST] = {
+    static MSCFunc_2 funcs[MS_BINARY_OP_LAST] = {
         func_plus, func_minus, func_mult, func_div,
         func_and, func_or,
         func_eq, func_neq, func_lt, func_gt, func_le, func_ge,
@@ -1362,7 +1378,8 @@ func_uminus (MSValue    *val,
 
 
 static MSValue *
-func_not (MSValue *val)
+func_not (MSValue *val,
+          G_GNUC_UNUSED MSContext *ctx)
 {
     return !ms_value_get_bool (val) ?
             ms_value_true () : ms_value_false ();
@@ -1385,10 +1402,10 @@ func_len (MSValue    *val,
 }
 
 
-gpointer
+MSCFunc_1
 ms_unary_op_cfunc (MSUnaryOp op)
 {
-    static gpointer funcs[MS_UNARY_OP_LAST] = {
+    static MSCFunc_1 funcs[MS_UNARY_OP_LAST] = {
         func_uminus, func_not, func_len
     };
 
