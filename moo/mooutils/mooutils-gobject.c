@@ -174,17 +174,18 @@ moo_param_gtype_get_type (void)
 
     if (!type)
     {
-        GParamSpecTypeInfo info = {
+        static GParamSpecTypeInfo info = {
             sizeof (MooParamSpecGType), /* instance_size */
             16,                         /* n_preallocs */
             NULL,                       /* instance_init */
-            MOO_TYPE_GTYPE,             /* value_type */
+            0,							/* value_type */
             NULL,                       /* finalize */
             param_gtype_set_default,    /* value_set_default */
             param_gtype_validate,       /* value_validate */
             param_gtype_cmp,            /* values_cmp */
         };
 
+		info.value_type = MOO_TYPE_GTYPE;
         type = g_param_type_register_static ("MooParamGType", &info);
     }
 
