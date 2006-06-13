@@ -16,7 +16,7 @@
 #endif
 
 #include "mooutils/mooutils-fs.h"
-#include <unistd.h>
+
 #include <string.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -33,6 +33,9 @@
 
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
 #endif
 
 #define BROKEN_NAME "<" "????" ">"

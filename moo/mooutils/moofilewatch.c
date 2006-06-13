@@ -32,6 +32,8 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <string.h>
+/* sys/stat.h macros */
+#include "mooutils/mooutils-fs.h"
 #include "mooutils/moofilewatch.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
@@ -1056,10 +1058,14 @@ static Monitor *monitor_win32_create    (MooFileWatch   *watch,
     if (type == MONITOR_FILE)
         return monitor_stat_create (watch, type, filename, data, request, error);
 
+#ifdef __GNUC__
 #warning "Implement me"
+#endif
+
     g_set_error (error, MOO_FILE_WATCH_ERROR,
                  MOO_FILE_WATCH_ERROR_NOT_IMPLEMENTED,
                  "watching folders is not implemented on win32");
+
     return NULL;
 }
 

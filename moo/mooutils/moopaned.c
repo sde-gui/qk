@@ -1851,7 +1851,7 @@ moo_paned_motion (GtkWidget      *widget,
 
     if (paned->priv->in_drag)
     {
-        int size;
+        int size = 0;
         GtkRequisition requisition;
 
         gtk_widget_get_child_requisition (paned->priv->current_pane->frame,

@@ -21,6 +21,10 @@
  *  TODO!!! fix this mess
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #define MOO_FILE_SYSTEM_COMPILATION
 #include "moofileview/moofilesystem.h"
 #include "moofileview/symlink.h"
@@ -29,7 +33,9 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <errno.h>
 #include <time.h>
 #include <gtk/gtkicontheme.h>
@@ -1355,10 +1361,14 @@ moo_file_stat_unix (MooFile    *file,
     {
         if (S_ISDIR (file->statbuf.st_mode))
             file->info |= MOO_FILE_INFO_IS_DIR;
+#ifdef S_ISBLK
         else if (S_ISBLK (file->statbuf.st_mode))
             file->info |= MOO_FILE_INFO_IS_BLOCK_DEV;
+#endif
+#ifdef S_ISCHR
         else if (S_ISCHR (file->statbuf.st_mode))
             file->info |= MOO_FILE_INFO_IS_CHAR_DEV;
+#endif
 #ifdef S_ISFIFO
         else if (S_ISFIFO (file->statbuf.st_mode))
             file->info |= MOO_FILE_INFO_IS_FIFO;
@@ -1992,6 +2002,10 @@ render_icon_for_path (const char     *path,
         if (!mime_type || !mime_type[0])
             mime_type = MIME_TYPE_UNKNOWN;
     }
+#else
+#ifdef __GNUC__
+#warning "Implement me"
+#endif
 #endif
 
     return _render_icon (MOO_ICON_MIME, mime_type, 0, widget, size);

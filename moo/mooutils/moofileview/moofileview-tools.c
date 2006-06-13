@@ -298,7 +298,7 @@ action_check_one (ToolAction *action,
                   MooFile    *file)
 {
     GSList *l;
-    const char *mime;
+    G_GNUC_UNUSED const char *mime;
 
     g_return_val_if_fail (file != NULL, FALSE);
 
