@@ -351,3 +351,19 @@ main (int argc, char *argv[])
     g_object_unref (app);
     return retval;
 }
+
+
+#if defined(__WIN32__) && !defined(__GNUC__)
+
+#include <windows.h>
+
+int __stdcall
+WinMain (HINSTANCE hInstance,
+	     HINSTANCE hPrevInstance,
+		 char     *lpszCmdLine,
+		 int       nCmdShow)
+{
+	return main (__argc, __argv);
+}
+
+#endif
