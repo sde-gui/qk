@@ -6,12 +6,12 @@ mooscript = $(mooutils)/mooscript
 mooscript_srcdir = $(srcdir)/$(mooscript)
 
 mooscript_extra_dist =                  \
-    $(mooscript)/mooscript-yacc.y
+    $(mooscript)/mooscript.y
 
-$(mooscript)/mooscript-yacc.c: $(mooscript)/mooscript-yacc.y
-	bison -d -o $(mooscript_srcdir)/mooscript-yacc.c $(mooscript_srcdir)/mooscript-yacc.y
-$(mooscript)/mooscript-yacc.h: $(mooscript)/mooscript-yacc.y
-	bison -d -o $(mooscript_srcdir)/mooscript-yacc.c $(mooscript_srcdir)/mooscript-yacc.y
+$(mooscript)/mooscript-yacc.c: $(mooscript)/mooscript.y
+	bison -d -o $(mooscript_srcdir)/mooscript-yacc.c $(mooscript_srcdir)/mooscript.y
+$(mooscript)/mooscript-yacc.h: $(mooscript)/mooscript.y
+	bison -d -o $(mooscript_srcdir)/mooscript-yacc.c $(mooscript_srcdir)/mooscript.y
 
 mooscript_headers =                     \
     $(mooscript)/mooscript-context.h    \
