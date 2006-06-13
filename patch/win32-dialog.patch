@@ -1,0 +1,159 @@
+diff -r 05175a3138a2 moo/mooutils/moodialogs.c
+--- a/moo/mooutils/moodialogs.c	Tue Jun 13 00:40:43 2006 -0500
++++ b/moo/mooutils/moodialogs.c	Tue Jun 13 00:41:08 2006 -0500
+@@ -16,7 +16,10 @@
+ #include "mooutils/mooprefs.h"
+ #include "mooutils/mooutils-misc.h"
+ #include "mooutils/moocompat.h"
+-
++#ifdef __WIN32__
++#include <windows.h>
++#include <gdk/gdkwin32.h>
++#endif
+ 
+ static GtkWidget *
+ create_message_dialog (GtkWindow  *parent,
+@@ -205,6 +208,135 @@ moo_position_window (GtkWidget  *window,
+ }
+ 
+ 
++#ifdef __WIN32__
++static DWORD
++dialog_thread_main (gpointer param)
++{
++    guint type = MB_OK;
++
++    struct {
++        HWND parent;
++        GtkMessageType type;
++        char *title;
++        char *text;
++        gboolean done;
++    } *data = param;
++
++    switch (data->type)
++    {
++        case GTK_MESSAGE_INFO:
++            type |= MB_ICONINFORMATION;
++            break;
++
++        case GTK_MESSAGE_WARNING:
++            type |= MB_ICONWARNING;
++            break;
++
++        case GTK_MESSAGE_QUESTION:
++            /* should not happen */
++            break;
++
++        case GTK_MESSAGE_ERROR:
++            type |= MB_ICONERROR;
++            break;
++    }
++
++    if (data->parent)
++        type |= MB_APPLMODAL;
++    else
++        type |= MB_TASKMODAL;
++
++    MessageBoxW (data->parent,
++                 (LPCWSTR) data->text,
++                 (LPCWSTR) data->title,
++                 type);
++
++    data->done = TRUE;
++    return 0;
++}
++
++void
++moo_message_dialog (GtkWidget  *parent_widget,
++                    GtkMessageType type,
++                    const char *text,
++                    const char *secondary_text,
++                    gboolean    at_mouse,
++                    gboolean    at_coords,
++                    int         x,
++                    int         y)
++{
++    GtkWidget *dialog, *toplevel = NULL;
++    HANDLE thr;
++    HWND parent_handle = NULL;
++    DWORD thr_id;
++
++    struct {
++        HWND parent;
++        GtkMessageType type;
++        char *title;
++        char *text;
++        gboolean done;
++    } data = {NULL, type, NULL, NULL, FALSE};
++
++    g_return_if_fail (text != NULL);
++
++    if (parent_widget)
++        parent_widget = gtk_widget_get_toplevel (parent_widget);
++
++    if (parent_widget && GTK_WIDGET_TOPLEVEL (parent_widget) && parent_widget->window)
++        parent_handle = GDK_WINDOW_HWND (parent_widget->window);
++
++    if (parent_handle &&
++        !DuplicateHandle (GetCurrentProcess (), parent_handle,
++                          GetCurrentProcess (), (LPHANDLE) &data.parent,
++                          0, FALSE, DUPLICATE_SAME_ACCESS))
++    {
++        char *msg = g_win32_error_message (GetLastError ());
++        g_critical ("%s: %s", G_STRLOC, msg);
++        g_free (msg);
++    }
++
++    g_print ("parent_handle: %p\n", parent_handle);
++    g_print ("handle: %p\n", data.parent);
++
++    data.title = (char*) g_utf8_to_utf16 ("", 0, NULL, NULL, NULL);
++
++    if (secondary_text)
++    {
++        char *full_text = g_strdup_printf ("%s\n%s", text, secondary_text);
++        data.text = (char*) g_utf8_to_utf16 (full_text, -1, NULL, NULL, NULL);
++        g_free (full_text);
++    }
++    else
++    {
++        data.text = (char*) g_utf8_to_utf16 (text, -1, NULL, NULL, NULL);
++    }
++
++    thr = CreateThread (NULL, 0, (LPTHREAD_START_ROUTINE) dialog_thread_main,
++                        &data, 0, &thr_id);
++
++    if (!thr)
++    {
++        char *msg = g_win32_error_message (GetLastError ());
++        g_critical ("%s: %s", G_STRLOC, msg);
++        g_free (msg);
++        return;
++    }
++
++    while (!data.done)
++    {
++        if (!g_main_context_iteration (NULL, FALSE))
++            g_usleep (1000);
++    }
++
++    if (data.parent)
++        CloseHandle (data.parent);
++    g_free (data.title);
++    g_free (data.text);
++    CloseHandle (thr);
++    return;
++}
++#else
+ void
+ moo_message_dialog (GtkWidget  *parent,
+                     GtkMessageType type,
+@@ -231,6 +363,7 @@ moo_message_dialog (GtkWidget  *parent,
+     gtk_dialog_run (GTK_DIALOG (dialog));
+     gtk_widget_destroy (dialog);
+ }
++#endif
+ 
+ 
+ void
