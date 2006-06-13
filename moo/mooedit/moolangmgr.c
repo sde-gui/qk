@@ -925,6 +925,10 @@ moo_lang_mgr_get_lang_for_file (MooLangMgr     *mgr,
 
     if (lang)
         return lang;
+#else
+#ifdef __GNUC__
+#warning "Implement me"
+#endif
 #endif /* MOO_USE_XDGMIME */
 
     lang = lang_mgr_get_lang_for_bak_filename (mgr, filename);
@@ -962,6 +966,10 @@ moo_lang_mgr_get_lang_for_filename (MooLangMgr *mgr,
 
     if (lang)
         return lang;
+#else
+#ifdef __GNUC__
+#warning "Implement me"
+#endif
 #endif /* MOO_USE_XDGMIME */
 
     lang = lang_mgr_get_lang_for_bak_filename (mgr, filename);
