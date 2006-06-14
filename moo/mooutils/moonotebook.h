@@ -98,6 +98,8 @@ void        moo_notebook_set_tab_label_text (MooNotebook    *notebook,
 const char *moo_notebook_get_tab_label_text (MooNotebook    *notebook,
                                              GtkWidget      *child);
 
+int         moo_notebook_get_event_tab      (MooNotebook    *notebook,
+                                             GdkEvent       *event);
 
 void        moo_notebook_reorder_child      (MooNotebook    *notebook,
                                              GtkWidget      *child,

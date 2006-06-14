@@ -2803,8 +2803,55 @@ static void     tab_drag_motion             (MooNotebook    *nb,
 }
 
 
-static gboolean moo_notebook_button_press   (GtkWidget      *widget,
-                                             GdkEventButton *event)
+int
+moo_notebook_get_event_tab (MooNotebook    *nb,
+                            GdkEvent       *event)
+{
+    int x = 0, y = 0;
+    Page *page;
+
+    g_return_val_if_fail (MOO_IS_NOTEBOOK (nb), -1);
+    g_return_val_if_fail (event != NULL && event->any.window != NULL, -1);
+    g_return_val_if_fail (nb->priv->tab_window != NULL, -1);
+
+    switch (event->type)
+    {
+        case GDK_MOTION_NOTIFY:
+            x = event->motion.x;
+            y = event->motion.y;
+            break;
+        case GDK_BUTTON_PRESS:
+        case GDK_2BUTTON_PRESS:
+        case GDK_3BUTTON_PRESS:
+        case GDK_BUTTON_RELEASE:
+            x = event->button.x;
+            y = event->button.y;
+            break;
+        case GDK_ENTER_NOTIFY:
+        case GDK_LEAVE_NOTIFY:
+            x = event->crossing.x;
+            y = event->crossing.y;
+            break;
+        case GDK_SCROLL:
+            x = event->scroll.x;
+            y = event->scroll.y;
+            break;
+        default:
+            g_return_val_if_reached (-1);
+    }
+
+    if (!translate_coords (nb->priv->tab_window, event->any.window, &x, &y))
+        return -1;
+
+    page = find_label_at_xy (nb, x, y, FALSE);
+
+    return page ? page_index (nb, page) : -1;
+}
+
+
+static gboolean
+moo_notebook_button_press (GtkWidget      *widget,
+                           GdkEventButton *event)
 {
     Page *page;
     MooNotebook *nb = MOO_NOTEBOOK (widget);
