@@ -453,7 +453,7 @@ header_footer_get_size (MooPrintHeaderFooter *hf,
     if (hf->font)
         font = hf->font;
 
-    hf->layout = gtk_print_context_create_layout (context);
+    hf->layout = gtk_print_context_create_pango_layout (context);
     pango_layout_set_text (hf->layout, "AAAyyy", -1);
 
     if (font)
@@ -555,7 +555,7 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
     }
 
     moo_print_operation_calc_page_size (print, context, font);
-    print->layout = gtk_print_context_create_layout (context);
+    print->layout = gtk_print_context_create_pango_layout (context);
 
     if (GET_OPTION (print, MOO_PRINT_WRAP))
     {
@@ -982,7 +982,7 @@ moo_print_operation_draw_page (GtkPrintOperation  *operation,
 
     timer = g_timer_new ();
 
-    cr = gtk_print_context_get_cairo (context);
+    cr = gtk_print_context_get_cairo_context (context);
 
     start = g_array_index (print->pages, GtkTextIter, page);
 
