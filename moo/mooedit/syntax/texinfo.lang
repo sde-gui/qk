@@ -244,9 +244,9 @@
 
     <context name="Normal">
       <Keyword keyword="input" style="Keyword"/>
-      <Keyword keyword="Keyword" style="Keyword"/>
-      <Regex pattern="@c\s+" context="Comment" style="Comment"/>
       <String string="@comment" context="Comment" style="Comment"/>
+      <Regex pattern="@c\s+" context="Comment" style="Comment"/>
+      <Keyword keyword="Keyword" style="Keyword"/>
       <String string="@end" bol-only="True" context="end" style="Keyword"/>
     </context>
     <context name="end" style="Keyword" eol-context="#pop">
