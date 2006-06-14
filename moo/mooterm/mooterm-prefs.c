@@ -118,6 +118,7 @@ GtkWidget  *moo_term_prefs_page_new   (void)
     xml = moo_glade_xml_new_empty ();
     moo_glade_xml_map_id (xml, "font", MOO_TYPE_FONT_BUTTON);
     moo_glade_xml_set_property (xml, "font", "monospace", "True");
+    moo_glade_xml_set_property (xml, "font", "filter-visible", "False");
 
     page = moo_prefs_dialog_page_new_from_xml ("Terminal", MOO_STOCK_TERMINAL,
                                                xml, MOO_TERM_PREFS_GLADE_UI,

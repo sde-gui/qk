@@ -72,7 +72,8 @@ enum {
   PROP_0,
   PROP_FONT_NAME,
   PROP_PREVIEW_TEXT,
-  PROP_MONOSPACE
+  PROP_MONOSPACE,
+  PROP_FILTER_VISIBLE
 };
 
 
@@ -126,6 +127,7 @@ static void     moo_font_selection_select_size           (GtkTreeSelection *sele
 static void     moo_font_selection_scroll_on_map         (MooFontSelection *fs);
 
 static void     moo_font_selection_preview_changed       (MooFontSelection *fontsel);
+static void     moo_font_selection_filter_changed        (MooFontSelection *fontsel);
 
 /* Misc. utility functions. */
 static void    moo_font_selection_load_font          (MooFontSelection *fs);
@@ -178,6 +180,14 @@ moo_font_selection_class_init (MooFontSelectionClass *klass)
                                                          FALSE,
                                                          G_PARAM_READWRITE));
 
+  g_object_class_install_property (gobject_class,
+                                   PROP_FILTER_VISIBLE,
+                                   g_param_spec_boolean ("filter-visible",
+                                                         P_("filter-visible"),
+                                                         P_("filter-visible"),
+                                                         TRUE,
+                                                         G_PARAM_READWRITE));
+
   gobject_class->finalize = moo_font_selection_finalize;
 }
 
@@ -201,6 +211,9 @@ moo_font_selection_set_property (GObject         *object,
       break;
     case PROP_MONOSPACE:
       moo_font_selection_set_monospace (fontsel, g_value_get_boolean (value));
+      break;
+    case PROP_FILTER_VISIBLE:
+      moo_font_selection_set_filter_visible (fontsel, g_value_get_boolean (value));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -227,6 +240,9 @@ static void moo_font_selection_get_property (GObject         *object,
       break;
     case PROP_MONOSPACE:
       g_value_set_boolean (value, fontsel->monospace != 0);
+      break;
+    case PROP_FILTER_VISIBLE:
+      g_value_set_boolean (value, fontsel->filter_visible != 0);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -269,6 +285,9 @@ moo_font_selection_init (MooFontSelection *fontsel)
   GtkTreeViewColumn *column;
   GList *focus_chain = NULL;
   AtkObject *atk_obj;
+
+  fontsel->monospace = FALSE;
+  fontsel->filter_visible = TRUE;
 
   gtk_widget_push_composite_child ();
 
@@ -487,6 +506,14 @@ moo_font_selection_init (MooFontSelection *fontsel)
   gtk_widget_show (vbox);
   gtk_box_pack_start (GTK_BOX (fontsel), vbox, FALSE, TRUE, 0);
 
+  fontsel->filter_button = gtk_check_button_new_with_label (_("Show only fixed width fonts"));
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fontsel->filter_button), fontsel->monospace != 0);
+  g_signal_connect_swapped (fontsel->filter_button, "toggled",
+                            G_CALLBACK (moo_font_selection_filter_changed), fontsel);
+  if (fontsel->filter_visible)
+    gtk_widget_show (fontsel->filter_button);
+  gtk_box_pack_start (GTK_BOX (vbox), fontsel->filter_button, FALSE, FALSE, 0);
+
   /* create the text entry widget */
   label = gtk_label_new_with_mnemonic (_("_Preview:"));
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
@@ -556,6 +583,14 @@ static void
 moo_font_selection_preview_changed (MooFontSelection *fontsel)
 {
   g_object_notify (G_OBJECT (fontsel), "preview_text");
+}
+
+static void
+moo_font_selection_filter_changed (MooFontSelection *fontsel)
+{
+    gboolean active = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fontsel->filter_button));
+    if (!active != !fontsel->monospace)
+      moo_font_selection_set_monospace (fontsel, active);
 }
 
 static void
@@ -1235,13 +1270,30 @@ moo_font_selection_set_monospace (MooFontSelection *fontsel,
 {
   g_return_if_fail (MOO_IS_FONT_SELECTION (fontsel));
 
-  monospace = monospace ? TRUE : FALSE;
-
-  if (monospace != fontsel->monospace)
+  if (!monospace != !fontsel->monospace)
     {
-      fontsel->monospace = monospace;
+      fontsel->monospace = monospace != 0;
       moo_font_selection_refresh (fontsel);
+      if (fontsel->filter_button)
+        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fontsel->filter_button),
+                                      monospace != 0);
       g_object_notify (G_OBJECT (fontsel), "monospace");
+    }
+}
+
+
+void
+moo_font_selection_set_filter_visible (MooFontSelection *fontsel,
+                                       gboolean          visible)
+{
+  g_return_if_fail (MOO_IS_FONT_SELECTION (fontsel));
+
+  if (!visible != !fontsel->filter_visible)
+    {
+      fontsel->filter_visible = visible != 0;
+      if (fontsel->filter_button)
+        g_object_set (fontsel->filter_button, "visible", visible, NULL);
+      g_object_notify (G_OBJECT (fontsel), "filter-visible");
     }
 }
 
@@ -1384,6 +1436,7 @@ struct _MooFontButtonPrivate
   guint         show_style : 1;
   guint         show_size : 1;
   guint         monospace : 1;
+  guint         filter_visible : 1;
 
   GtkWidget     *font_dialog;
   GtkWidget     *inside;
@@ -1407,7 +1460,8 @@ enum
   BUTTON_PROP_USE_SIZE,
   BUTTON_PROP_SHOW_STYLE,
   BUTTON_PROP_SHOW_SIZE,
-  BUTTON_PROP_MONOSPACE
+  BUTTON_PROP_MONOSPACE,
+  BUTTON_PROP_FILTER_VISIBLE
 };
 
 /* Prototypes */
@@ -1559,6 +1613,14 @@ moo_font_button_class_init (MooFontButtonClass *klass)
                                                          TRUE,
                                                          G_PARAM_READWRITE));
 
+  g_object_class_install_property (gobject_class,
+                                   BUTTON_PROP_FILTER_VISIBLE,
+                                   g_param_spec_boolean ("filter-visible",
+                                                         P_("filter-visible"),
+                                                         P_("filter-visible"),
+                                                         TRUE,
+                                                         G_PARAM_READWRITE));
+
   /**
    * MooFontButton::font-set:
    * @widget: the object which received the signal.
@@ -1592,6 +1654,8 @@ moo_font_button_init (MooFontButton *font_button)
   font_button->priv->show_size = TRUE;
   font_button->priv->font_dialog = NULL;
   font_button->priv->title = g_strdup (_("Pick a Font"));
+  font_button->priv->monospace = FALSE;
+  font_button->priv->filter_visible = TRUE;
 
   font_button->priv->inside = moo_font_button_create_inside (font_button);
   gtk_container_add (GTK_CONTAINER (font_button), font_button->priv->inside);
@@ -1649,6 +1713,9 @@ moo_font_button_set_property (GObject      *object,
     case BUTTON_PROP_MONOSPACE:
       moo_font_button_set_monospace (font_button, g_value_get_boolean (value));
       break;
+    case BUTTON_PROP_FILTER_VISIBLE:
+      moo_font_button_set_filter_visible (font_button, g_value_get_boolean (value));
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, param_id, pspec);
       break;
@@ -1685,6 +1752,9 @@ moo_font_button_get_property (GObject    *object,
       break;
     case BUTTON_PROP_MONOSPACE:
       g_value_set_boolean (value, moo_font_button_get_monospace (font_button));
+      break;
+    case BUTTON_PROP_FILTER_VISIBLE:
+      g_value_set_boolean (value, moo_font_button_get_filter_visible (font_button));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, param_id, pspec);
@@ -1962,7 +2032,7 @@ gboolean
 moo_font_button_get_monospace (MooFontButton *font_button)
 {
   g_return_val_if_fail (MOO_IS_FONT_BUTTON (font_button), FALSE);
-  return font_button->priv->monospace;
+  return font_button->priv->monospace != 0;
 }
 
 void
@@ -1971,11 +2041,9 @@ moo_font_button_set_monospace (MooFontButton *font_button,
 {
   g_return_if_fail (MOO_IS_FONT_BUTTON (font_button));
 
-  monospace = monospace != 0;
-
-  if (font_button->priv->monospace != monospace)
+  if (!font_button->priv->monospace != !monospace)
     {
-      font_button->priv->monospace = monospace;
+      font_button->priv->monospace = monospace != 0;
 
       gtk_container_remove (GTK_CONTAINER (font_button), font_button->priv->inside);
       font_button->priv->inside = moo_font_button_create_inside (font_button);
@@ -1988,6 +2056,32 @@ moo_font_button_set_monospace (MooFontButton *font_button,
                                           monospace);
 
       g_object_notify (G_OBJECT (font_button), "monospace");
+    }
+}
+
+
+gboolean
+moo_font_button_get_filter_visible (MooFontButton *font_button)
+{
+  g_return_val_if_fail (MOO_IS_FONT_BUTTON (font_button), FALSE);
+  return font_button->priv->filter_visible != 0;
+}
+
+void
+moo_font_button_set_filter_visible (MooFontButton *font_button,
+                                    gboolean       visible)
+{
+  g_return_if_fail (MOO_IS_FONT_BUTTON (font_button));
+
+  if (!font_button->priv->filter_visible != !visible)
+    {
+      font_button->priv->filter_visible = visible != 0;
+
+      if (font_button->priv->font_dialog)
+        moo_font_selection_set_filter_visible (MOO_FONT_SELECTION (MOO_FONT_SELECTION_DIALOG (font_button->priv->font_dialog)->fontsel),
+                                               visible);
+
+      g_object_notify (G_OBJECT (font_button), "filter-visible");
     }
 }
 
@@ -2069,6 +2163,8 @@ moo_font_button_clicked (GtkButton *button)
       font_dialog = MOO_FONT_SELECTION_DIALOG (font_button->priv->font_dialog);
       moo_font_selection_set_monospace (MOO_FONT_SELECTION (font_dialog->fontsel),
                                         font_button->priv->monospace);
+      moo_font_selection_set_filter_visible (MOO_FONT_SELECTION (font_dialog->fontsel),
+                                             font_button->priv->filter_visible);
 
       if (parent)
         gtk_window_set_transient_for (GTK_WINDOW (font_dialog), GTK_WINDOW (parent));

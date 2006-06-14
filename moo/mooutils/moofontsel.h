@@ -68,8 +68,6 @@ struct _MooFontSelection
 {
   GtkVBox parent_instance;
 
-  gboolean monospace;
-
   GtkWidget *font_entry;
   GtkWidget *family_list;
   GtkWidget *font_style_entry;
@@ -85,6 +83,9 @@ struct _MooFontSelection
   PangoFontFace *face;		/* Current face */
 
   gint size;
+
+  guint monospace : 1;
+  guint filter_visible : 1;
 };
 
 struct _MooFontSelectionClass
@@ -150,8 +151,10 @@ G_CONST_RETURN gchar* moo_font_selection_get_preview_text (MooFontSelection *fon
 void                  moo_font_selection_set_preview_text (MooFontSelection *fontsel,
 							   const gchar      *text);
 
-void       moo_font_selection_set_monospace     (MooFontSelection *fontsel,
-                                                 gboolean          monospace);
+void       moo_font_selection_set_monospace         (MooFontSelection *fontsel,
+                                                     gboolean          monospace);
+void       moo_font_selection_set_filter_visible    (MooFontSelection *fontsel,
+                                                     gboolean          visible);
 
 /*****************************************************************************
  * MooFontSelectionDialog functions.
@@ -247,6 +250,9 @@ void                  moo_font_button_set_show_size  (MooFontButton *font_button
 gboolean              moo_font_button_get_monospace  (MooFontButton *font_button);
 void                  moo_font_button_set_monospace  (MooFontButton *font_button,
                                                       gboolean       monospace);
+gboolean              moo_font_button_get_filter_visible (MooFontButton *font_button);
+void                  moo_font_button_set_filter_visible (MooFontButton *font_button,
+                                                          gboolean       visible);
 
 
 G_END_DECLS
