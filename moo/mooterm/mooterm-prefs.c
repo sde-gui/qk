@@ -25,6 +25,7 @@
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moostock.h"
+#include "mooutils/moofontsel.h"
 #include "mooutils/mooglade.h"
 #include <string.h>
 
@@ -110,16 +111,19 @@ _moo_term_apply_settings (MooTerm *term)
 GtkWidget  *moo_term_prefs_page_new   (void)
 {
     GtkWidget *page;
+    MooGladeXML *xml;
 
     _moo_term_init_settings ();
 
-    page = moo_prefs_dialog_page_new_from_xml ("Terminal",
-                                               MOO_STOCK_TERMINAL,
-                                               NULL, MOO_TERM_PREFS_GLADE_UI,
-                                               -1,
-                                               "page",
-                                               MOO_TERM_PREFS_PREFIX);
+    xml = moo_glade_xml_new_empty ();
+    moo_glade_xml_map_id (xml, "font", MOO_TYPE_FONT_BUTTON);
+    moo_glade_xml_set_property (xml, "font", "monospace", "True");
 
+    page = moo_prefs_dialog_page_new_from_xml ("Terminal", MOO_STOCK_TERMINAL,
+                                               xml, MOO_TERM_PREFS_GLADE_UI,
+                                               -1, "page", MOO_TERM_PREFS_PREFIX);
+
+    g_object_unref (xml);
     return page;
 }
 
