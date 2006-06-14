@@ -61,12 +61,14 @@ mooutils_sources =                             \
     $(mooutils)/mooconfig.c                    \
     $(mooutils)/moodialogs.c                   \
     $(mooutils)/moodialogs.h                   \
+    $(mooutils)/mooentry.c                     \
     $(mooutils)/moofiledialog.c                \
     $(mooutils)/moofiledialog.h                \
-    $(mooutils)/mooentry.c                     \
     $(mooutils)/moofilewatch.c                 \
     $(mooutils)/moofilewatch.h                 \
     $(mooutils)/moofiltermgr.c                 \
+    $(mooutils)/moofontsel.c                   \
+    $(mooutils)/moofontsel.h                   \
     $(mooutils)/mooglade.c                     \
     $(mooutils)/moohistoryentry.c              \
     $(mooutils)/moohistorylist.c               \

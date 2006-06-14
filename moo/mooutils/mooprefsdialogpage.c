@@ -18,6 +18,7 @@
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooprefsdialogpage.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/moofontsel.h"
 #include <string.h>
 
 
@@ -541,12 +542,13 @@ setting_get_value (GtkWidget      *widget,
             return TRUE;
         }
     }
-    else if (GTK_IS_FONT_BUTTON (widget))
+    else if (GTK_IS_FONT_BUTTON (widget) || MOO_IS_FONT_BUTTON (widget))
     {
         if (value->g_type == G_TYPE_STRING)
         {
-            const char *val = gtk_font_button_get_font_name (GTK_FONT_BUTTON (widget));
-            g_value_set_string (value, val);
+            char *val = NULL;
+            g_object_get (widget, "font-name", &val, NULL);
+            g_value_take_string (value, val);
             return TRUE;
         }
     }
@@ -622,7 +624,7 @@ static void setting_set_value   (GtkWidget      *widget,
             return;
         }
     }
-    else if (GTK_IS_FONT_BUTTON (widget))
+    else if (GTK_IS_FONT_BUTTON (widget) || MOO_IS_FONT_BUTTON (widget))
     {
         if (value->g_type == G_TYPE_STRING)
         {
