@@ -166,7 +166,7 @@ main (int argc, char *argv[])
 
 #include <windows.h>
 
-int 
+int __stdcall
 WinMain (HINSTANCE hInstance,
 	     HINSTANCE hPrevInstance,
 		 char     *lpszCmdLine,
