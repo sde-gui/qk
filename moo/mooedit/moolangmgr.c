@@ -865,7 +865,7 @@ lang_mgr_get_lang_for_bak_filename (MooLangMgr *mgr,
     int len;
     guint i;
 
-    static const char *bak_globs[] = {"*~", "*.bak", "*.in"};
+    static const char *bak_globs[] = {"*~", "*.bak", "*.in", "*.orig"};
 
     utf8_name = g_filename_to_utf8 (filename, -1, NULL, NULL, NULL);
     g_return_val_if_fail (utf8_name != NULL, NULL);
