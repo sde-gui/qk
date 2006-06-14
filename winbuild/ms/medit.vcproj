@@ -607,6 +607,12 @@
 						RelativePath="..\..\moo\mooutils\moofiltermgr.h">
 					</File>
 					<File
+						RelativePath="..\..\moo\mooutils\moofontsel.c">
+					</File>
+					<File
+						RelativePath="..\..\moo\mooutils\moofontsel.h">
+					</File>
+					<File
 						RelativePath="..\..\moo\mooutils\mooglade.c">
 					</File>
 					<File

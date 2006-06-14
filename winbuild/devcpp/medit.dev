@@ -1,7 +1,7 @@
 [Project]
 FileName=medit.dev
 Name=medit
-UnitCount=242
+UnitCount=244
 Type=0
 Ver=1
 ObjFiles=
@@ -2459,6 +2459,26 @@ BuildCmd=
 
 [Unit242]
 FileName=..\..\moo\mooutils\moomarshals.c
+CompileCpp=0
+Folder=mooutils
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit243]
+FileName=..\..\moo\mooutils\moofontsel.c
+CompileCpp=0
+Folder=mooutils
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit244]
+FileName=..\..\moo\mooutils\moofontsel.h
 CompileCpp=0
 Folder=mooutils
 Compile=1
