@@ -139,13 +139,6 @@ gboolean         moo_editor_save_copy       (MooEditor      *editor,
                                              const char     *encoding,
                                              GError        **error);
 
-MooEditSession  *moo_editor_get_session     (MooEditor      *editor);
-gboolean         moo_editor_load_session    (MooEditor      *editor,
-                                             MooEditSession *session,
-                                             gboolean        ask_confirm);
-gboolean         moo_editor_clear           (MooEditor      *editor,
-                                             gboolean        ask_confirm);
-
 #ifdef MOOEDIT_COMPILATION
 void             _moo_edit_window_insert_doc    (MooEditWindow  *window,
                                                  MooEdit        *doc,
