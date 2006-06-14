@@ -126,14 +126,6 @@ static gboolean moo_edit_window_close           (MooEditWindow      *window);
 static void     setup_notebook                  (MooEditWindow      *window);
 static void     update_window_title             (MooEditWindow      *window);
 
-static void     notebook_switch_page            (MooNotebook        *notebook,
-                                                 guint               page_num,
-                                                 MooEditWindow      *window);
-static gboolean notebook_populate_popup         (MooNotebook        *notebook,
-                                                 GtkWidget          *child,
-                                                 GtkMenu            *menu,
-                                                 MooEditWindow      *window);
-
 static void     proxy_boolean_property          (MooEditWindow      *window,
                                                  GParamSpec         *prop,
                                                  MooEdit            *doc);
@@ -1293,8 +1285,113 @@ moo_edit_window_print (MooEditWindow *window)
 
 
 /****************************************************************************/
+/* Notebook popup menu
+ */
+
+static void     close_activated         (GtkWidget          *item,
+                                         MooEditWindow      *window)
+{
+    MooEdit *edit = g_object_get_data (G_OBJECT (item), "moo-edit");
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (MOO_IS_EDIT (edit));
+    moo_editor_close_doc (window->priv->editor, edit, TRUE);
+}
+
+
+static void     close_others_activated  (GtkWidget          *item,
+                                         MooEditWindow      *window)
+{
+    GSList *list;
+    MooEdit *edit = g_object_get_data (G_OBJECT (item), "moo-edit");
+
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (MOO_IS_EDIT (edit));
+
+    list = moo_edit_window_list_docs (window);
+    list = g_slist_remove (list, edit);
+
+    moo_editor_close_docs (window->priv->editor, list, TRUE);
+
+    g_slist_free (list);
+}
+
+
+/****************************************************************************/
 /* Documents
  */
+
+static void
+notebook_switch_page (G_GNUC_UNUSED MooNotebook *notebook,
+                      guint          page_num,
+                      MooEditWindow *window)
+{
+    edit_changed (window, get_nth_tab (window, page_num));
+    moo_edit_window_check_actions (window);
+    g_object_notify (G_OBJECT (window), "active-doc");
+}
+
+
+static gboolean
+notebook_populate_popup (MooNotebook        *notebook,
+                         GtkWidget          *child,
+                         GtkMenu            *menu,
+                         MooEditWindow      *window)
+{
+    MooEdit *edit;
+    GtkWidget *item;
+
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), TRUE);
+    g_return_val_if_fail (window->priv->notebook == notebook, TRUE);
+    g_return_val_if_fail (GTK_IS_SCROLLED_WINDOW (child), TRUE);
+
+    edit = MOO_EDIT (gtk_bin_get_child (GTK_BIN (child)));
+    g_return_val_if_fail (MOO_IS_EDIT (edit), TRUE);
+
+    item = gtk_menu_item_new_with_label ("Close");
+    gtk_widget_show (item);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+    g_object_set_data (G_OBJECT (item), "moo-edit", edit);
+    g_signal_connect (item, "activate",
+                      G_CALLBACK (close_activated),
+                      window);
+
+    if (moo_edit_window_num_docs (window) > 1)
+    {
+        item = gtk_menu_item_new_with_label ("Close All Others");
+        gtk_widget_show (item);
+        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+        g_object_set_data (G_OBJECT (item), "moo-edit", edit);
+        g_signal_connect (item, "activate",
+                          G_CALLBACK (close_others_activated),
+                          window);
+    }
+
+    return FALSE;
+}
+
+
+static gboolean
+notebook_button_press (MooNotebook    *notebook,
+                       GdkEventButton *event,
+                       MooEditWindow  *window)
+{
+    int n;
+
+    if (event->button != 2 || event->type != GDK_BUTTON_PRESS)
+        return FALSE;
+
+    n = moo_notebook_get_event_tab (notebook, (GdkEvent*) event);
+
+    if (n < 0)
+        return FALSE;
+
+    moo_editor_close_doc (window->priv->editor,
+                          get_nth_tab (window, n),
+                          TRUE);
+
+    return TRUE;
+}
+
 
 static void
 setup_notebook (MooEditWindow *window)
@@ -1305,6 +1402,8 @@ setup_notebook (MooEditWindow *window)
                             G_CALLBACK (notebook_switch_page), window);
     g_signal_connect (window->priv->notebook, "populate-popup",
                       G_CALLBACK (notebook_populate_popup), window);
+    g_signal_connect (window->priv->notebook, "button-press-event",
+                      G_CALLBACK (notebook_button_press), window);
 
     frame = gtk_aspect_frame_new (NULL, 0.5, 0.5, 1.0, FALSE);
     gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_NONE);
@@ -1332,17 +1431,6 @@ setup_notebook (MooEditWindow *window)
                       G_CALLBACK (notebook_drag_drop), window);
     g_signal_connect (window->priv->notebook, "drag-data-received",
                       G_CALLBACK (notebook_drag_data_recv), window);
-}
-
-
-static void
-notebook_switch_page (G_GNUC_UNUSED MooNotebook *notebook,
-                      guint          page_num,
-                      MooEditWindow *window)
-{
-    edit_changed (window, get_nth_tab (window, page_num));
-    moo_edit_window_check_actions (window);
-    g_object_notify (G_OBJECT (window), "active-doc");
 }
 
 
@@ -1891,76 +1979,6 @@ update_tab_label (MooEditWindow *window,
     gtk_image_set_from_pixbuf (GTK_IMAGE (icon), pixbuf);
 
     g_free (label_text);
-}
-
-
-/****************************************************************************/
-/* Notebook popup menu
- */
-
-static void     close_activated         (GtkWidget          *item,
-                                         MooEditWindow      *window)
-{
-    MooEdit *edit = g_object_get_data (G_OBJECT (item), "moo-edit");
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-    g_return_if_fail (MOO_IS_EDIT (edit));
-    moo_editor_close_doc (window->priv->editor, edit, TRUE);
-}
-
-
-static void     close_others_activated  (GtkWidget          *item,
-                                         MooEditWindow      *window)
-{
-    GSList *list;
-    MooEdit *edit = g_object_get_data (G_OBJECT (item), "moo-edit");
-
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-    g_return_if_fail (MOO_IS_EDIT (edit));
-
-    list = moo_edit_window_list_docs (window);
-    list = g_slist_remove (list, edit);
-
-    moo_editor_close_docs (window->priv->editor, list, TRUE);
-
-    g_slist_free (list);
-}
-
-
-static gboolean notebook_populate_popup (MooNotebook        *notebook,
-                                         GtkWidget          *child,
-                                         GtkMenu            *menu,
-                                         MooEditWindow      *window)
-{
-    MooEdit *edit;
-    GtkWidget *item;
-
-    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), TRUE);
-    g_return_val_if_fail (window->priv->notebook == notebook, TRUE);
-    g_return_val_if_fail (GTK_IS_SCROLLED_WINDOW (child), TRUE);
-
-    edit = MOO_EDIT (gtk_bin_get_child (GTK_BIN (child)));
-    g_return_val_if_fail (MOO_IS_EDIT (edit), TRUE);
-
-    item = gtk_menu_item_new_with_label ("Close");
-    gtk_widget_show (item);
-    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-    g_object_set_data (G_OBJECT (item), "moo-edit", edit);
-    g_signal_connect (item, "activate",
-                      G_CALLBACK (close_activated),
-                      window);
-
-    if (moo_edit_window_num_docs (window) > 1)
-    {
-        item = gtk_menu_item_new_with_label ("Close All Others");
-        gtk_widget_show (item);
-        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-        g_object_set_data (G_OBJECT (item), "moo-edit", edit);
-        g_signal_connect (item, "activate",
-                          G_CALLBACK (close_others_activated),
-                          window);
-    }
-
-    return FALSE;
 }
 
 
