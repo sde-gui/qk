@@ -1,14 +1,15 @@
 0.7:
 ----
-1. Tools. Finally decide what and how.
-2. Fix style schemes:
+1. Printing.
+2. Tools. Finally decide what and how.
+3. Fix style schemes:
   a. Fix gvim and dark schemes.
   b. Make use-scheme work.
   c. Make good set of default styles.
-3. Project manager:
+4. Project manager:
   a. Open/save sessions.
   b. C, Python, LaTex.
-4. Bookmarks ?
+5. Bookmarks ?
 
 0.8:
 ----
