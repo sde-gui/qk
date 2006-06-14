@@ -1,0 +1,14 @@
+0.7:
+----
+1. Fix style schemes:
+  a. Fix gvim and dark schemes.
+  b. Make use-scheme work.
+  c. Make good set of default styles.
+2. Project manager:
+  a. Open/save sessions.
+  b. C, Python, LaTex.
+3. Bookmarks ?
+
+0.8:
+----
+1. GtkSourceView.
