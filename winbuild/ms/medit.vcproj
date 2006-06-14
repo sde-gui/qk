@@ -20,6 +20,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories=".;..\..\moo;..\..\moo\mooutils"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;__WIN32__;HAVE_CONFIG_H;__MOO__"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -77,6 +78,7 @@
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="2"
 				OptimizeForWindowsApplication="TRUE"
+				AdditionalIncludeDirectories=".;..\..\moo;..\..\moo\mooutils"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;__WIN32__;HAVE_CONFIG_H;__MOO__"
 				RuntimeLibrary="4"
 				UsePrecompiledHeader="0"
