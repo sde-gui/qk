@@ -1,6 +1,6 @@
-diff -r 05175a3138a2 moo/mooutils/moodialogs.c
---- a/moo/mooutils/moodialogs.c	Tue Jun 13 00:40:43 2006 -0500
-+++ b/moo/mooutils/moodialogs.c	Tue Jun 13 00:41:08 2006 -0500
+diff -r c7583f0256f6 moo/mooutils/moodialogs.c
+--- a/moo/mooutils/moodialogs.c	Wed Jun 14 11:59:54 2006 -0500
++++ b/moo/mooutils/moodialogs.c	Wed Jun 14 12:49:49 2006 -0500
 @@ -16,7 +16,10 @@
  #include "mooutils/mooprefs.h"
  #include "mooutils/mooutils-misc.h"
@@ -13,7 +13,7 @@ diff -r 05175a3138a2 moo/mooutils/moodialogs.c
  
  static GtkWidget *
  create_message_dialog (GtkWindow  *parent,
-@@ -205,6 +208,135 @@ moo_position_window (GtkWidget  *window,
+@@ -205,6 +208,119 @@ moo_position_window (GtkWidget  *window,
  }
  
  
@@ -76,7 +76,6 @@ diff -r 05175a3138a2 moo/mooutils/moodialogs.c
 +{
 +    GtkWidget *dialog, *toplevel = NULL;
 +    HANDLE thr;
-+    HWND parent_handle = NULL;
 +    DWORD thr_id;
 +
 +    struct {
@@ -93,20 +92,7 @@ diff -r 05175a3138a2 moo/mooutils/moodialogs.c
 +        parent_widget = gtk_widget_get_toplevel (parent_widget);
 +
 +    if (parent_widget && GTK_WIDGET_TOPLEVEL (parent_widget) && parent_widget->window)
-+        parent_handle = GDK_WINDOW_HWND (parent_widget->window);
-+
-+    if (parent_handle &&
-+        !DuplicateHandle (GetCurrentProcess (), parent_handle,
-+                          GetCurrentProcess (), (LPHANDLE) &data.parent,
-+                          0, FALSE, DUPLICATE_SAME_ACCESS))
-+    {
-+        char *msg = g_win32_error_message (GetLastError ());
-+        g_critical ("%s: %s", G_STRLOC, msg);
-+        g_free (msg);
-+    }
-+
-+    g_print ("parent_handle: %p\n", parent_handle);
-+    g_print ("handle: %p\n", data.parent);
++        data.parent = GDK_WINDOW_HWND (parent_widget->window);
 +
 +    data.title = (char*) g_utf8_to_utf16 ("", 0, NULL, NULL, NULL);
 +
@@ -138,8 +124,6 @@ diff -r 05175a3138a2 moo/mooutils/moodialogs.c
 +            g_usleep (1000);
 +    }
 +
-+    if (data.parent)
-+        CloseHandle (data.parent);
 +    g_free (data.title);
 +    g_free (data.text);
 +    CloseHandle (thr);
@@ -149,7 +133,7 @@ diff -r 05175a3138a2 moo/mooutils/moodialogs.c
  void
  moo_message_dialog (GtkWidget  *parent,
                      GtkMessageType type,
-@@ -231,6 +363,7 @@ moo_message_dialog (GtkWidget  *parent,
+@@ -231,6 +347,7 @@ moo_message_dialog (GtkWidget  *parent,
      gtk_dialog_run (GTK_DIALOG (dialog));
      gtk_widget_destroy (dialog);
  }
