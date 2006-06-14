@@ -1,3 +1,9 @@
+2006-06-14  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    Close editor tabs by middle mouse button click.
+
+2006-06-14  Thomas Gilgin <thomas_gilgin@users.sourceforge.net>
+    Made MSVC project work without tweaking global visual studio settings.
+
 2006-06-11  Yevgen Muntyan  <muntyan@math.tamu.edu>
     Find Current Word action (Thomas Gilgin).
 
