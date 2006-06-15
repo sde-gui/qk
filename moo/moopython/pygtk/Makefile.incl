@@ -89,9 +89,9 @@ endif
 
 if MOO_USE_CUSTOM_CODEGEN
 codegen_script = $(moopython_srcdir)/codegen/codegen.py
-codegen = $(PYTHON) $(codegen_script) $(codegen_platform)
+codegen = $(PYTHON) $(codegen_script) $(codegen_platform) --pygtk-version=$(PYGTK_MINOR_VERSION)
 else
-codegen = $(PYTHON) $(PYGTK_CODEGEN_DIR)/codegen.py
+codegen = $(PYTHON) $(PYGTK_CODEGEN_DIR)/codegen.py $(PYGTK_CODEGEN_ARGS)
 endif
 
 $(moopygtk)/mooutils-pygtk.c: $(moopygtk)/mooutils-pygtk.defs $(moopygtk)/mooutils-pygtk.override $(mooutils_override_files) $(codegen_script)

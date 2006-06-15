@@ -2,7 +2,7 @@
 # _MOO_AC_PYGTK_CODEGEN
 #
 AC_DEFUN([_MOO_AC_PYGTK_CODEGEN],[
-    AC_ARG_WITH([custom-codegen], AC_HELP_STRING([--with-custom-codegen], [whether to use custom copy of pygtk codegen (default = yes with pygtk 2.8)]),[
+    AC_ARG_WITH([custom-codegen], AC_HELP_STRING([--with-custom-codegen], [whether to use custom copy of pygtk codegen (default = yes)]),[
         if test x$with_custom_codegen = "xno"; then
             MOO_USE_CUSTOM_CODEGEN="no"
             AC_MSG_NOTICE([using installed codegen])
@@ -11,13 +11,8 @@ AC_DEFUN([_MOO_AC_PYGTK_CODEGEN],[
             AC_MSG_NOTICE([using patched codegen])
         fi
     ],[
-        if $PKG_CONFIG "pygtk-2.0 >= 2.8 pygtk-2.0 < 2.9"; then
-            AC_MSG_NOTICE([pygtk-2.8, using patched codegen])
-            MOO_USE_CUSTOM_CODEGEN=yes
-        else
-            AC_MSG_NOTICE([pygtk version different from 2.8, using installed codegen])
-            MOO_USE_CUSTOM_CODEGEN=no
-        fi
+        MOO_USE_CUSTOM_CODEGEN="yes"
+        AC_MSG_NOTICE([using patched codegen])
     ])
 
     if test x$MOO_USE_CUSTOM_CODEGEN != xyes; then
@@ -221,6 +216,22 @@ AC_DEFUN([MOO_AC_PYGTK],[
     AM_CONDITIONAL(MOO_USE_PYGTK, test x$MOO_USE_PYGTK = "xyes")
     if test x$MOO_USE_PYGTK = "xyes"; then
         AC_DEFINE(MOO_USE_PYGTK, 1, [MOO_USE_PYGTK])
+
+        PYGTK_VERSION=`$PKG_CONFIG --modversion pygtk-2.0`
+        i=0
+        for part in `echo $PYGTK_VERSION | sed 's/\./ /g'`; do
+            i=`expr $i + 1`
+            eval part$i=$part
+        done
+
+        PYGTK_MAJOR_VERSION=$part1
+        PYGTK_MINOR_VERSION=$part2
+        PYGTK_MICRO_VERSION=$part3
+
+        AC_SUBST(PYGTK_VERSION)
+        AC_SUBST(PYGTK_MAJOR_VERSION)
+        AC_SUBST(PYGTK_MINOR_VERSION)
+        AC_SUBST(PYGTK_MICRO_VERSION)
     fi
 
     AM_CONDITIONAL(MOO_USE_CUSTOM_CODEGEN, test x$MOO_USE_CUSTOM_CODEGEN = "xyes")
