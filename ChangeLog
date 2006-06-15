@@ -1,4 +1,7 @@
 2006-06-14  Yevgen Muntyan  <muntyan@tamu.edu>
+    Made codegen work with pygtk-2.6; made plugins work with pygtk-2.6.
+
+2006-06-14  Yevgen Muntyan  <muntyan@tamu.edu>
     Close editor tabs by middle mouse button click.
 
 2006-06-14  Thomas Gilgin <thomas_gilgin@users.sourceforge.net>
