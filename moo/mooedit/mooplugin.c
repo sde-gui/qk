@@ -68,7 +68,7 @@ static void     plugin_detach_doc       (MooPlugin      *plugin,
                                          MooEditWindow  *window,
                                          MooEdit        *doc);
 
-static gboolean plugin_info_check       (MooPluginInfo  *info);
+static gboolean plugin_info_check       (const MooPluginInfo *info);
 
 static char    *make_prefs_key          (MooPlugin      *plugin,
                                          const char     *key);
@@ -188,6 +188,7 @@ moo_plugin_finalize (GObject *object)
         g_hash_table_destroy (plugin->langs);
 
     moo_plugin_info_free (plugin->info);
+    moo_plugin_params_free (plugin->params);
 
     G_OBJECT_CLASS(parent_class)->finalize (object);
 }
@@ -202,7 +203,9 @@ moo_plugin_class_init (MooPluginClass *klass)
 
 
 gboolean
-moo_plugin_register (GType type)
+moo_plugin_register (GType                  type,
+                     const MooPluginInfo   *info,
+                     const MooPluginParams *params)
 {
     MooPluginClass *klass;
     MooPlugin *plugin;
@@ -214,14 +217,6 @@ moo_plugin_register (GType type)
     klass = g_type_class_ref (type);
     g_return_val_if_fail (klass != NULL, FALSE);
 
-//     if (klass->plugin_system_version != MOO_PLUGIN_CURRENT_VERSION)
-//     {
-//         g_message ("%s: plugin %s of version %d is incompatible with "
-//                    "current version %d", G_STRLOC, g_type_name (type),
-//                    klass->plugin_system_version, MOO_PLUGIN_CURRENT_VERSION);
-//         return FALSE;
-//     }
-
     if (moo_plugin_registered (type))
     {
         g_warning ("%s: plugin '%s' already registered",
@@ -229,9 +224,7 @@ moo_plugin_register (GType type)
         return FALSE;
     }
 
-    plugin = g_object_new (type, NULL);
-
-    if (!plugin_info_check (plugin->info))
+    if (!plugin_info_check (info))
     {
         g_warning ("%s: invalid info in plugin '%s'",
                    G_STRLOC, g_type_name (type));
@@ -239,12 +232,17 @@ moo_plugin_register (GType type)
         return FALSE;
     }
 
-    if (plugin->info->langs)
+    plugin = g_object_new (type, NULL);
+    plugin->info = moo_plugin_info_copy ((MooPluginInfo*) info);
+    plugin->params = params ? moo_plugin_params_copy ((MooPluginParams*) params) :
+                              moo_plugin_params_new (TRUE, TRUE);
+
+    if (info->langs)
     {
         char **langs, **p;
         GHashTable *table;
 
-        langs = g_strsplit_set (plugin->info->langs, " \t\r\n", 0);
+        langs = g_strsplit_set (info->langs, " \t\r\n", 0);
         table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
         for (p = langs; p && *p; ++p)
@@ -264,7 +262,7 @@ moo_plugin_register (GType type)
 
         if (!g_hash_table_size (table))
         {
-            g_warning ("%s: invalid langs string '%s'", G_STRLOC, plugin->info->langs);
+            g_warning ("%s: invalid langs string '%s'", G_STRLOC, info->langs);
             g_hash_table_destroy (table);
         }
         else
@@ -287,7 +285,7 @@ moo_plugin_register (GType type)
 
     prefs_key = make_prefs_key (plugin, PLUGIN_PREFS_ENABLED);
     moo_prefs_new_key_bool (prefs_key, moo_plugin_enabled (plugin));
-    plugin->info->params->enabled = moo_prefs_get_bool (prefs_key);
+    plugin->params->enabled = moo_prefs_get_bool (prefs_key);
     g_free (prefs_key);
 
     if (!plugin_init (plugin))
@@ -669,13 +667,12 @@ moo_doc_plugin_lookup (const char     *plugin_id,
 
 
 static gboolean
-plugin_info_check (MooPluginInfo *info)
+plugin_info_check (const MooPluginInfo *info)
 {
     return info && info->id && info->id[0] &&
             g_utf8_validate (info->id, -1, NULL) &&
             info->name && g_utf8_validate (info->name, -1, NULL) &&
-            info->description && g_utf8_validate (info->description, -1, NULL) &&
-            info->params;
+            info->description && g_utf8_validate (info->description, -1, NULL);
 }
 
 
@@ -721,7 +718,7 @@ gboolean
 moo_plugin_enabled (MooPlugin *plugin)
 {
     g_return_val_if_fail (MOO_IS_PLUGIN (plugin), FALSE);
-    return plugin->info->params->enabled;
+    return plugin->params->enabled;
 }
 
 
@@ -737,11 +734,11 @@ plugin_enable (MooPlugin  *plugin)
 
     g_assert (!plugin->initialized);
 
-    plugin->info->params->enabled = TRUE;
+    plugin->params->enabled = TRUE;
 
     if (!plugin_init (plugin))
     {
-        plugin->info->params->enabled = FALSE;
+        plugin->params->enabled = FALSE;
         return FALSE;
     }
 
@@ -772,7 +769,7 @@ plugin_disable (MooPlugin  *plugin)
     g_slist_free (windows);
 
     plugin_deinit (plugin);
-    plugin->info->params->enabled = FALSE;
+    plugin->params->enabled = FALSE;
 }
 
 
@@ -869,17 +866,10 @@ static GModule *
 module_open (const char *path)
 {
     GModule *module;
-    G_GNUC_UNUSED guint saved;
 
-#ifdef __WIN32__
-    saved = SetErrorMode (SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
-#endif
-
+    _moo_disable_win32_error_message ();
     module = g_module_open (path, G_MODULE_BIND_LOCAL);
-
-#ifdef __WIN32__
-    SetErrorMode (saved);
-#endif
+    _moo_enable_win32_error_message ();
 
     return module;
 }
@@ -1122,7 +1112,7 @@ static gboolean
 moo_plugin_visible (MooPlugin *plugin)
 {
     g_return_val_if_fail (MOO_IS_PLUGIN (plugin), FALSE);
-    return plugin->info->params->visible ? TRUE : FALSE;
+    return plugin->params->visible ? TRUE : FALSE;
 }
 
 
@@ -1166,9 +1156,7 @@ moo_plugin_info_new (const char     *id,
                      const char     *description,
                      const char     *author,
                      const char     *version,
-                     const char     *langs,
-                     gboolean        enabled,
-                     gboolean        visible)
+                     const char     *langs)
 {
     MooPluginInfo *info;
 
@@ -1181,7 +1169,6 @@ moo_plugin_info_new (const char     *id,
     info->author = author ? g_strdup (author) : g_strdup ("");
     info->version = version ? g_strdup (version) : g_strdup ("");
     info->langs = g_strdup (langs);
-    info->params = moo_plugin_params_new (enabled, visible);
 
     return info;
 }
@@ -1191,10 +1178,8 @@ MooPluginInfo *
 moo_plugin_info_copy (MooPluginInfo *info)
 {
     g_return_val_if_fail (info != NULL, NULL);
-    g_return_val_if_fail (info->params != NULL, NULL);
     return moo_plugin_info_new (info->id, info->name, info->description,
-                                info->author, info->version, info->langs,
-                                info->params->enabled, info->params->visible);
+                                info->author, info->version, info->langs);
 }
 
 
@@ -1209,7 +1194,6 @@ moo_plugin_info_free (MooPluginInfo *info)
         g_free (info->author);
         g_free (info->version);
         g_free (info->langs);
-        moo_plugin_params_free (info->params);
         g_free (info);
     }
 }

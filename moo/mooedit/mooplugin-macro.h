@@ -34,15 +34,9 @@ MOO_PLUGIN_INIT_FUNC (void)
                                description__,author__,version__,            \
                                langs__)                                     \
                                                                             \
-static struct {                                                             \
-    const char *id;                                                         \
-    const char *name;                                                       \
-    const char *description;                                                \
-    const char *author;                                                     \
-    const char *version;                                                    \
-    const char *langs;                                                      \
-} plugin_name__##_plugin_info = {id__, name__, description__,               \
-                                 author__, version__, langs__};
+static const MooPluginInfo plugin_name__##_plugin_info =                    \
+    {(char*) id__, (char*) name__, (char*) description__,                   \
+     (char*) author__, (char*) version__, (char*) langs__};
 
 
 #define MOO_PLUGIN_DEFINE_FULL(Name__,name__,                               \
@@ -63,8 +57,6 @@ name__##_plugin_class_init (MooPluginClass *klass)                          \
 {                                                                           \
     name__##_plugin_parent_class = g_type_class_peek_parent (klass);        \
                                                                             \
-    /* klass->plugin_system_version = MOO_PLUGIN_CURRENT_VERSION; */        \
-                                                                            \
     klass->init = (MooPluginInitFunc) init__;                               \
     klass->deinit = (MooPluginDeinitFunc) deinit__;                         \
     klass->attach_win = (MooPluginAttachWinFunc) attach_win__;              \
@@ -77,15 +69,6 @@ name__##_plugin_class_init (MooPluginClass *klass)                          \
 static void                                                                 \
 name__##_plugin_instance_init (MooPlugin *plugin)                           \
 {                                                                           \
-    plugin->info =                                                          \
-        moo_plugin_info_new (name__##_plugin_info.id,                       \
-                             name__##_plugin_info.name,                     \
-                             name__##_plugin_info.description,              \
-                             name__##_plugin_info.author,                   \
-                             name__##_plugin_info.version,                  \
-                             name__##_plugin_info.langs,                    \
-                             TRUE, TRUE);                                   \
-                                                                            \
     plugin->win_plugin_type = WIN_PLUGIN_TYPE__;                            \
     plugin->doc_plugin_type = DOC_PLUGIN_TYPE__;                            \
 }                                                                           \

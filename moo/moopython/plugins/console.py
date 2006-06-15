@@ -6,20 +6,12 @@ import gobject
 CONSOLE_PLUGIN_ID = "Console"
 
 class Plugin(moo.edit.Plugin):
-    def __init__(self):
-        moo.edit.Plugin.__init__(self)
-
-        self.set_info(moo.edit.PluginInfo(CONSOLE_PLUGIN_ID, "Console",
-                                          description="Console",
-                                          author="Yevgen Muntyan <muntyan@math.tamu.edu>",
-                                          version="3.1415926"))
-        self.set_win_plugin_type(WinPlugin)
-
     def do_init(self):
         editor = moo.edit.editor_instance()
         xml = editor.get_ui_xml()
         self.ui_merge_id = xml.new_merge_id()
 
+        self.set_win_plugin_type(WinPlugin)
         moo.utils.window_class_add_action(moo.edit.EditWindow, "ShowConsole",
                                           display_name="Show Console",
                                           label="Show Console",
@@ -69,7 +61,12 @@ class WinPlugin(moo.edit.WinPlugin):
         self.window.remove_pane(CONSOLE_PLUGIN_ID)
 
 
-if os.name == 'posix' and moo.edit.module_check_version(1, 0):
+if os.name == 'posix' and moo.edit.module_check_version(2, 0):
     gobject.type_register(Plugin)
     gobject.type_register(WinPlugin)
-    moo.edit.plugin_register(Plugin)
+
+    info = moo.edit.PluginInfo(CONSOLE_PLUGIN_ID, "Console",
+                               description="Console",
+                               author="Yevgen Muntyan <muntyan@math.tamu.edu>",
+                               version="3.1415926")
+    moo.edit.plugin_register(Plugin, info)

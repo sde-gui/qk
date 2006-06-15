@@ -19,12 +19,6 @@ class Action(moo.edit.Action):
 
 
 class Plugin(moo.edit.Plugin):
-    def __init__(self):
-        moo.edit.Plugin.__init__(self)
-
-        self.set_info(moo.edit.PluginInfo("RealPythonPlugin", "Real Python Plugin",
-                                          description="Plugin", author="Uknown",
-                                          version="3.1415926"))
 
     def do_init(self):
         #print "do_init"
@@ -48,7 +42,11 @@ class Plugin(moo.edit.Plugin):
         pass
 
 
-if moo.edit.module_check_version(1, 0):
+if moo.edit.module_check_version(2, 0):
     gobject.type_register(Action)
     gobject.type_register(Plugin)
-    moo.edit.plugin_register(Plugin)
+
+    info = moo.edit.PluginInfo("RealPythonPlugin", "Real Python Plugin",
+                               description="Plugin", author="Uknown",
+                               version="3.1415926")
+    moo.edit.plugin_register(Plugin, info)

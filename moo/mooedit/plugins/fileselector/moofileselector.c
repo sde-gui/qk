@@ -1173,7 +1173,7 @@ _moo_file_selector_plugin_init (void)
 
     MOO_MODULE_CHECK_VERSION ();
 
-    if (!moo_plugin_register (ptype))
+    if (!moo_plugin_register (ptype, &file_selector_plugin_info, NULL))
         return FALSE;
 
     moo_plugin_method_new ("get-widget", ptype,

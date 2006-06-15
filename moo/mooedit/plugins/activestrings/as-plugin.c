@@ -1161,5 +1161,6 @@ gboolean
 _moo_active_strings_plugin_init (void)
 {
     MOO_MODULE_CHECK_VERSION ();
-    return moo_plugin_register (as_plugin_get_type ());
+    return moo_plugin_register (as_plugin_get_type (),
+                                &as_plugin_info, NULL);
 }

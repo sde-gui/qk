@@ -88,5 +88,6 @@ gboolean
 _moo_completion_plugin_init (void)
 {
     MOO_MODULE_CHECK_VERSION ();
-    return moo_plugin_register (cmpl_plugin_get_type ());
+    return moo_plugin_register (cmpl_plugin_get_type (),
+                                &cmpl_plugin_info, NULL);
 }

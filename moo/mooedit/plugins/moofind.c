@@ -916,5 +916,6 @@ gboolean
 _moo_find_plugin_init (void)
 {
     MOO_MODULE_CHECK_VERSION ();
-    return moo_plugin_register (find_plugin_get_type ());
+    return moo_plugin_register (find_plugin_get_type (),
+                                &find_plugin_info, NULL);
 }

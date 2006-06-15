@@ -26,14 +26,6 @@ class FileLine(object):
         self.line = line
 
 class Plugin(moo.edit.Plugin):
-    def __init__(self):
-        moo.edit.Plugin.__init__(self)
-
-        self.set_info(moo.edit.PluginInfo(PLUGIN_ID, "Python",
-                                          description="Python support",
-                                          author="Yevgen Muntyan <muntyan@math.tamu.edu>",
-                                          version="3.1415926"))
-
     def do_init(self):
         editor = moo.edit.editor_instance()
         xml = editor.get_ui_xml()
@@ -171,6 +163,11 @@ class Plugin(moo.edit.Plugin):
         window.remove_pane(PLUGIN_ID)
 
 
-if moo.edit.module_check_version(1, 0):
+if moo.edit.module_check_version(2, 0):
     gobject.type_register(Plugin)
-    moo.edit.plugin_register(Plugin)
+
+    info = moo.edit.PluginInfo(PLUGIN_ID, "Python",
+                               description="Python support",
+                               author="Yevgen Muntyan <muntyan@math.tamu.edu>",
+                               version="3.1415926")
+    moo.edit.plugin_register(Plugin, info)
