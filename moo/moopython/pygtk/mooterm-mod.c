@@ -20,11 +20,6 @@
 #include "moopython/moopython-utils.h"
 
 
-void        _moo_term_register_classes  (PyObject       *dict);
-void        _moo_term_add_constants     (PyObject       *module,
-                                         const char     *strip_prefix);
-
-extern PyMethodDef _moo_term_functions[];
 static char *moo_term_module_doc = (char*)"_moo_term module.";
 
 

@@ -19,11 +19,6 @@
 #include "moopython/pygtk/mooapp-mod.h"
 
 
-void        _moo_app_register_classes   (PyObject       *dict);
-void        _moo_app_add_constants      (PyObject       *module,
-                                         const char     *strip_prefix);
-
-extern PyMethodDef _moo_app_functions[];
 static char *moo_app_module_doc = (char*) "_moo_app module.";
 
 

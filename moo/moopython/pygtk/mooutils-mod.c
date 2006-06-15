@@ -21,17 +21,13 @@
 #include "mooutils/moostock.h"
 
 
-void        _moo_utils_register_classes (PyObject       *dict);
-void        _moo_utils_add_constants    (PyObject       *module,
-                                         const char     *strip_prefix);
-
-extern PyMethodDef _moo_utils_functions[];
 static char *moo_utils_module_doc = (char*)"__moo_utils__ module.";
 
 #define add_constant(mod_,name_,val_) PyModule_AddStringConstant (mod, (char*) name_, (char*) val_)
 
 
-static PyObject *pyobj_from_gval (const GValue *value)
+static PyObject *
+pyobj_from_gval (const GValue *value)
 {
     if (!G_VALUE_HOLDS (value, MOO_TYPE_PY_OBJECT))
         return_RuntimeErr ("invalid value passed");
@@ -39,7 +35,8 @@ static PyObject *pyobj_from_gval (const GValue *value)
 }
 
 
-static int gval_from_pyobj (GValue *value, PyObject *obj)
+static int
+gval_from_pyobj (GValue *value, PyObject *obj)
 {
     if (!G_VALUE_HOLDS (value, MOO_TYPE_PY_OBJECT))
         return_RuntimeErrInt ("invalid value passed");
