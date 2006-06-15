@@ -6,6 +6,8 @@ import defsparser, argtypes, override
 import definitions
 import reversewrapper
 
+pygtk_version = 6
+
 class Coverage(object):
     def __init__(self, name):
         self.name = name
@@ -344,7 +346,8 @@ class Wrapper:
                         self.objinfo.typecode in self.overrides.newstyle_constructors)
                 else:
                     # ok, a hack to determine if we should use new-style constructores :P
-                    if getattr(self, 'write_property_based_constructor', None) is not None:
+                    if pygtk_version >= 8 and \
+                       getattr(self, 'write_property_based_constructor', None) is not None:
                         if (len(constructor.params) == 0 or
                             isinstance(constructor.params[0], definitions.Property)):
                             # write_property_based_constructor is only
@@ -1178,9 +1181,9 @@ def write_registers(parser, fp):
             fp.write('    pygobject_register_class(d, "' + obj.c_name +
                      '", ' + obj.typecode + ', &Py' + obj.c_name +
                      '_Type, NULL);\n')
-        if obj.has_new_constructor_api:
+        if pygtk_version >= 8 and obj.has_new_constructor_api:
             fp.write('    pyg_set_object_has_new_constructor(%s);\n' % obj.typecode)
-        else:
+        elif pygtk_version >= 8:
             print >> sys.stderr, ("Warning: Constructor for %s needs to be updated to new API\n"
                                   "         See http://live.gnome.org/PyGTK_2fWhatsNew28"
                                   "#update-constructors") % obj.c_name
@@ -1226,7 +1229,8 @@ def main(argv):
     errorfilename = None
     opts, args = getopt.getopt(argv[1:], "o:p:r:t:D:",
                         ["override=", "prefix=", "register=", "outfilename=",
-                         "load-types=", "errorfilename=", "platform="])
+                         "load-types=", "errorfilename=", "platform=",
+                         "pygtk-version="])
     defines = {} # -Dkey[=val] options
     for opt, arg in opts:
         if opt in ('-o', '--override'):
@@ -1245,6 +1249,9 @@ def main(argv):
             errorfilename = arg
         elif opt == '--platform':
             sys.platform = arg
+        elif opt == '--pygtk-version':
+            global pygtk_version
+            pygtk_version = int(arg)
         elif opt in ('-t', '--load-types'):
             globals = {}
             execfile(arg, globals)
