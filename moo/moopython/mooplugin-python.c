@@ -210,7 +210,13 @@ moo_python_api_init (void)
         argv[0] = g_strdup ("");
     }
 
+#if PY_MINOR_VERSION >= 4
+    /* do not let python install signal handlers */
+    Py_InitializeEx (FALSE);
+#else
     Py_Initialize ();
+#endif
+
     /* pygtk wants sys.argv */
     PySys_SetArgv (argc, argv);
 
