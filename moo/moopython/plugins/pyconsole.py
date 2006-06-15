@@ -520,7 +520,10 @@ class _Console(_ReadLine, code.InteractiveInterpreter):
             self.showtraceback()
 
     def runcode(self, code):
-        self.emit("command", code)
+        if gtk.pygtk_version[1] < 8:
+            self.do_command(code)
+        else:
+            self.emit("command", code)
 
     def exec_command(self, command):
         if self._get_line():
@@ -601,13 +604,17 @@ def ReadLineType(t=gtk.TextView):
     return readline
 
 def ConsoleType(t=gtk.TextView):
-    class console(t, _Console):
+    class console_type(t, _Console):
         __gsignals__ = {
-            'command' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (object,))
-        }
+            'command' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (object,)),
+            'key-press-event' : 'override'
+          }
 
         def __init__(self, *args, **kwargs):
-            t.__init__(self)
+            if gtk.pygtk_version[1] < 8:
+                gobject.GObject.__init__(self)
+            else:
+                t.__init__(self)
             _Console.__init__(self, *args, **kwargs)
 
         def do_command(self, code):
@@ -617,8 +624,9 @@ def ConsoleType(t=gtk.TextView):
             return _Console.do_key_press_event(self, event, t)
 
     if gtk.pygtk_version[1] < 8:
-        gobject.type_register(console)
-    return console
+        gobject.type_register(console_type)
+
+    return console_type
 
 ReadLine = ReadLineType()
 Console = ConsoleType()
