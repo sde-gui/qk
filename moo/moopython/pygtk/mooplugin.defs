@@ -6,6 +6,7 @@
   (fields
     '("gboolean" "initialized")
     '("MooPluginInfo*" "info")
+    '("MooPluginParams*" "params")
     '("GSList*" "docs")
     '("GType" "win_plugin_type")
     '("GType" "doc_plugin_type")
@@ -48,7 +49,6 @@
     '("char*" "author")
     '("char*" "version")
     '("char*" "langs")
-    '("MooPluginParams*" "params")
   )
 )
 
@@ -66,12 +66,12 @@
 
 ;; MooPlugin
 
-(define-function moo_plugin_new
-  (c-name "moo_plugin_new")
-  (is-constructor-of "MooPlugin")
-  (return-type "MooPlugin*")
-  (properties)
-)
+;(define-function moo_plugin_new
+;  (c-name "moo_plugin_new")
+;  (is-constructor-of "MooPlugin")
+;  (return-type "MooPlugin*")
+;  (properties)
+;)
 
 (define-method initialized
   (of-object "MooPlugin")
@@ -266,8 +266,6 @@
     '("const-char*" "description" (null-ok) (default "NULL"))
     '("const-char*" "version" (null-ok) (default "NULL"))
     '("const-char*" "langs" (null-ok) (default "NULL"))
-    '("gboolean" "enabled" (null-ok) (default "TRUE"))
-    '("gboolean" "visible" (null-ok) (default "TRUE"))
   )
 )
 
@@ -287,16 +285,10 @@
   (return-type "gboolean")
   (parameters
     '("GType" "type")
+    '("MooPluginInfo*" "info")
+    '("MooPluginParams*" "params" (null-ok) (default "NULL"))
   )
 )
-
-;; (define-function plugin_register
-;;   (c-name "moo_python_plugin_register")
-;;   (return-type "gboolean")
-;;   (parameters
-;;     '("GType" "type")
-;;   )
-;; )
 
 (define-function plugin_lookup
   (c-name "moo_plugin_lookup")
