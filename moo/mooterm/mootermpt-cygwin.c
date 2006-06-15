@@ -677,6 +677,8 @@ run_in_helper (const char *cmd,
     sinfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
     sinfo.wShowWindow = SW_HIDE;
 
+    _moo_disable_win32_error_message ();
+
     if (! CreateProcess (helper_binary->str, cmd_line, NULL, NULL, TRUE,
                          CREATE_NEW_CONSOLE | CREATE_NEW_PROCESS_GROUP,
                          NULL, HELPER_DIR, &sinfo, &pinfo))
@@ -685,8 +687,13 @@ run_in_helper (const char *cmd,
         g_set_error (error, MOO_TERM_ERROR, MOO_TERM_ERROR_FAILED,
                      "CreateProcess: %s", msg);
         g_free (msg);
+
+        _moo_enable_win32_error_message ();
+
         goto error;
     }
+
+    _moo_enable_win32_error_message ();
 
     g_free (cmd_line);
     cmd_line = NULL;

@@ -1534,3 +1534,23 @@ moo_splitlines (const char *string)
     g_ptr_array_add (array, NULL);
     return (char**) g_ptr_array_free (array, FALSE);
 }
+
+
+G_GNUC_UNUSED static guint
+saved_win32_error_mode;
+
+void
+_moo_disable_win32_error_message (void)
+{
+#ifdef __WIN32__
+    saved_win32_error_mode = SetErrorMode (SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
+#endif
+}
+
+void
+_moo_enable_win32_error_message (void)
+{
+#ifdef __WIN32__
+    SetErrorMode (saved_win32_error_mode);
+#endif
+}
