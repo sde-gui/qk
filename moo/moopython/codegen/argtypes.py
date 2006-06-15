@@ -61,7 +61,7 @@ class WrapperInfo:
         for kw in keywords:
             if keyword.iskeyword(kw):
                 kw = kw + '_'
-            self.kwlist.append('(char*)"%s"' % kw)
+            self.kwlist.append('(char*) "%s"' % kw)
 
 class ArgType:
     def write_param(self, ptype, pname, pdflt, pnull, info):
@@ -110,30 +110,6 @@ class StringArg(ArgType):
                                   '        return PyString_FromString(ret);\n'+
                                   '    Py_INCREF(Py_None);\n' +
                                   '    return Py_None;')
-
-class StrvArg(ArgType):
-    def write_param(self, ptype, pname, pdflt, pnull, info):
-        if pdflt:
-            if pdflt != 'NULL': raise TypeError("Only NULL is supported as a default char** value")
-            info.varlist.add('char', '**' + pname + ' = ' + pdflt)
-        else:
-            info.varlist.add('char', '**' + pname)
-        info.arglist.append(pname)
-        if pnull:
-            info.add_parselist('O&', ['moo_pyobject_to_strv', '&' + pname], [pname])
-        else:
-            info.add_parselist('O&', ['moo_pyobject_to_strv_no_null', '&' + pname], [pname])
-    def write_return(self, ptype, ownsreturn, info):
-        if ownsreturn:
-            # have to free result ...
-            info.varlist.add('char', '**ret')
-            info.varlist.add('PyObject', '*py_ret')
-            info.codeafter.append('    py_ret = moo_strv_to_pyobject (ret);' +
-                                  '    g_strfreev (ret);' +
-                                  '    return py_ret;')
-        else:
-            info.varlist.add('char', '**ret')
-            info.codeafter.append('    return moo_strv_to_pyobject (ret);')
 
 class UCharArg(ArgType):
     # allows strings with embedded NULLs.
@@ -428,9 +404,9 @@ class EnumArg(ArgType):
         self.typecode = typecode
     def write_param(self, ptype, pname, pdflt, pnull, info):
         if pdflt:
-            info.varlist.add('int', pname + ' = ' + pdflt)
+            info.varlist.add(self.enumname, pname + ' = ' + pdflt)
         else:
-            info.varlist.add('int', pname)
+            info.varlist.add(self.enumname, pname)
         info.varlist.add('PyObject', '*py_' + pname + ' = NULL')
         info.codebefore.append(self.enum % { 'typecode': self.typecode,
                                              'name': pname})
@@ -448,10 +424,10 @@ class FlagsArg(ArgType):
         self.typecode = typecode
     def write_param(self, ptype, pname, pdflt, pnull, info):
         if pdflt:
-            info.varlist.add('int', pname + ' = ' + pdflt)
+            info.varlist.add(self.flagname, pname + ' = ' + pdflt)
             default = "py_%s && " % (pname,)
         else:
-            info.varlist.add('int', pname)
+            info.varlist.add(self.flagname, pname)
             default = ""
         info.varlist.add('PyObject', '*py_' + pname + ' = NULL')
         info.codebefore.append(self.flag % {'default':default,
@@ -500,7 +476,17 @@ class ObjectArg(ArgType):
                 info.codebefore.append(self.null % {'name':pname,
                                                     'cast':self.cast,
                                                     'type':self.objname})
-            info.arglist.append(pname)
+            if ptype.endswith('*'):
+                typename = ptype[:-1]
+                try:
+                    const, typename = typename.split('const-')
+                except ValueError:
+                    const = ''
+                if typename != ptype:
+                    info.arglist.append('(%s *) %s' % (ptype[:-1], pname))
+                else:
+                    info.arglist.append(pname)
+
             info.add_parselist('O', ['&py_' + pname], [pname])
         else:
             if pdflt:
@@ -517,8 +503,13 @@ class ObjectArg(ArgType):
                 info.add_parselist('O!', ['&Py%s_Type' % self.objname,
                                           '&' + pname], [pname])
     def write_return(self, ptype, ownsreturn, info):
-        if ptype[-1] == '*': ptype = ptype[:-1]
-        info.varlist.add(ptype, '*ret')
+        if ptype.endswith('*'):
+            typename = ptype[:-1]
+            try:
+                const, typename = typename.split('const-')
+            except ValueError:
+                const = ''
+        info.varlist.add(typename, '*ret')
         if ownsreturn:
             info.varlist.add('PyObject', '*py_ret')
             info.codeafter.append('    py_ret = pygobject_new((GObject *)ret);\n'
@@ -572,16 +563,15 @@ class BoxedArg(ArgType):
     ret_tmpl = '    /* pyg_boxed_new handles NULL checking */\n' \
                '    return pyg_boxed_new(%(typecode)s, %(ret)s, %(copy)s, TRUE);'
     def write_return(self, ptype, ownsreturn, info):
-        const_arg = False
+        if ptype[:6] == 'const-':
+            decl_type = 'const ' + self.typename
+        else:
+            decl_type = self.typename
         if ptype[-1] == '*':
+            info.varlist.add(decl_type, '*ret')
             ret = 'ret'
             if ptype[:6] == 'const-':
-                const_arg = True
-                decl_type = "const " + self.typename
-                ret = "(%s*) ret" % (self.typename,)
-            else:
-                decl_type = self.typename
-            info.varlist.add(decl_type, '*ret')
+                ret = '(%s*) ret' % (self.typename,)
         else:
             info.varlist.add(self.typename, 'ret')
             ret = '&ret'
@@ -689,7 +679,6 @@ class AtomArg(IntArg):
         info.add_parselist('O', ['&py_' + pname], [pname])
     def write_return(self, ptype, ownsreturn, info):
         info.varlist.add('GdkAtom', 'ret')
-        info.codeafter.append('    return PyString_FromString(gdk_atom_name(ret));')
         info.varlist.add('PyObject *', 'py_ret')
         info.varlist.add('gchar *', 'name')
         info.codeafter.append('    name = gdk_atom_name(ret);\n'
@@ -937,9 +926,6 @@ matcher.register('const-gchar*', arg)
 matcher.register('gchar-const*', arg)
 matcher.register('string', arg)
 matcher.register('static_string', arg)
-
-arg = StrvArg()
-matcher.register('strv', arg)
 
 arg = UCharArg()
 matcher.register('unsigned-char*', arg)
