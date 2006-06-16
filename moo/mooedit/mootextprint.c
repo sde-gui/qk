@@ -49,7 +49,7 @@ G_STMT_START {                          \
         (print)->options &= (~(opt));   \
 } G_STMT_END
 
-#define GET_OPTION(print, opt)      ((print->options &= opt) != 0)
+#define GET_OPTION(print, opt)      ((print->options & opt) != 0)
 
 
 typedef struct _HFFormat HFFormat;
@@ -89,6 +89,7 @@ static void moo_print_operation_end_print   (GtkPrintOperation  *operation,
 static GtkWidget *moo_print_operation_create_custom_widget (GtkPrintOperation *operation);
 static void moo_print_operation_custom_widget_apply (GtkPrintOperation *operation,
                                                      GtkWidget *widget);
+static void moo_print_operation_load_prefs  (MooPrintOperation  *print);
 
 
 G_DEFINE_TYPE(MooPrintOperation, _moo_print_operation, GTK_TYPE_PRINT_OPERATION)
@@ -306,7 +307,7 @@ _moo_print_operation_class_init (MooPrintOperationClass *klass)
                                      g_param_spec_boolean ("use-styles",
                                              "use-styles",
                                              "use-styles",
-                                             TRUE,
+                                             FALSE,
                                              G_PARAM_READWRITE));
 }
 
@@ -324,8 +325,7 @@ _moo_print_operation_init (MooPrintOperation *print)
                                                     page_setup);
 
     print->last_line = -1;
-    print->options = MOO_PRINT_USE_STYLES |
-            MOO_PRINT_HEADER | MOO_PRINT_FOOTER;
+    print->options = MOO_PRINT_HEADER | MOO_PRINT_FOOTER;
     print->wrap_mode = PANGO_WRAP_WORD_CHAR;
     print->header.separator = TRUE;
     print->footer.separator = TRUE;
@@ -531,6 +531,8 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
     g_return_if_fail (print->first_line < gtk_text_buffer_get_line_count (print->buffer));
     g_return_if_fail (print->last_line < gtk_text_buffer_get_line_count (print->buffer));
 
+    moo_print_operation_load_prefs (MOO_PRINT_OPERATION (operation));
+
     timer = g_timer_new ();
 
     if (print->last_line < 0)
@@ -652,8 +654,8 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
 
     gtk_print_operation_set_n_pages (operation, print->pages->len);
 
-    g_message ("begin_print: %d pages in %f s", print->pages->len,
-               g_timer_elapsed (timer, NULL));
+//     g_message ("begin_print: %d pages in %f s", print->pages->len,
+//                g_timer_elapsed (timer, NULL));
     g_timer_destroy (timer);
 
     if (!print->tm)
@@ -993,7 +995,7 @@ moo_print_operation_draw_page (GtkPrintOperation  *operation,
 
     print_page (print, &start, &end, page, cr);
 
-    g_message ("page %d: %f s", page, g_timer_elapsed (timer, NULL));
+//     g_message ("page %d: %f s", page, g_timer_elapsed (timer, NULL));
     g_timer_destroy (timer);
 }
 
@@ -1071,12 +1073,9 @@ _moo_edit_print (GtkTextView *view,
                           "doc", view, "show-progress", TRUE, NULL);
 
     if (MOO_IS_EDIT (view))
-    {
-        moo_print_operation_load_prefs (MOO_PRINT_OPERATION (print));
         _moo_print_operation_set_filename (MOO_PRINT_OPERATION (print),
                                            moo_edit_get_display_filename (MOO_EDIT (view)),
                                            moo_edit_get_display_basename (MOO_EDIT (view)));
-    }
 
     if (!parent)
         parent = GTK_WIDGET (view);
@@ -1086,7 +1085,8 @@ _moo_edit_print (GtkTextView *view,
     if (GTK_WIDGET_TOPLEVEL (parent))
         parent_window = GTK_WINDOW (parent);
 
-    res = gtk_print_operation_run (print, parent_window, &error);
+    res = gtk_print_operation_run (print, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
+                                   parent_window, &error);
 
     switch (res)
     {
@@ -1110,6 +1110,7 @@ _moo_edit_print (GtkTextView *view,
             break;
 
         case GTK_PRINT_OPERATION_RESULT_CANCEL:
+        case GTK_PRINT_OPERATION_RESULT_IN_PROGRESS:
             break;
     }
 
@@ -1338,7 +1339,7 @@ moo_print_operation_create_custom_widget (G_GNUC_UNUSED GtkPrintOperation *opera
 
 
 static void
-moo_print_operation_custom_widget_apply (G_GNUC_UNUSED GtkPrintOperation *operation,
+moo_print_operation_custom_widget_apply (G_GNUC_UNUSED GtkPrintOperation *print,
                                          GtkWidget *widget)
 {
     MooGladeXML *xml;
