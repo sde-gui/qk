@@ -557,6 +557,7 @@ moo_window_present (GtkWindow *window)
     if (!GTK_WIDGET_REALIZED (window))
         return gtk_window_present (window);
 
+    gdk_x11_window_move_to_current_desktop (GTK_WIDGET(window)->window);
     stamp = gdk_x11_get_server_time (GTK_WIDGET(window)->window);
     gtk_window_present_with_time (window, stamp);
 #endif
