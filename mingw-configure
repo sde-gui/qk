@@ -1,5 +1,8 @@
 #!/bin/sh
 
+PKG_CONFIG_PROGRAM=${PKG_CONFIG_PROGRAM:-/usr/bin/pkg-config}
+MINGW_TOOL_PREFIX=${MINGW_TOOL_PREFIX:-/usr/bin/i586-mingw32msvc}
+
 if [ -z $GTK_PREFIX ]; then
     export GTK_PREFIX=/usr/local/win/gtk
 fi
@@ -10,9 +13,9 @@ export PKG_CONFIG_LIBDIR=$GTK_PREFIX/lib/pkgconfig
 
 if [ x`basename $0` = xfake-pkg-config ]; then
     if [ "x$1" = "x--atleast-pkgconfig-version" ]; then
-        exec /usr/bin/pkg-config --atleast-pkgconfig-version $2
+        exec $PKG_CONFIG_PROGRAM --atleast-pkgconfig-version $2
     else
-        exec /usr/bin/pkg-config --define-variable=prefix=$GTK_PREFIX $*
+        exec $PKG_CONFIG_PROGRAM --define-variable=prefix=$GTK_PREFIX $*
     fi
 fi
 
@@ -32,33 +35,33 @@ if [ x$CONFIGURE = x ]; then
     CONFIGURE="$configure_dir"/configure
 fi
 
-export ADDR2LINE="/usr/bin/i586-mingw32msvc-addr2line"
-export AR="/usr/bin/i586-mingw32msvc-ar"
-export AS="/usr/bin/i586-mingw32msvc-as"
-export CC="/usr/bin/i586-mingw32msvc-gcc"
-export CPP="/usr/bin/i586-mingw32msvc-cpp"
-export CPPFILT="/usr/bin/i586-mingw32msvc-c++filt"
-export CXX="/usr/bin/i586-mingw32msvc-g++"
-export DLLTOOL="/usr/bin/i586-mingw32msvc-dlltool"
-export DLLWRAP="/usr/bin/i586-mingw32msvc-dllwrap"
-export GCOV="/usr/bin/i586-mingw32msvc-gcov"
-export LD="/usr/bin/i586-mingw32msvc-ld"
-export NM="/usr/bin/i586-mingw32msvc-nm"
-export OBJCOPY="/usr/bin/i586-mingw32msvc-objcopy"
-export OBJDUMP="/usr/bin/i586-mingw32msvc-objdump"
-export RANLIB="/usr/bin/i586-mingw32msvc-ranlib"
-export READELF="/usr/bin/i586-mingw32msvc-readelf"
-export SIZE="/usr/bin/i586-mingw32msvc-size"
-export STRINGS="/usr/bin/i586-mingw32msvc-strings"
-export STRIP="/usr/bin/i586-mingw32msvc-strip"
-export WINDRES="/usr/bin/i586-mingw32msvc-windres"
+export ADDR2LINE="$MINGW_TOOL_PREFIX-addr2line"
+export AR="$MINGW_TOOL_PREFIX-ar"
+export AS="$MINGW_TOOL_PREFIX-as"
+export CC="$MINGW_TOOL_PREFIX-gcc"
+export CPP="$MINGW_TOOL_PREFIX-cpp"
+export CPPFILT="$MINGW_TOOL_PREFIX-c++filt"
+export CXX="$MINGW_TOOL_PREFIX-g++"
+export DLLTOOL="$MINGW_TOOL_PREFIX-dlltool"
+export DLLWRAP="$MINGW_TOOL_PREFIX-dllwrap"
+export GCOV="$MINGW_TOOL_PREFIX-gcov"
+export LD="$MINGW_TOOL_PREFIX-ld"
+export NM="$MINGW_TOOL_PREFIX-nm"
+export OBJCOPY="$MINGW_TOOL_PREFIX-objcopy"
+export OBJDUMP="$MINGW_TOOL_PREFIX-objdump"
+export RANLIB="$MINGW_TOOL_PREFIX-ranlib"
+export READELF="$MINGW_TOOL_PREFIX-readelf"
+export SIZE="$MINGW_TOOL_PREFIX-size"
+export STRINGS="$MINGW_TOOL_PREFIX-strings"
+export STRIP="$MINGW_TOOL_PREFIX-strip"
+export WINDRES="$MINGW_TOOL_PREFIX-windres"
 
 export CPATH=$GTK_PREFIX/include
 export LDFLAGS="-L$GTK_PREFIX/lib $LDFLAGS"
 export CFLAGS="${CFLAGS:-"-O2 -g"} -I$GTK_PREFIX/include -mms-bitfields -march=i686"
 export CXXFLAGS="${CFLAGS:-"-O2 -g"} -I$GTK_PREFIX/include -mms-bitfields -march=i686"
 
-export PATH=$MINGW_BIN:/usr/i586-mingw32msvc/bin:$PATH
+export PATH=$MINGW_BIN:/usr/i586-mingw32msvc/bin:/usr/local/mingw32/bin:$PATH
 
 if [ -L fake-pkg-config ]; then
     rm fake-pkg-config
