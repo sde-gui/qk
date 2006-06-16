@@ -47,6 +47,7 @@
  * 04/25/2006: made egg_regex_new return NULL on error
  * 05/31/2006: made egg_regex_optimize return boolean, cleaned up places which
  *             set GError
+ * 06/16/2006: added check for PCRE_CONFIG_UTF8
  *
  * mooutils/eggregex.c
  *****************************************************************************/
@@ -116,6 +117,14 @@ egg_regex_new (const gchar         *pattern,
   const gchar *errmsg;
   gint erroffset;
   gint capture_count;
+  static gint utf8_support = 0;
+
+  if (!utf8_support)
+  {
+    pcre_config (PCRE_CONFIG_UTF8, &utf8_support);
+    if (!utf8_support)
+      g_error ("pcre library is compiled without UTF8 support");
+  }
 
   /* make pcre use glib memory functions */
   pcre_malloc = (gpointer (*) (size_t)) g_malloc;
