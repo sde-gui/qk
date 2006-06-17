@@ -11,6 +11,5 @@ moo_extra_dist +=                             \
     $(mooedit_glade)/mootextfind.glade        \
     $(mooedit_glade)/mooeditprefs.glade       \
     $(mooedit_glade)/mooeditsavemult.glade    \
-    $(mooedit_glade)/mooeditcolorsprefs.glade \
     $(mooedit_glade)/moopluginprefs.glade     \
     $(mooedit_glade)/mooprint.glade
