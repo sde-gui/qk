@@ -310,7 +310,7 @@ action_check_one (ToolAction *action,
     mime = _moo_file_get_mime_type (file);
     g_return_val_if_fail (mime != NULL, FALSE);
 
-    if (mime == xdg_mime_type_unknown)
+    if (mime == XDG_MIME_TYPE_UNKNOWN)
         return FALSE;
 
     for (l = action->mimetypes; l != NULL; l = l->next)

@@ -922,7 +922,7 @@ moo_lang_mgr_get_lang_for_file (MooLangMgr     *mgr,
 
     mime_type = xdg_mime_get_mime_type_for_file (filename, NULL);
 
-    if (!xdg_mime_mime_type_equal (mime_type, XDG_MIME_TYPE_UNKNOWN))
+    if (mime_type != XDG_MIME_TYPE_UNKNOWN)
         lang = moo_lang_mgr_get_lang_for_mime_type (mgr, mime_type);
 
     if (lang)
@@ -963,7 +963,7 @@ moo_lang_mgr_get_lang_for_filename (MooLangMgr *mgr,
 
     mime_type = xdg_mime_get_mime_type_from_file_name (filename);
 
-    if (!xdg_mime_mime_type_equal (mime_type, XDG_MIME_TYPE_UNKNOWN))
+    if (mime_type != XDG_MIME_TYPE_UNKNOWN)
         lang = moo_lang_mgr_get_lang_for_mime_type (mgr, mime_type);
 
     if (lang)
