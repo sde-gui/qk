@@ -104,6 +104,8 @@ enum {
     SETTING_LANG,
     SETTING_INDENT,
     SETTING_STRIP,
+    SETTING_WRAP_MODE,
+    SETTING_SHOW_LINE_NUMBERS,
     LAST_SETTING
 };
 
@@ -168,6 +170,13 @@ moo_edit_class_init (MooEditClass *klass)
             g_param_spec_boolean ("strip", "strip", "strip",
                                   FALSE,
                                   G_PARAM_READWRITE));
+    settings[SETTING_WRAP_MODE] = moo_edit_config_install_setting (
+            g_param_spec_enum ("wrap-mode", "wrap-mode", "wrap-mode",
+                               GTK_TYPE_WRAP_MODE, GTK_WRAP_NONE,
+                               G_PARAM_READWRITE));
+    settings[SETTING_SHOW_LINE_NUMBERS] = moo_edit_config_install_setting (
+            g_param_spec_boolean ("show-line-numbers", "show-line-numbers", "show-line-numbers",
+                                  FALSE, G_PARAM_READWRITE));
 
     _moo_edit_class_init_actions (klass);
 
@@ -956,12 +965,27 @@ moo_edit_set_lang (MooEdit *edit,
 
 
 static void
-moo_edit_apply_config (MooEdit *edit)
+moo_edit_apply_lang_config (MooEdit *edit)
 {
     const char *lang_id = moo_edit_config_get_string (edit->config, "lang");
     MooLangMgr *mgr = moo_editor_get_lang_mgr (edit->priv->editor);
     MooLang *lang = lang_id ? moo_lang_mgr_get_lang (mgr, lang_id) : NULL;
     moo_edit_set_lang (edit, lang);
+}
+
+static void
+moo_edit_apply_config (MooEdit *edit)
+{
+    GtkWrapMode wrap_mode;
+    gboolean line_numbers;
+
+    moo_edit_apply_lang_config (edit);
+
+    moo_edit_config_get (edit->config, "wrap-mode", &wrap_mode, NULL);
+    gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (edit), wrap_mode);
+
+    line_numbers = moo_edit_config_get_bool (edit->config, "show-line-numbers");
+    moo_text_view_set_show_line_numbers (MOO_TEXT_VIEW (edit), line_numbers);
 }
 
 

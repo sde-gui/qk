@@ -125,7 +125,6 @@ _moo_edit_apply_settings (MooEdit *edit)
                   "highlight-matching-brackets", get_bool (MOO_EDIT_PREFS_HIGHLIGHT_MATCHING),
                   "highlight-mismatching-brackets", get_bool (MOO_EDIT_PREFS_HIGHLIGHT_MISMATCHING),
                   "highlight-current-line", get_bool (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE),
-                  "show-line-numbers", get_bool (MOO_EDIT_PREFS_SHOW_LINE_NUMBERS),
                   "draw-tabs", get_bool (MOO_EDIT_PREFS_SHOW_TABS),
                   "draw-trailing-spaces", get_bool (MOO_EDIT_PREFS_SHOW_TRAILING_SPACES),
                   "quick-search-flags", get_flags (MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS),
@@ -139,18 +138,26 @@ _moo_edit_apply_settings (MooEdit *edit)
                          !get_bool (MOO_EDIT_PREFS_SPACES_NO_TABS),
                          "indent-width", MOO_EDIT_CONFIG_SOURCE_PREFS,
                          get_int (MOO_EDIT_PREFS_INDENT_WIDTH),
+                         "show-line-numbers", MOO_EDIT_CONFIG_SOURCE_PREFS,
+                         get_bool (MOO_EDIT_PREFS_SHOW_LINE_NUMBERS),
                          NULL);
 
     if (get_bool (MOO_EDIT_PREFS_WRAP_ENABLE))
     {
         if (get_bool (MOO_EDIT_PREFS_WRAP_WORDS))
-            gtk_text_view_set_wrap_mode (text_view, GTK_WRAP_WORD);
+            moo_edit_config_set (edit->config, "wrap-mode",
+                                 MOO_EDIT_CONFIG_SOURCE_PREFS,
+                                 GTK_WRAP_WORD, NULL);
         else
-            gtk_text_view_set_wrap_mode (text_view, GTK_WRAP_CHAR);
+            moo_edit_config_set (edit->config, "wrap-mode",
+                                 MOO_EDIT_CONFIG_SOURCE_PREFS,
+                                 GTK_WRAP_CHAR, NULL);
     }
     else
     {
-        gtk_text_view_set_wrap_mode (text_view, GTK_WRAP_NONE);
+        moo_edit_config_set (edit->config, "wrap-mode",
+                             MOO_EDIT_CONFIG_SOURCE_PREFS,
+                             GTK_WRAP_NONE, NULL);
     }
 
     if (get_bool (MOO_EDIT_PREFS_USE_DEFAULT_FONT))

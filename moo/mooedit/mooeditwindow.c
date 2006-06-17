@@ -141,6 +141,12 @@ static void     edit_lang_changed               (MooEditWindow      *window,
 static void     edit_overwrite_changed          (MooEditWindow      *window,
                                                  GParamSpec         *pspec,
                                                  MooEdit            *doc);
+static void     edit_wrap_mode_changed          (MooEditWindow      *window,
+                                                 GParamSpec         *pspec,
+                                                 MooEdit            *doc);
+static void     edit_show_line_numbers_changed  (MooEditWindow      *window,
+                                                 GParamSpec         *pspec,
+                                                 MooEdit            *doc);
 static GtkWidget *create_tab_label              (MooEditWindow      *window,
                                                  MooEdit            *edit);
 static void     update_tab_label                (MooEditWindow      *window,
@@ -149,6 +155,7 @@ static void     edit_cursor_moved               (MooEditWindow      *window,
                                                  GtkTextIter        *iter,
                                                  MooEdit            *edit);
 static void     update_lang_menu                (MooEditWindow      *window);
+static void     update_doc_view_actions         (MooEditWindow      *window);
 
 static void     create_statusbar                (MooEditWindow      *window);
 static void     update_statusbar                (MooEditWindow      *window);
@@ -212,6 +219,11 @@ static void moo_edit_window_next_ph     (MooEditWindow      *window);
 static void moo_edit_window_prev_ph     (MooEditWindow      *window);
 static void moo_edit_window_find_now_f  (MooEditWindow      *window);
 static void moo_edit_window_find_now_b  (MooEditWindow      *window);
+
+static void wrap_text_toggled           (MooEditWindow      *window,
+                                         gboolean            active);
+static void line_numbers_toggled        (MooEditWindow      *window,
+                                         gboolean            active);
 
 
 #ifdef MOO_ENABLE_PRINTING
@@ -570,6 +582,22 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "accel", "<ctrl>G",
                                  "closure-signal", "goto-line-interactive",
                                  "closure-proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "WrapText",
+                                 "action-type::", GTK_TYPE_TOGGLE_ACTION,
+                                 "display-name", "Toggle Text Wrapping",
+                                 "label", "_Wrap Text",
+                                 "toggled-callback", wrap_text_toggled,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "LineNumbers",
+                                 "action-type::", GTK_TYPE_TOGGLE_ACTION,
+                                 "display-name", "Toggle Line Numbers Display",
+                                 "label", "_Show Line Numbers",
+                                 "toggled-callback", line_numbers_toggled,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
@@ -1268,6 +1296,58 @@ moo_edit_window_print (MooEditWindow *window)
 #endif
 
 
+static void
+wrap_text_toggled (MooEditWindow *window,
+                   gboolean       active)
+{
+    MooEdit *doc;
+    GtkWrapMode mode;
+
+    doc = moo_edit_window_get_active_doc (window);
+    g_return_if_fail (doc != NULL);
+
+    g_object_get (doc, "wrap-mode", &mode, NULL);
+
+    if ((active && mode != GTK_WRAP_NONE) || (!active && mode == GTK_WRAP_NONE))
+        return;
+
+    if (!active)
+    {
+        mode = GTK_WRAP_NONE;
+    }
+    else
+    {
+        if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_WRAP_WORDS)))
+            mode = GTK_WRAP_WORD;
+        else
+            mode = GTK_WRAP_CHAR;
+    }
+
+    moo_edit_config_set (doc->config, "wrap-mode", MOO_EDIT_CONFIG_SOURCE_USER, mode, NULL);
+}
+
+
+static void
+line_numbers_toggled (MooEditWindow *window,
+                      gboolean       active)
+{
+    MooEdit *doc;
+    gboolean show;
+
+    doc = moo_edit_window_get_active_doc (window);
+    g_return_if_fail (doc != NULL);
+
+    g_object_get (doc, "show-line-numbers", &show, NULL);
+
+    if ((active && show) || (!active && !show))
+        return;
+
+    moo_edit_config_set (doc->config, "show-line-numbers",
+                         MOO_EDIT_CONFIG_SOURCE_USER, active,
+                         NULL);
+}
+
+
 /****************************************************************************/
 /* Notebook popup menu
  */
@@ -1437,6 +1517,7 @@ edit_changed (MooEditWindow *window,
         update_window_title (window);
         update_statusbar (window);
         update_lang_menu (window);
+        update_doc_view_actions (window);
     }
 
     if (doc)
@@ -1451,6 +1532,59 @@ edit_overwrite_changed (MooEditWindow *window,
 {
     if (doc == ACTIVE_DOC (window))
         update_statusbar (window);
+}
+
+
+static void
+edit_wrap_mode_changed (MooEditWindow *window,
+                        G_GNUC_UNUSED GParamSpec *pspec,
+                        MooEdit       *doc)
+{
+    gpointer action;
+    GtkWrapMode mode;
+
+    if (doc != ACTIVE_DOC (window))
+        return;
+
+    action = moo_window_get_action (MOO_WINDOW (window), "WrapText");
+    g_return_if_fail (action != NULL);
+
+    g_object_get (doc, "wrap-mode", &mode, NULL);
+    gtk_toggle_action_set_active (action, mode != GTK_WRAP_NONE);
+}
+
+
+static void
+edit_show_line_numbers_changed (MooEditWindow *window,
+                                G_GNUC_UNUSED GParamSpec *pspec,
+                                MooEdit       *doc)
+{
+    gpointer action;
+    gboolean show;
+
+    if (doc != ACTIVE_DOC (window))
+        return;
+
+    action = moo_window_get_action (MOO_WINDOW (window), "LineNumbers");
+    g_return_if_fail (action != NULL);
+
+    g_object_get (doc, "show-line-numbers", &show, NULL);
+    gtk_toggle_action_set_active (action, show);
+}
+
+
+static void
+update_doc_view_actions (MooEditWindow *window)
+{
+    MooEdit *doc;
+
+    doc = moo_edit_window_get_active_doc (window);
+
+    if (!doc)
+        return;
+
+    edit_wrap_mode_changed (window, NULL, doc);
+    edit_show_line_numbers_changed (window, NULL, doc);
 }
 
 
@@ -1621,6 +1755,10 @@ _moo_edit_window_insert_doc (MooEditWindow  *window,
                               G_CALLBACK (edit_changed), window);
     g_signal_connect_swapped (edit, "notify::overwrite",
                               G_CALLBACK (edit_overwrite_changed), window);
+    g_signal_connect_swapped (edit, "notify::wrap-mode",
+                              G_CALLBACK (edit_wrap_mode_changed), window);
+    g_signal_connect_swapped (edit, "notify::show-line-numbers",
+                              G_CALLBACK (edit_show_line_numbers_changed), window);
     g_signal_connect_swapped (edit, "filename_changed",
                               G_CALLBACK (edit_filename_changed), window);
     g_signal_connect_swapped (edit, "notify::can-undo",
@@ -1664,21 +1802,14 @@ _moo_edit_window_remove_doc (MooEditWindow  *window,
 
     g_signal_emit (window, signals[CLOSE_DOC], 0, doc);
 
-    g_signal_handlers_disconnect_by_func (doc,
-                                          (gpointer) edit_changed,
-                                          window);
-    g_signal_handlers_disconnect_by_func (doc,
-                                          (gpointer) edit_filename_changed,
-                                          window);
-    g_signal_handlers_disconnect_by_func (doc,
-                                          (gpointer) proxy_boolean_property,
-                                          window);
-    g_signal_handlers_disconnect_by_func (doc,
-                                          (gpointer) edit_cursor_moved,
-                                          window);
-    g_signal_handlers_disconnect_by_func (doc,
-                                          (gpointer) edit_lang_changed,
-                                          window);
+    g_signal_handlers_disconnect_by_func (doc, (gpointer) edit_changed, window);
+    g_signal_handlers_disconnect_by_func (doc, (gpointer) edit_filename_changed, window);
+    g_signal_handlers_disconnect_by_func (doc, (gpointer) proxy_boolean_property, window);
+    g_signal_handlers_disconnect_by_func (doc, (gpointer) edit_cursor_moved, window);
+    g_signal_handlers_disconnect_by_func (doc, (gpointer) edit_lang_changed, window);
+    g_signal_handlers_disconnect_by_func (doc, (gpointer) edit_overwrite_changed, window);
+    g_signal_handlers_disconnect_by_func (doc, (gpointer) edit_wrap_mode_changed, window);
+    g_signal_handlers_disconnect_by_func (doc, (gpointer) edit_show_line_numbers_changed, window);
 
     _moo_doc_detach_plugins (window, doc);
 
@@ -2508,7 +2639,9 @@ lang_item_activated (MooEditWindow *window,
         do_set = !!lang_name;
 
     if (do_set)
-        moo_edit_config_set (doc->config, "lang", 0, lang_name, NULL);
+        moo_edit_config_set (doc->config, "lang",
+                             MOO_EDIT_CONFIG_SOURCE_USER,
+                             lang_name, NULL);
 }
 
 

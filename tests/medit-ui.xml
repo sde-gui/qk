@@ -84,6 +84,11 @@
       <item action="NextBookmark"/>
       -->
       <separator/>
+      <item name="Document" label="_Document">
+        <item action="WrapText"/>
+        <item action="LineNumbers"/>
+      </item>
+      <separator/>
       <item action="FocusDoc"/>
       <separator/>
       <placeholder name="UserMenu"/>
