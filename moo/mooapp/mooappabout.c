@@ -11,6 +11,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "mooapp/mooappabout-glade.h"
 #include "mooapp/mooappabout.h"
 #include "mooapp/mooapp.h"
@@ -129,6 +133,8 @@ show_system_info (void)
     GtkTextBuffer *buffer;
     GString *text;
     char *string;
+    char **dirs, **p;
+    const MooAppInfo *app_info;
 
     if (system_info_dialog)
     {
@@ -149,6 +155,10 @@ show_system_info (void)
     textview = moo_glade_xml_get_widget (xml, "textview");
     buffer = gtk_text_view_get_buffer (textview);
     text = g_string_new (NULL);
+
+    app_info = moo_app_get_info (moo_app_get_instance ());
+    g_return_if_fail (app_info != NULL);
+    g_string_append_printf (text, "%s-%s\n", app_info->full_name, app_info->version);
 
 #ifdef __WIN32__
     string = get_windows_name ();
@@ -195,6 +205,34 @@ show_system_info (void)
 
 #ifdef MOO_USE_FAM
     g_string_append_printf (text, "FAM support: yes\n");
+#endif
+
+#ifdef MOO_ENABLE_RELOCATION
+    g_string_append_printf (text, "relocation enabled\n");
+#else
+    g_string_append_printf (text, "relocation disabled\n");
+#endif
+
+    g_string_append (text, "Data dirs: ");
+    dirs = moo_get_data_dirs (MOO_DATA_SHARE, NULL);
+    for (p = dirs; p && *p; ++p)
+        g_string_append_printf (text, "%s'%s'", p == dirs ? "" : ", ", *p);
+    g_string_append (text, "\n");
+    g_strfreev (dirs);
+
+    g_string_append (text, "Lib dirs: ");
+    dirs = moo_get_data_dirs (MOO_DATA_LIB, NULL);
+    for (p = dirs; p && *p; ++p)
+        g_string_append_printf (text, "%s'%s'", p == dirs ? "" : ", ", *p);
+    g_string_append (text, "\n");
+    g_strfreev (dirs);
+
+#ifdef MOO_BROKEN_GTK_THEME
+    g_string_append (text, "Broken gtk theme: yes\n");
+#endif
+
+#ifdef MOO_ENABLE_PRINTING
+    g_string_append (text, "Printing enabled: yes\n");
 #endif
 
     gtk_text_buffer_set_text (buffer, text->str, -1);
