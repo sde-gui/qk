@@ -313,8 +313,11 @@ static void
 toggled_object_died (GtkAction *action,
                      gpointer   obj)
 {
-    guint n = g_signal_handlers_disconnect_by_func (action, (gpointer) action_toggled_obj, obj);
+    G_GNUC_UNUSED guint n;
+
+    n = g_signal_handlers_disconnect_by_func (action, (gpointer) action_toggled_obj, obj);
     g_assert (n);
+
     g_object_set_data (G_OBJECT (action), "moo-toggled-ptr", NULL);
 }
 

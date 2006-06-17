@@ -528,8 +528,10 @@ moo_lang_build_contexts (MooLang *lang,
 
     for (l = xml->syntax->contexts; l != NULL; l = l->next)
     {
-        ContextXML *ctx_xml = l->data;
-        MooContext *ctx = _moo_lang_add_context (lang, ctx_xml->name, ctx_xml->style);
+        ContextXML *ctx_xml;
+        G_GNUC_UNUSED MooContext *ctx;
+        ctx_xml = l->data;
+        ctx = _moo_lang_add_context (lang, ctx_xml->name, ctx_xml->style);
         g_assert (ctx != NULL);
     }
 }
