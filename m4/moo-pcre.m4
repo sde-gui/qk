@@ -17,24 +17,77 @@ AC_HELP_STRING([--with-system-pcre], [whether to use system copy of pcre library
 ])
 
 if test x$MOO_BUILD_PCRE != xyes; then
+    have_pcre="no"
+
     PKG_CHECK_MODULES(PCRE, [libpcre >= 6.4], [
+        have_pcre="yes"
+    ], [
+        have_pcre="no"
+    ])
+
+    if test $have_pcre = yes; then
+        AC_MSG_CHECKING(pcre UTF8 support)
+
+        save_CPPFLAGS="$CPPFLAGS"
+        CPPFLAGS="$CPPFLAGS $PCRE_CFLAGS"
+        save_CFLAGS="$CFLAGS"
+        CFLAGS="$CFLAGS $PCRE_CFLAGS"
+        save_LDFLAGS="$LDFLAGS"
+        LDFLAGS="$LDFLAGS $PCRE_LIBS"
+
+        AC_RUN_IFELSE([
+            AC_LANG_SOURCE([[
+            #include <pcre.h>
+            #include <stdlib.h>
+            int main (int argc, char *argv[])
+            {
+                int result = 0;
+
+                pcre_config (PCRE_CONFIG_UTF8, &result);
+
+                if (result)
+                    pcre_config (PCRE_CONFIG_UNICODE_PROPERTIES, &result);
+
+                if (result)
+                    exit (0);
+                else
+                    exit (1);
+            }]
+        ])],[
+            AC_MSG_RESULT(yes)
+            have_pcre=yes
+        ],[
+            AC_MSG_RESULT(no)
+            have_pcre=no
+        ],[
+            AC_MSG_RESULT(can't check when crosscompiling, assuming it's fine)
+            have_pcre=yes
+        ])
+
+        CFLAGS="$save_CFLAGS"
+        CPPFLAGS="$save_CPPFLAGS"
+        LDFLAGS="$save_LDFLAGS"
+    fi
+fi
+
+if test x$MOO_BUILD_PCRE != xyes; then
+    if test x$have_pcre = xyes; then
         MOO_BUILD_PCRE="no"
         AC_MSG_NOTICE([using installed libpcre])
         MOO_PCRE_CFLAGS="$PCRE_CFLAGS"
         MOO_PCRE_LIBS="$PCRE_LIBS"
-    ], [
-        if test x$MOO_BUILD_PCRE = xno; then
-            AC_MSG_ERROR([libpcre of version 6.4 or higher not found])
-        else
-            AC_MSG_NOTICE([libpcre of version 6.4 or higher not found, building own copy])
-            MOO_BUILD_PCRE="yes"
-        fi
-    ])
+    else
+        MOO_BUILD_PCRE="yes"
+        AC_MSG_NOTICE([building pcre library])
+    fi
+else
+    MOO_BUILD_PCRE="yes"
+    AC_MSG_NOTICE([building pcre library])
 fi
 
 AM_CONDITIONAL(MOO_BUILD_PCRE, test x$MOO_BUILD_PCRE = xyes)
 if test x$MOO_BUILD_PCRE = xyes; then
-    AC_DEFINE(MOO_BUILD_PCRE, , [MOO_BUILD_PCRE - bulid pcre library])
+    AC_DEFINE(MOO_BUILD_PCRE, , [MOO_BUILD_PCRE - build pcre library])
 fi
 
 
