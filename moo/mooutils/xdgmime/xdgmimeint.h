@@ -29,7 +29,7 @@
 #define __XDG_MIME_INT_H__
 
 #include "xdgmime.h"
-
+#include <glib.h>
 
 #ifndef	FALSE
 #define	FALSE (0)
@@ -40,17 +40,20 @@
 #endif
 
 /* FIXME: Needs to be configure check */
-typedef unsigned int   xdg_unichar_t;
-typedef unsigned char  xdg_uchar8_t;
-typedef unsigned short xdg_uint16_t;
-typedef unsigned int   xdg_uint32_t;
+// typedef unsigned int   xdg_unichar_t;
+// typedef unsigned char  xdg_uchar8_t;
+// typedef unsigned short xdg_uint16_t;
+// typedef unsigned int   xdg_uint32_t;
+typedef guint32 xdg_unichar_t;
+typedef guchar xdg_uchar8_t;
+typedef gushort xdg_uint16_t;
+typedef guint32 xdg_uint32_t;
 
 #ifdef XDG_PREFIX
-#define _xdg_utf8_skip   XDG_ENTRY(utf8_skip)
 #define _xdg_utf8_to_ucs4   XDG_ENTRY(utf8_to_ucs4)
 #define _xdg_ucs4_to_lower   XDG_ENTRY(ucs4_to_lower)
 #define _xdg_utf8_validate   XDG_ENTRY(utf8_validate)
-#define _xdg_get_base_name   XDG_ENTRY(get_ase_name)
+#define _xdg_get_base_name   XDG_ENTRY(get_base_name)
 #endif
 
 #define SWAP_BE16_TO_LE16(val) (xdg_uint16_t)(((xdg_uint16_t)(val) << 8)|((xdg_uint16_t)(val) >> 8))
@@ -61,9 +64,7 @@ typedef unsigned int   xdg_uint32_t;
 					      (((xdg_uint32_t)(val) & 0x000000FFU) << 24))
 /* UTF-8 utils
  */
-extern const char *const _xdg_utf8_skip;
-#define _xdg_utf8_next_char(p) (char *)((p) + _xdg_utf8_skip[*(unsigned char *)(p)])
-#define _xdg_utf8_char_size(p) (int) (_xdg_utf8_skip[*(unsigned char *)(p)])
+#define _xdg_utf8_next_char g_utf8_next_char
 
 xdg_unichar_t  _xdg_utf8_to_ucs4  (const char    *source);
 xdg_unichar_t  _xdg_ucs4_to_lower (xdg_unichar_t  source);
