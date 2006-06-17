@@ -9,8 +9,8 @@ AC_DEFUN([MOO_AC_FLAGS],[
 
     moo_top_src_dir=`cd $srcdir && pwd`
     moo_top_build_dir=`cd ./$ac_top_builddir && pwd`
-    MOO_CFLAGS="-I$moo_top_src_dir/moo $GTK_CFLAGS $MOO_PCRE_CFLAGS -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\" -D__MOO__ -DMOO_MARSHALS_H=\\\"mooutils/moomarshals.h\\\""
-    MOO_LIBS="$GTK_LIBS $MOO_PCRE_LIBS"
+    MOO_CFLAGS="$MOO_CFLAGS -I$moo_top_src_dir/moo $GTK_CFLAGS $MOO_PCRE_CFLAGS -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\" -D__MOO__ -DMOO_MARSHALS_H=\\\"mooutils/moomarshals.h\\\""
+    MOO_LIBS="$MOO_LIBS $GTK_LIBS $MOO_PCRE_LIBS"
 
     if test x$MOO_USE_FAM = xyes; then
         MOO_LIBS="$MOO_LIBS $FAM_LIBS"
