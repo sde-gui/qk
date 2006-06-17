@@ -32,6 +32,7 @@
 #include "xdgmimeint.h"
 #include <ctype.h>
 #include <string.h>
+#include <glib.h>
 
 #ifndef	FALSE
 #define	FALSE	(0)
@@ -133,8 +134,7 @@ _xdg_ucs4_to_lower (xdg_unichar_t source)
 int
 _xdg_utf8_validate (const char *source)
 {
-  /* FIXME: actually write */
-  return TRUE;
+  return g_utf8_validate (source, -1, NULL);
 }
 
 const char *
