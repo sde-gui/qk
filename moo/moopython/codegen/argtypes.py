@@ -111,6 +111,71 @@ class StringArg(ArgType):
                                   '    Py_INCREF(Py_None);\n' +
                                   '    return Py_None;')
 
+class StrvArg(ArgType):
+    def write_param(self, ptype, pname, pdflt, pnull, info):
+        if pdflt:
+            if pdflt != 'NULL': raise TypeError("Only NULL is supported as a default char** value")
+            info.varlist.add('char', '**' + pname + ' = ' + pdflt)
+        else:
+            info.varlist.add('char', '**' + pname)
+        info.arglist.append(pname)
+        if pnull:
+            info.add_parselist('O&', ['moo_pyobject_to_strv', '&' + pname], [pname])
+        else:
+            info.add_parselist('O&', ['moo_pyobject_to_strv_no_null', '&' + pname], [pname])
+    def write_return(self, ptype, ownsreturn, info):
+        if ownsreturn:
+            # have to free result ...
+            info.varlist.add('char', '**ret')
+            info.varlist.add('PyObject', '*py_ret')
+            info.codeafter.append('    py_ret = moo_strv_to_pyobject (ret);\n' +
+                                  '    g_strfreev (ret);\n' +
+                                  '    return py_ret;')
+        else:
+            info.varlist.add('char', '**ret')
+            info.codeafter.append('    return moo_strv_to_pyobject (ret);')
+
+class StringSListArg(ArgType):
+    def write_return(self, ptype, ownsreturn, info):
+        if ownsreturn:
+            # have to free result ...
+            info.varlist.add('GSList', '*ret')
+            info.varlist.add('PyObject', '*py_ret')
+            info.codeafter.append('    py_ret = moo_string_slist_to_pyobject (ret);\n' +
+                                  '    g_slist_foreach (ret, (GFunc) g_free, NULL);\n' +
+                                  '    g_slist_free (ret);\n' +
+                                  '    return py_ret;')
+        else:
+            info.varlist.add('GSList', '*ret')
+            info.codeafter.append('    return moo_string_slist_to_pyobject (ret);')
+
+class ObjectSListArg(ArgType):
+    def write_return(self, ptype, ownsreturn, info):
+        if ownsreturn:
+            # have to free result ...
+            info.varlist.add('GSList', '*ret')
+            info.varlist.add('PyObject', '*py_ret')
+            info.codeafter.append('    py_ret = moo_object_slist_to_pyobject (ret);\n' +
+                                  '    g_slist_foreach (ret, (GFunc) g_object_unref, NULL);\n' +
+                                  '    g_slist_free (ret);\n' +
+                                  '    return py_ret;')
+        else:
+            info.varlist.add('GSList', '*ret')
+            info.codeafter.append('    return moo_object_slist_to_pyobject (ret);')
+
+class NoRefObjectSListArg(ArgType):
+    def write_return(self, ptype, ownsreturn, info):
+        if ownsreturn:
+            # have to free result ...
+            info.varlist.add('GSList', '*ret')
+            info.varlist.add('PyObject', '*py_ret')
+            info.codeafter.append('    py_ret = moo_object_slist_to_pyobject (ret);\n' +
+                                  '    g_slist_free (ret);\n' +
+                                  '    return py_ret;')
+        else:
+            info.varlist.add('GSList', '*ret')
+            info.codeafter.append('    return moo_object_slist_to_pyobject (ret);')
+
 class UCharArg(ArgType):
     # allows strings with embedded NULLs.
     def write_param(self, ptype, pname, pdflt, pnull, info):
@@ -926,6 +991,16 @@ matcher.register('const-gchar*', arg)
 matcher.register('gchar-const*', arg)
 matcher.register('string', arg)
 matcher.register('static_string', arg)
+
+arg = StrvArg()
+matcher.register('strv', arg)
+
+arg = StringSListArg()
+matcher.register('string-slist', arg)
+arg = ObjectSListArg()
+matcher.register('object-slist', arg)
+arg = NoRefObjectSListArg()
+matcher.register('no-ref-object-slist', arg)
 
 arg = UCharArg()
 matcher.register('unsigned-char*', arg)

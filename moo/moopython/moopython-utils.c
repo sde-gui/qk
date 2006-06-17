@@ -140,11 +140,13 @@ PyObject *moo_gvalue_to_pyobject (const GValue *val)
 }
 
 
-typedef PyObject *(*PtrToPy) (gpointer ptr);
+typedef PyObject *(*PtrToPy) (gpointer  ptr,
+                              gpointer  data);
 
 static PyObject*
-slist_to_pyobject (GSList *list,
-                   PtrToPy func)
+slist_to_pyobject (GSList  *list,
+                   PtrToPy  func,
+                   gpointer data)
 {
     int i;
     GSList *l;
@@ -154,7 +156,7 @@ slist_to_pyobject (GSList *list,
 
     for (i = 0, l = list; l != NULL; l = l->next, ++i)
     {
-        PyObject *item = func (l->data);
+        PyObject *item = func (l->data, data);
 
         if (!item)
         {
@@ -172,7 +174,7 @@ slist_to_pyobject (GSList *list,
 PyObject*
 moo_object_slist_to_pyobject (GSList *list)
 {
-    return slist_to_pyobject (list, (PtrToPy) pygobject_new);
+    return slist_to_pyobject (list, (PtrToPy) pygobject_new, NULL);
 }
 
 
@@ -188,7 +190,24 @@ string_to_pyobject (gpointer str)
 PyObject*
 moo_string_slist_to_pyobject (GSList *list)
 {
-    return slist_to_pyobject (list, string_to_pyobject);
+    return slist_to_pyobject (list, (PtrToPy) string_to_pyobject, NULL);
+}
+
+
+static PyObject *
+boxed_to_pyobject (gpointer boxed,
+                   gpointer type)
+{
+    return pyg_boxed_new (GPOINTER_TO_SIZE (type), boxed, TRUE, TRUE);
+}
+
+PyObject *
+moo_boxed_slist_to_pyobject (GSList *list,
+                             GType   type)
+{
+    g_return_val_if_fail (g_type_is_a (type, G_TYPE_BOXED), NULL);
+    return slist_to_pyobject (list, boxed_to_pyobject,
+                              GSIZE_TO_POINTER (type));
 }
 
 

@@ -100,6 +100,14 @@
   (parent "GtkVBox")
   (c-name "MooPrefsDialogPage")
   (gtype-id "MOO_TYPE_PREFS_DIALOG_PAGE")
+  (fields
+    '("char*" "label")
+    '("GdkPixbuf*" "icon")
+    '("char*" "icon_stock_id")
+    '("MooGladeXML*" "xml")
+    '("GSList*" "widgets")
+    '("gboolean" "auto_apply")
+  )
 )
 
 (define-object Window
@@ -107,6 +115,12 @@
   (parent "GtkWindow")
   (c-name "MooWindow")
   (gtype-id "MOO_TYPE_WINDOW")
+  (fields
+    '("GtkAccelGroup*" "accel_group")
+    '("GtkWidget*" "menubar")
+    '("GtkWidget*" "toolbar")
+    '("GtkWidget*" "vbox")
+  )
 )
 
 (define-object MenuAction
@@ -804,7 +818,7 @@
 (define-method get_widget
   (of-object "MooGladeXML")
   (c-name "moo_glade_xml_get_widget")
-  (return-type "gpointer")
+  (return-type "GtkWidget*")
   (parameters
     '("const-char*" "id")
   )

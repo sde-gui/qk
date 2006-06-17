@@ -35,6 +35,8 @@ int          moo_pyobject_to_strv_no_null   (PyObject       *obj,
 
 PyObject    *moo_object_slist_to_pyobject   (GSList         *list);
 PyObject    *moo_string_slist_to_pyobject   (GSList         *list);
+PyObject    *moo_boxed_slist_to_pyobject    (GSList         *list,
+                                             GType           type);
 
 PyObject    *moo_gvalue_to_pyobject         (const GValue   *val);
 

@@ -324,6 +324,7 @@
 (define-function plugin_get_dirs
   (c-name "moo_plugin_get_dirs")
   (return-type "strv")
+  (caller-owns-return "t")
 )
 
 (define-function plugin_read_dirs

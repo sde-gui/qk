@@ -92,6 +92,16 @@
   )
 )
 
+(define-object TextStyleScheme
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooTextStyleScheme")
+  (gtype-id "MOO_TYPE_TEXT_STYLE_SCHEME")
+  (fields
+    '("char*" "name")
+  )
+)
+
 
 (define-boxed Lang
   (in-module "Moo")
@@ -676,7 +686,8 @@
 (define-method get_sections
   (of-object "MooLangMgr")
   (c-name "moo_lang_mgr_get_sections")
-  (return-type "GSList*")
+  (return-type "string-slist")
+  (caller-owns-return "t")
 )
 
 (define-method get_lang_for_file
@@ -715,31 +726,10 @@
   )
 )
 
-(define-method get_context
-  (of-object "MooLangMgr")
-  (c-name "moo_lang_mgr_get_context")
-  (return-type "MooContext*")
-  (parameters
-    '("const-char*" "lang_name")
-    '("const-char*" "ctx_name")
-  )
-)
-
 (define-method list_schemes
   (of-object "MooLangMgr")
   (c-name "moo_lang_mgr_list_schemes")
   (return-type "GSList*")
-)
-
-(define-method get_style
-  (of-object "MooLangMgr")
-  (c-name "moo_lang_mgr_get_style")
-  (return-type "MooTextStyle*")
-  (parameters
-    '("const-char*" "lang_name")
-    '("const-char*" "style_name")
-    '("MooTextStyleScheme*" "scheme")
-  )
 )
 
 (define-method get_active_scheme
@@ -1256,9 +1246,9 @@
   )
 )
 
-(define-method apply_scheme
+(define-method set_scheme
   (of-object "MooTextView")
-  (c-name "moo_text_view_apply_scheme")
+  (c-name "moo_text_view_set_scheme")
   (return-type "none")
   (parameters
     '("MooTextStyleScheme*" "scheme")
