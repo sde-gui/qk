@@ -36,10 +36,12 @@ static void     character_default           (MooIndenter    *indenter,
                                              gunichar        inserted_char,
                                              GtkTextIter    *where);
 static void     config_changed_default      (MooIndenter    *indenter,
-                                             guint           setting_id);
+                                             guint           setting_id,
+                                             GParamSpec     *pspec);
 
 static void     config_notify               (MooIndenter    *indenter,
-                                             guint           var_id);
+                                             guint           var_id,
+                                             GParamSpec     *pspec);
 
 
 enum {
@@ -59,7 +61,6 @@ enum {
 };
 
 enum {
-    SETTING_TAB_WIDTH,
     SETTING_USE_TABS,
     SETTING_INDENT_WIDTH,
     LAST_SETTING
@@ -83,14 +84,6 @@ moo_indenter_class_init (MooIndenterClass *klass)
 
     klass->character = character_default;
     klass->config_changed = config_changed_default;
-
-    settings[SETTING_TAB_WIDTH] = moo_edit_config_install_setting (
-            g_param_spec_uint ("indent-tab-width",
-                               "indent-tab-width",
-                               "indent-tab-width",
-                               1, G_MAXUINT, 8,
-                               G_PARAM_READWRITE));
-    moo_edit_config_install_alias ("indent-tab-width", "tab-width");
 
     settings[SETTING_USE_TABS] = moo_edit_config_install_setting (
             g_param_spec_boolean ("indent-use-tabs",
@@ -149,9 +142,9 @@ moo_indenter_class_init (MooIndenterClass *klass)
                           G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                           G_STRUCT_OFFSET (MooIndenterClass, config_changed),
                           NULL, NULL,
-                          _moo_marshal_VOID__UINT,
-                          G_TYPE_NONE, 1,
-                          G_TYPE_UINT);
+                          _moo_marshal_VOID__UINT_POINTER,
+                          G_TYPE_NONE, 2,
+                          G_TYPE_UINT, G_TYPE_POINTER);
 
     signals[CHARACTER] =
             g_signal_new ("character",
@@ -186,9 +179,15 @@ moo_indenter_constructor (GType           type,
     if (indent->doc)
     {
         guint i;
+        GParamSpec *pspec;
+        guint id;
 
         for (i = 0; i < LAST_SETTING; ++i)
-            config_notify (indent, settings[i]);
+            config_notify (indent, settings[i], NULL);
+
+        pspec = moo_edit_config_lookup_spec ("tab-width", &id, FALSE);
+        g_return_val_if_fail (pspec != NULL, object);
+        config_notify (indent, id, pspec);
 
         g_signal_connect_swapped (indent->doc, "config-notify",
                                   G_CALLBACK (config_notify),
@@ -283,9 +282,13 @@ static void  moo_indenter_get_property  (GObject        *object,
 
 static void
 config_notify (MooIndenter *indenter,
-               guint        var_id)
+               guint        var_id,
+               GParamSpec  *pspec)
 {
-    g_signal_emit (indenter, signals[CONFIG_CHANGED], 0, var_id);
+    if (!pspec)
+        pspec = moo_edit_config_get_spec (var_id);
+    g_return_if_fail (pspec != NULL);
+    g_signal_emit (indenter, signals[CONFIG_CHANGED], 0, var_id, pspec);
 }
 
 
@@ -707,18 +710,14 @@ moo_indenter_shift_lines (MooIndenter    *indenter,
 
 static void
 config_changed_default (MooIndenter    *indenter,
-                        guint           var_id)
+                        guint           var_id,
+                        GParamSpec     *pspec)
 {
     MooEdit *doc = indenter->doc;
 
     g_return_if_fail (MOO_IS_EDIT (doc));
 
-    if (var_id == settings[SETTING_TAB_WIDTH])
-    {
-        guint tab_width = moo_edit_config_get_uint (doc->config, "indent-tab-width");
-        g_object_set (indenter, "tab-width", tab_width, NULL);
-    }
-    else if (var_id == settings[SETTING_USE_TABS])
+    if (var_id == settings[SETTING_USE_TABS])
     {
         gboolean use_tabs = moo_edit_config_get_bool (doc->config, "indent-use-tabs");
         g_object_set (indenter, "use-tabs", use_tabs, NULL);
@@ -727,5 +726,10 @@ config_changed_default (MooIndenter    *indenter,
     {
         guint width = moo_edit_config_get_uint (doc->config, "indent-width");
         g_object_set (indenter, "indent", width, NULL);
+    }
+    else if (!strcmp (pspec->name, "tab-width"))
+    {
+        guint tab_width = moo_edit_config_get_uint (doc->config, "tab-width");
+        g_object_set (indenter, "tab-width", tab_width, NULL);
     }
 }

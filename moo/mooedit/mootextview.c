@@ -94,6 +94,7 @@ static void     moo_text_view_set_scroll_adjustments (GtkTextView *text_view,
                                              GtkAdjustment      *vadj);
 
 static void     create_current_line_gc      (MooTextView        *view);
+static void     update_tab_width            (MooTextView        *view);
 
 static GtkTextBuffer *get_buffer            (MooTextView        *view);
 static MooTextBuffer *get_moo_buffer        (MooTextView        *view);
@@ -204,6 +205,7 @@ enum {
     PROP_HIGHLIGHT_MISMATCHING_BRACKETS,
     PROP_CURRENT_LINE_COLOR,
     PROP_CURRENT_LINE_COLOR_GDK,
+    PROP_TAB_WIDTH,
     PROP_DRAW_TABS,
     PROP_DRAW_TRAILING_SPACES,
     PROP_HAS_TEXT,
@@ -329,6 +331,14 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "current-line-color",
                                              LIGHT_BLUE,
                                              G_PARAM_WRITABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_TAB_WIDTH,
+                                     g_param_spec_uint ("tab-width",
+                                             "tab-width",
+                                             "tab-width",
+                                             1, G_MAXUINT, 8,
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_DRAW_TABS,
@@ -655,6 +665,7 @@ static void moo_text_view_init (MooTextView *view)
 
     view->priv->highlight_matching_brackets = TRUE;
     view->priv->highlight_mismatching_brackets = FALSE;
+    view->priv->tab_width = 8;
 
     view->priv->bold_current_line_number = TRUE;
 
@@ -989,6 +1000,10 @@ moo_text_view_set_property (GObject        *object,
             moo_text_view_set_indenter (view, g_value_get_object (value));
             break;
 
+        case PROP_TAB_WIDTH:
+            moo_text_view_set_tab_width (view, g_value_get_uint (value));
+            break;
+
         case PROP_HIGHLIGHT_MATCHING_BRACKETS:
             view->priv->highlight_matching_brackets = g_value_get_boolean (value);
             if (view->priv->constructed)
@@ -1101,6 +1116,9 @@ moo_text_view_get_property (GObject        *object,
             break;
         case PROP_INDENTER:
             g_value_set_object (value, view->priv->indenter);
+            break;
+        case PROP_TAB_WIDTH:
+            g_value_set_uint (value, view->priv->tab_width);
             break;
         case PROP_HIGHLIGHT_CURRENT_LINE:
             g_value_set_boolean (value, view->priv->highlight_current_line);
@@ -1963,6 +1981,7 @@ moo_text_view_realize (GtkWidget *widget)
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->realize (widget);
 
     create_current_line_gc (view);
+    update_tab_width (view);
     view->priv->digit_width = 0;
 
     if (view->priv->manage_clipboard)
@@ -3208,6 +3227,7 @@ moo_text_view_style_set (GtkWidget *widget,
     view->priv->expander_size += EXPANDER_PADDING;
 
     update_box_tag (view);
+    update_tab_width (view);
 
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->style_set (widget, prev_style);
 }
@@ -3241,6 +3261,52 @@ moo_text_view_set_enable_folding (MooTextView *view,
     gtk_text_view_set_border_window_size (GTK_TEXT_VIEW (view),
                                           GTK_TEXT_WINDOW_LEFT,
                                           get_left_margin_width (view));
+}
+
+
+static void
+update_tab_width (MooTextView *view)
+{
+    PangoTabArray *tabs;
+    PangoLayout *layout;
+    guint tab_width;
+    int layout_width;
+    const char *string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
+
+    if (!GTK_WIDGET_REALIZED (view))
+        return;
+
+    g_return_if_fail (view->priv->tab_width > 0);
+    g_return_if_fail (GTK_WIDGET (view)->style != NULL);
+
+    layout = gtk_widget_create_pango_layout (GTK_WIDGET (view), string);
+    pango_layout_get_size (layout, &layout_width, NULL);
+    tab_width = (layout_width * view->priv->tab_width) / strlen (string);
+
+    tabs = pango_tab_array_new (2, FALSE);
+    pango_tab_array_set_tab (tabs, 0, PANGO_TAB_LEFT, 0);
+    pango_tab_array_set_tab (tabs, 1, PANGO_TAB_LEFT, tab_width);
+
+    gtk_text_view_set_tabs (GTK_TEXT_VIEW (view), tabs);
+
+    pango_tab_array_free (tabs);
+    g_object_unref (layout);
+}
+
+void
+moo_text_view_set_tab_width (MooTextView *view,
+                             guint        width)
+{
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    g_return_if_fail (width > 0);
+
+    if (width == view->priv->tab_width)
+        return;
+
+    view->priv->tab_width = width;
+    update_tab_width (view);
+
+    g_object_notify (G_OBJECT (view), "tab-width");
 }
 
 

@@ -106,6 +106,7 @@ enum {
     SETTING_STRIP,
     SETTING_WRAP_MODE,
     SETTING_SHOW_LINE_NUMBERS,
+    SETTING_TAB_WIDTH,
     LAST_SETTING
 };
 
@@ -177,6 +178,9 @@ moo_edit_class_init (MooEditClass *klass)
     settings[SETTING_SHOW_LINE_NUMBERS] = moo_edit_config_install_setting (
             g_param_spec_boolean ("show-line-numbers", "show-line-numbers", "show-line-numbers",
                                   FALSE, G_PARAM_READWRITE));
+    settings[SETTING_TAB_WIDTH] = moo_edit_config_install_setting (
+            g_param_spec_uint ("tab-width", "tab-width", "tab-width",
+                               1, G_MAXUINT, 8, G_PARAM_READWRITE));
 
     _moo_edit_class_init_actions (klass);
 
@@ -825,7 +829,7 @@ set_emacs_var (MooEdit *edit,
     }
     else if (!g_ascii_strcasecmp (name, "tab-width"))
     {
-        moo_edit_config_parse_one (edit->config, "indent-tab-width", val,
+        moo_edit_config_parse_one (edit->config, "tab-width", val,
                                    MOO_EDIT_CONFIG_SOURCE_FILE);
     }
     else if (!g_ascii_strcasecmp (name, "c-basic-offset"))
@@ -978,6 +982,7 @@ moo_edit_apply_config (MooEdit *edit)
 {
     GtkWrapMode wrap_mode;
     gboolean line_numbers;
+    guint tab_width;
 
     moo_edit_apply_lang_config (edit);
 
@@ -986,6 +991,9 @@ moo_edit_apply_config (MooEdit *edit)
 
     line_numbers = moo_edit_config_get_bool (edit->config, "show-line-numbers");
     moo_text_view_set_show_line_numbers (MOO_TEXT_VIEW (edit), line_numbers);
+
+    tab_width = moo_edit_config_get_uint (edit->config, "tab-width");
+    moo_text_view_set_tab_width (MOO_TEXT_VIEW (edit), tab_width);
 }
 
 

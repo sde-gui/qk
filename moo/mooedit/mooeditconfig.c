@@ -308,9 +308,9 @@ moo_edit_config_install_setting (GParamSpec *pspec)
     global_init ();
     klass = g_type_class_ref (MOO_TYPE_EDIT_CONFIG);
 
-    if (g_object_class_find_property (klass, pspec->name))
+    if (moo_edit_config_lookup_spec (pspec->name, NULL, TRUE))
     {
-        g_warning ("%s: setting with name '%s' already exists",
+        g_warning ("%s: setting named '%s' already exists",
                    G_STRLOC, pspec->name);
         return 0;
     }
