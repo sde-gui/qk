@@ -797,9 +797,9 @@ _moo_edit_start_file_watch (MooEdit *edit)
     g_return_if_fail ((edit->priv->status & MOO_EDIT_CHANGED_ON_DISK) == 0);
     g_return_if_fail (edit->priv->filename != NULL);
 
-    moo_file_watch_monitor_file (watch, edit->priv->filename, edit,
-                                 &edit->priv->file_monitor_id,
-                                 &error);
+    edit->priv->file_monitor_id = moo_file_watch_monitor_file (watch,
+                                                               edit->priv->filename,
+                                                               edit, &error);
 
     if (!edit->priv->file_monitor_id)
     {

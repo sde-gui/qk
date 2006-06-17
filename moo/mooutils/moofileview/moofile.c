@@ -866,11 +866,12 @@ start_monitor (MooFolder *folder)
     folder->priv->fam = _moo_file_system_get_file_watch (folder->priv->fs);
     g_return_if_fail (folder->priv->fam != NULL);
 
-    if (!moo_file_watch_monitor_directory (folder->priv->fam,
-                                           folder->priv->path,
-                                           folder,
-                                           &folder->priv->fam_request,
-                                           &error))
+    folder->priv->fam_request =
+            moo_file_watch_monitor_directory (folder->priv->fam,
+                                              folder->priv->path,
+                                              folder, &error);
+
+    if (!folder->priv->fam_request)
     {
         g_warning ("%s: moo_fam_monitor_directory failed", G_STRLOC);
         g_warning ("%s: %s", G_STRLOC, error->message);

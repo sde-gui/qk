@@ -47,6 +47,7 @@ GQuark  moo_file_watch_error_quark (void);
 #define MOO_IS_FILE_WATCH_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FILE_WATCH))
 #define MOO_FILE_WATCH_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FILE_WATCH, MooFileWatchClass))
 
+#define MOO_TYPE_FILE_WATCH_EVENT          (moo_file_watch_event_get_type ())
 #define MOO_TYPE_FILE_WATCH_EVENT_CODE     (moo_file_watch_event_code_get_type ())
 #define MOO_TYPE_FILE_WATCH_METHOD         (moo_file_watch_method_get_type ())
 
@@ -100,6 +101,7 @@ struct _MooFileWatchClass
 };
 
 GType           moo_file_watch_get_type             (void) G_GNUC_CONST;
+GType           moo_file_watch_event_get_type       (void) G_GNUC_CONST;
 GType           moo_file_watch_event_code_get_type  (void) G_GNUC_CONST;
 GType           moo_file_watch_method_get_type      (void) G_GNUC_CONST;
 
@@ -111,15 +113,13 @@ gboolean        moo_file_watch_close                (MooFileWatch   *watch,
                                                      GError        **error);
 
 /* FAMMonitorDirectory, FAMMonitorFile */
-gboolean        moo_file_watch_monitor_directory    (MooFileWatch   *watch,
+int             moo_file_watch_monitor_directory    (MooFileWatch   *watch,
                                                      const char     *filename,
                                                      gpointer        data,
-                                                     int            *monitor_id,
                                                      GError        **error);
-gboolean        moo_file_watch_monitor_file         (MooFileWatch   *watch,
+int             moo_file_watch_monitor_file         (MooFileWatch   *watch,
                                                      const char     *filename,
                                                      gpointer        data,
-                                                     int            *monitor_id,
                                                      GError        **error);
 
 /* FAMSuspendMonitor, FAMResumeMonitor, FAMCancelMonitor */

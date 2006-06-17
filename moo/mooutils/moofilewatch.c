@@ -62,6 +62,16 @@ typedef enum {
     MONITOR_FILE
 } MonitorType;
 
+struct _Monitor {
+    MooFileWatch *parent;
+    MonitorType type;
+    char *filename;
+    gpointer user_data;
+    int request;
+    guint suspended : 1;
+    struct stat statbuf;
+};
+
 typedef struct {
     gboolean (*start)   (MooFileWatch   *watch,
                          GError        **error);
@@ -162,7 +172,8 @@ static guint signals[LAST_SIGNAL];
 
 static void moo_file_watch_finalize     (GObject            *object);
 
-static void moo_file_watch_class_init   (MooFileWatchClass  *klass)
+static void
+moo_file_watch_class_init (MooFileWatchClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
@@ -176,7 +187,7 @@ static void moo_file_watch_class_init   (MooFileWatchClass  *klass)
                           NULL, NULL,
                           _moo_marshal_VOID__POINTER,
                           G_TYPE_NONE, 1,
-                          G_TYPE_POINTER);
+                          MOO_TYPE_FILE_WATCH_EVENT);
 
     signals[ERROR_SIGNAL] =
             g_signal_new ("error",
@@ -190,7 +201,8 @@ static void moo_file_watch_class_init   (MooFileWatchClass  *klass)
 }
 
 
-static void moo_file_watch_init (MooFileWatch   *watch)
+static void
+moo_file_watch_init (MooFileWatch *watch)
 {
     watch->priv = g_new0 (MooFileWatchPrivate, 1);
     watch->priv->requests = g_hash_table_new (g_direct_hash, g_direct_equal);
@@ -241,7 +253,8 @@ static void moo_file_watch_init (MooFileWatch   *watch)
 }
 
 
-static void moo_file_watch_finalize     (GObject            *object)
+static void
+moo_file_watch_finalize (GObject *object)
 {
     GError *error = NULL;
     MooFileWatch *watch = MOO_FILE_WATCH (object);
@@ -266,7 +279,8 @@ static void moo_file_watch_finalize     (GObject            *object)
 }
 
 
-GQuark  moo_file_watch_error_quark (void)
+GQuark
+moo_file_watch_error_quark (void)
 {
     static GQuark quark = 0;
     if (!quark)
@@ -305,6 +319,18 @@ moo_file_watch_method_get_type (void)
 
 
 GType
+moo_file_watch_event_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+        type = g_pointer_type_register_static ("MooFileWatchEvent");
+
+    return type;
+}
+
+
+GType
 moo_file_watch_event_code_get_type (void)
 {
     static GType type = 0;
@@ -326,16 +352,15 @@ moo_file_watch_event_code_get_type (void)
 }
 
 
-static gboolean
+static int
 moo_file_watch_create_monitor (MooFileWatch   *watch,
                                MonitorType     type,
                                const char     *filename,
                                gpointer        data,
-                               int            *request,
                                GError        **error)
 {
     Monitor *monitor;
-    int req;
+    int request;
 
     g_return_val_if_fail (MOO_IS_FILE_WATCH (watch), FALSE);
     g_return_val_if_fail (filename != NULL, FALSE);
@@ -348,45 +373,41 @@ moo_file_watch_create_monitor (MooFileWatch   *watch,
         return FALSE;
     }
 
-    monitor = watch->priv->funcs.create (watch, type, filename, data, &req, error);
+    monitor = watch->priv->funcs.create (watch, type, filename, data, &request, error);
 
     if (!monitor)
-        return FALSE;
+        return 0;
 
     watch->priv->monitors = g_slist_prepend (watch->priv->monitors, monitor);
-    g_hash_table_insert (watch->priv->requests, GINT_TO_POINTER (req), monitor);
+    g_hash_table_insert (watch->priv->requests, GINT_TO_POINTER (request), monitor);
 
-    if (request)
-        *request = req;
-
-    return TRUE;
+    return request;
 }
 
 
-gboolean        moo_file_watch_monitor_directory    (MooFileWatch   *watch,
-                                                     const char     *filename,
-                                                     gpointer        data,
-                                                     int            *monitor_id,
-                                                     GError        **error)
+int
+moo_file_watch_monitor_directory (MooFileWatch   *watch,
+                                  const char     *filename,
+                                  gpointer        data,
+                                  GError        **error)
 {
-    return moo_file_watch_create_monitor (watch, MONITOR_DIR, filename,
-                                          data, monitor_id, error);
+    return moo_file_watch_create_monitor (watch, MONITOR_DIR, filename, data, error);
 }
 
 
-gboolean        moo_file_watch_monitor_file         (MooFileWatch   *watch,
-                                                     const char     *filename,
-                                                     gpointer        data,
-                                                     int            *monitor_id,
-                                                     GError        **error)
+int
+moo_file_watch_monitor_file (MooFileWatch   *watch,
+                             const char     *filename,
+                             gpointer        data,
+                             GError        **error)
 {
-    return moo_file_watch_create_monitor (watch, MONITOR_FILE, filename,
-                                          data, monitor_id, error);
+    return moo_file_watch_create_monitor (watch, MONITOR_FILE, filename, data, error);
 }
 
 
-void            moo_file_watch_suspend_monitor      (MooFileWatch   *watch,
-                                                     int             monitor_id)
+void
+moo_file_watch_suspend_monitor (MooFileWatch   *watch,
+                                int             monitor_id)
 {
     Monitor *monitor;
 
@@ -400,8 +421,9 @@ void            moo_file_watch_suspend_monitor      (MooFileWatch   *watch,
 }
 
 
-void            moo_file_watch_resume_monitor       (MooFileWatch   *watch,
-                                                     int             monitor_id)
+void
+moo_file_watch_resume_monitor (MooFileWatch   *watch,
+                               int             monitor_id)
 {
     Monitor *monitor;
 
@@ -415,8 +437,9 @@ void            moo_file_watch_resume_monitor       (MooFileWatch   *watch,
 }
 
 
-void            moo_file_watch_cancel_monitor       (MooFileWatch   *watch,
-                                                     int             monitor_id)
+void
+moo_file_watch_cancel_monitor (MooFileWatch   *watch,
+                               int             monitor_id)
 {
     Monitor *monitor;
 
@@ -433,8 +456,9 @@ void            moo_file_watch_cancel_monitor       (MooFileWatch   *watch,
 }
 
 
-static void emit_event  (MooFileWatch       *watch,
-                         MooFileWatchEvent  *event)
+static void
+emit_event (MooFileWatch       *watch,
+            MooFileWatchEvent  *event)
 {
     DEBUG_PRINT ("watch %p, monitor %d: event %s for %s",
                  watch, event->monitor_id,
@@ -444,7 +468,8 @@ static void emit_event  (MooFileWatch       *watch,
 }
 
 
-MooFileWatch   *moo_file_watch_new                  (GError        **error)
+MooFileWatch *
+moo_file_watch_new (GError **error)
 {
     MooFileWatch *watch;
 
@@ -461,8 +486,9 @@ MooFileWatch   *moo_file_watch_new                  (GError        **error)
 }
 
 
-gboolean        moo_file_watch_close                (MooFileWatch   *watch,
-                                                     GError        **error)
+gboolean
+moo_file_watch_close (MooFileWatch   *watch,
+                      GError        **error)
 {
     g_return_val_if_fail (MOO_IS_FILE_WATCH (watch), FALSE);
 
@@ -478,17 +504,6 @@ gboolean        moo_file_watch_close                (MooFileWatch   *watch,
 
     return watch->priv->funcs.shutdown (watch, error);
 }
-
-
-struct _Monitor {
-    MooFileWatch *parent;
-    MonitorType type;
-    char *filename;
-    gpointer user_data;
-    int request;
-    guint suspended : 1;
-    struct stat statbuf;
-};
 
 
 /*****************************************************************************/
@@ -520,8 +535,9 @@ static gboolean read_fam_events         (GIOChannel     *source,
                                          GIOCondition    condition,
                                          MooFileWatch   *watch);
 
-static gboolean watch_fam_start         (MooFileWatch   *watch,
-                                         GError        **error)
+static gboolean
+watch_fam_start (MooFileWatch   *watch,
+                 GError        **error)
 {
     GIOChannel *fam_socket;
 
@@ -539,8 +555,9 @@ static gboolean watch_fam_start         (MooFileWatch   *watch,
 }
 
 
-static gboolean watch_fam_shutdown      (MooFileWatch   *watch,
-                                         GError        **error)
+static gboolean
+watch_fam_shutdown (MooFileWatch   *watch,
+                    GError        **error)
 {
     if (watch->priv->fam_connection_watch)
         g_source_remove (watch->priv->fam_connection_watch);
@@ -552,12 +569,13 @@ static gboolean watch_fam_shutdown      (MooFileWatch   *watch,
 }
 
 
-static Monitor *monitor_fam_create  (MooFileWatch   *watch,
-                                     MonitorType     type,
-                                     const char     *filename,
-                                     gpointer        data,
-                                     int            *request,
-                                     GError        **error)
+static Monitor *
+monitor_fam_create (MooFileWatch   *watch,
+                    MonitorType     type,
+                    const char     *filename,
+                    gpointer        data,
+                    int            *request,
+                    GError        **error)
 {
     FAMRequest fr;
     int result;
@@ -605,7 +623,8 @@ static Monitor *monitor_fam_create  (MooFileWatch   *watch,
 }
 
 
-static void     monitor_fam_suspend (Monitor        *monitor)
+static void
+monitor_fam_suspend (Monitor *monitor)
 {
     FAMRequest fr;
     int result;
@@ -640,7 +659,8 @@ static void     monitor_fam_suspend (Monitor        *monitor)
 }
 
 
-static void     monitor_fam_resume  (Monitor        *monitor)
+static void
+monitor_fam_resume (Monitor *monitor)
 {
     FAMRequest fr;
     int result;
@@ -675,11 +695,11 @@ static void     monitor_fam_resume  (Monitor        *monitor)
 }
 
 
-static void     monitor_fam_delete  (Monitor        *monitor)
+static void
+monitor_fam_delete (Monitor *monitor)
 {
     FAMRequest fr;
     int result;
-
     g_return_if_fail (monitor != NULL);
 
     fr.reqnum = monitor->request;
@@ -699,9 +719,10 @@ static void     monitor_fam_delete  (Monitor        *monitor)
 }
 
 
-static gboolean read_fam_events (G_GNUC_UNUSED GIOChannel *source,
-                                 GIOCondition    condition,
-                                 MooFileWatch   *watch)
+static gboolean
+read_fam_events (G_GNUC_UNUSED GIOChannel *source,
+                 GIOCondition    condition,
+                 MooFileWatch   *watch)
 {
     GError *error = NULL;
     int result;
@@ -826,8 +847,9 @@ static MooFileWatchError errno_to_file_error    (int             code);
 static gboolean do_stat                         (MooFileWatch   *watch);
 
 
-static gboolean watch_stat_start        (MooFileWatch   *watch,
-                                         G_GNUC_UNUSED GError **error)
+static gboolean
+watch_stat_start (MooFileWatch   *watch,
+                  G_GNUC_UNUSED GError **error)
 {
     watch->priv->stat_timeout =
             g_timeout_add_full (MOO_STAT_PRIORITY,
@@ -838,8 +860,9 @@ static gboolean watch_stat_start        (MooFileWatch   *watch,
 }
 
 
-static gboolean watch_stat_shutdown     (MooFileWatch   *watch,
-                                         G_GNUC_UNUSED GError **error)
+static gboolean
+watch_stat_shutdown (MooFileWatch   *watch,
+                     G_GNUC_UNUSED GError **error)
 {
     if (watch->priv->stat_timeout)
         g_source_remove (watch->priv->stat_timeout);
@@ -848,12 +871,13 @@ static gboolean watch_stat_shutdown     (MooFileWatch   *watch,
 }
 
 
-static Monitor *monitor_stat_create     (MooFileWatch   *watch,
-                                         MonitorType     type,
-                                         const char     *filename,
-                                         gpointer        data,
-                                         int            *request,
-                                         GError        **error)
+static Monitor *
+monitor_stat_create (MooFileWatch   *watch,
+                     MonitorType     type,
+                     const char     *filename,
+                     gpointer        data,
+                     int            *request,
+                     GError        **error)
 {
     Monitor *monitor;
     struct stat buf;
@@ -908,21 +932,24 @@ static Monitor *monitor_stat_create     (MooFileWatch   *watch,
 }
 
 
-static void     monitor_stat_suspend    (Monitor        *monitor)
+static void
+monitor_stat_suspend (Monitor *monitor)
 {
     g_return_if_fail (monitor != NULL);
     monitor->suspended = TRUE;
 }
 
 
-static void     monitor_stat_resume     (Monitor        *monitor)
+static void
+monitor_stat_resume (Monitor *monitor)
 {
     g_return_if_fail (monitor != NULL);
     monitor->suspended = FALSE;
 }
 
 
-static void     monitor_stat_delete     (Monitor        *monitor)
+static void
+monitor_stat_delete (Monitor *monitor)
 {
     g_return_if_fail (monitor != NULL);
     DEBUG_PRINT ("removing monitor for '%s'", monitor->filename);
@@ -931,7 +958,8 @@ static void     monitor_stat_delete     (Monitor        *monitor)
 }
 
 
-static gboolean do_stat                 (MooFileWatch   *watch)
+static gboolean
+do_stat (MooFileWatch *watch)
 {
     GSList *l, *list, *to_remove = NULL;
     gboolean result = TRUE;
@@ -1002,7 +1030,8 @@ out:
 }
 
 
-static MooFileWatchError errno_to_file_error (int code)
+static MooFileWatchError
+errno_to_file_error (int code)
 {
     MooFileWatchError fcode = MOO_FILE_WATCH_ERROR_FAILED;
 
@@ -1032,26 +1061,29 @@ static MooFileWatchError errno_to_file_error (int code)
  */
 #ifdef __WIN32__
 
-static gboolean watch_win32_start       (MooFileWatch   *watch,
-                                         GError        **error)
+static gboolean
+watch_win32_start (MooFileWatch   *watch,
+                   GError        **error)
 {
     return watch_stat_start (watch, error);
 }
 
 
-static gboolean watch_win32_shutdown    (MooFileWatch   *watch,
-                                         GError        **error)
+static gboolean
+watch_win32_shutdown (MooFileWatch   *watch,
+                      GError        **error)
 {
     return watch_stat_shutdown (watch, error);
 }
 
 
-static Monitor *monitor_win32_create    (MooFileWatch   *watch,
-                                         MonitorType     type,
-                                         const char     *filename,
-                                         gpointer        data,
-                                         int            *request,
-                                         GError        **error)
+static Monitor *
+monitor_win32_create (MooFileWatch   *watch,
+                      MonitorType     type,
+                      const char     *filename,
+                      gpointer        data,
+                      int            *request,
+                      GError        **error)
 {
     g_return_val_if_fail (filename != NULL, FALSE);
 
@@ -1070,7 +1102,8 @@ static Monitor *monitor_win32_create    (MooFileWatch   *watch,
 }
 
 
-static void     monitor_win32_suspend   (Monitor        *monitor)
+static void
+monitor_win32_suspend (Monitor *monitor)
 {
     g_return_if_fail (monitor != NULL);
 
@@ -1084,7 +1117,8 @@ static void     monitor_win32_suspend   (Monitor        *monitor)
 }
 
 
-static void     monitor_win32_resume    (Monitor        *monitor)
+static void
+monitor_win32_resume (Monitor *monitor)
 {
     g_return_if_fail (monitor != NULL);
 
@@ -1098,7 +1132,8 @@ static void     monitor_win32_resume    (Monitor        *monitor)
 }
 
 
-static void     monitor_win32_delete    (Monitor        *monitor)
+static void
+monitor_win32_delete (Monitor *monitor)
 {
     g_return_if_fail (monitor != NULL);
 
