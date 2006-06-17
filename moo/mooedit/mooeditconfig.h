@@ -69,16 +69,16 @@ gboolean        moo_edit_config_get_bool        (MooEditConfig  *config,
 void            moo_edit_config_set             (MooEditConfig  *config,
                                                  const char     *first_setting,
                                                  MooEditConfigSource source,
-                                                 ...); /* setting, source, value, ... */
+                                                 ...) G_GNUC_NULL_TERMINATED; /* setting, source, value, ... */
 void            moo_edit_config_get             (MooEditConfig  *config,
                                                  const char     *first_setting,
-                                                 ...); /* alias for g_object_get() */
+                                                 ...) G_GNUC_NULL_TERMINATED; /* alias for g_object_get() */
 
 void            moo_edit_config_set_global      (const char     *first_setting,
                                                  MooEditConfigSource source,
-                                                 ...); /* setting, source, value, ... */
+                                                 ...) G_GNUC_NULL_TERMINATED; /* setting, source, value, ... */
 void            moo_edit_config_get_global      (const char     *first_setting,
-                                                 ...); /* alias for g_object_get(global, ...) */
+                                                 ...) G_GNUC_NULL_TERMINATED;  /* alias for g_object_get(global, ...) */
 
 void            moo_edit_config_parse_one       (MooEditConfig  *config,
                                                  const char     *setting_name,
