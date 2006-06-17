@@ -1,5 +1,21 @@
+2006-06-16  Yevgen Muntyan  <muntyan@tamu.edu>
+    Fixed build error on FreeBSD when python is not used.
+
+2006-06-16  Yevgen Muntyan  <muntyan@tamu.edu>
+    Added check for UTF8 support in system libpcre.
+
+2006-06-16  Yevgen Muntyan  <muntyan@tamu.edu>
+    Move window to current workspace when invoking running instance.
+
+2006-06-15  Yevgen Muntyan  <muntyan@tamu.edu>
+    Updated printing.
+
 2006-06-14  Yevgen Muntyan  <muntyan@tamu.edu>
     Made codegen work with pygtk-2.6; made plugins work with pygtk-2.6.
+
+2006-06-14  Yevgen Muntyan  <muntyan@tamu.edu>
+    Made terminal not show win32 error message when it can't start child
+    process due to missing dlls problem.
 
 2006-06-14  Yevgen Muntyan  <muntyan@tamu.edu>
     Close editor tabs by middle mouse button click.
