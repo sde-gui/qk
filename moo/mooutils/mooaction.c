@@ -13,6 +13,7 @@
 
 #include "mooutils/mooaction.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooaccel.h"
 #include <gtk/gtktoggleaction.h>
 #include <string.h>
 
@@ -104,8 +105,19 @@ void
 moo_action_set_default_accel (GtkAction  *action,
                               const char *accel)
 {
+    char *norm;
+
     g_return_if_fail (GTK_IS_ACTION (action));
-    set_string (action, "moo-action-default-accel", accel);
+
+    if (!accel || !accel[0])
+    {
+        set_string (action, "moo-action-default-accel", accel);
+        return;
+    }
+
+    norm = _moo_accel_normalize (accel);
+    set_string (action, "moo-action-default-accel", norm);
+    g_free (norm);
 }
 
 
@@ -132,14 +144,14 @@ _moo_action_get_accel_path (GtkAction *action)
 const char *
 _moo_action_get_accel (GtkAction *action)
 {
-    const char *string;
+    const char *path;
 
     g_return_val_if_fail (GTK_IS_ACTION (action), "");
 
-    if ((string = get_string (action, "moo-action-accel-path")))
-        return string;
-    else if ((string = get_string (action, "moo-action-default-accel")))
-        return string;
+    path = _moo_action_get_accel_path (action);
+
+    if (path)
+        return _moo_get_accel (path);
     else
         return "";
 }

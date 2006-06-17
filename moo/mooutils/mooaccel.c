@@ -583,8 +583,9 @@ typedef struct {
     ChoiceType choice;
 } Shortcut;
 
-static Shortcut *shortcut_new   (ChoiceType  choice,
-                                 const char *accel)
+static Shortcut *
+shortcut_new (ChoiceType  choice,
+              const char *accel)
 {
     Shortcut *s = g_new (Shortcut, 1);
     s->choice = choice;
@@ -592,7 +593,8 @@ static Shortcut *shortcut_new   (ChoiceType  choice,
     return s;
 }
 
-static void      shortcut_free  (Shortcut   *s)
+static void
+shortcut_free (Shortcut *s)
 {
     g_free (s->accel);
     g_free (s);
@@ -617,6 +619,7 @@ typedef struct {
     GPtrArray *actions;     /* GtkActionGroup* */
     GHashTable *groups;     /* char* -> GtkTreeRowReference* */
 } Stuff;
+
 
 static Stuff *
 stuff_new (void)
@@ -796,9 +799,10 @@ _moo_accel_prefs_page_new (GtkActionGroup *actions)
 }
 
 
-static void apply_one (GtkAction    *action,
-                       Shortcut     *shortcut,
-                       G_GNUC_UNUSED Stuff        *stuff)
+static void
+apply_one (GtkAction    *action,
+           Shortcut     *shortcut,
+           G_GNUC_UNUSED Stuff *stuff)
 {
     const char *accel_path = _moo_action_get_accel_path (action);
     const char *accel = _moo_get_accel (accel_path);
@@ -829,7 +833,8 @@ static void apply_one (GtkAction    *action,
     }
 }
 
-static void apply (Stuff *stuff)
+static void
+apply (Stuff *stuff)
 {
     g_hash_table_foreach (stuff->changed,
                           (GHFunc) apply_one,
@@ -927,6 +932,9 @@ init (Stuff *stuff)
         }
     }
 
+    gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (stuff->store),
+                                          COLUMN_ACTION_NAME,
+                                          GTK_SORT_ASCENDING);
     gtk_tree_view_expand_all (stuff->treeview);
     tree_selection_changed (stuff);
 }
@@ -1008,15 +1016,15 @@ tree_selection_changed (Stuff *stuff)
     {
         const char *accel = _moo_action_get_accel (action);
 
-        if (!accel[0])
-        {
-            gtk_toggle_button_set_active (stuff->shortcut_none, TRUE);
-            moo_accel_button_set_accel (stuff->shortcut, NULL);
-        }
-        else if (!strcmp (accel, default_accel))
+        if (!strcmp (accel, default_accel))
         {
             gtk_toggle_button_set_active (stuff->shortcut_default, TRUE);
             moo_accel_button_set_accel (stuff->shortcut, default_accel);
+        }
+        else if (!accel[0])
+        {
+            gtk_toggle_button_set_active (stuff->shortcut_none, TRUE);
+            moo_accel_button_set_accel (stuff->shortcut, NULL);
         }
         else
         {
