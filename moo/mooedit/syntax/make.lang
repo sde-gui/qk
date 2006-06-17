@@ -3,7 +3,7 @@
 <!-- Makefile syntaxfile v0.9 by Per Wigren <wigren@home.se> -->
 <!-- Modified by Joseph Wenninger <jowenn@kde.org> -->
 <language name="Makefile" version="1.06" kateversion="2.4" section="Others"
-          extensions="*makefile*;*Makefile*;rules" mimetypes="text/x-makefile"
+          extensions="*makefile*;*Makefile*;rules;*.mk" mimetypes="text/x-makefile"
           author="Per Wigren (wigren@home.se)" license="">
 
   <syntax>
@@ -21,15 +21,15 @@
     </keyword-list>
 
     <context name="Normal" style="Normal Text" eol-context="#stay">
+      <Char style="Comment" context="Comment" include-into-next="true" char="#"/>
       <Keyword style="Keyword" context="#stay" keyword="keywords"/>
-      <Regex style="Target" context="#stay" pattern="^[^:]*\s*:"/>
       <Regex style="Variable" context="Value" pattern="[_\w\d]*\s*(?=:=|=|\+=)"/>
+      <Regex style="Target" context="#stay" pattern="^[^:]*\s*:"/>
       <Regex style="Section" context="#stay" pattern="^[.].*:"/>
       <Char style="String" context="String" char="&quot;"/>
       <Regex style="Operator" context="VarFromNormal" pattern="[$][\({]"/>
       <AnyChar style="Operator" context="#stay" chars="+*=%$():\\&#059;" />
       <Regex style="Operator" context="Commands" pattern="[@-]" first-non-blank-only="true"/>
-      <Char style="Comment" context="Comment" include-into-next="true" char="#"/>
     </context>
 
     <context style="Comment" eol-context="#pop" name="Comment">
