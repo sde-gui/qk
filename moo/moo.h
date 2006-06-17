@@ -48,7 +48,6 @@
 #include <mooutils/mooaccel.h>
 #include <mooutils/mooaccelbutton.h>
 #include <mooutils/mooaction.h>
-#include <mooutils/mooactiongroup.h>
 #include <mooutils/moobigpaned.h>
 #include <mooutils/mooclosure.h>
 #include <mooutils/moocmd.h>
@@ -70,10 +69,8 @@
 #include <mooutils/mooprefsdialogpage.h>
 #include <mooutils/moopython.h>
 #include <mooutils/moostock.h>
-#include <mooutils/mootoggleaction.h>
 #include <mooutils/moouixml.h>
-#include <mooutils/mooundomanager.h>
-#include <mooutils/moouseractions.h>
+#include <mooutils/mooundo.h>
 #include <mooutils/mooutils-fs.h>
 #include <mooutils/mooutils-gobject.h>
 #include <mooutils/mooutils-misc.h>
