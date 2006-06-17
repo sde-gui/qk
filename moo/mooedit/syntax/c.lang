@@ -150,7 +150,7 @@
       <TwoChars style="Comment" context="Commentar 2" char1="/" char2="*" beginRegion="Comment"/>
       <IncludeRules from="##Misc##CommonCommentRules"/>
       <Regex style="Comment" context="Outscoped intern" pattern="#\s*if" beginRegion="Outscoped" first-non-blank-only="true"/>
-      <Regex style="Preprocessor" context="#pop" pattern="#\s*(endif|else|elif)" endRegion="Outscoped" first-non-blank-only="true"/>
+      <Regex style="Preprocessor" context="#pop" pattern="#\s*(endif|else|elif)" include-into-next="true" endRegion="Outscoped" first-non-blank-only="true"/>
     </context>
     <context style="Comment" eol-context="#stay" name="Outscoped intern">
       <TwoChars style="Comment" context="Commentar 2" char1="/" char2="*" beginRegion="Comment"/>
