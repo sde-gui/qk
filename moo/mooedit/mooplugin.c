@@ -228,7 +228,6 @@ moo_plugin_register (GType                  type,
     {
         g_warning ("%s: invalid info in plugin '%s'",
                    G_STRLOC, g_type_name (type));
-        g_object_unref (plugin);
         return FALSE;
     }
 
