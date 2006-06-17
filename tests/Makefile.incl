@@ -15,9 +15,10 @@ EXTRA_DIST +=           \
     tests/medit-app.opag\
     tests/medit.win
 
-BUILT_SOURCES += medit-ui.h tests/medit-app.c
+BUILT_SOURCES += medit-ui.h
 medit-ui.h: tests/medit-ui.xml
 	sh $(srcdir)/moo/mooutils/xml2h.sh MEDIT_UI $(srcdir)/tests/medit-ui.xml > medit-ui.h
+
 tests/medit-app.c: tests/medit-app.opag medit-ui.h
 	if test -z $(OPAG); then \
 		touch $(srcdir)/tests/medit-app.c; \
