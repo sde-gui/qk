@@ -416,3 +416,104 @@ _wrap_moo_file_dialog_get_filenames (PyGObject *self)
 
     return ret;
 }
+%%
+override moo_get_data_dirs varargs
+static PyObject *
+_wrap_moo_get_data_dirs (G_GNUC_UNUSED PyObject *self, PyObject *args)
+{
+    int type;
+    PyObject *py_type = NULL;
+    PyObject *ret;
+    char **dirs;
+    guint n_dirs, i;
+
+    if (!PyArg_ParseTuple (args, (char*) "O:get_data_dirs", &py_type))
+        return NULL;
+    if (pyg_enum_get_value(MOO_TYPE_DATA_DIR_TYPE, py_type, &type))
+        return NULL;
+
+    dirs = moo_get_data_dirs (type, &n_dirs);
+
+    if (!dirs)
+        return_None;
+
+    ret = PyTuple_New (n_dirs);
+    g_return_val_if_fail (ret != NULL, NULL);
+
+    for (i = 0; i < n_dirs; ++i)
+        PyTuple_SET_ITEM (ret, i, PyString_FromString (dirs[i]));
+
+    g_strfreev (dirs);
+    return ret;
+}
+%%
+override moo_get_data_subdirs varargs
+static PyObject *
+_wrap_moo_get_data_subdirs (G_GNUC_UNUSED PyObject *self, PyObject *args)
+{
+    int type;
+    PyObject *py_type = NULL;
+    PyObject *ret;
+    char **dirs;
+    guint n_dirs, i;
+    char *subdir;
+
+    if (!PyArg_ParseTuple (args, (char*) "sO:get_data_dirs", &subdir, &py_type))
+        return NULL;
+    if (pyg_enum_get_value(MOO_TYPE_DATA_DIR_TYPE, py_type, &type))
+        return NULL;
+
+    dirs = moo_get_data_subdirs (subdir, type, &n_dirs);
+
+    if (!dirs)
+        return_None;
+
+    ret = PyTuple_New (n_dirs);
+    g_return_val_if_fail (ret != NULL, NULL);
+
+    for (i = 0; i < n_dirs; ++i)
+        PyTuple_SET_ITEM (ret, i, PyString_FromString (dirs[i]));
+
+    g_strfreev (dirs);
+    return ret;
+}
+%%
+override moo_file_watch_monitor_directory kwargs
+static PyObject *
+_wrap_moo_file_watch_monitor_directory (PyGObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = { (char*) "filename", NULL };
+    char *filename;
+    int ret;
+    GError *error = NULL;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,(char*) "s:MooFileWatch.monitor_directory", kwlist, &filename))
+        return NULL;
+
+    ret = moo_file_watch_monitor_directory (MOO_FILE_WATCH(self->obj), filename, NULL, &error);
+
+    if (pyg_error_check(&error))
+        return NULL;
+
+    return PyInt_FromLong (ret);
+}
+%%
+override moo_file_watch_monitor_file kwargs
+static PyObject *
+_wrap_moo_file_watch_monitor_file (PyGObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = { (char*) "filename", NULL };
+    char *filename;
+    int ret;
+    GError *error = NULL;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,(char*) "s:MooFileWatch.monitor_file", kwlist, &filename))
+        return NULL;
+
+    ret = moo_file_watch_monitor_file (MOO_FILE_WATCH (self->obj), filename, NULL, &error);
+
+    if (pyg_error_check(&error))
+        return NULL;
+
+    return PyInt_FromLong (ret);
+}

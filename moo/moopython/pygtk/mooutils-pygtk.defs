@@ -181,6 +181,18 @@
   (release-func "moo_closure_unref")
 )
 
+(define-pointer FileWatchEvent
+  (in-module "Moo")
+  (c-name "MooFileWatchEvent")
+  (gtype-id "MOO_TYPE_FILE_WATCH_EVENT")
+  (fields
+    '("MooFileWatchEventCode" "code")
+    '("int" "monitor_id")
+    '("char*" "filename")
+    '("gpointer" "data")
+  )
+)
+
 
 ;; Enumerations and flags ...
 
@@ -557,11 +569,11 @@
 (define-method monitor_directory
   (of-object "MooFileWatch")
   (c-name "moo_file_watch_monitor_directory")
-  (return-type "gboolean")
+  (return-type "int")
   (parameters
     '("const-char*" "filename")
     '("gpointer" "data")
-    '("int*" "monitor_id")
+    '("GDestroyNotify" "data_notify")
     '("GError**" "error")
   )
 )
@@ -569,11 +581,11 @@
 (define-method monitor_file
   (of-object "MooFileWatch")
   (c-name "moo_file_watch_monitor_file")
-  (return-type "gboolean")
+  (return-type "int")
   (parameters
     '("const-char*" "filename")
     '("gpointer" "data")
-    '("int*" "monitor_id")
+    '("GDestroyNotify" "data_notify")
     '("GError**" "error")
   )
 )
@@ -2544,7 +2556,7 @@
 
 (define-function get_data_dirs
   (c-name "moo_get_data_dirs")
-  (return-type "char**")
+  (return-type "char*")
   (parameters
     '("MooDataDirType" "type")
     '("guint*" "n_dirs")
