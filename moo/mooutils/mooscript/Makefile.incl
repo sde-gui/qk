@@ -8,10 +8,10 @@ mooscript_srcdir = $(srcdir)/$(mooscript)
 mooscript_extra_dist =                  \
     $(mooscript)/mooscript.y
 
-$(mooscript)/mooscript-yacc.c: $(mooscript)/mooscript.y
-	bison -d -o $(mooscript_srcdir)/mooscript-yacc.c $(mooscript_srcdir)/mooscript.y
-$(mooscript)/mooscript-yacc.h: $(mooscript)/mooscript.y
-	bison -d -o $(mooscript_srcdir)/mooscript-yacc.c $(mooscript_srcdir)/mooscript.y
+# not using rule for auto-regenerating mooscript-yacc.[ch]
+mooscript_yacc: $(mooscript)/mooscript.y
+	touch mooscript_yacc
+	bison -o $(mooscript_srcdir)/mooscript-yacc.c -d $(mooscript_srcdir)/mooscript.y
 
 mooscript_headers =                     \
     $(mooscript)/mooscript-context.h    \
