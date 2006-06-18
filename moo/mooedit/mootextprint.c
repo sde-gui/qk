@@ -514,6 +514,19 @@ moo_print_operation_calc_page_size (MooPrintOperation  *print,
 }
 
 
+#ifdef __WIN32__
+static struct tm *
+localtime_r (const time_t *timep,
+             struct tm *result)
+{
+    struct tm *res;
+    res = localtime (timep);
+    if (res)
+        *result = *res;
+    return res;
+}
+#endif
+
 static void
 moo_print_operation_begin_print (GtkPrintOperation  *operation,
                                  GtkPrintContext    *context)
@@ -606,7 +619,7 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
 
         gtk_text_iter_forward_line (&iter);
 
-        if (page_height + line_height > print->page.height + 5.)
+        if (page_height + line_height > print->page.height + .1)
         {
             gboolean part = FALSE;
             PangoLayoutIter *layout_iter;
@@ -624,7 +637,7 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
                     layout_line = pango_layout_iter_get_line (layout_iter);
                     pango_layout_line_get_pixel_extents (layout_line, NULL, &line_rect);
 
-                    if (page_height + part_height + line_rect.height > print->page.height + 5.)
+                    if (page_height + part_height + line_rect.height > print->page.height + .1)
                         break;
 
                     part_height += line_rect.height;
@@ -1223,11 +1236,11 @@ moo_print_init_prefs (void)
     moo_prefs_new_key_bool (PREFS_PRINT_FOOTER, TRUE);
     moo_prefs_new_key_bool (PREFS_PRINT_HEADER_SEPARATOR, TRUE);
     moo_prefs_new_key_bool (PREFS_PRINT_FOOTER_SEPARATOR, TRUE);
-    moo_prefs_new_key_string (PREFS_HEADER_LEFT, NULL);
+    moo_prefs_new_key_string (PREFS_HEADER_LEFT, "%Ef");
     moo_prefs_new_key_string (PREFS_HEADER_CENTER, NULL);
     moo_prefs_new_key_string (PREFS_HEADER_RIGHT, NULL);
     moo_prefs_new_key_string (PREFS_FOOTER_LEFT, NULL);
-    moo_prefs_new_key_string (PREFS_FOOTER_CENTER, NULL);
+    moo_prefs_new_key_string (PREFS_FOOTER_CENTER, "Page %Ep of %EP");
     moo_prefs_new_key_string (PREFS_FOOTER_RIGHT, NULL);
 
     moo_prefs_new_key_string (PREFS_FONT, NULL);
