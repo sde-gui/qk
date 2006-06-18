@@ -37,6 +37,9 @@
 #include <string.h>
 #include <stdio.h>
 
+#ifdef HAVE_SIGNAL_H
+#include <signal.h>
+#endif
 
 #ifdef VERSION
 #define APP_VERSION VERSION
@@ -76,6 +79,7 @@ struct _MooAppPrivate {
     gboolean    use_terminal;
 
     char       *tmpdir;
+    guint       sigintr : 1;
 };
 
 
@@ -189,10 +193,23 @@ enum {
 static guint signals[LAST_SIGNAL];
 
 
+#if defined(HAVE_SIGNAL)
+static RETSIGTYPE
+sigint_handler (G_GNUC_UNUSED int sig)
+{
+    if (moo_app_instance && moo_app_instance->priv)
+        moo_app_instance->priv->sigintr = TRUE;
+}
+#endif
+
 static void
 moo_app_class_init (MooAppClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+
+#if defined(HAVE_SIGNAL) && defined(SIGINT)
+    signal (SIGINT, sigint_handler);
+#endif
 
     moo_create_stock_items ();
 
@@ -956,7 +973,8 @@ moo_app_send_files (MooApp  *app,
 }
 
 
-static gboolean on_gtk_main_quit (MooApp *app)
+static gboolean
+on_gtk_main_quit (MooApp *app)
 {
     app->priv->quit_handler_id = 0;
 
@@ -967,6 +985,18 @@ static gboolean on_gtk_main_quit (MooApp *app)
 }
 
 
+static gboolean
+check_signal (void)
+{
+    if (moo_app_instance && moo_app_instance->priv->sigintr)
+    {
+        moo_app_instance->priv->sigintr = FALSE;
+        MOO_APP_GET_CLASS(moo_app_instance)->quit (moo_app_instance);
+    }
+
+    return TRUE;
+}
+
 static int
 moo_app_run_real (MooApp *app)
 {
@@ -975,6 +1005,8 @@ moo_app_run_real (MooApp *app)
 
     app->priv->quit_handler_id =
             gtk_quit_add (0, (GtkFunction) on_gtk_main_quit, app);
+
+    g_timeout_add (100, (GSourceFunc) check_signal, NULL);
 
     gtk_main ();
 
@@ -1054,7 +1086,7 @@ moo_app_quit_real (MooApp *app)
     app->priv->term_window = NULL;
 
 #ifdef MOO_BUILD_EDIT
-    moo_editor_close_all (app->priv->editor, TRUE);
+    moo_editor_close_all (app->priv->editor, FALSE);
 
     moo_plugin_shutdown ();
 

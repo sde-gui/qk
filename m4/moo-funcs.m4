@@ -16,6 +16,10 @@ AC_DEFUN([MOO_AC_FUNCS],[
     #for mooappabout.h
     AC_CHECK_HEADERS(sys/utsname.h)
 
+    #for mooapp.c
+    AC_CHECK_HEADERS(signal.h)
+    AC_TYPE_SIGNAL
+
     ################################################################################
     #  Terminal stuff
     AC_CHECK_HEADERS([poll.h errno.h io.h fcntl.h sys/types.h sys/wait.h signal.h])
