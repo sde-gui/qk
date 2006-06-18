@@ -35,6 +35,7 @@
 # include <glib/gstdio.h>
 #endif
 
+#undef LOAD_BINARY
 
 static MooEditLoader *default_loader = NULL;
 static MooEditSaver *default_saver = NULL;
@@ -243,7 +244,7 @@ static gboolean do_load                 (MooEdit            *edit,
                                          const char         *file,
                                          const char         *encoding,
                                          GError            **error);
-#if 0
+#ifdef LOAD_BINARY
 static gboolean load_binary             (MooEdit            *edit,
                                          const char         *file,
                                          GError            **error);
@@ -345,7 +346,7 @@ moo_edit_load_default (G_GNUC_UNUSED MooEditLoader *loader,
         success = try_load (edit, file, encoding, error);
     }
 
-#if 0
+#ifdef LOAD_BINARY
     if (!success)
     {
         g_clear_error (error);
@@ -515,7 +516,7 @@ error_out:
 }
 
 
-#if 0
+#ifdef LOAD_BINARY
 #define TEXT_BUF_LEN (1 << 16)
 #define REPLACEMENT_CHAR '\1'
 #define LINE_LEN 80
