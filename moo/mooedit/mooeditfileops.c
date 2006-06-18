@@ -243,6 +243,11 @@ static gboolean do_load                 (MooEdit            *edit,
                                          const char         *file,
                                          const char         *encoding,
                                          GError            **error);
+#if 0
+static gboolean load_binary             (MooEdit            *edit,
+                                         const char         *file,
+                                         GError            **error);
+#endif
 
 static const char *common_encodings[] = {
     "UTF8",
@@ -257,7 +262,6 @@ try_load (MooEdit            *edit,
           const char         *encoding,
           GError            **error)
 {
-    GtkTextIter start, end;
     GtkTextBuffer *buffer;
     gboolean result, enable_highlight;
 
@@ -266,9 +270,7 @@ try_load (MooEdit            *edit,
     g_return_val_if_fail (encoding && encoding[0], FALSE);
 
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
-
-    gtk_text_buffer_get_bounds (buffer, &start, &end);
-    gtk_text_buffer_delete (buffer, &start, &end);
+    gtk_text_buffer_set_text (buffer, "", 0);
 
     g_object_get (edit, "enable-highlight", &enable_highlight, NULL);
     g_object_set (edit, "enable-highlight", FALSE, NULL);
@@ -342,6 +344,17 @@ moo_edit_load_default (G_GNUC_UNUSED MooEditLoader *loader,
     {
         success = try_load (edit, file, encoding, error);
     }
+
+#if 0
+    if (!success)
+    {
+        g_clear_error (error);
+        success = load_binary (edit, file, error);
+    }
+#endif
+
+    if (!success)
+        gtk_text_buffer_set_text (buffer, "", 0);
 
     unblock_buffer_signals (edit);
 
@@ -500,6 +513,89 @@ error_out:
     g_free (line);
     return FALSE;
 }
+
+
+#if 0
+#define TEXT_BUF_LEN (1 << 16)
+#define REPLACEMENT_CHAR '\1'
+#define LINE_LEN 80
+static gboolean
+load_binary (MooEdit     *edit,
+             const char  *filename,
+             GError     **error)
+{
+    GIOChannel *file = NULL;
+    GIOStatus status;
+    GtkTextBuffer *buffer;
+
+    g_return_val_if_fail (filename != NULL, FALSE);
+
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+
+    file = g_io_channel_new_file (filename, "r", error);
+
+    if (!file)
+        return FALSE;
+
+    g_io_channel_set_encoding (file, NULL, NULL);
+
+    while (TRUE)
+    {
+        gsize len, line_len;
+        char buf[TEXT_BUF_LEN];
+
+        status = g_io_channel_read_chars (file, buf, TEXT_BUF_LEN, &len, error);
+
+        if (status != G_IO_STATUS_NORMAL && status != G_IO_STATUS_EOF)
+            goto error_out;
+
+        if (len)
+        {
+            guint i;
+
+            for (i = 0, line_len = 0; i < len; ++i, ++line_len)
+            {
+                if (buf[i] && !(buf[i] & 0x80))
+                    continue;
+
+                if (line_len > LINE_LEN)
+                {
+                    buf[i] = '\n';
+                    line_len = 0;
+                }
+                else
+                {
+                    buf[i] = REPLACEMENT_CHAR;
+                }
+            }
+
+            gtk_text_buffer_insert_at_cursor (buffer, buf, len);
+        }
+
+        if (status == G_IO_STATUS_EOF)
+        {
+            g_io_channel_shutdown (file, TRUE, NULL);
+            g_io_channel_unref (file);
+            break;
+        }
+    }
+
+    g_clear_error (error);
+    return TRUE;
+
+error_out:
+    if (file)
+    {
+        g_io_channel_shutdown (file, TRUE, NULL);
+        g_io_channel_unref (file);
+    }
+
+    return FALSE;
+}
+#undef TEXT_BUF_LEN
+#undef REPLACEMENT_CHAR
+#undef LINE_LEN
+#endif
 
 
 /* XXX */
