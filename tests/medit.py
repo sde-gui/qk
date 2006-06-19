@@ -12,9 +12,9 @@
 #   See COPYING file that comes with this distribution.
 #
 
+import gtk
 import moo
 import gobject
-import gtk
 import sys
 import getopt
 
@@ -34,6 +34,7 @@ def get_ui():
     ui = file.read()
     file.close()
     return ui
+
 
 def main(argv):
     new_instance = True
@@ -70,7 +71,6 @@ def main(argv):
 
     if (not new_instance and app.send_files(files)) or not app.init():
         gtk.gdk.notify_startup_complete()
-        del app
         return 0
 
     editor = app.get_editor()
@@ -80,7 +80,7 @@ def main(argv):
         for f in args:
             editor.new_file(window, None, f)
 
-    editor.connect("all-windows-closed", lambda e, a: a.quit())
+    editor.connect("all-windows-closed", lambda e, a: a.quit(), app)
 
     return app.run()
 
