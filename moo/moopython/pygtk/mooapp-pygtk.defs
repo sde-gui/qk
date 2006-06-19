@@ -135,3 +135,12 @@
     '("int" "len")
   )
 )
+
+(define-method send_files
+  (of-object "MooApp")
+  (c-name "moo_app_send_files")
+  (return-type "gboolean")
+  (parameters
+    '("strv" "files")
+  )
+)
