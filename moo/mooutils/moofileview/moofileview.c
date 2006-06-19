@@ -2978,7 +2978,8 @@ static void     file_view_delete_selected       (MooFileView    *fileview)
 }
 
 
-static void file_view_create_folder         (MooFileView    *fileview)
+static void
+file_view_create_folder (MooFileView *fileview)
 {
     GError *error = NULL;
     char *path, *name;
@@ -3086,23 +3087,26 @@ file_view_properties_dialog (MooFileView *fileview)
 /* Popup menu
  */
 
-static gboolean really_destroy_menu (GtkWidget *menu)
+static gboolean
+really_destroy_menu (GtkWidget *menu)
 {
     g_object_unref (menu);
     return FALSE;
 }
 
-static void destroy_menu    (GtkWidget *menu)
+static void
+destroy_menu (GtkWidget *menu)
 {
     g_idle_add ((GSourceFunc) really_destroy_menu, menu);
 }
 
 /* TODO */
-static void menu_position_func  (G_GNUC_UNUSED GtkMenu *menu,
-                                 gint       *x,
-                                 gint       *y,
-                                 gboolean   *push_in,
-                                 gpointer    user_data)
+static void
+menu_position_func (G_GNUC_UNUSED GtkMenu *menu,
+                    gint       *x,
+                    gint       *y,
+                    gboolean   *push_in,
+                    gpointer    user_data)
 {
     GdkWindow *window;
 
@@ -3117,9 +3121,10 @@ static void menu_position_func  (G_GNUC_UNUSED GtkMenu *menu,
     *push_in = TRUE;
 }
 
-static void         do_popup                (MooFileView    *fileview,
-                                             GdkEventButton *event,
-                                             GList          *selected)
+static void
+do_popup (MooFileView    *fileview,
+          GdkEventButton *event,
+          GList          *selected)
 {
     GtkWidget *menu;
     GList *files = NULL, *l;
@@ -3140,7 +3145,7 @@ static void         do_popup                (MooFileView    *fileview,
     }
 
     menu = moo_ui_xml_create_widget (fileview->priv->ui_xml,
-                                     MOO_UI_MENU, "MooFileView/Menubar",
+                                     MOO_UI_MENU, "MooFileView/Menu",
                                      fileview->priv->actions,
                                      NULL);
     gtk_object_sink (GTK_OBJECT (g_object_ref (menu)));
@@ -3163,7 +3168,8 @@ static void         do_popup                (MooFileView    *fileview,
 }
 
 
-static gboolean     moo_file_view_popup_menu    (GtkWidget      *widget)
+static gboolean
+moo_file_view_popup_menu (GtkWidget *widget)
 {
     GList *selected;
     MooFileView *fileview = MOO_FILE_VIEW (widget);
