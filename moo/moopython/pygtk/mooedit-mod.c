@@ -53,12 +53,5 @@ _moo_edit_mod_init (void)
             PyErr_Print ();
     }
 
-    if (!PyErr_Occurred ())
-    {
-        MooEditor *editor = moo_editor_instance ();
-        moo_lang_mgr_read_dirs (moo_editor_get_lang_mgr (editor));
-        moo_plugin_read_dirs ();
-    }
-
     return !PyErr_Occurred ();
 }
