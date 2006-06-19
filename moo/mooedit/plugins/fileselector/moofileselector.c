@@ -399,18 +399,18 @@ out:
 static void
 file_selector_create_file (MooFileSelector *filesel)
 {
-    char *path, *dir = NULL;
+    char *path = NULL, *dir = NULL;
     MooEdit *doc;
 
     g_object_get (filesel, "current-directory", &dir, NULL);
 
     if (!dir)
-        return;
+        goto out;
 
     path = new_file_dialog (GTK_WIDGET (filesel), dir, "Untitled");
 
     if (!path)
-        return;
+        goto out;
 
     doc = moo_editor_new_file (moo_edit_window_get_editor (filesel->window),
                                filesel->window, GTK_WIDGET (filesel), path, NULL);
@@ -418,7 +418,9 @@ file_selector_create_file (MooFileSelector *filesel)
     if (doc)
         moo_edit_save (doc, NULL);
 
+out:
     g_free (path);
+    g_free (dir);
 }
 
 
