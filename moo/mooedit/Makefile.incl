@@ -17,7 +17,6 @@ mooedit_include_headers =                     \
     $(mooedit)/mooeditconfig.h                \
     $(mooedit)/mooeditor.h                    \
     $(mooedit)/mooeditprefs.h                 \
-    $(mooedit)/mooeditsession.h               \
     $(mooedit)/mooeditwindow.h                \
     $(mooedit)/mooindenter.h                  \
     $(mooedit)/moolang.h                      \
@@ -42,7 +41,6 @@ mooedit_noinst_headers =                      \
     $(mooedit)/mooeditfileops.h               \
     $(mooedit)/mooeditprefs-glade.h           \
     $(mooedit)/mooeditsavemultiple-glade.h    \
-    $(mooedit)/mooeditsession-private.h       \
     $(mooedit)/moofold.h                      \
     $(mooedit)/moohighlighter.h               \
     $(mooedit)/moolang-aux.h                  \
@@ -79,7 +77,6 @@ mooedit_sources =                             \
     $(mooedit)/mooeditor.c                    \
     $(mooedit)/mooeditprefs.c                 \
     $(mooedit)/mooeditprefspage.c             \
-    $(mooedit)/mooeditsession.c               \
     $(mooedit)/mooeditwindow.c                \
     $(mooedit)/moofold.c                      \
     $(mooedit)/moohighlighter.c               \

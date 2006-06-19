@@ -13,7 +13,6 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditor.h"
-#include "mooedit/mooeditsession-private.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditfileops.h"
 #include "mooedit/mooplugin.h"
