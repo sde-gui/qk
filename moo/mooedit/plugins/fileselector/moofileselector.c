@@ -286,6 +286,146 @@ goto_current_doc_dir (MooFileSelector *filesel)
 }
 
 
+/****************************************************************************/
+/* NewFile
+ */
+
+static GtkWidget *
+create_new_file_dialog (GtkWidget    *parent,
+                        const char   *start_text,
+                        MooGladeXML **xml)
+{
+    GtkWidget *dialog, *button;
+    GtkEntry *entry;
+
+    *xml = moo_glade_xml_new_empty ();
+    moo_glade_xml_map_class (*xml, "GtkEntry", MOO_TYPE_ENTRY);
+    moo_glade_xml_parse_memory (*xml, MOO_FILE_SELECTOR_GLADE_XML, -1,
+                                "new_file_dialog");
+
+    dialog = moo_glade_xml_get_widget (*xml, "new_file_dialog");
+    g_return_val_if_fail (dialog != NULL, NULL);
+
+    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
+
+    entry = moo_glade_xml_get_widget (*xml, "entry");
+
+    gtk_entry_set_text (entry, start_text);
+    moo_entry_clear_undo (MOO_ENTRY (entry));
+
+    gtk_widget_show_all (dialog);
+    gtk_widget_grab_focus (GTK_WIDGET (entry));
+
+    button = moo_glade_xml_get_widget (*xml, "ok_button");
+    moo_bind_bool_property (button, "sensitive", entry, "empty", TRUE);
+
+    return dialog;
+}
+
+static char *
+new_file_dialog (GtkWidget   *parent,
+                 const char  *dirname,
+                 const char  *start_name)
+{
+    MooGladeXML *xml = NULL;
+    GtkWidget *dialog = NULL;
+    GtkEntry *entry = NULL;
+    char *fullname = NULL;
+
+    g_return_val_if_fail (dirname != NULL, NULL);
+
+    while (TRUE)
+    {
+        const char *text;
+        char *name;
+        char *err_text;
+
+        if (!dialog)
+        {
+            dialog = create_new_file_dialog (parent, start_name, &xml);
+            entry = moo_glade_xml_get_widget (xml, "entry");
+        }
+
+        if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
+            goto out;
+
+        text = gtk_entry_get_text (entry);
+
+        if (!text[0])
+        {
+            g_critical ("%s: ooops", G_STRLOC);
+            goto out;
+        }
+
+        /* XXX error checking, you know */
+        name = g_filename_from_utf8 (text, -1, NULL, NULL, NULL);
+
+        if (!name)
+        {
+            char *sec_text;
+            err_text = g_strdup_printf ("Can not create file '%s'", text);
+            sec_text = g_strdup_printf ("Could not convert '%s' to filename encoding.\n"
+                                        "Please consider simpler name, such as foo.blah "
+                                        "or blah.foo", text);
+            moo_error_dialog (dialog ? dialog : parent, err_text, sec_text);
+            g_free (err_text);
+            g_free (sec_text);
+            continue;
+        }
+
+        fullname = g_build_filename (dirname, name, NULL);
+        g_free (name);
+
+        if (!g_file_test (fullname, G_FILE_TEST_EXISTS))
+            goto out;
+
+        err_text = g_strdup_printf ("File '%s' already exists", text);
+        moo_error_dialog (dialog, err_text, NULL);
+        g_free (err_text);
+
+        g_free (fullname);
+        fullname = NULL;
+    }
+
+out:
+    if (xml)
+        g_object_unref (xml);
+    if (dialog)
+        gtk_widget_destroy (dialog);
+    return fullname;
+}
+
+
+static void
+file_selector_create_file (MooFileSelector *filesel)
+{
+    char *path, *dir = NULL;
+    MooEdit *doc;
+
+    g_object_get (filesel, "current-directory", &dir, NULL);
+
+    if (!dir)
+        return;
+
+    path = new_file_dialog (GTK_WIDGET (filesel), dir, "Untitled");
+
+    if (!path)
+        return;
+
+    doc = moo_editor_new_file (moo_edit_window_get_editor (filesel->window),
+                               filesel->window, GTK_WIDGET (filesel), path, NULL);
+
+    if (doc)
+        moo_edit_save (doc, NULL);
+
+    g_free (path);
+}
+
+
+/****************************************************************************/
+/* Constructor
+ */
+
 static GObject *
 moo_file_selector_constructor (GType           type,
                                guint           n_props,
@@ -297,6 +437,7 @@ moo_file_selector_constructor (GType           type,
     MooFileSelector *filesel;
     MooFileView *fileview;
     GObject *object;
+    guint merge_id;
 
     object = G_OBJECT_CLASS(_moo_file_selector_parent_class)->constructor (type, n_props, props);
     filesel = MOO_FILE_SELECTOR (object);
@@ -315,11 +456,25 @@ moo_file_selector_constructor (GType           type,
                                  "closure-object", filesel,
                                  "closure-callback", goto_current_doc_dir,
                                  NULL);
+    moo_action_group_add_action (_moo_file_view_get_actions (MOO_FILE_VIEW (fileview)),
+                                 "NewFile",
+                                 "label", "New File...",
+                                 "tooltip", "New File...",
+                                 "stock-id", GTK_STOCK_NEW,
+                                 "closure-object", filesel,
+                                 "closure-callback", file_selector_create_file,
+                                 NULL);
 
     xml = _moo_file_view_get_ui_xml (MOO_FILE_VIEW (fileview));
-    moo_ui_xml_insert_markup (xml, moo_ui_xml_new_merge_id (xml),
+    merge_id = moo_ui_xml_new_merge_id (xml);
+    moo_ui_xml_insert_markup (xml, merge_id,
                               "MooFileView/Toolbar", -1,
                               "<item action=\"GoToCurrentDocDir\"/>");
+    moo_ui_xml_insert_markup_before (xml, merge_id,
+                                     "MooFileView/Menu",
+                                     "NewFolder",
+                                     "<item action=\"NewFile\"/>"
+                                     "<separator/>");
 
     label = moo_pane_label_new (MOO_STOCK_FILE_SELECTOR,
                                 NULL, NULL/*button*/, "File Selector",
@@ -538,7 +693,8 @@ create_save_as_dialog (GtkWidget   *parent,
 
     *xml = moo_glade_xml_new_empty ();
     moo_glade_xml_map_class (*xml, "GtkEntry", MOO_TYPE_ENTRY);
-    moo_glade_xml_parse_memory (*xml, MOO_FILE_SELECTOR_GLADE_XML, -1, NULL);
+    moo_glade_xml_parse_memory (*xml, MOO_FILE_SELECTOR_GLADE_XML, -1,
+                                "save_untitled_dialog");
 
     dialog = moo_glade_xml_get_widget (*xml, "save_untitled_dialog");
     g_return_val_if_fail (dialog != NULL, NULL);
