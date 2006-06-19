@@ -24,7 +24,7 @@
 #include <stdio.h>
 
 
-#define DEFAULT_NEW_INSTANCE 0
+#define DEFAULT_NEW_INSTANCE FALSE
 
 
 int _medit_parse_options (const char *const program_name,
@@ -265,7 +265,7 @@ main (int argc, char *argv[])
     char **files;
     gpointer window;
     int retval;
-    gboolean new_instance;
+    gboolean new_instance = DEFAULT_NEW_INSTANCE;
 
     gtk_init (&argc, &argv);
 //     gdk_window_set_debug_updates (TRUE);
@@ -301,12 +301,6 @@ main (int argc, char *argv[])
         new_instance = FALSE;
     else if (_medit_opt_new_app)
         new_instance = TRUE;
-    else
-#if DEFAULT_NEW_INSTANCE
-        new_instance = TRUE;
-#else
-        new_instance = FALSE;
-#endif
 
     files = moo_filenames_from_locale (argv + opt_remain);
 
