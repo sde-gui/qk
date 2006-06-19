@@ -31,6 +31,7 @@
 
 
 static PyObject *main_mod;
+static gboolean in_moo_module;
 
 
 static MooPyObject*
@@ -355,21 +356,24 @@ moo_python_plugin_read_dirs (void)
 gboolean
 _moo_python_plugin_init (void)
 {
-    if (!moo_python_api_init ())
-        return FALSE;
-
-    if (!_moo_pygtk_init ())
+    if (!in_moo_module)
     {
-        PyErr_Print ();
-        moo_python_init (MOO_PY_API_VERSION, NULL);
-        return FALSE;
-    }
+        if (!moo_python_api_init ())
+            return FALSE;
+
+        if (!_moo_pygtk_init ())
+        {
+            PyErr_Print ();
+            moo_python_init (MOO_PY_API_VERSION, NULL);
+            return FALSE;
+        }
 
 #ifdef pyg_disable_warning_redirections
-    pyg_disable_warning_redirections ();
+        pyg_disable_warning_redirections ();
 #else
-    moo_reset_log_func ();
+        moo_reset_log_func ();
 #endif
+    }
 
     moo_python_plugin_read_dirs ();
     return TRUE;
@@ -393,5 +397,15 @@ MOO_PLUGIN_INIT_FUNC_DECL
 
     return !moo_python_running () &&
             _moo_python_plugin_init ();
+}
+#endif
+
+
+#ifdef MOO_PYTHON_MODULE
+void initmoo (void)
+{
+    in_moo_module = TRUE;
+    moo_python_api_init ();
+    _moo_pygtk_init ();
 }
 #endif
