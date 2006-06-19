@@ -230,9 +230,10 @@ moo_app_class_init (MooAppClass *klass)
 
     g_object_class_install_property (gobject_class,
                                      PROP_ARGV,
-                                     g_param_spec_pointer ("argv",
+                                     g_param_spec_boxed ("argv",
                                              "argv",
                                              "Null-terminated array of application arguments",
+                                             G_TYPE_STRV,
                                              G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 
     g_object_class_install_property (gobject_class,
@@ -467,7 +468,7 @@ moo_app_set_property (GObject        *object,
     switch (prop_id)
     {
         case PROP_ARGV:
-            moo_app_set_argv (app, (char**)g_value_get_pointer (value));
+            moo_app_set_argv (app, (char**) g_value_get_boxed (value));
             break;
 
         case PROP_SHORT_NAME:
