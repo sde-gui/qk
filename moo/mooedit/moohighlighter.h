@@ -44,10 +44,6 @@ struct _CtxNode
     CtxNode *line_end;
     GtkTextTag *context_tag;
     GHashTable *match_tags; /* rule -> GtkTextTag* */
-    /* Match tags that may be contained in this context.
-       They are not necessarily in match_tags list due to
-       include-into-next rule property */
-    GSList *child_tags;
 };
 
 struct _MooHighlighter {
@@ -56,6 +52,7 @@ struct _MooHighlighter {
     MooLang *lang;
     CtxNode *root;
     GSList *nodes;
+    GSList *tags;
     guint idle;
 };
 

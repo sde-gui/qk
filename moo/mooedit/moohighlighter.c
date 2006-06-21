@@ -42,8 +42,7 @@ static CtxNode      *ctx_node_new           (MooHighlighter     *hl,
                                              CtxNode            *parent,
                                              MooContext         *context,
                                              gboolean            create_tag);
-static void          ctx_node_free          (CtxNode            *node,
-                                             GtkTextTagTable    *table);
+static void          ctx_node_free          (CtxNode            *node);
 static CtxNode      *get_next_node          (MooHighlighter     *hl,
                                              CtxNode            *node,
                                              MooRule            *rule);
@@ -79,30 +78,20 @@ _moo_syntax_tag_init (MooSyntaxTag *tag)
 
 
 static void
-remove_tag (G_GNUC_UNUSED gpointer rule,
-            GtkTextTag      *tag,
+ctx_node_free (CtxNode *node)
+{
+    g_hash_table_destroy (node->match_tags);
+    g_hash_table_destroy (node->children);
+    g_free (node);
+}
+
+
+static void
+delete_tag (GtkTextTag      *tag,
             GtkTextTagTable *table)
 {
     gtk_text_tag_table_remove (table, tag);
 }
-
-static void
-ctx_node_free (CtxNode          *node,
-               GtkTextTagTable  *table)
-{
-    if (table)
-        g_hash_table_foreach (node->match_tags, (GHFunc) remove_tag, table);
-
-    g_hash_table_destroy (node->match_tags);
-    g_hash_table_destroy (node->children);
-    g_slist_free (node->child_tags);
-
-    if (node->context_tag && table)
-        gtk_text_tag_table_remove (table, node->context_tag);
-
-    g_free (node);
-}
-
 
 void
 _moo_highlighter_destroy (MooHighlighter *hl,
@@ -115,7 +104,12 @@ _moo_highlighter_destroy (MooHighlighter *hl,
     if (delete_tags)
         table = gtk_text_buffer_get_tag_table (hl->buffer);
 
-    g_slist_foreach (hl->nodes, (GFunc) ctx_node_free, table);
+    g_slist_foreach (hl->nodes, (GFunc) ctx_node_free, NULL);
+    g_slist_free (hl->nodes);
+
+    if (delete_tags)
+        g_slist_foreach (hl->tags, (GFunc) delete_tag, table);
+    g_slist_free (hl->tags);
 
     if (hl->lang)
         moo_lang_unref (hl->lang);
@@ -161,7 +155,7 @@ iter_get_syntax_tag (const GtkTextIter *iter)
 
 static void
 apply_tag (MooHighlighter     *hl,
-           Line               *line,
+           G_GNUC_UNUSED Line *line,
            CtxNode            *ctx_node,
            CtxNode            *match_node,
            MooRule            *rule,
@@ -187,7 +181,6 @@ apply_tag (MooHighlighter     *hl,
                  rule ? rule->description : "NULL",
                  _moo_line_buffer_get_line_index (hl->line_buf, line));
 #endif
-        line->hl_info->tags = g_slist_prepend (line->hl_info->tags, g_object_ref (tag));
         _moo_text_buffer_apply_syntax_tag (MOO_TEXT_BUFFER (hl->buffer), tag, start, end);
     }
 }
@@ -243,6 +236,8 @@ create_tag (MooHighlighter *hl,
         return NULL;
 
     tag = moo_syntax_tag_new (ctx_node, match_node, rule);
+    hl->tags = g_slist_prepend (hl->tags, tag);
+//     g_print ("%d tags\n", g_slist_length (hl->tags));
 
     table = gtk_text_buffer_get_tag_table (hl->buffer);
 
@@ -260,7 +255,6 @@ create_tag (MooHighlighter *hl,
 #endif
 
     _moo_lang_set_tag_style (tag, ctx_node->ctx, rule, NULL);
-    ctx_node->child_tags = g_slist_prepend (ctx_node->child_tags, tag);
 
     return tag;
 }
@@ -317,6 +311,7 @@ ctx_node_new (MooHighlighter *hl,
         node->context_tag = create_tag (hl, node, NULL, NULL);
 
     hl->nodes = g_slist_prepend (hl->nodes, node);
+//     g_print ("node of depth %d, total %d nodes\n", node->depth, g_slist_length (hl->nodes));
 
     return node;
 }
@@ -364,25 +359,35 @@ get_line_end_node (MooHighlighter *hl,
 {
     guint i;
     CtxNode *next = NULL;
-    MooContext *ctx = node->ctx;
 
     if (node->line_end)
         return node->line_end;
 
-    switch (ctx->line_end.type)
+    while (!next)
     {
-        case MOO_CONTEXT_STAY:
-            next = node;
-            break;
+        MooContext *ctx = node->ctx;
 
-        case MOO_CONTEXT_POP:
-            for (i = 0, next = node; next->parent != NULL && i < ctx->line_end.num;
-                 ++i, next = next->parent);
-            break;
+        switch (ctx->line_end.type)
+        {
+            case MOO_CONTEXT_STAY:
+                next = node;
+                break;
 
-        case MOO_CONTEXT_SWITCH:
-            next = ctx_node_new (hl, node, ctx->line_end.ctx, TRUE);
-            break;
+            case MOO_CONTEXT_POP:
+                for (i = 0, next = node; next->parent != NULL && i < ctx->line_end.num;
+                     ++i, next = next->parent);
+                g_assert (node != next);
+                node = next;
+                next = NULL;
+                break;
+
+            case MOO_CONTEXT_SWITCH:
+                next = ctx_node_new (hl, node, ctx->line_end.ctx, TRUE);
+                g_assert (node != next);
+                node = next;
+                next = NULL;
+                break;
+        }
     }
 
     g_assert (next != NULL);
@@ -617,10 +622,10 @@ hl_compute_range (MooHighlighter *hl,
 
 
 static gboolean
-moo_highlighter_compute_timed (MooHighlighter     *hl,
-                               int                 first_line,
-                               int                 last_line,
-                               int                 time)
+moo_highlighter_compute_timed (MooHighlighter *hl,
+                               int             first_line,
+                               int             last_line,
+                               int             time)
 {
     Interval to_highlight;
 
@@ -714,7 +719,7 @@ _moo_highlighter_apply_tags (MooHighlighter     *hl,
         HLInfo *info = line->hl_info;
         guint i;
         GtkTextIter t_start, t_end;
-        GSList *tags;
+        GSList *t;
 
         if (!hl->line_buf->invalid.empty && line_no >= hl->line_buf->invalid.first)
             break;
@@ -727,27 +732,17 @@ _moo_highlighter_apply_tags (MooHighlighter     *hl,
         last_changed = line_no;
 
         line->hl_info->tags_applied = TRUE;
-        tags = line->hl_info->tags;
-        line->hl_info->tags = NULL;
 
         gtk_text_buffer_get_iter_at_line (hl->buffer, &t_start, line_no);
 
         if (gtk_text_iter_ends_line (&t_start))
-        {
-            g_slist_foreach (tags, (GFunc) g_object_unref, NULL);
-            g_slist_free (tags);
             continue;
-        }
 
         t_end = t_start;
         gtk_text_iter_forward_to_line_end (&t_end);
 
-        while (tags)
-        {
-            gtk_text_buffer_remove_tag (hl->buffer, tags->data, &t_start, &t_end);
-            g_object_unref (tags->data);
-            tags = g_slist_delete_link (tags, tags);
-        }
+        for (t = hl->tags; t != NULL; t = t->next)
+            gtk_text_buffer_remove_tag (hl->buffer, t->data, &t_start, &t_end);
 
         t_end = t_start;
 

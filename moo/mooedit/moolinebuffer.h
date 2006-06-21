@@ -59,7 +59,6 @@ struct _HLInfo {
     Segment *segments;
     guint n_segments;
     guint n_segments_alloc__;
-    GSList *tags; /* tags applied (maybe) in this line */
     guint tags_applied : 1; /* correct highlighting tags were applied */
 };
 
@@ -97,8 +96,7 @@ GSList  *_moo_line_buffer_get_marks_in_range (LineBuffer *line_buf,
 
 void     _moo_line_buffer_split_line    (LineBuffer     *line_buf,
                                          int             line,
-                                         int             num_new_lines,
-                                         GtkTextTag     *tag);
+                                         int             num_new_lines);
 void     _moo_line_buffer_delete        (LineBuffer     *line_buf,
                                          int             first,
                                          int             num,
@@ -125,20 +123,6 @@ void     _moo_line_add_segment          (Line           *line,
     (ar__)->empty = FALSE;                                      \
     (ar__)->first = 0;                                          \
     (ar__)->last = size__ - 1;                                  \
-
-#define LINE_SET_TAGS_APPLIED(line__)                           \
-G_STMT_START {                                                  \
-    (line__)->hl_info->_tags_applied = TRUE;                    \
-    (line__)->hl_info->_dirty = TRUE;                           \
-} G_STMT_END
-
-#define LINE_UNSET_TAGS_APPLIED(line__)                         \
-G_STMT_START {                                                  \
-    (line__)->hl_info->_tags_applied = FALSE;                   \
-} G_STMT_END
-
-#define LINE_DIRTY(line__) ((line__)->hl_info->_dirty)
-#define LINE_TAGS_APPLIED(line__) ((line__)->hl_info->_tags_applied)
 
 #define BUF_CLEAN(line_buf__) (AREA_IS_EMPTY__ (&(line_buf__)->invalid))
 #define BUF_SET_CLEAN(line_buf__) (AREA_SET_EMPTY__ (&(line_buf__)->invalid))

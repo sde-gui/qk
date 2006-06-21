@@ -20,8 +20,7 @@ static BTNode  *bt_node_new         (BTNode     *parent,
                                      guint       n_children,
                                      guint       count,
                                      guint       n_marks);
-static BTData  *bt_data_new         (BTNode     *parent,
-                                     gpointer    tag);
+static BTData  *bt_data_new         (BTNode     *parent);
 static void     bt_node_free_rec    (BTNode     *node,
                                      GSList    **removed_marks);
 static void     bt_data_free        (BTData     *data,
@@ -63,7 +62,7 @@ _moo_text_btree_new (void)
     tree->depth = 0;
     tree->root = bt_node_new (NULL, 1, 1, 0);
     tree->root->is_bottom = TRUE;
-    tree->root->data[0] = bt_data_new (tree->root, NULL);
+    tree->root->data[0] = bt_data_new (tree->root);
 
     CHECK_INTEGRITY (tree, TRUE);
 
@@ -175,8 +174,6 @@ hl_info_free (HLInfo *info)
     {
 #ifdef __MOO__
         g_free (info->segments);
-        g_slist_foreach (info->tags, (GFunc) g_object_unref, NULL);
-        g_slist_free (info->tags);
         hl_info_free__ (info);
 #endif
     }
@@ -184,17 +181,11 @@ hl_info_free (HLInfo *info)
 
 
 static BTData*
-bt_data_new (BTNode  *parent,
-             gpointer tag)
+bt_data_new (BTNode *parent)
 {
     BTData *data = data_new__ ();
-
     data->parent = parent;
     data->hl_info = hl_info_new ();
-
-    if (tag)
-        data->hl_info->tags = g_slist_prepend (NULL, g_object_ref (tag));
-
     return data;
 }
 
@@ -280,8 +271,7 @@ node_remove__ (BTNode *node, gpointer data)
 
 BTData*
 _moo_text_btree_insert (BTree   *tree,
-                        guint    index_,
-                        gpointer tag)
+                        guint    index_)
 {
     BTNode *node, *tmp;
     BTData *data;
@@ -307,7 +297,7 @@ _moo_text_btree_insert (BTree   *tree,
     g_assert (node->n_children < BTREE_NODE_MAX_CAPACITY);
     g_assert (index_ <= node->n_children);
 
-    data = bt_data_new (node, tag);
+    data = bt_data_new (node);
     node_insert__ (node, data, index_);
 
     for (tmp = node; tmp != NULL; tmp = tmp->parent)
@@ -530,8 +520,7 @@ _moo_text_btree_delete (BTree          *tree,
 void
 _moo_text_btree_insert_range (BTree      *tree,
                               int         first,
-                              int         num,
-                              gpointer    tag)
+                              int         num)
 {
     int i;
 
@@ -540,7 +529,7 @@ _moo_text_btree_insert_range (BTree      *tree,
     g_assert (num > 0);
 
     for (i = 0; i < num; ++i)
-        _moo_text_btree_insert (tree, first, tag);
+        _moo_text_btree_insert (tree, first);
 }
 
 

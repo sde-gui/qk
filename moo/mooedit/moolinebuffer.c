@@ -39,7 +39,7 @@ Line*
 _moo_line_buffer_insert (LineBuffer     *line_buf,
                          int             index)
 {
-    Line *line = _moo_text_btree_insert (line_buf->tree, index, NULL);
+    Line *line = _moo_text_btree_insert (line_buf->tree, index);
     invalidate_line (line_buf, line, index);
     return line;
 }
@@ -59,22 +59,17 @@ _moo_line_buffer_clamp_invalid (LineBuffer *line_buf)
 void
 _moo_line_buffer_split_line (LineBuffer *line_buf,
                              int         line,
-                             int         num_new_lines,
-                             GtkTextTag *tag)
+                             int         num_new_lines)
 {
     Line *l;
-    GSList *tags;
 
-    _moo_text_btree_insert_range (line_buf->tree, line + 1, num_new_lines, tag);
+    _moo_text_btree_insert_range (line_buf->tree, line + 1, num_new_lines);
 
     l = _moo_line_buffer_get_line (line_buf, line);
     invalidate_line (line_buf, l, line);
-    tags = g_slist_copy (l->hl_info->tags);
-    g_slist_foreach (tags, (GFunc) g_object_ref, NULL);
 
     l = _moo_line_buffer_get_line (line_buf, line + num_new_lines);
     invalidate_line (line_buf, l, line + num_new_lines);
-    l->hl_info->tags = g_slist_concat (l->hl_info->tags, tags);
 }
 
 
@@ -87,20 +82,17 @@ _moo_line_buffer_delete (LineBuffer *line_buf,
                          GSList    **deleted_marks)
 {
     Line *line;
-    GSList *old_tags = NULL;
     MooLineMark **old_marks = NULL;
     guint i, n_old_marks = 0;
 
     if (move_to >= 0)
     {
         line = _moo_line_buffer_get_line (line_buf, first + num - 1);
-        old_tags = line->hl_info->tags;
-        line->hl_info->tags = NULL;
 
         old_marks = line->marks;
         n_old_marks = line->n_marks;
         line->marks = NULL;
- 
+
         if (n_old_marks)
             _moo_text_btree_update_n_marks (line_buf->tree, line, -((int) n_old_marks));
 
@@ -112,8 +104,6 @@ _moo_line_buffer_delete (LineBuffer *line_buf,
     if (move_to >= 0)
     {
         line = _moo_line_buffer_get_line (line_buf, move_to);
-
-        line->hl_info->tags = g_slist_concat (line->hl_info->tags, old_tags);
 
         if (n_old_marks)
         {
@@ -492,8 +482,6 @@ _moo_line_buffer_cleanup (LineBuffer *line_buf)
     {
         Line *line = _moo_line_buffer_get_line (line_buf, i);
         _moo_line_erase_segments (line);
-        g_slist_free (line->hl_info->tags);
-        line->hl_info->tags = NULL;
         line->hl_info->tags_applied = FALSE;
     }
 }

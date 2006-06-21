@@ -531,8 +531,6 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
 
     moo_text_buffer_unhighlight_brackets (buffer);
 
-    tag = _moo_text_iter_get_syntax_tag (pos);
-
     GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->insert_text (text_buffer, pos, text, length);
 
     last_line = gtk_text_iter_get_line (pos);
@@ -541,8 +539,7 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
         _moo_line_buffer_invalidate (buffer->priv->line_buf, first_line);
     else
         _moo_line_buffer_split_line (buffer->priv->line_buf,
-                                     first_line, last_line - first_line,
-                                     tag);
+                                     first_line, last_line - first_line);
 
     /* XXX btree can do it better ? i guess it can't */
     if (starts_line && ins_line)

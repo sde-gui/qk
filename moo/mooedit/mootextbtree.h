@@ -76,16 +76,14 @@ BTData     *_moo_text_btree_get_data        (BTree      *tree,
                                              guint       index_);
 
 BTData     *_moo_text_btree_insert          (BTree      *tree,
-                                             guint       index_,
-                                             gpointer    tag);
+                                             guint       index_);
 void        _moo_text_btree_delete          (BTree      *tree,
                                              guint       index_,
                                              GSList    **removed_marks);
 
 void        _moo_text_btree_insert_range    (BTree      *tree,
                                              int         first,
-                                             int         num,
-                                             gpointer    tag);
+                                             int         num);
 void        _moo_text_btree_delete_range    (BTree      *tree,
                                              int         first,
                                              int         num,
