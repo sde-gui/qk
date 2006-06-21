@@ -2,10 +2,8 @@
 ----
 1. Printing.
 2. Tools. Finally decide what and how.
-3. Fix style schemes:
-  a. Fix gvim and dark schemes.
-  b. Make use-scheme work.
-  c. Make good set of default styles.
+3. Fix gvim and dark schemes. The rest of theme business
+should go to gtksourceview.
 4. Project manager:
   a. Open/save sessions.
   b. C, Python, LaTex.
