@@ -61,7 +61,7 @@ GType   moo_edit_action_flags_get_type      (void) G_GNUC_CONST;
 void    moo_edit_class_new_action           (MooEditClass       *klass,
                                              const char         *id,
                                              const char         *first_prop_name,
-                                             ...);
+                                             ...) G_GNUC_NULL_TERMINATED;
 void    moo_edit_class_new_actionv          (MooEditClass       *klass,
                                              const char         *id,
                                              const char         *first_prop_name,

@@ -76,7 +76,7 @@ void        moo_window_class_set_id         (MooWindowClass     *klass,
 void        moo_window_class_new_action     (MooWindowClass     *klass,
                                              const char         *id,
                                              const char         *first_prop_name,
-                                             ...);
+                                             ...) G_GNUC_NULL_TERMINATED;
 void        moo_window_class_new_actionv    (MooWindowClass     *klass,
                                              const char         *id,
                                              const char         *first_prop_name,

@@ -19,6 +19,14 @@
 #include <gtk/gtkcellrenderer.h>
 #include <gtk/gtkdnd.h>
 
+#ifndef G_GNUC_NULL_TERMINATED
+#if __GNUC__ >= 4
+#define G_GNUC_NULL_TERMINATED __attribute__((__sentinel__))
+#else
+#define G_GNUC_NULL_TERMINATED
+#endif
+#endif
+
 G_BEGIN_DECLS
 
 
@@ -89,7 +97,7 @@ GtkCellRenderer *_moo_icon_view_get_cell      (MooIconView    *view,
 void          _moo_icon_view_set_attributes   (MooIconView    *view,
                                                MooIconViewCell cell_type,
                                                const char     *first_attr,
-                                               ...);
+                                               ...) G_GNUC_NULL_TERMINATED;
 void          _moo_icon_view_clear_attributes (MooIconView    *view,
                                                MooIconViewCell cell_type);
 

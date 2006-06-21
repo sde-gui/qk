@@ -17,6 +17,14 @@
 #include <gtk/gtkwidget.h>
 #include <mooutils/mooclosure.h>
 
+#ifndef G_GNUC_NULL_TERMINATED
+#if __GNUC__ >= 4
+#define G_GNUC_NULL_TERMINATED __attribute__((__sentinel__))
+#else
+#define G_GNUC_NULL_TERMINATED
+#endif
+#endif
+
 G_BEGIN_DECLS
 
 
@@ -96,7 +104,7 @@ GParameter  *moo_param_array_collect        (GType       type,
                                              MooLookupProperty lookup_func,
                                              guint      *len,
                                              const char *first_prop_name,
-                                             ...);
+                                             ...) G_GNUC_NULL_TERMINATED;
 GParameter  *moo_param_array_collect_valist (GType       type,
                                              MooLookupProperty lookup_func,
                                              guint      *len,
@@ -108,7 +116,7 @@ GParameter  *moo_param_array_add            (GType       type,
                                              guint       len,
                                              guint      *new_len,
                                              const char *first_prop_name,
-                                             ...);
+                                             ...) G_GNUC_NULL_TERMINATED;
 GParameter  *moo_param_array_add_valist     (GType       type,
                                              GParameter *src,
                                              guint       len,
@@ -120,7 +128,7 @@ GParameter  *moo_param_array_add_type       (GParameter *src,
                                              guint       len,
                                              guint      *new_len,
                                              const char *first_prop_name,
-                                             ...);
+                                             ...) G_GNUC_NULL_TERMINATED;
 GParameter  *moo_param_array_add_type_valist(GParameter *src,
                                              guint       len,
                                              guint      *new_len,

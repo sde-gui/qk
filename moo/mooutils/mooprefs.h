@@ -18,6 +18,14 @@
 #include <gdk/gdkcolor.h>
 #include <mooutils/moomarkup.h>
 
+#ifndef G_GNUC_NULL_TERMINATED
+#if __GNUC__ >= 4
+#define G_GNUC_NULL_TERMINATED __attribute__((__sentinel__))
+#else
+#define G_GNUC_NULL_TERMINATED
+#endif
+#endif
+
 G_BEGIN_DECLS
 
 
@@ -89,7 +97,7 @@ void            moo_prefs_new_key_flags (const char     *key,
                                          int             default_val);
 
 char           *moo_prefs_make_key      (const char     *first_comp,
-                                         ...);
+                                         ...) G_GNUC_NULL_TERMINATED;
 char           *moo_prefs_make_keyv     (const char     *first_comp,
                                          va_list         var_args);
 

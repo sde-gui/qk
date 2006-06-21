@@ -16,6 +16,14 @@
 
 #include <mooutils/mooaction.h>
 
+#ifndef G_GNUC_NULL_TERMINATED
+#if __GNUC__ >= 4
+#define G_GNUC_NULL_TERMINATED __attribute__((__sentinel__))
+#else
+#define G_GNUC_NULL_TERMINATED
+#endif
+#endif
+
 G_BEGIN_DECLS
 
 
@@ -59,7 +67,7 @@ MooActionFactory   *moo_action_factory_new_func     (MooActionFactoryFunc factor
                                                      gpointer            data);
 MooActionFactory   *moo_action_factory_new          (GType               action_type,
                                                      const char         *first_prop_name,
-                                                     ...);
+                                                     ...) G_GNUC_NULL_TERMINATED;
 MooActionFactory   *moo_action_factory_new_valist   (GType               object_type,
                                                      const char         *first_prop_name,
                                                      va_list             var_args);
@@ -76,7 +84,7 @@ gpointer            moo_action_factory_create_action(MooActionFactory   *factory
 GtkAction          *moo_action_group_add_action     (GtkActionGroup     *group,
                                                      const char         *action_id,
                                                      const char         *first_prop_name,
-                                                     ...);
+                                                     ...) G_GNUC_NULL_TERMINATED;
 GParamSpec         *_moo_action_find_property       (GObjectClass       *klass,
                                                      const char         *name);
 GParamSpec         *_moo_action_find_fake_property  (GObjectClass       *klass,
