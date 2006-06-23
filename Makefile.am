@@ -109,15 +109,15 @@ iconthemedir = $(hicolor)/48x48/apps
 icontheme_DATA = moo/mooutils/pixmaps/medit.png
 EXTRA_DIST += $(desktop_DATA)
 
-update_icon_cache = gtk-update-icon-cache -f -t $(hicolor)
-
-install-data-hook:
-	if echo "Updating icon cache" && $(update_icon_cache); then		\
-		echo "Done.";							\
-	else									\
-		echo "*** GTK icon cache not updated. After install, run this:";\
-		echo $(update_icon_cache);					\
-	fi
+# update_icon_cache = gtk-update-icon-cache -f -t $(hicolor)
+#
+# install-data-hook:
+# 	if echo "Updating icon cache" && $(update_icon_cache); then		\
+# 		echo "Done.";							\
+# 	else									\
+# 		echo "*** GTK icon cache not updated. After install, run this:";\
+# 		echo $(update_icon_cache);					\
+# 	fi
 
 ##############################################################################
 # tests
