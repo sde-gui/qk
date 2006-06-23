@@ -745,8 +745,6 @@ text_view_start_selection_dnd (GtkTextView       *text_view,
                               1, (GdkEvent*)event);
 
     gtk_target_list_unref (target_list);
-
-    gtk_drag_set_icon_default (context);
 }
 
 
