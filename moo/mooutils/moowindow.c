@@ -80,7 +80,7 @@ GObject        *moo_window_constructor              (GType                  type
                                                      GObjectConstructParam *props);
 
 static void     moo_window_init                     (MooWindow      *window);
-static void     moo_window_finalize                 (GObject        *object);
+static void     moo_window_dispose                  (GObject        *object);
 
 static void     moo_window_set_property             (GObject        *object,
                                                      guint           prop_id,
@@ -144,13 +144,14 @@ static guint signals[LAST_SIGNAL] = {0};
 G_DEFINE_TYPE (MooWindow, moo_window, GTK_TYPE_WINDOW)
 
 
-static void moo_window_class_init (MooWindowClass *klass)
+static void
+moo_window_class_init (MooWindowClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
     gobject_class->constructor = moo_window_constructor;
-    gobject_class->finalize = moo_window_finalize;
+    gobject_class->dispose = moo_window_dispose;
     gobject_class->set_property = moo_window_set_property;
     gobject_class->get_property = moo_window_get_property;
 
@@ -347,7 +348,8 @@ moo_window_constructor (GType                  type,
 }
 
 
-static void moo_window_init (MooWindow *window)
+static void
+moo_window_init (MooWindow *window)
 {
     window->priv = g_new0 (MooWindowPrivate, 1);
     window->vbox = gtk_vbox_new (FALSE, 0);
@@ -357,30 +359,37 @@ static void moo_window_init (MooWindow *window)
 }
 
 
-static void moo_window_finalize       (GObject      *object)
+static void
+moo_window_dispose (GObject *object)
 {
     MooWindow *window = MOO_WINDOW(object);
 
-    if (window->priv->ui_xml)
-        g_object_unref (window->priv->ui_xml);
-    if (window->priv->actions)
-        g_object_unref (window->priv->actions);
+    window_instances = g_slist_remove (window_instances, object);
 
-    g_free (window->priv->name);
-    g_free (window->priv->id);
-    g_free (window->priv->menubar_ui_name);
-    g_free (window->priv->toolbar_ui_name);
+    if (window->priv)
+    {
+        if (window->priv->ui_xml)
+            g_object_unref (window->priv->ui_xml);
+        if (window->priv->actions)
+            g_object_unref (window->priv->actions);
 
-    if (window->accel_group)
-        g_object_unref (window->accel_group);
+        g_free (window->priv->name);
+        g_free (window->priv->id);
+        g_free (window->priv->menubar_ui_name);
+        g_free (window->priv->toolbar_ui_name);
 
-    if (window->priv->save_size_id)
-        g_source_remove (window->priv->save_size_id);
-    window->priv->save_size_id = 0;
+        if (window->accel_group)
+            g_object_unref (window->accel_group);
 
-    g_free (window->priv);
+        if (window->priv->save_size_id)
+            g_source_remove (window->priv->save_size_id);
+        window->priv->save_size_id = 0;
 
-    G_OBJECT_CLASS (moo_window_parent_class)->finalize (object);
+        g_free (window->priv);
+        window->priv = NULL;
+    }
+
+    G_OBJECT_CLASS (moo_window_parent_class)->dispose (object);
 }
 
 
