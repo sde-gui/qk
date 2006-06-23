@@ -1851,6 +1851,10 @@ static gboolean tab_icon_button_release     (GtkWidget      *evbox,
 static gboolean tab_icon_motion_notify      (GtkWidget      *evbox,
                                              GdkEventMotion *event,
                                              MooEditWindow  *window);
+
+static void     tab_icon_drag_begin         (GtkWidget      *evbox,
+                                             GdkDragContext *context,
+                                             MooEditWindow  *window);
 static void     tab_icon_drag_data_delete   (GtkWidget      *evbox,
                                              GdkDragContext *context,
                                              MooEditWindow  *window);
@@ -1870,12 +1874,8 @@ tab_icon_button_release (GtkWidget      *evbox,
                          MooEditWindow  *window)
 {
     g_object_set_data (G_OBJECT (evbox), "moo-drag-info", NULL);
-    g_signal_handlers_disconnect_by_func (evbox,
-                                          (gpointer) tab_icon_button_release,
-                                          window);
-    g_signal_handlers_disconnect_by_func (evbox,
-                                          (gpointer) tab_icon_motion_notify,
-                                          window);
+    g_signal_handlers_disconnect_by_func (evbox, (gpointer) tab_icon_button_release, window);
+    g_signal_handlers_disconnect_by_func (evbox, (gpointer) tab_icon_motion_notify, window);
     return FALSE;
 }
 
@@ -1887,12 +1887,15 @@ tab_icon_start_drag (GtkWidget      *evbox,
 {
     GtkTargetList *targets;
     GdkDragContext *context;
-    GdkPixbuf *pixbuf;
-    GtkImage *icon;
     MooEdit *edit;
 
     edit = g_object_get_data (G_OBJECT (evbox), "moo-edit");
     g_return_if_fail (MOO_IS_EDIT (edit));
+
+    g_signal_connect (evbox, "drag-begin", G_CALLBACK (tab_icon_drag_begin), window);
+    g_signal_connect (evbox, "drag-data-delete", G_CALLBACK (tab_icon_drag_data_delete), window);
+    g_signal_connect (evbox, "drag-data-get", G_CALLBACK (tab_icon_drag_data_get), window);
+    g_signal_connect (evbox, "drag-end", G_CALLBACK (tab_icon_drag_end), window);
 
     targets = gtk_target_list_new (NULL, 0);
 
@@ -1907,17 +1910,6 @@ tab_icon_start_drag (GtkWidget      *evbox,
     context = gtk_drag_begin (evbox, targets,
                               GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK,
                               1, (GdkEvent*) event);
-
-    icon = g_object_get_data (G_OBJECT (evbox), "moo-edit-icon");
-    pixbuf = gtk_image_get_pixbuf (icon);
-    gtk_drag_set_icon_pixbuf (context, pixbuf, 0, 0);
-
-    g_signal_connect (evbox, "drag-data-delete",
-                      G_CALLBACK (tab_icon_drag_data_delete), window);
-    g_signal_connect (evbox, "drag-data-get",
-                      G_CALLBACK (tab_icon_drag_data_get), window);
-    g_signal_connect (evbox, "drag-end",
-                      G_CALLBACK (tab_icon_drag_end), window);
 
     gtk_target_list_unref (targets);
 }
@@ -1935,9 +1927,7 @@ tab_icon_motion_notify (GtkWidget      *evbox,
 
     if (gtk_drag_check_threshold (evbox, info->x, info->y, event->x, event->y))
     {
-        g_signal_handlers_disconnect_by_func (evbox,
-                                              (gpointer) tab_icon_motion_notify,
-                                              window);
+        g_signal_handlers_disconnect_by_func (evbox, (gpointer) tab_icon_motion_notify, window);
         tab_icon_start_drag (evbox, (GdkEvent*) event, window);
     }
 
@@ -1964,6 +1954,19 @@ tab_icon_button_press (GtkWidget        *evbox,
     g_signal_connect (evbox, "button-release-event", G_CALLBACK (tab_icon_button_release), window);
 
     return FALSE;
+}
+
+
+static void
+tab_icon_drag_begin (GtkWidget      *evbox,
+                     GdkDragContext *context,
+                     G_GNUC_UNUSED MooEditWindow *window)
+{
+    GdkPixbuf *pixbuf;
+    GtkImage *icon;
+    icon = g_object_get_data (G_OBJECT (evbox), "moo-edit-icon");
+    pixbuf = gtk_image_get_pixbuf (icon);
+    gtk_drag_set_icon_pixbuf (context, pixbuf, 0, 0);
 }
 
 
@@ -2014,15 +2017,10 @@ tab_icon_drag_end (GtkWidget      *evbox,
                    MooEditWindow  *window)
 {
     g_object_set_data (G_OBJECT (evbox), "moo-drag-info", NULL);
-    g_signal_handlers_disconnect_by_func (evbox,
-                                          (gpointer) tab_icon_drag_data_delete,
-                                          window);
-    g_signal_handlers_disconnect_by_func (evbox,
-                                          (gpointer) tab_icon_drag_data_get,
-                                          window);
-    g_signal_handlers_disconnect_by_func (evbox,
-                                          (gpointer) tab_icon_drag_end,
-                                          window);
+    g_signal_handlers_disconnect_by_func (evbox, (gpointer) tab_icon_drag_begin, window);
+    g_signal_handlers_disconnect_by_func (evbox, (gpointer) tab_icon_drag_data_delete, window);
+    g_signal_handlers_disconnect_by_func (evbox, (gpointer) tab_icon_drag_data_get, window);
+    g_signal_handlers_disconnect_by_func (evbox, (gpointer) tab_icon_drag_end, window);
 }
 
 
