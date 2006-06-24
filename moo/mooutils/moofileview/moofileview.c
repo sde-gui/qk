@@ -2075,6 +2075,7 @@ history_add (MooFileView    *fileview,
     if (hist->block)
         return;
 
+    /* XXX strcmp */
     if (hist->current && !strcmp (dirname, hist->current))
         return;
 
@@ -3001,8 +3002,8 @@ file_view_create_folder (MooFileView *fileview)
     if (!fileview->priv->current_dir)
         return;
 
-    name = _moo_create_folder_dialog (GTK_WIDGET (fileview),
-                                      fileview->priv->current_dir);
+    name = _moo_file_view_create_folder_dialog (GTK_WIDGET (fileview),
+                                                fileview->priv->current_dir);
 
     if (!name || !name[0])
     {
@@ -5376,7 +5377,7 @@ run_command_on_files (MooFileView *fileview,
         goto out;
     }
 
-    /* XXX */
+    /* XXX strcmp */
     if (fileview->priv->current_dir &&
         !strcmp (destdir, _moo_folder_get_path (fileview->priv->current_dir)) &&
         list_len == 1)
@@ -5470,6 +5471,44 @@ drop_item_activated (GObject     *item,
 }
 
 
+// /* XXX */
+// static gboolean
+// same_path (const char *path1,
+//            const char *path2)
+// {
+//     return !strcmp (path1, path2);
+// }
+//
+//
+// static void
+// copy_file (MooFileView  *fileview,
+//            const char   *src,
+//            const char   *destdir)
+// {
+//     const char *args[] = {"cp", "-R", "--"};
+//     char *name = NULL;
+//     GList *list = NULL;
+//
+//     name = _moo_file_view_copy_file_dialog (GTK_WIDGET (fileview), src, destdir);
+//
+//     if (!name)
+//         goto out;
+//
+//     if (g_file_test (name, G_FILE_TEST_EXISTS))
+//     {
+//         g_critical ("%s: oops", G_STRLOC);
+//         goto out;
+//     }
+//
+//     list = g_list_prepend (NULL, (char*) src);
+//     run_command_on_files (fileview, list, name, args, G_N_ELEMENTS (args));
+//
+// out:
+//     g_free (name);
+//     g_list_free (list);
+// }
+
+
 static void
 moo_file_view_drop_uris (MooFileView    *fileview,
                          char          **uris,
@@ -5508,6 +5547,29 @@ moo_file_view_drop_uris (MooFileView    *fileview,
         g_warning ("%s: got empty uri list", G_STRLOC);
         goto out;
     }
+
+//     if (!filenames->next)
+//     {
+//         char *dirname;
+//
+//         if (same_path (destdir, filenames->data))
+//         {
+//             g_warning ("%s: dragging folder to itself", G_STRLOC);
+//             goto out;
+//         }
+//
+//         dirname = g_path_get_dirname (filenames->data);
+//
+//         if (same_path (destdir, dirname))
+//         {
+//             success = TRUE;
+//             copy_file (fileview, filenames->data, destdir);
+//             g_free (dirname);
+//             goto out;
+//         }
+//
+//         g_free (dirname);
+//     }
 
     mask = moo_get_modifiers (widget);
 

@@ -304,8 +304,8 @@ _moo_file_props_dialog_new (GtkWidget *parent)
 
 
 char*
-_moo_create_folder_dialog (GtkWidget  *parent,
-                           MooFolder  *folder)
+_moo_file_view_create_folder_dialog (GtkWidget  *parent,
+                                     MooFolder  *folder)
 {
     MooGladeXML *xml;
     GtkWidget *dialog, *entry, *label;

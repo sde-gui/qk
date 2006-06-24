@@ -50,18 +50,17 @@ struct _MooFilePropsDialogClass
 };
 
 
-GType       _moo_file_props_dialog_get_type (void) G_GNUC_CONST;
+GType       _moo_file_props_dialog_get_type     (void) G_GNUC_CONST;
 
-GtkWidget  *_moo_file_props_dialog_new      (GtkWidget          *parent);
-void        _moo_file_props_dialog_set_file (MooFilePropsDialog *dialog,
-                                             MooFile            *file,
-                                             MooFolder          *folder);
+GtkWidget  *_moo_file_props_dialog_new          (GtkWidget          *parent);
+void        _moo_file_props_dialog_set_file     (MooFilePropsDialog *dialog,
+                                                 MooFile            *file,
+                                                 MooFolder          *folder);
 
-char       *_moo_create_folder_dialog       (GtkWidget          *parent,
-                                             MooFolder          *folder);
-
-char       *_moo_file_view_save_drop_dialog (GtkWidget          *parent,
-                                             const char         *dirname);
+char       *_moo_file_view_create_folder_dialog (GtkWidget          *parent,
+                                                 MooFolder          *folder);
+char       *_moo_file_view_save_drop_dialog     (GtkWidget          *parent,
+                                                 const char         *dirname);
 
 
 G_END_DECLS
