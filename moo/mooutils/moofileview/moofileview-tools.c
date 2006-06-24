@@ -336,7 +336,9 @@ action_check (ToolAction *action,
 
     while (files)
     {
-        if (!action_check_one (action, files->data))
+        MooFile *f = files->data;
+
+        if (!MOO_FILE_EXISTS (f) || MOO_FILE_IS_DIR (f) || !action_check_one (action, f))
         {
             visible = FALSE;
             break;
