@@ -119,8 +119,9 @@ void        _moo_file_view_drag_finish                  (MooFileView    *filevie
                                                          gboolean        delete_data,
                                                          guint           time);
 
-
+/* returns list of absolute paths, must be freed together with content */
 GList      *_moo_file_view_get_filenames                (MooFileView    *fileview);
+/* returns list of MooFile* pointers, must be freed, and elements must be unref'ed */
 GList      *_moo_file_view_get_files                    (MooFileView    *fileview);
 
 
