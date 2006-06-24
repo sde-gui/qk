@@ -87,47 +87,50 @@ static GObject *moo_file_selector_constructor   (GType           type,
                                                  GObjectConstructParam *props);
 static void     moo_file_selector_finalize      (GObject        *object);
 
-static gboolean moo_file_selector_chdir     (MooFileView    *fileview,
-                                             const char     *dir,
-                                             GError        **error);
-static void     moo_file_selector_activate  (MooFileView    *fileview,
-                                             const char     *path);
-static gboolean moo_file_selector_drop      (MooFileView    *fileview,
-                                             const char     *path,
-                                             GtkWidget      *widget,
-                                             GdkDragContext *context,
-                                             int             x,
-                                             int             y,
-                                             guint           time);
+static gboolean moo_file_selector_chdir         (MooFileView    *fileview,
+                                                 const char     *dir,
+                                                 GError        **error);
+static void     moo_file_selector_activate      (MooFileView    *fileview,
+                                                 const char     *path);
+static void     moo_file_selector_populate_popup(MooFileView    *fileview,
+                                                 GList          *selected,
+                                                 GtkMenu        *menu);
+static gboolean moo_file_selector_drop          (MooFileView    *fileview,
+                                                 const char     *path,
+                                                 GtkWidget      *widget,
+                                                 GdkDragContext *context,
+                                                 int             x,
+                                                 int             y,
+                                                 guint           time);
 static gboolean moo_file_selector_drop_data_received (MooFileView *fileview,
-                                             const char     *path,
-                                             GtkWidget      *widget,
-                                             GdkDragContext *context,
-                                             int             x,
-                                             int             y,
-                                             GtkSelectionData *data,
-                                             guint           info,
-                                             guint           time);
+                                                 const char     *path,
+                                                 GtkWidget      *widget,
+                                                 GdkDragContext *context,
+                                                 int             x,
+                                                 int             y,
+                                                 GtkSelectionData *data,
+                                                 guint           info,
+                                                 guint           time);
 
-static void     moo_file_selector_drop_doc  (MooFileSelector *filesel,
-                                             MooEdit        *doc,
-                                             const char     *destdir,
-                                             GtkWidget      *widget,
-                                             GdkDragContext *context,
-                                             int             x,
-                                             int             y,
-                                             guint           time);
+static void     moo_file_selector_drop_doc      (MooFileSelector *filesel,
+                                                 MooEdit        *doc,
+                                                 const char     *destdir,
+                                                 GtkWidget      *widget,
+                                                 GdkDragContext *context,
+                                                 int             x,
+                                                 int             y,
+                                                 guint           time);
 
-static void     button_drag_leave           (GtkWidget      *button,
-                                             GdkDragContext *context,
-                                             guint           time,
-                                             MooFileSelector *filesel);
-static gboolean button_drag_motion          (GtkWidget      *button,
-                                             GdkDragContext *context,
-                                             int             x,
-                                             int             y,
-                                             guint           time,
-                                             MooFileSelector *filesel);
+static void     button_drag_leave               (GtkWidget      *button,
+                                                 GdkDragContext *context,
+                                                 guint           time,
+                                                 MooFileSelector *filesel);
+static gboolean button_drag_motion              (GtkWidget      *button,
+                                                 GdkDragContext *context,
+                                                 int             x,
+                                                 int             y,
+                                                 guint           time,
+                                                 MooFileSelector *filesel);
 
 
 static void
@@ -147,6 +150,7 @@ _moo_file_selector_class_init (MooFileSelectorClass *klass)
     fileview_class->activate = moo_file_selector_activate;
     fileview_class->drop = moo_file_selector_drop;
     fileview_class->drop_data_received = moo_file_selector_drop_data_received;
+    fileview_class->populate_popup = moo_file_selector_populate_popup;
 
     g_object_class_install_property (gobject_class,
                                      PROP_WINDOW,
@@ -290,13 +294,33 @@ goto_current_doc_dir (MooFileSelector *filesel)
 /* NewFile
  */
 
+static void
+moo_file_selector_populate_popup (MooFileView *fileview,
+                                  GList       *selected,
+                                  G_GNUC_UNUSED GtkMenu *menu)
+{
+    GtkAction *action;
+
+    action = gtk_action_group_get_action (_moo_file_view_get_actions (fileview), "NewFile");
+
+    if (action)
+        gtk_action_set_sensitive (action, !selected || !selected->next);
+}
+
+
 static GtkWidget *
 create_new_file_dialog (GtkWidget    *parent,
+                        const char   *dirname,
                         const char   *start_text,
                         MooGladeXML **xml)
 {
     GtkWidget *dialog, *button;
     GtkEntry *entry;
+    GtkLabel *label;
+    char *display_dirname, *label_text;
+
+    display_dirname = g_filename_display_basename (dirname);
+    g_return_val_if_fail (display_dirname != NULL, NULL);
 
     *xml = moo_glade_xml_new_empty ();
     moo_glade_xml_map_class (*xml, "GtkEntry", MOO_TYPE_ENTRY);
@@ -309,9 +333,12 @@ create_new_file_dialog (GtkWidget    *parent,
     moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
 
     entry = moo_glade_xml_get_widget (*xml, "entry");
-
     gtk_entry_set_text (entry, start_text);
     moo_entry_clear_undo (MOO_ENTRY (entry));
+
+    label = moo_glade_xml_get_widget (*xml, "label");
+    label_text = g_strdup_printf ("Create file in '%s' folder:", display_dirname);
+    gtk_label_set_text (label, label_text);
 
     gtk_widget_show_all (dialog);
     gtk_widget_grab_focus (GTK_WIDGET (entry));
@@ -319,6 +346,8 @@ create_new_file_dialog (GtkWidget    *parent,
     button = moo_glade_xml_get_widget (*xml, "ok_button");
     moo_bind_bool_property (button, "sensitive", entry, "empty", TRUE);
 
+    g_free (label_text);
+    g_free (display_dirname);
     return dialog;
 }
 
@@ -342,7 +371,8 @@ new_file_dialog (GtkWidget   *parent,
 
         if (!dialog)
         {
-            dialog = create_new_file_dialog (parent, start_name, &xml);
+            dialog = create_new_file_dialog (parent, dirname, start_name, &xml);
+            g_return_val_if_fail (dialog != NULL, NULL);
             entry = moo_glade_xml_get_widget (xml, "entry");
         }
 
@@ -401,11 +431,29 @@ file_selector_create_file (MooFileSelector *filesel)
 {
     char *path = NULL, *dir = NULL;
     MooEdit *doc;
+    GList *selected = NULL;
 
-    g_object_get (filesel, "current-directory", &dir, NULL);
+    selected = _moo_file_view_get_filenames (MOO_FILE_VIEW (filesel));
 
-    if (!dir)
-        goto out;
+    if (selected)
+    {
+        if (selected->next)
+        {
+            g_critical ("%s: oops", G_STRLOC);
+            goto out;
+        }
+
+        dir = selected->data;
+        g_list_free (selected);
+        selected = NULL;
+    }
+    else
+    {
+        g_object_get (filesel, "current-directory", &dir, NULL);
+
+        if (!dir)
+            goto out;
+    }
 
     path = new_file_dialog (GTK_WIDGET (filesel), dir, "Untitled");
 
@@ -421,6 +469,8 @@ file_selector_create_file (MooFileSelector *filesel)
 out:
     g_free (path);
     g_free (dir);
+    g_list_foreach (selected, (GFunc) g_free, NULL);
+    g_list_free (selected);
 }
 
 
