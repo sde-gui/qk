@@ -1697,10 +1697,11 @@ create_bookmark_view (MooFileView *fileview)
 }
 
 
-static gboolean moo_file_view_check_visible (MooFileView    *fileview,
-                                             MooFile        *file,
-                                             gboolean        ignore_hidden,
-                                             gboolean        ignore_two_dots)
+static gboolean
+moo_file_view_check_visible (MooFileView *fileview,
+                             MooFile     *file,
+                             gboolean     ignore_hidden,
+                             gboolean     ignore_two_dots)
 {
     if (!file)
         return FALSE;
@@ -1738,9 +1739,10 @@ static gboolean moo_file_view_check_visible (MooFileView    *fileview,
 }
 
 
-static gboolean     filter_visible_func (GtkTreeModel   *model,
-                                         GtkTreeIter    *iter,
-                                         MooFileView    *fileview)
+static gboolean
+filter_visible_func (GtkTreeModel *model,
+                     GtkTreeIter  *iter,
+                     MooFileView  *fileview)
 {
     MooFile *file;
     gboolean visible = TRUE;
@@ -1764,11 +1766,12 @@ static gboolean     filter_visible_func (GtkTreeModel   *model,
 }
 
 
-static void icon_data_func  (G_GNUC_UNUSED GObject *column_or_iconview,
-                             GtkCellRenderer    *cell,
-                             GtkTreeModel       *model,
-                             GtkTreeIter        *iter,
-                             MooFileView        *fileview)
+static void
+icon_data_func (G_GNUC_UNUSED GObject *column_or_iconview,
+                GtkCellRenderer    *cell,
+                GtkTreeModel       *model,
+                GtkTreeIter        *iter,
+                MooFileView        *fileview)
 {
     MooFile *file = NULL;
     GdkPixbuf *pixbuf = NULL;
@@ -1784,11 +1787,12 @@ static void icon_data_func  (G_GNUC_UNUSED GObject *column_or_iconview,
 }
 
 
-static void name_data_func  (G_GNUC_UNUSED GObject *column_or_iconview,
-                             GtkCellRenderer    *cell,
-                             GtkTreeModel       *model,
-                             GtkTreeIter        *iter,
-                             G_GNUC_UNUSED MooFileView *fileview)
+static void
+name_data_func (G_GNUC_UNUSED GObject *column_or_iconview,
+                GtkCellRenderer    *cell,
+                GtkTreeModel       *model,
+                GtkTreeIter        *iter,
+                G_GNUC_UNUSED MooFileView *fileview)
 {
     MooFile *file = NULL;
     const char *name = NULL;
@@ -2602,8 +2606,9 @@ _moo_file_view_set_sort_case_sensitive (MooFileView    *fileview,
 /* Filters
  */
 
-static void         moo_file_view_set_filter_mgr    (MooFileView    *fileview,
-                                                     MooFilterMgr   *mgr)
+static void
+moo_file_view_set_filter_mgr (MooFileView    *fileview,
+                              MooFilterMgr   *mgr)
 {
     if (!mgr)
     {
@@ -2626,7 +2631,8 @@ static void         moo_file_view_set_filter_mgr    (MooFileView    *fileview,
 }
 
 
-static void         block_filter_signals    (MooFileView    *fileview)
+static void
+block_filter_signals (MooFileView *fileview)
 {
     g_signal_handlers_block_by_func (fileview->priv->filter_combo,
                                      (gpointer) filter_button_toggled,
@@ -2639,7 +2645,8 @@ static void         block_filter_signals    (MooFileView    *fileview)
                                      fileview);
 }
 
-static void         unblock_filter_signals  (MooFileView    *fileview)
+static void
+unblock_filter_signals (MooFileView *fileview)
 {
     g_signal_handlers_unblock_by_func (fileview->priv->filter_combo,
                                        (gpointer) filter_button_toggled,
@@ -2653,7 +2660,8 @@ static void         unblock_filter_signals  (MooFileView    *fileview)
 }
 
 
-static void         init_filter_combo       (MooFileView    *fileview)
+static void
+init_filter_combo (MooFileView *fileview)
 {
     MooFilterMgr *mgr = fileview->priv->filter_mgr;
     GtkFileFilter *filter;
@@ -2678,7 +2686,8 @@ static void         init_filter_combo       (MooFileView    *fileview)
 }
 
 
-static void         filter_button_toggled   (MooFileView    *fileview)
+static void
+filter_button_toggled (MooFileView *fileview)
 {
     gboolean active =
             gtk_toggle_button_get_active (fileview->priv->filter_button);
@@ -2692,7 +2701,8 @@ static void         filter_button_toggled   (MooFileView    *fileview)
 }
 
 
-static void         filter_combo_changed    (MooFileView    *fileview)
+static void
+filter_combo_changed (MooFileView *fileview)
 {
     GtkTreeIter iter;
     GtkFileFilter *filter;
@@ -2711,7 +2721,8 @@ static void         filter_combo_changed    (MooFileView    *fileview)
 }
 
 
-static void         filter_entry_activate   (MooFileView    *fileview)
+static void
+filter_entry_activate (MooFileView *fileview)
 {
     const char *text;
     GtkFileFilter *filter;
@@ -2729,8 +2740,9 @@ static void         filter_entry_activate   (MooFileView    *fileview)
 }
 
 
-static void         fileview_set_filter     (MooFileView    *fileview,
-                                             GtkFileFilter  *filter)
+static void
+fileview_set_filter (MooFileView    *fileview,
+                     GtkFileFilter  *filter)
 {
     GtkFileFilter *null_filter;
 
@@ -2780,9 +2792,10 @@ static void         fileview_set_filter     (MooFileView    *fileview,
 }
 
 
-static void         fileview_set_use_filter (MooFileView    *fileview,
-                                             gboolean        use,
-                                             gboolean        block_signals)
+static void
+fileview_set_use_filter (MooFileView    *fileview,
+                         gboolean        use,
+                         gboolean        block_signals)
 {
     if (block_signals)
         block_filter_signals (fileview);
@@ -2888,7 +2901,8 @@ file_view_get_selected_files (MooFileView *fileview)
 }
 
 
-static void     file_view_delete_selected       (MooFileView    *fileview)
+static void
+file_view_delete_selected (MooFileView *fileview)
 {
     GError *error = NULL;
     GList *files, *l;
@@ -3254,7 +3268,8 @@ _moo_file_view_set_show_parent (MooFileView    *fileview,
 }
 
 
-static void         toggle_show_hidden      (MooFileView    *fileview)
+static void
+toggle_show_hidden (MooFileView *fileview)
 {
     _moo_file_view_set_show_hidden (fileview,
                                    !fileview->priv->show_hidden_files);
@@ -3623,7 +3638,8 @@ static gboolean entry_tab_key           (GtkEntry       *entry,
 static gboolean looks_like_path         (const char     *text);
 
 
-static void         path_entry_init         (MooFileView    *fileview)
+static void
+path_entry_init (MooFileView *fileview)
 {
     GtkEntry *entry = fileview->priv->entry;
 
@@ -3641,14 +3657,16 @@ static void         path_entry_init         (MooFileView    *fileview)
 }
 
 
-static void         path_entry_deinit       (MooFileView    *fileview)
+static void
+path_entry_deinit (MooFileView *fileview)
 {
     typeahead_destroy (fileview);
 }
 
 
-static void     entry_changed       (GtkEntry       *entry,
-                                     MooFileView    *fileview)
+static void
+entry_changed (GtkEntry       *entry,
+               MooFileView    *fileview)
 {
     gboolean need_to_refilter = FALSE;
 
@@ -3709,9 +3727,10 @@ static void     entry_changed       (GtkEntry       *entry,
 }
 
 
-static gboolean entry_key_press     (GtkEntry       *entry,
-                                     GdkEventKey    *event,
-                                     MooFileView    *fileview)
+static gboolean
+entry_key_press (GtkEntry       *entry,
+                 GdkEventKey    *event,
+                 MooFileView    *fileview)
 {
     GtkWidget *filewidget;
     const char *name;
@@ -3753,7 +3772,8 @@ static gboolean entry_key_press     (GtkEntry       *entry,
 }
 
 
-static gboolean entry_stop_tab_cycle    (MooFileView    *fileview)
+static gboolean
+entry_stop_tab_cycle (MooFileView *fileview)
 {
     switch (fileview->priv->entry_state)
     {
@@ -3768,8 +3788,9 @@ static gboolean entry_stop_tab_cycle    (MooFileView    *fileview)
 }
 
 
-static gboolean entry_tab_key       (GtkEntry       *entry,
-                                     MooFileView    *fileview)
+static gboolean
+entry_tab_key (GtkEntry       *entry,
+               MooFileView    *fileview)
 {
     const char *text;
 
@@ -3799,8 +3820,9 @@ static gboolean entry_tab_key       (GtkEntry       *entry,
 }
 
 
-static void         path_entry_set_text     (MooFileView    *fileview,
-                                             const char     *text)
+static void
+path_entry_set_text (MooFileView    *fileview,
+                     const char     *text)
 {
     GtkEntry *entry = fileview->priv->entry;
     g_signal_handlers_block_by_func (entry, (gpointer) entry_changed,
@@ -3812,7 +3834,8 @@ static void         path_entry_set_text     (MooFileView    *fileview,
 }
 
 
-static void         path_entry_delete_to_cursor (MooFileView *fileview)
+static void
+path_entry_delete_to_cursor (MooFileView *fileview)
 {
     GtkEditable *entry = GTK_EDITABLE (fileview->priv->entry);
     if (gtk_widget_is_focus (GTK_WIDGET (entry)))
@@ -3821,8 +3844,9 @@ static void         path_entry_delete_to_cursor (MooFileView *fileview)
 }
 
 
-static void     entry_activate      (GtkEntry       *entry,
-                                     MooFileView    *fileview)
+static void
+entry_activate (GtkEntry       *entry,
+                MooFileView    *fileview)
 {
     char *filename = NULL;
     GtkTreePath *selected;
@@ -4152,9 +4176,10 @@ moo_file_view_key_press (MooFileView    *fileview,
 }
 
 
-static gboolean entry_focus_out     (GtkWidget      *entry,
-                                     G_GNUC_UNUSED GdkEventFocus *event,
-                                     MooFileView    *fileview)
+static gboolean
+entry_focus_out (GtkWidget      *entry,
+                 G_GNUC_UNUSED GdkEventFocus *event,
+                 MooFileView    *fileview)
 {
     /* focus may be lost due to switching to other window, do nothing then */
     if (!gtk_widget_is_focus (entry))
@@ -4163,8 +4188,9 @@ static gboolean entry_focus_out     (GtkWidget      *entry,
 }
 
 
-static void     stop_path_entry     (MooFileView    *fileview,
-                                     gboolean        focus_file_list)
+static void
+stop_path_entry (MooFileView    *fileview,
+                 gboolean        focus_file_list)
 {
     char *text;
 
@@ -4187,8 +4213,9 @@ static void     stop_path_entry     (MooFileView    *fileview,
 
 
 /* WIN32_XXX */
-static void         file_view_activate_filename (MooFileView    *fileview,
-                                                 const char     *display_name)
+static void
+file_view_activate_filename (MooFileView    *fileview,
+                             const char     *display_name)
 {
     GError *error = NULL;
     char *dirname, *basename;
@@ -4261,7 +4288,8 @@ static void         file_view_activate_filename (MooFileView    *fileview,
 }
 
 
-static gboolean looks_like_path         (const char     *text)
+static gboolean
+looks_like_path (const char *text)
 {
     if (strchr (text, '/'))
         return TRUE;
@@ -4297,8 +4325,9 @@ static gboolean typeahead_find_match_hidden     (MooFileView    *fileview,
                                                  gboolean        exact_match);
 
 
-static void     typeahead_try       (MooFileView    *fileview,
-                                     gboolean        need_to_refilter)
+static void
+typeahead_try (MooFileView *fileview,
+               gboolean     need_to_refilter)
 {
     const char *text;
     Typeahead *stuff = fileview->priv->typeahead;
@@ -4355,7 +4384,8 @@ static void     typeahead_try       (MooFileView    *fileview,
 }
 
 
-static void     typeahead_tab_key       (MooFileView    *fileview)
+static void
+typeahead_tab_key (MooFileView *fileview)
 {
     const char *text;
     Typeahead *stuff = fileview->priv->typeahead;
@@ -4490,7 +4520,8 @@ error:
 }
 
 
-static gboolean typeahead_stop_tab_cycle(MooFileView    *fileview)
+static gboolean
+typeahead_stop_tab_cycle (MooFileView *fileview)
 {
     Typeahead *stuff = fileview->priv->typeahead;
 
@@ -4508,7 +4539,8 @@ static gboolean typeahead_stop_tab_cycle(MooFileView    *fileview)
 }
 
 
-static void     typeahead_create        (MooFileView    *fileview)
+static void
+typeahead_create (MooFileView *fileview)
 {
     Typeahead *stuff = g_new0 (Typeahead, 1);
 
@@ -4533,7 +4565,8 @@ static void     typeahead_create        (MooFileView    *fileview)
 }
 
 
-static void     typeahead_destroy       (MooFileView    *fileview)
+static void
+typeahead_destroy (MooFileView *fileview)
 {
     Typeahead *stuff = fileview->priv->typeahead;
     if (stuff->matched_prefix)
@@ -4543,8 +4576,9 @@ static void     typeahead_destroy       (MooFileView    *fileview)
 }
 
 
-void        _moo_file_view_set_typeahead_case_sensitive  (MooFileView    *fileview,
-                                                         gboolean        case_sensitive)
+void
+_moo_file_view_set_typeahead_case_sensitive (MooFileView *fileview,
+                                             gboolean     case_sensitive)
 {
     g_return_if_fail (MOO_IS_FILE_VIEW (fileview));
 
@@ -4573,10 +4607,11 @@ void        _moo_file_view_set_typeahead_case_sensitive  (MooFileView    *filevi
 }
 
 
-static gboolean typeahead_find_match_visible    (MooFileView    *fileview,
-                                                 const char     *text,
-                                                 GtkTreeIter    *filter_iter,
-                                                 gboolean        exact_match)
+static gboolean
+typeahead_find_match_visible (MooFileView    *fileview,
+                              const char     *text,
+                              GtkTreeIter    *filter_iter,
+                              gboolean        exact_match)
 {
     guint len;
 
@@ -4594,10 +4629,11 @@ static gboolean typeahead_find_match_visible    (MooFileView    *fileview,
 }
 
 
-static gboolean typeahead_find_match_hidden     (MooFileView    *fileview,
-                                                 const char     *text,
-                                                 GtkTreeIter    *iter,
-                                                 gboolean        exact)
+static gboolean
+typeahead_find_match_hidden (MooFileView    *fileview,
+                             const char     *text,
+                             GtkTreeIter    *iter,
+                             gboolean        exact)
 {
     guint len;
     GtkTreeModel *model = fileview->priv->model;
