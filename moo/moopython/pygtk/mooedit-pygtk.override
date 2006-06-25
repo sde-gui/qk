@@ -460,3 +460,86 @@ _wrap_moo_lang_mgr_get_available_langs (PyGObject *self)
     g_slist_free (list);
     return result;
 }
+%%
+override moo_plugin_call_method varargs
+static PyObject *
+_wrap_moo_plugin_call_method (PyGObject *self, PyObject *args)
+{
+    const char *name;
+    MooPluginMeth *meth;
+    GValue *params = NULL;
+    GValue retval;
+    PyObject *ret = NULL;
+    guint i;
+
+    if (!args || !PyTuple_GET_SIZE (args))
+        return_TypeErr ("Plugin.call_method takes at least 1 argument");
+
+    name = PyString_AsString (PyTuple_GET_ITEM (args, 0));
+
+    if (!name)
+        return NULL;
+
+    meth = moo_plugin_lookup_method (self->obj, name);
+
+    if (!meth)
+    {
+        PyErr_Format (PyExc_TypeError, "in Plugin.call_method: unknown method '%s'", name);
+        return NULL;
+    }
+
+    if ((int) meth->n_params + 1 != PyTuple_GET_SIZE (args))
+    {
+        PyErr_Format (PyExc_TypeError, "in Plugin.call_method: method '%s' takes "
+                      "exactly %d arguments (%d given)", name, meth->n_params,
+                      PyTuple_GET_SIZE (args) - 1);
+        return NULL;
+    }
+
+    if (meth->return_type != G_TYPE_NONE)
+    {
+        retval.g_type = 0;
+        g_value_init (&retval, meth->return_type);
+    }
+
+    params = g_new0 (GValue, meth->n_params + 1);
+    g_value_init (params, G_OBJECT_TYPE (self->obj));
+    g_value_set_object (params, self->obj);
+
+    for (i = 0; i < meth->n_params; ++i)
+    {
+        g_value_init (&params[i+1], meth->param_types[i]);
+
+        if (pyg_value_from_pyobject (&params[i+1], PyTuple_GET_ITEM (args, i+1)))
+        {
+            PyObject *ps = PyObject_Str (PyTuple_GET_ITEM (args, i+1));
+            char *s = PyString_AsString (ps);
+            PyErr_Format(PyExc_TypeError, "could not convert object '%s' to type '%s'",
+                         s ? s : "(unknown)", g_type_name (meth->param_types[i]));
+            Py_XDECREF (ps);
+            goto out;
+        }
+    }
+
+    moo_plugin_call_methodv (params, name, &retval);
+
+    if (meth->return_type != G_TYPE_NONE)
+    {
+        ret = pyg_value_as_pyobject (&retval, TRUE);
+    }
+    else
+    {
+        ret = Py_None;
+        Py_INCREF (ret);
+    }
+
+out:
+    if (meth->return_type != G_TYPE_NONE)
+        g_value_unset (&retval);
+    for (i = 0; i < meth->n_params + 1; ++i)
+        if (G_IS_VALUE (&params[i]))
+            g_value_unset (&params[i]);
+    g_free (params);
+
+    return ret;
+}
