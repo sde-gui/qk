@@ -462,6 +462,15 @@
   )
 )
 
+(define-method get_nth_doc
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_get_nth_doc")
+  (return-type "MooEdit*")
+  (parameters
+    '("guint" "n")
+  )
+)
+
 (define-method list_docs
   (of-object "MooEditWindow")
   (c-name "moo_edit_window_list_docs")
