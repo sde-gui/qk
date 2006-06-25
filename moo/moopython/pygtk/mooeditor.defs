@@ -73,11 +73,24 @@
     '("const-char*" "filename" (null-ok) (default "NULL"))
     '("const-char*" "encoding" (null-ok) (default "NULL"))
   )
-  (docstring "open_file(window=None, parent=None, filename=None, encoding=None) -> bool.\n"
+  (docstring "open_file(window=None, parent=None, filename=None, encoding=None) -> Edit.\n"
              "\n"
              "Opens a file.\n"
              "If filename is None, it asks user for filename first, and returns False if\n"
              "user pressed Cancel in the file chooser dialog.")
+)
+
+(define-method open_file_line
+  (of-object "MooEditor")
+  (c-name "moo_editor_open_file_line")
+  (return-type "MooEdit*")
+  (parameters
+    '("const-char*" "filename")
+    '("int" "line")
+  )
+  (docstring "open_file_line(filename, line) -> Edit.\n"
+             "\n"
+             "Opens a file and places cursor on the given line.")
 )
 
 (define-method get_doc
