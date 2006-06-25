@@ -474,6 +474,12 @@
   (return-type "guint")
 )
 
+(define-method close_all
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_close_all")
+  (return-type "gboolean")
+)
+
 (define-method set_title_prefix
   (of-object "MooEditWindow")
   (c-name "moo_edit_window_set_title_prefix")

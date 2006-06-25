@@ -66,7 +66,7 @@
 
 (define-object Notebook
   (in-module "Moo")
-  (parent "GtkNotebook")
+  (parent "GtkContainer")
   (c-name "MooNotebook")
   (gtype-id "MOO_TYPE_NOTEBOOK")
 )
@@ -999,6 +999,12 @@
   (of-object "MooHistoryList")
   (c-name "moo_history_list_get_menu_mgr")
   (return-type "MooMenuMgr*")
+)
+
+(define-method get_last_item
+  (of-object "MooHistoryList")
+  (c-name "moo_history_list_get_last_item")
+  (return-type "char*")
 )
 
 (define-function moo_history_list_item_new
@@ -2368,7 +2374,7 @@
   (return-type "none")
   (parameters
     '("const-char*" "key")
-    '("const-char*" "default_val")
+    '("const-char*" "default_val" (null-ok) (default "NULL"))
   )
 )
 
@@ -2377,7 +2383,7 @@
   (return-type "none")
   (parameters
     '("const-char*" "key")
-    '("const-GdkColor*" "default_val")
+    '("const-GdkColor*" "default_val" (null-ok))
   )
 )
 
@@ -2470,7 +2476,7 @@
   (return-type "none")
   (parameters
     '("const-char*" "key")
-    '("const-char*" "val")
+    '("const-char*" "val" (null-ok))
   )
 )
 
@@ -2479,7 +2485,7 @@
   (return-type "none")
   (parameters
     '("const-char*" "key")
-    '("const-char*" "val")
+    '("const-char*" "val" (null-ok))
   )
 )
 

@@ -42,7 +42,7 @@ import gtk.FileChooser as PyGtkFileChooser_Type
 import gtk.Frame as PyGtkFrame_Type
 import gtk.Table as PyGtkTable_Type
 import gtk.Entry as PyGtkEntry_Type
-import gtk.Notebook as PyGtkNotebook_Type
+import gtk.Container as PyGtkContainer_Type
 import gtk.Bin as PyGtkBin_Type
 import gobject.GObject as PyGObject_Type
 import gtk.gdk.Color as PyGdkColor_Type
