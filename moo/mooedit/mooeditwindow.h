@@ -56,6 +56,8 @@ struct _MooEditWindowClass
 
 GType        moo_edit_window_get_type               (void) G_GNUC_CONST;
 
+gboolean     moo_edit_window_close_all              (MooEditWindow  *window);
+
 typedef void (*MooEditWindowCheckActionFunc)        (GtkAction      *action,
                                                      MooEdit        *doc,
                                                      GParamSpec     *pspec,
