@@ -37,6 +37,7 @@ int _medit_parse_options (const char *const program_name,
 %%
 u  unique       "Use running instance of application"
 n  new-app      "Run new instance of application"
+s  standalone   "Run new instance of application and do not open input pipe"
 l  log          "[=FILE] Show debug output or write it to FILE" optarg
    version      "Display version information and exit"          return
 h  help         "Display this help text and exit"               return
@@ -53,6 +54,7 @@ usage (void)
 
     g_print ("%s", STR_HELP_UNIQUE);
     g_print ("%s", STR_HELP_NEW_APP);
+    g_print ("%s", STR_HELP_STANDALONE);
     g_print ("%s", STR_HELP_LOG);
     g_print ("%s", STR_HELP_VERSION);
     g_print ("%s", STR_HELP_HELP);
@@ -75,6 +77,7 @@ main (int argc, char *argv[])
     gpointer window;
     int retval;
     gboolean new_instance = DEFAULT_NEW_INSTANCE;
+    gboolean run_input = TRUE;
 
     gtk_init (&argc, &argv);
 //     gdk_window_set_debug_updates (TRUE);
@@ -111,10 +114,17 @@ main (int argc, char *argv[])
     else if (_medit_opt_new_app)
         new_instance = TRUE;
 
+    if (_medit_opt_standalone)
+    {
+        new_instance = TRUE;
+        run_input = FALSE;
+    }
+
     files = moo_filenames_from_locale (argv + opt_remain);
 
     app = g_object_new (MOO_TYPE_APP,
                         "argv", argv,
+                        "run-input", run_input,
                         "short-name", "medit",
                         "full-name", "medit",
                         "description", "medit is a text editor",

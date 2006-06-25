@@ -65,6 +65,10 @@ int _medit_parse_options (const char *const program_name,
 #define STR_HELP_NEW_APP "\
   -n, --new-app       Run new instance of application\n"
 
+#define STR_HELP_STANDALONE "\
+  -s, --standalone    Run new instance of application and do not open input\n\
+                        pipe\n"
+
 #define STR_HELP_LOG "\
   -l, --log[=FILE]    Show debug output or write it to FILE\n"
 
@@ -77,6 +81,8 @@ int _medit_parse_options (const char *const program_name,
 #define STR_HELP "\
   -u, --unique        Use running instance of application\n\
   -n, --new-app       Run new instance of application\n\
+  -s, --standalone    Run new instance of application and do not open input\n\
+                        pipe\n\
   -l, --log[=FILE]    Show debug output or write it to FILE\n\
       --version       Display version information and exit\n\
   -h, --help          Display this help text and exit\n"
@@ -86,6 +92,9 @@ char _medit_opt_unique;
 
 /* Set to 1 if option --new-app (-n) has been specified.  */
 char _medit_opt_new_app;
+
+/* Set to 1 if option --standalone (-s) has been specified.  */
+char _medit_opt_standalone;
 
 /* Set to 1 if option --log (-l) has been specified.  */
 char _medit_opt_log;
@@ -105,11 +114,13 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
 {
   static const char *const optstr__unique = "unique";
   static const char *const optstr__new_app = "new-app";
+  static const char *const optstr__standalone = "standalone";
   static const char *const optstr__version = "version";
   static const char *const optstr__help = "help";
   int i = 0;
   _medit_opt_unique = 0;
   _medit_opt_new_app = 0;
+  _medit_opt_standalone = 0;
   _medit_opt_log = 0;
   _medit_opt_version = 0;
   _medit_opt_help = 0;
@@ -168,6 +179,18 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
           break;
         }
         goto error_unknown_long_opt;
+       case 's':
+        if (strncmp (option + 1, optstr__standalone + 1, option_len - 1) == 0)
+        {
+          if (argument != 0)
+          {
+            option = optstr__standalone;
+            goto error_unexpec_arg_long;
+          }
+          _medit_opt_standalone = 1;
+          break;
+        }
+        goto error_unknown_long_opt;
        case 'u':
         if (strncmp (option + 1, optstr__unique + 1, option_len - 1) == 0)
         {
@@ -221,6 +244,9 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
          case 'n':
           _medit_opt_new_app = 1;
           break;
+         case 's':
+          _medit_opt_standalone = 1;
+          break;
          case 'u':
           _medit_opt_unique = 1;
           break;
@@ -244,6 +270,7 @@ usage (void)
 
     g_print ("%s", STR_HELP_UNIQUE);
     g_print ("%s", STR_HELP_NEW_APP);
+    g_print ("%s", STR_HELP_STANDALONE);
     g_print ("%s", STR_HELP_LOG);
     g_print ("%s", STR_HELP_VERSION);
     g_print ("%s", STR_HELP_HELP);
@@ -266,6 +293,7 @@ main (int argc, char *argv[])
     gpointer window;
     int retval;
     gboolean new_instance = DEFAULT_NEW_INSTANCE;
+    gboolean run_input = TRUE;
 
     gtk_init (&argc, &argv);
 //     gdk_window_set_debug_updates (TRUE);
@@ -302,10 +330,17 @@ main (int argc, char *argv[])
     else if (_medit_opt_new_app)
         new_instance = TRUE;
 
+    if (_medit_opt_standalone)
+    {
+        new_instance = TRUE;
+        run_input = FALSE;
+    }
+
     files = moo_filenames_from_locale (argv + opt_remain);
 
     app = g_object_new (MOO_TYPE_APP,
                         "argv", argv,
+                        "run-input", run_input,
                         "short-name", "medit",
                         "full-name", "medit",
                         "description", "medit is a text editor",
