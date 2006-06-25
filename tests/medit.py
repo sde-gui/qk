@@ -29,13 +29,6 @@ def usage():
     print "  -h, --help          Display this help text and exit"
 
 
-def get_ui():
-    file = open('/home/muntyan/projects/moo/tests/medit-ui.xml')
-    ui = file.read()
-    file.close()
-    return ui
-
-
 def main(argv):
     new_instance = True
 
@@ -66,7 +59,7 @@ def main(argv):
                       description="medit is a text editor",
                       website="http://mooedit.sourceforge.net/",
                       website_label="http://mooedit.sourceforge.net/",
-                      default_ui=get_ui(),
+                      default_ui=ui,
                       logo=moo.utils.STOCK_MEDIT)
 
     if (not new_instance and app.send_files(files)) or not app.init():
@@ -83,6 +76,192 @@ def main(argv):
     editor.connect("all-windows-closed", lambda e, a: a.quit(), app)
 
     return app.run()
+
+
+ui = """
+<ui><!-- -*- Mode: XML; indent-tabs-mode: nil; c-basic-offset: 2 -*- -->
+
+<object name="Editor">
+
+  <widget name="Menubar">
+
+    <item name="File" label="_File">
+      <separator/>
+      <item action="NewDoc"/>
+      <item action="NewWindow"/>
+      <separator/>
+      <item action="Open"/>
+      <item action="OpenRecent"/>
+      <item action="Save"/>
+      <item action="SaveAs"/>
+      <separator/>
+      <item action="Reload"/>
+      <separator/>
+      <item action="PrintOptions"/>
+      <item action="PageSetup"/>
+      <item action="Print"/>
+      <separator/>
+      <placeholder name="UserMenu"/>
+      <separator/>
+      <item action="Close"/>
+      <item action="CloseAll"/>
+      <separator/>
+      <item action="Quit"/>
+      <separator/>
+    </item>
+
+    <item name="Edit" label="_Edit">
+      <separator/>
+      <item action="Undo"/>
+      <item action="Redo"/>
+      <separator/>
+      <item action="Cut"/>
+      <item action="Copy"/>
+      <item action="Paste"/>
+      <item action="Delete"/>
+      <separator/>
+      <item action="SelectAll"/>
+      <separator/>
+      <item action="Indent"/>
+      <item action="Unindent"/>
+      <separator/>
+      <item action="Comment"/>
+      <item action="Uncomment"/>
+      <separator/>
+      <placeholder name="UserMenu"/>
+      <separator/>
+    </item>
+
+    <item name="Search" label="_Search">
+      <separator/>
+      <item action="Find"/>
+      <item action="FindNext"/>
+      <item action="FindPrevious"/>
+      <item action="Replace"/>
+      <separator/>
+      <item action="QuickSearch"/>
+      <item action="FindCurrent"/>
+      <item action="FindCurrentBack"/>
+      <separator/>
+      <item action="GoToLine"/>
+      <separator/>
+      <item action="NextPlaceholder"/>
+      <item action="PrevPlaceholder"/>
+      <separator/>
+      <placeholder name="UserMenu"/>
+      <separator/>
+    </item>
+
+    <item name="View" label="_View">
+      <separator/>
+      <item action="PreviousTab"/>
+      <item action="NextTab"/>
+      <separator/>
+      <item action="LanguageMenu"/>
+      <separator/>
+      <!--
+      <item action="ToggleBookmark"/>
+      <item action="PreviousBookmark"/>
+      <item action="NextBookmark"/>
+      -->
+      <separator/>
+      <item name="Document" label="_Document">
+        <item action="WrapText"/>
+        <item action="LineNumbers"/>
+      </item>
+      <separator/>
+      <item action="FocusDoc"/>
+      <separator/>
+      <placeholder name="UserMenu"/>
+      <separator/>
+    </item>
+
+    <item name="Tools" label="_Tools">
+      <separator/>
+      <placeholder name="ToolsMenu"/>
+      <separator/>
+      <placeholder name="UserMenu"/>
+      <separator/>
+      <item action="StopJob"/>
+      <separator/>
+    </item>
+
+    <item name="Settings" label="_Settings">
+      <separator/>
+      <item action="ShowToolbar"/>
+      <item action="ToolbarStyle"/>
+      <separator/>
+      <item action="ConfigureShortcuts"/>
+      <separator/>
+      <item action="Preferences"/>
+      <separator/>
+    </item>
+
+    <item name="Window" label="_Window">
+      <separator/>
+      <item action="NoDocuments"/>
+      <placeholder name="DocList"/>
+      <separator/>
+    </item>
+
+    <item name="Help" label="_Help">
+      <separator/>
+      <item action="About"/>
+      <separator/>
+    </item>
+
+  </widget> <!-- Menubar -->
+
+  <widget name="Toolbar">
+    <separator/>
+    <item action="NewDoc"/>
+    <separator/>
+    <item action="Open"/>
+    <item action="Save"/>
+    <item action="SaveAs"/>
+    <separator/>
+    <item action="Undo"/>
+    <item action="Redo"/>
+    <separator/>
+    <item action="Cut"/>
+    <item action="Copy"/>
+    <item action="Paste"/>
+    <separator/>
+
+    <item action="Find"/>
+    <item action="Replace"/>
+
+    <separator/>
+    <placeholder name="BuildToolbar">
+      <item action="StopJob"/>
+    </placeholder>
+    <separator/>
+
+  </widget> <!-- Toolbar -->
+
+  <widget name="Popup">
+    <separator/>
+    <placeholder name="PopupStart"/>
+    <separator/>
+    <item action="Undo"/>
+    <item action="Redo"/>
+    <separator/>
+    <item action="Cut"/>
+    <item action="Copy"/>
+    <item action="Paste"/>
+    <separator/>
+    <item action="SelectAll"/>
+    <separator/>
+    <item action="BookmarksMenu"/>
+    <separator/>
+    <placeholder name="PopupEnd"/>
+    <separator/>
+  </widget> <!-- Popup -->
+
+</object> <!-- Editor -->
+
+</ui>
+"""
 
 
 if __name__ == '__main__':
