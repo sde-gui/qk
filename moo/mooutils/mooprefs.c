@@ -238,8 +238,16 @@ moo_prefs_key_registered (const char *key)
 const GValue*
 moo_prefs_get (const char *key)
 {
+    const GValue *val;
+
     g_return_val_if_fail (key != NULL, NULL);
-    return prefs_get (instance(), key);
+
+    val = prefs_get (instance(), key);
+
+    if (!val)
+        g_warning ("%s: key %s not registered", G_STRLOC, key);
+
+    return val;
 }
 
 
