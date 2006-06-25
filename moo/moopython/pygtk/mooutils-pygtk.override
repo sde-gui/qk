@@ -23,6 +23,7 @@ headers
 #include "mooutils/moouixml.h"
 #include "mooutils/moomenuaction.h"
 #include "mooutils/mooundo.h"
+#include "moofileview/moofileview.h"
 #include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
 

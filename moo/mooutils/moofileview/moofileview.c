@@ -402,7 +402,7 @@ static void     file_view_paste_clipboard   (MooFileView    *fileview);
 
 
 /* MOO_TYPE_FILE_VIEW */
-G_DEFINE_TYPE (MooFileView, _moo_file_view, GTK_TYPE_VBOX)
+G_DEFINE_TYPE (MooFileView, moo_file_view, GTK_TYPE_VBOX)
 
 enum {
     PROP_0,
@@ -448,7 +448,7 @@ enum {
 static guint signals[LAST_SIGNAL];
 
 static void
-_moo_file_view_class_init (MooFileViewClass *klass)
+moo_file_view_class_init (MooFileViewClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
@@ -830,7 +830,7 @@ _moo_file_view_class_init (MooFileViewClass *klass)
 
 
 static void
-_moo_file_view_init (MooFileView *fileview)
+moo_file_view_init (MooFileView *fileview)
 {
     fileview->priv = g_new0 (MooFileViewPrivate, 1);
     fileview->priv->show_hidden_files = FALSE;
@@ -916,7 +916,7 @@ moo_file_view_finalize (GObject *object)
     g_free (fileview->priv);
     fileview->priv = NULL;
 
-    G_OBJECT_CLASS (_moo_file_view_parent_class)->finalize (object);
+    G_OBJECT_CLASS (moo_file_view_parent_class)->finalize (object);
 }
 
 
@@ -924,7 +924,7 @@ static void
 moo_file_view_hide (GtkWidget *widget)
 {
     cancel_drop_open (MOO_FILE_VIEW (widget));
-    GTK_WIDGET_CLASS(_moo_file_view_parent_class)->hide (widget);
+    GTK_WIDGET_CLASS(moo_file_view_parent_class)->hide (widget);
 }
 
 
@@ -1225,7 +1225,7 @@ init_actions (MooFileView *fileview)
 
 
 MooUIXML*
-_moo_file_view_get_ui_xml (MooFileView *fileview)
+moo_file_view_get_ui_xml (MooFileView *fileview)
 {
     g_return_val_if_fail (MOO_IS_FILE_VIEW (fileview), NULL);
     return fileview->priv->ui_xml;
@@ -1233,7 +1233,7 @@ _moo_file_view_get_ui_xml (MooFileView *fileview)
 
 
 GtkActionGroup*
-_moo_file_view_get_actions (MooFileView *fileview)
+moo_file_view_get_actions (MooFileView *fileview)
 {
     g_return_val_if_fail (MOO_IS_FILE_VIEW (fileview), NULL);
     return fileview->priv->actions;
@@ -1827,9 +1827,9 @@ static void size_data_func  (G_GNUC_UNUSED GObject            *column_or_iconvie
 
 
 gboolean
-_moo_file_view_chdir (MooFileView    *fileview,
-                      const char     *dir,
-                      GError        **error)
+moo_file_view_chdir (MooFileView    *fileview,
+                     const char     *dir,
+                     GError        **error)
 {
     gboolean result;
 
@@ -1870,7 +1870,7 @@ moo_file_view_go_up (MooFileView *fileview)
         const char *path = _moo_folder_get_path (parent);
         char *name = g_path_get_basename (_moo_folder_get_path (fileview->priv->current_dir));
 
-        if (_moo_file_view_chdir (fileview, path, NULL))
+        if (moo_file_view_chdir (fileview, path, NULL))
             _moo_file_view_select_name (fileview, name);
 
         g_free (name);
@@ -1888,7 +1888,7 @@ moo_file_view_go_home (MooFileView *fileview)
     if (fileview->priv->entry_state)
         stop_path_entry (fileview, TRUE);
 
-    if (!_moo_file_view_chdir (fileview, fileview->priv->home_dir, &error))
+    if (!moo_file_view_chdir (fileview, fileview->priv->home_dir, &error))
     {
         g_warning ("%s: could not go home", G_STRLOC);
 
@@ -1926,7 +1926,7 @@ file_list_row_activated (MooFileView    *fileview,
     {
         GError *error = NULL;
 
-        if (!_moo_file_view_chdir (fileview, _moo_file_name (file), &error))
+        if (!moo_file_view_chdir (fileview, _moo_file_name (file), &error))
         {
             g_warning ("%s: could not go into '%s'",
                        G_STRLOC, _moo_file_name (file));
@@ -2134,7 +2134,7 @@ moo_file_view_go (MooFileView *fileview,
     {
         fileview->priv->history->block++;
 
-        if (!_moo_file_view_chdir (fileview, dir, &error))
+        if (!moo_file_view_chdir (fileview, dir, &error))
         {
             g_warning ("%s: could not go into '%s'",
                        G_STRLOC, dir);
@@ -2180,7 +2180,7 @@ moo_file_view_set_property (GObject        *object,
     switch (prop_id)
     {
         case PROP_CURRENT_DIRECTORY:
-            _moo_file_view_chdir (fileview, g_value_get_string (value), NULL);
+            moo_file_view_chdir (fileview, g_value_get_string (value), NULL);
             break;
 
         case PROP_HOME_DIRECTORY:
@@ -2319,7 +2319,7 @@ static void
 moo_file_view_unrealize (GtkWidget *widget)
 {
     file_view_clear_clipboard (MOO_FILE_VIEW (widget));
-    GTK_WIDGET_CLASS(_moo_file_view_parent_class)->unrealize (widget);
+    GTK_WIDGET_CLASS(moo_file_view_parent_class)->unrealize (widget);
 }
 
 
@@ -3416,7 +3416,7 @@ bookmark_activate (G_GNUC_UNUSED MooBookmarkMgr *mgr,
     if (activated != fileview)
         return;
 
-    _moo_file_view_chdir (fileview, bookmark->path, NULL);
+    moo_file_view_chdir (fileview, bookmark->path, NULL);
 }
 
 
@@ -3425,7 +3425,7 @@ bookmark_activated (MooFileView    *fileview,
                     MooBookmark    *bookmark)
 {
     g_return_if_fail (bookmark != NULL && bookmark->path != NULL);
-    _moo_file_view_chdir (fileview, bookmark->path, NULL);
+    moo_file_view_chdir (fileview, bookmark->path, NULL);
 }
 
 
@@ -4237,7 +4237,7 @@ file_view_activate_filename (MooFileView    *fileview,
 
     if (g_file_test (path, G_FILE_TEST_IS_DIR))
     {
-        if (!_moo_file_view_chdir (fileview, path, &error))
+        if (!moo_file_view_chdir (fileview, path, &error))
         {
             g_warning ("%s: could not chdir to %s",
                        G_STRLOC, path);
@@ -4263,7 +4263,7 @@ file_view_activate_filename (MooFileView    *fileview,
         g_return_if_reached ();
     }
 
-    if (!_moo_file_view_chdir (fileview, dirname, &error))
+    if (!moo_file_view_chdir (fileview, dirname, &error))
     {
         g_warning ("%s: could not chdir to %s",
                     G_STRLOC, dirname);
@@ -4794,7 +4794,7 @@ drop_open_timeout_func2 (MooFileView *fileview)
             g_warning ("%s: oops", G_STRLOC);
         }
 
-        if (goto_dir && _moo_file_view_chdir (fileview, goto_dir, NULL))
+        if (goto_dir && moo_file_view_chdir (fileview, goto_dir, NULL))
             _moo_file_view_select_name (fileview, NULL);
 
         if (file)

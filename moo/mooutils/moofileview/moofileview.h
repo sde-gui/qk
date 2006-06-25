@@ -22,7 +22,7 @@ G_BEGIN_DECLS
 
 
 #define MOO_TYPE_FILE_VIEW_TYPE         (_moo_file_view_type_get_type ())
-#define MOO_TYPE_FILE_VIEW              (_moo_file_view_get_type ())
+#define MOO_TYPE_FILE_VIEW              (moo_file_view_get_type ())
 #define MOO_FILE_VIEW(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FILE_VIEW, MooFileView))
 #define MOO_FILE_VIEW_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FILE_VIEW, MooFileViewClass))
 #define MOO_IS_FILE_VIEW(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_FILE_VIEW))
@@ -79,12 +79,12 @@ struct _MooFileViewClass
 };
 
 
-GType       _moo_file_view_get_type                     (void) G_GNUC_CONST;
+GType       moo_file_view_get_type                      (void) G_GNUC_CONST;
 GType       _moo_file_view_type_get_type                (void) G_GNUC_CONST;
 
 GtkWidget  *_moo_file_view_new                          (void);
 
-gboolean    _moo_file_view_chdir                        (MooFileView    *fileview,
+gboolean    moo_file_view_chdir                         (MooFileView    *fileview,
                                                          const char     *dir,
                                                          GError        **error);
 
@@ -105,8 +105,8 @@ void        _moo_file_view_set_sort_case_sensitive      (MooFileView    *filevie
 void        _moo_file_view_set_typeahead_case_sensitive (MooFileView    *fileview,
                                                          gboolean        case_sensitive);
 
-MooUIXML   *_moo_file_view_get_ui_xml                   (MooFileView    *fileview);
-GtkActionGroup *_moo_file_view_get_actions              (MooFileView    *fileview);
+MooUIXML   *moo_file_view_get_ui_xml                    (MooFileView    *fileview);
+GtkActionGroup *moo_file_view_get_actions               (MooFileView    *fileview);
 
 void        _moo_file_view_add_target                   (MooFileView    *fileview,
                                                          GdkAtom         target,

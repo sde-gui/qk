@@ -231,7 +231,7 @@ file_selector_go_home (MooFileView *fileview)
     if (dir)
         real_dir = g_filename_from_utf8 (dir, -1, NULL, NULL, NULL);
 
-    if (!real_dir || !_moo_file_view_chdir (fileview, real_dir, NULL))
+    if (!real_dir || !moo_file_view_chdir (fileview, real_dir, NULL))
         g_signal_emit_by_name (fileview, "go-home");
 
     /* it's refed in g_idle_add() */
@@ -284,7 +284,7 @@ goto_current_doc_dir (MooFileSelector *filesel)
     if (filename)
     {
         char *dirname = g_path_get_dirname (filename);
-        _moo_file_view_chdir (MOO_FILE_VIEW (filesel), dirname, NULL);
+        moo_file_view_chdir (MOO_FILE_VIEW (filesel), dirname, NULL);
         g_free (dirname);
     }
 }
@@ -301,7 +301,7 @@ moo_file_selector_populate_popup (MooFileView *fileview,
 {
     GtkAction *action;
 
-    action = gtk_action_group_get_action (_moo_file_view_get_actions (fileview), "NewFile");
+    action = gtk_action_group_get_action (moo_file_view_get_actions (fileview), "NewFile");
 
     if (action)
         gtk_action_set_sensitive (action, !selected || !selected->next);
@@ -501,14 +501,14 @@ moo_file_selector_constructor (GType           type,
 
     g_idle_add ((GSourceFunc) file_selector_go_home, g_object_ref (filesel));
 
-    moo_action_group_add_action (_moo_file_view_get_actions (MOO_FILE_VIEW (fileview)),
+    moo_action_group_add_action (moo_file_view_get_actions (MOO_FILE_VIEW (fileview)),
                                  "GoToCurrentDocDir",
                                  "stock-id", GTK_STOCK_JUMP_TO,
                                  "tooltip", "Go to current document directory",
                                  "closure-object", filesel,
                                  "closure-callback", goto_current_doc_dir,
                                  NULL);
-    moo_action_group_add_action (_moo_file_view_get_actions (MOO_FILE_VIEW (fileview)),
+    moo_action_group_add_action (moo_file_view_get_actions (MOO_FILE_VIEW (fileview)),
                                  "NewFile",
                                  "label", "New File...",
                                  "tooltip", "New File...",
@@ -517,7 +517,7 @@ moo_file_selector_constructor (GType           type,
                                  "closure-callback", file_selector_create_file,
                                  NULL);
 
-    xml = _moo_file_view_get_ui_xml (MOO_FILE_VIEW (fileview));
+    xml = moo_file_view_get_ui_xml (MOO_FILE_VIEW (fileview));
     merge_id = moo_ui_xml_new_merge_id (xml);
     moo_ui_xml_insert_markup (xml, merge_id,
                               "MooFileView/Toolbar", -1,

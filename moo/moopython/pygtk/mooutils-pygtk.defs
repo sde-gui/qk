@@ -208,6 +208,9 @@
 )
 
 
+(include "moofileview.defs")
+
+
 ;; Enumerations and flags ...
 
 (define-enum UIWidgetType

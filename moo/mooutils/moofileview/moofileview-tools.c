@@ -211,8 +211,8 @@ _moo_file_view_tools_load (MooFileView *fileview)
 
     g_return_if_fail (MOO_IS_FILE_VIEW (fileview));
 
-    xml = _moo_file_view_get_ui_xml (fileview);
-    group = _moo_file_view_get_actions (fileview);
+    xml = moo_file_view_get_ui_xml (fileview);
+    group = moo_file_view_get_actions (fileview);
     remove_old_tools (fileview, xml, group);
 
     doc = moo_prefs_get_markup ();

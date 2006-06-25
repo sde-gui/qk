@@ -28,8 +28,8 @@ mooedit_defs_files =                         \
     $(moopygtk)/mooeditor.defs               \
     $(moopygtk)/mooplugin.defs
 
-# mooutils_override_files =                    \
-#     $(moopygtk)/moowindow.override
+mooutils_defs_files =                        \
+    $(moopygtk)/moofileview.defs
 
 moopygtk_extra_dist =                        \
     $(moopygtk)/moo-mod.py                   \
@@ -94,7 +94,7 @@ else
 codegen = $(PYTHON) $(PYGTK_CODEGEN_DIR)/codegen.py $(PYGTK_CODEGEN_ARGS)
 endif
 
-$(moopygtk)/mooutils-pygtk.c: $(moopygtk)/mooutils-pygtk.defs $(moopygtk)/mooutils-pygtk.override $(mooutils_override_files) $(codegen_script)
+$(moopygtk)/mooutils-pygtk.c: $(moopygtk)/mooutils-pygtk.defs $(moopygtk)/mooutils-pygtk.override $(mooutils_defs_files) $(codegen_script)
 	mkdir -p $(moopygtk)
 	$(codegen) --prefix _moo_utils \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
