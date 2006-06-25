@@ -1,39 +1,29 @@
-from project.cproject import *
-from project.cconfig import *
-
-class MooProj(CProject):
-    def __init__(self, *args, **kwargs):
-        CProject.__init__(self, *args, **kwargs)
-
-        self.config.make_options = MakeOptions(n_jobs=3)
-
-        runopt = RunOptions(exe='medit', args='--g-fatal-warnings')
-        confopt = ConfigureOptions(args='--enable-debug=full --enable-all-gcc-warnings',
-                                   cflags='-O0 -g3 -pg')
-        debug = BuildConfiguration('debug',
-                                   build_dir='build/debug',
-                                   configure_options=confopt,
-                                   run_options=runopt)
-        self.config.add_conf(debug)
-
-        runopt = RunOptions(exe='medit')
-        confopt = ConfigureOptions(args='--enable-all-gcc-warnings ',
-                                   cflags='-O2 -g')
-        optim = BuildConfiguration('optimized',
-                                   build_dir='build/optimized',
-                                   configure_options=confopt,
-                                   run_options=runopt)
-        self.config.add_conf(optim)
-
-
-__project__ = MooProj
-__version__ = "1.0"
-__name__ = "moo"
-
-__config__ = \
-"""<cconfig version="1.0">
- <active-configuration>debug</active-configuration>
-</cconfig>
-"""
-
-# kate: lang python; indent-width 4; space-indent on; strip on
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<medit-project name="moo" type="C" version="1.0">
+  <make>
+    <n_jobs>3</n_jobs>
+  </make>
+  <configurations>
+    <debug>
+      <run>
+        <exe>medit</exe>
+        <args>--g-fatal-warnings</args>
+      </run>
+      <configure>
+        <args>--enable-debug=full --enable-all-gcc-warnings</args>
+        <cflags>-O0 -g3 -pg</cflags>
+      </configure>
+      <build_dir>build/debug</build_dir>
+    </debug>
+    <optimized>
+      <run>
+        <exe>medit</exe>
+      </run>
+      <configure>
+        <args>--enable-all-gcc-warnings</args>
+      </configure>
+      <build_dir>build/optimized</build_dir>
+    </optimized>
+  </configurations>
+  <active-configuration>debug</active-configuration>
+</medit-project>
