@@ -1354,7 +1354,7 @@ static void     child_visible_notify        (GtkWidget      *child,
     {
         if (GTK_WIDGET_VISIBLE (child))
         {
-            if (nb->priv->tabs_visible)
+            if (nb->priv->show_tabs)
             {
                 gtk_widget_show (page->label->widget);
                 GTK_WIDGET_SET_FLAGS (nb, GTK_CAN_FOCUS);
