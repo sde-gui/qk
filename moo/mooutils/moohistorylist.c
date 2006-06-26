@@ -139,7 +139,7 @@ moo_history_list_class_init (MooHistoryListClass *klass)
                           NULL, NULL,
                           _moo_marshal_VOID__BOXED_POINTER,
                           G_TYPE_NONE, 2,
-                          MOO_TYPE_HISTORY_LIST_ITEM | G_SIGNAL_TYPE_STATIC_SCOPE,
+                          MOO_TYPE_HISTORY_LIST_ITEM,
                           G_TYPE_POINTER);
 
     signals[CHANGED] =
