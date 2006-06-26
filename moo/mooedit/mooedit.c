@@ -963,6 +963,7 @@ moo_edit_set_lang (MooEdit *edit,
         moo_text_view_set_lang (MOO_TEXT_VIEW (edit), lang);
         _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor),
                                      edit->config, moo_lang_id (lang));
+        _moo_edit_apply_settings (edit);
         g_object_notify (G_OBJECT (edit), "has-comments");
     }
 }
@@ -1036,6 +1037,7 @@ _moo_edit_update_config (void)
         MooEdit *edit = l->data;
         _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor), edit->config,
                                      moo_lang_id (moo_text_view_get_lang (MOO_TEXT_VIEW (edit))));
+        _moo_edit_apply_settings (edit);
     }
 }
 
@@ -1075,8 +1077,11 @@ moo_edit_filename_changed (MooEdit    *edit,
     lang_changed = strcmp (lang_id, moo_lang_id (old_lang)) != 0;
 
     if (!lang_changed)
+    {
         _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor),
                                      edit->config, moo_lang_id (lang));
+        _moo_edit_apply_settings (edit);
+    }
 
     _moo_edit_thaw_config_notify (edit);
 }
