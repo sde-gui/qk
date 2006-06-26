@@ -357,15 +357,6 @@ del $(InputDir)$(InputName).tmp
 						RelativePath="..\..\moo\mooedit\mooeditsavemultiple-glade.h">
 					</File>
 					<File
-						RelativePath="..\..\moo\mooedit\mooeditsession-private.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditsession.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditsession.h">
-					</File>
-					<File
 						RelativePath="..\..\moo\mooedit\mooeditwindow.c">
 					</File>
 					<File
@@ -1378,7 +1369,8 @@ del $(InputDir)$(InputName).tmp
 								CommandLine="@echo on
 python ..\..\moo\mooutils\xml2h.py MOO_CREATE_FOLDER_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
 copy /y $(InputDir)$(InputName).tmp $(InputDir)..\$(InputName)-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp"
+del $(InputDir)$(InputName).tmp
+"
 								Outputs="$(InputDir)..\$(InputName)-glade.h"/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -1388,7 +1380,8 @@ del $(InputDir)$(InputName).tmp"
 								CommandLine="@echo on
 python ..\..\moo\mooutils\xml2h.py MOO_CREATE_FOLDER_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
 copy /y $(InputDir)$(InputName).tmp $(InputDir)..\$(InputName)-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp"
+del $(InputDir)$(InputName).tmp
+"
 								Outputs="$(InputDir)..\$(InputName)-glade.h"/>
 						</FileConfiguration>
 					</File>
@@ -1416,7 +1409,8 @@ del $(InputDir)$(InputName).tmp"
 								CommandLine="@echo on
 python ..\..\moo\mooutils\xml2h.py MOO_FILE_PROPS_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
 copy /y $(InputDir)$(InputName).tmp $(InputDir)..\$(InputName)-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp"
+del $(InputDir)$(InputName).tmp
+"
 								AdditionalDependencies=""
 								Outputs="$(InputDir)..\$(InputName)-glade.h"/>
 						</FileConfiguration>
@@ -1427,7 +1421,8 @@ del $(InputDir)$(InputName).tmp"
 								CommandLine="@echo on
 python ..\..\moo\mooutils\xml2h.py MOO_FILE_PROPS_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
 copy /y $(InputDir)$(InputName).tmp $(InputDir)..\$(InputName)-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp"
+del $(InputDir)$(InputName).tmp
+"
 								AdditionalDependencies="$(InputDir)..\$(InputName).h"
 								Outputs="$(InputDir)..\$(InputName)-glade.h"/>
 						</FileConfiguration>
