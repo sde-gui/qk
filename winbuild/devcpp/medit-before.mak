@@ -34,7 +34,6 @@ GENERATED =                                 \
     $(mooedit)/mooprint-glade.h             \
     $(mooedit)/mooeditprefs-glade.h         \
     $(mooedit)/mooeditsavemultiple-glade.h  \
-    $(mooedit)/mooeditcolorsprefs-glade.h   \
     $(mooutils)/stock-moo.h                 \
     $(moofileview)/moofileview-ui.h         \
     $(moofileview)/moofileprops-glade.h     \
@@ -91,9 +90,6 @@ $(mooedit)/mootextfind-glade.h: $(mooedit_srcdir)/glade/mootextfind.glade $(XML2
 $(mooedit)/mooeditprefs-glade.h: $(mooedit_srcdir)/glade/mooeditprefs.glade $(XML2H)
 	python $(XML2H) MOO_EDIT_PREFS_GLADE_UI $(mooedit_srcdir)/glade/mooeditprefs.glade \
 		> $(mooedit)/mooeditprefs-glade.h
-$(mooedit)/mooeditcolorsprefs-glade.h: $(mooedit_srcdir)/glade/mooeditcolorsprefs.glade $(XML2H)
-	python $(XML2H) MOO_EDIT_COLORS_PREFS_GLADE_UI $(mooedit_srcdir)/glade/mooeditcolorsprefs.glade \
-		> $(mooedit)/mooeditcolorsprefs-glade.h
 $(mooedit)/moopluginprefs-glade.h: $(mooedit_srcdir)/glade/moopluginprefs.glade $(XML2H)
 	python $(XML2H) MOO_PLUGIN_PREFS_GLADE_UI $(mooedit_srcdir)/glade/moopluginprefs.glade \
 		> $(mooedit)/moopluginprefs-glade.h
