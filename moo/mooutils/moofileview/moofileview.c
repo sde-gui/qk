@@ -3478,7 +3478,7 @@ file_view_select_iter (MooFileView *fileview,
             if (gtk_tree_model_get_iter_first (fileview->priv->filter_model, &filter_iter))
                 file_view_move_selection (fileview, &filter_iter);
         }
-        else
+        else if (filter_path)
         {
             gtk_tree_model_get_iter (fileview->priv->filter_model,
                                      &filter_iter, filter_path);
