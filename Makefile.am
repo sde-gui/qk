@@ -26,6 +26,7 @@ AM_CFLAGS =					\
 
 ###########################################################################
 
+THANKS = $(srcdir)/THANKS
 CLEANFILES =
 EXTRA_PROGRAMS =
 noinst_PROGRAMS =

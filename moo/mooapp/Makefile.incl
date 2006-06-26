@@ -6,7 +6,8 @@ mooapp = $(moo_prefix)/mooapp
 mooapp_srcdir = $(srcdir)/$(mooapp)
 
 mooapp_built_sources =                        \
-    $(mooapp)/mooappabout-glade.h
+    $(mooapp)/mooappabout-glade.h             \
+    $(mooapp)/THANKS.h
 
 mooapp_include_headers =                      \
     $(mooapp)/mooapp.h
@@ -34,6 +35,9 @@ endif
 $(mooapp)/mooappabout-glade.h: $(mooapp_srcdir)/glade/mooappabout.glade $(XML2H)
 	mkdir -p $(mooapp)
 	sh $(XML2H) MOO_APP_ABOUT_GLADE_UI $(mooapp_srcdir)/glade/mooappabout.glade > $(mooapp)/mooappabout-glade.h
+$(mooapp)/THANKS.h: $(THANKS) $(XML2H)
+	mkdir -p $(mooapp)
+	sh $(XML2H) THANKS $(THANKS) > $(mooapp)/THANKS.h
 
 if MOO_BUILD_APP
 moo_sources += $(mooapp_sources)

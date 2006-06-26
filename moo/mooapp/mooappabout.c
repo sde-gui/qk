@@ -16,6 +16,7 @@
 #endif
 
 #include "mooapp/mooappabout-glade.h"
+#include "mooapp/THANKS.h"
 #include "mooapp/mooappabout.h"
 #include "mooapp/mooapp.h"
 #include "mooapp/moohtml.h"
@@ -49,6 +50,8 @@ show_credits (void)
 {
     MooGladeXML *xml;
     MooHtml *written_by;
+    GtkTextView *thanks;
+    GtkTextBuffer *buffer;
 
     if (credits_dialog)
     {
@@ -76,11 +79,15 @@ show_credits (void)
 #else
     /* XXX */
     {
-        GtkTextBuffer *buffer = gtk_text_view_get_buffer (written_by);
+        buffer = gtk_text_view_get_buffer (written_by);
         gtk_text_buffer_insert_at_cursor (buffer,
                                           "Yevgen Muntyan <muntyan@tamu.edu>", -1);
     }
 #endif
+
+    thanks = moo_glade_xml_get_widget (xml, "thanks");
+    buffer = gtk_text_view_get_buffer (thanks);
+    gtk_text_buffer_insert_at_cursor (buffer, THANKS, -1);
 
     if (about_dialog)
         gtk_window_set_transient_for (GTK_WINDOW (credits_dialog),
