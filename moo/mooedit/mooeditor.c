@@ -280,6 +280,9 @@ moo_editor_init (MooEditor *editor)
     editor->priv = g_new0 (MooEditorPrivate, 1);
 
     editor->priv->lang_mgr = moo_lang_mgr_new ();
+    g_signal_connect_swapped (editor->priv->lang_mgr, "loaded",
+                              G_CALLBACK (apply_prefs), editor);
+
     editor->priv->filter_mgr = moo_filter_mgr_new ();
 
     editor->priv->history = moo_history_list_new ("Editor");

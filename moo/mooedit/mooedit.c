@@ -1053,6 +1053,7 @@ moo_edit_filename_changed (MooEdit    *edit,
     _moo_edit_freeze_config_notify (edit);
 
     moo_edit_config_unset_by_source (edit->config, MOO_EDIT_CONFIG_SOURCE_FILE);
+    _moo_edit_apply_settings (edit);
 
     if (filename)
     {

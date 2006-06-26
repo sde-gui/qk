@@ -46,7 +46,15 @@ static void
 moo_lang_mgr_class_init (MooLangMgrClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+
     gobject_class->finalize = moo_lang_mgr_finalize;
+
+    moo_signal_new_cb ("loaded",
+                       G_OBJECT_CLASS_TYPE (klass),
+                       G_SIGNAL_RUN_LAST,
+                       NULL, NULL, NULL,
+                       _moo_marshal_VOID__VOID,
+                       G_TYPE_NONE, 0);
 }
 
 
@@ -757,6 +765,7 @@ out:
     g_slist_free (lang_xml_list);
 
     moo_lang_mgr_load_styles (mgr);
+    g_signal_emit_by_name (mgr, "loaded");
 }
 
 
