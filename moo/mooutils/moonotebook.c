@@ -1943,7 +1943,16 @@ static void     labels_size_allocate        (MooNotebook    *nb,
     gboolean invalidate = FALSE;
 
     if (!(list = get_visible_pages (nb)))
+    {
+        if (nb->priv->arrows_visible)
+        {
+            nb->priv->arrows_visible = FALSE;
+            nb->priv->arrows_size = 0;
+            gtk_widget_hide (nb->priv->arrows);
+        }
+
         return;
+    }
 
     height = allocation->height;
 
