@@ -297,7 +297,7 @@ _moo_file_props_dialog_new (GtkWidget *parent)
 
     dialog = g_object_new (MOO_TYPE_FILE_PROPS_DIALOG, NULL);
 
-    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
+    moo_window_set_parent (dialog, parent);
 
     return dialog;
 }
@@ -320,7 +320,7 @@ _moo_file_view_create_folder_dialog (GtkWidget  *parent,
     dialog = moo_glade_xml_get_widget (xml, "dialog");
     g_return_val_if_fail (dialog != NULL, NULL);
 
-    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
+    moo_window_set_parent (dialog, parent);
 
     label = moo_glade_xml_get_widget (xml, "label");
     path = g_filename_display_name (_moo_folder_get_path (folder));
@@ -424,7 +424,7 @@ _moo_file_view_save_drop_dialog (GtkWidget          *parent,
     dialog = moo_glade_xml_get_widget (xml, "save_drop_dialog");
     g_return_val_if_fail (dialog != NULL, NULL);
 
-    moo_position_window (dialog, parent, TRUE, FALSE, 0, 0);
+    moo_position_window_at_pointer (dialog, parent);
 
     entry = moo_glade_xml_get_widget (xml, "entry");
 

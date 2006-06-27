@@ -330,7 +330,7 @@ create_new_file_dialog (GtkWidget    *parent,
     dialog = moo_glade_xml_get_widget (*xml, "new_file_dialog");
     g_return_val_if_fail (dialog != NULL, NULL);
 
-    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
+    moo_window_set_parent (dialog, parent);
 
     entry = moo_glade_xml_get_widget (*xml, "entry");
     gtk_entry_set_text (entry, start_text);
@@ -753,7 +753,7 @@ create_save_as_dialog (GtkWidget   *parent,
 
     gtk_window_set_title (GTK_WINDOW (dialog), title);
 
-    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
+    moo_window_set_parent (dialog, parent);
 
     entry = moo_glade_xml_get_widget (*xml, "entry");
 

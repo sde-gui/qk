@@ -275,9 +275,7 @@ static void moo_accel_button_clicked       (MooAccelButton *button)
     if (button->title)
         gtk_window_set_title (GTK_WINDOW (dialog), button->title);
 
-    moo_position_window (dialog,
-                         gtk_widget_get_toplevel (GTK_WIDGET (button)),
-                         FALSE, FALSE, 0, 0);
+    moo_window_set_parent (dialog, GTK_WIDGET (button));
 
     ok_button = moo_glade_xml_get_widget (xml, "ok");
     cancel_button = moo_glade_xml_get_widget (xml, "cancel");

@@ -326,7 +326,7 @@ moo_prefs_dialog_run (MooPrefsDialog *dialog,
 {
     g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
 
-    moo_position_window (GTK_WIDGET (dialog), parent, FALSE, FALSE, 0, 0);
+    moo_window_set_parent (GTK_WIDGET (dialog), parent);
 
     dialog->running = TRUE;
     g_signal_emit_by_name (dialog, "init");

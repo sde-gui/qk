@@ -1320,7 +1320,7 @@ _moo_edit_print_options_dialog (GtkWidget *parent)
     dialog = moo_glade_xml_get_widget (xml, "dialog");
     g_return_if_fail (dialog != NULL);
 
-    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
+    moo_window_set_parent (dialog, parent);
 
     set_options (xml);
 

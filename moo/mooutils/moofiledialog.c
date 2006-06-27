@@ -523,8 +523,7 @@ moo_file_dialog_run (MooFileDialog *dialog)
     filechooser = moo_file_dialog_create_widget (dialog);
 
     if (dialog->priv->parent)
-        moo_position_window (filechooser, dialog->priv->parent,
-                             FALSE, FALSE, 0, 0);
+        moo_window_set_parent (filechooser, dialog->priv->parent);
 
     switch (dialog->priv->type)
     {

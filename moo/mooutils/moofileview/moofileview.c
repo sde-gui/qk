@@ -2941,7 +2941,7 @@ file_view_delete_selected (MooFileView *fileview)
                                      GTK_MESSAGE_WARNING,
                                      GTK_BUTTONS_NONE,
                                      "%s", message);
-    moo_position_window (dialog, GTK_WIDGET (fileview), FALSE, FALSE, 0, 0);
+    moo_window_set_parent (dialog, GTK_WIDGET (fileview));
 
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
                             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -2968,7 +2968,7 @@ file_view_delete_selected (MooFileView *fileview)
                                                  MOO_FILE_IS_DIR (l->data) ? "folder" : "file",
                                                  path);
 
-                moo_position_window (dialog, GTK_WIDGET (fileview), FALSE, FALSE, 0, 0);
+                moo_window_set_parent (dialog, GTK_WIDGET (fileview));
 
                 if (error)
                 {
@@ -3402,7 +3402,7 @@ edit_bookmarks (MooFileView *fileview)
                           G_CALLBACK (gtk_widget_hide_on_delete), NULL);
     }
 
-    moo_position_window (dialog, GTK_WIDGET (fileview), FALSE, FALSE, 0, 0);
+    moo_window_set_parent (dialog, GTK_WIDGET (fileview));
     gtk_window_present (GTK_WINDOW (dialog));
 }
 

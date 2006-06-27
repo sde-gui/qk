@@ -140,13 +140,13 @@ on_hide (GtkWindow *window)
 #endif
 
 
-void
-moo_position_window (GtkWidget  *window,
-                     GtkWidget  *parent,
-                     gboolean    at_mouse,
-                     gboolean    at_coords,
-                     int         x,
-                     int         y)
+static void
+moo_position_window_real (GtkWidget  *window,
+                          GtkWidget  *parent,
+                          gboolean    at_mouse,
+                          gboolean    at_coords,
+                          int         x,
+                          int         y)
 {
     GtkWidget *toplevel = NULL;
 
@@ -206,6 +206,32 @@ moo_position_window (GtkWidget  *window,
 
 
 void
+moo_position_window (GtkWidget  *window,
+                     GtkWidget  *parent,
+                     int         x,
+                     int         y)
+{
+    moo_position_window_real (window, parent, FALSE, TRUE, x, y);
+}
+
+
+void
+moo_position_window_at_pointer (GtkWidget  *window,
+                                GtkWidget  *parent)
+{
+    moo_position_window_real (window, parent, TRUE, FALSE, 0, 0);
+}
+
+
+void
+moo_window_set_parent (GtkWidget  *window,
+                       GtkWidget  *parent)
+{
+    moo_position_window_real (window, parent, FALSE, FALSE, 0, 0);
+}
+
+
+void
 moo_message_dialog (GtkWidget  *parent,
                     GtkMessageType type,
                     const char *text,
@@ -226,7 +252,7 @@ moo_message_dialog (GtkWidget  *parent,
                                     type, text, secondary_text);
     g_return_if_fail (dialog != NULL);
 
-    moo_position_window (dialog, parent, at_mouse, at_coords, x, y);
+    moo_position_window_real (dialog, parent, at_mouse, at_coords, x, y);
 
     gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);
@@ -311,7 +337,7 @@ moo_overwrite_file_dialog (GtkWidget  *parent,
 
     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
 
-    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
+    moo_window_set_parent (dialog, parent);
 
     response = gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);
@@ -339,7 +365,7 @@ moo_font_dialog (GtkWidget  *parent,
         gtk_font_selection_dialog_set_font_name (
                 GTK_FONT_SELECTION_DIALOG (dialog), start_font);
 
-    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
+    moo_window_set_parent (dialog, parent);
 
     if (GTK_RESPONSE_OK == gtk_dialog_run (GTK_DIALOG (dialog)))
         fontname = gtk_font_selection_dialog_get_font_name (

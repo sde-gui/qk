@@ -182,6 +182,7 @@ moo_edit_save_changes_dialog (MooEdit *edit)
 
     gtk_dialog_set_default_response (dialog, GTK_RESPONSE_YES);
 
+    moo_window_set_parent (GTK_WIDGET (dialog), GTK_WIDGET (edit));
     response = gtk_dialog_run (dialog);
     if (response == GTK_RESPONSE_DELETE_EVENT)
         response = GTK_RESPONSE_CANCEL;
@@ -380,7 +381,7 @@ moo_edit_save_multiple_changes_dialog (GSList  *docs,
     xml = moo_glade_xml_new_from_buf (MOO_EDIT_SAVE_MULTIPLE_GLADE_UI, -1, "dialog");
     dialog = moo_glade_xml_get_widget (xml, "dialog");
 
-    moo_position_window (dialog, docs->data, FALSE, FALSE, 0, 0);
+    moo_window_set_parent (dialog, docs->data);
 
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
                             MOO_STOCK_SAVE_NONE, GTK_RESPONSE_NO,
@@ -606,7 +607,7 @@ moo_text_nothing_found_dialog (GtkWidget      *parent,
                                      GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_INFO, GTK_BUTTONS_NONE,
                                      msg_text);
-    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
+    moo_window_set_parent (dialog, parent);
 
     gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CLOSE,
                             GTK_RESPONSE_CANCEL, NULL);
@@ -637,7 +638,7 @@ moo_text_search_from_start_dialog (GtkWidget *widget,
     dialog = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE,
                                      msg);
-    moo_position_window (dialog, widget, FALSE, FALSE, 0, 0);
+    moo_window_set_parent (dialog, widget);
 
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
                             GTK_STOCK_NO, GTK_RESPONSE_CANCEL,
@@ -689,7 +690,7 @@ moo_text_regex_error_dialog (GtkWidget  *parent,
                                      GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_ERROR, GTK_BUTTONS_NONE,
                                      msg_text);
-    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
+    moo_window_set_parent (dialog, parent);
     gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CLOSE,
                             GTK_RESPONSE_CANCEL, NULL);
     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
@@ -712,7 +713,7 @@ moo_text_prompt_on_replace_dialog (GtkWidget *parent)
     dialog = moo_glade_xml_get_widget (xml, "prompt_on_replace_dialog");
     g_object_unref (xml);
 
-    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
+    moo_window_set_parent (dialog, parent);
 
     return dialog;
 }

@@ -319,7 +319,7 @@ create_grep_dialog (MooEditWindow  *window,
                                      GTK_RESPONSE_OK);
     gtk_dialog_set_response_sensitive (GTK_DIALOG (stuff->grep_dialog),
                                        GTK_RESPONSE_OK, FALSE);
-    moo_position_window (stuff->grep_dialog, GTK_WIDGET (window), FALSE, FALSE, 0, 0);
+    moo_window_set_parent (stuff->grep_dialog, GTK_WIDGET (window));
 
     g_signal_connect (stuff->grep_dialog, "delete-event",
                       G_CALLBACK (gtk_widget_hide_on_delete), NULL);
@@ -364,7 +364,7 @@ create_find_dialog (MooEditWindow  *window,
                                      GTK_RESPONSE_OK);
     gtk_dialog_set_response_sensitive (GTK_DIALOG (stuff->find_dialog),
                                        GTK_RESPONSE_OK, FALSE);
-    moo_position_window (stuff->find_dialog, GTK_WIDGET (window), FALSE, FALSE, 0, 0);
+    moo_window_set_parent (stuff->find_dialog, GTK_WIDGET (window));
 
     g_signal_connect (stuff->find_dialog, "delete-event",
                       G_CALLBACK (gtk_widget_hide_on_delete), NULL);

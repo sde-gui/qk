@@ -37,12 +37,15 @@ void        moo_message_dialog              (GtkWidget  *parent,
                                              gboolean    at_coords,
                                              int         x,
                                              int         y);
+
 void        moo_position_window             (GtkWidget  *window,
                                              GtkWidget  *parent,
-                                             gboolean    at_mouse,
-                                             gboolean    at_coords,
                                              int         x,
                                              int         y);
+void        moo_position_window_at_pointer  (GtkWidget  *window,
+                                             GtkWidget  *parent);
+void        moo_window_set_parent           (GtkWidget  *window,
+                                             GtkWidget  *parent);
 
 void        moo_error_dialog                (GtkWidget  *parent,
                                              const char *text,

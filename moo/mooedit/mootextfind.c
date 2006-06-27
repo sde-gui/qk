@@ -356,7 +356,7 @@ moo_find_setup (MooFind        *find,
     g_return_if_fail (MOO_IS_FIND (find));
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
 
-    moo_position_window (GTK_WIDGET (find), GTK_WIDGET (view), FALSE, FALSE, 0, 0);
+    moo_window_set_parent (GTK_WIDGET (find), GTK_WIDGET (view));
 
     buffer = gtk_text_view_get_buffer (view);
     search_entry = moo_glade_xml_get_widget (find->xml, "search_entry");
@@ -1355,7 +1355,7 @@ moo_text_view_run_goto_line (GtkTextView *view)
     g_signal_connect (scale, "value-changed", G_CALLBACK (update_spin_value), spin);
     g_signal_connect (spin, "value-changed", G_CALLBACK (update_scale_value), scale);
 
-    moo_position_window (dialog, GTK_WIDGET (view), FALSE, FALSE, 0, 0);
+    moo_window_set_parent (dialog, GTK_WIDGET (view));
 
     g_object_unref (xml);
 
