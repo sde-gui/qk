@@ -37,7 +37,7 @@ medit sources are tracked using mercurial, therefore there is no
 CVS or SVN access. You may browse medit repository online at
 http://mooedit.sourceforge.net/hg/moo.
 To check out a copy of medit repository, install mercurial, and do
-hg clone http://mooedit.sourceforge.net/hg/moo .
+hg clone http://mooedit.sourceforge.net/hg/moo
 This will create a new directory named 'moo' with medit sources inside.
 To update them later on, do
 hg pull; hg update

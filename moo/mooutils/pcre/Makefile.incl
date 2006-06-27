@@ -37,7 +37,7 @@ endif
 
 moo_extra_dist +=                              \
     $(moopcre)/AUTHORS                         \
-    $(moopcre)/COPYING                         \
+    $(moopcre)/COPYING.pcre                    \
     $(moopcre)/ChangeLog                       \
     $(moopcre)/NEWS                            \
     $(moopcre)/dftables.c                      \
