@@ -119,7 +119,7 @@ cmpl_data_read_simple_file (CmplData *data)
 
     list = parse_words (contents, NULL, data->path);
     data->cmpl = moo_completion_new_text (list);
-    g_message ("read %d words from %s", g_list_length (list), data->path);
+//     g_message ("read %d words from %s", g_list_length (list), data->path);
 
     g_free (contents);
 }
@@ -245,8 +245,8 @@ cmpl_data_read_config_file (CmplData *data)
             continue;
         }
 
-        g_message ("read %d words for patttern '%s' from %s",
-                   g_list_length (words), pattern, data->path);
+//         g_message ("read %d words for patttern '%s' from %s",
+//                    g_list_length (words), pattern, data->path);
 
         group = moo_completion_new_group (data->cmpl, NULL);
         moo_completion_group_add_data (group, words);
@@ -384,7 +384,7 @@ cmpl_plugin_check_file (CmplPlugin  *plugin,
     data->path = g_strdup (path);
     data->type = type;
     data->mtime = buf.st_mtime;
-    g_message ("found file '%s' for lang '%s'", path, id);
+//     g_message ("found file '%s' for lang '%s'", path, id);
 }
 
 
