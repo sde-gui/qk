@@ -46,8 +46,9 @@ configure has the following medit-specific options:
 
   --with-system-pcre      whether to use system copy of pcre library (default
                           = YES)
-    medit needs pcre library version not older than 6.4. If it's not available,
-    included copy will be built.
+    medit needs pcre library version not older than 6.4. If it's not available
+    or if installed version of the library doesn't have unicode support (this is
+    the case with default FreeBSD port), included copy will be built.
 
   The following four options control components of libmoo which get built. Only
   --without-mooterm may be used with medit, since it uses all other components.
