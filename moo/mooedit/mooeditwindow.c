@@ -1398,7 +1398,8 @@ static void     close_others_activated  (GtkWidget          *item,
     list = moo_edit_window_list_docs (window);
     list = g_slist_remove (list, edit);
 
-    moo_editor_close_docs (window->priv->editor, list, TRUE);
+    if (list)
+        moo_editor_close_docs (window->priv->editor, list, TRUE);
 
     g_slist_free (list);
 }
@@ -1415,6 +1416,7 @@ notebook_switch_page (G_GNUC_UNUSED MooNotebook *notebook,
 {
     edit_changed (window, get_nth_tab (window, page_num));
     moo_edit_window_check_actions (window);
+    moo_edit_window_update_doc_list (window);
     g_object_notify (G_OBJECT (window), "active-doc");
 }
 
@@ -1668,14 +1670,6 @@ moo_edit_window_set_active_doc (MooEditWindow *window,
     g_return_if_fail (page >= 0);
 
     moo_notebook_set_current_page (window->priv->notebook, page);
-
-    if (!window->priv->doc_list_update_idle)
-    {
-        GtkToggleAction *action;
-        action = g_object_get_data (G_OBJECT (edit), "moo-doc-list-action");
-        g_return_if_fail (action != NULL);
-        gtk_toggle_action_set_active (action, TRUE);
-    }
 }
 
 
@@ -2339,7 +2333,7 @@ get_pane_element (const char *pane_id,
 
 
 static PaneParams *
-load_pane_params (const char         *pane_id)
+load_pane_params (const char *pane_id)
 {
     MooMarkupNode *node;
     PaneParams *params;
@@ -2506,9 +2500,9 @@ pane_size_changed (MooEditWindow      *window,
  */
 
 static void
-clear_statusbar_message (MooEditWindow *window)
+clear_statusbar (MooEditWindow *window)
 {
-    moo_edit_window_pop_message (window, NULL);
+    gtk_statusbar_pop (window->priv->statusbar, 0);
 }
 
 
@@ -2519,7 +2513,7 @@ set_statusbar_numbers (MooEditWindow *window,
 {
     char *text = g_strdup_printf ("Line: %d Col: %d", line, column);
     gtk_label_set_text (window->priv->cursor_label, text);
-    clear_statusbar_message (window);
+    clear_statusbar (window);
     g_free (text);
 }
 
@@ -2539,7 +2533,7 @@ update_statusbar (MooEditWindow *window)
     if (!edit)
     {
         gtk_widget_set_sensitive (window->priv->info, FALSE);
-        clear_statusbar_message (window);
+        clear_statusbar (window);
         return;
     }
 
@@ -2596,42 +2590,16 @@ create_statusbar (MooEditWindow *window)
 }
 
 
-guint
-moo_edit_window_push_message (MooEditWindow  *window,
-                              const char     *message,
-                              const char     *id)
-{
-    guint ctx_id;
-
-    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), 0);
-    g_return_val_if_fail (message != NULL, 0);
-
-    ctx_id = id ? gtk_statusbar_get_context_id (window->priv->statusbar, id) : 0;
-    return gtk_statusbar_push (window->priv->statusbar, ctx_id, message);
-}
-
-
-void
-moo_edit_window_pop_message (MooEditWindow  *window,
-                             const char     *id)
-{
-    guint ctx_id;
-
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-
-    ctx_id = id ? gtk_statusbar_get_context_id (window->priv->statusbar, id) : 0;
-    gtk_statusbar_pop (window->priv->statusbar, ctx_id);
-}
-
-
 void
 moo_edit_window_message (MooEditWindow  *window,
                          const char     *message)
 {
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-    g_return_if_fail (message != NULL);
-    moo_edit_window_pop_message (window, NULL);
-    moo_edit_window_push_message (window, message, NULL);
+
+    gtk_statusbar_pop (window->priv->statusbar, 0);
+
+    if (message)
+        gtk_statusbar_push (window->priv->statusbar, 0, message);
 }
 
 

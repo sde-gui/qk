@@ -121,11 +121,6 @@ GtkWidget   *moo_edit_window_get_output_pane        (MooEditWindow  *window);
 
 void         moo_edit_window_message                (MooEditWindow  *window,
                                                      const char     *message);
-guint        moo_edit_window_push_message           (MooEditWindow  *window,
-                                                     const char     *message,
-                                                     const char     *id);
-void         moo_edit_window_pop_message            (MooEditWindow  *window,
-                                                     const char     *id);
 
 
 G_END_DECLS
