@@ -344,7 +344,7 @@ moo_app_about_dialog (GtkWidget *parent)
     if (parent)
         parent = gtk_widget_get_toplevel (parent);
 
-    if (parent && GTK_WIDGET_TOPLEVEL (parent))
+    if (parent && GTK_IS_WINDOW (parent))
         gtk_window_set_transient_for (GTK_WINDOW (about_dialog), GTK_WINDOW (parent));
 
     gtk_window_present (GTK_WINDOW (about_dialog));

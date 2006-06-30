@@ -3226,7 +3226,7 @@ drag_scroll_timeout (MooIconView *view)
 
     toplevel = gtk_widget_get_toplevel (widget);
 
-    if (!GTK_WIDGET_TOPLEVEL (toplevel))
+    if (!GTK_IS_WINDOW (toplevel))
     {
         g_critical ("%s: oops", G_STRLOC);
         goto out;

@@ -155,7 +155,7 @@ moo_position_window_real (GtkWidget  *window,
 
     if (parent)
         toplevel = gtk_widget_get_toplevel (parent);
-    if (toplevel && !GTK_WIDGET_TOPLEVEL (toplevel))
+    if (toplevel && !GTK_IS_WINDOW (toplevel))
         toplevel = NULL;
 
     if (toplevel)
@@ -171,7 +171,7 @@ moo_position_window_real (GtkWidget  *window,
 
     if (!at_mouse && !at_coords && parent && GTK_WIDGET_REALIZED (parent))
     {
-        if (GTK_WIDGET_TOPLEVEL (parent))
+        if (GTK_IS_WINDOW (parent))
         {
             gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_CENTER_ON_PARENT);
         }
@@ -245,7 +245,7 @@ moo_message_dialog (GtkWidget  *parent,
 
     if (parent)
         toplevel = gtk_widget_get_toplevel (parent);
-    if (!toplevel || !GTK_WIDGET_TOPLEVEL (toplevel))
+    if (!toplevel || !GTK_IS_WINDOW (toplevel))
         toplevel = NULL;
 
     dialog = create_message_dialog (toplevel ? GTK_WINDOW (toplevel) : NULL,
