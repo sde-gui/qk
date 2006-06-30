@@ -24,6 +24,7 @@ G_BEGIN_DECLS
 
 #define MOO_TYPE_EDIT_ON_EXTERNAL_CHANGES   (moo_edit_on_external_changes_get_type ())
 #define MOO_TYPE_EDIT_STATUS                (moo_edit_status_get_type ())
+#define MOO_TYPE_EDIT_STATE                 (moo_edit_state_get_type ())
 #define MOO_TYPE_EDIT_FILE_INFO             (moo_edit_file_info_get_type ())
 
 #define MOO_TYPE_EDIT_BOOKMARK              (moo_edit_bookmark_get_type ())
@@ -57,8 +58,16 @@ typedef enum {
     MOO_EDIT_CLEAN              = 1 << 4  /* doesn't prompt if it's closed, even if it's modified*/
 } MooEditStatus;
 
+typedef enum {
+    MOO_EDIT_STATE_NORMAL,
+    MOO_EDIT_STATE_LOADING,
+    MOO_EDIT_STATE_SAVING,
+    MOO_EDIT_STATE_PRINTING
+} MooEditState;
+
 #define MOO_EDIT_IS_MODIFIED(edit)  (moo_edit_get_status (edit) & MOO_EDIT_MODIFIED)
 #define MOO_EDIT_IS_CLEAN(edit)     (moo_edit_get_status (edit) & MOO_EDIT_CLEAN)
+#define MOO_EDIT_IS_BUSY(edit)      (moo_edit_get_state (edit) != MOO_EDIT_STATE_NORMAL)
 
 typedef struct _MooEditFileInfo MooEditFileInfo;
 typedef struct _MooEditBookmark MooEditBookmark;
@@ -114,11 +123,12 @@ struct _MooEditClass
 };
 
 
-GType            moo_edit_get_type                       (void) G_GNUC_CONST;
-GType            moo_edit_status_get_type                (void) G_GNUC_CONST;
-GType            moo_edit_on_external_changes_get_type   (void) G_GNUC_CONST;
-GType            moo_edit_file_info_get_type             (void) G_GNUC_CONST;
-GType            moo_edit_bookmark_get_type              (void) G_GNUC_CONST;
+GType            moo_edit_get_type                      (void) G_GNUC_CONST;
+GType            moo_edit_status_get_type               (void) G_GNUC_CONST;
+GType            moo_edit_state_get_type                (void) G_GNUC_CONST;
+GType            moo_edit_on_external_changes_get_type  (void) G_GNUC_CONST;
+GType            moo_edit_file_info_get_type            (void) G_GNUC_CONST;
+GType            moo_edit_bookmark_get_type             (void) G_GNUC_CONST;
 
 const char      *moo_edit_get_filename          (MooEdit        *edit);
 const char      *moo_edit_get_basename          (MooEdit        *edit);
@@ -137,6 +147,7 @@ void             moo_edit_set_clean             (MooEdit        *edit,
                                                  gboolean        clean);
 MooEditStatus    moo_edit_get_status            (MooEdit        *edit);
 void             moo_edit_status_changed        (MooEdit        *edit);
+MooEditState     moo_edit_get_state             (MooEdit        *edit);
 
 MooEditFileInfo *moo_edit_file_info_new         (const char     *filename,
                                                  const char     *encoding);

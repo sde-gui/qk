@@ -1256,6 +1256,20 @@ moo_editor_set_active_doc (MooEditor      *editor,
 }
 
 
+static MooEdit *
+find_busy (GSList *docs)
+{
+    while (docs)
+    {
+        if (MOO_EDIT_IS_BUSY (docs->data))
+            return docs->data;
+        docs = docs->next;
+    }
+
+    return NULL;
+}
+
+
 gboolean
 moo_editor_close_window (MooEditor      *editor,
                          MooEditWindow  *window,
@@ -1265,12 +1279,21 @@ moo_editor_close_window (MooEditor      *editor,
     MooEditDialogResponse response;
     GSList *modified;
     gboolean do_close = FALSE;
+    MooEdit *busy = NULL;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
 
     info = window_list_find (editor, window);
     g_return_val_if_fail (info != NULL, FALSE);
+
+    busy = find_busy (info->docs);
+
+    if (busy)
+    {
+        moo_editor_set_active_doc (editor, busy);
+        return FALSE;
+    }
 
     modified = find_modified (info->docs);
 
@@ -1416,9 +1439,18 @@ moo_editor_close_docs (MooEditor      *editor,
 
     for (l = list; l != NULL; l = l->next)
     {
+        WindowInfo *info;
         MooEdit *doc = l->data;
         g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
-        g_return_val_if_fail (window_list_find_doc (editor, doc) != NULL, FALSE);
+
+        info = window_list_find_doc (editor, doc);
+        g_return_val_if_fail (info != NULL, FALSE);
+
+        if (MOO_EDIT_IS_BUSY (doc))
+        {
+            moo_editor_set_active_doc (editor, doc);
+            return FALSE;
+        }
     }
 
     /* do i care? */
@@ -1760,6 +1792,9 @@ _moo_editor_reload (MooEditor      *editor,
 
     g_return_if_fail (MOO_IS_EDITOR (editor));
 
+    if (MOO_EDIT_IS_BUSY (doc))
+        return;
+
     info = window_list_find_doc (editor, doc);
     g_return_if_fail (info != NULL);
 
@@ -1846,6 +1881,9 @@ _moo_editor_save (MooEditor      *editor,
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
 
+    if (MOO_EDIT_IS_BUSY (doc))
+        return FALSE;
+
     info = window_list_find_doc (editor, doc);
     g_return_val_if_fail (info != NULL, FALSE);
 
@@ -1904,6 +1942,9 @@ _moo_editor_save_as (MooEditor      *editor,
     gboolean result = FALSE;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
+
+    if (MOO_EDIT_IS_BUSY (doc))
+        return FALSE;
 
     info = window_list_find_doc (editor, doc);
     g_return_val_if_fail (info != NULL, FALSE);

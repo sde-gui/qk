@@ -14,6 +14,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mootextprint.h"
 #include "mooedit/mooedit.h"
+#include "mooedit/mooedit-private.h"
 #include "mooedit/mooprint-glade.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooutils/mooglade.h"
@@ -86,10 +87,13 @@ static void moo_print_operation_draw_page   (GtkPrintOperation  *operation,
                                              int                 page);
 static void moo_print_operation_end_print   (GtkPrintOperation  *operation,
                                              GtkPrintContext    *context);
+static void moo_print_operation_status_changed (GtkPrintOperation *operation);
 static GtkWidget *moo_print_operation_create_custom_widget (GtkPrintOperation *operation);
 static void moo_print_operation_custom_widget_apply (GtkPrintOperation *operation,
                                                      GtkWidget *widget);
 static void moo_print_operation_load_prefs  (MooPrintOperation  *print);
+static void update_progress                 (GtkPrintOperation  *operation,
+                                             int                 page);
 
 
 G_DEFINE_TYPE(MooPrintOperation, _moo_print_operation, GTK_TYPE_PRINT_OPERATION)
@@ -252,6 +256,7 @@ _moo_print_operation_class_init (MooPrintOperationClass *klass)
     print_class->end_print = moo_print_operation_end_print;
     print_class->create_custom_widget = moo_print_operation_create_custom_widget;
     print_class->custom_widget_apply = moo_print_operation_custom_widget_apply;
+    print_class->status_changed = moo_print_operation_status_changed;
 
     g_object_class_install_property (object_class,
                                      PROP_DOC,
@@ -417,7 +422,7 @@ _moo_edit_page_setup (GtkTextView    *view,
     if (parent)
         parent = gtk_widget_get_toplevel (parent);
 
-    if (parent && GTK_WIDGET_TOPLEVEL (parent))
+    if (parent && GTK_IS_WINDOW (parent))
         parent_window = GTK_WINDOW (parent);
 
     new_page_setup = gtk_print_run_page_setup_dialog (parent_window,
@@ -547,6 +552,9 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
     moo_print_operation_load_prefs (MOO_PRINT_OPERATION (operation));
 
     timer = g_timer_new ();
+
+    if (MOO_IS_EDIT (print->doc))
+        _moo_edit_set_state (MOO_EDIT (print->doc), MOO_EDIT_STATE_PRINTING, "Printing");
 
     if (print->last_line < 0)
         print->last_line = gtk_text_buffer_get_line_count (print->buffer) - 1;
@@ -996,6 +1004,7 @@ moo_print_operation_draw_page (GtkPrintOperation  *operation,
     g_return_if_fail (page < (int) print->pages->len);
 
     timer = g_timer_new ();
+    update_progress (operation, page);
 
     cr = gtk_print_context_get_cairo_context (context);
 
@@ -1023,8 +1032,62 @@ moo_print_operation_end_print (GtkPrintOperation  *operation,
 
     g_array_free (print->pages, TRUE);
 
+    if (MOO_IS_EDIT (print->doc))
+        _moo_edit_set_state (MOO_EDIT (print->doc), MOO_EDIT_STATE_NORMAL, NULL);
+
     print->layout = NULL;
     print->pages = NULL;
+}
+
+
+static void
+update_progress (GtkPrintOperation *op,
+                 int                page)
+{
+    char *text = NULL;
+    MooPrintOperation *print = MOO_PRINT_OPERATION (op);
+    GtkPrintStatus status;
+    MooEditWindow *window;
+    MooEdit *doc;
+
+    if (!MOO_IS_EDIT (print->doc))
+        return;
+
+    doc = MOO_EDIT (print->doc);
+    window = moo_edit_get_window (doc);
+    status = gtk_print_operation_get_status (op);
+
+    if (status == GTK_PRINT_STATUS_FINISHED)
+    {
+        text = g_strdup ("Finished printing");
+    }
+    else if (status == GTK_PRINT_STATUS_GENERATING_DATA && page >= 0)
+    {
+        int n_pages;
+        g_object_get (print, "n-pages", &n_pages, NULL);
+        text = g_strdup_printf ("Printing page %d of %d", page, n_pages);
+    }
+    else
+    {
+        text = g_strdup (gtk_print_operation_get_status_string (op));
+    }
+
+    if (window)
+        moo_edit_window_message (window, NULL);
+
+    if (moo_edit_get_state (doc) == MOO_EDIT_STATE_PRINTING)
+        _moo_edit_set_progress_text (doc, text);
+    else if (window)
+        moo_edit_window_message (window, text);
+
+    g_free (text);
+}
+
+
+static void
+moo_print_operation_status_changed (GtkPrintOperation *op)
+{
+    update_progress (op, -1);
 }
 
 
@@ -1083,7 +1146,7 @@ _moo_edit_print (GtkTextView *view,
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
 
     print = g_object_new (MOO_TYPE_PRINT_OPERATION,
-                          "doc", view, "show-progress", TRUE, NULL);
+                          "doc", view, NULL);
 
     if (MOO_IS_EDIT (view))
         _moo_print_operation_set_filename (MOO_PRINT_OPERATION (print),
@@ -1095,7 +1158,7 @@ _moo_edit_print (GtkTextView *view,
 
     parent = gtk_widget_get_toplevel (parent);
 
-    if (GTK_WIDGET_TOPLEVEL (parent))
+    if (GTK_IS_WINDOW (parent))
         parent_window = GTK_WINDOW (parent);
 
     res = gtk_print_operation_run (print, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,

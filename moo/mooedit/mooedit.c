@@ -332,6 +332,7 @@ moo_edit_finalize (GObject *object)
     g_free (edit->priv->display_filename);
     g_free (edit->priv->display_basename);
     g_free (edit->priv->encoding);
+    g_free (edit->priv->progress_text);
     g_free (edit->priv);
     edit->priv = NULL;
 
@@ -367,6 +368,20 @@ moo_edit_dispose (GObject *object)
     {
         _moo_edit_stop_file_watch (edit);
         edit->priv->file_monitor_id = 0;
+    }
+
+    if (edit->priv->progress)
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        edit->priv->progress = NULL;
+        edit->priv->progressbar = NULL;
+    }
+
+    if (edit->priv->progress_timeout)
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        g_source_remove (edit->priv->progress_timeout);
+        edit->priv->progress_timeout = 0;
     }
 
     if (edit->priv->update_bookmarks_idle)
@@ -533,7 +548,7 @@ moo_edit_is_empty (MooEdit *edit)
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
 
-    if (MOO_EDIT_IS_MODIFIED (edit) || edit->priv->filename)
+    if (MOO_EDIT_IS_BUSY (edit) || MOO_EDIT_IS_MODIFIED (edit) || edit->priv->filename)
         return FALSE;
 
     gtk_text_buffer_get_bounds (get_buffer (edit), &start, &end);
@@ -1970,4 +1985,169 @@ moo_edit_popup_menu (GtkWidget *widget)
 {
     _moo_edit_do_popup (MOO_EDIT (widget), NULL);
     return TRUE;
+}
+
+
+/*****************************************************************************/
+/* progress dialogs and stuff
+ */
+
+GType
+moo_edit_state_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+    {
+        static const GEnumValue values[] = {
+            { MOO_EDIT_STATE_NORMAL, (char*) "MOO_EDIT_STATE_NORMAL", (char*) "normal" },
+            { MOO_EDIT_STATE_LOADING, (char*) "MOO_EDIT_STATE_LOADING", (char*) "loading" },
+            { MOO_EDIT_STATE_SAVING, (char*) "MOO_EDIT_STATE_SAVING", (char*) "saving" },
+            { MOO_EDIT_STATE_PRINTING, (char*) "MOO_EDIT_STATE_PRINTING", (char*) "printing" },
+            { 0, NULL, NULL }
+        };
+
+        type = g_enum_register_static ("MooEditState", values);
+    }
+
+    return type;
+}
+
+
+MooEditState
+moo_edit_get_state (MooEdit *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), MOO_EDIT_STATE_NORMAL);
+    return edit->priv->state;
+}
+
+
+static void
+position_progress (MooEdit *edit)
+{
+    GtkAllocation *allocation;
+    int x, y;
+
+    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (GTK_IS_WIDGET (edit->priv->progress));
+
+    if (!GTK_WIDGET_REALIZED (edit))
+        return;
+
+    allocation = &GTK_WIDGET(edit)->allocation;
+
+    x = allocation->width/2 - PROGRESS_WIDTH/2;
+    y = allocation->height/2 - PROGRESS_HEIGHT/2;
+    gtk_text_view_move_child (GTK_TEXT_VIEW (edit),
+                              edit->priv->progress,
+                              x, y);
+}
+
+
+static void
+update_progress (MooEdit *edit)
+{
+    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (GTK_IS_WIDGET (edit->priv->progressbar));
+    g_return_if_fail (edit->priv->progress_text != NULL);
+    gtk_progress_bar_set_text (GTK_PROGRESS_BAR (edit->priv->progressbar),
+                               edit->priv->progress_text);
+}
+
+
+void
+_moo_edit_set_progress_text (MooEdit    *edit,
+                             const char *text)
+{
+    g_free (edit->priv->progress_text);
+    edit->priv->progress_text = g_strdup (text);
+    update_progress (edit);
+}
+
+
+static gboolean
+pulse_progress (MooEdit *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    g_return_val_if_fail (GTK_IS_WIDGET (edit->priv->progressbar), FALSE);
+    gtk_progress_bar_pulse (GTK_PROGRESS_BAR (edit->priv->progressbar));
+    update_progress (edit);
+    return TRUE;
+}
+
+
+static gboolean
+show_progress (MooEdit *edit)
+{
+    GtkWidget *align;
+
+    edit->priv->progress_timeout = 0;
+
+    g_return_val_if_fail (!edit->priv->progress, FALSE);
+
+    edit->priv->progress = gtk_event_box_new ();
+    align = gtk_alignment_new (.5, .5, .0, .0);
+    gtk_container_add (GTK_CONTAINER (edit->priv->progress), align);
+    gtk_alignment_set_padding (GTK_ALIGNMENT (align), 12, 12, 12, 12);
+    gtk_widget_set_size_request (align, PROGRESS_WIDTH, PROGRESS_HEIGHT);
+    edit->priv->progressbar = gtk_progress_bar_new ();
+    gtk_container_add (GTK_CONTAINER (align), edit->priv->progressbar);
+    gtk_widget_show_all (edit->priv->progress);
+
+    gtk_text_view_add_child_in_window (GTK_TEXT_VIEW (edit),
+                                       edit->priv->progress,
+                                       GTK_TEXT_WINDOW_WIDGET,
+                                       0, 0);
+    position_progress (edit);
+    update_progress (edit);
+
+    edit->priv->progress_timeout =
+            g_timeout_add (PROGRESS_TIMEOUT,
+                           (GSourceFunc) pulse_progress,
+                           edit);
+
+    return FALSE;
+}
+
+
+void
+_moo_edit_set_state (MooEdit      *edit,
+                     MooEditState  state,
+                     const char   *text)
+{
+    g_return_if_fail (state == MOO_EDIT_STATE_NORMAL ||
+                      edit->priv->state == MOO_EDIT_STATE_NORMAL);
+
+    if (state == edit->priv->state)
+        return;
+
+    edit->priv->state = state;
+    gtk_text_view_set_editable (GTK_TEXT_VIEW (edit), !state);
+
+    if (!state)
+    {
+        if (edit->priv->progress)
+        {
+            GtkWidget *tmp = edit->priv->progress;
+            edit->priv->progress = NULL;
+            edit->priv->progressbar = NULL;
+            gtk_widget_destroy (tmp);
+        }
+
+        g_free (edit->priv->progress_text);
+        edit->priv->progress_text = NULL;
+
+        if (edit->priv->progress_timeout)
+            g_source_remove (edit->priv->progress_timeout);
+        edit->priv->progress_timeout = 0;
+    }
+    else
+    {
+        if (!edit->priv->progress_timeout)
+            edit->priv->progress_timeout =
+                    g_timeout_add (PROGRESS_TIMEOUT,
+                                   (GSourceFunc) show_progress,
+                                   edit);
+        edit->priv->progress_text = g_strdup (text);
+    }
 }

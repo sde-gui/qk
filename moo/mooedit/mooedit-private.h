@@ -24,6 +24,11 @@
 G_BEGIN_DECLS
 
 
+#define PROGRESS_TIMEOUT    100
+#define PROGRESS_WIDTH      300
+#define PROGRESS_HEIGHT     100
+
+
 extern GSList *_moo_edit_instances;
 void        _moo_edit_add_class_actions     (MooEdit        *edit);
 void        _moo_edit_check_actions         (MooEdit        *edit);
@@ -63,6 +68,13 @@ MooEdit     *_moo_edit_new                  (MooEditor      *editor);
 void         _moo_edit_set_status           (MooEdit        *edit,
                                              MooEditStatus   status);
 
+void         _moo_edit_set_state                (MooEdit        *edit,
+                                                 MooEditState    state,
+                                                 const char     *text);
+void         _moo_edit_create_progress_dialog   (MooEdit        *edit);
+void         _moo_edit_set_progress_text        (MooEdit        *edit,
+                                                 const char     *text);
+
 
 typedef enum {
     MOO_EDIT_LINE_END_NONE,
@@ -97,6 +109,15 @@ struct _MooEditPrivate {
     gulong focus_in_handler_id;
     gboolean modified_on_disk;
     gboolean deleted_from_disk;
+
+    /***********************************************************************/
+    /* Progress dialog and stuff
+    /*/
+    MooEditState state;
+    guint progress_timeout;
+    GtkWidget *progress;
+    GtkWidget *progressbar;
+    char *progress_text;
 
     /***********************************************************************/
     /* Bookmarks

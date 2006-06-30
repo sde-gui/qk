@@ -154,72 +154,42 @@
   (in-module "Moo")
   (c-name "MooEditOnExternalChanges")
   (gtype-id "MOO_TYPE_EDIT_ON_EXTERNAL_CHANGES")
-  (values
-    '("dont-watch-file" "MOO_EDIT_DONT_WATCH_FILE")
-    '("always-alert" "MOO_EDIT_ALWAYS_ALERT")
-    '("always-reload" "MOO_EDIT_ALWAYS_RELOAD")
-    '("reload-if-safe" "MOO_EDIT_RELOAD_IF_SAFE")
-  )
 )
 
 (define-flags Status
   (in-module "Moo")
   (c-name "MooEditStatus")
   (gtype-id "MOO_TYPE_EDIT_STATUS")
-  (values
-    '("modified-on-disk" "MOO_EDIT_MODIFIED_ON_DISK")
-    '("deleted" "MOO_EDIT_DELETED")
-    '("changed-on-disk" "MOO_EDIT_CHANGED_ON_DISK")
-    '("modified" "MOO_EDIT_MODIFIED")
-    '("clean" "MOO_EDIT_CLEAN")
-  )
+)
+
+(define-enum State
+  (in-module "Moo")
+  (c-name "MooEditState")
+  (gtype-id "MOO_TYPE_EDIT_STATE")
 )
 
 (define-flags TextSearchFlags
   (in-module "Moo")
   (c-name "MooTextSearchFlags")
   (gtype-id "MOO_TYPE_TEXT_SEARCH_FLAGS")
-  (values
-    '("caseless" "MOO_TEXT_SEARCH_CASELESS")
-    '("regex" "MOO_TEXT_SEARCH_REGEX")
-  )
 )
 
 (define-flags TextReplaceResponse
   (in-module "Moo")
   (c-name "MooTextReplaceResponse")
   (gtype-id "MOO_TYPE_TEXT_REPLACE_RESPONSE")
-  (values
-    '("stop" "MOO_TEXT_REPLACE_STOP")
-    '("skip" "MOO_TEXT_REPLACE_SKIP")
-    '("do-replace" "MOO_TEXT_REPLACE_DO_REPLACE")
-    '("all" "MOO_TEXT_REPLACE_ALL")
-  )
 )
 
 (define-flags TextStyleMask
   (in-module "Moo")
   (c-name "MooTextStyleMask")
   (gtype-id "MOO_TYPE_TEXT_STYLE_MASK")
-  (values
-    '("foreground" "MOO_TEXT_STYLE_FOREGROUND")
-    '("background" "MOO_TEXT_STYLE_BACKGROUND")
-    '("bold" "MOO_TEXT_STYLE_BOLD")
-    '("italic" "MOO_TEXT_STYLE_ITALIC")
-    '("underline" "MOO_TEXT_STYLE_UNDERLINE")
-    '("strikethrough" "MOO_TEXT_STYLE_STRIKETHROUGH")
-  )
 )
 
 (define-enum TextSelectionType
   (in-module "Moo")
   (c-name "MooTextSelectionType")
   (gtype-id "MOO_TYPE_TEXT_SELECTION_TYPE")
-  (values
-    '("chars" "MOO_TEXT_SELECT_CHARS")
-    '("words" "MOO_TEXT_SELECT_WORDS")
-    '("lines" "MOO_TEXT_SELECT_LINES")
-  )
 )
 
 
@@ -329,6 +299,22 @@
   (c-name "moo_edit_status_changed")
   (return-type "none")
 )
+
+(define-method get_state
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_state")
+  (return-type "MooEditState")
+)
+
+;; (define-method set_state
+;;   (of-object "MooEdit")
+;;   (c-name "_moo_edit_set_state")
+;;   (return-type "none")
+;;   (parameters
+;;     '("MooEditState" "state")
+;;     '("const-char*" "text")
+;;   )
+;; )
 
 (define-function moo_edit_file_info_new
   (c-name "moo_edit_file_info_new")
