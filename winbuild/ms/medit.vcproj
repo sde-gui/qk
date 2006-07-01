@@ -160,6 +160,20 @@ del $(InputDir)$(InputName).tmp
 						Outputs="$(InputDir)medit-ui.h"/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\..\Thanks">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="@echo on
+python ..\..\moo\mooutils\xml2h.py --txt THANKS $(InputPath) &gt;$(InputDir)$(InputName).tmp
+copy /y $(InputDir)$(InputName).tmp $(InputDir)moo\mooapp\THANKS.h &gt;nul
+del $(InputDir)$(InputName).tmp
+"
+						Outputs="$(InputDir)moo\mooapp\THANKS.h"/>
+				</FileConfiguration>
+			</File>
 			<Filter
 				Name="moo"
 				Filter="">
@@ -1513,7 +1527,16 @@ del $(InputDir)$(InputName).tmp
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+			<File
+				RelativePath="..\..\moo\mooutils\pixmaps\medit.ico">
+			</File>
+			<File
+				RelativePath=".\medit.rc">
+			</File>
 		</Filter>
+		<File
+			RelativePath=".\resource.h">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
