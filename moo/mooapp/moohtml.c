@@ -1002,6 +1002,7 @@ moo_html_motion (GtkWidget      *widget,
     {
         x = event->x;
         y = event->y;
+        state = event->state;
     }
 
     if (state & (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK))
