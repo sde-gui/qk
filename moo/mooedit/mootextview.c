@@ -3269,9 +3269,8 @@ update_tab_width (MooTextView *view)
 {
     PangoTabArray *tabs;
     PangoLayout *layout;
-    guint tab_width;
-    int layout_width;
-    const char *string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
+    int tab_width;
+    char *string;
 
     if (!GTK_WIDGET_REALIZED (view))
         return;
@@ -3279,9 +3278,9 @@ update_tab_width (MooTextView *view)
     g_return_if_fail (view->priv->tab_width > 0);
     g_return_if_fail (GTK_WIDGET (view)->style != NULL);
 
+    string = g_strnfill (view->priv->tab_width, ' ');
     layout = gtk_widget_create_pango_layout (GTK_WIDGET (view), string);
-    pango_layout_get_size (layout, &layout_width, NULL);
-    tab_width = (layout_width * view->priv->tab_width) / strlen (string);
+    pango_layout_get_size (layout, &tab_width, NULL);
 
     tabs = pango_tab_array_new (2, FALSE);
     pango_tab_array_set_tab (tabs, 0, PANGO_TAB_LEFT, 0);
@@ -3291,6 +3290,7 @@ update_tab_width (MooTextView *view)
 
     pango_tab_array_free (tabs);
     g_object_unref (layout);
+    g_free (string);
 }
 
 void
