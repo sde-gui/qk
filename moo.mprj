@@ -7,7 +7,7 @@
     <debug>
       <run>
         <exe>medit</exe>
-        <args>--g-fatal-warnings</args>
+        <args>--g-fatal-warnings --standalone</args>
       </run>
       <configure>
         <args>--enable-debug=full --enable-all-gcc-warnings</args>
