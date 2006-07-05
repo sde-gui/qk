@@ -193,23 +193,10 @@ enum {
 static guint signals[LAST_SIGNAL];
 
 
-#if defined(HAVE_SIGNAL)
-static RETSIGTYPE
-sigint_handler (G_GNUC_UNUSED int sig)
-{
-    if (moo_app_instance && moo_app_instance->priv)
-        moo_app_instance->priv->sigintr = TRUE;
-}
-#endif
-
 static void
 moo_app_class_init (MooAppClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-
-#if defined(HAVE_SIGNAL) && defined(SIGINT)
-    signal (SIGINT, sigint_handler);
-#endif
 
     moo_create_stock_items ();
 
@@ -402,6 +389,16 @@ moo_app_instance_init (MooApp *app)
 }
 
 
+#if defined(HAVE_SIGNAL)
+static RETSIGTYPE
+sigint_handler (G_GNUC_UNUSED int sig)
+{
+    if (moo_app_instance && moo_app_instance->priv)
+        moo_app_instance->priv->sigintr = TRUE;
+    signal (SIGINT, SIG_DFL);
+}
+#endif
+
 static GObject*
 moo_app_constructor (GType           type,
                      guint           n_params,
@@ -424,6 +421,10 @@ moo_app_constructor (GType           type,
 
     if (!app->priv->info->full_name)
         app->priv->info->full_name = g_strdup (app->priv->info->short_name);
+
+#if defined(HAVE_SIGNAL) && defined(SIGINT)
+    signal (SIGINT, sigint_handler);
+#endif
 
     install_editor_actions (app);
     install_terminal_actions (app);
@@ -929,9 +930,9 @@ moo_app_send_msg (MooApp     *app,
 
 gboolean
 moo_app_send_files (MooApp  *app,
-                    char   **files)
+                    char   **files,
+                    guint32  stamp)
 {
-    char **p;
     gboolean result;
     GString *msg;
 
@@ -939,15 +940,14 @@ moo_app_send_files (MooApp  *app,
 
     msg = g_string_new (NULL);
 
-    if (!files || !*files)
-        g_string_append_len (msg, CMD_PRESENT, strlen (CMD_PRESENT) + 1);
+    g_string_append_printf (msg, "%s%08x", CMD_OPEN_URIS, stamp);
 
-    for (p = files; p && *p; ++p)
+    while (files && *files)
     {
-        char *freeme = NULL;
+        char *freeme = NULL, *uri;
         const char *basename, *filename;
 
-        basename = *p;
+        basename = *files++;
 
         if (g_path_is_absolute (basename))
         {
@@ -961,13 +961,19 @@ moo_app_send_files (MooApp  *app,
             g_free (dir);
         }
 
-        g_string_append_len (msg, CMD_OPEN_FILE, strlen (CMD_OPEN_FILE));
-        g_string_append_len (msg, filename, strlen (filename) + 1);
+        uri = g_filename_to_uri (filename, NULL, NULL);
+
+        if (uri)
+        {
+            g_string_append (msg, uri);
+            g_string_append (msg, "\r\n");
+        }
 
         g_free (freeme);
+        g_free (uri);
     }
 
-    result = moo_app_send_msg (app, msg->str, msg->len);
+    result = moo_app_send_msg (app, msg->str, msg->len + 1);
 
     g_string_free (msg, TRUE);
     return result;
@@ -991,8 +997,10 @@ check_signal (void)
 {
     if (moo_app_instance && moo_app_instance->priv->sigintr)
     {
+        g_print ("check_signal\n");
         moo_app_instance->priv->sigintr = FALSE;
         MOO_APP_GET_CLASS(moo_app_instance)->quit (moo_app_instance);
+        gtk_main_quit ();
     }
 
     return TRUE;
@@ -1451,7 +1459,40 @@ moo_app_present (MooApp *app)
 
     g_return_if_fail (window != NULL);
 
-    moo_window_present (window);
+    moo_window_present (window, 0);
+}
+
+
+static void
+moo_app_open_uris (MooApp     *app,
+                   const char *data)
+{
+#ifdef MOO_BUILD_EDIT
+    char **uris, **p;
+    guint32 stamp;
+    char *stamp_string;
+
+    stamp_string = g_strndup (data, 8);
+    stamp = strtoul (stamp_string, NULL, 16);
+
+    data += 8;
+    uris = g_strsplit (data, "\r\n", 0);
+
+    for (p = uris; p && *p; ++p)
+    {
+        char *filename = g_filename_from_uri (*p, NULL, NULL);
+
+        if (filename)
+            moo_app_new_file (app, filename);
+
+        g_free (filename);
+    }
+
+    moo_editor_present (app->priv->editor, stamp);
+
+    g_strfreev (uris);
+    g_free (stamp_string);
+#endif /* MOO_BUILD_EDIT */
 }
 
 
@@ -1515,6 +1556,9 @@ moo_app_exec_cmd_real (MooApp             *app,
 
         case MOO_APP_CMD_OPEN_FILE:
             moo_app_new_file (app, data);
+            break;
+        case MOO_APP_CMD_OPEN_URIS:
+            moo_app_open_uris (app, data);
             break;
         case MOO_APP_CMD_QUIT:
             moo_app_quit (app);

@@ -112,7 +112,8 @@ gboolean         moo_app_send_msg               (MooApp     *app,
                                                  const char *data,
                                                  int         len);
 gboolean         moo_app_send_files             (MooApp     *app,
-                                                 char      **files);
+                                                 char      **files,
+                                                 guint32     stamp);
 
 void             moo_app_reload_python_plugins  (void);
 
