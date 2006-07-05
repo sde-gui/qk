@@ -57,6 +57,7 @@ gboolean        moo_mkdir                   (const char *path,
                                              GError    **error);
 
 char          **moo_filenames_from_locale   (char      **files);
+char           *moo_filename_from_locale    (const char *file);
 
 /*
  * C library and WinAPI functions wrappers analogous to glib/gstdio.h

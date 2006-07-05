@@ -339,19 +339,26 @@ moo_filenames_from_locale (char **files)
 
     for (i = 0; files && *files; ++files)
     {
-#ifdef __WIN32__
-        conv[i] = g_locale_to_utf8 (*files, -1, NULL, NULL, NULL);
+        conv[i] = moo_filename_from_locale (*files);
 
         if (!conv[i])
             g_warning ("%s: could not convert '%s' to UTF8", G_STRLOC, *files);
         else
             ++i;
-#else
-        conv[i++] = g_strdup (*files);
-#endif
     }
 
     return conv;
+}
+
+char *
+moo_filename_from_locale (const char *file)
+{
+    g_return_val_if_fail (file != NULL, NULL);
+#ifdef __WIN32__
+    return g_locale_to_utf8 (file, -1, NULL, NULL, NULL);
+#else
+    return g_strdup (file);
+#endif
 }
 
 
