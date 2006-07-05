@@ -142,5 +142,6 @@
   (return-type "gboolean")
   (parameters
     '("strv" "files")
+    '("guint32" "stamp" (default "0"))
   )
 )

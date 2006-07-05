@@ -95,7 +95,8 @@ void             moo_editor_set_active_window (MooEditor    *editor,
 void             moo_editor_set_active_doc  (MooEditor      *editor,
                                              MooEdit        *doc);
 
-void             moo_editor_present         (MooEditor      *editor);
+void             moo_editor_present         (MooEditor      *editor,
+                                             guint32         stamp);
 
 /* lists must be freed, content must not be unrefed */
 GSList          *moo_editor_list_windows    (MooEditor      *editor);

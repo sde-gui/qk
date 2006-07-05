@@ -1206,7 +1206,8 @@ moo_editor_get_active_window (MooEditor *editor)
 
 
 void
-moo_editor_present (MooEditor *editor)
+moo_editor_present (MooEditor *editor,
+                    guint32    stamp)
 {
     MooEditWindow *window;
 
@@ -1218,7 +1219,7 @@ moo_editor_present (MooEditor *editor)
         window = moo_editor_new_window (editor);
 
     g_return_if_fail (window != NULL);
-    moo_window_present (GTK_WINDOW (window));
+    moo_window_present (GTK_WINDOW (window), stamp);
 }
 
 
@@ -1251,7 +1252,7 @@ moo_editor_set_active_doc (MooEditor      *editor,
     g_return_if_fail (info != NULL);
     g_return_if_fail (info->window != NULL);
 
-    moo_window_present (GTK_WINDOW (info->window));
+    moo_window_present (GTK_WINDOW (info->window), 0);
     moo_edit_window_set_active_doc (info->window, doc);
 }
 

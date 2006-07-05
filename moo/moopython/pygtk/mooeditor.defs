@@ -152,6 +152,9 @@
   (of-object "MooEditor")
   (c-name "moo_editor_present")
   (return-type "none")
+  (parameters
+    '("guint32" "stamp" (default "0"))
+  )
   (docstring "present() -> None.\n"
              "\n"
              "Brings top editor window to the front.")
