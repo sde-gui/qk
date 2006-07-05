@@ -13,6 +13,7 @@
 
 #include "medit-ui.h"
 #include <mooapp/mooapp.h>
+#include <mooedit/mooplugin.h>
 #include <mooutils/mooutils-fs.h>
 #include <mooutils/mooutils-misc.h>
 #include <mooutils/moostock.h>
@@ -22,8 +23,18 @@
 #include <string.h>
 #include <stdio.h>
 
+#if GTK_CHECK_VERSION(2,8,0) && defined(GDK_WINDOWING_X11)
+#include <gdk/gdkx.h>
+#define TIMESTAMP (gdk_x11_display_get_user_time (gdk_display_get_default ()))
+#else
+#define TIMESTAMP (0)
+#endif
 
-#define DEFAULT_NEW_INSTANCE FALSE
+
+typedef enum {
+    MODE_SIMPLE,
+    MODE_PROJECT
+} AppMode;
 
 
 int _medit_parse_options (const char *const program_name,
@@ -35,12 +46,13 @@ int _medit_parse_options (const char *const program_name,
  * http://www.zero-based.org/software/opag/
  */
 %%
-u  unique       "Use running instance of application"
 n  new-app      "Run new instance of application"
-s  standalone   "Run new instance of application and do not open input pipe"
-l  log          "[=FILE] Show debug output or write it to FILE" optarg
-   version      "Display version information and exit"          return
-h  help         "Display this help text and exit"               return
+m  mode         "=[simple|project] Use specified mode"              reqarg
+p  project      "=PROJECT Open project file PROJECT"                reqarg
+l  line         "=LINE Open file and position cursor on line LINE"  optarg
+   log          "[=FILE] Show debug output or write it to FILE"     optarg
+   version      "Display version information and exit"              return
+h  help         "Display this help text and exit"                   return
 %%
 /* end of generated code
  ********************************************************/
@@ -50,20 +62,54 @@ static void
 usage (void)
 {
     g_print ("Usage: %s [OPTIONS] [FILES]\n", g_get_prgname ());
-    g_print ("Options:\n");
-
-    g_print ("%s", STR_HELP_UNIQUE);
-    g_print ("%s", STR_HELP_NEW_APP);
-    g_print ("%s", STR_HELP_STANDALONE);
-    g_print ("%s", STR_HELP_LOG);
-    g_print ("%s", STR_HELP_VERSION);
-    g_print ("%s", STR_HELP_HELP);
+    g_print ("Options:\n%s", STR_HELP);
 }
 
 static void
 version (void)
 {
     g_print ("medit %s\n", MOO_VERSION);
+}
+
+
+static void
+check_args (int opt_remain)
+{
+    if (_medit_opt_help)
+    {
+        usage ();
+        exit (0);
+    }
+
+    if (opt_remain < 0)
+    {
+        usage ();
+        exit (1);
+    }
+
+    if (_medit_opt_mode)
+    {
+        if (!_medit_arg_mode ||
+            (strcmp (_medit_arg_mode, "simple") &&
+             strcmp (_medit_arg_mode, "project")))
+        {
+            usage ();
+            exit (1);
+        }
+    }
+
+    if (_medit_opt_project && _medit_arg_mode &&
+        strcmp (_medit_arg_mode, "project"))
+    {
+        usage ();
+        exit (1);
+    }
+
+    if (_medit_opt_version)
+    {
+        version ();
+        exit (0);
+    }
 }
 
 
@@ -76,30 +122,18 @@ main (int argc, char *argv[])
     char **files;
     gpointer window;
     int retval;
-    gboolean new_instance = DEFAULT_NEW_INSTANCE;
+    gboolean new_instance = FALSE;
     gboolean run_input = TRUE;
+    AppMode mode = MODE_SIMPLE;
+    guint32 stamp;
 
     gtk_init (&argc, &argv);
+    stamp = TIMESTAMP;
+
 //     gdk_window_set_debug_updates (TRUE);
 
     opt_remain = _medit_parse_options (g_get_prgname (), argc, argv);
-
-    if (opt_remain < 0)
-    {
-        usage ();
-        return 1;
-    }
-
-    if (_medit_opt_help)
-    {
-        usage ();
-        return 0;
-    }
-    else if (_medit_opt_version)
-    {
-        version ();
-        return 0;
-    }
+    check_args (opt_remain);
 
     if (_medit_opt_log)
     {
@@ -109,16 +143,19 @@ main (int argc, char *argv[])
             moo_set_log_func_window (TRUE);
     }
 
-    if (_medit_opt_unique)
-        new_instance = FALSE;
-    else if (_medit_opt_new_app)
-        new_instance = TRUE;
-
-    if (_medit_opt_standalone)
+    if (_medit_opt_mode)
     {
-        new_instance = TRUE;
-        run_input = FALSE;
+        if (!strcmp (_medit_arg_mode, "simple"))
+            mode = MODE_SIMPLE;
+        else
+            mode = MODE_PROJECT;
     }
+
+    if (_medit_opt_project)
+        mode = MODE_PROJECT;
+
+    if (_medit_opt_new_app || mode == MODE_PROJECT)
+        new_instance = TRUE;
 
     files = moo_filenames_from_locale (argv + opt_remain);
 
@@ -134,13 +171,35 @@ main (int argc, char *argv[])
                         "logo", MOO_STOCK_MEDIT,
                         NULL);
 
-    if ((!new_instance && moo_app_send_files (app, files)) ||
+    if ((!new_instance && moo_app_send_files (app, files, stamp)) ||
          !moo_app_init (app))
     {
         gdk_notify_startup_complete ();
         g_strfreev (files);
         g_object_unref (app);
         return 0;
+    }
+
+    if (mode == MODE_PROJECT)
+    {
+        MooPlugin *plugin;
+
+        plugin = moo_plugin_lookup ("ProjectManager");
+
+        if (!plugin)
+        {
+            g_printerr ("Could not initialize project manager plugin\n");
+            exit (1);
+        }
+
+        if (_medit_arg_project)
+        {
+            char *project = moo_filename_from_locale (_medit_arg_project);
+            g_object_set (plugin, "project", _medit_arg_project, NULL);
+            g_free (project);
+        }
+
+        moo_plugin_set_enabled (plugin, TRUE);
     }
 
     editor = moo_app_get_editor (app);

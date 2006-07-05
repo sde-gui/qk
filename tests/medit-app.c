@@ -14,6 +14,7 @@
 
 #include "medit-ui.h"
 #include <mooapp/mooapp.h>
+#include <mooedit/mooplugin.h>
 #include <mooutils/mooutils-fs.h>
 #include <mooutils/mooutils-misc.h>
 #include <mooutils/moostock.h>
@@ -23,8 +24,18 @@
 #include <string.h>
 #include <stdio.h>
 
+#if GTK_CHECK_VERSION(2,8,0) && defined(GDK_WINDOWING_X11)
+#include <gdk/gdkx.h>
+#define TIMESTAMP (gdk_x11_display_get_user_time (gdk_display_get_default ()))
+#else
+#define TIMESTAMP (0)
+#endif
 
-#define DEFAULT_NEW_INSTANCE FALSE
+
+typedef enum {
+    MODE_SIMPLE,
+    MODE_PROJECT
+} AppMode;
 
 
 int _medit_parse_options (const char *const program_name,
@@ -59,44 +70,49 @@ int _medit_parse_options (const char *const program_name,
 # define STR_ERR_MISSING_ARG_SHORT  "%s: option `-%c' requires an argument\n"
 #endif
 
-#define STR_HELP_UNIQUE "\
-  -u, --unique        Use running instance of application\n"
-
 #define STR_HELP_NEW_APP "\
-  -n, --new-app       Run new instance of application\n"
+  -n, --new-app                  Run new instance of application\n"
 
-#define STR_HELP_STANDALONE "\
-  -s, --standalone    Run new instance of application and do not open input\n\
-                        pipe\n"
+#define STR_HELP_MODE "\
+  -m, --mode=[simple|project]    Use specified mode\n"
+
+#define STR_HELP_PROJECT "\
+  -p, --project=PROJECT          Open project file PROJECT\n"
+
+#define STR_HELP_LINE "\
+  -l, --line=LINE                Open file and position cursor on line LINE\n"
 
 #define STR_HELP_LOG "\
-  -l, --log[=FILE]    Show debug output or write it to FILE\n"
+      --log[=FILE]               Show debug output or write it to FILE\n"
 
 #define STR_HELP_VERSION "\
-      --version       Display version information and exit\n"
+      --version                  Display version information and exit\n"
 
 #define STR_HELP_HELP "\
-  -h, --help          Display this help text and exit\n"
+  -h, --help                     Display this help text and exit\n"
 
 #define STR_HELP "\
-  -u, --unique        Use running instance of application\n\
-  -n, --new-app       Run new instance of application\n\
-  -s, --standalone    Run new instance of application and do not open input\n\
-                        pipe\n\
-  -l, --log[=FILE]    Show debug output or write it to FILE\n\
-      --version       Display version information and exit\n\
-  -h, --help          Display this help text and exit\n"
-
-/* Set to 1 if option --unique (-u) has been specified.  */
-char _medit_opt_unique;
+  -n, --new-app                  Run new instance of application\n\
+  -m, --mode=[simple|project]    Use specified mode\n\
+  -p, --project=PROJECT          Open project file PROJECT\n\
+  -l, --line=LINE                Open file and position cursor on line LINE\n\
+      --log[=FILE]               Show debug output or write it to FILE\n\
+      --version                  Display version information and exit\n\
+  -h, --help                     Display this help text and exit\n"
 
 /* Set to 1 if option --new-app (-n) has been specified.  */
 char _medit_opt_new_app;
 
-/* Set to 1 if option --standalone (-s) has been specified.  */
-char _medit_opt_standalone;
+/* Set to 1 if option --mode (-m) has been specified.  */
+char _medit_opt_mode;
 
-/* Set to 1 if option --log (-l) has been specified.  */
+/* Set to 1 if option --project (-p) has been specified.  */
+char _medit_opt_project;
+
+/* Set to 1 if option --line (-l) has been specified.  */
+char _medit_opt_line;
+
+/* Set to 1 if option --log has been specified.  */
 char _medit_opt_log;
 
 /* Set to 1 if option --version has been specified.  */
@@ -105,25 +121,38 @@ char _medit_opt_version;
 /* Set to 1 if option --help (-h) has been specified.  */
 char _medit_opt_help;
 
-/* Argument to option --log (-l), or a null pointer if no argument.  */
+/* Argument to option --mode (-m).  */
+const char *_medit_arg_mode;
+
+/* Argument to option --project (-p).  */
+const char *_medit_arg_project;
+
+/* Argument to option --line (-l), or a null pointer if no argument.  */
+const char *_medit_arg_line;
+
+/* Argument to option --log, or a null pointer if no argument.  */
 const char *_medit_arg_log;
 
 /* Parse command line options.  Return index of first non-option argument,
    or -1 if an error is encountered.  */
 int _medit_parse_options (const char *const program_name, const int argc, char **const argv)
 {
-  static const char *const optstr__unique = "unique";
   static const char *const optstr__new_app = "new-app";
-  static const char *const optstr__standalone = "standalone";
+  static const char *const optstr__mode = "mode";
+  static const char *const optstr__project = "project";
   static const char *const optstr__version = "version";
   static const char *const optstr__help = "help";
   int i = 0;
-  _medit_opt_unique = 0;
   _medit_opt_new_app = 0;
-  _medit_opt_standalone = 0;
+  _medit_opt_mode = 0;
+  _medit_opt_project = 0;
+  _medit_opt_line = 0;
   _medit_opt_log = 0;
   _medit_opt_version = 0;
   _medit_opt_help = 0;
+  _medit_arg_mode = 0;
+  _medit_arg_project = 0;
+  _medit_arg_line = 0;
   _medit_arg_log = 0;
   while (++i < argc)
   {
@@ -160,10 +189,36 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
         }
         goto error_unknown_long_opt;
        case 'l':
+        if (strncmp (option + 1, "ine", option_len - 1) == 0)
+        {
+          if (option_len <= 1)
+            goto error_long_opt_ambiguous;
+          _medit_arg_line = argument;
+          _medit_opt_line = 1;
+          break;
+        }
         if (strncmp (option + 1, "og", option_len - 1) == 0)
         {
+          if (option_len <= 1)
+            goto error_long_opt_ambiguous;
           _medit_arg_log = argument;
           _medit_opt_log = 1;
+          break;
+        }
+        goto error_unknown_long_opt;
+       case 'm':
+        if (strncmp (option + 1, optstr__mode + 1, option_len - 1) == 0)
+        {
+          if (argument != 0)
+            _medit_arg_mode = argument;
+          else if (++i < argc)
+            _medit_arg_mode = argv [i];
+          else
+          {
+            option = optstr__mode;
+            goto error_missing_arg_long;
+          }
+          _medit_opt_mode = 1;
           break;
         }
         goto error_unknown_long_opt;
@@ -179,27 +234,19 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
           break;
         }
         goto error_unknown_long_opt;
-       case 's':
-        if (strncmp (option + 1, optstr__standalone + 1, option_len - 1) == 0)
+       case 'p':
+        if (strncmp (option + 1, optstr__project + 1, option_len - 1) == 0)
         {
           if (argument != 0)
+            _medit_arg_project = argument;
+          else if (++i < argc)
+            _medit_arg_project = argv [i];
+          else
           {
-            option = optstr__standalone;
-            goto error_unexpec_arg_long;
+            option = optstr__project;
+            goto error_missing_arg_long;
           }
-          _medit_opt_standalone = 1;
-          break;
-        }
-        goto error_unknown_long_opt;
-       case 'u':
-        if (strncmp (option + 1, optstr__unique + 1, option_len - 1) == 0)
-        {
-          if (argument != 0)
-          {
-            option = optstr__unique;
-            goto error_unexpec_arg_long;
-          }
-          _medit_opt_unique = 1;
+          _medit_opt_project = 1;
           break;
         }
         goto error_unknown_long_opt;
@@ -218,6 +265,12 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
        error_unknown_long_opt:
         fprintf (stderr, STR_ERR_UNKNOWN_LONG_OPT, program_name, option);
         return -1;
+       error_long_opt_ambiguous:
+        fprintf (stderr, STR_ERR_LONG_OPT_AMBIGUOUS, program_name, option);
+        return -1;
+       error_missing_arg_long:
+        fprintf (stderr, STR_ERR_MISSING_ARG_LONG, program_name, option);
+        return -1;
        error_unexpec_arg_long:
         fprintf (stderr, STR_ERR_UNEXPEC_ARG_LONG, program_name, option);
         return -1;
@@ -234,24 +287,41 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
          case 'l':
           if (option [1] != '\0')
           {
-            _medit_arg_log = option + 1;
+            _medit_arg_line = option + 1;
             option = "\0";
           }
           else
-            _medit_arg_log = 0;
-          _medit_opt_log = 1;
+            _medit_arg_line = 0;
+          _medit_opt_line = 1;
+          break;
+         case 'm':
+          if (option [1] != '\0')
+            _medit_arg_mode = option + 1;
+          else if (++i < argc)
+            _medit_arg_mode = argv [i];
+          else
+            goto error_missing_arg_short;
+          option = "\0";
+          _medit_opt_mode = 1;
           break;
          case 'n':
           _medit_opt_new_app = 1;
           break;
-         case 's':
-          _medit_opt_standalone = 1;
-          break;
-         case 'u':
-          _medit_opt_unique = 1;
+         case 'p':
+          if (option [1] != '\0')
+            _medit_arg_project = option + 1;
+          else if (++i < argc)
+            _medit_arg_project = argv [i];
+          else
+            goto error_missing_arg_short;
+          option = "\0";
+          _medit_opt_project = 1;
           break;
          default:
           fprintf (stderr, STR_ERR_UNKNOWN_SHORT_OPT, program_name, *option);
+          return -1;
+         error_missing_arg_short:
+          fprintf (stderr, STR_ERR_MISSING_ARG_SHORT, program_name, *option);
           return -1;
         }
       } while (*++option != '\0');
@@ -266,20 +336,54 @@ static void
 usage (void)
 {
     g_print ("Usage: %s [OPTIONS] [FILES]\n", g_get_prgname ());
-    g_print ("Options:\n");
-
-    g_print ("%s", STR_HELP_UNIQUE);
-    g_print ("%s", STR_HELP_NEW_APP);
-    g_print ("%s", STR_HELP_STANDALONE);
-    g_print ("%s", STR_HELP_LOG);
-    g_print ("%s", STR_HELP_VERSION);
-    g_print ("%s", STR_HELP_HELP);
+    g_print ("Options:\n%s", STR_HELP);
 }
 
 static void
 version (void)
 {
     g_print ("medit %s\n", MOO_VERSION);
+}
+
+
+static void
+check_args (int opt_remain)
+{
+    if (_medit_opt_help)
+    {
+        usage ();
+        exit (0);
+    }
+
+    if (opt_remain < 0)
+    {
+        usage ();
+        exit (1);
+    }
+
+    if (_medit_opt_mode)
+    {
+        if (!_medit_arg_mode ||
+            (strcmp (_medit_arg_mode, "simple") &&
+             strcmp (_medit_arg_mode, "project")))
+        {
+            usage ();
+            exit (1);
+        }
+    }
+
+    if (_medit_opt_project && _medit_arg_mode &&
+        strcmp (_medit_arg_mode, "project"))
+    {
+        usage ();
+        exit (1);
+    }
+
+    if (_medit_opt_version)
+    {
+        version ();
+        exit (0);
+    }
 }
 
 
@@ -292,30 +396,18 @@ main (int argc, char *argv[])
     char **files;
     gpointer window;
     int retval;
-    gboolean new_instance = DEFAULT_NEW_INSTANCE;
+    gboolean new_instance = FALSE;
     gboolean run_input = TRUE;
+    AppMode mode = MODE_SIMPLE;
+    guint32 stamp;
 
     gtk_init (&argc, &argv);
+    stamp = TIMESTAMP;
+
 //     gdk_window_set_debug_updates (TRUE);
 
     opt_remain = _medit_parse_options (g_get_prgname (), argc, argv);
-
-    if (opt_remain < 0)
-    {
-        usage ();
-        return 1;
-    }
-
-    if (_medit_opt_help)
-    {
-        usage ();
-        return 0;
-    }
-    else if (_medit_opt_version)
-    {
-        version ();
-        return 0;
-    }
+    check_args (opt_remain);
 
     if (_medit_opt_log)
     {
@@ -325,16 +417,19 @@ main (int argc, char *argv[])
             moo_set_log_func_window (TRUE);
     }
 
-    if (_medit_opt_unique)
-        new_instance = FALSE;
-    else if (_medit_opt_new_app)
-        new_instance = TRUE;
-
-    if (_medit_opt_standalone)
+    if (_medit_opt_mode)
     {
-        new_instance = TRUE;
-        run_input = FALSE;
+        if (!strcmp (_medit_arg_mode, "simple"))
+            mode = MODE_SIMPLE;
+        else
+            mode = MODE_PROJECT;
     }
+
+    if (_medit_opt_project)
+        mode = MODE_PROJECT;
+
+    if (_medit_opt_new_app || mode == MODE_PROJECT)
+        new_instance = TRUE;
 
     files = moo_filenames_from_locale (argv + opt_remain);
 
@@ -350,13 +445,35 @@ main (int argc, char *argv[])
                         "logo", MOO_STOCK_MEDIT,
                         NULL);
 
-    if ((!new_instance && moo_app_send_files (app, files)) ||
+    if ((!new_instance && moo_app_send_files (app, files, stamp)) ||
          !moo_app_init (app))
     {
         gdk_notify_startup_complete ();
         g_strfreev (files);
         g_object_unref (app);
         return 0;
+    }
+
+    if (mode == MODE_PROJECT)
+    {
+        MooPlugin *plugin;
+
+        plugin = moo_plugin_lookup ("ProjectManager");
+
+        if (!plugin)
+        {
+            g_printerr ("Could not initialize project manager plugin\n");
+            exit (1);
+        }
+
+        if (_medit_arg_project)
+        {
+            char *project = moo_filename_from_locale (_medit_arg_project);
+            g_object_set (plugin, "project", _medit_arg_project, NULL);
+            g_free (project);
+        }
+
+        moo_plugin_set_enabled (plugin, TRUE);
     }
 
     editor = moo_app_get_editor (app);
