@@ -148,7 +148,7 @@ $(mooedit)/mooprint-glade.h: $(mooedit_srcdir)/glade/mooprint.glade $(XML2H)
 	sh $(XML2H) MOO_PRINT_GLADE_XML $(mooedit_srcdir)/glade/mooprint.glade \
 		> $(mooedit)/mooprint-glade.h
 
-if MOO_ENABLE_PRINTING
+if GTK_2_10
 mooedit_sources += $(mooedit_printing_sources)
 else
 mooedit_extra_dist = $(mooedit_printing_sources)

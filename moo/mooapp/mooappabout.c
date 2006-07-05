@@ -238,10 +238,6 @@ show_system_info (void)
     g_string_append (text, "Broken gtk theme: yes\n");
 #endif
 
-#ifdef MOO_ENABLE_PRINTING
-    g_string_append (text, "Printing enabled: yes\n");
-#endif
-
     gtk_text_buffer_set_text (buffer, text->str, -1);
     g_string_free (text, TRUE);
 

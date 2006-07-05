@@ -32,11 +32,13 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/mooglade.h"
 #include "moofileview/moofilesystem.h"
-#ifdef MOO_ENABLE_PRINTING
-#include "mooedit/mootextprint.h"
-#endif
 #include <string.h>
 #include <gtk/gtk.h>
+
+#if GTK_CHECK_VERSION(2,10,0)
+#define ENABLE_PRINTING
+#include "mooedit/mootextprint.h"
+#endif
 
 
 #define ACTIVE_DOC moo_edit_window_get_active_doc
@@ -228,7 +230,7 @@ static void line_numbers_toggled                (MooEditWindow      *window,
                                                  gboolean            active);
 
 
-#ifdef MOO_ENABLE_PRINTING
+#ifdef ENABLE_PRINTING
 static void action_page_setup      (MooEditWindow    *window);
 static void action_print           (MooEditWindow    *window);
 #endif
@@ -728,7 +730,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "no-accel", TRUE,
                                  NULL);
 
-#ifdef MOO_ENABLE_PRINTING
+#ifdef ENABLE_PRINTING
     moo_window_class_new_action (window_class, "PageSetup",
                                  "display-name", "Page Setup",
                                  "label", "Page Setup",
@@ -1301,7 +1303,7 @@ action_prev_ph (MooEditWindow *window)
 }
 
 
-#ifdef MOO_ENABLE_PRINTING
+#ifdef ENABLE_PRINTING
 static void
 action_page_setup (MooEditWindow *window)
 {
