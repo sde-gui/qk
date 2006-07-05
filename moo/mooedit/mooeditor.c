@@ -1679,7 +1679,8 @@ moo_editor_open_file (MooEditor      *editor,
 MooEdit *
 moo_editor_open_file_line (MooEditor      *editor,
                            const char     *filename,
-                           int             line)
+                           int             line,
+                           MooEditWindow  *window)
 {
     MooEdit *doc;
 
@@ -1696,7 +1697,7 @@ moo_editor_open_file_line (MooEditor      *editor,
         return doc;
     }
 
-    doc = moo_editor_open_file (editor, NULL, NULL, filename, NULL);
+    doc = moo_editor_open_file (editor, window, NULL, filename, NULL);
     g_return_val_if_fail (doc != NULL, NULL);
 
     /* XXX */

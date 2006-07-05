@@ -87,8 +87,9 @@
   (parameters
     '("const-char*" "filename")
     '("int" "line")
+    '("MooEditWindow*" "window" (null-ok) (default "NULL"))
   )
-  (docstring "open_file_line(filename, line) -> Edit.\n"
+  (docstring "open_file_line(filename, line, window=None) -> Edit.\n"
              "\n"
              "Opens a file and places cursor on the given line.")
 )
