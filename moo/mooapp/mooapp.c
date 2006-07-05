@@ -997,7 +997,6 @@ check_signal (void)
 {
     if (moo_app_instance && moo_app_instance->priv->sigintr)
     {
-        g_print ("check_signal\n");
         moo_app_instance->priv->sigintr = FALSE;
         MOO_APP_GET_CLASS(moo_app_instance)->quit (moo_app_instance);
         gtk_main_quit ();

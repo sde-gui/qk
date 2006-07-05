@@ -127,7 +127,7 @@ const char *_medit_arg_mode;
 /* Argument to option --project (-p).  */
 const char *_medit_arg_project;
 
-/* Argument to option --line (-l), or a null pointer if no argument.  */
+/* Argument to option --line (-l).  */
 const char *_medit_arg_line;
 
 /* Argument to option --log, or a null pointer if no argument.  */
@@ -140,6 +140,7 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   static const char *const optstr__new_app = "new-app";
   static const char *const optstr__mode = "mode";
   static const char *const optstr__project = "project";
+  static const char *const optstr__line = "line";
   static const char *const optstr__version = "version";
   static const char *const optstr__help = "help";
   int i = 0;
@@ -189,11 +190,19 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
         }
         goto error_unknown_long_opt;
        case 'l':
-        if (strncmp (option + 1, "ine", option_len - 1) == 0)
+        if (strncmp (option + 1, optstr__line + 1, option_len - 1) == 0)
         {
           if (option_len <= 1)
             goto error_long_opt_ambiguous;
-          _medit_arg_line = argument;
+          if (argument != 0)
+            _medit_arg_line = argument;
+          else if (++i < argc)
+            _medit_arg_line = argv [i];
+          else
+          {
+            option = optstr__line;
+            goto error_missing_arg_long;
+          }
           _medit_opt_line = 1;
           break;
         }
@@ -286,12 +295,12 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
           return i + 1;
          case 'l':
           if (option [1] != '\0')
-          {
             _medit_arg_line = option + 1;
-            option = "\0";
-          }
+          else if (++i < argc)
+            _medit_arg_line = argv [i];
           else
-            _medit_arg_line = 0;
+            goto error_missing_arg_short;
+          option = "\0";
           _medit_opt_line = 1;
           break;
          case 'm':
@@ -400,6 +409,7 @@ main (int argc, char *argv[])
     gboolean run_input = TRUE;
     AppMode mode = MODE_SIMPLE;
     guint32 stamp;
+    int line = 0;
 
     gtk_init (&argc, &argv);
     stamp = TIMESTAMP;
@@ -479,12 +489,20 @@ main (int argc, char *argv[])
     editor = moo_app_get_editor (app);
     window = moo_editor_new_window (editor);
 
+    if (_medit_arg_line)
+        line = strtol (_medit_arg_line, NULL, 10);
+
     if (files && *files)
     {
         char **p;
 
         for (p = files; p && *p; ++p)
-            moo_editor_new_file (editor, window, NULL, *p, NULL);
+        {
+            if (p == files && _medit_arg_line)
+                moo_editor_open_file_line (editor, *p, line, window);
+            else
+                moo_editor_new_file (editor, window, NULL, *p, NULL);
+        }
     }
 
     g_strfreev (files);

@@ -49,7 +49,7 @@ int _medit_parse_options (const char *const program_name,
 n  new-app      "Run new instance of application"
 m  mode         "=[simple|project] Use specified mode"              reqarg
 p  project      "=PROJECT Open project file PROJECT"                reqarg
-l  line         "=LINE Open file and position cursor on line LINE"  optarg
+l  line         "=LINE Open file and position cursor on line LINE"  reqarg
    log          "[=FILE] Show debug output or write it to FILE"     optarg
    version      "Display version information and exit"              return
 h  help         "Display this help text and exit"                   return
@@ -126,6 +126,7 @@ main (int argc, char *argv[])
     gboolean run_input = TRUE;
     AppMode mode = MODE_SIMPLE;
     guint32 stamp;
+    int line = 0;
 
     gtk_init (&argc, &argv);
     stamp = TIMESTAMP;
@@ -205,12 +206,20 @@ main (int argc, char *argv[])
     editor = moo_app_get_editor (app);
     window = moo_editor_new_window (editor);
 
+    if (_medit_arg_line)
+        line = strtol (_medit_arg_line, NULL, 10);
+
     if (files && *files)
     {
         char **p;
 
         for (p = files; p && *p; ++p)
-            moo_editor_new_file (editor, window, NULL, *p, NULL);
+        {
+            if (p == files && _medit_arg_line)
+                moo_editor_open_file_line (editor, *p, line);
+            else
+                moo_editor_new_file (editor, window, NULL, *p, NULL);
+        }
     }
 
     g_strfreev (files);
