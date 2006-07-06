@@ -243,6 +243,14 @@ get_regex (const char          *pattern,
 }
 
 
+inline static gboolean
+is_word_char (const GtkTextIter *iter)
+{
+    gunichar c = gtk_text_iter_get_char (iter);
+    return c == '_' || g_unichar_isalnum (c);
+}
+
+
 static gboolean
 is_whole_word (const GtkTextIter *start,
                const GtkTextIter *end)
@@ -254,19 +262,13 @@ is_whole_word (const GtkTextIter *start,
 
     if (!gtk_text_iter_starts_line (&s))
     {
-        gunichar c;
         gtk_text_iter_backward_char (&s);
-        c = gtk_text_iter_get_char (&s);
-        if (g_unichar_isalnum (c))
+        if (is_word_char (&s))
             return FALSE;
     }
 
-    if (!gtk_text_iter_ends_line (&e))
-    {
-        gunichar c = gtk_text_iter_get_char (&e);
-        if (g_unichar_isalnum (c))
-            return FALSE;
-    }
+    if (!gtk_text_iter_ends_line (&e) && is_word_char (&e))
+        return FALSE;
 
     return TRUE;
 }
