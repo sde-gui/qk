@@ -124,7 +124,7 @@ char _medit_opt_help;
 /* Argument to option --mode (-m).  */
 const char *_medit_arg_mode;
 
-/* Argument to option --project (-p).  */
+/* Argument to option --project (-p), or a null pointer if no argument.  */
 const char *_medit_arg_project;
 
 /* Argument to option --line (-l).  */
@@ -139,7 +139,6 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
 {
   static const char *const optstr__new_app = "new-app";
   static const char *const optstr__mode = "mode";
-  static const char *const optstr__project = "project";
   static const char *const optstr__line = "line";
   static const char *const optstr__version = "version";
   static const char *const optstr__help = "help";
@@ -244,17 +243,9 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
         }
         goto error_unknown_long_opt;
        case 'p':
-        if (strncmp (option + 1, optstr__project + 1, option_len - 1) == 0)
+        if (strncmp (option + 1, "roject", option_len - 1) == 0)
         {
-          if (argument != 0)
-            _medit_arg_project = argument;
-          else if (++i < argc)
-            _medit_arg_project = argv [i];
-          else
-          {
-            option = optstr__project;
-            goto error_missing_arg_long;
-          }
+          _medit_arg_project = argument;
           _medit_opt_project = 1;
           break;
         }
@@ -318,12 +309,12 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
           break;
          case 'p':
           if (option [1] != '\0')
+          {
             _medit_arg_project = option + 1;
-          else if (++i < argc)
-            _medit_arg_project = argv [i];
+            option = "\0";
+          }
           else
-            goto error_missing_arg_short;
-          option = "\0";
+            _medit_arg_project = 0;
           _medit_opt_project = 1;
           break;
          default:
@@ -476,7 +467,7 @@ main (int argc, char *argv[])
             exit (1);
         }
 
-        if (_medit_arg_project)
+        if (_medit_arg_project && *_medit_arg_project)
         {
             char *project = moo_filename_from_locale (_medit_arg_project);
             g_object_set (plugin, "project", _medit_arg_project, NULL);

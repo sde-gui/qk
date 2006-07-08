@@ -48,7 +48,7 @@ int _medit_parse_options (const char *const program_name,
 %%
 n  new-app      "Run new instance of application"
 m  mode         "=[simple|project] Use specified mode"              reqarg
-p  project      "=PROJECT Open project file PROJECT"                reqarg
+p  project      "=PROJECT Open project file PROJECT"                optarg
 l  line         "=LINE Open file and position cursor on line LINE"  reqarg
    log          "[=FILE] Show debug output or write it to FILE"     optarg
    version      "Display version information and exit"              return
@@ -193,7 +193,7 @@ main (int argc, char *argv[])
             exit (1);
         }
 
-        if (_medit_arg_project)
+        if (_medit_arg_project && *_medit_arg_project)
         {
             char *project = moo_filename_from_locale (_medit_arg_project);
             g_object_set (plugin, "project", _medit_arg_project, NULL);
@@ -216,7 +216,7 @@ main (int argc, char *argv[])
         for (p = files; p && *p; ++p)
         {
             if (p == files && _medit_arg_line)
-                moo_editor_open_file_line (editor, *p, line);
+                moo_editor_open_file_line (editor, *p, line, window);
             else
                 moo_editor_new_file (editor, window, NULL, *p, NULL);
         }
