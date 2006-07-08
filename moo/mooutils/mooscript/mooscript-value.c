@@ -93,7 +93,7 @@ MSValue *
 ms_value_int (int ival)
 {
     MSValue *val = ms_value_new (&types[MS_VALUE_INT]);
-    val->ival = ival;
+    val->u.ival = ival;
     return val;
 }
 
@@ -140,7 +140,7 @@ ms_value_take_string (char *string)
         return ms_value_none ();
 
     val = ms_value_new (&types[MS_VALUE_STRING]);
-    val->str = string;
+    val->u.str = string;
     return val;
 }
 
@@ -152,10 +152,10 @@ ms_value_gvalue (const GValue *gval)
     g_return_val_if_fail (G_IS_VALUE (gval), NULL);
     val = ms_value_new (&types[MS_VALUE_GVALUE]);
 
-    val->gval = g_new (GValue, 1);
-    val->gval->g_type = 0;
-    g_value_init (val->gval, G_VALUE_TYPE (gval));
-    g_value_copy (gval, val->gval);
+    val->u.gval = g_new (GValue, 1);
+    val->u.gval->g_type = 0;
+    g_value_init (val->u.gval, G_VALUE_TYPE (gval));
+    g_value_copy (gval, val->u.gval);
 
     return val;
 }
@@ -166,7 +166,7 @@ ms_value_get_object (MSValue *value)
 {
     g_return_val_if_fail (value != NULL, NULL);
     g_return_val_if_fail (MS_VALUE_TYPE (value) == MS_VALUE_GVALUE, NULL);
-    return g_value_get_object (value->gval);
+    return g_value_get_object (value->u.gval);
 }
 
 
@@ -195,11 +195,11 @@ ms_value_list (guint n_elms)
     guint i;
 
     val = ms_value_new (&types[MS_VALUE_LIST]);
-    val->list.elms = ms_value_array_alloc (n_elms);
-    val->list.n_elms = n_elms;
+    val->u.list.elms = ms_value_array_alloc (n_elms);
+    val->u.list.n_elms = n_elms;
 
     for (i = 0; i < n_elms; ++i)
-        val->list.elms[i] = ms_value_none ();
+        val->u.list.elms[i] = ms_value_none ();
 
     return val;
 }
@@ -213,12 +213,12 @@ ms_value_list_set_elm (MSValue    *list,
     g_return_if_fail (list != NULL);
     g_return_if_fail (elm != NULL);
     g_return_if_fail (MS_VALUE_TYPE (list) == MS_VALUE_LIST);
-    g_return_if_fail (index < list->list.n_elms);
+    g_return_if_fail (index < list->u.list.n_elms);
 
-    if (list->list.elms[index] != elm)
+    if (list->u.list.elms[index] != elm)
     {
-        ms_value_unref (list->list.elms[index]);
-        list->list.elms[index] = ms_value_ref (elm);
+        ms_value_unref (list->u.list.elms[index]);
+        list->u.list.elms[index] = ms_value_ref (elm);
     }
 }
 
@@ -229,8 +229,8 @@ ms_value_dict (void)
     MSValue *val;
 
     val = ms_value_new (&types[MS_VALUE_DICT]);
-    val->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
-                                       (GDestroyNotify) ms_value_unref);
+    val->u.hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+                                         (GDestroyNotify) ms_value_unref);
 
     return val;
 }
@@ -244,7 +244,7 @@ ms_value_dict_get_elm (MSValue    *dict,
     g_return_val_if_fail (dict != NULL, NULL);
     g_return_val_if_fail (key != NULL, NULL);
     g_return_val_if_fail (MS_VALUE_TYPE (dict) == MS_VALUE_DICT, NULL);
-    val = g_hash_table_lookup (dict->hash, key);
+    val = g_hash_table_lookup (dict->u.hash, key);
     return ms_value_ref (val);
 }
 
@@ -260,15 +260,15 @@ ms_value_dict_set_elm (MSValue    *dict,
     g_return_if_fail (key != NULL);
     g_return_if_fail (MS_VALUE_TYPE (dict) == MS_VALUE_DICT);
 
-    old = g_hash_table_lookup (dict->hash, key);
+    old = g_hash_table_lookup (dict->u.hash, key);
 
     if (old == val)
         return;
 
     if (!val)
-        g_hash_table_remove (dict->hash, key);
+        g_hash_table_remove (dict->u.hash, key);
     else
-        g_hash_table_insert (dict->hash, g_strdup (key),
+        g_hash_table_insert (dict->u.hash, g_strdup (key),
                              ms_value_ref (val));
 }
 
@@ -308,7 +308,7 @@ ms_value_unref (MSValue *val)
     switch (MS_VALUE_TYPE (val))
     {
         case MS_VALUE_STRING:
-            g_free (val->str);
+            g_free (val->u.str);
             break;
 
         case MS_VALUE_NONE:
@@ -324,24 +324,24 @@ ms_value_unref (MSValue *val)
             break;
 
         case MS_VALUE_GVALUE:
-            g_value_unset (val->gval);
-            g_free (val->gval);
+            g_value_unset (val->u.gval);
+            g_free (val->u.gval);
             break;
 
         case MS_VALUE_LIST:
-            for (i = 0; i < val->list.n_elms; ++i)
-                ms_value_unref (val->list.elms[i]);
-            ms_value_array_free (val->list.elms,
-                                 val->list.n_elms);
+            for (i = 0; i < val->u.list.n_elms; ++i)
+                ms_value_unref (val->u.list.elms[i]);
+            ms_value_array_free (val->u.list.elms,
+                                 val->u.list.n_elms);
             break;
 
         case MS_VALUE_DICT:
-            g_hash_table_destroy (val->hash);
+            g_hash_table_destroy (val->u.hash);
             break;
 
         case MS_VALUE_FUNC:
-            g_object_unref (val->func.func);
-            ms_value_unref (val->func.obj);
+            g_object_unref (val->u.func.func);
+            ms_value_unref (val->u.func.obj);
             break;
 
         case MS_VALUE_INVALID:
@@ -389,55 +389,55 @@ ms_value_get_bool (MSValue *val)
     switch (MS_VALUE_TYPE (val))
     {
         case MS_VALUE_STRING:
-            return val->str[0] != 0;
+            return val->u.str[0] != 0;
         case MS_VALUE_INT:
-            return val->ival != 0;
+            return val->u.ival != 0;
         case MS_VALUE_NONE:
             return FALSE;
         case MS_VALUE_LIST:
-            return val->list.n_elms != 0;
+            return val->u.list.n_elms != 0;
         case MS_VALUE_DICT:
-            return g_hash_table_size (val->hash) != 0;
+            return g_hash_table_size (val->u.hash) != 0;
         case MS_VALUE_FUNC:
             return TRUE;
         case MS_VALUE_GVALUE:
-            switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->gval)))
+            switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->u.gval)))
             {
                 case G_TYPE_CHAR:
-                    return g_value_get_char (val->gval) != 0;
+                    return g_value_get_char (val->u.gval) != 0;
                 case G_TYPE_UCHAR:
-                    return g_value_get_uchar (val->gval) != 0;
+                    return g_value_get_uchar (val->u.gval) != 0;
                 case G_TYPE_BOOLEAN:
-                    return g_value_get_boolean (val->gval);
+                    return g_value_get_boolean (val->u.gval);
                 case G_TYPE_INT:
-                    return g_value_get_int (val->gval) != 0;
+                    return g_value_get_int (val->u.gval) != 0;
                 case G_TYPE_UINT:
-                    return g_value_get_uint (val->gval) != 0;
+                    return g_value_get_uint (val->u.gval) != 0;
                 case G_TYPE_LONG:
-                    return g_value_get_long (val->gval) != 0;
+                    return g_value_get_long (val->u.gval) != 0;
                 case G_TYPE_ULONG:
-                    return g_value_get_ulong (val->gval) != 0;
+                    return g_value_get_ulong (val->u.gval) != 0;
                 case G_TYPE_INT64:
-                    return g_value_get_int64 (val->gval) != 0;
+                    return g_value_get_int64 (val->u.gval) != 0;
                 case G_TYPE_UINT64:
-                    return g_value_get_uint64 (val->gval) != 0;
+                    return g_value_get_uint64 (val->u.gval) != 0;
                 case G_TYPE_ENUM:
-                    return g_value_get_enum (val->gval) != 0;
+                    return g_value_get_enum (val->u.gval) != 0;
                 case G_TYPE_FLAGS:
-                    return g_value_get_flags (val->gval) != 0;
+                    return g_value_get_flags (val->u.gval) != 0;
                 case G_TYPE_FLOAT:
-                    return g_value_get_float (val->gval) != 0;
+                    return g_value_get_float (val->u.gval) != 0;
                 case G_TYPE_DOUBLE:
-                    return g_value_get_double (val->gval) != 0;
+                    return g_value_get_double (val->u.gval) != 0;
                 case G_TYPE_STRING:
-                    return g_value_get_string (val->gval) != NULL &&
-                            *g_value_get_string (val->gval) != 0;
+                    return g_value_get_string (val->u.gval) != NULL &&
+                            *g_value_get_string (val->u.gval) != 0;
                 case G_TYPE_POINTER:
-                    return g_value_get_pointer (val->gval) != NULL;
+                    return g_value_get_pointer (val->u.gval) != NULL;
                 case G_TYPE_BOXED:
-                    return g_value_get_boxed (val->gval) != NULL;
+                    return g_value_get_boxed (val->u.gval) != NULL;
                 case G_TYPE_OBJECT:
-                    return g_value_get_object (val->gval) != NULL;
+                    return g_value_get_object (val->u.gval) != NULL;
                 default:
                     g_return_val_if_reached (FALSE);
             }
@@ -460,7 +460,7 @@ ms_value_get_int (MSValue    *val,
     switch (MS_VALUE_TYPE (val))
     {
         case MS_VALUE_INT:
-            *ival = val->ival;
+            *ival = val->u.ival;
             return TRUE;
 
         case MS_VALUE_NONE:
@@ -468,40 +468,40 @@ ms_value_get_int (MSValue    *val,
             return TRUE;
 
         case MS_VALUE_GVALUE:
-            switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->gval)))
+            switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->u.gval)))
             {
                 case G_TYPE_CHAR:
-                    *ival = g_value_get_char (val->gval) != 0;
+                    *ival = g_value_get_char (val->u.gval) != 0;
                     return TRUE;
                 case G_TYPE_UCHAR:
-                    *ival = g_value_get_uchar (val->gval) != 0;
+                    *ival = g_value_get_uchar (val->u.gval) != 0;
                     return TRUE;
                 case G_TYPE_BOOLEAN:
-                    *ival = g_value_get_boolean (val->gval);
+                    *ival = g_value_get_boolean (val->u.gval);
                     return TRUE;
                 case G_TYPE_INT:
-                    *ival = g_value_get_int (val->gval) != 0;
+                    *ival = g_value_get_int (val->u.gval) != 0;
                     return TRUE;
                 case G_TYPE_UINT:
-                    *ival = g_value_get_uint (val->gval) != 0;
+                    *ival = g_value_get_uint (val->u.gval) != 0;
                     return TRUE;
                 case G_TYPE_LONG:
-                    *ival = g_value_get_long (val->gval) != 0;
+                    *ival = g_value_get_long (val->u.gval) != 0;
                     return TRUE;
                 case G_TYPE_ULONG:
-                    *ival = g_value_get_ulong (val->gval) != 0;
+                    *ival = g_value_get_ulong (val->u.gval) != 0;
                     return TRUE;
                 case G_TYPE_INT64:
-                    *ival = g_value_get_int64 (val->gval) != 0;
+                    *ival = g_value_get_int64 (val->u.gval) != 0;
                     return TRUE;
                 case G_TYPE_UINT64:
-                    *ival = g_value_get_uint64 (val->gval) != 0;
+                    *ival = g_value_get_uint64 (val->u.gval) != 0;
                     return TRUE;
                 case G_TYPE_ENUM:
-                    *ival = g_value_get_enum (val->gval) != 0;
+                    *ival = g_value_get_enum (val->u.gval) != 0;
                     return TRUE;
                 case G_TYPE_FLAGS:
-                    *ival = g_value_get_flags (val->gval) != 0;
+                    *ival = g_value_get_flags (val->u.gval) != 0;
                     return TRUE;
 
                 default:
@@ -528,7 +528,7 @@ ms_value_get_gvalue (MSValue *val,
     {
         case MS_VALUE_INT:
             g_value_init (dest, G_TYPE_INT);
-            g_value_set_int (dest, val->ival);
+            g_value_set_int (dest, val->u.ival);
             return TRUE;
 
         case MS_VALUE_NONE:
@@ -537,13 +537,13 @@ ms_value_get_gvalue (MSValue *val,
             return TRUE;
 
         case MS_VALUE_GVALUE:
-            g_value_init (dest, G_VALUE_TYPE (val->gval));
-            g_value_copy (val->gval, dest);
+            g_value_init (dest, G_VALUE_TYPE (val->u.gval));
+            g_value_copy (val->u.gval, dest);
             return TRUE;
 
         case MS_VALUE_STRING:
             g_value_init (dest, G_TYPE_STRING);
-            g_value_set_string (dest, val->str);
+            g_value_set_string (dest, val->u.str);
             return TRUE;
 
         case MS_VALUE_LIST:
@@ -692,12 +692,12 @@ print_func (MSValue *val)
 
     g_assert (MS_VALUE_TYPE (val) == MS_VALUE_FUNC);
 
-    if (!val->func.meth)
+    if (!val->u.func.meth)
         return g_strdup ("<function>");
-    else if (!val->func.obj)
+    else if (!val->u.func.obj)
         return g_strdup ("<method>");
 
-    obj = ms_value_repr (val->func.obj);
+    obj = ms_value_repr (val->u.func.obj);
     str = g_strdup_printf ("<method of %s>", obj);
     g_free (obj);
 
@@ -713,55 +713,55 @@ ms_value_print (MSValue *val)
     switch (MS_VALUE_TYPE (val))
     {
         case MS_VALUE_STRING:
-            return g_strdup (val->str);
+            return g_strdup (val->u.str);
         case MS_VALUE_INT:
-            return g_strdup_printf ("%d", val->ival);
+            return g_strdup_printf ("%d", val->u.ival);
         case MS_VALUE_NONE:
             return g_strdup ("none");
         case MS_VALUE_LIST:
-            return print_list (val->list.elms, val->list.n_elms);
+            return print_list (val->u.list.elms, val->u.list.n_elms);
         case MS_VALUE_DICT:
-            return print_dict (val->hash);
+            return print_dict (val->u.hash);
         case MS_VALUE_FUNC:
             return print_func (val);
         case MS_VALUE_GVALUE:
-            switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->gval)))
+            switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->u.gval)))
             {
                 case G_TYPE_CHAR:
-                    return g_strdup_printf ("%c", g_value_get_char (val->gval));
+                    return g_strdup_printf ("%c", g_value_get_char (val->u.gval));
                 case G_TYPE_UCHAR:
-                    return g_strdup_printf ("%c", g_value_get_uchar (val->gval));
+                    return g_strdup_printf ("%c", g_value_get_uchar (val->u.gval));
                 case G_TYPE_BOOLEAN:
-                    return g_strdup_printf ("%d", g_value_get_boolean (val->gval));
+                    return g_strdup_printf ("%d", g_value_get_boolean (val->u.gval));
                 case G_TYPE_INT:
-                    return g_strdup_printf ("%d", g_value_get_int (val->gval));
+                    return g_strdup_printf ("%d", g_value_get_int (val->u.gval));
                 case G_TYPE_UINT:
-                    return g_strdup_printf ("%d", g_value_get_uint (val->gval));
+                    return g_strdup_printf ("%d", g_value_get_uint (val->u.gval));
                 case G_TYPE_LONG:
-                    return g_strdup_printf ("%ld", g_value_get_long (val->gval));
+                    return g_strdup_printf ("%ld", g_value_get_long (val->u.gval));
                 case G_TYPE_ULONG:
-                    return g_strdup_printf ("%ld", g_value_get_ulong (val->gval));
+                    return g_strdup_printf ("%ld", g_value_get_ulong (val->u.gval));
                 case G_TYPE_INT64:
-                    return g_strdup_printf ("%" G_GINT64_FORMAT, g_value_get_int64 (val->gval));
+                    return g_strdup_printf ("%" G_GINT64_FORMAT, g_value_get_int64 (val->u.gval));
                 case G_TYPE_UINT64:
-                    return g_strdup_printf ("%" G_GUINT64_FORMAT, g_value_get_uint64 (val->gval));
+                    return g_strdup_printf ("%" G_GUINT64_FORMAT, g_value_get_uint64 (val->u.gval));
                 case G_TYPE_ENUM:
-                    return g_strdup_printf ("%d", g_value_get_enum (val->gval));
+                    return g_strdup_printf ("%d", g_value_get_enum (val->u.gval));
                 case G_TYPE_FLAGS:
-                    return g_strdup_printf ("%d", g_value_get_flags (val->gval));
+                    return g_strdup_printf ("%d", g_value_get_flags (val->u.gval));
                 case G_TYPE_FLOAT:
-                    return g_strdup_printf ("%f", g_value_get_float (val->gval));
+                    return g_strdup_printf ("%f", g_value_get_float (val->u.gval));
                 case G_TYPE_DOUBLE:
-                    return g_strdup_printf ("%f", g_value_get_double (val->gval));
+                    return g_strdup_printf ("%f", g_value_get_double (val->u.gval));
                 case G_TYPE_STRING:
-                    return g_value_get_string (val->gval) ?
-                            g_strdup (g_value_get_string (val->gval)) : g_strdup ("NULL");
+                    return g_value_get_string (val->u.gval) ?
+                            g_strdup (g_value_get_string (val->u.gval)) : g_strdup ("NULL");
                 case G_TYPE_POINTER:
-                    return g_strdup_printf ("Pointer %p", g_value_get_pointer (val->gval));
+                    return g_strdup_printf ("Pointer %p", g_value_get_pointer (val->u.gval));
                 case G_TYPE_BOXED:
-                    return g_strdup_printf ("Boxed %p", g_value_get_boxed (val->gval));
+                    return g_strdup_printf ("Boxed %p", g_value_get_boxed (val->u.gval));
                 case G_TYPE_OBJECT:
-                    return g_strdup_printf ("Object %p", g_value_get_object (val->gval));
+                    return g_strdup_printf ("Object %p", g_value_get_object (val->u.gval));
                 default:
                     g_return_val_if_reached (NULL);
             }
@@ -784,67 +784,67 @@ ms_value_repr (MSValue *val)
     switch (MS_VALUE_TYPE (val))
     {
         case MS_VALUE_STRING:
-            tmp = g_strescape (val->str, NULL);
+            tmp = g_strescape (val->u.str, NULL);
             ret = g_strdup_printf ("\"%s\"", tmp);
             g_free (tmp);
             return ret;
 
         case MS_VALUE_INT:
-            return g_strdup_printf ("%d", val->ival);
+            return g_strdup_printf ("%d", val->u.ival);
 
         case MS_VALUE_NONE:
             return g_strdup ("none");
 
         case MS_VALUE_LIST:
-            return print_list (val->list.elms, val->list.n_elms);
+            return print_list (val->u.list.elms, val->u.list.n_elms);
 
         case MS_VALUE_DICT:
-            return print_dict (val->hash);
+            return print_dict (val->u.hash);
 
         case MS_VALUE_FUNC:
             return print_func (val);
 
         case MS_VALUE_GVALUE:
-            switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->gval)))
+            switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->u.gval)))
             {
                 case G_TYPE_CHAR:
-                    return g_strdup_printf ("'%c'", g_value_get_char (val->gval));
+                    return g_strdup_printf ("'%c'", g_value_get_char (val->u.gval));
                 case G_TYPE_UCHAR:
-                    return g_strdup_printf ("'%c'", g_value_get_uchar (val->gval));
+                    return g_strdup_printf ("'%c'", g_value_get_uchar (val->u.gval));
                 case G_TYPE_BOOLEAN:
-                    return g_strdup_printf ("%d", g_value_get_boolean (val->gval));
+                    return g_strdup_printf ("%d", g_value_get_boolean (val->u.gval));
                 case G_TYPE_INT:
-                    return g_strdup_printf ("%d", g_value_get_int (val->gval));
+                    return g_strdup_printf ("%d", g_value_get_int (val->u.gval));
                 case G_TYPE_UINT:
-                    return g_strdup_printf ("%d", g_value_get_uint (val->gval));
+                    return g_strdup_printf ("%d", g_value_get_uint (val->u.gval));
                 case G_TYPE_LONG:
-                    return g_strdup_printf ("%ld", g_value_get_long (val->gval));
+                    return g_strdup_printf ("%ld", g_value_get_long (val->u.gval));
                 case G_TYPE_ULONG:
-                    return g_strdup_printf ("%ld", g_value_get_ulong (val->gval));
+                    return g_strdup_printf ("%ld", g_value_get_ulong (val->u.gval));
                 case G_TYPE_INT64:
-                    return g_strdup_printf ("%" G_GINT64_FORMAT, g_value_get_int64 (val->gval));
+                    return g_strdup_printf ("%" G_GINT64_FORMAT, g_value_get_int64 (val->u.gval));
                 case G_TYPE_UINT64:
-                    return g_strdup_printf ("%" G_GUINT64_FORMAT, g_value_get_uint64 (val->gval));
+                    return g_strdup_printf ("%" G_GUINT64_FORMAT, g_value_get_uint64 (val->u.gval));
                 case G_TYPE_ENUM:
-                    return g_strdup_printf ("<%d>", g_value_get_enum (val->gval));
+                    return g_strdup_printf ("<%d>", g_value_get_enum (val->u.gval));
                 case G_TYPE_FLAGS:
-                    return g_strdup_printf ("<%d>", g_value_get_flags (val->gval));
+                    return g_strdup_printf ("<%d>", g_value_get_flags (val->u.gval));
                 case G_TYPE_FLOAT:
-                    return g_strdup_printf ("%f", g_value_get_float (val->gval));
+                    return g_strdup_printf ("%f", g_value_get_float (val->u.gval));
                 case G_TYPE_DOUBLE:
-                    return g_strdup_printf ("%f", g_value_get_double (val->gval));
+                    return g_strdup_printf ("%f", g_value_get_double (val->u.gval));
                 case G_TYPE_STRING:
-                    tmp = (char*) g_value_get_string (val->gval);
+                    tmp = (char*) g_value_get_string (val->u.gval);
                     tmp = tmp ? g_strescape (tmp, NULL) : NULL;
                     ret = tmp ? g_strdup_printf ("\"%s\"", tmp) : g_strdup ("(null)");
                     g_free (tmp);
                     return ret;
                 case G_TYPE_POINTER:
-                    return g_strdup_printf ("<pointer %p>", g_value_get_pointer (val->gval));
+                    return g_strdup_printf ("<pointer %p>", g_value_get_pointer (val->u.gval));
                 case G_TYPE_BOXED:
-                    return g_strdup_printf ("<boxed %p>", g_value_get_boxed (val->gval));
+                    return g_strdup_printf ("<boxed %p>", g_value_get_boxed (val->u.gval));
                 case G_TYPE_OBJECT:
-                    return g_strdup_printf ("<object %p>", g_value_get_object (val->gval));
+                    return g_strdup_printf ("<object %p>", g_value_get_object (val->u.gval));
                 default:
                     g_return_val_if_reached (NULL);
             }
@@ -861,9 +861,9 @@ static MSValue *
 func_plus (MSValue *a, MSValue *b, MSContext *ctx)
 {
     if (MS_VALUE_TYPE (a) == MS_VALUE_INT && MS_VALUE_TYPE (b) == MS_VALUE_INT)
-        return ms_value_int (a->ival + b->ival);
+        return ms_value_int (a->u.ival + b->u.ival);
     else if (MS_VALUE_TYPE (a) == MS_VALUE_STRING && MS_VALUE_TYPE (b) == MS_VALUE_STRING)
-        return ms_value_take_string (g_strdup_printf ("%s%s", a->str, b->str));
+        return ms_value_take_string (g_strdup_printf ("%s%s", a->u.str, b->u.str));
 
     return ms_context_set_error (ctx, MS_ERROR_TYPE,
                                  "invalid PLUS");
@@ -874,7 +874,7 @@ static MSValue *
 func_minus (MSValue *a, MSValue *b, MSContext *ctx)
 {
     if (MS_VALUE_TYPE (a) == MS_VALUE_INT && MS_VALUE_TYPE (b) == MS_VALUE_INT)
-        return ms_value_int (a->ival - b->ival);
+        return ms_value_int (a->u.ival - b->u.ival);
     return ms_context_set_error (ctx, MS_ERROR_TYPE,
                                  "invalid MINUS");
 }
@@ -884,7 +884,7 @@ static MSValue *
 func_mult (MSValue *a, MSValue *b, MSContext *ctx)
 {
     if (MS_VALUE_TYPE (a) == MS_VALUE_INT && MS_VALUE_TYPE (b) == MS_VALUE_INT)
-        return ms_value_int (a->ival * b->ival);
+        return ms_value_int (a->u.ival * b->u.ival);
 
     if (MS_VALUE_TYPE (a) == MS_VALUE_STRING && MS_VALUE_TYPE (b) == MS_VALUE_INT)
     {
@@ -892,18 +892,18 @@ func_mult (MSValue *a, MSValue *b, MSContext *ctx)
         guint len;
         int i;
 
-        if (b->ival < 0)
+        if (b->u.ival < 0)
             return ms_context_set_error (ctx, MS_ERROR_TYPE,
                                          "string * negative int");
-        if (b->ival == 0)
+        if (b->u.ival == 0)
             return ms_value_string ("");
 
-        len = strlen (a->str);
-        s = g_new (char, len * b->ival + 1);
-        s[len * b->ival] = 0;
+        len = strlen (a->u.str);
+        s = g_new (char, len * b->u.ival + 1);
+        s[len * b->u.ival] = 0;
 
-        for (i = 0; i < b->ival; ++i)
-            memcpy (&s[i*len], a->str, len);
+        for (i = 0; i < b->u.ival; ++i)
+            memcpy (&s[i*len], a->u.str, len);
 
         return ms_value_take_string (s);
     }
@@ -918,8 +918,8 @@ func_div (MSValue *a, MSValue *b, MSContext *ctx)
 {
     if (MS_VALUE_TYPE (a) == MS_VALUE_INT && MS_VALUE_TYPE (b) == MS_VALUE_INT)
     {
-        if (b->ival)
-            return ms_value_int (a->ival / b->ival);
+        if (b->u.ival)
+            return ms_value_int (a->u.ival / b->u.ival);
         else
             return ms_context_set_error (ctx, MS_ERROR_VALUE,
                                          "division by zero");
@@ -961,11 +961,11 @@ list_equal (MSValue *a, MSValue *b)
 {
     guint i;
 
-    if (a->list.n_elms != b->list.n_elms)
+    if (a->u.list.n_elms != b->u.list.n_elms)
         return FALSE;
 
-    for (i = 0; i < a->list.n_elms; ++i)
-        if (!ms_value_equal (a->list.elms[i], b->list.elms[i]))
+    for (i = 0; i < a->u.list.n_elms; ++i)
+        if (!ms_value_equal (a->u.list.elms[i], b->u.list.elms[i]))
             return FALSE;
 
     return TRUE;
@@ -1019,20 +1019,20 @@ ms_value_equal (MSValue *a, MSValue *b)
     switch (MS_VALUE_TYPE (a))
     {
         case MS_VALUE_INT:
-            return a->ival == b->ival;
+            return a->u.ival == b->u.ival;
         case MS_VALUE_NONE:
             return TRUE;
         case MS_VALUE_STRING:
-            return !strcmp (a->str, b->str);
+            return !strcmp (a->u.str, b->u.str);
         case MS_VALUE_LIST:
             return list_equal (a, b);
         case MS_VALUE_DICT:
-            return dict_equal (a->hash, b->hash);
+            return dict_equal (a->u.hash, b->u.hash);
         case MS_VALUE_GVALUE:
             g_return_val_if_reached (FALSE);
         case MS_VALUE_FUNC:
-            return a->func.func == b->func.func &&
-                    a->func.obj == b->func.obj;
+            return a->u.func.func == b->u.func.func &&
+                    a->u.func.obj == b->u.func.obj;
         case MS_VALUE_INVALID:
             g_assert_not_reached ();
     }
@@ -1048,15 +1048,15 @@ list_cmp (MSValue *a, MSValue *b)
 {
     guint i;
 
-    for (i = 0; i < a->list.n_elms && i < b->list.n_elms; ++i)
+    for (i = 0; i < a->u.list.n_elms && i < b->u.list.n_elms; ++i)
     {
-        int c = ms_value_cmp (a->list.elms[i], b->list.elms[i]);
+        int c = ms_value_cmp (a->u.list.elms[i], b->u.list.elms[i]);
 
         if (c)
             return c;
     }
 
-    return CMP (a->list.n_elms, b->list.n_elms);
+    return CMP (a->u.list.n_elms, b->u.list.n_elms);
 }
 
 
@@ -1108,21 +1108,21 @@ ms_value_cmp (MSValue *a, MSValue *b)
     switch (MS_VALUE_TYPE (a))
     {
         case MS_VALUE_INT:
-            return CMP (a->ival, b->ival);
+            return CMP (a->u.ival, b->u.ival);
         case MS_VALUE_NONE:
             return 0;
         case MS_VALUE_STRING:
-            return strcmp (a->str, b->str);
+            return strcmp (a->u.str, b->u.str);
         case MS_VALUE_LIST:
             return list_cmp (a, b);
         case MS_VALUE_DICT:
-            return dict_cmp (a->hash, b->hash);
+            return dict_cmp (a->u.hash, b->u.hash);
         case MS_VALUE_GVALUE:
             g_return_val_if_reached (CMP (a, b));
         case MS_VALUE_FUNC:
-            return a->func.func < b->func.func ? -1 :
-                    (a->func.func > b->func.func ? 1 :
-                        CMP (a->func.obj, b->func.obj));
+            return a->u.func.func < b->u.func.func ? -1 :
+                    (a->u.func.func > b->u.func.func ? 1 :
+                        CMP (a->u.func.obj, b->u.func.obj));
         case MS_VALUE_INVALID:
             g_assert_not_reached ();
     }
@@ -1188,8 +1188,8 @@ list_in (MSValue   *list,
 {
     guint i;
 
-    for (i = 0; i < list->list.n_elms; ++i)
-        if (ms_value_equal (val, list->list.elms[i]))
+    for (i = 0; i < list->u.list.n_elms; ++i)
+        if (ms_value_equal (val, list->u.list.elms[i]))
             return ms_value_true ();
 
     return ms_value_false ();
@@ -1202,7 +1202,7 @@ dict_in (MSValue   *dict,
     if (MS_VALUE_TYPE (val) != MS_VALUE_STRING)
         return ms_value_false ();
 
-    return g_hash_table_lookup (dict->hash, val->str) ?
+    return g_hash_table_lookup (dict->u.hash, val->u.str) ?
             ms_value_true () : ms_value_false ();
 }
 
@@ -1213,7 +1213,7 @@ string_in (MSValue   *string,
     if (MS_VALUE_TYPE (val) != MS_VALUE_STRING)
         return ms_value_false ();
 
-    return strstr (string->str, val->str) ?
+    return strstr (string->u.str, val->u.str) ?
             ms_value_true () : ms_value_false ();
 }
 
@@ -1279,11 +1279,11 @@ func_format (MSValue *format, MSValue *tuple, MSContext *ctx)
         return ms_context_set_error (ctx, MS_ERROR_TYPE, "invalid '%'");
 
     if (MS_VALUE_TYPE (tuple) == MS_VALUE_LIST)
-        n_items = tuple->list.n_elms;
+        n_items = tuple->u.list.n_elms;
     else
         n_items = 1;
 
-    p = str = format->str;
+    p = str = format->u.str;
     ret = g_string_new (NULL);
     items_written = 0;
 
@@ -1313,7 +1313,7 @@ func_format (MSValue *format, MSValue *tuple, MSContext *ctx)
                     }
 
                     if (MS_VALUE_TYPE (tuple) == MS_VALUE_LIST)
-                        val = tuple->list.elms[items_written];
+                        val = tuple->u.list.elms[items_written];
                     else
                         val = tuple;
 
@@ -1372,7 +1372,7 @@ func_uminus (MSValue    *val,
              MSContext  *ctx)
 {
     if (MS_VALUE_TYPE (val) == MS_VALUE_INT)
-        return ms_value_int (-val->ival);
+        return ms_value_int (-val->u.ival);
     return ms_context_set_error (ctx, MS_ERROR_TYPE, NULL);
 }
 
@@ -1393,9 +1393,9 @@ func_len (MSValue    *val,
     switch (MS_VALUE_TYPE (val))
     {
         case MS_VALUE_STRING:
-            return ms_value_int (strlen (val->str));
+            return ms_value_int (strlen (val->u.str));
         case MS_VALUE_LIST:
-            return ms_value_int (val->list.n_elms);
+            return ms_value_int (val->u.list.n_elms);
         default:
             return ms_context_set_error (ctx, MS_ERROR_TYPE, NULL);
     }
@@ -1420,7 +1420,7 @@ ms_value_func (MSFunc *func)
     MSValue *val;
     g_return_val_if_fail (MS_IS_FUNC (func), NULL);
     val = ms_value_new (&types[MS_VALUE_FUNC]);
-    val->func.func = g_object_ref (func);
+    val->u.func.func = g_object_ref (func);
     return val;
 }
 
@@ -1431,7 +1431,7 @@ ms_value_meth (MSFunc *func)
     MSValue *val;
     g_return_val_if_fail (MS_IS_FUNC (func), NULL);
     val = ms_value_func (func);
-    val->func.meth = TRUE;
+    val->u.func.meth = TRUE;
     return val;
 }
 
@@ -1444,7 +1444,7 @@ ms_value_bound_meth (MSFunc  *func,
     g_return_val_if_fail (MS_IS_FUNC (func), NULL);
     g_return_val_if_fail (obj != NULL, NULL);
     val = ms_value_meth (func);
-    val->func.obj = ms_value_ref (obj);
+    val->u.func.obj = ms_value_ref (obj);
     return val;
 }
 
@@ -1472,16 +1472,16 @@ ms_value_call (MSValue    *func,
     g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
     g_return_val_if_fail (MS_VALUE_TYPE (func) == MS_VALUE_FUNC, NULL);
 
-    if (!func->func.meth || !func->func.obj)
-        return ms_func_call (func->func.func, args, n_args, ctx);
+    if (!func->u.func.meth || !func->u.func.obj)
+        return ms_func_call (func->u.func.func, args, n_args, ctx);
 
     real_args = ms_value_array_alloc (n_args + 1);
-    real_args[0] = ms_value_ref (func->func.obj);
+    real_args[0] = ms_value_ref (func->u.func.obj);
 
     for (i = 0; i < n_args; ++i)
         real_args[i+1] = ms_value_ref (args[i]);
 
-    ret = ms_func_call (func->func.func, real_args, n_args + 1, ctx);
+    ret = ms_func_call (func->u.func.func, real_args, n_args + 1, ctx);
 
     for (i = 0; i < n_args + 1; ++i)
         ms_value_unref (real_args[i]);

@@ -205,7 +205,7 @@ ms_node_env_var_eval (MSNode    *node,
     if (!name)
         return NULL;
 
-    if (MS_VALUE_TYPE (name) != MS_VALUE_STRING || !name->str)
+    if (MS_VALUE_TYPE (name) != MS_VALUE_STRING || !name->u.str)
     {
         ms_context_format_error (ctx, MS_ERROR_TYPE,
                                  "in $(%v): variable name must be a string",
@@ -214,7 +214,7 @@ ms_node_env_var_eval (MSNode    *node,
         return NULL;
     }
 
-    ret = ms_context_get_env_variable (ctx, name->str);
+    ret = ms_context_get_env_variable (ctx, name->u.str);
     ms_value_unref (name);
 
     if (ret || ctx->error)
@@ -761,9 +761,9 @@ ms_node_for_eval (MSNode    *node,
 
     var = MS_NODE_VAR (loop->variable);
 
-    for (i = 0; i < vallist->list.n_elms; ++i)
+    for (i = 0; i < vallist->u.list.n_elms; ++i)
     {
-        if (!ms_context_assign_variable (ctx, var->name, vallist->list.elms[i]))
+        if (!ms_context_assign_variable (ctx, var->name, vallist->u.list.elms[i]))
             goto error;
 
         ms_value_unref (ret);
@@ -1148,12 +1148,12 @@ ms_node_get_item_eval (MSNode    *node_,
     {
         if (MS_VALUE_TYPE (key) == MS_VALUE_STRING)
         {
-            val = ms_value_dict_get_elm (obj, key->str);
+            val = ms_value_dict_get_elm (obj, key->u.str);
 
             if (!val)
             {
                 ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                         "no key '%s'", key->str);
+                                         "no key '%s'", key->u.str);
                 goto error;
             }
 
@@ -1186,11 +1186,11 @@ ms_node_get_item_eval (MSNode    *node_,
     switch (MS_VALUE_TYPE (obj))
     {
         case MS_VALUE_STRING:
-            len = g_utf8_strlen (obj->str, -1);
+            len = g_utf8_strlen (obj->u.str, -1);
             break;
 
         case MS_VALUE_LIST:
-            len = obj->list.n_elms;
+            len = obj->u.list.n_elms;
             break;
 
         default:
@@ -1210,11 +1210,11 @@ ms_node_get_item_eval (MSNode    *node_,
     switch (MS_VALUE_TYPE (obj))
     {
         case MS_VALUE_STRING:
-            val = ms_value_string_len (g_utf8_offset_to_pointer (obj->str, index), 1);
+            val = ms_value_string_len (g_utf8_offset_to_pointer (obj->u.str, index), 1);
             break;
 
         case MS_VALUE_LIST:
-            val = ms_value_ref (obj->list.elms[index]);
+            val = ms_value_ref (obj->u.list.elms[index]);
             break;
 
         default:
@@ -1294,7 +1294,7 @@ ms_node_set_item_eval (MSNode    *node_,
     {
         if (MS_VALUE_TYPE (key) == MS_VALUE_STRING)
         {
-            ms_value_dict_set_elm (obj, key->str, val);
+            ms_value_dict_set_elm (obj, key->u.str, val);
             goto out;
         }
         else
@@ -1323,7 +1323,7 @@ ms_node_set_item_eval (MSNode    *node_,
     switch (MS_VALUE_TYPE (obj))
     {
         case MS_VALUE_LIST:
-            len = obj->list.n_elms;
+            len = obj->u.list.n_elms;
             break;
 
         default:

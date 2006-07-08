@@ -45,11 +45,11 @@ len_func (MSValue    *val,
     switch (val->klass->type)
     {
         case MS_VALUE_STRING:
-            return ms_value_int (g_utf8_strlen (val->str, -1));
+            return ms_value_int (g_utf8_strlen (val->u.str, -1));
         case MS_VALUE_LIST:
-            return ms_value_int (val->list.n_elms);
+            return ms_value_int (val->u.list.n_elms);
         case MS_VALUE_DICT:
-            return ms_value_int (g_hash_table_size (val->hash));
+            return ms_value_int (g_hash_table_size (val->u.hash));
         default:
             return ms_context_set_error (ctx, MS_ERROR_TYPE, NULL);
     }
@@ -446,10 +446,10 @@ dict_keys_func (MSValue *dict,
         guint i;
     } data;
 
-    n_keys = g_hash_table_size (dict->hash);
+    n_keys = g_hash_table_size (dict->u.hash);
     data.list = ms_value_list (n_keys);
     data.i = 0;
-    g_hash_table_foreach (dict->hash, (GHFunc) dict_add_key, &data);
+    g_hash_table_foreach (dict->u.hash, (GHFunc) dict_add_key, &data);
 
     return data.list;
 }
@@ -465,7 +465,7 @@ dict_has_key_func (MSValue *dict,
     if (MS_VALUE_TYPE (key) != MS_VALUE_STRING)
         return ms_value_false ();
 
-    val = ms_value_dict_get_elm (dict, key->str);
+    val = ms_value_dict_get_elm (dict, key->u.str);
     ret = val ? ms_value_true () : ms_value_false ();
     ms_value_unref (val);
 
@@ -477,21 +477,21 @@ static MSValue *
 str_len_func (MSValue *val,
               G_GNUC_UNUSED MSContext *ctx)
 {
-    return ms_value_int (g_utf8_strlen (val->str, -1));
+    return ms_value_int (g_utf8_strlen (val->u.str, -1));
 }
 
 static MSValue *
 dict_len_func (MSValue *val,
                G_GNUC_UNUSED MSContext *ctx)
 {
-    return ms_value_int (g_hash_table_size (val->hash));
+    return ms_value_int (g_hash_table_size (val->u.hash));
 }
 
 static MSValue *
 list_len_func (MSValue *val,
                G_GNUC_UNUSED MSContext *ctx)
 {
-    return ms_value_int (val->list.n_elms);
+    return ms_value_int (val->u.list.n_elms);
 }
 
 static MSValue *
@@ -501,15 +501,15 @@ list_max_func (MSValue   *val,
     guint i;
     MSValue *max;
 
-    if (!val->list.n_elms)
+    if (!val->u.list.n_elms)
         return ms_context_format_error (ctx, MS_ERROR_VALUE,
                                         "requested MAX of empty list");
 
-    max = val->list.elms[0];
+    max = val->u.list.elms[0];
 
-    for (i = 1; i < val->list.n_elms; ++i)
-        if (ms_value_cmp (max, val->list.elms[i]) < 0)
-            max = val->list.elms[i];
+    for (i = 1; i < val->u.list.n_elms; ++i)
+        if (ms_value_cmp (max, val->u.list.elms[i]) < 0)
+            max = val->u.list.elms[i];
 
     return ms_value_ref (max);
 }
@@ -521,15 +521,15 @@ list_min_func (MSValue   *val,
     guint i;
     MSValue *min;
 
-    if (!val->list.n_elms)
+    if (!val->u.list.n_elms)
         return ms_context_format_error (ctx, MS_ERROR_VALUE,
                                         "requested MIN of empty list");
 
-    min = val->list.elms[0];
+    min = val->u.list.elms[0];
 
-    for (i = 1; i < val->list.n_elms; ++i)
-        if (ms_value_cmp (min, val->list.elms[i]) > 0)
-            min = val->list.elms[i];
+    for (i = 1; i < val->u.list.n_elms; ++i)
+        if (ms_value_cmp (min, val->u.list.elms[i]) > 0)
+            min = val->u.list.elms[i];
 
     return ms_value_ref (min);
 }
@@ -542,10 +542,10 @@ list_copy_func (MSValue   *val,
     MSValue *copy;
     guint i;
 
-    copy = ms_value_list (val->list.n_elms);
+    copy = ms_value_list (val->u.list.n_elms);
 
-    for (i = 0; i < val->list.n_elms; ++i)
-        ms_value_list_set_elm (copy, i, val->list.elms[i]);
+    for (i = 0; i < val->u.list.n_elms; ++i)
+        ms_value_list_set_elm (copy, i, val->u.list.elms[i]);
 
     return copy;
 }

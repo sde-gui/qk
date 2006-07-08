@@ -62,7 +62,7 @@ _moo_text_btree_new (void)
     tree->depth = 0;
     tree->root = bt_node_new (NULL, 1, 1, 0);
     tree->root->is_bottom = TRUE;
-    tree->root->data[0] = bt_data_new (tree->root);
+    tree->root->u.data[0] = bt_data_new (tree->root);
 
     CHECK_INTEGRITY (tree, TRUE);
 
@@ -104,13 +104,13 @@ _moo_text_btree_get_data (BTree *tree,
     {
         BTNode **child;
 
-        for (child = node->children; index_ >= (*child)->count; child++)
+        for (child = node->u.children; index_ >= (*child)->count; child++)
             index_ -= (*child)->count;
 
         node = *child;
     }
 
-    return node->data[index_];
+    return node->u.data[index_];
 }
 
 
@@ -142,12 +142,12 @@ bt_node_free_rec (BTNode  *node,
         if (node->is_bottom)
         {
             for (i = 0; i < node->n_children; ++i)
-                bt_data_free (node->data[i], removed_marks);
+                bt_data_free (node->u.data[i], removed_marks);
         }
         else
         {
             for (i = 0; i < node->n_children; ++i)
-                bt_node_free_rec (node->children[i], removed_marks);
+                bt_node_free_rec (node->u.children[i], removed_marks);
         }
 
         node_free__ (node);
@@ -228,7 +228,7 @@ node_get_index (BTNode *node, gpointer child)
 {
     guint i;
     for (i = 0; ; ++i)
-        if (node->children[i] == child)
+        if (node->u.children[i] == child)
             return i;
 }
 
@@ -241,11 +241,11 @@ node_insert__ (BTNode *node, gpointer data, guint index_)
     g_assert (index_ <= node->n_children);
 
     if (index_ < node->n_children)
-        memmove (node->children + index_ + 1,
-                 node->children + index_,
+        memmove (node->u.children + index_ + 1,
+                 node->u.children + index_,
                   (node->n_children - index_) * sizeof (BTData*));
 
-    node->children[index_] = data;
+    node->u.children[index_] = data;
     node->n_children++;
 }
 
@@ -261,8 +261,8 @@ node_remove__ (BTNode *node, gpointer data)
     index = node_get_index (node, data);
 
     if (index + 1 < node->n_children)
-        memmove (node->data + index,
-                 node->data + index + 1,
+        memmove (node->u.data + index,
+                 node->u.data + index + 1,
                  (node->n_children - index - 1) * sizeof (BTData*));
 
     node->n_children--;
@@ -288,7 +288,7 @@ _moo_text_btree_insert (BTree   *tree,
     {
         BTNode **child;
 
-        for (child = node->children; index_ > (*child)->count; child++)
+        for (child = node->u.children; index_ > (*child)->count; child++)
             index_ -= (*child)->count;
 
         node = *child;
@@ -312,7 +312,7 @@ _moo_text_btree_insert (BTree   *tree,
         {
             tree->depth++;
             node->parent = bt_node_new (NULL, 1, node->count, node->n_marks);
-            node->parent->children[0] = node;
+            node->parent->u.children[0] = node;
             tree->root = node->parent;
         }
 
@@ -320,7 +320,7 @@ _moo_text_btree_insert (BTree   *tree,
             new_count = BTREE_NODE_MIN_CAPACITY;
         else
             for (new_count = 0, i = BTREE_NODE_MIN_CAPACITY; i < BTREE_NODE_MAX_CAPACITY; ++i)
-                new_count += node->children[i]->count;
+                new_count += node->u.children[i]->count;
 
         node_index = node_get_index (node->parent, node);
         g_assert (node_index < node->parent->n_children);
@@ -331,12 +331,12 @@ _moo_text_btree_insert (BTree   *tree,
         node_insert__ (node->parent, new_node, node_index + 1);
         g_assert (node_get_index (node->parent, new_node) == node_index + 1);
         g_assert (node_get_index (node->parent, node) == node_index);
-        memcpy (new_node->children,
-                node->children + BTREE_NODE_MIN_CAPACITY,
+        memcpy (new_node->u.children,
+                node->u.children + BTREE_NODE_MIN_CAPACITY,
                 BTREE_NODE_MIN_CAPACITY * sizeof (BTNode*));
         node->n_children = BTREE_NODE_MIN_CAPACITY;
         for (i = 0; i < new_node->n_children; ++i)
-            new_node->children[i]->parent = new_node;
+            new_node->u.children[i]->parent = new_node;
 
         if (node->n_marks)
         {
@@ -344,9 +344,9 @@ _moo_text_btree_insert (BTree   *tree,
             new_node->n_marks = 0;
 
             for (i = 0; i < node->n_children; ++i)
-                node->n_marks += node->children[i]->n_marks;
+                node->n_marks += node->u.children[i]->n_marks;
             for (i = 0; i < new_node->n_children; ++i)
-                new_node->n_marks += new_node->children[i]->n_marks;
+                new_node->n_marks += new_node->u.children[i]->n_marks;
         }
 
         node = node->parent;
@@ -367,16 +367,16 @@ merge_nodes (BTNode *parent, guint first)
 
     g_assert (first + 1 < parent->n_children);
 
-    node = parent->children[first];
-    next = parent->children[first+1];
+    node = parent->u.children[first];
+    next = parent->u.children[first+1];
     g_assert (node->n_children + next->n_children < BTREE_NODE_MAX_CAPACITY);
 
-    memcpy (node->children + node->n_children,
-            next->children,
+    memcpy (node->u.children + node->n_children,
+            next->u.children,
             next->n_children * sizeof (BTNode*));
 
     for (i = node->n_children; i < node->n_children + next->n_children; ++i)
-        node->children[i]->parent = node;
+        node->u.children[i]->parent = node;
 
     node->n_children += next->n_children;
     node->count += next->count;
@@ -428,7 +428,7 @@ _moo_text_btree_delete (BTree          *tree,
                 break;
 
             tree->depth--;
-            tree->root = node->children[0];
+            tree->root = node->u.children[0];
             tree->root->parent = NULL;
             node_free__ (node);
             break;
@@ -448,11 +448,11 @@ _moo_text_btree_delete (BTree          *tree,
 
             if (node_index)
             {
-                BTNode *sib = parent->children[node_index-1];
+                BTNode *sib = parent->u.children[node_index-1];
 
                 if (sib->n_children > BTREE_NODE_MIN_CAPACITY)
                 {
-                    BTNode *child = sib->children[sib->n_children-1];
+                    BTNode *child = sib->u.children[sib->n_children-1];
                     node_insert__ (node, child, 0);
                     node_remove__ (sib, child);
                     child->parent = node;
@@ -478,11 +478,11 @@ _moo_text_btree_delete (BTree          *tree,
             }
             else
             {
-                BTNode *sib = parent->children[1];
+                BTNode *sib = parent->u.children[1];
 
                 if (sib->n_children > BTREE_NODE_MIN_CAPACITY)
                 {
-                    BTNode *child = sib->children[0];
+                    BTNode *child = sib->u.children[0];
                     node_insert__ (node, child, node->n_children);
                     node_remove__ (sib, child);
                     g_assert (node->n_children == BTREE_NODE_MIN_CAPACITY);
@@ -584,8 +584,8 @@ node_check_count (BTNode *node)
     {
         for (i = 0; i < node->n_children; ++i)
         {
-            real_count += node->children[i]->count;
-            mark_count += node->children[i]->n_marks;
+            real_count += node->u.children[i]->count;
+            mark_count += node->u.children[i]->n_marks;
         }
     }
 
@@ -628,7 +628,7 @@ node_check (BTNode *node, gboolean is_root, gboolean check_capacity)
 
     if (!node->is_bottom)
         for (i = 0; i < node->n_children; ++i)
-            node_check (node->children[i], FALSE, check_capacity);
+            node_check (node->u.children[i], FALSE, check_capacity);
 }
 
 
@@ -644,7 +644,7 @@ static void CHECK_INTEGRITY (BTree *tree, gboolean check_capacity)
     for (i = 0, p = 1; i < BTREE_MAX_DEPTH - 1; ++i, p *= BTREE_NODE_MIN_CAPACITY) ;
     g_assert (p > 10000000);
 
-    for (i = 0, node = tree->root; i < tree->depth; ++i, node = node->children[0])
+    for (i = 0, node = tree->root; i < tree->depth; ++i, node = node->u.children[0])
         g_assert (!node->is_bottom);
     g_assert (node->is_bottom);
 

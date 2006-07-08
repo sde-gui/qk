@@ -50,7 +50,7 @@ struct _CtxSwitchInfo {
     union {
         guint num;
         CrossRef ref;
-    };
+    } u;
 };
 
 struct _LangXML {

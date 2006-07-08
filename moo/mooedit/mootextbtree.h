@@ -45,7 +45,7 @@ struct _BTNode {
     union {
         BTNode *children[BTREE_NODE_MAX_CAPACITY];
         BTData *data[BTREE_NODE_MAX_CAPACITY];
-    };
+    } u;
 
     guint n_children : BTREE_NODE_EXP + 1;
     guint is_bottom : 1;

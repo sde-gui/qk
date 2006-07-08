@@ -91,7 +91,7 @@ _moo_context_set_eol_stay (MooContext *ctx)
 {
     g_return_if_fail (ctx != NULL);
     ctx->line_end.type = MOO_CONTEXT_STAY;
-    ctx->line_end.num = 0;
+    ctx->line_end.u.num = 0;
 }
 
 
@@ -102,7 +102,7 @@ _moo_context_set_eol_pop (MooContext     *ctx,
     g_return_if_fail (ctx != NULL);
     g_return_if_fail (num > 0);
     ctx->line_end.type = MOO_CONTEXT_POP;
-    ctx->line_end.num = num;
+    ctx->line_end.u.num = num;
 }
 
 
@@ -112,7 +112,7 @@ _moo_context_set_eol_switch (MooContext     *ctx,
 {
     g_return_if_fail (ctx != NULL && target != NULL);
     ctx->line_end.type = MOO_CONTEXT_SWITCH;
-    ctx->line_end.ctx = target;
+    ctx->line_end.u.ctx = target;
 }
 
 

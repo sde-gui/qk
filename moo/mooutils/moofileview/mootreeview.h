@@ -58,7 +58,7 @@ struct _MooTreeViewChild
     union {
         MooTreeViewTree tree;
         MooTreeViewIcon icon;
-    };
+    } u;
 };
 
 struct _MooTreeView

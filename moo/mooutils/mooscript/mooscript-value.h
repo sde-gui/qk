@@ -91,7 +91,7 @@ struct _MSValue {
             MSValue *obj;
             guint meth : 1;
         } func;
-    };
+    } u;
 };
 
 

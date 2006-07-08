@@ -315,16 +315,16 @@ child_new (MooTreeView  *view,
     if (GTK_IS_TREE_VIEW (widget))
     {
         child->type = MOO_TREE_VIEW_TREE;
-        child->tree.view = GTK_TREE_VIEW (widget);
-        child->tree.selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (widget));
+        child->u.tree.view = GTK_TREE_VIEW (widget);
+        child->u.tree.selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (widget));
 
-        g_signal_connect_swapped (child->tree.selection, "changed",
+        g_signal_connect_swapped (child->u.tree.selection, "changed",
                                   G_CALLBACK (child_selection_changed), child);
     }
     else if (MOO_IS_ICON_VIEW (widget))
     {
         child->type = MOO_TREE_VIEW_ICON;
-        child->icon.view = MOO_ICON_VIEW (widget);
+        child->u.icon.view = MOO_ICON_VIEW (widget);
 
         g_signal_connect_swapped (widget, "selection-changed",
                                   G_CALLBACK (child_selection_changed), child);
@@ -377,9 +377,9 @@ child_set_model (Child          *child,
                  GtkTreeModel   *model)
 {
     if (child->type == MOO_TREE_VIEW_TREE)
-        gtk_tree_view_set_model (child->tree.view, model);
+        gtk_tree_view_set_model (child->u.tree.view, model);
     else if (child->type == MOO_TREE_VIEW_ICON)
-        _moo_icon_view_set_model (child->icon.view, model);
+        _moo_icon_view_set_model (child->u.icon.view, model);
     else
         g_return_if_reached ();
 }
@@ -451,10 +451,10 @@ _moo_tree_view_selection_is_empty (MooTreeView *view)
     switch (child->type)
     {
         case MOO_TREE_VIEW_TREE:
-            return !gtk_tree_selection_count_selected_rows (child->tree.selection);
+            return !gtk_tree_selection_count_selected_rows (child->u.tree.selection);
 
         case MOO_TREE_VIEW_ICON:
-            return !_moo_icon_view_get_selected (child->icon.view, NULL);
+            return !_moo_icon_view_get_selected (child->u.icon.view, NULL);
     }
 
     g_return_val_if_reached (TRUE);
@@ -475,10 +475,10 @@ _moo_tree_view_path_is_selected (MooTreeView    *view,
     switch (child->type)
     {
         case MOO_TREE_VIEW_TREE:
-            return gtk_tree_selection_path_is_selected (child->tree.selection, path);
+            return gtk_tree_selection_path_is_selected (child->u.tree.selection, path);
 
         case MOO_TREE_VIEW_ICON:
-            return _moo_icon_view_path_is_selected (child->icon.view, path);
+            return _moo_icon_view_path_is_selected (child->u.icon.view, path);
     }
 
     g_return_val_if_reached (FALSE);
@@ -498,10 +498,10 @@ _moo_tree_view_unselect_all (MooTreeView *view)
     switch (child->type)
     {
         case MOO_TREE_VIEW_TREE:
-            return gtk_tree_selection_unselect_all (child->tree.selection);
+            return gtk_tree_selection_unselect_all (child->u.tree.selection);
 
         case MOO_TREE_VIEW_ICON:
-            return _moo_icon_view_unselect_all (child->icon.view);
+            return _moo_icon_view_unselect_all (child->u.icon.view);
     }
 }
 
@@ -519,10 +519,10 @@ _moo_tree_view_get_selected_rows (MooTreeView *view)
     switch (child->type)
     {
         case MOO_TREE_VIEW_TREE:
-            return gtk_tree_selection_get_selected_rows (child->tree.selection, NULL);
+            return gtk_tree_selection_get_selected_rows (child->u.tree.selection, NULL);
 
         case MOO_TREE_VIEW_ICON:
-            return _moo_icon_view_get_selected_rows (child->icon.view);
+            return _moo_icon_view_get_selected_rows (child->u.icon.view);
     }
 
     g_return_val_if_reached (NULL);
@@ -544,13 +544,13 @@ _moo_tree_view_get_selected_path (MooTreeView *view)
     switch (child->type)
     {
         case MOO_TREE_VIEW_TREE:
-            if (gtk_tree_selection_get_selected (child->tree.selection, &model, &iter))
+            if (gtk_tree_selection_get_selected (child->u.tree.selection, &model, &iter))
                 return gtk_tree_model_get_path (model, &iter);
             else
                 return NULL;
 
         case MOO_TREE_VIEW_ICON:
-            return _moo_icon_view_get_selected_path (child->icon.view);
+            return _moo_icon_view_get_selected_path (child->u.icon.view);
     }
 
     g_return_val_if_reached (NULL);
@@ -574,11 +574,11 @@ _moo_tree_view_get_path_at_pos (gpointer        view,
         switch (child->type)
         {
             case MOO_TREE_VIEW_TREE:
-                return gtk_tree_view_get_path_at_pos (child->tree.view, x, y, path,
+                return gtk_tree_view_get_path_at_pos (child->u.tree.view, x, y, path,
                                                       NULL, NULL, NULL);
 
             case MOO_TREE_VIEW_ICON:
-                return _moo_icon_view_get_path_at_pos (child->icon.view, x, y, path,
+                return _moo_icon_view_get_path_at_pos (child->u.icon.view, x, y, path,
                                                        NULL, NULL, NULL);
         }
 
@@ -616,10 +616,10 @@ _moo_tree_view_set_cursor (MooTreeView    *view,
     switch (child->type)
     {
         case MOO_TREE_VIEW_TREE:
-            return gtk_tree_view_set_cursor (child->tree.view, path, NULL, start_editing);
+            return gtk_tree_view_set_cursor (child->u.tree.view, path, NULL, start_editing);
 
         case MOO_TREE_VIEW_ICON:
-            return _moo_icon_view_set_cursor (child->icon.view, path, FALSE);
+            return _moo_icon_view_set_cursor (child->u.icon.view, path, FALSE);
     }
 }
 
@@ -639,10 +639,10 @@ _moo_tree_view_scroll_to_cell (MooTreeView    *view,
     switch (child->type)
     {
         case MOO_TREE_VIEW_TREE:
-            return gtk_tree_view_scroll_to_cell (child->tree.view, path, NULL, FALSE, 0, 0);
+            return gtk_tree_view_scroll_to_cell (child->u.tree.view, path, NULL, FALSE, 0, 0);
 
         case MOO_TREE_VIEW_ICON:
-            return _moo_icon_view_scroll_to_cell (child->icon.view, path);
+            return _moo_icon_view_scroll_to_cell (child->u.icon.view, path);
     }
 }
 
@@ -663,10 +663,10 @@ _moo_tree_view_selected_foreach (MooTreeView    *view,
     switch (child->type)
     {
         case MOO_TREE_VIEW_TREE:
-            return gtk_tree_selection_selected_foreach (child->tree.selection, func, data);
+            return gtk_tree_selection_selected_foreach (child->u.tree.selection, func, data);
 
         case MOO_TREE_VIEW_ICON:
-            return _moo_icon_view_selected_foreach (child->icon.view, func, data);
+            return _moo_icon_view_selected_foreach (child->u.icon.view, func, data);
     }
 }
 

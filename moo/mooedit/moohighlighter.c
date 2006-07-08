@@ -337,12 +337,12 @@ get_next_node (MooHighlighter *hl,
             break;
 
         case MOO_CONTEXT_POP:
-            for (i = 0, next = node; next->parent != NULL && i < rule->exit.num;
+            for (i = 0, next = node; next->parent != NULL && i < rule->exit.u.num;
                  ++i, next = next->parent);
             break;
 
         case MOO_CONTEXT_SWITCH:
-            next = ctx_node_new (hl, node, rule->exit.ctx, TRUE);
+            next = ctx_node_new (hl, node, rule->exit.u.ctx, TRUE);
             break;
     }
 
@@ -374,7 +374,7 @@ get_line_end_node (MooHighlighter *hl,
                 break;
 
             case MOO_CONTEXT_POP:
-                for (i = 0, next = node; next->parent != NULL && i < ctx->line_end.num;
+                for (i = 0, next = node; next->parent != NULL && i < ctx->line_end.u.num;
                      ++i, next = next->parent);
                 g_assert (node != next);
                 node = next;
@@ -382,7 +382,7 @@ get_line_end_node (MooHighlighter *hl,
                 break;
 
             case MOO_CONTEXT_SWITCH:
-                next = ctx_node_new (hl, node, ctx->line_end.ctx, TRUE);
+                next = ctx_node_new (hl, node, ctx->line_end.u.ctx, TRUE);
                 g_assert (node != next);
                 node = next;
                 next = NULL;

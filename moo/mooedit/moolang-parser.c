@@ -302,8 +302,8 @@ ctx_switch_info_destroy (CtxSwitchInfo *switch_info)
 #if 0
         case MOO_CONTEXT_JUMP:
 #endif
-            g_free (switch_info->ref.name);
-            g_free (switch_info->ref.lang);
+            g_free (switch_info->u.ref.name);
+            g_free (switch_info->u.ref.lang);
             break;
         case MOO_CONTEXT_STAY:
         case MOO_CONTEXT_POP:
@@ -375,7 +375,7 @@ parse_context_ref (const xmlChar *string,
     if (!string || !strcmp ((char*) string, CONTEXT_STAY))
     {
         switch_info->type = MOO_CONTEXT_STAY;
-        switch_info->num = 0;
+        switch_info->u.num = 0;
     }
     else if (!strncmp ((char*) string, CONTEXT_POP, strlen (CONTEXT_POP)))
     {
@@ -389,7 +389,7 @@ parse_context_ref (const xmlChar *string,
         }
 
         switch_info->type = MOO_CONTEXT_POP;
-        switch_info->num = n;
+        switch_info->u.num = n;
     }
     else
     {
@@ -399,8 +399,8 @@ parse_context_ref (const xmlChar *string,
             return FALSE;
 
         switch_info->type = MOO_CONTEXT_SWITCH;
-        switch_info->ref.lang = lang;
-        switch_info->ref.name = name;
+        switch_info->u.ref.lang = lang;
+        switch_info->u.ref.name = name;
     }
 
     return TRUE;
@@ -1071,8 +1071,8 @@ context_xml_parse (LangXML *lang_xml,
         case MOO_CONTEXT_JUMP:
 #endif
             lang_xml_add_cross_ref (lang_xml,
-                                    xml->eol_switch_info.ref.lang,
-                                    xml->eol_switch_info.ref.name);
+                                    xml->eol_switch_info.u.ref.lang,
+                                    xml->eol_switch_info.u.ref.name);
             break;
         case MOO_CONTEXT_STAY:
         case MOO_CONTEXT_POP:
@@ -1504,8 +1504,8 @@ rule_xml_parse (LangXML *lang_xml,
                     case MOO_CONTEXT_JUMP:
 #endif
                         lang_xml_add_cross_ref (lang_xml,
-                                xml->end_switch_info.ref.lang,
-                                xml->end_switch_info.ref.name);
+                                                xml->end_switch_info.u.ref.lang,
+                                                xml->end_switch_info.u.ref.name);
                         break;
                     case MOO_CONTEXT_STAY:
                     case MOO_CONTEXT_POP:
@@ -1649,18 +1649,18 @@ _moo_rule_new_from_xml (RuleXML    *xml,
             _moo_rule_set_end_stay (rule);
             break;
         case MOO_CONTEXT_POP:
-            _moo_rule_set_end_pop (rule, xml->end_switch_info.num);
+            _moo_rule_set_end_pop (rule, xml->end_switch_info.u.num);
             break;
         case MOO_CONTEXT_SWITCH:
 #if 0
         case MOO_CONTEXT_JUMP:
 #endif
-            if (xml->end_switch_info.ref.lang)
+            if (xml->end_switch_info.u.ref.lang)
                 switch_to = _moo_lang_mgr_get_context (lang->mgr,
-                                                       xml->end_switch_info.ref.lang,
-                                                       xml->end_switch_info.ref.name);
+                                                       xml->end_switch_info.u.ref.lang,
+                                                       xml->end_switch_info.u.ref.name);
             else
-                switch_to = _moo_lang_get_context (lang, xml->end_switch_info.ref.name);
+                switch_to = _moo_lang_get_context (lang, xml->end_switch_info.u.ref.name);
 
             if (!switch_to)
             {

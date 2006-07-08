@@ -98,7 +98,7 @@ struct _MooCtxSwitch {
     union {
         guint num;
         MooContext *ctx;
-    };
+    } u;
 };
 
 
@@ -195,7 +195,7 @@ struct _MooRule
         MooRuleAscii2Char _2char;
         MooRuleAsciiAnyChar anychar;
         MooRuleInclude incl;
-    };
+    } u;
 };
 
 

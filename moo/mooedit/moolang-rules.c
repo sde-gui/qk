@@ -443,7 +443,7 @@ _moo_rule_set_end_stay (MooRule *rule)
 {
     g_return_if_fail (rule != NULL);
     rule->exit.type = MOO_CONTEXT_STAY;
-    rule->exit.num = 0;
+    rule->exit.u.num = 0;
 }
 
 
@@ -453,7 +453,7 @@ _moo_rule_set_end_pop (MooRule *rule,
 {
     g_return_if_fail (rule != NULL && num != 0);
     rule->exit.type = MOO_CONTEXT_POP;
-    rule->exit.num = num;
+    rule->exit.u.num = num;
 }
 
 
@@ -463,7 +463,7 @@ _moo_rule_set_end_switch (MooRule    *rule,
 {
     g_return_if_fail (rule != NULL && target != 0);
     rule->exit.type = MOO_CONTEXT_SWITCH;
-    rule->exit.ctx = target;
+    rule->exit.u.ctx = target;
 }
 
 
@@ -481,36 +481,36 @@ rule_string_match (MooRule         *rule,
 
     result->match_start = NULL;
 
-    if (rule->str.caseless)
+    if (rule->u.str.caseless)
     {
         if (flags & MATCH_START_ONLY)
         {
-            if (!g_ascii_strncasecmp (data->start, rule->str.string, rule->str.length))
+            if (!g_ascii_strncasecmp (data->start, rule->u.str.string, rule->u.str.length))
                 result->match_start = data->start;
         }
         else
         {
-            result->match_start = ascii_casestrstr (data->start, rule->str.string, data->limit);
+            result->match_start = ascii_casestrstr (data->start, rule->u.str.string, data->limit);
         }
     }
     else
     {
         if (flags & MATCH_START_ONLY)
         {
-            if (!strncmp (data->start, rule->str.string, rule->str.length))
+            if (!strncmp (data->start, rule->u.str.string, rule->u.str.length))
                 result->match_start = data->start;
         }
         else
         {
-            result->match_start = strstr (data->start, rule->str.string);
+            result->match_start = strstr (data->start, rule->u.str.string);
         }
     }
 
     if (!result->match_start)
         return NULL;
 
-    result->match_end = result->match_start + rule->str.length;
-    result->match_len = rule->str.length;
+    result->match_end = result->match_start + rule->u.str.length;
+    result->match_len = rule->u.str.length;
     result->match_offset = -1;
     return rule;
 }
@@ -519,7 +519,7 @@ rule_string_match (MooRule         *rule,
 static void
 rule_string_destroy (MooRule *rule)
 {
-    g_free (rule->str.string);
+    g_free (rule->u.str.string);
 }
 
 
@@ -544,14 +544,14 @@ _moo_rule_string_new (const char         *string,
 
     rule->description = g_strdup_printf ("STRING %s", string);
 
-    rule->str.caseless = (flags & MOO_RULE_MATCH_CASELESS) ? TRUE : FALSE;
+    rule->u.str.caseless = (flags & MOO_RULE_MATCH_CASELESS) ? TRUE : FALSE;
 
-    if (rule->str.caseless)
-        rule->str.string = g_ascii_strdown (string, -1);
+    if (rule->u.str.caseless)
+        rule->u.str.string = g_ascii_strdown (string, -1);
     else
-        rule->str.string = g_strdup (string);
+        rule->u.str.string = g_strdup (string);
 
-    rule->str.length = length;
+    rule->u.str.length = length;
 
     return rule;
 }
@@ -578,9 +578,9 @@ rule_regex_match (MooRule        *rule,
 
     while (start <= data->limit)
     {
-        egg_regex_clear (rule->regex.regex);
+        egg_regex_clear (rule->u.regex.regex);
 
-        n_matches = egg_regex_match_extended (rule->regex.regex,
+        n_matches = egg_regex_match_extended (rule->u.regex.regex,
                                               data->line_string,
                                               data->line_string_len,
                                               start - data->line_string,
@@ -589,7 +589,7 @@ rule_regex_match (MooRule        *rule,
         if (n_matches < 1)
             return NULL;
 
-        egg_regex_fetch_pos (rule->regex.regex, data->line_string, 0,
+        egg_regex_fetch_pos (rule->u.regex.regex, data->line_string, 0,
                              &start_pos, &end_pos);
 
         if (data->line_string + start_pos > data->limit)
@@ -600,14 +600,14 @@ rule_regex_match (MooRule        *rule,
         result->match_len = -1;
         result->match_offset = -1;
 
-        if (rule->regex.left_word_bndry && result->match_start > data->line_string &&
+        if (rule->u.regex.left_word_bndry && result->match_start > data->line_string &&
             CHAR_IS_WORD (result->match_start[0]) && CHAR_IS_WORD (result->match_start[-1]))
         {
             start = result->match_start + 1;
             continue;
         }
 
-        if (rule->regex.right_word_bndry && result->match_end > data->line_string &&
+        if (rule->u.regex.right_word_bndry && result->match_end > data->line_string &&
             CHAR_IS_WORD (result->match_end[0]) && CHAR_IS_WORD (result->match_end[-1]))
         {
             start = result->match_start + 1;
@@ -624,7 +624,7 @@ rule_regex_match (MooRule        *rule,
 static void
 rule_regex_destroy (MooRule *rule)
 {
-    egg_regex_free (rule->regex.regex);
+    egg_regex_free (rule->u.regex.regex);
 }
 
 
@@ -680,7 +680,7 @@ _moo_rule_regex_new (const char         *pattern,
 
     rule->description = g_strdup_printf ("REGEX %s", pattern);
 
-    rule->regex.regex = regex;
+    rule->u.regex.regex = regex;
 
     return rule;
 }
@@ -700,23 +700,23 @@ rule_char_match (MooRule         *rule,
 
     if (flags & MATCH_START_ONLY)
     {
-        if (rule->_char.caseless)
+        if (rule->u._char.caseless)
         {
-            if (data->start[0] == rule->_char.ch)
+            if (data->start[0] == rule->u._char.ch)
                 result->match_start = data->start;
         }
         else
         {
-            if (g_ascii_tolower (data->start[0]) == rule->_char.ch)
+            if (g_ascii_tolower (data->start[0]) == rule->u._char.ch)
                 result->match_start = data->start;
         }
     }
     else
     {
-        if (rule->_char.caseless)
-            result->match_start = ascii_lower_strchr (data->start, rule->_char.ch, data->limit);
+        if (rule->u._char.caseless)
+            result->match_start = ascii_lower_strchr (data->start, rule->u._char.ch, data->limit);
         else
-            result->match_start = ascii_strchr (data->start, rule->_char.ch, data->limit);
+            result->match_start = ascii_strchr (data->start, rule->u._char.ch, data->limit);
     }
 
     if (!result->match_start)
@@ -740,12 +740,12 @@ rule_2char_match (MooRule         *rule,
 
     if (flags & MATCH_START_ONLY)
     {
-        if (data->start[0] == rule->_2char.str[0] && data->start[1] == rule->_2char.str[1])
+        if (data->start[0] == rule->u._2char.str[0] && data->start[1] == rule->u._2char.str[1])
             result->match_start = data->start;
     }
     else
     {
-        result->match_start = strstr (data->start, rule->_2char.str);
+        result->match_start = strstr (data->start, rule->u._2char.str);
     }
 
     if (!result->match_start)
@@ -774,12 +774,12 @@ _moo_rule_char_new (char                ch,
 
     if (flags & MOO_RULE_MATCH_CASELESS)
     {
-        rule->_char.ch = g_ascii_tolower (ch);
-        rule->_char.caseless = TRUE;
+        rule->u._char.ch = g_ascii_tolower (ch);
+        rule->u._char.caseless = TRUE;
     }
     else
     {
-        rule->_char.ch = ch;
+        rule->u._char.ch = ch;
     }
 
     return rule;
@@ -808,9 +808,9 @@ _moo_rule_2char_new (char                ch1,
         ch2 = g_ascii_tolower (ch2);
     }
 
-    rule->_2char.str[0] = ch1;
-    rule->_2char.str[1] = ch2;
-    rule->_2char.str[2] = 0;
+    rule->u._2char.str[0] = ch1;
+    rule->u._2char.str[1] = ch2;
+    rule->u._2char.str[2] = 0;
 
     return rule;
 }
@@ -832,9 +832,9 @@ rule_any_char_match (MooRule         *rule,
 
     if (flags & MATCH_START_ONLY)
     {
-        for (i = 0; i < rule->anychar.n_chars; ++i)
+        for (i = 0; i < rule->u.anychar.n_chars; ++i)
         {
-            if (data->start[0] == rule->anychar.chars[i])
+            if (data->start[0] == rule->u.anychar.chars[i])
             {
                 result->match_start = data->start;
                 break;
@@ -843,15 +843,15 @@ rule_any_char_match (MooRule         *rule,
     }
     else
     {
-        for (i = 0; i < rule->anychar.n_chars; ++i)
+        for (i = 0; i < rule->u.anychar.n_chars; ++i)
         {
             if (!result->match_start)
             {
-                result->match_start = ascii_strchr (data->start, rule->anychar.chars[i], data->limit);
+                result->match_start = ascii_strchr (data->start, rule->u.anychar.chars[i], data->limit);
             }
             else if (result->match_start == data->start + 1)
             {
-                if (data->start[0] == rule->anychar.chars[i])
+                if (data->start[0] == rule->u.anychar.chars[i])
                 {
                     result->match_start = data->start;
                     break;
@@ -859,7 +859,7 @@ rule_any_char_match (MooRule         *rule,
             }
             else
             {
-                char *tmp = ascii_strchr (data->start, rule->anychar.chars[i], data->limit);
+                char *tmp = ascii_strchr (data->start, rule->u.anychar.chars[i], data->limit);
                 if (tmp < result->match_start)
                     result->match_start = tmp;
             }
@@ -882,7 +882,7 @@ rule_any_char_match (MooRule         *rule,
 static void
 rule_any_char_destroy (MooRule *rule)
 {
-    g_free (rule->anychar.chars);
+    g_free (rule->u.anychar.chars);
 }
 
 
@@ -906,8 +906,8 @@ _moo_rule_any_char_new (const char         *string,
 
     rule->description = g_strdup_printf ("ANYCHAR %s", string);
 
-    rule->anychar.n_chars = len;
-    rule->anychar.chars = g_strdup (string);
+    rule->u.anychar.n_chars = len;
+    rule->u.anychar.chars = g_strdup (string);
 
     return rule;
 }
@@ -959,8 +959,8 @@ _moo_rule_keywords_new (GSList             *words,
 
     if (word_boundary)
     {
-        rule->regex.left_word_bndry = TRUE;
-        rule->regex.right_word_bndry = TRUE;
+        rule->u.regex.left_word_bndry = TRUE;
+        rule->u.regex.right_word_bndry = TRUE;
     }
 
 out:
@@ -979,7 +979,7 @@ rule_include_match (MooRule         *rule,
                     MatchResult     *result,
                     MatchFlags       flags)
 {
-    return rules_match_real (rule->incl.ctx->rules,
+    return rules_match_real (rule->u.incl.ctx->rules,
                              (MatchData*) data, result, flags);
 }
 
@@ -996,7 +996,7 @@ _moo_rule_include_new (MooContext *ctx)
 
     rule->description = g_strdup_printf ("INCLUDE %s", ctx->name);
 
-    rule->incl.ctx = ctx;
+    rule->u.incl.ctx = ctx;
 
     return rule;
 }

@@ -360,7 +360,7 @@ node_get_marks (BTree  *tree,
             if (i + node_offset > last_line)
                 break;
 
-            line = node->data[i];
+            line = node->u.data[i];
 
             for (j = 0; j < line->n_marks; ++j)
             {
@@ -376,15 +376,15 @@ node_get_marks (BTree  *tree,
         {
             GSList *child_list;
 
-            if (node->children[i]->n_marks)
+            if (node->u.children[i]->n_marks)
             {
-                child_list = node_get_marks (tree, node->children[i],
+                child_list = node_get_marks (tree, node->u.children[i],
                                              first_line, last_line,
                                              node_offset);
                 total = g_slist_concat (child_list, total);
             }
 
-            node_offset += node->children[i]->count;
+            node_offset += node->u.children[i]->count;
 
             if (last_line < node_offset)
                 break;
@@ -436,12 +436,12 @@ line_get_index (BTData *line)
 
         for (i = 0; i < node->parent->n_children; ++i)
         {
-            if (node->parent->children[i] != node)
+            if (node->parent->u.children[i] != node)
             {
                 if (bottom)
                     index += 1;
                 else
-                    index += node->parent->children[i]->count;
+                    index += node->parent->u.children[i]->count;
             }
             else
             {
