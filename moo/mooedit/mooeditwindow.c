@@ -1813,12 +1813,16 @@ _moo_edit_window_remove_doc (MooEditWindow  *window,
 {
     int page;
     GtkAction *action;
+    MooEdit *new_doc;
+    gboolean had_focus;
 
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT (doc));
 
     page = get_page_num (window, doc);
     g_return_if_fail (page >= 0);
+
+    had_focus = GTK_WIDGET_HAS_FOCUS (doc);
 
     g_signal_emit (window, signals[CLOSE_DOC], 0, doc);
 
@@ -1849,8 +1853,12 @@ _moo_edit_window_remove_doc (MooEditWindow  *window,
     g_signal_emit (window, signals[CLOSE_DOC_AFTER], 0);
     g_object_notify (G_OBJECT (window), "active-doc");
 
-    if (!ACTIVE_DOC (window))
+    new_doc = ACTIVE_DOC (window);
+
+    if (!new_doc)
         moo_edit_window_check_actions (window);
+    else if (had_focus)
+        gtk_widget_grab_focus (GTK_WIDGET (new_doc));
 }
 
 
