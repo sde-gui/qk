@@ -498,24 +498,21 @@ moo_text_iter_get_prev_stop (const GtkTextIter *start,
     guint indent;
 
     iter = *start;
-
     gtk_text_iter_set_line_offset (&iter, 0);
-    if (!same_line)
-    {
-        if (gtk_text_iter_is_start (&iter))
-            return 0;
-        gtk_text_iter_backward_line (&iter);
-    }
 
-    while (TRUE)
+    if (!same_line && !gtk_text_iter_backward_line (&iter))
+        return 0;
+
+    do
     {
-        if (compute_line_offset (&iter, tab_width, &indent) &&
-            indent && indent <= offset)
-                return indent;
-        if (!gtk_text_iter_get_line (&iter))
+        if (compute_line_offset (&iter, tab_width, &indent) && indent <= offset)
+            return indent;
+        else if (!gtk_text_iter_get_line (&iter))
             return 0;
-        gtk_text_iter_backward_line (&iter);
     }
+    while (gtk_text_iter_backward_line (&iter));
+
+    return 0;
 }
 
 
