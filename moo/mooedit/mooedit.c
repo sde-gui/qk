@@ -19,9 +19,11 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/moolang-private.h"
+#include "mooedit/mooeditprogress-glade.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooglade.h"
 #include <string.h>
 
 
@@ -2048,10 +2050,12 @@ static void
 update_progress (MooEdit *edit)
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
-    g_return_if_fail (GTK_IS_WIDGET (edit->priv->progressbar));
     g_return_if_fail (edit->priv->progress_text != NULL);
-    gtk_progress_bar_set_text (GTK_PROGRESS_BAR (edit->priv->progressbar),
-                               edit->priv->progress_text);
+    g_return_if_fail (edit->priv->state != MOO_EDIT_STATE_NORMAL);
+
+    if (edit->priv->progressbar)
+        gtk_progress_bar_set_text (GTK_PROGRESS_BAR (edit->priv->progressbar),
+                                   edit->priv->progress_text);
 }
 
 
@@ -2076,23 +2080,36 @@ pulse_progress (MooEdit *edit)
 }
 
 
+static void
+progress_cancel_clicked (MooEdit *doc)
+{
+    g_return_if_fail (MOO_IS_EDIT (doc));
+    if (doc->priv->state && doc->priv->cancel_op)
+        doc->priv->cancel_op (doc->priv->cancel_data);
+}
+
+
 static gboolean
 show_progress (MooEdit *edit)
 {
-    GtkWidget *align;
+    MooGladeXML *xml;
+    GtkButton *cancel;
 
     edit->priv->progress_timeout = 0;
 
     g_return_val_if_fail (!edit->priv->progress, FALSE);
 
-    edit->priv->progress = gtk_event_box_new ();
-    align = gtk_alignment_new (.5, .5, .0, .0);
-    gtk_container_add (GTK_CONTAINER (edit->priv->progress), align);
-    gtk_alignment_set_padding (GTK_ALIGNMENT (align), 12, 12, 12, 12);
-    gtk_widget_set_size_request (align, PROGRESS_WIDTH, PROGRESS_HEIGHT);
-    edit->priv->progressbar = gtk_progress_bar_new ();
-    gtk_container_add (GTK_CONTAINER (align), edit->priv->progressbar);
-    gtk_widget_show_all (edit->priv->progress);
+    xml = moo_glade_xml_new_from_buf (MOO_EDIT_PROGRESS_GLADE_XML, -1, "eventbox");
+    g_return_val_if_fail (xml != NULL, FALSE);
+
+    edit->priv->progress = moo_glade_xml_get_widget (xml, "eventbox");
+    edit->priv->progressbar = moo_glade_xml_get_widget (xml, "progressbar");
+    g_assert (GTK_IS_WIDGET (edit->priv->progressbar));
+
+    cancel = moo_glade_xml_get_widget (xml, "cancel");
+    g_signal_connect_swapped (cancel, "clicked",
+                              G_CALLBACK (progress_cancel_clicked),
+                              MOO_EDIT (edit));
 
     gtk_text_view_add_child_in_window (GTK_TEXT_VIEW (edit),
                                        edit->priv->progress,
@@ -2106,17 +2123,23 @@ show_progress (MooEdit *edit)
                            (GSourceFunc) pulse_progress,
                            edit);
 
+    g_object_unref (xml);
     return FALSE;
 }
 
 
 void
-_moo_edit_set_state (MooEdit      *edit,
-                     MooEditState  state,
-                     const char   *text)
+_moo_edit_set_state (MooEdit        *edit,
+                     MooEditState    state,
+                     const char     *text,
+                     GDestroyNotify  cancel,
+                     gpointer        data)
 {
     g_return_if_fail (state == MOO_EDIT_STATE_NORMAL ||
                       edit->priv->state == MOO_EDIT_STATE_NORMAL);
+
+    edit->priv->cancel_op = cancel;
+    edit->priv->cancel_data = data;
 
     if (state == edit->priv->state)
         return;

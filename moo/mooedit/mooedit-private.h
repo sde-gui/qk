@@ -56,21 +56,23 @@ void        _moo_edit_update_config         (void);
 /* File operations
 /*/
 
-void        _moo_edit_set_filename          (MooEdit        *edit,
-                                             const char     *file,
-                                             const char     *encoding);
-char        *_moo_edit_filename_to_utf8     (const char     *filename);
+void        _moo_edit_set_filename              (MooEdit        *edit,
+                                                 const char     *file,
+                                                 const char     *encoding);
+char        *_moo_edit_filename_to_utf8         (const char     *filename);
 
-void         _moo_edit_start_file_watch     (MooEdit        *edit);
-void         _moo_edit_stop_file_watch      (MooEdit        *edit);
+void         _moo_edit_start_file_watch         (MooEdit        *edit);
+void         _moo_edit_stop_file_watch          (MooEdit        *edit);
 
-MooEdit     *_moo_edit_new                  (MooEditor      *editor);
-void         _moo_edit_set_status           (MooEdit        *edit,
-                                             MooEditStatus   status);
+MooEdit     *_moo_edit_new                      (MooEditor      *editor);
+void         _moo_edit_set_status               (MooEdit        *edit,
+                                                 MooEditStatus   status);
 
 void         _moo_edit_set_state                (MooEdit        *edit,
                                                  MooEditState    state,
-                                                 const char     *text);
+                                                 const char     *text,
+                                                 GDestroyNotify  cancel,
+                                                 gpointer        data);
 void         _moo_edit_create_progress_dialog   (MooEdit        *edit);
 void         _moo_edit_set_progress_text        (MooEdit        *edit,
                                                  const char     *text);
@@ -118,6 +120,8 @@ struct _MooEditPrivate {
     GtkWidget *progress;
     GtkWidget *progressbar;
     char *progress_text;
+    GDestroyNotify cancel_op;
+    gpointer cancel_data;
 
     /***********************************************************************/
     /* Bookmarks
