@@ -841,7 +841,7 @@ _moo_bookmark_mgr_get_editor (MooBookmarkMgr *mgr)
                       G_CALLBACK (dialog_show), mgr);
 
     mgr->priv->editor = dialog;
-    gtk_object_sink (GTK_OBJECT (g_object_ref (dialog)));
+    gtk_object_sink (g_object_ref (dialog));
 
     return dialog;
 }

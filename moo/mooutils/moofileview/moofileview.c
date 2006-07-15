@@ -2775,7 +2775,7 @@ fileview_set_filter (MooFileView    *fileview,
     if (filter)
     {
         const char *name;
-        gtk_object_sink (GTK_OBJECT (g_object_ref (filter)));
+        gtk_object_sink (g_object_ref (filter));
         name = gtk_file_filter_get_name (filter);
         gtk_entry_set_text (fileview->priv->filter_entry, name);
         fileview_set_use_filter (fileview, TRUE, FALSE);
@@ -3081,7 +3081,7 @@ file_view_properties_dialog (MooFileView *fileview)
     if (!dialog)
     {
         dialog = _moo_file_props_dialog_new (GTK_WIDGET (fileview));
-        gtk_object_sink (GTK_OBJECT (g_object_ref (dialog)));
+        gtk_object_sink (g_object_ref (dialog));
         g_object_set_data_full (G_OBJECT (fileview),
                                 "moo-file-view-properties-dialog",
                                 dialog, g_object_unref);
@@ -3163,7 +3163,7 @@ do_popup (MooFileView    *fileview,
                                      MOO_UI_MENU, "MooFileView/Menu",
                                      fileview->priv->actions,
                                      NULL);
-    gtk_object_sink (GTK_OBJECT (g_object_ref (menu)));
+    gtk_object_sink (g_object_ref (menu));
     g_signal_connect (menu, "deactivate", G_CALLBACK (destroy_menu), NULL);
 
     _moo_file_view_tools_check (fileview);
@@ -3394,7 +3394,7 @@ edit_bookmarks (MooFileView *fileview)
     if (!dialog)
     {
         dialog = _moo_bookmark_mgr_get_editor (fileview->priv->bookmark_mgr);
-        gtk_object_sink (GTK_OBJECT (g_object_ref (dialog)));
+        gtk_object_sink (g_object_ref (dialog));
         g_object_set_data_full (G_OBJECT (fileview),
                                 "moo-file-view-bookmarks-editor",
                                 dialog, g_object_unref);

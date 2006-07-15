@@ -531,7 +531,7 @@ moo_paned_constructor (GType                  type,
             break;
     }
 
-    gtk_object_sink (GTK_OBJECT (g_object_ref (paned->button_box)));
+    gtk_object_sink (g_object_ref (paned->button_box));
     gtk_widget_set_parent (paned->button_box, GTK_WIDGET (paned));
     gtk_widget_show (paned->button_box);
     g_signal_connect_swapped (paned->button_box, "notify::visible",
@@ -2455,7 +2455,7 @@ int         moo_paned_insert_pane       (MooPaned       *paned,
     pane = pane_new (pane_label);
 
     pane->frame = create_frame_widget (paned, pane, TRUE);
-    gtk_object_sink (GTK_OBJECT (g_object_ref (pane->frame)));
+    gtk_object_sink (g_object_ref (pane->frame));
 
     if (GTK_WIDGET_REALIZED (paned))
         gtk_widget_set_parent_window (pane->frame,
