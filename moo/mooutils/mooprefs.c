@@ -989,7 +989,9 @@ write_item (const char  *key,
     }
 
     string = moo_value_convert_to_string (item_value (item));
-    g_return_if_fail (string != NULL);
+
+    if (!string)
+        string = "";
 
     if (!stuff->root)
         stuff->root =
