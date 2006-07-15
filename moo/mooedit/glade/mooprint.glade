@@ -75,6 +75,7 @@
                 <property name="label" translatable="yes">Ellipsize long lines</property>
                 <property name="use_underline">True</property>
                 <property name="draw_indicator">True</property>
+                <property name="moo_sensitive">!wrap</property>
               </widget>
               <packing>
                 <property name="expand">False</property>
@@ -104,6 +105,7 @@
                     </child>
                     <child>
                       <widget class="GtkAlignment" id="header_alignment">
+                        <property name="moo_sensitive">print_header</property>
                         <property name="visible">True</property>
                         <child>
                           <widget class="GtkVBox" id="vbox2">
@@ -263,6 +265,7 @@
                     </child>
                     <child>
                       <widget class="GtkAlignment" id="footer_alignment">
+                        <property name="moo_sensitive">print_footer</property>
                         <property name="visible">True</property>
                         <child>
                           <widget class="GtkVBox" id="vbox4">
