@@ -804,7 +804,7 @@ moo_completion_group_find (MooCompletionGroup *group,
 
     egg_regex_clear (group->regex);
 
-    if (egg_regex_match (group->regex, line, -1, 0) >= 1)
+    if (egg_regex_match (group->regex, line, 0) >= 1)
     {
         guint i;
 
@@ -812,7 +812,7 @@ moo_completion_group_find (MooCompletionGroup *group,
         {
             int start_pos = -1, end_pos = -1;
 
-            egg_regex_fetch_pos (group->regex, line, group->parens[i],
+            egg_regex_fetch_pos (group->regex, group->parens[i],
                                  &start_pos, &end_pos);
 
             if (start_pos >= 0 && end_pos >= 0)

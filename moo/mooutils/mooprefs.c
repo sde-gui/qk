@@ -774,8 +774,7 @@ closure_match (Closure            *closure,
 
         case MOO_PREFS_MATCH_REGEX:
             egg_regex_clear (closure->pattern.regex);
-            return egg_regex_match (closure->pattern.regex,
-                                    key, -1, 0) > 0;
+            return egg_regex_match (closure->pattern.regex, key, 0) > 0;
 
         default:
             g_return_val_if_reached (FALSE);
@@ -796,11 +795,13 @@ static void
 pattern_free (Pattern             p,
               MooPrefsMatchType   type)
 {
-    if (!p.key) return;
-    if (type == MOO_PREFS_MATCH_REGEX)
-        egg_regex_free (p.regex);
-    else
-        g_free (p.key);
+    if (p.key)
+    {
+        if (type == MOO_PREFS_MATCH_REGEX)
+            egg_regex_unref (p.regex);
+        else
+            g_free (p.key);
+    }
 }
 
 

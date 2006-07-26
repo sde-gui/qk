@@ -53,10 +53,10 @@ moo_text_search_regex_forward (const GtkTextIter      *search_start,
 
         egg_regex_clear (regex);
 
-        if (egg_regex_match_extended (regex, text, -1, text_start - text, 0) > 0)
+        if (egg_regex_match_full (regex, text, -1, text_start - text, 0, NULL))
         {
             int start_pos, end_pos;
-            egg_regex_fetch_pos (regex, text, 0, &start_pos, &end_pos);
+            egg_regex_fetch_pos (regex, 0, &start_pos, &end_pos);
 
             *match_start = start;
             gtk_text_iter_forward_chars (match_start, g_utf8_pointer_to_offset (text, text + start_pos));
@@ -116,9 +116,9 @@ find_last_match (EggRegex          *regex,
     len = strlen (text);
     start = 0;
 
-    while (egg_regex_match_extended (regex, text, len, start, flags) > 0)
+    while (egg_regex_match_full (regex, text, len, start, flags, NULL))
     {
-        egg_regex_fetch_pos (regex, text, 0, start_pos, end_pos);
+        egg_regex_fetch_pos (regex, 0, start_pos, end_pos);
         start = *start_pos + 1;
         if (start >= len)
             break;

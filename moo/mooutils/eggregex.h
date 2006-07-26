@@ -1,49 +1,23 @@
 /* EggRegex -- regular expression API wrapper around PCRE.
- * Copyright (C) 1999 Scott Wimer
- * Copyright (C) 2004 Matthias Clasen
  *
- * This is basically an ease of user wrapper around the functionality of
- * PCRE.
+ * Copyright (C) 1999, 2000 Scott Wimer
+ * Copyright (C) 2004, Matthias Clasen <mclasen@redhat.com>
+ * Copyright (C) 2005 - 2006, Marco Barisione <barisione@gmail.com>
  *
- * With this library, we are, hopefully, drastically reducing the code
- * complexity necessary by making use of a more complex and detailed
- * data structure to store the regex info.  I am hoping to have a regex
- * interface that is almost as easy to use as Perl's.  <fingers crossed>
- *
- * Author: Scott Wimer <scottw@cgibuilder.com>
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * This library is free software, you can distribute it or modify it
- * under the following terms:
- *  1) The GNU General Public License (GPL)
- *  2) The GNU Library General Public License (LGPL)
- *  3) The Perl Artistic license (Artistic)
- *  4) The BSD license (BSD)
- *
- * In short, you can use this library in any code you desire, so long as
- * the Copyright notice above remains intact.  If you do make changes to
- * it, I would appreciate that you let me know so I can improve this
- * library for everybody, but I'm not gonna force you to.
- *
- * Please note that this library is just a wrapper around Philip Hazel's
- * PCRE library.  Please see the file 'LICENSE' in your PCRE distribution.
- * And, if you live in England, please send him a pint of good beer, his
- * library is great.
- *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
-/*****************************************************************************
- * Changed by Muntyan
- *
- * 04/24/2005: added refcounting
- * 04/30/2005: added egg_regex_eval_replacement and egg_regex_check_replacement
- * 05/31/2006: made egg_regex_optimize return boolean
- *
- * mooutils/eggregex.h
- *****************************************************************************/
 
 #ifndef __EGGREGEX_H__
 #define __EGGREGEX_H__
@@ -59,7 +33,8 @@ typedef enum
 {
   EGG_REGEX_ERROR_COMPILE,
   EGG_REGEX_ERROR_OPTIMIZE,
-  EGG_REGEX_ERROR_REPLACE
+  EGG_REGEX_ERROR_REPLACE,
+  EGG_REGEX_ERROR_MATCH
 } EggRegexError;
 
 #define EGG_REGEX_ERROR egg_regex_error_quark ()
@@ -75,6 +50,7 @@ typedef enum
   EGG_REGEX_ANCHORED          = 1 << 4,
   EGG_REGEX_DOLLAR_ENDONLY    = 1 << 5,
   EGG_REGEX_UNGREEDY          = 1 << 9,
+  EGG_REGEX_RAW               = 1 << 11,
   EGG_REGEX_NO_AUTO_CAPTURE   = 1 << 12
 } EggRegexCompileFlags;
 
@@ -83,26 +59,14 @@ typedef enum
   EGG_REGEX_MATCH_ANCHORED    = 1 << 4,
   EGG_REGEX_MATCH_NOTBOL      = 1 << 7,
   EGG_REGEX_MATCH_NOTEOL      = 1 << 8,
-  EGG_REGEX_MATCH_NOTEMPTY    = 1 << 10
+  EGG_REGEX_MATCH_NOTEMPTY    = 1 << 10,
+  EGG_REGEX_MATCH_PARTIAL     = 1 << 15
 } EggRegexMatchFlags;
 
 typedef struct _EggRegex  EggRegex;
 
-typedef gboolean (*EggRegexEvalCallback) (EggRegex*, const gchar*, GString*, gpointer);
+typedef gboolean (*EggRegexEvalCallback) (const EggRegex*, const gchar*, GString*, gpointer);
 
-/* Really quick outline of features... functions are preceded by 'egg_regex_'
- *   new         - compile a pattern and put it in a egg_regex structure
- *   free        - free up the memory used by the egg_regex structure
- *   clear       - clear out the structure to match against a new string
- *   optimize    - study the pattern to make matching more efficient
- *   match       - try matching a pattern in the string
- *   match_next  - try matching pattern again in the string
- *   fetch       - fetch a particular matching sub pattern
- *   fetch_all   - get all of the matching sub patterns
- *   split       - split the string on a regex
- *   split_next  - for using split as an iterator of sorts
- *   replace     - replace occurances of a pattern with some text
- */
 
 EggRegex  *egg_regex_new          (const gchar           *pattern,
 				   EggRegexCompileFlags   compile_options,
@@ -110,83 +74,135 @@ EggRegex  *egg_regex_new          (const gchar           *pattern,
 				   GError               **error);
 gboolean   egg_regex_optimize     (EggRegex              *regex,
 				   GError               **error);
-/* ref() and unref() accept NULL */
-EggRegex  *egg_regex_ref          (EggRegex              *regex);
-void       egg_regex_unref        (EggRegex              *regex);
-void       egg_regex_free         (EggRegex              *regex);
-/* FIXME */
+EggRegex  *egg_regex_ref	  (EggRegex              *regex);
+void       egg_regex_unref	  (EggRegex              *regex);
+EggRegex  *egg_regex_copy	  (const EggRegex        *regex);
 const gchar * egg_regex_get_pattern
-				  (EggRegex              *regex);
+				  (const EggRegex        *regex);
 void       egg_regex_clear        (EggRegex              *regex);
-gint       egg_regex_match        (EggRegex              *regex,
+gboolean   egg_regex_match_simple (const gchar           *pattern,
+				   const gchar           *string,
+				   EggRegexCompileFlags   compile_options,
+				   EggRegexMatchFlags     match_options);
+gboolean   egg_regex_match        (EggRegex              *regex,
+				   const gchar           *string,
+				   EggRegexMatchFlags     match_options);
+gboolean   egg_regex_match_full   (EggRegex              *regex,
 				   const gchar           *string,
 				   gssize                 string_len,
+				   gint                   start_position,
+				   EggRegexMatchFlags     match_options,
+				   GError               **error);
+gboolean   egg_regex_match_next   (EggRegex              *regex,
+				   const gchar           *string,
 				   EggRegexMatchFlags     match_options);
-gint       egg_regex_match_extended
+gboolean   egg_regex_match_next_full
 				  (EggRegex              *regex,
 				   const gchar           *string,
 				   gssize                 string_len,
-				   gint                   string_index,
+				   gint                   start_position,
+				   EggRegexMatchFlags     match_options,
+				   GError               **error);
+gboolean   egg_regex_match_all    (EggRegex              *regex,
+				   const gchar           *string,
 				   EggRegexMatchFlags     match_options);
-gint       egg_regex_match_next   (EggRegex              *regex,
+gboolean   egg_regex_match_all_full
+				  (EggRegex              *regex,
 				   const gchar           *string,
 				   gssize                 string_len,
-				   EggRegexMatchFlags     match_options);
-gchar     *egg_regex_fetch        (EggRegex              *regex,
-				   const gchar           *string,
-				   gint                   match_num);
-void       egg_regex_fetch_pos    (EggRegex              *regex,
-				   const gchar           *string,
+				   gint                   start_position,
+				   EggRegexMatchFlags     match_options,
+				   GError               **error);
+gint       egg_regex_get_match_count
+				  (const EggRegex        *regex);
+gboolean   egg_regex_is_partial_match
+				  (const EggRegex        *regex);
+gchar     *egg_regex_fetch        (const EggRegex        *regex,
+				   gint                   match_num,
+				   const gchar           *string);
+gboolean   egg_regex_fetch_pos    (const EggRegex        *regex,
 				   gint                   match_num,
 				   gint                  *start_pos,
 				   gint                  *end_pos);
-gchar     *egg_regex_fetch_named  (EggRegex              *regex,
-				   const gchar           *string,
-				   const gchar           *name);
-gchar    **egg_regex_fetch_all    (EggRegex              *regex,
+gchar     *egg_regex_fetch_named  (const EggRegex        *regex,
+				   const gchar           *name,
 				   const gchar           *string);
-gchar    **egg_regex_split        (EggRegex              *regex,
+gboolean   egg_regex_fetch_named_pos
+				  (const EggRegex        *regex,
+				   const gchar           *name,
+				   gint                  *start_pos,
+				   gint                  *end_pos);
+gchar    **egg_regex_fetch_all    (const EggRegex        *regex,
+				   const gchar           *string);
+gint       egg_regex_get_string_number
+				  (const EggRegex        *regex,
+				   const gchar           *name);
+gchar    **egg_regex_split_simple (const gchar           *pattern,
 				   const gchar           *string,
-				   gssize                 string_len,
-				   EggRegexMatchFlags     match_options,
-				   gint                   max_pieces);
-gchar     *egg_regex_split_next   (EggRegex              *regex,
-				   const gchar           *string,
-				   gssize                 string_len,
+				   EggRegexCompileFlags   compile_options,
 				   EggRegexMatchFlags     match_options);
+gchar    **egg_regex_split	  (EggRegex              *regex,
+				   const gchar           *string,
+				   EggRegexMatchFlags     match_options);
+gchar    **egg_regex_split_full   (EggRegex              *regex,
+				   const gchar           *string,
+				   gssize                 string_len,
+				   gint                   start_position,
+				   EggRegexMatchFlags     match_options,
+				   gint                   max_tokens,
+				   GError               **error);
+gchar     *egg_regex_split_next	  (EggRegex              *regex,
+				   const gchar           *string,
+				   EggRegexMatchFlags     match_options);
+gchar     *egg_regex_split_next_full
+				  (EggRegex              *regex,
+				   const gchar           *string,
+				   gssize                 string_len,
+				   gint                   start_position,
+				   EggRegexMatchFlags     match_options,
+				   GError               **error);
 gchar     *egg_regex_replace      (EggRegex              *regex,
 				   const gchar           *string,
 				   gssize                 string_len,
+				   gint                   start_position,
 				   const gchar           *replacement,
 				   EggRegexMatchFlags     match_options,
 				   GError               **error);
+gchar     *egg_regex_replace_literal
+				  (EggRegex              *regex,
+				   const gchar           *string,
+				   gssize                 string_len,
+				   gint                   start_position,
+				   const gchar           *replacement,
+				   EggRegexMatchFlags     match_options);
 gchar     *egg_regex_replace_eval (EggRegex              *regex,
 				   const gchar           *string,
 				   gssize                 string_len,
+				   gint                   start_position,
+				   EggRegexMatchFlags     match_options,
 				   EggRegexEvalCallback   eval,
-				   gpointer               user_data,
-				   EggRegexMatchFlags     match_options);
+				   gpointer               user_data);
+gchar     *egg_regex_escape_string
+				  (const gchar           *string,
+				   gint                   length);
 
-int        egg_regex_get_string_number (EggRegex         *regex,
-                                   const char            *name);
 
-
-gchar *egg_regex_eval_replacement (EggRegex              *regex,
-				   const gchar           *string,
-				   const gchar           *replacement,
-				   GError               **error);
-gchar *egg_regex_try_eval_replacement (EggRegex          *regex,
-                                       const gchar       *replacement,
-                                       GError           **error);
-gboolean egg_regex_check_replacement (const gchar *replacement,
-                                      gboolean    *has_references,
-                                      GError     **error);
-
-gchar      *egg_regex_escape_string (const char *string,
-                                     gint        chars);
-gboolean    egg_regex_escape        (const char *string,
-                                     int         bytes,
-                                     GString    *dest);
+/*****************************************************************************/
+/* muntyan's additions
+ */
+gboolean    egg_regex_escape                (const char *string,
+                                             int         bytes,
+                                             GString    *dest);
+gboolean    egg_regex_check_replacement     (const char *replacement,
+                                             gboolean   *has_references,
+                                             GError    **error);
+char       *egg_regex_eval_replacement      (EggRegex   *regex,
+                                             const char *string,
+                                             const char *replacement,
+                                             GError    **error);
+char       *egg_regex_try_eval_replacement  (EggRegex   *regex,
+                                             const char *replacement,
+                                             GError    **error);
 
 
 G_END_DECLS

@@ -569,7 +569,7 @@ rule_regex_match (MooRule        *rule,
 {
     /* TODO: limit */
     /* XXX line start and stuff */
-    int n_matches, start_pos, end_pos;
+    int start_pos, end_pos;
     EggRegexMatchFlags regex_flags = 0;
     char *start = data->start;
 
@@ -580,16 +580,15 @@ rule_regex_match (MooRule        *rule,
     {
         egg_regex_clear (rule->u.regex.regex);
 
-        n_matches = egg_regex_match_extended (rule->u.regex.regex,
-                                              data->line_string,
-                                              data->line_string_len,
-                                              start - data->line_string,
-                                              regex_flags);
-
-        if (n_matches < 1)
+        if (!egg_regex_match_full (rule->u.regex.regex,
+                                   data->line_string,
+                                   data->line_string_len,
+                                   start - data->line_string,
+                                   regex_flags,
+                                   NULL))
             return NULL;
 
-        egg_regex_fetch_pos (rule->u.regex.regex, data->line_string, 0,
+        egg_regex_fetch_pos (rule->u.regex.regex, 0,
                              &start_pos, &end_pos);
 
         if (data->line_string + start_pos > data->limit)
@@ -624,7 +623,7 @@ rule_regex_match (MooRule        *rule,
 static void
 rule_regex_destroy (MooRule *rule)
 {
-    egg_regex_free (rule->u.regex.regex);
+    egg_regex_unref (rule->u.regex.regex);
 }
 
 
@@ -674,7 +673,7 @@ _moo_rule_regex_new (const char         *pattern,
 
     if (!rule)
     {
-        egg_regex_free (regex);
+        egg_regex_unref (regex);
         return NULL;
     }
 

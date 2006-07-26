@@ -1146,15 +1146,15 @@ moo_html_parse_url (const char     *url,
     regex = egg_regex_new ("^([a-zA-Z]+://)?([^#]*)(#(.*))?$", 0, 0, NULL);
     g_return_val_if_fail (regex != NULL, FALSE);
 
-    if (egg_regex_match (regex, url, -1, 0) < 1)
+    if (egg_regex_match (regex, url, 0) < 1)
     {
         egg_regex_unref (regex);
         return FALSE;
     }
 
-    *scheme = egg_regex_fetch (regex, url, 1);
-    *base = egg_regex_fetch (regex, url, 2);
-    *anchor = egg_regex_fetch (regex, url, 4);
+    *scheme = egg_regex_fetch (regex, 1, url);
+    *base = egg_regex_fetch (regex, 2, url);
+    *anchor = egg_regex_fetch (regex, 4, url);
 
     if (!*scheme || !**scheme) {g_free (*scheme); *scheme = NULL;}
     if (!*base || !**base) {g_free (*base); *base = NULL;}

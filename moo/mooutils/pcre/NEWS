@@ -1,6 +1,39 @@
 News about PCRE releases
 ------------------------
 
+Release 6.7 04-Jul-06
+---------------------
+
+The main additions to this release are the ability to use the same name for
+multiple sets of parentheses, and support for CRLF line endings in both the
+library and pcregrep (and in pcretest for testing).
+
+Thanks to Ian Taylor, the stack usage for many kinds of pattern has been
+significantly reduced for certain subject strings.
+
+
+Release 6.5 01-Feb-06
+---------------------
+
+Important changes in this release:
+
+1. A number of new features have been added to pcregrep.
+
+2. The Unicode property tables have been updated to Unicode 4.1.0, and the
+   supported properties have been extended with script names such as "Arabic",
+   and the derived properties "Any" and "L&". This has necessitated a change to
+   the interal format of compiled patterns. Any saved compiled patterns that
+   use \p or \P must be recompiled.
+
+3. The specification of recursion in patterns has been changed so that all
+   recursive subpatterns are automatically treated as atomic groups. Thus, for
+   example, (?R) is treated as if it were (?>(?R)). This is necessary because
+   otherwise there are situations where recursion does not work.
+
+See the ChangeLog for a complete list of changes, which include a number of bug
+fixes and tidies.
+
+
 Release 6.0 07-Jun-05
 ---------------------
 
