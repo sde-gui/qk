@@ -150,6 +150,7 @@ typedef struct stateblock {
 #define INTS_PER_STATEBLOCK  (sizeof(stateblock)/sizeof(int))
 
 
+#undef DEBUG
 #ifdef DEBUG
 /*************************************************
 *             Print character string             *

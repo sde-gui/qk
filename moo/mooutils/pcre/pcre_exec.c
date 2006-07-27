@@ -81,6 +81,7 @@ static const char rep_max[] = { 0, 0, 0, 0, 1, 1 };
 
 
 
+#undef DEBUG
 #ifdef DEBUG
 /*************************************************
 *        Debugging function to print chars       *

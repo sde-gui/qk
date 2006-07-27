@@ -11,16 +11,17 @@ DIST_SUBDIRS = m4
 
 ACLOCAL_AMFLAGS = -I $(top_srcdir)/m4
 
-AM_CFLAGS =					\
-    -I$(top_builddir)				\
-    -I$(top_srcdir)				\
-    -I$(top_srcdir)/$(MOO_SRC_PREFIX)		\
-    -I$(top_builddir)/$(MOO_SRC_PREFIX)		\
-    -I$(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils	\
-    -I$(top_builddir)/$(MOO_SRC_PREFIX)/mooutils\
-    $(MOO_CFLAGS)				\
-    $(PYTHON_INCLUDES)				\
-    $(PYGTK_CFLAGS)				\
+AM_CFLAGS =						\
+    -I$(top_builddir)					\
+    -I$(top_srcdir)					\
+    -I$(top_srcdir)/$(MOO_SRC_PREFIX)			\
+    -I$(top_builddir)/$(MOO_SRC_PREFIX)			\
+    -I$(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils		\
+    -I$(top_builddir)/$(MOO_SRC_PREFIX)/mooutils	\
+    -I$(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils/pcre	\
+    $(MOO_CFLAGS)					\
+    $(PYTHON_INCLUDES)					\
+    $(PYGTK_CFLAGS)					\
     $(MOO_DEBUG_CFLAGS)
 
 

@@ -47,6 +47,7 @@ functions whose names all begin with "_pcre_". */
 
 /* Define DEBUG to get debugging output on stdout. */
 
+#undef DEBUG
 #if 0
 #define DEBUG
 #endif
