@@ -45,11 +45,26 @@ gboolean    _moo_edit_has_comments          (MooEdit        *edit,
 /***********************************************************************/
 /* Preferences
 /*/
-void        _moo_edit_init_settings         (void);
-void        _moo_edit_apply_settings        (MooEdit        *edit);
-void        _moo_edit_freeze_config_notify  (MooEdit        *edit);
-void        _moo_edit_thaw_config_notify    (MooEdit        *edit);
-void        _moo_edit_update_config         (void);
+enum {
+    MOO_EDIT_SETTING_LANG,
+    MOO_EDIT_SETTING_INDENT,
+    MOO_EDIT_SETTING_STRIP,
+    MOO_EDIT_SETTING_WRAP_MODE,
+    MOO_EDIT_SETTING_SHOW_LINE_NUMBERS,
+    MOO_EDIT_SETTING_TAB_WIDTH,
+    MOO_EDIT_LAST_SETTING
+};
+
+extern guint *_moo_edit_settings;
+
+void        _moo_edit_update_global_config      (void);
+void        _moo_edit_init_config               (void);
+void        _moo_edit_update_lang_config        (void);
+
+void        _moo_edit_apply_prefs               (MooEdit        *edit);
+void        _moo_edit_freeze_config_notify      (MooEdit        *edit);
+void        _moo_edit_thaw_config_notify        (MooEdit        *edit);
+void        _moo_edit_update_config_from_global (MooEdit        *edit);
 
 
 /***********************************************************************/

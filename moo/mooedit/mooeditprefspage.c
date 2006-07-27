@@ -16,6 +16,7 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditprefs-glade.h"
 #include "mooedit/moolang-private.h"
+#include "mooedit/mooeditfiltersettings.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moostock.h"
@@ -28,6 +29,7 @@
 static void     prefs_page_init             (MooPrefsDialogPage *page);
 static void     prefs_page_apply            (MooPrefsDialogPage *page);
 static void     prefs_page_apply_lang_prefs (MooPrefsDialogPage *page);
+static void     apply_filter_settings       (MooPrefsDialogPage *page);
 
 static void     scheme_combo_init           (GtkComboBox        *combo,
                                              MooEditor          *editor);
@@ -45,6 +47,8 @@ static void     default_lang_combo_set_lang (GtkComboBox        *combo,
 
 static void     lang_combo_init             (GtkComboBox        *combo,
                                              MooPrefsDialogPage *page);
+
+static void     filter_treeview_init        (MooGladeXML        *xml);
 
 static GtkTreeModel *create_lang_model      (MooEditor          *editor);
 
@@ -64,7 +68,7 @@ moo_edit_prefs_page_new (MooEditor *editor)
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
 
-    _moo_edit_init_settings ();
+    _moo_edit_init_config ();
 
     xml = moo_glade_xml_new_empty ();
     moo_glade_xml_map_id (xml, "fontbutton", MOO_TYPE_FONT_BUTTON);
@@ -91,6 +95,8 @@ moo_edit_prefs_page_new (MooEditor *editor)
     default_lang_combo_init (default_lang_combo, page);
     lang_combo = moo_glade_xml_get_widget (page->xml, "lang_combo");
     lang_combo_init (lang_combo, page);
+
+    filter_treeview_init (page->xml);
 
     return page_widget;
 }
@@ -251,6 +257,10 @@ prefs_page_apply (MooPrefsDialogPage *page)
 {
     MooTextStyleScheme *scheme;
     char *lang;
+    MooEditor *editor;
+
+    editor = page_get_editor (page);
+    g_return_if_fail (editor != NULL);
 
     scheme = page_get_scheme (page);
     g_return_if_fail (scheme != NULL);
@@ -262,6 +272,8 @@ prefs_page_apply (MooPrefsDialogPage *page)
     g_free (lang);
 
     prefs_page_apply_lang_prefs (page);
+    apply_filter_settings (page);
+    _moo_editor_apply_prefs (editor);
 }
 
 
@@ -695,5 +707,200 @@ prefs_page_apply_lang_prefs (MooPrefsDialogPage *page)
     mgr = moo_editor_get_lang_mgr (page_get_editor (page));
     gtk_tree_model_foreach (model, (GtkTreeModelForeachFunc) apply_one_lang, mgr);
     _moo_lang_mgr_save_config (mgr);
-    _moo_edit_update_config ();
+    _moo_edit_update_lang_config ();
+}
+
+
+/*********************************************************************/
+/* Filters
+ */
+
+enum {
+    FILTER_COLUMN_FILTER,
+    FILTER_COLUMN_CONFIG,
+    FILTER_NUM_COLUMNS
+};
+
+
+static void
+filter_store_set_modified (gpointer store,
+                           gboolean modified)
+{
+    g_return_if_fail (GTK_IS_LIST_STORE (store));
+    g_object_set_data (store, "filter-store-modified",
+                       GINT_TO_POINTER (modified));
+}
+
+static gboolean
+filter_store_get_modified (gpointer store)
+{
+    g_return_val_if_fail (GTK_IS_LIST_STORE (store), FALSE);
+    return g_object_get_data (store, "filter-store-modified") != NULL;
+}
+
+static void
+populate_filter_settings_store (GtkListStore *store)
+{
+    GSList *strings, *l;
+
+    _moo_edit_filter_settings_load ();
+
+    l = strings = _moo_edit_filter_settings_get_strings ();
+
+    while (l)
+    {
+        GtkTreeIter iter;
+
+        g_return_if_fail (l->next != NULL);
+
+        gtk_list_store_append (store, &iter);
+        gtk_list_store_set (store, &iter,
+                            FILTER_COLUMN_FILTER, l->data,
+                            FILTER_COLUMN_CONFIG, l->next->data,
+                            -1);
+
+        l = l->next->next;
+    }
+
+    g_slist_foreach (strings, (GFunc) g_free, NULL);
+    g_slist_free (strings);
+}
+
+
+static gboolean
+strings_equal (const char *s1,
+               const char *s2)
+{
+    return !strcmp (s1 ? s1 : "", s2 ? s2 : "");
+}
+
+static void
+filter_cell_edited (GtkCellRendererText *cell,
+                    const char          *path_string,
+                    const char          *text,
+                    GtkListStore        *store)
+{
+    GtkTreeIter iter;
+    GtkTreePath *path;
+    int column;
+    char *old_text;
+
+    g_return_if_fail (GTK_IS_LIST_STORE (store));
+
+    column = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (cell), "filter-store-column-id"));
+    g_return_if_fail (column >= 0 && column < FILTER_NUM_COLUMNS);
+
+    path = gtk_tree_path_new_from_string (path_string);
+
+    if (!gtk_tree_model_get_iter (GTK_TREE_MODEL (store), &iter, path))
+    {
+        gtk_tree_path_free (path);
+        return;
+    }
+
+    gtk_tree_model_get (GTK_TREE_MODEL (store), &iter, column, &old_text, -1);
+
+    if (!strings_equal (old_text, text))
+    {
+        gtk_list_store_set (store, &iter, column, text, -1);
+        filter_store_set_modified (store, TRUE);
+    }
+
+    g_free (old_text);
+    gtk_tree_path_free (path);
+}
+
+
+static void
+create_filter_cell (GtkTreeView  *treeview,
+                    GtkListStore *store,
+                    const char   *title,
+                    int           column_id)
+{
+    GtkTreeViewColumn *column;
+    GtkCellRenderer *cell;
+
+    cell = gtk_cell_renderer_text_new ();
+    column = gtk_tree_view_column_new_with_attributes (title, cell, "text", column_id, NULL);
+    gtk_tree_view_append_column (treeview, column);
+
+    g_object_set (cell, "editable", TRUE, NULL);
+    g_object_set_data (G_OBJECT (cell), "filter-store-column-id", GINT_TO_POINTER (column_id));
+    g_signal_connect (cell, "edited", G_CALLBACK (filter_cell_edited), store);
+}
+
+
+static void
+filter_treeview_init (MooGladeXML *xml)
+{
+    GtkTreeView *filter_treeview;
+    GtkListStore *store;
+    MooTreeHelper *helper;
+
+    filter_treeview = moo_glade_xml_get_widget (xml, "filter_treeview");
+    g_return_if_fail (filter_treeview != NULL);
+
+    store = gtk_list_store_new (FILTER_NUM_COLUMNS, G_TYPE_STRING, G_TYPE_STRING);
+    populate_filter_settings_store (store);
+    gtk_tree_view_set_model (filter_treeview, GTK_TREE_MODEL (store));
+
+    create_filter_cell (filter_treeview, store, "Filter", FILTER_COLUMN_FILTER);
+    create_filter_cell (filter_treeview, store, "Options", FILTER_COLUMN_CONFIG);
+
+    helper = moo_tree_helper_new (GTK_WIDGET (filter_treeview),
+                                  moo_glade_xml_get_widget (xml, "new_filter_setting"),
+                                  moo_glade_xml_get_widget (xml, "delete_filter_setting"),
+                                  moo_glade_xml_get_widget (xml, "filter_setting_up"),
+                                  moo_glade_xml_get_widget (xml, "filter_setting_down"));
+    gtk_object_sink (g_object_ref (helper));
+    g_object_set_data_full (G_OBJECT (filter_treeview), "tree-helper", helper, g_object_unref);
+
+    g_object_unref (store);
+}
+
+
+static gboolean
+prepend_filter_and_config (GtkTreeModel *model,
+                           G_GNUC_UNUSED GtkTreePath *path,
+                           GtkTreeIter  *iter,
+                           GSList      **list)
+{
+    char *filter = NULL, *config = NULL;
+
+    gtk_tree_model_get (model, iter,
+                        FILTER_COLUMN_FILTER, &filter,
+                        FILTER_COLUMN_CONFIG, &config,
+                        -1);
+
+    *list = g_slist_prepend (*list, filter ? filter : g_strdup (""));
+    *list = g_slist_prepend (*list, config ? config : g_strdup (""));
+
+    return FALSE;
+}
+
+static void
+apply_filter_settings (MooPrefsDialogPage *page)
+{
+    GtkTreeView *filter_treeview;
+    GSList *strings = NULL;
+    GtkTreeModel *model;
+
+    filter_treeview = moo_glade_xml_get_widget (page->xml, "filter_treeview");
+    g_return_if_fail (filter_treeview != NULL);
+
+    model = gtk_tree_view_get_model (filter_treeview);
+
+    if (!filter_store_get_modified (model))
+        return;
+
+    gtk_tree_model_foreach (model,
+                            (GtkTreeModelForeachFunc) prepend_filter_and_config,
+                            &strings);
+    strings = g_slist_reverse (strings);
+
+    _moo_edit_filter_settings_set_strings (strings);
+    filter_store_set_modified (model, FALSE);
+
+    g_slist_foreach (strings, (GFunc) g_free, NULL);
+    g_slist_free (strings);
 }

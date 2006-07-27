@@ -474,8 +474,8 @@ moo_edit_config_set_value (MooEditConfig  *config,
 
 static void
 moo_edit_config_set_valist (MooEditConfig  *config,
-                            const char     *first_setting,
                             MooEditConfigSource source,
+                            const char     *first_setting,
                             va_list         var_args)
 {
     const gchar *name;
@@ -520,9 +520,6 @@ moo_edit_config_set_valist (MooEditConfig  *config,
         g_value_unset (&value);
 
         name = va_arg (var_args, gchar*);
-
-        if (name)
-            source = va_arg (var_args, guint);
     }
 
     g_object_thaw_notify (G_OBJECT (config));
@@ -532,8 +529,8 @@ moo_edit_config_set_valist (MooEditConfig  *config,
 
 void
 moo_edit_config_set (MooEditConfig  *config,
-                     const char     *first_setting,
                      MooEditConfigSource source,
+                     const char     *first_setting,
                      ...)
 {
     va_list var_args;
@@ -541,8 +538,8 @@ moo_edit_config_set (MooEditConfig  *config,
     g_return_if_fail (MOO_IS_EDIT_CONFIG (config));
     g_return_if_fail (first_setting != NULL);
 
-    va_start (var_args, source);
-    moo_edit_config_set_valist (config, first_setting, source, var_args);
+    va_start (var_args, first_setting);
+    moo_edit_config_set_valist (config, source, first_setting, var_args);
     va_end (var_args);
 }
 
@@ -563,8 +560,8 @@ moo_edit_config_get (MooEditConfig  *config,
 
 
 void
-moo_edit_config_set_global (const char     *first_setting,
-                            MooEditConfigSource source,
+moo_edit_config_set_global (MooEditConfigSource source,
+                            const char     *first_setting,
                             ...)
 {
     va_list var_args;
@@ -573,8 +570,8 @@ moo_edit_config_set_global (const char     *first_setting,
 
     global_init ();
 
-    va_start (var_args, source);
-    moo_edit_config_set_valist (global, first_setting, source, var_args);
+    va_start (var_args, first_setting);
+    moo_edit_config_set_valist (global, source, first_setting, var_args);
     va_end (var_args);
 }
 

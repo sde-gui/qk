@@ -16,29 +16,48 @@
 #include <string.h>
 
 
-#define STR_STACK_SIZE 4
+static void _moo_edit_init_prefs (void);
 
-const char *moo_edit_setting                (const char     *setting_name)
+
+static guint settings[MOO_EDIT_LAST_SETTING];
+guint *_moo_edit_settings = settings;
+
+
+void
+_moo_edit_init_config (void)
 {
-    static GString *stack[STR_STACK_SIZE];
-    static guint p;
+    static gboolean done = FALSE;
 
-    g_return_val_if_fail (setting_name != NULL, NULL);
+    if (done)
+        return;
+    done = TRUE;
 
-    if (!stack[0])
-    {
-        for (p = 0; p < STR_STACK_SIZE; ++p)
-            stack[p] = g_string_new ("");
-        p = STR_STACK_SIZE - 1;
-    }
+    _moo_edit_init_prefs ();
 
-    if (p == STR_STACK_SIZE - 1)
-        p = 0;
-    else
-        p++;
-
-    g_string_printf (stack[p], MOO_EDIT_PREFS_PREFIX "/%s", setting_name);
-    return stack[p]->str;
+    _moo_edit_settings[MOO_EDIT_SETTING_LANG] =
+        moo_edit_config_install_setting (g_param_spec_string ("lang", "lang", "lang",
+                                                              NULL,
+                                                              G_PARAM_READWRITE));
+    _moo_edit_settings[MOO_EDIT_SETTING_INDENT] =
+        moo_edit_config_install_setting (g_param_spec_string ("indent", "indent", "indent",
+                                                              NULL,
+                                                              G_PARAM_READWRITE));
+    _moo_edit_settings[MOO_EDIT_SETTING_STRIP] =
+        moo_edit_config_install_setting (g_param_spec_boolean ("strip", "strip", "strip",
+                                                               FALSE,
+                                                               G_PARAM_READWRITE));
+    _moo_edit_settings[MOO_EDIT_SETTING_WRAP_MODE] =
+        moo_edit_config_install_setting (g_param_spec_enum ("wrap-mode", "wrap-mode", "wrap-mode",
+                                                            GTK_TYPE_WRAP_MODE, GTK_WRAP_NONE,
+                                                            G_PARAM_READWRITE));
+    _moo_edit_settings[MOO_EDIT_SETTING_SHOW_LINE_NUMBERS] =
+        moo_edit_config_install_setting (g_param_spec_boolean ("show-line-numbers", "show-line-numbers", "show-line-numbers",
+                                                               FALSE,
+                                                               G_PARAM_READWRITE));
+    _moo_edit_settings[MOO_EDIT_SETTING_TAB_WIDTH] =
+        moo_edit_config_install_setting (g_param_spec_uint ("tab-width", "tab-width", "tab-width",
+                                                            1, G_MAXUINT, 8,
+                                                            G_PARAM_READWRITE));
 }
 
 
@@ -49,8 +68,8 @@ const char *moo_edit_setting                (const char     *setting_name)
 #define NEW_KEY_ENUM(s,t,v)  moo_prefs_new_key_enum (MOO_EDIT_PREFS_PREFIX "/" s, t, v)
 #define NEW_KEY_FLAGS(s,t,v) moo_prefs_new_key_flags (MOO_EDIT_PREFS_PREFIX "/" s, t, v)
 
-void
-_moo_edit_init_settings (void)
+static void
+_moo_edit_init_prefs (void)
 {
     static gboolean done = FALSE;
 
@@ -107,7 +126,41 @@ _moo_edit_init_settings (void)
 #define get_flags(key) moo_prefs_get_flags (MOO_EDIT_PREFS_PREFIX "/" key)
 
 void
-_moo_edit_apply_settings (MooEdit *edit)
+_moo_edit_update_global_config (void)
+{
+    gboolean use_tabs, strip, show_line_numbers;
+    int indent_width;
+    GtkWrapMode wrap_mode;
+
+    use_tabs = !get_bool (MOO_EDIT_PREFS_SPACES_NO_TABS);
+    indent_width = get_int (MOO_EDIT_PREFS_INDENT_WIDTH);
+    strip = get_bool (MOO_EDIT_PREFS_STRIP);
+    show_line_numbers = get_bool (MOO_EDIT_PREFS_SHOW_LINE_NUMBERS);
+
+    if (get_bool (MOO_EDIT_PREFS_WRAP_ENABLE))
+    {
+        if (get_bool (MOO_EDIT_PREFS_WRAP_WORDS))
+            wrap_mode = GTK_WRAP_WORD;
+        else
+            wrap_mode = GTK_WRAP_CHAR;
+    }
+    else
+    {
+        wrap_mode = GTK_WRAP_NONE;
+    }
+
+    moo_edit_config_set_global (MOO_EDIT_CONFIG_SOURCE_AUTO,
+                                "indent-use-tabs", use_tabs,
+                                "indent-width", indent_width,
+                                "strip", strip,
+                                "show-line-numbers", show_line_numbers,
+                                "wrap-mode", wrap_mode,
+                                NULL);
+}
+
+
+void
+_moo_edit_apply_prefs (MooEdit *edit)
 {
     GtkTextView *text_view;
     MooLangMgr *mgr;
@@ -115,7 +168,6 @@ _moo_edit_apply_settings (MooEdit *edit)
     g_return_if_fail (MOO_IS_EDIT (edit));
 
     g_object_freeze_notify (G_OBJECT (edit));
-    _moo_edit_freeze_config_notify (edit);
 
     text_view = GTK_TEXT_VIEW (edit);
 
@@ -133,33 +185,6 @@ _moo_edit_apply_settings (MooEdit *edit)
                   "backspace-indents", get_bool (MOO_EDIT_PREFS_BACKSPACE_INDENTS),
                   NULL);
 
-    moo_edit_config_set (edit->config,
-                         "indent-use-tabs", MOO_EDIT_CONFIG_SOURCE_PREFS,
-                         !get_bool (MOO_EDIT_PREFS_SPACES_NO_TABS),
-                         "indent-width", MOO_EDIT_CONFIG_SOURCE_PREFS,
-                         get_int (MOO_EDIT_PREFS_INDENT_WIDTH),
-                         "show-line-numbers", MOO_EDIT_CONFIG_SOURCE_PREFS,
-                         get_bool (MOO_EDIT_PREFS_SHOW_LINE_NUMBERS),
-                         NULL);
-
-    if (get_bool (MOO_EDIT_PREFS_WRAP_ENABLE))
-    {
-        if (get_bool (MOO_EDIT_PREFS_WRAP_WORDS))
-            moo_edit_config_set (edit->config, "wrap-mode",
-                                 MOO_EDIT_CONFIG_SOURCE_PREFS,
-                                 GTK_WRAP_WORD, NULL);
-        else
-            moo_edit_config_set (edit->config, "wrap-mode",
-                                 MOO_EDIT_CONFIG_SOURCE_PREFS,
-                                 GTK_WRAP_CHAR, NULL);
-    }
-    else
-    {
-        moo_edit_config_set (edit->config, "wrap-mode",
-                             MOO_EDIT_CONFIG_SOURCE_PREFS,
-                             GTK_WRAP_NONE, NULL);
-    }
-
     if (get_bool (MOO_EDIT_PREFS_USE_DEFAULT_FONT))
         moo_text_view_set_font_from_string (MOO_TEXT_VIEW (edit), NULL);
     else
@@ -170,6 +195,32 @@ _moo_edit_apply_settings (MooEdit *edit)
     moo_text_view_set_scheme (MOO_TEXT_VIEW (edit),
                               moo_lang_mgr_get_active_scheme (mgr));
 
-    _moo_edit_thaw_config_notify (edit);
     g_object_thaw_notify (G_OBJECT (edit));
+}
+
+
+const char *
+moo_edit_setting (const char *setting_name)
+{
+#define STR_STACK_SIZE 4
+    static GString *stack[STR_STACK_SIZE];
+    static guint p;
+
+    g_return_val_if_fail (setting_name != NULL, NULL);
+
+    if (!stack[0])
+    {
+        for (p = 0; p < STR_STACK_SIZE; ++p)
+            stack[p] = g_string_new ("");
+        p = STR_STACK_SIZE - 1;
+    }
+
+    if (p == STR_STACK_SIZE - 1)
+        p = 0;
+    else
+        p++;
+
+    g_string_printf (stack[p], MOO_EDIT_PREFS_PREFIX "/%s", setting_name);
+    return stack[p]->str;
+#undef STR_STACK_SIZE
 }

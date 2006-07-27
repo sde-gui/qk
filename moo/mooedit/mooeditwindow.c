@@ -1349,7 +1349,7 @@ wrap_text_toggled (MooEditWindow *window,
             mode = GTK_WRAP_CHAR;
     }
 
-    moo_edit_config_set (doc->config, "wrap-mode", MOO_EDIT_CONFIG_SOURCE_USER, mode, NULL);
+    moo_edit_config_set (doc->config, MOO_EDIT_CONFIG_SOURCE_USER, "wrap-mode", mode, NULL);
 }
 
 
@@ -1368,8 +1368,8 @@ line_numbers_toggled (MooEditWindow *window,
     if ((active && show) || (!active && !show))
         return;
 
-    moo_edit_config_set (doc->config, "show-line-numbers",
-                         MOO_EDIT_CONFIG_SOURCE_USER, active,
+    moo_edit_config_set (doc->config, MOO_EDIT_CONFIG_SOURCE_USER,
+                         "show-line-numbers", active,
                          NULL);
 }
 
@@ -2651,9 +2651,8 @@ lang_item_activated (MooEditWindow *window,
         do_set = !!lang_name;
 
     if (do_set)
-        moo_edit_config_set (doc->config, "lang",
-                             MOO_EDIT_CONFIG_SOURCE_USER,
-                             lang_name, NULL);
+        moo_edit_config_set (doc->config, MOO_EDIT_CONFIG_SOURCE_USER,
+                             "lang", lang_name, NULL);
 }
 
 

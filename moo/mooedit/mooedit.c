@@ -20,6 +20,7 @@
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/moolang-private.h"
 #include "mooedit/mooeditprogress-glade.h"
+#include "mooedit/mooeditfiltersettings.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mooutils-gobject.h"
@@ -102,18 +103,6 @@ enum {
     PROP_HAS_COMMENTS
 };
 
-enum {
-    SETTING_LANG,
-    SETTING_INDENT,
-    SETTING_STRIP,
-    SETTING_WRAP_MODE,
-    SETTING_SHOW_LINE_NUMBERS,
-    SETTING_TAB_WIDTH,
-    LAST_SETTING
-};
-
-static guint settings[LAST_SETTING];
-
 /* MOO_TYPE_EDIT */
 G_DEFINE_TYPE (MooEdit, moo_edit, MOO_TYPE_TEXT_VIEW)
 
@@ -160,31 +149,6 @@ moo_edit_class_init (MooEditClass *klass)
                                              "has-comments",
                                              FALSE,
                                              G_PARAM_READABLE));
-
-    settings[SETTING_LANG] = moo_edit_config_install_setting (
-            g_param_spec_string ("lang", "lang", "lang",
-                                 NULL,
-                                 G_PARAM_READWRITE));
-    settings[SETTING_INDENT] = moo_edit_config_install_setting (
-            g_param_spec_string ("indent", "indent", "indent",
-                                 NULL,
-                                 G_PARAM_READWRITE));
-    settings[SETTING_STRIP] = moo_edit_config_install_setting (
-            g_param_spec_boolean ("strip", "strip", "strip",
-                                  FALSE,
-                                  G_PARAM_READWRITE));
-    settings[SETTING_WRAP_MODE] = moo_edit_config_install_setting (
-            g_param_spec_enum ("wrap-mode", "wrap-mode", "wrap-mode",
-                               GTK_TYPE_WRAP_MODE, GTK_WRAP_NONE,
-                               G_PARAM_READWRITE));
-    settings[SETTING_SHOW_LINE_NUMBERS] = moo_edit_config_install_setting (
-            g_param_spec_boolean ("show-line-numbers", "show-line-numbers", "show-line-numbers",
-                                  FALSE, G_PARAM_READWRITE));
-    settings[SETTING_TAB_WIDTH] = moo_edit_config_install_setting (
-            g_param_spec_uint ("tab-width", "tab-width", "tab-width",
-                               1, G_MAXUINT, 8, G_PARAM_READWRITE));
-
-    _moo_edit_class_init_actions (klass);
 
     signals[CONFIG_NOTIFY] =
             g_signal_new ("config-notify",
@@ -260,7 +224,8 @@ moo_edit_class_init (MooEditClass *klass)
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
 
-    _moo_edit_init_settings ();
+    _moo_edit_init_config ();
+    _moo_edit_class_init_actions (klass);
 }
 
 
@@ -980,7 +945,7 @@ moo_edit_set_lang (MooEdit *edit,
         moo_text_view_set_lang (MOO_TEXT_VIEW (edit), lang);
         _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor),
                                      edit->config, moo_lang_id (lang));
-        _moo_edit_apply_settings (edit);
+        _moo_edit_update_config_from_global (edit);
         g_object_notify (G_OBJECT (edit), "has-comments");
     }
 }
@@ -1004,13 +969,14 @@ moo_edit_apply_config (MooEdit *edit)
 
     moo_edit_apply_lang_config (edit);
 
-    moo_edit_config_get (edit->config, "wrap-mode", &wrap_mode, NULL);
+    moo_edit_config_get (edit->config,
+                         "wrap-mode", &wrap_mode,
+                         "show-line-numbers", &line_numbers,
+                         "tab-width", &tab_width,
+                         NULL);
+
     gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (edit), wrap_mode);
-
-    line_numbers = moo_edit_config_get_bool (edit->config, "show-line-numbers");
     moo_text_view_set_show_line_numbers (MOO_TEXT_VIEW (edit), line_numbers);
-
-    tab_width = moo_edit_config_get_uint (edit->config, "tab-width");
     moo_text_view_set_tab_width (MOO_TEXT_VIEW (edit), tab_width);
 }
 
@@ -1037,15 +1003,25 @@ moo_edit_config_notify (MooEdit        *edit,
                         guint           var_id,
                         G_GNUC_UNUSED GParamSpec *pspec)
 {
-    if (var_id == settings[SETTING_LANG])
-        moo_edit_apply_config (edit);
+    if (var_id == _moo_edit_settings[MOO_EDIT_SETTING_LANG])
+        moo_edit_apply_lang_config (edit);
     else
         moo_edit_queue_apply_config (edit);
 }
 
 
 void
-_moo_edit_update_config (void)
+_moo_edit_update_config_from_global (MooEdit *edit)
+{
+    g_return_if_fail (MOO_IS_EDIT (edit));
+    /* XXX */
+    moo_edit_config_unset_by_source (edit->config,
+                                     MOO_EDIT_CONFIG_SOURCE_AUTO);
+}
+
+
+void
+_moo_edit_update_lang_config (void)
 {
     GSList *l;
 
@@ -1054,7 +1030,6 @@ _moo_edit_update_config (void)
         MooEdit *edit = l->data;
         _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor), edit->config,
                                      moo_lang_id (moo_text_view_get_lang (MOO_TEXT_VIEW (edit))));
-        _moo_edit_apply_settings (edit);
     }
 }
 
@@ -1066,23 +1041,29 @@ moo_edit_filename_changed (MooEdit    *edit,
     gboolean lang_changed = FALSE;
     MooLang *lang = NULL, *old_lang = NULL;
     const char *lang_id = NULL;
+    const char *filter_config = NULL;
 
     old_lang = moo_text_view_get_lang (MOO_TEXT_VIEW (edit));
 
     _moo_edit_freeze_config_notify (edit);
 
     moo_edit_config_unset_by_source (edit->config, MOO_EDIT_CONFIG_SOURCE_FILE);
-    _moo_edit_apply_settings (edit);
+    _moo_edit_update_config_from_global (edit);
 
     if (filename)
     {
         MooLangMgr *mgr = moo_editor_get_lang_mgr (edit->priv->editor);
         lang = moo_lang_mgr_get_lang_for_file (mgr, filename);
         lang_id = lang ? moo_lang_id (lang) : NULL;
+        filter_config = _moo_edit_filter_settings_get_for_file (filename);
     }
 
-    moo_edit_config_set (edit->config, "lang", MOO_EDIT_CONFIG_SOURCE_FILENAME, lang_id, NULL);
-    moo_edit_config_set (edit->config, "indent", MOO_EDIT_CONFIG_SOURCE_FILENAME, NULL, NULL);
+    moo_edit_config_set (edit->config, MOO_EDIT_CONFIG_SOURCE_FILENAME,
+                         "lang", lang_id, "indent", NULL, NULL);
+
+    if (filter_config)
+        moo_edit_config_parse (edit->config, filter_config,
+                               MOO_EDIT_CONFIG_SOURCE_FILENAME);
 
     try_mode_strings (edit);
 
@@ -1097,7 +1078,7 @@ moo_edit_filename_changed (MooEdit    *edit,
     {
         _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor),
                                      edit->config, moo_lang_id (lang));
-        _moo_edit_apply_settings (edit);
+        _moo_edit_update_config_from_global (edit);
     }
 
     _moo_edit_thaw_config_notify (edit);

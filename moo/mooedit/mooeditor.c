@@ -19,6 +19,7 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooedit-private.h"
 #include "mooedit/moolang-private.h"
+#include "mooedit/mooeditfiltersettings.h"
 #include "mooutils/moomenuaction.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
@@ -88,11 +89,6 @@ static void          activate_history_item  (MooEditor      *editor,
                                              MooHistoryListItem *item,
                                              MooEditWindow  *window);
 
-static void          prefs_changed          (const char     *key,
-                                             const GValue   *newval,
-                                             MooEditor      *editor);
-static gboolean      apply_prefs            (MooEditor      *editor);
-
 static void          add_new_window_action      (void);
 static void          remove_new_window_action   (void);
 
@@ -131,9 +127,6 @@ struct _MooEditorPrivate {
     GType            doc_type;
 
     char            *default_lang;
-
-    guint            prefs_notify;
-    guint            prefs_idle;
 
     gboolean         autosave;
     guint            autosave_interval;
@@ -178,7 +171,6 @@ G_DEFINE_TYPE (MooEditor, moo_editor, G_TYPE_OBJECT)
 static void
 moo_editor_class_init (MooEditorClass *klass)
 {
-    gpointer ref_class;
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     MooWindowClass *edit_window_class;
 
@@ -186,11 +178,9 @@ moo_editor_class_init (MooEditorClass *klass)
     gobject_class->set_property = moo_editor_set_property;
     gobject_class->get_property = moo_editor_get_property;
 
-    _moo_edit_init_settings ();
-    ref_class = g_type_class_ref (MOO_TYPE_EDIT);
-    g_type_class_unref (ref_class);
-    ref_class = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
-    g_type_class_unref (ref_class);
+    _moo_edit_init_config ();
+    g_type_class_unref (g_type_class_ref (MOO_TYPE_EDIT));
+    g_type_class_unref (g_type_class_ref (MOO_TYPE_EDIT_WINDOW));
 
     g_object_class_install_property (gobject_class,
                                      PROP_OPEN_SINGLE_FILE_INSTANCE,
@@ -281,7 +271,8 @@ moo_editor_init (MooEditor *editor)
 
     editor->priv->lang_mgr = moo_lang_mgr_new ();
     g_signal_connect_swapped (editor->priv->lang_mgr, "loaded",
-                              G_CALLBACK (apply_prefs), editor);
+                              G_CALLBACK (_moo_editor_apply_prefs),
+                              editor);
 
     editor->priv->filter_mgr = moo_filter_mgr_new ();
 
@@ -305,13 +296,8 @@ moo_editor_init (MooEditor *editor)
     moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG),
                               MOO_LANG_NONE);
 
-    editor->priv->prefs_notify =
-            moo_prefs_notify_connect (MOO_EDIT_PREFS_PREFIX "/[^/]*",
-                                      MOO_PREFS_MATCH_REGEX,
-                                      (MooPrefsNotify) prefs_changed,
-                                      editor, NULL);
-
-    apply_prefs (editor);
+    _moo_edit_filter_settings_load ();
+    _moo_editor_apply_prefs (editor);
 }
 
 
@@ -437,10 +423,6 @@ moo_editor_finalize (GObject *object)
     if (editor->priv->history)
         g_object_unref (editor->priv->history);
     g_object_unref (editor->priv->lang_mgr);
-
-    if (editor->priv->prefs_idle)
-        g_source_remove (editor->priv->prefs_idle);
-    moo_prefs_notify_disconnect (editor->priv->prefs_notify);
 
     if (editor->priv->file_watch)
     {
@@ -963,12 +945,11 @@ moo_editor_add_doc (MooEditor      *editor,
          !moo_edit_config_get_string (doc->config, "lang") &&
          editor->priv->default_lang)
     {
-        moo_edit_config_set (doc->config,
-                             "lang", MOO_EDIT_CONFIG_SOURCE_FILENAME,
-                             editor->priv->default_lang, NULL);
+        moo_edit_config_set (doc->config, MOO_EDIT_CONFIG_SOURCE_FILENAME,
+                             "lang", editor->priv->default_lang, NULL);
     }
 
-    _moo_edit_apply_settings (doc);
+    _moo_edit_apply_prefs (doc);
 }
 
 
@@ -2082,17 +2063,6 @@ moo_editor_set_edit_type (MooEditor      *editor,
 
 
 static void
-prefs_changed (G_GNUC_UNUSED const char *key,
-               G_GNUC_UNUSED const GValue *newval,
-               MooEditor *editor)
-{
-    if (!editor->priv->prefs_idle)
-        editor->priv->prefs_idle =
-                g_idle_add ((GSourceFunc) apply_prefs, editor);
-}
-
-
-static void
 set_default_lang (MooEditor  *editor,
                   const char *name)
 {
@@ -2102,15 +2072,13 @@ set_default_lang (MooEditor  *editor,
 }
 
 
-static gboolean
-apply_prefs (MooEditor *editor)
+void
+_moo_editor_apply_prefs (MooEditor *editor)
 {
     GSList *docs;
-    gboolean use_tabs, autosave, backups, strip;
-    int indent_width, autosave_interval;
+    gboolean autosave, backups;
+    int autosave_interval;
     const char *color_scheme, *default_lang;
-
-    editor->priv->prefs_idle = 0;
 
     default_lang = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG));
 
@@ -2119,31 +2087,24 @@ apply_prefs (MooEditor *editor)
 
     set_default_lang (editor, default_lang);
 
-    use_tabs = !moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SPACES_NO_TABS));
-    indent_width = moo_prefs_get_int (moo_edit_setting (MOO_EDIT_PREFS_INDENT_WIDTH));
-    strip = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_STRIP));
-    autosave = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_AUTO_SAVE));
-    autosave_interval = moo_prefs_get_int (moo_edit_setting (MOO_EDIT_PREFS_AUTO_SAVE_INTERVAL));
-    backups = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_MAKE_BACKUPS));
-    color_scheme = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_COLOR_SCHEME));
+    _moo_edit_update_global_config ();
 
-    moo_edit_config_set_global ("indent-use-tabs", MOO_EDIT_CONFIG_SOURCE_PREFS, use_tabs,
-                                "indent-width", MOO_EDIT_CONFIG_SOURCE_PREFS, indent_width,
-                                "strip", MOO_EDIT_CONFIG_SOURCE_PREFS, strip,
-                                NULL);
+    color_scheme = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_COLOR_SCHEME));
 
     if (color_scheme)
         _moo_lang_mgr_set_active_scheme (editor->priv->lang_mgr, color_scheme);
 
     docs = moo_editor_list_docs (editor);
-    g_slist_foreach (docs, (GFunc) _moo_edit_apply_settings, NULL);
+    g_slist_foreach (docs, (GFunc) _moo_edit_apply_prefs, NULL);
     g_slist_free (docs);
+
+    autosave = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_AUTO_SAVE));
+    autosave_interval = moo_prefs_get_int (moo_edit_setting (MOO_EDIT_PREFS_AUTO_SAVE_INTERVAL));
+    backups = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_MAKE_BACKUPS));
 
     g_object_set (editor,
                   "autosave", autosave,
                   "autosave-interval", autosave_interval,
                   "save-backups", backups,
                   NULL);
-
-    return FALSE;
 }

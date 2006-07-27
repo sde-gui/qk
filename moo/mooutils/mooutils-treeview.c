@@ -55,6 +55,17 @@ static gboolean moo_tree_helper_get_selected    (MooTreeHelper      *helper,
                                                  GtkTreeModel      **model,
                                                  GtkTreeIter        *iter);
 
+static gboolean tree_helper_new_row_default     (MooTreeHelper      *helper,
+                                                 GtkTreeModel       *model,
+                                                 GtkTreePath        *path);
+static gboolean tree_helper_delete_row_default  (MooTreeHelper      *helper,
+                                                 GtkTreeModel       *model,
+                                                 GtkTreePath        *path);
+static gboolean tree_helper_move_row_default    (MooTreeHelper      *helper,
+                                                 GtkTreeModel       *model,
+                                                 GtkTreePath        *old_path,
+                                                 GtkTreePath        *new_path);
+
 
 G_DEFINE_TYPE (MooTreeHelper, _moo_tree_helper, GTK_TYPE_OBJECT)
 
@@ -245,10 +256,82 @@ moo_tree_helper_destroy (GtkObject *object)
 }
 
 
+static gboolean
+tree_helper_new_row_default (G_GNUC_UNUSED MooTreeHelper *helper,
+                             GtkTreeModel  *model,
+                             GtkTreePath   *path)
+{
+    GtkTreeIter iter;
+
+    if (!GTK_IS_LIST_STORE (model))
+        return FALSE;
+
+    g_return_val_if_fail (path != NULL, FALSE);
+    g_return_val_if_fail (gtk_tree_path_get_depth (path) == 1, FALSE);
+
+    gtk_list_store_insert (GTK_LIST_STORE (model), &iter,
+                           gtk_tree_path_get_indices(path)[0]);
+
+    return TRUE;
+}
+
+
+static gboolean
+tree_helper_delete_row_default (G_GNUC_UNUSED MooTreeHelper *helper,
+                                GtkTreeModel  *model,
+                                GtkTreePath   *path)
+{
+    GtkTreeIter iter;
+
+    if (!GTK_IS_LIST_STORE (model))
+        return FALSE;
+
+    g_return_val_if_fail (path != NULL, FALSE);
+    g_return_val_if_fail (gtk_tree_path_get_depth (path) == 1, FALSE);
+
+    gtk_tree_model_get_iter (model, &iter, path);
+    gtk_list_store_remove (GTK_LIST_STORE (model), &iter);
+
+    return TRUE;
+}
+
+
+static gboolean
+tree_helper_move_row_default (G_GNUC_UNUSED MooTreeHelper *helper,
+                              GtkTreeModel *model,
+                              GtkTreePath  *old_path,
+                              GtkTreePath  *new_path)
+{
+    GtkTreeIter old_iter, new_iter;
+    int new, old;
+
+    if (!GTK_IS_LIST_STORE (model))
+        return FALSE;
+
+    g_return_val_if_fail (old_path && new_path, FALSE);
+    g_return_val_if_fail (gtk_tree_path_get_depth (old_path) == 1, FALSE);
+    g_return_val_if_fail (gtk_tree_path_get_depth (new_path) == 1, FALSE);
+
+    new = gtk_tree_path_get_indices(new_path)[0];
+    old = gtk_tree_path_get_indices(old_path)[0];
+    g_return_val_if_fail (ABS (new - old) == 1, FALSE);
+
+    gtk_tree_model_get_iter (model, &old_iter, old_path);
+    gtk_tree_model_get_iter (model, &new_iter, new_path);
+    gtk_list_store_swap (GTK_LIST_STORE (model), &old_iter, &new_iter);
+
+    return TRUE;
+}
+
+
 static void
 _moo_tree_helper_class_init (MooTreeHelperClass *klass)
 {
     GTK_OBJECT_CLASS(klass)->destroy = moo_tree_helper_destroy;
+
+    klass->move_row = tree_helper_move_row_default;
+    klass->new_row = tree_helper_new_row_default;
+    klass->delete_row = tree_helper_delete_row_default;
 
     tree_signals[NEW_ROW] =
             g_signal_new ("new-row",

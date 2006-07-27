@@ -39,6 +39,7 @@ mooedit_noinst_headers =                      \
     $(mooedit)/mooedit-private.h              \
     $(mooedit)/mooeditdialogs.h               \
     $(mooedit)/mooeditfileops.h               \
+    $(mooedit)/mooeditfiltersettings.h        \
     $(mooedit)/mooeditprefs-glade.h           \
     $(mooedit)/mooeditprogress-glade.h        \
     $(mooedit)/mooeditsavemultiple-glade.h    \
@@ -74,6 +75,7 @@ mooedit_sources =                             \
     $(mooedit)/mooeditconfig.c                \
     $(mooedit)/mooeditdialogs.c               \
     $(mooedit)/mooeditfileops.c               \
+    $(mooedit)/mooeditfiltersettings.c        \
     $(mooedit)/mooeditinput.c                 \
     $(mooedit)/mooeditor.c                    \
     $(mooedit)/mooeditprefs.c                 \

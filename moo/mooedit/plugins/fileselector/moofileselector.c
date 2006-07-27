@@ -446,8 +446,15 @@ file_selector_create_file (MooFileSelector *filesel)
         dir = selected->data;
         g_list_free (selected);
         selected = NULL;
+
+        if (!g_file_test (dir, G_FILE_TEST_IS_DIR))
+        {
+            g_free (dir);
+            dir = NULL;
+        }
     }
-    else
+
+    if (!dir)
     {
         g_object_get (filesel, "current-directory", &dir, NULL);
 

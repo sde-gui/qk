@@ -64,36 +64,6 @@ const char *moo_edit_setting                (const char     *setting_name);
 #define MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS       "quick_search_flags"
 #define MOO_EDIT_PREFS_SEARCH_FLAGS             "search_flags"
 
-//
-// #define MOO_EDIT_PREFS_ON_EXTERNAL_CHANGES          "on_external_changes"
-// #define MOO_EDIT_PREFS_TABS_WIDTH                   "tabs_width"
-// #define MOO_EDIT_PREFS_AUTO_INDENT                  "auto_indent"
-// #define MOO_EDIT_PREFS_TAB_INDENTS                  "tab_indents"
-// #define MOO_EDIT_PREFS_BACKSPACE_INDENTS            "backspace_indents"
-// #define MOO_EDIT_PREFS_LIMIT_UNDO                   "limit_undo"
-// #define MOO_EDIT_PREFS_LIMIT_UNDO_NUM               "limit_undo_num"
-// #define MOO_EDIT_PREFS_SHOW_MARGIN                  "show_right_margin"
-// #define MOO_EDIT_PREFS_MARGIN                       "right_margin"
-
-// #define MOO_EDIT_STYLE_ALERT                        "Alert"
-// #define MOO_EDIT_STYLE_BASE_N                       "BaseN"
-// #define MOO_EDIT_STYLE_CHAR                         "Char"
-// #define MOO_EDIT_STYLE_COMMENT                      "Comment"
-// #define MOO_EDIT_STYLE_DATA_TYPE                    "Data Type"
-// #define MOO_EDIT_STYLE_DECIMAL                      "Decimal"
-// #define MOO_EDIT_STYLE_ERROR                        "Error"
-// #define MOO_EDIT_STYLE_FLOAT                        "Float"
-// #define MOO_EDIT_STYLE_FUNCTION                     "Function"
-// #define MOO_EDIT_STYLE_KEYWORD                      "Keyword"
-// #define MOO_EDIT_STYLE_NORMAL                       "Normal"
-// #define MOO_EDIT_STYLE_OTHERS                       "Others"
-// #define MOO_EDIT_STYLE_STRING                       "String"
-
-// #define MOO_EDIT_PREFS_BOLD                         "bold"
-// #define MOO_EDIT_PREFS_ITALIC                       "italic"
-// #define MOO_EDIT_PREFS_UNDERLINE                    "underline"
-// #define MOO_EDIT_PREFS_STRIKETHROUGH                "strikethrough"
-
 
 G_END_DECLS
 

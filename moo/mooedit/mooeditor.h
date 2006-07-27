@@ -163,6 +163,7 @@ gboolean         _moo_editor_save_as            (MooEditor      *editor,
 void             _moo_editor_post_message       (MooEditor      *editor,
                                                  GQuark          domain,
                                                  const char     *message);
+void             _moo_editor_apply_prefs        (MooEditor      *editor);
 #endif /* MOOEDIT_COMPILATION */
 
 

@@ -46,8 +46,7 @@ typedef enum {
     MOO_EDIT_CONFIG_SOURCE_FILE     = 10,
     MOO_EDIT_CONFIG_SOURCE_FILENAME = 20,
     MOO_EDIT_CONFIG_SOURCE_LANG     = 30,
-    MOO_EDIT_CONFIG_SOURCE_PREFS    = 40,
-    MOO_EDIT_CONFIG_SOURCE_AUTO     = 50
+    MOO_EDIT_CONFIG_SOURCE_AUTO     = 40
 } MooEditConfigSource;
 
 struct _MooEditConfig
@@ -75,16 +74,16 @@ gboolean        moo_edit_config_get_bool        (MooEditConfig  *config,
                                                  const char     *setting);
 
 void            moo_edit_config_set             (MooEditConfig  *config,
-                                                 const char     *first_setting,
                                                  MooEditConfigSource source,
-                                                 ...) G_GNUC_NULL_TERMINATED; /* setting, source, value, ... */
+                                                 const char     *first_setting,
+                                                 ...) G_GNUC_NULL_TERMINATED; /* setting, value, ... */
 void            moo_edit_config_get             (MooEditConfig  *config,
                                                  const char     *first_setting,
                                                  ...) G_GNUC_NULL_TERMINATED; /* alias for g_object_get() */
 
-void            moo_edit_config_set_global      (const char     *first_setting,
-                                                 MooEditConfigSource source,
-                                                 ...) G_GNUC_NULL_TERMINATED; /* setting, source, value, ... */
+void            moo_edit_config_set_global      (MooEditConfigSource source,
+                                                 const char     *first_setting,
+                                                 ...) G_GNUC_NULL_TERMINATED; /* setting, value, ... */
 void            moo_edit_config_get_global      (const char     *first_setting,
                                                  ...) G_GNUC_NULL_TERMINATED;  /* alias for g_object_get(global, ...) */
 
