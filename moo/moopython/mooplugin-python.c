@@ -12,7 +12,11 @@
  */
 
 #include <Python.h>
+
+#ifndef MOO_INSTALL_LIB
 #define NO_IMPORT_PYGOBJECT
+#endif
+
 #include "pygobject.h"
 
 #ifdef HAVE_CONFIG_H
@@ -353,6 +357,23 @@ moo_python_plugin_read_dirs (void)
 }
 
 
+static gboolean
+init_moo_pygtk (void)
+{
+#ifndef MOO_INSTALL_LIB
+    return _moo_pygtk_init ();
+#else
+    PyObject *module = PyImport_ImportModule ((char*) "moo");
+
+    if (!module)
+        PyErr_SetString(PyExc_ImportError,
+                        "could not import moo");
+
+    return module != NULL;
+#endif
+}
+
+
 gboolean
 _moo_python_plugin_init (void)
 {
@@ -361,7 +382,7 @@ _moo_python_plugin_init (void)
         if (!moo_python_api_init ())
             return FALSE;
 
-        if (!_moo_pygtk_init ())
+        if (!init_moo_pygtk ())
         {
             PyErr_Print ();
             moo_python_init (MOO_PY_API_VERSION, NULL);
@@ -405,7 +426,10 @@ MOO_PLUGIN_INIT_FUNC_DECL
 void initmoo (void)
 {
     in_moo_module = TRUE;
-    moo_python_api_init ();
+
+    if (!moo_python_running())
+        moo_python_api_init ();
+
     _moo_pygtk_init ();
 }
 #endif

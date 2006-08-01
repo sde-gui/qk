@@ -84,6 +84,11 @@ libmooterm_la_SOURCES += $(mooterm_win32_sources)
 EXTRA_DIST += $(mooterm_unix_sources)
 endif
 
+if MOO_INSTALL_LIB
+mooterm_includedir = $(moo_includedir)/mooterm
+mooterm_include_HEADERS = $(mooterm_include_headers)
+endif
+
 AM_CFLAGS =			\
 	-I$(top_builddir)	\
 	-I..			\

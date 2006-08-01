@@ -11,20 +11,20 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooedit/mootextsearch.h"
+#include "mooedit/mootextsearch-private.h"
 #include "mooedit/gtksourceiter.h"
 #include <string.h>
 
 
 gboolean
-moo_text_search_regex_forward (const GtkTextIter      *search_start,
-                               const GtkTextIter      *search_end,
-                               EggRegex               *regex,
-                               GtkTextIter            *match_start,
-                               GtkTextIter            *match_end,
-                               char                  **string,
-                               int                    *match_offset,
-                               int                    *match_len)
+_moo_text_search_regex_forward (const GtkTextIter      *search_start,
+                                const GtkTextIter      *search_end,
+                                EggRegex               *regex,
+                                GtkTextIter            *match_start,
+                                GtkTextIter            *match_end,
+                                char                  **string,
+                                int                    *match_offset,
+                                int                    *match_len)
 {
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
@@ -129,14 +129,14 @@ find_last_match (EggRegex          *regex,
 
 
 gboolean
-moo_text_search_regex_backward (const GtkTextIter      *search_start,
-                                const GtkTextIter      *search_end,
-                                EggRegex               *regex,
-                                GtkTextIter            *match_start,
-                                GtkTextIter            *match_end,
-                                char                  **string,
-                                int                    *match_offset,
-                                int                    *match_len)
+_moo_text_search_regex_backward (const GtkTextIter      *search_start,
+                                 const GtkTextIter      *search_end,
+                                 EggRegex               *regex,
+                                 GtkTextIter            *match_start,
+                                 GtkTextIter            *match_end,
+                                 char                  **string,
+                                 int                    *match_offset,
+                                 int                    *match_len)
 {
     GtkTextIter slice_start, slice_end;
     GtkTextBuffer *buffer;
@@ -337,9 +337,9 @@ moo_text_search_forward (const GtkTextIter      *start,
     if (!regex)
         return FALSE;
 
-    return moo_text_search_regex_forward (start, end, regex,
-                                          match_start, match_end,
-                                          NULL, NULL, NULL);
+    return _moo_text_search_regex_forward (start, end, regex,
+                                           match_start, match_end,
+                                           NULL, NULL, NULL);
 }
 
 
@@ -394,9 +394,9 @@ moo_text_search_backward (const GtkTextIter      *start,
     if (!regex)
         return FALSE;
 
-    return moo_text_search_regex_backward (start, end, regex,
-                                           match_start, match_end,
-                                           NULL, NULL, NULL);
+    return _moo_text_search_regex_backward (start, end, regex,
+                                            match_start, match_end,
+                                            NULL, NULL, NULL);
 }
 
 
@@ -485,8 +485,8 @@ moo_text_replace_regex_all_real (GtkTextIter            *start,
         GError *error = NULL;
         int match_len;
 
-        if (!moo_text_search_regex_forward (start, end, regex, &match_start, &match_end,
-                                            &string, NULL, &match_len))
+        if (!_moo_text_search_regex_forward (start, end, regex, &match_start, &match_end,
+                                             &string, NULL, &match_len))
             goto out;
 
         if (!match_len)
@@ -595,11 +595,11 @@ out:
 
 
 int
-moo_text_replace_regex_all (GtkTextIter            *start,
-                            GtkTextIter            *end,
-                            EggRegex               *regex,
-                            const char             *replacement,
-                            gboolean                replacement_literal)
+_moo_text_replace_regex_all (GtkTextIter            *start,
+                             GtkTextIter            *end,
+                             EggRegex               *regex,
+                             const char             *replacement,
+                             gboolean                replacement_literal)
 {
     g_return_val_if_fail (start != NULL, 0);
     g_return_val_if_fail (regex != NULL, 0);
@@ -611,13 +611,13 @@ moo_text_replace_regex_all (GtkTextIter            *start,
 
 
 int
-moo_text_replace_regex_all_interactive (GtkTextIter            *start,
-                                        GtkTextIter            *end,
-                                        EggRegex               *regex,
-                                        const char             *replacement,
-                                        gboolean                replacement_literal,
-                                        MooTextReplaceFunc      func,
-                                        gpointer                func_data)
+_moo_text_replace_regex_all_interactive (GtkTextIter            *start,
+                                         GtkTextIter            *end,
+                                         EggRegex               *regex,
+                                         const char             *replacement,
+                                         gboolean                replacement_literal,
+                                         MooTextReplaceFunc      func,
+                                         gpointer                func_data)
 {
     g_return_val_if_fail (start != NULL, 0);
     g_return_val_if_fail (regex != NULL, 0);
@@ -660,8 +660,8 @@ moo_text_replace_all (GtkTextIter            *start,
         if (!regex)
             return 0;
 
-        return moo_text_replace_regex_all (start, end, regex, replacement,
-                                           flags & MOO_TEXT_SEARCH_REPL_LITERAL);
+        return _moo_text_replace_regex_all (start, end, regex, replacement,
+                                            flags & MOO_TEXT_SEARCH_REPL_LITERAL);
     }
 
     buffer = gtk_text_iter_get_buffer (start);
@@ -704,13 +704,13 @@ out:
 
 
 int
-moo_text_replace_all_interactive (GtkTextIter            *start,
-                                  GtkTextIter            *end,
-                                  const char             *text,
-                                  const char             *replacement,
-                                  MooTextSearchFlags      flags,
-                                  MooTextReplaceFunc      func,
-                                  gpointer                func_data)
+_moo_text_replace_all_interactive (GtkTextIter            *start,
+                                   GtkTextIter            *end,
+                                   const char             *text,
+                                   const char             *replacement,
+                                   MooTextSearchFlags      flags,
+                                   MooTextReplaceFunc      func,
+                                   gpointer                func_data)
 {
     int count = 0;
     GtkTextMark *end_mark;
@@ -738,9 +738,9 @@ moo_text_replace_all_interactive (GtkTextIter            *start,
         if (!regex)
             return 0;
 
-        return moo_text_replace_regex_all_interactive (start, end, regex, replacement,
-                                                       flags & MOO_TEXT_SEARCH_REPL_LITERAL,
-                                                       func, func_data);
+        return _moo_text_replace_regex_all_interactive (start, end, regex, replacement,
+                                                        flags & MOO_TEXT_SEARCH_REPL_LITERAL,
+                                                        func, func_data);
     }
 
     buffer = gtk_text_iter_get_buffer (start);

@@ -6,7 +6,6 @@ EXTRA_DIST =        \
     moo-flags.m4    \
     moo-funcs.m4    \
     moo-gtk.m4      \
-    moo-gtkhtml.m4  \
     moo-os.m4       \
     moo-pcre.m4     \
     moo-progs.m4    \

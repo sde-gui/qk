@@ -38,3 +38,8 @@ AM_CFLAGS =			\
 	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
+
+if MOO_INSTALL_LIB
+mooscript_includedir = $(moo_includedir)/mooscript
+mooscript_include_HEADERS = $(mooscript_headers)
+endif

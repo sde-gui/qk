@@ -4,6 +4,11 @@ BUILT_SOURCES =			\
 mooapp_include_headers =	\
 	mooapp.h
 
+if MOO_INSTALL_LIB
+mooapp_includedir = $(moo_includedir)/mooapp
+mooapp_include_HEADERS = $(mooapp_include_headers)
+endif
+
 mooapp_sources =			\
 	$(mooapp_include_headers)	\
 	mooappabout-glade.h		\

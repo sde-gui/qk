@@ -54,6 +54,7 @@ mooedit_noinst_headers =               \
 	mootextfind-glade.h            \
 	mootextfind.h                  \
 	mootextgotoline-glade.h        \
+	mootextsearch-private.h        \
 	mootextview-private.h          \
 	quicksearch-glade.h            \
 	statusbar-glade.h
@@ -170,3 +171,8 @@ AM_CFLAGS =			\
 	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
+
+if MOO_INSTALL_LIB
+mooedit_includedir = $(moo_includedir)/mooedit
+mooedit_include_HEADERS = $(mooedit_include_headers)
+endif

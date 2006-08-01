@@ -15,15 +15,23 @@ moopython_sources +=		\
 endif
 
 noinst_LTLIBRARIES = libmoopython.la
-libmoopython_la_LIBADD = pygtk/libmoopygtk.la
+libmoopython_la_LIBADD =
 libmoopython_la_SOURCES = $(moopython_sources)
-AM_CFLAGS =			\
+
+if MOO_INSTALL_LIB
+lib_define = -DMOO_INSTALL_LIB
+else
+libmoopython_la_LIBADD += pygtk/libmoopygtk.la
+endif
+
+libmoopython_la_CFLAGS =	\
 	-I..			\
 	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
 	$(PYTHON_INCLUDES)	\
-	$(PYGTK_CFLAGS)
+	$(PYGTK_CFLAGS)		\
+	$(lib_define)
 
 EXTRA_DIST +=			     \
 	codegen/__init__.py          \

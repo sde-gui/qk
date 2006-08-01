@@ -23,8 +23,8 @@ gtk_2_4_sources =		\
 	newgtk/gtkfontbutton.h
 
 mooutils_include_headers =	\
-	eggregex.h		\
 	mooaccelbutton.h	\
+	mooaction.h		\
 	moobigpaned.h		\
 	mooclosure.h		\
 	moocmd.h		\
@@ -57,13 +57,13 @@ mooutils_include_headers =	\
 
 mooutils_sources =			\
 	$(mooutils_include_headers)	\
+	eggregex.h			\
 	eggregex.c			\
 	mooaccel.h			\
 	mooaccel.c			\
 	mooaccelbutton-glade.h		\
 	mooaccelbutton.c		\
 	mooaccelprefs-glade.h		\
-	mooaction.h			\
 	mooaction.c			\
 	mooactionfactory.h		\
 	mooactionfactory.c		\
@@ -215,3 +215,8 @@ AM_CFLAGS =			\
 	$(pcre_include)		\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
+
+if MOO_INSTALL_LIB
+mooutils_includedir = $(moo_includedir)/mooutils
+mooutils_include_HEADERS = $(mooutils_include_headers)
+endif

@@ -44,8 +44,6 @@
 #include <mooterm/mootermline.h>
 #include <mooterm/mootermtag.h>
 
-#include <mooutils/eggregex.h>
-#include <mooutils/mooaccel.h>
 #include <mooutils/mooaccelbutton.h>
 #include <mooutils/mooaction.h>
 #include <mooutils/moobigpaned.h>

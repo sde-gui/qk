@@ -16,7 +16,7 @@
 #include "mooedit/mootextgotoline-glade.h"
 #include "mooedit/mootextview.h"
 #include "mooedit/mooeditdialogs.h"
-#include "mooedit/mootextsearch.h"
+#include "mooedit/mootextsearch-private.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooutils/moohistoryentry.h"
 #include "mooutils/mooentry.h"
@@ -619,11 +619,11 @@ do_find (const GtkTextIter *start,
     if (regex)
     {
         if (flags & MOO_FIND_BACKWARDS)
-            return moo_text_search_regex_backward (start, end, regex, match_start,
-                                                   match_end, NULL, NULL, NULL);
+            return _moo_text_search_regex_backward (start, end, regex, match_start,
+                                                    match_end, NULL, NULL, NULL);
         else
-            return moo_text_search_regex_forward (start, end, regex, match_start,
-                                                  match_end, NULL, NULL, NULL);
+            return _moo_text_search_regex_forward (start, end, regex, match_start,
+                                                   match_end, NULL, NULL, NULL);
     }
     else
     {
@@ -1045,8 +1045,8 @@ do_replace_silent (GtkTextIter       *start,
         search_flags |= MOO_TEXT_SEARCH_WHOLE_WORDS;
 
     if (regex)
-        return moo_text_replace_regex_all (start, end, regex, replacement,
-                                           flags & MOO_FIND_REPL_LITERAL);
+        return _moo_text_replace_regex_all (start, end, regex, replacement,
+                                            flags & MOO_FIND_REPL_LITERAL);
     else
         return moo_text_replace_all (start, end, text, replacement, search_flags);
 }
@@ -1164,12 +1164,12 @@ do_replace_interactive (GtkTextView       *view,
         search_flags |= MOO_TEXT_SEARCH_WHOLE_WORDS;
 
     if (regex)
-        *replaced = moo_text_replace_regex_all_interactive (start, end, regex, replacement,
-                                                            flags & MOO_FIND_REPL_LITERAL,
-                                                            replace_func, &data);
+        *replaced = _moo_text_replace_regex_all_interactive (start, end, regex, replacement,
+                                                             flags & MOO_FIND_REPL_LITERAL,
+                                                             replace_func, &data);
     else
-        *replaced = moo_text_replace_all_interactive (start, end, text, replacement,
-                                                      search_flags, replace_func, &data);
+        *replaced = _moo_text_replace_all_interactive (start, end, text, replacement,
+                                                       search_flags, replace_func, &data);
 
     if (data.dialog)
         gtk_widget_destroy (data.dialog);

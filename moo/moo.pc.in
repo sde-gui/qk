@@ -1,6 +1,7 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 includedir=@includedir@
+datarootdir=@datarootdir@
 datadir=@datadir@
 libdir=@libdir@
 
@@ -9,7 +10,7 @@ pluginsdir=@MOO_LIB_DIR@/plugins
 
 Name: moo
 Description: A text editor and terminal emulator library
-Requires: gtk+-2.0 @MOO_XML_PKG_NAME@ @MOO_GTKHTML_PACKAGE@
+Requires: gtk+-2.0 @MOO_XML_PKG_NAME@
 Version: @MOO_VERSION_UNQUOTED@
-Cflags: -I@moo_includedir@ -I@moo_libincludedir@
+Cflags: -I@moo_includedir@
 Libs: -L${libdir} -lmoo @PYTHON_LDFLAGS@

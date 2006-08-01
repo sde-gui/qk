@@ -14,12 +14,7 @@
 
 #include "medit-ui.h"
 #include "THANKS.h"
-#include <mooapp/mooapp.h>
-#include <mooedit/mooplugin.h>
-#include <mooutils/mooutils-fs.h>
-#include <mooutils/mooutils-misc.h>
-#include <mooutils/moostock.h>
-#include <moo-version.h>
+#include <moo.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>

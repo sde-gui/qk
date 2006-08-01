@@ -15,7 +15,6 @@
 #define __MOO_TEXT_SEARCH_H__
 
 #include <mooedit/mootextiter.h>
-#include <mooutils/eggregex.h>
 
 G_BEGIN_DECLS
 
@@ -40,15 +39,6 @@ typedef enum {
     MOO_TEXT_REPLACE_ALL = 3
 } MooTextReplaceResponse;
 
-/* replacement is evaluated in case of regex */
-typedef MooTextReplaceResponse (*MooTextReplaceFunc) (const char         *text,
-                                                      EggRegex           *regex,
-                                                      const char         *replacement,
-                                                      const GtkTextIter  *to_replace_start,
-                                                      const GtkTextIter  *to_replace_end,
-                                                      gpointer            user_data);
-
-
 gboolean moo_text_search_forward            (const GtkTextIter      *start,
                                              const char             *str,
                                              MooTextSearchFlags      flags,
@@ -62,49 +52,11 @@ gboolean moo_text_search_backward           (const GtkTextIter      *start,
                                              GtkTextIter            *match_end,
                                              const GtkTextIter      *end);
 
-gboolean moo_text_search_regex_forward      (const GtkTextIter      *start,
-                                             const GtkTextIter      *end,
-                                             EggRegex               *regex,
-                                             GtkTextIter            *match_start,
-                                             GtkTextIter            *match_end,
-                                             char                  **string,
-                                             int                    *match_offset,
-                                             int                    *match_len);
-gboolean moo_text_search_regex_backward     (const GtkTextIter      *start,
-                                             const GtkTextIter      *end,
-                                             EggRegex               *regex,
-                                             GtkTextIter            *match_start,
-                                             GtkTextIter            *match_end,
-                                             char                  **string,
-                                             int                    *match_offset,
-                                             int                    *match_len);
-
-int      moo_text_replace_regex_all         (GtkTextIter            *start,
-                                             GtkTextIter            *end,
-                                             EggRegex               *regex,
-                                             const char             *replacement,
-                                             gboolean                replacement_literal);
 int      moo_text_replace_all               (GtkTextIter            *start,
                                              GtkTextIter            *end,
                                              const char             *text,
                                              const char             *replacement,
                                              MooTextSearchFlags      flags);
-
-int      moo_text_replace_regex_all_interactive
-                                            (GtkTextIter            *start,
-                                             GtkTextIter            *end,
-                                             EggRegex               *regex,
-                                             const char             *replacement,
-                                             gboolean                replacement_literal,
-                                             MooTextReplaceFunc      func,
-                                             gpointer                func_data);
-int      moo_text_replace_all_interactive   (GtkTextIter            *start,
-                                             GtkTextIter            *end,
-                                             const char             *text,
-                                             const char             *replacement,
-                                             MooTextSearchFlags      flags,
-                                             MooTextReplaceFunc      func,
-                                             gpointer                func_data);
 
 
 G_END_DECLS
