@@ -27,7 +27,8 @@ medit-ui.h: medit-ui.xml
 THANKS.h: ../THANKS
 	sh $(srcdir)/../moo/mooutils/xml2h.sh THANKS $(srcdir)/../THANKS > THANKS.h
 
-medit-app.c: medit-app.opag medit-ui.h
+# medit-app.c is not in BUILT_SOURCES, so the target must use absolute path to it
+$(srcdir)/medit-app.c: medit-app.opag medit-ui.h
 	if test -z $(OPAG); then \
 		touch $(srcdir)/medit-app.c; \
 	else \
