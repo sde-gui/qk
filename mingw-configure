@@ -3,23 +3,36 @@
 PKG_CONFIG_PROGRAM=${PKG_CONFIG_PROGRAM:-/usr/bin/pkg-config}
 MINGW_TOOL_PREFIX=${MINGW_TOOL_PREFIX:-/usr/bin/i586-mingw32msvc}
 
-if [ -z $GTK_PREFIX ]; then
-    export GTK_PREFIX=/usr/local/win/gtk
-fi
-export PKG_CONFIG_PATH=$GTK_PREFIX/lib/pkgconfig
-export PKG_CONFIG_LIBDIR=$GTK_PREFIX/lib/pkgconfig
-
 ############################################################################
+# pkg-config
 
 if [ x`basename $0` = xfake-pkg-config ]; then
     if [ "x$1" = "x--atleast-pkgconfig-version" ]; then
         exec $PKG_CONFIG_PROGRAM --atleast-pkgconfig-version $2
     else
-        exec $PKG_CONFIG_PROGRAM --define-variable=prefix=$GTK_PREFIX $*
+        if [ "x$2" = "xpygtk-2.0" -o "x$2" = "xpygobject-2.0" -o \
+             "x$3" = "xpygtk-2.0" -o "x$3" = "xpygobject-2.0" ];
+        then
+            prefix=$PYTHON_PREFIX
+        else
+            prefix=$GTK_PREFIX
+        fi
+
+        exec $PKG_CONFIG_PROGRAM --define-variable=prefix=$prefix $*
     fi
 fi
 
 ############################################################################
+
+export GTK_PREFIX=${GTK_PREFIX:-/usr/local/win/gtk}
+
+if [ "x$1" = "x--with-python=2.3" -o "x$2" = "x--with-python=2.3" ]; then
+    export PYTHON_PREFIX=${PYTHON_PREFIX:-/usr/local/win/Python23}
+elif [ "x$1" = "x--with-python=2.4" -o "x$2" = "x--with-python=2.4" ]; then
+    export PYTHON_PREFIX=${PYTHON_PREFIX:-/usr/local/win/Python24}
+fi
+
+export PKG_CONFIG_LIBDIR=$GTK_PREFIX/lib/pkgconfig:$PYTHON_PREFIX/Lib/pkgconfig
 
 if [ x$CONFIGURE = x ]; then
     CONFIGURE="configure"

@@ -58,7 +58,7 @@ MOO_COMPONENTS
 MOO_AC_RELOC
 MOO_AC_SET_DIRS(moo)
 MOO_AC_FLAGS
-AM_CONDITIONAL(MOO_INSTALL_LIB, true)
+AM_CONDITIONAL(MOO_INSTALL_LIB, false)
 
 
 ################################################################################

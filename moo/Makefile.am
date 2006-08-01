@@ -8,13 +8,6 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = moo.pc
 endif
 
-# mooedit_includedir = $(moo_includedir)/mooedit
-# mooedit_include_HEADERS = $(mooedit_include_headers)
-# mooterm_includedir = $(moo_includedir)/mooterm
-# mooterm_include_HEADERS = $(mooterm_include_headers)
-# mooutils_includedir = $(moo_includedir)/mooutils
-# mooutils_include_HEADERS = $(mooutils_include_headers)
-
 EXTRA_DIST =	\
 	TODO
 
@@ -62,6 +55,7 @@ libmoo_la_SOURCES = $(moo_include_headers)
 
 
 if MOO_INSTALL_LIB
+if MOO_USE_PYGTK
 pyexec_LTLIBRARIES = moo.la
 moo_la_SOURCES =			\
 	moopython/moopython-utils.c	\
@@ -78,4 +72,5 @@ moo_la_CFLAGS =			\
 	$(PYTHON_INCLUDES)	\
 	$(PYGTK_CFLAGS)		\
 	-DMOO_PYTHON_MODULE
+endif
 endif

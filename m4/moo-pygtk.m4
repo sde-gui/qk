@@ -217,6 +217,7 @@ AC_DEFUN([MOO_AC_PYGTK],[
     if test x$MOO_USE_PYGTK = "xyes"; then
         AC_DEFINE(MOO_USE_PYGTK, 1, [MOO_USE_PYGTK])
 
+        $PKG_CONFIG --modversion pygtk-2.0
         PYGTK_VERSION=`$PKG_CONFIG --modversion pygtk-2.0`
         i=0
         for part in `echo $PYGTK_VERSION | sed 's/\./ /g'`; do

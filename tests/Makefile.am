@@ -88,7 +88,7 @@ medit_LDFLAGS = $(ldflags)
 medit_LDADD = $(ldadd)
 medit_SOURCES = medit-ui.h THANKS.h
 nodist_medit_SOURCES =
-EXTRA_DIST += medit.rc.in
+EXTRA_DIST += medit.rc.in medit-app.c
 
 if MOO_BUILD_APP
 medit_SOURCES += medit-app.c
