@@ -20,6 +20,7 @@
 #include "mooutils/mooaccelbutton.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooglade.h"
+#include "mooutils/moodialogs.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
@@ -367,7 +368,7 @@ _moo_get_accel_label_by_path (const char *accel_path)
  */
 
 /* TODO: multibyte symbols? */
-inline static guint
+static guint
 keyval_from_symbol (char sym)
 {
     switch (sym)
@@ -413,7 +414,7 @@ keyval_from_symbol (char sym)
 }
 
 
-inline static guint
+static guint
 parse_key (const char *string)
 {
     char *stripped = g_strstrip (g_strdup (string));
@@ -427,7 +428,7 @@ parse_key (const char *string)
 }
 
 
-inline static GdkModifierType
+static GdkModifierType
 parse_mod (const char *string)
 {
     GdkModifierType mod = 0;
@@ -671,18 +672,22 @@ row_activated (Stuff *stuff)
 }
 
 
-inline static void block_accel_set (Stuff *stuff)
+static void
+block_accel_set (Stuff *stuff)
 {
     g_signal_handlers_block_matched (stuff->shortcut, G_SIGNAL_MATCH_FUNC,
                                      0, 0, 0, (gpointer)accel_set, 0);
 }
-inline static void unblock_accel_set (Stuff *stuff)
+
+static void
+unblock_accel_set (Stuff *stuff)
 {
     g_signal_handlers_unblock_matched (stuff->shortcut, G_SIGNAL_MATCH_FUNC,
                                        0, 0, 0, (gpointer)accel_set, 0);
 }
 
-inline static void block_radio (Stuff *stuff)
+static void
+block_radio (Stuff *stuff)
 {
     g_signal_handlers_block_matched (stuff->shortcut_none, G_SIGNAL_MATCH_FUNC,
                                      0, 0, 0, (gpointer)shortcut_none_toggled, 0);
@@ -691,7 +696,9 @@ inline static void block_radio (Stuff *stuff)
     g_signal_handlers_block_matched (stuff->shortcut_custom, G_SIGNAL_MATCH_FUNC,
                                      0, 0, 0, (gpointer)shortcut_custom_toggled, 0);
 }
-inline static void unblock_radio (Stuff *stuff)
+
+static void
+unblock_radio (Stuff *stuff)
 {
     g_signal_handlers_unblock_matched (stuff->shortcut_none, G_SIGNAL_MATCH_FUNC,
                                        0, 0, 0, (gpointer)shortcut_none_toggled, 0);
@@ -713,7 +720,7 @@ _moo_accel_prefs_page_new (GtkActionGroup *actions)
 
     xml = moo_glade_xml_new_empty ();
     moo_glade_xml_map_class (xml, "GtkButton", MOO_TYPE_ACCEL_BUTTON);
-    moo_glade_xml_parse_memory (xml, MOO_SHORTCUTS_PREFS_GLADE_UI, -1, "page");
+    moo_glade_xml_parse_memory (xml, MOO_ACCEL_PREFS_GLADE_UI, -1, "page");
 
     page = moo_prefs_dialog_page_new ("Shortcuts", MOO_STOCK_KEYBOARD);
 
@@ -1041,7 +1048,8 @@ tree_selection_changed (Stuff *stuff)
 }
 
 
-static void accel_set (Stuff *stuff)
+static void
+accel_set (Stuff *stuff)
 {
     GtkTreeIter iter;
     GtkTreePath *path;
@@ -1078,7 +1086,8 @@ static void accel_set (Stuff *stuff)
 }
 
 
-static void shortcut_none_toggled (Stuff *stuff)
+static void
+shortcut_none_toggled (Stuff *stuff)
 {
     GtkTreeIter iter;
     GtkTreePath *path;
@@ -1107,7 +1116,8 @@ static void shortcut_none_toggled (Stuff *stuff)
 }
 
 
-static void shortcut_default_toggled (Stuff *stuff)
+static void
+shortcut_default_toggled (Stuff *stuff)
 {
     GtkTreeIter iter;
     GtkTreePath *path;
@@ -1162,7 +1172,8 @@ static void shortcut_default_toggled (Stuff *stuff)
 }
 
 
-static void shortcut_custom_toggled (Stuff *stuff)
+static void
+shortcut_custom_toggled (Stuff *stuff)
 {
     GtkTreeIter iter;
     GtkTreePath *path;
@@ -1209,8 +1220,9 @@ static void shortcut_custom_toggled (Stuff *stuff)
 }
 
 
-static void dialog_response (GObject *page,
-                             int response)
+static void
+dialog_response (GObject *page,
+                 int response)
 {
     switch (response)
     {
@@ -1231,7 +1243,7 @@ _moo_accel_prefs_dialog_new (GtkActionGroup *group)
     GtkWidget *page, *dialog, *page_holder;
     MooGladeXML *xml;
 
-    xml = moo_glade_xml_new_from_buf (MOO_SHORTCUTS_PREFS_GLADE_UI, -1, "dialog");
+    xml = moo_glade_xml_new_from_buf (MOO_ACCEL_PREFS_GLADE_UI, -1, "dialog");
     g_return_val_if_fail (xml != NULL, NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");
@@ -1264,22 +1276,16 @@ _moo_accel_prefs_dialog_run (GtkActionGroup *group,
                              GtkWidget      *parent)
 {
     GtkWidget *dialog = _moo_accel_prefs_dialog_new (group);
-    GtkWindow *parent_window = GTK_WINDOW (gtk_widget_get_toplevel (parent));
 
-    gtk_window_set_transient_for (GTK_WINDOW (dialog), parent_window);
+    moo_window_set_parent (dialog, parent);
 
     while (TRUE)
     {
         int response = gtk_dialog_run (GTK_DIALOG (dialog));
+
         if (response != GTK_RESPONSE_REJECT)
             break;
     }
 
     gtk_widget_destroy (dialog);
-
-#ifdef __WIN32__ /* TODO */
-    gtk_window_present (parent_window);
-#endif /* __WIN32__ */
-
-    return;
 }

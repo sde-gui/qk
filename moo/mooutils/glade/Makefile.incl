@@ -5,6 +5,6 @@
 mooutils_glade = $(mooutils)/glade
 
 moo_extra_dist +=                             \
-    $(mooutils_glade)/shortcutdialog.glade    \
-    $(mooutils_glade)/shortcutsprefs.glade    \
+    $(mooutils_glade)/accelbutton.glade       \
+    $(mooutils_glade)/accelprefs.glade        \
     $(mooutils_glade)/moologwindow.glade
