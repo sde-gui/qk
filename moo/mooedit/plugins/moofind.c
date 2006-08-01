@@ -871,7 +871,6 @@ output_activate (WindowStuff    *stuff,
                  int             line)
 {
     MooEditor *editor;
-    MooEdit *doc;
     FileLinePair *line_data;
 
     line_data = moo_line_view_get_data (MOO_LINE_VIEW (stuff->output), line);
@@ -880,20 +879,8 @@ output_activate (WindowStuff    *stuff,
         return FALSE;
 
     editor = moo_edit_window_get_editor (stuff->window);
-    moo_editor_open_file (editor, stuff->window, NULL,
-                          line_data->filename, NULL);
-
-    doc = moo_editor_get_doc (editor, line_data->filename);
-
-    if (!doc)
-        return TRUE;
-
-    moo_editor_set_active_doc (editor, doc);
-    gtk_widget_grab_focus (GTK_WIDGET (doc));
-
-    if (line_data->line >= 0)
-        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc),
-                                   line_data->line, -1, FALSE, TRUE);
+    moo_editor_open_file_line (editor, line_data->filename,
+                               line_data->line, stuff->window);
 
     return TRUE;
 }

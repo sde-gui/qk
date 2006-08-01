@@ -1672,7 +1672,8 @@ moo_editor_open_file_line (MooEditor      *editor,
 
     if (doc)
     {
-        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), line, 0, FALSE, FALSE);
+        if (line >= 0)
+            moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), line, 0, FALSE, FALSE);
         moo_editor_set_active_doc (editor, doc);
         gtk_widget_grab_focus (GTK_WIDGET (doc));
         return doc;
@@ -1683,7 +1684,8 @@ moo_editor_open_file_line (MooEditor      *editor,
 
     /* XXX */
     moo_editor_set_active_doc (editor, doc);
-    moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), line, 0, FALSE, TRUE);
+    if (line >= 0)
+        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), line, 0, FALSE, TRUE);
     gtk_widget_grab_focus (GTK_WIDGET (doc));
     return doc;
 }
@@ -1809,7 +1811,7 @@ _moo_editor_reload (MooEditor      *editor,
     }
 
     moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), cursor_line,
-                               cursor_offset, TRUE, TRUE);
+                               cursor_offset, TRUE, FALSE);
 }
 
 
