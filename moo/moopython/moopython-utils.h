@@ -73,6 +73,8 @@ G_STMT_START {                  \
 #define return_TypeErrInt(msg)      G_STMT_START {PyErr_SetString(PyExc_TypeError, msg); return -1;} G_STMT_END
 #define return_RuntimeErr(msg)      G_STMT_START {PyErr_SetString(PyExc_RuntimeError, msg); return NULL;} G_STMT_END
 #define return_RuntimeErrInt(msg)   G_STMT_START {PyErr_SetString(PyExc_RuntimeError, msg); return -1;} G_STMT_END
+#define return_ValueErr(msg)        G_STMT_START {PyErr_SetString(PyExc_ValueError, msg); return NULL;} G_STMT_END
+#define return_ValueErrInt(msg)     G_STMT_START {PyErr_SetString(PyExc_ValueError, msg); return -1;} G_STMT_END
 
 
 G_END_DECLS
