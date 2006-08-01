@@ -152,7 +152,7 @@ script_for_unichar_bsearch (gunichar ch)
   static int saved_mid = SCRIPT_TABLE_MIDPOINT;
   int mid = saved_mid;
 
-  do 
+  do
     {
       if (ch < script_table[mid].start)
 	upper = mid - 1;
@@ -173,6 +173,6 @@ script_for_unichar (gunichar ch)
 {
   if (ch < EASY_SCRIPTS_RANGE)
     return script_easy_table[ch];
-  else 
-    return script_for_unichar_bsearch (ch); 
+  else
+    return script_for_unichar_bsearch (ch);
 }

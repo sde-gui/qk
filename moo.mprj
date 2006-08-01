@@ -9,7 +9,7 @@
   <configurations>
     <debug>
       <run>
-        <exe>medit</exe>
+        <exe>tests/medit</exe>
         <args>--g-fatal-warnings --new-app</args>
       </run>
       <configure>
@@ -20,7 +20,7 @@
     </debug>
     <optimized>
       <run>
-        <exe>medit</exe>
+        <exe>tests/medit</exe>
         <args>--new-app</args>
       </run>
       <configure>

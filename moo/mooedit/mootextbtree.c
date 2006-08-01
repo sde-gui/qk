@@ -158,12 +158,8 @@ bt_node_free_rec (BTNode  *node,
 inline static HLInfo*
 hl_info_new (void)
 {
-#ifdef __MOO__
     HLInfo *info = hl_info_new__ ();
     return info;
-#else
-    return NULL;
-#endif
 }
 
 
@@ -172,10 +168,8 @@ hl_info_free (HLInfo *info)
 {
     if (info)
     {
-#ifdef __MOO__
         g_free (info->segments);
         hl_info_free__ (info);
-#endif
     }
 }
 

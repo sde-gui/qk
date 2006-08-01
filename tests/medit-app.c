@@ -13,6 +13,7 @@
  */
 
 #include "medit-ui.h"
+#include "THANKS.h"
 #include <mooapp/mooapp.h>
 #include <mooedit/mooplugin.h>
 #include <mooutils/mooutils-fs.h>
@@ -444,6 +445,7 @@ main (int argc, char *argv[])
                         "website-label", "http://mooedit.sourceforge.net/",
                         "default-ui", MEDIT_UI,
                         "logo", MOO_STOCK_MEDIT,
+                        "credits", THANKS,
                         NULL);
 
     if ((!new_instance && moo_app_send_files (app, files, stamp)) ||

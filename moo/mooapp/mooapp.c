@@ -175,7 +175,8 @@ enum {
     PROP_DEFAULT_UI,
     PROP_LOGO,
     PROP_WEBSITE,
-    PROP_WEBSITE_LABEL
+    PROP_WEBSITE_LABEL,
+    PROP_CREDITS
 };
 
 enum {
@@ -300,6 +301,14 @@ moo_app_class_init (MooAppClass *klass)
                                      g_param_spec_string ("default-ui",
                                              "default-ui",
                                              "default-ui",
+                                             NULL,
+                                             G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_CREDITS,
+                                     g_param_spec_string ("credits",
+                                             "credits",
+                                             "credits",
                                              NULL,
                                              G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 
@@ -516,6 +525,11 @@ moo_app_set_property (GObject        *object,
             g_free (app->priv->info->logo);
             app->priv->info->logo = g_strdup (g_value_get_string (value));
             g_object_notify (G_OBJECT (app), "logo");
+            break;
+
+        case PROP_CREDITS:
+            g_free (app->priv->info->credits);
+            app->priv->info->credits = g_strdup (g_value_get_string (value));
             break;
 
         default:
@@ -1387,6 +1401,7 @@ moo_app_info_copy (const MooAppInfo *info)
     copy->website_label = g_strdup (info->website_label);
     copy->rc_file = g_strdup (info->rc_file);
     copy->logo = g_strdup (info->logo);
+    copy->credits = g_strdup (info->credits);
 
     return copy;
 }
@@ -1405,6 +1420,7 @@ moo_app_info_free (MooAppInfo *info)
         g_free (info->website_label);
         g_free (info->rc_file);
         g_free (info->logo);
+        g_free (info->credits);
         g_free (info);
     }
 }

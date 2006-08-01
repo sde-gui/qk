@@ -16,7 +16,6 @@
 #endif
 
 #include "mooapp/mooappabout-glade.h"
-#include "mooapp/THANKS.h"
 #include "mooapp/mooappabout.h"
 #include "mooapp/mooapp.h"
 #include "mooapp/moohtml.h"
@@ -52,6 +51,10 @@ show_credits (void)
     MooHtml *written_by;
     GtkTextView *thanks;
     GtkTextBuffer *buffer;
+    const MooAppInfo *info;
+
+    info = moo_app_get_info (moo_app_get_instance());
+    g_return_if_fail (info && info->credits);
 
     if (credits_dialog)
     {
@@ -59,6 +62,7 @@ show_credits (void)
             gtk_window_set_transient_for (GTK_WINDOW (credits_dialog),
                                           GTK_WINDOW (about_dialog));
         gtk_window_present (GTK_WINDOW (credits_dialog));
+        return;
     }
 
     xml = moo_glade_xml_new_empty ();
@@ -87,7 +91,7 @@ show_credits (void)
 
     thanks = moo_glade_xml_get_widget (xml, "thanks");
     buffer = gtk_text_view_get_buffer (thanks);
-    gtk_text_buffer_insert_at_cursor (buffer, THANKS, -1);
+    gtk_text_buffer_insert_at_cursor (buffer, info->credits, -1);
 
     if (about_dialog)
         gtk_window_set_transient_for (GTK_WINDOW (credits_dialog),

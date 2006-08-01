@@ -777,8 +777,6 @@ _list_delete_last (MooHistoryList *list)
 /* Loading and saving
  */
 
-#ifdef __MOO__
-
 #define ELEMENT_RECENT_ITEMS    "recent-items"
 #define ELEMENT_ITEM            "item"
 
@@ -899,17 +897,5 @@ list_save_recent (MooHistoryList *list)
     g_free (root_path);
 }
 
-
 #undef ELEMENT_RECENT_FILES
 #undef ELEMENT_ENTRY
-
-#else  /* !__MOO__ */
-static void
-list_load_recent (G_GNUC_UNUSED MooHistoryList *list)
-{
-}
-static void
-list_save_recent (G_GNUC_UNUSED MooHistoryList *list)
-{
-}
-#endif /* !__MOO__ */

@@ -3,8 +3,8 @@
 #
 
 m4_define([moo_major_version], [0])
-m4_define([moo_minor_version], [6])
-m4_define([moo_micro_version], [999])
+m4_define([moo_minor_version], [7])
+m4_define([moo_micro_version], [0])
 m4_define([moo_version], [moo_major_version.moo_minor_version.moo_micro_version])
 
 AC_INIT(medit, [moo_version], [muntyan@tamu.edu], medit)
@@ -17,8 +17,8 @@ MOO_DEFINE_VERSIONS
 AC_PROG_CC
 AC_PROG_CC_STDC
 AC_HEADER_STDC
-# AC_LIBTOOL_WIN32_DLL
-# AC_PROG_LIBTOOL
+AC_LIBTOOL_WIN32_DLL
+AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 MOO_AC_PROGS
 
@@ -54,7 +54,6 @@ MOO_AC_PCRE
 
 MOO_SRC_PREFIX="moo"
 AC_SUBST(MOO_SRC_PREFIX)
-AM_CONDITIONAL(MOO_BUILD_LIB, false)
 MOO_COMPONENTS
 MOO_AC_RELOC
 MOO_AC_SET_DIRS(moo)
@@ -66,12 +65,30 @@ MOO_AC_FLAGS
 #
 AC_OUTPUT([
 Makefile
+moo/Makefile
+moo/mooutils/Makefile
+moo/mooscript/Makefile
+moo/moofileview/Makefile
+moo/mooterm/Makefile
+moo/mooedit/Makefile
+moo/mooedit/syntax/Makefile
+moo/mooedit/plugins/Makefile
+moo/mooedit/plugins/activestrings/Makefile
+moo/mooedit/plugins/completion/Makefile
+moo/mooedit/plugins/fileselector/Makefile
+moo/mooapp/Makefile
+moo/moopython/Makefile
+moo/moopython/plugins/Makefile
+moo/moopython/pygtk/Makefile
+moo/mooutils/pcre/Makefile
+moo/mooutils/xdgmime/Makefile
+m4/Makefile
+tests/Makefile
 moo/mooterm/termhelper_res.rc
 moo/moo.pc
 moo/moo-version.h
 tests/pyapp.py
 tests/medit.rc
-m4/Makefile
 wininstaller/medit.iss
 ])
 

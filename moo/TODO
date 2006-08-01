@@ -1,0 +1,35 @@
+Editor
+========
+
+1. Color settings!!!
+2. Default lang, for ggap.
+3. See what can be done in the absence of xml.
+4. Make messages in xml parser include file name.
+5. File saving: permissions, backups, symlinks.
+6. Syntax highlighting: implement what kate does.
+
+
+Terminal
+========
+
+0. FIX IT!
+1. Think about profiles, can they help?
+2. Terminal settings.
+
+
+App
+========
+
+1. Set default window icon.
+
+
+Misc
+========
+
+1. Make MooNotebook subclass GtkContainer; apparently dogtail doesn't like it to be
+a GtkNotebook.
+
+
+Bugs
+========
+1. HistoryList - make it load when needed.

@@ -19,7 +19,7 @@
 #include "moofileview/moofile.h"
 #include "mooutils/mooprefs.h"
 #if MOO_USE_XDGMIME
-#include "xdgmime/xdgmime.h"
+#include "mooutils/xdgmime/xdgmime.h"
 #endif
 #include <string.h>
 
