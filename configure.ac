@@ -14,6 +14,9 @@ AC_CANONICAL_HOST
 AC_CONFIG_HEADERS(config.h)
 MOO_DEFINE_VERSIONS
 
+AM_CONDITIONAL(MOO_INSTALL_LIB, false)
+AC_DISABLE_SHARED
+
 AC_PROG_CC
 AC_PROG_CC_STDC
 AC_HEADER_STDC
@@ -58,7 +61,6 @@ MOO_COMPONENTS
 MOO_AC_RELOC
 MOO_AC_SET_DIRS(moo)
 MOO_AC_FLAGS
-AM_CONDITIONAL(MOO_INSTALL_LIB, false)
 
 
 ################################################################################
@@ -80,6 +82,7 @@ moo/mooedit/plugins/fileselector/Makefile
 moo/mooapp/Makefile
 moo/moopython/Makefile
 moo/moopython/plugins/Makefile
+moo/moopython/plugins/pyproject/Makefile
 moo/moopython/pygtk/Makefile
 moo/mooutils/pcre/Makefile
 moo/mooutils/xdgmime/Makefile

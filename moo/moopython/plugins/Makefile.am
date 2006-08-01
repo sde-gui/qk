@@ -1,3 +1,5 @@
+SUBDIRS = pyproject
+
 moopython_pluginsdir = $(MOO_LIB_DIR)/plugins
 moopython_plugins_libdir = $(MOO_LIB_DIR)/plugins/lib
 
