@@ -38,8 +38,8 @@ endif
 SUBDIRS = $(subdirs) .
 DIST_SUBDIRS = mooutils mooterm mooedit mooapp moopython mooscript moofileview
 
-# noinst_LTLIBRARIES = libmoo.la
-lib_LTLIBRARIES = libmoo.la
+noinst_LTLIBRARIES = libmoo.la
+#lib_LTLIBRARIES = libmoo.la
 libmoo_la_LIBADD = $(libs)
 # libmoo_la_LDFLAGS = -no-undefined -export-symbols-regex "^(moo_|ms_|m_|egg_regex_).*"
 libmoo_la_LDFLAGS = -no-undefined -export-symbols-regex ".*"
