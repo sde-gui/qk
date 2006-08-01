@@ -60,6 +60,8 @@ circumstance. */
 /* Win32 uses DLL by default; it needs special stuff for exported functions
 when building PCRE. */
 
+#define PCRE_DEFINITION
+
 #ifdef _WIN32
 #  ifdef PCRE_DEFINITION
 #    ifdef DLL_EXPORT
