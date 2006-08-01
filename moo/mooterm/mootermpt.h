@@ -54,8 +54,6 @@ struct _MooTermPtClass {
                                          guint       height);
     gboolean    (*fork_command)         (MooTermPt  *pt,
                                          const struct _MooTermCommand *cmd,
-                                         const char *working_dir,
-                                         char      **envp,
                                          GError    **error);
     void        (*write)                (MooTermPt  *pt,
                                          const char *data,
@@ -87,8 +85,6 @@ void            _moo_term_pt_send_intr      (MooTermPt      *pt);
 
 gboolean        _moo_term_pt_fork_command   (MooTermPt      *pt,
                                              const struct _MooTermCommand *cmd,
-                                             const char     *working_dir,
-                                             char          **envp,
                                              GError        **error);
 void            _moo_term_pt_kill_child     (MooTermPt      *pt);
 

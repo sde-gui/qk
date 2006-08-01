@@ -87,8 +87,6 @@ static void     set_size            (MooTermPt      *pt,
                                      guint           height);
 static gboolean fork_command        (MooTermPt      *pt,
                                      const MooTermCommand *cmd,
-                                     const char     *working_dir,
-                                     char          **envp,
                                      GError        **error);
 static void     pt_write            (MooTermPt      *pt,
                                      const char     *string,
@@ -162,8 +160,6 @@ _moo_term_get_default_shell (void)
 static gboolean
 fork_command (MooTermPt      *pt_gen,
               const MooTermCommand *cmd,
-              const char     *working_dir,
-              char          **envp,
               GError        **error)
 {
     MooTermPtCyg *pt;
@@ -174,7 +170,8 @@ fork_command (MooTermPt      *pt_gen,
 
     pt = MOO_TERM_PT_CYG (pt_gen);
 
-    result = run_in_helper (cmd->cmd_line, working_dir, envp,
+    result = run_in_helper (cmd->cmd_line,
+                            cmd->working_dir, cmd->envp,
                             TERM_WIDTH (pt), TERM_HEIGHT (pt),
                             &pt->in, &pt->out, &pt->pid,
                             &pt->process_id, error);

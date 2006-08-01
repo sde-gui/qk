@@ -34,7 +34,6 @@ G_BEGIN_DECLS
 
 #define TERM_IMPLEMENT_ME TERM_IMPLEMENT_ME_WARNING ("%s: implement me", G_STRLOC)
 
-
 #define PT_WRITER_PRIORITY          G_PRIORITY_DEFAULT
 #define PT_READER_PRIORITY          G_PRIORITY_DEFAULT
 
@@ -79,6 +78,20 @@ typedef enum {
 } DragType;
 
 typedef struct _MooTermFont MooTermFont;
+
+typedef enum {
+    MOO_TERM_ERASE_AUTO,
+    MOO_TERM_ERASE_ASCII_BACKSPACE,
+    MOO_TERM_ERASE_ASCII_DELETE,
+    MOO_TERM_ERASE_DELETE_SEQUENCE
+} MooTermEraseBinding;
+
+struct _MooTermCommand {
+    char    *cmd_line;
+    char   **argv;
+    char    *working_dir;
+    char   **envp;
+};
 
 struct _MooTermPrivate {
     struct _MooTermPt       *pt;
@@ -177,6 +190,9 @@ struct _MooTermPrivate {
         guint           drag_moved : 1;
     } mouse_stuff;
 };
+
+#define MOO_TYPE_TERM_ERASE_BINDING (_moo_term_erase_binding_get_type ())
+GType       _moo_term_erase_binding_get_type (void) G_GNUC_CONST;
 
 #define term_top_line(term)                     \
     ((term)->priv->scrolled ?                   \

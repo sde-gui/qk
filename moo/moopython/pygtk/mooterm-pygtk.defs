@@ -78,17 +78,17 @@
 
 ;; Enumerations and flags ...
 
-(define-enum EraseBinding
-  (in-module "Moo")
-  (c-name "MooTermEraseBinding")
-  (gtype-id "MOO_TYPE_TERM_ERASE_BINDING")
-  (values
-    '("auto" "MOO_TERM_ERASE_AUTO")
-    '("ascii-backspace" "MOO_TERM_ERASE_ASCII_BACKSPACE")
-    '("ascii-delete" "MOO_TERM_ERASE_ASCII_DELETE")
-    '("delete-sequence" "MOO_TERM_ERASE_DELETE_SEQUENCE")
-  )
-)
+;; (define-enum EraseBinding
+;;   (in-module "Moo")
+;;   (c-name "MooTermEraseBinding")
+;;   (gtype-id "MOO_TYPE_TERM_ERASE_BINDING")
+;;   (values
+;;     '("auto" "MOO_TERM_ERASE_AUTO")
+;;     '("ascii-backspace" "MOO_TERM_ERASE_ASCII_BACKSPACE")
+;;     '("ascii-delete" "MOO_TERM_ERASE_ASCII_DELETE")
+;;     '("delete-sequence" "MOO_TERM_ERASE_DELETE_SEQUENCE")
+;;   )
+;; )
 
 (define-flags TextAttrMask
   (in-module "Moo")
@@ -420,8 +420,6 @@
   (return-type "none")
   (parameters
     '("const-MooTermCommand*" "cmd")
-    '("const-char*" "working_dir" (null-ok) (default "NULL"))
-    '("strv" "envp" (null-ok) (default "NULL"))
     '("GError**" "error")
   )
 )
@@ -633,6 +631,8 @@
   (parameters
     '("const-char*" "cmd_line" (null-ok) (default "NULL"))
     '("strv" "argv" (null-ok) (default "NULL"))
+    '("const-char*" "working_dir" (null-ok) (default "NULL"))
+    '("strv" "envp" (null-ok) (default "NULL"))
   )
 )
 

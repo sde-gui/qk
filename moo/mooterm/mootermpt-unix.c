@@ -79,8 +79,6 @@ static void     set_size            (MooTermPt      *pt,
                                      guint           height);
 static gboolean fork_command        (MooTermPt      *pt,
                                      const MooTermCommand *cmd,
-                                     const char     *working_dir,
-                                     char          **envp,
                                      GError        **error);
 static gboolean fork_argv           (MooTermPt      *pt,
                                      char          **argv,
@@ -276,21 +274,21 @@ fork_argv (MooTermPt      *pt_gen,
 }
 
 
-static gboolean fork_command    (MooTermPt      *pt_gen,
-                                 const MooTermCommand *cmd,
-                                 const char     *working_dir,
-                                 char          **envp,
-                                 GError        **error)
+static gboolean
+fork_command (MooTermPt            *pt_gen,
+              const MooTermCommand *cmd,
+              GError              **error)
 {
     g_return_val_if_fail (cmd != NULL, FALSE);
     g_return_val_if_fail (cmd->argv != NULL, FALSE);
     g_return_val_if_fail (MOO_IS_TERM_PT_UNIX (pt_gen), FALSE);
 
-    return fork_argv (pt_gen, cmd->argv, working_dir, envp, error);
+    return fork_argv (pt_gen, cmd->argv, cmd->working_dir, cmd->envp, error);
 }
 
 
-static void     kill_child      (MooTermPt      *pt_gen)
+static void
+kill_child (MooTermPt *pt_gen)
 {
     MooTermPtUnix *pt = MOO_TERM_PT_UNIX (pt_gen);
 
@@ -697,7 +695,7 @@ send_intr (MooTermPt *pt)
 
 
 /* TODO: it should be in glib */
-MooTermCommand*
+MooTermCommand *
 _moo_term_get_default_shell (void)
 {
     static char *argv[2] = {NULL, NULL};
@@ -708,7 +706,7 @@ _moo_term_get_default_shell (void)
         if (!argv[0]) argv[0] = g_strdup ("/bin/sh");
     }
 
-    return moo_term_command_new (NULL, argv);
+    return moo_term_command_new_argv (argv, NULL, NULL);
 }
 
 

@@ -20,7 +20,6 @@ G_BEGIN_DECLS
 
 
 #define MOO_TYPE_TERM_COMMAND       (moo_term_command_get_type ())
-#define MOO_TYPE_TERM_ERASE_BINDING (moo_term_erase_binding_get_type ())
 
 #define MOO_TYPE_TERM               (moo_term_get_type ())
 #define MOO_TERM(object)            (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_TERM, MooTerm))
@@ -66,18 +65,6 @@ struct _MooTermClass
 };
 
 typedef enum {
-    MOO_TERM_ERASE_AUTO,
-    MOO_TERM_ERASE_ASCII_BACKSPACE,
-    MOO_TERM_ERASE_ASCII_DELETE,
-    MOO_TERM_ERASE_DELETE_SEQUENCE
-} MooTermEraseBinding;
-
-struct _MooTermCommand {
-    char    *cmd_line;
-    char   **argv;
-};
-
-typedef enum {
     MOO_TERM_ERROR_FAILED,
     MOO_TERM_ERROR_INVAL
 } MooTermError;
@@ -87,15 +74,12 @@ GQuark      moo_term_error_quark            (void) G_GNUC_CONST;
 
 GType       moo_term_get_type               (void) G_GNUC_CONST;
 GType       moo_term_command_get_type       (void) G_GNUC_CONST;
-GType       moo_term_erase_binding_get_type (void) G_GNUC_CONST;
 
 void        moo_term_set_adjustment         (MooTerm        *term,
                                              GtkAdjustment  *vadj);
 
 gboolean    moo_term_fork_command           (MooTerm        *term,
                                              const MooTermCommand *cmd,
-                                             const char     *working_dir,
-                                             char          **envp,
                                              GError        **error);
 gboolean    moo_term_fork_command_line      (MooTerm        *term,
                                              const char     *cmd_line,
@@ -157,8 +141,12 @@ guint       moo_term_char_width             (MooTerm        *term);
 gboolean    moo_term_start_default_shell    (MooTerm        *term,
                                              GError        **error);
 
-MooTermCommand  *moo_term_command_new       (const char     *cmd_line,
-                                             char          **argv);
+MooTermCommand  *moo_term_command_new_argv  (char          **argv,
+                                             const char     *working_dir,
+                                             char          **envp);
+MooTermCommand  *moo_term_command_new_command_line (const char *cmd_line,
+                                             const char     *working_dir,
+                                             char          **envp);
 MooTermCommand  *moo_term_command_copy      (const MooTermCommand *cmd);
 void             moo_term_command_free      (MooTermCommand *cmd);
 

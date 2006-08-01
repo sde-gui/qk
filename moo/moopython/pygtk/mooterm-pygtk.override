@@ -367,3 +367,39 @@ _wrap_moo_term_get_selection_bounds (PyGObject *self)
         return_None;
     }
 }
+%%
+override moo_term_command_new kwargs
+static int
+_wrap_moo_term_command_new (PyGBoxed *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = { (char*) "cmd_line", (char*) "argv", (char*) "working_dir", (char*) "envp", NULL };
+    char *cmd_line = NULL, **argv = NULL, *working_dir = NULL, **envp = NULL;
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs,(char*) "|zO&zO&:MooTermCommand.__init__",
+                                      kwlist,
+                                      &cmd_line,
+                                      moo_pyobject_to_strv, &argv,
+                                      &working_dir,
+                                      moo_pyobject_to_strv, &envp))
+        return -1;
+
+    if (!argv || !cmd_line)
+        return_ValueErrInt ("Term.__init__: either argv or cmd_line must be given");
+
+    if (argv && cmd_line)
+        return_ValueErrInt ("Term.__init__: only one of argv or cmd_line may be given");
+
+    self->gtype = MOO_TYPE_TERM_COMMAND;
+    self->free_on_dealloc = FALSE;
+
+    if (argv)
+        self->boxed = moo_term_command_new_argv (argv, working_dir, envp);
+    else
+        self->boxed = moo_term_command_new_command_line (cmd_line, working_dir, envp);
+
+    if (!self->boxed)
+        return_RuntimeErrInt ("could not create MooTermCommand object");
+
+    self->free_on_dealloc = TRUE;
+    return 0;
+}

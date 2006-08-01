@@ -100,12 +100,10 @@ _moo_term_pt_set_size (MooTermPt      *pt,
 gboolean
 _moo_term_pt_fork_command (MooTermPt      *pt,
                            const MooTermCommand *cmd,
-                           const char     *working_dir,
-                           char          **envp,
                            GError        **error)
 {
     g_return_val_if_fail (MOO_IS_TERM_PT (pt), FALSE);
-    return MOO_TERM_PT_GET_CLASS(pt)->fork_command (pt, cmd, working_dir, envp, error);
+    return MOO_TERM_PT_GET_CLASS(pt)->fork_command (pt, cmd, error);
 }
 
 
