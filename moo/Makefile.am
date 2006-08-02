@@ -2,11 +2,11 @@ moo_include_headers =	\
 	moo.h		\
 	moo-version.h
 
-if MOO_INSTALL_LIB
-moo_include_HEADERS = $(moo_include_headers)
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = moo.pc
-endif
+# if MOO_INSTALL_LIB
+# moo_include_HEADERS = $(moo_include_headers)
+# pkgconfigdir = $(libdir)/pkgconfig
+# pkgconfig_DATA = moo.pc
+# endif
 
 EXTRA_DIST =	\
 	TODO

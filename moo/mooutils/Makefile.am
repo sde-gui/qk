@@ -12,47 +12,46 @@ libs += xdgmime/libxdgmime.la
 endif
 SUBDIRS = $(subdirs) .
 
-gmappedfile_sources =		\
-	newgtk/gmappedfile.c	\
+gmappedfile_sources =			\
+	newgtk/gmappedfile.c		\
 	newgtk/gmappedfile.h
 
-gtk_2_4_sources =		\
-	newgtk/gtkcolorbutton.c	\
-	newgtk/gtkcolorbutton.h	\
-	newgtk/gtkfontbutton.c	\
+gtk_2_4_sources =			\
+	newgtk/gtkcolorbutton.c		\
+	newgtk/gtkcolorbutton.h		\
+	newgtk/gtkfontbutton.c		\
 	newgtk/gtkfontbutton.h
 
-mooutils_include_headers =	\
-	mooaccelbutton.h	\
-	mooaction.h		\
-	moobigpaned.h		\
-	mooclosure.h		\
-	moocmd.h		\
-	moocombo.h		\
-	moocommand.h		\
-	mooconfig.h		\
-	mooentry.h		\
-	moofiltermgr.h		\
-	mooglade.h		\
-	moohistoryentry.h	\
-	moohistorylist.h	\
-	moolinklabel.h		\
-	moomarkup.h		\
-	moomenuaction.h		\
-	moomenumgr.h		\
-	moomenutoolbutton.h	\
-	moonotebook.h		\
-	moopaned.h		\
-	mooprefs.h		\
-	mooprefsdialog.h	\
-	mooprefsdialogpage.h	\
-	moopython.h		\
-	moostock.h		\
-	moouixml.h		\
-	mooundo.h		\
-	mooutils-fs.h		\
-	mooutils-gobject.h	\
-	mooutils-misc.h		\
+mooutils_include_headers =		\
+	mooaccelbutton.h		\
+	mooaction.h			\
+	moobigpaned.h			\
+	mooclosure.h			\
+	moocmd.h			\
+	moocombo.h			\
+	moocommand.h			\
+	mooconfig.h			\
+	mooentry.h			\
+	moofiltermgr.h			\
+	mooglade.h			\
+	moohistoryentry.h		\
+	moohistorylist.h		\
+	moolinklabel.h			\
+	moomarkup.h			\
+	moomenuaction.h			\
+	moomenumgr.h			\
+	moomenutoolbutton.h		\
+	moonotebook.h			\
+	moopaned.h			\
+	mooprefs.h			\
+	mooprefsdialog.h		\
+	mooprefsdialogpage.h		\
+	moopython.h			\
+	moostock.h			\
+	moouixml.h			\
+	mooundo.h			\
+	mooutils-gobject.h		\
+	mooutils-misc.h			\
 	moowindow.h
 
 mooutils_sources =			\
@@ -103,6 +102,7 @@ mooutils_sources =			\
 	moostock.c			\
 	moouixml.c			\
 	mooundo.c			\
+	mooutils-fs.h			\
 	mooutils-fs.c			\
 	mooutils-gobject.c		\
 	mooutils-misc.c			\
@@ -216,7 +216,7 @@ AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
 
-if MOO_INSTALL_LIB
-mooutils_includedir = $(moo_includedir)/mooutils
-mooutils_include_HEADERS = $(mooutils_include_headers)
-endif
+# if MOO_INSTALL_LIB
+# mooutils_includedir = $(moo_includedir)/mooutils
+# mooutils_include_HEADERS = $(mooutils_include_headers)
+# endif

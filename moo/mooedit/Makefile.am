@@ -172,7 +172,7 @@ AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
 
-if MOO_INSTALL_LIB
-mooedit_includedir = $(moo_includedir)/mooedit
-mooedit_include_HEADERS = $(mooedit_include_headers)
-endif
+# if MOO_INSTALL_LIB
+# mooedit_includedir = $(moo_includedir)/mooedit
+# mooedit_include_HEADERS = $(mooedit_include_headers)
+# endif
