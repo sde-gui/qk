@@ -843,7 +843,7 @@ window_list_find_file (MooEditor  *editor,
         MooEdit *edit;
     } data;
 
-    data.filename = moo_normalize_file_path (filename);
+    data.filename = _moo_normalize_file_path (filename);
     data.edit = NULL;
     link = g_slist_find_custom (editor->priv->windows, &data,
                                 (GCompareFunc) filename_and_doc_cmp);
@@ -1088,7 +1088,7 @@ moo_editor_open (MooEditor      *editor,
         MooEdit *doc = NULL;
         char *filename;
 
-        filename = moo_normalize_file_path (info->filename);
+        filename = _moo_normalize_file_path (info->filename);
 
         if (window_list_find_file (editor, filename, &bring_to_front))
         {
@@ -1672,7 +1672,7 @@ moo_editor_open_file_line (MooEditor      *editor,
         return doc;
     }
 
-    freeme = moo_normalize_file_path (filename);
+    freeme = _moo_normalize_file_path (filename);
     filename = freeme;
 
     if (!g_file_test (filename, G_FILE_TEST_EXISTS))
@@ -1714,7 +1714,7 @@ moo_editor_new_file (MooEditor      *editor,
         return moo_editor_open_file (editor, window, parent,
                                      filename, encoding);
 
-    freeme = moo_normalize_file_path (filename);
+    freeme = _moo_normalize_file_path (filename);
     filename = freeme;
 
     if (!window)

@@ -1139,7 +1139,7 @@ _as_plugin_save_config (MooConfig *config,
     if (is_default)
         result = moo_save_user_data_file (AS_FILE, string, -1, error);
     else
-        result = moo_save_file_utf8 (file, string, -1, error);
+        result = _moo_save_file_utf8 (file, string, -1, error);
 
     g_free (string);
     return result;

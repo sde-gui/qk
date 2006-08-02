@@ -995,7 +995,7 @@ moo_markup_save (MooMarkupDoc       *doc,
     text = moo_markup_node_get_string (MOO_MARKUP_NODE (doc));
     g_return_val_if_fail (text != NULL, FALSE);
 
-    result = moo_save_file_utf8 (filename, text, -1, error);
+    result = _moo_save_file_utf8 (filename, text, -1, error);
     g_free (text);
     return result;
 }
@@ -1096,7 +1096,7 @@ moo_markup_save_pretty (MooMarkupDoc       *doc,
         if (MOO_MARKUP_IS_ELEMENT (child))
             format_pretty_element (MOO_MARKUP_ELEMENT (child), str, 0, indent);
 
-    result = moo_save_file_utf8 (filename, str->str, -1, error);
+    result = _moo_save_file_utf8 (filename, str->str, -1, error);
     g_string_free (str, TRUE);
     return result;
 }

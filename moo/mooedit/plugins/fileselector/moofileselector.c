@@ -975,7 +975,7 @@ doc_move (MooFileSelector *filesel,
     {
         if (moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc), NULL))
         {
-            m_unlink (old_filename);
+            _m_unlink (old_filename);
             select_file (filesel, filename, destdir);
         }
 

@@ -455,7 +455,7 @@ create_folder (G_GNUC_UNUSED MooFileSystem *fs,
     {
         int saved_errno = errno;
         g_set_error (error, MOO_FILE_ERROR,
-                     moo_file_error_from_errno (saved_errno),
+                     _moo_file_error_from_errno (saved_errno),
                      "%s", g_strerror (saved_errno));
         return FALSE;
     }
@@ -594,14 +594,14 @@ delete_file (G_GNUC_UNUSED MooFileSystem *fs,
         isdir = g_file_test (path, G_FILE_TEST_IS_DIR);
 
     if (isdir)
-        return moo_rmdir (path, recursive, error);
+        return _moo_rmdir (path, recursive, error);
 
-    if (m_remove (path))
+    if (_m_remove (path))
     {
         int err = errno;
         char *path_utf8 = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
         g_set_error (error, MOO_FILE_ERROR,
-                     moo_file_error_from_errno (err),
+                     _moo_file_error_from_errno (err),
                      "Could not delete file '%s': %s",
                      path_utf8 ? path_utf8 : BROKEN_NAME,
                      g_strerror (err));
@@ -637,11 +637,11 @@ move_file_unix (G_GNUC_UNUSED MooFileSystem *fs,
     g_return_val_if_fail (g_path_is_absolute (new_path), FALSE);
 
     /* XXX */
-    if (m_rename (old_path, new_path))
+    if (_m_rename (old_path, new_path))
     {
         int saved_errno = errno;
         g_set_error (error, MOO_FILE_ERROR,
-                     moo_file_error_from_errno (saved_errno),
+                     _moo_file_error_from_errno (saved_errno),
                      "%s", g_strerror (saved_errno));
         return FALSE;
     }

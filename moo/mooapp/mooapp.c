@@ -660,7 +660,7 @@ moo_app_create_user_data_dir (MooApp *app)
     if (g_file_test (dir, G_FILE_TEST_IS_DIR))
         return dir;
 
-    if (!moo_mkdir (dir, &error))
+    if (!_moo_mkdir (dir, &error))
     {
         g_warning ("%s: %s", G_STRLOC, error->message);
         g_error_free (error);
@@ -692,7 +692,7 @@ moo_app_python_execute_file (G_GNUC_UNUSED GtkWindow *parent_window)
     if (!filename)
         return;
 
-    file = m_fopen (filename, "r");
+    file = _m_fopen (filename, "r");
 
     if (!file)
     {
@@ -724,7 +724,7 @@ moo_app_python_run_file (MooApp      *app,
     g_return_val_if_fail (filename != NULL, FALSE);
     g_return_val_if_fail (moo_python_running (), FALSE);
 
-    file = m_fopen (filename, "r");
+    file = _m_fopen (filename, "r");
     g_return_val_if_fail (file != NULL, FALSE);
 
     res = moo_python_run_file (file, filename);
@@ -1126,7 +1126,7 @@ moo_app_quit_real (MooApp *app)
     if (app->priv->tmpdir)
     {
         GError *error = NULL;
-        moo_rmdir (app->priv->tmpdir, TRUE, &error);
+        _moo_rmdir (app->priv->tmpdir, TRUE, &error);
 
         if (error)
         {
@@ -1613,7 +1613,7 @@ moo_app_tempnam (MooApp *app)
             dirname = g_build_filename (g_get_tmp_dir (), basename, NULL);
             g_free (basename);
 
-            if (m_mkdir (dirname))
+            if (_m_mkdir (dirname))
             {
                 g_free (dirname);
                 dirname = NULL;

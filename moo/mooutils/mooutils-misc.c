@@ -1242,7 +1242,7 @@ moo_make_user_data_dir (void)
 
     if (!g_file_test (dir, G_FILE_TEST_IS_DIR))
     {
-        result = m_mkdir (dir);
+        result = _m_mkdir (dir);
 
         if (result)
         {
@@ -1428,10 +1428,10 @@ moo_save_user_data_file (const char     *basename,
     file = moo_get_user_data_file (basename);
     g_return_val_if_fail (dir && file, FALSE);
 
-    if (!moo_mkdir (dir, error))
+    if (!_moo_mkdir (dir, error))
         goto out;
 
-    if (!moo_save_file_utf8 (file, content, len, error))
+    if (!_moo_save_file_utf8 (file, content, len, error))
         goto out;
 
     result = TRUE;

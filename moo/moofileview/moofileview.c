@@ -5715,7 +5715,7 @@ moo_file_view_drop_text (G_GNUC_UNUSED MooFileView *fileview,
             goto out;
         }
 
-        if (!moo_save_file_utf8 (name, text, -1, &error))
+        if (!_moo_save_file_utf8 (name, text, -1, &error))
         {
             char *utf8_name = g_filename_display_name (name);
             char *err_text = g_strdup_printf ("Could not save file\n%s", utf8_name);

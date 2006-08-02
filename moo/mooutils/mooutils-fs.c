@@ -43,10 +43,10 @@
 
 /* XXX fix this */
 gboolean
-moo_save_file_utf8 (const char *name,
-                    const char *text,
-                    gssize      len,
-                    GError    **error)
+_moo_save_file_utf8 (const char *name,
+                     const char *text,
+                     gssize      len,
+                     GError    **error)
 {
     GIOChannel *file;
     GIOStatus status;
@@ -150,7 +150,7 @@ rm_r (const char *path,
 
         errno = 0;
 
-        if (m_remove (file_path))
+        if (_m_remove (file_path))
         {
             int err = errno;
 
@@ -165,7 +165,7 @@ rm_r (const char *path,
                 default:
                     success = FALSE;
                     g_set_error (error, MOO_FILE_ERROR,
-                                 moo_file_error_from_errno (err),
+                                 _moo_file_error_from_errno (err),
                                  "Could not remove '%s': %s", file_path,
                                  g_strerror (err));
             }
@@ -180,12 +180,12 @@ rm_r (const char *path,
     {
         errno = 0;
 
-        if (m_remove (path) != 0)
+        if (_m_remove (path) != 0)
         {
             int err = errno;
             success = FALSE;
             g_set_error (error, MOO_FILE_ERROR,
-                         moo_file_error_from_errno (err),
+                         _moo_file_error_from_errno (err),
                          "Could not remove '%s': %s", path,
                          g_strerror (err));
         }
@@ -197,9 +197,9 @@ rm_r (const char *path,
 
 
 gboolean
-moo_rmdir (const char *path,
-           gboolean    recursive,
-           GError    **error)
+_moo_rmdir (const char *path,
+            gboolean    recursive,
+            GError    **error)
 {
     g_return_val_if_fail (path != NULL, FALSE);
 
@@ -207,12 +207,12 @@ moo_rmdir (const char *path,
     {
         errno = 0;
 
-        if (m_rmdir (path) != 0)
+        if (_m_rmdir (path) != 0)
         {
             int err = errno;
             char *path_utf8 = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
             g_set_error (error, MOO_FILE_ERROR,
-                         moo_file_error_from_errno (err),
+                         _moo_file_error_from_errno (err),
                          "Could not remove '%s': %s",
                          path_utf8 ? path_utf8 : BROKEN_NAME,
                          g_strerror (err));
@@ -234,8 +234,8 @@ moo_rmdir (const char *path,
 
 
 gboolean
-moo_mkdir (const char *path,
-           GError    **error)
+_moo_mkdir (const char *path,
+            GError    **error)
 {
     struct stat buf;
     char *utf8_path;
@@ -251,7 +251,7 @@ moo_mkdir (const char *path,
 
         g_set_error (error,
                      MOO_FILE_ERROR,
-                     moo_file_error_from_errno (err_code),
+                     _moo_file_error_from_errno (err_code),
                      "Could not create directory '%s': %s",
                      utf8_path ? utf8_path : BROKEN_NAME,
                      g_strerror (err_code));
@@ -264,14 +264,14 @@ moo_mkdir (const char *path,
     {
         errno = 0;
 
-        if (m_mkdir (path) == -1)
+        if (_m_mkdir (path) == -1)
         {
             int err_code = errno;
             utf8_path = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
 
             g_set_error (error,
                          MOO_FILE_ERROR,
-                         moo_file_error_from_errno (err_code),
+                         _moo_file_error_from_errno (err_code),
                          "Could not create directory '%s': %s",
                          utf8_path ? utf8_path : BROKEN_NAME,
                          g_strerror (err_code));
@@ -299,7 +299,7 @@ moo_mkdir (const char *path,
 
 
 GQuark
-moo_file_error_quark (void)
+_moo_file_error_quark (void)
 {
     static GQuark quark = 0;
 
@@ -311,7 +311,7 @@ moo_file_error_quark (void)
 
 
 MooFileError
-moo_file_error_from_errno (int code)
+_moo_file_error_from_errno (int code)
 {
     switch (code)
     {
@@ -376,7 +376,7 @@ moo_filename_from_locale (const char *file)
 
 
 char *
-moo_normalize_file_path (const char *filename)
+_moo_normalize_file_path (const char *filename)
 {
     char *freeme = NULL;
     char *working_dir, *basename, *dirname;
@@ -399,7 +399,7 @@ moo_normalize_file_path (const char *filename)
 
     errno = 0;
 
-    if (m_chdir (dirname) != 0)
+    if (_m_chdir (dirname) != 0)
     {
         int err = errno;
         g_warning ("%s: %s", G_STRLOC, g_strerror (err));
@@ -412,7 +412,7 @@ moo_normalize_file_path (const char *filename)
 
         errno = 0;
 
-        if (m_chdir (working_dir) != 0)
+        if (_m_chdir (working_dir) != 0)
         {
             int err = errno;
             g_warning ("%s: %s", G_STRLOC, g_strerror (err));
@@ -486,7 +486,7 @@ G_STMT_START {                                                  \
 
 
 int
-m_unlink (const char *path)
+_m_unlink (const char *path)
 {
 #ifdef __WIN32__
     CCALL_1 (unlink, _wunlink, path);
@@ -497,7 +497,7 @@ m_unlink (const char *path)
 
 
 int
-m_rmdir (const char *path)
+_m_rmdir (const char *path)
 {
 #ifdef __WIN32__
     CCALL_1 (rmdir, _wrmdir, path);
@@ -508,7 +508,7 @@ m_rmdir (const char *path)
 
 
 int
-m_chdir (const char *path)
+_m_chdir (const char *path)
 {
 #ifdef __WIN32__
     CCALL_1 (_chdir, _wchdir, path);
@@ -519,7 +519,7 @@ m_chdir (const char *path)
 
 
 int
-m_mkdir (const char *path)
+_m_mkdir (const char *path)
 {
 #ifdef __WIN32__
     CCALL_1 (mkdir, _wmkdir, path);
@@ -530,7 +530,7 @@ m_mkdir (const char *path)
 
 
 int
-m_remove (const char *path)
+_m_remove (const char *path)
 {
 #ifdef __WIN32__
     gboolean use_wide_char_api;
@@ -573,8 +573,8 @@ m_remove (const char *path)
 
 
 gpointer
-m_fopen (const char *path,
-         const char *mode)
+_m_fopen (const char *path,
+          const char *mode)
 {
 #ifdef __WIN32__
     gboolean use_wide_char_api;
@@ -623,8 +623,8 @@ m_fopen (const char *path,
 
 
 int
-m_rename (const char *old_name,
-          const char *new_name)
+_m_rename (const char *old_name,
+           const char *new_name)
 {
 #ifdef __WIN32__
     gboolean use_wide_char_api;

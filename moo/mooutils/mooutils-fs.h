@@ -28,7 +28,7 @@
 G_BEGIN_DECLS
 
 
-#define MOO_FILE_ERROR (moo_file_error_quark ())
+#define MOO_FILE_ERROR (_moo_file_error_quark ())
 
 typedef enum
 {
@@ -43,37 +43,37 @@ typedef enum
     MOO_FILE_ERROR_NOT_IMPLEMENTED
 } MooFileError;
 
-GQuark          moo_file_error_quark        (void) G_GNUC_CONST;
-MooFileError    moo_file_error_from_errno   (int         err_code);
+GQuark          _moo_file_error_quark       (void) G_GNUC_CONST;
+MooFileError    _moo_file_error_from_errno  (int         err_code);
 
-gboolean        moo_save_file_utf8          (const char *name,
+gboolean        _moo_save_file_utf8         (const char *name,
                                              const char *text,
                                              gssize      len,
                                              GError    **error);
-gboolean        moo_rmdir                   (const char *path,
+gboolean        _moo_rmdir                  (const char *path,
                                              gboolean    recursive,
                                              GError    **error);
-gboolean        moo_mkdir                   (const char *path,
+gboolean        _moo_mkdir                  (const char *path,
                                              GError    **error);
 
 char          **moo_filenames_from_locale   (char      **files);
 char           *moo_filename_from_locale    (const char *file);
 
-char           *moo_normalize_file_path     (const char *filename);
+char           *_moo_normalize_file_path    (const char *filename);
 
 /*
  * C library and WinAPI functions wrappers analogous to glib/gstdio.h
  */
 
-int             m_unlink                    (const char *path);
-int             m_mkdir                     (const char *path); /* S_IRWXU on unix */
-int             m_rmdir                     (const char *path);
-int             m_remove                    (const char *path);
-gpointer        m_fopen                     (const char *path,
+int             _m_unlink                   (const char *path);
+int             _m_mkdir                    (const char *path); /* S_IRWXU on unix */
+int             _m_rmdir                    (const char *path);
+int             _m_remove                   (const char *path);
+gpointer        _m_fopen                    (const char *path,
                                              const char *mode);
-int             m_rename                    (const char *old_name,
+int             _m_rename                   (const char *old_name,
                                              const char *new_name);
-int             m_chdir                     (const char *path);
+int             _m_chdir                    (const char *path);
 
 
 G_END_DECLS
