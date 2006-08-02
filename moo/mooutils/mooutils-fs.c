@@ -148,6 +148,8 @@ rm_r (const char *path,
     {
         char *file_path = g_build_filename (path, file, NULL);
 
+        errno = 0;
+
         if (m_remove (file_path))
         {
             int err = errno;
@@ -174,14 +176,19 @@ rm_r (const char *path,
 
     g_dir_close (dir);
 
-    if (success && m_remove (path))
+    if (success)
     {
-        int err = errno;
-        success = FALSE;
-        g_set_error (error, MOO_FILE_ERROR,
-                     moo_file_error_from_errno (err),
-                     "Could not remove '%s': %s", path,
-                     g_strerror (err));
+        errno = 0;
+
+        if (m_remove (path) != 0)
+        {
+            int err = errno;
+            success = FALSE;
+            g_set_error (error, MOO_FILE_ERROR,
+                         moo_file_error_from_errno (err),
+                         "Could not remove '%s': %s", path,
+                         g_strerror (err));
+        }
     }
 
     return success;
@@ -198,7 +205,9 @@ moo_rmdir (const char *path,
 
     if (!recursive)
     {
-        if (m_rmdir (path))
+        errno = 0;
+
+        if (m_rmdir (path) != 0)
         {
             int err = errno;
             char *path_utf8 = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
@@ -233,7 +242,9 @@ moo_mkdir (const char *path,
 
     g_return_val_if_fail (path != NULL, FALSE);
 
-    if (stat (path, &buf) == -1 && errno != ENOENT)
+    errno = 0;
+
+    if (stat (path, &buf) != 0 && errno != ENOENT)
     {
         int err_code = errno;
         utf8_path = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
@@ -251,6 +262,8 @@ moo_mkdir (const char *path,
 
     if (errno != 0)
     {
+        errno = 0;
+
         if (m_mkdir (path) == -1)
         {
             int err_code = errno;
@@ -362,6 +375,62 @@ moo_filename_from_locale (const char *file)
 }
 
 
+char *
+moo_normalize_file_path (const char *filename)
+{
+    char *freeme = NULL;
+    char *working_dir, *basename, *dirname;
+    char *real_filename = NULL;
+
+    g_return_val_if_fail (filename != NULL, NULL);
+
+    working_dir = g_get_current_dir ();
+    g_return_val_if_fail (working_dir != NULL, g_strdup (filename));
+
+    if (!g_path_is_absolute (filename))
+    {
+        freeme = g_build_filename (working_dir, filename, NULL);
+        filename = freeme;
+    }
+
+    dirname = g_path_get_dirname (filename);
+    basename = g_path_get_basename (filename);
+    g_return_val_if_fail (dirname && basename, g_strdup (filename));
+
+    errno = 0;
+
+    if (m_chdir (dirname) != 0)
+    {
+        int err = errno;
+        g_warning ("%s: %s", G_STRLOC, g_strerror (err));
+    }
+    else
+    {
+        char *real_dirname = g_get_current_dir ();
+        real_filename = g_build_filename (real_dirname, basename, NULL);
+        g_free (real_dirname);
+
+        errno = 0;
+
+        if (m_chdir (working_dir) != 0)
+        {
+            int err = errno;
+            g_warning ("%s: %s", G_STRLOC, g_strerror (err));
+        }
+    }
+
+    if (!real_filename)
+        real_filename = g_strdup (filename);
+
+    g_free (freeme);
+    g_free (dirname);
+    g_free (basename);
+    g_free (working_dir);
+
+    return real_filename;
+}
+
+
 /**********************************************************************/
 /* MSLU for poor
  */
@@ -401,6 +470,8 @@ G_STMT_START {                                                  \
         return -1;                                              \
     }                                                           \
                                                                 \
+    errno = 0;                                                  \
+                                                                \
     if (use_wide_char_api)                                      \
         retval = _WFunc (converted);                            \
     else                                                        \
@@ -437,6 +508,17 @@ m_rmdir (const char *path)
 
 
 int
+m_chdir (const char *path)
+{
+#ifdef __WIN32__
+    CCALL_1 (_chdir, _wchdir, path);
+#else
+    return chdir (path);
+#endif
+}
+
+
+int
 m_mkdir (const char *path)
 {
 #ifdef __WIN32__
@@ -463,6 +545,8 @@ m_remove (const char *path)
         errno = EINVAL;
         return -1;
     }
+
+    errno = 0;
 
     if (use_wide_char_api)
         retval = _wremove (converted);
@@ -519,6 +603,8 @@ m_fopen (const char *path,
         return NULL;
     }
 
+    errno = 0;
+
     if (use_wide_char_api)
         retval = _wfopen (path_conv, mode_conv);
     else
@@ -565,6 +651,8 @@ m_rename (const char *old_name,
         errno = EINVAL;
         return -1;
     }
+
+    errno = 0;
 
     if (use_wide_char_api)
         retval = _wrename (old_conv, new_conv);

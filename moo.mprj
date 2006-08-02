@@ -3,9 +3,6 @@
   <make>
     <n_jobs>3</n_jobs>
   </make>
-  <commands>
-    <compile>cd $(top_builddir) &amp;&amp; $(make) $(base).o</compile>
-  </commands>
   <configurations>
     <debug>
       <run>

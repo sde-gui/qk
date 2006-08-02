@@ -59,6 +59,8 @@ gboolean        moo_mkdir                   (const char *path,
 char          **moo_filenames_from_locale   (char      **files);
 char           *moo_filename_from_locale    (const char *file);
 
+char           *moo_normalize_file_path     (const char *filename);
+
 /*
  * C library and WinAPI functions wrappers analogous to glib/gstdio.h
  */
@@ -71,6 +73,7 @@ gpointer        m_fopen                     (const char *path,
                                              const char *mode);
 int             m_rename                    (const char *old_name,
                                              const char *new_name);
+int             m_chdir                     (const char *path);
 
 
 G_END_DECLS

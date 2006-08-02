@@ -26,6 +26,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/moofilewatch.h"
+#include "mooutils/mooutils-fs.h"
 #include <string.h>
 
 
@@ -57,7 +58,7 @@ static WindowInfo   *window_list_find       (MooEditor      *editor,
                                              MooEditWindow  *win);
 static WindowInfo   *window_list_find_doc   (MooEditor      *editor,
                                              MooEdit        *edit);
-static WindowInfo   *window_list_find_filename (MooEditor   *editor,
+static WindowInfo   *window_list_find_file  (MooEditor      *editor,
                                              const char     *filename,
                                              MooEdit       **edit);
 
@@ -821,8 +822,8 @@ static int
 filename_and_doc_cmp (WindowInfo *w, gpointer user_data)
 {
     struct {
-        const char *filename;
-        MooEdit    *edit;
+        char    *filename;
+        MooEdit *edit;
     } *data = user_data;
 
     g_return_val_if_fail (w != NULL, TRUE);
@@ -832,22 +833,30 @@ filename_and_doc_cmp (WindowInfo *w, gpointer user_data)
 }
 
 static WindowInfo*
-window_list_find_filename (MooEditor   *editor,
-                           const char     *filename,
-                           MooEdit       **edit)
+window_list_find_file (MooEditor  *editor,
+                       const char *filename,
+                       MooEdit   **edit)
 {
+    GSList *link;
     struct {
-        const char *filename;
-        MooEdit    *edit;
-    } data = {filename, NULL};
+        char    *filename;
+        MooEdit *edit;
+    } data;
 
-    GSList *l = g_slist_find_custom (editor->priv->windows, &data,
-                                     (GCompareFunc) filename_and_doc_cmp);
-    if (l)
+    data.filename = moo_normalize_file_path (filename);
+    data.edit = NULL;
+    link = g_slist_find_custom (editor->priv->windows, &data,
+                                (GCompareFunc) filename_and_doc_cmp);
+    g_free (data.filename);
+
+    if (link)
     {
         g_assert (data.edit != NULL);
-        if (edit) *edit = data.edit;
-        return l->data;
+
+        if (edit)
+            *edit = data.edit;
+
+        return link->data;
     }
 
     if (window_info_find (editor->priv->windowless, filename))
@@ -1035,23 +1044,6 @@ moo_editor_new_doc (MooEditor      *editor,
 }
 
 
-static char *
-filename_make_absolute (const char *name)
-{
-    char *abs_name, *dir;
-
-    if (g_path_is_absolute (name))
-        return g_strdup (name);
-
-    /* XXX normalize it */
-    dir = g_get_current_dir ();
-    abs_name = g_build_filename (dir, name, NULL);
-
-    g_free (dir);
-    return abs_name;
-}
-
-
 gboolean
 moo_editor_open (MooEditor      *editor,
                  MooEditWindow  *window,
@@ -1096,9 +1088,9 @@ moo_editor_open (MooEditor      *editor,
         MooEdit *doc = NULL;
         char *filename;
 
-        filename = filename_make_absolute (info->filename);
+        filename = moo_normalize_file_path (info->filename);
 
-        if (window_list_find_filename (editor, filename, &bring_to_front))
+        if (window_list_find_file (editor, filename, &bring_to_front))
         {
             moo_history_list_add_filename (editor->priv->history, filename);
             g_free (filename);
@@ -1663,7 +1655,8 @@ moo_editor_open_file_line (MooEditor      *editor,
                            int             line,
                            MooEditWindow  *window)
 {
-    MooEdit *doc;
+    MooEdit *doc = NULL;
+    char *freeme = NULL;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     g_return_val_if_fail (filename != NULL, NULL);
@@ -1679,6 +1672,12 @@ moo_editor_open_file_line (MooEditor      *editor,
         return doc;
     }
 
+    freeme = moo_normalize_file_path (filename);
+    filename = freeme;
+
+    if (!g_file_test (filename, G_FILE_TEST_EXISTS))
+        goto out;
+
     doc = moo_editor_open_file (editor, window, NULL, filename, NULL);
     g_return_val_if_fail (doc != NULL, NULL);
 
@@ -1687,6 +1686,9 @@ moo_editor_open_file_line (MooEditor      *editor,
     if (line >= 0)
         moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), line, 0, FALSE, TRUE);
     gtk_widget_grab_focus (GTK_WIDGET (doc));
+
+out:
+    g_free (freeme);
     return doc;
 }
 
@@ -1712,7 +1714,7 @@ moo_editor_new_file (MooEditor      *editor,
         return moo_editor_open_file (editor, window, parent,
                                      filename, encoding);
 
-    freeme = filename_make_absolute (filename);
+    freeme = moo_normalize_file_path (filename);
     filename = freeme;
 
     if (!window)
@@ -2021,17 +2023,12 @@ moo_editor_get_doc (MooEditor      *editor,
                     const char     *filename)
 {
     MooEdit *doc = NULL;
-    char *abs;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     g_return_val_if_fail (filename != NULL, NULL);
 
-    abs = filename_make_absolute (filename);
-    g_return_val_if_fail (abs != NULL, NULL);
+    window_list_find_file (editor, filename, &doc);
 
-    window_list_find_filename (editor, abs, &doc);
-
-    g_free (abs);
     return doc;
 }
 
