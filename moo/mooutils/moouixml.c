@@ -119,14 +119,6 @@ static Merge   *lookup_merge            (MooUIXML       *xml,
 
 static Node    *node_new                (NodeType        type,
                                          const char     *name);
-static Item    *item_new                (const char     *name,
-                                         const char     *action,
-                                         const char     *stock_id,
-                                         const char     *label,
-                                         const char     *tooltip,
-                                         const char     *icon_stock_id,
-                                         const char     *translation_domain,
-                                         gboolean        translatable);
 static gboolean node_is_ancestor        (Node           *node,
                                          Node           *ancestor);
 static gboolean node_is_empty           (Node           *node);
@@ -387,6 +379,16 @@ parse_placeholder (MooMarkupNode *mnode)
 }
 
 
+static Item *
+item_new (const char *name,
+          const char *action)
+{
+    Item *item = (Item*) node_new (ITEM, name);
+    item->action = g_strdup (action);
+    return item;
+}
+
+
 static char *
 translate_string (const char *string,
                   const char *translation_domain,
@@ -409,24 +411,62 @@ translate_string (const char *string,
 }
 
 static Item *
-item_new (const char *name,
-          const char *action,
-          const char *stock_id,
-          const char *label,
-          const char *tooltip,
-          const char *icon_stock_id,
-          const char *translation_domain,
-          gboolean    translatable)
+item_new_from_node (MooMarkupNode *node,
+                    const char    *translation_domain)
 {
     Item *item;
+    const char *name;
+    const char *action;
+    const char *stock_id;
+    const char *stock_label;
+    const char *label;
+    const char *tooltip;
+    const char *icon_stock_id;
+    gboolean translatable = FALSE;
 
-    item = (Item*) node_new (ITEM, name);
+    name = moo_markup_get_prop (node, "name");
 
-    item->action = g_strdup (action);
+    if (!name)
+        name = moo_markup_get_prop (node, "action");
+
+    label = moo_markup_get_prop (node, "_label");
+    if (label)
+        translatable = TRUE;
+    else
+        label = moo_markup_get_prop (node, "label");
+
+    tooltip = moo_markup_get_prop (node, "_tooltip");
+    if (tooltip)
+        translatable = TRUE;
+    else
+        tooltip = moo_markup_get_prop (node, "tooltip");
+
+    action = moo_markup_get_prop (node, "action");
+    stock_id = moo_markup_get_prop (node, "stock-id");
+    stock_label = moo_markup_get_prop (node, "stock-label");
+    icon_stock_id = moo_markup_get_prop (node, "icon-stock-id"),
+
+    item = item_new (name, action);
+
     item->stock_id = g_strdup (stock_id);
     item->icon_stock_id = g_strdup (icon_stock_id);
 
-    item->label = translate_string (label, translation_domain, translatable);
+    if (stock_label)
+    {
+        GtkStockItem stock_item;
+
+        if (!gtk_stock_lookup (stock_label, &stock_item))
+            g_warning ("could not find stock item '%s'", stock_label);
+        else if (!stock_item.label)
+            g_warning ("stock item '%s' does not have a label", stock_label);
+        else
+            item->label = g_strdup (stock_item.label);
+    }
+    else
+    {
+        item->label = translate_string (label, translation_domain, translatable);
+    }
+
     item->tooltip = translate_string (tooltip, translation_domain, translatable);
 
     return item;
@@ -437,34 +477,9 @@ static Node*
 parse_item (MooMarkupNode *mnode)
 {
     Item *item;
-    const char *name;
     MooMarkupNode *mchild;
-    const char *label, *tooltip;
-    gboolean translatable = FALSE;
 
-    name = moo_markup_get_prop (mnode, "name");
-
-    if (!name)
-        name = moo_markup_get_prop (mnode, "action");
-
-    label = moo_markup_get_prop (mnode, "_label");
-    if (label)
-        translatable = TRUE;
-    else
-        label = moo_markup_get_prop (mnode, "label");
-
-    tooltip = moo_markup_get_prop (mnode, "_tooltip");
-    if (tooltip)
-        translatable = TRUE;
-    else
-        tooltip = moo_markup_get_prop (mnode, "tooltip");
-
-    item = item_new (name,
-                     moo_markup_get_prop (mnode, "action"),
-                     moo_markup_get_prop (mnode, "stock-id"),
-                     label, tooltip,
-                     moo_markup_get_prop (mnode, "icon-stock-id"),
-                     NULL, translatable);
+    item = item_new_from_node (mnode, NULL);
 
     for (mchild = mnode->children; mchild != NULL; mchild = mchild->next)
     {
@@ -890,7 +905,7 @@ moo_ui_xml_add_item (MooUIXML       *xml,
                        G_STRLOC, NODE_TYPE_NAME[parent->type]);
     }
 
-    item = item_new (name, action, NULL, NULL, NULL, NULL, NULL, FALSE);
+    item = item_new (name, action);
     item->parent = parent;
     parent->children = g_slist_insert (parent->children, item, position);
 
@@ -1678,6 +1693,7 @@ create_menu_item (MooUIXML       *xml,
     Item *item;
 
     g_return_if_fail (node != NULL && node->type == ITEM);
+    g_return_if_fail (node->name != NULL);
 
     item = (Item*) node;
 
@@ -1723,6 +1739,11 @@ create_menu_item (MooUIXML       *xml,
             {
                 menu_item = gtk_menu_item_new_with_mnemonic (item->label);
             }
+        }
+        else
+        {
+            g_warning ("item '%s' does not have an associated action, label, or stock id",
+                       item->name);
         }
 
         if (menu_item)
