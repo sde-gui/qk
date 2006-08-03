@@ -1,6 +1,11 @@
+ini_in_files = project-plugin.ini.in
+%.ini:   %.ini.in   $(INTLTOOL_MERGE) $(wildcard $(top_srcdir)/po/*.po) ; LC_ALL=C $(INTLTOOL_MERGE) -d -u -c $(top_builddir)/po/.intltool-merge-cache $(top_srcdir)/po $< $@
+ini_files = $(ini_in_files:.ini.in=.ini)
+
 pluginsdir = $(MOO_LIB_DIR)/plugins
 plugins_DATA =				\
-	project-plugin.py
+	project-plugin.py		\
+	$(ini_files)
 
 mprojdir = $(pluginsdir)/lib/mproj
 mproj_DATA =				\
@@ -31,7 +36,8 @@ ltxproj_DATA =				\
 	projects/ltxproj/__init__.py
 
 EXTRA_DIST =				\
-    $(plugins_DATA)			\
+    project-plugin.py			\
+    $(ini_in_files)			\
     $(projects_DATA)			\
     $(mproj_DATA)			\
     $(cproj_DATA)			\

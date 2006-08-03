@@ -458,42 +458,41 @@ typedef MooPluginLoaderClass MooPythonPluginLoaderClass;
 G_DEFINE_TYPE (MooPythonPluginLoader, _moo_python_plugin_loader, MOO_TYPE_PLUGIN_LOADER)
 
 
-// static gboolean
-// push_path_dir (const char *filename)
-// {
-//     PyObject *sys = NULL, *path = NULL;
-//     char *dirname;
-//
-//     /* XXX encoding */
-//     dirname = g_path_get_dirname (filename);
-//     g_return_val_if_fail (dirname != NULL, FALSE);
-//
-//     sys = PyImport_ImportModule ((char*) "sys");
-//
-//     if (sys)
-//         path = PyObject_GetAttrString (sys, (char*) "path");
-//
-//     if (!path || !PyList_Check (path))
-//     {
-//         g_critical ("%s: oops", G_STRLOC);
-//     }
-//     else
-//     {
-//         for (d = dirs; d && *d; ++d)
-//         {
-//             char *libdir = g_build_filename (*d, LIBDIR, NULL);
-//             PyObject *s = PyString_FromString (libdir);
-//             PyList_Append (path, s);
-//             Py_XDECREF (s);
-//             g_free (libdir);
-//         }
-//     }
-//
-//     for (d = dirs; d && *d; ++d)
-//         moo_python_plugin_read_dir (*d);
-//
-//     g_strfreev (dirs);
-// }
+static void
+sys_path_add_plugin_dirs (void)
+{
+    char **d;
+    char **dirs = moo_plugin_get_dirs ();
+    PyObject *sys = NULL, *path = NULL;
+    static gboolean been_here = FALSE;
+
+    if (been_here)
+        return;
+
+    been_here = TRUE;
+    sys = PyImport_ImportModule ((char*) "sys");
+
+    if (sys)
+        path = PyObject_GetAttrString (sys, (char*) "path");
+
+    if (!path || !PyList_Check (path))
+    {
+        g_critical ("%s: oops", G_STRLOC);
+    }
+    else
+    {
+        for (d = dirs; d && *d; ++d)
+        {
+            char *libdir = g_build_filename (*d, LIBDIR, NULL);
+            PyObject *s = PyString_FromString (libdir);
+            PyList_Append (path, s);
+            Py_XDECREF (s);
+            g_free (libdir);
+        }
+    }
+
+    g_strfreev (dirs);
+}
 
 
 static PyObject *
@@ -508,6 +507,8 @@ load_file (const char *path)
 
     if (!moo_python_stuff_init ())
         return NULL;
+
+    sys_path_add_plugin_dirs ();
 
     if (!g_file_get_contents (path, &content, NULL, &error))
     {

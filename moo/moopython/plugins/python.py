@@ -163,11 +163,5 @@ class Plugin(moo.edit.Plugin):
         window.remove_pane(PLUGIN_ID)
 
 
-if moo.edit.module_check_version(2, 0):
-    gobject.type_register(Plugin)
-
-    info = moo.edit.PluginInfo(PLUGIN_ID, "Python",
-                               description="Python support",
-                               author="Yevgen Muntyan <muntyan@math.tamu.edu>",
-                               version="3.1415926")
-    moo.edit.plugin_register(Plugin, info)
+gobject.type_register(Plugin)
+__plugin__ = Plugin

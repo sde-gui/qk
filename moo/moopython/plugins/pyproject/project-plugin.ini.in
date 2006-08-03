@@ -1,0 +1,13 @@
+[module]
+type=Python
+file=project-plugin.py
+version=0.7
+
+[plugin]
+id=ProjectManager
+_name=Project Manager
+_description=Project manager
+author=Yevgen Muntyan <muntyan@math.tamu.edu>
+version=3.1415926
+enabled=false
+visible=false

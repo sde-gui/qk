@@ -1,0 +1,11 @@
+[module]
+type=Python
+file=python.py
+version=0.7
+
+[plugin]
+id=Python
+_name=Python
+_description=Python support
+author=Yevgen Muntyan <muntyan@math.tamu.edu>
+version=3.1415926
