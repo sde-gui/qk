@@ -534,8 +534,8 @@ egg_regex_match_next_full (EggRegex          *regex,
 
   if G_UNLIKELY(regex->pos < 0)
     {
-      const gchar *msg = _("egg_regex_match_next_full: called without a "
-                           "previous call to egg_regex_clear()");
+      const gchar *msg = "egg_regex_match_next_full: called without a "
+                         "previous call to egg_regex_clear()";
       g_log (G_LOG_DOMAIN, G_LOG_LEVEL_CRITICAL, msg);
       g_set_error (error, EGG_REGEX_ERROR, EGG_REGEX_ERROR_MATCH, msg);
       return FALSE;
