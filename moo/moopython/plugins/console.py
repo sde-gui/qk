@@ -61,12 +61,9 @@ class WinPlugin(moo.edit.WinPlugin):
         self.window.remove_pane(CONSOLE_PLUGIN_ID)
 
 
-if os.name == 'posix' and moo.edit.module_check_version(2, 0):
+if os.name == 'posix':
     gobject.type_register(Plugin)
     gobject.type_register(WinPlugin)
-
-    info = moo.edit.PluginInfo(CONSOLE_PLUGIN_ID, "Console",
-                               description="Console",
-                               author="Yevgen Muntyan <muntyan@math.tamu.edu>",
-                               version="3.1415926")
-    moo.edit.plugin_register(Plugin, info)
+    __plugin__ = Plugin
+else:
+    __plugin__ = None

@@ -4,6 +4,7 @@ moopython_pluginsdir = $(MOO_LIB_DIR)/plugins
 moopython_plugins_libdir = $(MOO_LIB_DIR)/plugins/lib
 
 moopython_plugins_DATA =	\
+	console.ini		\
 	console.py		\
 	python.py
 

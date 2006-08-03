@@ -16,6 +16,7 @@
 #endif
 
 #include "mooedit/mooplugin.h"
+#include "mooedit/mooplugin-loader.h"
 #include "mooedit/moopluginprefs-glade.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "moopython/mooplugin-python.h"
@@ -203,7 +204,8 @@ moo_plugin_class_init (MooPluginClass *klass)
 
 
 gboolean
-moo_plugin_register (GType                  type,
+moo_plugin_register (const char            *id,
+                     GType                  type,
                      const MooPluginInfo   *info,
                      const MooPluginParams *params)
 {
@@ -211,6 +213,9 @@ moo_plugin_register (GType                  type,
     MooPlugin *plugin;
     char *prefs_key;
     GSList *l, *windows;
+
+    g_return_val_if_fail (id != NULL && id[0] != 0, FALSE);
+    g_return_val_if_fail (g_utf8_validate (id, -1, NULL), FALSE);
 
     g_return_val_if_fail (g_type_is_a (type, MOO_TYPE_PLUGIN), FALSE);
 
@@ -232,6 +237,7 @@ moo_plugin_register (GType                  type,
     }
 
     plugin = g_object_new (type, NULL);
+    plugin->id = g_strdup (id);
     plugin->info = moo_plugin_info_copy ((MooPluginInfo*) info);
     plugin->params = params ? moo_plugin_params_copy ((MooPluginParams*) params) :
                               moo_plugin_params_new (TRUE, TRUE);
@@ -668,8 +674,7 @@ moo_doc_plugin_lookup (const char     *plugin_id,
 static gboolean
 plugin_info_check (const MooPluginInfo *info)
 {
-    return info && info->id && info->id[0] &&
-            g_utf8_validate (info->id, -1, NULL) &&
+    return info &&
             info->name && g_utf8_validate (info->name, -1, NULL) &&
             info->description && g_utf8_validate (info->description, -1, NULL);
 }
@@ -805,8 +810,8 @@ gboolean
 moo_module_check_version (guint major,
                           guint minor)
 {
-    return major == MOO_MODULE_VERSION_MAJOR &&
-            minor <= MOO_MODULE_VERSION_MINOR;
+    return major == MOO_VERSION_MAJOR &&
+            minor <= MOO_VERSION_MINOR;
 }
 
 
@@ -835,7 +840,6 @@ moo_plugin_##what (MooPlugin *plugin)                       \
     return plugin->info->what;                              \
 }
 
-DEFINE_GETTER(id)
 DEFINE_GETTER(name)
 DEFINE_GETTER(description)
 DEFINE_GETTER(version)
@@ -843,35 +847,13 @@ DEFINE_GETTER(author)
 
 #undef DEFINE_GETTER
 
-
-static gboolean
-moo_plugin_read_module (GModule     *module,
-                        const char  *name)
+const char *
+moo_plugin_id (MooPlugin *plugin)
 {
-    MooPluginModuleInitFunc init_func;
-
-    g_return_val_if_fail (module != NULL, FALSE);
-    g_return_val_if_fail (name != NULL, FALSE);
-
-    if (!g_module_symbol (module, MOO_PLUGIN_INIT_FUNC_NAME,
-                          (gpointer*) &init_func))
-        return FALSE;
-
-    return init_func ();
+    g_return_val_if_fail (MOO_IS_PLUGIN (plugin), NULL);
+    return plugin->id;
 }
 
-
-static GModule *
-module_open (const char *path)
-{
-    GModule *module;
-
-    _moo_disable_win32_error_message ();
-    module = g_module_open (path, G_MODULE_BIND_LOCAL);
-    _moo_enable_win32_error_message ();
-
-    return module;
-}
 
 static void
 moo_plugin_read_dir (const char *path)
@@ -888,30 +870,12 @@ moo_plugin_read_dir (const char *path)
 
     while ((name = g_dir_read_name (dir)))
     {
-        char *module_path, *prefix, *suffix;
-        GModule *module;
-
-        if (!g_str_has_suffix (name, "." G_MODULE_SUFFIX))
-            continue;
-
-        suffix = g_strrstr (name, "." G_MODULE_SUFFIX);
-        prefix = g_strndup (name, suffix - name);
-
-        module_path = g_build_filename (path, name, NULL);
-        module = module_open (module_path);
-
-        if (module)
+        if (g_str_has_suffix (name, ".ini"))
         {
-            if (!moo_plugin_read_module (module, prefix))
-                g_module_close (module);
+            char *tmp = g_strdup (name);
+            _moo_plugin_load (path, tmp);
+            g_free (tmp);
         }
-        else
-        {
-            g_message ("%s: %s", G_STRLOC, g_module_error ());
-        }
-
-        g_free (prefix);
-        g_free (module_path);
     }
 
     g_dir_close (dir);
@@ -937,9 +901,6 @@ moo_plugin_init_builtin (void)
 #endif
     _moo_active_strings_plugin_init ();
     _moo_completion_plugin_init ();
-#ifdef MOO_USE_PYGTK
-    _moo_python_plugin_init ();
-#endif
 }
 
 
@@ -1150,8 +1111,7 @@ moo_plugin_set_win_plugin_type (MooPlugin *plugin,
 
 
 MooPluginInfo *
-moo_plugin_info_new (const char     *id,
-                     const char     *name,
+moo_plugin_info_new (const char     *name,
                      const char     *description,
                      const char     *author,
                      const char     *version,
@@ -1159,10 +1119,9 @@ moo_plugin_info_new (const char     *id,
 {
     MooPluginInfo *info;
 
-    g_return_val_if_fail (id && name, NULL);
+    g_return_val_if_fail (name != NULL, NULL);
 
     info = g_new0 (MooPluginInfo, 1);
-    info->id = g_strdup (id);
     info->name = g_strdup (name);
     info->description = description ? g_strdup (description) : g_strdup ("");
     info->author = author ? g_strdup (author) : g_strdup ("");
@@ -1177,7 +1136,7 @@ MooPluginInfo *
 moo_plugin_info_copy (MooPluginInfo *info)
 {
     g_return_val_if_fail (info != NULL, NULL);
-    return moo_plugin_info_new (info->id, info->name, info->description,
+    return moo_plugin_info_new (info->name, info->description,
                                 info->author, info->version, info->langs);
 }
 
@@ -1187,7 +1146,6 @@ moo_plugin_info_free (MooPluginInfo *info)
 {
     if (info)
     {
-        g_free (info->id);
         g_free (info->name);
         g_free (info->description);
         g_free (info->author);

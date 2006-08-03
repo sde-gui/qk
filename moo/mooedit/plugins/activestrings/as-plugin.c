@@ -1146,7 +1146,7 @@ _as_plugin_save_config (MooConfig *config,
 }
 
 
-MOO_PLUGIN_DEFINE_INFO (as, AS_PLUGIN_ID,
+MOO_PLUGIN_DEFINE_INFO (as,
                         "Active Strings", "Very active",
                         "Yevgen Muntyan <muntyan@tamu.edu>",
                         MOO_VERSION, NULL);
@@ -1160,7 +1160,8 @@ MOO_PLUGIN_DEFINE_FULL (AS, as,
 gboolean
 _moo_active_strings_plugin_init (void)
 {
-    MOO_MODULE_CHECK_VERSION ();
-    return moo_plugin_register (as_plugin_get_type (),
-                                &as_plugin_info, NULL);
+    return moo_plugin_register (AS_PLUGIN_ID,
+                                as_plugin_get_type (),
+                                &as_plugin_info,
+                                NULL);
 }

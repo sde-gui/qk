@@ -19,8 +19,10 @@
 G_BEGIN_DECLS
 
 
-gboolean    _moo_python_plugin_init     (void);
-void        _moo_python_plugin_deinit   (void);
+#define MOO_PYTHON_PLUGIN_LOADER_ID "Python"
+gpointer    _moo_python_get_plugin_loader   (void);
+gboolean    _moo_python_plugin_init         (void);
+void        _moo_python_plugin_deinit       (void);
 
 
 G_END_DECLS

@@ -5,6 +5,7 @@
   (gtype-id "MOO_TYPE_PLUGIN")
   (fields
     '("gboolean" "initialized")
+    '("char*" "id")
     '("MooPluginInfo*" "info")
     '("MooPluginParams*" "params")
     '("GSList*" "docs")
@@ -43,7 +44,6 @@
   (copy-func "moo_plugin_info_copy")
   (release-func "moo_plugin_info_free")
   (fields
-    '("char*" "id")
     '("char*" "name")
     '("char*" "description")
     '("char*" "author")
@@ -260,7 +260,6 @@
   (is-constructor-of "MooPluginInfo")
   (return-type "MooPluginInfo*")
   (parameters
-    '("const-char*" "id")
     '("const-char*" "name")
     '("const-char*" "author" (null-ok) (default "NULL"))
     '("const-char*" "description" (null-ok) (default "NULL"))
@@ -284,6 +283,7 @@
   (c-name "moo_plugin_register")
   (return-type "gboolean")
   (parameters
+    '("const-char*" "id")
     '("GType" "type")
     '("MooPluginInfo*" "info")
     '("MooPluginParams*" "params" (null-ok) (default "NULL"))

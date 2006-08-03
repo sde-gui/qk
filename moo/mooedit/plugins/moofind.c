@@ -887,7 +887,7 @@ output_activate (WindowStuff    *stuff,
 }
 
 
-MOO_PLUGIN_DEFINE_INFO (find, FIND_PLUGIN_ID,
+MOO_PLUGIN_DEFINE_INFO (find,
                         "Find", "Finds everything",
                         "Yevgen Muntyan <muntyan@tamu.edu>",
                         MOO_VERSION, NULL);
@@ -903,7 +903,8 @@ MOO_PLUGIN_DEFINE_FULL (Find, find,
 gboolean
 _moo_find_plugin_init (void)
 {
-    MOO_MODULE_CHECK_VERSION ();
-    return moo_plugin_register (find_plugin_get_type (),
-                                &find_plugin_info, NULL);
+    return moo_plugin_register (FIND_PLUGIN_ID,
+                                find_plugin_get_type (),
+                                &find_plugin_info,
+                                NULL);
 }

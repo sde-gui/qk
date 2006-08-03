@@ -18,8 +18,9 @@ mooedit_include_headers =              \
 	moolangmgr.h                   \
 	moolinemark.h                  \
 	moolineview.h                  \
-	mooplugin-macro.h              \
 	mooplugin.h                    \
+	mooplugin-loader.h             \
+	mooplugin-macro.h              \
 	mootextbuffer.h                \
 	mootextiter.h                  \
 	mootextpopup.h                 \
@@ -88,6 +89,7 @@ mooedit_sources =                      \
 	moolinemark.c                  \
 	moolineview.c                  \
 	mooplugin.c                    \
+	mooplugin-loader.c             \
 	mootextbox.c                   \
 	mootextbtree.c                 \
 	mootextbuffer.c                \

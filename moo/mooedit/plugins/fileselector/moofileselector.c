@@ -1361,7 +1361,7 @@ _moo_file_selector_update_tools (MooPlugin *plugin)
 }
 
 
-MOO_PLUGIN_DEFINE_INFO (file_selector, MOO_FILE_SELECTOR_PLUGIN_ID,
+MOO_PLUGIN_DEFINE_INFO (file_selector,
                         "File Selector", "File selector pane for editor window",
                         "Yevgen Muntyan <muntyan@tamu.edu>",
                         MOO_VERSION, NULL);
@@ -1387,9 +1387,10 @@ _moo_file_selector_plugin_init (void)
 {
     GType ptype = file_selector_plugin_get_type ();
 
-    MOO_MODULE_CHECK_VERSION ();
-
-    if (!moo_plugin_register (ptype, &file_selector_plugin_info, NULL))
+    if (!moo_plugin_register (MOO_FILE_SELECTOR_PLUGIN_ID,
+                              ptype,
+                              &file_selector_plugin_info,
+                              NULL))
         return FALSE;
 
     moo_plugin_method_new ("get-widget", ptype,

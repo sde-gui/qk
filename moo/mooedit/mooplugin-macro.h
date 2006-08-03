@@ -17,25 +17,21 @@
 #include <mooedit/mooplugin.h>
 
 
-#define MOO_MODULE_CHECK_VERSION()                                          \
-G_STMT_START {                                                              \
-    if (!moo_module_check_version (MOO_MODULE_VERSION_MAJOR,                \
-                                   MOO_MODULE_VERSION_MINOR))               \
-        return FALSE;                                                       \
-} G_STMT_END
-
-
 #define MOO_PLUGIN_INIT_FUNC_DECL   \
 G_MODULE_EXPORT gboolean            \
-MOO_PLUGIN_INIT_FUNC (void)
+MOO_PLUGIN_INIT_FUNC (GType *type)
+
+#define MOO_MODULE_INIT_FUNC_DECL   \
+G_MODULE_EXPORT gboolean            \
+MOO_MODULE_INIT_FUNC (void)
 
 
-#define MOO_PLUGIN_DEFINE_INFO(plugin_name__,id__,name__,                   \
+#define MOO_PLUGIN_DEFINE_INFO(plugin_name__,name__,                        \
                                description__,author__,version__,            \
                                langs__)                                     \
                                                                             \
 static const MooPluginInfo plugin_name__##_plugin_info =                    \
-    {(char*) id__, (char*) name__, (char*) description__,                   \
+    {(char*) name__, (char*) description__,                                 \
      (char*) author__, (char*) version__, (char*) langs__};
 
 

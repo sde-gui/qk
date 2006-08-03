@@ -21,11 +21,10 @@ G_BEGIN_DECLS
 #define MOO_PLUGIN_PREFS_ROOT  "Plugins"
 #define MOO_PLUGIN_DIR_BASENAME "plugins"
 
-#define MOO_MODULE_VERSION_MAJOR 2
-#define MOO_MODULE_VERSION_MINOR 0
-
-#define MOO_PLUGIN_INIT_FUNC            moo_module_init
-#define MOO_PLUGIN_INIT_FUNC_NAME       "moo_module_init"
+#define MOO_PLUGIN_INIT_FUNC            moo_plugin_module_init
+#define MOO_PLUGIN_INIT_FUNC_NAME       "moo_plugin_module_init"
+#define MOO_MODULE_INIT_FUNC            moo_module_init
+#define MOO_MODULE_INIT_FUNC_NAME       "moo_module_init"
 
 #define MOO_TYPE_PLUGIN                 (moo_plugin_get_type ())
 #define MOO_PLUGIN(object)              (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_PLUGIN, MooPlugin))
@@ -63,7 +62,8 @@ typedef struct _MooDocPluginClass    MooDocPluginClass;
 typedef struct _MooPluginMeth        MooPluginMeth;
 
 
-typedef gboolean    (*MooPluginModuleInitFunc)  (void);
+typedef gboolean    (*MooModuleInitFunc)        (void);
+typedef gboolean    (*MooPluginModuleInitFunc)  (GType          *type);
 
 typedef gboolean    (*MooPluginInitFunc)        (MooPlugin      *plugin);
 typedef void        (*MooPluginDeinitFunc)      (MooPlugin      *plugin);
@@ -104,13 +104,10 @@ struct _MooPluginParams
 
 struct _MooPluginInfo
 {
-    char *id;
-
     char *name;
     char *description;
     char *author;
     char *version;
-
     char *langs;
 };
 
@@ -120,6 +117,7 @@ struct _MooPlugin
 
     gboolean initialized;
 
+    char *id;
     GQuark id_quark;
     MooPluginInfo *info;
     MooPluginParams *params;
@@ -183,7 +181,8 @@ GType       moo_plugin_params_get_type  (void) G_GNUC_CONST;
 gboolean    moo_module_check_version    (guint           major,
                                          guint           minor);
 
-gboolean    moo_plugin_register         (GType           type,
+gboolean    moo_plugin_register         (const char     *id,
+                                         GType           type,
                                          const MooPluginInfo *info,
                                          const MooPluginParams *params);
 void        moo_plugin_unregister       (GType           type);
@@ -222,8 +221,7 @@ void        moo_plugin_set_doc_plugin_type (MooPlugin   *plugin,
 void        moo_plugin_set_win_plugin_type (MooPlugin   *plugin,
                                          GType           type);
 
-MooPluginInfo *moo_plugin_info_new      (const char     *id,
-                                         const char     *name,
+MooPluginInfo *moo_plugin_info_new      (const char     *name,
                                          const char     *description,
                                          const char     *author,
                                          const char     *version,

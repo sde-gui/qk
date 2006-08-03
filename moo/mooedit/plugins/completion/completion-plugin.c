@@ -74,7 +74,7 @@ cmpl_plugin_deinit (CmplPlugin *plugin)
 }
 
 
-MOO_PLUGIN_DEFINE_INFO (cmpl, CMPL_PLUGIN_ID,
+MOO_PLUGIN_DEFINE_INFO (cmpl,
                         "Completion", "Makes it complete",
                         "Yevgen Muntyan <muntyan@tamu.edu>",
                         MOO_VERSION, NULL)
@@ -87,7 +87,8 @@ MOO_PLUGIN_DEFINE_FULL (Cmpl, cmpl,
 gboolean
 _moo_completion_plugin_init (void)
 {
-    MOO_MODULE_CHECK_VERSION ();
-    return moo_plugin_register (cmpl_plugin_get_type (),
-                                &cmpl_plugin_info, NULL);
+    return moo_plugin_register (CMPL_PLUGIN_ID,
+                                cmpl_plugin_get_type (),
+                                &cmpl_plugin_info,
+                                NULL);
 }
