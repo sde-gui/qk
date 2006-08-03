@@ -14,6 +14,13 @@ AC_CANONICAL_HOST
 AC_CONFIG_HEADERS(config.h)
 MOO_DEFINE_VERSIONS
 
+AC_PROG_INTLTOOL([0.29])
+GETTEXT_PACKAGE=moo
+AC_SUBST(GETTEXT_PACKAGE)
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Name of the gettext package.])
+ALL_LINGUAS=""
+AM_GLIB_GNU_GETTEXT
+
 AM_CONDITIONAL(MOO_INSTALL_LIB, false)
 AC_DISABLE_SHARED
 
@@ -88,6 +95,7 @@ moo/mooutils/pcre/Makefile
 moo/mooutils/xdgmime/Makefile
 m4/Makefile
 tests/Makefile
+po/Makefile.in
 moo/mooterm/termhelper_res.rc
 moo/moo.pc
 moo/moo-version.h

@@ -5,21 +5,28 @@ EXTRA_DIST =			\
 	mingw-configure		\
 	cygwin-configure	\
 	makewin			\
-	THANKS
+	THANKS			\
+	intltool-extract.in	\
+	intltool-merge.in	\
+	intltool-update.in	\
+	medit.desktop.in
 
-DIST_SUBDIRS = m4 moo tests
-SUBDIRS = moo tests
+DIST_SUBDIRS = m4 moo tests po
+SUBDIRS = moo tests po
 
 ACLOCAL_AMFLAGS = -I $(top_srcdir)/m4
 
+@INTLTOOL_DESKTOP_RULE@
+DESKTOP_IN_FILES = medit.desktop.in
+DESKTOP_FILES =$(DESKTOP_IN_FILES:.desktop.in=.desktop)
 desktopdir = $(datadir)/applications
-desktop_DATA = medit.desktop
+desktop_DATA = $(DESKTOP_FILES)
+
 appicondir = $(datadir)/pixmaps
 appicon_DATA = moo/mooutils/pixmaps/medit.png
 hicolor = $(datadir)/icons/hicolor
 iconthemedir = $(hicolor)/48x48/apps
 icontheme_DATA = moo/mooutils/pixmaps/medit.png
-EXTRA_DIST += $(desktop_DATA)
 
 # update_icon_cache = gtk-update-icon-cache -f -t $(hicolor)
 #

@@ -49,3 +49,5 @@ moo/moo-version\.h$
 moo/moo\.pc$
 moo/mooterm/termhelper_res\.rc$
 ^\.moo\.mprj\.session$
+^po/missing$
+^po/.*\.pot$

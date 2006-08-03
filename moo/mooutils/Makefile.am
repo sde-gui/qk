@@ -87,6 +87,7 @@ mooutils_sources =			\
 	mooglade.c			\
 	moohistoryentry.c		\
 	moohistorylist.c		\
+	mooi18n.h			\
 	moolinklabel.c			\
 	moologwindow-glade.h		\
 	moomarkup.c			\

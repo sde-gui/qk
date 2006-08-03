@@ -1,0 +1,27 @@
+[encoding: UTF-8]
+medit.desktop.in
+moo/mooapp/glade/mooappabout.glade
+moo/mooedit/glade/mooeditprefs.glade
+moo/mooedit/glade/mooeditprogress.glade
+moo/mooedit/glade/mooeditsavemult.glade
+moo/mooedit/glade/moopluginprefs.glade
+moo/mooedit/glade/mooprint.glade
+moo/mooedit/glade/mootextfind.glade
+moo/mooedit/glade/mootextgotoline.glade
+moo/mooedit/glade/quicksearch.glade
+moo/mooedit/glade/statusbar.glade
+moo/mooedit/plugins/fileselector/moofileselector-prefs.glade
+moo/mooedit/plugins/fileselector/moofileselector.glade
+moo/mooedit/plugins/moofind.glade
+moo/moofileview/glade/bookmark_editor.glade
+moo/moofileview/glade/drop.glade
+moo/moofileview/glade/moocreatefolder.glade
+moo/moofileview/glade/moofileprops.glade
+moo/mooscript/mooscript-yacc.c
+moo/mooterm/glade/mootermprefs.glade
+moo/mooterm/mootermparser-yacc.c
+moo/mooutils/eggregex.c
+moo/mooutils/glade/accelprefs.glade
+moo/mooutils/glade/moologwindow.glade
+moo/mooutils/moofontsel.c
+moo/mooapp/mooappabout.c
