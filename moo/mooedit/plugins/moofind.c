@@ -27,6 +27,7 @@
 #include "mooutils/mooglade.h"
 #include "mooutils/moohistoryentry.h"
 #include "mooutils/moodialogs.h"
+#include "mooutils/mooi18n.h"
 #include <gtk/gtkdialog.h>
 #include <gtk/gtkscrolledwindow.h>
 #include <gtk/gtktogglebutton.h>
@@ -304,7 +305,7 @@ create_grep_dialog (MooEditWindow  *window,
     GtkWidget *skip_combo;
     MooHistoryList *skip_list;
 
-    stuff->grep_xml = moo_glade_xml_new_empty ();
+    stuff->grep_xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (stuff->grep_xml, "pattern_combo", MOO_TYPE_HISTORY_ENTRY);
     moo_glade_xml_map_id (stuff->grep_xml, "glob_combo", MOO_TYPE_HISTORY_ENTRY);
     moo_glade_xml_map_id (stuff->grep_xml, "dir_combo", MOO_TYPE_HISTORY_ENTRY);
@@ -350,7 +351,7 @@ create_find_dialog (MooEditWindow  *window,
 {
     GtkWidget *dir_entry, *pattern_entry;
 
-    stuff->find_xml = moo_glade_xml_new_empty ();
+    stuff->find_xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (stuff->find_xml, "pattern_combo", MOO_TYPE_HISTORY_ENTRY);
     moo_glade_xml_map_id (stuff->find_xml, "dir_combo", MOO_TYPE_HISTORY_ENTRY);
     moo_glade_xml_map_id (stuff->find_xml, "skip_combo", MOO_TYPE_HISTORY_ENTRY);

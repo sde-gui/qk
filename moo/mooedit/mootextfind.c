@@ -22,6 +22,7 @@
 #include "mooutils/mooentry.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moodialogs.h"
+#include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
 #include <glib/gprintf.h>
 
@@ -108,7 +109,7 @@ moo_find_init (MooFind *find)
     GtkWidget *vbox;
     MooCombo *search, *replace;
 
-    find->xml = moo_glade_xml_new_empty ();
+    find->xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (find->xml, "search_entry", MOO_TYPE_HISTORY_ENTRY);
     moo_glade_xml_map_id (find->xml, "replace_entry", MOO_TYPE_HISTORY_ENTRY);
 
@@ -1330,7 +1331,7 @@ moo_text_view_run_goto_line (GtkTextView *view)
     buffer = gtk_text_view_get_buffer (view);
     line_count = gtk_text_buffer_get_line_count (buffer);
 
-    xml = moo_glade_xml_new_from_buf (MOO_TEXT_GOTO_LINE_GLADE_UI, -1, NULL);
+    xml = moo_glade_xml_new_from_buf (MOO_TEXT_GOTO_LINE_GLADE_UI, -1, NULL, GETTEXT_PACKAGE);
     g_return_if_fail (xml != NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");

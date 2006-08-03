@@ -734,6 +734,9 @@
 (define-function moo_glade_xml_new_empty
   (c-name "moo_glade_xml_new_empty")
   (return-type "MooGladeXML*")
+  (parameters
+    '("const-char*" "domain" (null-ok) (default "NULL"))
+  )
 )
 
 (define-method map_class
@@ -805,6 +808,7 @@
   (parameters
     '("const-char*" "file")
     '("const-char*" "root")
+    '("const-char*" "domain" (null-ok) (default "NULL"))
   )
 )
 
@@ -815,6 +819,7 @@
     '("const-char*" "buffer")
     '("int" "size")
     '("const-char*" "root")
+    '("const-char*" "domain" (null-ok) (default "NULL"))
   )
 )
 

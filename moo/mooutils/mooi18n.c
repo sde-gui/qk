@@ -26,7 +26,6 @@ _moo_gettext (const char *string)
     if (!been_here)
     {
         been_here = TRUE;
-        g_print ("MOO_LOCALE_DIR: %s\n", MOO_LOCALE_DIR);
         bindtextdomain (GETTEXT_PACKAGE, MOO_LOCALE_DIR);
         bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
     }

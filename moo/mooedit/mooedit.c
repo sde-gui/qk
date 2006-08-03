@@ -25,6 +25,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooglade.h"
+#include "mooutils/mooi18n.h"
 #include <string.h>
 
 
@@ -2080,7 +2081,7 @@ show_progress (MooEdit *edit)
 
     g_return_val_if_fail (!edit->priv->progress, FALSE);
 
-    xml = moo_glade_xml_new_from_buf (MOO_EDIT_PROGRESS_GLADE_XML, -1, "eventbox");
+    xml = moo_glade_xml_new_from_buf (MOO_EDIT_PROGRESS_GLADE_XML, -1, "eventbox", GETTEXT_PACKAGE);
     g_return_val_if_fail (xml != NULL, FALSE);
 
     edit->priv->progress = moo_glade_xml_get_widget (xml, "eventbox");

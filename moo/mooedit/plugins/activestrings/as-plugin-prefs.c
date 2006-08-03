@@ -17,6 +17,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-treeview.h"
+#include "mooutils/mooi18n.h"
 #include <string.h>
 
 
@@ -73,7 +74,7 @@ _as_plugin_prefs_page (MooPlugin *plugin)
     GtkCellRenderer *cell;
     MooConfigHelper *helper;
 
-    xml = moo_glade_xml_new_empty ();
+    xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "script", MOO_TYPE_TEXT_VIEW);
     page = moo_prefs_dialog_page_new_from_xml ("Active Strings", GTK_STOCK_CONVERT,
                                                xml, AS_PLUGIN_GLADE_UI, -1,

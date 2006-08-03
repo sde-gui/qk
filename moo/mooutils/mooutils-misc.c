@@ -19,6 +19,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/moologwindow-glade.h"
 #include "mooutils/mooglade.h"
+#include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -639,7 +640,7 @@ moo_log_window_new (void)
     MooLogWindow *log;
     PangoFontDescription *font;
 
-    xml = moo_glade_xml_new_from_buf (MOO_LOG_WINDOW_GLADE_UI, -1, NULL);
+    xml = moo_glade_xml_new_from_buf (MOO_LOG_WINDOW_GLADE_UI, -1, NULL, GETTEXT_PACKAGE);
     log = g_new (MooLogWindow, 1);
 
     log->window = moo_glade_xml_get_widget (xml, "window");

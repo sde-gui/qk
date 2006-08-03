@@ -15,6 +15,7 @@
 #include "mooedit/plugins/fileselector/moofileselector-prefs-glade.h"
 #include "mooutils/mooprefsdialogpage.h"
 #include "mooutils/mooutils-treeview.h"
+#include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -62,7 +63,7 @@ _moo_file_selector_prefs_page (MooPlugin *plugin)
     GtkListStore *store;
     MooTreeHelper *helper;
 
-    xml = moo_glade_xml_new_empty ();
+    xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     page = moo_prefs_dialog_page_new_from_xml ("File Selector", GTK_STOCK_OPEN,
                                                xml, MOO_FILE_SELECTOR_PREFS_GLADE_XML, -1,
                                                "page", NULL);

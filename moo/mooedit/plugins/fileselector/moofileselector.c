@@ -29,6 +29,7 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/mooi18n.h"
 #include <string.h>
 #include <gmodule.h>
 #include <gtk/gtk.h>
@@ -322,7 +323,7 @@ create_new_file_dialog (GtkWidget    *parent,
     display_dirname = g_filename_display_basename (dirname);
     g_return_val_if_fail (display_dirname != NULL, NULL);
 
-    *xml = moo_glade_xml_new_empty ();
+    *xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_class (*xml, "GtkEntry", MOO_TYPE_ENTRY);
     moo_glade_xml_parse_memory (*xml, MOO_FILE_SELECTOR_GLADE_XML, -1,
                                 "new_file_dialog");
@@ -750,7 +751,7 @@ create_save_as_dialog (GtkWidget   *parent,
     GtkWidget *dialog, *button;
     GtkEntry *entry;
 
-    *xml = moo_glade_xml_new_empty ();
+    *xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_class (*xml, "GtkEntry", MOO_TYPE_ENTRY);
     moo_glade_xml_parse_memory (*xml, MOO_FILE_SELECTOR_GLADE_XML, -1,
                                 "save_untitled_dialog");

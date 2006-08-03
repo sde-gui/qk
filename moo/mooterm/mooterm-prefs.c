@@ -27,6 +27,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/moofontsel.h"
 #include "mooutils/mooglade.h"
+#include "mooutils/mooi18n.h"
 #include <string.h>
 
 
@@ -115,7 +116,7 @@ GtkWidget  *moo_term_prefs_page_new   (void)
 
     _moo_term_init_settings ();
 
-    xml = moo_glade_xml_new_empty ();
+    xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "font", MOO_TYPE_FONT_BUTTON);
     moo_glade_xml_set_property (xml, "font", "monospace", "True");
     moo_glade_xml_set_property (xml, "font", "filter-visible", "False");

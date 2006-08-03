@@ -21,6 +21,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/eggregex.h"
+#include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
 
 
@@ -378,7 +379,7 @@ moo_edit_save_multiple_changes_dialog (GSList  *docs,
     for (l = docs; l != NULL; l = l->next)
         g_return_val_if_fail (MOO_IS_EDIT (l->data), MOO_EDIT_RESPONSE_CANCEL);
 
-    xml = moo_glade_xml_new_from_buf (MOO_EDIT_SAVE_MULTIPLE_GLADE_UI, -1, "dialog");
+    xml = moo_glade_xml_new_from_buf (MOO_EDIT_SAVE_MULTIPLE_GLADE_UI, -1, "dialog", GETTEXT_PACKAGE);
     dialog = moo_glade_xml_get_widget (xml, "dialog");
 
     moo_window_set_parent (dialog, docs->data);
@@ -709,7 +710,8 @@ moo_text_prompt_on_replace_dialog (GtkWidget *parent)
     MooGladeXML *xml;
 
     xml = moo_glade_xml_new_from_buf (MOO_TEXT_FIND_GLADE_UI, -1,
-                                      "prompt_on_replace_dialog");
+                                      "prompt_on_replace_dialog",
+                                      GETTEXT_PACKAGE);
     dialog = moo_glade_xml_get_widget (xml, "prompt_on_replace_dialog");
     g_object_unref (xml);
 

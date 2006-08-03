@@ -21,6 +21,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/moodialogs.h"
+#include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
@@ -718,7 +719,7 @@ _moo_accel_prefs_page_new (GtkActionGroup *actions)
     GtkTreeViewColumn *column;
     MooGladeXML *xml;
 
-    xml = moo_glade_xml_new_empty ();
+    xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_class (xml, "GtkButton", MOO_TYPE_ACCEL_BUTTON);
     moo_glade_xml_parse_memory (xml, MOO_ACCEL_PREFS_GLADE_UI, -1, "page");
 
@@ -1243,7 +1244,7 @@ _moo_accel_prefs_dialog_new (GtkActionGroup *group)
     GtkWidget *page, *dialog, *page_holder;
     MooGladeXML *xml;
 
-    xml = moo_glade_xml_new_from_buf (MOO_ACCEL_PREFS_GLADE_UI, -1, "dialog");
+    xml = moo_glade_xml_new_from_buf (MOO_ACCEL_PREFS_GLADE_UI, -1, "dialog", GETTEXT_PACKAGE);
     g_return_val_if_fail (xml != NULL, NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");

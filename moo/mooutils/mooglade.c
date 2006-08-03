@@ -18,6 +18,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/mooprefs.h"
+#include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
 #include <string.h>
 #include <errno.h>
@@ -127,6 +128,8 @@ struct _MooGladeXMLPrivate {
     GHashTable *widgets;
     char *root_id;
 
+    char *translation_domain;
+
     GHashTable *class_to_type;
     GHashTable *id_to_type;
     GHashTable *id_to_func;
@@ -168,7 +171,8 @@ static void          child_free                 (Child          *child);
 static WidgetProps  *widget_props_new           (MooMarkupNode  *node,
                                                  GType           widget_type,
                                                  GHashTable     *add_props,
-                                                 gboolean        ignore_errors);
+                                                 gboolean        ignore_errors,
+                                                 const char     *translation_domain);
 static void          widget_props_free          (WidgetProps    *props);
 static PackingProps *packing_props_new          (MooMarkupNode  *node,
                                                  GType           container_type);
@@ -1083,7 +1087,7 @@ widget_new (MooGladeXML    *xml,
 
     props = widget_props_new (node, type,
                               g_hash_table_lookup (xml->priv->props, id),
-                              ignore_errors);
+                              ignore_errors, xml->priv->translation_domain);
     g_return_val_if_fail (props != NULL, NULL);
 
     widget = g_new0 (Widget, 1);
@@ -1385,11 +1389,63 @@ widget_props_add_one (const char *name,
 }
 
 
+static const char *
+get_property_text (MooMarkupNode *node,
+                   const char    *translation_domain)
+{
+    gboolean translatable = FALSE, strip_context = FALSE;
+    const char *prop, *translatable_attr;
+
+#ifndef ENABLE_NLS
+    return moo_markup_get_content (node);
+#endif
+
+    prop = moo_markup_get_content (node);
+
+    if (!prop || !prop[0])
+        return prop;
+
+    translatable_attr = moo_markup_get_prop (node, "translatable");
+
+    if (translatable_attr && !strcmp (translatable_attr, "yes"))
+    {
+        const char *ctx_attr = moo_markup_get_prop (node, "context");
+
+        if (ctx_attr && !strcmp (ctx_attr, "yes"))
+            strip_context = TRUE;
+
+        translatable = TRUE;
+    }
+
+    if (!translatable)
+        return prop;
+
+    if (translation_domain)
+    {
+        const char *translated;
+
+        if (strip_context)
+            translated = g_strip_context (prop, dgettext (prop, translation_domain));
+        else
+            translated = dgettext (prop, translation_domain);
+
+        if (strcmp (translated, translation_domain) != 0)
+            return translated;
+    }
+
+    if (strip_context)
+        return g_strip_context (prop, gettext (prop));
+    else
+        return gettext (prop);
+}
+
+
 static WidgetProps*
 widget_props_new (MooMarkupNode  *node,
                   GType           type,
                   GHashTable     *add_props,
-                  gboolean        ignore_errors)
+                  gboolean        ignore_errors,
+                  const char     *translation_domain)
 {
     GArray *params;
     GObjectClass *klass;
@@ -1410,7 +1466,7 @@ widget_props_new (MooMarkupNode  *node,
         if (NODE_IS_PROPERTY (elm))
         {
             const char *name = moo_markup_get_prop (elm, "name");
-            const char *value = moo_markup_get_content (elm);
+            const char *value = get_property_text (elm, translation_domain);
             gboolean result;
 
             result = widget_props_add (props, params, klass,
@@ -1910,9 +1966,11 @@ moo_glade_xml_set_property (MooGladeXML    *xml,
 
 
 MooGladeXML *
-moo_glade_xml_new_empty (void)
+moo_glade_xml_new_empty (const char *domain)
 {
-    return g_object_new (MOO_TYPE_GLADE_XML, NULL);
+    MooGladeXML *xml = g_object_new (MOO_TYPE_GLADE_XML, NULL);
+    xml->priv->translation_domain = g_strdup (domain);
+    return xml;
 }
 
 
@@ -1987,13 +2045,14 @@ moo_glade_xml_parse_memory (MooGladeXML    *xml,
 
 MooGladeXML*
 moo_glade_xml_new (const char     *file,
-                   const char     *root)
+                   const char     *root,
+                   const char     *domain)
 {
     MooGladeXML *xml;
 
     g_return_val_if_fail (file != NULL, NULL);
 
-    xml = moo_glade_xml_new_empty ();
+    xml = moo_glade_xml_new_empty (domain);
 
     if (!moo_glade_xml_parse_file (xml, file, root))
     {
@@ -2008,13 +2067,14 @@ moo_glade_xml_new (const char     *file,
 MooGladeXML*
 moo_glade_xml_new_from_buf (const char     *buffer,
                             int             size,
-                            const char     *root)
+                            const char     *root,
+                            const char     *domain)
 {
     MooGladeXML *xml;
 
     g_return_val_if_fail (buffer != NULL, NULL);
 
-    xml = moo_glade_xml_new_empty ();
+    xml = moo_glade_xml_new_empty (domain);
 
     if (!moo_glade_xml_parse_memory (xml, buffer, size, root))
     {
@@ -2268,6 +2328,7 @@ moo_glade_xml_dispose (GObject *object)
         g_hash_table_foreach (xml->priv->widgets,
                               (GHFunc) unref_widget, xml);
         g_hash_table_destroy (xml->priv->widgets);
+        g_free (xml->priv->translation_domain);
         g_free (xml->priv->root_id);
         g_free (xml->priv);
         xml->priv = NULL;

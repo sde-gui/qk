@@ -19,6 +19,7 @@
 #include "mooutils/mooprefsdialogpage.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/moofontsel.h"
+#include "mooutils/mooi18n.h"
 #include <string.h>
 
 
@@ -375,7 +376,7 @@ moo_prefs_dialog_page_new_from_xml (const char         *label,
     g_return_val_if_fail (!xml || MOO_IS_GLADE_XML (xml), NULL);
 
     if (!xml)
-        xml = moo_glade_xml_new_empty ();
+        xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     else
         g_object_ref (xml);
 

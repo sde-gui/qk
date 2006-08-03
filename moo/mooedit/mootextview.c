@@ -25,6 +25,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooundo.h"
 #include "mooutils/mooentry.h"
+#include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
@@ -4414,7 +4415,7 @@ moo_text_view_start_quick_search (MooTextView *view)
     {
         MooGladeXML *xml;
 
-        xml = moo_glade_xml_new_empty ();
+        xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
         moo_glade_xml_map_class (xml, "GtkEntry", MOO_TYPE_ENTRY);
         moo_glade_xml_parse_memory (xml, QUICK_SEARCH_GLADE_XML, -1, "evbox");
 

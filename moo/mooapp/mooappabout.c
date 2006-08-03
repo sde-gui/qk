@@ -23,6 +23,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moolinklabel.h"
 #include "mooutils/mooglade.h"
+#include "mooutils/mooi18n.h"
 #include "config.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
@@ -65,7 +66,7 @@ show_credits (void)
         return;
     }
 
-    xml = moo_glade_xml_new_empty ();
+    xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "written_by", MOO_TYPE_HTML);
     moo_glade_xml_parse_memory (xml, MOO_APP_ABOUT_GLADE_UI, -1, "credits");
 
@@ -119,7 +120,7 @@ show_license (void)
         return;
     }
 
-    xml = moo_glade_xml_new_from_buf (MOO_APP_ABOUT_GLADE_UI, -1, "license");
+    xml = moo_glade_xml_new_from_buf (MOO_APP_ABOUT_GLADE_UI, -1, "license", GETTEXT_PACKAGE);
 
     license_dialog = moo_glade_xml_get_widget (xml, "license");
     g_return_if_fail (license_dialog != NULL);
@@ -156,7 +157,7 @@ show_system_info (void)
         return;
     }
 
-    xml = moo_glade_xml_new_from_buf (MOO_APP_ABOUT_GLADE_UI, -1, "system");
+    xml = moo_glade_xml_new_from_buf (MOO_APP_ABOUT_GLADE_UI, -1, "system", GETTEXT_PACKAGE);
 
     system_info_dialog = moo_glade_xml_get_widget (xml, "system");
     g_return_if_fail (system_info_dialog != NULL);
@@ -281,7 +282,7 @@ create_about_dialog (void)
     MooLinkLabel *url;
 
     info = moo_app_get_info (moo_app_get_instance());
-    xml = moo_glade_xml_new_empty ();
+    xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "url", MOO_TYPE_LINK_LABEL);
     moo_glade_xml_parse_memory (xml, MOO_APP_ABOUT_GLADE_UI, -1, "dialog");
     g_return_val_if_fail (xml != NULL, NULL);

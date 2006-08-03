@@ -23,6 +23,7 @@
 #include "mooutils/mooglade.h"
 #include "mooutils/moofontsel.h"
 #include "mooutils/mooutils-treeview.h"
+#include "mooutils/mooi18n.h"
 #include <string.h>
 
 
@@ -70,7 +71,7 @@ moo_edit_prefs_page_new (MooEditor *editor)
 
     _moo_edit_init_config ();
 
-    xml = moo_glade_xml_new_empty ();
+    xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "fontbutton", MOO_TYPE_FONT_BUTTON);
     moo_glade_xml_set_property (xml, "fontbutton", "monospace", "True");
     page_widget = moo_prefs_dialog_page_new_from_xml ("Editor", GTK_STOCK_EDIT, xml,

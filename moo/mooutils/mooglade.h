@@ -62,7 +62,7 @@ typedef gboolean   (*MooGladePropFunc)      (MooGladeXML    *xml,
 
 GType        moo_glade_xml_get_type         (void);
 
-MooGladeXML *moo_glade_xml_new_empty        (void);
+MooGladeXML *moo_glade_xml_new_empty        (const char     *domain);
 
 void         moo_glade_xml_map_class        (MooGladeXML    *xml,
                                              const char     *class_name,
@@ -100,10 +100,12 @@ gboolean     moo_glade_xml_fill_widget      (MooGladeXML    *xml,
                                              const char     *target_name);
 
 MooGladeXML *moo_glade_xml_new              (const char     *file,
-                                             const char     *root);
+                                             const char     *root,
+                                             const char     *domain);
 MooGladeXML *moo_glade_xml_new_from_buf     (const char     *buffer,
                                              int             size,
-                                             const char     *root);
+                                             const char     *root,
+                                             const char     *domain);
 
 gpointer     moo_glade_xml_get_widget       (MooGladeXML    *xml,
                                              const char     *id);

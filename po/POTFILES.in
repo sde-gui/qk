@@ -17,6 +17,7 @@ moo/moofileview/glade/bookmark_editor.glade
 moo/moofileview/glade/drop.glade
 moo/moofileview/glade/moocreatefolder.glade
 moo/moofileview/glade/moofileprops.glade
+moo/moofileview/moofileview-ui.xml
 moo/mooscript/mooscript-yacc.c
 moo/mooterm/glade/mootermprefs.glade
 moo/mooterm/mootermparser-yacc.c
@@ -25,3 +26,4 @@ moo/mooutils/glade/accelprefs.glade
 moo/mooutils/glade/moologwindow.glade
 moo/mooutils/moofontsel.c
 moo/mooapp/mooappabout.c
+tests/medit-ui.xml
