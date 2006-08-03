@@ -2,7 +2,7 @@
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
 <!-- Generated with glade3
 	Version: 2.91.3
-	Date: Thu Aug  3 01:55:27 2006
+	Date: Thu Aug  3 04:10:46 2006
 	User: muntyan
 	Host: munt10
 -->
@@ -37,7 +37,7 @@
                               <widget class="GtkCheckButton" id="smarthome">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="label">Smart Home and End</property>
+                                <property name="label" translatable="yes">Smart Home and End</property>
                                 <property name="use_underline">True</property>
                                 <property name="focus_on_click">False</property>
                                 <property name="draw_indicator">True</property>
@@ -76,7 +76,7 @@
                                         <child>
                                           <widget class="GtkLabel" id="label156">
                                             <property name="visible">True</property>
-                                            <property name="label" translatable="yes" context="yes">Moves input focus</property>
+                                            <property name="label" translatable="yes">Moves input focus</property>
                                           </widget>
                                         </child>
                                       </widget>
@@ -91,7 +91,7 @@
                                         <child>
                                           <widget class="GtkLabel" id="label2">
                                             <property name="visible">True</property>
-                                            <property name="label">Indents text</property>
+                                            <property name="label" translatable="yes">Indents text</property>
                                           </widget>
                                         </child>
                                       </widget>
@@ -109,7 +109,7 @@
                                         <child>
                                           <widget class="GtkLabel" id="label3">
                                             <property name="visible">True</property>
-                                            <property name="label">Moves cursor to next placeholder</property>
+                                            <property name="label" translatable="yes">Moves cursor to next placeholder</property>
                                           </widget>
                                         </child>
                                       </widget>
@@ -131,7 +131,7 @@
                     <child>
                       <widget class="GtkLabel" id="label64">
                         <property name="visible">True</property>
-                        <property name="label">Keyboard</property>
+                        <property name="label" translatable="yes">Keyboard</property>
                       </widget>
                       <packing>
                         <property name="type">label_item</property>
@@ -164,7 +164,7 @@
                                 <child>
                                   <widget class="GtkLabel" id="label4">
                                     <property name="visible">True</property>
-                                    <property name="label">Enable auto indentation</property>
+                                    <property name="label" translatable="yes">Enable auto indentation</property>
                                   </widget>
                                 </child>
                               </widget>
@@ -177,7 +177,7 @@
                               <widget class="GtkCheckButton" id="usespaces">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="label">Use spaces to indent</property>
+                                <property name="label" translatable="yes">Use spaces to indent</property>
                                 <property name="use_underline">True</property>
                                 <property name="focus_on_click">False</property>
                                 <property name="draw_indicator">True</property>
@@ -200,7 +200,7 @@
                                     <child>
                                       <widget class="GtkLabel" id="label32">
                                         <property name="visible">True</property>
-                                        <property name="label">Indent width:</property>
+                                        <property name="label" translatable="yes">Indent width:</property>
                                         <property name="mnemonic_widget">tabswidth_spin</property>
                                       </widget>
                                       <packing>
@@ -225,7 +225,7 @@
                                     <child>
                                       <widget class="GtkLabel" id="label96">
                                         <property name="visible">True</property>
-                                        <property name="label">spaces</property>
+                                        <property name="label" translatable="yes">spaces</property>
                                       </widget>
                                       <packing>
                                         <property name="expand">False</property>
@@ -248,7 +248,7 @@
                                 <child>
                                   <widget class="GtkLabel" id="label5">
                                     <property name="visible">True</property>
-                                    <property name="label">Backspace key indents</property>
+                                    <property name="label" translatable="yes">Backspace key indents</property>
                                   </widget>
                                 </child>
                               </widget>
@@ -263,7 +263,7 @@
                     <child>
                       <widget class="GtkLabel" id="label641">
                         <property name="visible">True</property>
-                        <property name="label">Indentation</property>
+                        <property name="label" translatable="yes">Indentation</property>
                       </widget>
                       <packing>
                         <property name="type">label_item</property>
@@ -296,7 +296,7 @@
                                   <widget class="GtkCheckButton" id="auto_save">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
-                                    <property name="label">Auto save every </property>
+                                    <property name="label" translatable="yes">Auto save every </property>
                                     <property name="use_underline">True</property>
                                     <property name="focus_on_click">False</property>
                                     <property name="draw_indicator">True</property>
@@ -325,7 +325,7 @@
                                 <child>
                                   <widget class="GtkLabel" id="auto_save_label">
                                     <property name="visible">True</property>
-                                    <property name="label"> minutes</property>
+                                    <property name="label" translatable="yes"> minutes</property>
                                     <property name="moo_sensitive">auto_save</property>
                                   </widget>
                                   <packing>
@@ -343,7 +343,7 @@
                             <child>
                               <widget class="GtkCheckButton" id="checkbutton11">
                                 <property name="can_focus">True</property>
-                                <property name="label">Make backups</property>
+                                <property name="label" translatable="yes">Make backups</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
                                 <property name="moo_prefs_key">make_backups</property>
@@ -358,7 +358,7 @@
                               <widget class="GtkCheckButton" id="checkbutton21">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="label">Remove trailing spaces</property>
+                                <property name="label" translatable="yes">Remove trailing spaces</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
                                 <property name="moo_prefs_key">strip</property>
@@ -376,7 +376,7 @@
                     <child>
                       <widget class="GtkLabel" id="label951">
                         <property name="visible">True</property>
-                        <property name="label">Saving</property>
+                        <property name="label" translatable="yes">Saving</property>
                       </widget>
                       <packing>
                         <property name="type">label_item</property>
@@ -408,7 +408,7 @@
                                 <child>
                                   <widget class="GtkLabel" id="label1021">
                                     <property name="visible">True</property>
-                                    <property name="label">Default language: </property>
+                                    <property name="label" translatable="yes">Default language: </property>
                                   </widget>
                                   <packing>
                                     <property name="expand">False</property>
@@ -442,7 +442,7 @@
                     <child>
                       <widget class="GtkLabel" id="label1011">
                         <property name="visible">True</property>
-                        <property name="label">Misc</property>
+                        <property name="label" translatable="yes">Misc</property>
                         <property name="use_markup">True</property>
                       </widget>
                       <packing>
@@ -464,7 +464,7 @@
             <child>
               <widget class="GtkLabel" id="label211">
                 <property name="visible">True</property>
-                <property name="label">General</property>
+                <property name="label" translatable="yes">General</property>
               </widget>
               <packing>
                 <property name="type">tab</property>
@@ -491,7 +491,7 @@
                               <widget class="GtkCheckButton" id="enable_wrapping">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="label">Enable text wrapping</property>
+                                <property name="label" translatable="yes">Enable text wrapping</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
                                 <property name="moo_prefs_key">wrapping_enable</property>
@@ -505,7 +505,7 @@
                               <widget class="GtkCheckButton" id="dont_split_words">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="label">Do not split words</property>
+                                <property name="label" translatable="yes">Do not split words</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
                                 <property name="moo_prefs_key">wrapping_dont_split_words</property>
@@ -524,7 +524,7 @@
                     <child>
                       <widget class="GtkLabel" id="label701">
                         <property name="visible">True</property>
-                        <property name="label">Text wrapping</property>
+                        <property name="label" translatable="yes">Text wrapping</property>
                       </widget>
                       <packing>
                         <property name="type">label_item</property>
@@ -554,7 +554,7 @@
                               <widget class="GtkCheckButton" id="checkbutton5">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="label">Enable syntax highlighting</property>
+                                <property name="label" translatable="yes">Enable syntax highlighting</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
                                 <property name="moo_prefs_key">enable_highlighting</property>
@@ -568,7 +568,7 @@
                               <widget class="GtkCheckButton" id="checkbutton6">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="label">Highlight matching brackets</property>
+                                <property name="label" translatable="yes">Highlight matching brackets</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
                                 <property name="moo_prefs_key">highlight_matching_brackets</property>
@@ -583,7 +583,7 @@
                               <widget class="GtkCheckButton" id="checkbutton7">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="label">Highlight mismatching brackets</property>
+                                <property name="label" translatable="yes">Highlight mismatching brackets</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
                                 <property name="moo_prefs_key">highlight_mismatching_brackets</property>
@@ -598,7 +598,7 @@
                               <widget class="GtkCheckButton" id="checkbutton9">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="label">Highlight current line</property>
+                                <property name="label" translatable="yes">Highlight current line</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
                                 <property name="moo_prefs_key">highlight_current_line</property>
@@ -616,7 +616,7 @@
                     <child>
                       <widget class="GtkLabel" id="label98">
                         <property name="visible">True</property>
-                        <property name="label">Highlighting</property>
+                        <property name="label" translatable="yes">Highlighting</property>
                       </widget>
                       <packing>
                         <property name="type">label_item</property>
@@ -647,7 +647,7 @@
                               <widget class="GtkCheckButton" id="show_line_numbers">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="label">Show line numbers</property>
+                                <property name="label" translatable="yes">Show line numbers</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
                                 <property name="moo_prefs_key">show_line_numbers</property>
@@ -661,7 +661,7 @@
                               <widget class="GtkCheckButton" id="checkbutton3">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="label">Show tabs</property>
+                                <property name="label" translatable="yes">Show tabs</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
                                 <property name="moo_prefs_key">show_tabs</property>
@@ -676,7 +676,7 @@
                               <widget class="GtkCheckButton" id="checkbutton4">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="label">Show trailing spaces</property>
+                                <property name="label" translatable="yes">Show trailing spaces</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
                                 <property name="moo_prefs_key">show_trailing_spaces</property>
@@ -694,7 +694,7 @@
                     <child>
                       <widget class="GtkLabel" id="label73">
                         <property name="visible">True</property>
-                        <property name="label">Misc</property>
+                        <property name="label" translatable="yes">Misc</property>
                       </widget>
                       <packing>
                         <property name="type">label_item</property>
@@ -716,7 +716,7 @@
             <child>
               <widget class="GtkLabel" id="label62">
                 <property name="visible">True</property>
-                <property name="label">View</property>
+                <property name="label" translatable="yes">View</property>
               </widget>
               <packing>
                 <property name="type">tab</property>
@@ -729,7 +729,7 @@
                   <widget class="GtkCheckButton" id="use_default_font">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="label">Use default theme font</property>
+                    <property name="label" translatable="yes">Use default theme font</property>
                     <property name="use_underline">True</property>
                     <property name="draw_indicator">True</property>
                     <property name="moo_prefs_key">use_default_font</property>
@@ -745,12 +745,27 @@
                     <property name="n_rows">2</property>
                     <property name="n_columns">2</property>
                     <child>
-                      <widget class="GtkLabel" id="label99">
+                      <widget class="GtkComboBox" id="color_scheme_combo">
                         <property name="visible">True</property>
-                        <property name="label">Font:</property>
-                        <property name="moo_sensitive">!use_default_font</property>
                       </widget>
                       <packing>
+                        <property name="left_attach">1</property>
+                        <property name="right_attach">2</property>
+                        <property name="top_attach">1</property>
+                        <property name="bottom_attach">2</property>
+                        <property name="x_options">GTK_FILL</property>
+                        <property name="y_options"></property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkLabel" id="label100">
+                        <property name="visible">True</property>
+                        <property name="xalign">0.000000</property>
+                        <property name="label" translatable="yes">Color scheme:</property>
+                      </widget>
+                      <packing>
+                        <property name="top_attach">1</property>
+                        <property name="bottom_attach">2</property>
                         <property name="x_options"></property>
                         <property name="y_options"></property>
                       </packing>
@@ -771,31 +786,13 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="label100">
+                      <widget class="GtkLabel" id="label99">
                         <property name="visible">True</property>
-                        <property name="xalign">0.000000</property>
-                        <property name="label">Color scheme:</property>
+                        <property name="label" translatable="yes">Font:</property>
+                        <property name="moo_sensitive">!use_default_font</property>
                       </widget>
                       <packing>
-                        <property name="top_attach">1</property>
-                        <property name="bottom_attach">2</property>
                         <property name="x_options"></property>
-                        <property name="y_options"></property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkComboBox" id="color_scheme_combo">
-                        <property name="visible">True</property>
-                        <property name="items" translatable="yes">KDE
-gvim
-</property>
-                      </widget>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="right_attach">2</property>
-                        <property name="top_attach">1</property>
-                        <property name="bottom_attach">2</property>
-                        <property name="x_options">GTK_FILL</property>
                         <property name="y_options"></property>
                       </packing>
                     </child>
@@ -814,7 +811,7 @@ gvim
             <child>
               <widget class="GtkLabel" id="label97">
                 <property name="visible">True</property>
-                <property name="label">Font and colors</property>
+                <property name="label" translatable="yes">Font and colors</property>
               </widget>
               <packing>
                 <property name="type">tab</property>
@@ -839,61 +836,28 @@ gvim
                             <property name="n_rows">4</property>
                             <property name="n_columns">2</property>
                             <child>
-                              <widget class="GtkComboBox" id="lang_combo">
-                                <property name="visible">True</property>
-                              </widget>
-                              <packing>
-                                <property name="left_attach">1</property>
-                                <property name="right_attach">2</property>
-                                <property name="y_options"></property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkLabel" id="label768">
-                                <property name="visible">True</property>
-                                <property name="xalign">1.000000</property>
-                                <property name="label" translatable="yes">Language:</property>
-                              </widget>
-                              <packing>
-                                <property name="x_options">GTK_FILL</property>
-                                <property name="y_options"></property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkEntry" id="extensions">
+                              <widget class="GtkEntry" id="config">
                                 <property name="visible">True</property>
                                 <property name="activates_default">True</property>
+                                <property name="tooltip">strip: bool; use-tabs: bool; indent-width: integer; tab-width: integer</property>
                               </widget>
                               <packing>
                                 <property name="left_attach">1</property>
                                 <property name="right_attach">2</property>
-                                <property name="top_attach">2</property>
-                                <property name="bottom_attach">3</property>
+                                <property name="top_attach">3</property>
+                                <property name="bottom_attach">4</property>
                                 <property name="y_options"></property>
                               </packing>
                             </child>
                             <child>
-                              <widget class="GtkEntry" id="mimetypes">
-                                <property name="visible">True</property>
-                                <property name="activates_default">True</property>
-                              </widget>
-                              <packing>
-                                <property name="left_attach">1</property>
-                                <property name="right_attach">2</property>
-                                <property name="top_attach">1</property>
-                                <property name="bottom_attach">2</property>
-                                <property name="y_options"></property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkLabel" id="label_extensions">
+                              <widget class="GtkLabel" id="label9">
                                 <property name="visible">True</property>
                                 <property name="xalign">1.000000</property>
-                                <property name="label" translatable="yes">Extensions:</property>
+                                <property name="label" translatable="yes">Options:</property>
                               </widget>
                               <packing>
-                                <property name="top_attach">2</property>
-                                <property name="bottom_attach">3</property>
+                                <property name="top_attach">3</property>
+                                <property name="bottom_attach">4</property>
                                 <property name="x_options">GTK_FILL</property>
                                 <property name="y_options"></property>
                               </packing>
@@ -912,29 +876,62 @@ gvim
                               </packing>
                             </child>
                             <child>
-                              <widget class="GtkLabel" id="label9">
+                              <widget class="GtkLabel" id="label_extensions">
                                 <property name="visible">True</property>
                                 <property name="xalign">1.000000</property>
-                                <property name="label" translatable="yes">Options:</property>
+                                <property name="label" translatable="yes">Extensions:</property>
                               </widget>
                               <packing>
-                                <property name="top_attach">3</property>
-                                <property name="bottom_attach">4</property>
+                                <property name="top_attach">2</property>
+                                <property name="bottom_attach">3</property>
                                 <property name="x_options">GTK_FILL</property>
                                 <property name="y_options"></property>
                               </packing>
                             </child>
                             <child>
-                              <widget class="GtkEntry" id="config">
+                              <widget class="GtkEntry" id="mimetypes">
                                 <property name="visible">True</property>
                                 <property name="activates_default">True</property>
-                                <property name="tooltip">strip: bool; use-tabs: bool; indent-width: integer; tab-width: integer</property>
                               </widget>
                               <packing>
                                 <property name="left_attach">1</property>
                                 <property name="right_attach">2</property>
-                                <property name="top_attach">3</property>
-                                <property name="bottom_attach">4</property>
+                                <property name="top_attach">1</property>
+                                <property name="bottom_attach">2</property>
+                                <property name="y_options"></property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkEntry" id="extensions">
+                                <property name="visible">True</property>
+                                <property name="activates_default">True</property>
+                              </widget>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="right_attach">2</property>
+                                <property name="top_attach">2</property>
+                                <property name="bottom_attach">3</property>
+                                <property name="y_options"></property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkLabel" id="label768">
+                                <property name="visible">True</property>
+                                <property name="xalign">1.000000</property>
+                                <property name="label" translatable="yes">Language:</property>
+                              </widget>
+                              <packing>
+                                <property name="x_options">GTK_FILL</property>
+                                <property name="y_options"></property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkComboBox" id="lang_combo">
+                                <property name="visible">True</property>
+                              </widget>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="right_attach">2</property>
                                 <property name="y_options"></property>
                               </packing>
                             </child>
