@@ -1558,3 +1558,55 @@ _moo_enable_win32_error_message (void)
     SetErrorMode (saved_win32_error_mode);
 #endif
 }
+
+
+const char *
+moo_stock_label (const char *stock_id)
+{
+    GtkStockItem item;
+
+    g_return_val_if_fail (stock_id != NULL, NULL);
+
+    if (!gtk_stock_lookup (stock_id, &item))
+    {
+        g_warning ("could not find stock item '%s'", stock_id);
+        return NULL;
+    }
+
+    return item.label;
+}
+
+
+const char *
+moo_stock_name (const char *stock_id)
+{
+    const char *label;
+    static GString *string;
+    char *p;
+
+    g_return_val_if_fail (stock_id != NULL, NULL);
+
+    label = moo_stock_label (stock_id);
+    g_return_val_if_fail (label != NULL, NULL);
+
+    if (!string)
+        string = g_string_new (NULL);
+    else
+        g_string_truncate (string, 0);
+
+    p = strchr (label, '_');
+
+    if (!p)
+    {
+        g_string_append (string, label);
+    }
+    else
+    {
+        if (p > label)
+            g_string_append_len (string, label, p - label);
+
+        g_string_append (string, p + 1);
+    }
+
+    return string->str;
+}

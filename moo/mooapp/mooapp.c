@@ -33,6 +33,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooi18n.h"
 #include "mooutils/xdgmime/xdgmime.h"
 #include <string.h>
 #include <stdio.h>
@@ -1226,32 +1227,29 @@ install_actions (MooApp *app,
                  GType   type)
 {
     MooWindowClass *klass = g_type_class_ref (type);
-    char *about, *_about;
+    char *_about;
 
     g_return_if_fail (klass != NULL);
 
-    about = g_strdup_printf ("About %s", app->priv->info->full_name);
-    _about = g_strdup_printf ("_About %s", app->priv->info->full_name);
+    _about = g_strdup_printf (Q_("Menu item label|_About %s"), app->priv->info->full_name);
 
     moo_window_class_new_action (klass, "Preferences",
-                                 "display-name", "Preferences",
-                                 "label", "Pre_ferences",
-                                 "tooltip", "Preferences",
+                                 "stock-display-name", GTK_STOCK_PREFERENCES,
+                                 "stock-label", GTK_STOCK_PREFERENCES,
+                                 "stock-tooltip", GTK_STOCK_PREFERENCES,
                                  "stock-id", GTK_STOCK_PREFERENCES,
                                  "closure-callback", moo_app_prefs_dialog,
                                  NULL);
 
     moo_window_class_new_action (klass, "About",
-                                 "display-name", "About",
+                                 "stock-display-name", GTK_STOCK_ABOUT,
                                  "label", _about,
                                  "no-accel", TRUE,
-                                 "tooltip", about,
                                  "stock-id", GTK_STOCK_ABOUT,
                                  "closure-callback", moo_app_about_dialog,
                                  NULL);
 
     g_type_class_unref (klass);
-    g_free (about);
     g_free (_about);
 }
 
@@ -1265,9 +1263,9 @@ install_editor_actions (MooApp *app)
     g_return_if_fail (klass != NULL);
 
     moo_window_class_new_action (klass, "Quit",
-                                 "display-name", "Quit",
-                                 "label", "_Quit",
-                                 "tooltip", "Quit",
+                                 "stock-display-name", GTK_STOCK_QUIT,
+                                 "stock-label", GTK_STOCK_QUIT,
+                                 "stock-tooltip", GTK_STOCK_QUIT,
                                  "stock-id", GTK_STOCK_QUIT,
                                  "accel", "<ctrl>Q",
                                  "closure-callback", moo_app_quit,

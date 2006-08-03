@@ -386,9 +386,9 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "Save",
-                                 "display-name", "Save",
-                                 "label", "_Save",
-                                 "tooltip", "Save document",
+                                 "stock-display-name", GTK_STOCK_SAVE,
+                                 "stock-label", GTK_STOCK_SAVE,
+                                 "stock-tooltip", GTK_STOCK_SAVE,
                                  "stock-id", GTK_STOCK_SAVE,
                                  "accel", "<ctrl>S",
                                  "closure-callback", action_save,
@@ -396,7 +396,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "SaveAs",
-                                 "display-name", "Save As",
+                                 "stock-display-name", GTK_STOCK_SAVE_AS,
                                  "label", "Save _As...",
                                  "tooltip", "Save as...",
                                  "stock-id", GTK_STOCK_SAVE_AS,
@@ -406,8 +406,8 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "Close",
-                                 "display-name", "Close",
-                                 "label", "_Close",
+                                 "stock-display-name", GTK_STOCK_CLOSE,
+                                 "stock-label", GTK_STOCK_CLOSE,
                                  "tooltip", "Close document",
                                  "stock-id", GTK_STOCK_CLOSE,
                                  "accel", "<ctrl>W",
@@ -425,9 +425,9 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "Undo",
-                                 "display-name", "Undo",
-                                 "label", "_Undo",
-                                 "tooltip", "Undo",
+                                 "stock-display-name", GTK_STOCK_UNDO,
+                                 "stock-label", GTK_STOCK_UNDO,
+                                 "stock-tooltip", GTK_STOCK_UNDO,
                                  "stock-id", GTK_STOCK_UNDO,
                                  "accel", "<ctrl>Z",
                                  "closure-signal", "undo",
@@ -436,9 +436,9 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "Redo",
-                                 "display-name", "Redo",
-                                 "label", "_Redo",
-                                 "tooltip", "Redo",
+                                 "stock-display-name", GTK_STOCK_REDO,
+                                 "stock-label", GTK_STOCK_REDO,
+                                 "stock-tooltip", GTK_STOCK_REDO,
                                  "stock-id", GTK_STOCK_REDO,
                                  "accel", "<shift><ctrl>Z",
                                  "closure-signal", "redo",
@@ -447,9 +447,9 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "Cut",
-                                 "display-name", "Cut",
-                                 "label", "Cu_t",
-                                 "tooltip", "Cut",
+                                 "stock-display-name", GTK_STOCK_CUT,
+                                 "stock-label", GTK_STOCK_CUT,
+                                 "stock-tooltip", GTK_STOCK_CUT,
                                  "stock-id", GTK_STOCK_CUT,
                                  "accel", "<ctrl>X",
                                  "closure-signal", "cut-clipboard",
@@ -458,9 +458,9 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "Copy",
-                                 "display-name", "Copy",
-                                 "label", "_Copy",
-                                 "tooltip", "Copy",
+                                 "stock-display-name", GTK_STOCK_COPY,
+                                 "stock-label", GTK_STOCK_COPY,
+                                 "stock-tooltip", GTK_STOCK_COPY,
                                  "stock-id", GTK_STOCK_COPY,
                                  "accel", "<ctrl>C",
                                  "closure-signal", "copy-clipboard",
@@ -469,9 +469,9 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "Paste",
-                                 "display-name", "Paste",
-                                 "label", "_Paste",
-                                 "tooltip", "Paste",
+                                 "stock-display-name", GTK_STOCK_PASTE,
+                                 "stock-label", GTK_STOCK_PASTE,
+                                 "stock-tooltip", GTK_STOCK_PASTE,
                                  "stock-id", GTK_STOCK_PASTE,
                                  "accel", "<ctrl>V",
                                  "closure-signal", "paste-clipboard",
@@ -480,9 +480,9 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "Delete",
-                                 "display-name", "Delete",
-                                 "label", "_Delete",
-                                 "tooltip", "Delete",
+                                 "stock-display-name", GTK_STOCK_DELETE,
+                                 "stock-label", GTK_STOCK_DELETE,
+                                 "stock-tooltip", GTK_STOCK_DELETE,
                                  "stock-id", GTK_STOCK_DELETE,
                                  "closure-signal", "delete-selection",
                                  "closure-proxy-func", moo_edit_window_get_active_doc,
@@ -520,9 +520,9 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "Find",
-                                 "display-name", "Find",
-                                 "label", "_Find",
-                                 "tooltip", "Find",
+                                 "stock-display-name", GTK_STOCK_FIND,
+                                 "stock-label", GTK_STOCK_FIND,
+                                 "stock-tooltip", GTK_STOCK_FIND,
                                  "stock-id", GTK_STOCK_FIND,
                                  "accel", "<ctrl>F",
                                  "closure-signal", "find-interactive",
@@ -553,9 +553,9 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "Replace",
-                                 "display-name", "Replace",
-                                 "label", "_Replace",
-                                 "tooltip", "Replace",
+                                 "stock-display-name", GTK_STOCK_FIND_AND_REPLACE,
+                                 "stock-label", GTK_STOCK_FIND_AND_REPLACE,
+                                 "stock-tooltip", GTK_STOCK_FIND_AND_REPLACE,
                                  "stock-id", GTK_STOCK_FIND_AND_REPLACE,
                                  "accel", "<ctrl>R",
                                  "closure-signal", "replace-interactive",
@@ -618,9 +618,9 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, STOP_ACTION_ID,
-                                 "display-name", "Stop",
-                                 "label", "Stop",
-                                 "tooltip", "Stop",
+                                 "stock-display-name", GTK_STOCK_STOP,
+                                 "stock-label", GTK_STOCK_STOP,
+                                 "stock-tooltip", GTK_STOCK_STOP,
                                  "stock-id", GTK_STOCK_STOP,
                                  "accel", "Escape",
                                  "closure-callback", action_abort_jobs,
@@ -706,9 +706,10 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "Indent",
-                                 "display-name", "Indent",
-                                 "label", "Indent",
-                                 "tooltip", "Indent",
+                                 "stock-display-name", GTK_STOCK_INDENT,
+                                 "stock-label", GTK_STOCK_INDENT,
+                                 "stock-tooltip", GTK_STOCK_INDENT,
+                                 "stock-id", GTK_STOCK_INDENT,
                                  "accel", "<ctrl>i",
                                  "closure-callback", moo_text_view_indent,
                                  "closure-proxy-func", moo_edit_window_get_active_doc,
@@ -716,9 +717,10 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "Unindent",
-                                 "display-name", "Unindent",
-                                 "label", "Unindent",
-                                 "tooltip", "Unindent",
+                                 "stock-display-name", GTK_STOCK_UNINDENT,
+                                 "stock-label", GTK_STOCK_UNINDENT,
+                                 "stock-tooltip", GTK_STOCK_UNINDENT,
+                                 "stock-id", GTK_STOCK_UNINDENT,
                                  "accel", "<shift><ctrl>i",
                                  "closure-callback", moo_text_view_unindent,
                                  "closure-proxy-func", moo_edit_window_get_active_doc,
@@ -726,7 +728,6 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "NoDocuments",
-                                 "display-name", "No Documents",
                                  "label", "No Documents",
                                  "no-accel", TRUE,
                                  NULL);
@@ -741,9 +742,9 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "Print",
-                                 "display-name", "Print",
-                                 "label", "Print",
-                                 "tooltip", "Print",
+                                 "stock-display-name", GTK_STOCK_PRINT,
+                                 "stock-label", GTK_STOCK_PRINT,
+                                 "stock-tooltip", GTK_STOCK_PRINT,
                                  "accel", "<ctrl>P",
                                  "stock-id", GTK_STOCK_PRINT,
                                  "closure-callback", action_print,

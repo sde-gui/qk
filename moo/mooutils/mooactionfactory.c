@@ -15,6 +15,7 @@
 #include "mooutils/mooaction.h"
 #include "mooutils/mooclosure.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-misc.h"
 #include <gtk/gtktoggleaction.h>
 #include <gobject/gvaluecollector.h>
 #include <string.h>
@@ -25,6 +26,9 @@ G_DEFINE_TYPE(MooActionFactory, moo_action_factory, G_TYPE_OBJECT)
 
 enum {
     PROP_DISPLAY_NAME,
+    PROP_STOCK_LABEL,
+    PROP_STOCK_DISPLAY_NAME,
+    PROP_STOCK_TOOLTIP,
     PROP_ACCEL,
     PROP_NO_ACCEL,
     PROP_FORCE_ACCEL_LABEL,
@@ -79,6 +83,10 @@ action_init_props (void)
         return;
 
     pspecs[PROP_DISPLAY_NAME] = g_param_spec_string ("display-name", "display-name", "display-name", NULL, G_PARAM_READWRITE);
+    pspecs[PROP_STOCK_LABEL] = g_param_spec_string ("stock-label", "stock-label", "stock-label", NULL, G_PARAM_READWRITE);
+    pspecs[PROP_STOCK_DISPLAY_NAME] = g_param_spec_string ("stock-display-name", "stock-display-name", "stock-display-name", NULL, G_PARAM_READWRITE);
+    pspecs[PROP_STOCK_TOOLTIP] = g_param_spec_string ("stock-tooltip", "stock-tooltip", "stock-tooltip", NULL, G_PARAM_READWRITE);
+
     pspecs[PROP_ACCEL] = g_param_spec_string ("accel", "accel", "accel", NULL, G_PARAM_READWRITE);
     pspecs[PROP_NO_ACCEL] = g_param_spec_boolean ("no-accel", "no-accel", "no-accel", FALSE, G_PARAM_READWRITE);
     pspecs[PROP_FORCE_ACCEL_LABEL] = g_param_spec_boolean ("force-accel-label", "force-accel-label", "force-accel-label", FALSE, G_PARAM_READWRITE);
@@ -358,6 +366,12 @@ moo_action_set_fake_properties (gpointer    action,
             _moo_action_set_dead (action, g_value_get_boolean (value));
         else if (!strcmp (name, "has-submenu"))
             _moo_action_set_has_submenu (action, g_value_get_boolean (value));
+        else if (!strcmp (name, "stock-label"))
+            g_object_set (action, "label", moo_stock_label (g_value_get_string (value)), NULL);
+        else if (!strcmp (name, "stock-display-name"))
+            moo_action_set_display_name (action, moo_stock_name (g_value_get_string (value)));
+        else if (!strcmp (name, "stock-tooltip"))
+            g_object_set (action, "tooltip", moo_stock_name (g_value_get_string (value)), NULL);
         else if (!strcmp (name, "closure"))
             closure = g_value_get_boxed (value);
         else if (!strcmp (name, "closure-object"))
