@@ -88,6 +88,7 @@ mooutils_sources =			\
 	moohistoryentry.c		\
 	moohistorylist.c		\
 	mooi18n.h			\
+	mooi18n.c			\
 	moolinklabel.c			\
 	moologwindow-glade.h		\
 	moomarkup.c			\
@@ -215,7 +216,8 @@ AM_CFLAGS =			\
 	-I..			\
 	$(pcre_include)		\
 	$(MOO_CFLAGS)		\
-	$(MOO_DEBUG_CFLAGS)
+	$(MOO_DEBUG_CFLAGS)	\
+	-DMOO_LOCALE_DIR=\"${MOO_LOCALE_DIR}\"
 
 # if MOO_INSTALL_LIB
 # mooutils_includedir = $(moo_includedir)/mooutils
