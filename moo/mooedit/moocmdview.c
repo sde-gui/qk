@@ -331,7 +331,10 @@ moo_cmd_view_running (MooCmdView *view)
 char *
 get_signal_message (int sig)
 {
-    return g_strdup_printf ("Aborted (%s)", g_strsignal (sig));
+    if (sig == SIGSEGV)
+        return g_strdup ("*** Aborted. Segmentation fault ***");
+    else
+        return g_strdup ("*** Aborted ***");
 }
 
 static gboolean
