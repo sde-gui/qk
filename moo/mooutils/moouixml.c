@@ -394,7 +394,7 @@ translate_string (const char *string,
                   const char *translation_domain,
                   gboolean    translatable)
 {
-    if (!string || !translatable)
+    if (!string || !string[0] || !translatable)
         return g_strdup (string);
 
     if (translation_domain)
