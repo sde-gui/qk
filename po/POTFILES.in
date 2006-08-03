@@ -29,4 +29,6 @@ moo/mooutils/moostock.c
 moo/mooapp/mooappabout.c
 moo/mooapp/mooapp.c
 tests/medit-ui.xml
+[type: desktop]
 moo/moopython/plugins/console.ini.desktop.in
+moo/moopython/plugins/python.ini.desktop.in
