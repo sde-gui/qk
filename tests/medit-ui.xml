@@ -4,7 +4,7 @@
 
   <widget name="Menubar">
 
-    <item name="File" label="_File">
+    <item name="File" _label="_File">
       <separator/>
       <item action="NewDoc"/>
       <item action="NewWindow"/>
@@ -29,7 +29,7 @@
       <separator/>
     </item>
 
-    <item name="Edit" label="_Edit">
+    <item name="Edit" _label="_Edit">
       <separator/>
       <item action="Undo"/>
       <item action="Redo"/>
@@ -51,7 +51,7 @@
       <separator/>
     </item>
 
-    <item name="Search" label="_Search">
+    <item name="Search" _label="_Search">
       <separator/>
       <item action="Find"/>
       <item action="FindNext"/>
@@ -71,7 +71,7 @@
       <separator/>
     </item>
 
-    <item name="View" label="_View">
+    <item name="View" _label="_View">
       <separator/>
       <item action="PreviousTab"/>
       <item action="NextTab"/>
@@ -84,7 +84,7 @@
       <item action="NextBookmark"/>
       -->
       <separator/>
-      <item name="Document" label="_Document">
+      <item name="Document" _label="_Document">
         <item action="WrapText"/>
         <item action="LineNumbers"/>
       </item>
@@ -95,7 +95,7 @@
       <separator/>
     </item>
 
-    <item name="Tools" label="_Tools">
+    <item name="Tools" _label="_Tools">
       <separator/>
       <placeholder name="ToolsMenu"/>
       <separator/>
@@ -105,7 +105,7 @@
       <separator/>
     </item>
 
-    <item name="Settings" label="_Settings">
+    <item name="Settings" _label="_Settings">
       <separator/>
       <item action="ShowToolbar"/>
       <item action="ToolbarStyle"/>
@@ -116,14 +116,14 @@
       <separator/>
     </item>
 
-    <item name="Window" label="_Window">
+    <item name="Window" _label="_Window">
       <separator/>
       <item action="NoDocuments"/>
       <placeholder name="DocList"/>
       <separator/>
     </item>
 
-    <item name="Help" label="_Help">
+    <item name="Help" _label="_Help">
       <separator/>
       <item action="About"/>
       <separator/>

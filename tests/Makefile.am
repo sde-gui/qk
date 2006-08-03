@@ -23,7 +23,8 @@ EXTRA_DIST =		\
 BUILT_SOURCES = medit-ui.h THANKS.h
 
 medit-ui.h: medit-ui.xml
-	sh $(srcdir)/../moo/mooutils/xml2h.sh MEDIT_UI $(srcdir)/medit-ui.xml > medit-ui.h
+	sh $(srcdir)/../moo/mooutils/xml2h.sh MEDIT_UI $(srcdir)/medit-ui.xml > medit-ui.h.tmp && \
+	mv medit-ui.h.tmp medit-ui.h
 THANKS.h: ../THANKS
 	sh $(srcdir)/../moo/mooutils/xml2h.sh THANKS $(srcdir)/../THANKS > THANKS.h
 
