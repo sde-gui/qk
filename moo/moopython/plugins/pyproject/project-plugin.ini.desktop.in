@@ -1,6 +1,6 @@
 [module]
 type=Python
-file=project-plugin.py
+file=project/project-plugin.py
 version=0.7
 
 [plugin]
