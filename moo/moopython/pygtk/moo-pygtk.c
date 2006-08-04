@@ -25,12 +25,14 @@
 #include <glib.h>
 
 
-static PyObject *moo_version (void)
+static PyObject *
+moo_version (void)
 {
     return PyString_FromString (MOO_VERSION);
 }
 
-static PyObject *moo_detailed_version (void)
+static PyObject *
+moo_detailed_version (void)
 {
     PyObject *res = PyDict_New ();
     g_return_val_if_fail (res != NULL, NULL);
@@ -54,8 +56,53 @@ static char *_moo_module_doc = (char*)"_moo module.";
 static void
 func_init_pygobject (void)
 {
-    init_pygobject ();
-    init_pygtk ();
+    PyObject *gobject, *pygtk;
+
+    gobject = PyImport_ImportModule ((char*) "gobject");
+
+    if (gobject != NULL)
+    {
+        PyObject *mdict = PyModule_GetDict (gobject);
+        PyObject *cobject = PyDict_GetItemString (mdict, "_PyGObject_API");
+
+        if (PyCObject_Check (cobject))
+        {
+            _PyGObject_API = (struct _PyGObject_Functions *) PyCObject_AsVoidPtr (cobject);
+        }
+        else
+        {
+            PyErr_SetString (PyExc_RuntimeError,
+                             "could not find _PyGObject_API object");
+            return;
+        }
+    }
+    else
+    {
+        return;
+    }
+
+    pygtk = PyImport_ImportModule((char*) "gtk._gtk");
+
+    if (pygtk != NULL)
+    {
+        PyObject *module_dict = PyModule_GetDict (pygtk);
+        PyObject *cobject = PyDict_GetItemString (module_dict, "_PyGtk_API");
+
+        if (PyCObject_Check (cobject))
+        {
+            _PyGtk_API = (struct _PyGtk_FunctionStruct*) PyCObject_AsVoidPtr (cobject);
+        }
+        else
+        {
+            PyErr_SetString (PyExc_RuntimeError,
+                             "could not find _PyGtk_API object");
+            return;
+        }
+    }
+    else
+    {
+        return;
+    }
 }
 
 gboolean

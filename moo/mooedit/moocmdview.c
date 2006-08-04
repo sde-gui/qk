@@ -328,7 +328,7 @@ moo_cmd_view_running (MooCmdView *view)
 
 
 #ifndef __WIN32__
-char *
+static char *
 get_signal_message (int sig)
 {
     if (sig == SIGSEGV)

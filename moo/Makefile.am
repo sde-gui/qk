@@ -35,7 +35,9 @@ libs += mooapp/libmooapp.la
 endif
 if MOO_USE_PYGTK
 subdirs += moopython
-libs += moopython/libmoopython.la
+if !MOO_BUILD_PYTHON_MODULE
+libs += moopython/libmoopython.la $(PYTHON_LIBS) $(PYTHON_EXTRA_LIBS)
+endif
 endif
 
 SUBDIRS = $(subdirs) .
@@ -47,8 +49,7 @@ else
 noinst_LTLIBRARIES = libmoo.la
 endif
 
-#lib_LTLIBRARIES = libmoo.la
-libmoo_la_LIBADD = $(libs) $(MOO_LIBS) $(PYTHON_LDFLAGS)
+libmoo_la_LIBADD = $(libs) $(MOO_LIBS)
 # libmoo_la_LDFLAGS = -no-undefined -export-symbols-regex "^(moo_|ms_|m_|egg_regex_).*"
 libmoo_la_LDFLAGS = -no-undefined -export-symbols-regex ".*"
 libmoo_la_SOURCES = $(moo_include_headers)
@@ -57,20 +58,25 @@ libmoo_la_SOURCES = $(moo_include_headers)
 if MOO_INSTALL_LIB
 if MOO_USE_PYGTK
 pyexec_LTLIBRARIES = moo.la
-moo_la_SOURCES =			\
-	moopython/moopython-utils.c	\
-	moopython/moopython-utils.h	\
-	moopython/mooplugin-python.c	\
-	moopython/mooplugin-python.h
+moo_la_SOURCES = moo.h
 moo_la_LDFLAGS = -module -no-undefined -export-symbols-regex "initmoo"
-moo_la_LIBADD = moopython/pygtk/libmoopygtk.la libmoo.la
+moo_la_LIBADD = moopython/libmoomod.la libmoo.la $(PYTHON_LIBS)
 moo_la_CFLAGS =			\
 	-I..			\
 	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
-	$(PYTHON_INCLUDES)	\
+	$(PYTHON_CFLAGS)	\
 	$(PYGTK_CFLAGS)		\
 	-DMOO_PYTHON_MODULE
-endif
-endif
+endif MOO_USE_PYGTK
+
+if MOO_BUILD_PYTHON_MODULE
+plugindir = $(MOO_LIB_DIR)/plugins
+plugin_LTLIBRARIES = pymoo.la
+plugin_DATA = moopython/pymoo.ini
+pymoo_la_SOURCES = moo.h
+pymoo_la_LDFLAGS = -module -no-undefined -export-symbols-regex "moo_module_init"
+pymoo_la_LIBADD = moopython/libpymoo.la libmoo.la $(PYTHON_LIBS) $(PYTHON_EXTRA_LIBS)
+endif MOO_BUILD_PYTHON_MODULE
+endif MOO_INSTALL_LIB

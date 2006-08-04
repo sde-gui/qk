@@ -19,7 +19,7 @@
 #include "mooedit/mooplugin-loader.h"
 #include "mooedit/moopluginprefs-glade.h"
 #include "mooedit/plugins/mooeditplugins.h"
-#include "moopython/mooplugin-python.h"
+#include "moopython/moopython.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"
@@ -924,8 +924,17 @@ moo_plugin_read_dirs (void)
 
     moo_plugin_init_builtin ();
 
+#if MOO_USE_PYGTK
+#ifndef MOO_BUILD_PYTHON_MODULE
+    /* XXX move it elsewhere */
+    _moo_python_init ();
+#endif
+#endif
+
     for (d = plugin_store->dirs; d && *d; ++d)
         moo_plugin_read_dir (*d);
+
+    _moo_plugin_finish_load ();
 }
 
 
@@ -947,9 +956,10 @@ moo_plugin_shutdown (void)
         list = g_slist_delete_link (list, list);
     }
 
-#ifdef MOO_USE_PYGTK
-    _moo_python_plugin_deinit ();
-#endif
+    /* XXX */
+// #ifdef MOO_USE_PYGTK
+//     _moo_python_plugin_deinit ();
+// #endif
 
     plugin_store->dirs_read = FALSE;
     plugin_store->editor = NULL;

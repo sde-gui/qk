@@ -14,7 +14,6 @@
 #include <config.h>
 #include "mooedit/mooplugin-loader.h"
 #include "mooedit/mooplugin.h"
-#include "moopython/mooplugin-python.h"
 #include "mooutils/mooutils-misc.h"
 #include <string.h>
 #include <stdlib.h>
@@ -39,6 +38,7 @@
 
 
 typedef struct {
+    char            *ini_file;
     char            *loader;
     char            *file;
     char            *plugin_id;
@@ -48,80 +48,105 @@ typedef struct {
 
 
 static GHashTable *registered_loaders;
-static void init_loaders (void);
-GType _moo_c_plugin_loader_get_type (void);
+static GSList *waiting_list;
 
-
-typedef MooPluginLoader MooCPluginLoader;
-typedef MooPluginLoaderClass MooCPluginLoaderClass;
-
-G_DEFINE_TYPE (MooPluginLoader, moo_plugin_loader, G_TYPE_OBJECT)
-G_DEFINE_TYPE (MooCPluginLoader, _moo_c_plugin_loader, MOO_TYPE_PLUGIN_LOADER)
+static void init_loaders                    (void);
+GType       _moo_c_plugin_loader_get_type   (void);
+static void module_info_free                (ModuleInfo *info);
 
 
 static void
-moo_plugin_loader_init (G_GNUC_UNUSED MooPluginLoader *loader)
+moo_plugin_loader_load (const MooPluginLoader *loader,
+                        ModuleInfo            *module_info)
 {
+    if (module_info->plugin_id)
+    {
+        g_return_if_fail (loader->load_plugin != NULL);
+        loader->load_plugin (module_info->file,
+                             module_info->plugin_id,
+                             module_info->plugin_info,
+                             module_info->plugin_params,
+                             module_info->ini_file,
+                             loader->data);
+    }
+    else
+    {
+        g_return_if_fail (loader->load_module != NULL);
+        loader->load_module (module_info->file,
+                             module_info->ini_file,
+                             loader->data);
+    }
 }
 
 
-static void
-moo_plugin_loader_class_init (G_GNUC_UNUSED MooPluginLoaderClass *klass)
-{
-}
-
-
-static MooPluginLoader *
+MooPluginLoader *
 moo_plugin_loader_lookup (const char *id)
 {
     g_return_val_if_fail (id != NULL, NULL);
-    init_loaders ();
-    return g_hash_table_lookup (registered_loaders, id);
+
+    if (registered_loaders)
+        return g_hash_table_lookup (registered_loaders, id);
+    else
+        return NULL;
 }
 
 
 static void
-moo_plugin_loader_add (MooPluginLoader *loader,
-                       const char      *type)
+moo_plugin_loader_add (const MooPluginLoader *loader,
+                       const char            *type)
 {
-    g_return_if_fail (MOO_IS_PLUGIN_LOADER (loader));
+    MooPluginLoader *copy;
+
+    g_return_if_fail (loader != NULL);
     g_return_if_fail (type != NULL);
     g_return_if_fail (registered_loaders != NULL);
 
-    g_hash_table_insert (registered_loaders, g_strdup (type), g_object_ref (loader));
+    copy = g_memdup (loader, sizeof (MooPluginLoader));
+    g_hash_table_insert (registered_loaders, g_strdup (type), copy);
 }
 
 
 void
-moo_plugin_loader_register (MooPluginLoader *loader,
-                            const char      *type)
+moo_plugin_loader_register (const MooPluginLoader *loader,
+                            const char            *type)
 {
-    g_return_if_fail (MOO_IS_PLUGIN_LOADER (loader));
+    GSList *open_now = NULL, *hold = NULL;
+    GSList *l;
+
+    g_return_if_fail (loader != NULL);
     g_return_if_fail (type != NULL);
+
     init_loaders ();
+    g_return_if_fail (!g_hash_table_lookup (registered_loaders, type));
+
     moo_plugin_loader_add (loader, type);
-}
 
-
-static void
-moo_plugin_loader_load (MooPluginLoader *loader,
-                        ModuleInfo      *module_info,
-                        const char      *ini_file)
-{
-    if (module_info->plugin_id)
+    for (l = waiting_list; l != NULL; l = l->next)
     {
-        g_return_if_fail (MOO_PLUGIN_LOADER_GET_CLASS(loader)->load_plugin != NULL);
-        MOO_PLUGIN_LOADER_GET_CLASS(loader)->load_plugin (loader,
-                                                          module_info->file,
-                                                          module_info->plugin_id,
-                                                          module_info->plugin_info,
-                                                          module_info->plugin_params,
-                                                          ini_file);
+        ModuleInfo *info = l->data;
+
+        if (!strcmp (info->loader, type))
+            open_now = g_slist_prepend (open_now, info);
+        else
+            hold = g_slist_prepend (hold, info);
+    }
+
+    if (open_now)
+    {
+        open_now = g_slist_reverse (open_now);
+        g_slist_free (waiting_list);
+        waiting_list = g_slist_reverse (hold);
     }
     else
     {
-        g_return_if_fail (MOO_PLUGIN_LOADER_GET_CLASS(loader)->load_module != NULL);
-        MOO_PLUGIN_LOADER_GET_CLASS(loader)->load_module (loader, module_info->file, ini_file);
+        g_slist_free (hold);
+    }
+
+    while (open_now)
+    {
+        moo_plugin_loader_load (loader, open_now->data);
+        module_info_free (open_now->data);
+        open_now = g_slist_delete_link (open_now, open_now);
     }
 }
 
@@ -212,18 +237,17 @@ invalid:
 }
 
 
-static gboolean
-parse_ini_file (const char       *dir,
-                const char       *ini_file,
-                ModuleInfo       *module_info)
+static ModuleInfo *
+parse_ini_file (const char *dir,
+                const char *ini_file)
 {
     GKeyFile *key_file;
     GError *error = NULL;
     char *ini_file_path;
-    gboolean success = FALSE;
     char *file = NULL, *loader = NULL, *id = NULL, *version = NULL;
     MooPluginInfo *info = NULL;
     MooPluginParams *params = NULL;
+    ModuleInfo *module_info = NULL;
 
     ini_file_path = g_build_filename (dir, ini_file, NULL);
     key_file = g_key_file_new ();
@@ -280,12 +304,14 @@ parse_ini_file (const char       *dir,
             goto out;
     }
 
+    module_info = g_new0 (ModuleInfo, 1);
     module_info->loader = loader;
     module_info->file = g_build_path (dir, file, NULL);
     module_info->plugin_id = id;
     module_info->plugin_info = info;
     module_info->plugin_params = params;
-    success = TRUE;
+    module_info->ini_file = ini_file_path;
+    ini_file_path = NULL;
 
 out:
     if (error)
@@ -295,7 +321,7 @@ out:
     g_free (file);
     g_free (version);
 
-    if (!success)
+    if (!module_info)
     {
         g_free (loader);
         g_free (id);
@@ -303,18 +329,20 @@ out:
         moo_plugin_params_free (params);
     }
 
-    return success;
+    return module_info;
 }
 
 
 static void
-module_info_destroy (ModuleInfo *module_info)
+module_info_free (ModuleInfo *module_info)
 {
+    g_free (module_info->ini_file);
     g_free (module_info->loader);
     g_free (module_info->file);
     g_free (module_info->plugin_id);
     moo_plugin_info_free (module_info->plugin_info);
     moo_plugin_params_free (module_info->plugin_params);
+    g_free (module_info);
 }
 
 
@@ -322,30 +350,42 @@ void
 _moo_plugin_load (const char *dir,
                   const char *ini_file)
 {
-    ModuleInfo module_info;
+    ModuleInfo *module_info;
     MooPluginLoader *loader;
-    char *ini_file_path;
 
     g_return_if_fail (dir != NULL && ini_file != NULL);
 
-    if (!parse_ini_file (dir, ini_file, &module_info))
+    init_loaders ();
+
+    module_info = parse_ini_file (dir, ini_file);
+
+    if (!module_info)
         return;
 
-    loader = moo_plugin_loader_lookup (module_info.loader);
+    loader = moo_plugin_loader_lookup (module_info->loader);
 
     if (!loader)
     {
-        /* XXX */
-        g_warning ("unknown module type '%s' in file '%s'", module_info.loader, ini_file);
-        module_info_destroy (&module_info);
+        waiting_list = g_slist_append (waiting_list, module_info);
         return;
     }
 
-    ini_file_path = g_build_filename (dir, ini_file, NULL);
-    moo_plugin_loader_load (loader, &module_info, ini_file_path);
+    moo_plugin_loader_load (loader, module_info);
+    module_info_free (module_info);
+}
 
-    g_free (ini_file_path);
-    module_info_destroy (&module_info);
+
+void
+_moo_plugin_finish_load (void)
+{
+    while (waiting_list)
+    {
+        ModuleInfo *info = waiting_list->data;
+        g_warning ("unknown module type '%s' in file %s",
+                   info->loader, info->ini_file);
+        module_info_free (info);
+        waiting_list = g_slist_delete_link (waiting_list, waiting_list);
+    }
 }
 
 
@@ -355,7 +395,7 @@ module_open (const char *path)
     GModule *module;
 
     _moo_disable_win32_error_message ();
-    module = g_module_open (path, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
+    module = g_module_open (path, G_MODULE_BIND_LAZY);
     _moo_enable_win32_error_message ();
 
     if (!module)
@@ -366,9 +406,9 @@ module_open (const char *path)
 
 
 static void
-load_c_module (G_GNUC_UNUSED MooPluginLoader *loader,
-               const char *module_file,
-               G_GNUC_UNUSED const char *ini_file)
+load_c_module (const char *module_file,
+               G_GNUC_UNUSED const char *ini_file,
+               G_GNUC_UNUSED gpointer data)
 {
     MooModuleInitFunc init_func;
     GModule *module;
@@ -390,12 +430,12 @@ load_c_module (G_GNUC_UNUSED MooPluginLoader *loader,
 
 
 static void
-load_c_plugin (G_GNUC_UNUSED MooPluginLoader *loader,
-               const char      *plugin_file,
+load_c_plugin (const char      *plugin_file,
                const char      *plugin_id,
                MooPluginInfo   *info,
                MooPluginParams *params,
-               G_GNUC_UNUSED const char      *ini_file)
+               G_GNUC_UNUSED const char *ini_file,
+               G_GNUC_UNUSED gpointer data)
 {
     MooPluginModuleInitFunc init_func;
     GModule *module;
@@ -432,37 +472,15 @@ load_c_plugin (G_GNUC_UNUSED MooPluginLoader *loader,
 
 
 static void
-_moo_c_plugin_loader_class_init (MooPluginLoaderClass *klass)
-{
-    klass->load_module = load_c_module;
-    klass->load_plugin = load_c_plugin;
-}
-
-
-static void
-_moo_c_plugin_loader_init (G_GNUC_UNUSED MooPluginLoader *loader)
-{
-}
-
-
-static void
 init_loaders (void)
 {
-    MooPluginLoader *loader;
+    MooPluginLoader loader = {load_c_module, load_c_plugin, NULL};
 
     if (registered_loaders)
         return;
 
     registered_loaders = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                                g_free, g_object_unref);
+                                                g_free, g_free);
 
-    loader = g_object_new (_moo_c_plugin_loader_get_type (), NULL);
-    moo_plugin_loader_add (loader, "C");
-    g_object_unref (loader);
-
-#ifdef MOO_USE_PYGTK
-    loader = _moo_python_get_plugin_loader ();
-    moo_plugin_loader_add (loader, MOO_PYTHON_PLUGIN_LOADER_ID);
-    g_object_unref (loader);
-#endif
+    moo_plugin_loader_add (&loader, "C");
 }

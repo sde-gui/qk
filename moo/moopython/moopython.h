@@ -1,5 +1,5 @@
 /*
- *   mooplugin-python.h
+ *   moopython.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,20 +11,17 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_PLUGIN_PYTHON_H__
-#define __MOO_PLUGIN_PYTHON_H__
+#ifndef __MOO_PYTHON_H__
+#define __MOO_PYTHON_H__
 
 #include <glib.h>
 
 G_BEGIN_DECLS
 
 
-#define MOO_PYTHON_PLUGIN_LOADER_ID "Python"
-gpointer    _moo_python_get_plugin_loader   (void);
-gboolean    _moo_python_plugin_init         (void);
-void        _moo_python_plugin_deinit       (void);
+gboolean    _moo_python_init    (void);
 
 
 G_END_DECLS
 
-#endif /* __MOO_PLUGIN_PYTHON_H__ */
+#endif /* __MOO_PYTHON_H__ */

@@ -19,45 +19,33 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_PLUGIN_LOADER                 (moo_plugin_loader_get_type ())
-#define MOO_PLUGIN_LOADER(object)              (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_PLUGIN_LOADER, MooPluginLoader))
-#define MOO_PLUGIN_LOADER_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_PLUGIN_LOADER, MooPluginLoaderClass))
-#define MOO_IS_PLUGIN_LOADER(object)           (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_PLUGIN_LOADER))
-#define MOO_IS_PLUGIN_LOADER_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_PLUGIN_LOADER))
-#define MOO_PLUGIN_LOADER_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_PLUGIN_LOADER, MooPluginLoaderClass))
-
-typedef struct _MooPluginLoadInfo       MooPluginLoadInfo;
 typedef struct _MooPluginLoader         MooPluginLoader;
-typedef struct _MooPluginLoaderClass    MooPluginLoaderClass;
+
+typedef void (*MooLoadModuleFunc) (const char      *module_file,
+                                   const char      *ini_file,
+                                   gpointer         data);
+typedef void (*MooLoadPluginFunc) (const char      *plugin_file,
+                                   const char      *plugin_id,
+                                   MooPluginInfo   *info,
+                                   MooPluginParams *params,
+                                   const char      *ini_file,
+                                   gpointer         data);
+
 
 struct _MooPluginLoader
 {
-    GObject base;
+    MooLoadModuleFunc load_module;
+    MooLoadPluginFunc load_plugin;
+    gpointer data;
 };
 
-struct _MooPluginLoaderClass
-{
-    GObjectClass base_class;
+void             moo_plugin_loader_register (const MooPluginLoader  *loader,
+                                             const char             *type);
+MooPluginLoader *moo_plugin_loader_lookup   (const char             *type);
 
-    void (*load_module) (MooPluginLoader *loader,
-                         const char      *module_file,
-                         const char      *ini_file);
-
-    void (*load_plugin) (MooPluginLoader *loader,
-                         const char      *plugin_file,
-                         const char      *plugin_id,
-                         MooPluginInfo   *info,
-                         MooPluginParams *params,
-                         const char      *ini_file);
-};
-
-
-GType   moo_plugin_loader_get_type  (void) G_GNUC_CONST;
-void    moo_plugin_loader_register  (MooPluginLoader    *loader,
-                                     const char         *type);
-
-void    _moo_plugin_load            (const char         *dir,
-                                     const char         *ini_file);
+void             _moo_plugin_load           (const char             *dir,
+                                             const char             *ini_file);
+void             _moo_plugin_finish_load    (void);
 
 
 G_END_DECLS

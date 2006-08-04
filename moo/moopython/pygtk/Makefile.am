@@ -146,5 +146,5 @@ AM_CFLAGS =			\
 	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
-	$(PYTHON_INCLUDES)	\
+	$(PYTHON_CFLAGS)	\
 	$(PYGTK_CFLAGS)
