@@ -1,6 +1,6 @@
-ini_in_files = project-plugin.ini.in
+ini_in_files = project-plugin.ini.desktop.in
 @MOO_INTLTOOL_INI_RULE@
-ini_files = $(ini_in_files:.ini.in=.ini)
+ini_files = $(ini_in_files:.ini.desktop.in=.ini)
 CLEANFILES = $(ini_files)
 
 inidir = $(MOO_LIB_DIR)/plugins
