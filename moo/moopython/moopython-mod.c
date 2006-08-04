@@ -22,10 +22,82 @@
 #include "mooutils/mooutils-misc.h"
 
 
+static PyObject *sys_module = NULL;
+
+static gboolean
+sys_path_add_dir (const char *dir)
+{
+    PyObject *path;
+    PyObject *s;
+
+    if (!sys_module)
+        sys_module = PyImport_ImportModule ((char*) "sys");
+
+    if (!sys_module)
+    {
+        PyErr_Print ();
+        return FALSE;
+    }
+
+    path = PyObject_GetAttrString (sys_module, (char*) "path");
+
+    if (!path)
+    {
+        PyErr_Print ();
+        return FALSE;
+    }
+
+    if (!PyList_Check (path))
+    {
+        g_critical ("sys.path is not a list");
+        Py_DECREF (path);
+        return FALSE;
+    }
+
+    s = PyString_FromString (dir);
+    PyList_Append (path, s);
+
+    Py_DECREF (s);
+    Py_DECREF (path);
+    return TRUE;
+}
+
+static void
+sys_path_remove_dir (const char *dir)
+{
+    PyObject *path;
+    int i;
+
+    if (!sys_module)
+        return;
+
+    path = PyObject_GetAttrString (sys_module, (char*) "path");
+
+    if (!path || !PyList_Check (path))
+        return;
+
+    for (i = PyList_GET_SIZE (path) - 1; i >= 0; --i)
+    {
+        PyObject *item = PyList_GET_ITEM (path, i);
+
+        if (PyString_CheckExact (item) &&
+            !strcmp (PyString_AsString (item), dir))
+        {
+            if (PySequence_DelItem (path, i) != 0)
+                PyErr_Print ();
+            break;
+        }
+    }
+
+    Py_DECREF (path);
+}
+
+
 MOO_MODULE_INIT_FUNC_DECL;
 MOO_MODULE_INIT_FUNC_DECL
 {
     PyObject *moo_mod;
+    char *dlldir = NULL;
 
     if (moo_python_running ())
         return FALSE;
@@ -36,7 +108,23 @@ MOO_MODULE_INIT_FUNC_DECL
         return FALSE;
     }
 
+#ifdef __WIN32__
+    dlldir = moo_get_dll_dir (MOO_PYTHON_MODULE_DLL_NAME);
+#endif
+
+    if (dlldir && !sys_path_add_dir (dlldir))
+    {
+        g_free (dlldir);
+        dlldir = NULL;
+    }
+
     moo_mod = PyImport_ImportModule ((char*) "moo");
+
+    if (dlldir)
+    {
+        sys_path_remove_dir (dlldir);
+        g_free (dlldir);
+    }
 
     if (!moo_mod)
     {

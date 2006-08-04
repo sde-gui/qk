@@ -16,16 +16,19 @@
 #define NO_IMPORT_PYGOBJECT
 #include <pygobject.h>
 #include "mooedit/mooplugin-loader.h"
-#include "moopython/moopython.h"
+#include "moopython/moopython-builtin.h"
+#include "moopython/moopython-api.h"
 #include "moopython/moopython-loader.h"
 #include "moopython/pygtk/moo-pygtk.h"
+#include "mooutils/moopython.h"
+#include "mooutils/mooutils-misc.h"
 
 gboolean
 _moo_python_init (void)
 {
     if (!moo_python_running ())
     {
-        if (!_moo_python_api_init ())
+        if (!moo_python_api_init ())
         {
             g_warning ("%s: oops", G_STRLOC);
             return FALSE;
@@ -35,7 +38,7 @@ _moo_python_init (void)
         {
             g_warning ("%s: could not initialize moo module", G_STRLOC);
             PyErr_Print ();
-            _moo_python_api_deinit ();
+            moo_python_api_deinit ();
             return FALSE;
         }
 

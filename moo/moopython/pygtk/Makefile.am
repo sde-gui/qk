@@ -137,9 +137,18 @@ mooterm-mod.h: mooterm-mod.py $(PY2H)
 	sh $(PY2H) MOO_TERM_PY $(srcdir)/mooterm-mod.py > mooterm-mod.h
 
 
+if MOO_OS_UNIX
 noinst_LTLIBRARIES = libmoopygtk.la
+else
+noinst_LTLIBRARIES = libmoopygtk23.la libmoopygtk24.la
+endif
+
 libmoopygtk_la_SOURCES = $(moopygtk_sources)
+libmoopygtk23_la_SOURCES = $(moopygtk_sources)
+libmoopygtk24_la_SOURCES = $(moopygtk_sources)
 nodist_libmoopygtk_la_SOURCES = $(nodist_moopygtk_sources)
+nodist_libmoopygtk23_la_SOURCES = $(nodist_moopygtk_sources)
+nodist_libmoopygtk24_la_SOURCES = $(nodist_moopygtk_sources)
 
 AM_CFLAGS =			\
 	-I../..			\
@@ -148,3 +157,19 @@ AM_CFLAGS =			\
 	$(MOO_DEBUG_CFLAGS)	\
 	$(PYTHON_CFLAGS)	\
 	$(PYGTK_CFLAGS)
+
+libmoopygtk23_la_CFLAGS =	\
+	-I../..			\
+	-I$(top_builddir)	\
+	$(MOO_CFLAGS)		\
+	$(MOO_DEBUG_CFLAGS)	\
+	$(PYTHON23_CFLAGS)	\
+	$(PYGTK23_CFLAGS)
+
+libmoopygtk24_la_CFLAGS =	\
+	-I../..			\
+	-I$(top_builddir)	\
+	$(MOO_CFLAGS)		\
+	$(MOO_DEBUG_CFLAGS)	\
+	$(PYTHON24_CFLAGS)	\
+	$(PYGTK24_CFLAGS)

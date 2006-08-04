@@ -1,6 +1,35 @@
 SUBDIRS = plugins pygtk .
 
+libmoomod_la_sources =		\
+	moo-mod.c		\
+	moopython-api.h		\
+	moopython-loader.h	\
+	moopython-loader.c	\
+	moopython-utils.h	\
+	moopython-utils.c
+
+libpymoo_la_sources =		\
+	moopython-mod.c		\
+	moopython-api.h		\
+	moopython-loader.h	\
+	moopython-loader.c	\
+	moopython-utils.h	\
+	moopython-utils.c
+
+libmoopython_la_sources =	\
+	moopython-builtin.h	\
+	moopython-builtin.c	\
+	moopython-api.h		\
+	moopython-loader.h	\
+	moopython-loader.c	\
+	moopython-utils.h	\
+	moopython-utils.c
+libmoopython_la_libadd =	\
+	pygtk/libmoopygtk.la
+
 noinst_LTLIBRARIES =
+
+if MOO_OS_UNIX
 
 if MOO_INSTALL_LIB
 noinst_LTLIBRARIES += libmoomod.la
@@ -13,34 +42,12 @@ else
 noinst_LTLIBRARIES += libmoopython.la
 endif
 
-libmoomod_la_SOURCES =		\
-	moo-mod.c		\
-	moopython-api.h		\
-	moopython-loader.h	\
-	moopython-loader.c	\
-	moopython-utils.h	\
-	moopython-utils.c
-libmoomod_la_LIBADD =		\
-	pygtk/libmoopygtk.la
+else !MOO_OS_UNIX
 
-libpymoo_la_SOURCES =		\
-	moopython-mod.c		\
-	moopython-api.h		\
-	moopython-loader.h	\
-	moopython-loader.c	\
-	moopython-utils.h	\
-	moopython-utils.c
+noinst_LTLIBRARIES += libmoomod23.la libmoomod24.la
+noinst_LTLIBRARIES += libpymoo23.la libpymoo24.la
 
-libmoopython_la_SOURCES =	\
-	moopython.h		\
-	moopython.c		\
-	moopython-api.h		\
-	moopython-loader.h	\
-	moopython-loader.c	\
-	moopython-utils.h	\
-	moopython-utils.c
-libmoopython_la_LIBADD =	\
-	pygtk/libmoopygtk.la
+endif !MOO_OS_UNIX
 
 AM_CFLAGS =			\
 	-I..			\
@@ -48,14 +55,49 @@ AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
 	$(PYTHON_CFLAGS)	\
-	$(PYGTK_CFLAGS)		\
-	$(lib_define)
+	$(PYGTK_CFLAGS)
+
+py23_cflags =			\
+	-I..			\
+	-I$(top_builddir)	\
+	$(MOO_CFLAGS)		\
+	$(MOO_DEBUG_CFLAGS)	\
+	$(PYTHON23_CFLAGS)	\
+	$(PYGTK23_CFLAGS)	\
+	-DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
+
+py24_cflags =			\
+	-I..			\
+	-I$(top_builddir)	\
+	$(MOO_CFLAGS)		\
+	$(MOO_DEBUG_CFLAGS)	\
+	$(PYTHON24_CFLAGS)	\
+	$(PYGTK23_CFLAGS)	\
+	-DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
+
+libmoomod_la_SOURCES = $(libmoomod_la_sources)
+libmoomod_la_LIBADD = pygtk/libmoopygtk.la
+libmoomod23_la_SOURCES = $(libmoomod_la_sources)
+libmoomod23_la_LIBADD = pygtk/libmoopygtk23.la
+libmoomod23_la_CFLAGS = $(py23_cflags)
+libmoomod24_la_SOURCES = $(libmoomod_la_sources)
+libmoomod24_la_LIBADD = pygtk/libmoopygtk24.la
+libmoomod24_la_CFLAGS = $(py24_cflags)
+
+libpymoo_la_SOURCES = $(libpymoo_la_sources)
+libpymoo23_la_SOURCES = $(libpymoo_la_sources)
+libpymoo23_la_CFLAGS = $(py23_cflags)
+libpymoo24_la_SOURCES = $(libpymoo_la_sources)
+libpymoo24_la_CFLAGS = $(py24_cflags)
+
+libmoopython_la_SOURCES = $(libmoopython_la_sources)
+libmoopython_la_LIBADD = $(libmoopython_la_libadd)
 
 EXTRA_DIST =				\
 	moo-mod.c			\
 	moopython-mod.c			\
-	moopython.h			\
-	moopython.c			\
+	moopython-builtin.h		\
+	moopython-builtin.c		\
 	moopython-api.h			\
 	moopython-loader.h		\
 	moopython-loader.c		\

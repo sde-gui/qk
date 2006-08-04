@@ -3,34 +3,36 @@
 # checks python stuff when building for mingw. it's broken
 #
 AC_DEFUN([_MOO_AC_CHECK_PYTHON_MINGW],[
-    no_dot_version=`echo $1 | sed "s/\.//"`
+    if test -z "$PYTHON[]$1[]_PARENT_DIR"; then
+        PYTHON[]$1[]_PARENT_DIR=/usr/local/win
+    fi
+    if test -z "$PYTHON[]$1[]_PREFIX"; then
+        PYTHON[]$1[]_PREFIX=$PYTHON[]$1[]_PARENT_DIR/Python$1
+    fi
+    if test -z "$PYTHON[]$1[]_CFLAGS"; then
+        PYTHON[]$1[]_CFLAGS="-I$PYTHON[]$1[]_PREFIX/include -mno-cygwin"
+    fi
+    if test -z "$PYTHON[]$1[]_LIBS"; then
+        PYTHON[]$1[]_LIBS="-L$PYTHON[]$1[]_PREFIX/libs -lpython$1 -mno-cygwin"
+    fi
+    if test -z "$PYTHON[]$1"; then
+        PYTHON[]$1="python"
+    fi
 
-    if test -z "$PYTHON_PARENT_DIR"; then
-        PYTHON_PARENT_DIR=/usr/local/win
-    fi
-    if test -z "$PYTHON_PREFIX"; then
-        PYTHON_PREFIX=$PYTHON_PARENT_DIR/Python$no_dot_version
-    fi
-    if test -z "$PYTHON_CFLAGS"; then
-        PYTHON_CFLAGS="-I$PYTHON_PREFIX/include -mno-cygwin"
-    fi
-    if test -z "$PYTHON_LIBS"; then
-        PYTHON_LIBS="-L$PYTHON_PREFIX/libs -lpython$no_dot_version -mno-cygwin"
-    fi
-    if test -z "$PYTHON"; then
-        PYTHON="python"
-    fi
+    PYTHON_PARENT_DIR="$PYTHON[]$1[]_PARENT_DIR"
+    PYTHON_PREFIX="$PYTHON[]$1[]_PREFIX"
+    PYTHON="$PYTHON[]$1[]"
 
     # check whether Python.h and library exists
 
     save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$CPPFLAGS $PYTHON_CFLAGS"
+    CPPFLAGS="$CPPFLAGS $PYTHON[]$1[]_CFLAGS"
     save_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS $PYTHON_CFLAGS"
+    CFLAGS="$CFLAGS $PYTHON[]$1[]_CFLAGS"
     save_LDFLAGS="$LDFLAGS"
-    LDFLAGS="$LDFLAGS $PYTHON_LIBS"
+    LDFLAGS="$LDFLAGS $PYTHON[]$1[]_LIBS"
 
-    AC_MSG_CHECKING([PYTHON_CFLAGS])
+    AC_MSG_CHECKING([PYTHON[]$1[]_CFLAGS])
     AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
     #include <Python.h>
     int main ()
@@ -41,19 +43,19 @@ AC_DEFUN([_MOO_AC_CHECK_PYTHON_MINGW],[
         Py_Finalize();
         return 0;
     }]])],[
-        AC_MSG_RESULT([$PYTHON_CFLAGS])
-        AC_MSG_CHECKING([PYTHON_LIBS])
-        AC_MSG_RESULT([$PYTHON_LIBS])
+        AC_MSG_RESULT([$PYTHON[]$1[]_CFLAGS])
+        AC_MSG_CHECKING([PYTHON[]$1[]_LIBS])
+        AC_MSG_RESULT([$PYTHON[]$1[]_LIBS])
         AC_MSG_NOTICE([Did not do real linking])
-        AC_SUBST(PYTHON_CFLAGS)
-        AC_SUBST(PYTHON_LIBS)
-        pyexecdir=$PYTHON_PREFIX/Lib/site-packages
+        AC_SUBST(PYTHON[]$1[]_CFLAGS)
+        AC_SUBST(PYTHON[]$1[]_LIBS)
+        pyexecdir=$PYTHON[]$1[]_PREFIX/Lib/site-packages
         $2
     ],[
         AC_MSG_RESULT([Not found])
-        PYTHON_CFLAGS=""
-        PYTHON_LIBS=""
-        PYTHON_EXTRA_LIBS=""
+        PYTHON[]$1[]_CFLAGS=""
+        PYTHON[]$1[]_LIBS=""
+        PYTHON[]$1[]_EXTRA_LIBS=""
         $3
     ])
 
@@ -195,7 +197,8 @@ AC_MSG_NOTICE([checking for headers and libs required to compile python extensio
     AC_REQUIRE([MOO_AC_CHECK_OS])
     if test x$MOO_OS_CYGWIN != xyes; then
         if test x$MOO_OS_MINGW = xyes; then
-            _MOO_AC_CHECK_PYTHON_MINGW([$1],[$2],[$3])
+            _MOO_AC_CHECK_PYTHON_MINGW([23],[$2],[$3])
+            _MOO_AC_CHECK_PYTHON_MINGW([24],[$2],[$3])
         else
             _MOO_AC_CHECK_PYTHON_UNIX([$1],[$2],[$3])
         fi

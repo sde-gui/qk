@@ -5,22 +5,31 @@ import sys
 import getopt
 
 dir = os.getcwd()
-builddir = "/home/muntyan/projects/moo/build"
+builddir = dir
 moo_windir = "/usr/local/win/medit"
-
+strip = "i586-mingw32msvc-strip"
+do_strip = True
+installer = None
 
 def usage():
-    print "Usage:", sys.argv[0], "[build_dir]"
+    print "Usage:", sys.argv[0], "[--no-strip] [build_dir]"
     sys.exit(2)
 
-if sys.argv[1:]:
-    if sys.argv[2:]: usage()
-    moo_builddir = os.path.abspath(sys.argv[1])
-else:
-    moo_builddir = builddir + "/mingw"
+try:
+    opts, args = getopt.getopt(sys.argv[1:], "", ["no-strip"])
+except getopt.GetoptError:
+    usage()
 
-config = os.path.basename(moo_builddir)
-installdir = "%s/%s-inst" % (dir, config)
+for o, a in opts:
+    if o == "--no-strip":
+        do_strip = False
+if args:
+    if args[1:]: usage()
+    moo_builddir = os.path.abspath(args[0])
+else:
+    moo_builddir = builddir
+
+installdir = dir + "/inst_"
 
 issdir = "Z:%s/wininstaller" % (moo_builddir,)
 iss = issdir + "/medit.iss"
@@ -38,11 +47,20 @@ def do_cmd(cmd):
         raise Error(status)
 
 def copy_files():
-    files = ["bin/medit.exe", "share/moo/syntax",
-             "share/moo/tools.cfg", "share/moo/menu.cfg", "share/moo/as.cfg",
-             "share/moo/completion", "lib/moo/plugins"]
+    files = ["bin/medit.exe", "bin/libmoo.dll",
+             "share/moo/*", "lib/moo/plugins", "lib/moo/projects"]
     for f in files:
         do_cmd("cp -r %s/usr/local/%s %s/" % (installdir, f, moo_windir))
+    do_cmd("mkdir -p %s/plugins/pymoo23 %s/plugins/pymoo24" % (moo_windir, moo_windir))
+    do_cmd("cp %s/usr/local/lib/pymoo23.dll %s/plugins/pymoo23/pymoo.dll" % (installdir, moo_windir))
+    do_cmd("cp %s/usr/local/lib/moo23.dll %s/plugins/pymoo23/moo.pyd" % (installdir, moo_windir))
+    do_cmd("cp %s/usr/local/lib/pymoo24.dll %s/plugins/pymoo24/pymoo.dll" % (installdir, moo_windir))
+    do_cmd("cp %s/usr/local/lib/moo24.dll %s/plugins/pymoo24/moo.pyd" % (installdir, moo_windir))
+    do_cmd("cp libxml2-2.dll %s/" % (moo_windir,))
+
+    if do_strip:
+        do_cmd("%s %s/plugins/*/*.dll" % (strip, moo_windir))
+        do_cmd("%s %s/*.exe %s/*.dll" % (strip, moo_windir, moo_windir))
 
 config_template = """
 version = @MOO_VERSION@
@@ -59,13 +77,20 @@ def get_version():
     return config.version
 
 def build():
+    global installer
+
     do_cmd("mkdir " + moo_windir)
     do_cmd("mkdir " + installdir)
     os.chdir(moo_builddir)
-    do_cmd("make install-strip DESTDIR=" + installdir)
+    do_cmd("make install DESTDIR=" + installdir)
     copy_files()
     do_cmd("wine /usr/local/win/InnoSetup5/ISCC.exe " + iss)
-    installer = "meditsetup-" + get_version() + config.replace("mingw", "") + ".exe"
+
+    if do_strip:
+        installer = "meditsetup-" + get_version() + ".exe"
+    else:
+        installer = "meditsetup-dbg-" + get_version() + ".exe"
+
     do_cmd("mv %s/wininstaller/Output/setup.exe %s/%s" % (moo_builddir, dir, installer))
 
 def clean():
@@ -80,3 +105,4 @@ except Error, e:
 
 clean()
 print "*** Success ***"
+print "Installer: ", installer

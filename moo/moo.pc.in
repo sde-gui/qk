@@ -13,4 +13,4 @@ Description: A text editor and terminal emulator library
 Requires: gtk+-2.0 @MOO_XML_PKG_NAME@
 Version: @MOO_VERSION_UNQUOTED@
 Cflags: -I@moo_includedir@
-Libs: -L${libdir} -lmoo @PYTHON_LDFLAGS@
+Libs: -L${libdir} -lmoo @PYTHON_LIBS@ @PYTHON_EXTRA_LIBS@

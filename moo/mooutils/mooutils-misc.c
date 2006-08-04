@@ -1144,40 +1144,59 @@ moo_get_app_dir (void)
     static char *appdir;
 
     if (!appdir)
-    {
-        char *appname = NULL;
-
-        if (G_WIN32_HAVE_WIDECHAR_API ())
-        {
-            wchar_t buf[MAX_PATH+1];
-
-            if (GetModuleFileNameW (GetModuleHandle (NULL), buf, G_N_ELEMENTS (buf)) > 0)
-                appname = g_utf16_to_utf8 (buf, -1, NULL, NULL, NULL);
-        }
-        else
-        {
-            gchar buf[MAX_PATH+1];
-
-            if (GetModuleFileNameA (GetModuleHandle (NULL), buf, G_N_ELEMENTS (buf)) > 0)
-                appname = g_locale_to_utf8 (buf, -1, NULL, NULL, NULL);
-        }
-
-        if (appname)
-        {
-            appdir = g_path_get_dirname (appname);
-            g_free (appname);
-        }
-        else
-        {
-            appdir = g_strdup (".");
-        }
-    }
+        appdir = moo_get_dll_dir (NULL);
 
     return g_strdup (appdir);
 }
+
+
+char *
+moo_get_dll_dir (const char *dll)
+{
+    char *dir;
+    char *dllname = NULL;
+    HMODULE handle;
+
+    handle = GetModuleHandle (dll);
+    g_return_val_if_fail (handle != NULL, g_strdup ("."));
+
+    if (G_WIN32_HAVE_WIDECHAR_API ())
+    {
+        wchar_t buf[MAX_PATH+1];
+
+        if (GetModuleFileNameW (handle, buf, G_N_ELEMENTS (buf)) > 0)
+            dllname = g_utf16_to_utf8 (buf, -1, NULL, NULL, NULL);
+    }
+    else
+    {
+        gchar buf[MAX_PATH+1];
+
+        if (GetModuleFileNameA (handle, buf, G_N_ELEMENTS (buf)) > 0)
+            dllname = g_locale_to_utf8 (buf, -1, NULL, NULL, NULL);
+    }
+
+    if (dllname)
+    {
+        dir = g_path_get_dirname (dllname);
+        g_free (dllname);
+    }
+    else
+    {
+        dir = g_strdup (".");
+    }
+
+    return dir;
+}
+
 #else
 char *
 moo_get_app_dir (void)
+{
+    g_return_val_if_reached (g_strdup ("."));
+}
+
+char *
+moo_get_dll_dir (G_GNUC_UNUSED const char *dll)
 {
     g_return_val_if_reached (g_strdup ("."));
 }

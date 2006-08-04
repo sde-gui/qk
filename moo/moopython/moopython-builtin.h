@@ -1,5 +1,5 @@
 /*
- *   moopython.h
+ *   moopython-builtin.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_PYTHON_H__
-#define __MOO_PYTHON_H__
+#ifndef __MOO_PYTHON_BUILTIN_H__
+#define __MOO_PYTHON_BUILTIN_H__
 
 #include <glib.h>
 
@@ -24,4 +24,4 @@ gboolean    _moo_python_init    (void);
 
 G_END_DECLS
 
-#endif /* __MOO_PYTHON_H__ */
+#endif /* __MOO_PYTHON_BUILTIN_H__ */

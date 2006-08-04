@@ -450,7 +450,7 @@ create_folder (G_GNUC_UNUSED MooFileSystem *fs,
 #ifndef __WIN32__
     if (mkdir (path, S_IRWXU | S_IRWXG | S_IRWXO))
 #else
-    if (m_mkdir (path))
+    if (_m_mkdir (path))
 #endif
     {
         int saved_errno = errno;

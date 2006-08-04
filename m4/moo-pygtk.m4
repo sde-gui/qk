@@ -27,25 +27,24 @@ AC_DEFUN([_MOO_AC_PYGTK_CODEGEN],[
 #
 AC_DEFUN([_MOO_AC_CHECK_PYGTK_MINGW],[
     # _AC_CHECK_PYGTK_MINGW
-    no_dot_version=`echo $1 | sed "s/\.//"`
 
-    if test -z $PYTHON_PARENT_DIR; then
-        PYTHON_PARENT_DIR=/usr/local/win
+    if test -z "$PYTHON[]$1[]_PARENT_DIR"; then
+        PYTHON[]$1[]_PARENT_DIR=/usr/local/win
     fi
-    if test -z $PYTHON_PREFIX; then
-        PYTHON_PREFIX=$PYTHON_PARENT_DIR/Python$no_dot_version
+    if test -z "$PYTHON[]$1[]_PREFIX"; then
+        PYTHON[]$1[]_PREFIX=$PYTHON[]$1[]_PARENT_DIR/Python$1
     fi
-    if test -z $PYGTK_CFLAGS; then
-        PYGTK_CFLAGS="-I$PYTHON_PREFIX/include/pygtk-2.0 $GTK_CFLAGS"
+    if test -z "$PYGTK[]$1[]_CFLAGS"; then
+        PYGTK[]$1[]_CFLAGS="-I$PYTHON[]$1[]_PREFIX/include/pygtk-2.0 $PYTHON[]$1[]_CFLAGS $GTK_CFLAGS"
     fi
 
     dnl check whether pygtk.h exists
     save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$CPPFLAGS $PYGTK_CFLAGS -I$PYTHON_PREFIX/include"
+    CPPFLAGS="$CPPFLAGS $PYGTK[]$1[]_CFLAGS"
     save_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS $PYGTK_CFLAGS -I$PYTHON_PREFIX/include"
+    CFLAGS="$CFLAGS $PYGTK[]$1[]_CFLAGS"
 
-    AC_MSG_CHECKING([for pygtk headers])
+    AC_MSG_CHECKING([for pygtk$1 headers])
     # start AC_COMPILE_IFELSE in _AC_CHECK_PYGTK_MINGW
     AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
     #include <pygtk/pygtk.h>
@@ -54,13 +53,17 @@ AC_DEFUN([_MOO_AC_CHECK_PYGTK_MINGW],[
             init_pygtk();
             return 0;
     }]])],[
-        AC_MSG_RESULT([$PYGTK_CFLAGS])
-        AC_SUBST(PYGTK_CFLAGS)
-        PYGTK_DEFS_DIR=$PYTHON_PREFIX/share/pygtk/2.0/defs
+        AC_MSG_RESULT([$PYGTK[]$1[]_CFLAGS])
+        AC_SUBST(PYGTK[]$1[]_CFLAGS)
+        PYGTK[]$1[]_DEFS_DIR=$PYTHON[]$1[]_PREFIX/share/pygtk/2.0/defs
+        AC_SUBST(PYGTK[]$1[]_DEFS_DIR)
+        PYGTK_DEFS_DIR=$PYTHON[]$1[]_PREFIX/share/pygtk/2.0/defs
         AC_SUBST(PYGTK_DEFS_DIR)
-        PYGTK_CODEGEN_DIR=$PYTHON_PREFIX/share/pygtk/2.0/codegen
+        PYGTK[]$1[]_CODEGEN_DIR=$PYTHON[]$1[]_PREFIX/share/pygtk/2.0/codegen
+        AC_SUBST(PYGTK[]$1[]_CODEGEN_DIR)
+        PYGTK_CODEGEN_DIR=$PYTHON[]$1[]_PREFIX/share/pygtk/2.0/codegen
         AC_SUBST(PYGTK_CODEGEN_DIR)
-        AC_MSG_NOTICE([pygtk defs dir: $PYGTK_DEFS_DIR])
+        AC_MSG_NOTICE([pygtk defs dir: $PYGTK[]$1[]_DEFS_DIR])
         $2
         _MOO_AC_PYGTK_CODEGEN
     ],[
@@ -130,7 +133,8 @@ AC_DEFUN([MOO_AC_CHECK_PYGTK],[
 
     if test x$MOO_OS_CYGWIN != xyes; then
         if test x$MOO_OS_MINGW = xyes; then
-            _MOO_AC_CHECK_PYGTK_MINGW([$1],[$2],[$3])
+            _MOO_AC_CHECK_PYGTK_MINGW([23],[$2],[$3])
+            _MOO_AC_CHECK_PYGTK_MINGW([24],[$2],[$3])
         else
             _MOO_AC_CHECK_PYGTK_UNIX([$1],[$2],[$3])
         fi

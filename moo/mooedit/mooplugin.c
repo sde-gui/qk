@@ -19,7 +19,7 @@
 #include "mooedit/mooplugin-loader.h"
 #include "mooedit/moopluginprefs-glade.h"
 #include "mooedit/plugins/mooeditplugins.h"
-#include "moopython/moopython.h"
+#include "moopython/moopython-builtin.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"

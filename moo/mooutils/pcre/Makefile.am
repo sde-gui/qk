@@ -22,7 +22,7 @@ moopcre_sources =			\
 	ucpinternal.h
 
 EXTRA_DIST =				\
-	AUTHORS				\
+	AUTHORS.pcre			\
 	ChangeLog			\
 	COPYING.pcre			\
 	NEWS				\
