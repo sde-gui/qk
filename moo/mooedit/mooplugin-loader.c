@@ -142,10 +142,10 @@ parse_plugin_info (GKeyFile         *key_file,
     gboolean enabled = TRUE;
     gboolean visible = TRUE;
 
-    name = g_key_file_get_string (key_file, GROUP_PLUGIN, KEY_NAME, NULL);
-    description = g_key_file_get_string (key_file, GROUP_PLUGIN, KEY_DESCRIPTION, NULL);
-    author = g_key_file_get_string (key_file, GROUP_PLUGIN, KEY_AUTHOR, NULL);
-    version = g_key_file_get_string (key_file, GROUP_PLUGIN, KEY_VERSION, NULL);
+    name = g_key_file_get_locale_string (key_file, GROUP_PLUGIN, KEY_NAME, NULL, NULL);
+    description = g_key_file_get_locale_string (key_file, GROUP_PLUGIN, KEY_DESCRIPTION, NULL, NULL);
+    author = g_key_file_get_locale_string (key_file, GROUP_PLUGIN, KEY_AUTHOR, NULL, NULL);
+    version = g_key_file_get_locale_string (key_file, GROUP_PLUGIN, KEY_VERSION, NULL, NULL);
     langs = g_key_file_get_string (key_file, GROUP_PLUGIN, KEY_LANGS, NULL);
 
     if (g_key_file_has_key (key_file, GROUP_PLUGIN, KEY_ENABLED, NULL))
