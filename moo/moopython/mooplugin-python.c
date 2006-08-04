@@ -457,38 +457,93 @@ typedef MooPluginLoader MooPythonPluginLoader;
 typedef MooPluginLoaderClass MooPythonPluginLoaderClass;
 G_DEFINE_TYPE (MooPythonPluginLoader, _moo_python_plugin_loader, MOO_TYPE_PLUGIN_LOADER)
 
+static PyObject *sys_module;
+
+static gboolean
+sys_path_add_dir (const char *dir)
+{
+    PyObject *path;
+    PyObject *s;
+
+    if (!sys_module)
+        sys_module = PyImport_ImportModule ((char*) "sys");
+
+    if (!sys_module)
+    {
+        PyErr_Print ();
+        return FALSE;
+    }
+
+    path = PyObject_GetAttrString (sys_module, (char*) "path");
+
+    if (!path)
+    {
+        PyErr_Print ();
+        return FALSE;
+    }
+
+    if (!PyList_Check (path))
+    {
+        g_critical ("sys.path is not a list");
+        Py_DECREF (path);
+        return FALSE;
+    }
+
+    s = PyString_FromString (dir);
+    PyList_Append (path, s);
+
+    Py_DECREF (s);
+    Py_DECREF (path);
+    return TRUE;
+}
+
+static void
+sys_path_remove_dir (const char *dir)
+{
+    PyObject *path;
+    int i;
+
+    if (!sys_module)
+        return;
+
+    path = PyObject_GetAttrString (sys_module, (char*) "path");
+
+    if (!path || !PyList_Check (path))
+        return;
+
+    for (i = PyList_GET_SIZE (path) - 1; i >= 0; --i)
+    {
+        PyObject *item = PyList_GET_ITEM (path, i);
+
+        if (PyString_CheckExact (item) &&
+            !strcmp (PyString_AsString (item), dir))
+        {
+            if (PySequence_DelItem (path, i) != 0)
+                PyErr_Print ();
+            break;
+        }
+    }
+
+    Py_DECREF (path);
+}
 
 static void
 sys_path_add_plugin_dirs (void)
 {
     char **d;
     char **dirs = moo_plugin_get_dirs ();
-    PyObject *sys = NULL, *path = NULL;
     static gboolean been_here = FALSE;
 
     if (been_here)
         return;
 
     been_here = TRUE;
-    sys = PyImport_ImportModule ((char*) "sys");
 
-    if (sys)
-        path = PyObject_GetAttrString (sys, (char*) "path");
-
-    if (!path || !PyList_Check (path))
+    for (d = dirs; d && *d; ++d)
     {
-        g_critical ("%s: oops", G_STRLOC);
-    }
-    else
-    {
-        for (d = dirs; d && *d; ++d)
-        {
-            char *libdir = g_build_filename (*d, LIBDIR, NULL);
-            PyObject *s = PyString_FromString (libdir);
-            PyList_Append (path, s);
-            Py_XDECREF (s);
-            g_free (libdir);
-        }
+        char *libdir = g_build_filename (*d, LIBDIR, NULL);
+        sys_path_add_dir (libdir);
+        g_free (libdir);
     }
 
     g_strfreev (dirs);
@@ -496,19 +551,12 @@ sys_path_add_plugin_dirs (void)
 
 
 static PyObject *
-load_file (const char *path)
+do_load_file (const char *path)
 {
     PyObject *mod = NULL;
     PyObject *code;
     char *modname = NULL, *content = NULL;
     GError *error = NULL;
-
-    g_return_val_if_fail (path != NULL, NULL);
-
-    if (!moo_python_stuff_init ())
-        return NULL;
-
-    sys_path_add_plugin_dirs ();
 
     if (!g_file_get_contents (path, &content, NULL, &error))
     {
@@ -540,6 +588,34 @@ out:
     g_free (modname);
 
     return mod;
+}
+
+
+static PyObject *
+load_file (const char *path)
+{
+    char *dirname;
+    gboolean dir_added;
+    PyObject *retval;
+
+    g_return_val_if_fail (path != NULL, NULL);
+
+    if (!moo_python_stuff_init ())
+        return NULL;
+
+    sys_path_add_plugin_dirs ();
+
+    dirname = g_path_get_dirname (path);
+    dir_added = sys_path_add_dir (dirname);
+
+    retval = do_load_file (path);
+
+    if (dir_added)
+        sys_path_remove_dir (dirname);
+
+    g_free (dirname);
+
+    return retval;
 }
 
 
