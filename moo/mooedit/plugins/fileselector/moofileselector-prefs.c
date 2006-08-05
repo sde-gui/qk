@@ -64,7 +64,7 @@ _moo_file_selector_prefs_page (MooPlugin *plugin)
     MooTreeHelper *helper;
 
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    page = moo_prefs_dialog_page_new_from_xml ("File Selector", GTK_STOCK_OPEN,
+    page = moo_prefs_dialog_page_new_from_xml (_("File Selector"), GTK_STOCK_OPEN,
                                                xml, MOO_FILE_SELECTOR_PREFS_GLADE_XML, -1,
                                                "page", NULL);
 

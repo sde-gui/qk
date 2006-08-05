@@ -174,7 +174,7 @@ ensure_output (WindowStuff *stuff)
         return;
 
     label = moo_pane_label_new (MOO_STOCK_FIND_IN_FILES, NULL, NULL,
-                                "Search Results", "Search Results");
+                                _("Search Results"), _("Search Results"));
     stuff->output = g_object_new (MOO_TYPE_CMD_VIEW,
                                   "highlight-current-line", TRUE,
                                   NULL);
@@ -237,18 +237,18 @@ find_plugin_init (FindPlugin *plugin)
     g_return_val_if_fail (editor != NULL, FALSE);
 
     moo_window_class_new_action (klass, "FindInFiles",
-                                 "display-name", "Find In Files",
-                                 "label", "Find In Files",
-                                 "tooltip", "Find In Files",
+                                 "display-name", _("Find In Files"),
+                                 "label", _("Find In Files"),
+                                 "tooltip", _("Find in files"),
                                  "accel", "<ctrl><alt>f",
                                  "stock-id", MOO_STOCK_FIND_IN_FILES,
                                  "closure-callback", find_in_files_cb,
                                  NULL);
 
     moo_window_class_new_action (klass, "FindFile",
-                                 "display-name", "Find File",
-                                 "label", "Find File",
-                                 "tooltip", "Find File",
+                                 "display-name", _("Find File"),
+                                 "label", _("Find File"),
+                                 "tooltip", _("Find file"),
                                  "stock-id", MOO_STOCK_FIND_FILE,
                                  "closure-callback", find_file_cb,
                                  NULL);
@@ -341,7 +341,7 @@ create_grep_dialog (MooEditWindow  *window,
 
     skip_combo = moo_glade_xml_get_widget (stuff->grep_xml, "skip_combo");
     skip_list = moo_history_entry_get_list (MOO_HISTORY_ENTRY (skip_combo));
-    moo_history_list_add_full (skip_list, ".svn/;CVS/", "CVS and SVN dirs");
+    moo_history_list_add_full (skip_list, ".svn/;CVS/", _("CVS and SVN dirs"));
 }
 
 
@@ -734,7 +734,7 @@ execute_grep (const char     *pattern,
                             !case_sensitive ? "-i " : "", pattern);
 
     stuff->cmd = CMD_GREP;
-    moo_cmd_view_run_command (stuff->output, command->str, NULL, "Find in Files");
+    moo_cmd_view_run_command (stuff->output, command->str, NULL, _("Find In Files"));
     g_string_free (command, TRUE);
 }
 
@@ -793,7 +793,7 @@ execute_find (const char     *pattern,
     }
 
     stuff->cmd = CMD_FIND;
-    moo_cmd_view_run_command (stuff->output, command->str, NULL, "Find File");
+    moo_cmd_view_run_command (stuff->output, command->str, NULL, _("Find File"));
     g_string_free (command, TRUE);
 }
 
@@ -849,10 +849,10 @@ command_exit (MooLineView *view,
 
         /* xargs exits with code 123 if it's command exited with status 1-125*/
         if (cmd == CMD_GREP && (!exit_code || exit_code == 123))
-            msg = g_strdup_printf ("*** %d matches found ***",
+            msg = g_strdup_printf (_("*** %d matches found ***"),
                                    stuff->match_count);
         else if (cmd == CMD_FIND && !exit_code)
-            msg = g_strdup_printf ("*** %d files found ***",
+            msg = g_strdup_printf (_("*** %d files found ***"),
                                    stuff->match_count);
         else
             return FALSE;
@@ -888,7 +888,7 @@ output_activate (WindowStuff    *stuff,
 
 
 MOO_PLUGIN_DEFINE_INFO (find,
-                        "Find", "Finds everything",
+                        N_("Find"), N_("Finds everything"),
                         "Yevgen Muntyan <muntyan@tamu.edu>",
                         MOO_VERSION, NULL);
 MOO_WIN_PLUGIN_DEFINE (Find, find,

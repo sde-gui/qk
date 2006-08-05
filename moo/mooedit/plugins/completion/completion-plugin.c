@@ -12,10 +12,10 @@
  */
 
 #include "config.h"
-
+#include "completion.h"
 #include "mooedit/mooplugin-macro.h"
 #include "mooedit/plugins/mooeditplugins.h"
-#include "completion.h"
+#include "mooutils/mooi18n.h"
 
 
 static gboolean cmpl_plugin_init        (CmplPlugin     *plugin);
@@ -33,9 +33,9 @@ cmpl_plugin_init (CmplPlugin *plugin)
     g_return_val_if_fail (editor != NULL, FALSE);
 
     moo_window_class_new_action (klass, "CompleteWord",
-                                 "display-name", "Complete Word",
-                                 "label", "Complete Word",
-                                 "tooltip", "Complete Word",
+                                 "display-name", _("Complete Word"),
+                                 "label", _("Complete Word"),
+                                 "tooltip", _("Complete Word"),
                                  "accel", "<Ctrl>space",
                                  "closure-callback", _completion_callback,
                                  NULL);
@@ -75,7 +75,7 @@ cmpl_plugin_deinit (CmplPlugin *plugin)
 
 
 MOO_PLUGIN_DEFINE_INFO (cmpl,
-                        "Completion", "Makes it complete",
+                        N_("Completion"), N_("Makes it complete"),
                         "Yevgen Muntyan <muntyan@tamu.edu>",
                         MOO_VERSION, NULL)
 MOO_PLUGIN_DEFINE_FULL (Cmpl, cmpl,
