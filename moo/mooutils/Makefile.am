@@ -36,6 +36,7 @@ mooutils_include_headers =		\
 	mooglade.h			\
 	moohistoryentry.h		\
 	moohistorylist.h		\
+	mooi18n.h			\
 	moolinklabel.h			\
 	moomarkup.h			\
 	moomenuaction.h			\
@@ -87,7 +88,6 @@ mooutils_sources =			\
 	mooglade.c			\
 	moohistoryentry.c		\
 	moohistorylist.c		\
-	mooi18n.h			\
 	mooi18n.c			\
 	moolinklabel.c			\
 	moologwindow-glade.h		\

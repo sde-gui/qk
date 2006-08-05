@@ -23,13 +23,13 @@ G_BEGIN_DECLS
 
 #ifdef ENABLE_NLS
 
-#define _(String) _moo_gettext (String)
-#define Q_(String) g_strip_context ((String), _moo_gettext (String))
+#define _(String) moo_gettext (String)
+#define Q_(String) g_strip_context ((String), moo_gettext (String))
 #define N_(String) (String)
 #define D_(String,Domain) dgettext (Domain, String)
 #define QD_(String,Domain) g_strip_context ((String), D_ (String, Domain))
 
-const char *_moo_gettext (const char *string);
+const char *moo_gettext (const char *string);
 
 #else /* !ENABLE_NLS */
 

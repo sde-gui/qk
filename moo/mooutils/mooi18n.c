@@ -14,11 +14,11 @@
 #include "mooutils/mooi18n.h"
 #include <glib.h>
 
-#ifdef ENABLE_NLS
 
 const char *
-_moo_gettext (const char *string)
+moo_gettext (const char *string)
 {
+#ifdef ENABLE_NLS
     static gboolean been_here = FALSE;
 
     g_return_val_if_fail (string != NULL, NULL);
@@ -31,6 +31,7 @@ _moo_gettext (const char *string)
     }
 
     return dgettext (GETTEXT_PACKAGE, string);
+#else /* !ENABLE_NLS */
+    return string;
+#endif /* !ENABLE_NLS */
 }
-
-#endif /* ENABLE_NLS */
