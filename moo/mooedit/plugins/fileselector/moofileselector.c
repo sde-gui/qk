@@ -338,7 +338,7 @@ create_new_file_dialog (GtkWidget    *parent,
     moo_entry_clear_undo (MOO_ENTRY (entry));
 
     label = moo_glade_xml_get_widget (*xml, "label");
-    label_text = g_strdup_printf ("Create file in '%s' folder:", display_dirname);
+    label_text = g_strdup_printf (_("Create file in folder '%s':"), display_dirname);
     gtk_label_set_text (label, label_text);
 
     gtk_widget_show_all (dialog);
@@ -394,10 +394,10 @@ new_file_dialog (GtkWidget   *parent,
         if (!name)
         {
             char *sec_text;
-            err_text = g_strdup_printf ("Can not create file '%s'", text);
-            sec_text = g_strdup_printf ("Could not convert '%s' to filename encoding.\n"
-                                        "Please consider simpler name, such as foo.blah "
-                                        "or blah.foo", text);
+            err_text = g_strdup_printf (_("Could not create file '%s'"), text);
+            sec_text = g_strdup_printf (_("Could not convert '%s' to filename encoding. "
+                                          "Please consider simpler name, such as foo.blah "
+                                          "or blah.foo"), text);
             moo_error_dialog (dialog ? dialog : parent, err_text, sec_text);
             g_free (err_text);
             g_free (sec_text);
@@ -410,7 +410,7 @@ new_file_dialog (GtkWidget   *parent,
         if (!g_file_test (fullname, G_FILE_TEST_EXISTS))
             goto out;
 
-        err_text = g_strdup_printf ("File '%s' already exists", text);
+        err_text = g_strdup_printf (_("File '%s' already exists"), text);
         moo_error_dialog (dialog, err_text, NULL);
         g_free (err_text);
 
@@ -463,7 +463,7 @@ file_selector_create_file (MooFileSelector *filesel)
             goto out;
     }
 
-    path = new_file_dialog (GTK_WIDGET (filesel), dir, "Untitled");
+    path = new_file_dialog (GTK_WIDGET (filesel), dir, _("Untitled"));
 
     if (!path)
         goto out;
@@ -512,14 +512,14 @@ moo_file_selector_constructor (GType           type,
     moo_action_group_add_action (moo_file_view_get_actions (MOO_FILE_VIEW (fileview)),
                                  "GoToCurrentDocDir",
                                  "stock-id", GTK_STOCK_JUMP_TO,
-                                 "tooltip", "Go to current document directory",
+                                 "tooltip", _("Go to current document directory"),
                                  "closure-object", filesel,
                                  "closure-callback", goto_current_doc_dir,
                                  NULL);
     moo_action_group_add_action (moo_file_view_get_actions (MOO_FILE_VIEW (fileview)),
                                  "NewFile",
-                                 "label", "New File...",
-                                 "tooltip", "New File...",
+                                 "label", _("New File..."),
+                                 "tooltip", _("New File..."),
                                  "stock-id", GTK_STOCK_NEW,
                                  "closure-object", filesel,
                                  "closure-callback", file_selector_create_file,
@@ -537,8 +537,8 @@ moo_file_selector_constructor (GType           type,
                                      "<separator/>");
 
     label = moo_pane_label_new (MOO_STOCK_FILE_SELECTOR,
-                                NULL, NULL/*button*/, "File Selector",
-                                "File Selector");
+                                NULL, NULL/*button*/, _("File Selector"),
+                                _("File Selector"));
     moo_edit_window_add_pane (filesel->window, MOO_FILE_SELECTOR_PLUGIN_ID,
                               GTK_WIDGET (filesel), label, MOO_PANE_POS_RIGHT);
     moo_pane_label_free (label);
@@ -830,10 +830,10 @@ save_as_dialog (GtkWidget   *parent,
         if (!name)
         {
             char *err_text, *sec_text;
-            err_text = g_strdup_printf ("Could not save file as '%s'", text);
-            sec_text = g_strdup_printf ("Could not convert '%s' to filename encoding.\n"
-                                        "Please consider simpler name, such as foo.blah "
-                                        "or blah.foo", text);
+            err_text = g_strdup_printf (_("Could not save file as '%s'"), text);
+            sec_text = g_strdup_printf (_("Could not convert '%s' to filename encoding. "
+                                          "Please consider simpler name, such as foo.blah "
+                                          "or blah.foo"), text);
             moo_error_dialog (dialog ? dialog : parent, err_text, sec_text);
             g_free (err_text);
             g_free (sec_text);
@@ -903,7 +903,7 @@ drop_untitled (MooFileSelector *filesel,
 
     name = save_as_dialog (widget, destdir,
                            moo_edit_get_display_basename (doc),
-                           TRUE, "Save As");
+                           TRUE, _("Save As"));
 
     if (!name)
         return FALSE;
@@ -928,7 +928,7 @@ doc_save_as (MooFileSelector *filesel,
 
     filename = save_as_dialog (GTK_WIDGET (filesel), destdir,
                                moo_edit_get_display_basename (doc),
-                               ask_name, "Save As");
+                               ask_name, _("Save As"));
 
     if (filename)
     {
@@ -948,7 +948,7 @@ doc_save_copy (MooFileSelector *filesel,
 
     filename = save_as_dialog (GTK_WIDGET (filesel), destdir,
                                moo_edit_get_display_basename (doc),
-                               ask_name, "Save Copy As");
+                               ask_name, _("Save Copy As"));
 
     if (filename)
     {
@@ -970,7 +970,7 @@ doc_move (MooFileSelector *filesel,
 
     filename = save_as_dialog (GTK_WIDGET (filesel), destdir,
                                moo_edit_get_display_basename (doc),
-                               ask_name, "Rename To");
+                               ask_name, _("Rename To"));
 
     if (filename)
     {
@@ -1142,8 +1142,8 @@ create_drop_doc_menu (MooFileSelector *filesel,
 
     item = create_menu_item (filesel, doc, destdir,
                              MOO_STOCK_FILE_MOVE,
-                             "Move Here",
-                             "Move/Rename...",
+                             _("Move Here"),
+                             _("Move/Rename..."),
                              "Shift",
                              DROP_DOC_MOVE);
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
@@ -1151,8 +1151,8 @@ create_drop_doc_menu (MooFileSelector *filesel,
 
     item = create_menu_item (filesel, doc, destdir,
                              MOO_STOCK_FILE_SAVE_AS,
-                             "Save Here",
-                             "Save As...",
+                             _("Save Here"),
+                             _("Save As..."),
                              "Control",
                              DROP_DOC_SAVE_AS);
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
@@ -1160,9 +1160,9 @@ create_drop_doc_menu (MooFileSelector *filesel,
 
     item = create_menu_item (filesel, doc, destdir,
                              MOO_STOCK_FILE_SAVE_COPY,
-                             "Save Copy",
-                             "Save Copy As...",
-                             "  Control+Shift",
+                             _("Save Copy"),
+                             _("Save Copy As..."),
+                             "Control+Shift",
                              DROP_DOC_SAVE_COPY);
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
     items = g_slist_prepend (items, item);
@@ -1273,9 +1273,9 @@ file_selector_plugin_init (Plugin *plugin)
     g_return_val_if_fail (editor != NULL, FALSE);
 
     moo_window_class_new_action (klass, "ShowFileSelector",
-                                 "display-name", "Show File Selector",
-                                 "label", "Show File Selector",
-                                 "tooltip", "Show file selector",
+                                 "display-name", _("Show File Selector"),
+                                 "label", _("Show File Selector"),
+                                 "tooltip", _("Show file selector"),
                                  "stock-id", MOO_STOCK_FILE_SELECTOR,
                                  "closure-callback", show_file_selector,
                                  NULL);
@@ -1362,7 +1362,8 @@ _moo_file_selector_update_tools (MooPlugin *plugin)
 
 
 MOO_PLUGIN_DEFINE_INFO (file_selector,
-                        "File Selector", "File selector pane for editor window",
+                        N_("File Selector"),
+                        N_("File selector pane for editor window"),
                         "Yevgen Muntyan <muntyan@tamu.edu>",
                         MOO_VERSION, NULL);
 MOO_PLUGIN_DEFINE_FULL (FileSelector, file_selector,

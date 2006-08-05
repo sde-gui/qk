@@ -30,6 +30,11 @@ moo/mooutils/moostock.c
 moo/mooapp/mooappabout.c
 moo/mooapp/mooapp.c
 tests/medit-ui.xml
-moo/moopython/plugins/console.ini.desktop.in
+moo/moopython/plugins/terminal.ini.desktop.in
+moo/moopython/plugins/terminal.py
 moo/moopython/plugins/python.ini.desktop.in
+moo/moopython/plugins/python.py
 moo/moopython/plugins/pyproject/project-plugin.ini.desktop.in
+moo/moopython/plugins/pyproject/mproj/manager.py
+moo/moopython/plugins/pyproject/projects/c.py
+moo/moopython/plugins/pyproject/projects/latex.py

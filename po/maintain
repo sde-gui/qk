@@ -1,6 +1,15 @@
 #!/bin/sh
-if [ `basename $0` = pot ]; then
-    exec intltool-update --gettext-package=moo -p
-else
-    exec intltool-update -m
-fi
+
+case `basename $0` in
+    pot)
+        args="--gettext-package=moo -p"
+        ;;
+    dist)
+        args="--gettext-package=moo -d"
+        ;;
+    *)
+        args="-m"
+        ;;
+esac
+
+exec intltool-update $args $*
