@@ -5,6 +5,7 @@ import os.path
 import mproj.utils
 from mproj.simple import SimpleProject
 from mproj.utils import print_error
+from moo.utils import _, N_
 
 from cproj.config import CConfig
 from cproj.parser import parse_make_error
@@ -45,14 +46,14 @@ class CProject(SimpleProject):
         self.panes.extend([_BUILD_PANE_ID, _OUTPUT_PANE_ID])
 
         commands = [
-            ["Build", "Build Project", _STOCK_BUILD, "F8", _CMD_BUILD],
-            ["Compile", "Compile File", _STOCK_COMPILE, "F9", _CMD_COMPILE],
-            ["RunConfigure", "Run Configure", None, None, _CMD_CONFIGURE],
-            ["RunAutogen", "Run autogen.sh", None, None, _CMD_AUTOGEN],
-            ["Clean", "Clean Project", None, None, _CMD_CLEAN],
-            ["Distclean", "Distclean", None, None, _CMD_DISTCLEAN],
-            ["Execute", "Execute Program", _STOCK_EXECUTE, "<shift>F9", _CMD_EXECUTE],
-            ["Install", "Install", None, "<shift><ctrl>I", _CMD_INSTALL],
+            ["Build", _("Build Project"), _STOCK_BUILD, "F8", _CMD_BUILD],
+            ["Compile", _("Compile File"), _STOCK_COMPILE, "F9", _CMD_COMPILE],
+            ["RunConfigure", _("Run Configure"), None, None, _CMD_CONFIGURE],
+            ["RunAutogen", _("Run autogen.sh"), None, None, _CMD_AUTOGEN],
+            ["Clean", _("Clean Project"), None, None, _CMD_CLEAN],
+            ["Distclean", _("Distclean"), None, None, _CMD_DISTCLEAN],
+            ["Execute", _("Execute Program"), _STOCK_EXECUTE, "<shift>F9", _CMD_EXECUTE],
+            ["Install", _("Install"), None, "<shift><ctrl>I", _CMD_INSTALL],
         ]
 
         for c in commands:
@@ -70,7 +71,7 @@ class CProject(SimpleProject):
         xml = editor.get_ui_xml()
         xml.insert_markup_after(self.merge_id, "Editor/Menubar",
                                 "Project", """
-                                <item name="Build" label="_Build">
+                                <item name="Build" _label="%s">
                                   <item action="CProjectBuild"/>
                                   <item action="CProjectCompile"/>
                                   <item action="CProjectRunConfigure"/>
@@ -83,7 +84,7 @@ class CProject(SimpleProject):
                                   <separator/>
                                   <item action="CProjectExecute"/>
                                 </item>
-                                """)
+                                """ % (N_("_Build"),))
         xml.insert_markup(self.merge_id, "Editor/Toolbar/BuildToolbar",
                           0, """
                           <item action="CProjectBuild"/>
@@ -102,7 +103,7 @@ class CProject(SimpleProject):
         pane = window.get_pane(_BUILD_PANE_ID)
         if not pane:
             label = moo.utils.PaneLabel(icon_stock_id=_STOCK_BUILD,
-                                        label="Build Messages")
+                                        label=_("Build Messages"))
             output = moo.edit.CmdView()
             window.add_stop_client(output)
 
@@ -135,7 +136,7 @@ class CProject(SimpleProject):
         pane = window.get_pane(_OUTPUT_PANE_ID)
         if not pane:
             label = moo.utils.PaneLabel(icon_stock_id=_STOCK_EXECUTE,
-                                        label="Output")
+                                        label=_("Output"))
             output = moo.edit.CmdView()
             window.add_stop_client(output)
             output.set_property("highlight-current-line", False)

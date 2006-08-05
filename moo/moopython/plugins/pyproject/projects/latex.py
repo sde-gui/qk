@@ -4,6 +4,7 @@ import moo
 import mproj.utils
 from mproj.simple import SimpleProject
 from mproj.utils import print_error
+from moo.utils import _, N_
 
 from ltxproj.config import LatexConfig
 
@@ -30,8 +31,8 @@ class LatexProject(SimpleProject):
         SimpleProject.init_ui(self)
 
         commands = [
-            ["Latex", "LaTeX", _STOCK_LATEX, "F8", _CMD_LATEX],
-            ["ViewDvi", "View Dvi", _STOCK_VIEW_DVI, "F9", _CMD_VIEW_DVI],
+            ["Latex", _("LaTeX"), _STOCK_LATEX, "F8", _CMD_LATEX],
+            ["ViewDvi", _("View Dvi"), _STOCK_VIEW_DVI, "F9", _CMD_VIEW_DVI],
         ]
 
         for c in commands:
@@ -44,11 +45,11 @@ class LatexProject(SimpleProject):
         xml = editor.get_ui_xml()
         xml.insert_markup_after(self.merge_id, "Editor/Menubar",
                                 "Project", """
-                                <item name="Latex" label="_LaTeX">
+                                <item name="Latex" _label="%s">
                                   <item action="LatexProjectLatex"/>
                                   <item action="LatexProjectViewDvi"/>
                                 </item>
-                                """)
+                                """ % (N_("_LaTeX"),))
         xml.insert_markup(self.merge_id, "Editor/Toolbar/BuildToolbar",
                           0, """
                           <item action="LatexProjectLatex"/>

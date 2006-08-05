@@ -4,6 +4,10 @@ import gtk as _gtk
 import gobject as _gobject
 from __moo_utils__ import *
 
+_ = gettext
+
+def N_(string):
+    return string
 
 def _activate(action, callback, window):
     callback(window)

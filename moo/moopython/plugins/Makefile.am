@@ -3,13 +3,13 @@ SUBDIRS = pyproject
 moopython_pluginsdir = $(MOO_LIB_DIR)/plugins
 moopython_plugins_libdir = $(MOO_LIB_DIR)/plugins/lib
 
-ini_in_files = console.ini.desktop.in python.ini.desktop.in
+ini_in_files = terminal.ini.desktop.in python.ini.desktop.in
 @MOO_INTLTOOL_INI_RULE@
 ini_files = $(ini_in_files:.ini.desktop.in=.ini)
 CLEANFILES = $(ini_files)
 
 plugins =			\
-	console.py		\
+	terminal.py		\
 	python.py
 
 moopython_plugins_DATA =	\

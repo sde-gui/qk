@@ -2602,6 +2602,17 @@
 )
 
 
+;; mooutils/mooi18n.h
+
+(define-function gettext
+  (c-name "moo_gettext")
+  (return-type "const-char*")
+  (parameters
+    '("const-char*" "string")
+  )
+)
+
+
 ;; mooutils/moofiledialog.h
 
 (define-function moo_file_dialog_new

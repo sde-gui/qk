@@ -5,6 +5,7 @@ import pango
 import re
 import sys
 import os
+from moo.utils import _
 
 if os.name == 'nt':
     PYTHON_COMMAND = '"' + sys.exec_prefix + '\\python.exe" -u'
@@ -33,8 +34,8 @@ class Plugin(moo.edit.Plugin):
 
         if have_pyconsole:
             moo.utils.window_class_add_action(moo.edit.EditWindow, "PythonConsole",
-                                              display_name="Python Console",
-                                              label="Python Console",
+                                              display_name=_("Python Console"),
+                                              label=_("Python Console"),
                                               callback=self.show_console)
             xml.add_item(self.ui_merge_id, "ToolsMenu",
                          "PythonConsole", "PythonConsole", -1)
@@ -45,8 +46,8 @@ class Plugin(moo.edit.Plugin):
             [re.compile(r'\s*([^:]+):(\d+):.*'), 1, 2]
         ]
         moo.utils.window_class_add_action(moo.edit.EditWindow, "RunFile",
-                                          display_name="Run File",
-                                          label="Run File",
+                                          display_name=_("Run File"),
+                                          label=_("Run File"),
                                           stock_id=moo.utils.STOCK_EXECUTE,
                                           accel="<shift>F9",
                                           callback=self.run_file)
@@ -82,13 +83,13 @@ class Plugin(moo.edit.Plugin):
 
         swin.add(console)
         window.set_default_size(400,300)
-        window.set_title("pythony")
+        window.set_title(_("pythony"))
         window.show_all()
 
     def ensure_output(self, window):
         pane = window.get_pane(PLUGIN_ID)
         if not pane:
-            label = moo.utils.PaneLabel(icon_stock_id=moo.utils.STOCK_EXECUTE, label="Output")
+            label = moo.utils.PaneLabel(icon_stock_id=moo.utils.STOCK_EXECUTE, label=_("Output"))
             output = moo.edit.CmdView()
             output.set_property("highlight-current-line", True)
             output.connect("activate", self.output_activate)

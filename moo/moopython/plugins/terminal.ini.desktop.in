@@ -1,11 +1,11 @@
 [module]
 type=Python
-file=console.py
+file=terminal.py
 version=0.7
 
 [plugin]
-id=Console
-_name=Console
-_description=Console
+id=Terminal
+_name=Terminal
+_description=Terminal plugin
 author=Yevgen Muntyan <muntyan@math.tamu.edu>
 version=3.1415926

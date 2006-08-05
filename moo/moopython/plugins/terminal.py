@@ -2,8 +2,9 @@ import os
 import moo
 import gtk
 import gobject
+from moo.utils import _
 
-CONSOLE_PLUGIN_ID = "Console"
+TERMINAL_PLUGIN_ID = "Terminal"
 
 class Plugin(moo.edit.Plugin):
     def do_init(self):
@@ -12,12 +13,12 @@ class Plugin(moo.edit.Plugin):
         self.ui_merge_id = xml.new_merge_id()
 
         self.set_win_plugin_type(WinPlugin)
-        moo.utils.window_class_add_action(moo.edit.EditWindow, "ShowConsole",
-                                          display_name="Show Console",
-                                          label="Show Console",
+        moo.utils.window_class_add_action(moo.edit.EditWindow, "ShowTerminal",
+                                          display_name=_("Show Terminal"),
+                                          label=_("Show Terminal"),
                                           stock_id=moo.utils.STOCK_TERMINAL,
-                                          callback=self.show_console)
-        xml.add_item(self.ui_merge_id, "Editor/Menubar/View", action="ShowConsole")
+                                          callback=self.show_terminal)
+        xml.add_item(self.ui_merge_id, "Editor/Menubar/View", action="ShowTerminal")
 
         return True
 
@@ -25,10 +26,10 @@ class Plugin(moo.edit.Plugin):
         editor = moo.edit.editor_instance()
         xml = editor.get_ui_xml()
         xml.remove_ui(self.ui_merge_id)
-        moo.utils.window_class_remove_action(moo.edit.EditWindow, "ShowConsole")
+        moo.utils.window_class_remove_action(moo.edit.EditWindow, "ShowTerminal")
 
-    def show_console(self, window):
-        pane = window.get_pane(CONSOLE_PLUGIN_ID)
+    def show_terminal(self, window):
+        pane = window.get_pane(TERMINAL_PLUGIN_ID)
         window.paned.present_pane(pane)
 
 
@@ -40,11 +41,11 @@ class WinPlugin(moo.edit.WinPlugin):
 
     def do_create(self):
         label = moo.utils.PaneLabel(icon_stock_id = moo.utils.STOCK_TERMINAL,
-                                    label = "Console",
-                                    window_title = "Console")
+                                    label=_("Terminal"),
+                                    window_title=_("Terminal"))
 
         self.terminal = moo.term.Term()
-        self.terminal.connect("child_died", self.start)
+        self.terminal.connect("child-died", self.start)
         self.start()
 
         swin = gtk.ScrolledWindow()
@@ -53,12 +54,12 @@ class WinPlugin(moo.edit.WinPlugin):
         swin.add(self.terminal)
         swin.show_all()
 
-        self.window.add_pane(CONSOLE_PLUGIN_ID, swin, label, moo.utils.PANE_POS_BOTTOM)
+        self.window.add_pane(TERMINAL_PLUGIN_ID, swin, label, moo.utils.PANE_POS_BOTTOM)
 
         return True
 
     def do_destroy(self):
-        self.window.remove_pane(CONSOLE_PLUGIN_ID)
+        self.window.remove_pane(TERMINAL_PLUGIN_ID)
 
 
 if os.name == 'posix':

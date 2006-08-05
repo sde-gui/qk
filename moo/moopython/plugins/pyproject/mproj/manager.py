@@ -5,6 +5,7 @@ import gobject
 from mproj.config import File
 from mproj.simple import SimpleProject
 from mproj.utils import print_error, format_error
+from moo.utils import _, N_
 
 
 PROJECT_VERSION = "1.0"
@@ -38,8 +39,8 @@ class _OpenRecent(object):
         self.mgr = mgr
 
     def __call__(self, window):
-        action = moo.utils.MenuAction("OpenRecentProject", "Open Recent Project")
-        moo.utils.action_set_display_name(action, "Open Recent Project")
+        action = moo.utils.MenuAction("OpenRecentProject", _("Open Recent Project"))
+        moo.utils.action_set_display_name(action, _("Open Recent Project"))
         moo.utils.action_set_no_accel(action, True)
         action.set_mgr(self.mgr.recent_list.get_menu_mgr())
         moo.utils.bind_bool_property(action, "sensitive",
@@ -59,13 +60,13 @@ class Manager(object):
         editor.set_property("single-window", True)
 
         moo.utils.window_class_add_action(moo.edit.EditWindow, "OpenProject",
-                                          display_name="Open Project",
-                                          label="Open Project",
+                                          display_name=_("Open Project"),
+                                          label=_("Open Project"),
                                           stock_id=moo.utils.STOCK_OPEN_PROJECT,
                                           callback=self.open_project_cb)
         moo.utils.window_class_add_action(moo.edit.EditWindow, "CloseProject",
-                                          display_name="Close Project",
-                                          label="Close Project",
+                                          display_name=_("Close Project"),
+                                          label=_("Close Project"),
                                           stock_id=moo.utils.STOCK_CLOSE_PROJECT,
                                           callback=self.close_project_cb)
 
@@ -84,14 +85,14 @@ class Manager(object):
         self.merge_id = xml.new_merge_id()
         xml.insert_markup_after(self.merge_id, "Editor/Menubar",
                                 "View", """
-                                <item name="Project" label="_Project">
+                                <item name="Project" _label="%s">
                                   <item action="OpenProject"/>
                                   <item action="OpenRecentProject"/>
                                   <separator/>
                                   <item action="CloseProject"/>
                                   <separator/>
                                 </item>
-                                """)
+                                """ % (N_("_Project"),))
 
 
     def deinit(self):
@@ -141,7 +142,7 @@ class Manager(object):
         self.window = None
 
     def open_project_cb(self, window):
-        filename = moo.utils.file_dialogp(parent=window, title="Open Project",
+        filename = moo.utils.file_dialogp(parent=window, title=_("Open Project"),
                                           prefs_key="Plugins/Project/last_dir")
         if not filename:
             return
@@ -153,7 +154,7 @@ class Manager(object):
 
     def bad_project(self, parent, filename, error):
         print_error(error)
-        moo.utils.error_dialog(parent, "Could not open project '%s'" % (filename,), str(error))
+        moo.utils.error_dialog(parent, _("Could not open project '%s'") % (filename,), str(error))
 
     def fixme(self, parent, msg):
         moo.utils.warning_dialog(parent, "FIXME", str(msg))
