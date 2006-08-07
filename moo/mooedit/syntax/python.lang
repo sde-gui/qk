@@ -45,6 +45,7 @@
     <keyword-list name="builtinfuncs">
       <keyword>abs</keyword>
       <keyword>apply</keyword>
+      <keyword>bool</keyword>
       <keyword>buffer</keyword>
       <keyword>callable</keyword>
       <keyword>chr</keyword>
