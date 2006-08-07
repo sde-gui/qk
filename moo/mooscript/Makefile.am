@@ -39,7 +39,7 @@ AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
 
-# if MOO_INSTALL_LIB
-# mooscript_includedir = $(moo_includedir)/mooscript
-# mooscript_include_HEADERS = $(mooscript_headers)
-# endif
+if MOO_INSTALL_HEADERS
+mooscript_includedir = $(moo_includedir)/mooscript
+mooscript_include_HEADERS = $(mooscript_headers)
+endif

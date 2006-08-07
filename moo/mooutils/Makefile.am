@@ -219,7 +219,7 @@ AM_CFLAGS =			\
 	$(MOO_DEBUG_CFLAGS)	\
 	-DMOO_LOCALE_DIR=\"${MOO_LOCALE_DIR}\"
 
-# if MOO_INSTALL_LIB
-# mooutils_includedir = $(moo_includedir)/mooutils
-# mooutils_include_HEADERS = $(mooutils_include_headers)
-# endif
+if MOO_INSTALL_HEADERS
+mooutils_includedir = $(moo_includedir)/mooutils
+mooutils_include_HEADERS = $(mooutils_include_headers)
+endif
