@@ -80,6 +80,7 @@ regex_new (pcre                *re,
   EggRegex *regex = g_new0 (EggRegex, 1);
   gint capture_count;
 
+  regex->ref_count = 1;
   regex->regex = re;
   regex->pattern = g_strdup (pattern);
   regex->string_len = -1;	/* not set yet */
@@ -312,6 +313,7 @@ egg_regex_clear (EggRegex *regex)
    * delimiter offsets stored.  Free up those guys as well. */
   if (regex->delims != NULL)
     g_slist_free (regex->delims);
+  regex->delims = NULL;
 }
 
 /**
@@ -1308,7 +1310,7 @@ egg_regex_split_next_full (EggRegex          *regex,
   if (regex->delims != NULL)
     {
       token = regex->delims->data;
-      regex->delims = g_slist_remove (regex->delims, token);
+      regex->delims = g_slist_delete_link (regex->delims, regex->delims);
       return token;
     }
 

@@ -594,7 +594,7 @@ EggRegex*
 moo_find_get_regex (MooFind *find)
 {
     g_return_val_if_fail (MOO_IS_FIND (find), NULL);
-    return find->regex ? egg_regex_ref (find->regex) : NULL;
+    return egg_regex_ref (find->regex);
 }
 
 
