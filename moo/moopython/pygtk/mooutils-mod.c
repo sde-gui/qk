@@ -11,6 +11,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#include "config.h"
 #include <Python.h>
 #define NO_IMPORT_PYGOBJECT
 #include <pygobject.h>
@@ -63,6 +64,8 @@ _moo_utils_mod_init (void)
 
     if (PyErr_Occurred ())
         return FALSE;
+
+    add_constant (mod, "GETTEXT_PACKAGE", GETTEXT_PACKAGE);
 
     add_constant (mod, "STOCK_GGAP", MOO_STOCK_GGAP);
     add_constant (mod, "STOCK_MEDIT", MOO_STOCK_MEDIT);
