@@ -820,7 +820,8 @@ _moo_bookmark_mgr_get_editor (MooBookmarkMgr *mgr)
     if (mgr->priv->editor)
         return mgr->priv->editor;
 
-    xml = moo_glade_xml_new_from_buf (MOO_BOOKMARK_MGR_GLADE_UI, -1, NULL, GETTEXT_PACKAGE);
+    xml = moo_glade_xml_new_from_buf (MOO_BOOKMARK_MGR_GLADE_UI, -1,
+                                      NULL, GETTEXT_PACKAGE, NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");
     g_assert (dialog != NULL);

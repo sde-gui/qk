@@ -384,7 +384,7 @@ moo_prefs_dialog_page_new_from_xml (const char         *label,
     moo_glade_xml_set_signal_func (xml, connect_signals, &data);
     moo_glade_xml_set_prop_func (xml, set_props, &data);
 
-    if (!moo_glade_xml_parse_memory (xml, buffer, buffer_size, page_id))
+    if (!moo_glade_xml_parse_memory (xml, buffer, buffer_size, page_id, NULL))
     {
         g_critical ("%s: could not parse xml", G_STRLOC);
         g_object_unref (xml);

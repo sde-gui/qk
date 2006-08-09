@@ -162,20 +162,24 @@ static FuncDataPair *func_data_pair_new         (MooGladeCreateFunc func,
 static void          func_data_pair_free        (FuncDataPair   *pair);
 static Widget       *widget_new                 (MooGladeXML    *xml,
                                                  Child          *parent,
-                                                 MooMarkupNode  *node);
+                                                 MooMarkupNode  *node,
+                                                 GError        **error);
 static void          widget_free                (Widget         *widget);
 static Child        *child_new                  (MooGladeXML    *xml,
                                                  Widget         *parent,
-                                                 MooMarkupNode  *node);
+                                                 MooMarkupNode  *node,
+                                                 GError        **error);
 static void          child_free                 (Child          *child);
 static WidgetProps  *widget_props_new           (MooMarkupNode  *node,
                                                  GType           widget_type,
                                                  GHashTable     *add_props,
                                                  gboolean        ignore_errors,
-                                                 const char     *translation_domain);
+                                                 const char     *translation_domain,
+                                                 GError        **error);
 static void          widget_props_free          (WidgetProps    *props);
 static PackingProps *packing_props_new          (MooMarkupNode  *node,
-                                                 GType           container_type);
+                                                 GType           container_type,
+                                                 GError        **error);
 static void          packing_props_free         (PackingProps   *props);
 static Signal       *signal_new                 (const char     *id,
                                                  const char     *handler,
@@ -195,19 +199,23 @@ static gboolean      parse_property             (GParamSpec     *param_spec,
 static gboolean      moo_glade_xml_parse_markup (MooGladeXML    *xml,
                                                  MooMarkupDoc   *doc,
                                                  const char     *root,
-                                                 GtkWidget      *root_widget);
+                                                 GtkWidget      *root_widget,
+                                                 GError        **error);
 static void          moo_glade_xml_dispose      (GObject        *object);
 static gboolean      moo_glade_xml_add_widget   (MooGladeXML    *xml,
                                                  const char     *id,
-                                                 GtkWidget      *widget);
+                                                 GtkWidget      *widget,
+                                                 GError        **error);
 static gboolean      moo_glade_xml_build        (MooGladeXML    *xml,
                                                  Widget         *widget_node,
-                                                 GtkWidget      *widget);
+                                                 GtkWidget      *widget,
+                                                 GError        **error);
 static void          moo_glade_xml_cleanup      (MooGladeXML    *xml);
 
 static gboolean      create_child               (MooGladeXML    *xml,
                                                  GtkWidget      *parent,
-                                                 Child          *child);
+                                                 Child          *child,
+                                                 GError        **error);
 static void          set_special_props          (MooGladeXML    *xml,
                                                  GtkWidget      *widget,
                                                  WidgetProps    *props);
@@ -223,16 +231,19 @@ static void          connect_signals            (MooGladeXML    *xml,
                                                  Widget         *node);
 
 static GtkWidget    *create_widget              (MooGladeXML    *xml,
-                                                 Widget         *widget);
+                                                 Widget         *widget,
+                                                 GError        **error);
 static gboolean      create_children            (MooGladeXML    *xml,
                                                  Widget         *widget_node,
-                                                 GtkWidget      *widget);
-static gboolean      pack_children              (MooGladeXML    *xml,
+                                                 GtkWidget      *widget,
+                                                 GError        **error);
+static void          pack_children              (MooGladeXML    *xml,
                                                  Widget         *widget_node,
                                                  GtkWidget      *widget);
 static GtkWidget    *moo_glade_xml_create_widget(MooGladeXML    *xml,
                                                  Widget         *node,
-                                                 GtkWidget      *widget);
+                                                 GtkWidget      *widget,
+                                                 GError        **error);
 
 static void          dump_widget                (Widget         *widget_node);
 
@@ -240,7 +251,8 @@ static void          dump_widget                (Widget         *widget_node);
 static gboolean
 moo_glade_xml_build (MooGladeXML    *xml,
                      Widget         *widget_node,
-                     GtkWidget      *widget)
+                     GtkWidget      *widget,
+                     GError        **error)
 {
     if (widget)
     {
@@ -249,19 +261,23 @@ moo_glade_xml_build (MooGladeXML    *xml,
 
         if (!g_type_is_a (G_OBJECT_TYPE (widget), widget_node->type))
         {
-            g_warning ("%s: incompatible types", G_STRLOC);
+            g_set_error (error, MOO_GLADE_XML_ERROR,
+                         MOO_GLADE_XML_ERROR_FAILED,
+                         "incompatible types %s and %s",
+                         g_type_name (G_OBJECT_TYPE (widget)),
+                         g_type_name (widget_node->type));
             return FALSE;
         }
     }
 
-    widget = moo_glade_xml_create_widget (xml, widget_node, widget);
+    widget = moo_glade_xml_create_widget (xml, widget_node, widget, error);
 
-    if (!moo_glade_xml_add_widget (xml, widget_node->id, widget))
+    if (!widget || !moo_glade_xml_add_widget (xml, widget_node->id, widget, error))
         goto error;
 
     widget_node->widget = widget;
 
-    if (!create_children (xml, widget_node, widget))
+    if (!create_children (xml, widget_node, widget, error))
         goto error;
 
     set_special_props (xml, widget, widget_node->props);
@@ -522,15 +538,17 @@ connect_signals (MooGladeXML    *xml,
 
 
 static GtkWidget*
-create_widget (MooGladeXML    *xml,
-               Widget         *widget_node)
+create_widget (MooGladeXML *xml,
+               Widget      *widget_node,
+               GError     **error)
 {
     GtkWidget *widget;
 
-    widget = moo_glade_xml_create_widget (xml, widget_node, NULL);
+    widget = moo_glade_xml_create_widget (xml, widget_node, NULL, error);
 
-    if (!moo_glade_xml_add_widget (xml, widget_node->id, widget) ||
-         !create_children (xml, widget_node, widget))
+    if (!widget ||
+        !moo_glade_xml_add_widget (xml, widget_node->id, widget, error) ||
+        !create_children (xml, widget_node, widget, error))
     {
         gtk_widget_destroy (widget);
         return NULL;
@@ -606,30 +624,35 @@ set_special_props (MooGladeXML    *xml,
 static GtkWidget*
 moo_glade_xml_create_widget (MooGladeXML *xml,
                              Widget      *node,
-                             GtkWidget   *widget)
+                             GtkWidget   *widget,
+                             GError     **error)
 {
     WidgetProps *props;
     GType type = 0;
-    FuncDataPair *pair;
 
     g_return_val_if_fail (node != NULL, NULL);
 
     if (!widget)
     {
+        FuncDataPair *pair;
         pair = g_hash_table_lookup (xml->priv->id_to_func, node->id);
-
         if (pair)
-        {
             widget = pair->func (xml, node->id, pair->data);
-        }
     }
 
     if (!widget)
         type = node->type;
 
-    props = node->props;
+    if (!widget && !type)
+    {
+        g_set_error (error, MOO_GLADE_XML_ERROR,
+                     MOO_GLADE_XML_ERROR_FAILED,
+                     "coudl not create widget '%s'",
+                     node->id);
+        return NULL;
+    }
 
-    g_return_val_if_fail (widget != NULL || type != 0, NULL);
+    props = node->props;
 
     if (!widget)
     {
@@ -708,27 +731,30 @@ moo_glade_xml_create_widget (MooGladeXML *xml,
 
 
 static gboolean
-create_children (MooGladeXML    *xml,
-                 Widget         *widget_node,
-                 GtkWidget      *widget)
+create_children (MooGladeXML  *xml,
+                 Widget       *widget_node,
+                 GtkWidget    *widget,
+                 GError      **error)
 {
     GSList *l;
 
     for (l = widget_node->children; l != NULL; l = l->next)
     {
         Child *child = l->data;
-        if (!create_child (xml, widget, child))
+        if (!create_child (xml, widget, child, error))
             return FALSE;
     }
 
-    return pack_children (xml, widget_node, widget);
+    pack_children (xml, widget_node, widget);
+    return TRUE;
 }
 
 
 static gboolean
 create_child (MooGladeXML    *xml,
               GtkWidget      *parent,
-              Child          *child)
+              Child          *child,
+              GError        **error)
 {
     GtkWidget *widget = NULL;
 
@@ -741,10 +767,18 @@ create_child (MooGladeXML    *xml,
     if (child->internal_child)
     {
         gboolean added = FALSE;
-        GtkWidget *real_parent =
-                moo_glade_xml_get_widget (xml, child->internal_parent_id);
+        GtkWidget *real_parent;
 
-        g_return_val_if_fail (real_parent != NULL, FALSE);
+        real_parent = moo_glade_xml_get_widget (xml, child->internal_parent_id);
+
+        if (!real_parent)
+        {
+            g_set_error (error, MOO_GLADE_XML_ERROR,
+                         MOO_GLADE_XML_ERROR_FAILED,
+                         "could not find widget '%s'",
+                         child->internal_parent_id);
+            return FALSE;
+        }
 
         if (!strcmp (child->internal_child, "vbox") && GTK_IS_DIALOG (real_parent))
         {
@@ -768,8 +802,11 @@ create_child (MooGladeXML    *xml,
 
             if (!widget)
             {
-                widget = create_widget (xml, child->widget);
-                g_return_val_if_fail (widget != NULL, FALSE);
+                widget = create_widget (xml, child->widget, error);
+
+                if (!widget)
+                    return FALSE;
+
                 gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (real_parent), widget);
                 added = TRUE;
             }
@@ -777,12 +814,14 @@ create_child (MooGladeXML    *xml,
 
         if (!widget)
         {
-            g_warning ("could not find internal child '%s' for widget '%s'",
-                       child->internal_child, child->internal_parent_id);
+            g_set_error (error, MOO_GLADE_XML_ERROR,
+                         MOO_GLADE_XML_ERROR_FAILED,
+                         "could not find internal child '%s' for widget '%s'",
+                         child->internal_child, child->internal_parent_id);
             return FALSE;
         }
 
-        if (!added && !moo_glade_xml_add_widget (xml, child->widget->id, widget))
+        if (!added && !moo_glade_xml_add_widget (xml, child->widget->id, widget, error))
             return FALSE;
 
         if (child->widget->props->n_params)
@@ -794,15 +833,17 @@ create_child (MooGladeXML    *xml,
                                        &child->widget->props->params[i].value);
         }
 
-        if (!create_children (xml, child->widget, widget))
+        if (!create_children (xml, child->widget, widget, error))
             return FALSE;
 
         set_special_props (xml, widget, child->widget->props);
     }
     else
     {
-        widget = create_widget (xml, child->widget);
-        g_return_val_if_fail (widget != NULL, FALSE);
+        widget = create_widget (xml, child->widget, error);
+
+        if (!widget)
+            return FALSE;
     }
 
     child->widget->widget = widget;
@@ -812,15 +853,15 @@ create_child (MooGladeXML    *xml,
 }
 
 
-static gboolean
+static void
 pack_children (MooGladeXML    *xml,
                Widget         *parent_node,
                GtkWidget      *parent)
 {
     GSList *l;
 
-    g_return_val_if_fail (parent_node != NULL, FALSE);
-    g_return_val_if_fail (parent != NULL, FALSE);
+    g_return_if_fail (parent_node != NULL);
+    g_return_if_fail (parent != NULL);
 
     for (l = parent_node->children; l != NULL; l = l->next)
     {
@@ -832,7 +873,7 @@ pack_children (MooGladeXML    *xml,
             continue;
 
         widget = child->widget->widget;
-        g_return_val_if_fail (widget != NULL, FALSE);
+        g_return_if_fail (widget != NULL);
 
         if (GTK_IS_FRAME (parent) &&
             (child->props->mask & PACK_PROP_LABEL_ITEM))
@@ -917,8 +958,6 @@ pack_children (MooGladeXML    *xml,
         set_special_props (xml, widget, child->widget->props);
         set_custom_props (xml, child->widget);
     }
-
-    return TRUE;
 }
 
 
@@ -1044,7 +1083,8 @@ packing_props_free (PackingProps *props)
 static Widget*
 widget_new (MooGladeXML    *xml,
             Child          *parent,
-            MooMarkupNode  *node)
+            MooMarkupNode  *node,
+            GError        **error)
 {
     Widget *widget;
     WidgetProps *props;
@@ -1080,14 +1120,18 @@ widget_new (MooGladeXML    *xml,
 
         if (!type)
         {
-            g_warning ("could not find type of class '%s'", class_name);
+            g_set_error (error, MOO_GLADE_XML_ERROR,
+                         MOO_GLADE_XML_ERROR_FAILED,
+                         "could not find type of class '%s'",
+                         class_name);
             return NULL;
         }
     }
 
     props = widget_props_new (node, type,
                               g_hash_table_lookup (xml->priv->props, id),
-                              ignore_errors, xml->priv->translation_domain);
+                              ignore_errors, xml->priv->translation_domain,
+                              error);
     g_return_val_if_fail (props != NULL, NULL);
 
     widget = g_new0 (Widget, 1);
@@ -1103,7 +1147,7 @@ widget_new (MooGladeXML    *xml,
     {
         if (NODE_IS_CHILD (elm))
         {
-            Child *child = child_new (xml, widget, elm);
+            Child *child = child_new (xml, widget, elm, error);
 
             if (!child)
             {
@@ -1124,7 +1168,8 @@ widget_new (MooGladeXML    *xml,
 static Child*
 child_new (MooGladeXML    *xml,
            Widget         *parent,
-           MooMarkupNode  *node)
+           MooMarkupNode  *node,
+           GError        **error)
 {
     Child *child;
     PackingProps *props;
@@ -1147,13 +1192,23 @@ child_new (MooGladeXML    *xml,
     if (!widget_node)
     {
         char *text = moo_markup_node_get_string (node);
-        g_print ("%s\n", text);
+        g_set_error (error, MOO_GLADE_XML_ERROR,
+                     MOO_GLADE_XML_ERROR_FAILED,
+                     "no widget element in '%s'",
+                     text);
         g_free (text);
-        g_return_val_if_fail (widget_node != NULL, NULL);
+        return NULL;
     }
 
     class_name = moo_markup_get_prop (widget_node, "class");
-    g_return_val_if_fail (class_name != NULL, NULL);
+
+    if (!class_name)
+    {
+        g_set_error (error, MOO_GLADE_XML_ERROR,
+                     MOO_GLADE_XML_ERROR_FAILED,
+                     "no class attribute in widget element");
+        return NULL;
+    }
 
     if (!strcmp (class_name, "GtkToolbar"))
     {
@@ -1187,8 +1242,10 @@ child_new (MooGladeXML    *xml,
         }
         else
         {
-            g_warning ("%s: unknown internal child name '%s'",
-                       G_STRLOC, internal_child);
+            g_set_error (error, MOO_GLADE_XML_ERROR,
+                         MOO_GLADE_XML_ERROR_FAILED,
+                         "unknown internal child name '%s'",
+                         internal_child);
             return NULL;
         }
 
@@ -1200,8 +1257,10 @@ child_new (MooGladeXML    *xml,
             {
                 if (!real_parent->parent_node)
                 {
-                    g_warning ("%s: could not find parent of '%s'",
-                               G_STRLOC, internal_child);
+                    g_set_error (error, MOO_GLADE_XML_ERROR,
+                                 MOO_GLADE_XML_ERROR_FAILED,
+                                 "could not find parent of '%s'",
+                                 internal_child);
                     return NULL;
                 }
                 else
@@ -1220,11 +1279,12 @@ child_new (MooGladeXML    *xml,
     packing_node = moo_markup_get_element (node, "packing");
 
     if (packing_node)
-        props = packing_props_new (packing_node, parent->type);
+        props = packing_props_new (packing_node, parent->type, error);
     else
-        props = packing_props_new (NULL, 0);
+        props = packing_props_new (NULL, 0, error);
 
-    g_return_val_if_fail (props != NULL, NULL);
+    if (!props)
+        return NULL;
 
     child = g_new0 (Child, 1);
     child->parent_node = parent;
@@ -1232,12 +1292,12 @@ child_new (MooGladeXML    *xml,
     child->internal_parent_id = g_strdup (internal_parent_id);
     child->props = props;
 
-    child->widget = widget_new (xml, child, widget_node);
+    child->widget = widget_new (xml, child, widget_node, error);
 
     if (!child->widget)
     {
         child_free (child);
-        g_return_val_if_fail (child->widget != NULL, NULL);
+        return NULL;
     }
 
     return child;
@@ -1250,7 +1310,8 @@ widget_props_add (WidgetProps  *props,
                   GObjectClass *klass,
                   const char   *name,
                   const char   *value,
-                  gboolean      ignore_errors)
+                  gboolean      ignore_errors,
+                  GError      **error)
 {
     GParameter param = {NULL, {0, {{0}, {0}}}};
     gboolean special = TRUE;
@@ -1357,8 +1418,10 @@ widget_props_add (WidgetProps  *props,
         }
         else if (!ignore_errors)
         {
-            g_warning ("%s: could not convert '%s' to property '%s'",
-                       G_STRLOC, value, name);
+            g_set_error (error, MOO_GLADE_XML_ERROR,
+                         MOO_GLADE_XML_ERROR_FAILED,
+                         "could not convert '%s' to property '%s'",
+                         value, name);
             return FALSE;
         }
     }
@@ -1378,6 +1441,7 @@ widget_props_add_one (const char *name,
         GObjectClass *klass;
         gboolean result;
         gboolean ignore_errors;
+        GError **error;
     } *data = user_data;
 
     if (!data->result)
@@ -1385,7 +1449,8 @@ widget_props_add_one (const char *name,
 
     data->result = widget_props_add (data->props, data->params,
                                      data->klass, name, value,
-                                     data->ignore_errors);
+                                     data->ignore_errors,
+                                     data->error);
 }
 
 
@@ -1445,7 +1510,8 @@ widget_props_new (MooMarkupNode  *node,
                   GType           type,
                   GHashTable     *add_props,
                   gboolean        ignore_errors,
-                  const char     *translation_domain)
+                  const char     *translation_domain,
+                  GError        **error)
 {
     GArray *params;
     GObjectClass *klass;
@@ -1471,7 +1537,8 @@ widget_props_new (MooMarkupNode  *node,
 
             result = widget_props_add (props, params, klass,
                                        name, value,
-                                       ignore_errors);
+                                       ignore_errors,
+                                       error);
 
             if (!result)
                 goto error;
@@ -1487,7 +1554,8 @@ widget_props_new (MooMarkupNode  *node,
             GObjectClass *klass;
             gboolean result;
             gboolean ignore_errors;
-        } data = {props, params, klass, TRUE, ignore_errors};
+            GError **error;
+        } data = {props, params, klass, TRUE, ignore_errors, error};
 
         g_hash_table_foreach (add_props, (GHFunc) widget_props_add_one, &data);
 
@@ -1509,17 +1577,17 @@ error:
 }
 
 
-static PackingProps *packing_props_new          (MooMarkupNode  *node,
-                                                 GType           container_type)
+static PackingProps *
+packing_props_new (MooMarkupNode  *node,
+                   GType           container_type,
+                   GError        **error)
 {
     GArray *params;
     GObjectClass *klass;
     PackingProps *props;
 
     if (!node && !container_type)
-    {
         return g_new0 (PackingProps, 1);
-    }
 
     g_return_val_if_fail (node != NULL, FALSE);
 
@@ -1558,12 +1626,15 @@ static PackingProps *packing_props_new          (MooMarkupNode  *node,
 
                 if (!param_spec)
                 {
-                    g_warning ("could not find property '%s'", name);
+                    g_set_error (error, MOO_GLADE_XML_ERROR,
+                                 MOO_GLADE_XML_ERROR_FAILED,
+                                 "could not find property '%s'",
+                                 name);
                     moo_param_array_free ((GParameter*) params->data, params->len);
                     g_array_free (params, FALSE);
                     g_type_class_unref (klass);
                     packing_props_free (props);
-                    return FALSE;
+                    return NULL;
                 }
 
                 if (parse_property (param_spec, value, &param))
@@ -1572,12 +1643,15 @@ static PackingProps *packing_props_new          (MooMarkupNode  *node,
                 }
                 else
                 {
-                    g_warning ("could not convert '%s' to property '%s'", value, name);
+                    g_set_error (error, MOO_GLADE_XML_ERROR,
+                                 MOO_GLADE_XML_ERROR_FAILED,
+                                 "could not convert '%s' to property '%s'",
+                                 value, name);
                     moo_param_array_free ((GParameter*) params->data, params->len);
                     g_array_free (params, FALSE);
                     g_type_class_unref (klass);
                     packing_props_free (props);
-                    return FALSE;
+                    return NULL;
                 }
             }
         }
@@ -1977,31 +2051,21 @@ moo_glade_xml_new_empty (const char *domain)
 gboolean
 moo_glade_xml_parse_file (MooGladeXML    *xml,
                           const char     *file,
-                          const char     *root)
+                          const char     *root,
+                          GError        **error)
 {
     MooMarkupDoc *doc;
-    GError *error = NULL;
     gboolean result;
 
     g_return_val_if_fail (xml != NULL, FALSE);
     g_return_val_if_fail (file != NULL, FALSE);
 
-    doc = moo_markup_parse_file (file, &error);
+    doc = moo_markup_parse_file (file, error);
 
     if (!doc)
-    {
-        g_warning ("%s: could not parse file '%s'", G_STRLOC, file);
-
-        if (error)
-        {
-            g_warning ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
-
         return FALSE;
-    }
 
-    result = moo_glade_xml_parse_markup (xml, doc, root, NULL);
+    result = moo_glade_xml_parse_markup (xml, doc, root, NULL, error);
 
     moo_markup_doc_unref (doc);
     return result;
@@ -2012,41 +2076,59 @@ gboolean
 moo_glade_xml_parse_memory (MooGladeXML    *xml,
                             const char     *buffer,
                             int             size,
-                            const char     *root)
+                            const char     *root,
+                            GError        **error)
 {
     MooMarkupDoc *doc;
-    GError *error = NULL;
     gboolean result;
+    GError *error_here = NULL;
 
     g_return_val_if_fail (xml != NULL, FALSE);
     g_return_val_if_fail (buffer != NULL, FALSE);
 
-    doc = moo_markup_parse_memory (buffer, size, &error);
+    doc = moo_markup_parse_memory (buffer, size, &error_here);
 
     if (!doc)
     {
-        g_warning ("%s: could not parse buffer", G_STRLOC);
-
         if (error)
         {
-            g_warning ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
+            g_propagate_error (error, error_here);
+        }
+        else
+        {
+            g_warning ("could not parse markup: %s",
+                       error_here->message);
+            g_error_free (error_here);
         }
 
         return FALSE;
     }
 
-    result = moo_glade_xml_parse_markup (xml, doc, root, NULL);
+    result = moo_glade_xml_parse_markup (xml, doc, root, NULL, &error_here);
+
+    if (!result)
+    {
+        if (error)
+        {
+            g_propagate_error (error, error_here);
+        }
+        else
+        {
+            g_warning ("%s: %s", G_STRLOC, error_here->message);
+            g_error_free (error_here);
+        }
+    }
 
     moo_markup_doc_unref (doc);
     return result;
 }
 
 
-MooGladeXML*
+MooGladeXML *
 moo_glade_xml_new (const char     *file,
                    const char     *root,
-                   const char     *domain)
+                   const char     *domain,
+                   GError        **error)
 {
     MooGladeXML *xml;
 
@@ -2054,7 +2136,7 @@ moo_glade_xml_new (const char     *file,
 
     xml = moo_glade_xml_new_empty (domain);
 
-    if (!moo_glade_xml_parse_file (xml, file, root))
+    if (!moo_glade_xml_parse_file (xml, file, root, error))
     {
         g_object_unref (xml);
         return NULL;
@@ -2068,16 +2150,28 @@ MooGladeXML*
 moo_glade_xml_new_from_buf (const char     *buffer,
                             int             size,
                             const char     *root,
-                            const char     *domain)
+                            const char     *domain,
+                            GError        **error)
 {
     MooGladeXML *xml;
+    GError *error_here = NULL;
 
     g_return_val_if_fail (buffer != NULL, NULL);
 
     xml = moo_glade_xml_new_empty (domain);
 
-    if (!moo_glade_xml_parse_memory (xml, buffer, size, root))
+    if (!moo_glade_xml_parse_memory (xml, buffer, size, root, &error_here))
     {
+        if (error)
+        {
+            g_propagate_error (error, error_here);
+        }
+        else
+        {
+            g_warning ("%s: %s", G_STRLOC, error_here->message);
+            g_error_free (error_here);
+        }
+
         g_object_unref (xml);
         return NULL;
     }
@@ -2126,7 +2220,8 @@ static gboolean
 moo_glade_xml_parse_markup (MooGladeXML  *xml,
                             MooMarkupDoc *doc,
                             const char   *root_id,
-                            GtkWidget    *root_widget)
+                            GtkWidget    *root_widget,
+                            GError      **error)
 {
     MooMarkupNode *glade_elm;
     MooMarkupNode *root = NULL;
@@ -2138,7 +2233,14 @@ moo_glade_xml_parse_markup (MooGladeXML  *xml,
     g_return_val_if_fail (!root_widget || GTK_IS_WIDGET (root_widget), FALSE);
 
     glade_elm = moo_markup_get_root_element (doc, "glade-interface");
-    g_return_val_if_fail (glade_elm != NULL, FALSE);
+
+    if (!glade_elm)
+    {
+        g_set_error (error, MOO_GLADE_XML_ERROR,
+                     MOO_GLADE_XML_ERROR_FAILED,
+                     "no 'glade-interface' element");
+        return FALSE;
+    }
 
     FOREACH_ELM_START(glade_elm, elm)
     {
@@ -2171,22 +2273,26 @@ moo_glade_xml_parse_markup (MooGladeXML  *xml,
     if (!root)
     {
         if (root_id)
-            g_warning ("%s: could not find root element '%s'",
-                       G_STRLOC, root_id);
+            g_set_error (error, MOO_GLADE_XML_ERROR,
+                         MOO_GLADE_XML_ERROR_FAILED,
+                         "could not find root element '%s'",
+                         root_id);
         else
-            g_warning ("%s: could not find root element", G_STRLOC);
+            g_set_error (error, MOO_GLADE_XML_ERROR,
+                         MOO_GLADE_XML_ERROR_FAILED,
+                         "could not find root element");
 
         goto out;
     }
 
-    widget = widget_new (xml, NULL, root);
+    widget = widget_new (xml, NULL, root, error);
 
     if (!widget)
         goto out;
 
     dump_widget (widget);
 
-    if (!moo_glade_xml_build (xml, widget, root_widget))
+    if (!moo_glade_xml_build (xml, widget, root_widget, error))
         goto out;
 
 #if 0
@@ -2210,32 +2316,25 @@ moo_glade_xml_fill_widget (MooGladeXML    *xml,
                            GtkWidget      *target,
                            const char     *buffer,
                            int             size,
-                           const char     *target_name)
+                           const char     *target_name,
+                           GError        **error)
 {
     MooMarkupDoc *doc;
-    GError *error = NULL;
     gboolean result;
 
     g_return_val_if_fail (xml != NULL, FALSE);
     g_return_val_if_fail (buffer != NULL, FALSE);
     g_return_val_if_fail (GTK_IS_WIDGET (target), FALSE);
 
-    doc = moo_markup_parse_memory (buffer, size, &error);
+    doc = moo_markup_parse_memory (buffer, size, error);
 
     if (!doc)
-    {
-        g_warning ("%s: could not parse buffer", G_STRLOC);
-
-        if (error)
-        {
-            g_warning ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
-
         return FALSE;
-    }
 
-    result = moo_glade_xml_parse_markup (xml, doc, target_name, target);
+    result = moo_glade_xml_parse_markup (xml, doc,
+                                         target_name,
+                                         target,
+                                         error);
 
     moo_markup_doc_unref (doc);
     return result;
@@ -2271,14 +2370,17 @@ widget_destroyed (MooGladeXML *xml,
 static gboolean
 moo_glade_xml_add_widget (MooGladeXML    *xml,
                           const char     *id,
-                          GtkWidget      *widget)
+                          GtkWidget      *widget,
+                          GError        **error)
 {
     g_return_val_if_fail (id != NULL, FALSE);
     g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
 
     if (g_hash_table_lookup (xml->priv->widgets, id))
     {
-        g_critical ("%s: duplicated id '%s'", G_STRLOC, id);
+        g_set_error (error, MOO_GLADE_XML_ERROR,
+                     MOO_GLADE_XML_ERROR_FAILED,
+                     "duplicated id '%s'", id);
         return FALSE;
     }
 
@@ -2442,6 +2544,13 @@ static void
 func_data_pair_free (FuncDataPair *pair)
 {
     g_free (pair);
+}
+
+
+GQuark
+moo_glade_xml_error_quark (void)
+{
+    return g_quark_from_static_string ("moo-glade-xml-error");
 }
 
 

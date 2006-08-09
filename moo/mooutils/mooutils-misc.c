@@ -640,7 +640,8 @@ moo_log_window_new (void)
     MooLogWindow *log;
     PangoFontDescription *font;
 
-    xml = moo_glade_xml_new_from_buf (MOO_LOG_WINDOW_GLADE_UI, -1, NULL, GETTEXT_PACKAGE);
+    xml = moo_glade_xml_new_from_buf (MOO_LOG_WINDOW_GLADE_UI, -1,
+                                      NULL, GETTEXT_PACKAGE, NULL);
     log = g_new (MooLogWindow, 1);
 
     log->window = moo_glade_xml_get_widget (xml, "window");

@@ -26,6 +26,11 @@ G_BEGIN_DECLS
 #define MOO_IS_GLADE_XML_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_GLADE_XML))
 #define MOO_GLADE_XML_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_GLADE_XML, MooGladeXMLClass))
 
+#define MOO_GLADE_XML_ERROR (moo_glade_xml_error_quark ())
+
+typedef enum {
+    MOO_GLADE_XML_ERROR_FAILED
+} MooGladeXMLError;
 
 typedef struct _MooGladeXML        MooGladeXML;
 typedef struct _MooGladeXMLPrivate MooGladeXMLPrivate;
@@ -60,7 +65,8 @@ typedef gboolean   (*MooGladePropFunc)      (MooGladeXML    *xml,
                                              gpointer        data);
 
 
-GType        moo_glade_xml_get_type         (void);
+GType        moo_glade_xml_get_type         (void) G_GNUC_CONST;
+GQuark       moo_glade_xml_error_quark      (void) G_GNUC_CONST;
 
 MooGladeXML *moo_glade_xml_new_empty        (const char     *domain);
 
@@ -88,24 +94,29 @@ void         moo_glade_xml_set_property     (MooGladeXML    *xml,
 
 gboolean     moo_glade_xml_parse_file       (MooGladeXML    *xml,
                                              const char     *file,
-                                             const char     *root);
+                                             const char     *root,
+                                             GError        **error);
 gboolean     moo_glade_xml_parse_memory     (MooGladeXML    *xml,
                                              const char     *buffer,
                                              int             size,
-                                             const char     *root);
+                                             const char     *root,
+                                             GError        **error);
 gboolean     moo_glade_xml_fill_widget      (MooGladeXML    *xml,
                                              GtkWidget      *target,
                                              const char     *buffer,
                                              int             size,
-                                             const char     *target_name);
+                                             const char     *target_name,
+                                             GError        **error);
 
 MooGladeXML *moo_glade_xml_new              (const char     *file,
                                              const char     *root,
-                                             const char     *domain);
+                                             const char     *domain,
+                                             GError        **error);
 MooGladeXML *moo_glade_xml_new_from_buf     (const char     *buffer,
                                              int             size,
                                              const char     *root,
-                                             const char     *domain);
+                                             const char     *domain,
+                                             GError        **error);
 
 gpointer     moo_glade_xml_get_widget       (MooGladeXML    *xml,
                                              const char     *id);

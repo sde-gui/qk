@@ -113,7 +113,7 @@ moo_find_init (MooFind *find)
     moo_glade_xml_map_id (find->xml, "search_entry", MOO_TYPE_HISTORY_ENTRY);
     moo_glade_xml_map_id (find->xml, "replace_entry", MOO_TYPE_HISTORY_ENTRY);
 
-    if (!moo_glade_xml_parse_memory (find->xml, MOO_TEXT_FIND_GLADE_UI, -1, "vbox"))
+    if (!moo_glade_xml_parse_memory (find->xml, MOO_TEXT_FIND_GLADE_UI, -1, "vbox", NULL))
     {
         g_object_unref (find->xml);
         find->xml = NULL;
@@ -1331,7 +1331,8 @@ moo_text_view_run_goto_line (GtkTextView *view)
     buffer = gtk_text_view_get_buffer (view);
     line_count = gtk_text_buffer_get_line_count (buffer);
 
-    xml = moo_glade_xml_new_from_buf (MOO_TEXT_GOTO_LINE_GLADE_UI, -1, NULL, GETTEXT_PACKAGE);
+    xml = moo_glade_xml_new_from_buf (MOO_TEXT_GOTO_LINE_GLADE_UI, -1,
+                                      NULL, GETTEXT_PACKAGE, NULL);
     g_return_if_fail (xml != NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");

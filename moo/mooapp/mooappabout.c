@@ -68,7 +68,7 @@ show_credits (void)
 
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "written_by", MOO_TYPE_HTML);
-    moo_glade_xml_parse_memory (xml, MOO_APP_ABOUT_GLADE_UI, -1, "credits");
+    moo_glade_xml_parse_memory (xml, MOO_APP_ABOUT_GLADE_UI, -1, "credits", NULL);
 
     credits_dialog = moo_glade_xml_get_widget (xml, "credits");
     g_return_if_fail (credits_dialog != NULL);
@@ -120,7 +120,7 @@ show_license (void)
         return;
     }
 
-    xml = moo_glade_xml_new_from_buf (MOO_APP_ABOUT_GLADE_UI, -1, "license", GETTEXT_PACKAGE);
+    xml = moo_glade_xml_new_from_buf (MOO_APP_ABOUT_GLADE_UI, -1, "license", GETTEXT_PACKAGE, NULL);
 
     license_dialog = moo_glade_xml_get_widget (xml, "license");
     g_return_if_fail (license_dialog != NULL);
@@ -157,7 +157,8 @@ show_system_info (void)
         return;
     }
 
-    xml = moo_glade_xml_new_from_buf (MOO_APP_ABOUT_GLADE_UI, -1, "system", GETTEXT_PACKAGE);
+    xml = moo_glade_xml_new_from_buf (MOO_APP_ABOUT_GLADE_UI, -1,
+                                      "system", GETTEXT_PACKAGE, NULL);
 
     system_info_dialog = moo_glade_xml_get_widget (xml, "system");
     g_return_if_fail (system_info_dialog != NULL);
@@ -284,7 +285,7 @@ create_about_dialog (void)
     info = moo_app_get_info (moo_app_get_instance());
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "url", MOO_TYPE_LINK_LABEL);
-    moo_glade_xml_parse_memory (xml, MOO_APP_ABOUT_GLADE_UI, -1, "dialog");
+    moo_glade_xml_parse_memory (xml, MOO_APP_ABOUT_GLADE_UI, -1, "dialog", NULL);
     g_return_val_if_fail (xml != NULL, NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");

@@ -1403,7 +1403,7 @@ _moo_edit_print_options_dialog (GtkWidget *parent)
     GtkWidget *dialog;
     MooGladeXML *xml;
 
-    xml = moo_glade_xml_new_from_buf (MOO_PRINT_GLADE_XML, -1, NULL);
+    xml = moo_glade_xml_new_from_buf (MOO_PRINT_GLADE_XML, -1, NULL, NULL);
     g_return_if_fail (xml != NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");
@@ -1427,7 +1427,7 @@ moo_print_operation_create_custom_widget (G_GNUC_UNUSED GtkPrintOperation *opera
     GtkWidget *page;
     MooGladeXML *xml;
 
-    xml = moo_glade_xml_new_from_buf (MOO_PRINT_GLADE_XML, -1, "page");
+    xml = moo_glade_xml_new_from_buf (MOO_PRINT_GLADE_XML, -1, "page", NULL);
     g_return_val_if_fail (xml != NULL, NULL);
 
     page = moo_glade_xml_get_widget (xml, "page");

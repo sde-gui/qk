@@ -721,7 +721,7 @@ _moo_accel_prefs_page_new (GtkActionGroup *actions)
 
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_class (xml, "GtkButton", MOO_TYPE_ACCEL_BUTTON);
-    moo_glade_xml_parse_memory (xml, MOO_ACCEL_PREFS_GLADE_UI, -1, "page");
+    moo_glade_xml_parse_memory (xml, MOO_ACCEL_PREFS_GLADE_UI, -1, "page", NULL);
 
     page = moo_prefs_dialog_page_new ("Shortcuts", MOO_STOCK_KEYBOARD);
 
@@ -1244,7 +1244,8 @@ _moo_accel_prefs_dialog_new (GtkActionGroup *group)
     GtkWidget *page, *dialog, *page_holder;
     MooGladeXML *xml;
 
-    xml = moo_glade_xml_new_from_buf (MOO_ACCEL_PREFS_GLADE_UI, -1, "dialog", GETTEXT_PACKAGE);
+    xml = moo_glade_xml_new_from_buf (MOO_ACCEL_PREFS_GLADE_UI, -1,
+                                      "dialog", GETTEXT_PACKAGE, NULL);
     g_return_val_if_fail (xml != NULL, NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");
