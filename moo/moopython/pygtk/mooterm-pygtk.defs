@@ -14,6 +14,7 @@
   (parent "GObject")
   (c-name "MooTermBuffer")
   (gtype-id "MOO_TYPE_TERM_BUFFER")
+  (final "true")
 )
 
 (define-object Tag
@@ -56,6 +57,7 @@
   (gtype-id "MOO_TYPE_TERM_COMMAND")
   (copy-func "moo_term_command_copy")
   (release-func "moo_term_command_free")
+  (final "true")
 )
 
 (define-pointer Line

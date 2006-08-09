@@ -5,6 +5,12 @@
   (gtype-id "MOO_TYPE_FILE_VIEW")
 )
 
+(define-function moo_file_view_new
+  (c-name "moo_file_view_new")
+  (is-constructor-of "MooFileView")
+  (return-type "GtkWidget*")
+)
+
 (define-method chdir
   (of-object "MooFileView")
   (c-name "moo_file_view_chdir")

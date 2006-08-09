@@ -27,6 +27,7 @@
   (parent "GObject")
   (c-name "MooFileWatch")
   (gtype-id "MOO_TYPE_FILE_WATCH")
+  (final "true")
 )
 
 (define-object FilterMgr
@@ -41,6 +42,7 @@
   (parent "GObject")
   (c-name "MooGladeXML")
   (gtype-id "MOO_TYPE_GLADE_XML")
+  (final "true")
 )
 
 (define-object HistoryEntry
@@ -734,6 +736,7 @@
 (define-function moo_glade_xml_new_empty
   (c-name "moo_glade_xml_new_empty")
   (return-type "MooGladeXML*")
+  (is-constructor-of "MooGladeXML")
   (parameters
     '("const-char*" "domain" (null-ok) (default "NULL"))
   )
@@ -787,6 +790,7 @@
   (parameters
     '("const-char*" "file")
     '("const-char*" "root")
+    '("GError**" "error")
   )
 )
 
@@ -796,19 +800,33 @@
   (return-type "gboolean")
   (parameters
     '("const-char*" "buffer")
-    '("int" "size")
-    '("const-char*" "root")
+    '("int" "size" (null-ok) (default "-1"))
+    '("const-char*" "root" (null-ok) (default "NULL"))
+    '("GError**" "error")
+  )
+)
+
+(define-method fill_widget
+  (of-object "MooGladeXML")
+  (c-name "moo_glade_xml_fill_widget")
+  (return-type "gboolean")
+  (parameters
+    '("GtkWidget*" "target")
+    '("const-char*" "buffer")
+    '("int" "size" (null-ok) (default "-1"))
+    '("const-char*" "target_name")
+    '("GError**" "error")
   )
 )
 
 (define-function moo_glade_xml_new
   (c-name "moo_glade_xml_new")
-  (is-constructor-of "MooGladeXml")
   (return-type "MooGladeXML*")
   (parameters
     '("const-char*" "file")
-    '("const-char*" "root")
+    '("const-char*" "root" (null-ok) (default "NULL"))
     '("const-char*" "domain" (null-ok) (default "NULL"))
+    '("GError**" "error")
   )
 )
 
@@ -817,9 +835,10 @@
   (return-type "MooGladeXML*")
   (parameters
     '("const-char*" "buffer")
-    '("int" "size")
-    '("const-char*" "root")
+    '("int" "size" (null-ok) (default "-1"))
+    '("const-char*" "root" (null-ok) (default "NULL"))
     '("const-char*" "domain" (null-ok) (default "NULL"))
+    '("GError**" "error")
   )
 )
 
@@ -846,8 +865,8 @@
   (c-name "moo_history_entry_new")
   (is-constructor-of "MooHistoryEntry")
   (return-type "GtkWidget*")
-  (parameters
-    '("const-char*" "user_id" (null-ok))
+  (properties
+    '("user_id" (optional))
   )
 )
 
@@ -883,8 +902,8 @@
   (c-name "moo_history_list_new")
   (is-constructor-of "MooHistoryList")
   (return-type "MooHistoryList*")
-  (parameters
-    '("const-char*" "user_id")
+  (properties
+    '("user_id")
   )
 )
 
@@ -1236,8 +1255,8 @@
   (c-name "moo_prefs_dialog_new")
   (is-constructor-of "MooPrefsDialog")
   (return-type "GtkWidget*")
-  (parameters
-    '("const-char*" "title")
+  (properties
+    '("title" (optional))
   )
 )
 
@@ -1278,6 +1297,16 @@
   )
 )
 
+(define-virtual init
+  (of-object "MooPrefsDialog")
+  (return-type "none")
+)
+
+(define-virtual apply
+  (of-object "MooPrefsDialog")
+  (return-type "none")
+)
+
 
 
 ;; From ../mooutils/mooprefsdialogpage.h
@@ -1287,22 +1316,22 @@
   (is-constructor-of "MooPrefsDialogPage")
   (return-type "GtkWidget*")
   (properties
-    '("const-char*" "label")
-    '("const-char*" "icon_stock_id")
+    '("label" (optional))
+    '("icon_stock_id" (optional))
   )
 )
 
-(define-function moo_prefs_dialog_page_new_from_xml
+(define-function prefs_dialog_page_new_from_xml
   (c-name "moo_prefs_dialog_page_new_from_xml")
   (return-type "GtkWidget*")
   (parameters
     '("const-char*" "label")
-    '("const-char*" "icon_stock_id")
-    '("MooGladeXML*" "xml")
+    '("const-char*" "icon_stock_id" (null-ok) (default "NULL"))
+    '("MooGladeXML*" "xml" (null-ok) (default "NULL"))
     '("const-char*" "buffer")
-    '("int" "buffer_size")
+    '("int" "buffer_size" (null-ok) (default "-1"))
     '("const-char*" "page_id")
-    '("const-char*" "prefs_root")
+    '("const-char*" "prefs_root" (null-ok) (default "NULL"))
   )
 )
 
@@ -1380,11 +1409,11 @@
 
 ;; From ../mooutils/moowindow.h
 
-;(define-function moo_window_new
-;  (c-name "moo_window_new")
-;  (is-constructor-of "MooWindow")
-;  (return-type "GtkWidget*")
-;)
+(define-function moo_window_new
+  (c-name "moo_window_new")
+  (is-constructor-of "MooWindow")
+  (return-type "GtkWidget*")
+)
 
 (define-method close
   (of-object "MooWindow")
@@ -1771,7 +1800,7 @@
   (is-constructor-of "MooPaned")
   (return-type "GtkWidget*")
   (properties
-    '("MooPanePosition" "pane_position")
+    '("pane_position" (optional))
   )
 )
 
@@ -1988,7 +2017,7 @@
   (is-constructor-of "MooUndoStack")
   (return-type "MooUndoStack*")
   (properties
-    '("GObject*" "document")
+    '("document")
   )
 )
 
@@ -2620,12 +2649,12 @@
   (is-constructor-of "MooFileDialog")
   (return-type "MooFileDialog*")
   (properties
-    '("MooFileDialogType" "type")
-    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
-    '("gboolean" "multiple" (null-ok) (default "FALSE"))
-    '("const-char*" "title" (null-ok) (default "NULL"))
-    '("const-char*" "dir" (null-ok) (default "NULL"))
-    '("const-char*" "name" (null-ok) (default "NULL"))
+    '("type")
+    '("parent" (optional))
+    '("multiple" (optional))
+    '("title" (optional))
+    '("dir" (optional))
+    '("name" (optional))
   )
 )
 
