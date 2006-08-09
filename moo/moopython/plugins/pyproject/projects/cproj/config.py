@@ -1,72 +1,83 @@
 import os.path
 import moo
 
-from mproj.utils import expand_command
-from mproj.config import Dict, StringDict, List
-from mproj.simple import SimpleProject, SimpleConfig
+from mprj.utils import expand_command
+from mprj.settings import *
+from mprj.simple import SimpleProject, SimpleConfig
 
 
-class MakeOptions(Dict):
-    __attributes__ = {'flags' : str,
-                      'cmd' : str,
-                      'n_jobs' : int,
-                      'vars' : StringDict}
+class MakeOptions(Group):
+    __items__ = {
+        'flags' : String,
+        'cmd' : String,
+        'n_jobs' : Int(default=1),
+        'vars' : Dict
+    }
 
-class ConfigureOptions(Dict):
-    __attributes__ = {'args' : str,
-                      'cppflags' : str,
-                      'ldflags' : str,
-                      'cflags' : str,
-                      'cxxflags' : str,
-                      'cc' : str,
-                      'cxx' : str,
-                      'vars' : StringDict}
+class ConfigureOptions(Group):
+    __items__ = {
+        'args' : String,
+        'cppflags' : String,
+        'ldflags' : String,
+        'cflags' : String,
+        'cxxflags' : String,
+        'cc' : String,
+        'cxx' : String,
+        'vars' : Dict
+    }
 
-class Commands(Dict):
-    __attributes__ = {'build' : [str, 'cd $(top_builddir) && $(make)'],
-                      'compile' : [str, 'cd $(builddir) && $(make) $(base).o'],
-                      'configure' : [str, 'cd $(top_builddir) && $(top_srcdir)/configure $(configure_args)'],
-                      'autogen' : [str, 'cd $(top_builddir) && $(top_srcdir)/autogen.sh $(configure_args)'],
-                      'clean' : [str, 'cd $(top_builddir) && $(make) clean'],
-                      'distclean' : [str, 'cd $(top_builddir) && $(make) distclean'],
-                      'install' : [str, 'cd $(top_builddir) && $(make) install']}
+class Commands(Group):
+    __items__ = {
+        'build' : String(default='cd $(top_builddir) && $(make)'),
+        'compile' : String(default='cd $(builddir) && $(make) $(base).o'),
+        'configure' : String(default='cd $(top_builddir) && $(top_srcdir)/configure $(configure_args)'),
+        'autogen' : String(default='cd $(top_builddir) && $(top_srcdir)/autogen.sh $(configure_args)'),
+        'clean' : String(default='cd $(top_builddir) && $(make) clean'),
+        'distclean' : String(default='cd $(top_builddir) && $(make) distclean'),
+        'install' : String(default='cd $(top_builddir) && $(make) install')
+    }
 
-class RunOptions(Dict):
-    __attributes__ = {'run_from' : str,
-                      'run_from_dir' : str,
-                      'exe' : str,
-                      'args' : str,
-                      'vars' : StringDict}
+class RunOptions(Group):
+    __items__ = {
+        'run_from' : String,
+        'run_from_dir' : String,
+        'exe' : String,
+        'args' : String,
+        'vars' : Dict
+    }
 
     def load(self, node):
-        Dict.load(self, node)
+        Group.load(self, node)
 
         if not self.run_from:
             self.run_from = 'build_dir'
-        if self.run_from and self.run_from not in ['exe_dir', 'build_dir', 'custom_dir']:
-                raise TypeError
+        if self.run_from not in [None, '', 'exe_dir', 'build_dir', 'custom_dir']:
+            raise TypeError()
         if self.run_from == 'custom_dir':
             if not self.run_from_dir:
-                raise TypeError
+                raise TypeError()
 
-class BuildConfiguration(Dict):
-
-    __attributes__ = {'build_dir' : str,
-                      'make' : MakeOptions,
-                      'run' : RunOptions,
-                      'configure' : ConfigureOptions}
+class BuildConfiguration(Group):
+    __items__ = {
+        'build_dir' : String,
+        'make' : MakeOptions,
+        'run' : RunOptions,
+        'configure' : ConfigureOptions
+    }
 
     def load(self, node):
         self.name = node.name
-        Dict.load(self, node)
+        Group.load(self, node)
 
 
 class CConfig(SimpleConfig):
-    __attributes__ = {'run' : RunOptions,
-                      'make' : MakeOptions,
-                      'configurations' : List(BuildConfiguration),
-                      'active' : str,
-                      'commands' : [Commands, Commands()]}
+    __items__ = {
+        'run' : RunOptions,
+        'make' : MakeOptions,
+        'configurations' : List(BuildConfiguration),
+        'active' : String,
+        'commands' : Commands
+    }
 
     def load(self):
         SimpleConfig.load(self)
@@ -182,7 +193,7 @@ class CConfig(SimpleConfig):
                               self.get_build_dir(topdir))
 
 if __name__ == '__main__':
-    from mproj.configxml import File
+    from mprj.configxml import File
 
     s1 = """
     <medit-project name="moo" type="C" version="2.0">

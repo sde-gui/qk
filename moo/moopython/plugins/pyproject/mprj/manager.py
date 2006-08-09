@@ -2,9 +2,9 @@ import moo
 import sys
 import os, os.path
 import gobject
-from mproj.config import File
-from mproj.simple import SimpleProject
-from mproj.utils import print_error, format_error
+from mprj.config import File
+from mprj.simple import SimpleProject
+from mprj.utils import print_error, format_error
 from moo.utils import _, N_
 
 
@@ -64,6 +64,11 @@ class Manager(object):
                                           label=_("Open Project"),
                                           stock_id=moo.utils.STOCK_OPEN_PROJECT,
                                           callback=self.open_project_cb)
+        moo.utils.window_class_add_action(moo.edit.EditWindow, "ProjectOptions",
+                                          display_name=_("Project _Options"),
+                                          label=_("Project Options"),
+                                          stock_id=moo.utils.STOCK_PROJECT_OPTIONS,
+                                          callback=self.project_options_cb)
         moo.utils.window_class_add_action(moo.edit.EditWindow, "CloseProject",
                                           display_name=_("Close Project"),
                                           label=_("Close Project"),
@@ -89,6 +94,8 @@ class Manager(object):
                                   <item action="OpenProject"/>
                                   <item action="OpenRecentProject"/>
                                   <separator/>
+                                  <item action="ProjectOptions"/>
+                                  <separator/>
                                   <item action="CloseProject"/>
                                   <separator/>
                                 </item>
@@ -99,6 +106,7 @@ class Manager(object):
         self.close_project(True)
         moo.utils.window_class_remove_action(moo.edit.EditWindow, "OpenProject")
         moo.utils.window_class_remove_action(moo.edit.EditWindow, "CloseProject")
+        moo.utils.window_class_remove_action(moo.edit.EditWindow, "ProjectOptions")
         moo.utils.window_class_remove_action(moo.edit.EditWindow, "OpenRecentProject")
         editor = moo.edit.editor_instance()
         editor.get_ui_xml().remove_ui(self.merge_id)
@@ -122,6 +130,9 @@ class Manager(object):
         action = self.window.get_action("CloseProject")
         if action:
             action.set_property("sensitive", False)
+        action = self.window.get_action("ProjectOptions")
+        if action:
+            action.set_property("visible", self.project is not None)
 
         if not self.project:
             project = self.project_to_open
@@ -162,6 +173,12 @@ class Manager(object):
     def close_window(self, window):
         return not self.close_project(False)
 
+    def project_options_cb(self, window):
+        if self.project:
+            self.project.options_dialog(window)
+        else:
+            self.fixme(window, "disable Close Project command")
+
     def close_project_cb(self, window):
         if self.project:
             if self.close_project(False):
@@ -191,9 +208,12 @@ class Manager(object):
         self.recent_list.add_filename(filename)
         moo.utils.prefs_set_string("Plugins/Project/last", filename)
 
-        action = self.window.get_action("CloseProject")
-        if action:
-            action.set_property("sensitive", True)
+        close = self.window.get_action("CloseProject")
+        options = self.window.get_action("ProjectOptions")
+        if close:
+            close.set_property("sensitive", True)
+        if options:
+            options.set_property("visible", True)
 
 
     """ close_project """
@@ -208,9 +228,12 @@ class Manager(object):
         self.project = None
 
         if self.window:
-            action = self.window.get_action("CloseProject")
-            if action:
-                action.set_property("sensitive", False)
+            close = self.window.get_action("CloseProject")
+            options = self.window.get_action("ProjectOptions")
+            if close:
+                close.set_property("sensitive", False)
+            if close:
+                options.set_property("visible", False)
             self.window.set_title_prefix("medit")
 
         return True

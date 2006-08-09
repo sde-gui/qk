@@ -1,1 +1,0 @@
-"""mproj - medit project plugin"""

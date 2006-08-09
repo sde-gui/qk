@@ -1,19 +1,23 @@
 import os.path
 import moo
 
-from mproj.utils import expand_command
-from mproj.config import Dict, StringDict, List
-from mproj.simple import SimpleProject, SimpleConfig
+from mprj.utils import expand_command
+from mprj.settings import *
+from mprj.simple import SimpleProject, SimpleConfig
 
 
-class Commands(Dict):
-    __attributes__ = {'latex' : [str, 'cd $(srcdir) && latex $(basename)'],
-                      'viewdvi' : [str, 'cd $(srcdir) && kdvi $(base).dvi']}
+class Commands(Group):
+    __items__ = {
+        'latex' : [String, {'default' : 'cd $(srcdir) && latex $(basename)'}],
+        'viewdvi' : [String, {'default' : 'cd $(srcdir) && kdvi $(base).dvi'}]
+    }
 
 
 class LatexConfig(SimpleConfig):
-    __attributes__ = {'master' : str,
-                      'commands' : [Commands, Commands()]}
+    __items__ = {
+        'master' : String,
+        'commands' : Commands
+    }
 
     def get_command(self, cmd, filename, topdir):
         if self.master:
@@ -24,7 +28,7 @@ class LatexConfig(SimpleConfig):
                               None, filename, topdir, None)
 
 if __name__ == '__main__':
-    from mproj.configxml import File
+    from mprj.configxml import File
 
     s1 = """
     <medit-project name="moo" type="LaTeX" version="1.0">

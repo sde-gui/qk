@@ -1,9 +1,9 @@
 import gtk
 import moo
 
-import mproj.utils
-from mproj.simple import SimpleProject
-from mproj.utils import print_error
+import mprj.utils
+from mprj.simple import SimpleProject
+from mprj.utils import print_error
 from moo.utils import _, N_
 
 from ltxproj.config import LatexConfig
@@ -69,7 +69,7 @@ class LatexProject(SimpleProject):
             self.exec_command(window, cmd)   and \
             self.after_command(window, cmd)
         except Exception, e:
-            mproj.utils.oops(window, e)
+            mprj.utils.oops(window, e)
 
 
     def before_command(self, window, cmd):

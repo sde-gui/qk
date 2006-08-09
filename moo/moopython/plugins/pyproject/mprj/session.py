@@ -1,4 +1,4 @@
-from mproj.configxml import XML, Dir, Text
+from mprj.config._xml import XML, XMLGroup, XMLItem
 import moo
 
 class Session(object):
@@ -36,11 +36,11 @@ class Session(object):
         f.close()
 
     def __format(self):
-        root = Dir('medit-session')
+        root = XMLGroup('medit-session')
         for d in self.__docs:
-            root.add_child(Text('doc', d))
+            root.add_child(XMLItem('doc', d))
         if self.__active is not None:
-            root.add_child(Text('active', self.__active))
+            root.add_child(XMLItem('active', self.__active))
         return '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n' + \
                 root.get_string()
 

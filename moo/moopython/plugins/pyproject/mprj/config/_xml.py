@@ -1,9 +1,11 @@
+__all__ = ['BadFileError', 'File']
+
 import cgi
 import xml.dom
 from xml.dom.minidom import parseString
 
 
-class BadFile(Exception):
+class BadFileError(Exception):
     pass
 
 class File(object):
@@ -12,7 +14,7 @@ class File(object):
         self.root = self.xml.root
 
         if self.root.name != 'medit-project':
-            raise BadFile('Invalid root element "%s"' % (self.root.name,))
+            raise BadFileError('Invalid root element "%s"' % (self.root.name,))
 
         self.path = path
         self.version = self.root.get_attr('version')
@@ -20,16 +22,16 @@ class File(object):
         self.project_type = self.root.get_attr('type')
 
         if not self.version:
-            raise BadFile('Version missing')
+            raise BadFileError('Version missing')
         if not self.name:
-            raise BadFile('Name missing')
+            raise BadFileError('Name missing')
         if not self.project_type:
-            raise BadFile('Project type missing')
+            raise BadFileError('Project type missing')
 
 
 _INDENT_STRING = " "
 
-class Node(object):
+class XMLNode(object):
     def __init__(self, name):
         if not name:
             raise ValueError()
@@ -63,9 +65,13 @@ class Node(object):
     def __repr__(self):
         return self.get_string()
 
-class Dir(Node):
+    def _attributes_equal(self, other):
+        return self.name == other.name and \
+               self.__attrs == other.__attrs
+
+class XMLGroup(XMLNode):
     def __init__(self, name, children=[]):
-        Node.__init__(self, name)
+        XMLNode.__init__(self, name)
         self.__children = []
         self.__children_names = {}
 
@@ -83,7 +89,7 @@ class Dir(Node):
             return None
 
     def add_child(self, child, index=-1):
-        if not isinstance(child, Node):
+        if not isinstance(child, XMLNode):
             raise TypeError
         if index < 0 or index >= len(self.__children):
             self.__children.append(child)
@@ -105,26 +111,26 @@ class Dir(Node):
 
     def get_xml_elm_type(self, elm):
         if len(elm.childNodes) > 1:
-            return Dir
+            return XMLGroup
         if not elm.childNodes:
-            return Text
+            return Item
         c = elm.childNodes[0]
         if c.nodeType == xml.dom.Node.ELEMENT_NODE:
-            return Dir
+            return XMLGroup
         elif c.nodeType == xml.dom.Node.TEXT_NODE:
-            return Text
+            return XMLItem
 
     def load_xml(self, elm):
-        Node.load_xml(self, elm)
+        XMLNode.load_xml(self, elm)
         for c in elm.childNodes:
             if c.nodeType == xml.dom.Node.ELEMENT_NODE:
                 t = self.get_xml_elm_type(c)
-                if t is Dir:
-                    child = Dir(c.tagName)
+                if t is XMLGroup:
+                    child = XMLGroup(c.tagName)
                     self.add_child(child)
                     child.load_xml(c)
-                elif t is Text:
-                    child = Text(c.tagName)
+                elif t is XMLItem:
+                    child = XMLItem(c.tagName)
                     self.add_child(child)
                     child.load_xml(c)
 
@@ -135,16 +141,25 @@ class Dir(Node):
         s += _INDENT_STRING * indent + "</%s>\n" % (self.name,)
         return s
 
-class Text(Node):
+    def __eq__(self, other):
+        if type(other) != XMLGroup:
+            return False
+        if not self._attributes_equal(other):
+            return False
+        return self.children() == other.children()
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+class XMLItem(XMLNode):
     def __init__(self, name, content=None):
-        Node.__init__(self, name)
+        XMLNode.__init__(self, name)
         self.set(content)
 
     def get(self):
-        return self.__content
+        return self.content
 
     def set(self, content):
-        self.__content = content
+        self.content = content
 
     def get_string(self, indent=0):
         s = _INDENT_STRING * indent + self.format_start()
@@ -157,7 +172,15 @@ class Text(Node):
     def load_xml(self, elm):
         if elm.childNodes:
             self.set(elm.childNodes[0].data)
-        Node.load_xml(self, elm)
+        XMLNode.load_xml(self, elm)
+
+    def __eq__(self, other):
+        if type(other) != XMLItem:
+            return False
+        return self._attributes_equal(other) and \
+               self.content == other.content
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 
 class XML(object):
@@ -165,7 +188,7 @@ class XML(object):
         object.__init__(self)
 
         dom = parseString(string)
-        self.root = Dir(dom.documentElement.tagName)
+        self.root = XMLGroup(dom.documentElement.tagName)
         self.root.load_xml(dom.documentElement)
         dom.unlink()
 

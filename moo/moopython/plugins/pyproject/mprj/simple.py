@@ -1,13 +1,15 @@
-from mproj.project import Project
-from mproj.config import Config, StringDict
-from mproj.utils import print_error
-from mproj.session import Session
 import moo
 import os.path
 
+from mprj.project import Project
+from mprj.config import Config
+from mprj.settings import Dict
+from mprj.utils import print_error
+from mprj.session import Session
+
 
 class SimpleConfig(Config):
-    __attributes__ = { 'vars' : StringDict }
+    __items__ = { 'vars' : Dict }
 
 
 class SimpleProject(Project):
@@ -66,3 +68,10 @@ class SimpleProject(Project):
             Session(self.window).save(file)
         except:
             print_error()
+
+    def options_dialog(self, window):
+        dialog = self.create_options_dialog()
+        dialog.run(window)
+
+    def create_options_dialog(self):
+        return None

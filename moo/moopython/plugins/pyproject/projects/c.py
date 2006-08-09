@@ -2,13 +2,14 @@ import gtk
 import moo
 import os.path
 
-import mproj.utils
-from mproj.simple import SimpleProject
-from mproj.utils import print_error
+import mprj.utils
+from mprj.simple import SimpleProject
+from mprj.utils import print_error
 from moo.utils import _, N_
 
 from cproj.config import CConfig
 from cproj.parser import parse_make_error
+from cproj.optdialog import Dialog as OptionsDialog
 
 
 _STOCK_BUILD = moo.utils.STOCK_BUILD
@@ -203,7 +204,7 @@ class CProject(SimpleProject):
             self.exec_command(window, cmd)   and \
             self.after_command(window, cmd)
         except Exception, e:
-            mproj.utils.oops(window, e)
+            mprj.utils.oops(window, e)
 
 
     def before_command(self, window, cmd):
@@ -249,8 +250,11 @@ class CProject(SimpleProject):
                 return False
             return self.__cmd_simple(cmd, filename, window)
 
-        mproj.utils.implement_me(window, "Command " + cmd)
+        mprj.utils.implement_me(window, "Command " + cmd)
         return False
+
+    def create_options_dialog(self):
+        return OptionsDialog(self)
 
 class _BuildConfigurationAction(object):
     def __init__(self, project):
