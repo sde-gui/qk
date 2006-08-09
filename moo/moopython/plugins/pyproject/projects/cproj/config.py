@@ -1,5 +1,6 @@
 import os.path
 import moo
+from moo.utils import _
 
 from mprj.utils import expand_command
 from mprj.settings import *
@@ -11,20 +12,24 @@ class MakeOptions(Group):
         'flags' : String,
         'cmd' : String,
         'n_jobs' : Int(default=1),
-        'vars' : Dict
+        'vars' : Dict(str)
     }
+    __item_name__ = _('Make options')
+    __item_descrption__ = _('Make options')
 
 class ConfigureOptions(Group):
     __items__ = {
-        'args' : String,
+        'args' : String(name=_('Configure arguments')),
         'cppflags' : String,
         'ldflags' : String,
         'cflags' : String,
         'cxxflags' : String,
         'cc' : String,
         'cxx' : String,
-        'vars' : Dict
+        'vars' : Dict(str, name=_('Environment variables'))
     }
+    __item_name__ = _('Configure options')
+    __item_descrption__ = _('Configure options')
 
 class Commands(Group):
     __items__ = {
@@ -36,6 +41,8 @@ class Commands(Group):
         'distclean' : String(default='cd $(top_builddir) && $(make) distclean'),
         'install' : String(default='cd $(top_builddir) && $(make) install')
     }
+    __item_name__ = _('Build commands')
+    __item_descrption__ = _('Build commands')
 
 class RunOptions(Group):
     __items__ = {
@@ -43,8 +50,10 @@ class RunOptions(Group):
         'run_from_dir' : String,
         'exe' : String,
         'args' : String,
-        'vars' : Dict
+        'vars' : Dict(str)
     }
+    __item_name__ = _('Run options')
+    __item_descrption__ = _('Run options')
 
     def load(self, node):
         Group.load(self, node)
@@ -59,11 +68,13 @@ class RunOptions(Group):
 
 class BuildConfiguration(Group):
     __items__ = {
-        'build_dir' : String,
+        'build_dir' : String(name=_('Build directory')),
         'make' : MakeOptions,
         'run' : RunOptions,
         'configure' : ConfigureOptions
     }
+    __item_name__ = _('Build configuration')
+    __item_descrption__ = _('Build configuration')
 
     def load(self, node):
         self.name = node.name
@@ -74,27 +85,26 @@ class CConfig(SimpleConfig):
     __items__ = {
         'run' : RunOptions,
         'make' : MakeOptions,
-        'configurations' : List(BuildConfiguration),
+        'configurations' : Dict(BuildConfiguration),
         'active' : String,
         'commands' : Commands
     }
 
-    def load(self):
-        SimpleConfig.load(self)
+    def load_xml(self):
+        SimpleConfig.load_xml(self)
 
-        if not self.configurations:
+        if not len(self.configurations):
             raise RuntimeError("No configurations defined")
 
         if self.active:
-            confs = [c.name for c in self.configurations]
-            if self.active not in confs:
+            if self.active not in self.configurations.keys():
                 raise RuntimeError("Invalid configuration %s" % (self.active,))
         else:
-            self.active = self.configurations[0].name
+            self.active = self.configurations.keys()[0]
 
         self.confs = {}
-        for c in self.configurations:
-            self.confs[c.name] = c
+        for name in self.configurations:
+            self.confs[name] = self.configurations[name]
 
     def get_active_conf(self):
         if not self.confs:
@@ -193,7 +203,7 @@ class CConfig(SimpleConfig):
                               self.get_build_dir(topdir))
 
 if __name__ == '__main__':
-    from mprj.configxml import File
+    from mprj.config import File
 
     s1 = """
     <medit-project name="moo" type="C" version="2.0">
@@ -227,13 +237,11 @@ if __name__ == '__main__':
     """
 
     c = CConfig(File(s1))
-    c.load()
     s2 = str(c.get_xml())
 
     print s2
 
     c = CConfig(File(s2))
-    c.load()
     s3 = str(c.get_xml())
 
     assert s2 == s3

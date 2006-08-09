@@ -200,7 +200,6 @@ class Manager(object):
         project_type = self.project_types.get(file.project_type)
         config_type = getattr(project_type, '__config__')
         config = config_type(file)
-        config.load()
 
         self.project = project_type(window, config)
         self.project.load()

@@ -3,7 +3,6 @@ from moo.utils import _
 import mprj.optdialog
 from mprj.optdialog import page_new_from_file
 
-print __file__
 dir = os.path.dirname(__file__)
 
 class Page(mprj.optdialog.Page):

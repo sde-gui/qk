@@ -5,7 +5,7 @@ from mprj.config._xml import XMLItem
 
 
 class Setting(Item):
-    def __init__(self, id, value=None, default=None, editable=None, data_type=None, **kwargs):
+    def __init__(self, id, value=None, default=None, editable=True, data_type=None, **kwargs):
         Item.__init__(self, id, **kwargs)
 
         self.__default = default
@@ -64,7 +64,8 @@ class Setting(Item):
         return self.equal(self.get_default())
 
     def copy_from(self, other):
-        self.set_value(other.get_value())
+        changed = Item.copy_from(self, other)
+        return self.set_value(other.get_value()) or changed
 
     def copy(self):
         return create_instance(type(self), self.get_id(),

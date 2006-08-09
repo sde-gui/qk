@@ -233,38 +233,13 @@ class TestGroup(unittest.TestCase):
         self.assert_(g.foo == g.bar)
 
 
-class TestList(unittest.TestCase):
-    def testlist(self):
-        typ = List(str)
-        l = typ.create_instance('ddd')
-        l.append('1')
-        l.append('2')
-        self.assert_(len(l) == 2)
-        l2 = typ.create_instance('ddd')
-        l2.append('1')
-        l2.append('2')
-        self.assert_(l == l2)
-
-    def testlist2(self):
-        typ = List(Setting())
-        l = typ.create_instance('ddd')
-        l.append(Setting.create_instance('a'))
-        l.append(Setting.create_instance('b'))
-        self.assert_(len(l) == 2)
-        l2 = typ.create_instance('ddd')
-        l2.append(Setting.create_instance('a'))
-        l2.append(Setting.create_instance('b'))
-        self.assert_(l == l2)
-        self.assert_(l == l.copy())
-
-
 class TestConfig(unittest.TestCase):
     def testconfig(self):
         class C(Config):
             __items__ = {
                 'variables' : Dict(str),
                 'project_dir' : Setting(data_type=str),
-                'stuff' : List(str)
+                'stuff' : Dict(str)
             }
 
         f = File("""<medit-project version="1.0" name="Foo" type="Simple">
@@ -280,7 +255,7 @@ class TestConfig(unittest.TestCase):
         self.assert_(len(c.get_items()) == 3)
         self.assert_(c.project_dir == '.')
         self.assert_(len(c.stuff) == 1)
-        self.assert_(c.stuff[0] == 'ddd')
+        self.assert_(c.stuff['kff'] == 'ddd')
         self.assert_(c.variables['foo'] == 'bar')
 
 

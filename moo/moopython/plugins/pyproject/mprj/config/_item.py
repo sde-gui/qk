@@ -93,9 +93,25 @@ class Item(object):
     def __init__(self, id, name=None, description=None, visible=True):
         object.__init__(self)
         self.__id = id
-        self.__name = name or _(id)
-        self.__description = description or self.__name
-        self.__visible = visible
+
+        if name:
+            self.__name = name or _(id)
+        elif hasattr(type(self), '__item_name__'):
+            self.__name = getattr(type(self), '__item_name__')
+        else:
+            self.__name = _(id)
+
+        if description:
+            self.__description = description
+        elif hasattr(type(self), '__item_description__'):
+            self.__description = getattr(type(self), '__item_description__')
+        else:
+            self.__description = self.__name
+
+        if hasattr(type(self), '__item_visible__'):
+            self.__visible = getattr(type(self), '__item_visible__')
+        else:
+            self.__visible = visible
 
     def set_name(self, name): self.__name = name
     def set_description(self, description): self.__description = description
@@ -115,6 +131,7 @@ class Item(object):
         self.__name = other.__name
         self.__description = other.__description
         self.__visible = other.__visible
+        return False
 
     def copy(self):
         copy = create_instance(type(self), self.get_id())

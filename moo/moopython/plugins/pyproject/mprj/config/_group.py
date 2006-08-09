@@ -2,6 +2,7 @@ __all__ = ['Group']
 
 from mprj.config._item import Item, _ItemMeta, create_instance
 from mprj.config._xml import XMLGroup
+from mprj.config._utils import dict_diff
 
 
 class _GroupMeta(_ItemMeta):
@@ -43,12 +44,12 @@ class Group(Item):
 
         if items:
             for id in items:
-                self.add_item(id, items[id])
+                self.add_item(items[id], id)
 
         if hasattr(type(self), '__items__'):
             items = getattr(type(self), '__items__')
             for id in items:
-                self.add_item(id, items[id])
+                self.add_item(items[id], id)
 
     def __getattr__(self, attr):
         if self.has_item(attr):
@@ -83,9 +84,17 @@ class Group(Item):
         return self.__items_dict.has_key(name)
 
     def copy_from(self, other):
-        Item.copy_from(self, other)
-        for item in self:
-            item.copy_from(other[item.get_id()])
+        changed = Item.copy_from(self, other)
+        first, common, second = dict_diff(self.__items_dict, other.__items_dict)
+        if first or second:
+            changed = True
+        for id in first:
+            self.remove_item(id)
+        for id in common:
+            changed = self[id].copy_from(other[id]) or changed
+        for id in second:
+            self.add_item(other[id].copy())
+        return changed
 
     def get_value(self):
         return self
@@ -93,9 +102,12 @@ class Group(Item):
     def get_items(self):
         return self.__items
 
-    def add_item(self, id, info):
+    def add_item(self, info, id=None):
+        if id is None:
+            id = info.get_id()
         if self.has_item(id):
             raise RuntimeError("item '%s' already exist in '%s'" % (id, self))
+#         print info
         item = create_instance(info, id)
         self.__items.append(item)
         self.__items_dict[id] = item

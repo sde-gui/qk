@@ -28,7 +28,7 @@ class LatexConfig(SimpleConfig):
                               None, filename, topdir, None)
 
 if __name__ == '__main__':
-    from mprj.configxml import File
+    from mprj.config import File
 
     s1 = """
     <medit-project name="moo" type="LaTeX" version="1.0">
@@ -37,13 +37,11 @@ if __name__ == '__main__':
     """
 
     c = LatexConfig(File(s1))
-    c.load()
     s2 = str(c.get_xml())
 
     print s2
 
     c = LatexConfig(File(s2))
-    c.load()
     s3 = str(c.get_xml())
 
     assert s2 == s3

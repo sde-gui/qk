@@ -1,15 +1,15 @@
 import moo
 import os.path
+from moo.utils import _
 
 from mprj.project import Project
-from mprj.config import Config
-from mprj.settings import Dict
+from mprj.config import Config, Dict
 from mprj.utils import print_error
 from mprj.session import Session
 
 
 class SimpleConfig(Config):
-    __items__ = { 'vars' : Dict }
+    __items__ = { 'vars' : Dict(str, name=_('Environment variables')) }
 
 
 class SimpleProject(Project):
@@ -75,3 +75,26 @@ class SimpleProject(Project):
 
     def create_options_dialog(self):
         return None
+
+
+if __name__ == '__main__':
+    from mprj.config import File
+
+    s1 = """
+    <medit-project name="moo" type="Simple" version="2.0">
+      <vars>
+        <foo>bar</foo>
+        <blah>bom</blah>
+      </vars>
+    </medit-project>
+    """
+
+    c = SimpleConfig(File(s1))
+    s2 = str(c.get_xml())
+
+    print s2
+
+    c = SimpleConfig(File(s2))
+    s3 = str(c.get_xml())
+
+    assert s2 == s3

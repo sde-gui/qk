@@ -1,7 +1,7 @@
 """ settings.py: basic Setting subclasses """
 
-from mprj.config import Setting, Group, List
-from mprj.config._view import *
+from mprj.config import Setting, Group, Dict, Item
+from mprj.config.view import *
 from mprj.config._xml import XMLItem, XMLGroup
 
 def _cmp_nodes(n1, n2):
@@ -9,25 +9,25 @@ def _cmp_nodes(n1, n2):
 
 class String(Setting):
     def get_cell_type(self):
-        return mprj.configview.CellText
+        return CellText
     def get_string(self):
-        return self.get()
+        return self.get_value()
     def set_string(self, text):
-        self.set(text)
+        self.set_value(text)
 
 class Bool(Setting):
     def get_cell_type(self):
-        return mprj.configview.CellToggle
+        return CellToggle
     def get_bool(self):
-        return self.get()
+        return self.get_value()
     def set_string(self, text):
-        self.set(bool(text))
+        self.set_value(bool(text))
 
 class Int(Setting):
     def get_cell_type(self):
-        return mprj.configview.CellText
+        return CellText
     def get_int(self):
-        return self.get()
+        return self.get_value()
     def check_value(self, value):
         try:
             value = int(value)
@@ -35,28 +35,7 @@ class Int(Setting):
         except:
             return False
     def set_string(self, text):
-        self.set(int(text))
-
-class Dict(Setting, dict):
-    def load(self, node):
-        for c in node.children():
-            self[c.name] = c.get()
-    def save(self):
-        nodes = []
-        for k in self:
-            val = self[k]
-            if val is not None:
-                nodes.append(XmlItem(k, val))
-        if nodes:
-            nodes.sort(_cmp_nodes)
-            return [XMLGroup(self.get_id(), nodes)]
-        else:
-            return []
-    def copy(self):
-        copy = Dict()
-        for key in self:
-            copy[key] = self[key]
-        return copy
+        self.set_value(int(text))
 
 if __name__ == '__main__':
     import gtk
@@ -65,16 +44,16 @@ if __name__ == '__main__':
     window.set_size_request(300,200)
     window.connect('destroy', gtk.main_quit)
 
-    group = mprj.config.Group('ddd')
-    s = String('blah', value='111')
+    group = Group.create_instance('ddd')
+    s = String.create_instance('blah', value='111')
     group.add_item(s)
     group.blah = 8
-    print s.get()
+    print s.get_value()
     print s is group.blah
-    group.add_item(String('foo', value='foofoofoofoofoofoofoofoo'))
-    group.add_item(Bool('fff', value=True))
+    group.add_item(String.create_instance('foo', value='foofoofoofoofoofoofoofoo'))
+    group.add_item(Bool.create_instance('fff', value=True))
 
-    view = mprj.configview.View(group)
+    view = View(group)
     window.add(view)
     window.show_all()
     gtk.main()

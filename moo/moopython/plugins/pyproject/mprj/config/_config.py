@@ -1,6 +1,7 @@
 __all__ = ['Config']
 
 from mprj.config._group import Group, _GroupMeta
+from mprj.config._xml import XMLGroup
 
 
 class Config(Group):
@@ -20,10 +21,17 @@ class Config(Group):
         self.name = file.name
         self.type = file.project_type
         self.version = file.version
+        self.load_xml()
+
+    def load_xml(self):
         Group.load(self, self.file.root)
 
     def get_xml(self):
-        xml = self.save()[0]
+        xml = Group.save(self)
+        if xml:
+            xml = xml[0]
+        else:
+            xml = XMLGroup('medit-project')
         xml.set_attr('name', self.name)
         xml.set_attr('type', self.type)
         xml.set_attr('version', self.version)

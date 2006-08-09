@@ -1,4 +1,4 @@
-__all__ = ['Column', 'View']
+__all__ = ['Column', 'View', 'CellText', 'CellToggle']
 
 """ configview.py: TreeView column and cell renderers for settings """
 
@@ -144,7 +144,7 @@ class CellText(gtk.CellRendererText):
     def do_edited(self, path, text):
         model = self.__model
         setting = model.get_value(model.get_iter(path), self.__column)
-        setting.set(text)
+        setting.set_string(text)
 
 
 """ CellToggle: toggle renderer """
@@ -158,4 +158,4 @@ class CellToggle(gtk.CellRendererToggle):
     def do_toggled(self, path):
         model = self.__model
         setting = model.get_value(model.get_iter(path), self.__column)
-        setting.set(not setting.get_bool())
+        setting.set_value(not setting.get_bool())
