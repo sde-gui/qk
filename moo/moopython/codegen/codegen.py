@@ -28,14 +28,14 @@ class Coverage(object):
     def printstats(self):
         total = self.wrapped + self.not_wrapped
         fd = sys.stderr
-        if total:
-            fd.write("***INFO*** The coverage of %s is %.2f%% (%i/%i)\n" %
-                     (self.name,
-                      float(self.wrapped*100)/total,
-                      self.wrapped,
-                      total))
-        else:
-            fd.write("***INFO*** There are no declared %s.\n" % self.name)
+        #if total:
+            #fd.write("***INFO*** The coverage of %s is %.2f%% (%i/%i)\n" %
+                     #(self.name,
+                      #float(self.wrapped*100)/total,
+                      #self.wrapped,
+                      #total))
+        #else:
+            #fd.write("***INFO*** There are no declared %s.\n" % self.name)
 
 functions_coverage = Coverage("global functions")
 methods_coverage = Coverage("methods")
@@ -94,7 +94,7 @@ class FileOutput:
 
 class Wrapper:
     type_tmpl = (
-        'PyTypeObject Py%(typename)s_Type = {\n'
+        'static PyTypeObject Py%(typename)s_Type = {\n'
         '    PyObject_HEAD_INIT(NULL)\n'
         '    0,                                 /* ob_size */\n'
         '    (char*) "%(classname)s",           /* tp_name */\n'
@@ -1236,11 +1236,11 @@ class SourceWriter:
     def write_type_declarations(self):
         self.fp.write('/* ---------- forward type declarations ---------- */\n')
         for obj in self.parser.boxes:
-            self.fp.write('PyTypeObject Py' + obj.c_name + '_Type;\n')
+            self.fp.write('static PyTypeObject Py' + obj.c_name + '_Type;\n')
         for obj in self.parser.objects:
-            self.fp.write('PyTypeObject Py' + obj.c_name + '_Type;\n')
+            self.fp.write('static PyTypeObject Py' + obj.c_name + '_Type;\n')
         for interface in self.parser.interfaces:
-            self.fp.write('PyTypeObject Py' + interface.c_name + '_Type;\n')
+            self.fp.write('static PyTypeObject Py' + interface.c_name + '_Type;\n')
         self.fp.write('\n')
 
     def write_body(self):
@@ -1403,7 +1403,7 @@ class SourceWriter:
                 self.fp.write(
                     '    pyg_set_object_has_new_constructor(%s);\n' %
                     obj.typecode)
-            else:
+            elif not obj.final:
                 print >> sys.stderr, (
                     "Warning: Constructor for %s needs to be updated to new API\n"
                     "         See http://live.gnome.org/PyGTK_2fWhatsNew28"

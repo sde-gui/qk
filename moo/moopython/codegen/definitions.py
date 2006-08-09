@@ -79,6 +79,7 @@ class ObjectDef(Definition):
         self.implements = []
         self.class_init_func = None
         self.has_new_constructor_api = False
+        self.final = False
         for arg in get_valid_scheme_definitions(args):
             if arg[0] == 'in-module':
                 self.module = arg[1]
@@ -93,6 +94,8 @@ class ObjectDef(Definition):
             elif arg[0] == 'fields':
                 for parg in arg[1:]:
                     self.fields.append((parg[0], parg[1]))
+            elif arg[0] == 'final':
+                self.final = (arg[1] == 'true')
             elif arg[0] == 'implements':
                 self.implements.append(arg[1])
     def merge(self, old):

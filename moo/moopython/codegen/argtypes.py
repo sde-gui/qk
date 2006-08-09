@@ -211,7 +211,7 @@ class GUniCharArg(ArgType):
                 '    }\n'
                 '#endif\n'
                 '    py_ret = (Py_UNICODE)ret;\n'
-                '    return PyUnicode_FromUnicode(&py_ret, 1);\n')
+                '    return PyUnicode_FromUnicode(&py_ret, 1);')
     def write_param(self, ptype, pname, pdflt, pnull, info):
         if pdflt:
             info.varlist.add('gunichar', pname + " = '" + pdflt + "'")
@@ -289,9 +289,9 @@ class SizeArg(ArgType):
     def write_return(self, ptype, ownsreturn, info):
         info.varlist.add(ptype, 'ret')
         if self.llp64:
-            info.codeafter.append('    return PyLong_FromUnsignedLongLong(ret);\n')
+            info.codeafter.append('    return PyLong_FromUnsignedLongLong(ret);')
         else:
-            info.codeafter.append('    return PyLong_FromUnsignedLong(ret);\n')
+            info.codeafter.append('    return PyLong_FromUnsignedLong(ret);')
 
 class SSizeArg(ArgType):
 
@@ -313,9 +313,9 @@ class SSizeArg(ArgType):
     def write_return(self, ptype, ownsreturn, info):
         info.varlist.add(ptype, 'ret')
         if self.llp64:
-            info.codeafter.append('    return PyLong_FromLongLong(ret);\n')
+            info.codeafter.append('    return PyLong_FromLongLong(ret);')
         else:
-            info.codeafter.append('    return PyLong_FromLong(ret);\n')
+            info.codeafter.append('    return PyLong_FromLong(ret);')
 
 class LongArg(ArgType):
     def write_param(self, ptype, pname, pdflt, pnull, info):
@@ -327,12 +327,12 @@ class LongArg(ArgType):
         info.add_parselist('l', ['&' + pname], [pname])
     def write_return(self, ptype, ownsreturn, info):
         info.varlist.add(ptype, 'ret')
-        info.codeafter.append('    return PyInt_FromLong(ret);\n')
+        info.codeafter.append('    return PyInt_FromLong(ret);')
 
 class BoolArg(IntArg):
     def write_return(self, ptype, ownsreturn, info):
         info.varlist.add('int', 'ret')
-        info.codeafter.append('    return PyBool_FromLong(ret);\n')
+        info.codeafter.append('    return PyBool_FromLong(ret);')
 
 class TimeTArg(ArgType):
     def write_param(self, ptype, pname, pdflt, pnull, info):
@@ -356,7 +356,7 @@ class ULongArg(ArgType):
         info.add_parselist('k', ['&' + pname], [pname])
     def write_return(self, ptype, ownsreturn, info):
         info.varlist.add(ptype, 'ret')
-        info.codeafter.append('    return PyLong_FromUnsignedLong(ret);\n')
+        info.codeafter.append('    return PyLong_FromUnsignedLong(ret);')
 
 class UInt32Arg(ULongArg):
     def write_param(self, ptype, pname, pdflt, pnull, info):
