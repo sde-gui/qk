@@ -273,7 +273,6 @@ static LoadResult   load_binary (MooEdit            *edit,
 #endif
 
 static const char *common_encodings[] = {
-    "UTF8",
     "ISO_8859-15",
     "ISO_8859-1"
 };
@@ -339,18 +338,7 @@ moo_edit_load_default (G_GNUC_UNUSED MooEditLoader *loader,
 
     if (!encoding)
     {
-        guint i;
-
-        for (i = 0; i < G_N_ELEMENTS (common_encodings); ++i)
-        {
-            g_clear_error (error);
-
-            encoding = common_encodings[i];
-            result = try_load (edit, file, encoding, error);
-
-            if (result == SUCCESS || result == ERROR_FILE)
-                break;
-        }
+        result = try_load (edit, file, "UTF8", error);
 
         if (result == ERROR_ENCODING)
         {
@@ -361,6 +349,22 @@ moo_edit_load_default (G_GNUC_UNUSED MooEditLoader *loader,
                 g_clear_error (error);
                 encoding = locale_charset;
                 result = try_load (edit, file, encoding, error);
+            }
+        }
+
+        if (result == ERROR_ENCODING)
+        {
+            guint i;
+
+            for (i = 0; i < G_N_ELEMENTS (common_encodings); ++i)
+            {
+                g_clear_error (error);
+
+                encoding = common_encodings[i];
+                result = try_load (edit, file, encoding, error);
+
+                if (result == SUCCESS || result == ERROR_FILE)
+                    break;
             }
         }
     }
