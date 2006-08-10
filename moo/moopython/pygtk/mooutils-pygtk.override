@@ -519,3 +519,110 @@ _wrap_moo_file_watch_monitor_file (PyGObject *self, PyObject *args, PyObject *kw
 
     return PyInt_FromLong (ret);
 }
+%%
+override moo_glade_xml_fill_widget kwargs
+static PyObject *
+_wrap_moo_glade_xml_fill_widget (PyGObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = { (char*) "target", (char*) "buffer", (char*) "target_name", NULL };
+    PyGObject *target;
+    char *buffer, *target_name;
+    GError *error = NULL;
+    int ret;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
+                                     (char*) "O!ss:MooGladeXML.fill_widget", kwlist,
+                                     &PyGtkWidget_Type, &target,
+                                     &buffer, &target_name))
+        return NULL;
+
+    ret = moo_glade_xml_fill_widget (MOO_GLADE_XML(self->obj),
+                                     GTK_WIDGET(target->obj),
+                                     buffer, -1,
+                                     target_name,
+                                     &error);
+
+    if (pyg_error_check(&error))
+        return NULL;
+
+    return PyBool_FromLong(ret);
+}
+%%
+override moo_file_dialog kwargs
+static PyObject *
+_wrap_moo_file_dialog (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = { (char*) "type", (char*) "parent", (char*) "title", (char*) "start_dir", NULL };
+    PyObject *py_type = NULL;
+    int type;
+    char *title = NULL, *start_dir = NULL;
+    const gchar *ret;
+    GtkWidget *parent = NULL;
+    PyGObject *py_parent = NULL;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char*) "O|Ozz:file_dialog", kwlist,
+                                     &py_type, &py_parent, &title, &start_dir))
+        return NULL;
+
+    if (pyg_enum_get_value (MOO_TYPE_FILE_DIALOG_TYPE, py_type, &type))
+        return NULL;
+
+    if ((PyObject*) py_parent == Py_None)
+    {
+        parent = NULL;
+    }
+    else if (py_parent && pygobject_check (py_parent, &PyGtkWidget_Type))
+    {
+        parent = GTK_WIDGET (py_parent->obj);
+    }
+    else if (py_parent)
+    {
+        PyErr_SetString (PyExc_TypeError, "parent should be a GtkWidget or None");
+        return NULL;
+    }
+
+    ret = moo_file_dialog (parent, type, title, start_dir);
+
+    if (ret)
+        return PyString_FromString(ret);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+%%
+override moo_bind_sensitive kwargs
+static PyObject *
+_wrap_moo_bind_sensitive (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = { (char*) "toggle_btn", (char*) "dependent", (char*) "invert", NULL };
+    PyGObject *toggle_btn, *dependent;
+    int invert = FALSE;
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "O!O!|i:moo_bind_sensitive", kwlist,
+                                      &PyGtkWidget_Type, &toggle_btn,
+                                      &PyGtkWidget_Type, &dependent,
+                                      &invert))
+        return NULL;
+
+    moo_bind_sensitive (GTK_WIDGET (toggle_btn->obj),
+                        (GtkWidget**) &dependent->obj, 1,
+                        invert);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+%%
+override-slot MooGladeXML.tp_getattr
+static PyObject *
+_wrap_moo_glade_xml_tp_getattr (PyObject *self, char *attr)
+{
+    GObject *ret = NULL;
+
+    if (g_str_has_prefix (attr, "w_"))
+        ret = moo_glade_xml_get_widget (MOO_GLADE_XML (pygobject_get (self)), attr + 2);
+
+    if (ret)
+        return pygobject_new (ret);
+
+    return Py_FindMethod ((PyMethodDef*) _PyMooGladeXML_methods, self, attr);
+}

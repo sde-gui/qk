@@ -106,9 +106,10 @@
     '("char*" "label")
     '("GdkPixbuf*" "icon")
     '("char*" "icon_stock_id")
-    '("MooGladeXML*" "xml")
     '("GSList*" "widgets")
     '("gboolean" "auto_apply")
+;;     xml may not be wrapped
+;;     '("MooGladeXML*" "xml")
   )
 )
 
@@ -219,79 +220,42 @@
   (in-module "Moo")
   (c-name "MooUIWidgetType")
   (gtype-id "MOO_TYPE_UI_WIDGET_TYPE")
-  (values
-    '("menubar" "MOO_UI_MENUBAR")
-    '("menu" "MOO_UI_MENU")
-    '("toolbar" "MOO_UI_TOOLBAR")
-  )
 )
 
 (define-enum FileDialogType
   (in-module "Moo")
   (c-name "MooFileDialogType")
   (gtype-id "MOO_TYPE_FILE_DIALOG_TYPE")
-  (values
-    '("file-open-existing" "MOO_DIALOG_FILE_OPEN_EXISTING")
-    '("file-open-any" "MOO_DIALOG_FILE_OPEN_ANY")
-    '("file-save" "MOO_DIALOG_FILE_SAVE")
-    '("dir-open" "MOO_DIALOG_DIR_OPEN")
-  )
 )
 
 (define-enum FileWatchMethod
   (in-module "Moo")
   (c-name "MooFileWatchMethod")
   (gtype-id "MOO_TYPE_FILE_WATCH_METHOD")
-  (values
-    '("stat" "MOO_FILE_WATCH_STAT")
-    '("fam" "MOO_FILE_WATCH_FAM")
-    '("win32" "MOO_FILE_WATCH_WIN32")
-  )
 )
 
 (define-enum FileWatchEventCode
   (in-module "Moo")
   (c-name "MooFileWatchEventCode")
   (gtype-id "MOO_TYPE_FILE_WATCH_EVENT_CODE")
-  (values
-    '("changed" "MOO_FILE_WATCH_CHANGED")
-    '("deleted" "MOO_FILE_WATCH_DELETED")
-    '("created" "MOO_FILE_WATCH_CREATED")
-    '("moved" "MOO_FILE_WATCH_MOVED")
-  )
 )
 
 (define-enum PanePosition
   (in-module "Moo")
   (c-name "MooPanePosition")
   (gtype-id "MOO_TYPE_PANE_POSITION")
-  (values
-    '("left" "MOO_PANE_POS_LEFT")
-    '("right" "MOO_PANE_POS_RIGHT")
-    '("top" "MOO_PANE_POS_TOP")
-    '("bottom" "MOO_PANE_POS_BOTTOM")
-  )
 )
 
 (define-flags PrefsMatchType
   (in-module "Moo")
   (c-name "MooPrefsMatchType")
   (gtype-id "MOO_TYPE_PREFS_MATCH_TYPE")
-  (values
-    '("key" "MOO_PREFS_MATCH_KEY")
-    '("prefix" "MOO_PREFS_MATCH_PREFIX")
-    '("regex" "MOO_PREFS_MATCH_REGEX")
-  )
 )
 
 (define-enum DataDirType
   (in-module "Moo")
   (c-name "MooDataDirType")
   (gtype-id "MOO_TYPE_DATA_DIR_TYPE")
-  (values
-    '("share" "MOO_DATA_SHARE")
-    '("lib" "MOO_DATA_LIB")
-  )
 )
 
 
@@ -813,7 +777,6 @@
   (parameters
     '("GtkWidget*" "target")
     '("const-char*" "buffer")
-    '("int" "size" (null-ok) (default "-1"))
     '("const-char*" "target_name")
     '("GError**" "error")
   )
@@ -1265,7 +1228,7 @@
   (c-name "moo_prefs_dialog_run")
   (return-type "none")
   (parameters
-    '("GtkWidget*" "parent")
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
   )
 )
 
@@ -1355,6 +1318,16 @@
     '("GtkToggleButton**" "btns")
     '("const-char**" "cvals")
   )
+)
+
+(define-virtual init
+  (of-object "MooPrefsDialogPage")
+  (return-type "none")
+)
+
+(define-virtual apply
+  (of-object "MooPrefsDialogPage")
+  (return-type "none")
 )
 
 
@@ -2137,16 +2110,16 @@
 
 ;; From moo/mooutils/mooutils-gobject.h
 
-;; (define-function moo_bind_sensitive
-;;   (c-name "moo_bind_sensitive")
-;;   (return-type "none")
-;;   (parameters
-;;     '("GtkWidget*" "toggle_btn")
-;;     '("GtkWidget**" "dependent")
-;;     '("int" "num_dependent")
-;;     '("gboolean" "invert")
-;;   )
-;; )
+(define-function bind_sensitive
+  (c-name "moo_bind_sensitive")
+  (return-type "none")
+  (parameters
+    '("GtkWidget*" "toggle_btn")
+    '("GtkWidget*" "dependent")
+    '("int" "num_dependent")
+    '("gboolean" "invert")
+  )
+)
 
 (define-function bind_bool_property
   (c-name "moo_bind_bool_property")
@@ -2156,7 +2129,7 @@
     '("const-char*" "target_prop")
     '("GObject*" "source")
     '("const-char*" "source_prop")
-    '("gboolean" "invert")
+    '("gboolean" "invert" (null-ok) (default "FALSE"))
   )
 )
 
@@ -2690,8 +2663,8 @@
   (c-name "moo_file_dialog")
   (return-type "const-char*")
   (parameters
-    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
     '("MooFileDialogType" "type")
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
     '("const-char*" "title" (null-ok) (default "NULL"))
     '("const-char*" "start_dir" (null-ok) (default "NULL"))
   )
