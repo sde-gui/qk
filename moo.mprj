@@ -1,27 +1,34 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <medit-project name="moo" type="C" version="1.0">
+  <run>
+    <exe>tests/medit</exe>
+    <args>--g-fatal-warnings --new-app</args>
+    <vars>
+      <var name="LANGUAGE">ru</var>
+    </vars>
+  </run>
+  <make>
+    <args>-j 3</args>
+  </make>
   <configurations>
     <debug>
-      <run>
-        <exe>tests/medit</exe>
-        <args>--g-fatal-warnings --new-app</args>
-      </run>
       <configure>
         <args>--enable-debug=full --enable-all-gcc-warnings</args>
-        <cflags>-O0 -g3 -pg</cflags>
+        <vars>
+          <var name="CFLAGS">-g -pg</var>
+        </vars>
       </configure>
       <build_dir>build/debug</build_dir>
     </debug>
     <optimized>
-      <run>
-        <exe>tests/medit</exe>
-        <args>--new-app</args>
-      </run>
       <configure>
         <args>--enable-all-gcc-warnings</args>
+        <vars>
+          <var name="CFLAGS">-g -O2</var>
+        </vars>
       </configure>
       <build_dir>build/optimized</build_dir>
     </optimized>
   </configurations>
-  <active-configuration>debug</active-configuration>
+  <active>debug</active>
 </medit-project>

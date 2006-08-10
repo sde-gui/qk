@@ -1,8 +1,20 @@
-__all__ = ['Group']
+__all__ = ['Group', 'ValueNotSet']
 
 from mprj.config._item import Item, _ItemMeta, create_instance
 from mprj.config._xml import XMLGroup
 from mprj.config._utils import dict_diff
+
+
+class ValueNotSetType(object):
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            instance = object.__new__(cls)
+            setattr(cls, 'instance', instance)
+        return getattr(cls, 'instance')
+    def __nonzero__(self):
+        return False
+
+ValueNotSet = ValueNotSetType()
 
 
 class _GroupMeta(_ItemMeta):
@@ -36,11 +48,12 @@ def _cmp_nodes(n1, n2):
 class Group(Item):
     __metaclass__ = _GroupMeta
 
-    def __init__(self, id, items={}, **kwargs):
+    def __init__(self, id, items={}, not_set=False, **kwargs):
         Item.__init__(self, id, **kwargs)
 
         self.__items = []
         self.__items_dict = {}
+        self.__not_set = not_set
 
         if items:
             for id in items:
@@ -97,17 +110,19 @@ class Group(Item):
         return changed
 
     def get_value(self):
-        return self
+        if self.__not_set:
+            return None
+        else:
+            return self
 
-    def get_items(self):
-        return self.__items
+    def items(self): return self.__items
+    def keys(self): return self.__items_dict.keys()
 
     def add_item(self, info, id=None):
         if id is None:
             id = info.get_id()
         if self.has_item(id):
             raise RuntimeError("item '%s' already exist in '%s'" % (id, self))
-#         print info
         item = create_instance(info, id)
         self.__items.append(item)
         self.__items_dict[id] = item

@@ -4,55 +4,41 @@ from moo.utils import _
 
 
 def create_instance(descr, *args, **kwargs):
-#     print "create_instance: %s, %s, %s" % (descr, args, kwargs)
-
     if isinstance(descr, Item):
         return descr
 
-    item_type = None
+    if not isinstance(descr, type) or not issubclass(descr, Item):
+        raise TypeError('invalid argument for create_instance: %s' % (descr,))
 
-    if isinstance(descr, type):
-        if issubclass(descr, Item):
-            item_type = descr
-        else:
-            raise TypeError('invalid argument for create_instance: %s' % (descr,))
-    else:
-        if not issubclass(descr[0], Item):
-            raise TypeError('invalid argument for create_instance: %s' % (descr,))
-        item_type = descr[0]
-        if not args or len(args) > 1:
-            raise TypeError('invalid arguments for create_instance: %s, %s, %s' % (descr, args, kwargs))
-        if kwargs:
-            raise TypeError('invalid arguments for create_instance: %s, %s, %s' % (descr, args, kwargs))
-        if len(descr) > 2:
-            raise TypeError('invalid arguments for create_instance: %s, %s, %s' % (descr, args, kwargs))
-        if descr[1:]:
-            kwargs = descr[1]
-        else:
-            kwargs = {}
+    return descr.create_instance(*args, **kwargs)
 
-    return item_type.create_instance(*args, **kwargs)
 
+def _create_item_class(cls, dct):
+    if not dct:
+        return cls
+    class ItemClass(cls):
+        __item_attributes__ = dct
+    return ItemClass
 
 class _ItemMeta(type):
     # Override __call__ so that syntax FooSetting(foo=bar)
-    # returns [FooSetting, {'foo' : bar}]. It makes it possible
-    # to use nicer {'id' : FooSetting(default=1)} syntax in
-    # Group __items__ attribute.
-    # If do_create_instance keyword argument is True, then
+    # returns new class derived from FooSetting with __item_attributes__
+    # set. It makes it possible to use nicer {'id' : FooSetting(default=1)}
+    # syntax in Group __items__ attribute.
+    # If _do_create_instance keyword argument is True, then
     # actually do create an instance.
     def __call__(self, *args, **kwargs):
-        if kwargs.has_key('do_create_instance') and \
-           kwargs['do_create_instance'] is True:
-            del kwargs['do_create_instance']
+        if kwargs.has_key('_do_create_instance') and \
+           kwargs['_do_create_instance'] is True:
+            del kwargs['_do_create_instance']
             obj = type.__call__(self, *args, **kwargs)
-            kwargs['do_create_instance'] = True
+            kwargs['_do_create_instance'] = True
             return obj
         else:
             dct = {}
             for k in kwargs:
                 dct[k] = kwargs[k]
-            return [self, dct]
+            return _create_item_class(self, dct)
 
     def __init__(cls, name, bases, dic):
         super(_ItemMeta, cls).__init__(name, bases, dic)
@@ -60,11 +46,36 @@ class _ItemMeta(type):
         # Add create_instace class method.
         if not dic.has_key('create_instance'):
             def create_instance(self, *args, **kwargs):
-                kwargs['do_create_instance'] = True
+                kwargs['_do_create_instance'] = True
                 obj = self(*args, **kwargs)
-                del kwargs['do_create_instance']
+                del kwargs['_do_create_instance']
                 return obj
             setattr(cls, 'create_instance', classmethod(create_instance))
+
+        meta_attrs = {}
+        if dic.has_key('__class_attributes__'):
+            meta_attrs = dic['__class_attributes__']
+        for c in bases:
+            if hasattr(c, '__class_attributes__'):
+                m = getattr(c, '__class_attributes__')
+                for k in m:
+                    meta_attrs[k] = m[k]
+        setattr(cls, '__class_attributes__', meta_attrs)
+
+        attrs = {}
+        if dic.has_key('__item_attributes__'):
+            attrs = dic['__item_attributes__']
+        for a in meta_attrs:
+            if dic.has_key(a):
+                attrs[meta_attrs[a]] = dic[a]
+        for c in bases:
+            if hasattr(c, '__item_attributes__'):
+                d = getattr(c, '__item_attributes__')
+                for k in d:
+                    # XXX copy
+                    if not attrs.has_key(k):
+                        attrs[k] = d[k]
+        setattr(cls, '__item_attributes__', attrs)
 
         # check basic methods
         if not hasattr(cls, '__no_item_methods__') and not dic.has_key('__no_item_methods__'):
@@ -76,51 +87,69 @@ class _ItemMeta(type):
                 if not dic.has_key('save'):
                     raise RuntimeError('Class %s does not implement save()' % (cls,))
         else:
-            def notimplemented(*args, **kwargs):
-                raise NotImplementedError('Class %s does not implement save()' % (cls,))
-            if not dic.has_key('copy_from'):
-                setattr(cls, 'copy_from', notimplemented)
+            def notimplemented(name):
+                def notimplemented(*args, **kwargs):
+                    raise NotImplementedError('Class %s does not implement %s()' % (cls, name))
+                return notimplemented
+#             if not dic.has_key('copy_from'):
+#                 setattr(cls, 'copy_from', notimplemented('copy_from'))
             if not dic.has_key('load'):
-                setattr(cls, 'load', notimplemented)
+                setattr(cls, 'load', notimplemented('load'))
             if not dic.has_key('save'):
-                setattr(cls, 'save', notimplemented)
-
+                setattr(cls, 'save', notimplemented('save'))
 
 
 class Item(object):
     __metaclass__ = _ItemMeta
+    __class_attributes__ = {
+        '__item_name__' : 'name',
+        '__item_description__' : 'description',
+        '__item_cell_type__' : 'cell_type',
+        '__item_visible__' : 'visible',
+    }
 
-    def __init__(self, id, name=None, description=None, visible=True):
+    def __init__(self, id, name=None, description=None, visible=None, cell_type=None):
         object.__init__(self)
         self.__id = id
 
-        if name:
-            self.__name = name or _(id)
-        elif hasattr(type(self), '__item_name__'):
-            self.__name = getattr(type(self), '__item_name__')
-        else:
-            self.__name = _(id)
+        attrs = getattr(type(self), '__item_attributes__')
 
-        if description:
-            self.__description = description
-        elif hasattr(type(self), '__item_description__'):
-            self.__description = getattr(type(self), '__item_description__')
-        else:
-            self.__description = self.__name
+        if cell_type is None and attrs.has_key('cell_type'):
+            cell_type = attrs['cell_type']
 
-        if hasattr(type(self), '__item_visible__'):
-            self.__visible = getattr(type(self), '__item_visible__')
-        else:
-            self.__visible = visible
+        if name is None:
+            if attrs.has_key('name'):
+                name = attrs['name']
+            else:
+                name = _(id)
+
+        if description is None:
+            if attrs.has_key('description'):
+                description = attrs['description']
+            else:
+                description = name
+
+        if visible is None:
+            if attrs.has_key('visible'):
+                visible = attrs['visible']
+            else:
+                visible = True
+
+        self.__name = name
+        self.__description = description
+        self.__visible = visible
+        self.__cell_type = cell_type
 
     def set_name(self, name): self.__name = name
     def set_description(self, description): self.__description = description
     def set_visible(self, visible): self.__visible = visible
+    def set_cell_type(self, cell_type): self.__cell_type = cell_type
 
     def get_id(self): return self.__id
     def get_name(self): return self.__name
     def get_description(self): return self.__description
     def get_visible(self): return self.__visible
+    def get_cell_type(self): return self.__cell_type
 
     def load(self, node): raise NotImplementedError()
     def save(self): raise NotImplementedError()
@@ -137,6 +166,15 @@ class Item(object):
         copy = create_instance(type(self), self.get_id())
         copy.copy_from(self)
         return copy
+
+    def dump_xml(self):
+        nodes = self.save()
+        if not nodes:
+            return ''
+        if len(nodes) > 1:
+            return '\n'.join([n.get_string() for n in nodes])
+        else:
+            return nodes[0].get_string()
 
     def __str__(self):
         return '<%s %s>' % (type(self), self.get_id())

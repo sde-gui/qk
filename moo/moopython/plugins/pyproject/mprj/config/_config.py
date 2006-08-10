@@ -1,7 +1,7 @@
 __all__ = ['Config']
 
 from mprj.config._group import Group, _GroupMeta
-from mprj.config._xml import XMLGroup
+from mprj.config._xml import XMLGroup, File
 
 
 class Config(Group):
@@ -10,21 +10,35 @@ class Config(Group):
     # override parent's __call__ method, so Config() works as intended
     class __metaclass__(_GroupMeta):
         def __call__(self, *args, **kwargs):
-            kwargs['do_create_instance'] = True
+            kwargs['_do_create_instance'] = True
             obj = _GroupMeta.__call__(self, *args, **kwargs)
-            del kwargs['do_create_instance']
+            del kwargs['_do_create_instance']
             return obj
 
     def __init__(self, file):
         Group.__init__(self, 'medit-project')
-        self.file = file
-        self.name = file.name
-        self.type = file.project_type
-        self.version = file.version
-        self.load_xml()
+        if file is not None:
+            self.load_xml(file.root)
+            self.name = file.name
+            self.type = file.project_type
+            self.version = file.version
 
-    def load_xml(self):
-        Group.load(self, self.file.root)
+    def copy(self):
+        copy = type(self)(None)
+        copy.copy_from(self)
+        return copy
+
+    def copy_from(self, other):
+        self.name = other.name
+        self.type = other.type
+        self.version = other.version
+        return Group.copy_from(self, other)
+
+    def load_xml(self, xml):
+        Group.load(self, xml)
+
+    def dump_xml(self):
+        return self.get_xml().get_string()
 
     def get_xml(self):
         xml = Group.save(self)

@@ -5,13 +5,42 @@ from mprj.config._xml import XMLItem
 
 
 class Setting(Item):
-    def __init__(self, id, value=None, default=None, editable=True, data_type=None, **kwargs):
+    __class_attributes__ = {
+        '__item_default__' : 'default',
+        '__item_editable__' : 'editable',
+        '__item_data_type__' : 'data_type',
+        '__item_null_ok__' : 'null_ok',
+    }
+
+    def __init__(self, id, value=None, **kwargs):
         Item.__init__(self, id, **kwargs)
+
+        default = None
+        editable = True
+        data_type = None
+        null_ok = False
+
+        attrs = getattr(type(self), '__item_attributes__')
+
+        if attrs.has_key('default'):
+            default = attrs['default']
+
+        if attrs.has_key('editable'):
+            editable = attrs['editable']
+
+        if attrs.has_key('data_type'):
+            data_type = attrs['data_type']
+
+        if attrs.has_key('null_ok'):
+            null_ok = attrs['null_ok']
+        elif default is None:
+            null_ok = True
 
         self.__default = default
         self.__value = default
         self.__editable = editable
         self.__data_type = data_type
+        self.__null_ok = null_ok
 
         if value is None:
             self.reset()
@@ -30,11 +59,28 @@ class Setting(Item):
                 value = data_type(value)
         return self.set_value(value)
 
+    def check_value(self, value):
+        try:
+            self.transform_value(value)
+        except Exception:
+            return False
+
+    def transform_value(self, value):
+        if value is None and self.__null_ok:
+            return None
+        data_type = self.get_data_type()
+        if data_type is not None:
+            if not isinstance(value, data_type):
+                raise TypeError('value %s is invalid for %s' % (value, self))
+            else:
+                return value
+        else:
+            return value
+
     def set_value(self, value):
-        if not self.check_value(value):
-            raise ValueError("%s is not a valid value for %s" % (value, self))
+        value = self.transform_value(value)
         if not self.equal(value):
-            self._assign(value)
+            self.__value = value
             return True
         else:
             return False
@@ -46,14 +92,6 @@ class Setting(Item):
             return False
     def __ne__(self, other):
         return not self.__eq__(other)
-
-    def _assign(self, value):
-        if value is not None:
-            data_type = self.get_data_type()
-            if data_type is not None:
-                if not isinstance(value, data_type):
-                    value = data_type(value)
-        self.__value = value
 
     def get_value(self): return self.__value
     def get_default(self): return self.__default
@@ -67,26 +105,8 @@ class Setting(Item):
         changed = Item.copy_from(self, other)
         return self.set_value(other.get_value()) or changed
 
-    def copy(self):
-        return create_instance(type(self), self.get_id(),
-                               name=self.get_name(),
-                               visible=self.get_visible(),
-                               value=self.get_value(),
-                               default=self.get_default(),
-                               editable=self.get_editable(),
-                               data_type=self.get_data_type())
-        return copy
-
     def equal(self, value):
         return self.get_value() == value
-
-    def check_value(self, value):
-        if value is None:
-            return True
-        data_type = self.get_data_type()
-        if data_type is None:
-            return True
-        return isinstance(value, data_type)
 
     def load(self, node):
         self.set_string(node.get())

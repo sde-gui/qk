@@ -201,7 +201,7 @@ class Manager(object):
         config_type = getattr(project_type, '__config__')
         config = config_type(file)
 
-        self.project = project_type(window, config)
+        self.project = project_type(window, config, file)
         self.project.load()
         window.set_title_prefix(self.project.name)
         self.recent_list.add_filename(filename)

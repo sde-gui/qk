@@ -89,7 +89,7 @@ class Plugin(moo.edit.Plugin):
     def ensure_output(self, window):
         pane = window.get_pane(PLUGIN_ID)
         if not pane:
-            label = moo.utils.PaneLabel(icon_stock_id=moo.utils.STOCK_EXECUTE, label=_("Output"))
+            label = moo.utils.PaneLabel(icon_stock_id=moo.utils.STOCK_EXECUTE, label=_("Python Output"))
             output = moo.edit.CmdView()
             output.set_property("highlight-current-line", True)
             output.connect("activate", self.output_activate)

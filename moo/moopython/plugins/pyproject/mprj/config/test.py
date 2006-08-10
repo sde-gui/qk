@@ -6,13 +6,14 @@ from mprj.config._xml import XMLItem, XMLGroup, XML
 
 class TestItem(unittest.TestCase):
     def testdescription(self):
-        type, dummy = Item()
+        type = Item()
         self.assert_(type is Item)
-        self.assert_(not dummy)
 
     def testlongdescription(self):
-        type, dct = Item(default=2, value=3)
-        self.assert_(type is Item)
+        type = Item(default=2, value=3)
+        self.assert_(type is not Item)
+        self.assert_(issubclass(type, Item))
+        dct = type.__item_attributes__
         self.assert_(len(dct) == 2)
         self.assert_(dct['default'] == 2)
         self.assert_(dct['value'] == 3)
@@ -43,11 +44,11 @@ class TestCreateInstance(unittest.TestCase):
         item_create_instance(Item(name='wefwef'), 'id')
         item_create_instance(Item(name='wefwef', description='ewfwef'), 'id')
         item_create_instance(Item, 'id')
-        item_create_instance([Item, {'name' : 'ffff'}], 'id')
+        self.assertRaises(TypeError, item_create_instance, [Item, {'name' : 'ffff'}], 'id')
 
     def testjunk(self):
         self.assertRaises(TypeError, item_create_instance, Item(name='wefwef'))
-        self.assertRaises(TypeError, item_create_instance, Item(blah='wefwef'), 'fwef')
+        item_create_instance(Item(blah='wefwef'), 'fwef')
         self.assertRaises(TypeError, item_create_instance)
         self.assertRaises(TypeError, item_create_instance, 'wefef')
         self.assertRaises(TypeError, item_create_instance, 1)
@@ -58,33 +59,24 @@ class TestCreateInstance(unittest.TestCase):
 
 
 class TestSetting(unittest.TestCase):
-    def testvalue(self):
-        s = item_create_instance(Setting(name='name', default=5), 'id')
-        self.assert_(s.get_default() == 5)
-        self.assert_(s.get_value() == 5)
-        s.set_value(8)
-        self.assert_(s.get_value() == 8)
-        s.reset()
-        self.assert_(s.get_value() == 5)
-
     def testvalue2(self):
         s = item_create_instance(Setting(), 'id')
         self.assert_(s.get_default() is None)
         self.assert_(s.get_value() is None)
-        s.set_value(8)
-        self.assert_(s.get_value() == 8)
         s.reset()
         self.assert_(s.get_value() is None)
+        s.copy()
 
     def testdatatype(self):
         s = item_create_instance(Setting(data_type=str), 'id')
         self.assert_(s.get_default() is None)
         self.assert_(s.get_value() is None)
-        self.assertRaises(ValueError, s.set_value, 8)
+        self.assertRaises(TypeError, s.set_value, 8)
         s.reset()
         self.assert_(s.get_value() is None)
         s.set_string('5')
         self.assert_(s.get_value() == '5')
+        s.copy()
 
     def testdatatype2(self):
         s = item_create_instance(Setting(data_type=int), 'id')
@@ -92,25 +84,27 @@ class TestSetting(unittest.TestCase):
         self.assert_(s.get_value() is None)
         s.set_value(8)
         self.assert_(s.get_value() == 8)
-        self.assertRaises(ValueError, s.set_value, '8')
+        self.assertRaises(TypeError, s.set_value, '8')
         s.reset()
         self.assert_(s.get_value() is None)
         s.set_string('5')
         self.assert_(s.get_value() == 5)
-        self.assertRaises(ValueError, s.set_string, 'ewfwef')
-        self.assertRaises(ValueError, s.set_value, 'ewfwef')
+        self.assertRaises(Exception, s.set_string, 'ewfwef')
+        self.assertRaises(TypeError, s.set_value, 'ewfwef')
+        s.copy()
 
     def testnormal(self):
-        s = item_create_instance(Setting(name='name', value=2), 'id')
+        s = item_create_instance(Setting(name='name', data_type=int), '1', value=2)
         self.assert_(s.get_default() is None)
         self.assert_(not s.is_default())
-        s = item_create_instance(Setting(name='name', default=8), 'id')
+        s = item_create_instance(Setting(name='name', default=8, data_type=int), '2')
         self.assert_(s.get_default() == 8)
         self.assert_(s.is_default())
-        s = item_create_instance(Setting(name='name', value=2, default=8), 'id')
+        s = item_create_instance(Setting(name='name', default=8, data_type=int), '3', value=2)
         self.assert_(s.get_default() == 8)
         self.assert_(s.get_value() == 2)
         self.assert_(not s.is_default())
+        s.copy()
 
     def testops(self):
         s1 = item_create_instance(Setting(data_type=int), 'id')
@@ -125,6 +119,8 @@ class TestSetting(unittest.TestCase):
         self.assert_(s1.equal(5))
         self.assert_(not s1.equal(s2))
         self.assert_(not s1.equal(3))
+        s1.copy()
+        s2.copy()
 
     def testsave(self):
         s = item_create_instance(Setting(data_type=int), 'id')
@@ -133,6 +129,7 @@ class TestSetting(unittest.TestCase):
         self.assert_(s.save() == [XMLItem('id', '5')])
         s.reset()
         self.assert_(s.save() == [])
+        s.copy()
 
     def testsave2(self):
         s = item_create_instance(Setting(data_type=str), 'id')
@@ -141,12 +138,17 @@ class TestSetting(unittest.TestCase):
         self.assert_(s.save() == [XMLItem('id', '')])
         s.reset()
         self.assert_(s.save() == [])
+        s.copy()
 
     def testsave3(self):
         s = item_create_instance(Setting(default='444', data_type=str), 'id')
         self.assert_(s.save() == [])
         s.set_value('fff')
         self.assert_(s.save() == [XMLItem('id', 'fff')])
+        s.set_value('')
+        self.assert_(s.save() == [XMLItem('id', '')])
+        s.copy()
+        s = item_create_instance(Setting(default='444', data_type=str, null_ok=True), 'id')
         s.set_value(None)
         self.assert_(s.save() == [XMLItem('id', None)])
 
@@ -158,6 +160,7 @@ class TestSetting(unittest.TestCase):
         node = XMLItem('id', None)
         s.load(node)
         self.assert_(s.get_value() is None)
+        s.copy()
 
     def testload2(self):
         s = item_create_instance(Setting(data_type=int), 'id')
@@ -166,6 +169,39 @@ class TestSetting(unittest.TestCase):
         node = XMLItem('id', '5')
         s.load(node)
         self.assert_(s.get_value() == 5)
+        s.copy()
+
+
+class TestDict(unittest.TestCase):
+    def assign(self, s, key, val):
+        s[key] = val
+
+    def testdict(self):
+        s = item_create_instance(Dict(str), 'id')
+        self.assert_(s == s.copy())
+        s['blah'] = 'fwef'
+        self.assert_(s['blah'] == 'fwef')
+        s['foo'] = 'ddd'
+        self.assert_(s['foo'] == 'ddd')
+        s['foo'] = 'blah'
+        self.assert_(s['foo'] == 'blah')
+        self.assert_(s == s.copy())
+        self.assertRaises(Exception, self.assign, s, 'fff', 3)
+
+    def testdict2(self):
+        S = Setting(data_type=int, default=5)
+        s = item_create_instance(Dict(S), 'id')
+        self.assert_(s == s.copy())
+        s['blah'] = S.create_instance('dd')
+        self.assert_(s['blah'] == 5)
+        self.assertRaises(Exception, self.assign, s, 'fff', 5)
+        self.assertRaises(Exception, self.assign, s, 'fff', '44')
+        self.assertRaises(Exception, self.assign, s, 'fff', None)
+        self.assert_(s == s.copy())
+
+    def testnormal(self):
+        from mprj.config._dict import DictBase
+        self.assert_(issubclass(Dict(str), DictBase))
 
 
 class TestGroup(unittest.TestCase):
@@ -211,6 +247,8 @@ class TestGroup(unittest.TestCase):
         self.assert_(g1.bar == g2.bar)
         self.assert_(g1.baz == g2.baz)
         self.assert_(g2.blah is True)
+        self.assert_(g1.copy() == g1)
+        self.assert_(g2.copy() == g2)
 
     def testgroup3(self):
         class G1(Group):
@@ -231,6 +269,7 @@ class TestGroup(unittest.TestCase):
             }
         g = G3.create_instance('g')
         self.assert_(g.foo == g.bar)
+        self.assert_(g.copy() == g)
 
 
 class TestConfig(unittest.TestCase):
@@ -238,6 +277,7 @@ class TestConfig(unittest.TestCase):
         class C(Config):
             __items__ = {
                 'variables' : Dict(str),
+                'variables2' : Dict(str, xml_elm_name='item', xml_attr_name='id'),
                 'project_dir' : Setting(data_type=str),
                 'stuff' : Dict(str)
             }
@@ -246,17 +286,21 @@ class TestConfig(unittest.TestCase):
                       <variables>
                         <foo>bar</foo>
                       </variables>
+                      <variables2>
+                        <item id="foo">bar</item>
+                      </variables2>
                       <project_dir>.</project_dir>
                       <stuff>
                         <kff>ddd</kff>
                       </stuff>
                     </medit-project>""")
         c = C(f)
-        self.assert_(len(c.get_items()) == 3)
+        self.assert_(len(c.items()) == 4)
         self.assert_(c.project_dir == '.')
         self.assert_(len(c.stuff) == 1)
         self.assert_(c.stuff['kff'] == 'ddd')
         self.assert_(c.variables['foo'] == 'bar')
+        self.assert_(c.variables2['foo'] == 'bar')
 
 
 if __name__ == '__main__':

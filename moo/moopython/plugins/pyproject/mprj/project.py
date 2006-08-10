@@ -43,19 +43,20 @@ class Project(object):
 
     """
 
-    def __init__(self, window, config):
+    def __init__(self, window, config, file):
         object.__init__(self)
 
         self.window = window
         self.config = config
-        self.name = config.file.name
+        self.name = file.name
 
-        self.filename = os.path.abspath(config.file.path)
+        self.filename = os.path.abspath(file.path)
         self.topdir = os.path.dirname(self.filename)
 
         editor = moo.edit.editor_instance()
         xml = editor.get_ui_xml()
-        self.merge_id = xml.new_merge_id()
+        if xml is not None:
+            self.merge_id = xml.new_merge_id()
         self.actions = []
         self.panes = []
 

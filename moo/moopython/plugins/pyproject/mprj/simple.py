@@ -16,9 +16,6 @@ class SimpleProject(Project):
 
     __config__ = SimpleConfig
 
-    def __init__(self, window, config):
-        Project.__init__(self, window, config)
-
     def init_ui(self):
         Project.init_ui(self)
 
@@ -68,6 +65,9 @@ class SimpleProject(Project):
             Session(self.window).save(file)
         except:
             print_error()
+
+    def save_config(self):
+        print self.config.get_xml()
 
     def options_dialog(self, window):
         dialog = self.create_options_dialog()

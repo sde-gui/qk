@@ -38,6 +38,8 @@ class XMLNode(object):
         self.name = name
         self.parent = None
         self.__attrs = {}
+    def has_attr(self, attr):
+        return self.__attrs.has_key(attr)
     def get_attr(self, attr):
         if self.__attrs.has_key(attr):
             return self.__attrs[attr]
@@ -70,12 +72,17 @@ class XMLNode(object):
                self.__attrs == other.__attrs
 
 class XMLGroup(XMLNode):
-    def __init__(self, name, children=[]):
+    def __init__(self, name, children=[], sort=True):
         XMLNode.__init__(self, name)
         self.__children = []
         self.__children_names = {}
 
         if children:
+            if sort:
+                def cmp_nodes(n1, n2):
+                    return cmp(n1.name, n2.name)
+                children = [c for c in children]
+                children.sort(cmp_nodes)
             for c in children:
                 self.add_child(c)
 
@@ -113,7 +120,7 @@ class XMLGroup(XMLNode):
         if len(elm.childNodes) > 1:
             return XMLGroup
         if not elm.childNodes:
-            return Item
+            return XMLItem
         c = elm.childNodes[0]
         if c.nodeType == xml.dom.Node.ELEMENT_NODE:
             return XMLGroup
@@ -163,7 +170,7 @@ class XMLItem(XMLNode):
 
     def get_string(self, indent=0):
         s = _INDENT_STRING * indent + self.format_start()
-        if self.get() is None:
+        if not self.get():
             s += "/>\n"
         else:
             s += ">%s</%s>\n" % (cgi.escape(str(self.get())), self.name)
@@ -172,6 +179,8 @@ class XMLItem(XMLNode):
     def load_xml(self, elm):
         if elm.childNodes:
             self.set(elm.childNodes[0].data)
+        else:
+            self.set('')
         XMLNode.load_xml(self, elm)
 
     def __eq__(self, other):

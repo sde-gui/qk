@@ -40,7 +40,7 @@ class Session(object):
         for d in self.__docs:
             root.add_child(XMLItem('doc', d))
         if self.__active is not None:
-            root.add_child(XMLItem('active', self.__active))
+            root.add_child(XMLItem('active', str(self.__active)))
         return '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n' + \
                 root.get_string()
 
