@@ -11,6 +11,7 @@ mooedit_syntax_DATA =           \
 	ms.lang                 \
 	octave.lang             \
 	perl.lang               \
+	po.lang                 \
 	python.lang             \
 	python-console.lang     \
 	scheme.lang             \

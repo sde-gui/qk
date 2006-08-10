@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language SYSTEM "language.dtd">
+<!--
+  This file is part of KDE's kate project.
+
+  copyright   : (C) 2004 by Dominik Haumann
+  email       : dhdev at gmx dot de
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Library General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Library General Public License for more details.
+
+  You should have received a copy of the GNU Library General Public
+  License along with this library; if not, write to the
+  Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+  Boston, MA  02110-1301, USA.
+ -->
+<language name="GNU Gettext" section="Markup" extensions="*.po;*.pot" mimetypes="application/x-gettext" author="Dominik Haumann (dhdev@gmx.de)" license="LGPL">
+  <syntax>
+    <context name="Normal" style="Normal Text">
+      <Regex style="Keyword" pattern="^(msgid_plural|msgid|msgstr|msgctxt)"/>
+      <Regex style="Reference" pattern="^s*#: \.\..*$"/>
+      <Regex style="Automatic Comment" pattern="^\s*#:.*$"/>
+      <Regex style="Flag" pattern="^\s*#,.*$"/>
+      <Regex style="Translator Comment" pattern="^\s*#.*$"/>
+      <Regex style="Char" pattern="\\."/>
+      <Char style="String" char="&quot;" context="String"/>
+      <Regex style="Index" pattern="\[\d+\]"/>
+    </context>
+    <context name = "String" style="String" eol-context="#stay">
+      <Regex style="Char" pattern="\\."/>
+      <Char style="String" char="&quot;" context="#pop"/>
+    </context>
+  </syntax>
+  <styles>
+    <style name = "Normal Text"         default-style="Normal"/>
+    <style name = "Keyword"             default-style="Keyword"/>
+    <style name = "String"              default-style="String"/>
+    <style name = "Translator Comment"  default-style="Comment" foreground="#0000ff"/>
+    <style name = "Automatic Comment"   default-style="Comment"/>
+    <style name = "Reference"           default-style="Comment"/>
+    <style name = "Flag"                default-style="Comment" foreground="#0000ff"/>
+    <style name = "Char"                default-style="Char"/>
+    <style name = "Index"               default-style="Decimal"/>
+  </styles>
+  <general>
+    <comments>
+      <single-line start="#"/>
+    </comments>
+  </general>
+</language>
