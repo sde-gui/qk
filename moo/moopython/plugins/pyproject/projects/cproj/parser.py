@@ -1,11 +1,12 @@
 import re
 
 errors = [
+    r'In file included from (?P<file>[^:]+):(?P<line>\d+):.*',
     r'(?P<file>[^:]+):(?P<line>\d+):(\d+:)?\s*error\s*:.*',
-    r'(?P<file>[^:]+):(?P<line>\d+):.*'
+    r'(?P<file>[^:]+):(?P<line>\d+):.*',
 ]
 warnings = [
-    r'(?P<file>[^:]+):(?P<line>\d+):(\d+:)?\s*warning\s*:.*'
+    r'(?P<file>[^:]+):(?P<line>\d+):(\d+:)?\s*warning\s*:.*',
 ]
 
 errors = [re.compile(e) for e in errors]
