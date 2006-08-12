@@ -1382,11 +1382,11 @@
 
 ;; From ../mooutils/moowindow.h
 
-(define-function moo_window_new
-  (c-name "moo_window_new")
-  (is-constructor-of "MooWindow")
-  (return-type "GtkWidget*")
-)
+;; (define-function moo_window_new
+;;   (c-name "moo_window_new")
+;;   (is-constructor-of "MooWindow")
+;;   (return-type "GtkWidget*")
+;; )
 
 (define-method close
   (of-object "MooWindow")
