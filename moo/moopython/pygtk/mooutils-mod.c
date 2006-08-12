@@ -31,7 +31,7 @@ static PyObject *
 pyobj_from_gval (const GValue *value)
 {
     if (!G_VALUE_HOLDS (value, MOO_TYPE_PY_OBJECT))
-        return_RuntimeErr ("invalid value passed");
+        return_RuntimeError ("invalid value passed");
     return moo_py_object_ref (g_value_get_boxed (value));
 }
 
@@ -40,7 +40,7 @@ static int
 gval_from_pyobj (GValue *value, PyObject *obj)
 {
     if (!G_VALUE_HOLDS (value, MOO_TYPE_PY_OBJECT))
-        return_RuntimeErrInt ("invalid value passed");
+        return_RuntimeErrorInt ("invalid value passed");
     g_value_set_boxed (value, obj);
     return 0;
 }

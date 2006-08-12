@@ -122,7 +122,7 @@ _wrap_moo_window_class_add_action (G_GNUC_UNUSED PyObject *self, PyObject *args)
     extra = PyTuple_GET_SIZE (args) - 3;
 
     if (extra < 0)
-        return_TypeErr ("at least three arguments required");
+        return_TypeError ("at least three arguments required");
 
     py_type = PyTuple_GET_ITEM (args, 0);
     py_id = PyTuple_GET_ITEM (args, 1);
@@ -134,13 +134,13 @@ _wrap_moo_window_class_add_action (G_GNUC_UNUSED PyObject *self, PyObject *args)
         return NULL;
 
     if (!g_type_is_a (type, MOO_TYPE_WINDOW))
-        return_TypeErr ("type must be derived from MooWindow");
+        return_TypeError ("type must be derived from MooWindow");
 
     if (!PyString_Check (py_id))
-        return_TypeErr ("id must be a string");
+        return_TypeError ("id must be a string");
 
     if (!PyCallable_Check (py_factory_func))
-        return_TypeErr ("factory_func must be callable");
+        return_TypeError ("factory_func must be callable");
 
     klass = g_type_class_ref (type);
 
@@ -184,7 +184,7 @@ _wrap_moo_window_class_remove_action (G_GNUC_UNUSED PyObject *self, PyObject *ar
         return NULL;
 
     if (!g_type_is_a (type, MOO_TYPE_WINDOW))
-        return_TypeErr ("type must be derived from MooWindow");
+        return_TypeError ("type must be derived from MooWindow");
 
     klass = g_type_class_ref (type);
     moo_window_class_remove_action (klass, action_id);
@@ -233,12 +233,12 @@ _wrap_moo_closure_new (G_GNUC_UNUSED PyObject *self, PyObject *args)
     MooPyClosure *closure;
 
     if (!args)
-        return_TypeErr ("function argument required");
+        return_TypeError ("function argument required");
 
     py_func = PyTuple_GET_ITEM (args, 0);
 
     if (!PyCallable_Check (py_func))
-        return_TypeErr ("function must be callable");
+        return_TypeError ("function must be callable");
 
     if (PyTuple_GET_SIZE (args) > 1)
     {
@@ -345,23 +345,23 @@ _wrap_moo_prefs_notify_connect (G_GNUC_UNUSED PyObject *self, PyObject *args)
     guint id;
 
     if (!args)
-        return_TypeErr ("arguments required");
+        return_TypeError ("arguments required");
 
     if (PyTuple_GET_SIZE (args) < 3)
-        return_TypeErr ("three arguments required");
+        return_TypeError ("three arguments required");
 
     py_pattern = PyTuple_GET_ITEM (args, 0);
     py_match_type = PyTuple_GET_ITEM (args, 1);
     py_func = PyTuple_GET_ITEM (args, 2);
 
     if (!PyString_Check (py_pattern))
-        return_TypeErr ("pattern must be a string");
+        return_TypeError ("pattern must be a string");
 
     if (!PyInt_Check (py_match_type))
-        return_TypeErr ("match_type must be an integer");
+        return_TypeError ("match_type must be an integer");
 
     if (!PyCallable_Check (py_func))
-        return_TypeErr ("function must be callable");
+        return_TypeError ("function must be callable");
 
     if (PyTuple_GET_SIZE (args) > 1)
     {

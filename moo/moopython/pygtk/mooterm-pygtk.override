@@ -245,7 +245,7 @@ _wrap_moo_term_set_colors (PyGObject *self, PyObject *args)
         return NULL;
 
     if (!PySequence_Check (py_colors))
-        return_TypeErr ("colors must be a list or tuple");
+        return_TypeError ("colors must be a list or tuple");
 
     n_colors = PySequence_Size (py_colors);
 
@@ -282,7 +282,7 @@ static int
 _wrap_moo_term_text_attr_tp_setattr (PyGBoxed *self, char *attr, PyObject *value)
 {
     if (!value)
-        return_TypeErrInt ("can't delete attributes");
+        return_TypeErrorInt ("can't delete attributes");
 
     if (!strcmp (attr, "foreground") || !strcmp (attr, "background"))
     {
@@ -319,7 +319,7 @@ static int
 _wrap_moo_term_iter_tp_setattr (PyGBoxed *self, char *attr, PyObject *value)
 {
     if (!value)
-        return_TypeErrInt ("can't delete attributes");
+        return_TypeErrorInt ("can't delete attributes");
 
     if (!strcmp (attr, "row") || !strcmp (attr, "col"))
     {
@@ -384,10 +384,10 @@ _wrap_moo_term_command_new (PyGBoxed *self, PyObject *args, PyObject *kwargs)
         return -1;
 
     if (!argv || !cmd_line)
-        return_ValueErrInt ("Term.__init__: either argv or cmd_line must be given");
+        return_ValueErrorInt ("Term.__init__: either argv or cmd_line must be given");
 
     if (argv && cmd_line)
-        return_ValueErrInt ("Term.__init__: only one of argv or cmd_line may be given");
+        return_ValueErrorInt ("Term.__init__: only one of argv or cmd_line may be given");
 
     self->gtype = MOO_TYPE_TERM_COMMAND;
     self->free_on_dealloc = FALSE;
@@ -398,7 +398,7 @@ _wrap_moo_term_command_new (PyGBoxed *self, PyObject *args, PyObject *kwargs)
         self->boxed = moo_term_command_new_command_line (cmd_line, working_dir, envp);
 
     if (!self->boxed)
-        return_RuntimeErrInt ("could not create MooTermCommand object");
+        return_RuntimeErrorInt ("could not create MooTermCommand object");
 
     self->free_on_dealloc = TRUE;
     return 0;

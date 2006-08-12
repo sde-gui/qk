@@ -43,13 +43,13 @@ _wrap_moo_python_plugin_register (G_GNUC_UNUSED PyObject *self, PyObject *args)
         return NULL;
 
     if (!PyType_Check (plugin_type))
-        return_TypeErr ("argument must be a type");
+        return_TypeError ("argument must be a type");
 
     if (win_plugin_type && win_plugin_type != Py_None && !PyType_Check (win_plugin_type))
-        return_TypeErr ("argument must be a type");
+        return_TypeError ("argument must be a type");
 
     if (doc_plugin_type && doc_plugin_type != Py_None && !PyType_Check (doc_plugin_type))
-        return_TypeErr ("argument must be a type");
+        return_TypeError ("argument must be a type");
 
     if (win_plugin_type == Py_None)
         win_plugin_type = NULL;
@@ -251,7 +251,7 @@ _wrap_moo_text_search_forward (G_GNUC_UNUSED PyObject *self, PyObject *args)
     if (pyg_boxed_check (py_start, GTK_TYPE_TEXT_ITER))
         start = pyg_boxed_get (py_start, GtkTextIter);
     else
-        return_TypeErr ("start should be a GtkTextIter");
+        return_TypeError ("start should be a GtkTextIter");
 
     if (pyg_flags_get_value (MOO_TYPE_TEXT_SEARCH_FLAGS, py_flags, &flags))
         return NULL;
@@ -259,7 +259,7 @@ _wrap_moo_text_search_forward (G_GNUC_UNUSED PyObject *self, PyObject *args)
     if (pyg_boxed_check(py_end, GTK_TYPE_TEXT_ITER))
         end = pyg_boxed_get(py_end, GtkTextIter);
     else if (py_end != Py_None)
-        return_TypeErr ("end should be a GtkTextIter or None");
+        return_TypeError ("end should be a GtkTextIter or None");
 
     if (moo_text_search_forward (start, str, flags, &match_start, &match_end, end))
     {
@@ -290,7 +290,7 @@ _wrap_moo_text_search_backward (G_GNUC_UNUSED PyObject *self, PyObject *args)
     if (pyg_boxed_check (py_start, GTK_TYPE_TEXT_ITER))
         start = pyg_boxed_get (py_start, GtkTextIter);
     else
-        return_TypeErr ("start should be a GtkTextIter");
+        return_TypeError ("start should be a GtkTextIter");
 
     if (pyg_flags_get_value (MOO_TYPE_TEXT_SEARCH_FLAGS, py_flags, &flags))
         return NULL;
@@ -298,7 +298,7 @@ _wrap_moo_text_search_backward (G_GNUC_UNUSED PyObject *self, PyObject *args)
     if (pyg_boxed_check(py_end, GTK_TYPE_TEXT_ITER))
         end = pyg_boxed_get(py_end, GtkTextIter);
     else if (py_end != Py_None)
-        return_TypeErr ("end should be a GtkTextIter or None");
+        return_TypeError ("end should be a GtkTextIter or None");
 
     if (moo_text_search_backward (start, str, flags, &match_start, &match_end, end))
     {
@@ -322,7 +322,7 @@ _wrap_moo_edit_class_add_action (G_GNUC_UNUSED PyObject *self, PyObject *args)
     MooEditClass *klass;
 
     if (PyTuple_GET_SIZE (args) < 3)
-        return_TypeErr ("at least three arguments required");
+        return_TypeError ("at least three arguments required");
 
     py_type = PyTuple_GET_ITEM (args, 0);
     py_id = PyTuple_GET_ITEM (args, 1);
@@ -335,13 +335,13 @@ _wrap_moo_edit_class_add_action (G_GNUC_UNUSED PyObject *self, PyObject *args)
         return NULL;
 
     if (!g_type_is_a (type, MOO_TYPE_EDIT))
-        return_TypeErr ("type must be derived from MooEdit");
+        return_TypeError ("type must be derived from MooEdit");
 
     if (!g_type_is_a (action_type, MOO_TYPE_EDIT_ACTION))
-        return_TypeErr ("action_type must be derived from MooEditAction");
+        return_TypeError ("action_type must be derived from MooEditAction");
 
     if (!PyString_Check (py_id))
-        return_TypeErr ("id must be a string");
+        return_TypeError ("id must be a string");
 
     klass = g_type_class_ref (type);
 
@@ -370,7 +370,7 @@ _wrap_moo_edit_class_remove_action (G_GNUC_UNUSED PyObject *self, PyObject *args
         return NULL;
 
     if (!g_type_is_a (type, MOO_TYPE_EDIT))
-        return_TypeErr ("type must be derived from MooEdit");
+        return_TypeError ("type must be derived from MooEdit");
 
     klass = g_type_class_ref (type);
     moo_edit_class_remove_action (klass, action_id);
@@ -413,7 +413,7 @@ _wrap_moo_edit_window_set_action_langs (G_GNUC_UNUSED PyObject *self, PyObject *
                 Py_DECREF (py_langs);
                 g_slist_foreach (langs, (GFunc) g_free, NULL);
                 g_slist_free (langs);
-                return_TypeErr ("langs must be a sequence of strings");
+                return_TypeError ("langs must be a sequence of strings");
             }
 
             lang_id = moo_lang_id_from_name (PyString_AS_STRING (lang));
@@ -472,7 +472,7 @@ _wrap_moo_plugin_call_method (PyGObject *self, PyObject *args)
     guint i;
 
     if (!args || !PyTuple_GET_SIZE (args))
-        return_TypeErr ("Plugin.call_method takes at least 1 argument");
+        return_TypeError ("Plugin.call_method takes at least 1 argument");
 
     name = PyString_AsString (PyTuple_GET_ITEM (args, 0));
 
