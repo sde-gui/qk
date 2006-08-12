@@ -20,6 +20,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "moopython/pygtk/moo-mod.h"
 #include "moopython/pygtk/moo-pygtk.h"
+#include "moopython/moopython-utils.h"
 #include <pygobject.h>  /* _PyGObjectAPI lives here */
 #include <pygtk/pygtk.h>
 #include <glib.h>
@@ -105,6 +106,29 @@ func_init_pygobject (void)
     }
 }
 
+static PyObject *
+py_object_from_moo_py_object (const GValue *value)
+{
+    PyObject *obj;
+
+    g_return_val_if_fail (G_VALUE_TYPE (value) == MOO_TYPE_PY_OBJECT, NULL);
+
+    obj = g_value_get_boxed (value);
+
+    if (!obj)
+        obj = Py_None;
+
+    return moo_py_object_ref (obj);
+}
+
+
+static int
+py_object_to_moo_py_object (GValue *value, PyObject *obj)
+{
+    g_value_set_boxed (value, obj == Py_None ? obj : NULL);
+    return 0;
+}
+
 gboolean
 _moo_pygtk_init (void)
 {
@@ -114,6 +138,10 @@ _moo_pygtk_init (void)
 
     if (PyErr_Occurred ())
         return FALSE;
+
+    pyg_register_boxed_custom (MOO_TYPE_PY_OBJECT,
+                               py_object_from_moo_py_object,
+                               py_object_to_moo_py_object);
 
     _moo_module = Py_InitModule3 ((char*) "_moo", _moo_functions, _moo_module_doc);
 
