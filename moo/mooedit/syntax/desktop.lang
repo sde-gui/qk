@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language SYSTEM "language.dtd">
+<language name=".desktop" section="Configuration" extensions="*.desktop;*.kdelnk;*.ini" mimetypes="application/x-desktop">
+  <syntax>
+    <context style="Key" name="Normal">
+      <Regex pattern="\[.*\]$" style="Section" bol-only="0"/>
+      <Regex pattern="\[.*\]" style="Language" context="Value"/>
+      <Char char="#" style="Comment" context="Comment" first-non-blank-only="true"/>
+      <Char char="=" style="Normal Text" context="Value"/>
+    </context>
+    <context style="Normal Text" eol-context="#pop" name="Value"/>
+    <context style="Comment"     eol-context="#pop" name="Comment"/>
+  </syntax>
+  <styles>
+    <style name="Normal Text" default-style="Normal"/>
+    <style name="Section"     default-style="Keyword"/>
+    <style name="Key"         default-style="DataType"/>
+    <style name="Language"    default-style="Decimal" bold="1"/>
+    <style name="Comment"     default-style="Comment"/>
+  </styles>
+  <general>
+    <comments>
+      <single-line start="#"/>
+    </comments>
+  </general>
+</language>

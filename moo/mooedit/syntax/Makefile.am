@@ -2,6 +2,7 @@ mooedit_syntaxdir = ${MOO_TEXT_LANG_FILES_DIR}
 mooedit_syntax_DATA =           \
 	c.lang                  \
 	changelog.lang          \
+	desktop.lang            \
 	diff.lang               \
 	gap.lang                \
 	gnuplot.lang            \

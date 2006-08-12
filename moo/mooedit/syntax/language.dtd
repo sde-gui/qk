@@ -5,7 +5,7 @@
   "FALSE", "NO", "0" mean false.
 -->
 <!ENTITY % boolean "true|false|TRUE|FALSE|True|False|0|1">
-<!ENTITY % section "Others|Sources|Markup|Scripts|Scientific">
+<!ENTITY % section "Others|Sources|Markup|Scripts|Scientific|Configuration">
 <!ENTITY % def_styles "Normal|Keyword|DataType|Decimal|BaseN|Float|Char|String|Comment|Others|Alert|Function|RegionMarker|Error">
 
 <!-- rule_type -->
