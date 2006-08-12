@@ -136,14 +136,58 @@ moo_pyobject_to_strv_no_null (PyObject  *obj,
 
 PyObject *moo_gvalue_to_pyobject (const GValue *val)
 {
-    return pyg_value_as_pyobject (val, TRUE);
+    PyObject *obj;
+
+    obj = pyg_value_as_pyobject (val, TRUE);
+
+    if (!obj && !PyErr_Occurred ())
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        PyErr_Format (PyExc_TypeError, "could not convert value of type %s",
+                      g_type_name (G_VALUE_TYPE (val)));
+    }
+
+    return obj;
 }
+
+
+void
+moo_pyobject_to_gvalue (PyObject *object,
+                        GValue   *value)
+{
+    GType type;
+
+    g_return_if_fail (value != NULL && !G_IS_VALUE (value));
+    g_return_if_fail (object != NULL);
+
+    type = pyg_type_from_object (object);
+
+    if (type != 0 && type != G_TYPE_NONE)
+    {
+        g_value_init (value, type);
+
+        if (pyg_value_from_pyobject (value, object) == 0)
+            return;
+
+        g_critical ("%s: oops", G_STRLOC);
+        g_value_unset (value);
+    }
+
+    PyErr_Clear ();
+    g_value_init (value, MOO_TYPE_PY_OBJECT);
+
+    if (object != Py_None)
+        g_value_set_boxed (value, object);
+    else
+        g_value_set_boxed (value, NULL);
+}
+
 
 
 typedef PyObject *(*PtrToPy) (gpointer  ptr,
                               gpointer  data);
 
-static PyObject*
+static PyObject *
 slist_to_pyobject (GSList  *list,
                    PtrToPy  func,
                    gpointer data)
@@ -171,23 +215,23 @@ slist_to_pyobject (GSList  *list,
 }
 
 
-PyObject*
+PyObject *
 moo_object_slist_to_pyobject (GSList *list)
 {
     return slist_to_pyobject (list, (PtrToPy) pygobject_new, NULL);
 }
 
 
-static PyObject*
+static PyObject *
 string_to_pyobject (gpointer str)
 {
     if (!str)
-        return_RuntimeErr ("got NULL string");
+        return_RuntimeError ("got NULL string");
     else
         return PyString_FromString (str);
 }
 
-PyObject*
+PyObject *
 moo_string_slist_to_pyobject (GSList *list)
 {
     return slist_to_pyobject (list, (PtrToPy) string_to_pyobject, NULL);
@@ -211,7 +255,7 @@ moo_boxed_slist_to_pyobject (GSList *list,
 }
 
 
-PyObject*
+PyObject *
 moo_py_object_ref (PyObject *obj)
 {
     Py_XINCREF (obj);
@@ -321,7 +365,7 @@ moo_py_file_write (PyObject *self, PyObject *args)
         return NULL;
 
     if (!file->write_func)
-        return_RuntimeErr ("no write function installed");
+        return_RuntimeError ("no write function installed");
 
     file->write_func (string);
     return_None;

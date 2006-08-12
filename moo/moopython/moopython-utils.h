@@ -39,7 +39,8 @@ PyObject    *moo_boxed_slist_to_pyobject    (GSList         *list,
                                              GType           type);
 
 PyObject    *moo_gvalue_to_pyobject         (const GValue   *val);
-
+void         moo_pyobject_to_gvalue         (PyObject       *object,
+                                             GValue         *value);
 
 char        *moo_py_err_string              (void);
 void         moo_py_init_print_funcs        (void);
@@ -67,14 +68,14 @@ G_STMT_START {                  \
 #define return_Int(v)   return Py_BuildValue ((char*)"i", (v))
 
 
-#define return_AttrErr(msg)         G_STMT_START {PyErr_SetString(PyExc_AttributeError, msg); return NULL;} G_STMT_END
-#define return_AttrErrInt(msg)      G_STMT_START {PyErr_SetString(PyExc_AttributeError, msg); return -1;} G_STMT_END
-#define return_TypeErr(msg)         G_STMT_START {PyErr_SetString(PyExc_TypeError, msg); return NULL;} G_STMT_END
-#define return_TypeErrInt(msg)      G_STMT_START {PyErr_SetString(PyExc_TypeError, msg); return -1;} G_STMT_END
-#define return_RuntimeErr(msg)      G_STMT_START {PyErr_SetString(PyExc_RuntimeError, msg); return NULL;} G_STMT_END
-#define return_RuntimeErrInt(msg)   G_STMT_START {PyErr_SetString(PyExc_RuntimeError, msg); return -1;} G_STMT_END
-#define return_ValueErr(msg)        G_STMT_START {PyErr_SetString(PyExc_ValueError, msg); return NULL;} G_STMT_END
-#define return_ValueErrInt(msg)     G_STMT_START {PyErr_SetString(PyExc_ValueError, msg); return -1;} G_STMT_END
+#define return_AttrError(msg)       G_STMT_START {PyErr_SetString(PyExc_AttributeError, msg); return NULL;} G_STMT_END
+#define return_AttrErrorInt(msg)    G_STMT_START {PyErr_SetString(PyExc_AttributeError, msg); return -1;} G_STMT_END
+#define return_TypeError(msg)       G_STMT_START {PyErr_SetString(PyExc_TypeError, msg); return NULL;} G_STMT_END
+#define return_TypeErrorInt(msg)    G_STMT_START {PyErr_SetString(PyExc_TypeError, msg); return -1;} G_STMT_END
+#define return_RuntimeError(msg)    G_STMT_START {PyErr_SetString(PyExc_RuntimeError, msg); return NULL;} G_STMT_END
+#define return_RuntimeErrorInt(msg) G_STMT_START {PyErr_SetString(PyExc_RuntimeError, msg); return -1;} G_STMT_END
+#define return_ValueError(msg)      G_STMT_START {PyErr_SetString(PyExc_ValueError, msg); return NULL;} G_STMT_END
+#define return_ValueErrorInt(msg)   G_STMT_START {PyErr_SetString(PyExc_ValueError, msg); return -1;} G_STMT_END
 
 
 G_END_DECLS
