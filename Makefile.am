@@ -9,13 +9,13 @@ EXTRA_DIST =			\
 	intltool-extract.in	\
 	intltool-merge.in	\
 	intltool-update.in	\
-	make-pot-subdirs	\
+	mkpotsubdirs		\
 	medit.desktop.in
 
 all-am: pot-subdirs-stamp wininstaller/medit.iss
 
 pot-subdirs-stamp: po/POTFILES.in
-	$(SHELL) $(srcdir)/make-pot-subdirs "$(srcdir)"
+	$(SHELL) $(srcdir)/mkpotsubdirs "$(srcdir)"
 CLEANFILES = pot-subdirs-stamp
 
 DIST_SUBDIRS = m4 moo tests po
