@@ -8,11 +8,8 @@ ini_DATA =				\
 	$(ini_files)
 
 plugindir = $(MOO_LIB_DIR)/plugins/project
-plugin_DATA =				\
-	project-plugin.py
-
-mprjdir = $(plugindir)
-nobase_mprj_DATA =			\
+nobase_plugin_DATA =			\
+	project-plugin.py		\
 	mprj/__init__.py		\
 	mprj/manager.py			\
 	mprj/project.py			\
@@ -45,7 +42,6 @@ nobase_projects_DATA =			\
 	projects/ltxproj/__init__.py
 
 EXTRA_DIST =				\
-    $(plugin_DATA)			\
+    $(nobase_plugin_DATA)		\
     $(ini_in_files)			\
-    $(nobase_mprj_DATA)			\
     $(nobase_projects_DATA)
