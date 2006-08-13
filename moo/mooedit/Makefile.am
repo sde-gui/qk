@@ -1,3 +1,10 @@
+# make intltool happy
+all-am: subdirs-stamp
+subdirs-stamp:
+	mkdir -p glade
+	echo stamp > subdirs-stamp
+CLEANFILES = subdirs-stamp
+
 SUBDIRS = plugins syntax
 
 mooedit_toolsdir = $(MOO_DATA_DIR)

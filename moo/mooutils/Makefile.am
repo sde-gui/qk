@@ -1,3 +1,10 @@
+# make intltool happy
+all-am: subdirs-stamp
+subdirs-stamp:
+	mkdir -p glade
+	echo stamp > subdirs-stamp
+CLEANFILES = subdirs-stamp
+
 DIST_SUBDIRS = pcre xdgmime
 
 subdirs =
@@ -130,7 +137,7 @@ endif
 nodist_mooutils_sources =		\
 	moomarshals.c			\
 	moomarshals.h
-CLEANFILES =				\
+CLEANFILES +=				\
 	moomarshals.c			\
 	moomarshals.h
 
@@ -139,7 +146,7 @@ EXTRA_DIST =				\
 	py2h.sh				\
 	xml2h.sh			\
 	$(gmappedfile_sources)		\
-	$(moonewgtk_gtk_2_4_sources)	\
+	$(gtk_2_4_sources)		\
 	glade/accelbutton.glade		\
 	glade/accelprefs.glade		\
 	glade/moologwindow.glade	\

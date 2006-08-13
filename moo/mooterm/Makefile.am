@@ -1,3 +1,10 @@
+# make intltool happy
+all-am: subdirs-stamp
+subdirs-stamp:
+	mkdir -p glade
+	echo stamp > subdirs-stamp
+CLEANFILES = subdirs-stamp
+
 mooterm_include_headers =	       \
 	mooterm.h                      \
 	mootermwindow.h                \
@@ -100,7 +107,7 @@ if MOO_OS_CYGWIN
 noinst_PROGRAMS = termhelper
 termhelper_SOURCES = $(termhelper_sources)
 nodist_termhelper_SOURCES = termhelper_res.res
-CLEANFILES = termhelper_res.res
+CLEANFILES += termhelper_res.res
 termhelper_CFLAGS =                         \
     -I$(top_builddir)                       \
     -I$(top_srcdir)                         \
@@ -114,5 +121,5 @@ termhelper_LDADD = termhelper_res.res
 else
 termhelper_res.res: termhelper_res.rc
 	touch termhelper_res.res
-CLEANFILES = termhelper_res.res
+CLEANFILES += termhelper_res.res
 endif

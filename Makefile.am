@@ -22,6 +22,12 @@ DESKTOP_FILES =$(DESKTOP_IN_FILES:.desktop.in=.desktop)
 desktopdir = $(datadir)/applications
 desktop_DATA = $(DESKTOP_FILES)
 
+DISTCLEANFILES =		\
+	$(DESKTOP_FILES)	\
+	intltool-extract	\
+	intltool-merge		\
+	intltool-update
+
 appicondir = $(datadir)/pixmaps
 appicon_DATA = moo/mooutils/pixmaps/medit.png
 hicolor = $(datadir)/icons/hicolor
