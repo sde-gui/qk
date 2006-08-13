@@ -16,6 +16,7 @@ mooapp_sources =			\
 	mooappabout.h                   \
 	mooapp.c                        \
 	mooapp.h                        \
+	mooapp-private.h                \
 	mooappinput.c                   \
 	mooappinput.h
 

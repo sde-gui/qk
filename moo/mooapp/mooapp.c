@@ -15,9 +15,10 @@
 #include "config.h"
 #endif
 
+#define MOO_APP_COMPILATION
 #define WANT_MOO_APP_CMD_CHARS
 #include "mooapp/mooappinput.h"
-#include "mooapp/mooapp.h"
+#include "mooapp/mooapp-private.h"
 #include "mooterm/mootermwindow.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"

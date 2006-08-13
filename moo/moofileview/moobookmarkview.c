@@ -11,6 +11,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#define MOO_FILE_VIEW_COMPILATION
 #include "moofileview/moobookmarkview.h"
 #include "mooutils/moomarshals.h"
 #include <gtk/gtk.h>

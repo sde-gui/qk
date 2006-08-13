@@ -32,7 +32,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
-#include "moofileview/moofilesystem.h"
+#include "moofileview/moofile.h"
 #include <string.h>
 #include <gtk/gtk.h>
 

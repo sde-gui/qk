@@ -13,13 +13,13 @@
 
 /* XXX use MooCombo */
 
-#define MOO_FILE_SYSTEM_COMPILATION
+#define MOO_FILE_VIEW_COMPILATION
 #include "moofileentry.h"
 #include "moofilesystem.h"
 #include "moofoldermodel.h"
+#include "moofileview-aux.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
-#include "moofileview-private.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 

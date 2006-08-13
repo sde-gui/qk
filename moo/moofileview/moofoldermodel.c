@@ -11,8 +11,9 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#define MOO_FILE_SYSTEM_COMPILATION
+#define MOO_FILE_VIEW_COMPILATION
 #include "moofoldermodel.h"
+#include "moofile-private.h"
 #include "moofoldermodel-private.h"
 #include <gtk/gtktreednd.h>
 

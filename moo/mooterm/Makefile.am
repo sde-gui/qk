@@ -32,6 +32,7 @@ mooterm_sources =                      \
 	mootermpt.c                    \
 	mootermpt.h                    \
 	mootermpt-private.h            \
+	mootermtag-private.h           \
 	mootermtag.c                   \
 	mootermwindow.c                \
 	mootermprefs-glade.h

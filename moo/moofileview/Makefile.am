@@ -1,4 +1,8 @@
+moofileview_headers =	        \
+	moofileview.h
+
 moofileview_sources =		\
+	$(moofileview_headers)  \
 	moobookmarkmgr.c	\
 	moobookmarkmgr.h	\
 	moobookmarkmgr-glade.h	\
@@ -8,19 +12,21 @@ moofileview_sources =		\
 	moofileviewdrop-glade.h	\
 	moofile.c		\
 	moofile.h		\
+	moofile-private.h	\
 	moofileentry.c		\
 	moofileentry.h		\
 	moofileprops-glade.h	\
 	moofilesystem.c		\
 	moofilesystem.h		\
 	moofileview.c		\
-	moofileview.h		\
-	moofileview-ui.h	\
+	moofileview-aux.h	\
 	moofileview-dialogs.c	\
 	moofileview-dialogs.h	\
+	moofileview-impl.h	\
 	moofileview-private.h	\
 	moofileview-tools.c	\
 	moofileview-tools.h	\
+	moofileview-ui.h	\
 	moofoldermodel.c	\
 	moofoldermodel.h	\
 	moofoldermodel-private.h\
@@ -29,6 +35,11 @@ moofileview_sources =		\
 	mootreeview.c		\
 	mootreeview.h		\
 	symlink.h
+
+if MOO_INSTALL_HEADERS
+moofileview_includedir = $(moo_includedir)/moofileview
+moofileview_include_HEADERS = $(moofileview_headers)
+endif
 
 moofileview_pixmaps =		\
 	symlink.png		\

@@ -22,10 +22,6 @@
   (parent "GObject")
   (c-name "MooTermTag")
   (gtype-id "MOO_TYPE_TERM_TAG")
-  (fields
-    '("char*" "name")
-    '("MooTermTextAttr" "attr")
-  )
 )
 
 (define-object Window
@@ -737,6 +733,20 @@
              "foreground - text color as TextColor value, has effect only if TEXT_FOREGROUND mask is set\n"
              "background - background color as TextColor value, has effect only if TEXT_BACKGROUND mask is set\n"
   )
+)
+
+(define-method get_attr
+  (of-object "MooTermTag")
+  (c-name "moo_term_tag_get_attr")
+  (return-type "const-MooTermTextAttr*")
+  (docstring "Tag.get_attr() -> TermTextAttr.\n")
+)
+
+(define-method get_name
+  (of-object "MooTermTag")
+  (c-name "moo_term_tag_get_name")
+  (return-type "const-char*")
+  (docstring "Tag.get_name() -> str.\n")
 )
 
 (define-function moo_term_text_attr_new

@@ -118,12 +118,6 @@ gboolean         moo_app_send_files             (MooApp     *app,
 
 void             moo_app_reload_python_plugins  (void);
 
-void             _moo_app_exec_cmd              (MooApp     *app,
-                                                 char        cmd,
-                                                 const char *data,
-                                                 guint       len);
-GtkWidget       *_moo_app_create_prefs_dialog   (MooApp     *app);
-
 
 G_END_DECLS
 

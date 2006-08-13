@@ -23,6 +23,20 @@
 G_BEGIN_DECLS
 
 
+#define MOO_TERM_EMPTY_CHAR  ' '
+#define MOO_TERM_ZERO_ATTR {0, 0, 0}
+
+
+#define MOO_TERM_TEXT_ATTR_EQUAL(a1__,a2__)             \
+    ((a1__).mask == (a2__).mask &&                      \
+    (!((a1__).mask & MOO_TERM_TEXT_FOREGROUND) ||       \
+        (a1__).foreground == (a2__).foreground) &&      \
+    (!((a1__).mask & MOO_TERM_TEXT_BACKGROUND) ||       \
+        (a1__).background == (a2__).background))
+
+
+typedef struct _MooTermCell MooTermCell;
+
 struct _MooTermCell {
     gunichar        ch;
     MooTermTextAttr attr;

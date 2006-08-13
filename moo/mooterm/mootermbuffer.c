@@ -1260,7 +1260,7 @@ static void
 set_ansi_foreground (MooTermBuffer *buf,
                      guint          color)
 {
-    if ((color) < MOO_TERM_COLOR_MAX)
+    if ((color) < MOO_TERM_NUM_COLORS)
     {
         buf->priv->current_attr.mask |= MOO_TERM_TEXT_FOREGROUND;
         buf->priv->current_attr.foreground = color;
@@ -1275,7 +1275,7 @@ static void
 set_ansi_background (MooTermBuffer *buf,
                      guint          color)
 {
-    if (color < MOO_TERM_COLOR_MAX)
+    if (color < MOO_TERM_NUM_COLORS)
     {
         buf->priv->current_attr.mask |= MOO_TERM_TEXT_BACKGROUND;
         buf->priv->current_attr.background = color;

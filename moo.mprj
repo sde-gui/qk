@@ -7,9 +7,9 @@
       <var name="LANGUAGE">ru</var>
     </vars>
   </run>
-  <make>
+<!--  <make>
     <args>-j 3</args>
-  </make>
+  </make>-->
   <configurations>
     <debug>
       <configure>

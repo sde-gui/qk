@@ -11,6 +11,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#ifndef MOO_FILE_VIEW_COMPILATION
+#error "This file may not be included"
+#endif
+
 #ifndef __MOO_ICON_VIEW_H__
 #define __MOO_ICON_VIEW_H__
 

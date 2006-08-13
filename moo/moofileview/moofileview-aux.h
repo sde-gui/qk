@@ -1,5 +1,5 @@
 /*
- *   moofilesystem-private.h
+ *   moofileview-aux.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,9 +11,16 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#ifndef MOO_FILE_VIEW_COMPILATION
+#error "This file may not be included"
+#endif
 
 #include <string.h>
 #include <glib.h>
+
+#ifndef __MOO_FILE_VIEW_AUX_H__
+#define __MOO_FILE_VIEW_AUX_H__
+
 
 #define COLUMN_FILE MOO_FOLDER_MODEL_COLUMN_FILE
 
@@ -201,3 +208,6 @@ out:
         *unique_iter_p = unique_iter;
     return prefix;
 }
+
+
+#endif /* __MOO_FILE_VIEW_AUX_H__ */

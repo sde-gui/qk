@@ -51,3 +51,4 @@ moo/mooterm/termhelper_res\.rc$
 ^\..*\.session$
 ^po/missing$
 ^po/.*\.pot$
+^po/notexist$

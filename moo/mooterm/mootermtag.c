@@ -12,6 +12,7 @@
  */
 
 #define MOOTERM_COMPILATION
+#include "mooterm/mootermtag-private.h"
 #include "mooterm/mootermbuffer-private.h"
 #include "mooterm/mooterm-private.h"
 #include "mooterm/mootermline-private.h"
@@ -342,6 +343,22 @@ moo_term_tag_set_attributes (MooTermTag         *tag,
     attr.background = background;
 
     moo_term_tag_set_attr (tag, &attr);
+}
+
+
+const char *
+moo_term_tag_get_name (MooTermTag *tag)
+{
+    g_return_val_if_fail (MOO_IS_TERM_TAG (tag), NULL);
+    return tag->name;
+}
+
+
+const MooTermTextAttr *
+moo_term_tag_get_attr (MooTermTag *tag)
+{
+    g_return_val_if_fail (MOO_IS_TERM_TAG (tag), NULL);
+    return &tag->attr;
 }
 
 

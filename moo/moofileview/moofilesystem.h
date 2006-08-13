@@ -17,14 +17,16 @@
  *  from gtk/gtkfilesystem.h; I also borrowed icon code from there.).
  */
 
+#ifndef MOO_FILE_VIEW_COMPILATION
+#error "This file may not be included"
+#endif
+
 #ifndef __MOO_FILE_SYSTEM_H__
 #define __MOO_FILE_SYSTEM_H__
 
-#include <moofileview/moofile.h>
+#include "moofileview/moofile-private.h"
+#include <mooutils/moofilewatch.h>
 #include <gtk/gtkwidget.h>
-#ifdef MOO_FILE_SYSTEM_COMPILATION
-#include "mooutils/moofilewatch.h"
-#endif
 
 
 G_BEGIN_DECLS
@@ -138,10 +140,7 @@ char        *_moo_file_system_get_absolute_path (MooFileSystem  *fs,
 
 MooFileSystem *_moo_folder_get_file_system      (MooFolder      *folder);
 
-
-#ifdef MOO_FILE_SYSTEM_COMPILATION
 MooFileWatch *_moo_file_system_get_file_watch   (MooFileSystem  *fs);
-#endif
 
 
 G_END_DECLS

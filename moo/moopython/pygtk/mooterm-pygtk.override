@@ -237,7 +237,7 @@ override moo_term_set_colors varargs
 static PyObject *
 _wrap_moo_term_set_colors (PyGObject *self, PyObject *args)
 {
-    GdkColor colors[2*MOO_TERM_COLOR_MAX];
+    GdkColor colors[2 * MOO_TERM_NUM_COLORS];
     guint i, n_colors;
     PyObject *py_colors;
 
@@ -249,10 +249,10 @@ _wrap_moo_term_set_colors (PyGObject *self, PyObject *args)
 
     n_colors = PySequence_Size (py_colors);
 
-    if (n_colors != MOO_TERM_COLOR_MAX && n_colors != 2 * MOO_TERM_COLOR_MAX)
+    if (n_colors != MOO_TERM_NUM_COLORS && n_colors != 2 * MOO_TERM_NUM_COLORS)
     {
         PyErr_Format (PyExc_ValueError, "number of colors must be %d or %d",
-                      MOO_TERM_COLOR_MAX, MOO_TERM_COLOR_MAX * 2);
+                      MOO_TERM_NUM_COLORS, MOO_TERM_NUM_COLORS * 2);
         return NULL;
     }
 

@@ -185,17 +185,17 @@ moo_term_set_colors (MooTerm  *term,
 
     g_return_if_fail (MOO_IS_TERM (term));
     g_return_if_fail (colors != NULL);
-    g_return_if_fail (n_colors == MOO_TERM_COLOR_MAX ||
-                      n_colors == 2*MOO_TERM_COLOR_MAX);
+    g_return_if_fail (n_colors == MOO_TERM_NUM_COLORS ||
+                      n_colors == 2 * MOO_TERM_NUM_COLORS);
 
-    for (i = 0; i < MOO_TERM_COLOR_MAX; ++i)
+    for (i = 0; i < MOO_TERM_NUM_COLORS; ++i)
     {
         term->priv->palette[i] = colors[i];
 
-        if (n_colors > MOO_TERM_COLOR_MAX)
-            term->priv->palette[i + MOO_TERM_COLOR_MAX] = colors[i + MOO_TERM_COLOR_MAX];
+        if (n_colors > MOO_TERM_NUM_COLORS)
+            term->priv->palette[i + MOO_TERM_NUM_COLORS] = colors[i + MOO_TERM_NUM_COLORS];
         else
-            term->priv->palette[ + MOO_TERM_COLOR_MAX] = colors[i];
+            term->priv->palette[ + MOO_TERM_NUM_COLORS] = colors[i];
     }
 
     if (GTK_WIDGET_REALIZED (term))
@@ -275,7 +275,7 @@ void
 _moo_term_init_palette (MooTerm        *term)
 {
     int i;
-    GdkColor colors[2 * MOO_TERM_COLOR_MAX];
+    GdkColor colors[2 * MOO_TERM_NUM_COLORS];
     GtkWidget *widget = GTK_WIDGET (term);
 
     gtk_widget_ensure_style (widget);
@@ -287,17 +287,17 @@ _moo_term_init_palette (MooTerm        *term)
 
     for (i = 0; i < 2; ++i)
     {
-        gdk_color_parse ("black", &colors[8*i + MOO_TERM_BLACK]);
-        gdk_color_parse ("red", &colors[8*i + MOO_TERM_RED]);
-        gdk_color_parse ("green", &colors[8*i + MOO_TERM_GREEN]);
-        gdk_color_parse ("yellow", &colors[8*i + MOO_TERM_YELLOW]);
-        gdk_color_parse ("blue", &colors[8*i + MOO_TERM_BLUE]);
-        gdk_color_parse ("magenta", &colors[8*i + MOO_TERM_MAGENTA]);
-        gdk_color_parse ("cyan", &colors[8*i + MOO_TERM_CYAN]);
-        gdk_color_parse ("white", &colors[8*i + MOO_TERM_WHITE]);
+        gdk_color_parse ("black", &colors[8 * i + MOO_TERM_BLACK]);
+        gdk_color_parse ("red", &colors[8 * i + MOO_TERM_RED]);
+        gdk_color_parse ("green", &colors[8 * i + MOO_TERM_GREEN]);
+        gdk_color_parse ("yellow", &colors[8 * i + MOO_TERM_YELLOW]);
+        gdk_color_parse ("blue", &colors[8 * i + MOO_TERM_BLUE]);
+        gdk_color_parse ("magenta", &colors[8 * i + MOO_TERM_MAGENTA]);
+        gdk_color_parse ("cyan", &colors[8 * i + MOO_TERM_CYAN]);
+        gdk_color_parse ("white", &colors[8 * i + MOO_TERM_WHITE]);
     }
 
-    moo_term_set_colors (term, colors, 2 * MOO_TERM_COLOR_MAX);
+    moo_term_set_colors (term, colors, 2 * MOO_TERM_NUM_COLORS);
 }
 
 
@@ -322,16 +322,16 @@ _moo_term_update_palette (MooTerm *term)
                               TRUE, TRUE);
 
     if (term->priv->color[0])
-        for (i = 0; i < 2*MOO_TERM_COLOR_MAX; ++i)
+        for (i = 0; i < 2 * MOO_TERM_NUM_COLORS; ++i)
             g_object_unref (term->priv->color[i]);
 
-    for (i = 0; i < MOO_TERM_COLOR_MAX; ++i)
+    for (i = 0; i < MOO_TERM_NUM_COLORS; ++i)
         for (j = 0; j < 2; ++j)
             gdk_colormap_alloc_color (colormap,
                                       &term->priv->palette[8*j + i],
                                       TRUE, TRUE);
 
-    for (i = 0; i < MOO_TERM_COLOR_MAX; ++i)
+    for (i = 0; i < MOO_TERM_NUM_COLORS; ++i)
         for (j = 0; j < 2; ++j)
     {
         vals.foreground = term->priv->palette[8*j + i];
@@ -889,8 +889,8 @@ term_draw_cells (MooTerm        *term,
 
     if (attr.mask & MOO_TERM_TEXT_FOREGROUND)
     {
-        g_return_if_fail (attr.foreground < MOO_TERM_COLOR_MAX);
-        fg = term->priv->color[8*bold + attr.foreground];
+        g_return_if_fail (attr.foreground < MOO_TERM_NUM_COLORS);
+        fg = term->priv->color[8 * bold + attr.foreground];
     }
     else
     {
@@ -899,8 +899,8 @@ term_draw_cells (MooTerm        *term,
 
     if (attr.mask & MOO_TERM_TEXT_BACKGROUND)
     {
-        g_return_if_fail (attr.foreground < MOO_TERM_COLOR_MAX);
-        bg = term->priv->color[8*bold + attr.background];
+        g_return_if_fail (attr.foreground < MOO_TERM_NUM_COLORS);
+        bg = term->priv->color[8 * bold + attr.background];
     }
     else
     {

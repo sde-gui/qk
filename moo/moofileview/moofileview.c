@@ -17,14 +17,14 @@
 #define GTK_DISABLE_DEPRECATED
 #endif
 
-#define MOO_FILE_SYSTEM_COMPILATION
-#include "moofileview/moofileview.h"
+#define MOO_FILE_VIEW_COMPILATION
 #include "moofileview/moofileview-dialogs.h"
 #include "moofileview/moobookmarkmgr.h"
 #include "moofileview/moofilesystem.h"
 #include "moofileview/moofoldermodel.h"
 #include "moofileview/moofileentry.h"
 #include "moofileview/mooiconview.h"
+#include "moofileview/moofileview-aux.h"
 #include "moofileview/moofileview-private.h"
 #include "moofileview/moofileview-ui.h"
 #include "moofileview/mootreeview.h"

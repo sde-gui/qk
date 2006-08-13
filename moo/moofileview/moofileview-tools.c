@@ -15,8 +15,10 @@
 #include "config.h"
 #endif
 
+#define MOO_FILE_VIEW_COMPILATION
 #include "moofileview/moofileview-tools.h"
-#include "moofileview/moofile.h"
+#include "moofileview/moofileview-private.h"
+#include "moofileview/moofile-private.h"
 #include "mooutils/mooprefs.h"
 #if MOO_USE_XDGMIME
 #include "mooutils/xdgmime/xdgmime.h"

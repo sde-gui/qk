@@ -13,6 +13,7 @@
 
 #define MOOTERM_COMPILATION
 #include "mooterm/mootermline-private.h"
+#include "mooterm/mootermtag-private.h"
 #include <string.h>
 
 

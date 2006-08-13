@@ -14,27 +14,14 @@
 #ifndef __MOO_TERM_LINE_H__
 #define __MOO_TERM_LINE_H__
 
-#include "mooterm/mootermtag.h"
+#include <mooterm/mootermtag.h>
 
 G_BEGIN_DECLS
 
 
-typedef struct _MooTermCell MooTermCell;
 typedef struct _MooTermLine MooTermLine;
 
 #define MOO_TYPE_TERM_LINE (moo_term_line_get_type ())
-
-
-#define MOO_TERM_EMPTY_CHAR  ' '
-#define MOO_TERM_ZERO_ATTR {0, 0, 0}
-
-
-#define MOO_TERM_TEXT_ATTR_EQUAL(a1__,a2__)             \
-    ((a1__).mask == (a2__).mask &&                      \
-    (!((a1__).mask & MOO_TERM_TEXT_FOREGROUND) ||       \
-        (a1__).foreground == (a2__).foreground) &&      \
-    (!((a1__).mask & MOO_TERM_TEXT_BACKGROUND) ||       \
-        (a1__).background == (a2__).background))
 
 
 GType       moo_term_line_get_type      (void) G_GNUC_CONST;

@@ -14,14 +14,11 @@
 #ifndef __MOO_FILE_VIEW_H__
 #define __MOO_FILE_VIEW_H__
 
-#include <gtk/gtkvbox.h>
-#include <gtk/gtkmenu.h>
 #include <mooutils/moouixml.h>
 
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_FILE_VIEW_TYPE         (_moo_file_view_type_get_type ())
 #define MOO_TYPE_FILE_VIEW              (moo_file_view_get_type ())
 #define MOO_FILE_VIEW(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FILE_VIEW, MooFileView))
 #define MOO_FILE_VIEW_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FILE_VIEW, MooFileViewClass))
@@ -29,100 +26,17 @@ G_BEGIN_DECLS
 #define MOO_IS_FILE_VIEW_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FILE_VIEW))
 #define MOO_FILE_VIEW_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FILE_VIEW, MooFileViewClass))
 
+typedef struct _MooFileView      MooFileView;
+typedef struct _MooFileViewClass MooFileViewClass;
 
-typedef enum {
-    MOO_FILE_VIEW_LIST,
-    MOO_FILE_VIEW_ICON,
-    MOO_FILE_VIEW_BOOKMARK
-} MooFileViewType;
+GType            moo_file_view_get_type     (void) G_GNUC_CONST;
 
-typedef struct _MooFileView         MooFileView;
-typedef struct _MooFileViewPrivate  MooFileViewPrivate;
-typedef struct _MooFileViewClass    MooFileViewClass;
+gboolean         moo_file_view_chdir        (MooFileView    *fileview,
+                                             const char     *dir,
+                                             GError        **error);
 
-struct _MooFileView
-{
-    GtkVBox vbox;
-    GtkWidget *toolbar;
-    MooFileViewPrivate *priv;
-};
-
-struct _MooFileViewClass
-{
-    GtkVBoxClass        vbox_class;
-
-    gboolean    (*chdir)            (MooFileView    *fileview,
-                                     const char     *dir,
-                                     GError        **error);
-    void        (*populate_popup)   (MooFileView    *fileview,
-                                     GList          *selected,
-                                     GtkMenu        *menu);
-    void        (*activate)         (MooFileView    *fileview,
-                                     const char     *path);
-
-    gboolean    (*drop)             (MooFileView    *fileview,
-                                     const char     *path,
-                                     GtkWidget      *widget,
-                                     GdkDragContext *context,
-                                     int             x,
-                                     int             y,
-                                     guint           time);
-    gboolean    (*drop_data_received) (MooFileView  *fileview,
-                                     const char     *path,
-                                     GtkWidget      *widget,
-                                     GdkDragContext *context,
-                                     int             x,
-                                     int             y,
-                                     GtkSelectionData *data,
-                                     guint           info,
-                                     guint           time);
-};
-
-
-GType       moo_file_view_get_type                      (void) G_GNUC_CONST;
-GType       _moo_file_view_type_get_type                (void) G_GNUC_CONST;
-
-GtkWidget  *_moo_file_view_new                          (void);
-
-gboolean    moo_file_view_chdir                         (MooFileView    *fileview,
-                                                         const char     *dir,
-                                                         GError        **error);
-
-void        _moo_file_view_select_name                  (MooFileView    *fileview,
-                                                         const char     *name);
-void        _moo_file_view_select_display_name          (MooFileView    *fileview,
-                                                         const char     *name);
-
-void        _moo_file_view_set_view_type                (MooFileView    *fileview,
-                                                         MooFileViewType type);
-
-void        _moo_file_view_set_show_hidden              (MooFileView    *fileview,
-                                                         gboolean        show);
-void        _moo_file_view_set_show_parent              (MooFileView    *fileview,
-                                                         gboolean        show);
-void        _moo_file_view_set_sort_case_sensitive      (MooFileView    *fileview,
-                                                         gboolean        case_sensitive);
-void        _moo_file_view_set_typeahead_case_sensitive (MooFileView    *fileview,
-                                                         gboolean        case_sensitive);
-
-MooUIXML   *moo_file_view_get_ui_xml                    (MooFileView    *fileview);
-GtkActionGroup *moo_file_view_get_actions               (MooFileView    *fileview);
-
-void        _moo_file_view_add_target                   (MooFileView    *fileview,
-                                                         GdkAtom         target,
-                                                         guint           flags,
-                                                         guint           info);
-
-void        _moo_file_view_drag_finish                  (MooFileView    *fileview,
-                                                         GdkDragContext *context,
-                                                         gboolean        success,
-                                                         gboolean        delete_data,
-                                                         guint           time);
-
-/* returns list of absolute paths, must be freed together with content */
-GList      *_moo_file_view_get_filenames                (MooFileView    *fileview);
-/* returns list of MooFile* pointers, must be freed, and elements must be unref'ed */
-GList      *_moo_file_view_get_files                    (MooFileView    *fileview);
+MooUIXML        *moo_file_view_get_ui_xml   (MooFileView    *fileview);
+GtkActionGroup  *moo_file_view_get_actions  (MooFileView    *fileview);
 
 
 G_END_DECLS

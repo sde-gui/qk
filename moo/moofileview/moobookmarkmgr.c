@@ -15,6 +15,7 @@
 #include "config.h"
 #endif
 
+#define MOO_FILE_VIEW_COMPILATION
 #include "moofileview/moobookmarkmgr.h"
 #include "moofileview/moobookmarkmgr-glade.h"
 #include "moofileview/moofileentry.h"

@@ -11,12 +11,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#ifndef MOO_FILE_VIEW_COMPILATION
+#error "This file may not be included"
+#endif
+
 #ifndef __MOO_FOLDER_MODEL_PRIVATE_H__
 #define __MOO_FOLDER_MODEL_PRIVATE_H__
-
-#ifndef MOO_FILE_SYSTEM_COMPILATION
-#error "Do not include this file"
-#endif
 
 #include <glib.h>
 #include <string.h>

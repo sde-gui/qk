@@ -11,6 +11,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#define MOO_FILE_VIEW_COMPILATION
 #include "mooiconview.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
