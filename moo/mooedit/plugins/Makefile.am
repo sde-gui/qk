@@ -16,7 +16,7 @@ EXTRA_DIST =			\
 
 XML2H = $(srcdir)/../../mooutils/xml2h.sh
 moofind-glade.h: moofind.glade $(XML2H)
-	sh $(XML2H) MOO_FIND_GLADE_XML $(srcdir)/moofind.glade > moofind-glade.h
+	$(SHELL) $(XML2H) MOO_FIND_GLADE_XML $(srcdir)/moofind.glade > moofind-glade.h
 
 unix_sources =			\
 	moofind.c		\

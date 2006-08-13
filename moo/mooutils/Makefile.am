@@ -1,10 +1,3 @@
-# make intltool happy
-all-am: subdirs-stamp
-subdirs-stamp:
-	mkdir -p glade
-	echo stamp > subdirs-stamp
-CLEANFILES = subdirs-stamp
-
 DIST_SUBDIRS = pcre xdgmime
 
 subdirs =
@@ -137,7 +130,7 @@ endif
 nodist_mooutils_sources =		\
 	moomarshals.c			\
 	moomarshals.h
-CLEANFILES +=				\
+CLEANFILES =				\
 	moomarshals.c			\
 	moomarshals.h
 
@@ -178,13 +171,13 @@ moomarshals.h: moomarshals.list
 
 XML2H = $(srcdir)/xml2h.sh
 mooaccelbutton-glade.h: $(srcdir)/glade/accelbutton.glade $(XML2H)
-	sh $(XML2H) MOO_ACCEL_BUTTON_GLADE_UI \
+	$(SHELL) $(XML2H) MOO_ACCEL_BUTTON_GLADE_UI \
 	   $(srcdir)/glade/accelbutton.glade > mooaccelbutton-glade.h
 mooaccelprefs-glade.h: $(srcdir)/glade/accelprefs.glade $(XML2H)
-	sh $(XML2H) MOO_ACCEL_PREFS_GLADE_UI \
+	$(SHELL) $(XML2H) MOO_ACCEL_PREFS_GLADE_UI \
 	   $(srcdir)/glade/accelprefs.glade > mooaccelprefs-glade.h
 moologwindow-glade.h: $(srcdir)/glade/moologwindow.glade $(XML2H)
-	sh $(XML2H) MOO_LOG_WINDOW_GLADE_UI \
+	$(SHELL) $(XML2H) MOO_LOG_WINDOW_GLADE_UI \
 	   $(srcdir)/glade/moologwindow.glade > moologwindow-glade.h
 
 mooutils_pixmaps =			\

@@ -1,16 +1,7 @@
-# make intltool happy
-all-am: subdirs-stamp
-subdirs-stamp:
-	mkdir -p projects/cproj
-	mkdir -p projects/ltxproj
-	mkdir -p mprj/config
-	echo stamp > subdirs-stamp
-CLEANFILES = subdirs-stamp
-
 ini_in_files = project-plugin.ini.desktop.in
 @MOO_INTLTOOL_INI_RULE@
 ini_files = $(ini_in_files:.ini.desktop.in=.ini)
-CLEANFILES += $(ini_files)
+CLEANFILES = $(ini_files)
 
 inidir = $(MOO_LIB_DIR)/plugins
 ini_DATA =				\

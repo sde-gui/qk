@@ -22,11 +22,12 @@ EXTRA_DIST =		\
 
 BUILT_SOURCES = medit-ui.h THANKS.h
 
-medit-ui.h: medit-ui.xml
-	sh $(srcdir)/../moo/mooutils/xml2h.sh MEDIT_UI $(srcdir)/medit-ui.xml > medit-ui.h.tmp && \
+XML2H = $(srcdir)/../moo/mooutils/xml2h.sh
+medit-ui.h: medit-ui.xml $(XML2H)
+	$(SHELL) $(XML2H) MEDIT_UI $(srcdir)/medit-ui.xml > medit-ui.h.tmp && \
 	mv medit-ui.h.tmp medit-ui.h
-THANKS.h: ../THANKS
-	sh $(srcdir)/../moo/mooutils/xml2h.sh THANKS $(srcdir)/../THANKS > THANKS.h
+THANKS.h: ../THANKS $(XML2H)
+	$(SHELL) $(XML2H) THANKS $(srcdir)/../THANKS > THANKS.h
 
 # medit-app.c is not in BUILT_SOURCES, so the target must use absolute path to it
 $(srcdir)/medit-app.c: medit-app.opag medit-ui.h

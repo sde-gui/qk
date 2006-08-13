@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if test "x$1" = "x"; then
+    echo usage: $0 srcdir
+    exit 1
+fi
+
+potfiles=`cat $1/po/POTFILES.in` && \
+for potfile in $potfiles; do mkdir -p `dirname $potfile`; done && \
+echo stamp > pot-subdirs-stamp

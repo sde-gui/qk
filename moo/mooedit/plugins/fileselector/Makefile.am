@@ -15,9 +15,9 @@ BUILT_SOURCES =				\
 
 XML2H = $(srcdir)/../../../mooutils/xml2h.sh
 moofileselector-glade.h: moofileselector.glade $(XML2H)
-	sh $(XML2H) MOO_FILE_SELECTOR_GLADE_XML $(srcdir)/moofileselector.glade > moofileselector-glade.h
+	$(SHELL) $(XML2H) MOO_FILE_SELECTOR_GLADE_XML $(srcdir)/moofileselector.glade > moofileselector-glade.h
 moofileselector-prefs-glade.h: moofileselector-prefs.glade $(XML2H)
-	sh $(XML2H) MOO_FILE_SELECTOR_PREFS_GLADE_XML $(srcdir)/moofileselector-prefs.glade > moofileselector-prefs-glade.h
+	$(SHELL) $(XML2H) MOO_FILE_SELECTOR_PREFS_GLADE_XML $(srcdir)/moofileselector-prefs.glade > moofileselector-prefs-glade.h
 
 noinst_LTLIBRARIES = libfileselector.la
 libfileselector_la_SOURCES = $(fileselector_sources)

@@ -1,10 +1,3 @@
-# make intltool happy
-all-am: subdirs-stamp
-subdirs-stamp:
-	mkdir -p glade
-	echo stamp > subdirs-stamp
-CLEANFILES = subdirs-stamp
-
 moofileview_headers =	        \
 	moofileview.h
 
@@ -69,15 +62,15 @@ symlink.h: $(moofileview_pixmaps)
 XML2H = $(srcdir)/../mooutils/xml2h.sh
 
 moofileview-ui.h: $(srcdir)/moofileview-ui.xml $(XML2H)
-	sh $(XML2H) MOO_FILE_VIEW_UI $(srcdir)/moofileview-ui.xml > moofileview-ui.h
+	$(SHELL) $(XML2H) MOO_FILE_VIEW_UI $(srcdir)/moofileview-ui.xml > moofileview-ui.h
 moofileprops-glade.h: $(srcdir)/glade/moofileprops.glade $(XML2H)
-	sh $(XML2H) MOO_FILE_PROPS_GLADE_UI $(srcdir)/glade/moofileprops.glade > moofileprops-glade.h
+	$(SHELL) $(XML2H) MOO_FILE_PROPS_GLADE_UI $(srcdir)/glade/moofileprops.glade > moofileprops-glade.h
 moocreatefolder-glade.h: $(srcdir)/glade/moocreatefolder.glade $(XML2H)
-	sh $(XML2H) MOO_CREATE_FOLDER_GLADE_UI $(srcdir)/glade/moocreatefolder.glade > moocreatefolder-glade.h
+	$(SHELL) $(XML2H) MOO_CREATE_FOLDER_GLADE_UI $(srcdir)/glade/moocreatefolder.glade > moocreatefolder-glade.h
 moobookmarkmgr-glade.h: $(srcdir)/glade/bookmark_editor.glade $(XML2H)
-	sh $(XML2H) MOO_BOOKMARK_MGR_GLADE_UI $(srcdir)/glade/bookmark_editor.glade > moobookmarkmgr-glade.h
+	$(SHELL) $(XML2H) MOO_BOOKMARK_MGR_GLADE_UI $(srcdir)/glade/bookmark_editor.glade > moobookmarkmgr-glade.h
 moofileviewdrop-glade.h: $(srcdir)/glade/drop.glade $(XML2H)
-	sh $(XML2H) MOO_FILE_VIEW_DROP_GLADE_UI $(srcdir)/glade/drop.glade > moofileviewdrop-glade.h
+	$(SHELL) $(XML2H) MOO_FILE_VIEW_DROP_GLADE_UI $(srcdir)/glade/drop.glade > moofileviewdrop-glade.h
 
 
 EXTRA_DIST =				\

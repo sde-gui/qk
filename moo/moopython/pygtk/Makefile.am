@@ -131,15 +131,15 @@ mooapp-pygtk.c: mooapp-pygtk.defs mooapp-pygtk.override $(codegen_files)
 
 PY2H = $(srcdir)/../../mooutils/py2h.sh
 moo-mod.h: $(srcdir)/moo-mod.py $(PY2H)
-	sh $(PY2H) MOO_PY $(srcdir)/moo-mod.py > moo-mod.h
+	$(SHELL) $(PY2H) MOO_PY $(srcdir)/moo-mod.py > moo-mod.h
 mooedit-mod.h: $(srcdir)/mooedit-mod.py $(PY2H)
-	sh $(PY2H) MOO_EDIT_PY $(srcdir)/mooedit-mod.py > mooedit-mod.h
+	$(SHELL) $(PY2H) MOO_EDIT_PY $(srcdir)/mooedit-mod.py > mooedit-mod.h
 mooapp-mod.h: mooapp-mod.py $(PY2H)
-	sh $(PY2H) MOO_APP_PY $(srcdir)/mooapp-mod.py > mooapp-mod.h
+	$(SHELL) $(PY2H) MOO_APP_PY $(srcdir)/mooapp-mod.py > mooapp-mod.h
 mooutils-mod.h: mooutils-mod.py $(PY2H)
-	sh $(PY2H) MOO_UTILS_PY $(srcdir)/mooutils-mod.py > mooutils-mod.h
+	$(SHELL) $(PY2H) MOO_UTILS_PY $(srcdir)/mooutils-mod.py > mooutils-mod.h
 mooterm-mod.h: mooterm-mod.py $(PY2H)
-	sh $(PY2H) MOO_TERM_PY $(srcdir)/mooterm-mod.py > mooterm-mod.h
+	$(SHELL) $(PY2H) MOO_TERM_PY $(srcdir)/mooterm-mod.py > mooterm-mod.h
 
 
 if MOO_OS_UNIX

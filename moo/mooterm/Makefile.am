@@ -1,10 +1,3 @@
-# make intltool happy
-all-am: subdirs-stamp
-subdirs-stamp:
-	mkdir -p glade
-	echo stamp > subdirs-stamp
-CLEANFILES = subdirs-stamp
-
 mooterm_include_headers =	       \
 	mooterm.h                      \
 	mootermwindow.h                \
@@ -76,7 +69,7 @@ mootermparser_yacc: mootermparser-yacc.y
 
 XML2H = $(srcdir)/../mooutils/xml2h.sh
 mootermprefs-glade.h: glade/mootermprefs.glade $(XML2H)
-	sh $(XML2H) MOO_TERM_PREFS_GLADE_UI $(srcdir)/glade/mootermprefs.glade \
+	$(SHELL) $(XML2H) MOO_TERM_PREFS_GLADE_UI $(srcdir)/glade/mootermprefs.glade \
 		> mootermprefs-glade.h
 
 
@@ -107,7 +100,7 @@ if MOO_OS_CYGWIN
 noinst_PROGRAMS = termhelper
 termhelper_SOURCES = $(termhelper_sources)
 nodist_termhelper_SOURCES = termhelper_res.res
-CLEANFILES += termhelper_res.res
+CLEANFILES = termhelper_res.res
 termhelper_CFLAGS =                         \
     -I$(top_builddir)                       \
     -I$(top_srcdir)                         \
@@ -121,5 +114,5 @@ termhelper_LDADD = termhelper_res.res
 else
 termhelper_res.res: termhelper_res.rc
 	touch termhelper_res.res
-CLEANFILES += termhelper_res.res
+CLEANFILES = termhelper_res.res
 endif

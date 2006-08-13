@@ -19,7 +19,7 @@ BUILT_SOURCES =			\
 
 XML2H = $(srcdir)/../../../mooutils/xml2h.sh
 as-plugin-glade.h: as-plugin.glade $(XML2H)
-	sh $(XML2H) AS_PLUGIN_GLADE_UI $(srcdir)/as-plugin.glade > as-plugin-glade.h
+	$(SHELL) $(XML2H) AS_PLUGIN_GLADE_UI $(srcdir)/as-plugin.glade > as-plugin-glade.h
 
 noinst_LTLIBRARIES = libastrings.la
 libastrings_la_SOURCES = $(astrings_sources)

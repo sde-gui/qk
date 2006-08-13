@@ -1,10 +1,3 @@
-# make intltool happy
-all-am: subdirs-stamp
-subdirs-stamp:
-	mkdir -p glade
-	echo stamp > subdirs-stamp
-CLEANFILES = subdirs-stamp
-
 BUILT_SOURCES =			\
 	mooappabout-glade.h
 
@@ -41,7 +34,7 @@ endif
 
 XML2H = $(srcdir)/../mooutils/xml2h.sh
 mooappabout-glade.h: $(srcdir)/glade/mooappabout.glade $(XML2H)
-	sh $(XML2H) MOO_APP_ABOUT_GLADE_UI $(srcdir)/glade/mooappabout.glade > mooappabout-glade.h
+	$(SHELL) $(XML2H) MOO_APP_ABOUT_GLADE_UI $(srcdir)/glade/mooappabout.glade > mooappabout-glade.h
 
 noinst_LTLIBRARIES = libmooapp.la
 libmooapp_la_SOURCES = $(mooapp_sources)

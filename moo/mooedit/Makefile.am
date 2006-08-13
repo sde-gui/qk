@@ -1,10 +1,3 @@
-# make intltool happy
-all-am: subdirs-stamp
-subdirs-stamp:
-	mkdir -p glade
-	echo stamp > subdirs-stamp
-CLEANFILES = subdirs-stamp
-
 SUBDIRS = plugins syntax
 
 mooedit_toolsdir = $(MOO_DATA_DIR)
@@ -126,31 +119,31 @@ BUILT_SOURCES =                        \
 
 XML2H = $(srcdir)/../mooutils/xml2h.sh
 mootextgotoline-glade.h: $(srcdir)/glade/mootextgotoline.glade $(XML2H)
-	sh $(XML2H) MOO_TEXT_GOTO_LINE_GLADE_UI $(srcdir)/glade/mootextgotoline.glade \
+	$(SHELL) $(XML2H) MOO_TEXT_GOTO_LINE_GLADE_UI $(srcdir)/glade/mootextgotoline.glade \
 		> mootextgotoline-glade.h
 mootextfind-glade.h: $(srcdir)/glade/mootextfind.glade $(XML2H)
-	sh $(XML2H) MOO_TEXT_FIND_GLADE_UI $(srcdir)/glade/mootextfind.glade \
+	$(SHELL) $(XML2H) MOO_TEXT_FIND_GLADE_UI $(srcdir)/glade/mootextfind.glade \
 		> mootextfind-glade.h
 mooeditprefs-glade.h: $(srcdir)/glade/mooeditprefs.glade $(XML2H)
-	sh $(XML2H) MOO_EDIT_PREFS_GLADE_UI $(srcdir)/glade/mooeditprefs.glade \
+	$(SHELL) $(XML2H) MOO_EDIT_PREFS_GLADE_UI $(srcdir)/glade/mooeditprefs.glade \
 		> mooeditprefs-glade.h
 mooeditprogress-glade.h: $(srcdir)/glade/mooeditprogress.glade $(XML2H)
-	sh $(XML2H) MOO_EDIT_PROGRESS_GLADE_XML $(srcdir)/glade/mooeditprogress.glade \
+	$(SHELL) $(XML2H) MOO_EDIT_PROGRESS_GLADE_XML $(srcdir)/glade/mooeditprogress.glade \
 		> mooeditprogress-glade.h
 moopluginprefs-glade.h: $(srcdir)/glade/moopluginprefs.glade $(XML2H)
-	sh $(XML2H) MOO_PLUGIN_PREFS_GLADE_UI $(srcdir)/glade/moopluginprefs.glade \
+	$(SHELL) $(XML2H) MOO_PLUGIN_PREFS_GLADE_UI $(srcdir)/glade/moopluginprefs.glade \
 		> moopluginprefs-glade.h
 mooeditsavemultiple-glade.h: $(srcdir)/glade/mooeditsavemult.glade $(XML2H)
-	sh $(XML2H) MOO_EDIT_SAVE_MULTIPLE_GLADE_UI $(srcdir)/glade/mooeditsavemult.glade \
+	$(SHELL) $(XML2H) MOO_EDIT_SAVE_MULTIPLE_GLADE_UI $(srcdir)/glade/mooeditsavemult.glade \
 		> mooeditsavemultiple-glade.h
 quicksearch-glade.h: $(srcdir)/glade/quicksearch.glade $(XML2H)
-	sh $(XML2H) QUICK_SEARCH_GLADE_XML $(srcdir)/glade/quicksearch.glade \
+	$(SHELL) $(XML2H) QUICK_SEARCH_GLADE_XML $(srcdir)/glade/quicksearch.glade \
 		> quicksearch-glade.h
 statusbar-glade.h: $(srcdir)/glade/statusbar.glade $(XML2H)
-	sh $(XML2H) STATUSBAR_GLADE_XML $(srcdir)/glade/statusbar.glade \
+	$(SHELL) $(XML2H) STATUSBAR_GLADE_XML $(srcdir)/glade/statusbar.glade \
 		> statusbar-glade.h
 mooprint-glade.h: $(srcdir)/glade/mooprint.glade $(XML2H)
-	sh $(XML2H) MOO_PRINT_GLADE_XML $(srcdir)/glade/mooprint.glade \
+	$(SHELL) $(XML2H) MOO_PRINT_GLADE_XML $(srcdir)/glade/mooprint.glade \
 		> mooprint-glade.h
 
 EXTRA_DIST =				\
