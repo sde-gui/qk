@@ -34,9 +34,6 @@ GtkWindow  *moo_get_toplevel_window         (void);
 gboolean    moo_window_set_icon_from_stock  (GtkWindow  *window,
                                              const char *stock_id);
 
-const char *moo_stock_label                 (const char *stock_id);
-const char *moo_stock_name                  (const char *stock_id);
-
 void        moo_log_window_show             (void);
 void        moo_log_window_hide             (void);
 
