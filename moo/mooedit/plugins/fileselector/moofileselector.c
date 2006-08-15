@@ -718,7 +718,7 @@ moo_file_selector_drop_data_received (MooFileView *fileview,
         goto error;
     }
 
-    doc = moo_selection_data_get_pointer (data, moo_edit_tab_atom);
+    doc = _moo_selection_data_get_pointer (data, moo_edit_tab_atom);
 
     if (!MOO_IS_EDIT (doc))
     {
@@ -1078,7 +1078,7 @@ create_menu_item (MooFileSelector *filesel,
 
     g_signal_connect (item, "activate", G_CALLBACK (drop_item_activated), filesel);
     gtk_widget_show (item);
-    moo_menu_item_set_accel_label (item, accel_label);
+    _moo_menu_item_set_accel_label (item, accel_label);
 
     return item;
 }
@@ -1103,7 +1103,7 @@ menu_key_event (GtkWidget   *menu,
             return FALSE;
     }
 
-    mask = moo_get_modifiers (menu);
+    mask = _moo_get_modifiers (menu);
     alternate = (mask & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) != 0;
 
     items = g_object_get_data (G_OBJECT (menu), "moo-menu-items");
@@ -1120,7 +1120,7 @@ menu_key_event (GtkWidget   *menu,
 
         g_object_set_data (G_OBJECT (item), "moo-menu-item-alternate",
                            GINT_TO_POINTER (alternate));
-        moo_menu_item_set_label (item, label, FALSE);
+        _moo_menu_item_set_label (item, label, FALSE);
     }
 
     return FALSE;
@@ -1176,7 +1176,7 @@ create_drop_doc_menu (MooFileSelector *filesel,
 
     item = gtk_image_menu_item_new_from_stock (GTK_STOCK_CANCEL, NULL);
     gtk_widget_show (item);
-    moo_menu_item_set_accel_label (item, "Escape");
+    _moo_menu_item_set_accel_label (item, "Escape");
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
     return menu;
@@ -1211,7 +1211,7 @@ moo_file_selector_drop_doc (MooFileSelector *filesel,
         return;
     }
 
-    mods = moo_get_modifiers (widget) & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK);
+    mods = _moo_get_modifiers (widget) & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK);
 
     if (!mods || mods & GDK_MOD1_MASK)
         action = DROP_DOC_ASK;

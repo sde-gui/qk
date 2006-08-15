@@ -609,14 +609,15 @@ get_top_window (MooEditor *editor)
     }
 
     list = g_slist_reverse (list);
-    window = moo_get_top_window (list);
+    window = _moo_get_top_window (list);
 
     g_slist_free (list);
     return MOO_EDIT_WINDOW (window);
 }
 
 
-static void file_info_list_free (GSList *list)
+static void
+file_info_list_free (GSList *list)
 {
     g_slist_foreach (list, (GFunc) moo_edit_file_info_free, NULL);
     g_slist_free (list);
@@ -1192,7 +1193,7 @@ moo_editor_present (MooEditor *editor,
         window = moo_editor_new_window (editor);
 
     g_return_if_fail (window != NULL);
-    moo_window_present (GTK_WINDOW (window), stamp);
+    _moo_window_present (GTK_WINDOW (window), stamp);
 }
 
 
@@ -1225,7 +1226,7 @@ moo_editor_set_active_doc (MooEditor      *editor,
     g_return_if_fail (info != NULL);
     g_return_if_fail (info->window != NULL);
 
-    moo_window_present (GTK_WINDOW (info->window), 0);
+    _moo_window_present (GTK_WINDOW (info->window), 0);
     moo_edit_window_set_active_doc (info->window, doc);
 }
 

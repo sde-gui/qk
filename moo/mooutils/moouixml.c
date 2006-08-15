@@ -2146,7 +2146,7 @@ create_tool_item (MooUIXML       *xml,
         gtk_widget_show (tool_item);
 
         if (item->tooltip)
-            moo_widget_set_tooltip (tool_item, item->tooltip);
+            _moo_widget_set_tooltip (tool_item, item->tooltip);
         if (item->icon_stock_id)
             gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (tool_item),
                                           item->icon_stock_id);

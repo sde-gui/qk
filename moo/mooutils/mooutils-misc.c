@@ -338,7 +338,7 @@ find_by_xid (GSList *windows, XID w)
 
 
 GtkWindow*
-moo_get_top_window (GSList *windows)
+_moo_get_top_window (GSList *windows)
 {
     GArray *xids;
     Display *display;
@@ -439,7 +439,7 @@ moo_get_top_window (GSList *windows)
 
 
 gboolean
-moo_window_is_hidden (GtkWindow  *window)
+_moo_window_is_hidden (GtkWindow  *window)
 {
     g_return_val_if_fail (GTK_IS_WINDOW (window), FALSE);
     return is_minimized (GDK_WINDOW_XDISPLAY (GTK_WIDGET(window)->window),
@@ -458,7 +458,7 @@ moo_window_is_hidden (GtkWindow  *window)
     gdk_win32_drawable_get_handle (GTK_WIDGET(w)->window)
 
 gboolean
-moo_window_is_hidden (GtkWindow  *window)
+_moo_window_is_hidden (GtkWindow  *window)
 {
     HANDLE h;
     WINDOWPLACEMENT info;
@@ -488,7 +488,7 @@ moo_window_is_hidden (GtkWindow  *window)
 
 
 GtkWindow*
-moo_get_top_window (GSList *windows)
+_moo_get_top_window (GSList *windows)
 {
     GSList *l;
     HWND top = NULL;
@@ -500,7 +500,7 @@ moo_get_top_window (GSList *windows)
     {
         g_return_val_if_fail (GTK_IS_WINDOW (l->data), NULL);
 
-        if (!moo_window_is_hidden (GTK_WINDOW (l->data)))
+        if (!_moo_window_is_hidden (GTK_WINDOW (l->data)))
             break;
     }
 
@@ -535,7 +535,7 @@ moo_get_top_window (GSList *windows)
 #else /* neither X nor WIN32 ?? */
 
 GtkWindow*
-moo_get_top_window (GSList *windows)
+_moo_get_top_window (GSList *windows)
 {
     g_return_val_if_fail (windows != NULL, NULL);
     g_critical ("%s: don't know how to do it", G_STRLOC);
@@ -546,8 +546,8 @@ moo_get_top_window (GSList *windows)
 
 
 void
-moo_window_present (GtkWindow *window,
-                    G_GNUC_UNUSED guint32 stamp)
+_moo_window_present (GtkWindow *window,
+                     G_GNUC_UNUSED guint32 stamp)
 {
     g_return_if_fail (GTK_IS_WINDOW (window));
 
@@ -569,8 +569,8 @@ moo_window_present (GtkWindow *window,
 
 /* XXX check what gtk_window_set_icon_name() does */
 gboolean
-moo_window_set_icon_from_stock (GtkWindow  *window,
-                                const char *stock_id)
+_moo_window_set_icon_from_stock (GtkWindow  *window,
+                                 const char *stock_id)
 {
     GdkPixbuf *icon;
 
@@ -594,7 +594,7 @@ moo_window_set_icon_from_stock (GtkWindow  *window,
 
 
 GtkWindow*
-moo_get_toplevel_window (void)
+_moo_get_toplevel_window (void)
 {
     GList *list, *l;
     GSList *windows = NULL;
@@ -606,7 +606,7 @@ moo_get_toplevel_window (void)
         if (GTK_IS_WINDOW (l->data) && GTK_WIDGET(l->data)->window)
             windows = g_slist_prepend (windows, l->data);
 
-    top = moo_get_top_window (windows);
+    top = _moo_get_top_window (windows);
 
     g_list_free (list);
     g_slist_free (windows);
@@ -1034,9 +1034,9 @@ moo_segfault (void)
  */
 
 void
-moo_selection_data_set_pointer (GtkSelectionData *data,
-                                GdkAtom         type,
-                                gpointer        ptr)
+_moo_selection_data_set_pointer (GtkSelectionData *data,
+                                 GdkAtom           type,
+                                 gpointer          ptr)
 {
     g_return_if_fail (data != NULL);
     gtk_selection_data_set (data, type, 8, /* 8 bits per byte */
@@ -1045,8 +1045,8 @@ moo_selection_data_set_pointer (GtkSelectionData *data,
 
 
 gpointer
-moo_selection_data_get_pointer (GtkSelectionData *data,
-                                GdkAtom           type)
+_moo_selection_data_get_pointer (GtkSelectionData *data,
+                                 GdkAtom           type)
 {
     GdkWindow *owner;
     gpointer result = NULL;
@@ -1072,7 +1072,7 @@ moo_selection_data_get_pointer (GtkSelectionData *data,
  */
 
 GdkModifierType
-moo_get_modifiers (GtkWidget *widget)
+_moo_get_modifiers (GtkWidget *widget)
 {
     GdkModifierType mask;
     GdkDisplay *display;
@@ -1094,8 +1094,8 @@ moo_get_modifiers (GtkWidget *widget)
  */
 
 void
-moo_menu_item_set_accel_label (GtkWidget      *menu_item,
-                               const char     *label)
+_moo_menu_item_set_accel_label (GtkWidget  *menu_item,
+                                const char *label)
 {
     GtkWidget *accel_label;
 
@@ -1115,9 +1115,9 @@ moo_menu_item_set_accel_label (GtkWidget      *menu_item,
 
 
 void
-moo_menu_item_set_label (GtkWidget      *item,
-                         const char     *text,
-                         gboolean        mnemonic)
+_moo_menu_item_set_label (GtkWidget  *item,
+                          const char *text,
+                          gboolean    mnemonic)
 {
     GtkWidget *label;
 
@@ -1485,7 +1485,7 @@ moo_data_dir_type_get_type (void)
 
 
 gboolean
-moo_debug_enabled (void)
+_moo_debug_enabled (void)
 {
     static gboolean enabled;
     static gboolean been_here;
@@ -1501,8 +1501,8 @@ moo_debug_enabled (void)
 
 
 void
-moo_widget_set_tooltip (GtkWidget  *widget,
-                        const char *tip)
+_moo_widget_set_tooltip (GtkWidget  *widget,
+                         const char *tip)
 {
     static GtkTooltips *tooltips;
 
@@ -1519,7 +1519,7 @@ moo_widget_set_tooltip (GtkWidget  *widget,
 
 
 char **
-moo_splitlines (const char *string)
+_moo_splitlines (const char *string)
 {
     GPtrArray *array;
     const char *line, *p;

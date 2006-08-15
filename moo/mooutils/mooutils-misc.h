@@ -25,13 +25,13 @@ gboolean    moo_open_email                  (const char *address,
                                              const char *body);
 
 
-gboolean    moo_window_is_hidden            (GtkWindow  *window);
-void        moo_window_present              (GtkWindow  *window,
+gboolean    _moo_window_is_hidden           (GtkWindow  *window);
+void        _moo_window_present             (GtkWindow  *window,
                                              guint32     stamp);
-GtkWindow  *moo_get_top_window              (GSList     *windows);
-GtkWindow  *moo_get_toplevel_window         (void);
+GtkWindow  *_moo_get_top_window             (GSList     *windows);
+GtkWindow  *_moo_get_toplevel_window        (void);
 
-gboolean    moo_window_set_icon_from_stock  (GtkWindow  *window,
+gboolean    _moo_window_set_icon_from_stock (GtkWindow  *window,
                                              const char *stock_id);
 
 void        moo_log_window_show             (void);
@@ -48,7 +48,7 @@ void        moo_reset_log_func              (void);
 
 
 void        moo_segfault                    (void);
-gboolean    moo_debug_enabled               (void) G_GNUC_CONST;
+gboolean    _moo_debug_enabled              (void) G_GNUC_CONST;
 
 void        _moo_disable_win32_error_message(void);
 void        _moo_enable_win32_error_message (void);
@@ -86,24 +86,24 @@ char      **moo_get_data_subdirs            (const char     *subdir,
 #define moo_get_data_files moo_get_data_subdirs
 
 
-void        moo_selection_data_set_pointer  (GtkSelectionData *data,
+void        _moo_selection_data_set_pointer (GtkSelectionData *data,
                                              GdkAtom         type,
                                              gpointer        ptr);
-gpointer    moo_selection_data_get_pointer  (GtkSelectionData *data,
+gpointer    _moo_selection_data_get_pointer (GtkSelectionData *data,
                                              GdkAtom         type);
 
-GdkModifierType moo_get_modifiers           (GtkWidget      *widget);
+GdkModifierType _moo_get_modifiers          (GtkWidget      *widget);
 
-void        moo_menu_item_set_accel_label   (GtkWidget      *menu_item,
+void        _moo_menu_item_set_accel_label  (GtkWidget      *menu_item,
                                              const char     *label);
-void        moo_menu_item_set_label         (GtkWidget      *menu_item,
+void        _moo_menu_item_set_label        (GtkWidget      *menu_item,
                                              const char     *label,
                                              gboolean        mnemonic);
 
-void        moo_widget_set_tooltip          (GtkWidget      *widget,
+void        _moo_widget_set_tooltip         (GtkWidget      *widget,
                                              const char     *tip);
 
-char      **moo_splitlines                  (const char     *string);
+char      **_moo_splitlines                 (const char     *string);
 
 
 G_END_DECLS

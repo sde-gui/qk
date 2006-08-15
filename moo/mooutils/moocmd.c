@@ -367,7 +367,7 @@ try_channel_leftover (MooCmd      *cmd,
     {
         char **lines, **p;
 
-        lines = moo_splitlines (text);
+        lines = _moo_splitlines (text);
 
         if (lines)
         {

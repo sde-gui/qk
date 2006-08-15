@@ -568,7 +568,7 @@ set_special_props (MooGladeXML    *xml,
         gtk_widget_show (widget);
 
     if (props->mask & PROP_TOOLTIP)
-        moo_widget_set_tooltip (widget, props->tooltip);
+        _moo_widget_set_tooltip (widget, props->tooltip);
 
     if (props->mask & PROP_ENABLE_TOOLTIPS)
     {
@@ -1873,7 +1873,7 @@ parse_property (GParamSpec     *param_spec,
     }
     else if (param_spec->value_type == G_TYPE_STRV)
     {
-        char **strv = moo_splitlines (value);
+        char **strv = _moo_splitlines (value);
         g_value_take_boxed (&param->value, strv);
     }
     else

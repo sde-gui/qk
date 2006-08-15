@@ -1077,10 +1077,10 @@
   (return-type "none")
 )
 
-(define-function reset_log_func
-  (c-name "moo_reset_log_func")
-  (return-type "none")
-)
+;; (define-function reset_log_func
+;;   (c-name "moo_reset_log_func")
+;;   (return-type "none")
+;; )
 
 
 
@@ -1383,35 +1383,35 @@
 
 ;; From ../mooutils/moowin.h
 
-(define-function window_is_hidden
-  (c-name "moo_window_is_hidden")
-  (return-type "gboolean")
-  (parameters
-    '("GtkWindow*" "window")
-  )
-)
+;; (define-function window_is_hidden
+;;   (c-name "moo_window_is_hidden")
+;;   (return-type "gboolean")
+;;   (parameters
+;;     '("GtkWindow*" "window")
+;;   )
+;; )
 
-(define-function get_top_window
-  (c-name "moo_get_top_window")
-  (return-type "GtkWindow*")
-  (parameters
-    '("GSList*" "windows")
-  )
-)
-
-(define-function get_toplevel_window
-  (c-name "moo_get_toplevel_window")
-  (return-type "GtkWindow*")
-)
-
-(define-function window_set_icon_from_stock
-  (c-name "moo_window_set_icon_from_stock")
-  (return-type "gboolean")
-  (parameters
-    '("GtkWindow*" "window")
-    '("const-char*" "stock_id")
-  )
-)
+;; (define-function get_top_window
+;;   (c-name "moo_get_top_window")
+;;   (return-type "GtkWindow*")
+;;   (parameters
+;;     '("GSList*" "windows")
+;;   )
+;; )
+;;
+;; (define-function get_toplevel_window
+;;   (c-name "moo_get_toplevel_window")
+;;   (return-type "GtkWindow*")
+;; )
+;;
+;; (define-function window_set_icon_from_stock
+;;   (c-name "moo_window_set_icon_from_stock")
+;;   (return-type "gboolean")
+;;   (parameters
+;;     '("GtkWindow*" "window")
+;;     '("const-char*" "stock_id")
+;;   )
+;; )
 
 
 
@@ -2602,9 +2602,33 @@
   )
 )
 
+(define-function make_user_data_dir
+  (c-name "moo_make_user_data_dir")
+  (return-type "gboolean")
+)
+
 (define-function get_user_data_dir
   (c-name "moo_get_user_data_dir")
   (return-type "char*")
+)
+
+(define-function get_user_data_file
+  (c-name "moo_get_user_data_file")
+  (return-type "char*")
+  (parameters
+    '("const-char*" "basename")
+  )
+)
+
+(define-function save_user_data_file
+  (c-name "moo_save_user_data_file")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "basename")
+    '("const-char*" "content")
+    '("gssize" "len" (null-ok) (default "-1"))
+    '("GError**" "error")
+  )
 )
 
 (define-function get_data_dirs
@@ -2613,6 +2637,15 @@
   (parameters
     '("MooDataDirType" "type")
     '("guint*" "n_dirs")
+  )
+)
+
+(define-function get_data_files
+  (c-name "moo_get_data_files")
+  (return-type "char*")
+  (parameters
+    '("MooDataDirType" "type")
+    '("guint*" "n_files")
   )
 )
 

@@ -2422,9 +2422,9 @@ get_clipboard_cb (G_GNUC_UNUSED GtkClipboard *clipboard,
     switch (info)
     {
         case CB_TARGET_CLIPBOARD:
-            moo_selection_data_set_pointer (selection_data,
-                                            moo_file_view_clipboard,
-                                            fileview);
+            _moo_selection_data_set_pointer (selection_data,
+                                             moo_file_view_clipboard,
+                                             fileview);
             break;
 
         case CB_TARGET_URI_LIST:
@@ -2511,7 +2511,7 @@ file_view_paste_clipboard (MooFileView *fileview)
         GList *filenames, *l;
         const char *destdir;
 
-        remote = moo_selection_data_get_pointer (data, moo_file_view_clipboard);
+        remote = _moo_selection_data_get_pointer (data, moo_file_view_clipboard);
         g_return_if_fail (remote != NULL);
 
         cb = remote->priv->clipboard;
@@ -5576,7 +5576,7 @@ moo_file_view_drop_uris (MooFileView    *fileview,
 //         g_free (dirname);
 //     }
 
-    mask = moo_get_modifiers (widget);
+    mask = _moo_get_modifiers (widget);
 
 #if 0
 #define ACTION_NAME(ac) (ac == GDK_ACTION_DEFAULT ? "DEFAULT" :             \
@@ -5643,7 +5643,7 @@ moo_file_view_drop_uris (MooFileView    *fileview,
                            GINT_TO_POINTER (action));                                       \
         g_signal_connect (item, "activate", G_CALLBACK (drop_item_activated), fileview);    \
         gtk_widget_show (item);                                                             \
-        moo_menu_item_set_accel_label (item, accel_label);                                  \
+        _moo_menu_item_set_accel_label (item, accel_label);                                  \
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
         CREATE_IT (MOO_STOCK_FILE_MOVE, GDK_ACTION_MOVE, "Shift");
@@ -5657,7 +5657,7 @@ moo_file_view_drop_uris (MooFileView    *fileview,
 
         item = gtk_image_menu_item_new_from_stock (GTK_STOCK_CANCEL, NULL);
         gtk_widget_show (item);
-        moo_menu_item_set_accel_label (item, "Escape");
+        _moo_menu_item_set_accel_label (item, "Escape");
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
         _moo_file_view_drag_finish (fileview, context, TRUE, FALSE, time);

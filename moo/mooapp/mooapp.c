@@ -1473,7 +1473,7 @@ moo_app_present (MooApp *app)
 
     g_return_if_fail (window != NULL);
 
-    moo_window_present (window, 0);
+    _moo_window_present (window, 0);
 }
 
 

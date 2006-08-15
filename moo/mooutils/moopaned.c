@@ -2246,7 +2246,7 @@ static GtkWidget    *create_button  (Pane           *pane,
     g_object_set_data (G_OBJECT (button), "moo-pane", pane);
     gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
     gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
-    moo_widget_set_tooltip (button, tip);
+    _moo_widget_set_tooltip (button, tip);
     icon = gtk_image_new_from_stock (stock_id, MOO_ICON_SIZE_REAL_SMALL);
     gtk_container_add (GTK_CONTAINER (button), icon);
     gtk_box_pack_end (GTK_BOX (toolbar), button, FALSE, FALSE, 0);
@@ -3585,7 +3585,7 @@ create_pane_window (MooPaned       *paned,
     if (pane->label->icon_pixbuf)
         gtk_window_set_icon (window, pane->label->icon_pixbuf);
     else if (pane->label->icon_stock_id)
-        moo_window_set_icon_from_stock (window, pane->label->icon_stock_id);
+        _moo_window_set_icon_from_stock (window, pane->label->icon_stock_id);
 
     switch (paned->priv->pane_position)
     {

@@ -2019,9 +2019,9 @@ tab_icon_drag_data_get (GtkWidget      *evbox,
 
     if (info == TARGET_MOO_EDIT_TAB)
     {
-        moo_selection_data_set_pointer (data,
-                                        gdk_atom_intern ("MOO_EDIT_TAB", FALSE),
-                                        edit);
+        _moo_selection_data_set_pointer (data,
+                                         gdk_atom_intern ("MOO_EDIT_TAB", FALSE),
+                                         edit);
     }
     else if (info == TARGET_URI_LIST)
     {
@@ -3469,7 +3469,7 @@ notebook_drag_data_recv (GtkWidget          *widget,
         if (data->target == moo_edit_tab_atom)
         {
             GtkWidget *toplevel;
-            MooEdit *doc = moo_selection_data_get_pointer (data, moo_edit_tab_atom);
+            MooEdit *doc = _moo_selection_data_get_pointer (data, moo_edit_tab_atom);
 
             if (!doc)
                 goto out;
@@ -3530,7 +3530,7 @@ notebook_drag_data_recv (GtkWidget          *widget,
         if (info == TARGET_MOO_EDIT_TAB)
         {
             GtkWidget *toplevel;
-            MooEdit *doc = moo_selection_data_get_pointer (data, moo_edit_tab_atom);
+            MooEdit *doc = _moo_selection_data_get_pointer (data, moo_edit_tab_atom);
 
             if (!doc)
             {
