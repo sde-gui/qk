@@ -243,7 +243,7 @@ moo_edit_init (MooEdit *edit)
 
     edit->priv->file_watch_policy = MOO_EDIT_RELOAD_IF_SAFE;
 
-    edit->priv->actions = gtk_action_group_new ("MooEdit");
+    edit->priv->actions = moo_action_collection_new ("MooEdit", "MooEdit");
 
     indent = moo_indenter_new (edit, NULL);
     moo_text_view_set_indenter (MOO_TEXT_VIEW (edit), indent);
@@ -1920,7 +1920,7 @@ _moo_edit_do_popup (MooEdit        *edit,
         window = moo_edit_get_window (edit);
         edit->priv->menu =
                 moo_ui_xml_create_widget (xml, MOO_UI_MENU, "Editor/Popup",
-                                          moo_edit_get_actions (edit),
+                                          edit->priv->actions,
                                           window ? MOO_WINDOW(window)->accel_group : NULL);
         gtk_object_sink (g_object_ref (edit->priv->menu));
 

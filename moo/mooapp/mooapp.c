@@ -1234,16 +1234,16 @@ install_actions (MooApp *app,
 
     _about = g_strdup_printf (Q_("Menu item label|_About %s"), app->priv->info->full_name);
 
-    moo_window_class_new_action (klass, "Preferences",
-                                 "stock-display-name", GTK_STOCK_PREFERENCES,
-                                 "stock-label", GTK_STOCK_PREFERENCES,
-                                 "stock-tooltip", GTK_STOCK_PREFERENCES,
+    moo_window_class_new_action (klass, "Preferences", NULL,
+                                 "display-name", GTK_STOCK_PREFERENCES,
+                                 "label", GTK_STOCK_PREFERENCES,
+                                 "tooltip", GTK_STOCK_PREFERENCES,
                                  "stock-id", GTK_STOCK_PREFERENCES,
                                  "closure-callback", moo_app_prefs_dialog,
                                  NULL);
 
-    moo_window_class_new_action (klass, "About",
-                                 "stock-display-name", GTK_STOCK_ABOUT,
+    moo_window_class_new_action (klass, "About", NULL,
+                                 "display-name", GTK_STOCK_ABOUT,
                                  "label", _about,
                                  "no-accel", TRUE,
                                  "stock-id", GTK_STOCK_ABOUT,
@@ -1263,10 +1263,10 @@ install_editor_actions (MooApp *app)
 
     g_return_if_fail (klass != NULL);
 
-    moo_window_class_new_action (klass, "Quit",
-                                 "stock-display-name", GTK_STOCK_QUIT,
-                                 "stock-label", GTK_STOCK_QUIT,
-                                 "stock-tooltip", GTK_STOCK_QUIT,
+    moo_window_class_new_action (klass, "Quit", NULL,
+                                 "display-name", GTK_STOCK_QUIT,
+                                 "label", GTK_STOCK_QUIT,
+                                 "tooltip", GTK_STOCK_QUIT,
                                  "stock-id", GTK_STOCK_QUIT,
                                  "accel", "<ctrl>Q",
                                  "closure-callback", moo_app_quit,
@@ -1306,7 +1306,7 @@ install_terminal_actions (MooApp *app)
 
     install_actions (app, MOO_TYPE_TERM_WINDOW);
 
-    moo_window_class_new_action (klass, "NewEditor",
+    moo_window_class_new_action (klass, "NewEditor", NULL,
                                  "display-name", "New Editor",
                                  "label", "_New Editor",
                                  "tooltip", "New Editor",
@@ -1316,7 +1316,7 @@ install_terminal_actions (MooApp *app)
                                  "closure-proxy-func", moo_app_get_instance,
                                  NULL);
 
-    moo_window_class_new_action (klass, "OpenInEditor",
+    moo_window_class_new_action (klass, "OpenInEditor", NULL,
                                  "display-name", "Open In Editor",
                                  "label", "_Open In Editor",
                                  "tooltip", "Open In Editor",

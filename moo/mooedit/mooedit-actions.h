@@ -14,6 +14,7 @@
 #ifndef __MOO_EDIT_ACTIONS_H__
 #define __MOO_EDIT_ACTIONS_H__
 
+#include <mooutils/mooaction.h>
 #include <mooutils/moouixml.h>
 #include <mooedit/mooedit.h>
 
@@ -38,7 +39,7 @@ typedef enum {
 
 struct _MooEditAction
 {
-    GtkAction parent;
+    MooAction parent;
     MooEdit *doc;
     GSList *langs;
     MooEditActionFlags flags;
@@ -46,7 +47,7 @@ struct _MooEditAction
 
 struct _MooEditActionClass
 {
-    GtkActionClass parent_class;
+    MooActionClass parent_class;
 
     gboolean (*check_state) (MooEditAction *action);
 };

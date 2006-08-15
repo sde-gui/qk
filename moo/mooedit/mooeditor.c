@@ -256,7 +256,7 @@ moo_editor_class_init (MooEditorClass *klass)
                                G_TYPE_NONE, 0);
 
     edit_window_class = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
-    moo_window_class_new_action_custom (edit_window_class, RECENT_ACTION_ID,
+    moo_window_class_new_action_custom (edit_window_class, RECENT_ACTION_ID, NULL,
                                         (MooWindowActionFunc) create_recent_action,
                                         NULL, NULL);
     g_type_class_unref (edit_window_class);
@@ -572,7 +572,7 @@ add_new_window_action (void)
     klass = g_type_class_peek (MOO_TYPE_EDIT_WINDOW);
 
     if (!moo_window_class_find_action (klass, "NewWindow"))
-        moo_window_class_new_action (klass, "NewWindow",
+        moo_window_class_new_action (klass, "NewWindow", NULL,
                                      "display-name", "New Window",
                                      "label", "_New Window",
                                      "tooltip", "Open new editor window",

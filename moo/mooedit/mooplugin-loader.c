@@ -381,7 +381,7 @@ _moo_plugin_finish_load (void)
     while (waiting_list)
     {
         ModuleInfo *info = waiting_list->data;
-        g_warning ("unknown module type '%s' in file %s",
+        g_message ("unknown module type '%s' in file %s",
                    info->loader, info->ini_file);
         module_info_free (info);
         waiting_list = g_slist_delete_link (waiting_list, waiting_list);

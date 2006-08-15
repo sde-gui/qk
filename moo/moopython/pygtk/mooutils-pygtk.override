@@ -22,6 +22,7 @@ headers
 #include "mooutils/moostock.h"
 #include "mooutils/moouixml.h"
 #include "mooutils/moomenuaction.h"
+#include "mooutils/mooactionbase.h"
 #include "mooutils/mooundo.h"
 #include "mooutils/mooi18n.h"
 #include "moofileview/moofileview.h"
@@ -51,6 +52,8 @@ import gtk.gdk.Color as PyGdkColor_Type
 import gtk.gdk.Pixbuf as PyGdkPixbuf_Type
 import gtk.ActionGroup as PyGtkActionGroup_Type
 import gtk.Action as PyGtkAction_Type
+import gtk.ToggleAction as PyGtkToggleAction_Type
+import gtk.RadioAction as PyGtkRadioAction_Type
 import gtk.AccelGroup as PyGtkAccelGroup_Type
 %%
 ignore-glob
@@ -114,19 +117,20 @@ destroy_func_n_args (PyObject *func_n_args)
 static PyObject *
 _wrap_moo_window_class_add_action (G_GNUC_UNUSED PyObject *self, PyObject *args)
 {
-    PyObject *py_type, *py_id, *py_factory_func, *func_n_args;
+    PyObject *py_type, *py_id, *py_group, *py_factory_func, *func_n_args;
     GType type;
     MooWindowClass *klass;
     int i, extra;
 
-    extra = PyTuple_GET_SIZE (args) - 3;
+    extra = PyTuple_GET_SIZE (args) - 4;
 
     if (extra < 0)
         return_TypeError ("at least three arguments required");
 
     py_type = PyTuple_GET_ITEM (args, 0);
     py_id = PyTuple_GET_ITEM (args, 1);
-    py_factory_func = PyTuple_GET_ITEM (args, 2);
+    py_group = PyTuple_GET_ITEM (args, 2);
+    py_factory_func = PyTuple_GET_ITEM (args, 3);
 
     type = pyg_type_from_object (py_type);
 
@@ -138,6 +142,9 @@ _wrap_moo_window_class_add_action (G_GNUC_UNUSED PyObject *self, PyObject *args)
 
     if (!PyString_Check (py_id))
         return_TypeError ("id must be a string");
+
+    if (py_group != Py_None && !PyString_Check (py_group))
+        return_TypeError ("group must be a string or None");
 
     if (!PyCallable_Check (py_factory_func))
         return_TypeError ("factory_func must be callable");
@@ -153,11 +160,12 @@ _wrap_moo_window_class_add_action (G_GNUC_UNUSED PyObject *self, PyObject *args)
     for (i = 0; i < extra; ++i)
     {
         PyTuple_SET_ITEM (PyTuple_GET_ITEM (func_n_args, 1), i + 1,
-                          PyTuple_GET_ITEM (args, i + 3));
-        Py_INCREF (PyTuple_GET_ITEM (args, i + 3));
+                          PyTuple_GET_ITEM (args, i + 4));
+        Py_INCREF (PyTuple_GET_ITEM (args, i + 4));
     }
 
     moo_window_class_new_action_custom (klass, PyString_AS_STRING (py_id),
+                                        py_group == Py_None ? NULL : PyString_AS_STRING (py_group),
                                         (MooWindowActionFunc) py_action_factory_func,
                                         func_n_args, (GDestroyNotify) destroy_func_n_args);
 

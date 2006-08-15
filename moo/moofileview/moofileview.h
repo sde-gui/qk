@@ -29,14 +29,14 @@ G_BEGIN_DECLS
 typedef struct _MooFileView      MooFileView;
 typedef struct _MooFileViewClass MooFileViewClass;
 
-GType            moo_file_view_get_type     (void) G_GNUC_CONST;
+GType                   moo_file_view_get_type      (void) G_GNUC_CONST;
 
-gboolean         moo_file_view_chdir        (MooFileView    *fileview,
-                                             const char     *dir,
-                                             GError        **error);
+gboolean                moo_file_view_chdir         (MooFileView    *fileview,
+                                                     const char     *dir,
+                                                     GError        **error);
 
-MooUIXML        *moo_file_view_get_ui_xml   (MooFileView    *fileview);
-GtkActionGroup  *moo_file_view_get_actions  (MooFileView    *fileview);
+MooUIXML               *moo_file_view_get_ui_xml    (MooFileView    *fileview);
+MooActionCollection    *moo_file_view_get_actions   (MooFileView    *fileview);
 
 
 G_END_DECLS

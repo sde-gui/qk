@@ -32,7 +32,7 @@ cmpl_plugin_init (CmplPlugin *plugin)
     g_return_val_if_fail (klass != NULL, FALSE);
     g_return_val_if_fail (editor != NULL, FALSE);
 
-    moo_window_class_new_action (klass, "CompleteWord",
+    moo_window_class_new_action (klass, "CompleteWord", NULL,
                                  "display-name", _("Complete Word"),
                                  "label", _("Complete Word"),
                                  "tooltip", _("Complete Word"),

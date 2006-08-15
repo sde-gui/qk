@@ -16,8 +16,8 @@
 
 #include <mooutils/mooutils-gobject.h>
 #include <mooutils/moouixml.h>
+#include <mooutils/mooactioncollection.h>
 #include <gtk/gtkwindow.h>
-#include <gtk/gtkactiongroup.h>
 
 G_BEGIN_DECLS
 
@@ -75,17 +75,28 @@ void        moo_window_class_set_id         (MooWindowClass     *klass,
 
 void        moo_window_class_new_action     (MooWindowClass     *klass,
                                              const char         *id,
+                                             const char         *group,
                                              const char         *first_prop_name,
                                              ...) G_GNUC_NULL_TERMINATED;
 void        moo_window_class_new_actionv    (MooWindowClass     *klass,
                                              const char         *id,
+                                             const char         *group,
                                              const char         *first_prop_name,
                                              va_list             props);
 void        moo_window_class_new_action_custom (MooWindowClass  *klass,
                                              const char         *id,
+                                             const char         *group,
                                              MooWindowActionFunc func,
                                              gpointer            data,
                                              GDestroyNotify      notify);
+
+void        moo_window_class_new_group      (MooWindowClass     *klass,
+                                             const char         *name,
+                                             const char         *display_name);
+gboolean    moo_window_class_find_group     (MooWindowClass     *klass,
+                                             const char         *name);
+void        moo_window_class_remove_group   (MooWindowClass     *klass,
+                                             const char         *name);
 
 gboolean    moo_window_class_find_action    (MooWindowClass     *klass,
                                              const char         *id);
@@ -96,7 +107,7 @@ MooUIXML   *moo_window_get_ui_xml           (MooWindow          *window);
 void        moo_window_set_ui_xml           (MooWindow          *window,
                                              MooUIXML           *xml);
 
-GtkActionGroup *moo_window_get_actions      (MooWindow          *window);
+MooActionCollection *moo_window_get_actions (MooWindow          *window);
 GtkAction  *moo_window_get_action           (MooWindow          *window,
                                              const char         *action);
 

@@ -14,7 +14,7 @@
 #ifndef __MOO_ACTION_FACTORY_H__
 #define __MOO_ACTION_FACTORY_H__
 
-#include <mooutils/mooaction.h>
+#include <gtk/gtkactiongroup.h>
 
 #ifndef G_GNUC_NULL_TERMINATED
 #if __GNUC__ >= 4
@@ -49,10 +49,8 @@ struct _MooActionFactory
     gpointer             factory_func_data;
 
     GType       action_type;
-    guint       n_real_props;
-    GParameter *real_props;
-    guint       n_fake_props;
-    GParameter *fake_props;
+    guint       n_props;
+    GParameter *props;
 };
 
 struct _MooActionFactoryClass
@@ -82,23 +80,9 @@ gpointer            moo_action_factory_create_action(MooActionFactory   *factory
 
 
 GtkAction          *moo_action_group_add_action     (GtkActionGroup     *group,
-                                                     const char         *action_id,
+                                                     const char         *name,
                                                      const char         *first_prop_name,
                                                      ...) G_GNUC_NULL_TERMINATED;
-GParamSpec         *_moo_action_find_property       (GObjectClass       *klass,
-                                                     const char         *name);
-GParamSpec         *_moo_action_find_fake_property  (GObjectClass       *klass,
-                                                     const char         *name);
-GtkAction          *moo_action_new                  (GType               action_type,
-                                                     const char         *first_prop_name,
-                                                     ...);
-GtkAction          *moo_action_newv                 (GType               action_type,
-                                                     guint               n_parameters,
-                                                     GParameter         *parameters);
-GtkAction          *moo_action_new_valist           (GType               action_type,
-                                                     const char         *name,
-                                                     const char         *first_property_name,
-                                                     va_list             var_args);
 
 
 G_END_DECLS

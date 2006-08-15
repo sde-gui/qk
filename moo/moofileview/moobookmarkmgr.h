@@ -92,7 +92,7 @@ GtkWidget      *_moo_bookmark_mgr_get_editor(MooBookmarkMgr *mgr);
 
 void            _moo_bookmark_mgr_add_user  (MooBookmarkMgr *mgr,
                                              gpointer        user, /* GObject* */
-                                             GtkActionGroup *actions,
+                                             MooActionCollection *actions,
                                              MooUIXML       *xml,
                                              const char     *path);
 void            _moo_bookmark_mgr_remove_user(MooBookmarkMgr *mgr,

@@ -20,6 +20,7 @@
 #include "moofileview/moofileview-private.h"
 #include "moofileview/moofile-private.h"
 #include "mooutils/mooprefs.h"
+#include "mooutils/mooaction.h"
 #if MOO_USE_XDGMIME
 #include "mooutils/xdgmime/xdgmime.h"
 #endif
@@ -32,17 +33,17 @@ typedef struct {
 } ToolsInfo;
 
 typedef struct {
-    GtkAction parent;
+    MooAction parent;
     MooFileView *fileview;
     GSList *extensions;
     GSList *mimetypes;
     char *command;
 } ToolAction;
 
-typedef GtkActionClass ToolActionClass;
+typedef MooActionClass ToolActionClass;
 
 GType _moo_file_view_tool_action_get_type (void) G_GNUC_CONST;
-G_DEFINE_TYPE (ToolAction, _moo_file_view_tool_action, GTK_TYPE_ACTION)
+G_DEFINE_TYPE (ToolAction, _moo_file_view_tool_action, MOO_TYPE_ACTION)
 
 
 static void
@@ -109,7 +110,7 @@ static void
 _moo_file_view_tool_action_class_init (ToolActionClass *klass)
 {
     G_OBJECT_CLASS (klass)->finalize = moo_file_view_tool_action_finalize;
-    klass->activate = moo_file_view_tool_action_activate;
+    GTK_ACTION_CLASS (klass)->activate = moo_file_view_tool_action_activate;
 }
 
 
@@ -207,6 +208,7 @@ _moo_file_view_tools_load (MooFileView *fileview)
     MooMarkupDoc *doc;
     MooMarkupNode *root, *child;
     MooUIXML *xml;
+    MooActionCollection *actions;
     GtkActionGroup *group;
     MooUINode *ph;
     GSList *l;
@@ -214,7 +216,8 @@ _moo_file_view_tools_load (MooFileView *fileview)
     g_return_if_fail (MOO_IS_FILE_VIEW (fileview));
 
     xml = moo_file_view_get_ui_xml (fileview);
-    group = moo_file_view_get_actions (fileview);
+    actions = moo_file_view_get_actions (fileview);
+    group = moo_action_collection_get_group (actions, NULL);
     remove_old_tools (fileview, xml, group);
 
     doc = moo_prefs_get_markup ();

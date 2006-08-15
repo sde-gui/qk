@@ -14,52 +14,75 @@
 #ifndef __MOO_ACTION_H__
 #define __MOO_ACTION_H__
 
-#include <gtk/gtkactiongroup.h>
-#include <mooutils/mooclosure.h>
+#include <gtk/gtkradioaction.h>
 
 G_BEGIN_DECLS
 
 
-const char  *moo_action_get_display_name    (GtkAction      *action);
-void         moo_action_set_display_name    (GtkAction      *action,
-                                             const char     *name);
+#define MOO_TYPE_ACTION                     (moo_action_get_type ())
+#define MOO_ACTION(object)                  (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_ACTION, MooAction))
+#define MOO_ACTION_CLASS(klass)             (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_ACTION, MooActionClass))
+#define MOO_IS_ACTION(object)               (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_ACTION))
+#define MOO_IS_ACTION_CLASS(klass)          (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_ACTION))
+#define MOO_ACTION_GET_CLASS(obj)           (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_ACTION, MooActionClass))
 
-const char  *moo_action_get_default_accel   (GtkAction      *action);
-void         moo_action_set_default_accel   (GtkAction      *action,
-                                             const char     *accel);
+typedef struct _MooAction        MooAction;
+typedef struct _MooActionPrivate MooActionPrivate;
+typedef struct _MooActionClass   MooActionClass;
 
-void         moo_action_set_no_accel        (GtkAction      *action,
-                                             gboolean        no_accel);
-gboolean     moo_action_get_no_accel        (GtkAction      *action);
+struct _MooAction {
+    GtkAction base;
+    MooActionPrivate *priv;
+};
 
-void         moo_sync_toggle_action         (GtkAction      *action,
-                                             gpointer        master,
-                                             const char     *prop,
-                                             gboolean        invert);
+struct _MooActionClass {
+    GtkActionClass base_class;
+};
 
-void         _moo_action_set_force_accel_label (GtkAction   *action,
-                                             gboolean        force);
-gboolean     _moo_action_get_force_accel_label (GtkAction   *action);
 
-void         _moo_action_set_accel_path     (GtkAction      *action,
-                                             const char     *accel_path);
-const char  *_moo_action_get_accel_path     (GtkAction      *action);
-const char  *_moo_action_get_accel          (GtkAction      *action);
+#define MOO_TYPE_TOGGLE_ACTION                     (moo_toggle_action_get_type ())
+#define MOO_TOGGLE_ACTION(object)                  (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_TOGGLE_ACTION, MooToggleAction))
+#define MOO_TOGGLE_ACTION_CLASS(klass)             (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_TOGGLE_ACTION, MooToggleActionClass))
+#define MOO_IS_TOGGLE_ACTION(object)               (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_TOGGLE_ACTION))
+#define MOO_IS_TOGGLE_ACTION_CLASS(klass)          (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_TOGGLE_ACTION))
+#define MOO_TOGGLE_ACTION_GET_CLASS(obj)           (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_TOGGLE_ACTION, MooToggleActionClass))
 
-const char  *_moo_action_make_accel_path    (const char     *group_id,
-                                             const char     *action_id);
+typedef struct _MooToggleAction        MooToggleAction;
+typedef struct _MooToggleActionPrivate MooToggleActionPrivate;
+typedef struct _MooToggleActionClass   MooToggleActionClass;
 
-gboolean     _moo_action_get_dead           (GtkAction      *action);
-void         _moo_action_set_dead           (GtkAction      *action,
-                                             gboolean        dead);
+struct _MooToggleAction {
+    GtkToggleAction base;
+    MooToggleActionPrivate *priv;
+};
 
-gboolean     _moo_action_get_has_submenu    (GtkAction      *action);
-void         _moo_action_set_has_submenu    (GtkAction      *action,
-                                             gboolean        dead);
+struct _MooToggleActionClass {
+    GtkToggleActionClass base_class;
+};
 
-void         _moo_action_set_closure        (GtkAction      *action,
-                                             MooClosure     *closure);
-MooClosure  *_moo_action_get_closure        (GtkAction      *action);
+
+#define MOO_TYPE_RADIO_ACTION                     (moo_radio_action_get_type ())
+#define MOO_RADIO_ACTION(object)                  (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_RADIO_ACTION, MooRadioAction))
+#define MOO_RADIO_ACTION_CLASS(klass)             (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_RADIO_ACTION, MooRadioActionClass))
+#define MOO_IS_RADIO_ACTION(object)               (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_RADIO_ACTION))
+#define MOO_IS_RADIO_ACTION_CLASS(klass)          (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_RADIO_ACTION))
+#define MOO_RADIO_ACTION_GET_CLASS(obj)           (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_RADIO_ACTION, MooRadioActionClass))
+
+typedef struct _MooRadioAction        MooRadioAction;
+typedef struct _MooRadioActionClass   MooRadioActionClass;
+
+struct _MooRadioAction {
+    GtkRadioAction base;
+};
+
+struct _MooRadioActionClass {
+    GtkRadioActionClass base_class;
+};
+
+
+GType           moo_action_get_type         (void) G_GNUC_CONST;
+GType           moo_toggle_action_get_type  (void) G_GNUC_CONST;
+GType           moo_radio_action_get_type   (void) G_GNUC_CONST;
 
 
 G_END_DECLS

@@ -33,7 +33,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "mooapp/mooappinput.h"
-#include "mooapp/mooapp.h"
+#define MOO_APP_COMPILATION
+#include "mooapp/mooapp-private.h"
 
 
 struct _MooAppInput

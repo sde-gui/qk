@@ -46,6 +46,8 @@
 
 #include <mooutils/mooaccelbutton.h>
 #include <mooutils/mooaction.h>
+#include <mooutils/mooactionbase.h>
+#include <mooutils/mooactioncollection.h>
 #include <mooutils/moobigpaned.h>
 #include <mooutils/mooclosure.h>
 #include <mooutils/moocmd.h>

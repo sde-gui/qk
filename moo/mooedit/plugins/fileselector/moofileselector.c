@@ -302,7 +302,7 @@ moo_file_selector_populate_popup (MooFileView *fileview,
 {
     GtkAction *action;
 
-    action = gtk_action_group_get_action (moo_file_view_get_actions (fileview), "NewFile");
+    action = moo_action_collection_get_action (moo_file_view_get_actions (fileview), "NewFile");
 
     if (action)
         gtk_action_set_sensitive (action, !selected || !selected->next);
@@ -498,6 +498,7 @@ moo_file_selector_constructor (GType           type,
     MooFileView *fileview;
     GObject *object;
     guint merge_id;
+    GtkActionGroup *group;
 
     object = G_OBJECT_CLASS(_moo_file_selector_parent_class)->constructor (type, n_props, props);
     filesel = MOO_FILE_SELECTOR (object);
@@ -509,15 +510,14 @@ moo_file_selector_constructor (GType           type,
 
     g_idle_add ((GSourceFunc) file_selector_go_home, g_object_ref (filesel));
 
-    moo_action_group_add_action (moo_file_view_get_actions (MOO_FILE_VIEW (fileview)),
-                                 "GoToCurrentDocDir",
+    group = moo_action_collection_get_group (moo_file_view_get_actions (MOO_FILE_VIEW (fileview)), NULL);
+    moo_action_group_add_action (group, "GoToCurrentDocDir",
                                  "stock-id", GTK_STOCK_JUMP_TO,
                                  "tooltip", _("Go to current document directory"),
                                  "closure-object", filesel,
                                  "closure-callback", goto_current_doc_dir,
                                  NULL);
-    moo_action_group_add_action (moo_file_view_get_actions (MOO_FILE_VIEW (fileview)),
-                                 "NewFile",
+    moo_action_group_add_action (group, "NewFile",
                                  "label", _("New File..."),
                                  "tooltip", _("New File..."),
                                  "stock-id", GTK_STOCK_NEW,
@@ -1272,7 +1272,7 @@ file_selector_plugin_init (Plugin *plugin)
     g_return_val_if_fail (klass != NULL, FALSE);
     g_return_val_if_fail (editor != NULL, FALSE);
 
-    moo_window_class_new_action (klass, "ShowFileSelector",
+    moo_window_class_new_action (klass, "ShowFileSelector", NULL,
                                  "display-name", _("Show File Selector"),
                                  "label", _("Show File Selector"),
                                  "tooltip", _("Show file selector"),

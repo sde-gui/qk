@@ -236,7 +236,7 @@ find_plugin_init (FindPlugin *plugin)
     g_return_val_if_fail (klass != NULL, FALSE);
     g_return_val_if_fail (editor != NULL, FALSE);
 
-    moo_window_class_new_action (klass, "FindInFiles",
+    moo_window_class_new_action (klass, "FindInFiles", NULL,
                                  "display-name", _("Find In Files"),
                                  "label", _("Find In Files"),
                                  "tooltip", _("Find in files"),
@@ -245,7 +245,7 @@ find_plugin_init (FindPlugin *plugin)
                                  "closure-callback", find_in_files_cb,
                                  NULL);
 
-    moo_window_class_new_action (klass, "FindFile",
+    moo_window_class_new_action (klass, "FindFile", NULL,
                                  "display-name", _("Find File"),
                                  "label", _("Find File"),
                                  "tooltip", _("Find file"),

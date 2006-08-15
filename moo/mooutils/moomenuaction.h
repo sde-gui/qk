@@ -33,7 +33,7 @@ typedef struct _MooMenuActionClass   MooMenuActionClass;
 
 struct _MooMenuAction
 {
-    GtkAction   base;
+    MooAction base;
     MooMenuMgr *mgr;
     gpointer    data;
     guint       is_object : 1;
@@ -41,7 +41,7 @@ struct _MooMenuAction
 
 struct _MooMenuActionClass
 {
-    GtkActionClass base_class;
+    MooActionClass base_class;
 };
 
 

@@ -23,8 +23,9 @@ gtk_2_4_sources =			\
 	newgtk/gtkfontbutton.h
 
 mooutils_include_headers =		\
-	mooaccelbutton.h		\
 	mooaction.h			\
+	mooactionbase.h			\
+	mooactioncollection.h		\
 	moobigpaned.h			\
 	mooclosure.h			\
 	moocmd.h			\
@@ -63,10 +64,19 @@ mooutils_sources =			\
 	mooaccel.c			\
 	mooaccelbutton-glade.h		\
 	mooaccelbutton.c		\
+	mooaccelbutton.h		\
+	mooaccelprefs.h			\
+	mooaccelprefs.c			\
 	mooaccelprefs-glade.h		\
 	mooaction.c			\
+	mooaction-private.h		\
+	mooactionbase.c			\
+	mooactionbase-private.h		\
+	mooactioncollection.c		\
 	mooactionfactory.h		\
 	mooactionfactory.c		\
+	mooactiongroup.h		\
+	mooactiongroup.c		\
 	moobigpaned.c			\
 	mooclosure.c			\
 	moocmd.c			\

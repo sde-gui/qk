@@ -51,27 +51,27 @@ static void moo_term_window_class_init (MooTermWindowClass *klass)
 
     moo_window_class_set_id (window_class, "Terminal", "Terminal");
 
-    moo_window_class_new_action (window_class, "Copy",
-                                 "stock-display-name", GTK_STOCK_COPY,
-                                 "stock-label", GTK_STOCK_COPY,
-                                 "stock-tooltip", GTK_STOCK_COPY,
+    moo_window_class_new_action (window_class, "Copy", NULL,
+                                 "display-name", GTK_STOCK_COPY,
+                                 "label", GTK_STOCK_COPY,
+                                 "tooltip", GTK_STOCK_COPY,
                                  "stock-id", GTK_STOCK_COPY,
                                  "accel", "<alt>C",
                                  "closure-callback", copy_clipboard,
                                  "closure-proxy-func", moo_term_window_get_term,
                                  NULL);
 
-    moo_window_class_new_action (window_class, "Paste",
-                                 "stock-display-name", GTK_STOCK_PASTE,
-                                 "stock-label", GTK_STOCK_PASTE,
-                                 "stock-tooltip", GTK_STOCK_PASTE,
+    moo_window_class_new_action (window_class, "Paste", NULL,
+                                 "display-name", GTK_STOCK_PASTE,
+                                 "label", GTK_STOCK_PASTE,
+                                 "tooltip", GTK_STOCK_PASTE,
                                  "stock-id", GTK_STOCK_PASTE,
                                  "accel", "<alt>V",
                                  "closure-callback", paste_clipboard,
                                  "closure-proxy-func", moo_term_window_get_term,
                                  NULL);
 
-    moo_window_class_new_action (window_class, "SelectAll",
+    moo_window_class_new_action (window_class, "SelectAll", NULL,
                                  "display-name", "Select All",
                                  "label", "Select _All",
                                  "tooltip", "Select all",

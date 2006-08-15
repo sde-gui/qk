@@ -30,5 +30,5 @@
 (define-method get_actions
   (of-object "MooFileView")
   (c-name "moo_file_view_get_actions")
-  (return-type "GtkActionGroup*")
+  (return-type "MooActionCollection*")
 )

@@ -100,21 +100,21 @@ static void init_actions (void)
 
     g_return_if_fail (klass != NULL);
 
-    moo_window_class_new_action (klass, "Preferences",
+    moo_window_class_new_action (klass, "Preferences", NULL,
                                  "display-name", "Preferences",
                                  "label", "Preferences",
                                  "tooltip", "Preferences",
                                  "stock-id", GTK_STOCK_PREFERENCES,
                                  "closure-callback", show_preferences,
                                  NULL);
-    moo_window_class_new_action (klass, "Quit",
+    moo_window_class_new_action (klass, "Quit", NULL,
                                  "display-name", "Quit",
                                  "label", "_Quit",
                                  "tooltip", "Quit",
                                  "stock-id", GTK_STOCK_QUIT,
                                  "closure-callback", quit,
                                  NULL);
-    moo_window_class_new_action (klass, "About",
+    moo_window_class_new_action (klass, "About", NULL,
                                  "display-name", "About",
                                  "label", "About",
                                  "tooltip", "About",

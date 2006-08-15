@@ -39,7 +39,9 @@
 #include "mooutils/moocmd.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooactionfactory.h"
+#include "mooutils/mooaction-private.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/mooi18n.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
@@ -135,7 +137,7 @@ struct _MooFileViewPrivate {
     gboolean         sort_case_sensitive;
     gboolean         completion_case_sensitive;
 
-    GtkActionGroup  *actions;
+    MooActionCollection *actions;
     MooUIXML        *ui_xml;
     gboolean         has_selection;
 
@@ -1054,13 +1056,16 @@ static void
 init_actions (MooFileView *fileview)
 {
     GtkAction *action;
+    GtkActionGroup *group;
 
-    fileview->priv->actions = gtk_action_group_new ("File Selector");
+    fileview->priv->actions = moo_action_collection_new ("File Selector", _("File Selector"));
     fileview->priv->ui_xml = moo_ui_xml_new ();
     moo_ui_xml_add_ui_from_string (fileview->priv->ui_xml,
                                    MOO_FILE_VIEW_UI, -1);
 
-    moo_action_group_add_action (fileview->priv->actions, "GoUp",
+    group = moo_action_collection_get_group (fileview->priv->actions, NULL);
+
+    moo_action_group_add_action (group, "GoUp",
                                  "label", "Parent Folder",
                                  "tooltip", "Parent Folder",
                                  "stock-id", GTK_STOCK_GO_UP,
@@ -1070,7 +1075,7 @@ init_actions (MooFileView *fileview)
                                  "closure-signal", "go-up",
                                  NULL);
 
-    action = moo_action_group_add_action (fileview->priv->actions, "GoBack",
+    action = moo_action_group_add_action (group, "GoBack",
                                           "label", "Go Back",
                                           "tooltip", "Go Back",
                                           "stock-id", GTK_STOCK_GO_BACK,
@@ -1081,7 +1086,7 @@ init_actions (MooFileView *fileview)
                                           NULL);
     moo_bind_bool_property (action, "sensitive", fileview, "can-go-back", FALSE);
 
-    action = moo_action_group_add_action (fileview->priv->actions, "GoForward",
+    action = moo_action_group_add_action (group, "GoForward",
                                           "label", "Go Forward",
                                           "tooltip", "Go Forward",
                                           "stock-id", GTK_STOCK_GO_FORWARD,
@@ -1092,7 +1097,7 @@ init_actions (MooFileView *fileview)
                                           NULL);
     moo_bind_bool_property (action, "sensitive", fileview, "can-go-forward", FALSE);
 
-    moo_action_group_add_action (fileview->priv->actions, "GoHome",
+    moo_action_group_add_action (group, "GoHome",
                                  "label", "Home Folder",
                                  "tooltip", "Home Folder",
                                  "stock-id", GTK_STOCK_HOME,
@@ -1102,7 +1107,7 @@ init_actions (MooFileView *fileview)
                                  "closure-signal", "go-home",
                                  NULL);
 
-    moo_action_group_add_action (fileview->priv->actions, "NewFolder",
+    moo_action_group_add_action (group, "NewFolder",
                                  "label", "New Folder...",
                                  "tooltip", "New Folder...",
                                  "stock-id", GTK_STOCK_DIRECTORY,
@@ -1110,7 +1115,7 @@ init_actions (MooFileView *fileview)
                                  "closure-callback", file_view_create_folder,
                                  NULL);
 
-    action = moo_action_group_add_action (fileview->priv->actions, "Delete",
+    action = moo_action_group_add_action (group, "Delete",
                                           "label", "Delete...",
                                           "tooltip", "Delete...",
                                           "stock-id", GTK_STOCK_DELETE,
@@ -1121,30 +1126,30 @@ init_actions (MooFileView *fileview)
                                           NULL);
     moo_bind_bool_property (action, "sensitive", fileview, "has-selection", FALSE);
 
-    action = moo_action_group_add_action (fileview->priv->actions, "ShowHiddenFiles",
-                                          "action-type::", GTK_TYPE_TOGGLE_ACTION,
+    action = moo_action_group_add_action (group, "ShowHiddenFiles",
+                                          "action-type::", MOO_TYPE_TOGGLE_ACTION,
                                           "label", "Show Hidden Files",
                                           "tooltip", "Show Hidden Files",
                                           "accel", "<alt><shift>H",
                                           "force-accel-label", TRUE,
                                           NULL);
-    moo_sync_toggle_action (action, fileview, "show-hidden-files", FALSE);
+    _moo_sync_toggle_action (action, fileview, "show-hidden-files", FALSE);
 
-    action = moo_action_group_add_action (fileview->priv->actions, "ShowParentFolder",
-                                          "action-type::", GTK_TYPE_TOGGLE_ACTION,
+    action = moo_action_group_add_action (group, "ShowParentFolder",
+                                          "action-type::", MOO_TYPE_TOGGLE_ACTION,
                                           "label", "Show Parent Folder",
                                           "tooltip", "Show Parent Folder",
                                           NULL);
-    moo_sync_toggle_action (action, fileview, "show-parent-folder", FALSE);
+    _moo_sync_toggle_action (action, fileview, "show-parent-folder", FALSE);
 
-    action = moo_action_group_add_action (fileview->priv->actions, "CaseSensitiveSort",
-                                          "action-type::", GTK_TYPE_TOGGLE_ACTION,
+    action = moo_action_group_add_action (group, "CaseSensitiveSort",
+                                          "action-type::", MOO_TYPE_TOGGLE_ACTION,
                                           "label", "Case Sensitive Sort",
                                           "tooltip", "Case Sensitive Sort",
                                           NULL);
-    moo_sync_toggle_action (action, fileview, "sort-case-sensitive", FALSE);
+    _moo_sync_toggle_action (action, fileview, "sort-case-sensitive", FALSE);
 
-    action = moo_action_group_add_action (fileview->priv->actions, "Properties",
+    action = moo_action_group_add_action (group, "Properties",
                                           "label", "Properties",
                                           "tooltip", "Properties",
                                           "stock-id", GTK_STOCK_PROPERTIES,
@@ -1155,7 +1160,7 @@ init_actions (MooFileView *fileview)
                                           NULL);
     moo_bind_bool_property (action, "sensitive", fileview, "has-selection", FALSE);
 
-    moo_action_group_add_action (fileview->priv->actions, "BookmarksMenu",
+    moo_action_group_add_action (group, "BookmarksMenu",
                                  "label", "Bookmarks",
                                  "tooltip", "Bookmarks",
                                  "stock-id", GTK_STOCK_ABOUT,
@@ -1164,7 +1169,7 @@ init_actions (MooFileView *fileview)
                                  "has-submenu", TRUE,
                                  NULL);
 
-    moo_action_group_add_action (fileview->priv->actions, "AddBookmark",
+    moo_action_group_add_action (group, "AddBookmark",
                                  "label", "Add Bookmark",
                                  "tooltip", "Add Bookmark",
                                  "stock-id", GTK_STOCK_ADD,
@@ -1172,7 +1177,7 @@ init_actions (MooFileView *fileview)
                                  "closure-callback", add_bookmark,
                                  NULL);
 
-    moo_action_group_add_action (fileview->priv->actions, "EditBookmarks",
+    moo_action_group_add_action (group, "EditBookmarks",
                                  "label", "Edit Bookmarks...",
                                  "tooltip", "Edit Bookmarks...",
                                  "stock-id", GTK_STOCK_EDIT,
@@ -1180,7 +1185,7 @@ init_actions (MooFileView *fileview)
                                  "closure-callback", edit_bookmarks,
                                  NULL);
 
-    action = moo_action_group_add_action (fileview->priv->actions, "Cut",
+    action = moo_action_group_add_action (group, "Cut",
                                           "label", "Cut",
                                           "tooltip", "Cut",
                                           "stock-id", GTK_STOCK_CUT,
@@ -1191,7 +1196,7 @@ init_actions (MooFileView *fileview)
                                           NULL);
     moo_bind_bool_property (action, "sensitive", fileview, "has-selection", FALSE);
 
-    action = moo_action_group_add_action (fileview->priv->actions, "Copy",
+    action = moo_action_group_add_action (group, "Copy",
                                           "label", "Copy",
                                           "tooltip", "Copy",
                                           "stock-id", GTK_STOCK_COPY,
@@ -1202,7 +1207,7 @@ init_actions (MooFileView *fileview)
                                           NULL);
     moo_bind_bool_property (action, "sensitive", fileview, "has-selection", FALSE);
 
-    action = moo_action_group_add_action (fileview->priv->actions, "Paste",
+    action = moo_action_group_add_action (group, "Paste",
                                           "label", "Paste",
                                           "tooltip", "Paste",
                                           "stock-id", GTK_STOCK_PASTE,
@@ -1213,7 +1218,7 @@ init_actions (MooFileView *fileview)
                                           NULL);
 
 #ifdef __WIN32__
-    moo_action_group_add_action (fileview->priv->actions, "Reload",
+    moo_action_group_add_action (group, "Reload",
                                  "label", "Reload",
                                  "tooltip", "Reload",
                                  "stock-id", GTK_STOCK_REFRESH,
@@ -1232,7 +1237,7 @@ moo_file_view_get_ui_xml (MooFileView *fileview)
 }
 
 
-GtkActionGroup*
+MooActionCollection *
 moo_file_view_get_actions (MooFileView *fileview)
 {
     g_return_val_if_fail (MOO_IS_FILE_VIEW (fileview), NULL);

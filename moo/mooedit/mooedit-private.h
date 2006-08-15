@@ -149,7 +149,7 @@ struct _MooEditPrivate {
     /* Actions
     /*/
     GtkMenu *menu;
-    GtkActionGroup *actions;
+    MooActionCollection *actions;
 };
 
 

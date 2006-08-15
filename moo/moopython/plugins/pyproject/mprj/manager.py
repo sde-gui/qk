@@ -40,8 +40,7 @@ class _OpenRecent(object):
 
     def __call__(self, window):
         action = moo.utils.MenuAction("OpenRecentProject", _("Open Recent Project"))
-        moo.utils.action_set_display_name(action, _("Open Recent Project"))
-        moo.utils.action_set_no_accel(action, True)
+        action.set_property('display-name', _("Open Recent Project"))
         action.set_mgr(self.mgr.recent_list.get_menu_mgr())
         moo.utils.bind_bool_property(action, "sensitive",
                                      self.mgr.recent_list, "empty",

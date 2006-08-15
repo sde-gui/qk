@@ -18,6 +18,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooactionfactory.h"
+#include "mooutils/mooactionbase.h"
 #include <string.h>
 #include <gobject/gvaluecollector.h>
 
@@ -117,11 +118,21 @@ create_action (const char *action_id,
     g_return_val_if_fail (MOO_IS_ACTION_FACTORY (info->action), NULL);
     g_return_val_if_fail (action_id && action_id[0], NULL);
 
-    action = moo_action_factory_create_action (info->action, edit,
-                                               "closure-object", edit,
-                                               "toggled-object", edit,
-                                               "name", action_id,
-                                               NULL);
+    if (g_type_is_a (info->action->action_type, MOO_TYPE_ACTION))
+        action = moo_action_factory_create_action (info->action, edit,
+                                                   "closure-object", edit,
+                                                   "name", action_id,
+                                                   NULL);
+    else if (g_type_is_a (info->action->action_type, MOO_TYPE_TOGGLE_ACTION))
+        action = moo_action_factory_create_action (info->action, edit,
+                                                   "toggled-object", edit,
+                                                   "name", action_id,
+                                                   NULL);
+    else
+        action = moo_action_factory_create_action (info->action, edit,
+                                                   "name", action_id,
+                                                   NULL);
+
     g_return_val_if_fail (action != NULL, NULL);
 
     if (g_type_is_a (info->action->action_type, MOO_TYPE_EDIT_ACTION))
@@ -248,9 +259,9 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
 
             action_type = moo_value_get_gtype (&param.value);
 
-            if (!g_type_is_a (action_type, GTK_TYPE_ACTION))
+            if (!g_type_is_a (action_type, MOO_TYPE_ACTION_BASE))
             {
-                g_warning ("%s: invalid action type", G_STRLOC);
+                g_warning ("%s: invalid action type %s", G_STRLOC, g_type_name (action_type));
                 goto error;
             }
 
@@ -289,7 +300,7 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
                 action_class = g_type_class_ref (action_type);
             }
 
-            pspec = _moo_action_find_property (action_class, name);
+            pspec = g_object_class_find_property (action_class, name);
 
             if (!pspec)
             {
@@ -486,7 +497,7 @@ GtkActionGroup *
 moo_edit_get_actions (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return edit->priv->actions;
+    return moo_action_collection_get_group (edit->priv->actions, NULL);
 }
 
 
@@ -544,7 +555,7 @@ _moo_edit_add_class_actions (MooEdit *edit)
 void
 _moo_edit_check_actions (MooEdit *edit)
 {
-    GList *actions = gtk_action_group_list_actions (edit->priv->actions);
+    GList *actions = moo_action_collection_list_actions (edit->priv->actions);
 
     while (actions)
     {
@@ -611,7 +622,7 @@ _moo_edit_class_init_actions (MooEditClass *klass)
 /* MooEditAction
  */
 
-G_DEFINE_TYPE (MooEditAction, moo_edit_action, GTK_TYPE_ACTION);
+G_DEFINE_TYPE (MooEditAction, moo_edit_action, MOO_TYPE_ACTION);
 
 enum {
     CHECK_STATE,

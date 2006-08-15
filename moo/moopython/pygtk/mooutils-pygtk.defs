@@ -126,9 +126,44 @@
   )
 )
 
-(define-object MenuAction
+(define-interface ActionBase
+  (in-module "Moo")
+  (c-name "MooActionBase")
+  (gtype-id "MOO_TYPE_ACTION_BASE")
+  (prerequisite "GtkAction")
+)
+
+(define-object ActionCollection
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooActionCollection")
+  (gtype-id "MOO_TYPE_ACTION_COLLECTION")
+)
+
+(define-object Action
   (in-module "Moo")
   (parent "GtkAction")
+  (c-name "MooAction")
+  (gtype-id "MOO_TYPE_ACTION")
+)
+
+(define-object ToggleAction
+  (in-module "Moo")
+  (parent "GtkToggleAction")
+  (c-name "MooToggleAction")
+  (gtype-id "MOO_TYPE_TOGGLE_ACTION")
+)
+
+(define-object RadioAction
+  (in-module "Moo")
+  (parent "GtkRadioAction")
+  (c-name "MooRadioAction")
+  (gtype-id "MOO_TYPE_RADIO_ACTION")
+)
+
+(define-object MenuAction
+  (in-module "Moo")
+  (parent "MooAction")
   (c-name "MooMenuAction")
   (gtype-id "MOO_TYPE_MENU_ACTION")
 )
@@ -1447,7 +1482,7 @@
 (define-method get_actions
   (of-object "MooWindow")
   (c-name "moo_window_get_actions")
-  (return-type "GtkActionGroup*")
+  (return-type "MooActionCollection*")
 )
 
 (define-method get_action
@@ -1530,7 +1565,7 @@
   (parameters
     '("MooUIWidgetType" "type")
     '("const-char*" "path")
-    '("GtkActionGroup*" "actions")
+    '("MooActionCollection*" "actions")
     '("GtkAccelGroup*" "accel_group")
   )
 )
@@ -2205,67 +2240,67 @@
 
 ;; From ./ggap/moo/mooutils/mooaction.h
 
-(define-function sync_toggle_action
-  (c-name "moo_sync_toggle_action")
-  (return-type "none")
-  (parameters
-    '("GtkAction*" "action")
-    '("GObject*" "master")
-    '("const-char*" "prop")
-    '("gboolean" "invert" (null-ok) (default "FALSE"))
-  )
-)
-
-(define-function action_set_display_name
-  (c-name "moo_action_set_display_name")
-  (return-type "none")
-  (parameters
-    '("GtkAction*" "action")
-    '("const-char*" "name")
-  )
-)
-
-(define-function action_get_display_name
-  (c-name "moo_action_get_display_name")
-  (return-type "const-char*")
-  (parameters
-    '("GtkAction*" "action")
-  )
-)
-
-(define-function action_set_default_accel
-  (c-name "moo_action_set_default_accel")
-  (return-type "none")
-  (parameters
-    '("GtkAction*" "action")
-    '("const-char*" "accel" (null-ok))
-  )
-)
-
-(define-function action_get_default_accel
-  (c-name "moo_action_get_default_accel")
-  (return-type "const-char*")
-  (parameters
-    '("GtkAction*" "action")
-  )
-)
-
-(define-function action_set_no_accel
-  (c-name "moo_action_set_no_accel")
-  (return-type "none")
-  (parameters
-    '("GtkAction*" "action")
-    '("gboolean" "no_accel")
-  )
-)
-
-(define-function action_get_no_accel
-  (c-name "moo_action_get_no_accel")
-  (return-type "gboolean")
-  (parameters
-    '("GtkAction*" "action")
-  )
-)
+;; (define-function sync_toggle_action
+;;   (c-name "moo_sync_toggle_action")
+;;   (return-type "none")
+;;   (parameters
+;;     '("GtkAction*" "action")
+;;     '("GObject*" "master")
+;;     '("const-char*" "prop")
+;;     '("gboolean" "invert" (null-ok) (default "FALSE"))
+;;   )
+;; )
+;;
+;; (define-function action_set_display_name
+;;   (c-name "moo_action_set_display_name")
+;;   (return-type "none")
+;;   (parameters
+;;     '("GtkAction*" "action")
+;;     '("const-char*" "name")
+;;   )
+;; )
+;;
+;; (define-function action_get_display_name
+;;   (c-name "moo_action_get_display_name")
+;;   (return-type "const-char*")
+;;   (parameters
+;;     '("GtkAction*" "action")
+;;   )
+;; )
+;;
+;; (define-function action_set_default_accel
+;;   (c-name "moo_action_set_default_accel")
+;;   (return-type "none")
+;;   (parameters
+;;     '("GtkAction*" "action")
+;;     '("const-char*" "accel" (null-ok))
+;;   )
+;; )
+;;
+;; (define-function action_get_default_accel
+;;   (c-name "moo_action_get_default_accel")
+;;   (return-type "const-char*")
+;;   (parameters
+;;     '("GtkAction*" "action")
+;;   )
+;; )
+;;
+;; (define-function action_set_no_accel
+;;   (c-name "moo_action_set_no_accel")
+;;   (return-type "none")
+;;   (parameters
+;;     '("GtkAction*" "action")
+;;     '("gboolean" "no_accel")
+;;   )
+;; )
+;;
+;; (define-function action_get_no_accel
+;;   (c-name "moo_action_get_no_accel")
+;;   (return-type "gboolean")
+;;   (parameters
+;;     '("GtkAction*" "action")
+;;   )
+;; )
 
 
 ;; From ../mooutils/mooprefs.h

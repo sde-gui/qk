@@ -20,7 +20,7 @@
 #include "mooutils/mooconfig.h"
 #include "mooutils/moocommand.h"
 #include "mooutils/mooaccel.h"
-#include "mooutils/mooaction.h"
+#include "mooutils/mooaction-private.h"
 #include <string.h>
 
 
@@ -378,7 +378,7 @@ load_config_item (FileType       type,
         case FILE_TOOLS:
             klass = g_type_class_peek (MOO_TYPE_EDIT_WINDOW);
 
-            moo_window_class_new_action_custom (klass, data->id,
+            moo_window_class_new_action_custom (klass, data->id, NULL,
                                                 create_tool_action, data,
                                                 (GDestroyNotify) action_data_free);
 
@@ -615,7 +615,7 @@ run_exe (MooToolAction *action,
 
     return moo_cmd_view_run_command (MOO_CMD_VIEW (cmd_view), cmd_line,
                                      action->data->cmd->working_dir,
-                                     moo_action_get_display_name (GTK_ACTION (action)));
+                                     _moo_action_get_display_name (GTK_ACTION (action)));
 }
 
 
@@ -693,7 +693,7 @@ create_tool_action (MooWindow *window,
                            "name", data->name,
                            "label", data->label,
                            NULL);
-    moo_action_set_default_accel (GTK_ACTION (action), data->accel);
+    _moo_action_set_default_accel (GTK_ACTION (action), data->accel);
     action->window = MOO_EDIT_WINDOW (window);
     action->data = data;
 
@@ -722,7 +722,7 @@ create_edit_action (MooEdit *edit,
                            "langs", data->langs,
                            "flags", flags,
                            NULL);
-    moo_action_set_default_accel (GTK_ACTION (action), data->accel);
+    _moo_action_set_default_accel (GTK_ACTION (action), data->accel);
     action->window = moo_edit_get_window (edit);
     action->data = data;
 

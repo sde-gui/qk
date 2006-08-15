@@ -12,6 +12,7 @@
  */
 
 #include "mooutils/moomenuaction.h"
+#include "mooutils/mooaction-private.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include <gtk/gtk.h>
@@ -45,7 +46,7 @@ enum {
 
 
 /* MOO_TYPE_MENU_ACTION */
-G_DEFINE_TYPE (MooMenuAction, moo_menu_action, GTK_TYPE_ACTION)
+G_DEFINE_TYPE (MooMenuAction, moo_menu_action, MOO_TYPE_ACTION)
 
 
 static void
@@ -74,7 +75,7 @@ static void
 moo_menu_action_init (MooMenuAction *action)
 {
     action->mgr = moo_menu_mgr_new ();
-    moo_action_set_no_accel (GTK_ACTION (action), TRUE);
+    _moo_action_set_no_accel (GTK_ACTION (action), TRUE);
 }
 
 
@@ -118,7 +119,7 @@ moo_menu_action_set_property (GObject        *object,
 }
 
 
-static GtkWidget*
+static GtkWidget *
 moo_menu_action_create_menu_item (GtkAction *action)
 {
     MooMenuAction *menu_action;

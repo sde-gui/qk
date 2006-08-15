@@ -456,7 +456,7 @@ moo_bookmark_mgr_save (MooBookmarkMgr *mgr)
 struct _UserInfo {
     GObject *user;
     MooUIXML *xml;
-    GtkActionGroup *actions;
+    MooActionCollection *actions;
     char *path;
     guint user_id;
     guint merge_id;
@@ -464,16 +464,16 @@ struct _UserInfo {
 };
 
 static UserInfo*
-user_info_new (GObject        *user,
-               GtkActionGroup *actions,
-               MooUIXML       *xml,
-               const char     *path,
-               guint           user_id)
+user_info_new (GObject             *user,
+               MooActionCollection *actions,
+               MooUIXML            *xml,
+               const char          *path,
+               guint                user_id)
 {
     UserInfo *info;
 
     g_return_val_if_fail (G_IS_OBJECT (user), NULL);
-    g_return_val_if_fail (GTK_IS_ACTION_GROUP (actions), NULL);
+    g_return_val_if_fail (MOO_IS_ACTION_COLLECTION (actions), NULL);
     g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
     g_return_val_if_fail (path, NULL);
     g_return_val_if_fail (user_id > 0, NULL);
@@ -526,12 +526,15 @@ make_menu (MooBookmarkMgr *mgr,
     GtkTreeModel *model = GTK_TREE_MODEL (mgr->priv->store);
     GtkTreeIter iter;
     GString *markup;
+    GtkActionGroup *group;
 
     if (!gtk_tree_model_get_iter_first (model, &iter))
         return;
 
     info->merge_id = moo_ui_xml_new_merge_id (info->xml);
     markup = g_string_new (NULL);
+
+    group = moo_action_collection_get_group (info->actions, NULL);
 
     do
     {
@@ -549,9 +552,8 @@ make_menu (MooBookmarkMgr *mgr,
 
         action_id = g_strdup_printf ("MooBookmarkAction-%p", bookmark);
 
-        action = moo_action_group_add_action (info->actions, action_id,
-                                              "label", bookmark->label ? bookmark->label :
-                                                bookmark->display_path,
+        action = moo_action_group_add_action (group, action_id,
+                                              "label", bookmark->label ? bookmark->label : bookmark->display_path,
                                               "stock-id", bookmark->icon_stock_id,
                                               "tooltip", bookmark->display_path,
                                               "no-accel", TRUE,
@@ -584,7 +586,7 @@ destroy_menu (UserInfo *info)
     for (l = info->bm_actions; l != NULL; l = l->next)
     {
         GtkAction *action = l->data;
-        gtk_action_group_remove_action (info->actions, action);
+        moo_action_collection_remove_action (info->actions, action);
         g_object_unref (action);
     }
 
@@ -628,7 +630,7 @@ mgr_update_menus (MooBookmarkMgr *mgr)
 void
 _moo_bookmark_mgr_add_user (MooBookmarkMgr *mgr,
                             gpointer        user,
-                            GtkActionGroup *actions,
+                            MooActionCollection *actions,
                             MooUIXML       *xml,
                             const char     *path)
 {
@@ -637,7 +639,7 @@ _moo_bookmark_mgr_add_user (MooBookmarkMgr *mgr,
 
     g_return_if_fail (MOO_IS_BOOKMARK_MGR (mgr));
     g_return_if_fail (G_IS_OBJECT (user));
-    g_return_if_fail (GTK_IS_ACTION_GROUP (actions));
+    g_return_if_fail (MOO_IS_ACTION_COLLECTION (actions));
     g_return_if_fail (MOO_IS_UI_XML (xml));
     g_return_if_fail (path != NULL);
 
