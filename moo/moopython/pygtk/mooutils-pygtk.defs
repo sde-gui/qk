@@ -247,6 +247,7 @@
 
 
 (include "moofileview.defs")
+(include "subdir/moofileview.defs")
 
 
 ;; Enumerations and flags ...
@@ -1492,18 +1493,6 @@
   (parameters
     '("const-char*" "action_id")
   )
-)
-
-(define-method get_name
-  (of-object "MooWindow")
-  (c-name "moo_window_get_name")
-  (return-type "char*")
-)
-
-(define-method get_id
-  (of-object "MooWindow")
-  (c-name "moo_window_get_id")
-  (return-type "char*")
 )
 
 

@@ -120,7 +120,7 @@ tree_selection_changed (GtkTreeSelection *selection,
     }
 
     if (old_path)
-        moo_tree_helper_update_model (helper, model, old_path);
+        _moo_tree_helper_update_model (helper, model, old_path);
 
     moo_tree_helper_real_update_widgets (helper, model, path);
 
@@ -182,7 +182,7 @@ combo_changed (GtkComboBox   *combo,
     }
 
     if (old_path)
-        moo_tree_helper_update_model (helper, model, old_path);
+        _moo_tree_helper_update_model (helper, model, old_path);
 
     moo_tree_helper_real_update_widgets (helper, model, path);
 
@@ -394,7 +394,7 @@ _moo_tree_helper_class_init (MooTreeHelperClass *klass)
 
 
 void
-moo_tree_view_select_first (GtkTreeView *tree_view)
+_moo_tree_view_select_first (GtkTreeView *tree_view)
 {
     GtkTreeSelection *selection;
     GtkTreeModel *model;
@@ -411,7 +411,7 @@ moo_tree_view_select_first (GtkTreeView *tree_view)
 
 
 void
-moo_combo_box_select_first (GtkComboBox *combo)
+_moo_combo_box_select_first (GtkComboBox *combo)
 {
     GtkTreeModel *model;
     GtkTreeIter iter;
@@ -469,9 +469,9 @@ moo_tree_helper_real_update_widgets (MooTreeHelper      *helper,
 
 
 void
-moo_tree_helper_update_model (MooTreeHelper      *helper,
-                              GtkTreeModel       *model,
-                              GtkTreePath        *path)
+_moo_tree_helper_update_model (MooTreeHelper *helper,
+                               GtkTreeModel  *model,
+                               GtkTreePath   *path)
 {
     GtkTreePath *freeme = NULL;
     GtkTreeIter iter;
@@ -607,7 +607,7 @@ moo_tree_helper_delete_row (MooTreeHelper *helper)
                    (gtk_tree_path_prev (path) && gtk_tree_model_get_iter (model, &iter, path))))
         gtk_tree_selection_select_iter (selection, &iter);
     else
-        moo_tree_helper_update_widgets (helper);
+        _moo_tree_helper_update_widgets (helper);
 
     gtk_tree_path_free (path);
 }
@@ -734,11 +734,11 @@ moo_tree_helper_connect (MooTreeHelper *helper,
 
 
 MooTreeHelper *
-moo_tree_helper_new (GtkWidget *widget,
-                     GtkWidget *new_btn,
-                     GtkWidget *delete_btn,
-                     GtkWidget *up_btn,
-                     GtkWidget *down_btn)
+_moo_tree_helper_new (GtkWidget *widget,
+                      GtkWidget *new_btn,
+                      GtkWidget *delete_btn,
+                      GtkWidget *up_btn,
+                      GtkWidget *down_btn)
 {
     MooTreeHelper *helper;
 
@@ -754,7 +754,7 @@ moo_tree_helper_new (GtkWidget *widget,
 
 
 void
-moo_tree_helper_update_widgets (MooTreeHelper *helper)
+_moo_tree_helper_update_widgets (MooTreeHelper *helper)
 {
     GtkTreeModel *model;
     GtkTreeIter iter;
@@ -1054,11 +1054,11 @@ _moo_config_helper_init (MooConfigHelper *helper)
 
 
 MooConfigHelper *
-moo_config_helper_new (GtkWidget *tree_view,
-                       GtkWidget *new_btn,
-                       GtkWidget *delete_btn,
-                       GtkWidget *up_btn,
-                       GtkWidget *down_btn)
+_moo_config_helper_new (GtkWidget *tree_view,
+                        GtkWidget *new_btn,
+                        GtkWidget *delete_btn,
+                        GtkWidget *up_btn,
+                        GtkWidget *down_btn)
 {
     MooConfigHelper *helper;
 
@@ -1352,10 +1352,10 @@ moo_config_helper_add_widget_full (MooConfigHelper *helper,
 
 
 void
-moo_config_helper_add_widget (MooConfigHelper *helper,
-                              GtkWidget       *widget,
-                              const char      *key,
-                              gboolean         update_live)
+_moo_config_helper_add_widget (MooConfigHelper *helper,
+                               GtkWidget       *widget,
+                               const char      *key,
+                               gboolean         update_live)
 {
     g_return_if_fail (MOO_IS_CONFIG_HELPER (helper));
     g_return_if_fail (GTK_IS_WIDGET (widget));
@@ -1366,10 +1366,10 @@ moo_config_helper_add_widget (MooConfigHelper *helper,
 
 
 void
-moo_config_helper_update_model (MooConfigHelper *helper,
-                                GtkTreeModel    *model,
-                                GtkTreePath     *path)
+_moo_config_helper_update_model (MooConfigHelper *helper,
+                                 GtkTreeModel    *model,
+                                 GtkTreePath     *path)
 {
     g_return_if_fail (MOO_IS_CONFIG_HELPER (helper));
-    moo_tree_helper_update_model (MOO_TREE_HELPER (helper), model, path);
+    _moo_tree_helper_update_model (MOO_TREE_HELPER (helper), model, path);
 }

@@ -1,5 +1,5 @@
 /*
- *   mooui/moowindow.h
+ *   moowindow.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -67,8 +67,6 @@ gboolean    moo_window_close                (MooWindow          *window);
 /* Actions
  */
 
-const char *moo_window_class_get_id         (MooWindowClass     *klass);
-const char *moo_window_class_get_name       (MooWindowClass     *klass);
 void        moo_window_class_set_id         (MooWindowClass     *klass,
                                              const char         *id,
                                              const char         *name);
@@ -78,11 +76,6 @@ void        moo_window_class_new_action     (MooWindowClass     *klass,
                                              const char         *group,
                                              const char         *first_prop_name,
                                              ...) G_GNUC_NULL_TERMINATED;
-void        moo_window_class_new_actionv    (MooWindowClass     *klass,
-                                             const char         *id,
-                                             const char         *group,
-                                             const char         *first_prop_name,
-                                             va_list             props);
 void        moo_window_class_new_action_custom (MooWindowClass  *klass,
                                              const char         *id,
                                              const char         *group,
@@ -110,9 +103,6 @@ void        moo_window_set_ui_xml           (MooWindow          *window,
 MooActionCollection *moo_window_get_actions (MooWindow          *window);
 GtkAction  *moo_window_get_action           (MooWindow          *window,
                                              const char         *action);
-
-char       *moo_window_get_name             (MooWindow          *window);
-char       *moo_window_get_id               (MooWindow          *window);
 
 
 G_END_DECLS

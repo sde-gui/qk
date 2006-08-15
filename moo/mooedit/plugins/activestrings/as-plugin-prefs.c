@@ -99,22 +99,22 @@ _as_plugin_prefs_page (MooPlugin *plugin)
                                              (GtkTreeCellDataFunc) pattern_data_func,
                                              NULL, NULL);
 
-    helper = moo_config_helper_new (treeview,
-                                    moo_glade_xml_get_widget (xml, "new"),
-                                    moo_glade_xml_get_widget (xml, "delete"),
-                                    moo_glade_xml_get_widget (xml, "up"),
-                                    moo_glade_xml_get_widget (xml, "down"));
+    helper = _moo_config_helper_new (treeview,
+                                     moo_glade_xml_get_widget (xml, "new"),
+                                     moo_glade_xml_get_widget (xml, "delete"),
+                                     moo_glade_xml_get_widget (xml, "up"),
+                                     moo_glade_xml_get_widget (xml, "down"));
 
-    moo_config_helper_add_widget (helper, moo_glade_xml_get_widget (xml, "pattern"),
-                                  AS_KEY_PATTERN, TRUE);
-    moo_config_helper_add_widget (helper, moo_glade_xml_get_widget (xml, "lang"),
-                                  AS_KEY_LANG, FALSE);
-    moo_config_helper_add_widget (helper, moo_glade_xml_get_widget (xml, "enabled"),
-                                  AS_KEY_ENABLED, TRUE);
-    moo_config_helper_add_widget (helper, moo_glade_xml_get_widget (xml, "word_boundary"),
-                                  AS_KEY_WORD_BOUNDARY, FALSE);
-    moo_config_helper_add_widget (helper, moo_glade_xml_get_widget (xml, "script"),
-                                  NULL, FALSE);
+    _moo_config_helper_add_widget (helper, moo_glade_xml_get_widget (xml, "pattern"),
+                                   AS_KEY_PATTERN, TRUE);
+    _moo_config_helper_add_widget (helper, moo_glade_xml_get_widget (xml, "lang"),
+                                   AS_KEY_LANG, FALSE);
+    _moo_config_helper_add_widget (helper, moo_glade_xml_get_widget (xml, "enabled"),
+                                   AS_KEY_ENABLED, TRUE);
+    _moo_config_helper_add_widget (helper, moo_glade_xml_get_widget (xml, "word_boundary"),
+                                   AS_KEY_WORD_BOUNDARY, FALSE);
+    _moo_config_helper_add_widget (helper, moo_glade_xml_get_widget (xml, "script"),
+                                   NULL, FALSE);
 
     g_signal_connect (helper, "new-item",
                       G_CALLBACK (new_item), NULL);
@@ -160,7 +160,7 @@ prefs_page_apply (MooGladeXML *xml)
 
     treeview = moo_glade_xml_get_widget (xml, "treeview");
     helper = g_object_get_data (G_OBJECT (treeview), "as-plugin-config-helper");
-    moo_config_helper_update_model (helper, NULL, NULL);
+    _moo_config_helper_update_model (helper, NULL, NULL);
 
     config = MOO_CONFIG (gtk_tree_view_get_model (GTK_TREE_VIEW (treeview)));
 
@@ -195,7 +195,7 @@ prefs_page_init (MooGladeXML *xml)
 
     treeview = moo_glade_xml_get_widget (xml, "treeview");
     gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (config));
-    moo_tree_view_select_first (GTK_TREE_VIEW (treeview));
+    _moo_tree_view_select_first (GTK_TREE_VIEW (treeview));
 
     g_object_unref (config);
 }

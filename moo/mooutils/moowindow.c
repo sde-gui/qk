@@ -1,5 +1,5 @@
 /*
- *   mooui/moowindow.c
+ *   moowindow.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -77,50 +77,55 @@ static void init_prefs (MooWindow *window);
 static GtkToolbarStyle get_toolbar_style (MooWindow *window);
 
 
-static void     moo_window_class_init               (MooWindowClass *klass);
-GObject        *moo_window_constructor              (GType                  type,
-                                                     guint                  n_props,
-                                                     GObjectConstructParam *props);
+static const char  *moo_window_class_get_id             (MooWindowClass *klass);
+static const char  *moo_window_class_get_name           (MooWindowClass *klass);
 
-static void     moo_window_init                     (MooWindow      *window);
-static void     moo_window_dispose                  (GObject        *object);
+static void         moo_window_class_new_actionv        (MooWindowClass *klass,
+                                                         const char     *id,
+                                                         const char     *group,
+                                                         const char     *first_prop_name,
+                                                         va_list         props);
 
-static void     moo_window_set_property             (GObject        *object,
-                                                     guint           prop_id,
-                                                     const GValue   *value,
-                                                     GParamSpec     *pspec);
-static void     moo_window_get_property             (GObject        *object,
-                                                     guint           prop_id,
-                                                     GValue         *value,
-                                                     GParamSpec     *pspec);
+GObject            *moo_window_constructor              (GType           type,
+                                                         guint           n_props,
+                                                         GObjectConstructParam *props);
+static void         moo_window_dispose                  (GObject        *object);
+static void         moo_window_set_property             (GObject        *object,
+                                                         guint           prop_id,
+                                                         const GValue   *value,
+                                                         GParamSpec     *pspec);
+static void         moo_window_get_property             (GObject        *object,
+                                                         guint           prop_id,
+                                                         GValue         *value,
+                                                         GParamSpec     *pspec);
 
-static void     moo_window_set_id                   (MooWindow      *window,
-                                                     const char     *id);
-static void     moo_window_add_class_actions        (MooWindow      *window);
-static void     moo_window_add_action               (MooWindow      *window,
-                                                     const char     *group,
-                                                     GtkAction      *action);
-static void     moo_window_remove_action            (MooWindow      *window,
-                                                     const char     *action_id);
+static void         moo_window_set_id                   (MooWindow      *window,
+                                                         const char     *id);
+static void         moo_window_add_class_actions        (MooWindow      *window);
+static void         moo_window_add_action               (MooWindow      *window,
+                                                         const char     *group,
+                                                         GtkAction      *action);
+static void         moo_window_remove_action            (MooWindow      *window,
+                                                         const char     *action_id);
 
-static gboolean moo_window_delete_event             (GtkWidget      *widget,
-                                                     GdkEventAny    *event);
+static gboolean     moo_window_delete_event             (GtkWidget      *widget,
+                                                         GdkEventAny    *event);
 
-static gboolean moo_window_save_size                (MooWindow      *window);
+static gboolean     moo_window_save_size                (MooWindow      *window);
 
-static void     moo_window_update_ui                (MooWindow      *window);
-static void     moo_window_update_menubar           (MooWindow      *window);
-static void     moo_window_update_toolbar           (MooWindow      *window);
+static void         moo_window_update_ui                (MooWindow      *window);
+static void         moo_window_update_menubar           (MooWindow      *window);
+static void         moo_window_update_toolbar           (MooWindow      *window);
 
-static void     moo_window_shortcuts_prefs_dialog   (MooWindow      *window);
+static void         moo_window_shortcuts_prefs_dialog   (MooWindow      *window);
 
-static void     moo_window_set_menubar_visible      (MooWindow      *window,
-                                                     gboolean        visible);
-static void     moo_window_set_toolbar_visible      (MooWindow      *window,
-                                                     gboolean        visible);
+static void         moo_window_set_menubar_visible      (MooWindow      *window,
+                                                         gboolean        visible);
+static void         moo_window_set_toolbar_visible      (MooWindow      *window,
+                                                         gboolean        visible);
 
-static GtkAction *create_toolbar_style_action       (MooWindow      *window,
-                                                     gpointer        dummy);
+static GtkAction   *create_toolbar_style_action         (MooWindow      *window,
+                                                         gpointer        dummy);
 
 
 enum {
@@ -919,7 +924,7 @@ create_action (const char *action_id,
 }
 
 
-const char*
+static const char*
 moo_window_class_get_id (MooWindowClass *klass)
 {
     GType type;
@@ -931,7 +936,7 @@ moo_window_class_get_id (MooWindowClass *klass)
 }
 
 
-const char*
+static const char*
 moo_window_class_get_name (MooWindowClass     *klass)
 {
     GType type;
@@ -1127,22 +1132,6 @@ moo_window_get_action (MooWindow  *window,
     g_return_val_if_fail (MOO_IS_WINDOW (window), NULL);
     g_return_val_if_fail (action != NULL, NULL);
     return moo_action_collection_get_action (window->priv->actions, action);
-}
-
-
-char*
-moo_window_get_name (MooWindow          *window)
-{
-    g_return_val_if_fail (MOO_IS_WINDOW (window), NULL);
-    return g_strdup (window->priv->name);
-}
-
-
-char*
-moo_window_get_id (MooWindow          *window)
-{
-    g_return_val_if_fail (MOO_IS_WINDOW (window), NULL);
-    return g_strdup (window->priv->id);
 }
 
 

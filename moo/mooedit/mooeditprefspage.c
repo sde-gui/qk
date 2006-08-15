@@ -176,7 +176,7 @@ prefs_page_init (MooPrefsDialogPage *page)
     default_lang_combo_set_lang (default_lang_combo, lang);
 
     helper = g_object_get_data (G_OBJECT (page), "moo-tree-helper");
-    moo_tree_helper_update_widgets (helper);
+    _moo_tree_helper_update_widgets (helper);
 }
 
 
@@ -635,8 +635,8 @@ lang_combo_init (GtkComboBox        *combo,
     gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (combo), cell,
                                         set_sensitive, NULL, NULL);
 
-    moo_combo_box_select_first (combo);
-    helper = moo_tree_helper_new (GTK_WIDGET (combo), NULL, NULL, NULL, NULL);
+    _moo_combo_box_select_first (combo);
+    helper = _moo_tree_helper_new (GTK_WIDGET (combo), NULL, NULL, NULL, NULL);
     g_return_if_fail (helper != NULL);
 
     g_object_set_data_full (G_OBJECT (page), "moo-tree-helper",
@@ -645,7 +645,7 @@ lang_combo_init (GtkComboBox        *combo,
                               G_CALLBACK (helper_update_widgets), page);
     g_signal_connect_swapped (helper, "update-model",
                               G_CALLBACK (helper_update_model), page);
-    moo_tree_helper_update_widgets (helper);
+    _moo_tree_helper_update_widgets (helper);
 }
 
 
@@ -700,7 +700,7 @@ prefs_page_apply_lang_prefs (MooPrefsDialogPage *page)
     MooLangMgr *mgr;
 
     helper = g_object_get_data (G_OBJECT (page), "moo-tree-helper");
-    moo_tree_helper_update_model (helper, NULL, NULL);
+    _moo_tree_helper_update_model (helper, NULL, NULL);
 
     model = page_get_lang_model (page);
     g_return_if_fail (model != NULL);
@@ -848,11 +848,11 @@ filter_treeview_init (MooGladeXML *xml)
     create_filter_cell (filter_treeview, store, "Filter", FILTER_COLUMN_FILTER);
     create_filter_cell (filter_treeview, store, "Options", FILTER_COLUMN_CONFIG);
 
-    helper = moo_tree_helper_new (GTK_WIDGET (filter_treeview),
-                                  moo_glade_xml_get_widget (xml, "new_filter_setting"),
-                                  moo_glade_xml_get_widget (xml, "delete_filter_setting"),
-                                  moo_glade_xml_get_widget (xml, "filter_setting_up"),
-                                  moo_glade_xml_get_widget (xml, "filter_setting_down"));
+    helper = _moo_tree_helper_new (GTK_WIDGET (filter_treeview),
+                                   moo_glade_xml_get_widget (xml, "new_filter_setting"),
+                                   moo_glade_xml_get_widget (xml, "delete_filter_setting"),
+                                   moo_glade_xml_get_widget (xml, "filter_setting_up"),
+                                   moo_glade_xml_get_widget (xml, "filter_setting_down"));
     gtk_object_sink (g_object_ref (helper));
     g_object_set_data_full (G_OBJECT (filter_treeview), "tree-helper", helper, g_object_unref);
 
