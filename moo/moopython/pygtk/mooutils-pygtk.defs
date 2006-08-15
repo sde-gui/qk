@@ -247,7 +247,6 @@
 
 
 (include "moofileview.defs")
-(include "subdir/moofileview.defs")
 
 
 ;; Enumerations and flags ...
@@ -2171,31 +2170,31 @@
   )
 )
 
-(define-function watch_add_signal
-  (c-name "moo_watch_add_signal")
-  (return-type "none")
-  (parameters
-    '("guint" "watch_id")
-    '("const-char*" "source_signal")
-  )
-)
+;; (define-function watch_add_signal
+;;   (c-name "moo_watch_add_signal")
+;;   (return-type "none")
+;;   (parameters
+;;     '("guint" "watch_id")
+;;     '("const-char*" "source_signal")
+;;   )
+;; )
 
-(define-function watch_add_property
-  (c-name "moo_watch_add_property")
-  (return-type "none")
-  (parameters
-    '("guint" "watch_id")
-    '("const-char*" "source_prop")
-  )
-)
+;; (define-function watch_add_property
+;;   (c-name "moo_watch_add_property")
+;;   (return-type "none")
+;;   (parameters
+;;     '("guint" "watch_id")
+;;     '("const-char*" "source_prop")
+;;   )
+;; )
 
-(define-function watch_remove
-  (c-name "moo_watch_remove")
-  (return-type "gboolean")
-  (parameters
-    '("guint" "watch_id")
-  )
-)
+;; (define-function watch_remove
+;;   (c-name "moo_watch_remove")
+;;   (return-type "gboolean")
+;;   (parameters
+;;     '("guint" "watch_id")
+;;   )
+;; )
 
 
 ;;;;;;;;;;;;;

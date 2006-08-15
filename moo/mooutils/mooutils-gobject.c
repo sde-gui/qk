@@ -11,7 +11,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-gobject-private.h"
 #include "mooutils/mooclosure.h"
 #include <gobject/gvaluecollector.h>
 #include <string.h>
@@ -57,13 +57,13 @@ moo_gtype_lcopy_value (const GValue   *value,
                        G_GNUC_UNUSED guint collect_flags)
 {
     GType *ptr = collect_values->v_pointer;
-    *ptr = moo_value_get_gtype (value);
+    *ptr = _moo_value_get_gtype (value);
     return NULL;
 }
 
 
 GType
-moo_gtype_get_type (void)
+_moo_gtype_get_type (void)
 {
     static GType type = 0;
 
@@ -107,15 +107,15 @@ moo_gtype_get_type (void)
 
 
 void
-moo_value_set_gtype (GValue     *value,
-                     GType       v_gtype)
+_moo_value_set_gtype (GValue *value,
+                      GType   v_gtype)
 {
     MOO_GTYPE_PEEK(value) = (gpointer) v_gtype;
 }
 
 
 GType
-moo_value_get_gtype (const GValue *value)
+_moo_value_get_gtype (const GValue *value)
 {
     return (GType) MOO_GTYPE_PEEK(value);
 }
@@ -126,7 +126,7 @@ param_gtype_set_default (GParamSpec *pspec,
                          GValue     *value)
 {
     MooParamSpecGType *mspec = MOO_PARAM_SPEC_GTYPE (pspec);
-    moo_value_set_gtype (value, mspec->base);
+    _moo_value_set_gtype (value, mspec->base);
 }
 
 
@@ -135,20 +135,20 @@ param_gtype_validate (GParamSpec   *pspec,
                       GValue       *value)
 {
     MooParamSpecGType *mspec = MOO_PARAM_SPEC_GTYPE (pspec);
-    GType t = moo_value_get_gtype (value);
+    GType t = _moo_value_get_gtype (value);
     gboolean changed = FALSE;
 
     if (G_TYPE_IS_DERIVABLE (mspec->base))
     {
         if (!g_type_is_a (t, mspec->base))
         {
-            moo_value_set_gtype (value, mspec->base);
+            _moo_value_set_gtype (value, mspec->base);
             changed = TRUE;
         }
     }
     else if (!g_type_name (t))
     {
-        moo_value_set_gtype (value, mspec->base);
+        _moo_value_set_gtype (value, mspec->base);
         changed = TRUE;
     }
 
@@ -161,14 +161,14 @@ param_gtype_cmp (G_GNUC_UNUSED GParamSpec *pspec,
                  const GValue *value1,
                  const GValue *value2)
 {
-    GType t1 = moo_value_get_gtype (value1);
-    GType t2 = moo_value_get_gtype (value2);
+    GType t1 = _moo_value_get_gtype (value1);
+    GType t2 = _moo_value_get_gtype (value2);
     return t1 == t2 ? 0 : (t1 < t2 ? -1 : 1);
 }
 
 
 GType
-moo_param_gtype_get_type (void)
+_moo_param_gtype_get_type (void)
 {
     static GType type = 0;
 
@@ -194,11 +194,11 @@ moo_param_gtype_get_type (void)
 
 
 GParamSpec*
-moo_param_spec_gtype (const char     *name,
-                      const char     *nick,
-                      const char     *blurb,
-                      GType           base,
-                      GParamFlags     flags)
+_moo_param_spec_gtype (const char     *name,
+                       const char     *nick,
+                       const char     *blurb,
+                       GType           base,
+                       GParamFlags     flags)
 {
     MooParamSpecGType *pspec;
 
@@ -210,10 +210,6 @@ moo_param_spec_gtype (const char     *name,
 
     return G_PARAM_SPEC (pspec);
 }
-
-
-GType       g_param_type_register_static    (const gchar *name,
-                                             const GParamSpecTypeInfo *pspec_info);
 
 
 /*****************************************************************************/
@@ -248,7 +244,7 @@ string_to_flags (const char *string,
     ival.g_type = 0;
     g_value_init (&ival, G_TYPE_INT);
 
-    if (!moo_value_convert_from_string (string, &ival))
+    if (!_moo_value_convert_from_string (string, &ival))
         return FALSE;
 
     *flags = g_value_get_int (&ival);
@@ -257,8 +253,8 @@ string_to_flags (const char *string,
 
 
 gboolean
-moo_value_convert (const GValue   *src,
-                   GValue         *dest)
+_moo_value_convert (const GValue *src,
+                    GValue       *dest)
 {
     GType src_type, dest_type;
 
@@ -267,8 +263,8 @@ moo_value_convert (const GValue   *src,
     src_type = G_VALUE_TYPE (src);
     dest_type = G_VALUE_TYPE (dest);
 
-    g_return_val_if_fail (moo_value_type_supported (src_type), FALSE);
-    g_return_val_if_fail (moo_value_type_supported (dest_type), FALSE);
+    g_return_val_if_fail (_moo_value_type_supported (src_type), FALSE);
+    g_return_val_if_fail (_moo_value_type_supported (dest_type), FALSE);
 
     if (src_type == dest_type)
     {
@@ -563,8 +559,8 @@ moo_value_convert (const GValue   *src,
 
 
 gboolean
-moo_value_equal (const GValue   *a,
-                 const GValue   *b)
+_moo_value_equal (const GValue *a,
+                  const GValue *b)
 {
     GType type;
 
@@ -629,7 +625,7 @@ moo_value_equal (const GValue   *a,
 
 
 gboolean
-moo_value_type_supported (GType type)
+_moo_value_type_supported (GType type)
 {
     return type == G_TYPE_BOOLEAN ||
             type == G_TYPE_INT ||
@@ -643,64 +639,64 @@ moo_value_type_supported (GType type)
 
 
 gboolean
-moo_value_convert_to_bool (const GValue *val)
+_moo_value_convert_to_bool (const GValue *val)
 {
     GValue result;
     result.g_type = 0;
     g_value_init (&result, G_TYPE_BOOLEAN);
-    moo_value_convert (val, &result);
+    _moo_value_convert (val, &result);
     return g_value_get_boolean (&result);
 }
 
 
 int
-moo_value_convert_to_int (const GValue *val)
+_moo_value_convert_to_int (const GValue *val)
 {
     GValue result;
     result.g_type = 0;
     g_value_init (&result, G_TYPE_INT);
-    moo_value_convert (val, &result);
+    _moo_value_convert (val, &result);
     return g_value_get_int (&result);
 }
 
 
 int
-moo_value_convert_to_enum (const GValue   *val,
-                           GType           enum_type)
+_moo_value_convert_to_enum (const GValue *val,
+                            GType         enum_type)
 {
     GValue result;
     result.g_type = 0;
     g_value_init (&result, enum_type);
-    moo_value_convert (val, &result);
+    _moo_value_convert (val, &result);
     return g_value_get_enum (&result);
 }
 
 
 int
-moo_value_convert_to_flags (const GValue   *val,
-                            GType           flags_type)
+_moo_value_convert_to_flags (const GValue *val,
+                             GType         flags_type)
 {
     GValue result;
     result.g_type = 0;
     g_value_init (&result, flags_type);
-    moo_value_convert (val, &result);
+    _moo_value_convert (val, &result);
     return g_value_get_flags (&result);
 }
 
 
 double
-moo_value_convert_to_double (const GValue *val)
+_moo_value_convert_to_double (const GValue *val)
 {
     GValue result;
     result.g_type = 0;
     g_value_init (&result, G_TYPE_DOUBLE);
-    moo_value_convert (val, &result);
+    _moo_value_convert (val, &result);
     return g_value_get_double (&result);
 }
 
 
 const GdkColor*
-moo_value_convert_to_color (const GValue *val)
+_moo_value_convert_to_color (const GValue *val)
 {
     static GValue result;
 
@@ -709,7 +705,7 @@ moo_value_convert_to_color (const GValue *val)
 
     g_value_init (&result, GDK_TYPE_COLOR);
 
-    if (!moo_value_convert (val, &result))
+    if (!_moo_value_convert (val, &result))
         return NULL;
     else
         return g_value_get_boxed (&result);
@@ -717,7 +713,7 @@ moo_value_convert_to_color (const GValue *val)
 
 
 const char*
-moo_value_convert_to_string (const GValue *val)
+_moo_value_convert_to_string (const GValue *val)
 {
     static GValue result;
 
@@ -726,7 +722,7 @@ moo_value_convert_to_string (const GValue *val)
 
     g_value_init (&result, G_TYPE_STRING);
 
-    if (!moo_value_convert (val, &result))
+    if (!_moo_value_convert (val, &result))
         return NULL;
     else
         return g_value_get_string (&result);
@@ -734,8 +730,8 @@ moo_value_convert_to_string (const GValue *val)
 
 
 gboolean
-moo_value_convert_from_string (const char *string,
-                               GValue     *val)
+_moo_value_convert_from_string (const char *string,
+                                GValue     *val)
 {
     GValue str_val;
     gboolean result;
@@ -746,7 +742,7 @@ moo_value_convert_from_string (const char *string,
     str_val.g_type = 0;
     g_value_init (&str_val, G_TYPE_STRING);
     g_value_set_static_string (&str_val, string);
-    result = moo_value_convert (&str_val, val);
+    result = _moo_value_convert (&str_val, val);
     g_value_unset (&str_val);
 
     return result;
@@ -754,8 +750,8 @@ moo_value_convert_from_string (const char *string,
 
 
 int
-moo_convert_string_to_int (const char     *string,
-                           int             default_val)
+_moo_convert_string_to_int (const char *string,
+                            int         default_val)
 {
     int int_val;
 
@@ -765,7 +761,7 @@ moo_convert_string_to_int (const char     *string,
         str_val.g_type = 0;
         g_value_init (&str_val, G_TYPE_STRING);
         g_value_set_static_string (&str_val, string);
-        int_val = moo_value_convert_to_int (&str_val);
+        int_val = _moo_value_convert_to_int (&str_val);
         g_value_unset (&str_val);
     }
     else
@@ -778,8 +774,8 @@ moo_convert_string_to_int (const char     *string,
 
 
 gboolean
-moo_convert_string_to_bool (const char     *string,
-                            gboolean        default_val)
+_moo_convert_string_to_bool (const char *string,
+                             gboolean    default_val)
 {
     gboolean bool_val;
 
@@ -789,7 +785,7 @@ moo_convert_string_to_bool (const char     *string,
         str_val.g_type = 0;
         g_value_init (&str_val, G_TYPE_STRING);
         g_value_set_static_string (&str_val, string);
-        bool_val = moo_value_convert_to_bool (&str_val);
+        bool_val = _moo_value_convert_to_bool (&str_val);
         g_value_unset (&str_val);
     }
     else
@@ -802,7 +798,7 @@ moo_convert_string_to_bool (const char     *string,
 
 
 const char*
-moo_convert_bool_to_string (gboolean        value)
+_moo_convert_bool_to_string (gboolean value)
 {
     GValue bool_val;
 
@@ -810,12 +806,12 @@ moo_convert_bool_to_string (gboolean        value)
     g_value_init (&bool_val, G_TYPE_BOOLEAN);
     g_value_set_boolean (&bool_val, value);
 
-    return moo_value_convert_to_string (&bool_val);
+    return _moo_value_convert_to_string (&bool_val);
 }
 
 
 const char*
-moo_convert_int_to_string (int             value)
+_moo_convert_int_to_string (int value)
 {
     GValue int_val;
 
@@ -823,23 +819,23 @@ moo_convert_int_to_string (int             value)
     g_value_init (&int_val, G_TYPE_INT);
     g_value_set_int (&int_val, value);
 
-    return moo_value_convert_to_string (&int_val);
+    return _moo_value_convert_to_string (&int_val);
 }
 
 
 gboolean
-moo_value_change_type (GValue         *val,
-                       GType           new_type)
+_moo_value_change_type (GValue *val,
+                        GType   new_type)
 {
     GValue tmp;
     gboolean result;
 
     g_return_val_if_fail (G_IS_VALUE (val), FALSE);
-    g_return_val_if_fail (moo_value_type_supported (new_type), FALSE);
+    g_return_val_if_fail (_moo_value_type_supported (new_type), FALSE);
 
     tmp.g_type = 0;
     g_value_init (&tmp, new_type);
-    result = moo_value_convert (val, &tmp);
+    result = _moo_value_convert (val, &tmp);
 
     if (result)
     {
@@ -859,19 +855,19 @@ static void         copy_param          (GParameter *dest,
                                          GParameter *src);
 
 GParameter*
-moo_param_array_collect (GType       type,
-                         MooLookupProperty lookup_func,
-                         guint      *len,
-                         const char *first_prop_name,
-                         ...)
+_moo_param_array_collect (GType       type,
+                          MooLookupProperty lookup_func,
+                          guint      *len,
+                          const char *first_prop_name,
+                          ...)
 {
     GParameter *array;
     va_list var_args;
 
     va_start (var_args, first_prop_name);
-    array = moo_param_array_collect_valist (type, lookup_func, len,
-                                            first_prop_name,
-                                            var_args);
+    array = _moo_param_array_collect_valist (type, lookup_func, len,
+                                             first_prop_name,
+                                             var_args);
     va_end (var_args);
 
     return array;
@@ -879,20 +875,20 @@ moo_param_array_collect (GType       type,
 
 
 GParameter*
-moo_param_array_add (GType       type,
-                     GParameter *src,
-                     guint       len,
-                     guint      *new_len,
-                     const char *first_prop_name,
-                     ...)
+_moo_param_array_add (GType       type,
+                      GParameter *src,
+                      guint       len,
+                      guint      *new_len,
+                      const char *first_prop_name,
+                      ...)
 {
     GParameter *copy;
     va_list var_args;
 
     va_start (var_args, first_prop_name);
-    copy = moo_param_array_add_valist (type, src, len, new_len,
-                                       first_prop_name,
-                                       var_args);
+    copy = _moo_param_array_add_valist (type, src, len, new_len,
+                                        first_prop_name,
+                                        var_args);
     va_end (var_args);
 
     return copy;
@@ -900,19 +896,19 @@ moo_param_array_add (GType       type,
 
 
 GParameter*
-moo_param_array_add_type (GParameter *src,
-                          guint       len,
-                          guint      *new_len,
-                          const char *first_prop_name,
-                          ...)
+_moo_param_array_add_type (GParameter *src,
+                           guint       len,
+                           guint      *new_len,
+                           const char *first_prop_name,
+                           ...)
 {
     GParameter *copy;
     va_list var_args;
 
     va_start (var_args, first_prop_name);
-    copy = moo_param_array_add_type_valist (src, len, new_len,
-                                            first_prop_name,
-                                            var_args);
+    copy = _moo_param_array_add_type_valist (src, len, new_len,
+                                             first_prop_name,
+                                             var_args);
     va_end (var_args);
 
     return copy;
@@ -920,12 +916,12 @@ moo_param_array_add_type (GParameter *src,
 
 
 GParameter*
-moo_param_array_add_valist (GType       type,
-                            GParameter *src,
-                            guint       len,
-                            guint      *new_len,
-                            const char *first_prop_name,
-                            va_list     var_args)
+_moo_param_array_add_valist (GType       type,
+                             GParameter *src,
+                             guint       len,
+                             guint      *new_len,
+                             const char *first_prop_name,
+                             va_list     var_args)
 {
     const char *name;
     GArray *copy;
@@ -954,7 +950,7 @@ moo_param_array_add_valist (GType       type,
         if (!pspec) {
             g_warning ("%s: class '%s' doesn't have property '%s'",
                        G_STRLOC, g_type_name (type), name);
-            moo_param_array_free ((GParameter*)copy->data, copy->len);
+            _moo_param_array_free ((GParameter*)copy->data, copy->len);
             g_array_free (copy, FALSE);
             return NULL;
         }
@@ -968,7 +964,7 @@ moo_param_array_add_valist (GType       type,
             g_free (error);
             g_value_unset (&param.value);
             g_free ((char*)param.name);
-            moo_param_array_free ((GParameter*)copy->data, copy->len);
+            _moo_param_array_free ((GParameter*)copy->data, copy->len);
             g_array_free (copy, FALSE);
             return NULL;
         }
@@ -984,11 +980,11 @@ moo_param_array_add_valist (GType       type,
 
 
 GParameter*
-moo_param_array_add_type_valist (GParameter *src,
-                                 guint       len,
-                                 guint      *new_len,
-                                 const char *first_prop_name,
-                                 va_list     var_args)
+_moo_param_array_add_type_valist (GParameter *src,
+                                  guint       len,
+                                  guint      *new_len,
+                                  const char *first_prop_name,
+                                  va_list     var_args)
 {
     const char *name;
     GArray *copy;
@@ -1015,7 +1011,7 @@ moo_param_array_add_type_valist (GParameter *src,
         if (G_TYPE_FUNDAMENTAL (type) == G_TYPE_INVALID)
         {
             g_warning ("%s: invalid type id passed", G_STRLOC);
-            moo_param_array_free ((GParameter*)copy->data, copy->len);
+            _moo_param_array_free ((GParameter*)copy->data, copy->len);
             g_array_free (copy, FALSE);
             return NULL;
         }
@@ -1030,7 +1026,7 @@ moo_param_array_add_type_valist (GParameter *src,
             g_free (error);
             g_value_unset (&param.value);
             g_free ((char*)param.name);
-            moo_param_array_free ((GParameter*)copy->data, copy->len);
+            _moo_param_array_free ((GParameter*)copy->data, copy->len);
             g_array_free (copy, FALSE);
             return NULL;
         }
@@ -1046,11 +1042,11 @@ moo_param_array_add_type_valist (GParameter *src,
 
 
 GParameter*
-moo_param_array_collect_valist (GType       type,
-                                MooLookupProperty lookup_func,
-                                guint      *len,
-                                const char *first_prop_name,
-                                va_list     var_args)
+_moo_param_array_collect_valist (GType       type,
+                                 MooLookupProperty lookup_func,
+                                 guint      *len,
+                                 const char *first_prop_name,
+                                 va_list     var_args)
 {
     GObjectClass *klass;
     GArray *params = NULL;
@@ -1077,7 +1073,7 @@ moo_param_array_collect_valist (GType       type,
         {
             g_warning ("%s: class '%s' doesn't have property '%s'",
                        G_STRLOC, g_type_name (type), prop_name);
-            moo_param_array_free ((GParameter*)params->data, params->len);
+            _moo_param_array_free ((GParameter*)params->data, params->len);
             g_array_free (params, FALSE);
             g_type_class_unref (klass);
             return NULL;
@@ -1094,7 +1090,7 @@ moo_param_array_collect_valist (GType       type,
             g_free (error);
             g_value_unset (&param.value);
             g_free ((char*)param.name);
-            moo_param_array_free ((GParameter*)params->data, params->len);
+            _moo_param_array_free ((GParameter*)params->data, params->len);
             g_array_free (params, FALSE);
             g_type_class_unref (klass);
             return NULL;
@@ -1113,8 +1109,8 @@ moo_param_array_collect_valist (GType       type,
 
 
 void
-moo_param_array_free (GParameter *array,
-                      guint       len)
+_moo_param_array_free (GParameter *array,
+                       guint       len)
 {
     guint i;
 
@@ -1163,16 +1159,16 @@ void_closure_new (void)
 
 
 guint
-moo_signal_new_cb (const gchar        *signal_name,
-                   GType               itype,
-                   GSignalFlags        signal_flags,
-                   GCallback           handler,
-                   GSignalAccumulator  accumulator,
-                   gpointer            accu_data,
-                   GSignalCMarshaller  c_marshaller,
-                   GType               return_type,
-                   guint               n_params,
-                   ...)
+_moo_signal_new_cb (const gchar        *signal_name,
+                    GType               itype,
+                    GSignalFlags        signal_flags,
+                    GCallback           handler,
+                    GSignalAccumulator  accumulator,
+                    gpointer            accu_data,
+                    GSignalCMarshaller  c_marshaller,
+                    GType               return_type,
+                    guint               n_params,
+                    ...)
 {
     va_list args;
     guint signal_id;
@@ -1207,8 +1203,8 @@ static guint watch_last_id = 0;
 
 #define Watch MooObjectWatch
 #define WatchClass MooObjectWatchClass
-#define watch_new moo_object_watch_new
-#define watch_alloc moo_object_watch_alloc
+#define watch_new _moo_object_watch_new
+#define watch_alloc _moo_object_watch_alloc
 
 
 static void
@@ -1368,13 +1364,13 @@ prop_watch_destroy (Watch *watch)
 
 
 guint
-moo_add_property_watch (gpointer            target,
-                        const char         *target_prop,
-                        gpointer            source,
-                        const char         *source_prop,
-                        MooTransformPropFunc transform,
-                        gpointer            transform_data,
-                        GDestroyNotify      destroy_notify)
+_moo_add_property_watch (gpointer            target,
+                         const char         *target_prop,
+                         gpointer            source,
+                         const char         *source_prop,
+                         MooTransformPropFunc transform,
+                         gpointer            transform_data,
+                         GDestroyNotify      destroy_notify)
 {
     PropWatch *watch;
 
@@ -1440,18 +1436,18 @@ prop_watch_check (PropWatch *watch)
 
 
 void
-moo_copy_boolean (GValue             *target,
-                  const GValue       *source,
-                  G_GNUC_UNUSED gpointer dummy)
+_moo_copy_boolean (GValue             *target,
+                   const GValue       *source,
+                   G_GNUC_UNUSED gpointer dummy)
 {
     g_value_set_boolean (target, g_value_get_boolean (source) ? TRUE : FALSE);
 }
 
 
 void
-moo_invert_boolean (GValue             *target,
-                    const GValue       *source,
-                    G_GNUC_UNUSED gpointer dummy)
+_moo_invert_boolean (GValue             *target,
+                     const GValue       *source,
+                     G_GNUC_UNUSED gpointer dummy)
 {
     g_value_set_boolean (target, !g_value_get_boolean (source));
 }
@@ -1469,20 +1465,20 @@ moo_bind_bool_property (gpointer            target,
     g_return_val_if_fail (target_prop && source_prop, 0);
 
     if (invert)
-        return moo_add_property_watch (target, target_prop, source, source_prop,
-                                       moo_invert_boolean, NULL, NULL);
+        return _moo_add_property_watch (target, target_prop, source, source_prop,
+                                        _moo_invert_boolean, NULL, NULL);
     else
-        return moo_add_property_watch (target, target_prop, source, source_prop,
-                                       moo_copy_boolean, NULL, NULL);
+        return _moo_add_property_watch (target, target_prop, source, source_prop,
+                                        _moo_copy_boolean, NULL, NULL);
 }
 
 
 gboolean
-moo_sync_bool_property (gpointer            slave,
-                        const char         *slave_prop,
-                        gpointer            master,
-                        const char         *master_prop,
-                        gboolean            invert)
+_moo_sync_bool_property (gpointer            slave,
+                         const char         *slave_prop,
+                         gpointer            master,
+                         const char         *master_prop,
+                         gboolean            invert)
 {
     guint id1 = 0, id2 = 0;
 
@@ -1493,7 +1489,7 @@ moo_sync_bool_property (gpointer            slave,
         id2 = moo_bind_bool_property (master, master_prop, slave, slave_prop, invert);
 
         if (!id2)
-            moo_watch_remove (id1);
+            _moo_watch_remove (id1);
     }
 
     return id1 && id2;
@@ -1516,7 +1512,7 @@ moo_bind_sensitive (GtkWidget          *btn,
 
 
 gboolean
-moo_watch_remove (guint watch_id)
+_moo_watch_remove (guint watch_id)
 {
     Watch *watch;
 
@@ -1535,8 +1531,8 @@ moo_watch_remove (guint watch_id)
 
 
 void
-moo_watch_add_signal (guint       watch_id,
-                      const char *source_signal)
+_moo_watch_add_signal (guint       watch_id,
+                       const char *source_signal)
 {
     Watch *watch;
 
@@ -1554,15 +1550,15 @@ moo_watch_add_signal (guint       watch_id,
 
 
 void
-moo_watch_add_property (guint       watch_id,
-                        const char *source_prop)
+_moo_watch_add_property (guint       watch_id,
+                         const char *source_prop)
 {
     char *signal;
 
     g_return_if_fail (source_prop != NULL);
 
     signal = g_strdup_printf ("notify::%s", source_prop);
-    moo_watch_add_signal (watch_id, signal);
+    _moo_watch_add_signal (watch_id, signal);
 
     g_free (signal);
 }
@@ -1684,10 +1680,10 @@ signal_watch_invoke (SignalWatch *watch)
 
 
 guint
-moo_bind_signal (gpointer            target,
-                 const char         *target_signal,
-                 gpointer            source,
-                 const char         *source_signal)
+_moo_bind_signal (gpointer            target,
+                  const char         *target_signal,
+                  gpointer            source,
+                  const char         *source_signal)
 {
     SignalWatch *watch;
 
@@ -1716,22 +1712,22 @@ struct _MooData
 
 
 GType
-moo_ptr_get_type (void)
+_moo_ptr_get_type (void)
 {
     static GType type = 0;
 
     if (!type)
         type = g_boxed_type_register_static ("MooPtr",
-                                             (GBoxedCopyFunc) moo_ptr_ref,
-                                             (GBoxedFreeFunc) moo_ptr_unref);
+                                             (GBoxedCopyFunc) _moo_ptr_ref,
+                                             (GBoxedFreeFunc) _moo_ptr_unref);
 
     return type;
 }
 
 
 MooPtr*
-moo_ptr_new (gpointer        data,
-             GDestroyNotify  free_func)
+_moo_ptr_new (gpointer        data,
+              GDestroyNotify  free_func)
 {
     MooPtr *ptr;
 
@@ -1748,7 +1744,7 @@ moo_ptr_new (gpointer        data,
 
 
 MooPtr *
-moo_ptr_ref (MooPtr *ptr)
+_moo_ptr_ref (MooPtr *ptr)
 {
     if (ptr)
         ptr->ref_count++;
@@ -1757,7 +1753,7 @@ moo_ptr_ref (MooPtr *ptr)
 
 
 void
-moo_ptr_unref (MooPtr *ptr)
+_moo_ptr_unref (MooPtr *ptr)
 {
     if (ptr && !--(ptr->ref_count))
     {
@@ -1769,14 +1765,14 @@ moo_ptr_unref (MooPtr *ptr)
 
 
 GType
-moo_data_get_type (void)
+_moo_data_get_type (void)
 {
     static GType type = 0;
 
     if (!type)
         type = g_boxed_type_register_static ("MooData",
-                                             (GBoxedCopyFunc) moo_data_ref,
-                                             (GBoxedFreeFunc) moo_data_unref);
+                                             (GBoxedCopyFunc) _moo_data_ref,
+                                             (GBoxedFreeFunc) _moo_data_unref);
 
     return type;
 }
@@ -1810,9 +1806,9 @@ copy_gvalue (const GValue *val)
 
 
 MooData *
-moo_data_new (GHashFunc       hash_func,
-              GEqualFunc      key_equal_func,
-              GDestroyNotify  key_destroy_func)
+_moo_data_new (GHashFunc       hash_func,
+               GEqualFunc      key_equal_func,
+               GDestroyNotify  key_destroy_func)
 {
     MooData *data;
 
@@ -1834,7 +1830,7 @@ moo_data_new (GHashFunc       hash_func,
 
 
 MooData *
-moo_data_ref (MooData *data)
+_moo_data_ref (MooData *data)
 {
     if (data)
         data->ref_count++;
@@ -1843,7 +1839,7 @@ moo_data_ref (MooData *data)
 
 
 void
-moo_data_unref (MooData *data)
+_moo_data_unref (MooData *data)
 {
     if (data && !--(data->ref_count))
     {
@@ -1854,9 +1850,9 @@ moo_data_unref (MooData *data)
 
 
 void
-moo_data_insert_value (MooData        *data,
-                       gpointer        key,
-                       const GValue   *value)
+_moo_data_insert_value (MooData        *data,
+                        gpointer        key,
+                        const GValue   *value)
 {
     g_return_if_fail (data != NULL);
     g_return_if_fail (G_IS_VALUE (value));
@@ -1865,10 +1861,10 @@ moo_data_insert_value (MooData        *data,
 
 
 void
-moo_data_insert_ptr (MooData        *data,
-                     gpointer        key,
-                     gpointer        value,
-                     GDestroyNotify  destroy)
+_moo_data_insert_ptr (MooData        *data,
+                      gpointer        key,
+                      gpointer        value,
+                      GDestroyNotify  destroy)
 {
     MooPtr *ptr;
     GValue gval;
@@ -1876,21 +1872,21 @@ moo_data_insert_ptr (MooData        *data,
     g_return_if_fail (data != NULL);
     g_return_if_fail (value != NULL);
 
-    ptr = moo_ptr_new (value, destroy);
+    ptr = _moo_ptr_new (value, destroy);
     gval.g_type = 0;
     g_value_init (&gval, MOO_TYPE_PTR);
     g_value_set_boxed (&gval, ptr);
 
-    moo_data_insert_value (data, key, &gval);
+    _moo_data_insert_value (data, key, &gval);
 
     g_value_unset (&gval);
-    moo_ptr_unref (ptr);
+    _moo_ptr_unref (ptr);
 }
 
 
 void
-moo_data_remove (MooData  *data,
-                 gpointer  key)
+_moo_data_remove (MooData  *data,
+                  gpointer  key)
 {
     g_return_if_fail (data != NULL);
     g_hash_table_remove (data->hash, key);
@@ -1898,7 +1894,7 @@ moo_data_remove (MooData  *data,
 
 
 void
-moo_data_clear (MooData *data)
+_moo_data_clear (MooData *data)
 {
     g_return_if_fail (data != NULL);
 
@@ -1912,7 +1908,7 @@ moo_data_clear (MooData *data)
 
 
 guint
-moo_data_size (MooData *data)
+_moo_data_size (MooData *data)
 {
     g_return_val_if_fail (data != NULL, 0);
     return g_hash_table_size (data->hash);
@@ -1920,8 +1916,8 @@ moo_data_size (MooData *data)
 
 
 gboolean
-moo_data_has_key (MooData  *data,
-                  gpointer  key)
+_moo_data_has_key (MooData  *data,
+                   gpointer  key)
 {
     g_return_val_if_fail (data != NULL, FALSE);
     return g_hash_table_lookup (data->hash, key) != NULL;
@@ -1929,8 +1925,8 @@ moo_data_has_key (MooData  *data,
 
 
 GType
-moo_data_get_value_type (MooData  *data,
-                         gpointer  key)
+_moo_data_get_value_type (MooData  *data,
+                          gpointer  key)
 {
     GValue *value;
     g_return_val_if_fail (data != NULL, 0);
@@ -1940,9 +1936,9 @@ moo_data_get_value_type (MooData  *data,
 
 
 gboolean
-moo_data_get_value (MooData        *data,
-                    gpointer        key,
-                    GValue         *dest)
+_moo_data_get_value (MooData        *data,
+                     gpointer        key,
+                     GValue         *dest)
 {
     GValue *value;
 
@@ -1962,8 +1958,8 @@ moo_data_get_value (MooData        *data,
 
 
 gpointer
-moo_data_get_ptr (MooData  *data,
-                  gpointer  key)
+_moo_data_get_ptr (MooData  *data,
+                   gpointer  key)
 {
     MooPtr *ptr;
     GValue *value;

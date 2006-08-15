@@ -496,7 +496,7 @@ radio_button_get_value (GtkWidget *button,
     val.g_type = 0;
     g_value_init (&val, type);
 
-    if (moo_value_convert_from_string (string, &val))
+    if (_moo_value_convert_from_string (string, &val))
         return g_value_get_enum (&val);
 
     g_return_val_if_reached (-1);

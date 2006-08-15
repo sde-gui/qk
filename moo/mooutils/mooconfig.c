@@ -1152,7 +1152,7 @@ moo_config_get_bool (MooConfig      *config,
     string = moo_config_item_get (item, key);
     default_val = get_default_bool (config, key);
 
-    return moo_convert_string_to_bool (string, default_val);
+    return _moo_convert_string_to_bool (string, default_val);
 }
 
 

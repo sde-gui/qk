@@ -241,13 +241,13 @@ moo_entry_class_init (MooEntryClass *klass)
                               G_TYPE_NONE, 0);
 
     signals[DELETE_TO_START] =
-            moo_signal_new_cb ("delete-to-start",
-                               G_OBJECT_CLASS_TYPE (klass),
-                               G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                               G_CALLBACK (moo_entry_delete_to_start),
-                               NULL, NULL,
-                               _moo_marshal_VOID__VOID,
-                               G_TYPE_NONE, 0);
+            _moo_signal_new_cb ("delete-to-start",
+                                G_OBJECT_CLASS_TYPE (klass),
+                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                                G_CALLBACK (moo_entry_delete_to_start),
+                                NULL, NULL,
+                                _moo_marshal_VOID__VOID,
+                                G_TYPE_NONE, 0);
 
     binding_set = gtk_binding_set_by_class (klass);
     gtk_binding_entry_add_signal (binding_set, GDK_z,

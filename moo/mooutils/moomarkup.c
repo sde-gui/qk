@@ -726,8 +726,8 @@ moo_markup_get_int_prop (MooMarkupNode      *node,
 {
     g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (node), default_val);
     g_return_val_if_fail (prop_name != NULL, default_val);
-    return moo_convert_string_to_int (moo_markup_get_prop (node, prop_name),
-                                      default_val);
+    return _moo_convert_string_to_int (moo_markup_get_prop (node, prop_name),
+                                       default_val);
 }
 
 
@@ -737,7 +737,7 @@ moo_markup_set_int_prop (MooMarkupNode      *node,
                          int                 val)
 {
     moo_markup_set_prop (node, prop_name,
-                         moo_convert_int_to_string (val));
+                         _moo_convert_int_to_string (val));
 }
 
 
@@ -748,8 +748,8 @@ moo_markup_get_bool_prop (MooMarkupNode      *node,
 {
     g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (node), default_val);
     g_return_val_if_fail (prop_name != NULL, default_val);
-    return moo_convert_string_to_bool (moo_markup_get_prop (node, prop_name),
-                                       default_val);
+    return _moo_convert_string_to_bool (moo_markup_get_prop (node, prop_name),
+                                        default_val);
 }
 
 
@@ -759,7 +759,7 @@ moo_markup_set_bool_prop (MooMarkupNode      *node,
                           gboolean            val)
 {
     moo_markup_set_prop (node, prop_name,
-                         moo_convert_bool_to_string (val));
+                         _moo_convert_bool_to_string (val));
 }
 
 

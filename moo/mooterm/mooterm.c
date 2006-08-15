@@ -220,14 +220,14 @@ static void moo_term_class_init (MooTermClass *klass)
                           GTK_TYPE_MENU);
 
     signals[SET_WIDTH] =
-            moo_signal_new_cb ("set-width",
-                               G_OBJECT_CLASS_TYPE (gobject_class),
-                               G_SIGNAL_RUN_LAST,
-                               NULL, /* handler */
-                               NULL, NULL,
-                               _moo_marshal_VOID__UINT,
-                               G_TYPE_NONE, 1,
-                               G_TYPE_UINT);
+            _moo_signal_new_cb ("set-width",
+                                G_OBJECT_CLASS_TYPE (gobject_class),
+                                G_SIGNAL_RUN_LAST,
+                                NULL, /* handler */
+                                NULL, NULL,
+                                _moo_marshal_VOID__UINT,
+                                G_TYPE_NONE, 1,
+                                G_TYPE_UINT);
 
     signals[APPLY_SETTINGS] =
             g_signal_new ("apply-settings",

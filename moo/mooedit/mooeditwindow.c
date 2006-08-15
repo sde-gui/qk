@@ -2422,7 +2422,7 @@ save_pane_params (const char *pane_id,
 
     if (params->position >= 0)
         moo_markup_set_prop (node, PROP_PANE_POSITION,
-                             moo_convert_int_to_string (params->position));
+                             _moo_convert_int_to_string (params->position));
     else
         moo_markup_set_prop (node, PROP_PANE_POSITION, NULL);
 

@@ -1295,7 +1295,7 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
                 goto error;
             }
 
-            action_type = moo_value_get_gtype (&param.value);
+            action_type = _moo_value_get_gtype (&param.value);
 
             if (!g_type_is_a (action_type, MOO_TYPE_ACTION_BASE))
             {
@@ -1379,8 +1379,7 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
             goto error;
         }
 
-        moo_param_array_free ((GParameter*) action_params->data,
-                               action_params->len);
+        _moo_param_array_free ((GParameter*) action_params->data, action_params->len);
         g_array_free (action_params, FALSE);
         action_params = NULL;
 

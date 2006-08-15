@@ -519,13 +519,13 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                           G_TYPE_BOOLEAN, 0);
 
     signals[DELETE_SELECTION] =
-            moo_signal_new_cb ("delete-selection",
-                               G_OBJECT_CLASS_TYPE (klass),
-                               G_SIGNAL_RUN_LAST,
-                               G_CALLBACK (moo_text_view_delete_selection),
-                               NULL, NULL,
-                               _moo_marshal_VOID__VOID,
-                               G_TYPE_NONE, 0);
+            _moo_signal_new_cb ("delete-selection",
+                                G_OBJECT_CLASS_TYPE (klass),
+                                G_SIGNAL_RUN_LAST,
+                                G_CALLBACK (moo_text_view_delete_selection),
+                                NULL, NULL,
+                                _moo_marshal_VOID__VOID,
+                                G_TYPE_NONE, 0);
 
     signals[FIND_WORD_AT_CURSOR] =
             g_signal_new ("find-word-at-cursor",
@@ -594,13 +594,13 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                           G_TYPE_UINT);
 
     signals[CURSOR_MOVED] =
-            moo_signal_new_cb ("cursor-moved",
-                               G_OBJECT_CLASS_TYPE (klass),
-                               G_SIGNAL_RUN_LAST,
-                               NULL, NULL, NULL,
-                               _moo_marshal_VOID__BOXED,
-                               G_TYPE_NONE, 1,
-                               GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
+            _moo_signal_new_cb ("cursor-moved",
+                                G_OBJECT_CLASS_TYPE (klass),
+                                G_SIGNAL_RUN_LAST,
+                                NULL, NULL, NULL,
+                                _moo_marshal_VOID__BOXED,
+                                G_TYPE_NONE, 1,
+                                GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
 
     signals[SET_SCHEME] =
             g_signal_new ("set-scheme",
@@ -623,13 +623,13 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                           G_TYPE_INT);
 
     signals[START_QUICK_SEARCH] =
-            moo_signal_new_cb ("start-quick-search",
-                               G_OBJECT_CLASS_TYPE (klass),
-                               G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                               G_CALLBACK (start_quick_search),
-                               NULL, NULL,
-                               _moo_marshal_BOOL__VOID,
-                               G_TYPE_BOOLEAN, 0);
+            _moo_signal_new_cb ("start-quick-search",
+                                G_OBJECT_CLASS_TYPE (klass),
+                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                                G_CALLBACK (start_quick_search),
+                                NULL, NULL,
+                                _moo_marshal_BOOL__VOID,
+                                G_TYPE_BOOLEAN, 0);
 
     binding_set = gtk_binding_set_by_class (klass);
     gtk_binding_entry_add_signal (binding_set, GDK_z, GDK_CONTROL_MASK,

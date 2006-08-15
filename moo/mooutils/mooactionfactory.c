@@ -29,7 +29,7 @@ moo_action_factory_dispose (GObject *object)
 
     if (factory->props)
     {
-        moo_param_array_free (factory->props, factory->n_props);
+        _moo_param_array_free (factory->props, factory->n_props);
         factory->props = NULL;
         factory->n_props = 0;
     }
@@ -138,7 +138,7 @@ collect_valist (GType        type,
             g_warning ("%s: could not find property '%s' for class '%s'",
                        G_STRLOC, prop_name, g_type_name (type));
 
-            moo_param_array_free ((GParameter*) props->data, props->len);
+            _moo_param_array_free ((GParameter*) props->data, props->len);
             g_array_free (props, FALSE);
 
             g_type_class_unref (klass);
@@ -157,7 +157,7 @@ collect_valist (GType        type,
             g_value_unset (&param.value);
             g_free ((char*)param.name);
 
-            moo_param_array_free ((GParameter*) props->data, props->len);
+            _moo_param_array_free ((GParameter*) props->data, props->len);
             g_array_free (props, FALSE);
 
             g_type_class_unref (klass);
@@ -283,8 +283,8 @@ moo_action_factory_create_action (MooActionFactory   *factory,
 
     object = g_object_newv (factory->action_type, n_props, props);
 
-    moo_param_array_free (props, n_props);
-    moo_param_array_free (add_props, n_add_props);
+    _moo_param_array_free (props, n_props);
+    _moo_param_array_free (add_props, n_add_props);
 
     return object;
 }
@@ -336,7 +336,7 @@ moo_action_factory_new_a (GType       action_type,
             g_warning ("%s: could not find property '%s' for class '%s'",
                        G_STRLOC, prop_name, g_type_name (action_type));
 
-            moo_param_array_free ((GParameter*) props->data, props->len);
+            _moo_param_array_free ((GParameter*) props->data, props->len);
             g_array_free (props, FALSE);
 
             g_type_class_unref (klass);

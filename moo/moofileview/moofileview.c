@@ -595,7 +595,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                           GTK_TYPE_MENU);
 
     signals[GO_UP] =
-            moo_signal_new_cb ("go-up",
+            _moo_signal_new_cb("go-up",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                                G_CALLBACK (moo_file_view_go_up),
@@ -604,7 +604,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                G_TYPE_NONE, 0);
 
     signals[GO_FORWARD] =
-            moo_signal_new_cb ("go-forward",
+            _moo_signal_new_cb("go-forward",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                                G_CALLBACK (moo_file_view_go_forward),
@@ -613,7 +613,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                G_TYPE_NONE, 0);
 
     signals[GO_BACK] =
-            moo_signal_new_cb ("go-back",
+            _moo_signal_new_cb("go-back",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                                G_CALLBACK (moo_file_view_go_back),
@@ -622,7 +622,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                G_TYPE_NONE, 0);
 
     signals[GO_HOME] =
-            moo_signal_new_cb ("go-home",
+            _moo_signal_new_cb("go-home",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                                G_CALLBACK (moo_file_view_go_home),
@@ -631,7 +631,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                G_TYPE_NONE, 0);
 
     signals[FOCUS_TO_FILTER_ENTRY] =
-            moo_signal_new_cb ("focus-to-filter-entry",
+            _moo_signal_new_cb("focus-to-filter-entry",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                                G_CALLBACK (focus_to_filter_entry),
@@ -640,7 +640,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                G_TYPE_NONE, 0);
 
     signals[FOCUS_TO_FILE_VIEW] =
-            moo_signal_new_cb ("focus-to-file-view",
+            _moo_signal_new_cb("focus-to-file-view",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                                G_CALLBACK (focus_to_file_view),
@@ -649,7 +649,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                G_TYPE_NONE, 0);
 
     signals[TOGGLE_SHOW_HIDDEN] =
-            moo_signal_new_cb ("toggle-show-hidden",
+            _moo_signal_new_cb("toggle-show-hidden",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                                G_CALLBACK (toggle_show_hidden),
@@ -658,7 +658,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                G_TYPE_NONE, 0);
 
     signals[DELETE_TO_CURSOR] =
-            moo_signal_new_cb ("delete-to-cursor",
+            _moo_signal_new_cb("delete-to-cursor",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                                G_CALLBACK (path_entry_delete_to_cursor),
@@ -667,7 +667,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                G_TYPE_NONE, 0);
 
     signals[DELETE_SELECTED] =
-            moo_signal_new_cb ("delete-selected",
+            _moo_signal_new_cb("delete-selected",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                                G_CALLBACK (file_view_delete_selected),
@@ -676,7 +676,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                G_TYPE_NONE, 0);
 
     signals[CREATE_FOLDER] =
-            moo_signal_new_cb ("create-folder",
+            _moo_signal_new_cb("create-folder",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                                G_CALLBACK (file_view_create_folder),
@@ -685,7 +685,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                G_TYPE_NONE, 0);
 
     signals[PROPERTIES_DIALOG] =
-             moo_signal_new_cb ("properties-dialog",
+             _moo_signal_new_cb("properties-dialog",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                                G_CALLBACK (file_view_properties_dialog),
@@ -694,7 +694,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                G_TYPE_NONE, 0);
 
     signals[RELOAD] =
-            moo_signal_new_cb ("reload",
+            _moo_signal_new_cb("reload",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                                G_CALLBACK (moo_file_view_reload),
@@ -735,7 +735,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                           G_TYPE_UINT);
 
     signals[CUT_CLIPBOARD] =
-            moo_signal_new_cb ("cut-clipboard",
+            _moo_signal_new_cb("cut-clipboard",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                                G_CALLBACK (file_view_cut_clipboard),
@@ -744,7 +744,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                G_TYPE_NONE, 0);
 
     signals[COPY_CLIPBOARD] =
-            moo_signal_new_cb ("copy-clipboard",
+            _moo_signal_new_cb("copy-clipboard",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                                G_CALLBACK (file_view_copy_clipboard),
@@ -753,7 +753,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                G_TYPE_NONE, 0);
 
     signals[PASTE_CLIPBOARD] =
-            moo_signal_new_cb ("paste-clipboard",
+            _moo_signal_new_cb("paste-clipboard",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                                G_CALLBACK (file_view_paste_clipboard),

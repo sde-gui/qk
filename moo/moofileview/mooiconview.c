@@ -335,24 +335,24 @@ _moo_icon_view_class_init (MooIconViewClass *klass)
     widget_class->set_scroll_adjustments_signal = signals[SET_SCROLL_ADJUSTMENTS];
 
     signals[ACTIVATE_ITEM_AT_CURSOR] =
-            moo_signal_new_cb ("activate-item-at-cursor",
-                               G_OBJECT_CLASS_TYPE (klass),
-                               G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                               G_CALLBACK (activate_item_at_cursor),
-                               NULL, NULL,
-                               _moo_marshal_VOID__VOID,
-                               G_TYPE_NONE, 0);
+            _moo_signal_new_cb ("activate-item-at-cursor",
+                                G_OBJECT_CLASS_TYPE (klass),
+                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                                G_CALLBACK (activate_item_at_cursor),
+                                NULL, NULL,
+                                _moo_marshal_VOID__VOID,
+                                G_TYPE_NONE, 0);
 
     signals[MOVE_CURSOR] =
-            moo_signal_new_cb ("move-cursor",
-                               G_OBJECT_CLASS_TYPE (klass),
-                               G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                               G_CALLBACK (move_cursor),
-                               NULL, NULL,
-                               _moo_marshal_BOOLEAN__ENUM_INT_BOOLEAN,
-                               G_TYPE_BOOLEAN, 3,
-                               GTK_TYPE_MOVEMENT_STEP,
-                               G_TYPE_INT, G_TYPE_BOOLEAN);
+            _moo_signal_new_cb ("move-cursor",
+                                G_OBJECT_CLASS_TYPE (klass),
+                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                                G_CALLBACK (move_cursor),
+                                NULL, NULL,
+                                _moo_marshal_BOOLEAN__ENUM_INT_BOOLEAN,
+                                G_TYPE_BOOLEAN, 3,
+                                GTK_TYPE_MOVEMENT_STEP,
+                                G_TYPE_INT, G_TYPE_BOOLEAN);
 
     binding_set = gtk_binding_set_by_class (klass);
 

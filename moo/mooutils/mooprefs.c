@@ -211,7 +211,7 @@ moo_prefs_new_key (const char     *key,
                    const GValue   *default_value)
 {
     g_return_if_fail (key != NULL);
-    g_return_if_fail (moo_value_type_supported (value_type));
+    g_return_if_fail (_moo_value_type_supported (value_type));
     g_return_if_fail (default_value != NULL);
     g_return_if_fail (G_VALUE_TYPE (default_value) == value_type);
 
@@ -313,7 +313,7 @@ prefs_new_key (MooPrefs       *prefs,
 
     g_return_if_fail (key && key[0]);
     g_return_if_fail (g_utf8_validate (key, -1, NULL));
-    g_return_if_fail (moo_value_type_supported (type));
+    g_return_if_fail (_moo_value_type_supported (type));
     g_return_if_fail (G_IS_VALUE (default_value));
     g_return_if_fail (G_VALUE_TYPE (default_value) == type);
 
@@ -365,7 +365,7 @@ prefs_new_key_from_string (MooPrefs     *prefs,
     }
     else
     {
-        moo_value_convert (&val, &item->value);
+        _moo_value_convert (&val, &item->value);
     }
 
     g_value_unset (&val);
@@ -496,7 +496,7 @@ item_new (GType           type,
 {
     PrefsItem *item;
 
-    g_return_val_if_fail (moo_value_type_supported (type), NULL);
+    g_return_val_if_fail (_moo_value_type_supported (type), NULL);
     g_return_val_if_fail (value && default_value, NULL);
     g_return_val_if_fail (G_VALUE_TYPE (value) == type, NULL);
     g_return_val_if_fail (G_VALUE_TYPE (default_value) == type, NULL);
@@ -519,13 +519,13 @@ item_set_type (PrefsItem      *item,
                GType           type)
 {
     g_return_val_if_fail (item != NULL, FALSE);
-    g_return_val_if_fail (moo_value_type_supported (type), FALSE);
+    g_return_val_if_fail (_moo_value_type_supported (type), FALSE);
 
     if (type != item->type)
     {
         item->type = type;
-        moo_value_change_type (&item->value, type);
-        moo_value_change_type (&item->default_value, type);
+        _moo_value_change_type (&item->value, type);
+        _moo_value_change_type (&item->default_value, type);
         return TRUE;
     }
 
@@ -570,7 +570,7 @@ item_set (PrefsItem      *item,
     g_return_val_if_fail (G_IS_VALUE (value), FALSE);
     g_return_val_if_fail (item->type == G_VALUE_TYPE (value), FALSE);
 
-    if (!moo_value_equal (value, &item->value))
+    if (!_moo_value_equal (value, &item->value))
     {
         g_value_copy (value, &item->value);
         return TRUE;
@@ -588,7 +588,7 @@ item_set_default (PrefsItem      *item,
     g_return_val_if_fail (G_IS_VALUE (value), FALSE);
     g_return_val_if_fail (item->type == G_VALUE_TYPE (value), FALSE);
 
-    if (!moo_value_equal (value, &item->default_value))
+    if (!_moo_value_equal (value, &item->default_value))
     {
         g_value_copy (value, &item->default_value);
         return TRUE;
@@ -979,9 +979,9 @@ write_item (const char  *key,
 
     g_return_if_fail (key != NULL && key[0] != 0);
     g_return_if_fail (item != NULL && stuff != NULL);
-    g_return_if_fail (moo_value_type_supported (item->type));
+    g_return_if_fail (_moo_value_type_supported (item->type));
 
-    if (moo_value_equal (item_value (item), item_default_value (item)))
+    if (_moo_value_equal (item_value (item), item_default_value (item)))
     {
 #ifdef DEBUG_READWRITE
         g_print ("skipping '%s'\n", key);
@@ -989,7 +989,7 @@ write_item (const char  *key,
         return;
     }
 
-    string = moo_value_convert_to_string (item_value (item));
+    string = _moo_value_convert_to_string (item_value (item));
 
     if (!string)
         string = "";
@@ -1236,7 +1236,7 @@ moo_prefs_get_number (const char *key)
     value = moo_prefs_get (key);
     g_return_val_if_fail (value != NULL, 0);
 
-    return moo_value_convert_to_double (value);
+    return _moo_value_convert_to_double (value);
 }
 
 
@@ -1355,7 +1355,7 @@ moo_prefs_set_number (const char     *key,
     g_value_init (&double_val, G_TYPE_DOUBLE);
 
     g_value_set_double (&double_val, val);
-    moo_value_convert (&double_val, &gval);
+    _moo_value_convert (&double_val, &gval);
     moo_prefs_set (key, &gval);
 }
 

@@ -248,12 +248,12 @@ moo_editor_class_init (MooEditorClass *klass)
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     signals[ALL_WINDOWS_CLOSED] =
-            moo_signal_new_cb ("all-windows-closed",
-                               G_OBJECT_CLASS_TYPE (klass),
-                               G_SIGNAL_RUN_LAST,
-                               NULL, NULL, NULL,
-                               _moo_marshal_VOID__VOID,
-                               G_TYPE_NONE, 0);
+            _moo_signal_new_cb ("all-windows-closed",
+                                G_OBJECT_CLASS_TYPE (klass),
+                                G_SIGNAL_RUN_LAST,
+                                NULL, NULL, NULL,
+                                _moo_marshal_VOID__VOID,
+                                G_TYPE_NONE, 0);
 
     edit_window_class = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     moo_window_class_new_action_custom (edit_window_class, RECENT_ACTION_ID, NULL,

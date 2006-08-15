@@ -213,13 +213,13 @@ _moo_file_entry_completion_class_init (MooFileEntryCompletionClass *klass)
                                              G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
 
     signals[FINISHED] =
-            moo_signal_new_cb ("finished",
-                               G_OBJECT_CLASS_TYPE (klass),
-                               G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                               G_CALLBACK (completion_finished),
-                               NULL, NULL,
-                               _moo_marshal_VOID__VOID,
-                               G_TYPE_NONE, 0);
+            _moo_signal_new_cb ("finished",
+                                G_OBJECT_CLASS_TYPE (klass),
+                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                                G_CALLBACK (completion_finished),
+                                NULL, NULL,
+                                _moo_marshal_VOID__VOID,
+                                G_TYPE_NONE, 0);
 }
 
 

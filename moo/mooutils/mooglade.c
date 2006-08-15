@@ -1051,7 +1051,7 @@ widget_props_free (WidgetProps *props)
     if (props)
     {
         if (props->params)
-            moo_param_array_free (props->params, props->n_params);
+            _moo_param_array_free (props->params, props->n_params);
 
         if (props->custom_props)
         {
@@ -1074,7 +1074,7 @@ packing_props_free (PackingProps *props)
     if (props)
     {
         if (props->params)
-            moo_param_array_free (props->params, props->n_params);
+            _moo_param_array_free (props->params, props->n_params);
         g_free (props);
     }
 }
@@ -1569,7 +1569,7 @@ widget_props_new (MooMarkupNode  *node,
     return props;
 
 error:
-    moo_param_array_free ((GParameter*) params->data, params->len);
+    _moo_param_array_free ((GParameter*) params->data, params->len);
     g_array_free (params, FALSE);
     g_type_class_unref (klass);
     widget_props_free (props);
@@ -1630,7 +1630,7 @@ packing_props_new (MooMarkupNode  *node,
                                  MOO_GLADE_XML_ERROR_FAILED,
                                  "could not find property '%s'",
                                  name);
-                    moo_param_array_free ((GParameter*) params->data, params->len);
+                    _moo_param_array_free ((GParameter*) params->data, params->len);
                     g_array_free (params, FALSE);
                     g_type_class_unref (klass);
                     packing_props_free (props);
@@ -1647,7 +1647,7 @@ packing_props_new (MooMarkupNode  *node,
                                  MOO_GLADE_XML_ERROR_FAILED,
                                  "could not convert '%s' to property '%s'",
                                  value, name);
-                    moo_param_array_free ((GParameter*) params->data, params->len);
+                    _moo_param_array_free ((GParameter*) params->data, params->len);
                     g_array_free (params, FALSE);
                     g_type_class_unref (klass);
                     packing_props_free (props);

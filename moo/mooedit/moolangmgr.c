@@ -49,12 +49,12 @@ moo_lang_mgr_class_init (MooLangMgrClass *klass)
 
     gobject_class->finalize = moo_lang_mgr_finalize;
 
-    moo_signal_new_cb ("loaded",
-                       G_OBJECT_CLASS_TYPE (klass),
-                       G_SIGNAL_RUN_LAST,
-                       NULL, NULL, NULL,
-                       _moo_marshal_VOID__VOID,
-                       G_TYPE_NONE, 0);
+    _moo_signal_new_cb ("loaded",
+                        G_OBJECT_CLASS_TYPE (klass),
+                        G_SIGNAL_RUN_LAST,
+                        NULL, NULL, NULL,
+                        _moo_marshal_VOID__VOID,
+                        G_TYPE_NONE, 0);
 }
 
 

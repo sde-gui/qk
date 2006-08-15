@@ -755,7 +755,7 @@ moo_edit_config_parse_one (MooEditConfig  *config,
     if (G_PARAM_SPEC_VALUE_TYPE (pspec) == G_TYPE_BOOLEAN)
         result = parse_boolean (value, &gval);
     else
-        result = moo_value_convert_from_string (value, &gval);
+        result = _moo_value_convert_from_string (value, &gval);
 
     if (result)
         moo_edit_config_set_value (config, prop_id, source, &gval);

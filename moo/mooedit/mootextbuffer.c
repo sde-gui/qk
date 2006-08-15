@@ -249,24 +249,24 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
                           G_TYPE_NONE, 0);
 
     signals[HIGHLIGHTING_CHANGED] =
-            moo_signal_new_cb ("highlighting-changed",
-                               G_OBJECT_CLASS_TYPE (klass),
-                               G_SIGNAL_RUN_LAST,
-                               NULL, NULL, NULL,
-                               _moo_marshal_VOID__BOXED_BOXED,
-                               G_TYPE_NONE, 2,
-                               GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE,
-                               GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
+            _moo_signal_new_cb ("highlighting-changed",
+                                G_OBJECT_CLASS_TYPE (klass),
+                                G_SIGNAL_RUN_LAST,
+                                NULL, NULL, NULL,
+                                _moo_marshal_VOID__BOXED_BOXED,
+                                G_TYPE_NONE, 2,
+                                GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE,
+                                GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
 
     signals[TAGS_CHANGED] =
-            moo_signal_new_cb ("tags-changed",
-                               G_OBJECT_CLASS_TYPE (klass),
-                               G_SIGNAL_RUN_LAST,
-                               NULL, NULL, NULL,
-                               _moo_marshal_VOID__BOXED_BOXED,
-                               G_TYPE_NONE, 2,
-                               GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE,
-                               GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
+            _moo_signal_new_cb ("tags-changed",
+                                G_OBJECT_CLASS_TYPE (klass),
+                                G_SIGNAL_RUN_LAST,
+                                NULL, NULL, NULL,
+                                _moo_marshal_VOID__BOXED_BOXED,
+                                G_TYPE_NONE, 2,
+                                GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE,
+                                GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
 
     signals[LINE_MARK_ADDED] =
             g_signal_new ("line-mark-added",

@@ -566,8 +566,8 @@ toggle_watch_new (GObject    *master,
         return NULL;
     }
 
-    watch = moo_object_watch_new (ToggleWatch, &ToggleWatchClass,
-                                  master, action, NULL, NULL);
+    watch = _moo_object_watch_new (ToggleWatch, &ToggleWatchClass,
+                                   master, action, NULL, NULL);
 
     watch->pspec = pspec;
     watch->invert = invert;

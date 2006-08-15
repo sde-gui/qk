@@ -92,13 +92,13 @@ static void moo_line_view_class_init (MooLineViewClass *klass)
                           G_TYPE_INT);
 
     signals[ACTIVATE_CURRENT_LINE] =
-            moo_signal_new_cb ("activate-current-line",
-                               G_OBJECT_CLASS_TYPE (klass),
-                               G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                               G_CALLBACK (activate_current_line),
-                               NULL, NULL,
-                               _moo_marshal_VOID__VOID,
-                               G_TYPE_NONE, 0);
+            _moo_signal_new_cb ("activate-current-line",
+                                G_OBJECT_CLASS_TYPE (klass),
+                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                                G_CALLBACK (activate_current_line),
+                                NULL, NULL,
+                                _moo_marshal_VOID__VOID,
+                                G_TYPE_NONE, 0);
 
     binding_set = gtk_binding_set_by_class (klass);
 
@@ -111,9 +111,9 @@ static void moo_line_view_init (MooLineView *view)
 {
     view->priv = g_new0 (MooLineViewPrivate, 1);
 
-    view->priv->line_data = moo_data_new (g_direct_hash,
-                                          g_direct_equal,
-                                          NULL);
+    view->priv->line_data = _moo_data_new (g_direct_hash,
+                                           g_direct_equal,
+                                           NULL);
 
     g_object_set (view,
                   "editable", FALSE,
@@ -128,7 +128,7 @@ static void moo_line_view_finalize       (GObject      *object)
 {
     MooLineView *view = MOO_LINE_VIEW (object);
 
-    moo_data_destroy (view->priv->line_data);
+    _moo_data_destroy (view->priv->line_data);
     g_free (view->priv);
 
     G_OBJECT_CLASS (moo_line_view_parent_class)->finalize (object);
@@ -154,7 +154,7 @@ moo_line_view_clear (MooLineView *view)
     gtk_text_buffer_get_bounds (buffer, &start, &end);
     gtk_text_buffer_delete (buffer, &start, &end);
 
-    moo_data_clear (view->priv->line_data);
+    _moo_data_clear (view->priv->line_data);
 }
 
 
@@ -336,11 +336,11 @@ moo_line_view_set_data (MooLineView    *view,
     g_return_if_fail (line >= 0);
 
     if (data)
-        moo_data_insert_ptr (view->priv->line_data,
-                             GINT_TO_POINTER (line),
-                             data, free_func);
+        _moo_data_insert_ptr (view->priv->line_data,
+                              GINT_TO_POINTER (line),
+                              data, free_func);
     else
-        moo_data_remove (view->priv->line_data, GINT_TO_POINTER (line));
+        _moo_data_remove (view->priv->line_data, GINT_TO_POINTER (line));
 }
 
 
@@ -350,8 +350,8 @@ moo_line_view_get_data (MooLineView    *view,
 {
     g_return_val_if_fail (MOO_IS_LINE_VIEW (view), NULL);
     g_return_val_if_fail (line >= 0, NULL);
-    return moo_data_get_ptr (view->priv->line_data,
-                             GINT_TO_POINTER (line));
+    return _moo_data_get_ptr (view->priv->line_data,
+                              GINT_TO_POINTER (line));
 }
 
 
@@ -587,12 +587,12 @@ moo_line_view_set_line_data (MooLineView    *view,
     g_return_if_fail (!data || G_IS_VALUE (data));
 
     if (data)
-        moo_data_insert_value (view->priv->line_data,
-                               GINT_TO_POINTER (line),
-                               data);
+        _moo_data_insert_value (view->priv->line_data,
+                                GINT_TO_POINTER (line),
+                                data);
     else
-        moo_data_remove (view->priv->line_data,
-                         GINT_TO_POINTER (line));
+        _moo_data_remove (view->priv->line_data,
+                          GINT_TO_POINTER (line));
 }
 
 
@@ -604,7 +604,7 @@ moo_line_view_get_line_data (MooLineView    *view,
     g_return_val_if_fail (MOO_IS_LINE_VIEW (view), FALSE);
     g_return_val_if_fail (line >= 0, FALSE);
     g_return_val_if_fail (!G_IS_VALUE (dest), FALSE);
-    return moo_data_get_value (view->priv->line_data,
-                               GINT_TO_POINTER (line),
-                               dest);
+    return _moo_data_get_value (view->priv->line_data,
+                                GINT_TO_POINTER (line),
+                                dest);
 }
