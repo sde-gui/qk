@@ -38,32 +38,32 @@ enum {
 static guint signals[LAST_SIGNAL] = {0};
 
 
-static void moo_accel_button_class_init    (MooAccelButtonClass *klass);
-static void moo_accel_button_init          (MooAccelButton      *button);
+static void moo_accel_button_finalize       (GObject        *object);
+static void moo_accel_button_set_property   (GObject        *object,
+                                             guint           param_id,
+                                             const GValue   *value,
+                                             GParamSpec     *pspec);
+static void moo_accel_button_get_property   (GObject        *object,
+                                             guint           param_id,
+                                             GValue         *value,
+                                             GParamSpec     *pspec);
 
-static void moo_accel_button_finalize      (GObject             *object);
-static void moo_accel_button_set_property  (GObject        *object,
-                                            guint           param_id,
-                                            const GValue   *value,
-                                            GParamSpec     *pspec);
-static void moo_accel_button_get_property  (GObject        *object,
-                                            guint           param_id,
-                                            GValue         *value,
-                                            GParamSpec     *pspec);
-
-static void moo_accel_button_clicked       (MooAccelButton *button);
+static void moo_accel_button_clicked        (GtkButton      *button);
 
 
-G_DEFINE_TYPE(MooAccelButton, moo_accel_button, GTK_TYPE_BUTTON)
+G_DEFINE_TYPE (MooAccelButton, _moo_accel_button, GTK_TYPE_BUTTON)
 
 
-static void moo_accel_button_class_init    (MooAccelButtonClass *klass)
+static void
+_moo_accel_button_class_init (MooAccelButtonClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
     gobject_class->get_property = moo_accel_button_get_property;
     gobject_class->set_property = moo_accel_button_set_property;
     gobject_class->finalize = moo_accel_button_finalize;
+
+    GTK_BUTTON_CLASS (klass)->clicked = moo_accel_button_clicked;
 
     klass->accel_set = NULL;
 
@@ -96,41 +96,42 @@ static void moo_accel_button_class_init    (MooAccelButtonClass *klass)
 }
 
 
-static void moo_accel_button_init (MooAccelButton *button)
+static void
+_moo_accel_button_init (MooAccelButton *button)
 {
     button->accel = NULL;
     button->title = NULL;
-    g_signal_connect (button, "clicked",
-                      G_CALLBACK (moo_accel_button_clicked), NULL);
 }
 
 
-static void moo_accel_button_finalize (GObject *object)
+static void
+moo_accel_button_finalize (GObject *object)
 {
     MooAccelButton *button = MOO_ACCEL_BUTTON (object);
     g_free (button->title);
     button->title = NULL;
     g_free (button->accel);
     button->accel = NULL;
-    G_OBJECT_CLASS (moo_accel_button_parent_class)->finalize (object);
+    G_OBJECT_CLASS (_moo_accel_button_parent_class)->finalize (object);
 }
 
 
-static void moo_accel_button_set_property  (GObject        *object,
-                                            guint           param_id,
-                                            const GValue   *value,
-                                            GParamSpec     *pspec)
+static void
+moo_accel_button_set_property (GObject        *object,
+                               guint           param_id,
+                               const GValue   *value,
+                               GParamSpec     *pspec)
 {
     MooAccelButton *button = MOO_ACCEL_BUTTON (object);
 
     switch (param_id)
     {
         case PROP_TITLE:
-            moo_accel_button_set_title (button, g_value_get_string (value));
+            _moo_accel_button_set_title (button, g_value_get_string (value));
             break;
 
         case PROP_ACCEL:
-            moo_accel_button_set_accel (button, g_value_get_string (value));
+            _moo_accel_button_set_accel (button, g_value_get_string (value));
             break;
 
         default:
@@ -140,21 +141,22 @@ static void moo_accel_button_set_property  (GObject        *object,
 }
 
 
-static void moo_accel_button_get_property  (GObject        *object,
-                                            guint           param_id,
-                                            GValue         *value,
-                                            GParamSpec     *pspec)
+static void
+moo_accel_button_get_property (GObject        *object,
+                               guint           param_id,
+                               GValue         *value,
+                               GParamSpec     *pspec)
 {
     MooAccelButton *button = MOO_ACCEL_BUTTON (object);
 
     switch (param_id)
     {
         case PROP_TITLE:
-            g_value_set_string (value, moo_accel_button_get_title (button));
+            g_value_set_string (value, _moo_accel_button_get_title (button));
             break;
 
         case PROP_ACCEL:
-            g_value_set_string (value, moo_accel_button_get_accel (button));
+            g_value_set_string (value, _moo_accel_button_get_accel (button));
             break;
 
         default:
@@ -164,22 +166,24 @@ static void moo_accel_button_get_property  (GObject        *object,
 }
 
 
-GtkWidget   *moo_accel_button_new               (const char         *accel)
+GtkWidget *
+_moo_accel_button_new (const char *accel)
 {
-    return GTK_WIDGET (g_object_new (MOO_TYPE_ACCEL_BUTTON,
-                                     "accel", accel, NULL));
+    return g_object_new (MOO_TYPE_ACCEL_BUTTON, "accel", accel, NULL);
 }
 
 
-const char  *moo_accel_button_get_title         (MooAccelButton     *button)
+const char *
+_moo_accel_button_get_title (MooAccelButton *button)
 {
     g_return_val_if_fail (MOO_IS_ACCEL_BUTTON (button), NULL);
     return button->title;
 }
 
 
-void         moo_accel_button_set_title         (MooAccelButton     *button,
-                                                 const char         *title)
+void
+_moo_accel_button_set_title (MooAccelButton *button,
+                             const char     *title)
 {
     g_return_if_fail (MOO_IS_ACCEL_BUTTON (button));
     g_free (button->title);
@@ -188,38 +192,42 @@ void         moo_accel_button_set_title         (MooAccelButton     *button,
 }
 
 
-const char  *moo_accel_button_get_accel         (MooAccelButton     *button)
+const char *
+_moo_accel_button_get_accel (MooAccelButton *button)
 {
     g_return_val_if_fail (MOO_IS_ACCEL_BUTTON (button), NULL);
     return button->accel;
 }
 
 
-gboolean     moo_accel_button_set_accel         (MooAccelButton     *button,
-                                                 const char         *accel)
+gboolean
+_moo_accel_button_set_accel (MooAccelButton *button,
+                             const char     *accel)
 {
-    guint accel_key;
-    GdkModifierType accel_mods;
+    guint accel_key = 0;
+    GdkModifierType accel_mods = 0;
 
     g_return_val_if_fail (MOO_IS_ACCEL_BUTTON (button), FALSE);
 
-    accel_key = 0;
-    accel_mods = 0;
     if (accel && accel[0])
     {
         gtk_accelerator_parse (accel, &accel_key, &accel_mods);
+
         if (!accel_key && !accel_mods)
             return FALSE;
     }
 
     g_free (button->accel);
-    if (accel_key || accel_mods) {
+
+    if (accel_key || accel_mods)
+    {
         char *label = gtk_accelerator_get_label (accel_key, accel_mods);
         button->accel = gtk_accelerator_name (accel_key, accel_mods);
         gtk_button_set_label (GTK_BUTTON (button), label);
         g_free (label);
     }
-    else {
+    else
+    {
         button->accel = g_strdup ("");
         gtk_button_set_label (GTK_BUTTON (button), "");
     }
@@ -237,9 +245,10 @@ typedef struct {
 } Stuff;
 
 
-static gboolean key_event (G_GNUC_UNUSED GtkWidget    *widget,
-                           GdkEventKey  *event,
-                           Stuff        *s)
+static gboolean
+key_event (G_GNUC_UNUSED GtkWidget *widget,
+           GdkEventKey  *event,
+           Stuff        *s)
 {
     if (gtk_accelerator_valid (event->keyval, event->state))
     {
@@ -255,8 +264,9 @@ static gboolean key_event (G_GNUC_UNUSED GtkWidget    *widget,
 
 
 static void
-moo_accel_button_clicked (MooAccelButton *button)
+moo_accel_button_clicked (GtkButton *gtkbutton)
 {
+    MooAccelButton *button = MOO_ACCEL_BUTTON (gtkbutton);
     MooGladeXML *xml;
     GtkWidget *dialog, *ok_button, *cancel_button, *eventbox, *label;
     Stuff s = {0, 0, NULL};
@@ -302,12 +312,12 @@ moo_accel_button_clicked (MooAccelButton *button)
         if (s.key || s.mods)
         {
             char *accel = gtk_accelerator_name (s.key, s.mods);
-            moo_accel_button_set_accel (button, accel);
+            _moo_accel_button_set_accel (button, accel);
             g_free (accel);
         }
         else
         {
-            moo_accel_button_set_accel (button, "");
+            _moo_accel_button_set_accel (button, "");
         }
     }
 }

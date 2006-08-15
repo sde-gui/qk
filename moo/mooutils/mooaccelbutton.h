@@ -19,7 +19,7 @@
 
 G_BEGIN_DECLS
 
-#define MOO_TYPE_ACCEL_BUTTON             (moo_accel_button_get_type ())
+#define MOO_TYPE_ACCEL_BUTTON             (_moo_accel_button_get_type ())
 #define MOO_ACCEL_BUTTON(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOO_TYPE_ACCEL_BUTTON, MooAccelButton))
 #define MOO_ACCEL_BUTTON_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_ACCEL_BUTTON, MooAccelButtonClass))
 #define MOO_IS_ACCEL_BUTTON(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOO_TYPE_ACCEL_BUTTON))
@@ -44,15 +44,15 @@ struct _MooAccelButtonClass {
 };
 
 
-GType        moo_accel_button_get_type          (void) G_GNUC_CONST;
-GtkWidget   *moo_accel_button_new               (const char         *accel);
+GType        _moo_accel_button_get_type         (void) G_GNUC_CONST;
+GtkWidget   *_moo_accel_button_new              (const char         *accel);
 
-const char  *moo_accel_button_get_title         (MooAccelButton     *button);
-void         moo_accel_button_set_title         (MooAccelButton     *button,
+const char  *_moo_accel_button_get_title        (MooAccelButton     *button);
+void         _moo_accel_button_set_title        (MooAccelButton     *button,
                                                  const char         *title);
 
-const char  *moo_accel_button_get_accel         (MooAccelButton     *button);
-gboolean     moo_accel_button_set_accel         (MooAccelButton     *button,
+const char  *_moo_accel_button_get_accel        (MooAccelButton     *button);
+gboolean     _moo_accel_button_set_accel        (MooAccelButton     *button,
                                                  const char         *accel);
 
 
