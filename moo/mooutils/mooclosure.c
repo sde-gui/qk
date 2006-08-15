@@ -314,8 +314,11 @@ static void
 object_ptr_object_died (MooObjectPtr *ptr)
 {
     GObject *object = ptr->target;
+
     ptr->target = NULL;
-    ptr->notify (ptr->notify_data, object);
+
+    if (ptr->notify)
+        ptr->notify (ptr->notify_data, object);
 }
 
 
@@ -327,7 +330,7 @@ moo_object_ptr_new (GObject    *object,
     MooObjectPtr *ptr;
 
     g_return_val_if_fail (G_IS_OBJECT (object), NULL);
-    g_return_val_if_fail (notify != NULL, NULL);
+    g_return_val_if_fail (notify != NULL || data == NULL, NULL);
 
     ptr = g_new (MooObjectPtr, 1);
     ptr->target = object;
