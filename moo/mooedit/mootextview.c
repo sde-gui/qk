@@ -1238,15 +1238,15 @@ moo_text_tab_key_action_get_type (void)
 }
 
 
-char*
-moo_text_view_get_selection (MooTextView *view)
+char *
+moo_text_view_get_selection (gpointer view)
 {
     GtkTextBuffer *buf;
     GtkTextIter start, end;
 
-    g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), NULL);
+    g_return_val_if_fail (GTK_IS_TEXT_VIEW (view), NULL);
 
-    buf = get_buffer (view);
+    buf = gtk_text_view_get_buffer (view);
 
     if (gtk_text_buffer_get_selection_bounds (buf, &start, &end))
         return gtk_text_buffer_get_slice (buf, &start, &end, TRUE);
@@ -1405,7 +1405,7 @@ moo_text_view_set_indenter (MooTextView *view,
 
 
 typedef struct {
-    MooTextView *view;
+    GtkTextView *view;
     int      line;
     int      character;
     gboolean visual;
@@ -1433,7 +1433,7 @@ do_move_cursor (Scroll *scroll)
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (scroll->view), FALSE);
     g_return_val_if_fail (scroll->line >= 0, FALSE);
 
-    buffer = get_buffer (scroll->view);
+    buffer = gtk_text_view_get_buffer (scroll->view);
 
     if (scroll->line >= gtk_text_buffer_get_line_count (buffer))
         scroll->line = gtk_text_buffer_get_line_count (buffer) - 1;
@@ -1483,7 +1483,7 @@ do_move_cursor (Scroll *scroll)
     }
 
     gtk_text_buffer_place_cursor (buffer, &iter);
-    gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (scroll->view),
+    gtk_text_view_scroll_to_mark (scroll->view,
                                   gtk_text_buffer_get_insert (buffer),
                                   0.2, FALSE, 0, 0);
 
@@ -1493,7 +1493,7 @@ do_move_cursor (Scroll *scroll)
 
 
 void
-moo_text_view_move_cursor (MooTextView  *view,
+moo_text_view_move_cursor (gpointer      view,
                            int           line,
                            int           offset,
                            gboolean      offset_visual,
@@ -1501,7 +1501,7 @@ moo_text_view_move_cursor (MooTextView  *view,
 {
     Scroll *scroll;
 
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    g_return_if_fail (GTK_IS_TEXT_VIEW (view));
 
     scroll = g_new (Scroll, 1);
     scroll->view = view;

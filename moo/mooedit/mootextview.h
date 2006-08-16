@@ -101,7 +101,7 @@ GtkWidget   *moo_text_view_new                      (void);
 
 void         moo_text_view_select_all               (MooTextView        *view);
 
-char        *moo_text_view_get_selection            (MooTextView        *view);
+char        *moo_text_view_get_selection            (gpointer            view);
 char        *moo_text_view_get_text                 (MooTextView        *view);
 gboolean     moo_text_view_has_selection            (MooTextView        *view);
 gboolean     moo_text_view_has_text                 (MooTextView        *view);
@@ -126,7 +126,7 @@ void         moo_text_view_set_indenter             (MooTextView        *view,
 void         moo_text_view_get_cursor               (MooTextView        *view,
                                                      GtkTextIter        *iter);
 int          moo_text_view_get_cursor_line          (MooTextView        *view);
-void         moo_text_view_move_cursor              (MooTextView        *view,
+void         moo_text_view_move_cursor              (gpointer            view,
                                                      int                 line,
                                                      int                 offset,
                                                      gboolean            offset_visual,
