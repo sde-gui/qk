@@ -115,6 +115,17 @@ _moo_file_view_tool_action_class_init (ToolActionClass *klass)
 
 
 static void
+tools_info_free (ToolsInfo *info)
+{
+    if (info)
+    {
+        g_slist_free (info->actions);
+        g_free (info);
+    }
+}
+
+
+static void
 remove_old_tools (MooFileView    *fileview,
                   MooUIXML       *xml,
                   GtkActionGroup *group)
@@ -125,20 +136,18 @@ remove_old_tools (MooFileView    *fileview,
 
     if (info)
     {
-        g_object_set_data (G_OBJECT (fileview), "moo-file-view-tools-info", NULL);
-
         moo_ui_xml_remove_ui (xml, info->merge_id);
 
         while (info->actions)
         {
             GtkAction *a = info->actions->data;
             gtk_action_group_remove_action (group, a);
-            info->actions = g_slist_delete_link (info->actions,
-                    info->actions);
+            info->actions = g_slist_delete_link (info->actions, info->actions);
         }
-
-        g_free (info);
     }
+
+    /* this will call tools_info_free */
+    g_object_set_data (G_OBJECT (fileview), "moo-file-view-tools-info", NULL);
 }
 
 
@@ -281,7 +290,8 @@ _moo_file_view_tools_load (MooFileView *fileview)
 
     info->actions = g_slist_reverse (info->actions);
     info->merge_id = moo_ui_xml_new_merge_id (xml);
-    g_object_set_data (G_OBJECT (fileview), "moo-file-view-tools-info", info);
+    g_object_set_data_full (G_OBJECT (fileview), "moo-file-view-tools-info", info,
+                            (GDestroyNotify) tools_info_free);
 
     for (l = info->actions; l != NULL; l = l->next)
     {
