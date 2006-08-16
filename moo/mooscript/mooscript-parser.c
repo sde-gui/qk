@@ -253,42 +253,6 @@ ms_lex_parse_word (MSLex    *lex,
 }
 
 
-static int
-ms_lex_parse_python (MSLex *lex)
-{
-    guint ptr = lex->ptr;
-    const char *input = (const char *) lex->input;
-
-    g_assert (input[ptr] == input[ptr+1] &&
-              input[ptr+1] == input[ptr+2] &&
-              input[ptr] == '=');
-
-    while (TRUE)
-    {
-        while (ptr < lex->len && !IS_EOL(input[ptr]))
-            ptr++;
-
-        if (ptr == lex->len)
-        {
-            _ms_script_yylval.str = ms_lex_add_string (lex, input + lex->ptr + 3, -1);
-            lex->ptr = lex->len;
-            return PYTHON;
-        }
-
-        while (IS_EOL (input[ptr]))
-            ptr++;
-
-        if (input[ptr] == '=' && input[ptr+1] == '=' && input[ptr+2] == '=')
-        {
-            _ms_script_yylval.str = ms_lex_add_string (lex, input + lex->ptr + 3,
-                                                       ptr - lex->ptr - 3);
-            lex->ptr = ptr + 3;
-            return PYTHON;
-        }
-    }
-}
-
-
 #define THIS            (lex->input[lex->ptr])
 #define NEXT            (lex->input[lex->ptr+1])
 #define NEXT2           (lex->input[lex->ptr+2])
@@ -355,9 +319,6 @@ _ms_script_yylex (MSParser *parser)
         g_warning ("got unicode character");
         return ms_lex_error (parser);
     }
-
-    if (c == '=' && NEXT == '=' && NEXT2 == '=')
-        return ms_lex_parse_python (lex);
 
     if (c == '#')
     {

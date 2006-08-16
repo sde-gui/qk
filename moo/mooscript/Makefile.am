@@ -5,6 +5,10 @@ mooscript_yacc: $(srcdir)/mooscript.y
 	touch mooscript_yacc
 	bison -o $(srcdir)/mooscript-yacc.c -d $(srcdir)/mooscript.y
 
+mooscript.o: mooscript_yacc
+	echo stamp > mooscript.o
+CLEANFILES = mooscript.o
+
 mooscript_headers =		\
 	mooscript-context.h	\
 	mooscript-func.h	\

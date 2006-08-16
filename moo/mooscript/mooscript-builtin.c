@@ -14,7 +14,6 @@
 #include "mooscript-context.h"
 #include "mooscript-parser.h"
 #include "mooscript-zenity.h"
-#include "mooutils/moopython.h"
 #include "mooutils/mooprefs.h"
 #include <string.h>
 
@@ -94,21 +93,6 @@ int_func (MSValue    *arg,
     }
 
     return ms_value_int (ival);
-}
-
-
-static MSValue*
-python_func (MSValue    *arg,
-             MSContext  *ctx)
-{
-    char *script;
-    MSValue *ret;
-
-    script = ms_value_print (arg);
-    ret = ms_context_run_python (ctx, script);
-
-    g_free (script);
-    return ret;
 }
 
 
@@ -376,7 +360,6 @@ _ms_context_add_builtin (MSContext *ctx)
     ADD_FUNC (ms_cfunc_new_1, len_func, "Len");
 
     ADD_FUNC (ms_cfunc_new_var, print_func, "Print");
-    ADD_FUNC (ms_cfunc_new_1, python_func, "Python");
     ADD_FUNC (ms_cfunc_new_1, include_func, "Include");
     ADD_FUNC (ms_cfunc_new_0, abort_func, "Abort");
 

@@ -31,7 +31,6 @@ typedef enum {
     MS_TYPE_NODE_ASSIGN,
     MS_TYPE_NODE_VALUE,
     MS_TYPE_NODE_VAL_LIST,
-    MS_TYPE_NODE_PYTHON,
     MS_TYPE_NODE_RETURN,
     MS_TYPE_NODE_BREAK,
     MS_TYPE_NODE_DICT_ELM,
@@ -55,7 +54,6 @@ typedef struct _MSNodeAssign MSNodeAssign;
 typedef struct _MSNodeValue MSNodeValue;
 typedef struct _MSNodeEnvVar MSNodeEnvVar;
 typedef struct _MSNodeValList MSNodeValList;
-typedef struct _MSNodePython MSNodePython;
 typedef struct _MSNodeBreak MSNodeBreak;
 typedef struct _MSNodeReturn MSNodeReturn;
 typedef struct _MSNodeDict MSNodeDict;
@@ -119,7 +117,6 @@ _ms_node_check_type (gpointer   pnode,
 #define MS_NODE_VALUE(node_)        MS_NODE_CAST (node_, MS_TYPE_NODE_VALUE, MSNodeValue)
 #define MS_NODE_ENV_VAR(node_)      MS_NODE_CAST (node_, MS_TYPE_NODE_ENV_VAR, MSNodeEnvVar)
 #define MS_NODE_VAL_LIST(node_)     MS_NODE_CAST (node_, MS_TYPE_NODE_VAL_LIST, MSNodeValList)
-#define MS_NODE_PYTHON(node_)       MS_NODE_CAST (node_, MS_TYPE_NODE_PYTHON, MSNodePython)
 #define MS_NODE_BREAK(node_)        MS_NODE_CAST (node_, MS_TYPE_NODE_BREAK, MSNodeBreak)
 #define MS_NODE_RETURN(node_)       MS_NODE_CAST (node_, MS_TYPE_NODE_RETURN, MSNodeReturn)
 #define MS_NODE_DICT(node_)         MS_NODE_CAST (node_, MS_TYPE_NODE_DICT, MSNodeDict)
@@ -216,12 +213,6 @@ struct _MSNodeEnvVar {
     MSNode node;
     MSNode *name;
     MSNode *dflt;
-};
-
-
-struct _MSNodePython {
-    MSNode node;
-    char *script;
 };
 
 
@@ -324,8 +315,6 @@ MSNodeValList  *ms_node_val_range_new       (MSNode     *first,
 MSNodeEnvVar   *ms_node_env_var_new         (MSNode     *name,
                                              MSNode     *dflt);
 MSNodeVar      *ms_node_var_new             (const char *name);
-
-MSNodePython   *ms_node_python_new          (const char *script);
 
 MSNodeGetItem  *ms_node_get_item_new        (MSNode     *obj,
                                              MSNode     *key);

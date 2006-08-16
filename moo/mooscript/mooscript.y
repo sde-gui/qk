@@ -205,19 +205,6 @@ node_string (MSParser   *parser,
 
 
 static MSNode *
-node_python (MSParser   *parser,
-             const char *string)
-{
-    MSNodePython *node;
-
-    node = ms_node_python_new (string);
-    _ms_parser_add_node (parser, node);
-
-    return MS_NODE (node);
-}
-
-
-static MSNode *
 node_value_list (MSParser   *parser,
                  MSNodeList *list)
 {
@@ -396,10 +383,9 @@ node_dict_assign (MSParser   *parser,
 %token <str> IDENTIFIER
 %token <str> LITERAL
 %token <str> VARIABLE
-%token <str> PYTHON
 %token <ival> NUMBER
 
-%type <node> program stmt stmt_or_python
+%type <node> program stmt stmt_or_error
 %type <node> if_stmt elif_block ternary loop assignment
 %type <node> simple_expr compound_expr expr variable
 %type <node> list_elms dict_elms dict_entry
@@ -427,14 +413,13 @@ node_dict_assign (MSParser   *parser,
 script:   program           { _ms_parser_set_top_node (parser, $1); }
 ;
 
-program:  stmt_or_python            { $$ = node_list_add (parser, NULL, $1); }
-        | program stmt_or_python    { $$ = node_list_add (parser, MS_NODE_LIST ($1), $2); }
+program:  stmt_or_error             { $$ = node_list_add (parser, NULL, $1); }
+        | program stmt_or_error     { $$ = node_list_add (parser, MS_NODE_LIST ($1), $2); }
 ;
 
-stmt_or_python:
+stmt_or_error:
           error ';'         { $$ = NULL; }
         | stmt ';'          { $$ = $1; }
-        | PYTHON            { $$ = node_python (parser, $1); }
 ;
 
 stmt:   /* empty */         { $$ = NULL; }

@@ -14,7 +14,6 @@
 #include "mooscript-node.h"
 #include "mooscript-func.h"
 #include "mooscript-context.h"
-#include "mooutils/moopython.h"
 #include <string.h>
 
 
@@ -1071,43 +1070,6 @@ ms_node_val_range_new (MSNode *first,
     node->type = MS_VAL_RANGE;
     node->first = ms_node_ref (first);
     node->last = ms_node_ref (last);
-
-    return node;
-}
-
-
-/****************************************************************************/
-/* MSNodePython
- */
-
-static void
-ms_node_python_destroy (MSNode *node)
-{
-    g_free (MS_NODE_PYTHON(node)->script);
-}
-
-
-static MSValue *
-ms_node_python_eval (MSNode    *node_,
-                     MSContext *ctx)
-{
-    return ms_context_run_python (ctx, MS_NODE_PYTHON(node_)->script);
-}
-
-
-MSNodePython *
-ms_node_python_new (const char *script)
-{
-    MSNodePython *node;
-
-    g_return_val_if_fail (script != NULL, NULL);
-
-    node = NODE_NEW (MSNodePython,
-                     MS_TYPE_NODE_PYTHON,
-                     ms_node_python_eval,
-                     ms_node_python_destroy);
-
-    node->script = g_strdup (script);
 
     return node;
 }
