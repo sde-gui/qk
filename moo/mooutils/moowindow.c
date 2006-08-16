@@ -101,7 +101,7 @@ static void         moo_window_get_property             (GObject        *object,
 
 static void         moo_window_set_id                   (MooWindow      *window,
                                                          const char     *id);
-static void         moo_window_add_class_actions        (MooWindow      *window);
+static void         moo_window_create_class_actions     (MooWindow      *window);
 static void         moo_window_add_action               (MooWindow      *window,
                                                          const char     *group,
                                                          GtkAction      *action);
@@ -291,11 +291,10 @@ moo_window_constructor (GType                  type,
     klass = g_type_class_ref (type);
     moo_window_set_id (window, moo_window_class_get_id (klass));
     window->priv->name = g_strdup (moo_window_class_get_name (klass));
-    window->priv->actions = moo_action_collection_new (window->priv->id, window->priv->name);
 
     init_prefs (window);
 
-    moo_window_add_class_actions (window);
+    moo_window_create_class_actions (window);
     window_instances = g_slist_prepend (window_instances, object);
 
     window->accel_group = gtk_accel_group_new ();
@@ -379,8 +378,12 @@ moo_window_dispose (GObject *object)
     {
         if (window->priv->ui_xml)
             g_object_unref (window->priv->ui_xml);
+
         if (window->priv->actions)
+        {
+            _moo_action_collection_set_window (window->priv->actions, NULL);
             g_object_unref (window->priv->actions);
+        }
 
         g_free (window->priv->name);
         g_free (window->priv->id);
@@ -807,7 +810,12 @@ static GtkToolbarStyle get_toolbar_style (MooWindow *window)
 
 #define MOO_WINDOW_NAME_QUARK        (get_quark__(0))
 #define MOO_WINDOW_ID_QUARK          (get_quark__(1))
-#define MOO_WINDOW_ACTIONS_QUARK     (get_quark__(2))
+#define MOO_WINDOW_ACTIONS_QUARK_    (get_quark__(2))
+
+typedef struct {
+    GHashTable *groups; /* name -> display_name */
+    GHashTable *actions;
+} ActionStore;
 
 typedef struct {
     MooActionFactory *action;
@@ -819,23 +827,18 @@ typedef struct {
 static GQuark
 get_quark__ (guint n)
 {
-#define N_QUARKS 3
-    guint i;
-    static GQuark q[N_QUARKS] = {0, 0, 0};
-    static const char *names[N_QUARKS] = {
-        "moo_window_name",
-        "moo_window_id",
-        "moo_window_actions",
-    };
+    static GQuark q[3];
+
+    g_assert (n < 3);
 
     if (!q[0])
     {
-        for (i = 0; i < N_QUARKS; ++i)
-            q[i] = g_quark_from_static_string (names[i]);
+        q[0] = g_quark_from_static_string ("moo-window-name");
+        q[1] = g_quark_from_static_string ("moo-window-id");
+        q[2] = g_quark_from_static_string ("moo-window-actions");
     }
 
     return q[n];
-#undef N_QUARKS
 }
 
 
@@ -864,24 +867,55 @@ action_info_free (ActionInfo *info)
     {
         g_object_unref (info->action);
         g_strfreev (info->conditions);
+        g_free (info->group);
         g_free (info);
     }
 }
 
 
-static GtkAction*
+static ActionStore *
+action_store_new (void)
+{
+    ActionStore *store = g_new0 (ActionStore, 1);
+    store->actions = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+                                            (GDestroyNotify) action_info_free);
+    store->groups = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+    return store;
+}
+
+
+static ActionStore *
+type_get_store (GType type)
+{
+    return g_type_get_qdata (type, MOO_WINDOW_ACTIONS_QUARK_);
+}
+
+
+static ActionStore *
+type_ensure_store (GType type)
+{
+    ActionStore *store = g_type_get_qdata (type, MOO_WINDOW_ACTIONS_QUARK_);
+
+    if (!store)
+    {
+        store = action_store_new ();
+        g_type_set_qdata (type, MOO_WINDOW_ACTIONS_QUARK_, store);
+    }
+
+    return store;
+}
+
+
+static GtkAction *
 create_action (const char *action_id,
                ActionInfo *info,
                MooWindow  *window)
 {
     GtkAction *action;
-    const char *class_id;
 
     g_return_val_if_fail (info != NULL, NULL);
     g_return_val_if_fail (MOO_IS_ACTION_FACTORY (info->action), NULL);
     g_return_val_if_fail (action_id && action_id[0], NULL);
-
-    class_id = moo_window_class_get_id (MOO_WINDOW_CLASS (G_OBJECT_GET_CLASS (window)));
 
     if (g_type_is_a (info->action->action_type, MOO_TYPE_ACTION))
         action = moo_action_factory_create_action (info->action, window,
@@ -924,7 +958,7 @@ create_action (const char *action_id,
 }
 
 
-static const char*
+static const char *
 moo_window_class_get_id (MooWindowClass *klass)
 {
     GType type;
@@ -936,7 +970,7 @@ moo_window_class_get_id (MooWindowClass *klass)
 }
 
 
-static const char*
+static const char *
 moo_window_class_get_name (MooWindowClass     *klass)
 {
     GType type;
@@ -955,30 +989,23 @@ moo_window_class_install_action (MooWindowClass     *klass,
                                  const char         *group,
                                  char              **conditions)
 {
-    GHashTable *actions;
+    ActionStore *store;
     ActionInfo *info;
-    GType type;
     GSList *l;
+    GType type;
 
     g_return_if_fail (MOO_IS_WINDOW_CLASS (klass));
     g_return_if_fail (MOO_IS_ACTION_FACTORY (action));
     g_return_if_fail (action_id && action_id[0]);
 
     type = G_OBJECT_CLASS_TYPE (klass);
-    actions = g_type_get_qdata (type, MOO_WINDOW_ACTIONS_QUARK);
+    store = type_ensure_store (type);
 
-    if (!actions)
-    {
-        actions = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                         g_free, (GDestroyNotify) action_info_free);
-        g_type_set_qdata (type, MOO_WINDOW_ACTIONS_QUARK, actions);
-    }
-
-    if (g_hash_table_lookup (actions, action_id))
+    if (g_hash_table_lookup (store->actions, action_id))
         moo_window_class_remove_action (klass, action_id);
 
     info = action_info_new (action, group, conditions);
-    g_hash_table_insert (actions, g_strdup (action_id), info);
+    g_hash_table_insert (store->actions, g_strdup (action_id), info);
 
     for (l = window_instances; l != NULL; l = l->next)
     {
@@ -987,7 +1014,10 @@ moo_window_class_install_action (MooWindowClass     *klass,
             GtkAction *action = create_action (action_id, info, l->data);
 
             if (action)
+            {
                 moo_window_add_action (l->data, group, action);
+                g_object_unref (action);
+            }
         }
     }
 }
@@ -1053,16 +1083,14 @@ gboolean
 moo_window_class_find_action (MooWindowClass *klass,
                               const char     *id)
 {
-    GHashTable *actions;
-    GType type;
+    ActionStore *store;
 
     g_return_val_if_fail (MOO_IS_WINDOW_CLASS (klass), FALSE);
 
-    type = G_OBJECT_CLASS_TYPE (klass);
-    actions = g_type_get_qdata (type, MOO_WINDOW_ACTIONS_QUARK);
+    store = type_get_store (G_OBJECT_CLASS_TYPE (klass));
 
-    if (actions)
-        return g_hash_table_lookup (actions, id) != NULL;
+    if (store)
+        return g_hash_table_lookup (store->actions, id) != NULL;
     else
         return FALSE;
 }
@@ -1072,21 +1100,98 @@ void
 moo_window_class_remove_action (MooWindowClass     *klass,
                                 const char         *action_id)
 {
-    GHashTable *actions;
+    ActionStore *store;
     GType type;
     GSList *l;
 
     g_return_if_fail (MOO_IS_WINDOW_CLASS (klass));
+    g_return_if_fail (action_id != NULL);
 
     type = G_OBJECT_CLASS_TYPE (klass);
-    actions = g_type_get_qdata (type, MOO_WINDOW_ACTIONS_QUARK);
+    store = type_get_store (type);
 
-    if (actions)
-        g_hash_table_remove (actions, action_id);
+    if (store)
+        g_hash_table_remove (store->actions, action_id);
 
     for (l = window_instances; l != NULL; l = l->next)
         if (g_type_is_a (G_OBJECT_TYPE (l->data), type))
             moo_window_remove_action (l->data, action_id);
+}
+
+
+void
+moo_window_class_new_group (MooWindowClass *klass,
+                            const char     *name,
+                            const char     *display_name)
+{
+    ActionStore *store;
+    GSList *l;
+    GType type;
+
+    g_return_if_fail (MOO_IS_WINDOW_CLASS (klass));
+    g_return_if_fail (name != NULL);
+    g_return_if_fail (display_name != NULL);
+
+    type = G_OBJECT_CLASS_TYPE (klass);
+    store = type_ensure_store (type);
+
+    g_hash_table_insert (store->groups, g_strdup (name), g_strdup (display_name));
+
+    for (l = window_instances; l != NULL; l = l->next)
+    {
+        if (g_type_is_a (G_OBJECT_TYPE (l->data), type))
+        {
+            MooWindow *window = l->data;
+            moo_action_collection_add_group (window->priv->actions, name, display_name);
+        }
+    }
+}
+
+
+gboolean
+moo_window_class_find_group (MooWindowClass *klass,
+                             const char     *name)
+{
+    ActionStore *store;
+
+    g_return_val_if_fail (MOO_IS_WINDOW_CLASS (klass), FALSE);
+
+    store = type_get_store (G_OBJECT_CLASS_TYPE (klass));
+
+    if (store)
+        return g_hash_table_lookup (store->groups, name) != NULL;
+    else
+        return FALSE;
+}
+
+
+void
+moo_window_class_remove_group (MooWindowClass *klass,
+                               const char     *name)
+{
+    ActionStore *store;
+    GType type;
+    GSList *l;
+
+    g_return_if_fail (MOO_IS_WINDOW_CLASS (klass));
+    g_return_if_fail (name != NULL);
+
+    type = G_OBJECT_CLASS_TYPE (klass);
+    store = type_get_store (type);
+
+    if (store)
+        g_hash_table_remove (store->groups, name);
+
+    for (l = window_instances; l != NULL; l = l->next)
+    {
+        if (g_type_is_a (G_OBJECT_TYPE (l->data), type))
+        {
+            MooWindow *window = l->data;
+            GtkActionGroup *group = moo_action_collection_get_group (window->priv->actions, name);
+            if (group)
+                moo_action_collection_remove_group (window->priv->actions, group);
+        }
+    }
 }
 
 
@@ -1155,26 +1260,44 @@ add_action (const char *id,
     GtkAction *action = create_action (id, info, window);
 
     if (action)
+    {
         moo_window_add_action (window, info->group, action);
+        g_object_unref (action);
+    }
 }
 
 static void
-moo_window_add_class_actions (MooWindow *window)
+add_group (const char *name,
+           const char *display_name,
+           MooWindow  *window)
+{
+    moo_action_collection_add_group (window->priv->actions, name, display_name);
+}
+
+static void
+moo_window_create_class_actions (MooWindow *window)
 {
     GType type;
 
     g_return_if_fail (MOO_IS_WINDOW (window));
 
+    window->priv->actions = moo_action_collection_new (window->priv->id,
+                                                       window->priv->name);
+    _moo_action_collection_set_window (window->priv->actions, window);
+
     type = G_OBJECT_TYPE (window);
 
     while (TRUE)
     {
-        GHashTable *actions;
+        ActionStore *store;
 
-        actions = g_type_get_qdata (type, MOO_WINDOW_ACTIONS_QUARK);
+        store = type_get_store (type);
 
-        if (actions)
-            g_hash_table_foreach (actions, (GHFunc) add_action, window);
+        if (store)
+        {
+            g_hash_table_foreach (store->groups, (GHFunc) add_group, window);
+            g_hash_table_foreach (store->actions, (GHFunc) add_action, window);
+        }
 
         if (type == MOO_TYPE_WINDOW)
             break;

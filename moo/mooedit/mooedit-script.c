@@ -17,29 +17,42 @@
 #include <string.h>
 
 
-static void moo_edit_context_init_text_api      (MSContext  *ctx);
-static void moo_edit_context_init_editor_api    (MSContext  *ctx);
+#define MS_VAR_WINDOW       "window"
+#define MS_VAR_DOC          "doc"
+#define MS_VAR_FILE         "file"
+#define MS_VAR_NAME         "name"
+#define MS_VAR_BASE         "base"
+#define MS_VAR_DIR          "dir"
+#define MS_VAR_EXT          "ext"
 
 
-G_DEFINE_TYPE (MooEditContext, moo_edit_context, MS_TYPE_CONTEXT)
+static void add_text_api    (MSContext  *ctx);
+static void add_editor_api  (MSContext  *ctx);
+
+static void moo_edit_script_context_set_doc (MooEditScriptContext   *ctx,
+                                             GtkTextView            *doc);
+
+
+G_DEFINE_TYPE (MooEditScriptContext, moo_edit_script_context, MS_TYPE_CONTEXT)
 
 enum {
     PROP_0,
     PROP_DOC
 };
 
+
 static void
-moo_edit_context_set_property (GObject        *object,
-                               guint           prop_id,
-                               const GValue   *value,
-                               GParamSpec     *pspec)
+moo_edit_script_context_set_property (GObject        *object,
+                                      guint           prop_id,
+                                      const GValue   *value,
+                                      GParamSpec     *pspec)
 {
-    MooEditContext *ctx = MOO_EDIT_CONTEXT (object);
+    MooEditScriptContext *ctx = MOO_EDIT_SCRIPT_CONTEXT (object);
 
     switch (prop_id)
     {
         case PROP_DOC:
-            moo_edit_context_set_doc (ctx, g_value_get_object (value));
+            moo_edit_script_context_set_doc (ctx, g_value_get_object (value));
             break;
 
         default:
@@ -50,12 +63,12 @@ moo_edit_context_set_property (GObject        *object,
 
 
 static void
-moo_edit_context_get_property (GObject        *object,
-                               guint           prop_id,
-                               GValue         *value,
-                               GParamSpec     *pspec)
+moo_edit_script_context_get_property (GObject    *object,
+                                      guint       prop_id,
+                                      GValue     *value,
+                                      GParamSpec *pspec)
 {
-    MooEditContext *ctx = MOO_EDIT_CONTEXT (object);
+    MooEditScriptContext *ctx = MOO_EDIT_SCRIPT_CONTEXT (object);
 
     switch (prop_id)
     {
@@ -71,28 +84,26 @@ moo_edit_context_get_property (GObject        *object,
 
 
 static void
-moo_edit_context_class_init (MooEditContextClass *klass)
+moo_edit_script_context_class_init (MooEditScriptContextClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
-    gobject_class->set_property = moo_edit_context_set_property;
-    gobject_class->get_property = moo_edit_context_get_property;
+    gobject_class->set_property = moo_edit_script_context_set_property;
+    gobject_class->get_property = moo_edit_script_context_get_property;
 
     g_object_class_install_property (gobject_class,
                                      PROP_DOC,
-                                     g_param_spec_object ("doc",
-                                             "doc",
-                                             "doc",
-                                             MOO_TYPE_EDIT,
-                                             G_PARAM_READWRITE));
+                                     g_param_spec_object ("doc", "doc", "doc",
+                                                          GTK_TYPE_TEXT_VIEW,
+                                                          G_PARAM_READWRITE));
 }
 
 
 static void
-moo_edit_context_init (MooEditContext *ctx)
+moo_edit_script_context_init (MooEditScriptContext *ctx)
 {
-    moo_edit_context_init_text_api (MS_CONTEXT (ctx));
-    moo_edit_context_init_editor_api (MS_CONTEXT (ctx));
+    add_text_api (MS_CONTEXT (ctx));
+    add_editor_api (MS_CONTEXT (ctx));
 }
 
 
@@ -121,36 +132,40 @@ get_extension (const char *string,
 
 
 void
-moo_edit_context_set_doc (MooEditContext *ctx,
-                          MooEdit        *doc)
+moo_edit_script_context_set_doc (MooEditScriptContext *ctx,
+                                 GtkTextView          *doc)
 {
     MSValue *val;
-    MooEditWindow *window = NULL;
+    GtkWidget *window = NULL;
 
-    g_return_if_fail (MOO_IS_EDIT_CONTEXT (ctx));
-    g_return_if_fail (!doc || MOO_IS_EDIT (doc));
+    g_return_if_fail (MOO_IS_EDIT_SCRIPT_CONTEXT (ctx));
+    g_return_if_fail (!doc || GTK_IS_TEXT_VIEW (doc));
 
     if (doc)
-        window = moo_edit_get_window (doc);
+    {
+        window = gtk_widget_get_toplevel (GTK_WIDGET (doc));
+        if (!GTK_IS_WINDOW (window))
+            window = NULL;
+    }
 
     g_object_set (ctx, "window", window, NULL);
 
     val = ms_value_dict ();
 
-    if (doc)
+    if (MOO_IS_EDIT (doc))
     {
         char *dirname = NULL, *base = NULL, *ext = NULL;
 
-        if (moo_edit_get_basename (doc))
-            get_extension (moo_edit_get_basename (doc), &base, &ext);
+        if (moo_edit_get_basename (MOO_EDIT (doc)))
+            get_extension (moo_edit_get_basename (MOO_EDIT (doc)), &base, &ext);
 
-        if (moo_edit_get_filename (doc))
-            dirname = g_path_get_dirname (moo_edit_get_filename (doc));
+        if (moo_edit_get_filename (MOO_EDIT (doc)))
+            dirname = g_path_get_dirname (moo_edit_get_filename (MOO_EDIT (doc)));
 
         ms_value_dict_set_string (val, MS_VAR_FILE,
-                                  moo_edit_get_filename (doc));
+                                  moo_edit_get_filename (MOO_EDIT (doc)));
         ms_value_dict_set_string (val, MS_VAR_NAME,
-                                  moo_edit_get_basename (doc));
+                                  moo_edit_get_basename (MOO_EDIT (doc)));
         ms_value_dict_set_string (val, MS_VAR_BASE, base);
         ms_value_dict_set_string (val, MS_VAR_DIR, dirname);
         ms_value_dict_set_string (val, MS_VAR_EXT, ext);
@@ -171,115 +186,115 @@ moo_edit_context_set_doc (MooEditContext *ctx,
     ms_context_assign_variable (MS_CONTEXT (ctx), MS_VAR_DOC, val);
     ms_value_unref (val);
 
-    if (moo_python_running ())
-    {
-        ms_context_assign_py_object (MS_CONTEXT (ctx), MS_VAR_DOC, doc);
-        ms_context_assign_py_object (MS_CONTEXT (ctx), MS_VAR_WINDOW, window);
-    }
-
     ctx->doc = doc;
     g_object_notify (G_OBJECT (ctx), "doc");
 }
 
 
 MSContext *
-moo_edit_context_new (MooEdit       *doc,
-                      MooEditWindow *window)
+moo_edit_script_context_new (GtkTextView *doc,
+                             GtkWindow   *window)
 {
-    g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), NULL);
-    g_return_val_if_fail (!doc || MOO_IS_EDIT (doc), NULL);
-    return g_object_new (MOO_TYPE_EDIT_CONTEXT,
-                         "window", window,
-                         "doc", doc,
-                         NULL);
-}
+    g_return_val_if_fail (!window || GTK_IS_WINDOW (window), NULL);
+    g_return_val_if_fail (!doc || GTK_IS_TEXT_VIEW (doc), NULL);
 
-
-MSContext *
-moo_text_context_new (GtkTextView *doc)
-{
-    GtkWidget *window;
-    MSContext *ctx;
-
-    g_return_val_if_fail (GTK_IS_TEXT_VIEW (doc), NULL);
-
-    if (MOO_IS_EDIT (doc))
-        return moo_edit_context_new (MOO_EDIT (doc), NULL);
-
-    window = gtk_widget_get_toplevel (GTK_WIDGET (doc));
-
-    ctx = g_object_new (MS_TYPE_CONTEXT,
-                        "window", GTK_IS_WINDOW (window) ? window : NULL,
-                        NULL);
-
-    moo_edit_context_init_text_api (ctx);
-
-    return ctx;
-}
-
-
-static void
-moo_edit_set_shell_vars (MooCommand     *cmd,
-                         MooEdit        *doc,
-                         MooEditWindow  *window)
-{
-    if (doc)
-    {
-        char *dirname = NULL, *base = NULL, *ext = NULL;
-
-        if (moo_edit_get_filename (doc))
-            dirname = g_path_get_dirname (moo_edit_get_filename (doc));
-
-        if (moo_edit_get_basename (doc))
-            get_extension (moo_edit_get_basename (doc), &base, &ext);
-
-        moo_command_set_shell_var (cmd, MS_VAR_FILE,
-                                   moo_edit_get_filename (doc));
-        moo_command_set_shell_var (cmd, MS_VAR_NAME,
-                                   moo_edit_get_basename (doc));
-        moo_command_set_shell_var (cmd, MS_VAR_BASE, base);
-        moo_command_set_shell_var (cmd, MS_VAR_EXT, ext);
-        moo_command_set_shell_var (cmd, MS_VAR_DIR, dirname);
-
-        g_free (base);
-        g_free (ext);
-        g_free (dirname);
-    }
+    if (window)
+        return g_object_new (MOO_TYPE_EDIT_SCRIPT_CONTEXT,
+                             "window", window,
+                             "doc", doc,
+                             NULL);
     else
-    {
-        moo_command_set_shell_var (cmd, MS_VAR_FILE, NULL);
-        moo_command_set_shell_var (cmd, MS_VAR_BASE, NULL);
-        moo_command_set_shell_var (cmd, MS_VAR_EXT, NULL);
-        moo_command_set_shell_var (cmd, MS_VAR_DIR, NULL);
-    }
+        return g_object_new (MOO_TYPE_EDIT_SCRIPT_CONTEXT,
+                             "doc", doc,
+                             NULL);
 }
 
 
-void
-moo_edit_setup_command (MooCommand     *cmd,
-                        MooEdit        *doc,
-                        MooEditWindow  *window)
-{
-    MSContext *ctx;
-
-    g_return_if_fail (MOO_IS_COMMAND (cmd));
-    g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
-    g_return_if_fail (!doc || MOO_IS_EDIT (doc));
-
-    if (!doc && window)
-        doc = moo_edit_window_get_active_doc (window);
-
-    ctx = moo_edit_context_new (doc, window);
-
-    moo_command_set_context (cmd, ctx);
-
-    if (ctx->py_dict)
-        moo_command_set_py_dict (cmd, ctx->py_dict);
-
-    g_object_unref (ctx);
-
-    moo_edit_set_shell_vars (cmd, doc, window);
-}
+// MSContext *
+// moo_text_context_new (GtkTextView *doc)
+// {
+//     GtkWidget *window;
+//     MSContext *ctx;
+//
+//     g_return_val_if_fail (GTK_IS_TEXT_VIEW (doc), NULL);
+//
+//     if (MOO_IS_EDIT (doc))
+//         return moo_edit_script_context_new (MOO_EDIT (doc), NULL);
+//
+//     window = gtk_widget_get_toplevel (GTK_WIDGET (doc));
+//
+//     ctx = g_object_new (MS_TYPE_CONTEXT,
+//                         "window", GTK_IS_WINDOW (window) ? window : NULL,
+//                         NULL);
+//
+//     moo_edit_script_context_init_text_api (ctx);
+//
+//     return ctx;
+// }
+//
+//
+// static void
+// moo_edit_set_shell_vars (MooCommand     *cmd,
+//                          MooEdit        *doc,
+//                          MooEditWindow  *window)
+// {
+//     if (doc)
+//     {
+//         char *dirname = NULL, *base = NULL, *ext = NULL;
+//
+//         if (moo_edit_get_filename (doc))
+//             dirname = g_path_get_dirname (moo_edit_get_filename (doc));
+//
+//         if (moo_edit_get_basename (doc))
+//             get_extension (moo_edit_get_basename (doc), &base, &ext);
+//
+//         moo_command_set_shell_var (cmd, MS_VAR_FILE,
+//                                    moo_edit_get_filename (doc));
+//         moo_command_set_shell_var (cmd, MS_VAR_NAME,
+//                                    moo_edit_get_basename (doc));
+//         moo_command_set_shell_var (cmd, MS_VAR_BASE, base);
+//         moo_command_set_shell_var (cmd, MS_VAR_EXT, ext);
+//         moo_command_set_shell_var (cmd, MS_VAR_DIR, dirname);
+//
+//         g_free (base);
+//         g_free (ext);
+//         g_free (dirname);
+//     }
+//     else
+//     {
+//         moo_command_set_shell_var (cmd, MS_VAR_FILE, NULL);
+//         moo_command_set_shell_var (cmd, MS_VAR_BASE, NULL);
+//         moo_command_set_shell_var (cmd, MS_VAR_EXT, NULL);
+//         moo_command_set_shell_var (cmd, MS_VAR_DIR, NULL);
+//     }
+// }
+//
+//
+// void
+// moo_edit_setup_command (MooCommand     *cmd,
+//                         MooEdit        *doc,
+//                         MooEditWindow  *window)
+// {
+//     MSContext *ctx;
+//
+//     g_return_if_fail (MOO_IS_COMMAND (cmd));
+//     g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
+//     g_return_if_fail (!doc || MOO_IS_EDIT (doc));
+//
+//     if (!doc && window)
+//         doc = moo_edit_window_get_active_doc (window);
+//
+//     ctx = moo_edit_script_context_new (doc, window);
+//
+//     moo_command_set_context (cmd, ctx);
+//
+//     if (ctx->py_dict)
+//         moo_command_set_py_dict (cmd, ctx->py_dict);
+//
+//     g_object_unref (ctx);
+//
+//     moo_edit_set_shell_vars (cmd, doc, window);
+// }
 
 
 /******************************************************************/
@@ -320,7 +335,7 @@ static MSFunc *builtin_funcs[N_BUILTIN_FUNCS];
 
 #define CHECK_DOC(ctx,doc)                          \
 G_STMT_START {                                      \
-    doc = MOO_EDIT_CONTEXT(ctx)->doc;               \
+    doc = MOO_EDIT_SCRIPT_CONTEXT(ctx)->doc;        \
                                                     \
     if (!doc)                                       \
     {                                               \
@@ -411,7 +426,7 @@ cfunc_backspace (MSValue  **args,
     int n;
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
-    MooEdit *doc;
+    GtkTextView *doc;
 
     CHECK_DOC (ctx, doc);
 
@@ -421,7 +436,7 @@ cfunc_backspace (MSValue  **args,
     if (!n)
         return ms_value_none ();
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
+    buffer = gtk_text_view_get_buffer (doc);
 
     if (gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
     {
@@ -435,7 +450,7 @@ cfunc_backspace (MSValue  **args,
         gtk_text_buffer_delete (buffer, &start, &end);
     }
 
-    scroll_to_cursor (GTK_TEXT_VIEW (doc));
+    scroll_to_cursor (doc);
     return ms_value_none ();
 }
 
@@ -448,7 +463,7 @@ cfunc_delete (MSValue  **args,
     int n;
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
-    MooEdit *doc;
+    GtkTextView *doc;
 
     CHECK_DOC (ctx, doc);
 
@@ -458,7 +473,7 @@ cfunc_delete (MSValue  **args,
     if (!n)
         return ms_value_none ();
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
+    buffer = gtk_text_view_get_buffer (doc);
 
     if (gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
     {
@@ -472,7 +487,7 @@ cfunc_delete (MSValue  **args,
         gtk_text_buffer_delete (buffer, &start, &end);
     }
 
-    scroll_to_cursor (GTK_TEXT_VIEW (doc));
+    scroll_to_cursor (doc);
     return ms_value_none ();
 }
 
@@ -484,7 +499,7 @@ cfunc_newline (MSValue  **args,
 {
     int n;
     GtkTextBuffer *buffer;
-    MooEdit *doc;
+    GtkTextView *doc;
     char *freeme = NULL;
     const char *insert;
 
@@ -496,13 +511,13 @@ cfunc_newline (MSValue  **args,
     if (!n)
         return ms_value_none ();
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
+    buffer = gtk_text_view_get_buffer (doc);
     insert = "\n";
 
     if (n > 1)
         insert = freeme = g_strnfill (n, '\n');
 
-    insert_and_scroll (GTK_TEXT_VIEW (doc), insert, n);
+    insert_and_scroll (doc, insert, n);
 
     g_free (freeme);
     return ms_value_none ();
@@ -510,14 +525,14 @@ cfunc_newline (MSValue  **args,
 
 
 static void
-get_cursor (MooEdit *doc,
-            int     *line,
-            int     *col)
+get_cursor (GtkTextView *doc,
+            int         *line,
+            int         *col)
 {
     GtkTextBuffer *buffer;
     GtkTextIter iter;
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
+    buffer = gtk_text_view_get_buffer (doc);
     gtk_text_buffer_get_iter_at_mark (buffer, &iter,
                                       gtk_text_buffer_get_insert (buffer));
 
@@ -532,7 +547,7 @@ cfunc_up (MSValue  **args,
           MSContext *ctx)
 {
     int line, col, n;
-    MooEdit *doc;
+    GtkTextView *doc;
 
     CHECK_DOC (ctx, doc);
 
@@ -545,9 +560,8 @@ cfunc_up (MSValue  **args,
     get_cursor (doc, &line, &col);
 
     if (line > 0)
-        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc),
-                                   MAX (line - n, 0), col,
-                                   TRUE, FALSE);
+        moo_text_view_move_cursor (doc, MAX (line - n, 0), col, TRUE, FALSE);
+
     scroll_to_cursor (GTK_TEXT_VIEW (doc));
 
     return ms_value_none ();
@@ -561,7 +575,7 @@ cfunc_down (MSValue  **args,
 {
     int line, col, n, line_count;
     GtkTextBuffer *buffer;
-    MooEdit *doc;
+    GtkTextView *doc;
 
     CHECK_DOC (ctx, doc);
 
@@ -572,12 +586,10 @@ cfunc_down (MSValue  **args,
         return ms_value_none ();
 
     get_cursor (doc, &line, &col);
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
+    buffer = gtk_text_view_get_buffer (doc);
     line_count = gtk_text_buffer_get_line_count (buffer);
 
-    moo_text_view_move_cursor (MOO_TEXT_VIEW (doc),
-                               MIN (line + n, line_count - 1), col,
-                               TRUE, FALSE);
+    moo_text_view_move_cursor (doc, MIN (line + n, line_count - 1), col, TRUE, FALSE);
     scroll_to_cursor (GTK_TEXT_VIEW (doc));
 
     return ms_value_none ();
@@ -591,7 +603,7 @@ cfunc_select (MSValue   *arg,
     int n;
     GtkTextBuffer *buffer;
     GtkTextIter start, end;
-    MooEdit *doc;
+    GtkTextView *doc;
 
     CHECK_DOC (ctx, doc);
 
@@ -599,33 +611,33 @@ cfunc_select (MSValue   *arg,
         return ms_context_set_error (MS_CONTEXT (ctx), MS_ERROR_TYPE,
                                      "argument must be integer");
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
+    buffer = gtk_text_view_get_buffer (doc);
     gtk_text_buffer_get_iter_at_mark (buffer, &start,
                                       gtk_text_buffer_get_insert (buffer));
     end = start;
     gtk_text_iter_forward_chars (&end, n);
 
     gtk_text_buffer_select_range (buffer, &end, &start);
-    scroll_to_cursor (GTK_TEXT_VIEW (doc));
+    scroll_to_cursor (doc);
 
     return ms_value_none ();
 }
 
 
 static void
-move_cursor (MooEdit *doc,
-             int      howmany)
+move_cursor (GtkTextView *doc,
+             int          howmany)
 {
     GtkTextBuffer *buffer;
     GtkTextIter iter;
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
+    buffer = gtk_text_view_get_buffer (doc);
     gtk_text_buffer_get_iter_at_mark (buffer, &iter,
                                       gtk_text_buffer_get_insert (buffer));
 
     gtk_text_iter_forward_chars (&iter, howmany);
     gtk_text_buffer_place_cursor (buffer, &iter);
-    scroll_to_cursor (GTK_TEXT_VIEW (doc));
+    scroll_to_cursor (doc);
 }
 
 
@@ -635,7 +647,7 @@ cfunc_left (MSValue  **args,
             MSContext *ctx)
 {
     int n;
-    MooEdit *doc;
+    GtkTextView *doc;
 
     CHECK_DOC (ctx, doc);
 
@@ -653,7 +665,7 @@ cfunc_right (MSValue  **args,
              MSContext *ctx)
 {
     int n;
-    MooEdit *doc;
+    GtkTextView *doc;
 
     CHECK_DOC (ctx, doc);
 
@@ -673,14 +685,14 @@ cfunc_insert (MSValue  **args,
     guint i;
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
-    MooEdit *doc;
+    GtkTextView *doc;
 
     CHECK_DOC (ctx, doc);
 
     if (!n_args)
         return ms_value_none ();
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
+    buffer = gtk_text_view_get_buffer (doc);
 
     if (gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
         gtk_text_buffer_delete (buffer, &start, &end);
@@ -692,7 +704,7 @@ cfunc_insert (MSValue  **args,
         g_free (s);
     }
 
-    scroll_to_cursor (GTK_TEXT_VIEW (doc));
+    scroll_to_cursor (doc);
     return ms_value_none ();
 }
 
@@ -704,7 +716,7 @@ cfunc_insert_placeholder (MSValue  **args,
 {
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
-    MooEdit *doc;
+    GtkTextView *doc;
     char *text = NULL;
 
     CHECK_DOC (ctx, doc);
@@ -713,16 +725,20 @@ cfunc_insert_placeholder (MSValue  **args,
         return ms_context_set_error (ctx, MS_ERROR_TYPE,
                                      "number of args must be zero or one");
 
+    if (!MOO_IS_TEXT_VIEW (doc))
+        return ms_context_set_error (ctx, MS_ERROR_TYPE,
+                                     "document does not support placeholders");
+
     if (n_args)
         text = ms_value_print (args[0]);
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
+    buffer = gtk_text_view_get_buffer (doc);
 
     if (gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
         gtk_text_buffer_delete (buffer, &start, &end);
 
     moo_text_view_insert_placeholder (MOO_TEXT_VIEW (doc), &start, text);
-    scroll_to_cursor (GTK_TEXT_VIEW (doc));
+    scroll_to_cursor (doc);
 
     g_free (text);
     return ms_value_none ();
@@ -732,12 +748,12 @@ cfunc_insert_placeholder (MSValue  **args,
 static MSValue *
 cfunc_selection (MSContext *ctx)
 {
-    MooEdit *doc;
+    GtkTextView *doc;
     char *text;
 
     CHECK_DOC (ctx, doc);
 
-    text = moo_text_view_get_selection (MOO_TEXT_VIEW (doc));
+    text = moo_text_view_get_selection (doc);
     return ms_value_take_string (text);
 }
 
@@ -746,7 +762,7 @@ cfunc_selection (MSContext *ctx)
 static MSValue *                        \
 name (MSContext *ctx)                   \
 {                                       \
-    MooEdit *doc;                       \
+    GtkTextView *doc;                   \
     CHECK_DOC (ctx, doc);               \
     g_signal_emit_by_name (doc, sig);   \
     return ms_value_none ();            \
@@ -760,7 +776,7 @@ DEFINE_CLIP_FUNC(cfunc_paste, "paste-clipboard")
 
 
 static void
-init_api (void)
+init_text_api (void)
 {
     if (builtin_funcs[0])
         return;
@@ -783,11 +799,11 @@ init_api (void)
 
 
 static void
-moo_edit_context_init_text_api (MSContext *ctx)
+add_text_api (MSContext *ctx)
 {
     guint i;
 
-    init_api ();
+    init_text_api ();
 
     for (i = 0; i < N_BUILTIN_FUNCS; ++i)
         ms_context_set_func (ctx, builtin_func_names[i],
@@ -816,13 +832,18 @@ static MSValue *
 cfunc_open (MSValue   *arg,
             MSContext *ctx)
 {
-    MooEdit *doc, *new_doc;
+    gpointer doc;
+    MooEdit *new_doc;
     MooEditor *editor;
     MooEditWindow *window;
     char *filename;
 
-    doc = MOO_EDIT_CONTEXT(ctx)->doc;
-    editor = doc ? doc->priv->editor : moo_editor_instance ();
+    g_return_val_if_fail (MOO_IS_EDIT_SCRIPT_CONTEXT (ctx), NULL);
+
+    doc = MOO_EDIT_SCRIPT_CONTEXT(ctx)->doc;
+    editor = MOO_IS_EDIT (doc) ? MOO_EDIT (doc)->priv->editor : moo_editor_instance ();
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+
     window = MOO_IS_EDIT_WINDOW (ctx->window) ? MOO_EDIT_WINDOW (ctx->window) : NULL;
     filename = ms_value_print (arg);
 
@@ -844,7 +865,7 @@ init_editor_api (void)
 
 
 static void
-moo_edit_context_init_editor_api (MSContext *ctx)
+add_editor_api (MSContext *ctx)
 {
     guint i;
 

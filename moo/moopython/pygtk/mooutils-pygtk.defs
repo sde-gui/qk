@@ -1429,23 +1429,27 @@
   (return-type "gboolean")
 )
 
-(define-method get_id
-  (of-object "MooWindowClass")
+(define-function window_class_get_id
   (c-name "moo_window_class_get_id")
   (return-type "const-char*")
+  (parameters
+    '("MooWindowClass*" "cls")
+  )
 )
 
-(define-method get_name
-  (of-object "MooWindowClass")
+(define-function window_class_get_name
   (c-name "moo_window_class_get_name")
   (return-type "const-char*")
+  (parameters
+    '("MooWindowClass*" "cls")
+  )
 )
 
-(define-method set_id
-  (of-object "MooWindowClass")
+(define-function window_class_set_id
   (c-name "moo_window_class_set_id")
   (return-type "none")
   (parameters
+    '("MooWindowClass*" "cls")
     '("const-char*" "id")
     '("const-char*" "name")
   )
@@ -1456,13 +1460,52 @@
   (return-type "none")
 )
 
+(define-function window_class_find_action
+  (c-name "moo_window_class_find_action")
+  (return-type "gboolean")
+  (parameters
+    '("MooWindowClass*" "cls")
+    '("const-char*" "id")
+  )
+)
+
 (define-function window_class_remove_action
   (c-name "moo_window_class_remove_action")
   (return-type "none")
   (parameters
+    '("MooWindowClass*" "cls")
     '("const-char*" "id")
   )
 )
+
+(define-function window_class_add_group
+  (c-name "moo_window_class_add_group")
+  (return-type "none")
+  (parameters
+    '("MooWindowClass*" "cls")
+    '("const-char*" "name")
+    '("const-char*" "display_name")
+  )
+)
+
+(define-function window_class_find_group
+  (c-name "moo_window_class_find_group")
+  (return-type "gboolean")
+  (parameters
+    '("MooWindowClass*" "cls")
+    '("const-char*" "name")
+  )
+)
+
+(define-function window_class_remove_group
+  (c-name "moo_window_class_remove_group")
+  (return-type "gboolean")
+  (parameters
+    '("MooWindowClass*" "cls")
+    '("const-char*" "name")
+  )
+)
+
 
 (define-method get_ui_xml
   (of-object "MooWindow")

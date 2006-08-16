@@ -30,7 +30,6 @@ mooutils_include_headers =		\
 	mooclosure.h			\
 	moocmd.h			\
 	moocombo.h			\
-	moocommand.h			\
 	mooconfig.h			\
 	mooentry.h			\
 	moofiltermgr.h			\
@@ -83,7 +82,6 @@ mooutils_sources =			\
 	moocombo.c			\
 	moocompat.c			\
 	moocompat.h			\
-	moocommand.c			\
 	mooconfig.c			\
 	moodialogs.c			\
 	moodialogs.h			\

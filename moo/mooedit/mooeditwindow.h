@@ -29,6 +29,7 @@ G_BEGIN_DECLS
 #define MOO_IS_EDIT_WINDOW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_WINDOW))
 #define MOO_EDIT_WINDOW_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_WINDOW, MooEditWindowClass))
 
+#define MOO_TYPE_ACTION_CHECK_TYPE      (moo_action_check_type_get_type ())
 
 typedef struct _MooEditWindow           MooEditWindow;
 typedef struct _MooEditWindowPrivate    MooEditWindowPrivate;
@@ -55,25 +56,28 @@ struct _MooEditWindowClass
 
 
 GType        moo_edit_window_get_type               (void) G_GNUC_CONST;
+GType        moo_action_check_type_get_type         (void) G_GNUC_CONST;
 
 gboolean     moo_edit_window_close_all              (MooEditWindow  *window);
 
-typedef void (*MooEditWindowCheckActionFunc)        (GtkAction      *action,
+typedef gboolean (*MooActionCheckFunc)              (GtkAction      *action,
+                                                     MooEditWindow  *window,
                                                      MooEdit        *doc,
-                                                     GParamSpec     *pspec,
-                                                     GValue         *prop_value,
                                                      gpointer        data);
+typedef enum {
+    MOO_ACTION_CHECK_SENSITIVE,
+    MOO_ACTION_CHECK_VISIBLE,
+    MOO_ACTION_CHECK_ACTIVE
+} MooActionCheckType;
 
-void         moo_edit_window_set_action_langs       (const char     *action_id,
-                                                     const char     *action_prop,
-                                                     GSList         *langs);
-void         moo_edit_window_add_action_check       (const char     *action_id,
-                                                     const char     *action_prop,
-                                                     MooEditWindowCheckActionFunc func,
+void         moo_edit_window_set_action_check       (const char     *action_id,
+                                                     MooActionCheckType type,
+                                                     MooActionCheckFunc func,
                                                      gpointer        data,
                                                      GDestroyNotify  notify);
-void         moo_edit_window_remove_action_check    (const char     *action_id,
-                                                     const char     *action_prop);
+void         moo_edit_window_set_action_langs       (const char     *action_id,
+                                                     MooActionCheckType type,
+                                                     const char     *langs);
 
 MooEdit     *moo_edit_window_get_active_doc         (MooEditWindow  *window);
 void         moo_edit_window_set_active_doc         (MooEditWindow  *window,

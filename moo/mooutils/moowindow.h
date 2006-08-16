@@ -83,6 +83,11 @@ void        moo_window_class_new_action_custom (MooWindowClass  *klass,
                                              gpointer            data,
                                              GDestroyNotify      notify);
 
+gboolean    moo_window_class_find_action    (MooWindowClass     *klass,
+                                             const char         *id);
+void        moo_window_class_remove_action  (MooWindowClass     *klass,
+                                             const char         *id);
+
 void        moo_window_class_new_group      (MooWindowClass     *klass,
                                              const char         *name,
                                              const char         *display_name);
@@ -90,11 +95,6 @@ gboolean    moo_window_class_find_group     (MooWindowClass     *klass,
                                              const char         *name);
 void        moo_window_class_remove_group   (MooWindowClass     *klass,
                                              const char         *name);
-
-gboolean    moo_window_class_find_action    (MooWindowClass     *klass,
-                                             const char         *id);
-void        moo_window_class_remove_action  (MooWindowClass     *klass,
-                                             const char         *id);
 
 MooUIXML   *moo_window_get_ui_xml           (MooWindow          *window);
 void        moo_window_set_ui_xml           (MooWindow          *window,

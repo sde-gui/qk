@@ -1,11 +1,22 @@
 SUBDIRS = plugins syntax
 
 mooedit_toolsdir = $(MOO_DATA_DIR)
-mooedit_tools_DATA = tools.cfg menu.cfg
+mooedit_tools_DATA = tools.xml menu.xml
+
+moocommand_stuff =                     \
+	moocommand.h                   \
+	moocommand.c                   \
+	moocommand-exe.h               \
+	moocommand-exe.c               \
+	moocommand-script.h            \
+	moocommand-script.c
+
+completion =                           \
+	moocompletion.h                \
+	moocompletion.c
 
 mooedit_include_headers =              \
 	moocmdview.h                   \
-	moocompletion.h                \
 	mooedit-actions.h              \
 	mooedit-script.h               \
 	mooedit.h                      \
@@ -63,9 +74,9 @@ mooedit_noinst_headers =               \
 mooedit_sources =                      \
 	$(mooedit_include_headers)     \
 	$(mooedit_noinst_headers)      \
+	$(moocommand_stuff)            \
 	gtksourceiter.c                \
 	moocmdview.c                   \
-	moocompletion.c                \
 	mooedit-actions.c              \
 	mooedit-script.c               \
 	mooedit.c                      \
@@ -156,7 +167,8 @@ EXTRA_DIST =				\
 	glade/mooeditsavemult.glade	\
 	glade/moopluginprefs.glade	\
 	glade/mooprint.glade		\
-	$(mooedit_tools_DATA)
+	$(mooedit_tools_DATA)		\
+	$(completion)
 
 if GTK_2_10
 mooedit_sources += $(mooedit_printing_sources)

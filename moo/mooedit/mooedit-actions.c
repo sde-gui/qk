@@ -23,10 +23,22 @@
 #include <gobject/gvaluecollector.h>
 
 
-static void moo_edit_add_action     (MooEdit        *edit,
-                                     GtkAction      *action);
-static void moo_edit_remove_action  (MooEdit        *edit,
-                                     const char     *action_id);
+static void moo_edit_add_action                 (MooEdit            *edit,
+                                                 GtkAction          *action);
+static void moo_edit_remove_action              (MooEdit            *edit,
+                                                 const char         *action_id);
+
+static void moo_edit_class_new_actionv          (MooEditClass       *klass,
+                                                 const char         *id,
+                                                 const char         *first_prop_name,
+                                                 va_list             props);
+static void moo_edit_class_new_action_custom    (MooEditClass       *klass,
+                                                 const char         *id,
+                                                 MooEditActionFunc   func,
+                                                 gpointer            data,
+                                                 GDestroyNotify      notify);
+
+static void moo_edit_action_check_state         (MooEditAction      *action);
 
 
 #define MOO_EDIT_ACTIONS_QUARK (moo_edit_get_actions_quark ())
@@ -212,7 +224,7 @@ moo_edit_class_install_action (MooEditClass     *klass,
 }
 
 
-void
+static void
 moo_edit_class_new_actionv (MooEditClass       *klass,
                             const char         *action_id,
                             const char         *first_prop_name,
@@ -413,7 +425,7 @@ custom_action_factory_func (MooEdit          *edit,
 }
 
 
-void
+static void
 moo_edit_class_new_action_custom (MooEditClass       *klass,
                                   const char         *action_id,
                                   MooEditActionFunc   func,
@@ -625,13 +637,6 @@ _moo_edit_class_init_actions (MooEditClass *klass)
 G_DEFINE_TYPE (MooEditAction, moo_edit_action, MOO_TYPE_ACTION);
 
 enum {
-    CHECK_STATE,
-    NUM_SIGNALS
-};
-
-static guint signals[NUM_SIGNALS];
-
-enum {
     PROP_0,
     PROP_DOC,
     PROP_FLAGS,
@@ -666,10 +671,6 @@ moo_edit_action_get_property (GObject        *object,
             g_value_set_flags (value, action->flags);
             break;
 
-        case PROP_LANGS:
-            g_value_set_pointer (value, action->langs);
-            break;
-
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -684,18 +685,13 @@ string_slist_free (GSList *list)
 }
 
 
-static GSList *
-string_slist_copy (GSList *list)
+static void
+moo_edit_action_set_langs (MooEditAction *action,
+                           const char    *string)
 {
-    GSList *copy = NULL;
-
-    while (list)
-    {
-        copy = g_slist_prepend (copy, g_strdup (list->data));
-        list = list->next;
-    }
-
-    return g_slist_reverse (copy);
+    string_slist_free (action->langs);
+    action->langs = _moo_edit_parse_langs (string);
+    g_object_notify (G_OBJECT (action), "langs");
 }
 
 
@@ -720,9 +716,7 @@ moo_edit_action_set_property (GObject        *object,
             break;
 
         case PROP_LANGS:
-            string_slist_free (action->langs);
-            action->langs = string_slist_copy (g_value_get_pointer (value));
-            g_object_notify (object, "langs");
+            moo_edit_action_set_langs (action, g_value_get_string (value));
             break;
 
         default:
@@ -737,38 +731,30 @@ moo_edit_action_init (G_GNUC_UNUSED MooEditAction *action)
 }
 
 
-static gboolean
+static void
 moo_edit_action_check_state_real (MooEditAction *action)
 {
-    g_return_val_if_fail (action->doc != NULL, FALSE);
+    gboolean sensitive = TRUE, visible = TRUE;
 
-    if (action->flags)
-    {
-        gboolean sensitive = (action->flags & MOO_EDIT_ACTION_NEED_FILE) ?
-                                moo_edit_get_filename (action->doc) != NULL : TRUE;
-        g_object_set (action, "sensitive", sensitive, NULL);
-    }
+    g_return_if_fail (action->doc != NULL);
 
     if (action->langs)
     {
-        GSList *l;
         MooLang *lang = moo_text_view_get_lang (MOO_TEXT_VIEW (action->doc));
-        const char *lang_id = moo_lang_id (lang);
-        gboolean visible = FALSE;
 
-        for (l = action->langs; l != NULL; l = l->next)
+        if (!g_slist_find_custom (action->langs, moo_lang_id (lang),
+                                  (GCompareFunc) strcmp))
         {
-            if (l->data && !strcmp (l->data, lang_id))
-            {
-                visible = TRUE;
-                break;
-            }
+            sensitive = FALSE;
+            visible = FALSE;
         }
-
-        g_object_set (action, "visible", visible, NULL);
     }
 
-    return TRUE;
+    if (sensitive && action->flags)
+        sensitive = (action->flags & MOO_EDIT_ACTION_NEED_FILE) ?
+                        moo_edit_get_filename (action->doc) != NULL : TRUE;
+
+    g_object_set (action, "visible", visible, "sensitive", sensitive, NULL);
 }
 
 
@@ -801,18 +787,11 @@ moo_edit_action_class_init (MooEditActionClass *klass)
 
     g_object_class_install_property (gobject_class,
                                      PROP_LANGS,
-                                     g_param_spec_pointer ("langs",
+                                     g_param_spec_string ("langs",
                                              "langs",
                                              "langs",
-                                             G_PARAM_READWRITE));
-
-    signals[CHECK_STATE] =
-            g_signal_new ("check-state", G_TYPE_FROM_CLASS (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                          G_STRUCT_OFFSET (MooEditActionClass, check_state),
-                          g_signal_accumulator_true_handled, NULL,
-                          _moo_marshal_BOOLEAN__VOID,
-                          G_TYPE_BOOLEAN, 0);
+                                             NULL,
+                                             G_PARAM_WRITABLE));
 }
 
 
@@ -835,10 +814,10 @@ moo_edit_action_flags_get_type (void)
 }
 
 
-void
+static void
 moo_edit_action_check_state (MooEditAction *action)
 {
-    gboolean result;
     g_return_if_fail (MOO_IS_EDIT_ACTION (action));
-    g_signal_emit (action, signals[CHECK_STATE], 0, &result);
+    g_return_if_fail (MOO_EDIT_ACTION_GET_CLASS (action)->check_state != NULL);
+    MOO_EDIT_ACTION_GET_CLASS (action)->check_state (action);
 }

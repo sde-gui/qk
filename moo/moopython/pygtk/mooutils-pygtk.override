@@ -141,7 +141,7 @@ _wrap_moo_window_class_add_action (G_GNUC_UNUSED PyObject *self, PyObject *args)
         return_TypeError ("type must be derived from MooWindow");
 
     if (!PyString_Check (py_id))
-        return_TypeError ("id must be a string");
+        return_TypeError ("name must be a string");
 
     if (py_group != Py_None && !PyString_Check (py_group))
         return_TypeError ("group must be a string or None");
@@ -173,11 +173,40 @@ _wrap_moo_window_class_add_action (G_GNUC_UNUSED PyObject *self, PyObject *args)
     return_None;
 }
 %%
+override moo_window_class_find_action kwargs
+static PyObject *
+_wrap_moo_window_class_find_action (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = {(char*) "cls", (char*) "name", NULL};
+    PyObject *py_type;
+    GType type;
+    const char *action_id;
+    MooWindowClass *klass;
+    gboolean ret;
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "Os:window_class_find_action", kwlist, &py_type, &action_id))
+        return NULL;
+
+    type = pyg_type_from_object (py_type);
+
+    if (!type)
+        return NULL;
+
+    if (!g_type_is_a (type, MOO_TYPE_WINDOW))
+        return_TypeError ("type must be derived from MooWindow");
+
+    klass = g_type_class_ref (type);
+    ret = moo_window_class_find_action (klass, action_id);
+    g_type_class_unref (klass);
+
+    return_Bool (ret);
+}
+%%
 override moo_window_class_remove_action kwargs
 static PyObject *
 _wrap_moo_window_class_remove_action (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = {(char*) "class", (char*) "id", NULL};
+    static char *kwlist[] = {(char*) "cls", (char*) "name", NULL};
     PyObject *py_type;
     GType type;
     const char *action_id;
@@ -196,6 +225,94 @@ _wrap_moo_window_class_remove_action (G_GNUC_UNUSED PyObject *self, PyObject *ar
 
     klass = g_type_class_ref (type);
     moo_window_class_remove_action (klass, action_id);
+    g_type_class_unref (klass);
+
+    return_None;
+}
+%%
+override moo_window_class_new_group kwargs
+static PyObject *
+_wrap_moo_window_class_new_group (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = {(char*) "cls", (char*) "name", (char*) "display_name", NULL};
+    PyObject *py_type;
+    GType type;
+    const char *name, *display_name;
+    MooWindowClass *klass;
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "Oss:window_class_new_group", kwlist,
+                                      &py_type, &name, &display_name))
+        return NULL;
+
+    type = pyg_type_from_object (py_type);
+
+    if (!type)
+        return NULL;
+
+    if (!g_type_is_a (type, MOO_TYPE_WINDOW))
+        return_TypeError ("type must be derived from MooWindow");
+
+    klass = g_type_class_ref (type);
+    moo_window_class_new_group (klass, name, display_name);
+    g_type_class_unref (klass);
+
+    return_None;
+}
+%%
+override moo_window_class_find_group kwargs
+static PyObject *
+_wrap_moo_window_class_find_group (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = {(char*) "cls", (char*) "name", NULL};
+    PyObject *py_type;
+    GType type;
+    const char *name;
+    MooWindowClass *klass;
+    gboolean ret;
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "Os:window_class_find_group", kwlist,
+                                      &py_type, &name))
+        return NULL;
+
+    type = pyg_type_from_object (py_type);
+
+    if (!type)
+        return NULL;
+
+    if (!g_type_is_a (type, MOO_TYPE_WINDOW))
+        return_TypeError ("type must be derived from MooWindow");
+
+    klass = g_type_class_ref (type);
+    ret = moo_window_class_find_group (klass, name);
+    g_type_class_unref (klass);
+
+    return_Bool (ret);
+}
+%%
+override moo_window_class_remove_group kwargs
+static PyObject *
+_wrap_moo_window_class_remove_group (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = {(char*) "cls", (char*) "name", NULL};
+    PyObject *py_type;
+    GType type;
+    const char *name;
+    MooWindowClass *klass;
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "Os:window_class_remove_group", kwlist,
+                                      &py_type, &name))
+        return NULL;
+
+    type = pyg_type_from_object (py_type);
+
+    if (!type)
+        return NULL;
+
+    if (!g_type_is_a (type, MOO_TYPE_WINDOW))
+        return_TypeError ("type must be derived from MooWindow");
+
+    klass = g_type_class_ref (type);
+    moo_window_class_remove_group (klass, name);
     g_type_class_unref (klass);
 
     return_None;

@@ -161,6 +161,56 @@ ms_value_gvalue (const GValue *gval)
 }
 
 
+MSValue *
+ms_value_from_gvalue (const GValue *gval)
+{
+    char c_val;
+    const char *s_val;
+
+    g_return_val_if_fail (gval != NULL, NULL);
+
+    switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (gval)))
+    {
+        case G_TYPE_CHAR:
+            c_val = g_value_get_char (gval);
+            return c_val ? ms_value_string_len (&c_val, 1) : ms_value_none ();
+        case G_TYPE_UCHAR:
+            c_val = g_value_get_uchar (gval);
+            return c_val ? ms_value_string_len (&c_val, 1) : ms_value_none ();
+        case G_TYPE_BOOLEAN:
+            return ms_value_bool (g_value_get_boolean (gval));
+        case G_TYPE_INT:
+            return ms_value_int (g_value_get_int (gval));
+        case G_TYPE_UINT:
+            return ms_value_int (g_value_get_uint (gval));
+        case G_TYPE_LONG:
+            return ms_value_int (g_value_get_long (gval));
+        case G_TYPE_ULONG:
+            return ms_value_int (g_value_get_ulong (gval));
+        case G_TYPE_INT64:
+            return ms_value_int (g_value_get_int64 (gval));
+        case G_TYPE_UINT64:
+            return ms_value_int (g_value_get_uint64 (gval));
+
+        case G_TYPE_STRING:
+            s_val = g_value_get_string (gval);
+            return s_val ? ms_value_string (s_val) : ms_value_none ();
+
+        case G_TYPE_BOXED:
+        case G_TYPE_OBJECT:
+        case G_TYPE_POINTER:
+        case G_TYPE_DOUBLE:
+        case G_TYPE_FLOAT:
+        case G_TYPE_FLAGS:
+        case G_TYPE_ENUM:
+            return ms_value_gvalue (gval);
+
+        default:
+            g_return_val_if_reached (NULL);
+    }
+}
+
+
 gpointer
 ms_value_get_object (MSValue *value)
 {

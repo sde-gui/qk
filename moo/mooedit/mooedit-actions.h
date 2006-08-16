@@ -49,7 +49,7 @@ struct _MooEditActionClass
 {
     MooActionClass parent_class;
 
-    gboolean (*check_state) (MooEditAction *action);
+    void (*check_state) (MooEditAction *action);
 };
 
 
@@ -63,15 +63,6 @@ void    moo_edit_class_new_action           (MooEditClass       *klass,
                                              const char         *id,
                                              const char         *first_prop_name,
                                              ...) G_GNUC_NULL_TERMINATED;
-void    moo_edit_class_new_actionv          (MooEditClass       *klass,
-                                             const char         *id,
-                                             const char         *first_prop_name,
-                                             va_list             props);
-void    moo_edit_class_new_action_custom    (MooEditClass       *klass,
-                                             const char         *id,
-                                             MooEditActionFunc   func,
-                                             gpointer            data,
-                                             GDestroyNotify      notify);
 void    moo_edit_class_new_action_type      (MooEditClass       *klass,
                                              const char         *id,
                                              GType               type);
@@ -80,10 +71,11 @@ void    moo_edit_class_remove_action        (MooEditClass       *klass,
                                              const char         *id);
 
 GtkActionGroup *moo_edit_get_actions        (MooEdit            *edit);
-GtkAction  *moo_edit_get_action_by_id       (MooEdit            *edit,
+GtkAction *moo_edit_get_action_by_id        (MooEdit            *edit,
                                              const char         *action_id);
 
-void    moo_edit_action_check_state         (MooEditAction      *action);
+/* defined in mooeditwindow.c */
+GSList *_moo_edit_parse_langs               (const char         *string);
 
 
 G_END_DECLS

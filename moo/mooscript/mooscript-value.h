@@ -129,6 +129,7 @@ MSValue     *ms_value_string_len        (const char     *string,
                                          int             chars);
 MSValue     *ms_value_take_string       (char           *string);
 MSValue     *ms_value_gvalue            (const GValue   *gval);
+MSValue     *ms_value_from_gvalue       (const GValue   *gval);
 
 MSValue     *ms_value_object            (gpointer        object);
 gpointer     ms_value_get_object        (MSValue        *value);

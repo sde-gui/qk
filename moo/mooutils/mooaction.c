@@ -14,7 +14,24 @@
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooactionbase-private.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooactiongroup.h"
 #include <string.h>
+
+
+gpointer
+_moo_action_get_window (gpointer action)
+{
+    GtkActionGroup *group;
+    MooActionCollection *collection;
+
+    g_return_val_if_fail (GTK_IS_ACTION (action), NULL);
+
+    group = _moo_action_get_group (action);
+    g_return_val_if_fail (MOO_IS_ACTION_GROUP (group), NULL);
+
+    collection = _moo_action_group_get_collection (MOO_ACTION_GROUP (group));
+    return _moo_action_collection_get_window (collection);
+}
 
 
 #define DEFINE_ACTION_TYPE(TypeName, type_name, TYPE_PARENT)                \
@@ -113,10 +130,16 @@ moo_action_dispose (GObject *object)
 {
     MooAction *action = MOO_ACTION (object);
 
-    if (action->priv->closure)
+    if (action->priv)
     {
-        moo_closure_unref (action->priv->closure);
-        action->priv->closure = NULL;
+        if (action->priv->closure)
+        {
+            moo_closure_unref (action->priv->closure);
+            action->priv->closure = NULL;
+        }
+
+        g_free (action->priv);
+        action->priv = NULL;
     }
 
     G_OBJECT_CLASS (moo_action_parent_class)->dispose (object);

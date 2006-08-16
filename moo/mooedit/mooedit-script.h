@@ -14,53 +14,47 @@
 #ifndef __MOO_EDIT_SCRIPT_H__
 #define __MOO_EDIT_SCRIPT_H__
 
-#include <mooutils/moocommand.h>
+#include <mooedit/mooedit.h>
 #include <mooscript/mooscript-context.h>
-#include <mooedit/mooeditor.h>
+#include <gtk/gtkwindow.h>
 
 G_BEGIN_DECLS
 
 
-#define MS_VAR_WINDOW       "window"
-#define MS_VAR_DOC          "doc"
-#define MS_VAR_FILE         "file"
-#define MS_VAR_NAME         "name"
-#define MS_VAR_BASE         "base"
-#define MS_VAR_DIR          "dir"
-#define MS_VAR_EXT          "ext"
+#define MOO_TYPE_EDIT_SCRIPT_CONTEXT              (moo_edit_script_context_get_type ())
+#define MOO_EDIT_SCRIPT_CONTEXT(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_EDIT_SCRIPT_CONTEXT, MooEditScriptContext))
+#define MOO_EDIT_SCRIPT_CONTEXT_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_EDIT_SCRIPT_CONTEXT, MooEditScriptContextClass))
+#define MOO_IS_EDIT_SCRIPT_CONTEXT(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_EDIT_SCRIPT_CONTEXT))
+#define MOO_IS_EDIT_SCRIPT_CONTEXT_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_SCRIPT_CONTEXT))
+#define MOO_EDIT_SCRIPT_CONTEXT_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_SCRIPT_CONTEXT, MooEditScriptContextClass))
 
-#define MOO_TYPE_EDIT_CONTEXT              (moo_edit_context_get_type ())
-#define MOO_EDIT_CONTEXT(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_EDIT_CONTEXT, MooEditContext))
-#define MOO_EDIT_CONTEXT_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_EDIT_CONTEXT, MooEditContextClass))
-#define MOO_IS_EDIT_CONTEXT(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_EDIT_CONTEXT))
-#define MOO_IS_EDIT_CONTEXT_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_CONTEXT))
-#define MOO_EDIT_CONTEXT_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_CONTEXT, MooEditContextClass))
-
-typedef struct _MooEditContext MooEditContext;
-typedef struct _MooEditContextClass MooEditContextClass;
+typedef struct _MooEditScriptContext MooEditScriptContext;
+typedef struct _MooEditScriptContextClass MooEditScriptContextClass;
 
 
-struct _MooEditContext {
-    MSContext context;
-    MooEdit *doc;
+struct _MooEditScriptContext {
+    MSContext base;
+    GtkTextView *doc;
 };
 
-struct _MooEditContextClass {
-    MSContextClass context_class;
+struct _MooEditScriptContextClass {
+    MSContextClass base_class;
 };
 
 
-GType        moo_edit_context_get_type  (void) G_GNUC_CONST;
+GType        moo_edit_script_context_get_type   (void) G_GNUC_CONST;
 
-MSContext   *moo_text_context_new       (GtkTextView    *doc);
-MSContext   *moo_edit_context_new       (MooEdit        *doc,
-                                         MooEditWindow  *window);
-void         moo_edit_context_set_doc   (MooEditContext *ctx,
-                                         MooEdit        *doc);
+MSContext   *moo_edit_script_context_new        (GtkTextView    *doc,
+                                                 GtkWindow      *window);
 
-void         moo_edit_setup_command     (MooCommand     *cmd,
-                                         MooEdit        *doc,
-                                         MooEditWindow  *window);
+
+// MSContext   *moo_text_context_new       (GtkTextView    *doc);
+// MSContext   *moo_edit_script_context_new       (MooEdit        *doc,
+//                                          MooEditWindow  *window);
+//
+// void         moo_edit_setup_command     (MooCommand     *cmd,
+//                                          MooEdit        *doc,
+//                                          MooEditWindow  *window);
 
 
 G_END_DECLS

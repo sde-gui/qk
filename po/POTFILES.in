@@ -6,6 +6,9 @@ moo/mooapp/mooapp.c
 moo/mooapp/glade/mooappabout.glade
 
 moo/mooedit/mooeditwindow.c
+moo/mooedit/moousertools.c
+moo/mooedit/menu.xml
+moo/mooedit/tools.xml
 moo/mooedit/glade/mooeditprefs.glade
 moo/mooedit/glade/mooeditprogress.glade
 moo/mooedit/glade/mooeditsavemult.glade
@@ -24,6 +27,7 @@ moo/mooedit/plugins/moofind.c
 moo/mooedit/plugins/moofind.glade
 
 moo/moofileview/moofileview-ui.xml
+moo/moofileview/moofileview.c
 moo/moofileview/glade/bookmark_editor.glade
 moo/moofileview/glade/drop.glade
 moo/moofileview/glade/moocreatefolder.glade

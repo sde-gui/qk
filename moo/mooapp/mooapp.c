@@ -121,9 +121,6 @@ static void     moo_app_exec_cmd_real   (MooApp             *app,
                                          char                cmd,
                                          const char         *data,
                                          guint               len);
-static void     moo_app_cmd_setup_real  (MooApp             *app,
-                                         MooCommand         *cmd,
-                                         GtkWindow          *window);
 static GtkWidget *moo_app_create_prefs_dialog (MooApp       *app);
 
 static void     moo_app_set_name        (MooApp             *app,
@@ -188,7 +185,6 @@ enum {
     TRY_QUIT,
     PREFS_DIALOG,
     EXEC_CMD,
-    CMD_SETUP,
     LAST_SIGNAL
 };
 
@@ -216,7 +212,6 @@ moo_app_class_init (MooAppClass *klass)
     klass->try_quit = moo_app_try_quit_real;
     klass->prefs_dialog = moo_app_create_prefs_dialog;
     klass->exec_cmd = moo_app_exec_cmd_real;
-    klass->cmd_setup = moo_app_cmd_setup_real;
 
     g_object_class_install_property (gobject_class,
                                      PROP_ARGV,
@@ -370,17 +365,6 @@ moo_app_class_init (MooAppClass *klass)
                           G_TYPE_CHAR,
                           G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
                           G_TYPE_UINT);
-
-    signals[CMD_SETUP] =
-            g_signal_new ("cmd-setup",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooAppClass, cmd_setup),
-                          NULL, NULL,
-                          _moo_marshal_VOID__OBJECT_OBJECT,
-                          G_TYPE_NONE, 2,
-                          MOO_TYPE_COMMAND,
-                          GTK_TYPE_WINDOW);
 }
 
 
@@ -785,24 +769,10 @@ moo_app_get_info (MooApp     *app)
 }
 
 
-static void
-moo_app_cmd_setup (MooCommand   *cmd,
-                   MooWindow    *window)
-{
-    MooApp *app = moo_app_get_instance ();
-    g_return_if_fail (app != NULL);
-    g_signal_emit (app, signals[CMD_SETUP], 0, cmd, window);
-}
-
-
 #ifdef MOO_BUILD_EDIT
 static void
 moo_app_init_editor (MooApp *app)
 {
-    char **files;
-    guint n_files;
-    char *user_file;
-
     app->priv->editor = moo_editor_create_instance ();
     moo_editor_set_ui_xml (app->priv->editor,
                            moo_app_get_ui_xml (app));
@@ -813,17 +783,8 @@ moo_app_init_editor (MooApp *app)
 
     moo_plugin_read_dirs ();
 
-    moo_edit_get_user_tools_files (&files, &n_files, &user_file);
-    moo_edit_load_user_tools (files, n_files, user_file,
-                              moo_app_get_ui_xml (app));
-    g_strfreev (files);
-    g_free (user_file);
-
-    moo_edit_get_user_menu_files (&files, &n_files, &user_file);
-    moo_edit_load_user_menu (files, n_files, user_file,
-                             moo_app_get_ui_xml (app));
-    g_strfreev (files);
-    g_free (user_file);
+    moo_edit_load_user_tools (NULL, moo_app_get_ui_xml (app));
+    moo_edit_load_user_menu (NULL, moo_app_get_ui_xml (app));
 }
 #endif /* MOO_BUILD_EDIT */
 
@@ -1510,25 +1471,25 @@ moo_app_open_uris (MooApp     *app,
 }
 
 
-static void
-run_script (const char *string)
-{
-    MooCommand *cmd;
-    MSContext *ctx;
-
-    cmd = moo_command_new (MOO_COMMAND_SCRIPT, string);
-    g_return_if_fail (cmd != NULL);
-
-    ctx = ms_context_new (NULL);
-    moo_command_set_context (cmd, ctx);
-    if (ctx->py_dict)
-        moo_command_set_py_dict (cmd, ctx->py_dict);
-    g_object_unref (ctx);
-
-    moo_app_cmd_setup (cmd, NULL);
-    moo_command_run (cmd);
-    g_object_unref (cmd);
-}
+// static void
+// run_script (const char *string)
+// {
+//     MooCommand *cmd;
+//     MSContext *ctx;
+//
+//     cmd = moo_command_new (MOO_COMMAND_SCRIPT, string);
+//     g_return_if_fail (cmd != NULL);
+//
+//     ctx = ms_context_new (NULL);
+//     moo_command_set_context (cmd, ctx);
+//     if (ctx->py_dict)
+//         moo_command_set_py_dict (cmd, ctx->py_dict);
+//     g_object_unref (ctx);
+//
+//     moo_app_cmd_setup (cmd, NULL);
+//     moo_command_run (cmd);
+//     g_object_unref (cmd);
+// }
 
 
 static MooAppCmdCode
@@ -1564,9 +1525,9 @@ moo_app_exec_cmd_real (MooApp             *app,
             moo_app_python_run_file (app, data);
             break;
 
-        case MOO_APP_CMD_SCRIPT:
-            run_script (data);
-            break;
+//         case MOO_APP_CMD_SCRIPT:
+//             run_script (data);
+//             break;
 
         case MOO_APP_CMD_OPEN_FILE:
             moo_app_new_file (app, data);
@@ -1641,16 +1602,6 @@ moo_app_tempnam (MooApp *app)
 
     g_warning ("%s: could not generate temp file name", G_STRLOC);
     return NULL;
-}
-
-
-static void
-moo_app_cmd_setup_real (MooApp     *app,
-                        MooCommand *cmd,
-                        GtkWindow  *window)
-{
-    if (MOO_IS_EDIT_WINDOW (window))
-        return moo_edit_setup_command (cmd, NULL, MOO_EDIT_WINDOW (window));
 }
 
 

@@ -15,7 +15,6 @@
 #define __MOO_APP_H__
 
 #include <mooedit/mooeditor.h>
-#include <mooutils/moocommand.h>
 
 G_BEGIN_DECLS
 
@@ -69,9 +68,6 @@ struct _MooAppClass
                                  char        cmd,
                                  const char *data,
                                  guint       len);
-    void        (*cmd_setup)    (MooApp     *app,
-                                 MooCommand *cmd,
-                                 GtkWindow  *window);
 };
 
 

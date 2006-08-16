@@ -66,6 +66,10 @@ void                 moo_action_collection_remove_action    (MooActionCollection
                                                              GtkAction              *action);
 GList               *moo_action_collection_list_actions     (MooActionCollection    *coll);
 
+void                 _moo_action_collection_set_window      (MooActionCollection    *coll,
+                                                             gpointer                window);
+gpointer             _moo_action_collection_get_window      (MooActionCollection    *coll);
+
 
 G_END_DECLS
 

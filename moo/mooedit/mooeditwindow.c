@@ -24,6 +24,7 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooplugin.h"
 #include "mooedit/moocmdview.h"
+#include "mooedit/mooedit-actions.h"
 #include "mooutils/moonotebook.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moomarshals.h"
@@ -50,13 +51,17 @@
 #define STOP_ACTION_ID "StopJob"
 
 typedef struct {
-    char *property;
-    MooEditWindowCheckActionFunc func;
+    MooActionCheckFunc func;
     gpointer data;
     GDestroyNotify notify;
+} OnePropCheck;
+
+#define N_ACTION_CHECKS 3
+typedef struct {
+    OnePropCheck checks[N_ACTION_CHECKS];
 } ActionCheck;
 
-static GHashTable *action_checks; /* char* -> GSList* */
+static GHashTable *action_checks; /* char* -> ActionCheck* */
 static GSList *windows;
 
 typedef struct {
@@ -102,11 +107,6 @@ static GtkTargetEntry dest_targets[] = {
 };
 
 
-static ActionCheck *action_check_new            (const char         *action_prop,
-                                                 MooEditWindowCheckActionFunc func,
-                                                 gpointer            data,
-                                                 GDestroyNotify      notify);
-static void     action_check_free               (ActionCheck        *check);
 static void     action_checks_init              (void);
 static void     moo_edit_window_check_actions   (MooEditWindow      *window);
 
@@ -2747,155 +2747,188 @@ edit_lang_changed (MooEditWindow      *window,
  */
 
 static void
-moo_edit_window_check_action (MooEdit       *doc,
-                              GtkAction     *action,
-                              ActionCheck   *check)
+window_check_one_action (const char    *action_id,
+                         ActionCheck   *set,
+                         MooEditWindow *window,
+                         MooEdit       *doc)
 {
-    gpointer klass;
-    GParamSpec *pspec;
-    GValue value;
-
-    klass = G_OBJECT_GET_CLASS (action);
-    pspec = g_object_class_find_property (klass, check->property);
-    g_return_if_fail (pspec != NULL);
-
-    value.g_type = 0;
-    g_value_init (&value, pspec->value_type);
-
-    check->func (action, doc, pspec, &value, check->data);
-    g_object_set_property (G_OBJECT (action), check->property, &value);
-
-    g_value_unset (&value);
-}
-
-
-static void
-window_check_actions (const char    *action_id,
-                      GSList        *checks,
-                      MooEditWindow *window)
-{
+    MooActionCheckFunc func;
     GtkAction *action;
-    MooEdit *doc;
+    gboolean visible = TRUE, sensitive = TRUE;
 
     action = moo_window_get_action (MOO_WINDOW (window), action_id);
 
     if (!action)
         return;
 
-    doc = ACTIVE_DOC (window);
-
-    while (checks)
+    if ((func = set->checks[MOO_ACTION_CHECK_ACTIVE].func))
     {
-        moo_edit_window_check_action (doc, action, checks->data);
-        checks = checks->next;
+        if (!func (action, window, doc,
+                   set->checks[MOO_ACTION_CHECK_ACTIVE].data))
+        {
+            visible = FALSE;
+            sensitive = FALSE;
+        }
     }
+
+    if (visible && (func = set->checks[MOO_ACTION_CHECK_VISIBLE].func))
+    {
+        gpointer data = set->checks[MOO_ACTION_CHECK_VISIBLE].data;
+        visible = func (action, window, doc, data);
+    }
+
+    if (sensitive && (func = set->checks[MOO_ACTION_CHECK_SENSITIVE].func))
+    {
+        gpointer data = set->checks[MOO_ACTION_CHECK_SENSITIVE].data;
+        sensitive = func (action, window, doc, data);
+    }
+
+    g_object_set (action, "visible", visible, "sensitive", sensitive, NULL);
+}
+
+
+static void
+check_action_hash_cb (const char    *action_id,
+                      ActionCheck   *check,
+                      gpointer       user_data)
+{
+    struct {
+        MooEdit *doc;
+        MooEditWindow *window;
+    } *data = user_data;
+
+    window_check_one_action (action_id, check, data->window, data->doc);
 }
 
 
 static void
 moo_edit_window_check_actions (MooEditWindow *window)
 {
+    struct {
+        MooEdit *doc;
+        MooEditWindow *window;
+    } data;
+
+    data.window = window;
+    data.doc = ACTIVE_DOC (window);
+
     g_hash_table_foreach (action_checks,
-                          (GHFunc) window_check_actions,
-                          window);
+                          (GHFunc) check_action_hash_cb,
+                          &data);
 }
 
 
-static void
-check_action (const char  *action_id,
-              ActionCheck *check)
+void
+moo_edit_window_set_action_check (const char     *action_id,
+                                  MooActionCheckType type,
+                                  MooActionCheckFunc func,
+                                  gpointer        data,
+                                  GDestroyNotify  notify)
 {
+    ActionCheck *check;
     GSList *l;
+
+    g_return_if_fail (action_id != NULL);
+    g_return_if_fail (type < N_ACTION_CHECKS);
+    g_return_if_fail (func != NULL);
+
+    action_checks_init ();
+
+    check = g_hash_table_lookup (action_checks, action_id);
+
+    if (!check)
+    {
+        check = g_new0 (ActionCheck, 1);
+        g_hash_table_insert (action_checks, g_strdup (action_id), check);
+    }
+
+    if (check->checks[type].func)
+    {
+        check->checks[type].func = NULL;
+
+        if (check->checks[type].notify)
+            check->checks[type].notify (check->checks[type].data);
+    }
+
+    check->checks[type].func = func;
+    check->checks[type].data = data;
+    check->checks[type].notify = notify;
 
     for (l = windows; l != NULL; l = l->next)
     {
         MooEditWindow *window = l->data;
         MooEdit *doc = ACTIVE_DOC (window);
-        GtkAction *action = moo_window_get_action (MOO_WINDOW (window), action_id);
-        if (action)
-            moo_edit_window_check_action (doc, action, check);
+        window_check_one_action (action_id, check, window, doc);
     }
-}
-
-
-static int
-check_and_prop_cmp (ActionCheck *check,
-                    const char  *prop)
-{
-    return strcmp (check->property, prop);
-}
-
-void
-moo_edit_window_add_action_check (const char     *action_id,
-                                  const char     *action_prop,
-                                  MooEditWindowCheckActionFunc func,
-                                  gpointer        data,
-                                  GDestroyNotify  notify)
-{
-    ActionCheck *check;
-    GSList *list;
-
-    g_return_if_fail (action_id != NULL);
-    g_return_if_fail (action_prop != NULL);
-    g_return_if_fail (func != NULL);
-
-    action_checks_init ();
-
-    list = g_hash_table_lookup (action_checks, action_id);
-
-    if (list)
-    {
-        GSList *old = g_slist_find_custom (list, action_prop,
-                                           (GCompareFunc) check_and_prop_cmp);
-
-        if (old)
-        {
-            action_check_free (old->data);
-            list = g_slist_delete_link (list, old);
-        }
-    }
-
-    check = action_check_new (action_prop, func, data, notify);
-    list = g_slist_prepend (list, check);
-    g_hash_table_insert (action_checks, g_strdup (action_id), list);
-
-    check_action (action_id, check);
 }
 
 
 static void
-check_action_langs (G_GNUC_UNUSED GtkAction *action,
-                    MooEdit        *doc,
-                    G_GNUC_UNUSED GParamSpec *pspec,
-                    GValue         *prop_value,
-                    gpointer        langs)
+moo_edit_window_remove_action_check (const char        *action_id,
+                                     MooActionCheckType type)
 {
-    MooLang *lang;
+    ActionCheck *check;
+    gboolean remove = TRUE;
+    guint i;
+
+    g_return_if_fail (action_id != NULL);
+    g_return_if_fail (type <= N_ACTION_CHECKS);
+
+    if (!action_checks)
+        return;
+
+    check = g_hash_table_lookup (action_checks, action_id);
+
+    if (!check)
+        return;
+
+    if (type < N_ACTION_CHECKS)
+    {
+        for (i = 0; i < N_ACTION_CHECKS; ++i)
+        {
+            if (check->checks[i].func && i != type)
+            {
+                remove = FALSE;
+                break;
+            }
+        }
+
+        if (!remove && check->checks[type].func && check->checks[type].notify)
+        {
+            check->checks[type].func = NULL;
+            check->checks[type].notify (check->checks[type].data);
+        }
+    }
+
+    if (remove)
+    {
+        g_hash_table_remove (action_checks, action_id);
+
+        for (i = 0; i < N_ACTION_CHECKS; ++i)
+            if (check->checks[i].func && check->checks[i].notify)
+                check->checks[i].notify (check->checks[i].data);
+
+        g_free (check);
+    }
+}
+
+
+static gboolean
+check_action_langs (G_GNUC_UNUSED GtkAction *action,
+                    G_GNUC_UNUSED MooEditWindow *window,
+                    MooEdit       *doc,
+                    gpointer       langs_list)
+{
     gboolean value = FALSE;
 
     if (doc)
     {
-        lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
-
-        value = NULL != g_slist_find_custom (langs, moo_lang_id (lang),
+        MooLang *lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
+        value = NULL != g_slist_find_custom (langs_list, moo_lang_id (lang),
                                              (GCompareFunc) strcmp);
     }
 
-    g_value_set_boolean (prop_value, value);
-}
-
-static GSList *
-string_list_copy (GSList *list)
-{
-    GSList *copy = NULL;
-
-    while (list)
-    {
-        copy = g_slist_prepend (copy, g_strdup (list->data));
-        list = list->next;
-    }
-
-    return g_slist_reverse (copy);
+    return value;
 }
 
 static void
@@ -2905,79 +2938,52 @@ string_list_free (gpointer list)
     g_slist_free (list);
 }
 
-void
-moo_edit_window_set_action_langs (const char *action_id,
-                                  const char *action_prop,
-                                  GSList     *langs)
-{
-    g_return_if_fail (action_id != NULL);
-    g_return_if_fail (action_prop != NULL);
 
-    if (langs)
-        moo_edit_window_add_action_check (action_id, action_prop,
+GSList *
+_moo_edit_parse_langs (const char *string)
+{
+    char **pieces, **p;
+    GSList *list = NULL;
+
+    if (!string)
+        return NULL;
+
+    pieces = g_strsplit_set (string, " \t\r\n;,", 0);
+
+    if (!pieces)
+        return NULL;
+
+    for (p = pieces; *p != NULL; ++p)
+    {
+        g_strstrip (*p);
+
+        if (**p)
+            list = g_slist_prepend (list, moo_lang_id_from_name (*p));
+    }
+
+    g_strfreev (pieces);
+    return g_slist_reverse (list);
+}
+
+void
+moo_edit_window_set_action_langs (const char        *action_id,
+                                  MooActionCheckType type,
+                                  const char        *langs)
+{
+    GSList *langs_list;
+
+    g_return_if_fail (action_id != NULL);
+    g_return_if_fail (type < N_ACTION_CHECKS);
+
+    langs_list = _moo_edit_parse_langs (langs);
+
+    if (langs_list)
+        moo_edit_window_set_action_check (action_id, type,
                                           check_action_langs,
-                                          string_list_copy (langs),
+                                          langs_list,
                                           string_list_free);
     else
-        moo_edit_window_remove_action_check (action_id, action_prop);
-}
-
-
-void
-moo_edit_window_remove_action_check (const char *action_id,
-                                     const char *action_prop)
-{
-    GSList *list;
-
-    g_return_if_fail (action_id != NULL);
-    g_return_if_fail (action_prop != NULL);
-
-    action_checks_init ();
-
-    list = g_hash_table_lookup (action_checks, action_id);
-
-    if (list)
-    {
-        GSList *old = g_slist_find_custom (list, action_prop,
-                                           (GCompareFunc) check_and_prop_cmp);
-
-        if (old)
-        {
-            action_check_free (old->data);
-            list = g_slist_delete_link (list, old);
-        }
-
-        if (!list)
-            g_hash_table_remove (action_checks, action_id);
-    }
-}
-
-
-static ActionCheck *
-action_check_new (const char     *action_prop,
-                  MooEditWindowCheckActionFunc func,
-                  gpointer        data,
-                  GDestroyNotify  notify)
-{
-    ActionCheck *check = g_new0 (ActionCheck, 1);
-    check->property = g_strdup (action_prop);
-    check->func = func;
-    check->data = data;
-    check->notify = notify;
-    return check;
-}
-
-
-static void
-action_check_free (ActionCheck *check)
-{
-    if (check)
-    {
-        if (check->notify)
-            check->notify (check->data);
-        g_free (check->property);
-        g_free (check);
-    }
+        moo_edit_window_remove_action_check (action_id, type);
 }
 
 
@@ -2987,6 +2993,27 @@ action_checks_init (void)
     if (!action_checks)
         action_checks =
                 g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+}
+
+
+GType
+moo_action_check_type_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+    {
+        static const GEnumValue values[] = {
+            { MOO_ACTION_CHECK_SENSITIVE, (char*) "MOO_ACTION_CHECK_SENSITIVE", (char*) "sensitive" },
+            { MOO_ACTION_CHECK_VISIBLE, (char*) "MOO_ACTION_CHECK_VISIBLE", (char*) "visible" },
+            { MOO_ACTION_CHECK_ACTIVE, (char*) "MOO_ACTION_CHECK_ACTIVE", (char*) "active" },
+            { 0, NULL, NULL }
+        };
+
+        type = g_enum_register_static ("MooActionCheckType", values);
+    }
+
+    return type;
 }
 
 

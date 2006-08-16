@@ -13,6 +13,7 @@
 
 #include "mooutils/mooactiongroup.h"
 #include "mooutils/mooactionbase.h"
+#include "mooutils/moowindow.h"
 #include <string.h>
 
 
@@ -21,6 +22,7 @@ struct _MooActionCollectionPrivate {
     GHashTable *groups; /* name -> MooActionGroup* */
     GSList *groups_list;
     char *name;
+    gpointer window;
 };
 
 enum {
@@ -53,6 +55,7 @@ moo_action_collection_dispose (GObject *object)
         g_object_unref (coll->priv->default_group);
         g_hash_table_destroy (coll->priv->groups);
         g_slist_free (coll->priv->groups_list);
+        g_free (coll->priv->name);
         g_free (coll->priv);
     }
 
@@ -241,7 +244,7 @@ moo_action_collection_get_action (MooActionCollection *coll,
     {
         GtkActionGroup *group = l->data;
         GtkAction *action = gtk_action_group_get_action (group, name);
-        if (name)
+        if (action)
             return action;
     }
 
@@ -281,4 +284,22 @@ moo_action_collection_list_actions (MooActionCollection *coll)
     }
 
     return list;
+}
+
+
+void
+_moo_action_collection_set_window (MooActionCollection *coll,
+                                   gpointer             window)
+{
+    g_return_if_fail (MOO_IS_ACTION_COLLECTION (coll));
+    g_return_if_fail (!window || MOO_IS_WINDOW (window));
+    coll->priv->window = window;
+}
+
+
+gpointer
+_moo_action_collection_get_window (MooActionCollection *coll)
+{
+    g_return_val_if_fail (MOO_IS_ACTION_COLLECTION (coll), NULL);
+    return coll->priv->window;
 }

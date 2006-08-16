@@ -19,10 +19,21 @@ CLEANFILES =
 
 mooedit_defs_files =		\
 	mooeditor.defs		\
-	mooplugin.defs
+	mooplugin.defs		\
+	moocommand.defs
+moocommand.o: mooedit-pygtk.o
+	echo stamp > moocommand.o
+mooplugin.o: mooedit-pygtk.o
+	echo stamp > mooplugin.o
+mooeditor.o: mooedit-pygtk.o
+	echo stamp > mooeditor.o
+CLEANFILES += moocommand.o mooplugin.o mooeditor.o
 
 mooutils_defs_files =		\
 	moofileview.defs
+moofileview.o: mooutils-pygtk.o
+	echo stamp > moofileview.o
+CLEANFILES += moofileview.o
 
 EXTRA_DIST =			\
 	moo-mod.py		\

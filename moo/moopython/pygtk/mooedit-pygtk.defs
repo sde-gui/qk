@@ -89,6 +89,7 @@
   (gtype-id "MOO_TYPE_EDIT_ACTION")
   (fields
     '("MooEdit*" "doc")
+    '("MooEditActionFlags" "flags")
   )
 )
 
@@ -147,6 +148,7 @@
 
 (include "mooplugin.defs")
 (include "mooeditor.defs")
+(include "moocommand.defs")
 
 ;; Enumerations and flags ...
 
@@ -190,6 +192,18 @@
   (in-module "Moo")
   (c-name "MooTextSelectionType")
   (gtype-id "MOO_TYPE_TEXT_SELECTION_TYPE")
+)
+
+(define-flags ActionFlags
+  (in-module "Moo")
+  (c-name "MooEditActionFlags")
+  (gtype-id "MOO_TYPE_EDIT_ACTION_FLAGS")
+)
+
+(define-enum ActionCheckType
+  (in-module "Moo")
+  (c-name "MooActionCheckType")
+  (gtype-id "MOO_TYPE_ACTION_CHECK_TYPE")
 )
 
 
@@ -556,33 +570,26 @@
   (return-type "GtkWidget*")
 )
 
+
 (define-function window_set_action_langs
   (c-name "moo_edit_window_set_action_langs")
   (return-type "none")
   (parameters
     '("const-char*" "action_id")
-    '("const-char*" "action_prop")
-    '("GSList*" "langs")
+    '("MooActionCheckType" "type")
+    '("const-char*" "langs")
   )
 )
 
-(define-function window_add_action_check
-  (c-name "moo_edit_window_add_action_check")
+(define-function window_set_action_check
+  (c-name "moo_edit_window_set_action_check")
   (return-type "none")
   (parameters
     '("const-char*" "action_id")
-    '("const-char*" "action_prop")
-    '("MooEditWindowCheckActionFunc" "func")
+    '("MooActionCheckType" "type")
+    '("MooActionCheckFunc" "func")
     '("gpointer" "data")
-  )
-)
-
-(define-function window_remove_action_check
-  (c-name "moo_edit_window_remove_action_check")
-  (return-type "none")
-  (parameters
-    '("const-char*" "action_id")
-    '("const-char*" "action_prop")
+    '("GDestroyNotify" "notify")
   )
 )
 
@@ -1440,28 +1447,15 @@
 
 ;; From moo/mooedit/mooedit-actions.h
 
-(define-virtual check_state
-  (of-object "MooEditAction")
-  (return-type "gboolean")
-)
-
 ;(define-function moo_edit_action_new
 ;  (c-name "moo_edit_action_new")
 ;  (is-constructor-of "MooEditAction")
 ;  (return-type "GtkAction*")
 ;)
 
-(define-function _edit_class_add_action
-  (c-name "moo_edit_class_add_action")
+(define-virtual check_state
+  (of-object "MooEditAction")
   (return-type "none")
-)
-
-(define-function edit_class_remove_action
-  (c-name "moo_edit_class_remove_action")
-  (return-type "none")
-  (parameters
-    '("const-char*" "id")
-  )
 )
 
 (define-method get_actions
@@ -1476,5 +1470,19 @@
   (return-type "GtkAction*")
   (parameters
     '("const-char*" "action_id")
+  )
+)
+
+
+(define-function _edit_class_add_action
+  (c-name "moo_edit_class_add_action")
+  (return-type "none")
+)
+
+(define-function edit_class_remove_action
+  (c-name "moo_edit_class_remove_action")
+  (return-type "none")
+  (parameters
+    '("const-char*" "id")
   )
 )

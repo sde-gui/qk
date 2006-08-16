@@ -1,0 +1,206 @@
+;; -*- Mode: scheme; strip on; -*-
+
+(define-object CommandContext
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooCommandContext")
+  (gtype-id "MOO_TYPE_COMMAND_CONTEXT")
+)
+
+(define-object Command
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooCommand")
+  (gtype-id "MOO_TYPE_COMMAND")
+  (fields
+    '("MooCommandFlags" "flags")
+  )
+)
+
+(define-boxed CommandData
+  (in-module "Moo")
+  (c-name "CommandData")
+  (gtype-id "MOO_TYPE_COMMAND_DATA")
+)
+
+(define-flags CommandFlags
+  (in-module "Moo")
+  (c-name "MooCommandFlags")
+  (gtype-id "MOO_TYPE_COMMAND_FLAGS")
+)
+
+
+(define-function command_create
+  (c-name "moo_command_create")
+  (return-type "MooCommand*")
+  (parameters
+    '("const-char*" "type")
+    '("MooCommandData*" "data")
+  )
+)
+
+(define-function command_register
+  (c-name "moo_command_register")
+  (return-type "none")
+  (parameters
+    '("const-char*" "type")
+    '("MooCommandFactoryFunc" "factory_func")
+    '("gpointer" "factory_data")
+  )
+)
+
+(define-function command_registered
+  (c-name "moo_command_registered")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "type")
+  )
+)
+
+
+(define-method run
+  (of-object "MooCommand")
+  (c-name "moo_command_run")
+  (return-type "none")
+  (parameters
+    '("MooCommandContext*" "ctx")
+  )
+)
+
+(define-virtual run
+  (of-object "MooCommand")
+  (return-type "none")
+  (parameters
+    '("MooCommandContext*" "ctx")
+  )
+)
+
+(define-method set_flags
+  (of-object "MooCommand")
+  (c-name "moo_command_set_flags")
+  (return-type "none")
+  (parameters
+    '("MooCommandFlags" "flags")
+  )
+)
+
+(define-method get_flags
+  (of-object "MooCommand")
+  (c-name "moo_command_get_flags")
+  (return-type "MooCommandFlags")
+)
+
+
+(define-function moo_command_context_new
+  (c-name "moo_command_context_new")
+  (is-constructor-of "MooCommandContext")
+  (return-type "MooCommandContext*")
+  (properties
+    '("doc" (optional))
+    '("window" (optional))
+  )
+)
+
+(define-method set_doc
+  (of-object "MooCommandContext")
+  (c-name "moo_command_context_set_doc")
+  (return-type "none")
+  (parameters
+    '("GtkTextView*" "doc" (null-ok))
+  )
+)
+
+(define-method get_doc
+  (of-object "MooCommandContext")
+  (c-name "moo_command_context_get_doc")
+  (return-type "GtkTextView*")
+)
+
+(define-method set_window
+  (of-object "MooCommandContext")
+  (c-name "moo_command_context_set_window")
+  (return-type "none")
+  (parameters
+    '("GtkWindow*" "window" (null-ok))
+  )
+)
+
+(define-method get_window
+  (of-object "MooCommandContext")
+  (c-name "moo_command_context_get_window")
+  (return-type "GtkWindow*")
+)
+
+(define-method set
+  (of-object "MooCommandContext")
+  (c-name "moo_command_context_set")
+  (return-type "none")
+  (parameters
+    '("const-char*" "name")
+    '("const-GValue*" "value")
+  )
+)
+
+(define-method get
+  (of-object "MooCommandContext")
+  (c-name "moo_command_context_get")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "name")
+    '("GValue*" "value")
+  )
+)
+
+(define-method unset
+  (of-object "MooCommandContext")
+  (c-name "moo_command_context_unset")
+  (return-type "none")
+  (parameters
+    '("const-char*" "name")
+  )
+)
+
+(define-method foreach
+  (of-object "MooCommandContext")
+  (c-name "moo_command_context_foreach")
+  (return-type "none")
+  (parameters
+    '("MooCommandContextForeachFunc" "func")
+    '("gpointer" "data")
+  )
+)
+
+
+(define-function moo_command_data_new
+  (c-name "moo_command_data_new")
+  (is-constructor-of "MooCommandData")
+  (return-type "MooCommandData*")
+)
+
+(define-method set
+  (of-object "MooCommandData")
+  (c-name "moo_command_data_set")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("const-char*" "value")
+  )
+)
+
+(define-method get
+  (of-object "MooCommandData")
+  (c-name "moo_command_data_get")
+  (return-type "const-char*")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-method unset
+  (of-object "MooCommandData")
+  (c-name "moo_command_data_unset")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+  )
+)

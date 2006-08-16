@@ -11,6 +11,7 @@ headers
 #include "mooedit/moocmdview.h"
 #include "mooedit/mooedit-actions.h"
 #include "mooedit/mooplugin.h"
+#include "mooedit/moocommand.h"
 #include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
 
@@ -19,6 +20,7 @@ headers
 modulename moo.edit
 %%
 import gtk.Widget as PyGtkWidget_Type
+import gtk.Window as PyGtkWindow_Type
 import gtk.TextView as PyGtkTextView_Type
 import gtk.TextBuffer as PyGtkTextBuffer_Type
 import gtk.TextTagTable as PyGtkTextTagTable_Type
@@ -379,59 +381,6 @@ _wrap_moo_edit_class_remove_action (G_GNUC_UNUSED PyObject *self, PyObject *args
     return_None;
 }
 %%
-override moo_edit_window_set_action_langs kwargs
-static PyObject *
-_wrap_moo_edit_window_set_action_langs (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
-{
-    GSList *langs = NULL;
-    PyObject *py_langs;
-    const char *action_id, *action_prop;
-    char *kwlist[] = {(char*) "action_id", (char*) "action_prop", (char*) "langs", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "ssO:window_set_action_langs",
-                                      kwlist, &action_id, &action_prop, &py_langs))
-        return NULL;
-
-    if (py_langs != Py_None)
-    {
-        int n_items, i;
-        char *lang_id;
-
-        py_langs = PySequence_Fast (py_langs, "langs must be a sequence or None");
-
-        if (!py_langs)
-            return NULL;
-
-        n_items = PySequence_Fast_GET_SIZE (py_langs);
-
-        for (i = 0; i < n_items; ++i)
-        {
-            PyObject *lang = PySequence_Fast_GET_ITEM (py_langs, i);
-
-            if (!PyString_Check (lang))
-            {
-                Py_DECREF (py_langs);
-                g_slist_foreach (langs, (GFunc) g_free, NULL);
-                g_slist_free (langs);
-                return_TypeError ("langs must be a sequence of strings");
-            }
-
-            lang_id = moo_lang_id_from_name (PyString_AS_STRING (lang));
-            langs = g_slist_prepend (langs, lang_id);
-        }
-
-        langs = g_slist_reverse (langs);
-    }
-
-    moo_edit_window_set_action_langs (action_id, action_prop, langs);
-
-    Py_DECREF (py_langs);
-    g_slist_foreach (langs, (GFunc) g_free, NULL);
-    g_slist_free (langs);
-
-    return_None;
-}
-%%
 override moo_editor_create_instance noargs
 static PyObject *
 _wrap_moo_editor_create_instance (void)
@@ -541,4 +490,225 @@ out:
     g_free (params);
 
     return ret;
+}
+%%
+override moo_command_context_set kwargs
+static PyObject *
+_wrap_moo_command_context_set (PyGObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = {(char*) "name", (char*) "value", NULL};
+    char *name;
+    PyObject *py_value;
+    GValue value;
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "sO:MooCommandContext.set", kwlist,
+                                      &name, &py_value))
+        return NULL;
+
+    if (py_value == Py_None)
+        return_TypeError ("MooCommandContext.set: value may not be None");
+
+    value.g_type = 0;
+    moo_pyobject_to_gvalue (py_value, &value);
+
+    moo_command_context_set (MOO_COMMAND_CONTEXT (self->obj), name, &value);
+
+    g_value_unset (&value);
+    return_None;
+}
+%%
+override moo_command_context_get kwargs
+static PyObject *
+_wrap_moo_command_context_get (PyGObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = {(char*) "name", NULL};
+    char *name;
+    PyObject *py_value;
+    GValue value;
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "s:MooCommandContext.get",
+                                      kwlist, &name))
+        return NULL;
+
+    value.g_type = 0;
+
+    if (!moo_command_context_get (MOO_COMMAND_CONTEXT (self->obj), name, &value))
+        return_None;
+
+    py_value = moo_gvalue_to_pyobject (&value);
+    g_assert (py_value || PyErr_Occurred ());
+
+    g_value_unset (&value);
+    return py_value;
+}
+%%
+override moo_command_context_foreach varargs
+static void
+context_foreach_func (const char   *name,
+                      const GValue *value,
+                      gpointer      user_data)
+{
+    PyObject *py_value, *ret;
+
+    struct {
+        PyObject *func;
+        PyObject *data;
+        gboolean error;
+    } *data = user_data;
+
+    if (data->error)
+        return;
+
+    py_value = pyg_value_as_pyobject (value, TRUE);
+
+    if (!py_value)
+    {
+        data->error = TRUE;
+        return;
+    }
+
+    PyTuple_SetItem (data->data, 0, PyString_FromString (name));
+    PyTuple_SetItem (data->data, 1, py_value);
+
+    ret = PyObject_CallObject (data->func, data->data);
+
+    if (ret != NULL)
+        Py_DECREF (ret);
+    else
+        data->error = TRUE;
+}
+
+static PyObject *
+_wrap_moo_command_context_foreach (PyGObject *self, PyObject *args)
+{
+    int len, i;
+    PyObject *py_func, *py_data;
+    struct {
+        PyObject *func;
+        PyObject *data;
+        gboolean error;
+    } data;
+
+    len = PyTuple_GET_SIZE (args);
+
+    if (len == 0)
+        return_ValueError ("MooCommandContext.foreach: at least one argument is requred");
+
+    py_func = PyTuple_GET_ITEM (args, 0);
+
+    if (!PyCallable_Check (py_func))
+        return_TypeError ("MooCommandContext.foreach: argument must be callable");
+
+    py_data = PyTuple_New (len + 1);
+
+    for (i = 1; i < len; ++i)
+    {
+        PyObject *item = PyTuple_GET_ITEM (args, i);
+        Py_INCREF (item);
+        PyTuple_SetItem (py_data, i + 1, item);
+    }
+
+    data.func = py_func;
+    data.data = py_data;
+    data.error = FALSE;
+
+    moo_command_context_foreach (MOO_COMMAND_CONTEXT (self->obj),
+                                 context_foreach_func,
+                                 &data);
+
+    Py_DECREF (py_data);
+
+    if (data.error)
+        return NULL;
+
+    return_None;
+}
+%%
+override moo_command_register kwargs
+
+typedef struct {
+    PyObject *func;
+    PyObject *data;
+} CommandFactoryData;
+
+static MooCommand *
+command_factory_func (MooCommandData *data,
+                      gpointer        user_data)
+{
+    MooCommand *cmd;
+    PyObject *py_cmd, *py_data;
+    CommandFactoryData *factory_data = user_data;
+
+    py_data = pyg_boxed_new (MOO_TYPE_COMMAND_DATA, data, TRUE, TRUE);
+
+    if (factory_data->data)
+        py_cmd = PyObject_CallFunction (factory_data->func, (char*) "OO", py_data, factory_data->data);
+    else
+        py_cmd = PyObject_CallFunction (factory_data->func, (char*) "O", py_data);
+
+    Py_DECREF (py_data);
+
+    if (!py_cmd)
+    {
+        PyErr_Print ();
+        return NULL;
+    }
+
+    if (py_cmd == Py_None)
+    {
+        Py_DECREF (py_cmd);
+        return NULL;
+    }
+
+    if (!pygobject_check (py_cmd, &PyMooCommand_Type))
+    {
+        g_warning ("command must be of type MooCommand");
+        Py_DECREF (py_cmd);
+        return NULL;
+    }
+
+    cmd = g_object_ref (pygobject_get (py_cmd));
+
+    Py_DECREF (py_cmd);
+    return cmd;
+}
+
+static void
+command_factory_data_free (CommandFactoryData *data)
+{
+    if (data)
+    {
+        Py_XDECREF (data->func);
+        Py_XDECREF (data->data);
+        g_free (data);
+    }
+}
+
+static PyObject *
+_wrap_moo_command_register (G_GNUC_UNUSED PyGObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = {(char*) "type", (char*) "factory_func", (char*) "factory_data", NULL};
+    char *type;
+    PyObject *factory_func;
+    PyObject *factory_data = NULL;
+    CommandFactoryData *data;
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "sO|O:command_register",
+                                      kwlist, &type, &factory_func, &factory_data))
+        return NULL;
+
+    if (!PyCallable_Check (factory_func))
+        return_TypeError ("command_register: factory_func must be callable");
+
+    Py_INCREF (factory_func);
+    Py_XINCREF (factory_data);
+
+    data = g_new0 (CommandFactoryData, 1);
+    data->func = factory_func;
+    data->data = factory_data;
+
+    moo_command_register (type, command_factory_func, data,
+                          (GDestroyNotify) command_factory_data_free);
+
+    return_None;
 }
