@@ -1479,6 +1479,7 @@ def main(argv):
     p = defsparser.DefsParser(args[0], defines)
     if not outfilename:
         outfilename = os.path.splitext(args[0])[0] + '.c'
+    outfilename = os.path.abspath(outfilename)
 
     p.startParsing()
 
