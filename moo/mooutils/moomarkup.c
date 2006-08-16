@@ -63,6 +63,8 @@ typedef struct {
 
 
 static MooMarkupDoc     *moo_markup_doc_new_priv    (const char         *name);
+static void              moo_markup_doc_set_name    (MooMarkupDoc       *doc,
+                                                     const char         *name);
 static MooMarkupNode    *moo_markup_element_new     (MooMarkupDoc       *doc,
                                                      MooMarkupNode      *parent,
                                                      const char         *name,
@@ -166,6 +168,9 @@ moo_markup_parse_file (const char     *filename,
 
     doc = moo_markup_parse_memory (content, -1, error);
 
+    if (doc)
+        moo_markup_doc_set_name (doc, filename);
+
     g_free (content);
     return doc;
 }
@@ -242,11 +247,25 @@ moo_markup_doc_new_priv (const char *name)
     MooMarkupDoc *doc = g_new0 (MooMarkupDoc, 1);
 
     doc->type = MOO_MARKUP_DOC_NODE;
-    doc->name = g_strdup (name);
+    doc->name = g_strdup (name ? name : "");
     doc->doc = doc;
     doc->ref_count = 1;
 
     return doc;
+}
+
+
+static void
+moo_markup_doc_set_name (MooMarkupDoc *doc,
+                         const char   *name)
+{
+    char *tmp;
+
+    g_return_if_fail (MOO_MARKUP_IS_DOC (doc));
+
+    tmp = doc->name;
+    doc->name = g_strdup (name ? name : "");
+    g_free (tmp);
 }
 
 
