@@ -20,10 +20,29 @@
 G_BEGIN_DECLS
 
 
+#define MOO_TYPE_TREE_HELPER              (_moo_tree_helper_get_type ())
+#define MOO_TREE_HELPER(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_TREE_HELPER, MooTreeHelper))
+#define MOO_TREE_HELPER_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_TREE_HELPER, MooTreeHelperClass))
+#define MOO_IS_TREE_HELPER(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_TREE_HELPER))
+#define MOO_IS_TREE_HELPER_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_TREE_HELPER))
+#define MOO_TREE_HELPER_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_TREE_HELPER, MooTreeHelperClass))
+
 typedef struct _MooTreeHelper MooTreeHelper;
 typedef struct _MooConfigHelper MooConfigHelper;
 typedef struct _MooTreeHelperClass MooTreeHelperClass;
 typedef struct _MooConfigHelperClass MooConfigHelperClass;
+
+struct _MooTreeHelper {
+    GtkObject parent;
+
+    int type;
+    gpointer widget;
+
+    GtkWidget *new_btn;
+    GtkWidget *delete_btn;
+    GtkWidget *up_btn;
+    GtkWidget *down_btn;
+};
 
 struct _MooTreeHelperClass {
     GtkObjectClass parent_class;
@@ -64,7 +83,15 @@ struct _MooConfigHelperClass {
 };
 
 
+GType            _moo_tree_helper_get_type          (void) G_GNUC_CONST;
+
 MooTreeHelper   *_moo_tree_helper_new               (GtkWidget          *treeview_or_combo,
+                                                     GtkWidget          *new_btn,
+                                                     GtkWidget          *delete_btn,
+                                                     GtkWidget          *up_btn,
+                                                     GtkWidget          *down_btn);
+void             _moo_tree_helper_connect           (MooTreeHelper      *helper,
+                                                     GtkWidget          *treeview_or_combo,
                                                      GtkWidget          *new_btn,
                                                      GtkWidget          *delete_btn,
                                                      GtkWidget          *up_btn,

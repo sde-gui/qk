@@ -15,33 +15,10 @@
 #include "mooutils/moomarshals.h"
 
 
-#define MOO_TYPE_TREE_HELPER              (_moo_tree_helper_get_type ())
-#define MOO_TREE_HELPER(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_TREE_HELPER, MooTreeHelper))
-#define MOO_TREE_HELPER_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_TREE_HELPER, MooTreeHelperClass))
-#define MOO_IS_TREE_HELPER(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_TREE_HELPER))
-#define MOO_IS_TREE_HELPER_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_TREE_HELPER))
-#define MOO_TREE_HELPER_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_TREE_HELPER, MooTreeHelperClass))
-
-
 typedef enum {
     TREE_VIEW,
     COMBO_BOX
 } WidgetType;
-
-struct _MooTreeHelper {
-    GtkObject parent;
-
-    WidgetType type;
-    gpointer widget;
-
-    GtkWidget *new_btn;
-    GtkWidget *delete_btn;
-    GtkWidget *up_btn;
-    GtkWidget *down_btn;
-};
-
-
-GType   _moo_tree_helper_get_type    (void) G_GNUC_CONST;
 
 static void moo_tree_helper_new_row             (MooTreeHelper      *helper);
 static void moo_tree_helper_delete_row          (MooTreeHelper      *helper);
@@ -668,13 +645,13 @@ _moo_tree_helper_init (G_GNUC_UNUSED MooTreeHelper *helper)
 }
 
 
-static void
-moo_tree_helper_connect (MooTreeHelper *helper,
-                         GtkWidget     *widget,
-                         GtkWidget     *new_btn,
-                         GtkWidget     *delete_btn,
-                         GtkWidget     *up_btn,
-                         GtkWidget     *down_btn)
+void
+_moo_tree_helper_connect (MooTreeHelper *helper,
+                          GtkWidget     *widget,
+                          GtkWidget     *new_btn,
+                          GtkWidget     *delete_btn,
+                          GtkWidget     *up_btn,
+                          GtkWidget     *down_btn)
 {
     GtkTreeSelection *selection;
 
@@ -747,7 +724,7 @@ _moo_tree_helper_new (GtkWidget *widget,
     helper = g_object_new (MOO_TYPE_TREE_HELPER, NULL);
     gtk_object_sink (g_object_ref (helper));
 
-    moo_tree_helper_connect (helper, widget, new_btn, delete_btn, up_btn, down_btn);
+    _moo_tree_helper_connect (helper, widget, new_btn, delete_btn, up_btn, down_btn);
 
     return helper;
 }
@@ -1067,8 +1044,8 @@ _moo_config_helper_new (GtkWidget *tree_view,
     helper = g_object_new (MOO_TYPE_CONFIG_HELPER, NULL);
     gtk_object_sink (g_object_ref (helper));
 
-    moo_tree_helper_connect (MOO_TREE_HELPER (helper), tree_view,
-                             new_btn, delete_btn, up_btn, down_btn);
+    _moo_tree_helper_connect (MOO_TREE_HELPER (helper), tree_view,
+                              new_btn, delete_btn, up_btn, down_btn);
 
     return helper;
 }

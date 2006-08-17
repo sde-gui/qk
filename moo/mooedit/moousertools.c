@@ -183,6 +183,8 @@ load_tool_func (MooToolLoadInfo *info,
     MooCommand *cmd;
     MooUIXML *xml = user_data;
 
+    g_return_if_fail (info != NULL);
+
     if (!info->enabled)
         return;
 
@@ -194,7 +196,9 @@ load_tool_func (MooToolLoadInfo *info,
         return;
 #endif
 
-    cmd = moo_command_create (info->cmd_type,
+    g_return_if_fail (MOO_IS_COMMAND_TYPE (info->cmd_type));
+
+    cmd = moo_command_create (info->cmd_type->name,
                               info->options,
                               info->cmd_data);
 
@@ -397,8 +401,7 @@ parse_element (MooMarkupNode       *node,
         return;
     }
 
-    info.cmd_data = _moo_command_parse_markup (cmd_node,
-                                               (char**) &info.cmd_type,
+    info.cmd_data = _moo_command_parse_markup (cmd_node, &info.cmd_type,
                                                (char**) &info.options);
 
     if (!info.cmd_data)
@@ -410,7 +413,6 @@ parse_element (MooMarkupNode       *node,
     func (&info, data);
 
     moo_command_data_unref (cmd_data);
-    g_free ((char*) info.cmd_type);
     g_free ((char*) info.options);
 }
 

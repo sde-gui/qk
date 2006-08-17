@@ -46,7 +46,7 @@ typedef struct {
     MooToolPosition position;
     gboolean        enabled;
     MooToolOSType   os_type;
-    const char     *cmd_type;
+    MooCommandType *cmd_type;
     MooCommandData *cmd_data;
     MooToolFileType type;
     const char     *file;

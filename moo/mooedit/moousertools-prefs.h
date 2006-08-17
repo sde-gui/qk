@@ -19,7 +19,7 @@
 G_BEGIN_DECLS
 
 
-GtkWidget  *moo_user_tools_prefs_page_new   (void);
+GtkWidget  *_moo_user_tools_prefs_page_new  (void);
 
 
 G_END_DECLS

@@ -20,6 +20,7 @@
 
 
 G_DEFINE_TYPE (MooCommand, moo_command, G_TYPE_OBJECT)
+G_DEFINE_TYPE (MooCommandType, moo_command_type, G_TYPE_OBJECT)
 G_DEFINE_TYPE (MooCommandContext, moo_command_context, G_TYPE_OBJECT)
 
 enum {
@@ -43,11 +44,6 @@ struct _MooCommandContextPrivate {
     gpointer doc;
 };
 
-typedef struct {
-    MooCommandTypeInfo info;
-    GDestroyNotify notify;
-} CommandType;
-
 struct _MooCommandData {
     guint ref_count;
     GHashTable *hash;
@@ -66,98 +62,76 @@ moo_command_create (const char     *name,
                     const char     *options,
                     MooCommandData *data)
 {
-    CommandType *type;
-    MooCommand *cmd;
+    MooCommandType *type;
 
-    g_return_val_if_fail (registered_types != NULL, NULL);
+    g_return_val_if_fail (name != NULL, NULL);
 
-    if (data)
-        moo_command_data_ref (data);
-    else
-        data = moo_command_data_new ();
-
-    type = g_hash_table_lookup (registered_types, name);
+    type = moo_command_type_lookup (name);
     g_return_val_if_fail (type != NULL, NULL);
 
-    cmd = type->info.factory (data, options, type->info.data);
-
-    moo_command_data_unref (data);
-    return cmd;
+    return _moo_command_type_create_command (type, data, options);
 }
 
 
 void
-moo_command_type_register (const char         *id,
-                           const char         *name,
-                           MooCommandFactoryFunc factory,
-                           MooCommandCreateWidgetFunc create_widget,
-                           MooCommandLoadDataFunc load_data,
-                           MooCommandSaveDataFunc save_data,
-                           gpointer            data,
-                           GDestroyNotify      notify)
+moo_command_type_register (const char     *name,
+                           const char     *display_name,
+                           MooCommandType *type)
 {
-    CommandType *type;
+    MooCommandTypeClass *klass;
 
-    g_return_if_fail (id != NULL && name != NULL);
-    g_return_if_fail (factory != NULL);
-    g_return_if_fail (create_widget != NULL);
-    g_return_if_fail (load_data != NULL);
-    g_return_if_fail (save_data != NULL);
+    g_return_if_fail (name != NULL);
+    g_return_if_fail (display_name != NULL);
+    g_return_if_fail (MOO_IS_COMMAND_TYPE (type));
+
+    klass = MOO_COMMAND_TYPE_GET_CLASS (type);
+    g_return_if_fail (klass->create_command != NULL);
+    g_return_if_fail (klass->create_widget != NULL);
+    g_return_if_fail (klass->load_data != NULL);
+    g_return_if_fail (klass->save_data != NULL);
 
     if (registered_types != NULL)
     {
-        CommandType *old = g_hash_table_lookup (registered_types, name);
+        MooCommandType *old = g_hash_table_lookup (registered_types, name);
 
-        if (old != NULL)
+        if (old)
         {
             g_warning ("reregistering command type '%s'", name);
-
-            if (old->notify)
-                old->notify (old->info.data);
-
-            g_free ((char*) old->info.id);
-            g_free ((char*) old->info.name);
-            g_free (old);
+            g_hash_table_remove (registered_types, name);
+            g_object_unref (old);
         }
     }
 
     if (!registered_types)
         registered_types = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
-    type = g_new0 (CommandType, 1);
-    type->info.id = g_strdup (id);
-    type->info.name = g_strdup (name);
-    type->info.factory = factory;
-    type->info.create_widget = create_widget;
-    type->info.load_data = load_data;
-    type->info.save_data = save_data;
-    type->info.data = data;
-    type->notify = notify;
+    type->name = g_strdup (name);
+    type->display_name = g_strdup (display_name);
 
-    g_hash_table_insert (registered_types, g_strdup (name), type);
+    g_hash_table_insert (registered_types, g_strdup (name), g_object_ref (type));
 }
 
 
-MooCommandTypeInfo *
+MooCommandType *
 moo_command_type_lookup (const char *name)
 {
-    CommandType *type = NULL;
+    MooCommandType *type = NULL;
 
     g_return_val_if_fail (name != NULL, FALSE);
 
     if (registered_types != NULL)
         type = g_hash_table_lookup (registered_types, name);
 
-    return type ? &type->info : NULL;
+    return type;
 }
 
 
 static void
-add_type_hash_cb (const char *type,
-                  G_GNUC_UNUSED gpointer whatever,
+add_type_hash_cb (G_GNUC_UNUSED const char *name,
+                  MooCommandType *type,
                   GSList **list)
 {
-    *list = g_slist_prepend (*list, g_strdup (type));
+    *list = g_slist_prepend (*list, type);
 }
 
 GSList *
@@ -169,6 +143,81 @@ moo_command_list_types (void)
         g_hash_table_foreach (registered_types, (GHFunc) add_type_hash_cb, &list);
 
     return g_slist_reverse (list);
+}
+
+
+static void
+moo_command_type_init (G_GNUC_UNUSED MooCommandType *type)
+{
+}
+
+static void
+moo_command_type_finalize (GObject *object)
+{
+    MooCommandType *type = MOO_COMMAND_TYPE (object);
+    g_free (type->name);
+    g_free (type->display_name);
+    G_OBJECT_CLASS (moo_command_type_parent_class)->finalize (object);
+}
+
+static void
+moo_command_type_class_init (MooCommandTypeClass *klass)
+{
+    G_OBJECT_CLASS (klass)->finalize = moo_command_type_finalize;
+}
+
+
+MooCommand *
+_moo_command_type_create_command (MooCommandType    *type,
+                                  MooCommandData    *data,
+                                  const char        *options)
+{
+    MooCommand *cmd;
+
+    g_return_val_if_fail (MOO_IS_COMMAND_TYPE (type), NULL);
+    g_return_val_if_fail (MOO_COMMAND_TYPE_GET_CLASS(type)->create_command != NULL, NULL);
+
+    if (data)
+        moo_command_data_ref (data);
+    else
+        data = moo_command_data_new ();
+
+    cmd = MOO_COMMAND_TYPE_GET_CLASS (type)->create_command (type, data, options);
+
+    moo_command_data_unref (data);
+    return cmd;
+}
+
+GtkWidget *
+_moo_command_type_create_widget (MooCommandType *type)
+{
+    g_return_val_if_fail (MOO_IS_COMMAND_TYPE (type), NULL);
+    g_return_val_if_fail (MOO_COMMAND_TYPE_GET_CLASS(type)->create_widget != NULL, NULL);
+    return MOO_COMMAND_TYPE_GET_CLASS (type)->create_widget (type);
+}
+
+void
+_moo_command_type_load_data (MooCommandType    *type,
+                             GtkWidget         *widget,
+                             MooCommandData    *data)
+{
+    g_return_if_fail (MOO_IS_COMMAND_TYPE (type));
+    g_return_if_fail (MOO_COMMAND_TYPE_GET_CLASS(type)->load_data != NULL);
+    g_return_if_fail (GTK_IS_WIDGET (widget));
+    g_return_if_fail (data != NULL);
+    MOO_COMMAND_TYPE_GET_CLASS(type)->load_data (type, widget, data);
+}
+
+gboolean
+_moo_command_type_save_data (MooCommandType    *type,
+                             GtkWidget         *widget,
+                             MooCommandData    *data)
+{
+    g_return_val_if_fail (MOO_IS_COMMAND_TYPE (type), FALSE);
+    g_return_val_if_fail (MOO_COMMAND_TYPE_GET_CLASS(type)->save_data != NULL, FALSE);
+    g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
+    g_return_val_if_fail (data != NULL, FALSE);
+    return MOO_COMMAND_TYPE_GET_CLASS (type)->save_data (type, widget, data);
 }
 
 
@@ -691,28 +740,31 @@ moo_command_context_get_window (MooCommandContext *ctx)
 
 MooCommandData *
 _moo_command_parse_markup (MooMarkupNode   *node,
-                           char           **type_p,
+                           MooCommandType **type_p,
                            char           **options_p)
 {
     MooCommandData *data;
     MooMarkupNode *child;
-    const char *type, *options;
+    MooCommandType *type;
+    const char *type_name, *options;
 
     g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (node), NULL);
     g_return_val_if_fail (!strcmp (node->name, "command"), NULL);
 
-    type = moo_markup_get_prop (node, "type");
+    type_name = moo_markup_get_prop (node, "type");
     options = moo_markup_get_prop (node, "options");
 
-    if (!type)
+    if (!type_name)
     {
         g_warning ("no type attribute in %s element", node->name);
         return NULL;
     }
 
-    if (!moo_command_type_lookup (type))
+    type = moo_command_type_lookup (type_name);
+
+    if (!type)
     {
-        g_warning ("unknown command type %s", type);
+        g_warning ("unknown command type %s", type_name);
         return NULL;
     }
 
@@ -734,7 +786,7 @@ _moo_command_parse_markup (MooMarkupNode   *node,
     }
 
     if (type_p)
-        *type_p = g_strdup (type);
+        *type_p = type;
     if (options_p)
         *options_p = g_strdup (options);
 

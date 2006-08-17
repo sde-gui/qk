@@ -9,7 +9,9 @@ moocommand_stuff =                     \
 	moocommand-exe.h               \
 	moocommand-exe.c               \
 	moocommand-script.h            \
-	moocommand-script.c
+	moocommand-script.c            \
+	moocommanddisplay.h            \
+	moocommanddisplay.c
 
 completion =                           \
 	moocompletion.h                \

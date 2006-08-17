@@ -34,6 +34,13 @@ G_BEGIN_DECLS
 #define MOO_IS_COMMAND_CONTEXT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_COMMAND_CONTEXT))
 #define MOO_COMMAND_CONTEXT_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_COMMAND_CONTEXT, MooCommandContextClass))
 
+#define MOO_TYPE_COMMAND_TYPE               (moo_command_type_get_type ())
+#define MOO_COMMAND_TYPE(object)            (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_COMMAND_TYPE, MooCommandType))
+#define MOO_COMMAND_TYPE_CLASS(klass)       (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_COMMAND_TYPE, MooCommandTypeClass))
+#define MOO_IS_COMMAND_TYPE(object)         (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_COMMAND_TYPE))
+#define MOO_IS_COMMAND_TYPE_CLASS(klass)    (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_COMMAND_TYPE))
+#define MOO_COMMAND_TYPE_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_COMMAND_TYPE, MooCommandTypeClass))
+
 #define MOO_TYPE_COMMAND_DATA               (moo_command_data_get_type ())
 #define MOO_TYPE_COMMAND_OPTIONS            (moo_command_options_get_type ())
 
@@ -43,7 +50,8 @@ typedef struct _MooCommandContext           MooCommandContext;
 typedef struct _MooCommandContextPrivate    MooCommandContextPrivate;
 typedef struct _MooCommandContextClass      MooCommandContextClass;
 typedef struct _MooCommandData              MooCommandData;
-typedef struct _MooCommandTypeInfo          MooCommandTypeInfo;
+typedef struct _MooCommandType              MooCommandType;
+typedef struct _MooCommandTypeClass         MooCommandTypeClass;
 
 typedef enum {
     MOO_COMMAND_NEED_DOC        = 1 << 0,
@@ -79,25 +87,25 @@ struct _MooCommandClass {
                                      MooCommandContext  *ctx);
 };
 
-typedef MooCommand *(*MooCommandFactoryFunc)    (MooCommandData     *data,
-                                                 const char         *options,
-                                                 gpointer            user_data);
-typedef GtkWidget *(*MooCommandCreateWidgetFunc)(gpointer            user_data);
-typedef void       (*MooCommandLoadDataFunc)    (GtkWidget          *widget,
-                                                 MooCommandData     *data,
-                                                 gpointer            user_data);
-typedef gboolean   (*MooCommandSaveDataFunc)    (GtkWidget          *widget,
-                                                 MooCommandData     *data,
-                                                 gpointer            user_data);
+struct _MooCommandType {
+    GObject base;
+    char *name;
+    char *display_name;
+};
 
-struct _MooCommandTypeInfo {
-    const char *id;
-    const char *name;
-    MooCommandFactoryFunc factory;
-    MooCommandCreateWidgetFunc create_widget;
-    MooCommandLoadDataFunc load_data;
-    MooCommandSaveDataFunc save_data;
-    gpointer data;
+struct _MooCommandTypeClass {
+    GObjectClass base_class;
+
+    MooCommand *(*create_command) (MooCommandType    *type,
+                                   MooCommandData    *data,
+                                   const char        *options);
+    GtkWidget  *(*create_widget)  (MooCommandType    *type);
+    void        (*load_data)      (MooCommandType    *type,
+                                   GtkWidget         *widget,
+                                   MooCommandData    *data);
+    gboolean    (*save_data)      (MooCommandType    *type,
+                                   GtkWidget         *widget,
+                                   MooCommandData    *data);
 };
 
 
@@ -105,8 +113,9 @@ GType               moo_command_get_type        (void) G_GNUC_CONST;
 GType               moo_command_context_get_type(void) G_GNUC_CONST;
 GType               moo_command_data_get_type   (void) G_GNUC_CONST;
 GType               moo_command_options_get_type(void) G_GNUC_CONST;
+GType               moo_command_type_get_type   (void) G_GNUC_CONST;
 
-MooCommand         *moo_command_create          (const char         *type,
+MooCommand         *moo_command_create          (const char         *name,
                                                  const char         *options,
                                                  MooCommandData     *data);
 
@@ -124,16 +133,11 @@ MooCommandOptions   moo_command_get_options     (MooCommand         *cmd);
 
 MooCommandOptions   moo_command_options_parse   (const char         *string);
 
-void                moo_command_type_register   (const char         *type,
-                                                 const char         *name,
-                                                 MooCommandFactoryFunc factory,
-                                                 MooCommandCreateWidgetFunc create_widget,
-                                                 MooCommandLoadDataFunc load_data,
-                                                 MooCommandSaveDataFunc save_data,
-                                                 gpointer            data,
-                                                 GDestroyNotify      notify);
-MooCommandTypeInfo *moo_command_type_lookup     (const char         *type);
-/* free return value and its contents */
+void                moo_command_type_register   (const char         *name,
+                                                 const char         *display_name,
+                                                 MooCommandType     *type);
+MooCommandType     *moo_command_type_lookup     (const char         *name);
+/* returns list of MooCommandType instances, list should be freed */
 GSList             *moo_command_list_types      (void);
 
 
@@ -179,12 +183,23 @@ void                moo_command_context_foreach (MooCommandContext  *ctx,
 
 void                _moo_command_init           (void);
 MooCommandData     *_moo_command_parse_markup   (MooMarkupNode      *node,
-                                                 char              **type,
+                                                 MooCommandType    **type,
                                                  char              **options);
 void                _moo_command_format_markup  (MooMarkupNode      *parent,
                                                  MooCommandData     *data,
                                                  char               *type,
                                                  char               *options);
+
+MooCommand  *_moo_command_type_create_command   (MooCommandType    *type,
+                                                 MooCommandData    *data,
+                                                 const char        *options);
+GtkWidget   *_moo_command_type_create_widget    (MooCommandType    *type);
+void         _moo_command_type_load_data        (MooCommandType    *type,
+                                                 GtkWidget         *widget,
+                                                 MooCommandData    *data);
+gboolean     _moo_command_type_save_data        (MooCommandType    *type,
+                                                 GtkWidget         *widget,
+                                                 MooCommandData    *data);
 
 
 G_END_DECLS

@@ -25,8 +25,12 @@ struct _MooCommandScriptPrivate {
     MSNode *script;
 };
 
-
 G_DEFINE_TYPE (MooCommandScript, moo_command_script, MOO_TYPE_COMMAND)
+
+typedef MooCommandType MooCommandTypeScript;
+typedef MooCommandTypeClass MooCommandTypeScriptClass;
+GType _moo_command_type_script_get_type (void) G_GNUC_CONST;
+G_DEFINE_TYPE (MooCommandTypeScript, _moo_command_type_script, MOO_TYPE_COMMAND_TYPE)
 
 
 static void
@@ -91,9 +95,9 @@ moo_command_script_dispose (GObject *object)
 
 
 static MooCommand *
-factory_func (MooCommandData *data,
-              const char     *options,
-              G_GNUC_UNUSED gpointer user_data)
+script_type_create_command (G_GNUC_UNUSED MooCommandType *type,
+                            MooCommandData *data,
+                            const char     *options)
 {
     MooCommand *cmd;
     const char *code;
@@ -110,7 +114,7 @@ factory_func (MooCommandData *data,
 
 
 static GtkWidget *
-create_widget (G_GNUC_UNUSED gpointer data)
+script_type_create_widget (G_GNUC_UNUSED MooCommandType *type)
 {
     GtkWidget *page;
     MooGladeXML *xml;
@@ -126,9 +130,9 @@ create_widget (G_GNUC_UNUSED gpointer data)
 
 
 static void
-load_data (GtkWidget      *page,
-           MooCommandData *data,
-           G_GNUC_UNUSED gpointer user_data)
+script_type_load_data (G_GNUC_UNUSED MooCommandType *type,
+                       GtkWidget      *page,
+                       MooCommandData *data)
 {
     MooGladeXML *xml;
     GtkTextView *textview;
@@ -145,9 +149,9 @@ load_data (GtkWidget      *page,
 
 
 static gboolean
-save_data (GtkWidget      *page,
-           MooCommandData *data,
-           G_GNUC_UNUSED gpointer user_data)
+script_type_save_data (G_GNUC_UNUSED MooCommandType *type,
+                       GtkWidget      *page,
+                       MooCommandData *data)
 {
     MooGladeXML *xml;
     GtkTextView *textview;
@@ -161,9 +165,8 @@ save_data (GtkWidget      *page,
 
     new_code = moo_text_view_get_text (textview);
     code = moo_command_data_get (data, "code");
-    code = code ? code : "";
 
-    if (strcmp (code, new_code) != 0)
+    if (strcmp (code ? code : "", new_code ? new_code : "") != 0)
     {
         moo_command_data_set (data, "code", new_code);
         changed = TRUE;
@@ -175,17 +178,31 @@ save_data (GtkWidget      *page,
 
 
 static void
+_moo_command_type_script_init (G_GNUC_UNUSED MooCommandType *type)
+{
+}
+
+static void
+_moo_command_type_script_class_init (MooCommandTypeClass *klass)
+{
+    klass->create_command = script_type_create_command;
+    klass->create_widget = script_type_create_widget;
+    klass->load_data = script_type_load_data;
+    klass->save_data = script_type_save_data;
+}
+
+
+static void
 moo_command_script_class_init (MooCommandScriptClass *klass)
 {
+    MooCommandType *type;
+
     G_OBJECT_CLASS(klass)->dispose = moo_command_script_dispose;
     MOO_COMMAND_CLASS(klass)->run = moo_command_script_run;
 
-    moo_command_type_register ("MooScript", _("MooScript"),
-                               factory_func,
-                               create_widget,
-                               load_data,
-                               save_data,
-                               NULL, NULL);
+    type = g_object_new (_moo_command_type_script_get_type (), NULL);
+    moo_command_type_register ("MooScript", _("MooScript"), type);
+    g_object_unref (type);
 }
 
 
