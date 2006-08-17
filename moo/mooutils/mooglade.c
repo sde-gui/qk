@@ -895,16 +895,13 @@ pack_children (MooGladeXML    *xml,
                 Child *page_child = g_slist_nth_data (parent_node->children, index - 1);
 
                 if (!page_child->widget || !page_child->widget->widget)
-                {
-                    g_warning ("%s: empty notebook page with non-empty label", G_STRLOC);
-                }
+                    g_message ("%s: empty notebook page with non-empty label", G_STRLOC);
                 else
-                {
                     gtk_notebook_set_tab_label (GTK_NOTEBOOK (parent),
                                                 page_child->widget->widget,
                                                 widget);
-                    packed = TRUE;
-                }
+
+                packed = TRUE;
             }
         }
         else if (GTK_IS_MENU_ITEM (parent) && GTK_IS_MENU (widget))
