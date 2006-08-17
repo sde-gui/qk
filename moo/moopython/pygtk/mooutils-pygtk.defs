@@ -1321,7 +1321,7 @@
 
 (define-function prefs_dialog_page_new_from_xml
   (c-name "moo_prefs_dialog_page_new_from_xml")
-  (return-type "GtkWidget*")
+  (return-type "MooPrefsDialogPage*")
   (parameters
     '("const-char*" "label")
     '("const-char*" "icon_stock_id" (null-ok) (default "NULL"))

@@ -67,7 +67,7 @@ setup_script_view (MooTextView *script)
 GtkWidget *
 _as_plugin_prefs_page (MooPlugin *plugin)
 {
-    GtkWidget *page;
+    MooPrefsDialogPage *page;
     MooGladeXML *xml;
     GtkWidget *treeview;
     GtkTreeViewColumn *column;

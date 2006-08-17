@@ -357,7 +357,7 @@ set_props (MooGladeXML    *xml,
 }
 
 
-GtkWidget*
+MooPrefsDialogPage *
 moo_prefs_dialog_page_new_from_xml (const char         *label,
                                     const char         *icon_stock_id,
                                     MooGladeXML        *xml,
@@ -400,7 +400,7 @@ moo_prefs_dialog_page_new_from_xml (const char         *label,
                   "icon-stock-id", icon_stock_id,
                   NULL);
 
-    return GTK_WIDGET (page);
+    return page;
 }
 
 

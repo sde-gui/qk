@@ -55,7 +55,8 @@ GType       moo_prefs_dialog_page_get_type      (void) G_GNUC_CONST;
 
 GtkWidget  *moo_prefs_dialog_page_new           (const char         *label,
                                                  const char         *icon_stock_id);
-GtkWidget  *moo_prefs_dialog_page_new_from_xml  (const char         *label,
+MooPrefsDialogPage *
+            moo_prefs_dialog_page_new_from_xml  (const char         *label,
                                                  const char         *icon_stock_id,
                                                  MooGladeXML        *xml,
                                                  const char         *buffer,

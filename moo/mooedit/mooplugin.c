@@ -1460,7 +1460,7 @@ enable_toggled (GtkCellRendererToggle *cell,
 void
 _moo_plugin_attach_prefs (GtkWidget *dialog)
 {
-    GtkWidget *page;
+    MooPrefsDialogPage *page;
     MooGladeXML *xml;
     GtkTreeView *treeview;
     GtkCellRenderer *cell;
@@ -1474,7 +1474,7 @@ _moo_plugin_attach_prefs (GtkWidget *dialog)
                                                -1, "page", MOO_PLUGIN_PREFS_ROOT);
     g_return_if_fail (page != NULL);
 
-    xml = MOO_PREFS_DIALOG_PAGE(page)->xml;
+    xml = page->xml;
 
     treeview = moo_glade_xml_get_widget (xml, "treeview");
 
@@ -1502,7 +1502,7 @@ _moo_plugin_attach_prefs (GtkWidget *dialog)
     g_signal_connect (dialog, "init", G_CALLBACK (prefs_init), page);
     g_signal_connect (dialog, "apply", G_CALLBACK (prefs_apply), page);
 
-    moo_prefs_dialog_append_page (MOO_PREFS_DIALOG (dialog), page);
+    moo_prefs_dialog_append_page (MOO_PREFS_DIALOG (dialog), GTK_WIDGET (page));
 }
 
 

@@ -111,7 +111,7 @@ _moo_term_apply_settings (MooTerm *term)
 
 GtkWidget  *moo_term_prefs_page_new   (void)
 {
-    GtkWidget *page;
+    MooPrefsDialogPage *page;
     MooGladeXML *xml;
 
     _moo_term_init_settings ();
@@ -126,7 +126,7 @@ GtkWidget  *moo_term_prefs_page_new   (void)
                                                -1, "page", MOO_TERM_PREFS_PREFIX);
 
     g_object_unref (xml);
-    return page;
+    return GTK_WIDGET (page);
 }
 
 
