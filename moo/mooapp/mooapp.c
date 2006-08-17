@@ -25,6 +25,7 @@
 #include "mooedit/mooplugin.h"
 #include "mooedit/mooedit-script.h"
 #include "mooedit/moousertools.h"
+#include "mooedit/moousertools-prefs.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moopython.h"
@@ -783,8 +784,8 @@ moo_app_init_editor (MooApp *app)
 
     moo_plugin_read_dirs ();
 
-    moo_edit_load_user_tools (NULL, moo_app_get_ui_xml (app));
-    moo_edit_load_user_menu (NULL, moo_app_get_ui_xml (app));
+    _moo_edit_load_user_tools (MOO_TOOL_FILE_TOOLS, moo_app_get_ui_xml (app));
+    _moo_edit_load_user_tools (MOO_TOOL_FILE_MENU, moo_app_get_ui_xml (app));
 }
 #endif /* MOO_BUILD_EDIT */
 
@@ -1644,6 +1645,7 @@ moo_app_create_prefs_dialog (MooApp *app)
 
 #ifdef MOO_BUILD_EDIT
     moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new (moo_app_get_editor (app)));
+    moo_prefs_dialog_append_page (dialog, moo_user_tools_prefs_page_new ());
     _moo_plugin_attach_prefs (GTK_WIDGET (dialog));
 #endif
 

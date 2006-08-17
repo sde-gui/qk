@@ -53,3 +53,4 @@ moo/mooterm/termhelper_res\.rc$
 ^po/.*\.pot$
 ^po/notexist$
 -old\..*$
+^po/ru\.po$

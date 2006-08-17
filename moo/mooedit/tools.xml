@@ -2,8 +2,7 @@
   <tool id="ShellCommand" os="unix">
     <_name>Shell Command</_name>
     <_label>_Shell Command</_label>
-    <command type="MooScript">
-      <flags>need-doc</flags>
+    <command type="MooScript" options="need-doc">
       <code>cmd = HistoryEntry("", "ShellCommand");
 if cmd then
   Insert(Exec(cmd), "\n");

@@ -38,8 +38,7 @@ mooedit_include_headers =              \
 	mootextsearch.h                \
 	mootextstyle.h                 \
 	mootextstylescheme.h           \
-	mootextview.h                  \
-	moousertools.h
+	mootextview.h
 
 mooedit_noinst_headers =               \
 	gtksourceiter.h                \
@@ -68,6 +67,9 @@ mooedit_noinst_headers =               \
 	mootextgotoline-glade.h        \
 	mootextsearch-private.h        \
 	mootextview-private.h          \
+	moousertools.h                 \
+	moousertools-prefs.h           \
+	mooedittools-glade.h           \
 	quicksearch-glade.h            \
 	statusbar-glade.h
 
@@ -110,7 +112,8 @@ mooedit_sources =                      \
 	mootextstyle.c                 \
 	mootextstylescheme.c           \
 	mootextview.c                  \
-	moousertools.c
+	moousertools.c                 \
+	moousertools-prefs.c
 
 mooedit_printing_sources =             \
 	mootextprint.c                 \
@@ -125,7 +128,8 @@ BUILT_SOURCES =                        \
 	mooprint-glade.h               \
 	mooeditprefs-glade.h           \
 	mooeditprogress-glade.h        \
-	mooeditsavemultiple-glade.h
+	mooeditsavemultiple-glade.h    \
+	mooedittools-glade.h
 
 
 XML2H = $(srcdir)/../mooutils/xml2h.sh
@@ -156,6 +160,9 @@ statusbar-glade.h: $(srcdir)/glade/statusbar.glade $(XML2H)
 mooprint-glade.h: $(srcdir)/glade/mooprint.glade $(XML2H)
 	$(SHELL) $(XML2H) MOO_PRINT_GLADE_XML $(srcdir)/glade/mooprint.glade \
 		> mooprint-glade.h
+mooedittools-glade.h: $(srcdir)/glade/mooedittools.glade $(XML2H)
+	$(SHELL) $(XML2H) MOO_EDIT_TOOLS_GLADE_XML $(srcdir)/glade/mooedittools.glade \
+		> mooedittools-glade.h
 
 EXTRA_DIST =				\
 	glade/statusbar.glade		\

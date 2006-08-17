@@ -13,7 +13,7 @@
   (c-name "MooCommand")
   (gtype-id "MOO_TYPE_COMMAND")
   (fields
-    '("MooCommandFlags" "flags")
+    '("MooCommandOptions" "options")
   )
 )
 
@@ -23,24 +23,33 @@
   (gtype-id "MOO_TYPE_COMMAND_DATA")
 )
 
-(define-flags CommandFlags
+(define-flags CommandOptions
   (in-module "Moo")
-  (c-name "MooCommandFlags")
-  (gtype-id "MOO_TYPE_COMMAND_FLAGS")
+  (c-name "MooCommandOptions")
+  (gtype-id "MOO_TYPE_COMMAND_OPTIONS")
 )
 
+
+(define-function parse_command_options
+  (c-name "moo_command_options_parse")
+  (return-type "MooCommandOptions")
+  (parameters
+    '("const-char*" "string" (null-ok))
+  )
+)
 
 (define-function command_create
   (c-name "moo_command_create")
   (return-type "MooCommand*")
   (parameters
     '("const-char*" "type")
+    '("const-char*" "options")
     '("MooCommandData*" "data")
   )
 )
 
-(define-function command_register
-  (c-name "moo_command_register")
+(define-function command_type_register
+  (c-name "moo_command_type_register")
   (return-type "none")
   (parameters
     '("const-char*" "type")
@@ -49,8 +58,8 @@
   )
 )
 
-(define-function command_registered
-  (c-name "moo_command_registered")
+(define-function command_type_registered
+  (c-name "moo_command_type_registered")
   (return-type "gboolean")
   (parameters
     '("const-char*" "type")
@@ -75,19 +84,19 @@
   )
 )
 
-(define-method set_flags
+(define-method set_options
   (of-object "MooCommand")
-  (c-name "moo_command_set_flags")
+  (c-name "moo_command_set_options")
   (return-type "none")
   (parameters
-    '("MooCommandFlags" "flags")
+    '("MooCommandOptions" "options")
   )
 )
 
-(define-method get_flags
+(define-method get_options
   (of-object "MooCommand")
-  (c-name "moo_command_get_flags")
-  (return-type "MooCommandFlags")
+  (c-name "moo_command_get_options")
+  (return-type "MooCommandOptions")
 )
 
 

@@ -30,7 +30,7 @@ enum {
 
 enum {
     CMD_PROP_0,
-    CMD_PROP_FLAGS
+    CMD_PROP_OPTIONS
 };
 
 typedef struct {
@@ -44,8 +44,7 @@ struct _MooCommandContextPrivate {
 };
 
 typedef struct {
-    MooCommandFactoryFunc func;
-    gpointer data;
+    MooCommandTypeInfo info;
     GDestroyNotify notify;
 } CommandType;
 
@@ -64,6 +63,7 @@ static void      variable_free  (Variable       *var);
 
 MooCommand *
 moo_command_create (const char     *name,
+                    const char     *options,
                     MooCommandData *data)
 {
     CommandType *type;
@@ -79,7 +79,7 @@ moo_command_create (const char     *name,
     type = g_hash_table_lookup (registered_types, name);
     g_return_val_if_fail (type != NULL, NULL);
 
-    cmd = type->func (data, type->data);
+    cmd = type->info.factory (data, options, type->info.data);
 
     moo_command_data_unref (data);
     return cmd;
@@ -87,15 +87,22 @@ moo_command_create (const char     *name,
 
 
 void
-moo_command_register (const char         *name,
-                      MooCommandFactoryFunc func,
-                      gpointer            user_data,
-                      GDestroyNotify      notify)
+moo_command_type_register (const char         *id,
+                           const char         *name,
+                           MooCommandFactoryFunc factory,
+                           MooCommandCreateWidgetFunc create_widget,
+                           MooCommandLoadDataFunc load_data,
+                           MooCommandSaveDataFunc save_data,
+                           gpointer            data,
+                           GDestroyNotify      notify)
 {
     CommandType *type;
 
-    g_return_if_fail (name != NULL);
-    g_return_if_fail (func != NULL);
+    g_return_if_fail (id != NULL && name != NULL);
+    g_return_if_fail (factory != NULL);
+    g_return_if_fail (create_widget != NULL);
+    g_return_if_fail (load_data != NULL);
+    g_return_if_fail (save_data != NULL);
 
     if (registered_types != NULL)
     {
@@ -104,8 +111,12 @@ moo_command_register (const char         *name,
         if (old != NULL)
         {
             g_warning ("reregistering command type '%s'", name);
+
             if (old->notify)
-                old->notify (old->data);
+                old->notify (old->info.data);
+
+            g_free ((char*) old->info.id);
+            g_free ((char*) old->info.name);
             g_free (old);
         }
     }
@@ -114,20 +125,50 @@ moo_command_register (const char         *name,
         registered_types = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
     type = g_new0 (CommandType, 1);
-    type->func = func;
-    type->data = user_data;
+    type->info.id = g_strdup (id);
+    type->info.name = g_strdup (name);
+    type->info.factory = factory;
+    type->info.create_widget = create_widget;
+    type->info.load_data = load_data;
+    type->info.save_data = save_data;
+    type->info.data = data;
     type->notify = notify;
 
     g_hash_table_insert (registered_types, g_strdup (name), type);
 }
 
 
-gboolean
-moo_command_registered (const char *name)
+MooCommandTypeInfo *
+moo_command_type_lookup (const char *name)
 {
+    CommandType *type = NULL;
+
     g_return_val_if_fail (name != NULL, FALSE);
-    return registered_types != NULL &&
-            g_hash_table_lookup (registered_types, name) != NULL;
+
+    if (registered_types != NULL)
+        type = g_hash_table_lookup (registered_types, name);
+
+    return type ? &type->info : NULL;
+}
+
+
+static void
+add_type_hash_cb (const char *type,
+                  G_GNUC_UNUSED gpointer whatever,
+                  GSList **list)
+{
+    *list = g_slist_prepend (*list, g_strdup (type));
+}
+
+GSList *
+moo_command_list_types (void)
+{
+    GSList *list = NULL;
+
+    if (registered_types)
+        g_hash_table_foreach (registered_types, (GHFunc) add_type_hash_cb, &list);
+
+    return g_slist_reverse (list);
 }
 
 
@@ -141,8 +182,8 @@ moo_command_set_property (GObject *object,
 
     switch (property_id)
     {
-        case CMD_PROP_FLAGS:
-            moo_command_set_flags (cmd, g_value_get_flags (value));
+        case CMD_PROP_OPTIONS:
+            moo_command_set_options (cmd, g_value_get_flags (value));
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -160,8 +201,8 @@ moo_command_get_property (GObject *object,
 
     switch (property_id)
     {
-        case CMD_PROP_FLAGS:
-            g_value_set_flags (value, cmd->flags);
+        case CMD_PROP_OPTIONS:
+            g_value_set_flags (value, cmd->options);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -174,13 +215,13 @@ moo_command_check_sensitive_real (MooCommand *cmd,
                                   gpointer    doc,
                                   gpointer    window)
 {
-    if ((cmd->flags & MOO_COMMAND_NEED_WINDOW) && !MOO_IS_EDIT_WINDOW (window))
+    if ((cmd->options & MOO_COMMAND_NEED_WINDOW) && !MOO_IS_EDIT_WINDOW (window))
         return FALSE;
 
-    if ((cmd->flags & MOO_COMMAND_NEED_DOC) && !doc)
+    if ((cmd->options & MOO_COMMAND_NEED_DOC) && !doc)
         return FALSE;
 
-    if ((cmd->flags & MOO_COMMAND_NEED_FILE) && (!MOO_IS_EDIT (doc) || !moo_edit_get_filename (doc)))
+    if ((cmd->options & MOO_COMMAND_NEED_FILE) && (!MOO_IS_EDIT (doc) || !moo_edit_get_filename (doc)))
         return FALSE;
 
     return TRUE;
@@ -209,9 +250,9 @@ moo_command_class_init (MooCommandClass *klass)
     klass->check_context = moo_command_check_context_real;
     klass->check_sensitive = moo_command_check_sensitive_real;
 
-    g_object_class_install_property (object_class, CMD_PROP_FLAGS,
-                                     g_param_spec_flags ("flags", "flags", "flags",
-                                                         MOO_TYPE_COMMAND_FLAGS,
+    g_object_class_install_property (object_class, CMD_PROP_OPTIONS,
+                                     g_param_spec_flags ("options", "options", "options",
+                                                         MOO_TYPE_COMMAND_OPTIONS,
                                                          0,
                                                          G_PARAM_READWRITE));
 }
@@ -223,14 +264,14 @@ moo_command_init (G_GNUC_UNUSED MooCommand *cmd)
 }
 
 
-static MooCommandFlags
-check_flags (MooCommandFlags flags)
+static MooCommandOptions
+check_options (MooCommandOptions options)
 {
-    MooCommandFlags checked = flags;
+    MooCommandOptions checked = options;
 
-    if (flags & MOO_COMMAND_NEED_FILE)
+    if (options & MOO_COMMAND_NEED_FILE)
         checked |= MOO_COMMAND_NEED_DOC;
-    if (flags & MOO_COMMAND_NEED_SAVE)
+    if (options & MOO_COMMAND_NEED_SAVE)
         checked |= MOO_COMMAND_NEED_DOC;
 
     return checked;
@@ -250,16 +291,16 @@ moo_command_run (MooCommand         *cmd,
     doc = moo_command_context_get_doc (ctx);
     window = moo_command_context_get_window (ctx);
 
-    if (cmd->flags & MOO_COMMAND_NEED_WINDOW)
+    if (cmd->options & MOO_COMMAND_NEED_WINDOW)
         g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
 
-    if (cmd->flags & MOO_COMMAND_NEED_DOC)
+    if (cmd->options & MOO_COMMAND_NEED_DOC)
         g_return_if_fail (doc != NULL);
 
-    if (cmd->flags & MOO_COMMAND_NEED_FILE)
+    if (cmd->options & MOO_COMMAND_NEED_FILE)
         g_return_if_fail (MOO_IS_EDIT (doc) && moo_edit_get_filename (doc) != NULL);
 
-    if (cmd->flags & MOO_COMMAND_NEED_SAVE)
+    if (cmd->options & MOO_COMMAND_NEED_SAVE)
     {
         if (MOO_EDIT_IS_MODIFIED (doc) && !moo_edit_save (doc, NULL))
             return;
@@ -295,31 +336,31 @@ moo_command_check_sensitive (MooCommand *cmd,
 
 
 void
-moo_command_set_flags (MooCommand      *cmd,
-                       MooCommandFlags  flags)
+moo_command_set_options (MooCommand       *cmd,
+                         MooCommandOptions options)
 {
     g_return_if_fail (MOO_IS_COMMAND (cmd));
 
-    flags = check_flags (flags);
+    options = check_options (options);
 
-    if (flags != cmd->flags)
+    if (options != cmd->options)
     {
-        cmd->flags = flags;
-        g_object_notify (G_OBJECT (cmd), "flags");
+        cmd->options = options;
+        g_object_notify (G_OBJECT (cmd), "options");
     }
 }
 
 
-MooCommandFlags
-moo_command_get_flags (MooCommand *cmd)
+MooCommandOptions
+moo_command_get_options (MooCommand *cmd)
 {
     g_return_val_if_fail (MOO_IS_COMMAND (cmd), 0);
-    return cmd->flags;
+    return cmd->options;
 }
 
 
 GType
-moo_command_flags_get_type (void)
+moo_command_options_get_type (void)
 {
     static GType type;
 
@@ -333,17 +374,17 @@ moo_command_flags_get_type (void)
             { 0, NULL, NULL }
         };
 
-        type = g_flags_register_static ("MooCommandFlags", values);
+        type = g_flags_register_static ("MooCommandOptions", values);
     }
 
     return type;
 }
 
 
-MooCommandFlags
-moo_command_flags_parse (const char *string)
+MooCommandOptions
+moo_command_options_parse (const char *string)
 {
-    MooCommandFlags flags = 0;
+    MooCommandOptions options = 0;
     char **pieces, **p;
 
     if (!string)
@@ -364,34 +405,20 @@ moo_command_flags_parse (const char *string)
             continue;
 
         if (!strcmp (s, "need-doc"))
-            flags |= MOO_COMMAND_NEED_DOC;
+            options |= MOO_COMMAND_NEED_DOC;
         else if (!strcmp (s, "need-file"))
-            flags |= MOO_COMMAND_NEED_FILE;
+            options |= MOO_COMMAND_NEED_FILE;
         else if (!strcmp (s, "need-save"))
-            flags |= MOO_COMMAND_NEED_SAVE;
+            options |= MOO_COMMAND_NEED_SAVE;
         else if (!strcmp (s, "need-window"))
-            flags |= MOO_COMMAND_NEED_WINDOW;
+            options |= MOO_COMMAND_NEED_WINDOW;
         else
             g_warning ("unknown flag '%s'", s);
     }
 
 out:
     g_strfreev (pieces);
-    return flags;
-}
-
-
-void
-moo_command_load_data (MooCommand     *cmd,
-                       MooCommandData *data)
-{
-    const char *flags;
-
-    g_return_if_fail (MOO_IS_COMMAND (cmd));
-    g_return_if_fail (data != NULL);
-
-    flags = moo_command_data_get (data, "flags");
-    moo_command_set_flags (cmd, moo_command_flags_parse (flags));
+    return options;
 }
 
 
@@ -663,27 +690,19 @@ moo_command_context_get_window (MooCommandContext *ctx)
 
 
 MooCommandData *
-moo_command_data_new (void)
+_moo_command_parse_markup (MooMarkupNode   *node,
+                           char           **type_p,
+                           char           **options_p)
 {
-    MooCommandData *data = g_new0 (MooCommandData, 1);
-    data->ref_count = 1;
-    data->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
-    return data;
-}
-
-
-MooCommand *
-_moo_command_parse_markup (MooMarkupNode *node)
-{
-    MooCommand *cmd;
     MooCommandData *data;
     MooMarkupNode *child;
-    const char *type;
+    const char *type, *options;
 
     g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (node), NULL);
     g_return_val_if_fail (!strcmp (node->name, "command"), NULL);
 
     type = moo_markup_get_prop (node, "type");
+    options = moo_markup_get_prop (node, "options");
 
     if (!type)
     {
@@ -691,7 +710,7 @@ _moo_command_parse_markup (MooMarkupNode *node)
         return NULL;
     }
 
-    if (!moo_command_registered (type))
+    if (!moo_command_type_lookup (type))
     {
         g_warning ("unknown command type %s", type);
         return NULL;
@@ -714,10 +733,31 @@ _moo_command_parse_markup (MooMarkupNode *node)
         moo_command_data_set (data, child->name, moo_markup_get_content (child));
     }
 
-    cmd = moo_command_create (type, data);
+    if (type_p)
+        *type_p = g_strdup (type);
+    if (options_p)
+        *options_p = g_strdup (options);
 
-    moo_command_data_unref (data);
-    return cmd;
+    return data;
+}
+
+
+MooCommandData *
+moo_command_data_new (void)
+{
+    MooCommandData *data = g_new0 (MooCommandData, 1);
+    data->ref_count = 1;
+    data->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+    return data;
+}
+
+
+void
+moo_command_data_clear (MooCommandData *data)
+{
+    g_return_if_fail (data != NULL);
+    g_hash_table_destroy (data->hash);
+    data->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 }
 
 

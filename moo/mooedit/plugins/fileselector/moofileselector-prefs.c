@@ -55,7 +55,7 @@ static void     helper_update_model     (MooGladeXML    *xml,
 GtkWidget *
 _moo_file_selector_prefs_page (MooPlugin *plugin)
 {
-    GtkWidget *page;
+    MooPrefsDialogPage *page;
     MooGladeXML *xml;
     GtkWidget *treeview;
     GtkTreeViewColumn *column;
@@ -102,7 +102,7 @@ _moo_file_selector_prefs_page (MooPlugin *plugin)
 
     g_object_set_data (G_OBJECT (xml), "moo-file-selector-plugin", plugin);
     g_object_unref (xml);
-    return page;
+    return GTK_WIDGET (page);
 }
 
 

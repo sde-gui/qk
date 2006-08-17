@@ -3,8 +3,7 @@
     <_name>Switch Header And Implementation</_name>
     <_label>_Switch Header And Implementation</_label>
     <langs>C, GAP</langs>
-    <command type="MooScript">
-      <flags>need-file</flags>
+    <command type="MooScript" options="need-file">
       <code>extensions = [[['.h', '.hh', '.hpp', '.hxx', '.H'], ['.c', '.cc', '.cpp', '.cxx', '.C']],
               [['.gd'], ['.gi']]];
 new = none;

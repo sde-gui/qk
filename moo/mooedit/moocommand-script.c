@@ -13,7 +13,12 @@
 
 #include "mooedit/moocommand-script.h"
 #include "mooedit/mooedit-script.h"
+#include "mooedit/mooedittools-glade.h"
+#include "mooedit/mootextview.h"
 #include "mooscript/mooscript-parser.h"
+#include "mooutils/mooi18n.h"
+#include "mooutils/mooglade.h"
+#include <string.h>
 
 
 struct _MooCommandScriptPrivate {
@@ -87,6 +92,7 @@ moo_command_script_dispose (GObject *object)
 
 static MooCommand *
 factory_func (MooCommandData *data,
+              const char     *options,
               G_GNUC_UNUSED gpointer user_data)
 {
     MooCommand *cmd;
@@ -96,12 +102,75 @@ factory_func (MooCommandData *data,
 
     g_return_val_if_fail (code && *code, NULL);
 
-    cmd = moo_command_script_new (code);
+    cmd = moo_command_script_new (code, moo_command_options_parse (options));
     g_return_val_if_fail (cmd != NULL, NULL);
 
-    moo_command_load_data (cmd, data);
-
     return cmd;
+}
+
+
+static GtkWidget *
+create_widget (G_GNUC_UNUSED gpointer data)
+{
+    GtkWidget *page;
+    MooGladeXML *xml;
+
+    xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
+    moo_glade_xml_parse_memory (xml, MOO_EDIT_TOOLS_GLADE_XML, -1, "moo_script_page", NULL);
+    page = moo_glade_xml_get_widget (xml, "moo_script_page");
+    g_return_val_if_fail (page != NULL, NULL);
+
+    g_object_set_data_full (G_OBJECT (page), "moo-glade-xml", xml, g_object_unref);
+    return page;
+}
+
+
+static void
+load_data (GtkWidget      *page,
+           MooCommandData *data,
+           G_GNUC_UNUSED gpointer user_data)
+{
+    MooGladeXML *xml;
+    GtkTextView *textview;
+    GtkTextBuffer *buffer;
+    const char *code;
+
+    xml = g_object_get_data (G_OBJECT (page), "moo-glade-xml");
+    textview = moo_glade_xml_get_widget (xml, "textview");
+    buffer = gtk_text_view_get_buffer (textview);
+
+    code = moo_command_data_get (data, "code");
+    gtk_text_buffer_set_text (buffer, code ? code : "", -1);
+}
+
+
+static gboolean
+save_data (GtkWidget      *page,
+           MooCommandData *data,
+           G_GNUC_UNUSED gpointer user_data)
+{
+    MooGladeXML *xml;
+    GtkTextView *textview;
+    const char *code;
+    char *new_code;
+    gboolean changed = FALSE;
+
+    xml = g_object_get_data (G_OBJECT (page), "moo-glade-xml");
+    textview = moo_glade_xml_get_widget (xml, "textview");
+    g_assert (GTK_IS_TEXT_VIEW (textview));
+
+    new_code = moo_text_view_get_text (textview);
+    code = moo_command_data_get (data, "code");
+    code = code ? code : "";
+
+    if (strcmp (code, new_code) != 0)
+    {
+        moo_command_data_set (data, "code", new_code);
+        changed = TRUE;
+    }
+
+    g_free (new_code);
+    return changed;
 }
 
 
@@ -111,7 +180,12 @@ moo_command_script_class_init (MooCommandScriptClass *klass)
     G_OBJECT_CLASS(klass)->dispose = moo_command_script_dispose;
     MOO_COMMAND_CLASS(klass)->run = moo_command_script_run;
 
-    moo_command_register ("MooScript", factory_func, NULL, NULL);
+    moo_command_type_register ("MooScript", _("MooScript"),
+                               factory_func,
+                               create_widget,
+                               load_data,
+                               save_data,
+                               NULL, NULL);
 }
 
 
@@ -123,7 +197,8 @@ moo_command_script_init (MooCommandScript *cmd)
 
 
 MooCommand *
-moo_command_script_new (const char *script)
+moo_command_script_new (const char       *script,
+                        MooCommandOptions options)
 {
     MooCommandScript *cmd;
     MSNode *node;
@@ -133,7 +208,7 @@ moo_command_script_new (const char *script)
     node = ms_script_parse (script);
     g_return_val_if_fail (node != NULL, NULL);
 
-    cmd = g_object_new (MOO_TYPE_COMMAND_SCRIPT, NULL);
+    cmd = g_object_new (MOO_TYPE_COMMAND_SCRIPT, "options", options, NULL);
     cmd->priv->script = node;
 
     return MOO_COMMAND (cmd);

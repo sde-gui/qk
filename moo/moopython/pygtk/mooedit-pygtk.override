@@ -624,29 +624,37 @@ _wrap_moo_command_context_foreach (PyGObject *self, PyObject *args)
     return_None;
 }
 %%
-override moo_command_register kwargs
+override moo_command_type_register kwargs
 
 typedef struct {
-    PyObject *func;
+    PyObject *factory_func;
+    PyObject *create_widget_func;
+    PyObject *load_data_func;
+    PyObject *save_data_func;
     PyObject *data;
-} CommandFactoryData;
+} CommandTypeData;
 
 static MooCommand *
 command_factory_func (MooCommandData *data,
+                      const char     *flags,
                       gpointer        user_data)
 {
     MooCommand *cmd;
-    PyObject *py_cmd, *py_data;
-    CommandFactoryData *factory_data = user_data;
+    PyObject *py_cmd, *py_data, *py_flags;
+    CommandTypeData *type_data = user_data;
 
     py_data = pyg_boxed_new (MOO_TYPE_COMMAND_DATA, data, TRUE, TRUE);
+    py_flags = PyString_FromString (flags);
 
-    if (factory_data->data)
-        py_cmd = PyObject_CallFunction (factory_data->func, (char*) "OO", py_data, factory_data->data);
+    if (type_data->data)
+        py_cmd = PyObject_CallFunction (type_data->factory_func, (char*) "OOO",
+                                        py_data, py_flags, type_data->data);
     else
-        py_cmd = PyObject_CallFunction (factory_data->func, (char*) "O", py_data);
+        py_cmd = PyObject_CallFunction (type_data->factory_func, (char*) "OO",
+                                        py_data, py_flags);
 
     Py_DECREF (py_data);
+    Py_DECREF (py_flags);
 
     if (!py_cmd)
     {
@@ -673,42 +681,185 @@ command_factory_func (MooCommandData *data,
     return cmd;
 }
 
+static GtkWidget *
+command_create_widget (gpointer user_data)
+{
+    PyObject *py_widget;
+    GtkWidget *widget;
+    CommandTypeData *type_data = user_data;
+
+    if (type_data->data)
+        py_widget = PyObject_CallFunction (type_data->create_widget_func, (char*) "O", type_data->data);
+    else
+        py_widget = PyObject_CallFunction (type_data->create_widget_func, (char*) "");
+
+    if (!py_widget)
+    {
+        PyErr_Print ();
+        return NULL;
+    }
+
+    if (py_widget == Py_None)
+    {
+        Py_DECREF (py_widget);
+        return NULL;
+    }
+
+    if (!pygobject_check (py_widget, &PyGtkWidget_Type))
+    {
+        g_warning ("return value must be a GtkWidget");
+        Py_DECREF (py_widget);
+        return NULL;
+    }
+
+    widget = g_object_ref (pygobject_get (py_widget));
+
+    Py_DECREF (py_widget);
+    return widget;
+}
+
 static void
-command_factory_data_free (CommandFactoryData *data)
+command_load_data (GtkWidget      *widget,
+                   MooCommandData *data,
+                   gpointer        user_data)
+{
+    PyObject *py_widget, *py_data;
+    CommandTypeData *type_data = user_data;
+    PyObject *py_ret;
+
+    py_data = pyg_boxed_new (MOO_TYPE_COMMAND_DATA, data, TRUE, TRUE);
+    py_widget = pygobject_new (G_OBJECT (widget));
+
+    if (type_data->data)
+        py_ret = PyObject_CallFunction (type_data->load_data_func, (char*) "OOO",
+                                        py_widget, py_data, type_data->data);
+    else
+        py_ret = PyObject_CallFunction (type_data->load_data_func, (char*) "OO",
+                                        py_widget, py_data);
+
+    if (!py_ret)
+    {
+        PyErr_Print ();
+    }
+    else
+    {
+        Py_DECREF (py_ret);
+    }
+}
+
+static gboolean
+command_save_data (GtkWidget      *widget,
+                   MooCommandData *data,
+                   gpointer        user_data)
+{
+    PyObject *py_widget, *py_data;
+    CommandTypeData *type_data = user_data;
+    PyObject *py_ret;
+    gboolean ret = FALSE;
+
+    py_data = pyg_boxed_new (MOO_TYPE_COMMAND_DATA, data, TRUE, TRUE);
+    py_widget = pygobject_new (G_OBJECT (widget));
+
+    if (type_data->data)
+        py_ret = PyObject_CallFunction (type_data->save_data_func, (char*) "OOO",
+                                        py_widget, py_data, type_data->data);
+    else
+        py_ret = PyObject_CallFunction (type_data->save_data_func, (char*) "OO",
+                                        py_widget, py_data);
+
+    if (!py_ret)
+    {
+        PyErr_Print ();
+    }
+    else
+    {
+        ret = PyObject_IsTrue (py_ret);
+        Py_DECREF (py_ret);
+    }
+
+    return ret;
+}
+
+static void
+command_type_data_free (CommandTypeData *data)
 {
     if (data)
     {
-        Py_XDECREF (data->func);
+        Py_XDECREF (data->factory_func);
+        Py_XDECREF (data->create_widget_func);
+        Py_XDECREF (data->load_data_func);
+        Py_XDECREF (data->save_data_func);
         Py_XDECREF (data->data);
         g_free (data);
     }
 }
 
 static PyObject *
-_wrap_moo_command_register (G_GNUC_UNUSED PyGObject *self, PyObject *args, PyObject *kwargs)
+_wrap_moo_command_type_register (G_GNUC_UNUSED PyGObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = {(char*) "type", (char*) "factory_func", (char*) "factory_data", NULL};
-    char *type;
-    PyObject *factory_func;
+    static char *kwlist[] = {(char*) "id",
+                             (char*) "name",
+                             (char*) "factory_func",
+                             (char*) "create_widget_func",
+                             (char*) "load_data_func",
+                             (char*) "save_data_func",
+                             (char*) "data",
+                             NULL};
+    char *type, *name;
+    PyObject *factory_func, *create_widget_func, *load_data_func, *save_data_func;
     PyObject *factory_data = NULL;
-    CommandFactoryData *data;
+    CommandTypeData *data;
 
-    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "sO|O:command_register",
-                                      kwlist, &type, &factory_func, &factory_data))
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "ssOOOO|O:command_type_register",
+                                      kwlist, &type, &name,
+                                      &factory_func, &factory_data))
         return NULL;
 
     if (!PyCallable_Check (factory_func))
         return_TypeError ("command_register: factory_func must be callable");
+    if (!PyCallable_Check (create_widget_func))
+        return_TypeError ("command_register: create_widget_func must be callable");
+    if (!PyCallable_Check (load_data_func))
+        return_TypeError ("command_register: load_data_func must be callable");
+    if (!PyCallable_Check (save_data_func))
+        return_TypeError ("command_register: save_data_func must be callable");
 
     Py_INCREF (factory_func);
+    Py_INCREF (create_widget_func);
+    Py_INCREF (load_data_func);
+    Py_INCREF (save_data_func);
     Py_XINCREF (factory_data);
 
-    data = g_new0 (CommandFactoryData, 1);
-    data->func = factory_func;
+    data = g_new0 (CommandTypeData, 1);
+    data->factory_func = factory_func;
+    data->create_widget_func = create_widget_func;
+    data->load_data_func = load_data_func;
+    data->save_data_func = save_data_func;
     data->data = factory_data;
 
-    moo_command_register (type, command_factory_func, data,
-                          (GDestroyNotify) command_factory_data_free);
+    moo_command_type_register (type, name,
+                               command_factory_func,
+                               command_create_widget,
+                               command_load_data,
+                               command_save_data,
+                               data,
+                               (GDestroyNotify) command_type_data_free);
 
     return_None;
+}
+%%
+override moo_command_type_registered kwargs
+static PyObject *
+_wrap_moo_command_type_registered (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = { (char*) "type", NULL };
+    char *type;
+    int ret;
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs,(char*) "s:command_type_registered", kwlist, &type))
+        return NULL;
+
+    ret = moo_command_type_lookup (type) != NULL;
+
+    return PyBool_FromLong (ret);
 }

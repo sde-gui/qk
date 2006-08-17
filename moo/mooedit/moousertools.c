@@ -25,11 +25,7 @@
 #define TOOLS_FILE  "tools.xml"
 #define MENU_FILE   "menu.xml"
 
-enum {
-    FILE_TOOLS,
-    FILE_MENU,
-    N_FILES
-};
+#define N_TOOLS     2
 
 enum {
     PROP_0,
@@ -60,12 +56,9 @@ G_DEFINE_TYPE (MooToolAction, _moo_tool_action, MOO_TYPE_EDIT_ACTION);
 #define MOO_TOOL_ACTION(obj)    (G_TYPE_CHECK_INSTANCE_CAST (obj, MOO_TYPE_TOOL_ACTION, MooToolAction))
 
 
-static ToolStore *tools_stores[N_FILES];
+static ToolStore *tools_stores[N_TOOLS];
 
 
-static void                 parse_user_tools        (MooMarkupDoc   *doc,
-                                                     MooUIXML       *xml,
-                                                     int             type);
 static MooCommandContext   *create_command_context  (gpointer        window,
                                                      gpointer        doc);
 
@@ -83,7 +76,7 @@ unload_user_tools (int type)
     list = store->tools;
     store->tools = NULL;
 
-    if (type == FILE_MENU)
+    if (type == MOO_TOOL_FILE_MENU)
         klass = g_type_class_peek (MOO_TYPE_EDIT_WINDOW);
     else
         klass = g_type_class_peek (MOO_TYPE_EDIT);
@@ -100,7 +93,7 @@ unload_user_tools (int type)
             g_object_unref (info->xml);
         }
 
-        if (type == FILE_MENU)
+        if (type == MOO_TOOL_FILE_MENU)
             moo_window_class_remove_action (klass, info->id);
         else
             moo_edit_class_remove_action (klass, info->id);
@@ -122,7 +115,7 @@ find_user_tools_file (int type)
     char *filename = NULL;
     int i;
 
-    files = moo_get_data_files (type == FILE_TOOLS ? TOOLS_FILE : MENU_FILE,
+    files = moo_get_data_files (type == MOO_TOOL_FILE_TOOLS ? TOOLS_FILE : MENU_FILE,
                                 MOO_DATA_SHARE, &n_files);
 
     if (!n_files)
@@ -142,60 +135,26 @@ find_user_tools_file (int type)
 }
 
 
-static void
-load_user_tools (const char *file,
-                 MooUIXML   *xml,
-                 int         type)
+void
+_moo_edit_save_user_tools (MooToolFileType  type,
+                           MooMarkupDoc    *doc)
 {
-    MooMarkupDoc *doc;
+    char *contents;
     GError *error = NULL;
-    char *freeme = NULL;
 
-    g_return_if_fail (!xml || MOO_IS_UI_XML (xml));
-    g_return_if_fail (type < N_FILES);
+    g_return_if_fail (type < N_TOOLS);
+    g_return_if_fail (doc != NULL);
 
-    unload_user_tools (type);
-    _moo_command_init ();
+    contents = moo_markup_node_get_pretty_string (MOO_MARKUP_NODE (doc), 2);
 
-    if (!file)
+    if (!moo_save_user_data_file (type == MOO_TOOL_FILE_TOOLS ? TOOLS_FILE : MENU_FILE,
+                                  contents, -1, &error))
     {
-        freeme = find_user_tools_file (type);
-        file = freeme;
-    }
-
-    if (!file)
-        return;
-
-    doc = moo_markup_parse_file (file, &error);
-
-    if (doc)
-    {
-        parse_user_tools (doc, xml, type);
-        moo_markup_doc_unref (doc);
-    }
-    else
-    {
-        g_warning ("could not load file '%s': %s", file, error->message);
+        g_critical ("could not save tools file: %s", error->message);
         g_error_free (error);
     }
 
-    g_free (freeme);
-}
-
-
-void
-moo_edit_load_user_tools (const char *file,
-                          MooUIXML   *xml)
-{
-    return load_user_tools (file, xml, FILE_TOOLS);
-}
-
-
-void
-moo_edit_load_user_menu (const char *file,
-                         MooUIXML   *xml)
-{
-    return load_user_tools (file, xml, FILE_MENU);
+    g_free (contents);
 }
 
 
@@ -215,146 +174,79 @@ check_sensitive_func (GtkAction      *gtkaction,
 
 
 static void
-parse_element (MooMarkupNode *node,
-               MooUIXML      *xml,
-               int            type,
-               const char    *file)
+load_tool_func (MooToolLoadInfo *info,
+                gpointer         user_data)
 {
-    const char *os, *id;
-    const char *position = NULL, *name = NULL, *label = NULL;
-    const char *accel = NULL, *menu = NULL, *langs = NULL;
-    MooMarkupNode *cmd_node, *child;
-    MooCommand *cmd;
-    gboolean enabled;
     ToolStore **store;
     ToolInfo *tool_info;
     gpointer klass = NULL;
+    MooCommand *cmd;
+    MooUIXML *xml = user_data;
 
-    if (strcmp (node->name, "tool"))
-    {
-        g_warning ("invalid element %s in file %s", node->name, file);
-        return;
-    }
-
-    id = moo_markup_get_prop (node, "id");
-
-    if (!id || !id[0])
-    {
-        g_warning ("tool id attribute missing in file %s", file);
-        return;
-    }
-
-    enabled = moo_markup_get_bool_prop (node, "enabled", TRUE);
-    os = moo_markup_get_prop (node, "os");
-    position = moo_markup_get_prop (node, "position");
-
-    if (!enabled)
+    if (!info->enabled)
         return;
 
-    if (os)
-    {
 #ifdef __WIN32__
-        if (g_ascii_strncasecmp (os, "win", 3);
-            return;
+    if (info->os_type != MOO_TOOL_WINDOWS)
+        return;
 #else
-        if (g_ascii_strcasecmp (os, "unix"))
-            return;
+    if (info->os_type != MOO_TOOL_UNIX)
+        return;
 #endif
-    }
 
-    for (child = node->children; child != NULL; child = child->next)
-    {
-        if (!MOO_MARKUP_IS_ELEMENT (child) || !strcmp (child->name, "command"))
-            continue;
-
-        if (!strcmp (child->name, "name"))
-            name = moo_markup_get_content (child);
-        else if (!strcmp (child->name, "_name"))
-            name = _(moo_markup_get_content (child));
-        else if (!strcmp (child->name, "label"))
-            label = moo_markup_get_content (child);
-        else if (!strcmp (child->name, "_label"))
-            label = _(moo_markup_get_content (child));
-        else if (!strcmp (child->name, "accel"))
-            accel = moo_markup_get_content (child);
-        else if (!strcmp (child->name, "position"))
-            position = moo_markup_get_content (child);
-        else if (!strcmp (child->name, "menu"))
-            menu = moo_markup_get_content (child);
-        else if (!strcmp (child->name, "langs"))
-            langs = moo_markup_get_content (child);
-        else
-            g_warning ("unknown element %s in tool %s in file %s",
-                       child->name, id, file);
-    }
-
-    if (!name)
-    {
-        g_warning ("name missing for tool '%s' in file %s", id, file);
-        return;
-    }
-
-    if (!label)
-        label = name;
-
-    cmd_node = moo_markup_get_element (node, "command");
-
-    if (!cmd_node)
-    {
-        g_warning ("command missing for tool '%s' in file %s", id, file);
-        return;
-    }
-
-    cmd = _moo_command_parse_markup (cmd_node);
+    cmd = moo_command_create (info->cmd_type,
+                              info->options,
+                              info->cmd_data);
 
     if (!cmd)
     {
-        g_warning ("could not get command for tool '%s' in file %s", id, file);
+        g_warning ("could not get command for tool '%s' in file %s",
+                   info->id, info->file);
         return;
     }
 
-    switch (type)
+    switch (info->type)
     {
-        case FILE_TOOLS:
+        case MOO_TOOL_FILE_TOOLS:
             klass = g_type_class_peek (MOO_TYPE_EDIT_WINDOW);
 
             if (!moo_window_class_find_group (klass, "Tools"))
                 moo_window_class_new_group (klass, "Tools", _("Tools"));
 
-            moo_window_class_new_action (klass, id, "Tools",
+            moo_window_class_new_action (klass, info->id, "Tools",
                                          "action-type::", MOO_TYPE_TOOL_ACTION,
-                                         "display-name", name,
-                                         "label", label,
-                                         "accel", accel,
+                                         "display-name", info->name,
+                                         "label", info->label,
+                                         "accel", info->accel,
                                          "command", cmd,
                                          NULL);
 
-            moo_edit_window_set_action_check (id, MOO_ACTION_CHECK_SENSITIVE,
+            moo_edit_window_set_action_check (info->id, MOO_ACTION_CHECK_SENSITIVE,
                                               check_sensitive_func,
                                               NULL, NULL);
 
-            if (langs)
-                moo_edit_window_set_action_langs (id, MOO_ACTION_CHECK_ACTIVE, langs);
+            if (info->langs)
+                moo_edit_window_set_action_langs (info->id, MOO_ACTION_CHECK_ACTIVE, info->langs);
 
             break;
 
-        case FILE_MENU:
+        case MOO_TOOL_FILE_MENU:
             klass = g_type_class_peek (MOO_TYPE_EDIT);
-            moo_edit_class_new_action (klass, id,
+            moo_edit_class_new_action (klass, info->id,
                                        "action-type::", MOO_TYPE_TOOL_ACTION,
-                                       "display-name", name,
-                                       "label", label,
-                                       "accel", accel,
+                                       "display-name", info->name,
+                                       "label", info->label,
+                                       "accel", info->accel,
                                        "command", cmd,
-                                       "langs", langs,
+                                       "langs", info->langs,
                                        NULL);
             break;
     }
 
     tool_info = g_new0 (ToolInfo, 1);
-    tool_info->id = g_strdup (id);
+    tool_info->id = g_strdup (info->id);
 
-    store = &tools_stores[type];
+    store = &tools_stores[info->type];
 
     if (!*store)
         *store = g_new (ToolStore, 1);
@@ -367,29 +259,22 @@ parse_element (MooMarkupNode *node,
         char *freeme = NULL;
         char *markup;
 
-        markup = g_markup_printf_escaped ("<item action=\"%s\"/>", id);
+        markup = g_markup_printf_escaped ("<item action=\"%s\"/>", info->id);
         tool_info->xml = g_object_ref (xml);
         tool_info->merge_id = moo_ui_xml_new_merge_id (xml);
 
-        if (type == FILE_MENU)
+        if (info->type == MOO_TOOL_FILE_MENU)
         {
-            ui_path = "Editor/Popup/PopupEnd";
 
-            if (position)
-            {
-                if (!g_ascii_strcasecmp (position, "end"))
-                    ui_path = "Editor/Popup/PopupEnd";
-                else if (!g_ascii_strcasecmp (position, "start"))
-                    ui_path = "Editor/Popup/PopupStart";
-                else
-                    g_warning ("unknown position type '%s' for tool %s in file %s",
-                               position, id, file);
-            }
+            if (info->position == MOO_TOOL_POS_START)
+                ui_path = "Editor/Popup/PopupStart";
+            else
+                ui_path = "Editor/Popup/PopupEnd";
         }
         else
         {
             freeme = g_strdup_printf ("Editor/Menubar/%s/UserMenu",
-                                      menu ? menu : "Tools");
+                                      info->menu ? info->menu : "Tools");
             ui_path = freeme;
         }
 
@@ -403,10 +288,138 @@ parse_element (MooMarkupNode *node,
 }
 
 
+void
+_moo_edit_load_user_tools (MooToolFileType type,
+                           MooUIXML       *xml)
+{
+    unload_user_tools (type);
+    _moo_edit_parse_user_tools (type, load_tool_func, xml);
+}
+
+
 static void
-parse_user_tools (MooMarkupDoc *doc,
-                  MooUIXML     *xml,
-                  int           type)
+parse_element (MooMarkupNode       *node,
+               MooToolFileType      type,
+               MooToolFileParseFunc func,
+               gpointer             data,
+               const char          *file)
+{
+    const char *os;
+    const char *position = NULL;
+    MooMarkupNode *cmd_node, *child;
+    MooCommandData *cmd_data;
+    MooToolLoadInfo info;
+
+    memset (&info, 0, sizeof (info));
+    info.type = type;
+    info.file = file;
+    info.position = MOO_TOOL_POS_END;
+
+    if (strcmp (node->name, "tool"))
+    {
+        g_warning ("invalid element %s in file %s", node->name, file);
+        return;
+    }
+
+    info.id = moo_markup_get_prop (node, "id");
+
+    if (!info.id || !info.id[0])
+    {
+        g_warning ("tool id missing in file %s", file);
+        return;
+    }
+
+    info.enabled = moo_markup_get_bool_prop (node, "enabled", TRUE);
+    os = moo_markup_get_prop (node, "os");
+
+#ifdef __WIN32__
+    info.os_type = (!os || !g_ascii_strncasecmp (os, "win", 3)) ? MOO_TOOL_WINDOWS : MOO_TOOL_UNIX;
+#else
+    info.os_type = (!os || !g_ascii_strcasecmp (os, "unix")) ? MOO_TOOL_UNIX : MOO_TOOL_WINDOWS;
+#endif
+
+    for (child = node->children; child != NULL; child = child->next)
+    {
+        if (!MOO_MARKUP_IS_ELEMENT (child) || !strcmp (child->name, "command"))
+            continue;
+
+        if (!strcmp (child->name, "name"))
+            info.name = moo_markup_get_content (child);
+        else if (!strcmp (child->name, "_name"))
+            info.name = _(moo_markup_get_content (child));
+        else if (!strcmp (child->name, "label"))
+            info.label = moo_markup_get_content (child);
+        else if (!strcmp (child->name, "_label"))
+            info.label = _(moo_markup_get_content (child));
+        else if (!strcmp (child->name, "accel"))
+            info.accel = moo_markup_get_content (child);
+        else if (!strcmp (child->name, "position"))
+            position = moo_markup_get_content (child);
+        else if (!strcmp (child->name, "menu"))
+            info.menu = moo_markup_get_content (child);
+        else if (!strcmp (child->name, "langs"))
+            info.langs = moo_markup_get_content (child);
+        else
+            g_warning ("unknown element %s in tool %s in file %s",
+                       child->name, info.id, file);
+    }
+
+    if (!info.name)
+    {
+        g_warning ("name missing for tool '%s' in file %s", info.id, file);
+        return;
+    }
+
+    if (position && type != MOO_TOOL_FILE_MENU)
+    {
+        g_warning ("invalid element 'position' in tool '%s' in file %s", info.id, file);
+        return;
+    }
+    else if (position)
+    {
+        if (!g_ascii_strcasecmp (position, "end"))
+            info.position = MOO_TOOL_POS_END;
+        else if (!g_ascii_strcasecmp (position, "start"))
+            info.position = MOO_TOOL_POS_START;
+        else
+            g_warning ("unknown position type '%s' for tool %s in file %s",
+                       position, info.id, file);
+    }
+
+    if (!info.label)
+        info.label = info.name;
+
+    cmd_node = moo_markup_get_element (node, "command");
+
+    if (!cmd_node)
+    {
+        g_warning ("command missing for tool '%s' in file %s", info.id, file);
+        return;
+    }
+
+    info.cmd_data = _moo_command_parse_markup (cmd_node,
+                                               (char**) &info.cmd_type,
+                                               (char**) &info.options);
+
+    if (!info.cmd_data)
+    {
+        g_warning ("could not get command data for tool '%s' in file %s", info.id, file);
+        return;
+    }
+
+    func (&info, data);
+
+    moo_command_data_unref (cmd_data);
+    g_free ((char*) info.cmd_type);
+    g_free ((char*) info.options);
+}
+
+
+static void
+parse_doc (MooMarkupDoc        *doc,
+           MooToolFileType      type,
+           MooToolFileParseFunc func,
+           gpointer             data)
 {
     MooMarkupNode *root, *child;
 
@@ -421,8 +434,43 @@ parse_user_tools (MooMarkupDoc *doc,
     for (child = root->children; child != NULL; child = child->next)
     {
         if (MOO_MARKUP_IS_ELEMENT (child))
-            parse_element (child, xml, type, doc->name);
+            parse_element (child, type, func, data, doc->name);
     }
+}
+
+
+void
+_moo_edit_parse_user_tools (MooToolFileType        type,
+                            MooToolFileParseFunc   func,
+                            gpointer               data)
+{
+    char *file;
+    MooMarkupDoc *doc;
+    GError *error = NULL;
+
+    g_return_if_fail (type < N_TOOLS);
+    g_return_if_fail (func != NULL);
+
+    _moo_command_init ();
+    file = find_user_tools_file (type);
+
+    if (!file)
+        return;
+
+    doc = moo_markup_parse_file (file, &error);
+
+    if (doc)
+    {
+        parse_doc (doc, type, func, data);
+        moo_markup_doc_unref (doc);
+    }
+    else
+    {
+        g_warning ("could not load file '%s': %s", file, error->message);
+        g_error_free (error);
+    }
+
+    g_free (file);
 }
 
 
