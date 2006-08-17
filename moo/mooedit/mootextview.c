@@ -1272,13 +1272,13 @@ moo_text_view_has_text (MooTextView *view)
 
 
 char *
-moo_text_view_get_text (MooTextView *view)
+moo_text_view_get_text (gpointer view)
 {
     GtkTextBuffer *buf;
     GtkTextIter start, end;
     char *text;
 
-    g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), NULL);
+    g_return_val_if_fail (GTK_IS_TEXT_VIEW (view), NULL);
 
     buf = get_buffer (view);
     gtk_text_buffer_get_bounds (buf, &start, &end);
