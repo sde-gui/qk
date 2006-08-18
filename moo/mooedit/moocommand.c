@@ -19,6 +19,11 @@
 #include <string.h>
 
 
+#define ELEMENT_COMMAND "command"
+#define PROP_TYPE       "type"
+#define PROP_OPTIONS    "options"
+
+
 G_DEFINE_TYPE (MooCommand, moo_command, G_TYPE_OBJECT)
 G_DEFINE_TYPE (MooCommandType, moo_command_type, G_TYPE_OBJECT)
 G_DEFINE_TYPE (MooCommandContext, moo_command_context, G_TYPE_OBJECT)
@@ -749,10 +754,10 @@ _moo_command_parse_markup (MooMarkupNode   *node,
     const char *type_name, *options;
 
     g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (node), NULL);
-    g_return_val_if_fail (!strcmp (node->name, "command"), NULL);
+    g_return_val_if_fail (!strcmp (node->name, ELEMENT_COMMAND), NULL);
 
-    type_name = moo_markup_get_prop (node, "type");
-    options = moo_markup_get_prop (node, "options");
+    type_name = moo_markup_get_prop (node, PROP_TYPE);
+    options = moo_markup_get_prop (node, PROP_OPTIONS);
 
     if (!type_name)
     {
@@ -791,6 +796,46 @@ _moo_command_parse_markup (MooMarkupNode   *node,
         *options_p = g_strdup (options);
 
     return data;
+}
+
+
+static void
+prepend_key (char *key,
+             G_GNUC_UNUSED gpointer value,
+             GSList **list)
+{
+    *list = g_slist_prepend (*list, key);
+}
+
+void
+_moo_command_format_markup (MooMarkupNode  *parent,
+                            MooCommandData *data,
+                            MooCommandType *type,
+                            char           *options)
+{
+    GSList *keys = NULL;
+    MooMarkupNode *node;
+
+    g_return_if_fail (MOO_MARKUP_IS_ELEMENT (parent));
+    g_return_if_fail (MOO_IS_COMMAND_TYPE (type));
+
+    node = moo_markup_create_element (parent, ELEMENT_COMMAND);
+    moo_markup_set_prop (node, PROP_TYPE, type->name);
+
+    if (options && options[0])
+        moo_markup_set_prop (node, PROP_OPTIONS, options);
+
+    if (data)
+        g_hash_table_foreach (data->hash, (GHFunc) prepend_key, &keys);
+
+    keys = g_slist_sort (keys, (GCompareFunc) strcmp);
+
+    while (keys)
+    {
+        moo_markup_create_text_element (node, keys->data,
+                                        moo_command_data_get (data, keys->data));
+        keys = g_slist_delete_link (keys, keys);
+    }
 }
 
 

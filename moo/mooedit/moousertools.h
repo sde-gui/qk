@@ -20,49 +20,62 @@
 G_BEGIN_DECLS
 
 
-typedef enum {
-    MOO_TOOL_FILE_TOOLS,
-    MOO_TOOL_FILE_MENU
-} MooToolFileType;
+#define MOO_TYPE_USER_TOOL_INFO (_moo_user_tool_info_get_type ())
 
 typedef enum {
-    MOO_TOOL_POS_START,
-    MOO_TOOL_POS_END
-} MooToolPosition;
+    MOO_USER_TOOL_MENU,
+    MOO_USER_TOOL_CONTEXT
+} MooUserToolType;
 
 typedef enum {
-    MOO_TOOL_UNIX,
-    MOO_TOOL_WINDOWS
-} MooToolOSType;
+    MOO_USER_TOOL_POS_END,
+    MOO_USER_TOOL_POS_START
+} MooUserToolPosition;
+
+typedef enum {
+    MOO_USER_TOOL_UNIX,
+    MOO_USER_TOOL_WIN32
+} MooUserToolOSType;
+
+#ifdef G_OS_WIN32
+#define MOO_USER_TOOL_THIS_OS MOO_USER_TOOL_WIN32
+#else
+#define MOO_USER_TOOL_THIS_OS MOO_USER_TOOL_UNIX
+#endif
 
 typedef struct {
-    const char     *id;
-    const char     *name;
-    const char     *label;
-    const char     *accel;
-    const char     *menu;
-    const char     *langs;
-    const char     *options;
-    MooToolPosition position;
-    gboolean        enabled;
-    MooToolOSType   os_type;
-    MooCommandType *cmd_type;
-    MooCommandData *cmd_data;
-    MooToolFileType type;
-    const char     *file;
-} MooToolLoadInfo;
+    char                *name;
+    char                *accel;
+    char                *menu;
+    char                *langs;
+    char                *options;
+    char                *filter;
+    MooUserToolPosition  position;
+    gboolean             enabled;
+    MooUserToolOSType    os_type;
+    MooCommandType      *cmd_type;
+    MooCommandData      *cmd_data;
+    MooUserToolType      type;
+    char                *file;
+    guint                ref_count;
+} MooUserToolInfo;
 
-void    _moo_edit_load_user_tools       (MooToolFileType         type,
-                                         MooUIXML               *xml);
+GType _moo_user_tool_info_get_type (void) G_GNUC_CONST;
 
-typedef void (*MooToolFileParseFunc)    (MooToolLoadInfo        *info,
+MooUserToolInfo *_moo_user_tool_info_new    (void);
+MooUserToolInfo *_moo_user_tool_info_ref    (MooUserToolInfo *info);
+void             _moo_user_tool_info_unref  (MooUserToolInfo *info);
+
+void    _moo_edit_load_user_tools       (MooUserToolType         type);
+
+typedef void (*MooToolFileParseFunc)    (MooUserToolInfo        *info,
                                          gpointer                data);
 
-void    _moo_edit_parse_user_tools      (MooToolFileType         type,
+void    _moo_edit_parse_user_tools      (MooUserToolType         type,
                                          MooToolFileParseFunc    func,
                                          gpointer                data);
-void    _moo_edit_save_user_tools       (MooToolFileType         type,
-                                         MooMarkupDoc           *doc);
+void    _moo_edit_save_user_tools       (MooUserToolType         type,
+                                         const GSList           *info);
 
 
 G_END_DECLS

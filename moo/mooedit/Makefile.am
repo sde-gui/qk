@@ -1,7 +1,7 @@
 SUBDIRS = plugins syntax
 
 mooedit_toolsdir = $(MOO_DATA_DIR)
-mooedit_tools_DATA = tools.xml menu.xml
+mooedit_tools_DATA = menu.xml context.xml
 
 moocommand_stuff =                     \
 	moocommand.h                   \
@@ -174,6 +174,7 @@ EXTRA_DIST =				\
 	glade/mooeditprefs.glade	\
 	glade/mooeditprogress.glade	\
 	glade/mooeditsavemult.glade	\
+	glade/mooedittools.glade	\
 	glade/moopluginprefs.glade	\
 	glade/mooprint.glade		\
 	$(mooedit_tools_DATA)		\

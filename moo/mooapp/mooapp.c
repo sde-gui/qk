@@ -784,8 +784,8 @@ moo_app_init_editor (MooApp *app)
 
     moo_plugin_read_dirs ();
 
-    _moo_edit_load_user_tools (MOO_TOOL_FILE_TOOLS, moo_app_get_ui_xml (app));
-    _moo_edit_load_user_tools (MOO_TOOL_FILE_MENU, moo_app_get_ui_xml (app));
+    _moo_edit_load_user_tools (MOO_USER_TOOL_MENU);
+    _moo_edit_load_user_tools (MOO_USER_TOOL_CONTEXT);
 }
 #endif /* MOO_BUILD_EDIT */
 

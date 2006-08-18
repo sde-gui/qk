@@ -275,6 +275,7 @@ _moo_command_display_new (GtkComboBox        *type_combo,
                               new_btn, delete_btn, up_btn, down_btn);
     init_type_combo (display, type_combo, notebook);
 
+    gtk_object_sink (g_object_ref (display));
     return display;
 }
 

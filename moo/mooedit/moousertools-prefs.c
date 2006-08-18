@@ -24,21 +24,24 @@
 #define GET_WID(name) (moo_glade_xml_get_widget (page->xml, (name)))
 
 enum {
-    COLUMN_ENABLED,
-    COLUMN_ID,
-    COLUMN_NAME,
-    COLUMN_LABEL,
-    COLUMN_LANGS,
-    COLUMN_OPTIONS,
-    COLUMN_COMMAND_TYPE,
-    COLUMN_COMMAND_DATA,
+    COLUMN_INFO,
     N_COLUMNS
 };
 
 
-static gboolean get_changed     (MooPrefsDialogPage *page);
-static void     set_changed     (MooPrefsDialogPage *page,
-                                 gboolean            changed);
+static MooUserToolType
+page_get_type (MooPrefsDialogPage *page)
+{
+    return GPOINTER_TO_INT (g_object_get_data (G_OBJECT (page), "moo-user-tool-type"));
+}
+
+
+static void
+page_set_type (MooPrefsDialogPage *page,
+               MooUserToolType     type)
+{
+    g_object_set_data (G_OBJECT (page), "moo-user-tool-type", GINT_TO_POINTER (type));
+}
 
 
 static gboolean
@@ -52,8 +55,7 @@ static void
 set_changed (MooPrefsDialogPage *page,
              gboolean            changed)
 {
-    g_object_set_data (G_OBJECT (page), "moo-changed",
-                       GINT_TO_POINTER (changed));
+    g_object_set_data (G_OBJECT (page), "moo-changed", GINT_TO_POINTER (changed));
 }
 
 
@@ -65,39 +67,24 @@ get_helper (MooPrefsDialogPage *page)
 
 
 static void
-tool_parse_func (MooToolLoadInfo *info,
+tool_parse_func (MooUserToolInfo *info,
                  gpointer         data)
 {
     GtkTreeIter iter;
     GtkListStore *store = data;
 
-#ifdef __WIN32__
-    if (info->os_type != MOO_TOOL_WINDOWS)
-        return;
-#else
-    if (info->os_type != MOO_TOOL_UNIX)
-        return;
-#endif
-
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter,
-                        COLUMN_ENABLED, info->enabled,
-                        COLUMN_ID, info->id,
-                        COLUMN_NAME, info->name,
-                        COLUMN_LABEL, info->label,
-                        COLUMN_LANGS, info->langs,
-                        COLUMN_OPTIONS, info->options,
-                        COLUMN_COMMAND_TYPE, info->cmd_type,
-                        COLUMN_COMMAND_DATA, info->cmd_data,
-                        -1);
+    if (info->os_type == MOO_USER_TOOL_THIS_OS)
+    {
+        gtk_list_store_append (store, &iter);
+        gtk_list_store_set (store, &iter, COLUMN_INFO, info, -1);
+    }
 }
 
 static void
-populate_store (GtkListStore *store)
+populate_store (GtkListStore   *store,
+                MooUserToolType type)
 {
-    _moo_edit_parse_user_tools (MOO_TOOL_FILE_TOOLS,
-                                tool_parse_func,
-                                store);
+    _moo_edit_parse_user_tools (type, tool_parse_func, store);
 }
 
 
@@ -107,26 +94,31 @@ new_row (MooPrefsDialogPage *page,
          GtkTreePath        *path)
 {
     GtkTreeIter iter;
-    MooCommandData *cmd_data;
+    MooUserToolInfo *info;
 
-    cmd_data = moo_command_data_new ();
+    info = _moo_user_tool_info_new ();
+    info->cmd_data = moo_command_data_new ();
+    info->name = g_strdup ("New Tool");
+    info->enabled = TRUE;
+    info->cmd_type = moo_command_type_lookup ("MooScript");
 
     set_changed (page, TRUE);
     gtk_list_store_insert (GTK_LIST_STORE (model), &iter,
                            gtk_tree_path_get_indices(path)[0]);
-    gtk_list_store_set (GTK_LIST_STORE (model), &iter,
-                        COLUMN_ENABLED, TRUE,
-                        COLUMN_ID, "New Tool",
-                        COLUMN_NAME, "New Tool",
-                        COLUMN_LABEL, "New Tool",
-                        COLUMN_COMMAND_TYPE, moo_command_type_lookup ("MooScript"),
-                        COLUMN_COMMAND_DATA, cmd_data,
-                        -1);
+    gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_INFO, info, -1);
 
-    moo_command_data_unref (cmd_data);
+    _moo_user_tool_info_unref (info);
     return TRUE;
 }
 
+
+static void
+set_text (MooPrefsDialogPage *page,
+          const char         *name,
+          const char         *text)
+{
+    gtk_entry_set_text (GET_WID (name), text ? text : "");
+}
 
 static void
 update_widgets (MooPrefsDialogPage *page,
@@ -140,83 +132,52 @@ update_widgets (MooPrefsDialogPage *page,
 
     if (path)
     {
-        MooCommandType *type;
-        MooCommandData *data;
-        gtk_tree_model_get (model, iter,
-                            COLUMN_COMMAND_TYPE, &type,
-                            COLUMN_COMMAND_DATA, &data,
-                            -1);
-        _moo_command_display_set (helper, type, data);
-        g_object_unref (type);
-        moo_command_data_unref (data);
+        MooUserToolInfo *info;
+
+        gtk_tree_model_get (model, iter, COLUMN_INFO, &info, -1);
+        g_return_if_fail (info != NULL);
+
+        _moo_command_display_set (helper, info->cmd_type, info->cmd_data);
+
+        gtk_toggle_button_set_active (GET_WID ("enabled"), info->enabled);
+        set_text (page, "langs", info->langs);
+        set_text (page, "options", info->options);
+
+        if (page_get_type (page) == MOO_USER_TOOL_CONTEXT)
+            set_text (page, "filter", info->filter);
+
+        _moo_user_tool_info_unref (info);
     }
     else
     {
+        gtk_toggle_button_set_active (GET_WID ("enabled"), FALSE);
+        set_text (page, "langs", NULL);
+        set_text (page, "options", NULL);
+        set_text (page, "filter", NULL);
         _moo_command_display_set (helper, NULL, NULL);
     }
+
+    gtk_widget_set_sensitive (GET_WID ("tool_vbox"), path != NULL);
 }
-// {
-//     gboolean enabled;
-//     char *name, *label, *langs, *options;
-//     gboolean sensitive;
-//     MooCommandData *cmd_data;
-//     MooCommandType *cmd_type;
-//     GtkWidget *widget;
-//
-//     if (path)
-//     {
-//         gtk_tree_model_get (model, iter,
-//                             COLUMN_ENABLED, &enabled,
-//                             COLUMN_NAME, &name,
-//                             COLUMN_LABEL, &label,
-//                             COLUMN_LANGS, &langs,
-//                             COLUMN_OPTIONS, &options,
-//                             COLUMN_COMMAND_TYPE, &cmd_type,
-//                             COLUMN_COMMAND_DATA, &cmd_data,
-//                             -1);
-//         sensitive = TRUE;
-//     }
-//     else
-//     {
-//         enabled = FALSE;
-//         name = label = langs = options = NULL;
-//         sensitive = FALSE;
-//         cmd_data = NULL;
-//         cmd_type = NULL;
-//     }
-//
-//     combo_set_type (page, cmd_type);
-//
-//     if (cmd_type)
-//     {
-//         combo_get_type (page, NULL, &widget);
-//         g_return_if_fail (widget != NULL);
-//         _moo_command_type_load_data (cmd_type, widget, cmd_data);
-//     }
-//
-//     gtk_toggle_button_set_active (GET_WID ("enabled"), enabled);
-//     gtk_entry_set_text (GET_WID ("name"), name ? name : "");
-//     gtk_entry_set_text (GET_WID ("label"), label ? label : "");
-//     gtk_entry_set_text (GET_WID ("langs"), langs ? langs : "");
-//     gtk_entry_set_text (GET_WID ("options"), options ? options : "");
-//     gtk_widget_set_sensitive (GET_WID ("tool_vbox"), sensitive);
-//
-//     g_free (name);
-//     g_free (label);
-//     g_free (langs);
-//     g_free (options);
-//
-//     if (cmd_data)
-//         moo_command_data_unref (cmd_data);
-//     if (cmd_type)
-//         g_object_unref (cmd_type);
-// }
+
 
 static gboolean
-string_equal (const char *s1,
-              const char *s2)
+get_text (MooPrefsDialogPage *page,
+          const char         *name,
+          char              **dest)
 {
-    return !strcmp (s1 ? s1 : "", s2 ? s2 : "");
+    const char *text = gtk_entry_get_text (GET_WID (name));
+
+    if (strcmp (*dest ? *dest : "", text) != 0)
+    {
+        g_free (*dest);
+        *dest = text[0] ? g_strdup (text) : NULL;
+        return TRUE;
+    }
+    else
+    {
+        return FALSE;
+    }
 }
 
 static void
@@ -228,78 +189,63 @@ update_model (MooPrefsDialogPage *page,
     MooCommandDisplay *helper;
     MooCommandType *type;
     MooCommandData *data;
+    MooUserToolInfo *info;
+    gboolean changed = FALSE;
 
     helper = get_helper (page);
+    gtk_tree_model_get (model, iter, COLUMN_INFO, &info, -1);
+    g_return_if_fail (info != NULL);
 
     if (_moo_command_display_get (helper, &type, &data))
     {
-        gtk_list_store_set (GTK_LIST_STORE (model), iter,
-                            COLUMN_COMMAND_TYPE, type,
-                            COLUMN_COMMAND_DATA, data,
-                            -1);
+        moo_command_data_unref (info->cmd_data);
+        info->cmd_data = moo_command_data_ref (data);
+        info->cmd_type = type;
+        gtk_list_store_set (GTK_LIST_STORE (model), iter, COLUMN_INFO, info, -1);
+        changed = TRUE;
+    }
+
+    if (gtk_toggle_button_get_active (GET_WID ("enabled")) != info->enabled)
+    {
+        info->enabled = gtk_toggle_button_get_active (GET_WID ("enabled"));
+        changed = TRUE;
+    }
+
+    changed = get_text (page, "langs", &info->langs) || changed;
+    changed = get_text (page, "options", &info->options) || changed;
+
+    if (page_get_type (page) == MOO_USER_TOOL_CONTEXT)
+        changed = get_text (page, "filter", &info->filter) || changed;
+
+    if (changed)
+    {
+        g_print ("page changed\n");
         set_changed (page, TRUE);
     }
 
-//     gboolean old_enabled;
-//     char *old_name, *old_label, *old_type, *old_langs, *old_options;
-//     gboolean enabled;
-//     const char *name, *label, *type, *langs, *options;
-//     MooCommandData *data;
-//     MooCommandTypeInfo *info = NULL;
-//     GtkWidget *widget;
-//
-//     enabled = gtk_toggle_button_get_active (GET_WID ("enabled"));
-//     name = gtk_entry_get_text (GET_WID ("name"));
-//     label = gtk_entry_get_text (GET_WID ("label"));
-//     langs = gtk_entry_get_text (GET_WID ("langs"));
-//     options = gtk_entry_get_text (GET_WID ("options"));
-//
-//     combo_get_type (page, &type, &info, &widget);
-//     g_return_if_fail (info != NULL);
-//
-//     gtk_tree_model_get (model, iter, COLUMN_COMMAND, &data, -1);
-//
-//     if (info->save_data (widget, data, info->data))
-//         set_changed (page, TRUE);
-//
-//     gtk_tree_model_get (model, iter,
-//                         COLUMN_ENABLED, &old_enabled,
-//                         COLUMN_NAME, &old_name,
-//                         COLUMN_LABEL, &old_label,
-//                         COLUMN_LANGS, &old_langs,
-//                         COLUMN_OPTIONS, &old_options,
-//                         COLUMN_COMMAND_TYPE, &old_type,
-//                         -1);
-//
-//     if (enabled != old_enabled ||
-//         !string_equal (old_name, name) ||
-//         !string_equal (old_label, label) ||
-//         !string_equal (old_langs, langs) ||
-//         !string_equal (old_options, options) ||
-//         !string_equal (old_type, type))
-//     {
-//         gtk_list_store_set (GTK_LIST_STORE (model), iter,
-//                             COLUMN_ENABLED, enabled,
-//                             COLUMN_NAME, name,
-//                             COLUMN_LABEL, label,
-//                             COLUMN_LANGS, langs,
-//                             COLUMN_OPTIONS, options,
-//                             COLUMN_COMMAND_TYPE, type,
-//                             -1);
-//         set_changed (page, TRUE);
-//     }
-//
-//     g_free (old_name);
-//     g_free (old_label);
-//     g_free (old_langs);
-//     g_free (old_options);
-//     g_free (old_type);
-//     moo_command_data_unref (data);
+    _moo_user_tool_info_unref (info);
 }
 
 
 static void
-page_init (MooPrefsDialogPage *page)
+name_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
+                GtkCellRenderer *cell,
+                GtkTreeModel    *model,
+                GtkTreeIter     *iter)
+{
+    MooUserToolInfo *info = NULL;
+
+    gtk_tree_model_get (model, iter, COLUMN_INFO, &info, -1);
+    g_return_if_fail (info != NULL);
+
+    g_object_set (cell, "text", info->name, NULL);
+
+    _moo_user_tool_info_unref (info);
+}
+
+static void
+command_page_init (MooPrefsDialogPage *page,
+                   MooUserToolType     type)
 {
     GtkTreeView *treeview;
     GtkListStore *store;
@@ -307,19 +253,27 @@ page_init (MooPrefsDialogPage *page)
     GtkCellRenderer *cell;
     MooCommandDisplay *helper;
 
+    page_set_type (page, type);
+
+    if (type != MOO_USER_TOOL_CONTEXT)
+    {
+        gtk_widget_hide (GET_WID ("filter"));
+        gtk_widget_hide (GET_WID ("filter_label"));
+    }
+
     treeview = moo_glade_xml_get_widget (page->xml, "treeview");
-    store = gtk_list_store_new (N_COLUMNS, G_TYPE_BOOLEAN, G_TYPE_STRING,
-                                G_TYPE_STRING, G_TYPE_STRING,
-                                G_TYPE_STRING, G_TYPE_STRING,
-                                MOO_TYPE_COMMAND_TYPE,
-                                MOO_TYPE_COMMAND_DATA);
+    store = gtk_list_store_new (N_COLUMNS, MOO_TYPE_USER_TOOL_INFO);
     gtk_tree_view_set_model (treeview, GTK_TREE_MODEL (store));
 
     cell = gtk_cell_renderer_text_new ();
-    column = gtk_tree_view_column_new_with_attributes ("id", cell, "text", COLUMN_ID, NULL);
+    column = gtk_tree_view_column_new ();
+    gtk_tree_view_column_pack_start (column, cell, TRUE);
+    gtk_tree_view_column_set_cell_data_func (column, cell,
+                                             (GtkTreeCellDataFunc) name_data_func,
+                                             NULL, NULL);
     gtk_tree_view_append_column (treeview, column);
 
-    populate_store (store);
+    populate_store (store, type);
 
     helper = _moo_command_display_new (GET_WID ("type_combo"),
                                        GET_WID ("notebook"),
@@ -343,9 +297,12 @@ page_init (MooPrefsDialogPage *page)
 
 
 static void
-page_apply (MooPrefsDialogPage *page)
+command_page_apply (MooPrefsDialogPage *page)
 {
     MooTreeHelper *helper;
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+    GSList *list = NULL;
 
     helper = g_object_get_data (G_OBJECT (page), "moo-tree-helper");
     _moo_tree_helper_update_model (helper, NULL, NULL);
@@ -355,7 +312,54 @@ page_apply (MooPrefsDialogPage *page)
 
     g_print ("apply\n");
 
+    model = gtk_tree_view_get_model (GET_WID ("treeview"));
+
+    if (gtk_tree_model_get_iter_first (model, &iter))
+    {
+        do
+        {
+            MooUserToolInfo *info;
+            gtk_tree_model_get (model, &iter, COLUMN_INFO, &info, -1);
+            list = g_slist_prepend (list, info);
+        }
+        while (gtk_tree_model_iter_next (model, &iter));
+    }
+
+    list = g_slist_reverse (list);
+
+    _moo_edit_save_user_tools (page_get_type (page), list);
+    _moo_edit_load_user_tools (page_get_type (page));
+
+    g_slist_foreach (list, (GFunc) _moo_user_tool_info_unref, NULL);
+    g_slist_free (list);
+
     set_changed (page, FALSE);
+}
+
+
+static void
+main_page_init (MooPrefsDialogPage *main_page)
+{
+    MooPrefsDialogPage *page_context, *page_menu;
+
+    page_menu = moo_glade_xml_get_widget (main_page->xml, "page_menu");
+    page_context = moo_glade_xml_get_widget (main_page->xml, "page_context");
+
+    command_page_init (page_menu, MOO_USER_TOOL_MENU);
+    command_page_init (page_context, MOO_USER_TOOL_CONTEXT);
+}
+
+
+static void
+main_page_apply (MooPrefsDialogPage *main_page)
+{
+    MooPrefsDialogPage *page_context, *page_menu;
+
+    page_menu = moo_glade_xml_get_widget (main_page->xml, "page_menu");
+    page_context = moo_glade_xml_get_widget (main_page->xml, "page_context");
+
+    command_page_apply (page_menu);
+    command_page_apply (page_context);
 }
 
 
@@ -363,15 +367,25 @@ GtkWidget *
 _moo_user_tools_prefs_page_new (void)
 {
     MooPrefsDialogPage *page;
+    MooPrefsDialogPage *page_menu, *page_context;
     MooGladeXML *xml;
 
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
+    moo_glade_xml_map_id (xml, "page_menu", MOO_TYPE_PREFS_DIALOG_PAGE);
+    moo_glade_xml_map_id (xml, "page_context", MOO_TYPE_PREFS_DIALOG_PAGE);
     page = moo_prefs_dialog_page_new_from_xml (_("Tools"), GTK_STOCK_EXECUTE,
-                                               xml, MOO_EDIT_TOOLS_GLADE_XML, -1,
+                                               xml, MOO_EDIT_TOOLS_GLADE_XML,
                                                "page", NULL);
+    g_signal_connect (page, "init", G_CALLBACK (main_page_init), NULL);
+    g_signal_connect (page, "apply", G_CALLBACK (main_page_apply), NULL);
 
-    g_signal_connect (page, "init", G_CALLBACK (page_init), NULL);
-    g_signal_connect (page, "apply", G_CALLBACK (page_apply), NULL);
+    page_menu = moo_glade_xml_get_widget (xml, "page_menu");
+    moo_prefs_dialog_page_fill_from_xml (page_menu, NULL, MOO_EDIT_TOOLS_GLADE_XML,
+                                         "page_command", NULL);
+
+    page_context = moo_glade_xml_get_widget (xml, "page_context");
+    moo_prefs_dialog_page_fill_from_xml (page_context, NULL, MOO_EDIT_TOOLS_GLADE_XML,
+                                         "page_command", NULL);
 
     g_object_unref (xml);
     return GTK_WIDGET (page);

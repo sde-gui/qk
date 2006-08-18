@@ -1,34 +1,10 @@
 <tools>
-  <tool id="SwitchHeaderAndImpl">
-    <_name>Switch Header And Implementation</_name>
-    <_label>_Switch Header And Implementation</_label>
-    <langs>C, GAP</langs>
-    <command type="MooScript" options="need-file">
-      <code>extensions = [[['.h', '.hh', '.hpp', '.hxx', '.H'], ['.c', '.cc', '.cpp', '.cxx', '.C']],
-              [['.gd'], ['.gi']]];
-new = none;
-
-for p in extensions do
-  if doc.ext in p[0] then
-    new = p[1];
-    break;
-  elif doc.ext in p[1] then
-    new = p[0];
-    break;
-  fi;
-od;
-
-if not new then
-  return;
+  <tool name="_Shell Command" os="unix">
+    <command type="MooScript" options="need-doc">
+      <code>cmd = HistoryEntry("", "ShellCommand");
+if cmd then
+  Insert(Exec(cmd), "\n");
 fi;
-
-for e in new do
-  file = doc.dir + '/' + doc.base + e;
-  if FileExists(file) then
-    Open(file);
-    return;
-  fi;
-od;
 </code>
     </command>
   </tool>

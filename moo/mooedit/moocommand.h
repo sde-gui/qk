@@ -187,7 +187,7 @@ MooCommandData     *_moo_command_parse_markup   (MooMarkupNode      *node,
                                                  char              **options);
 void                _moo_command_format_markup  (MooMarkupNode      *parent,
                                                  MooCommandData     *data,
-                                                 char               *type,
+                                                 MooCommandType     *type,
                                                  char               *options);
 
 MooCommand  *_moo_command_type_create_command   (MooCommandType    *type,
