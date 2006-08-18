@@ -362,45 +362,67 @@ moo_prefs_dialog_page_new_from_xml (const char         *label,
                                     const char         *icon_stock_id,
                                     MooGladeXML        *xml,
                                     const char         *buffer,
-                                    int                 buffer_size,
                                     const char         *page_id,
                                     const char         *prefs_root)
 {
     MooPrefsDialogPage *page;
+
+    g_return_val_if_fail (buffer != NULL && page_id != NULL, NULL);
+    g_return_val_if_fail (!xml || MOO_IS_GLADE_XML (xml), NULL);
+
+    page = g_object_new (MOO_TYPE_PREFS_DIALOG_PAGE,
+                         "label", label,
+                         "icon-stock-id", icon_stock_id,
+                         NULL);
+
+    if (!moo_prefs_dialog_page_fill_from_xml (page, xml, buffer, page_id, prefs_root))
+    {
+        gtk_object_sink (g_object_ref (page));
+        g_object_unref (page);
+        return NULL;
+    }
+
+    return page;
+}
+
+
+gboolean
+moo_prefs_dialog_page_fill_from_xml (MooPrefsDialogPage *page,
+                                     MooGladeXML        *xml,
+                                     const char         *buffer,
+                                     const char         *page_id,
+                                     const char         *prefs_root)
+{
     struct {
         const char *prefs_root;
         const char *page_id;
     } data = {prefs_root, page_id};
 
-    g_return_val_if_fail (buffer != NULL && page_id != NULL, NULL);
-    g_return_val_if_fail (!xml || MOO_IS_GLADE_XML (xml), NULL);
+    g_return_val_if_fail (MOO_IS_PREFS_DIALOG_PAGE (page), FALSE);
+    g_return_val_if_fail (buffer != NULL, FALSE);
+    g_return_val_if_fail (page_id != NULL, FALSE);
+    g_return_val_if_fail (page->xml == NULL, FALSE);
+    g_return_val_if_fail (!xml || MOO_IS_GLADE_XML (xml), FALSE);
 
     if (!xml)
         xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     else
         g_object_ref (xml);
 
-    moo_glade_xml_map_id (xml, page_id, MOO_TYPE_PREFS_DIALOG_PAGE);
     moo_glade_xml_set_signal_func (xml, connect_signals, &data);
     moo_glade_xml_set_prop_func (xml, set_props, &data);
 
-    if (!moo_glade_xml_parse_memory (xml, buffer, buffer_size, page_id, NULL))
+    if (!moo_glade_xml_fill_widget (xml, GTK_WIDGET (page), buffer, -1, page_id, NULL))
     {
         g_critical ("%s: could not parse xml", G_STRLOC);
         g_object_unref (xml);
-        return NULL;
+        return FALSE;
     }
-
-    /*XXX*/
-    page = moo_glade_xml_get_widget (xml, page_id);
-    page->xml = xml;
-
-    g_object_set (page,
-                  "label", label,
-                  "icon-stock-id", icon_stock_id,
-                  NULL);
-
-    return page;
+    else
+    {
+        page->xml = xml;
+        return TRUE;
+    }
 }
 
 

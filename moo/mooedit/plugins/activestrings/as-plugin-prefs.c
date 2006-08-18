@@ -77,7 +77,7 @@ _as_plugin_prefs_page (MooPlugin *plugin)
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "script", MOO_TYPE_TEXT_VIEW);
     page = moo_prefs_dialog_page_new_from_xml ("Active Strings", GTK_STOCK_CONVERT,
-                                               xml, AS_PLUGIN_GLADE_UI, -1,
+                                               xml, AS_PLUGIN_GLADE_UI,
                                                "page", NULL);
 
     g_object_set_data_full (G_OBJECT (xml), "as-plugin",

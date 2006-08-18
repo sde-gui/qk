@@ -60,7 +60,11 @@ MooPrefsDialogPage *
                                                  const char         *icon_stock_id,
                                                  MooGladeXML        *xml,
                                                  const char         *buffer,
-                                                 int                 buffer_size,
+                                                 const char         *page_id,
+                                                 const char         *prefs_root);
+gboolean    moo_prefs_dialog_page_fill_from_xml (MooPrefsDialogPage *page,
+                                                 MooGladeXML        *xml,
+                                                 const char         *buffer,
                                                  const char         *page_id,
                                                  const char         *prefs_root);
 

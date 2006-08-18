@@ -1327,7 +1327,18 @@
     '("const-char*" "icon_stock_id" (null-ok) (default "NULL"))
     '("MooGladeXML*" "xml" (null-ok) (default "NULL"))
     '("const-char*" "buffer")
-    '("int" "buffer_size" (null-ok) (default "-1"))
+    '("const-char*" "page_id")
+    '("const-char*" "prefs_root" (null-ok) (default "NULL"))
+  )
+)
+
+(define-method fill_from_xml
+  (of-object "MooPrefsDialogPage")
+  (c-name "moo_prefs_dialog_page_fill_from_xml")
+  (return-type "gboolean")
+  (parameters
+    '("MooGladeXML*" "xml" (null-ok) (default "NULL"))
+    '("const-char*" "buffer")
     '("const-char*" "page_id")
     '("const-char*" "prefs_root" (null-ok) (default "NULL"))
   )
