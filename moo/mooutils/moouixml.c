@@ -2168,6 +2168,7 @@ create_tool_item (MooUIXML       *xml,
 
     g_return_val_if_fail (tool_item != NULL, FALSE);
 
+    gtk_tool_item_set_homogeneous (GTK_TOOL_ITEM (tool_item), FALSE);
     xml_add_widget (xml, tool_item, toplevel, node);
     xml_add_item_widget (xml, tool_item);
 
