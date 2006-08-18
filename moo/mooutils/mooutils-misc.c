@@ -1460,7 +1460,7 @@ moo_save_user_data_file (const char     *basename,
 out:
     g_free (dir);
     g_free (file);
-    return FALSE;
+    return result;
 }
 
 
