@@ -106,11 +106,13 @@ void             moo_app_set_ui_xml             (MooApp     *app,
 char            *moo_app_tempnam                (MooApp     *app);
 
 gboolean         moo_app_send_msg               (MooApp     *app,
+                                                 const char *pid,
                                                  const char *data,
                                                  int         len);
 gboolean         moo_app_send_files             (MooApp     *app,
                                                  char      **files,
-                                                 guint32     stamp);
+                                                 guint32     stamp,
+                                                 const char *pid);
 
 void             moo_app_reload_python_plugins  (void);
 

@@ -69,6 +69,9 @@ int _medit_parse_options (const char *const program_name,
 #define STR_HELP_NEW_APP "\
   -n, --new-app                  Run new instance of application\n"
 
+#define STR_HELP_PID "\
+      --pid=PID                  Use existing instance with process id PID\n"
+
 #define STR_HELP_MODE "\
   -m, --mode=[simple|project]    Use specified mode\n"
 
@@ -89,6 +92,7 @@ int _medit_parse_options (const char *const program_name,
 
 #define STR_HELP "\
   -n, --new-app                  Run new instance of application\n\
+      --pid=PID                  Use existing instance with process id PID\n\
   -m, --mode=[simple|project]    Use specified mode\n\
   -p, --project=PROJECT          Open project file PROJECT\n\
   -l, --line=LINE                Open file and position cursor on line LINE\n\
@@ -98,6 +102,9 @@ int _medit_parse_options (const char *const program_name,
 
 /* Set to 1 if option --new-app (-n) has been specified.  */
 char _medit_opt_new_app;
+
+/* Set to 1 if option --pid has been specified.  */
+char _medit_opt_pid;
 
 /* Set to 1 if option --mode (-m) has been specified.  */
 char _medit_opt_mode;
@@ -117,10 +124,13 @@ char _medit_opt_version;
 /* Set to 1 if option --help (-h) has been specified.  */
 char _medit_opt_help;
 
+/* Argument to option --pid.  */
+const char *_medit_arg_pid;
+
 /* Argument to option --mode (-m).  */
 const char *_medit_arg_mode;
 
-/* Argument to option --project (-p), or a null pointer if no argument.  */
+/* Argument to option --project (-p).  */
 const char *_medit_arg_project;
 
 /* Argument to option --line (-l).  */
@@ -134,18 +144,22 @@ const char *_medit_arg_log;
 int _medit_parse_options (const char *const program_name, const int argc, char **const argv)
 {
   static const char *const optstr__new_app = "new-app";
+  static const char *const optstr__pid = "pid";
   static const char *const optstr__mode = "mode";
+  static const char *const optstr__project = "project";
   static const char *const optstr__line = "line";
   static const char *const optstr__version = "version";
   static const char *const optstr__help = "help";
   int i = 0;
   _medit_opt_new_app = 0;
+  _medit_opt_pid = 0;
   _medit_opt_mode = 0;
   _medit_opt_project = 0;
   _medit_opt_line = 0;
   _medit_opt_log = 0;
   _medit_opt_version = 0;
   _medit_opt_help = 0;
+  _medit_arg_pid = 0;
   _medit_arg_mode = 0;
   _medit_arg_project = 0;
   _medit_arg_line = 0;
@@ -239,9 +253,35 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
         }
         goto error_unknown_long_opt;
        case 'p':
-        if (strncmp (option + 1, "roject", option_len - 1) == 0)
+        if (strncmp (option + 1, optstr__pid + 1, option_len - 1) == 0)
         {
-          _medit_arg_project = argument;
+          if (option_len <= 1)
+            goto error_long_opt_ambiguous;
+          if (argument != 0)
+            _medit_arg_pid = argument;
+          else if (++i < argc)
+            _medit_arg_pid = argv [i];
+          else
+          {
+            option = optstr__pid;
+            goto error_missing_arg_long;
+          }
+          _medit_opt_pid = 1;
+          break;
+        }
+        if (strncmp (option + 1, optstr__project + 1, option_len - 1) == 0)
+        {
+          if (option_len <= 1)
+            goto error_long_opt_ambiguous;
+          if (argument != 0)
+            _medit_arg_project = argument;
+          else if (++i < argc)
+            _medit_arg_project = argv [i];
+          else
+          {
+            option = optstr__project;
+            goto error_missing_arg_long;
+          }
           _medit_opt_project = 1;
           break;
         }
@@ -305,12 +345,12 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
           break;
          case 'p':
           if (option [1] != '\0')
-          {
             _medit_arg_project = option + 1;
-            option = "\0";
-          }
+          else if (++i < argc)
+            _medit_arg_project = argv [i];
           else
-            _medit_arg_project = 0;
+            goto error_missing_arg_short;
+          option = "\0";
           _medit_opt_project = 1;
           break;
          default:
@@ -357,6 +397,33 @@ check_args (int opt_remain)
         exit (1);
     }
 
+    if (_medit_opt_pid)
+    {
+        if (_medit_opt_mode)
+        {
+            g_print ("--mode can't be used together with --pid\n");
+            exit (1);
+        }
+
+        if (_medit_opt_project)
+        {
+            g_print ("--project can't be used together with --pid\n");
+            exit (1);
+        }
+
+        if (_medit_opt_new_app)
+        {
+            g_print ("--new-app can't be used together with --pid\n");
+            exit (1);
+        }
+
+        if (!_medit_arg_pid || !_medit_arg_pid[0])
+        {
+            usage ();
+            exit (1);
+        }
+    }
+
     if (_medit_opt_mode)
     {
         if (!_medit_arg_mode ||
@@ -396,7 +463,7 @@ main (int argc, char *argv[])
     gboolean run_input = TRUE;
     AppMode mode = MODE_SIMPLE;
     guint32 stamp;
-    int line = 0;
+    int line = -1;
 
     gtk_init (&argc, &argv);
     stamp = TIMESTAMP;
@@ -443,7 +510,23 @@ main (int argc, char *argv[])
                         "credits", THANKS,
                         NULL);
 
-    if ((!new_instance && moo_app_send_files (app, files, stamp)) ||
+    if (_medit_arg_line)
+        line = strtol (_medit_arg_line, NULL, 10);
+
+    if (_medit_opt_pid)
+    {
+        if (moo_app_send_files (app, files, stamp, _medit_arg_pid))
+        {
+            exit (0);
+        }
+        else
+        {
+            g_print ("Could not send files to pid %s\n", _medit_arg_pid);
+            exit (1);
+        }
+    }
+
+    if ((!new_instance && moo_app_send_files (app, files, stamp, NULL)) ||
          !moo_app_init (app))
     {
         gdk_notify_startup_complete ();
@@ -477,16 +560,13 @@ main (int argc, char *argv[])
     editor = moo_app_get_editor (app);
     window = moo_editor_new_window (editor);
 
-    if (_medit_arg_line)
-        line = strtol (_medit_arg_line, NULL, 10);
-
     if (files && *files)
     {
         char **p;
 
         for (p = files; p && *p; ++p)
         {
-            if (p == files && _medit_arg_line)
+            if (p == files && line >= 0)
                 moo_editor_open_file_line (editor, *p, line, window);
             else
                 moo_editor_new_file (editor, window, NULL, *p, NULL);

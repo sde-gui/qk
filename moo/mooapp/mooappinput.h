@@ -80,6 +80,7 @@ void         _moo_app_input_shutdown    (MooAppInput    *ch);
 const char  *_moo_app_input_get_name    (MooAppInput    *ch);
 
 gboolean     _moo_app_input_send_msg    (const char     *pipe_basename,
+                                         const char     *pid,
                                          const char     *data,
                                          gssize          len);
 

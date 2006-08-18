@@ -273,6 +273,7 @@ _moo_app_input_start (MooAppInput *ch)
 
 gboolean
 _moo_app_input_send_msg (G_GNUC_UNUSED const char *pipe_basename,
+                         G_GNUC_UNUSED const char *pid,
                          G_GNUC_UNUSED const char *data,
                          G_GNUC_UNUSED gssize len)
 {
@@ -512,8 +513,64 @@ _moo_app_input_start (MooAppInput *ch)
 }
 
 
+static gboolean
+try_send (const char *tmpdir_name,
+          const char *prefix,
+          const char *pid_string,
+          const char *data,
+          gssize      data_len)
+{
+    GPid pid;
+    char *filename = NULL;
+    GIOChannel *chan = NULL;
+    GIOStatus status;
+    gboolean result = FALSE;
+
+    if (!pid_string[0])
+        goto out;
+
+    errno = 0;
+    pid = strtol (pid_string, NULL, 10);
+
+    if (errno)
+        goto out;
+
+    filename = g_strdup_printf ("%s/%s%s", tmpdir_name, prefix, pid_string);
+
+    if (kill (pid, 0) != 0)
+    {
+        unlink (filename);
+        goto out;
+    }
+
+    chan = g_io_channel_new_file (filename, "w", NULL);
+
+    if (!chan)
+        goto out;
+
+    g_io_channel_set_encoding (chan, NULL, NULL);
+    status = g_io_channel_set_flags (chan, G_IO_FLAG_NONBLOCK, NULL);
+
+    if (status != G_IO_STATUS_NORMAL)
+        goto out;
+
+    status = g_io_channel_write_chars (chan, data, data_len, NULL, NULL);
+
+    if (status != G_IO_STATUS_NORMAL)
+        goto out;
+
+    result = TRUE;
+
+out:
+    if (chan)
+        g_io_channel_unref (chan);
+    g_free (filename);
+    return result;
+}
+
 gboolean
 _moo_app_input_send_msg (const char     *pipe_basename,
+                         const char     *pid,
                          const char     *data,
                          gssize          data_len)
 {
@@ -526,75 +583,33 @@ _moo_app_input_send_msg (const char     *pipe_basename,
     g_return_val_if_fail (pipe_basename != NULL, FALSE);
     g_return_val_if_fail (data != NULL, FALSE);
 
+    prefix = g_strdup_printf (NAME_PREFIX, pipe_basename);
+    prefix_len = strlen (prefix);
     tmpdir_name = g_get_tmp_dir ();
+
+    if (pid)
+    {
+        success = try_send (tmpdir_name, prefix, pid, data, data_len);
+        goto out;
+    }
+
     tmpdir = g_dir_open (tmpdir_name, 0, NULL);
 
     if (!tmpdir)
-        return FALSE;
-
-    prefix = g_strdup_printf (NAME_PREFIX, pipe_basename);
-    prefix_len = strlen (prefix);
+        goto out;
 
     while ((entry = g_dir_read_name (tmpdir)))
     {
-        const char *pid_string;
-        GPid pid;
-        char *filename = NULL;
-        GIOChannel *chan;
-        GIOStatus status;
-
-        if (strncmp (entry, prefix, prefix_len))
-            goto cont;
-
-        pid_string = entry + prefix_len;
-
-        if (!pid_string[0])
-            goto cont;
-
-        errno = 0;
-        pid = strtol (entry + prefix_len, NULL, 10);
-
-        if (errno)
-            goto cont;
-
-        filename = g_build_filename (tmpdir_name, entry, NULL);
-
-        if (kill (pid, 0))
+        if (!strncmp (entry, prefix, prefix_len))
         {
-            /* XXX unlink should file if it's not our file, but still.. */
-            unlink (filename);
-            goto cont;
+            const char *pid_string = entry + prefix_len;
+
+            if (try_send (tmpdir_name, prefix, pid_string, data, data_len))
+            {
+                success = TRUE;
+                goto out;
+            }
         }
-
-        chan = g_io_channel_new_file (filename, "w", NULL);
-
-        if (!chan)
-            goto cont;
-
-        g_io_channel_set_encoding (chan, NULL, NULL);
-        status = g_io_channel_set_flags (chan, G_IO_FLAG_NONBLOCK, NULL);
-
-        if (status != G_IO_STATUS_NORMAL)
-        {
-            g_io_channel_unref (chan);
-            goto cont;
-        }
-
-        status = g_io_channel_write_chars (chan, data, data_len, NULL, NULL);
-
-        if (status != G_IO_STATUS_NORMAL)
-        {
-            g_io_channel_unref (chan);
-            goto cont;
-        }
-
-        g_free (filename);
-        g_io_channel_unref (chan);
-        success = TRUE;
-        goto out;
-
-cont:
-        g_free (filename);
     }
 
 out:

@@ -5,10 +5,12 @@ moo/mooapp/mooappabout.c
 moo/mooapp/mooapp.c
 moo/mooapp/glade/mooappabout.glade
 
+moo/mooedit/moocommand-script.c
 moo/mooedit/mooeditwindow.c
 moo/mooedit/moousertools.c
+moo/mooedit/moousertools-prefs.c
+moo/mooedit/context.xml
 moo/mooedit/menu.xml
-moo/mooedit/tools.xml
 moo/mooedit/glade/mooeditprefs.glade
 moo/mooedit/glade/mooeditprogress.glade
 moo/mooedit/glade/mooeditsavemult.glade
@@ -18,6 +20,7 @@ moo/mooedit/glade/mootextfind.glade
 moo/mooedit/glade/mootextgotoline.glade
 moo/mooedit/glade/quicksearch.glade
 moo/mooedit/glade/statusbar.glade
+moo/mooedit/glade/mooedittools.glade
 moo/mooedit/plugins/completion/completion-plugin.c
 moo/mooedit/plugins/fileselector/moofileselector-prefs.glade
 moo/mooedit/plugins/fileselector/moofileselector.glade

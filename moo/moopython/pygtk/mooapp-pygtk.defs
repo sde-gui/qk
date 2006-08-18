@@ -131,6 +131,7 @@
   (c-name "moo_app_send_msg")
   (return-type "gboolean")
   (parameters
+    '("const-char*" "pid" (null-ok))
     '("const-char*" "data")
     '("int" "len")
   )
@@ -143,5 +144,6 @@
   (parameters
     '("strv" "files")
     '("guint32" "stamp" (default "0"))
+    '("const-char*" "pid" (null-ok) (default "NULL"))
   )
 )

@@ -43,8 +43,9 @@ int _medit_parse_options (const char *const program_name,
  */
 %%
 n  new-app      "Run new instance of application"
+   pid          "=PID Use existing instance with process id PID"    reqarg
 m  mode         "=[simple|project] Use specified mode"              reqarg
-p  project      "=PROJECT Open project file PROJECT"                optarg
+p  project      "=PROJECT Open project file PROJECT"                reqarg
 l  line         "=LINE Open file and position cursor on line LINE"  reqarg
    log          "[=FILE] Show debug output or write it to FILE"     optarg
    version      "Display version information and exit"              return
@@ -81,6 +82,33 @@ check_args (int opt_remain)
     {
         usage ();
         exit (1);
+    }
+
+    if (_medit_opt_pid)
+    {
+        if (_medit_opt_mode)
+        {
+            g_print ("--mode can't be used together with --pid\n");
+            exit (1);
+        }
+
+        if (_medit_opt_project)
+        {
+            g_print ("--project can't be used together with --pid\n");
+            exit (1);
+        }
+
+        if (_medit_opt_new_app)
+        {
+            g_print ("--new-app can't be used together with --pid\n");
+            exit (1);
+        }
+
+        if (!_medit_arg_pid || !_medit_arg_pid[0])
+        {
+            usage ();
+            exit (1);
+        }
     }
 
     if (_medit_opt_mode)
@@ -122,7 +150,7 @@ main (int argc, char *argv[])
     gboolean run_input = TRUE;
     AppMode mode = MODE_SIMPLE;
     guint32 stamp;
-    int line = 0;
+    int line = -1;
 
     gtk_init (&argc, &argv);
     stamp = TIMESTAMP;
@@ -169,7 +197,23 @@ main (int argc, char *argv[])
                         "credits", THANKS,
                         NULL);
 
-    if ((!new_instance && moo_app_send_files (app, files, stamp)) ||
+    if (_medit_arg_line)
+        line = strtol (_medit_arg_line, NULL, 10);
+
+    if (_medit_opt_pid)
+    {
+        if (moo_app_send_files (app, files, stamp, _medit_arg_pid))
+        {
+            exit (0);
+        }
+        else
+        {
+            g_print ("Could not send files to pid %s\n", _medit_arg_pid);
+            exit (1);
+        }
+    }
+
+    if ((!new_instance && moo_app_send_files (app, files, stamp, NULL)) ||
          !moo_app_init (app))
     {
         gdk_notify_startup_complete ();
@@ -203,16 +247,13 @@ main (int argc, char *argv[])
     editor = moo_app_get_editor (app);
     window = moo_editor_new_window (editor);
 
-    if (_medit_arg_line)
-        line = strtol (_medit_arg_line, NULL, 10);
-
     if (files && *files)
     {
         char **p;
 
         for (p = files; p && *p; ++p)
         {
-            if (p == files && _medit_arg_line)
+            if (p == files && line >= 0)
                 moo_editor_open_file_line (editor, *p, line, window);
             else
                 moo_editor_new_file (editor, window, NULL, *p, NULL);

@@ -897,19 +897,21 @@ start_input (MooApp *app)
 
 gboolean
 moo_app_send_msg (MooApp     *app,
+                  const char *pid,
                   const char *data,
                   int         len)
 {
     g_return_val_if_fail (MOO_IS_APP (app), FALSE);
     g_return_val_if_fail (data != NULL, FALSE);
-    return _moo_app_input_send_msg (app->priv->info->short_name, data, len);
+    return _moo_app_input_send_msg (app->priv->info->short_name, pid, data, len);
 }
 
 
 gboolean
-moo_app_send_files (MooApp  *app,
-                    char   **files,
-                    guint32  stamp)
+moo_app_send_files (MooApp     *app,
+                    char      **files,
+                    guint32     stamp,
+                    const char *pid)
 {
     gboolean result;
     GString *msg;
@@ -951,7 +953,7 @@ moo_app_send_files (MooApp  *app,
         g_free (uri);
     }
 
-    result = moo_app_send_msg (app, msg->str, msg->len + 1);
+    result = moo_app_send_msg (app, pid, msg->str, msg->len + 1);
 
     g_string_free (msg, TRUE);
     return result;
