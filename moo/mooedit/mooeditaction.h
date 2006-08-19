@@ -20,7 +20,6 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_EDIT_ACTION_FLAGS          (moo_edit_action_flags_get_type ())
 #define MOO_TYPE_EDIT_ACTION                (moo_edit_action_get_type ())
 #define MOO_EDIT_ACTION(object)             (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_EDIT_ACTION, MooEditAction))
 #define MOO_EDIT_ACTION_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_EDIT_ACTION, MooEditActionClass))
@@ -31,10 +30,6 @@ G_BEGIN_DECLS
 typedef struct _MooEditAction        MooEditAction;
 typedef struct _MooEditActionPrivate MooEditActionPrivate;
 typedef struct _MooEditActionClass   MooEditActionClass;
-
-typedef enum {
-    MOO_EDIT_ACTION_NEED_FILE = 1 << 0
-} MooEditActionFlags;
 
 struct _MooEditAction
 {
@@ -51,7 +46,6 @@ struct _MooEditActionClass
 
 
 GType   moo_edit_action_get_type            (void) G_GNUC_CONST;
-GType   moo_edit_action_flags_get_type      (void) G_GNUC_CONST;
 
 MooEdit *moo_edit_action_get_doc            (MooEditAction  *action);
 

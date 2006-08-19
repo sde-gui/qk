@@ -190,12 +190,6 @@
   (gtype-id "MOO_TYPE_TEXT_SELECTION_TYPE")
 )
 
-(define-flags ActionFlags
-  (in-module "Moo")
-  (c-name "MooEditActionFlags")
-  (gtype-id "MOO_TYPE_EDIT_ACTION_FLAGS")
-)
-
 (define-enum ActionCheckType
   (in-module "Moo")
   (c-name "MooActionCheckType")

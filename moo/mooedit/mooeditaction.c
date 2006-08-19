@@ -13,13 +13,15 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditaction.h"
+#include "mooedit/mooedit-private.h"
+#include "mooutils/eggregex.h"
 #include <string.h>
 
 
 struct _MooEditActionPrivate {
     MooEdit *doc;
     GSList *langs;
-    MooEditActionFlags flags;
+    EggRegex *regex;
 };
 
 
@@ -28,16 +30,46 @@ G_DEFINE_TYPE (MooEditAction, moo_edit_action, MOO_TYPE_ACTION);
 enum {
     PROP_0,
     PROP_DOC,
-    PROP_FLAGS,
-    PROP_LANGS
+    PROP_LANGS,
+    PROP_FILTER_PATTERN
 };
+
+
+static void
+moo_edit_action_set_filter (MooEditAction *action,
+                            const char    *pattern)
+{
+    GError *error = NULL;
+
+    egg_regex_unref (action->priv->regex);
+    action->priv->regex = NULL;
+
+    if (!pattern)
+        return;
+
+    action->priv->regex = egg_regex_new (pattern, 0, EGG_REGEX_MATCH_NOTEMPTY, &error);
+
+    if (!action->priv->regex)
+    {
+        g_warning ("%s: %s", G_STRLOC, error->message);
+        g_error_free (error);
+    }
+    else
+    {
+        egg_regex_optimize (action->priv->regex, NULL);
+    }
+}
+
 
 static void
 moo_edit_action_finalize (GObject *object)
 {
     MooEditAction *action = MOO_EDIT_ACTION (object);
+
+    egg_regex_unref (action->priv->regex);
     g_slist_foreach (action->priv->langs, (GFunc) g_free, NULL);
     g_slist_free (action->priv->langs);
+
     G_OBJECT_CLASS(moo_edit_action_parent_class)->finalize (object);
 }
 
@@ -56,8 +88,11 @@ moo_edit_action_get_property (GObject        *object,
             g_value_set_object (value, action->priv->doc);
             break;
 
-        case PROP_FLAGS:
-            g_value_set_flags (value, action->priv->flags);
+        case PROP_FILTER_PATTERN:
+            if (action->priv->regex)
+                g_value_set_string (value, egg_regex_get_pattern (action->priv->regex));
+            else
+                g_value_set_string (value, NULL);
             break;
 
         default:
@@ -107,13 +142,12 @@ moo_edit_action_set_property (GObject        *object,
             g_object_notify (object, "doc");
             break;
 
-        case PROP_FLAGS:
-            action->priv->flags = g_value_get_flags (value);
-            g_object_notify (object, "flags");
-            break;
-
         case PROP_LANGS:
             moo_edit_action_set_langs (action, g_value_get_string (value));
+            break;
+
+        case PROP_FILTER_PATTERN:
+            moo_edit_action_set_filter (action, g_value_get_string (value));
             break;
 
         default:
@@ -148,10 +182,6 @@ moo_edit_action_check_state_real (MooEditAction *action)
         }
     }
 
-    if (sensitive && action->priv->flags)
-        sensitive = (action->priv->flags & MOO_EDIT_ACTION_NEED_FILE) ?
-                        moo_edit_get_filename (action->priv->doc) != NULL : TRUE;
-
     g_object_set (action, "visible", visible, "sensitive", sensitive, NULL);
 }
 
@@ -178,37 +208,41 @@ moo_edit_action_class_init (MooEditActionClass *klass)
                                              G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
-                                     PROP_FLAGS,
-                                     g_param_spec_flags ("flags",
-                                             "flags",
-                                             "flags",
-                                             MOO_TYPE_EDIT_ACTION_FLAGS, 0,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
                                      PROP_LANGS,
                                      g_param_spec_string ("langs",
                                              "langs",
                                              "langs",
                                              NULL,
                                              G_PARAM_WRITABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_FILTER_PATTERN,
+                                     g_param_spec_string ("filter-pattern",
+                                             "filter-pattern",
+                                             "filter-pattern",
+                                             NULL,
+                                             G_PARAM_READWRITE));
 }
 
 
-GType
-moo_edit_action_flags_get_type (void)
+static void
+moo_edit_action_check_state (MooEditAction *action)
 {
-    static GType type;
+    g_return_if_fail (MOO_IS_EDIT_ACTION (action));
+    g_return_if_fail (MOO_EDIT_ACTION_GET_CLASS (action)->check_state != NULL);
+    MOO_EDIT_ACTION_GET_CLASS (action)->check_state (action);
+}
 
-    if (!type)
+
+void
+_moo_edit_check_actions (MooEdit *edit)
+{
+    GList *actions = moo_action_collection_list_actions (edit->priv->actions);
+
+    while (actions)
     {
-        static GFlagsValue values[] = {
-            { MOO_EDIT_ACTION_NEED_FILE, (char*) "MOO_EDIT_ACTION_NEED_FILE", (char*) "need-file" },
-            { 0, NULL, NULL },
-        };
-
-        type = g_flags_register_static ("MooEditActionFlags", values);
+        if (MOO_IS_EDIT_ACTION (actions->data))
+            moo_edit_action_check_state (actions->data);
+        actions = g_list_delete_link (actions, actions);
     }
-
-    return type;
 }
