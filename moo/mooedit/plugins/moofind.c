@@ -662,6 +662,53 @@ process_line (MooLineView *view,
 }
 
 
+static char *
+parse_globs (const char *string,
+             gboolean    wholename)
+{
+    char **pieces, **p;
+    GString *command;
+
+    if (!string || !string[0] || !strcmp (string, "*"))
+        return NULL;
+
+    pieces = g_strsplit_set (string, ";,", 0);
+    command = g_string_new (NULL);
+
+    for (p = pieces; p && *p; ++p)
+        g_string_append_printf (command, "%s-%s \"%s\"",
+                                p == pieces ? "" : " -o ",
+                                wholename ? "wholename" : "name",
+                                *p);
+
+    g_strfreev (pieces);
+    return g_string_free (command, FALSE);
+}
+
+static void
+append_globs (GString    *command,
+              const char *globs_string,
+              const char *skip_string)
+{
+    char *globs, *skip;
+
+    globs = parse_globs (globs_string, FALSE);
+    skip = parse_globs (skip_string, TRUE);
+
+    if (globs && skip)
+        g_string_append_printf (command, " \\( \\( %s \\) -a ! \\( %s \\) \\) ", globs, skip);
+    else if (globs)
+        g_string_append_printf (command, " \\( %s \\) ", globs);
+    else if (skip)
+        g_string_append_printf (command, " \\( %s \\) ", skip);
+    else
+        g_string_append (command, " ");
+
+    g_free (globs);
+    g_free (skip);
+}
+
+
 static void
 execute_grep (const char     *pattern,
               const char     *glob,
@@ -671,7 +718,6 @@ execute_grep (const char     *pattern,
               WindowStuff    *stuff)
 {
     GString *command = NULL;
-    char **globs = NULL;
 
     g_return_if_fail (stuff->output != NULL);
     g_return_if_fail (pattern && pattern[0]);
@@ -682,55 +728,10 @@ execute_grep (const char     *pattern,
     stuff->match_count = 0;
 
     command = g_string_new (NULL);
-    g_string_printf (command, "find '%s'", dir);
-
-    if (glob && glob[0] && strcmp (glob, "*"))
-    {
-        globs = g_strsplit (glob, ";", 0);
-
-        if (globs)
-        {
-            char **p;
-            gboolean first = TRUE;
-
-            for (p = globs; *p != NULL; p++)
-            {
-                if (first)
-                {
-                    g_string_append_printf (command, " \\( -name \"%s\"", *p);
-                    first = FALSE;
-                }
-                else
-                {
-                    g_string_append_printf (command, " -o -name \"%s\"", *p);
-                }
-            }
-
-            g_string_append (command, " \\)");
-        }
-
-        g_strfreev (globs);
-    }
-
-    g_string_append_printf (command, " -print -follow");
-
-    if (skip_files && skip_files[0])
-    {
-        globs = g_strsplit (skip_files, ";", 0);
-
-        if (globs)
-        {
-            char **p;
-            for (p = globs; *p != NULL; p++)
-                g_string_append_printf (command, " | grep -v \"%s\"", *p);
-        }
-
-        g_strfreev (globs);
-    }
-
-
-    g_string_append_printf (command, " | sed -e \"s/ /\\\\\\ /g\" -e \"s/'/\\\\\\'/g\" "
-                                     "| xargs egrep -H -n %s-e '%s'",
+    g_string_printf (command, "find '%s' -type f", dir);
+    append_globs (command, glob, skip_files);
+    g_string_append_printf (command, "-print -follow | sed -e \"s/ /\\\\\\ /g\" -e \"s/'/\\\\\\'/g\" "
+                                     "| xargs egrep -I -s -H -n %s-e '%s'",
                             !case_sensitive ? "-i " : "", pattern);
 
     stuff->cmd = CMD_GREP;
@@ -746,8 +747,6 @@ execute_find (const char     *pattern,
               WindowStuff    *stuff)
 {
     GString *command = NULL;
-    char **globs = NULL;
-    char **p;
 
     g_return_if_fail (stuff->cmd == 0);
     g_return_if_fail (pattern && pattern[0]);
@@ -757,40 +756,10 @@ execute_find (const char     *pattern,
     stuff->current_file = NULL;
     stuff->match_count = 0;
 
-    globs = g_strsplit (pattern, ";", 0);
-    g_return_if_fail (globs != NULL);
-
-    for (p = globs; *p != NULL; p++)
-    {
-        if (!command)
-        {
-            command = g_string_new (NULL);
-            g_string_printf (command, "find '%s' \\( -name \"%s\"", dir, *p);
-        }
-        else
-        {
-            g_string_append_printf (command, " -o -name \"%s\"", *p);
-        }
-    }
-
-    g_string_append (command, " \\)");
-    g_strfreev (globs);
-
-    g_string_append_printf (command, " -print");
-
-    if (skip_files)
-    {
-        globs = g_strsplit (skip_files, ";", 0);
-
-        if (globs)
-        {
-            char **p;
-            for (p = globs; *p != NULL; p++)
-                g_string_append_printf (command, " | grep -v \"%s\"", *p);
-        }
-
-        g_strfreev (globs);
-    }
+    command = g_string_new (NULL);
+    g_string_printf (command, "find '%s' -type f", dir);
+    append_globs (command, pattern, skip_files);
+    g_string_append (command, " -print");
 
     stuff->cmd = CMD_FIND;
     moo_cmd_view_run_command (stuff->output, command->str, NULL, _("Find File"));
