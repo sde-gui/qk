@@ -293,6 +293,8 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
     moo_edit_tab_atom = gdk_atom_intern ("MOO_EDIT_TAB", FALSE);
     text_uri_atom = gdk_atom_intern ("text/uri-list", FALSE);
 
+    g_type_class_add_private (klass, sizeof (MooEditWindowPrivate));
+
     g_object_class_install_property (gobject_class,
                                      PROP_EDITOR,
                                      g_param_spec_object ("editor",
@@ -760,7 +762,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
 static void
 moo_edit_window_init (MooEditWindow *window)
 {
-    window->priv = g_new0 (MooEditWindowPrivate, 1);
+    window->priv = G_TYPE_INSTANCE_GET_PRIVATE (window, MOO_TYPE_EDIT_WINDOW, MooEditWindowPrivate);
     window->priv->prefix = g_strdup ("medit");
     window->priv->panes = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
     window->priv->panes_to_save = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
@@ -847,7 +849,7 @@ moo_edit_window_finalize (GObject *object)
     }
 
     g_free (window->priv->prefix);
-    g_free (window->priv);
+
     G_OBJECT_CLASS (moo_edit_window_parent_class)->finalize (object);
 }
 

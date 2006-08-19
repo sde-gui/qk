@@ -87,6 +87,8 @@ moo_edit_config_class_init (MooEditConfigClass *klass)
     gobject_class->get_property = moo_edit_config_get_property;
     gobject_class->finalize = moo_edit_config_finalize;
 
+    g_type_class_add_private (klass, sizeof (MooEditConfigPrivate));
+
     prop_id_quark = g_quark_from_static_string ("MooEditConfigPropId");
     aliases = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 
@@ -100,7 +102,7 @@ moo_edit_config_init (MooEditConfig *config)
 {
     guint i;
 
-    config->priv = g_new0 (MooEditConfigPrivate, 1);
+    config->priv = G_TYPE_INSTANCE_GET_PRIVATE (config, MOO_TYPE_EDIT_CONFIG, MooEditConfigPrivate);
     config->priv->values = g_new0 (Value, vars->len);
     config->priv->n_values = config->priv->n_values_allocd__ = vars->len;
 
@@ -130,7 +132,6 @@ moo_edit_config_finalize (GObject *object)
         g_value_unset (GVALUE (config, i));
 
     g_free (config->priv->values);
-    g_free (config->priv);
 
     G_OBJECT_CLASS (moo_edit_config_parent_class)->finalize (object);
 }

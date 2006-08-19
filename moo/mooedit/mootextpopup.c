@@ -99,7 +99,6 @@ moo_text_popup_dispose (GObject *object)
         if (popup->priv->window)
             gtk_widget_destroy (popup->priv->window);
 
-        g_free (popup->priv);
         popup->priv = NULL;
     }
 
@@ -118,6 +117,8 @@ moo_text_popup_class_init (MooTextPopupClass *klass)
 
     klass->show = moo_text_popup_show_real;
     klass->hide = moo_text_popup_hide_real;
+
+    g_type_class_add_private (klass, sizeof (MooTextPopupPrivate));
 
     g_object_class_install_property (gobject_class,
                                      PROP_HIDE_ON_ACTIVATE,
@@ -202,7 +203,7 @@ moo_text_popup_class_init (MooTextPopupClass *klass)
 static void
 moo_text_popup_init (MooTextPopup *popup)
 {
-    popup->priv = g_new0 (MooTextPopupPrivate, 1);
+    popup->priv = G_TYPE_INSTANCE_GET_PRIVATE (popup, MOO_TYPE_TEXT_POPUP, MooTextPopupPrivate);
     popup->column = popup->priv->column = gtk_tree_view_column_new ();
 //     gtk_tree_view_column_set_sizing (popup->column,
 //                                      GTK_TREE_VIEW_COLUMN_FIXED);

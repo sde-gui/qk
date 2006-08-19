@@ -285,6 +285,8 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     klass->char_inserted = moo_text_view_char_inserted;
     klass->set_scheme = moo_text_view_set_scheme_real;
 
+    g_type_class_add_private (klass, sizeof (MooTextViewPrivate));
+
     g_object_class_install_property (gobject_class,
                                      PROP_BUFFER,
                                      g_param_spec_object ("buffer",
@@ -645,7 +647,7 @@ static void moo_text_view_init (MooTextView *view)
 {
     char *name;
 
-    view->priv = g_new0 (MooTextViewPrivate, 1);
+    view->priv = G_TYPE_INSTANCE_GET_PRIVATE (view, MOO_TYPE_TEXT_VIEW, MooTextViewPrivate);
 
     gdk_color_parse (LIGHT_BLUE, &view->priv->current_line_color);
 
@@ -764,9 +766,6 @@ moo_text_view_finalize (GObject *object)
     }
 
     g_slist_free (view->priv->line_marks);
-
-    g_free (view->priv);
-    view->priv = NULL;
 
     G_OBJECT_CLASS (moo_text_view_parent_class)->finalize (object);
 }

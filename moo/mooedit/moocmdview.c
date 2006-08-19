@@ -29,7 +29,6 @@ struct _MooCmdViewPrivate {
     GtkTextTag *stderr_tag;
 };
 
-static void      moo_cmd_view_finalize      (GObject    *object);
 static void      moo_cmd_view_destroy       (GtkObject  *object);
 static GObject  *moo_cmd_view_constructor   (GType                  type,
                                              guint                  n_construct_properties,
@@ -74,7 +73,6 @@ moo_cmd_view_class_init (MooCmdViewClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkObjectClass *gtkobject_class = GTK_OBJECT_CLASS (klass);
 
-    gobject_class->finalize = moo_cmd_view_finalize;
     gobject_class->constructor = moo_cmd_view_constructor;
 
     gtkobject_class->destroy = moo_cmd_view_destroy;
@@ -83,6 +81,8 @@ moo_cmd_view_class_init (MooCmdViewClass *klass)
     klass->cmd_exit = moo_cmd_view_cmd_exit;
     klass->stdout_line = moo_cmd_view_stdout_line;
     klass->stderr_line = moo_cmd_view_stderr_line;
+
+    g_type_class_add_private (klass, sizeof (MooCmdViewPrivate));
 
     signals[ABORT] =
             g_signal_new ("abort",
@@ -147,18 +147,7 @@ moo_cmd_view_class_init (MooCmdViewClass *klass)
 static void
 moo_cmd_view_init (MooCmdView *view)
 {
-    view->priv = g_new0 (MooCmdViewPrivate, 1);
-}
-
-
-static void
-moo_cmd_view_finalize (GObject *object)
-{
-    MooCmdView *view = MOO_CMD_VIEW (object);
-
-    g_free (view->priv);
-
-    G_OBJECT_CLASS (moo_cmd_view_parent_class)->finalize (object);
+    view->priv = G_TYPE_INSTANCE_GET_PRIVATE (view, MOO_TYPE_CMD_VIEW, MooCmdViewPrivate);
 }
 
 

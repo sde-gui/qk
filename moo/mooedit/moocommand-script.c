@@ -104,7 +104,6 @@ moo_command_script_dispose (GObject *object)
     if (cmd->priv)
     {
         ms_node_unref (cmd->priv->script);
-        g_free (cmd->priv);
         cmd->priv = NULL;
     }
 
@@ -227,6 +226,8 @@ moo_command_script_class_init (MooCommandScriptClass *klass)
     G_OBJECT_CLASS(klass)->dispose = moo_command_script_dispose;
     MOO_COMMAND_CLASS(klass)->run = moo_command_script_run;
 
+    g_type_class_add_private (klass, sizeof (MooCommandScriptPrivate));
+
     type = g_object_new (_moo_command_type_script_get_type (), NULL);
     moo_command_type_register ("MooScript", _("MooScript"), type);
     g_object_unref (type);
@@ -236,7 +237,9 @@ moo_command_script_class_init (MooCommandScriptClass *klass)
 static void
 moo_command_script_init (MooCommandScript *cmd)
 {
-    cmd->priv = g_new0 (MooCommandScriptPrivate, 1);
+    cmd->priv = G_TYPE_INSTANCE_GET_PRIVATE (cmd,
+                                             MOO_TYPE_COMMAND_SCRIPT,
+                                             MooCommandScriptPrivate);
 }
 
 

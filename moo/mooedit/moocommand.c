@@ -600,7 +600,6 @@ moo_command_context_dispose (GObject *object)
             g_object_unref (ctx->priv->window);
         if (ctx->priv->doc)
             g_object_unref (ctx->priv->doc);
-        g_free (ctx->priv);
         ctx->priv = NULL;
     }
 
@@ -661,6 +660,8 @@ moo_command_context_class_init (MooCommandContextClass *klass)
     object_class->set_property = moo_command_context_set_property;
     object_class->get_property = moo_command_context_get_property;
 
+    g_type_class_add_private (klass, sizeof (MooCommandContextPrivate));
+
     g_object_class_install_property (object_class, CTX_PROP_DOC,
                                      g_param_spec_object ("doc", "doc", "doc",
                                                           GTK_TYPE_TEXT_VIEW,
@@ -676,7 +677,7 @@ moo_command_context_class_init (MooCommandContextClass *klass)
 static void
 moo_command_context_init (MooCommandContext *ctx)
 {
-    ctx->priv = g_new0 (MooCommandContextPrivate, 1);
+    ctx->priv = G_TYPE_INSTANCE_GET_PRIVATE (ctx, MOO_TYPE_COMMAND_CONTEXT, MooCommandContextPrivate);
     ctx->priv->vars = g_hash_table_new_full (g_str_hash,
                                              g_str_equal,
                                              g_free,

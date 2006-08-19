@@ -81,6 +81,8 @@ static void moo_line_view_class_init (MooLineViewClass *klass)
     textview_class->move_cursor = moo_line_view_move_cursor;
     textview_class->populate_popup = moo_line_view_populate_popup;
 
+    g_type_class_add_private (klass, sizeof (MooLineViewPrivate));
+
     signals[ACTIVATE] =
             g_signal_new ("activate",
                           G_OBJECT_CLASS_TYPE (klass),
@@ -109,7 +111,7 @@ static void moo_line_view_class_init (MooLineViewClass *klass)
 
 static void moo_line_view_init (MooLineView *view)
 {
-    view->priv = g_new0 (MooLineViewPrivate, 1);
+    view->priv = G_TYPE_INSTANCE_GET_PRIVATE (view, MOO_TYPE_LINE_VIEW, MooLineViewPrivate);
 
     view->priv->line_data = _moo_data_new (g_direct_hash,
                                            g_direct_equal,
@@ -129,7 +131,6 @@ static void moo_line_view_finalize       (GObject      *object)
     MooLineView *view = MOO_LINE_VIEW (object);
 
     _moo_data_destroy (view->priv->line_data);
-    g_free (view->priv);
 
     G_OBJECT_CLASS (moo_line_view_parent_class)->finalize (object);
 }

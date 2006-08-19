@@ -127,6 +127,8 @@ moo_edit_class_init (MooEditClass *klass)
     klass->filename_changed = moo_edit_filename_changed;
     klass->config_notify = moo_edit_config_notify;
 
+    g_type_class_add_private (klass, sizeof (MooEditPrivate));
+
     g_object_class_install_property (gobject_class,
                                      PROP_EDITOR,
                                      g_param_spec_object ("editor",
@@ -239,7 +241,7 @@ moo_edit_init (MooEdit *edit)
     g_signal_connect_swapped (edit->config, "notify",
                               G_CALLBACK (config_changed), edit);
 
-    edit->priv = g_new0 (MooEditPrivate, 1);
+    edit->priv = G_TYPE_INSTANCE_GET_PRIVATE (edit, MOO_TYPE_EDIT, MooEditPrivate);
 
     edit->priv->file_watch_policy = MOO_EDIT_RELOAD_IF_SAFE;
 
@@ -301,8 +303,6 @@ moo_edit_finalize (GObject *object)
     g_free (edit->priv->display_basename);
     g_free (edit->priv->encoding);
     g_free (edit->priv->progress_text);
-    g_free (edit->priv);
-    edit->priv = NULL;
 
     G_OBJECT_CLASS (moo_edit_parent_class)->finalize (object);
 }

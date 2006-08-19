@@ -173,6 +173,8 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
 
     klass->cursor_moved = moo_text_buffer_cursor_moved;
 
+    g_type_class_add_private (klass, sizeof (MooTextBufferPrivate));
+
     g_object_class_install_property (gobject_class,
                                      PROP_HIGHLIGHT_MATCHING_BRACKETS,
                                      g_param_spec_boolean ("highlight-matching-brackets",
@@ -333,7 +335,8 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
 static void
 moo_text_buffer_init (MooTextBuffer *buffer)
 {
-    buffer->priv = g_new0 (MooTextBufferPrivate, 1);
+    buffer->priv = G_TYPE_INSTANCE_GET_PRIVATE (buffer, MOO_TYPE_TEXT_BUFFER, MooTextBufferPrivate);
+
     buffer->priv->line_buf = _moo_line_buffer_new ();
     buffer->priv->do_highlight = TRUE;
     buffer->priv->hl = _moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
@@ -387,9 +390,6 @@ moo_text_buffer_finalize (GObject *object)
                                           (gpointer) after_undo_redo,
                                           buffer);
     g_object_unref (buffer->priv->undo_stack);
-
-    g_free (buffer->priv);
-    buffer->priv = NULL;
 
     G_OBJECT_CLASS (moo_text_buffer_parent_class)->finalize (object);
 }
