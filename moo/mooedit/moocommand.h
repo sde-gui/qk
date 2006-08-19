@@ -173,6 +173,11 @@ gboolean            moo_command_context_get     (MooCommandContext  *ctx,
                                                  GValue             *value);
 void                moo_command_context_unset   (MooCommandContext  *ctx,
                                                  const char         *name);
+void                moo_command_context_set_string (MooCommandContext *ctx,
+                                                 const char         *name,
+                                                 const char         *value);
+const char         *moo_command_context_get_string (MooCommandContext *ctx,
+                                                 const char         *name);
 
 typedef void (*MooCommandContextForeachFunc)    (const char         *name,
                                                  const GValue       *value,

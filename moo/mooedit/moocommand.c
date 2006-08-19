@@ -515,6 +515,27 @@ moo_command_context_set (MooCommandContext  *ctx,
 }
 
 
+void
+moo_command_context_set_string (MooCommandContext *ctx,
+                                const char        *name,
+                                const char        *value)
+{
+    if (value)
+    {
+        GValue gval;
+        gval.g_type = 0;
+        g_value_init (&gval, G_TYPE_STRING);
+        g_value_set_string (&gval, value);
+        moo_command_context_set (ctx, name, &gval);
+        g_value_unset (&gval);
+    }
+    else
+    {
+        moo_command_context_unset (ctx, name);
+    }
+}
+
+
 gboolean
 moo_command_context_get (MooCommandContext  *ctx,
                          const char         *name,
@@ -525,6 +546,7 @@ moo_command_context_get (MooCommandContext  *ctx,
     g_return_val_if_fail (MOO_IS_COMMAND_CONTEXT (ctx), FALSE);
     g_return_val_if_fail (name != NULL, FALSE);
     g_return_val_if_fail (value != NULL, FALSE);
+    g_return_val_if_fail (G_VALUE_TYPE (value) == 0, FALSE);
 
     var = g_hash_table_lookup (ctx->priv->vars, name);
 
@@ -534,6 +556,25 @@ moo_command_context_get (MooCommandContext  *ctx,
     g_value_init (value, G_VALUE_TYPE (&var->value));
     g_value_copy (&var->value, value);
     return TRUE;
+}
+
+
+const char *
+moo_command_context_get_string (MooCommandContext  *ctx,
+                                const char         *name)
+{
+    Variable *var;
+
+    g_return_val_if_fail (MOO_IS_COMMAND_CONTEXT (ctx), NULL);
+    g_return_val_if_fail (name != NULL, NULL);
+
+    var = g_hash_table_lookup (ctx->priv->vars, name);
+
+    if (!var)
+        return NULL;
+
+    g_return_val_if_fail (G_VALUE_TYPE (&var->value) == G_TYPE_STRING, NULL);
+    return g_value_get_string (&var->value);
 }
 
 

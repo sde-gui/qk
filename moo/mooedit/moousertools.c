@@ -256,8 +256,7 @@ check_info (MooUserToolInfo *info,
 }
 
 static void
-load_tool_func (MooUserToolInfo *info,
-                G_GNUC_UNUSED gpointer user_data)
+load_tool (MooUserToolInfo *info)
 {
     ToolInfo *tool_info;
     gpointer klass = NULL;
@@ -376,16 +375,24 @@ load_tool_func (MooUserToolInfo *info,
 void
 _moo_edit_load_user_tools (MooUserToolType type)
 {
+    GSList *list;
+
     unload_user_tools (type);
-    _moo_edit_parse_user_tools (type, load_tool_func, NULL);
+
+    list = _moo_edit_parse_user_tools (type);
+
+    while (list)
+    {
+        load_tool (list->data);
+        _moo_user_tool_info_unref (list->data);
+        list = g_slist_delete_link (list, list);
+    }
 }
 
 
-static void
+static MooUserToolInfo *
 parse_element (MooMarkupNode       *node,
                MooUserToolType      type,
-               MooToolFileParseFunc func,
-               gpointer             data,
                const char          *file)
 {
     const char *os;
@@ -393,17 +400,16 @@ parse_element (MooMarkupNode       *node,
     MooMarkupNode *cmd_node, *child;
     MooUserToolInfo *info;
 
+    if (strcmp (node->name, ELEMENT_TOOL))
+    {
+        g_warning ("invalid element %s in file %s", node->name, file);
+        return NULL;
+    }
+
     info = _moo_user_tool_info_new ();
     info->type = type;
     info->file = g_strdup (file);
     info->position = MOO_USER_TOOL_POS_END;
-
-    if (strcmp (node->name, ELEMENT_TOOL))
-    {
-        g_warning ("invalid element %s in file %s", node->name, file);
-        return;
-    }
-
     info->name = g_strdup (moo_markup_get_prop (node, PROP_NAME));
 
     info->enabled = moo_markup_get_bool_prop (node, PROP_ENABLED, TRUE);
@@ -427,7 +433,7 @@ parse_element (MooMarkupNode       *node,
                 g_warning ("duplicated element '%s' in tool %s in file %s",
                            child->name, info->name, file);
                 _moo_user_tool_info_unref (info);
-                return;
+                return NULL;
             }
 
             info->filter = g_strdup (moo_markup_get_content (child));
@@ -439,7 +445,7 @@ parse_element (MooMarkupNode       *node,
                 g_warning ("duplicated element '%s' in tool %s in file %s",
                            child->name, info->name, file);
                 _moo_user_tool_info_unref (info);
-                return;
+                return NULL;
             }
 
             info->accel = g_strdup (moo_markup_get_content (child));
@@ -455,7 +461,7 @@ parse_element (MooMarkupNode       *node,
                 g_warning ("duplicated element '%s' in tool %s in file %s",
                            child->name, info->name, file);
                 _moo_user_tool_info_unref (info);
-                return;
+                return NULL;
             }
 
             info->menu = g_strdup (moo_markup_get_content (child));
@@ -467,7 +473,7 @@ parse_element (MooMarkupNode       *node,
                 g_warning ("duplicated element '%s' in tool %s in file %s",
                            child->name, info->name, file);
                 _moo_user_tool_info_unref (info);
-                return;
+                return NULL;
             }
 
             info->langs = g_strdup (moo_markup_get_content (child));
@@ -496,7 +502,7 @@ parse_element (MooMarkupNode       *node,
     {
         g_warning ("command missing for tool '%s' in file %s", info->name, file);
         _moo_user_tool_info_unref (info);
-        return;
+        return NULL;
     }
 
     info->cmd_data = _moo_command_parse_markup (cmd_node, &info->cmd_type, &info->options);
@@ -505,62 +511,64 @@ parse_element (MooMarkupNode       *node,
     {
         g_warning ("could not get command data for tool '%s' in file %s", info->name, file);
         _moo_user_tool_info_unref (info);
-        return;
+        return NULL;
     }
 
-    func (info, data);
-
-    _moo_user_tool_info_unref (info);
+    return info;
 }
 
 
-static void
+static GSList *
 parse_doc (MooMarkupDoc        *doc,
-           MooUserToolType      type,
-           MooToolFileParseFunc func,
-           gpointer             data)
+           MooUserToolType      type)
 {
     MooMarkupNode *root, *child;
+    GSList *list = NULL;
 
     root = moo_markup_get_root_element (doc, ELEMENT_TOOLS);
 
     if (!root)
     {
         g_warning ("no '" ELEMENT_TOOLS "' element in file '%s'", doc->name);
-        return;
+        return NULL;
     }
 
     for (child = root->children; child != NULL; child = child->next)
     {
         if (MOO_MARKUP_IS_ELEMENT (child))
-            parse_element (child, type, func, data, doc->name);
+        {
+            MooUserToolInfo *info = parse_element (child, type, doc->name);
+
+            if (info)
+                list = g_slist_prepend (list, info);
+        }
     }
+
+    return g_slist_reverse (list);
 }
 
 
-void
-_moo_edit_parse_user_tools (MooUserToolType        type,
-                            MooToolFileParseFunc   func,
-                            gpointer               data)
+GSList *
+_moo_edit_parse_user_tools (MooUserToolType type)
 {
     char *file;
     MooMarkupDoc *doc;
     GError *error = NULL;
+    GSList *list = NULL;
 
-    g_return_if_fail (type < N_TOOLS);
-    g_return_if_fail (func != NULL);
+    g_return_val_if_fail (type < N_TOOLS, NULL);
 
     _moo_command_init ();
     file = find_user_tools_file (type);
 
     if (!file)
-        return;
+        return NULL;
 
     doc = moo_markup_parse_file (file, &error);
 
     if (doc)
     {
-        parse_doc (doc, type, func, data);
+        list = parse_doc (doc, type);
         moo_markup_doc_unref (doc);
     }
     else
@@ -570,6 +578,7 @@ _moo_edit_parse_user_tools (MooUserToolType        type,
     }
 
     g_free (file);
+    return list;
 }
 
 
@@ -821,13 +830,63 @@ _moo_tool_action_class_init (MooToolActionClass *klass)
 }
 
 
+static void
+get_extension (const char *string,
+               char      **base,
+               char      **ext)
+{
+    char *dot;
+
+    g_return_if_fail (string != NULL);
+
+    dot = strrchr (string, '.');
+
+    if (dot)
+    {
+        *base = g_strndup (string, dot - string);
+        *ext = g_strdup (dot);
+    }
+    else
+    {
+        *base = g_strdup (string);
+        *ext = g_strdup ("");
+    }
+}
+
 static MooCommandContext *
 create_command_context (gpointer window,
                         gpointer doc)
 {
     MooCommandContext *ctx;
+    char *user_dir;
 
     ctx = moo_command_context_new (doc, window);
 
+    if (MOO_IS_EDIT (doc) && moo_edit_get_filename (doc))
+    {
+        const char *filename, *basename;
+        char *dirname, *base, *extension;
+
+        filename = moo_edit_get_filename (doc);
+        basename = moo_edit_get_basename (doc);
+        dirname = g_path_get_dirname (filename);
+        get_extension (basename, &base, &extension);
+
+        moo_command_context_set_string (ctx, "DOC", filename);
+        moo_command_context_set_string (ctx, "DOC_DIR", dirname);
+        moo_command_context_set_string (ctx, "DOC_BASE", base);
+        moo_command_context_set_string (ctx, "DOC_EXT", extension);
+
+        g_free (dirname);
+        g_free (base);
+        g_free (extension);
+    }
+
+    user_dir = moo_get_user_data_dir ();
+
+    moo_command_context_set_string (ctx, "DATA_DIR", user_dir);
+    moo_command_context_set_string (ctx, "APP_PID", _moo_get_pid_string ());
+
+    g_free (user_dir);
     return ctx;
 }

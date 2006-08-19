@@ -67,24 +67,27 @@ get_helper (MooPrefsDialogPage *page)
 
 
 static void
-tool_parse_func (MooUserToolInfo *info,
-                 gpointer         data)
-{
-    GtkTreeIter iter;
-    GtkListStore *store = data;
-
-    if (info->os_type == MOO_USER_TOOL_THIS_OS)
-    {
-        gtk_list_store_append (store, &iter);
-        gtk_list_store_set (store, &iter, COLUMN_INFO, info, -1);
-    }
-}
-
-static void
 populate_store (GtkListStore   *store,
                 MooUserToolType type)
 {
-    _moo_edit_parse_user_tools (type, tool_parse_func, store);
+    GtkTreeIter iter;
+    GSList *list;
+
+    list = _moo_edit_parse_user_tools (type);
+
+    while (list)
+    {
+        MooUserToolInfo *info = list->data;
+
+        if (info->os_type == MOO_USER_TOOL_THIS_OS)
+        {
+            gtk_list_store_append (store, &iter);
+            gtk_list_store_set (store, &iter, COLUMN_INFO, info, -1);
+        }
+
+        _moo_user_tool_info_unref (info);
+        list = g_slist_delete_link (list, list);
+    }
 }
 
 
@@ -95,6 +98,7 @@ new_row (MooPrefsDialogPage *page,
 {
     GtkTreeIter iter;
     MooUserToolInfo *info;
+    GtkTreeViewColumn *column;
 
     info = _moo_user_tool_info_new ();
     info->cmd_data = moo_command_data_new ();
@@ -106,6 +110,9 @@ new_row (MooPrefsDialogPage *page,
     gtk_list_store_insert (GTK_LIST_STORE (model), &iter,
                            gtk_tree_path_get_indices(path)[0]);
     gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_INFO, info, -1);
+
+    column = gtk_tree_view_get_column (GET_WID ("treeview"), 0);
+    gtk_tree_view_set_cursor (GET_WID ("treeview"), path, column, TRUE);
 
     _moo_user_tool_info_unref (info);
     return TRUE;
@@ -244,6 +251,35 @@ name_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
 }
 
 static void
+name_cell_edited (MooPrefsDialogPage *page,
+                  char               *path_string,
+                  char               *text)
+{
+    GtkTreeModel *model;
+    GtkTreePath *path;
+    GtkTreeIter iter;
+    MooUserToolInfo *info = NULL;
+
+    path = gtk_tree_path_new_from_string (path_string);
+    model = gtk_tree_view_get_model (GET_WID ("treeview"));
+
+    if (gtk_tree_model_get_iter (model, &iter, path))
+    {
+        gtk_tree_model_get (model, &iter, COLUMN_INFO, &info, -1);
+        g_return_if_fail (info != NULL);
+
+        if (strcmp (info->name ? info->name : "", text) != 0)
+        {
+            set_changed (page, TRUE);
+            g_free (info->name);
+            info->name = g_strdup (text);
+        }
+    }
+
+    gtk_tree_path_free (path);
+}
+
+static void
 command_page_init (MooPrefsDialogPage *page,
                    MooUserToolType     type)
 {
@@ -272,6 +308,8 @@ command_page_init (MooPrefsDialogPage *page,
                                              (GtkTreeCellDataFunc) name_data_func,
                                              NULL, NULL);
     gtk_tree_view_append_column (treeview, column);
+    g_object_set (cell, "editable", TRUE, NULL);
+    g_signal_connect_swapped (cell, "edited", G_CALLBACK (name_cell_edited), page);
 
     populate_store (store, type);
 

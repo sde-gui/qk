@@ -1,5 +1,5 @@
 <tools>
-  <tool name="_Switch Header And Implementation">
+  <tool name="Switch Header And Implementation">
     <langs>C, GAP</langs>
     <command type="MooScript" options="need-file">
       <code>extensions = [[['.h', '.hh', '.hpp', '.hxx', '.H'], ['.c', '.cc', '.cpp', '.cxx', '.C']],

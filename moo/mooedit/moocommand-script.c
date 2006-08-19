@@ -11,13 +11,16 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#define MOOEDIT_COMPILATION
 #include "mooedit/moocommand-script.h"
 #include "mooedit/mooedit-script.h"
 #include "mooedit/mooedittools-glade.h"
 #include "mooedit/mooeditor.h"
+#include "mooedit/mootext-private.h"
 #include "mooscript/mooscript-parser.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooglade.h"
+#include "mooutils/mooundo.h"
 #include <string.h>
 
 
@@ -53,6 +56,8 @@ static void
 moo_command_script_run (MooCommand        *cmd_base,
                         MooCommandContext *ctx)
 {
+    gpointer doc;
+    MooUndoStack *undo_stack = NULL;
     MSValue *ret;
     MSContext *script_ctx;
     MooCommandScript *cmd = MOO_COMMAND_SCRIPT (cmd_base);
@@ -65,7 +70,20 @@ moo_command_script_run (MooCommand        *cmd_base,
 
     moo_command_context_foreach (ctx, set_variable, script_ctx);
 
+    doc = moo_command_context_get_doc (ctx);
+    if (MOO_IS_TEXT_VIEW (doc))
+    {
+        MooTextBuffer *buffer = MOO_TEXT_BUFFER (gtk_text_view_get_buffer (doc));
+        undo_stack = _moo_text_buffer_get_undo_stack (buffer);
+    }
+
+    if (undo_stack)
+        moo_undo_stack_start_group (undo_stack);
+
     ret = ms_top_node_eval (cmd->priv->script, script_ctx);
+
+    if (undo_stack)
+        moo_undo_stack_end_group (undo_stack);
 
     if (!ret)
     {
