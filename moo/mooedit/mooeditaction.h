@@ -1,5 +1,5 @@
 /*
- *   mooedit-actions.h
+ *   mooeditaction.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,11 +11,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_EDIT_ACTIONS_H__
-#define __MOO_EDIT_ACTIONS_H__
+#ifndef __MOO_EDIT_ACTION_H__
+#define __MOO_EDIT_ACTION_H__
 
 #include <mooutils/mooaction.h>
-#include <mooutils/moouixml.h>
 #include <mooedit/mooedit.h>
 
 G_BEGIN_DECLS
@@ -40,9 +39,7 @@ typedef enum {
 struct _MooEditAction
 {
     MooAction parent;
-    MooEdit *doc;
-    GSList *langs;
-    MooEditActionFlags flags;
+    MooEditActionPrivate *priv;
 };
 
 struct _MooEditActionClass
@@ -53,31 +50,15 @@ struct _MooEditActionClass
 };
 
 
-typedef GtkAction *(*MooEditActionFunc)     (MooEdit            *edit,
-                                             gpointer            data);
-
 GType   moo_edit_action_get_type            (void) G_GNUC_CONST;
 GType   moo_edit_action_flags_get_type      (void) G_GNUC_CONST;
 
-void    moo_edit_class_new_action           (MooEditClass       *klass,
-                                             const char         *id,
-                                             const char         *first_prop_name,
-                                             ...) G_GNUC_NULL_TERMINATED;
-void    moo_edit_class_new_action_type      (MooEditClass       *klass,
-                                             const char         *id,
-                                             GType               type);
-
-void    moo_edit_class_remove_action        (MooEditClass       *klass,
-                                             const char         *id);
-
-GtkActionGroup *moo_edit_get_actions        (MooEdit            *edit);
-GtkAction *moo_edit_get_action_by_id        (MooEdit            *edit,
-                                             const char         *action_id);
+MooEdit *moo_edit_action_get_doc            (MooEditAction  *action);
 
 /* defined in mooeditwindow.c */
-GSList *_moo_edit_parse_langs               (const char         *string);
+GSList *_moo_edit_parse_langs               (const char     *string);
 
 
 G_END_DECLS
 
-#endif /* __MOO_EDIT_ACTIONS_H__ */
+#endif /* __MOO_EDIT_ACTION_H__ */

@@ -14,7 +14,8 @@
 #include "mooedit/moousertools.h"
 #include "mooedit/moocommand.h"
 #include "mooedit/mooeditor.h"
-#include "mooedit/mooedit-actions.h"
+#include "mooedit/mooeditaction.h"
+#include "mooedit/mooeditaction-factory.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooaccel.h"
 #include "mooutils/mooi18n.h"
@@ -763,9 +764,10 @@ moo_tool_action_activate (GtkAction *gtkaction)
 
     g_return_if_fail (action->cmd != NULL);
 
-    if (edit_action->doc)
+    doc = moo_edit_action_get_doc (edit_action);
+
+    if (doc)
     {
-        doc = edit_action->doc;
         window = moo_edit_get_window (doc);
     }
     else
@@ -788,6 +790,7 @@ moo_tool_action_check_state (MooEditAction *edit_action)
 {
     gboolean sensitive;
     MooToolAction *action = MOO_TOOL_ACTION (edit_action);
+    MooEdit *doc;
 
     g_return_if_fail (action->cmd != NULL);
 
@@ -796,9 +799,8 @@ moo_tool_action_check_state (MooEditAction *edit_action)
     if (!gtk_action_is_visible (GTK_ACTION (action)))
         return;
 
-    sensitive = moo_command_check_sensitive (action->cmd,
-                                             edit_action->doc,
-                                             moo_edit_get_window (edit_action->doc));
+    doc = moo_edit_action_get_doc (edit_action);
+    sensitive = moo_command_check_sensitive (action->cmd, doc, moo_edit_get_window (doc));
 
     g_object_set (action, "sensitive", sensitive, NULL);
 }

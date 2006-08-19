@@ -19,7 +19,6 @@ completion =                           \
 
 mooedit_include_headers =              \
 	moocmdview.h                   \
-	mooedit-actions.h              \
 	mooedit-script.h               \
 	mooedit.h                      \
 	mooeditconfig.h                \
@@ -81,7 +80,10 @@ mooedit_sources =                      \
 	$(moocommand_stuff)            \
 	gtksourceiter.c                \
 	moocmdview.c                   \
-	mooedit-actions.c              \
+	mooeditaction.h                \
+	mooeditaction.c                \
+	mooeditaction-factory.h        \
+	mooeditaction-factory.c        \
 	mooedit-script.c               \
 	mooedit.c                      \
 	mooeditconfig.c                \

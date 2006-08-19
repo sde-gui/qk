@@ -12,7 +12,7 @@
  */
 
 #define MOOEDIT_COMPILATION
-#include "mooedit/mooedit-actions.h"
+#include "mooedit/mooeditaction-factory.h"
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mootextview-private.h"
 #include "mooedit/mooeditdialogs.h"

@@ -1,5 +1,5 @@
 /*
- *   mooedit-actions.c
+ *   mooeditaction-factory.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -12,13 +12,13 @@
  */
 
 #define MOOEDIT_COMPILATION
-#include "mooedit/mooedit-actions.h"
+#include "mooedit/mooeditaction-factory.h"
+#include "mooedit/mooeditaction.h"
 #include "mooedit/mooedit-private.h"
 #include "mooutils/mooutils-gobject.h"
-#include "mooutils/moocompat.h"
-#include "mooutils/moomarshals.h"
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/mooactionbase.h"
+#include "mooutils/moocompat.h"
 #include <string.h>
 #include <gobject/gvaluecollector.h>
 
@@ -627,190 +627,6 @@ _moo_edit_class_init_actions (MooEditClass *klass)
                                "closure-callback", moo_text_view_select_all,
                                "condition::sensitive", "has-text",
                                NULL);
-}
-
-
-/****************************************************************************/
-/* MooEditAction
- */
-
-G_DEFINE_TYPE (MooEditAction, moo_edit_action, MOO_TYPE_ACTION);
-
-enum {
-    PROP_0,
-    PROP_DOC,
-    PROP_FLAGS,
-    PROP_LANGS
-};
-
-static void
-moo_edit_action_finalize (GObject *object)
-{
-    MooEditAction *action = MOO_EDIT_ACTION (object);
-    g_slist_foreach (action->langs, (GFunc) g_free, NULL);
-    g_slist_free (action->langs);
-    G_OBJECT_CLASS(moo_edit_action_parent_class)->finalize (object);
-}
-
-
-static void
-moo_edit_action_get_property (GObject        *object,
-                              guint           prop_id,
-                              GValue         *value,
-                              GParamSpec     *pspec)
-{
-    MooEditAction *action = MOO_EDIT_ACTION (object);
-
-    switch (prop_id)
-    {
-        case PROP_DOC:
-            g_value_set_object (value, action->doc);
-            break;
-
-        case PROP_FLAGS:
-            g_value_set_flags (value, action->flags);
-            break;
-
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-    }
-}
-
-
-static void
-string_slist_free (GSList *list)
-{
-    g_slist_foreach (list, (GFunc) g_free, NULL);
-    g_slist_free (list);
-}
-
-
-static void
-moo_edit_action_set_langs (MooEditAction *action,
-                           const char    *string)
-{
-    string_slist_free (action->langs);
-    action->langs = _moo_edit_parse_langs (string);
-    g_object_notify (G_OBJECT (action), "langs");
-}
-
-
-static void
-moo_edit_action_set_property (GObject        *object,
-                              guint           prop_id,
-                              const GValue   *value,
-                              GParamSpec     *pspec)
-{
-    MooEditAction *action = MOO_EDIT_ACTION (object);
-
-    switch (prop_id)
-    {
-        case PROP_DOC:
-            action->doc = g_value_get_object (value);
-            g_object_notify (object, "doc");
-            break;
-
-        case PROP_FLAGS:
-            action->flags = g_value_get_flags (value);
-            g_object_notify (object, "flags");
-            break;
-
-        case PROP_LANGS:
-            moo_edit_action_set_langs (action, g_value_get_string (value));
-            break;
-
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-    }
-}
-
-
-static void
-moo_edit_action_init (G_GNUC_UNUSED MooEditAction *action)
-{
-}
-
-
-static void
-moo_edit_action_check_state_real (MooEditAction *action)
-{
-    gboolean sensitive = TRUE, visible = TRUE;
-
-    g_return_if_fail (action->doc != NULL);
-
-    if (action->langs)
-    {
-        MooLang *lang = moo_text_view_get_lang (MOO_TEXT_VIEW (action->doc));
-
-        if (!g_slist_find_custom (action->langs, moo_lang_id (lang),
-                                  (GCompareFunc) strcmp))
-        {
-            sensitive = FALSE;
-            visible = FALSE;
-        }
-    }
-
-    if (sensitive && action->flags)
-        sensitive = (action->flags & MOO_EDIT_ACTION_NEED_FILE) ?
-                        moo_edit_get_filename (action->doc) != NULL : TRUE;
-
-    g_object_set (action, "visible", visible, "sensitive", sensitive, NULL);
-}
-
-
-static void
-moo_edit_action_class_init (MooEditActionClass *klass)
-{
-    GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-
-    gobject_class->finalize = moo_edit_action_finalize;
-    gobject_class->set_property = moo_edit_action_set_property;
-    gobject_class->get_property = moo_edit_action_get_property;
-
-    klass->check_state = moo_edit_action_check_state_real;
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_DOC,
-                                     g_param_spec_object ("doc",
-                                             "doc",
-                                             "doc",
-                                             MOO_TYPE_EDIT,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_FLAGS,
-                                     g_param_spec_flags ("flags",
-                                             "flags",
-                                             "flags",
-                                             MOO_TYPE_EDIT_ACTION_FLAGS, 0,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_LANGS,
-                                     g_param_spec_string ("langs",
-                                             "langs",
-                                             "langs",
-                                             NULL,
-                                             G_PARAM_WRITABLE));
-}
-
-
-GType
-moo_edit_action_flags_get_type (void)
-{
-    static GType type;
-
-    if (!type)
-    {
-        static GFlagsValue values[] = {
-            { MOO_EDIT_ACTION_NEED_FILE, (char*) "MOO_EDIT_ACTION_NEED_FILE", (char*) "need-file" },
-            { 0, NULL, NULL },
-        };
-
-        type = g_flags_register_static ("MooEditActionFlags", values);
-    }
-
-    return type;
 }
 
 

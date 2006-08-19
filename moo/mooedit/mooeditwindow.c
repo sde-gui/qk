@@ -24,7 +24,7 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooplugin.h"
 #include "mooedit/moocmdview.h"
-#include "mooedit/mooedit-actions.h"
+#include "mooedit/mooeditaction.h"
 #include "mooutils/moonotebook.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moomarshals.h"

@@ -87,10 +87,6 @@
   (parent "GtkAction")
   (c-name "MooEditAction")
   (gtype-id "MOO_TYPE_EDIT_ACTION")
-  (fields
-    '("MooEdit*" "doc")
-    '("MooEditActionFlags" "flags")
-  )
 )
 
 (define-object TextStyleScheme
@@ -1452,6 +1448,12 @@
 ;  (is-constructor-of "MooEditAction")
 ;  (return-type "GtkAction*")
 ;)
+
+(define-method get_doc
+  (of-object "MooEditAction")
+  (c-name "moo_edit_action_get_doc")
+  (return-type "MooEdit*")
+)
 
 (define-virtual check_state
   (of-object "MooEditAction")
