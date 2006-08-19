@@ -283,6 +283,9 @@ moo_editor_init (MooEditor *editor)
     moo_history_list_set_display_func (editor->priv->history,
                                        moo_history_list_display_basename,
                                        NULL);
+    moo_history_list_set_tip_func (editor->priv->history,
+                                   moo_history_list_display_filename,
+                                   NULL);
     g_signal_connect_swapped (editor->priv->history, "activate-item",
                               G_CALLBACK (activate_history_item), editor);
 
@@ -878,6 +881,7 @@ create_recent_action (MooEditWindow  *window)
 
     action = moo_menu_action_new (RECENT_ACTION_ID, "Open Recent");
     mgr = moo_history_list_get_menu_mgr (editor->priv->history);
+    moo_menu_mgr_set_show_tooltips (mgr, TRUE);
     moo_menu_action_set_mgr (MOO_MENU_ACTION (action), mgr);
     moo_menu_action_set_menu_data (MOO_MENU_ACTION (action), window, TRUE);
 

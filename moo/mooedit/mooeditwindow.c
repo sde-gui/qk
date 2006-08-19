@@ -2681,19 +2681,21 @@ create_lang_action (MooEditWindow      *window)
     menu_mgr = moo_menu_action_get_mgr (MOO_MENU_ACTION (action));
 
     moo_menu_mgr_append (menu_mgr, NULL,
-                         MOO_LANG_NONE, "None",
+                         MOO_LANG_NONE, "None", NULL,
                          MOO_MENU_ITEM_RADIO, NULL, NULL);
 
     for (l = sections; l != NULL; l = l->next)
         moo_menu_mgr_append (menu_mgr, NULL,
-                             l->data, l->data, 0, NULL, NULL);
+                             l->data, l->data, NULL,
+                             0, NULL, NULL);
 
     for (l = langs; l != NULL; l = l->next)
     {
         MooLang *lang = l->data;
         if (!lang->hidden)
             moo_menu_mgr_append (menu_mgr, lang->section,
-                                 lang->id, lang->display_name, MOO_MENU_ITEM_RADIO,
+                                 lang->id, lang->display_name, NULL,
+                                 MOO_MENU_ITEM_RADIO,
                                  g_strdup (lang->id), g_free);
     }
 

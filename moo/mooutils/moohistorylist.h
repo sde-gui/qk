@@ -88,6 +88,9 @@ void             moo_history_list_remove            (MooHistoryList *list,
 void             moo_history_list_set_display_func  (MooHistoryList *list,
                                                      MooHistoryDisplayFunc func,
                                                      gpointer        data);
+void             moo_history_list_set_tip_func      (MooHistoryList *list,
+                                                     MooHistoryDisplayFunc func,
+                                                     gpointer        data);
 void             moo_history_list_set_compare_func  (MooHistoryList *list,
                                                      MooHistoryCompareFunc func,
                                                      gpointer        data);

@@ -751,7 +751,8 @@ create_toolbar_style_action (MooWindow      *window,
 
     for (i = 0; i < N_STYLES; ++i)
         moo_menu_mgr_append (menu_mgr, NULL,
-                             ids[i], labels[i], MOO_MENU_ITEM_RADIO,
+                             ids[i], labels[i], NULL,
+                             MOO_MENU_ITEM_RADIO,
                              GINT_TO_POINTER (i), NULL);
 
     style = get_toolbar_style (window);

@@ -38,6 +38,8 @@ struct _MooHistoryListPrivate {
 
     MooHistoryDisplayFunc display_func;
     gpointer display_data;
+    MooHistoryDisplayFunc tip_func;
+    gpointer tip_data;
     MooHistoryCompareFunc compare_func;
     gpointer compare_data;
     gboolean allow_empty;
@@ -341,6 +343,19 @@ list_get_display (MooHistoryList     *list,
 }
 
 
+static char*
+list_get_tip (MooHistoryList     *list,
+              const char         *item)
+{
+    g_return_val_if_fail (item != NULL, NULL);
+
+    if (list->priv->tip_func)
+        return list->priv->tip_func (item, list->priv->tip_data);
+    else
+        return NULL;
+}
+
+
 void
 moo_history_list_add_builtin (MooHistoryList *list,
                               const char     *item,
@@ -556,6 +571,17 @@ moo_history_list_set_display_func (MooHistoryList *list,
 
 
 void
+moo_history_list_set_tip_func (MooHistoryList *list,
+                               MooHistoryDisplayFunc func,
+                               gpointer        data)
+{
+    g_return_if_fail (MOO_IS_HISTORY_LIST (list));
+    list->priv->tip_func = func;
+    list->priv->tip_data = data;
+}
+
+
+void
 moo_history_list_set_compare_func  (MooHistoryList *list,
                                     MooHistoryCompareFunc func,
                                     gpointer        data)
@@ -710,18 +736,26 @@ _list_insert (MooHistoryList     *list,
               const Item         *entry)
 {
     GtkTreeIter iter;
+    char *tip = NULL;
 
     gtk_list_store_insert (list->priv->store, &iter, index);
     gtk_list_store_set (list->priv->store, &iter, 0, entry, -1);
 
     if (entry)
+    {
+        tip = list_get_tip (list, entry->data);
         moo_menu_mgr_insert (list->priv->mgr,
                              NULL, index, NULL,
-                             entry->display, MOO_MENU_ITEM_ACTIVATABLE,
+                             entry->display, tip, MOO_MENU_ITEM_ACTIVATABLE,
                              moo_history_list_item_copy (entry),
                              (GDestroyNotify) moo_history_list_item_free);
+    }
     else
+    {
         moo_menu_mgr_insert_separator (list->priv->mgr, NULL, index);
+    }
+
+    g_free (tip);
 }
 
 
@@ -732,6 +766,7 @@ _list_move_on_top (MooHistoryList     *list,
     GtkTreePath *path;
     int old_index, new_index;
     Item *entry;
+    char *tip;
 
     path = gtk_tree_model_get_path (list->priv->model, iter);
     old_index = gtk_tree_path_get_indices (path)[0];
@@ -745,11 +780,12 @@ _list_move_on_top (MooHistoryList     *list,
     entry = list_get_item (list, iter);
 
     moo_menu_mgr_remove (list->priv->mgr, NULL, old_index);
+    tip = list_get_tip (list, entry->data);
 
     if (entry)
         moo_menu_mgr_insert (list->priv->mgr,
                              NULL, new_index, NULL,
-                             entry->display, MOO_MENU_ITEM_ACTIVATABLE,
+                             entry->display, tip, MOO_MENU_ITEM_ACTIVATABLE,
                              moo_history_list_item_copy (entry),
                              (GDestroyNotify) moo_history_list_item_free);
     else
@@ -759,6 +795,7 @@ _list_move_on_top (MooHistoryList     *list,
     gtk_list_store_insert (list->priv->store, iter, new_index);
     gtk_list_store_set (list->priv->store, iter, 0, entry, -1);
     moo_history_list_item_free (entry);
+    g_free (tip);
 }
 
 

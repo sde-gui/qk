@@ -14,6 +14,7 @@
 #include "mooutils/moomenumgr.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/mooutils-misc.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -21,6 +22,7 @@
 typedef struct {
     char *id;
     char *label;
+    char *tip;
     gpointer data;
     GDestroyNotify destroy;
     MooMenuItemFlags flags;
@@ -41,6 +43,7 @@ struct _MooMenuMgrPrivate {
     GSList *menus; /* Menu* */
     Item *active_item;
     guint use_mnemonic : 1;
+    guint show_tooltips : 1;
     guint frozen : 1;
     guint active_item_removed : 1;
 };
@@ -50,6 +53,7 @@ static void         moo_menu_mgr_finalize   (GObject    *object);
 
 static Item        *item_new                (const char         *id,
                                              const char         *label,
+                                             const char         *tip,
                                              gpointer            data,
                                              GDestroyNotify      destroy,
                                              MooMenuItemFlags    flags);
@@ -125,6 +129,8 @@ moo_menu_mgr_class_init (MooMenuMgrClass *klass)
 
     gobject_class->finalize = moo_menu_mgr_finalize;
 
+    g_type_class_add_private (klass, sizeof (MooMenuMgrPrivate));
+
     signals[RADIO_SET_ACTIVE] =
             g_signal_new ("radio-set-active",
                           G_OBJECT_CLASS_TYPE (klass),
@@ -160,7 +166,7 @@ moo_menu_mgr_class_init (MooMenuMgrClass *klass)
 static void
 moo_menu_mgr_init (MooMenuMgr *mgr)
 {
-    mgr->priv = g_new0 (MooMenuMgrPrivate, 1);
+    mgr->priv = G_TYPE_INSTANCE_GET_PRIVATE (mgr, MOO_TYPE_MENU_MGR, MooMenuMgrPrivate);
     mgr->priv->named_nodes =
             g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
     mgr->priv->use_mnemonic = TRUE;
@@ -189,8 +195,6 @@ moo_menu_mgr_finalize (GObject *object)
     }
 
     g_hash_table_destroy (mgr->priv->named_nodes);
-
-    g_free (mgr->priv);
 
     G_OBJECT_CLASS(moo_menu_mgr_parent_class)->finalize (object);
 }
@@ -422,6 +426,9 @@ menu_item_new (MooMenuMgr         *mgr,
             g_signal_connect (menu_item, "activate", G_CALLBACK (item_activated), mgr);
     }
 
+    if (mgr->priv->show_tooltips && item->tip)
+        _moo_widget_set_tooltip (menu_item, item->tip);
+
     gtk_widget_show (menu_item);
     object_set_data (G_OBJECT (menu_item), mgr, menu, item);
     g_hash_table_insert (menu->items, item, menu_item);
@@ -627,6 +634,7 @@ construct_menus (MooMenuMgr         *mgr,
 static Item*
 item_new (const char         *id,
           const char         *label,
+          const char         *tip,
           gpointer            data,
           GDestroyNotify      destroy,
           MooMenuItemFlags    flags)
@@ -635,6 +643,7 @@ item_new (const char         *id,
 
     item->id = g_strdup (id);
     item->label = g_strdup (label);
+    item->tip = g_strdup (tip);
     item->data = data;
     item->destroy = destroy;
     item->flags = flags;
@@ -650,6 +659,7 @@ item_free (Item               *item)
     {
         g_free (item->id);
         g_free (item->label);
+        g_free (item->tip);
         if (item->destroy)
             item->destroy (item->data);
         g_free (item);
@@ -859,6 +869,7 @@ moo_menu_mgr_insert (MooMenuMgr         *mgr,
                      int                 position,
                      const char         *item_id,
                      const char         *label,
+                     const char         *tip,
                      MooMenuItemFlags    flags,
                      gpointer            data,
                      GDestroyNotify      destroy)
@@ -876,7 +887,7 @@ moo_menu_mgr_insert (MooMenuMgr         *mgr,
         g_return_val_if_fail (parent_node != NULL, -1);
     }
 
-    item = item_new (item_id, label, data, destroy, flags);
+    item = item_new (item_id, label, tip, data, destroy, flags);
     return mgr_insert (mgr, parent_node, position, item);
 }
 
@@ -928,18 +939,27 @@ moo_menu_mgr_insert_separator (MooMenuMgr         *mgr,
                                int                 position)
 {
     return moo_menu_mgr_insert (mgr, parent_id, position,
-                                NULL, NULL,
+                                NULL, NULL, NULL,
                                 MOO_MENU_ITEM_SEPARATOR,
                                 NULL, NULL);
 }
 
 
 void
-moo_menu_mgr_set_use_mnemonic (MooMenuMgr         *mgr,
-                               gboolean            use)
+moo_menu_mgr_set_use_mnemonic (MooMenuMgr *mgr,
+                               gboolean    use)
 {
     g_return_if_fail (MOO_IS_MENU_MGR (mgr));
-    mgr->priv->use_mnemonic = use ? TRUE : FALSE;
+    mgr->priv->use_mnemonic = use != 0;
+}
+
+
+void
+moo_menu_mgr_set_show_tooltips (MooMenuMgr *mgr,
+                                gboolean    show)
+{
+    g_return_if_fail (MOO_IS_MENU_MGR (mgr));
+    mgr->priv->show_tooltips = show != 0;
 }
 
 
@@ -948,12 +968,13 @@ moo_menu_mgr_append (MooMenuMgr         *mgr,
                      const char         *parent_id,
                      const char         *item_id,
                      const char         *label,
+                     const char         *tip,
                      MooMenuItemFlags    flags,
                      gpointer            data,
                      GDestroyNotify      destroy)
 {
     return moo_menu_mgr_insert (mgr, parent_id, -1, item_id,
-                                label, flags, data, destroy);
+                                label, tip, flags, data, destroy);
 }
 
 
