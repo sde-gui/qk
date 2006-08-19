@@ -41,7 +41,7 @@
       <mainprogram>tests/medit</mainprogram>
       <directoryradio>executable</directoryradio>
       <customdirectory>/</customdirectory>
-      <programargs>--pidpid=1000</programargs>
+      <programargs>-n</programargs>
       <terminal>false</terminal>
       <autocompile>false</autocompile>
       <envvars>
@@ -224,7 +224,7 @@
   <kdevdebugger>
     <general>
       <dbgshell>libtool</dbgshell>
-      <programargs>--pidpid=1000</programargs>
+      <programargs>-n --g-fatal-warnings</programargs>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>true</floatingtoolbar>

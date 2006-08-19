@@ -232,19 +232,20 @@ void
 _moo_accel_register (const char *accel_path,
                      const char *default_accel)
 {
-    const char *old_accel;
+    char *freeme = NULL;
 
     g_return_if_fail (accel_path != NULL && default_accel != NULL);
 
     init_accel_map ();
 
-    old_accel = get_default_accel (accel_path);
-
-    if (old_accel)
-    {
-        if (strcmp (old_accel, default_accel))
-            g_warning ("%s: oops", G_STRLOC);
+    if (get_default_accel (accel_path))
         return;
+
+    if (default_accel[0])
+    {
+        freeme = _moo_accel_normalize (default_accel);
+        g_return_if_fail (freeme != NULL);
+        default_accel = freeme;
     }
 
     if (default_accel[0])
@@ -274,6 +275,8 @@ _moo_accel_register (const char *accel_path,
 
     prefs_new_accel (accel_path, default_accel);
     set_accel (accel_path, prefs_get_accel (accel_path));
+
+    g_free (freeme);
 }
 
 
@@ -281,15 +284,25 @@ void
 _moo_modify_acel (const char *accel_path,
                   const char *new_accel)
 {
+    char *freeme = NULL;
+
     g_return_if_fail (accel_path != NULL);
+    g_return_if_fail (get_accel (accel_path) != NULL);
 
     if (!new_accel)
         new_accel = "";
 
-    g_return_if_fail (get_accel (accel_path) != NULL);
+    if (new_accel[0])
+    {
+        freeme = _moo_accel_normalize (new_accel);
+        new_accel = freeme;
+        g_return_if_fail (new_accel != NULL);
+    }
 
     set_accel (accel_path, new_accel);
     prefs_set_accel (accel_path, new_accel);
+
+    g_free (freeme);
 }
 
 
