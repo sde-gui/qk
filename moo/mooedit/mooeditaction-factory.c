@@ -38,8 +38,6 @@ static void moo_edit_class_new_action_custom    (MooEditClass       *klass,
                                                  gpointer            data,
                                                  GDestroyNotify      notify);
 
-static void moo_edit_action_check_state         (MooEditAction      *action);
-
 
 #define MOO_EDIT_ACTIONS_QUARK (moo_edit_get_actions_quark ())
 
@@ -565,20 +563,6 @@ _moo_edit_add_class_actions (MooEdit *edit)
 
 
 void
-_moo_edit_check_actions (MooEdit *edit)
-{
-    GList *actions = moo_action_collection_list_actions (edit->priv->actions);
-
-    while (actions)
-    {
-        if (MOO_IS_EDIT_ACTION (actions->data))
-            moo_edit_action_check_state (actions->data);
-        actions = g_list_delete_link (actions, actions);
-    }
-}
-
-
-void
 _moo_edit_class_init_actions (MooEditClass *klass)
 {
     moo_edit_class_new_action (klass, "Undo",
@@ -627,13 +611,4 @@ _moo_edit_class_init_actions (MooEditClass *klass)
                                "closure-callback", moo_text_view_select_all,
                                "condition::sensitive", "has-text",
                                NULL);
-}
-
-
-static void
-moo_edit_action_check_state (MooEditAction *action)
-{
-    g_return_if_fail (MOO_IS_EDIT_ACTION (action));
-    g_return_if_fail (MOO_EDIT_ACTION_GET_CLASS (action)->check_state != NULL);
-    MOO_EDIT_ACTION_GET_CLASS (action)->check_state (action);
 }
