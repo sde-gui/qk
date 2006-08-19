@@ -1138,6 +1138,25 @@ _moo_menu_item_set_label (GtkWidget  *item,
 /* data dirs
  */
 
+const char *
+_moo_get_pid_string (void)
+{
+    static char *string;
+
+    if (!string)
+    {
+#ifdef __WIN32__
+#warning "Implement me"
+        string = g_strdup ("");
+#else
+        string = g_strdup_printf ("%d", getpid ());
+#endif
+    }
+
+    return string;
+}
+
+
 #ifdef __WIN32__
 char *
 moo_get_app_dir (void)

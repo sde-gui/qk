@@ -105,6 +105,8 @@ void        _moo_widget_set_tooltip         (GtkWidget      *widget,
 
 char      **_moo_splitlines                 (const char     *string);
 
+const char *_moo_get_pid_string             (void);
+
 
 G_END_DECLS
 
