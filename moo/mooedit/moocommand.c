@@ -14,6 +14,7 @@
 #include "mooedit/moocommand-script.h"
 #include "mooedit/moocommand-exe.h"
 #include "mooedit/mooeditwindow.h"
+#include "mooedit/mooedit-enums.h"
 #include <gtk/gtkwindow.h>
 #include <gtk/gtktextview.h>
 #include <string.h>
@@ -410,28 +411,6 @@ moo_command_get_options (MooCommand *cmd)
 {
     g_return_val_if_fail (MOO_IS_COMMAND (cmd), 0);
     return cmd->options;
-}
-
-
-GType
-moo_command_options_get_type (void)
-{
-    static GType type;
-
-    if (!type)
-    {
-        static GFlagsValue values[] = {
-            { MOO_COMMAND_NEED_DOC, (char*) "MOO_COMMAND_NEED_DOC", (char*) "need-doc" },
-            { MOO_COMMAND_NEED_FILE, (char*) "MOO_COMMAND_NEED_FILE", (char*) "need-file" },
-            { MOO_COMMAND_NEED_SAVE, (char*) "MOO_COMMAND_NEED_SAVE", (char*) "need-save" },
-            { MOO_COMMAND_NEED_WINDOW, (char*) "MOO_COMMAND_NEED_WINDOW", (char*) "need-window" },
-            { 0, NULL, NULL }
-        };
-
-        type = g_flags_register_static ("MooCommandOptions", values);
-    }
-
-    return type;
 }
 
 

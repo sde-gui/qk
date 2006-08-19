@@ -22,9 +22,6 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_TEXT_SELECTION_TYPE    (moo_text_selection_type_get_type ())
-#define MOO_TYPE_TEXT_TAB_KEY_ACTION    (moo_text_tab_key_action_get_type ())
-
 #define MOO_TYPE_TEXT_VIEW              (moo_text_view_get_type ())
 #define MOO_TEXT_VIEW(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_TEXT_VIEW, MooTextView))
 #define MOO_TEXT_VIEW_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_TEXT_VIEW, MooTextViewClass))
@@ -37,13 +34,15 @@ typedef struct _MooTextView         MooTextView;
 typedef struct _MooTextViewPrivate  MooTextViewPrivate;
 typedef struct _MooTextViewClass    MooTextViewClass;
 
-typedef enum {
+typedef enum
+{
     MOO_TEXT_SELECT_CHARS,
     MOO_TEXT_SELECT_WORDS,
     MOO_TEXT_SELECT_LINES
 } MooTextSelectionType;
 
-typedef enum {
+typedef enum
+{
     MOO_TEXT_TAB_KEY_DO_NOTHING,
     MOO_TEXT_TAB_KEY_INDENT,
     MOO_TEXT_TAB_KEY_FIND_PLACEHOLDER
@@ -94,8 +93,6 @@ struct _MooTextViewClass
 
 
 GType        moo_text_view_get_type                 (void) G_GNUC_CONST;
-GType        moo_text_selection_type_get_type       (void) G_GNUC_CONST;
-GType        moo_text_tab_key_action_get_type       (void) G_GNUC_CONST;
 
 GtkWidget   *moo_text_view_new                      (void);
 

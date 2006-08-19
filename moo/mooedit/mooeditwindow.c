@@ -2998,27 +2998,6 @@ action_checks_init (void)
 }
 
 
-GType
-moo_action_check_type_get_type (void)
-{
-    static GType type = 0;
-
-    if (!type)
-    {
-        static const GEnumValue values[] = {
-            { MOO_ACTION_CHECK_SENSITIVE, (char*) "MOO_ACTION_CHECK_SENSITIVE", (char*) "sensitive" },
-            { MOO_ACTION_CHECK_VISIBLE, (char*) "MOO_ACTION_CHECK_VISIBLE", (char*) "visible" },
-            { MOO_ACTION_CHECK_ACTIVE, (char*) "MOO_ACTION_CHECK_ACTIVE", (char*) "active" },
-            { 0, NULL, NULL }
-        };
-
-        type = g_enum_register_static ("MooActionCheckType", values);
-    }
-
-    return type;
-}
-
-
 /*****************************************************************************/
 /* Stop button
  */

@@ -20,6 +20,7 @@ completion =                           \
 mooedit_include_headers =              \
 	moocmdview.h                   \
 	mooedit-script.h               \
+	mooedit-enums.h                \
 	mooedit.h                      \
 	mooeditconfig.h                \
 	mooeditor.h                    \
@@ -85,6 +86,7 @@ mooedit_sources =                      \
 	mooeditaction-factory.h        \
 	mooeditaction-factory.c        \
 	mooedit-script.c               \
+	mooedit-enums.c                \
 	mooedit.c                      \
 	mooeditconfig.c                \
 	mooeditdialogs.c               \
@@ -133,7 +135,44 @@ BUILT_SOURCES =                        \
 	mooeditprefs-glade.h           \
 	mooeditprogress-glade.h        \
 	mooeditsavemultiple-glade.h    \
-	mooedittools-glade.h
+	mooedittools-glade.h           \
+	mooedit-enums.c                \
+	mooedit-enums.h
+
+mooedit_enums_headers =			\
+	moocommand.h			\
+	mooeditconfig.h			\
+	mooeditwindow.h			\
+	mooedit.h			\
+	mootextfind.h			\
+	mootextsearch.h			\
+	mootextstyle.h			\
+	mootextview.h
+
+CLEANFILES = stamp-mooedit-enums.h mooedit-enums.h mooedit-enums.c
+mooedit-enums.h: stamp-mooedit-enums.h
+	@true
+stamp-mooedit-enums.h: $(mooedit_enums_headers) Makefile
+	( cd $(srcdir) && glib-mkenums \
+			--fhead "#ifndef __MOO_EDIT_ENUMS_H__\n#define __MOO_EDIT_ENUMS_H__\n\n#include <glib-object.h>\n" \
+			--fhead "\nG_BEGIN_DECLS\n\n\n" \
+			--fprod "/* enumerations from \"mooedit/@filename@\" */\n" \
+			--vhead "GType @enum_name@_get_type (void) G_GNUC_CONST;\n#define MOO_TYPE_@ENUMSHORT@ (@enum_name@_get_type())\n\n" \
+			--ftail "\nG_END_DECLS\n\n#endif /* __MOO_EDIT_ENUMS_H__ */" \
+		$(mooedit_enums_headers) ) >> xgen-gtbh \
+	&& (cmp -s xgen-gtbh mooedit-enums.h || cp xgen-gtbh mooedit-enums.h ) \
+	&& rm -f xgen-gtbh \
+	&& echo timestamp > $(@F)
+mooedit-enums.c: $(mooedit_enums_headers) Makefile
+	( cd $(srcdir) && glib-mkenums \
+			--fhead "#include \"mooedit/mooedit-enums.h\"\n\n" \
+			--fprod "#include \"mooedit/@filename@\"\n\n" \
+			--vhead "GType\n@enum_name@_get_type (void)\n{\n    static GType etype = 0;\n    if (etype == 0)\n    {\n        static const G@Type@Value values[] = {" \
+			--vprod "            { @VALUENAME@, (char*) \"@VALUENAME@\", (char*) \"@valuenick@\" }," \
+			--vtail "            { 0, NULL, NULL }\n        };\n        etype = g_@type@_register_static (\"@EnumName@\", values);\n    }\n    return etype;\n}\n\n" \
+		$(mooedit_enums_headers) ) > xgen-gtbc \
+	&& cp xgen-gtbc mooedit-enums.c  \
+	&& rm -f xgen-gtbc
 
 
 XML2H = $(srcdir)/../mooutils/xml2h.sh

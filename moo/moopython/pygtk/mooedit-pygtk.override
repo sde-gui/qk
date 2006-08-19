@@ -13,6 +13,7 @@ headers
 #include "mooedit/mooeditaction.h"
 #include "mooedit/mooplugin.h"
 #include "mooedit/moocommand.h"
+#include "mooedit/mooedit-enums.h"
 #include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
 

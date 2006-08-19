@@ -18,6 +18,7 @@
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mootextsearch-private.h"
 #include "mooedit/mooeditprefs.h"
+#include "mooedit/mooedit-enums.h"
 #include "mooutils/moohistoryentry.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/moocompat.h"
@@ -1251,32 +1252,6 @@ moo_text_view_run_replace (GtkTextView    *view,
     g_free (text);
     g_free (replacement);
     egg_regex_unref (regex);
-}
-
-
-GType
-moo_find_flags_get_type (void)
-{
-    static GType type;
-
-    if (!type)
-    {
-        static GFlagsValue values[] = {
-            { MOO_FIND_REGEX, (char*) "MOO_FIND_REGEX", (char*) "regex" },
-            { MOO_FIND_CASELESS, (char*) "MOO_FIND_CASELESS", (char*) "caseless" },
-            { MOO_FIND_IN_SELECTED, (char*) "MOO_FIND_IN_SELECTED", (char*) "selected" },
-            { MOO_FIND_BACKWARDS, (char*) "MOO_FIND_BACKWARDS", (char*) "backwards" },
-            { MOO_FIND_WHOLE_WORDS, (char*) "MOO_FIND_WHOLE_WORDS", (char*) "whole-words" },
-            { MOO_FIND_FROM_CURSOR, (char*) "MOO_FIND_FROM_CURSOR", (char*) "from-cursor" },
-            { MOO_FIND_DONT_PROMPT, (char*) "MOO_FIND_DONT_PROMPT", (char*) "do-not-prompt" },
-            { MOO_FIND_REPL_LITERAL, (char*) "MOO_FIND_REPL_LITERAL", (char*) "repl-literal" },
-            { 0, NULL, NULL }
-        };
-
-        type = g_flags_register_static ("MooFindFlags", values);
-    }
-
-    return type;
 }
 
 

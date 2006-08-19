@@ -588,49 +588,6 @@ moo_edit_get_property (GObject        *object,
 
 
 GType
-moo_edit_status_get_type (void)
-{
-    static GType type = 0;
-
-    if (!type)
-    {
-        static const GFlagsValue values[] = {
-            { MOO_EDIT_MODIFIED_ON_DISK, (char*)"MOO_EDIT_MODIFIED_ON_DISK", (char*)"modified-on-disk" },
-            { MOO_EDIT_DELETED, (char*)"MOO_EDIT_DELETED", (char*)"deleted" },
-            { MOO_EDIT_CHANGED_ON_DISK, (char*)"MOO_EDIT_CHANGED_ON_DISK", (char*)"changed-on-disk" },
-            { MOO_EDIT_MODIFIED, (char*)"MOO_EDIT_MODIFIED", (char*)"modified" },
-            { MOO_EDIT_CLEAN, (char*)"MOO_EDIT_CLEAN", (char*)"clean" },
-            { 0, NULL, NULL }
-        };
-        type = g_flags_register_static ("MooEditStatus", values);
-    }
-
-    return type;
-}
-
-
-GType
-moo_edit_on_external_changes_get_type (void)
-{
-    static GType type = 0;
-
-    if (!type)
-    {
-        static const GEnumValue values[] = {
-            { MOO_EDIT_DONT_WATCH_FILE, (char*)"MOO_EDIT_DONT_WATCH_FILE", (char*)"dont-watch-file" },
-            { MOO_EDIT_ALWAYS_ALERT, (char*)"MOO_EDIT_ALWAYS_ALERT", (char*)"always-alert" },
-            { MOO_EDIT_ALWAYS_RELOAD, (char*)"MOO_EDIT_ALWAYS_RELOAD", (char*)"always-reload" },
-            { MOO_EDIT_RELOAD_IF_SAFE, (char*)"MOO_EDIT_RELOAD_IF_SAFE", (char*)"reload-if-safe" },
-            { 0, NULL, NULL }
-        };
-        type = g_enum_register_static ("MooEditOnExternalChanges", values);
-    }
-
-    return type;
-}
-
-
-GType
 moo_edit_file_info_get_type (void)
 {
     static GType type = 0;
@@ -1975,28 +1932,6 @@ moo_edit_popup_menu (GtkWidget *widget)
 /*****************************************************************************/
 /* progress dialogs and stuff
  */
-
-GType
-moo_edit_state_get_type (void)
-{
-    static GType type = 0;
-
-    if (!type)
-    {
-        static const GEnumValue values[] = {
-            { MOO_EDIT_STATE_NORMAL, (char*) "MOO_EDIT_STATE_NORMAL", (char*) "normal" },
-            { MOO_EDIT_STATE_LOADING, (char*) "MOO_EDIT_STATE_LOADING", (char*) "loading" },
-            { MOO_EDIT_STATE_SAVING, (char*) "MOO_EDIT_STATE_SAVING", (char*) "saving" },
-            { MOO_EDIT_STATE_PRINTING, (char*) "MOO_EDIT_STATE_PRINTING", (char*) "printing" },
-            { 0, NULL, NULL }
-        };
-
-        type = g_enum_register_static ("MooEditState", values);
-    }
-
-    return type;
-}
-
 
 MooEditState
 moo_edit_get_state (MooEdit *edit)

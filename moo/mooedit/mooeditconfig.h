@@ -34,14 +34,13 @@ G_BEGIN_DECLS
 #define MOO_IS_EDIT_CONFIG_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_CONFIG))
 #define MOO_EDIT_CONFIG_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_CONFIG, MooEditConfigClass))
 
-#define MOO_TYPE_EDIT_CONFIG_SOURCE       (moo_edit_config_source_get_type ())
-
 typedef struct _MooEditConfig         MooEditConfig;
 typedef struct _MooEditConfigPrivate  MooEditConfigPrivate;
 typedef struct _MooEditConfigClass    MooEditConfigClass;
 
 
-typedef enum {
+typedef enum
+{
     MOO_EDIT_CONFIG_SOURCE_USER     = 0,
     MOO_EDIT_CONFIG_SOURCE_FILE     = 10,
     MOO_EDIT_CONFIG_SOURCE_FILENAME = 20,
@@ -62,7 +61,6 @@ struct _MooEditConfigClass
 
 
 GType           moo_edit_config_get_type        (void) G_GNUC_CONST;
-GType           moo_edit_config_source_get_type (void) G_GNUC_CONST;
 
 MooEditConfig  *moo_edit_config_new             (void);
 

@@ -20,12 +20,12 @@ G_BEGIN_DECLS
 
 
 #define MOO_TYPE_TEXT_STYLE         (moo_text_style_get_type ())
-#define MOO_TYPE_TEXT_STYLE_MASK    (moo_text_style_mask_get_type ())
 
 typedef struct _MooTextStyle MooTextStyle;
 typedef struct _MooTextStyleArray MooTextStyleArray;
 
-typedef enum  {
+typedef enum /*< flags >*/
+{
     MOO_TEXT_STYLE_FOREGROUND       = 1 << 0,
     MOO_TEXT_STYLE_BACKGROUND       = 1 << 1,
     MOO_TEXT_STYLE_BOLD             = 1 << 2,
@@ -53,7 +53,6 @@ struct _MooTextStyleArray {
 
 
 GType               moo_text_style_get_type         (void) G_GNUC_CONST;
-GType               moo_text_style_mask_get_type    (void) G_GNUC_CONST;
 
 MooTextStyle       *moo_text_style_new              (const char         *default_style,
                                                      const GdkColor     *foreground,

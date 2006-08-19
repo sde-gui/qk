@@ -42,7 +42,6 @@ G_BEGIN_DECLS
 #define MOO_COMMAND_TYPE_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_COMMAND_TYPE, MooCommandTypeClass))
 
 #define MOO_TYPE_COMMAND_DATA               (moo_command_data_get_type ())
-#define MOO_TYPE_COMMAND_OPTIONS            (moo_command_options_get_type ())
 
 typedef struct _MooCommand                  MooCommand;
 typedef struct _MooCommandClass             MooCommandClass;
@@ -53,7 +52,8 @@ typedef struct _MooCommandData              MooCommandData;
 typedef struct _MooCommandType              MooCommandType;
 typedef struct _MooCommandTypeClass         MooCommandTypeClass;
 
-typedef enum {
+typedef enum /*< flags >*/
+{
     MOO_COMMAND_NEED_DOC        = 1 << 0,
     MOO_COMMAND_NEED_FILE       = 1 << 1,
     MOO_COMMAND_NEED_SAVE       = 1 << 2,
@@ -112,7 +112,6 @@ struct _MooCommandTypeClass {
 GType               moo_command_get_type        (void) G_GNUC_CONST;
 GType               moo_command_context_get_type(void) G_GNUC_CONST;
 GType               moo_command_data_get_type   (void) G_GNUC_CONST;
-GType               moo_command_options_get_type(void) G_GNUC_CONST;
 GType               moo_command_type_get_type   (void) G_GNUC_CONST;
 
 MooCommand         *moo_command_create          (const char         *name,

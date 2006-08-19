@@ -143,27 +143,3 @@ moo_text_style_get_type (void)
 
     return type;
 }
-
-
-GType
-moo_text_style_mask_get_type (void)
-{
-    static GType type = 0;
-
-    if (!type)
-    {
-        static GFlagsValue values[] = {
-            { MOO_TEXT_STYLE_FOREGROUND, (char*) "MOO_TEXT_STYLE_FOREGROUND", (char*) "foreground" },
-            { MOO_TEXT_STYLE_BACKGROUND, (char*) "MOO_TEXT_STYLE_BACKGROUND", (char*) "background" },
-            { MOO_TEXT_STYLE_BOLD, (char*) "MOO_TEXT_STYLE_BOLD", (char*) "bold" },
-            { MOO_TEXT_STYLE_ITALIC, (char*) "MOO_TEXT_STYLE_ITALIC", (char*) "italic" },
-            { MOO_TEXT_STYLE_UNDERLINE, (char*) "MOO_TEXT_STYLE_UNDERLINE", (char*) "underline" },
-            { MOO_TEXT_STYLE_STRIKETHROUGH, (char*) "MOO_TEXT_STYLE_STRIKETHROUGH", (char*) "strikethrough" },
-            { 0, NULL, NULL }
-        };
-
-        type = g_flags_register_static ("MooTextStyleMask", values);
-    }
-
-    return type;
-}

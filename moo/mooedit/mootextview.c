@@ -17,6 +17,7 @@
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/mootextfind.h"
 #include "mooedit/mootext-private.h"
+#include "mooedit/mooedit-enums.h"
 #include "mooedit/quicksearch-glade.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootextbox.h"
@@ -1192,48 +1193,6 @@ moo_text_view_get_property (GObject        *object,
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
     }
-}
-
-
-GType
-moo_text_selection_type_get_type (void)
-{
-    static GType type = 0;
-
-    if (!type)
-    {
-        static const GEnumValue values[] = {
-            { MOO_TEXT_SELECT_CHARS, (char*)"MOO_TEXT_SELECT_CHARS", (char*)"select-chars" },
-            { MOO_TEXT_SELECT_WORDS, (char*)"MOO_TEXT_SELECT_WORDS", (char*)"select-words" },
-            { MOO_TEXT_SELECT_LINES, (char*)"MOO_TEXT_SELECT_LINES", (char*)"select-lines" },
-            { 0, NULL, NULL }
-        };
-
-        type = g_enum_register_static ("MooTextSelectionType", values);
-    }
-
-    return type;
-}
-
-
-GType
-moo_text_tab_key_action_get_type (void)
-{
-    static GType type = 0;
-
-    if (!type)
-    {
-        static const GEnumValue values[] = {
-            { MOO_TEXT_TAB_KEY_DO_NOTHING, (char*)"MOO_TEXT_TAB_KEY_DO_NOTHING", (char*)"do-nothing" },
-            { MOO_TEXT_TAB_KEY_INDENT, (char*)"MOO_TEXT_TAB_KEY_INDENT", (char*)"indent" },
-            { MOO_TEXT_TAB_KEY_FIND_PLACEHOLDER, (char*)"MOO_TEXT_TAB_KEY_FIND_PLACEHOLDER", (char*)"find-placeholder" },
-            { 0, NULL, NULL }
-        };
-
-        type = g_enum_register_static ("MooTextTabKeyAction", values);
-    }
-
-    return type;
 }
 
 

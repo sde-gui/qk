@@ -12,6 +12,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooedit-private.h"
+#include "mooedit/mooedit-enums.h"
 #include "mooedit/mootextbuffer.h"
 #include <string.h>
 

@@ -22,9 +22,6 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_EDIT_ON_EXTERNAL_CHANGES   (moo_edit_on_external_changes_get_type ())
-#define MOO_TYPE_EDIT_STATUS                (moo_edit_status_get_type ())
-#define MOO_TYPE_EDIT_STATE                 (moo_edit_state_get_type ())
 #define MOO_TYPE_EDIT_FILE_INFO             (moo_edit_file_info_get_type ())
 
 #define MOO_TYPE_EDIT_BOOKMARK              (moo_edit_bookmark_get_type ())
@@ -42,14 +39,16 @@ G_BEGIN_DECLS
 #define MOO_EDIT_GET_CLASS(obj)             (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT, MooEditClass))
 
 
-typedef enum {
+typedef enum
+{
     MOO_EDIT_DONT_WATCH_FILE = 0,
     MOO_EDIT_ALWAYS_ALERT,
     MOO_EDIT_ALWAYS_RELOAD,
     MOO_EDIT_RELOAD_IF_SAFE
 } MooEditOnExternalChanges;
 
-typedef enum {
+typedef enum /*< flags >*/
+{
     MOO_EDIT_MODIFIED_ON_DISK   = 1 << 0,
     MOO_EDIT_DELETED            = 1 << 1,
     MOO_EDIT_CHANGED_ON_DISK    = MOO_EDIT_MODIFIED_ON_DISK | MOO_EDIT_DELETED,
@@ -58,7 +57,8 @@ typedef enum {
     MOO_EDIT_CLEAN              = 1 << 4  /* doesn't prompt if it's closed, even if it's modified*/
 } MooEditStatus;
 
-typedef enum {
+typedef enum
+{
     MOO_EDIT_STATE_NORMAL,
     MOO_EDIT_STATE_LOADING,
     MOO_EDIT_STATE_SAVING,
@@ -124,9 +124,6 @@ struct _MooEditClass
 
 
 GType            moo_edit_get_type                      (void) G_GNUC_CONST;
-GType            moo_edit_status_get_type               (void) G_GNUC_CONST;
-GType            moo_edit_state_get_type                (void) G_GNUC_CONST;
-GType            moo_edit_on_external_changes_get_type  (void) G_GNUC_CONST;
 GType            moo_edit_file_info_get_type            (void) G_GNUC_CONST;
 GType            moo_edit_bookmark_get_type             (void) G_GNUC_CONST;
 

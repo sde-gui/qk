@@ -23,8 +23,6 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_FIND_FLAGS         (moo_find_flags_get_type ())
-
 #define MOO_TYPE_FIND               (moo_find_get_type ())
 #define MOO_FIND(object)            (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FIND, MooFind))
 #define MOO_FIND_CLASS(klass)       (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FIND, MooFindClass))
@@ -36,7 +34,8 @@ G_BEGIN_DECLS
 typedef struct _MooFind       MooFind;
 typedef struct _MooFindClass  MooFindClass;
 
-typedef enum {
+typedef enum /*< flags >*/
+{
     MOO_FIND_REGEX              = 1 << 0,
     MOO_FIND_CASELESS           = 1 << 1,
     MOO_FIND_IN_SELECTED        = 1 << 2,
@@ -65,7 +64,6 @@ typedef void (*MooFindMsgFunc) (const char *msg,
 
 
 GType           moo_find_get_type           (void) G_GNUC_CONST;
-GType           moo_find_flags_get_type     (void) G_GNUC_CONST;
 
 GtkWidget      *moo_find_new                (gboolean        replace);
 

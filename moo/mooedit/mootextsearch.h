@@ -19,20 +19,16 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_TEXT_SEARCH_FLAGS          (moo_text_search_flags_get_type ())
-#define MOO_TYPE_TEXT_REPLACE_RESPONSE      (moo_text_replace_response_get_type ())
-GType moo_text_search_flags_get_type        (void) G_GNUC_CONST;
-GType moo_text_replace_response_get_type    (void) G_GNUC_CONST;
-
-
-typedef enum {
+typedef enum /*< flags >*/
+{
     MOO_TEXT_SEARCH_CASELESS        = 1 << 0,
     MOO_TEXT_SEARCH_REGEX           = 1 << 1,
     MOO_TEXT_SEARCH_WHOLE_WORDS     = 1 << 2,
     MOO_TEXT_SEARCH_REPL_LITERAL    = 1 << 3
 } MooTextSearchFlags;
 
-typedef enum {
+typedef enum /*< enum >*/
+{
     MOO_TEXT_REPLACE_STOP = 0,
     MOO_TEXT_REPLACE_SKIP = 1,
     MOO_TEXT_REPLACE_DO_REPLACE = 2,

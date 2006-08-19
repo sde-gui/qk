@@ -29,8 +29,6 @@ G_BEGIN_DECLS
 #define MOO_IS_EDIT_WINDOW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_WINDOW))
 #define MOO_EDIT_WINDOW_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_WINDOW, MooEditWindowClass))
 
-#define MOO_TYPE_ACTION_CHECK_TYPE      (moo_action_check_type_get_type ())
-
 typedef struct _MooEditWindow           MooEditWindow;
 typedef struct _MooEditWindowPrivate    MooEditWindowPrivate;
 typedef struct _MooEditWindowClass      MooEditWindowClass;
@@ -56,7 +54,6 @@ struct _MooEditWindowClass
 
 
 GType        moo_edit_window_get_type               (void) G_GNUC_CONST;
-GType        moo_action_check_type_get_type         (void) G_GNUC_CONST;
 
 gboolean     moo_edit_window_close_all              (MooEditWindow  *window);
 
@@ -64,7 +61,8 @@ typedef gboolean (*MooActionCheckFunc)              (GtkAction      *action,
                                                      MooEditWindow  *window,
                                                      MooEdit        *doc,
                                                      gpointer        data);
-typedef enum {
+typedef enum
+{
     MOO_ACTION_CHECK_SENSITIVE,
     MOO_ACTION_CHECK_VISIBLE,
     MOO_ACTION_CHECK_ACTIVE
