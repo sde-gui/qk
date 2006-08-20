@@ -911,22 +911,6 @@ moo_text_view_end_not_undoable_action (MooTextView *view)
 }
 
 
-void
-_moo_text_view_new_undo_group (MooTextView *view)
-{
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-    moo_undo_stack_new_group (get_undo_stack (view));
-}
-
-
-void
-_moo_text_view_end_undo_group (MooTextView *view)
-{
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-    moo_undo_stack_end_group (get_undo_stack (view));
-}
-
-
 gboolean
 moo_text_view_redo (MooTextView    *view)
 {
