@@ -123,7 +123,7 @@ _as_plugin_prefs_page (MooPlugin *plugin)
                             helper, g_object_unref);
 
     g_object_unref (xml);
-    return page;
+    return GTK_WIDGET (page);
 }
 
 

@@ -36,7 +36,8 @@ as_plugin_context_setup (MSContext       *ctx,
         ms_value_unref (val);
     }
 
-    moo_edit_context_set_doc (MOO_EDIT_CONTEXT (ctx), doc);
+    moo_edit_script_context_set_doc (MOO_EDIT_SCRIPT_CONTEXT (ctx),
+                                     GTK_TEXT_VIEW (doc));
 }
 
 
@@ -49,7 +50,7 @@ as_plugin_context_clear (MSContext *ctx,
     for (i = 0; i < n_parens + 1; ++i)
         ms_context_assign_positional (ctx, i, NULL);
 
-    moo_edit_context_set_doc (MOO_EDIT_CONTEXT (ctx), NULL);
+    moo_edit_script_context_set_doc (MOO_EDIT_SCRIPT_CONTEXT (ctx), NULL);
 }
 
 
@@ -65,7 +66,7 @@ _as_plugin_context_exec (MSContext      *ctx,
     MSValue *val;
     gboolean success;
 
-    g_return_val_if_fail (MOO_IS_EDIT_CONTEXT (ctx), FALSE);
+    g_return_val_if_fail (MOO_IS_EDIT_SCRIPT_CONTEXT (ctx), FALSE);
     g_return_val_if_fail (script != NULL, FALSE);
     g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
     g_return_val_if_fail (insert != NULL, FALSE);

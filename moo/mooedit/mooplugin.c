@@ -247,6 +247,7 @@ moo_plugin_register (const char            *id,
         char **langs, **p;
         GHashTable *table;
 
+        /* XXX */
         langs = g_strsplit_set (info->langs, " \t\r\n", 0);
         table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
@@ -455,6 +456,7 @@ plugin_attach_doc (MooPlugin      *plugin,
     if (!moo_plugin_enabled (plugin))
         return;
 
+    /* XXX ! */
     if (plugin->langs)
     {
         MooLang *lang;
@@ -899,7 +901,7 @@ moo_plugin_init_builtin (void)
 #if GTK_CHECK_VERSION(2,6,0)
     _moo_file_selector_plugin_init ();
 #endif
-//     _moo_active_strings_plugin_init ();
+    _moo_active_strings_plugin_init ();
 //     _moo_completion_plugin_init ();
 }
 
