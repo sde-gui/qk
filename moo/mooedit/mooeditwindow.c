@@ -1868,6 +1868,7 @@ _moo_edit_window_remove_doc (MooEditWindow  *window,
 typedef struct {
     int x;
     int y;
+    gboolean drag_started;
 } DragInfo;
 
 
@@ -1954,9 +1955,12 @@ tab_icon_motion_notify (GtkWidget      *evbox,
     info = g_object_get_data (G_OBJECT (evbox), "moo-drag-info");
     g_return_val_if_fail (info != NULL, FALSE);
 
+    if (info->drag_started)
+        return TRUE;
+
     if (gtk_drag_check_threshold (evbox, info->x, info->y, event->x, event->y))
     {
-        g_signal_handlers_disconnect_by_func (evbox, (gpointer) tab_icon_motion_notify, window);
+        info->drag_started = TRUE;
         tab_icon_start_drag (evbox, (GdkEvent*) event, window);
     }
 
