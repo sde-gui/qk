@@ -13,7 +13,7 @@
 
 #include "mooedit/moocmdview.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/moocmd.h"
+#include "mooutils/moospawn.h"
 
 #ifndef __WIN32__
 #include <sys/wait.h>
@@ -184,7 +184,7 @@ moo_cmd_view_destroy (GtkObject *object)
 
     if (view->priv->cmd)
     {
-        moo_cmd_abort (view->priv->cmd);
+        _moo_cmd_abort (view->priv->cmd);
         g_object_unref (view->priv->cmd);
         view->priv->cmd = NULL;
     }
@@ -249,16 +249,28 @@ moo_cmd_view_run_command (MooCmdView *view,
                           const char *working_dir,
                           const char *job_name)
 {
+    return moo_cmd_view_run_command_full (view, cmd, NULL, working_dir, NULL, job_name);
+}
+
+
+gboolean
+moo_cmd_view_run_command_full (MooCmdView  *view,
+                               const char  *cmd,
+                               const char  *display_cmd,
+                               const char  *working_dir,
+                               char       **envp,
+                               const char  *job_name)
+{
     GError *error = NULL;
     char **argv = NULL;
     gboolean result = FALSE;
 
     g_return_val_if_fail (MOO_IS_CMD_VIEW (view), FALSE);
     g_return_val_if_fail (cmd && cmd[0], FALSE);
-
     g_return_val_if_fail (!view->priv->cmd, FALSE);
 
-    moo_line_view_write_line (MOO_LINE_VIEW (view), cmd, -1,
+    moo_line_view_write_line (MOO_LINE_VIEW (view),
+                              display_cmd ? display_cmd : cmd, -1,
                               view->priv->message_tag);
 
 #ifdef __WIN32__
@@ -280,11 +292,11 @@ moo_cmd_view_run_command (MooCmdView *view,
     argv[3] = NULL;
 #endif
 
-    view->priv->cmd = moo_cmd_new_full (working_dir, argv, NULL,
-                                        G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
-                                        MOO_CMD_UTF8_OUTPUT,
-                                        NULL, NULL,
-                                        &error);
+    view->priv->cmd = _moo_cmd_new (working_dir, argv, envp,
+                                    G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
+                                    MOO_CMD_UTF8_OUTPUT,
+                                    NULL, NULL,
+                                    &error);
 
     if (error)
     {
@@ -409,7 +421,7 @@ static gboolean
 moo_cmd_view_abort_real (MooCmdView *view)
 {
     if (view->priv->cmd)
-        moo_cmd_abort (view->priv->cmd);
+        _moo_cmd_abort (view->priv->cmd);
     return TRUE;
 }
 
