@@ -28,7 +28,6 @@ mooutils_include_headers =		\
 	mooactioncollection.h		\
 	moobigpaned.h			\
 	mooclosure.h			\
-	moocmd.h			\
 	moocombo.h			\
 	mooconfig.h			\
 	mooentry.h			\
@@ -78,7 +77,6 @@ mooutils_sources =			\
 	mooactiongroup.c		\
 	moobigpaned.c			\
 	mooclosure.c			\
-	moocmd.c			\
 	moocombo.c			\
 	moocompat.c			\
 	moocompat.h			\
@@ -109,6 +107,8 @@ mooutils_sources =			\
 	mooprefsdialog.c		\
 	mooprefsdialogpage.c		\
 	moopython.c			\
+	moospawn.h			\
+	moospawn.c			\
 	moostock.c			\
 	moouixml.c			\
 	mooundo.c			\

@@ -1,5 +1,5 @@
 /*
- *   moocmd.c
+ *   moospawn.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,9 +11,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooutils/moocmd.h"
+#include "mooutils/moospawn.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-misc.h"
+#include <string.h>
 
 #ifndef __WIN32__
 #include <sys/wait.h>
@@ -38,6 +39,8 @@ struct _MooCmdPrivate {
     guint child_watch;
     guint stdout_watch;
     guint stderr_watch;
+    GString *out_buffer;
+    GString *err_buffer;
 };
 
 static void     moo_cmd_finalize        (GObject    *object);
@@ -92,11 +95,11 @@ enum {
 
 
 /* MOO_TYPE_CMD */
-G_DEFINE_TYPE (MooCmd, moo_cmd, G_TYPE_OBJECT)
+G_DEFINE_TYPE (MooCmd, _moo_cmd, G_TYPE_OBJECT)
 
 
 static void
-moo_cmd_class_init (MooCmdClass *klass)
+_moo_cmd_class_init (MooCmdClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
@@ -107,6 +110,8 @@ moo_cmd_class_init (MooCmdClass *klass)
     klass->cmd_exit = NULL;
     klass->stdout_text = moo_cmd_stdout_text;
     klass->stderr_text = moo_cmd_stderr_text;
+
+    g_type_class_add_private (klass, sizeof (MooCmdPrivate));
 
     signals[ABORT] =
             g_signal_new ("abort",
@@ -150,11 +155,11 @@ moo_cmd_class_init (MooCmdClass *klass)
 
 
 static void
-moo_cmd_init (MooCmd *cmd)
+_moo_cmd_init (MooCmd *cmd)
 {
-    cmd->priv = g_new0 (MooCmdPrivate, 1);
-    cmd->out_buffer = g_string_new (NULL);
-    cmd->err_buffer = g_string_new (NULL);
+    cmd->priv = G_TYPE_INSTANCE_GET_PRIVATE (cmd, MOO_TYPE_CMD, MooCmdPrivate);
+    cmd->priv->out_buffer = g_string_new (NULL);
+    cmd->priv->err_buffer = g_string_new (NULL);
 }
 
 
@@ -163,12 +168,10 @@ moo_cmd_finalize (GObject *object)
 {
     MooCmd *cmd = MOO_CMD (object);
 
-    g_string_free (cmd->out_buffer, TRUE);
-    g_string_free (cmd->err_buffer, TRUE);
+    g_string_free (cmd->priv->out_buffer, TRUE);
+    g_string_free (cmd->priv->err_buffer, TRUE);
 
-    g_free (cmd->priv);
-
-    G_OBJECT_CLASS (moo_cmd_parent_class)->finalize (object);
+    G_OBJECT_CLASS (_moo_cmd_parent_class)->finalize (object);
 }
 
 
@@ -178,22 +181,22 @@ moo_cmd_dispose (GObject *object)
     MooCmd *cmd = MOO_CMD (object);
 
     if (cmd->priv->pid)
-        moo_cmd_abort (cmd);
+        _moo_cmd_abort (cmd);
     moo_cmd_cleanup (cmd);
 
-    G_OBJECT_CLASS (moo_cmd_parent_class)->dispose (object);
+    G_OBJECT_CLASS (_moo_cmd_parent_class)->dispose (object);
 }
 
 
 MooCmd*
-moo_cmd_new_full (const char *working_dir,
-                  char      **argv,
-                  char      **envp,
-                  GSpawnFlags flags,
-                  MooCmdFlags cmd_flags,
-                  GSpawnChildSetupFunc child_setup,
-                  gpointer    user_data,
-                  GError    **error)
+_moo_cmd_new (const char *working_dir,
+              char      **argv,
+              char      **envp,
+              GSpawnFlags flags,
+              MooCmdFlags cmd_flags,
+              GSpawnChildSetupFunc child_setup,
+              gpointer    user_data,
+              GError    **error)
 {
     MooCmd *cmd;
     gboolean result;
@@ -631,7 +634,7 @@ moo_cmd_abort_real (MooCmd *cmd)
 
 
 void
-moo_cmd_abort (MooCmd *cmd)
+_moo_cmd_abort (MooCmd *cmd)
 {
     gboolean handled;
     g_return_if_fail (MOO_IS_CMD (cmd));
@@ -644,7 +647,7 @@ moo_cmd_stdout_text (MooCmd     *cmd,
                      const char *text)
 {
     if (cmd->priv->cmd_flags & MOO_CMD_COLLECT_STDOUT)
-        g_string_append (cmd->out_buffer, text);
+        g_string_append (cmd->priv->out_buffer, text);
     return FALSE;
 }
 
@@ -654,6 +657,16 @@ moo_cmd_stderr_text (MooCmd     *cmd,
                      const char *text)
 {
     if (cmd->priv->cmd_flags & MOO_CMD_COLLECT_STDERR)
-        g_string_append (cmd->err_buffer, text);
+        g_string_append (cmd->priv->err_buffer, text);
     return FALSE;
+}
+
+
+gboolean
+_moo_unix_spawn_async (char      **argv,
+                       GSpawnFlags g_flags,
+                       GError    **error)
+{
+    return g_spawn_async (NULL, argv, NULL, g_flags,
+                          NULL, NULL, NULL, error);
 }

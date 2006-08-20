@@ -1,5 +1,5 @@
 /*
- *   moocmd.h
+ *   moospawn.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,15 +11,15 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_CMD_H__
-#define __MOO_CMD_H__
+#ifndef __MOO_SPAWN_H__
+#define __MOO_SPAWN_H__
 
 #include <glib-object.h>
 
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_CMD              (moo_cmd_get_type ())
+#define MOO_TYPE_CMD              (_moo_cmd_get_type ())
 #define MOO_CMD(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_CMD, MooCmd))
 #define MOO_CMD_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_CMD, MooCmdClass))
 #define MOO_IS_CMD(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_CMD))
@@ -43,16 +43,13 @@ typedef enum {
 
 struct _MooCmd
 {
-    GObject object;
-
-    GString *out_buffer;
-    GString *err_buffer;
+    GObject base;
     MooCmdPrivate *priv;
 };
 
 struct _MooCmdClass
 {
-    GObjectClass object_class;
+    GObjectClass base_class;
 
     /* action signal */
     gboolean (*abort)       (MooCmd     *cmd);
@@ -66,9 +63,13 @@ struct _MooCmdClass
 };
 
 
-GType       moo_cmd_get_type        (void) G_GNUC_CONST;
+GType       _moo_cmd_get_type       (void) G_GNUC_CONST;
 
-MooCmd     *moo_cmd_new_full        (const char *working_dir,
+gboolean    _moo_unix_spawn_async   (char      **argv,
+                                     GSpawnFlags g_flags,
+                                     GError    **error);
+
+MooCmd     *_moo_cmd_new            (const char *working_dir,
                                      char      **argv,
                                      char      **envp,
                                      GSpawnFlags flags,
@@ -77,9 +78,9 @@ MooCmd     *moo_cmd_new_full        (const char *working_dir,
                                      gpointer    user_data,
                                      GError    **error);
 
-void        moo_cmd_abort           (MooCmd     *cmd);
+void        _moo_cmd_abort          (MooCmd     *cmd);
 
 
 G_END_DECLS
 
-#endif /* __MOO_CMD_H__ */
+#endif /* __MOO_SPAWN_H__ */
