@@ -1,4 +1,4 @@
-SUBDIRS = plugins syntax
+SUBDIRS = . plugins syntax
 
 mooedit_toolsdir = $(MOO_DATA_DIR)
 mooedit_tools_DATA = menu.xml context.xml
