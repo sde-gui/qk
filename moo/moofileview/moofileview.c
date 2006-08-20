@@ -36,7 +36,7 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/moofiltermgr.h"
 #include "mooutils/moouixml.h"
-#include "mooutils/moocmd.h"
+#include "mooutils/moospawn.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/mooaction-private.h"
@@ -5342,7 +5342,6 @@ run_command_on_files (MooFileView *fileview,
                       int          n_first_args)
 {
     GError *error = NULL;
-    MooCmd *cmd;
     char **argv;
     int list_len, n_args, i;
     GList *l;
@@ -5368,12 +5367,7 @@ run_command_on_files (MooFileView *fileview,
     for (i = 0, l = filenames; l != NULL; l = l->next, i++)
         argv[n_first_args + i] = l->data;
 
-    cmd = moo_cmd_new_full (NULL, argv, NULL,
-                            G_SPAWN_SEARCH_PATH,
-                            MOO_CMD_STDOUT_TO_PARENT | MOO_CMD_STDERR_TO_PARENT,
-                            NULL, NULL, &error);
-
-    if (!cmd)
+    if (!_moo_unix_spawn_async (argv, G_SPAWN_SEARCH_PATH, &error))
     {
         g_critical ("%s: could not spawn '%s'",
                     G_STRLOC, first_args[0]);
@@ -5394,8 +5388,6 @@ run_command_on_files (MooFileView *fileview,
 
         g_free (basename);
     }
-
-    g_signal_connect (cmd, "cmd-exit", G_CALLBACK (g_object_unref), NULL);
 
 out:
     g_free (argv);
