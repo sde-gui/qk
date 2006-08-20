@@ -20,7 +20,6 @@
 #include "mooscript/mooscript-parser.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooglade.h"
-#include "mooutils/mooundo.h"
 #include <string.h>
 
 
@@ -57,10 +56,10 @@ moo_command_script_run (MooCommand        *cmd_base,
                         MooCommandContext *ctx)
 {
     gpointer doc;
-    MooUndoStack *undo_stack = NULL;
     MSValue *ret;
     MSContext *script_ctx;
     MooCommandScript *cmd = MOO_COMMAND_SCRIPT (cmd_base);
+    GtkTextBuffer *buffer;
 
     g_return_if_fail (cmd->priv->script != NULL);
 
@@ -71,19 +70,15 @@ moo_command_script_run (MooCommand        *cmd_base,
     moo_command_context_foreach (ctx, set_variable, script_ctx);
 
     doc = moo_command_context_get_doc (ctx);
-    if (MOO_IS_TEXT_VIEW (doc))
-    {
-        MooTextBuffer *buffer = MOO_TEXT_BUFFER (gtk_text_view_get_buffer (doc));
-        undo_stack = _moo_text_buffer_get_undo_stack (buffer);
-    }
+    buffer = doc ? gtk_text_view_get_buffer (doc) : NULL;
 
-    if (undo_stack)
-        moo_undo_stack_start_group (undo_stack);
+    if (buffer)
+        gtk_text_buffer_begin_user_action (buffer);
 
     ret = ms_top_node_eval (cmd->priv->script, script_ctx);
 
-    if (undo_stack)
-        moo_undo_stack_end_group (undo_stack);
+    if (buffer)
+        gtk_text_buffer_end_user_action (buffer);
 
     if (!ret)
     {
@@ -146,6 +141,7 @@ script_type_create_widget (G_GNUC_UNUSED MooCommandType *type)
     g_return_val_if_fail (page != NULL, NULL);
 
     textview = moo_glade_xml_get_widget (xml, "textview");
+    moo_text_view_set_font_from_string (textview, "Monospace");
     mgr = moo_editor_get_lang_mgr (moo_editor_instance ());
     lang = moo_lang_mgr_get_lang (mgr, "mooscript");
     moo_text_view_set_lang (textview, lang);

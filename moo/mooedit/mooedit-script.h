@@ -44,8 +44,11 @@ struct _MooEditScriptContextClass {
 
 GType        moo_edit_script_context_get_type   (void) G_GNUC_CONST;
 
-MSContext   *moo_edit_script_context_new        (GtkTextView    *doc,
-                                                 GtkWindow      *window);
+MSContext   *moo_edit_script_context_new        (GtkTextView            *doc,
+                                                 GtkWindow              *window);
+
+void         moo_edit_script_context_set_doc    (MooEditScriptContext   *ctx,
+                                                 GtkTextView            *doc);
 
 
 // MSContext   *moo_text_context_new       (GtkTextView    *doc);

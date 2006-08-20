@@ -283,17 +283,6 @@ moo_command_check_sensitive_real (MooCommand *cmd,
 }
 
 
-static gboolean
-moo_command_check_context_real (MooCommand        *cmd,
-                                MooCommandContext *ctx)
-{
-    gpointer doc, window;
-    doc = moo_command_context_get_doc (ctx);
-    window = moo_command_context_get_window (ctx);
-    return moo_command_check_sensitive (cmd, doc, window);
-}
-
-
 static void
 moo_command_class_init (MooCommandClass *klass)
 {
@@ -302,7 +291,6 @@ moo_command_class_init (MooCommandClass *klass)
     object_class->set_property = moo_command_set_property;
     object_class->get_property = moo_command_get_property;
 
-    klass->check_context = moo_command_check_context_real;
     klass->check_sensitive = moo_command_check_sensitive_real;
 
     g_object_class_install_property (object_class, CMD_PROP_OPTIONS,
@@ -324,12 +312,53 @@ check_options (MooCommandOptions options)
 {
     MooCommandOptions checked = options;
 
+    if (options & MOO_COMMAND_NEED_SAVE_ALL)
+        checked |= MOO_COMMAND_NEED_SAVE;
     if (options & MOO_COMMAND_NEED_FILE)
         checked |= MOO_COMMAND_NEED_DOC;
     if (options & MOO_COMMAND_NEED_SAVE)
         checked |= MOO_COMMAND_NEED_DOC;
 
     return checked;
+}
+
+
+static gboolean
+save_one (MooEdit *doc)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
+
+    if (MOO_EDIT_IS_MODIFIED (doc) && !moo_edit_save (doc, NULL))
+        return FALSE;
+
+    return TRUE;
+}
+
+static gboolean
+save_all (MooEdit *doc)
+{
+    MooEditWindow *window;
+    GSList *list, *l;
+    gboolean result = TRUE;
+
+    g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
+
+    window = moo_edit_get_window (doc);
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
+
+    list = moo_edit_window_list_docs (window);
+
+    for (l = list; l != NULL; l = l->next)
+    {
+        if (!save_one (l->data))
+        {
+            result = FALSE;
+            break;
+        }
+    }
+
+    g_slist_free (list);
+    return result;
 }
 
 
@@ -356,24 +385,20 @@ moo_command_run (MooCommand         *cmd,
         g_return_if_fail (MOO_IS_EDIT (doc) && moo_edit_get_filename (doc) != NULL);
 
     if (cmd->options & MOO_COMMAND_NEED_SAVE)
+        g_return_if_fail (MOO_IS_EDIT (doc));
+
+    if (cmd->options & MOO_COMMAND_NEED_SAVE_ALL)
     {
-        if (MOO_EDIT_IS_MODIFIED (doc) && !moo_edit_save (doc, NULL))
+        if (!save_all (doc))
+            return;
+    }
+    else if (cmd->options & MOO_COMMAND_NEED_SAVE)
+    {
+        if (!save_one (doc))
             return;
     }
 
     MOO_COMMAND_GET_CLASS(cmd)->run (cmd, ctx);
-}
-
-
-gboolean
-moo_command_check_context (MooCommand        *cmd,
-                           MooCommandContext *ctx)
-{
-    g_return_val_if_fail (MOO_IS_COMMAND (cmd), FALSE);
-    g_return_val_if_fail (MOO_IS_COMMAND_CONTEXT (ctx), FALSE);
-    g_return_val_if_fail (MOO_COMMAND_GET_CLASS(cmd)->check_context != NULL, FALSE);
-
-    return MOO_COMMAND_GET_CLASS(cmd)->check_context (cmd, ctx);
 }
 
 
@@ -423,7 +448,7 @@ moo_command_options_parse (const char *string)
     if (!string)
         return 0;
 
-    pieces = g_strsplit (string, ";", 0);
+    pieces = g_strsplit_set (string, " \t\r\n;,", 0);
 
     if (!pieces || !pieces[0])
         goto out;
@@ -441,8 +466,10 @@ moo_command_options_parse (const char *string)
             options |= MOO_COMMAND_NEED_DOC;
         else if (!strcmp (s, "need-file"))
             options |= MOO_COMMAND_NEED_FILE;
-        else if (!strcmp (s, "need-save"))
+        else if (!strcmp (s, "need-save") || !strcmp (s, "save"))
             options |= MOO_COMMAND_NEED_SAVE;
+        else if (!strcmp (s, "need-save-all") || !strcmp (s, "save-all"))
+            options |= MOO_COMMAND_NEED_SAVE_ALL;
         else if (!strcmp (s, "need-window"))
             options |= MOO_COMMAND_NEED_WINDOW;
         else
@@ -957,8 +984,8 @@ _moo_command_init (void)
 
     if (!been_here)
     {
-        g_type_class_ref (MOO_TYPE_COMMAND_SCRIPT);
-//         g_type_class_ref (MOO_TYPE_COMMAND_EXE);
+        g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_SCRIPT));
+        g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_EXE));
         been_here = TRUE;
     }
 }

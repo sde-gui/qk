@@ -13,15 +13,14 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditaction.h"
+#include "mooedit/mooeditaction-factory.h"
 #include "mooedit/mooedit-private.h"
-#include "mooutils/eggregex.h"
 #include <string.h>
 
 
 struct _MooEditActionPrivate {
     MooEdit *doc;
     GSList *langs;
-    EggRegex *regex;
 };
 
 
@@ -30,35 +29,8 @@ G_DEFINE_TYPE (MooEditAction, moo_edit_action, MOO_TYPE_ACTION);
 enum {
     PROP_0,
     PROP_DOC,
-    PROP_LANGS,
-    PROP_FILTER_PATTERN
+    PROP_LANGS
 };
-
-
-static void
-moo_edit_action_set_filter (MooEditAction *action,
-                            const char    *pattern)
-{
-    GError *error = NULL;
-
-    egg_regex_unref (action->priv->regex);
-    action->priv->regex = NULL;
-
-    if (!pattern)
-        return;
-
-    action->priv->regex = egg_regex_new (pattern, 0, EGG_REGEX_MATCH_NOTEMPTY, &error);
-
-    if (!action->priv->regex)
-    {
-        g_warning ("%s: %s", G_STRLOC, error->message);
-        g_error_free (error);
-    }
-    else
-    {
-        egg_regex_optimize (action->priv->regex, NULL);
-    }
-}
 
 
 static void
@@ -66,7 +38,6 @@ moo_edit_action_finalize (GObject *object)
 {
     MooEditAction *action = MOO_EDIT_ACTION (object);
 
-    egg_regex_unref (action->priv->regex);
     g_slist_foreach (action->priv->langs, (GFunc) g_free, NULL);
     g_slist_free (action->priv->langs);
 
@@ -86,13 +57,6 @@ moo_edit_action_get_property (GObject        *object,
     {
         case PROP_DOC:
             g_value_set_object (value, action->priv->doc);
-            break;
-
-        case PROP_FILTER_PATTERN:
-            if (action->priv->regex)
-                g_value_set_string (value, egg_regex_get_pattern (action->priv->regex));
-            else
-                g_value_set_string (value, NULL);
             break;
 
         default:
@@ -146,10 +110,6 @@ moo_edit_action_set_property (GObject        *object,
             moo_edit_action_set_langs (action, g_value_get_string (value));
             break;
 
-        case PROP_FILTER_PATTERN:
-            moo_edit_action_set_filter (action, g_value_get_string (value));
-            break;
-
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -166,23 +126,16 @@ moo_edit_action_init (MooEditAction *action)
 static void
 moo_edit_action_check_state_real (MooEditAction *action)
 {
-    gboolean sensitive = TRUE, visible = TRUE;
+    MooLang *lang;
+    gboolean active;
 
-    g_return_if_fail (action->priv->doc != NULL);
+    if (!action->priv->doc || !action->priv->langs)
+        return;
 
-    if (action->priv->langs)
-    {
-        MooLang *lang = moo_text_view_get_lang (MOO_TEXT_VIEW (action->priv->doc));
+    lang = moo_text_view_get_lang (MOO_TEXT_VIEW (action->priv->doc));
+    active = g_slist_find_custom (action->priv->langs, moo_lang_id (lang), (GCompareFunc) strcmp) != NULL;
 
-        if (!g_slist_find_custom (action->priv->langs, moo_lang_id (lang),
-                                  (GCompareFunc) strcmp))
-        {
-            sensitive = FALSE;
-            visible = FALSE;
-        }
-    }
-
-    g_object_set (action, "visible", visible, "sensitive", sensitive, NULL);
+    g_object_set (action, "visible", active, "sensitive", active, NULL);
 }
 
 
@@ -214,14 +167,6 @@ moo_edit_action_class_init (MooEditActionClass *klass)
                                              "langs",
                                              NULL,
                                              G_PARAM_WRITABLE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_FILTER_PATTERN,
-                                     g_param_spec_string ("filter-pattern",
-                                             "filter-pattern",
-                                             "filter-pattern",
-                                             NULL,
-                                             G_PARAM_READWRITE));
 }
 
 
@@ -237,7 +182,8 @@ moo_edit_action_check_state (MooEditAction *action)
 void
 _moo_edit_check_actions (MooEdit *edit)
 {
-    GList *actions = moo_action_collection_list_actions (edit->priv->actions);
+    GtkActionGroup *group = moo_edit_get_actions (edit);
+    GList *actions = gtk_action_group_list_actions (group);
 
     while (actions)
     {

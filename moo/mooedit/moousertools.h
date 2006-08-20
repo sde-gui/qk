@@ -49,7 +49,6 @@ typedef struct {
     char                *menu;
     char                *langs;
     char                *options;
-    char                *filter;
     MooUserToolPosition  position;
     gboolean             enabled;
     MooUserToolOSType    os_type;

@@ -40,7 +40,6 @@
 #define ELEMENT_ACCEL       "accel"
 #define ELEMENT_MENU        "menu"
 #define ELEMENT_LANGS       "langs"
-#define ELEMENT_FILTER      "filter"
 #define ELEMENT_POSITION    "position"
 #define ELEMENT_COMMAND     "command"
 #define PROP_NAME           "name"
@@ -228,14 +227,10 @@ check_info (MooUserToolInfo *info,
         return FALSE;
     }
 
-    if (info->filter && type != MOO_USER_TOOL_CONTEXT)
-        g_warning ("filter specified in tool %s in file %s",
-                   info->name, info->file);
-
     if (info->position != MOO_USER_TOOL_POS_END &&
         type != MOO_USER_TOOL_CONTEXT)
     {
-        g_warning ("filter specified in tool %s in file %s",
+        g_warning ("position specified in tool %s in file %s",
                    info->name, info->file);
     }
 
@@ -427,19 +422,7 @@ parse_element (MooMarkupNode       *node,
         if (!MOO_MARKUP_IS_ELEMENT (child) || !strcmp (child->name, ELEMENT_COMMAND))
             continue;
 
-        if (!strcmp (child->name, ELEMENT_FILTER))
-        {
-            if (info->filter)
-            {
-                g_warning ("duplicated element '%s' in tool %s in file %s",
-                           child->name, info->name, file);
-                _moo_user_tool_info_unref (info);
-                return NULL;
-            }
-
-            info->filter = g_strdup (moo_markup_get_content (child));
-        }
-        else if (!strcmp (child->name, ELEMENT_ACCEL))
+        if (!strcmp (child->name, ELEMENT_ACCEL))
         {
             if (info->accel)
             {
@@ -612,8 +595,6 @@ _moo_edit_save_user_tools (MooUserToolType  type,
             moo_markup_create_text_element (node, ELEMENT_MENU, info->menu);
         if (info->langs && info->langs[0])
             moo_markup_create_text_element (node, ELEMENT_LANGS, info->langs);
-        if (info->filter && info->filter[0])
-            moo_markup_create_text_element (node, ELEMENT_FILTER, info->filter);
         if (!info->enabled)
             moo_markup_set_bool_prop (node, PROP_ENABLED, info->enabled);
         if (info->position != MOO_USER_TOOL_POS_END)
@@ -673,7 +654,6 @@ _moo_user_tool_info_unref (MooUserToolInfo *info)
     g_free (info->menu);
     g_free (info->langs);
     g_free (info->options);
-    g_free (info->filter);
     g_free (info->file);
 
     if (info->cmd_data)

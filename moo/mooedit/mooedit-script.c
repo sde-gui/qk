@@ -29,9 +29,6 @@
 static void add_text_api    (MSContext  *ctx);
 static void add_editor_api  (MSContext  *ctx);
 
-static void moo_edit_script_context_set_doc (MooEditScriptContext   *ctx,
-                                             GtkTextView            *doc);
-
 
 G_DEFINE_TYPE (MooEditScriptContext, moo_edit_script_context, MS_TYPE_CONTEXT)
 

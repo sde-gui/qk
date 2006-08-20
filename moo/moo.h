@@ -51,7 +51,6 @@
 #include <mooutils/mooactioncollection.h>
 #include <mooutils/moobigpaned.h>
 #include <mooutils/mooclosure.h>
-#include <mooutils/moocmd.h>
 #include <mooutils/moocombo.h>
 #include <mooutils/mooentry.h>
 #include <mooutils/moofiltermgr.h>

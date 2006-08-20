@@ -32,21 +32,6 @@ G_BEGIN_DECLS
 typedef struct _MooCommandDisplay MooCommandDisplay;
 typedef struct _MooCommandDisplayClass MooCommandDisplayClass;
 
-struct _MooCommandDisplay {
-    MooTreeHelper base;
-
-    GtkComboBox *type_combo;
-    GtkNotebook *notebook;
-
-    gboolean changed;
-    MooCommandData *active_data;
-    MooCommandType *active_type;
-};
-
-struct _MooCommandDisplayClass {
-    MooTreeHelperClass base_class;
-};
-
 GType               _moo_command_display_get_type   (void);
 MooCommandDisplay  *_moo_command_display_new        (GtkComboBox        *type_combo,
                                                      GtkNotebook        *notebook,

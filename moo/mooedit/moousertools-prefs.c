@@ -102,7 +102,8 @@ new_row (MooPrefsDialogPage *page,
 
     info = _moo_user_tool_info_new ();
     info->cmd_data = moo_command_data_new ();
-    info->name = g_strdup ("New Tool");
+    info->name = g_strdup (_("New Command"));
+    info->options = g_strdup ("need-doc");
     info->enabled = TRUE;
     info->cmd_type = moo_command_type_lookup ("MooScript");
 
@@ -150,9 +151,6 @@ update_widgets (MooPrefsDialogPage *page,
         set_text (page, "langs", info->langs);
         set_text (page, "options", info->options);
 
-        if (page_get_type (page) == MOO_USER_TOOL_CONTEXT)
-            set_text (page, "filter", info->filter);
-
         _moo_user_tool_info_unref (info);
     }
     else
@@ -160,7 +158,6 @@ update_widgets (MooPrefsDialogPage *page,
         gtk_toggle_button_set_active (GET_WID ("enabled"), FALSE);
         set_text (page, "langs", NULL);
         set_text (page, "options", NULL);
-        set_text (page, "filter", NULL);
         _moo_command_display_set (helper, NULL, NULL);
     }
 
@@ -220,9 +217,6 @@ update_model (MooPrefsDialogPage *page,
 
     changed = get_text (page, "langs", &info->langs) || changed;
     changed = get_text (page, "options", &info->options) || changed;
-
-    if (page_get_type (page) == MOO_USER_TOOL_CONTEXT)
-        changed = get_text (page, "filter", &info->filter) || changed;
 
     if (changed)
     {
@@ -290,12 +284,6 @@ command_page_init (MooPrefsDialogPage *page,
     MooCommandDisplay *helper;
 
     page_set_type (page, type);
-
-    if (type != MOO_USER_TOOL_CONTEXT)
-    {
-        gtk_widget_hide (GET_WID ("filter"));
-        gtk_widget_hide (GET_WID ("filter_label"));
-    }
 
     treeview = moo_glade_xml_get_widget (page->xml, "treeview");
     store = gtk_list_store_new (N_COLUMNS, MOO_TYPE_USER_TOOL_INFO);
