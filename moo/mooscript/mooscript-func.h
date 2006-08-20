@@ -33,7 +33,7 @@ G_BEGIN_DECLS
 #define MS_IS_CFUNC_CLASS(klass)        (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_CFUNC))
 #define MS_CFUNC_GET_CLASS(obj)         (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_CFUNC, MSCFuncClass))
 
-
+typedef struct _MSContext MSContext;
 typedef struct _MSFuncClass MSFuncClass;
 typedef struct _MSCFunc MSCFunc;
 typedef struct _MSCFuncClass MSCFuncClass;
@@ -86,22 +86,12 @@ struct _MSCFuncClass {
 GType           ms_func_get_type    (void) G_GNUC_CONST;
 GType           ms_cfunc_get_type   (void) G_GNUC_CONST;
 
-MSValue        *ms_func_call        (MSFunc     *func,
-                                     MSValue   **args,
-                                     guint       n_args,
-                                     MSContext  *ctx);
-
 MSFunc         *ms_cfunc_new_var    (MSCFunc_Var cfunc);
 MSFunc         *ms_cfunc_new_0      (MSCFunc_0   cfunc);
 MSFunc         *ms_cfunc_new_1      (MSCFunc_1   cfunc);
 MSFunc         *ms_cfunc_new_2      (MSCFunc_2   cfunc);
 MSFunc         *ms_cfunc_new_3      (MSCFunc_3   cfunc);
 MSFunc         *ms_cfunc_new_4      (MSCFunc_4   cfunc);
-
-const char     *ms_binary_op_name   (MSBinaryOp      op);
-MSCFunc_2       ms_binary_op_cfunc  (MSBinaryOp      op);
-const char     *ms_unary_op_name    (MSUnaryOp       op);
-MSCFunc_1       ms_unary_op_cfunc   (MSUnaryOp       op);
 
 
 G_END_DECLS

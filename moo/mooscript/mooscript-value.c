@@ -11,7 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooscript-value.h"
+#include "mooscript-value-private.h"
+#include "mooscript-func-private.h"
 #include "mooscript-context.h"
 #include <string.h>
 
@@ -112,7 +113,7 @@ ms_value_string_printf (const char *format,
     va_list args;
 
     va_start (args, format);
-    value = ms_value_take_string (ms_vaprintf (format, args));
+    value = ms_value_take_string (_ms_vaprintf (format, args));
     va_end (args);
 
     return value;
@@ -406,7 +407,7 @@ ms_value_unref (MSValue *val)
 
 
 const char *
-ms_binary_op_name (MSBinaryOp op)
+_ms_binary_op_name (MSBinaryOp op)
 {
     static const char *names[MS_BINARY_OP_LAST] = {
         "@PLUS", "@MINUS", "@MULT", "@DIV", "@AND", "@OR",
@@ -420,7 +421,7 @@ ms_binary_op_name (MSBinaryOp op)
 
 
 const char *
-ms_unary_op_name (MSUnaryOp op)
+_ms_unary_op_name (MSUnaryOp op)
 {
     static const char *names[MS_UNARY_OP_LAST] = {
         "@UMINUS", "@NOT", "@LEN"
@@ -1403,7 +1404,7 @@ func_format (MSValue *format, MSValue *tuple, MSContext *ctx)
 
 
 MSCFunc_2
-ms_binary_op_cfunc (MSBinaryOp op)
+_ms_binary_op_cfunc (MSBinaryOp op)
 {
     static MSCFunc_2 funcs[MS_BINARY_OP_LAST] = {
         func_plus, func_minus, func_mult, func_div,
@@ -1453,7 +1454,7 @@ func_len (MSValue    *val,
 
 
 MSCFunc_1
-ms_unary_op_cfunc (MSUnaryOp op)
+_ms_unary_op_cfunc (MSUnaryOp op)
 {
     static MSCFunc_1 funcs[MS_UNARY_OP_LAST] = {
         func_uminus, func_not, func_len
@@ -1500,7 +1501,7 @@ ms_value_bound_meth (MSFunc  *func,
 
 
 gboolean
-ms_value_is_func (MSValue *val)
+_ms_value_is_func (MSValue *val)
 {
     g_return_val_if_fail (val != NULL, FALSE);
     return MS_VALUE_TYPE (val) == MS_VALUE_FUNC;
@@ -1508,10 +1509,10 @@ ms_value_is_func (MSValue *val)
 
 
 MSValue *
-ms_value_call (MSValue    *func,
-               MSValue   **args,
-               guint       n_args,
-               MSContext  *ctx)
+_ms_value_call (MSValue    *func,
+                MSValue   **args,
+                guint       n_args,
+                MSContext  *ctx)
 {
     MSValue *ret;
     MSValue **real_args;
@@ -1523,7 +1524,7 @@ ms_value_call (MSValue    *func,
     g_return_val_if_fail (MS_VALUE_TYPE (func) == MS_VALUE_FUNC, NULL);
 
     if (!func->u.func.meth || !func->u.func.obj)
-        return ms_func_call (func->u.func.func, args, n_args, ctx);
+        return _ms_func_call (func->u.func.func, args, n_args, ctx);
 
     real_args = ms_value_array_alloc (n_args + 1);
     real_args[0] = ms_value_ref (func->u.func.obj);
@@ -1531,7 +1532,7 @@ ms_value_call (MSValue    *func,
     for (i = 0; i < n_args; ++i)
         real_args[i+1] = ms_value_ref (args[i]);
 
-    ret = ms_func_call (func->u.func.func, real_args, n_args + 1, ctx);
+    ret = _ms_func_call (func->u.func.func, real_args, n_args + 1, ctx);
 
     for (i = 0; i < n_args + 1; ++i)
         ms_value_unref (real_args[i]);
@@ -1560,9 +1561,9 @@ ms_type_init (void)
 
 
 void
-ms_value_class_add_method (MSValueClass   *klass,
-                           const char     *name,
-                           MSFunc         *func)
+_ms_value_class_add_method (MSValueClass   *klass,
+                            const char     *name,
+                            MSFunc         *func)
 {
     g_return_if_fail (klass != NULL && klass->type < MS_VALUE_INVALID);
     g_return_if_fail (name != NULL);
@@ -1596,8 +1597,8 @@ ms_value_add_method (MSValue    *val,
 
 
 MSValue *
-ms_value_get_method (MSValue    *value,
-                     const char *name)
+_ms_value_get_method (MSValue    *value,
+                      const char *name)
 {
     MSFunc *func = NULL;
 
@@ -1618,14 +1619,14 @@ ms_value_get_method (MSValue    *value,
 
 
 char *
-ms_printf (const char     *format,
-           ...)
+_ms_printf (const char     *format,
+            ...)
 {
     char *string;
     va_list args;
 
     va_start (args, format);
-    string = ms_vaprintf (format, args);
+    string = _ms_vaprintf (format, args);
     va_end (args);
 
     return string;
@@ -1633,8 +1634,8 @@ ms_printf (const char     *format,
 
 
 char *
-ms_vaprintf (const char *format,
-             va_list     args)
+_ms_vaprintf (const char *format,
+              va_list     args)
 {
     GString *buffer;
     char *arg_s;
@@ -1727,7 +1728,7 @@ ms_vaprintf (const char *format,
 
 
 GType
-ms_value_get_type (void)
+_ms_value_get_type (void)
 {
     static GType type;
 

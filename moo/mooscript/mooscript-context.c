@@ -11,13 +11,33 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooscript-context.h"
+#include "mooscript-context-private.h"
 #include "mooscript-parser.h"
+#include "mooscript-func-private.h"
 #include "mooutils/moomarshals.h"
 #include <glib/gprintf.h>
 #include <gtk/gtkwindow.h>
 
 #define N_POS_VARS 20
+
+typedef void (*MSPrintFunc) (const char *string,
+                             MSContext  *ctx);
+
+struct _MSContextPrivate {
+    GHashTable *vars;
+    MSError error;
+    char *error_msg;
+    MSPrintFunc print_func;
+
+    MSValue *return_val;
+    guint break_set : 1;
+    guint continue_set : 1;
+    guint return_set : 1;
+
+    int argc;
+    char **argv;
+    char *name;
+};
 
 enum {
     PROP_0,
@@ -60,15 +80,15 @@ ms_context_set_property (GObject        *object,
             break;
 
         case PROP_NAME:
-            g_free (ctx->name);
+            g_free (ctx->priv->name);
             ctx->window = g_strdup (g_value_get_string (value));
             g_object_notify (object, "name");
             break;
 
         case PROP_ARGV:
-            g_strfreev (ctx->argv);
-            ctx->argv = g_strdupv (g_value_get_pointer (value));
-            ctx->argc = ctx->argv ? g_strv_length (ctx->argv) : 0;
+            g_strfreev (ctx->priv->argv);
+            ctx->priv->argv = g_strdupv (g_value_get_pointer (value));
+            ctx->priv->argc = ctx->priv->argv ? g_strv_length (ctx->priv->argv) : 0;
             g_object_notify (object, "argv");
             break;
 
@@ -93,11 +113,11 @@ ms_context_get_property (GObject        *object,
             break;
 
         case PROP_NAME:
-            g_value_set_string (value, ctx->name);
+            g_value_set_string (value, ctx->priv->name);
             break;
 
         case PROP_ARGV:
-            g_value_set_pointer (value, ctx->argv);
+            g_value_set_pointer (value, ctx->priv->argv);
             break;
 
         default:
@@ -125,20 +145,20 @@ ms_context_constructor (GType                  type,
     obj = G_OBJECT_CLASS(ms_context_parent_class)->constructor (type, n_props, props);
     ctx = MS_CONTEXT (obj);
 
-    if (!ctx->name)
+    if (!ctx->priv->name)
     {
-        if (ctx->argv && ctx->argc)
-            ctx->name = g_strdup (ctx->argv[0]);
+        if (ctx->priv->argv && ctx->priv->argc)
+            ctx->priv->name = g_strdup (ctx->priv->argv[0]);
         else
-            ctx->name = g_strdup ("script");
+            ctx->priv->name = g_strdup ("script");
     }
 
-    if (!ctx->argv || !ctx->argc)
+    if (!ctx->priv->argv || !ctx->priv->argc)
     {
-        g_strfreev (ctx->argv);
-        ctx->argv = g_new0 (char*, 2);
-        ctx->argv[0] = g_strdup (ctx->name);
-        ctx->argc = 1;
+        g_strfreev (ctx->priv->argv);
+        ctx->priv->argv = g_new0 (char*, 2);
+        ctx->priv->argv[0] = g_strdup (ctx->priv->name);
+        ctx->priv->argc = 1;
     }
 
     return obj;
@@ -148,10 +168,12 @@ ms_context_constructor (GType                  type,
 static void
 ms_context_init (MSContext *ctx)
 {
-    ctx->vars = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
-                                       (GDestroyNotify) ms_variable_unref);
+    ctx->priv = G_TYPE_INSTANCE_GET_PRIVATE (ctx, MS_TYPE_CONTEXT, MSContextPrivate);
 
-    ctx->print_func = default_print_func;
+    ctx->priv->vars = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+                                             (GDestroyNotify) ms_variable_unref);
+
+    ctx->priv->print_func = default_print_func;
 
     _ms_context_add_builtin (ctx);
 }
@@ -162,13 +184,13 @@ ms_context_finalize (GObject *object)
 {
     MSContext *ctx = MS_CONTEXT (object);
 
-    g_hash_table_destroy (ctx->vars);
-    g_free (ctx->error_msg);
+    g_hash_table_destroy (ctx->priv->vars);
+    g_free (ctx->priv->error_msg);
 
-    ms_value_unref (ctx->return_val);
+    ms_value_unref (ctx->priv->return_val);
 
-    g_free (ctx->name);
-    g_strfreev (ctx->argv);
+    g_free (ctx->priv->name);
+    g_strfreev (ctx->priv->argv);
 
     G_OBJECT_CLASS(ms_context_parent_class)->finalize (object);
 }
@@ -183,6 +205,8 @@ ms_context_class_init (MSContextClass *klass)
     object_class->set_property = ms_context_set_property;
     object_class->get_property = ms_context_get_property;
     object_class->constructor = ms_context_constructor;
+
+    g_type_class_add_private (klass, sizeof (MSContextPrivate));
 
     ms_type_init ();
 
@@ -234,7 +258,7 @@ ms_context_eval_variable (MSContext  *ctx,
     if (var->value)
         return ms_value_ref (var->value);
 
-    return ms_func_call (var->func, NULL, 0, ctx);
+    return _ms_func_call (var->func, NULL, 0, ctx);
 }
 
 
@@ -327,7 +351,7 @@ ms_context_lookup_var (MSContext  *ctx,
 {
     g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
     g_return_val_if_fail (name != NULL, NULL);
-    return g_hash_table_lookup (ctx->vars, name);
+    return g_hash_table_lookup (ctx->priv->vars, name);
 }
 
 
@@ -341,15 +365,16 @@ ms_context_set_var (MSContext  *ctx,
     g_return_val_if_fail (MS_IS_CONTEXT (ctx), FALSE);
     g_return_val_if_fail (name != NULL, FALSE);
 
-    old = g_hash_table_lookup (ctx->vars, name);
+    old = g_hash_table_lookup (ctx->priv->vars, name);
 
     if (var != old)
     {
         if (var)
-            g_hash_table_insert (ctx->vars, g_strdup (name),
+            g_hash_table_insert (ctx->priv->vars,
+                                 g_strdup (name),
                                  ms_variable_ref (var));
         else
-            g_hash_table_remove (ctx->vars, name);
+            g_hash_table_remove (ctx->priv->vars, name);
     }
 
     return TRUE;
@@ -384,16 +409,16 @@ ms_context_set_error (MSContext  *ctx,
     const char *errname;
 
     g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
-    g_return_val_if_fail (!ctx->error && error, NULL);
-    g_return_val_if_fail (!ctx->error_msg, NULL);
+    g_return_val_if_fail (!ctx->priv->error && error, NULL);
+    g_return_val_if_fail (!ctx->priv->error_msg, NULL);
 
-    ctx->error = error;
+    ctx->priv->error = error;
     errname = ms_context_get_error_msg (ctx);
 
     if (message && *message)
-        ctx->error_msg = g_strdup_printf ("%s: %s", errname, message);
+        ctx->priv->error_msg = g_strdup_printf ("%s: %s", errname, message);
     else
-        ctx->error_msg = g_strdup (message);
+        ctx->priv->error_msg = g_strdup (message);
 
     return NULL;
 }
@@ -409,8 +434,8 @@ ms_context_format_error (MSContext  *ctx,
     char *string;
 
     g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
-    g_return_val_if_fail (!ctx->error && error, NULL);
-    g_return_val_if_fail (!ctx->error_msg, NULL);
+    g_return_val_if_fail (!ctx->priv->error && error, NULL);
+    g_return_val_if_fail (!ctx->priv->error_msg, NULL);
 
     if (!format || !format[0])
     {
@@ -419,7 +444,7 @@ ms_context_format_error (MSContext  *ctx,
     }
 
     va_start (args, format);
-    string = ms_vaprintf (format, args);
+    string = _ms_vaprintf (format, args);
     va_end (args);
 
     ms_context_set_error (ctx, error, string);
@@ -433,9 +458,9 @@ void
 ms_context_clear_error (MSContext *ctx)
 {
     g_return_if_fail (MS_IS_CONTEXT (ctx));
-    ctx->error = MS_ERROR_NONE;
-    g_free (ctx->error_msg);
-    ctx->error_msg = NULL;
+    ctx->priv->error = MS_ERROR_NONE;
+    g_free (ctx->priv->error_msg);
+    ctx->priv->error_msg = NULL;
 }
 
 
@@ -448,13 +473,13 @@ ms_context_get_error_msg (MSContext *ctx)
     };
 
     g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
-    g_return_val_if_fail (ctx->error < MS_ERROR_LAST, NULL);
-    g_return_val_if_fail (ctx->error != MS_ERROR_NONE, "ERROR");
+    g_return_val_if_fail (ctx->priv->error < MS_ERROR_LAST, NULL);
+    g_return_val_if_fail (ctx->priv->error != MS_ERROR_NONE, "ERROR");
 
-    if (ctx->error_msg)
-        return ctx->error_msg;
+    if (ctx->priv->error_msg)
+        return ctx->priv->error_msg;
     else
-        return msgs[ctx->error];
+        return msgs[ctx->priv->error];
 }
 
 
@@ -520,60 +545,97 @@ ms_variable_unref (MSVariable *var)
 
 
 void
-ms_context_set_return (MSContext  *ctx,
-                       MSValue    *val)
+_ms_context_set_return (MSContext  *ctx,
+                        MSValue    *val)
 {
-    g_return_if_fail (MS_IS_CONTEXT (ctx));
-    g_return_if_fail (!ctx->return_set);
-    ctx->return_set = TRUE;
-    ctx->return_val = val ? ms_value_ref (val) : ms_value_none ();
+    g_assert (MS_IS_CONTEXT (ctx));
+    g_return_if_fail (!ctx->priv->return_set);
+    ctx->priv->return_set = TRUE;
+    ctx->priv->return_val = val ? ms_value_ref (val) : ms_value_none ();
+}
+
+MSValue *
+_ms_context_get_return (MSContext *ctx)
+{
+    g_assert (MS_IS_CONTEXT (ctx));
+    g_return_val_if_fail (ctx->priv->return_set, NULL);
+    return ms_value_ref (ctx->priv->return_val);
 }
 
 
 void
-ms_context_set_break (MSContext  *ctx)
+_ms_context_set_break (MSContext  *ctx)
 {
-    g_return_if_fail (MS_IS_CONTEXT (ctx));
-    g_return_if_fail (!ctx->break_set);
-    ctx->break_set = TRUE;
+    g_assert (MS_IS_CONTEXT (ctx));
+    g_return_if_fail (!ctx->priv->break_set);
+    ctx->priv->break_set = TRUE;
 }
 
 
 void
-ms_context_set_continue (MSContext *ctx)
+_ms_context_set_continue (MSContext *ctx)
 {
-    g_return_if_fail (MS_IS_CONTEXT (ctx));
-    g_return_if_fail (!ctx->continue_set);
-    ctx->continue_set = TRUE;
+    g_assert (MS_IS_CONTEXT (ctx));
+    g_return_if_fail (!ctx->priv->continue_set);
+    ctx->priv->continue_set = TRUE;
 }
 
 
 void
-ms_context_unset_return (MSContext *ctx)
+_ms_context_unset_return (MSContext *ctx)
 {
-    g_return_if_fail (MS_IS_CONTEXT (ctx));
-    g_return_if_fail (ctx->return_set);
-    ctx->return_set = FALSE;
-    ms_value_unref (ctx->return_val);
-    ctx->return_val = NULL;
+    g_assert (MS_IS_CONTEXT (ctx));
+    g_return_if_fail (ctx->priv->return_set);
+    ctx->priv->return_set = FALSE;
+    ms_value_unref (ctx->priv->return_val);
+    ctx->priv->return_val = NULL;
 }
 
 
 void
-ms_context_unset_break (MSContext  *ctx)
+_ms_context_unset_break (MSContext  *ctx)
 {
-    g_return_if_fail (MS_IS_CONTEXT (ctx));
-    g_return_if_fail (ctx->break_set);
-    ctx->break_set = FALSE;
+    g_assert (MS_IS_CONTEXT (ctx));
+    g_return_if_fail (ctx->priv->break_set);
+    ctx->priv->break_set = FALSE;
 }
 
 
 void
-ms_context_unset_continue (MSContext *ctx)
+_ms_context_unset_continue (MSContext *ctx)
 {
-    g_return_if_fail (MS_IS_CONTEXT (ctx));
-    g_return_if_fail (ctx->continue_set);
-    ctx->continue_set = FALSE;
+    g_assert (MS_IS_CONTEXT (ctx));
+    g_return_if_fail (ctx->priv->continue_set);
+    ctx->priv->continue_set = FALSE;
+}
+
+
+gboolean
+_ms_context_return_set (MSContext *ctx)
+{
+    g_assert (MS_IS_CONTEXT (ctx));
+    return ctx->priv->return_set;
+}
+
+gboolean
+_ms_context_break_set (MSContext *ctx)
+{
+    g_assert (MS_IS_CONTEXT (ctx));
+    return ctx->priv->break_set;
+}
+
+gboolean
+_ms_context_continue_set (MSContext *ctx)
+{
+    g_assert (MS_IS_CONTEXT (ctx));
+    return ctx->priv->continue_set;
+}
+
+gboolean
+_ms_context_error_set (MSContext *ctx)
+{
+    g_assert (MS_IS_CONTEXT (ctx));
+    return ctx->priv->error != 0;
 }
 
 
@@ -609,4 +671,13 @@ ms_context_get_env_variable (MSContext  *ctx,
     g_signal_emit (ctx, signals[GET_ENV_VAR], 0, name, &val);
 
     return val;
+}
+
+
+void
+_ms_context_print (MSContext  *ctx,
+                   const char *string)
+{
+    g_assert (MS_IS_CONTEXT (ctx));
+    ctx->priv->print_func (string, ctx);
 }

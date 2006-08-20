@@ -20,7 +20,7 @@
 
 #define CHECK_GTK(ctx)                                              \
 G_STMT_START {                                                      \
-    if (!gtk_init_check (&ctx->argc, &ctx->argv))                   \
+    if (!gtk_init_check (NULL, NULL))                               \
         return ms_context_format_error (ctx, MS_ERROR_RUNTIME,      \
                                         "could not open display");  \
 } G_STMT_END
@@ -46,7 +46,8 @@ entry_func (MSValue   **args,
     if (n_args > 2 && !ms_value_is_none (args[2]))
         hide_text = ms_value_get_bool (args[2]);
 
-    dialog = gtk_dialog_new_with_buttons (NULL, ctx->window,
+    dialog = gtk_dialog_new_with_buttons (NULL,
+                                          ctx->window,
                                           GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR,
                                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                           GTK_STOCK_OK, GTK_RESPONSE_OK,
@@ -108,7 +109,8 @@ history_entry_func (MSValue   **args,
     if (n_args > 2 && !ms_value_is_none (args[2]))
         dialog_text = ms_value_print (args[2]);
 
-    dialog = gtk_dialog_new_with_buttons (NULL, ctx->window,
+    dialog = gtk_dialog_new_with_buttons (NULL,
+                                          ctx->window,
                                           GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR,
                                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                           GTK_STOCK_OK, GTK_RESPONSE_OK,
@@ -184,7 +186,8 @@ text_func (MSValue   **args,
     if (n_args > 1)
         dialog_text = ms_value_print (args[1]);
 
-    dialog = gtk_dialog_new_with_buttons (NULL, ctx->window,
+    dialog = gtk_dialog_new_with_buttons (NULL,
+                                          ctx->window,
                                           GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR,
                                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                           GTK_STOCK_OK, GTK_RESPONSE_OK,
@@ -381,8 +384,7 @@ file_selector_func (MSValue   **args,
     if (n_args > 1)
         start = ms_value_print (args[1]);
 
-    dialog = moo_file_dialog_new (type, ctx->window ? GTK_WIDGET (ctx->window) : NULL,
-                                  multiple, title, start, NULL);
+    dialog = moo_file_dialog_new (type, ctx->window, multiple, title, start, NULL);
 
     g_free (title);
     g_free (start);

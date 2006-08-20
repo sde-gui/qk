@@ -14,7 +14,7 @@
 #ifndef __MOO_SCRIPT_PARSER_PRIV_H__
 #define __MOO_SCRIPT_PARSER_PRIV_H__
 
-#include "mooscript-node.h"
+#include "mooscript-node-private.h"
 
 G_BEGIN_DECLS
 

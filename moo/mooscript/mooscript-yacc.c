@@ -136,7 +136,7 @@
 /* Copy the first part of user declarations.  */
 #line 1 "/home/muntyan/projects/moo/moo/mooscript/mooscript.y"
 
-#include "mooscript-parser-priv.h"
+#include "mooscript-parser-private.h"
 #include "mooscript-yacc.h"
 
 
@@ -147,19 +147,19 @@ node_list_add (MSParser   *parser,
 {
     if (!list)
     {
-        list = ms_node_list_new ();
+        list = _ms_node_list_new ();
         _ms_parser_add_node (parser, list);
     }
 
     if (!node)
     {
         MSValue *none = ms_value_none ();
-        node = MS_NODE (ms_node_value_new (none));
+        node = MS_NODE (_ms_node_value_new (none));
         ms_value_unref (none);
         _ms_parser_add_node (parser, node);
     }
 
-    ms_node_list_add (list, node);
+    _ms_node_list_add (list, node);
     return MS_NODE (list);
 }
 
@@ -174,7 +174,7 @@ node_function (MSParser   *parser,
     g_return_val_if_fail (func != NULL, NULL);
     g_return_val_if_fail (!args || MS_IS_NODE_LIST (args), NULL);
 
-    node = ms_node_function_new (func, args);
+    node = _ms_node_function_new (func, args);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -192,7 +192,7 @@ node_if_else (MSParser   *parser,
 
     g_return_val_if_fail (condition && then_, NULL);
 
-    node = ms_node_if_else_new (condition, then_, elif_, else_);
+    node = _ms_node_if_else_new (condition, then_, elif_, else_);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -220,7 +220,7 @@ node_while (MSParser   *parser,
 
     g_return_val_if_fail (cond != NULL, NULL);
 
-    loop = ms_node_while_new (type, cond, what);
+    loop = _ms_node_while_new (type, cond, what);
     _ms_parser_add_node (parser, loop);
 
     return MS_NODE (loop);
@@ -237,7 +237,7 @@ node_for (MSParser   *parser,
 
     g_return_val_if_fail (var && list, NULL);
 
-    loop = ms_node_for_new (var, list, what);
+    loop = _ms_node_for_new (var, list, what);
     _ms_parser_add_node (parser, loop);
 
     return MS_NODE (loop);
@@ -250,7 +250,7 @@ node_var (MSParser   *parser,
 {
     MSNodeVar *node;
 
-    node = ms_node_var_new (name);
+    node = _ms_node_var_new (name);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -269,7 +269,7 @@ node_assignment (MSParser   *parser,
     g_return_val_if_fail (val != NULL, NULL);
 
     var = node_var (parser, name);
-    node = ms_node_assign_new (MS_NODE_VAR (var), val);
+    node = _ms_node_assign_new (MS_NODE_VAR (var), val);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -286,7 +286,7 @@ node_binary_op (MSParser   *parser,
 
     g_return_val_if_fail (lval && rval, NULL);
 
-    node = ms_node_binary_op_new (op, lval, rval);
+    node = _ms_node_binary_op_new (op, lval, rval);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -302,7 +302,7 @@ node_unary_op (MSParser   *parser,
 
     g_return_val_if_fail (val != NULL, NULL);
 
-    node = ms_node_unary_op_new (op, val);
+    node = _ms_node_unary_op_new (op, val);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -317,7 +317,7 @@ node_int (MSParser   *parser,
     MSValue *value;
 
     value = ms_value_int (n);
-    node = ms_node_value_new (value);
+    node = _ms_node_value_new (value);
     ms_value_unref (value);
     _ms_parser_add_node (parser, node);
 
@@ -333,7 +333,7 @@ node_string (MSParser   *parser,
     MSValue *value;
 
     value = ms_value_string (string);
-    node = ms_node_value_new (value);
+    node = _ms_node_value_new (value);
     ms_value_unref (value);
     _ms_parser_add_node (parser, node);
 
@@ -347,7 +347,7 @@ node_value_list (MSParser   *parser,
 {
     MSNodeValList *node;
 
-    node = ms_node_val_list_new (list);
+    node = _ms_node_val_list_new (list);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -361,7 +361,7 @@ node_value_range (MSParser   *parser,
 {
     MSNodeValList *node;
 
-    node = ms_node_val_range_new (first, last);
+    node = _ms_node_val_range_new (first, last);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -375,7 +375,7 @@ node_get_item (MSParser   *parser,
 {
     MSNodeGetItem *node;
 
-    node = ms_node_get_item_new (obj, key);
+    node = _ms_node_get_item_new (obj, key);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -390,7 +390,7 @@ node_set_item (MSParser   *parser,
 {
     MSNodeSetItem *node;
 
-    node = ms_node_set_item_new (obj, key, val);
+    node = _ms_node_set_item_new (obj, key, val);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -403,7 +403,7 @@ node_dict (MSParser   *parser,
 {
     MSNodeDict *node;
 
-    node = ms_node_dict_new (list);
+    node = _ms_node_dict_new (list);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -417,7 +417,7 @@ node_dict_entry (MSParser   *parser,
 {
     MSNodeDictEntry *node;
 
-    node = ms_node_dict_entry_new (key, val);
+    node = _ms_node_dict_entry_new (key, val);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -430,7 +430,7 @@ node_return (MSParser   *parser,
 {
     MSNodeReturn *node;
 
-    node = ms_node_return_new (val);
+    node = _ms_node_return_new (val);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -442,7 +442,7 @@ node_break (MSParser *parser)
 {
     MSNodeBreak *node;
 
-    node = ms_node_break_new (MS_BREAK_BREAK);
+    node = _ms_node_break_new (MS_BREAK_BREAK);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -454,7 +454,7 @@ node_continue (MSParser *parser)
 {
     MSNodeBreak *node;
 
-    node = ms_node_break_new (MS_BREAK_CONTINUE);
+    node = _ms_node_break_new (MS_BREAK_CONTINUE);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -468,7 +468,7 @@ node_env_var (MSParser   *parser,
 {
     MSNodeEnvVar *node;
 
-    node = ms_node_env_var_new (var, deflt);
+    node = _ms_node_env_var_new (var, deflt);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -482,7 +482,7 @@ node_dict_elm (MSParser   *parser,
 {
     MSNodeDictElm *node;
 
-    node = ms_node_dict_elm_new (dict, key);
+    node = _ms_node_dict_elm_new (dict, key);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -497,7 +497,7 @@ node_dict_assign (MSParser   *parser,
 {
     MSNodeDictAssign *node;
 
-    node = ms_node_dict_assign_new (dict, key, val);
+    node = _ms_node_dict_assign_new (dict, key, val);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);

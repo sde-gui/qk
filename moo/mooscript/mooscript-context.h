@@ -26,6 +26,7 @@ G_BEGIN_DECLS
 #define MS_IS_CONTEXT_CLASS(klass)          (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_CONTEXT))
 #define MS_CONTEXT_GET_CLASS(obj)           (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_CONTEXT, MSContextClass))
 
+typedef struct _MSContextPrivate MSContextPrivate;
 typedef struct _MSContextClass MSContextClass;
 typedef struct _MSVariable MSVariable;
 
@@ -44,26 +45,10 @@ typedef enum {
     MS_ERROR_LAST
 } MSError;
 
-typedef void (*MSPrintFunc) (const char *string,
-                             MSContext  *ctx);
-
 struct _MSContext {
     GObject object;
-
-    GHashTable *vars;
-    MSError error;
-    char *error_msg;
-    MSPrintFunc print_func;
+    MSContextPrivate *priv;
     gpointer window;
-
-    MSValue *return_val;
-    guint break_set : 1;
-    guint continue_set : 1;
-    guint return_set : 1;
-
-    int argc;
-    char **argv;
-    char *name;
 };
 
 struct _MSContextClass {
@@ -82,7 +67,6 @@ MSVariable  *ms_variable_ref                (MSVariable *var);
 void         ms_variable_unref              (MSVariable *var);
 
 MSContext   *ms_context_new                 (gpointer    window);
-void         _ms_context_add_builtin        (MSContext  *ctx);
 
 MSValue     *ms_context_run_script          (MSContext  *ctx,
                                              const char *script);
@@ -122,14 +106,6 @@ MSValue     *ms_context_format_error        (MSContext  *ctx,
 
 const char  *ms_context_get_error_msg       (MSContext  *ctx);
 void         ms_context_clear_error         (MSContext  *ctx);
-
-void         ms_context_set_return          (MSContext  *ctx,
-                                             MSValue    *val);
-void         ms_context_set_break           (MSContext  *ctx);
-void         ms_context_set_continue        (MSContext  *ctx);
-void         ms_context_unset_return        (MSContext  *ctx);
-void         ms_context_unset_break         (MSContext  *ctx);
-void         ms_context_unset_continue      (MSContext  *ctx);
 
 
 G_END_DECLS

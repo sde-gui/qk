@@ -12,13 +12,14 @@
  */
 
 #include "mooscript-context.h"
+#include "mooscript-func-private.h"
 
 
 MSValue *
-ms_func_call (MSFunc     *func,
-              MSValue   **args,
-              guint       n_args,
-              MSContext  *ctx)
+_ms_func_call (MSFunc     *func,
+               MSValue   **args,
+               guint       n_args,
+               MSContext  *ctx)
 {
     MSFuncCall call;
 

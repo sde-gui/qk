@@ -11,7 +11,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooscript-parser-priv.h"
+#include "mooscript-parser-private.h"
 #include "mooscript-parser.h"
 #include "mooscript-yacc.h"
 #include <string.h>
@@ -602,7 +602,7 @@ _ms_parser_set_top_node (MSParser   *parser,
 
     if (!node)
     {
-        node = (MSNode*) ms_node_list_new ();
+        node = (MSNode*) _ms_node_list_new ();
         _ms_parser_add_node (parser, node);
     }
 

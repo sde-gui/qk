@@ -11,9 +11,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooscript-context.h"
+#include "mooscript-context-private.h"
 #include "mooscript-parser.h"
 #include "mooscript-zenity.h"
+#include "mooscript-func-private.h"
 #include "mooutils/mooprefs.h"
 #include <string.h>
 
@@ -28,11 +29,11 @@ print_func (MSValue   **args,
     for (i = 0; i < n_args; ++i)
     {
         char *s = ms_value_print (args[i]);
-        ctx->print_func (s, ctx);
+        _ms_context_print (ctx, s);
         g_free (s);
     }
 
-    ctx->print_func ("\n", ctx);
+    _ms_context_print (ctx, "\n");
     return ms_value_none ();
 }
 
@@ -347,13 +348,13 @@ _ms_context_add_builtin (MSContext *ctx)
 
     for (i = 0; i < MS_BINARY_OP_LAST; ++i)
         ADD_FUNC (ms_cfunc_new_2,
-                  ms_binary_op_cfunc (i),
-                  ms_binary_op_name (i));
+                  _ms_binary_op_cfunc (i),
+                  _ms_binary_op_name (i));
 
     for (i = 0; i < MS_UNARY_OP_LAST; ++i)
         ADD_FUNC (ms_cfunc_new_1,
-                  ms_unary_op_cfunc (i),
-                  ms_unary_op_name (i));
+                  _ms_unary_op_cfunc (i),
+                  _ms_unary_op_name (i));
 
     ADD_FUNC (ms_cfunc_new_1, str_func, "Str");
     ADD_FUNC (ms_cfunc_new_1, int_func, "Int");
@@ -393,7 +394,7 @@ add_meth (MSValueClass *klass,
           const char   *name,
           MSFunc       *func)
 {
-    ms_value_class_add_method (klass, name, func);
+    _ms_value_class_add_method (klass, name, func);
     g_object_unref (func);
 }
 
