@@ -700,7 +700,7 @@ append_globs (GString    *command,
     else if (globs)
         g_string_append_printf (command, " \\( %s \\) ", globs);
     else if (skip)
-        g_string_append_printf (command, " \\( %s \\) ", skip);
+        g_string_append_printf (command, " ! \\( %s \\) ", skip);
     else
         g_string_append (command, " ");
 
@@ -735,7 +735,7 @@ execute_grep (const char     *pattern,
                             !case_sensitive ? "-i " : "", pattern);
 
     stuff->cmd = CMD_GREP;
-    moo_cmd_view_run_command (stuff->output, command->str, NULL, _("Find In Files"));
+    moo_cmd_view_run_command (stuff->output, command->str, NULL, _("Find in Files"));
     g_string_free (command, TRUE);
 }
 
