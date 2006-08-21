@@ -243,68 +243,67 @@ set_variable (const char   *name,
               const GValue *gval,
               gpointer      array)
 {
-    char *value = NULL;
+    char *freeme = NULL;
+    const char *value = NULL;
 
     switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (gval)))
     {
         case G_TYPE_CHAR:
-            value = g_strdup_printf ("%c", g_value_get_char (gval));
+            freeme = g_strdup_printf ("%c", g_value_get_char (gval));
             break;
         case G_TYPE_UCHAR:
-            value = g_strdup_printf ("%c", g_value_get_uchar (gval));
+            freeme = g_strdup_printf ("%c", g_value_get_uchar (gval));
             break;
         case G_TYPE_INT:
-            value = g_strdup_printf ("%d", g_value_get_int (gval));
+            freeme = g_strdup_printf ("%d", g_value_get_int (gval));
             break;
         case G_TYPE_UINT:
-            value = g_strdup_printf ("%u", g_value_get_uint (gval));
+            freeme = g_strdup_printf ("%u", g_value_get_uint (gval));
             break;
         case G_TYPE_LONG:
-            value = g_strdup_printf ("%ld", g_value_get_long (gval));
+            freeme = g_strdup_printf ("%ld", g_value_get_long (gval));
             break;
         case G_TYPE_ULONG:
-            value = g_strdup_printf ("%lu", g_value_get_ulong (gval));
+            freeme = g_strdup_printf ("%lu", g_value_get_ulong (gval));
             break;
         case G_TYPE_INT64:
-            value = g_strdup_printf ("%" G_GINT64_FORMAT, g_value_get_int64 (gval));
+            freeme = g_strdup_printf ("%" G_GINT64_FORMAT, g_value_get_int64 (gval));
             break;
         case G_TYPE_UINT64:
-            value = g_strdup_printf ("%" G_GUINT64_FORMAT, g_value_get_uint64 (gval));
+            freeme = g_strdup_printf ("%" G_GUINT64_FORMAT, g_value_get_uint64 (gval));
             break;
         case G_TYPE_STRING:
-            value = g_strdup (g_value_get_string (gval));
+            value = g_value_get_string (gval);
             break;
         default:
             g_message ("ignoring value of type %s", g_type_name (G_VALUE_TYPE (gval)));
     }
 
+    if (freeme)
+        value = freeme;
+
     if (value)
-    {
-        g_ptr_array_add (array, g_strdup (name));
-        g_ptr_array_add (array, value);
-    }
+        g_ptr_array_add (array, g_strdup_printf ("%s=%s", name, value));
+
+    g_free (freeme);
 }
 
 static char **
 create_environment (MooCommandContext *ctx)
 {
     GPtrArray *array;
-    gpointer doc;
 
     array = g_ptr_array_new ();
     moo_command_context_foreach (ctx, set_variable, array);
 
-    doc = moo_command_context_get_doc (ctx);
-
-    g_ptr_array_add (array, NULL);
-
-    if (array->len > 1)
+    if (array->len)
     {
+        g_ptr_array_add (array, NULL);
         return (char**) g_ptr_array_free (array, FALSE);
     }
     else
     {
-        g_strfreev ((char**) g_ptr_array_free (array, FALSE));
+        g_ptr_array_free (array, TRUE);
         return NULL;
     }
 }
