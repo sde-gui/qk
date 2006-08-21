@@ -2006,7 +2006,7 @@ render_icon_for_path (const char     *path,
     }
 #else
 #ifdef __GNUC__
-#warning "Implement me"
+#warning "Implement render_icon_for_path()"
 #endif
 #endif
 

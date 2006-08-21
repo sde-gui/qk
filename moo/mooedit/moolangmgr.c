@@ -938,7 +938,7 @@ moo_lang_mgr_get_lang_for_file (MooLangMgr     *mgr,
         return lang;
 #else
 #ifdef __GNUC__
-#warning "Implement me"
+#warning "Implement moo_lang_mgr_get_lang_for_file()"
 #endif
 #endif /* MOO_USE_XDGMIME */
 
@@ -979,7 +979,7 @@ moo_lang_mgr_get_lang_for_filename (MooLangMgr *mgr,
         return lang;
 #else
 #ifdef __GNUC__
-#warning "Implement me"
+#warning "Implement moo_lang_mgr_get_lang_for_filename()"
 #endif
 #endif /* MOO_USE_XDGMIME */
 

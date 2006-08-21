@@ -845,7 +845,7 @@ get_root_folder_win32 (MooFileSystem  *fs,
                        MooFileFlags    wanted)
 {
 #ifdef __GNUC__
-#warning "Implement me"
+#warning "Implement get_root_folder_win32()"
 #endif
     return _moo_file_system_get_folder (fs, "c:\\", wanted, NULL);
 }
@@ -858,7 +858,7 @@ move_file_win32 (G_GNUC_UNUSED MooFileSystem  *fs,
                  GError        **error)
 {
 #ifdef __GNUC__
-#warning "Implement me"
+#warning "Implement move_file_win32()"
 #endif
     g_set_error (error, MOO_FILE_ERROR,
                  MOO_FILE_ERROR_NOT_IMPLEMENTED,
@@ -982,7 +982,7 @@ parse_path_win32 (MooFileSystem  *fs,
                   GError        **error)
 {
 #ifdef __GNUC__
-#warning "Implement me"
+#warning "Implement parse_path_win32()"
 #endif
     const char *separator;
     char *norm_dirname = NULL, *dirname = NULL, *basename = NULL;

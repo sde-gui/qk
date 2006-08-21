@@ -281,7 +281,7 @@ _moo_app_input_send_msg (G_GNUC_UNUSED const char *pipe_basename,
     g_return_val_if_fail (data != NULL, FALSE);
 
 #ifdef __GNUC__
-#warning "Implement me"
+#warning "Implement _moo_app_input_send_msg()"
 #endif
 
     return FALSE;

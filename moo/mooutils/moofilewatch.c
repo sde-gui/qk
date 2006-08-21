@@ -1091,7 +1091,7 @@ monitor_win32_create (MooFileWatch   *watch,
         return monitor_stat_create (watch, type, filename, data, request, error);
 
 #ifdef __GNUC__
-#warning "Implement me"
+#warning "Implement monitor_win32_create()"
 #endif
 
     g_set_error (error, MOO_FILE_WATCH_ERROR,

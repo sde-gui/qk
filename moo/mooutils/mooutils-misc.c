@@ -1146,7 +1146,9 @@ _moo_get_pid_string (void)
     if (!string)
     {
 #ifdef __WIN32__
-#warning "Implement me"
+#ifdef __GNUC__
+#warning "Implement _moo_get_pid_string()"
+#endif
         string = g_strdup ("");
 #else
         string = g_strdup_printf ("%d", getpid ());
