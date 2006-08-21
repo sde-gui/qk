@@ -18,6 +18,7 @@
 #include "mooedit/moocmdview.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooglade.h"
+#include "mooutils/mooutils-fs.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -128,7 +129,8 @@ save_temp (const char *data,
 
     close (fd);
 
-    if (!g_file_set_contents (filename, data, length, &error))
+    /* XXX */
+    if (!_moo_save_file_utf8 (filename, data, length, &error))
     {
         g_critical ("%s: %s", G_STRLOC, error->message);
         g_error_free (error);
