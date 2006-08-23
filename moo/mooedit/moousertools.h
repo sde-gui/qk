@@ -44,6 +44,7 @@ typedef enum {
 #endif
 
 typedef struct {
+    char                *id;
     char                *name;
     char                *accel;
     char                *menu;

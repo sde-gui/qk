@@ -45,6 +45,7 @@
 #define PROP_NAME           "name"
 #define PROP_ENABLED        "enabled"
 #define PROP_OS             "os"
+#define PROP_ID             "id"
 
 enum {
     PROP_0,
@@ -199,21 +200,18 @@ check_sensitive_func (GtkAction      *gtkaction,
 }
 
 
-static void
-mangle_name (const char *label,
-             char      **id,
-             char      **name)
+static char *
+get_name (const char *label)
 {
-    char *underscore;
+    char *underscore, *name;
 
-    *id = g_strdup (label);
-    g_strcanon (*id, G_CSET_A_2_Z G_CSET_a_2_z G_CSET_DIGITS "_", '_');
-
-    *name = g_strdup (label);
-    underscore = strchr (*name, '_');
+    name = g_strdup (label);
+    underscore = strchr (name, '_');
 
     if (underscore)
         memmove (underscore, underscore + 1, strlen (underscore + 1) + 1);
+
+    return name;
 }
 
 
@@ -221,6 +219,12 @@ static gboolean
 check_info (MooUserToolInfo *info,
             MooUserToolType  type)
 {
+    if (!info->id || !info->id[0])
+    {
+        g_warning ("tool id missing in file %s", info->file);
+        return FALSE;
+    }
+
     if (!info->name || !info->name[0])
     {
         g_warning ("tool name missing in file %s", info->file);
@@ -257,7 +261,7 @@ load_tool (MooUserToolInfo *info)
     ToolInfo *tool_info;
     gpointer klass = NULL;
     MooCommand *cmd;
-    char *id, *name;
+    char *name;
 
     g_return_if_fail (info != NULL);
     g_return_if_fail (info->file != NULL);
@@ -289,7 +293,7 @@ load_tool (MooUserToolInfo *info)
         return;
     }
 
-    mangle_name (info->name, &id, &name);
+    name = get_name (info->name);
 
     switch (info->type)
     {
@@ -299,7 +303,7 @@ load_tool (MooUserToolInfo *info)
             if (!moo_window_class_find_group (klass, "Tools"))
                 moo_window_class_new_group (klass, "Tools", _("Tools"));
 
-            moo_window_class_new_action (klass, id, "Tools",
+            moo_window_class_new_action (klass, info->id, "Tools",
                                          "action-type::", MOO_TYPE_TOOL_ACTION,
                                          "display-name", name,
                                          "label", info->name,
@@ -307,18 +311,18 @@ load_tool (MooUserToolInfo *info)
                                          "command", cmd,
                                          NULL);
 
-            moo_edit_window_set_action_check (id, MOO_ACTION_CHECK_SENSITIVE,
+            moo_edit_window_set_action_check (info->id, MOO_ACTION_CHECK_SENSITIVE,
                                               check_sensitive_func,
                                               NULL, NULL);
 
             if (info->langs)
-                moo_edit_window_set_action_langs (id, MOO_ACTION_CHECK_ACTIVE, info->langs);
+                moo_edit_window_set_action_langs (info->id, MOO_ACTION_CHECK_ACTIVE, info->langs);
 
             break;
 
         case MOO_USER_TOOL_CONTEXT:
             klass = g_type_class_peek (MOO_TYPE_EDIT);
-            moo_edit_class_new_action (klass, id,
+            moo_edit_class_new_action (klass, info->id,
                                        "action-type::", MOO_TYPE_TOOL_ACTION,
                                        "display-name", name,
                                        "label", info->name,
@@ -329,7 +333,7 @@ load_tool (MooUserToolInfo *info)
             break;
     }
 
-    tool_info = tools_store_add (info->type, id);
+    tool_info = tools_store_add (info->type, info->id);
 
     if (tool_info->xml)
     {
@@ -337,7 +341,7 @@ load_tool (MooUserToolInfo *info)
         char *freeme = NULL;
         char *markup;
 
-        markup = g_markup_printf_escaped ("<item action=\"%s\"/>", id);
+        markup = g_markup_printf_escaped ("<item action=\"%s\"/>", info->id);
 
         if (info->type == MOO_USER_TOOL_CONTEXT)
         {
@@ -362,7 +366,6 @@ load_tool (MooUserToolInfo *info)
         g_free (freeme);
     }
 
-    g_free (id);
     g_free (name);
     g_object_unref (cmd);
 }
@@ -406,6 +409,7 @@ parse_element (MooMarkupNode       *node,
     info->type = type;
     info->file = g_strdup (file);
     info->position = MOO_USER_TOOL_POS_END;
+    info->id = g_strdup (moo_markup_get_prop (node, PROP_ID));
     info->name = g_strdup (moo_markup_get_prop (node, PROP_NAME));
 
     info->enabled = moo_markup_get_bool_prop (node, PROP_ENABLED, TRUE);
@@ -566,6 +570,71 @@ _moo_edit_parse_user_tools (MooUserToolType type)
 }
 
 
+static GHashTable *
+collect_ids (const GSList *list)
+{
+    GHashTable *ids = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+
+    while (list)
+    {
+        const MooUserToolInfo *info = list->data;
+
+        if (info->id)
+            g_hash_table_insert (ids, g_strdup (info->id), GINT_TO_POINTER (TRUE));
+
+        list = list->next;
+    }
+
+    return ids;
+}
+
+static const char *
+generate_id (const MooUserToolInfo *info,
+             GHashTable            *ids)
+{
+    char *base, *name;
+    const char *id;
+
+    if (info->name)
+        name = get_name (info->name);
+    else
+        name = NULL;
+
+    base = g_strdup_printf ("MooUserTool_%s", name ? name : "");
+    g_strcanon (base, G_CSET_A_2_Z G_CSET_a_2_z G_CSET_DIGITS "_", '_');
+
+    if (!g_hash_table_lookup (ids, base))
+    {
+        id = base;
+        g_hash_table_insert (ids, base, GINT_TO_POINTER (TRUE));
+        base = NULL;
+    }
+    else
+    {
+        guint i = 0;
+
+        while (TRUE)
+        {
+            char *tmp = g_strdup_printf ("%s_%d", base, i);
+
+            if (!g_hash_table_lookup (ids, tmp))
+            {
+                id = tmp;
+                g_hash_table_insert (ids, tmp, GINT_TO_POINTER (TRUE));
+                break;
+            }
+
+            g_free (tmp);
+
+            i += 1;
+        }
+    }
+
+    g_free (name);
+    g_free (base);
+    return id;
+}
+
 void
 _moo_edit_save_user_tools (MooUserToolType  type,
                            const GSList    *list)
@@ -574,18 +643,28 @@ _moo_edit_save_user_tools (MooUserToolType  type,
     MooMarkupNode *root;
     GError *error = NULL;
     char *string;
+    GHashTable *ids;
 
     g_return_if_fail (type < N_TOOLS);
 
     doc = moo_markup_doc_new ("tools");
     root = moo_markup_create_root_element (doc, ELEMENT_TOOLS);
+    ids = collect_ids (list);
 
     while (list)
     {
         MooMarkupNode *node;
         const MooUserToolInfo *info = list->data;
+        const char *id;
 
         node = moo_markup_create_element (root, ELEMENT_TOOL);
+
+        if (info->id)
+            id = info->id;
+        else
+            id = generate_id (info, ids);
+
+        moo_markup_set_prop (node, PROP_ID, id);
 
         if (info->name && info->name[0])
             moo_markup_set_prop (node, PROP_NAME, info->name);
@@ -618,6 +697,7 @@ _moo_edit_save_user_tools (MooUserToolType  type,
 
     g_message ("done");
 
+    g_hash_table_destroy (ids);
     g_free (string);
     moo_markup_doc_unref (doc);
 }
@@ -649,6 +729,7 @@ _moo_user_tool_info_unref (MooUserToolInfo *info)
     if (--info->ref_count)
         return;
 
+    g_free (info->id);
     g_free (info->name);
     g_free (info->accel);
     g_free (info->menu);
@@ -854,7 +935,7 @@ create_command_context (gpointer window,
         dirname = g_path_get_dirname (filename);
         get_extension (basename, &base, &extension);
 
-        moo_command_context_set_string (ctx, "DOC", filename);
+        moo_command_context_set_string (ctx, "DOC", basename);
         moo_command_context_set_string (ctx, "DOC_DIR", dirname);
         moo_command_context_set_string (ctx, "DOC_BASE", base);
         moo_command_context_set_string (ctx, "DOC_EXT", extension);
@@ -868,6 +949,8 @@ create_command_context (gpointer window,
 
     moo_command_context_set_string (ctx, "DATA_DIR", user_dir);
     moo_command_context_set_string (ctx, "APP_PID", _moo_get_pid_string ());
+    /* XXX */
+    moo_command_context_set_string (ctx, "MEDIT_PID", _moo_get_pid_string ());
 
     g_free (user_dir);
     return ctx;
