@@ -2154,10 +2154,10 @@ draw_box (GtkTextView       *text_view,
     gtk_text_view_buffer_to_window_coords (text_view, GTK_TEXT_WINDOW_TEXT,
                                            rect.x, rect.y, &rect.x, &rect.y);
 
-    rect.x += 1;
-    rect.y += 1;
-    rect.width -= 3;
-    rect.height -= 3;
+    rect.x += 2;
+    rect.y += 2;
+    rect.width -= 4;
+    rect.height -= 4;
 
     if (selected)
         gc = GTK_WIDGET(text_view)->style->base_gc[GTK_STATE_NORMAL];
