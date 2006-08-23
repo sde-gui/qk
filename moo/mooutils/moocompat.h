@@ -22,6 +22,9 @@
 
 #if !GLIB_CHECK_VERSION(2,8,0)
 #include "mooutils/newgtk/gmappedfile.h"
+
+int g_mkdir_with_parents    (const gchar *pathname,
+                             int          mode);
 #endif /* !GLIB_CHECK_VERSION(2,8,0) */
 
 #if !GTK_CHECK_VERSION(2,4,0)

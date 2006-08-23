@@ -17,6 +17,9 @@
  *  g_signal_accumulator_true_handled function is taken from gobject/gsignal.c;
  *  it's Copyright (C) 2000-2001 Red Hat, Inc.
  *
+ *  g_mkdir_with_parents function is taken from glib/gfileutils.c;
+ *  it's Copyright 2000 Red Hat, Inc.
+ *
  *  substitute_underscores, and gtk_accelerator_get_label are taken from gtk/gtkaccelgroup.c.
  *  it's Copyright (C) 1998, 2001 Tim Janik
  *
@@ -75,6 +78,70 @@ void g_ptr_array_remove_range (GPtrArray *array,
 }
 
 #endif /* !GLIB_CHECK_VERSION(2,4,0) */
+
+
+#if !GLIB_CHECK_VERSION(2,8,0)
+
+int
+g_mkdir_with_parents (const gchar *pathname,
+		      int          mode)
+{
+  gchar *fn, *p;
+
+  if (pathname == NULL || *pathname == '\0')
+    {
+      errno = EINVAL;
+      return -1;
+    }
+
+  fn = g_strdup (pathname);
+
+  if (g_path_is_absolute (fn))
+    p = (gchar *) g_path_skip_root (fn);
+  else
+    p = fn;
+
+  do
+    {
+      while (*p && !G_IS_DIR_SEPARATOR (*p))
+	p++;
+
+      if (!*p)
+	p = NULL;
+      else
+	*p = '\0';
+
+      if (!g_file_test (fn, G_FILE_TEST_EXISTS))
+	{
+	  if (g_mkdir (fn, mode) == -1)
+	    {
+	      int errno_save = errno;
+	      g_free (fn);
+	      errno = errno_save;
+	      return -1;
+	    }
+	}
+      else if (!g_file_test (fn, G_FILE_TEST_IS_DIR))
+	{
+	  g_free (fn);
+	  errno = ENOTDIR;
+	  return -1;
+	}
+      if (p)
+	{
+	  *p++ = G_DIR_SEPARATOR;
+	  while (*p && G_IS_DIR_SEPARATOR (*p))
+	    p++;
+	}
+    }
+  while (p);
+
+  g_free (fn);
+
+  return 0;
+}
+
+#endif /* !GLIB_CHECK_VERSION(2,8,0) */
 
 
 #if !GTK_CHECK_VERSION(2,6,0)
