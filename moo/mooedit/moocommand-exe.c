@@ -679,6 +679,26 @@ exe_type_save_data (G_GNUC_UNUSED MooCommandType *type,
 }
 
 
+static gboolean
+exe_type_data_equal (G_GNUC_UNUSED MooCommandType *type,
+                     MooCommandData *data1,
+                     MooCommandData *data2)
+{
+    guint i;
+    const char *keys[] = {"cmd-line", "input", "output"};
+
+    for (i = 0; i < G_N_ELEMENTS (keys); ++i)
+    {
+        const char *val1 = moo_command_data_get (data1, keys[i]);
+        const char *val2 = moo_command_data_get (data2, keys[i]);
+        if (strcmp (val1 ? val1 : "", val2 ? val2 : "") != 0)
+            return FALSE;
+    }
+
+    return TRUE;
+}
+
+
 static void
 _moo_command_type_exe_class_init (MooCommandTypeExeClass *klass)
 {
@@ -686,6 +706,7 @@ _moo_command_type_exe_class_init (MooCommandTypeExeClass *klass)
     klass->create_widget = exe_type_create_widget;
     klass->load_data = exe_type_load_data;
     klass->save_data = exe_type_save_data;
+    klass->data_equal = exe_type_data_equal;
 }
 
 

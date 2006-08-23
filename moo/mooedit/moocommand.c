@@ -95,6 +95,7 @@ moo_command_type_register (const char     *name,
     g_return_if_fail (klass->create_widget != NULL);
     g_return_if_fail (klass->load_data != NULL);
     g_return_if_fail (klass->save_data != NULL);
+    g_return_if_fail (klass->data_equal != NULL);
 
     if (registered_types != NULL)
     {
@@ -224,6 +225,18 @@ _moo_command_type_save_data (MooCommandType    *type,
     g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
     g_return_val_if_fail (data != NULL, FALSE);
     return MOO_COMMAND_TYPE_GET_CLASS (type)->save_data (type, widget, data);
+}
+
+gboolean
+_moo_command_type_data_equal (MooCommandType *type,
+                              MooCommandData *data1,
+                              MooCommandData *data2)
+{
+    g_return_val_if_fail (MOO_IS_COMMAND_TYPE (type), FALSE);
+    g_return_val_if_fail (MOO_COMMAND_TYPE_GET_CLASS(type)->data_equal != NULL, FALSE);
+    g_return_val_if_fail (data1 != NULL, FALSE);
+    g_return_val_if_fail (data2 != NULL, FALSE);
+    return MOO_COMMAND_TYPE_GET_CLASS (type)->data_equal (type, data1, data2);
 }
 
 

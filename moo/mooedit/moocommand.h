@@ -105,6 +105,9 @@ struct _MooCommandTypeClass {
     gboolean    (*save_data)      (MooCommandType    *type,
                                    GtkWidget         *widget,
                                    MooCommandData    *data);
+    gboolean    (*data_equal)     (MooCommandType    *type,
+                                   MooCommandData    *data1,
+                                   MooCommandData    *data2);
 };
 
 
@@ -203,6 +206,9 @@ void         _moo_command_type_load_data        (MooCommandType    *type,
 gboolean     _moo_command_type_save_data        (MooCommandType    *type,
                                                  GtkWidget         *widget,
                                                  MooCommandData    *data);
+gboolean     _moo_command_type_data_equal       (MooCommandType    *type,
+                                                 MooCommandData    *data1,
+                                                 MooCommandData    *data2);
 
 
 G_END_DECLS

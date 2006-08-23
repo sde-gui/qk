@@ -199,6 +199,17 @@ script_type_save_data (G_GNUC_UNUSED MooCommandType *type,
 }
 
 
+static gboolean
+script_type_data_equal (G_GNUC_UNUSED MooCommandType *type,
+                        MooCommandData *data1,
+                        MooCommandData *data2)
+{
+    const char *val1 = moo_command_data_get (data1, "code");
+    const char *val2 = moo_command_data_get (data2, "code");
+    return !strcmp (val1 ? val1 : "", val2 ? val2 : "");
+}
+
+
 static void
 _moo_command_type_script_init (G_GNUC_UNUSED MooCommandType *type)
 {
@@ -211,6 +222,7 @@ _moo_command_type_script_class_init (MooCommandTypeClass *klass)
     klass->create_widget = script_type_create_widget;
     klass->load_data = script_type_load_data;
     klass->save_data = script_type_save_data;
+    klass->data_equal = script_type_data_equal;
 }
 
 
