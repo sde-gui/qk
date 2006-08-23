@@ -210,12 +210,11 @@ _moo_rmdir (const char *path,
         if (_m_rmdir (path) != 0)
         {
             int err = errno;
-            char *path_utf8 = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
+            char *path_utf8 = g_filename_display_name (path);
             g_set_error (error, MOO_FILE_ERROR,
                          _moo_file_error_from_errno (err),
                          "Could not remove '%s': %s",
-                         path_utf8 ? path_utf8 : BROKEN_NAME,
-                         g_strerror (err));
+                         path_utf8, g_strerror (err));
             g_free (path_utf8);
             return FALSE;
         }
@@ -247,14 +246,13 @@ _moo_mkdir (const char *path,
     if (stat (path, &buf) != 0 && errno != ENOENT)
     {
         int err_code = errno;
-        utf8_path = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
+        utf8_path = g_filename_display_name (path);
 
         g_set_error (error,
                      MOO_FILE_ERROR,
                      _moo_file_error_from_errno (err_code),
                      "Could not create directory '%s': %s",
-                     utf8_path ? utf8_path : BROKEN_NAME,
-                     g_strerror (err_code));
+                     utf8_path, g_strerror (err_code));
 
         g_free (utf8_path);
         return FALSE;
@@ -267,14 +265,13 @@ _moo_mkdir (const char *path,
         if (_m_mkdir (path) == -1)
         {
             int err_code = errno;
-            utf8_path = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
+            utf8_path = g_filename_display_name (path);
 
             g_set_error (error,
                          MOO_FILE_ERROR,
                          _moo_file_error_from_errno (err_code),
                          "Could not create directory '%s': %s",
-                         utf8_path ? utf8_path : BROKEN_NAME,
-                         g_strerror (err_code));
+                         utf8_path, g_strerror (err_code));
 
             g_free (utf8_path);
             return FALSE;
@@ -286,15 +283,45 @@ _moo_mkdir (const char *path,
     if (S_ISDIR (buf.st_mode))
         return TRUE;
 
-    utf8_path = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
+    utf8_path = g_filename_display_name (path);
     g_set_error (error, MOO_FILE_ERROR,
                  MOO_FILE_ERROR_ALREADY_EXISTS,
                  "Could not create directory '%s': %s",
-                 utf8_path ? utf8_path : BROKEN_NAME,
-                 g_strerror (EEXIST));
+                 utf8_path, g_strerror (EEXIST));
     g_free (utf8_path);
 
     return FALSE;
+}
+
+
+gboolean
+_moo_rename (const char *path,
+             const char *new_path,
+             GError    **error)
+{
+    g_return_val_if_fail (path != NULL, FALSE);
+    g_return_val_if_fail (new_path != NULL, FALSE);
+
+    errno = 0;
+
+    if (_m_rename (path, new_path) != 0)
+    {
+        int err_code = errno;
+        char *utf8_path = g_filename_display_name (path);
+        char *utf8_new_path = g_filename_display_name (new_path);
+
+        g_set_error (error,
+                     MOO_FILE_ERROR,
+                     _moo_file_error_from_errno (err_code),
+                     "Could not rename file '%s' to '%s': %s",
+                     utf8_path, utf8_new_path, g_strerror (err_code));
+
+        g_free (utf8_path);
+        g_free (utf8_new_path);
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 

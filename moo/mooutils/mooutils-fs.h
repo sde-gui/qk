@@ -55,6 +55,9 @@ gboolean        _moo_rmdir                  (const char *path,
                                              GError    **error);
 gboolean        _moo_mkdir                  (const char *path,
                                              GError    **error);
+gboolean        _moo_rename                 (const char *path,
+                                             const char *new_path,
+                                             GError    **error);
 
 char          **moo_filenames_from_locale   (char      **files);
 char           *moo_filename_from_locale    (const char *file);
