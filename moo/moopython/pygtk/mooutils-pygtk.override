@@ -15,7 +15,7 @@ headers
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moowindow.h"
 #include "mooutils/mooprefsdialog.h"
-#include "mooutils/moohistoryentry.h"
+#include "mooutils/moohistorycombo.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/moonotebook.h"
 #include "mooutils/mooentry.h"

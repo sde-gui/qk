@@ -33,7 +33,7 @@ mooutils_include_headers =		\
 	mooentry.h			\
 	moofiltermgr.h			\
 	mooglade.h			\
-	moohistoryentry.h		\
+	moohistorycombo.h		\
 	moohistorylist.h		\
 	mooi18n.h			\
 	moolinklabel.h			\
@@ -92,7 +92,7 @@ mooutils_sources =			\
 	moofontsel.c			\
 	moofontsel.h			\
 	mooglade.c			\
-	moohistoryentry.c		\
+	moohistorycombo.c		\
 	moohistorylist.c		\
 	mooi18n.c			\
 	moolinklabel.c			\

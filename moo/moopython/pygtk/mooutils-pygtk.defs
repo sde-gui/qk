@@ -48,8 +48,8 @@
 (define-object HistoryEntry
   (in-module "Moo")
   (parent "MooCombo")
-  (c-name "MooHistoryEntry")
-  (gtype-id "MOO_TYPE_HISTORY_ENTRY")
+  (c-name "MooHistoryCombo")
+  (gtype-id "MOO_TYPE_HISTORY_COMBO")
 )
 
 (define-object HistoryList
@@ -859,9 +859,9 @@
 
 ;; From ../mooutils/moohistoryentry.h
 
-(define-function moo_history_entry_new
-  (c-name "moo_history_entry_new")
-  (is-constructor-of "MooHistoryEntry")
+(define-function moo_history_combo_new
+  (c-name "moo_history_combo_new")
+  (is-constructor-of "MooHistoryCombo")
   (return-type "GtkWidget*")
   (properties
     '("user_id" (optional))
@@ -869,8 +869,8 @@
 )
 
 (define-method set_list
-  (of-object "MooHistoryEntry")
-  (c-name "moo_history_entry_set_list")
+  (of-object "MooHistoryCombo")
+  (c-name "moo_history_combo_set_list")
   (return-type "none")
   (parameters
     '("MooHistoryList*" "list")
@@ -878,14 +878,14 @@
 )
 
 (define-method get_list
-  (of-object "MooHistoryEntry")
-  (c-name "moo_history_entry_get_list")
+  (of-object "MooHistoryCombo")
+  (c-name "moo_history_combo_get_list")
   (return-type "MooHistoryList*")
 )
 
 (define-method add_text
-  (of-object "MooHistoryEntry")
-  (c-name "moo_history_entry_add_text")
+  (of-object "MooHistoryCombo")
+  (c-name "moo_history_combo_add_text")
   (return-type "none")
   (parameters
     '("const-char*" "text")
@@ -1004,11 +1004,11 @@
   )
 )
 
-(define-method load
-  (of-object "MooHistoryList")
-  (c-name "moo_history_list_load")
-  (return-type "none")
-)
+;; (define-method load
+;;   (of-object "MooHistoryList")
+;;   (c-name "moo_history_list_load")
+;;   (return-type "none")
+;; )
 
 (define-method add_builtin
   (of-object "MooHistoryList")

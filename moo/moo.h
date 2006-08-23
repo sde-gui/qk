@@ -55,7 +55,7 @@
 #include <mooutils/mooentry.h>
 #include <mooutils/moofiltermgr.h>
 #include <mooutils/mooglade.h>
-#include <mooutils/moohistoryentry.h>
+#include <mooutils/moohistorycombo.h>
 #include <mooutils/moohistorylist.h>
 #include <mooutils/moolinklabel.h>
 #include <mooutils/moomarkup.h>

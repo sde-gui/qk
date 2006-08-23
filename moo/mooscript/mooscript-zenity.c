@@ -14,7 +14,7 @@
 #include "mooscript-zenity.h"
 #include "mooscript-context.h"
 #include "mooutils/moodialogs.h"
-#include "mooutils/moohistoryentry.h"
+#include "mooutils/moohistorycombo.h"
 #include <gtk/gtk.h>
 
 
@@ -125,7 +125,7 @@ history_entry_func (MSValue   **args,
         gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), label, FALSE, FALSE, 0);
     }
 
-    entry = moo_history_entry_new (user_id);
+    entry = moo_history_combo_new (user_id);
     moo_combo_set_use_button (MOO_COMBO (entry), FALSE);
     gtk_widget_show (entry);
     moo_combo_entry_set_text (MOO_COMBO (entry), entry_text ? entry_text : "");
@@ -140,7 +140,7 @@ history_entry_func (MSValue   **args,
 
         if (text[0])
         {
-            moo_history_entry_add_text (MOO_HISTORY_ENTRY (entry), text);
+            moo_history_combo_commit (MOO_HISTORY_COMBO (entry));
             result = ms_value_string (text);
         }
         else
