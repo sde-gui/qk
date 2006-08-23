@@ -54,6 +54,7 @@ mooedit_noinst_headers =               \
 	mooeditsavemultiple-glade.h    \
 	moofold.h                      \
 	moohighlighter.h               \
+	mookeyfile.h                   \
 	moolang-aux.h                  \
 	moolang-parser.h               \
 	moolang-private.h              \
@@ -101,6 +102,7 @@ mooedit_sources =                      \
 	moofold.c                      \
 	moohighlighter.c               \
 	mooindenter.c                  \
+	mookeyfile.c                   \
 	moolang-parser.c               \
 	moolang-rules.c                \
 	moolang.c                      \

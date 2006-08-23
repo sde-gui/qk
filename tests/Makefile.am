@@ -10,7 +10,7 @@ EXTRA_PROGRAMS =			\
 	markup termbuffer testfileview	\
 	testpaned testpanedfileview 	\
 	miniglade langparser testobject \
-	testfold ms
+	testfold ms testkeyfile
 
 all-tests: $(EXTRA_PROGRAMS)
 
@@ -74,9 +74,12 @@ bin_PROGRAMS = $(medit)
 
 ldflags = -export-dynamic
 ldadd = ../moo/libmoo.la
+test_ldflags = -export-dynamic
+test_ldadd = ../moo/libmoo-test.la
 
 if MOO_OS_MINGW
 ldflags += -mwindows
+test_ldflags += -mwindows
 endif MOO_OS_MINGW
 
 
@@ -122,6 +125,10 @@ testtext_SOURCES = testtext.c
 langparser_LDFLAGS = $(ldflags)
 langparser_LDADD = $(ldadd)
 langparser_SOURCES = testparser.c
+
+testkeyfile_LDFLAGS = $(ldflags)
+testkeyfile_LDADD = $(ldadd)
+testkeyfile_SOURCES = testkeyfile.c
 
 ms_LDFLAGS = $(ldflags)
 ms_LDADD = $(ldadd) -lreadline
