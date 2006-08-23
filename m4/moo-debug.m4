@@ -5,6 +5,18 @@ AC_DEFUN([MOO_AC_DEBUG],[
     MOO_DEBUG="no"
     MOO_DEBUG_CFLAGS=
 
+    AC_ARG_ENABLE(tests,
+    AC_HELP_STRING([--enable-tests],[build test programs (default = NO)]),[
+        if test "x$enable_tests" = "xno"; then
+            MOO_ENABLE_TESTS="no"
+        else
+            MOO_ENABLE_TESTS="yes"
+        fi
+    ],[
+        MOO_ENABLE_TESTS="no"
+    ])
+    AM_CONDITIONAL(MOO_ENABLE_TESTS, test x$MOO_ENABLE_TESTS = "xyes")
+
     AC_ARG_ENABLE(debug,
     AC_HELP_STRING([--enable-debug],[enable debug options (default = NO)]),[
         if test "x$enable_debug" = "xno"; then
@@ -69,6 +81,10 @@ MOO_PYTHON_DEBUG_CFLAGS="$MOO_DEBUG_GCC_CFLAGS $MOO_PYTHON_DEBUG_CFLAGS -Wall -W
 
     MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS $moo_debug_flags"
     MOO_PYTHON_DEBUG_CFLAGS="$MOO_PYTHON_DEBUG_CFLAGS $moo_debug_flags"
+
+    if test x$MOO_ENABLE_TESTS = "xyes"; then
+        MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS -DMOO_ENABLE_TESTS"
+    fi
 
     AC_SUBST(MOO_DEBUG_CFLAGS)
     AC_SUBST(MOO_PYTHON_DEBUG_CFLAGS)

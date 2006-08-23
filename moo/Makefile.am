@@ -106,3 +106,12 @@ moo24_la_LIBADD = moopython/libmoomod24.la libmoo.la $(MOO_LIBS) $(PYTHON24_LIBS
 
 endif MOO_USE_PYGTK
 endif !MOO_OS_UNIX
+
+
+if MOO_ENABLE_TESTS
+noinst_LTLIBRARIES += libmoo-test.la
+endif
+
+libmoo_test_la_LIBADD = $(libmoo_la_LIBADD)
+libmoo_test_la_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -no-undefined -avoid-version
+libmoo_test_la_SOURCES = $(moo_include_headers)
