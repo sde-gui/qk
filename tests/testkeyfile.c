@@ -19,6 +19,7 @@ int main (int argc, char *argv[])
     GError *error = NULL;
     MooKeyFile *key_file;
     const char *file;
+    char *string;
 
     if (argc < 2)
         g_error ("usage: %s <file>", argv[0]);
@@ -34,6 +35,13 @@ int main (int argc, char *argv[])
     }
 
     g_print ("Successfully parsed file %s\n", file);
+
+    string = moo_key_file_format (key_file, "A comment", 2);
+    g_print ("===========================\n");
+    g_print ("%s", string);
+    g_print ("===========================\n");
+    g_free (string);
+
     moo_key_file_unref (key_file);
 
     return 0;
