@@ -225,7 +225,7 @@ moo_command_script_class_init (MooCommandScriptClass *klass)
     g_type_class_add_private (klass, sizeof (MooCommandScriptPrivate));
 
     type = g_object_new (_moo_command_type_script_get_type (), NULL);
-    moo_command_type_register ("MooScript", _("MooScript"), type);
+    moo_command_type_register ("moo-script", _("MooScript"), type);
     g_object_unref (type);
 }
 

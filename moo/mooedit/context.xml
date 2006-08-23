@@ -1,7 +1,7 @@
 <tools>
-  <tool name="Switch Header And Implementation">
+  <tool id="SwitchHeaderAndImplementation" name="Switch Header And Implementation">
     <langs>C, GAP</langs>
-    <command type="MooScript" options="need-file">
+    <command type="moo-script" options="need-file">
       <code>extensions = [[['.h', '.hh', '.hpp', '.hxx', '.H'], ['.c', '.cc', '.cpp', '.cxx', '.C']],
               [['.gd'], ['.gi']]];
 new = none;

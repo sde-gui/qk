@@ -1,6 +1,6 @@
 <tools>
-  <tool name="_Shell Command" os="unix">
-    <command type="MooScript" options="need-doc">
+  <tool id="ShellCommand" name="_Shell Command" os="unix">
+    <command type="moo-script" options="need-doc">
       <code>cmd = HistoryEntry("", "ShellCommand");
 if cmd then
   Insert(Exec(cmd), "\n");
