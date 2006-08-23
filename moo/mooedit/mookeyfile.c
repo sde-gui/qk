@@ -13,6 +13,7 @@
 
 #include "mooedit/mookeyfile.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/moocompat.h"
 #include <string.h>
 
@@ -626,6 +627,14 @@ moo_key_file_delete_item (MooKeyFile *key_file,
 
 
 const char *
+moo_key_file_item_name (MooKeyFileItem *item)
+{
+    g_return_val_if_fail (item != NULL, NULL);
+    return item->name;
+}
+
+
+const char *
 moo_key_file_item_get (MooKeyFileItem *item,
                        const char     *key)
 {
@@ -737,4 +746,62 @@ GQuark
 moo_key_file_error_quark (void)
 {
     return g_quark_from_static_string ("moo-key-file-error");
+}
+
+
+static void
+format_key (const char *key,
+            const char *value,
+            GString    *string)
+{
+    g_string_append_printf (string, "%s=%s\n", key, value);
+}
+
+static void
+format_content (const char *content,
+                GString    *string,
+                const char *indent)
+{
+    char **p;
+    char **lines = _moo_splitlines (content);
+
+    for (p = lines; p && *p; ++p)
+        g_string_append_printf (string, "%s%s\n", indent, *p);
+
+    g_strfreev (lines);
+}
+
+char *
+moo_key_file_format (MooKeyFile *key_file,
+                     const char *comment,
+                     guint       indent)
+{
+    char *fill;
+    GList *l;
+    GString *string;
+
+    g_return_val_if_fail (key_file != NULL, NULL);
+
+    fill = g_strnfill (indent, ' ');
+    string = g_string_new (NULL);
+
+    if (comment)
+        g_string_append_printf (string, "# %s\n", comment);
+
+    for (l = key_file->items->head; l != NULL; l = l->next)
+    {
+        MooKeyFileItem *item = l->data;
+
+        g_string_append_printf (string, "[%s]\n", item->name);
+        g_hash_table_foreach (item->keys, (GHFunc) format_key, string);
+
+        if (item->content)
+            format_content (item->content, string, fill);
+
+        if (l->next)
+            g_string_append (string, "\n");
+    }
+
+    g_free (fill);
+    return g_string_free (string, FALSE);
 }

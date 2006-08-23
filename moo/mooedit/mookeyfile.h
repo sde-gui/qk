@@ -61,7 +61,9 @@ gboolean        moo_key_file_parse_file         (MooKeyFile         *key_file,
                                                  const char         *filename,
                                                  GError            **error);
 
-char            *moo_key_file_format            (MooKeyFile         *key_file);
+char            *moo_key_file_format            (MooKeyFile         *key_file,
+                                                 const char         *comment,
+                                                 guint               indent);
 
 guint            moo_key_file_n_items           (MooKeyFile         *key_file);
 MooKeyFileItem  *moo_key_file_nth_item          (MooKeyFile         *key_file,
@@ -71,20 +73,22 @@ MooKeyFileItem  *moo_key_file_new_item          (MooKeyFile         *key_file,
 void             moo_key_file_delete_item       (MooKeyFile         *key_file,
                                                  guint               index);
 
-const char     *moo_key_file_item_get           (MooKeyFileItem     *item,
+const char      *moo_key_file_item_name         (MooKeyFileItem     *item);
+
+const char      *moo_key_file_item_get          (MooKeyFileItem     *item,
                                                  const char         *key);
-void            moo_key_file_item_set           (MooKeyFileItem     *item,
+void             moo_key_file_item_set          (MooKeyFileItem     *item,
                                                  const char         *key,
                                                  const char         *value);
-gboolean        moo_key_file_item_get_bool      (MooKeyFileItem     *item,
+gboolean         moo_key_file_item_get_bool     (MooKeyFileItem     *item,
                                                  const char         *key,
                                                  gboolean            default_val);
-void            moo_key_file_item_set_bool      (MooKeyFileItem     *item,
+void             moo_key_file_item_set_bool     (MooKeyFileItem     *item,
                                                  const char         *key,
                                                  gboolean            value);
 
-const char     *moo_key_file_item_get_content   (MooKeyFileItem     *item);
-void            moo_key_file_item_set_content   (MooKeyFileItem     *item,
+const char      *moo_key_file_item_get_content  (MooKeyFileItem     *item);
+void             moo_key_file_item_set_content  (MooKeyFileItem     *item,
                                                  const char         *content);
 
 
