@@ -448,7 +448,7 @@ moo_history_list_add_full (MooHistoryList *list,
     if (!list->priv->allow_empty && !entry[0])
         return;
 
-    moo_history_list_load (list);
+    _moo_history_list_load (list);
 
     if (list_find_item (list, entry, &iter))
     {
@@ -503,7 +503,7 @@ moo_history_list_get_last_item (MooHistoryList *list)
 
     g_return_val_if_fail (MOO_IS_HISTORY_LIST (list), NULL);
 
-    moo_history_list_load (list);
+    _moo_history_list_load (list);
 
     if (!gtk_tree_model_iter_children (list->priv->model, &iter, NULL))
         return NULL;
@@ -709,7 +709,7 @@ MooMenuMgr*
 moo_history_list_get_menu_mgr (MooHistoryList *list)
 {
     g_return_val_if_fail (MOO_IS_HISTORY_LIST (list), NULL);
-    moo_history_list_load (list);
+    _moo_history_list_load (list);
     return list->priv->mgr;
 }
 
@@ -820,7 +820,7 @@ _list_delete_last (MooHistoryList *list)
 /* TODO: this all is broken with non-utf8 text */
 
 void
-moo_history_list_load (MooHistoryList *list)
+_moo_history_list_load (MooHistoryList *list)
 {
     MooMarkupDoc *xml;
     MooMarkupNode *root, *node;
