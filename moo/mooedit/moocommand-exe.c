@@ -185,6 +185,7 @@ make_cmd (MooCommandExe     *cmd,
 static void
 run_in_pane (MooCommandExe     *cmd,
              MooCommandContext *ctx,
+             const char        *working_dir,
              char             **envp)
 {
     GtkTextView *doc;
@@ -211,7 +212,7 @@ run_in_pane (MooCommandExe     *cmd,
         moo_edit_window_present_output (window);
         moo_cmd_view_run_command_full (MOO_CMD_VIEW (output),
                                        cmd_line, cmd->priv->cmd_line,
-                                       NULL, envp, "Command");
+                                       working_dir, envp, "Command");
 
         g_free (cmd_line);
     }
@@ -288,10 +289,13 @@ set_variable (const char   *name,
     g_free (freeme);
 }
 
-static char **
-create_environment (MooCommandContext *ctx)
+static void
+create_environment (MooCommandContext *ctx,
+                    char             **working_dir,
+                    char            ***envp)
 {
     GPtrArray *array;
+    MooEdit *doc;
 
     array = g_ptr_array_new ();
     moo_command_context_foreach (ctx, set_variable, array);
@@ -299,19 +303,27 @@ create_environment (MooCommandContext *ctx)
     if (array->len)
     {
         g_ptr_array_add (array, NULL);
-        return (char**) g_ptr_array_free (array, FALSE);
+        *envp = (char**) g_ptr_array_free (array, FALSE);
     }
     else
     {
         g_ptr_array_free (array, TRUE);
-        return NULL;
+        *envp = NULL;
     }
+
+    doc = moo_command_context_get_doc (ctx);
+
+    if (doc && moo_edit_get_filename (doc))
+        *working_dir = g_path_get_dirname (moo_edit_get_filename (doc));
+    else
+        *working_dir = NULL;
 }
 
 
 static gboolean
 run_command (MooCommandExe     *cmd,
              MooCommandContext *ctx,
+             const char        *working_dir,
              char             **envp,
              char             **output)
 {
@@ -326,7 +338,7 @@ run_command (MooCommandExe     *cmd,
         return FALSE;
 
     argv[2] = cmd_line;
-    result = g_spawn_sync (NULL, (char**) argv, (char**) envp, 0,
+    result = g_spawn_sync (working_dir, (char**) argv, (char**) envp, 0,
                            NULL, NULL, output, NULL, NULL, &error);
 
     if (!result)
@@ -348,22 +360,23 @@ moo_command_exe_run (MooCommand        *cmd_base,
     MooCommandExe *cmd = MOO_COMMAND_EXE (cmd_base);
     char **envp;
     char *output = NULL;
+    char *working_dir;
 
-    envp = create_environment (ctx);
+    create_environment (ctx, &working_dir, &envp);
 
     if (cmd->priv->output == MOO_COMMAND_EXE_OUTPUT_PANE)
     {
-        run_in_pane (cmd, ctx, envp);
+        run_in_pane (cmd, ctx, working_dir, envp);
         goto out;
     }
 
     if (cmd->priv->output == MOO_COMMAND_EXE_OUTPUT_NONE)
     {
-        run_command (cmd, ctx, envp, NULL);
+        run_command (cmd, ctx, working_dir, envp, NULL);
         goto out;
     }
 
-    if (!run_command (cmd, ctx, envp, &output))
+    if (!run_command (cmd, ctx, working_dir, envp, &output))
         goto out;
 
     if (cmd->priv->output == MOO_COMMAND_EXE_OUTPUT_INSERT)
@@ -381,6 +394,7 @@ moo_command_exe_run (MooCommand        *cmd_base,
     insert_text (MOO_TEXT_VIEW (doc), output);
 
 out:
+    g_free (working_dir);
     g_strfreev (envp);
     g_free (output);
 }
