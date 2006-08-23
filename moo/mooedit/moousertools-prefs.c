@@ -101,11 +101,11 @@ new_row (MooPrefsDialogPage *page,
     GtkTreeViewColumn *column;
 
     info = _moo_user_tool_info_new ();
+    info->cmd_type = moo_command_type_lookup ("moo-script");
     info->cmd_data = moo_command_data_new ();
     info->name = g_strdup (_("New Command"));
     info->options = g_strdup ("need-doc");
     info->enabled = TRUE;
-    info->cmd_type = moo_command_type_lookup ("MooScript");
 
     set_changed (page, TRUE);
     gtk_list_store_insert (GTK_LIST_STORE (model), &iter,
@@ -119,6 +119,17 @@ new_row (MooPrefsDialogPage *page,
     return TRUE;
 }
 
+static gboolean
+delete_row (MooPrefsDialogPage *page,
+            GtkTreeModel       *model,
+            GtkTreePath        *path)
+{
+    GtkTreeIter iter;
+    gtk_tree_model_get_iter (model, &iter, path);
+    gtk_list_store_remove (GTK_LIST_STORE (model), &iter);
+    set_changed (page, TRUE);
+    return TRUE;
+}
 
 static void
 set_text (MooPrefsDialogPage *page,
@@ -312,6 +323,7 @@ command_page_init (MooPrefsDialogPage *page,
     g_signal_connect_swapped (page, "destroy", G_CALLBACK (gtk_object_destroy), helper);
 
     g_signal_connect_swapped (helper, "new-row", G_CALLBACK (new_row), page);
+    g_signal_connect_swapped (helper, "delete-row", G_CALLBACK (delete_row), page);
     g_signal_connect_swapped (helper, "update-widgets", G_CALLBACK (update_widgets), page);
     g_signal_connect_swapped (helper, "update-model", G_CALLBACK (update_model), page);
 
