@@ -1454,6 +1454,76 @@ moo_get_user_data_file (const char *basename)
 }
 
 
+static gboolean
+save_with_backup (const char *filename,
+                  const char *data,
+                  gssize      len,
+                  GError    **error)
+{
+    char *tmp_file, *bak_file;
+    gboolean result = FALSE;
+    GError *error_move = NULL;
+
+    tmp_file = g_strdup_printf ("%s.tmp", filename);
+    bak_file = g_strdup_printf ("%s.bak", filename);
+
+    if (!_moo_save_file_utf8 (tmp_file, data, len, error))
+        goto out;
+
+    _moo_rename (filename, bak_file, &error_move);
+
+    if (!_moo_rename (tmp_file, filename, error))
+    {
+        if (error_move)
+        {
+            g_critical ("%s: %s", G_STRLOC, error_move->message);
+            g_error_free (error_move);
+        }
+    }
+    else
+    {
+        if (error_move)
+            g_propagate_error (error, error_move);
+        else
+            result = TRUE;
+    }
+
+out:
+    g_free (tmp_file);
+    g_free (bak_file);
+    return result;
+}
+
+static gboolean
+same_content (const char *filename,
+              const char *data,
+              gsize       len)
+{
+    GMappedFile *file;
+    char *content;
+    gsize i;
+    gboolean equal = FALSE;
+
+    file = g_mapped_file_new (filename, FALSE, NULL);
+
+    if (!file || g_mapped_file_get_length (file) != len)
+        goto out;
+
+    content = g_mapped_file_get_contents (file);
+
+    for (i = 0; i < len; ++i)
+        if (data[i] != content[i])
+            goto out;
+
+    equal = TRUE;
+
+out:
+    if (file)
+        g_mapped_file_free (file);
+
+    return equal;
+}
+
 gboolean
 moo_save_user_data_file (const char     *basename,
                          const char     *content,
@@ -1466,6 +1536,9 @@ moo_save_user_data_file (const char     *basename,
     g_return_val_if_fail (basename != NULL, FALSE);
     g_return_val_if_fail (content != NULL, FALSE);
 
+    if (len < 0)
+        len = strlen (content);
+
     dir = moo_get_user_data_dir ();
     file = moo_get_user_data_file (basename);
     g_return_val_if_fail (dir && file, FALSE);
@@ -1473,7 +1546,13 @@ moo_save_user_data_file (const char     *basename,
     if (!_moo_mkdir (dir, error))
         goto out;
 
-    if (!_moo_save_file_utf8 (file, content, len, error))
+    if (same_content (file, content, len))
+    {
+        result = TRUE;
+        goto out;
+    }
+
+    if (!save_with_backup (file, content, len, error))
         goto out;
 
     result = TRUE;
