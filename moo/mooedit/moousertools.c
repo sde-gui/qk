@@ -46,6 +46,8 @@
 #define PROP_ENABLED        "enabled"
 #define PROP_OS             "os"
 #define PROP_ID             "id"
+#define PROP_DELETED        "deleted"
+#define PROP_BUILTIN        "builtin"
 
 enum {
     PROP_0,
@@ -158,30 +160,44 @@ tools_store_add (MooUserToolType type,
 }
 
 
-static char *
-find_user_tools_file (int type)
+static void
+find_user_tools_file (int     type,
+                      char ***sys_files_p,
+                      char  **user_file_p)
 {
     char **files;
     guint n_files;
-    char *filename = NULL;
     int i;
+    GPtrArray *sys_files = NULL;
+
+    *sys_files_p = NULL;
+    *user_file_p = NULL;
 
     files = moo_get_data_files (FILENAMES[type], MOO_DATA_SHARE, &n_files);
 
     if (!n_files)
-        return NULL;
+        return;
 
-    for (i = n_files - 1; i >= 0; --i)
+    if (g_file_test (files[n_files - 1], G_FILE_TEST_EXISTS))
+        *user_file_p = g_strdup (files[n_files - 1]);
+
+    for (i = 0; i < (int) n_files - 1; ++i)
     {
         if (g_file_test (files[i], G_FILE_TEST_EXISTS))
         {
-            filename = g_strdup (files[i]);
-            break;
+            if (!sys_files)
+                sys_files = g_ptr_array_new ();
+            g_ptr_array_add (sys_files, g_strdup (files[i]));
         }
     }
 
+    if (sys_files)
+    {
+        g_ptr_array_add (sys_files, NULL);
+        *sys_files_p = (char**) g_ptr_array_free (sys_files, FALSE);
+    }
+
     g_strfreev (files);
-    return filename;
 }
 
 
@@ -411,15 +427,28 @@ parse_element (MooMarkupNode       *node,
     info->position = MOO_USER_TOOL_POS_END;
     info->id = g_strdup (moo_markup_get_prop (node, PROP_ID));
     info->name = g_strdup (moo_markup_get_prop (node, PROP_NAME));
-
     info->enabled = moo_markup_get_bool_prop (node, PROP_ENABLED, TRUE);
+    info->deleted = moo_markup_get_bool_prop (node, PROP_DELETED, FALSE);
+    info->builtin = moo_markup_get_bool_prop (node, PROP_BUILTIN, FALSE);
+
+    if (!info->id)
+    {
+        g_warning ("tool id missing in file %s", file);
+        _moo_user_tool_info_unref (info);
+        return NULL;
+    }
+
+    if (info->deleted || info->builtin)
+        return info;
+
     os = moo_markup_get_prop (node, PROP_OS);
 
-#ifdef __WIN32__
-    info->os_type = (!os || !g_ascii_strncasecmp (os, "win", 3)) ? MOO_USER_TOOL_WIN32 : MOO_USER_TOOL_UNIX;
-#else
-    info->os_type = (!os || !g_ascii_strcasecmp (os, "unix")) ? MOO_USER_TOOL_UNIX : MOO_USER_TOOL_WIN32;
-#endif
+    if (!os || !os[0])
+        info->os_type = MOO_USER_TOOL_THIS_OS;
+    else if (!g_ascii_strncasecmp (os, "win", 3))
+        info->os_type = MOO_USER_TOOL_WIN32;
+    else
+        info->os_type = MOO_USER_TOOL_UNIX;
 
     for (child = node->children; child != NULL; child = child->next)
     {
@@ -536,23 +565,18 @@ parse_doc (MooMarkupDoc        *doc,
 }
 
 
-GSList *
-_moo_edit_parse_user_tools (MooUserToolType type)
+static GSList *
+parse_file_simple (const char     *filename,
+                   MooUserToolType type)
 {
-    char *file;
     MooMarkupDoc *doc;
     GError *error = NULL;
     GSList *list = NULL;
 
+    g_return_val_if_fail (filename != NULL, NULL);
     g_return_val_if_fail (type < N_TOOLS, NULL);
 
-    _moo_command_init ();
-    file = find_user_tools_file (type);
-
-    if (!file)
-        return NULL;
-
-    doc = moo_markup_parse_file (file, &error);
+    doc = moo_markup_parse_file (filename, &error);
 
     if (doc)
     {
@@ -561,39 +585,116 @@ _moo_edit_parse_user_tools (MooUserToolType type)
     }
     else
     {
-        g_warning ("could not load file '%s': %s", file, error->message);
+        g_warning ("could not load file '%s': %s", filename, error->message);
         g_error_free (error);
     }
 
-    g_free (file);
     return list;
 }
 
-
-static GHashTable *
-collect_ids (const GSList *list)
+static void
+parse_file (const char     *filename,
+            MooUserToolType type,
+            GSList        **list,
+            GHashTable     *ids)
 {
-    GHashTable *ids = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+    GSList *new_list;
 
-    while (list)
+    new_list = parse_file_simple (filename, type);
+
+    if (!new_list)
+        return;
+
+    while (new_list)
     {
-        const MooUserToolInfo *info = list->data;
+        MooUserToolInfo *info, *old_info;
+        GSList *old_link;
 
-        if (info->id)
-            g_hash_table_insert (ids, g_strdup (info->id), GINT_TO_POINTER (TRUE));
+        info = new_list->data;
+        g_return_if_fail (info->id != NULL);
 
-        list = list->next;
+        old_link = g_hash_table_lookup (ids, info->id);
+        old_info = old_link ? old_link->data : NULL;
+
+        if (old_link)
+        {
+            *list = g_slist_delete_link (*list, old_link);
+            g_hash_table_remove (ids, info->id);
+        }
+
+        if (info->deleted)
+        {
+            _moo_user_tool_info_unref (info);
+            info = NULL;
+        }
+        else if (info->builtin)
+        {
+            _moo_user_tool_info_unref (info);
+            info = old_info ? _moo_user_tool_info_ref (old_info) : NULL;
+        }
+
+        if (info)
+        {
+            *list = g_slist_prepend (*list, info);
+            g_hash_table_insert (ids, g_strdup (info->id), *list);
+        }
+
+        if (old_info)
+            _moo_user_tool_info_unref (old_info);
+
+        new_list = g_slist_delete_link (new_list, new_list);
     }
-
-    return ids;
 }
 
-static const char *
-generate_id (const MooUserToolInfo *info,
-             GHashTable            *ids)
+static GSList *
+parse_user_tools (MooUserToolType type,
+                  GHashTable    **ids_p,
+                  gboolean        sys_only)
+{
+    char **sys_files, *user_file;
+    GSList *list = NULL;
+    GHashTable *ids = NULL;
+    char **p;
+
+    g_return_val_if_fail (type < N_TOOLS, NULL);
+
+    _moo_command_init ();
+
+    find_user_tools_file (type, &sys_files, &user_file);
+    ids = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+
+    for (p = sys_files; p && *p; ++p)
+        parse_file (*p, type, &list, ids);
+
+    if (!sys_only && user_file)
+        parse_file (user_file, type, &list, ids);
+
+    if (ids_p)
+        *ids_p = ids;
+    else
+        g_hash_table_destroy (ids);
+
+    g_strfreev (sys_files);
+    g_free (user_file);
+
+    return g_slist_reverse (list);
+}
+
+GSList *
+_moo_edit_parse_user_tools (MooUserToolType type)
+{
+    g_return_val_if_fail (type < N_TOOLS, NULL);
+    return parse_user_tools (type, NULL, FALSE);
+}
+
+
+static void
+generate_id (MooUserToolInfo *info,
+             GHashTable      *ids)
 {
     char *base, *name;
-    const char *id;
+
+    g_return_if_fail (info->id == NULL);
 
     if (info->name)
         name = get_name (info->name);
@@ -605,8 +706,7 @@ generate_id (const MooUserToolInfo *info,
 
     if (!g_hash_table_lookup (ids, base))
     {
-        id = base;
-        g_hash_table_insert (ids, base, GINT_TO_POINTER (TRUE));
+        info->id = base;
         base = NULL;
     }
     else
@@ -619,8 +719,7 @@ generate_id (const MooUserToolInfo *info,
 
             if (!g_hash_table_lookup (ids, tmp))
             {
-                id = tmp;
-                g_hash_table_insert (ids, tmp, GINT_TO_POINTER (TRUE));
+                info->id = tmp;
                 break;
             }
 
@@ -632,57 +731,196 @@ generate_id (const MooUserToolInfo *info,
 
     g_free (name);
     g_free (base);
-    return id;
+}
+
+static void
+assign_missing_ids (GSList *list)
+{
+    GSList *l;
+    GHashTable *ids;
+
+    ids = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+
+    for (l = list; l != NULL; l = l->next)
+    {
+        MooUserToolInfo *info = l->data;
+
+        if (info->id)
+            g_hash_table_insert (ids, g_strdup (info->id), l);
+    }
+
+    for (l = list; l != NULL; l = l->next)
+    {
+        MooUserToolInfo *info = l->data;
+
+        if (!info->id)
+        {
+            generate_id (info, ids);
+            g_hash_table_insert (ids, g_strdup (info->id), l);
+        }
+    }
+
+    g_hash_table_destroy (ids);
+}
+
+static void
+add_deleted (const char *id,
+             GSList     *link,
+             GSList    **list)
+{
+    MooUserToolInfo *info;
+
+    g_assert (!strcmp (((MooUserToolInfo*)link->data)->id, id));
+
+    info = _moo_user_tool_info_new ();
+    info->id = g_strdup (id);
+    info->deleted = TRUE;
+
+    *list = g_slist_prepend (*list, info);
+}
+
+static gboolean
+string_equal (const char *s1,
+              const char *s2)
+{
+    return !strcmp (s1 ? s1 : "", s2 ? s2 : "");
+}
+
+static gboolean
+info_equal (MooUserToolInfo *info1,
+            MooUserToolInfo *info2)
+{
+    if (info1 == info2)
+        return TRUE;
+
+    if (info1->deleted)
+        return info2->deleted != 0;
+    if (info1->builtin)
+        return info2->builtin != 0;
+
+    if (!info1->enabled != !info2->enabled)
+        return FALSE;
+
+    return info1->position == info2->position &&
+           info1->os_type == info2->os_type &&
+           info1->position == info2->position &&
+           info1->position == info2->position &&
+           info1->cmd_type == info2->cmd_type &&
+           string_equal (info1->name, info2->name) &&
+           string_equal (info1->accel, info2->accel) &&
+           string_equal (info1->menu, info2->menu) &&
+           string_equal (info1->langs, info2->langs) &&
+           string_equal (info1->options, info2->options) &&
+           _moo_command_type_data_equal (info1->cmd_type, info1->cmd_data, info2->cmd_data);
+}
+
+static GSList *
+generate_real_list (MooUserToolType  type,
+                    GSList          *list)
+{
+    GSList *real_list = NULL;
+    GSList *sys_list;
+    GHashTable *sys_ids;
+
+    sys_list = parse_user_tools (type, &sys_ids, TRUE);
+    assign_missing_ids (list);
+
+    while (list)
+    {
+        MooUserToolInfo *new_info = NULL;
+        MooUserToolInfo *info = list->data;
+        GSList *sys_link;
+
+        sys_link = g_hash_table_lookup (sys_ids, info->id);
+
+        if (sys_link)
+        {
+            MooUserToolInfo *sys_info = sys_link->data;
+
+            if (info_equal (sys_info, info))
+            {
+                new_info = _moo_user_tool_info_new ();
+                new_info->id = g_strdup (sys_info->id);
+                new_info->builtin = TRUE;
+            }
+            else
+            {
+                new_info = _moo_user_tool_info_ref (info);
+            }
+
+            g_hash_table_remove (sys_ids, info->id);
+        }
+        else
+        {
+            new_info = _moo_user_tool_info_ref (info);
+        }
+
+        real_list = g_slist_prepend (real_list, new_info);
+        list = list->next;
+    }
+
+    g_hash_table_foreach (sys_ids, (GHFunc) add_deleted, &real_list);
+
+    g_hash_table_destroy (sys_ids);
+    g_slist_foreach (sys_list, (GFunc) _moo_user_tool_info_unref, NULL);
+    g_slist_free (sys_list);
+
+    return g_slist_reverse (real_list);
 }
 
 void
 _moo_edit_save_user_tools (MooUserToolType  type,
-                           const GSList    *list)
+                           GSList          *user_list)
 {
     MooMarkupDoc *doc;
     MooMarkupNode *root;
     GError *error = NULL;
     char *string;
-    GHashTable *ids;
+    GSList *list;
 
     g_return_if_fail (type < N_TOOLS);
 
     doc = moo_markup_doc_new ("tools");
     root = moo_markup_create_root_element (doc, ELEMENT_TOOLS);
-    ids = collect_ids (list);
+    list = generate_real_list (type, user_list);
 
     while (list)
     {
         MooMarkupNode *node;
-        const MooUserToolInfo *info = list->data;
-        const char *id;
+        MooUserToolInfo *info = list->data;
 
         node = moo_markup_create_element (root, ELEMENT_TOOL);
+        moo_markup_set_prop (node, PROP_ID, info->id);
 
-        if (info->id)
-            id = info->id;
+        if (info->deleted)
+        {
+            moo_markup_set_bool_prop (node, PROP_DELETED, TRUE);
+        }
+        else if (info->builtin)
+        {
+            moo_markup_set_bool_prop (node, PROP_BUILTIN, TRUE);
+        }
         else
-            id = generate_id (info, ids);
+        {
+            if (info->name && info->name[0])
+                moo_markup_set_prop (node, PROP_NAME, info->name);
+            if (info->accel && info->accel[0])
+                moo_markup_create_text_element (node, ELEMENT_ACCEL, info->accel);
+            if (info->menu && info->menu[0])
+                moo_markup_create_text_element (node, ELEMENT_MENU, info->menu);
+            if (info->langs && info->langs[0])
+                moo_markup_create_text_element (node, ELEMENT_LANGS, info->langs);
+            if (!info->enabled)
+                moo_markup_set_bool_prop (node, PROP_ENABLED, info->enabled);
+            if (info->position != MOO_USER_TOOL_POS_END)
+                moo_markup_create_text_element (node, ELEMENT_POSITION, "start");
 
-        moo_markup_set_prop (node, PROP_ID, id);
+            _moo_command_format_markup (node, info->cmd_data,
+                                        info->cmd_type, info->options);
+        }
 
-        if (info->name && info->name[0])
-            moo_markup_set_prop (node, PROP_NAME, info->name);
-        if (info->accel && info->accel[0])
-            moo_markup_create_text_element (node, ELEMENT_ACCEL, info->accel);
-        if (info->menu && info->menu[0])
-            moo_markup_create_text_element (node, ELEMENT_MENU, info->menu);
-        if (info->langs && info->langs[0])
-            moo_markup_create_text_element (node, ELEMENT_LANGS, info->langs);
-        if (!info->enabled)
-            moo_markup_set_bool_prop (node, PROP_ENABLED, info->enabled);
-        if (info->position != MOO_USER_TOOL_POS_END)
-            moo_markup_create_text_element (node, ELEMENT_POSITION, "start");
-
-        _moo_command_format_markup (node, info->cmd_data,
-                                    info->cmd_type, info->options);
-
-        list = list->next;
+        _moo_user_tool_info_unref (info);
+        list = g_slist_delete_link (list, list);
     }
 
     string = moo_markup_node_get_pretty_string (MOO_MARKUP_NODE (doc), 2);
@@ -697,7 +935,6 @@ _moo_edit_save_user_tools (MooUserToolType  type,
 
     g_message ("done");
 
-    g_hash_table_destroy (ids);
     g_free (string);
     moo_markup_doc_unref (doc);
 }

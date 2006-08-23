@@ -51,13 +51,15 @@ typedef struct {
     char                *langs;
     char                *options;
     MooUserToolPosition  position;
-    gboolean             enabled;
     MooUserToolOSType    os_type;
     MooCommandType      *cmd_type;
     MooCommandData      *cmd_data;
     MooUserToolType      type;
     char                *file;
-    guint                ref_count;
+    guint                ref_count : 29;
+    guint                enabled : 1;
+    guint                deleted : 1;
+    guint                builtin : 1;
 } MooUserToolInfo;
 
 GType _moo_user_tool_info_get_type (void) G_GNUC_CONST;
@@ -74,7 +76,7 @@ typedef void (*MooToolFileParseFunc)    (MooUserToolInfo        *info,
 /* caller must free the list and unref() the contents */
 GSList *_moo_edit_parse_user_tools      (MooUserToolType         type);
 void    _moo_edit_save_user_tools       (MooUserToolType         type,
-                                         const GSList           *info);
+                                         GSList                 *user_info);
 
 
 G_END_DECLS
