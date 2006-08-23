@@ -432,6 +432,36 @@ real_child_setup (gpointer user_data)
 #endif
 
 
+static char **
+make_env (char **add)
+{
+    GPtrArray *new_env;
+    char **names, **p;
+
+    if (!add)
+        return NULL;
+
+    new_env = g_ptr_array_new ();
+    names = g_listenv ();
+
+    for (p = names; p && *p; ++p)
+    {
+        const char *val = g_getenv (*p);
+
+        if (val)
+            g_ptr_array_add (new_env, g_strdup_printf ("%s=%s", *p, val));
+    }
+
+    for (p = add; p && *p; ++p)
+        g_ptr_array_add (new_env, g_strdup (*p));
+
+    g_strfreev (names);
+
+    g_ptr_array_add (new_env, NULL);
+    return (char**) g_ptr_array_free (new_env, FALSE);
+}
+
+
 static gboolean
 moo_cmd_run_command (MooCmd     *cmd,
                      const char *working_dir,
@@ -445,6 +475,7 @@ moo_cmd_run_command (MooCmd     *cmd,
 {
     gboolean result;
     int *outp, *errp;
+    char **new_env;
 
 #ifndef __WIN32__
     struct {
@@ -477,17 +508,19 @@ moo_cmd_run_command (MooCmd     *cmd,
             errp = &cmd->priv->err;
     }
 
+    new_env = make_env (envp);
+
 #if 0 && defined(__WIN32__)
     if (!(cmd_flags & MOO_CMD_OPEN_CONSOLE))
         result = moo_win32_spawn_async_with_pipes (working_dir,
-                                                   argv, envp,
+                                                   argv, new_env,
                                                    flags | G_SPAWN_DO_NOT_REAP_CHILD,
                                                    &cmd->priv->pid,
                                                    NULL, outp, errp, error);
     else
 #endif
     result = g_spawn_async_with_pipes (working_dir,
-                                       argv, envp,
+                                       argv, new_env,
                                        flags | G_SPAWN_DO_NOT_REAP_CHILD,
 #ifndef __WIN32__
                                        real_child_setup, &data,
@@ -496,6 +529,8 @@ moo_cmd_run_command (MooCmd     *cmd,
 #endif
                                        &cmd->priv->pid,
                                        NULL, outp, errp, error);
+
+    g_strfreev (new_env);
 
     if (!result)
         return FALSE;
