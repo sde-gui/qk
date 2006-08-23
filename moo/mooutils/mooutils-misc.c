@@ -20,6 +20,7 @@
 #include "mooutils/moologwindow-glade.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/moocompat.h"
 #include <gtk/gtk.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -1275,27 +1276,28 @@ moo_get_user_data_dir (void)
 
 
 gboolean
-moo_make_user_data_dir (void)
+moo_make_user_data_dir (const char *path)
 {
     int result = 0;
-    char *dir = moo_get_user_data_dir ();
+    char *full_path;
+    char *user_dir;
 
-    g_return_val_if_fail (dir != NULL, FALSE);
+    user_dir = moo_get_user_data_dir ();
+    g_return_val_if_fail (user_dir != NULL, FALSE);
 
-    if (!g_file_test (dir, G_FILE_TEST_IS_DIR))
+    full_path = g_build_filename (user_dir, path, NULL);
+    result = g_mkdir_with_parents (full_path, S_IRWXU);
+
+    if (result != 0)
     {
-        result = _m_mkdir (dir);
-
-        if (result)
-        {
-            int err = errno;
-            g_critical ("could not create directory '%s': %s",
-                        dir, g_strerror (err));
-        }
+        int err = errno;
+        g_critical ("could not create directory '%s': %s",
+                    full_path, g_strerror (err));
     }
 
-    g_free (dir);
-    return !result;
+    g_free (user_dir);
+    g_free (full_path);
+    return result == 0;
 }
 
 

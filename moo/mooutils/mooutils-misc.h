@@ -67,7 +67,7 @@ char       *moo_get_app_dir                 (void);
 char       *moo_get_dll_dir                 (const char     *dll);
 
 /* ~/.appname */
-gboolean    moo_make_user_data_dir          (void);
+gboolean    moo_make_user_data_dir          (const char     *path);
 char       *moo_get_user_data_dir           (void);
 char       *moo_get_user_data_file          (const char     *basename);
 gboolean    moo_save_user_data_file         (const char     *basename,

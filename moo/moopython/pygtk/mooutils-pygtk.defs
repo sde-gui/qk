@@ -2659,6 +2659,9 @@
 (define-function make_user_data_dir
   (c-name "moo_make_user_data_dir")
   (return-type "gboolean")
+  (parameters
+    '("const-char*" "path" (null-ok) (default "NULL"))
+  )
 )
 
 (define-function get_user_data_dir
