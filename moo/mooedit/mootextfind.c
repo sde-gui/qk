@@ -19,7 +19,7 @@
 #include "mooedit/mootextsearch-private.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooedit-enums.h"
-#include "mooutils/moohistoryentry.h"
+#include "mooutils/moohistorycombo.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moodialogs.h"
@@ -111,8 +111,8 @@ moo_find_init (MooFind *find)
     MooCombo *search, *replace;
 
     find->xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    moo_glade_xml_map_id (find->xml, "search_entry", MOO_TYPE_HISTORY_ENTRY);
-    moo_glade_xml_map_id (find->xml, "replace_entry", MOO_TYPE_HISTORY_ENTRY);
+    moo_glade_xml_map_id (find->xml, "search_entry", MOO_TYPE_HISTORY_COMBO);
+    moo_glade_xml_map_id (find->xml, "replace_entry", MOO_TYPE_HISTORY_COMBO);
 
     if (!moo_glade_xml_parse_memory (find->xml, MOO_TEXT_FIND_GLADE_UI, -1, "vbox", NULL))
     {
@@ -132,8 +132,8 @@ moo_find_init (MooFind *find)
     moo_entry_set_use_special_chars_menu (MOO_ENTRY (search->entry), TRUE);
     moo_entry_set_use_special_chars_menu (MOO_ENTRY (replace->entry), TRUE);
 
-    moo_history_entry_set_list (MOO_HISTORY_ENTRY (search), search_history);
-    moo_history_entry_set_list (MOO_HISTORY_ENTRY (replace), replace_history);
+    moo_history_combo_set_list (MOO_HISTORY_COMBO (search), search_history);
+    moo_history_combo_set_list (MOO_HISTORY_COMBO (replace), replace_history);
 }
 
 
@@ -511,6 +511,7 @@ moo_find_run (MooFind        *find,
         }
 
         last_search_flags = flags;
+        moo_prefs_set_flags (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_FLAGS), flags);
         g_free (last_search);
         last_search = g_strdup (search_for);
         egg_regex_unref (last_regex);
