@@ -525,17 +525,24 @@ try_send (const char *tmpdir_name,
     GIOChannel *chan = NULL;
     GIOStatus status;
     gboolean result = FALSE;
+    char *endptr;
 
     if (!pid_string[0])
         goto out;
 
     errno = 0;
-    pid = strtol (pid_string, NULL, 10);
+    pid = strtol (pid_string, &endptr, 10);
 
-    if (errno)
+    if (errno != 0 || endptr == pid_string || *endptr != 0)
+    {
+        g_warning ("invalid pid string '%s'", pid_string);
         goto out;
+    }
 
     filename = g_strdup_printf ("%s/%s%s", tmpdir_name, prefix, pid_string);
+
+    if (!g_file_test (filename, G_FILE_TEST_EXISTS))
+        goto out;
 
     if (kill (pid, 0) != 0)
     {
