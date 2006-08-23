@@ -464,6 +464,7 @@ main (int argc, char *argv[])
     AppMode mode = MODE_SIMPLE;
     guint32 stamp;
     int line = -1;
+    const char *pid_string = NULL;
 
     gtk_init (&argc, &argv);
     stamp = TIMESTAMP;
@@ -514,14 +515,19 @@ main (int argc, char *argv[])
         line = strtol (_medit_arg_line, NULL, 10);
 
     if (_medit_opt_pid)
+        pid_string = _medit_arg_pid;
+    else if (!_medit_opt_new_app)
+        pid_string = g_getenv ("MEDIT_PID");
+
+    if (pid_string)
     {
-        if (moo_app_send_files (app, files, stamp, _medit_arg_pid))
+        if (moo_app_send_files (app, files, stamp, pid_string))
         {
             exit (0);
         }
         else
         {
-            g_print ("Could not send files to pid %s\n", _medit_arg_pid);
+            g_print ("Could not send files to pid %s\n", pid_string);
             exit (1);
         }
     }
