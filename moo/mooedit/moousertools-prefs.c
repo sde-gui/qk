@@ -120,15 +120,17 @@ new_row (MooPrefsDialogPage *page,
 }
 
 static gboolean
-delete_row (MooPrefsDialogPage *page,
-            GtkTreeModel       *model,
-            GtkTreePath        *path)
+delete_row (MooPrefsDialogPage *page)
 {
-    GtkTreeIter iter;
-    gtk_tree_model_get_iter (model, &iter, path);
-    gtk_list_store_remove (GTK_LIST_STORE (model), &iter);
     set_changed (page, TRUE);
-    return TRUE;
+    return FALSE;
+}
+
+static gboolean
+move_row (MooPrefsDialogPage *page)
+{
+    set_changed (page, TRUE);
+    return FALSE;
 }
 
 static void
@@ -324,6 +326,7 @@ command_page_init (MooPrefsDialogPage *page,
 
     g_signal_connect_swapped (helper, "new-row", G_CALLBACK (new_row), page);
     g_signal_connect_swapped (helper, "delete-row", G_CALLBACK (delete_row), page);
+    g_signal_connect_swapped (helper, "move-row", G_CALLBACK (move_row), page);
     g_signal_connect_swapped (helper, "update-widgets", G_CALLBACK (update_widgets), page);
     g_signal_connect_swapped (helper, "update-model", G_CALLBACK (update_model), page);
 
