@@ -20,6 +20,9 @@
  *  g_mkdir_with_parents function is taken from glib/gfileutils.c;
  *  it's Copyright 2000 Red Hat, Inc.
  *
+ *  g_listenv function is taken from glib/gutils.c;
+ *  it's Copyright (C) 1995-1998  Peter Mattis, Spencer Kimball and Josh MacDonald
+ *
  *  substitute_underscores, and gtk_accelerator_get_label are taken from gtk/gtkaccelgroup.c.
  *  it's Copyright (C) 1998, 2001 Tim Janik
  *
@@ -29,6 +32,38 @@
 
 
 #include "mooutils/moocompat.h"
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdlib.h>
+
+#ifdef G_OS_WIN32
+#include <windows.h>
+#include <io.h>
+#endif /* G_OS_WIN32 */
+
+#ifndef S_ISLNK
+#define S_ISLNK(x) 0
+#endif
+
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
+#if GLIB_CHECK_VERSION(2,6,0)
+#include <glib/gstdio.h>
+#endif
+
 #include <string.h>
 
 
@@ -139,6 +174,96 @@ g_mkdir_with_parents (const gchar *pathname,
   g_free (fn);
 
   return 0;
+}
+
+gchar **
+g_listenv (void)
+{
+#ifndef G_OS_WIN32
+  gchar **result, *eq;
+  gint len, i, j;
+
+  len = g_strv_length (environ);
+  result = g_new0 (gchar *, len + 1);
+
+  j = 0;
+  for (i = 0; i < len; i++)
+    {
+      eq = strchr (environ[i], '=');
+      if (eq)
+	result[j++] = g_strndup (environ[i], eq - environ[i]);
+    }
+
+  result[j] = NULL;
+
+  return result;
+#else
+  gchar **result, *eq;
+  gint len = 0, i, j;
+
+  if (G_WIN32_HAVE_WIDECHAR_API ())
+    {
+      wchar_t *p, *q;
+
+      p = (wchar_t *) GetEnvironmentStringsW ();
+      if (p != NULL)
+	{
+	  q = p;
+	  while (*q)
+	    {
+	      q += wcslen (q) + 1;
+	      len++;
+	    }
+	}
+      result = g_new0 (gchar *, len + 1);
+
+      j = 0;
+      q = p;
+      while (*q)
+	{
+	  result[j] = g_utf16_to_utf8 (q, -1, NULL, NULL, NULL);
+	  if (result[j] != NULL)
+	    {
+	      eq = strchr (result[j], '=');
+	      if (eq && eq > result[j])
+		{
+		  *eq = '\0';
+		  j++;
+		}
+	      else
+		g_free (result[j]);
+	    }
+	  q += wcslen (q) + 1;
+	}
+      result[j] = NULL;
+      FreeEnvironmentStringsW (p);
+    }
+  else
+    {
+      len = g_strv_length (environ);
+      result = g_new0 (gchar *, len + 1);
+
+      j = 0;
+      for (i = 0; i < len; i++)
+	{
+	  result[j] = g_locale_to_utf8 (environ[i], -1, NULL, NULL, NULL);
+	  if (result[j] != NULL)
+	    {
+	      eq = strchr (result[j], '=');
+	      if (eq && eq > result[j])
+		{
+		  *eq = '\0';
+		  j++;
+		}
+	      else
+		g_free (result[j]);
+	    }
+	}
+      result[j] = NULL;
+    }
+
+  return result;
+#endif
 }
 
 #endif /* !GLIB_CHECK_VERSION(2,8,0) */
