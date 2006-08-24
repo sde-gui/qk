@@ -4,11 +4,13 @@ SUBDIRS = plugins syntax
 mooedit_toolsdir = $(MOO_DATA_DIR)
 mooedit_tools_DATA = menu.xml context.xml
 
+unix_sources =				\
+	moocommand-exe-unix.c
+
 moocommand_stuff =                     \
 	moocommand.h                   \
 	moocommand.c                   \
 	moocommand-exe.h               \
-	moocommand-exe.c               \
 	moocommand-script.h            \
 	moocommand-script.c            \
 	moocommanddisplay.h            \
@@ -155,6 +157,8 @@ mooedit_enums_headers =			\
 CLEANFILES = stamp-mooedit-enums.h mooedit-enums.h mooedit-enums.c
 mooedit-enums.h: stamp-mooedit-enums.h
 	@true
+mooedit-enums.c: stamp-mooedit-enums.c
+	@true
 stamp-mooedit-enums.h: $(mooedit_enums_headers) Makefile
 	( cd $(srcdir) && glib-mkenums \
 			--fhead "#ifndef __MOO_EDIT_ENUMS_H__\n#define __MOO_EDIT_ENUMS_H__\n\n#include <glib-object.h>\n" \
@@ -162,11 +166,11 @@ stamp-mooedit-enums.h: $(mooedit_enums_headers) Makefile
 			--fprod "/* enumerations from \"mooedit/@filename@\" */\n" \
 			--vhead "GType @enum_name@_get_type (void) G_GNUC_CONST;\n#define MOO_TYPE_@ENUMSHORT@ (@enum_name@_get_type())\n\n" \
 			--ftail "\nG_END_DECLS\n\n#endif /* __MOO_EDIT_ENUMS_H__ */" \
-		$(mooedit_enums_headers) ) >> xgen-gtbh \
+		$(mooedit_enums_headers) ) > xgen-gtbh \
 	&& (cmp -s xgen-gtbh mooedit-enums.h || cp xgen-gtbh mooedit-enums.h ) \
 	&& rm -f xgen-gtbh \
 	&& echo timestamp > $(@F)
-mooedit-enums.c: $(mooedit_enums_headers) Makefile
+stamp-mooedit-enums.c: $(mooedit_enums_headers) Makefile
 	( cd $(srcdir) && glib-mkenums \
 			--fhead "#include \"mooedit/mooedit-enums.h\"\n\n" \
 			--fprod "#include \"mooedit/@filename@\"\n\n" \
@@ -174,8 +178,9 @@ mooedit-enums.c: $(mooedit_enums_headers) Makefile
 			--vprod "            { @VALUENAME@, (char*) \"@VALUENAME@\", (char*) \"@valuenick@\" }," \
 			--vtail "            { 0, NULL, NULL }\n        };\n        etype = g_@type@_register_static (\"@EnumName@\", values);\n    }\n    return etype;\n}\n\n" \
 		$(mooedit_enums_headers) ) > xgen-gtbc \
-	&& cp xgen-gtbc mooedit-enums.c  \
-	&& rm -f xgen-gtbc
+	&& (cmp -s xgen-gtbc mooedit-enums.c || cp xgen-gtbc mooedit-enums.c ) \
+	&& rm -f xgen-gtbc \
+	&& echo timestamp > $(@F)
 
 
 XML2H = $(srcdir)/../mooutils/xml2h.sh
@@ -228,6 +233,12 @@ if GTK_2_10
 mooedit_sources += $(mooedit_printing_sources)
 else
 EXTRA_DIST += $(mooedit_printing_sources)
+endif
+
+if MOO_OS_UNIX
+mooedit_sources += $(unix_sources)
+else
+EXTRA_DIST += $(unix_sources)
 endif
 
 noinst_LTLIBRARIES = libmooedit.la

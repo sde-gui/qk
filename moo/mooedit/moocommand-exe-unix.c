@@ -1,5 +1,5 @@
 /*
- *   moocommand-exe.c
+ *   moocommand-exe-unix.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *

@@ -998,7 +998,9 @@ _moo_command_init (void)
     if (!been_here)
     {
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_SCRIPT));
+#ifndef __WIN32__
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_EXE));
+#endif
         been_here = TRUE;
     }
 }
