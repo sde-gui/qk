@@ -89,8 +89,8 @@
 
     <context style="Normal Text" eol-context="#stay" name="Normal">
       <Whitespace/>
-      <Regex style="Preprocessor" context="Outscoped" pattern="#\s*if\s+0" beginRegion="Outscoped" first-non-blank-only="true"/>
-      <Char style="Preprocessor" context="Preprocessor" char="#" first-non-blank-only="true"/>
+      <Regex style="Preprocessor" context="Outscoped" pattern="^\s*#\s*if\s+0"/>
+      <Regex style="Preprocessor" context="Preprocessor" pattern="^\s*#"/>
       <Keyword style="Keyword" context="#stay" keyword="keywords"/>
       <Keyword style="Data Type" context="#stay" keyword="types"/>
       <Keyword keyword="CommonMacro" style="Common Macro" context="#stay"/>
@@ -111,7 +111,7 @@
         <String style="Decimal" context="#stay" string="U" caseless="TRUE"/>
         <String style="Decimal" context="#stay" string="L" caseless="TRUE"/>
       </Int>
-      <CChar style="Char" context="#stay"/>
+      <Regex style="Char" pattern="'([^\\]|\\.)'"/>
       <Char style="String" context="String" char="&quot;"/>
       <!--             <IncludeRules from="##Doxygen"/> -->
       <TwoChars style="Comment" context="Commentar 1" char1="/" char2="/"/>
