@@ -335,6 +335,7 @@ create_lang_model (MooEditor *editor)
     GSList *langs, *sections, *l;
     GtkTreeIter iter;
     const char *config;
+    char *ext, *mime;
 
     mgr = moo_editor_get_lang_mgr (editor);
     langs = moo_lang_mgr_get_available_langs (mgr);
@@ -345,10 +346,16 @@ create_lang_model (MooEditor *editor)
 
     gtk_tree_store_append (store, &iter, NULL);
     config = _moo_lang_mgr_get_config (mgr, MOO_LANG_NONE);
+    ext = list_to_string (_moo_lang_mgr_get_extensions (mgr, NULL));
+    mime = list_to_string (_moo_lang_mgr_get_mime_types (mgr, NULL));
     gtk_tree_store_set (store, &iter, COLUMN_ID, MOO_LANG_NONE,
                         COLUMN_NAME, "None",
                         COLUMN_CONFIG, config,
+                        COLUMN_MIMETYPES, mime,
+                        COLUMN_EXTENSIONS, ext,
                         -1);
+    g_free (ext);
+    g_free (mime);
 
     /* separator */
     gtk_tree_store_append (store, &iter, NULL);
@@ -569,10 +576,7 @@ helper_update_widgets (MooPrefsDialogPage *page,
     gtk_entry_set_text (extensions, ext ? ext : "");
     gtk_entry_set_text (mimetypes, mime ? mime : "");
     gtk_entry_set_text (config, conf ? conf : "");
-
-    gtk_widget_set_sensitive (GTK_WIDGET (extensions), lang != NULL);
     gtk_widget_set_sensitive (GTK_WIDGET (mimetypes), lang != NULL);
-    gtk_widget_set_sensitive (label_extensions, lang != NULL);
     gtk_widget_set_sensitive (label_mimetypes, lang != NULL);
 
     if (lang)
@@ -654,6 +658,7 @@ apply_one_lang (GtkTreeModel *model,
 {
     MooLang *lang = NULL;
     char *config = NULL, *id = NULL;
+    char *mime, *ext;
 
     gtk_tree_model_get (model, iter,
                         COLUMN_LANG, &lang,
@@ -663,26 +668,19 @@ apply_one_lang (GtkTreeModel *model,
     if (!id)
         return FALSE;
 
-    if (lang)
-    {
-        char *mime, *ext;
+    gtk_tree_model_get (model, iter,
+                        COLUMN_MIMETYPES, &mime,
+                        COLUMN_EXTENSIONS, &ext, -1);
 
-        gtk_tree_model_get (model, iter,
-                            COLUMN_MIMETYPES, &mime,
-                            COLUMN_EXTENSIONS, &ext, -1);
-
-        _moo_lang_set_mime_types (lang, mime);
-        _moo_lang_set_extensions (lang, ext);
-
-        g_free (mime);
-        g_free (ext);
-    }
-
+    _moo_lang_mgr_set_mime_types (mgr, id, mime);
+    _moo_lang_mgr_set_extensions (mgr, id, ext);
     _moo_lang_mgr_set_config (mgr, id, config);
 
     if (lang)
         moo_lang_unref (lang);
 
+    g_free (mime);
+    g_free (ext);
     g_free (config);
     g_free (id);
     return FALSE;

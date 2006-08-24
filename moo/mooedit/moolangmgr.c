@@ -910,6 +910,47 @@ lang_mgr_get_lang_for_bak_filename (MooLangMgr *mgr,
 }
 
 
+static gboolean
+filename_blacklisted (MooLangMgr *mgr,
+                      const char *filename)
+{
+    /* bak files */
+    char *basename, *utf8_basename;
+    gboolean result = FALSE;
+    GSList *extensions;
+
+    basename = g_path_get_basename (filename);
+    g_return_val_if_fail (basename != NULL, FALSE);
+    utf8_basename = g_filename_display_name (basename);
+    g_return_val_if_fail (utf8_basename != NULL, FALSE);
+
+    extensions = g_hash_table_lookup (mgr->extensions, MOO_LANG_NONE);
+
+    while (extensions)
+    {
+        if (g_pattern_match_simple ((char*) extensions->data, utf8_basename))
+        {
+            result = TRUE;
+            break;
+        }
+
+        extensions = extensions->next;
+    }
+
+    g_free (utf8_basename);
+    g_free (basename);
+    return result;
+}
+
+static gboolean
+file_blacklisted (MooLangMgr *mgr,
+                  const char *filename)
+{
+    /* XXX mime type */
+    return filename_blacklisted (mgr, filename);
+}
+
+
 MooLang*
 moo_lang_mgr_get_lang_for_file (MooLangMgr     *mgr,
                                 const char     *filename)
@@ -919,6 +960,9 @@ moo_lang_mgr_get_lang_for_file (MooLangMgr     *mgr,
 
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
     g_return_val_if_fail (filename != NULL, NULL);
+
+    if (file_blacklisted (mgr, filename))
+        return NULL;
 
     lang = lang_mgr_get_lang_by_extension (mgr, filename);
 
@@ -960,6 +1004,9 @@ moo_lang_mgr_get_lang_for_filename (MooLangMgr *mgr,
 
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
     g_return_val_if_fail (filename != NULL, NULL);
+
+    if (filename_blacklisted (mgr, filename))
+        return NULL;
 
     lang = lang_mgr_get_lang_by_extension (mgr, filename);
 
@@ -1207,6 +1254,44 @@ _moo_lang_set_extensions (MooLang    *lang,
                          lang->mgr->extensions);
 }
 
+void
+_moo_lang_mgr_set_mime_types (MooLangMgr *mgr,
+                              const char *lang_id,
+                              const char *mime)
+{
+    g_return_if_fail (MOO_IS_LANG_MGR (mgr));
+
+    if (lang_id && strcmp (lang_id, MOO_LANG_NONE) != 0)
+    {
+        MooLang *lang = moo_lang_mgr_get_lang (mgr, lang_id);
+        g_return_if_fail (lang != NULL);
+        return _moo_lang_set_mime_types (lang, mime);
+    }
+
+    g_hash_table_insert (mgr->mime_types,
+                         g_strdup (MOO_LANG_NONE),
+                         parse_mime_types (mime));
+}
+
+void
+_moo_lang_mgr_set_extensions (MooLangMgr *mgr,
+                              const char *lang_id,
+                              const char *extensions)
+{
+    g_return_if_fail (MOO_IS_LANG_MGR (mgr));
+
+    if (lang_id && strcmp (lang_id, MOO_LANG_NONE) != 0)
+    {
+        MooLang *lang = moo_lang_mgr_get_lang (mgr, lang_id);
+        g_return_if_fail (lang != NULL);
+        return _moo_lang_set_extensions (lang, extensions);
+    }
+
+    g_hash_table_insert (mgr->extensions,
+                         g_strdup (MOO_LANG_NONE),
+                         parse_extensions (extensions));
+}
+
 
 GSList *
 moo_lang_get_extensions (MooLang *lang)
@@ -1233,6 +1318,38 @@ moo_lang_get_mime_types (MooLang *lang)
         return value;
     else
         return lang->mime_types;
+}
+
+GSList *
+_moo_lang_mgr_get_extensions (MooLangMgr *mgr,
+                              const char *lang_id)
+{
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+
+    if (lang_id && strcmp (lang_id, MOO_LANG_NONE) != 0)
+    {
+        MooLang *lang = moo_lang_mgr_get_lang (mgr, lang_id);
+        g_return_val_if_fail (lang != NULL, NULL);
+        return moo_lang_get_extensions (lang);
+    }
+
+    return g_hash_table_lookup (mgr->extensions, MOO_LANG_NONE);
+}
+
+GSList *
+_moo_lang_mgr_get_mime_types (MooLangMgr *mgr,
+                              const char *lang_id)
+{
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+
+    if (lang_id && strcmp (lang_id, MOO_LANG_NONE) != 0)
+    {
+        MooLang *lang = moo_lang_mgr_get_lang (mgr, lang_id);
+        g_return_val_if_fail (lang != NULL, NULL);
+        return moo_lang_get_mime_types (lang);
+    }
+
+    return g_hash_table_lookup (mgr->mime_types, MOO_LANG_NONE);
 }
 
 
@@ -1459,6 +1576,36 @@ save_one_lang (MooMarkupNode *root,
     }
 }
 
+static void
+save_one (MooLangMgr     *mgr,
+          MooLang        *lang,
+          const char     *id,
+          MooMarkupDoc   *xml,
+          MooMarkupNode **root)
+{
+    const char *config;
+    GSList *extensions, *mimetypes;
+
+    id = lang ? lang->id : id;
+    g_return_if_fail (id != NULL);
+
+    config = g_hash_table_lookup (mgr->config, id);
+    extensions = _moo_lang_mgr_get_extensions (mgr, id);
+    mimetypes = _moo_lang_mgr_get_mime_types (mgr, id);
+
+    if (!config && lang && extensions == lang->extensions && mimetypes == lang->mime_types)
+        return;
+
+    if (!*root)
+        *root = moo_markup_create_element (MOO_MARKUP_NODE (xml), ELEMENT_LANG_CONFIG);
+
+    g_return_if_fail (*root != NULL);
+
+    save_one_lang (*root, id, config,
+                   extensions, !lang || extensions != lang->extensions,
+                   mimetypes, !lang || mimetypes != lang->mime_types);
+}
+
 void
 _moo_lang_mgr_save_config (MooLangMgr *mgr)
 {
@@ -1478,25 +1625,11 @@ _moo_lang_mgr_save_config (MooLangMgr *mgr)
 
     root = NULL;
 
+    save_one (mgr, NULL, MOO_LANG_NONE, xml, &root);
+
     for (l = mgr->langs; l != NULL; l = l->next)
     {
         MooLang *lang = l->data;
-        const char *config;
-        GSList *extensions, *mimetypes;
-
-        config = g_hash_table_lookup (mgr->config, lang->id);
-        extensions = moo_lang_get_extensions (lang);
-        mimetypes = moo_lang_get_mime_types (lang);
-
-        if (config || extensions != lang->extensions || mimetypes != lang->mime_types)
-        {
-            if (!root)
-                root = moo_markup_create_element (MOO_MARKUP_NODE (xml), ELEMENT_LANG_CONFIG);
-            g_return_if_fail (root != NULL);
-
-            save_one_lang (root, lang->id, config,
-                           extensions, extensions != lang->extensions,
-                           mimetypes, mimetypes != lang->mime_types);
-        }
+        save_one (mgr, lang, lang->id, xml, &root);
     }
 }

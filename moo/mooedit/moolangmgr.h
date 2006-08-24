@@ -56,6 +56,19 @@ void            moo_lang_mgr_read_dirs              (MooLangMgr         *mgr);
 
 MooTextStyleScheme *moo_lang_mgr_get_active_scheme  (MooLangMgr         *mgr);
 
+/* return value must not be modified */
+GSList         *_moo_lang_mgr_get_extensions        (MooLangMgr         *mgr,
+                                                     const char         *lang_id);
+/* return value must not be modified */
+GSList         *_moo_lang_mgr_get_mime_types        (MooLangMgr         *mgr,
+                                                     const char         *lang_id);
+void            _moo_lang_mgr_set_mime_types        (MooLangMgr         *mgr,
+                                                     const char         *lang_id,
+                                                     const char         *mime);
+void            _moo_lang_mgr_set_extensions        (MooLangMgr         *mgr,
+                                                     const char         *lang_id,
+                                                     const char         *extensions);
+
 
 G_END_DECLS
 
