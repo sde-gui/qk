@@ -35,8 +35,8 @@ configure has the following medit-specific options:
                           = yes with pygtk-2.8)
     medit uses patched pygtk codegen to allow docstrings in generated code. It's
     unlikely you want to use this option, and it's not advised to use it if you
-    are not sure what codegen is. Still, in case of problems with python, patched
-    codegen may be the source of problem, so using upstream codegen may be forced.
+    are not sure what codegen is. Even if you know what codegen is, do not use
+    this option.
 
   --with-system-pcre      whether to use system copy of pcre library (default
                           = YES)

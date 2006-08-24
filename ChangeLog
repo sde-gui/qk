@@ -1,3 +1,46 @@
+2006-08-23  Yevgen Muntyan  <muntyan@tamu.edu>
+    * === Released 0.7.0 ===
+
+2006-08-23  Yevgen Muntyan  <muntyan@tamu.edu>
+    Disabled active strings and completion.
+    Made it possible to blacklist certain extensions, so no lang is picked up
+    for them.
+
+2006-08-20  Yevgen Muntyan  <muntyan@tamu.edu>
+    Fixed bug with simultaneous dragging icon and reordering tabs in notebook
+
+2006-08-19  Yevgen Muntyan  <muntyan@tamu.edu>
+    Use globs for files to skip so it's consistent with files-to-process
+
+2006-08-09  Yevgen Muntyan  <muntyan@tamu.edu>
+    Try UTF8, then locale, then ISO***
+
+2006-08-03  Yevgen Muntyan  <muntyan@tamu.edu>
+    Started i18n stuff
+
+2006-07-05  Yevgen Muntyan  <muntyan@tamu.edu>
+    Added --mode argument to control project plugin; made it pass
+    --project argument to the plugin.
+    Pass timestap from STARTUP_ID to another instance in order not to
+    break focus stiealing prevention thing.
+
+2006-06-26  Yevgen Muntyan  <muntyan@tamu.edu>
+    Make sure color scheme setting is applied before opening documents
+
+2006-06-25  Yevgen Muntyan  <muntyan@tamu.edu>
+    Make document grab focus in open_file_line, to close the pane
+
+2006-06-23  Yevgen Muntyan  <muntyan@tamu.edu>
+    Do not try to open special files; do not try different encodings
+    when error is not related to charset conversion
+    Fixed tab icon dnd which caused input lock in child windows
+
+2006-06-19  Yevgen Muntyan  <muntyan@tamu.edu>
+    Added New File action in file selector.
+
+2006-06-17  Yevgen Muntyan  <muntyan@tamu.edu>
+    Made displayed tab width configurable.
+
 2006-06-16  Yevgen Muntyan  <muntyan@tamu.edu>
     Fixed build error on FreeBSD when python is not used.
 

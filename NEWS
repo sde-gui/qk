@@ -1,3 +1,42 @@
+2006-08-23  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    * === Released 0.7.0 ===
+
+    New features and impovements:
+        New and improved user-defined tools.
+        Much improved Find plugin.
+        I18n infrastructure is in place (no translations yet).
+        Reworked plugin system.
+        Experimental project plugin.
+        Printing with gtk-2.10.
+
+        Made it possible to blacklist certain extensions, so no language
+        is picked up for them.
+        Added New File action in file selector.
+        Made displayed tab width configurable.
+        Close editor tabs by middle mouse button click (Thomas Gilgin).
+        Made font selectors show only monospace fonts.
+        Find Current Word action (Thomas Gilgin).
+        Improved terminal drawing.
+        Prettified python console (Geoffrey French).
+
+    Disabled active strings and completion in this version, they will
+    be reenabled and made actually useful in next releases.
+
+    Bug fixes include:
+        Fixed bug with simultaneous dragging icon and reordering tabs in notebook.
+        On opening files prefer locale encoding to builtin ones (Thomas Gilgin).
+        Do not try to open special files both on windows and unix.
+        Fix startup notification protocol handling, so the editor does not steal
+        focus when using single instance mode and does pop up on correct desktop
+        when needed.
+        Color scheme setting applied after opening a document (Thomas Gilgin).
+        Custom shortcuts did not get saved under certain conditions.
+        Fixed tab icon dnd which caused input lock in child windows.
+        Fixed bug in Search/Replace when replacement uses back references.
+        Store clipboard contents on quit (Thomas Gilgin).
+        Fixed crash on paste from another application.
+        Save search history and search options (Thomas Gilgin).
+
 2006-05-26  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.6.99 ===
 

@@ -1,3 +1,6 @@
+NOTE: DO NOT read this, it's mostly junk, medit will use brand new gtksourceview
+syntax highlighting.
+
 Here's what I gather about colors in various editors:
 
 libmoo got highlighting styles and colors from kde text editor, Kate.

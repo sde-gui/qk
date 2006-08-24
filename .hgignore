@@ -54,3 +54,5 @@ moo/mooterm/termhelper_res\.rc$
 ^po/notexist$
 -old\..*$
 ^po/ru\.po$
+.*\.(new|old).*
+gmon\.out
