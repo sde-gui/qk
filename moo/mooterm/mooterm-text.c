@@ -452,7 +452,7 @@ _moo_term_button_press (GtkWidget      *widget,
 
         bound = iter;
 
-        if (_moo_term_extend_selection (term, MOO_TEXT_SELECT_WORDS, &iter, &bound))
+        if (_moo_term_extend_selection (term, MOO_TERM_SELECT_WORDS, &iter, &bound))
             _moo_term_select_range (term, &bound, &iter);
     }
     else if (event->type == GDK_3BUTTON_PRESS && event->button == 1)
@@ -466,7 +466,7 @@ _moo_term_button_press (GtkWidget      *widget,
 
         bound = iter;
 
-        if (_moo_term_extend_selection (term, MOO_TEXT_SELECT_LINES, &iter, &bound))
+        if (_moo_term_extend_selection (term, MOO_TERM_SELECT_LINES, &iter, &bound))
             _moo_term_select_range (term, &bound, &iter);
     }
 
@@ -558,7 +558,7 @@ _moo_term_motion_notify (GtkWidget      *widget,
     {
         GdkRectangle rect;
         MooTermIter start;
-        MooTextSelectionType t;
+        MooTermSelectionType t;
 
         MOUSE_STUFF(term)->drag_moved = TRUE;
         _moo_term_get_visible_rect (term, &rect);
@@ -580,13 +580,13 @@ _moo_term_motion_notify (GtkWidget      *widget,
         switch (MOUSE_STUFF(term)->drag_button)
         {
             case GDK_BUTTON_PRESS:
-                t = MOO_TEXT_SELECT_CHARS;
+                t = MOO_TERM_SELECT_CHARS;
                 break;
             case GDK_2BUTTON_PRESS:
-                t = MOO_TEXT_SELECT_WORDS;
+                t = MOO_TERM_SELECT_WORDS;
                 break;
             default:
-                t = MOO_TEXT_SELECT_LINES;
+                t = MOO_TERM_SELECT_LINES;
         }
 
         if (_moo_term_extend_selection (term, t, &iter, &start))
@@ -651,7 +651,7 @@ drag_scroll_timeout_func (MooTerm *term)
     int x, y, px, py;
     MooTermIter iter;
     MooTermIter start;
-    MooTextSelectionType t;
+    MooTermSelectionType t;
 
     g_assert (MOUSE_STUFF(term)->drag_type == DRAG_SELECT);
 
@@ -666,13 +666,13 @@ drag_scroll_timeout_func (MooTerm *term)
     switch (MOUSE_STUFF(term)->drag_button)
     {
         case GDK_BUTTON_PRESS:
-            t = MOO_TEXT_SELECT_CHARS;
+            t = MOO_TERM_SELECT_CHARS;
             break;
         case GDK_2BUTTON_PRESS:
-            t = MOO_TEXT_SELECT_WORDS;
+            t = MOO_TERM_SELECT_WORDS;
             break;
         default:
-            t = MOO_TEXT_SELECT_LINES;
+            t = MOO_TERM_SELECT_LINES;
     }
 
     if (_moo_term_extend_selection (term, t, &iter, &start))
@@ -1020,7 +1020,7 @@ static gunichar iter_get_char           (const MooTermIter  *iter);
 
 gboolean
 _moo_term_extend_selection (MooTerm            *term,
-                            MooTextSelectionType type,
+                            MooTermSelectionType type,
                             MooTermIter        *end,
                             MooTermIter        *start)
 {
@@ -1029,7 +1029,7 @@ _moo_term_extend_selection (MooTerm            *term,
     CHECK_ITER (start);
     CHECK_ITER (end);
 
-    if (type == MOO_TEXT_SELECT_CHARS)
+    if (type == MOO_TERM_SELECT_CHARS)
     {
         return order;
     }
@@ -1040,7 +1040,7 @@ _moo_term_extend_selection (MooTerm            *term,
         start = end; end = tmp;
     }
 
-    if (type == MOO_TEXT_SELECT_WORDS)
+    if (type == MOO_TERM_SELECT_WORDS)
     {
         int ch_class;
 
@@ -1066,7 +1066,7 @@ _moo_term_extend_selection (MooTerm            *term,
         return iter_cmp (start, end);
     }
 
-    if (type == MOO_TEXT_SELECT_LINES)
+    if (type == MOO_TERM_SELECT_LINES)
     {
         iter_set_line_offset (start, 0);
         iter_forward_line (end);

@@ -19,7 +19,13 @@
 #define __MOO_TERM_TEXT_PRIVATE_H__
 
 #include "mooterm/mooterm-text.h"
-#include "mooedit/mootextview.h"
+
+typedef enum
+{
+    MOO_TERM_SELECT_CHARS,
+    MOO_TERM_SELECT_WORDS,
+    MOO_TERM_SELECT_LINES
+} MooTermSelectionType;
 
 
 void        _moo_term_iter_order            (MooTermIter        *first,
@@ -33,7 +39,7 @@ void        _moo_term_select_range          (MooTerm            *term,
                                              const MooTermIter  *start,
                                              const MooTermIter  *end);
 gboolean    _moo_term_extend_selection      (MooTerm            *term,
-                                             MooTextSelectionType type,
+                                             MooTermSelectionType type,
                                              MooTermIter        *end,
                                              MooTermIter        *start);
 void        _moo_term_get_visible_rect      (MooTerm            *term,
