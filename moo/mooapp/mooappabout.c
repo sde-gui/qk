@@ -76,7 +76,7 @@ show_credits (void)
     g_signal_connect (credits_dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
 
     written_by = moo_glade_xml_get_widget (xml, "written_by");
-#ifdef MOO_USE_XML
+#if defined(MOO_USE_XML) && !defined(__WIN32__)
     moo_html_load_memory (written_by,
                           "Yevgen Muntyan <a href=\"mailto://muntyan@tamu.edu\">"
                                   "&lt;muntyan@tamu.edu&gt;</a>",
