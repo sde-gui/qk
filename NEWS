@@ -1,3 +1,9 @@
+2006-08-24  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    * === Released 0.7.1 ===
+
+    Quick-fix release: fixed some build errors,
+    removed shell unix tools from win32 build.
+
 2006-08-23  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.7.0 ===
 
