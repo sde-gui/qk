@@ -14,7 +14,6 @@
 #ifndef __MOO_UTILS_TREE_VIEW_H__
 #define __MOO_UTILS_TREE_VIEW_H__
 
-#include <mooutils/mooconfig.h>
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
@@ -28,9 +27,7 @@ G_BEGIN_DECLS
 #define MOO_TREE_HELPER_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_TREE_HELPER, MooTreeHelperClass))
 
 typedef struct _MooTreeHelper MooTreeHelper;
-typedef struct _MooConfigHelper MooConfigHelper;
 typedef struct _MooTreeHelperClass MooTreeHelperClass;
-typedef struct _MooConfigHelperClass MooConfigHelperClass;
 
 struct _MooTreeHelper {
     GtkObject parent;
@@ -68,20 +65,6 @@ struct _MooTreeHelperClass {
                                      GtkTreeIter    *iter);
 };
 
-struct _MooConfigHelperClass {
-    MooTreeHelperClass parent_class;
-
-    void        (*new_item)         (MooConfigHelper    *helper,
-                                     MooConfig          *config,
-                                     MooConfigItem      *item);
-    void        (*set_from_item)    (MooConfigHelper    *helper,
-                                     MooConfig          *config,
-                                     MooConfigItem      *item);
-    void        (*set_from_widgets) (MooConfigHelper    *helper,
-                                     MooConfig          *config,
-                                     MooConfigItem      *item);
-};
-
 
 GType            _moo_tree_helper_get_type          (void) G_GNUC_CONST;
 
@@ -100,21 +83,6 @@ void             _moo_tree_helper_update_model      (MooTreeHelper      *helper,
                                                      GtkTreeModel       *model,
                                                      GtkTreePath        *path);
 void             _moo_tree_helper_update_widgets    (MooTreeHelper      *helper);
-
-MooConfigHelper *_moo_config_helper_new             (GtkWidget          *tree_view,
-                                                     GtkWidget          *new_btn,
-                                                     GtkWidget          *delete_btn,
-                                                     GtkWidget          *up_btn,
-                                                     GtkWidget          *down_btn);
-
-void             _moo_config_helper_add_widget      (MooConfigHelper    *helper,
-                                                     GtkWidget          *widget,
-                                                     const char         *key,
-                                                     gboolean            update_live);
-void             _moo_config_helper_update_model    (MooConfigHelper    *helper,
-                                                     GtkTreeModel       *model,
-                                                     GtkTreePath        *path);
-
 
 void             _moo_tree_view_select_first        (GtkTreeView        *tree_view);
 void             _moo_combo_box_select_first        (GtkComboBox        *combo);
