@@ -13,13 +13,14 @@ mooedit_syntax_DATA =           \
 	octave.lang             \
 	perl.lang               \
 	po.lang                 \
-	python.lang             \
 	python-console.lang     \
+	python.lang             \
 	scheme.lang             \
 	sci.lang                \
 	sh.lang                 \
 	texinfo.lang            \
 	xml.lang                \
+	yacc.lang               \
 	garnacho.styles         \
 	gvim.styles             \
 	check.sh                \

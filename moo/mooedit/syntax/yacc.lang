@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language SYSTEM "language.dtd">
+<language name="Yacc" section="Others"
+          mimetypes="text/x-yacc;text/x-bison"
+          extensions="*.yacc;*.y">
+
+  <syntax>
+    <context name="Normal">
+      <Regex pattern="^%{" style="Section" context="InlineC"/>
+      <TwoChars style="Comment" context="Commentar 1" char1="/" char2="/"/>
+      <TwoChars style="Comment" context="Commentar 2" char1="/" char2="*"/>
+    </context>
+    <context style="Comment" eol-context="#pop" name="Commentar 1">
+      <IncludeRules from="##Misc##CommonCommentRules"/>
+      <LineContinue context="#stay"/>
+    </context>
+    <context style="Comment" eol-context="#stay" name="Commentar 2">
+      <TwoChars style="Comment" context="#pop" char1="*" char2="/" endRegion="Comment"/>
+      <IncludeRules from="##Misc##CommonCommentRules"/>
+    </context>
+    <context name="InlineC">
+      <Regex pattern="^%}" style="Section" context="#pop" include-into-next="true"/>
+      <IncludeRules from="##C##Normal"/>
+    </context>
+  </syntax>
+
+  <styles>
+    <style name="Comment"     default-style="Comment"/>
+    <style name="Section"     default-style="Others" bold="TRUE"/>
+  </styles>
+
+  <general>
+    <brackets>()[]</brackets>
+    <comments>
+      <single-line start="//"/>
+    </comments>
+  </general>
+
+</language>
