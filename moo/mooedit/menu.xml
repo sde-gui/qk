@@ -8,4 +8,11 @@ fi;
 </code>
     </command>
   </tool>
+  <tool id="SortLines" name="Sort">
+    <command type="exe" options="need-doc">
+      <cmd-line>sort</cmd-line>
+      <input>lines</input>
+      <output>insert</output>
+    </command>
+  </tool>
 </tools>
