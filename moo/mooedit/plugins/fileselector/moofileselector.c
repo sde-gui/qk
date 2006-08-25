@@ -300,12 +300,16 @@ moo_file_selector_populate_popup (MooFileView *fileview,
                                   GList       *selected,
                                   G_GNUC_UNUSED GtkMenu *menu)
 {
-    GtkAction *action;
+    GtkAction *new_file, *open;
 
-    action = moo_action_collection_get_action (moo_file_view_get_actions (fileview), "NewFile");
+    new_file = moo_action_collection_get_action (moo_file_view_get_actions (fileview), "NewFile");
+    open = moo_action_collection_get_action (moo_file_view_get_actions (fileview), "Open");
 
-    if (action)
-        gtk_action_set_sensitive (action, !selected || !selected->next);
+    if (new_file)
+        gtk_action_set_sensitive (new_file, !selected || !selected->next);
+
+    if (open)
+        gtk_action_set_visible (open, selected && selected->next);
 }
 
 
@@ -482,6 +486,45 @@ out:
 }
 
 
+static void
+file_selector_open_files (MooFileSelector *filesel)
+{
+    GList *selected = NULL;
+    GList *files = NULL;
+
+    selected = _moo_file_view_get_filenames (MOO_FILE_VIEW (filesel));
+
+    if (!selected)
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        return;
+    }
+
+    while (selected)
+    {
+        char *filename = selected->data;
+
+        if (g_file_test (filename, G_FILE_TEST_IS_REGULAR))
+            files = g_list_prepend (files, filename);
+        else
+            g_free (filename);
+
+        selected = g_list_delete_link (selected, selected);
+    }
+
+    files = g_list_reverse (files);
+
+    while (files)
+    {
+        moo_editor_open_file (moo_edit_window_get_editor (filesel->window),
+                              filesel->window, GTK_WIDGET (filesel),
+                              files->data, NULL);
+        g_free (files->data);
+        files = g_list_delete_link (files, files);
+    }
+}
+
+
 /****************************************************************************/
 /* Constructor
  */
@@ -524,6 +567,13 @@ moo_file_selector_constructor (GType           type,
                                  "closure-object", filesel,
                                  "closure-callback", file_selector_create_file,
                                  NULL);
+    moo_action_group_add_action (group, "Open",
+                                 "label", GTK_STOCK_OPEN,
+                                 "tooltip", GTK_STOCK_OPEN,
+                                 "stock-id", GTK_STOCK_OPEN,
+                                 "closure-object", filesel,
+                                 "closure-callback", file_selector_open_files,
+                                 NULL);
 
     xml = moo_file_view_get_ui_xml (MOO_FILE_VIEW (fileview));
     merge_id = moo_ui_xml_new_merge_id (xml);
@@ -535,6 +585,9 @@ moo_file_selector_constructor (GType           type,
                                      "NewFolder",
                                      "<item action=\"NewFile\"/>"
                                      "<separator/>");
+    moo_ui_xml_insert_markup (xml, merge_id,
+                              "MooFileView/Menu", 0,
+                              "<item action=\"Open\"/>");
 
     label = moo_pane_label_new (MOO_STOCK_FILE_SELECTOR,
                                 NULL, NULL/*button*/, _("File Selector"),
