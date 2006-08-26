@@ -383,11 +383,11 @@ process_language_node (xmlTextReaderPtr reader, const gchar *filename)
 	tmp = xmlTextReaderGetAttribute (reader, BAD_CAST "id");
 	if (tmp != NULL)
 	{
-		lang->priv->id = g_strdup ((gchar*) tmp);
+		lang->priv->id = g_ascii_strdown ((gchar*) tmp, -1);
 	}
 	else
 	{
-		lang->priv->id = g_strdup ((gchar*) untranslated_name);
+		lang->priv->id = g_ascii_strdown ((gchar*) untranslated_name, -1);
 	}
 	xmlFree (tmp);
 	xmlFree (untranslated_name);
