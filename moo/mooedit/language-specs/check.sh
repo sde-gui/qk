@@ -1,4 +1,7 @@
 #!/bin/sh
+# "./check.sh somelang.lang" will validate somelang.lang file.
+# "./check.sh" without arguments will validate lang and styles files
+# specified here.
 
 langs="c.lang cpp.lang def.lang html.lang \
        javascript.lang latex.lang xml.lang \

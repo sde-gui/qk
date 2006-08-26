@@ -21,6 +21,7 @@
   <style name="def:error" background="#FF0000" bold="true"/>
   <style name="def:package" foreground="#FF00FF" bold="true"/>
   <style name="def:escape" foreground="#9010D0"/>
+  <style name="def:shebang" foreground="#0000FF" bold="true"/>
 
   <style name="Others" foreground="#2E8B57" bold="true"/>
   <style name="Others 2" foreground="#008B8B"/>

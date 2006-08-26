@@ -212,6 +212,11 @@
                 <ref name="boolean-value"/>
             </attribute>
         </optional>
+        <optional>
+            <attribute name="first-line-only">
+                <ref name="boolean-value"/>
+            </attribute>
+        </optional>
 
         <choice>
             <element name="match">
@@ -259,6 +264,11 @@
         </optional>
         <optional>
             <attribute name="end-at-line-end">
+                <ref name="boolean-value"/>
+            </attribute>
+        </optional>
+        <optional>
+            <attribute name="first-line-only">
                 <ref name="boolean-value"/>
             </attribute>
         </optional>
