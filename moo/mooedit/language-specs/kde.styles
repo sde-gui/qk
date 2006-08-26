@@ -32,9 +32,9 @@
   <style name="xml:tags" bold="true"/>
   <style name="xml:namespace" foreground="#008000"/>
   <style name="xml:entity" foreground="#0000FF"/>
-  <style name="xml:cdata-delim" foreground="#008080" bold="1"/>
+  <style name="xml:cdata-delim" foreground="#008080" bold="true"/>
   <style name="xml:processing-instruction" bold="true"/>
-  <style name="xml:doctype" foreground="#800000" bold="1"/>
+  <style name="xml:doctype" foreground="#800000" bold="true"/>
 
   <style name="js:object" foreground="#008000"/>
   <style name="js:constructors" bold="true"/>
