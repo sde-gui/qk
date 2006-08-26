@@ -313,6 +313,12 @@ create_definition (ParserState *parser_state,
 	{
 		xmlAttr *attribute;
 
+		if (child->type != XML_READER_TYPE_ELEMENT)
+		{
+			child = child->next;
+			continue;
+		}
+
 		/* FIXME: add PCRE_EXTRA support in EggRegex */
 		flags = parser_state->regex_compile_flags;
 
