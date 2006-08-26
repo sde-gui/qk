@@ -7,7 +7,8 @@ langs2 =			\
 	html.lang		\
 	javascript.lang		\
 	latex.lang		\
-	xml.lang
+	xml.lang		\
+	yacc.lang
 
 langs1 =			\
 	ada.lang		\

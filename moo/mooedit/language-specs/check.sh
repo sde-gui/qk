@@ -1,6 +1,9 @@
 #!/bin/sh
 
-langs="c.lang cpp.lang def.lang html.lang javascript.lang latex.lang xml.lang"
+langs="c.lang cpp.lang def.lang html.lang \
+       javascript.lang latex.lang xml.lang \
+       yacc.lang"
+
 styles="gvim.styles kde.styles"
 
 if [ $1 ]; then
