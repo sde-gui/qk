@@ -5,6 +5,8 @@ builddir=`pwd`
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
+srcdir=`cd $srcdir && pwd`
+
 if test -d $srcdir/m4 ; then
     m4dir=`cd $srcdir/m4 && pwd`
     aclocal_extra="-I $m4dir"
