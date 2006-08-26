@@ -17,6 +17,7 @@
         <style id="data-type"      _name="Data Type"/>
         <style id="character"      _name="Character"/>
         <style id="function"       _name="Function"/>
+        <style id="shebang"        _name="Shebang"/>
 
 <!--        <style id="others"         _name="Others"/>-->
 <!--        <style id="others2"        _name="Others 2"/>-->
@@ -104,6 +105,11 @@
         <context id="line-continue">
             <start>\\$</start>
             <end>^</end>
+        </context>
+
+        <context id="shebang" style-ref="shebang" first-line-only="true">
+            <start>^#!</start>
+            <end>$</end>
         </context>
 
         <context id="c-style-escape" style-ref="escape">
