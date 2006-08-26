@@ -122,6 +122,7 @@
                     <keyword>return</keyword>
                     <keyword>sizeof</keyword>
                     <keyword>switch</keyword>
+                    <keyword>typedef</keyword>
                     <keyword>while</keyword>
                 </context>
 
@@ -146,7 +147,6 @@
                     <keyword>size_t</keyword>
                     <keyword>static</keyword>
                     <keyword>struct</keyword>
-                    <keyword>typedef</keyword>
                     <keyword>union</keyword>
                     <keyword>unsigned</keyword>
                     <keyword>void</keyword>
