@@ -15,7 +15,7 @@
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditprefs-glade.h"
-#include "mooedit/moolang-private.h"
+#include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moocompat.h"
@@ -110,7 +110,7 @@ scheme_combo_init (GtkComboBox *combo,
     GtkCellRenderer *cell;
 
     mgr = moo_editor_get_lang_mgr (editor);
-    list = moo_lang_mgr_list_schemes (mgr);
+    list = _moo_lang_mgr_list_schemes (mgr);
     g_return_if_fail (list != NULL);
 
     store = gtk_list_store_new (1, MOO_TYPE_TEXT_STYLE_SCHEME);
@@ -132,6 +132,7 @@ scheme_combo_init (GtkComboBox *combo,
                                         NULL, NULL);
 
     g_object_unref (store);
+    g_slist_foreach (list, (GFunc) g_object_unref, NULL);
     g_slist_free (list);
 }
 
@@ -145,7 +146,7 @@ scheme_combo_data_func (G_GNUC_UNUSED GtkCellLayout *layout,
     MooTextStyleScheme *scheme = NULL;
     gtk_tree_model_get (model, iter, 0, &scheme, -1);
     g_return_if_fail (scheme != NULL);
-    g_object_set (cell, "text", scheme->name, NULL);
+    g_object_set (cell, "text", moo_text_style_scheme_get_name (scheme), NULL);
     g_object_unref (scheme);
 }
 
@@ -162,7 +163,7 @@ prefs_page_init (MooPrefsDialogPage *page)
 
     editor = page_get_editor (page);
     mgr = moo_editor_get_lang_mgr (editor);
-    scheme = moo_lang_mgr_get_active_scheme (mgr);
+    scheme = _moo_lang_mgr_get_active_scheme (mgr);
     g_return_if_fail (scheme != NULL);
 
     scheme_combo = moo_glade_xml_get_widget (page->xml, "color_scheme_combo");
@@ -262,7 +263,8 @@ prefs_page_apply (MooPrefsDialogPage *page)
 
     scheme = page_get_scheme (page);
     g_return_if_fail (scheme != NULL);
-    moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_COLOR_SCHEME), scheme->name);
+    moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_COLOR_SCHEME),
+                          moo_text_style_scheme_get_id (scheme));
     g_object_unref (scheme);
 
     lang = page_get_default_lang (page);
@@ -311,16 +313,24 @@ enum {
 
 
 static char *
-list_to_string (GSList *list)
+list_to_string (GSList  *list,
+                gboolean free_list)
 {
+    GSList *l;
     GString *string = g_string_new (NULL);
 
-    while (list)
+    for (l = list; l != NULL; l = l->next)
     {
-        g_string_append (string, list->data);
+        g_string_append (string, l->data);
 
-        if ((list = list->next))
+        if (l->next)
             g_string_append_c (string, ';');
+    }
+
+    if (free_list)
+    {
+        g_slist_foreach (list, (GFunc) g_free, NULL);
+        g_slist_free (list);
     }
 
     return g_string_free (string, FALSE);
@@ -346,8 +356,8 @@ create_lang_model (MooEditor *editor)
 
     gtk_tree_store_append (store, &iter, NULL);
     config = _moo_lang_mgr_get_config (mgr, MOO_LANG_NONE);
-    ext = list_to_string (_moo_lang_mgr_get_extensions (mgr, NULL));
-    mime = list_to_string (_moo_lang_mgr_get_mime_types (mgr, NULL));
+    ext = list_to_string (_moo_lang_mgr_get_extensions (mgr, NULL), TRUE);
+    mime = list_to_string (_moo_lang_mgr_get_mime_types (mgr, NULL), TRUE);
     gtk_tree_store_set (store, &iter, COLUMN_ID, MOO_LANG_NONE,
                         COLUMN_NAME, "None",
                         COLUMN_CONFIG, config,
@@ -371,18 +381,20 @@ create_lang_model (MooEditor *editor)
         {
             MooLang *lang = l->data;
 
-            if (!lang->hidden && !strcmp (lang->section, section))
+            if (!_moo_lang_get_hidden (lang) &&
+                !strcmp (_moo_lang_get_section (lang), section))
             {
                 GtkTreeIter child;
                 char *ext, *mime;
 
-                ext = list_to_string (moo_lang_get_extensions (lang));
-                mime = list_to_string (moo_lang_get_mime_types (lang));
+                ext = list_to_string (_moo_lang_mgr_get_extensions (mgr, _moo_lang_id (lang)), TRUE);
+                mime = list_to_string (_moo_lang_mgr_get_mime_types (mgr, _moo_lang_id (lang)), TRUE);
 
-                config = _moo_lang_mgr_get_config (mgr, lang->id);
+                config = _moo_lang_mgr_get_config (mgr, _moo_lang_id (lang));
                 gtk_tree_store_append (store, &child, &iter);
-                gtk_tree_store_set (store, &child, COLUMN_ID, lang->id,
-                                    COLUMN_NAME, lang->display_name,
+                gtk_tree_store_set (store, &child,
+                                    COLUMN_ID, _moo_lang_id (lang),
+                                    COLUMN_NAME, _moo_lang_display_name (lang),
                                     COLUMN_LANG, lang,
                                     COLUMN_CONFIG, config,
                                     COLUMN_MIMETYPES, mime,
@@ -398,6 +410,7 @@ create_lang_model (MooEditor *editor)
         sections = g_slist_delete_link (sections, sections);
     }
 
+    g_slist_foreach (langs, (GFunc) g_object_unref, NULL);
     g_slist_free (langs);
     return GTK_TREE_MODEL (store);
 }
@@ -580,7 +593,7 @@ helper_update_widgets (MooPrefsDialogPage *page,
     gtk_widget_set_sensitive (label_mimetypes, lang != NULL);
 
     if (lang)
-        moo_lang_unref (lang);
+        g_object_unref (lang);
 
     g_free (conf);
     g_free (ext);
@@ -677,7 +690,7 @@ apply_one_lang (GtkTreeModel *model,
     _moo_lang_mgr_set_config (mgr, id, config);
 
     if (lang)
-        moo_lang_unref (lang);
+        g_object_unref (lang);
 
     g_free (mime);
     g_free (ext);

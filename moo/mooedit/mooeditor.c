@@ -18,7 +18,7 @@
 #include "mooedit/mooplugin.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooedit-private.h"
-#include "mooedit/moolang-private.h"
+#include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooutils/moomenuaction.h"
 #include "mooutils/moocompat.h"

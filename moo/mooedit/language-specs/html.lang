@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language id="html" _name="HTML" version="2.0" _section="Markup"
+          mimetypes="text/html" globs="*.htm;*.html">
+    <styles>
+        <style id="comment"      _name="Comment"
+                                 map-to="def:comment"/>
+        <style id="tag"          _name="Tag"
+                                 map-to="def:keyword"/>
+        <style id="attrib-name"  _name="Attribute Name"
+                                 map-to="def:data-type"/>
+        <style id="attrib-value" _name="Attribute Value"
+                                 map-to="def:string"/>
+        <style id="dtd"          _name="DTD"
+                                 map-to="def:preprocessor"/>
+        <style id="entity"       _name="Entity"
+                                 map-to="def:escape"/>
+        <style id="error"        _name="Error"
+                                 map-to="def:error"/>
+    </styles>
+
+    <default-regex-options>i</default-regex-options>
+
+    <definitions>
+        <context id="entity" style-ref="entity">
+            <match>&amp;[a-z]+;</match>
+        </context>
+
+        <context id="generic-tag">
+            <include>
+
+                <!-- Attribute in the form: name="value" -->
+                <context id="attrib-quoted" style-ref="attrib-name">
+                    <start extended="true">
+                        /
+                            [a-z0-9:_-]+    # attribute name
+                            \s*=\s*         # "="
+                            (")             # string beginning
+                        /xi
+                    </start>
+                    <end>"</end>
+                    <include>
+                        <context sub-pattern="1" where="start" style-ref="attrib-value"/>
+                        <context sub-pattern="0" where="end" style-ref="attrib-value"/>
+                        <context id="string" extend-parent="false" end-at-line-end="true" style-ref="attrib-value">
+                            <start>\%{def:always-match}</start>
+                            <include>
+                                <context ref="entity"/>
+                            </include>
+                        </context>
+                    </include>
+                </context>
+
+                <!-- Attribute in the form: name=value -->
+                <context id="attrib-unquoted" style-ref="attrib-value">
+                    <start extended="true">
+                        /
+                            [a-z0-9:_-]+ # attribute name
+                            \s*=\s*      # "="
+                        /xi
+                    </start>
+                    <end>(?=&gt;|\s)</end>
+                    <include>
+                        <context sub-pattern="0" where="start" style-ref="attrib-name"/>
+                        <context ref="entity"/>
+                    </include>
+                </context>
+
+                <!-- Attribute in the form: name -->
+                <context id="attrib-no-value" style-ref="attrib-name">
+                    <match extended="true">
+                        /
+                            [a-z0-9:_-]+  # attribute name
+                        /xi
+                    </match>
+                </context>
+
+            </include>
+        </context>
+
+        <context id="html">
+            <include>
+
+                <context id="comment" style-ref="comment">
+                    <start>&lt;!--</start>
+                    <end>--&gt;</end>
+                    <include>
+                        <context ref="def:comment:*"/>
+                    </include>
+                </context>
+
+                <context id="dtd" style-ref="dtd">
+                    <start>&lt;!</start>
+                    <end>&gt;</end>
+                </context>
+
+                <context ref="entity"/>
+
+                <context id="script">
+                    <start>&lt;\s*script\%]</start>
+                    <end>&lt;\s*/\s*script\s*&gt;</end>
+
+                    <include>
+                        <context sub-pattern="0" where="start" style-ref="tag"/>
+                        <context sub-pattern="0" where="end" style-ref="tag"/>
+                        <context ref="generic-tag:*"/>
+                        <context id="js-code" extend-parent="false">
+                            <start>&gt;</start>
+                            <include>
+                                <context sub-pattern="0" where="start" style-ref="tag"/>
+                                <context ref="js:js:*"/>
+                            </include>
+                        </context>
+                    </include>
+                </context>
+
+                <context id="tag" style-ref="tag">
+                    <start>&lt;\s*/?\s*[a-z0-9_-]+</start>
+                    <end>\/?\s*&gt;</end>
+                    <include>
+                        <context ref="generic-tag:*"/>
+                    </include>
+                </context>
+
+            </include>
+        </context>
+    </definitions>
+</language>

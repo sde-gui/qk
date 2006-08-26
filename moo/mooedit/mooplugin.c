@@ -258,7 +258,7 @@ moo_plugin_register (const char            *id,
             if (!**p)
                 continue;
 
-            id = moo_lang_id_from_name (*p);
+            id = _moo_lang_id_from_name (*p);
 
             if (!g_hash_table_lookup (table, id))
                 g_hash_table_insert (table, id, id);
@@ -463,7 +463,7 @@ plugin_attach_doc (MooPlugin      *plugin,
         const char *id;
 
         lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
-        id = moo_lang_id (lang);
+        id = _moo_lang_id (lang);
 
         if (!g_hash_table_lookup (plugin->langs, id))
             return;
@@ -1023,7 +1023,7 @@ doc_lang_changed (MooEdit *doc)
 
     window = moo_edit_get_window (doc);
     lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
-    id = moo_lang_id (lang);
+    id = _moo_lang_id (lang);
 
     for (l = plugin_store->list; l != NULL; l = l->next)
     {

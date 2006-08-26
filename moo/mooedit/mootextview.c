@@ -129,15 +129,13 @@ static void     set_manage_clipboard        (MooTextView        *view,
                                              gboolean            manage);
 static void     selection_changed           (MooTextView        *view,
                                              MooTextBuffer      *buffer);
-static void     highlighting_changed        (GtkTextView        *view,
+static void     highlight_updated           (GtkTextView        *view,
                                              const GtkTextIter  *start,
                                              const GtkTextIter  *end);
-static void     tags_changed                (GtkTextView        *view,
-                                             const GtkTextIter  *start,
-                                             const GtkTextIter  *end);
+// static void     tags_changed                (GtkTextView        *view,
+//                                              const GtkTextIter  *start,
+//                                              const GtkTextIter  *end);
 
-static void     moo_text_view_set_scheme_real (MooTextView      *view,
-                                             MooTextStyleScheme *scheme);
 static void     overwrite_changed           (MooTextView        *view);
 static void     check_cursor_blink          (MooTextView        *view);
 static void     moo_text_view_draw_cursor   (GtkTextView        *view,
@@ -185,7 +183,6 @@ enum {
     CHAR_INSERTED,
     UNDO,
     REDO,
-    SET_SCHEME,
     LINE_MARK_CLICKED,
     START_QUICK_SEARCH,
     LAST_SIGNAL
@@ -284,7 +281,6 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     klass->undo = moo_text_view_undo;
     klass->redo = moo_text_view_redo;
     klass->char_inserted = moo_text_view_char_inserted;
-    klass->set_scheme = moo_text_view_set_scheme_real;
 
     g_type_class_add_private (klass, sizeof (MooTextViewPrivate));
 
@@ -605,16 +601,6 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                 G_TYPE_NONE, 1,
                                 GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
 
-    signals[SET_SCHEME] =
-            g_signal_new ("set-scheme",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooTextViewClass, set_scheme),
-                          NULL, NULL,
-                          _moo_marshal_VOID__OBJECT,
-                          G_TYPE_NONE, 1,
-                          MOO_TYPE_TEXT_STYLE_SCHEME);
-
     signals[LINE_MARK_CLICKED] =
             g_signal_new ("line-mark-clicked",
                           G_OBJECT_CLASS_TYPE (klass),
@@ -707,10 +693,10 @@ moo_text_view_constructor (GType                  type,
                               G_CALLBACK (cursor_moved), view);
     g_signal_connect_swapped (get_buffer (view), "selection-changed",
                               G_CALLBACK (selection_changed), view);
-    g_signal_connect_swapped (get_buffer (view), "highlighting-changed",
-                              G_CALLBACK (highlighting_changed), view);
-    g_signal_connect_swapped (get_buffer (view), "tags-changed",
-                              G_CALLBACK (tags_changed), view);
+    g_signal_connect_swapped (get_buffer (view), "highlight-updated",
+                              G_CALLBACK (highlight_updated), view);
+//     g_signal_connect_swapped (get_buffer (view), "tags-changed",
+//                               G_CALLBACK (tags_changed), view);
     g_signal_connect_swapped (get_buffer (view), "notify::has-selection",
                               G_CALLBACK (proxy_prop_notify), view);
     g_signal_connect_swapped (get_buffer (view), "notify::has-text",
@@ -2283,26 +2269,24 @@ moo_text_view_expose (GtkWidget      *widget,
 
     if (event->window == text_window)
     {
-        GdkRectangle rect = event->area;
+        GdkRectangle visible_rect;
+        GtkTextIter iter1, iter2;
 
-        gtk_text_view_window_to_buffer_coords (text_view,
-                                               GTK_TEXT_WINDOW_TEXT,
-                                               rect.x,
-                                               rect.y,
-                                               &rect.x,
-                                               &rect.y);
+        gtk_text_view_get_visible_rect (text_view, &visible_rect);
+        gtk_text_view_get_line_at_y (text_view, &iter1, visible_rect.y, NULL);
+        gtk_text_iter_backward_line (&iter1);
+        gtk_text_view_get_line_at_y (text_view, &iter2, visible_rect.y + visible_rect.height, NULL);
+        gtk_text_iter_forward_line (&iter2);
 
-        gtk_text_view_get_line_at_y (text_view, &start, rect.y, NULL);
-        gtk_text_view_get_line_at_y (text_view, &end, rect.y + rect.height, NULL);
-        gtk_text_iter_forward_line (&end);
-
-        first_line = gtk_text_iter_get_line (&start);
-        last_line = gtk_text_iter_get_line (&end);
-
-        /* it reports bogus values sometimes, like on opening huge file */
-        if (last_line - first_line < 2000)
-            _moo_text_buffer_ensure_highlight (get_moo_buffer (view),
-                                               first_line, last_line);
+        /* FIXME: is "It generates new expose event" part true? */
+        /* Sometimes, until lines in GtkTextView are calculated, get_visible_rect
+           returns whole buffer. It generates new expose event after it recalculates
+           lines, so there is no point in emitting update-highlight now.
+           To see this, open a big file, and scroll down. It will freeze for a while. */
+#define MANY_LINES 300
+        if (gtk_text_iter_get_line (&iter2) - gtk_text_iter_get_line (&iter1) < MANY_LINES)
+            _moo_text_buffer_update_highlight (get_moo_buffer (view), &iter1, &iter2, FALSE);
+#undef MANY_LINES
     }
 
     handled = GTK_WIDGET_CLASS(moo_text_view_parent_class)->expose_event (widget, event);
@@ -2332,118 +2316,164 @@ moo_text_view_expose (GtkWidget      *widget,
 
 
 static void
-highlighting_changed (GtkTextView        *text_view,
-                      const GtkTextIter  *start,
-                      const GtkTextIter  *end)
+highlight_updated (GtkTextView       *text_view,
+		   const GtkTextIter *start,
+                   const GtkTextIter *end)
 {
-    GdkRectangle visible, changed, update;
-    int y, height;
+    GdkRectangle visible_rect;
+    GdkRectangle updated_rect;
+    GdkRectangle redraw_rect;
+    gint y;
+    gint height;
 
-    if (!GTK_WIDGET_DRAWABLE (text_view))
-        return;
+    /* get visible area */
+    gtk_text_view_get_visible_rect (text_view, &visible_rect);
 
-    gtk_text_view_get_visible_rect (text_view, &visible);
-
-    gtk_text_view_get_line_yrange (text_view, start, &changed.y, &height);
+    /* get updated rectangle */
+    gtk_text_view_get_line_yrange (text_view, start, &y, &height);
+    updated_rect.y = y;
     gtk_text_view_get_line_yrange (text_view, end, &y, &height);
-    changed.height = y - changed.y + height;
-    changed.x = visible.x;
-    changed.width = visible.width;
+    updated_rect.height = y + height - updated_rect.y;
+    updated_rect.x = visible_rect.x;
+    updated_rect.width = visible_rect.width;
 
-    if (gdk_rectangle_intersect (&changed, &visible, &update))
+    /* intersect both rectangles to see whether we need to queue a redraw */
+    if (gdk_rectangle_intersect (&updated_rect, &visible_rect, &redraw_rect))
     {
-        GtkTextIter update_start, update_end;
-        int first_line, last_line;
+    	GdkRectangle widget_rect;
 
-        gtk_text_view_get_line_at_y (text_view, &update_start, update.y, NULL);
-        gtk_text_view_get_line_at_y (text_view, &update_end, update.y + update.height - 1, NULL);
+    	gtk_text_view_buffer_to_window_coords (text_view,
+    					       GTK_TEXT_WINDOW_WIDGET,
+    					       redraw_rect.x,
+    					       redraw_rect.y,
+    					       &widget_rect.x,
+    					       &widget_rect.y);
 
-        first_line = gtk_text_iter_get_line (&update_start);
-        last_line = gtk_text_iter_get_line (&update_end);
+    	widget_rect.width = redraw_rect.width;
+    	widget_rect.height = redraw_rect.height;
 
-        /* it reports bogus values sometimes, like on opening huge file */
-        if (last_line - first_line < 2000)
-        {
-//             g_print ("asking to apply tags on lines %d-%d\n", first_line, last_line);
-            _moo_text_buffer_ensure_highlight (get_moo_buffer (MOO_TEXT_VIEW (text_view)),
-                                               first_line, last_line);
-        }
+    	gtk_widget_queue_draw_area (GTK_WIDGET (text_view),
+    				    widget_rect.x,
+    				    widget_rect.y,
+    				    widget_rect.width,
+    				    widget_rect.height);
     }
 }
 
 
-static gboolean
-invalidate_rectangle (MooTextView *view)
-{
-    GdkWindow *window;
-    GdkRectangle *rect = view->priv->update_rectangle;
+// static void
+// highlighting_changed (GtkTextView        *text_view,
+//                       const GtkTextIter  *start,
+//                       const GtkTextIter  *end)
+// {
+//     GdkRectangle visible, changed, update;
+//     int y, height;
+//
+//     if (!GTK_WIDGET_DRAWABLE (text_view))
+//         return;
+//
+//     gtk_text_view_get_visible_rect (text_view, &visible);
+//
+//     gtk_text_view_get_line_yrange (text_view, start, &changed.y, &height);
+//     gtk_text_view_get_line_yrange (text_view, end, &y, &height);
+//     changed.height = y - changed.y + height;
+//     changed.x = visible.x;
+//     changed.width = visible.width;
+//
+//     if (gdk_rectangle_intersect (&changed, &visible, &update))
+//     {
+//         GtkTextIter update_start, update_end;
+//         int first_line, last_line;
+//
+//         gtk_text_view_get_line_at_y (text_view, &update_start, update.y, NULL);
+//         gtk_text_view_get_line_at_y (text_view, &update_end, update.y + update.height - 1, NULL);
+//
+//         first_line = gtk_text_iter_get_line (&update_start);
+//         last_line = gtk_text_iter_get_line (&update_end);
+//
+//         /* it reports bogus values sometimes, like on opening huge file */
+//         if (last_line - first_line < 2000)
+//         {
+// //             g_print ("asking to apply tags on lines %d-%d\n", first_line, last_line);
+//             _moo_text_buffer_ensure_highlight (get_moo_buffer (MOO_TEXT_VIEW (text_view)),
+//                                                first_line, last_line);
+//         }
+//     }
+// }
 
-    view->priv->update_rectangle = NULL;
-    view->priv->update_idle = 0;
 
-    gtk_text_view_buffer_to_window_coords (GTK_TEXT_VIEW (view),
-                                           GTK_TEXT_WINDOW_TEXT,
-                                           rect->x, rect->y,
-                                           &rect->x, &rect->y);
-    window = gtk_text_view_get_window (GTK_TEXT_VIEW (view), GTK_TEXT_WINDOW_TEXT);
-    gdk_window_invalidate_rect (window, rect, FALSE);
+// static gboolean
+// invalidate_rectangle (MooTextView *view)
+// {
+//     GdkWindow *window;
+//     GdkRectangle *rect = view->priv->update_rectangle;
+//
+//     view->priv->update_rectangle = NULL;
+//     view->priv->update_idle = 0;
+//
+//     gtk_text_view_buffer_to_window_coords (GTK_TEXT_VIEW (view),
+//                                            GTK_TEXT_WINDOW_TEXT,
+//                                            rect->x, rect->y,
+//                                            &rect->x, &rect->y);
+//     window = gtk_text_view_get_window (GTK_TEXT_VIEW (view), GTK_TEXT_WINDOW_TEXT);
+//     gdk_window_invalidate_rect (window, rect, FALSE);
+//
+//     g_free (rect);
+//     return FALSE;
+// }
 
-    g_free (rect);
-    return FALSE;
-}
 
-
-static void
-tags_changed (GtkTextView        *text_view,
-              const GtkTextIter  *start,
-              const GtkTextIter  *end)
-{
-    GdkRectangle visible, changed, update;
-    int y, height;
-    MooTextView *view = MOO_TEXT_VIEW (text_view);
-
-    if (!GTK_WIDGET_DRAWABLE (text_view))
-        return;
-
-    gtk_text_view_get_visible_rect (text_view, &visible);
-
-    gtk_text_view_get_line_yrange (text_view, start, &changed.y, &height);
-    gtk_text_view_get_line_yrange (text_view, end, &y, &height);
-    changed.height = y - changed.y + height;
-    changed.x = visible.x;
-    changed.width = visible.width;
-
-    if (!gdk_rectangle_intersect (&changed, &visible, &update))
-        return;
-
-    if (view->priv->update_rectangle)
-    {
-        gdk_rectangle_union (view->priv->update_rectangle, &update,
-                             view->priv->update_rectangle);
-    }
-    else
-    {
-        view->priv->update_rectangle = g_new (GdkRectangle, 1);
-        *view->priv->update_rectangle = update;
-    }
-
-    if (view->priv->in_expose)
-    {
-        if (!view->priv->update_idle)
-            view->priv->update_idle =
-                    g_idle_add_full (G_PRIORITY_HIGH_IDLE,
-                                     (GSourceFunc) invalidate_rectangle,
-                                     view, NULL);
-    }
-    else
-    {
-        if (view->priv->update_idle)
-            g_source_remove (view->priv->update_idle);
-        view->priv->update_idle = 0;
-
-        invalidate_rectangle (view);
-    }
-}
+// static void
+// tags_changed (GtkTextView        *text_view,
+//               const GtkTextIter  *start,
+//               const GtkTextIter  *end)
+// {
+//     GdkRectangle visible, changed, update;
+//     int y, height;
+//     MooTextView *view = MOO_TEXT_VIEW (text_view);
+//
+//     if (!GTK_WIDGET_DRAWABLE (text_view))
+//         return;
+//
+//     gtk_text_view_get_visible_rect (text_view, &visible);
+//
+//     gtk_text_view_get_line_yrange (text_view, start, &changed.y, &height);
+//     gtk_text_view_get_line_yrange (text_view, end, &y, &height);
+//     changed.height = y - changed.y + height;
+//     changed.x = visible.x;
+//     changed.width = visible.width;
+//
+//     if (!gdk_rectangle_intersect (&changed, &visible, &update))
+//         return;
+//
+//     if (view->priv->update_rectangle)
+//     {
+//         gdk_rectangle_union (view->priv->update_rectangle, &update,
+//                              view->priv->update_rectangle);
+//     }
+//     else
+//     {
+//         view->priv->update_rectangle = g_new (GdkRectangle, 1);
+//         *view->priv->update_rectangle = update;
+//     }
+//
+//     if (view->priv->in_expose)
+//     {
+//         if (!view->priv->update_idle)
+//             view->priv->update_idle =
+//                     g_idle_add_full (G_PRIORITY_HIGH_IDLE,
+//                                      (GSourceFunc) invalidate_rectangle,
+//                                      view, NULL);
+//     }
+//     else
+//     {
+//         if (view->priv->update_idle)
+//             g_source_remove (view->priv->update_idle);
+//         view->priv->update_idle = 0;
+//
+//         invalidate_rectangle (view);
+//     }
+// }
 
 
 static void
@@ -2541,6 +2571,24 @@ moo_text_view_set_lang (MooTextView    *view,
 }
 
 
+void
+moo_text_view_set_lang_by_id (MooTextView *view,
+                              const char  *lang_id)
+{
+    MooEditor *editor;
+    MooLangMgr *mgr;
+    MooLang *lang;
+
+    editor = moo_editor_instance ();
+    g_return_if_fail (editor != NULL);
+
+    mgr = moo_editor_get_lang_mgr (editor);
+    lang = moo_lang_mgr_get_lang (mgr, lang_id);
+
+    moo_text_view_set_lang (view, lang);
+}
+
+
 MooLang*
 moo_text_view_get_lang (MooTextView *view)
 {
@@ -2549,95 +2597,34 @@ moo_text_view_get_lang (MooTextView *view)
 }
 
 
-static void
-moo_text_view_set_scheme_real (MooTextView      *view,
-                               MooTextStyleScheme *scheme)
-{
-    GdkColor color;
-    GdkColor *color_ptr;
-    MooTextBuffer *buffer;
-    GtkWidget *widget;
-
-    g_return_if_fail (scheme != NULL);
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-
-    widget = GTK_WIDGET (view);
-    buffer = get_moo_buffer (view);
-    gtk_widget_ensure_style (widget);
-
-    color_ptr = NULL;
-    if (scheme->text_colors[MOO_TEXT_COLOR_FG])
-    {
-        if (gdk_color_parse (scheme->text_colors[MOO_TEXT_COLOR_FG], &color))
-            color_ptr = &color;
-        else
-            g_warning ("%s: could not parse color '%s'", G_STRLOC,
-                       scheme->text_colors[MOO_TEXT_COLOR_FG]);
-    }
-    gtk_widget_modify_text (widget, GTK_STATE_NORMAL, color_ptr);
-    gtk_widget_modify_text (widget, GTK_STATE_ACTIVE, color_ptr);
-    gtk_widget_modify_text (widget, GTK_STATE_PRELIGHT, color_ptr);
-    gtk_widget_modify_text (widget, GTK_STATE_INSENSITIVE, color_ptr);
-    moo_text_view_set_cursor_color (view, color_ptr);
-
-    color_ptr = NULL;
-    if (scheme->text_colors[MOO_TEXT_COLOR_BG])
-    {
-        if (gdk_color_parse (scheme->text_colors[MOO_TEXT_COLOR_BG], &color))
-            color_ptr = &color;
-        else
-            g_warning ("%s: could not parse color '%s'", G_STRLOC,
-                       scheme->text_colors[MOO_TEXT_COLOR_BG]);
-    }
-    gtk_widget_modify_base (widget, GTK_STATE_NORMAL, color_ptr);
-    gtk_widget_modify_base (widget, GTK_STATE_ACTIVE, color_ptr);
-    gtk_widget_modify_base (widget, GTK_STATE_PRELIGHT, color_ptr);
-    gtk_widget_modify_base (widget, GTK_STATE_INSENSITIVE, color_ptr);
-
-    color_ptr = NULL;
-    if (scheme->text_colors[MOO_TEXT_COLOR_SEL_FG])
-    {
-        if (gdk_color_parse (scheme->text_colors[MOO_TEXT_COLOR_SEL_FG], &color))
-            color_ptr = &color;
-        else
-            g_warning ("%s: could not parse color '%s'", G_STRLOC,
-                       scheme->text_colors[MOO_TEXT_COLOR_SEL_FG]);
-    }
-    gtk_widget_modify_text (widget, GTK_STATE_SELECTED, color_ptr);
-
-    color_ptr = NULL;
-    if (scheme->text_colors[MOO_TEXT_COLOR_SEL_BG])
-    {
-        if (gdk_color_parse (scheme->text_colors[MOO_TEXT_COLOR_SEL_BG], &color))
-            color_ptr = &color;
-        else
-            g_warning ("%s: could not parse color '%s'", G_STRLOC,
-                       scheme->text_colors[MOO_TEXT_COLOR_SEL_BG]);
-    }
-    gtk_widget_modify_base (widget, GTK_STATE_SELECTED, color_ptr);
-
-    color_ptr = NULL;
-    if (scheme->text_colors[MOO_TEXT_COLOR_CUR_LINE])
-    {
-        if (gdk_color_parse (scheme->text_colors[MOO_TEXT_COLOR_CUR_LINE], &color))
-            color_ptr = &color;
-        else
-            g_warning ("%s: could not parse color '%s'", G_STRLOC,
-                       scheme->text_colors[MOO_TEXT_COLOR_CUR_LINE]);
-    }
-    moo_text_view_set_current_line_color (view, color_ptr);
-
-    moo_text_buffer_apply_scheme (buffer, scheme);
-}
-
-
 void
-moo_text_view_set_scheme (MooTextView        *view,
-                          MooTextStyleScheme *scheme)
+moo_text_view_set_style_scheme (MooTextView        *view,
+                                MooTextStyleScheme *scheme)
 {
     g_return_if_fail (MOO_IS_TEXT_STYLE_SCHEME (scheme));
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-    g_signal_emit (view, signals[SET_SCHEME], 0, scheme);
+
+    if (view->priv->style_scheme == scheme)
+        return;
+
+    if (view->priv->style_scheme)
+        g_object_unref (view->priv->style_scheme);
+
+    view->priv->style_scheme = g_object_ref (scheme);
+    _moo_text_style_scheme_apply (scheme, GTK_WIDGET (view));
+    _moo_text_buffer_set_style_scheme (get_moo_buffer (view), scheme);
+
+//     color_ptr = NULL;
+//     if (scheme->text_colors[MOO_TEXT_COLOR_CUR_LINE])
+//     {
+//         if (gdk_color_parse (scheme->text_colors[MOO_TEXT_COLOR_CUR_LINE], &color))
+//             color_ptr = &color;
+//         else
+//             g_warning ("%s: could not parse color '%s'", G_STRLOC,
+//                        scheme->text_colors[MOO_TEXT_COLOR_CUR_LINE]);
+//     }
+//     moo_text_view_set_current_line_color (view, color_ptr);
+
 }
 
 

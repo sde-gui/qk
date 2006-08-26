@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language id="cpp" _name="C++" version="2.0" _section="Sources"
+          mimetypes="text/x-c++;text/x-cpp;text/x-c-header;text/x-c++src;text/x-c++hdr"
+          globs="*.cc;*.hh;*.cpp;*.hpp;*.cxx;*.hxx;*.C">
+    <styles>
+        <style id="common-defines"  _name="Common defines"  map-to="c:common-defines"/>
+    </styles>
+
+    <definitions>
+        <context id="cpp">
+            <include>
+
+                <context id="keywords" style-ref="c:keyword">
+                    <keyword>and</keyword>
+                    <keyword>and_eq</keyword>
+                    <keyword>bitand</keyword>
+                    <keyword>bitor</keyword>
+                    <keyword>catch</keyword>
+                    <keyword>compl</keyword>
+                    <keyword>const_cast</keyword>
+                    <keyword>delete</keyword>
+                    <keyword>dynamic_cast</keyword>
+                    <keyword>false</keyword>
+                    <keyword>friend</keyword>
+                    <keyword>new</keyword>
+                    <keyword>not</keyword>
+                    <keyword>not_eq</keyword>
+                    <keyword>operator</keyword>
+                    <keyword>or</keyword>
+                    <keyword>or_eq</keyword>
+                    <keyword>private</keyword>
+                    <keyword>protected</keyword>
+                    <keyword>public</keyword>
+                    <keyword>reinterpret_cast</keyword>
+                    <keyword>static_cast</keyword>
+                    <keyword>this</keyword>
+                    <keyword>throw</keyword>
+                    <keyword>true</keyword>
+                    <keyword>try</keyword>
+                    <keyword>typeid</keyword>
+                    <keyword>using</keyword>
+                    <keyword>xor</keyword>
+                    <keyword>xor_eq</keyword>
+                </context>
+
+                <context id="types" style-ref="c:data-type">
+                    <keyword>bool</keyword>
+                    <keyword>class</keyword>
+                    <keyword>explicit</keyword>
+                    <keyword>export</keyword>
+                    <keyword>inline</keyword>
+                    <keyword>mutable</keyword>
+                    <keyword>namespace</keyword>
+                    <keyword>template</keyword>
+                    <keyword>typename</keyword>
+                    <keyword>virtual</keyword>
+                    <keyword>wchar_t</keyword>
+                </context>
+
+                <context id="common-defines" style-ref="common-defines">
+                    <keyword>__STDC__</keyword>
+                    <keyword>__cplusplus</keyword>
+                </context>
+
+                <context ref="c:c:*"/>
+
+            </include>
+        </context>
+    </definitions>
+
+    <brackets>(){}[]</brackets>
+    <line-comment start="//"/>
+    <block-comment start="/*" end="*/"/>
+</language>

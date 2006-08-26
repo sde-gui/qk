@@ -247,7 +247,10 @@ moo_edit_action_check_visible_real (MooEditAction *action)
     if (visible && action->priv->langs)
     {
         lang = moo_text_view_get_lang (MOO_TEXT_VIEW (action->priv->doc));
-        if (!g_slist_find_custom (action->priv->langs, moo_lang_id (lang), (GCompareFunc) strcmp))
+
+        if (!g_slist_find_custom (action->priv->langs,
+                                  _moo_lang_id (lang),
+                                  (GCompareFunc) strcmp))
             visible = FALSE;
     }
 

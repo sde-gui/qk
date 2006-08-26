@@ -1,5 +1,5 @@
 # XXX it needs plugins to be built first but plugins want mooedit-enums.h
-SUBDIRS = plugins syntax
+SUBDIRS = gtksourceview plugins language-specs
 
 mooedit_toolsdir = $(MOO_DATA_DIR)
 mooedit_tools_DATA = menu.xml context.xml
@@ -7,36 +7,25 @@ mooedit_tools_DATA = menu.xml context.xml
 unix_sources =				\
 	moocommand-exe-unix.c
 
-moocommand_stuff =                     \
-	moocommand.h                   \
-	moocommand.c                   \
-	moocommand-exe.h               \
-	moocommand-script.h            \
-	moocommand-script.c            \
-	moocommanddisplay.h            \
-	moocommanddisplay.c
-
 completion =                           \
 	moocompletion.h                \
 	moocompletion.c
 
 mooedit_include_headers =              \
 	moocmdview.h                   \
-	mooedit-script.h               \
 	mooedit-enums.h                \
+	mooedit-script.h               \
 	mooedit.h                      \
 	mooeditconfig.h                \
 	mooeditor.h                    \
 	mooeditprefs.h                 \
 	mooeditwindow.h                \
 	mooindenter.h                  \
-	moolang.h                      \
-	moolangmgr.h                   \
 	moolinemark.h                  \
 	moolineview.h                  \
-	mooplugin.h                    \
 	mooplugin-loader.h             \
 	mooplugin-macro.h              \
+	mooplugin.h                    \
 	mootextbuffer.h                \
 	mootextiter.h                  \
 	mootextpopup.h                 \
@@ -46,7 +35,10 @@ mooedit_include_headers =              \
 	mootextview.h
 
 mooedit_noinst_headers =               \
-	gtksourceiter.h                \
+	moocommand-exe.h               \
+	moocommand-script.h            \
+	moocommand.h                   \
+	moocommanddisplay.h            \
 	mooedit-private.h              \
 	mooeditdialogs.h               \
 	mooeditfileops.h               \
@@ -54,14 +46,13 @@ mooedit_noinst_headers =               \
 	mooeditprefs-glade.h           \
 	mooeditprogress-glade.h        \
 	mooeditsavemultiple-glade.h    \
+	mooedittools-glade.h           \
 	moofold.h                      \
-	moohighlighter.h               \
 	mookeyfile.h                   \
-	moolang-aux.h                  \
-	moolang-parser.h               \
 	moolang-private.h              \
-	moolang-rules.h                \
-	moolang-strings.h              \
+	moolang.h                      \
+	moolangmgr-private.h           \
+	moolangmgr.h                   \
 	moolinebuffer.h                \
 	moopluginprefs-glade.h         \
 	mooprint-glade.h               \
@@ -73,9 +64,8 @@ mooedit_noinst_headers =               \
 	mootextgotoline-glade.h        \
 	mootextsearch-private.h        \
 	mootextview-private.h          \
-	moousertools.h                 \
 	moousertools-prefs.h           \
-	mooedittools-glade.h           \
+	moousertools.h                 \
 	quicksearch-glade.h            \
 	statusbar-glade.h
 
@@ -83,15 +73,17 @@ mooedit_sources =                      \
 	$(mooedit_include_headers)     \
 	$(mooedit_noinst_headers)      \
 	$(moocommand_stuff)            \
-	gtksourceiter.c                \
 	moocmdview.c                   \
-	mooeditaction.h                \
-	mooeditaction.c                \
-	mooeditaction-factory.h        \
-	mooeditaction-factory.c        \
-	mooedit-script.c               \
+	moocommand-script.c            \
+	moocommand.c                   \
+	moocommanddisplay.c            \
 	mooedit-enums.c                \
+	mooedit-script.c               \
 	mooedit.c                      \
+	mooeditaction-factory.c        \
+	mooeditaction-factory.h        \
+	mooeditaction.c                \
+	mooeditaction.h                \
 	mooeditconfig.c                \
 	mooeditdialogs.c               \
 	mooeditfileops.c               \
@@ -102,29 +94,25 @@ mooedit_sources =                      \
 	mooeditprefspage.c             \
 	mooeditwindow.c                \
 	moofold.c                      \
-	moohighlighter.c               \
 	mooindenter.c                  \
 	mookeyfile.c                   \
-	moolang-parser.c               \
-	moolang-rules.c                \
 	moolang.c                      \
 	moolangmgr.c                   \
 	moolinebuffer.c                \
 	moolinemark.c                  \
 	moolineview.c                  \
-	mooplugin.c                    \
 	mooplugin-loader.c             \
+	mooplugin.c                    \
 	mootextbox.c                   \
 	mootextbtree.c                 \
 	mootextbuffer.c                \
 	mootextfind.c                  \
 	mootextpopup.c                 \
 	mootextsearch.c                \
-	mootextstyle.c                 \
 	mootextstylescheme.c           \
 	mootextview.c                  \
-	moousertools.c                 \
-	moousertools-prefs.c
+	moousertools-prefs.c           \
+	moousertools.c
 
 mooedit_printing_sources =             \
 	mootextprint.c                 \
@@ -243,7 +231,7 @@ endif
 
 noinst_LTLIBRARIES = libmooedit.la
 libmooedit_la_SOURCES = $(mooedit_sources)
-libmooedit_la_LIBADD = plugins/libmooeditplugins.la
+libmooedit_la_LIBADD = plugins/libmooeditplugins.la gtksourceview/libgtksourceview.la
 
 AM_CFLAGS =			\
 	-I..			\

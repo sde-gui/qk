@@ -41,15 +41,11 @@ static void CHECK_INTEGRITY (BTree *tree, gboolean check_capacity);
 #define data_new__() g_slice_new0 (BTData)
 #define node_free__(node) g_slice_free (BTNode, node)
 #define node_new__() g_slice_new0 (BTNode)
-#define hl_info_free__(info) g_slice_free (HLInfo, info)
-#define hl_info_new__() g_slice_new0 (HLInfo)
 #else
 #define data_free__ g_free
 #define node_free__ g_free
-#define hl_info_free__ g_free
 #define data_new__() g_new0 (BTData, 1)
 #define node_new__() g_new0 (BTNode, 1)
-#define hl_info_new__() g_new0 (HLInfo, 1)
 #endif
 
 
@@ -155,31 +151,11 @@ bt_node_free_rec (BTNode  *node,
 }
 
 
-inline static HLInfo*
-hl_info_new (void)
-{
-    HLInfo *info = hl_info_new__ ();
-    return info;
-}
-
-
-inline static void
-hl_info_free (HLInfo *info)
-{
-    if (info)
-    {
-        g_free (info->segments);
-        hl_info_free__ (info);
-    }
-}
-
-
 static BTData*
 bt_data_new (BTNode *parent)
 {
     BTData *data = data_new__ ();
     data->parent = parent;
-    data->hl_info = hl_info_new ();
     return data;
 }
 
@@ -190,8 +166,6 @@ bt_data_free (BTData  *data,
 {
     if (data)
     {
-        hl_info_free (data->hl_info);
-
         if (data->n_marks)
         {
             guint i;

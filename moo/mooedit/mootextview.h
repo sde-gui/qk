@@ -18,6 +18,7 @@
 #include <mooedit/mooindenter.h>
 #include <mooedit/moolang.h>
 #include <mooedit/mootextsearch.h>
+#include <mooedit/mootextstylescheme.h>
 
 G_BEGIN_DECLS
 
@@ -65,9 +66,6 @@ struct _MooTextViewClass
     gboolean (* char_inserted)      (MooTextView    *view,
                                      GtkTextIter    *where, /* points to position after the char */
                                      guint           character); /* gunichar */
-
-    void (* set_scheme)             (MooTextView    *view,
-                                     MooTextStyleScheme *scheme);
 
     gboolean (* line_mark_clicked)  (MooTextView    *view,
                                      int             line);
@@ -136,7 +134,7 @@ void         moo_text_view_set_current_line_color   (MooTextView        *view,
                                                      const GdkColor     *color);
 void         moo_text_view_set_cursor_color         (MooTextView        *view,
                                                      const GdkColor     *color);
-void         moo_text_view_set_scheme               (MooTextView        *view,
+void         moo_text_view_set_style_scheme         (MooTextView        *view,
                                                      MooTextStyleScheme *scheme);
 
 void         moo_text_view_set_show_line_numbers    (MooTextView        *view,
@@ -156,6 +154,8 @@ GtkTextTag  *moo_text_view_lookup_tag               (MooTextView        *view,
 MooLang     *moo_text_view_get_lang                 (MooTextView        *view);
 void         moo_text_view_set_lang                 (MooTextView        *view,
                                                      MooLang            *lang);
+void         moo_text_view_set_lang_by_id           (MooTextView        *view,
+                                                     const char         *id);
 
 void         moo_text_view_strip_whitespace         (MooTextView        *view);
 

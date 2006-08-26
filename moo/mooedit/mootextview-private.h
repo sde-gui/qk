@@ -93,6 +93,7 @@ struct _MooTextViewPrivate {
     /***********************************************************************/
     /* Drawing
     /*/
+    MooTextStyleScheme *style_scheme;
     guint tab_width;
     gboolean highlight_current_line;
     GdkColor current_line_color;

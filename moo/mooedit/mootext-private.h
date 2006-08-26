@@ -20,6 +20,7 @@
 
 #include "mooedit/moofold.h"
 #include "mooedit/moolinebuffer.h"
+#include "mooedit/mootextstylescheme.h"
 
 G_BEGIN_DECLS
 
@@ -48,23 +49,26 @@ void        _moo_line_mark_set_fold                 (MooLineMark        *mark,
                                                      MooFold            *fold);
 MooFold    *_moo_line_mark_get_fold                 (MooLineMark        *mark);
 
-void        _moo_text_buffer_ensure_highlight       (MooTextBuffer      *buffer,
-                                                     int                 first_line,
-                                                     int                 last_line);
-void        _moo_text_buffer_apply_syntax_tag       (MooTextBuffer      *buffer,
-                                                     GtkTextTag         *tag,
+void        _moo_text_buffer_update_highlight       (MooTextBuffer      *buffer,
                                                      const GtkTextIter  *start,
-                                                     const GtkTextIter  *end);
-void        _moo_text_buffer_highlighting_changed   (MooTextBuffer      *buffer,
-                                                     int                 first,
-                                                     int                 last);
-void        _moo_text_buffer_tags_changed           (MooTextBuffer      *buffer,
-                                                     int                 first,
-                                                     int                 last);
+                                                     const GtkTextIter  *end,
+                                                     gboolean            synchronous);
+// void        _moo_text_buffer_apply_syntax_tag       (MooTextBuffer      *buffer,
+//                                                      GtkTextTag         *tag,
+//                                                      const GtkTextIter  *start,
+//                                                      const GtkTextIter  *end);
+// void        _moo_text_buffer_highlighting_changed   (MooTextBuffer      *buffer,
+//                                                      int                 first,
+//                                                      int                 last);
+// void        _moo_text_buffer_tags_changed           (MooTextBuffer      *buffer,
+//                                                      int                 first,
+//                                                      int                 last);
 gpointer    _moo_text_buffer_get_undo_stack         (MooTextBuffer      *buffer);
 void        _moo_text_buffer_get_bracket_tags       (MooTextBuffer      *buffer,
                                                      GtkTextTag        **correct,
                                                      GtkTextTag        **incorrect);
+void        _moo_text_buffer_set_style_scheme       (MooTextBuffer      *buffer,
+                                                     MooTextStyleScheme *scheme);
 
 
 G_END_DECLS

@@ -18,7 +18,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/statusbar-glade.h"
 #include "mooedit/mooedit-private.h"
-#include "mooedit/moolang-private.h"
+#include "mooedit/moolang.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/mooeditprefs.h"
@@ -2631,12 +2631,14 @@ cmp_langs (MooLang *lang1,
 {
     int result;
 
-    result = strcmp (lang1->section, lang2->section);
+    result = strcmp (_moo_lang_get_section (lang1),
+                     _moo_lang_get_section (lang2));
 
     if (result)
         return result;
     else
-        return strcmp (lang1->display_name, lang2->display_name);
+        return strcmp (_moo_lang_display_name (lang1),
+                       _moo_lang_display_name (lang2));
 }
 
 
@@ -2696,16 +2698,19 @@ create_lang_action (MooEditWindow      *window)
     for (l = langs; l != NULL; l = l->next)
     {
         MooLang *lang = l->data;
-        if (!lang->hidden)
-            moo_menu_mgr_append (menu_mgr, lang->section,
-                                 lang->id, lang->display_name, NULL,
-                                 MOO_MENU_ITEM_RADIO,
-                                 g_strdup (lang->id), g_free);
+        if (!_moo_lang_get_hidden (lang))
+            moo_menu_mgr_append (menu_mgr, _moo_lang_get_section (lang),
+                                 _moo_lang_id (lang),
+                                 _moo_lang_display_name (lang),
+                                 NULL, MOO_MENU_ITEM_RADIO,
+                                 g_strdup (_moo_lang_id (lang)),
+                                 g_free);
     }
 
     g_signal_connect_swapped (menu_mgr, "radio-set-active",
                               G_CALLBACK (lang_item_activated), window);
 
+    g_slist_foreach (langs, (GFunc) g_object_unref, NULL);
     g_slist_free (langs);
     g_slist_foreach (sections, (GFunc) g_free, NULL);
     g_slist_free (sections);
@@ -2732,7 +2737,7 @@ update_lang_menu (MooEditWindow      *window)
     g_return_if_fail (action != NULL);
 
     moo_menu_mgr_set_active (moo_menu_action_get_mgr (MOO_MENU_ACTION (action)),
-                             moo_lang_id (lang), TRUE);
+                             _moo_lang_id (lang), TRUE);
 }
 
 
@@ -2932,7 +2937,7 @@ check_action_langs (G_GNUC_UNUSED GtkAction *action,
     if (doc)
     {
         MooLang *lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
-        value = NULL != g_slist_find_custom (langs_list, moo_lang_id (lang),
+        value = NULL != g_slist_find_custom (langs_list, _moo_lang_id (lang),
                                              (GCompareFunc) strcmp);
     }
 
@@ -2966,7 +2971,7 @@ _moo_edit_parse_langs (const char *string)
         g_strstrip (*p);
 
         if (**p)
-            list = g_slist_prepend (list, moo_lang_id_from_name (*p));
+            list = g_slist_prepend (list, _moo_lang_id_from_name (*p));
     }
 
     g_strfreev (pieces);

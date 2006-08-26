@@ -42,7 +42,7 @@ typedef struct {
     CHECK_ITER(iter__)
 
 
-#ifdef DEBUG
+#ifdef MOO_DEBUG
 static void CHECK_ITER (const MooTermIter *iter)
 {
     g_assert (iter->term != NULL);

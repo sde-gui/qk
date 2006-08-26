@@ -14,35 +14,34 @@
 #ifndef __MOO_LANG_H__
 #define __MOO_LANG_H__
 
-#include <gtk/gtktexttag.h>
-#include <mooedit/mootextstylescheme.h>
+#include <glib-object.h>
 
 G_BEGIN_DECLS
 
 
-#define MOO_LANG_DIR_BASENAME   "syntax"
-#define MOO_STYLES_PREFS_PREFIX MOO_EDIT_PREFS_PREFIX "/styles"
+#define MOO_TYPE_LANG              (moo_lang_get_type ())
+#define MOO_LANG(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_LANG, MooLang))
+#define MOO_IS_LANG(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_LANG))
 
-#define MOO_LANG_NONE "none"
-
-#define MOO_TYPE_LANG       (moo_lang_get_type ())
-
+#define MOO_LANG_NONE       "none"
+#define MOO_LANG_NONE_NAME  "None"
 
 typedef struct _MooLang MooLang;
 
+GType        moo_lang_get_type                  (void) G_GNUC_CONST;
 
-GType       moo_lang_get_type                   (void) G_GNUC_CONST;
+/* accepts NULL */
+const char  *_moo_lang_id                       (MooLang    *lang);
+const char  *_moo_lang_display_name             (MooLang    *lang);
 
-MooLang    *moo_lang_ref                        (MooLang            *lang);
-void        moo_lang_unref                      (MooLang            *lang);
+const char  *_moo_lang_get_line_comment         (MooLang    *lang);
+const char  *_moo_lang_get_block_comment_start  (MooLang    *lang);
+const char  *_moo_lang_get_block_comment_end    (MooLang    *lang);
+const char  *_moo_lang_get_brackets             (MooLang    *lang);
+const char  *_moo_lang_get_section              (MooLang    *lang);
+gboolean     _moo_lang_get_hidden               (MooLang    *lang);
 
-char       *moo_lang_id_from_name               (const char         *name);
-/* MOO_LANG_NONE if lang == NULL */
-const char *moo_lang_id                         (MooLang            *lang);
-
-/* result of these two must not be modified */
-GSList     *moo_lang_get_extensions             (MooLang            *lang);
-GSList     *moo_lang_get_mime_types             (MooLang            *lang);
+char        *_moo_lang_id_from_name             (const char *whatever);
 
 
 G_END_DECLS

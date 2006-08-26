@@ -165,6 +165,7 @@ _moo_edit_apply_prefs (MooEdit *edit)
 {
     GtkTextView *text_view;
     MooLangMgr *mgr;
+    MooTextStyleScheme *scheme;
 
     g_return_if_fail (MOO_IS_EDIT (edit));
 
@@ -193,8 +194,10 @@ _moo_edit_apply_prefs (MooEdit *edit)
                                             get_string (MOO_EDIT_PREFS_FONT));
 
     mgr = moo_editor_get_lang_mgr (edit->priv->editor);
-    moo_text_view_set_scheme (MOO_TEXT_VIEW (edit),
-                              moo_lang_mgr_get_active_scheme (mgr));
+    scheme = _moo_lang_mgr_get_active_scheme (mgr);
+
+    if (scheme)
+        moo_text_view_set_style_scheme (MOO_TEXT_VIEW (edit), scheme);
 
     g_object_thaw_notify (G_OBJECT (edit));
 }

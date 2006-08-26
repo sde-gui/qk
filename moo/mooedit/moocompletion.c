@@ -294,11 +294,7 @@ moo_completion_exec_script (MooCompletion      *cmpl,
     char *match;
     MSValue *result;
 
-    if (MOO_IS_EDIT (cmpl->priv->doc))
-        ctx = moo_edit_context_new (MOO_EDIT (cmpl->priv->doc), NULL);
-    else
-        ctx = moo_text_context_new (cmpl->priv->doc);
-
+    ctx = moo_edit_script_context_new (cmpl->priv->doc, NULL);
     match = gtk_text_buffer_get_slice (cmpl->priv->buffer, start, end, TRUE);
 
     ms_context_assign_string (ctx, MOO_COMPLETION_VAR_MATCH, match);

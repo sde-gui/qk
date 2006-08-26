@@ -21,14 +21,11 @@
 #include <gtk/gtktextbuffer.h>
 #include "mooedit/mootextbtree.h"
 #include "mooedit/mootextbuffer.h"
-#include "mooedit/moolang-private.h"
 
 G_BEGIN_DECLS
 
 
-typedef struct _CtxNode CtxNode;
 typedef struct _LineBuffer LineBuffer;
-typedef struct _Segment Segment;
 typedef struct _BTData Line;
 
 typedef struct {
@@ -36,47 +33,19 @@ typedef struct {
     int last;
 } Interval;
 
-typedef struct {
-    int first;
-    int last;
-    gboolean empty;
-} Area;
-
 struct _LineBuffer {
     BTree *tree;
-    Area invalid;
-};
-
-struct _Segment {
-    int len;
-    CtxNode *ctx_node;
-    CtxNode *match_node;
-    MooRule *rule;
-};
-
-struct _HLInfo {
-    CtxNode *start_node;
-    Segment *segments;
-    guint n_segments;
-    guint n_segments_alloc__;
-    guint tags_applied : 1; /* correct highlighting tags were applied */
 };
 
 
 LineBuffer *_moo_line_buffer_new        (void);
 void     _moo_line_buffer_free          (LineBuffer     *line_buf);
 
-void     _moo_line_buffer_cleanup       (LineBuffer     *line_buf);
-
 Line    *_moo_line_buffer_get_line      (LineBuffer     *line_buf,
                                          int             index);
 
 Line    *_moo_line_buffer_insert        (LineBuffer     *line_buf,
                                          int             index);
-void     _moo_line_buffer_invalidate    (LineBuffer     *line_buf,
-                                         int             line);
-void     _moo_line_buffer_invalidate_all (LineBuffer    *line_buf);
-void     _moo_line_buffer_clamp_invalid (LineBuffer     *line_buf);
 
 guint    _moo_line_buffer_get_stamp     (LineBuffer     *line_buf);
 int      _moo_line_buffer_get_line_index (LineBuffer    *line_buf,
@@ -103,29 +72,6 @@ void     _moo_line_buffer_delete        (LineBuffer     *line_buf,
                                          int             move_to,
                                          GSList        **moved_marks,
                                          GSList        **deleted_marks);
-
-void     _moo_line_erase_segments       (Line           *line);
-void     _moo_line_add_segment          (Line           *line,
-                                         int             len,
-                                         CtxNode        *ctx_node,
-                                         CtxNode        *match_node,
-                                         MooRule        *rule);
-
-
-#define AREA_SET_EMPTY__(ar__) ((ar__)->empty = TRUE)
-#define AREA_IS_EMPTY__(ar__) ((ar__)->empty)
-
-#define AREA_CLAMP(ar__,size__)                                 \
-    (ar__)->last = CLAMP ((ar__)->last, 0, size__ - 1);         \
-    (ar__)->first = CLAMP ((ar__)->first, 0, (ar__)->last);
-
-#define AREA_SET(ar__,size__)                                   \
-    (ar__)->empty = FALSE;                                      \
-    (ar__)->first = 0;                                          \
-    (ar__)->last = size__ - 1;                                  \
-
-#define BUF_CLEAN(line_buf__) (AREA_IS_EMPTY__ (&(line_buf__)->invalid))
-#define BUF_SET_CLEAN(line_buf__) (AREA_SET_EMPTY__ (&(line_buf__)->invalid))
 
 
 G_END_DECLS

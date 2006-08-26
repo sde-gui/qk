@@ -17,7 +17,7 @@ AC_DEFUN([MOO_AC_SET_DIRS],[
     MOO_LOCALE_DIR="${datadir}/locale"
     AC_SUBST(MOO_LOCALE_DIR)
 
-    MOO_TEXT_LANG_FILES_DIR="${MOO_DATA_DIR}/syntax"
+    MOO_TEXT_LANG_FILES_DIR="${MOO_DATA_DIR}/language-specs"
     AC_SUBST(MOO_TEXT_LANG_FILES_DIR)
 
     moo_includedir=${includedir}/$1

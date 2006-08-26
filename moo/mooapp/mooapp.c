@@ -780,8 +780,6 @@ moo_app_init_editor (MooApp *app)
     moo_editor_set_app_name (app->priv->editor,
                              app->priv->info->short_name);
 
-    moo_lang_mgr_read_dirs (moo_editor_get_lang_mgr (app->priv->editor));
-
     moo_plugin_read_dirs ();
 
     _moo_edit_load_user_tools (MOO_USER_TOOL_MENU);

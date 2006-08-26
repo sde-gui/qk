@@ -18,7 +18,8 @@
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootextbuffer.h"
-#include "mooedit/moolang-private.h"
+// #include "mooedit/moolangmgr-private.h"
+// #include "mooedit/moolang-private.h"
 #include "mooedit/mooeditprogress-glade.h"
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooutils/moomarshals.h"
@@ -902,7 +903,7 @@ moo_edit_set_lang (MooEdit *edit,
     {
         moo_text_view_set_lang (MOO_TEXT_VIEW (edit), lang);
         _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor),
-                                     edit->config, moo_lang_id (lang));
+                                     edit->config, _moo_lang_id (lang));
         _moo_edit_update_config_from_global (edit);
         g_object_notify (G_OBJECT (edit), "has-comments");
     }
@@ -987,7 +988,7 @@ _moo_edit_update_lang_config (void)
     {
         MooEdit *edit = l->data;
         _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor), edit->config,
-                                     moo_lang_id (moo_text_view_get_lang (MOO_TEXT_VIEW (edit))));
+                                     _moo_lang_id (moo_text_view_get_lang (MOO_TEXT_VIEW (edit))));
     }
 }
 
@@ -1012,7 +1013,7 @@ moo_edit_filename_changed (MooEdit    *edit,
     {
         MooLangMgr *mgr = moo_editor_get_lang_mgr (edit->priv->editor);
         lang = moo_lang_mgr_get_lang_for_file (mgr, filename);
-        lang_id = lang ? moo_lang_id (lang) : NULL;
+        lang_id = lang ? _moo_lang_id (lang) : NULL;
         filter_config = _moo_edit_filter_settings_get_for_file (filename);
     }
 
@@ -1030,12 +1031,12 @@ moo_edit_filename_changed (MooEdit    *edit,
     if (!lang_id)
         lang_id = MOO_LANG_NONE;
 
-    lang_changed = strcmp (lang_id, moo_lang_id (old_lang)) != 0;
+    lang_changed = strcmp (lang_id, _moo_lang_id (old_lang)) != 0;
 
     if (!lang_changed)
     {
         _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor),
-                                     edit->config, moo_lang_id (lang));
+                                     edit->config, _moo_lang_id (lang));
         _moo_edit_update_config_from_global (edit);
     }
 
@@ -1504,8 +1505,8 @@ _moo_edit_has_comments (MooEdit  *edit,
     if (!lang)
         return FALSE;
 
-    single = lang->line_comment != NULL;
-    multi = lang->block_comment_start && lang->block_comment_end;
+    single = _moo_lang_get_line_comment (lang) != NULL;
+    multi = _moo_lang_get_block_comment_start (lang) && _moo_lang_get_block_comment_end (lang);
 
     if (single_line)
         *single_line = single;
@@ -1731,10 +1732,12 @@ moo_edit_comment (MooEdit *edit)
 
     /* FIXME */
     if (single_line)
-        line_comment (buffer, lang->line_comment, &start, &end);
+        line_comment (buffer, _moo_lang_get_line_comment (lang), &start, &end);
     else
-        block_comment (buffer, lang->block_comment_start,
-                       lang->block_comment_end, &start, &end);
+        block_comment (buffer,
+                       _moo_lang_get_block_comment_start (lang),
+                       _moo_lang_get_block_comment_end (lang),
+                       &start, &end);
 
 
     if (adjust_selection)
@@ -1772,10 +1775,12 @@ moo_edit_uncomment (MooEdit *edit)
 
     /* FIXME */
     if (single_line)
-        line_uncomment (buffer, lang->line_comment, &start, &end);
+        line_uncomment (buffer, _moo_lang_get_line_comment (lang), &start, &end);
     else
-        block_uncomment (buffer, lang->block_comment_start,
-                         lang->block_comment_end, &start, &end);
+        block_uncomment (buffer,
+                         _moo_lang_get_block_comment_start (lang),
+                         _moo_lang_get_block_comment_end (lang),
+                         &start, &end);
 
     gtk_text_buffer_end_user_action (buffer);
 }

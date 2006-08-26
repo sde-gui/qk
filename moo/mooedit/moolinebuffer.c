@@ -20,17 +20,11 @@
 #define PTRCPY(dest_,src_,n_ptr_)  memcpy (dest_, src_, (n_ptr_) * sizeof(gpointer))
 
 
-static void     invalidate_line (LineBuffer *line_buf,
-                                 Line       *line,
-                                 int         index);
-
-
 LineBuffer*
 _moo_line_buffer_new (void)
 {
     LineBuffer *buf = g_new0 (LineBuffer, 1);
     buf->tree = _moo_text_btree_new ();
-    BUF_SET_CLEAN (buf);
     return buf;
 }
 
@@ -40,19 +34,7 @@ _moo_line_buffer_insert (LineBuffer     *line_buf,
                          int             index)
 {
     Line *line = _moo_text_btree_insert (line_buf->tree, index);
-    invalidate_line (line_buf, line, index);
     return line;
-}
-
-
-void
-_moo_line_buffer_clamp_invalid (LineBuffer *line_buf)
-{
-    if (!BUF_CLEAN (line_buf))
-    {
-        int size = _moo_text_btree_size (line_buf->tree);
-        AREA_CLAMP (&line_buf->invalid, size);
-    }
 }
 
 
@@ -61,15 +43,8 @@ _moo_line_buffer_split_line (LineBuffer *line_buf,
                              int         line,
                              int         num_new_lines)
 {
-    Line *l;
-
+    g_assert (num_new_lines != 0);
     _moo_text_btree_insert_range (line_buf->tree, line + 1, num_new_lines);
-
-    l = _moo_line_buffer_get_line (line_buf, line);
-    invalidate_line (line_buf, l, line);
-
-    l = _moo_line_buffer_get_line (line_buf, line + num_new_lines);
-    invalidate_line (line_buf, l, line + num_new_lines);
 }
 
 
@@ -129,86 +104,6 @@ _moo_line_buffer_delete (LineBuffer *line_buf,
             _moo_text_btree_update_n_marks (line_buf->tree, line, n_old_marks);
         }
     }
-
-    _moo_line_buffer_invalidate (line_buf, move_to >= 0 ? move_to : first);
-}
-
-
-static void
-invalidate_line_one (Line *line)
-{
-    _moo_line_erase_segments (line);
-    line->hl_info->start_node = NULL;
-    line->hl_info->tags_applied = FALSE;
-}
-
-void
-_moo_line_buffer_invalidate (LineBuffer *line_buf,
-                             int         index)
-{
-    invalidate_line (line_buf, _moo_text_btree_get_data (line_buf->tree, index), index);
-}
-
-
-static void
-invalidate_line (LineBuffer *line_buf,
-                 Line       *line,
-                 int         index)
-{
-    invalidate_line_one (line);
-
-    if (line_buf->invalid.empty)
-    {
-        line_buf->invalid.empty = FALSE;
-        line_buf->invalid.first = index;
-        line_buf->invalid.last = index;
-    }
-    else
-    {
-        line_buf->invalid.first = MIN (line_buf->invalid.first, index);
-        line_buf->invalid.last = MAX (line_buf->invalid.last, index);
-        _moo_line_buffer_clamp_invalid (line_buf);
-    }
-}
-
-
-void
-_moo_line_buffer_invalidate_all (LineBuffer *line_buf)
-{
-    _moo_line_buffer_invalidate (line_buf, 0);
-    AREA_SET (&line_buf->invalid, _moo_text_btree_size (line_buf->tree));
-}
-
-
-void
-_moo_line_erase_segments (Line *line)
-{
-    g_assert (line != NULL);
-    line->hl_info->n_segments = 0;
-}
-
-
-void
-_moo_line_add_segment (Line           *line,
-                       int             len,
-                       CtxNode        *ctx_node,
-                       CtxNode        *match_node,
-                       MooRule        *rule)
-{
-    HLInfo *info = line->hl_info;
-
-    if (info->n_segments == info->n_segments_alloc__)
-    {
-        info->n_segments_alloc__ = MAX (2, 1.5 * info->n_segments_alloc__);
-        info->segments = g_realloc (info->segments, info->n_segments_alloc__ * sizeof (Segment));
-    }
-
-    info->segments[info->n_segments].len = len;
-    info->segments[info->n_segments].ctx_node = ctx_node;
-    info->segments[info->n_segments].match_node = match_node;
-    info->segments[info->n_segments].rule = rule;
-
-    info->n_segments++;
 }
 
 
@@ -466,22 +361,4 @@ _moo_line_buffer_get_line_index (G_GNUC_UNUSED LineBuffer *line_buf,
     index = line_get_index (line);
     g_assert (line == _moo_line_buffer_get_line (line_buf, index));
     return index;
-}
-
-
-void
-_moo_line_buffer_cleanup (LineBuffer *line_buf)
-{
-    guint i, size;
-
-    g_return_if_fail (line_buf != NULL);
-
-    size = _moo_text_btree_size (line_buf->tree);
-
-    for (i = 0; i < size; ++i)
-    {
-        Line *line = _moo_line_buffer_get_line (line_buf, i);
-        _moo_line_erase_segments (line);
-        line->hl_info->tags_applied = FALSE;
-    }
 }

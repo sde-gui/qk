@@ -15,6 +15,7 @@
 #define __MOO_TEXT_STYLE_H__
 
 #include <gdk/gdkcolor.h>
+#include <gtk/gtktexttag.h>
 
 G_BEGIN_DECLS
 
@@ -22,53 +23,37 @@ G_BEGIN_DECLS
 #define MOO_TYPE_TEXT_STYLE         (moo_text_style_get_type ())
 
 typedef struct _MooTextStyle MooTextStyle;
-typedef struct _MooTextStyleArray MooTextStyleArray;
 
-typedef enum /*< flags >*/
+/* must be the same as GtkSourceStyleMask */
+typedef enum
 {
-    MOO_TEXT_STYLE_FOREGROUND       = 1 << 0,
-    MOO_TEXT_STYLE_BACKGROUND       = 1 << 1,
-    MOO_TEXT_STYLE_BOLD             = 1 << 2,
-    MOO_TEXT_STYLE_ITALIC           = 1 << 3,
-    MOO_TEXT_STYLE_UNDERLINE        = 1 << 4,
-    MOO_TEXT_STYLE_STRIKETHROUGH    = 1 << 5
+    MOO_TEXT_STYLE_USE_BACKGROUND    = 1 << 0,	/*< nick=use_background >*/
+    MOO_TEXT_STYLE_USE_FOREGROUND    = 1 << 1,	/*< nick=use_foreground >*/
+    MOO_TEXT_STYLE_USE_ITALIC        = 1 << 2,	/*< nick=use_italic >*/
+    MOO_TEXT_STYLE_USE_BOLD          = 1 << 3,	/*< nick=use_bold >*/
+    MOO_TEXT_STYLE_USE_UNDERLINE     = 1 << 4,	/*< nick=use_underline >*/
+    MOO_TEXT_STYLE_USE_STRIKETHROUGH = 1 << 5	/*< nick=use_strikethrough >*/
 } MooTextStyleMask;
 
-struct _MooTextStyle {
-    char *default_style;
-    GdkColor foreground;
-    GdkColor background;
-    guint bold : 1;
-    guint italic : 1;
-    guint underline : 1;
-    guint strikethrough : 1;
-    guint modified : 1;
-    MooTextStyleMask mask;
-};
+/* must be the same as GtkSourceStyle */
+struct _MooTextStyle
+{
+	MooTextStyleMask mask;
 
-struct _MooTextStyleArray {
-    MooTextStyle **data;
-    guint len;
+	GdkColor foreground;
+	GdkColor background;
+
+	guint italic : 1;
+	guint bold : 1;
+	guint underline : 1;
+	guint strikethrough : 1;
 };
 
 
-GType               moo_text_style_get_type         (void) G_GNUC_CONST;
-
-MooTextStyle       *moo_text_style_new              (const char         *default_style,
-                                                     const GdkColor     *foreground,
-                                                     const GdkColor     *background,
-                                                     gboolean            bold,
-                                                     gboolean            italic,
-                                                     gboolean            underline,
-                                                     gboolean            strikethrough,
-                                                     MooTextStyleMask    mask,
-                                                     gboolean            modified);
-MooTextStyle       *moo_text_style_copy             (const MooTextStyle *style);
-void                moo_text_style_copy_content     (MooTextStyle       *dest,
-                                                     const MooTextStyle *src);
-void                moo_text_style_compose          (MooTextStyle       *dest,
-                                                     const MooTextStyle *src);
-void                moo_text_style_free             (MooTextStyle       *style);
+GType   moo_text_style_get_type         (void) G_GNUC_CONST;
+void    moo_text_style_free             (MooTextStyle       *style);
+void    _moo_text_style_apply_to_tag    (const MooTextStyle *style,
+                                         GtkTextTag         *tag);
 
 
 G_END_DECLS

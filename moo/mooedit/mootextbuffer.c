@@ -13,8 +13,9 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mootextiter.h"
-#include "mooedit/moohighlighter.h"
 #include "mooedit/mootext-private.h"
+#include "mooedit/moolang-private.h"
+#include "mooedit/mootextstylescheme.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooundo.h"
 #include "mooutils/mooutils-gobject.h"
@@ -25,7 +26,8 @@ struct _MooTextBufferPrivate {
     gboolean has_selection;
     gboolean has_text;
 
-    MooHighlighter *hl;
+    MooTextStyleScheme *style_scheme;
+    GtkSourceEngine *engine;
     MooLang *lang;
     gboolean may_apply_tag;
     gboolean do_highlight;
@@ -54,7 +56,7 @@ struct _MooTextBufferPrivate {
 };
 
 
-static void     moo_text_buffer_finalize            (GObject        *object);
+static void     moo_text_buffer_dispose             (GObject        *object);
 
 static void     moo_text_buffer_set_property        (GObject        *object,
                                                      guint           prop_id,
@@ -88,8 +90,10 @@ static void     moo_text_buffer_modified_changed    (GtkTextBuffer      *buffer)
 static void     moo_text_buffer_highlight_brackets  (MooTextBuffer      *buffer,
                                                      const GtkTextIter  *insert);
 static void     moo_text_buffer_unhighlight_brackets(MooTextBuffer      *buffer);
-
-static void     moo_text_buffer_queue_highlight     (MooTextBuffer      *buffer);
+static void     moo_text_buffer_set_bracket_match_style (MooTextBuffer  *buffer,
+                                                     const MooTextStyle *style);
+static void     moo_text_buffer_set_bracket_mismatch_style (MooTextBuffer *buffer,
+                                                     const MooTextStyle *style);
 
 static void     emit_cursor_moved                   (MooTextBuffer      *buffer,
                                                      const GtkTextIter  *iter);
@@ -119,10 +123,9 @@ static void     line_mark_deleted                   (MooTextBuffer      *buffer,
 
 
 enum {
+    HIGHLIGHT_UPDATED, /* GtkSourceBuffer's */
     CURSOR_MOVED,
     SELECTION_CHANGED,
-    HIGHLIGHTING_CHANGED,
-    TAGS_CHANGED,
     LINE_MARK_ADDED,
     LINE_MARK_MOVED,
     LINE_MARK_DELETED,
@@ -137,6 +140,7 @@ static guint signals[LAST_SIGNAL];
 
 enum {
     PROP_0,
+    PROP_HIGHLIGHT, /* mimic GtkSourceBuffer */
     PROP_HIGHLIGHT_MATCHING_BRACKETS,
     PROP_HIGHLIGHT_MISMATCHING_BRACKETS,
     PROP_BRACKET_MATCH_STYLE,
@@ -161,7 +165,7 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
 
     gobject_class->set_property = moo_text_buffer_set_property;
     gobject_class->get_property = moo_text_buffer_get_property;
-    gobject_class->finalize = moo_text_buffer_finalize;
+    gobject_class->dispose = moo_text_buffer_dispose;
 
     buffer_class->mark_set = moo_text_buffer_mark_set;
     buffer_class->insert_text = moo_text_buffer_insert_text;
@@ -174,6 +178,14 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
     klass->cursor_moved = moo_text_buffer_cursor_moved;
 
     g_type_class_add_private (klass, sizeof (MooTextBufferPrivate));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_HIGHLIGHT,
+                                     g_param_spec_boolean ("highlight",
+                                             "highlight",
+                                             "highlight",
+                                             TRUE,
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_HIGHLIGHT_MATCHING_BRACKETS,
@@ -225,11 +237,21 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
 
     g_object_class_install_property (gobject_class,
                                      PROP_LANG,
-                                     g_param_spec_boxed ("lang",
+                                     g_param_spec_object ("lang",
                                              "lang",
                                              "lang",
                                              MOO_TYPE_LANG,
                                              G_PARAM_READWRITE));
+
+    signals[HIGHLIGHT_UPDATED] =
+            _moo_signal_new_cb ("highlight_updated",
+                                G_OBJECT_CLASS_TYPE (klass),
+                                G_SIGNAL_RUN_LAST,
+                                NULL, NULL, NULL,
+                                _moo_marshal_VOID__BOXED_BOXED,
+                                G_TYPE_NONE, 2,
+                                GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE,
+                                GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
 
     signals[CURSOR_MOVED] =
             g_signal_new ("cursor-moved",
@@ -249,26 +271,6 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
-
-    signals[HIGHLIGHTING_CHANGED] =
-            _moo_signal_new_cb ("highlighting-changed",
-                                G_OBJECT_CLASS_TYPE (klass),
-                                G_SIGNAL_RUN_LAST,
-                                NULL, NULL, NULL,
-                                _moo_marshal_VOID__BOXED_BOXED,
-                                G_TYPE_NONE, 2,
-                                GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE,
-                                GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
-
-    signals[TAGS_CHANGED] =
-            _moo_signal_new_cb ("tags-changed",
-                                G_OBJECT_CLASS_TYPE (klass),
-                                G_SIGNAL_RUN_LAST,
-                                NULL, NULL, NULL,
-                                _moo_marshal_VOID__BOXED_BOXED,
-                                G_TYPE_NONE, 2,
-                                GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE,
-                                GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
 
     signals[LINE_MARK_ADDED] =
             g_signal_new ("line-mark-added",
@@ -339,8 +341,6 @@ moo_text_buffer_init (MooTextBuffer *buffer)
 
     buffer->priv->line_buf = _moo_line_buffer_new ();
     buffer->priv->do_highlight = TRUE;
-    buffer->priv->hl = _moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
-                                             buffer->priv->line_buf, NULL);
     buffer->priv->bracket_found = MOO_BRACKET_MATCH_NONE;
 
     buffer->priv->fold_tree = _moo_fold_tree_new (buffer);
@@ -369,29 +369,62 @@ moo_text_buffer_init (MooTextBuffer *buffer)
 
 
 static void
-moo_text_buffer_finalize (GObject *object)
+moo_text_buffer_dispose (GObject *object)
 {
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (object);
 
-    /* XXX leak if folds are not deleted */
-    _moo_fold_tree_free (buffer->priv->fold_tree);
-    _moo_highlighter_destroy (buffer->priv->hl, FALSE);
-    _moo_line_buffer_free (buffer->priv->line_buf);
+    if (buffer->priv->fold_tree)
+    {
+        /* XXX leak if folds are not deleted */
+        _moo_fold_tree_free (buffer->priv->fold_tree);
+        buffer->priv->fold_tree = NULL;
+    }
+
+    if (buffer->priv->engine)
+    {
+    	_gtk_source_engine_attach_buffer (buffer->priv->engine, NULL);
+    	g_object_unref (buffer->priv->engine);
+    	buffer->priv->engine = NULL;
+    }
+
+    if (buffer->priv->style_scheme)
+    {
+    	g_object_unref (buffer->priv->style_scheme);
+    	buffer->priv->style_scheme = NULL;
+    }
+
+    if (buffer->priv->lang)
+    {
+    	g_object_unref (buffer->priv->lang);
+    	buffer->priv->engine = NULL;
+    }
+
+    if (buffer->priv->line_buf)
+    {
+        _moo_line_buffer_free (buffer->priv->line_buf);
+        buffer->priv->line_buf = NULL;
+    }
 
     g_free (buffer->priv->left_brackets);
     g_free (buffer->priv->right_brackets);
+    buffer->priv->left_brackets = NULL;
+    buffer->priv->right_brackets = NULL;
 
 #if 0
     g_signal_handlers_disconnect_by_func (buffer->priv->undo_stack,
                                           (gpointer) before_undo_redo,
                                           buffer);
 #endif
-    g_signal_handlers_disconnect_by_func (buffer->priv->undo_stack,
-                                          (gpointer) after_undo_redo,
-                                          buffer);
-    g_object_unref (buffer->priv->undo_stack);
+    if (buffer->priv->undo_stack)
+    {
+        g_signal_handlers_disconnect_by_func (buffer->priv->undo_stack,
+                                              (gpointer) after_undo_redo,
+                                              buffer);
+        g_object_unref (buffer->priv->undo_stack);
+        buffer->priv->undo_stack = NULL;
+    }
 
-    G_OBJECT_CLASS (moo_text_buffer_parent_class)->finalize (object);
+    G_OBJECT_CLASS (moo_text_buffer_parent_class)->dispose (object);
 }
 
 
@@ -499,6 +532,7 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (text_buffer);
     GtkTextTag *tag;
     int first_line, last_line;
+    int start_offset, end_offset;
     gboolean starts_line, ins_line;
 
     if (!text[0])
@@ -507,6 +541,7 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
     if (length < 0)
         length = strlen (text);
 
+    start_offset = gtk_text_iter_get_offset (pos);
     first_line = gtk_text_iter_get_line (pos);
     starts_line = gtk_text_iter_starts_line (pos);
     ins_line = (text[0] == '\n' || text[0] == '\r');
@@ -535,9 +570,7 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
 
     last_line = gtk_text_iter_get_line (pos);
 
-    if (last_line == first_line)
-        _moo_line_buffer_invalidate (buffer->priv->line_buf, first_line);
-    else
+    if (last_line != first_line)
         _moo_line_buffer_split_line (buffer->priv->line_buf,
                                      first_line, last_line - first_line);
 
@@ -551,11 +584,12 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
         g_slist_free (marks);
     }
 
-    if (length == 1)
-        _moo_text_buffer_ensure_highlight (buffer, first_line, last_line);
-    moo_text_buffer_queue_highlight (buffer);
-
     emit_cursor_moved (buffer, pos);
+
+    end_offset = gtk_text_iter_get_offset (pos);
+
+    if (buffer->priv->engine)
+        _gtk_source_engine_text_inserted (buffer->priv->engine, start_offset, end_offset);
 
     if (!buffer->priv->has_text)
     {
@@ -601,7 +635,7 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
                               GtkTextIter        *end)
 {
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (text_buffer);
-    int first_line, last_line, offset;
+    int first_line, last_line, offset, length;
     gboolean starts_line;
     GSList *deleted_marks = NULL, *moved_marks = NULL;
     GtkTextTag *tag;
@@ -611,7 +645,10 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
     first_line = gtk_text_iter_get_line (start);
     last_line = gtk_text_iter_get_line (end);
     starts_line = gtk_text_iter_starts_line (start);
-    offset = gtk_text_iter_get_line_offset (end) - gtk_text_iter_get_line_offset (start);
+    offset = gtk_text_iter_get_offset (start);
+    length = gtk_text_iter_get_offset (end) - offset;
+
+    g_return_if_fail (length > 0);
 
     if ((tag = get_placeholder_tag (text_buffer)) &&
          (gtk_text_iter_has_tag (end, tag) ||
@@ -663,11 +700,6 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
                                      first_line,
                                      &moved_marks, &deleted_marks);
     }
-    else
-    {
-        _moo_line_buffer_invalidate (buffer->priv->line_buf,
-                                     first_line);
-    }
 
     /* It would be better if marks were moved/deleted before deleting text, but it
        could cause problems with invalidated iters. if they were deleted after
@@ -678,10 +710,6 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
     g_slist_free (deleted_marks);
     g_slist_free (moved_marks);
 
-    if (last_line == first_line && offset == 1)
-        _moo_text_buffer_ensure_highlight (buffer, first_line, last_line);
-    moo_text_buffer_queue_highlight (buffer);
-
     update_selection (buffer);
     emit_cursor_moved (buffer, start);
 
@@ -691,6 +719,9 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
         if (!buffer->priv->has_text)
             g_object_notify (G_OBJECT (buffer), "has-text");
     }
+
+    if (buffer->priv->engine != NULL)
+        _gtk_source_engine_text_deleted (buffer->priv->engine, offset, length);
 }
 
 
@@ -735,44 +766,41 @@ void
 moo_text_buffer_set_lang (MooTextBuffer  *buffer,
                           MooLang        *lang)
 {
-    MooLang *old_lang;
-
     g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
 
     if (buffer->priv->lang == lang)
         return;
 
-    old_lang = buffer->priv->lang;
+    if (buffer->priv->engine)
+    {
+    	_gtk_source_engine_attach_buffer (buffer->priv->engine, NULL);
+    	g_object_unref (buffer->priv->engine);
+    	buffer->priv->engine = NULL;
+    }
 
-    if (old_lang)
-        moo_lang_unref (old_lang);
+    if (buffer->priv->lang)
+        g_object_unref (buffer->priv->lang);
 
-    _moo_highlighter_destroy (buffer->priv->hl,
-                              buffer->priv->do_highlight && old_lang);
-
-    _moo_line_buffer_cleanup (buffer->priv->line_buf);
     buffer->priv->lang = lang;
 
     if (lang)
-        moo_lang_ref (lang);
-
-    if (lang && buffer->priv->do_highlight)
     {
-        buffer->priv->hl = _moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
-                                                 buffer->priv->line_buf, lang);
+        g_object_ref (lang);
 
-        if (old_lang)
-            _moo_line_buffer_invalidate_all (buffer->priv->line_buf);
+    	buffer->priv->engine = _moo_lang_get_engine (lang);
 
-        moo_text_buffer_queue_highlight (buffer);
-    }
-    else
-    {
-        buffer->priv->hl = _moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
-                                                 buffer->priv->line_buf, NULL);
+    	if (buffer->priv->engine)
+    	{
+            _gtk_source_engine_attach_buffer (buffer->priv->engine,
+    						  GTK_TEXT_BUFFER (buffer));
+
+            if (buffer->priv->style_scheme)
+                _gtk_source_engine_set_style_scheme (buffer->priv->engine,
+                                                     GTK_SOURCE_STYLE_SCHEME (buffer->priv->style_scheme));
+    	}
     }
 
-    moo_text_buffer_set_brackets (buffer, lang ? lang->brackets : NULL);
+    moo_text_buffer_set_brackets (buffer, lang ? _moo_lang_get_brackets (lang) : NULL);
 }
 
 
@@ -781,14 +809,6 @@ moo_text_buffer_get_lang (MooTextBuffer  *buffer)
 {
     g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), NULL);
     return buffer->priv->lang;
-}
-
-
-static void
-moo_text_buffer_queue_highlight (MooTextBuffer *buffer)
-{
-    if (buffer->priv->lang && buffer->priv->do_highlight)
-        _moo_highlighter_queue_compute (buffer->priv->hl);
 }
 
 
@@ -803,31 +823,8 @@ moo_text_buffer_set_highlight (MooTextBuffer      *buffer,
     if (highlight == buffer->priv->do_highlight)
         return;
 
-    if (buffer->priv->do_highlight && buffer->priv->lang)
-    {
-        _moo_highlighter_destroy (buffer->priv->hl, TRUE);
-        _moo_line_buffer_cleanup (buffer->priv->line_buf);
-    }
-    else
-    {
-        _moo_highlighter_destroy (buffer->priv->hl, FALSE);
-    }
-
     buffer->priv->do_highlight = highlight;
-
-    if (!highlight || !buffer->priv->lang)
-    {
-        buffer->priv->hl = _moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
-                                                 buffer->priv->line_buf, NULL);
-    }
-    else
-    {
-        buffer->priv->hl = _moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
-                                                 buffer->priv->line_buf,
-                                                 buffer->priv->lang);
-        _moo_line_buffer_invalidate_all (buffer->priv->line_buf);
-        moo_text_buffer_queue_highlight (buffer);
-    }
+    g_object_notify (G_OBJECT (buffer), "highlight");
 }
 
 
@@ -849,6 +846,10 @@ moo_text_buffer_set_property (GObject        *object,
 
     switch (prop_id)
     {
+        case PROP_HIGHLIGHT:
+            moo_text_buffer_set_highlight (buffer, g_value_get_boolean (value));
+            break;
+
         case PROP_HIGHLIGHT_MATCHING_BRACKETS:
             buffer->priv->highlight_matching_brackets = g_value_get_boolean (value) != 0;
             g_object_notify (object, "highlight-matching-brackets");
@@ -868,7 +869,7 @@ moo_text_buffer_set_property (GObject        *object,
             break;
 
         case PROP_LANG:
-            moo_text_buffer_set_lang (buffer, g_value_get_boxed (value));
+            moo_text_buffer_set_lang (buffer, g_value_get_object (value));
             break;
 
         default:
@@ -888,6 +889,10 @@ moo_text_buffer_get_property (GObject        *object,
 
     switch (prop_id)
     {
+        case PROP_HIGHLIGHT:
+            g_value_set_boolean (value, buffer->priv->do_highlight);
+            break;
+
         case PROP_HIGHLIGHT_MATCHING_BRACKETS:
             g_value_set_boolean (value, buffer->priv->highlight_matching_brackets);
             break;
@@ -897,7 +902,7 @@ moo_text_buffer_get_property (GObject        *object,
             break;
 
         case PROP_LANG:
-            g_value_set_boxed (value, buffer->priv->lang);
+            g_value_set_object (value, buffer->priv->lang);
             break;
 
         case PROP_HAS_TEXT:
@@ -936,53 +941,16 @@ moo_text_buffer_has_selection (MooTextBuffer *buffer)
 
 
 void
-_moo_text_buffer_ensure_highlight (MooTextBuffer      *buffer,
-                                   int                 first_line,
-                                   int                 last_line)
+_moo_text_buffer_update_highlight (MooTextBuffer      *buffer,
+                                   const GtkTextIter  *start,
+                                   const GtkTextIter  *end,
+                                   gboolean            synchronous)
 {
-    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
-    _moo_highlighter_apply_tags (buffer->priv->hl,
-                                 first_line, last_line);
-}
+	g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
 
-
-static void
-something_changed (MooTextBuffer *buffer,
-                   int            first,
-                   int            last,
-                   guint          sig)
-{
-    GtkTextIter start, end;
-
-    g_assert (MOO_IS_TEXT_BUFFER (buffer));
-    g_assert (first <= last && first >= 0);
-
-    gtk_text_buffer_get_iter_at_line (GTK_TEXT_BUFFER (buffer), &start, first);
-
-    if (first == last)
-        end = start;
-    else
-        gtk_text_buffer_get_iter_at_line (GTK_TEXT_BUFFER (buffer), &end, last);
-
-    g_signal_emit (buffer, signals[sig], 0, &start, &end);
-}
-
-
-void
-_moo_text_buffer_highlighting_changed (MooTextBuffer *buffer,
-                                       int            first,
-                                       int            last)
-{
-    something_changed (buffer, first, last, HIGHLIGHTING_CHANGED);
-}
-
-
-void
-_moo_text_buffer_tags_changed (MooTextBuffer *buffer,
-                               int            first,
-                               int            last)
-{
-    something_changed (buffer, first, last, TAGS_CHANGED);
+	if (buffer->priv->engine != NULL)
+		_gtk_source_engine_update_highlight (buffer->priv->engine,
+						     start, end, synchronous);
 }
 
 
@@ -992,36 +960,53 @@ moo_text_buffer_apply_tag (GtkTextBuffer      *buffer,
                            const GtkTextIter  *start,
                            const GtkTextIter  *end)
 {
-    if (MOO_IS_SYNTAX_TAG (tag) && !MOO_TEXT_BUFFER(buffer)->priv->may_apply_tag)
-        return;
+//     if (MOO_IS_SYNTAX_TAG (tag) && !MOO_TEXT_BUFFER(buffer)->priv->may_apply_tag)
+//         return;
 
     GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->apply_tag (buffer, tag, start, end);
 }
 
 
-void
-_moo_text_buffer_apply_syntax_tag (MooTextBuffer      *buffer,
-                                   GtkTextTag         *tag,
-                                   const GtkTextIter  *start,
-                                   const GtkTextIter  *end)
-{
-    GtkTextBuffer *text_buffer = GTK_TEXT_BUFFER (buffer);
-    buffer->priv->may_apply_tag = TRUE;
-    gtk_text_buffer_apply_tag (text_buffer, tag, start, end);
-    buffer->priv->may_apply_tag = FALSE;
-}
+// void
+// _moo_text_buffer_apply_syntax_tag (MooTextBuffer      *buffer,
+//                                    GtkTextTag         *tag,
+//                                    const GtkTextIter  *start,
+//                                    const GtkTextIter  *end)
+// {
+//     GtkTextBuffer *text_buffer = GTK_TEXT_BUFFER (buffer);
+//     buffer->priv->may_apply_tag = TRUE;
+//     gtk_text_buffer_apply_tag (text_buffer, tag, start, end);
+//     buffer->priv->may_apply_tag = FALSE;
+// }
 
 
 void
-moo_text_buffer_apply_scheme (MooTextBuffer      *buffer,
-                              MooTextStyleScheme *scheme)
+_moo_text_buffer_set_style_scheme (MooTextBuffer      *buffer,
+                                   MooTextStyleScheme *scheme)
 {
+    MooTextStyle *style;
+
     g_return_if_fail (MOO_IS_TEXT_STYLE_SCHEME (scheme));
     g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
 
-    moo_text_buffer_set_bracket_match_style (buffer, scheme->bracket_match);
-    moo_text_buffer_set_bracket_mismatch_style (buffer, scheme->bracket_mismatch);
-    _moo_highlighter_apply_scheme (buffer->priv->hl, scheme);
+    if (scheme == buffer->priv->style_scheme)
+        return;
+
+    if (buffer->priv->style_scheme)
+        g_object_unref (buffer->priv->style_scheme);
+    buffer->priv->style_scheme = g_object_ref (scheme);
+
+    style = moo_text_style_scheme_get_bracket_match_style (scheme);
+    moo_text_buffer_set_bracket_match_style (buffer, style);
+    moo_text_style_free (style);
+
+    style = moo_text_style_scheme_get_bracket_mismatch_style (scheme);
+    moo_text_buffer_set_bracket_mismatch_style (buffer, style);
+    moo_text_style_free (style);
+
+    if (buffer->priv->engine)
+        _gtk_source_engine_set_style_scheme (buffer->priv->engine,
+                                             GTK_SOURCE_STYLE_SCHEME (scheme));
 }
 
 
@@ -1270,7 +1255,7 @@ moo_text_buffer_cursor_moved (MooTextBuffer      *buffer,
 }
 
 
-void
+static void
 moo_text_buffer_set_bracket_match_style (MooTextBuffer      *buffer,
                                          const MooTextStyle *style)
 {
@@ -1285,12 +1270,12 @@ moo_text_buffer_set_bracket_match_style (MooTextBuffer      *buffer,
         buffer->priv->correct_match_tag =
                 gtk_text_buffer_create_tag (GTK_TEXT_BUFFER (buffer), NULL, NULL);
 
-    _moo_style_set_tag_style (style, buffer->priv->correct_match_tag);
+    _moo_text_style_apply_to_tag (style, buffer->priv->correct_match_tag);
     g_object_notify (G_OBJECT (buffer), "bracket-match-style");
 }
 
 
-void
+static void
 moo_text_buffer_set_bracket_mismatch_style (MooTextBuffer      *buffer,
                                             const MooTextStyle *style)
 {
@@ -1305,7 +1290,7 @@ moo_text_buffer_set_bracket_mismatch_style (MooTextBuffer      *buffer,
         buffer->priv->incorrect_match_tag =
                 gtk_text_buffer_create_tag (GTK_TEXT_BUFFER (buffer), NULL, NULL);
 
-    _moo_style_set_tag_style (style, buffer->priv->incorrect_match_tag);
+    _moo_text_style_apply_to_tag (style, buffer->priv->incorrect_match_tag);
     g_object_notify (G_OBJECT (buffer), "bracket-mismatch-style");
 }
 

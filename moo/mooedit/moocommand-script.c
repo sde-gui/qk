@@ -131,8 +131,6 @@ script_type_create_widget (G_GNUC_UNUSED MooCommandType *type)
     GtkWidget *page;
     MooGladeXML *xml;
     MooTextView *textview;
-    MooLangMgr *mgr;
-    MooLang *lang;
 
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "textview", MOO_TYPE_TEXT_VIEW);
@@ -142,9 +140,7 @@ script_type_create_widget (G_GNUC_UNUSED MooCommandType *type)
 
     textview = moo_glade_xml_get_widget (xml, "textview");
     moo_text_view_set_font_from_string (textview, "Monospace");
-    mgr = moo_editor_get_lang_mgr (moo_editor_instance ());
-    lang = moo_lang_mgr_get_lang (mgr, "mooscript");
-    moo_text_view_set_lang (textview, lang);
+    moo_text_view_set_lang_by_id (textview, "mooscript");
 
     g_object_set_data_full (G_OBJECT (page), "moo-glade-xml", xml, g_object_unref);
     return page;

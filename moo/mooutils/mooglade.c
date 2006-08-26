@@ -2646,7 +2646,6 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkCornerType", GTK_TYPE_CORNER_TYPE);
     REGISTER_TYPE ("GtkCurve", GTK_TYPE_CURVE);
     REGISTER_TYPE ("GtkCurveType", GTK_TYPE_CURVE_TYPE);
-    REGISTER_TYPE ("GtkDebugFlag", GTK_TYPE_DEBUG_FLAG);
     REGISTER_TYPE ("GtkDeleteType", GTK_TYPE_DELETE_TYPE);
     REGISTER_TYPE ("GtkDestDefaults", GTK_TYPE_DEST_DEFAULTS);
     REGISTER_TYPE ("GtkDialog", GTK_TYPE_DIALOG);

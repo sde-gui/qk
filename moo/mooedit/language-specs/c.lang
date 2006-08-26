@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language id="c" _name="C" version="2.0" _section="Sources"
+          mimetypes="text/x-c;text/x-chdr;text/x-csrc"
+          globs="*.c;*.h">
+    <styles>
+        <style id="comment"           _name="Comment"           map-to="def:comment"/>
+        <style id="error"             _name="Error"             map-to="def:error"/>
+        <style id="string"            _name="String"            map-to="def:string"/>
+        <style id="escape"            _name="Escape"            map-to="def:escape"/>
+        <style id="preprocessor"      _name="Preprocessor"      map-to="def:preprocessor"/>
+        <style id="common-defines"    _name="Common defines"    map-to="def:preprocessor"/>
+        <style id="included-file"     _name="Included File"     map-to="def:package"/>
+        <style id="char"              _name="Character"         map-to="def:string"/>
+        <style id="keyword"           _name="Keyword"           map-to="def:keyword"/>
+        <style id="data-type"         _name="Data Type"         map-to="def:data-type"/>
+    </styles>
+
+    <definitions>
+        <context id="c">
+            <include>
+
+                <!-- Comments -->
+                <context id="comment" style-ref="comment">
+                    <start>\/\/</start>
+                    <end>$</end>
+                    <include>
+                        <context ref="def:line-continue"/>
+                        <context ref="def:comment:*"/>
+                    </include>
+                </context>
+
+                <context id="comment-multiline" style-ref="comment">
+                    <start>\/\*</start>
+                    <end>\*\/</end>
+                    <include>
+                        <context ref="def:comment:*"/>
+                    </include>
+                </context>
+
+                <context id="close-comment-outside-comment" style-ref="error">
+                    <match>\*\/(?!\*)</match>
+                </context>
+
+                <!-- Preprocessor -->
+                <define-regex id="preproc-start">^\s*#\s*</define-regex>
+
+                <context id="if0-comment" style-ref="comment">
+                    <start>\%{preproc-start}if\s*0\b</start>
+                    <end>\%{preproc-start}(endif|else|elif)\b</end>
+                    <include>
+                        <context id="if-in-if0">
+                            <start>\%{preproc-start}if(n?def)?\b</start>
+                            <end>\%{preproc-start}endif\b</end>
+                            <include>
+                                <context ref="if-in-if0"/>
+                            </include>
+                        </context>
+                    </include>
+                </context>
+
+                <context id="include" style-ref="preprocessor">
+                    <match extended="true">
+                            \%{preproc-start}
+                            include\s*
+                            (".*?"|&lt;.*&gt;)
+                    </match>
+                    <include>
+                        <context id="included-file" sub-pattern="1" style-ref="included-file"/>
+                    </include>
+                </context>
+
+                <context id="preprocessor" style-ref="preprocessor" end-at-line-end="true">
+                    <start extended="true">
+                            \%{preproc-start}
+                            (define|undef|error|pragma|if(n?def)?|else|elif|endif|line)
+                            \b
+                    </start>
+                    <include>
+                        <context ref="def:line-continue"/>
+                        <context ref="comment"/>
+                        <context ref="comment-multiline"/>
+                    </include>
+                </context>
+
+                <!-- Strings -->
+                <context id="string" end-at-line-end="true" style-ref="string">
+                    <start>"</start>
+                    <end>"</end>
+                    <include>
+                        <context ref="def:line-continue"/>
+                        <context ref="def:c-style-escape"/>
+                    </include>
+                </context>
+
+                <context id="char" end-at-line-end="true" style-ref="char">
+                    <start>'</start>
+                    <end>'</end>
+                    <include>
+                        <context ref="def:c-style-escape"/>
+                    </include>
+                </context>
+
+                <!-- Numbers -->
+                <context ref="def:decimal"/>
+                <context ref="def:octal"/>
+                <context ref="def:hexadecimal"/>
+                <context ref="def:float"/>
+
+                <!-- Keywords -->
+                <context id="keywords" style-ref="keyword">
+                    <keyword>asm</keyword>
+                    <keyword>break</keyword>
+                    <keyword>case</keyword>
+                    <keyword>continue</keyword>
+                    <keyword>default</keyword>
+                    <keyword>do</keyword>
+                    <keyword>else</keyword>
+                    <keyword>for</keyword>
+                    <keyword>fortran</keyword>
+                    <keyword>goto</keyword>
+                    <keyword>if</keyword>
+                    <keyword>return</keyword>
+                    <keyword>sizeof</keyword>
+                    <keyword>switch</keyword>
+                    <keyword>while</keyword>
+                </context>
+
+                <context id="types" style-ref="data-type">
+                    <keyword>_Bool</keyword>
+                    <keyword>_Complex</keyword>
+                    <keyword>_Imaginary</keyword>
+                    <keyword>auto</keyword>
+                    <keyword>char</keyword>
+                    <keyword>const</keyword>
+                    <keyword>double</keyword>
+                    <keyword>enum</keyword>
+                    <keyword>extern</keyword>
+                    <keyword>float</keyword>
+                    <keyword>int</keyword>
+                    <keyword>inline</keyword>
+                    <keyword>long</keyword>
+                    <keyword>register</keyword>
+                    <keyword>restrict</keyword>
+                    <keyword>short</keyword>
+                    <keyword>signed</keyword>
+                    <keyword>size_t</keyword>
+                    <keyword>static</keyword>
+                    <keyword>struct</keyword>
+                    <keyword>typedef</keyword>
+                    <keyword>union</keyword>
+                    <keyword>unsigned</keyword>
+                    <keyword>void</keyword>
+                    <keyword>volatile</keyword>
+                </context>
+
+                <context id="common-defines" style-ref="common-defines">
+                    <keyword>NULL</keyword>
+                    <keyword>TRUE</keyword>
+                    <keyword>FALSE</keyword>
+                    <keyword>MAX</keyword>
+                    <keyword>MIN</keyword>
+                    <keyword>__LINE__</keyword>
+                    <keyword>__DATA__</keyword>
+                    <keyword>__FILE__</keyword>
+                    <keyword>__func__</keyword>
+                    <keyword>__TIME__</keyword>
+                    <keyword>__STDC__</keyword>
+                </context>
+
+            </include>
+        </context>
+    </definitions>
+
+    <brackets>(){}[]</brackets>
+    <line-comment start="//"/>
+    <block-comment start="/*" end="*/"/>
+</language>

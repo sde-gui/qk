@@ -75,10 +75,6 @@ void        moo_text_buffer_set_highlight               (MooTextBuffer      *buf
                                                          gboolean            highlight);
 gboolean    moo_text_buffer_get_highlight               (MooTextBuffer      *buffer);
 
-void        moo_text_buffer_set_bracket_match_style     (MooTextBuffer      *buffer,
-                                                         const MooTextStyle *style);
-void        moo_text_buffer_set_bracket_mismatch_style  (MooTextBuffer      *buffer,
-                                                         const MooTextStyle *style);
 void        moo_text_buffer_set_brackets                (MooTextBuffer      *buffer,
                                                          const char         *brackets);
 
@@ -89,9 +85,6 @@ void        moo_text_buffer_end_non_interactive_action  (MooTextBuffer      *buf
 
 gboolean    moo_text_buffer_has_text                    (MooTextBuffer      *buffer);
 gboolean    moo_text_buffer_has_selection               (MooTextBuffer      *buffer);
-
-void        moo_text_buffer_apply_scheme                (MooTextBuffer      *buffer,
-                                                         MooTextStyleScheme *scheme);
 
 void        moo_text_buffer_add_line_mark               (MooTextBuffer      *buffer,
                                                          MooLineMark        *mark,

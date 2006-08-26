@@ -34,7 +34,6 @@ typedef struct _BTData BTData;
 typedef struct _BTIter BTIter;
 typedef struct _BTree BTree;
 
-typedef struct _HLInfo HLInfo;
 struct _MooLineMark;
 
 
@@ -56,7 +55,6 @@ struct _BTData {
     BTNode *parent;
     guint n_marks;
 
-    HLInfo *hl_info;
     struct _MooLineMark **marks;
 };
 

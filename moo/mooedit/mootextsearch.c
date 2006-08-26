@@ -12,7 +12,7 @@
  */
 
 #include "mooedit/mootextsearch-private.h"
-#include "mooedit/gtksourceiter.h"
+#include "gtksourceview/gtksourceiter.h"
 #include <string.h>
 
 
@@ -310,13 +310,13 @@ moo_text_search_forward (const GtkTextIter      *start,
         }
 
         if (!(flags & MOO_TEXT_SEARCH_WHOLE_WORDS))
-            return _gtk_source_iter_forward_search (start, str, gs_flags,
-                                                    match_start, match_end, end);
+            return gtk_source_iter_forward_search (start, str, gs_flags,
+                                                   match_start, match_end, end);
 
         real_start = *start;
 
-        while (_gtk_source_iter_forward_search (&real_start, str, gs_flags,
-                                                match_start, match_end, end))
+        while (gtk_source_iter_forward_search (&real_start, str, gs_flags,
+                                               match_start, match_end, end))
         {
             if (is_whole_word (match_start, match_end))
                 return TRUE;
@@ -367,13 +367,13 @@ moo_text_search_backward (const GtkTextIter      *start,
             gs_flags |= GTK_SOURCE_SEARCH_CASE_INSENSITIVE;
 
         if (!(flags & MOO_TEXT_SEARCH_WHOLE_WORDS))
-            return _gtk_source_iter_backward_search (start, str, gs_flags,
-                                                     match_start, match_end, end);
+            return gtk_source_iter_backward_search (start, str, gs_flags,
+                                                    match_start, match_end, end);
 
         real_start = *start;
 
-        while (_gtk_source_iter_backward_search (&real_start, str, gs_flags,
-                                                 match_start, match_end, end))
+        while (gtk_source_iter_backward_search (&real_start, str, gs_flags,
+                                                match_start, match_end, end))
         {
             if (is_whole_word (match_start, match_end))
                 return TRUE;
