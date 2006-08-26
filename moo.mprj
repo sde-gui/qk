@@ -13,7 +13,7 @@
   <configurations>
     <debug>
       <configure>
-        <args>--enable-debug=full --enable-all-gcc-warnings --without-python</args>
+        <args>--enable-debug=full --enable-all-gcc-warnings</args>
         <vars>
           <var name="CFLAGS">-g -pg</var>
         </vars>

@@ -26,12 +26,19 @@
   (gtype-id "MOO_TYPE_INDENTER")
 )
 
-(define-object LangMgr
-  (in-module "Moo")
-  (parent "GObject")
-  (c-name "MooLangMgr")
-  (gtype-id "MOO_TYPE_LANG_MGR")
-)
+;; (define-object LangMgr
+;;   (in-module "Moo")
+;;   (parent "GObject")
+;;   (c-name "MooLangMgr")
+;;   (gtype-id "MOO_TYPE_LANG_MGR")
+;; )
+;;
+;; (define-object Lang
+;;   (in-module "Moo")
+;;   (parent "GObject")
+;;   (c-name "MooLangMgr")
+;;   (gtype-id "MOO_TYPE_LANG_MGR")
+;; )
 
 (define-object TextBuffer
   (in-module "Moo")
@@ -89,57 +96,35 @@
   (gtype-id "MOO_TYPE_EDIT_ACTION")
 )
 
-(define-object TextStyleScheme
-  (in-module "Moo")
-  (parent "GObject")
-  (c-name "MooTextStyleScheme")
-  (gtype-id "MOO_TYPE_TEXT_STYLE_SCHEME")
-  (fields
-    '("char*" "name")
-  )
-)
-
-
-(define-boxed Lang
-  (in-module "Moo")
-  (c-name "MooLang")
-  (gtype-id "MOO_TYPE_LANG")
-  (copy-func "moo_lang_ref")
-  (release-func "moo_lang_unref")
+;; (define-object TextStyleScheme
+;;   (in-module "Moo")
+;;   (parent "GObject")
+;;   (c-name "MooTextStyleScheme")
+;;   (gtype-id "MOO_TYPE_TEXT_STYLE_SCHEME")
 ;;   (fields
-;;     '("char*" "id")
-;;     '("char*" "display_name")
-;;     '("char*" "section")
-;;     '("char*" "version")
-;;     '("char*" "author")
-;;     '("GSList*" "mime_types")
-;;     '("GSList*" "extensions")
-;;     '("char*" "brackets")
-;;     '("char*" "line_comment")
-;;     '("char*" "block_comment_start")
-;;     '("char*" "block_comment_end")
-;;     '("char*" "sample")
+;;     '("char*" "name")
 ;;   )
-)
+;; )
 
-(define-boxed TextStyle
-  (in-module "Moo")
-  (c-name "MooTextStyle")
-  (gtype-id "MOO_TYPE_TEXT_STYLE")
-  (copy-func "moo_text_style_copy")
-  (release-func "moo_text_style_free")
-  (fields
-    '("char*" "default_style")
-    '("GdkColor" "foreground")
-    '("GdkColor" "background")
-    '("gboolean" "bold")
-    '("gboolean" "italic")
-    '("gboolean" "underline")
-    '("gboolean" "strikethrough")
-    '("gboolean" "modified")
-    '("MooTextStyleMask" "mask")
-  )
-)
+
+;; (define-boxed TextStyle
+;;   (in-module "Moo")
+;;   (c-name "MooTextStyle")
+;;   (gtype-id "MOO_TYPE_TEXT_STYLE")
+;;   (copy-func "moo_text_style_copy")
+;;   (release-func "moo_text_style_free")
+;;   (fields
+;;     '("char*" "default_style")
+;;     '("GdkColor" "foreground")
+;;     '("GdkColor" "background")
+;;     '("gboolean" "bold")
+;;     '("gboolean" "italic")
+;;     '("gboolean" "underline")
+;;     '("gboolean" "strikethrough")
+;;     '("gboolean" "modified")
+;;     '("MooTextStyleMask" "mask")
+;;   )
+;; )
 
 
 (include "mooplugin.defs")
