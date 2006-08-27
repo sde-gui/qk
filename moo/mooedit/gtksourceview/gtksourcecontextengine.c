@@ -154,6 +154,9 @@ struct _ContextDefinition
 	 * context. */
 	Regex			*reg_all;
 
+	/* Should this context start only at the first line? */
+	guint			 first_line_only : 1;
+
 	/* Should this context end before end of the line (namely,
 	 * before the line terminating characters)? */
 	guint			 end_at_line_end : 1;
@@ -281,6 +284,8 @@ struct _LineInfo
 	/* Character length of line terminator, or 0 if it's the
 	 * last line in buffer. */
 	gint			 eol_length;
+	/* Line number in the buffer */
+	gint			 line_no;
 };
 
 struct _InvalidRegion
@@ -1156,6 +1161,18 @@ simple_segment_split_ (GtkSourceContextEngine *ce,
 	return invalid;
 }
 
+/**
+ * invalidate_region:
+ *
+ * @ce: a #GtkSourceContextEngine.
+ * @offset: the start of invalidated area.
+ * @length: the length of the area.
+ *
+ * Adds the area to the invalid region and queues highlighting.
+ * %length may be negative which means deletion; positive
+ * means insertion; 0 means "something happened here", it's
+ * treated as zero-length insertion.
+ */
 static gboolean
 invalidate_region (GtkSourceContextEngine *ce,
 		   gint                    offset,
@@ -1216,6 +1233,21 @@ invalidate_region (GtkSourceContextEngine *ce,
 	return TRUE;
 }
 
+/**
+ * insert_range:
+ *
+ * @ce: a #GtkSourceContextEngine.
+ * @offset: the start of new segment.
+ * @length: the length of the segment.
+ *
+ * Updates segment tree after insertion: it updates tree
+ * offsets as appropriate, and inserts a new invalid segment
+ * or extends existing invalid segment as %offset, so
+ * after the call segment [offset, offset + length) is marked
+ * invalid in the tree.
+ * It may be safely called with length == 0 at any moment
+ * (and it's used here and there).
+ */
 static void
 insert_range (GtkSourceContextEngine *ce,
 	      gint                    offset,
@@ -1317,6 +1349,15 @@ insert_range (GtkSourceContextEngine *ce,
 	CHECK_TREE (ce);
 }
 
+/**
+ * gtk_source_context_engine_text_inserted:
+ *
+ * @ce: a #GtkSourceContextEngine.
+ * @start_offset: the start of inserted text.
+ * @end_offset: the end of inserted text.
+ *
+ * Called from GtkTextBuffer::insert_text.
+ */
 static void
 gtk_source_context_engine_text_inserted (GtkSourceEngine *engine,
 					 gint             start_offset,
@@ -1386,6 +1427,17 @@ fix_offsets_delete_ (Segment *segment,
 	segment->end_at = fix_offset_delete_ (segment->end_at, offset, length);
 }
 
+/**
+ * delete_range_:
+ *
+ * @ce: a #GtkSourceContextEngine.
+ * @start: the start of deleted area.
+ * @end: the end of deleted area.
+ *
+ * Updates segment tree after deletion: removes segments at deleted
+ * interval, updates tree offsets, etc.
+ * It's called only from update_tree().
+ */
 static void
 delete_range_ (GtkSourceContextEngine *ce,
 	       gint                    start,
@@ -1402,6 +1454,15 @@ delete_range_ (GtkSourceContextEngine *ce,
 	CHECK_TREE (ce);
 };
 
+/**
+ * gtk_source_context_engine_text_deleted:
+ *
+ * @ce: a #GtkSourceContextEngine.
+ * @offset: the start of deleted text.
+ * @length: the length (in characters) of deleted text.
+ *
+ * Called from GtkTextBuffer::delete_range.
+ */
 static void
 gtk_source_context_engine_text_deleted (GtkSourceEngine *engine,
 					gint             offset,
@@ -3348,10 +3409,18 @@ next_segment (GtkSourceContextEngine  *ce,
 		definition_iter_init (&def_iter, state->context->definition);
 		while ((child_def = definition_iter_next (&def_iter)))
 		{
+			gboolean try_this = TRUE;
+
 			/* If the child definition does not extend the parent
 			 * and the current context could end here we do not
 			 * need to examine this child. */
-			if (child_def->extend_parent || !context_end_found)
+			if (!child_def->extend_parent && context_end_found)
+				try_this = FALSE;
+
+			if (child_def->first_line_only && line->line_no == 0)
+				try_this = FALSE;
+
+			if (try_this)
 			{
 				/* Does this child definition start a new
 				 * context at the current position? */
@@ -3531,6 +3600,7 @@ get_line_info (GtkTextBuffer     *buffer,
 
 	line->text = gtk_text_buffer_get_slice (buffer, line_start, line_end, TRUE);
 	line->start_at = gtk_text_iter_get_offset (line_start);
+	line->line_no = gtk_text_iter_get_line (line_start);
 
 	if (!gtk_text_iter_starts_line (line_end))
 	{
@@ -4507,8 +4577,7 @@ context_definition_new (const gchar        *id,
 			const gchar        *start,
 			const gchar        *end,
 			const gchar        *style,
-			gboolean            extend_parent,
-			gboolean            end_at_line_end,
+			GtkSourceContextMatchOptions options,
 			GError            **error)
 {
 	ContextDefinition *definition;
@@ -4590,8 +4659,9 @@ context_definition_new (const gchar        *id,
 	definition->id = g_strdup (id);
 	definition->style = g_strdup (style);
 	definition->type = type;
-	definition->extend_parent = extend_parent;
-	definition->end_at_line_end = end_at_line_end;
+	definition->extend_parent = (options & GTK_SOURCE_CONTEXT_EXTEND_PARENT) != 0;
+	definition->end_at_line_end = (options & GTK_SOURCE_CONTEXT_END_AT_LINE_END) != 0;
+	definition->first_line_only = (options & GTK_SOURCE_CONTEXT_FIRST_LINE_ONLY) != 0;
 	definition->children = NULL;
 	definition->sub_patterns = NULL;
 
@@ -4599,7 +4669,7 @@ context_definition_new (const gchar        *id,
 	 * should have extend-parent="true" and end-at-line-end="false". */
 	if (!parent && egg_regex_match_simple ("(.+):\\1", id, 0, 0))
 	{
-		if (end_at_line_end)
+		if (definition->end_at_line_end)
 		{
 			g_warning ("end-at-line-end should be "
 				   "\"false\" for main contexts (id: %s)",
@@ -4607,7 +4677,7 @@ context_definition_new (const gchar        *id,
 			definition->end_at_line_end = FALSE;
 		}
 
-		if (!extend_parent)
+		if (!definition->extend_parent)
 		{
 			g_warning ("extend-parent should be "
 				   "\"true\" for main contexts (id: %s)",
@@ -4729,8 +4799,7 @@ _gtk_source_context_engine_define_context (GtkSourceContextEngine  *ce,
 					   const gchar             *start_regex,
 					   const gchar             *end_regex,
 					   const gchar             *style,
-					   gboolean                 extend_parent,
-					   gboolean                 end_at_line_end,
+					   GtkSourceContextMatchOptions options,
 					   GError                 **error)
 {
 	ContextDefinition *definition, *parent = NULL;
@@ -4793,8 +4862,7 @@ _gtk_source_context_engine_define_context (GtkSourceContextEngine  *ce,
 
 	definition = context_definition_new (id, type, parent, match_regex,
 					     start_regex, end_regex, style,
-					     extend_parent, end_at_line_end,
-					     error);
+					     options, error);
 	if (!definition)
 		return FALSE;
 
@@ -5015,7 +5083,8 @@ _gtk_source_context_engine_set_escape_char (GtkSourceContextEngine *ce,
 
 	if (!_gtk_source_context_engine_define_context (ce, "gtk-source-context-engine-escape",
 							NULL, pattern, NULL, NULL, NULL,
-							TRUE, FALSE, &error))
+							GTK_SOURCE_CONTEXT_EXTEND_PARENT,
+							&error))
 		goto out;
 
 	g_free (pattern);
@@ -5023,7 +5092,8 @@ _gtk_source_context_engine_set_escape_char (GtkSourceContextEngine *ce,
 
 	if (!_gtk_source_context_engine_define_context (ce, "gtk-source-context-engine-line-escape",
 							NULL, NULL, pattern, "^", NULL,
-							TRUE, FALSE, &error))
+							GTK_SOURCE_CONTEXT_EXTEND_PARENT,
+							&error))
 		goto out;
 
 	g_slist_foreach (definitions, (GFunc) add_escape_ref, ce);

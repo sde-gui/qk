@@ -2315,50 +2315,50 @@ moo_text_view_expose (GtkWidget      *widget,
 }
 
 
-static void
-highlight_updated (GtkTextView       *text_view,
-		   const GtkTextIter *start,
-                   const GtkTextIter *end)
-{
-    GdkRectangle visible_rect;
-    GdkRectangle updated_rect;
-    GdkRectangle redraw_rect;
-    gint y;
-    gint height;
-
-    /* get visible area */
-    gtk_text_view_get_visible_rect (text_view, &visible_rect);
-
-    /* get updated rectangle */
-    gtk_text_view_get_line_yrange (text_view, start, &y, &height);
-    updated_rect.y = y;
-    gtk_text_view_get_line_yrange (text_view, end, &y, &height);
-    updated_rect.height = y + height - updated_rect.y;
-    updated_rect.x = visible_rect.x;
-    updated_rect.width = visible_rect.width;
-
-    /* intersect both rectangles to see whether we need to queue a redraw */
-    if (gdk_rectangle_intersect (&updated_rect, &visible_rect, &redraw_rect))
-    {
-    	GdkRectangle widget_rect;
-
-    	gtk_text_view_buffer_to_window_coords (text_view,
-    					       GTK_TEXT_WINDOW_WIDGET,
-    					       redraw_rect.x,
-    					       redraw_rect.y,
-    					       &widget_rect.x,
-    					       &widget_rect.y);
-
-    	widget_rect.width = redraw_rect.width;
-    	widget_rect.height = redraw_rect.height;
-
-    	gtk_widget_queue_draw_area (GTK_WIDGET (text_view),
-    				    widget_rect.x,
-    				    widget_rect.y,
-    				    widget_rect.width,
-    				    widget_rect.height);
-    }
-}
+// static void
+// highlight_updated (GtkTextView       *text_view,
+// 		   const GtkTextIter *start,
+//                    const GtkTextIter *end)
+// {
+//     GdkRectangle visible_rect;
+//     GdkRectangle updated_rect;
+//     GdkRectangle redraw_rect;
+//     gint y;
+//     gint height;
+//
+//     /* get visible area */
+//     gtk_text_view_get_visible_rect (text_view, &visible_rect);
+//
+//     /* get updated rectangle */
+//     gtk_text_view_get_line_yrange (text_view, start, &y, &height);
+//     updated_rect.y = y;
+//     gtk_text_view_get_line_yrange (text_view, end, &y, &height);
+//     updated_rect.height = y + height - updated_rect.y;
+//     updated_rect.x = visible_rect.x;
+//     updated_rect.width = visible_rect.width;
+//
+//     /* intersect both rectangles to see whether we need to queue a redraw */
+//     if (gdk_rectangle_intersect (&updated_rect, &visible_rect, &redraw_rect))
+//     {
+//     	GdkRectangle widget_rect;
+//
+//     	gtk_text_view_buffer_to_window_coords (text_view,
+//     					       GTK_TEXT_WINDOW_WIDGET,
+//     					       redraw_rect.x,
+//     					       redraw_rect.y,
+//     					       &widget_rect.x,
+//     					       &widget_rect.y);
+//
+//     	widget_rect.width = redraw_rect.width;
+//     	widget_rect.height = redraw_rect.height;
+//
+//     	gtk_widget_queue_draw_area (GTK_WIDGET (text_view),
+//     				    widget_rect.x,
+//     				    widget_rect.y,
+//     				    widget_rect.width,
+//     				    widget_rect.height);
+//     }
+// }
 
 
 // static void
@@ -2402,78 +2402,80 @@ highlight_updated (GtkTextView       *text_view,
 // }
 
 
-// static gboolean
-// invalidate_rectangle (MooTextView *view)
-// {
-//     GdkWindow *window;
-//     GdkRectangle *rect = view->priv->update_rectangle;
-//
-//     view->priv->update_rectangle = NULL;
-//     view->priv->update_idle = 0;
-//
-//     gtk_text_view_buffer_to_window_coords (GTK_TEXT_VIEW (view),
-//                                            GTK_TEXT_WINDOW_TEXT,
-//                                            rect->x, rect->y,
-//                                            &rect->x, &rect->y);
-//     window = gtk_text_view_get_window (GTK_TEXT_VIEW (view), GTK_TEXT_WINDOW_TEXT);
-//     gdk_window_invalidate_rect (window, rect, FALSE);
-//
-//     g_free (rect);
-//     return FALSE;
-// }
+static gboolean
+invalidate_rectangle (MooTextView *view)
+{
+    GdkWindow *window;
+    GdkRectangle *rect = view->priv->update_rectangle;
+
+    view->priv->update_rectangle = NULL;
+    view->priv->update_idle = 0;
+
+    gtk_text_view_buffer_to_window_coords (GTK_TEXT_VIEW (view),
+                                           GTK_TEXT_WINDOW_TEXT,
+                                           rect->x, rect->y,
+                                           &rect->x, &rect->y);
+    window = gtk_text_view_get_window (GTK_TEXT_VIEW (view), GTK_TEXT_WINDOW_TEXT);
+    gdk_window_invalidate_rect (window, rect, FALSE);
+
+    g_free (rect);
+    return FALSE;
+}
 
 
-// static void
-// tags_changed (GtkTextView        *text_view,
-//               const GtkTextIter  *start,
-//               const GtkTextIter  *end)
-// {
-//     GdkRectangle visible, changed, update;
-//     int y, height;
-//     MooTextView *view = MOO_TEXT_VIEW (text_view);
-//
-//     if (!GTK_WIDGET_DRAWABLE (text_view))
-//         return;
-//
-//     gtk_text_view_get_visible_rect (text_view, &visible);
-//
-//     gtk_text_view_get_line_yrange (text_view, start, &changed.y, &height);
-//     gtk_text_view_get_line_yrange (text_view, end, &y, &height);
-//     changed.height = y - changed.y + height;
-//     changed.x = visible.x;
-//     changed.width = visible.width;
-//
-//     if (!gdk_rectangle_intersect (&changed, &visible, &update))
-//         return;
-//
-//     if (view->priv->update_rectangle)
-//     {
-//         gdk_rectangle_union (view->priv->update_rectangle, &update,
-//                              view->priv->update_rectangle);
-//     }
-//     else
-//     {
-//         view->priv->update_rectangle = g_new (GdkRectangle, 1);
-//         *view->priv->update_rectangle = update;
-//     }
-//
-//     if (view->priv->in_expose)
-//     {
-//         if (!view->priv->update_idle)
-//             view->priv->update_idle =
-//                     g_idle_add_full (G_PRIORITY_HIGH_IDLE,
-//                                      (GSourceFunc) invalidate_rectangle,
-//                                      view, NULL);
-//     }
-//     else
-//     {
-//         if (view->priv->update_idle)
-//             g_source_remove (view->priv->update_idle);
-//         view->priv->update_idle = 0;
-//
-//         invalidate_rectangle (view);
-//     }
-// }
+static void
+highlight_updated (GtkTextView       *text_view,
+		   const GtkTextIter *start,
+                   const GtkTextIter *end)
+{
+    GdkRectangle visible, changed, update;
+    int y, height;
+    MooTextView *view = MOO_TEXT_VIEW (text_view);
+
+    if (!GTK_WIDGET_DRAWABLE (text_view))
+        return;
+
+    gtk_text_view_get_visible_rect (text_view, &visible);
+
+    gtk_text_view_get_line_yrange (text_view, start, &changed.y, &height);
+    gtk_text_view_get_line_yrange (text_view, end, &y, &height);
+    changed.height = y - changed.y + height;
+    changed.x = visible.x;
+    changed.width = visible.width;
+
+    if (!gdk_rectangle_intersect (&changed, &visible, &update))
+        return;
+
+    if (view->priv->update_rectangle)
+    {
+        gdk_rectangle_union (view->priv->update_rectangle, &update,
+                             view->priv->update_rectangle);
+    }
+    else
+    {
+        view->priv->update_rectangle = g_new (GdkRectangle, 1);
+        *view->priv->update_rectangle = update;
+    }
+
+    if (view->priv->in_expose)
+    {
+        g_print ("oops, in expose\n");
+
+        if (!view->priv->update_idle)
+            view->priv->update_idle =
+                    g_idle_add_full (G_PRIORITY_HIGH_IDLE,
+                                     (GSourceFunc) invalidate_rectangle,
+                                     view, NULL);
+    }
+    else
+    {
+        if (view->priv->update_idle)
+            g_source_remove (view->priv->update_idle);
+        view->priv->update_idle = 0;
+
+        invalidate_rectangle (view);
+    }
+}
 
 
 static void

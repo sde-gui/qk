@@ -51,6 +51,12 @@ struct _GtkSourceContextEngineClass
 	GtkSourceEngineClass parent_class;
 };
 
+typedef enum {
+	GTK_SOURCE_CONTEXT_EXTEND_PARENT	= 1 << 0,
+	GTK_SOURCE_CONTEXT_END_AT_LINE_END	= 1 << 1,
+	GTK_SOURCE_CONTEXT_FIRST_LINE_ONLY	= 1 << 2,
+} GtkSourceContextMatchOptions;
+
 GType		 _gtk_source_context_engine_get_type	(void) G_GNUC_CONST;
 
 GtkSourceContextEngine *_gtk_source_context_engine_new  (GtkSourceLanguage	*lang);
@@ -63,8 +69,7 @@ gboolean	 _gtk_source_context_engine_define_context
 							 const gchar		 *start_regex,
 							 const gchar		 *end_regex,
 							 const gchar		 *style,
-							 gboolean		  extend_parent,
-							 gboolean		  end_at_line_end,
+							 GtkSourceContextMatchOptions options,
 							 GError			**error);
 
 gboolean	 _gtk_source_context_engine_add_sub_pattern

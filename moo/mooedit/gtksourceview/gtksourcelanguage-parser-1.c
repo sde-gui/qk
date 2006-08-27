@@ -53,8 +53,8 @@ engine_add_simple_pattern (GtkSourceContextEngine *ce,
 							    root_id,
 							    pattern, NULL, NULL,
 							    style,
-							    TRUE,
-							    TRUE,
+							    GTK_SOURCE_CONTEXT_EXTEND_PARENT |
+								GTK_SOURCE_CONTEXT_END_AT_LINE_END,
 							    &error);
 
 	if (error)
@@ -81,6 +81,7 @@ engine_add_syntax_pattern (GtkSourceContextEngine *ce,
 	gchar *real_id, *root_id;
 	gchar *freeme = NULL;
 	GError *error = NULL;
+	GtkSourceContextMatchOptions options = GTK_SOURCE_CONTEXT_EXTEND_PARENT;
 
 	g_return_val_if_fail (id != NULL, FALSE);
 
@@ -95,13 +96,15 @@ engine_add_syntax_pattern (GtkSourceContextEngine *ce,
 		end_at_line_end = TRUE;
 	}
 
+	if (end_at_line_end)
+		options |= GTK_SOURCE_CONTEXT_END_AT_LINE_END;
+
 	result = _gtk_source_context_engine_define_context (ce, real_id, root_id,
 							    NULL,
 							    pattern_start,
 							    pattern_end,
 							    style,
-							    TRUE,
-							    end_at_line_end,
+							    options,
 							    &error);
 
 	if (error)
@@ -700,7 +703,8 @@ define_root_context (GtkSourceContextEngine *ce,
 	id = g_strdup_printf ("%s:%s", language->priv->id, language->priv->id);
 	result = _gtk_source_context_engine_define_context (ce, id,
 							    NULL, NULL, NULL, NULL,
-							    NULL, TRUE, FALSE,
+							    NULL,
+							    GTK_SOURCE_CONTEXT_EXTEND_PARENT,
 							    &error);
 
 	if (error)

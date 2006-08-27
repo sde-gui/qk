@@ -263,16 +263,17 @@ lang_id_is_already_loaded (ParserState *parser_state, gchar *lang_id)
 
 static gboolean
 create_definition (ParserState *parser_state,
-		gchar *id,
-		gchar *parent_id,
-		gchar *style,
-		GError **error)
+		   gchar       *id,
+		   gchar       *parent_id,
+		   gchar       *style,
+		   GError     **error)
 {
 	gchar *match = NULL, *start = NULL, *end = NULL;
 	gchar *prefix = NULL, *suffix = NULL;
 	xmlChar *tmp;
 	gboolean extend_parent = TRUE;
 	gboolean end_at_line_end = FALSE;
+	GtkSourceContextMatchOptions options = 0;
 
 	xmlNode *context_node, *child;
 
@@ -486,6 +487,11 @@ create_definition (ParserState *parser_state,
 		g_free (tmp);
 	}
 
+	if (extend_parent)
+		options |= GTK_SOURCE_CONTEXT_EXTEND_PARENT;
+	if (end_at_line_end)
+		options |= GTK_SOURCE_CONTEXT_END_AT_LINE_END;
+
 	if (tmp_error == NULL)
 		_gtk_source_context_engine_define_context (parser_state->engine,
 							   id,
@@ -494,8 +500,7 @@ create_definition (ParserState *parser_state,
 							   start,
 							   end,
 							   style,
-							   extend_parent,
-							   end_at_line_end,
+							   options,
 							   &tmp_error);
 
 	g_free (match);
