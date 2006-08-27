@@ -13,5 +13,5 @@ for file in $files; do
         echo "*** Error: " $file.lang
 	exit 1
     fi
-    mv $file.new.lang $file.lang
+#    mv $file.new.lang $file.lang
 done
