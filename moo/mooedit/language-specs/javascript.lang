@@ -75,10 +75,10 @@
                 </context>
 
                 <!-- Numbers -->
+                <context ref="def:float"/>
                 <context ref="def:decimal"/>
                 <context ref="def:octal"/>
                 <context ref="def:hexadecimal"/>
-                <context ref="def:float"/>
 
                 <!-- Keywords -->
                 <context id="keywords" style-ref="keyword">

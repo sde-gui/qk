@@ -101,10 +101,10 @@
                 </context>
 
                 <!-- Numbers -->
+                <context ref="def:float"/>
                 <context ref="def:decimal"/>
                 <context ref="def:octal"/>
                 <context ref="def:hexadecimal"/>
-                <context ref="def:float"/>
 
                 <!-- Keywords -->
                 <context id="keywords" style-ref="keyword">
@@ -115,12 +115,14 @@
                     <keyword>default</keyword>
                     <keyword>do</keyword>
                     <keyword>else</keyword>
+                    <keyword>enum</keyword>
                     <keyword>for</keyword>
                     <keyword>fortran</keyword>
                     <keyword>goto</keyword>
                     <keyword>if</keyword>
                     <keyword>return</keyword>
                     <keyword>sizeof</keyword>
+                    <keyword>struct</keyword>
                     <keyword>switch</keyword>
                     <keyword>typedef</keyword>
                     <keyword>while</keyword>
@@ -134,7 +136,6 @@
                     <keyword>char</keyword>
                     <keyword>const</keyword>
                     <keyword>double</keyword>
-                    <keyword>enum</keyword>
                     <keyword>extern</keyword>
                     <keyword>float</keyword>
                     <keyword>int</keyword>
@@ -146,7 +147,6 @@
                     <keyword>signed</keyword>
                     <keyword>size_t</keyword>
                     <keyword>static</keyword>
-                    <keyword>struct</keyword>
                     <keyword>union</keyword>
                     <keyword>unsigned</keyword>
                     <keyword>void</keyword>
