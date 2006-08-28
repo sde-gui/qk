@@ -1415,7 +1415,7 @@ moo_paned_size_allocate (GtkWidget     *widget,
                                     rect.x, rect.y,
                                     rect.width, rect.height);
 
-            if (paned->priv->raise_pane)
+//             if (paned->priv->raise_pane)
             {
                 gdk_window_raise (paned->priv->pane_window);
                 paned->priv->raise_pane = FALSE;
