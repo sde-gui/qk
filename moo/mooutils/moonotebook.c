@@ -1748,8 +1748,9 @@ moo_notebook_switch_page (MooNotebook *nb,
     page = get_nth_page (nb, page_num);
     g_return_if_fail (page != NULL);
 
-    if (GTK_WIDGET_REALIZED (nb))
+    if (GTK_WIDGET_MAPPED (nb))
         gtk_widget_map (page->child);
+
     gtk_widget_show (page->label->widget);
 
     nb->priv->current_page = page;
