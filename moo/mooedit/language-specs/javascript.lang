@@ -61,7 +61,7 @@
                         <context id="string-continue" style-ref="escape">
                             <match>\\\n</match>
                         </context>
-                        <context ref="def:c-style-escape"/>
+                        <context ref="def:escape"/>
                     </include>
                 </context>
 
@@ -70,7 +70,7 @@
                     <end>'</end>
                     <include>
                         <context ref="string-continue"/>
-                        <context ref="def:c-style-escape"/>
+                        <context ref="def:escape"/>
                     </include>
                 </context>
 

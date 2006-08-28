@@ -71,6 +71,8 @@ void			 gtk_source_style_scheme_set_style	(GtkSourceStyleScheme *scheme,
 void			 _gtk_source_style_scheme_apply		(GtkSourceStyleScheme *scheme,
 								 GtkWidget            *widget);
 GtkSourceStyleScheme	*_gtk_source_style_scheme_new_from_file (const gchar          *filename);
+/* temporary hackaround, implemented in gtksourcelanguagesmanager.c, returns new instance */
+GtkSourceStyleScheme	*_gtk_source_style_scheme_get_default	(void);
 
 G_END_DECLS
 

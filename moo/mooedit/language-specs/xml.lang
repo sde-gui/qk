@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <language id="xml" _name="XML" version="2.0" _section="Markup"
           mimetypes="application/xml;text/xml;image/svg+xml,text/rdf"
-          globs="*.xml;*.rdf;*.svg;*.rng;*.lang">
+          globs="*.xml;*.rdf;*.svg;*.rng;*.lang;*.xslt">
     <styles>
         <style id="comment"                 _name="Comment"                 map-to="def:comment"/>
         <style id="doctype"                 _name="DOCTYPE"                 map-to="def:preprocessor"/>

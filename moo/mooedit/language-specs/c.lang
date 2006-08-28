@@ -76,27 +76,20 @@
                             \b
                     </start>
                     <include>
-                        <context ref="def:line-continue"/>
+                        <context ref="def:line-continue" ignore-style="true"/>
                         <context ref="comment"/>
                         <context ref="comment-multiline"/>
                     </include>
                 </context>
 
                 <!-- Strings -->
-                <context id="string" end-at-line-end="true" style-ref="string">
-                    <start>"</start>
-                    <end>"</end>
-                    <include>
-                        <context ref="def:line-continue"/>
-                        <context ref="def:c-style-escape"/>
-                    </include>
-                </context>
+                <context ref="def:string"/>
 
                 <context id="char" end-at-line-end="true" style-ref="char">
                     <start>'</start>
                     <end>'</end>
                     <include>
-                        <context ref="def:c-style-escape"/>
+                        <context ref="def:escape"/>
                     </include>
                 </context>
 

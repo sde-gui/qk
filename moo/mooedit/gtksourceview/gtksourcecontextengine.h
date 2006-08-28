@@ -57,6 +57,11 @@ typedef enum {
 	GTK_SOURCE_CONTEXT_FIRST_LINE_ONLY	= 1 << 2,
 } GtkSourceContextMatchOptions;
 
+typedef enum {
+	GTK_SOURCE_CONTEXT_IGNORE_STYLE		= 1 << 0,
+	GTK_SOURCE_CONTEXT_OVERRIDE_STYLE	= 1 << 1,
+} GtkSourceContextRefOptions;
+
 GType		 _gtk_source_context_engine_get_type	(void) G_GNUC_CONST;
 
 GtkSourceContextEngine *_gtk_source_context_engine_new  (GtkSourceLanguage	*lang);
@@ -84,6 +89,8 @@ gboolean	 _gtk_source_context_engine_add_sub_pattern
 gboolean	 _gtk_source_context_engine_add_ref 	(GtkSourceContextEngine	 *ce,
 							 const gchar		 *parent_id,
 							 const gchar		 *ref_id,
+							 GtkSourceContextRefOptions options,
+							 const gchar		 *style,
 							 gboolean		  all,
 							 GError			**error);
 

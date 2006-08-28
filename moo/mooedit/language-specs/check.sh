@@ -3,8 +3,8 @@
 # "./check.sh" without arguments will validate lang and styles files
 # specified here.
 
-langs="c.lang cpp.lang def.lang html.lang \
-       javascript.lang latex.lang xml.lang \
+langs="automake.lang c.lang cpp.lang def.lang html.lang \
+       javascript.lang latex.lang makefile.lang xml.lang \
        yacc.lang"
 
 styles="gvim.styles kde.styles"

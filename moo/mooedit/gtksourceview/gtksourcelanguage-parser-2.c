@@ -45,6 +45,7 @@
 #include <eggregex.h>
 
 #define PARSER_ERROR parser_error_quark ()
+#define ATTR_NO_STYLE ""
 
 typedef enum {
 	PARSER_ERROR_CANNOT_OPEN     = 0,
@@ -52,6 +53,7 @@ typedef enum {
 	PARSER_ERROR_INVALID_DOC,
 	PARSER_ERROR_WRONG_VERSION,
 	PARSER_ERROR_WRONG_ID,
+	PARSER_ERROR_WRONG_STYLE,
 	PARSER_ERROR_MALFORMED_REGEX,
 	PARSER_ERROR_MALFORMED_MAP_TO
 } ParserError;
@@ -97,10 +99,10 @@ typedef struct _ParserState ParserState;
 static GQuark     parser_error_quark           (void);
 static gboolean   str_to_bool                  (gchar *string);
 static gchar     *generate_new_id              (ParserState *parser_state);
-static gboolean   id_is_decorated              (gchar *id,
+static gboolean   id_is_decorated              (const gchar *id,
                                                 gchar **lang_id);
 static gchar     *decorate_id                  (ParserState *parser_state,
-                                                gchar *id);
+                                                const gchar *id);
 
 static ParserState *parser_state_new           (GtkSourceLanguage      *language,
                                                 GtkSourceContextEngine *engine,
@@ -187,7 +189,8 @@ generate_new_id (ParserState *parser_state)
 }
 
 static gboolean
-id_is_decorated (gchar *id, gchar **lang_id)
+id_is_decorated (const gchar *id,
+		 gchar      **lang_id)
 {
 	/* This function is quite simple because the XML validator check for
 	 * the correctness of the id with a regex */
@@ -226,7 +229,7 @@ id_is_decorated (gchar *id, gchar **lang_id)
 
 static gchar *
 decorate_id (ParserState *parser_state,
-		gchar *id)
+	     const gchar *id)
 {
 	gchar *decorated_id;
 
@@ -519,7 +522,11 @@ create_definition (ParserState *parser_state,
 }
 
 static gboolean
-add_ref (ParserState *parser_state, gchar *ref, GError **error)
+add_ref (ParserState               *parser_state,
+	 const gchar               *ref,
+	 GtkSourceContextRefOptions options,
+	 const gchar               *style,
+	 GError	                  **error)
 {
 	gchar *container_id;
 	gboolean all = FALSE;
@@ -561,6 +568,7 @@ add_ref (ParserState *parser_state, gchar *ref, GError **error)
 			}
 		}
 		ref_id = g_strdup (ref);
+		g_free (lang_id);
 	}
 	else
 	{
@@ -575,6 +583,18 @@ add_ref (ParserState *parser_state, gchar *ref, GError **error)
 			ref_id [strlen (ref_id) - 2] = '\0';
 		}
 
+		if (all && (options & (GTK_SOURCE_CONTEXT_IGNORE_STYLE | GTK_SOURCE_CONTEXT_OVERRIDE_STYLE)))
+		{
+			g_set_error (&tmp_error, PARSER_ERROR,
+				     PARSER_ERROR_WRONG_STYLE,
+				     "style override used with wildcard context reference"
+				     " in language '%s' in ref '%s'",
+				     lang_id, ref);
+		}
+	}
+
+	if (tmp_error == NULL && parser_state->engine != NULL)
+	{
 		container_id = g_queue_peek_head (parser_state->curr_parents);
 
 		/* If the document is validated container_id is never NULL */
@@ -583,6 +603,8 @@ add_ref (ParserState *parser_state, gchar *ref, GError **error)
 		_gtk_source_context_engine_add_ref (parser_state->engine,
 						    container_id,
 						    ref_id,
+						    options,
+						    style,
 						    all,
 						    &tmp_error);
 
@@ -648,6 +670,8 @@ handle_context_element (ParserState *parser_state,
 	xmlChar *ref, *sub_pattern, *tmp;
 	int is_empty;
 	gboolean success;
+	gboolean ignore_style = FALSE;
+	GtkSourceContextRefOptions options = 0;
 
 	GError *tmp_error = NULL;
 
@@ -658,35 +682,67 @@ handle_context_element (ParserState *parser_state,
 	sub_pattern = xmlTextReaderGetAttribute (parser_state->reader,
 			BAD_CAST "sub-pattern");
 
-	tmp = xmlTextReaderGetAttribute (parser_state->reader,
-			BAD_CAST "style-ref");
-
-	if (tmp == NULL || id_is_decorated ((gchar *)tmp, NULL))
-		style_ref = g_strdup ((gchar *)tmp);
-	else
-		style_ref = decorate_id (parser_state, (gchar *)tmp);
+	tmp = xmlTextReaderGetAttribute (parser_state->reader, BAD_CAST "ignore-style");
+	if (tmp != NULL && str_to_bool ((gchar*) tmp))
+		ignore_style = TRUE;
 	xmlFree (tmp);
 
-	if (style_ref && !g_hash_table_lookup (parser_state->styles_mapping, style_ref))
+	tmp = xmlTextReaderGetAttribute (parser_state->reader, BAD_CAST "style-ref");
+	if (tmp == NULL || id_is_decorated ((gchar*) tmp, NULL))
+		style_ref = g_strdup ((gchar*) tmp);
+	else
+		style_ref = decorate_id (parser_state, (gchar*) tmp);
+	xmlFree (tmp);
+
+	if (ignore_style && !ref)
+	{
+		g_set_error (error, PARSER_ERROR,
+			     PARSER_ERROR_WRONG_STYLE,
+			     "ignore-style used not in a reference to context");
+
+		xmlFree (ref);
+		g_free (style_ref);
+
+		return;
+	}
+
+	if (ignore_style)
+	{
+		options |= GTK_SOURCE_CONTEXT_IGNORE_STYLE;
+
+		if (style_ref != NULL)
+			g_warning ("style-ref and ignore-style used simultaneously");
+	}
+
+	if (!ignore_style && style_ref && !g_hash_table_lookup (parser_state->styles_mapping, style_ref))
 	{
 		g_warning ("style '%s' not defined", style_ref);
 	}
 
 	if (ref != NULL)
 	{
-		add_ref (parser_state, (gchar *)ref, &tmp_error);
+		if (style_ref)
+			options |= GTK_SOURCE_CONTEXT_OVERRIDE_STYLE;
+
+		add_ref (parser_state, (gchar*) ref, options, style_ref, &tmp_error);
 	}
 	else
 	{
+		char *freeme = NULL;
+
 		tmp = xmlTextReaderGetAttribute (parser_state->reader, BAD_CAST "id");
 		if (tmp == NULL)
-			tmp = xmlStrdup (BAD_CAST generate_new_id (parser_state));
+		{
+			freeme = generate_new_id (parser_state);
+			tmp = xmlStrdup (BAD_CAST freeme);
+		}
 
-		if (id_is_decorated ((gchar *)tmp, NULL))
-			id = g_strdup ((gchar *)tmp);
+		if (id_is_decorated ((gchar*) tmp, NULL))
+			id = g_strdup ((gchar*) tmp);
 		else
-			id = decorate_id (parser_state, (gchar *)tmp);
+			id = decorate_id (parser_state, (gchar*) tmp);
 
+		g_free (freeme);
 		xmlFree (tmp);
 
 		if (parser_state->engine != NULL)

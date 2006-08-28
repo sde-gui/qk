@@ -12,6 +12,7 @@ langs2 =			\
 
 langs1 =			\
 	ada.lang		\
+	automake.lang		\
 	changelog.lang		\
 	check.sh		\
 	csharp.lang		\

@@ -670,3 +670,20 @@ gtk_source_languages_manager_get_available_style_schemes (GtkSourceLanguagesMana
 	lm->priv->style_schemes = g_slist_reverse (lm->priv->style_schemes);
 	return lm->priv->style_schemes;
 }
+
+GtkSourceStyleScheme *
+_gtk_source_style_scheme_get_default (void)
+{
+	GtkSourceStyleScheme *scheme = NULL;
+	GtkSourceLanguagesManager *lm;
+	const GSList *list;
+
+	lm = gtk_source_languages_manager_new ();
+	list = gtk_source_languages_manager_get_available_style_schemes (lm);
+
+	if (list)
+		scheme = g_object_ref (list->data);
+
+	g_object_unref (lm);
+	return scheme;
+}

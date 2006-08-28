@@ -255,7 +255,9 @@
             </attribute>
         </optional>
         <optional>
-            <attribute name="style-ref"/>
+            <attribute name="style-ref">
+                <ref name="id-type"/>
+            </attribute>
         </optional>
         <optional>
             <attribute name="extend-parent">
@@ -337,7 +339,9 @@
             </attribute>
         </optional>
         <optional>
-            <attribute name="style-ref"/>
+            <attribute name="style-ref">
+                <ref name="id-type"/>
+            </attribute>
         </optional>
 
         <attribute name="sub-pattern"/>
@@ -352,7 +356,9 @@
             </attribute>
         </optional>
         <optional>
-            <attribute name="style-ref"/>
+            <attribute name="style-ref">
+                <ref name="id-type"/>
+            </attribute>
         </optional>
 
         <attribute name="sub-pattern"/>
@@ -371,6 +377,16 @@
         <attribute name="ref">
             <ref name="ref-type"/>
         </attribute>
+        <optional>
+            <choice>
+                <attribute name="style-ref">
+                    <ref name="id-type"/>
+                </attribute>
+                <attribute name="ignore-style">
+                    <ref name="boolean-value"/>
+                </attribute>
+            </choice>
+        </optional>
     </element>
 </define>
 

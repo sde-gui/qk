@@ -102,7 +102,7 @@
             </include>
         </context>
 
-        <context id="line-continue">
+        <context id="line-continue" style-ref="escape">
             <start>\\$</start>
             <end>^</end>
         </context>
@@ -112,8 +112,28 @@
             <end>$</end>
         </context>
 
-        <context id="c-style-escape" style-ref="escape">
+        <context id="escape" style-ref="escape">
             <match>\\.</match>
+        </context>
+
+        <!-- usual quoted string, ends at line end, \ is an escape char -->
+        <context id="string" style-ref="string" end-at-line-end="true">
+            <start>"</start>
+            <end>"</end>
+            <include>
+                <context ref="escape"/>
+                <context ref="line-continue"/>
+            </include>
+        </context>
+
+        <!-- same thing but with single quote marks -->
+        <context id="single-quoted-string" style-ref="string" end-at-line-end="true">
+            <start>'</start>
+            <end>'</end>
+            <include>
+                <context ref="escape"/>
+                <context ref="line-continue"/>
+            </include>
         </context>
 
     </definitions>
