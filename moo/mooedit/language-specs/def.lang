@@ -107,6 +107,23 @@
             <end>^</end>
         </context>
 
+        <!-- this is intended to be used from line comments starting not with #,
+             see shell-like-comment below -->
+        <context id="line-comment">
+          <include>
+            <context ref="line-continue" ignore-style="true"/>
+            <context ref="comment:*"/>
+          </include>
+        </context>
+
+        <!-- A line comment starting with #, with \ as escape-new-line char -->
+        <context id="shell-like-comment" style-ref="comment" end-at-line-end="true">
+          <start>#</start>
+          <include>
+            <context ref="line-comment"/>
+          </include>
+        </context>
+
         <context id="shebang" style-ref="shebang" first-line-only="true">
             <start>^#!</start>
             <end>$</end>

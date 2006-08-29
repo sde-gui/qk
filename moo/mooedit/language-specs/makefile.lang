@@ -2,12 +2,13 @@
 <language id="makefile" _name="Makefile" version="2.0" _section="Sources"
           mimetypes="text/x-makefile" globs="Makefile*">
   <styles>
-    <style id="comment"   name="Comment" map-to="def:comment"/>
-    <style id="function"  name="Function" map-to="def:function"/>
-    <style id="string"    name="String" map-to="def:string"/>
-    <style id="keyword"   name="Keyword" map-to="def:keyword"/>
-    <style id="variable"  name="Variable" map-to="def:data-type"/>
-    <style id="target"    name="Target" map-to="def:function"/>
+    <style id="comment"       name="Comment" map-to="def:comment"/>
+    <style id="function"      name="Function" map-to="def:function"/>
+    <style id="string"        name="String" map-to="def:string"/>
+    <style id="keyword"       name="Keyword" map-to="def:keyword"/>
+    <style id="variable"      name="Variable" map-to="def:data-type"/>
+    <style id="target"        name="Target" map-to="def:function"/>
+    <style id="trailing-tab"  name="Trailing Tab"/>
   </styles>
 
   <definitions>
@@ -23,15 +24,7 @@
     <context id="makefile">
       <include>
         <context ref="def:shebang"/>
-
-        <context id="line-comment" style-ref="comment" end-at-line-end="true">
-          <start>#</start>
-          <include>
-            <context ref="def:line-continue"/>
-            <context ref="def:comment:*"/>
-          </include>
-        </context>
-
+        <context ref="def:shell-like-comment"/>
         <context ref="def:string"/>
         <context ref="def:single-quoted-string"/>
 
@@ -54,10 +47,14 @@
         </context>
 
         <context id="targets">
-          <match>^\s*([^\s]+)\s*\:</match>
+          <match>^([^\t\:][^\:]*)\:</match>
           <include>
             <context sub-pattern="1" style-ref="target"/>
           </include>
+        </context>
+
+        <context id="trailing-tab" style-ref="trailing-tab">
+          <match>^\t+$</match>
         </context>
 
         <context id="directives" style-ref="keyword">
@@ -65,10 +62,12 @@
           <keyword>else</keyword>
           <keyword>endef</keyword>
           <keyword>endif</keyword>
+          <keyword>if</keyword>
           <keyword>ifdef</keyword>
           <keyword>ifeq</keyword>
           <keyword>ifndef</keyword>
           <keyword>ifneq</keyword>
+          <keyword>include</keyword>
           <keyword>override</keyword>
           <keyword>unexport</keyword>
         </context>

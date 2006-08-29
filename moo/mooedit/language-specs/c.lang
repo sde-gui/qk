@@ -20,12 +20,10 @@
             <include>
 
                 <!-- Comments -->
-                <context id="comment" style-ref="comment">
+                <context id="comment" style-ref="comment" end-at-line-end="true">
                     <start>\/\/</start>
-                    <end>$</end>
                     <include>
-                        <context ref="def:line-continue"/>
-                        <context ref="def:comment:*"/>
+                      <context ref="def:line-comment"/>
                     </include>
                 </context>
 

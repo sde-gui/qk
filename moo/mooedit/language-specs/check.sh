@@ -3,7 +3,7 @@
 # "./check.sh" without arguments will validate lang and styles files
 # specified here.
 
-langs="automake.lang c.lang cpp.lang changelog.lang def.lang \
+langs="c.lang cpp.lang changelog.lang def.lang \
        html.lang javascript.lang latex.lang makefile.lang \
        xml.lang yacc.lang"
 
