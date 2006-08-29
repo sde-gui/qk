@@ -2,13 +2,14 @@
 <language id="makefile" _name="Makefile" version="2.0" _section="Sources"
           mimetypes="text/x-makefile" globs="Makefile*">
   <styles>
-    <style id="comment"       name="Comment" map-to="def:comment"/>
-    <style id="function"      name="Function" map-to="def:function"/>
-    <style id="string"        name="String" map-to="def:string"/>
-    <style id="keyword"       name="Keyword" map-to="def:keyword"/>
-    <style id="variable"      name="Variable" map-to="def:data-type"/>
-    <style id="target"        name="Target" map-to="def:function"/>
-    <style id="trailing-tab"  name="Trailing Tab"/>
+    <style id="variable"        name="Variable" map-to="def:data-type"/>
+    <style id="assignment-rhs"  name="assignment-rhs"/>
+    <style id="assignment-lhs"  name="assignment-lhs"/>
+    <style id="targets"         name="targets" map-to="def:function"/>
+    <style id="prereq"          name="prereq"/>
+    <style id="command"         name="command"/>
+    <style id="trailing-tab"    name="Trailing Tab"/>
+    <style id="function"        name="function" map-to="def:function"/>
   </styles>
 
   <definitions>
@@ -21,7 +22,77 @@
       </include>
     </context>
 
+    <context id="backtick-string" style-ref="function" end-at-line-end="true">
+      <start>`</start>
+      <end>`</end>
+      <include>
+        <context ref="def:escape"/>
+        <context ref="def:line-continue"/>
+      </include>
+    </context>
+
+    <context id="assignment-rhs" style-ref="assignment-rhs" end-at-line-end="true">
+      <start></start>
+      <include>
+        <context ref="def:line-continue"/>
+        <context ref="def:shell-like-comment"/>
+        <context ref="variable"/>
+        <context ref="def:string"/>
+        <context ref="def:single-quoted-string"/>
+        <context ref="backtick-string"/>
+      </include>
+    </context>
+
+    <context id="command" style-ref="command" extend-parent="false" end-at-line-end="true">
+      <start></start>
+      <include>
+        <context ref="def:line-continue"/>
+        <context ref="def:shell-like-comment"/>
+        <context ref="variable"/>
+        <context ref="def:string"/>
+        <context ref="def:single-quoted-string"/>
+        <context ref="backtick-string"/>
+      </include>
+    </context>
+
     <context id="makefile">
+      <include>
+        <context ref="def:shebang"/>
+        <context ref="def:shell-like-comment"/>
+
+        <context id="assignment" end-at-line-end="true">
+          <start>^(\%{variable})\s*=</start>
+            <include>
+              <context sub-pattern="1" where="start" style-ref="assignment-lhs"/>
+              <context ref="assignment-rhs"/>
+            </include>
+        </context>
+
+        <context id="rule">
+          <start>^([^\t\:][^\:]*)\:</start>
+          <end>^(?!\t)</end>
+          <include>
+            <context sub-pattern="1" where="start" style-ref="targets"/>
+            <context id="prereq" end-at-line-end="true" style-ref="prereq">
+              <start>(?&lt;=:)</start>
+              <end>;</end>
+              <include>
+                <context ref="def:escape"/>
+                <context ref="def:line-continue"/>
+                <context ref="variable"/>
+              </include>
+            </context>
+            <context id="trailing-tab" style-ref="trailing-tab">
+              <match>^\t+$</match>
+            </context>
+            <context ref="command"/>
+          </include>
+        </context>
+
+      </include>
+    </context>
+
+<!--    <context id="somecontext">
       <include>
         <context ref="def:shebang"/>
         <context ref="def:shell-like-comment"/>
@@ -111,6 +182,6 @@
           <keyword>\.SUFFIXES</keyword>
         </context>
       </include>
-    </context>
+    </context>-->
   </definitions>
 </language>

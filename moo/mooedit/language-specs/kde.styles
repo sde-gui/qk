@@ -44,5 +44,9 @@
 
   <style name="changelog:release" foreground="#0095ff" bold="true"/>
 
-  <style name="makefile:trailing-tab" background="pink"/>
+  <style name="makefile:trailing-tab"    background="pink"/>
+<!--  <style name="makefile:assignment-rhs"  background="red"/>-->
+<!--  <style name="makefile:assignment-lhs"  background="blue"/>-->
+<!--  <style name="makefile:prereq"          background="yellow"/>-->
+<!--  <style name="makefile:command"         background="green"/>-->
 </style-scheme>
