@@ -2121,7 +2121,9 @@ sub_pattern_to_int (const gchar *name)
 	errno = 0;
 	number = g_ascii_strtoull (name, &end_name, 10);
 
-	g_return_val_if_fail (!errno && number < G_MAXINT && !*end_name, -1);
+	if (errno !=0 || number > G_MAXINT || *end_name != 0)
+		return -1;
+
 	return number;
 }
 
