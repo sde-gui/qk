@@ -30,7 +30,7 @@
  *  Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald
  */
 
-
+#include "config.h"
 #include "mooutils/moocompat.h"
 
 #ifdef HAVE_UNISTD_H
@@ -175,6 +175,17 @@ g_mkdir_with_parents (const gchar *pathname,
 
   return 0;
 }
+
+
+#ifdef HAVE__NSGETENVIRON
+#define environ (*_NSGetEnviron())
+#elif !defined(G_OS_WIN32)
+
+/* According to the Single Unix Specification, environ is not in 
+ * any system header, although unistd.h often declares it.
+ */
+extern char **environ;
+#endif
 
 gchar **
 g_listenv (void)
