@@ -458,19 +458,18 @@ set_tag_style (GtkSourceContextEngine *ce,
 
 	if (!style)
 	{
+		/* FIXME: potential infinite loop, parser does not seem to check for circular references */
 		const char *map_to = style_name;
 		while (!style && (map_to = g_hash_table_lookup (ce->priv->lang->priv->styles, map_to)))
 			style = gtk_source_style_scheme_get_style (ce->priv->style_scheme, map_to);
 	}
 
+	/* not having style is fine, since parser checks validity of every style reference,
+	 * so we don't need to spit a warning here */
 	if (style)
 	{
 		_gtk_source_style_apply (style, tag);
 		gtk_source_style_free (style);
-	}
-	else
-	{
-		g_warning ("could not find style '%s'", style_name);
 	}
 }
 
@@ -2073,6 +2072,8 @@ regex_new (const gchar           *pattern,
 {
 	Regex *regex;
 
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
 	if (find_single_byte_escape (pattern))
 	{
 		g_set_error (error, GTK_SOURCE_CONTEXT_ENGINE_ERROR,
@@ -2418,8 +2419,12 @@ can_apply_match (Context  *state,
 	/* end_match_pos is the position of the end of the matched regex. */
 	regex_fetch_pos (regex, line->text, 0, NULL, &end_match_pos);
 
+	g_assert (end_match_pos <= line->length);
+
 	/* Verify if an ancestor ends in the matched text. */
-	if (ANCESTOR_CAN_END_CONTEXT (state))
+	if (ANCESTOR_CAN_END_CONTEXT (state) &&
+	    /* there is no middle of zero-length match */
+	    match_start < end_match_pos)
 	{
 		pos = match_start + 1;
 
@@ -3142,14 +3147,15 @@ container_context_starts_here (GtkSourceContextEngine  *ce,
 	Segment *new_segment;
 	gint match_end;
 
+	g_assert (*line_pos <= line->length);
+
 	/* We can have a container context definition (i.e. the main
 	 * language definition) without start_end.start. */
 	if (definition->u.start_end.start == NULL)
 		return FALSE;
 
 	if (!regex_match (definition->u.start_end.start,
-			  line->text, line->length,
-			  *line_pos))
+			  line->text, line->length, *line_pos))
 	{
 		return FALSE;
 	}
@@ -3163,6 +3169,8 @@ container_context_starts_here (GtkSourceContextEngine  *ce,
 		context_unref (new_context);
 		return FALSE;
 	}
+
+	g_assert (match_end <= line->length);
 
         segment_extend (state, line->start_at + match_end);
         new_segment = create_segment (ce, state, new_context,
@@ -3194,19 +3202,26 @@ simple_context_starts_here (GtkSourceContextEngine *ce,
 
 	g_return_val_if_fail (definition->u.match != NULL, FALSE);
 
+	g_assert (*line_pos <= line->length);
+
 	if (!regex_match (definition->u.match, line->text, line->length, *line_pos))
 		return FALSE;
 
 	new_context = create_child_context (state->context, definition, line->text);
 	g_return_val_if_fail (new_context != NULL, FALSE);
 
-	if (!can_apply_match (new_context, line, *line_pos, &match_end, definition->u.match))
+	if (!can_apply_match (new_context, line, *line_pos, &match_end, definition->u.match) ||
+	    /* if length of the match is zero, then we get zero-length segment and return to
+	     * the same state, so it's an infinite loop */
+	    *line_pos == match_end)
 	{
 		context_unref (new_context);
 		return FALSE;
 	}
 
-        segment_extend (state, line->start_at + match_end);
+	g_assert (match_end <= line->length);
+
+	segment_extend (state, line->start_at + match_end);
         new_segment = create_segment (ce, state, new_context,
 				      line->start_at + *line_pos,
 				      line->start_at + match_end,
@@ -3401,6 +3416,7 @@ next_segment (GtkSourceContextEngine  *ce,
 	gint pos = *line_pos;
 
 	g_assert (!(*hint) || (*hint)->parent == state);
+	g_assert (pos <= line->length);
 
 	while (pos <= line->length)
 	{
@@ -3426,6 +3442,7 @@ next_segment (GtkSourceContextEngine  *ce,
 		if (ANCESTOR_CAN_END_CONTEXT (state->context) &&
 		    ancestor_ends_here (state, line, pos, new_state))
 		{
+			g_assert (pos <= line->length);
 			segment_extend (state, line->start_at + pos);
 			*line_pos = pos;
 			return TRUE;
@@ -3458,6 +3475,7 @@ next_segment (GtkSourceContextEngine  *ce,
 						       line, &pos, new_state,
 						       hint))
 				{
+					g_assert (pos <= line->length);
 					*line_pos = pos;
 					definition_iter_destroy (&def_iter);
 					return TRUE;
@@ -3481,6 +3499,7 @@ next_segment (GtkSourceContextEngine  *ce,
 					 SUB_PATTERN_WHERE_END))
 			{
 				g_assert (state->end_at >= line->start_at + pos);
+				g_assert (pos <= line->length);
 				/* FIXME: if child may terminate parent */
 				*new_state = state->parent;
 				*hint = state;
@@ -3530,7 +3549,9 @@ check_line_end (Segment   *state,
 			terminating_segment = current_segment;
 		current_segment = current_segment->parent;
 	}
-	while (ANCESTOR_CAN_END_CONTEXT (current_segment->context));
+	while (current_segment &&
+		(ANCESTOR_CAN_END_CONTEXT (current_segment->context) ||
+		 (terminating_segment && terminating_segment->parent == current_segment)));
 
 	if (terminating_segment)
 	{
@@ -4660,6 +4681,7 @@ context_definition_new (const gchar        *id,
 		}
 		else if (!definition->u.match->resolved)
 		{
+			regex_error = TRUE;
 			unresolved_error = TRUE;
 			regex_unref (definition->u.match);
 			definition->u.match = NULL;
@@ -4676,13 +4698,14 @@ context_definition_new (const gchar        *id,
 		}
 		else if (!definition->u.start_end.start->resolved)
 		{
+			regex_error = TRUE;
 			unresolved_error = TRUE;
 			regex_unref (definition->u.start_end.start);
 			definition->u.start_end.start = NULL;
 		}
 	}
 
-	if (end)
+	if (end && !regex_error)
 	{
 		definition->u.start_end.end = regex_new (end, EGG_REGEX_ANCHORED, error);
 
