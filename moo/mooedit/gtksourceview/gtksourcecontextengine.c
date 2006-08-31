@@ -329,7 +329,8 @@ struct _GtkSourceContextEnginePrivate
 	/* Tree of contexts. */
 	Context			*root_context;
 	Segment			*root_segment;
-	Segment			*hint;
+        Segment                 *hint;
+        Segment                 *hint2;
 	/* list of Segment* */
 	GSList			*invalid;
 	InvalidRegion		 invalid_region;
@@ -1831,17 +1832,21 @@ gtk_source_context_engine_attach_buffer (GtkSourceEngine *engine,
 		ce->priv->first_update = 0;
 		ce->priv->incremental_update = 0;
 
-		segment_destroy (ce, ce->priv->root_segment);
-		context_unref (ce->priv->root_context);
+		if (ce->priv->root_segment != NULL)
+			segment_destroy (ce, ce->priv->root_segment);
+		if (ce->priv->root_context != NULL)
+			context_unref (ce->priv->root_context);
 		g_slist_free (ce->priv->invalid);
 		ce->priv->root_segment = NULL;
 		ce->priv->root_context = NULL;
 		ce->priv->invalid = NULL;
 
-		gtk_text_buffer_delete_mark (ce->priv->buffer,
-					     ce->priv->invalid_region.start);
-		gtk_text_buffer_delete_mark (ce->priv->buffer,
-					     ce->priv->invalid_region.end);
+		if (ce->priv->invalid_region.start != NULL)
+			gtk_text_buffer_delete_mark (ce->priv->buffer,
+						     ce->priv->invalid_region.start);
+		if (ce->priv->invalid_region.end != NULL)
+			gtk_text_buffer_delete_mark (ce->priv->buffer,
+						     ce->priv->invalid_region.end);
 		ce->priv->invalid_region.start = NULL;
 		ce->priv->invalid_region.end = NULL;
 
@@ -3128,6 +3133,8 @@ segment_destroy (GtkSourceContextEngine *ce,
 	 * so we only can unset the hint */
 	if (ce->priv->hint == segment)
 		ce->priv->hint = NULL;
+        if (ce->priv->hint2 == segment)
+                ce->priv->hint2 = NULL;
 
 	if (SEGMENT_IS_INVALID (segment))
 		remove_invalid (ce, segment);
@@ -3148,8 +3155,7 @@ container_context_starts_here (GtkSourceContextEngine  *ce,
 			       ContextDefinition       *definition,
 			       LineInfo                *line,
 			       gint                    *line_pos,
-			       Segment                **new_state,
-			       Segment                **hint)
+			       Segment                **new_state)
 {
 	Context *new_context;
 	Segment *new_segment;
@@ -3184,13 +3190,13 @@ container_context_starts_here (GtkSourceContextEngine  *ce,
         new_segment = create_segment (ce, state, new_context,
 				      line->start_at + *line_pos,
 				      line->start_at + match_end,
-				      *hint);
+				      ce->priv->hint2);
 	apply_sub_patterns (new_segment, line,
 			    definition->u.start_end.start,
 			    SUB_PATTERN_WHERE_START);
 	*line_pos = match_end;
 	*new_state = new_segment;
-	*hint = NULL;
+	ce->priv->hint2 = NULL;
 	context_unref (new_context);
 	return TRUE;
 }
@@ -3201,8 +3207,7 @@ simple_context_starts_here (GtkSourceContextEngine *ce,
 			    ContextDefinition      *definition,
 			    LineInfo               *line,
 			    gint                   *line_pos,
-			    Segment               **new_state,
-			    Segment               **hint)
+			    Segment               **new_state)
 {
 	gint match_end;
 	Context *new_context;
@@ -3233,11 +3238,11 @@ simple_context_starts_here (GtkSourceContextEngine *ce,
         new_segment = create_segment (ce, state, new_context,
 				      line->start_at + *line_pos,
 				      line->start_at + match_end,
-				      *hint);
+				      ce->priv->hint2);
 	apply_sub_patterns (new_segment, line, definition->u.match, SUB_PATTERN_WHERE_DEFAULT);
 	*line_pos = match_end;
 	*new_state = state;
-	*hint = new_segment;
+	ce->priv->hint2 = new_segment;
 	context_unref (new_context);
 	return TRUE;
 }
@@ -3264,8 +3269,7 @@ child_starts_here (GtkSourceContextEngine *ce,
 		   ContextDefinition      *definition,
 		   LineInfo               *line,
 		   gint                   *line_pos,
-		   Segment               **new_state,
-		   Segment               **hint)
+		   Segment               **new_state)
 {
 	switch (definition->type)
 	{
@@ -3275,16 +3279,14 @@ child_starts_here (GtkSourceContextEngine *ce,
 							   definition,
 							   line,
 							   line_pos,
-							   new_state,
-							   hint);
+							   new_state);
 		case CONTEXT_TYPE_CONTAINER:
 			return container_context_starts_here (ce,
 							      state,
 							      definition,
 							      line,
 							      line_pos,
-							      new_state,
-							      hint);
+							      new_state);
 		default:
 			g_return_val_if_reached (FALSE);
 	}
@@ -3387,10 +3389,7 @@ ancestor_ends_here (Segment                *state,
 		Segment *current_segment = state;
 
 		while (current_segment->context != terminating_context)
-		{
-			g_assert (current_segment->end_at >= line->start_at + line_pos);
 			current_segment = current_segment->parent;
-		}
 
 		*new_state = current_segment;
 		g_assert (*new_state != NULL);
@@ -3419,12 +3418,11 @@ next_segment (GtkSourceContextEngine  *ce,
 	      Segment                 *state,
 	      LineInfo                *line,
 	      gint                    *line_pos,
-	      Segment                **new_state,
-	      Segment                **hint)
+	      Segment                **new_state)
 {
 	gint pos = *line_pos;
 
-	g_assert (!(*hint) || (*hint)->parent == state);
+	g_assert (!ce->priv->hint2 || ce->priv->hint2->parent == state);
 	g_assert (pos <= line->length);
 
 	while (pos <= line->length)
@@ -3481,8 +3479,7 @@ next_segment (GtkSourceContextEngine  *ce,
 				/* Does this child definition start a new
 				 * context at the current position? */
 				if (child_starts_here (ce, state, child_def,
-						       line, &pos, new_state,
-						       hint))
+						       line, &pos, new_state))
 				{
 					g_assert (pos <= line->length);
 					*line_pos = pos;
@@ -3508,7 +3505,7 @@ next_segment (GtkSourceContextEngine  *ce,
 				g_assert (pos <= line->length);
 				/* FIXME: if child may terminate parent */
 				*new_state = state->parent;
-				*hint = state;
+				ce->priv->hint2 = state;
 				*line_pos = pos;
 				return TRUE;
 			}
@@ -3533,13 +3530,13 @@ next_segment (GtkSourceContextEngine  *ce,
  * Return value: the new state.
  */
 static Segment *
-check_line_end (Segment   *state,
-		Segment  **hint)
+check_line_end (GtkSourceContextEngine *ce,
+                Segment                *state)
 {
 	Segment *current_segment;
 	Segment *terminating_segment;
 
-	g_assert (!(*hint) || (*hint)->parent == state);
+	g_assert (!ce->priv->hint2 || ce->priv->hint2->parent == state);
 
 	/* A context can be terminated by the parent if extend_parent is
 	 * FALSE, so we need to verify the end of all the parents of
@@ -3558,7 +3555,7 @@ check_line_end (Segment   *state,
 
 	if (terminating_segment)
 	{
-		*hint = terminating_segment;
+		ce->priv->hint2 = terminating_segment;
 		return terminating_segment->parent;
 	}
 	else
@@ -3569,8 +3566,7 @@ check_line_end (Segment   *state,
 
 static void
 delete_zero_length_segments (GtkSourceContextEngine *ce,
-			     GList                  *list,
-			     Segment               **hint)
+			     GList                  *list)
 {
 	while (list)
 	{
@@ -3603,9 +3599,9 @@ delete_zero_length_segments (GtkSourceContextEngine *ce,
 				l = next;
 			}
 
-			if (*hint)
+			if (ce->priv->hint2)
 			{
-				Segment *s2 = *hint;
+				Segment *s2 = ce->priv->hint2;
 				gboolean child = FALSE;
 
 				while (s2)
@@ -3620,7 +3616,7 @@ delete_zero_length_segments (GtkSourceContextEngine *ce,
 				}
 
 				if (child)
-					*hint = s->parent;
+					ce->priv->hint2 = s->parent;
 			}
 
 			segment_remove (ce, s);
@@ -3645,21 +3641,23 @@ delete_zero_length_segments (GtkSourceContextEngine *ce,
 static Segment *
 analyze_line (GtkSourceContextEngine *ce,
 	      Segment                *state,
-	      LineInfo               *line,
-	      Segment               **hint)
+	      LineInfo               *line)
 {
 	gint line_pos = 0;
-	GList *new_segments = NULL;
+	GList *end_segments = NULL;
 
 	g_assert (SEGMENT_IS_CONTAINER (state));
-	g_assert (!(*hint) || (*hint)->parent == state);
+
+        if (!ce->priv->hint2 || ce->priv->hint2->parent != state)
+                ce->priv->hint2 = state->last_child;
+        g_assert (!ce->priv->hint2 || ce->priv->hint2->parent == state);
 
 	/* Find the contexts in the line. */
 	while (line_pos <= line->length)
 	{
 		Segment *new_state = NULL;
 
-		if (!next_segment (ce, state, line, &line_pos, &new_state, hint))
+		if (!next_segment (ce, state, line, &line_pos, &new_state))
 			break;
 
 		g_assert (new_state != NULL);
@@ -3667,10 +3665,17 @@ analyze_line (GtkSourceContextEngine *ce,
 
 		state = new_state;
 
+                if (!ce->priv->hint2 || ce->priv->hint2->parent != state)
+                        ce->priv->hint2 = state->last_child;
+                g_assert (!ce->priv->hint2 || ce->priv->hint2->parent == state);
+
+		/* XXX this a temporary workaround for zero-length segments in the end
+		 * of line. there are no zero-length segments in the middle because it goes
+		 * into infinite loop in that case. */
 		/* state may be extended later, so not all elements of new_segments
 		 * really have zero length */
-		if (state->start_at == state->end_at)
-			new_segments = g_list_prepend (new_segments, state);
+		if (state->start_at == line->length)
+			end_segments = g_list_prepend (end_segments, state);
 	}
 
 	/* Extend current state to the end of line. */
@@ -3682,7 +3687,7 @@ analyze_line (GtkSourceContextEngine *ce,
 	if (ANCESTOR_CAN_END_CONTEXT (state->context) ||
 	    SEGMENT_END_AT_LINE_END (state))
 	{
-		state = check_line_end (state, hint);
+		state = check_line_end (ce, state);
 	}
 
 	/* Extend the segment to the beginning of next line. */
@@ -3691,9 +3696,9 @@ analyze_line (GtkSourceContextEngine *ce,
 
 	/* if it's the last line, don't bother with zero length segments */
 	if (!line->eol_length)
-		g_list_free (new_segments);
+		g_list_free (end_segments);
 	else
-		delete_zero_length_segments (ce, new_segments, hint);
+		delete_zero_length_segments (ce, end_segments);
 
 	return state;
 }
@@ -4062,6 +4067,18 @@ segment_remove (GtkSourceContextEngine *ce,
 		else
 			ce->priv->hint = segment->parent;
 	}
+
+        /* if ce->priv->hint2 is being deleted, set it to some
+         * neighbour segment */
+        if (ce->priv->hint2 == segment)
+        {
+                if (segment->next)
+                        ce->priv->hint2 = segment->next;
+                else if (segment->prev)
+                        ce->priv->hint2 = segment->prev;
+                else
+                        ce->priv->hint2 = segment->parent;
+        }
 
 	segment_destroy (ce, segment);
 }
@@ -4478,7 +4495,6 @@ update_syntax (GtkSourceContextEngine *ce,
         gint analyzed_end;
 	GtkTextBuffer *buffer = ce->priv->buffer;
 	Segment *state = ce->priv->root_segment;
-	Segment *hint = ce->priv->hint;
 	GTimer *timer;
 
 	context_freeze (ce->priv->root_context);
@@ -4576,12 +4592,12 @@ update_syntax (GtkSourceContextEngine *ce,
 						       line_start_offset - 1);
 		g_assert (state->context != NULL);
 
-		hint = ce->priv->hint;
+		ce->priv->hint2 = ce->priv->hint;
 
-		if (hint && hint->parent != state)
-			hint = NULL;
+		if (ce->priv->hint2 && ce->priv->hint2->parent != state)
+			ce->priv->hint2 = NULL;
 
-		state = analyze_line (ce, state, &line, &hint);
+		state = analyze_line (ce, state, &line);
 		CHECK_TREE (ce);
 
 		{
@@ -4590,8 +4606,8 @@ update_syntax (GtkSourceContextEngine *ce,
 		}
 
 		/* XXX this is wrong */
-		if (hint)
-			ce->priv->hint = hint;
+		if (ce->priv->hint2)
+			ce->priv->hint = ce->priv->hint2;
 		else
 			ce->priv->hint = state;
 
@@ -4613,7 +4629,7 @@ update_syntax (GtkSourceContextEngine *ce,
 
 		if (!next_line_invalid)
 		{
-			Segment *old_state;
+			Segment *old_state, *hint;
 
 			hint = ce->priv->hint ? ce->priv->hint : state;
 			old_state = get_segment_at_offset (ce, hint, line_end_offset);
