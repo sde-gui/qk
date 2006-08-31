@@ -4,8 +4,9 @@
 # specified here.
 
 langs="c.lang cpp.lang changelog.lang def.lang \
-       html.lang javascript.lang latex.lang makefile.lang \
-       xml.lang yacc.lang"
+       html.lang javascript.lang latex.lang ms.lang \
+       m4.lang makefile.lang xml.lang yacc.lang \
+       sh.lang python.lang"
 
 styles="gvim.styles kde.styles"
 

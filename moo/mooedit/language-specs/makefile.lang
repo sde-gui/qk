@@ -184,4 +184,6 @@
       </include>
     </context>-->
   </definitions>
+
+  <line-comment start="#"/>
 </language>

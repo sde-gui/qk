@@ -49,4 +49,13 @@
 <!--  <style name="makefile:assignment-lhs"  background="blue"/>-->
 <!--  <style name="makefile:prereq"          background="yellow"/>-->
 <!--  <style name="makefile:command"         background="green"/>-->
+
+<!--  <style name="html:comment" background="grey"/>
+  <style name="html:tag" background="blue"/>
+  <style name="html:attrib-name" background="green"/>
+  <style name="html:attrib-value" background="yellow"/>
+  <style name="html:dtd" background="red"/>
+  <style name="html:entity" background="purple"/>
+  <style name="html:error" background="red" strikethrough="true"/>-->
+
 </style-scheme>

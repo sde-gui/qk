@@ -2,17 +2,23 @@ languagespecsdir = ${MOO_TEXT_LANG_FILES_DIR}
 
 langs2 =			\
 	c.lang			\
+	changelog.lang		\
 	cpp.lang		\
 	def.lang		\
 	html.lang		\
 	javascript.lang		\
 	latex.lang		\
+	m4.lang			\
+	makefile.lang		\
+	ms.lang			\
+	python.lang		\
+	python-console.lang	\
+	sh.lang			\
 	xml.lang		\
 	yacc.lang
 
 langs1 =			\
 	ada.lang		\
-	changelog.lang		\
 	check.sh		\
 	csharp.lang		\
 	css.lang		\
@@ -25,7 +31,6 @@ langs1 =			\
 	ini.lang		\
 	java.lang		\
 	lua.lang		\
-	makefile.lang		\
 	msil.lang		\
 	nemerle.lang		\
 	octave.lang		\
@@ -33,7 +38,6 @@ langs1 =			\
 	perl.lang		\
 	php.lang		\
 	po.lang			\
-	python.lang		\
 	R.lang			\
 	ruby.lang		\
 	scheme.lang		\

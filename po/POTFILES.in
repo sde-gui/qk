@@ -16,6 +16,7 @@ moo/mooedit/menu.xml
 
 moo/mooedit/gtksourceview/gtksourcelanguagesmanager.c
 moo/mooedit/gtksourceview/gtksourcestylescheme.c
+moo/mooedit/gtksourceview/gtksourcelanguage-parser-2.c
 
 moo/mooedit/language-specs/R.lang
 moo/mooedit/language-specs/ada.lang
@@ -37,7 +38,9 @@ moo/mooedit/language-specs/java.lang
 moo/mooedit/language-specs/javascript.lang
 moo/mooedit/language-specs/latex.lang
 moo/mooedit/language-specs/lua.lang
+moo/mooedit/language-specs/m4.lang
 moo/mooedit/language-specs/makefile.lang
+moo/mooedit/language-specs/ms.lang
 moo/mooedit/language-specs/msil.lang
 moo/mooedit/language-specs/nemerle.lang
 moo/mooedit/language-specs/octave.lang
@@ -56,6 +59,7 @@ moo/mooedit/language-specs/vbnet.lang
 moo/mooedit/language-specs/verilog.lang
 moo/mooedit/language-specs/vhdl.lang
 moo/mooedit/language-specs/xml.lang
+moo/mooedit/language-specs/yacc.lang
 
 moo/mooedit/glade/mooeditprefs.glade
 moo/mooedit/glade/mooeditprogress.glade

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language id="mooscript" name="MooScript" version="2.0" _section="Scripts"
+          mimetypes="text/x-mooscript;application/x-mooscript" globs="*.ms">
+
+  <styles>
+    <style id="keyword" _name="Keyword" map-to="def:keyword"/>
+    <style id="special-vars" _name="Special Variables" map-to="def:preprocessor"/>
+    <style id="function" _name="Function" map-to="def:function"/>
+  </styles>
+
+  <definitions>
+    <context id="keyword" style-ref="keyword">
+      <keyword>and</keyword>
+      <keyword>break</keyword>
+      <keyword>continue</keyword>
+      <keyword>do</keyword>
+      <keyword>elif</keyword>
+      <keyword>else</keyword>
+      <keyword>fi</keyword>
+      <keyword>for</keyword>
+      <keyword>if</keyword>
+      <keyword>in</keyword>
+      <keyword>not</keyword>
+      <keyword>od</keyword>
+      <keyword>or</keyword>
+      <keyword>return</keyword>
+      <keyword>then</keyword>
+      <keyword>while</keyword>
+    </context>
+
+    <context id="special-vars" style-ref="special-vars">
+      <keyword>false</keyword>
+      <keyword>none</keyword>
+      <keyword>true</keyword>
+    </context>
+
+    <context id="mooscript">
+      <include>
+        <context ref="python:double-quoted-string"/>
+        <context ref="python:single-quoted-string"/>
+        <context ref="def:shell-like-comment"/>
+        <context ref="keyword"/>
+        <context ref="special-vars"/>
+        <context style-ref="function">
+          <match>\b[_\w][_\w\d]*(?=[\s]*[(])</match>
+        </context>
+      </include>
+    </context>
+  </definitions>
+
+  <brackets>()[]{}</brackets>
+  <line-comment start="#"/>
+
+</language>
