@@ -19,6 +19,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/moospawn.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -331,6 +332,7 @@ run_command (MooCommandExe     *cmd,
     gboolean result;
     const char *argv[4] = {"/bin/sh", "-c", NULL, NULL};
     char *cmd_line;
+    char **real_env;
 
     cmd_line = make_cmd (cmd, ctx);
 
@@ -338,8 +340,48 @@ run_command (MooCommandExe     *cmd,
         return FALSE;
 
     argv[2] = cmd_line;
-    result = g_spawn_sync (working_dir, (char**) argv, (char**) envp, 0,
+    real_env = _moo_env_add (envp);
+
+    result = g_spawn_sync (working_dir, (char**) argv, real_env, 0,
                            NULL, NULL, output, NULL, NULL, &error);
+
+    g_strfreev (real_env);
+
+    if (!result)
+    {
+        g_message ("could not run command: %s", error->message);
+        g_error_free (error);
+    }
+
+    g_free (cmd_line);
+    return result;
+}
+
+
+static gboolean
+run_command_async (MooCommandExe     *cmd,
+                   MooCommandContext *ctx,
+                   const char        *working_dir,
+                   char             **envp)
+{
+    GError *error = NULL;
+    gboolean result;
+    const char *argv[4] = {"/bin/sh", "-c", NULL, NULL};
+    char *cmd_line;
+    char **real_env;
+
+    cmd_line = make_cmd (cmd, ctx);
+
+    if (!cmd_line)
+        return FALSE;
+
+    argv[2] = cmd_line;
+    real_env = _moo_env_add (envp);
+
+    result = g_spawn_async (working_dir, (char**) argv, real_env,
+                            0, NULL, NULL, NULL, &error);
+
+    g_strfreev (real_env);
 
     if (!result)
     {
@@ -373,6 +415,12 @@ moo_command_exe_run (MooCommand        *cmd_base,
     if (cmd->priv->output == MOO_COMMAND_EXE_OUTPUT_NONE)
     {
         run_command (cmd, ctx, working_dir, envp, NULL);
+        goto out;
+    }
+
+    if (cmd->priv->output == MOO_COMMAND_EXE_OUTPUT_NONE_ASYNC)
+    {
+        run_command_async (cmd, ctx, working_dir, envp);
         goto out;
     }
 
@@ -424,6 +472,7 @@ moo_command_exe_check_sensitive (MooCommand *cmd_base,
     switch (cmd->priv->output)
     {
         case MOO_COMMAND_EXE_OUTPUT_NONE:
+        case MOO_COMMAND_EXE_OUTPUT_NONE_ASYNC:
         case MOO_COMMAND_EXE_OUTPUT_NEW_DOC:
             break;
         case MOO_COMMAND_EXE_OUTPUT_PANE:
@@ -500,6 +549,8 @@ parse_output (const char *string,
 
     if (!strcmp (string, "none"))
         *output = MOO_COMMAND_EXE_OUTPUT_NONE;
+    else if (!strcmp (string, "async"))
+        *output = MOO_COMMAND_EXE_OUTPUT_NONE_ASYNC;
     else if (!strcmp (string, "pane"))
         *output = MOO_COMMAND_EXE_OUTPUT_PANE;
     else if (!strcmp (string, "insert"))
@@ -577,7 +628,7 @@ exe_type_create_widget (G_GNUC_UNUSED MooCommandType *type)
     MooLang *lang;
 
     static const char *input_names[4] = {N_("None"), N_("Selected lines"), N_("Selection"), N_("Whole document")};
-    static const char *output_names[4] = {N_("None"), N_("Output pane"), N_("Insert into the document"), N_("New document")};
+    static const char *output_names[5] = {N_("None"), N_("None, asynchronous"), N_("Output pane"), N_("Insert into the document"), N_("New document")};
 
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "textview", MOO_TYPE_TEXT_VIEW);
@@ -641,7 +692,7 @@ exe_type_save_data (G_GNUC_UNUSED MooCommandType *type,
     gboolean changed = FALSE;
     int index, old_index;
     const char *input_strings[4] = {"none", "lines", "selection", "doc"};
-    const char *output_strings[4] = {"none", "pane", "insert", "new-doc"};
+    const char *output_strings[5] = {"none", "async", "pane", "insert", "new-doc"};
 
     xml = g_object_get_data (G_OBJECT (page), "moo-glade-xml");
     textview = moo_glade_xml_get_widget (xml, "textview");
