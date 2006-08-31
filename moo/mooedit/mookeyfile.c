@@ -644,6 +644,26 @@ moo_key_file_item_get (MooKeyFileItem *item,
 }
 
 
+char *
+moo_key_file_item_steal (MooKeyFileItem *item,
+                         const char     *key)
+{
+    char *orig_key, *value;
+
+    g_return_val_if_fail (item != NULL, NULL);
+    g_return_val_if_fail (key != NULL, NULL);
+
+    if (!g_hash_table_lookup_extended (item->keys, key,
+                                       (gpointer*) &orig_key,
+                                       (gpointer*) &value))
+        return NULL;
+
+    g_hash_table_steal (item->keys, key);
+    g_free (orig_key);
+    return value;
+}
+
+
 void
 moo_key_file_item_set (MooKeyFileItem *item,
                        const char     *key,
@@ -678,6 +698,29 @@ moo_key_file_item_get_bool (MooKeyFileItem *item,
 }
 
 
+gboolean
+moo_key_file_item_steal_bool (MooKeyFileItem *item,
+                              const char     *key,
+                              gboolean        default_val)
+{
+    char *val;
+    gboolean ret;
+
+    g_return_val_if_fail (item != NULL, default_val);
+    g_return_val_if_fail (key != NULL, default_val);
+
+    val = moo_key_file_item_steal (item, key);
+
+    if (!val)
+        return default_val;
+
+    ret = _moo_convert_string_to_bool (val, default_val);
+
+    g_free (val);
+    return ret;
+}
+
+
 void
 moo_key_file_item_set_bool (MooKeyFileItem *item,
                             const char     *key,
@@ -689,11 +732,36 @@ moo_key_file_item_set_bool (MooKeyFileItem *item,
 }
 
 
+void
+moo_key_file_item_foreach (MooKeyFileItem *item,
+                           GHFunc          func,
+                           gpointer        data)
+{
+    g_return_if_fail (item != NULL);
+    g_return_if_fail (func != NULL);
+    g_hash_table_foreach (item->keys, func, data);
+}
+
+
 const char *
 moo_key_file_item_get_content (MooKeyFileItem *item)
 {
     g_return_val_if_fail (item != NULL, NULL);
     return item->content;
+}
+
+
+char *
+moo_key_file_item_steal_content (MooKeyFileItem *item)
+{
+    char *ret;
+
+    g_return_val_if_fail (item != NULL, NULL);
+
+    ret = item->content;
+    item->content = NULL;
+
+    return ret;
 }
 
 

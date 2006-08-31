@@ -77,17 +77,26 @@ const char      *moo_key_file_item_name         (MooKeyFileItem     *item);
 
 const char      *moo_key_file_item_get          (MooKeyFileItem     *item,
                                                  const char         *key);
+char            *moo_key_file_item_steal        (MooKeyFileItem     *item,
+                                                 const char         *key);
 void             moo_key_file_item_set          (MooKeyFileItem     *item,
                                                  const char         *key,
                                                  const char         *value);
 gboolean         moo_key_file_item_get_bool     (MooKeyFileItem     *item,
                                                  const char         *key,
                                                  gboolean            default_val);
+gboolean         moo_key_file_item_steal_bool   (MooKeyFileItem     *item,
+                                                 const char         *key,
+                                                 gboolean            default_val);
 void             moo_key_file_item_set_bool     (MooKeyFileItem     *item,
                                                  const char         *key,
                                                  gboolean            value);
+void             moo_key_file_item_foreach      (MooKeyFileItem     *item,
+                                                 GHFunc              func,
+                                                 gpointer            data);
 
 const char      *moo_key_file_item_get_content  (MooKeyFileItem     *item);
+char            *moo_key_file_item_steal_content(MooKeyFileItem     *item);
 void             moo_key_file_item_set_content  (MooKeyFileItem     *item,
                                                  const char         *content);
 

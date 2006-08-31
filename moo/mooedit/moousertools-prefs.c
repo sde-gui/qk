@@ -102,7 +102,7 @@ new_row (MooPrefsDialogPage *page,
 
     info = _moo_user_tool_info_new ();
     info->cmd_type = moo_command_type_lookup ("moo-script");
-    info->cmd_data = moo_command_data_new ();
+    info->cmd_data = info->cmd_type ? moo_command_data_new (info->cmd_type->n_keys) : NULL;
     info->name = g_strdup (_("New Command"));
     info->options = g_strdup ("need-doc");
     info->enabled = TRUE;

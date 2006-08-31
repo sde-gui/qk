@@ -14,7 +14,6 @@
 #ifndef __MOO_COMMAND_H__
 #define __MOO_COMMAND_H__
 
-#include <mooutils/moomarkup.h>
 #include <gtk/gtkwidget.h>
 
 G_BEGIN_DECLS
@@ -90,6 +89,8 @@ struct _MooCommandType {
     GObject base;
     char *name;
     char *display_name;
+    char **keys;
+    guint n_keys;
 };
 
 struct _MooCommandTypeClass {
@@ -136,23 +137,25 @@ MooCommandOptions   moo_command_options_parse   (const char         *string);
 
 void                moo_command_type_register   (const char         *name,
                                                  const char         *display_name,
-                                                 MooCommandType     *type);
+                                                 MooCommandType     *type,
+                                                 char              **data_keys);
 MooCommandType     *moo_command_type_lookup     (const char         *name);
 /* returns list of MooCommandType instances, list should be freed */
 GSList             *moo_command_list_types      (void);
 
 
-MooCommandData     *moo_command_data_new        (void);
+MooCommandData     *moo_command_data_new        (guint               len);
 
 MooCommandData     *moo_command_data_ref        (MooCommandData     *data);
 void                moo_command_data_unref      (MooCommandData     *data);
 void                moo_command_data_set        (MooCommandData     *data,
-                                                 const char         *key,
+                                                 guint               index_,
                                                  const char         *value);
+void                moo_command_data_set_code   (MooCommandData     *data,
+                                                 const char         *code);
 const char         *moo_command_data_get        (MooCommandData     *data,
-                                                 const char         *key);
-void                moo_command_data_unset      (MooCommandData     *data,
-                                                 const char         *key);
+                                                 guint               index_);
+const char         *moo_command_data_get_code   (MooCommandData     *data);
 void                moo_command_data_clear      (MooCommandData     *data);
 
 
@@ -186,29 +189,6 @@ typedef void (*MooCommandContextForeachFunc)    (const char         *name,
 void                moo_command_context_foreach (MooCommandContext  *ctx,
                                                  MooCommandContextForeachFunc func,
                                                  gpointer            data);
-
-void                _moo_command_init           (void);
-MooCommandData     *_moo_command_parse_markup   (MooMarkupNode      *node,
-                                                 MooCommandType    **type,
-                                                 char              **options);
-void                _moo_command_format_markup  (MooMarkupNode      *parent,
-                                                 MooCommandData     *data,
-                                                 MooCommandType     *type,
-                                                 char               *options);
-
-MooCommand  *_moo_command_type_create_command   (MooCommandType    *type,
-                                                 MooCommandData    *data,
-                                                 const char        *options);
-GtkWidget   *_moo_command_type_create_widget    (MooCommandType    *type);
-void         _moo_command_type_load_data        (MooCommandType    *type,
-                                                 GtkWidget         *widget,
-                                                 MooCommandData    *data);
-gboolean     _moo_command_type_save_data        (MooCommandType    *type,
-                                                 GtkWidget         *widget,
-                                                 MooCommandData    *data);
-gboolean     _moo_command_type_data_equal       (MooCommandType    *type,
-                                                 MooCommandData    *data1,
-                                                 MooCommandData    *data2);
 
 
 G_END_DECLS

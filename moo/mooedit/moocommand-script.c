@@ -114,7 +114,7 @@ script_type_create_command (G_GNUC_UNUSED MooCommandType *type,
     MooCommand *cmd;
     const char *code;
 
-    code = moo_command_data_get (data, "code");
+    code = moo_command_data_get_code (data);
 
     g_return_val_if_fail (code && *code, NULL);
 
@@ -161,7 +161,7 @@ script_type_load_data (G_GNUC_UNUSED MooCommandType *type,
     textview = moo_glade_xml_get_widget (xml, "textview");
     buffer = gtk_text_view_get_buffer (textview);
 
-    code = moo_command_data_get (data, "code");
+    code = moo_command_data_get_code (data);
     gtk_text_buffer_set_text (buffer, code ? code : "", -1);
 }
 
@@ -182,11 +182,11 @@ script_type_save_data (G_GNUC_UNUSED MooCommandType *type,
     g_assert (GTK_IS_TEXT_VIEW (textview));
 
     new_code = moo_text_view_get_text (textview);
-    code = moo_command_data_get (data, "code");
+    code = moo_command_data_get_code (data);
 
     if (strcmp (code ? code : "", new_code ? new_code : "") != 0)
     {
-        moo_command_data_set (data, "code", new_code);
+        moo_command_data_set_code (data, new_code);
         changed = TRUE;
     }
 
@@ -200,8 +200,8 @@ script_type_data_equal (G_GNUC_UNUSED MooCommandType *type,
                         MooCommandData *data1,
                         MooCommandData *data2)
 {
-    const char *val1 = moo_command_data_get (data1, "code");
-    const char *val2 = moo_command_data_get (data2, "code");
+    const char *val1 = moo_command_data_get_code (data1);
+    const char *val2 = moo_command_data_get_code (data2);
     return !strcmp (val1 ? val1 : "", val2 ? val2 : "");
 }
 
@@ -233,7 +233,7 @@ moo_command_script_class_init (MooCommandScriptClass *klass)
     g_type_class_add_private (klass, sizeof (MooCommandScriptPrivate));
 
     type = g_object_new (_moo_command_type_script_get_type (), NULL);
-    moo_command_type_register ("moo-script", _("MooScript"), type);
+    moo_command_type_register ("moo-script", _("MooScript"), type, NULL);
     g_object_unref (type);
 }
 

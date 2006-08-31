@@ -2,9 +2,9 @@
 SUBDIRS = gtksourceview plugins language-specs
 
 mooedit_toolsdir = $(MOO_DATA_DIR)
-mooedit_tools_DATA = menu.xml context.xml
+mooedit_tools_DATA = menu.cfg context.cfg
 
-unix_sources =				\
+unix_sources =                         \
 	moocommand-exe-unix.c
 
 completion =                           \
@@ -37,6 +37,7 @@ mooedit_include_headers =              \
 mooedit_noinst_headers =               \
 	moocommand-exe.h               \
 	moocommand-script.h            \
+	moocommand-private.h           \
 	moocommand.h                   \
 	moocommanddisplay.h            \
 	mooedit-private.h              \

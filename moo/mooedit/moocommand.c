@@ -11,6 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#define MOOEDIT_COMPILATION
+#include "mooedit/moocommand-private.h"
 #include "mooedit/moocommand-script.h"
 #include "mooedit/moocommand-exe.h"
 #include "mooedit/mooeditwindow.h"
@@ -20,9 +22,8 @@
 #include <string.h>
 
 
-#define ELEMENT_COMMAND "command"
-#define PROP_TYPE       "type"
-#define PROP_OPTIONS    "options"
+#define KEY_TYPE    "type"
+#define KEY_OPTIONS "options"
 
 
 G_DEFINE_TYPE (MooCommand, moo_command, G_TYPE_OBJECT)
@@ -52,15 +53,19 @@ struct _MooCommandContextPrivate {
 
 struct _MooCommandData {
     guint ref_count;
-    GHashTable *hash;
+    char **data;
+    guint len;
+    char *code;
 };
 
 
 static GHashTable *registered_types;
 
 
-static Variable *variable_new   (const GValue   *value);
-static void      variable_free  (Variable       *var);
+static Variable *variable_new               (const GValue   *value);
+static void      variable_free              (Variable       *var);
+static void      moo_command_data_take_code (MooCommandData *data,
+                                             char           *code);
 
 
 MooCommand *
@@ -82,7 +87,8 @@ moo_command_create (const char     *name,
 void
 moo_command_type_register (const char     *name,
                            const char     *display_name,
-                           MooCommandType *type)
+                           MooCommandType *type,
+                           char          **keys)
 {
     MooCommandTypeClass *klass;
 
@@ -114,6 +120,8 @@ moo_command_type_register (const char     *name,
 
     type->name = g_strdup (name);
     type->display_name = g_strdup (display_name);
+    type->keys = g_strdupv (keys);
+    type->n_keys = keys ? g_strv_length (keys) : 0;
 
     g_hash_table_insert (registered_types, g_strdup (name), g_object_ref (type));
 }
@@ -187,7 +195,7 @@ _moo_command_type_create_command (MooCommandType    *type,
     if (data)
         moo_command_data_ref (data);
     else
-        data = moo_command_data_new ();
+        data = moo_command_data_new (type->n_keys);
 
     cmd = MOO_COMMAND_TYPE_GET_CLASS (type)->create_command (type, data, options);
 
@@ -804,108 +812,154 @@ moo_command_context_get_window (MooCommandContext *ctx)
 }
 
 
+static int
+find_key (MooCommandType *type,
+          const char     *key)
+{
+    guint i;
+
+    for (i = 0; i < type->n_keys; ++i)
+        if (!strcmp (type->keys[i], key))
+            return i;
+
+    return -1;
+}
+
+static void
+item_foreach_func (const char *key,
+                   const char *val,
+                   gpointer    user_data)
+{
+    int index;
+
+    struct {
+        MooCommandType *type;
+        MooCommandData *cmd_data;
+        gboolean error;
+        const char *filename;
+        const char *name;
+    } *data = user_data;
+
+    if (data->error)
+        return;
+
+    index = find_key (data->type, key);
+
+    if (index < 0)
+    {
+        g_warning ("unknown key %s in item %s in file %s",
+                   key, data->name, data->filename);
+        data->error = TRUE;
+        return;
+    }
+
+    moo_command_data_set (data->cmd_data, index, val);
+}
+
 MooCommandData *
-_moo_command_parse_markup (MooMarkupNode   *node,
-                           MooCommandType **type_p,
-                           char           **options_p)
+_moo_command_parse_item (MooKeyFileItem    *item,
+                         const char        *name,
+                         const char        *filename,
+                         MooCommandType   **type_p,
+                         char             **options_p)
 {
     MooCommandData *data;
-    MooMarkupNode *child;
     MooCommandType *type;
-    const char *type_name, *options;
+    char *type_name, *options;
+    struct {
+        MooCommandData *cmd_data;
+        gboolean error;
+        const char *filename;
+        const char *name;
+    } parse_data;
 
-    g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (node), NULL);
-    g_return_val_if_fail (!strcmp (node->name, ELEMENT_COMMAND), NULL);
+    g_return_val_if_fail (item != NULL, NULL);
 
-    type_name = moo_markup_get_prop (node, PROP_TYPE);
-    options = moo_markup_get_prop (node, PROP_OPTIONS);
+    type_name = moo_key_file_item_steal (item, KEY_TYPE);
+    options = moo_key_file_item_steal (item, KEY_OPTIONS);
 
     if (!type_name)
     {
-        g_warning ("no type attribute in %s element", node->name);
-        return NULL;
+        g_warning ("no type attribute in item %s in file %s", name, filename);
+        goto error;
     }
 
     type = moo_command_type_lookup (type_name);
 
     if (!type)
     {
-        g_warning ("unknown command type %s", type_name);
-        return NULL;
+        g_warning ("unknown command type %s in item %s in file %s",
+                   type_name, name, filename);
+        goto error;
     }
 
-    data = moo_command_data_new ();
+    data = moo_command_data_new (type->n_keys);
 
-    for (child = node->children; child != NULL; child = child->next)
+    parse_data.cmd_data = data;
+    parse_data.error = FALSE;
+    parse_data.filename = filename;
+    parse_data.name = name;
+
+    moo_key_file_item_foreach (item, (GHFunc) item_foreach_func, &parse_data);
+
+    if (parse_data.error)
     {
-        if (!MOO_MARKUP_IS_ELEMENT (child))
-            continue;
-
-        if (moo_command_data_get (data, child->name))
-        {
-            g_warning ("duplicated %s element", child->name);
-            moo_command_data_unref (data);
-            return NULL;
-        }
-
-        moo_command_data_set (data, child->name, moo_markup_get_content (child));
+        moo_command_data_unref (data);
+        goto error;
     }
+
+    moo_command_data_take_code (data, moo_key_file_item_steal_content (item));
 
     if (type_p)
         *type_p = type;
+
     if (options_p)
-        *options_p = g_strdup (options);
+        *options_p = options;
+    else
+        g_free (options);
+
+    g_free (type_name);
 
     return data;
+
+error:
+    g_free (type_name);
+    g_free (options);
+    return NULL;
 }
 
-
-static void
-prepend_key (char *key,
-             G_GNUC_UNUSED gpointer value,
-             GSList **list)
-{
-    *list = g_slist_prepend (*list, key);
-}
 
 void
-_moo_command_format_markup (MooMarkupNode  *parent,
-                            MooCommandData *data,
-                            MooCommandType *type,
-                            char           *options)
+_moo_command_format_item (MooKeyFileItem *item,
+                          MooCommandData *data,
+                          MooCommandType *type,
+                          char           *options)
 {
-    GSList *keys = NULL;
-    MooMarkupNode *node;
-
-    g_return_if_fail (MOO_MARKUP_IS_ELEMENT (parent));
+    g_return_if_fail (item != NULL);
     g_return_if_fail (MOO_IS_COMMAND_TYPE (type));
 
-    node = moo_markup_create_element (parent, ELEMENT_COMMAND);
-    moo_markup_set_prop (node, PROP_TYPE, type->name);
+    moo_key_file_item_set (item, KEY_TYPE, type->name);
 
     if (options && options[0])
-        moo_markup_set_prop (node, PROP_OPTIONS, options);
+        moo_key_file_item_set (item, KEY_OPTIONS, options);
 
     if (data)
-        g_hash_table_foreach (data->hash, (GHFunc) prepend_key, &keys);
-
-    keys = g_slist_sort (keys, (GCompareFunc) strcmp);
-
-    while (keys)
     {
-        moo_markup_create_text_element (node, keys->data,
-                                        moo_command_data_get (data, keys->data));
-        keys = g_slist_delete_link (keys, keys);
+        guint i;
+        for (i = 0; i < type->n_keys; ++i)
+            moo_key_file_item_set (item, type->keys[i], moo_command_data_get (data, i));
+        moo_key_file_item_set_content (item, moo_command_data_get_code (data));
     }
 }
 
 
 MooCommandData *
-moo_command_data_new (void)
+moo_command_data_new (guint len)
 {
     MooCommandData *data = g_new0 (MooCommandData, 1);
     data->ref_count = 1;
-    data->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+    data->data = len ? g_new0 (char*, len) : NULL;
+    data->len = len;
     return data;
 }
 
@@ -913,9 +967,15 @@ moo_command_data_new (void)
 void
 moo_command_data_clear (MooCommandData *data)
 {
+    guint i;
+
     g_return_if_fail (data != NULL);
-    g_hash_table_destroy (data->hash);
-    data->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+
+    for (i = 0; i < data->len; ++i)
+    {
+        g_free (data->data[i]);
+        data->data[i] = NULL;
+    }
 }
 
 
@@ -935,7 +995,11 @@ moo_command_data_unref (MooCommandData *data)
 
     if (!--data->ref_count)
     {
-        g_hash_table_destroy (data->hash);
+        guint i;
+        for (i = 0; i < data->len; ++i)
+            g_free (data->data[i]);
+        g_free (data->data);
+        g_free (data->code);
         g_free (data);
     }
 }
@@ -943,36 +1007,58 @@ moo_command_data_unref (MooCommandData *data)
 
 void
 moo_command_data_set (MooCommandData *data,
-                      const char     *key,
+                      guint           index,
                       const char     *value)
 {
+    char *tmp;
+
     g_return_if_fail (data != NULL);
-    g_return_if_fail (key != NULL);
+    g_return_if_fail (index < data->len);
     g_return_if_fail (value != NULL);
 
-    g_hash_table_insert (data->hash, g_strdup (key), g_strdup (value));
+    tmp = data->data[index];
+    data->data[index] = g_strdup (value);
+    g_free (tmp);
 }
 
 
 const char *
 moo_command_data_get (MooCommandData *data,
-                      const char     *key)
+                      guint           index)
 {
     g_return_val_if_fail (data != NULL, NULL);
-    g_return_val_if_fail (key != NULL, NULL);
+    g_return_val_if_fail (index < data->len, NULL);
+    return data->data[index];
+}
 
-    return g_hash_table_lookup (data->hash, key);
+
+static void
+moo_command_data_take_code (MooCommandData *data,
+                            char           *code)
+{
+    char *tmp;
+
+    g_return_if_fail (data != NULL);
+
+    tmp = data->code;
+    data->code = code;
+    g_free (tmp);
 }
 
 
 void
-moo_command_data_unset (MooCommandData *data,
-                        const char     *key)
+moo_command_data_set_code (MooCommandData *data,
+                           const char     *code)
 {
-    g_return_if_fail (data != NULL);
-    g_return_if_fail (key != NULL);
+    moo_command_data_take_code (data, g_strdup (code));
+}
 
-    g_hash_table_remove (data->hash, key);
+
+const char *
+moo_command_data_get_code (MooCommandData *data)
+{
+    g_return_val_if_fail (data != NULL, NULL);
+    return data->code;
 }
 
 

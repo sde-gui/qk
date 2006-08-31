@@ -11,8 +11,9 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#define MOOEDIT_COMPILATION
 #include "mooedit/moocommanddisplay.h"
-#include "mooedit/moocommand.h"
+#include "mooedit/moocommand-private.h"
 #include <string.h>
 
 
@@ -68,6 +69,7 @@ combo_changed (MooCommandDisplay *display)
 {
     GtkWidget *widget;
     int index;
+    MooCommandType *type;
 
     index = gtk_combo_box_get_active (display->type_combo);
     g_return_if_fail (index >= 0);
@@ -81,14 +83,15 @@ combo_changed (MooCommandDisplay *display)
         display->data[display->active].changed = TRUE;
 
     display->active = index;
+    type = display->data[index].type;
+    g_return_if_fail (type != NULL);
 
     if (!display->data[index].data)
-        display->data[index].data = moo_command_data_new ();
+        display->data[index].data = moo_command_data_new (type->n_keys);
 
     gtk_notebook_set_current_page (display->notebook, index);
     widget = gtk_notebook_get_nth_page (display->notebook, index);
-    _moo_command_type_load_data (display->data[index].type, widget,
-                                 display->data[index].data);
+    _moo_command_type_load_data (type, widget, display->data[index].data);
 }
 
 

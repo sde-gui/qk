@@ -66,6 +66,7 @@
     '("const-char*" "name")
     '("const-char*" "display_name")
     '("MooCommandType*" "type")
+    '("strv" "data_keys")
   )
 )
 
@@ -228,6 +229,9 @@
   (c-name "moo_command_data_new")
   (is-constructor-of "MooCommandData")
   (return-type "MooCommandData*")
+  (parameters
+    '("guint" "len")
+  )
 )
 
 (define-method set
@@ -235,8 +239,8 @@
   (c-name "moo_command_data_set")
   (return-type "none")
   (parameters
-    '("const-char*" "key")
-    '("const-char*" "value")
+    '("guint" "key")
+    '("const-char*" "value" (null-ok))
   )
 )
 
@@ -245,15 +249,21 @@
   (c-name "moo_command_data_get")
   (return-type "const-char*")
   (parameters
-    '("const-char*" "key")
+    '("guint" "key")
   )
 )
 
-(define-method unset
+(define-method set_code
   (of-object "MooCommandData")
-  (c-name "moo_command_data_unset")
+  (c-name "moo_command_data_set_code")
   (return-type "none")
   (parameters
-    '("const-char*" "key")
+    '("const-char*" "value" (null-ok))
   )
+)
+
+(define-method get_code
+  (of-object "MooCommandData")
+  (c-name "moo_command_data_get_code")
+  (return-type "const-char*")
 )

@@ -33,6 +33,16 @@
 #define MOO_COMMAND_EXE_INPUT_DEFAULT   MOO_COMMAND_EXE_INPUT_NONE
 #define MOO_COMMAND_EXE_OUTPUT_DEFAULT  MOO_COMMAND_EXE_OUTPUT_NONE
 
+enum {
+    KEY_INPUT,
+    KEY_OUTPUT,
+    N_KEYS
+};
+
+static const char *data_keys[] = {
+    "input", "output", NULL
+};
+
 struct _MooCommandExePrivate {
     char *cmd_line;
     MooCommandExeInput input;
@@ -501,7 +511,7 @@ moo_command_exe_class_init (MooCommandExeClass *klass)
     g_type_class_add_private (klass, sizeof (MooCommandExePrivate));
 
     type = g_object_new (_moo_command_type_exe_get_type (), NULL);
-    moo_command_type_register ("exe", _("Shell command"), type);
+    moo_command_type_register ("exe", _("Shell command"), type, (char**) data_keys);
     g_object_unref (type);
 }
 
@@ -577,12 +587,12 @@ exe_type_create_command (G_GNUC_UNUSED MooCommandType *type,
     const char *cmd_line;
     int input, output;
 
-    cmd_line = moo_command_data_get (data, "cmd-line");
+    cmd_line = moo_command_data_get_code (data);
     g_return_val_if_fail (cmd_line && *cmd_line, NULL);
 
-    if (!parse_input (moo_command_data_get (data, "input"), &input))
+    if (!parse_input (moo_command_data_get (data, KEY_INPUT), &input))
         g_return_val_if_reached (NULL);
-    if (!parse_output (moo_command_data_get (data, "output"), &output))
+    if (!parse_output (moo_command_data_get (data, KEY_OUTPUT), &output))
         g_return_val_if_reached (NULL);
 
     cmd = moo_command_exe_new (cmd_line, moo_command_options_parse (options), input, output);
@@ -624,8 +634,6 @@ exe_type_create_widget (G_GNUC_UNUSED MooCommandType *type)
     GtkWidget *page;
     MooGladeXML *xml;
     MooTextView *textview;
-    MooLangMgr *mgr;
-    MooLang *lang;
 
     static const char *input_names[4] = {N_("None"), N_("Selected lines"), N_("Selection"), N_("Whole document")};
     static const char *output_names[5] = {N_("None"), N_("None, asynchronous"), N_("Output pane"), N_("Insert into the document"), N_("New document")};
@@ -638,9 +646,7 @@ exe_type_create_widget (G_GNUC_UNUSED MooCommandType *type)
 
     textview = moo_glade_xml_get_widget (xml, "textview");
     moo_text_view_set_font_from_string (textview, "Monospace");
-    mgr = moo_editor_get_lang_mgr (moo_editor_instance ());
-    lang = moo_lang_mgr_get_lang (mgr, "sh");
-    moo_text_view_set_lang (textview, lang);
+    moo_text_view_set_lang_by_id (textview, "sh");
 
     init_combo (moo_glade_xml_get_widget (xml, "input"), input_names, G_N_ELEMENTS (input_names));
     init_combo (moo_glade_xml_get_widget (xml, "output"), output_names, G_N_ELEMENTS (output_names));
@@ -669,13 +675,13 @@ exe_type_load_data (G_GNUC_UNUSED MooCommandType *type,
     textview = moo_glade_xml_get_widget (xml, "textview");
     buffer = gtk_text_view_get_buffer (textview);
 
-    cmd_line = moo_command_data_get (data, "cmd-line");
+    cmd_line = moo_command_data_get_code (data);
     gtk_text_buffer_set_text (buffer, cmd_line ? cmd_line : "", -1);
 
-    parse_input (moo_command_data_get (data, "input"), &index);
+    parse_input (moo_command_data_get (data, KEY_INPUT), &index);
     gtk_combo_box_set_active (moo_glade_xml_get_widget (xml, "input"), index);
 
-    parse_output (moo_command_data_get (data, "output"), &index);
+    parse_output (moo_command_data_get (data, KEY_OUTPUT), &index);
     gtk_combo_box_set_active (moo_glade_xml_get_widget (xml, "output"), index);
 }
 
@@ -699,29 +705,29 @@ exe_type_save_data (G_GNUC_UNUSED MooCommandType *type,
     g_assert (GTK_IS_TEXT_VIEW (textview));
 
     new_cmd_line = moo_text_view_get_text (textview);
-    cmd_line = moo_command_data_get (data, "cmd-line");
+    cmd_line = moo_command_data_get_code (data);
 
     if (strcmp (cmd_line ? cmd_line : "", new_cmd_line ? new_cmd_line : "") != 0)
     {
-        moo_command_data_set (data, "cmd-line", new_cmd_line);
+        moo_command_data_set_code (data, new_cmd_line);
         changed = TRUE;
     }
 
     index = gtk_combo_box_get_active (moo_glade_xml_get_widget (xml, "input"));
-    parse_input (moo_command_data_get (data, "input"), &old_index);
+    parse_input (moo_command_data_get (data, KEY_INPUT), &old_index);
     g_assert (0 <= index && index < MOO_COMMAND_EXE_MAX_INPUT);
     if (index != old_index)
     {
-        moo_command_data_set (data, "input", input_strings[index]);
+        moo_command_data_set (data, KEY_INPUT, input_strings[index]);
         changed = TRUE;
     }
 
     index = gtk_combo_box_get_active (moo_glade_xml_get_widget (xml, "output"));
-    parse_output (moo_command_data_get (data, "output"), &old_index);
+    parse_output (moo_command_data_get (data, KEY_OUTPUT), &old_index);
     g_assert (0 <= index && index < MOO_COMMAND_EXE_MAX_OUTPUT);
     if (index != old_index)
     {
-        moo_command_data_set (data, "output", output_strings[index]);
+        moo_command_data_set (data, KEY_OUTPUT, output_strings[index]);
         changed = TRUE;
     }
 
@@ -736,12 +742,11 @@ exe_type_data_equal (G_GNUC_UNUSED MooCommandType *type,
                      MooCommandData *data2)
 {
     guint i;
-    const char *keys[] = {"cmd-line", "input", "output"};
 
-    for (i = 0; i < G_N_ELEMENTS (keys); ++i)
+    for (i = 0; i < N_KEYS; ++i)
     {
-        const char *val1 = moo_command_data_get (data1, keys[i]);
-        const char *val2 = moo_command_data_get (data2, keys[i]);
+        const char *val1 = moo_command_data_get (data1, i);
+        const char *val2 = moo_command_data_get (data2, i);
         if (strcmp (val1 ? val1 : "", val2 ? val2 : "") != 0)
             return FALSE;
     }
