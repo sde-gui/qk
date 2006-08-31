@@ -1248,6 +1248,15 @@
   )
 )
 
+(define-method set_lang_by_id
+  (of-object "MooTextView")
+  (c-name "moo_text_view_set_lang_by_id")
+  (return-type "none")
+  (parameters
+    '("const-char*" "lang" (null-ok))
+  )
+)
+
 (define-method add_child_in_border
   (of-object "MooTextView")
   (c-name "moo_text_view_add_child_in_border")
