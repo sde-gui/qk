@@ -433,8 +433,8 @@ real_child_setup (gpointer user_data)
 #endif
 
 
-static char **
-make_env (char **add)
+char **
+_moo_env_add (char **add)
 {
     GPtrArray *new_env;
     char **names, **p;
@@ -509,7 +509,7 @@ moo_cmd_run_command (MooCmd     *cmd,
             errp = &cmd->priv->err;
     }
 
-    new_env = make_env (envp);
+    new_env = _moo_env_add (envp);
 
 #if 0 && defined(__WIN32__)
     if (!(cmd_flags & MOO_CMD_OPEN_CONSOLE))

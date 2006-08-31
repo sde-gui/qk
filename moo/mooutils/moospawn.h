@@ -65,10 +65,6 @@ struct _MooCmdClass
 
 GType       _moo_cmd_get_type       (void) G_GNUC_CONST;
 
-gboolean    _moo_unix_spawn_async   (char      **argv,
-                                     GSpawnFlags g_flags,
-                                     GError    **error);
-
 MooCmd     *_moo_cmd_new            (const char *working_dir,
                                      char      **argv,
                                      char      **envp,
@@ -77,8 +73,12 @@ MooCmd     *_moo_cmd_new            (const char *working_dir,
                                      GSpawnChildSetupFunc child_setup,
                                      gpointer    user_data,
                                      GError    **error);
-
 void        _moo_cmd_abort          (MooCmd     *cmd);
+
+gboolean    _moo_unix_spawn_async   (char      **argv,
+                                     GSpawnFlags g_flags,
+                                     GError    **error);
+char      **_moo_env_add            (char      **add);
 
 
 G_END_DECLS
