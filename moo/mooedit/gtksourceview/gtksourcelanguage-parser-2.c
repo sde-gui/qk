@@ -89,8 +89,6 @@ struct _ParserState
 
 	gchar *opening_delimiter;
 	gchar *closing_delimiter;
-
-	GError **error;
 };
 typedef struct _ParserState ParserState;
 
@@ -565,6 +563,18 @@ add_ref (ParserState               *parser_state,
 					    parser_state->styles_mapping,
 					    parser_state->loaded_lang_ids,
 					    &tmp_error);
+
+				if (tmp_error)
+				{
+					GError *tmp_error2 = NULL;
+					g_set_error (&tmp_error2, PARSER_ERROR, tmp_error->code,
+						     "In file '%s' referenced from '%s': %s",
+						     imported_language->priv->lang_file_name,
+						     parser_state->language->priv->lang_file_name,
+						     tmp_error->message);
+					g_clear_error (&tmp_error);
+					tmp_error = tmp_error2;
+				}
 			}
 		}
 		ref_id = g_strdup (ref);
@@ -675,8 +685,7 @@ handle_context_element (ParserState *parser_state,
 
 	GError *tmp_error = NULL;
 
-	/* Return if an error is already set */
-	g_return_if_fail (error == NULL || *error == NULL);
+	g_return_if_fail (error != NULL && *error == NULL);
 
 	ref = xmlTextReaderGetAttribute (parser_state->reader, BAD_CAST "ref");
 	sub_pattern = xmlTextReaderGetAttribute (parser_state->reader,
@@ -799,8 +808,7 @@ handle_language_element (ParserState *parser_state,
 	xmlChar *lang_id, *lang_version;
 	xmlChar *expected_version = BAD_CAST "2.0";
 
-	/* Return if an error is already set */
-	g_return_if_fail (error == NULL || *error == NULL);
+	g_return_if_fail (error != NULL && *error == NULL);
 
 	lang_version = xmlTextReaderGetAttribute (parser_state->reader, BAD_CAST "version");
 
@@ -808,10 +816,11 @@ handle_language_element (ParserState *parser_state,
 			(xmlStrcmp (expected_version, lang_version) != 0))
 	{
 		g_set_error (error,
-				PARSER_ERROR,
-				PARSER_ERROR_WRONG_VERSION,
-				"wrong language version '%s', expected '%s'",
-				lang_version, (gchar *)expected_version);
+			     PARSER_ERROR,
+			     PARSER_ERROR_WRONG_VERSION,
+			     "wrong language version '%s', expected '%s'",
+			     lang_version ? (gchar*) lang_version : "(none)",
+			     (gchar*) expected_version);
 	}
 
 	lang_id = xmlTextReaderGetAttribute (parser_state->reader, BAD_CAST "id");
@@ -827,14 +836,18 @@ handle_language_element (ParserState *parser_state,
 
 static gboolean
 replace_by_id (const EggRegex *egg_regex,
-	       const gchar *regex,
-	       GString *expanded_regex,
-	       gpointer data)
+	       const gchar    *regex,
+	       GString        *expanded_regex,
+	       gpointer        user_data)
 {
 	gchar *id, *subst, *escapes;
 	gchar *tmp;
 	GError *tmp_error = NULL;
-	ParserState *parser_state = data;
+
+	struct {
+		ParserState *parser_state;
+		GError *error;
+	} *data = user_data;
 
 	escapes = egg_regex_fetch (egg_regex, 1, regex);
 	tmp = egg_regex_fetch (egg_regex, 2, regex);
@@ -844,17 +857,14 @@ replace_by_id (const EggRegex *egg_regex,
 	if (id_is_decorated (tmp, NULL))
 		id = g_strdup (tmp);
 	else
-		id = decorate_id (parser_state, tmp);
+		id = decorate_id (data->parser_state, tmp);
 	g_free (tmp);
 
-	subst = g_hash_table_lookup (parser_state->defined_regexes, id);
+	subst = g_hash_table_lookup (data->parser_state->defined_regexes, id);
 	if (subst == NULL)
-	{
 		g_set_error (&tmp_error,
-				PARSER_ERROR, PARSER_ERROR_WRONG_ID,
-				_ ("wrong id '%s' in regex '%s'"), id, regex);
-
-	}
+			     PARSER_ERROR, PARSER_ERROR_WRONG_ID,
+			     _("wrong id '%s' in regex '%s'"), id, regex);
 
 	if (tmp_error == NULL)
 	{
@@ -867,7 +877,7 @@ replace_by_id (const EggRegex *egg_regex,
 
 	if (tmp_error != NULL)
 	{
-		g_propagate_error (parser_state->error, tmp_error);
+		g_propagate_error (&data->error, tmp_error);
 		return TRUE;
 	}
 
@@ -977,20 +987,20 @@ expand_regex_vars (ParserState *parser_state, gchar *regex, gint len, GError **e
 	const gchar *re = "(?<!\\\\)(\\\\\\\\)*\\\\%\\{([^@]*?)\\}";
 	gchar *expanded_regex;
 	EggRegex *egg_re;
+	struct {
+		ParserState *parser_state;
+		GError *error;
+	} data = {parser_state, NULL};
 
 	if (regex == NULL)
 		return NULL;
 
 	egg_re = egg_regex_new (re, 0, 0, NULL);
 
-	/* Use parser_state to pass the GError because we cannot pass
-	 * it directly to the callback */
-	parser_state->error = error;
 	expanded_regex = egg_regex_replace_eval (egg_re, regex, len, 0, 0,
-						 replace_by_id, parser_state);
-	parser_state->error = NULL;
+						 replace_by_id, &data);
 
-	if (*error == NULL)
+	if (data.error == NULL)
         {
 		DEBUG (g_message ("expanded regex vars '%s' to '%s'",
 				  regex, expanded_regex));
@@ -998,9 +1008,10 @@ expand_regex_vars (ParserState *parser_state, gchar *regex, gint len, GError **e
 
 	egg_regex_unref (egg_re);
 
-	if (*error != NULL)
+	if (data.error != NULL)
 	{
 		g_free (expanded_regex);
+		g_propagate_error (error, data.error);
 		return NULL;
 	}
 
@@ -1194,8 +1205,7 @@ handle_define_regex_element (ParserState *parser_state,
 
 	int type;
 
-	/* Return if an error is already set */
-	g_return_if_fail (error == NULL || *error == NULL);
+	g_return_if_fail (error != NULL && *error == NULL);
 
 	if (parser_state->engine == NULL)
 		return;
@@ -1259,8 +1269,7 @@ handle_default_regex_options_element (ParserState *parser_state,
 	xmlChar *options;
 	int ret, type;
 
-	/* Return if an error is already set */
-	g_return_if_fail (error == NULL || *error == NULL);
+	g_return_if_fail (error != NULL && *error == NULL);
 
 	if (!parser_state->engine)
 		return;
@@ -1298,7 +1307,7 @@ map_style (ParserState *parser_state,
 {
 	const gchar *mapped_style;
 
-	g_return_if_fail (error == NULL || *error == NULL);
+	g_return_if_fail (error != NULL && *error == NULL);
 
 	if (map_to != NULL)
 		mapped_style = g_hash_table_lookup (parser_state->styles_mapping,
@@ -1370,7 +1379,7 @@ parse_language_with_id (ParserState *parser_state,
 	GtkSourceLanguage *imported_language;
 	GError *tmp_error = NULL;
 
-	g_return_if_fail (error == NULL || *error == NULL);
+	g_return_if_fail (error != NULL && *error == NULL);
 
 	lm = _gtk_source_language_get_languages_manager (parser_state->language);
 	imported_language = gtk_source_languages_manager_get_language_by_id (lm, lang_id);
@@ -1411,7 +1420,7 @@ parse_style (ParserState *parser_state,
 	gchar *lang_id = NULL;
 	GError *tmp_error = NULL;
 
-	g_return_if_fail (error == NULL || *error == NULL);
+	g_return_if_fail (error != NULL && *error == NULL);
 
 	tmp = xmlTextReaderGetAttribute (parser_state->reader,
 					 BAD_CAST "id");
@@ -1485,8 +1494,7 @@ handle_keyword_char_class_element (ParserState *parser_state,
 	xmlChar *char_class;
 	int ret, type;
 
-	/* Return if an error is already set */
-	g_return_if_fail (!error || !*error);
+	g_return_if_fail (error != NULL && *error == NULL);
 
 	if (!parser_state->engine)
 		return;
@@ -1519,21 +1527,16 @@ handle_styles_element (ParserState *parser_state,
 	const xmlChar *tag_name;
 	GError *tmp_error = NULL;
 
-	g_return_if_fail (error == NULL || *error == NULL);
+	g_return_if_fail (error != NULL && *error == NULL);
 
 	while (TRUE)
 	{
 		ret = xmlTextReaderRead (parser_state->reader);
-		if (!xmlTextReaderIsValid (parser_state->reader))
-		{
-			/* TODO: get the error message from the
-			 * xml parser */
-			g_set_error (&tmp_error,
-					PARSER_ERROR,
-					PARSER_ERROR_INVALID_DOC,
-					"invalid language file");
+
+		/* FIXME: is xmlTextReaderIsValid call needed here or
+		 * error func will be called? */
+		if (*error)
 			break;
-		}
 
 		tag_name = xmlTextReaderConstName (parser_state->reader);
 		type = xmlTextReaderNodeType  (parser_state->reader);
@@ -1620,6 +1623,17 @@ element_end (ParserState *parser_state)
 	}
 }
 
+static void
+text_reader_error_func (GError     **error,
+			const gchar *msg,
+			xmlParserSeverities severity,
+			xmlTextReaderLocatorPtr locator)
+{
+	/* FIXME: does someone know how to use libxml api? */
+	g_return_if_fail (error != NULL && *error == NULL);
+	g_set_error (error, PARSER_ERROR, PARSER_ERROR_INVALID_DOC, "%s", msg);
+}
+
 static gboolean
 file_parse (gchar                     *filename,
 	    GtkSourceLanguage         *language,
@@ -1634,6 +1648,8 @@ file_parse (gchar                     *filename,
 	int ret;
 	int fd;
 	GError *tmp_error = NULL;
+	GtkSourceLanguagesManager *lm;
+	const gchar *rng_lang_schema;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
@@ -1653,51 +1669,44 @@ file_parse (gchar                     *filename,
 			     PARSER_ERROR,
 			     PARSER_ERROR_CANNOT_OPEN,
 			     "unable to open the file");
+		goto error;
 	}
 
-	if (tmp_error == NULL)
+	lm = _gtk_source_language_get_languages_manager (language);
+	rng_lang_schema = _gtk_source_languages_manager_get_rng_file (lm);
+
+	if (!rng_lang_schema)
 	{
-		GtkSourceLanguagesManager *lm;
-		const gchar *rng_lang_schema;
+		g_set_error (&tmp_error,
+			     PARSER_ERROR,
+			     PARSER_ERROR_CANNOT_VALIDATE,
+			     "could not find the RelaxNG schema file");
+		goto error;
+	}
 
-		lm = _gtk_source_language_get_languages_manager (language);
-		rng_lang_schema = _gtk_source_languages_manager_get_rng_file (lm);
-
-		if (!rng_lang_schema)
-		{
-			g_set_error (&tmp_error,
-				     PARSER_ERROR,
-				     PARSER_ERROR_CANNOT_VALIDATE,
-				     "could not find the RelaxNG schema file");
-		}
-		else if (xmlTextReaderRelaxNGValidate (reader, rng_lang_schema))
-		{
-			g_set_error (&tmp_error,
-				     PARSER_ERROR,
-				     PARSER_ERROR_CANNOT_VALIDATE,
-				     "unable to load the RelaxNG schema '%s'",
-				     rng_lang_schema);
-		}
+	if (xmlTextReaderRelaxNGValidate (reader, rng_lang_schema))
+	{
+		g_set_error (&tmp_error,
+			     PARSER_ERROR,
+			     PARSER_ERROR_CANNOT_VALIDATE,
+			     "unable to load the RelaxNG schema '%s'",
+			     rng_lang_schema);
+		goto error;
 	}
 
 	parser_state = parser_state_new (language, engine,
 					 defined_regexes, styles,
 					 reader, loaded_lang_ids);
+	xmlTextReaderSetErrorHandler (reader,
+				      (xmlTextReaderErrorFunc) text_reader_error_func,
+				      &tmp_error);
 
 	while (!tmp_error && (ret = xmlTextReaderRead (parser_state->reader)) == 1)
 	{
 		int type;
 
-		if (!xmlTextReaderIsValid (parser_state->reader))
-		{
-			/* TODO: get the error message from the
-			 * xml parser */
-			g_set_error (&tmp_error,
-				     PARSER_ERROR,
-				     PARSER_ERROR_INVALID_DOC,
-				     "invalid language file");
-		}
-
+		/* FIXME: is xmlTextReaderIsValid call needed here or
+		 * error func will be called? */
 		if (tmp_error)
 			break;
 
@@ -1717,12 +1726,13 @@ file_parse (gchar                     *filename,
 	parser_state_destroy (parser_state);
 
 	if (tmp_error)
-	{
-		g_propagate_error (error, tmp_error);
-		return FALSE;
-	}
+		goto error;
 
 	return TRUE;
+
+error:
+	g_propagate_error (error, tmp_error);
+	return FALSE;
 }
 
 static ParserState *
