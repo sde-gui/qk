@@ -5,6 +5,7 @@ EXTRA_DIST =			\
 	mingw-configure		\
 	cygwin-configure	\
 	makewin			\
+	COPYING.lib		\
 	THANKS			\
 	intltool-extract.in	\
 	intltool-merge.in	\
