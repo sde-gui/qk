@@ -161,6 +161,9 @@ moo_lang_mgr_get_lang (MooLangMgr *mgr,
     id = _moo_lang_id_from_name (name);
     lang = g_hash_table_lookup (mgr->langs, id);
 
+    if (!lang)
+        g_warning ("could not find language '%s'", name);
+
     g_free (id);
     return lang;
 }
