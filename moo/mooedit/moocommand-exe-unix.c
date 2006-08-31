@@ -588,7 +588,7 @@ exe_type_create_widget (G_GNUC_UNUSED MooCommandType *type)
     textview = moo_glade_xml_get_widget (xml, "textview");
     moo_text_view_set_font_from_string (textview, "Monospace");
     mgr = moo_editor_get_lang_mgr (moo_editor_instance ());
-    lang = moo_lang_mgr_get_lang (mgr, "bash");
+    lang = moo_lang_mgr_get_lang (mgr, "sh");
     moo_text_view_set_lang (textview, lang);
 
     init_combo (moo_glade_xml_get_widget (xml, "input"), input_names, G_N_ELEMENTS (input_names));
