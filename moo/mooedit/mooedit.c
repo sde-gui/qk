@@ -18,8 +18,6 @@
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootextbuffer.h"
-// #include "mooedit/moolangmgr-private.h"
-// #include "mooedit/moolang-private.h"
 #include "mooedit/mooeditprogress-glade.h"
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooutils/moomarshals.h"
