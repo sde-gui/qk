@@ -7,6 +7,9 @@ text editor.
 
 medit is free software, released under GNU GPL license. See COPYING
 file in this distribution for complete text of the license.
+Portions of code are licensed under GNU LGPL license. See COPYING.lib
+file for the text of this license. Files released under LGPL have
+special notes about the license as appropriate.
 
 The web site is:
     http://mooedit.sourcefoge.net/
