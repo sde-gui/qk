@@ -33,6 +33,22 @@
 #include "gtksourcelanguagesmanager.h"
 #include "gtksourcelanguage-private.h"
 
+static gchar *
+fix_pattern (const gchar *pattern,
+	     gboolean    *end_at_line_end)
+{
+	if (pattern && g_str_has_suffix (pattern, "\\n"))
+	{
+		if (end_at_line_end)
+			*end_at_line_end = TRUE;
+		return g_strndup (pattern, strlen (pattern) - 2);
+	}
+	else
+	{
+		return g_strdup (pattern);
+	}
+}
+
 static gboolean
 engine_add_simple_pattern (GtkSourceContextEngine *ce,
 			   GtkSourceLanguage      *language,
@@ -41,7 +57,7 @@ engine_add_simple_pattern (GtkSourceContextEngine *ce,
 			   const gchar            *pattern)
 {
 	gboolean result;
-	char *real_id, *root_id;
+	gchar *real_id, *root_id, *fixed;
 	GError *error = NULL;
 
 	g_return_val_if_fail (id != NULL, FALSE);
@@ -49,9 +65,11 @@ engine_add_simple_pattern (GtkSourceContextEngine *ce,
 	root_id = g_strdup_printf ("%s:%s", language->priv->id, language->priv->id);
 	real_id = g_strdup_printf ("%s:%s", language->priv->id, id);
 
+	fixed = fix_pattern (pattern, NULL);
+
 	result = _gtk_source_context_engine_define_context (ce, real_id,
 							    root_id,
-							    pattern, NULL, NULL,
+							    fixed, NULL, NULL,
 							    style,
 							    GTK_SOURCE_CONTEXT_EXTEND_PARENT |
 								GTK_SOURCE_CONTEXT_END_AT_LINE_END,
@@ -63,6 +81,7 @@ engine_add_simple_pattern (GtkSourceContextEngine *ce,
 		g_error_free (error);
 	}
 
+	g_free (fixed);
 	g_free (real_id);
 	g_free (root_id);
 	return result;
@@ -79,7 +98,7 @@ engine_add_syntax_pattern (GtkSourceContextEngine *ce,
 {
 	gboolean result;
 	gchar *real_id, *root_id;
-	gchar *freeme = NULL;
+	gchar *fixed_start, *fixed_end;
 	GError *error = NULL;
 	GtkSourceContextMatchOptions options = GTK_SOURCE_CONTEXT_EXTEND_PARENT;
 
@@ -88,13 +107,8 @@ engine_add_syntax_pattern (GtkSourceContextEngine *ce,
 	root_id = g_strdup_printf ("%s:%s", language->priv->id, language->priv->id);
 	real_id = g_strdup_printf ("%s:%s", language->priv->id, id);
 
-	/* XXX */
-	if (pattern_end && g_str_has_suffix (pattern_end, "\\n"))
-	{
-		freeme = g_strndup (pattern_end, strlen (pattern_end) - 2);
-		pattern_end = freeme;
-		end_at_line_end = TRUE;
-	}
+	fixed_start = fix_pattern (pattern_start, &end_at_line_end);
+	fixed_end = fix_pattern (pattern_end, &end_at_line_end);
 
 	if (end_at_line_end)
 		options |= GTK_SOURCE_CONTEXT_END_AT_LINE_END;
@@ -115,7 +129,8 @@ engine_add_syntax_pattern (GtkSourceContextEngine *ce,
 
 	g_free (real_id);
 	g_free (root_id);
-	g_free (freeme);
+	g_free (fixed_start);
+	g_free (fixed_end);
 
 	return result;
 }
