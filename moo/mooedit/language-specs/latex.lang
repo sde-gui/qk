@@ -2,10 +2,11 @@
 <language id="latex" _name="LaTeX" version="2.0" _section="Markup" mimetypes="text/x-tex">
     <styles>
         <style id="comment"            _name="Comment"    map-to="def:comment"/>
+        <style id="inline-math"        _name="Inline Math Mode" map-to="def:package"/>
         <style id="math"               _name="Math Mode"  map-to="def:package"/>
-        <style id="include"            _name="Include"    map-to="def:package"/>
+        <style id="include"            _name="Include"    map-to="def:keyword"/>
         <style id="most-used-commands" _name="Command"    map-to="def:keyword"/>
-        <style id="command"            _name="Keyword"/> <!--map-to="def:others"-->
+        <style id="command"            _name="Keyword"    map-to="def:keyword"/>
         <style id="verbatim"           _name="Verbatim"   map-to="def:comment"/>
     </styles>
 
@@ -30,6 +31,11 @@
                 </context>
 
                 <context id="math" style-ref="math">
+                    <start>\$\$</start>
+                    <end>\$\$</end>
+                </context>
+
+                <context id="inline-math" style-ref="inline-math">
                     <start>\$</start>
                     <end>\$</end>
                 </context>
@@ -122,4 +128,6 @@
             </include>
         </context>
     </definitions>
+
+    <line-comment start="%"/>
 </language>
