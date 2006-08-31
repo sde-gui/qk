@@ -192,9 +192,9 @@ filter_setting_match (FilterSetting *setting,
 {
     if (egg_regex_match (setting->regex, filename, 0))
     {
-        g_message ("file '%s' matched pattern '%s': config '%s'",
-                   filename, egg_regex_get_pattern (setting->regex),
-                   setting->config);
+//         g_message ("file '%s' matched pattern '%s': config '%s'",
+//                    filename, egg_regex_get_pattern (setting->regex),
+//                    setting->config);
         return setting->config;
     }
 
