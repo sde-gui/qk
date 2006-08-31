@@ -76,10 +76,8 @@ class Plugin(moo.edit.Plugin):
                                "import moo\nimport gtk\n")
         console.set_property("highlight-current-line", False)
         editor = moo.edit.editor_instance()
-        mgr = editor.get_lang_mgr()
-        lang = mgr.get_lang("PythonConsole")
-        console.set_lang(lang)
-        console.modify_font(pango.FontDescription("Courier New 11"))
+        console.set_lang_by_id("python-console")
+        console.modify_font(pango.FontDescription("Monospace"))
 
         swin.add(console)
         window.set_default_size(400,300)
