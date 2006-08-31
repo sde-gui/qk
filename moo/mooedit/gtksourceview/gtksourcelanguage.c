@@ -131,7 +131,8 @@ _gtk_source_language_new_from_file (const gchar			*filename,
 
     	}
 
-	lang->priv->languages_manager = lm;
+	if (lang != NULL)
+		lang->priv->languages_manager = lm;
 
 	return lang;
 }
