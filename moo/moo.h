@@ -29,6 +29,7 @@
 #include <mooedit/moolangmgr.h>
 #include <mooedit/moolinemark.h>
 #include <mooedit/moolineview.h>
+#include <mooedit/moooutputfilter.h>
 #include <mooedit/mooplugin-macro.h>
 #include <mooedit/mooplugin.h>
 #include <mooedit/mootextbuffer.h>
