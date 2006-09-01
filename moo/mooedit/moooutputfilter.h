@@ -19,26 +19,52 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_OUTPUT_FILTER                    (moo_output_filter_get_type ())
-#define MOO_OUTPUT_FILTER(object)                 (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_OUTPUT_FILTER, MooOutputFilter))
-#define MOO_OUTPUT_FILTER_CLASS(klass)            (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_OUTPUT_FILTER, MooOutputFilterClass))
-#define MOO_IS_OUTPUT_FILTER(object)              (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_OUTPUT_FILTER))
-#define MOO_IS_OUTPUT_FILTER_CLASS(klass)         (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_OUTPUT_FILTER))
-#define MOO_OUTPUT_FILTER_GET_CLASS(obj)          (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_OUTPUT_FILTER, MooOutputFilterClass))
+#define MOO_TYPE_OUTPUT_FILTER              (moo_output_filter_get_type ())
+#define MOO_OUTPUT_FILTER(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_OUTPUT_FILTER, MooOutputFilter))
+#define MOO_OUTPUT_FILTER_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_OUTPUT_FILTER, MooOutputFilterClass))
+#define MOO_IS_OUTPUT_FILTER(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_OUTPUT_FILTER))
+#define MOO_IS_OUTPUT_FILTER_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_OUTPUT_FILTER))
+#define MOO_OUTPUT_FILTER_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_OUTPUT_FILTER, MooOutputFilterClass))
 
-typedef struct _MooOutputFilter                  MooOutputFilter;
-typedef struct _MooOutputFilterClass             MooOutputFilterClass;
+typedef struct _MooOutputFilter      MooOutputFilter;
+typedef struct _MooOutputFilterClass MooOutputFilterClass;
 
 struct _MooOutputFilter {
     GObject base;
+    MooLineView *view;
 };
 
 struct _MooOutputFilterClass {
     GObjectClass base_class;
+
+    void     (*attach)      (MooOutputFilter *filter);
+    void     (*detach)      (MooOutputFilter *filter);
+
+    void     (*cmd_start)   (MooOutputFilter *filter);
+    gboolean (*cmd_exit)    (MooOutputFilter *filter,
+                             int              status);
+    gboolean (*stdout_line) (MooOutputFilter *filter,
+                             const char      *line);
+    gboolean (*stderr_line) (MooOutputFilter *filter,
+                             const char      *line);
 };
 
 
-GType   moo_output_filter_get_type  (void) G_GNUC_CONST;
+GType        moo_output_filter_get_type     (void) G_GNUC_CONST;
+
+MooOutputFilter *moo_output_filter_new      (void);
+
+void         moo_output_filter_set_view     (MooOutputFilter    *filter,
+                                             MooLineView        *view);
+MooLineView *moo_output_filter_get_view     (MooOutputFilter    *filter);
+
+gboolean     moo_output_filter_stdout_line  (MooOutputFilter    *filter,
+                                             const char         *line);
+gboolean     moo_output_filter_stderr_line  (MooOutputFilter    *filter,
+                                             const char         *line);
+void         moo_output_filter_cmd_start    (MooOutputFilter    *filter);
+gboolean     moo_output_filter_cmd_exit     (MooOutputFilter    *filter,
+                                             int                 status);
 
 
 G_END_DECLS

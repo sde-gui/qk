@@ -12,7 +12,7 @@
  */
 
 #include "config.h"
-#include "mooedit/moocommand-exe.h"
+#include "mooedit/moocommand-exe-private.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooedittools-glade.h"
 #include "mooedit/moocmdview.h"
@@ -36,17 +36,19 @@
 enum {
     KEY_INPUT,
     KEY_OUTPUT,
+    KEY_FILTER,
     N_KEYS
 };
 
 static const char *data_keys[] = {
-    "input", "output", NULL
+    "input", "output", "filter", NULL
 };
 
 struct _MooCommandExePrivate {
     char *cmd_line;
     MooCommandExeInput input;
     MooCommandExeOutput output;
+    char *filter;
 };
 
 
@@ -72,6 +74,7 @@ moo_command_exe_finalize (GObject *object)
 {
     MooCommandExe *cmd = MOO_COMMAND_EXE (object);
 
+    g_free (cmd->priv->filter);
     g_free (cmd->priv->cmd_line);
 
     G_OBJECT_CLASS (moo_command_exe_parent_class)->finalize (object);
@@ -216,15 +219,23 @@ run_in_pane (MooCommandExe     *cmd,
     /* XXX */
     if (!moo_cmd_view_running (MOO_CMD_VIEW (output)))
     {
+        MooOutputFilter *filter;
+
         cmd_line = make_cmd (cmd, ctx);
         g_return_if_fail (cmd_line != NULL);
 
         moo_line_view_clear (MOO_LINE_VIEW (output));
         moo_edit_window_present_output (window);
+
+        filter = cmd->priv->filter ? moo_command_filter_create (cmd->priv->filter) : NULL;
+        moo_cmd_view_set_filter (MOO_CMD_VIEW (output), filter);
+
         moo_cmd_view_run_command_full (MOO_CMD_VIEW (output),
                                        cmd_line, cmd->priv->cmd_line,
                                        working_dir, envp, "Command");
 
+        if (filter)
+            g_object_unref (filter);
         g_free (cmd_line);
     }
 }
@@ -513,6 +524,8 @@ moo_command_exe_class_init (MooCommandExeClass *klass)
     type = g_object_new (_moo_command_type_exe_get_type (), NULL);
     moo_command_type_register ("exe", _("Shell command"), type, (char**) data_keys);
     g_object_unref (type);
+
+//     moo_command_filter_register ("something", _("Something"), SOME_TYPE);
 }
 
 
@@ -595,7 +608,10 @@ exe_type_create_command (G_GNUC_UNUSED MooCommandType *type,
     if (!parse_output (moo_command_data_get (data, KEY_OUTPUT), &output))
         g_return_val_if_reached (NULL);
 
-    cmd = moo_command_exe_new (cmd_line, moo_command_options_parse (options), input, output);
+    cmd = _moo_command_exe_new (cmd_line,
+                                moo_command_options_parse (options),
+                                input, output,
+                                moo_command_data_get (data, KEY_FILTER));
     g_return_val_if_fail (cmd != NULL, NULL);
 
     return cmd;
@@ -767,10 +783,11 @@ _moo_command_type_exe_class_init (MooCommandTypeExeClass *klass)
 
 
 MooCommand *
-moo_command_exe_new (const char         *cmd_line,
-                     MooCommandOptions   options,
-                     MooCommandExeInput  input,
-                     MooCommandExeInput  output)
+_moo_command_exe_new (const char         *cmd_line,
+                      MooCommandOptions   options,
+                      MooCommandExeInput  input,
+                      MooCommandExeOutput output,
+                      const char         *filter)
 {
     MooCommandExe *cmd;
 
@@ -783,6 +800,7 @@ moo_command_exe_new (const char         *cmd_line,
     cmd->priv->cmd_line = g_strdup (cmd_line);
     cmd->priv->input = input;
     cmd->priv->output = output;
+    cmd->priv->filter = g_strdup (filter);
 
     return MOO_COMMAND (cmd);
 }

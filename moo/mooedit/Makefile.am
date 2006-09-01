@@ -4,6 +4,15 @@ SUBDIRS = gtksourceview plugins language-specs
 mooedit_toolsdir = $(MOO_DATA_DIR)
 mooedit_tools_DATA = context.cfg menu.cfg
 
+dummy_targets =                        \
+	moocommand-exe.o               \
+	moocommand-exe-private.o
+CLEANFILES = $(dummy_targets)
+moocommand-exe.o: moocommand-exe-unix.o
+	echo stamp > $(@F)
+moocommand-exe-private.o: moocommand-exe-unix.o
+	echo stamp > $(@F)
+
 unix_sources =                         \
 	moocommand-exe-unix.c
 
@@ -24,6 +33,7 @@ mooedit_include_headers =              \
 	moolinemark.h                  \
 	moolineview.h                  \
 	moooutputfilter.h              \
+	moooutputfiltersimple.h        \
 	mooplugin-loader.h             \
 	mooplugin-macro.h              \
 	mooplugin.h                    \
@@ -39,6 +49,7 @@ mooedit_noinst_headers =               \
 	moocommand-exe.h               \
 	moocommand-script.h            \
 	moocommand-private.h           \
+	moocommand-exe-private.h       \
 	moocommand.h                   \
 	moocommanddisplay.h            \
 	mooedit-private.h              \
@@ -104,6 +115,7 @@ mooedit_sources =                      \
 	moolinemark.c                  \
 	moolineview.c                  \
 	moooutputfilter.c              \
+	moooutputfiltersimple.c        \
 	mooplugin-loader.c             \
 	mooplugin.c                    \
 	mootextbox.c                   \
@@ -145,7 +157,7 @@ mooedit_enums_headers =			\
 	mootextstyle.h			\
 	mootextview.h
 
-CLEANFILES = stamp-mooedit-enums.h stamp-mooedit-enums.c mooedit-enums.h mooedit-enums.c
+CLEANFILES += stamp-mooedit-enums.h stamp-mooedit-enums.c mooedit-enums.h mooedit-enums.c
 mooedit-enums.h: stamp-mooedit-enums.h
 	@true
 mooedit-enums.c: stamp-mooedit-enums.c

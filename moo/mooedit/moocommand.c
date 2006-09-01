@@ -16,6 +16,7 @@
 #include "mooedit/moocommand-script.h"
 #include "mooedit/moocommand-exe.h"
 #include "mooedit/mooeditwindow.h"
+#include "mooedit/moooutputfiltersimple.h"
 #include "mooedit/mooedit-enums.h"
 #include <gtk/gtkwindow.h>
 #include <gtk/gtktextview.h>
@@ -58,8 +59,16 @@ struct _MooCommandData {
     char *code;
 };
 
+typedef struct {
+    char *name;
+    MooCommandFilterFactory factory_func;
+    gpointer data;
+    GDestroyNotify data_notify;
+} FilterInfo;
+
 
 static GHashTable *registered_types;
+static GHashTable *registered_filters;
 
 
 static Variable *variable_new               (const GValue   *value);
@@ -1087,6 +1096,130 @@ _moo_command_init (void)
 #ifndef __WIN32__
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_EXE));
 #endif
+        _moo_command_filter_simple_init ();
         been_here = TRUE;
     }
+}
+
+
+static void
+filters_init (void)
+{
+    if (!registered_filters)
+        registered_filters = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+}
+
+
+static FilterInfo *
+filter_lookup (const char *id)
+{
+    g_return_val_if_fail (id != NULL, NULL);
+
+    if (registered_filters)
+        return g_hash_table_lookup (registered_filters, id);
+    else
+        return NULL;
+}
+
+
+void
+moo_command_filter_register (const char             *id,
+                             const char             *name,
+                             MooCommandFilterFactory factory_func,
+                             gpointer                data,
+                             GDestroyNotify          data_notify)
+{
+    FilterInfo *info;
+
+    g_return_if_fail (id != NULL);
+    g_return_if_fail (name != NULL);
+    g_return_if_fail (factory_func != NULL);
+
+    filters_init ();
+
+    if (filter_lookup (id))
+    {
+        g_message ("reregistering filter '%s'", id);
+        moo_command_filter_unregister (id);
+    }
+
+    info = g_new0 (FilterInfo, 1);
+    info->name = g_strdup (name);
+    info->factory_func = factory_func;
+    info->data = data;
+    info->data_notify = data_notify;
+
+    g_hash_table_insert (registered_filters, g_strdup (id), info);
+}
+
+
+void
+moo_command_filter_unregister (const char *id)
+{
+    FilterInfo *info;
+
+    g_return_if_fail (id != NULL);
+
+    info = filter_lookup (id);
+
+    if (!info)
+    {
+        g_warning ("filter '%s' not registered", id);
+        return;
+    }
+
+    g_hash_table_remove (registered_filters, id);
+
+    if (info->data_notify)
+        info->data_notify (info->data);
+
+    g_free (info->name);
+    g_free (info);
+}
+
+
+const char *
+moo_command_filter_lookup (const char *id)
+{
+    FilterInfo *info;
+
+    g_return_val_if_fail (id != NULL, 0);
+
+    info = filter_lookup (id);
+
+    return info ? info->name : NULL;
+}
+
+
+static void
+prepend_filter_id (const char *id,
+                   G_GNUC_UNUSED gpointer info,
+                   GSList    **list)
+{
+    *list = g_slist_prepend (*list, g_strdup (id));
+}
+
+GSList *
+moo_command_filter_list (void)
+{
+    GSList *list = NULL;
+
+    if (registered_filters)
+        g_hash_table_foreach (registered_filters, (GHFunc) prepend_filter_id, &list);
+
+    return list;
+}
+
+
+MooOutputFilter *
+moo_command_filter_create (const char *id)
+{
+    FilterInfo *info;
+
+    g_return_val_if_fail (id != NULL, NULL);
+
+    info = filter_lookup (id);
+    g_return_val_if_fail (info != NULL, NULL);
+
+    return info->factory_func (id, info->data);
 }

@@ -15,6 +15,7 @@
 #define __MOO_CMD_VIEW__
 
 #include <mooedit/moolineview.h>
+#include <mooedit/moooutputfilter.h>
 
 G_BEGIN_DECLS
 
@@ -61,19 +62,22 @@ GType       moo_cmd_view_get_type           (void) G_GNUC_CONST;
 
 GtkWidget  *moo_cmd_view_new                (void);
 
-gboolean    moo_cmd_view_run_command        (MooCmdView     *view,
-                                             const char     *cmd,
-                                             const char     *working_dir,
-                                             const char     *job_name);
-gboolean    moo_cmd_view_run_command_full   (MooCmdView     *view,
-                                             const char     *cmd,
-                                             const char     *display_cmd,
-                                             const char     *working_dir,
-                                             char          **envp,
-                                             const char     *job_name);
+void        moo_cmd_view_set_filter         (MooCmdView         *view,
+                                             MooOutputFilter    *filter);
 
-void        moo_cmd_view_abort              (MooCmdView     *view);
-gboolean    moo_cmd_view_running            (MooCmdView     *view);
+gboolean    moo_cmd_view_run_command        (MooCmdView         *view,
+                                             const char         *cmd,
+                                             const char         *working_dir,
+                                             const char         *job_name);
+gboolean    moo_cmd_view_run_command_full   (MooCmdView         *view,
+                                             const char         *cmd,
+                                             const char         *display_cmd,
+                                             const char         *working_dir,
+                                             char              **envp,
+                                             const char         *job_name);
+
+void        moo_cmd_view_abort              (MooCmdView         *view);
+gboolean    moo_cmd_view_running            (MooCmdView         *view);
 
 
 G_END_DECLS

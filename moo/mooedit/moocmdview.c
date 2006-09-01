@@ -23,10 +23,13 @@
 
 struct _MooCmdViewPrivate {
     MooCmd *cmd;
+
     GtkTextTag *error_tag;
     GtkTextTag *message_tag;
     GtkTextTag *stdout_tag;
     GtkTextTag *stderr_tag;
+
+    MooOutputFilter *filter;
 };
 
 static void      moo_cmd_view_destroy       (GtkObject  *object);
@@ -182,6 +185,8 @@ moo_cmd_view_destroy (GtkObject *object)
 {
     MooCmdView *view = MOO_CMD_VIEW (object);
 
+    moo_cmd_view_set_filter (view, NULL);
+
     if (view->priv->cmd)
     {
         _moo_cmd_abort (view->priv->cmd);
@@ -198,6 +203,34 @@ GtkWidget*
 moo_cmd_view_new (void)
 {
     return g_object_new (MOO_TYPE_CMD_VIEW, NULL);
+}
+
+
+void
+moo_cmd_view_set_filter (MooCmdView      *view,
+                         MooOutputFilter *filter)
+{
+    g_return_if_fail (MOO_IS_CMD_VIEW (view));
+    g_return_if_fail (!filter || MOO_IS_OUTPUT_FILTER (filter));
+
+    if (view->priv->filter == filter)
+        return;
+
+    if (view->priv->filter)
+    {
+        moo_output_filter_set_view (view->priv->filter, NULL);
+        g_object_unref (view->priv->filter);
+        view->priv->filter = NULL;
+    }
+
+    view->priv->filter = filter;
+
+    if (view->priv->filter)
+    {
+        g_object_ref (view->priv->filter);
+        moo_output_filter_set_view (view->priv->filter,
+                                    MOO_LINE_VIEW (view));
+    }
 }
 
 
@@ -220,7 +253,7 @@ cmd_exit_cb (MooCmd     *cmd,
 
 
 static gboolean
-stdout_text_cb (MooCmd     *cmd,
+stdout_line_cb (MooCmd     *cmd,
                 const char *text,
                 MooCmdView *view)
 {
@@ -232,7 +265,7 @@ stdout_text_cb (MooCmd     *cmd,
 
 
 static gboolean
-stderr_text_cb (MooCmd     *cmd,
+stderr_line_cb (MooCmd     *cmd,
                 const char *text,
                 MooCmdView *view)
 {
@@ -308,11 +341,14 @@ moo_cmd_view_run_command_full (MooCmdView  *view,
     }
 
     g_signal_connect (view->priv->cmd, "cmd-exit", G_CALLBACK (cmd_exit_cb), view);
-    g_signal_connect (view->priv->cmd, "stdout-text", G_CALLBACK (stdout_text_cb), view);
-    g_signal_connect (view->priv->cmd, "stderr-text", G_CALLBACK (stderr_text_cb), view);
+    g_signal_connect (view->priv->cmd, "stdout-line", G_CALLBACK (stdout_line_cb), view);
+    g_signal_connect (view->priv->cmd, "stderr-line", G_CALLBACK (stderr_line_cb), view);
 
     result = TRUE;
     g_signal_emit (view, signals[JOB_STARTED], 0, job_name);
+
+    if (view->priv->filter)
+        moo_output_filter_cmd_start (view->priv->filter);
 
 out:
     g_strfreev (argv);
@@ -342,6 +378,9 @@ static gboolean
 moo_cmd_view_cmd_exit (MooCmdView *view,
                        int         status)
 {
+    if (view->priv->filter && moo_output_filter_cmd_exit (view->priv->filter, status))
+        return TRUE;
+
     if (WIFEXITED (status))
     {
         guint8 exit_code = WEXITSTATUS (status);
@@ -397,6 +436,9 @@ static gboolean
 moo_cmd_view_cmd_exit (MooCmdView *view,
                        int         status)
 {
+    if (view->priv->filter && moo_output_filter_cmd_exit (view->priv->filter, status))
+        return TRUE;
+
     if (!status)
     {
         moo_line_view_write_line (MOO_LINE_VIEW (view),
@@ -439,8 +481,12 @@ static gboolean
 moo_cmd_view_stdout_line (MooCmdView *view,
                           const char *line)
 {
+    if (view->priv->filter && moo_output_filter_stdout_line (view->priv->filter, line))
+        return TRUE;
+
     moo_line_view_write_line (MOO_LINE_VIEW (view), line, -1,
                               view->priv->stdout_tag);
+
     return FALSE;
 }
 
@@ -449,7 +495,11 @@ static gboolean
 moo_cmd_view_stderr_line (MooCmdView *view,
                           const char *line)
 {
+    if (view->priv->filter && moo_output_filter_stderr_line (view->priv->filter, line))
+        return TRUE;
+
     moo_line_view_write_line (MOO_LINE_VIEW (view), line, -1,
                               view->priv->stderr_tag);
+
     return FALSE;
 }

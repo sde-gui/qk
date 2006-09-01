@@ -15,6 +15,7 @@
 #define __MOO_COMMAND_H__
 
 #include <gtk/gtkwidget.h>
+#include <mooedit/moooutputfilter.h>
 
 G_BEGIN_DECLS
 
@@ -112,83 +113,99 @@ struct _MooCommandTypeClass {
 };
 
 
-GType               moo_command_get_type        (void) G_GNUC_CONST;
-GType               moo_command_context_get_type(void) G_GNUC_CONST;
-GType               moo_command_data_get_type   (void) G_GNUC_CONST;
-GType               moo_command_type_get_type   (void) G_GNUC_CONST;
+GType               moo_command_get_type            (void) G_GNUC_CONST;
+GType               moo_command_context_get_type    (void) G_GNUC_CONST;
+GType               moo_command_data_get_type       (void) G_GNUC_CONST;
+GType               moo_command_type_get_type       (void) G_GNUC_CONST;
 
-MooCommand         *moo_command_create          (const char         *name,
-                                                 const char         *options,
-                                                 MooCommandData     *data);
+MooCommand         *moo_command_create              (const char         *name,
+                                                     const char         *options,
+                                                     MooCommandData     *data);
 
-void                moo_command_run             (MooCommand         *cmd,
-                                                 MooCommandContext  *ctx);
-gboolean            moo_command_check_context   (MooCommand         *cmd,
-                                                 MooCommandContext  *ctx);
-gboolean            moo_command_check_sensitive (MooCommand         *cmd,
-                                                 gpointer            doc,
-                                                 gpointer            window);
+void                moo_command_run                 (MooCommand         *cmd,
+                                                     MooCommandContext  *ctx);
+gboolean            moo_command_check_context       (MooCommand         *cmd,
+                                                     MooCommandContext  *ctx);
+gboolean            moo_command_check_sensitive     (MooCommand         *cmd,
+                                                     gpointer            doc,
+                                                     gpointer            window);
 
-void                moo_command_set_options     (MooCommand         *cmd,
-                                                 MooCommandOptions   options);
-MooCommandOptions   moo_command_get_options     (MooCommand         *cmd);
+void                moo_command_set_options         (MooCommand         *cmd,
+                                                     MooCommandOptions   options);
+MooCommandOptions   moo_command_get_options         (MooCommand         *cmd);
 
-MooCommandOptions   moo_command_options_parse   (const char         *string);
+MooCommandOptions   moo_command_options_parse       (const char         *string);
 
-void                moo_command_type_register   (const char         *name,
-                                                 const char         *display_name,
-                                                 MooCommandType     *type,
-                                                 char              **data_keys);
-MooCommandType     *moo_command_type_lookup     (const char         *name);
+void                moo_command_type_register       (const char         *name,
+                                                     const char         *display_name,
+                                                     MooCommandType     *type,
+                                                     char              **data_keys);
+MooCommandType     *moo_command_type_lookup         (const char         *name);
 /* returns list of MooCommandType instances, list should be freed */
-GSList             *moo_command_list_types      (void);
+GSList             *moo_command_list_types          (void);
 
 
-MooCommandData     *moo_command_data_new        (guint               len);
+MooCommandData     *moo_command_data_new            (guint               len);
 
-MooCommandData     *moo_command_data_ref        (MooCommandData     *data);
-void                moo_command_data_unref      (MooCommandData     *data);
-void                moo_command_data_set        (MooCommandData     *data,
-                                                 guint               index_,
-                                                 const char         *value);
-void                moo_command_data_set_code   (MooCommandData     *data,
-                                                 const char         *code);
-const char         *moo_command_data_get        (MooCommandData     *data,
-                                                 guint               index_);
-const char         *moo_command_data_get_code   (MooCommandData     *data);
-void                moo_command_data_clear      (MooCommandData     *data);
+MooCommandData     *moo_command_data_ref            (MooCommandData     *data);
+void                moo_command_data_unref          (MooCommandData     *data);
+void                moo_command_data_set            (MooCommandData     *data,
+                                                     guint               index_,
+                                                     const char         *value);
+void                moo_command_data_set_code       (MooCommandData     *data,
+                                                     const char         *code);
+const char         *moo_command_data_get            (MooCommandData     *data,
+                                                     guint               index_);
+const char         *moo_command_data_get_code       (MooCommandData     *data);
+void                moo_command_data_clear          (MooCommandData     *data);
 
 
-MooCommandContext  *moo_command_context_new     (gpointer            doc,
-                                                 gpointer            window);
+MooCommandContext  *moo_command_context_new         (gpointer            doc,
+                                                     gpointer            window);
 
-void                moo_command_context_set_doc (MooCommandContext  *ctx,
-                                                 gpointer            doc);
-void                moo_command_context_set_window (MooCommandContext *ctx,
-                                                 gpointer            window);
-gpointer            moo_command_context_get_doc (MooCommandContext  *ctx);
-gpointer            moo_command_context_get_window (MooCommandContext *ctx);
+void                moo_command_context_set_doc     (MooCommandContext  *ctx,
+                                                     gpointer            doc);
+void                moo_command_context_set_window  (MooCommandContext *ctx,
+                                                     gpointer            window);
+gpointer            moo_command_context_get_doc     (MooCommandContext  *ctx);
+gpointer            moo_command_context_get_window  (MooCommandContext *ctx);
 
-void                moo_command_context_set     (MooCommandContext  *ctx,
-                                                 const char         *name,
-                                                 const GValue       *value);
-gboolean            moo_command_context_get     (MooCommandContext  *ctx,
-                                                 const char         *name,
-                                                 GValue             *value);
-void                moo_command_context_unset   (MooCommandContext  *ctx,
-                                                 const char         *name);
-void                moo_command_context_set_string (MooCommandContext *ctx,
-                                                 const char         *name,
-                                                 const char         *value);
-const char         *moo_command_context_get_string (MooCommandContext *ctx,
-                                                 const char         *name);
+void                moo_command_context_set         (MooCommandContext  *ctx,
+                                                     const char         *name,
+                                                     const GValue       *value);
+gboolean            moo_command_context_get         (MooCommandContext  *ctx,
+                                                     const char         *name,
+                                                     GValue             *value);
+void                moo_command_context_unset       (MooCommandContext  *ctx,
+                                                     const char         *name);
+void                moo_command_context_set_string  (MooCommandContext *ctx,
+                                                     const char         *name,
+                                                     const char         *value);
+const char         *moo_command_context_get_string  (MooCommandContext *ctx,
+                                                     const char         *name);
 
-typedef void (*MooCommandContextForeachFunc)    (const char         *name,
-                                                 const GValue       *value,
-                                                 gpointer            data);
-void                moo_command_context_foreach (MooCommandContext  *ctx,
-                                                 MooCommandContextForeachFunc func,
-                                                 gpointer            data);
+typedef void (*MooCommandContextForeachFunc)        (const char         *name,
+                                                     const GValue       *value,
+                                                     gpointer            data);
+void                moo_command_context_foreach     (MooCommandContext  *ctx,
+                                                     MooCommandContextForeachFunc func,
+                                                     gpointer            data);
+
+
+typedef MooOutputFilter *(*MooCommandFilterFactory) (const char         *id,
+                                                     gpointer            data);
+
+void                moo_command_filter_register     (const char         *id,
+                                                     const char         *name,
+                                                     MooCommandFilterFactory factory_func,
+                                                     gpointer            data,
+                                                     GDestroyNotify      data_notify);
+void                moo_command_filter_unregister   (const char         *id);
+/* returns name */
+const char         *moo_command_filter_lookup       (const char         *id);
+/* list of ids, must be freed together with content */
+GSList             *moo_command_filter_list         (void);
+MooOutputFilter    *moo_command_filter_create       (const char         *id);
 
 
 G_END_DECLS

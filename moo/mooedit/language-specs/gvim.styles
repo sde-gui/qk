@@ -1,112 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <style-scheme id="gvim" _name="GVim">
-  <style name="bracket-match" foreground="white" background="grey" bold="true"/>
+  <style name="bracket-match"               foreground="white" background="grey" bold="true"/>
+  <style name="bracket-mismatch"            foreground="white" background="red" bold="true"/>
 
-  <style name="Others" foreground="#2E8B57" bold="true"/>
-  <style name="Others 2" foreground="#008B8B"/>
-  <style name="Others 3" foreground="#6A5ACD"/>
+  <!-- legacy styles for old lang files -->
+  <style name="Others"                      foreground="#2E8B57" bold="true"/>
+  <style name="Others 2"                    foreground="#008B8B"/>
+  <style name="Others 3"                    foreground="#6A5ACD"/>
 
-  <style name="def:base-n-integer" foreground="#FF00FF"/>
-  <style name="def:character" foreground="#FF00FF"/>
-  <style name="def:comment" foreground="#0000FF"/>
-  <style name="def:data-type" foreground="#2E8B57" bold="true"/>
-  <style name="def:function" foreground="#008A8C"/>
-  <style name="def:decimal" foreground="#FF00FF"/>
-  <style name="def:floating-point" foreground="#FF00FF"/>
-  <style name="def:keyword" foreground="#A52A2A" bold="true"/>
-  <style name="def:string" foreground="#FF00FF"/>
-  <style name="def:specials" foreground="#FFFFFF" background="#FF0000"/>
-<!--  <style name="def:others" foreground="#2E8B57" bold="true"/>-->
-<!--  <style name="def:others2" foreground="#008B8B"/>-->
-<!--  <style name="def:others3" foreground="#6A5ACD"/>-->
-  <style name="def:net-address-in-comment" foreground="#0000FF" italic="true" underline="true"/>
-  <style name="def:note" foreground="#0000FF" background="#FFFF00" bold="true"/>
-  <style name="def:error" background="#FF0000" bold="true"/>
-<!--  <style name="def:package" foreground="#FF00FF" bold="true"/>-->
-  <style name="def:escape" foreground="#9010D0"/>
-  <style name="def:shebang" foreground="#0000FF" bold="true"/>
+  <style name="def:base-n-integer"          foreground="#FF00FF"/>
+  <style name="def:character"               foreground="#FF00FF"/>
+  <style name="def:comment"                 foreground="#0000FF"/>
+  <style name="def:data-type"               foreground="#2E8B57" bold="true"/>
+  <style name="def:function"                foreground="#008A8C"/>
+  <style name="def:decimal"                 foreground="#FF00FF"/>
+  <style name="def:floating-point"          foreground="#FF00FF"/>
+  <style name="def:keyword"                 foreground="#A52A2A" bold="true"/>
+  <style name="def:string"                  foreground="#FF00FF"/>
+  <style name="def:specials"                foreground="#FFFFFF" background="#FF0000"/>
+  <style name="def:net-address-in-comment"  foreground="#0000FF" italic="true" underline="true"/>
+  <style name="def:note"                    foreground="#0000FF" background="#FFFF00" bold="true"/>
+  <style name="def:error"                   background="#FF0000" bold="true"/>
+  <style name="def:escape"                  foreground="#9010D0"/>
+  <style name="def:shebang"                 foreground="#0000FF" bold="true"/>
 
-  <style name="c:preprocessor" foreground="#A020F0"/>
+  <style name="c:preprocessor"              foreground="#A020F0"/>
 
-  <style name="diff:added-line"   use-style="Others 2"/>
-  <style name="diff:removed-line" use-style="Others 3"/>
-  <style name="diff:changed-line" use-style="c:preprocessor"/>
-  <style name="diff:special-case" use-style="def:string"/>
-  <style name="diff:location"     use-style="def:keyword"/>
-  <style name="diff:diff-file"    use-style="def:data-type"/>
+  <style name="diff:added-line"             use-style="Others 2"/>
+  <style name="diff:removed-line"           use-style="Others 3"/>
+  <style name="diff:changed-line"           use-style="c:preprocessor"/>
+  <style name="diff:special-case"           use-style="def:string"/>
+  <style name="diff:location"               use-style="def:keyword"/>
+  <style name="diff:diff-file"              use-style="def:data-type"/>
 
-  <style name="xml:attribute-name" foreground="#6A5ACD"/>
-  <style name="xml:tags" foreground="#008B8B"/>
-  <style name="xml:namespace" foreground="#2E8B57" bold="true"/>
-  <style name="xml:doctype" use-style="c:preprocessor"/>
-  <style name="xml:cdata-delim" use-style="c:preprocessor"/>
-  <style name="xml:processing-instruction" use-style="c:preprocessor"/>
+  <style name="xml:attribute-name"          foreground="#6A5ACD"/>
+  <style name="xml:tags"                    foreground="#008B8B"/>
+  <style name="xml:namespace"               foreground="#2E8B57" bold="true"/>
+  <style name="xml:doctype"                 use-style="c:preprocessor"/>
+  <style name="xml:cdata-delim"             use-style="c:preprocessor"/>
+  <style name="xml:processing-instruction"  use-style="c:preprocessor"/>
 
-  <style name="js:object" foreground="#2E8B57" bold="true"/>
-  <style name="js:constructors" foreground="#008B8B"/>
+  <style name="js:object"                   foreground="#2E8B57" bold="true"/>
+  <style name="js:constructors"             foreground="#008B8B"/>
 
-  <style name="latex:command" foreground="#2E8B57" bold="true"/>
+  <style name="latex:command"               foreground="#2E8B57" bold="true"/>
 
-  <style name="python:builtins" use-style="Others"/>
-  <style name="changelog:email" use-style="def:comment"/>
+  <style name="python:builtins"             use-style="Others"/>
+  <style name="changelog:email"             use-style="def:comment"/>
 </style-scheme>
-
-<!--
-css.lang
-	<pattern-item _name="Unicode Character Reference" style="Others 2">
-	<pattern-item _name="Punctuators" style="Others 3">
-	<pattern-item _name="Attribute Value Delimiters" style="Others 2">
-	<pattern-item _name="Selector Grammar" style="Others 3">
-	<pattern-item _name="Unicode Range" style="Others 2">
-diff.lang
-	<pattern-item _name="Removed line" style="Others 3">
-	<pattern-item _name="Added line" style="Others 2">
-javascript.lang
-        <style id="object"            _name="Object"
-                                      map-to="def:others"/>
-        <style id="constructors"      _name="Constructors"
-                                      map-to="def:others2"/>
-latex.lang
-        <style id="command"            _name="Keyword"
-                                       map-to="def:others"/>
-makefile.lang
-	<keyword-list _name = "Variable1" style = "Others 3" match-empty-string-at-beginning = "FALSE" match-empty-string-at-end = "FALSE">
-	<keyword-list _name = "Variable2" style = "Others 2" match-empty-string-at-beginning = "FALSE" match-empty-string-at-end = "FALSE">
-msil.lang
-	<keyword-list name="Reserved Words - Group #1" style="Others" case-sensitive="TRUE">
-	<keyword-list name="Reserved Words - Group #2" style="Others" case-sensitive="TRUE">
-perl.lang
-	<pattern-item _name = "Function Call" style = "Others">
-	<pattern-item _name = "Method Call" style = "Others">
-php.lang
-	<pattern-item _name = "First Open PHP Tag" style = "Others">
-	<block-comment _name = "HTML Block" style = "Others">
-po.lang
-	<line-comment _name = "Location" style= "Others 2">
-python.lang
-	<keyword-list _name = "Builtins" style = "Others" case-sensitive="TRUE">
-  <style name="python:builtins"             use-style="c:preprocessor"/>
-R.lang
-        <pattern-item _name="Delimiter" style="Others 3">
-ruby.lang
-	<keyword-list _name="Attribute Definitions" style="Others" case-sensitive="TRUE">
-	<keyword-list _name = "Builtins" style = "Others" case-sensitive="TRUE">
-scheme.lang
-	<keyword-list _name="Function" style="Others"
-sh.lang
-	<pattern-item _name = "Punctuator" style = "Others">
-	<keyword-list _name = "Redirection" style = "Others" match-empty-string-at-beginning = "FALSE" match-empty-string-at-end = "FALSE">
-	<keyword-list _name = "Variable1" style = "Others 3" match-empty-string-at-beginning = "FALSE" match-empty-string-at-end = "FALSE">
-	<keyword-list _name = "Variable2" style = "Others 2" match-empty-string-at-beginning = "FALSE" match-empty-string-at-end = "FALSE">
-	<keyword-list _name = "Common Command" style = "Others" case-sensitive="TRUE">
-texinfo.lang
-	<pattern-item _name="Keyword" style="Others">
-xml.lang
-        <style id="attribute-name"    _name="Attribute Name"
-                                      map-to="def:others3"/>
-        <style id="tags"              _name="Tag"
-                                      map-to="def:others2"/>
-        <style id="namespace"         _name="Namespace"
-                                      map-to="def:others"/>
-
--->

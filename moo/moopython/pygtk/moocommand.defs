@@ -267,3 +267,104 @@
   (c-name "moo_command_data_get_code")
   (return-type "const-char*")
 )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; MooOutputFilter
+;;
+
+(define-object OutputFilter
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooOutputFilter")
+  (gtype-id "MOO_TYPE_OUTPUT_FILTER")
+  (fields
+    '("MooLineView*" "view")
+  )
+)
+
+(define-virtual attach
+  (of-object "MooOutputFilter")
+  (return-type "none")
+)
+
+(define-virtual detach
+  (of-object "MooOutputFilter")
+  (return-type "none")
+)
+
+(define-virtual stdout_line
+  (of-object "MooOutputFilter")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "line")
+  )
+)
+
+(define-virtual stderr_line
+  (of-object "MooOutputFilter")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "line")
+  )
+)
+
+(define-virtual cmd_start
+  (of-object "MooOutputFilter")
+  (return-type "none")
+)
+
+(define-virtual cmd_exit
+  (of-object "MooOutputFilter")
+  (return-type "gboolean")
+  (parameters
+    '("int" "status")
+  )
+)
+
+(define-method set_view
+  (of-object "MooOutputFilter")
+  (c-name "moo_output_filter_set_view")
+  (return-type "none")
+  (parameters
+    '("MooLineView*" "view" (null-ok))
+  )
+)
+
+(define-method get_view
+  (of-object "MooOutputFilter")
+  (c-name "moo_output_filter_get_view")
+  (return-type "MooLineView*")
+)
+
+(define-method stdout_line
+  (of-object "MooOutputFilter")
+  (c-name "moo_output_filter_stdout_line")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "line")
+  )
+)
+
+(define-method stderr_line
+  (of-object "MooOutputFilter")
+  (c-name "moo_output_filter_stderr_line")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "line")
+  )
+)
+
+(define-method cmd_start
+  (of-object "MooOutputFilter")
+  (c-name "moo_output_filter_cmd_start")
+  (return-type "none")
+)
+
+(define-method cmd_exit
+  (of-object "MooOutputFilter")
+  (c-name "moo_output_filter_cmd_exit")
+  (return-type "gboolean")
+  (parameters
+    '("int" "status")
+  )
+)
