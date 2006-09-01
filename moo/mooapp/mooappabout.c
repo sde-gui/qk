@@ -11,10 +11,6 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include "mooapp/mooappabout-glade.h"
 #include "mooapp/mooappabout.h"
 #include "mooapp/mooapp.h"
@@ -24,7 +20,6 @@
 #include "mooutils/moolinklabel.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
-#include "config.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>

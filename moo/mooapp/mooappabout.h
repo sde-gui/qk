@@ -14,10 +14,7 @@
 #ifndef __MOO_APP_ABOUT_H__
 #define __MOO_APP_ABOUT_H__
 
-
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #ifdef HAVE_SYS_UTSNAME_H
 #include <sys/utsname.h>
