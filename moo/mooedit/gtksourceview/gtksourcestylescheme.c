@@ -333,98 +333,132 @@ str_to_bool (const gchar *string)
 }
 
 static gboolean
-parse_style (const gchar     *element_name,
-	     const gchar    **names,
-	     const gchar    **values,
-	     gchar          **style_name_p,
-	     GtkSourceStyle **style_p,
-	     GError         **error)
+parse_style (GtkSourceStyleScheme *scheme,
+	     const gchar         **names,
+	     const gchar         **values,
+	     gchar               **style_name_p,
+	     GtkSourceStyle      **style_p,
+	     GError              **error)
 {
-	gchar *fg = NULL, *bg = NULL;
-	GtkSourceStyle *style;
-	char *style_name = NULL;
+	GtkSourceStyle *use_style = NULL;
+	GtkSourceStyle *result = NULL;
+	const gchar *fg = NULL, *bg = NULL;
+	const gchar *style_name = NULL;
+	GtkSourceStyleMask mask = 0;
+	gboolean bold, italic, underline, strikethrough;
 
-	style = gtk_source_style_new (0);
-
-	for (; names && *names; names++, values++)
+	for ( ; names && *names; names++, values++)
 	{
-		if (!strcmp (*names, "name"))
+		const gchar *name = *names;
+		const gchar *val = *values;
+
+		if (!strcmp (name, "name"))
+			style_name = val;
+		else if (!strcmp (name, "foreground"))
+			fg = val;
+		else if (!strcmp (name, "background"))
+			bg = val;
+		else if (!strcmp (name, "italic"))
 		{
-			g_free (style_name);
-			style_name = g_strdup (*values);
+			mask |= GTK_SOURCE_STYLE_USE_ITALIC;
+			italic = str_to_bool (val);
 		}
-		else if (!strcmp (*names, "foreground"))
+		else if (!strcmp (name, "bold"))
 		{
-			g_free (fg);
-			fg = g_strdup (*values);
+			mask |= GTK_SOURCE_STYLE_USE_BOLD;
+			bold = str_to_bool (val);
 		}
-		else if (!strcmp (*names, "background"))
+		else if (!strcmp (name, "underline"))
 		{
-			g_free (bg);
-			bg = g_strdup (*values);
+			mask |= GTK_SOURCE_STYLE_USE_UNDERLINE;
+			underline = str_to_bool (val);
 		}
-		else if (!strcmp (*names, "italic"))
+		else if (!strcmp (name, "strikethrough"))
 		{
-			style->mask |= GTK_SOURCE_STYLE_USE_ITALIC;
-			style->italic = str_to_bool (*values);
+			mask |= GTK_SOURCE_STYLE_USE_STRIKETHROUGH;
+			strikethrough = str_to_bool (val);
 		}
-		else if (!strcmp (*names, "bold"))
+		else if (!strcmp (name, "use-style"))
 		{
-			style->mask |= GTK_SOURCE_STYLE_USE_BOLD;
-			style->bold = str_to_bool (*values);
-		}
-		else if (!strcmp (*names, "strikethrough"))
-		{
-			style->mask |= GTK_SOURCE_STYLE_USE_STRIKETHROUGH;
-			style->strikethrough = str_to_bool (*values);
-		}
-		else if (!strcmp (*names, "underline"))
-		{
-			style->mask |= GTK_SOURCE_STYLE_USE_UNDERLINE;
-			style->underline = str_to_bool (*values);
+			if (use_style != NULL)
+			{
+				g_set_error (error, ERROR_QUARK, 0,
+					     "in style '%s': duplicated use-style attribute",
+					     style_name ? style_name : "(null)");
+				gtk_source_style_free (use_style);
+				return FALSE;
+			}
+
+			use_style = gtk_source_style_scheme_get_style (scheme, val);
+
+			if (!use_style)
+			{
+				g_set_error (error, ERROR_QUARK, 0,
+					     "in style '%s': unknown style '%s'",
+					     style_name ? style_name : "(null)", val);
+				return FALSE;
+			}
 		}
 		else
 		{
 			g_set_error (error, ERROR_QUARK, 0,
-				     "unexpected attribute '%s' in element '%s'",
-				     *names, element_name);
-			gtk_source_style_free (style);
-			g_free (style_name);
+				     "in style '%s': unexpected attribute '%s'",
+				     style_name ? style_name : "(null)", name);
+			gtk_source_style_free (use_style);
 			return FALSE;
 		}
 	}
 
 	if (!style_name)
 	{
-		g_set_error (error, ERROR_QUARK, 0,
-			     "'name' attribute missing");
-		gtk_source_style_free (style);
-		g_free (style_name);
+		g_set_error (error, ERROR_QUARK, 0, "name attribute missing");
+		gtk_source_style_free (use_style);
 		return FALSE;
 	}
 
-	if (fg)
+	if (use_style)
 	{
-		if (gdk_color_parse (fg, &style->foreground))
-			style->mask |= GTK_SOURCE_STYLE_USE_FOREGROUND;
-		else
-			g_warning ("invalid color '%s'", fg);
+		if (fg != NULL || bg != NULL || mask != 0)
+		{
+			g_set_error (error, ERROR_QUARK, 0,
+				     "in style '%s': style attributes used along with use-style",
+				     style_name);
+			gtk_source_style_free (use_style);
+			return FALSE;
+		}
+
+		result = use_style;
+		use_style = NULL;
+	}
+	else
+	{
+		result = gtk_source_style_new (mask);
+		result->bold = bold;
+		result->italic = italic;
+		result->underline = underline;
+		result->strikethrough = strikethrough;
+
+		if (fg != NULL)
+		{
+			if (gdk_color_parse (fg, &result->foreground))
+				result->mask |= GTK_SOURCE_STYLE_USE_FOREGROUND;
+			else
+				g_warning ("in style '%s': invalid color '%s'",
+					   style_name, fg);
+		}
+
+		if (bg != NULL)
+		{
+			if (gdk_color_parse (bg, &result->background))
+				result->mask |= GTK_SOURCE_STYLE_USE_BACKGROUND;
+			else
+				g_warning ("in style '%s': invalid color '%s'",
+					   style_name, bg);
+		}
 	}
 
-	if (bg)
-	{
-		if (gdk_color_parse (bg, &style->background))
-			style->mask |= GTK_SOURCE_STYLE_USE_BACKGROUND;
-		else
-			g_warning ("invalid color '%s'", bg);
-	}
-
-	g_free (fg);
-	g_free (bg);
-
-	*style_p = style;
-	*style_name_p = style_name;
-
+	*style_p = result;
+	*style_name_p = g_strdup (style_name);
 	return TRUE;
 }
 
@@ -517,7 +551,7 @@ start_element (G_GNUC_UNUSED GMarkupParseContext *context,
 		return;
 	}
 
-	if (!parse_style (element_name, attribute_names, attribute_values,
+	if (!parse_style (data->scheme, attribute_names, attribute_values,
 			  &style_name, &style, error))
 	{
 		return;
