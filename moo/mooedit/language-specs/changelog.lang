@@ -5,7 +5,7 @@
   <styles>
     <style id="date" name="Date" map-to="def:data-type"/>
     <style id="name" name="Name" map-to="def:keyword"/>
-    <style id="email" name="Email" map-to="def:preprocessor"/>
+    <style id="email" name="Email"/>
     <style id="file" name="File" map-to="def:function"/>
     <style id="function" name="Function" map-to="def:function"/>
     <style id="release" name="Release" map-to="def:function"/>

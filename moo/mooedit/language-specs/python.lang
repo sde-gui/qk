@@ -7,7 +7,7 @@
     <style id="module-handler" _name="Module handler" map-to="def:character"/>
     <style id="keyword" _name="Keyword" map-to="def:keyword"/>
     <style id="function" _name="Function" map-to="def:keyword"/>
-    <style id="builtins" _name="Builtins" map-to="def:preprocessor"/>
+    <style id="builtins" _name="Builtins"/>
     <style id="multiline-string" _name="Multiline string" map-to="def:string"/>
     <style id="string" _name="String" map-to="def:string"/>
   </styles>
@@ -56,6 +56,7 @@
       <include>
         <context ref="def:shebang"/>
         <context ref="def:shell-like-comment"/>
+        <context ref="def:line-continue"/>
         <context ref="multiline-double-quoted-string"/>
         <context ref="multiline-single-quoted-string"/>
         <context ref="double-quoted-string"/>

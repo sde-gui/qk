@@ -4,7 +4,7 @@
 
   <styles>
     <style id="keyword" _name="Keyword" map-to="def:keyword"/>
-    <style id="special-vars" _name="Special Variables" map-to="def:preprocessor"/>
+    <style id="special-vars" _name="Special Variables"/>
     <style id="function" _name="Function" map-to="def:function"/>
   </styles>
 

@@ -4,9 +4,9 @@
           globs="*.xml;*.rdf;*.svg;*.rng;*.lang;*.xslt">
     <styles>
         <style id="comment"                 _name="Comment"                 map-to="def:comment"/>
-        <style id="doctype"                 _name="DOCTYPE"                 map-to="def:preprocessor"/>
-        <style id="cdata-delim"             _name="CDATA Delimiters"        map-to="def:preprocessor"/>
-        <style id="processing-instruction"  _name="Processing Instruction"  map-to="def:preprocessor"/>
+        <style id="doctype"                 _name="DOCTYPE"/>
+        <style id="cdata-delim"             _name="CDATA Delimiters"/>
+        <style id="processing-instruction"  _name="Processing Instruction"/>
         <style id="attribute-name"          _name="Attribute Name"/> <!--map-to="def:others3"-->
         <style id="attribute-value"         _name="Attribute Value"         map-to="def:string"/>
         <style id="entity"                  _name="Entity"                  map-to="def:escape"/>

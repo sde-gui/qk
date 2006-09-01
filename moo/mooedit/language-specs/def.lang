@@ -1,28 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <language id="def" _name="Defaults" hidden="true" version="2.0">
     <styles>
-        <style id="decimal"        _name="Decimal"/>
-        <style id="base-n-integer" _name="Base-N Integer"/>
-        <style id="floating-point" _name="Floating Point"/>
-        <style id="net-address"    _name="Net Address"/>
-        <style id="note"           _name="Note"/>
-        <style id="escape"         _name="Escape"/>
-
-        <style id="comment"        _name="Comment"/>
-        <style id="error"          _name="Error"/>
-        <style id="preprocessor"   _name="Preprocessor"/>
-        <style id="string"         _name="String"/>
-        <style id="package"        _name="Package"/>
-        <style id="keyword"        _name="Keyword"/>
-        <style id="data-type"      _name="Data Type"/>
-        <style id="character"      _name="Character"/>
-        <style id="function"       _name="Function"/>
-        <style id="shebang"        _name="Shebang"/>
-
-<!--        <style id="others"         _name="Others"/>-->
-<!--        <style id="others2"        _name="Others 2"/>-->
-<!--        <style id="others3"        _name="Others 3"/>-->
-        <style id="specials"       _name="Specials"/>
+        <style id="decimal"                 _name="Decimal"/>
+        <style id="base-n-integer"          _name="Base-N Integer"/>
+        <style id="floating-point"          _name="Floating Point"/>
+        <style id="net-address-in-comment"  _name="Net Address"/>
+        <style id="note"                    _name="Note"/>
+        <style id="escape"                  _name="Escape"/>
+        <style id="comment"                 _name="Comment"/>
+        <style id="error"                   _name="Error"/>
+        <style id="string"                  _name="String"/>
+        <style id="keyword"                 _name="Keyword"/>
+        <style id="data-type"               _name="Data Type"/>
+        <style id="character"               _name="Character"/>
+        <style id="function"                _name="Function"/>
+        <style id="shebang"                 _name="Shebang"/>
     </styles>
 
     <definitions>
@@ -90,10 +82,10 @@
 
         <context id="comment">
             <include>
-                <context id="net-address" extend-parent="false" style-ref="net-address">
+                <context id="net-address" extend-parent="false" style-ref="net-address-in-comment">
                     <match>\%{net-address}</match>
                 </context>
-                <context id="email-address" extend-parent="false" style-ref="net-address">
+                <context id="email-address" extend-parent="false" style-ref="net-address-in-comment">
                     <match>\%{email-address}</match>
                 </context>
                 <context id="comment-note" extend-parent="false" style-ref="note">

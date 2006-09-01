@@ -19,31 +19,12 @@
       <oneOrMore>
           <element name="style">
               <attribute name="name"/>
+
               <optional>
-                <attribute name="foreground"/>
-              </optional>
-              <optional>
-                <attribute name="background"/>
-              </optional>
-              <optional>
-                <attribute name="bold">
-                  <ref name="boolean-value"/>
-                </attribute>
-              </optional>
-              <optional>
-                <attribute name="italic">
-                  <ref name="boolean-value"/>
-                </attribute>
-              </optional>
-              <optional>
-                <attribute name="underline">
-                  <ref name="boolean-value"/>
-                </attribute>
-              </optional>
-              <optional>
-                <attribute name="strikethrough">
-                  <ref name="boolean-value"/>
-                </attribute>
+                <choice>
+                  <attribute name="use-style"/>
+                  <ref name="style-elements"/>
+                </choice>
               </optional>
           </element>
       </oneOrMore>
@@ -52,10 +33,39 @@
 </start>
 
 <define name="boolean-value">
-    <choice>
-        <value>true</value>
-        <value>false</value>
-    </choice>
+  <choice>
+    <value>true</value>
+    <value>false</value>
+  </choice>
+</define>
+
+<define name="style-elements">
+  <optional>
+    <attribute name="foreground"/>
+  </optional>
+  <optional>
+    <attribute name="background"/>
+  </optional>
+  <optional>
+    <attribute name="bold">
+      <ref name="boolean-value"/>
+    </attribute>
+  </optional>
+  <optional>
+    <attribute name="italic">
+      <ref name="boolean-value"/>
+    </attribute>
+  </optional>
+  <optional>
+    <attribute name="underline">
+      <ref name="boolean-value"/>
+    </attribute>
+  </optional>
+  <optional>
+    <attribute name="strikethrough">
+      <ref name="boolean-value"/>
+    </attribute>
+  </optional>
 </define>
 
 </grammar>
