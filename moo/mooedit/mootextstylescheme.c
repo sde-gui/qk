@@ -142,6 +142,10 @@ _moo_text_style_scheme_apply (MooTextStyleScheme *scheme,
             style = gtk_source_style_scheme_get_style (GTK_SOURCE_STYLE_SCHEME (scheme), STYLE_CURSOR);
             moo_text_view_set_cursor_color (MOO_TEXT_VIEW (widget), style ? &style->foreground : NULL);
             gtk_source_style_free (style);
+
+            style = gtk_source_style_scheme_get_style (GTK_SOURCE_STYLE_SCHEME (scheme), STYLE_CURRENT_LINE);
+            moo_text_view_set_current_line_color (MOO_TEXT_VIEW (widget), style ? &style->foreground : NULL);
+            gtk_source_style_free (style);
         }
 }
 
