@@ -36,7 +36,7 @@
         </include>
     </context>
 
-    <context id="double-quoted-string" style-ref="string">
+    <context id="double-quoted-string" style-ref="string" end-at-line-end="true">
       <start>\"</start>
       <end>\"</end>
         <include>
@@ -44,7 +44,7 @@
         </include>
     </context>
 
-    <context id="single-quoted-string" style-ref="string">
+    <context id="single-quoted-string" style-ref="string" end-at-line-end="true">
       <start>\'</start>
       <end>\'</end>
         <include>
