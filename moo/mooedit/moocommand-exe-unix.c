@@ -232,6 +232,7 @@ run_in_pane (MooCommandExe     *cmd,
 
         moo_line_view_clear (MOO_LINE_VIEW (output));
         moo_edit_window_present_output (window);
+        gtk_widget_grab_focus (output);
 
         filter = cmd->priv->filter ? moo_command_filter_create (cmd->priv->filter) : NULL;
         moo_cmd_view_set_filter (MOO_CMD_VIEW (output), filter);

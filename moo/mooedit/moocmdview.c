@@ -12,6 +12,7 @@
  */
 
 #include "mooedit/moocmdview.h"
+#include "mooedit/mooeditwindow.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moospawn.h"
 
@@ -29,6 +30,7 @@ struct _MooCmdViewPrivate {
     GtkTextTag *stdout_tag;
     GtkTextTag *stderr_tag;
 
+    MooEditWindow *window;
     MooOutputFilter *filter;
 };
 
@@ -68,6 +70,23 @@ enum {
 
 /* MOO_TYPE_CMD_VIEW */
 G_DEFINE_TYPE (MooCmdView, moo_cmd_view, MOO_TYPE_LINE_VIEW)
+
+
+void
+moo_cmd_view_set_window (MooCmdView *view,
+                         gpointer    window)
+{
+    g_return_if_fail (MOO_IS_CMD_VIEW (view));
+    g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
+    view->priv->window = window;
+}
+
+gpointer
+moo_cmd_view_get_window (MooCmdView *view)
+{
+    g_return_val_if_fail (MOO_IS_CMD_VIEW (view), NULL);
+    return view->priv->window;
+}
 
 
 static void
@@ -202,7 +221,7 @@ moo_cmd_view_destroy (GtkObject *object)
 GtkWidget*
 moo_cmd_view_new (void)
 {
-    return g_object_new (MOO_TYPE_CMD_VIEW, NULL);
+    return g_object_new (MOO_TYPE_CMD_VIEW, "highlight-current-line", TRUE, NULL);
 }
 
 
@@ -218,6 +237,7 @@ moo_cmd_view_set_filter (MooCmdView      *view,
 
     if (view->priv->filter)
     {
+        moo_output_filter_set_window (view->priv->filter, NULL);
         moo_output_filter_set_view (view->priv->filter, NULL);
         g_object_unref (view->priv->filter);
         view->priv->filter = NULL;
@@ -228,8 +248,8 @@ moo_cmd_view_set_filter (MooCmdView      *view,
     if (view->priv->filter)
     {
         g_object_ref (view->priv->filter);
-        moo_output_filter_set_view (view->priv->filter,
-                                    MOO_LINE_VIEW (view));
+        moo_output_filter_set_window (view->priv->filter, view->priv->window);
+        moo_output_filter_set_view (view->priv->filter, MOO_LINE_VIEW (view));
     }
 }
 
@@ -348,7 +368,7 @@ moo_cmd_view_run_command_full (MooCmdView  *view,
     g_signal_emit (view, signals[JOB_STARTED], 0, job_name);
 
     if (view->priv->filter)
-        moo_output_filter_cmd_start (view->priv->filter);
+        moo_output_filter_cmd_start (view->priv->filter, working_dir);
 
 out:
     g_strfreev (argv);

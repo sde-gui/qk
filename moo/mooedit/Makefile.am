@@ -2,7 +2,7 @@
 SUBDIRS = gtksourceview plugins language-specs
 
 mooedit_toolsdir = $(MOO_DATA_DIR)
-mooedit_tools_DATA = context.cfg menu.cfg
+mooedit_tools_DATA = context.cfg menu.cfg filters.cfg
 
 dummy_targets =                        \
 	moocommand-exe.o               \

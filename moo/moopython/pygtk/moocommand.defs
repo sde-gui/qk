@@ -277,9 +277,6 @@
   (parent "GObject")
   (c-name "MooOutputFilter")
   (gtype-id "MOO_TYPE_OUTPUT_FILTER")
-  (fields
-    '("MooLineView*" "view")
-  )
 )
 
 (define-virtual attach
@@ -358,6 +355,9 @@
   (of-object "MooOutputFilter")
   (c-name "moo_output_filter_cmd_start")
   (return-type "none")
+  (parameters
+    '("const-char*" "working_dir")
+  )
 )
 
 (define-method cmd_exit

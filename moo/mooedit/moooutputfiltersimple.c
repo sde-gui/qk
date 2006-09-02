@@ -59,10 +59,6 @@ static FilterInfo   *filter_info_new    (guint                   n_patterns);
 static FilterInfo   *filter_info_ref    (FilterInfo             *info);
 static void          filter_info_unref  (FilterInfo             *info);
 
-static void          view_activate      (MooLineView            *view,
-                                         int                     line,
-                                         MooOutputFilterSimple  *filter);
-
 
 G_DEFINE_TYPE (MooOutputFilterSimple, _moo_output_filter_simple, MOO_TYPE_OUTPUT_FILTER)
 
@@ -88,9 +84,6 @@ moo_output_filter_simple_attach (MooOutputFilter *base)
     MooOutputFilterSimple *filter = MOO_OUTPUT_FILTER_SIMPLE (base);
 
     g_return_if_fail (filter->priv->info != NULL);
-
-    g_signal_connect (base->view, "activate",
-                      G_CALLBACK (view_activate), filter);
 }
 
 
@@ -100,29 +93,6 @@ moo_output_filter_simple_detach (MooOutputFilter *base)
     MooOutputFilterSimple *filter = MOO_OUTPUT_FILTER_SIMPLE (base);
 
     g_return_if_fail (filter->priv->info != NULL);
-
-    g_signal_handlers_disconnect_by_func (base->view, (gpointer) view_activate, filter);
-}
-
-
-static void
-view_activate (MooLineView           *view,
-               int                    line,
-               MooOutputFilterSimple *filter)
-{
-    MooFileLineData *data;
-
-    g_return_if_fail (MOO_IS_LINE_VIEW (view));
-    g_return_if_fail (MOO_IS_OUTPUT_FILTER_SIMPLE (filter));
-
-    data = moo_line_view_get_boxed (view, line, MOO_TYPE_FILE_LINE_DATA);
-
-    if (!data)
-        return;
-
-    g_print ("clicked: %s:%d:%d\n", data->file, data->line, data->character);
-
-    moo_file_line_data_free (data);
 }
 
 
@@ -137,8 +107,8 @@ parse_file_line (const char *file,
         return NULL;
 
     data = moo_file_line_data_new (file, -1, -1);
-    data->line = _moo_convert_string_to_int (line, -1);
-    data->character = _moo_convert_string_to_int (character, -1);
+    data->line = _moo_convert_string_to_int (line, 0) - 1;
+    data->character = _moo_convert_string_to_int (character, 0) - 1;
 
     return data;
 }
@@ -194,7 +164,8 @@ process_line (MooOutputFilterSimple *filter,
         if (!egg_regex_match (regex->re, text, 0))
             continue;
 
-        process_result (text, regex->re, type, MOO_OUTPUT_FILTER(filter)->view);
+        process_result (text, regex->re, type,
+                        moo_output_filter_get_view (MOO_OUTPUT_FILTER(filter)));
 
         return TRUE;
     }

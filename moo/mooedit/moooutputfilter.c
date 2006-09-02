@@ -12,8 +12,16 @@
  */
 
 #include "mooedit/moooutputfilter.h"
+#include "mooedit/mooeditor.h"
 #include "mooutils/moomarshals.h"
 #include <string.h>
+
+
+struct _MooOutputFilterPrivate {
+    MooLineView *view;
+    char *working_dir;
+    MooEditWindow *window;
+};
 
 
 G_DEFINE_TYPE (MooOutputFilter, moo_output_filter, G_TYPE_OBJECT)
@@ -30,8 +38,40 @@ static guint signals[N_SIGNALS];
 
 
 static void
+moo_output_filter_finalize (GObject *object)
+{
+    MooOutputFilter *filter = MOO_OUTPUT_FILTER (object);
+
+    g_free (filter->priv->working_dir);
+
+    G_OBJECT_CLASS (moo_output_filter_parent_class)->finalize (object);
+}
+
+
+static void
+moo_output_filter_activate (MooOutputFilter *filter,
+                            int              line)
+{
+    MooFileLineData *data;
+
+    data = moo_line_view_get_boxed (filter->priv->view, line, MOO_TYPE_FILE_LINE_DATA);
+
+    if (data)
+    {
+        moo_output_filter_open_file (filter, data);
+        moo_file_line_data_free (data);
+    }
+}
+
+
+static void
 moo_output_filter_class_init (MooOutputFilterClass *klass)
 {
+    G_OBJECT_CLASS (klass)->finalize = moo_output_filter_finalize;
+    klass->activate = moo_output_filter_activate;
+
+    g_type_class_add_private (klass, sizeof (MooOutputFilterPrivate));
+
     signals[STDOUT_LINE] =
         g_signal_new ("stdout-line",
                       G_OBJECT_CLASS_TYPE (klass),
@@ -74,8 +114,22 @@ moo_output_filter_class_init (MooOutputFilterClass *klass)
 
 
 static void
-moo_output_filter_init (G_GNUC_UNUSED MooOutputFilter *cmd)
+moo_output_filter_init (MooOutputFilter *filter)
 {
+    filter->priv = G_TYPE_INSTANCE_GET_PRIVATE (filter, MOO_TYPE_OUTPUT_FILTER, MooOutputFilterPrivate);
+}
+
+
+static void
+view_activate (MooLineView     *view,
+               int              line,
+               MooOutputFilter *filter)
+{
+    g_return_if_fail (MOO_IS_LINE_VIEW (view));
+    g_return_if_fail (MOO_IS_OUTPUT_FILTER (filter));
+
+    if (MOO_OUTPUT_FILTER_GET_CLASS (filter)->activate)
+        MOO_OUTPUT_FILTER_GET_CLASS (filter)->activate (filter, line);
 }
 
 
@@ -86,19 +140,25 @@ moo_output_filter_set_view (MooOutputFilter *filter,
     g_return_if_fail (MOO_IS_OUTPUT_FILTER (filter));
     g_return_if_fail (!view || MOO_IS_LINE_VIEW (view));
 
-    if (filter->view == view)
+    if (filter->priv->view == view)
         return;
 
-    if (filter->view)
+    if (filter->priv->view)
     {
+        g_signal_handlers_disconnect_by_func (filter->priv->view,
+                                              (gpointer) view_activate,
+                                              filter);
+
         if (MOO_OUTPUT_FILTER_GET_CLASS (filter)->detach)
             MOO_OUTPUT_FILTER_GET_CLASS (filter)->detach (filter);
     }
 
-    filter->view = view;
+    filter->priv->view = view;
 
     if (view)
     {
+        g_signal_connect (view, "activate", G_CALLBACK (view_activate), filter);
+
         if (MOO_OUTPUT_FILTER_GET_CLASS (filter)->attach)
             MOO_OUTPUT_FILTER_GET_CLASS (filter)->attach (filter);
     }
@@ -109,7 +169,7 @@ MooLineView *
 moo_output_filter_get_view (MooOutputFilter *filter)
 {
     g_return_val_if_fail (MOO_IS_OUTPUT_FILTER (filter), NULL);
-    return filter->view;
+    return filter->priv->view;
 }
 
 
@@ -150,9 +210,17 @@ moo_output_filter_stderr_line (MooOutputFilter *filter,
 
 
 void
-moo_output_filter_cmd_start (MooOutputFilter *filter)
+moo_output_filter_cmd_start (MooOutputFilter *filter,
+                             const char      *working_dir)
 {
+    char *tmp;
+
     g_return_if_fail (MOO_IS_OUTPUT_FILTER (filter));
+
+    tmp = filter->priv->working_dir;
+    filter->priv->working_dir = g_strdup (working_dir);
+    g_free (tmp);
+
     g_signal_emit (filter, signals[CMD_START], 0);
 }
 
@@ -233,4 +301,71 @@ moo_file_line_data_free (MooFileLineData *data)
         g_free (data->file);
         g_free (data);
     }
+}
+
+
+const char *
+moo_output_filter_get_working_dir (MooOutputFilter *filter)
+{
+    g_return_val_if_fail (MOO_IS_OUTPUT_FILTER (filter), NULL);
+    return filter->priv->working_dir;
+}
+
+
+void
+moo_output_filter_set_window (MooOutputFilter *filter,
+                              gpointer         window)
+{
+    g_return_if_fail (MOO_IS_OUTPUT_FILTER (filter));
+    g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
+    filter->priv->window = window;
+}
+
+gpointer
+moo_output_filter_get_window (MooOutputFilter *filter)
+{
+    g_return_val_if_fail (MOO_IS_OUTPUT_FILTER (filter), NULL);
+    return filter->priv->window;
+}
+
+
+void
+moo_output_filter_open_file (MooOutputFilter *filter,
+                             MooFileLineData *data)
+{
+    const char *path = NULL;
+    char *freeme = NULL;
+
+    g_return_if_fail (MOO_IS_OUTPUT_FILTER (filter));
+    g_return_if_fail (data != NULL);
+    g_return_if_fail (data->file != NULL);
+
+    if (g_path_is_absolute (data->file))
+    {
+        path = data->file;
+    }
+    else if (filter->priv->working_dir)
+    {
+        freeme = g_build_filename (filter->priv->working_dir, data->file, NULL);
+        path = freeme;
+    }
+
+    if (path)
+    {
+        if (g_file_test (path, G_FILE_TEST_EXISTS))
+        {
+            MooEditor *editor = moo_editor_instance ();
+            moo_editor_open_file_line (editor, path, data->line, filter->priv->window);
+        }
+        else
+        {
+            g_message ("file '%s' does not exist", path);
+        }
+    }
+    else
+    {
+        g_message ("could not find file '%s'", data->file);
+    }
+
+    g_free (freeme);
 }
