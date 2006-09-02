@@ -27,6 +27,10 @@ G_BEGIN_DECLS
 #define MOO_IS_CMD_VIEW_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_CMD_VIEW))
 #define MOO_CMD_VIEW_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_CMD_VIEW, MooCmdViewClass))
 
+#define MOO_CMD_VIEW_MESSAGE "message"
+#define MOO_CMD_VIEW_ERROR   "error"
+#define MOO_CMD_VIEW_STDOUT  "stdout"
+#define MOO_CMD_VIEW_STDERR  "stderr"
 
 typedef struct _MooCmdView         MooCmdView;
 typedef struct _MooCmdViewPrivate  MooCmdViewPrivate;
