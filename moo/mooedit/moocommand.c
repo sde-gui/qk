@@ -426,6 +426,8 @@ moo_command_run (MooCommand         *cmd,
     {
         if (!save_one (doc))
             return;
+        if (!moo_edit_get_filename (doc))
+            return;
     }
 
     MOO_COMMAND_GET_CLASS(cmd)->run (cmd, ctx);
@@ -876,6 +878,7 @@ _moo_command_parse_item (MooKeyFileItem    *item,
     MooCommandType *type;
     char *type_name, *options;
     struct {
+        MooCommandType *type;
         MooCommandData *cmd_data;
         gboolean error;
         const char *filename;
@@ -904,6 +907,7 @@ _moo_command_parse_item (MooKeyFileItem    *item,
 
     data = moo_command_data_new (type->n_keys);
 
+    parse_data.type = type;
     parse_data.cmd_data = data;
     parse_data.error = FALSE;
     parse_data.filename = filename;
@@ -1023,7 +1027,6 @@ moo_command_data_set (MooCommandData *data,
 
     g_return_if_fail (data != NULL);
     g_return_if_fail (index < data->len);
-    g_return_if_fail (value != NULL);
 
     tmp = data->data[index];
     data->data[index] = g_strdup (value);
@@ -1096,7 +1099,7 @@ _moo_command_init (void)
 #ifndef __WIN32__
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_EXE));
 #endif
-        _moo_command_filter_simple_init ();
+        _moo_command_filter_simple_load ();
         been_here = TRUE;
     }
 }
