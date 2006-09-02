@@ -57,9 +57,9 @@ moo_output_filter_class_init (MooOutputFilterClass *klass)
                       G_OBJECT_CLASS_TYPE (klass),
                       G_SIGNAL_RUN_LAST,
                       G_STRUCT_OFFSET (MooOutputFilterClass, cmd_start),
-                      g_signal_accumulator_true_handled, NULL,
-                      _moo_marshal_BOOL__VOID,
-                      G_TYPE_BOOLEAN, 0);
+                      NULL, NULL,
+                      _moo_marshal_VOID__VOID,
+                      G_TYPE_NONE, 0);
 
     signals[CMD_EXIT] =
         g_signal_new ("cmd-exit",
@@ -175,4 +175,62 @@ MooOutputFilter *
 moo_output_filter_new (void)
 {
     return g_object_new (MOO_TYPE_OUTPUT_FILTER, NULL);
+}
+
+
+GType
+moo_file_line_data_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+        type = g_boxed_type_register_static ("MooFileLineData",
+                                             (GBoxedCopyFunc) moo_file_line_data_copy,
+                                             (GBoxedFreeFunc) moo_file_line_data_free);
+
+    return type;
+}
+
+
+MooFileLineData *
+moo_file_line_data_new (const char *file,
+                        int         line,
+                        int         character)
+{
+    MooFileLineData *data;
+
+    g_return_val_if_fail (file != NULL, NULL);
+
+    data = g_new0 (MooFileLineData, 1);
+    data->file = g_strdup (file);
+    data->line = line;
+    data->character = character;
+
+    return data;
+}
+
+
+MooFileLineData *
+moo_file_line_data_copy (MooFileLineData *data)
+{
+    MooFileLineData *copy = NULL;
+
+    if (data)
+    {
+        copy = g_memdup (data, sizeof (MooFileLineData));
+        copy->file = g_strdup (data->file);
+    }
+
+    return copy;
+}
+
+
+void
+moo_file_line_data_free (MooFileLineData *data)
+{
+    if (data)
+    {
+        g_free (data->file);
+        g_free (data);
+    }
 }

@@ -368,3 +368,46 @@
     '("int" "status")
   )
 )
+
+
+(define-function command_filter_register
+  (c-name "moo_command_filter_register")
+  (return-type "none")
+  (parameters
+    '("const-char*" "id")
+    '("const-char*" "name")
+    '("MooCommandFilterFactory" "factory_func")
+    '("gpointer" "data")
+    '("GDestroyNotify" "data_notify")
+  )
+)
+
+(define-function command_filter_unregister
+  (c-name "moo_command_filter_unregister")
+  (return-type "none")
+  (parameters
+    '("const-char*" "id")
+  )
+)
+
+(define-function command_filter_lookup
+  (c-name "moo_command_filter_lookup")
+  (return-type "const-char*")
+  (parameters
+    '("const-char*" "id")
+  )
+)
+
+(define-function command_filter_list
+  (c-name "moo_command_filter_list")
+  (return-type "string-slist")
+  (caller-owns-return "t")
+)
+
+(define-function command_filter_create
+  (c-name "moo_command_filter_create")
+  (return-type "MooOutputFilter*")
+  (parameters
+    '("const-char*" "id")
+  )
+)

@@ -33,7 +33,6 @@ mooedit_include_headers =              \
 	moolinemark.h                  \
 	moolineview.h                  \
 	moooutputfilter.h              \
-	moooutputfiltersimple.h        \
 	mooplugin-loader.h             \
 	mooplugin-macro.h              \
 	mooplugin.h                    \
@@ -67,6 +66,7 @@ mooedit_noinst_headers =               \
 	moolangmgr-private.h           \
 	moolangmgr.h                   \
 	moolinebuffer.h                \
+	moooutputfiltersimple.h        \
 	moopluginprefs-glade.h         \
 	mooprint-glade.h               \
 	mootext-private.h              \

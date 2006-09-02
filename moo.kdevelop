@@ -50,7 +50,7 @@
     </run>
     <configurations>
       <debug>
-        <configargs>--enable-debug --enable-all-gcc-warnings</configargs>
+        <configargs>--enable-debug --enable-all-gcc-warnings --without-python</configargs>
         <builddir>build/debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>

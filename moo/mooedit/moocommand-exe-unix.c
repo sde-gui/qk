@@ -19,6 +19,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/moospawn.h"
 #include <gtk/gtk.h>
 #include <string.h>
@@ -32,6 +33,11 @@
 #define MOO_COMMAND_EXE_MAX_OUTPUT      (MOO_COMMAND_EXE_OUTPUT_NEW_DOC + 1)
 #define MOO_COMMAND_EXE_INPUT_DEFAULT   MOO_COMMAND_EXE_INPUT_NONE
 #define MOO_COMMAND_EXE_OUTPUT_DEFAULT  MOO_COMMAND_EXE_OUTPUT_NONE
+
+enum {
+    COLUMN_NAME,
+    COLUMN_ID
+};
 
 enum {
     KEY_INPUT,
@@ -644,6 +650,92 @@ init_combo (GtkComboBox *combo,
     g_object_unref (store);
 }
 
+static void
+init_filter_combo (GtkComboBox *combo)
+{
+    GtkListStore *store;
+    GtkCellRenderer *cell;
+    GtkTreeIter iter;
+    GSList *ids;
+
+    cell = gtk_cell_renderer_text_new ();
+    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combo), cell, TRUE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (combo), cell,
+                                    "text", COLUMN_NAME, NULL);
+
+    store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
+    gtk_combo_box_set_model (combo, GTK_TREE_MODEL (store));
+
+    gtk_list_store_append (store, &iter);
+    gtk_list_store_set (store, &iter, COLUMN_NAME, _("None"), -1);
+
+    ids = moo_command_filter_list ();
+
+    while (ids)
+    {
+        const char *name;
+        char *id = ids->data;
+
+        id = ids->data;
+        ids = g_slist_delete_link (ids, ids);
+        name = moo_command_filter_lookup (id);
+
+        if (!name)
+        {
+            g_critical ("%s: oops", G_STRLOC);
+            continue;
+        }
+
+        gtk_list_store_append (store, &iter);
+        gtk_list_store_set (store, &iter,
+                            COLUMN_ID, id,
+                            COLUMN_NAME, _(name),
+                            -1);
+
+        g_free (id);
+    }
+
+    g_object_unref (store);
+}
+
+static void
+set_filter_combo (GtkComboBox *combo,
+                  const char  *id)
+{
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+
+    model = gtk_combo_box_get_model (combo);
+
+    if (!id)
+    {
+        gtk_combo_box_set_active (combo, 0);
+        return;
+    }
+
+    if (gtk_tree_model_iter_nth_child (model, &iter, NULL, 1))
+    {
+        do {
+            char *id_here;
+
+            gtk_tree_model_get (model, &iter, COLUMN_ID, &id_here, -1);
+
+            if (!strcmp (id_here, id))
+            {
+                gtk_combo_box_set_active_iter (combo, &iter);
+                g_free (id_here);
+                return;
+            }
+
+            g_free (id_here);
+        }
+        while (gtk_tree_model_iter_next (model, &iter));
+    }
+
+    g_warning ("unknown filter %s", id);
+    gtk_combo_box_set_active (combo, -1);
+}
+
 static GtkWidget *
 exe_type_create_widget (G_GNUC_UNUSED MooCommandType *type)
 {
@@ -666,6 +758,7 @@ exe_type_create_widget (G_GNUC_UNUSED MooCommandType *type)
 
     init_combo (moo_glade_xml_get_widget (xml, "input"), input_names, G_N_ELEMENTS (input_names));
     init_combo (moo_glade_xml_get_widget (xml, "output"), output_names, G_N_ELEMENTS (output_names));
+    init_filter_combo (moo_glade_xml_get_widget (xml, "filter"));
 
     g_object_set_data_full (G_OBJECT (page), "moo-glade-xml", xml, g_object_unref);
     return page;
@@ -699,6 +792,18 @@ exe_type_load_data (G_GNUC_UNUSED MooCommandType *type,
 
     parse_output (moo_command_data_get (data, KEY_OUTPUT), &index);
     gtk_combo_box_set_active (moo_glade_xml_get_widget (xml, "output"), index);
+
+    if (index == MOO_COMMAND_EXE_OUTPUT_PANE)
+    {
+        gtk_widget_set_sensitive (moo_glade_xml_get_widget (xml, "filter"), TRUE);
+        set_filter_combo (moo_glade_xml_get_widget (xml, "filter"),
+                          moo_command_data_get (data, KEY_FILTER));
+    }
+    else
+    {
+        gtk_widget_set_sensitive (moo_glade_xml_get_widget (xml, "filter"), FALSE);
+        set_filter_combo (moo_glade_xml_get_widget (xml, "filter"), NULL);
+    }
 }
 
 
@@ -723,7 +828,7 @@ exe_type_save_data (G_GNUC_UNUSED MooCommandType *type,
     new_cmd_line = moo_text_view_get_text (textview);
     cmd_line = moo_command_data_get_code (data);
 
-    if (strcmp (cmd_line ? cmd_line : "", new_cmd_line ? new_cmd_line : "") != 0)
+    if (!_moo_str_equal (cmd_line, new_cmd_line))
     {
         moo_command_data_set_code (data, new_cmd_line);
         changed = TRUE;
@@ -747,6 +852,34 @@ exe_type_save_data (G_GNUC_UNUSED MooCommandType *type,
         changed = TRUE;
     }
 
+    if (index == MOO_COMMAND_EXE_OUTPUT_PANE)
+    {
+        const char *old_filter;
+        char *new_filter = NULL;
+        GtkComboBox *combo = moo_glade_xml_get_widget (xml, "filter");
+        GtkTreeIter iter;
+
+        if (gtk_combo_box_get_active_iter (combo, &iter))
+        {
+            GtkTreeModel *model = gtk_combo_box_get_model (combo);
+            gtk_tree_model_get (model, &iter, COLUMN_ID, &new_filter, -1);
+        }
+
+        old_filter = moo_command_data_get (data, KEY_FILTER);
+
+        if (!_moo_str_equal (old_filter, new_filter))
+        {
+            moo_command_data_set (data, KEY_FILTER, new_filter);
+            changed = TRUE;
+        }
+
+        g_free (new_filter);
+    }
+    else
+    {
+        moo_command_data_set (data, KEY_FILTER, NULL);
+    }
+
     g_free (new_cmd_line);
     return changed;
 }
@@ -763,7 +896,7 @@ exe_type_data_equal (G_GNUC_UNUSED MooCommandType *type,
     {
         const char *val1 = moo_command_data_get (data1, i);
         const char *val2 = moo_command_data_get (data2, i);
-        if (strcmp (val1 ? val1 : "", val2 ? val2 : "") != 0)
+        if (!_moo_str_equal (val1, val2))
             return FALSE;
     }
 

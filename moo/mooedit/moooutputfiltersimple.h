@@ -19,7 +19,7 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_OUTPUT_FILTER_SIMPLE              (moo_output_filter_simple_get_type ())
+#define MOO_TYPE_OUTPUT_FILTER_SIMPLE              (_moo_output_filter_simple_get_type ())
 #define MOO_OUTPUT_FILTER_SIMPLE(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_OUTPUT_FILTER_SIMPLE, MooOutputFilterSimple))
 #define MOO_OUTPUT_FILTER_SIMPLE_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_OUTPUT_FILTER_SIMPLE, MooOutputFilterSimpleClass))
 #define MOO_IS_OUTPUT_FILTER_SIMPLE(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_OUTPUT_FILTER_SIMPLE))
@@ -29,6 +29,14 @@ G_BEGIN_DECLS
 typedef struct _MooOutputFilterSimple        MooOutputFilterSimple;
 typedef struct _MooOutputFilterSimplePrivate MooOutputFilterSimplePrivate;
 typedef struct _MooOutputFilterSimpleClass   MooOutputFilterSimpleClass;
+typedef struct _MooOutputFilterInfo          MooOutputFilterInfo;
+typedef struct _MooOutputPatternInfo         MooOutputPatternInfo;
+
+typedef enum {
+    MOO_OUTPUT_STDOUT,
+    MOO_OUTPUT_STDERR,
+    MOO_OUTPUT_ALL
+} MooOutputTextType;
 
 struct _MooOutputFilterSimple {
     MooOutputFilter base;
@@ -39,10 +47,30 @@ struct _MooOutputFilterSimpleClass {
     MooOutputFilterClass base_class;
 };
 
+struct _MooOutputPatternInfo {
+    char *pattern;
+    MooOutputTextType type;
+};
 
-GType   moo_output_filter_simple_get_type   (void) G_GNUC_CONST;
+struct _MooOutputFilterInfo {
+    char *id;
+    char *name;
+    MooOutputPatternInfo **patterns;
+    guint n_patterns;
+    guint ref_count;
+    guint deleted : 1;
+    guint builtin : 1;
+    guint enabled : 1;
+};
 
-void    _moo_command_filter_simple_init     (void);
+
+GType                _moo_output_filter_simple_get_type (void) G_GNUC_CONST;
+
+void                 _moo_command_filter_simple_load    (void);
+
+MooOutputFilterInfo *_moo_output_filter_info_new        (void);
+MooOutputFilterInfo *_moo_output_filter_info_ref        (MooOutputFilterInfo    *info);
+void                 _moo_output_filter_info_unref      (MooOutputFilterInfo    *info);
 
 
 G_END_DECLS

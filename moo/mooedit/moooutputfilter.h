@@ -19,6 +19,8 @@
 G_BEGIN_DECLS
 
 
+#define MOO_TYPE_FILE_LINE_DATA             (moo_file_line_data_get_type ())
+
 #define MOO_TYPE_OUTPUT_FILTER              (moo_output_filter_get_type ())
 #define MOO_OUTPUT_FILTER(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_OUTPUT_FILTER, MooOutputFilter))
 #define MOO_OUTPUT_FILTER_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_OUTPUT_FILTER, MooOutputFilterClass))
@@ -28,6 +30,13 @@ G_BEGIN_DECLS
 
 typedef struct _MooOutputFilter      MooOutputFilter;
 typedef struct _MooOutputFilterClass MooOutputFilterClass;
+typedef struct _MooFileLineData      MooFileLineData;
+
+struct _MooFileLineData {
+    char *file;
+    int line;
+    int character;
+};
 
 struct _MooOutputFilter {
     GObject base;
@@ -50,21 +59,28 @@ struct _MooOutputFilterClass {
 };
 
 
-GType        moo_output_filter_get_type     (void) G_GNUC_CONST;
+GType            moo_output_filter_get_type     (void) G_GNUC_CONST;
+GType            moo_file_line_data_get_type    (void) G_GNUC_CONST;
 
-MooOutputFilter *moo_output_filter_new      (void);
+MooFileLineData *moo_file_line_data_new         (const char         *file,
+                                                 int                 line,
+                                                 int                 character);
+MooFileLineData *moo_file_line_data_copy        (MooFileLineData    *data);
+void             moo_file_line_data_free        (MooFileLineData    *data);
 
-void         moo_output_filter_set_view     (MooOutputFilter    *filter,
-                                             MooLineView        *view);
-MooLineView *moo_output_filter_get_view     (MooOutputFilter    *filter);
+MooOutputFilter *moo_output_filter_new          (void);
 
-gboolean     moo_output_filter_stdout_line  (MooOutputFilter    *filter,
-                                             const char         *line);
-gboolean     moo_output_filter_stderr_line  (MooOutputFilter    *filter,
-                                             const char         *line);
-void         moo_output_filter_cmd_start    (MooOutputFilter    *filter);
-gboolean     moo_output_filter_cmd_exit     (MooOutputFilter    *filter,
-                                             int                 status);
+void             moo_output_filter_set_view     (MooOutputFilter    *filter,
+                                                 MooLineView        *view);
+MooLineView     *moo_output_filter_get_view     (MooOutputFilter    *filter);
+
+gboolean         moo_output_filter_stdout_line  (MooOutputFilter    *filter,
+                                                 const char         *line);
+gboolean         moo_output_filter_stderr_line  (MooOutputFilter    *filter,
+                                                 const char         *line);
+void             moo_output_filter_cmd_start    (MooOutputFilter    *filter);
+gboolean         moo_output_filter_cmd_exit     (MooOutputFilter    *filter,
+                                                 int                 status);
 
 
 G_END_DECLS
