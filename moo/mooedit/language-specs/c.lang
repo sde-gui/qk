@@ -116,6 +116,7 @@
                     <keyword>struct</keyword>
                     <keyword>switch</keyword>
                     <keyword>typedef</keyword>
+                    <keyword>union</keyword>
                     <keyword>while</keyword>
                 </context>
 
@@ -138,7 +139,6 @@
                     <keyword>signed</keyword>
                     <keyword>size_t</keyword>
                     <keyword>static</keyword>
-                    <keyword>union</keyword>
                     <keyword>unsigned</keyword>
                     <keyword>void</keyword>
                     <keyword>volatile</keyword>
