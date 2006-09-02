@@ -56,10 +56,10 @@ struct _MooCmdClass
 
     gboolean (*cmd_exit)    (MooCmd     *cmd,
                              int         status);
-    gboolean (*stdout_text) (MooCmd     *cmd,
-                             const char *text);
-    gboolean (*stderr_text) (MooCmd     *cmd,
-                             const char *text);
+    gboolean (*stdout_line) (MooCmd     *cmd,
+                             const char *line);
+    gboolean (*stderr_line) (MooCmd     *cmd,
+                             const char *line);
 };
 
 

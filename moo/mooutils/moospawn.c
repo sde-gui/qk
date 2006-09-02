@@ -51,10 +51,10 @@ static void     moo_cmd_check_stop      (MooCmd     *cmd);
 static void     moo_cmd_cleanup         (MooCmd     *cmd);
 
 static gboolean moo_cmd_abort_real      (MooCmd     *cmd);
-static gboolean moo_cmd_stdout_text     (MooCmd     *cmd,
-                                         const char *text);
-static gboolean moo_cmd_stderr_text     (MooCmd     *cmd,
-                                         const char *text);
+static gboolean moo_cmd_stdout_line     (MooCmd     *cmd,
+                                         const char *line);
+static gboolean moo_cmd_stderr_line     (MooCmd     *cmd,
+                                         const char *line);
 
 static gboolean moo_cmd_run_command     (MooCmd     *cmd,
                                          const char *working_dir,
@@ -82,8 +82,8 @@ static gboolean moo_win32_spawn_async_with_pipes (const gchar *working_directory
 enum {
     ABORT,
     CMD_EXIT,
-    STDOUT_TEXT,
-    STDERR_TEXT,
+    STDOUT_LINE,
+    STDERR_LINE,
     LAST_SIGNAL
 };
 
@@ -109,8 +109,8 @@ _moo_cmd_class_init (MooCmdClass *klass)
 
     klass->abort = moo_cmd_abort_real;
     klass->cmd_exit = NULL;
-    klass->stdout_text = moo_cmd_stdout_text;
-    klass->stderr_text = moo_cmd_stderr_text;
+    klass->stdout_line = moo_cmd_stdout_line;
+    klass->stderr_line = moo_cmd_stderr_line;
 
     g_type_class_add_private (klass, sizeof (MooCmdPrivate));
 
@@ -133,21 +133,21 @@ _moo_cmd_class_init (MooCmdClass *klass)
                           G_TYPE_BOOLEAN, 1,
                           G_TYPE_INT);
 
-    signals[STDOUT_TEXT] =
-            g_signal_new ("stdout-text",
+    signals[STDOUT_LINE] =
+            g_signal_new ("stdout-line",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooCmdClass, stdout_text),
+                          G_STRUCT_OFFSET (MooCmdClass, stdout_line),
                           g_signal_accumulator_true_handled, NULL,
                           _moo_marshal_BOOL__STRING,
                           G_TYPE_BOOLEAN, 1,
                           G_TYPE_STRING);
 
-    signals[STDERR_TEXT] =
-            g_signal_new ("stderr-text",
+    signals[STDERR_LINE] =
+            g_signal_new ("stderr-line",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooCmdClass, stderr_text),
+                          G_STRUCT_OFFSET (MooCmdClass, stderr_line),
                           g_signal_accumulator_true_handled, NULL,
                           _moo_marshal_BOOL__STRING,
                           G_TYPE_BOOLEAN, 1,
@@ -240,63 +240,63 @@ command_exit (GPid    pid,
 
 
 static void
-process_text (MooCmd      *cmd,
-              const char  *text,
+process_line (MooCmd      *cmd,
+              const char  *line,
               gboolean     err)
 {
     gboolean dummy = FALSE;
-    const char *real_text = text;
+    const char *real_line = line;
     char *freeme = NULL;
 
     if (cmd->priv->cmd_flags & MOO_CMD_UTF8_OUTPUT)
     {
         const char *charset;
 
-        real_text = NULL;
+        real_line = NULL;
 
         if (g_get_charset (&charset))
         {
             const char *end;
 
-            if (!g_utf8_validate (text, -1, &end))
+            if (!g_utf8_validate (line, -1, &end))
             {
-                g_warning ("%s: invalid unicode:\n%s", G_STRLOC, text);
+                g_warning ("%s: invalid unicode:\n%s", G_STRLOC, line);
 
-                if (end > text)
+                if (end > line)
                 {
-                    freeme = g_strndup (text, end - text);
-                    real_text = freeme;
+                    freeme = g_strndup (line, end - line);
+                    real_line = freeme;
                 }
             }
             else
             {
-                real_text = text;
+                real_line = line;
             }
         }
         else
         {
             GError *error = NULL;
 
-            freeme = g_convert_with_fallback (text, -1, "UTF8", charset,
+            freeme = g_convert_with_fallback (line, -1, "UTF8", charset,
                                               NULL, NULL, NULL, &error);
 
             if (!freeme)
             {
                 g_warning ("%s: could not convert text to UTF8:\n%s",
-                           G_STRLOC, text);
+                           G_STRLOC, line);
                 g_warning ("%s: %s", G_STRLOC, error->message);
             }
 
-            real_text = freeme;
+            real_line = freeme;
         }
     }
 
-    if (real_text)
+    if (real_line)
     {
         if (err)
-            g_signal_emit (cmd, signals[STDERR_TEXT], 0, real_text, &dummy);
+            g_signal_emit (cmd, signals[STDERR_LINE], 0, real_line, &dummy);
         else
-            g_signal_emit (cmd, signals[STDOUT_TEXT], 0, real_text, &dummy);
+            g_signal_emit (cmd, signals[STDOUT_LINE], 0, real_line, &dummy);
     }
 
     g_free (freeme);
@@ -319,7 +319,7 @@ command_out_or_err (MooCmd         *cmd,
     if (line)
     {
         line[line_end] = 0;
-        process_text (cmd, line, !out);
+        process_line (cmd, line, !out);
         g_free (line);
     }
 
@@ -377,7 +377,7 @@ try_channel_leftover (MooCmd      *cmd,
         {
             for (p = lines; *p != NULL; p++)
                 if (**p)
-                    process_text (cmd, *p, !out);
+                    process_line (cmd, *p, !out);
         }
 
         g_strfreev (lines);
@@ -406,7 +406,7 @@ stderr_watch_removed (MooCmd *cmd)
 {
     if (cmd->priv->stderr_io)
     {
-        try_channel_leftover (cmd, cmd->priv->stderr_io, TRUE);
+        try_channel_leftover (cmd, cmd->priv->stderr_io, FALSE);
         g_io_channel_unref (cmd->priv->stderr_io);
     }
 
@@ -679,21 +679,21 @@ _moo_cmd_abort (MooCmd *cmd)
 
 
 static gboolean
-moo_cmd_stdout_text (MooCmd     *cmd,
-                     const char *text)
+moo_cmd_stdout_line (MooCmd     *cmd,
+                     const char *line)
 {
     if (cmd->priv->cmd_flags & MOO_CMD_COLLECT_STDOUT)
-        g_string_append (cmd->priv->out_buffer, text);
+        g_string_append (cmd->priv->out_buffer, line);
     return FALSE;
 }
 
 
 static gboolean
-moo_cmd_stderr_text (MooCmd     *cmd,
-                     const char *text)
+moo_cmd_stderr_line (MooCmd     *cmd,
+                     const char *line)
 {
     if (cmd->priv->cmd_flags & MOO_CMD_COLLECT_STDERR)
-        g_string_append (cmd->priv->err_buffer, text);
+        g_string_append (cmd->priv->err_buffer, line);
     return FALSE;
 }
 
