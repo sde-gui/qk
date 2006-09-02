@@ -2541,7 +2541,13 @@ create_reg_all (Context           *context,
 		{
 			if (!tmp->definition->extend_parent)
 			{
-				g_string_append (all, regex_get_pattern (tmp->parent->end));
+				if (tmp->parent->end != NULL)
+					g_string_append (all, regex_get_pattern (tmp->parent->end));
+				else if (tmp->parent->definition->end_at_line_end)
+					g_string_append (all, "$");
+				else
+					g_critical ("%s: oops", G_STRLOC);
+
 				g_string_append (all, "|");
 			}
 
@@ -4840,6 +4846,18 @@ context_definition_new (const gchar        *id,
 		{
 			g_warning ("extend-parent should be "
 				   "\"true\" for main contexts (id: %s)",
+				   id);
+			definition->extend_parent = TRUE;
+		}
+	}
+
+	/* Children of toplevel context should have extend-parent = TRUE. */
+	if (parent && egg_regex_match_simple ("^(.+):\\1$", parent->id, 0, 0))
+	{
+		if (!definition->extend_parent)
+		{
+			g_warning ("extend-parent should be "
+				   "\"true\" for children of main context (id: %s)",
 				   id);
 			definition->extend_parent = TRUE;
 		}
