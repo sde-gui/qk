@@ -411,7 +411,7 @@ parse_item (MooKeyFileItem  *item,
             MooUserToolType  type,
             const char      *file)
 {
-    const char *os;
+    char *os;
     char *position = NULL;
     MooUserToolInfo *info;
 
@@ -441,14 +441,14 @@ parse_item (MooKeyFileItem  *item,
     if (info->deleted || info->builtin)
         return info;
 
-    os = moo_key_file_item_get (item, KEY_OS);
-
+    os = moo_key_file_item_steal (item, KEY_OS);
     if (!os || !os[0])
         info->os_type = MOO_USER_TOOL_THIS_OS;
     else if (!g_ascii_strncasecmp (os, "win", 3))
         info->os_type = MOO_USER_TOOL_WIN32;
     else
         info->os_type = MOO_USER_TOOL_UNIX;
+    g_free (os);
 
     info->accel = moo_key_file_item_steal (item, KEY_ACCEL);
     info->menu = moo_key_file_item_steal (item, KEY_MENU);
@@ -720,13 +720,6 @@ add_deleted (const char *id,
 }
 
 static gboolean
-string_equal (const char *s1,
-              const char *s2)
-{
-    return !strcmp (s1 ? s1 : "", s2 ? s2 : "");
-}
-
-static gboolean
 info_equal (MooUserToolInfo *info1,
             MooUserToolInfo *info2)
 {
@@ -746,11 +739,11 @@ info_equal (MooUserToolInfo *info1,
            info1->position == info2->position &&
            info1->position == info2->position &&
            info1->cmd_type == info2->cmd_type &&
-           string_equal (info1->name, info2->name) &&
-           string_equal (info1->accel, info2->accel) &&
-           string_equal (info1->menu, info2->menu) &&
-           string_equal (info1->langs, info2->langs) &&
-           string_equal (info1->options, info2->options) &&
+           _moo_str_equal (info1->name, info2->name) &&
+           _moo_str_equal (info1->accel, info2->accel) &&
+           _moo_str_equal (info1->menu, info2->menu) &&
+           _moo_str_equal (info1->langs, info2->langs) &&
+           _moo_str_equal (info1->options, info2->options) &&
            _moo_command_type_data_equal (info1->cmd_type, info1->cmd_data, info2->cmd_data);
 }
 

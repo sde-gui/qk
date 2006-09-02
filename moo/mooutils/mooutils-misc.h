@@ -15,6 +15,7 @@
 #define __MOO_UTILS_MISC_H__
 
 #include <gtk/gtk.h>
+#include <string.h>
 
 G_BEGIN_DECLS
 
@@ -104,6 +105,19 @@ void        _moo_widget_set_tooltip         (GtkWidget      *widget,
                                              const char     *tip);
 
 char      **_moo_splitlines                 (const char     *string);
+
+gboolean    _moo_str_equal                  (const char     *s1,
+                                             const char     *s2);
+
+static inline gboolean
+_moo_str_equal_inline (const char *s1,
+                       const char *s2)
+{
+    return !strcmp (s1 ? s1 : "", s2 ? s2 : "");
+}
+
+#define _moo_str_equal(s1, s2) (_moo_str_equal_inline ((s1), (s2)))
+
 
 const char *_moo_get_pid_string             (void);
 

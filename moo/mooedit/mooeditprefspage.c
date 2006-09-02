@@ -23,6 +23,7 @@
 #include "mooutils/mooglade.h"
 #include "mooutils/moofontsel.h"
 #include "mooutils/mooutils-treeview.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/mooi18n.h"
 #include <string.h>
 
@@ -470,14 +471,6 @@ default_lang_combo_init (GtkComboBox        *combo,
 
 
 static gboolean
-str_equal (const char *s1, const char *s2)
-{
-    s1 = s1 ? s1 : "";
-    s2 = s2 ? s2 : "";
-    return !strcmp (s1, s2);
-}
-
-static gboolean
 find_lang_by_id (GtkTreeModel *model,
                  G_GNUC_UNUSED GtkTreePath *path,
                  GtkTreeIter  *iter,
@@ -493,7 +486,7 @@ find_lang_by_id (GtkTreeModel *model,
 
     gtk_tree_model_get (model, iter, COLUMN_ID, &lang_id, -1);
 
-    if (str_equal (data->id, lang_id))
+    if (_moo_str_equal(data->id, lang_id))
     {
         data->found = TRUE;
         data->iter = *iter;
@@ -776,13 +769,6 @@ populate_filter_settings_store (GtkListStore *store)
 }
 
 
-static gboolean
-strings_equal (const char *s1,
-               const char *s2)
-{
-    return !strcmp (s1 ? s1 : "", s2 ? s2 : "");
-}
-
 static void
 filter_cell_edited (GtkCellRendererText *cell,
                     const char          *path_string,
@@ -809,7 +795,7 @@ filter_cell_edited (GtkCellRendererText *cell,
 
     gtk_tree_model_get (GTK_TREE_MODEL (store), &iter, column, &old_text, -1);
 
-    if (!strings_equal (old_text, text))
+    if (!_moo_str_equal (old_text, text))
     {
         gtk_list_store_set (store, &iter, column, text, -1);
         filter_store_set_modified (store, TRUE);

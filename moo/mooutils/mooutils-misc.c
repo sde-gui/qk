@@ -1680,3 +1680,12 @@ _moo_enable_win32_error_message (void)
     SetErrorMode (saved_win32_error_mode);
 #endif
 }
+
+
+#undef _moo_str_equal
+gboolean
+_moo_str_equal (const char *s1,
+                const char *s2)
+{
+    return !strcmp (s1 ? s1 : "", s2 ? s2 : "");
+}

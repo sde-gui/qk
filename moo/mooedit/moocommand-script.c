@@ -20,6 +20,7 @@
 #include "mooscript/mooscript-parser.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooglade.h"
+#include "mooutils/mooutils-misc.h"
 #include <string.h>
 
 
@@ -184,7 +185,7 @@ script_type_save_data (G_GNUC_UNUSED MooCommandType *type,
     new_code = moo_text_view_get_text (textview);
     code = moo_command_data_get_code (data);
 
-    if (strcmp (code ? code : "", new_code ? new_code : "") != 0)
+    if (!_moo_str_equal (code, new_code))
     {
         moo_command_data_set_code (data, new_code);
         changed = TRUE;
@@ -202,7 +203,7 @@ script_type_data_equal (G_GNUC_UNUSED MooCommandType *type,
 {
     const char *val1 = moo_command_data_get_code (data1);
     const char *val2 = moo_command_data_get_code (data2);
-    return !strcmp (val1 ? val1 : "", val2 ? val2 : "");
+    return _moo_str_equal (val1, val2);
 }
 
 
