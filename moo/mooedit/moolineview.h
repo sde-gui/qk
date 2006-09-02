@@ -59,11 +59,19 @@ void        moo_line_view_set_data      (MooLineView    *view,
 void        moo_line_view_set_line_data (MooLineView    *view,
                                          int             line,
                                          const GValue   *data);
+void        moo_line_view_set_boxed     (MooLineView    *view,
+                                         int             line,
+                                         GType           type,
+                                         gpointer        data);
 gpointer    moo_line_view_get_data      (MooLineView    *view,
                                          int             line);
 gboolean    moo_line_view_get_line_data (MooLineView    *view,
                                          int             line,
                                          GValue         *dest);
+/* returns a copy */
+gpointer    moo_line_view_get_boxed     (MooLineView    *view,
+                                         int             line,
+                                         GType           type);
 
 GtkTextTag *moo_line_view_create_tag    (MooLineView    *view,
                                          const char     *tag_name,

@@ -597,6 +597,31 @@ moo_line_view_set_line_data (MooLineView    *view,
 }
 
 
+void
+moo_line_view_set_boxed (MooLineView    *view,
+                         int             line,
+                         GType           type,
+                         gpointer        data)
+{
+    GValue gval;
+
+    g_return_if_fail (MOO_IS_LINE_VIEW (view));
+    g_return_if_fail (line >= 0);
+    g_return_if_fail (g_type_is_a (type, G_TYPE_BOXED));
+
+    if (!data)
+        return moo_line_view_set_data (view, line, NULL, NULL);
+
+    gval.g_type = 0;
+    g_value_init (&gval, type);
+    g_value_set_boxed (&gval, data);
+
+    moo_line_view_set_line_data (view, line, &gval);
+
+    g_value_unset (&gval);
+}
+
+
 gboolean
 moo_line_view_get_line_data (MooLineView    *view,
                              int             line,
@@ -608,4 +633,31 @@ moo_line_view_get_line_data (MooLineView    *view,
     return _moo_data_get_value (view->priv->line_data,
                                 GINT_TO_POINTER (line),
                                 dest);
+}
+
+
+/* returns a copy */
+gpointer
+moo_line_view_get_boxed (MooLineView    *view,
+                         int             line,
+                         GType           type)
+{
+    GValue gval;
+    gpointer ret = NULL;
+
+    g_return_val_if_fail (MOO_IS_LINE_VIEW (view), NULL);
+    g_return_val_if_fail (line >= 0, NULL);
+    g_return_val_if_fail (g_type_is_a (type, G_TYPE_BOXED), NULL);
+
+    gval.g_type = 0;
+
+    if (!moo_line_view_get_line_data (view, line, &gval))
+        return NULL;
+
+    if (G_VALUE_TYPE (&gval) == type)
+        ret = g_value_dup_boxed (&gval);
+
+    g_value_unset (&gval);
+
+    return ret;
 }
