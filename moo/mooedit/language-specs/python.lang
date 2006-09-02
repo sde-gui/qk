@@ -3,7 +3,7 @@
           mimetypes="text/x-python;application/x-python" globs="*.py">
 
   <styles>
-    <style id="self" _name="self" map-to="def:data-type"/>
+    <style id="special-variables" _name="Special Variables" map-to="def:data-type"/>
     <style id="module-handler" _name="Module handler" map-to="def:character"/>
     <style id="keyword" _name="Keyword" map-to="def:keyword"/>
     <style id="function" _name="Function" map-to="def:keyword"/>
@@ -62,8 +62,13 @@
         <context ref="double-quoted-string"/>
         <context ref="single-quoted-string"/>
 
-	<context id="self" style-ref="self">
+	<context id="special-variables" style-ref="special-variables">
           <keyword>self</keyword>
+          <keyword>False</keyword>
+          <keyword>None</keyword>
+          <keyword>True</keyword>
+          <keyword>__name__</keyword>
+          <keyword>__debug__</keyword>
 	</context>
 
         <context ref="def:float"/>
@@ -75,11 +80,6 @@
           <keyword>import</keyword>
           <keyword>from</keyword>
           <keyword>as</keyword>
-          <keyword>False</keyword>
-          <keyword>None</keyword>
-          <keyword>True</keyword>
-          <keyword>__name__</keyword>
-          <keyword>__debug__</keyword>
         </context>
 
         <context id="function" style-ref="function">
