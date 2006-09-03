@@ -25,7 +25,7 @@ gtk_source_style_get_type (void)
 {
 	static GType type;
 
-	if (!type)
+	if (type == 0)
 		type = g_boxed_type_register_static ("GtkSourceStyle",
 						     (GBoxedCopyFunc) gtk_source_style_copy,
 						     (GBoxedFreeFunc) gtk_source_style_free);

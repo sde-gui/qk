@@ -56,8 +56,6 @@ void           gtk_text_region_add                          (GtkTextRegion     *
 void           gtk_text_region_subtract                     (GtkTextRegion     *region,
 							     const GtkTextIter *_start,
 							     const GtkTextIter *_end);
-void           gtk_text_region_subtract_region              (GtkTextRegion     *region,
-							     GtkTextRegion     *region2);
 
 gint           gtk_text_region_subregions                   (GtkTextRegion *region);
 

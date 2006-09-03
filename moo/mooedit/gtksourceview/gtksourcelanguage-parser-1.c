@@ -37,7 +37,7 @@ static gchar *
 fix_pattern (const gchar *pattern,
 	     gboolean    *end_at_line_end)
 {
-	if (pattern && g_str_has_suffix (pattern, "\\n"))
+	if (pattern != NULL && g_str_has_suffix (pattern, "\\n"))
 	{
 		if (end_at_line_end)
 			*end_at_line_end = TRUE;
@@ -75,7 +75,7 @@ engine_add_simple_pattern (GtkSourceContextEngine *ce,
 								GTK_SOURCE_CONTEXT_END_AT_LINE_END,
 							    &error);
 
-	if (error)
+	if (error != NULL)
 	{
 		g_warning ("%s", error->message);
 		g_error_free (error);
@@ -121,7 +121,7 @@ engine_add_syntax_pattern (GtkSourceContextEngine *ce,
 							    options,
 							    &error);
 
-	if (error)
+	if (error != NULL)
 	{
 		g_warning ("%s", error->message);
 		g_error_free (error);
@@ -136,8 +136,7 @@ engine_add_syntax_pattern (GtkSourceContextEngine *ce,
 }
 
 static gchar *
-build_keyword_list (const gchar  *id,
-		    const GSList *keywords,
+build_keyword_list (const GSList *keywords,
 		    gboolean      case_sensitive,
 		    gboolean      match_empty_string_at_beginning,
 		    gboolean      match_empty_string_at_end,
@@ -145,7 +144,6 @@ build_keyword_list (const gchar  *id,
 		    const gchar  *end_regex)
 {
 	GString *str;
-	gint keyword_count;
 
 	g_return_val_if_fail (keywords != NULL, NULL);
 
@@ -164,34 +162,18 @@ build_keyword_list (const gchar  *id,
 		else
 			g_string_append (str, "(?i:");
 
-		keyword_count = 0;
-		/* Due to a bug in GNU libc regular expressions
-		 * implementation we can't have keyword lists of more
-		 * than 250 or so elements, so we truncate such a
-		 * list.  This is a temporary solution, as the correct
-		 * approach would be to generate multiple keyword
-		 * lists.  (See bug #110991) */
-		/* we are using pcre now, and it can handle more */
-#define KEYWORD_LIMIT 1000
-
-		while (keywords != NULL && keyword_count < KEYWORD_LIMIT)
+		/* TODO Make sure pcre can handle big lists, and split lists if necessary.
+		 * See #110991 */
+		while (keywords != NULL)
 		{
-			g_string_append (str, (gchar*)keywords->data);
+			g_string_append (str, (gchar*) keywords->data);
 
 			keywords = g_slist_next (keywords);
-			keyword_count++;
 
-			if (keywords != NULL && keyword_count < KEYWORD_LIMIT)
+			if (keywords != NULL)
 				g_string_append (str, "|");
 		}
 		g_string_append (str, ")");
-
-		if (keyword_count >= KEYWORD_LIMIT)
-		{
-			g_warning ("Keyword list '%s' too long. Only the first %d "
-				   "elements will be highlighted. See bug #110991 for "
-				   "further details.", id, KEYWORD_LIMIT);
-		}
 
 		if (end_regex != NULL)
 			g_string_append (str, end_regex);
@@ -201,36 +183,6 @@ build_keyword_list (const gchar  *id,
 	}
 
 	return g_string_free (str, FALSE);
-}
-
-static gchar *
-language_strconvescape (gchar *source)
-{
-	gunichar cur_char;
-	gunichar last_char = 0;
-	gchar *dest;
-	gchar *src;
-
-	if (source == NULL)
-		return NULL;
-
-	src = dest = source;
-
-	while (*src)
-	{
-		cur_char = g_utf8_get_char (src);
-		src = g_utf8_next_char (src);
-		if (last_char == '\\' && cur_char == 'n') {
-			cur_char = '\n';
-		} else if (last_char == '\\' && cur_char == 't') {
-			cur_char = '\t';
-		}
-		dest += g_unichar_to_utf8 (cur_char, dest);
-		last_char = cur_char;
-	}
-	*dest = '\0';
-
-	return source;
 }
 
 static void
@@ -250,8 +202,8 @@ parseLineComment (xmlNodePtr              cur,
 
 		start_regex = xmlNodeListGetString (child->doc, child->xmlChildrenNode, 1);
 
-		engine_add_syntax_pattern (ce, language, id, (gchar*) style,
-// 					   language_strconvescape ((gchar*) start_regex),
+		engine_add_syntax_pattern (ce, language, id,
+					   (gchar*) style,
 					   (gchar*) start_regex,
 					   NULL, TRUE);
 
@@ -312,8 +264,6 @@ parseBlockComment (xmlNodePtr              cur,
 	}
 
 	engine_add_syntax_pattern (ce, language, id, (gchar*) style,
-// 				   language_strconvescape ((gchar*) start_regex),
-// 				   language_strconvescape ((gchar*) end_regex),
 				   (gchar*) start_regex,
 				   (gchar*) end_regex,
 				   FALSE);
@@ -384,9 +334,6 @@ parseString (xmlNodePtr              cur,
 
 		return;
 	}
-
-// 	language_strconvescape ((gchar*) start_regex);
-// 	language_strconvescape ((gchar*) end_regex);
 
 	engine_add_syntax_pattern (ce, language, id,
 				   (gchar*) style,
@@ -481,9 +428,7 @@ parseKeywordList (xmlNodePtr              cur,
 		{
 			xmlChar *keyword;
 			keyword = xmlNodeListGetString (child->doc, child->xmlChildrenNode, 1);
-
-			list = g_slist_prepend (list,
-						language_strconvescape ((gchar*) keyword));
+			list = g_slist_prepend (list, keyword);
 		}
 
 		child = child->next;
@@ -502,13 +447,10 @@ parseKeywordList (xmlNodePtr              cur,
 		return;
 	}
 
-	regex = build_keyword_list (id,
-				    list,
+	regex = build_keyword_list (list,
 				    case_sensitive,
 				    match_empty_string_at_beginning,
 				    match_empty_string_at_end,
-// 				    language_strconvescape (beginning_regex),
-// 				    language_strconvescape (end_regex));
 				    beginning_regex,
 				    end_regex);
 
@@ -540,8 +482,8 @@ parsePatternItem (xmlNodePtr              cur,
 
 		regex = xmlNodeListGetString (child->doc, child->xmlChildrenNode, 1);
 
-		engine_add_simple_pattern (ce, language, id, (gchar*) style,
-// 					   language_strconvescape ((gchar*) regex));
+		engine_add_simple_pattern (ce, language, id,
+					   (gchar*) style,
 					   (gchar*) regex);
 
 		xmlFree (regex);
@@ -601,8 +543,6 @@ parseSyntaxItem (xmlNodePtr              cur,
 	}
 
 	engine_add_syntax_pattern (ce, language, id, (gchar*) style,
-// 				   language_strconvescape ((gchar*) start_regex),
-// 				   language_strconvescape ((gchar*) end_regex),
 				   (gchar*) start_regex,
 				   (gchar*) end_regex,
 				   FALSE);
@@ -677,29 +617,6 @@ parseTag (GtkSourceLanguage      *language,
 		g_print ("Unknown tag: %s\n", cur->name);
 	}
 
-// 	if (populate_styles_table)
-// 		g_hash_table_insert (language->priv->tag_id_to_style_name,
-// 				     g_strdup ((gchar *)id),
-// 				     g_strdup ((gchar *)style));
-
-// 	if (tags)
-// 	{
-// 		GtkTextTag *tag;
-// 		GtkSourceTagStyle *ts;
-//
-// 		tag = gtk_source_tag_new ((gchar *)id, (gchar *)name);
-// 		*tags = g_slist_prepend (*tags, tag);
-//
-// 		ts = gtk_source_language_get_tag_style (language, (gchar *)id);
-//
-// 		if (ts != NULL)
-// 		{
-// 			gtk_source_tag_set_style (GTK_SOURCE_TAG (tag), ts);
-// 			gtk_source_tag_style_free (ts);
-// 		}
-//
-// 	}
-
 	xmlFree (name);
 	xmlFree (style);
 	xmlFree (id);
@@ -722,7 +639,7 @@ define_root_context (GtkSourceContextEngine *ce,
 							    GTK_SOURCE_CONTEXT_EXTEND_PARENT,
 							    &error);
 
-	if (error)
+	if (error != NULL)
 	{
 		g_warning ("%s", error->message);
 		g_error_free (error);
@@ -740,6 +657,7 @@ _gtk_source_language_file_parse_version1 (GtkSourceLanguage      *language,
 	xmlNodePtr cur;
 	GMappedFile *mf;
 	gunichar esc_char = 0;
+	xmlChar *lang_version = NULL;
 
 	xmlKeepBlanksDefault (0);
 
@@ -770,27 +688,34 @@ _gtk_source_language_file_parse_version1 (GtkSourceLanguage      *language,
 	{
 		g_warning ("The lang file '%s' is empty",
 			   language->priv->lang_file_name);
-
-		xmlFreeDoc (doc);
-		return FALSE;
+		goto error;
 	}
 
-	if (xmlStrcmp (cur->name, (const xmlChar *) "language"))
+	if (xmlStrcmp (cur->name, (const xmlChar *) "language") != 0)
 	{
 		g_warning ("File '%s' is of the wrong type",
 			   language->priv->lang_file_name);
+		goto error;
+	}
 
-		xmlFreeDoc (doc);
-		return FALSE;
+	lang_version = xmlGetProp (cur, BAD_CAST "version");
+
+	if (lang_version == NULL || strcmp ("1.0", (char*) lang_version) != 0)
+	{
+		if (lang_version != NULL)
+			g_warning ("Wrong language version '%s' in file '%s', expected '%s'",
+				   (char*) lang_version, language->priv->lang_file_name, "1.0");
+		else
+			g_warning ("Language version missing in file '%s'",
+				   language->priv->lang_file_name);
+		goto error;
 	}
 
 	if (!define_root_context (engine, language))
 	{
 		g_warning ("Could not create root context for file '%s'",
 			   language->priv->lang_file_name);
-
-		xmlFreeDoc (doc);
-		return FALSE;
+		goto error;
 	}
 
 	/* FIXME: check that the language name, version, etc. are the
@@ -834,6 +759,13 @@ _gtk_source_language_file_parse_version1 (GtkSourceLanguage      *language,
 	_gtk_source_language_define_language_styles (language);
 
 	xmlFreeDoc (doc);
+	xmlFree (lang_version);
 	return TRUE;
+
+error:
+	if (doc)
+		xmlFreeDoc (doc);
+	xmlFree (lang_version);
+	return FALSE;
 }
 

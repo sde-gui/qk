@@ -402,27 +402,6 @@ gtk_text_region_subtract (GtkTextRegion     *region,
 	DEBUG (gtk_text_region_debug_print (region));
 }
 
-/* XXX */
-void
-gtk_text_region_subtract_region (GtkTextRegion *region,
-				 GtkTextRegion *region2)
-{
-	GtkTextRegionIterator iter;
-
-	g_return_if_fail (region != NULL);
-	g_return_if_fail (region2 != NULL);
-
-	gtk_text_region_get_iterator (region2, &iter, 0);
-
-	while (!gtk_text_region_iterator_is_end (&iter))
-	{
-		GtkTextIter start, end;
-		gtk_text_region_iterator_get_subregion (&iter, &start, &end);
-		gtk_text_region_subtract (region, &start, &end);
-		gtk_text_region_iterator_next (&iter);
-	}
-}
-
 gint
 gtk_text_region_subregions (GtkTextRegion *region)
 {

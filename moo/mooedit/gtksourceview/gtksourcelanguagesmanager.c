@@ -312,7 +312,7 @@ _gtk_source_languages_manager_get_rng_file (GtkSourceLanguagesManager *lm)
 {
 	g_return_val_if_fail (GTK_IS_SOURCE_LANGUAGES_MANAGER (lm), NULL);
 
-	if (!lm->priv->rng_file)
+	if (lm->priv->rng_file == NULL)
 	{
 		const GSList *dirs;
 
@@ -559,7 +559,7 @@ build_file_listing (const gchar *directory,
 	if (dir == NULL)
 		return filenames;
 
-	while ((name = g_dir_read_name (dir)))
+	while ((name = g_dir_read_name (dir)) != NULL)
 	{
 		gchar *full_path = g_build_filename (directory, name, NULL);
 
@@ -634,13 +634,13 @@ gtk_source_languages_manager_get_available_style_schemes (GtkSourceLanguagesMana
 
 	g_return_val_if_fail (GTK_IS_SOURCE_LANGUAGES_MANAGER (lm), NULL);
 
-	if (lm->priv->style_schemes)
+	if (lm->priv->style_schemes != NULL)
 		return lm->priv->style_schemes;
 
 	files = get_style_scheme_files (lm);
 	schemes = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
 
-	while (files)
+	while (files != NULL)
 	{
 		gchar *filename = files->data;
 
@@ -648,7 +648,7 @@ gtk_source_languages_manager_get_available_style_schemes (GtkSourceLanguagesMana
 
 		scheme = _gtk_source_style_scheme_new_from_file (filename);
 
-		if (scheme)
+		if (scheme != NULL)
 		{
 			const char *id = gtk_source_style_scheme_get_id (scheme);
 			GtkSourceStyleScheme *old;
@@ -681,7 +681,7 @@ _gtk_source_style_scheme_get_default (void)
 	lm = gtk_source_languages_manager_new ();
 	list = gtk_source_languages_manager_get_available_style_schemes (lm);
 
-	if (list)
+	if (list != NULL)
 		scheme = g_object_ref (list->data);
 
 	g_object_unref (lm);

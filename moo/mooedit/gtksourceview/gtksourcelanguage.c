@@ -240,7 +240,7 @@ get_attribute (xmlTextReaderPtr   reader,
 {
 	xmlChar *tmp = xmlTextReaderGetAttribute (reader, BAD_CAST attribute);
 
-	if (!tmp)
+	if (tmp == NULL)
 	{
 		g_warning ("missing %s attribute in %s element",
 			   attribute, element);

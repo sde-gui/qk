@@ -59,7 +59,7 @@ gtk_source_style_scheme_finalize (GObject *object)
 	g_free (scheme->priv->id);
 	g_free (scheme->priv->name);
 
-	if (scheme->priv->parent)
+	if (scheme->priv->parent != NULL)
 		g_object_unref (scheme->priv->parent);
 
 	G_OBJECT_CLASS (gtk_source_style_scheme_parent_class)->finalize (object);
@@ -198,10 +198,10 @@ gtk_source_style_scheme_get_style (GtkSourceStyleScheme *scheme,
 
 	style = g_hash_table_lookup (scheme->priv->styles, style_name);
 
-	if (style)
+	if (style != NULL)
 		return gtk_source_style_copy (style);
 
-	if (scheme->priv->parent)
+	if (scheme->priv->parent != NULL)
 		return gtk_source_style_scheme_get_style (scheme->priv->parent,
 							  style_name);
 	else
@@ -409,7 +409,7 @@ parse_style (GtkSourceStyleScheme *scheme,
 		}
 	}
 
-	if (!style_name)
+	if (style_name == NULL)
 	{
 		g_set_error (error, ERROR_QUARK, 0, "name attribute missing");
 		gtk_source_style_free (use_style);
@@ -474,7 +474,7 @@ start_element (G_GNUC_UNUSED GMarkupParseContext *context,
 	GtkSourceStyle *style;
 	gchar *style_name;
 
-	if (data->done || (!data->scheme && strcmp (element_name, "style-scheme")))
+	if (data->done || (data->scheme == NULL && strcmp (element_name, "style-scheme") != 0))
 	{
 		g_set_error (error, ERROR_QUARK, 0,
 			     "unexpected element '%s'",
@@ -482,11 +482,11 @@ start_element (G_GNUC_UNUSED GMarkupParseContext *context,
 		return;
 	}
 
-	if (!data->scheme)
+	if (data->scheme == NULL)
 	{
 		data->scheme = g_object_new (GTK_TYPE_SOURCE_STYLE_SCHEME, NULL);
 
-		while (attribute_names && *attribute_names)
+		while (attribute_names != NULL && *attribute_names != NULL)
 		{
 			gboolean error_set = FALSE;
 
@@ -496,7 +496,7 @@ start_element (G_GNUC_UNUSED GMarkupParseContext *context,
 			}
 			else if (!strcmp (*attribute_names, "_name"))
 			{
-				if (data->scheme->priv->name)
+				if (data->scheme->priv->name != NULL)
 				{
 					g_set_error (error, ERROR_QUARK, 0,
 						     "duplicated name attribute");
@@ -509,7 +509,7 @@ start_element (G_GNUC_UNUSED GMarkupParseContext *context,
 			}
 			else if (!strcmp (*attribute_names, "name"))
 			{
-				if (data->scheme->priv->name)
+				if (data->scheme->priv->name != NULL)
 				{
 					g_set_error (error, ERROR_QUARK, 0,
 						     "duplicated name attribute");
@@ -522,7 +522,7 @@ start_element (G_GNUC_UNUSED GMarkupParseContext *context,
 			}
 			else if (!strcmp (*attribute_names, "parent-scheme"))
 			{
-				/* XXX */
+				/* FIXME are we going to use parent schemes? */
 				g_warning ("%s: implement me", G_STRLOC);
 			}
 			else
@@ -543,7 +543,7 @@ start_element (G_GNUC_UNUSED GMarkupParseContext *context,
 		return;
 	}
 
-	if (strcmp (element_name, "style"))
+	if (strcmp (element_name, "style") != 0)
 	{
 		g_set_error (error, ERROR_QUARK, 0,
 			     "unexpected element '%s'",
@@ -598,7 +598,7 @@ _gtk_source_style_scheme_new_from_file (const gchar *filename)
 	if (!g_markup_parse_context_parse (ctx, text, -1, &error) ||
 	    !g_markup_parse_context_end_parse (ctx, &error))
 	{
-		if (data.scheme)
+		if (data.scheme != NULL)
 			g_object_unref (data.scheme);
 		data.scheme = NULL;
 		g_warning ("could not load style scheme file '%s': %s",

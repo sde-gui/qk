@@ -290,13 +290,13 @@ create_definition (ParserState *parser_state,
 
 	/* extend-parent */
 	tmp = xmlTextReaderGetAttribute (parser_state->reader, BAD_CAST "extend-parent");
-	if (tmp)
+	if (tmp != NULL)
 		extend_parent = str_to_bool ((gchar *)tmp);
 	xmlFree (tmp);
 
 	/* end-at-line-end */
 	tmp = xmlTextReaderGetAttribute (parser_state->reader, BAD_CAST "end-at-line-end");
-	if (tmp)
+	if (tmp != NULL)
 		end_at_line_end = str_to_bool ((gchar *)tmp);
 	xmlFree (tmp);
 
@@ -354,7 +354,7 @@ create_definition (ParserState *parser_state,
 
 		g_assert (child->name);
 		if (xmlStrcmp (BAD_CAST "match", child->name) == 0
-				&& child->children)
+				&& child->children != NULL)
 		{
 			/* <match> */
 			match = g_strdup ((gchar *)child->children->content);
@@ -363,7 +363,7 @@ create_definition (ParserState *parser_state,
 		else if (xmlStrcmp (BAD_CAST "start", child->name) == 0)
 		{
 			/* <start> */
-			if (child->children)
+			if (child->children != NULL)
 			{
 				start = g_strdup ((gchar *)child->children->content);
 			}
@@ -378,7 +378,7 @@ create_definition (ParserState *parser_state,
 		else if (xmlStrcmp (BAD_CAST "end", child->name) == 0)
 		{
 			/* <end> */
-			if (child->children)
+			if (child->children != NULL)
 				end = g_strdup ((gchar *)child->children->content);
 			else
 			{
@@ -420,6 +420,9 @@ create_definition (ParserState *parser_state,
 			 * in a single string */
 			while (TRUE)
 			{
+				/* TODO: check how pcre works with huge keyword lists,
+				 * and split big lists if needed, like in the old engine. */
+
 				/* TODO: this could be done destructively,
 				 * modifing the string in place without the
 				 * copy */
@@ -564,7 +567,7 @@ add_ref (ParserState               *parser_state,
 					    parser_state->loaded_lang_ids,
 					    &tmp_error);
 
-				if (tmp_error)
+				if (tmp_error != NULL)
 				{
 					GError *tmp_error2 = NULL;
 					g_set_error (&tmp_error2, PARSER_ERROR, tmp_error->code,
@@ -703,7 +706,7 @@ handle_context_element (ParserState *parser_state,
 		style_ref = decorate_id (parser_state, (gchar*) tmp);
 	xmlFree (tmp);
 
-	if (ignore_style && !ref)
+	if (ignore_style && ref == NULL)
 	{
 		g_set_error (error, PARSER_ERROR,
 			     PARSER_ERROR_WRONG_STYLE,
@@ -723,14 +726,15 @@ handle_context_element (ParserState *parser_state,
 			g_warning ("style-ref and ignore-style used simultaneously");
 	}
 
-	if (!ignore_style && style_ref && !g_hash_table_lookup (parser_state->styles_mapping, style_ref))
+	if (!ignore_style && style_ref != NULL &&
+	    g_hash_table_lookup (parser_state->styles_mapping, style_ref) == NULL)
 	{
 		g_warning ("style '%s' not defined", style_ref);
 	}
 
 	if (ref != NULL)
 	{
-		if (style_ref)
+		if (style_ref != NULL)
 			options |= GTK_SOURCE_CONTEXT_OVERRIDE_STYLE;
 
 		add_ref (parser_state, (gchar*) ref, options, style_ref, &tmp_error);
@@ -1271,7 +1275,7 @@ handle_default_regex_options_element (ParserState *parser_state,
 
 	g_return_if_fail (error != NULL && *error == NULL);
 
-	if (!parser_state->engine)
+	if (parser_state->engine == NULL)
 		return;
 
 	do {
@@ -1320,7 +1324,7 @@ map_style (ParserState *parser_state,
 			  map_to ? map_to : "(null)",
 			  mapped_style));
 
-	if (mapped_style)
+	if (mapped_style != NULL)
 		g_hash_table_insert (parser_state->styles_mapping,
 				     g_strdup (style_id),
 				     g_strdup (mapped_style));
@@ -1331,44 +1335,6 @@ map_style (ParserState *parser_state,
 			     "unable to map style '%s' to '%s'",
 			     style_id, map_to);
 }
-
-
-
-// static GtkTextTag *
-// create_tag (ParserState *parser_state,
-// 		gchar *id,
-// 		gchar *name,
-// 		gchar *default_style,
-// 		GError **error)
-// {
-// 	GtkTextTag *tag;
-// 	GtkSourceTagStyle *ts = NULL;
-//
-// 	g_return_val_if_fail (parser_state != NULL, NULL);
-// 	g_return_val_if_fail (id != NULL, NULL);
-// 	g_return_val_if_fail (name != NULL, NULL);
-//
-// 	DEBUG (g_message ("new tag id '%s', name '%s'", id, name));
-//
-// 	tag = gtk_source_tag_new (name, id);
-//
-// 	DEBUG (g_message ("mapping the style of '%s' to '%s'",
-// 				id, default_style));
-//
-// 	if (default_style != NULL)
-// 	{
-// 		ts = gtk_source_language_get_tag_style (parser_state->language,
-// 				default_style);
-// 	}
-//
-// 	if (ts != NULL)
-// 	{
-// 		gtk_source_tag_set_style (GTK_SOURCE_TAG (tag), ts);
-// 		gtk_source_tag_style_free (ts);
-// 	}
-//
-// 	return tag;
-// }
 
 static void
 parse_language_with_id (ParserState *parser_state,
@@ -1435,7 +1401,7 @@ parse_style (ParserState *parser_state,
 	name = xmlTextReaderGetAttribute (parser_state->reader,
 					  BAD_CAST "_name");
 
-	if (name)
+	if (name != NULL)
 	{
 		tmp = xmlStrdup (BAD_CAST dgettext (parser_state->language->priv->translation_domain,
 				 (gchar*) name));
@@ -1451,7 +1417,7 @@ parse_style (ParserState *parser_state,
 	map_to = xmlTextReaderGetAttribute (parser_state->reader,
 					    BAD_CAST "map-to");
 
-	if (map_to && !id_is_decorated ((gchar*) map_to, &lang_id))
+	if (map_to != NULL && !id_is_decorated ((gchar*) map_to, &lang_id))
 	{
 		g_set_error (&tmp_error,
 			     PARSER_ERROR,
@@ -1460,19 +1426,19 @@ parse_style (ParserState *parser_state,
 			     map_to, id);
 	}
 
-	if (!tmp_error && lang_id && !lang_id[0])
+	if (tmp_error == NULL && lang_id != NULL && lang_id[0] == 0)
 	{
 		g_free (lang_id);
 		lang_id = NULL;
 	}
 
-	if (!tmp_error && lang_id && !lang_id_is_already_loaded (parser_state, lang_id))
+	if (tmp_error == NULL && lang_id != NULL && !lang_id_is_already_loaded (parser_state, lang_id))
 		parse_language_with_id (parser_state, lang_id, &tmp_error);
 
 	DEBUG (g_message ("style %s (%s) to be mapped to '%s'",
 			  name, id, map_to ? (char*) map_to : "(null)"));
 
-	if (!tmp_error)
+	if (tmp_error == NULL)
 		map_style (parser_state, id, (gchar*) map_to, &tmp_error);
 
 	g_free (lang_id);
@@ -1480,7 +1446,7 @@ parse_style (ParserState *parser_state,
 	xmlFree (name);
 	xmlFree (map_to);
 
-	if (tmp_error)
+	if (tmp_error != NULL)
 	{
 		g_propagate_error (error, tmp_error);
 		return;
@@ -1496,7 +1462,7 @@ handle_keyword_char_class_element (ParserState *parser_state,
 
 	g_return_if_fail (error != NULL && *error == NULL);
 
-	if (!parser_state->engine)
+	if (parser_state->engine == NULL)
 		return;
 
 	do {
@@ -1535,7 +1501,7 @@ handle_styles_element (ParserState *parser_state,
 
 		/* FIXME: is xmlTextReaderIsValid call needed here or
 		 * error func will be called? */
-		if (*error)
+		if (*error != NULL)
 			break;
 
 		tag_name = xmlTextReaderConstName (parser_state->reader);
@@ -1547,7 +1513,7 @@ handle_styles_element (ParserState *parser_state,
 			break;
 
 		/* Skip nodes that aren't <style> elements */
-		if (!tag_name || xmlStrcmp (BAD_CAST "style", tag_name))
+		if (tag_name == NULL || xmlStrcmp (BAD_CAST "style", tag_name))
 			continue;
 
 		/* Handle <style> elements */
@@ -1675,7 +1641,7 @@ file_parse (gchar                     *filename,
 	lm = _gtk_source_language_get_languages_manager (language);
 	rng_lang_schema = _gtk_source_languages_manager_get_rng_file (lm);
 
-	if (!rng_lang_schema)
+	if (rng_lang_schema == NULL)
 	{
 		g_set_error (&tmp_error,
 			     PARSER_ERROR,
@@ -1707,7 +1673,7 @@ file_parse (gchar                     *filename,
 
 		/* FIXME: is xmlTextReaderIsValid call needed here or
 		 * error func will be called? */
-		if (tmp_error)
+		if (tmp_error != NULL)
 			break;
 
 		type = xmlTextReaderNodeType (parser_state->reader);
@@ -1725,7 +1691,7 @@ file_parse (gchar                     *filename,
 
 	parser_state_destroy (parser_state);
 
-	if (tmp_error)
+	if (tmp_error != NULL)
 		goto error;
 
 	return TRUE;
@@ -1789,7 +1755,7 @@ steal_styles_mapping (char       *style,
 		      char       *map_to,
 		      GHashTable *styles)
 {
-	if (strcmp (style, map_to))
+	if (strcmp (style, map_to) != 0)
 	{
 		g_hash_table_insert (styles, style, map_to);
 		return TRUE;
