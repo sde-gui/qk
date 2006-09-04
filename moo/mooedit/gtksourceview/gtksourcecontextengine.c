@@ -643,7 +643,6 @@ apply_tags (GtkSourceContextEngine *ce,
 	GtkTextTag *tag;
 	GtkTextIter start_iter, end_iter;
 	SubPattern *sp;
-	guint i;
 	Segment *child;
 
 	g_assert (segment != NULL);
@@ -666,7 +665,7 @@ apply_tags (GtkSourceContextEngine *ce,
 		gtk_text_buffer_apply_tag (ce->priv->buffer, tag, &start_iter, &end_iter);
 	}
 
-	for (sp = segment->sub_patterns, i = 0; sp != NULL; sp = sp->next, ++i)
+	for (sp = segment->sub_patterns; sp != NULL; sp = sp->next)
 	{
 		if (sp->start_at >= start_offset && sp->end_at <= end_offset)
 		{
@@ -687,9 +686,8 @@ apply_tags (GtkSourceContextEngine *ce,
 	     child != NULL && child->start_at < end_offset;
 	     child = child->next)
 	{
-		if (child->end_at <= start_offset)
-			continue;
-		apply_tags (ce, child, start_offset, end_offset);
+		if (child->end_at > start_offset)
+			apply_tags (ce, child, start_offset, end_offset);
 	}
 }
 
@@ -1102,7 +1100,11 @@ sub_pattern_new (Segment              *segment,
 static inline void
 sub_pattern_free (SubPattern *sp)
 {
+#ifdef ENABLE_DEBUG
+	memset (sp, 1, sizeof (SubPattern));
+#else
 	g_free (sp);
+#endif
 }
 
 static void
@@ -1135,21 +1137,20 @@ simple_segment_split_ (GtkSourceContextEngine *ce,
 		       Segment                *segment,
 		       gint                    offset)
 {
-	SubPattern *subpatterns, *sp;
+	SubPattern *sp;
 	Segment *new_segment, *invalid;
 	gint end_at = segment->end_at;
 
 	g_assert (SEGMENT_IS_SIMPLE (segment));
 	g_assert (segment->start_at < offset && offset < segment->end_at);
 
-	subpatterns = segment->sub_patterns;
+	sp = segment->sub_patterns;
 	segment->sub_patterns = NULL;
 	segment->end_at = offset;
 
 	invalid = create_segment (ce, segment->parent, NULL, offset, offset, segment);
 	new_segment = create_segment (ce, segment->parent, segment->context, offset, end_at, invalid);
 
-	sp = subpatterns;
 	while (sp != NULL)
 	{
 		Segment *append_to = NULL;
@@ -1856,6 +1857,7 @@ gtk_source_context_engine_attach_buffer (GtkSourceEngine *engine,
 			segment_destroy (ce, ce->priv->root_segment);
 		if (ce->priv->root_context != NULL)
 			context_unref (ce->priv->root_context);
+		g_assert (!ce->priv->invalid);
 		g_slist_free (ce->priv->invalid);
 		ce->priv->root_segment = NULL;
 		ce->priv->root_context = NULL;
@@ -2756,7 +2758,11 @@ context_remove_child (Context *parent,
 		if (!ptr->fixed)
 			g_hash_table_destroy (ptr->u.hash);
 
+#ifdef ENABLE_DEBUG
+		memset (ptr, 1, sizeof (ContextPtr));
+#else
 		g_free (ptr);
+#endif
 	}
 }
 
@@ -2800,7 +2806,11 @@ context_unref (Context *context)
 			g_hash_table_destroy (ptr->u.hash);
 		}
 
+#ifdef ENABLE_DEBUG
+		memset (ptr, 1, sizeof (ContextPtr));
+#else
 		g_free (ptr);
+#endif
 	}
 
 	if (context->parent != NULL)
@@ -3119,6 +3129,7 @@ create_segment (GtkSourceContextEngine *ce,
 			parent->children = segment;
 
 		CHECK_SEGMENT_LIST (parent);
+		CHECK_TREE (ce);
 	}
 
 	return segment;
@@ -3140,33 +3151,38 @@ static void
 segment_destroy_children (GtkSourceContextEngine *ce,
 			  Segment                *segment)
 {
-	Segment *children;
+	Segment *child;
 	SubPattern *sp;
 
-	g_assert (segment != NULL);
+	g_return_if_fail (segment != NULL);
 
-	children = segment->children;
+	child = segment->children;
 	segment->children = NULL;
 	segment->last_child = NULL;
 
-	while (children != NULL)
+	while (child != NULL)
 	{
-		Segment *tmp = children;
-		children = children->next;
-		segment_destroy (ce, tmp);
+		Segment *next = child->next;
+		segment_destroy (ce, child);
+		child = next;
 	}
 
-	for (sp = segment->sub_patterns; sp; sp = sp->next)
-		sub_pattern_free (sp);
-
+	sp = segment->sub_patterns;
 	segment->sub_patterns = NULL;
+
+	while (sp != NULL)
+	{
+		SubPattern *next = sp->next;
+		sub_pattern_free (sp);
+		sp = next;
+	}
 }
 
 static void
 segment_destroy (GtkSourceContextEngine *ce,
 		 Segment                *segment)
 {
-	g_assert (segment != NULL);
+	g_return_if_fail (segment != NULL);
 
 	segment_destroy_children (ce, segment);
 
@@ -3184,7 +3200,7 @@ segment_destroy (GtkSourceContextEngine *ce,
 
 #ifdef ENABLE_DEBUG
 	g_assert (!g_slist_find (ce->priv->invalid, segment));
-	memset (segment, 0, sizeof (Segment));
+	memset (segment, 1, sizeof (Segment));
 #else
 	g_free (segment);
 #endif
@@ -4130,8 +4146,8 @@ segment_erase_middle_ (GtkSourceContextEngine *ce,
 		       gint                    start,
 		       gint                    end)
 {
-	Segment *new_segment, *children, *child;
-	SubPattern *sub_patterns, *sp;
+	Segment *new_segment, *child;
+	SubPattern *sp;
 
 	new_segment = segment_new (ce,
 				   segment->parent,
@@ -4149,11 +4165,11 @@ segment_erase_middle_ (GtkSourceContextEngine *ce,
 	else
 		new_segment->parent->last_child = new_segment;
 
-	children = segment->children;
+	child = segment->children;
 	segment->children = NULL;
 	segment->last_child = NULL;
 
-	for (child = children; child != NULL; )
+	while (child != NULL)
 	{
 		Segment *append_to;
 		Segment *next = child->next;
@@ -4188,10 +4204,10 @@ segment_erase_middle_ (GtkSourceContextEngine *ce,
 		child = next;
 	}
 
-	sub_patterns = segment->sub_patterns;
+	sp = segment->sub_patterns;
 	segment->sub_patterns = NULL;
 
-	for (sp = sub_patterns; sp != NULL; )
+	while (sp != NULL)
 	{
 		SubPattern *next = sp->next;
 		Segment *append_to;
@@ -4210,6 +4226,7 @@ segment_erase_middle_ (GtkSourceContextEngine *ce,
 
 		sp->next = append_to->sub_patterns;
 		append_to->sub_patterns = sp;
+
 		sp = next;
 	}
 
@@ -4239,8 +4256,6 @@ segment_erase_range_ (GtkSourceContextEngine *ce,
 		      gint                    start,
 		      gint                    end)
 {
-	Segment *child;
-
 	g_assert (start < end);
 
 	if (segment->start_at == segment->end_at)
@@ -4261,7 +4276,9 @@ segment_erase_range_ (GtkSourceContextEngine *ce,
 
 	if (segment->start_at == end)
 	{
-		for (child = segment->children; child != NULL && child->start_at == end; )
+		Segment *child = segment->children;
+
+		while (child != NULL && child->start_at == end)
 		{
 			Segment *next = child->next;
 			segment_erase_range_ (ce, child, start, end);
@@ -4270,7 +4287,9 @@ segment_erase_range_ (GtkSourceContextEngine *ce,
 	}
 	else if (segment->end_at == start)
 	{
-		for (child = segment->last_child; child != NULL && child->end_at == start; )
+		Segment *child = segment->children;
+
+		while (child != NULL && child->end_at == start)
 		{
 			Segment *prev = child->prev;
 			segment_erase_range_ (ce, child, start, end);
@@ -4279,7 +4298,9 @@ segment_erase_range_ (GtkSourceContextEngine *ce,
 	}
 	else
 	{
-		for (child = segment->children; child != NULL; )
+		Segment *child = segment->children;
+
+		while (child != NULL)
 		{
 			Segment *next = child->next;
 			segment_erase_range_ (ce, child, start, end);
@@ -4289,12 +4310,12 @@ segment_erase_range_ (GtkSourceContextEngine *ce,
 
 	if (segment->sub_patterns != NULL)
 	{
-		SubPattern *sub_patterns, *sp;
+		SubPattern *sp;
 
-		sub_patterns = segment->sub_patterns;
+		sp = segment->sub_patterns;
 		segment->sub_patterns = NULL;
 
-		for (sp = sub_patterns; sp != NULL; )
+		while (sp != NULL)
 		{
 			SubPattern *next = sp->next;
 
@@ -4402,7 +4423,7 @@ segment_merge (GtkSourceContextEngine *ce,
 			while (second->sub_patterns != NULL)
 			{
 				SubPattern *sp = second->sub_patterns;
-				second->sub_patterns = second->sub_patterns->next;
+				second->sub_patterns = sp->next;
 				sp->next = first->sub_patterns;
 				first->sub_patterns = sp;
 			}
@@ -4764,7 +4785,11 @@ definition_child_new (ContextDefinition *definition,
 static void
 definition_child_free (DefinitionChild *ch)
 {
+#ifdef ENABLE_DEBUG
+	memset (ch, 1, sizeof (DefinitionChild));
+#else
 	g_free (ch);
+#endif
 }
 
 static ContextDefinition *
