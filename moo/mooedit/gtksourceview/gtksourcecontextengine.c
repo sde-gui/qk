@@ -4287,7 +4287,7 @@ segment_erase_range_ (GtkSourceContextEngine *ce,
 	}
 	else if (segment->end_at == start)
 	{
-		Segment *child = segment->children;
+		Segment *child = segment->last_child;
 
 		while (child != NULL && child->end_at == start)
 		{
