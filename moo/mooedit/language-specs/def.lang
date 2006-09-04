@@ -26,6 +26,7 @@
         <!-- $^ never matches. -->
         <define-regex id="never-match">$^</define-regex>
 
+        <!-- FIXME: these four are broken (and should be removed, I think) -->
         <define-regex id="decimal" extended="true" case-insensitive="true">
                 \b
                 ([1-9][0-9]* | 0)

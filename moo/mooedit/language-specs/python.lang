@@ -55,39 +55,39 @@
     <context id="multiline-double-quoted-string" style-ref="multiline-string">
       <start>\%{string-prefix}"""</start>
       <end>"""</end>
-        <include>
-          <context ref="format"/>
-          <context ref="escaped-char"/>
-        </include>
+      <include>
+        <context ref="format"/>
+        <context ref="escaped-char"/>
+      </include>
     </context>
 
     <context id="multiline-single-quoted-string" style-ref="multiline-string">
       <start>\%{string-prefix}'''</start>
       <end>'''</end>
-        <include>
-          <context ref="format"/>
-          <context ref="escaped-char"/>
-        </include>
+      <include>
+        <context ref="format"/>
+        <context ref="escaped-char"/>
+      </include>
     </context>
 
     <context id="double-quoted-string" style-ref="string" end-at-line-end="true">
       <start>\%{string-prefix}"</start>
       <end>"</end>
-        <include>
-          <context ref="format"/>
-          <context ref="escaped-char"/>
-          <context ref="def:line-continue"/>
-        </include>
+      <include>
+        <context ref="format"/>
+        <context ref="escaped-char"/>
+        <context ref="def:line-continue"/>
+      </include>
     </context>
 
     <context id="single-quoted-string" style-ref="string" end-at-line-end="true">
       <start>\%{string-prefix}'</start>
       <end>'</end>
-        <include>
-          <context ref="format"/>
-          <context ref="escaped-char"/>
-          <context ref="def:line-continue"/>
-        </include>
+      <include>
+        <context ref="format"/>
+        <context ref="escaped-char"/>
+        <context ref="def:line-continue"/>
+      </include>
     </context>
 
     <context id="python">
