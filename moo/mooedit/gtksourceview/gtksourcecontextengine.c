@@ -2524,6 +2524,7 @@ create_reg_all (Context           *context,
 	ContextDefinition *child_def;
 	GString *all;
 	Regex *regex;
+	GError *error = NULL;
 
 	g_return_val_if_fail ((context == NULL && definition != NULL) ||
 			      (context != NULL && definition == NULL), NULL);
@@ -2612,15 +2613,20 @@ create_reg_all (Context           *context,
 		g_string_truncate (all, all->len - 1);
 	g_string_append (all, ")");
 
-	regex = regex_new (all->str, 0, NULL);
+	regex = regex_new (all->str, 0, &error);
 
 	if (regex == NULL)
 	{
 		/* regex_new could fail, for instance if there are different
 		 * named sub-patterns with the same name. */
+		/* FIXME: this error also happens when some patterns are screwed up,
+		 * and printing error here actually helps. But the "for all the transitions"
+		 * part is questionable (and one would want to fix it in any case, even
+		 * if all patterns are correct). */
 		g_warning ("Cannot create a regex for all the transitions, "
 			   "the syntax highlighting process will be slower "
-			   "than usual.");
+			   "than usual.\nThe error was: %s", error->message);
+		g_error_free (error);
 	}
 
 	g_string_free (all, TRUE);
