@@ -847,12 +847,26 @@ try_mode_strings (MooEdit *edit)
 {
     GtkTextBuffer *buffer = get_buffer (edit);
     GtkTextIter start, end;
-    char *first, *last;
+    char *first = NULL, *second = NULL, *last = NULL;
 
     gtk_text_buffer_get_start_iter (buffer, &start);
-    end = start;
-    gtk_text_iter_forward_to_line_end (&end);
-    first = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
+
+    if (!gtk_text_iter_ends_line (&start))
+    {
+        end = start;
+        gtk_text_iter_forward_to_line_end (&end);
+        first = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
+    }
+
+    if (gtk_text_iter_forward_line (&start))
+    {
+        if (!gtk_text_iter_ends_line (&start))
+        {
+            end = start;
+            gtk_text_iter_forward_to_line_end (&end);
+            second = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
+        }
+    }
 
     gtk_text_buffer_get_end_iter (buffer, &end);
 
@@ -868,12 +882,19 @@ try_mode_strings (MooEdit *edit)
         gtk_text_iter_set_line_offset (&start, 0);
     }
 
-    last = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
+    if (gtk_text_iter_get_line (&start) != 1 &&
+        gtk_text_iter_get_line (&start) != 2)
+            last = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
 
-    try_mode_string (edit, first);
-    try_mode_string (edit, last);
+    if (first)
+        try_mode_string (edit, first);
+    if (second)
+        try_mode_string (edit, second);
+    if (last)
+        try_mode_string (edit, last);
 
     g_free (first);
+    g_free (second);
     g_free (last);
 }
 
