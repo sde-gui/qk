@@ -26,25 +26,16 @@
         <!-- $^ never matches. -->
         <define-regex id="never-match">$^</define-regex>
 
-        <!-- FIXME: these four are broken (and should be removed, I think) -->
-        <define-regex id="decimal" extended="true" case-insensitive="true">
-                \b
+        <define-regex id="decimal" extended="true">
                 ([1-9][0-9]* | 0)
-                (u (ll?)? | ll? u?)?
-                \b
         </define-regex>
-        <define-regex id="octal" extended="true" case-insensitive="true">
-                \b
+        <define-regex id="octal" extended="true">
                 0 [0-7]+
-                (u (ll?)? | ll? u?)?
-                \b
         </define-regex>
-        <define-regex id="hexadecimal" extended="true" case-insensitive="true">
-                \b
-                0x [0-9a-f]+
-                (u (ll?)? | ll? u?)?
-                \b
+        <define-regex id="hexadecimal" extended="true">
+                0 [xX] [0-9a-fA-F]+
         </define-regex>
+        <!-- FIXME: these one is broke, and is it useful at all? -->
         <define-regex id="float" extended="true" case-insensitive="true">
                 \b
                 ([0-9]+ e [-+]? [0-9]+ |

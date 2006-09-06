@@ -140,6 +140,5 @@
         </context>
     </definitions>
 
-    <brackets>&lt;&gt;</brackets>
     <block-comment start="&lt;!--" end="-->"/>
 </language>

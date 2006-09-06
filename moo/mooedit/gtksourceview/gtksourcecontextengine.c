@@ -53,7 +53,7 @@
 /* Regex used to match "\%{...@start}". */
 #define START_REF_REGEX "(?<!\\\\)(\\\\\\\\)*\\\\%\\{(.*?)@start\\}"
 
-/* Priority of one-time idle that is installed after buffer is modified. */
+/* Priority of one-time idle which is installed after buffer is modified. */
 #define FIRST_UPDATE_PRIORITY		G_PRIORITY_HIGH_IDLE
 /* Maximal amount of time allowed to spent in this first idle. Should be
  * small enough, since in worst case we block ui for this time after each keypress.

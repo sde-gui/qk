@@ -868,7 +868,7 @@ replace_by_id (const EggRegex *egg_regex,
 	if (subst == NULL)
 		g_set_error (&tmp_error,
 			     PARSER_ERROR, PARSER_ERROR_WRONG_ID,
-			     _("wrong id '%s' in regex '%s'"), id, regex);
+			     _("Unknown id '%s' in regex '%s'"), id, regex);
 
 	if (tmp_error == NULL)
 	{
@@ -1136,6 +1136,9 @@ expand_regex (ParserState *parser_state,
 	if (do_expand_vars)
 	{
 		tmp_regex = expand_regex_vars (parser_state, regex, len, error);
+
+		if (tmp_regex == NULL)
+			return NULL;
 	}
 	else
 	{
