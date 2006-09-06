@@ -2,12 +2,18 @@
 <language id="m4" _name="m4" _section="Scripts" version="2.0"
           mimetypes="application/x-m4" globs="*.m4;configure.in;configure.ac">
   <styles>
-    <style id="ps" name="ps" map-to="def:keyword"/>
+    <style id="m4-comment" name="m4-comment" map-to="sh:comment"/>
   </styles>
 
   <definitions>
     <context id="m4">
       <include>
+        <context id="m4-comment" style-ref="m4-comment" end-at-line-end="true">
+          <start>dnl</start>
+          <include>
+            <context ref="sh:comment:*"/>
+          </include>
+        </context>
         <context ref="sh:sh:*"/>
       </include>
     </context>

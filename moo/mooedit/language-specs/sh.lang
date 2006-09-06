@@ -58,7 +58,7 @@
         <context ref="generated-line-escape"/>
       </include>
     </context>
-    <context id="line-comment" style-ref="comment" end-at-line-end="true">
+    <context id="comment" style-ref="comment" end-at-line-end="true">
       <start>#</start>
       <include>
         <context ref="generated-escape"/>
@@ -295,7 +295,7 @@
         <context ref="string"/>
         <context ref="string-2"/>
         <context ref="backtick-string"/>
-        <context ref="line-comment"/>
+        <context ref="comment"/>
         <context ref="punctuator"/>
         <context ref="function"/>
         <context ref="redirection"/>
