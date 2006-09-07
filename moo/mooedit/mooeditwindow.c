@@ -2629,16 +2629,8 @@ static int
 cmp_langs (MooLang *lang1,
            MooLang *lang2)
 {
-    int result;
-
-    result = strcmp (_moo_lang_get_section (lang1),
-                     _moo_lang_get_section (lang2));
-
-    if (result)
-        return result;
-    else
-        return strcmp (_moo_lang_display_name (lang1),
-                       _moo_lang_display_name (lang2));
+    return g_utf8_collate (_moo_lang_display_name (lang1),
+                           _moo_lang_display_name (lang2));
 }
 
 

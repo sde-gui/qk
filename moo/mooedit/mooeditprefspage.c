@@ -338,6 +338,18 @@ list_to_string (GSList  *list,
 }
 
 
+static int
+lang_cmp (MooLang *lang1,
+          MooLang *lang2)
+{
+    const char *name1, *name2;
+
+    name1 = _moo_lang_display_name (lang1);
+    name2 = _moo_lang_display_name (lang2);
+
+    return g_utf8_collate (name1, name2);
+}
+
 static GtkTreeModel *
 create_lang_model (MooEditor *editor)
 {
@@ -349,7 +361,7 @@ create_lang_model (MooEditor *editor)
     char *ext, *mime;
 
     mgr = moo_editor_get_lang_mgr (editor);
-    langs = moo_lang_mgr_get_available_langs (mgr);
+    langs = g_slist_sort (moo_lang_mgr_get_available_langs (mgr), (GCompareFunc) lang_cmp);
     sections = moo_lang_mgr_get_sections (mgr);
 
     store = gtk_tree_store_new (6, G_TYPE_STRING, G_TYPE_STRING, MOO_TYPE_LANG,
