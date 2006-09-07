@@ -338,7 +338,7 @@ moo_edit_load_default (G_GNUC_UNUSED MooEditLoader *loader,
 
     if (!encoding)
     {
-        result = try_load (edit, file, "UTF8", error);
+        result = try_load (edit, file, "UTF-8", error);
 
         if (result == ERROR_ENCODING)
         {
@@ -732,7 +732,7 @@ moo_edit_save_default (G_GNUC_UNUSED MooEditSaver *saver,
     g_return_val_if_fail (filename && filename[0], FALSE);
 
     if (!encoding)
-        encoding = "UTF8";
+        encoding = "UTF-8";
 
     if (!do_write (edit, filename, encoding, error))
         return FALSE;
@@ -755,7 +755,7 @@ moo_edit_save_copy_default (G_GNUC_UNUSED MooEditSaver *saver,
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
     g_return_val_if_fail (filename && filename[0], FALSE);
-    return do_write (edit, filename, encoding ? encoding : "UTF8", error);
+    return do_write (edit, filename, encoding ? encoding : "UTF-8", error);
 }
 
 
@@ -1174,7 +1174,7 @@ _moo_edit_filename_to_utf8 (const char *filename)
 
     if (!utf_filename)
     {
-        g_critical ("%s: could not convert filename to utf8", G_STRLOC);
+        g_critical ("%s: could not convert filename to UTF8", G_STRLOC);
 
         if (err)
         {
