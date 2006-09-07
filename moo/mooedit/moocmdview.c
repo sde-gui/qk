@@ -19,6 +19,7 @@
 #ifndef __WIN32__
 #include <sys/wait.h>
 #include <unistd.h>
+#include <signal.h>
 #endif /* !__WIN32__ */
 
 
