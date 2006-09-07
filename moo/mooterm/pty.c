@@ -75,9 +75,13 @@
 #ifdef HAVE_STROPTS_H
 #include <stropts.h>
 #endif
-/* for darwin and bsd */
+/* for darwin and bsd (FreeBSD < 6?) */
 #ifdef HAVE_UTIL_H
 #include <util.h>
+#endif
+/* for FreeBSD */
+#ifdef HAVE_LIBUTIL_H
+#include <libutil.h>
 #endif
 #include <assert.h>
 #include "mooterm/pty.h"

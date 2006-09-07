@@ -277,12 +277,12 @@ process_line (MooCmd      *cmd,
         {
             GError *error = NULL;
 
-            freeme = g_convert_with_fallback (line, -1, "UTF8", charset,
+            freeme = g_convert_with_fallback (line, -1, "UTF-8", charset,
                                               NULL, NULL, NULL, &error);
 
             if (!freeme)
             {
-                g_warning ("%s: could not convert text to UTF8:\n%s",
+                g_warning ("%s: could not convert text to UTF-8:\n%s",
                            G_STRLOC, line);
                 g_warning ("%s: %s", G_STRLOC, error->message);
             }

@@ -137,7 +137,6 @@ $ac_distutils_result])
     # Check for Python extra linker flags
     # if PYTHON_EXTRA_LIBS is set, do not do anything
     if test $python_found = yes; then
-	AC_MSG_CHECKING([Python extra linker flags])
 
         if test -z "$PYTHON_EXTRA_LIBS"; then
             PYTHON_EXTRA_LIBS=`$PYTHON -c "import distutils.sysconfig; \
@@ -145,12 +144,15 @@ $ac_distutils_result])
                                            print conf('LOCALMODLIBS'), conf('LIBS')"`
             PYTHON_EXTRA_LDFLAGS=`$PYTHON -c "import distutils.sysconfig; \
                                               conf = distutils.sysconfig.get_config_var; \
-                                              print conf('LINKFORSHARED')"`
-            PYTHON_EXTRA_LIBS="$PYTHON_EXTRA_LIBS $PYTHON_EXTRA_LDFLAGS"
+                                              print conf('LINKFORSHARED'), conf('LDFLAGS')"`
         fi
 
+	AC_MSG_CHECKING([Python extra libs])
         AC_MSG_RESULT([$PYTHON_EXTRA_LIBS])
+	AC_MSG_CHECKING([Python extra linker flags])
+        AC_MSG_RESULT([$PYTHON_EXTRA_LDFLAGS])
 	AC_SUBST([PYTHON_EXTRA_LIBS])
+	AC_SUBST([PYTHON_EXTRA_LDFLAGS])
     fi
 
     if test $python_found = yes; then
