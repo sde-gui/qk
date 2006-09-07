@@ -72,9 +72,9 @@ endif
 
 bin_PROGRAMS = $(medit)
 
-ldflags = -export-dynamic
+ldflags = -export-dynamic $(PYTHON_EXTRA_LDFLAGS)
 ldadd = ../moo/libmoo.la
-test_ldflags = -export-dynamic
+test_ldflags = -export-dynamic $(PYTHON_EXTRA_LDFLAGS)
 test_ldadd = ../moo/libmoo-test.la
 
 if MOO_OS_MINGW
