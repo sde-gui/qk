@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <language id="c" _name="C" version="2.0" _section="Sources"
-          mimetypes="text/x-c;text/x-chdr;text/x-csrc"
-          globs="*.c;*.h">
+          mimetypes="text/x-c;text/x-chdr;text/x-csrc">
     <styles>
         <style id="comment"           _name="Comment"             map-to="def:comment"/>
         <style id="error"             _name="Error"               map-to="def:error"/>
@@ -225,7 +224,6 @@
         </context>
     </definitions>
 
-    <brackets>(){}[]</brackets>
     <line-comment start="//"/>
     <block-comment start="/*" end="*/"/>
 </language>

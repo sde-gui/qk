@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <language id="cpp" _name="C++" version="2.0" _section="Sources"
-          mimetypes="text/x-c++;text/x-cpp;text/x-c-header;text/x-c++src;text/x-c++hdr"
-          globs="*.cc;*.hh;*.cpp;*.hpp;*.cxx;*.hxx;*.C">
+          mimetypes="text/x-c++;text/x-cpp;text/x-c-header;text/x-c++src;text/x-c++hdr">
     <styles>
         <style id="common-defines"  _name="Common defines"  map-to="c:common-defines"/>
     </styles>
@@ -68,7 +67,6 @@
         </context>
     </definitions>
 
-    <brackets>(){}[]</brackets>
     <line-comment start="//"/>
     <block-comment start="/*" end="*/"/>
 </language>

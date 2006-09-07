@@ -35,7 +35,7 @@ struct _MooLangMgr {
     GtkSourceLanguagesManager base;
 
     GHashTable *langs;
-    GHashTable *extensions;
+    GHashTable *globs;
     GHashTable *mime_types;
     GHashTable *config;
     GHashTable *schemes;

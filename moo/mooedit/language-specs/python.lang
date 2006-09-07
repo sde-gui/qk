@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <language id="python" _name="Python" version="2.0" _section="Scripts"
-          mimetypes="text/x-python;application/x-python" globs="*.py">
+          mimetypes="text/x-python;application/x-python">
 
   <styles>
     <style id="special-variables" _name="Special variables" map-to="def:data-type"/>

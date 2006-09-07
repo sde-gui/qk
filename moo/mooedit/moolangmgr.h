@@ -49,7 +49,7 @@ void            _moo_lang_mgr_set_active_scheme     (MooLangMgr     *mgr,
 GSList         *_moo_lang_mgr_list_schemes          (MooLangMgr     *mgr);
 
 /* list must be freed together with content */
-GSList         *_moo_lang_mgr_get_extensions        (MooLangMgr     *mgr,
+GSList         *_moo_lang_mgr_get_globs             (MooLangMgr     *mgr,
                                                      const char     *lang_id);
 /* list must be freed together with content */
 GSList         *_moo_lang_mgr_get_mime_types        (MooLangMgr     *mgr,
@@ -57,9 +57,9 @@ GSList         *_moo_lang_mgr_get_mime_types        (MooLangMgr     *mgr,
 void            _moo_lang_mgr_set_mime_types        (MooLangMgr     *mgr,
                                                      const char     *lang_id,
                                                      const char     *mime);
-void            _moo_lang_mgr_set_extensions        (MooLangMgr     *mgr,
+void            _moo_lang_mgr_set_globs             (MooLangMgr     *mgr,
                                                      const char     *lang_id,
-                                                     const char     *extensions);
+                                                     const char     *globs);
 const char     *_moo_lang_mgr_get_config            (MooLangMgr     *mgr,
                                                      const char     *lang_id);
 void            _moo_lang_mgr_set_config            (MooLangMgr     *mgr,

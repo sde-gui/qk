@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <language id="html" _name="HTML" version="2.0" _section="Markup"
-          mimetypes="text/html" globs="*.htm;*.html">
+          mimetypes="text/html">
     <styles>
         <style id="comment"      _name="Comment"
                                  map-to="xml:comment"/>

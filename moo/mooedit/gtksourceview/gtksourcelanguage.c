@@ -166,12 +166,10 @@ gtk_source_language_finalize (GObject *object)
 		g_free (lang->priv->section);
 		g_free (lang->priv->id);
 		slist_deep_free (lang->priv->mime_types);
-		slist_deep_free (lang->priv->globs);
 		g_hash_table_destroy (lang->priv->styles);
 		g_free (lang->priv->line_comment);
 		g_free (lang->priv->block_comment_start);
 		g_free (lang->priv->block_comment_end);
-		g_free (lang->priv->brackets);
 		g_free (lang->priv);
 		lang->priv = NULL;
 	}
@@ -180,8 +178,8 @@ gtk_source_language_finalize (GObject *object)
 }
 
 static GSList *
-parse_mime_types_or_globs (xmlTextReaderPtr reader,
-			   const char      *attr_name)
+parse_mime_types (xmlTextReaderPtr reader,
+		  const char      *attr_name)
 {
 	xmlChar *attr;
 	gchar **mtl;
@@ -219,19 +217,6 @@ string_to_bool (const gchar *string)
 		g_return_val_if_reached (FALSE);
 }
 
-static void
-process_brackets_node (xmlTextReaderPtr   reader,
-		       GtkSourceLanguage *language)
-{
-	xmlNode *node;
-
-	node = xmlTextReaderCurrentNode (reader);
-	g_return_if_fail (node != NULL);
-	g_return_if_fail (node->children != NULL);
-
-	language->priv->brackets = g_strdup ((gchar*) node->children->content);
-}
-
 static gboolean
 get_attribute (xmlTextReaderPtr   reader,
 	       const gchar       *element,
@@ -255,11 +240,10 @@ get_attribute (xmlTextReaderPtr   reader,
 }
 
 static void
-process_brackets_and_comments (xmlTextReaderPtr   reader,
-			       GtkSourceLanguage *language)
+process_and_comments (xmlTextReaderPtr   reader,
+		      GtkSourceLanguage *language)
 {
 	gint ret;
-	gboolean brackets_done = FALSE;
 	gboolean line_comment_done = FALSE;
 	gboolean block_comment_done = FALSE;
 
@@ -273,20 +257,7 @@ process_brackets_and_comments (xmlTextReaderPtr   reader,
 
 			name = xmlTextReaderName (reader);
 
-			if (!xmlStrcmp (name, BAD_CAST "brackets"))
-			{
-				if (brackets_done)
-				{
-					g_warning ("duplicated %s element", name);
-					ret = 0;
-				}
-				else
-				{
-					process_brackets_node (reader, language);
-					brackets_done = TRUE;
-				}
-			}
-			else if (!xmlStrcmp (name, BAD_CAST "line-comment"))
+			if (!xmlStrcmp (name, BAD_CAST "line-comment"))
 			{
 				if (line_comment_done)
 				{
@@ -322,7 +293,7 @@ process_brackets_and_comments (xmlTextReaderPtr   reader,
 				}
 			}
 
-			if (brackets_done && line_comment_done && block_comment_done)
+			if (line_comment_done && block_comment_done)
 				ret = 0;
 
 			xmlFree (name);
@@ -440,11 +411,10 @@ process_language_node (xmlTextReaderPtr reader, const gchar *filename)
 
 	xmlFree (version);
 
-	lang->priv->mime_types = parse_mime_types_or_globs (reader, "mimetypes");
-	lang->priv->globs = parse_mime_types_or_globs (reader, "globs");
+	lang->priv->mime_types = parse_mime_types (reader, "mimetypes");
 
 	if (lang->priv->version == GTK_SOURCE_LANGUAGE_VERSION_2_0)
-		process_brackets_and_comments (reader, lang);
+		process_and_comments (reader, lang);
 
 	return lang;
 }
@@ -525,23 +495,6 @@ gtk_source_language_get_mime_types (GtkSourceLanguage *language)
 	g_return_val_if_fail (GTK_IS_SOURCE_LANGUAGE (language), NULL);
 
 	return slist_deep_copy (language->priv->mime_types);
-}
-
-/**
- * gtk_source_language_get_globs:
- * @language: a #GtkSourceLanguage.
- *
- * Returns a list of globs for the given @language.  After usage you should
- * free each element of the list as well as the list itself.
- *
- * Return value: a list of globs (strings).
- **/
-GSList *
-gtk_source_language_get_globs (GtkSourceLanguage *language)
-{
-	g_return_val_if_fail (GTK_IS_SOURCE_LANGUAGE (language), NULL);
-
-	return slist_deep_copy (language->priv->globs);
 }
 
 /**

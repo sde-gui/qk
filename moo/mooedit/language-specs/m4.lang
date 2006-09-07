@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<language id="m4" _name="m4" _section="Scripts" version="2.0"
-          mimetypes="application/x-m4" globs="*.m4;configure.in;configure.ac">
+<language id="m4" _name="m4" _section="Scripts" version="2.0" mimetypes="application/x-m4">
   <styles>
     <style id="m4-comment" name="m4-comment" map-to="sh:comment"/>
   </styles>

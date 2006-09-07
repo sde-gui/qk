@@ -453,55 +453,6 @@ gtk_source_languages_manager_get_language_for_mime_type (GtkSourceLanguagesManag
 }
 
 /**
- * gtk_source_languages_manager_get_language_for_filename:
- * @lm: a #GtkSourceLanguagesManager.
- * @filename: a filename in glib filename encoding.
- *
- * Return value: a #GtkSourceLanguage, or %NULL if there is no language
- * with glob matching @filename.
- **/
-/* FIXME use xdgmimeglob */
-GtkSourceLanguage *
-gtk_source_languages_manager_get_language_for_filename (GtkSourceLanguagesManager *lm,
-							const gchar               *filename)
-{
-	const GSList *languages;
-	char *utf8_filename;
-
-	g_return_val_if_fail (filename != NULL, NULL);
-
-	utf8_filename = g_filename_to_utf8 (filename, -1, NULL, NULL, NULL);
-	g_return_val_if_fail (utf8_filename != NULL, NULL);
-
-	languages = gtk_source_languages_manager_get_available_languages (lm);
-
-	while (languages != NULL)
-	{
-		GSList *globs, *tmp;
-		GtkSourceLanguage *lang = languages->data;
-
-		tmp = globs = gtk_source_language_get_globs (lang);
-
-		while (tmp != NULL)
-		{
-			if (g_pattern_match_simple (tmp->data, utf8_filename))
-				break;
-
-			tmp = g_slist_next (tmp);
-		}
-
-		slist_deep_free (globs);
-
-		if (tmp != NULL)
-			return lang;
-
-		languages = g_slist_next (languages);
-	}
-
-	return NULL;
-}
-
-/**
  * gtk_source_languages_manager_get_language_by_id:
  * @lm: a #GtkSourceLanguagesManager.
  * @id: a language id.

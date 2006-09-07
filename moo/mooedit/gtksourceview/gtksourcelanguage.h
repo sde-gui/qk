@@ -64,8 +64,6 @@ gint			 gtk_source_language_get_version		(GtkSourceLanguage       *language);
 
 /* Should free the list (and free each string in it also). */
 GSList			*gtk_source_language_get_mime_types		(GtkSourceLanguage       *language);
-/* Should free the list (and free each string in it also). */
-GSList			*gtk_source_language_get_globs			(GtkSourceLanguage       *language);
 
 G_END_DECLS
 

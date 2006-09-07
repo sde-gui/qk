@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <language id="diff" _name="Diff" version="2.0" _section="Others"
-          mimetypes="text/x-diff;text/x-patch" globs="*.diff;*.patch">
+          mimetypes="text/x-diff;text/x-patch">
 
   <styles>
     <style id="added-line"    _name="Added line"/> <!--Others 2-->

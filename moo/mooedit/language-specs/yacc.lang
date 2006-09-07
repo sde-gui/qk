@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <language id="yacc" _name="Yacc" _section="Others"
           version="2.0"
-          mimetypes="text/x-yacc;text/x-bison"
-          globs="*.yacc;*.y">
+          mimetypes="text/x-yacc;text/x-bison">
   <styles>
     <style id="inline-c" _name="Inline C Code" map-to="def:keyword"/>
     <style id="grammar" _name="grammar" map-to="def:keyword"/>
@@ -54,7 +53,6 @@
     </context>
   </definitions>
 
-  <brackets>()[]</brackets>
   <line-comment start="//"/>
   <block-comment start="/*" end="*/"/>
 </language>

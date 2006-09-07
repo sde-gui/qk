@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <language id="mooscript" name="MooScript" version="2.0" _section="Scripts"
-          mimetypes="text/x-mooscript;application/x-mooscript" globs="*.ms">
+          mimetypes="text/x-mooscript;application/x-mooscript">
 
   <styles>
     <style id="keyword" _name="Keyword" map-to="def:keyword"/>
@@ -48,7 +48,6 @@
     </context>
   </definitions>
 
-  <brackets>()[]{}</brackets>
   <line-comment start="#"/>
 
 </language>

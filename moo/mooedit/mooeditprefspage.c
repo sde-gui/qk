@@ -357,7 +357,7 @@ create_lang_model (MooEditor *editor)
 
     gtk_tree_store_append (store, &iter, NULL);
     config = _moo_lang_mgr_get_config (mgr, MOO_LANG_NONE);
-    ext = list_to_string (_moo_lang_mgr_get_extensions (mgr, NULL), TRUE);
+    ext = list_to_string (_moo_lang_mgr_get_globs (mgr, NULL), TRUE);
     mime = list_to_string (_moo_lang_mgr_get_mime_types (mgr, NULL), TRUE);
     gtk_tree_store_set (store, &iter, COLUMN_ID, MOO_LANG_NONE,
                         COLUMN_NAME, "None",
@@ -388,7 +388,7 @@ create_lang_model (MooEditor *editor)
                 GtkTreeIter child;
                 char *ext, *mime;
 
-                ext = list_to_string (_moo_lang_mgr_get_extensions (mgr, _moo_lang_id (lang)), TRUE);
+                ext = list_to_string (_moo_lang_mgr_get_globs (mgr, _moo_lang_id (lang)), TRUE);
                 mime = list_to_string (_moo_lang_mgr_get_mime_types (mgr, _moo_lang_id (lang)), TRUE);
 
                 config = _moo_lang_mgr_get_config (mgr, _moo_lang_id (lang));
@@ -679,7 +679,7 @@ apply_one_lang (GtkTreeModel *model,
                         COLUMN_EXTENSIONS, &ext, -1);
 
     _moo_lang_mgr_set_mime_types (mgr, id, mime);
-    _moo_lang_mgr_set_extensions (mgr, id, ext);
+    _moo_lang_mgr_set_globs (mgr, id, ext);
     _moo_lang_mgr_set_config (mgr, id, config);
 
     if (lang)

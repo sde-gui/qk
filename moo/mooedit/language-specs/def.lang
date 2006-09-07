@@ -27,15 +27,15 @@
         <define-regex id="never-match">$^</define-regex>
 
         <define-regex id="decimal" extended="true">
-                ([1-9][0-9]* | 0)
+            (?&lt;![\w\.]) ([1-9][0-9]* | 0) (?![\w\.])
         </define-regex>
         <define-regex id="octal" extended="true">
-                0 [0-7]+
+            (?&lt;![\w\.]) 0 [0-7]+ (?![\w\.])
         </define-regex>
         <define-regex id="hexadecimal" extended="true">
-                0 [xX] [0-9a-fA-F]+
+            (?&lt;![\w\.]) 0 [xX] [0-9a-fA-F]+ (?![\w\.])
         </define-regex>
-        <!-- FIXME: these one is broke, and is it useful at all? -->
+        <!-- FIXME: these one is broken, and is it useful at all? -->
         <define-regex id="float" extended="true" case-insensitive="true">
                 \b
                 ([0-9]+ e [-+]? [0-9]+ |

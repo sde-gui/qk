@@ -32,9 +32,6 @@
         <optional>
             <attribute name="mimetypes"/>
         </optional>
-        <optional>
-            <attribute name="globs"/>
-        </optional>
 
         <optional>
             <ref name="metadata"/>
@@ -58,11 +55,6 @@
 
         <ref name="definitions" />
 
-        <optional>
-            <element name="brackets">
-                <text/>
-            </element>
-        </optional>
         <optional>
             <element name="line-comment">
                 <attribute name="start"/>

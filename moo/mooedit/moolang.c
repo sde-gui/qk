@@ -193,7 +193,7 @@ const char *
 _moo_lang_get_brackets (MooLang *lang)
 {
     g_return_val_if_fail (MOO_IS_LANG (lang), NULL);
-    return GTK_SOURCE_LANGUAGE(lang)->priv->brackets;
+    return NULL;
 }
 
 
