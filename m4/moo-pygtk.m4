@@ -84,7 +84,7 @@ AC_DEFUN([_MOO_AC_CHECK_PYGTK_MINGW],[
 AC_DEFUN([_MOO_AC_CHECK_PYGTK_UNIX],[
     # _AC_CHECK_PYGTK_UNIX
     AC_MSG_CHECKING([for pygtk headers])
-    PKG_CHECK_MODULES(PYGTK,pygtk-2.0,[
+    PKG_CHECK_MODULES(PYGTK,pygtk-2.0 >= 2.8.0,[
         AC_MSG_RESULT([found])
         AC_MSG_CHECKING([whether pygtk can be used])
         save_CPPFLAGS="$CPPFLAGS"
