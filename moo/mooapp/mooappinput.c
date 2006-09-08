@@ -466,19 +466,45 @@ listener_main (ListenerInfo *info)
  */
 #ifndef __WIN32__
 
-#define NAME_PREFIX "%s_in."
+static char *
+get_prefix (const char *pipe_basename)
+{
+    GdkDisplay *display;
+    char *display_name;
+    char *prefix;
+
+    g_return_val_if_fail (pipe_basename != NULL, NULL);
+
+    display = gdk_display_get_default ();
+    g_return_val_if_fail (display != NULL, NULL);
+
+    display_name = g_strcanon (g_strdup (gdk_display_get_name (display)),
+                               G_CSET_A_2_Z G_CSET_a_2_z G_CSET_DIGITS,
+                               '_');
+    prefix = g_strdup_printf ("%s_%s_in.", pipe_basename, display_name);
+
+    g_free (display_name);
+    return prefix;
+}
 
 /* TODO: could you finally learn non-blocking io? */
 gboolean
 _moo_app_input_start (MooAppInput *ch)
 {
+    char *prefix;
+
     g_return_val_if_fail (!ch->ready, FALSE);
 
+    prefix = get_prefix (ch->pipe_basename);
+    g_return_val_if_fail (prefix != NULL, FALSE);
+
     ch->pipe_name =
-            g_strdup_printf ("%s/" NAME_PREFIX "%d",
+            g_strdup_printf ("%s/%s%d",
                              g_get_tmp_dir(),
-                             ch->pipe_basename,
+                             prefix,
                              getpid ());
+    g_free (prefix);
+
     unlink (ch->pipe_name);
 
     if (mkfifo (ch->pipe_name, S_IRUSR | S_IWUSR))
@@ -590,7 +616,9 @@ _moo_app_input_send_msg (const char     *pipe_basename,
     g_return_val_if_fail (pipe_basename != NULL, FALSE);
     g_return_val_if_fail (data != NULL, FALSE);
 
-    prefix = g_strdup_printf (NAME_PREFIX, pipe_basename);
+    prefix = get_prefix (pipe_basename);
+    g_return_val_if_fail (prefix != NULL, FALSE);
+
     prefix_len = strlen (prefix);
     tmpdir_name = g_get_tmp_dir ();
 
