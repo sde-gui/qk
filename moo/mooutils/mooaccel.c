@@ -12,7 +12,6 @@
  */
 
 #include "mooutils/mooaccel.h"
-#include "mooutils/mooaction-private.h"
 #include "mooutils/mooprefs.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
@@ -20,6 +19,11 @@
 
 #define MOO_ACCEL_PREFS_KEY "Shortcuts"
 
+
+static void          accel_map_changed  (GtkAccelMap        *map,
+                                         gchar              *accel_path,
+                                         guint               accel_key,
+                                         GdkModifierType     accel_mods);
 
 static const char   *get_accel          (const char         *accel_path);
 static void          prefs_new_accel    (const char         *accel_path,
@@ -50,7 +54,30 @@ init_accel_map (void)
                 g_hash_table_new_full (g_str_hash, g_str_equal,
                                        (GDestroyNotify) g_free,
                                        (GDestroyNotify) g_free);
+
+        g_signal_connect (gtk_accel_map_get (), "changed",
+                          G_CALLBACK (accel_map_changed),
+                          NULL);
     }
+}
+
+
+static void
+accel_map_changed (G_GNUC_UNUSED GtkAccelMap *map,
+                   gchar            *accel_path,
+                   guint             accel_key,
+                   GdkModifierType   accel_mods)
+{
+    char *new_accel;
+
+    if (accel_key && accel_mods)
+        new_accel = gtk_accelerator_name (accel_key, accel_mods);
+    else
+        new_accel = NULL;
+
+    _moo_modify_accel (accel_path, new_accel);
+
+    g_free (new_accel);
 }
 
 
@@ -166,6 +193,10 @@ set_accel (const char *accel_path,
                              g_strdup (""));
     }
 
+    g_signal_handlers_block_by_func (gtk_accel_map_get (),
+                                     (gpointer) accel_map_changed,
+                                     NULL);
+
     if (gtk_accel_map_lookup_entry (accel_path, &old))
     {
         if (accel_key != old.accel_key || accel_mods != old.accel_mods)
@@ -189,6 +220,10 @@ set_accel (const char *accel_path,
                                      accel_key,
                                      accel_mods);
     }
+
+    g_signal_handlers_unblock_by_func (gtk_accel_map_get (),
+                                       (gpointer) accel_map_changed,
+                                       NULL);
 }
 
 
@@ -281,8 +316,8 @@ _moo_accel_register (const char *accel_path,
 
 
 void
-_moo_modify_acel (const char *accel_path,
-                  const char *new_accel)
+_moo_modify_accel (const char *accel_path,
+                   const char *new_accel)
 {
     char *freeme = NULL;
 

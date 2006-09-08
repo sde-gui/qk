@@ -283,7 +283,7 @@ apply_one (GtkAction *action,
             g_return_if_reached ();
     }
 
-    _moo_modify_acel (accel_path, new_accel);
+    _moo_modify_accel (accel_path, new_accel);
 }
 
 static void

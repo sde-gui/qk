@@ -25,7 +25,7 @@ void         _moo_accel_register            (const char *accel_path,
 const char  *_moo_get_accel                 (const char *accel_path);
 const char  *_moo_get_default_accel         (const char *accel_path);
 
-void         _moo_modify_acel               (const char *accel_path,
+void         _moo_modify_accel              (const char *accel_path,
                                              const char *new_accel);
 
 char        *_moo_accel_normalize           (const char *accel);
