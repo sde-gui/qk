@@ -471,6 +471,7 @@ get_prefix (const char *pipe_basename)
 {
     GdkDisplay *display;
     char *display_name;
+    char *user_name;
     char *prefix;
 
     g_return_val_if_fail (pipe_basename != NULL, NULL);
@@ -481,9 +482,14 @@ get_prefix (const char *pipe_basename)
     display_name = g_strcanon (g_strdup (gdk_display_get_name (display)),
                                G_CSET_A_2_Z G_CSET_a_2_z G_CSET_DIGITS,
                                '_');
-    prefix = g_strdup_printf ("%s_%s_in.", pipe_basename, display_name);
+    user_name = g_strcanon (g_strdup (g_get_user_name ()),
+                            G_CSET_A_2_Z G_CSET_a_2_z G_CSET_DIGITS,
+                            '_');
+
+    prefix = g_strdup_printf ("%s_%s_%s_in.", pipe_basename, user_name, display_name);
 
     g_free (display_name);
+    g_free (user_name);
     return prefix;
 }
 
