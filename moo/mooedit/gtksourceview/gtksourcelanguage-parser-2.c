@@ -1502,6 +1502,8 @@ handle_styles_element (ParserState *parser_state,
 	{
 		ret = xmlTextReaderRead (parser_state->reader);
 
+		xmlTextReaderIsValid (parser_state->reader);
+
 		/* FIXME: is xmlTextReaderIsValid call needed here or
 		 * error func will be called? */
 		if (*error != NULL)
@@ -1593,14 +1595,16 @@ element_end (ParserState *parser_state)
 }
 
 static void
-text_reader_error_func (GError     **error,
-			const gchar *msg,
-			xmlParserSeverities severity,
-			xmlTextReaderLocatorPtr locator)
+text_reader_structured_error_func (GError     **gerror,
+				   xmlErrorPtr  error)
 {
 	/* FIXME: does someone know how to use libxml api? */
-	g_return_if_fail (error != NULL && *error == NULL);
-	g_set_error (error, PARSER_ERROR, PARSER_ERROR_INVALID_DOC, "%s", msg);
+
+	if (*gerror == NULL)
+		g_set_error (gerror, PARSER_ERROR, PARSER_ERROR_INVALID_DOC, "parser error");
+
+	/* XXX: g_print now because of --g-fatal-warnings */
+	g_print ("in file %s on line %d: %s\n", error->file, error->line, error->message);
 }
 
 static gboolean
@@ -1666,13 +1670,15 @@ file_parse (gchar                     *filename,
 	parser_state = parser_state_new (language, engine,
 					 defined_regexes, styles,
 					 reader, loaded_lang_ids);
-	xmlTextReaderSetErrorHandler (reader,
-				      (xmlTextReaderErrorFunc) text_reader_error_func,
-				      &tmp_error);
+	xmlTextReaderSetStructuredErrorHandler (reader,
+						(xmlStructuredErrorFunc) text_reader_structured_error_func,
+						&tmp_error);
 
 	while (!tmp_error && (ret = xmlTextReaderRead (parser_state->reader)) == 1)
 	{
 		int type;
+
+		xmlTextReaderIsValid (reader);
 
 		/* FIXME: is xmlTextReaderIsValid call needed here or
 		 * error func will be called? */
@@ -1782,8 +1788,6 @@ _gtk_source_language_file_parse_version2 (GtkSourceLanguage       *language,
 
 	filename = language->priv->lang_file_name;
 
-	/* TODO: tell the parser to validate the document while parsing
-	 * (XML_PARSE_DTD_VALID or XML_PARSER_VALIDATE). */
 	/* TODO: as an optimization tell the parser to merge CDATA
 	 * as text nodes (XML_PARSE_NOCDATA), and to ignore blank
 	 * nodes (XML_PARSE_NOBLANKS), if it is possible with
@@ -1801,6 +1805,9 @@ _gtk_source_language_file_parse_version2 (GtkSourceLanguage       *language,
 	success = file_parse (filename, language, engine,
 			      defined_regexes, styles,
 			      &loaded_lang_ids, &error);
+
+	if (success)
+		_gtk_source_context_engine_resolve_refs (engine, &error);
 
 	if (success)
 		g_hash_table_foreach_steal (styles,

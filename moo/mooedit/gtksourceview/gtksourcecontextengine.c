@@ -152,7 +152,7 @@ struct _ContextDefinition
 	} u;
 
 	/* Name of the style used for contexts of this type. */
-	gchar			*style;
+	gchar			*default_style;
 
 	/* This is a list of DefinitionChild pointers. */
 	GSList			*children;
@@ -198,10 +198,22 @@ struct _SubPatternDefinition
 
 struct _DefinitionChild
 {
-	ContextDefinition	*definition;
+	union
+	{
+		/* Equal to definition->id, used when it's not resolved yet */
+		gchar			*id;
+		ContextDefinition	*definition;
+	} u;
+
+	gchar			*style;
+
 	/* Whether this child is a reference to all child contexts of
 	 * <definition>. */
 	guint			 is_ref_all : 1;
+	/* Whether it is resolved, i.e. points to actual context definition. */
+	guint			 resolved : 1;
+	/* Whether it is resolved, i.e. points to actual context definition. */
+	guint			 override_style : 1;
 };
 
 struct _DefinitionsIter
@@ -224,6 +236,8 @@ struct _Context
 	 * could be matched in this context. */
 	Regex			*reg_all;
 
+	/* Either definition->default_style or child_def->style, not copied. */
+	const gchar		*style;
 	GtkTextTag		*tag;
 	GtkTextTag	       **subpattern_tags;
 
@@ -284,7 +298,8 @@ struct _SubPattern
  * from pcre need to be compared to line length, and adjusted when necessary.
  * Not using line terminator only means that \n can't be in patterns, it's not a
  * big deal: line end can't be highlighted anyway; if a rule needs to match it, it can
- * can use "$" as start and "^" as end (not in a single pattern, "$^" will never match).
+ * can use "$" as start and "^" as end (not in a single pattern of course, "$^" will
+ * never match).
  */
 #define NEXT_LINE_OFFSET(l_) ((l_)->start_at + (l_)->length + (l_)->eol_length)
 struct _LineInfo
@@ -376,7 +391,8 @@ static Segment	       *segment_new		(GtkSourceContextEngine *ce,
 						 gint			 end_at);
 static Context	       *context_new		(Context		*parent,
 						 ContextDefinition	*definition,
-						 const gchar		*line_text);
+						 const gchar		*line_text,
+						 const gchar		*style);
 static void		context_unref		(Context		*context);
 static void		context_freeze		(Context		*context);
 static void		context_thaw		(Context		*context);
@@ -404,7 +420,7 @@ static Context	       *ancestor_context_ends_here (Context		*state,
 						 gint			 pos);
 static void		definition_iter_init	(DefinitionsIter	*iter,
 						 ContextDefinition	*definition);
-static ContextDefinition *definition_iter_next	(DefinitionsIter	*iter);
+static DefinitionChild *definition_iter_next	(DefinitionsIter	*iter);
 static void		definition_iter_destroy	(DefinitionsIter	*iter);
 
 static void		update_syntax		(GtkSourceContextEngine	*ce,
@@ -527,8 +543,8 @@ get_parent_tag (Context    *context,
 	{
 		/* Lang files may repeat same style for nested contexts,
 		 * ignore them. */
-		if (context->definition->style &&
-		    strcmp (context->definition->style, style) != 0)
+		if (context->style &&
+		    strcmp (context->style, style) != 0)
 		{
 			g_assert (context->tag != NULL);
 			return context->tag;
@@ -627,9 +643,9 @@ static GtkTextTag *
 get_context_tag (GtkSourceContextEngine *ce,
 		 Context                *context)
 {
-	if (context->definition->style != NULL && context->tag == NULL)
+	if (context->style != NULL && context->tag == NULL)
 		context->tag = get_tag_for_parent (ce,
-						   context->definition->style,
+						   context->style,
 						   context->parent);
 	return context->tag;
 }
@@ -1906,7 +1922,7 @@ gtk_source_context_engine_attach_buffer (GtkSourceEngine *engine,
 			return;
 		}
 
-		ce->priv->root_context = context_new (NULL, main_definition, NULL);
+		ce->priv->root_context = context_new (NULL, main_definition, NULL, NULL);
 		ce->priv->root_segment = create_segment (ce, NULL, ce->priv->root_context, 0, 0, NULL);
 
 		ce->priv->tags = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
@@ -2523,7 +2539,7 @@ create_reg_all (Context           *context,
 		ContextDefinition *definition)
 {
 	DefinitionsIter iter;
-	ContextDefinition *child_def;
+	DefinitionChild *child_def;
 	GString *all;
 	Regex *regex;
 	GError *error = NULL;
@@ -2591,13 +2607,15 @@ create_reg_all (Context           *context,
 	{
 		Regex *child_regex = NULL;
 
-		switch (child_def->type)
+		g_return_val_if_fail (child_def->resolved, NULL);
+
+		switch (child_def->u.definition->type)
 		{
 			case CONTEXT_TYPE_CONTAINER:
-				child_regex = child_def->u.start_end.start;
+				child_regex = child_def->u.definition->u.start_end.start;
 				break;
 			case CONTEXT_TYPE_SIMPLE:
-				child_regex = child_def->u.match;
+				child_regex = child_def->u.definition->u.match;
 				break;
 			default:
 				g_return_val_if_reached (NULL);
@@ -2643,10 +2661,12 @@ context_ref (Context *context)
 	return context;
 }
 
+/* does not copy style */
 static Context *
 context_new (Context           *parent,
 	     ContextDefinition *definition,
-	     const gchar       *line_text)
+	     const gchar       *line_text,
+	     const gchar       *style)
 {
 	Context *context;
 
@@ -2654,6 +2674,7 @@ context_new (Context           *parent,
 	context->ref_count = 1;
 	context->definition = definition;
 	context->parent = parent;
+	context->style = style;
 
 	if (!parent || (parent->all_ancestors_extend &&
 	    parent->definition->extend_parent))
@@ -2896,12 +2917,13 @@ context_thaw (Context *ctx)
 
 static Context *
 create_child_context (Context           *parent,
-		      ContextDefinition *definition,
+		      DefinitionChild   *child_def,
 		      const gchar       *line_text)
 {
 	Context *context;
 	ContextPtr *ptr;
 	gchar *match = NULL;
+	ContextDefinition *definition = child_def->u.definition;
 
 	g_return_val_if_fail (parent != NULL, NULL);
 
@@ -2944,7 +2966,9 @@ create_child_context (Context           *parent,
 		return context_ref (context);
 	}
 
-	context = context_new (parent, definition, line_text);
+	context = context_new (parent, definition, line_text,
+			       child_def->override_style ? child_def->style :
+					child_def->u.definition->default_style);
 	g_return_val_if_fail (context != NULL, NULL);
 
 	if (ptr->fixed)
@@ -3209,7 +3233,7 @@ segment_destroy (GtkSourceContextEngine *ce,
 static gboolean
 container_context_starts_here (GtkSourceContextEngine  *ce,
 			       Segment                 *state,
-			       ContextDefinition       *definition,
+			       DefinitionChild         *child_def,
 			       LineInfo                *line,
 			       gint                    *line_pos,
 			       Segment                **new_state)
@@ -3217,6 +3241,7 @@ container_context_starts_here (GtkSourceContextEngine  *ce,
 	Context *new_context;
 	Segment *new_segment;
 	gint match_end;
+	ContextDefinition *definition = child_def->u.definition;
 
 	g_assert (*line_pos <= line->length);
 
@@ -3231,7 +3256,7 @@ container_context_starts_here (GtkSourceContextEngine  *ce,
 		return FALSE;
 	}
 
-	new_context = create_child_context (state->context, definition, line->text);
+	new_context = create_child_context (state->context, child_def, line->text);
 	g_return_val_if_fail (new_context != NULL, FALSE);
 
 	if (!can_apply_match (new_context, line, *line_pos, &match_end,
@@ -3261,7 +3286,7 @@ container_context_starts_here (GtkSourceContextEngine  *ce,
 static gboolean
 simple_context_starts_here (GtkSourceContextEngine *ce,
 			    Segment                *state,
-			    ContextDefinition      *definition,
+			    DefinitionChild        *child_def,
 			    LineInfo               *line,
 			    gint                   *line_pos,
 			    Segment               **new_state)
@@ -3269,6 +3294,7 @@ simple_context_starts_here (GtkSourceContextEngine *ce,
 	gint match_end;
 	Context *new_context;
 	Segment *new_segment;
+	ContextDefinition *definition = child_def->u.definition;
 
 	g_return_val_if_fail (definition->u.match != NULL, FALSE);
 
@@ -3277,7 +3303,7 @@ simple_context_starts_here (GtkSourceContextEngine *ce,
 	if (!regex_match (definition->u.match, line->text, line->length, *line_pos))
 		return FALSE;
 
-	new_context = create_child_context (state->context, definition, line->text);
+	new_context = create_child_context (state->context, child_def, line->text);
 	g_return_val_if_fail (new_context != NULL, FALSE);
 
 	if (!can_apply_match (new_context, line, *line_pos, &match_end, definition->u.match) ||
@@ -3307,11 +3333,11 @@ simple_context_starts_here (GtkSourceContextEngine *ce,
 /**
  * child_starts_here:
  *
- * @state: the current state.
- * @curr_definition: child #ContextDefinition.
- * @line: the line to analyze.
+ * @ce: the engine.
+ * @state: current state.
+ * @child_def: the child.
+ * @line: line to analyze.
  * @line_pos: the position inside @line.
- * @line_length: the length of @line.
  * @new_state: where to store the new state.
  *
  * Verifies if a context of the type in @curr_definition starts at
@@ -3323,24 +3349,26 @@ simple_context_starts_here (GtkSourceContextEngine *ce,
 static gboolean
 child_starts_here (GtkSourceContextEngine *ce,
 		   Segment                *state,
-		   ContextDefinition      *definition,
+		   DefinitionChild        *child_def,
 		   LineInfo               *line,
 		   gint                   *line_pos,
 		   Segment               **new_state)
 {
-	switch (definition->type)
+	g_return_val_if_fail (child_def->resolved, FALSE);
+
+	switch (child_def->u.definition->type)
 	{
 		case CONTEXT_TYPE_SIMPLE:
 			return simple_context_starts_here (ce,
 							   state,
-							   definition,
+							   child_def,
 							   line,
 							   line_pos,
 							   new_state);
 		case CONTEXT_TYPE_CONTAINER:
 			return container_context_starts_here (ce,
 							      state,
-							      definition,
+							      child_def,
 							      line,
 							      line_pos,
 							      new_state);
@@ -3486,7 +3514,7 @@ next_segment (GtkSourceContextEngine  *ce,
 	{
 		DefinitionsIter def_iter;
 		gboolean context_end_found;
-		ContextDefinition *child_def;
+		DefinitionChild *child_def;
 
 		if (state->context->reg_all)
 		{
@@ -3522,13 +3550,15 @@ next_segment (GtkSourceContextEngine  *ce,
 		{
 			gboolean try_this = TRUE;
 
+			g_return_val_if_fail (child_def->resolved, FALSE);
+
 			/* If the child definition does not extend the parent
 			 * and the current context could end here we do not
 			 * need to examine this child. */
-			if (!child_def->extend_parent && context_end_found)
+			if (!child_def->u.definition->extend_parent && context_end_found)
 				try_this = FALSE;
 
-			if (child_def->first_line_only && line->start_at != 0)
+			if (child_def->u.definition->first_line_only && line->start_at != 0)
 				try_this = FALSE;
 
 			if (try_this)
@@ -4770,12 +4800,27 @@ out:
 static DefinitionChild *
 definition_child_new (ContextDefinition *definition,
 		      ContextDefinition *child_def,
+		      const gchar       *child_id,
+		      const gchar       *style,
+		      gboolean           override_style,
 		      gboolean           is_ref_all)
 {
-	DefinitionChild *ch = g_new0 (DefinitionChild, 1);
+	DefinitionChild *ch;
 
+	g_return_val_if_fail (child_def != NULL || child_id != NULL, NULL);
+	g_return_val_if_fail (child_def == NULL || child_id == NULL, NULL);
+
+	ch = g_new0 (DefinitionChild, 1);
+
+	if (child_id != NULL)
+		ch->u.id = g_strdup (child_id);
+	else
+		ch->u.definition = child_def;
+
+	ch->style = g_strdup (style);
 	ch->is_ref_all = is_ref_all;
-	ch->definition = child_def;
+	ch->resolved = child_def != NULL;
+	ch->override_style = override_style;
 
 	definition->children = g_slist_append (definition->children, ch);
 
@@ -4785,6 +4830,10 @@ definition_child_new (ContextDefinition *definition,
 static void
 definition_child_free (DefinitionChild *ch)
 {
+	if (!ch->resolved)
+		g_free (ch->u.id);
+	g_free (ch->style);
+
 #ifdef ENABLE_DEBUG
 	memset (ch, 1, sizeof (DefinitionChild));
 #else
@@ -4882,7 +4931,7 @@ context_definition_new (const gchar        *id,
 	}
 
 	definition->id = g_strdup (id);
-	definition->style = g_strdup (style);
+	definition->default_style = g_strdup (style);
 	definition->type = type;
 	definition->extend_parent = (options & GTK_SOURCE_CONTEXT_EXTEND_PARENT) != 0;
 	definition->end_at_line_end = (options & GTK_SOURCE_CONTEXT_END_AT_LINE_END) != 0;
@@ -4927,80 +4976,6 @@ context_definition_new (const gchar        *id,
 	return definition;
 }
 
-static GtkSourceContextMatchOptions
-context_definition_get_options (ContextDefinition *definition)
-{
-	GtkSourceContextMatchOptions options = 0;
-
-	if (definition->extend_parent)
-		options |= GTK_SOURCE_CONTEXT_EXTEND_PARENT;
-	if (definition->end_at_line_end)
-		options |= GTK_SOURCE_CONTEXT_END_AT_LINE_END;
-	if (definition->first_line_only)
-		options |= GTK_SOURCE_CONTEXT_FIRST_LINE_ONLY;
-
-	return options;
-}
-
-static ContextDefinition *
-context_definition_copy (GtkSourceContextEngine *ce,
-			 ContextDefinition      *definition,
-			 ContextDefinition      *parent,
-			 const char             *style,
-			 GError                **error)
-{
-	ContextDefinition *copy;
-	gchar *id;
-	GtkSourceContextMatchOptions options;
-	const gchar *match = NULL;
-	const gchar *start = NULL, *end = NULL;
-
-	switch (definition->type)
-	{
-		case CONTEXT_TYPE_SIMPLE:
-			match = regex_get_pattern (definition->u.match);
-			break;
-		case CONTEXT_TYPE_CONTAINER:
-			if (definition->u.start_end.start != NULL)
-				start = regex_get_pattern (definition->u.start_end.start);
-			if (definition->u.start_end.end != NULL)
-				end = regex_get_pattern (definition->u.start_end.end);
-			break;
-		default:
-			g_return_val_if_reached (NULL);
-	}
-
-	DEBUG ({
-		g_print ("match: %s\n", match ? match : "(null)");
-		g_print ("start: %s\n", start ? start : "(null)");
-		g_print ("end: %s\n", end ? end : "(null)");
-	});
-
-	id = g_strdup_printf ("%s@%s@%s", ce->priv->id, parent->id, definition->id);
-
-	if (g_hash_table_lookup (ce->priv->definitions, id) != NULL)
-	{
-		guint i = 1;
-		while (TRUE)
-		{
-			g_free (id);
-			id = g_strdup_printf ("%s@%s@%s@%d", ce->priv->id, parent->id, definition->id, i);
-			if (g_hash_table_lookup (ce->priv->definitions, id) == NULL)
-				break;
-			++i;
-		}
-	}
-
-	options = context_definition_get_options (definition);
-
-	copy = context_definition_new (id, definition->type, parent,
-				       match, start, end,
-				       style, options, error);
-
-	g_free (id);
-	return copy;
-}
-
 static void
 context_definition_free (ContextDefinition *definition)
 {
@@ -5036,7 +5011,7 @@ context_definition_free (ContextDefinition *definition)
 	g_slist_free (definition->sub_patterns);
 
 	g_free (definition->id);
-	g_free (definition->style);
+	g_free (definition->default_style);
 	regex_unref (definition->reg_all);
 
 	g_slist_foreach (definition->children, (GFunc) definition_child_free, NULL);
@@ -5057,7 +5032,7 @@ definition_iter_destroy (DefinitionsIter *iter)
 	g_slist_free (iter->children_stack);
 }
 
-static ContextDefinition *
+static DefinitionChild *
 definition_iter_next (DefinitionsIter *iter)
 {
 	GSList *children_list;
@@ -5075,9 +5050,13 @@ definition_iter_next (DefinitionsIter *iter)
 	else
 	{
 		DefinitionChild *curr_child = children_list->data;
-		ContextDefinition *definition = curr_child->definition;
+		ContextDefinition *definition = curr_child->u.definition;
+
+		g_return_val_if_fail (curr_child->resolved, NULL);
+
 		children_list = g_slist_next (children_list);
 		iter->children_stack->data = children_list;
+
 		if (curr_child->is_ref_all)
 		{
 			iter->children_stack = g_slist_prepend (iter->children_stack,
@@ -5086,7 +5065,7 @@ definition_iter_next (DefinitionsIter *iter)
 		}
 		else
 		{
-			return definition;
+			return curr_child;
 		}
 	}
 }
@@ -5169,7 +5148,7 @@ _gtk_source_context_engine_define_context (GtkSourceContextEngine  *ce,
 	g_hash_table_insert (ce->priv->definitions, g_strdup (id), definition);
 
 	if (parent != NULL)
-		definition_child_new (parent, definition, FALSE);
+		definition_child_new (parent, definition, NULL, NULL, FALSE, FALSE);
 
 	return TRUE;
 }
@@ -5269,6 +5248,7 @@ _gtk_source_context_engine_add_ref (GtkSourceContextEngine    *ce,
 {
 	ContextDefinition *parent;
 	ContextDefinition *ref;
+	gboolean override_style = FALSE;
 
 	g_return_val_if_fail (parent_id != NULL, FALSE);
 	g_return_val_if_fail (ref_id != NULL, FALSE);
@@ -5284,31 +5264,7 @@ _gtk_source_context_engine_add_ref (GtkSourceContextEngine    *ce,
 		return FALSE;
 	}
 
-	/* If the id is already present in the hashtable it is a duplicate,
-	 * so we report the error (probably there is a duplicate id in the
-	 * XML lang file). */
 	ref = LOOKUP_DEFINITION (ce, ref_id);
-
-	if (ref == NULL)
-	{
-		g_set_error (error,
-			     GTK_SOURCE_CONTEXT_ENGINE_ERROR,
-			     GTK_SOURCE_CONTEXT_ENGINE_ERROR_INVALID_REF,
-			     "invalid id '%s', the definition does not exist",
-			     ref_id);
-		return FALSE;
-	}
-
-	if (all && ref->type != CONTEXT_TYPE_CONTAINER)
-	{
-		g_set_error (error,
-			     GTK_SOURCE_CONTEXT_ENGINE_ERROR,
-			     GTK_SOURCE_CONTEXT_ENGINE_ERROR_INVALID_REF,
-			     "context '%s' is not a container context",
-			     ref_id);
-		return FALSE;
-	}
-
 	parent = LOOKUP_DEFINITION (ce, parent_id);
 	g_return_val_if_fail (parent != NULL, FALSE);
 
@@ -5323,18 +5279,105 @@ _gtk_source_context_engine_add_ref (GtkSourceContextEngine    *ce,
 	}
 
 	if (options & (GTK_SOURCE_CONTEXT_IGNORE_STYLE | GTK_SOURCE_CONTEXT_OVERRIDE_STYLE))
-	{
-		ref = context_definition_copy (ce, ref, parent, style, error);
+		override_style = TRUE;
 
-		if (ref == NULL)
-			return FALSE;
-
-		g_hash_table_insert (ce->priv->definitions, g_strdup (ref->id), ref);
-	}
-
-	definition_child_new (parent, ref, all);
+	definition_child_new (parent, ref, (ref == NULL) ? ref_id : NULL,
+			      style, override_style, all);
 
 	return TRUE;
+}
+
+/**
+ * resolve_reference:
+ *
+ * Checks whether all children of a context definition refer to valid
+ * contexts. Called from _gtk_source_context_engine_resolve_refs.
+ */
+static void
+resolve_reference (const gchar       *id,
+		   ContextDefinition *definition,
+		   gpointer           user_data)
+{
+	GSList *l;
+
+	struct {
+		GtkSourceContextEngine *ce;
+		GError *error;
+	} *data = user_data;
+
+	if (data->error != NULL)
+		return;
+
+	for (l = definition->children; l != NULL; l = l->next)
+	{
+		ContextDefinition *ref;
+		DefinitionChild *child_def = l->data;
+
+		if (child_def->resolved)
+			continue;
+
+		ref = g_hash_table_lookup (data->ce->priv->definitions, child_def->u.id);
+
+		if (ref != NULL)
+		{
+			g_free (child_def->u.id);
+			child_def->u.definition = ref;
+			child_def->resolved = TRUE;
+		}
+		else
+		{
+			g_set_error (&data->error, GTK_SOURCE_CONTEXT_ENGINE_ERROR,
+				     GTK_SOURCE_CONTEXT_ENGINE_ERROR_INVALID_REF,
+				     "invalid reference '%s'", child_def->u.id);
+			break;
+		}
+	}
+}
+
+/**
+ * _gtk_source_context_engine_resolve_refs:
+ *
+ * @ce: #GtkSourceContextEngine.
+ * @error: error structure to be filled in when failed.
+ *
+ * Checks all context references. Lang file may use cross-references
+ * between contexts, e.g. context A may include context B, and context
+ * B in turn include context A. Hence during parsing it just records
+ * referenced context id (if it's not present already), and then it
+ * needs to check the references and replace them with actual context
+ * definitions.
+ * May be called any number of times, must be called after parsing is
+ * done.
+ *
+ * Return value: TRUE on success, FALSE if there were unresolved
+ * references.
+ */
+gboolean
+_gtk_source_context_engine_resolve_refs (GtkSourceContextEngine	 *ce,
+					 GError			**error)
+{
+	struct {
+		GtkSourceContextEngine *ce;
+		GError *error;
+	} data;
+
+	g_return_val_if_fail (GTK_IS_SOURCE_CONTEXT_ENGINE (ce), FALSE);
+	g_return_val_if_fail (error != NULL && *error == NULL, FALSE);
+
+	data.ce = ce;
+	data.error = NULL;
+
+	g_hash_table_foreach (ce->priv->definitions, (GHFunc) resolve_reference, &data);
+
+	if (data.error != NULL)
+	{
+		g_propagate_error (error, data.error);
+		return FALSE;
+	}
+	else
+	{
+		return TRUE;
+	}
 }
 
 static void
@@ -5343,7 +5386,6 @@ add_escape_ref (ContextDefinition      *definition,
 {
 	GError *error = NULL;
 
-	/* XXX */
 	if (definition->type != CONTEXT_TYPE_CONTAINER)
 		return;
 

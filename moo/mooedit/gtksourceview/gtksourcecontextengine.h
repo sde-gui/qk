@@ -94,6 +94,9 @@ gboolean	 _gtk_source_context_engine_add_ref 	(GtkSourceContextEngine	 *ce,
 							 gboolean		  all,
 							 GError			**error);
 
+gboolean	 _gtk_source_context_engine_resolve_refs(GtkSourceContextEngine	 *ce,
+							 GError			**error);
+
 /* Only for lang files version 1, do not use it */
 void		 _gtk_source_context_engine_set_escape_char (GtkSourceContextEngine	*ce,
 							     gunichar			 esc_char);
