@@ -137,7 +137,7 @@ endif
 nodist_mooutils_sources =		\
 	moomarshals.c			\
 	moomarshals.h
-CLEANFILES =				\
+DISTCLEANFILES =			\
 	moomarshals.c			\
 	moomarshals.h
 

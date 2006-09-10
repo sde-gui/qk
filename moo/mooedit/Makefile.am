@@ -157,7 +157,8 @@ mooedit_enums_headers =			\
 	mootextstyle.h			\
 	mootextview.h
 
-CLEANFILES += stamp-mooedit-enums.h stamp-mooedit-enums.c mooedit-enums.h mooedit-enums.c
+CLEANFILES += stamp-mooedit-enums.h stamp-mooedit-enums.c
+DISTCLEANFILES = mooedit-enums.h mooedit-enums.c
 mooedit-enums.h: stamp-mooedit-enums.h
 	@true
 mooedit-enums.c: stamp-mooedit-enums.c
