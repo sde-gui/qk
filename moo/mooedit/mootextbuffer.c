@@ -1831,6 +1831,8 @@ action_merge (EditAction     *last_action,
 }
 
 
+#define IS_SPACE_OR_TAB(c__) ((c__) == ' ' || (c__) == '\t')
+
 static gboolean
 insert_action_merge (InsertAction   *last_action,
                      InsertAction   *action,
@@ -1842,9 +1844,8 @@ insert_action_merge (InsertAction   *last_action,
         return FALSE;
 
     if (action->pos != (last_action->pos + last_action->chars) ||
-        (action->edit.text[0] != ' ' && action->edit.text[0] != '\t' &&
-         (last_action->edit.text[last_action->length-1] == ' ' ||
-          last_action->edit.text[last_action->length-1] == '\t')))
+        (!IS_SPACE_OR_TAB (action->edit.text[0]) &&
+          IS_SPACE_OR_TAB (last_action->edit.text[last_action->length-1])))
     {
         EDIT_ACTION(last_action)->mergeable = FALSE;
         return FALSE;
@@ -1884,8 +1885,7 @@ delete_action_merge (DeleteAction   *last_action,
                                                    last_action->end - last_action->start - 1);
 
         /* Deleted with the delete key */
-        if (action->edit.text[0] != ' ' && action->edit.text[0] != '\t' &&
-            (*text_end == ' ' || *text_end  == '\t'))
+        if (!IS_SPACE_OR_TAB (action->edit.text[0]) && IS_SPACE_OR_TAB (*text_end))
         {
             EDIT_ACTION(last_action)->mergeable = FALSE;
             return FALSE;
@@ -1899,8 +1899,8 @@ delete_action_merge (DeleteAction   *last_action,
     else
     {
         /* Deleted with the backspace key */
-        if (action->edit.text[0] != ' ' && action->edit.text[0] != '\t' &&
-            (last_action->edit.text[0] == ' ' || last_action->edit.text[0] == '\t'))
+        if (!IS_SPACE_OR_TAB (action->edit.text[0]) &&
+            IS_SPACE_OR_TAB (last_action->edit.text[0]))
         {
             EDIT_ACTION(last_action)->mergeable = FALSE;
             return FALSE;
