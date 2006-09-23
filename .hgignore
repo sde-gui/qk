@@ -19,7 +19,7 @@ aclocal\.m4$
 ^missing$
 \.o$
 \.exe$
-\.pyc$
+\.py[co]$
 ~$
 \.pcs$
 \.kdevses$
@@ -56,3 +56,4 @@ moo/mooterm/termhelper_res\.rc$
 ^po/ru\.po$
 .*\.(new|old).*
 gmon\.out
+py-compile
