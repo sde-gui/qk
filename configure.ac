@@ -71,7 +71,7 @@ AC_SUBST(MOO_SRC_PREFIX)
 MOO_COMPONENTS
 MOO_AC_RELOC
 MOO_AC_SET_DIRS(moo)
-MOO_AC_FLAGS
+MOO_AC_FLAGS(moo)
 
 
 ################################################################################
