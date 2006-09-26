@@ -150,7 +150,7 @@ main (int argc, char *argv[])
     gboolean run_input = TRUE;
     AppMode mode = MODE_SIMPLE;
     guint32 stamp;
-    int line = -1;
+    guint32 line = 0;
     const char *pid_string = NULL;
 
     gtk_init (&argc, &argv);
@@ -208,7 +208,7 @@ main (int argc, char *argv[])
 
     if (pid_string)
     {
-        if (moo_app_send_files (app, files, stamp, pid_string))
+        if (moo_app_send_files (app, files, line, stamp, pid_string))
         {
             exit (0);
         }
@@ -219,7 +219,7 @@ main (int argc, char *argv[])
         }
     }
 
-    if ((!new_instance && moo_app_send_files (app, files, stamp, NULL)) ||
+    if ((!new_instance && moo_app_send_files (app, files, line, stamp, NULL)) ||
          !moo_app_init (app))
     {
         gdk_notify_startup_complete ();
@@ -259,8 +259,8 @@ main (int argc, char *argv[])
 
         for (p = files; p && *p; ++p)
         {
-            if (p == files && line >= 0)
-                moo_editor_open_file_line (editor, *p, line, window);
+            if (p == files && line > 0)
+                moo_editor_open_file_line (editor, *p, line - 1, window);
             else
                 moo_editor_new_file (editor, window, NULL, *p, NULL);
         }
