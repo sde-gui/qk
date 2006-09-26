@@ -8,7 +8,7 @@ langs="c.lang cpp.lang changelog.lang def.lang \
        m4.lang makefile.lang xml.lang yacc.lang \
        sh.lang python.lang"
 
-styles="gvim.styles kde.styles"
+styles="gvim.styles kate.styles"
 
 if [ $1 ]; then
     langs=$*

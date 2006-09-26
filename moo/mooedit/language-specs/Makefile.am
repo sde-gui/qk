@@ -5,6 +5,7 @@ langs2 =			\
 	changelog.lang		\
 	cpp.lang		\
 	def.lang		\
+	gap.lang		\
 	html.lang		\
 	javascript.lang		\
 	latex.lang		\
@@ -50,7 +51,7 @@ langs1 =			\
 	vhdl.lang
 
 styles =			\
-	kde.styles		\
+	kate.styles		\
 	gvim.styles
 
 languagespecs_DATA =		\
