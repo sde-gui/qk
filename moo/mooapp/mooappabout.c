@@ -15,9 +15,9 @@
 #include "mooapp/mooappabout.h"
 #include "mooapp/mooapp.h"
 #include "mooapp/moohtml.h"
+#include "mooapp/moolinklabel.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"
-#include "mooutils/moolinklabel.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
@@ -307,8 +307,8 @@ create_about_dialog (void)
     g_free (markup);
 
     url = moo_glade_xml_get_widget (xml, "url");
-    moo_link_label_set_url (url, info->website);
-    moo_link_label_set_text (url, info->website_label);
+    _moo_link_label_set_url (url, info->website);
+    _moo_link_label_set_text (url, info->website_label);
 
     logo = moo_glade_xml_get_widget (xml, "logo");
 

@@ -58,7 +58,6 @@
 #include <mooutils/mooglade.h>
 #include <mooutils/moohistorycombo.h>
 #include <mooutils/moohistorylist.h>
-#include <mooutils/moolinklabel.h>
 #include <mooutils/moomarkup.h>
 #include <mooutils/moomenuaction.h>
 #include <mooutils/moomenumgr.h>
