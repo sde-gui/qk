@@ -527,7 +527,7 @@ default_lang_combo_set_lang (GtkComboBox *combo,
 
     model = gtk_combo_box_get_model (combo);
     data.found = FALSE;
-    data.id = id;
+    data.id = id ? id : MOO_LANG_NONE;
 
     gtk_tree_model_foreach (model,
                             (GtkTreeModelForeachFunc) find_lang_by_id,
