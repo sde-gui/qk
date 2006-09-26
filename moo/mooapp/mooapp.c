@@ -908,6 +908,7 @@ moo_app_send_msg (MooApp     *app,
 gboolean
 moo_app_send_files (MooApp     *app,
                     char      **files,
+                    guint32     line,
                     guint32     stamp,
                     const char *pid)
 {
@@ -918,7 +919,7 @@ moo_app_send_files (MooApp     *app,
 
     msg = g_string_new (NULL);
 
-    g_string_append_printf (msg, "%s%08x", CMD_OPEN_URIS, stamp);
+    g_string_append_printf (msg, "%s%08x%08x", CMD_OPEN_URIS, stamp, line);
 
     while (files && *files)
     {
@@ -1413,12 +1414,18 @@ _moo_app_exec_cmd (MooApp     *app,
 
 static void
 moo_app_new_file (MooApp       *app,
-                  const char   *filename)
+                  const char   *filename,
+                  guint32       line)
 {
 #ifdef MOO_BUILD_EDIT
     MooEditor *editor = moo_app_get_editor (app);
+
     g_return_if_fail (editor != NULL);
-    moo_editor_new_file (editor, NULL, NULL, filename, NULL);
+
+    if (line > 0)
+        moo_editor_open_file_line (editor, filename, line - 1, NULL);
+    else
+        moo_editor_new_file (editor, NULL, NULL, filename, NULL);
 #endif /* MOO_BUILD_EDIT */
 }
 
@@ -1447,11 +1454,18 @@ moo_app_open_uris (MooApp     *app,
     char **uris, **p;
     guint32 stamp;
     char *stamp_string;
+    char *line_string;
+    guint32 line;
 
     stamp_string = g_strndup (data, 8);
     stamp = strtoul (stamp_string, NULL, 16);
+    line_string = g_strndup (data + 8, 8);
+    line = strtoul (line_string, NULL, 16);
 
-    data += 8;
+    if (line > G_MAXINT)
+        line = 0;
+
+    data += 16;
     uris = g_strsplit (data, "\r\n", 0);
 
     for (p = uris; p && *p; ++p)
@@ -1459,7 +1473,12 @@ moo_app_open_uris (MooApp     *app,
         char *filename = g_filename_from_uri (*p, NULL, NULL);
 
         if (filename)
-            moo_app_new_file (app, filename);
+        {
+            if (p == uris && line > 0)
+                moo_app_new_file (app, filename, line);
+            else
+                moo_app_new_file (app, filename, 0);
+        }
 
         g_free (filename);
     }
@@ -1531,7 +1550,7 @@ moo_app_exec_cmd_real (MooApp             *app,
 //             break;
 
         case MOO_APP_CMD_OPEN_FILE:
-            moo_app_new_file (app, data);
+            moo_app_new_file (app, data, 0);
             break;
         case MOO_APP_CMD_OPEN_URIS:
             moo_app_open_uris (app, data);

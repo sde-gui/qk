@@ -111,6 +111,7 @@ gboolean         moo_app_send_msg               (MooApp     *app,
                                                  int         len);
 gboolean         moo_app_send_files             (MooApp     *app,
                                                  char      **files,
+                                                 guint32     line,
                                                  guint32     stamp,
                                                  const char *pid);
 
