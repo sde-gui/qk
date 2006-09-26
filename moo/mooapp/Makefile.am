@@ -18,7 +18,9 @@ mooapp_sources =			\
 	mooapp.h                        \
 	mooapp-private.h                \
 	mooappinput.c                   \
-	mooappinput.h
+	mooappinput.h			\
+	moolinklabel.h			\
+	moolinklabel.c
 
 EXTRA_DIST =				\
 	gpl                             \
