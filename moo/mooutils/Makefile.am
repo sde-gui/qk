@@ -35,7 +35,6 @@ mooutils_include_headers =		\
 	moohistorycombo.h		\
 	moohistorylist.h		\
 	mooi18n.h			\
-	moolinklabel.h			\
 	moomarkup.h			\
 	moomenuaction.h			\
 	moomenumgr.h			\
@@ -93,7 +92,6 @@ mooutils_sources =			\
 	moohistorycombo.c		\
 	moohistorylist.c		\
 	mooi18n.c			\
-	moolinklabel.c			\
 	moologwindow-glade.h		\
 	moomarkup.c			\
 	moomenuaction.c			\
@@ -170,8 +168,9 @@ BUILT_SOURCES =				\
 	stock-moo.h
 
 moomarshals.c: moomarshals.list
+	echo '#include "moomarshals.h"' > moomarshals.c && \
 	glib-genmarshal --prefix=_moo_marshal --body \
-	       $(srcdir)/moomarshals.list > moomarshals.c
+	       $(srcdir)/moomarshals.list >> moomarshals.c
 moomarshals.h: moomarshals.list
 	glib-genmarshal --prefix=_moo_marshal --header \
 	       $(srcdir)/moomarshals.list > moomarshals.h
