@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <language id="c" _name="C" version="2.0" _section="Sources"
-          mimetypes="text/x-c;text/x-chdr;text/x-csrc">
+          mimetypes="text/x-c;text/x-csrc">
     <styles>
         <style id="comment"           _name="Comment"             map-to="def:comment"/>
         <style id="error"             _name="Error"               map-to="def:error"/>
@@ -98,7 +98,7 @@
                 <context id="preprocessor" style-ref="preprocessor" end-at-line-end="true">
                     <start extended="true">
                             \%{preproc-start}
-                            (define|undef|error|pragma|if(n?def)?|else|elif|endif|line)
+                            (define|undef|error|pragma|if(n?def)?|else|elif|endif|line|warning)
                             \b
                     </start>
                     <include>
