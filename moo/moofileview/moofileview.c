@@ -2312,12 +2312,21 @@ moo_file_view_get_property (GObject        *object,
 
 enum {
     CB_TARGET_CLIPBOARD = 1,
-    CB_TARGET_URI_LIST = 2
+    CB_TARGET_URI_LIST = 2,
+    CB_TARGET_TEXT = 3
 };
+
+#define N_NO_TEXT_TARGETS 2
 
 static GtkTargetEntry clipboard_targets[] = {
     {(char*) "MOO_FILE_VIEW_CLIPBOARD", GTK_TARGET_SAME_APP, CB_TARGET_CLIPBOARD},
     {(char*) "text/uri-list", 0, CB_TARGET_URI_LIST},
+    {(char*) "UTF8_STRING", 0, CB_TARGET_TEXT},
+    {(char*) "TEXT", 0, CB_TARGET_TEXT},
+    {(char*) "COMPOUND_TEXT", 0, CB_TARGET_TEXT},
+    {(char*) "text/plain", 0, CB_TARGET_TEXT},
+    {(char*) "text/plain;charset=utf-8", 0, CB_TARGET_TEXT},
+    {(char*) "GDK_TARGET_STRING", 0, CB_TARGET_TEXT}
 };
 
 static void
@@ -2410,6 +2419,25 @@ set_selection_data_from_clipboard (GtkSelectionData *data,
     g_strfreev (uris);
 }
 
+static void
+set_text_from_clipboard (GtkSelectionData *data,
+                         Clipboard        *cb)
+{
+    char *path;
+    char *display_path;
+
+    g_return_if_fail (g_list_length (cb->files) == 1);
+
+    path = _moo_folder_get_file_path (cb->folder, cb->files->data);
+    g_return_if_fail (path != NULL);
+
+    display_path = g_filename_display_name (path);
+    gtk_selection_data_set_text (data, display_path, -1);
+
+    g_free (display_path);
+    g_free (path);
+}
+
 
 static void
 get_clipboard_cb (G_GNUC_UNUSED GtkClipboard *clipboard,
@@ -2430,6 +2458,11 @@ get_clipboard_cb (G_GNUC_UNUSED GtkClipboard *clipboard,
         case CB_TARGET_URI_LIST:
             set_selection_data_from_clipboard (selection_data,
                                                fileview->priv->clipboard);
+            break;
+
+        case CB_TARGET_TEXT:
+            set_text_from_clipboard (selection_data,
+                                     fileview->priv->clipboard);
             break;
 
         default:
@@ -2464,7 +2497,7 @@ file_view_cut_or_copy_clipboard (MooFileView *fileview,
     clipboard = gtk_widget_get_clipboard (GTK_WIDGET (fileview),
                                           GDK_SELECTION_CLIPBOARD);
     result = gtk_clipboard_set_with_owner (clipboard, clipboard_targets,
-                                           G_N_ELEMENTS (clipboard_targets),
+                                           files->next ? N_NO_TEXT_TARGETS : G_N_ELEMENTS (clipboard_targets),
                                            (GtkClipboardGetFunc) get_clipboard_cb,
                                            (GtkClipboardClearFunc) clear_clipboard_cb,
                                            G_OBJECT (fileview));
