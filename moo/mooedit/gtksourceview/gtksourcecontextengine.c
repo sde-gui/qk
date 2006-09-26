@@ -172,7 +172,7 @@ struct _ContextDefinition
 	 * before the line terminating characters)? */
 	guint			 end_at_line_end : 1;
 
-	/* Does this context can extend its parent? */
+	/* Can this context extend its parent? */
 	guint			 extend_parent : 1;
 };
 
@@ -279,6 +279,10 @@ struct _Segment
 	/* The context is used in the interval [start_at; end_at). */
 	gint			 start_at;
 	gint			 end_at;
+
+	/* Whether this segment is a whole good segment, or it's an
+	 * an end of bigger one left after erase_segments() call. */
+	guint			 is_start : 1;
 };
 
 struct _SubPattern
@@ -383,12 +387,14 @@ static Segment	       *create_segment		(GtkSourceContextEngine *ce,
 						 Context		*context,
 						 gint			 start_at,
 						 gint			 end_at,
+						 gboolean		 is_start,
 						 Segment		*hint);
 static Segment	       *segment_new		(GtkSourceContextEngine *ce,
 						 Segment		*parent,
 						 Context		*context,
 						 gint			 start_at,
-						 gint			 end_at);
+						 gint			 end_at,
+						 gboolean		 is_start);
 static Context	       *context_new		(Context		*parent,
 						 ContextDefinition	*definition,
 						 const gchar		*line_text,
@@ -430,7 +436,7 @@ static void		install_idle_worker	(GtkSourceContextEngine	*ce);
 static void		install_first_update	(GtkSourceContextEngine	*ce);
 
 
-/* MODIFICATIONS AND STUFF ------------------------------------------------ */
+/* TAGS AND STUFF -------------------------------------------------------------- */
 
 static void
 unhighlight_region_cb (G_GNUC_UNUSED gpointer style,
@@ -598,11 +604,11 @@ get_tag_for_parent (GtkSourceContextEngine *ce,
 
 			while (parent != NULL)
 			{
-				if (parent->definition->style != NULL)
+				if (parent->style != NULL)
 				{
 					g_string_prepend (style_path, "/");
 					g_string_prepend (style_path,
-							  parent->definition->style);
+							  parent->style);
 				}
 
 				parent = parent->parent;
@@ -837,6 +843,17 @@ refresh_range (GtkSourceContextEngine *ce,
 			       &real_end);
 }
 
+
+/* SEGMENT TREE ----------------------------------------------------------- */
+
+/**
+ * segment_cmp:
+ *
+ * @s1: first segment.
+ * @s2: second segment.
+ *
+ * Compares segments by their offset, used to sort list of invalid segments.
+ */
 static gint
 segment_cmp (Segment *s1,
 	     Segment *s2)
@@ -856,6 +873,16 @@ segment_cmp (Segment *s1,
                                  (s1->end_at > s2->end_at ? 1 : 0));
 }
 
+/**
+ * add_invalid:
+ *
+ * @ce: the engine.
+ * @segment: segment.
+ *
+ * Inserts segment into the list of invalid segments.
+ * Called whenever new invalid segment is created or when
+ * a segment is marked invalid.
+ */
 static void
 add_invalid (GtkSourceContextEngine *ce,
 	     Segment                *segment)
@@ -863,7 +890,7 @@ add_invalid (GtkSourceContextEngine *ce,
 #ifdef ENABLE_CHECK_TREE
 	g_assert (!g_slist_find (ce->priv->invalid, segment));
 #endif
-	g_assert (SEGMENT_IS_INVALID (segment));
+	g_return_if_fail (SEGMENT_IS_INVALID (segment));
 
 	ce->priv->invalid = g_slist_insert_sorted (ce->priv->invalid,
 						   segment,
@@ -872,6 +899,16 @@ add_invalid (GtkSourceContextEngine *ce,
 	DEBUG (g_print ("%d invalid\n", g_slist_length (ce->priv->invalid)));
 }
 
+/**
+ * remove_invalid:
+ *
+ * @ce: the engine.
+ * @segment: segment.
+ *
+ * Removes segment from the list of invalid segments;
+ * Called when an invalid segment is destroyed (invalid
+ * segments never become valid).
+ */
 static void
 remove_invalid (GtkSourceContextEngine *ce,
 		Segment                *segment)
@@ -880,6 +917,16 @@ remove_invalid (GtkSourceContextEngine *ce,
 	ce->priv->invalid = g_slist_remove (ce->priv->invalid, segment);
 }
 
+/**
+ * fix_offsets_insert_:
+ *
+ * @segment: segment.
+ * @start: start offset.
+ * @delta: length of inserted text.
+ *
+ * Recursively updates offsets after inserting text. To be called
+ * only from insert_range().
+ */
 static void
 fix_offsets_insert_ (Segment *segment,
 		     gint     start,
@@ -906,6 +953,19 @@ fix_offsets_insert_ (Segment *segment,
 	}
 }
 
+/**
+ * find_insertion_place_forward_:
+ *
+ * @segment: (grand)parent segment the new one should be inserted into.
+ * @offset: offset at which text is inserted.
+ * @start: segment from which to start search (to avoid
+ * walking whole tree).
+ * @parent: initialized with the parent of new segment.
+ * @prev: initialized with the previous sibling of new segment.
+ * @next: initialized with the next sibling of new segment.
+ *
+ * Auxiliary function used in find_insertion_place().
+ */
 static void
 find_insertion_place_forward_ (Segment  *segment,
 			       gint      offset,
@@ -959,6 +1019,19 @@ find_insertion_place_forward_ (Segment  *segment,
 	*parent = segment;
 }
 
+/**
+ * find_insertion_place_backward_:
+ *
+ * @segment: (grand)parent segment the new one should be inserted into.
+ * @offset: offset at which text is inserted.
+ * @start: segment from which to start search (to avoid
+ * walking whole tree).
+ * @parent: initialized with the parent of new segment.
+ * @prev: initialized with the previous sibling of new segment.
+ * @next: initialized with the next sibling of new segment.
+ *
+ * Auxiliary function used in find_insertion_place().
+ */
 static void
 find_insertion_place_backward_ (Segment  *segment,
 				gint      offset,
@@ -1013,6 +1086,24 @@ find_insertion_place_backward_ (Segment  *segment,
 	*parent = segment;
 }
 
+/**
+ * find_insertion_place:
+ *
+ * @segment: (grand)parent segment the new one should be inserted into.
+ * @offset: offset at which text is inserted.
+ * @start: segment from which to start search (to avoid
+ * walking whole tree).
+ * @parent: initialized with the parent of new segment.
+ * @prev: initialized with the previous sibling of new segment.
+ * @hint: a segment somewhere near insertion place to optimize search.
+ *
+ * After text is inserted, a new invalid segment is created and inserted
+ * into the tree. This function finds an appropriate position for the new
+ * segment. To make it faster, it uses hint and calls
+ * find_insertion_place_forward_ or find_insertion_place_backward_ depending
+ * on position of offset relative to hint.
+ * There is no return value, it always succeeds (or crashes).
+ */
 static void
 find_insertion_place (Segment  *segment,
 		      gint      offset,
@@ -1063,9 +1154,18 @@ find_insertion_place (Segment  *segment,
 		find_insertion_place_backward_ (segment, offset, hint, parent, prev, next);
 }
 
+/**
+ * get_invalid_at:
+ *
+ * @ce: the engine.
+ * @offset: the offset.
+ *
+ * Finds invalid segment adjacent to offset (i.e. such that start <= offset <= end),
+ * if any.
+ */
 static Segment *
-get_invalid_at_ (GtkSourceContextEngine *ce,
-		 gint                    offset)
+get_invalid_at (GtkSourceContextEngine *ce,
+		gint                    offset)
 {
 	GSList *link = ce->priv->invalid;
 
@@ -1087,6 +1187,14 @@ get_invalid_at_ (GtkSourceContextEngine *ce,
 	return NULL;
 }
 
+/**
+ * segment_add_subpattern:
+ *
+ * @state: the segment.
+ * @sp: subpattern.
+ *
+ * Prepends subpattern to subpatterns list in the segment.
+ */
 static void
 segment_add_subpattern (Segment    *state,
 			SubPattern *sp)
@@ -1095,6 +1203,17 @@ segment_add_subpattern (Segment    *state,
 	state->sub_patterns = sp;
 }
 
+/**
+ * sub_pattern_new:
+ *
+ * @segment: the segment.
+ * @start_at: start offset of the subpattern.
+ * @end_at: end offset of the subpattern.
+ * @sp_def: the subppatern definition.
+ *
+ * Creates new subpattern and adds it to the segment's
+ * subpatterns list.
+ */
 static SubPattern *
 sub_pattern_new (Segment              *segment,
 		 gint                  start_at,
@@ -1113,6 +1232,13 @@ sub_pattern_new (Segment              *segment,
 	return sp;
 }
 
+/**
+ * sub_pattern_free:
+ *
+ * @sp: subppatern.
+ *
+ * Calls g_free on subpattern, was useful for debugging.
+ */
 static inline void
 sub_pattern_free (SubPattern *sp)
 {
@@ -1123,6 +1249,14 @@ sub_pattern_free (SubPattern *sp)
 #endif
 }
 
+/**
+ * segment_make_invalid_:
+ *
+ * @ce: the engine.
+ * @segment: segment to invalidate.
+ *
+ * Invalidates segment. Called only from insert_range().
+ */
 static void
 segment_make_invalid_ (GtkSourceContextEngine *ce,
 		       Segment                *segment)
@@ -1144,10 +1278,24 @@ segment_make_invalid_ (GtkSourceContextEngine *ce,
 
 	ctx = segment->context;
 	segment->context = NULL;
+	segment->is_start = FALSE;
 	add_invalid (ce, segment);
 	context_unref (ctx);
 }
 
+/**
+ * simple_segment_split_:
+ *
+ * @ce: the engine.
+ * @segment: segment to split.
+ * @offset: offset at which text insertion occurred.
+ *
+ * Creates a new invalid segment and inserts it in the middle
+ * of the given one. Called from insert_range() to mark inserted
+ * text.
+ *
+ * Returns: new invalid segment.
+ */
 static Segment *
 simple_segment_split_ (GtkSourceContextEngine *ce,
 		       Segment                *segment,
@@ -1164,8 +1312,8 @@ simple_segment_split_ (GtkSourceContextEngine *ce,
 	segment->sub_patterns = NULL;
 	segment->end_at = offset;
 
-	invalid = create_segment (ce, segment->parent, NULL, offset, offset, segment);
-	new_segment = create_segment (ce, segment->parent, segment->context, offset, end_at, invalid);
+	invalid = create_segment (ce, segment->parent, NULL, offset, offset, FALSE, segment);
+	new_segment = create_segment (ce, segment->parent, segment->context, offset, end_at, FALSE, invalid);
 
 	while (sp != NULL)
 	{
@@ -1283,7 +1431,7 @@ invalidate_region (GtkSourceContextEngine *ce,
  * after the call segment [offset, offset + length) is marked
  * invalid in the tree.
  * It may be safely called with length == 0 at any moment
- * (and it's used here and there).
+ * to invalidate some offset (and it's used here and there).
  */
 static void
 insert_range (GtkSourceContextEngine *ce,
@@ -1297,7 +1445,7 @@ insert_range (GtkSourceContextEngine *ce,
 	 * Otherwise, find the deepest segment to split and insert
 	 * dummy segment in there. */
 
-	parent = get_invalid_at_ (ce, offset);
+	parent = get_invalid_at (ce, offset);
 
 	if (parent == NULL)
 		find_insertion_place (ce->priv->root_segment, offset,
@@ -1340,7 +1488,7 @@ insert_range (GtkSourceContextEngine *ce,
 	{
 		/* Just insert new zero-length invalid segment. */
 
-		new_segment = segment_new (ce, parent, NULL, offset, offset);
+		new_segment = segment_new (ce, parent, NULL, offset, offset, FALSE);
 
 		new_segment->next = next;
 		new_segment->prev = prev;
@@ -1409,10 +1557,21 @@ gtk_source_context_engine_text_inserted (GtkSourceEngine *engine,
 			   end_offset - start_offset);
 }
 
+/**
+ * fix_offset_delete_one_:
+ *
+ * @offset: segment.
+ * @start: start of deleted text.
+ * @length: length of deleted text.
+ *
+ * Returns new offset depending on location of %offset
+ * relative to deleted text.
+ * Called only from fix_offsets_delete_().
+ */
 static inline gint
-fix_offset_delete_ (gint offset,
-		    gint start,
-		    gint length)
+fix_offset_delete_one_ (gint offset,
+		        gint start,
+		        gint length)
 {
 	if (offset > start)
 	{
@@ -1425,6 +1584,17 @@ fix_offset_delete_ (gint offset,
 	return offset;
 }
 
+/**
+ * fix_offsets_delete_:
+ *
+ * @segment: segment.
+ * @start: start offset.
+ * @length: length of deleted text.
+ * @hint: some segment somewhere near deleted text to optimize search.
+ *
+ * Recursively updates offsets after deleting text. To be called
+ * only from delete_range_().
+ */
 static void
 fix_offsets_delete_ (Segment *segment,
 		     gint     offset,
@@ -1459,12 +1629,12 @@ fix_offsets_delete_ (Segment *segment,
 
 	for (sp = segment->sub_patterns; sp != NULL; sp = sp->next)
 	{
-		sp->start_at = fix_offset_delete_ (sp->start_at, offset, length);
-		sp->end_at = fix_offset_delete_ (sp->end_at, offset, length);
+		sp->start_at = fix_offset_delete_one_ (sp->start_at, offset, length);
+		sp->end_at = fix_offset_delete_one_ (sp->end_at, offset, length);
 	}
 
-	segment->start_at = fix_offset_delete_ (segment->start_at, offset, length);
-	segment->end_at = fix_offset_delete_ (segment->end_at, offset, length);
+	segment->start_at = fix_offset_delete_one_ (segment->start_at, offset, length);
+	segment->end_at = fix_offset_delete_one_ (segment->end_at, offset, length);
 }
 
 /**
@@ -1616,9 +1786,9 @@ update_tree (GtkSourceContextEngine *ce)
 	if (erase_start < erase_end)
 	{
 		erase_segments (ce, erase_start, erase_end, NULL);
-		create_segment (ce, ce->priv->root_segment, NULL, erase_start, erase_end, NULL);
+		create_segment (ce, ce->priv->root_segment, NULL, erase_start, erase_end, FALSE, NULL);
 	}
-	else if (get_invalid_at_ (ce, start) == NULL)
+	else if (get_invalid_at (ce, start) == NULL)
 	{
 		insert_range (ce, start, 0);
 	}
@@ -1626,11 +1796,25 @@ update_tree (GtkSourceContextEngine *ce)
 	region->empty = TRUE;
 
 #ifdef ENABLE_CHECK_TREE
-	g_assert (get_invalid_at_ (ce, start) != NULL);
+	g_assert (get_invalid_at (ce, start) != NULL);
 	CHECK_TREE (ce);
 #endif
 }
 
+/**
+ * gtk_source_context_engine_update_highlight:
+ *
+ * @ce: a #GtkSourceContextEngine.
+ * @start: start of area to update.
+ * @end: start of area to update.
+ * @synchronous: whether it should block until everything
+ * is analyzed/highlighted.
+ *
+ * GtkSourceEngine::update_highlight method.
+ *
+ * Makes sure the area is analyzed and highlighted. If %asynchronous
+ * is FALSE, then it queues idle worker.
+ */
 /* XXX make sure regions requested and highlighted are the same,
    so we don't install an idle just because a view gave us a
    start iter of the line it doesn't care about (and vice versa
@@ -1682,6 +1866,16 @@ gtk_source_context_engine_update_highlight (GtkSourceEngine   *engine,
 	}
 }
 
+/**
+ * enable_highlight:
+ *
+ * @ce: a #GtkSourceContextEngine.
+ * @enable: whether to enable highlighting.
+ *
+ * Whether to highlight (i.e. apply tags) analyzed area.
+ * Note that this does not turn on/off the analyzis stuff,
+ * it affects only text tags.
+ */
 static void
 enable_highlight (GtkSourceContextEngine *ce,
 		  gboolean                enable)
@@ -1712,6 +1906,13 @@ buffer_notify_highlight_cb (GtkSourceContextEngine *ce)
 
 /* IDLE WORKER CODE ------------------------------------------------------- */
 
+/**
+ * all_analyzed:
+ *
+ * @ce: a #GtkSourceContextEngine.
+ *
+ * Returns whether everything is analyzed (but it doesn't care about the tags).
+ */
 static gboolean
 all_analyzed (GtkSourceContextEngine *ce)
 {
@@ -1744,6 +1945,14 @@ idle_worker (GtkSourceContextEngine *ce)
 	return TRUE;
 }
 
+/**
+ * first_update_callback:
+ *
+ * @ce: a #GtkSourceContextEngine.
+ *
+ * Same as idle_worker, except: it runs once, and install idle_worker
+ * if not everything was analyzed at once.
+ */
 static gboolean
 first_update_callback (GtkSourceContextEngine *ce)
 {
@@ -1778,6 +1987,14 @@ install_idle_worker (GtkSourceContextEngine *ce)
 					 (GSourceFunc) idle_worker, ce, NULL);
 }
 
+/**
+ * install_first_update:
+ *
+ * @ce: #GtkSourceContextEngine.
+ *
+ * Schedules first_update_callback call.
+ * Always safe to call.
+ */
 static void
 install_first_update (GtkSourceContextEngine *ce)
 {
@@ -1826,6 +2043,13 @@ remove_tags_hash_cb (G_GNUC_UNUSED gpointer style,
 	g_slist_free (tags);
 }
 
+/**
+ * destroy_tags_hash:
+ *
+ * @ce: #GtkSourceContextEngine.
+ *
+ * Destroys syntax tags cache.
+ */
 static void
 destroy_tags_hash (GtkSourceContextEngine *ce)
 {
@@ -1923,7 +2147,7 @@ gtk_source_context_engine_attach_buffer (GtkSourceEngine *engine,
 		}
 
 		ce->priv->root_context = context_new (NULL, main_definition, NULL, NULL);
-		ce->priv->root_segment = create_segment (ce, NULL, ce->priv->root_context, 0, 0, NULL);
+		ce->priv->root_segment = create_segment (ce, NULL, ce->priv->root_context, 0, 0, TRUE, NULL);
 
 		ce->priv->tags = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
@@ -1958,6 +2182,15 @@ set_tag_style_hash_cb (const char             *style,
 	}
 }
 
+/**
+ * gtk_source_context_engine_set_style_scheme:
+ *
+ * @engine: #GtkSourceContextEngine.
+ * @scheme: #GtkSourceStyleScheme to set.
+ *
+ * GtkSourceEngine::set_style_scheme method.
+ * Sets current style scheme, updates tag styles and everything.
+ */
 static void
 gtk_source_context_engine_set_style_scheme (GtkSourceEngine      *engine,
 					    GtkSourceStyleScheme *scheme)
@@ -2071,6 +2304,15 @@ regex_unref (Regex *regex)
 	}
 }
 
+/**
+ * find_single_byte_escape:
+ *
+ * @string: the pattern.
+ *
+ * Checks whether pattern contains \C escape sequence,
+ * which means "single byte" in pcre and naturally leads
+ * to crash if used for highlighting.
+ */
 static gboolean
 find_single_byte_escape (const gchar *string)
 {
@@ -2158,6 +2400,15 @@ regex_new (const gchar           *pattern,
 	return regex;
 }
 
+/**
+ * sub_pattern_to_int:
+ *
+ * @name: the string from lang file.
+ *
+ * Tries to convert %name to a number and assumes
+ * it's a name if that fails. Used for references in
+ * subpattern contexts (e.g. \%{1@start} or \%{blah@start}).
+ */
 static gint
 sub_pattern_to_int (const gchar *name)
 {
@@ -2984,15 +3235,21 @@ segment_new (GtkSourceContextEngine *ce,
 	     Segment                *parent,
 	     Context                *context,
 	     gint                    start_at,
-	     gint                    end_at)
+	     gint                    end_at,
+	     gboolean                is_start)
 {
 	Segment *segment;
+
+#ifdef ENABLE_CHECK_TREE
+	g_assert (!is_start || context != NULL);
+#endif
 
 	segment = g_new0 (Segment, 1);
 	segment->parent = parent;
 	segment->context = context_ref (context);
 	segment->start_at = start_at;
 	segment->end_at = end_at;
+	segment->is_start = is_start;
 
 	if (context == NULL)
 		add_invalid (ce, segment);
@@ -3111,13 +3368,14 @@ create_segment (GtkSourceContextEngine *ce,
 		Context                *context,
 		gint                    start_at,
 		gint                    end_at,
+		gboolean                is_start,
 		Segment                *hint)
 {
 	Segment *segment;
 
 	g_assert (!parent || (parent->start_at <= start_at && end_at <= parent->end_at));
 
-	segment = segment_new (ce, parent, context, start_at, end_at);
+	segment = segment_new (ce, parent, context, start_at, end_at, is_start);
 
 	if (parent != NULL)
 	{
@@ -3272,6 +3530,7 @@ container_context_starts_here (GtkSourceContextEngine  *ce,
         new_segment = create_segment (ce, state, new_context,
 				      line->start_at + *line_pos,
 				      line->start_at + match_end,
+				      TRUE,
 				      ce->priv->hint2);
 	apply_sub_patterns (new_segment, line,
 			    definition->u.start_end.start,
@@ -3321,6 +3580,7 @@ simple_context_starts_here (GtkSourceContextEngine *ce,
         new_segment = create_segment (ce, state, new_context,
 				      line->start_at + *line_pos,
 				      line->start_at + match_end,
+				      TRUE,
 				      ce->priv->hint2);
 	apply_sub_patterns (new_segment, line, definition->u.match, SUB_PATTERN_WHERE_DEFAULT);
 	*line_pos = match_end;
@@ -3787,6 +4047,8 @@ analyze_line (GtkSourceContextEngine *ce,
 	else
 		delete_zero_length_segments (ce, end_segments);
 
+	CHECK_TREE (ce);
+
 	return state;
 }
 
@@ -4183,7 +4445,8 @@ segment_erase_middle_ (GtkSourceContextEngine *ce,
 				   segment->parent,
 				   segment->context,
 				   end,
-				   segment->end_at);
+				   segment->end_at,
+				   FALSE);
 	segment->end_at = start;
 
 	new_segment->next = segment->next;
@@ -4373,9 +4636,16 @@ segment_erase_range_ (GtkSourceContextEngine *ce,
 				  (segment->start_at < start && segment->end_at <= end));
 
 			if (segment->end_at > end)
+			{
+				/* If we erase the beginning, we need to clear
+				 * is_start flag. */
 				segment->start_at = end;
+				segment->is_start = FALSE;
+			}
 			else
+			{
 				segment->end_at = start;
+			}
 		}
 	}
 }
@@ -4690,12 +4960,11 @@ update_syntax (GtkSourceContextEngine *ce,
 			ce->priv->hint2 = NULL;
 
 		state = analyze_line (ce, state, &line);
-		CHECK_TREE (ce);
 
-		{
-			invalid = get_invalid_segment (ce);
-			g_assert (!invalid || invalid->start_at >= line_end_offset);
-		}
+		invalid = get_invalid_segment (ce);
+#ifdef ENABLE_CHECK_TREE
+		g_assert (invalid == NULL || invalid->start_at >= line_end_offset);
+#endif
 
 		/* XXX this is wrong */
 		if (ce->priv->hint2 != NULL)
@@ -4727,7 +4996,11 @@ update_syntax (GtkSourceContextEngine *ce,
 			hint = ce->priv->hint ? ce->priv->hint : state;
 			old_state = get_segment_at_offset (ce, hint, line_end_offset);
 
-			if (old_state->context != state->context)
+			/* We can merge old and new stuff if: contexts are the same,
+			 * and the segment on the next line is continuation of the
+			 * segment from previous line. */
+			if (old_state != state &&
+			    (old_state->context != state->context || state->is_start))
 			{
 				need_invalidate_next = TRUE;
 				next_line_invalid = TRUE;

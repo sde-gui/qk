@@ -1807,7 +1807,7 @@ _gtk_source_language_file_parse_version2 (GtkSourceLanguage       *language,
 			      &loaded_lang_ids, &error);
 
 	if (success)
-		_gtk_source_context_engine_resolve_refs (engine, &error);
+		success = _gtk_source_context_engine_resolve_refs (engine, &error);
 
 	if (success)
 		g_hash_table_foreach_steal (styles,
