@@ -53,9 +53,8 @@ noinst_LTLIBRARIES += libmoo.la
 endif
 
 libmoo_la_LIBADD = $(libs) $(MOO_LIBS)
-libmoo_la_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -no-undefined -avoid-version -export-symbols-regex "^(moo_|ms_).*"
 # libmoo_la_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -no-undefined -avoid-version -export-symbols-regex "^(moo_|ms_).*"
-# libmoo_la_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -no-undefined -avoid-version -export-symbols-regex ".*"
+libmoo_la_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -no-undefined -avoid-version -export-symbols-regex ".*"
 libmoo_la_SOURCES = $(moo_include_headers)
 
 moo_la_ldflags = -no-undefined -module -avoid-version -export-symbols-regex initmoo
