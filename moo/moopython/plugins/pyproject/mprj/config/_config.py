@@ -37,6 +37,10 @@ class Config(Group):
     def load_xml(self, xml):
         Group.load(self, xml)
 
+    def format(self):
+        return '<?xml version="1.0" encoding="UTF-8"?>\n' + \
+                self.get_xml().get_string()
+
     def dump_xml(self):
         return self.get_xml().get_string()
 

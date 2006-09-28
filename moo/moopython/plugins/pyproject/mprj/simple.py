@@ -1,5 +1,6 @@
 import moo
 import os.path
+import shutil
 from moo.utils import _
 
 from mprj.project import Project
@@ -67,7 +68,16 @@ class SimpleProject(Project):
             print_error()
 
     def save_config(self):
-        print self.config.get_xml()
+        try:
+            tmpname = os.path.join(os.path.dirname(self.filename), '.' + os.path.basename(self.filename) + '.tmp')
+            tmp = open(tmpname, "w")
+            tmp.write(self.config.format())
+            tmp.close()
+            shutil.copymode(self.filename, tmpname)
+            shutil.move(self.filename, self.filename + '.bak')
+            shutil.move(tmpname, self.filename)
+        except:
+            print_error()
 
     def options_dialog(self, window):
         dialog = self.create_options_dialog()
