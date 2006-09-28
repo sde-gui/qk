@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <language id="m4" _name="m4" _section="Scripts" version="2.0" mimetypes="application/x-m4">
   <styles>
-    <style id="m4-comment" name="m4-comment" map-to="sh:comment"/>
+    <style id="m4-comment" name="m4-comment" map-to="def:comment"/>
   </styles>
 
   <definitions>
@@ -10,11 +10,13 @@
         <context id="m4-comment" style-ref="m4-comment" end-at-line-end="true">
           <start>dnl</start>
           <include>
-            <context ref="sh:comment:*"/>
+            <context ref="def:line-comment:*"/>
           </include>
         </context>
         <context ref="sh:sh:*"/>
       </include>
     </context>
   </definitions>
+
+  <line-comment start="#"/>
 </language>
