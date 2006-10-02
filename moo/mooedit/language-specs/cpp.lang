@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<language id="cpp" _name="C++" version="2.0" _section="Sources"
-          mimetypes="text/x-c++;text/x-cpp;text/x-chdr;text/x-c++src;text/x-c++hdr">
+<language id="cpp" _name="C++" version="2.0" _section="Sources">
+    <metadata>
+      <property name="mimetypes">text/x-c++;text/x-cpp;text/x-chdr;text/x-c++src;text/x-c++hdr</property>
+      <property name="line-comment-start">//</property>
+      <property name="block-comment-start">/*</property>
+      <property name="block-comment-end">*/</property>
+    </metadata>
+
     <styles>
         <style id="common-defines"  _name="Common defines"  map-to="c:common-defines"/>
     </styles>
@@ -66,7 +72,4 @@
             </include>
         </context>
     </definitions>
-
-    <line-comment start="//"/>
-    <block-comment start="/*" end="*/"/>
 </language>

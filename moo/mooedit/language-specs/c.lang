@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<language id="c" _name="C" version="2.0" _section="Sources"
-          mimetypes="text/x-c;text/x-csrc">
+<language id="c" _name="C" version="2.0" _section="Sources">
+    <metadata>
+      <property name="mimetypes">text/x-c;text/x-csrc</property>
+      <property name="line-comment-start">//</property>
+      <property name="block-comment-start">/*</property>
+      <property name="block-comment-end">*/</property>
+    </metadata>
+
     <styles>
         <style id="comment"           _name="Comment"             map-to="def:comment"/>
         <style id="error"             _name="Error"               map-to="def:error"/>
@@ -223,7 +229,4 @@
             </include>
         </context>
     </definitions>
-
-    <line-comment start="//"/>
-    <block-comment start="/*" end="*/"/>
 </language>
