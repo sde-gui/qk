@@ -3,7 +3,11 @@
     Based on the syntax file for the old engine written by
     Scott Martin (scott@coffeeblack.org).
 -->
-<language id="js" _name="Javascript" version="2.0" _section="Scripts" mimetypes="application/x-javascript;text/x-javascript;text/javascript;text/x-js">
+<language id="js" _name="Javascript" version="2.0" _section="Scripts">
+    <metadata>
+      <property name="mimetypes">application/x-javascript;text/x-javascript;text/javascript;text/x-js</property>
+    </metadata>
+
     <styles>
         <style id="comment"           _name="Comment"
                                       map-to="def:comment"/>

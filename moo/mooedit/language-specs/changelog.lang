@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<language id="changelog" _name="ChangeLog" version="2.0" _section="Others"
-          mimetypes="text/x-changelog">
+<language id="changelog" _name="ChangeLog" version="2.0" _section="Others">
+
+  <metadata>
+    <property name="mimetypes">text/x-changelog</property>
+  </metadata>
 
   <styles>
     <style id="date" name="Date" map-to="def:data-type"/>

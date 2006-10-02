@@ -30,10 +30,6 @@
         </optional>
 
         <optional>
-            <attribute name="mimetypes"/>
-        </optional>
-
-        <optional>
             <ref name="metadata"/>
         </optional>
 
@@ -54,18 +50,6 @@
         </optional>
 
         <ref name="definitions" />
-
-        <optional>
-            <element name="line-comment">
-                <attribute name="start"/>
-            </element>
-        </optional>
-        <optional>
-            <element name="block-comment">
-                <attribute name="start"/>
-                <attribute name="end"/>
-            </element>
-        </optional>
     </element>
 </start>
 
@@ -119,28 +103,24 @@
 </define>
 
 
-<define name="itemInAnotherNamespace">
-    <element>
-        <anyName>
-            <except>
-                <nsName/>
-                <nsName ns=""/>
-            </except>
-        </anyName>
-
-        <zeroOrMore>
-            <ref name="itemInAnotherNamespace"/>
-            <text/>
-        </zeroOrMore>
+<define name="property">
+    <element name="property">
+        <attribute name="name">
+<!--          <data type="string">-->
+<!--              <param name="pattern">([a-zA-Z0-9_]|-)+</param>-->
+<!--          </data>-->
+        </attribute>
+        <text/>
+<!--        <optional>
+            <attribute name="mimetypes"/>
+        </optional>-->
     </element>
 </define>
-
-
 
 <define name="metadata">
     <element name="metadata">
         <zeroOrMore>
-            <ref name="itemInAnotherNamespace"/>
+            <ref name="property"/>
         </zeroOrMore>
     </element>
 </define>

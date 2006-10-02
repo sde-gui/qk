@@ -27,6 +27,9 @@
 
 G_BEGIN_DECLS
 
+#define GTK_SOURCE_LANGUAGE_VERSION_1_0  100
+#define GTK_SOURCE_LANGUAGE_VERSION_2_0  200
+
 struct _GtkSourceLanguagePrivate
 {
 	gchar			*lang_file_name;
@@ -42,11 +45,7 @@ struct _GtkSourceLanguagePrivate
 	gint                     version;
 	gboolean		 hidden;
 
-	GSList			*mime_types;
-
-	gchar			*line_comment;
-	gchar			*block_comment_start;
-	gchar			*block_comment_end;
+	GHashTable		*properties;
 
 	GtkSourceLanguagesManager *languages_manager;
 };

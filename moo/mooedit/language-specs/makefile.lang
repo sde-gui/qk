@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<language id="makefile" _name="Makefile" version="2.0" _section="Sources"
-          mimetypes="text/x-makefile">
+<language id="makefile" _name="Makefile" version="2.0" _section="Sources">
+  <metadata>
+    <property name="mimetypes">text/x-makefile</property>
+    <property name="line-comment-start">#</property>
+  </metadata>
+
   <styles>
     <style id="variable"        name="Variable" map-to="def:data-type"/>
     <style id="assignment-rhs"  name="assignment-rhs"/>
@@ -184,6 +188,4 @@
       </include>
     </context>-->
   </definitions>
-
-  <line-comment start="#"/>
 </language>

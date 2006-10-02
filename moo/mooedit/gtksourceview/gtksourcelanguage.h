@@ -51,9 +51,6 @@ struct _GtkSourceLanguageClass
 	GObjectClass              parent_class;
 };
 
-#define GTK_SOURCE_LANGUAGE_VERSION_1_0  100
-#define GTK_SOURCE_LANGUAGE_VERSION_2_0  200
-
 GType            	 gtk_source_language_get_type 			(void) G_GNUC_CONST;
 
 gchar	 		*gtk_source_language_get_id			(GtkSourceLanguage       *language);
@@ -64,6 +61,8 @@ gint			 gtk_source_language_get_version		(GtkSourceLanguage       *language);
 
 /* Should free the list (and free each string in it also). */
 GSList			*gtk_source_language_get_mime_types		(GtkSourceLanguage       *language);
+const gchar		*gtk_source_language_get_property		(GtkSourceLanguage       *language,
+									 const gchar		 *name);
 
 G_END_DECLS
 

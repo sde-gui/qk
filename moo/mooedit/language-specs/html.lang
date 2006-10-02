@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<language id="html" _name="HTML" version="2.0" _section="Markup"
-          mimetypes="text/html">
+<language id="html" _name="HTML" version="2.0" _section="Markup">
+    <metadata>
+      <property name="mimetypes">text/html</property>
+      <property name="block-comment-start">&lt;!--</property>
+      <property name="block-comment-end">--&gt;</property>
+    </metadata>
+
     <styles>
         <style id="comment"      _name="Comment"
                                  map-to="xml:comment"/>

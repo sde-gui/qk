@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<language id="sh" _name="Shell script" version="2.0" _section="Scripts"
-          mimetypes="text/x-shellscript;application/x-shellscript;text/x-sh">
+<language id="sh" _name="Shell script" version="2.0" _section="Scripts">
 
   <!-- reference used: http://www.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html -->
+
+  <metadata>
+    <property name="mimetypes">text/x-shellscript;application/x-shellscript;text/x-sh</property>
+    <property name="line-comment-start">#</property>
+  </metadata>
 
   <styles>
     <style id="single-quote" _name="Single-quoted string" map-to="def:string"/>
@@ -166,6 +170,4 @@
     </context>
 
   </definitions>
-
-  <line-comment start="#"/>
 </language>

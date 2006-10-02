@@ -1,5 +1,10 @@
 <?xml version="1.0"?>
-<language id="latex" _name="LaTeX" version="2.0" _section="Markup" mimetypes="text/x-tex">
+<language id="latex" _name="LaTeX" version="2.0" _section="Markup">
+    <metadata>
+      <property name="mimetypes">text/x-tex</property>
+      <property name="line-comment-start">%</property>
+    </metadata>
+
     <styles>
         <style id="comment"            _name="Comment"    map-to="def:comment"/>
         <style id="inline-math"        _name="Inline Math Mode"/>
@@ -141,6 +146,4 @@
             </include>
         </context>
     </definitions>
-
-    <line-comment start="%"/>
 </language>

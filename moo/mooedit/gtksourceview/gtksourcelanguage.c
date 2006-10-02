@@ -46,31 +46,6 @@ static void		  gtk_source_language_finalize 		(GObject 			*object);
 static GtkSourceLanguage *process_language_node 		(xmlTextReaderPtr 		 reader,
 								 const gchar 			*filename);
 
-/* Signals */
-enum {
-	LAST_SIGNAL
-};
-
-// static guint 	 signals[LAST_SIGNAL] = { 0 };
-
-
-static GSList *
-slist_deep_copy (GSList *list)
-{
-	GSList *l, *copy = NULL;
-
-	for (l = list; l != NULL; l = l->next)
-		copy = g_slist_prepend (copy, g_strdup (l->data));
-
-	return g_slist_reverse (copy);
-}
-
-static void
-slist_deep_free (GSList *list)
-{
-	g_slist_foreach (list, (GFunc) g_free, NULL);
-	g_slist_free (list);
-}
 
 GtkSourceLanguage *
 _gtk_source_language_new_from_file (const gchar			*filename,
@@ -149,6 +124,7 @@ gtk_source_language_init (GtkSourceLanguage *lang)
 {
 	lang->priv = g_new0 (GtkSourceLanguagePrivate, 1);
 	lang->priv->styles = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+	lang->priv->properties = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 }
 
 static void
@@ -165,11 +141,8 @@ gtk_source_language_finalize (GObject *object)
 		g_free (lang->priv->name);
 		g_free (lang->priv->section);
 		g_free (lang->priv->id);
-		slist_deep_free (lang->priv->mime_types);
+		g_hash_table_destroy (lang->priv->properties);
 		g_hash_table_destroy (lang->priv->styles);
-		g_free (lang->priv->line_comment);
-		g_free (lang->priv->block_comment_start);
-		g_free (lang->priv->block_comment_end);
 		g_free (lang->priv);
 		lang->priv = NULL;
 	}
@@ -177,6 +150,7 @@ gtk_source_language_finalize (GObject *object)
 	G_OBJECT_CLASS (gtk_source_language_parent_class)->finalize (object);
 }
 
+#if 0
 static GSList *
 parse_mime_types (xmlTextReaderPtr reader,
 		  const char      *attr_name)
@@ -201,6 +175,7 @@ parse_mime_types (xmlTextReaderPtr reader,
 
 	return g_slist_reverse (list);
 }
+#endif
 
 static gboolean
 string_to_bool (const gchar *string)
@@ -217,90 +192,64 @@ string_to_bool (const gchar *string)
 		g_return_val_if_reached (FALSE);
 }
 
-static gboolean
-get_attribute (xmlTextReaderPtr   reader,
-	       const gchar       *element,
-	       const gchar       *attribute,
-	       gchar            **dest)
-{
-	xmlChar *tmp = xmlTextReaderGetAttribute (reader, BAD_CAST attribute);
-
-	if (tmp == NULL)
-	{
-		g_warning ("missing %s attribute in %s element",
-			   attribute, element);
-		return FALSE;
-	}
-	else
-	{
-		*dest = g_strdup ((gchar*) tmp);
-		xmlFree (tmp);
-		return TRUE;
-	}
-}
-
 static void
-process_and_comments (xmlTextReaderPtr   reader,
-		      GtkSourceLanguage *language)
+process_properties (xmlTextReaderPtr   reader,
+		    GtkSourceLanguage *language)
 {
 	gint ret;
-	gboolean line_comment_done = FALSE;
-	gboolean block_comment_done = FALSE;
+	xmlNodePtr child;
+	xmlNodePtr node = NULL;
 
-	ret = xmlTextReaderRead (reader);
-
-	while (ret == 1)
+	while (node == NULL && (ret = xmlTextReaderRead (reader)) == 1)
 	{
-		if (xmlTextReaderNodeType (reader) == 1)
+		xmlChar *name;
+
+		if (xmlTextReaderNodeType (reader) != 1)
+			continue;
+
+		name = xmlTextReaderName (reader);
+
+		if (xmlStrcmp (name, BAD_CAST "metadata") != 0)
 		{
-			xmlChar *name;
-
-			name = xmlTextReaderName (reader);
-
-			if (!xmlStrcmp (name, BAD_CAST "line-comment"))
-			{
-				if (line_comment_done)
-				{
-					g_warning ("duplicated %s element", name);
-					ret = 0;
-				}
-				else
-				{
-					if (!get_attribute (reader, "line-comment", "start",
-							    &language->priv->line_comment))
-						ret = 0;
-					else
-						line_comment_done = TRUE;
-				}
-			}
-			else if (!xmlStrcmp (name, BAD_CAST "block-comment"))
-			{
-				if (block_comment_done)
-				{
-					g_warning ("duplicated %s element", name);
-					ret = 0;
-				}
-				else
-				{
-					if (!get_attribute (reader, "block-comment", "start",
-							    &language->priv->block_comment_start))
-						ret = 0;
-					else if (!get_attribute (reader, "block-comment", "end",
-								 &language->priv->block_comment_end))
-						ret = 0;
-					else
-						block_comment_done = TRUE;
-				}
-			}
-
-			if (line_comment_done && block_comment_done)
-				ret = 0;
-
 			xmlFree (name);
+			continue;
 		}
 
-		if (ret == 1)
-			ret = xmlTextReaderRead (reader);
+		xmlFree (name);
+
+		node = xmlTextReaderExpand (reader);
+
+		if (node == NULL)
+			return;
+	}
+
+	if (node == NULL)
+		return;
+
+	for (child = node->children; child != NULL; child = child->next)
+	{
+		xmlChar *name;
+		xmlChar *content;
+
+		if (child->type != XML_ELEMENT_NODE)
+			continue;
+
+		if (xmlStrcmp (child->name, BAD_CAST "property") != 0)
+		{
+			g_warning ("unknown element %s", (char*) child->name);
+			continue;
+		}
+
+		name = xmlGetProp (child, BAD_CAST "name");
+		content = xmlNodeGetContent (child);
+
+		if (name != NULL && content != NULL)
+			g_hash_table_insert (language->priv->properties,
+					     g_strdup ((char*) name),
+					     g_strdup ((char*) content));
+
+		xmlFree (name);
+		xmlFree (content);
 	}
 }
 
@@ -411,10 +360,8 @@ process_language_node (xmlTextReaderPtr reader, const gchar *filename)
 
 	xmlFree (version);
 
-	lang->priv->mime_types = parse_mime_types (reader, "mimetypes");
-
 	if (lang->priv->version == GTK_SOURCE_LANGUAGE_VERSION_2_0)
-		process_and_comments (reader, lang);
+		process_properties (reader, lang);
 
 	return lang;
 }
@@ -492,9 +439,46 @@ gtk_source_language_get_version (GtkSourceLanguage *language)
 GSList *
 gtk_source_language_get_mime_types (GtkSourceLanguage *language)
 {
+	const gchar *prop;
+	gchar **mtl;
+	gint i;
+	GSList *list = NULL;
+
 	g_return_val_if_fail (GTK_IS_SOURCE_LANGUAGE (language), NULL);
 
-	return slist_deep_copy (language->priv->mime_types);
+	prop = gtk_source_language_get_property (language, "mimetypes");
+
+	if (!prop)
+		return NULL;
+
+	mtl = g_strsplit_set (prop, ";,", 0);
+
+	for (i = 0; mtl[i] != NULL; i++)
+		/* steal the strings from the array */
+		list = g_slist_prepend (list, mtl[i]);
+
+	g_free (mtl);
+
+	return g_slist_reverse (list);
+}
+
+/**
+ * gtk_source_language_get_property:
+ *
+ * @language: a #GtkSourceLanguage.
+ * @name: property name.
+ *
+ * Returns value of property %name if it's set in the lang file
+ * and NULL otherwise.
+ **/
+const gchar *
+gtk_source_language_get_property (GtkSourceLanguage *language,
+				  const gchar       *name)
+{
+	g_return_val_if_fail (GTK_IS_SOURCE_LANGUAGE (language), NULL);
+	g_return_val_if_fail (name != NULL, NULL);
+
+	return g_hash_table_lookup (language->priv->properties, name);
 }
 
 /**
