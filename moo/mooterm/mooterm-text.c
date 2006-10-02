@@ -1305,7 +1305,9 @@ moo_term_get_text (MooTermIter    *start,
                    MooTermIter    *end)
 {
     /* XXX check iters */
-    Segment segm = {*start, *end};
+    Segment segm;
+    segm.start = *start;
+    segm.end = *end;
     return segment_get_text (&segm);
 }
 
