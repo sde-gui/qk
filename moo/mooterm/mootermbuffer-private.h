@@ -139,7 +139,7 @@ void    _moo_term_buffer_set_tab_stop           (MooTermBuffer  *buf);
 
 void    _moo_term_buffer_select_charset         (MooTermBuffer  *buf,
                                                  guint           set_num,
-                                                 guint           charset);
+                                                 CharsetType     charset);
 void    _moo_term_buffer_shift                  (MooTermBuffer  *buf,
                                                  guint           set);
 void    _moo_term_buffer_single_shift           (MooTermBuffer  *buf,
