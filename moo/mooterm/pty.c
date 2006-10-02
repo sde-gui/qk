@@ -45,10 +45,14 @@
 #define G_GNUC_NO_INSTRUMENT
 #endif  /* !__GNUC__ */
 
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif /*  HAVE_CONFIG_H */
+
+#ifdef HAVE_PTSNAME_R
+#define _GNU_SOURCE
+#include <stdlib.h>
+#endif
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
@@ -59,6 +63,7 @@
 #ifdef HAVE_TERMIOS_H
 #include <termios.h>
 #endif
+
 #include <sys/uio.h>
 #include <sys/wait.h>
 #include <errno.h>
