@@ -127,6 +127,7 @@ xdg_mime_init_from_directory (const char *directory)
 
   assert (directory != NULL);
 
+#ifdef HAVE_MMAP
   file_name = malloc (strlen (directory) + strlen ("/mime/mime.cache") + 1);
   strcpy (file_name, directory); strcat (file_name, "/mime/mime.cache");
   if (stat (file_name, &st) == 0)
@@ -150,6 +151,7 @@ xdg_mime_init_from_directory (const char *directory)
 	}
     }
   free (file_name);
+#endif /* HAVE_MMAP */
 
   file_name = malloc (strlen (directory) + strlen ("/mime/globs") + 1);
   strcpy (file_name, directory); strcat (file_name, "/mime/globs");
@@ -325,6 +327,7 @@ xdg_check_dir (const char *directory,
 
   assert (directory != NULL);
 
+#ifdef HAVE_MMAP
   /* Check the mime.cache file */
   file_name = malloc (strlen (directory) + strlen ("/mime/mime.cache") + 1);
   strcpy (file_name, directory); strcat (file_name, "/mime/mime.cache");
@@ -337,6 +340,7 @@ xdg_check_dir (const char *directory,
     }
   else if (exists)
     return FALSE;
+#endif
 
   /* Check the globs file */
   file_name = malloc (strlen (directory) + strlen ("/mime/globs") + 1);
