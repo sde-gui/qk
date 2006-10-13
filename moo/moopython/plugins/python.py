@@ -147,8 +147,13 @@ class Plugin(moo.edit.Plugin):
 
     def run_file(self, window):
         doc = window.get_active_doc()
-        if not doc or not doc.save():
+
+        if not doc:
             return
+        if not doc.get_filename() or doc.get_status() & moo.edit.EDIT_MODIFIED:
+            if not doc.save():
+                return
+
         pane = self.ensure_output(window)
 
         if pane.output.running():
