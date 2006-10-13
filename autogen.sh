@@ -2,13 +2,14 @@
 
 builddir=`pwd`
 
-srcdir=`dirname $0`
-test -z "$srcdir" && srcdir=.
+rel_srcdir=`dirname $0`
+test -z "$rel_srcdir" && rel_srcdir=.
 
-srcdir=`cd $srcdir && pwd`
+srcdir=`cd $rel_srcdir && pwd`
+echo "srcdir=" $srcdir
 
-if test -d $srcdir/m4 ; then
-    m4dir=`cd $srcdir/m4 && pwd`
+if test -d $rel_srcdir/m4 ; then
+    m4dir=`cd $rel_srcdir/m4 && pwd`
     aclocal_extra="-I $m4dir"
 fi
 
@@ -46,7 +47,7 @@ $AUTOCONF || exit $?
 
 if test -z $1; then
     echo
-    echo "run '$srcdir/configure ; make ; make install'"
+    echo "run '$rel_srcdir/configure ; make ; make install'"
     echo
 else
     if test $1 = "do" -o $1 = "--do"; then

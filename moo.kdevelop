@@ -35,7 +35,7 @@
   <kdevautoproject>
     <general>
       <activetarget>moo/libmoo.la</activetarget>
-      <useconfiguration>debug</useconfiguration>
+      <useconfiguration>gtk-cvs</useconfiguration>
     </general>
     <run>
       <mainprogram>tests/medit</mainprogram>
