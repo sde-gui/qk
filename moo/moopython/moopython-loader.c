@@ -97,13 +97,14 @@ static void
 sys_path_add_plugin_dirs (void)
 {
     char **d;
-    char **dirs = moo_plugin_get_dirs ();
+    char **dirs;
     static gboolean been_here = FALSE;
 
     if (been_here)
         return;
 
     been_here = TRUE;
+    dirs = moo_plugin_get_dirs ();
 
     for (d = dirs; d && *d; ++d)
     {
