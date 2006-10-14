@@ -1191,12 +1191,11 @@ moo_ui_xml_remove_ui (MooUIXML       *xml,
     g_return_if_fail (merge != NULL);
 
     nodes = g_slist_copy (merge->nodes);
-
-    SLIST_FOREACH (nodes, l)
+    while (nodes)
     {
-        moo_ui_xml_remove_node (xml, l->data);
+        moo_ui_xml_remove_node (xml, nodes->data);
+        nodes = g_slist_delete_link (nodes, nodes);
     }
-    SLIST_FOREACH_END;
 
     g_return_if_fail (merge->nodes == NULL);
     xml->priv->merged_ui = g_slist_remove (xml->priv->merged_ui, merge);
