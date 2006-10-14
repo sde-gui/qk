@@ -2215,7 +2215,7 @@ _create_icon_for_mime_type (GtkIconTheme   *icon_theme,
     GdkPixbuf *pixbuf;
     char **parent_types;
 
-    if (mime_type == MIME_TYPE_UNKNOWN)
+    if (!strcmp (mime_type, MIME_TYPE_UNKNOWN))
         return _create_icon_simple (icon_theme, MOO_ICON_FILE, NULL,
                                     widget, size);
 
@@ -2269,7 +2269,7 @@ _create_icon_for_mime_type (GtkIconTheme   *icon_theme,
 #ifndef __WIN32__
     parent_types = xdg_mime_list_mime_parents (mime_type);
 
-    if (parent_types && parent_types[0])
+    if (parent_types && parent_types[0] && strcmp (parent_types[0], MIME_TYPE_UNKNOWN) != 0)
         pixbuf = _create_icon_for_mime_type (icon_theme, parent_types[0],
                                              widget, size, pixel_size);
 
