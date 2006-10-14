@@ -231,14 +231,9 @@ process_properties (xmlTextReaderPtr   reader,
 		xmlChar *name;
 		xmlChar *content;
 
-		if (child->type != XML_ELEMENT_NODE)
+		if (child->type != XML_ELEMENT_NODE ||
+		    xmlStrcmp (child->name, BAD_CAST "property") != 0)
 			continue;
-
-		if (xmlStrcmp (child->name, BAD_CAST "property") != 0)
-		{
-			g_warning ("unknown element %s", (char*) child->name);
-			continue;
-		}
 
 		name = xmlGetProp (child, BAD_CAST "name");
 		content = xmlNodeGetContent (child);
