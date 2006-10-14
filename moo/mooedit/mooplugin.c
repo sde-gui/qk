@@ -188,6 +188,7 @@ moo_plugin_finalize (GObject *object)
     if (plugin->langs)
         g_hash_table_destroy (plugin->langs);
 
+    g_free (plugin->id);
     moo_plugin_info_free (plugin->info);
     moo_plugin_params_free (plugin->params);
 
