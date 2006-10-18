@@ -90,11 +90,6 @@ enum {
 static guint signals[LAST_SIGNAL];
 
 
-enum {
-    PROP_0,
-};
-
-
 /* MOO_TYPE_CMD */
 G_DEFINE_TYPE (MooCmd, _moo_cmd, G_TYPE_OBJECT)
 
@@ -482,7 +477,7 @@ moo_cmd_run_command (MooCmd     *cmd,
     struct {
         GSpawnChildSetupFunc child_setup;
         gpointer user_data;
-    } data = {child_setup, user_data};
+    } data;
 #endif
 
     g_return_val_if_fail (MOO_IS_CMD (cmd), FALSE);
@@ -510,6 +505,11 @@ moo_cmd_run_command (MooCmd     *cmd,
     }
 
     new_env = _moo_env_add (envp);
+
+#ifndef __WIN32__
+    data.child_setup = child_setup;
+    data.user_data = user_data;
+#endif
 
 #if 0 && defined(__WIN32__)
     if (!(cmd_flags & MOO_CMD_OPEN_CONSOLE))

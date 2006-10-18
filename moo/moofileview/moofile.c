@@ -128,7 +128,6 @@ static gboolean moo_folder_do_reload        (MooFolder  *folder);
 
 static void     stop_populate               (MooFolder  *folder);
 
-// static GSList  *files_list_copy             (GSList     *list);
 static void     files_list_free             (GSList    **list);
 
 static gboolean get_icons_a_bit             (MooFolder  *folder);
@@ -159,15 +158,9 @@ static void diff_hash_tables    (GHashTable *table1,
 
 static MooFile  *moo_file_new               (const char     *dirname,
                                              const char     *basename);
-// #ifdef __WIN32__
-// #define moo_file_stat moo_file_stat_win32
-// static void      moo_file_stat_win32        (MooFile        *file,
-//                                              const char     *dirname);
-// #else
 #define moo_file_stat moo_file_stat_unix
 static void      moo_file_stat_unix         (MooFile        *file,
                                              const char     *dirname);
-// #endif
 
 
 /* MOO_TYPE_FOLDER */
@@ -664,7 +657,8 @@ get_mime_type (MooFile    *file,
     if (!file->mime_type || !file->mime_type[0])
     {
         /* this should not happen */
-//         g_message ("%s: oops, %s", G_STRLOC, file->display_name);
+        if (0)
+            g_message ("%s: oops, %s", G_STRLOC, file->display_name);
         file->mime_type = MIME_TYPE_UNKNOWN;
     }
 
@@ -1563,15 +1557,6 @@ _moo_folder_get_path (MooFolder *folder)
 }
 
 
-// static GSList  *files_list_copy             (GSList     *list)
-// {
-//     GSList *copy, *l;
-//     for (copy = NULL, l = list; l != NULL; l = l->next)
-//         copy = g_slist_prepend (copy, _moo_file_ref (l->data));
-//     return g_slist_reverse (copy);
-// }
-
-
 static void
 files_list_free (GSList **list)
 {
@@ -1622,9 +1607,12 @@ get_unique (GHashTable *table1,
     struct {
         GSList *list;
         GHashTable *table2;
-    } data = {NULL, table2};
+    } data;
 
+    data.list = NULL;
+    data.table2 = table2;
     g_hash_table_foreach (table1, (GHFunc) check_unique, &data);
+
     *only_1 = data.list;
 }
 
@@ -2131,28 +2119,28 @@ _create_named_icon (GtkIconTheme   *icon_theme,
 
     pixbuf = gtk_icon_theme_load_icon (icon_theme, name, pixel_size, 0, NULL);
 
-//     if (!pixbuf)
-//         g_warning ("could not load '%s' icon", name);
+    if (!pixbuf && 0)
+        g_warning ("could not load '%s' icon", name);
 
     if (!pixbuf && fallback_name)
     {
         pixbuf = gtk_icon_theme_load_icon (icon_theme, fallback_name, pixel_size, 0, NULL);
-//         if (!pixbuf)
-//             g_warning ("could not load '%s' icon", fallback_name);
+        if (!pixbuf && 0)
+            g_warning ("could not load '%s' icon", fallback_name);
     }
 
     if (!pixbuf && fallback_stock)
     {
         pixbuf = gtk_widget_render_icon (widget, fallback_stock, size, NULL);
-//         if (!pixbuf)
-//             g_warning ("could not load stock '%s' icon", fallback_stock);
+        if (!pixbuf && 0)
+            g_warning ("could not load stock '%s' icon", fallback_stock);
     }
 
     if (!pixbuf)
     {
         pixbuf = gtk_widget_render_icon (widget, GTK_STOCK_FILE, size, NULL);
-//         if (!pixbuf)
-//             g_warning ("could not load stock '%s' icon", GTK_STOCK_FILE);
+        if (!pixbuf && 0)
+            g_warning ("could not load stock '%s' icon", GTK_STOCK_FILE);
     }
 
     return pixbuf;

@@ -1158,7 +1158,6 @@ completion_create_popup (MooFileEntryCompletion *cmpl)
     gtk_widget_set_size_request (GTK_WIDGET (cmpl->priv->treeview), -1, -1);
     gtk_tree_view_append_column (cmpl->priv->treeview, cmpl->priv->column);
     gtk_tree_view_set_headers_visible (cmpl->priv->treeview, FALSE);
-//     gtk_tree_view_set_hover_selection (cmpl->priv->treeview, TRUE);
 
     selection = gtk_tree_view_get_selection (cmpl->priv->treeview);
     gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
@@ -1167,8 +1166,6 @@ completion_create_popup (MooFileEntryCompletion *cmpl)
     gtk_widget_set_size_request (scrolled_window, -1, -1);
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
                                     GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-//     gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolled_window),
-//                                          GTK_SHADOW_ETCHED_IN);
     gtk_container_add (GTK_CONTAINER (scrolled_window), GTK_WIDGET (cmpl->priv->treeview));
 
     frame = gtk_frame_new (NULL);

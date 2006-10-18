@@ -531,8 +531,6 @@ moo_command_exe_class_init (MooCommandExeClass *klass)
     type = g_object_new (_moo_command_type_exe_get_type (), NULL);
     moo_command_type_register ("exe", _("Shell command"), type, (char**) data_keys);
     g_object_unref (type);
-
-//     moo_command_filter_register ("something", _("Something"), SOME_TYPE);
 }
 
 

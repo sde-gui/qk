@@ -43,7 +43,7 @@ typedef struct {
 
 static FilterStore filter_store;
 
-G_DEFINE_TYPE (MooEditAction, moo_edit_action, MOO_TYPE_ACTION);
+G_DEFINE_TYPE (MooEditAction, moo_edit_action, MOO_TYPE_ACTION)
 
 enum {
     PROP_0,

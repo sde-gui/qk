@@ -114,7 +114,7 @@ struct _WidgetProps {
 
 typedef enum {
     PACK_PROP_LABEL_ITEM    = 1 << 0,
-    PACK_PROP_TAB           = 1 << 1,
+    PACK_PROP_TAB           = 1 << 1
 } PackPropMask;
 
 struct _PackingProps {
@@ -430,7 +430,7 @@ set_custom_props (MooGladeXML    *xml,
                   !xml->priv->prop_func (xml, node->id, node->widget,
                                          prop, value, xml->priv->prop_func_data))
         {
-//             g_message ("%s: unknown property '%s'", G_STRLOC, prop);
+            /* g_message ("%s: unknown property '%s'", G_STRLOC, prop); */
         }
     }
 }
@@ -1389,8 +1389,10 @@ widget_props_add (WidgetProps  *props,
     else if (!strcmp (name, "items") &&
              GTK_IS_COMBO_BOX_CLASS (klass))
     {
+#if 0
 //         if (value && value[0])
 //             g_message ("%s: ignoring ComboBox items property", G_STRLOC);
+#endif
     }
 #endif /* GTK_CHECK_VERSION(2,4,0) */
     else
@@ -1552,8 +1554,14 @@ widget_props_new (MooMarkupNode  *node,
             gboolean result;
             gboolean ignore_errors;
             GError **error;
-        } data = {props, params, klass, TRUE, ignore_errors, error};
+        } data;
 
+        data.props = props;
+        data.params = params;
+        data.klass = klass;
+        data.result = TRUE;
+        data.ignore_errors = ignore_errors;
+        data.error = error;
         g_hash_table_foreach (add_props, (GHFunc) widget_props_add_one, &data);
 
         if (!data.result)

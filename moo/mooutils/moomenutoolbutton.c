@@ -20,13 +20,6 @@ enum {
     PROP_MENU
 };
 
-// enum {
-//     ACCEL_SET,
-//     LAST_SIGNAL
-// };
-
-// static guint signals[LAST_SIGNAL] = {0};
-
 
 static void moo_menu_tool_button_class_init (MooMenuToolButtonClass *klass);
 static void moo_menu_tool_button_init       (MooMenuToolButton      *button);
@@ -41,12 +34,8 @@ G_DEFINE_TYPE(MooMenuToolButton, moo_menu_tool_button, GTK_TYPE_TOGGLE_TOOL_BUTT
 static void
 moo_menu_tool_button_class_init (MooMenuToolButtonClass *klass)
 {
-//     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkObjectClass *gtkobject_class = GTK_OBJECT_CLASS (klass);
     GtkToggleToolButtonClass *toggle_class = GTK_TOGGLE_TOOL_BUTTON_CLASS (klass);
-//     GtkToolButtonClass *button_class = GTK_TOOL_BUTTON_CLASS (klass);
-//     GtkToolItemClass *item_class = GTK_TOOL_ITEM_CLASS (klass);
-
     gtkobject_class->destroy = moo_menu_tool_button_destroy;
     toggle_class->toggled = moo_menu_tool_button_toggled;
 }

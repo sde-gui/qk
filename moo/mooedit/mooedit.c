@@ -285,8 +285,6 @@ moo_edit_constructor (GType                  type,
                               G_CALLBACK (line_mark_deleted),
                               edit);
 
-//     g_object_set (edit, "enable-folding", TRUE, NULL);
-
     return object;
 }
 
@@ -1409,9 +1407,6 @@ moo_edit_add_bookmark (MooEdit *edit,
     bk = g_object_new (MOO_TYPE_EDIT_BOOKMARK, NULL);
     moo_text_buffer_add_line_mark (get_moo_buffer (edit), MOO_LINE_MARK (bk), line);
     g_object_set_data (G_OBJECT (bk), "moo-edit-bookmark", GINT_TO_POINTER (TRUE));
-
-    // bk->text = ???
-    // background
 
     if (!edit->priv->update_bookmarks_idle)
         edit->priv->bookmarks =

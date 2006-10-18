@@ -572,8 +572,6 @@ moo_find_set_flags (MooFind        *find,
                                   (flags & MOO_FIND_FROM_CURSOR) ? TRUE : FALSE);
     gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "backwards"),
                                   (flags & MOO_FIND_BACKWARDS) ? TRUE : FALSE);
-//     gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "selected"),
-//                                   (flags & MOO_FIND_IN_SELECTED) ? TRUE : FALSE);
     gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "dont_prompt"),
                                   (flags & MOO_FIND_DONT_PROMPT) ? TRUE : FALSE);
 
@@ -1159,12 +1157,16 @@ do_replace_interactive (GtkTextView       *view,
         GtkTextView *view;
         GtkWidget *dialog;
         MooTextReplaceResponse response;
-    } data = {view, NULL, MOO_TEXT_REPLACE_DO_REPLACE};
+    } data;
 
     if (flags & MOO_FIND_CASELESS)
         search_flags |= MOO_TEXT_SEARCH_CASELESS;
     if (flags & MOO_FIND_WHOLE_WORDS)
         search_flags |= MOO_TEXT_SEARCH_WHOLE_WORDS;
+
+    data.view = view;
+    data.dialog = NULL;
+    data.response = MOO_TEXT_REPLACE_DO_REPLACE;
 
     if (regex)
         *replaced = _moo_text_replace_regex_all_interactive (start, end, regex, replacement,

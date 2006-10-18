@@ -27,6 +27,82 @@
 #endif
 
 
+#if 1
+static void
+init_mem_stuff (void)
+{
+}
+#else
+#define ALIGN 4
+#include <libxml/xmlmemory.h>
+
+static gpointer
+my_malloc (gsize n_bytes)
+{
+    char *mem = malloc (n_bytes + ALIGN);
+    return mem ? mem + ALIGN : NULL;
+}
+
+static gpointer
+my_realloc (gpointer mem,
+	    gsize    n_bytes)
+{
+    if (mem)
+    {
+        char *new_mem = realloc ((char*) mem - ALIGN, n_bytes + ALIGN);
+        return new_mem ? new_mem + ALIGN : NULL;
+    }
+    else
+    {
+        return my_malloc (n_bytes);
+    }
+}
+
+static char *
+my_strdup (const char *s)
+{
+    if (s)
+    {
+        char *new_s = my_malloc (strlen (s) + 1);
+        strcpy (new_s, s);
+        return new_s;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+static void
+my_free (gpointer mem)
+{
+    if (mem)
+        free ((char*) mem - ALIGN);
+}
+
+static void
+init_mem_stuff (void)
+{
+    GMemVTable mem_table = {
+        my_malloc,
+        my_realloc,
+        my_free,
+        NULL, NULL, NULL
+    };
+
+    if (0)
+    {
+        g_mem_set_vtable (&mem_table);
+        g_slice_set_config (G_SLICE_CONFIG_ALWAYS_MALLOC, TRUE);
+    }
+    else
+    {
+        xmlMemSetup (my_free, my_malloc, my_realloc, my_strdup);
+    }
+}
+#endif
+
+
 typedef enum {
     MODE_SIMPLE,
     MODE_PROJECT
@@ -153,10 +229,14 @@ main (int argc, char *argv[])
     guint32 line = 0;
     const char *pid_string = NULL;
 
+    init_mem_stuff ();
+
     gtk_init (&argc, &argv);
     stamp = TIMESTAMP;
 
-//     gdk_window_set_debug_updates (TRUE);
+#if 0
+    gdk_window_set_debug_updates (TRUE);
+#endif
 
     opt_remain = _medit_parse_options (g_get_prgname (), argc, argv);
     check_args (opt_remain);

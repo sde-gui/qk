@@ -207,6 +207,7 @@ moo_edit_script_context_new (GtkTextView *doc,
 }
 
 
+#if 0
 // MSContext *
 // moo_text_context_new (GtkTextView *doc)
 // {
@@ -292,6 +293,7 @@ moo_edit_script_context_new (GtkTextView *doc,
 //
 //     moo_edit_set_shell_vars (cmd, doc, window);
 // }
+#endif
 
 
 /******************************************************************/

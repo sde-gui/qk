@@ -90,57 +90,6 @@ _moo_lang_get_mgr (MooLang *lang)
 }
 
 
-void
-_moo_lang_parse_file (MooLang *lang)
-{
-    GtkSourceLanguage *slang;
-    xmlTextReaderPtr reader;
-    int ret;
-    int fd;
-
-    g_return_if_fail (MOO_IS_LANG (lang));
-
-    slang = GTK_SOURCE_LANGUAGE (lang);
-    g_return_if_fail (slang->priv->lang_file_name != NULL);
-
-    fd = g_open (slang->priv->lang_file_name, O_RDONLY, 0);
-    g_return_if_fail (fd != -1);
-
-    reader = xmlReaderForFd (fd, slang->priv->lang_file_name, NULL, 0);
-
-    if (!reader)
-    {
-        g_critical ("%s: oops", G_STRLOC);
-        close (fd);
-        return;
-    }
-
-    ret = xmlTextReaderRead (reader);
-
-    while (ret == 1)
-    {
-    	if (xmlTextReaderNodeType (reader) == XML_READER_TYPE_ELEMENT)
-    	{
-    		xmlChar *name = xmlTextReaderName (reader);
-
-    		if (xmlStrcmp (name, BAD_CAST "language") == 0)
-    		{
-//     			read_language_node (lang, reader, slang->priv->lang_file_name);
-    			ret = 0;
-    		}
-
-    		xmlFree (name);
-    	}
-
-    	if (ret == 1)
-            ret = xmlTextReaderRead (reader);
-    }
-
-    xmlFreeTextReader (reader);
-    close (fd);
-}
-
-
 const char *
 _moo_lang_id (MooLang *lang)
 {

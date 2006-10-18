@@ -769,7 +769,7 @@ moo_menu_mgr_set_active (MooMenuMgr         *mgr,
 {
     GNode *node;
     Item *item;
-    gpointer callback;
+    GCallback callback;
     GSList *l;
 
     g_return_if_fail (MOO_IS_MENU_MGR (mgr));
@@ -789,11 +789,11 @@ moo_menu_mgr_set_active (MooMenuMgr         *mgr,
         if (mgr->priv->frozen)
             return;
 
-        callback = radio_item_toggled;
+        callback = (GCallback) radio_item_toggled;
     }
     else
     {
-        callback = check_item_toggled;
+        callback = (GCallback) check_item_toggled;
     }
 
     for (l = mgr->priv->menus; l != NULL; l = l->next)
@@ -804,9 +804,9 @@ moo_menu_mgr_set_active (MooMenuMgr         *mgr,
         m_item = g_hash_table_lookup (m->items, item);
         g_return_if_fail (m_item != NULL);
 
-        g_signal_handlers_block_by_func (m_item, callback, mgr);
+        g_signal_handlers_block_by_func (m_item, (gpointer) callback, mgr);
         gtk_check_menu_item_set_active (m_item, active);
-        g_signal_handlers_unblock_by_func (m_item, callback, mgr);
+        g_signal_handlers_unblock_by_func (m_item, (gpointer) callback, mgr);
     }
 
     if (item->flags & MOO_MENU_ITEM_RADIO)

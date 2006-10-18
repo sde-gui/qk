@@ -1079,9 +1079,9 @@ process_incoming (MooTerm *term)
 {
     gboolean done;
 
-//     if (term->priv->incoming->len > 2*INPUT_CHUNK_SIZE)
-//         g_print ("process_incoming: %d chars\n",
-//                  term->priv->incoming->len);
+    if (0 && term->priv->incoming->len > 2*INPUT_CHUNK_SIZE)
+        g_print ("process_incoming: %d chars\n",
+                 term->priv->incoming->len);
 
     done = !term->priv->incoming->len ||
                 _moo_term_parser_parse (term->priv->parser,
@@ -1122,7 +1122,9 @@ moo_term_feed (MooTerm    *term,
     if (len < 0)
         len = strlen (data);
 
-//     g_print ("moo_term_feed: %d chars\n", len);
+    if (0)
+        g_print ("moo_term_feed: %d chars\n", len);
+
     g_string_append_len (term->priv->incoming, data, len);
 
     if (!term->priv->process_timeout)

@@ -45,7 +45,6 @@ struct _MooLangClass {
 
 GtkSourceEngine *_moo_lang_get_engine   (MooLang    *lang);
 MooLangMgr      *_moo_lang_get_mgr      (MooLang    *lang);
-void             _moo_lang_parse_file   (MooLang    *lang);
 
 
 G_END_DECLS

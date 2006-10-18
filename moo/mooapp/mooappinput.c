@@ -168,8 +168,10 @@ static void
 commit (MooAppInput *self)
 {
     _moo_app_input_ref (self);
-//     g_print ("%s: commit %c\n%s\n-----\n", G_STRLOC,
-//              self->buffer->str[0], self->buffer->str + 1);
+
+    if (0)
+        g_print ("%s: commit %c\n%s\n-----\n", G_STRLOC,
+                 self->buffer->str[0], self->buffer->str + 1);
 
     if (!self->buffer->len)
         g_warning ("%s: got empty command", G_STRLOC);
@@ -698,7 +700,8 @@ read_input (GIOChannel   *source,
                 break;
 
             case 0:
-//                 g_print ("%s: got nothing\n", G_STRLOC);
+                if (0)
+                    g_print ("%s: got nothing\n", G_STRLOC);
                 again = FALSE;
                 break;
 

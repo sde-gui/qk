@@ -74,7 +74,7 @@ typedef struct {
 typedef MooEditActionClass MooToolActionClass;
 
 GType _moo_tool_action_get_type (void) G_GNUC_CONST;
-G_DEFINE_TYPE (MooToolAction, _moo_tool_action, MOO_TYPE_EDIT_ACTION);
+G_DEFINE_TYPE (MooToolAction, _moo_tool_action, MOO_TYPE_EDIT_ACTION)
 #define MOO_TYPE_TOOL_ACTION    (_moo_tool_action_get_type())
 #define MOO_IS_TOOL_ACTION(obj) (G_TYPE_CHECK_INSTANCE_TYPE (obj, MOO_TYPE_TOOL_ACTION))
 #define MOO_TOOL_ACTION(obj)    (G_TYPE_CHECK_INSTANCE_CAST (obj, MOO_TYPE_TOOL_ACTION, MooToolAction))

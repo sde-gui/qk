@@ -33,8 +33,6 @@ _moo_app_mod_init (void)
     if (!mod)
         return FALSE;
 
-
-//     _moo_app_add_constants (mod, "MOO_");
     _moo_app_register_classes (PyModule_GetDict (mod));
 
     if (!PyErr_Occurred ())

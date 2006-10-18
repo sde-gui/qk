@@ -146,62 +146,6 @@ void            _moo_tree_view_set_drag_dest_row    (gpointer        view,
                                                      GtkTreePath    *path);
 
 
-// void            _moo_tree_view_set_selection_mode   (MooTreeView    *view,
-//                                                      GtkSelectionMode mode);
-// gboolean        _moo_tree_view_get_selected         (MooTreeView    *view,
-//                                                      GtkTreeIter    *iter);
-// GtkTreePath    *_moo_tree_view_get_selected_path    (MooTreeView    *view);
-// gint            _moo_tree_view_count_selected_rows  (MooTreeView    *view);
-// void            _moo_tree_view_select_path          (MooTreeView    *view,
-//                                                      GtkTreePath    *path);
-// void            _moo_tree_view_unselect_path        (MooTreeView    *view,
-//                                                      GtkTreePath    *path);
-// void            _moo_tree_view_select_range         (MooTreeView    *view,
-//                                                      GtkTreePath    *start,
-//                                                      GtkTreePath    *end);
-// gboolean        _moo_tree_view_path_is_selected     (MooTreeView    *view,
-//                                                      GtkTreePath    *path);
-// void            _moo_tree_view_select_all           (MooTreeView    *view);
-// void            _moo_tree_view_unselect_all         (MooTreeView    *view);
-//
-// void            _moo_tree_view_scroll_to_cell       (MooTreeView    *view,
-//                                                      GtkTreePath    *path);
-// void            _moo_tree_view_set_cursor           (MooTreeView    *view,
-//                                                      GtkTreePath    *path,
-//                                                      gboolean        start_editing);
-// GtkTreePath    *_moo_tree_view_get_cursor           (MooTreeView    *view);
-// void            _moo_tree_view_row_activated        (MooTreeView    *view,
-//                                                      GtkTreePath    *path);
-//
-// // gboolean        _moo_tree_view_get_path_at_pos      (MooTreeView    *view,
-// //                                                      int             x,
-// //                                                      int             y,
-// //                                                      GtkTreePath   **path,
-// //                                                      MooTreeViewCell *cell,
-// //                                                      int            *cell_x,
-// //                                                      int            *cell_y);
-//
-// void            _moo_tree_view_enable_drag_source   (MooTreeView    *view,
-//                                                      GdkModifierType start_button_mask,
-//                                                      GtkTargetEntry *targets,
-//                                                      gint            n_targets,
-//                                                      GdkDragAction   actions);
-// GtkTargetList  *_moo_tree_view_get_source_targets   (MooTreeView    *view);
-// void            _moo_tree_view_disable_drag_source  (MooTreeView    *view);
-//
-// void            _moo_tree_view_enable_drag_dest     (MooTreeView    *view,
-//                                                      GtkTargetEntry *targets,
-//                                                      gint            n_targets,
-//                                                      GdkDragAction   actions);
-// void            _moo_tree_view_set_dest_targets     (MooTreeView    *view,
-//                                                      GtkTargetList  *targets);
-// void            _moo_tree_view_disable_drag_dest    (MooTreeView    *view);
-//
-// void            _moo_tree_view_set_drag_dest_row    (MooTreeView    *view,
-//                                                      GtkTreePath    *path);
-// GtkTreePath    *_moo_tree_view_get_drag_dest_row    (MooTreeView    *view);
-
-
 G_END_DECLS
 
 #endif /* __MOO_TREE_VIEW_H__ */

@@ -539,8 +539,6 @@ moo_edit_question_dialog (MooEdit    *edit,
                                              -1);
 #endif /* GTK_CHECK_VERSION(2,6,0) */
 
-//     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_YES);
-
     res = gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);
 

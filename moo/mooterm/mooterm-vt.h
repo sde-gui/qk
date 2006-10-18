@@ -369,7 +369,7 @@ typedef enum {
     CODE_DECSCPP,       /* Set Columns Per Page */
     CODE_DECSLPP,       /* Set Lines Per Page */
     CODE_DECSNLS,       /* Set Number of Lines per Screen */
-    CODE_DECSTBM,       /* Set Top and Bottom Margins */
+    CODE_DECSTBM        /* Set Top and Bottom Margins */
 } DECRQSSCode;
 
 #define FINAL_DECSASD   "$g"

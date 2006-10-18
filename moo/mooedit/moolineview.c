@@ -55,11 +55,6 @@ enum {
 static guint signals[LAST_SIGNAL];
 
 
-enum {
-    PROP_0,
-};
-
-
 /* MOO_TYPE_LINE_VIEW */
 G_DEFINE_TYPE (MooLineView, moo_line_view, MOO_TYPE_TEXT_VIEW)
 
@@ -71,8 +66,6 @@ static void moo_line_view_class_init (MooLineViewClass *klass)
     GtkTextViewClass *textview_class = GTK_TEXT_VIEW_CLASS (klass);
     GtkBindingSet *binding_set;
 
-//     gobject_class->set_property = moo_line_view_set_property;
-//     gobject_class->get_property = moo_line_view_get_property;
     gobject_class->finalize = moo_line_view_finalize;
 
     widget_class->realize = moo_line_view_realize;

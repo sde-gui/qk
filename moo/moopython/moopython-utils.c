@@ -331,16 +331,6 @@ typedef struct {
 } MooPyFile;
 
 
-// static int
-// moo_py_file_new (PyObject *self, PyObject *args, PyObject *kwargs)
-// {
-//     if (!PyArg_ParseTuple (args, (char*) ""))
-//         return -1;
-//
-//     return 0;
-// }
-
-
 static PyObject *
 moo_py_file_close (G_GNUC_UNUSED PyObject *self)
 {
@@ -418,7 +408,6 @@ static PyTypeObject MooPyFile_Type = {
     (descrgetfunc) 0,                   /* tp_descr_get */
     (descrsetfunc) 0,                   /* tp_descr_set */
     0,                                  /* tp_dictoffset */
-//     (initproc) moo_py_file_new,         /* tp_init */
     (initproc) 0,         /* tp_init */
     (allocfunc) 0,                      /* tp_alloc */
     (newfunc) 0,                        /* tp_new */

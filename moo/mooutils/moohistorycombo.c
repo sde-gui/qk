@@ -83,11 +83,6 @@ enum {
     PROP_HISTORY_LIST_ID
 };
 
-enum {
-    NUM_SIGNALS
-};
-
-// static guint signals[NUM_SIGNALS];
 
 static void
 moo_history_combo_class_init (MooHistoryComboClass *klass)
@@ -410,14 +405,6 @@ moo_history_combo_changed (MooCombo *combo)
         popup (hist_combo);
     }
 }
-
-
-// static void
-// maybe_refilter (MooHistoryCombo *combo)
-// {
-//     if (moo_combo_popup_shown (MOO_COMBO (combo)))
-//         refilter (combo);
-// }
 
 
 static gboolean

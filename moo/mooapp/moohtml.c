@@ -123,8 +123,6 @@ static gboolean moo_html_button_press       (GtkWidget      *widget,
                                              GdkEventButton *event);
 static gboolean moo_html_button_release     (GtkWidget      *widget,
                                              GdkEventButton *event);
-// static gboolean moo_html_key_press          (GtkWidget      *widget,
-//                                              GdkEventKey    *event);
 static gboolean moo_html_motion             (GtkWidget      *widget,
                                              GdkEventMotion *event);
 
@@ -289,7 +287,6 @@ moo_html_class_init (MooHtmlClass *klass)
     widget_class->size_allocate = moo_html_size_allocate;
     widget_class->button_press_event = moo_html_button_press;
     widget_class->button_release_event = moo_html_button_release;
-//     widget_class->key_press_event = moo_html_key_press;
     widget_class->motion_notify_event = moo_html_motion;
 
     klass->load_url = moo_html_load_url_real;
@@ -1571,12 +1568,6 @@ static void process_table_elm   (MooHtml *html, GtkTextBuffer *buffer, xmlNode *
                                  MooHtmlTag *parent, GtkTextIter *iter);
 static void process_tr_elm      (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
-// static void process_td_elm      (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
-//                                  MooHtmlTag *parent, GtkTextIter *iter);
-// static void process_th_elm      (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
-//                                  MooHtmlTag *parent, GtkTextIter *iter);
-// static void process_tbody_elm   (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
-//                                  MooHtmlTag *parent, GtkTextIter *iter);
 
 
 static void

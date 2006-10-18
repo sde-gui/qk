@@ -51,15 +51,6 @@ void         moo_edit_script_context_set_doc    (MooEditScriptContext   *ctx,
                                                  GtkTextView            *doc);
 
 
-// MSContext   *moo_text_context_new       (GtkTextView    *doc);
-// MSContext   *moo_edit_script_context_new       (MooEdit        *doc,
-//                                          MooEditWindow  *window);
-//
-// void         moo_edit_setup_command     (MooCommand     *cmd,
-//                                          MooEdit        *doc,
-//                                          MooEditWindow  *window);
-
-
 G_END_DECLS
 
 #endif /* __MOO_EDIT_SCRIPT_H__ */

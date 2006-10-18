@@ -902,8 +902,10 @@ moo_plugin_init_builtin (void)
 #if GTK_CHECK_VERSION(2,6,0)
     _moo_file_selector_plugin_init ();
 #endif
-//     _moo_active_strings_plugin_init ();
-//     _moo_completion_plugin_init ();
+#if 0
+    _moo_active_strings_plugin_init ();
+    _moo_completion_plugin_init ();
+#endif
 }
 
 
@@ -960,9 +962,9 @@ moo_plugin_shutdown (void)
     }
 
     /* XXX */
-// #ifdef MOO_USE_PYGTK
-//     _moo_python_plugin_deinit ();
-// #endif
+#if 0 && defined(MOO_USE_PYGTK)
+    _moo_python_plugin_deinit ();
+#endif
 
     plugin_store->dirs_read = FALSE;
     plugin_store->editor = NULL;

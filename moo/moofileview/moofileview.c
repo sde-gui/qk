@@ -1672,22 +1672,26 @@ create_bookmark_view (MooFileView *fileview)
 
     bkview = _moo_bookmark_view_new (NULL);
 
+#if 0
 //     gtk_tree_view_enable_drag_source (GTK_TREE_VIEW (bkview),
 //                                       GDK_BUTTON1_MASK,
 //                                       source_targets,
 //                                       G_N_ELEMENTS (source_targets),
 //                                       GDK_ACTION_ASK | GDK_ACTION_COPY |
 //                                               GDK_ACTION_MOVE | GDK_ACTION_LINK);
+#endif
     gtk_drag_dest_set (bkview, 0, NULL, 0,
                        GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
     gtk_drag_dest_set_target_list (bkview, fileview->priv->targets);
 
+#if 0
 //     g_signal_connect_swapped (bkview, "drag-data-received",
 //                               G_CALLBACK (drag_data_received),
 //                               fileview);
 //     g_signal_connect_swapped (bkview, "drag-drop",
 //                               G_CALLBACK (drag_drop),
 //                               fileview);
+#endif
     g_signal_connect_swapped (bkview, "drag-leave",
                               G_CALLBACK (drag_leave),
                               fileview);
@@ -3184,7 +3188,7 @@ do_popup (MooFileView    *fileview,
     struct {
         MooFileView *fileview;
         GList *rows;
-    } position_data = {fileview, selected};
+    } position_data;
 
     for (l = selected; l != NULL; l = l->next)
     {
@@ -3206,6 +3210,9 @@ do_popup (MooFileView    *fileview,
 
     _moo_file_view_tools_check (fileview);
     g_signal_emit (fileview, signals[POPULATE_POPUP], 0, files, menu);
+
+    position_data.fileview = fileview;
+    position_data.rows = selected;
 
     if (event)
         gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL,
@@ -4503,8 +4510,10 @@ typeahead_tab_key (MooFileView *fileview)
 
             name = _moo_file_display_name (file);
 
-//             if (!file || stuff->strcmp_func (stuff->matched_prefix->str, file))
-//                 goto error;
+#if 0
+            if (!file || stuff->strcmp_func (stuff->matched_prefix->str, file))
+                goto error;
+#endif
 
             if (MOO_FILE_IS_DIR (file))
             {
@@ -4538,8 +4547,10 @@ typeahead_tab_key (MooFileView *fileview)
     if (!file)
         goto error;
 
+#if 0
 //     if (stuff->strncmp_func (stuff->matched_prefix->str, file, stuff->matched_prefix->len))
 //         goto error;
+#endif
 
     name = _moo_file_display_name (file);
     path_entry_set_text (fileview, name);
@@ -5501,6 +5512,7 @@ drop_item_activated (GObject     *item,
 }
 
 
+#if 0
 // /* XXX */
 // static gboolean
 // same_path (const char *path1,
@@ -5537,6 +5549,7 @@ drop_item_activated (GObject     *item,
 //     g_free (name);
 //     g_list_free (list);
 // }
+#endif
 
 
 static void
@@ -5578,6 +5591,7 @@ moo_file_view_drop_uris (MooFileView    *fileview,
         goto out;
     }
 
+#if 0
 //     if (!filenames->next)
 //     {
 //         char *dirname;
@@ -5600,6 +5614,7 @@ moo_file_view_drop_uris (MooFileView    *fileview,
 //
 //         g_free (dirname);
 //     }
+#endif
 
     mask = _moo_get_modifiers (widget);
 

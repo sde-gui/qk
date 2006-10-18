@@ -622,8 +622,6 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                   "undo", 0);
     gtk_binding_entry_add_signal (binding_set, GDK_z, GDK_CONTROL_MASK | GDK_SHIFT_MASK,
                                   "redo", 0);
-//     gtk_binding_entry_add_signal (binding_set, GDK_slash, GDK_CONTROL_MASK,
-//                                   "start-quick-search", 0);
 }
 
 
@@ -658,7 +656,7 @@ static void moo_text_view_init (MooTextView *view)
 
     view->priv->qs.flags = MOO_TEXT_SEARCH_CASELESS;
 
-    name = g_strdup_printf ("moo-text-view-%p", view);
+    name = g_strdup_printf ("moo-text-view-%p", (gpointer) view);
     gtk_widget_set_name (GTK_WIDGET (view), name);
     g_free (name);
 }
@@ -2452,9 +2450,9 @@ moo_text_view_set_cursor_color (MooTextView    *view,
         "   GtkWidget::cursor-color = \"#%02x%02x%02x\"\n"
         "}\n"
         "widget \"*.%s\" style \"%p\"\n",
-        view,
+        (gpointer) view,
         color->red >> 8, color->green >> 8, color->blue >> 8,
-        gtk_widget_get_name (GTK_WIDGET (view)), view
+        gtk_widget_get_name (GTK_WIDGET (view)), (gpointer) view
     );
 
     gtk_rc_parse_string (rc_string);
@@ -3003,9 +3001,11 @@ calculate_digit_width (MooTextView *view,
     {
         int width;
 
-//         if (view->priv->bold_current_line_number)
-//             g_snprintf (str, sizeof (str), "<b>%d</b>", i);
-//         else
+#if 0
+        if (view->priv->bold_current_line_number)
+            g_snprintf (str, sizeof (str), "<b>%d</b>", i);
+        else
+#endif
             g_snprintf (str, sizeof (str), "%d", i);
 
         pango_layout_set_markup (layout, str, -1);
@@ -3921,12 +3921,14 @@ moo_text_view_size_allocate (GtkWidget     *widget,
     for (i = 0; i < 4; i++)
     {
         GtkWidget *child = view->priv->children[i];
-        GtkAllocation child_alloc = {left + border_width, top + border_width, 0, 0};
+        GtkAllocation child_alloc = {0, 0, 0, 0};
         GtkRequisition child_req;
 
         if (!child || !GTK_WIDGET_VISIBLE (child))
             continue;
 
+        child_alloc.x = left + border_width;
+        child_alloc.y = top + border_width;
         gtk_widget_get_child_requisition (child, &child_req);
 
         switch (i)

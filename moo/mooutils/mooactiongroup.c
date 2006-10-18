@@ -106,6 +106,7 @@ _moo_action_group_set_collection (MooActionGroup      *group,
 }
 
 
+#if 0
 // void
 // moo_action_group_set_name (MooActionGroup *group,
 //                                 const char          *name)
@@ -224,3 +225,4 @@ _moo_action_group_set_collection (MooActionGroup      *group,
 //
 //     gtk_action_group_remove_action (group, action);
 // }
+#endif

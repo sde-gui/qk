@@ -550,7 +550,7 @@ make_menu (MooBookmarkMgr *mgr,
             continue;
         }
 
-        action_id = g_strdup_printf ("MooBookmarkAction-%p", bookmark);
+        action_id = g_strdup_printf ("MooBookmarkAction-%p", (gpointer) bookmark);
 
         action = moo_action_group_add_action (group, action_id,
                                               "label", bookmark->label ? bookmark->label : bookmark->display_path,
@@ -688,6 +688,7 @@ _moo_bookmark_mgr_remove_user (MooBookmarkMgr *mgr,
 }
 
 
+#if 0
 // static void     create_menu_items           (MooBookmarkMgr *mgr,
 //                                              GtkMenuShell   *menu,
 //                                              int             position,
@@ -752,7 +753,6 @@ _moo_bookmark_mgr_remove_user (MooBookmarkMgr *mgr,
 // }
 
 
-#if 0
 static void moo_bookmark_mgr_update_menu(GtkMenuShell   *menu,
                                          MooBookmarkMgr *mgr)
 {

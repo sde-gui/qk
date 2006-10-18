@@ -26,18 +26,6 @@ static void     moo_fold_finalize           (GObject    *object);
 static void     moo_fold_free_recursively   (MooFold    *fold);
 
 
-enum {
-    LAST_SIGNAL
-};
-
-// static guint signals[LAST_SIGNAL];
-
-
-enum {
-    PROP_0
-};
-
-
 /* MOO_TYPE_FOLD */
 G_DEFINE_TYPE (MooFold, moo_fold, G_TYPE_OBJECT)
 

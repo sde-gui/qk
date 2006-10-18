@@ -368,7 +368,8 @@ read_child_out (G_GNUC_UNUSED GIOChannel     *source,
 
     if (!to_read)
     {
-//         g_print ("read_child_out: skipping\n");
+        if (0)
+            g_print ("read_child_out: skipping\n");
         return TRUE;
     }
 

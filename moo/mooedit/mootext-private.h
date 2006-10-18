@@ -53,16 +53,6 @@ void        _moo_text_buffer_update_highlight       (MooTextBuffer      *buffer,
                                                      const GtkTextIter  *start,
                                                      const GtkTextIter  *end,
                                                      gboolean            synchronous);
-// void        _moo_text_buffer_apply_syntax_tag       (MooTextBuffer      *buffer,
-//                                                      GtkTextTag         *tag,
-//                                                      const GtkTextIter  *start,
-//                                                      const GtkTextIter  *end);
-// void        _moo_text_buffer_highlighting_changed   (MooTextBuffer      *buffer,
-//                                                      int                 first,
-//                                                      int                 last);
-// void        _moo_text_buffer_tags_changed           (MooTextBuffer      *buffer,
-//                                                      int                 first,
-//                                                      int                 last);
 gpointer    _moo_text_buffer_get_undo_stack         (MooTextBuffer      *buffer);
 void        _moo_text_buffer_get_bracket_tags       (MooTextBuffer      *buffer,
                                                      GtkTextTag        **correct,

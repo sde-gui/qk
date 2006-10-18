@@ -1491,27 +1491,6 @@ moo_app_open_uris (MooApp     *app,
 }
 
 
-// static void
-// run_script (const char *string)
-// {
-//     MooCommand *cmd;
-//     MSContext *ctx;
-//
-//     cmd = moo_command_new (MOO_COMMAND_SCRIPT, string);
-//     g_return_if_fail (cmd != NULL);
-//
-//     ctx = ms_context_new (NULL);
-//     moo_command_set_context (cmd, ctx);
-//     if (ctx->py_dict)
-//         moo_command_set_py_dict (cmd, ctx->py_dict);
-//     g_object_unref (ctx);
-//
-//     moo_app_cmd_setup (cmd, NULL);
-//     moo_command_run (cmd);
-//     g_object_unref (cmd);
-// }
-
-
 static MooAppCmdCode
 get_cmd_code (char cmd)
 {
@@ -1544,10 +1523,6 @@ moo_app_exec_cmd_real (MooApp             *app,
         case MOO_APP_CMD_PYTHON_FILE:
             moo_app_python_run_file (app, data);
             break;
-
-//         case MOO_APP_CMD_SCRIPT:
-//             run_script (data);
-//             break;
 
         case MOO_APP_CMD_OPEN_FILE:
             moo_app_new_file (app, data, 0);
@@ -1658,8 +1633,8 @@ moo_app_create_prefs_dialog (MooApp *app)
     dialog = MOO_PREFS_DIALOG (moo_prefs_dialog_new (title));
     g_free (title);
 
-#ifdef MOO_BUILD_TERM
-//     moo_prefs_dialog_append_page (dialog, moo_term_prefs_page_new ());
+#if 0 && defined(MOO_BUILD_TERM)
+    moo_prefs_dialog_append_page (dialog, moo_term_prefs_page_new ());
 #endif
 
 #ifdef MOO_BUILD_EDIT

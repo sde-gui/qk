@@ -396,7 +396,7 @@ moo_prefs_dialog_page_fill_from_xml (MooPrefsDialogPage *page,
     struct {
         const char *prefs_root;
         const char *page_id;
-    } data = {prefs_root, page_id};
+    } data;
 
     g_return_val_if_fail (MOO_IS_PREFS_DIALOG_PAGE (page), FALSE);
     g_return_val_if_fail (buffer != NULL, FALSE);
@@ -408,6 +408,9 @@ moo_prefs_dialog_page_fill_from_xml (MooPrefsDialogPage *page,
         xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     else
         g_object_ref (xml);
+
+    data.prefs_root = prefs_root;
+    data.page_id = page_id;
 
     moo_glade_xml_set_signal_func (xml, connect_signals, &data);
     moo_glade_xml_set_prop_func (xml, set_props, &data);

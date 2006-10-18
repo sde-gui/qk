@@ -76,10 +76,6 @@ static void     moo_text_buffer_insert_text         (GtkTextBuffer      *buffer,
                                                      GtkTextIter        *pos,
                                                      const gchar        *text,
                                                      gint                length);
-static void     moo_text_buffer_apply_tag           (GtkTextBuffer      *buffer,
-                                                     GtkTextTag         *tag,
-                                                     const GtkTextIter  *start,
-                                                     const GtkTextIter  *end);
 static void     moo_text_buffer_delete_range        (GtkTextBuffer      *buffer,
                                                      GtkTextIter        *start,
                                                      GtkTextIter        *end);
@@ -170,7 +166,6 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
     buffer_class->mark_set = moo_text_buffer_mark_set;
     buffer_class->insert_text = moo_text_buffer_insert_text;
     buffer_class->delete_range = moo_text_buffer_delete_range;
-    buffer_class->apply_tag = moo_text_buffer_apply_tag;
     buffer_class->begin_user_action = moo_text_buffer_begin_user_action;
     buffer_class->end_user_action = moo_text_buffer_end_user_action;
     buffer_class->modified_changed = moo_text_buffer_modified_changed;
@@ -954,19 +949,7 @@ _moo_text_buffer_update_highlight (MooTextBuffer      *buffer,
 }
 
 
-static void
-moo_text_buffer_apply_tag (GtkTextBuffer      *buffer,
-                           GtkTextTag         *tag,
-                           const GtkTextIter  *start,
-                           const GtkTextIter  *end)
-{
-//     if (MOO_IS_SYNTAX_TAG (tag) && !MOO_TEXT_BUFFER(buffer)->priv->may_apply_tag)
-//         return;
-
-    GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->apply_tag (buffer, tag, start, end);
-}
-
-
+#if 0
 // void
 // _moo_text_buffer_apply_syntax_tag (MooTextBuffer      *buffer,
 //                                    GtkTextTag         *tag,
@@ -978,6 +961,7 @@ moo_text_buffer_apply_tag (GtkTextBuffer      *buffer,
 //     gtk_text_buffer_apply_tag (text_buffer, tag, start, end);
 //     buffer->priv->may_apply_tag = FALSE;
 // }
+#endif
 
 
 void

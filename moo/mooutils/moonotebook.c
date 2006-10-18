@@ -190,11 +190,6 @@ static void     moo_notebook_draw_dragged_label (MooNotebook    *nb,
 static void     moo_notebook_draw_child_border (MooNotebook *nb,
                                              GdkEventExpose *event);
 
-// static gboolean moo_notebook_enter          (GtkWidget      *widget,
-//                                              GdkEventCrossing *event);
-// static gboolean moo_notebook_leave          (GtkWidget      *widget,
-//                                              GdkEventCrossing *event);
-
 static gboolean moo_notebook_button_press   (GtkWidget      *widget,
                                              GdkEventButton *event);
 static gboolean moo_notebook_button_release (GtkWidget      *widget,
@@ -331,8 +326,6 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
     widget_class->size_request = moo_notebook_size_request;
     widget_class->size_allocate = moo_notebook_size_allocate;
     widget_class->parent_set = moo_notebook_parent_set;
-//     widget_class->enter_notify_event = moo_notebook_enter;
-//     widget_class->leave_notify_event = moo_notebook_leave;
     widget_class->button_press_event = moo_notebook_button_press;
     widget_class->button_release_event = moo_notebook_button_release;
     widget_class->scroll_event = moo_notebook_scroll_event;
@@ -2242,10 +2235,12 @@ static void moo_notebook_draw_dragged_label (MooNotebook    *nb,
     }
     else
     {
-        GdkRectangle area = {
-            nb->priv->drag_tab_x - nb->priv->labels_offset,
-            0, width, height
-        };
+        GdkRectangle area;
+
+        area.x = nb->priv->drag_tab_x - nb->priv->labels_offset;
+        area.y = 0;
+        area.width = width;
+        area.height = height;
 
         if (!gdk_rectangle_intersect (&area, &event->area, &area))
             return;

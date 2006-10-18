@@ -721,7 +721,7 @@ normalize_path_unix (G_GNUC_UNUSED MooFileSystem *fs,
     }
     else
     {
-//         g_assert (len == 1);
+        g_assert (1 || len == 1);
         normpath = tmp;
     }
 

@@ -52,22 +52,6 @@ struct _MooLangMgrClass
 };
 
 
-// void        _moo_lang_mgr_set_active_scheme     (MooLangMgr         *mgr,
-//                                                  const char         *scheme_id);
-// void        _moo_lang_mgr_add_lang              (MooLangMgr         *mgr,
-//                                                  MooLang            *lang);
-// const char *_moo_lang_mgr_get_config            (MooLangMgr         *mgr,
-//                                                  const char         *lang_id);
-// void        _moo_lang_mgr_set_config            (MooLangMgr         *mgr,
-//                                                  const char         *lang_id,
-//                                                  const char         *config);
-// void        _moo_lang_mgr_update_config         (MooLangMgr         *mgr,
-//                                                  MooEditConfig      *config,
-//                                                  const char         *lang_id);
-// void        _moo_lang_mgr_load_config           (MooLangMgr         *mgr);
-// void        _moo_lang_mgr_save_config           (MooLangMgr         *mgr);
-
-
 G_END_DECLS
 
 #endif /* __MOO_LANG_MGR_PRIVATE_H__ */

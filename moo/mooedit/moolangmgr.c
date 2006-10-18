@@ -475,7 +475,6 @@ read_langs (MooLangMgr *mgr)
         const char *id = _moo_lang_id (lang);
 
         g_hash_table_insert (mgr->langs, g_strdup (id), g_object_ref (lang));
-        _moo_lang_parse_file (lang);
 
         langs = langs->next;
     }

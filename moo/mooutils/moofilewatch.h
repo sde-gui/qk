@@ -62,7 +62,7 @@ typedef enum {
     MOO_FILE_WATCH_CHANGED         = 1,
     MOO_FILE_WATCH_DELETED         = 2,
     MOO_FILE_WATCH_CREATED         = 3,
-    MOO_FILE_WATCH_MOVED           = 4,
+    MOO_FILE_WATCH_MOVED           = 4
 } MooFileWatchEventCode;
 
 /*  The structure has the same meaning as the FAMEvent

@@ -1842,11 +1842,14 @@ node_foreach (Node           *node,
         NodeForeachFunc func;
         gpointer func_data;
         gboolean stop;
-    } foreach_data = {func, data, FALSE};
+    } foreach_data;
 
     g_return_if_fail (node != NULL);
     g_return_if_fail (func != NULL);
 
+    foreach_data.func = func;
+    foreach_data.func_data = data;
+    foreach_data.stop = FALSE;
     real_foreach (node, &foreach_data);
 }
 
@@ -1886,8 +1889,10 @@ check_empty (Node           *parent,
     }
 
     /* XXX decide something on this stuff */
+#if 0
 //     if (!(parent->flags & MOO_UI_NODE_ENABLE_EMPTY))
 //         gtk_widget_set_sensitive (widget, has_children);
+#endif
     g_object_set (widget, "visible", has_children, NULL);
 
     g_slist_free (children);

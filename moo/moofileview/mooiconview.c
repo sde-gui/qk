@@ -3007,7 +3007,6 @@ moo_icon_view_maybe_drag (MooIconView    *view,
     gboolean result = FALSE;
     int button;
     GdkDragContext *context;
-//     GdkPixmap *pixmap;
 
     info = view->priv->dnd_info;
 
@@ -3047,6 +3046,8 @@ moo_icon_view_maybe_drag (MooIconView    *view,
                               button,
                               (GdkEvent*) event);
 
+#if 0
+//     GdkPixmap *pixmap;
 //     pixmap = moo_icon_view_create_row_drag_icon (view, path);
 //     gtk_drag_set_icon_pixmap (context,
 //                               gdk_drawable_get_colormap (pixmap),
@@ -3055,6 +3056,7 @@ moo_icon_view_maybe_drag (MooIconView    *view,
 //                               /* the + 1 is for the black border in the icon ? */
 //                               view->priv->button_press_x + 1,
 //                               1);
+#endif
 
 out:
     if (path)

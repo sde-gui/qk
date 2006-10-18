@@ -520,7 +520,6 @@ static void      _list_sort             (GList         **list,
     guint i;
     GList **links;
     int *order;
-//     int *new_order;
     GList *l;
     struct {
         MooFileCmp cmp_func;
@@ -560,22 +559,9 @@ static void      _list_sort             (GList         **list,
     }
 
     *list = links[0];
-
-//     new_order = g_new (int, list_len);
-//     for (i = 0; i < list_len; ++i)
-//         new_order[i] = -1;
-
-//     for (i = 0; i < list_len; ++i)
-//     {
-//         g_assert (0 <= order[i] && order[i] < list_len);
-//         g_assert (new_order[order[i]] == -1);
-//         new_order[order[i]] = i;
-//     }
-//     *new_order_p = new_order;
     *new_order_p = order;
 
     g_free (links);
-//     g_free (order);
 }
 
 

@@ -205,8 +205,6 @@ moo_text_popup_init (MooTextPopup *popup)
 {
     popup->priv = G_TYPE_INSTANCE_GET_PRIVATE (popup, MOO_TYPE_TEXT_POPUP, MooTextPopupPrivate);
     popup->column = popup->priv->column = gtk_tree_view_column_new ();
-//     gtk_tree_view_column_set_sizing (popup->column,
-//                                      GTK_TREE_VIEW_COLUMN_FIXED);
     popup->priv->max_len = MAX_POPUP_LEN;
     popup->priv->hide_on_activate = TRUE;
 }
@@ -446,10 +444,8 @@ moo_text_popup_resize (MooTextPopup *popup)
     total_items = gtk_tree_model_iter_n_children (popup->priv->model, NULL);
     items = MIN (total_items, popup->priv->max_len);
 
-//     column_get_size (popup->priv->column, popup->priv->model, &width, &height);
     gtk_tree_view_column_cell_get_size (popup->priv->column, NULL,
                                         NULL, NULL, &width, &height);
-//     gtk_tree_view_column_set_fixed_width (popup->priv->column, width);
 
     screen = gtk_widget_get_screen (widget);
     monitor_num = gdk_screen_get_monitor_at_window (screen, widget->window);
@@ -472,8 +468,6 @@ moo_text_popup_resize (MooTextPopup *popup)
         gtk_scrolled_window_set_policy (popup->priv->scrolled_window,
                                         GTK_POLICY_NEVER, GTK_POLICY_NEVER);
 
-//     g_print ("list width: %d\n", width);
-
     gtk_widget_size_request (popup->priv->window, &popup_req);
 
     if (x < monitor.x)
@@ -494,7 +488,6 @@ moo_text_popup_resize (MooTextPopup *popup)
 
         if (old_width != popup_req.width || old_height != popup_req.height)
         {
-//             g_print ("resizing to %d, %d\n", popup_req.width, popup_req.height);
             gtk_window_resize (GTK_WINDOW (popup->priv->window),
                                popup_req.width, popup_req.height);
         }

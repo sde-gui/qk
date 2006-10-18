@@ -426,6 +426,7 @@ init_dir_entry (MooHistoryCombo *hist_combo,
         }
     }
 
+#if 0
 //     moo_history_list_remove (list, "CURRENT_DOC_DIR");
 //
 //     if (doc && moo_edit_get_filename (doc))
@@ -436,6 +437,7 @@ init_dir_entry (MooHistoryCombo *hist_combo,
 //         moo_history_list_add_builtin (list, "CURRENT_DOC_DIR",
 //                                       moo_edit_);
 //     }
+#endif
 }
 
 
@@ -915,14 +917,14 @@ output_activate (WindowStuff    *stuff,
 MOO_PLUGIN_DEFINE_INFO (find,
                         N_("Find"), N_("Finds everything"),
                         "Yevgen Muntyan <muntyan@tamu.edu>",
-                        MOO_VERSION, NULL);
+                        MOO_VERSION, NULL)
 MOO_WIN_PLUGIN_DEFINE (Find, find,
                        find_window_plugin_create,
-                       find_window_plugin_destroy);
+                       find_window_plugin_destroy)
 MOO_PLUGIN_DEFINE_FULL (Find, find,
                         find_plugin_init, find_plugin_deinit,
                         NULL, NULL, NULL, NULL, NULL,
-                        find_window_plugin_get_type (), 0);
+                        find_window_plugin_get_type (), 0)
 
 
 gboolean

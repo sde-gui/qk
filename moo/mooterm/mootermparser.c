@@ -320,8 +320,9 @@ flush_chars (MooTermParser *parser)
 {
     if (parser->character->len)
     {
-//         g_warning ("%s: invalid UTF8 '%s'", G_STRLOC,
-//                    parser->character->str);
+        if (0)
+            g_warning ("%s: invalid UTF8 '%s'", G_STRLOC,
+                       parser->character->str);
         VT_PRINT_CHAR (ERROR_CHAR);
         g_string_truncate (parser->character, 0);
     }
@@ -347,8 +348,9 @@ process_char (MooTermParser *parser,
                 break;
 
             case -1:
-//                 g_warning ("%s: invalid UTF8 '%s'", G_STRLOC,
-//                            parser->character->str);
+                if (0)
+                    g_warning ("%s: invalid UTF8 '%s'", G_STRLOC,
+                               parser->character->str);
                 VT_PRINT_CHAR (ERROR_CHAR);
                 g_string_truncate (parser->character, 0);
                 break;
@@ -824,8 +826,8 @@ _moo_term_parser_parse (MooTermParser  *parser,
 {
     parser_do_parse (parser, string, len);
 
-//     if (parser->save)
-//         g_print ("saved %d chars\n", parser->input.old_data->len);
+    if (0 && parser->save)
+        g_print ("saved %d chars\n", parser->input.old_data->len);
 
     return !parser->save;
 }
