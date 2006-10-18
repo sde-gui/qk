@@ -117,7 +117,7 @@ typedef enum {
 
 typedef enum {
 	CONTEXT_TYPE_SIMPLE = 0,
-	CONTEXT_TYPE_CONTAINER,
+	CONTEXT_TYPE_CONTAINER
 } ContextType;
 
 typedef enum {
@@ -473,7 +473,11 @@ unhighlight_region (GtkSourceContextEngine *ce,
 	struct {
 		GtkTextBuffer *buffer;
 		const GtkTextIter *start, *end;
-	} data = {ce->priv->buffer, start, end};
+	} data;
+
+	data.buffer = ce->priv->buffer;
+	data.start = start;
+	data.end = end;
 
 	if (gtk_text_iter_equal (start, end))
 		return;
@@ -1665,7 +1669,7 @@ delete_range_ (GtkSourceContextEngine *ce,
 	/* no need to invalidate at start, update_tree will do it */
 
 	CHECK_TREE (ce);
-};
+}
 
 /**
  * gtk_source_context_engine_text_deleted:
@@ -3250,7 +3254,7 @@ create_child_context (Context           *parent,
 		g_hash_table_insert (ptr->u.hash, match, context);
 
 	return context;
-};
+}
 
 /**
  * segment_new:
@@ -5694,7 +5698,7 @@ _gtk_source_context_engine_add_ref (GtkSourceContextEngine    *ce,
  * contexts. Called from _gtk_source_context_engine_resolve_refs.
  */
 static void
-resolve_reference (const gchar       *id,
+resolve_reference (G_GNUC_UNUSED const gchar *id,
 		   ContextDefinition *definition,
 		   gpointer           user_data)
 {

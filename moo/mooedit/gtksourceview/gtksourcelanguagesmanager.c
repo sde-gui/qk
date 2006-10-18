@@ -338,7 +338,9 @@ _gtk_source_languages_manager_get_rng_file (GtkSourceLanguagesManager *lm)
 }
 
 static void
-prepend_lang (gchar *id, GtkSourceLanguage *lang, GtkSourceLanguagesManager *lm)
+prepend_lang (G_GNUC_UNUSED gchar       *id,
+	      GtkSourceLanguage         *lang,
+	      GtkSourceLanguagesManager *lm)
 {
 	lm->priv->available_languages =
 		g_slist_prepend (lm->priv->available_languages, lang);

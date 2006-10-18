@@ -54,12 +54,12 @@ struct _GtkSourceContextEngineClass
 typedef enum {
 	GTK_SOURCE_CONTEXT_EXTEND_PARENT	= 1 << 0,
 	GTK_SOURCE_CONTEXT_END_AT_LINE_END	= 1 << 1,
-	GTK_SOURCE_CONTEXT_FIRST_LINE_ONLY	= 1 << 2,
+	GTK_SOURCE_CONTEXT_FIRST_LINE_ONLY	= 1 << 2
 } GtkSourceContextMatchOptions;
 
 typedef enum {
 	GTK_SOURCE_CONTEXT_IGNORE_STYLE		= 1 << 0,
-	GTK_SOURCE_CONTEXT_OVERRIDE_STYLE	= 1 << 1,
+	GTK_SOURCE_CONTEXT_OVERRIDE_STYLE	= 1 << 1
 } GtkSourceContextRefOptions;
 
 GType		 _gtk_source_context_engine_get_type	(void) G_GNUC_CONST;

@@ -994,13 +994,15 @@ expand_regex_vars (ParserState *parser_state, gchar *regex, gint len, GError **e
 	struct {
 		ParserState *parser_state;
 		GError *error;
-	} data = {parser_state, NULL};
+	} data;
 
 	if (regex == NULL)
 		return NULL;
 
 	egg_re = egg_regex_new (re, 0, 0, NULL);
 
+	data.parser_state = parser_state;
+	data.error = NULL;
 	expanded_regex = egg_regex_replace_eval (egg_re, regex, len, 0, 0,
 						 replace_by_id, &data);
 
