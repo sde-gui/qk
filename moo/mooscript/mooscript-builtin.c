@@ -544,11 +544,8 @@ _ms_type_init_builtin (MSValueClass *types)
     add_meth0 (MS_VALUE_LIST, "max", list_max_func);
     add_meth0 (MS_VALUE_LIST, "min", list_min_func);
     add_meth0 (MS_VALUE_LIST, "copy", list_copy_func);
-//     add_meth0 (MS_VALUE_LIST, "deep_copy", list_deep_copy_func);
 
     add_meth0 (MS_VALUE_DICT, "len", dict_len_func);
     add_meth0 (MS_VALUE_DICT, "keys", dict_keys_func);
     add_meth1 (MS_VALUE_DICT, "has_key", dict_has_key_func);
-//     add_meth0 (MS_VALUE_DICT, "copy", dict_copy_func);
-//     add_meth0 (MS_VALUE_DICT, "deep_copy", dict_deep_copy_func);
 }

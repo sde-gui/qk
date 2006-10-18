@@ -39,11 +39,6 @@
 #define	TRUE (!FALSE)
 #endif
 
-/* FIXME: Needs to be configure check */
-// typedef unsigned int   xdg_unichar_t;
-// typedef unsigned char  xdg_uchar8_t;
-// typedef unsigned short xdg_uint16_t;
-// typedef unsigned int   xdg_uint32_t;
 typedef guint32 xdg_unichar_t;
 typedef guchar xdg_uchar8_t;
 typedef gushort xdg_uint16_t;

@@ -381,7 +381,11 @@ keyval_from_symbol (char sym)
         case '%': return GDK_percent;
         case '&': return GDK_ampersand;
         case '\'': return GDK_apostrophe;
-//         case '\'': return GDK_quoteright;
+#if 0
+        case '\'': return GDK_quoteright;
+#define GDK_asciicircum 0x05e
+#define GDK_grave 0x060
+#endif
         case '(': return GDK_parenleft;
         case ')': return GDK_parenright;
         case '*': return GDK_asterisk;
@@ -400,8 +404,6 @@ keyval_from_symbol (char sym)
         case '[': return GDK_bracketleft;
         case '\\': return GDK_backslash;
         case ']': return GDK_bracketright;
-// #define GDK_asciicircum 0x05e
-// #define GDK_grave 0x060
         case '_': return GDK_underscore;
         case '`': return GDK_quoteleft;
         case '{': return GDK_braceleft;
