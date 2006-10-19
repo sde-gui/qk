@@ -73,7 +73,15 @@
       <start>`</start>
       <end>`</end>
       <include>
+        <context ref="def:escape"/>
+        <context ref="quoted:*"/>
+        <context ref="assignment"/>
+        <context ref="operator"/>
         <context ref="dollar:*"/>
+        <context ref="def:shell-like-comment"/>
+        <context ref="subshell"/>
+        <context ref="brace-group"/>
+        <context ref="common-commands"/>
       </include>
     </context>
 
