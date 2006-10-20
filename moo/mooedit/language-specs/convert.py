@@ -82,10 +82,12 @@ class LangFile(object):
         else:
             string += ' _section="%s"' % (self._section,)
 
-        if self.mimetypes:
-            string += ' mimetypes="%s"' % (cgi.escape(self.mimetypes),)
-
         string += '>\n'
+
+        if self.mimetypes:
+            string += indent + '<metadata>\n'
+            string += 2*indent + '<property name="mimetypes">%s</property>\n' % (cgi.escape(self.mimetypes),)
+            string += indent + '</metadata>\n\n'
 
         return string
 
@@ -111,7 +113,7 @@ class LangFile(object):
     def format_contexts(self, indent):
         string = indent + '<definitions>\n'
 
-        if self.escape_char:
+        if self.escape_char and self.escape_char != '\\':
             char = escape_escape_char(self.escape_char)
 
             string += indent*2 + '<context id="generated-escape">\n'
@@ -124,7 +126,18 @@ class LangFile(object):
             string += indent*2 + '</context>\n'
 
         for ctx in self.contexts:
-            string += ctx.format(indent)
+            if self.escape_char:
+                if self.escape_char != '\\':
+                    esc_ctx = 'generated-escape'
+                    line_esc_ctx = 'generated-line-escape'
+                else:
+                    esc_ctx = 'def:escape'
+                    line_esc_ctx = 'def:line-continue'
+            else:
+                esc_ctx = None
+                line_esc_ctx = None
+
+            string += ctx.format(indent, esc_ctx, line_esc_ctx)
 
         string += indent*2 + '<context id="%s">\n' % (self.id,)
         string += indent*3 + '<include>\n'
@@ -154,16 +167,16 @@ class Context(object):
         self.id = normalize_id(name or _name)
         self.is_container = False
 
-    def format(self, indent):
+    def format(self, indent, esc_ctx, line_esc_ctx):
         print "Implement me: %s.format()" % (type(self).__name__,)
         return indent*2 + '<context id="%s"/>\n' % (self.id)
 
-    def format_escape(self, indent):
+    def format_escape(self, indent, esc_ctx, line_esc_ctx):
         string = ""
-        if self.is_container:
+        if self.is_container and esc_ctx is not None:
             string += indent*3 + '<include>\n'
-            string += indent*4 + '<context ref="generated-escape"/>\n'
-            string += indent*4 + '<context ref="generated-line-escape"/>\n'
+            string += indent*4 + '<context ref="%s"/>\n' % (esc_ctx,)
+            string += indent*4 + '<context ref="%s"/>\n' % (line_esc_ctx,)
             string += indent*3 + '</include>\n'
         return string
 
@@ -180,7 +193,7 @@ class KeywordList(Context):
         self.beginning_regex = beginning_regex
         self.end_regex = end_regex
 
-    def format(self, indent):
+    def format(self, indent, esc_ctx, line_esc_ctx):
         string = indent*2 + '<context id="%s" style-ref="%s">\n' % (self.id, self.style)
 
         if self.beginning_regex:
@@ -196,7 +209,7 @@ class KeywordList(Context):
         for kw in self.keywords:
             string += indent*3 + '<keyword>%s</keyword>\n' % (cgi.escape(kw),)
 
-        string += self.format_escape(indent)
+        string += self.format_escape(indent, esc_ctx, line_esc_ctx)
         string += indent*2 + '</context>\n'
         return string
 
@@ -206,10 +219,10 @@ class PatternItem(Context):
         assert pattern
         self.pattern = pattern
 
-    def format(self, indent):
+    def format(self, indent, esc_ctx, line_esc_ctx):
         string = indent*2 + '<context id="%s" style-ref="%s">\n' % (self.id, self.style)
         string += indent*3 + '<match>%s</match>\n' % (cgi.escape(self.pattern),)
-        string += self.format_escape(indent)
+        string += self.format_escape(indent, esc_ctx, line_esc_ctx)
         string += indent*2 + '</context>\n'
         return string
 
@@ -220,10 +233,10 @@ class LineComment(Context):
         self.start = start
         self.is_container = True
 
-    def format(self, indent):
+    def format(self, indent, esc_ctx, line_esc_ctx):
         string = indent*2 + '<context id="%s" style-ref="%s" end-at-line-end="true">\n' % (self.id, self.style)
         string += indent*3 + '<start>%s</start>\n' % (cgi.escape(self.start),)
-        string += self.format_escape(indent)
+        string += self.format_escape(indent, esc_ctx, line_esc_ctx)
         string += indent*2 + '</context>\n'
         return string
 
@@ -235,11 +248,11 @@ class BlockComment(Context):
         self.end = end
         self.is_container = True
 
-    def format(self, indent):
+    def format(self, indent, esc_ctx, line_esc_ctx):
         string = indent*2 + '<context id="%s" style-ref="%s">\n' % (self.id, self.style)
         string += indent*3 + '<start>%s</start>\n' % (cgi.escape(self.start),)
         string += indent*3 + '<end>%s</end>\n' % (cgi.escape(self.end),)
-        string += self.format_escape(indent)
+        string += self.format_escape(indent, esc_ctx, line_esc_ctx)
         string += indent*2 + '</context>\n'
         return string
 
@@ -255,7 +268,7 @@ class String(Context):
         self.end_at_line_end = end_at_line_end
         self.is_container = True
 
-    def format(self, indent):
+    def format(self, indent, esc_ctx, line_esc_ctx):
         string = indent*2 + '<context id="%s" style-ref="%s"' % (self.id, self.style)
         if self.end_at_line_end:
             string += ' end-at-line-end="true"'
@@ -266,7 +279,7 @@ class String(Context):
         if self.end:
             string += indent*3 + '<end>%s</end>\n' % (cgi.escape(self.end),)
 
-        string += self.format_escape(indent)
+        string += self.format_escape(indent, esc_ctx, line_esc_ctx)
         string += indent*2 + '</context>\n'
         return string
 
@@ -282,7 +295,7 @@ class SyntaxItem(Context):
             self.end_at_line_end = True
         self.is_container = True
 
-    def format(self, indent):
+    def format(self, indent, esc_ctx, line_esc_ctx):
         string = indent*2 + '<context id="%s" style-ref="%s"' % (self.id, self.style)
         if self.end_at_line_end:
             string += ' end-at-line-end="true"'
@@ -293,7 +306,7 @@ class SyntaxItem(Context):
         if self.end:
             string += indent*3 + '<end>%s</end>\n' % (cgi.escape(self.end),)
 
-        string += self.format_escape(indent)
+        string += self.format_escape(indent, esc_ctx, line_esc_ctx)
         string += indent*2 + '</context>\n'
         return string
 
@@ -487,11 +500,10 @@ def parse_file(filename):
 
 if __name__ == '__main__':
     import sys
-    import os
 
     if not sys.argv[1:]:
         print "usage: %s LANG_FILE" % (sys.argv[0])
-        os.exit(1)
+        sys.exit(1)
 
     lang_file = parse_file(sys.argv[1])
     sys.stdout.write(lang_file.format())
