@@ -3541,13 +3541,17 @@ notebook_drag_data_recv (GtkWidget          *widget,
             if (!doc)
             {
                 g_critical ("%s: oops", G_STRLOC);
-                return gdk_drag_status (context, 0, time);
+                gdk_drag_status (context, 0, time);
+                return;
             }
 
             toplevel = gtk_widget_get_toplevel (GTK_WIDGET (doc));
 
             if (toplevel == GTK_WIDGET (window))
-                return gdk_drag_status (context, 0, time);
+            {
+                gdk_drag_status (context, 0, time);
+                return;
+            }
 
             gdk_drag_status (context, GDK_ACTION_MOVE, time);
         }

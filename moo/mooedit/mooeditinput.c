@@ -277,7 +277,10 @@ _moo_text_view_move_cursor (GtkTextView        *text_view,
     MooTextView *view = MOO_TEXT_VIEW (text_view);
 
     if (!text_view->cursor_visible && !view->priv->overwrite_mode)
-        return GTK_TEXT_VIEW_CLASS (parent_class())->move_cursor (text_view, step, count, extend_selection);
+    {
+        GTK_TEXT_VIEW_CLASS (parent_class())->move_cursor (text_view, step, count, extend_selection);
+        return;
+    }
 
     buffer = gtk_text_view_get_buffer (text_view);
     insert = gtk_text_buffer_get_insert (buffer);
@@ -332,7 +335,10 @@ _moo_text_view_delete_from_cursor (GtkTextView        *text_view,
     GtkTextIter insert, start, end;
 
     if (type != GTK_DELETE_WORD_ENDS)
-        return GTK_TEXT_VIEW_CLASS (parent_class())->delete_from_cursor (text_view, type, count);
+    {
+        GTK_TEXT_VIEW_CLASS (parent_class())->delete_from_cursor (text_view, type, count);
+        return;
+    }
 
     text_view_reset_im_context (text_view);
 

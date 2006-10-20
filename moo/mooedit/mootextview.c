@@ -4160,7 +4160,8 @@ quick_search_find (MooTextView *view,
         if (gtk_text_iter_equal (&iter1, &insert))
         {
             gtk_text_buffer_place_cursor (buffer, &insert);
-            return quick_search_find_from (view, text, &insert);
+            quick_search_find_from (view, text, &insert);
+            return;
         }
     }
 
@@ -4458,7 +4459,10 @@ moo_text_view_insert_placeholder (MooTextView  *view,
     g_return_if_fail (iter != NULL);
 
     if (!text || !text[0])
-        return moo_text_view_insert_box (view, iter);
+    {
+        moo_text_view_insert_box (view, iter);
+        return;
+    }
 
     tag = create_placeholder_tag (view);
     buffer = get_moo_buffer (view);

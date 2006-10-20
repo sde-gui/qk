@@ -805,7 +805,10 @@ moo_text_view_run_find_current_word (GtkTextView    *view,
     search_term = get_search_term (view, TRUE, &word_start, &word_end);
 
     if (!search_term)
-        return moo_text_view_run_find (view, msg_func, data);
+    {
+        moo_text_view_run_find (view, msg_func, data);
+        return;
+    }
 
     buffer = gtk_text_view_get_buffer (view);
     flags = last_search_flags & ~(MOO_FIND_REGEX | MOO_FIND_IN_SELECTED |
@@ -901,7 +904,10 @@ moo_text_view_run_find_next (GtkTextView    *view,
     init_find_history ();
 
     if (!last_search)
-        return moo_text_view_run_find (view, msg_func, data);
+    {
+        moo_text_view_run_find (view, msg_func, data);
+        return;
+    }
 
     buffer = gtk_text_view_get_buffer (view);
 
@@ -974,7 +980,10 @@ moo_text_view_run_find_prev (GtkTextView    *view,
     init_find_history ();
 
     if (!last_search)
-        return moo_text_view_run_find (view, msg_func, data);
+    {
+        moo_text_view_run_find (view, msg_func, data);
+        return;
+    }
 
     buffer = gtk_text_view_get_buffer (view);
 

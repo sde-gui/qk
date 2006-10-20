@@ -852,9 +852,10 @@ term_draw_cursor (MooTerm     *term,
 
     if (_moo_term_line_width (line) > column)
     {
-        return term_draw_cells (term, drawable, abs_row, column, 1,
-                                _moo_term_line_get_attr (line, column),
-                                !_moo_term_cell_selected (term, abs_row, column));
+        term_draw_cells (term, drawable, abs_row, column, 1,
+                         _moo_term_line_get_attr (line, column),
+                         !_moo_term_cell_selected (term, abs_row, column));
+        return;
     }
     else
     {

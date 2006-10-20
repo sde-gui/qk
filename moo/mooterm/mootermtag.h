@@ -58,9 +58,9 @@ typedef enum {
 #define MOO_TERM_NUM_COLORS 8
 
 struct _MooTermTextAttr {
-    MooTermTextAttrMask mask        : 6;
-    MooTermTextColor    foreground  : 3;
-    MooTermTextColor    background  : 3;
+    guint mask        : 6; /* MooTermTextAttrMask */
+    guint foreground  : 3; /* MooTermTextColor */
+    guint background  : 3; /* MooTermTextColor */
 };
 
 

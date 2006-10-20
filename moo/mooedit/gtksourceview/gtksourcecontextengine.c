@@ -992,7 +992,10 @@ find_insertion_place_forward_ (Segment  *segment,
 	for (child = start; child != NULL; child = child->next)
 	{
 		if (child->start_at <= offset && child->end_at >= offset)
-			return find_insertion_place (child, offset, parent, prev, next, NULL);
+		{
+			find_insertion_place (child, offset, parent, prev, next, NULL);
+			return;
+		}
 
 		if (child->end_at == offset)
 		{
@@ -1058,7 +1061,10 @@ find_insertion_place_backward_ (Segment  *segment,
 	for (child = start; child != NULL; child = child->prev)
 	{
 		if (child->start_at <= offset && child->end_at >= offset)
-			return find_insertion_place (child, offset, parent, prev, next, NULL);
+		{
+			find_insertion_place (child, offset, parent, prev, next, NULL);
+			return;
+		}
 
 		if (child->end_at == offset)
 		{
@@ -3413,9 +3419,9 @@ find_segment_position (Segment  *parent,
 		hint = parent->children;
 
 	if (hint->end_at <= start_at)
-		return find_segment_position_forward_ (hint, start_at, end_at, prev, next);
+		find_segment_position_forward_ (hint, start_at, end_at, prev, next);
 	else
-		return find_segment_position_backward_ (hint, start_at, end_at, prev, next);
+		find_segment_position_backward_ (hint, start_at, end_at, prev, next);
 }
 
 /**

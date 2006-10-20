@@ -44,7 +44,7 @@ typedef struct _MooUIPlaceholderNode MooUIPlaceholderNode;
     char *name;                 \
     MooUINode *parent;          \
     GSList *children;           \
-    MooUINodeFlags flags : 1
+    guint flags : 1
 
 struct _MooUINode {
     MOO_UI_NODE_STRUCT;

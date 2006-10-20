@@ -72,7 +72,7 @@ struct _MSNode {
     guint ref_count;
     MSNodeEval eval;
     MSNodeDestroy destroy;
-    MSNodeType type : 5;
+    MSNodeType type;
 };
 
 #if 1
