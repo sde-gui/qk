@@ -32,7 +32,7 @@ def get_file_paths(filename, top_srcdir, top_builddir=None):
         elif os.path.commonprefix([top_srcdir, srcdir]) == top_srcdir:
             builddir = os.path.join(top_builddir, srcdir[len(top_srcdir) + 1:])
         else:
-            print "oops"
+            print "can't get builddir for", filename
             builddir = ''
     else:
         filename, basename = '', ''
