@@ -265,7 +265,7 @@ _moo_app_input_start (MooAppInput *ch)
     ch->io = g_io_channel_win32_new_fd (listener_pipe[0]);
     g_io_channel_set_encoding (ch->io, NULL, NULL);
     g_io_channel_set_buffered (ch->io, FALSE);
-    ch->io_watch = g_io_add_watch (ch->io, G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP,
+    ch->io_watch = g_io_add_watch (ch->io, G_IO_IN | G_IO_PRI,
                                    (GIOFunc) read_input, ch);
 
     ch->ready = TRUE;
@@ -303,12 +303,7 @@ read_input (GIOChannel     *source,
     guint bytes_read;
 
     if (condition & (G_IO_ERR | G_IO_HUP))
-    {
-        if (errno != EAGAIN)
-            error_occured = TRUE;
-        else
-            again = FALSE;
-    }
+        error_occured = TRUE;
 
     g_io_channel_read_chars (source, &c, 1, &bytes_read, &err);
 
@@ -523,8 +518,7 @@ _moo_app_input_start (MooAppInput *ch)
         return FALSE;
     }
 
-    /* XXX posix man page says results of this are undefined */
-    ch->pipe = open (ch->pipe_name, O_RDWR | O_NONBLOCK);
+    ch->pipe = open (ch->pipe_name, O_RDONLY | O_NONBLOCK);
     if (ch->pipe == -1)
     {
         int err = errno;
@@ -538,7 +532,7 @@ _moo_app_input_start (MooAppInput *ch)
     ch->io = g_io_channel_unix_new (ch->pipe);
     g_io_channel_set_encoding (ch->io, NULL, NULL);
     ch->io_watch = g_io_add_watch (ch->io,
-                                   G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP,
+                                   G_IO_IN | G_IO_PRI,
                                    (GIOFunc) read_input,
                                    ch);
 
@@ -675,13 +669,9 @@ read_input (GIOChannel   *source,
 
     g_return_val_if_fail (source == self->io, FALSE);
 
+    /* XXX */
     if (condition & (G_IO_ERR | G_IO_HUP))
-    {
-        if (errno != EINTR && errno != EAGAIN)
-            error_occured = TRUE;
-        else if (!(condition & (G_IO_IN | G_IO_PRI)))
-            again = FALSE;
-    }
+        error_occured = TRUE;
 
     while (again && !error_occured && !err)
     {
@@ -749,13 +739,10 @@ read_input (GIOChannel   *source,
 
     if (error_occured || err)
     {
-        g_critical ("%s: error", G_STRLOC);
+        g_critical ("%s: %s", G_STRLOC, err ? err->message : "error");
 
         if (err)
-        {
-            g_critical ("%s: %s", G_STRLOC, err->message);
             g_error_free (err);
-        }
 
         _moo_app_input_shutdown (self);
         return FALSE;
