@@ -33,17 +33,52 @@ moo_python_api_run_simple_string (const char *str)
 }
 
 
+static MooPyObject *
+get_script_dict (const char *name)
+{
+    PyObject *dict, *builtins;
+
+    builtins = PyImport_ImportModule ((char*) "__builtin__");
+    g_return_val_if_fail (builtins != NULL, NULL);
+
+    dict = PyDict_New ();
+    PyDict_SetItemString (dict, (char*) "__builtins__", builtins);
+
+    if (name)
+    {
+        PyObject *py_name = PyString_FromString (name);
+        PyDict_SetItemString (dict, (char*) "__name__", py_name);
+        Py_XDECREF (py_name);
+    }
+
+    Py_XDECREF (builtins);
+    return (MooPyObject*) dict;
+}
+
+
 static MooPyObject*
 moo_python_api_run_string (const char  *str,
                            MooPyObject *locals,
                            MooPyObject *globals)
 {
+    PyObject *ret;
+
     g_return_val_if_fail (str != NULL, NULL);
+
+    if (!locals)
+        locals = get_script_dict ("__script__");
+    else
+        moo_Py_INCREF (locals);
+
     g_return_val_if_fail (locals != NULL, NULL);
-    g_return_val_if_fail (globals != NULL, NULL);
-    return (MooPyObject*) PyRun_String (str, Py_file_input,
-                                        (PyObject*) locals,
-                                        (PyObject*) globals);
+
+    if (!globals)
+        globals = locals;
+
+    ret = PyRun_String (str, Py_file_input, (PyObject*) locals, (PyObject*) globals);
+
+    moo_Py_DECREF (locals);
+    return (MooPyObject*) ret;
 }
 
 
@@ -56,6 +91,42 @@ moo_python_api_run_file (gpointer    fp,
     main_mod = PyImport_AddModule ((char*)"__main__");
     dict = PyModule_GetDict (main_mod);
     return (MooPyObject*) PyRun_File (fp, filename, Py_file_input, dict, dict);
+}
+
+
+static MooPyObject *
+moo_python_api_run_code (const char  *str,
+                         MooPyObject *locals,
+                         MooPyObject *globals)
+{
+    PyObject *ret;
+
+    g_return_val_if_fail (str != NULL, NULL);
+
+    if (!locals)
+        locals = get_script_dict ("__script__");
+    else
+        moo_Py_INCREF (locals);
+
+    g_return_val_if_fail (locals != NULL, NULL);
+
+    if (!globals)
+        globals = locals;
+
+    ret = PyRun_String (str, Py_file_input, (PyObject*) locals, (PyObject*) globals);
+
+    if (ret)
+    {
+        Py_DECREF (ret);
+
+        if (PyMapping_HasKeyString ((PyObject*) locals, (char*) "__retval__"))
+            ret = PyMapping_GetItemString ((PyObject*) locals, (char*) "__retval__");
+        else
+            ret = NULL;
+    }
+
+    moo_Py_DECREF (locals);
+    return (MooPyObject*) ret;
 }
 
 
@@ -132,29 +203,6 @@ moo_python_api_dict_del_item (MooPyObject *dict,
 }
 
 
-static MooPyObject *
-moo_python_api_get_script_dict (const char *name)
-{
-    PyObject *dict, *builtins;
-
-    builtins = PyImport_ImportModule ((char*) "__builtin__");
-    g_return_val_if_fail (builtins != NULL, NULL);
-
-    dict = PyDict_New ();
-    PyDict_SetItemString (dict, (char*) "__builtins__", builtins);
-
-    if (name)
-    {
-        PyObject *py_name = PyString_FromString (name);
-        PyDict_SetItemString (dict, (char*) "__name__", py_name);
-        Py_XDECREF (py_name);
-    }
-
-    Py_XDECREF (builtins);
-    return (MooPyObject*) dict;
-}
-
-
 static void
 moo_python_api_err_print (void)
 {
@@ -166,6 +214,51 @@ static char *
 moo_python_api_get_info (void)
 {
     return g_strdup_printf ("%s %s", Py_GetVersion (), Py_GetPlatform ());
+}
+
+
+static MooPyObject *
+moo_python_api_call_meth (MooPyObject *obj,
+                          const char  *meth,
+                          const char  *arg)
+{
+    PyObject *ret;
+
+    g_return_val_if_fail (obj != NULL, NULL);
+    g_return_val_if_fail (meth != NULL, NULL);
+
+    if (arg)
+        ret = PyObject_CallMethod ((PyObject*) obj, (char*) meth, (char*) "(s)", arg);
+    else
+        ret = PyObject_CallMethod ((PyObject*) obj, (char*) meth, (char*) "()");
+
+    return (MooPyObject*) ret;
+
+}
+
+
+static MooPyObject *
+moo_python_api_import_exec (const char  *name,
+                            const char  *string)
+{
+    PyObject *code;
+    PyObject *mod;
+    char *filename;
+
+    g_return_val_if_fail (name != NULL, NULL);
+    g_return_val_if_fail (string != NULL, NULL);
+
+    filename = g_strdup_printf ("%s.py", name);
+    code = Py_CompileString (string, filename, Py_file_input);
+    g_free (filename);
+
+    if (!code)
+        return FALSE;
+
+    mod = PyImport_ExecCodeModule ((char*) name, code);
+
+    Py_DECREF (code);
+    return (MooPyObject*) mod;
 }
 
 
@@ -183,11 +276,13 @@ moo_python_api_init (void)
         moo_python_api_run_simple_string,
         moo_python_api_run_string,
         moo_python_api_run_file,
+        moo_python_api_run_code,
         moo_python_api_py_object_from_gobject,
-        moo_python_api_get_script_dict,
         moo_python_api_dict_get_item,
         moo_python_api_dict_set_item,
-        moo_python_api_dict_del_item
+        moo_python_api_dict_del_item,
+        moo_python_api_import_exec,
+        moo_python_api_call_meth
     };
 
     g_return_val_if_fail (!moo_python_running(), FALSE);

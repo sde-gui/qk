@@ -37,10 +37,11 @@ struct _MooPyAPI {
                                          MooPyObject *globals);
     MooPyObject* (*run_file)            (void        *fp,
                                          const char  *filename);
+    MooPyObject* (*run_code)            (const char  *str,
+                                         MooPyObject *locals,
+                                         MooPyObject *globals);
 
     MooPyObject* (*py_object_from_gobject) (gpointer gobj);
-
-    MooPyObject* (*get_script_dict)     (const char  *name);
 
     MooPyObject* (*dict_get_item)       (MooPyObject *dict,
                                          const char  *key);
@@ -49,6 +50,12 @@ struct _MooPyAPI {
                                          MooPyObject *val);
     gboolean     (*dict_del_item)       (MooPyObject *dict,
                                          const char  *key);
+
+    MooPyObject* (*import_exec)         (const char  *name,
+                                         const char  *string);
+    MooPyObject* (*call_meth)           (MooPyObject *obj,
+                                         const char  *meth,
+                                         const char  *arg);
 };
 
 
@@ -69,13 +76,14 @@ void         moo_Py_DECREF  (MooPyObject    *obj);
 #define moo_python_run_simple_string    moo_py_api->run_simple_string
 #define moo_python_run_string           moo_py_api->run_string
 #define moo_python_run_file             moo_py_api->run_file
-
-#define moo_py_get_script_dict          moo_py_api->get_script_dict
+#define moo_python_run_code             moo_py_api->run_code
 
 #define moo_py_dict_get_item            moo_py_api->dict_get_item
 #define moo_py_dict_set_item            moo_py_api->dict_set_item
 #define moo_py_dict_del_item            moo_py_api->dict_del_item
 
+#define moo_py_import_exec              moo_py_api->import_exec
+#define moo_py_call_meth                moo_py_api->call_meth
 #define moo_py_object_from_gobject      moo_py_api->py_object_from_gobject
 
 
