@@ -265,7 +265,7 @@ _moo_app_input_start (MooAppInput *ch)
     ch->io = g_io_channel_win32_new_fd (listener_pipe[0]);
     g_io_channel_set_encoding (ch->io, NULL, NULL);
     g_io_channel_set_buffered (ch->io, FALSE);
-    ch->io_watch = g_io_add_watch (ch->io, G_IO_IN | G_IO_PRI,
+    ch->io_watch = g_io_add_watch (ch->io, G_IO_IN | G_IO_PRI | G_IO_HUP | G_IO_ERR,
                                    (GIOFunc) read_input, ch);
 
     ch->ready = TRUE;
@@ -518,7 +518,10 @@ _moo_app_input_start (MooAppInput *ch)
         return FALSE;
     }
 
-    ch->pipe = open (ch->pipe_name, O_RDONLY | O_NONBLOCK);
+    /* XXX O_RDWR is not good (man 3p open), but it must be opened for
+     * writing by us, otherwise we get POLLHUP when a writer dies on the other end.
+     * So, open for writing separately. */
+    ch->pipe = open (ch->pipe_name, O_RDWR | O_NONBLOCK);
     if (ch->pipe == -1)
     {
         int err = errno;
@@ -528,11 +531,18 @@ _moo_app_input_start (MooAppInput *ch)
         ch->pipe_name = NULL;
         return FALSE;
     }
+    else
+    {
+#if 1
+        g_message ("%s: opened input pipe %s with fd %d",
+                   G_STRLOC, ch->pipe_name, ch->pipe);
+#endif
+    }
 
     ch->io = g_io_channel_unix_new (ch->pipe);
     g_io_channel_set_encoding (ch->io, NULL, NULL);
     ch->io_watch = g_io_add_watch (ch->io,
-                                   G_IO_IN | G_IO_PRI,
+                                   G_IO_IN | G_IO_PRI | G_IO_HUP | G_IO_ERR,
                                    (GIOFunc) read_input,
                                    ch);
 
