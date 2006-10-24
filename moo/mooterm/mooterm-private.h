@@ -255,6 +255,7 @@ void        _moo_term_invalidate            (MooTerm        *term);
 
 void        _moo_term_release_selection     (MooTerm        *term);
 void        _moo_term_grab_selection        (MooTerm        *term);
+void        _moo_term_clear_selection       (MooTerm        *term);
 
 /* in mooterm-draw.c */
 void        _moo_term_pause_cursor_blinking (MooTerm        *term);

@@ -234,8 +234,8 @@ fork_argv (MooTermPt      *pt_gen,
     }
     else
     {
-#if 0
-        g_message ("%s: forked child pid %d", G_STRLOC, pt->child_pid);
+#if 1
+        g_message ("%s: forked child pid %d on fd %d", G_STRLOC, pt->child_pid, pt->master);
 #endif
     }
 

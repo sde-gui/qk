@@ -338,6 +338,18 @@ _moo_term_select_range (MooTerm            *term,
 }
 
 
+void        
+_moo_term_clear_selection (MooTerm *term)
+{
+    MooTermIter iter;
+
+    g_return_if_fail (MOO_IS_TERM (term));
+
+    get_start_iter (term, &iter);
+    _moo_term_select_range (term, &iter, &iter);
+}
+
+
 static void     get_start_iter      (MooTerm            *term,
                                      MooTermIter        *iter)
 {

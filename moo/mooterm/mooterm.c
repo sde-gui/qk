@@ -1622,6 +1622,8 @@ _moo_term_setting_request (MooTerm    *term,
 static void
 moo_term_reset_real (MooTerm *term)
 {
+    _moo_term_clear_selection (term);
+
     _moo_term_buffer_freeze_changed_notify (term->priv->primary_buffer);
     _moo_term_buffer_freeze_cursor_notify (term->priv->primary_buffer);
 
