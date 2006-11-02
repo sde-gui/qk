@@ -801,17 +801,8 @@ exe_type_load_data (G_GNUC_UNUSED MooCommandType *type,
     parse_output (moo_command_data_get (data, KEY_OUTPUT), &index);
     gtk_combo_box_set_active (moo_glade_xml_get_widget (xml, "output"), index);
 
-    if (index == MOO_COMMAND_EXE_OUTPUT_PANE)
-    {
-        gtk_widget_set_sensitive (moo_glade_xml_get_widget (xml, "filter"), TRUE);
-        set_filter_combo (moo_glade_xml_get_widget (xml, "filter"),
-                          moo_command_data_get (data, KEY_FILTER));
-    }
-    else
-    {
-        gtk_widget_set_sensitive (moo_glade_xml_get_widget (xml, "filter"), FALSE);
-        set_filter_combo (moo_glade_xml_get_widget (xml, "filter"), NULL);
-    }
+    set_filter_combo (moo_glade_xml_get_widget (xml, "filter"),
+                      moo_command_data_get (data, KEY_FILTER));
 }
 
 
