@@ -165,10 +165,10 @@ MooCommandContext  *moo_command_context_new         (gpointer            doc,
 
 void                moo_command_context_set_doc     (MooCommandContext  *ctx,
                                                      gpointer            doc);
-void                moo_command_context_set_window  (MooCommandContext *ctx,
+void                moo_command_context_set_window  (MooCommandContext  *ctx,
                                                      gpointer            window);
 gpointer            moo_command_context_get_doc     (MooCommandContext  *ctx);
-gpointer            moo_command_context_get_window  (MooCommandContext *ctx);
+gpointer            moo_command_context_get_window  (MooCommandContext  *ctx);
 
 void                moo_command_context_set         (MooCommandContext  *ctx,
                                                      const char         *name,

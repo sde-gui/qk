@@ -21,6 +21,7 @@
 struct _MooOutputFilterPrivate {
     MooLineView *view;
     char *working_dir;
+    char *filename;
     MooEditWindow *window;
 };
 
@@ -44,6 +45,7 @@ moo_output_filter_finalize (GObject *object)
     MooOutputFilter *filter = MOO_OUTPUT_FILTER (object);
 
     g_free (filter->priv->working_dir);
+    g_free (filter->priv->filename);
 
     G_OBJECT_CLASS (moo_output_filter_parent_class)->finalize (object);
 }
@@ -59,7 +61,7 @@ moo_output_filter_activate (MooOutputFilter *filter,
 
     if (data)
     {
-        moo_output_filter_open_file (filter, data);
+        moo_output_filter_open_file_line (filter, data);
         moo_file_line_data_free (data);
     }
 }
@@ -268,10 +270,8 @@ moo_file_line_data_new (const char *file,
 {
     MooFileLineData *data;
 
-    g_return_val_if_fail (file != NULL, NULL);
-
     data = g_new0 (MooFileLineData, 1);
-    data->file = g_strdup (file);
+    data->file = file && file[0] ? g_strdup (file) : NULL;
     data->line = line;
     data->character = character;
 
@@ -306,6 +306,28 @@ moo_file_line_data_free (MooFileLineData *data)
 
 
 const char *
+moo_output_filter_get_active_file (MooOutputFilter *filter)
+{
+    g_return_val_if_fail (MOO_IS_OUTPUT_FILTER (filter), NULL);
+    return filter->priv->filename;
+}
+
+
+void
+moo_output_filter_set_active_file (MooOutputFilter *filter,
+                                   const char      *filename)
+{
+    char *tmp;
+
+    g_return_if_fail (MOO_IS_OUTPUT_FILTER (filter));
+
+    tmp = filter->priv->filename;
+    filter->priv->filename = g_strdup (filename);
+    g_free (tmp);
+}
+
+
+const char *
 moo_output_filter_get_working_dir (MooOutputFilter *filter)
 {
     g_return_val_if_fail (MOO_IS_OUTPUT_FILTER (filter), NULL);
@@ -331,23 +353,26 @@ moo_output_filter_get_window (MooOutputFilter *filter)
 
 
 void
-moo_output_filter_open_file (MooOutputFilter *filter,
-                             MooFileLineData *data)
+moo_output_filter_open_file_line (MooOutputFilter *filter,
+                                  MooFileLineData *data)
 {
+    const char *filename;
     const char *path = NULL;
     char *freeme = NULL;
 
     g_return_if_fail (MOO_IS_OUTPUT_FILTER (filter));
     g_return_if_fail (data != NULL);
-    g_return_if_fail (data->file != NULL);
 
-    if (g_path_is_absolute (data->file))
+    filename = data->file ? data->file : filter->priv->filename;
+    g_return_if_fail (filename != NULL);
+
+    if (g_path_is_absolute (filename))
     {
-        path = data->file;
+        path = filename;
     }
     else if (filter->priv->working_dir)
     {
-        freeme = g_build_filename (filter->priv->working_dir, data->file, NULL);
+        freeme = g_build_filename (filter->priv->working_dir, filename, NULL);
         path = freeme;
     }
 
@@ -365,7 +390,7 @@ moo_output_filter_open_file (MooOutputFilter *filter,
     }
     else
     {
-        _moo_message ("could not find file '%s'", data->file);
+        _moo_message ("could not find file '%s'", filename);
     }
 
     g_free (freeme);

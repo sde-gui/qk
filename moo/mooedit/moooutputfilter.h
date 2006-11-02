@@ -87,12 +87,15 @@ void             moo_output_filter_cmd_start        (MooOutputFilter    *filter,
 gboolean         moo_output_filter_cmd_exit         (MooOutputFilter    *filter,
                                                      int                 status);
 
+const char      *moo_output_filter_get_active_file  (MooOutputFilter    *filter);
+void             moo_output_filter_set_active_file  (MooOutputFilter    *filter,
+                                                     const char         *filename);
 const char      *moo_output_filter_get_working_dir  (MooOutputFilter    *filter);
 void             moo_output_filter_set_window       (MooOutputFilter    *filter,
                                                      gpointer            window);
 gpointer         moo_output_filter_get_window       (MooOutputFilter    *filter);
 
-void             moo_output_filter_open_file        (MooOutputFilter    *filter,
+void             moo_output_filter_open_file_line   (MooOutputFilter    *filter,
                                                      MooFileLineData    *data);
 
 

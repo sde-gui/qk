@@ -27,7 +27,6 @@
 #define KEY_BUILTIN     "builtin"
 #define KEY_NAME        "name"
 #define KEY_ENABLED     "enabled"
-#define KEY_PATTERNS    "patterns"
 
 
 typedef struct {
@@ -103,7 +102,10 @@ parse_file_line (const char *file,
 {
     MooFileLineData *data;
 
-    if (!file || !file[0])
+    file = file && *file ? file : NULL;
+    line = line && *line ? line : NULL;
+
+    if (!file && !line)
         return NULL;
 
     data = moo_file_line_data_new (file, -1, -1);
@@ -116,7 +118,6 @@ parse_file_line (const char *file,
 static void
 process_result (const char       *text,
                 EggRegex         *regex,
-                MooOutputTextType type,
                 MooLineView      *view)
 {
     char *file, *line, *character;
@@ -128,8 +129,7 @@ process_result (const char       *text,
     line = egg_regex_fetch_named (regex, "line", text);
     character = egg_regex_fetch_named (regex, "character", text);
 
-    tag = moo_line_view_lookup_tag (view, type == MOO_OUTPUT_STDOUT ?
-                                            MOO_CMD_VIEW_STDOUT : MOO_CMD_VIEW_STDERR);
+    tag = moo_line_view_lookup_tag (view, MOO_CMD_VIEW_STDERR);
     line_no = moo_line_view_write_line (view, text, -1, tag);
 
     data = parse_file_line (file, line, character);
@@ -164,8 +164,7 @@ process_line (MooOutputFilterSimple *filter,
         if (!egg_regex_match (regex->re, text, 0))
             continue;
 
-        process_result (text, regex->re, type,
-                        moo_output_filter_get_view (MOO_OUTPUT_FILTER(filter)));
+        process_result (text, regex->re, moo_output_filter_get_view (MOO_OUTPUT_FILTER(filter)));
 
         return TRUE;
     }
@@ -440,9 +439,6 @@ _moo_output_filter_info_unref (MooOutputFilterInfo *info)
 /* Loading and saving
  */
 
-#define CHAR_IS_SPACE(c)        ((c) == ' ' || (c) == '\t')
-#define CHAR_IS_SEPARATOR(c)    ((c) == ',' || (c) == ';')
-
 static gboolean
 parse_patterns (MooOutputFilterInfo *info,
                 const char          *string,
@@ -463,12 +459,36 @@ parse_patterns (MooOutputFilterInfo *info,
         gunichar delim;
         char *pattern_start, *pattern_end;
         MooOutputPatternInfo *pattern_info;
+        MooOutputTextType type;
 
-        while (*string && CHAR_IS_SPACE (*string))
-            string++;
+        while (*string)
+        {
+            gunichar c = g_utf8_get_char (string);
+
+            if (c != ',' && c != ';' && !g_unichar_isspace (c))
+                break;
+
+            string = g_utf8_next_char (string);
+        }
 
         if (!*string)
             break;
+
+        switch (*string++)
+        {
+            case 'o':
+                type = MOO_OUTPUT_STDOUT;
+                break;
+            case 'e':
+                type = MOO_OUTPUT_STDERR;
+                break;
+            case 'a':
+                type = MOO_OUTPUT_ALL;
+                break;
+            default:
+                g_warning ("output type missing: '%s'", string - 1);
+                goto error;
+        }
 
         delim = g_utf8_get_char (string);
         pattern_start = g_utf8_next_char (string);
@@ -482,27 +502,10 @@ parse_patterns (MooOutputFilterInfo *info,
 
         pattern_info = g_new0 (MooOutputPatternInfo, 1);
         pattern_info->pattern = g_strndup (pattern_start, pattern_end - pattern_start);
-        pattern_info->type = MOO_OUTPUT_ALL;
+        pattern_info->type = type;
         patterns = g_slist_prepend (patterns, pattern_info);
 
         string = g_utf8_next_char (pattern_end);
-
-        while (*string && CHAR_IS_SPACE (*string))
-            string++;
-
-        if (!strncmp (string, "stdout", strlen ("stdout")))
-        {
-            pattern_info->type = MOO_OUTPUT_STDOUT;
-            string += strlen ("stdout");
-        }
-        else if (!strncmp (string, "stderr", strlen ("stderr")))
-        {
-            pattern_info->type = MOO_OUTPUT_STDERR;
-            string += strlen ("stderr");
-        }
-
-        if (CHAR_IS_SEPARATOR (*string))
-            string++;
     }
 
     info->n_patterns = g_slist_length (patterns);
@@ -556,12 +559,12 @@ parse_item (MooKeyFileItem *item,
     if (info->deleted || info->builtin)
         return info;
 
-    pattern_string = moo_key_file_item_steal (item, KEY_PATTERNS);
+    pattern_string = moo_key_file_item_steal_content (item);
 
     if (!parse_patterns (info, pattern_string, file))
     {
         _moo_output_filter_info_unref (info);
-        return NULL;
+        info = NULL;
     }
 
     g_free (pattern_string);

@@ -225,7 +225,7 @@ run_in_pane (MooCommandExe     *cmd,
     /* XXX */
     if (!moo_cmd_view_running (MOO_CMD_VIEW (output)))
     {
-        MooOutputFilter *filter;
+        MooOutputFilter *filter = NULL;
 
         cmd_line = make_cmd (cmd, ctx);
         g_return_if_fail (cmd_line != NULL);
@@ -234,7 +234,15 @@ run_in_pane (MooCommandExe     *cmd,
         moo_edit_window_present_output (window);
         gtk_widget_grab_focus (output);
 
-        filter = cmd->priv->filter ? moo_command_filter_create (cmd->priv->filter) : NULL;
+        if (cmd->priv->filter)
+            filter = moo_command_filter_create (cmd->priv->filter);
+
+        if (filter)
+        {
+            const char *fn = MOO_IS_EDIT (doc) ? moo_edit_get_filename (MOO_EDIT (doc)) : NULL;
+            moo_output_filter_set_active_file (filter, fn);
+        }
+
         moo_cmd_view_set_filter (MOO_CMD_VIEW (output), filter);
 
         moo_cmd_view_run_command_full (MOO_CMD_VIEW (output),
@@ -243,6 +251,7 @@ run_in_pane (MooCommandExe     *cmd,
 
         if (filter)
             g_object_unref (filter);
+
         g_free (cmd_line);
     }
 }
