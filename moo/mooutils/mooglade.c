@@ -2350,6 +2350,7 @@ GtkWidget*
 moo_glade_xml_get_root (MooGladeXML *xml)
 {
     g_return_val_if_fail (xml != NULL, NULL);
+    g_return_val_if_fail (xml->priv->root_id != NULL, NULL);
     return moo_glade_xml_get_widget (xml, xml->priv->root_id);
 }
 
