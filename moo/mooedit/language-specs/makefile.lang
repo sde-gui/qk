@@ -14,6 +14,7 @@
     <style id="command"         name="command"/>
     <style id="trailing-tab"    name="Trailing Tab"/>
     <style id="function"        name="function" map-to="def:function"/>
+    <style id="keyword"         name="keyword" map-to="def:keyword"/>
   </styles>
 
   <definitions>
@@ -59,6 +60,48 @@
       </include>
     </context>
 
+    <context id="directives" style-ref="keyword">
+      <keyword>define</keyword>
+      <keyword>else</keyword>
+      <keyword>endef</keyword>
+      <keyword>endif</keyword>
+      <keyword>if</keyword>
+      <keyword>ifdef</keyword>
+      <keyword>ifeq</keyword>
+      <keyword>ifndef</keyword>
+      <keyword>ifneq</keyword>
+      <keyword>include</keyword>
+      <keyword>override</keyword>
+      <keyword>unexport</keyword>
+    </context>
+
+    <context id="functions" style-ref="function">
+      <keyword>addprefix</keyword>
+      <keyword>addsuffix</keyword>
+      <keyword>basename</keyword>
+      <keyword>call</keyword>
+      <keyword>dir</keyword>
+      <keyword>error</keyword>
+      <keyword>filter</keyword>
+      <keyword>filter-out</keyword>
+      <keyword>findstring</keyword>
+      <keyword>firstword</keyword>
+      <keyword>foreach</keyword>
+      <keyword>join</keyword>
+      <keyword>notdir</keyword>
+      <keyword>origin</keyword>
+      <keyword>patsubst</keyword>
+      <keyword>shell</keyword>
+      <keyword>sort</keyword>
+      <keyword>strip</keyword>
+      <keyword>subst</keyword>
+      <keyword>suffix</keyword>
+      <keyword>warning</keyword>
+      <keyword>wildcard</keyword>
+      <keyword>word</keyword>
+      <keyword>words</keyword>
+    </context>
+
     <context id="makefile">
       <include>
         <context ref="def:shebang"/>
@@ -84,6 +127,7 @@
                 <context ref="def:escape"/>
                 <context ref="def:line-continue"/>
                 <context ref="variable"/>
+                <context ref="functions"/>
               </include>
             </context>
             <context id="trailing-tab" style-ref="trailing-tab">
@@ -92,6 +136,9 @@
             <context ref="command"/>
           </include>
         </context>
+
+        <context ref="directives"/>
+        <context ref="functions"/>
 
       </include>
     </context>

@@ -49,9 +49,8 @@
 
   <style name="mooscript:special-vars"      use-style="c:preprocessor"/>
 
-<!--  <style name="latex:command" foreground="#008000"/>-->
-  <style name="latex:math"                  use-style="c:preprocessor"/>
-  <style name="latex:inline-math"           use-style="c:preprocessor"/>
+  <style name="latex:math"                  foreground="#008000"/>
+  <style name="latex:inline-math"           foreground="#008000"/>
 
   <style name="changelog:release"           foreground="#0095ff" bold="true"/>
 
