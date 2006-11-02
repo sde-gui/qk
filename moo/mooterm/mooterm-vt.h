@@ -243,8 +243,8 @@ enum {
         case 104:                                   \
         case 106:                                   \
         case 1001:                                  \
-            g_message ("%s: IGNORING mode %d",      \
-                       G_STRLOC, code);             \
+            _moo_message ("%s: IGNORING mode %d",   \
+                          G_STRLOC, code);          \
             break;                                  \
                                                     \
         default:                                    \

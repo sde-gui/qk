@@ -35,6 +35,7 @@
 #include "mooapp/mooappinput.h"
 #define MOO_APP_COMPILATION
 #include "mooapp/mooapp-private.h"
+#include "mooutils/mooutils-misc.h"
 
 
 struct _MooAppInput
@@ -531,13 +532,9 @@ _moo_app_input_start (MooAppInput *ch)
         ch->pipe_name = NULL;
         return FALSE;
     }
-    else
-    {
-#if 1
-        g_message ("%s: opened input pipe %s with fd %d",
-                   G_STRLOC, ch->pipe_name, ch->pipe);
-#endif
-    }
+
+    _moo_message ("%s: opened input pipe %s with fd %d",
+                  G_STRLOC, ch->pipe_name, ch->pipe);
 
     ch->io = g_io_channel_unix_new (ch->pipe);
     g_io_channel_set_encoding (ch->io, NULL, NULL);

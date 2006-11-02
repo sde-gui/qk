@@ -30,6 +30,7 @@
 #include "moofileview/moofile-private.h"
 #include "moofileview/symlink.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/moomarshals.h"
 #include <string.h>
 #include <sys/types.h>
@@ -658,7 +659,7 @@ get_mime_type (MooFile    *file,
     {
         /* this should not happen */
         if (0)
-            g_message ("%s: oops, %s", G_STRLOC, file->display_name);
+            _moo_message ("%s: oops, %s", G_STRLOC, file->display_name);
         file->mime_type = MIME_TYPE_UNKNOWN;
     }
 
@@ -1283,8 +1284,8 @@ moo_file_stat_unix (MooFile    *file,
         if (errno == ENOENT)
         {
             gchar *display_name = g_filename_display_name (fullname);
-            g_message ("%s: file '%s' does not exist",
-                       G_STRLOC, display_name);
+            _moo_message ("%s: file '%s' does not exist",
+                          G_STRLOC, display_name);
             g_free (display_name);
             file->info = 0;
         }
@@ -1292,9 +1293,9 @@ moo_file_stat_unix (MooFile    *file,
         {
             int save_errno = errno;
             gchar *display_name = g_filename_display_name (fullname);
-            g_message ("%s: error getting information for '%s': %s",
-                       G_STRLOC, display_name,
-                       g_strerror (save_errno));
+            _moo_message ("%s: error getting information for '%s': %s",
+                          G_STRLOC, display_name,
+                          g_strerror (save_errno));
             g_free (display_name);
             file->info = MOO_FILE_INFO_IS_LOCKED | MOO_FILE_INFO_EXISTS;
             file->flags = 0;
@@ -1315,8 +1316,8 @@ moo_file_stat_unix (MooFile    *file,
                 if (errno == ENOENT)
                 {
                     gchar *display_name = g_filename_display_name (fullname);
-                    g_message ("%s: file '%s' is a broken link",
-                               G_STRLOC, display_name);
+                    _moo_message ("%s: file '%s' is a broken link",
+                                  G_STRLOC, display_name);
                     g_free (display_name);
                     file->info = MOO_FILE_INFO_IS_LINK;
                 }
@@ -1324,9 +1325,9 @@ moo_file_stat_unix (MooFile    *file,
                 {
                     int save_errno = errno;
                     gchar *display_name = g_filename_display_name (fullname);
-                    g_message ("%s: error getting information for '%s': %s",
-                               G_STRLOC, display_name,
-                               g_strerror (save_errno));
+                    _moo_message ("%s: error getting information for '%s': %s",
+                                  G_STRLOC, display_name,
+                                  g_strerror (save_errno));
                     g_free (display_name);
                     file->info = MOO_FILE_INFO_IS_LOCKED | MOO_FILE_INFO_EXISTS;
                     file->flags = 0;
@@ -1339,9 +1340,9 @@ moo_file_stat_unix (MooFile    *file,
             {
                 int save_errno = errno;
                 gchar *display_name = g_filename_display_name (fullname);
-                g_message ("%s: error getting link target for '%s': %s",
-                           G_STRLOC, display_name,
-                           g_strerror (save_errno));
+                _moo_message ("%s: error getting link target for '%s': %s",
+                              G_STRLOC, display_name,
+                              g_strerror (save_errno));
                 g_free (display_name);
             }
             else
@@ -2268,8 +2269,8 @@ _create_icon_for_mime_type (GtkIconTheme   *icon_theme,
         return pixbuf;
 #endif
 
-    g_message ("%s: could not find icon for mime type '%s'",
-               G_STRLOC, mime_type);
+    _moo_message ("%s: could not find icon for mime type '%s'",
+                  G_STRLOC, mime_type);
     return _create_icon_simple (icon_theme, MOO_ICON_FILE, NULL,
                                 widget, size);
 }

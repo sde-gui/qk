@@ -18,6 +18,7 @@
 #include "mooedit/mooeditwindow.h"
 #include "mooedit/moooutputfiltersimple.h"
 #include "mooedit/mooedit-enums.h"
+#include "mooutils/mooutils-misc.h"
 #include <gtk/gtkwindow.h>
 #include <gtk/gtktextview.h>
 #include <string.h>
@@ -1142,7 +1143,7 @@ moo_command_filter_register (const char             *id,
 
     if (filter_lookup (id))
     {
-        g_message ("reregistering filter '%s'", id);
+        _moo_message ("reregistering filter '%s'", id);
         moo_command_filter_unregister (id);
     }
 

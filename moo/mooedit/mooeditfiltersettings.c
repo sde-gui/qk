@@ -16,6 +16,7 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/eggregex.h"
+#include "mooutils/mooutils-misc.h"
 #include <string.h>
 
 
@@ -193,9 +194,9 @@ filter_setting_match (FilterSetting *setting,
     if (egg_regex_match (setting->regex, filename, 0))
     {
         if (0)
-            g_message ("file '%s' matched pattern '%s': config '%s'",
-                       filename, egg_regex_get_pattern (setting->regex),
-                       setting->config);
+            _moo_message ("file '%s' matched pattern '%s': config '%s'",
+                          filename, egg_regex_get_pattern (setting->regex),
+                          setting->config);
         return setting->config;
     }
 

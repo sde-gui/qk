@@ -3059,11 +3059,11 @@ file_view_create_folder (MooFileView *fileview)
 
     if (!path)
     {
-        g_message ("%s: could not make path for '%s'", G_STRLOC, name);
+        _moo_message ("%s: could not make path for '%s'", G_STRLOC, name);
 
         if (error)
         {
-            g_message ("%s: %s", G_STRLOC, error->message);
+            _moo_message ("%s: %s", G_STRLOC, error->message);
             g_error_free (error);
         }
 
@@ -3072,11 +3072,11 @@ file_view_create_folder (MooFileView *fileview)
 
     if (!_moo_file_system_create_folder (fileview->priv->file_system, path, &error))
     {
-        g_message ("%s: could not create folder '%s'", G_STRLOC, name);
+        _moo_message ("%s: could not create folder '%s'", G_STRLOC, name);
 
         if (error)
         {
-            g_message ("%s: %s", G_STRLOC, error->message);
+            _moo_message ("%s: %s", G_STRLOC, error->message);
             g_error_free (error);
         }
 

@@ -47,9 +47,10 @@ void        moo_set_log_func_file           (const char     *log_file);
 void        moo_set_log_func_silent         (void);
 void        moo_reset_log_func              (void);
 
-
 void        moo_segfault                    (void);
 gboolean    _moo_debug_enabled              (void) G_GNUC_CONST;
+void        _moo_message                    (const char     *format,
+                                             ...);
 
 void        _moo_disable_win32_error_message(void);
 void        _moo_enable_win32_error_message (void);

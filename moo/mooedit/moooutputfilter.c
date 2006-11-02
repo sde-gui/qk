@@ -14,6 +14,7 @@
 #include "mooedit/moooutputfilter.h"
 #include "mooedit/mooeditor.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/mooutils-misc.h"
 #include <string.h>
 
 
@@ -359,12 +360,12 @@ moo_output_filter_open_file (MooOutputFilter *filter,
         }
         else
         {
-            g_message ("file '%s' does not exist", path);
+            _moo_message ("file '%s' does not exist", path);
         }
     }
     else
     {
-        g_message ("could not find file '%s'", data->file);
+        _moo_message ("could not find file '%s'", data->file);
     }
 
     g_free (freeme);

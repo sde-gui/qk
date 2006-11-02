@@ -282,8 +282,8 @@ moo_plugin_register (const char            *id,
 
     if (moo_plugin_lookup (moo_plugin_id (plugin)))
     {
-        g_message ("%s: plugin with id %s already registered",
-                   G_STRLOC, moo_plugin_id (plugin));
+        _moo_message ("%s: plugin with id %s already registered",
+                      G_STRLOC, moo_plugin_id (plugin));
         g_object_unref (plugin);
         return FALSE;
     }

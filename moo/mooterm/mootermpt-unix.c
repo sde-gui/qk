@@ -21,6 +21,7 @@
 #include "mooterm/pty.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
+#include "mooutils/mooutils-misc.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -235,7 +236,8 @@ fork_argv (MooTermPt      *pt_gen,
     else
     {
 #if 1
-        g_message ("%s: forked child pid %d on fd %d", G_STRLOC, pt->child_pid, pt->master);
+        _moo_message ("%s: forked child pid %d on fd %d",
+                      G_STRLOC, pt->child_pid, pt->master);
 #endif
     }
 
@@ -344,7 +346,7 @@ read_child_out (G_GNUC_UNUSED GIOChannel     *source,
     {
         int bytes;
 
-        g_message ("%s: G_IO_HUP", G_STRLOC);
+        _moo_message ("%s: G_IO_HUP", G_STRLOC);
         error_no = errno;
 
         bytes = read (pt->master, buf, sizeof (buf));
@@ -356,7 +358,7 @@ read_child_out (G_GNUC_UNUSED GIOChannel     *source,
     }
     else if (condition & G_IO_ERR)
     {
-        g_message ("%s: G_IO_ERR", G_STRLOC);
+        _moo_message ("%s: G_IO_ERR", G_STRLOC);
         error_no = errno;
         goto error;
     }
@@ -369,7 +371,7 @@ read_child_out (G_GNUC_UNUSED GIOChannel     *source,
     if (!to_read)
     {
         if (0)
-            g_print ("read_child_out: skipping\n");
+            _moo_message ("read_child_out: skipping\n");
         return TRUE;
     }
 
@@ -482,10 +484,10 @@ read_child_out (G_GNUC_UNUSED GIOChannel     *source,
 
 error:
     if (error_occured)
-        g_message ("error in %s", G_STRLOC);
+        _moo_message ("error in %s", G_STRLOC);
 
     if (error_no)
-        g_message ("%s: %s", G_STRLOC, g_strerror (error_no));
+        _moo_message ("%s: %s", G_STRLOC, g_strerror (error_no));
 
     if (pt->io)
     {
@@ -651,9 +653,9 @@ static void     pt_write        (MooTermPt      *pt,
         }
         else
         {
-            g_message ("%s: stopping writing to child", G_STRLOC);
+            _moo_message ("%s: stopping writing to child", G_STRLOC);
             if (err)
-                g_message ("%s: %s", G_STRLOC, g_strerror (err));
+                _moo_message ("%s: %s", G_STRLOC, g_strerror (err));
             kill_child (pt);
         }
     }

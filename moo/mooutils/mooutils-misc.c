@@ -1589,6 +1589,7 @@ moo_data_dir_type_get_type (void)
 gboolean
 _moo_debug_enabled (void)
 {
+#ifndef MOO_DEBUG
     static gboolean enabled;
     static gboolean been_here;
 
@@ -1599,6 +1600,23 @@ _moo_debug_enabled (void)
     }
 
     return enabled;
+#else
+    return TRUE;
+#endif
+}
+
+
+void
+_moo_message (const char *format,
+              ...)
+{
+    if (_moo_debug_enabled ())
+    {
+        va_list args;
+        va_start (args, format);
+        g_logv (G_LOG_DOMAIN, G_LOG_LEVEL_MESSAGE, format, args);
+        va_end (args);
+    }
 }
 
 

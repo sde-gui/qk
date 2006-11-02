@@ -20,6 +20,7 @@
 #include "moofileview-aux.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-misc.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
@@ -535,8 +536,8 @@ completion_parse_text (MooFileEntryCompletion *cmpl,
                                       path, &dirname, &display_dirname,
                                       &display_basename, &error))
     {
-        g_message ("%s: could not parse path '%s'", G_STRLOC, path);
-        g_message ("%s: %s", G_STRLOC, error->message);
+        _moo_message ("%s: could not parse path '%s'", G_STRLOC, path);
+        _moo_message ("%s: %s", G_STRLOC, error->message);
         goto out;
     }
 
@@ -564,8 +565,8 @@ completion_parse_text (MooFileEntryCompletion *cmpl,
                                               &error);
         if (!folder)
         {
-            g_message ("%s: could not get folder '%s'", G_STRLOC, dirname);
-            g_message ("%s: %s", G_STRLOC, error->message);
+            _moo_message ("%s: could not get folder '%s'", G_STRLOC, dirname);
+            _moo_message ("%s: %s", G_STRLOC, error->message);
             g_error_free (error);
             goto out;
         }
