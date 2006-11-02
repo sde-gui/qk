@@ -69,7 +69,9 @@ moo_lang_mgr_init (MooLangMgr *mgr)
     for (i = 0; i < n_dirs; ++i)
         list = g_slist_prepend (list, dirs[i]);
 
-    g_object_set (mgr, "lang-files-dirs", list, "style-schemes-dirs", list, NULL);
+    g_object_set (mgr, "lang-files-dirs", list, NULL);
+    mgr->style_mgr = gtk_source_style_manager_new ();
+    gtk_source_style_manager_set_search_path (mgr->style_mgr, dirs, n_dirs);
 
     load_config (mgr);
 
@@ -85,11 +87,13 @@ moo_lang_mgr_dispose (GObject *object)
 
     if (mgr->langs)
     {
+        g_object_unref (mgr->style_mgr);
         g_hash_table_destroy (mgr->langs);
         g_hash_table_destroy (mgr->config);
         g_hash_table_destroy (mgr->globs);
         g_hash_table_destroy (mgr->mime_types);
         g_hash_table_destroy (mgr->schemes);
+        mgr->style_mgr = NULL;
         mgr->langs = NULL;
         mgr->config = NULL;
         mgr->globs = NULL;
@@ -655,7 +659,7 @@ read_schemes (MooLangMgr *mgr)
 
     mgr->got_schemes = TRUE;
 
-    list = gtk_source_languages_manager_get_available_style_schemes (GTK_SOURCE_LANGUAGES_MANAGER (mgr));
+    list = gtk_source_style_manager_list_schemes (mgr->style_mgr);
 
     while (list)
     {

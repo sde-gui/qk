@@ -59,7 +59,6 @@ void		 gtk_source_style_free		(GtkSourceStyle       *style);
 
 void		 _gtk_source_style_apply	(const GtkSourceStyle *style,
 						 GtkTextTag           *tag);
-void		 _gtk_source_style_unapply	(GtkTextTag           *tag);
 
 G_END_DECLS
 

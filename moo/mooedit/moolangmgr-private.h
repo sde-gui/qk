@@ -21,6 +21,7 @@
 #include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditconfig.h"
 #include "gtksourceview/gtksourcelanguagesmanager.h"
+#include "gtksourceview/gtksourcestylemanager.h"
 
 G_BEGIN_DECLS
 
@@ -33,6 +34,8 @@ typedef struct _MooLangMgrClass MooLangMgrClass;
 
 struct _MooLangMgr {
     GtkSourceLanguagesManager base;
+
+    GtkSourceStyleManager *style_mgr;
 
     GHashTable *langs;
     GHashTable *globs;

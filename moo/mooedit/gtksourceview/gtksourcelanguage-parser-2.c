@@ -838,6 +838,11 @@ handle_language_element (ParserState *parser_state,
 }
 
 
+struct ReplaceByIdData {
+	ParserState *parser_state;
+	GError *error;
+};
+
 static gboolean
 replace_by_id (const EggRegex *egg_regex,
 	       const gchar    *regex,
@@ -848,10 +853,7 @@ replace_by_id (const EggRegex *egg_regex,
 	gchar *tmp;
 	GError *tmp_error = NULL;
 
-	struct {
-		ParserState *parser_state;
-		GError *error;
-	} *data = user_data;
+	struct ReplaceByIdData *data = user_data;
 
 	escapes = egg_regex_fetch (egg_regex, 1, regex);
 	tmp = egg_regex_fetch (egg_regex, 2, regex);
@@ -991,10 +993,7 @@ expand_regex_vars (ParserState *parser_state, gchar *regex, gint len, GError **e
 	const gchar *re = "(?<!\\\\)(\\\\\\\\)*\\\\%\\{([^@]*?)\\}";
 	gchar *expanded_regex;
 	EggRegex *egg_re;
-	struct {
-		ParserState *parser_state;
-		GError *error;
-	} data;
+	struct ReplaceByIdData data;
 
 	if (regex == NULL)
 		return NULL;

@@ -445,15 +445,17 @@ static void		install_first_update	(GtkSourceContextEngine	*ce);
 
 /* TAGS AND STUFF -------------------------------------------------------------- */
 
+struct BufAndIters {
+	GtkTextBuffer *buffer;
+	const GtkTextIter *start, *end;
+};
+
 static void
 unhighlight_region_cb (G_GNUC_UNUSED gpointer style,
 		       GSList   *tags,
 		       gpointer  user_data)
 {
-	struct {
-		GtkTextBuffer *buffer;
-		const GtkTextIter *start, *end;
-	} *data = user_data;
+	struct BufAndIters *data = user_data;
 
 	while (tags != NULL)
 	{
@@ -470,10 +472,7 @@ unhighlight_region (GtkSourceContextEngine *ce,
 		    const GtkTextIter      *start,
 		    const GtkTextIter      *end)
 {
-	struct {
-		GtkTextBuffer *buffer;
-		const GtkTextIter *start, *end;
-	} data;
+	struct BufAndIters data;
 
 	data.buffer = ce->priv->buffer;
 	data.start = start;
@@ -495,7 +494,7 @@ set_tag_style (GtkSourceContextEngine *ce,
 	g_return_if_fail (GTK_IS_TEXT_TAG (tag));
 	g_return_if_fail (style_name != NULL);
 
-	_gtk_source_style_unapply (tag);
+	_gtk_source_style_apply (NULL, tag);
 
 	if (ce->priv->style_scheme == NULL)
 		return;
@@ -2436,6 +2435,11 @@ sub_pattern_to_int (const gchar *name)
 	return number;
 }
 
+struct RegexResolveData {
+	Regex       *start_regex;
+	const gchar *matched_text;
+};
+
 static gboolean
 replace_start_regex (const EggRegex *regex,
 		     const gchar    *matched_text,
@@ -2444,11 +2448,7 @@ replace_start_regex (const EggRegex *regex,
 {
 	gchar *num_string, *subst, *subst_escaped, *escapes;
 	gint num;
-	struct
-	{
-		Regex       *start_regex;
-		const gchar *matched_text;
-	} *data = user_data;
+	struct RegexResolveData *data = user_data;
 
 	escapes = egg_regex_fetch (regex, 1, matched_text);
 	num_string = egg_regex_fetch (regex, 2, matched_text);
@@ -2510,10 +2510,7 @@ regex_resolve (Regex       *regex,
 	EggRegex *start_ref;
 	gchar *expanded_regex;
 	Regex *new_regex;
-	struct {
-		Regex       *start_regex;
-		const gchar *matched_text;
-	} data;
+	struct RegexResolveData data;
 
 	if (regex == NULL || regex->resolved)
 		return regex_ref (regex);
@@ -5703,6 +5700,11 @@ _gtk_source_context_engine_add_ref (GtkSourceContextEngine    *ce,
  * Checks whether all children of a context definition refer to valid
  * contexts. Called from _gtk_source_context_engine_resolve_refs.
  */
+struct ResolveRefData {
+	GtkSourceContextEngine *ce;
+	GError *error;
+};
+
 static void
 resolve_reference (G_GNUC_UNUSED const gchar *id,
 		   ContextDefinition *definition,
@@ -5710,10 +5712,7 @@ resolve_reference (G_GNUC_UNUSED const gchar *id,
 {
 	GSList *l;
 
-	struct {
-		GtkSourceContextEngine *ce;
-		GError *error;
-	} *data = user_data;
+	struct ResolveRefData *data = user_data;
 
 	if (data->error != NULL)
 		return;
@@ -5766,10 +5765,7 @@ gboolean
 _gtk_source_context_engine_resolve_refs (GtkSourceContextEngine	 *ce,
 					 GError			**error)
 {
-	struct {
-		GtkSourceContextEngine *ce;
-		GError *error;
-	} data;
+	struct ResolveRefData data;
 
 	g_return_val_if_fail (GTK_IS_SOURCE_CONTEXT_ENGINE (ce), FALSE);
 	g_return_val_if_fail (error != NULL && *error == NULL, FALSE);
@@ -5917,15 +5913,17 @@ check_segment (GtkSourceContextEngine *ce,
 	}
 }
 
+struct CheckContextData {
+	Context *parent;
+	ContextDefinition *definition;
+};
+
 static void
 check_context_hash_cb (const char *text,
 		       Context    *context,
 		       gpointer    user_data)
 {
-	struct {
-		Context *parent;
-		ContextDefinition *definition;
-	} *data = user_data;
+	struct CheckContextData *data = user_data;
 
 	g_assert (text != NULL);
 	g_assert (context != NULL);
@@ -5948,10 +5946,9 @@ check_context (Context *context)
 		}
 		else
 		{
-			struct {
-				Context *parent;
-				ContextDefinition *definition;
-			} data = {context, ptr->definition};
+			struct CheckContextData data;
+			data.parent = context;
+			data.definition = ptr->definition;
 			g_hash_table_foreach (ptr->u.hash,
 					      (GHFunc) check_context_hash_cb,
 					      &data);

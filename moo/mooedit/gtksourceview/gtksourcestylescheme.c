@@ -42,9 +42,10 @@ enum {
 
 struct _GtkSourceStyleSchemePrivate
 {
-	char *id;
-	char *name;
+	gchar *id;
+	gchar *name;
 	GtkSourceStyleScheme *parent;
+	gchar *parent_id;
 	GHashTable *styles;
 };
 
@@ -58,6 +59,7 @@ gtk_source_style_scheme_finalize (GObject *object)
 	g_hash_table_destroy (scheme->priv->styles);
 	g_free (scheme->priv->id);
 	g_free (scheme->priv->name);
+	g_free (scheme->priv->parent_id);
 
 	if (scheme->priv->parent != NULL)
 		g_object_unref (scheme->priv->parent);
@@ -173,8 +175,8 @@ gtk_source_style_scheme_get_name (GtkSourceStyleScheme *scheme)
 }
 
 GtkSourceStyleScheme *
-gtk_source_style_scheme_new (const gchar *id,
-			     const gchar *name)
+_gtk_source_style_scheme_new (const gchar *id,
+			      const gchar *name)
 {
 	GtkSourceStyleScheme *scheme;
 
@@ -522,8 +524,7 @@ start_element (G_GNUC_UNUSED GMarkupParseContext *context,
 			}
 			else if (!strcmp (*attribute_names, "parent-scheme"))
 			{
-				/* FIXME are we going to use parent schemes? */
-				g_warning ("%s: implement me", G_STRLOC);
+				data->scheme->priv->parent_id = g_strdup (*attribute_values);
 			}
 			else
 			{
@@ -609,4 +610,31 @@ _gtk_source_style_scheme_new_from_file (const gchar *filename)
 	g_markup_parse_context_free (ctx);
 	g_free (text);
 	return data.scheme;
+}
+
+const gchar *
+_gtk_source_style_scheme_get_parent_id (GtkSourceStyleScheme *scheme)
+{
+	g_return_val_if_fail (GTK_IS_SOURCE_STYLE_SCHEME (scheme), NULL);
+	return scheme->priv->parent_id;
+}
+
+void
+_gtk_source_style_scheme_set_parent (GtkSourceStyleScheme *scheme,
+				     GtkSourceStyleScheme *parent_scheme)
+{
+	g_return_if_fail (GTK_IS_SOURCE_STYLE_SCHEME (scheme));
+	g_return_if_fail (!parent_scheme || GTK_IS_SOURCE_STYLE_SCHEME (parent_scheme));
+
+	if (scheme->priv->parent != NULL)
+		g_object_unref (scheme->priv->parent);
+	if (parent_scheme)
+		g_object_ref (parent_scheme);
+	scheme->priv->parent = parent_scheme;
+}
+
+GtkSourceStyleScheme *
+_gtk_source_style_scheme_default_new (void)
+{
+	return _gtk_source_style_scheme_new ("gvim", "GVim");
 }

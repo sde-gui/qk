@@ -274,6 +274,13 @@ process_language_node (xmlTextReaderPtr reader, const gchar *filename)
 		lang->priv->hidden = FALSE;
 	xmlFree (tmp);
 
+	tmp = xmlTextReaderGetAttribute (reader, BAD_CAST "mimetypes");
+	if (tmp != NULL)
+		g_hash_table_insert (lang->priv->properties,
+				     g_strdup ("mimetypes"),
+				     g_strdup ((char*) tmp));
+	xmlFree (tmp);
+
 	tmp = xmlTextReaderGetAttribute (reader, BAD_CAST "_name");
 	if (tmp == NULL)
 	{

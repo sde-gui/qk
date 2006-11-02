@@ -57,37 +57,36 @@ void
 _gtk_source_style_apply (const GtkSourceStyle *style,
 			 GtkTextTag           *tag)
 {
-	g_return_if_fail (style != NULL);
 	g_return_if_fail (GTK_IS_TEXT_TAG (tag));
 
-	g_object_freeze_notify (G_OBJECT (tag));
+	if (style != NULL)
+	{
+		g_object_freeze_notify (G_OBJECT (tag));
 
-	if (style->mask & GTK_SOURCE_STYLE_USE_BACKGROUND)
-		g_object_set (tag, "background-gdk", &style->background, NULL);
-	if (style->mask & GTK_SOURCE_STYLE_USE_FOREGROUND)
-		g_object_set (tag, "foreground-gdk", &style->foreground, NULL);
-	if (style->mask & GTK_SOURCE_STYLE_USE_ITALIC)
-		g_object_set (tag, "style", style->italic ? PANGO_STYLE_ITALIC : PANGO_STYLE_NORMAL, NULL);
-	if (style->mask & GTK_SOURCE_STYLE_USE_BOLD)
-		g_object_set (tag, "weight", style->bold ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL, NULL);
-	if (style->mask & GTK_SOURCE_STYLE_USE_UNDERLINE)
-		g_object_set (tag, "underline", style->underline ? PANGO_UNDERLINE_SINGLE : PANGO_UNDERLINE_NONE, NULL);
-	if (style->mask & GTK_SOURCE_STYLE_USE_STRIKETHROUGH)
-		g_object_set (tag, "strikethrough", style->strikethrough != 0, NULL);
+		if (style->mask & GTK_SOURCE_STYLE_USE_BACKGROUND)
+			g_object_set (tag, "background-gdk", &style->background, NULL);
+		if (style->mask & GTK_SOURCE_STYLE_USE_FOREGROUND)
+			g_object_set (tag, "foreground-gdk", &style->foreground, NULL);
+		if (style->mask & GTK_SOURCE_STYLE_USE_ITALIC)
+			g_object_set (tag, "style", style->italic ? PANGO_STYLE_ITALIC : PANGO_STYLE_NORMAL, NULL);
+		if (style->mask & GTK_SOURCE_STYLE_USE_BOLD)
+			g_object_set (tag, "weight", style->bold ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL, NULL);
+		if (style->mask & GTK_SOURCE_STYLE_USE_UNDERLINE)
+			g_object_set (tag, "underline", style->underline ? PANGO_UNDERLINE_SINGLE : PANGO_UNDERLINE_NONE, NULL);
+		if (style->mask & GTK_SOURCE_STYLE_USE_STRIKETHROUGH)
+			g_object_set (tag, "strikethrough", style->strikethrough != 0, NULL);
 
-	g_object_thaw_notify (G_OBJECT (tag));
-}
-
-void
-_gtk_source_style_unapply (GtkTextTag *tag)
-{
-	g_return_if_fail (GTK_IS_TEXT_TAG (tag));
-	g_object_set (tag,
-		      "background-set", FALSE,
-		      "foreground-set", FALSE,
-		      "style-set", FALSE,
-		      "weight-set", FALSE,
-		      "underline-set", FALSE,
-		      "strikethrough-set", FALSE,
-		      NULL);
+		g_object_thaw_notify (G_OBJECT (tag));
+	}
+	else
+	{
+		g_object_set (tag,
+			      "background-set", FALSE,
+			      "foreground-set", FALSE,
+			      "style-set", FALSE,
+			      "weight-set", FALSE,
+			      "underline-set", FALSE,
+			      "strikethrough-set", FALSE,
+			      NULL);
+	}
 }

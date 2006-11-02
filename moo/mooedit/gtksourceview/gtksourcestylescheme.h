@@ -50,7 +50,7 @@ struct _GtkSourceStyleSchemeClass
 
 GType			 gtk_source_style_scheme_get_type	(void) G_GNUC_CONST;
 
-GtkSourceStyleScheme	*gtk_source_style_scheme_new		(const gchar          *id,
+GtkSourceStyleScheme	*_gtk_source_style_scheme_new		(const gchar          *id,
 								 const gchar          *name);
 
 const gchar             *gtk_source_style_scheme_get_id         (GtkSourceStyleScheme *scheme);
@@ -71,8 +71,10 @@ void			 gtk_source_style_scheme_set_style	(GtkSourceStyleScheme *scheme,
 void			 _gtk_source_style_scheme_apply		(GtkSourceStyleScheme *scheme,
 								 GtkWidget            *widget);
 GtkSourceStyleScheme	*_gtk_source_style_scheme_new_from_file (const gchar          *filename);
-/* temporary hackaround, implemented in gtksourcelanguagesmanager.c, returns new instance */
-GtkSourceStyleScheme	*_gtk_source_style_scheme_get_default	(void);
+GtkSourceStyleScheme	*_gtk_source_style_scheme_default_new	(void);
+const gchar		*_gtk_source_style_scheme_get_parent_id	(GtkSourceStyleScheme *scheme);
+void			 _gtk_source_style_scheme_set_parent	(GtkSourceStyleScheme *scheme,
+								 GtkSourceStyleScheme *parent_scheme);
 
 G_END_DECLS
 

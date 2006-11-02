@@ -154,6 +154,6 @@ void
 _moo_text_style_apply_to_tag (const MooTextStyle *style,
                               GtkTextTag         *tag)
 {
-    _gtk_source_style_unapply (tag);
+    _gtk_source_style_apply (NULL, tag);
     _gtk_source_style_apply ((GtkSourceStyle*) style, tag);
 }
