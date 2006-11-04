@@ -480,7 +480,7 @@ moo_find_run (MooFind        *find,
 
             if (!regex)
             {
-                moo_text_regex_error_dialog (GTK_WIDGET (find), error);
+                _moo_text_regex_error_dialog (GTK_WIDGET (find), error);
                 g_error_free (error);
                 continue;
             }
@@ -502,7 +502,7 @@ moo_find_run (MooFind        *find,
 
             if (!egg_regex_check_replacement (replace_with, NULL, &error))
             {
-                moo_text_regex_error_dialog (GTK_WIDGET (find), error);
+                _moo_text_regex_error_dialog (GTK_WIDGET (find), error);
                 g_error_free (error);
                 egg_regex_unref (find->regex);
                 find->regex = NULL;
@@ -1095,7 +1095,7 @@ run_replace_silent (GtkTextView   *view,
     replaced = do_replace_silent (&start, &end, flags, text, regex, replacement);
 
     if (get_search_bounds2 (buffer, flags, &start, &end) &&
-        moo_text_search_from_start_dialog (GTK_WIDGET (view), replaced))
+        _moo_text_search_from_start_dialog (GTK_WIDGET (view), replaced))
     {
         int replaced2 = do_replace_silent (&start, &end, flags, text, regex, replacement);
         replaced_n_message (replaced2, msg_func, data);
@@ -1129,7 +1129,7 @@ replace_func (G_GNUC_UNUSED const char *text,
     scroll_to_found (data->view);
 
     if (!data->dialog)
-        data->dialog = moo_text_prompt_on_replace_dialog (GTK_WIDGET (data->view));
+        data->dialog = _moo_text_prompt_on_replace_dialog (GTK_WIDGET (data->view));
 
     response = gtk_dialog_run (GTK_DIALOG (data->dialog));
 
@@ -1215,7 +1215,7 @@ run_replace_interactive (GtkTextView   *view,
     {
         int replaced2 = replaced;
 
-        if (moo_text_search_from_start_dialog (GTK_WIDGET (view), replaced))
+        if (_moo_text_search_from_start_dialog (GTK_WIDGET (view), replaced))
             do_replace_interactive (view, &start, &end, flags, text, regex, replacement, &replaced2);
 
         replaced_n_message (replaced2, msg_func, data);

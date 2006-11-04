@@ -164,7 +164,7 @@ static void
 moo_closure_signal_destroy (MooClosure *closure)
 {
     MooClosureSignal *cl = (MooClosureSignal*) closure;
-    moo_object_ptr_free (cl->object);
+    _moo_object_ptr_free (cl->object);
     g_free (cl->signal);
 }
 
@@ -172,7 +172,7 @@ moo_closure_signal_destroy (MooClosure *closure)
 static void
 object_died (MooClosureSignal *cl)
 {
-    moo_object_ptr_free (cl->object);
+    _moo_object_ptr_free (cl->object);
     cl->object = NULL;
     moo_closure_invalidate ((MooClosure*) cl);
 }
@@ -208,7 +208,7 @@ moo_closure_signal_new (gpointer    object,
                           moo_closure_signal_call,
                           moo_closure_signal_destroy);
 
-    cl->object = moo_object_ptr_new (object, (GWeakNotify) object_died, cl);
+    cl->object = _moo_object_ptr_new (object, (GWeakNotify) object_died, cl);
     cl->proxy = (gpointer (*) (gpointer)) proxy_func;
     cl->signal = g_strdup (signal);
 
@@ -254,7 +254,7 @@ static void
 moo_closure_simple_destroy (MooClosure *closure)
 {
     MooClosureSimple *cl = (MooClosureSimple*) closure;
-    moo_object_ptr_free (cl->object);
+    _moo_object_ptr_free (cl->object);
     cl->object = NULL;
 }
 
@@ -264,7 +264,7 @@ closure_simple_object_died (MooClosureSimple *cl)
 {
     MooObjectPtr *tmp = cl->object;
     cl->object = NULL;
-    moo_object_ptr_free (tmp);
+    _moo_object_ptr_free (tmp);
     moo_closure_invalidate ((MooClosure*)cl);
 }
 
@@ -279,9 +279,9 @@ moo_closure_simple_new (gpointer    object,
     cl = moo_closure_new (MooClosureSimple,
                           moo_closure_simple_call,
                           moo_closure_simple_destroy);
-    cl->object = moo_object_ptr_new (object,
-                                     (GWeakNotify) closure_simple_object_died,
-                                     cl);
+    cl->object = _moo_object_ptr_new (object,
+                                      (GWeakNotify) closure_simple_object_died,
+                                      cl);
     cl->callback = (void (*) (gpointer)) callback;
     cl->proxy = (gpointer (*) (gpointer)) proxy_func;
 
@@ -290,10 +290,10 @@ moo_closure_simple_new (gpointer    object,
 
 
 MooClosure*
-moo_closure_new_simple (gpointer    object,
-                        const char *signal,
-                        GCallback   callback,
-                        GCallback   proxy_func)
+_moo_closure_new_simple (gpointer    object,
+                         const char *signal,
+                         GCallback   callback,
+                         GCallback   proxy_func)
 {
     g_return_val_if_fail (G_IS_OBJECT (object), NULL);
     g_return_val_if_fail (callback || signal, NULL);
@@ -323,9 +323,9 @@ object_ptr_object_died (MooObjectPtr *ptr)
 
 
 MooObjectPtr*
-moo_object_ptr_new (GObject    *object,
-                    GWeakNotify notify,
-                    gpointer    data)
+_moo_object_ptr_new (GObject    *object,
+                     GWeakNotify notify,
+                     gpointer    data)
 {
     MooObjectPtr *ptr;
 
@@ -344,7 +344,7 @@ moo_object_ptr_new (GObject    *object,
 
 
 void
-moo_object_ptr_die (MooObjectPtr *ptr)
+_moo_object_ptr_die (MooObjectPtr *ptr)
 {
     if (ptr)
     {
@@ -356,9 +356,9 @@ moo_object_ptr_die (MooObjectPtr *ptr)
 
 
 void
-moo_object_ptr_free (MooObjectPtr *ptr)
+_moo_object_ptr_free (MooObjectPtr *ptr)
 {
-    moo_object_ptr_die (ptr);
+    _moo_object_ptr_die (ptr);
     g_free (ptr);
 }
 

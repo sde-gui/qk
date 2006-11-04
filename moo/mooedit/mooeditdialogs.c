@@ -26,8 +26,8 @@
 
 
 GSList*
-moo_edit_open_dialog (GtkWidget      *widget,
-                      MooFilterMgr   *mgr)
+_moo_edit_open_dialog (GtkWidget      *widget,
+                       MooFilterMgr   *mgr)
 {
     MooFileDialog *dialog;
     const char *start;
@@ -67,9 +67,9 @@ moo_edit_open_dialog (GtkWidget      *widget,
 
 
 MooEditFileInfo*
-moo_edit_save_as_dialog (MooEdit        *edit,
-                         MooFilterMgr   *mgr,
-                         const char     *display_basename)
+_moo_edit_save_as_dialog (MooEdit        *edit,
+                          MooFilterMgr   *mgr,
+                          const char     *display_basename)
 {
     const char *title = "Save File";
     const char *start = NULL;
@@ -107,7 +107,7 @@ moo_edit_save_as_dialog (MooEdit        *edit,
 
 
 MooEditDialogResponse
-moo_edit_save_changes_dialog (MooEdit *edit)
+_moo_edit_save_changes_dialog (MooEdit *edit)
 {
     GtkDialog *dialog = NULL;
     int response;
@@ -362,8 +362,8 @@ files_treeview_get_to_save (GtkWidget *treeview)
 
 
 MooEditDialogResponse
-moo_edit_save_multiple_changes_dialog (GSList  *docs,
-                                       GSList **to_save)
+_moo_edit_save_multiple_changes_dialog (GSList  *docs,
+                                        GSList **to_save)
 {
     GSList *l;
     GtkWidget *dialog, *label, *treeview;
@@ -437,9 +437,9 @@ moo_edit_save_multiple_changes_dialog (GSList  *docs,
 
 /* XXX filename */
 void
-moo_edit_save_error_dialog (GtkWidget      *widget,
-                            const char     *filename,
-                            const char     *err_msg)
+_moo_edit_save_error_dialog (GtkWidget      *widget,
+                             const char     *filename,
+                             const char     *err_msg)
 {
     char *filename_utf8, *msg = NULL;
 
@@ -464,9 +464,9 @@ moo_edit_save_error_dialog (GtkWidget      *widget,
 
 /* XXX filename */
 void
-moo_edit_open_error_dialog (GtkWidget      *widget,
-                            const char     *filename,
-                            const char     *err_msg)
+_moo_edit_open_error_dialog (GtkWidget      *widget,
+                             const char     *filename,
+                             const char     *err_msg)
 {
     char *filename_utf8, *msg = NULL;
 
@@ -491,8 +491,8 @@ moo_edit_open_error_dialog (GtkWidget      *widget,
 
 /* XXX filename */
 void
-moo_edit_reload_error_dialog (GtkWidget      *widget,
-                              const char     *err_msg)
+_moo_edit_reload_error_dialog (GtkWidget      *widget,
+                               const char     *err_msg)
 {
     moo_error_dialog (widget, "Could not load file", err_msg);
 }
@@ -546,26 +546,26 @@ moo_edit_question_dialog (MooEdit    *edit,
 }
 
 gboolean
-moo_edit_reload_modified_dialog (MooEdit    *edit)
+_moo_edit_reload_modified_dialog (MooEdit    *edit)
 {
     return moo_edit_question_dialog (edit, "Reload?", "Reload");
 }
 
 gboolean
-moo_edit_overwrite_modified_dialog (MooEdit    *edit)
+_moo_edit_overwrite_modified_dialog (MooEdit    *edit)
 {
     return moo_edit_question_dialog (edit, "Overwrite modified?", "Overwrite");
 }
 
 gboolean
-moo_edit_overwrite_deleted_dialog (MooEdit    *edit)
+_moo_edit_overwrite_deleted_dialog (MooEdit    *edit)
 {
     return moo_edit_question_dialog (edit, "Overwrite deleted?", "Overwrite");
 }
 
 
 void
-moo_edit_file_deleted_dialog (MooEdit    *edit)
+_moo_edit_file_deleted_dialog (MooEdit    *edit)
 {
     moo_error_dialog (GTK_WIDGET (edit),
                       "File deleted",
@@ -575,7 +575,7 @@ moo_edit_file_deleted_dialog (MooEdit    *edit)
 
 /* XXX */
 int
-moo_edit_file_modified_on_disk_dialog (MooEdit *edit)
+_moo_edit_file_modified_on_disk_dialog (MooEdit *edit)
 {
     moo_error_dialog (GTK_WIDGET (edit),
                       "File modified on disk",
@@ -589,9 +589,9 @@ moo_edit_file_modified_on_disk_dialog (MooEdit *edit)
  */
 
 void
-moo_text_nothing_found_dialog (GtkWidget      *parent,
-                               const char     *text,
-                               gboolean        regex)
+_moo_text_nothing_found_dialog (GtkWidget      *parent,
+                                const char     *text,
+                                gboolean        regex)
 {
     GtkWidget *dialog;
     char *msg_text;
@@ -621,8 +621,8 @@ moo_text_nothing_found_dialog (GtkWidget      *parent,
 
 
 gboolean
-moo_text_search_from_start_dialog (GtkWidget *widget,
-                                   gboolean   backwards)
+_moo_text_search_from_start_dialog (GtkWidget *widget,
+                                    gboolean   backwards)
 {
     GtkWidget *dialog;
     int response;
@@ -660,8 +660,8 @@ moo_text_search_from_start_dialog (GtkWidget *widget,
 
 
 void
-moo_text_regex_error_dialog (GtkWidget  *parent,
-                             GError     *error)
+_moo_text_regex_error_dialog (GtkWidget  *parent,
+                              GError     *error)
 {
     GtkWidget *dialog;
     char *msg_text = NULL;
@@ -703,7 +703,7 @@ moo_text_regex_error_dialog (GtkWidget  *parent,
 
 
 GtkWidget*
-moo_text_prompt_on_replace_dialog (GtkWidget *parent)
+_moo_text_prompt_on_replace_dialog (GtkWidget *parent)
 {
     GtkWidget *dialog;
     MooGladeXML *xml;

@@ -64,14 +64,14 @@ void        moo_closure_invalidate          (MooClosure *closure);
 
 #define MOO_OBJECT_PTR_GET(ptr_) ((ptr_) && (ptr_)->target ? (ptr_)->target : NULL)
 
-MooObjectPtr *moo_object_ptr_new            (GObject    *object,
+MooObjectPtr *_moo_object_ptr_new           (GObject    *object,
                                              GWeakNotify notify,
                                              gpointer    data);
-void        moo_object_ptr_die              (MooObjectPtr *ptr);
-void        moo_object_ptr_free             (MooObjectPtr *ptr);
+void        _moo_object_ptr_die             (MooObjectPtr *ptr);
+void        _moo_object_ptr_free            (MooObjectPtr *ptr);
 
 
-MooClosure *moo_closure_new_simple          (gpointer    object,
+MooClosure *_moo_closure_new_simple         (gpointer    object,
                                              const char *signal,
                                              GCallback   callback,
                                              GCallback   proxy_func);

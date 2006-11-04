@@ -188,8 +188,8 @@ moo_action_constructor (GType                  type,
     {
         if (closure_object)
         {
-            closure = moo_closure_new_simple (closure_object, closure_signal,
-                                              closure_callback, closure_proxy_func);
+            closure = _moo_closure_new_simple (closure_object, closure_signal,
+                                               closure_callback, closure_proxy_func);
             moo_closure_ref_sink (closure);
         }
         else
@@ -339,7 +339,7 @@ moo_toggle_action_dispose (GObject *object)
 
     if (action->priv->ptr)
     {
-        moo_object_ptr_free (action->priv->ptr);
+        _moo_object_ptr_free (action->priv->ptr);
         action->priv->ptr = NULL;
     }
 
@@ -420,14 +420,14 @@ _moo_toggle_action_set_callback (MooToggleAction    *action,
 
     action->priv->callback = callback;
     if (action->priv->ptr)
-        moo_object_ptr_free (action->priv->ptr);
+        _moo_object_ptr_free (action->priv->ptr);
     action->priv->ptr = NULL;
     action->priv->data = NULL;
 
     if (callback)
     {
         if (object)
-            action->priv->ptr = moo_object_ptr_new (data, NULL, NULL);
+            action->priv->ptr = _moo_object_ptr_new (data, NULL, NULL);
         else
             action->priv->data = data;
     }

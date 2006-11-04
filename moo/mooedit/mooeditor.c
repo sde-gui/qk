@@ -1071,7 +1071,7 @@ moo_editor_open (MooEditor      *editor,
 
     if (!files)
     {
-        files = moo_edit_open_dialog (parent, editor->priv->filter_mgr);
+        files = _moo_edit_open_dialog (parent, editor->priv->filter_mgr);
 
         if (!files)
             return FALSE;
@@ -1126,8 +1126,8 @@ moo_editor_open (MooEditor      *editor,
         if (!_moo_edit_loader_load (loader, doc, filename, info->encoding, &error))
         {
             if (!editor->priv->silent)
-                moo_edit_open_error_dialog (parent, filename,
-                                            error ? error->message : NULL);
+                _moo_edit_open_error_dialog (parent, filename,
+                                             error ? error->message : NULL);
             g_error_free (error);
             result = FALSE;
         }
@@ -1285,7 +1285,7 @@ moo_editor_close_window (MooEditor      *editor,
         if (info->window)
             moo_edit_window_set_active_doc (info->window, modified->data);
 
-        response = moo_edit_save_changes_dialog (modified->data);
+        response = _moo_edit_save_changes_dialog (modified->data);
 
         switch (response)
         {
@@ -1307,7 +1307,7 @@ moo_editor_close_window (MooEditor      *editor,
         GSList *to_save = NULL, *l;
         gboolean saved = TRUE;
 
-        response = moo_edit_save_multiple_changes_dialog (modified, &to_save);
+        response = _moo_edit_save_multiple_changes_dialog (modified, &to_save);
 
         switch (response)
         {
@@ -1482,7 +1482,7 @@ close_docs_real (MooEditor      *editor,
         if (info->window)
             moo_edit_window_set_active_doc (info->window, modified->data);
 
-        response = moo_edit_save_changes_dialog (modified->data);
+        response = _moo_edit_save_changes_dialog (modified->data);
 
         switch (response)
         {
@@ -1504,7 +1504,7 @@ close_docs_real (MooEditor      *editor,
         GSList *to_save = NULL;
         gboolean saved = TRUE;
 
-        response = moo_edit_save_multiple_changes_dialog (modified, &to_save);
+        response = _moo_edit_save_multiple_changes_dialog (modified, &to_save);
 
         switch (response)
         {
@@ -1799,7 +1799,7 @@ _moo_editor_reload (MooEditor      *editor,
     if (!editor->priv->silent &&
          !MOO_EDIT_IS_CLEAN (doc) &&
          MOO_EDIT_IS_MODIFIED (doc) &&
-         !moo_edit_reload_modified_dialog (doc))
+         !_moo_edit_reload_modified_dialog (doc))
                 return;
 
     moo_text_view_get_cursor (MOO_TEXT_VIEW (doc), &iter);
@@ -1809,7 +1809,7 @@ _moo_editor_reload (MooEditor      *editor,
     if (!_moo_edit_loader_reload (loader, doc, &error_here))
     {
         if (!editor->priv->silent)
-            moo_edit_reload_error_dialog (GTK_WIDGET (doc), error_here->message);
+            _moo_edit_reload_error_dialog (GTK_WIDGET (doc), error_here->message);
         else
             g_propagate_error (error, error_here);
 
@@ -1890,15 +1890,15 @@ _moo_editor_save (MooEditor      *editor,
 
     if (!editor->priv->silent &&
          (moo_edit_get_status (doc) & MOO_EDIT_MODIFIED_ON_DISK) &&
-         !moo_edit_overwrite_modified_dialog (doc))
+         !_moo_edit_overwrite_modified_dialog (doc))
             goto out;
 
     if (!do_save (editor, saver, doc, filename, encoding, &error_here))
     {
         if (!editor->priv->silent)
         {
-            moo_edit_save_error_dialog (GTK_WIDGET (doc), filename,
-                                        error_here->message);
+            _moo_edit_save_error_dialog (GTK_WIDGET (doc), filename,
+                                         error_here->message);
             g_error_free (error_here);
         }
         else
@@ -1946,8 +1946,8 @@ _moo_editor_save_as (MooEditor      *editor,
 
     if (!filename)
     {
-        file_info = moo_edit_save_as_dialog (doc, editor->priv->filter_mgr,
-                                             moo_edit_get_display_basename (doc));
+        file_info = _moo_edit_save_as_dialog (doc, editor->priv->filter_mgr,
+                                              moo_edit_get_display_basename (doc));
 
         if (!file_info)
             goto out;
@@ -1961,9 +1961,9 @@ _moo_editor_save_as (MooEditor      *editor,
     {
         if (!editor->priv->silent)
         {
-            moo_edit_save_error_dialog (GTK_WIDGET (doc),
-                                        file_info->filename,
-                                        error_here->message);
+            _moo_edit_save_error_dialog (GTK_WIDGET (doc),
+                                         file_info->filename,
+                                         error_here->message);
             g_error_free (error_here);
         }
         else

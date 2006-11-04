@@ -1216,8 +1216,8 @@ watch_destroy (Watch *w)
             w->klass->destroy (w);
         if (w->notify)
             w->notify (w->notify_data);
-        moo_object_ptr_free (w->source);
-        moo_object_ptr_free (w->target);
+        _moo_object_ptr_free (w->source);
+        _moo_object_ptr_free (w->target);
         g_free (w);
     }
 }
@@ -1228,7 +1228,7 @@ watch_source_died (Watch *w)
 {
     if (w->klass->source_notify)
         w->klass->source_notify (w);
-    moo_object_ptr_free (w->source);
+    _moo_object_ptr_free (w->source);
     w->source = NULL;
     g_hash_table_remove (watches, GUINT_TO_POINTER (w->id));
 }
@@ -1238,7 +1238,7 @@ watch_target_died (Watch *w)
 {
     if (w->klass->target_notify)
         w->klass->target_notify (w);
-    moo_object_ptr_free (w->target);
+    _moo_object_ptr_free (w->target);
     w->target = NULL;
     g_hash_table_remove (watches, GUINT_TO_POINTER (w->id));
 }
@@ -1259,8 +1259,8 @@ watch_alloc (gsize          size,
     g_return_val_if_fail (G_IS_OBJECT (target), NULL);
 
     w = g_malloc0 (size);
-    w->source = moo_object_ptr_new (source, (GWeakNotify) watch_source_died, w);
-    w->target = moo_object_ptr_new (target, (GWeakNotify) watch_target_died, w);
+    w->source = _moo_object_ptr_new (source, (GWeakNotify) watch_source_died, w);
+    w->target = _moo_object_ptr_new (target, (GWeakNotify) watch_target_died, w);
     w->klass = klass;
     w->notify = notify;
     w->notify_data = notify_data;
