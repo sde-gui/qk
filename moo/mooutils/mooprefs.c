@@ -1059,7 +1059,7 @@ moo_prefs_save (const char     *file,
     if (empty)
     {
         if (g_file_test (file, G_FILE_TEST_EXISTS))
-            if (_m_unlink (file))
+            if (_moo_unlink (file))
                 g_critical ("%s: %s", G_STRLOC,
                             g_strerror (errno));
         return TRUE;

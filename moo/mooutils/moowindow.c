@@ -86,7 +86,7 @@ static void         moo_window_class_new_actionv        (MooWindowClass *klass,
                                                          const char     *first_prop_name,
                                                          va_list         props);
 
-GObject            *moo_window_constructor              (GType           type,
+static GObject     *moo_window_constructor              (GType           type,
                                                          guint           n_props,
                                                          GObjectConstructParam *props);
 static void         moo_window_dispose                  (GObject        *object);
@@ -273,7 +273,7 @@ moo_window_class_init (MooWindowClass *klass)
 }
 
 
-GObject *
+static GObject *
 moo_window_constructor (GType                  type,
                         guint                  n_props,
                         GObjectConstructParam *props)

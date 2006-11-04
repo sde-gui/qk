@@ -1363,10 +1363,10 @@ moo_get_data_dirs (MooDataDirType type,
     switch (type)
     {
         case MOO_DATA_SHARE:
-            d = g_win32_get_package_installation_subdirectory (NULL, NULL, "share/" MOO_PACKAGE_NAME);
+            d = g_win32_get_package_installation_subdirectory (NULL, NULL, "share\\" MOO_PACKAGE_NAME);
             break;
         case MOO_DATA_LIB:
-            d = g_win32_get_package_installation_subdirectory (NULL, NULL, "lib/" MOO_PACKAGE_NAME);
+            d = g_win32_get_package_installation_subdirectory (NULL, NULL, "lib\\" MOO_PACKAGE_NAME);
             break;
     }
 
@@ -1472,9 +1472,9 @@ save_with_backup (const char *filename,
     if (!_moo_save_file_utf8 (tmp_file, data, len, error))
         goto out;
 
-    _moo_rename (filename, bak_file, &error_move);
+    _moo_rename_file (filename, bak_file, &error_move);
 
-    if (!_moo_rename (tmp_file, filename, error))
+    if (!_moo_rename_file (tmp_file, filename, error))
     {
         if (error_move)
         {
@@ -1545,7 +1545,7 @@ moo_save_user_data_file (const char     *basename,
     file = moo_get_user_data_file (basename);
     g_return_val_if_fail (dir && file, FALSE);
 
-    if (!_moo_mkdir (dir, error))
+    if (!_moo_create_dir (dir, error))
         goto out;
 
     if (same_content (file, content, len))

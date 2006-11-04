@@ -4,7 +4,7 @@
   <style name="bracket-match"               background="#FFFF99" bold="true"/>
   <style name="bracket-mismatch"            background="#FF0000" bold="true"/>
 
-  <style name="Others"                      foreground="#008000"/>
+  <style name="Others"                      foreground="#800000"/>
   <style name="Others 2"                    bold="true"/>
   <style name="Others 3"                    foreground="#008000"/>
 

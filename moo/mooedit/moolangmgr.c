@@ -448,7 +448,7 @@ get_lang_for_mime_type (MooLangMgr *mgr,
     return found ? lang : NULL;
 }
 #else /* MOO_USE_XDGMIME */
-MooLang *
+static MooLang *
 get_lang_for_mime_type (MooLangMgr *mgr,
                         const char *mime)
 {

@@ -150,7 +150,7 @@ rm_r (const char *path,
 
         errno = 0;
 
-        if (_m_remove (file_path))
+        if (_moo_remove (file_path))
         {
             int err = errno;
 
@@ -180,7 +180,7 @@ rm_r (const char *path,
     {
         errno = 0;
 
-        if (_m_remove (path) != 0)
+        if (_moo_remove (path) != 0)
         {
             int err = errno;
             success = FALSE;
@@ -197,9 +197,9 @@ rm_r (const char *path,
 
 
 gboolean
-_moo_rmdir (const char *path,
-            gboolean    recursive,
-            GError    **error)
+_moo_remove_dir (const char *path,
+                 gboolean    recursive,
+                 GError    **error)
 {
     g_return_val_if_fail (path != NULL, FALSE);
 
@@ -207,7 +207,7 @@ _moo_rmdir (const char *path,
     {
         errno = 0;
 
-        if (_m_rmdir (path) != 0)
+        if (_moo_rmdir (path) != 0)
         {
             int err = errno;
             char *path_utf8 = g_filename_display_name (path);
@@ -233,8 +233,8 @@ _moo_rmdir (const char *path,
 
 
 gboolean
-_moo_mkdir (const char *path,
-            GError    **error)
+_moo_create_dir (const char *path,
+                 GError    **error)
 {
     struct stat buf;
     char *utf8_path;
@@ -262,7 +262,7 @@ _moo_mkdir (const char *path,
     {
         errno = 0;
 
-        if (_m_mkdir (path) == -1)
+        if (_moo_mkdir (path) == -1)
         {
             int err_code = errno;
             utf8_path = g_filename_display_name (path);
@@ -295,16 +295,16 @@ _moo_mkdir (const char *path,
 
 
 gboolean
-_moo_rename (const char *path,
-             const char *new_path,
-             GError    **error)
+_moo_rename_file (const char *path,
+                  const char *new_path,
+                  GError    **error)
 {
     g_return_val_if_fail (path != NULL, FALSE);
     g_return_val_if_fail (new_path != NULL, FALSE);
 
     errno = 0;
 
-    if (_m_rename (path, new_path) != 0)
+    if (_moo_rename (path, new_path) != 0)
     {
         int err_code = errno;
         char *utf8_path = g_filename_display_name (path);
@@ -426,7 +426,7 @@ _moo_normalize_file_path (const char *filename)
 
     errno = 0;
 
-    if (_m_chdir (dirname) != 0)
+    if (_moo_chdir (dirname) != 0)
     {
         int err = errno;
         g_warning ("%s: %s", G_STRLOC, g_strerror (err));
@@ -439,7 +439,7 @@ _moo_normalize_file_path (const char *filename)
 
         errno = 0;
 
-        if (_m_chdir (working_dir) != 0)
+        if (_moo_chdir (working_dir) != 0)
         {
             int err = errno;
             g_warning ("%s: %s", G_STRLOC, g_strerror (err));
@@ -513,7 +513,7 @@ G_STMT_START {                                                  \
 
 
 int
-_m_unlink (const char *path)
+_moo_unlink (const char *path)
 {
 #ifdef __WIN32__
     CCALL_1 (unlink, _wunlink, path);
@@ -524,7 +524,7 @@ _m_unlink (const char *path)
 
 
 int
-_m_rmdir (const char *path)
+_moo_rmdir (const char *path)
 {
 #ifdef __WIN32__
     CCALL_1 (rmdir, _wrmdir, path);
@@ -535,7 +535,7 @@ _m_rmdir (const char *path)
 
 
 int
-_m_chdir (const char *path)
+_moo_chdir (const char *path)
 {
 #ifdef __WIN32__
     CCALL_1 (_chdir, _wchdir, path);
@@ -546,7 +546,7 @@ _m_chdir (const char *path)
 
 
 int
-_m_mkdir (const char *path)
+_moo_mkdir (const char *path)
 {
 #ifdef __WIN32__
     CCALL_1 (mkdir, _wmkdir, path);
@@ -557,7 +557,7 @@ _m_mkdir (const char *path)
 
 
 int
-_m_remove (const char *path)
+_moo_remove (const char *path)
 {
 #ifdef __WIN32__
     gboolean use_wide_char_api;
@@ -600,8 +600,8 @@ _m_remove (const char *path)
 
 
 gpointer
-_m_fopen (const char *path,
-          const char *mode)
+_moo_fopen (const char *path,
+            const char *mode)
 {
 #ifdef __WIN32__
     gboolean use_wide_char_api;
@@ -650,8 +650,8 @@ _m_fopen (const char *path,
 
 
 int
-_m_rename (const char *old_name,
-           const char *new_name)
+_moo_rename (const char *old_name,
+             const char *new_name)
 {
 #ifdef __WIN32__
     gboolean use_wide_char_api;

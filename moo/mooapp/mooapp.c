@@ -647,7 +647,7 @@ moo_app_create_user_data_dir (MooApp *app)
     if (g_file_test (dir, G_FILE_TEST_IS_DIR))
         return dir;
 
-    if (!_moo_mkdir (dir, &error))
+    if (!_moo_create_dir (dir, &error))
     {
         g_warning ("%s: %s", G_STRLOC, error->message);
         g_error_free (error);
@@ -657,47 +657,6 @@ moo_app_create_user_data_dir (MooApp *app)
 
     return dir;
 }
-
-
-#if 0
-void
-moo_app_python_execute_file (G_GNUC_UNUSED GtkWindow *parent_window)
-{
-    GtkWidget *parent;
-    const char *filename = NULL;
-    FILE *file;
-
-    g_return_if_fail (moo_python_running ());
-
-    parent = parent_window ? GTK_WIDGET (parent_window) : NULL;
-    if (!filename)
-        filename = moo_file_dialogp (parent,
-                                     MOO_DIALOG_FILE_OPEN_EXISTING,
-                                     "Choose Python Script to Execute",
-                                     "python_exec_file", NULL);
-
-    if (!filename)
-        return;
-
-    file = _m_fopen (filename, "r");
-
-    if (!file)
-    {
-        moo_error_dialog (parent, "Could not open file", NULL);
-    }
-    else
-    {
-        MooPyObject *res = moo_python_run_file (file, filename);
-
-        fclose (file);
-
-        if (res)
-            moo_Py_DECREF (res);
-        else
-            moo_PyErr_Print ();
-    }
-}
-#endif
 
 
 static gboolean
@@ -711,7 +670,7 @@ moo_app_python_run_file (MooApp      *app,
     g_return_val_if_fail (filename != NULL, FALSE);
     g_return_val_if_fail (moo_python_running (), FALSE);
 
-    file = _m_fopen (filename, "r");
+    file = _moo_fopen (filename, "r");
     g_return_val_if_fail (file != NULL, FALSE);
 
     res = moo_python_run_file (file, filename);
@@ -1091,7 +1050,7 @@ moo_app_quit_real (MooApp *app)
     if (app->priv->tmpdir)
     {
         GError *error = NULL;
-        _moo_rmdir (app->priv->tmpdir, TRUE, &error);
+        _moo_remove_dir (app->priv->tmpdir, TRUE, &error);
 
         if (error)
         {
@@ -1568,7 +1527,7 @@ moo_app_tempnam (MooApp *app)
             dirname = g_build_filename (g_get_tmp_dir (), basename, NULL);
             g_free (basename);
 
-            if (_m_mkdir (dirname))
+            if (_moo_mkdir (dirname))
             {
                 g_free (dirname);
                 dirname = NULL;

@@ -50,12 +50,12 @@ gboolean        _moo_save_file_utf8         (const char *name,
                                              const char *text,
                                              gssize      len,
                                              GError    **error);
-gboolean        _moo_rmdir                  (const char *path,
+gboolean        _moo_remove_dir             (const char *path,
                                              gboolean    recursive,
                                              GError    **error);
-gboolean        _moo_mkdir                  (const char *path,
+gboolean        _moo_create_dir             (const char *path,
                                              GError    **error);
-gboolean        _moo_rename                 (const char *path,
+gboolean        _moo_rename_file            (const char *path,
                                              const char *new_path,
                                              GError    **error);
 
@@ -68,15 +68,15 @@ char           *_moo_normalize_file_path    (const char *filename);
  * C library and WinAPI functions wrappers analogous to glib/gstdio.h
  */
 
-int             _m_unlink                   (const char *path);
-int             _m_mkdir                    (const char *path); /* S_IRWXU on unix */
-int             _m_rmdir                    (const char *path);
-int             _m_remove                   (const char *path);
-gpointer        _m_fopen                    (const char *path,
+int             _moo_unlink                 (const char *path);
+int             _moo_mkdir                  (const char *path); /* S_IRWXU on unix */
+int             _moo_rmdir                  (const char *path);
+int             _moo_remove                 (const char *path);
+gpointer        _moo_fopen                  (const char *path,
                                              const char *mode);
-int             _m_rename                   (const char *old_name,
+int             _moo_rename                 (const char *old_name,
                                              const char *new_name);
-int             _m_chdir                    (const char *path);
+int             _moo_chdir                  (const char *path);
 
 
 G_END_DECLS
