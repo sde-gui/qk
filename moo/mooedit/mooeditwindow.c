@@ -1488,7 +1488,7 @@ setup_notebook (MooEditWindow *window)
 {
     GtkWidget *button, *icon, *frame;
 
-    g_signal_connect_after (window->priv->notebook, "switch-page",
+    g_signal_connect_after (window->priv->notebook, "moo-switch-page",
                             G_CALLBACK (notebook_switch_page), window);
     g_signal_connect (window->priv->notebook, "populate-popup",
                       G_CALLBACK (notebook_populate_popup), window);
