@@ -28,11 +28,7 @@ class ActionFactory(object):
 
     def __call__(self, window):
         self.window = window
-        if _gtk.check_version(2, 8, 0):
-            action = Action(self.id)
-            self.set_props(action)
-        else:
-            action = _gobject.new(Action, name=self.id, **self.props)
+        action = _gobject.new(Action, name=self.id, **self.props)
         self.set_fake_props(action)
         return action
 
