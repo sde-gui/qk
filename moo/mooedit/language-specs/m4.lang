@@ -2,6 +2,7 @@
 <language id="m4" _name="m4" _section="Scripts" version="2.0">
   <metadata>
     <property name="mimetypes">application/x-m4</property>
+    <property name="globs">*.m4</property>
     <property name="line-comment-start">#</property>
   </metadata>
 

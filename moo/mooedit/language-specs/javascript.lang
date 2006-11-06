@@ -6,6 +6,7 @@
 <language id="js" _name="Javascript" version="2.0" _section="Scripts">
     <metadata>
       <property name="mimetypes">application/x-javascript;text/x-javascript;text/javascript;text/x-js</property>
+      <property name="globs">*.js</property>
     </metadata>
 
     <styles>

@@ -2,6 +2,7 @@
 <language id="latex" _name="LaTeX" version="2.0" _section="Markup">
     <metadata>
       <property name="mimetypes">text/x-tex</property>
+      <property name="globs">*.tex;*.ltx;*.sty;*.cls;*.dtx;*.ins</property>
       <property name="line-comment-start">%</property>
     </metadata>
 

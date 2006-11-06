@@ -2,6 +2,7 @@
 <language id="python" _name="Python" version="2.0" _section="Scripts">
   <metadata>
     <property name="mimetypes">text/x-python;application/x-python</property>
+    <property name="globs">*.py</property>
     <property name="line-comment-start">#</property>
   </metadata>
 

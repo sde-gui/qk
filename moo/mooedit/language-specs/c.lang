@@ -2,6 +2,7 @@
 <language id="c" _name="C" version="2.0" _section="Sources">
     <metadata>
       <property name="mimetypes">text/x-c;text/x-csrc</property>
+      <property name="globs">*.c</property>
       <property name="line-comment-start">//</property>
       <property name="block-comment-start">/*</property>
       <property name="block-comment-end">*/</property>

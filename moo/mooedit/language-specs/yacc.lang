@@ -2,6 +2,7 @@
 <language id="yacc" _name="Yacc" _section="Others" version="2.0">
   <metadata>
     <property name="mimetypes">text/x-yacc;text/x-bison</property>
+    <property name="globs">*.y;*.yacc</property>
     <property name="line-comment-start">//</property>
     <property name="block-comment-start">/*</property>
     <property name="block-comment-end">*/</property>
