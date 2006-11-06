@@ -229,9 +229,9 @@ egg_regex_unref (EggRegex *regex)
   g_free (regex->offsets);
   g_free (regex->workspace);
   if (regex->regex != NULL)
-    g_free (regex->regex);
+    pcre_free (regex->regex);
   if (regex->extra != NULL)
-    g_free (regex->extra);
+    pcre_free (regex->extra);
   g_free (regex);
 }
 
@@ -256,7 +256,9 @@ egg_regex_copy (const EggRegex *regex)
 
   res = pcre_fullinfo (regex->regex, NULL, PCRE_INFO_SIZE, &size);
   g_return_val_if_fail (res >= 0, NULL);
-  re = g_malloc (size);
+  re = pcre_malloc (size);
+  if (!re)
+    abort ();
   memcpy (re, regex->regex, size);
   copy = regex_new (re, regex->pattern, regex->compile_opts, regex->match_opts);
 
@@ -265,7 +267,10 @@ egg_regex_copy (const EggRegex *regex)
       res = pcre_fullinfo (regex->regex, regex->extra,
 		      	   PCRE_INFO_STUDYSIZE, &size);
       g_return_val_if_fail (res >= 0, copy);
-      copy->extra = g_new0 (pcre_extra, 1);
+      copy->extra = pcre_malloc (sizeof (pcre_extra));
+      if (!copy->extra)
+        abort ();
+      memset (copy->extra, 0, sizeof (pcre_extra));
       copy->extra->flags = PCRE_EXTRA_STUDY_DATA;
       copy->extra->study_data = g_malloc (size);
       memcpy (copy->extra->study_data, regex->extra->study_data, size);
