@@ -78,6 +78,7 @@ MOO_AC_FLAGS(moo)
 #
 AC_OUTPUT([
 Makefile
+config.py
 moo/Makefile
 moo/mooutils/Makefile
 moo/mooscript/Makefile

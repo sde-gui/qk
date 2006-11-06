@@ -62,17 +62,8 @@ def copy_files():
         do_cmd("%s %s/plugins/*/*.dll" % (strip, moo_windir))
         do_cmd("%s %s/*.exe %s/*.dll" % (strip, moo_windir, moo_windir))
 
-config_template = """
-version = @MOO_VERSION@
-"""
-
 def get_version():
     sys.path.insert(0, moo_builddir)
-    if not os.path.exists('config.py.in'):
-        file = open('config.py.in', 'w+')
-        file.write(config_template)
-        file.close()
-    do_cmd('./config.status --file config.py:config.py.in')
     import config
     return config.version
 
