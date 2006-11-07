@@ -1348,8 +1348,8 @@ moo_window_add_action (MooWindow  *window,
         char *accel_path;
 
         accel_path = _moo_action_make_accel_path (action);
-        _moo_action_set_accel_path (action, accel_path);
         _moo_accel_register (accel_path, _moo_action_get_default_accel (action));
+        _moo_action_set_accel_path (action, accel_path);
 
         g_free (accel_path);
     }

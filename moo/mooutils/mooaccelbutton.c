@@ -246,17 +246,33 @@ typedef struct {
 
 
 static gboolean
-key_event (G_GNUC_UNUSED GtkWidget *widget,
+key_event (GtkWidget    *widget,
            GdkEventKey  *event,
            Stuff        *s)
 {
-    if (gtk_accelerator_valid (event->keyval, event->state))
+    GdkKeymap *keymap;
+    guint keyval;
+    GdkModifierType consumed_modifiers;
+    GdkModifierType mods;
+
+    keymap = gdk_keymap_get_for_display (gtk_widget_get_display (widget));
+    gdk_keymap_translate_keyboard_state (keymap, event->hardware_keycode,
+                                         event->state, event->group,
+                                         NULL, NULL, NULL, &consumed_modifiers);
+
+    keyval = gdk_keyval_to_lower (event->keyval);
+    mods = event->state & gtk_accelerator_get_default_mod_mask () & ~consumed_modifiers;
+
+    if (keyval != event->keyval)
+        mods |= GDK_SHIFT_MASK;
+
+    if (gtk_accelerator_valid (keyval, mods))
     {
-        char *label = gtk_accelerator_get_label (event->keyval, event->state);
+        char *label = gtk_accelerator_get_label (keyval, mods);
         gtk_label_set_text (s->label, label);
         g_free (label);
-        s->key = event->keyval;
-        s->mods = event->state;
+        s->key = keyval;
+        s->mods = mods;
     }
 
     return TRUE;

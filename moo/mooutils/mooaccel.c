@@ -156,7 +156,6 @@ set_accel (const char *accel_path,
 {
     guint accel_key = 0;
     GdkModifierType accel_mods = 0;
-    GtkAccelKey old;
     const char *old_accel;
 
     g_return_if_fail (accel_path != NULL && accel != NULL);
@@ -197,29 +196,9 @@ set_accel (const char *accel_path,
                                      (gpointer) accel_map_changed,
                                      NULL);
 
-    if (gtk_accel_map_lookup_entry (accel_path, &old))
-    {
-        if (accel_key != old.accel_key || accel_mods != old.accel_mods)
-        {
-            if (accel_key || accel_mods)
-            {
-                if (!gtk_accel_map_change_entry (accel_path, accel_key, accel_mods, TRUE))
-                    g_warning ("could not set accel '%s' for accel_path '%s'",
-                               accel, accel_path);
-            }
-            else
-            {
-                gtk_accel_map_change_entry (accel_path, 0, 0, TRUE);
-            }
-        }
-    }
-    else
-    {
-        if (accel_key || accel_mods)
-            gtk_accel_map_add_entry (accel_path,
-                                     accel_key,
-                                     accel_mods);
-    }
+    if (!gtk_accel_map_change_entry (accel_path, accel_key, accel_mods, TRUE))
+        g_warning ("could not set accel '%s' for accel_path '%s'",
+                   accel, accel_path);
 
     g_signal_handlers_unblock_by_func (gtk_accel_map_get (),
                                        (gpointer) accel_map_changed,
