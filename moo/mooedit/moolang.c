@@ -187,7 +187,7 @@ _moo_lang_get_mime_types (MooLang *lang)
 {
     const char *prop;
     g_return_val_if_fail (MOO_IS_LANG (lang), NULL);
-    prop = gtk_source_language_get_property (GTK_SOURCE_LANGUAGE (lang), "mime-types");
+    prop = gtk_source_language_get_property (GTK_SOURCE_LANGUAGE (lang), "mimetypes");
     return _moo_lang_parse_string_list (prop);
 }
 
