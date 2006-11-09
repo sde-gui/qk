@@ -67,8 +67,6 @@ void			 gtk_source_style_manager_append_search_path	(GtkSourceStyleManager	*mana
 void			 gtk_source_style_manager_prepend_search_path	(GtkSourceStyleManager	*manager,
 						    			 const gchar		*path);
 
-void			 gtk_source_style_manager_reload		(GtkSourceStyleManager	*manager);
-
 /* Do we need to add a GError? I don't think so, we can print a warning message on the terminal */
 gboolean		 gtk_source_style_manager_add_scheme		(GtkSourceStyleManager	*manager,
 						    			 const gchar		*filename);

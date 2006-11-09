@@ -228,7 +228,17 @@ check_parents (GSList     *schemes,
 	return schemes;
 }
 
-void
+static void
+gtk_source_style_manager_changed (GtkSourceStyleManager *mgr)
+{
+	if (!mgr->priv->need_reload)
+	{
+		mgr->priv->need_reload = TRUE;
+		g_signal_emit (mgr, signals[CHANGED], 0);
+	}
+}
+
+static void
 gtk_source_style_manager_reload (GtkSourceStyleManager *mgr)
 {
 	GHashTable *schemes_hash;
@@ -281,7 +291,6 @@ gtk_source_style_manager_reload (GtkSourceStyleManager *mgr)
 
 	mgr->priv->schemes = schemes;
 	mgr->priv->need_reload = FALSE;
-	g_signal_emit (mgr, signals[CHANGED], 0);
 }
 
 void
@@ -304,7 +313,8 @@ gtk_source_style_manager_set_search_path (GtkSourceStyleManager	*mgr,
 		mgr->priv->dirs = g_slist_prepend (mgr->priv->dirs, g_strdup (path[i]));
 
 	mgr->priv->dirs = g_slist_reverse (mgr->priv->dirs);
-	mgr->priv->need_reload = TRUE;
+
+	gtk_source_style_manager_changed (mgr);
 }
 
 void
