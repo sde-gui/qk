@@ -170,3 +170,49 @@ _moo_lang_id_from_name (const char *whatever)
     else
         return g_strstrip (g_ascii_strdown (whatever, -1));
 }
+
+
+GSList *
+_moo_lang_get_globs (MooLang *lang)
+{
+    const char *prop;
+    g_return_val_if_fail (MOO_IS_LANG (lang), NULL);
+    prop = gtk_source_language_get_property (GTK_SOURCE_LANGUAGE (lang), "globs");
+    return _moo_lang_parse_string_list (prop);
+}
+
+
+GSList *
+_moo_lang_get_mime_types (MooLang *lang)
+{
+    const char *prop;
+    g_return_val_if_fail (MOO_IS_LANG (lang), NULL);
+    prop = gtk_source_language_get_property (GTK_SOURCE_LANGUAGE (lang), "mime-types");
+    return _moo_lang_parse_string_list (prop);
+}
+
+
+GSList *
+_moo_lang_parse_string_list (const char *string)
+{
+    char *copy;
+    GSList *list = NULL;
+    char **pieces, **p;
+
+    if (!string || !string[0])
+        return NULL;
+
+    copy = g_strstrip (g_strdup (string));
+
+    pieces = g_strsplit_set (copy, ",;", 0);
+    g_return_val_if_fail (pieces != NULL, NULL);
+
+    for (p = pieces; *p; p++)
+        if (**p)
+            list = g_slist_prepend (list, g_strdup (*p));
+
+    g_strfreev (pieces);
+    g_free (copy);
+
+    return g_slist_reverse (list);
+}

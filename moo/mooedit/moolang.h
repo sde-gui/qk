@@ -34,6 +34,11 @@ GType        moo_lang_get_type                  (void) G_GNUC_CONST;
 const char  *_moo_lang_id                       (MooLang    *lang);
 const char  *_moo_lang_display_name             (MooLang    *lang);
 
+/* result must be freed together with content */
+GSList      *_moo_lang_get_globs                (MooLang    *lang);
+/* result must be freed together with content */
+GSList      *_moo_lang_get_mime_types           (MooLang    *lang);
+
 const char  *_moo_lang_get_line_comment         (MooLang    *lang);
 const char  *_moo_lang_get_block_comment_start  (MooLang    *lang);
 const char  *_moo_lang_get_block_comment_end    (MooLang    *lang);
@@ -42,6 +47,7 @@ const char  *_moo_lang_get_section              (MooLang    *lang);
 gboolean     _moo_lang_get_hidden               (MooLang    *lang);
 
 char        *_moo_lang_id_from_name             (const char *whatever);
+GSList      *_moo_lang_parse_string_list        (const char *string);
 
 
 G_END_DECLS
