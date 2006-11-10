@@ -1486,11 +1486,15 @@ _moo_edit_print_options_dialog (GtkWidget *parent)
 static GtkWidget *
 moo_print_operation_create_custom_widget (G_GNUC_UNUSED GtkPrintOperation *operation)
 {
-    GtkWidget *page;
+    GtkWidget *page, *font_button;
     MooGladeXML *xml;
 
     xml = moo_glade_xml_new_from_buf (MOO_PRINT_GLADE_XML, -1, "page", GETTEXT_PACKAGE, NULL);
     g_return_val_if_fail (xml != NULL, NULL);
+
+    font_button = moo_glade_xml_get_widget (xml, "font");
+    moo_bind_sensitive (moo_glade_xml_get_widget (xml, "use_custom_font"),
+                        &font_button, 1, FALSE);
 
     page = moo_glade_xml_get_widget (xml, "page");
     g_return_val_if_fail (page != NULL, NULL);
