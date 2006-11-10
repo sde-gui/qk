@@ -55,11 +55,21 @@ _moo_print_preview_init (MooPrintPreview *preview)
 static void
 moo_print_preview_finalize (GObject *object)
 {
+    guint i;
     MooPrintPreview *preview = MOO_PRINT_PREVIEW (object);
 
     g_object_unref (preview->op);
     g_object_unref (preview->gtk_preview);
+    g_object_unref (preview->context);
     g_object_unref (preview->xml);
+
+    if (preview->pages)
+    {
+        for (i = 0; i < preview->pages->len; ++i)
+            if (preview->pages->pdata[i])
+                cairo_surface_destroy (preview->pages->pdata[i]);
+        g_ptr_array_free (preview->pages, TRUE);
+    }
 
     G_OBJECT_CLASS (_moo_print_preview_parent_class)->finalize (object);
 }
