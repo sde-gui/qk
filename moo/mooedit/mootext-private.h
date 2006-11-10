@@ -57,6 +57,8 @@ gpointer    _moo_text_buffer_get_undo_stack         (MooTextBuffer      *buffer)
 void        _moo_text_buffer_get_bracket_tags       (MooTextBuffer      *buffer,
                                                      GtkTextTag        **correct,
                                                      GtkTextTag        **incorrect);
+gboolean    _moo_text_buffer_is_bracket_tag         (MooTextBuffer      *buffer,
+                                                     GtkTextTag         *tag);
 void        _moo_text_buffer_set_style_scheme       (MooTextBuffer      *buffer,
                                                      MooTextStyleScheme *scheme);
 

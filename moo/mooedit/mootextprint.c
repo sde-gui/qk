@@ -17,6 +17,7 @@
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooprint-glade.h"
 #include "mooedit/mooeditprefs.h"
+#include "mooedit/mootext-private.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
@@ -96,6 +97,12 @@ static void moo_print_operation_load_prefs  (MooPrintOperation  *print);
 static void update_progress                 (GtkPrintOperation  *operation,
                                              int                 page);
 
+static void fill_layout                     (MooPrintOperation  *op,
+                                             PangoLayout        *layout,
+                                             const GtkTextIter  *start,
+                                             const GtkTextIter  *end,
+                                             gboolean            get_styles);
+
 
 G_DEFINE_TYPE(MooPrintOperation, _moo_print_operation, GTK_TYPE_PRINT_OPERATION)
 
@@ -143,6 +150,8 @@ moo_print_operation_finalize (GObject *object)
     g_free (print->tm);
     g_free (print->filename);
     g_free (print->basename);
+
+    g_print ("moo_print_operation_finalize\n");
 
     G_OBJECT_CLASS(_moo_print_operation_parent_class)->finalize (object);
 }
@@ -323,6 +332,8 @@ _moo_print_operation_init (MooPrintOperation *print)
 {
     load_default_settings ();
 
+    g_print ("_moo_print_operation_init\n");
+
     gtk_print_operation_set_print_settings (GTK_PRINT_OPERATION (print),
                                             print_settings);
 
@@ -414,6 +425,8 @@ _moo_edit_page_setup (GtkTextView    *view,
     GtkWindow *parent_window = NULL;
 
     g_return_if_fail (!view || GTK_IS_TEXT_VIEW (view));
+
+    g_print ("_moo_edit_page_setup\n");
 
     load_default_settings ();
 
@@ -535,6 +548,9 @@ moo_print_operation_paginate (MooPrintOperation *op)
 {
     GtkTextIter iter, print_end;
     double page_height;
+    gboolean use_styles;
+
+    g_print ("moo_print_operation_paginate\n");
 
     op->pages = g_array_new (FALSE, FALSE, sizeof (GtkTextIter));
     gtk_text_buffer_get_iter_at_line (op->buffer, &iter,
@@ -545,21 +561,25 @@ moo_print_operation_paginate (MooPrintOperation *op)
     g_array_append_val (op->pages, iter);
     page_height = 0;
 
+    use_styles = GET_OPTION (op, MOO_PRINT_USE_STYLES);
+
+    if (use_styles && MOO_IS_TEXT_BUFFER (op->buffer))
+        _moo_text_buffer_update_highlight (MOO_TEXT_BUFFER (op->buffer),
+                                           &iter, &print_end, TRUE);
+
     while (gtk_text_iter_compare (&iter, &print_end) < 0)
     {
         GtkTextIter end;
         PangoRectangle line_rect;
         double line_height;
-        char *text;
 
         end = iter;
 
         if (!gtk_text_iter_ends_line (&end))
             gtk_text_iter_forward_to_line_end (&end);
 
-        text = gtk_text_buffer_get_slice (op->buffer, &iter, &end, TRUE);
-        pango_layout_set_text (op->layout, text, -1);
-        g_free (text);
+        fill_layout (op, op->layout, &iter, &end,
+                     GET_OPTION (op, MOO_PRINT_USE_STYLES));
 
         pango_layout_get_pixel_extents (op->layout, NULL, &line_rect);
         line_height = line_rect.height;
@@ -617,6 +637,8 @@ moo_print_operation_paginate (MooPrintOperation *op)
 #undef EPS
 
     gtk_print_operation_set_n_pages (GTK_PRINT_OPERATION (op), op->pages->len);
+
+    g_print ("moo_print_operation_paginate done\n");
 }
 
 
@@ -634,6 +656,8 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
     g_return_if_fail (print->last_line < 0 || print->last_line >= print->first_line);
     g_return_if_fail (print->first_line < gtk_text_buffer_get_line_count (print->buffer));
     g_return_if_fail (print->last_line < gtk_text_buffer_get_line_count (print->buffer));
+
+    g_print ("moo_print_operation_begin_print\n");
 
     moo_print_operation_load_prefs (MOO_PRINT_OPERATION (operation));
 
@@ -713,11 +737,25 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
         g_free (print->tm);
         print->tm = NULL;
     }
+
+    g_print ("moo_print_operation_begin_print done\n");
 }
 
 
+static gboolean
+ignore_tag (MooPrintOperation *op,
+            GtkTextTag        *tag)
+{
+    if (MOO_IS_TEXT_BUFFER (op->buffer) &&
+        _moo_text_buffer_is_bracket_tag (MOO_TEXT_BUFFER (op->buffer), tag))
+            return TRUE;
+
+    return FALSE;
+}
+
 static GSList *
-iter_get_attrs (GtkTextIter       *iter,
+get_iter_attrs (MooPrintOperation *op,
+                GtkTextIter       *iter,
                 const GtkTextIter *limit)
 {
     GSList *attrs = NULL, *tags;
@@ -732,8 +770,14 @@ iter_get_attrs (GtkTextIter       *iter,
 
     while (tags)
     {
-        GtkTextTag *tag = tags->data;
+        GtkTextTag *tag;
         gboolean bg_set, fg_set, style_set, ul_set, weight_set, st_set;
+
+        tag = tags->data;
+        tags = tags->next;
+
+        if (ignore_tag (op, tag))
+            continue;
 
         g_object_get (tag,
                       "background-set", &bg_set,
@@ -815,7 +859,8 @@ iter_get_attrs (GtkTextIter       *iter,
 
 
 static void
-fill_layout (PangoLayout       *layout,
+fill_layout (MooPrintOperation *op,
+             PangoLayout       *layout,
              const GtkTextIter *start,
              const GtkTextIter *end,
              gboolean           get_styles)
@@ -825,7 +870,7 @@ fill_layout (PangoLayout       *layout,
     GtkTextIter segm_start, segm_end;
     int start_index;
 
-    text = gtk_text_iter_get_text (start, end);
+    text = gtk_text_iter_get_slice (start, end);
     pango_layout_set_text (layout, text, -1);
     g_free (text);
 
@@ -841,7 +886,7 @@ fill_layout (PangoLayout       *layout,
         GSList *attrs;
 
         segm_end = segm_start;
-        attrs = iter_get_attrs (&segm_end, end);
+        attrs = get_iter_attrs (op, &segm_end, end);
 
         if (attrs)
         {
@@ -945,7 +990,7 @@ print_header_footer (MooPrintOperation    *print,
 
 
 static void
-print_page (MooPrintOperation *print,
+print_page (MooPrintOperation *op,
             const GtkTextIter *start,
             const GtkTextIter *end,
             int                page,
@@ -954,15 +999,17 @@ print_page (MooPrintOperation *print,
     GtkTextIter line_start, line_end;
     double offset;
 
+    g_print ("print_page %d\n", page);
+
     cairo_set_source_rgb (cr, 0., 0., 0.);
 
-    if (print->header.do_print)
-        print_header_footer (print, cr, &print->header, page, TRUE);
-    if (print->footer.do_print)
-        print_header_footer (print, cr, &print->footer, page, FALSE);
+    if (op->header.do_print)
+        print_header_footer (op, cr, &op->header, page, TRUE);
+    if (op->footer.do_print)
+        print_header_footer (op, cr, &op->footer, page, FALSE);
 
     line_start = *start;
-    offset = print->page.y;
+    offset = op->page.y;
 
     while (gtk_text_iter_compare (&line_start, end) < 0)
     {
@@ -970,8 +1017,8 @@ print_page (MooPrintOperation *print,
 
         if (gtk_text_iter_ends_line (&line_start))
         {
-            pango_layout_set_text (print->layout, "", 0);
-            pango_layout_set_attributes (print->layout, NULL);
+            pango_layout_set_text (op->layout, "", 0);
+            pango_layout_set_attributes (op->layout, NULL);
         }
         else
         {
@@ -981,17 +1028,19 @@ print_page (MooPrintOperation *print,
             if (gtk_text_iter_compare (&line_end, end) > 0)
                 line_end = *end;
 
-            fill_layout (print->layout, &line_start, &line_end,
-                         GET_OPTION (print, MOO_PRINT_USE_STYLES));
+            fill_layout (op, op->layout, &line_start, &line_end,
+                         GET_OPTION (op, MOO_PRINT_USE_STYLES));
         }
 
-        cairo_move_to (cr, print->page.x, offset);
-        pango_cairo_show_layout (cr, print->layout);
+        cairo_move_to (cr, op->page.x, offset);
+        pango_cairo_show_layout (cr, op->layout);
 
-        pango_layout_get_pixel_extents (print->layout, NULL, &line_rect);
+        pango_layout_get_pixel_extents (op->layout, NULL, &line_rect);
         offset += line_rect.height;
         gtk_text_iter_forward_line (&line_start);
     }
+
+    g_print ("print_page done\n");
 }
 
 
@@ -1022,7 +1071,7 @@ moo_print_operation_draw_page (GtkPrintOperation  *operation,
     else
         gtk_text_buffer_get_end_iter (print->buffer, &end);
 
-#if 1
+#ifdef MOO_DEBUG
     cairo_set_line_width (cr, 1.);
     cairo_set_source_rgb (cr, 1., 0., 0.);
     cairo_rectangle (cr,
@@ -1051,6 +1100,8 @@ moo_print_operation_end_print (GtkPrintOperation  *operation,
     MooPrintOperation *print = MOO_PRINT_OPERATION (operation);
 
     g_return_if_fail (print->buffer != NULL);
+
+    g_print ("moo_print_operation_end_print\n");
 
     g_array_free (print->pages, TRUE);
 
@@ -1334,7 +1385,7 @@ moo_print_init_prefs (void)
     moo_prefs_new_key_string (PREFS_FOOTER_RIGHT, NULL);
 
     moo_prefs_new_key_string (PREFS_FONT, NULL);
-    moo_prefs_new_key_bool (PREFS_USE_STYLES, FALSE);
+    moo_prefs_new_key_bool (PREFS_USE_STYLES, TRUE);
     moo_prefs_new_key_bool (PREFS_USE_CUSTOM_FONT, FALSE);
     moo_prefs_new_key_bool (PREFS_WRAP, TRUE);
     moo_prefs_new_key_bool (PREFS_ELLIPSIZE, FALSE);

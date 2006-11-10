@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <medit-project version="1.0" type="C" name="moo">
- <active>debug</active>
+ <active>gtk-cvs</active>
  <configurations>
   <debug>
    <build_dir>build/debug</build_dir>
@@ -20,6 +20,15 @@
     </vars>
    </configure>
   </optimized>
+  <gtk-cvs>
+   <build_dir>/home/muntyan/projects/gtk/build/moo</build_dir>
+   <configure>
+    <args>--enable-debug --enable-all-gcc-warnings --prefix=$PREFIX</args>
+    <vars>
+     <var name="CFLAGS">-g</var>
+    </vars>
+   </configure>
+  </gtk-cvs>
  </configurations>
  <run>
   <args>--g-fatal-warnings --new-app</args>
