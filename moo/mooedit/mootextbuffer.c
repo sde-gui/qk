@@ -1279,20 +1279,6 @@ moo_text_buffer_set_bracket_mismatch_style (MooTextBuffer      *buffer,
 }
 
 
-void
-_moo_text_buffer_get_bracket_tags (MooTextBuffer      *buffer,
-                                   GtkTextTag        **correct,
-                                   GtkTextTag        **incorrect)
-{
-    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
-
-    if (correct)
-        *correct = buffer->priv->correct_match_tag;
-
-    if (incorrect)
-        *incorrect = buffer->priv->incorrect_match_tag;
-}
-
 gboolean
 _moo_text_buffer_is_bracket_tag (MooTextBuffer *buffer,
                                  GtkTextTag    *tag)
