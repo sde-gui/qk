@@ -54,6 +54,15 @@ G_STMT_START {                          \
 
 #define GET_OPTION(print, opt)      ((print->options & opt) != 0)
 
+#if 0
+#define DEBUG_PRINT g_print
+#else
+static void
+DEBUG_PRINT (G_GNUC_UNUSED const char *format, ...)
+{
+}
+#endif
+
 
 typedef struct _HFFormat HFFormat;
 static HFFormat *hf_format_parse    (const char *strformat);
@@ -151,7 +160,7 @@ moo_print_operation_finalize (GObject *object)
     g_free (print->filename);
     g_free (print->basename);
 
-    g_print ("moo_print_operation_finalize\n");
+    DEBUG_PRINT ("moo_print_operation_finalize\n");
 
     G_OBJECT_CLASS(_moo_print_operation_parent_class)->finalize (object);
 }
@@ -332,7 +341,7 @@ _moo_print_operation_init (MooPrintOperation *print)
 {
     load_default_settings ();
 
-    g_print ("_moo_print_operation_init\n");
+    DEBUG_PRINT ("_moo_print_operation_init\n");
 
     gtk_print_operation_set_print_settings (GTK_PRINT_OPERATION (print),
                                             print_settings);
@@ -426,7 +435,7 @@ _moo_edit_page_setup (GtkTextView    *view,
 
     g_return_if_fail (!view || GTK_IS_TEXT_VIEW (view));
 
-    g_print ("_moo_edit_page_setup\n");
+    DEBUG_PRINT ("_moo_edit_page_setup\n");
 
     load_default_settings ();
 
@@ -550,7 +559,7 @@ moo_print_operation_paginate (MooPrintOperation *op)
     double page_height;
     gboolean use_styles;
 
-    g_print ("moo_print_operation_paginate\n");
+    DEBUG_PRINT ("moo_print_operation_paginate\n");
 
     op->pages = g_array_new (FALSE, FALSE, sizeof (GtkTextIter));
     gtk_text_buffer_get_iter_at_line (op->buffer, &iter,
@@ -638,7 +647,7 @@ moo_print_operation_paginate (MooPrintOperation *op)
 
     gtk_print_operation_set_n_pages (GTK_PRINT_OPERATION (op), op->pages->len);
 
-    g_print ("moo_print_operation_paginate done\n");
+    DEBUG_PRINT ("moo_print_operation_paginate done\n");
 }
 
 
@@ -657,7 +666,7 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
     g_return_if_fail (print->first_line < gtk_text_buffer_get_line_count (print->buffer));
     g_return_if_fail (print->last_line < gtk_text_buffer_get_line_count (print->buffer));
 
-    g_print ("moo_print_operation_begin_print\n");
+    DEBUG_PRINT ("moo_print_operation_begin_print\n");
 
     moo_print_operation_load_prefs (MOO_PRINT_OPERATION (operation));
 
@@ -738,7 +747,7 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
         print->tm = NULL;
     }
 
-    g_print ("moo_print_operation_begin_print done\n");
+    DEBUG_PRINT ("moo_print_operation_begin_print done\n");
 }
 
 
@@ -774,7 +783,7 @@ get_iter_attrs (MooPrintOperation *op,
         gboolean bg_set, fg_set, style_set, ul_set, weight_set, st_set;
 
         tag = tags->data;
-        tags = tags->next;
+        tags = g_slist_delete_link (tags, tags);
 
         if (ignore_tag (op, tag))
             continue;
@@ -837,8 +846,6 @@ get_iter_attrs (MooPrintOperation *op,
             g_object_get (tag, "strikethrough", &strikethrough, NULL);
             st = pango_attr_strikethrough_new (strikethrough);
         }
-
-        tags = g_slist_delete_link (tags, tags);
     }
 
     if (bg)
@@ -880,6 +887,7 @@ fill_layout (MooPrintOperation *op,
     attr_list = NULL;
     segm_start = *start;
     start_index = gtk_text_iter_get_line_index (start);
+    DEBUG_PRINT ("line %d, start at %d\n", gtk_text_iter_get_line (start), start_index);
 
     while (gtk_text_iter_compare (&segm_start, end) < 0)
     {
@@ -894,6 +902,8 @@ fill_layout (MooPrintOperation *op,
 
             si = gtk_text_iter_get_line_index (&segm_start) - start_index;
             ei = gtk_text_iter_get_line_index (&segm_end) - start_index;
+
+            DEBUG_PRINT ("chars %d - %d\n", si, ei);
 
             while (attrs)
             {
@@ -999,7 +1009,7 @@ print_page (MooPrintOperation *op,
     GtkTextIter line_start, line_end;
     double offset;
 
-    g_print ("print_page %d\n", page);
+    DEBUG_PRINT ("print_page %d\n", page);
 
     cairo_set_source_rgb (cr, 0., 0., 0.);
 
@@ -1040,7 +1050,7 @@ print_page (MooPrintOperation *op,
         gtk_text_iter_forward_line (&line_start);
     }
 
-    g_print ("print_page done\n");
+    DEBUG_PRINT ("print_page done\n");
 }
 
 
@@ -1101,7 +1111,7 @@ moo_print_operation_end_print (GtkPrintOperation  *operation,
 
     g_return_if_fail (print->buffer != NULL);
 
-    g_print ("moo_print_operation_end_print\n");
+    DEBUG_PRINT ("moo_print_operation_end_print\n");
 
     g_array_free (print->pages, TRUE);
 
