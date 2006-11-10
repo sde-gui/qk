@@ -18,6 +18,7 @@
 #include "mooedit/mooprint-glade.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootext-private.h"
+#include "mooedit/mooprintpreview.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
@@ -54,7 +55,7 @@ G_STMT_START {                          \
 
 #define GET_OPTION(print, opt)      ((print->options & opt) != 0)
 
-#if 0
+#if 1
 #define DEBUG_PRINT g_print
 #else
 static void
@@ -99,6 +100,10 @@ static void moo_print_operation_draw_page   (GtkPrintOperation  *operation,
 static void moo_print_operation_end_print   (GtkPrintOperation  *operation,
                                              GtkPrintContext    *context);
 static void moo_print_operation_status_changed (GtkPrintOperation *operation);
+static gboolean moo_print_operation_preview (GtkPrintOperation  *operation,
+                                             GtkPrintOperationPreview *preview,
+                                             GtkPrintContext    *context,
+                                             GtkWindow          *parent);
 static GtkWidget *moo_print_operation_create_custom_widget (GtkPrintOperation *operation);
 static void moo_print_operation_custom_widget_apply (GtkPrintOperation *operation,
                                                      GtkWidget *widget);
@@ -276,6 +281,7 @@ _moo_print_operation_class_init (MooPrintOperationClass *klass)
     print_class->create_custom_widget = moo_print_operation_create_custom_widget;
     print_class->custom_widget_apply = moo_print_operation_custom_widget_apply;
     print_class->status_changed = moo_print_operation_status_changed;
+    print_class->preview = moo_print_operation_preview;
 
     g_object_class_install_property (object_class,
                                      PROP_DOC,
@@ -652,44 +658,51 @@ moo_print_operation_paginate (MooPrintOperation *op)
 
 
 static void
-moo_print_operation_begin_print (GtkPrintOperation  *operation,
-                                 GtkPrintContext    *context)
+moo_print_operation_begin_print (GtkPrintOperation *operation,
+                                 GtkPrintContext   *context)
 {
-    MooPrintOperation *print = MOO_PRINT_OPERATION (operation);
+    MooPrintOperation *op = MOO_PRINT_OPERATION (operation);
     PangoFontDescription *font = NULL;
     GTimer *timer;
     time_t t;
 
-    g_return_if_fail (print->buffer != NULL);
-    g_return_if_fail (print->first_line >= 0);
-    g_return_if_fail (print->last_line < 0 || print->last_line >= print->first_line);
-    g_return_if_fail (print->first_line < gtk_text_buffer_get_line_count (print->buffer));
-    g_return_if_fail (print->last_line < gtk_text_buffer_get_line_count (print->buffer));
+    g_return_if_fail (op->buffer != NULL);
+    g_return_if_fail (op->first_line >= 0);
+    g_return_if_fail (op->last_line < 0 || op->last_line >= op->first_line);
+    g_return_if_fail (op->first_line < gtk_text_buffer_get_line_count (op->buffer));
+    g_return_if_fail (op->last_line < gtk_text_buffer_get_line_count (op->buffer));
 
     DEBUG_PRINT ("moo_print_operation_begin_print\n");
 
-    moo_print_operation_load_prefs (MOO_PRINT_OPERATION (operation));
+    moo_print_operation_load_prefs (op);
 
     timer = g_timer_new ();
 
-    if (MOO_IS_EDIT (print->doc))
-        _moo_edit_set_state (MOO_EDIT (print->doc),
-                             MOO_EDIT_STATE_PRINTING,
-                             "Printing",
-                             (GDestroyNotify) gtk_print_operation_cancel,
-                             print);
+    if (MOO_IS_EDIT (op->doc))
+    {
+        if (!op->preview)
+            _moo_edit_set_state (MOO_EDIT (op->doc),
+                                 MOO_EDIT_STATE_PRINTING,
+                                 "Printing",
+                                 (GDestroyNotify) gtk_print_operation_cancel,
+                                 op);
+        else
+            _moo_edit_set_state (MOO_EDIT (op->doc),
+                                 MOO_EDIT_STATE_NORMAL,
+                                 NULL, NULL, NULL);
+    }
 
-    if (print->last_line < 0)
-        print->last_line = gtk_text_buffer_get_line_count (print->buffer) - 1;
+    if (op->last_line < 0)
+        op->last_line = gtk_text_buffer_get_line_count (op->buffer) - 1;
 
-    if (print->font)
-        font = pango_font_description_from_string (print->font);
+    if (op->font)
+        font = pango_font_description_from_string (op->font);
 
-    if (!font && print->doc)
+    if (!font && op->doc)
     {
         PangoContext *widget_ctx;
 
-        widget_ctx = gtk_widget_get_pango_context (GTK_WIDGET (print->doc));
+        widget_ctx = gtk_widget_get_pango_context (GTK_WIDGET (op->doc));
 
         if (widget_ctx)
         {
@@ -700,34 +713,34 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
         }
     }
 
-    moo_print_operation_calc_page_size (print, context, font);
-    print->layout = gtk_print_context_create_pango_layout (context);
+    moo_print_operation_calc_page_size (op, context, font);
+    op->layout = gtk_print_context_create_pango_layout (context);
 
-    if (GET_OPTION (print, MOO_PRINT_WRAP))
+    if (GET_OPTION (op, MOO_PRINT_WRAP))
     {
-        pango_layout_set_width (print->layout, print->page.width * PANGO_SCALE);
-        pango_layout_set_wrap (print->layout, print->wrap_mode);
+        pango_layout_set_width (op->layout, op->page.width * PANGO_SCALE);
+        pango_layout_set_wrap (op->layout, op->wrap_mode);
     }
-    else if (GET_OPTION (print, MOO_PRINT_ELLIPSIZE))
+    else if (GET_OPTION (op, MOO_PRINT_ELLIPSIZE))
     {
-        pango_layout_set_width (print->layout, print->page.width * PANGO_SCALE);
-        pango_layout_set_ellipsize (print->layout, PANGO_ELLIPSIZE_END);
+        pango_layout_set_width (op->layout, op->page.width * PANGO_SCALE);
+        pango_layout_set_ellipsize (op->layout, PANGO_ELLIPSIZE_END);
     }
 
     if (font)
     {
-        pango_layout_set_font_description (print->layout, font);
+        pango_layout_set_font_description (op->layout, font);
         pango_font_description_free (font);
     }
 
-    moo_print_operation_paginate (print);
+    moo_print_operation_paginate (op);
 
-//     g_message ("begin_print: %d pages in %f s", print->pages->len,
-//                g_timer_elapsed (timer, NULL));
+    DEBUG_PRINT ("begin_print: %d pages in %f s\n", op->pages->len,
+                 g_timer_elapsed (timer, NULL));
     g_timer_destroy (timer);
 
-    if (!print->tm)
-        print->tm = g_new (struct tm, 1);
+    if (!op->tm)
+        op->tm = g_new (struct tm, 1);
 
     errno = 0;
     time (&t);
@@ -736,16 +749,19 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
     {
         int err = errno;
         g_critical ("time: %s", g_strerror (err));
-        g_free (print->tm);
-        print->tm = NULL;
+        g_free (op->tm);
+        op->tm = NULL;
     }
-    else if (!localtime_r (&t, print->tm))
+    else if (!localtime_r (&t, op->tm))
     {
         int err = errno;
         g_critical ("time: %s", g_strerror (err));
-        g_free (print->tm);
-        print->tm = NULL;
+        g_free (op->tm);
+        op->tm = NULL;
     }
+
+    if (op->preview)
+        _moo_print_preview_start (op->preview);
 
     DEBUG_PRINT ("moo_print_operation_begin_print done\n");
 }
@@ -887,7 +903,9 @@ fill_layout (MooPrintOperation *op,
     attr_list = NULL;
     segm_start = *start;
     start_index = gtk_text_iter_get_line_index (start);
+#if 0
     DEBUG_PRINT ("line %d, start at %d\n", gtk_text_iter_get_line (start), start_index);
+#endif
 
     while (gtk_text_iter_compare (&segm_start, end) < 0)
     {
@@ -902,8 +920,6 @@ fill_layout (MooPrintOperation *op,
 
             si = gtk_text_iter_get_line_index (&segm_start) - start_index;
             ei = gtk_text_iter_get_line_index (&segm_end) - start_index;
-
-            DEBUG_PRINT ("chars %d - %d\n", si, ei);
 
             while (attrs)
             {
@@ -1098,7 +1114,7 @@ moo_print_operation_draw_page (GtkPrintOperation  *operation,
 
     print_page (print, &start, &end, page, cr);
 
-//     g_message ("page %d: %f s", page, g_timer_elapsed (timer, NULL));
+    DEBUG_PRINT ("page %d: %f s\n", page, g_timer_elapsed (timer, NULL));
     g_timer_destroy (timer);
 }
 
@@ -1221,41 +1237,22 @@ moo_print_operation_load_prefs (MooPrintOperation *print)
 }
 
 
-void
-_moo_edit_print (GtkTextView *view,
-                 GtkWidget   *parent)
+static void
+print_operation_run (MooPrintOperation *op)
 {
-    GtkWindow *parent_window = NULL;
-    GtkWidget *error_dialog;
-    GtkPrintOperation *print;
     GtkPrintOperationResult res;
     GError *error = NULL;
+    GtkWidget *error_dialog;
 
-    g_return_if_fail (GTK_IS_TEXT_VIEW (view));
-
-    print = g_object_new (MOO_TYPE_PRINT_OPERATION,
-                          "doc", view, NULL);
-
-    if (MOO_IS_EDIT (view))
-        _moo_print_operation_set_filename (MOO_PRINT_OPERATION (print),
-                                           moo_edit_get_display_filename (MOO_EDIT (view)),
-                                           moo_edit_get_display_basename (MOO_EDIT (view)));
-
-    if (!parent)
-        parent = GTK_WIDGET (view);
-
-    parent = gtk_widget_get_toplevel (parent);
-
-    if (GTK_IS_WINDOW (parent))
-        parent_window = GTK_WINDOW (parent);
-
-    res = gtk_print_operation_run (print, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
-                                   parent_window, &error);
+    res = gtk_print_operation_run (GTK_PRINT_OPERATION (op),
+                                   GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
+                                   op->parent,
+                                   &error);
 
     switch (res)
     {
         case GTK_PRINT_OPERATION_RESULT_ERROR:
-            error_dialog = gtk_message_dialog_new (parent_window,
+            error_dialog = gtk_message_dialog_new (op->parent,
                                                    GTK_DIALOG_DESTROY_WITH_PARENT,
                                                    GTK_MESSAGE_ERROR,
                                                    GTK_BUTTONS_CLOSE,
@@ -1269,7 +1266,7 @@ _moo_edit_print (GtkTextView *view,
         case GTK_PRINT_OPERATION_RESULT_APPLY:
             if (print_settings)
                 g_object_unref (print_settings);
-            print_settings = gtk_print_operation_get_print_settings (print);
+            print_settings = gtk_print_operation_get_print_settings (GTK_PRINT_OPERATION (op));
             g_object_ref (print_settings);
             break;
 
@@ -1277,8 +1274,34 @@ _moo_edit_print (GtkTextView *view,
         case GTK_PRINT_OPERATION_RESULT_IN_PROGRESS:
             break;
     }
+}
 
-    g_object_unref (print);
+
+void
+_moo_edit_print (GtkTextView *view,
+                 GtkWidget   *parent)
+{
+    MooPrintOperation *op;
+
+    g_return_if_fail (GTK_IS_TEXT_VIEW (view));
+
+    op = g_object_new (MOO_TYPE_PRINT_OPERATION, "doc", view, NULL);
+
+    if (!parent)
+        parent = GTK_WIDGET (view);
+
+    parent = gtk_widget_get_toplevel (parent);
+
+    if (GTK_IS_WINDOW (parent))
+        op->parent = GTK_WINDOW (parent);
+
+    if (MOO_IS_EDIT (view))
+        _moo_print_operation_set_filename (op,
+                                           moo_edit_get_display_filename (MOO_EDIT (view)),
+                                           moo_edit_get_display_basename (MOO_EDIT (view)));
+
+    print_operation_run (op);
+    g_object_unref (op);
 }
 
 
@@ -1516,6 +1539,45 @@ moo_print_operation_custom_widget_apply (G_GNUC_UNUSED GtkPrintOperation *print,
     g_return_if_fail (xml != NULL);
 
     get_options (xml);
+}
+
+
+/*****************************************************************************/
+/* Preview
+ */
+
+static void
+preview_response (MooPrintPreview *preview,
+                  int              response)
+{
+    gtk_widget_hide (GTK_WIDGET (preview));
+    preview->op->preview = NULL;
+    gtk_print_operation_preview_end_preview (preview->gtk_preview);
+
+    if (response == MOO_PRINT_PREVIEW_RESPONSE_PRINT)
+        _moo_edit_print (preview->op->doc,
+                         preview->op->parent ? GTK_WIDGET (preview->op->parent) : NULL);
+
+    gtk_widget_destroy (GTK_WIDGET (preview));
+}
+
+static gboolean
+moo_print_operation_preview (GtkPrintOperation        *op,
+                             GtkPrintOperationPreview *preview,
+                             GtkPrintContext          *context,
+                             G_GNUC_UNUSED GtkWindow  *parent)
+{
+    GtkWidget *dialog;
+
+    DEBUG_PRINT ("moo_print_operation_preview\n");
+
+    dialog = _moo_print_preview_new (MOO_PRINT_OPERATION (op), preview, context);
+    gtk_widget_show (dialog);
+    g_signal_connect_swapped (dialog, "response", G_CALLBACK (preview_response), dialog);
+
+    DEBUG_PRINT ("moo_print_operation_preview done\n");
+
+    return TRUE;
 }
 
 

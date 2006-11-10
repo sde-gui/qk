@@ -130,6 +130,9 @@ mooedit_sources =			\
 	moousertools.c
 
 mooedit_printing_sources =		\
+	mooprintpreview.h		\
+	mooprintpreview-glade.h		\
+	mooprintpreview.c		\
 	mootextprint.c			\
 	mootextprint.h
 
@@ -145,7 +148,8 @@ BUILT_SOURCES =				\
 	mooeditsavemultiple-glade.h	\
 	mooedittools-glade.h		\
 	mooedit-enums.c			\
-	mooedit-enums.h
+	mooedit-enums.h			\
+	mooprintpreview-glade.h
 
 mooedit_enums_headers =			\
 	moocommand.h			\
@@ -218,6 +222,9 @@ mooprint-glade.h: $(srcdir)/glade/mooprint.glade $(XML2H)
 mooedittools-glade.h: $(srcdir)/glade/mooedittools.glade $(XML2H)
 	$(SHELL) $(XML2H) MOO_EDIT_TOOLS_GLADE_XML $(srcdir)/glade/mooedittools.glade \
 		> mooedittools-glade.h
+mooprintpreview-glade.h: $(srcdir)/glade/mooprintpreview.glade $(XML2H)
+	$(SHELL) $(XML2H) MOO_PRINT_PREVIEW_GLADE_XML $(srcdir)/glade/mooprintpreview.glade \
+		> mooprintpreview-glade.h
 
 EXTRA_DIST =				\
 	glade/statusbar.glade		\
@@ -230,6 +237,7 @@ EXTRA_DIST =				\
 	glade/mooedittools.glade	\
 	glade/moopluginprefs.glade	\
 	glade/mooprint.glade		\
+	glade/mooprintpreview.glade	\
 	$(mooedit_tools_DATA)		\
 	$(completion)
 

@@ -30,6 +30,7 @@ G_BEGIN_DECLS
 #define MOO_IS_PRINT_OPERATION_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_PRINT_OPERATION))
 #define MOO_PRINT_OPERATION_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_PRINT_OPERATION, MooPrintOperationClass))
 
+typedef struct _MooPrintPreview           MooPrintPreview;
 typedef struct _MooPrintOperation         MooPrintOperation;
 typedef struct _MooPrintOperationClass    MooPrintOperationClass;
 
@@ -65,8 +66,11 @@ struct _MooPrintOperation
 {
     GtkPrintOperation base;
 
+    GtkWindow *parent;
     GtkTextView *doc;
     GtkTextBuffer *buffer;
+
+    MooPrintPreview *preview;
 
     /* print settings */
     int first_line;
