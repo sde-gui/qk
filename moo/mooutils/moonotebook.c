@@ -370,6 +370,14 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
     widget_class->motion_notify_event = moo_notebook_motion;
     widget_class->focus = moo_notebook_focus;
 
+    widget_class->drag_begin = NULL;
+    widget_class->drag_end = NULL;
+    widget_class->drag_motion = NULL;
+    widget_class->drag_leave = NULL;
+    widget_class->drag_drop = NULL;
+    widget_class->drag_data_get = NULL;
+    widget_class->drag_data_received = NULL;
+
     container_class->forall = moo_notebook_forall;
     container_class->set_focus_child = moo_notebook_set_focus_child;
     container_class->remove = moo_notebook_remove;
