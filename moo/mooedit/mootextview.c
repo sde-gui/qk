@@ -51,6 +51,10 @@ static GtkTextWindowType window_types[4] = {
     GTK_TEXT_WINDOW_BOTTOM
 };
 
+static const GtkTargetEntry text_view_target_table[] = {
+    { (char*)"GTK_TEXT_BUFFER_CONTENTS", GTK_TARGET_SAME_APP, 0 }
+};
+
 static GdkAtom moo_text_view_atom;
 
 
@@ -244,10 +248,11 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     gobject_class->constructor = moo_text_view_constructor;
     gobject_class->finalize = moo_text_view_finalize;
 
-    widget_class->key_press_event = _moo_text_view_key_press_event;
     widget_class->button_press_event = _moo_text_view_button_press_event;
     widget_class->button_release_event = _moo_text_view_button_release_event;
     widget_class->motion_notify_event = _moo_text_view_motion_event;
+
+    widget_class->key_press_event = _moo_text_view_key_press_event;
     widget_class->realize = moo_text_view_realize;
     widget_class->unrealize = moo_text_view_unrealize;
     widget_class->expose_event = moo_text_view_expose;
@@ -667,6 +672,7 @@ moo_text_view_constructor (GType                  type,
                            guint                  n_construct_properties,
                            GObjectConstructParam *construct_param)
 {
+    GtkTargetList *target_list;
     GObject *object;
     MooTextView *view;
     MooUndoStack *undo_stack;
@@ -723,6 +729,11 @@ moo_text_view_constructor (GType                  type,
     gtk_text_mark_set_visible (view->priv->dnd_mark, FALSE);
 
     g_signal_connect (view, "notify::overwrite", G_CALLBACK (overwrite_changed), NULL);
+
+    target_list = gtk_target_list_new (text_view_target_table, G_N_ELEMENTS (text_view_target_table));
+    gtk_target_list_add_text_targets (target_list, 0);
+    gtk_drag_dest_set_target_list (GTK_WIDGET (view), target_list);
+    gtk_target_list_unref (target_list);
 
     return object;
 }

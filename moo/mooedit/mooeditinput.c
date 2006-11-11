@@ -630,7 +630,7 @@ _moo_text_view_button_release_event (GtkWidget          *widget,
 }
 
 
-#define outside(x,y,rect)               \
+#define OUTSIDE(x,y,rect)               \
     ((x) < (rect).x ||                  \
      (y) < (rect).y ||                  \
      (x) >= (rect).x + (rect).width ||  \
@@ -669,15 +669,15 @@ _moo_text_view_motion_event (GtkWidget          *widget,
         view->priv->drag_moved = TRUE;
         gtk_text_view_get_visible_rect (text_view, &rect);
 
-        if (outside (x, y, rect)) {
+        if (OUTSIDE (x, y, rect))
+        {
             start_drag_scroll (view);
             return TRUE;
         }
-        else
-            stop_drag_scroll (view);
+
+        stop_drag_scroll (view);
 
         buffer = gtk_text_view_get_buffer (text_view);
-
         gtk_text_view_get_iter_at_location (text_view, &start,
                                             view->priv->drag_start_x,
                                             view->priv->drag_start_y);
@@ -726,10 +726,6 @@ _moo_text_view_motion_event (GtkWidget          *widget,
 }
 
 
-static const GtkTargetEntry gtk_text_view_target_table[] = {
-    { (char*)"GTK_TEXT_BUFFER_CONTENTS", GTK_TARGET_SAME_APP, 0 }
-};
-
 static void
 text_view_start_selection_dnd (GtkTextView       *text_view,
                                G_GNUC_UNUSED const GtkTextIter *iter,
@@ -738,12 +734,17 @@ text_view_start_selection_dnd (GtkTextView       *text_view,
     GdkDragContext *context;
     GtkTargetList *target_list;
 
+    static const GtkTargetEntry target_table[] = {
+#if !GTK_CHECK_VERSION(2,10,0)
+        { (char*) "GTK_TEXT_BUFFER_CONTENTS", GTK_TARGET_SAME_APP, 0 }
+#endif
+    };
+
     text_view->drag_start_x = -1;
     text_view->drag_start_y = -1;
     text_view->pending_place_cursor_button = 0;
 
-    target_list = gtk_target_list_new (gtk_text_view_target_table,
-                                       G_N_ELEMENTS (gtk_text_view_target_table));
+    target_list = gtk_target_list_new (target_table, G_N_ELEMENTS (target_table));
     gtk_target_list_add_text_targets (target_list, 0);
 
     context = gtk_drag_begin (GTK_WIDGET (text_view), target_list,
