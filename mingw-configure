@@ -26,10 +26,10 @@ fi
 
 export GTK_PREFIX=${GTK_PREFIX:-/usr/local/win/gtk}
 
-if [ "x$1" = "x--with-python=2.4" -o "x$2" = "x--with-python=2.4" ]; then
-    export PYTHON_PREFIX=${PYTHON_PREFIX:-/usr/local/win/Python24}
+if [ "x$1" = "x--with-python=2.5" -o "x$2" = "x--with-python=2.5" ]; then
+    export PYTHON_PREFIX=${PYTHON_PREFIX:-/usr/local/win/Python25}
 else
-    export PYTHON_PREFIX=${PYTHON_PREFIX:-/usr/local/win/Python23}
+    export PYTHON_PREFIX=${PYTHON_PREFIX:-/usr/local/win/Python24}
 fi
 
 export PKG_CONFIG_LIBDIR=$GTK_PREFIX/lib/pkgconfig:$PYTHON_PREFIX/Lib/pkgconfig

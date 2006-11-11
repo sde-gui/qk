@@ -1363,10 +1363,10 @@ moo_get_data_dirs (MooDataDirType type,
     switch (type)
     {
         case MOO_DATA_SHARE:
-            d = g_win32_get_package_installation_subdirectory (NULL, NULL, "share\\" MOO_PACKAGE_NAME);
+            d = g_win32_get_package_installation_subdirectory (NULL, NULL, (char*) "share\\" MOO_PACKAGE_NAME);
             break;
         case MOO_DATA_LIB:
-            d = g_win32_get_package_installation_subdirectory (NULL, NULL, "lib\\" MOO_PACKAGE_NAME);
+            d = g_win32_get_package_installation_subdirectory (NULL, NULL, (char*) "lib\\" MOO_PACKAGE_NAME);
             break;
     }
 

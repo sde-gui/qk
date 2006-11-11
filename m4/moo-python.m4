@@ -199,8 +199,8 @@ AC_MSG_NOTICE([checking for headers and libs required to compile python extensio
     AC_REQUIRE([MOO_AC_CHECK_OS])
     if test x$MOO_OS_CYGWIN != xyes; then
         if test x$MOO_OS_MINGW = xyes; then
-            _MOO_AC_CHECK_PYTHON_MINGW([23],[$2],[$3])
             _MOO_AC_CHECK_PYTHON_MINGW([24],[$2],[$3])
+            _MOO_AC_CHECK_PYTHON_MINGW([25],[$2],[$3])
         else
             _MOO_AC_CHECK_PYTHON_UNIX([$1],[$2],[$3])
         fi

@@ -12,7 +12,7 @@ do_strip = True
 installer = None
 
 def usage():
-    print "Usage:", sys.argv[0], "[--no-strip] [build_dir]"
+    print "Usage:", sys.argv[0], "[--no-strip] [build_dir] [gtk-runtime]"
     sys.exit(2)
 
 try:
@@ -23,11 +23,16 @@ except getopt.GetoptError:
 for o, a in opts:
     if o == "--no-strip":
         do_strip = False
+if args[2:]:
+    usage()
 if args:
-    if args[1:]: usage()
     moo_builddir = os.path.abspath(args[0])
 else:
     moo_builddir = builddir
+if args[1:]:
+    runtime = os.path.abspath(args[1])
+else:
+    runtime = builddir + "/gtk-runtime"
 
 installdir = dir + "/inst_"
 
@@ -47,20 +52,26 @@ def do_cmd(cmd):
         raise Error(status)
 
 def copy_files():
-    files = ["bin/medit.exe", "bin/libmoo.dll",
-             "share/moo/*", "lib/moo/plugins", "lib/moo/projects"]
-    for f in files:
-        do_cmd("cp -r %s/usr/local/%s %s/" % (installdir, f, moo_windir))
-    do_cmd("mkdir -p %s/plugins/pymoo23 %s/plugins/pymoo24" % (moo_windir, moo_windir))
-    do_cmd("cp %s/usr/local/lib/pymoo23.dll %s/plugins/pymoo23/pymoo.dll" % (installdir, moo_windir))
-    do_cmd("cp %s/usr/local/lib/moo23.dll %s/plugins/pymoo23/moo.pyd" % (installdir, moo_windir))
-    do_cmd("cp %s/usr/local/lib/pymoo24.dll %s/plugins/pymoo24/pymoo.dll" % (installdir, moo_windir))
-    do_cmd("cp %s/usr/local/lib/moo24.dll %s/plugins/pymoo24/moo.pyd" % (installdir, moo_windir))
-    do_cmd("cp libxml2-2.dll %s/" % (moo_windir,))
+    do_cmd("cp -r %s/* %s/" % (runtime, moo_windir))
+    do_cmd("mkdir -p %s/lib/moo" % (moo_windir,))
+
+    do_cmd("cp -r %s/usr/local/bin/medit.exe %s/bin/" % (installdir, moo_windir))
+    do_cmd("cp -r %s/usr/local/bin/libmoo.dll %s/bin/" % (installdir, moo_windir))
+
+    do_cmd("cp -r %s/usr/local/share/moo %s/share/" % (installdir, moo_windir))
+
+    do_cmd("cp -r %s/usr/local/lib/moo/plugins %s/lib/moo/" % (installdir, moo_windir))
+    do_cmd("cp -r %s/usr/local/lib/moo/projects %s/lib/moo/" % (installdir, moo_windir))
+
+    do_cmd("mkdir -p %s/lib/moo/plugins/pymoo25 %s/lib/moo/plugins/pymoo24" % (moo_windir, moo_windir))
+    do_cmd("cp %s/usr/local/lib/pymoo25.dll %s/lib/moo/plugins/pymoo25/pymoo.dll" % (installdir, moo_windir))
+    do_cmd("cp %s/usr/local/lib/moo25.dll %s/lib/moo/plugins/pymoo25/moo.pyd" % (installdir, moo_windir))
+    do_cmd("cp %s/usr/local/lib/pymoo24.dll %s/lib/moo/plugins/pymoo24/pymoo.dll" % (installdir, moo_windir))
+    do_cmd("cp %s/usr/local/lib/moo24.dll %s/lib/moo/plugins/pymoo24/moo.pyd" % (installdir, moo_windir))
 
     if do_strip:
-        do_cmd("%s %s/plugins/*/*.dll" % (strip, moo_windir))
-        do_cmd("%s %s/*.exe %s/*.dll" % (strip, moo_windir, moo_windir))
+        do_cmd("%s %s/lib/moo/plugins/*/*.dll" % (strip, moo_windir))
+        do_cmd("%s %s/bin/medit.exe %s/bin/libmoo.dll" % (strip, moo_windir, moo_windir))
 
 def get_version():
     sys.path.insert(0, moo_builddir)

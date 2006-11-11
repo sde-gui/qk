@@ -85,20 +85,20 @@ endif MOO_INSTALL_LIB
 else !MOO_OS_UNIX
 if MOO_USE_PYGTK
 
-lib_LTLIBRARIES += pymoo23.la moo23.la pymoo24.la moo24.la
+lib_LTLIBRARIES += pymoo25.la moo25.la pymoo24.la moo24.la
 plugindir = $(MOO_LIB_DIR)/plugins
-plugin_DATA = moopython/pymoo23.ini moopython/pymoo24.ini
+plugin_DATA = moopython/pymoo25.ini moopython/pymoo24.ini
 
-pymoo23_la_SOURCES = moo.h
-pymoo23_la_LDFLAGS = $(pymoo_la_ldflags) $(PYTHON23_EXTRA_LDFLAGS)
-pymoo23_la_LIBADD = moopython/libpymoo23.la libmoo.la $(MOO_LIBS) $(PYTHON23_LIBS) $(PYTHON23_EXTRA_LIBS)
-moo23_la_SOURCES = moo.h
-moo23_la_LDFLAGS = $(moo_la_ldflags)
-moo23_la_LIBADD = moopython/libmoomod23.la libmoo.la $(MOO_LIBS) $(PYTHON23_LIBS)
+pymoo25_la_SOURCES = moo.h
+pymoo25_la_LDFLAGS = $(pymoo_la_ldflags) $(PYTHON25_EXTRA_LDFLAGS)
+pymoo25_la_LIBADD = moopython/libpymoo25.la libmoo.la $(MOO_LIBS) $(PYTHON25_LIBS) $(PYTHON25_EXTRA_LIBS)
+moo25_la_SOURCES = moo.h
+moo25_la_LDFLAGS = $(moo_la_ldflags)
+moo25_la_LIBADD = moopython/libmoomod25.la libmoo.la $(MOO_LIBS) $(PYTHON25_LIBS)
 
 pymoo24_la_SOURCES = moo.h
 pymoo24_la_LDFLAGS = $(pymoo_la_ldflags) $(PYTHON24_EXTRA_LDFLAGS)
-pymoo24_la_LIBADD = moopython/libpymoo23.la libmoo.la $(MOO_LIBS) $(PYTHON24_LIBS) $(PYTHON24_EXTRA_LIBS)
+pymoo24_la_LIBADD = moopython/libpymoo24.la libmoo.la $(MOO_LIBS) $(PYTHON24_LIBS) $(PYTHON24_EXTRA_LIBS)
 moo24_la_SOURCES = moo.h
 moo24_la_LDFLAGS = $(moo_la_ldflags)
 moo24_la_LIBADD = moopython/libmoomod24.la libmoo.la $(MOO_LIBS) $(PYTHON24_LIBS)

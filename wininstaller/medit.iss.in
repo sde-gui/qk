@@ -21,13 +21,14 @@ Source: C:\medit\*; DestDir: {app}; Flags: ignoreversion recursesubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: {group}\medit; Filename: {app}\medit.exe
+Name: {group}\medit; Filename: {app}\bin\medit.exe
 Name: {group}\{cm:UninstallProgram,medit}; Filename: {uninstallexe}
-Name: {userdesktop}\medit; Filename: {app}\medit.exe; Tasks: desktopicon
-Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\medit; Filename: {app}\medit.exe; Tasks: quicklaunchicon
+Name: {userdesktop}\medit; Filename: {app}\bin\medit.exe; Tasks: desktopicon
+Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\medit; Filename: {app}\bin\medit.exe; Tasks: quicklaunchicon
 
 [Run]
-Filename: {app}\medit.exe; Description: {cm:LaunchProgram,medit}; Flags: nowait postinstall skipifsilent
+Filename: {app}\bin\medit.exe; Description: {cm:LaunchProgram,medit}; Flags: nowait postinstall skipifsilent
 [UninstallDelete]
-Name: {app}\plugins\*.pyc; Type: files; Tasks:
-Name: {app}\plugins\lib\*.pyc; Type: files; Tasks:
+Name: {app}\lib\moo\plugins\*.pyc; Type: files; Tasks:
+Name: {app}\lib\moo\plugins\lib\*.pyc; Type: files; Tasks:
+

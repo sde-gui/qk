@@ -44,8 +44,8 @@ endif
 
 else !MOO_OS_UNIX
 
-noinst_LTLIBRARIES += libmoomod23.la libmoomod24.la
-noinst_LTLIBRARIES += libpymoo23.la libpymoo24.la
+noinst_LTLIBRARIES += libmoomod25.la libmoomod24.la
+noinst_LTLIBRARIES += libpymoo25.la libpymoo24.la
 
 endif !MOO_OS_UNIX
 
@@ -57,13 +57,13 @@ AM_CFLAGS =			\
 	$(PYTHON_CFLAGS)	\
 	$(PYGTK_CFLAGS)
 
-py23_cflags =			\
+py25_cflags =			\
 	-I..			\
 	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
-	$(PYTHON23_CFLAGS)	\
-	$(PYGTK23_CFLAGS)	\
+	$(PYTHON25_CFLAGS)	\
+	$(PYGTK25_CFLAGS)	\
 	-DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
 
 py24_cflags =			\
@@ -72,21 +72,21 @@ py24_cflags =			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
 	$(PYTHON24_CFLAGS)	\
-	$(PYGTK23_CFLAGS)	\
+	$(PYGTK24_CFLAGS)	\
 	-DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
 
 libmoomod_la_SOURCES = $(libmoomod_la_sources)
 libmoomod_la_LIBADD = pygtk/libmoopygtk.la
-libmoomod23_la_SOURCES = $(libmoomod_la_sources)
-libmoomod23_la_LIBADD = pygtk/libmoopygtk23.la
-libmoomod23_la_CFLAGS = $(py23_cflags)
+libmoomod25_la_SOURCES = $(libmoomod_la_sources)
+libmoomod25_la_LIBADD = pygtk/libmoopygtk25.la
+libmoomod25_la_CFLAGS = $(py25_cflags)
 libmoomod24_la_SOURCES = $(libmoomod_la_sources)
 libmoomod24_la_LIBADD = pygtk/libmoopygtk24.la
 libmoomod24_la_CFLAGS = $(py24_cflags)
 
 libpymoo_la_SOURCES = $(libpymoo_la_sources)
-libpymoo23_la_SOURCES = $(libpymoo_la_sources)
-libpymoo23_la_CFLAGS = $(py23_cflags)
+libpymoo25_la_SOURCES = $(libpymoo_la_sources)
+libpymoo25_la_CFLAGS = $(py25_cflags)
 libpymoo24_la_SOURCES = $(libpymoo_la_sources)
 libpymoo24_la_CFLAGS = $(py24_cflags)
 
