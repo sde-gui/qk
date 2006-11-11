@@ -93,6 +93,13 @@ sys_path_remove_dir (const char *dir)
 }
 
 
+static void
+func_init_pygobject (void)
+{
+    init_pygobject ();
+}
+
+
 MOO_MODULE_INIT_FUNC_DECL;
 MOO_MODULE_INIT_FUNC_DECL
 {
@@ -130,6 +137,16 @@ MOO_MODULE_INIT_FUNC_DECL
     {
         PyErr_Print ();
         g_warning ("%s: could not import moo", G_STRLOC);
+        moo_python_api_deinit ();
+        return FALSE;
+    }
+
+    func_init_pygobject ();
+
+    if (PyErr_Occurred ())
+    {
+        PyErr_Print ();
+        g_warning ("%s: could not import gobject", G_STRLOC);
         moo_python_api_deinit ();
         return FALSE;
     }
