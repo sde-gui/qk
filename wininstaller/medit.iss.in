@@ -29,6 +29,8 @@ Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\medit; Filename: {a
 [Run]
 Filename: {app}\bin\medit.exe; Description: {cm:LaunchProgram,medit}; Flags: nowait postinstall skipifsilent
 [UninstallDelete]
-Name: {app}\lib\moo\plugins\*.pyc; Type: files; Tasks:
-Name: {app}\lib\moo\plugins\lib\*.pyc; Type: files; Tasks:
+Name: {app}\lib\moo\plugins\*.pyc; Type: files; Tasks: 
+Name: {app}\lib\moo\plugins\lib\*.pyc; Type: files; Tasks: 
 
+Name: {app}\lib\moo\plugins\project\mprj\*.pyc; Type: files; Tasks: 
+Name: {app}\lib\moo\plugins\project\mprj\config\*.pyc; Type: files; Tasks: 
