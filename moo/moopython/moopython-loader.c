@@ -141,7 +141,10 @@ do_load_file (const char *path)
         goto out;
     }
 
+    _moo_disable_win32_error_message ();
     mod = PyImport_ExecCodeModule (modname, code);
+    _moo_enable_win32_error_message ();
+
     Py_DECREF (code);
 
     if (!mod)
