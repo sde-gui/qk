@@ -442,7 +442,7 @@ _wrap_moo_plugin_call_method (PyGObject *self, PyObject *args)
     if ((int) meth->n_params + 1 != PyTuple_GET_SIZE (args))
     {
         PyErr_Format (PyExc_TypeError, "in Plugin.call_method: method '%s' takes "
-                      "exactly %d arguments (%d given)", name, meth->n_params,
+                      "exactly %d arguments (%"G_GSSIZE_FORMAT" given)", name, meth->n_params,
                       PyTuple_GET_SIZE (args) - 1);
         return NULL;
     }

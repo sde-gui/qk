@@ -827,7 +827,7 @@ _moo_term_parser_parse (MooTermParser  *parser,
     parser_do_parse (parser, string, len);
 
     if (0 && parser->save)
-        g_print ("saved %d chars\n", parser->input.old_data->len);
+        g_print ("saved %" G_GSIZE_FORMAT " chars\n", parser->input.old_data->len);
 
     return !parser->save;
 }

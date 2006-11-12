@@ -1081,7 +1081,7 @@ process_incoming (MooTerm *term)
     gboolean done;
 
     if (0 && term->priv->incoming->len > 2*INPUT_CHUNK_SIZE)
-        g_print ("process_incoming: %d chars\n",
+        g_print ("process_incoming: %" G_GSIZE_FORMAT " chars\n",
                  term->priv->incoming->len);
 
     done = !term->priv->incoming->len ||

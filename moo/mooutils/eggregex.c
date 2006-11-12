@@ -1612,7 +1612,7 @@ expand_escape (const gchar        *replacement,
   tmp_error = g_error_new (EGG_REGEX_ERROR,
 			   EGG_REGEX_ERROR_REPLACE,
 			   _("Error while parsing replacement "
-			     "text \"%s\" at char %d: %s"),
+			     "text \"%s\" at char %" G_GSSIZE_FORMAT ": %s"),
 			   replacement,
 			   p - replacement,
 			   error_detail);
