@@ -281,6 +281,13 @@ process_language_node (xmlTextReaderPtr reader, const gchar *filename)
 				     g_strdup ((char*) tmp));
 	xmlFree (tmp);
 
+	tmp = xmlTextReaderGetAttribute (reader, BAD_CAST "globs");
+	if (tmp != NULL)
+		g_hash_table_insert (lang->priv->properties,
+				     g_strdup ("globs"),
+				     g_strdup ((char*) tmp));
+	xmlFree (tmp);
+
 	tmp = xmlTextReaderGetAttribute (reader, BAD_CAST "_name");
 	if (tmp == NULL)
 	{
