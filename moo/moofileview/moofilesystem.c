@@ -775,19 +775,19 @@ parse_path_unix (MooFileSystem  *fs,
     dirname = g_filename_from_utf8 (display_dirname, -1, NULL, NULL, error);
 
     if (!dirname)
-        goto error_label;
+        goto error;
 
     norm_dirname = _moo_file_system_normalize_path (fs, dirname, TRUE, error);
 
     if (!norm_dirname)
-        goto error_label;
+        goto error;
     else
         goto success;
 
     /* no fallthrough */
     g_assert_not_reached ();
 
-error_label:
+error:
     g_free (dirname);
     g_free (norm_dirname);
     g_free (display_dirname);
@@ -939,7 +939,12 @@ normalize_path_win32 (G_GNUC_UNUSED MooFileSystem *fs,
     else if (drive)
     {
         char *tmp = normpath;
-        normpath = g_strdup_printf ("%s%s", drive, normpath);
+
+        if (normpath[0] == '\\')
+            normpath = g_strdup_printf ("%s%s", drive, normpath);
+        else
+            normpath = g_strdup_printf ("%s\\%s", drive, normpath);
+
         g_free (tmp);
     }
 
@@ -986,6 +991,7 @@ parse_path_win32 (MooFileSystem  *fs,
 #endif
     const char *separator;
     char *norm_dirname = NULL, *dirname = NULL, *basename = NULL;
+    gsize len;
 
     g_return_val_if_fail (path_utf8 && path_utf8[0], FALSE);
     g_return_val_if_fail (g_path_is_absolute (path_utf8), FALSE);
@@ -993,30 +999,40 @@ parse_path_win32 (MooFileSystem  *fs,
     separator = strrchr (path_utf8, '\\');
     g_return_val_if_fail (separator != NULL, FALSE);
 
-    dirname = g_path_get_dirname (path_utf8);
-    basename = g_path_get_basename (path_utf8);
+    len = strlen (path_utf8);
+
+    if (path_utf8[len - 1] == '\\')
+    {
+        dirname = g_strdup (path_utf8);
+        basename = g_strdup ("");
+    }
+    else
+    {
+        dirname = g_path_get_dirname (path_utf8);
+        basename = g_path_get_basename (path_utf8);
+    }
+
     norm_dirname = _moo_file_system_normalize_path (fs, dirname, TRUE, error);
 
     if (!norm_dirname)
-        goto error_label;
-    else
-        goto success;
+        goto error;
 
-    /* no fallthrough */
-    g_assert_not_reached ();
-
-error_label:
-    g_free (dirname);
-    g_free (basename);
-    g_free (norm_dirname);
-    return FALSE;
-
-success:
-    g_clear_error (error);
     *dirname_p = norm_dirname;
     *display_dirname_p = dirname;
     *display_basename_p = basename;
+
+    g_message ("parsed '%s' into '%s' and '%s'", path_utf8, dirname, basename);
+
     return TRUE;
+
+error:
+    g_free (dirname);
+    g_free (basename);
+    g_free (norm_dirname);
+
+    g_message ("could not parse '%s'", path_utf8);
+
+    return FALSE;
 }
 
 
