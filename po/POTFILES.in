@@ -69,7 +69,6 @@ moo/mooedit/glade/mootextgotoline.glade
 moo/mooedit/glade/quicksearch.glade
 moo/mooedit/glade/statusbar.glade
 moo/mooedit/glade/mooedittools.glade
-moo/mooedit/plugins/completion/completion-plugin.c
 moo/mooedit/plugins/fileselector/moofileselector-prefs.glade
 moo/mooedit/plugins/fileselector/moofileselector.glade
 moo/mooedit/plugins/fileselector/moofileselector.c
