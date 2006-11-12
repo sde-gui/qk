@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language _name=".desktop" version="1.0" _section="Others" mimetypes="application/x-gnome-app-info;application/x-desktop">
+<language _name=".desktop" version="1.0" _section="Others" mimetypes="application/x-gnome-app-info;application/x-desktop" globs="*.desktop;*.kdelnk">
 
 	<line-comment _name = "Line Comment" style= "Comment">
 		<start-regex>#</start-regex>
@@ -62,7 +62,7 @@
 		<keyword>false</keyword>
 	</keyword-list>
 
-	<keyword-list _name = "Exec Parameter" style = "Preprocessor" case-sensitive="TRUE" 
+	<keyword-list _name = "Exec Parameter" style = "Preprocessor" case-sensitive="TRUE"
 		match-empty-string-at-beginning="FALSE">
 		<keyword>%f</keyword>
 		<keyword>%F</keyword>

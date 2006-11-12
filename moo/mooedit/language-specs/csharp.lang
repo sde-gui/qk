@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language _name="C#" version="1.0" _section="Sources" mimetypes="text/x-csharpsrc;text/x-csharp">
-	
+<language _name="C#" version="1.0" _section="Sources" mimetypes="text/x-csharpsrc;text/x-csharp" globs="*.cs">
+
 	<escape-char>\</escape-char>
 
 	<string _name = "String" style = "String" end-at-line-end = "TRUE">
@@ -27,7 +27,7 @@
 		<start-regex>/\*</start-regex>
         	<end-regex>\*/</end-regex>
 	</block-comment>
-	
+
 	<keyword-list _name = "Keywords" style = "Keyword" case-sensitive="TRUE">
 		<keyword>class</keyword>
 		<keyword>delegate</keyword>
@@ -135,6 +135,6 @@
 		<keyword>error</keyword>
 		<keyword>region</keyword>
 		<keyword>endregion</keyword>
-	</keyword-list>	
-	
+	</keyword-list>
+
 </language>

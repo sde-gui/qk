@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language _name="GtkRC" version="1.0" _section="Others" mimetypes="text/x-gtkrc">
-	
+<language _name="GtkRC" version="1.0" _section="Others" mimetypes="text/x-gtkrc"
+          globs="gtkrc;.gtkrc;gtkrc-*;.gtkrc-*">
+
 	<escape-char>\</escape-char>
 
 	<string _name = "Double Quoted String" style = "String" end-at-line-end = "TRUE">
@@ -25,7 +26,7 @@
 	<pattern-item _name = "Number" style = "Decimal">
 		<regex>\b[0-9][0-9\.]*\b</regex>
 	</pattern-item>
-	
+
 	<keyword-list _name = "Keyword" style = "Keyword" case-sensitive="TRUE">
 		<keyword>style</keyword>
 		<keyword>engine</keyword>
@@ -41,7 +42,7 @@
 		<keyword>base</keyword>
 		<keyword>text</keyword>
 	</keyword-list>
-	
+
 	<keyword-list _name = "State" style = "Preprocessor" case-sensitive="TRUE">
 		<keyword>ACTIVE</keyword>
 		<keyword>SELECTED</keyword>

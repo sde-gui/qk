@@ -45,7 +45,7 @@ def normalize_id(id):
         return id.replace(', ', '-').replace('.', '-').replace('*', '-').replace(',', '-').replace(' ', '-').replace('/', '-').replace('#', '-').lower()
 
 class LangFile(object):
-    def __init__(self, id, name, _name, section, _section, mimetypes, filename):
+    def __init__(self, id, name, _name, section, _section, mimetypes, globs, filename):
         object.__init__(self)
 
         assert name or _name
@@ -57,6 +57,7 @@ class LangFile(object):
         self.section = section
         self._section = _section
         self.mimetypes = mimetypes
+        self.globs = globs
         self.filename = filename
         self.contexts = []
         self.escape_char = None
@@ -84,9 +85,12 @@ class LangFile(object):
 
         string += '>\n'
 
-        if self.mimetypes:
+        if self.mimetypes or self.globs:
             string += indent + '<metadata>\n'
-            string += 2*indent + '<property name="mimetypes">%s</property>\n' % (cgi.escape(self.mimetypes),)
+            if self.mimetypes:
+                string += 2*indent + '<property name="mimetypes">%s</property>\n' % (cgi.escape(self.mimetypes),)
+            if self.globs:
+                string += 2*indent + '<property name="globs">%s</property>\n' % (cgi.escape(self.globs),)
             string += indent + '</metadata>\n\n'
 
         return string
@@ -484,6 +488,7 @@ def parse_file(filename):
                          node.getAttribute("section"),
                          node.getAttribute("_section"),
                          node.getAttribute("mimetypes"),
+                         node.getAttribute("globs"),
                          filename)
 
     node = first_child(node)

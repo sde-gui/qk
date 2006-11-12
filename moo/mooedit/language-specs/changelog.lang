@@ -3,6 +3,7 @@
 
   <metadata>
     <property name="mimetypes">text/x-changelog</property>
+    <property name="globs">ChangeLog*</property>
   </metadata>
 
   <styles>

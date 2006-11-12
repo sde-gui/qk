@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language _name="Ada" version="1.0" _section="Sources" mimetypes="text/x-ada;text/x-adasrc">
-	
+<language _name="Ada" version="1.0" _section="Sources" mimetypes="text/x-ada;text/x-adasrc" globs="*.adb;*.ads">
+
 	<line-comment _name = "Line Comment" style= "Comment">
 		<start-regex>--</start-regex>
 	</line-comment>
@@ -10,7 +10,7 @@
 		<start-regex>&quot;</start-regex>
 		<end-regex>&quot;</end-regex>
 	</string>
-	
+
 	<pattern-item _name = "Character Constant" style = "String">
 		<regex>&apos;.&apos;</regex>
 	</pattern-item>

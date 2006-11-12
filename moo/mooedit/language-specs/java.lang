@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language _name="Java" version="1.0" _section="Sources" mimetypes="text/x-java">
-	
+<language _name="Java" version="1.0" _section="Sources" mimetypes="text/x-java" globs="*.java">
+
 	<string _name = "String" style = "String" end-at-line-end = "TRUE">
 		<start-regex>&quot;</start-regex>
 		<end-regex>&quot;</end-regex>

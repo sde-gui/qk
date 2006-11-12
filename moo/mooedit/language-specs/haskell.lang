@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language _name="Haskell" version="1.0" _section="Sources" mimetypes="text/x-haskell">
+<language _name="Haskell" version="1.0" _section="Sources" mimetypes="text/x-haskell" globs="*.hs">
 
 	<escape-char>\</escape-char>
 

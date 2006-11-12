@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language _name="Fortran 95" version="1.0" _section="Sources" mimetypes="text/x-fortran">
-	
+<language _name="Fortran 95" version="1.0" _section="Sources" mimetypes="text/x-fortran" globs="*.f;*.f9[05];*.for">
+
 	<escape-char>\</escape-char>
 
 	<!-- Note: contains an hack to avoid considering ^COMMON a comment -->

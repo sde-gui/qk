@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language _name=".ini" version="1.0" _section="Others" mimetypes="text/x-ini-file;application/x-ini-file">
+<language _name=".ini" version="1.0" _section="Others" mimetypes="text/x-ini-file;application/x-ini-file" globs="*.ini">
 
 	<line-comment _name = "Line Comment" style= "Comment">
 		<start-regex>;</start-regex>
@@ -31,7 +31,7 @@
 		<keyword>yes</keyword>
 		<keyword>no</keyword>
 	</keyword-list>
-                                                                                                                                               
+
         <string _name="Single Quoted String" style="String" end-at-line-end="FALSE">
                 <start-regex>&apos;</start-regex>
                 <end-regex>&apos;</end-regex>
@@ -40,11 +40,11 @@
 	 <string _name="Double Quoted String" style="String" end-at-line-end="FALSE">
                 <start-regex>&quot;</start-regex>
                 <end-regex>&quot;</end-regex>
-        </string>                                                                                                                                              
+        </string>
         <pattern-item _name="Integer" style="Decimal">
                 <regex>\b[0-9]+\b</regex>
         </pattern-item>
-                                                                                                                                               
+
         <pattern-item _name="Decimal Number" style="Floating Point">
                 <regex>(\b[0-9]+(\.[0-9]+)?|\.[0-9]+)([Ee][\+-]?[0-9]+)?\b</regex>
         </pattern-item>

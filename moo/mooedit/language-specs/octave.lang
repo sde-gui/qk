@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language _name="Octave" version="1.0" _section="Scripts" mimetypes="text/x-octave;text/x-matlab">
-	
+<language _name="Octave" version="1.0" _section="Scripts" mimetypes="text/x-octave;text/x-matlab" globs="*.m">
+
 	<escape-char>\</escape-char>
 
 	<line-comment _name = "Line Comment" style= "Comment">
@@ -37,7 +37,7 @@
         	<keyword>NA</keyword>
 	</keyword-list>
 
-	<keyword-list _name = "Keyword" style = "Keyword" case-sensitive="TRUE">		
+	<keyword-list _name = "Keyword" style = "Keyword" case-sensitive="TRUE">
 		<keyword>function</keyword>
 		<keyword>endfunction</keyword>
 

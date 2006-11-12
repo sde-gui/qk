@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language _name="Scheme" version="1.0" _section="Sources" mimetypes="text/x-scheme">
+<language _name="Scheme" version="1.0" _section="Sources" mimetypes="text/x-scheme" globs="*.scm">
 
 	<line-comment _name="Line Comment" style="Comment">
 		<start-regex>;</start-regex>

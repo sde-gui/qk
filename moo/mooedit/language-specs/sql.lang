@@ -13,7 +13,7 @@
 <!-- You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA. -->
 
 <!DOCTYPE language SYSTEM "language.dtd">
-<language _name="SQL" version="1.0" _section="Sources" mimetypes="text/x-sql">
+<language _name="SQL" version="1.0" _section="Sources" mimetypes="text/x-sql" globs="*.sql">
 
 	<escape-char>\</escape-char>
 
@@ -92,7 +92,7 @@
 		<start-regex>/\*</start-regex>
         	<end-regex>\*/</end-regex>
 	</block-comment>
-	
+
 	<line-comment _name="Line Comment" style="Comment">
 		<start-regex>--</start-regex>
 	</line-comment>
