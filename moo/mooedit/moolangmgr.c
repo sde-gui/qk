@@ -17,6 +17,7 @@
 #include "mooedit/moolang-private.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-fs.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/xdgmime/xdgmime.h"
@@ -250,7 +251,7 @@ get_lang_by_extension (MooLangMgr *mgr,
 
         for (g = globs; !found && g != NULL; g = g->next)
         {
-            if (g_pattern_match_simple ((char*) g->data, utf8_basename))
+            if (_moo_glob_match_simple ((char*) g->data, utf8_basename))
             {
                 found = TRUE;
                 break;
@@ -293,7 +294,7 @@ lang_mgr_get_lang_for_bak_filename (MooLangMgr *mgr,
     {
         int ext_len = strlen (bak_globs[i]) - 1;
 
-        if (len > ext_len && g_pattern_match_simple (bak_globs[i], utf8_name))
+        if (len > ext_len && _moo_glob_match_simple (bak_globs[i], utf8_name))
         {
             utf8_base = g_strndup (utf8_name, len - ext_len);
             break;
@@ -337,7 +338,7 @@ filename_blacklisted (MooLangMgr *mgr,
 
     if (info)
         for (l = info->globs; !result && l != NULL; l = l->next)
-            if (g_pattern_match_simple ((char*) l->data, utf8_basename))
+            if (_moo_glob_match_simple ((char*) l->data, utf8_basename))
                 result = TRUE;
 
     g_free (utf8_basename);
@@ -369,11 +370,6 @@ moo_lang_mgr_get_lang_for_file (MooLangMgr *mgr,
     if (file_blacklisted (mgr, filename))
         return NULL;
 
-    lang = get_lang_by_extension (mgr, filename);
-
-    if (lang)
-        return lang;
-
 #ifdef MOO_USE_XDGMIME
     /* XXX: xdgmime wants utf8-encoded filename here. is it a problem? */
     /* It's a big problem! */
@@ -389,6 +385,11 @@ moo_lang_mgr_get_lang_for_file (MooLangMgr *mgr,
 #warning "Implement moo_lang_mgr_get_lang_for_file()"
 #endif
 #endif /* MOO_USE_XDGMIME */
+
+    lang = get_lang_by_extension (mgr, filename);
+
+    if (lang)
+        return lang;
 
     lang = lang_mgr_get_lang_for_bak_filename (mgr, filename);
 

@@ -79,6 +79,15 @@ int             _moo_rename                 (const char *old_name,
 int             _moo_chdir                  (const char *path);
 
 
+typedef struct _MooGlob MooGlob;
+MooGlob        *_moo_glob_new               (const char *pattern);
+gboolean        _moo_glob_match             (MooGlob    *glob,
+                                             const char *filename);
+gboolean        _moo_glob_match_simple      (const char *pattern,
+                                             const char *filename);
+void            _moo_glob_free              (MooGlob    *glob);
+
+
 G_END_DECLS
 
 #endif /* __MOO_UTILS_FS_H__ */

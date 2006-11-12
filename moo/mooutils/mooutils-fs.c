@@ -16,6 +16,7 @@
 #endif
 
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/mooutils-misc.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -695,4 +696,205 @@ _moo_rename (const char *old_name,
 #else
     return rename (old_name, new_name);
 #endif
+}
+
+
+/***********************************************************************/
+/* Glob matching
+ */
+
+#if 0 && defined(HAVE_FNMATCH_H)
+#include <fnmatch.h>
+#else
+#define MOO_GLOB_REGEX
+#include <mooutils/eggregex.h>
+#endif
+
+
+struct _MooGlob {
+#ifdef MOO_GLOB_REGEX
+    EggRegex *re;
+#else
+    char *pattern;
+#endif
+};
+
+#ifdef MOO_GLOB_REGEX
+static char *
+glob_to_re (const char *pattern)
+{
+    GString *string;
+    const char *p, *piece, *bracket;
+    char *escaped;
+
+    g_return_val_if_fail (pattern != NULL, NULL);
+
+    p = piece = pattern;
+    string = g_string_new (NULL);
+
+    while (*p)
+    {
+        switch (*p)
+        {
+            case '*':
+                if (p != piece)
+                    g_string_append_len (string, piece, p - piece);
+                g_string_append (string, ".*");
+                piece = ++p;
+                break;
+
+            case '?':
+                if (p != piece)
+                    g_string_append_len (string, piece, p - piece);
+                g_string_append_c (string, '.');
+                piece = ++p;
+                break;
+
+            case '[':
+                if (!(bracket = strchr (p + 1, ']')))
+                {
+                    g_warning ("in %s: unmatched '['", pattern);
+                    goto error;
+                }
+
+                if (p != piece)
+                    g_string_append_len (string, piece, p - piece);
+
+                g_string_append_c (string, '[');
+                if (p[1] == '^')
+                {
+                    g_string_append_c (string, '^');
+                    escaped = egg_regex_escape_string (p + 2, bracket - p - 2);
+                }
+                else
+                {
+                    escaped = egg_regex_escape_string (p + 1, bracket - p - 1);
+                }
+                g_string_append (string, escaped);
+                g_free (escaped);
+                g_string_append_c (string, ']');
+                piece = p = bracket + 1;
+                break;
+
+            case '\\':
+            case '|':
+            case '(':
+            case ')':
+            case ']':
+            case '{':
+            case '}':
+            case '^':
+            case '$':
+            case '+':
+            case '.':
+                if (p != piece)
+                    g_string_append_len (string, piece, p - piece);
+                g_string_append_c (string, '\\');
+                g_string_append_c (string, *p);
+                piece = ++p;
+                break;
+
+            default:
+                p = g_utf8_next_char (p);
+        }
+    }
+
+    if (*piece)
+        g_string_append (string, piece);
+
+    g_string_append_c (string, '$');
+
+    if (0)
+        _moo_message ("converted '%s' to '%s'\n", pattern, string->str);
+
+    return g_string_free (string, FALSE);
+
+error:
+    g_string_free (string, TRUE);
+    return NULL;
+}
+
+
+MooGlob *
+_moo_glob_new (const char *pattern)
+{
+    MooGlob *gl;
+    EggRegex *re;
+    char *re_pattern;
+    EggRegexCompileFlags flags = 0;
+    GError *error = NULL;
+
+    g_return_val_if_fail (pattern != NULL, NULL);
+
+#ifdef __WIN32__
+    flags = EGG_REGEX_CASELESS;
+#endif
+
+    if (!(re_pattern = glob_to_re (pattern)))
+        return NULL;
+
+    re = egg_regex_new (re_pattern, flags, 0, &error);
+
+    g_free (re_pattern);
+
+    if (!re)
+    {
+        g_warning ("%s: %s", G_STRLOC, error->message);
+        g_error_free (error);
+        return NULL;
+    }
+
+    gl = g_new0 (MooGlob, 1);
+    gl->re = re;
+
+    return gl;
+}
+
+
+gboolean
+_moo_glob_match (MooGlob    *glob,
+                 const char *filename_utf8)
+{
+    g_return_val_if_fail (glob != NULL, FALSE);
+    g_return_val_if_fail (filename_utf8 != NULL, FALSE);
+    g_return_val_if_fail (g_utf8_validate (filename_utf8, -1, NULL), FALSE);
+
+    return egg_regex_match (glob->re, filename_utf8, 0);
+}
+#endif
+
+
+void
+_moo_glob_free (MooGlob *glob)
+{
+    if (glob)
+    {
+#ifdef MOO_GLOB_REGEX
+        egg_regex_unref (glob->re);
+#else
+        g_free (glob->pattern);
+#endif
+        g_free (glob);
+    }
+}
+
+
+gboolean
+_moo_glob_match_simple (const char *pattern,
+                        const char *filename)
+{
+    MooGlob *gl;
+    gboolean result = FALSE;
+
+    g_return_val_if_fail (pattern != NULL, FALSE);
+    g_return_val_if_fail (filename != NULL, FALSE);
+
+    if ((gl = _moo_glob_new (pattern)))
+        result = _moo_glob_match (gl, filename);
+
+    if (result)
+        _moo_message ("'%s' matched '%s'", filename, pattern);
+
+    _moo_glob_free (gl);
+    return result;
 }
