@@ -109,7 +109,7 @@
         <context ref="def:shell-like-comment"/>
 
         <context id="assignment" end-at-line-end="true">
-          <start>^(\%{variable})\s*=</start>
+          <start>^(\%{variable})\s*[\+]?=</start>
             <include>
               <context sub-pattern="1" where="start" style-ref="assignment-lhs"/>
               <context ref="assignment-rhs"/>
