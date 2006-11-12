@@ -202,6 +202,12 @@ static gboolean moo_notebook_key_press      (GtkWidget      *widget,
                                              GdkEventKey    *event);
 static gboolean moo_notebook_motion         (GtkWidget      *widget,
                                              GdkEventMotion *event);
+#if 0
+static gboolean moo_notebook_enter          (GtkWidget      *widget,
+                                             GdkEventCrossing *event);
+static gboolean moo_notebook_leave          (GtkWidget      *widget,
+                                             GdkEventCrossing *event);
+#endif
 static gboolean moo_notebook_scroll_event   (GtkWidget      *widget,
                                              GdkEventScroll *event);
 
@@ -283,8 +289,8 @@ static GtkWidget *popup_func                (MooNotebook    *notebook,
                                              GtkWidget      *child,
                                              gpointer        user_data);
 
-// /* MOO_TYPE_NOTEBOOK */
-// G_DEFINE_TYPE (MooNotebook, moo_notebook, GTK_TYPE_CONTAINER)
+/* MOO_TYPE_NOTEBOOK */
+G_DEFINE_TYPE (MooNotebook, moo_notebook, GTK_TYPE_NOTEBOOK)
 
 enum {
     PROP_0,
@@ -305,34 +311,7 @@ enum {
 };
 
 static guint signals[NUM_SIGNALS];
-static gpointer parent_class;
-static gpointer grand_parent_class;
-
-GType
-moo_notebook_get_type (void)
-{
-    static GType t = 0;
-
-    if (!t)
-    {
-        static GTypeInfo type_info = {
-            sizeof (MooNotebookClass),
-            NULL, /* base_init */
-            NULL, /* base_finalize */
-            (GClassInitFunc) moo_notebook_class_init,
-            NULL, /* class_finalize */
-            NULL, /* class_data */
-            sizeof (MooNotebook),
-            0, /*n_preallocs */
-            (GInstanceInitFunc) moo_notebook_init,
-            NULL /* value_table */
-          };
-
-        t = g_type_register_static (GTK_TYPE_NOTEBOOK, "MooNotebook", &type_info, 0);
-    }
-
-    return t;
-}
+static gpointer moo_notebook_grand_parent_class;
 
 static void moo_notebook_class_init (MooNotebookClass *klass)
 {
@@ -341,8 +320,8 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
 
-    parent_class = g_type_class_peek_parent (klass);
-    grand_parent_class = g_type_class_peek_parent (parent_class);
+    moo_notebook_parent_class = g_type_class_peek_parent (klass);
+    moo_notebook_grand_parent_class = g_type_class_peek_parent (moo_notebook_parent_class);
 
     gobject_class->finalize = moo_notebook_finalize;
     gobject_class->set_property = moo_notebook_set_property;
@@ -367,8 +346,12 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
     widget_class->button_release_event = moo_notebook_button_release;
     widget_class->scroll_event = moo_notebook_scroll_event;
     widget_class->key_press_event = moo_notebook_key_press;
-    widget_class->motion_notify_event = moo_notebook_motion;
     widget_class->focus = moo_notebook_focus;
+    widget_class->motion_notify_event = moo_notebook_motion;
+#if 0
+    widget_class->enter_notify_event = moo_notebook_enter;
+    widget_class->leave_notify_event = moo_notebook_leave;
+#endif
 
     widget_class->drag_begin = NULL;
     widget_class->drag_end = NULL;
@@ -575,7 +558,7 @@ static void     moo_notebook_destroy        (GtkObject      *object)
     nb->priv->pages = NULL;
     nb->priv->current_page = NULL;
 
-    GTK_OBJECT_CLASS(parent_class)->destroy (object);
+    GTK_OBJECT_CLASS(moo_notebook_parent_class)->destroy (object);
 }
 
 
@@ -686,7 +669,7 @@ moo_notebook_finalize (GObject *object)
     /* XXX */
 
     g_free (notebook->priv);
-    G_OBJECT_CLASS (parent_class)->finalize (object);
+    G_OBJECT_CLASS (moo_notebook_parent_class)->finalize (object);
 }
 
 
@@ -1084,8 +1067,8 @@ moo_notebook_style_set (GtkWidget *widget,
                                   nb->priv->tab_window,
                                   GTK_STATE_NORMAL);
 
-    if (GTK_WIDGET_CLASS(grand_parent_class)->style_set)
-        GTK_WIDGET_CLASS(grand_parent_class)->style_set (widget, prev_style);
+    if (GTK_WIDGET_CLASS(moo_notebook_grand_parent_class)->style_set)
+        GTK_WIDGET_CLASS(moo_notebook_grand_parent_class)->style_set (widget, prev_style);
 }
 
 
@@ -1099,7 +1082,7 @@ moo_notebook_unrealize (GtkWidget *widget)
     nb->priv->tab_window = NULL;
 
     /* we don't call GtkNotebook's realize, so don't call unrealize() either */
-    GTK_WIDGET_CLASS(grand_parent_class)->unrealize (widget);
+    GTK_WIDGET_CLASS(moo_notebook_grand_parent_class)->unrealize (widget);
 }
 
 
@@ -1295,7 +1278,7 @@ static gboolean moo_notebook_expose         (GtkWidget      *widget,
         moo_notebook_draw_child_border (nb, event);
 
     /* do not let GtkNotebook try to draw */
-    GTK_WIDGET_CLASS(grand_parent_class)->expose_event (widget, event);
+    GTK_WIDGET_CLASS(moo_notebook_grand_parent_class)->expose_event (widget, event);
 
     if (nb->priv->in_drag && event->window == nb->priv->tab_window)
         moo_notebook_draw_dragged_label (nb, event);
@@ -3623,5 +3606,5 @@ static void     moo_notebook_set_focus_child(GtkContainer   *container,
         nb->priv->focus = FOCUS_ARROWS;
     }
 
-    GTK_CONTAINER_CLASS(grand_parent_class)->set_focus_child (container, child);
+    GTK_CONTAINER_CLASS(moo_notebook_grand_parent_class)->set_focus_child (container, child);
 }
