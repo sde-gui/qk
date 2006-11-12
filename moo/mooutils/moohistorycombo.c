@@ -19,6 +19,7 @@
 
 
 struct _MooHistoryComboPrivate {
+    gboolean enable_completion;
     gboolean called_popup;
     guint completion_popup_timeout_id;
     guint completion_popup_timeout;
@@ -80,7 +81,8 @@ enum {
     PROP_LIST,
     PROP_SORT_HISTORY,
     PROP_SORT_COMPLETION,
-    PROP_HISTORY_LIST_ID
+    PROP_HISTORY_LIST_ID,
+    PROP_ENABLE_COMPLETION
 };
 
 
@@ -124,6 +126,14 @@ moo_history_combo_class_init (MooHistoryComboClass *klass)
                                              G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
+                                     PROP_ENABLE_COMPLETION,
+                                     g_param_spec_boolean ("enable-completion",
+                                             "enable-completion",
+                                             "enable-completion",
+                                             TRUE,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
                                      PROP_HISTORY_LIST_ID,
                                      g_param_spec_string ("history-list-id",
                                              "history-list-id",
@@ -143,6 +153,7 @@ moo_history_combo_init (MooHistoryCombo *combo)
     combo->priv->filter_func = default_filter_func;
     combo->priv->filter_data = combo;
     combo->priv->completion_text = g_strdup ("");
+    combo->priv->enable_completion = TRUE;
 
     gtk_cell_layout_clear (GTK_CELL_LAYOUT (combo));
     cell = gtk_cell_renderer_text_new ();
@@ -201,6 +212,11 @@ moo_history_combo_set_property (GObject        *object,
             g_object_notify (object, "sort-completion");
             break;
 
+        case PROP_ENABLE_COMPLETION:
+            combo->priv->enable_completion = g_value_get_boolean (value);
+            g_object_notify (object, "enable-completion");
+            break;
+
         case PROP_HISTORY_LIST_ID:
             set_history_list_id (combo, g_value_get_string (value));
             break;
@@ -232,6 +248,10 @@ moo_history_combo_get_property (GObject        *object,
 
         case PROP_SORT_COMPLETION:
             g_value_set_boolean (value, combo->priv->sort_completion);
+            break;
+
+        case PROP_ENABLE_COMPLETION:
+            g_value_set_boolean (value, combo->priv->enable_completion);
             break;
 
         default:
@@ -323,7 +343,7 @@ default_sort_func (GtkTreeModel       *model,
                    GtkTreeIter        *a,
                    GtkTreeIter        *b)
 {
-    MooHistoryListItem *e1 = NULL, *e2 = NULL;
+    MooHistoryItem *e1 = NULL, *e2 = NULL;
     int result;
 
     /* XXX 0 is not good */
@@ -341,8 +361,8 @@ default_sort_func (GtkTreeModel       *model,
     else
         result = strcmp (e1->data, e2->data);
 
-    moo_history_list_item_free (e1);
-    moo_history_list_item_free (e2);
+    moo_history_item_free (e1);
+    moo_history_item_free (e2);
     return result;
 }
 
@@ -376,6 +396,10 @@ moo_history_combo_changed (MooCombo *combo)
 
     if (!GTK_WIDGET_MAPPED (combo))
         return;
+
+    if (!hist_combo->priv->enable_completion &&
+        !moo_combo_popup_shown (combo))
+            return;
 
     get_entry_text (hist_combo);
 
@@ -427,7 +451,7 @@ default_filter_func (const char         *entry_text,
                      G_GNUC_UNUSED gpointer data)
 {
     gboolean visible;
-    MooHistoryListItem *e = NULL;
+    MooHistoryItem *e = NULL;
 
     gtk_tree_model_get (model, iter, 0, &e, -1);
 
@@ -443,7 +467,7 @@ default_filter_func (const char         *entry_text,
         visible = TRUE;
     }
 
-    moo_history_list_item_free (e);
+    moo_history_item_free (e);
     return visible ? TRUE : FALSE;
 }
 
@@ -479,14 +503,27 @@ moo_history_combo_add_text (MooHistoryCombo *combo,
 void
 moo_history_combo_commit (MooHistoryCombo *combo)
 {
+    GtkTreeIter iter;
     const char *text;
+    MooHistoryItem *freeme = NULL;
 
     g_return_if_fail (MOO_IS_HISTORY_COMBO (combo));
 
     text = moo_combo_entry_get_text (MOO_COMBO (combo));
 
-    if (text && *text)
-        moo_history_combo_add_text (combo, text);
+    if (!text || !*text)
+        return;
+
+    if (moo_history_list_find (combo->priv->list, text, &iter))
+    {
+        freeme = moo_history_list_get_item (combo->priv->list, &iter);
+        text = freeme->data;
+    }
+
+    moo_history_combo_add_text (combo, text);
+
+    if (freeme)
+        moo_history_item_free (freeme);
 }
 
 
@@ -541,14 +578,14 @@ cell_data_func (G_GNUC_UNUSED GtkCellLayout *cell_layout,
                 GtkTreeModel       *model,
                 GtkTreeIter        *iter)
 {
-    MooHistoryListItem *e = NULL;
+    MooHistoryItem *e = NULL;
 
     gtk_tree_model_get (model, iter, 0, &e, -1);
 
     if (e)
     {
         g_object_set (cell, "text", e->display, NULL);
-        moo_history_list_item_free (e);
+        moo_history_item_free (e);
     }
 }
 
@@ -558,10 +595,12 @@ row_separator_func (GtkTreeModel       *model,
                     GtkTreeIter        *iter,
                     G_GNUC_UNUSED gpointer data)
 {
-    MooHistoryListItem *e = NULL;
-    gtk_tree_model_get (model, iter, 0, &e, -1);
-    moo_history_list_item_free (e);
-    return !e;
+    gboolean separator;
+    MooHistoryItem *item = NULL;
+    gtk_tree_model_get (model, iter, 0, &item, -1);
+    separator = item == NULL;
+    moo_history_item_free (item);
+    return separator;
 }
 
 
@@ -570,7 +609,7 @@ get_text_func (GtkTreeModel       *model,
                GtkTreeIter        *iter,
                G_GNUC_UNUSED gpointer data)
 {
-    MooHistoryListItem *e = NULL;
+    MooHistoryItem *e = NULL;
     char *text;
 
     gtk_tree_model_get (model, iter, 0, &e, -1);
@@ -579,6 +618,6 @@ get_text_func (GtkTreeModel       *model,
     g_return_val_if_fail (g_utf8_validate (e->data, -1, NULL), NULL);
 
     text = g_strdup (e->data);
-    moo_history_list_item_free (e);
+    moo_history_item_free (e);
     return text;
 }

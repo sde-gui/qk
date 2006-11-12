@@ -87,7 +87,7 @@ static MooEditSaver *get_saver              (MooEditor      *editor,
                                              MooEdit        *doc);
 
 static void          activate_history_item  (MooEditor      *editor,
-                                             MooHistoryListItem *item,
+                                             MooHistoryItem *item,
                                              MooEditWindow  *window);
 
 static void          add_new_window_action      (void);
@@ -893,9 +893,9 @@ create_recent_action (MooEditWindow  *window)
 
 
 static void
-activate_history_item (MooEditor           *editor,
-                       MooHistoryListItem  *item,
-                       MooEditWindow       *window)
+activate_history_item (MooEditor      *editor,
+                       MooHistoryItem *item,
+                       MooEditWindow  *window)
 {
     WindowInfo *win_info;
 

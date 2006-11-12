@@ -58,52 +58,38 @@ static void
 func_init_pygobject (void)
 {
     PyObject *gobject, *pygtk;
+    PyObject *mdict;
+    PyObject *cobject;
 
-    gobject = PyImport_ImportModule ((char*) "gobject");
+    if (!(gobject = PyImport_ImportModule ((char*) "gobject")))
+        return;
 
-    if (gobject != NULL)
+    mdict = PyModule_GetDict (gobject);
+    cobject = PyDict_GetItemString (mdict, "_PyGObject_API");
+
+    if (!cobject || !PyCObject_Check (cobject))
     {
-        PyObject *mdict = PyModule_GetDict (gobject);
-        PyObject *cobject = PyDict_GetItemString (mdict, "_PyGObject_API");
-
-        if (PyCObject_Check (cobject))
-        {
-            _PyGObject_API = (struct _PyGObject_Functions *) PyCObject_AsVoidPtr (cobject);
-        }
-        else
-        {
-            PyErr_SetString (PyExc_RuntimeError,
-                             "could not find _PyGObject_API object");
-            return;
-        }
-    }
-    else
-    {
+        PyErr_SetString (PyExc_RuntimeError,
+                         "could not find _PyGObject_API object");
         return;
     }
 
-    pygtk = PyImport_ImportModule((char*) "gtk._gtk");
+    _PyGObject_API = (struct _PyGObject_Functions *) PyCObject_AsVoidPtr (cobject);
 
-    if (pygtk != NULL)
-    {
-        PyObject *module_dict = PyModule_GetDict (pygtk);
-        PyObject *cobject = PyDict_GetItemString (module_dict, "_PyGtk_API");
+    if (!(pygtk = PyImport_ImportModule((char*) "gtk._gtk")))
+        return;
 
-        if (PyCObject_Check (cobject))
-        {
-            _PyGtk_API = (struct _PyGtk_FunctionStruct*) PyCObject_AsVoidPtr (cobject);
-        }
-        else
-        {
-            PyErr_SetString (PyExc_RuntimeError,
-                             "could not find _PyGtk_API object");
-            return;
-        }
-    }
-    else
+    mdict = PyModule_GetDict (pygtk);
+    cobject = PyDict_GetItemString (mdict, "_PyGtk_API");
+
+    if (!cobject || !PyCObject_Check (cobject))
     {
+        PyErr_SetString (PyExc_RuntimeError,
+                         "could not find _PyGtk_API object");
         return;
     }
+
+    _PyGtk_API = (struct _PyGtk_FunctionStruct*) PyCObject_AsVoidPtr (cobject);
 }
 
 static PyObject *
@@ -150,8 +136,8 @@ _moo_pygtk_init (void)
 
     PyImport_AddModule ((char*) "moo");
 
-    PyModule_AddObject (_moo_module, (char*)"version", moo_version());
-    PyModule_AddObject (_moo_module, (char*)"detailed_version", moo_detailed_version());
+    PyModule_AddObject (_moo_module, (char*) "version", moo_version());
+    PyModule_AddObject (_moo_module, (char*) "detailed_version", moo_detailed_version());
 
 #ifdef MOO_BUILD_UTILS
     if (!_moo_utils_mod_init ())

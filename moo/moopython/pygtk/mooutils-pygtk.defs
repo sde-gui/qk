@@ -212,12 +212,12 @@
   (release-func "moo_pane_params_free")
 )
 
-(define-boxed HistoryListItem
+(define-boxed HistoryItem
   (in-module "Moo")
-  (c-name "MooHistoryListItem")
-  (gtype-id "MOO_TYPE_HISTORY_LIST_ITEM")
-  (copy-func "moo_history_list_item_copy")
-  (release-func "moo_history_list_item_free")
+  (c-name "MooHistoryItem")
+  (gtype-id "MOO_TYPE_HISTORY_ITEM")
+  (copy-func "moo_history_item_copy")
+  (release-func "moo_history_item_free")
   (fields
     '("char*" "data")
     '("char*" "display")
@@ -1032,10 +1032,10 @@
   (return-type "char*")
 )
 
-(define-function moo_history_list_item_new
-  (c-name "moo_history_list_item_new")
-  (is-constructor-of "MooHistoryListItem")
-  (return-type "MooHistoryListItem*")
+(define-function moo_history_item_new
+  (c-name "moo_history_item_new")
+  (is-constructor-of "MooHistoryItem")
+  (return-type "MooHistoryItem*")
   (parameters
     '("const-char*" "data")
     '("const-char*" "display")

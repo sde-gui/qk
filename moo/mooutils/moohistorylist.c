@@ -20,7 +20,7 @@
 
 #define MAX_NUM_HISTORY_ITEMS 10
 
-typedef MooHistoryListItem Item;
+typedef MooHistoryItem Item;
 
 struct _MooHistoryListPrivate {
     GtkTreeModel *model;
@@ -76,7 +76,7 @@ static void     _list_delete_last               (MooHistoryList     *list);
 static void     list_save_recent                (MooHistoryList     *list);
 
 static void     menu_item_activated             (MooHistoryList     *list,
-                                                 MooHistoryListItem *entry,
+                                                 MooHistoryItem     *entry,
                                                  gpointer            menu_data);
 
 
@@ -141,7 +141,7 @@ moo_history_list_class_init (MooHistoryListClass *klass)
                           NULL, NULL,
                           _moo_marshal_VOID__BOXED_POINTER,
                           G_TYPE_NONE, 2,
-                          MOO_TYPE_HISTORY_LIST_ITEM,
+                          MOO_TYPE_HISTORY_ITEM,
                           G_TYPE_POINTER);
 
     signals[CHANGED] =
@@ -160,7 +160,7 @@ moo_history_list_init (MooHistoryList *list)
 {
     list->priv = g_new0 (MooHistoryListPrivate, 1);
     list->priv->max_items = MAX_NUM_HISTORY_ITEMS;
-    list->priv->store = gtk_list_store_new (1, MOO_TYPE_HISTORY_LIST_ITEM);
+    list->priv->store = gtk_list_store_new (1, MOO_TYPE_HISTORY_ITEM);
     list->priv->model = GTK_TREE_MODEL (list->priv->store);
     list->priv->use_separator = TRUE;
 
@@ -233,21 +233,22 @@ moo_history_list_finalize (GObject *object)
 }
 
 
-static Item*
-list_get_item (MooHistoryList *list,
-                GtkTreeIter    *iter)
+MooHistoryItem *
+moo_history_list_get_item (MooHistoryList *list,
+                           GtkTreeIter    *iter)
 {
-    Item *entry = NULL;
-    gtk_tree_model_get (list->priv->model, iter, 0, &entry, -1);
-    return entry;
+    MooHistoryItem *item = NULL;
+    gtk_tree_model_get (list->priv->model, iter, 0, &item, -1);
+    return item;
 }
 
 
-static gboolean
-list_find_item (MooHistoryList *list,
-                 const char     *text,
-                 GtkTreeIter    *iter)
+gboolean
+moo_history_list_find (MooHistoryList *list,
+                       const char     *text,
+                       GtkTreeIter    *iter)
 {
+    g_return_val_if_fail (MOO_IS_HISTORY_LIST (list), FALSE);
     g_return_val_if_fail (iter != NULL, FALSE);
     g_return_val_if_fail (text != NULL, FALSE);
 
@@ -255,15 +256,15 @@ list_find_item (MooHistoryList *list,
     {
         do
         {
-            Item *entry = list_get_item (list, iter);
+            Item *entry = moo_history_list_get_item (list, iter);
 
             if (entry && list->priv->compare_func (text, entry, list->priv->compare_data))
             {
-                moo_history_list_item_free (entry);
+                moo_history_item_free (entry);
                 return TRUE;
             }
 
-            moo_history_list_item_free (entry);
+            moo_history_item_free (entry);
         }
         while (gtk_tree_model_iter_next (list->priv->model, iter));
     }
@@ -284,9 +285,9 @@ default_compare_func (const char *text,
 
 
 Item*
-moo_history_list_item_new (const char     *data,
-                           const char     *display,
-                           gboolean        builtin)
+moo_history_item_new (const char     *data,
+                      const char     *display,
+                      gboolean        builtin)
 {
     Item *item;
 
@@ -297,24 +298,24 @@ moo_history_list_item_new (const char     *data,
     item = g_new0 (Item, 1);
     item->data = g_strdup (data);
     item->display = g_strdup (display);
-    item->builtin = builtin ? TRUE : FALSE;
+    item->builtin = builtin != 0;
 
     return item;
 }
 
 
 Item*
-moo_history_list_item_copy (const Item *item)
+moo_history_item_copy (const Item *item)
 {
     g_return_val_if_fail (item != NULL, NULL);
-    return moo_history_list_item_new (item->data,
-                                      item->display,
-                                      item->builtin);
+    return moo_history_item_new (item->data,
+                                 item->display,
+                                 item->builtin);
 }
 
 
 void
-moo_history_list_item_free (Item *item)
+moo_history_item_free (Item *item)
 {
     if (item)
     {
@@ -366,15 +367,15 @@ moo_history_list_add_builtin (MooHistoryList *list,
 
     g_return_if_fail (MOO_IS_HISTORY_LIST (list));
 
-    new_item = moo_history_list_item_new (item, display_item, TRUE);
+    new_item = moo_history_item_new (item, display_item, TRUE);
     g_return_if_fail (new_item != NULL);
 
-    if (list_find_item (list, item, &iter))
+    if (moo_history_list_find (list, item, &iter))
     {
-        Item *old = list_get_item (list, &iter);
+        Item *old = moo_history_list_get_item (list, &iter);
         if (!old->builtin)
             _list_remove (list, &iter);
-        moo_history_list_item_free (old);
+        moo_history_item_free (old);
     }
 
     _list_insert (list, list->priv->num_builtin++, new_item);
@@ -450,21 +451,22 @@ moo_history_list_add_full (MooHistoryList *list,
 
     _moo_history_list_load (list);
 
-    if (list_find_item (list, entry, &iter))
+    if (moo_history_list_find (list, entry, &iter))
     {
-        Item *old = list_get_item (list, &iter);
+        Item *old = moo_history_list_get_item (list, &iter);
 
         if (!old->builtin)
+        {
             _list_move_on_top (list, &iter);
+            list_save_recent (list);
+            g_signal_emit (list, signals[CHANGED], 0);
+        }
 
-        list_save_recent (list);
-        g_signal_emit (list, signals[CHANGED], 0);
-
-        moo_history_list_item_free (old);
+        moo_history_item_free (old);
         return;
     }
 
-    new_entry = moo_history_list_item_new (entry, display_entry, FALSE);
+    new_entry = moo_history_item_new (entry, display_entry, FALSE);
     g_return_if_fail (new_entry != NULL);
 
     if (list->priv->num_builtin &&
@@ -490,7 +492,7 @@ moo_history_list_add_full (MooHistoryList *list,
     g_signal_emit (list, signals[CHANGED], 0);
     g_object_notify (G_OBJECT (list), "empty");
 
-    moo_history_list_item_free (new_entry);
+    moo_history_item_free (new_entry);
 }
 
 
@@ -515,7 +517,7 @@ moo_history_list_get_last_item (MooHistoryList *list)
 
     data = item->data;
     item->data = NULL;
-    moo_history_list_item_free (item);
+    moo_history_item_free (item);
     return data;
 }
 
@@ -531,10 +533,10 @@ moo_history_list_remove (MooHistoryList *list,
     g_return_if_fail (MOO_IS_HISTORY_LIST (list));
     g_return_if_fail (entry != NULL);
 
-    if (!list_find_item (list, entry, &iter))
+    if (!moo_history_list_find (list, entry, &iter))
         return;
 
-    item = list_get_item (list, &iter);
+    item = moo_history_list_get_item (list, &iter);
     _list_remove (list, &iter);
 
     separator = list->priv->num_builtin;
@@ -554,7 +556,7 @@ moo_history_list_remove (MooHistoryList *list,
 
     list_save_recent (list);
 
-    moo_history_list_item_free (item);
+    moo_history_item_free (item);
     return;
 }
 
@@ -671,14 +673,14 @@ moo_history_list_new (const char *user_id)
 
 
 GType
-moo_history_list_item_get_type (void)
+moo_history_item_get_type (void)
 {
     static GType type = 0;
 
     if (!type)
-        type = g_boxed_type_register_static ("MooHistoryListItem",
-                                             (GBoxedCopyFunc) moo_history_list_item_copy,
-                                             (GBoxedFreeFunc) moo_history_list_item_free);
+        type = g_boxed_type_register_static ("MooHistoryItem",
+                                             (GBoxedCopyFunc) moo_history_item_copy,
+                                             (GBoxedFreeFunc) moo_history_item_free);
 
     return type;
 }
@@ -697,9 +699,9 @@ moo_history_list_get_model (MooHistoryList *list)
  */
 
 static void
-menu_item_activated (MooHistoryList     *list,
-                     MooHistoryListItem *entry,
-                     gpointer            menu_data)
+menu_item_activated (MooHistoryList *list,
+                     MooHistoryItem *entry,
+                     gpointer        menu_data)
 {
     g_signal_emit (list, signals[ACTIVATE_ITEM], 0, entry, menu_data);
 }
@@ -747,8 +749,8 @@ _list_insert (MooHistoryList     *list,
         moo_menu_mgr_insert (list->priv->mgr,
                              NULL, index, NULL,
                              entry->display, tip, MOO_MENU_ITEM_ACTIVATABLE,
-                             moo_history_list_item_copy (entry),
-                             (GDestroyNotify) moo_history_list_item_free);
+                             moo_history_item_copy (entry),
+                             (GDestroyNotify) moo_history_item_free);
     }
     else
     {
@@ -777,7 +779,7 @@ _list_move_on_top (MooHistoryList     *list,
     if (old_index == new_index)
         return;
 
-    entry = list_get_item (list, iter);
+    entry = moo_history_list_get_item (list, iter);
 
     moo_menu_mgr_remove (list->priv->mgr, NULL, old_index);
     tip = list_get_tip (list, entry->data);
@@ -786,15 +788,15 @@ _list_move_on_top (MooHistoryList     *list,
         moo_menu_mgr_insert (list->priv->mgr,
                              NULL, new_index, NULL,
                              entry->display, tip, MOO_MENU_ITEM_ACTIVATABLE,
-                             moo_history_list_item_copy (entry),
-                             (GDestroyNotify) moo_history_list_item_free);
+                             moo_history_item_copy (entry),
+                             (GDestroyNotify) moo_history_item_free);
     else
         moo_menu_mgr_insert_separator (list->priv->mgr, NULL, new_index);
 
     gtk_list_store_remove (list->priv->store, iter);
     gtk_list_store_insert (list->priv->store, iter, new_index);
     gtk_list_store_set (list->priv->store, iter, 0, entry, -1);
-    moo_history_list_item_free (entry);
+    moo_history_item_free (entry);
     g_free (tip);
 }
 
@@ -892,7 +894,7 @@ save_one (GtkTreeModel  *model,
     if (!item->builtin)
         moo_markup_create_text_element (root, ELEMENT_ITEM, item->data);
 
-    moo_history_list_item_free (item);
+    moo_history_item_free (item);
     return FALSE;
 }
 

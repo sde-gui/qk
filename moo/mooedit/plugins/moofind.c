@@ -301,6 +301,8 @@ setup_file_combo (MooHistoryCombo *hist_combo)
     GtkWidget *entry;
     MooFileEntryCompletion *completion;
 
+    g_object_set (hist_combo, "enable-completion", FALSE, NULL);
+
     entry = MOO_COMBO (hist_combo)->entry;
     completion = g_object_new (MOO_TYPE_FILE_ENTRY_COMPLETION,
                                "directories-only", TRUE,

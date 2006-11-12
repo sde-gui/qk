@@ -439,8 +439,8 @@ create_popup (MooCombo *combo)
     gtk_widget_set_size_request (GTK_WIDGET (combo->priv->treeview), -1, -1);
     gtk_tree_view_append_column (combo->priv->treeview, combo->priv->column);
     gtk_tree_view_set_headers_visible (combo->priv->treeview, FALSE);
-#if 0 && GTK_CHECK_VERSION(2,6,0)
-//     gtk_tree_view_set_hover_selection (combo->priv->treeview, TRUE);
+#if 1 && GTK_CHECK_VERSION(2,6,0)
+    gtk_tree_view_set_hover_selection (combo->priv->treeview, TRUE);
 #endif
 
     selection = gtk_tree_view_get_selection (combo->priv->treeview);
@@ -452,7 +452,7 @@ create_popup (MooCombo *combo)
                                     GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolled_window),
                                          GTK_SHADOW_ETCHED_IN);
-    /* a nasty hack to get the completions treeview to size nicely */
+    /* a nasty hack to get the treeview to size nicely */
     gtk_widget_set_size_request (GTK_SCROLLED_WINDOW (scrolled_window)->vscrollbar, -1, 0);
     gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolled_window), GTK_SHADOW_NONE);
     gtk_container_add (GTK_CONTAINER (scrolled_window), GTK_WIDGET (combo->priv->treeview));
@@ -948,9 +948,14 @@ char*
 moo_combo_get_text_at_iter (MooCombo       *combo,
                             GtkTreeIter    *iter)
 {
+    char *text;
+
     g_return_val_if_fail (MOO_IS_COMBO (combo), NULL);
-    return combo->priv->get_text_func (combo->priv->model, iter,
+
+    text = combo->priv->get_text_func (combo->priv->model, iter,
                                        combo->priv->get_text_data);
+    g_return_val_if_fail (text != NULL, g_strdup (""));
+    return text;
 }
 
 

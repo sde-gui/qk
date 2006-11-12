@@ -3,8 +3,8 @@
 #
 
 m4_define([moo_major_version], [0])
-m4_define([moo_minor_version], [8])
-m4_define([moo_micro_version], [0])
+m4_define([moo_minor_version], [7])
+m4_define([moo_micro_version], [9])
 m4_define([moo_version], [moo_major_version.moo_minor_version.moo_micro_version])
 
 AC_INIT(medit, [moo_version], [muntyan@tamu.edu], medit)
