@@ -74,16 +74,15 @@ AC_DEFUN([_MOO_AC_CHECK_PYTHON_MINGW],[
 AC_DEFUN([_MOO_AC_PYTHON_DEVEL],[
     # Check for distutils first
     AC_MSG_CHECKING([for the distutils Python package])
-    ac_distutils_result=`$PYTHON -c "import distutils" 2>&1`
-    if test -z "$ac_distutils_result"; then
+    $PYTHON -c "import distutils" 2>/dev/null
+    if test $? -eq 0; then
         python_found=yes
     	AC_MSG_RESULT([yes])
     else
         python_found=no
     	AC_MSG_RESULT([no])
     	AC_MSG_ERROR([cannot import Python module "distutils".
-Please check your Python installation. The error was:
-$ac_distutils_result])
+Please check your Python installation.])
     fi
 
     # Check for Python include path
