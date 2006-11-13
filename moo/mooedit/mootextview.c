@@ -2243,7 +2243,6 @@ moo_text_view_expose (GtkWidget      *widget,
     GdkWindow *left_window = gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_LEFT);
     GdkWindow *right_window = gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_RIGHT);
     GtkTextIter start, end;
-    int first_line = 0, last_line = 100000;
 
     view->priv->in_expose = TRUE;
 
@@ -2274,21 +2273,23 @@ moo_text_view_expose (GtkWidget      *widget,
     if (event->window == text_window)
     {
         GdkRectangle visible_rect;
-        GtkTextIter iter1, iter2;
 
         gtk_text_view_get_visible_rect (text_view, &visible_rect);
-        gtk_text_view_get_line_at_y (text_view, &iter1, visible_rect.y, NULL);
-        gtk_text_iter_backward_line (&iter1);
-        gtk_text_view_get_line_at_y (text_view, &iter2, visible_rect.y + visible_rect.height, NULL);
-        gtk_text_iter_forward_line (&iter2);
+        gtk_text_view_get_line_at_y (text_view, &start, visible_rect.y, NULL);
+        gtk_text_iter_backward_line (&start);
+        gtk_text_view_get_line_at_y (text_view, &end, visible_rect.y + visible_rect.height, NULL);
+        gtk_text_iter_forward_line (&end);
 
-        _moo_text_buffer_update_highlight (get_moo_buffer (view), &iter1, &iter2, FALSE);
+        _moo_text_buffer_update_highlight (get_moo_buffer (view), &start, &end, FALSE);
     }
 
     handled = GTK_WIDGET_CLASS(moo_text_view_parent_class)->expose_event (widget, event);
 
     if (event->window == text_window)
     {
+        int first_line = gtk_text_iter_get_line (&start);
+        int last_line = gtk_text_iter_get_line (&end);
+
         if (last_line - first_line < 2000)
         {
             if (view->priv->draw_tabs)
