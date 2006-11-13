@@ -17,13 +17,13 @@
 #include "config.h"
 #endif
 
-#include "mooutils/mooutils-misc.h"
 #include "moopython/pygtk/moo-mod.h"
 #include "moopython/pygtk/moo-pygtk.h"
 #include "moopython/moopython-utils.h"
 #include <pygobject.h>  /* _PyGObjectAPI lives here */
 #include <pygtk/pygtk.h>
 #include <glib.h>
+#include "moopython/moopython-pygtkmod.h"
 
 
 static PyObject *
@@ -54,44 +54,6 @@ static PyMethodDef _moo_functions[] = {
 static char *_moo_module_doc = (char*)"_moo module.";
 
 
-static void
-func_init_pygobject (void)
-{
-    PyObject *gobject, *pygtk;
-    PyObject *mdict;
-    PyObject *cobject;
-
-    if (!(gobject = PyImport_ImportModule ((char*) "gobject")))
-        return;
-
-    mdict = PyModule_GetDict (gobject);
-    cobject = PyDict_GetItemString (mdict, "_PyGObject_API");
-
-    if (!cobject || !PyCObject_Check (cobject))
-    {
-        PyErr_SetString (PyExc_RuntimeError,
-                         "could not find _PyGObject_API object");
-        return;
-    }
-
-    _PyGObject_API = (struct _PyGObject_Functions *) PyCObject_AsVoidPtr (cobject);
-
-    if (!(pygtk = PyImport_ImportModule((char*) "gtk._gtk")))
-        return;
-
-    mdict = PyModule_GetDict (pygtk);
-    cobject = PyDict_GetItemString (mdict, "_PyGtk_API");
-
-    if (!cobject || !PyCObject_Check (cobject))
-    {
-        PyErr_SetString (PyExc_RuntimeError,
-                         "could not find _PyGtk_API object");
-        return;
-    }
-
-    _PyGtk_API = (struct _PyGtk_FunctionStruct*) PyCObject_AsVoidPtr (cobject);
-}
-
 static PyObject *
 py_object_from_moo_py_object (const GValue *value)
 {
@@ -120,7 +82,7 @@ _moo_pygtk_init (void)
 {
     PyObject *_moo_module, *code, *moo_mod, *submod;
 
-    func_init_pygobject ();
+    init_pygtk_mod ();
 
     if (PyErr_Occurred ())
         return FALSE;

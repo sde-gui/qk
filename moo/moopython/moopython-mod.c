@@ -14,12 +14,13 @@
 #include "config.h"
 #include <Python.h>
 #include <pygobject.h>
+#include <pygtk/pygtk.h>
 
 #include "moopython/moopython-api.h"
 #include "moopython/moopython-loader.h"
+#include "moopython/moopython-pygtkmod.h"
 #include "mooedit/mooplugin-macro.h"
 #include "mooutils/moopython.h"
-#include "mooutils/mooutils-misc.h"
 
 
 static PyObject *sys_module = NULL;
@@ -93,13 +94,6 @@ sys_path_remove_dir (const char *dir)
 }
 
 
-static void
-func_init_pygobject (void)
-{
-    init_pygobject ();
-}
-
-
 MOO_MODULE_INIT_FUNC_DECL;
 MOO_MODULE_INIT_FUNC_DECL
 {
@@ -141,7 +135,7 @@ MOO_MODULE_INIT_FUNC_DECL
         return FALSE;
     }
 
-    func_init_pygobject ();
+    init_pygtk_mod ();
 
     if (PyErr_Occurred ())
     {
@@ -151,11 +145,7 @@ MOO_MODULE_INIT_FUNC_DECL
         return FALSE;
     }
 
-#ifdef pyg_disable_warning_redirections
-    pyg_disable_warning_redirections ();
-#else
-    moo_reset_log_func ();
-#endif
+    reset_log_func ();
 
     if (!moo_plugin_loader_lookup (MOO_PYTHON_PLUGIN_LOADER_ID))
     {

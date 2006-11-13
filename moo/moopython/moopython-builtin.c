@@ -14,12 +14,15 @@
 #include "config.h"
 #include <Python.h>
 #define NO_IMPORT_PYGOBJECT
+#define NO_IMPORT_PYGTK
 #include <pygobject.h>
+#include <pygtk/pygtk.h>
 #include "mooedit/mooplugin-loader.h"
 #include "moopython/moopython-builtin.h"
 #include "moopython/moopython-api.h"
 #include "moopython/moopython-loader.h"
 #include "moopython/pygtk/moo-pygtk.h"
+#include "moopython/moopython-pygtkmod.h"
 #include "mooutils/moopython.h"
 #include "mooutils/mooutils-misc.h"
 
@@ -42,11 +45,7 @@ _moo_python_init (void)
             return FALSE;
         }
 
-#ifdef pyg_disable_warning_redirections
-        pyg_disable_warning_redirections ();
-#else
-        moo_reset_log_func ();
-#endif
+        reset_log_func ();
 
         if (!moo_plugin_loader_lookup (MOO_PYTHON_PLUGIN_LOADER_ID))
         {

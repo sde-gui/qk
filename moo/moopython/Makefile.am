@@ -10,6 +10,7 @@ libmoomod_la_sources =		\
 
 libpymoo_la_sources =		\
 	moopython-mod.c		\
+	moopython-pygtkmod.h	\
 	moopython-api.h		\
 	moopython-loader.h	\
 	moopython-loader.c	\
