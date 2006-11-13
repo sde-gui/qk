@@ -1,3 +1,11 @@
+2006-11-13  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    * === Released 0.7.95 ===
+
+    Quick fix release for 0.7.9.
+
+    Fixed crash on windows with pygtk older than 2.10.
+    Got drawing tabs and trailing spaces back.
+
 2006-11-12  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.7.9 ===
 
