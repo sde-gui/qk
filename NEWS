@@ -1,3 +1,32 @@
+2006-11-12  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    * === Released 0.7.9 ===
+
+    Beta version of new 0.8 release.
+
+    Syntax highlighting has been replaced with brand new syntax
+    highlighting from GtkSourceView. It supports million different
+    languages, and has much better performance.
+
+    New features and improvements:
+        Win32 installer includes GTK.
+        Implemented print preview; implemented printing with
+        text styles from the document.
+        Implemented customizable output filters, for highlighting
+        errors in commands output and automatic opening appropriate
+        files.
+        Copying file in the file selector copies its URI/path
+        when appropriate.
+        Added "async" mode for running shell commands: output is
+        redirected to medit's parent console and medit does not
+        wait for the command to terminate.
+
+    Fixed bugs include:
+        Problem with new keyboard shortcuts not applied immediately
+        when set in Configure Shortcuts dialog.
+        Build errors with gtk-2.6.
+        Paned widgets can't be covered by document anymore.
+        Lot of other bugs too.
+
 2006-08-24  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.7.1 ===
 
