@@ -22,6 +22,7 @@
 #include "mooutils/mooglade.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
+#include <sys/types.h>
 #include <time.h>
 #include <errno.h>
 #include <string.h>

@@ -30,6 +30,7 @@
 #endif
 
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <errno.h>
 #include <string.h>
 /* sys/stat.h macros */

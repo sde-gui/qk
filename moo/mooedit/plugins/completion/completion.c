@@ -17,6 +17,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooconfig.h"
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <errno.h>
 #include <string.h>
 #include <time.h>

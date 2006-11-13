@@ -20,6 +20,7 @@
 
 #include "moofileview/moofile.h"
 #include <sys/stat.h>
+#include <sys/types.h>
 
 G_BEGIN_DECLS
 
