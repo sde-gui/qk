@@ -23,8 +23,7 @@
   <style name="def:shebang"                 foreground="#808080" bold="true"/>
   <style name="def:net-address-in-comment"  underline="true"/>
   <style name="def:escape"                  foreground="#FF00FF"/>
-
-<!--  <style name="def:specials"                foreground="#FFFFFF" background="#FF0000"/>-->
+  <style name="def:specials"                foreground="#FFFFFF" background="#FF0000"/>
 
   <style name="c:common-defines"            foreground="#0095ff" bold="true"/>
   <style name="c:preprocessor"              foreground="#008000"/>
