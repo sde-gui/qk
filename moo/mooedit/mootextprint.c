@@ -1413,7 +1413,7 @@ moo_print_init_prefs (void)
     moo_prefs_new_key_bool (PREFS_PRINT_FOOTER_SEPARATOR, TRUE);
     moo_prefs_new_key_string (PREFS_HEADER_LEFT, "%Ef");
     moo_prefs_new_key_string (PREFS_HEADER_CENTER, NULL);
-    moo_prefs_new_key_string (PREFS_HEADER_RIGHT, NULL);
+    moo_prefs_new_key_string (PREFS_HEADER_RIGHT, "%x %X");
     moo_prefs_new_key_string (PREFS_FOOTER_LEFT, NULL);
     moo_prefs_new_key_string (PREFS_FOOTER_CENTER, "Page %Ep of %EP");
     moo_prefs_new_key_string (PREFS_FOOTER_RIGHT, NULL);
