@@ -2897,22 +2897,12 @@ _moo_text_view_get_line_height (MooTextView *view)
 #define LINE_MARK_XPAD 2
 #define LINE_NUMBERS_XPAD 2
 
-void
-moo_text_view_set_show_line_numbers (MooTextView *view,
-                                     gboolean     show)
+static void
+update_left_margin_size (MooTextView *view)
 {
     gboolean show_margin;
 
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-
-    show = show != 0;
-
-    if (view->priv->show_line_numbers == show)
-        return;
-
-    view->priv->show_line_numbers = show;
     view->priv->digit_width = 0;
-
     show_margin = get_show_left_margin (view);
 
     if (GTK_WIDGET_REALIZED (view) && show_margin)
@@ -2932,6 +2922,19 @@ moo_text_view_set_show_line_numbers (MooTextView *view,
     if (show_margin)
         /* XXX dont' invalidate whole widget */
         gtk_widget_queue_draw (GTK_WIDGET (view));
+}
+
+void
+moo_text_view_set_show_line_numbers (MooTextView *view,
+                                     gboolean     show)
+{
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+
+    if (view->priv->show_line_numbers == show)
+        return;
+
+    view->priv->show_line_numbers = show != 0;
+    update_left_margin_size (view);
 
     g_object_notify (G_OBJECT (view), "show-line-numbers");
 }
@@ -2983,11 +2986,14 @@ create_line_numbers_layout (MooTextView *view)
 
     layout = gtk_widget_create_pango_layout (GTK_WIDGET (view), "");
 
+    /* TODO make it configurable */
+#if 0
     if (!view->priv->line_numbers_font)
         view->priv->line_numbers_font = pango_font_description_from_string ("Sans 10");
 
     if (view->priv->line_numbers_font)
         pango_layout_set_font_description (layout, view->priv->line_numbers_font);
+#endif
 
     return layout;
 }
@@ -3079,6 +3085,7 @@ moo_text_view_style_set (GtkWidget *widget,
 
     update_box_tag (view);
     update_tab_width (view);
+    update_left_margin_size (view);
 
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->style_set (widget, prev_style);
 }
