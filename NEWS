@@ -1,4 +1,10 @@
 2006-11-13  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    * === Released 0.7.96 ===
+
+    Fixed print preview for different page orientations.
+    Made editor use document font to display line numbers.
+
+2006-11-13  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.7.95 ===
 
     Quick fix release for 0.7.9.
