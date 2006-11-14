@@ -93,9 +93,27 @@ dummy_write_func (G_GNUC_UNUSED gpointer      closure,
 static cairo_surface_t *
 create_pdf_surface (MooPrintPreview *preview)
 {
+    GtkPageSetup *page_setup;
+    double width, height;
+
+    page_setup = gtk_print_context_get_page_setup (preview->context);
+
+    switch (gtk_page_setup_get_orientation (page_setup))
+    {
+        case GTK_PAGE_ORIENTATION_LANDSCAPE:
+        case GTK_PAGE_ORIENTATION_REVERSE_LANDSCAPE:
+            width = preview->page_height;
+            height = preview->page_width;
+            break;
+
+        default:
+            width = preview->page_width;
+            height = preview->page_height;
+            break;
+    }
+
     return cairo_pdf_surface_create_for_stream (dummy_write_func, NULL,
-                                                preview->page_width,
-                                                preview->page_height);
+                                                width, height);
 }
 
 
@@ -216,9 +234,9 @@ moo_print_preview_set_zoom (MooPrintPreview *preview,
     gtk_widget_queue_draw (preview->darea);
 
     if (zoom_to_fit)
-        g_print ("zoom_to_fit\n");
+        _moo_message ("zoom_to_fit\n");
     else
-        g_print ("zoom: %s\n", zoom_factor_names[zoom]);
+        _moo_message ("zoom: %s\n", zoom_factor_names[zoom]);
 }
 
 static void
@@ -242,9 +260,9 @@ moo_print_preview_zoom_in (MooPrintPreview *preview,
     g_return_if_fail (change == -1 || change == 1);
 
     if (change < 0)
-        g_print ("zoom out\n");
+        _moo_message ("zoom out\n");
     else
-        g_print ("zoom in\n");
+        _moo_message ("zoom in\n");
 }
 
 
@@ -279,10 +297,10 @@ expose_event (MooPrintPreview *preview,
 {
     cairo_surface_t *pdf;
     cairo_t *cr;
+    cairo_matrix_t matrix;
     double scale;
-#if 0
-    GTimer *timer;
-#endif
+    double width, height;
+    GtkPageSetup *page_setup;
 
     pdf = get_pdf (preview);
     g_return_val_if_fail (pdf != NULL, FALSE);
@@ -292,25 +310,54 @@ expose_event (MooPrintPreview *preview,
     gdk_cairo_rectangle (cr, &event->area);
     cairo_clip (cr);
 
-    cairo_set_source_rgb (cr, 1, 1, 1);
-    cairo_rectangle (cr, 0, 0, preview->screen_page_width, preview->screen_page_height);
-    cairo_fill (cr);
-
-#if 0
-    timer = g_timer_new ();
-#endif
-
     scale = preview->screen_page_width / preview->page_width;
     cairo_scale (cr, scale, scale);
+
+    width = preview->page_width;
+    height = preview->page_height;
+
+    cairo_set_source_rgb (cr, 1, 1, 1);
+    cairo_rectangle (cr, 0, 0, width, height);
+    cairo_fill (cr);
+
+    page_setup = gtk_print_context_get_page_setup (preview->context);
+    switch (gtk_page_setup_get_orientation (page_setup))
+    {
+        case GTK_PAGE_ORIENTATION_LANDSCAPE:
+            cairo_matrix_init (&matrix,
+                               0, -1,
+                               1,  0,
+                               0,  0);
+            cairo_transform (cr, &matrix);
+            cairo_translate (cr, -height, 0);
+            break;
+
+        case GTK_PAGE_ORIENTATION_REVERSE_PORTRAIT:
+            cairo_matrix_init (&matrix,
+                              -1,  0,
+                               0, -1,
+                               0,  0);
+            cairo_transform (cr, &matrix);
+            cairo_translate (cr, -width, -height);
+            break;
+
+        case GTK_PAGE_ORIENTATION_REVERSE_LANDSCAPE:
+            cairo_matrix_init (&matrix,
+                               0,  1,
+                              -1,  0,
+                               0,  0);
+            cairo_transform (cr, &matrix);
+            cairo_translate (cr, 0, -width);
+            break;
+
+        default: /* GTK_PAGE_ORIENTATION_PORTRAIT */
+          break;
+    }
+
     cairo_set_source_surface (cr, pdf, 0, 0);
     cairo_paint (cr);
 
     cairo_destroy (cr);
-
-#if 0
-    g_print ("%f s\n", g_timer_elapsed (timer, NULL));
-    g_timer_destroy (timer);
-#endif
 
     return FALSE;
 }
