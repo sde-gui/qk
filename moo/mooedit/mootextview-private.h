@@ -57,6 +57,8 @@ int         _moo_text_view_extend_selection     (MooTextView        *view,
 void        _moo_text_view_check_char_inserted  (MooTextView        *view);
 void        _moo_text_view_pend_cursor_blink    (MooTextView        *view);
 int         _moo_text_view_get_line_height      (MooTextView        *view);
+void        _moo_text_view_set_line_numbers_font (MooTextView       *view,
+                                                 const char         *name);
 
 
 typedef enum {

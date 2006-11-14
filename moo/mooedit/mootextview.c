@@ -2941,6 +2941,35 @@ moo_text_view_set_show_line_numbers (MooTextView *view,
 
 
 void
+_moo_text_view_set_line_numbers_font (MooTextView *view,
+                                      const char  *name)
+{
+    PangoFontDescription *font;
+
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+
+    if (name)
+        font = pango_font_description_from_string (name);
+    else
+        font = NULL;
+
+    if (font == view->priv->line_numbers_font ||
+        (font != NULL && view->priv->line_numbers_font != NULL &&
+         pango_font_description_equal (font, view->priv->line_numbers_font)))
+    {
+        pango_font_description_free (font);
+        return;
+    }
+
+    if (view->priv->line_numbers_font)
+        pango_font_description_free (view->priv->line_numbers_font);
+
+    view->priv->line_numbers_font = font;
+    update_left_margin_size (view);
+}
+
+
+void
 moo_text_view_set_show_line_marks (MooTextView *view,
                                    gboolean     show)
 {
@@ -2986,14 +3015,8 @@ create_line_numbers_layout (MooTextView *view)
 
     layout = gtk_widget_create_pango_layout (GTK_WIDGET (view), "");
 
-    /* TODO make it configurable */
-#if 0
-    if (!view->priv->line_numbers_font)
-        view->priv->line_numbers_font = pango_font_description_from_string ("Sans 10");
-
     if (view->priv->line_numbers_font)
         pango_layout_set_font_description (layout, view->priv->line_numbers_font);
-#endif
 
     return layout;
 }

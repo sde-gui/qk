@@ -12,6 +12,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooedit-private.h"
+#include "mooedit/mootextview-private.h"
 #include "mooedit/mooedit-enums.h"
 #include "mooedit/mootextbuffer.h"
 #include <string.h>
@@ -108,6 +109,7 @@ _moo_edit_init_prefs (void)
     NEW_KEY_FLAGS (MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS,
                    MOO_TYPE_TEXT_SEARCH_FLAGS,
                    MOO_TEXT_SEARCH_CASELESS);
+    NEW_KEY_STRING (MOO_EDIT_PREFS_LINE_NUMBERS_FONT, NULL);
 }
 
 
@@ -184,6 +186,9 @@ _moo_edit_apply_prefs (MooEdit *edit)
     else
         moo_text_view_set_font_from_string (MOO_TEXT_VIEW (edit),
                                             get_string (MOO_EDIT_PREFS_FONT));
+
+    _moo_text_view_set_line_numbers_font (MOO_TEXT_VIEW (edit),
+                                          get_string (MOO_EDIT_PREFS_LINE_NUMBERS_FONT));
 
     mgr = moo_editor_get_lang_mgr (edit->priv->editor);
     scheme = _moo_lang_mgr_get_active_scheme (mgr);
