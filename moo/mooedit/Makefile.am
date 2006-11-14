@@ -134,6 +134,7 @@ mooedit_printing_sources =		\
 	mooprintpreview-glade.h		\
 	mooprintpreview.c		\
 	mootextprint.c			\
+	mootextprint-private.h		\
 	mootextprint.h
 
 BUILT_SOURCES =				\

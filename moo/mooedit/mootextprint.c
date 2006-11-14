@@ -12,7 +12,7 @@
  */
 
 #define MOOEDIT_COMPILATION
-#include "mooedit/mootextprint.h"
+#include "mooedit/mootextprint-private.h"
 #include "mooedit/mooedit.h"
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooprint-glade.h"
@@ -46,15 +46,45 @@
 #define PREFS_FOOTER_RIGHT              MOO_EDIT_PREFS_PREFIX "/print/footer/right"
 
 
-#define SET_OPTION(print, opt, val)     \
-G_STMT_START {                          \
-    if (val)                            \
-        (print)->options |= (opt);      \
-    else                                \
-        (print)->options &= (~(opt));   \
+typedef struct {
+    double x;
+    double y;
+    double width;
+    double height;
+} Page;
+
+struct _MooPrintOperationPrivate {
+    GtkWindow *parent;
+    GtkTextView *doc;
+    GtkTextBuffer *buffer;
+
+    MooPrintPreview *preview;
+
+    /* print settings */
+    int first_line;
+    int last_line;          /* -1 to print everything after first_line */
+    MooPrintSettings *settings;
+    char *filename;
+    char *basename;
+    gpointer tm; /* struct tm * */
+
+    /* aux stuff */
+    GArray *pages;          /* GtkTextIter's pointing to pages start */
+    PangoLayout *layout;
+
+    Page page;                 /* text area */
+};
+
+
+#define SET_FLAG(flags, f, val)                     \
+G_STMT_START {                                      \
+    if (val)                                        \
+        (flags) |= (f);                             \
+    else                                            \
+        (flags) &= (~(f));                          \
 } G_STMT_END
 
-#define GET_OPTION(print, opt)      ((print->options & opt) != 0)
+#define GET_OPTION(op, opt) (((op)->priv->settings->flags & (opt)) != 0)
 
 #if 1
 #define DEBUG_PRINT g_print
@@ -67,14 +97,14 @@ DEBUG_PRINT (G_GNUC_UNUSED const char *format, ...)
 
 
 typedef struct _HFFormat HFFormat;
-static HFFormat *hf_format_parse    (const char *strformat);
-static void      hf_format_free     (HFFormat   *format);
-static char     *hf_format_eval     (HFFormat   *format,
-                                     struct tm  *tm,
-                                     int         page,
-                                     int         total_pages,
-                                     const char *filename,
-                                     const char *basename);
+static HFFormat *hf_format_parse    (const char         *strformat);
+static void      hf_format_free     (HFFormat           *format);
+static char     *hf_format_eval     (HFFormat           *format,
+                                     struct tm          *tm,
+                                     int                 page,
+                                     int                 total_pages,
+                                     const char         *filename,
+                                     const char         *basename);
 
 
 static GtkPageSetup *page_setup;
@@ -112,6 +142,14 @@ static void moo_print_operation_load_prefs  (MooPrintOperation  *print);
 static void update_progress                 (GtkPrintOperation  *operation,
                                              int                 page);
 
+static void moo_print_operation_set_doc     (MooPrintOperation  *print,
+                                             GtkTextView        *doc);
+static void moo_print_operation_set_buffer  (MooPrintOperation  *print,
+                                             GtkTextBuffer      *buffer);
+
+static void moo_print_operation_set_settings (MooPrintOperation *op,
+                                              MooPrintSettings  *settings);
+
 static void fill_layout                     (MooPrintOperation  *op,
                                              PangoLayout        *layout,
                                              const GtkTextIter  *start,
@@ -125,16 +163,53 @@ enum {
     PROP_0,
     PROP_DOC,
     PROP_BUFFER,
-    PROP_WRAP,
-    PROP_WRAP_MODE,
-    PROP_ELLIPSIZE,
-    PROP_FONT,
-    PROP_USE_STYLES
+    PROP_SETTINGS
 };
 
 
+static MooPrintHeaderFooter *
+moo_print_header_footer_new (void)
+{
+    int i;
+    MooPrintHeaderFooter *hf = g_new0 (MooPrintHeaderFooter, 1);
+
+    hf->font = NULL;
+    hf->separator = TRUE;
+    hf->layout = NULL;
+
+    for (i = 0; i < 3; ++i)
+    {
+        hf->format[i] = NULL;
+        hf->parsed_format[i] = NULL;
+    }
+
+    return hf;
+}
+
+
+static MooPrintHeaderFooter *
+moo_print_header_footer_copy (MooPrintHeaderFooter *hf)
+{
+    int i;
+    MooPrintHeaderFooter *copy;
+
+    g_return_val_if_fail (copy != NULL, NULL);
+
+    copy = moo_print_header_footer_new ();
+    copy->separator = hf->separator;
+
+    if (hf->font)
+        copy->font = pango_font_description_copy (hf->font);
+
+    for (i = 0; i < 3; ++i)
+        copy->format[i] = g_strdup (hf->format[i]);
+
+    return copy;
+}
+
+
 static void
-header_footer_destroy (MooPrintHeaderFooter *hf)
+moo_print_header_footer_free (MooPrintHeaderFooter *hf)
 {
     int i;
 
@@ -148,23 +223,117 @@ header_footer_destroy (MooPrintHeaderFooter *hf)
         g_free (hf->format[i]);
         hf_format_free (hf->parsed_format[i]);
     }
+
+    g_free (hf);
+}
+
+
+static void
+moo_print_header_footer_parse_format (MooPrintHeaderFooter *hf)
+{
+    int i;
+
+    for (i = 0; i < 3; ++i)
+        if (hf->format[i] && !hf->parsed_format[i])
+            hf->parsed_format[i] = hf_format_parse (hf->format[i]);
+}
+
+
+static MooPrintSettings *
+moo_print_settings_new_default (void)
+{
+    MooPrintSettings *settings = g_new0 (MooPrintSettings, 1);
+    settings->flags = MOO_PRINT_HEADER | MOO_PRINT_FOOTER;
+    settings->wrap_mode = PANGO_WRAP_WORD_CHAR;
+    settings->header = moo_print_header_footer_new ();
+    settings->footer = moo_print_header_footer_new ();
+    return settings;
+}
+
+
+static MooPrintSettings *
+moo_print_settings_copy (MooPrintSettings *settings)
+{
+    MooPrintSettings *copy;
+
+    g_return_val_if_fail (settings != NULL, NULL);
+
+    copy = g_new0 (MooPrintSettings, 1);
+
+    copy->font = g_strdup (settings->font);
+    copy->flags = settings->flags;
+    copy->wrap_mode = settings->wrap_mode;
+    copy->header = moo_print_header_footer_copy (settings->header);
+    copy->footer = moo_print_header_footer_copy (settings->footer);
+
+    return copy;
+}
+
+
+static void
+moo_print_settings_free (MooPrintSettings *settings)
+{
+    if (settings)
+    {
+        moo_print_header_footer_free (settings->header);
+        moo_print_header_footer_free (settings->footer);
+        g_free (settings);
+    }
+}
+
+
+GType
+_moo_print_settings_get_type (void)
+{
+    static GType t = 0;
+
+    if (!t)
+        t = g_boxed_type_register_static ("MooPrintSettings",
+                                          (GBoxedCopyFunc) moo_print_settings_copy,
+                                          (GBoxedFreeFunc) moo_print_settings_free);
+
+    return t;
+}
+
+
+static void
+moo_print_operation_set_settings (MooPrintOperation *op,
+                                  MooPrintSettings  *settings)
+{
+    g_return_if_fail (MOO_IS_PRINT_OPERATION (op));
+
+    if (op->priv->settings != settings)
+    {
+        moo_print_settings_free (op->priv->settings);
+
+        if (settings)
+            op->priv->settings = moo_print_settings_copy (settings);
+        else
+            op->priv->settings = moo_print_settings_new_default ();
+
+        moo_print_header_footer_parse_format (op->priv->settings->header);
+        moo_print_header_footer_parse_format (op->priv->settings->footer);
+
+        g_object_notify (G_OBJECT (op), "settings");
+    }
 }
 
 
 static void
 moo_print_operation_finalize (GObject *object)
 {
-    MooPrintOperation *print = MOO_PRINT_OPERATION (object);
+    MooPrintOperation *op = MOO_PRINT_OPERATION (object);
 
-    if (print->doc)
-        g_object_unref (print->doc);
-    if (print->buffer)
-        g_object_unref (print->buffer);
-    header_footer_destroy (&print->header);
-    header_footer_destroy (&print->footer);
-    g_free (print->tm);
-    g_free (print->filename);
-    g_free (print->basename);
+    if (op->priv->doc)
+        g_object_unref (op->priv->doc);
+    if (op->priv->buffer)
+        g_object_unref (op->priv->buffer);
+
+    moo_print_settings_free (op->priv->settings);
+    g_free (op->priv->filename);
+    g_free (op->priv->basename);
+    g_free (op->priv->tm);
+    g_free (op->priv);
 
     DEBUG_PRINT ("moo_print_operation_finalize\n");
 
@@ -178,42 +347,20 @@ moo_print_operation_set_property (GObject            *object,
                                   const GValue       *value,
                                   GParamSpec         *pspec)
 {
-    MooPrintOperation *print = MOO_PRINT_OPERATION (object);
+    MooPrintOperation *op = MOO_PRINT_OPERATION (object);
 
     switch (prop_id)
     {
         case PROP_DOC:
-            _moo_print_operation_set_doc (print, g_value_get_object (value));
+            moo_print_operation_set_doc (op, g_value_get_object (value));
             break;
 
         case PROP_BUFFER:
-            _moo_print_operation_set_buffer (print, g_value_get_object (value));
+            moo_print_operation_set_buffer (op, g_value_get_object (value));
             break;
 
-        case PROP_WRAP:
-            SET_OPTION (print, MOO_PRINT_WRAP, g_value_get_boolean (value));
-            g_object_notify (object, "wrap");
-            break;
-
-        case PROP_WRAP_MODE:
-            print->wrap_mode = g_value_get_enum (value);
-            g_object_notify (object, "wrap-mode");
-            break;
-
-        case PROP_ELLIPSIZE:
-            SET_OPTION (print, MOO_PRINT_ELLIPSIZE, g_value_get_boolean (value));
-            g_object_notify (object, "ellipsize");
-            break;
-
-        case PROP_FONT:
-            g_free (print->font);
-            print->font = g_value_dup_string (value);
-            g_object_notify (object, "font");
-            break;
-
-        case PROP_USE_STYLES:
-            SET_OPTION (print, MOO_PRINT_USE_STYLES, g_value_get_boolean (value));
-            g_object_notify (object, "use-styles");
+        case PROP_SETTINGS:
+            moo_print_operation_set_settings (op, g_value_get_boxed (value));
             break;
 
         default:
@@ -228,36 +375,20 @@ moo_print_operation_get_property (GObject            *object,
                                   GValue             *value,
                                   GParamSpec         *pspec)
 {
-    MooPrintOperation *print = MOO_PRINT_OPERATION (object);
+    MooPrintOperation *op = MOO_PRINT_OPERATION (object);
 
     switch (prop_id)
     {
         case PROP_DOC:
-            g_value_set_object (value, print->doc);
+            g_value_set_object (value, op->priv->doc);
             break;
 
         case PROP_BUFFER:
-            g_value_set_object (value, print->buffer);
+            g_value_set_object (value, op->priv->buffer);
             break;
 
-        case PROP_WRAP:
-            g_value_set_boolean (value, GET_OPTION (print, MOO_PRINT_WRAP));
-            break;
-
-        case PROP_WRAP_MODE:
-            g_value_set_enum (value, print->wrap_mode);
-            break;
-
-        case PROP_ELLIPSIZE:
-            g_value_set_boolean (value, GET_OPTION (print, MOO_PRINT_ELLIPSIZE));
-            break;
-
-        case PROP_FONT:
-            g_value_set_string (value, print->font);
-            break;
-
-        case PROP_USE_STYLES:
-            g_value_set_boolean (value, GET_OPTION (print, MOO_PRINT_USE_STYLES));
+        case PROP_SETTINGS:
+            g_value_set_boxed (value, op->priv->settings);
             break;
 
         default:
@@ -301,127 +432,95 @@ _moo_print_operation_class_init (MooPrintOperationClass *klass)
                                              G_PARAM_READWRITE));
 
     g_object_class_install_property (object_class,
-                                     PROP_FONT,
-                                     g_param_spec_string ("font",
-                                             "font",
-                                             "font",
-                                             NULL,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (object_class,
-                                     PROP_WRAP,
-                                     g_param_spec_boolean ("wrap",
-                                             "wrap",
-                                             "wrap",
-                                             TRUE,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (object_class,
-                                     PROP_WRAP_MODE,
-                                     g_param_spec_enum ("wrap-mode",
-                                             "wrap-mode",
-                                             "wrap-mode",
-                                             PANGO_TYPE_WRAP_MODE,
-                                             PANGO_WRAP_WORD_CHAR,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (object_class,
-                                     PROP_ELLIPSIZE,
-                                     g_param_spec_boolean ("ellipsize",
-                                             "ellipsize",
-                                             "ellipsize",
-                                             FALSE,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (object_class,
-                                     PROP_USE_STYLES,
-                                     g_param_spec_boolean ("use-styles",
-                                             "use-styles",
-                                             "use-styles",
-                                             FALSE,
+                                     PROP_SETTINGS,
+                                     g_param_spec_boxed ("settings",
+                                             "settings",
+                                             "settings",
+                                             MOO_TYPE_PRINT_SETTINGS,
                                              G_PARAM_READWRITE));
 }
 
 
 static void
-_moo_print_operation_init (MooPrintOperation *print)
+_moo_print_operation_init (MooPrintOperation *op)
 {
+    op->priv = g_new0 (MooPrintOperationPrivate, 1);
+
     load_default_settings ();
 
     DEBUG_PRINT ("_moo_print_operation_init\n");
 
-    gtk_print_operation_set_print_settings (GTK_PRINT_OPERATION (print),
+    gtk_print_operation_set_print_settings (GTK_PRINT_OPERATION (op),
                                             print_settings);
 
     if (page_setup)
-        gtk_print_operation_set_default_page_setup (GTK_PRINT_OPERATION (print),
+        gtk_print_operation_set_default_page_setup (GTK_PRINT_OPERATION (op),
                                                     page_setup);
 
-    print->last_line = -1;
-    print->options = MOO_PRINT_HEADER | MOO_PRINT_FOOTER;
-    print->wrap_mode = PANGO_WRAP_WORD_CHAR;
-    print->header.separator = TRUE;
-    print->footer.separator = TRUE;
+    op->priv->first_line = 0;
+    op->priv->last_line = -1;
+
+    op->priv->settings = moo_print_settings_new_default ();
 }
 
 
-void
-_moo_print_operation_set_doc (MooPrintOperation  *print,
-                              GtkTextView        *doc)
+static void
+moo_print_operation_set_doc (MooPrintOperation *op,
+                             GtkTextView       *doc)
 {
-    g_return_if_fail (MOO_IS_PRINT_OPERATION (print));
+    g_return_if_fail (MOO_IS_PRINT_OPERATION (op));
     g_return_if_fail (!doc || GTK_IS_TEXT_VIEW (doc));
 
-    if (print->doc == doc)
+    if (op->priv->doc == doc)
         return;
 
-    if (print->doc)
-        g_object_unref (print->doc);
-    if (print->buffer)
-        g_object_unref (print->buffer);
+    if (op->priv->doc)
+        g_object_unref (op->priv->doc);
+    if (op->priv->buffer)
+        g_object_unref (op->priv->buffer);
 
-    print->doc = doc;
+    op->priv->doc = doc;
 
-    if (print->doc)
+    if (op->priv->doc)
     {
-        g_object_ref (print->doc);
-        print->buffer = gtk_text_view_get_buffer (print->doc);
-        g_object_ref (print->buffer);
+        g_object_ref (op->priv->doc);
+        op->priv->buffer = gtk_text_view_get_buffer (op->priv->doc);
+        g_object_ref (op->priv->buffer);
     }
     else
     {
-        print->buffer = NULL;
+        op->priv->buffer = NULL;
     }
 
-    g_object_freeze_notify (G_OBJECT (print));
-    g_object_notify (G_OBJECT (print), "doc");
-    g_object_notify (G_OBJECT (print), "buffer");
-    g_object_thaw_notify (G_OBJECT (print));
+    g_object_freeze_notify (G_OBJECT (op));
+    g_object_notify (G_OBJECT (op), "doc");
+    g_object_notify (G_OBJECT (op), "buffer");
+    g_object_thaw_notify (G_OBJECT (op));
 }
 
 
-void
-_moo_print_operation_set_buffer (MooPrintOperation *print,
-                                 GtkTextBuffer     *buffer)
+static void
+moo_print_operation_set_buffer (MooPrintOperation *op,
+                                GtkTextBuffer     *buffer)
 {
-    g_return_if_fail (MOO_IS_PRINT_OPERATION (print));
+    g_return_if_fail (MOO_IS_PRINT_OPERATION (op));
     g_return_if_fail (!buffer || GTK_IS_TEXT_BUFFER (buffer));
 
-    if (print->buffer == buffer)
+    if (op->priv->buffer == buffer)
         return;
 
-    if (print->doc)
-        g_object_unref (print->doc);
-    if (print->buffer)
-        g_object_unref (print->buffer);
+    if (op->priv->doc)
+        g_object_unref (op->priv->doc);
+    if (op->priv->buffer)
+        g_object_unref (op->priv->buffer);
 
-    print->doc = NULL;
-    print->buffer = buffer;
+    op->priv->doc = NULL;
+    op->priv->buffer = buffer;
 
-    if (print->buffer)
-        g_object_ref (print->buffer);
+    if (op->priv->buffer)
+        g_object_ref (op->priv->buffer);
 
-    g_object_notify (G_OBJECT (print), "buffer");
+    g_object_notify (G_OBJECT (op), "buffer");
 }
 
 
@@ -434,20 +533,16 @@ load_default_settings (void)
 
 
 void
-_moo_edit_page_setup (GtkTextView    *view,
-                      GtkWidget      *parent)
+_moo_edit_page_setup (GtkWidget *parent)
 {
     GtkPageSetup *new_page_setup;
     GtkWindow *parent_window = NULL;
 
-    g_return_if_fail (!view || GTK_IS_TEXT_VIEW (view));
+    g_return_if_fail (!parent || GTK_IS_WIDGET (parent));
 
     DEBUG_PRINT ("_moo_edit_page_setup\n");
 
     load_default_settings ();
-
-    if (!parent && view)
-        parent = GTK_WIDGET (view);
 
     if (parent)
         parent = gtk_widget_get_toplevel (parent);
@@ -471,12 +566,12 @@ header_footer_get_size (MooPrintHeaderFooter *hf,
                         MooPrintOperation    *print,
                         GtkPrintContext      *context,
                         PangoFontDescription *default_font,
-                        MooPrintOptions       opt)
+                        MooPrintFlags         flag)
 {
     PangoFontDescription *font = default_font;
     PangoRectangle rect;
 
-    hf->do_print = GET_OPTION (print, opt) &&
+    hf->do_print = GET_OPTION (print, flag) &&
             (hf->parsed_format[0] || hf->parsed_format[1] || hf->parsed_format[2]);
 
     if (hf->layout)
@@ -507,40 +602,45 @@ header_footer_get_size (MooPrintHeaderFooter *hf,
 
 
 static void
-moo_print_operation_calc_page_size (MooPrintOperation  *print,
-                                    GtkPrintContext    *context,
+moo_print_operation_calc_page_size (MooPrintOperation    *op,
+                                    GtkPrintContext      *context,
                                     PangoFontDescription *default_font)
 {
-    print->page.x = 0.;
-    print->page.y = 0.;
-    print->page.width = gtk_print_context_get_width (context);
-    print->page.height = gtk_print_context_get_height (context);
+    Page *page = &op->priv->page;
+    MooPrintSettings *settings = op->priv->settings;
+    MooPrintHeaderFooter *header = settings->header;
+    MooPrintHeaderFooter *footer = settings->footer;
 
-    header_footer_get_size (&print->header, print, context,
+    page->x = 0.;
+    page->y = 0.;
+    page->width = gtk_print_context_get_width (context);
+    page->height = gtk_print_context_get_height (context);
+
+    header_footer_get_size (settings->header, op, context,
                             default_font, MOO_PRINT_HEADER);
-    header_footer_get_size (&print->footer, print, context,
+    header_footer_get_size (settings->footer, op, context,
                             default_font, MOO_PRINT_FOOTER);
 
-    if (print->header.do_print)
+    if (header->do_print)
     {
-        double delta = print->header.text_height + print->header.separator_before +
-                    print->header.separator_after + print->header.separator_height;
-        print->page.y += delta;
-        print->page.height -= delta;
+        double delta = header->text_height + header->separator_before +
+                       header->separator_after + header->separator_height;
+        page->y += delta;
+        page->height -= delta;
     }
 
-    if (print->footer.do_print)
+    if (footer->do_print)
     {
-        double delta = print->footer.text_height + print->footer.separator_before +
-                    print->footer.separator_after + print->footer.separator_height;
-        print->page.height -= delta;
+        double delta = footer->text_height + footer->separator_before +
+                    footer->separator_after + footer->separator_height;
+        page->height -= delta;
     }
 
-    if (print->page.height < 0)
+    if (page->height < 0)
     {
         g_critical ("%s: page messed up", G_STRLOC);
-        print->page.y = 0.;
-        print->page.height = gtk_print_context_get_height (context);
+        page->y = 0.;
+        page->height = gtk_print_context_get_height (context);
     }
 }
 
@@ -568,19 +668,19 @@ moo_print_operation_paginate (MooPrintOperation *op)
 
     DEBUG_PRINT ("moo_print_operation_paginate\n");
 
-    op->pages = g_array_new (FALSE, FALSE, sizeof (GtkTextIter));
-    gtk_text_buffer_get_iter_at_line (op->buffer, &iter,
-                                      op->first_line);
-    gtk_text_buffer_get_iter_at_line (op->buffer, &print_end,
-                                      op->last_line);
+    op->priv->pages = g_array_new (FALSE, FALSE, sizeof (GtkTextIter));
+    gtk_text_buffer_get_iter_at_line (op->priv->buffer, &iter,
+                                      op->priv->first_line);
+    gtk_text_buffer_get_iter_at_line (op->priv->buffer, &print_end,
+                                      op->priv->last_line);
     gtk_text_iter_forward_line (&print_end);
-    g_array_append_val (op->pages, iter);
+    g_array_append_val (op->priv->pages, iter);
     page_height = 0;
 
     use_styles = GET_OPTION (op, MOO_PRINT_USE_STYLES);
 
-    if (use_styles && MOO_IS_TEXT_BUFFER (op->buffer))
-        _moo_text_buffer_update_highlight (MOO_TEXT_BUFFER (op->buffer),
+    if (use_styles && MOO_IS_TEXT_BUFFER (op->priv->buffer))
+        _moo_text_buffer_update_highlight (MOO_TEXT_BUFFER (op->priv->buffer),
                                            &iter, &print_end, TRUE);
 
     while (gtk_text_iter_compare (&iter, &print_end) < 0)
@@ -594,23 +694,23 @@ moo_print_operation_paginate (MooPrintOperation *op)
         if (!gtk_text_iter_ends_line (&end))
             gtk_text_iter_forward_to_line_end (&end);
 
-        fill_layout (op, op->layout, &iter, &end,
+        fill_layout (op, op->priv->layout, &iter, &end,
                      GET_OPTION (op, MOO_PRINT_USE_STYLES));
 
-        pango_layout_get_pixel_extents (op->layout, NULL, &line_rect);
+        pango_layout_get_pixel_extents (op->priv->layout, NULL, &line_rect);
         line_height = line_rect.height;
 
 #define EPS (.1)
-        if (page_height > EPS && page_height + line_height > op->page.height + EPS)
+        if (page_height > EPS && page_height + line_height > op->priv->page.height + EPS)
         {
             gboolean part = FALSE;
 
-            if (GET_OPTION (op, MOO_PRINT_WRAP) && pango_layout_get_line_count (op->layout) > 1)
+            if (GET_OPTION (op, MOO_PRINT_WRAP) && pango_layout_get_line_count (op->priv->layout) > 1)
             {
                 double part_height = 0;
                 PangoLayoutIter *layout_iter;
 
-                layout_iter = pango_layout_get_iter (op->layout);
+                layout_iter = pango_layout_get_iter (op->priv->layout);
 
                 do
                 {
@@ -619,7 +719,7 @@ moo_print_operation_paginate (MooPrintOperation *op)
                     layout_line = pango_layout_iter_get_line (layout_iter);
                     pango_layout_line_get_pixel_extents (layout_line, NULL, &line_rect);
 
-                    if (page_height + part_height + line_rect.height > op->page.height + EPS)
+                    if (page_height + part_height + line_rect.height > op->priv->page.height + EPS)
                         break;
 
                     part_height += line_rect.height;
@@ -638,7 +738,7 @@ moo_print_operation_paginate (MooPrintOperation *op)
                 pango_layout_iter_free (layout_iter);
             }
 
-            g_array_append_val (op->pages, iter);
+            g_array_append_val (op->priv->pages, iter);
             page_height = line_height;
 
             if (!part)
@@ -652,7 +752,7 @@ moo_print_operation_paginate (MooPrintOperation *op)
     }
 #undef EPS
 
-    gtk_print_operation_set_n_pages (GTK_PRINT_OPERATION (op), op->pages->len);
+    gtk_print_operation_set_n_pages (GTK_PRINT_OPERATION (op), op->priv->pages->len);
 
     DEBUG_PRINT ("moo_print_operation_paginate done\n");
 }
@@ -663,47 +763,49 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
                                  GtkPrintContext   *context)
 {
     MooPrintOperation *op = MOO_PRINT_OPERATION (operation);
+    MooPrintSettings *settings;
     PangoFontDescription *font = NULL;
     GTimer *timer;
     time_t t;
 
-    g_return_if_fail (op->buffer != NULL);
-    g_return_if_fail (op->first_line >= 0);
-    g_return_if_fail (op->last_line < 0 || op->last_line >= op->first_line);
-    g_return_if_fail (op->first_line < gtk_text_buffer_get_line_count (op->buffer));
-    g_return_if_fail (op->last_line < gtk_text_buffer_get_line_count (op->buffer));
+    g_return_if_fail (op->priv->buffer != NULL);
+    g_return_if_fail (op->priv->first_line >= 0);
+    g_return_if_fail (op->priv->last_line < 0 || op->priv->last_line >= op->priv->first_line);
+    g_return_if_fail (op->priv->first_line < gtk_text_buffer_get_line_count (op->priv->buffer));
+    g_return_if_fail (op->priv->last_line < gtk_text_buffer_get_line_count (op->priv->buffer));
 
     DEBUG_PRINT ("moo_print_operation_begin_print\n");
 
     moo_print_operation_load_prefs (op);
+    settings = op->priv->settings;
 
     timer = g_timer_new ();
 
-    if (MOO_IS_EDIT (op->doc))
+    if (MOO_IS_EDIT (op->priv->doc))
     {
-        if (!op->preview)
-            _moo_edit_set_state (MOO_EDIT (op->doc),
+        if (!op->priv->preview)
+            _moo_edit_set_state (MOO_EDIT (op->priv->doc),
                                  MOO_EDIT_STATE_PRINTING,
                                  "Printing",
                                  (GDestroyNotify) gtk_print_operation_cancel,
                                  op);
         else
-            _moo_edit_set_state (MOO_EDIT (op->doc),
+            _moo_edit_set_state (MOO_EDIT (op->priv->doc),
                                  MOO_EDIT_STATE_NORMAL,
                                  NULL, NULL, NULL);
     }
 
-    if (op->last_line < 0)
-        op->last_line = gtk_text_buffer_get_line_count (op->buffer) - 1;
+    if (op->priv->last_line < 0)
+        op->priv->last_line = gtk_text_buffer_get_line_count (op->priv->buffer) - 1;
 
-    if (op->font)
-        font = pango_font_description_from_string (op->font);
+    if (settings->font)
+        font = pango_font_description_from_string (settings->font);
 
-    if (!font && op->doc)
+    if (!font && op->priv->doc)
     {
         PangoContext *widget_ctx;
 
-        widget_ctx = gtk_widget_get_pango_context (GTK_WIDGET (op->doc));
+        widget_ctx = gtk_widget_get_pango_context (GTK_WIDGET (op->priv->doc));
 
         if (widget_ctx)
         {
@@ -715,33 +817,33 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
     }
 
     moo_print_operation_calc_page_size (op, context, font);
-    op->layout = gtk_print_context_create_pango_layout (context);
+    op->priv->layout = gtk_print_context_create_pango_layout (context);
 
     if (GET_OPTION (op, MOO_PRINT_WRAP))
     {
-        pango_layout_set_width (op->layout, op->page.width * PANGO_SCALE);
-        pango_layout_set_wrap (op->layout, op->wrap_mode);
+        pango_layout_set_width (op->priv->layout, op->priv->page.width * PANGO_SCALE);
+        pango_layout_set_wrap (op->priv->layout, settings->wrap_mode);
     }
     else if (GET_OPTION (op, MOO_PRINT_ELLIPSIZE))
     {
-        pango_layout_set_width (op->layout, op->page.width * PANGO_SCALE);
-        pango_layout_set_ellipsize (op->layout, PANGO_ELLIPSIZE_END);
+        pango_layout_set_width (op->priv->layout, op->priv->page.width * PANGO_SCALE);
+        pango_layout_set_ellipsize (op->priv->layout, PANGO_ELLIPSIZE_END);
     }
 
     if (font)
     {
-        pango_layout_set_font_description (op->layout, font);
+        pango_layout_set_font_description (op->priv->layout, font);
         pango_font_description_free (font);
     }
 
     moo_print_operation_paginate (op);
 
-    DEBUG_PRINT ("begin_print: %d pages in %f s\n", op->pages->len,
+    DEBUG_PRINT ("begin_print: %d pages in %f s\n", op->priv->pages->len,
                  g_timer_elapsed (timer, NULL));
     g_timer_destroy (timer);
 
-    if (!op->tm)
-        op->tm = g_new (struct tm, 1);
+    if (!op->priv->tm)
+        op->priv->tm = g_new (struct tm, 1);
 
     errno = 0;
     time (&t);
@@ -750,19 +852,19 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
     {
         int err = errno;
         g_critical ("time: %s", g_strerror (err));
-        g_free (op->tm);
-        op->tm = NULL;
+        g_free (op->priv->tm);
+        op->priv->tm = NULL;
     }
-    else if (!localtime_r (&t, op->tm))
+    else if (!localtime_r (&t, op->priv->tm))
     {
         int err = errno;
         g_critical ("time: %s", g_strerror (err));
-        g_free (op->tm);
-        op->tm = NULL;
+        g_free (op->priv->tm);
+        op->priv->tm = NULL;
     }
 
-    if (op->preview)
-        _moo_print_preview_start (op->preview);
+    if (op->priv->preview)
+        _moo_print_preview_start (op->priv->preview);
 
     DEBUG_PRINT ("moo_print_operation_begin_print done\n");
 }
@@ -772,8 +874,8 @@ static gboolean
 ignore_tag (MooPrintOperation *op,
             GtkTextTag        *tag)
 {
-    if (MOO_IS_TEXT_BUFFER (op->buffer) &&
-        _moo_text_buffer_is_bracket_tag (MOO_TEXT_BUFFER (op->buffer), tag))
+    if (MOO_IS_TEXT_BUFFER (op->priv->buffer) &&
+        _moo_text_buffer_is_bracket_tag (MOO_TEXT_BUFFER (op->priv->buffer), tag))
             return TRUE;
 
     return FALSE;
@@ -949,53 +1051,54 @@ fill_layout (MooPrintOperation *op,
 
 
 static void
-print_header_footer (MooPrintOperation    *print,
+print_header_footer (MooPrintOperation    *op,
                      cairo_t              *cr,
                      MooPrintHeaderFooter *hf,
-                     int                   page,
+                     int                   page_no,
                      gboolean              header)
 {
     double y;
     char *text;
     PangoRectangle rect;
     int total_pages;
+    Page *page = &op->priv->page;
 
     if (header)
         y = 0;
     else
-        y = print->page.y + print->page.height + hf->separator_before +
-                hf->separator_after + hf->separator_height;
+        y = page->y + page->height + hf->separator_before +
+            hf->separator_after + hf->separator_height;
 
-    g_object_get (print, "n-pages", &total_pages, NULL);
+    g_object_get (op, "n-pages", &total_pages, NULL);
 
     if (hf->parsed_format[0] &&
-        (text = hf_format_eval (hf->parsed_format[0], print->tm, page,
-                                total_pages, print->filename, print->basename)))
+        (text = hf_format_eval (hf->parsed_format[0], op->priv->tm, page_no, total_pages,
+                                op->priv->filename, op->priv->basename)))
     {
         pango_layout_set_text (hf->layout, text, -1);
-        cairo_move_to (cr, print->page.x, y);
+        cairo_move_to (cr, page->x, y);
         pango_cairo_show_layout (cr, hf->layout);
         g_free (text);
     }
 
     if (hf->parsed_format[1] &&
-        (text = hf_format_eval (hf->parsed_format[1], print->tm, page,
-                                total_pages, print->filename, print->basename)))
+        (text = hf_format_eval (hf->parsed_format[1], op->priv->tm, page_no, total_pages,
+                                op->priv->filename, op->priv->basename)))
     {
         pango_layout_set_text (hf->layout, text, -1);
         pango_layout_get_pixel_extents (hf->layout, NULL, &rect);
-        cairo_move_to (cr, print->page.x + print->page.width/2 - rect.width/2, y);
+        cairo_move_to (cr, page->x + page->width/2. - rect.width/2., y);
         pango_cairo_show_layout (cr, hf->layout);
         g_free (text);
     }
 
     if (hf->parsed_format[2] &&
-        (text = hf_format_eval (hf->parsed_format[2], print->tm, page,
-                                total_pages, print->filename, print->basename)))
+        (text = hf_format_eval (hf->parsed_format[2], op->priv->tm, page_no, total_pages,
+                                op->priv->filename, op->priv->basename)))
     {
         pango_layout_set_text (hf->layout, text, -1);
         pango_layout_get_pixel_extents (hf->layout, NULL, &rect);
-        cairo_move_to (cr, print->page.x + print->page.width - rect.width, y);
+        cairo_move_to (cr, page->x + page->width - rect.width, y);
         pango_cairo_show_layout (cr, hf->layout);
         g_free (text);
     }
@@ -1003,14 +1106,13 @@ print_header_footer (MooPrintOperation    *print,
     if (hf->separator)
     {
         if (header)
-            y = hf->text_height + hf->separator_before + hf->separator_height/2;
+            y = hf->text_height + hf->separator_before + hf->separator_height/2.;
         else
-            y = print->page.y + print->page.height +
-                    hf->separator_after + hf->separator_height/2;
+            y = page->y + page->height + hf->separator_after + hf->separator_height/2.;
 
-        cairo_move_to (cr, print->page.x, y);
+        cairo_move_to (cr, page->x, y);
         cairo_set_line_width (cr, hf->separator_height);
-        cairo_line_to (cr, print->page.x + print->page.width, y);
+        cairo_line_to (cr, page->x + page->width, y);
         cairo_stroke (cr);
     }
 }
@@ -1023,6 +1125,7 @@ print_page (MooPrintOperation *op,
             int                page,
             cairo_t           *cr)
 {
+    MooPrintSettings *settings = op->priv->settings;
     GtkTextIter line_start, line_end;
     double offset;
 
@@ -1030,13 +1133,13 @@ print_page (MooPrintOperation *op,
 
     cairo_set_source_rgb (cr, 0., 0., 0.);
 
-    if (op->header.do_print)
-        print_header_footer (op, cr, &op->header, page, TRUE);
-    if (op->footer.do_print)
-        print_header_footer (op, cr, &op->footer, page, FALSE);
+    if (settings->header->do_print)
+        print_header_footer (op, cr, settings->header, page, TRUE);
+    if (settings->footer->do_print)
+        print_header_footer (op, cr, settings->footer, page, FALSE);
 
     line_start = *start;
-    offset = op->page.y;
+    offset = op->priv->page.y;
 
     while (gtk_text_iter_compare (&line_start, end) < 0)
     {
@@ -1044,8 +1147,8 @@ print_page (MooPrintOperation *op,
 
         if (gtk_text_iter_ends_line (&line_start))
         {
-            pango_layout_set_text (op->layout, "", 0);
-            pango_layout_set_attributes (op->layout, NULL);
+            pango_layout_set_text (op->priv->layout, "", 0);
+            pango_layout_set_attributes (op->priv->layout, NULL);
         }
         else
         {
@@ -1055,14 +1158,14 @@ print_page (MooPrintOperation *op,
             if (gtk_text_iter_compare (&line_end, end) > 0)
                 line_end = *end;
 
-            fill_layout (op, op->layout, &line_start, &line_end,
+            fill_layout (op, op->priv->layout, &line_start, &line_end,
                          GET_OPTION (op, MOO_PRINT_USE_STYLES));
         }
 
-        cairo_move_to (cr, op->page.x, offset);
-        pango_cairo_show_layout (cr, op->layout);
+        cairo_move_to (cr, op->priv->page.x, offset);
+        pango_cairo_show_layout (cr, op->priv->layout);
 
-        pango_layout_get_pixel_extents (op->layout, NULL, &line_rect);
+        pango_layout_get_pixel_extents (op->priv->layout, NULL, &line_rect);
         offset += line_rect.height;
         gtk_text_iter_forward_line (&line_start);
     }
@@ -1072,40 +1175,40 @@ print_page (MooPrintOperation *op,
 
 
 static void
-moo_print_operation_draw_page (GtkPrintOperation  *operation,
-                               GtkPrintContext    *context,
-                               int                 page)
+moo_print_operation_draw_page (GtkPrintOperation *operation,
+                               GtkPrintContext   *context,
+                               int                page)
 {
     cairo_t *cr;
     GtkTextIter start, end;
-    MooPrintOperation *print = MOO_PRINT_OPERATION (operation);
+    MooPrintOperation *op = MOO_PRINT_OPERATION (operation);
     GTimer *timer;
 
-    g_return_if_fail (print->buffer != NULL);
-    g_return_if_fail (print->pages != NULL);
-    g_return_if_fail (print->layout != NULL);
-    g_return_if_fail (page < (int) print->pages->len);
+    g_return_if_fail (op->priv->buffer != NULL);
+    g_return_if_fail (op->priv->pages != NULL);
+    g_return_if_fail (op->priv->layout != NULL);
+    g_return_if_fail (page < (int) op->priv->pages->len);
 
     timer = g_timer_new ();
     update_progress (operation, page);
 
     cr = gtk_print_context_get_cairo_context (context);
 
-    start = g_array_index (print->pages, GtkTextIter, page);
+    start = g_array_index (op->priv->pages, GtkTextIter, page);
 
-    if (page + 1 < (int) print->pages->len)
-        end = g_array_index (print->pages, GtkTextIter, page + 1);
+    if (page + 1 < (int) op->priv->pages->len)
+        end = g_array_index (op->priv->pages, GtkTextIter, page + 1);
     else
-        gtk_text_buffer_get_end_iter (print->buffer, &end);
+        gtk_text_buffer_get_end_iter (op->priv->buffer, &end);
 
 #ifdef MOO_DEBUG
     cairo_set_line_width (cr, 1.);
     cairo_set_source_rgb (cr, 1., 0., 0.);
     cairo_rectangle (cr,
-                     print->page.x,
-                     print->page.y,
-                     print->page.width,
-                     print->page.height);
+                     op->priv->page.x,
+                     op->priv->page.y,
+                     op->priv->page.width,
+                     op->priv->page.height);
     cairo_set_source_rgb (cr, 0., 1., 0.);
     cairo_rectangle (cr, 0, 0,
                      gtk_print_context_get_width (context),
@@ -1113,7 +1216,7 @@ moo_print_operation_draw_page (GtkPrintOperation  *operation,
     cairo_stroke (cr);
 #endif
 
-    print_page (print, &start, &end, page, cr);
+    print_page (op, &start, &end, page, cr);
 
     DEBUG_PRINT ("page %d: %f s\n", page, g_timer_elapsed (timer, NULL));
     g_timer_destroy (timer);
@@ -1124,40 +1227,40 @@ static void
 moo_print_operation_end_print (GtkPrintOperation  *operation,
                                G_GNUC_UNUSED GtkPrintContext *context)
 {
-    MooPrintOperation *print = MOO_PRINT_OPERATION (operation);
+    MooPrintOperation *op = MOO_PRINT_OPERATION (operation);
 
-    g_return_if_fail (print->buffer != NULL);
+    g_return_if_fail (op->priv->buffer != NULL);
 
     DEBUG_PRINT ("moo_print_operation_end_print\n");
 
-    g_array_free (print->pages, TRUE);
-
-    if (MOO_IS_EDIT (print->doc))
-        _moo_edit_set_state (MOO_EDIT (print->doc),
+    if (MOO_IS_EDIT (op->priv->doc))
+        _moo_edit_set_state (MOO_EDIT (op->priv->doc),
                              MOO_EDIT_STATE_NORMAL,
                              NULL, NULL, NULL);
 
-    print->layout = NULL;
-    print->pages = NULL;
+    g_object_unref (op->priv->layout);
+    op->priv->layout = NULL;
+    g_array_free (op->priv->pages, TRUE);
+    op->priv->pages = NULL;
 }
 
 
 static void
-update_progress (GtkPrintOperation *op,
+update_progress (GtkPrintOperation *operation,
                  int                page)
 {
     char *text = NULL;
-    MooPrintOperation *print = MOO_PRINT_OPERATION (op);
+    MooPrintOperation *op = MOO_PRINT_OPERATION (operation);
     GtkPrintStatus status;
     MooEditWindow *window;
     MooEdit *doc;
 
-    if (!MOO_IS_EDIT (print->doc))
+    if (!MOO_IS_EDIT (op->priv->doc))
         return;
 
-    doc = MOO_EDIT (print->doc);
+    doc = MOO_EDIT (op->priv->doc);
     window = moo_edit_get_window (doc);
-    status = gtk_print_operation_get_status (op);
+    status = gtk_print_operation_get_status (operation);
 
     if (status == GTK_PRINT_STATUS_FINISHED)
     {
@@ -1166,12 +1269,12 @@ update_progress (GtkPrintOperation *op,
     else if (status == GTK_PRINT_STATUS_GENERATING_DATA && page >= 0)
     {
         int n_pages;
-        g_object_get (print, "n-pages", &n_pages, NULL);
+        g_object_get (op, "n-pages", &n_pages, NULL);
         text = g_strdup_printf ("Printing page %d of %d", page, n_pages);
     }
     else
     {
-        text = g_strdup (gtk_print_operation_get_status_string (op));
+        text = g_strdup (gtk_print_operation_get_status_string (operation));
     }
 
     if (window)
@@ -1194,70 +1297,106 @@ moo_print_operation_status_changed (GtkPrintOperation *op)
 
 
 static void
-moo_print_operation_load_prefs (MooPrintOperation *print)
+moo_print_operation_set_filename (MooPrintOperation *op,
+                                  const char        *filename,
+                                  const char        *basename)
 {
-    char *formats[3];
+    char *tmp;
+
+    g_return_if_fail (MOO_IS_PRINT_OPERATION (op));
+
+    tmp = op->priv->filename;
+    op->priv->filename = g_strdup (filename);
+    g_free (tmp);
+
+    tmp = op->priv->basename;
+    op->priv->basename = g_strdup (basename);
+    g_free (tmp);
+}
+
+
+static MooPrintSettings *
+get_settings_from_prefs (void)
+{
+    MooPrintSettings *settings;
+    MooPrintHeaderFooter *hf;
 
     moo_print_init_prefs ();
+    settings = moo_print_settings_new_default ();
 
-    formats[0] = g_strdup (moo_prefs_get_string (PREFS_HEADER_LEFT));
-    formats[1] = g_strdup (moo_prefs_get_string (PREFS_HEADER_CENTER));
-    formats[2] = g_strdup (moo_prefs_get_string (PREFS_HEADER_RIGHT));
+    hf = settings->header;
+    hf->format[0] = g_strdup (moo_prefs_get_string (PREFS_HEADER_LEFT));
+    hf->format[1] = g_strdup (moo_prefs_get_string (PREFS_HEADER_CENTER));
+    hf->format[2] = g_strdup (moo_prefs_get_string (PREFS_HEADER_RIGHT));
+    hf->separator = moo_prefs_get_bool (PREFS_PRINT_HEADER_SEPARATOR);
+    SET_FLAG (settings->flags, MOO_PRINT_HEADER, moo_prefs_get_bool (PREFS_PRINT_HEADER));
 
-    _moo_print_operation_set_header_format (print, formats[0], formats[1], formats[2]);
-    SET_OPTION (print, MOO_PRINT_HEADER, moo_prefs_get_bool (PREFS_PRINT_HEADER));
-    print->header.separator = moo_prefs_get_bool (PREFS_PRINT_HEADER_SEPARATOR);
-
-    g_free (formats[0]);
-    g_free (formats[1]);
-    g_free (formats[2]);
-
-    formats[0] = g_strdup (moo_prefs_get_string (PREFS_FOOTER_LEFT));
-    formats[1] = g_strdup (moo_prefs_get_string (PREFS_FOOTER_CENTER));
-    formats[2] = g_strdup (moo_prefs_get_string (PREFS_FOOTER_RIGHT));
-
-    _moo_print_operation_set_footer_format (MOO_PRINT_OPERATION (print),
-                                            formats[0], formats[1], formats[2]);
-    SET_OPTION (print, MOO_PRINT_FOOTER, moo_prefs_get_bool (PREFS_PRINT_FOOTER));
-    print->footer.separator = moo_prefs_get_bool (PREFS_PRINT_FOOTER_SEPARATOR);
-
-    g_free (formats[0]);
-    g_free (formats[1]);
-    g_free (formats[2]);
+    hf = settings->footer;
+    hf->format[0] = g_strdup (moo_prefs_get_string (PREFS_FOOTER_LEFT));
+    hf->format[1] = g_strdup (moo_prefs_get_string (PREFS_FOOTER_CENTER));
+    hf->format[2] = g_strdup (moo_prefs_get_string (PREFS_FOOTER_RIGHT));
+    hf->separator = moo_prefs_get_bool (PREFS_PRINT_FOOTER_SEPARATOR);
+    SET_FLAG (settings->flags, MOO_PRINT_FOOTER, moo_prefs_get_bool (PREFS_PRINT_FOOTER));
 
     if (moo_prefs_get_bool (PREFS_USE_CUSTOM_FONT))
-    {
-        const char *font = moo_prefs_get_string (PREFS_FONT);
-        g_object_set (print, "font", font, NULL);
-    }
+        settings->font = g_strdup (moo_prefs_get_string (PREFS_FONT));
 
-    g_object_set (print, "use-styles", moo_prefs_get_bool (PREFS_USE_STYLES),
-                  "wrap", moo_prefs_get_bool (PREFS_WRAP),
-                  "ellipsize", moo_prefs_get_bool (PREFS_ELLIPSIZE),
-                  NULL);
+    SET_FLAG (settings->flags, MOO_PRINT_USE_STYLES, moo_prefs_get_bool (PREFS_USE_STYLES));
+    SET_FLAG (settings->flags, MOO_PRINT_WRAP, moo_prefs_get_bool (PREFS_WRAP));
+    SET_FLAG (settings->flags, MOO_PRINT_ELLIPSIZE, moo_prefs_get_bool (PREFS_ELLIPSIZE));
+
+    return settings;
 }
 
 
 static void
-print_operation_run (MooPrintOperation *op)
+moo_print_operation_load_prefs (MooPrintOperation *op)
 {
+    MooPrintSettings *settings = get_settings_from_prefs ();
+    moo_print_operation_set_settings (op, settings);
+    moo_print_settings_free (settings);
+}
+
+
+static void
+do_print_operation (GtkTextView            *view,
+                    GtkWidget              *parent,
+                    GtkPrintOperationAction action)
+{
+    MooPrintOperation *op;
     GtkPrintOperationResult res;
     GError *error = NULL;
     GtkWidget *error_dialog;
 
+    g_return_if_fail (GTK_IS_TEXT_VIEW (view));
+
+    op = g_object_new (MOO_TYPE_PRINT_OPERATION, "doc", view, NULL);
+
+    if (!parent)
+        parent = GTK_WIDGET (view);
+
+    if (parent)
+        parent = gtk_widget_get_toplevel (parent);
+
+    if (GTK_IS_WINDOW (parent))
+        op->priv->parent = GTK_WINDOW (parent);
+
+    if (MOO_IS_EDIT (view))
+        moo_print_operation_set_filename (op,
+                                          moo_edit_get_display_filename (MOO_EDIT (view)),
+                                          moo_edit_get_display_basename (MOO_EDIT (view)));
+
     res = gtk_print_operation_run (GTK_PRINT_OPERATION (op),
-                                   GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
-                                   op->parent,
-                                   &error);
+                                   action, op->priv->parent, &error);
 
     switch (res)
     {
         case GTK_PRINT_OPERATION_RESULT_ERROR:
-            error_dialog = gtk_message_dialog_new (op->parent,
+            error_dialog = gtk_message_dialog_new (op->priv->parent,
                                                    GTK_DIALOG_DESTROY_WITH_PARENT,
                                                    GTK_MESSAGE_ERROR,
                                                    GTK_BUTTONS_CLOSE,
-                                                   "Error printing file:\n%s",
+                                                   "Error:\n%s",
                                                    error ? error->message : "");
             gtk_dialog_run (GTK_DIALOG (error_dialog));
             gtk_widget_destroy (error_dialog);
@@ -1275,6 +1414,8 @@ print_operation_run (MooPrintOperation *op)
         case GTK_PRINT_OPERATION_RESULT_IN_PROGRESS:
             break;
     }
+
+    g_object_unref (op);
 }
 
 
@@ -1282,94 +1423,41 @@ void
 _moo_edit_print (GtkTextView *view,
                  GtkWidget   *parent)
 {
-    MooPrintOperation *op;
-
-    g_return_if_fail (GTK_IS_TEXT_VIEW (view));
-
-    op = g_object_new (MOO_TYPE_PRINT_OPERATION, "doc", view, NULL);
-
-    if (!parent)
-        parent = GTK_WIDGET (view);
-
-    parent = gtk_widget_get_toplevel (parent);
-
-    if (GTK_IS_WINDOW (parent))
-        op->parent = GTK_WINDOW (parent);
-
-    if (MOO_IS_EDIT (view))
-        _moo_print_operation_set_filename (op,
-                                           moo_edit_get_display_filename (MOO_EDIT (view)),
-                                           moo_edit_get_display_basename (MOO_EDIT (view)));
-
-    print_operation_run (op);
-    g_object_unref (op);
+    do_print_operation (view, parent, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG);
 }
 
 
 void
-_moo_print_operation_set_filename (MooPrintOperation  *print,
-                                   const char         *filename,
-                                   const char         *basename)
+_moo_edit_print_preview (GtkTextView *view,
+                         GtkWidget   *parent)
 {
-    g_return_if_fail (MOO_IS_PRINT_OPERATION (print));
-    g_free (print->filename);
-    g_free (print->basename);
-    print->filename = g_strdup (filename);
-    print->basename = g_strdup (basename);
-}
-
-
-static void
-set_hf_format (MooPrintHeaderFooter *hf,
-               const char          **formats)
-{
-    int i;
-    HFFormat *parsed[3] = {NULL, NULL, NULL};
-
-    for (i = 0; i < 3; ++i)
-    {
-        if (formats[i])
-            parsed[i] = hf_format_parse (formats[i]);
-
-        if (formats[i] && !parsed[i])
-        {
-            for (i = 0; i < 3; ++i)
-                hf_format_free (parsed[i]);
-            return;
-        }
-    }
-
-    for (i = 0; i < 3; ++i)
-    {
-        g_free (hf->format[i]);
-        hf_format_free (hf->parsed_format[i]);
-        hf->format[i] = g_strdup (formats[i]);
-        hf->parsed_format[i] = parsed[i];
-    }
+    do_print_operation (view, parent, GTK_PRINT_OPERATION_ACTION_PREVIEW);
 }
 
 
 void
-_moo_print_operation_set_header_format (MooPrintOperation  *print,
-                                        const char         *left,
-                                        const char         *center,
-                                        const char         *right)
+_moo_print_operation_set_preview (MooPrintOperation *op,
+                                  MooPrintPreview   *preview)
 {
-    const char *formats[] = {left, center, right};
-    g_return_if_fail (MOO_IS_PRINT_OPERATION (print));
-    set_hf_format (&print->header, formats);
+    g_return_if_fail (MOO_IS_PRINT_OPERATION (op));
+    g_return_if_fail (!preview || MOO_IS_PRINT_PREVIEW (preview));
+    op->priv->preview = preview;
 }
 
 
-void
-_moo_print_operation_set_footer_format (MooPrintOperation  *print,
-                                        const char         *left,
-                                        const char         *center,
-                                        const char         *right)
+GtkWindow *
+_moo_print_operation_get_parent (MooPrintOperation *op)
 {
-    const char *formats[] = {left, center, right};
-    g_return_if_fail (MOO_IS_PRINT_OPERATION (print));
-    set_hf_format (&print->footer, formats);
+    g_return_val_if_fail (MOO_IS_PRINT_OPERATION (op), NULL);
+    return op->priv->parent;
+}
+
+
+int
+_moo_print_operation_get_n_pages (MooPrintOperation *op)
+{
+    g_return_val_if_fail (MOO_IS_PRINT_OPERATION (op), -1);
+    return op->priv->pages ? (int) op->priv->pages->len : -1;
 }
 
 
@@ -1548,16 +1636,18 @@ moo_print_operation_custom_widget_apply (G_GNUC_UNUSED GtkPrintOperation *print,
  */
 
 static void
-preview_response (MooPrintPreview *preview,
-                  int              response)
+preview_response (MooPrintOperation *op,
+                  int                response,
+                  MooPrintPreview   *preview)
 {
     gtk_widget_hide (GTK_WIDGET (preview));
-    preview->op->preview = NULL;
-    gtk_print_operation_preview_end_preview (preview->gtk_preview);
+    op->priv->preview = NULL;
+
+    gtk_print_operation_preview_end_preview (_moo_print_preview_get_gtk_preview (preview));
 
     if (response == MOO_PRINT_PREVIEW_RESPONSE_PRINT)
-        _moo_edit_print (preview->op->doc,
-                         preview->op->parent ? GTK_WIDGET (preview->op->parent) : NULL);
+        _moo_edit_print (op->priv->doc,
+                         op->priv->parent ? GTK_WIDGET (op->priv->parent) : NULL);
 
     gtk_widget_destroy (GTK_WIDGET (preview));
 }
@@ -1574,7 +1664,7 @@ moo_print_operation_preview (GtkPrintOperation        *op,
 
     dialog = _moo_print_preview_new (MOO_PRINT_OPERATION (op), preview, context);
     gtk_widget_show (dialog);
-    g_signal_connect_swapped (dialog, "response", G_CALLBACK (preview_response), dialog);
+    g_signal_connect_swapped (dialog, "response", G_CALLBACK (preview_response), op);
 
     DEBUG_PRINT ("moo_print_operation_preview done\n");
 
@@ -1749,12 +1839,12 @@ eval_strftime (GString    *dest,
 
 
 static char *
-hf_format_eval (HFFormat   *format,
-                struct tm  *tm,
-                int         page,
-                int         total_pages,
-                const char *filename,
-                const char *basename)
+hf_format_eval (HFFormat         *format,
+                struct tm        *tm,
+                int               page,
+                int               total_pages,
+                const char       *filename,
+                const char       *basename)
 {
     GString *string;
     GSList *l;

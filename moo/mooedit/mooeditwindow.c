@@ -237,6 +237,7 @@ static void line_numbers_toggled                (MooEditWindow      *window,
 #ifdef ENABLE_PRINTING
 static void action_page_setup      (MooEditWindow    *window);
 static void action_print           (MooEditWindow    *window);
+static void action_print_preview   (MooEditWindow    *window);
 #endif
 
 
@@ -733,6 +734,15 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", _("Page Setup"),
                                  "accel", "<ctrl><shift>P",
                                  "closure-callback", action_page_setup,
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "PrintPreview", NULL,
+                                 "display-name", GTK_STOCK_PRINT_PREVIEW,
+                                 "label", GTK_STOCK_PRINT_PREVIEW,
+                                 "tooltip", GTK_STOCK_PRINT_PREVIEW,
+                                 "stock-id", GTK_STOCK_PRINT_PREVIEW,
+                                 "closure-callback", action_print_preview,
+                                 "condition::sensitive", "has-open-document",
                                  NULL);
 
     moo_window_class_new_action (window_class, "Print", NULL,
@@ -1305,8 +1315,7 @@ action_prev_ph (MooEditWindow *window)
 static void
 action_page_setup (MooEditWindow *window)
 {
-    gpointer doc = moo_edit_window_get_active_doc (window);
-    _moo_edit_page_setup (doc, GTK_WIDGET (window));
+    _moo_edit_page_setup (GTK_WIDGET (window));
 }
 
 
@@ -1316,6 +1325,15 @@ action_print (MooEditWindow *window)
     gpointer doc = moo_edit_window_get_active_doc (window);
     g_return_if_fail (doc != NULL);
     _moo_edit_print (doc, GTK_WIDGET (window));
+}
+
+
+static void
+action_print_preview (MooEditWindow *window)
+{
+    gpointer doc = moo_edit_window_get_active_doc (window);
+    g_return_if_fail (doc != NULL);
+    _moo_edit_print_preview (doc, GTK_WIDGET (window));
 }
 #endif
 

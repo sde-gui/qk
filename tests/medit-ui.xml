@@ -18,6 +18,7 @@
       <separator/>
       <item action="PrintOptions"/>
       <item action="PageSetup"/>
+      <item action="PrintPreview"/>
       <item action="Print"/>
       <separator/>
       <placeholder name="UserMenu"/>

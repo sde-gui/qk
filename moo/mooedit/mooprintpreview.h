@@ -31,33 +31,15 @@ G_BEGIN_DECLS
 #define MOO_IS_PRINT_PREVIEW_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_PRINT_PREVIEW))
 #define MOO_PRINT_PREVIEW_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_PRINT_PREVIEW, MooPrintPreviewClass))
 
-typedef struct _MooPrintPreviewClass MooPrintPreviewClass;
+typedef struct _MooPrintPreviewPrivate  MooPrintPreviewPrivate;
+typedef struct _MooPrintPreviewClass    MooPrintPreviewClass;
 
 #define MOO_PRINT_PREVIEW_RESPONSE_PRINT GTK_RESPONSE_APPLY
 
 struct _MooPrintPreview
 {
     GtkDialog base;
-    MooPrintOperation *op;
-    GtkPrintContext *context;
-    GtkPrintOperationPreview *gtk_preview;
-
-    MooGladeXML *xml;
-    GtkEntry *entry;
-    GtkWidget *darea;
-    GtkScrolledWindow *swin;
-
-    GPtrArray *pages;
-    guint n_pages;
-    guint current_page;
-
-    double page_width;
-    double page_height;
-    double screen_page_width;
-    double screen_page_height;
-
-    gboolean zoom_to_fit;
-    guint zoom;
+    MooPrintPreviewPrivate *priv;
 };
 
 struct _MooPrintPreviewClass
@@ -75,6 +57,8 @@ void         _moo_print_preview_start                   (MooPrintPreview        
 cairo_t     *_moo_print_preview_create_cairo_context    (MooPrintOperation          *op,
                                                          GtkPrintOperationPreview   *gtk_preview,
                                                          GtkPrintContext            *context);
+
+GtkPrintOperationPreview *_moo_print_preview_get_gtk_preview (MooPrintPreview       *preview);
 
 
 G_END_DECLS
