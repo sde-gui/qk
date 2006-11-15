@@ -3,6 +3,10 @@
 # various checks needed in moo
 #
 AC_DEFUN([MOO_AC_FUNCS],[
+    # backtrace() and friends
+    AC_CHECK_HEADERS(execinfo.h)
+    AC_CHECK_FUNCS(backtrace)
+
     # for pcre
     AC_CHECK_FUNCS(memmove bcopy strerror)
 
