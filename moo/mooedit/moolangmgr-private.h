@@ -43,8 +43,9 @@ struct _MooLangMgr {
 
     MooTextStyleScheme *active_scheme;
 
-    guint got_langs : 1;
-    guint got_schemes : 1;
+    gboolean got_langs;
+    gboolean got_schemes;
+    gboolean modified;
 };
 
 struct _MooLangMgrClass

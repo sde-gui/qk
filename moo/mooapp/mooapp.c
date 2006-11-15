@@ -66,6 +66,7 @@ struct _MooAppPrivate {
     int         exit_code;
     MooEditor  *editor;
     MooAppInfo *info;
+    char       *rc_files[2];
     gboolean    run_input;
 
     gboolean    running;
@@ -438,6 +439,8 @@ moo_app_finalize (GObject *object)
 
     moo_app_instance = NULL;
 
+    g_free (app->priv->rc_files[0]);
+    g_free (app->priv->rc_files[1]);
     moo_app_info_free (app->priv->info);
     g_free (app->priv->default_ui);
 
@@ -604,24 +607,28 @@ moo_app_get_input_pipe_name (G_GNUC_UNUSED MooApp *app)
 
 
 const char *
-moo_app_get_rc_file_name (MooApp *app)
+moo_app_get_rc_file_name (MooApp      *app,
+                          MooPrefsType prefs_type)
 {
     g_return_val_if_fail (MOO_IS_APP (app), NULL);
+    g_return_val_if_fail (prefs_type < 2, NULL);
 
-    if (!app->priv->info->rc_file)
+    if (!app->priv->rc_files[prefs_type])
     {
 #ifdef __WIN32__
-        char *basename = g_strdup_printf ("%s.ini",
+        const char *templates[] = {"%s.ini", "%s.state"};
+        char *basename = g_strdup_printf (templates[prefs_type],
                                           app->priv->info->short_name);
-        app->priv->info->rc_file =
+        app->priv->rc_files[prefs_type] =
                 g_build_filename (g_get_user_config_dir (),
                                   basename,
                                   NULL);
         g_free (basename);
 #else
-        char *basename = g_strdup_printf (".%src",
+        const char *templates[] = {".%src", ".%s.state"};
+        char *basename = g_strdup_printf (templates[prefs_type],
                                           app->priv->info->short_name);
-        app->priv->info->rc_file =
+        app->priv->rc_files[prefs_type] =
                 g_build_filename (g_get_home_dir (),
                                   basename,
                                   NULL);
@@ -629,7 +636,7 @@ moo_app_get_rc_file_name (MooApp *app)
 #endif
     }
 
-    return app->priv->info->rc_file;
+    return app->priv->rc_files[prefs_type];
 }
 
 
@@ -794,15 +801,14 @@ out:
 static gboolean
 moo_app_init_real (MooApp *app)
 {
-    const char *rc_file;
     GError *error = NULL;
 
     gdk_set_program_class (app->priv->info->full_name);
     gtk_window_set_default_icon_name (app->priv->info->short_name);
 
-    rc_file = moo_app_get_rc_file_name (app);
-
-    if (!moo_prefs_load (rc_file, &error))
+    if (!moo_prefs_load (moo_app_get_rc_file_name (app, MOO_PREFS_RC),
+                         moo_app_get_rc_file_name (app, MOO_PREFS_STATE),
+                         &error))
     {
         g_warning ("%s: could not read config file", G_STRLOC);
 
@@ -993,7 +999,9 @@ moo_app_save_prefs (MooApp *app)
 {
     GError *error = NULL;
 
-    if (!moo_prefs_save (moo_app_get_rc_file_name (app), &error))
+    if (!moo_prefs_save (moo_app_get_rc_file_name (app, MOO_PREFS_RC),
+                         moo_app_get_rc_file_name (app, MOO_PREFS_STATE),
+                         &error))
     {
         g_warning ("%s: could not save config file", G_STRLOC);
 

@@ -229,7 +229,7 @@ _moo_file_view_tools_load (MooFileView *fileview)
     group = moo_action_collection_get_group (actions, NULL);
     remove_old_tools (fileview, xml, group);
 
-    doc = moo_prefs_get_markup ();
+    doc = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_if_fail (doc != NULL);
 
     root = moo_markup_get_element (MOO_MARKUP_NODE (doc), "MooFileView/Tools");

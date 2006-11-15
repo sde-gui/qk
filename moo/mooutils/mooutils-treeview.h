@@ -32,6 +32,7 @@ typedef struct _MooTreeHelperClass MooTreeHelperClass;
 struct _MooTreeHelper {
     GtkObject parent;
 
+    gboolean modified;
     int type;
     gpointer widget;
 
@@ -83,6 +84,14 @@ void             _moo_tree_helper_update_model      (MooTreeHelper      *helper,
                                                      GtkTreeModel       *model,
                                                      GtkTreePath        *path);
 void             _moo_tree_helper_update_widgets    (MooTreeHelper      *helper);
+
+void             _moo_tree_helper_set_modified      (MooTreeHelper      *helper,
+                                                     gboolean            modified);
+gboolean         _moo_tree_helper_get_modified      (MooTreeHelper      *helper);
+
+gboolean         _moo_tree_helper_set               (MooTreeHelper      *helper,
+                                                     GtkTreeIter        *iter,
+                                                     ...);
 
 void             _moo_tree_view_select_first        (GtkTreeView        *tree_view);
 void             _moo_combo_box_select_first        (GtkComboBox        *combo);

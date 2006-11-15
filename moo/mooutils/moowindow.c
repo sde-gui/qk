@@ -785,14 +785,15 @@ static GtkToolbarStyle get_toolbar_style_gtk (MooWindow *window)
 static void init_prefs (MooWindow *window)
 {
     moo_prefs_new_key_bool (setting (window, PREFS_REMEMBER_SIZE), TRUE);
-    moo_prefs_new_key_bool (setting (window, PREFS_MAXIMIZED), FALSE);
-    moo_prefs_new_key_int (setting (window, PREFS_WIDTH), -1);
-    moo_prefs_new_key_int (setting (window, PREFS_HEIGHT), -1);
     moo_prefs_new_key_bool (setting (window, PREFS_SHOW_TOOLBAR), TRUE);
     moo_prefs_new_key_bool (setting (window, PREFS_SHOW_MENUBAR), TRUE);
     moo_prefs_new_key_enum (setting (window, PREFS_TOOLBAR_STYLE),
                             GTK_TYPE_TOOLBAR_STYLE,
                             get_toolbar_style_gtk (window));
+
+    _moo_prefs_new_key_bool_state (setting (window, PREFS_MAXIMIZED), FALSE);
+    _moo_prefs_new_key_int_state (setting (window, PREFS_WIDTH), -1);
+    _moo_prefs_new_key_int_state (setting (window, PREFS_HEIGHT), -1);
 }
 
 

@@ -29,45 +29,38 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_PREFS              (moo_prefs_get_type ())
+#define MOO_TYPE_PREFS_TYPE         (moo_prefs_type_get_type ())
 #define MOO_TYPE_PREFS_MATCH_TYPE   (moo_prefs_match_type_get_type ())
 
-#define MOO_PREFS(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_PREFS, MooPrefs))
-#define MOO_PREFS_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_PREFS, MooPrefsClass))
-#define MOO_IS_PREFS(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_PREFS))
-#define MOO_IS_PREFS_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_PREFS))
-#define MOO_PREFS_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_PREFS, MooPrefsClass))
 
-typedef struct _MooPrefs        MooPrefs;
-typedef struct _MooPrefsPrivate MooPrefsPrivate;
-typedef struct _MooPrefsClass   MooPrefsClass;
+typedef enum {
+    MOO_PREFS_RC,
+    MOO_PREFS_STATE
+} MooPrefsType;
 
-struct _MooPrefs
-{
-    GObject          gobject;
-
-    MooPrefsPrivate *priv;
-};
-
-struct _MooPrefsClass
-{
-    GObjectClass   parent_class;
-};
+typedef enum {
+    MOO_PREFS_MATCH_KEY       = 1 << 0,
+    MOO_PREFS_MATCH_PREFIX    = 1 << 1,
+    MOO_PREFS_MATCH_REGEX     = 1 << 2
+} MooPrefsMatchType;
 
 
-GType           moo_prefs_get_type          (void) G_GNUC_CONST;
+GType           moo_prefs_type_get_type (void) G_GNUC_CONST;
 GType           moo_prefs_match_type_get_type (void) G_GNUC_CONST;
 
-gboolean        moo_prefs_load          (const char     *file,
+gboolean        moo_prefs_load          (const char     *file_rc,
+                                         const char     *file_state,
                                          GError        **error);
-gboolean        moo_prefs_save          (const char     *file,
+gboolean        moo_prefs_save          (const char     *file_rc,
+                                         const char     *file_state,
                                          GError        **error);
 
-MooMarkupDoc   *moo_prefs_get_markup    (void);
+MooMarkupDoc   *moo_prefs_get_markup    (MooPrefsType    prefs_type);
 
 void            moo_prefs_new_key       (const char     *key,
                                          GType           value_type,
-                                         const GValue   *default_value);
+                                         const GValue   *default_value,
+                                         MooPrefsType    prefs_type);
 void            moo_prefs_delete_key    (const char     *key);
 
 char          **moo_prefs_list_keys     (guint          *n_keys);
@@ -95,6 +88,13 @@ void            moo_prefs_new_key_enum  (const char     *key,
 void            moo_prefs_new_key_flags (const char     *key,
                                          GType           flags_type,
                                          int             default_val);
+
+void            _moo_prefs_new_key_bool_state (const char     *key,
+                                         gboolean        default_val);
+void            _moo_prefs_new_key_int_state (const char     *key,
+                                         int             default_val);
+void            _moo_prefs_new_key_string_state (const char *key,
+                                         const char     *default_val);
 
 char           *moo_prefs_make_key      (const char     *first_comp,
                                          ...) G_GNUC_NULL_TERMINATED;
@@ -130,13 +130,6 @@ void            moo_prefs_set_flags     (const char     *key,
 typedef void  (*MooPrefsNotify)         (const char     *key,
                                          const GValue   *newval,
                                          gpointer        data);
-
-typedef enum
-{
-    MOO_PREFS_MATCH_KEY       = 1 << 0,
-    MOO_PREFS_MATCH_PREFIX    = 1 << 1,
-    MOO_PREFS_MATCH_REGEX     = 1 << 2
-} MooPrefsMatchType;
 
 guint           moo_prefs_notify_connect    (const char     *pattern,
                                              MooPrefsMatchType match_type,

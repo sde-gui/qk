@@ -14,6 +14,7 @@
 #include "mooutils/moomarkup.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-debug.h"
 #include "mooutils/moocompat.h"
 #include <string.h>
 #include <glib.h>
@@ -118,6 +119,51 @@ static void passthrough     (GMarkupParseContext    *context,
                              GError                **error);
 
 
+static void
+set_modified (MooMarkupNode *node,
+              gboolean       modified)
+{
+    if (node->doc)
+    {
+#ifdef MOO_DEBUG
+        if (modified && !node->doc->modified && node->doc->track_modified)
+        {
+            g_message ("markup doc %s modified",
+                       node->doc->name ? node->doc->name : "<NULL>");
+        }
+#endif
+
+        node->doc->modified = modified != 0;
+    }
+}
+
+
+void
+_moo_markup_set_modified (MooMarkupDoc *doc,
+                          gboolean      modified)
+{
+    g_return_if_fail (MOO_MARKUP_IS_DOC (doc));
+    set_modified (MOO_MARKUP_NODE (doc), modified);
+}
+
+
+void
+_moo_markup_set_track_modified (MooMarkupDoc *doc,
+                                gboolean      track)
+{
+    g_return_if_fail (MOO_MARKUP_IS_DOC (doc));
+    doc->track_modified = track != 0;
+}
+
+
+gboolean
+_moo_markup_get_modified (MooMarkupDoc *doc)
+{
+    g_return_val_if_fail (MOO_MARKUP_IS_DOC (doc), FALSE);
+    return doc->modified;
+}
+
+
 MooMarkupDoc*
 moo_markup_parse_memory (const char     *buffer,
                          int             size,
@@ -140,6 +186,8 @@ moo_markup_parse_memory (const char     *buffer,
     state.doc = doc;
     state.current = MOO_MARKUP_NODE (doc);
     context = g_markup_parse_context_new (&parser, (GMarkupParseFlags)0, &state, NULL);
+
+    _moo_markup_set_modified (doc, TRUE);
 
     if (!g_markup_parse_context_parse (context, buffer, size, error) ||
          !g_markup_parse_context_end_parse (context, error))
@@ -352,6 +400,8 @@ add_node (MooMarkupDoc     *doc,
         parent->children = node;
         parent->last = node;
     }
+
+    _moo_markup_set_modified (doc, TRUE);
 }
 
 
@@ -367,6 +417,7 @@ moo_markup_text_node_add_text (MooMarkupText  *node,
     node->text = tmp;
     node->size += text_len;
     node->text[node->size] = 0;
+    set_modified (MOO_MARKUP_NODE (node), TRUE);
 }
 
 
@@ -650,6 +701,8 @@ moo_markup_set_prop (MooMarkupNode      *elm,
     g_return_if_fail (MOO_MARKUP_IS_ELEMENT (elm));
     g_return_if_fail (!val || g_utf8_validate (val, -1, NULL));
 
+    set_modified (elm, TRUE);
+
     /* XXX validate prop_name and val */
 
     node = MOO_MARKUP_ELEMENT (elm);
@@ -831,6 +884,7 @@ moo_markup_delete_node (MooMarkupNode *node)
     g_return_if_fail (node != NULL);
     g_return_if_fail (node->parent != NULL);
 
+    set_modified (node, TRUE);
     parent = node->parent;
 
     for (child = parent->children; child != NULL && child != node;
@@ -987,7 +1041,7 @@ moo_markup_create_file_element (MooMarkupNode      *parent,
 }
 
 
-char*
+char *
 moo_markup_get_file_content (MooMarkupNode *node)
 {
     g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (node), NULL);
@@ -1142,7 +1196,7 @@ moo_markup_node_get_pretty_string (MooMarkupNode *node,
 
 
 
-MooMarkupNode*
+MooMarkupNode *
 MOO_MARKUP_NODE_CHECK_CAST (gpointer n)
 {
     MooMarkupNode *node = (MooMarkupNode*) n;
@@ -1155,7 +1209,7 @@ MOO_MARKUP_NODE_CHECK_CAST (gpointer n)
     return node;
 }
 
-MooMarkupDoc*
+MooMarkupDoc *
 MOO_MARKUP_DOC_CHECK_CAST (gpointer n)
 {
     MooMarkupNode *node = (MooMarkupNode*) n;
@@ -1164,7 +1218,7 @@ MOO_MARKUP_DOC_CHECK_CAST (gpointer n)
     return (MooMarkupDoc*) n;
 }
 
-MooMarkupElement*
+MooMarkupElement *
 MOO_MARKUP_ELEMENT_CHECK_CAST (gpointer n)
 {
     MooMarkupNode *node = (MooMarkupNode*) n;
@@ -1173,7 +1227,7 @@ MOO_MARKUP_ELEMENT_CHECK_CAST (gpointer n)
     return (MooMarkupElement*) n;
 }
 
-MooMarkupText*
+MooMarkupText *
 MOO_MARKUP_TEXT_CHECK_CAST (gpointer n)
 {
     MooMarkupNode *node = (MooMarkupNode*) n;
@@ -1182,7 +1236,7 @@ MOO_MARKUP_TEXT_CHECK_CAST (gpointer n)
     return (MooMarkupText*) n;
 }
 
-MooMarkupComment*
+MooMarkupComment *
 MOO_MARKUP_COMMENT_CHECK_CAST (gpointer n)
 {
     MooMarkupNode *node = (MooMarkupNode*) n;

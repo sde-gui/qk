@@ -30,7 +30,7 @@
 #define ELEMENT_MIME_TYPES      "mime-types"
 #define ELEMENT_CONFIG          "config"
 #define PROP_LANG_ID            "id"
-#define SCHEME_DEFAULT          "default"
+#define SCHEME_DEFAULT          "kate"
 
 
 typedef struct {
@@ -601,7 +601,9 @@ load_lang_node (MooLangMgr    *mgr,
         }
         else
         {
-            g_warning ("%s: ignoring node '%s'", G_STRLOC, node->name);
+            /* 'extensions' is leftover from previous versions */
+            if (strcmp (node->name, "extensions") != 0)
+                g_warning ("%s: ignoring node '%s'", G_STRLOC, node->name);
         }
     }
 }
@@ -620,8 +622,9 @@ load_config (MooLangMgr *mgr)
     MooMarkupNode *root, *node;
 
     set_default_config (mgr);
+    mgr->modified = FALSE;
 
-    xml = moo_prefs_get_markup ();
+    xml = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_if_fail (xml != NULL);
 
     root = moo_markup_get_element (MOO_MARKUP_NODE (xml),
@@ -643,6 +646,8 @@ load_config (MooLangMgr *mgr)
 
         load_lang_node (mgr, node);
     }
+
+    mgr->modified = FALSE;
 }
 
 
@@ -667,16 +672,16 @@ _moo_lang_mgr_set_active_scheme (MooLangMgr *mgr,
 
     read_schemes (mgr);
 
-    if (!name)
-        name = SCHEME_DEFAULT;
-
-    scheme = g_hash_table_lookup (mgr->schemes, name);
-
+    if (name)
+        scheme = g_hash_table_lookup (mgr->schemes, name);
     if (!scheme)
         scheme = g_hash_table_lookup (mgr->schemes, SCHEME_DEFAULT);
 
-    g_return_if_fail (scheme != NULL);
-    mgr->active_scheme = scheme;
+    if (!scheme)
+        g_warning ("%s: could not find style scheme '%s'",
+                   G_STRLOC, name ? name : "<NULL>");
+    else
+        mgr->active_scheme = scheme;
 }
 
 
@@ -839,34 +844,41 @@ set_globs_or_mime_types (MooLangMgr *mgr,
 {
     LangInfo *info;
     GSList *new;
+    GSList *old = NULL;
     GSList **ptr;
-    char *id;
+    char *id = NULL;
     gboolean modified = TRUE;
 
     read_langs (mgr);
 
     id = _moo_lang_id_from_name (lang_id);
     info = get_lang_info (mgr, id, FALSE);
-    g_free (id);
 
     g_return_if_fail (info != NULL);
 
     new = _moo_lang_parse_string_list (string);
+    old = globs ? _moo_lang_mgr_get_globs (mgr, id) :
+                  _moo_lang_mgr_get_mime_types (mgr, id);
+
+    if (string_list_equal (new, old))
+        goto out;
+
+    mgr->modified = TRUE;
 
     if (info->lang)
     {
-        GSList *old = globs ? _moo_lang_get_globs (info->lang) :
-                              _moo_lang_get_mime_types (info->lang);
-        modified = !string_list_equal (old, new);
+        GSList *builtin = globs ? _moo_lang_get_globs (info->lang) :
+                                  _moo_lang_get_mime_types (info->lang);
+        modified = !string_list_equal (builtin, new);
 
         if (modified)
         {
-            string_list_free (old);
+            string_list_free (builtin);
         }
         else
         {
             string_list_free (new);
-            new = old;
+            new = builtin;
         }
     }
 
@@ -878,6 +890,10 @@ set_globs_or_mime_types (MooLangMgr *mgr,
         info->globs_modified = modified;
     else
         info->mime_types_modified = modified;
+
+out:
+    g_free (id);
+    string_list_free (old);
 }
 
 
@@ -926,6 +942,7 @@ _moo_lang_mgr_set_config (MooLangMgr *mgr,
                           const char *config)
 {
     char *norm = NULL;
+    const char *old;
 
     g_return_if_fail (MOO_IS_LANG_MGR (mgr));
 
@@ -941,6 +958,11 @@ _moo_lang_mgr_set_config (MooLangMgr *mgr,
             norm = NULL;
         }
     }
+
+    old = g_hash_table_lookup (mgr->config, _moo_lang_id_from_name (lang_id));
+
+    if (!_moo_str_equal (old, norm))
+        mgr->modified = TRUE;
 
     g_hash_table_insert (mgr->config, _moo_lang_id_from_name (lang_id), norm);
 }
@@ -1047,9 +1069,13 @@ _moo_lang_mgr_save_config (MooLangMgr *mgr)
 
     g_return_if_fail (MOO_IS_LANG_MGR (mgr));
 
-    xml = moo_prefs_get_markup ();
+    if (!mgr->modified)
+        return;
+
+    xml = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_if_fail (xml != NULL);
 
+    mgr->modified = FALSE;
     root = moo_markup_get_element (MOO_MARKUP_NODE (xml), ELEMENT_LANG_CONFIG);
 
     if (root)

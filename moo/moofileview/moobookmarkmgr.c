@@ -341,7 +341,7 @@ moo_bookmark_mgr_load (MooBookmarkMgr *mgr)
     MooMarkupDoc *xml;
     MooMarkupNode *root, *node;
 
-    xml = moo_prefs_get_markup ();
+    xml = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_if_fail (xml != NULL);
 
     root = moo_markup_get_element (MOO_MARKUP_NODE (xml), BOOKMARKS_ROOT);
@@ -407,7 +407,7 @@ moo_bookmark_mgr_save (MooBookmarkMgr *mgr)
     GtkTreeModel *model;
     GtkTreeIter iter;
 
-    xml = moo_prefs_get_markup ();
+    xml = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_if_fail (xml != NULL);
 
     model = GTK_TREE_MODEL (mgr->priv->store);

@@ -108,6 +108,7 @@ mooutils_sources =			\
 	moostock.c			\
 	moouixml.c			\
 	mooundo.c			\
+	mooutils-debug.h		\
 	mooutils-fs.h			\
 	mooutils-fs.c			\
 	mooutils-gobject-private.h	\

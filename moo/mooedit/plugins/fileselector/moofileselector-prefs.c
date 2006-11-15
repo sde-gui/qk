@@ -46,10 +46,11 @@ static void     helper_update_widgets   (MooGladeXML    *xml,
                                          GtkTreeModel   *model,
                                          GtkTreePath    *path,
                                          GtkTreeIter    *iter);
-static void     helper_update_model     (MooGladeXML    *xml,
+static void     helper_update_model     (MooTreeHelper  *helper,
                                          GtkTreeModel   *model,
                                          GtkTreePath    *path,
-                                         GtkTreeIter    *iter);
+                                         GtkTreeIter    *iter,
+                                         MooGladeXML    *xml);
 
 
 GtkWidget *
@@ -96,8 +97,8 @@ _moo_file_selector_prefs_page (MooPlugin *plugin)
     g_signal_connect (helper, "move-row", G_CALLBACK (helper_move_row), NULL);
     g_signal_connect_swapped (helper, "update-widgets",
                               G_CALLBACK (helper_update_widgets), xml);
-    g_signal_connect_swapped (helper, "update-model",
-                              G_CALLBACK (helper_update_model), xml);
+    g_signal_connect (helper, "update-model",
+                      G_CALLBACK (helper_update_model), xml);
     g_object_set_data_full (G_OBJECT (xml), "moo-tree-helper", helper, g_object_unref);
 
     g_object_set_data (G_OBJECT (xml), "moo-file-selector-plugin", plugin);
@@ -107,13 +108,19 @@ _moo_file_selector_prefs_page (MooPlugin *plugin)
 
 
 static void
-save_store (GtkTreeModel *model)
+save_store (MooTreeHelper *helper,
+            GtkTreeModel  *model)
 {
     MooMarkupDoc *doc;
     MooMarkupNode *root;
     GtkTreeIter iter;
 
-    doc = moo_prefs_get_markup ();
+    if (!_moo_tree_helper_get_modified (helper))
+        return;
+
+    _moo_tree_helper_set_modified (helper, FALSE);
+
+    doc = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_if_fail (doc != NULL);
 
     root = moo_markup_get_element (MOO_MARKUP_NODE (doc), "MooFileView/Tools");
@@ -195,7 +202,7 @@ prefs_page_apply (MooGladeXML *xml)
     MooTreeHelper *helper = g_object_get_data (G_OBJECT (xml), "moo-tree-helper");
 
     _moo_tree_helper_update_model (helper, NULL, NULL);
-    save_store (store);
+    save_store (helper, store);
     _moo_file_selector_update_tools (g_object_get_data (G_OBJECT (xml), "moo-file-selector-plugin"));
 }
 
@@ -208,7 +215,7 @@ populate_store (GtkListStore *store)
 
     gtk_list_store_clear (store);
 
-    doc = moo_prefs_get_markup ();
+    doc = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_if_fail (doc != NULL);
 
     root = moo_markup_get_element (MOO_MARKUP_NODE (doc), "MooFileView/Tools");
@@ -264,6 +271,7 @@ prefs_page_init (MooGladeXML *xml)
     populate_store (store);
     _moo_tree_view_select_first (GTK_TREE_VIEW (treeview));
     _moo_tree_helper_update_widgets (g_object_get_data (G_OBJECT (xml), "moo-tree-helper"));
+    _moo_tree_helper_set_modified (g_object_get_data (G_OBJECT (xml), "moo-tree-helper"), FALSE);
 }
 
 
@@ -368,10 +376,11 @@ helper_update_widgets (MooGladeXML    *xml,
 
 
 static void
-helper_update_model (MooGladeXML    *xml,
-                     GtkTreeModel   *model,
+helper_update_model (MooTreeHelper  *helper,
+                     G_GNUC_UNUSED GtkTreeModel *model,
                      G_GNUC_UNUSED GtkTreePath *path,
-                     GtkTreeIter    *iter)
+                     GtkTreeIter    *iter,
+                     MooGladeXML    *xml)
 {
     const char *label, *command, *extensions, *mimetypes;
 
@@ -380,9 +389,10 @@ helper_update_model (MooGladeXML    *xml,
     extensions = gtk_entry_get_text (moo_glade_xml_get_widget (xml, "extensions"));
     mimetypes = gtk_entry_get_text (moo_glade_xml_get_widget (xml, "mimetypes"));
 
-    gtk_list_store_set (GTK_LIST_STORE (model), iter,
-                        COLUMN_LABEL, label,
-                        COLUMN_COMMAND, command,
-                        COLUMN_EXTENSIONS, extensions,
-                        COLUMN_MIMETYPES, mimetypes, -1);
+    _moo_tree_helper_set (helper, iter,
+                          COLUMN_LABEL, label[0] ? label : NULL,
+                          COLUMN_COMMAND, command[0] ? command : NULL,
+                          COLUMN_EXTENSIONS, extensions[0] ? extensions : NULL,
+                          COLUMN_MIMETYPES, mimetypes[0] ? mimetypes : NULL,
+                          -1);
 }

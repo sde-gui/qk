@@ -121,7 +121,7 @@ filter_settings_store_load (FilterSettingsStore *store)
 
     g_return_if_fail (!store->settings);
 
-    xml = moo_prefs_get_markup ();
+    xml = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_if_fail (xml != NULL);
 
     root = moo_markup_get_element (MOO_MARKUP_NODE (xml),
@@ -242,7 +242,7 @@ _moo_edit_filter_settings_set_strings (GSList *list)
     MooMarkupDoc *xml;
     MooMarkupNode *root;
 
-    xml = moo_prefs_get_markup ();
+    xml = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_if_fail (xml != NULL);
 
     root = moo_markup_get_element (MOO_MARKUP_NODE (xml),

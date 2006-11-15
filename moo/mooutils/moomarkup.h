@@ -85,6 +85,8 @@ struct _MooMarkupDoc {
     MooMarkupNode           *prev;      /* NULL */
     MooMarkupDoc            *doc;       /* self */
     guint                    ref_count;
+    guint                    modified : 1;
+    guint                    track_modified : 1;
 };
 
 
@@ -198,6 +200,12 @@ MooMarkupNode      *moo_markup_create_file_element  (MooMarkupNode      *parent,
                                                      const char         *path,
                                                      const char         *filename);
 char               *moo_markup_get_file_content     (MooMarkupNode      *node);
+
+void                _moo_markup_set_modified        (MooMarkupDoc       *doc,
+                                                     gboolean            modified);
+void                _moo_markup_set_track_modified  (MooMarkupDoc       *doc,
+                                                     gboolean            track);
+gboolean            _moo_markup_get_modified        (MooMarkupDoc       *doc);
 
 
 G_END_DECLS

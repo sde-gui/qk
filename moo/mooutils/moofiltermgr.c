@@ -62,6 +62,7 @@ struct _MooFilterMgrPrivate {
     GHashTable  *named_stores;  /* user_id -> FilterStore* */
     GHashTable  *filters;       /* glob -> Filter* */
     gboolean     loaded;
+    gboolean     changed;
     guint        save_idle_id;
 };
 
@@ -339,6 +340,7 @@ mgr_set_last_filter (MooFilterMgr   *mgr,
 
     store = mgr_get_store (mgr, user_id, TRUE);
     store->last_filter = filter;
+    mgr->priv->changed = TRUE;
 
     mgr_save (mgr);
 }
@@ -423,6 +425,7 @@ mgr_new_filter (MooFilterMgr   *mgr,
         g_return_val_if_fail (filter != NULL, NULL);
         g_hash_table_insert (mgr->priv->filters,
                              g_strdup (glob), filter);
+        mgr->priv->changed = TRUE;
     }
 
     return filter;
@@ -978,10 +981,11 @@ mgr_load (MooFilterMgr *mgr)
 
     if (mgr->priv->loaded)
         return;
-    else
-        mgr->priv->loaded = TRUE;
 
-    xml = moo_prefs_get_markup ();
+    mgr->priv->loaded = TRUE;
+    mgr->priv->changed = FALSE;
+
+    xml = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_if_fail (xml != NULL);
 
     root = moo_markup_get_element (MOO_MARKUP_NODE (xml), FILTERS_ROOT);
@@ -1015,6 +1019,8 @@ mgr_load (MooFilterMgr *mgr)
             g_warning ("%s: invalid '%s' element", G_STRLOC, elm->name);
         }
     }
+
+    mgr->priv->changed = FALSE;
 }
 
 
@@ -1067,7 +1073,10 @@ mgr_do_save (MooFilterMgr *mgr)
 
     mgr->priv->save_idle_id = 0;
 
-    xml = moo_prefs_get_markup ();
+    if (!mgr->priv->changed)
+        return FALSE;
+
+    xml = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_val_if_fail (xml != NULL, FALSE);
 
     root = moo_markup_get_element (MOO_MARKUP_NODE (xml), FILTERS_ROOT);
@@ -1110,13 +1119,16 @@ mgr_do_save (MooFilterMgr *mgr)
         }
     }
 
+    mgr->priv->changed = FALSE;
+
     g_slist_foreach (user_ids, (GFunc) g_free, NULL);
     g_slist_free (user_ids);
     return FALSE;
 }
 
 
-static void          mgr_save                   (MooFilterMgr   *mgr)
+static void
+mgr_save (MooFilterMgr *mgr)
 {
     if (!mgr->priv->save_idle_id)
         mgr->priv->save_idle_id = g_idle_add ((GSourceFunc) mgr_do_save, mgr);

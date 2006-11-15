@@ -69,6 +69,9 @@
   (of-object "MooApp")
   (c-name "moo_app_get_rc_file_name")
   (return-type "const-char*")
+  (parameters
+    '("MooPrefsType" "prefs_type" (default "MOO_PREFS_RC"))
+  )
 )
 
 (define-method get_input_pipe_name

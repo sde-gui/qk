@@ -12,7 +12,11 @@
  */
 
 #include "mooutils/mooutils-treeview.h"
+#include "mooutils/mooutils-gobject.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/mooutils-debug.h"
+#include <string.h>
+#include <gobject/gvaluecollector.h>
 
 
 typedef enum {
@@ -371,6 +375,31 @@ _moo_tree_helper_class_init (MooTreeHelperClass *klass)
 
 
 void
+_moo_tree_helper_set_modified (MooTreeHelper *helper,
+                               gboolean       modified)
+{
+    g_return_if_fail (MOO_IS_TREE_HELPER (helper));
+
+#ifdef MOO_DEBUG
+    if (!helper->modified && modified)
+    {
+        g_message ("%s: helper modified", G_STRLOC);
+    }
+#endif
+
+    helper->modified = modified != 0;
+}
+
+
+gboolean
+_moo_tree_helper_get_modified (MooTreeHelper *helper)
+{
+    g_return_val_if_fail (MOO_IS_TREE_HELPER (helper), FALSE);
+    return helper->modified;
+}
+
+
+void
 _moo_tree_view_select_first (GtkTreeView *tree_view)
 {
     GtkTreeSelection *selection;
@@ -554,7 +583,10 @@ moo_tree_helper_new_row (MooTreeHelper *helper)
     g_signal_emit (helper, tree_signals[NEW_ROW], 0, model, path, &result);
 
     if (result && gtk_tree_model_get_iter (model, &iter, path))
+    {
         gtk_tree_selection_select_iter (selection, &iter);
+        helper->modified = TRUE;
+    }
 
     gtk_tree_path_free (path);
 }
@@ -579,6 +611,9 @@ moo_tree_helper_delete_row (MooTreeHelper *helper)
     path = gtk_tree_model_get_path (model, &iter);
 
     g_signal_emit (helper, tree_signals[DELETE_ROW], 0, model, path, &result);
+
+    if (result)
+        helper->modified = TRUE;
 
     if (result && (gtk_tree_model_get_iter (model, &iter, path) ||
                    (gtk_tree_path_prev (path) && gtk_tree_model_get_iter (model, &iter, path))))
@@ -618,7 +653,10 @@ moo_tree_helper_row_move (MooTreeHelper *helper,
     g_signal_emit (helper, tree_signals[MOVE_ROW], 0, model, path, new_path, &result);
 
     if (result)
+    {
+        helper->modified = TRUE;
         moo_tree_helper_real_update_widgets (helper, model, new_path);
+    }
 
     gtk_tree_path_free (new_path);
     gtk_tree_path_free (path);
@@ -748,4 +786,98 @@ _moo_tree_helper_update_widgets (MooTreeHelper *helper)
     {
         moo_tree_helper_real_update_widgets (MOO_TREE_HELPER (helper), NULL, NULL);
     }
+}
+
+
+static gboolean
+set_value (GtkTreeModel  *model,
+           GtkTreeIter   *iter,
+           int            column,
+           GValue        *value)
+{
+    GValue old_value;
+    gboolean modified;
+
+    old_value.g_type = 0;
+    gtk_tree_model_get_value (model, iter, column, &old_value);
+
+    modified = !_moo_value_equal (value, &old_value);
+
+    if (GTK_IS_TREE_STORE (model))
+        gtk_tree_store_set_value (GTK_TREE_STORE (model), iter, column, value);
+    else if (GTK_IS_LIST_STORE (model))
+        gtk_list_store_set_value (GTK_LIST_STORE (model), iter, column, value);
+
+    g_value_unset (&old_value);
+    return modified;
+}
+
+static gboolean
+moo_tree_helper_set_valist (MooTreeHelper *helper,
+                            GtkTreeModel  *model,
+                            GtkTreeIter   *iter,
+                            va_list	   var_args)
+{
+    int column;
+    int n_columns;
+    gboolean modified = FALSE;
+
+    n_columns = gtk_tree_model_get_n_columns (model);
+    column = va_arg (var_args, gint);
+
+    while (column >= 0)
+    {
+        GType type;
+        GValue value;
+        char *error = NULL;
+
+        value.g_type = 0;
+
+        if (column >= n_columns)
+        {
+            g_warning ("%s: invalid column number %d", G_STRLOC, column);
+            break;
+        }
+
+        type = gtk_tree_model_get_column_type (model, column);
+        g_value_init (&value, type);
+
+        G_VALUE_COLLECT (&value, var_args, 0, &error);
+
+        if (error)
+        {
+            g_warning ("%s: %s", G_STRLOC, error);
+            g_free (error);
+            break;
+        }
+
+        modified = set_value (model, iter, column, &value) || modified;
+
+        g_value_unset (&value);
+        column = va_arg (var_args, gint);
+    }
+
+    helper->modified = helper->modified || modified;
+    return modified;
+}
+
+gboolean
+_moo_tree_helper_set (MooTreeHelper *helper,
+                      GtkTreeIter   *iter,
+                      ...)
+{
+      va_list args;
+      GtkTreeModel *model;
+      gboolean ret;
+
+      g_return_val_if_fail (MOO_IS_TREE_HELPER (helper), FALSE);
+
+      model = moo_tree_helper_get_model (helper);
+      g_return_val_if_fail (GTK_IS_TREE_STORE (model) || GTK_IS_LIST_STORE (model), FALSE);
+
+      va_start (args, iter);
+      ret = moo_tree_helper_set_valist (helper, model, iter, args);
+      va_end (args);
+
+      return ret;
 }

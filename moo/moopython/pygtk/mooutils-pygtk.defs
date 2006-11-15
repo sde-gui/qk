@@ -83,13 +83,6 @@
   )
 )
 
-(define-object Prefs
-  (in-module "Moo")
-  (parent "GObject")
-  (c-name "MooPrefs")
-  (gtype-id "MOO_TYPE_PREFS")
-)
-
 (define-object PrefsDialog
   (in-module "Moo")
   (parent "GtkDialog")
@@ -285,6 +278,12 @@
   (in-module "Moo")
   (c-name "MooPrefsMatchType")
   (gtype-id "MOO_TYPE_PREFS_MATCH_TYPE")
+)
+
+(define-enum PrefsType
+  (in-module "Moo")
+  (c-name "MooPrefsType")
+  (gtype-id "MOO_TYPE_PREFS_TYPE")
 )
 
 (define-enum DataDirType
@@ -2351,7 +2350,8 @@
   (c-name "moo_prefs_load")
   (return-type "gboolean")
   (parameters
-    '("const-char*" "file")
+    '("const-char*" "file_rc")
+    '("const-char*" "file_state")
     '("GError**" "error")
   )
 )
@@ -2360,7 +2360,8 @@
   (c-name "moo_prefs_save")
   (return-type "gboolean")
   (parameters
-    '("const-char*" "file")
+    '("const-char*" "file_rc")
+    '("const-char*" "file_state")
     '("GError**" "error")
   )
 )
@@ -2368,6 +2369,9 @@
 (define-function prefs_get_markup
   (c-name "moo_prefs_get_markup")
   (return-type "MooMarkupDoc*")
+  (parameters
+    '("MooPrefsType" "prefs_type")
+  )
 )
 
 (define-function prefs_new_key
@@ -2377,6 +2381,7 @@
     '("const-char*" "key")
     '("GType" "value_type")
     '("const-GValue*" "default_value")
+    '("MooPrefsType" "prefs_type")
   )
 )
 

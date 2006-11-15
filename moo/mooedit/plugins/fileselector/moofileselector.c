@@ -1342,7 +1342,7 @@ file_selector_plugin_init (Plugin *plugin)
                              "ShowFileSelector", -1);
     }
 
-    moo_prefs_new_key_string (DIR_PREFS, NULL);
+    _moo_prefs_new_key_string_state (DIR_PREFS, NULL);
 
     g_type_class_unref (klass);
     return TRUE;

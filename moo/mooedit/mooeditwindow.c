@@ -2189,7 +2189,7 @@ create_paned (MooEditWindow *window)
         char *key = g_strdup_printf (MOO_EDIT_PREFS_PREFIX "/window/panes/%s",
                                      PANE_POSITIONS[i]);
 
-        moo_prefs_new_key_int (key, -1);
+        _moo_prefs_new_key_int_state (key, -1);
         size = moo_prefs_get_int (key);
 
         if (size > 0)
@@ -2304,7 +2304,7 @@ get_pane_element (const char *pane_id,
     MooMarkupDoc *xml;
     MooMarkupNode *root, *node;
 
-    xml = moo_prefs_get_markup ();
+    xml = moo_prefs_get_markup (MOO_PREFS_STATE);
 
     root = moo_markup_get_element (MOO_MARKUP_NODE (xml), PANE_PREFS_ROOT);
 

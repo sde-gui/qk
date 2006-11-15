@@ -838,7 +838,7 @@ _moo_history_list_load (MooHistoryList *list)
     else
         list->priv->prefs_loaded = TRUE;
 
-    xml = moo_prefs_get_markup ();
+    xml = moo_prefs_get_markup (MOO_PREFS_STATE);
     g_return_if_fail (xml != NULL);
 
     root_path = g_strdup_printf ("%s/" ELEMENT_RECENT_ITEMS, list->priv->user_id);
@@ -911,7 +911,7 @@ list_save_recent (MooHistoryList *list)
     if (list->priv->loading)
         return;
 
-    xml = moo_prefs_get_markup ();
+    xml = moo_prefs_get_markup (MOO_PREFS_STATE);
     g_return_if_fail (xml != NULL);
 
     root_path = g_strdup_printf ("%s/" ELEMENT_RECENT_ITEMS, list->priv->user_id);
