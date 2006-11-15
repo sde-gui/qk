@@ -62,9 +62,13 @@ class WinPlugin(moo.edit.WinPlugin):
         self.window.remove_pane(TERMINAL_PLUGIN_ID)
 
 
+__plugin__ = None
+
 if os.name == 'posix':
-    gobject.type_register(Plugin)
-    gobject.type_register(WinPlugin)
-    __plugin__ = Plugin
-else:
-    __plugin__ = None
+    try:
+        import moo.term
+        gobject.type_register(Plugin)
+        gobject.type_register(WinPlugin)
+        __plugin__ = Plugin
+    except ImportError:
+        pass
