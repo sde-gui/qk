@@ -882,6 +882,10 @@ moo_app_send_files (MooApp     *app,
 
     g_return_val_if_fail (MOO_IS_APP (app), FALSE);
 
+    _moo_message ("moo_app_send_files: got %d files to pid %s",
+                  files ? g_strv_length (files) : 0,
+                  pid ? pid : "NONE");
+
     msg = g_string_new (NULL);
 
     g_string_append_printf (msg, "%s%08x%08x", CMD_OPEN_URIS, stamp, line);

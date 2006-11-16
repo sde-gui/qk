@@ -561,6 +561,7 @@ try_send (const char *tmpdir_name,
     GIOStatus status;
     gboolean result = FALSE;
     char *endptr;
+    GError *error = NULL;
 
     if (!pid_string[0])
         goto out;
@@ -575,37 +576,58 @@ try_send (const char *tmpdir_name,
     }
 
     filename = g_strdup_printf ("%s/%s%s", tmpdir_name, prefix, pid_string);
+    _moo_message ("try_send: sending data to pid %s, filename %s", pid_string, filename);
 
     if (!g_file_test (filename, G_FILE_TEST_EXISTS))
+    {
+        _moo_message ("try_send: file %s doesn't exist", filename);
         goto out;
+    }
 
     if (kill (pid, 0) != 0)
     {
+        _moo_message ("try_send: no process with pid %d", pid);
         unlink (filename);
         goto out;
     }
 
-    chan = g_io_channel_new_file (filename, "w", NULL);
+    chan = g_io_channel_new_file (filename, "w", &error);
 
     if (!chan)
+    {
+        _moo_message ("try_send: could not open %s for writing: %s",
+                      filename, error ? error->message : "<?>");
+        g_error_free (error);
         goto out;
+    }
 
     g_io_channel_set_encoding (chan, NULL, NULL);
-    status = g_io_channel_set_flags (chan, G_IO_FLAG_NONBLOCK, NULL);
+    status = g_io_channel_set_flags (chan, G_IO_FLAG_NONBLOCK, &error);
 
     if (status != G_IO_STATUS_NORMAL)
+    {
+        _moo_message ("try_send: could not set NONBLOCK flag: %s",
+                      error ? error->message : "<?>");
         goto out;
+    }
 
-    status = g_io_channel_write_chars (chan, data, data_len, NULL, NULL);
+    status = g_io_channel_write_chars (chan, data, data_len, NULL, &error);
 
     if (status != G_IO_STATUS_NORMAL)
+    {
+        _moo_message ("try_send: error writing to pipe: %s",
+                      error ? error->message : "<?>");
         goto out;
+    }
 
     result = TRUE;
+    _moo_message ("try_send: successfully sent stuff to pid %s", pid_string);
 
 out:
     if (chan)
         g_io_channel_unref (chan);
+    if (error)
+        g_error_free (error);
     g_free (filename);
     return result;
 }
@@ -624,6 +646,8 @@ _moo_app_input_send_msg (const char     *pipe_basename,
 
     g_return_val_if_fail (pipe_basename != NULL, FALSE);
     g_return_val_if_fail (data != NULL, FALSE);
+
+    _moo_message ("_moo_app_input_send_msg: sending data to pid %s", pid ? pid : "NONE");
 
     prefix = get_prefix (pipe_basename);
     g_return_val_if_fail (prefix != NULL, FALSE);
