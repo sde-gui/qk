@@ -193,7 +193,7 @@ moo_print_header_footer_copy (MooPrintHeaderFooter *hf)
     int i;
     MooPrintHeaderFooter *copy;
 
-    g_return_val_if_fail (copy != NULL, NULL);
+    g_return_val_if_fail (hf != NULL, NULL);
 
     copy = moo_print_header_footer_new ();
     copy->separator = hf->separator;
@@ -1209,6 +1209,7 @@ moo_print_operation_draw_page (GtkPrintOperation *operation,
                      op->priv->page.y,
                      op->priv->page.width,
                      op->priv->page.height);
+    cairo_stroke (cr);
     cairo_set_source_rgb (cr, 0., 1., 0.);
     cairo_rectangle (cr, 0, 0,
                      gtk_print_context_get_width (context),
@@ -1270,7 +1271,7 @@ update_progress (GtkPrintOperation *operation,
     {
         int n_pages;
         g_object_get (op, "n-pages", &n_pages, NULL);
-        text = g_strdup_printf ("Printing page %d of %d", page, n_pages);
+        text = g_strdup_printf ("Printing page %d of %d", page + 1, n_pages);
     }
     else
     {
