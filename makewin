@@ -11,9 +11,10 @@ strip = "i586-mingw32msvc-strip"
 do_strip = True
 bin_only = False
 installer = None
+data_dirs = []
 
 def usage():
-    print "Usage:", sys.argv[0], "[--no-strip] [--bin-only] [build_dir] [gtk-runtime]"
+    print "Usage:", sys.argv[0], "[--no-strip] [--bin-only] [build_dir] [additional_dir1] ..."
     sys.exit(2)
 
 try:
@@ -26,16 +27,12 @@ for o, a in opts:
         do_strip = False
     if o == "--bin-only":
         bin_only = True
-if args[2:]:
-    usage()
 if args:
     moo_builddir = os.path.abspath(args[0])
 else:
     moo_builddir = builddir
 if args[1:]:
-    runtime = os.path.abspath(args[1])
-else:
-    runtime = None
+    data_dirs = [os.path.abspath(d) for d in args[1:]]
 
 installdir = dir + "/inst_"
 
@@ -55,8 +52,9 @@ def do_cmd(cmd):
         raise Error(status)
 
 def copy_files():
-    if runtime is not None:
-        do_cmd("cp -r %s/* %s/" % (runtime, moo_windir))
+    if data_dirs:
+        for d in data_dirs:
+            do_cmd("cp -r %s/* %s/" % (d, moo_windir))
 
     do_cmd("mkdir -p %s/bin" % (moo_windir,))
     do_cmd("cp -r %s/usr/local/bin/medit.exe %s/bin/" % (installdir, moo_windir))
