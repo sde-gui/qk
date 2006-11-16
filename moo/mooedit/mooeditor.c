@@ -614,6 +614,12 @@ get_top_window (MooEditor *editor)
     list = g_slist_reverse (list);
     window = _moo_get_top_window (list);
 
+    if (!window)
+    {
+        WindowInfo *info = editor->priv->windows->data;
+        window = GTK_WINDOW (info->window);
+    }
+
     g_slist_free (list);
     return MOO_EDIT_WINDOW (window);
 }
