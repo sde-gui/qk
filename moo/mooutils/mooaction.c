@@ -151,6 +151,9 @@ moo_action_activate (GtkAction *gtkaction)
 {
     MooAction *action = MOO_ACTION (gtkaction);
 
+    if (GTK_ACTION_CLASS (moo_action_parent_class)->activate)
+        GTK_ACTION_CLASS (moo_action_parent_class)->activate (gtkaction);
+
     if (action->priv->closure)
         moo_closure_invoke (action->priv->closure);
 }
@@ -351,6 +354,9 @@ static void
 moo_toggle_action_toggled (GtkToggleAction *gtkaction)
 {
     MooToggleAction *action = MOO_TOGGLE_ACTION (gtkaction);
+
+    if (GTK_TOGGLE_ACTION_CLASS (moo_toggle_action_parent_class)->toggled)
+        GTK_TOGGLE_ACTION_CLASS (moo_toggle_action_parent_class)->toggled (gtkaction);
 
     if (action->priv->callback)
     {
