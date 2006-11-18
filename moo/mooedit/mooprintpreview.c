@@ -21,12 +21,20 @@
 #include "mooedit/mooprintpreview-glade.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
-#include <cairo/cairo-pdf.h>
+#include <cairo-pdf.h>
 
 #ifdef __WIN32__
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <cairo/cairo-win32.h>
+#include <cairo-win32.h>
+#endif
+
+#ifdef __WIN32__
+#define PRINTER_DPI (1200.)
+#define PRINTER_SCALE (72. / PRINTER_DPI)
+#else
+#define PRINTER_DPI (72.)
+#define PRINTER_SCALE (1.)
 #endif
 
 struct _MooPrintPreviewPrivate {
@@ -154,13 +162,7 @@ create_preview_surface_platform (GtkPaperSize *paper_size,
     width = gtk_paper_size_get_width (paper_size, GTK_UNIT_POINTS);
     height = gtk_paper_size_get_height (paper_size, GTK_UNIT_POINTS);
 
-#ifdef __WIN32__
-    *dpi_x = GetDeviceCaps (pango_win32_get_dc (), LOGPIXELSX);
-    *dpi_y = GetDeviceCaps (pango_win32_get_dc (), LOGPIXELSY);
-    g_print ("pango dpi: %f, %f\n", *dpi_x, *dpi_y);
-#else
-    *dpi_x = *dpi_y = 72.;
-#endif
+    *dpi_x = *dpi_y = PRINTER_DPI;
 
     sf = cairo_pdf_surface_create_for_stream (dummy_write_func, NULL,
                                               width, height);
@@ -413,8 +415,13 @@ get_pdf (MooPrintPreview *preview)
         g_return_val_if_fail (ps != NULL, NULL);
 
         cr = cairo_create (ps);
+
+        if (PRINTER_SCALE != 1.)
+            cairo_scale (cr, PRINTER_SCALE, PRINTER_SCALE);
+
         gtk_print_context_set_cairo_context (preview->priv->context, cr, dpi_x, dpi_y);
         gtk_print_operation_preview_render_page (preview->priv->gtk_preview, current_page);
+
         cairo_destroy (cr);
 
         pages->pdata[current_page] = ps;

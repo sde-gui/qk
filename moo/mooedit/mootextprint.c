@@ -30,7 +30,7 @@
 
 #ifdef __WIN32__
 #include <windows.h>
-#include <cairo/cairo-win32.h>
+#include <cairo-win32.h>
 #endif
 
 #define PREFS_FONT                      MOO_EDIT_PREFS_PREFIX "/print/font"
