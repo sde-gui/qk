@@ -22,11 +22,16 @@
 #include "mooutils/mooglade.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/mooutils-misc.h"
 #include <sys/types.h>
 #include <time.h>
 #include <errno.h>
 #include <string.h>
 
+#ifdef __WIN32__
+#include <windows.h>
+#include <cairo/cairo-win32.h>
+#endif
 
 #define PREFS_FONT                      MOO_EDIT_PREFS_PREFIX "/print/font"
 #define PREFS_USE_STYLES                MOO_EDIT_PREFS_PREFIX "/print/use_styles"
@@ -85,15 +90,6 @@ G_STMT_START {                                      \
 } G_STMT_END
 
 #define GET_OPTION(op, opt) (((op)->priv->settings->flags & (opt)) != 0)
-
-#if 1
-#define DEBUG_PRINT g_print
-#else
-static void
-DEBUG_PRINT (G_GNUC_UNUSED const char *format, ...)
-{
-}
-#endif
 
 
 typedef struct _HFFormat HFFormat;
@@ -335,7 +331,7 @@ moo_print_operation_finalize (GObject *object)
     g_free (op->priv->tm);
     g_free (op->priv);
 
-    DEBUG_PRINT ("moo_print_operation_finalize\n");
+    _moo_message ("moo_print_operation_finalize\n");
 
     G_OBJECT_CLASS(_moo_print_operation_parent_class)->finalize (object);
 }
@@ -448,7 +444,7 @@ _moo_print_operation_init (MooPrintOperation *op)
 
     load_default_settings ();
 
-    DEBUG_PRINT ("_moo_print_operation_init\n");
+    _moo_message ("_moo_print_operation_init\n");
 
     gtk_print_operation_set_print_settings (GTK_PRINT_OPERATION (op),
                                             print_settings);
@@ -540,7 +536,7 @@ _moo_edit_page_setup (GtkWidget *parent)
 
     g_return_if_fail (!parent || GTK_IS_WIDGET (parent));
 
-    DEBUG_PRINT ("_moo_edit_page_setup\n");
+    _moo_message ("_moo_edit_page_setup\n");
 
     load_default_settings ();
 
@@ -666,7 +662,10 @@ moo_print_operation_paginate (MooPrintOperation *op)
     double page_height;
     gboolean use_styles;
 
-    DEBUG_PRINT ("moo_print_operation_paginate\n");
+    _moo_message ("moo_print_operation_paginate\n");
+
+    if (op->priv->pages)
+        g_array_free (op->priv->pages, TRUE);
 
     op->priv->pages = g_array_new (FALSE, FALSE, sizeof (GtkTextIter));
     gtk_text_buffer_get_iter_at_line (op->priv->buffer, &iter,
@@ -754,7 +753,7 @@ moo_print_operation_paginate (MooPrintOperation *op)
 
     gtk_print_operation_set_n_pages (GTK_PRINT_OPERATION (op), op->priv->pages->len);
 
-    DEBUG_PRINT ("moo_print_operation_paginate done\n");
+    _moo_message ("moo_print_operation_paginate done\n");
 }
 
 
@@ -774,7 +773,7 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
     g_return_if_fail (op->priv->first_line < gtk_text_buffer_get_line_count (op->priv->buffer));
     g_return_if_fail (op->priv->last_line < gtk_text_buffer_get_line_count (op->priv->buffer));
 
-    DEBUG_PRINT ("moo_print_operation_begin_print\n");
+    _moo_message ("moo_print_operation_begin_print\n");
 
     moo_print_operation_load_prefs (op);
     settings = op->priv->settings;
@@ -817,6 +816,10 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
     }
 
     moo_print_operation_calc_page_size (op, context, font);
+
+    if (op->priv->layout)
+        g_object_unref (op->priv->layout);
+
     op->priv->layout = gtk_print_context_create_pango_layout (context);
 
     if (GET_OPTION (op, MOO_PRINT_WRAP))
@@ -836,10 +839,18 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
         pango_font_description_free (font);
     }
 
+#ifdef MOO_DEBUG
+    {
+        PangoContext *pctx = gtk_print_context_create_pango_context (context);
+        g_message ("pango context resolution: %f\n", pango_cairo_context_get_resolution (pctx));
+        g_object_unref (pctx);
+    }
+#endif
+
     moo_print_operation_paginate (op);
 
-    DEBUG_PRINT ("begin_print: %d pages in %f s\n", op->priv->pages->len,
-                 g_timer_elapsed (timer, NULL));
+    _moo_message ("begin_print: %d pages in %f s\n", op->priv->pages->len,
+                  g_timer_elapsed (timer, NULL));
     g_timer_destroy (timer);
 
     if (!op->priv->tm)
@@ -866,7 +877,7 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
     if (op->priv->preview)
         _moo_print_preview_start (op->priv->preview);
 
-    DEBUG_PRINT ("moo_print_operation_begin_print done\n");
+    _moo_message ("moo_print_operation_begin_print done\n");
 }
 
 
@@ -1007,7 +1018,7 @@ fill_layout (MooPrintOperation *op,
     segm_start = *start;
     start_index = gtk_text_iter_get_line_index (start);
 #if 0
-    DEBUG_PRINT ("line %d, start at %d\n", gtk_text_iter_get_line (start), start_index);
+    _moo_message ("line %d, start at %d\n", gtk_text_iter_get_line (start), start_index);
 #endif
 
     while (gtk_text_iter_compare (&segm_start, end) < 0)
@@ -1129,7 +1140,7 @@ print_page (MooPrintOperation *op,
     GtkTextIter line_start, line_end;
     double offset;
 
-    DEBUG_PRINT ("print_page %d\n", page);
+    _moo_message ("print_page %d\n", page);
 
     cairo_set_source_rgb (cr, 0., 0., 0.);
 
@@ -1170,7 +1181,7 @@ print_page (MooPrintOperation *op,
         gtk_text_iter_forward_line (&line_start);
     }
 
-    DEBUG_PRINT ("print_page done\n");
+    _moo_message ("print_page done\n");
 }
 
 
@@ -1189,7 +1200,6 @@ moo_print_operation_draw_page (GtkPrintOperation *operation,
     g_return_if_fail (op->priv->layout != NULL);
     g_return_if_fail (page < (int) op->priv->pages->len);
 
-    timer = g_timer_new ();
     update_progress (operation, page);
 
     cr = gtk_print_context_get_cairo_context (context);
@@ -1201,7 +1211,17 @@ moo_print_operation_draw_page (GtkPrintOperation *operation,
     else
         gtk_text_buffer_get_end_iter (op->priv->buffer, &end);
 
-#ifdef MOO_DEBUG
+#ifdef __WIN32__
+    if (page == 0)
+    {
+        HDC dc = cairo_win32_surface_get_dc (cairo_get_target (cr));
+        int dpi_x = GetDeviceCaps (dc, LOGPIXELSX);
+        int dpi_y = GetDeviceCaps (dc, LOGPIXELSY);
+        g_print ("dpi: %d, %d\n", dpi_x, dpi_y);
+    }
+#endif
+
+#if defined(MOO_DEBUG) && !defined(__WIN32__)
     cairo_set_line_width (cr, 1.);
     cairo_set_source_rgb (cr, 1., 0., 0.);
     cairo_rectangle (cr,
@@ -1217,9 +1237,16 @@ moo_print_operation_draw_page (GtkPrintOperation *operation,
     cairo_stroke (cr);
 #endif
 
+    timer = g_timer_new ();
+
+    pango_cairo_update_layout (cr, op->priv->layout);
+    if (op->priv->settings->header->layout)
+        pango_cairo_update_layout (cr, op->priv->settings->header->layout);
+    if (op->priv->settings->footer->layout)
+        pango_cairo_update_layout (cr, op->priv->settings->footer->layout);
     print_page (op, &start, &end, page, cr);
 
-    DEBUG_PRINT ("page %d: %f s\n", page, g_timer_elapsed (timer, NULL));
+    _moo_message ("page %d: %f s\n", page, g_timer_elapsed (timer, NULL));
     g_timer_destroy (timer);
 }
 
@@ -1232,7 +1259,7 @@ moo_print_operation_end_print (GtkPrintOperation  *operation,
 
     g_return_if_fail (op->priv->buffer != NULL);
 
-    DEBUG_PRINT ("moo_print_operation_end_print\n");
+    _moo_message ("moo_print_operation_end_print\n");
 
     if (MOO_IS_EDIT (op->priv->doc))
         _moo_edit_set_state (MOO_EDIT (op->priv->doc),
@@ -1661,13 +1688,13 @@ moo_print_operation_preview (GtkPrintOperation        *op,
 {
     GtkWidget *dialog;
 
-    DEBUG_PRINT ("moo_print_operation_preview\n");
+    _moo_message ("moo_print_operation_preview\n");
 
     dialog = _moo_print_preview_new (MOO_PRINT_OPERATION (op), preview, context);
     gtk_widget_show (dialog);
     g_signal_connect_swapped (dialog, "response", G_CALLBACK (preview_response), op);
 
-    DEBUG_PRINT ("moo_print_operation_preview done\n");
+    _moo_message ("moo_print_operation_preview done\n");
 
     return TRUE;
 }
