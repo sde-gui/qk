@@ -79,7 +79,7 @@ show_credits (void)
 #else
     /* XXX */
     {
-        buffer = gtk_text_view_get_buffer (written_by);
+        buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (written_by));
         gtk_text_buffer_insert_at_cursor (buffer,
                                           "Yevgen Muntyan <muntyan@tamu.edu>", -1);
     }
