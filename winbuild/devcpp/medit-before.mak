@@ -4,12 +4,12 @@ XML2H = $(MOO)/mooutils/xml2h.py
 
 mooutils = $(MOO)/mooutils
 mooutils_srcdir = $(MOO)/mooutils
+moofileview = $(MOO)/moofileview
+moofileview_srcdir = $(MOO)/moofileview
 mooedit = $(MOO)/mooedit
 mooedit_srcdir = $(MOO)/mooedit
 tests = ../../tests
 tests_w = ..\..\tests
-moofileview = $(mooutils)/moofileview
-moofileview_srcdir = $(moofileview)
 mooedit_plugins = $(mooedit)/plugins
 mooedit_plugins_srcdir = $(mooedit_plugins)
 astrings = $(mooedit_plugins)/activestrings
@@ -19,6 +19,7 @@ fileselector_srcdir = $(fileselector)
 
 GENERATED =                                 \
     config.h                                \
+    THANKS.h                                \
     $(mooutils)/moomarshals.h               \
     $(mooutils)/moomarshals.c               \
     $(tests)/medit-ui.h                     \
@@ -34,6 +35,9 @@ GENERATED =                                 \
     $(mooedit)/mooprint-glade.h             \
     $(mooedit)/mooeditprefs-glade.h         \
     $(mooedit)/mooeditsavemultiple-glade.h  \
+    $(mooedit)/mooeditprogress-glade.h      \
+    $(mooedit)/mooedittools-glade.h         \
+    $(mooedit)/mooprintpreview-glade.h      \
     $(mooutils)/stock-moo.h                 \
     $(moofileview)/moofileview-ui.h         \
     $(moofileview)/moofileprops-glade.h     \
@@ -49,6 +53,9 @@ all-before: $(GENERATED)
 
 LINKOBJ = *.o $(RES)
 
+THANKS.h: ../../THANKS $(XML2H)
+	python $(XML2H) THANKS ../../THANKS > THANKS.h
+	   
 ##############################################################
 # Marshalers
 #
@@ -57,7 +64,6 @@ $(MOO)/mooutils/moomarshals.h: $(MOO)/mooutils/moomarshals.list
 
 $(MOO)/mooutils/moomarshals.c: $(MOO)/mooutils/moomarshals.list
 	glib-genmarshal --prefix=_moo_marshal --body $(MOO)/mooutils/moomarshals.list > $(MOO)/mooutils/moomarshals.c
-
 
 ##############################################################
 # config.h
@@ -69,12 +75,12 @@ config.h: ../../config.h.win32
 ##############################################################
 # glade files
 #
-$(mooutils)/mooaccelbutton-glade.h: $(mooutils_srcdir)/glade/shortcutdialog.glade $(XML2H)
+$(mooutils)/mooaccelbutton-glade.h: $(mooutils_srcdir)/glade/accelbutton.glade $(XML2H)
 	python $(XML2H) MOO_ACCEL_BUTTON_GLADE_UI \
-	   $(mooutils_srcdir)/glade/shortcutdialog.glade > $(mooutils)/mooaccelbutton-glade.h
-$(mooutils)/mooaccelprefs-glade.h: $(mooutils_srcdir)/glade/shortcutsprefs.glade $(XML2H)
-	python $(XML2H) MOO_SHORTCUTS_PREFS_GLADE_UI \
-	   $(mooutils_srcdir)/glade/shortcutsprefs.glade > $(mooutils)/mooaccelprefs-glade.h
+	   $(mooutils_srcdir)/glade/accelbutton.glade > $(mooutils)/mooaccelbutton-glade.h
+$(mooutils)/mooaccelprefs-glade.h: $(mooutils_srcdir)/glade/accelprefs.glade $(XML2H)
+	python $(XML2H) MOO_ACCEL_PREFS_GLADE_UI \
+	   $(mooutils_srcdir)/glade/accelprefs.glade > $(mooutils)/mooaccelprefs-glade.h
 $(mooutils)/moologwindow-glade.h: $(mooutils_srcdir)/glade/moologwindow.glade $(XML2H)
 	python $(XML2H) MOO_LOG_WINDOW_GLADE_UI \
 	   $(mooutils_srcdir)/glade/moologwindow.glade > $(mooutils)/moologwindow-glade.h
@@ -105,6 +111,15 @@ $(mooedit)/statusbar-glade.h: $(mooedit_srcdir)/glade/statusbar.glade $(XML2H)
 $(mooedit)/mooprint-glade.h: $(mooedit_srcdir)/glade/mooprint.glade $(XML2H)
 	python $(XML2H) MOO_PRINT_GLADE_XML $(mooedit_srcdir)/glade/mooprint.glade \
 		> $(mooedit)/mooprint-glade.h
+$(mooedit)/mooeditprogress-glade.h: $(mooedit_srcdir)/glade/mooeditprogress.glade $(XML2H)
+	python $(XML2H) MOO_EDIT_PROGRESS_GLADE_XML $(mooedit_srcdir)/glade/mooeditprogress.glade \
+		> $(mooedit)/mooeditprogress-glade.h
+$(mooedit)/mooedittools-glade.h: $(mooedit_srcdir)/glade/mooedittools.glade $(XML2H)
+	python $(XML2H) MOO_EDIT_TOOLS_GLADE_XML $(mooedit_srcdir)/glade/mooedittools.glade \
+		> $(mooedit)/mooedittools-glade.h
+$(mooedit)/mooprintpreview-glade.h: $(mooedit_srcdir)/glade/mooprintpreview.glade $(XML2H)
+	python $(XML2H) MOO_PRINT_PREVIEW_GLADE_XML $(mooedit_srcdir)/glade/mooprintpreview.glade \
+		> $(mooedit)/mooprintpreview-glade.h
 $(moofileview)/moofileview-ui.h: $(moofileview_srcdir)/moofileview-ui.xml $(XML2H)
 	python $(XML2H) MOO_FILE_VIEW_UI                                       \
 	   $(moofileview_srcdir)/moofileview-ui.xml >                      \
