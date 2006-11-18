@@ -33,6 +33,12 @@ const char *moo_gettext (const char *string);
 
 #else /* !ENABLE_NLS */
 
+#undef textdomain
+#undef gettext
+#undef dgettext
+#undef dcgettext
+#undef bindtextdomain
+#undef bind_textdomain_codeset
 #define _(String) (String)
 #define N_(String) (String)
 #define Q_(String) g_strip_context ((String), (String))
