@@ -57,6 +57,10 @@ void        moo_warning_dialog              (GtkWidget  *parent,
                                              const char *text,
                                              const char *secondary_text);
 
+void        _moo_window_set_remember_size   (GtkWindow  *window,
+                                             const char *prefs_key,
+                                             gboolean    remember_position);
+
 
 G_END_DECLS
 

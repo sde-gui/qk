@@ -374,3 +374,147 @@ moo_font_dialog (GtkWidget  *parent,
 
     return fontname;
 }
+
+
+typedef struct {
+    char *key_maximized;
+    char *key_width;
+    char *key_height;
+    char *key_x;
+    char *key_y;
+    gboolean remember_position;
+    guint save_size_idle;
+} PositionInfo;
+
+static void
+position_info_free (PositionInfo *pinfo)
+{
+    if (pinfo)
+    {
+        if (pinfo->save_size_idle)
+            g_source_remove (pinfo->save_size_idle);
+        g_free (pinfo->key_maximized);
+        g_free (pinfo->key_width);
+        g_free (pinfo->key_height);
+        g_free (pinfo->key_x);
+        g_free (pinfo->key_y);
+        g_free (pinfo);
+    }
+}
+
+
+static gboolean
+save_size (GtkWindow *window)
+{
+    PositionInfo *pinfo;
+    GdkWindowState state;
+
+    pinfo = g_object_get_data (G_OBJECT (window), "moo-position-info");
+    g_return_val_if_fail (pinfo != NULL, FALSE);
+
+    pinfo->save_size_idle = 0;
+
+    if (!GTK_WIDGET_REALIZED (window))
+        return FALSE;
+
+    state = gdk_window_get_state (GTK_WIDGET(window)->window);
+    moo_prefs_set_bool (pinfo->key_maximized,
+                        state & GDK_WINDOW_STATE_MAXIMIZED);
+
+    if (!(state & GDK_WINDOW_STATE_MAXIMIZED))
+    {
+        int width, height;
+        gtk_window_get_size (GTK_WINDOW (window), &width, &height);
+        moo_prefs_set_int (pinfo->key_width, width);
+        moo_prefs_set_int (pinfo->key_height, height);
+    }
+
+    if (pinfo->remember_position)
+    {
+        int x, y;
+        gtk_window_get_position (window, &x, &y);
+        moo_prefs_set_int (pinfo->key_x, x);
+        moo_prefs_set_int (pinfo->key_y, y);
+    }
+
+    return FALSE;
+}
+
+static gboolean
+configure_event (GtkWindow *window,
+                 G_GNUC_UNUSED GdkEventConfigure *event,
+                 PositionInfo *pinfo)
+{
+    if (!pinfo->save_size_idle)
+        pinfo->save_size_idle = g_idle_add ((GSourceFunc) save_size, window);
+    return FALSE;
+}
+
+static void
+set_initial_size (GtkWindow    *window,
+                  PositionInfo *pinfo)
+{
+    int width, height;
+    gboolean maximized;
+
+    width = moo_prefs_get_int (pinfo->key_width);
+    height = moo_prefs_get_int (pinfo->key_height);
+    maximized = moo_prefs_get_bool (pinfo->key_maximized);
+
+    if (width > 0 && height > 0)
+        gtk_window_set_default_size (window, width, height);
+
+    if (moo_prefs_get_bool (pinfo->key_maximized))
+        gtk_window_maximize (window);
+
+    if (pinfo->remember_position)
+    {
+        int x, y;
+
+        x = moo_prefs_get_int (pinfo->key_x);
+        y = moo_prefs_get_int (pinfo->key_y);
+
+        if (x < G_MAXINT && y < G_MAXINT)
+            gtk_window_move (window, x, y);
+    }
+}
+
+
+void
+_moo_window_set_remember_size (GtkWindow  *window,
+                               const char *prefs_key,
+                               gboolean    remember_position)
+{
+    PositionInfo *pinfo;
+
+    g_return_if_fail (prefs_key != NULL);
+
+    pinfo = g_object_get_data (G_OBJECT (window), "moo-position-info");
+
+    if (pinfo)
+        g_signal_handlers_disconnect_by_func (window, (gpointer) configure_event, pinfo);
+
+    pinfo = g_new0 (PositionInfo, 1);
+    pinfo->key_maximized = moo_prefs_make_key (prefs_key, "maximized", NULL);
+    pinfo->key_width = moo_prefs_make_key (prefs_key, "width", NULL);
+    pinfo->key_height = moo_prefs_make_key (prefs_key, "height", NULL);
+    pinfo->key_x = moo_prefs_make_key (prefs_key, "x", NULL);
+    pinfo->key_y = moo_prefs_make_key (prefs_key, "y", NULL);
+    pinfo->remember_position = remember_position;
+
+    moo_prefs_create_key (pinfo->key_maximized, MOO_PREFS_STATE, G_TYPE_BOOLEAN, FALSE);
+    moo_prefs_create_key (pinfo->key_width, MOO_PREFS_STATE, G_TYPE_INT, -1);
+    moo_prefs_create_key (pinfo->key_height, MOO_PREFS_STATE, G_TYPE_INT, -1);
+
+    if (remember_position)
+    {
+       moo_prefs_create_key (pinfo->key_x, MOO_PREFS_STATE, G_TYPE_INT, G_MAXINT);
+       moo_prefs_create_key (pinfo->key_y, MOO_PREFS_STATE, G_TYPE_INT, G_MAXINT);
+    }
+
+    g_object_set_data_full (G_OBJECT (window), "moo-position-info",
+                            pinfo, (GDestroyNotify) position_info_free);
+    set_initial_size (window, pinfo);
+    g_signal_connect (window, "configure-event",
+                      G_CALLBACK (configure_event), pinfo);
+}

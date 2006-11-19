@@ -60,6 +60,9 @@ const char *moo_edit_setting                (const char     *setting_name);
 #define MOO_EDIT_PREFS_LAST_DIR                 "last_dir"
 #define MOO_EDIT_PREFS_PDF_LAST_DIR             "pdf_last_dir"
 
+#define MOO_EDIT_PREFS_DIALOGS                  "dialogs"
+#define MOO_EDIT_PREFS_DIALOG_OPEN              MOO_EDIT_PREFS_DIALOGS "/open"
+
 #define MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS       "quick_search_flags"
 #define MOO_EDIT_PREFS_SEARCH_FLAGS             "search_flags"
 
