@@ -104,6 +104,7 @@ po/Makefile.in
 moo/mooterm/termhelper_res.rc
 moo/moo.pc
 moo/moo-version.h
+moo/libmoo.rc
 tests/pyapp.py
 tests/medit.rc
 wininstaller/medit.iss
