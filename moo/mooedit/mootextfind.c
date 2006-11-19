@@ -75,8 +75,8 @@ init_find_history (void)
         moo_history_list_set_max_entries (replace_history, 20);
         last_search = moo_history_list_get_last_item (search_history);
 
-        moo_prefs_new_key_flags (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_FLAGS),
-                                 MOO_TYPE_FIND_FLAGS, MOO_FIND_CASELESS);
+        moo_prefs_create_key (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_FLAGS), MOO_PREFS_STATE,
+                                                MOO_TYPE_FIND_FLAGS, MOO_FIND_CASELESS);
         last_search_flags = moo_prefs_get_flags (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_FLAGS));
     }
 }

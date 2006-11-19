@@ -791,9 +791,9 @@ static void init_prefs (MooWindow *window)
                             GTK_TYPE_TOOLBAR_STYLE,
                             get_toolbar_style_gtk (window));
 
-    _moo_prefs_new_key_bool_state (setting (window, PREFS_MAXIMIZED), FALSE);
-    _moo_prefs_new_key_int_state (setting (window, PREFS_WIDTH), -1);
-    _moo_prefs_new_key_int_state (setting (window, PREFS_HEIGHT), -1);
+    moo_prefs_create_key (setting (window, PREFS_MAXIMIZED), MOO_PREFS_STATE, G_TYPE_BOOLEAN, FALSE);
+    moo_prefs_create_key (setting (window, PREFS_WIDTH), MOO_PREFS_STATE, G_TYPE_INT, -1);
+    moo_prefs_create_key (setting (window, PREFS_HEIGHT), MOO_PREFS_STATE, G_TYPE_INT, -1);
 }
 
 

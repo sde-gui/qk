@@ -2220,7 +2220,7 @@ create_paned (MooEditWindow *window)
         char *key = g_strdup_printf (MOO_EDIT_PREFS_PREFIX "/window/panes/%s",
                                      PANE_POSITIONS[i]);
 
-        _moo_prefs_new_key_int_state (key, -1);
+        moo_prefs_create_key (key, MOO_PREFS_STATE, G_TYPE_INT, -1);
         size = moo_prefs_get_int (key);
 
         if (size > 0)

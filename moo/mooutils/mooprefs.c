@@ -21,6 +21,7 @@
 #include "mooutils/mooutils-debug.h"
 #include <string.h>
 #include <errno.h>
+#include <gobject/gvaluecollector.h>
 
 #define PREFS_TYPE_LAST 2
 #define PREFS_ROOT "Prefs"
@@ -253,6 +254,39 @@ moo_prefs_new_key (const char     *key,
     g_return_if_fail (G_VALUE_TYPE (default_value) == value_type);
 
     prefs_new_key (instance(), key, value_type, default_value, prefs_type);
+}
+
+
+void
+moo_prefs_create_key (const char   *key,
+                      MooPrefsType  prefs_type,
+                      GType         value_type,
+                      ...)
+{
+    va_list args;
+    GValue default_value;
+    char *error = NULL;
+
+    g_return_if_fail (key != NULL);
+    g_return_if_fail (prefs_type < 2);
+    g_return_if_fail (_moo_value_type_supported (value_type));
+
+    default_value.g_type = 0;
+    g_value_init (&default_value, value_type);
+
+    va_start (args, value_type);
+    G_VALUE_COLLECT (&default_value, args, 0, &error);
+    va_end (args);
+
+    if (error)
+    {
+        g_warning ("%s: could not read value: %s", G_STRLOC, error);
+        g_free (error);
+        return;
+    }
+
+    moo_prefs_new_key (key, value_type, &default_value, prefs_type);
+    g_value_unset (&default_value);
 }
 
 
@@ -1259,21 +1293,6 @@ moo_prefs_new_key_bool (const char *key,
     moo_prefs_new_key (key, G_TYPE_BOOLEAN, &val, MOO_PREFS_RC);
 }
 
-void
-_moo_prefs_new_key_bool_state (const char *key,
-                               gboolean    default_val)
-{
-    GValue val;
-
-    g_return_if_fail (key != NULL);
-
-    val.g_type = 0;
-    g_value_init (&val, G_TYPE_BOOLEAN);
-    g_value_set_boolean (&val, default_val);
-
-    moo_prefs_new_key (key, G_TYPE_BOOLEAN, &val, MOO_PREFS_STATE);
-}
-
 
 void
 moo_prefs_new_key_int (const char *key,
@@ -1288,21 +1307,6 @@ moo_prefs_new_key_int (const char *key,
     g_value_set_int (&val, default_val);
 
     moo_prefs_new_key (key, G_TYPE_INT, &val, MOO_PREFS_RC);
-}
-
-void
-_moo_prefs_new_key_int_state (const char *key,
-                              int         default_val)
-{
-    GValue val;
-
-    g_return_if_fail (key != NULL);
-
-    val.g_type = 0;
-    g_value_init (&val, G_TYPE_INT);
-    g_value_set_int (&val, default_val);
-
-    moo_prefs_new_key (key, G_TYPE_INT, &val, MOO_PREFS_STATE);
 }
 
 
@@ -1353,23 +1357,6 @@ moo_prefs_new_key_string (const char *key,
 
     g_value_set_static_string (&val, default_val);
     moo_prefs_new_key (key, G_TYPE_STRING, &val, MOO_PREFS_RC);
-
-    g_value_unset (&val);
-}
-
-void
-_moo_prefs_new_key_string_state (const char *key,
-                                 const char *default_val)
-{
-    static GValue val;
-
-    g_return_if_fail (key != NULL);
-
-    val.g_type = 0;
-    g_value_init (&val, G_TYPE_STRING);
-
-    g_value_set_static_string (&val, default_val);
-    moo_prefs_new_key (key, G_TYPE_STRING, &val, MOO_PREFS_STATE);
 
     g_value_unset (&val);
 }

@@ -89,12 +89,10 @@ void            moo_prefs_new_key_flags (const char     *key,
                                          GType           flags_type,
                                          int             default_val);
 
-void            _moo_prefs_new_key_bool_state (const char     *key,
-                                         gboolean        default_val);
-void            _moo_prefs_new_key_int_state (const char     *key,
-                                         int             default_val);
-void            _moo_prefs_new_key_string_state (const char *key,
-                                         const char     *default_val);
+void            moo_prefs_create_key    (const char     *key,
+                                         MooPrefsType    prefs_type,
+                                         GType           value_type,
+                                         ...);
 
 char           *moo_prefs_make_key      (const char     *first_comp,
                                          ...) G_GNUC_NULL_TERMINATED;
