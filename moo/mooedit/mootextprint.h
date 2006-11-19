@@ -55,6 +55,8 @@ void    _moo_edit_print                         (GtkTextView        *view,
 void    _moo_edit_print_options_dialog          (GtkWidget          *parent);
 void    _moo_edit_print_preview                 (GtkTextView        *view,
                                                  GtkWidget          *parent);
+void    _moo_edit_export_pdf                    (GtkTextView        *view,
+                                                 const char         *filename);
 
 
 G_END_DECLS

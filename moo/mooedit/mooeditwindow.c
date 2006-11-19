@@ -34,6 +34,7 @@
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooaction-private.h"
+#include "mooutils/moofiledialog.h"
 #include "moofileview/moofile.h"
 #include <string.h>
 #include <gtk/gtk.h>
@@ -238,6 +239,7 @@ static void line_numbers_toggled                (MooEditWindow      *window,
 static void action_page_setup      (MooEditWindow    *window);
 static void action_print           (MooEditWindow    *window);
 static void action_print_preview   (MooEditWindow    *window);
+static void action_print_pdf       (MooEditWindow    *window);
 #endif
 
 
@@ -752,6 +754,15 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "accel", "<ctrl>P",
                                  "stock-id", GTK_STOCK_PRINT,
                                  "closure-callback", action_print,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "PrintPdf", NULL,
+                                 "display-name", _("Export as PDF"),
+                                 "label", _("Export as PDF..."),
+                                 "tooltip", _("Export as PDF"),
+                                 "stock-id", GTK_STOCK_PRINT,
+                                 "closure-callback", action_print_pdf,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 #endif
@@ -1334,6 +1345,26 @@ action_print_preview (MooEditWindow *window)
     gpointer doc = moo_edit_window_get_active_doc (window);
     g_return_if_fail (doc != NULL);
     _moo_edit_print_preview (doc, GTK_WIDGET (window));
+}
+
+
+static void
+action_print_pdf (MooEditWindow *window)
+{
+    const char *filename;
+    gpointer doc = moo_edit_window_get_active_doc (window);
+
+    doc = moo_edit_window_get_active_doc (window);
+    g_return_if_fail (doc != NULL);
+
+    filename = moo_file_dialogp (GTK_WIDGET (window),
+                                 MOO_FILE_DIALOG_SAVE,
+                                 "Export as PDF",
+                                 moo_edit_setting (MOO_EDIT_PREFS_PDF_LAST_DIR),
+                                 NULL);
+
+    if (filename)
+        _moo_edit_export_pdf (doc, filename);
 }
 #endif
 

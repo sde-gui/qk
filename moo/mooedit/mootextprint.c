@@ -1389,7 +1389,8 @@ moo_print_operation_load_prefs (MooPrintOperation *op)
 static void
 do_print_operation (GtkTextView            *view,
                     GtkWidget              *parent,
-                    GtkPrintOperationAction action)
+                    GtkPrintOperationAction action,
+                    const char             *filename)
 {
     MooPrintOperation *op;
     GtkPrintOperationResult res;
@@ -1397,8 +1398,12 @@ do_print_operation (GtkTextView            *view,
     GtkWidget *error_dialog;
 
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
+    g_return_if_fail (!filename || action == GTK_PRINT_OPERATION_ACTION_EXPORT);
 
-    op = g_object_new (MOO_TYPE_PRINT_OPERATION, "doc", view, NULL);
+    op = g_object_new (MOO_TYPE_PRINT_OPERATION,
+                       "doc", view,
+                       "export-filename", filename,
+                       NULL);
 
     if (!parent)
         parent = GTK_WIDGET (view);
@@ -1451,7 +1456,7 @@ void
 _moo_edit_print (GtkTextView *view,
                  GtkWidget   *parent)
 {
-    do_print_operation (view, parent, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG);
+    do_print_operation (view, parent, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG, NULL);
 }
 
 
@@ -1459,7 +1464,15 @@ void
 _moo_edit_print_preview (GtkTextView *view,
                          GtkWidget   *parent)
 {
-    do_print_operation (view, parent, GTK_PRINT_OPERATION_ACTION_PREVIEW);
+    do_print_operation (view, parent, GTK_PRINT_OPERATION_ACTION_PREVIEW, NULL);
+}
+
+
+void
+_moo_edit_export_pdf (GtkTextView *view,
+                      const char  *filename)
+{
+    do_print_operation (view, NULL, GTK_PRINT_OPERATION_ACTION_EXPORT, filename);
 }
 
 
