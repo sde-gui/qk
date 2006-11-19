@@ -1211,13 +1211,17 @@ moo_print_operation_draw_page (GtkPrintOperation *operation,
     else
         gtk_text_buffer_get_end_iter (op->priv->buffer, &end);
 
-#ifdef __WIN32__
+#if defined(__WIN32__) && 0
     if (page == 0)
     {
         HDC dc = cairo_win32_surface_get_dc (cairo_get_target (cr));
-        int dpi_x = GetDeviceCaps (dc, LOGPIXELSX);
-        int dpi_y = GetDeviceCaps (dc, LOGPIXELSY);
-        g_print ("dpi: %d, %d\n", dpi_x, dpi_y);
+
+        if (dc)
+        {
+            int dpi_x = GetDeviceCaps (dc, LOGPIXELSX);
+            int dpi_y = GetDeviceCaps (dc, LOGPIXELSY);
+            g_print ("dpi: %d, %d\n", dpi_x, dpi_y);
+        }
     }
 #endif
 
