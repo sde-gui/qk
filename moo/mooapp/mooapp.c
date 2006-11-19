@@ -1393,10 +1393,22 @@ moo_app_new_file (MooApp       *app,
 
     g_return_if_fail (editor != NULL);
 
-    if (line > 0)
-        moo_editor_open_file_line (editor, filename, line - 1, NULL);
+    if (filename)
+    {
+        if (line > 0)
+            moo_editor_open_file_line (editor, filename, line - 1, NULL);
+        else
+            moo_editor_new_file (editor, NULL, NULL, filename, NULL);
+    }
     else
-        moo_editor_new_file (editor, NULL, NULL, filename, NULL);
+    {
+        MooEdit *doc;
+
+        doc = moo_editor_get_active_doc (editor);
+
+        if (!doc || !moo_edit_is_empty (doc))
+            moo_editor_new_doc (editor, NULL);
+    }
 #endif /* MOO_BUILD_EDIT */
 }
 
@@ -1422,7 +1434,7 @@ moo_app_open_uris (MooApp     *app,
                    const char *data)
 {
 #ifdef MOO_BUILD_EDIT
-    char **uris, **p;
+    char **uris;
     guint32 stamp;
     char *stamp_string;
     char *line_string;
@@ -1439,19 +1451,28 @@ moo_app_open_uris (MooApp     *app,
     data += 16;
     uris = g_strsplit (data, "\r\n", 0);
 
-    for (p = uris; p && *p; ++p)
+    if (uris && *uris)
     {
-        char *filename = g_filename_from_uri (*p, NULL, NULL);
+        char **p;
 
-        if (filename)
+        for (p = uris; p && *p; ++p)
         {
-            if (p == uris && line > 0)
-                moo_app_new_file (app, filename, line);
-            else
-                moo_app_new_file (app, filename, 0);
-        }
+            char *filename = g_filename_from_uri (*p, NULL, NULL);
 
-        g_free (filename);
+            if (filename)
+            {
+                if (p == uris && line > 0)
+                    moo_app_new_file (app, filename, line);
+                else
+                    moo_app_new_file (app, filename, 0);
+            }
+
+            g_free (filename);
+        }
+    }
+    else
+    {
+        moo_app_new_file (app, NULL, 0);
     }
 
     moo_editor_present (app->priv->editor, stamp);
