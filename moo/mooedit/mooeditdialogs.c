@@ -25,7 +25,16 @@
 #include <gtk/gtk.h>
 
 
-GSList*
+static void
+open_dialog_created (G_GNUC_UNUSED MooFileDialog *fd,
+                     GtkWidget *widget)
+{
+    _moo_window_set_remember_size (GTK_WINDOW (widget),
+                                   moo_edit_setting (MOO_EDIT_PREFS_DIALOG_OPEN),
+                                   TRUE);
+}
+
+GSList *
 _moo_edit_open_dialog (GtkWidget      *widget,
                        MooFilterMgr   *mgr)
 {
@@ -34,11 +43,12 @@ _moo_edit_open_dialog (GtkWidget      *widget,
     char *new_start;
     GSList *filenames, *infos = NULL, *l;
 
-    moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), NULL);
+    moo_prefs_create_key (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), MOO_PREFS_STATE, G_TYPE_STRING, NULL);
     start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR));
 
     dialog = moo_file_dialog_new (MOO_FILE_DIALOG_OPEN, widget,
                                   TRUE, "Open", start, NULL);
+    g_signal_connect (dialog, "dialog-created", G_CALLBACK (open_dialog_created), NULL);
 
     if (mgr)
         moo_file_dialog_set_filter_mgr (dialog, mgr, "MooEdit");
@@ -66,7 +76,7 @@ _moo_edit_open_dialog (GtkWidget      *widget,
 }
 
 
-MooEditFileInfo*
+MooEditFileInfo *
 _moo_edit_save_as_dialog (MooEdit        *edit,
                           MooFilterMgr   *mgr,
                           const char     *display_basename)
@@ -78,7 +88,8 @@ _moo_edit_save_as_dialog (MooEdit        *edit,
     MooFileDialog *dialog;
     MooEditFileInfo *file_info;
 
-    moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), NULL);
+    moo_prefs_create_key (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR),
+                          MOO_PREFS_STATE, G_TYPE_STRING, NULL);
     start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR));
 
     dialog = moo_file_dialog_new (MOO_FILE_DIALOG_SAVE, GTK_WIDGET (edit),
