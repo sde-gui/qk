@@ -941,6 +941,7 @@ _moo_lang_mgr_set_config (MooLangMgr *mgr,
                           const char *lang_id,
                           const char *config)
 {
+    char *id;
     char *norm = NULL;
     const char *old;
 
@@ -959,12 +960,13 @@ _moo_lang_mgr_set_config (MooLangMgr *mgr,
         }
     }
 
-    old = g_hash_table_lookup (mgr->config, _moo_lang_id_from_name (lang_id));
+    id = _moo_lang_id_from_name (lang_id);
+    old = g_hash_table_lookup (mgr->config, id);
 
     if (!_moo_str_equal (old, norm))
         mgr->modified = TRUE;
 
-    g_hash_table_insert (mgr->config, _moo_lang_id_from_name (lang_id), norm);
+    g_hash_table_insert (mgr->config, id, norm);
 }
 
 
