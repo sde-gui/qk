@@ -16,6 +16,7 @@
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moocompat.h"
+#include "mooutils/moomarshals.h"
 #include <string.h>
 
 
@@ -49,6 +50,12 @@ enum {
     PROP_FILTER_MGR_ID
 };
 
+enum {
+    DIALOG_CREATED,
+    LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL];
 
 static void
 moo_file_dialog_set_property (GObject        *object,
@@ -275,6 +282,16 @@ moo_file_dialog_class_init (MooFileDialogClass *klass)
                                              "filter-mgr-id",
                                              NULL,
                                              G_PARAM_READWRITE));
+
+    signals[DIALOG_CREATED] =
+        g_signal_new ("dialog-created",
+                      G_TYPE_FROM_CLASS (klass),
+                      G_SIGNAL_RUN_LAST,
+                      G_STRUCT_OFFSET (MooFileDialogClass, dialog_created),
+                      NULL, NULL,
+                      _moo_marshal_VOID__OBJECT,
+                      G_TYPE_NONE, 1,
+                      GTK_TYPE_DIALOG);
 }
 
 
@@ -419,6 +436,10 @@ moo_file_dialog_create_widget (MooFileDialog *dialog)
                                GTK_FILE_CHOOSER (widget),
                                dialog->priv->filter_mgr_id);
 
+    if (dialog->priv->parent)
+        moo_window_set_parent (widget, dialog->priv->parent);
+
+    g_signal_emit (dialog, signals[DIALOG_CREATED], 0, widget);
 
     return widget;
 }
@@ -521,9 +542,6 @@ moo_file_dialog_run (MooFileDialog *dialog)
     set_filenames (dialog, NULL);
 
     filechooser = moo_file_dialog_create_widget (dialog);
-
-    if (dialog->priv->parent)
-        moo_window_set_parent (filechooser, dialog->priv->parent);
 
     switch (dialog->priv->type)
     {
@@ -640,13 +658,13 @@ moo_file_dialogp (GtkWidget          *parent,
 
     if (prefs_key)
     {
-        _moo_prefs_new_key_string_state (prefs_key, NULL);
+        moo_prefs_create_key (prefs_key, MOO_PREFS_STATE, G_TYPE_STRING, NULL);
         start = moo_prefs_get_string (prefs_key);
     }
 
     if (!start && alternate_prefs_key)
     {
-        _moo_prefs_new_key_string_state (alternate_prefs_key, NULL);
+        moo_prefs_create_key (alternate_prefs_key, MOO_PREFS_STATE, G_TYPE_STRING, NULL);
         start = moo_prefs_get_string (alternate_prefs_key);
     }
 
@@ -655,7 +673,7 @@ moo_file_dialogp (GtkWidget          *parent,
     if (filename && prefs_key)
     {
         char *new_start = g_path_get_dirname (filename);
-        _moo_prefs_new_key_string_state (prefs_key, NULL);
+        moo_prefs_create_key (prefs_key, MOO_PREFS_STATE, G_TYPE_STRING, NULL);
         moo_prefs_set_filename (prefs_key, new_start);
         g_free (new_start);
     }

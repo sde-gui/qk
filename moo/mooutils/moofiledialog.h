@@ -52,6 +52,9 @@ struct _MooFileDialog
 struct _MooFileDialogClass
 {
     GObjectClass parent_class;
+
+    void (*dialog_created) (MooFileDialog *fd,
+                            GtkWidget     *widget);
 };
 
 
