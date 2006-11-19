@@ -339,10 +339,13 @@ mgr_set_last_filter (MooFilterMgr   *mgr,
     g_return_if_fail (MOO_IS_FILTER_MGR (mgr));
 
     store = mgr_get_store (mgr, user_id, TRUE);
-    store->last_filter = filter;
-    mgr->priv->changed = TRUE;
 
-    mgr_save (mgr);
+    if (store->last_filter != filter)
+    {
+        store->last_filter = filter;
+        mgr->priv->changed = TRUE;
+        mgr_save (mgr);
+    }
 }
 
 
