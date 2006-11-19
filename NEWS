@@ -3,7 +3,7 @@
 
     Added Print Preview and Export as PDF menu items.
     Improved print preview.
-    Fixed problem with multiple windows on twm (Jan Lont).
+    Fixed problem with multiple windows on twm (Lontronics).
 
 2006-11-13  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.7.96 ===
