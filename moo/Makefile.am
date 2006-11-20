@@ -53,17 +53,18 @@ else
 noinst_LTLIBRARIES += libmoo.la
 endif
 
-libmoo_la_LIBADD = $(libs) $(MOO_LIBS)
-# libmoo_la_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -no-undefined -avoid-version -export-symbols-regex "^(moo_|ms_).*"
-libmoo_la_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -no-undefined -avoid-version -export-symbols-regex ".*"
-libmoo_la_SOURCES = $(moo_include_headers)
-
 if MOO_OS_MINGW
-libmoo_la_LIBADD += libmoo.res
 CLEANFILES = libmoo.res
+libmoo_res_ldflag = -Wl,libmoo.res
+libmoo_la_DEPENDENCIES = libmoo.res
 libmoo.res: libmoo.rc
 	$(WINDRES) -i libmoo.rc --input-format=rc -o libmoo.res -O coff
 endif
+
+libmoo_la_LIBADD = $(libs) $(MOO_LIBS)
+# libmoo_la_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) $(libmoo_res_ldflag) -no-undefined -avoid-version -export-symbols-regex "^(moo_|ms_).*"
+libmoo_la_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) $(libmoo_res_ldflag) -no-undefined -avoid-version -export-symbols-regex ".*"
+libmoo_la_SOURCES = $(moo_include_headers)
 
 moo_la_ldflags = -no-undefined -module -avoid-version -export-symbols-regex initmoo
 pymoo_la_ldflags = -no-undefined -module -avoid-version -export-symbols-regex moo_module_init
