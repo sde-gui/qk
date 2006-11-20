@@ -17,8 +17,7 @@ all-tests: $(EXTRA_PROGRAMS)
 EXTRA_DIST =		\
 	pyapp.py.in	\
 	medit-ui.xml	\
-	medit-app.opag	\
-	medit.win
+	medit-app.opag
 
 BUILT_SOURCES = medit-ui.h THANKS.h
 
@@ -36,12 +35,6 @@ $(srcdir)/medit-app.c: medit-app.opag medit-ui.h
 	else \
 		$(OPAG) -f _medit_parse_options -O _medit_opt_ -A _medit_arg_ $(srcdir)/medit-app.opag $(srcdir)/medit-app.c; \
 	fi
-
-if MOO_OS_MINGW
-medit.win: medit.win
-	cp $(srcdir)/medit.win medit
-	chmod +x medit
-endif
 
 all-am: pyapp.py
 
