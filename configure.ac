@@ -105,6 +105,10 @@ moo/mooterm/termhelper_res.rc
 moo/moo.pc
 moo/moo-version.h
 moo/libmoo.rc
+moo/moo24.rc
+moo/moo25.rc
+moo/pymoo24.rc
+moo/pymoo25.rc
 tests/pyapp.py
 tests/medit.rc
 wininstaller/medit.iss

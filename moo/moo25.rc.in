@@ -1,6 +1,5 @@
 #include <windows.h>
-
-A ICON MOVEABLE PURE LOADONCALL DISCARDABLE "@top_srcdir@/@MOO_SRC_PREFIX@/mooutils/pixmaps/medit.ico"
+#include <winver.h>
 
 VS_VERSION_INFO VERSIONINFO
   FILEVERSION @MOO_VERSION_MAJOR@,@MOO_VERSION_MINOR@,@MOO_VERSION_MICRO@,0
@@ -16,12 +15,12 @@ VS_VERSION_INFO VERSIONINFO
       BLOCK "040904B0"
       BEGIN
         VALUE "CompanyName", "Yevgen Muntyan"
-        VALUE "FileDescription", "medit text editor"
+        VALUE "FileDescription", "libmoo bindings for python-2.5"
         VALUE "FileVersion", "@MOO_VERSION_UNQUOTED@.0"
-        VALUE "InternalName", "medit-@MOO_VERSION_UNQUOTED@"
+        VALUE "InternalName", "moo-mod-@MOO_VERSION_UNQUOTED@"
         VALUE "LegalCopyright", "(C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>"
-        VALUE "OriginalFilename", "medit.exe"
-        VALUE "ProductName", "medit"
+        VALUE "OriginalFilename", "moo.pyd"
+        VALUE "ProductName", "moo25.pyd"
         VALUE "ProductVersion", @MOO_VERSION@
       END
     END

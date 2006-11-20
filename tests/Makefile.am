@@ -79,7 +79,15 @@ endif MOO_OS_MINGW
 ##############################################################################
 ##  medit
 ##
-medit_LDFLAGS = $(ldflags)
+if MOO_OS_MINGW
+CLEANFILES = medit.res
+medit_res_ldflag = -Wl,medit.res
+medit_DEPENDENCIES = medit.res
+medit.res: medit.rc
+	$(WINDRES) -i medit.rc --input-format=rc -o medit.res -O coff
+endif
+
+medit_LDFLAGS = $(ldflags) $(medit_res_ldflag)
 medit_LDADD = $(ldadd)
 medit_SOURCES = medit-ui.h THANKS.h
 nodist_medit_SOURCES =
@@ -90,19 +98,6 @@ medit_SOURCES += medit-app.c
 else
 medit_SOURCES += medit.c
 endif
-
-nodist_medit_SOURCES += medit.res
-CLEANFILES = medit.res
-
-if MOO_OS_MINGW
-medit.res: medit.rc
-	$(WINDRES) -i medit.rc --input-format=rc -o medit.res -O coff
-medit_SOURCES += medit.res
-medit_LDADD += medit.res
-else ! MOO_OS_MINGW
-medit.res: medit.rc
-	touch medit.res
-endif ! MOO_OS_MINGW
 
 
 testfold_LDFLAGS = $(ldflags)
