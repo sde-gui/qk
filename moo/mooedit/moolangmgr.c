@@ -666,7 +666,7 @@ void
 _moo_lang_mgr_set_active_scheme (MooLangMgr *mgr,
                                  const char *name)
 {
-    MooTextStyleScheme *scheme;
+    MooTextStyleScheme *scheme = NULL;
 
     g_return_if_fail (MOO_IS_LANG_MGR (mgr));
 
