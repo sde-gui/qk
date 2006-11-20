@@ -30,8 +30,10 @@
 #endif
 
 #ifdef __WIN32__
-#define PRINTER_DPI (1200.)
+#define PRINTER_DPI (600.)
 #define PRINTER_SCALE (72. / PRINTER_DPI)
+// #define PRINTER_DPI (72.)
+// #define PRINTER_SCALE (1.)
 #else
 #define PRINTER_DPI (72.)
 #define PRINTER_SCALE (1.)
@@ -365,9 +367,9 @@ moo_print_preview_set_zoom (MooPrintPreview *preview,
     gtk_widget_queue_draw (preview->priv->darea);
 
     if (zoom_to_fit)
-        _moo_message ("zoom_to_fit\n");
+        _moo_message ("zoom_to_fit");
     else
-        _moo_message ("zoom: %s\n", zoom_factor_names[zoom]);
+        _moo_message ("zoom: %s", zoom_factor_names[zoom]);
 }
 
 static void
@@ -391,9 +393,9 @@ moo_print_preview_zoom_in (MooPrintPreview *preview,
     g_return_if_fail (change == -1 || change == 1);
 
     if (change < 0)
-        _moo_message ("zoom out\n");
+        _moo_message ("zoom out");
     else
-        _moo_message ("zoom in\n");
+        _moo_message ("zoom in");
 }
 
 

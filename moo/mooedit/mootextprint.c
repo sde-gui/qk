@@ -33,6 +33,8 @@
 #include <cairo-win32.h>
 #endif
 
+#define SEPARATOR_POINTS 1.
+
 #define PREFS_FONT                      MOO_EDIT_PREFS_PREFIX "/print/font"
 #define PREFS_USE_STYLES                MOO_EDIT_PREFS_PREFIX "/print/use_styles"
 #define PREFS_USE_CUSTOM_FONT           MOO_EDIT_PREFS_PREFIX "/print/use_font"
@@ -146,6 +148,7 @@ static void moo_print_operation_set_buffer  (MooPrintOperation  *print,
 static void moo_print_operation_set_settings (MooPrintOperation *op,
                                               MooPrintSettings  *settings);
 
+static PangoLayout *create_layout           (GtkPrintContext    *context);
 static void fill_layout                     (MooPrintOperation  *op,
                                              PangoLayout        *layout,
                                              const GtkTextIter  *start,
@@ -331,7 +334,7 @@ moo_print_operation_finalize (GObject *object)
     g_free (op->priv->tm);
     g_free (op->priv);
 
-    _moo_message ("moo_print_operation_finalize\n");
+    _moo_message ("moo_print_operation_finalize");
 
     G_OBJECT_CLASS(_moo_print_operation_parent_class)->finalize (object);
 }
@@ -444,7 +447,7 @@ _moo_print_operation_init (MooPrintOperation *op)
 
     load_default_settings ();
 
-    _moo_message ("_moo_print_operation_init\n");
+    _moo_message ("_moo_print_operation_init");
 
     gtk_print_operation_set_print_settings (GTK_PRINT_OPERATION (op),
                                             print_settings);
@@ -536,7 +539,7 @@ _moo_edit_page_setup (GtkWidget *parent)
 
     g_return_if_fail (!parent || GTK_IS_WIDGET (parent));
 
-    _moo_message ("_moo_edit_page_setup\n");
+    _moo_message ("_moo_edit_page_setup");
 
     load_default_settings ();
 
@@ -558,6 +561,39 @@ _moo_edit_page_setup (GtkWidget *parent)
 
 
 static void
+get_layout_size (PangoLayout *layout,
+                 double      *width,
+                 double      *height)
+{
+    PangoRectangle rect;
+
+    pango_layout_get_extents (layout, NULL, &rect);
+
+    if (width)
+        *width = (double) rect.width / (double) PANGO_SCALE;
+
+    if (height)
+        *height = (double) rect.height / (double) PANGO_SCALE;
+}
+
+static void
+get_layout_line_size (PangoLayoutLine *line,
+                      double          *width,
+                      double          *height)
+{
+    PangoRectangle rect;
+
+    pango_layout_line_get_extents (line, NULL, &rect);
+
+    if (width)
+        *width = (double) rect.width / (double) PANGO_SCALE;
+
+    if (height)
+        *height = (double) rect.height / (double) PANGO_SCALE;
+}
+
+
+static void
 header_footer_get_size (MooPrintHeaderFooter *hf,
                         MooPrintOperation    *print,
                         GtkPrintContext      *context,
@@ -565,7 +601,6 @@ header_footer_get_size (MooPrintHeaderFooter *hf,
                         MooPrintFlags         flag)
 {
     PangoFontDescription *font = default_font;
-    PangoRectangle rect;
 
     hf->do_print = GET_OPTION (print, flag) &&
             (hf->parsed_format[0] || hf->parsed_format[1] || hf->parsed_format[2]);
@@ -580,17 +615,16 @@ header_footer_get_size (MooPrintHeaderFooter *hf,
     if (hf->font)
         font = hf->font;
 
-    hf->layout = gtk_print_context_create_pango_layout (context);
+    hf->layout = create_layout (context);
     pango_layout_set_text (hf->layout, "AAAyyy", -1);
 
     if (font)
         pango_layout_set_font_description (hf->layout, font);
 
-    pango_layout_get_pixel_extents (hf->layout, NULL, &rect);
-    hf->text_height = rect.height;
+    get_layout_size (hf->layout, NULL, &hf->text_height);
 
     if (hf->separator)
-        hf->separator_height = 1.;
+        hf->separator_height = SEPARATOR_POINTS / gtk_print_context_get_dpi_y (context);
 
     hf->separator_before = hf->text_height / 2;
     hf->separator_after = hf->text_height / 2;
@@ -611,6 +645,10 @@ moo_print_operation_calc_page_size (MooPrintOperation    *op,
     page->y = 0.;
     page->width = gtk_print_context_get_width (context);
     page->height = gtk_print_context_get_height (context);
+    _moo_message ("page size: %f, %f - %f in, %f in",
+                  page->width, page->height,
+                  page->width / gtk_print_context_get_dpi_x (context),
+                  page->height / gtk_print_context_get_dpi_y (context));
 
     header_footer_get_size (settings->header, op, context,
                             default_font, MOO_PRINT_HEADER);
@@ -638,6 +676,11 @@ moo_print_operation_calc_page_size (MooPrintOperation    *op,
         page->y = 0.;
         page->height = gtk_print_context_get_height (context);
     }
+
+    _moo_message ("printable area size: %f, %f - %f in, %f in",
+                  page->width, page->height,
+                  page->width / gtk_print_context_get_dpi_x (context),
+                  page->height / gtk_print_context_get_dpi_y (context));
 }
 
 
@@ -662,7 +705,8 @@ moo_print_operation_paginate (MooPrintOperation *op)
     double page_height;
     gboolean use_styles;
 
-    _moo_message ("moo_print_operation_paginate\n");
+    _moo_message ("moo_print_operation_paginate");
+    _moo_message ("page height: %f", op->priv->page.height);
 
     if (op->priv->pages)
         g_array_free (op->priv->pages, TRUE);
@@ -685,7 +729,6 @@ moo_print_operation_paginate (MooPrintOperation *op)
     while (gtk_text_iter_compare (&iter, &print_end) < 0)
     {
         GtkTextIter end;
-        PangoRectangle line_rect;
         double line_height;
 
         end = iter;
@@ -696,8 +739,7 @@ moo_print_operation_paginate (MooPrintOperation *op)
         fill_layout (op, op->priv->layout, &iter, &end,
                      GET_OPTION (op, MOO_PRINT_USE_STYLES));
 
-        pango_layout_get_pixel_extents (op->priv->layout, NULL, &line_rect);
-        line_height = line_rect.height;
+        get_layout_size (op->priv->layout, NULL, &line_height);
 
 #define EPS (.1)
         if (page_height > EPS && page_height + line_height > op->priv->page.height + EPS)
@@ -714,14 +756,15 @@ moo_print_operation_paginate (MooPrintOperation *op)
                 do
                 {
                     PangoLayoutLine *layout_line;
+                    double layout_line_height;
 
                     layout_line = pango_layout_iter_get_line (layout_iter);
-                    pango_layout_line_get_pixel_extents (layout_line, NULL, &line_rect);
+                    get_layout_line_size (layout_line, NULL, &layout_line_height);
 
-                    if (page_height + part_height + line_rect.height > op->priv->page.height + EPS)
+                    if (page_height + part_height + layout_line_height > op->priv->page.height + EPS)
                         break;
 
-                    part_height += line_rect.height;
+                    part_height += layout_line_height;
                     part = TRUE;
                 }
                 while (pango_layout_iter_next_line (layout_iter));
@@ -753,7 +796,7 @@ moo_print_operation_paginate (MooPrintOperation *op)
 
     gtk_print_operation_set_n_pages (GTK_PRINT_OPERATION (op), op->priv->pages->len);
 
-    _moo_message ("moo_print_operation_paginate done\n");
+    _moo_message ("moo_print_operation_paginate done");
 }
 
 
@@ -773,7 +816,7 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
     g_return_if_fail (op->priv->first_line < gtk_text_buffer_get_line_count (op->priv->buffer));
     g_return_if_fail (op->priv->last_line < gtk_text_buffer_get_line_count (op->priv->buffer));
 
-    _moo_message ("moo_print_operation_begin_print\n");
+    _moo_message ("moo_print_operation_begin_print");
 
     moo_print_operation_load_prefs (op);
     settings = op->priv->settings;
@@ -820,7 +863,7 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
     if (op->priv->layout)
         g_object_unref (op->priv->layout);
 
-    op->priv->layout = gtk_print_context_create_pango_layout (context);
+    op->priv->layout = create_layout (context);
 
     if (GET_OPTION (op, MOO_PRINT_WRAP))
     {
@@ -839,17 +882,17 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
         pango_font_description_free (font);
     }
 
-#ifdef MOO_DEBUG
-    {
-        PangoContext *pctx = gtk_print_context_create_pango_context (context);
-        g_message ("pango context resolution: %f\n", pango_cairo_context_get_resolution (pctx));
-        g_object_unref (pctx);
-    }
-#endif
+// #ifdef MOO_DEBUG
+//     {
+//         PangoContext *pctx = gtk_print_context_create_pango_context (context);
+//         g_message ("pango context resolution: %f", pango_cairo_context_get_resolution (pctx));
+//         g_object_unref (pctx);
+//     }
+// #endif
 
     moo_print_operation_paginate (op);
 
-    _moo_message ("begin_print: %d pages in %f s\n", op->priv->pages->len,
+    _moo_message ("begin_print: %d pages in %f s", op->priv->pages->len,
                   g_timer_elapsed (timer, NULL));
     g_timer_destroy (timer);
 
@@ -877,7 +920,7 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
     if (op->priv->preview)
         _moo_print_preview_start (op->priv->preview);
 
-    _moo_message ("moo_print_operation_begin_print done\n");
+    _moo_message ("moo_print_operation_begin_print done");
 }
 
 
@@ -995,6 +1038,31 @@ get_iter_attrs (MooPrintOperation *op,
 }
 
 
+static PangoLayout *
+create_layout (GtkPrintContext *context)
+{
+    PangoLayout *layout;
+    PangoContext *pango_context;
+    cairo_font_options_t *options;
+
+    g_return_val_if_fail (GTK_IS_PRINT_CONTEXT (context), NULL);
+
+    pango_context = gtk_print_context_create_pango_context (context);
+    pango_cairo_update_context (gtk_print_context_get_cairo_context (context), pango_context);
+
+    options = cairo_font_options_copy (pango_cairo_context_get_font_options (pango_context));
+    cairo_font_options_set_hint_metrics (options, CAIRO_HINT_METRICS_OFF);
+    cairo_font_options_set_hint_style (options, CAIRO_HINT_STYLE_NONE);
+    pango_cairo_context_set_font_options (pango_context, options);
+
+    layout = pango_layout_new (pango_context);
+
+    cairo_font_options_destroy (options);
+    g_object_unref (pango_context);
+    return layout;
+}
+
+
 static void
 fill_layout (MooPrintOperation *op,
              PangoLayout       *layout,
@@ -1070,7 +1138,6 @@ print_header_footer (MooPrintOperation    *op,
 {
     double y;
     char *text;
-    PangoRectangle rect;
     int total_pages;
     Page *page = &op->priv->page;
 
@@ -1096,9 +1163,10 @@ print_header_footer (MooPrintOperation    *op,
         (text = hf_format_eval (hf->parsed_format[1], op->priv->tm, page_no, total_pages,
                                 op->priv->filename, op->priv->basename)))
     {
+        double w;
         pango_layout_set_text (hf->layout, text, -1);
-        pango_layout_get_pixel_extents (hf->layout, NULL, &rect);
-        cairo_move_to (cr, page->x + page->width/2. - rect.width/2., y);
+        get_layout_size (hf->layout, &w, NULL);
+        cairo_move_to (cr, page->x + page->width/2. - w/2., y);
         pango_cairo_show_layout (cr, hf->layout);
         g_free (text);
     }
@@ -1107,9 +1175,10 @@ print_header_footer (MooPrintOperation    *op,
         (text = hf_format_eval (hf->parsed_format[2], op->priv->tm, page_no, total_pages,
                                 op->priv->filename, op->priv->basename)))
     {
+        double w;
         pango_layout_set_text (hf->layout, text, -1);
-        pango_layout_get_pixel_extents (hf->layout, NULL, &rect);
-        cairo_move_to (cr, page->x + page->width - rect.width, y);
+        get_layout_size (hf->layout, &w, NULL);
+        cairo_move_to (cr, page->x + page->width - w, y);
         pango_cairo_show_layout (cr, hf->layout);
         g_free (text);
     }
@@ -1140,7 +1209,7 @@ print_page (MooPrintOperation *op,
     GtkTextIter line_start, line_end;
     double offset;
 
-    _moo_message ("print_page %d\n", page);
+    _moo_message ("print_page %d", page);
 
     cairo_set_source_rgb (cr, 0., 0., 0.);
 
@@ -1154,7 +1223,7 @@ print_page (MooPrintOperation *op,
 
     while (gtk_text_iter_compare (&line_start, end) < 0)
     {
-        PangoRectangle line_rect;
+        double line_height;
 
         if (gtk_text_iter_ends_line (&line_start))
         {
@@ -1176,12 +1245,12 @@ print_page (MooPrintOperation *op,
         cairo_move_to (cr, op->priv->page.x, offset);
         pango_cairo_show_layout (cr, op->priv->layout);
 
-        pango_layout_get_pixel_extents (op->priv->layout, NULL, &line_rect);
-        offset += line_rect.height;
+        get_layout_size (op->priv->layout, NULL, &line_height);
+        offset += line_height;
         gtk_text_iter_forward_line (&line_start);
     }
 
-    _moo_message ("print_page done\n");
+    _moo_message ("print_page done");
 }
 
 
@@ -1226,6 +1295,7 @@ moo_print_operation_draw_page (GtkPrintOperation *operation,
 #endif
 
 #if defined(MOO_DEBUG) && !defined(__WIN32__)
+    cairo_save (cr);
     cairo_set_line_width (cr, 1.);
     cairo_set_source_rgb (cr, 1., 0., 0.);
     cairo_rectangle (cr,
@@ -1239,6 +1309,7 @@ moo_print_operation_draw_page (GtkPrintOperation *operation,
                      gtk_print_context_get_width (context),
                      gtk_print_context_get_height (context));
     cairo_stroke (cr);
+    cairo_restore (cr);
 #endif
 
     timer = g_timer_new ();
@@ -1250,7 +1321,7 @@ moo_print_operation_draw_page (GtkPrintOperation *operation,
         pango_cairo_update_layout (cr, op->priv->settings->footer->layout);
     print_page (op, &start, &end, page, cr);
 
-    _moo_message ("page %d: %f s\n", page, g_timer_elapsed (timer, NULL));
+    _moo_message ("page %d: %f s", page, g_timer_elapsed (timer, NULL));
     g_timer_destroy (timer);
 }
 
@@ -1263,7 +1334,7 @@ moo_print_operation_end_print (GtkPrintOperation  *operation,
 
     g_return_if_fail (op->priv->buffer != NULL);
 
-    _moo_message ("moo_print_operation_end_print\n");
+    _moo_message ("moo_print_operation_end_print");
 
     if (MOO_IS_EDIT (op->priv->doc))
         _moo_edit_set_state (MOO_EDIT (op->priv->doc),
@@ -1705,13 +1776,13 @@ moo_print_operation_preview (GtkPrintOperation        *op,
 {
     GtkWidget *dialog;
 
-    _moo_message ("moo_print_operation_preview\n");
+    _moo_message ("moo_print_operation_preview");
 
     dialog = _moo_print_preview_new (MOO_PRINT_OPERATION (op), preview, context);
     gtk_widget_show (dialog);
     g_signal_connect_swapped (dialog, "response", G_CALLBACK (preview_response), op);
 
-    _moo_message ("moo_print_operation_preview done\n");
+    _moo_message ("moo_print_operation_preview done");
 
     return TRUE;
 }
