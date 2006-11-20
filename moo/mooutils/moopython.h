@@ -18,58 +18,95 @@
 
 G_BEGIN_DECLS
 
-#define MOO_PY_API_VERSION 91
+#define MOO_PY_API_VERSION 93
 
 typedef struct _MooPyAPI MooPyAPI;
 typedef struct _MooPyObject MooPyObject;
+typedef struct _MooPyMethodDef MooPyMethodDef;
 
+typedef MooPyObject* (*MooPyCFunction) (MooPyObject*, MooPyObject*);
+
+enum {
+    MOO_PY_METH_VARARGS  = 1 << 0,
+    MOO_PY_METH_KEYWORDS = 1 << 1,
+    MOO_PY_METH_NOARGS   = 1 << 2,
+    MOO_PY_METH_O        = 1 << 3,
+    MOO_PY_METH_CLASS    = 1 << 4,
+    MOO_PY_METH_STATIC   = 1 << 5
+};
+
+struct _MooPyMethodDef {
+    const char     *ml_name;
+    MooPyCFunction  ml_meth;
+    int             ml_flags;
+    const char     *ml_doc;
+};
 
 struct _MooPyAPI {
-    MooPyObject* (*incref)              (MooPyObject *obj);
-    void         (*decref)              (MooPyObject *obj);
-    void         (*err_print)           (void);
+    MooPyObject *py_none;
+    MooPyObject *py_true;
+    MooPyObject *py_false;
 
-    char*        (*get_info)            (void);
+    MooPyObject* (*incref)                  (MooPyObject    *obj);
+    void         (*decref)                  (MooPyObject    *obj);
 
-    MooPyObject* (*run_simple_string)   (const char  *str);
-    MooPyObject* (*run_string)          (const char  *str,
-                                         MooPyObject *locals,
-                                         MooPyObject *globals);
-    MooPyObject* (*run_file)            (void        *fp,
-                                         const char  *filename);
-    MooPyObject* (*run_code)            (const char  *str,
-                                         MooPyObject *locals,
-                                         MooPyObject *globals);
+    char*        (*get_info)                (void);
 
-    MooPyObject* (*py_object_from_gobject) (gpointer gobj);
+    MooPyObject* (*run_simple_string)       (const char     *str);
+    MooPyObject* (*run_string)              (const char     *str,
+                                             MooPyObject    *locals,
+                                             MooPyObject    *globals);
+    MooPyObject* (*run_file)                (void           *fp,
+                                             const char     *filename);
+    MooPyObject* (*run_code)                (const char     *str,
+                                             MooPyObject    *locals,
+                                             MooPyObject    *globals);
 
-    MooPyObject* (*dict_get_item)       (MooPyObject *dict,
-                                         const char  *key);
-    gboolean     (*dict_set_item)       (MooPyObject *dict,
-                                         const char  *key,
-                                         MooPyObject *val);
-    gboolean     (*dict_del_item)       (MooPyObject *dict,
-                                         const char  *key);
+    MooPyObject* (*py_object_from_gobject)  (gpointer        gobj);
 
-    MooPyObject* (*import_exec)         (const char  *name,
-                                         const char  *string);
-    MooPyObject* (*call_meth)           (MooPyObject *obj,
-                                         const char  *meth,
-                                         const char  *arg);
+    MooPyObject* (*dict_get_item)           (MooPyObject    *dict,
+                                             const char     *key);
+    gboolean     (*dict_set_item)           (MooPyObject    *dict,
+                                             const char     *key,
+                                             MooPyObject    *val);
+    gboolean     (*dict_del_item)           (MooPyObject    *dict,
+                                             const char     *key);
+
+    MooPyObject* (*import_exec)             (const char     *name,
+                                             const char     *string);
+
+    void         (*py_err_print)            (void);
+    MooPyObject* (*py_object_call_method)   (MooPyObject    *object,
+                                             const char     *method,
+                                             const char     *format,
+                                             ...);
+    MooPyObject* (*py_object_call_function) (MooPyObject    *callable,
+                                             const char     *format,
+                                             ...);
+    MooPyObject* (*py_c_function_new)       (MooPyMethodDef *meth,
+                                             MooPyObject    *self);
+    int          (*py_module_add_object)    (MooPyObject    *mod,
+                                             const char     *name,
+                                             MooPyObject    *obj);
+    gboolean     (*py_arg_parse_tuple)      (MooPyObject    *args,
+                                             const char     *format,
+                                            ...);
+
+    GSList *_free_list;
 };
 
 
 extern MooPyAPI *moo_py_api;
-gboolean moo_python_init (guint     version,
-                          MooPyAPI *api);
+gboolean     moo_python_init        (guint           version,
+                                     MooPyAPI       *api);
 
+void         moo_python_add_data    (gpointer        data,
+                                     GDestroyNotify  destroy);
 
-MooPyObject *moo_Py_INCREF  (MooPyObject    *obj);
-void         moo_Py_DECREF  (MooPyObject    *obj);
+MooPyObject *moo_Py_INCREF          (MooPyObject    *obj);
+void         moo_Py_DECREF          (MooPyObject    *obj);
 
 #define moo_python_running() (moo_py_api != NULL)
-
-#define moo_PyErr_Print                 moo_py_api->err_print
 
 #define moo_python_get_info             moo_py_api->get_info
 
@@ -83,8 +120,17 @@ void         moo_Py_DECREF  (MooPyObject    *obj);
 #define moo_py_dict_del_item            moo_py_api->dict_del_item
 
 #define moo_py_import_exec              moo_py_api->import_exec
-#define moo_py_call_meth                moo_py_api->call_meth
 #define moo_py_object_from_gobject      moo_py_api->py_object_from_gobject
+
+#define moo_PyErr_Print                 moo_py_api->py_err_print
+#define moo_PyObject_CallMethod         moo_py_api->py_object_call_method
+#define moo_PyObject_CallFunction       moo_py_api->py_object_call_function
+#define moo_PyCFunction_New             moo_py_api->py_c_function_new
+#define moo_PyModule_AddObject          moo_py_api->py_module_add_object
+#define moo_PyArg_ParseTuple            moo_py_api->py_arg_parse_tuple
+#define moo_Py_None                     moo_py_api->py_none
+#define moo_Py_True                     moo_py_api->py_true
+#define moo_Py_False                    moo_py_api->py_false
 
 
 G_END_DECLS

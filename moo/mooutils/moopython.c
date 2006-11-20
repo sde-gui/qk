@@ -14,7 +14,39 @@
 #include "mooutils/moopython.h"
 
 
+typedef struct {
+    gpointer data;
+    GDestroyNotify destroy;
+} Data;
+
 MooPyAPI *moo_py_api = NULL;
+
+
+void
+moo_python_add_data (gpointer       data,
+                     GDestroyNotify destroy)
+{
+    Data *d;
+
+    g_return_if_fail (moo_py_api != NULL);
+    g_return_if_fail (destroy != NULL);
+
+    d = g_new (Data, 1);
+    d->data = data;
+    d->destroy = destroy;
+    moo_py_api->_free_list = g_slist_prepend (moo_py_api->_free_list, d);
+}
+
+static void
+data_free (Data *d)
+{
+    if (d)
+    {
+        d->destroy (d->data);
+        g_free (d);
+    }
+}
+
 
 gboolean
 moo_python_init (guint     version,
@@ -25,7 +57,15 @@ moo_python_init (guint     version,
 
     g_return_val_if_fail (!moo_py_api || !api, FALSE);
 
+    if (moo_py_api)
+    {
+        g_slist_foreach (moo_py_api->_free_list, (GFunc) data_free, NULL);
+        g_slist_free (moo_py_api->_free_list);
+    }
+
     moo_py_api = api;
+    moo_py_api->_free_list = NULL;
+
     return TRUE;
 }
 
