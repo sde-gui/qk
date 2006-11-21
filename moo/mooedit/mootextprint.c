@@ -105,10 +105,9 @@ static char     *hf_format_eval     (HFFormat           *format,
                                      const char         *basename);
 
 
-static GtkPageSetup *page_setup;
-static GtkPrintSettings *print_settings;
+static GtkPageSetup *global_page_setup;
+static GtkPrintSettings *global_print_settings;
 
-static void load_default_settings   (void);
 static void moo_print_init_prefs    (void);
 
 static void moo_print_operation_finalize    (GObject            *object);
@@ -445,16 +444,12 @@ _moo_print_operation_init (MooPrintOperation *op)
 {
     op->priv = g_new0 (MooPrintOperationPrivate, 1);
 
-    load_default_settings ();
-
     _moo_message ("_moo_print_operation_init");
 
     gtk_print_operation_set_print_settings (GTK_PRINT_OPERATION (op),
-                                            print_settings);
-
-    if (page_setup)
-        gtk_print_operation_set_default_page_setup (GTK_PRINT_OPERATION (op),
-                                                    page_setup);
+                                            global_print_settings);
+    gtk_print_operation_set_default_page_setup (GTK_PRINT_OPERATION (op),
+                                                global_page_setup);
 
     op->priv->first_line = 0;
     op->priv->last_line = -1;
@@ -523,14 +518,6 @@ moo_print_operation_set_buffer (MooPrintOperation *op,
 }
 
 
-static void
-load_default_settings (void)
-{
-    if (!print_settings)
-        print_settings = gtk_print_settings_new ();
-}
-
-
 void
 _moo_edit_page_setup (GtkWidget *parent)
 {
@@ -541,8 +528,6 @@ _moo_edit_page_setup (GtkWidget *parent)
 
     _moo_message ("_moo_edit_page_setup");
 
-    load_default_settings ();
-
     if (parent)
         parent = gtk_widget_get_toplevel (parent);
 
@@ -550,13 +535,13 @@ _moo_edit_page_setup (GtkWidget *parent)
         parent_window = GTK_WINDOW (parent);
 
     new_page_setup = gtk_print_run_page_setup_dialog (parent_window,
-                                                      page_setup,
-                                                      print_settings);
+                                                      global_page_setup,
+                                                      global_print_settings);
 
-    if (page_setup)
-        g_object_unref (page_setup);
+    if (global_page_setup)
+        g_object_unref (global_page_setup);
 
-    page_setup = new_page_setup;
+    global_page_setup = new_page_setup;
 }
 
 
@@ -1512,10 +1497,10 @@ do_print_operation (GtkTextView            *view,
             break;
 
         case GTK_PRINT_OPERATION_RESULT_APPLY:
-            if (print_settings)
-                g_object_unref (print_settings);
-            print_settings = gtk_print_operation_get_print_settings (GTK_PRINT_OPERATION (op));
-            g_object_ref (print_settings);
+            if (global_print_settings)
+                g_object_unref (global_print_settings);
+            global_print_settings = gtk_print_operation_get_print_settings (GTK_PRINT_OPERATION (op));
+            g_object_ref (global_print_settings);
             break;
 
         case GTK_PRINT_OPERATION_RESULT_CANCEL:
