@@ -17,7 +17,7 @@ Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:Ad
 Name: quicklaunchicon; Description: {cm:CreateQuickLaunchIcon}; GroupDescription: {cm:AdditionalIcons}; Flags: unchecked
 
 [Files]
-Source: C:\medit\*; DestDir: {app}; Flags: ignoreversion recursesubdirs
+Source: C:\medit\*; DestDir: {app}; Flags: ignoreversion recursesubdirs sortfilesbyextension; Tasks: 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -25,6 +25,8 @@ Name: {group}\medit; Filename: {app}\bin\medit.exe
 Name: {group}\{cm:UninstallProgram,medit}; Filename: {uninstallexe}
 Name: {userdesktop}\medit; Filename: {app}\bin\medit.exe; Tasks: desktopicon
 Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\medit; Filename: {app}\bin\medit.exe; Tasks: quicklaunchicon
+Name: {app}\medit; Filename: {app}\bin\medit.exe; Flags: createonlyiffileexists; Tasks: 
+Name: {app}\medit-debug; Filename: {app}\bin\medit.exe; Flags: createonlyiffileexists; Tasks: ; Parameters: --log --debug
 
 [Run]
 Filename: {app}\bin\medit.exe; Description: {cm:LaunchProgram,medit}; Flags: nowait postinstall skipifsilent unchecked; Tasks: 
@@ -34,3 +36,5 @@ Name: {app}\lib\moo\plugins\lib\*.pyc; Type: files; Tasks:
 
 Name: {app}\lib\moo\plugins\project\mprj\*.pyc; Type: files; Tasks: 
 Name: {app}\lib\moo\plugins\project\mprj\config\*.pyc; Type: files; Tasks: 
+[Types]
+
