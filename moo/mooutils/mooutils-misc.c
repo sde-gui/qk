@@ -1686,7 +1686,7 @@ saved_win32_error_mode;
 void
 _moo_disable_win32_error_message (void)
 {
-#if defined(__WIN32__) && !defined(MOO_DEBUG)
+#if defined(__WIN32__)
     if (!_moo_debug_enabled ())
         saved_win32_error_mode = SetErrorMode (SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
 #endif
@@ -1695,7 +1695,7 @@ _moo_disable_win32_error_message (void)
 void
 _moo_enable_win32_error_message (void)
 {
-#if defined(__WIN32__) && !defined(MOO_DEBUG)
+#if defined(__WIN32__)
     if (!_moo_debug_enabled ())
         SetErrorMode (saved_win32_error_mode);
 #endif
