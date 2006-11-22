@@ -84,4 +84,5 @@ export PKG_CONFIG="./fake-pkg-config"
 
 TARGET=i586-pc-mingw32msvc
 
-exec sh $CONFIGURE --target=$TARGET --host=$TARGET --enable-all-gcc-warnings $*
+exec sh $CONFIGURE --target=$TARGET --host=$TARGET --enable-all-gcc-warnings \
+                   --disable-static --enable-shared $*
