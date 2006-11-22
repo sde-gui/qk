@@ -64,7 +64,9 @@ moo_python_init (guint     version,
     }
 
     moo_py_api = api;
-    moo_py_api->_free_list = NULL;
+
+    if (moo_py_api)
+        moo_py_api->_free_list = NULL;
 
     return TRUE;
 }
