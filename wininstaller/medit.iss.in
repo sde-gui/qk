@@ -27,7 +27,7 @@ Name: {userdesktop}\medit; Filename: {app}\bin\medit.exe; Tasks: desktopicon
 Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\medit; Filename: {app}\bin\medit.exe; Tasks: quicklaunchicon
 
 [Run]
-Filename: {app}\bin\medit.exe; Description: {cm:LaunchProgram,medit}; Flags: nowait postinstall skipifsilent
+Filename: {app}\bin\medit.exe; Description: {cm:LaunchProgram,medit}; Flags: nowait postinstall skipifsilent unchecked; Tasks: 
 [UninstallDelete]
 Name: {app}\lib\moo\plugins\*.pyc; Type: files; Tasks: 
 Name: {app}\lib\moo\plugins\lib\*.pyc; Type: files; Tasks: 
