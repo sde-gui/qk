@@ -124,6 +124,7 @@ m  mode         "=[simple|project] Use specified mode"              reqarg
 p  project      "=PROJECT Open project file PROJECT"                reqarg
 l  line         "=LINE Open file and position cursor on line LINE"  reqarg
    log          "[=FILE] Show debug output or write it to FILE"     optarg
+   debug        "Run in debug mode"
    version      "Display version information and exit"              return
 h  help         "Display this help text and exit"                   return
 %%
@@ -240,6 +241,9 @@ main (int argc, char *argv[])
 
     opt_remain = _medit_parse_options (g_get_prgname (), argc, argv);
     check_args (opt_remain);
+
+    if (_medit_opt_debug)
+        g_setenv ("MOO_DEBUG", "yes", FALSE);
 
     if (_medit_opt_log)
     {

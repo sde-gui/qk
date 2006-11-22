@@ -160,6 +160,9 @@ int _medit_parse_options (const char *const program_name,
 #define STR_HELP_LOG "\
       --log[=FILE]               Show debug output or write it to FILE\n"
 
+#define STR_HELP_DEBUG "\
+      --debug                    Run in debug mode\n"
+
 #define STR_HELP_VERSION "\
       --version                  Display version information and exit\n"
 
@@ -173,6 +176,7 @@ int _medit_parse_options (const char *const program_name,
   -p, --project=PROJECT          Open project file PROJECT\n\
   -l, --line=LINE                Open file and position cursor on line LINE\n\
       --log[=FILE]               Show debug output or write it to FILE\n\
+      --debug                    Run in debug mode\n\
       --version                  Display version information and exit\n\
   -h, --help                     Display this help text and exit\n"
 
@@ -193,6 +197,9 @@ char _medit_opt_line;
 
 /* Set to 1 if option --log has been specified.  */
 char _medit_opt_log;
+
+/* Set to 1 if option --debug has been specified.  */
+char _medit_opt_debug;
 
 /* Set to 1 if option --version has been specified.  */
 char _medit_opt_version;
@@ -224,6 +231,7 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   static const char *const optstr__mode = "mode";
   static const char *const optstr__project = "project";
   static const char *const optstr__line = "line";
+  static const char *const optstr__debug = "debug";
   static const char *const optstr__version = "version";
   static const char *const optstr__help = "help";
   int i = 0;
@@ -233,6 +241,7 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   _medit_opt_project = 0;
   _medit_opt_line = 0;
   _medit_opt_log = 0;
+  _medit_opt_debug = 0;
   _medit_opt_version = 0;
   _medit_opt_help = 0;
   _medit_arg_pid = 0;
@@ -262,6 +271,18 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
       {
        case '\0':
         return i + 1;
+       case 'd':
+        if (strncmp (option + 1, optstr__debug + 1, option_len - 1) == 0)
+        {
+          if (argument != 0)
+          {
+            option = optstr__debug;
+            goto error_unexpec_arg_long;
+          }
+          _medit_opt_debug = 1;
+          break;
+        }
+        goto error_unknown_long_opt;
        case 'h':
         if (strncmp (option + 1, optstr__help + 1, option_len - 1) == 0)
         {
@@ -553,6 +574,9 @@ main (int argc, char *argv[])
 
     opt_remain = _medit_parse_options (g_get_prgname (), argc, argv);
     check_args (opt_remain);
+
+    if (_medit_opt_debug)
+        g_setenv ("MOO_DEBUG", "yes", FALSE);
 
     if (_medit_opt_log)
     {
