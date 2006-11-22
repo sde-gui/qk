@@ -1686,16 +1686,18 @@ saved_win32_error_mode;
 void
 _moo_disable_win32_error_message (void)
 {
-#ifdef __WIN32__
-    saved_win32_error_mode = SetErrorMode (SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
+#if defined(__WIN32__) && !defined(MOO_DEBUG)
+    if (!_moo_debug_enabled ())
+        saved_win32_error_mode = SetErrorMode (SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
 #endif
 }
 
 void
 _moo_enable_win32_error_message (void)
 {
-#ifdef __WIN32__
-    SetErrorMode (saved_win32_error_mode);
+#if defined(__WIN32__) && !defined(MOO_DEBUG)
+    if (!_moo_debug_enabled ())
+        SetErrorMode (saved_win32_error_mode);
 #endif
 }
 
