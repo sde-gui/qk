@@ -81,16 +81,14 @@
       <separator/>
       <item action="LanguageMenu"/>
       <separator/>
-      <!--
-      <item action="ToggleBookmark"/>
-      <item action="PreviousBookmark"/>
-      <item action="NextBookmark"/>
-      -->
-      <separator/>
       <item name="Document" _label="_Document">
         <item action="WrapText"/>
         <item action="LineNumbers"/>
       </item>
+      <separator/>
+      <item action="ToggleBookmark"/>
+      <item action="PreviousBookmark"/>
+      <item action="NextBookmark"/>
       <separator/>
       <item action="FocusDoc"/>
       <separator/>
