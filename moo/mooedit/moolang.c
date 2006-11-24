@@ -12,7 +12,9 @@
  */
 
 #define MOOEDIT_COMPILATION
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 #include "mooedit/moolang-private.h"
 #include "mooutils/mooi18n.h"
 #include "gtksourceview/gtksourcelanguage-private.h"

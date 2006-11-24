@@ -11,7 +11,9 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 #include "mooedit/moocommand-exe-private.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooedittools-glade.h"

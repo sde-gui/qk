@@ -12,7 +12,9 @@
  */
 
 #define MOOEDIT_COMPILATION
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 #include "mooedit/moolangmgr-private.h"
 #include "mooedit/moolang-private.h"
 #include "mooedit/mooeditprefs.h"

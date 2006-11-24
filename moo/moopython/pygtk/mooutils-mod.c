@@ -11,7 +11,9 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 #include <Python.h>
 #define NO_IMPORT_PYGOBJECT
 #include <pygobject.h>

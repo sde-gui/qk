@@ -33,7 +33,9 @@
  * gtkfontsel.* copied and modified to allow choosing monospace fonts
  */
 
-#include <config.h>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include <stdlib.h>
 #include <glib/gprintf.h>
 #include <string.h>

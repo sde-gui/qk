@@ -11,7 +11,9 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include <config.h>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include "mooedit/mooplugin-loader.h"
 #include "mooedit/mooplugin.h"
 #include "mooutils/mooutils-misc.h"
