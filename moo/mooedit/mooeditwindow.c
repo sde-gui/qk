@@ -576,7 +576,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "display-name", _("Find Current Word"),
                                  "label", _("Find Current _Word"),
                                  "stock-id", GTK_STOCK_FIND,
-                                 "accel", "<ctrl>3",
+                                 "accel", "F4",
                                  "closure-callback", action_find_now_f,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
@@ -585,7 +585,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "display-name", _("Find Current Word Backwards"),
                                  "label", _("Find Current Word _Backwards"),
                                  "stock-id", GTK_STOCK_FIND,
-                                 "accel", "<ctrl>4",
+                                 "accel", "<shift>F4",
                                  "closure-callback", action_find_now_b,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
@@ -617,9 +617,9 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "FocusDoc", NULL,
-                                 "display-name", _("Focus Doc"),
-                                 "label", _("_Focus Doc"),
-                                 "tooltip", _("Focus Doc"),
+                                 "display-name", _("Focus Document"),
+                                 "label", _("Focus Document"),
+                                 "tooltip", _("Focus Document"),
                                  "accel", "<alt>C",
                                  "closure-callback", gtk_widget_grab_focus,
                                  "closure-proxy-func", moo_edit_window_get_active_doc,
