@@ -1586,7 +1586,7 @@ moo_data_dir_type_get_type (void)
 }
 
 
-gboolean
+static gboolean
 _moo_debug_enabled (void)
 {
 #ifndef MOO_DEBUG
@@ -1684,7 +1684,7 @@ G_GNUC_UNUSED static guint
 saved_win32_error_mode;
 
 void
-_moo_disable_win32_error_message (void)
+moo_disable_win32_error_message (void)
 {
 #if defined(__WIN32__)
     if (!_moo_debug_enabled ())
@@ -1693,7 +1693,7 @@ _moo_disable_win32_error_message (void)
 }
 
 void
-_moo_enable_win32_error_message (void)
+moo_enable_win32_error_message (void)
 {
 #if defined(__WIN32__)
     if (!_moo_debug_enabled ())
