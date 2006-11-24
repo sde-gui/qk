@@ -88,6 +88,9 @@ static GObject *moo_file_selector_constructor   (GType           type,
                                                  GObjectConstructParam *props);
 static void     moo_file_selector_finalize      (GObject        *object);
 
+static void     moo_file_selector_select_file   (MooFileSelector *filesel,
+                                                 const char     *filename,
+                                                 const char     *dirname);
 static gboolean moo_file_selector_chdir         (MooFileView    *fileview,
                                                  const char     *dir,
                                                  GError        **error);
@@ -286,6 +289,7 @@ goto_current_doc_dir (MooFileSelector *filesel)
     {
         char *dirname = g_path_get_dirname (filename);
         moo_file_view_chdir (MOO_FILE_VIEW (filesel), dirname, NULL);
+        moo_file_selector_select_file (filesel, filename, dirname);
         g_free (dirname);
     }
 }
@@ -922,13 +926,24 @@ out:
 
 
 static void
-select_file (MooFileSelector *filesel,
-             const char      *filename,
-             const char      *dirname)
+moo_file_selector_select_file (MooFileSelector *filesel,
+                               const char      *filename,
+                               const char      *dirname)
 {
+    char *freeme = NULL;
     char *curdir = NULL;
 
+    g_return_if_fail (filename != NULL);
+    g_return_if_fail (dirname != NULL);
+
     g_object_get (filesel, "current-directory", &curdir, NULL);
+
+    /* XXX */
+    if (dirname[0] && dirname[strlen(dirname) - 1] != '/')
+    {
+        freeme = g_strdup_printf ("%s/", dirname);
+        dirname = freeme;
+    }
 
     if (curdir && !strcmp (curdir, dirname))
     {
@@ -938,6 +953,7 @@ select_file (MooFileSelector *filesel,
     }
 
     g_free (curdir);
+    g_free (freeme);
 }
 
 
@@ -964,7 +980,7 @@ drop_untitled (MooFileSelector *filesel,
     result = moo_edit_save_as (doc, name, NULL, NULL);
 
     if (result)
-        select_file (filesel, name, destdir);
+        moo_file_selector_select_file (filesel, name, destdir);
 
     g_free (name);
     return result;
@@ -986,7 +1002,7 @@ doc_save_as (MooFileSelector *filesel,
     if (filename)
     {
         if (moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc), NULL))
-            select_file (filesel, filename, destdir);
+            moo_file_selector_select_file (filesel, filename, destdir);
         g_free (filename);
     }
 }
@@ -1006,7 +1022,7 @@ doc_save_copy (MooFileSelector *filesel,
     if (filename)
     {
         if (moo_edit_save_copy (doc, filename, moo_edit_get_encoding (doc), NULL))
-            select_file (filesel, filename, destdir);
+            moo_file_selector_select_file (filesel, filename, destdir);
         g_free (filename);
     }
 }
@@ -1030,7 +1046,7 @@ doc_move (MooFileSelector *filesel,
         if (moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc), NULL))
         {
             _moo_unlink (old_filename);
-            select_file (filesel, filename, destdir);
+            moo_file_selector_select_file (filesel, filename, destdir);
         }
 
         g_free (filename);
