@@ -75,7 +75,6 @@ typedef enum {
     MOO_TEXT_VIEW_POS_INVALID
 } MooTextViewPos;
 
-
 struct _MooTextViewPrivate {
     gboolean constructed;
 
@@ -105,22 +104,21 @@ struct _MooTextViewPrivate {
     gboolean highlight_matching_brackets;
     gboolean highlight_mismatching_brackets;
 
-    gboolean show_line_numbers;
-    int digit_width; /* max line number digit width */
-    PangoFontDescription *line_numbers_font;
-    gboolean bold_current_line_number;
+    struct {
+        gboolean show_icons;
+        int icon_width;
+        gboolean show_numbers;
+        int digit_width;
+        PangoFontDescription *numbers_font;
+        gboolean show_folds;
+        int fold_width;
+    } lm;
 
-    gboolean show_scrollbar_marks;
-    int right_margin_width;
-    int cursor_line;
-
-    gboolean show_line_marks;
-    int line_mark_width;
-    GSList *line_marks;
+    int n_lines;
+    guint update_n_lines_idle;
 
     gboolean enable_folding;
-    int fold_margin_width;
-    int expander_size;
+    GSList *line_marks;
 
     /***********************************************************************/
     /* Search

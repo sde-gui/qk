@@ -867,14 +867,6 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
         pango_font_description_free (font);
     }
 
-// #ifdef MOO_DEBUG
-//     {
-//         PangoContext *pctx = gtk_print_context_create_pango_context (context);
-//         g_message ("pango context resolution: %f", pango_cairo_context_get_resolution (pctx));
-//         g_object_unref (pctx);
-//     }
-// #endif
-
     moo_print_operation_paginate (op);
 
     _moo_message ("begin_print: %d pages in %f s", op->priv->pages->len,

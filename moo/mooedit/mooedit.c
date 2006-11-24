@@ -141,7 +141,7 @@ moo_edit_class_init (MooEditClass *klass)
                                      g_param_spec_boolean ("enable-bookmarks",
                                              "enable-bookmarks",
                                              "enable-bookmarks",
-                                             FALSE,
+                                             TRUE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     g_object_class_install_property (gobject_class,
@@ -970,7 +970,9 @@ moo_edit_queue_apply_config (MooEdit *edit)
 {
     if (!edit->priv->apply_config_idle)
         edit->priv->apply_config_idle =
-                g_idle_add ((GSourceFunc) do_apply_config, edit);
+                g_idle_add_full (G_PRIORITY_HIGH,
+                                 (GSourceFunc) do_apply_config,
+                                 edit, NULL);
 }
 
 
@@ -1229,7 +1231,6 @@ moo_edit_set_enable_bookmarks (MooEdit  *edit,
         return;
 
     edit->priv->enable_bookmarks = enable;
-    moo_text_view_set_show_line_marks (MOO_TEXT_VIEW (edit), enable);
     buffer = get_moo_buffer (edit);
 
     if (!enable && edit->priv->bookmarks)
@@ -1260,8 +1261,9 @@ moo_edit_get_enable_bookmarks (MooEdit *edit)
 }
 
 
-static int cmp_bookmarks (MooLineMark *a,
-                          MooLineMark *b)
+static int
+cmp_bookmarks (MooLineMark *a,
+               MooLineMark *b)
 {
     int line_a = moo_line_mark_get_line (a);
     int line_b = moo_line_mark_get_line (b);
@@ -1403,6 +1405,8 @@ moo_edit_add_bookmark (MooEdit *edit,
     g_return_if_fail (MOO_IS_EDIT (edit));
     g_return_if_fail (line < get_line_count (edit));
     g_return_if_fail (moo_edit_get_bookmark_at_line (edit, line) == NULL);
+
+    g_object_set (edit, "show-line-marks", TRUE, NULL);
 
     bk = g_object_new (MOO_TYPE_EDIT_BOOKMARK, NULL);
     moo_text_buffer_add_line_mark (get_moo_buffer (edit), MOO_LINE_MARK (bk), line);

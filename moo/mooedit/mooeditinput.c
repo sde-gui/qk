@@ -434,7 +434,7 @@ left_window_click (GtkTextView    *text_view,
 
     gdk_drawable_get_size (event->window, &window_width, NULL);
 
-    if (view->priv->show_line_marks && event->x >= 0 && event->x < view->priv->line_mark_width)
+    if (view->priv->lm.show_icons && event->x >= 0 && event->x < view->priv->lm.icon_width)
     {
         gboolean ret;
         line = left_window_to_line (text_view, event->y);
@@ -442,7 +442,7 @@ left_window_click (GtkTextView    *text_view,
         return ret;
     }
     else if (view->priv->enable_folding &&
-             event->x >= window_width - view->priv->fold_margin_width &&
+             event->x >= window_width - view->priv->lm.fold_width &&
              event->x < window_width)
     {
         MooTextBuffer *buffer = MOO_TEXT_BUFFER (gtk_text_view_get_buffer (text_view));

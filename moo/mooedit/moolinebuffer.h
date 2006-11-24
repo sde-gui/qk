@@ -28,11 +28,6 @@ G_BEGIN_DECLS
 typedef struct _LineBuffer LineBuffer;
 typedef struct _BTData Line;
 
-typedef struct {
-    int first;
-    int last;
-} Interval;
-
 struct _LineBuffer {
     BTree *tree;
 };

@@ -44,6 +44,7 @@
 #include "mooedit/mootextprint.h"
 #endif
 
+#define ENABLE_BOOKMARKS
 
 #define ACTIVE_DOC moo_edit_window_get_active_doc
 #define ACTIVE_PAGE(window) (moo_notebook_get_current_page (window->priv->notebook))
@@ -218,10 +219,10 @@ static void action_close_tab                    (MooEditWindow      *window);
 static void action_close_all                    (MooEditWindow      *window);
 static void action_previous_tab                 (MooEditWindow      *window);
 static void action_next_tab                     (MooEditWindow      *window);
-#if 0
-static void action_toggle_bookmark (MooEditWindow  *window);
-static void action_next_bookmark (MooEditWindow    *window);
-static void action_prev_bookmark (MooEditWindow    *window);
+#ifdef ENABLE_BOOKMARKS
+static void action_toggle_bookmark              (MooEditWindow      *window);
+static void action_next_bookmark                (MooEditWindow      *window);
+static void action_prev_bookmark                (MooEditWindow      *window);
 #endif
 static void action_next_ph                      (MooEditWindow      *window);
 static void action_prev_ph                      (MooEditWindow      *window);
@@ -636,7 +637,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "condition::visible", "has-stop-clients",
                                  NULL);
 
-#if 0
+#ifdef ENABLE_BOOKMARKS
     moo_window_class_new_action (window_class, "ToggleBookmark", NULL,
                                  "display-name", "Toggle Bookmark",
                                  "label", "Toggle Bookmark",
@@ -1248,7 +1249,7 @@ action_abort_jobs (MooEditWindow *window)
 }
 
 
-#if 0
+#ifdef ENABLE_BOOKMARKS
 static void
 action_toggle_bookmark (MooEditWindow *window)
 {
