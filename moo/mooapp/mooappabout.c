@@ -239,6 +239,10 @@ show_system_info (void)
     g_string_append (text, "Broken gtk theme: yes\n");
 #endif
 
+#ifdef HAVE_CONFIGARGS_H
+    g_string_append_printf (text, "Configured with: %s\n", configure_args);
+#endif
+
     gtk_text_buffer_set_text (buffer, text->str, -1);
     g_string_free (text, TRUE);
 

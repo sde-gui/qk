@@ -1,3 +1,12 @@
+AC_DEFUN([_MOO_AC_CONFIGURE_ARGS],[
+moo_ac_configure_args=`echo "$ac_configure_args" | sed 's/^ //; s/\\""\`\$/\\\\&/g'`
+cat >configargs.h.tmp <<EOF
+static const char configure_args@<:@@:>@ = "$moo_ac_configure_args";
+EOF
+cmp -s configargs.h configargs.h.tmp || mv configargs.h.tmp configargs.h
+AC_DEFINE(HAVE_CONFIGARGS_H, 1, [configargs.h is created])
+])
+
 ##############################################################################
 # MOO_AC_FLAGS(moo_top_dir)
 #
@@ -31,4 +40,6 @@ AC_DEFUN([MOO_AC_FLAGS],[
 
     AC_SUBST(MOO_CFLAGS)
     AC_SUBST(MOO_LIBS)
+
+    _MOO_AC_CONFIGURE_ARGS
 ])
