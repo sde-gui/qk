@@ -314,7 +314,7 @@ add_row (GtkActionGroup    *group,
     GtkTreeIter iter;
     GtkTreeRowReference *row;
 
-    if (_moo_action_get_no_accel (action))
+    if (_moo_action_get_no_accel (action) || !_moo_action_get_accel_editable (action))
         return FALSE;
 
     group_name = _moo_action_group_get_display_name (MOO_ACTION_GROUP (group));

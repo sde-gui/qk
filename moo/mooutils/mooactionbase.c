@@ -14,6 +14,7 @@
 #include "mooutils/mooactionbase-private.h"
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooactiongroup.h"
+#include "mooutils/moomarshals.h"
 #include <gtk/gtkaction.h>
 #include <gtk/gtkstock.h>
 #include <string.h>
@@ -24,7 +25,34 @@ enum {
 
 
 static void
-moo_action_base_class_init (gpointer g_iface)
+base_init (void)
+{
+    static gboolean done = FALSE;
+
+    if (!done)
+    {
+        done = TRUE;
+
+        g_signal_new ("connect-proxy",
+                      MOO_TYPE_ACTION_BASE,
+                      G_SIGNAL_RUN_LAST,
+                      G_STRUCT_OFFSET (MooActionBaseClass, connect_proxy),
+                      NULL, NULL,
+                      _moo_marshal_VOID__OBJECT,
+                      G_TYPE_NONE, 1, GTK_TYPE_WIDGET);
+
+        g_signal_new ("disconnect-proxy",
+                      MOO_TYPE_ACTION_BASE,
+                      G_SIGNAL_RUN_LAST,
+                      G_STRUCT_OFFSET (MooActionBaseClass, disconnect_proxy),
+                      NULL, NULL,
+                      _moo_marshal_VOID__OBJECT,
+                      G_TYPE_NONE, 1, GTK_TYPE_WIDGET);
+    }
+}
+
+static void
+class_init (gpointer g_iface)
 {
     g_object_interface_install_property (g_iface,
                                          g_param_spec_string ("display-name", "display-name", "display-name",
@@ -35,6 +63,10 @@ moo_action_base_class_init (gpointer g_iface)
                                                               NULL,
                                                               G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
     g_object_interface_install_property (g_iface,
+                                         g_param_spec_boolean ("connect-accel", "connect-accel", "connect-accel",
+                                                               FALSE,
+                                                               G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+    g_object_interface_install_property (g_iface,
                                          g_param_spec_boolean ("no-accel", "no-accel", "no-accel",
                                                                FALSE,
                                                                G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
@@ -42,6 +74,10 @@ moo_action_base_class_init (gpointer g_iface)
                                          g_param_spec_boolean ("force-accel-label", "force-accel-label", "force-accel-label",
                                                                FALSE,
                                                                G_PARAM_READWRITE));
+    g_object_interface_install_property (g_iface,
+                                         g_param_spec_boolean ("accel-editable", "accel-editable", "accel-editable",
+                                                               TRUE,
+                                                               G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
     g_object_interface_install_property (g_iface,
                                          g_param_spec_boolean ("dead", "dead", "dead",
                                                                FALSE,
@@ -68,10 +104,18 @@ _moo_action_base_init_class (GObjectClass *klass)
                                      g_param_spec_string ("accel", "accel", "accel",
                                                           NULL,
                                                           G_PARAM_READWRITE));
+    g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_CONNECT_ACCEL,
+                                     g_param_spec_boolean ("connect-accel", "connect-accel", "connect-accel",
+                                                           FALSE,
+                                                           G_PARAM_READWRITE));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_NO_ACCEL,
                                      g_param_spec_boolean ("no-accel", "no-accel", "no-accel",
                                                            FALSE,
                                                            G_PARAM_READWRITE));
+    g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_ACCEL_EDITABLE,
+                                     g_param_spec_boolean ("accel-editable", "accel-editable", "accel-editable",
+                                                           TRUE,
+                                                           G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_FORCE_ACCEL_LABEL,
                                      g_param_spec_boolean ("force-accel-label", "force-accel-label", "force-accel-label",
                                                            FALSE,
@@ -79,7 +123,7 @@ _moo_action_base_init_class (GObjectClass *klass)
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_DEAD,
                                      g_param_spec_boolean ("dead", "dead", "dead",
                                                            FALSE,
-                                                           G_PARAM_READWRITE));
+                                                           G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_ACTIVE,
                                      g_param_spec_boolean ("active", "active", "active",
                                                            TRUE,
@@ -106,9 +150,9 @@ moo_action_base_get_type (void)
     {
         static const GTypeInfo info = {
             sizeof (MooActionBaseClass), /* class_size */
-            NULL, /* base_init */
+            (GBaseInitFunc) base_init,
             NULL, /* base_finalize */
-            (GClassInitFunc) moo_action_base_class_init, /* class_init */
+            (GClassInitFunc) class_init,
             NULL, /* class_finalize */
             NULL, /* class_data */
             0,
@@ -261,6 +305,40 @@ _moo_action_get_no_accel (gpointer action)
 
 
 static void
+moo_action_base_set_connect_accel (gpointer action,
+                                   gboolean connect)
+{
+    g_return_if_fail (MOO_IS_ACTION_BASE (action));
+    set_bool (action, "moo-action-connect-accel", connect);
+    g_object_notify (G_OBJECT (action), "connect-accel");
+}
+
+gboolean
+_moo_action_get_connect_accel (gpointer action)
+{
+    g_return_val_if_fail (MOO_IS_ACTION_BASE (action), FALSE);
+    return get_bool (action, "moo-action-connect-accel");
+}
+
+
+static void
+moo_action_base_set_accel_editable (gpointer action,
+                                    gboolean editable)
+{
+    g_return_if_fail (MOO_IS_ACTION_BASE (action));
+    set_bool (action, "moo-action-accel-editable", editable);
+    g_object_notify (G_OBJECT (action), "accel-editable");
+}
+
+gboolean
+_moo_action_get_accel_editable (gpointer action)
+{
+    g_return_val_if_fail (MOO_IS_ACTION_BASE (action), FALSE);
+    return get_bool (action, "moo-action-accel-editable");
+}
+
+
+static void
 moo_action_base_set_force_accel_label (MooActionBase *ab,
                                        gboolean       force)
 {
@@ -368,8 +446,14 @@ _moo_action_base_set_property (GObject      *object,
         case MOO_ACTION_BASE_PROP_ACCEL:
             moo_action_base_set_accel (ab, g_value_get_string (value));
             break;
+        case MOO_ACTION_BASE_PROP_CONNECT_ACCEL:
+            moo_action_base_set_connect_accel (ab, g_value_get_boolean (value));
+            break;
         case MOO_ACTION_BASE_PROP_NO_ACCEL:
             _moo_action_set_no_accel (ab, g_value_get_boolean (value));
+            break;
+        case MOO_ACTION_BASE_PROP_ACCEL_EDITABLE:
+            moo_action_base_set_accel_editable (ab, g_value_get_boolean (value));
             break;
         case MOO_ACTION_BASE_PROP_FORCE_ACCEL_LABEL:
             moo_action_base_set_force_accel_label (ab, g_value_get_boolean (value));
@@ -412,8 +496,14 @@ _moo_action_base_get_property (GObject    *object,
         case MOO_ACTION_BASE_PROP_ACCEL:
             g_value_set_string (value, moo_action_base_get_accel (ab));
             break;
+        case MOO_ACTION_BASE_PROP_CONNECT_ACCEL:
+            g_value_set_boolean (value, _moo_action_get_connect_accel (ab));
+            break;
         case MOO_ACTION_BASE_PROP_NO_ACCEL:
             g_value_set_boolean (value, _moo_action_get_no_accel (ab));
+            break;
+        case MOO_ACTION_BASE_PROP_ACCEL_EDITABLE:
+            g_value_set_boolean (value, _moo_action_get_accel_editable (ab));
             break;
         case MOO_ACTION_BASE_PROP_FORCE_ACCEL_LABEL:
             g_value_set_boolean (value, moo_action_base_get_force_accel_label (ab));

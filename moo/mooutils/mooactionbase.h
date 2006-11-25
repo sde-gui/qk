@@ -14,7 +14,7 @@
 #ifndef __MOO_ACTION_BASE_H__
 #define __MOO_ACTION_BASE_H__
 
-#include <glib-object.h>
+#include <gtk/gtkwidget.h>
 
 G_BEGIN_DECLS
 
@@ -29,6 +29,11 @@ typedef struct _MooActionBaseClass  MooActionBaseClass;
 
 struct _MooActionBaseClass {
     GTypeInterface parent;
+
+    void (*connect_proxy)    (MooActionBase *action,
+                              GtkWidget     *proxy);
+    void (*disconnect_proxy) (MooActionBase *action,
+                              GtkWidget     *proxy);
 };
 
 

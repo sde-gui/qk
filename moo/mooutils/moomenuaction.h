@@ -57,8 +57,6 @@ void        moo_menu_action_set_mgr         (MooMenuAction  *action,
 void        moo_menu_action_set_menu_data   (MooMenuAction  *action,
                                              gpointer        data,
                                              gboolean        is_object);
-void        moo_menu_action_set_menu_label  (MooMenuAction  *action,
-                                             const char     *label);
 
 
 G_END_DECLS

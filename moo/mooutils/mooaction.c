@@ -100,6 +100,41 @@ DEFINE_ACTION_TYPE (MooToggleAction, moo_toggle_action, GTK_TYPE_TOGGLE_ACTION)
 DEFINE_ACTION_TYPE (MooRadioAction, moo_radio_action, GTK_TYPE_RADIO_ACTION)
 
 
+static void
+connect_proxy (GtkAction *action,
+               GtkWidget *widget)
+{
+    GtkActionClass *parent;
+
+    if (MOO_IS_ACTION (action))
+        parent = moo_action_parent_class;
+    else if (MOO_IS_TOGGLE_ACTION (action))
+        parent = moo_toggle_action_parent_class;
+    else
+        parent = moo_radio_action_parent_class;
+
+    parent->connect_proxy (action, widget);
+    g_signal_emit_by_name (action, "connect-proxy", widget);
+}
+
+static void
+disconnect_proxy (GtkAction *action,
+                  GtkWidget *widget)
+{
+    GtkActionClass *parent;
+
+    if (MOO_IS_ACTION (action))
+        parent = moo_action_parent_class;
+    else if (MOO_IS_TOGGLE_ACTION (action))
+        parent = moo_toggle_action_parent_class;
+    else
+        parent = moo_radio_action_parent_class;
+
+    g_signal_emit_by_name (action, "disconnect-proxy", widget);
+    parent->disconnect_proxy (action, widget);
+}
+
+
 /*****************************************************************************/
 /* MooAction
  */
@@ -220,6 +255,8 @@ moo_action_class_init (MooActionClass *klass)
     object_class->dispose = moo_action_dispose;
     object_class->constructor = moo_action_constructor;
     action_class->activate = moo_action_activate;
+    action_class->connect_proxy = connect_proxy;
+    action_class->disconnect_proxy = disconnect_proxy;
 
     g_object_class_install_property (object_class, ACTION_PROP_CLOSURE,
                                      g_param_spec_boxed ("closure", "closure", "closure",
@@ -444,11 +481,14 @@ static void
 moo_toggle_action_class_init (MooToggleActionClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
-    GtkToggleActionClass *action_class = GTK_TOGGLE_ACTION_CLASS (klass);
+    GtkActionClass *action_class = GTK_ACTION_CLASS (klass);
+    GtkToggleActionClass *toggle_action_class = GTK_TOGGLE_ACTION_CLASS (klass);
 
     object_class->dispose = moo_toggle_action_dispose;
     object_class->constructor = moo_toggle_action_constructor;
-    action_class->toggled = moo_toggle_action_toggled;
+    toggle_action_class->toggled = moo_toggle_action_toggled;
+    action_class->connect_proxy = connect_proxy;
+    action_class->disconnect_proxy = disconnect_proxy;
 
     g_object_class_install_property (object_class, TOGGLE_ACTION_PROP_TOGGLED_CALLBACK,
                                      g_param_spec_pointer ("toggled-callback", "toggled-callback", "toggled-callback",
@@ -516,8 +556,11 @@ moo_radio_action_init (G_GNUC_UNUSED MooRadioAction *action)
 
 
 static void
-moo_radio_action_class_init (G_GNUC_UNUSED MooRadioActionClass *klass)
+moo_radio_action_class_init (MooRadioActionClass *klass)
 {
+    GtkActionClass *action_class = GTK_ACTION_CLASS (klass);
+    action_class->connect_proxy = connect_proxy;
+    action_class->disconnect_proxy = disconnect_proxy;
 }
 
 

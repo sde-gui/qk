@@ -48,6 +48,8 @@ GtkActionGroup *_moo_action_get_group       (gpointer            action);
 void        _moo_action_set_no_accel        (gpointer            action,
                                              gboolean            no_accel);
 gboolean    _moo_action_get_no_accel        (gpointer            action);
+gboolean    _moo_action_get_connect_accel   (gpointer            action);
+gboolean    _moo_action_get_accel_editable  (gpointer            action);
 char       *_moo_action_make_accel_path     (gpointer            action);
 void        _moo_action_set_accel_path      (gpointer            action,
                                              const char         *accel_path);

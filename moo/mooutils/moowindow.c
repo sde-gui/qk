@@ -297,10 +297,6 @@ moo_window_constructor (GType                  type,
     moo_window_create_class_actions (window);
     window_instances = g_slist_prepend (window_instances, object);
 
-    window->accel_group = gtk_accel_group_new ();
-    gtk_window_add_accel_group (GTK_WINDOW (window),
-                                window->accel_group);
-
     vbox = gtk_vbox_new (FALSE, 0);
     gtk_widget_show (vbox);
     gtk_container_add (GTK_CONTAINER (window), vbox);
@@ -360,10 +356,16 @@ static void
 moo_window_init (MooWindow *window)
 {
     window->priv = g_new0 (MooWindowPrivate, 1);
+
     window->vbox = gtk_vbox_new (FALSE, 0);
     gtk_widget_show (window->vbox);
+
     window->priv->toolbar_visible = TRUE;
     window->priv->menubar_visible = TRUE;
+
+    window->accel_group = gtk_accel_group_new ();
+    gtk_window_add_accel_group (GTK_WINDOW (window),
+                                window->accel_group);
 }
 
 
@@ -1343,6 +1345,7 @@ moo_window_add_action (MooWindow  *window,
     g_return_if_fail (group != NULL);
 
     gtk_action_group_add_action (group, action);
+    gtk_action_set_accel_group (action, window->accel_group);
 
     if (!_moo_action_get_dead (action) && !_moo_action_get_no_accel (action))
     {
@@ -1351,6 +1354,9 @@ moo_window_add_action (MooWindow  *window,
         accel_path = _moo_action_make_accel_path (action);
         _moo_accel_register (accel_path, _moo_action_get_default_accel (action));
         _moo_action_set_accel_path (action, accel_path);
+
+        if (_moo_action_get_connect_accel (action))
+            gtk_action_connect_accelerator (action);
 
         g_free (accel_path);
     }
