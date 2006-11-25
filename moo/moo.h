@@ -19,6 +19,7 @@
 
 #include <mooedit/moocmdview.h>
 #include <mooedit/mooedit.h>
+#include <mooedit/mooedit-bookmarks.h>
 #include <mooedit/mooeditconfig.h>
 #include <mooedit/mooeditor.h>
 #include <mooedit/mooeditprefs.h>

@@ -22,6 +22,7 @@ completion =				\
 
 mooedit_include_headers =		\
 	moocmdview.h			\
+	mooedit-bookmarks.h		\
 	mooedit-enums.h			\
 	mooedit-script.h		\
 	mooedit.h			\
@@ -92,6 +93,7 @@ mooedit_sources =			\
 	moocommand-script.c		\
 	moocommand.c			\
 	moocommanddisplay.c		\
+	mooedit-bookmarks.c		\
 	mooedit-enums.c			\
 	mooedit-script.c		\
 	mooedit.c			\

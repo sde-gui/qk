@@ -16,20 +16,12 @@
 
 #include <mooedit/mootextview.h>
 #include <mooedit/mooeditconfig.h>
-#include <mooedit/moolinemark.h>
 #include <mooutils/mooprefs.h>
 
 G_BEGIN_DECLS
 
 
 #define MOO_TYPE_EDIT_FILE_INFO             (moo_edit_file_info_get_type ())
-
-#define MOO_TYPE_EDIT_BOOKMARK              (moo_edit_bookmark_get_type ())
-#define MOO_EDIT_BOOKMARK(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_EDIT_BOOKMARK, MooEditBookmark))
-#define MOO_EDIT_BOOKMARK_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_EDIT_BOOKMARK, MooEditBookmarkClass))
-#define MOO_IS_EDIT_BOOKMARK(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_EDIT_BOOKMARK))
-#define MOO_IS_EDIT_BOOKMARK_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_BOOKMARK))
-#define MOO_EDIT_BOOKMARK_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_BOOKMARK, MooEditBookmarkClass))
 
 #define MOO_TYPE_EDIT                       (moo_edit_get_type ())
 #define MOO_EDIT(object)                    (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_EDIT, MooEdit))
@@ -70,23 +62,9 @@ typedef enum
 #define MOO_EDIT_IS_BUSY(edit)      (moo_edit_get_state (edit) != MOO_EDIT_STATE_NORMAL)
 
 typedef struct _MooEditFileInfo MooEditFileInfo;
-typedef struct _MooEditBookmark MooEditBookmark;
 typedef struct _MooEdit         MooEdit;
 typedef struct _MooEditPrivate  MooEditPrivate;
 typedef struct _MooEditClass    MooEditClass;
-typedef struct _MooEditBookmarkClass MooEditBookmarkClass;
-
-
-struct _MooEditBookmark
-{
-    MooLineMark mark;
-    char *text;
-};
-
-struct _MooEditBookmarkClass
-{
-    MooLineMarkClass mark_class;
-};
 
 
 struct _MooEditFileInfo {
@@ -125,7 +103,6 @@ struct _MooEditClass
 
 GType            moo_edit_get_type                      (void) G_GNUC_CONST;
 GType            moo_edit_file_info_get_type            (void) G_GNUC_CONST;
-GType            moo_edit_bookmark_get_type             (void) G_GNUC_CONST;
 
 const char      *moo_edit_get_filename          (MooEdit        *edit);
 const char      *moo_edit_get_basename          (MooEdit        *edit);
@@ -163,23 +140,6 @@ gboolean         moo_edit_save_copy             (MooEdit        *edit,
                                                  const char     *filename,
                                                  const char     *encoding,
                                                  GError        **error);
-
-void             moo_edit_set_enable_bookmarks  (MooEdit        *edit,
-                                                 gboolean        enable);
-gboolean         moo_edit_get_enable_bookmarks  (MooEdit        *edit);
-/* list must not be modified */
-const GSList    *moo_edit_list_bookmarks        (MooEdit        *edit);
-void             moo_edit_toggle_bookmark       (MooEdit        *edit,
-                                                 guint           line);
-void             moo_edit_remove_bookmark       (MooEdit        *edit,
-                                                 MooEditBookmark *bookmark);
-void             moo_edit_add_bookmark          (MooEdit        *edit,
-                                                 guint           line);
-MooEditBookmark *moo_edit_get_bookmark_at_line  (MooEdit        *edit,
-                                                 guint           line);
-GSList          *moo_edit_get_bookmarks_in_range(MooEdit        *edit,
-                                                 int             first_line,
-                                                 int             last_line);
 
 void             moo_edit_comment               (MooEdit        *edit);
 void             moo_edit_uncomment             (MooEdit        *edit);

@@ -25,6 +25,7 @@
 #include "mooedit/mooplugin.h"
 #include "mooedit/moocmdview.h"
 #include "mooedit/mooeditaction.h"
+#include "mooedit/mooedit-bookmarks.h"
 #include "mooutils/moonotebook.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moomarshals.h"
@@ -223,6 +224,10 @@ static void action_next_tab                     (MooEditWindow      *window);
 static void action_toggle_bookmark              (MooEditWindow      *window);
 static void action_next_bookmark                (MooEditWindow      *window);
 static void action_prev_bookmark                (MooEditWindow      *window);
+static GtkAction *create_goto_bookmark_action   (MooWindow          *window,
+                                                 gpointer            data);
+static GtkAction *create_bookmarks_menu_action  (MooWindow          *window,
+                                                 gpointer            data);
 #endif
 static void action_next_ph                      (MooEditWindow      *window);
 static void action_prev_ph                      (MooEditWindow      *window);
@@ -283,6 +288,7 @@ static guint signals[NUM_SIGNALS];
 static void
 moo_edit_window_class_init (MooEditWindowClass *klass)
 {
+    guint i;
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkObjectClass *gtkobject_class = GTK_OBJECT_CLASS (klass);
     MooWindowClass *window_class = MOO_WINDOW_CLASS (klass);
@@ -638,6 +644,20 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
 #ifdef ENABLE_BOOKMARKS
+    for (i = 1; i < 10; ++i)
+    {
+        char *action_id = g_strdup_printf (MOO_EDIT_GOTO_BOOKMARK_ACTION "%d", i);
+        moo_window_class_new_action_custom (window_class, action_id, NULL,
+                                            create_goto_bookmark_action,
+                                            GUINT_TO_POINTER (i),
+                                            NULL);
+        g_free (action_id);
+    }
+
+    moo_window_class_new_action_custom (window_class, "BookmarksMenu", NULL,
+                                        create_bookmarks_menu_action,
+                                        NULL, NULL);
+
     moo_window_class_new_action (window_class, "ToggleBookmark", NULL,
                                  "display-name", "Toggle Bookmark",
                                  "label", "Toggle Bookmark",
@@ -652,7 +672,6 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "display-name", "Next Bookmark",
                                  "label", "Next Bookmark",
                                  "tooltip", "Next bookmark",
-                                 "stock-id", GTK_STOCK_GO_DOWN,
                                  "accel", "<alt>Down",
                                  "closure-callback", action_next_bookmark,
                                  "condition::visible", "has-open-document",
@@ -662,7 +681,6 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "display-name", "Previous Bookmark",
                                  "label", "Previous Bookmark",
                                  "tooltip", "Previous bookmark",
-                                 "stock-id", GTK_STOCK_GO_UP,
                                  "accel", "<alt>Up",
                                  "closure-callback", action_prev_bookmark,
                                  "condition::visible", "has-open-document",
@@ -728,6 +746,8 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
     moo_window_class_new_action (window_class, "NoDocuments", NULL,
                                  "label", _("No Documents"),
                                  "no-accel", TRUE,
+                                 "sensitive", FALSE,
+                                 "condition::visible", "!has-open-document",
                                  NULL);
 
 #ifdef ENABLE_PRINTING
@@ -991,7 +1011,6 @@ moo_edit_window_constructor (GType                  type,
     GtkWidget *notebook;
     MooEditWindow *window;
     GtkWindowGroup *group;
-    GtkAction *no_docs;
 
     GObject *object =
             G_OBJECT_CLASS(moo_edit_window_parent_class)->constructor (type, n_props, props);
@@ -1020,9 +1039,6 @@ moo_edit_window_constructor (GType                  type,
     g_signal_connect (window, "realize", G_CALLBACK (update_window_title), NULL);
     g_signal_connect (window, "notify::ui-xml",
                       G_CALLBACK (moo_edit_window_update_doc_list), NULL);
-
-    no_docs = moo_window_get_action (MOO_WINDOW (window), "NoDocuments");
-    g_object_set (no_docs, "sensitive", FALSE, NULL);
 
     edit_changed (window, NULL);
     moo_edit_window_check_actions (window);
@@ -1273,8 +1289,7 @@ action_next_bookmark (MooEditWindow *window)
 
     if (bookmarks)
     {
-        cursor = moo_line_mark_get_line (bookmarks->data);
-        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), cursor, 0, FALSE, FALSE);
+        moo_edit_goto_bookmark (doc, bookmarks->data);
         g_slist_free (bookmarks);
     }
 }
@@ -1297,10 +1312,246 @@ action_prev_bookmark (MooEditWindow *window)
     if (bookmarks)
     {
         GSList *last = g_slist_last (bookmarks);
-        cursor = moo_line_mark_get_line (last->data);
-        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), cursor, 0, FALSE, FALSE);
+        moo_edit_goto_bookmark (doc, last->data);
         g_slist_free (bookmarks);
     }
+}
+
+
+static void
+goto_bookmark_activated (GtkAction *action,
+                         gpointer   data)
+{
+    MooEdit *doc;
+    MooEditWindow *window;
+    MooEditBookmark *bk;
+    guint n = GPOINTER_TO_UINT (data);
+
+    window = _moo_action_get_window (action);
+    g_return_if_fail (window != NULL);
+
+    doc = moo_edit_window_get_active_doc (window);
+    g_return_if_fail (doc != NULL);
+
+    if ((bk = moo_edit_get_bookmark (doc, n)))
+        moo_edit_goto_bookmark (doc, bk);
+}
+
+static GtkAction *
+create_goto_bookmark_action (MooWindow *window,
+                             gpointer   data)
+{
+    GtkAction *action;
+    guint n = GPOINTER_TO_UINT (data);
+    char *accel;
+    char *name;
+
+    name = g_strdup_printf (MOO_EDIT_GOTO_BOOKMARK_ACTION "%d", n);
+    accel = g_strdup_printf ("<ctrl>%d", n);
+
+    action = g_object_new (MOO_TYPE_ACTION, "name", name, "accel", accel,
+                           "connect-accel", TRUE, "accel-editable", FALSE, NULL);
+    g_signal_connect (action, "activate", G_CALLBACK (goto_bookmark_activated), data);
+    moo_bind_bool_property (action, "sensitive", window, "has-open-document", FALSE);
+
+    g_free (name);
+    g_free (accel);
+    return action;
+}
+
+
+static void
+bookmark_item_activated (GtkWidget *item)
+{
+    g_print ("bookmark_item_activated\n");
+    moo_edit_goto_bookmark (g_object_get_data (G_OBJECT (item), "moo-edit"),
+                            g_object_get_data (G_OBJECT (item), "moo-bookmark"));
+}
+
+static GtkWidget *
+create_bookmark_item (MooEditWindow   *window,
+                      MooEdit         *doc,
+                      MooEditBookmark *bk)
+{
+    char *label, *bk_text;
+    GtkWidget *item = NULL;
+
+    bk_text = _moo_edit_bookmark_get_text (bk);
+    label = g_strdup_printf ("%d - \"%s\"", 1 + moo_line_mark_get_line (MOO_LINE_MARK (bk)),
+                             bk_text ? bk_text : "");
+    g_free (bk_text);
+
+    if (bk->no)
+    {
+        GtkAction *action;
+        char *action_name;
+
+        action_name = g_strdup_printf (MOO_EDIT_GOTO_BOOKMARK_ACTION "%d", bk->no);
+        action = moo_window_get_action (MOO_WINDOW (window), action_name);
+
+        if (action)
+        {
+            g_object_set (action, "label", label, NULL);
+            item = gtk_action_create_menu_item (action);
+        }
+        else
+        {
+            g_critical ("%s: oops", G_STRLOC);
+        }
+
+        g_free (action_name);
+    }
+
+    if (!item)
+    {
+        item = gtk_menu_item_new_with_label (label);
+        g_signal_connect (item, "activate", G_CALLBACK (bookmark_item_activated), NULL);
+    }
+
+    g_object_set_data_full (G_OBJECT (item), "moo-bookmark", g_object_ref (bk), g_object_unref);
+    g_object_set_data_full (G_OBJECT (item), "moo-edit", g_object_ref (doc), g_object_unref);
+
+    g_free (label);
+
+    return item;
+}
+
+static void
+populate_bookmarks (MooEditWindow *window,
+                    GtkWidget     *menu)
+{
+    GtkAction *pn;
+    MooEdit *doc;
+    GtkWidget *item;
+    const GSList *bookmarks;
+
+    g_print ("populate_bookmarks\n");
+
+    doc = moo_edit_window_get_active_doc (window);
+    g_return_if_fail (doc != NULL);
+
+    bookmarks = moo_edit_list_bookmarks (doc);
+
+    pn = moo_window_get_action (MOO_WINDOW (window), "PreviousBookmark");
+    item = gtk_action_create_menu_item (pn);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+    g_object_set (pn, "sensitive", bookmarks != NULL, NULL);
+
+    pn = moo_window_get_action (MOO_WINDOW (window), "NextBookmark");
+    item = gtk_action_create_menu_item (pn);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+    g_object_set (pn, "sensitive", bookmarks != NULL, NULL);
+
+    if (bookmarks)
+    {
+        item = gtk_separator_menu_item_new ();
+        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+    }
+
+    while (bookmarks)
+    {
+        item = create_bookmark_item (window, doc, bookmarks->data);
+        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+        bookmarks = bookmarks->next;
+    }
+
+    gtk_widget_show_all (menu);
+}
+
+static gboolean
+erase_bookmarks_menu (GtkMenuItem *bk_item)
+{
+    g_print ("erase_bookmarks_menu\n");
+
+    if (g_object_get_data (G_OBJECT (bk_item), "moo-bookmarks-populated"))
+    {
+        GtkWidget *menu = gtk_menu_item_get_submenu (bk_item);
+
+        if (menu)
+            gtk_container_foreach (GTK_CONTAINER (menu),
+                                   (GtkCallback) gtk_widget_destroy,
+                                   NULL);
+    }
+
+    g_object_set_data (G_OBJECT (bk_item),
+                       "moo-bookmarks-populated",
+                       GINT_TO_POINTER (FALSE));
+    g_object_unref (bk_item);
+
+    return FALSE;
+}
+
+static void
+bookmarks_toplevel_hide (GtkWidget   *toplevel,
+                         GtkMenuItem *bk_item)
+{
+    g_print ("bookmarks_toplevel_hide\n");
+    g_idle_add ((GSourceFunc) erase_bookmarks_menu, g_object_ref (bk_item));
+    g_signal_handlers_disconnect_by_func (toplevel,
+                                          (gpointer) bookmarks_toplevel_hide,
+                                          bk_item);
+}
+
+static void
+bookmarks_item_selected (GtkMenuItem   *bk_item,
+                         MooEditWindow *window)
+{
+    g_print ("bookmarks_item_selected\n");
+
+    if (!g_object_get_data (G_OBJECT (bk_item), "moo-bookmarks-populated"))
+    {
+        GtkWidget *menu;
+
+        menu = gtk_menu_item_get_submenu (bk_item);
+        g_return_if_fail (menu != NULL);
+
+        populate_bookmarks (window, menu);
+        g_object_set_data (G_OBJECT (bk_item), "moo-bookmarks-populated",
+                           GINT_TO_POINTER (TRUE));
+
+        menu = gtk_widget_get_parent (GTK_WIDGET (bk_item));
+
+        if (GTK_IS_MENU (menu))
+            g_signal_connect (GTK_MENU (menu)->toplevel, "hide",
+                              G_CALLBACK (bookmarks_toplevel_hide), bk_item);
+        else
+            g_critical ("%s: oops", G_STRLOC);
+    }
+}
+
+static void
+connect_bookmarks_item (GtkAction     *action,
+                        GtkWidget     *widget)
+{
+    MooEditWindow *window;
+    GtkWidget *menu;
+
+    g_return_if_fail (GTK_IS_MENU_ITEM (widget));
+
+    window = _moo_action_get_window (action);
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+
+    menu = gtk_menu_new ();
+    gtk_menu_item_set_submenu (GTK_MENU_ITEM (widget), menu);
+    g_signal_connect (widget, "select", G_CALLBACK (bookmarks_item_selected), window);
+}
+
+static GtkAction *
+create_bookmarks_menu_action (MooWindow *window,
+                              G_GNUC_UNUSED gpointer data)
+{
+    GtkAction *action;
+
+    action = g_object_new (MOO_TYPE_ACTION,
+                           "name", "BookmarksMenu",
+                           "label", _("Bookmarks"),
+                           "no-accel", TRUE,
+                           NULL);
+
+    g_signal_connect (action, "connect-proxy", G_CALLBACK (connect_bookmarks_item), NULL);
+    moo_bind_bool_property (action, "sensitive", window, "has-open-document", FALSE);
+
+    return action;
 }
 #endif
 
@@ -3338,7 +3589,6 @@ do_update_doc_list (MooEditWindow *window)
     GSList *group = NULL;
     MooUINode *ph;
     gpointer active_doc;
-    GtkAction *no_docs;
 
     active_doc = ACTIVE_DOC (window);
 
@@ -3368,9 +3618,6 @@ do_update_doc_list (MooEditWindow *window)
     g_return_val_if_fail (ph != NULL, FALSE);
 
     docs = moo_edit_window_list_docs (window);
-
-    no_docs = moo_window_get_action (MOO_WINDOW (window), "NoDocuments");
-    g_object_set (no_docs, "visible", (gboolean) (docs == NULL), NULL);
 
     if (!docs)
         goto out;

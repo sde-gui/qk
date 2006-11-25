@@ -87,8 +87,7 @@
       </item>
       <separator/>
       <item action="ToggleBookmark"/>
-      <item action="PreviousBookmark"/>
-      <item action="NextBookmark"/>
+      <item action="BookmarksMenu"/>
       <separator/>
       <item action="FocusDoc"/>
       <separator/>

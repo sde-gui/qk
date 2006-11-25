@@ -18,6 +18,7 @@
 #ifndef __MOO_EDIT_PRIVATE_H__
 #define __MOO_EDIT_PRIVATE_H__
 
+#include "mooedit/moolinemark.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mootextview.h"
 
@@ -40,6 +41,16 @@ void        _moo_edit_do_popup              (MooEdit        *edit,
 gboolean    _moo_edit_has_comments          (MooEdit        *edit,
                                              gboolean       *single_line,
                                              gboolean       *multi_line);
+
+#define MOO_EDIT_GOTO_BOOKMARK_ACTION "GoToBookmark"
+void        _moo_edit_delete_bookmarks      (MooEdit        *edit,
+                                             gboolean        in_destroy);
+void        _moo_edit_line_mark_moved       (MooEdit        *edit,
+                                             MooLineMark    *mark);
+void        _moo_edit_line_mark_deleted     (MooEdit        *edit,
+                                             MooLineMark    *mark);
+gboolean    _moo_edit_line_mark_clicked     (MooTextView    *view,
+                                             int             line);
 
 
 /***********************************************************************/
