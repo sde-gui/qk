@@ -673,6 +673,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "label", "Next Bookmark",
                                  "tooltip", "Next bookmark",
                                  "accel", "<alt>Down",
+                                 "connect-accel", TRUE,
                                  "closure-callback", action_next_bookmark,
                                  "condition::visible", "has-open-document",
                                  NULL);
@@ -682,6 +683,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "label", "Previous Bookmark",
                                  "tooltip", "Previous bookmark",
                                  "accel", "<alt>Up",
+                                 "connect-accel", TRUE,
                                  "closure-callback", action_prev_bookmark,
                                  "condition::visible", "has-open-document",
                                  NULL);
@@ -1363,7 +1365,6 @@ create_goto_bookmark_action (MooWindow *window,
 static void
 bookmark_item_activated (GtkWidget *item)
 {
-    g_print ("bookmark_item_activated\n");
     moo_edit_goto_bookmark (g_object_get_data (G_OBJECT (item), "moo-edit"),
                             g_object_get_data (G_OBJECT (item), "moo-bookmark"));
 }
@@ -1425,8 +1426,6 @@ populate_bookmarks (MooEditWindow *window,
     GtkWidget *item;
     const GSList *bookmarks;
 
-    g_print ("populate_bookmarks\n");
-
     doc = moo_edit_window_get_active_doc (window);
     g_return_if_fail (doc != NULL);
 
@@ -1461,8 +1460,6 @@ populate_bookmarks (MooEditWindow *window,
 static gboolean
 erase_bookmarks_menu (GtkMenuItem *bk_item)
 {
-    g_print ("erase_bookmarks_menu\n");
-
     if (g_object_get_data (G_OBJECT (bk_item), "moo-bookmarks-populated"))
     {
         GtkWidget *menu = gtk_menu_item_get_submenu (bk_item);
@@ -1485,7 +1482,6 @@ static void
 bookmarks_toplevel_hide (GtkWidget   *toplevel,
                          GtkMenuItem *bk_item)
 {
-    g_print ("bookmarks_toplevel_hide\n");
     g_idle_add ((GSourceFunc) erase_bookmarks_menu, g_object_ref (bk_item));
     g_signal_handlers_disconnect_by_func (toplevel,
                                           (gpointer) bookmarks_toplevel_hide,
@@ -1496,8 +1492,6 @@ static void
 bookmarks_item_selected (GtkMenuItem   *bk_item,
                          MooEditWindow *window)
 {
-    g_print ("bookmarks_item_selected\n");
-
     if (!g_object_get_data (G_OBJECT (bk_item), "moo-bookmarks-populated"))
     {
         GtkWidget *menu;
