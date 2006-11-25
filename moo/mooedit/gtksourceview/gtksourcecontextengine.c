@@ -4491,7 +4491,7 @@ get_segment_at_offset (GtkSourceContextEngine *ce,
 	if (offset == ce->priv->root_segment->end_at)
 		return ce->priv->root_segment;
 
-#if 1
+#ifdef ENABLE_DEBUG
 	/* if you see this message (often), then something is
 	 * wrong with the hints business, i.e. optimizations
 	 * do not work quite like they should */
