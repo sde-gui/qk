@@ -1358,18 +1358,18 @@
   )
 )
 
-(define-method set_name
+(define-method set_markup
   (of-object "MooLineMark")
-  (c-name "moo_line_mark_set_name")
+  (c-name "moo_line_mark_set_markup")
   (return-type "none")
   (parameters
-    '("const-char*" "name")
+    '("const-char*" "name" (null-ok))
   )
 )
 
-(define-method get_name
+(define-method get_markup
   (of-object "MooLineMark")
-  (c-name "moo_line_mark_get_name")
+  (c-name "moo_line_mark_get_markup")
   (return-type "const-char*")
 )
 

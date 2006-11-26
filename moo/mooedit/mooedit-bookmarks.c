@@ -46,7 +46,6 @@ moo_edit_bookmark_init (MooEditBookmark *bk)
     g_object_set (bk,
                   "visible", TRUE,
                   "background", "#E5E5FF",
-                  "stock-id", MOO_STOCK_EDIT_BOOKMARK,
                   NULL);
 }
 
@@ -278,6 +277,17 @@ moo_edit_add_bookmark (MooEdit *edit,
         no = get_unused_bookmark_no (edit);
 
     bk->no = no;
+
+    if (no)
+    {
+        char buf[32];
+        g_snprintf (buf, sizeof buf, "<b>%d</b>", no);
+        moo_line_mark_set_markup (MOO_LINE_MARK (bk), buf);
+    }
+    else
+    {
+        moo_line_mark_set_stock_id (MOO_LINE_MARK (bk), MOO_STOCK_EDIT_BOOKMARK);
+    }
 
     if (!edit->priv->update_bookmarks_idle)
         edit->priv->bookmarks =

@@ -26,7 +26,7 @@ struct _MooLineMarkPrivate {
 
     GtkWidget *widget;
 
-    char *name;
+    char *markup;
 
     MooTextBuffer *buffer;
     LineBuffer *line_buf;
@@ -76,7 +76,7 @@ enum {
     PROP_BACKGROUND_SET,
     PROP_PIXBUF,
     PROP_STOCK_ID,
-    PROP_NAME,
+    PROP_MARKUP,
     PROP_VISIBLE
 };
 
@@ -121,10 +121,10 @@ moo_line_mark_class_init (MooLineMarkClass *klass)
                                              G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
-                                     PROP_NAME,
-                                     g_param_spec_string ("name",
-                                             "name",
-                                             "name",
+                                     PROP_MARKUP,
+                                     g_param_spec_string ("markup",
+                                             "markup",
+                                             "markup",
                                              NULL,
                                              G_PARAM_READWRITE));
 
@@ -181,9 +181,9 @@ moo_line_mark_finalize (GObject *object)
         g_object_unref (mark->priv->pixbuf);
     if (mark->priv->background_gc)
         g_object_unref (mark->priv->background_gc);
-    g_free (mark->priv->stock_id);
 
-    g_free (mark->priv->name);
+    g_free (mark->priv->stock_id);
+    g_free (mark->priv->markup);
     g_free (mark->priv);
 
     G_OBJECT_CLASS (moo_line_mark_parent_class)->finalize (object);
@@ -214,8 +214,8 @@ moo_line_mark_set_property (GObject        *object,
             moo_line_mark_changed (mark);
             break;
 
-        case PROP_NAME:
-            moo_line_mark_set_name (mark, g_value_get_string (value));
+        case PROP_MARKUP:
+            moo_line_mark_set_markup (mark, g_value_get_string (value));
             break;
 
         case PROP_VISIBLE:
@@ -256,8 +256,8 @@ moo_line_mark_get_property (GObject        *object,
             g_value_set_boolean (value, mark->priv->background_set != 0);
             break;
 
-        case PROP_NAME:
-            g_value_set_string (value, mark->priv->name);
+        case PROP_MARKUP:
+            g_value_set_string (value, mark->priv->markup);
             break;
 
         case PROP_VISIBLE:
@@ -365,25 +365,27 @@ moo_line_mark_changed (MooLineMark *mark)
 
 
 void
-moo_line_mark_set_name (MooLineMark    *mark,
-                        const char     *name)
+moo_line_mark_set_markup (MooLineMark    *mark,
+                          const char     *markup)
 {
+    char *tmp;
+
     g_return_if_fail (MOO_IS_LINE_MARK (mark));
 
-    if (mark->priv->name != name)
-    {
-        g_free (mark->priv->name);
-        mark->priv->name = g_strdup (name);
-        g_object_notify (G_OBJECT (mark), "name");
-    }
+    if (!markup || !markup[0])
+        markup = NULL;
+
+    tmp = mark->priv->markup;
+    mark->priv->markup = g_strdup (markup);
+    g_free (tmp);
 }
 
 
 const char *
-moo_line_mark_get_name (MooLineMark *mark)
+moo_line_mark_get_markup (MooLineMark *mark)
 {
     g_return_val_if_fail (MOO_IS_LINE_MARK (mark), NULL);
-    return mark->priv->name;
+    return mark->priv->markup;
 }
 
 

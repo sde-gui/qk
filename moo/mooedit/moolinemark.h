@@ -69,10 +69,6 @@ void        moo_line_mark_set_background_gdk    (MooLineMark    *mark,
 void        moo_line_mark_set_background        (MooLineMark    *mark,
                                                  const char     *color);
 
-void        moo_line_mark_set_name              (MooLineMark    *mark,
-                                                 const char     *name);
-const char *moo_line_mark_get_name              (MooLineMark    *mark);
-
 int         moo_line_mark_get_line              (MooLineMark    *mark);
 MooTextBuffer *moo_line_mark_get_buffer         (MooLineMark    *mark);
 gboolean    moo_line_mark_get_visible           (MooLineMark    *mark);
@@ -83,8 +79,11 @@ void        moo_line_mark_set_stock_id          (MooLineMark    *mark,
                                                  const char     *stock_id);
 void        moo_line_mark_set_pixbuf            (MooLineMark    *mark,
                                                  GdkPixbuf      *pixbuf);
+void        moo_line_mark_set_markup            (MooLineMark    *mark,
+                                                 const char     *markup);
 const char *moo_line_mark_get_stock_id          (MooLineMark    *mark);
 GdkPixbuf  *moo_line_mark_get_pixbuf            (MooLineMark    *mark);
+const char *moo_line_mark_get_markup            (MooLineMark    *mark);
 GdkGC      *moo_line_mark_get_background_gc     (MooLineMark    *mark);
 
 

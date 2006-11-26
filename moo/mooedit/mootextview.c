@@ -2820,8 +2820,31 @@ get_n_digits (MooTextView *view)
 static void
 update_line_mark_icons (MooTextView *view)
 {
-    /* XXX */
-    view->priv->lm.icon_width = 16;
+    int i;
+    char str[32];
+    GtkSettings *settings;
+    PangoLayout *layout;
+
+    g_return_if_fail (GTK_WIDGET_REALIZED (view));
+
+    settings = gtk_widget_get_settings (GTK_WIDGET (view));
+
+    if (!gtk_icon_size_lookup_for_settings (settings, GTK_ICON_SIZE_MENU,
+                                            &view->priv->lm.icon_width, NULL))
+        view->priv->lm.icon_width = 16;
+
+    layout = gtk_widget_create_pango_layout (GTK_WIDGET (view), NULL);
+
+    for (i = 1; i < 10; ++i)
+    {
+        PangoRectangle rect;
+        g_snprintf (str, sizeof str, "<b>%d</b>", i);
+        pango_layout_set_markup (layout, str, -1);
+        pango_layout_get_pixel_extents  (layout, &rect, NULL);
+        view->priv->lm.icon_width = MAX (view->priv->lm.icon_width, rect.width);
+    }
+
+    g_object_unref (layout);
 }
 
 static void
@@ -2838,7 +2861,7 @@ update_digit_width (MooTextView *view)
     {
         int width;
         g_snprintf (str, sizeof str, "%d", i);
-        pango_layout_set_markup (layout, str, -1);
+        pango_layout_set_text (layout, str, -1);
         pango_layout_get_pixel_size (layout, &width, NULL);
         view->priv->lm.digit_width = MAX (view->priv->lm.digit_width, width);
     }
@@ -2937,6 +2960,7 @@ draw_marks (MooTextView    *view,
     {
         MooLineMark *mark;
         GdkPixbuf *pixbuf;
+        const char *markup;
 
         mark = marks->data;
         marks = marks->next;
@@ -2959,6 +2983,27 @@ draw_marks (MooTextView    *view,
             gdk_draw_pixbuf (event->window, NULL, pixbuf,
                              0, 0, x, y, -1, -1,
                              GDK_RGB_DITHER_NORMAL, 0, 0);
+        }
+
+        markup = moo_line_mark_get_markup (mark);
+
+        if (markup)
+        {
+            PangoLayout *layout;
+            PangoRectangle rect;
+            int x, y;
+
+            layout = gtk_widget_create_pango_layout (GTK_WIDGET (view), NULL);
+            pango_layout_set_markup (layout, markup, -1);
+            pango_layout_get_pixel_extents (layout, &rect, NULL);
+            x = MARK_ICON_LPAD + (view->priv->lm.icon_width - rect.width) / 2;
+            y = line_y - 1 + (line_height - rect.y - rect.height) / 2;
+
+            gdk_draw_layout (event->window,
+                             GTK_WIDGET(view)->style->fg_gc[GTK_WIDGET_STATE(view)],
+                             x, y, layout);
+
+            g_object_unref (layout);
         }
     }
 }
