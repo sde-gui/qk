@@ -606,6 +606,12 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
+    moo_window_class_new_action (window_class, "DocumentSubmenu", NULL,
+                                 "label", _("_Document"),
+                                 "no-accel", TRUE,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
     moo_window_class_new_action (window_class, "WrapText", NULL,
                                  "action-type::", MOO_TYPE_TOGGLE_ACTION,
                                  "display-name", _("Toggle Text Wrapping"),

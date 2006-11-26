@@ -81,7 +81,7 @@
       <separator/>
       <item action="LanguageMenu"/>
       <separator/>
-      <item name="Document" _label="_Document">
+      <item action="DocumentSubmenu">
         <item action="WrapText"/>
         <item action="LineNumbers"/>
       </item>
