@@ -98,7 +98,6 @@ moo/moopython/plugins/pyproject/Makefile
 moo/moopython/pygtk/Makefile
 moo/mooutils/pcre/Makefile
 moo/mooutils/xdgmime/Makefile
-m4/Makefile
 tests/Makefile
 po/Makefile.in
 moo/mooterm/termhelper_res.rc
