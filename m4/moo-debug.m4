@@ -78,9 +78,6 @@ if test x$MOO_DEBUG = "xyes"; then
 moo_debug_flags="-DG_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED dnl
 -DGDK_DISABLE_DEPRECATED -DENABLE_DEBUG -DENABLE_PROFILE dnl
 -DG_ENABLE_DEBUG -DG_ENABLE_PROFILE -DMOO_DEBUG=1"
-  if test $GTK_MINOR_VERSION -ge 10; then
-    MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS '-Dgtk_object_sink(o)=g_object_unref(g_object_ref_sink(o))'"
-  fi
 else
   moo_debug_flags="-DNDEBUG=1 -DG_DISABLE_CAST_CHECKS -DG_DISABLE_ASSERT"
 fi
