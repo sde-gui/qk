@@ -547,6 +547,32 @@ check_args (int opt_remain)
 }
 
 
+static void
+push_appdir_to_path (void)
+{
+#ifdef __WIN32__
+    char *appdir;
+    const char *path;
+    char *new_path;
+
+    appdir = moo_get_app_dir ();
+    g_return_if_fail (appdir != NULL);
+
+    path = g_getenv ("Path");
+
+    if (path)
+        new_path = g_strdup_printf ("%s;%s", appdir, path);
+    else
+        new_path = g_strdup (appdir);
+
+    g_setenv ("Path", new_path, TRUE);
+
+    g_free (new_path);
+    g_free (appdir);
+#endif
+}
+
+
 int
 main (int argc, char *argv[])
 {
@@ -585,6 +611,8 @@ main (int argc, char *argv[])
         else
             moo_set_log_func_window (TRUE);
     }
+
+    push_appdir_to_path ();
 
     if (_medit_opt_mode)
     {
