@@ -9,16 +9,17 @@ builddir = dir
 moo_windir = "/usr/local/win/medit"
 strip = "i586-mingw32msvc-strip"
 do_strip = True
+do_zip = False
 bin_only = False
 installer = None
 data_dirs = []
 
 def usage():
-    print "Usage:", sys.argv[0], "[--no-strip] [--bin-only] [build_dir] [additional_dir1] ..."
+    print "Usage:", sys.argv[0], "[--no-strip] [--bin-only] [--zip] [build_dir] [additional_dir1] ..."
     sys.exit(2)
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "", ["no-strip", "bin-only"])
+    opts, args = getopt.getopt(sys.argv[1:], "", ["no-strip", "bin-only", "zip"])
 except getopt.GetoptError:
     usage()
 
@@ -27,6 +28,8 @@ for o, a in opts:
         do_strip = False
     if o == "--bin-only":
         bin_only = True
+    if o == "--zip":
+        do_zip = True
 if args:
     moo_builddir = os.path.abspath(args[0])
 else:
@@ -93,14 +96,23 @@ def build():
     os.chdir(moo_builddir)
     do_cmd("make install DESTDIR=" + installdir)
     copy_files()
-    do_cmd("wine /usr/local/win/InnoSetup5/ISCC.exe " + iss)
 
     if do_strip:
-        installer = "meditsetup-" + get_version() + ".exe"
+        dbg = ""
     else:
-        installer = "meditsetup-dbg-" + get_version() + ".exe"
+        dbg = "dbg-"
 
-    do_cmd("mv %s/wininstaller/Output/setup.exe %s/%s" % (moo_builddir, dir, installer))
+    if do_zip:
+        zipdir = "medit-" + dbg + get_version()
+        installer = zipdir + ".zip"
+        do_cmd("rm -fr %s %s" % (zipdir, installer))
+        do_cmd("mv %s ./%s" % (moo_windir, zipdir))
+        do_cmd("zip -r9 %s %s" % (installer, zipdir))
+        do_cmd("rm -fr %s" % (zipdir,))
+    else:
+        installer = "meditsetup-" + dbg + get_version() + ".exe"
+        do_cmd("wine /usr/local/win/InnoSetup5/ISCC.exe " + iss)
+        do_cmd("mv %s/wininstaller/Output/setup.exe %s/%s" % (moo_builddir, dir, installer))
 
 def clean():
     do_cmd("rm -rf %s %s %s" % (moo_windir, installdir,
