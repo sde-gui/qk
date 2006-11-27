@@ -2997,7 +2997,7 @@ draw_marks (MooTextView    *view,
             pango_layout_set_markup (layout, markup, -1);
             pango_layout_get_pixel_extents (layout, &rect, NULL);
             x = MARK_ICON_LPAD + (view->priv->lm.icon_width - rect.width) / 2;
-            y = line_y - 1 + (line_height - rect.y - rect.height) / 2;
+            y = line_y;
 
             gdk_draw_layout (event->window,
                              GTK_WIDGET(view)->style->fg_gc[GTK_WIDGET_STATE(view)],
