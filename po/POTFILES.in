@@ -15,6 +15,7 @@ moo/mooedit/moousertools-prefs.c
 moo/mooedit/gtksourceview/gtksourcelanguagesmanager.c
 moo/mooedit/gtksourceview/gtksourcestylescheme.c
 moo/mooedit/gtksourceview/gtksourcelanguage-parser-2.c
+moo/mooedit/gtksourceview/gtksourcecontextengine.c
 
 moo/mooedit/language-specs/R.lang
 moo/mooedit/language-specs/ada.lang
@@ -27,6 +28,7 @@ moo/mooedit/language-specs/def.lang
 moo/mooedit/language-specs/desktop.lang
 moo/mooedit/language-specs/diff.lang
 moo/mooedit/language-specs/fortran.lang
+moo/mooedit/language-specs/gap.lang
 moo/mooedit/language-specs/gtkrc.lang
 moo/mooedit/language-specs/haskell.lang
 moo/mooedit/language-specs/html.lang
@@ -69,12 +71,14 @@ moo/mooedit/glade/mootextgotoline.glade
 moo/mooedit/glade/quicksearch.glade
 moo/mooedit/glade/statusbar.glade
 moo/mooedit/glade/mooedittools.glade
+moo/mooedit/glade/mooprintpreview.glade
 moo/mooedit/plugins/fileselector/moofileselector-prefs.glade
 moo/mooedit/plugins/fileselector/moofileselector.glade
 moo/mooedit/plugins/fileselector/moofileselector.c
 moo/mooedit/plugins/fileselector/moofileselector-prefs.c
 moo/mooedit/plugins/moofind.c
 moo/mooedit/plugins/moofind.glade
+moo/mooedit/plugins/completion/completion-plugin.c
 
 moo/moofileview/moofileview-ui.xml
 moo/moofileview/moofileview.c
@@ -91,6 +95,7 @@ moo/mooterm/glade/mootermprefs.glade
 moo/mooutils/eggregex.c
 moo/mooutils/moofontsel.c
 moo/mooutils/moostock.c
+moo/mooutils/moowindow.c
 moo/mooutils/glade/accelprefs.glade
 moo/mooutils/glade/moologwindow.glade
 
