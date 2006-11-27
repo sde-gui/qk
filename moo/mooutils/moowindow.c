@@ -22,6 +22,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooactionfactory.h"
+#include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
 #include <gobject/gvaluecollector.h>
 #include <string.h>
@@ -475,22 +476,25 @@ moo_window_set_property (GObject      *object,
                          const GValue *value,
                          GParamSpec   *pspec)
 {
+    char *tmp;
     const char *name = NULL;
     MooWindow *window = MOO_WINDOW (object);
 
     switch (prop_id)
     {
         case PROP_TOOLBAR_UI_NAME:
+            tmp = window->priv->toolbar_ui_name;
             name = g_value_get_string (value);
-            g_free (window->priv->toolbar_ui_name);
             window->priv->toolbar_ui_name = name ? g_strdup (name) : g_strdup ("");
+            g_free (tmp);
             g_object_notify (object, "toolbar-ui-name");
             break;
 
         case PROP_MENUBAR_UI_NAME:
+            tmp = window->priv->menubar_ui_name;
             name = g_value_get_string (value);
-            g_free (window->priv->menubar_ui_name);
             window->priv->menubar_ui_name = name ? g_strdup (name) : g_strdup ("");
+            g_free (tmp);
             g_object_notify (object, "menubar-ui-name");
             break;
 
@@ -734,10 +738,10 @@ create_toolbar_style_action (MooWindow      *window,
     MooMenuMgr *menu_mgr;
 
     const char *labels[N_STYLES] = {
-        "_Icons Only",
-        "_Labels Only",
-        "Icons _and Labels",
-        "Icons _and Important Labels"
+        N_("_Icons Only"),
+        N_("_Labels Only"),
+        N_("Icons _and Labels"),
+        N_("Icons and I_mportant Labels")
     };
 
     const char *ids[N_STYLES] = {
@@ -753,7 +757,7 @@ create_toolbar_style_action (MooWindow      *window,
 
     for (i = 0; i < N_STYLES; ++i)
         moo_menu_mgr_append (menu_mgr, NULL,
-                             ids[i], labels[i], NULL,
+                             ids[i], _(labels[i]), NULL,
                              MOO_MENU_ITEM_RADIO,
                              GINT_TO_POINTER (i), NULL);
 
