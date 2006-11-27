@@ -8,7 +8,7 @@ import os
 from moo.utils import _
 
 if os.name == 'nt':
-    PYTHON_COMMAND = '"' + sys.exec_prefix + '\\python.exe" -u'
+    PYTHON_COMMAND = '"' + sys.exec_prefix + '\\pythonw.exe" -u'
 else:
     PYTHON_COMMAND = 'python -u'
 
