@@ -417,6 +417,8 @@ run_command_async (MooCommandExe     *cmd,
     argv[2] = cmd_line;
     real_env = _moo_env_add (envp);
 
+    _moo_message ("Launching:\n%s\n", cmd_line);
+
     result = g_spawn_async (working_dir, (char**) argv, real_env,
                             0, NULL, NULL, NULL, &error);
 

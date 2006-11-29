@@ -1116,6 +1116,18 @@ create_command_context (gpointer window,
         g_free (extension);
     }
 
+    if (MOO_IS_EDIT (doc))
+    {
+        GValue val;
+        val.g_type = 0;
+        g_value_init (&val, G_TYPE_INT);
+        g_value_set_int (&val, moo_text_view_get_cursor_line (doc));
+        moo_command_context_set (ctx, "LINE0", &val);
+        g_value_set_int (&val, moo_text_view_get_cursor_line (doc) + 1);
+        moo_command_context_set (ctx, "LINE", &val);
+        g_value_unset (&val);
+    }
+
     user_dir = moo_get_user_data_dir ();
 
     moo_command_context_set_string (ctx, "DATA_DIR", user_dir);
