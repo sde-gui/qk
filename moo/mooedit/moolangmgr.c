@@ -211,6 +211,9 @@ moo_lang_mgr_get_lang (MooLangMgr *mgr,
     if (!name || !strcmp (name, MOO_LANG_NONE))
         return NULL;
 
+    if (!g_ascii_strcasecmp (name, "c++"))
+        name = "cpp";
+
     read_langs (mgr);
     id = _moo_lang_id_from_name (name);
     info = get_lang_info (mgr, id, FALSE);
