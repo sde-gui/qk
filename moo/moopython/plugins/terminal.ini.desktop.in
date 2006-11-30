@@ -1,7 +1,7 @@
 [module]
 type=Python
 file=terminal.py
-version=0.7
+version=0.8
 
 [plugin]
 id=Terminal

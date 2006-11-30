@@ -1,7 +1,7 @@
 [module]
 type=Python
 file=project/project-plugin.py
-version=0.7
+version=0.8
 
 [plugin]
 id=ProjectManager
