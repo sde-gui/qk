@@ -1,3 +1,11 @@
+2006-11-30  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    * === Released 0.8.0 ===
+
+    Added document bookmarks (Dmytro Savchuk).
+    "medit" without arguments opens new file if existing process instance
+    is used (Lontronics).
+    Open dialog remembers its size (Lontronics).
+
 2006-11-19  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.7.97 ===
 
