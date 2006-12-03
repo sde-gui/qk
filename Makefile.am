@@ -51,7 +51,7 @@ DIST_SUBDIRS = moo tests po
 # need to create pot-subdirs-stamp before it goes to po/
 SUBDIRS = . moo tests po
 
-ACLOCAL_AMFLAGS = -I $(top_srcdir)/m4
+ACLOCAL_AMFLAGS = -I m4
 
 @INTLTOOL_DESKTOP_RULE@
 DESKTOP_IN_FILES = medit.desktop.in
