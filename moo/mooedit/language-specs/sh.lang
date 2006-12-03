@@ -3,6 +3,7 @@
   <metadata>
     <property name="mimetypes">text/x-shellscript;application/x-shellscript;text/x-sh</property>
     <property name="globs">*.sh</property>
+    <property name="line-comment-start">#</property>
   </metadata>
   <styles>
     <style id="function" name="Function" map-to="def:function"/>
