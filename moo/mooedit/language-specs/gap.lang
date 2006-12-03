@@ -23,7 +23,7 @@
     </context>-->
 
     <context id="character" style-ref="character">
-      <match>\'.\'</match>
+      <match>\'(\\[trn\\]|[^\\])\'</match>
     </context>
     <context id="keyword" style-ref="keyword">
       <keyword>and</keyword>
