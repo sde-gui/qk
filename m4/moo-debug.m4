@@ -58,7 +58,7 @@ AC_HELP_STRING([--enable-all-intel-warnings], [enable most of intel compiler war
 ])
 
 if test x$all_intel_warnings = "xyes"; then
-    MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS -Wall -Wcheck -w2"
+    MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS -Wall -Wcheck -w2 -wd981 -wd188"
 elif test x$all_gcc_warnings = "xyes"; then
 MOO_DEBUG_CFLAGS="$MOO_DEBUG_GCC_CFLAGS $MOO_DEBUG_CFLAGS -W -Wall -Wpointer-arith dnl
 -Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
