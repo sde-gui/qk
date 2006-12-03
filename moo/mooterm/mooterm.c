@@ -85,6 +85,7 @@ static void     moo_term_set_alternate_buffer   (MooTerm        *term,
 
 static void     emit_new_line                   (MooTerm        *term);
 static void     moo_term_reset_real             (MooTerm        *term);
+static void     moo_term_bell_real              (MooTerm        *term);
 
 
 enum {
@@ -143,6 +144,7 @@ static void moo_term_class_init (MooTermClass *klass)
     klass->set_scroll_adjustments = moo_term_set_scroll_adjustments;
     klass->apply_settings = _moo_term_apply_settings;
     klass->reset = moo_term_reset_real;
+    klass->bell = moo_term_bell_real;
 
     g_object_class_install_property (gobject_class,
                                      PROP_CURSOR_BLINKS,
@@ -1214,6 +1216,13 @@ _moo_term_bell (MooTerm    *term)
     g_signal_emit (term, signals[BELL], 0);
 }
 
+static void
+moo_term_bell_real (MooTerm *term)
+{
+    if (gtk_widget_has_screen (GTK_WIDGET (term)))
+        gdk_display_beep (gtk_widget_get_display (GTK_WIDGET (term)));
+}
+
 
 void
 _moo_term_decid (MooTerm    *term)
@@ -1595,19 +1604,19 @@ _moo_term_setting_request (MooTerm    *term,
             make_DECRQSS (DECSCL);
             break;
         case CODE_DECSCPP:       /* Set Columns Per Page */
-            ps = g_strdup_printf ("%d", term->priv->width);
+            ps = g_strdup_printf ("%u", term->priv->width);
             make_DECRQSS (DECSCPP);
             break;
         case CODE_DECSLPP:       /* Set Lines Per Page */
-            ps = g_strdup_printf ("%d", term->priv->height);
+            ps = g_strdup_printf ("%u", term->priv->height);
             make_DECRQSS (DECSLPP);
             break;
         case CODE_DECSNLS:       /* Set Number of Lines per Screen */
-            ps = g_strdup_printf ("%d", term->priv->height);
+            ps = g_strdup_printf ("%u", term->priv->height);
             make_DECRQSS (DECSNLS);
             break;
         case CODE_DECSTBM:       /* Set Top and Bottom Margins */
-            ps = g_strdup_printf ("%d;%d",
+            ps = g_strdup_printf ("%u;%u",
                                   term->priv->buffer->priv->top_margin + 1,
                                   term->priv->buffer->priv->bottom_margin + 1);
             make_DECRQSS (DECSTBM);
@@ -1680,11 +1689,11 @@ _moo_term_dsr (MooTerm    *term,
     {
         case 6:
             if (extended)
-                answer = g_strdup_printf (VT_CSI_ "%d;%d;0R",
+                answer = g_strdup_printf (VT_CSI_ "%u;%u;0R",
                                           buf_cursor_row (buf) + 1,
                                           buf_cursor_col_real (buf) + 1);
             else
-                answer = g_strdup_printf (VT_CSI_ "%d;%dR",
+                answer = g_strdup_printf (VT_CSI_ "%u;%uR",
                                           buf_cursor_row (buf) + 1,
                                           buf_cursor_col_real (buf) + 1);
             break;
