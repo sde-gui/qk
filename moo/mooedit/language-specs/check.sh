@@ -6,7 +6,7 @@
 langs="c.lang cpp.lang changelog.lang def.lang \
        html.lang javascript.lang latex.lang \
        m4.lang makefile.lang xml.lang yacc.lang \
-       sh.lang python.lang"
+       sh.lang python.lang perl.lang"
 
 styles="gvim.styles kate.styles"
 
