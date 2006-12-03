@@ -178,7 +178,7 @@ struct _MooTermPrivate {
         guint               meta_sends_escape : 1;          /* = TRUE */
         guint               scroll_on_input : 1;            /* = TRUE */
         guint               bold_pango : 1;
-        gboolean            bold_offset : 1;
+        guint               bold_offset : 1;
     } settings;
 
     struct {

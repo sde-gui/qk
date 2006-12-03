@@ -1681,7 +1681,7 @@ void    moo_term_buffer_set_mode                (MooTermBuffer  *buf,
             break;
 
         default:
-            g_warning ("%s: unknown mode %d", G_STRLOC, mode);
+            g_warning ("%s: unknown mode %u", G_STRLOC, mode);
     }
 }
 

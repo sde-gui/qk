@@ -415,17 +415,6 @@ rect_window_to_screen (MooTerm      *term,
 }
 
 
-inline static void
-region_destroy (GdkRegion **region)
-{
-    if (*region)
-    {
-        gdk_region_destroy (*region);
-        *region = NULL;
-    }
-}
-
-
 static void
 moo_term_draw (MooTerm     *term,
                GdkDrawable *drawable,

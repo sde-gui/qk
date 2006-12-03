@@ -398,7 +398,6 @@ create_lang_model (MooEditor *editor)
                 !strcmp (_moo_lang_get_section (lang), section))
             {
                 GtkTreeIter child;
-                char *ext, *mime;
 
                 ext = list_to_string (_moo_lang_mgr_get_globs (mgr, _moo_lang_id (lang)), TRUE);
                 mime = list_to_string (_moo_lang_mgr_get_mime_types (mgr, _moo_lang_id (lang)), TRUE);
@@ -570,14 +569,13 @@ helper_update_widgets (MooPrefsDialogPage *page,
                        GtkTreeIter        *iter)
 {
     GtkEntry *extensions, *mimetypes, *config;
-    GtkWidget *label_extensions, *label_mimetypes;
+    GtkWidget *label_mimetypes;
     MooLang *lang = NULL;
     char *ext = NULL, *mime = NULL, *id = NULL, *conf = NULL;
 
     g_return_if_fail (iter != NULL);
 
     extensions = moo_glade_xml_get_widget (page->xml, "extensions");
-    label_extensions = moo_glade_xml_get_widget (page->xml, "label_extensions");
     mimetypes = moo_glade_xml_get_widget (page->xml, "mimetypes");
     label_mimetypes = moo_glade_xml_get_widget (page->xml, "label_mimetypes");
     config = moo_glade_xml_get_widget (page->xml, "config");

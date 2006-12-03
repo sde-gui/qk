@@ -538,7 +538,6 @@ moo_file_selector_constructor (GType           type,
                                guint           n_props,
                                GObjectConstructParam *props)
 {
-    MooEditor *editor;
     MooPaneLabel *label;
     MooUIXML *xml;
     MooFileSelector *filesel;
@@ -552,8 +551,6 @@ moo_file_selector_constructor (GType           type,
     fileview = MOO_FILE_VIEW (object);
 
     g_return_val_if_fail (filesel->window != NULL, object);
-
-    editor = moo_edit_window_get_editor (filesel->window);
 
     g_idle_add ((GSourceFunc) file_selector_go_home, g_object_ref (filesel));
 
@@ -845,7 +842,6 @@ save_as_dialog (GtkWidget   *parent,
     GtkWidget *dialog = NULL;
     GtkEntry *entry = NULL;
     char *fullname = NULL;
-    gboolean first_time = TRUE;
 
     g_return_val_if_fail (dirname != NULL, NULL);
 
@@ -872,8 +868,6 @@ save_as_dialog (GtkWidget   *parent,
 
             text = gtk_entry_get_text (entry);
         }
-
-        first_time = FALSE;
 
         if (!text[0])
         {

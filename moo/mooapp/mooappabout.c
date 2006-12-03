@@ -186,7 +186,7 @@ show_system_info (void)
     }
 #endif
 
-    g_string_append_printf (text, "GTK version: %d.%d.%d\n",
+    g_string_append_printf (text, "GTK version: %u.%u.%u\n",
                             gtk_major_version,
                             gtk_minor_version,
                             gtk_micro_version);

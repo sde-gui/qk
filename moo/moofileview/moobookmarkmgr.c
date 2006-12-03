@@ -634,7 +634,6 @@ _moo_bookmark_mgr_add_user (MooBookmarkMgr *mgr,
                             MooUIXML       *xml,
                             const char     *path)
 {
-    guint merge_id;
     UserInfo *info;
 
     g_return_if_fail (MOO_IS_BOOKMARK_MGR (mgr));
@@ -643,7 +642,6 @@ _moo_bookmark_mgr_add_user (MooBookmarkMgr *mgr,
     g_return_if_fail (MOO_IS_UI_XML (xml));
     g_return_if_fail (path != NULL);
 
-    merge_id = moo_ui_xml_new_merge_id (xml);
     info = user_info_new (user, actions, xml, path,
                           ++mgr->priv->last_user_id);
     mgr->priv->users = g_slist_prepend (mgr->priv->users, info);

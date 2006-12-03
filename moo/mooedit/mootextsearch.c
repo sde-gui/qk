@@ -482,7 +482,6 @@ moo_text_replace_regex_all_real (GtkTextIter            *start,
         char *freeme_here = NULL;
         const char *real_replacement;
         char *string;
-        GError *error = NULL;
         int match_len;
 
         if (!_moo_text_search_regex_forward (start, end, regex, &match_start, &match_end,

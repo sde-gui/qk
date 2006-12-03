@@ -655,7 +655,7 @@ generate_id (MooUserToolInfo *info,
 
         while (TRUE)
         {
-            char *tmp = g_strdup_printf ("%s_%d", base, i);
+            char *tmp = g_strdup_printf ("%s_%u", base, i);
 
             if (!g_hash_table_lookup (ids, tmp))
             {

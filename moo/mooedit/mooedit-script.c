@@ -497,7 +497,6 @@ cfunc_newline (MSValue  **args,
                MSContext *ctx)
 {
     int n;
-    GtkTextBuffer *buffer;
     GtkTextView *doc;
     char *freeme = NULL;
     const char *insert;
@@ -510,7 +509,6 @@ cfunc_newline (MSValue  **args,
     if (!n)
         return ms_value_none ();
 
-    buffer = gtk_text_view_get_buffer (doc);
     insert = "\n";
 
     if (n > 1)

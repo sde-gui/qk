@@ -338,7 +338,7 @@ _moo_term_select_range (MooTerm            *term,
 }
 
 
-void        
+void
 _moo_term_clear_selection (MooTerm *term)
 {
     MooTermIter iter;
@@ -444,7 +444,7 @@ _moo_term_button_press (GtkWidget      *widget,
         }
         else
         {
-            g_warning ("got button %d in button_press callback", event->button);
+            g_warning ("got button %u in button_press callback", event->button);
         }
     }
     else if (event->type == GDK_2BUTTON_PRESS && event->button == 1)
@@ -559,8 +559,8 @@ _moo_term_motion_notify (GtkWidget      *widget,
         gdk_window_get_pointer (event->window, &event_x, &event_y, NULL);
     }
     else {
-        event_x = (int)event->x;
-        event_y = (int)event->y;
+        event_x = (int) event->x;
+        event_y = (int) event->y;
     }
 
     moo_term_window_to_buffer_coords (term, event_x, event_y, &x, &y);
@@ -609,14 +609,11 @@ _moo_term_motion_notify (GtkWidget      *widget,
     else
     {
         /* this piece is from gtktextview.c */
-        int x, y;
-
         gdk_window_get_pointer (widget->window, &x, &y, NULL);
 
         if (gtk_drag_check_threshold (widget, MOUSE_STUFF(term)->drag_start_x,
                                       MOUSE_STUFF(term)->drag_start_y, x, y))
         {
-            MooTermIter iter;
             int buffer_x, buffer_y;
 
             moo_term_window_to_buffer_coords (term,

@@ -412,7 +412,7 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
 #endif /* GTK_CHECK_VERSION(2,6,0) */
 
     label = moo_glade_xml_get_widget (xml, "label");
-    msg = g_strdup_printf ("<span weight=\"bold\" size=\"larger\">There are %d "
+    msg = g_strdup_printf ("<span weight=\"bold\" size=\"larger\">There are %u "
                            "documents with unsaved changes. Save changes before "
                            "closing?</span>", g_slist_length (docs));
     gtk_label_set_markup (GTK_LABEL (label), msg);

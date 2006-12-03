@@ -3006,7 +3006,6 @@ moo_icon_view_maybe_drag (MooIconView    *view,
     GtkTreePath *path = NULL;
     gboolean result = FALSE;
     int button;
-    GdkDragContext *context;
 
     info = view->priv->dnd_info;
 
@@ -3040,11 +3039,11 @@ moo_icon_view_maybe_drag (MooIconView    *view,
 
     /* drag it! */
     result = TRUE;
-    context = gtk_drag_begin (GTK_WIDGET (view),
-                              info->source_targets,
-                              info->source_actions,
-                              button,
-                              (GdkEvent*) event);
+    gtk_drag_begin (GTK_WIDGET (view),
+                    info->source_targets,
+                    info->source_actions,
+                    button,
+                    (GdkEvent*) event);
 
 #if 0
 //     GdkPixmap *pixmap;

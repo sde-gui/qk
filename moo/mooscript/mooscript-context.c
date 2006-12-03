@@ -337,7 +337,7 @@ ms_context_assign_positional (MSContext  *ctx,
 
     g_return_val_if_fail (MS_IS_CONTEXT (ctx), FALSE);
 
-    name = g_strdup_printf ("_%d", n);
+    name = g_strdup_printf ("_%u", n);
     result = ms_context_assign_variable (ctx, name, value);
 
     g_free (name);

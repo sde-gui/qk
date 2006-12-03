@@ -883,7 +883,6 @@ moo_folder_model_iter_nth_child (GtkTreeModel *tree_model,
                                  GtkTreeIter  *parent,
                                  gint          n)
 {
-    MooFolderModel *model;
     GtkTreePath *path;
     gboolean result;
 
@@ -897,7 +896,6 @@ moo_folder_model_iter_nth_child (GtkTreeModel *tree_model,
     }
 
     /* TODO */
-    model = MOO_FOLDER_MODEL (tree_model);
     path = gtk_tree_path_new_from_indices (n, -1);
     result = gtk_tree_model_get_iter (tree_model, iter, path);
     gtk_tree_path_free (path);

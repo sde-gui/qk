@@ -553,7 +553,7 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
         }
         else
         {
-            g_warning ("got button %d in button_press callback", event->button);
+            g_warning ("got button %u in button_press callback", event->button);
         }
     }
     else if (event->type == GDK_2BUTTON_PRESS && event->button == 1)

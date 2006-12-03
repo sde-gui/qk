@@ -2267,7 +2267,7 @@ moo_ui_xml_create_widget (MooUIXML            *xml,
 
     if (type < 1 || type > 3)
     {
-        g_warning ("%s: invalid widget type %d", G_STRLOC, type);
+        g_warning ("%s: invalid widget type %u", G_STRLOC, type);
         return NULL;
     }
 

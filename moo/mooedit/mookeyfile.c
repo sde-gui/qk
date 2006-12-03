@@ -287,7 +287,7 @@ parse_content (Parser         *parser,
             char *text = g_strndup (line, line_len);
             g_set_error (&parser->error, MOO_KEY_FILE_ERROR,
                          MOO_KEY_FILE_ERROR_PARSE,
-                         "wrong indentation in file %s at line %d: %s",
+                         "wrong indentation in file %s at line %u: %s",
                          parser->file, parser->line_no, text);
             g_free (text);
             goto error;
@@ -347,7 +347,7 @@ parse_item (Parser         *parser,
             char *text = g_strndup (line, line_len);
             g_set_error (&parser->error, MOO_KEY_FILE_ERROR,
                          MOO_KEY_FILE_ERROR_PARSE,
-                         "unexpected text in file %s at line %d: %s",
+                         "unexpected text in file %s at line %u: %s",
                          parser->file, parser->line_no, text);
             g_free (text);
             return FALSE;
@@ -386,7 +386,7 @@ find_and_parse_item (Parser *parser)
         {
             g_set_error (&parser->error, MOO_KEY_FILE_ERROR,
                          MOO_KEY_FILE_ERROR_PARSE,
-                         "unexpected indented block in file %s at line %d",
+                         "unexpected indented block in file %s at line %u",
                          parser->file, parser->line_no);
             return FALSE;
         }
@@ -396,7 +396,7 @@ find_and_parse_item (Parser *parser)
             char *text = g_strndup (line, line_len);
             g_set_error (&parser->error, MOO_KEY_FILE_ERROR,
                          MOO_KEY_FILE_ERROR_PARSE,
-                         "unexpected text in file %s at line %d: %s",
+                         "unexpected text in file %s at line %u: %s",
                          parser->file, parser->line_no, text);
             g_free (text);
             return FALSE;

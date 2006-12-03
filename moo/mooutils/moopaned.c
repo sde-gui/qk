@@ -521,7 +521,7 @@ moo_paned_constructor (GType                  type,
             paned->button_box = gtk_hbox_new (FALSE, button_spacing);
             break;
         default:
-            g_warning ("%s: invalid 'pane-position' property value '%d',"
+            g_warning ("%s: invalid 'pane-position' property value '%u',"
                        "falling back to MOO_PANE_POS_LEFT", G_STRLOC,
                        paned->priv->pane_position);
             paned->priv->pane_position = MOO_PANE_POS_LEFT;

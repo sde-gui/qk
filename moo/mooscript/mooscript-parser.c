@@ -374,7 +374,7 @@ _ms_script_yyerror (MSParser   *parser,
                     const char *string)
 {
     char *line = get_line ((const char*) parser->lex->input + parser->lex->line_ptr);
-    g_print ("On line %d: %s\n", parser->lex->line_no, string);
+    g_print ("On line %u: %s\n", parser->lex->line_no, string);
     g_print ("%s\n", line);
     parser->failed = TRUE;
     g_free (line);

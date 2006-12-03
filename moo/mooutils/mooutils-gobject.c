@@ -301,7 +301,7 @@ _moo_value_convert (const GValue *src,
         if (src_type == G_TYPE_UINT)
         {
             char *string =
-                    g_strdup_printf ("%d", g_value_get_uint (src));
+                    g_strdup_printf ("%u", g_value_get_uint (src));
             g_value_take_string (dest, string);
             return TRUE;
         }

@@ -652,7 +652,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
 #ifdef ENABLE_BOOKMARKS
     for (i = 1; i < 10; ++i)
     {
-        char *action_id = g_strdup_printf (MOO_EDIT_GOTO_BOOKMARK_ACTION "%d", i);
+        char *action_id = g_strdup_printf (MOO_EDIT_GOTO_BOOKMARK_ACTION "%u", i);
         moo_window_class_new_action_custom (window_class, action_id, NULL,
                                             create_goto_bookmark_action,
                                             GUINT_TO_POINTER (i),
@@ -1354,8 +1354,8 @@ create_goto_bookmark_action (MooWindow *window,
     char *accel;
     char *name;
 
-    name = g_strdup_printf (MOO_EDIT_GOTO_BOOKMARK_ACTION "%d", n);
-    accel = g_strdup_printf ("<ctrl>%d", n);
+    name = g_strdup_printf (MOO_EDIT_GOTO_BOOKMARK_ACTION "%u", n);
+    accel = g_strdup_printf ("<ctrl>%u", n);
 
     action = g_object_new (MOO_TYPE_ACTION, "name", name, "accel", accel,
                            "connect-accel", TRUE, "accel-editable", FALSE, NULL);
@@ -1393,7 +1393,7 @@ create_bookmark_item (MooEditWindow   *window,
         GtkAction *action;
         char *action_name;
 
-        action_name = g_strdup_printf (MOO_EDIT_GOTO_BOOKMARK_ACTION "%d", bk->no);
+        action_name = g_strdup_printf (MOO_EDIT_GOTO_BOOKMARK_ACTION "%u", bk->no);
         action = moo_window_get_action (MOO_WINDOW (window), action_name);
 
         if (action)

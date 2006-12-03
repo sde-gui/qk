@@ -787,11 +787,11 @@ ms_value_print (MSValue *val)
                 case G_TYPE_INT:
                     return g_strdup_printf ("%d", g_value_get_int (val->u.gval));
                 case G_TYPE_UINT:
-                    return g_strdup_printf ("%d", g_value_get_uint (val->u.gval));
+                    return g_strdup_printf ("%u", g_value_get_uint (val->u.gval));
                 case G_TYPE_LONG:
                     return g_strdup_printf ("%ld", g_value_get_long (val->u.gval));
                 case G_TYPE_ULONG:
-                    return g_strdup_printf ("%ld", g_value_get_ulong (val->u.gval));
+                    return g_strdup_printf ("%lu", g_value_get_ulong (val->u.gval));
                 case G_TYPE_INT64:
                     return g_strdup_printf ("%" G_GINT64_FORMAT, g_value_get_int64 (val->u.gval));
                 case G_TYPE_UINT64:
@@ -799,7 +799,7 @@ ms_value_print (MSValue *val)
                 case G_TYPE_ENUM:
                     return g_strdup_printf ("%d", g_value_get_enum (val->u.gval));
                 case G_TYPE_FLAGS:
-                    return g_strdup_printf ("%d", g_value_get_flags (val->u.gval));
+                    return g_strdup_printf ("%u", g_value_get_flags (val->u.gval));
                 case G_TYPE_FLOAT:
                     return g_strdup_printf ("%f", g_value_get_float (val->u.gval));
                 case G_TYPE_DOUBLE:
@@ -867,11 +867,11 @@ ms_value_repr (MSValue *val)
                 case G_TYPE_INT:
                     return g_strdup_printf ("%d", g_value_get_int (val->u.gval));
                 case G_TYPE_UINT:
-                    return g_strdup_printf ("%d", g_value_get_uint (val->u.gval));
+                    return g_strdup_printf ("%u", g_value_get_uint (val->u.gval));
                 case G_TYPE_LONG:
                     return g_strdup_printf ("%ld", g_value_get_long (val->u.gval));
                 case G_TYPE_ULONG:
-                    return g_strdup_printf ("%ld", g_value_get_ulong (val->u.gval));
+                    return g_strdup_printf ("%lu", g_value_get_ulong (val->u.gval));
                 case G_TYPE_INT64:
                     return g_strdup_printf ("%" G_GINT64_FORMAT, g_value_get_int64 (val->u.gval));
                 case G_TYPE_UINT64:
@@ -879,7 +879,7 @@ ms_value_repr (MSValue *val)
                 case G_TYPE_ENUM:
                     return g_strdup_printf ("<%d>", g_value_get_enum (val->u.gval));
                 case G_TYPE_FLAGS:
-                    return g_strdup_printf ("<%d>", g_value_get_flags (val->u.gval));
+                    return g_strdup_printf ("<%u>", g_value_get_flags (val->u.gval));
                 case G_TYPE_FLOAT:
                     return g_strdup_printf ("%f", g_value_get_float (val->u.gval));
                 case G_TYPE_DOUBLE:

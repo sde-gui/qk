@@ -281,7 +281,7 @@ moo_edit_add_bookmark (MooEdit *edit,
     if (no)
     {
         char buf[32];
-        g_snprintf (buf, sizeof buf, "<b>%d</b>", no);
+        g_snprintf (buf, sizeof buf, "<b>%u</b>", no);
         moo_line_mark_set_markup (MOO_LINE_MARK (bk), buf);
     }
     else
