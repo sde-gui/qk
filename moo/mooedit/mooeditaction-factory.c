@@ -179,10 +179,10 @@ moo_edit_class_new_action (MooEditClass       *klass,
 
 
 static void
-moo_edit_class_install_action (MooEditClass     *klass,
-                               const char         *action_id,
-                               MooActionFactory   *action,
-                               char              **conditions)
+moo_edit_class_install_action (MooEditClass      *klass,
+                               const char        *action_id,
+                               MooActionFactory  *factory,
+                               char             **conditions)
 {
     GHashTable *actions;
     ActionInfo *info;
@@ -190,7 +190,7 @@ moo_edit_class_install_action (MooEditClass     *klass,
     GSList *l;
 
     g_return_if_fail (MOO_IS_EDIT_CLASS (klass));
-    g_return_if_fail (MOO_IS_ACTION_FACTORY (action));
+    g_return_if_fail (MOO_IS_ACTION_FACTORY (factory));
     g_return_if_fail (action_id && action_id[0]);
 
     type = G_OBJECT_CLASS_TYPE (klass);
@@ -206,7 +206,7 @@ moo_edit_class_install_action (MooEditClass     *klass,
     if (g_hash_table_lookup (actions, action_id))
         moo_edit_class_remove_action (klass, action_id);
 
-    info = action_info_new (action, conditions);
+    info = action_info_new (factory, conditions);
     g_hash_table_insert (actions, g_strdup (action_id), info);
 
     for (l = _moo_edit_instances; l != NULL; l = l->next)

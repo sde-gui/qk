@@ -341,22 +341,22 @@ add_row (GtkActionGroup    *group,
     }
     else
     {
-        GtkTreeIter group;
+        GtkTreeIter group_iter;
         GtkTreePath *path;
 
-        gtk_tree_store_append (page->store, &group, NULL);
-        gtk_tree_store_set (page->store, &group,
+        gtk_tree_store_append (page->store, &group_iter, NULL);
+        gtk_tree_store_set (page->store, &group_iter,
                             COLUMN_ACTION_NAME, group_name,
                             COLUMN_ACTION, NULL,
                             COLUMN_ACCEL, NULL,
                             -1);
-        path = gtk_tree_model_get_path (GTK_TREE_MODEL (page->store), &group);
+        path = gtk_tree_model_get_path (GTK_TREE_MODEL (page->store), &group_iter);
         g_hash_table_insert (page->groups,
                              g_strdup (group_name),
                              gtk_tree_row_reference_new (GTK_TREE_MODEL (page->store), path));
         gtk_tree_path_free (path);
 
-        gtk_tree_store_append (page->store, &iter, &group);
+        gtk_tree_store_append (page->store, &iter, &group_iter);
     }
 
     accel = get_accel_label_for_path (_moo_action_get_accel_path (action));

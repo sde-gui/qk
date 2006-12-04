@@ -1930,15 +1930,11 @@ void
 moo_text_buffer_delete_line_mark (MooTextBuffer *buffer,
                                   MooLineMark   *mark)
 {
-    int line;
-
     g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
     g_return_if_fail (MOO_IS_LINE_MARK (mark));
     g_return_if_fail (moo_line_mark_get_buffer (mark) == buffer);
 
-    line = moo_line_mark_get_line (mark);
     _moo_line_buffer_remove_mark (buffer->priv->line_buf, mark);
-
     line_mark_deleted (buffer, mark);
     g_object_unref (mark);
 }

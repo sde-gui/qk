@@ -254,17 +254,17 @@ moo_plugin_register (const char            *id,
 
         for (p = langs; p && *p; ++p)
         {
-            char *id;
+            char *lang_id;
 
             if (!**p)
                 continue;
 
-            id = _moo_lang_id_from_name (*p);
+            lang_id = _moo_lang_id_from_name (*p);
 
-            if (!g_hash_table_lookup (table, id))
-                g_hash_table_insert (table, id, id);
+            if (!g_hash_table_lookup (table, lang_id))
+                g_hash_table_insert (table, lang_id, lang_id);
             else
-                g_free (id);
+                g_free (lang_id);
         }
 
         if (!g_hash_table_size (table))

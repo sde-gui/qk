@@ -256,10 +256,10 @@ moo_file_selector_chdir (MooFileView    *fileview,
 
     if (result)
     {
-        char *dir = NULL;
-        g_object_get (fileview, "current-directory", &dir, NULL);
-        moo_prefs_set_filename (DIR_PREFS, dir);
-        g_free (dir);
+        char *new_dir = NULL;
+        g_object_get (fileview, "current-directory", &new_dir, NULL);
+        moo_prefs_set_filename (DIR_PREFS, new_dir);
+        g_free (new_dir);
     }
 
     return result;

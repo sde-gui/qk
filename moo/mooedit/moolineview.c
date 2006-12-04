@@ -417,7 +417,6 @@ moo_line_view_write_line (MooLineView    *view,
 static void
 check_if_scrolled (MooLineView *view)
 {
-    GdkWindow *text_window;
     GdkRectangle rect;
     GtkTextIter iter;
     int line;
@@ -427,9 +426,6 @@ check_if_scrolled (MooLineView *view)
         view->priv->scrolled = FALSE;
         return;
     }
-
-    text_window = gtk_text_view_get_window (GTK_TEXT_VIEW (view),
-                                            GTK_TEXT_WINDOW_TEXT);
 
     gtk_text_view_get_visible_rect (GTK_TEXT_VIEW (view), &rect);
     gtk_text_view_get_line_at_y (GTK_TEXT_VIEW (view), &iter,

@@ -3638,7 +3638,7 @@ do_update_doc_list (MooEditWindow *window)
         }
         else
         {
-            GtkActionGroup *group;
+            GtkActionGroup *action_group;
             char *name = g_strdup_printf ("MooEdit-%p", doc);
             action = g_object_new (MOO_TYPE_RADIO_ACTION ,
                                    "name", name,
@@ -3649,8 +3649,8 @@ do_update_doc_list (MooEditWindow *window)
             g_object_set_data (G_OBJECT (action), "moo-edit", doc);
             _moo_action_set_no_accel (action, TRUE);
             g_signal_connect (action, "toggled", G_CALLBACK (doc_list_action_toggled), window);
-            group = moo_action_collection_get_group (moo_window_get_actions (MOO_WINDOW (window)), NULL);
-            gtk_action_group_add_action (group, GTK_ACTION (action));
+            action_group = moo_action_collection_get_group (moo_window_get_actions (MOO_WINDOW (window)), NULL);
+            gtk_action_group_add_action (action_group, GTK_ACTION (action));
             g_free (name);
         }
 

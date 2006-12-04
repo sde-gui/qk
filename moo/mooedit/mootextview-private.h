@@ -28,7 +28,7 @@ G_BEGIN_DECLS
 
 /***********************************************************************/
 /* GtkTextView stuff
-/*/
+ */
 void        _moo_text_view_move_cursor          (GtkTextView        *text_view,
                                                  GtkMovementStep     step,
                                                  gint                count,
@@ -93,7 +93,7 @@ struct _MooTextViewPrivate {
 
     /***********************************************************************/
     /* Drawing
-    /*/
+     */
     MooTextStyleScheme *style_scheme;
     guint tab_width;
     gboolean highlight_current_line;
@@ -122,13 +122,13 @@ struct _MooTextViewPrivate {
 
     /***********************************************************************/
     /* Search
-    /*/
+     */
     int last_search_stamp;
     GtkTextMark *last_found_start, *last_found_end;
 
     /***********************************************************************/
     /* Indentation
-    /*/
+     */
     MooIndenter *indenter;
     gboolean backspace_indents;
     gboolean enter_indents;
@@ -136,7 +136,7 @@ struct _MooTextViewPrivate {
 
     /***********************************************************************/
     /* Keyboard
-    /*/
+     */
     gboolean smart_home_end;
     gboolean ctrl_up_down_scrolls;
     gboolean ctrl_page_up_down_scrolls;
@@ -148,7 +148,7 @@ struct _MooTextViewPrivate {
 
     /***********************************************************************/
     /* Selection and drag
-    /*/
+     */
     guint           drag_scroll_timeout;
     GdkEventType    drag_button;
     MooTextViewDragType drag_type;
@@ -160,7 +160,7 @@ struct _MooTextViewPrivate {
 
     /***********************************************************************/
     /* Drag'n'drop from outside
-    /*/
+     */
     gboolean drag_inside;
     gboolean drag_drop;
     GtkTargetList *targets;
@@ -168,13 +168,13 @@ struct _MooTextViewPrivate {
 
     /***********************************************************************/
     /* Children
-    /*/
+     */
     GtkWidget *children[4];
     GSList *boxes;
 
     /***********************************************************************/
     /* Search
-    /*/
+     */
     struct {
         gboolean enable;
         gboolean in_search;

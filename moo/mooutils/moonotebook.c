@@ -935,7 +935,6 @@ static void     moo_notebook_size_allocate  (GtkWidget      *widget,
 
     if (nb->priv->current_page)
     {
-        int border_width = gtk_container_get_border_width (GTK_CONTAINER (nb));
         child_allocation.x = allocation->x + border_width + xthickness;
         child_allocation.y = allocation->y + nb->priv->tabs_height + border_width + ythickness;
         child_allocation.width = MAX (0, allocation->width - 2*border_width - 2*xthickness);
@@ -3531,8 +3530,9 @@ static gboolean moo_notebook_focus          (GtkWidget      *widget,
 }
 
 
-static void     moo_notebook_set_focus_child(GtkContainer   *container,
-                                             GtkWidget      *child)
+static void
+moo_notebook_set_focus_child (GtkContainer *container,
+                              GtkWidget    *child)
 {
     Page *page;
     GtkWidget *focus_child, *window;
@@ -3563,6 +3563,7 @@ static void     moo_notebook_set_focus_child(GtkContainer   *container,
         }
     }
 
+    /* XXX should it be used? */
     old_focus = nb->priv->focus;
 
     if (child)

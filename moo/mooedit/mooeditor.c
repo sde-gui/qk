@@ -1424,7 +1424,6 @@ moo_editor_close_docs (MooEditor      *editor,
 
     for (l = list; l != NULL; l = l->next)
     {
-        WindowInfo *info;
         MooEdit *doc = l->data;
         g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
 

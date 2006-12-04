@@ -105,21 +105,16 @@ static int
 ms_lex_parse_string (MSLex    *lex,
                      MSParser *parser)
 {
-    guint first, last;
-    guchar quote, second;
+    guint last;
+    guchar quote;
     GString *string;
     int token = -1;
 
     g_assert (IS_QUOTE (lex->input[lex->ptr]));
 
-    last = first = lex->ptr + 1;
+    last = lex->ptr + 1;
     quote = lex->input[lex->ptr];
     string = g_string_new (NULL);
-
-    if (quote == '\'')
-        second = '"';
-    else
-        second = '\'';
 
     while (last < lex->len)
     {

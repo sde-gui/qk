@@ -55,7 +55,7 @@ gboolean    _moo_edit_line_mark_clicked     (MooTextView    *view,
 
 /***********************************************************************/
 /* Preferences
-/*/
+ */
 enum {
     MOO_EDIT_SETTING_LANG,
     MOO_EDIT_SETTING_INDENT,
@@ -80,7 +80,7 @@ void        _moo_edit_update_config_from_global (MooEdit        *edit);
 
 /***********************************************************************/
 /* File operations
-/*/
+ */
 
 void        _moo_edit_set_filename              (MooEdit        *edit,
                                                  const char     *file,
@@ -121,7 +121,7 @@ struct _MooEditPrivate {
 
     /***********************************************************************/
     /* Document
-    /*/
+     */
     char *filename;
     char *basename;
     char *display_filename;
@@ -140,7 +140,7 @@ struct _MooEditPrivate {
 
     /***********************************************************************/
     /* Progress dialog and stuff
-    /*/
+     */
     MooEditState state;
     guint progress_timeout;
     GtkWidget *progress;
@@ -151,14 +151,14 @@ struct _MooEditPrivate {
 
     /***********************************************************************/
     /* Bookmarks
-    /*/
+     */
     gboolean enable_bookmarks;
     GSList *bookmarks; /* sorted by line number */
     guint update_bookmarks_idle;
 
     /***********************************************************************/
     /* Actions
-    /*/
+     */
     GtkMenu *menu;
     MooActionCollection *actions;
 };

@@ -856,12 +856,12 @@ create_child (MooGladeXML    *xml,
 static void
 pack_children (MooGladeXML    *xml,
                Widget         *parent_node,
-               GtkWidget      *parent)
+               GtkWidget      *parent_widget)
 {
     GSList *l;
 
     g_return_if_fail (parent_node != NULL);
-    g_return_if_fail (parent != NULL);
+    g_return_if_fail (parent_widget != NULL);
 
     for (l = parent_node->children; l != NULL; l = l->next)
     {
@@ -875,13 +875,13 @@ pack_children (MooGladeXML    *xml,
         widget = child->widget->widget;
         g_return_if_fail (widget != NULL);
 
-        if (GTK_IS_FRAME (parent) &&
+        if (GTK_IS_FRAME (parent_widget) &&
             (child->props->mask & PACK_PROP_LABEL_ITEM))
         {
-            gtk_frame_set_label_widget (GTK_FRAME (parent), widget);
+            gtk_frame_set_label_widget (GTK_FRAME (parent_widget), widget);
             packed = TRUE;
         }
-        else if (GTK_IS_NOTEBOOK (parent) &&
+        else if (GTK_IS_NOTEBOOK (parent_widget) &&
                  (child->props->mask & PACK_PROP_TAB))
         {
             int index = g_slist_index (parent_node->children, child);
@@ -897,21 +897,21 @@ pack_children (MooGladeXML    *xml,
                 if (!page_child->widget || !page_child->widget->widget)
                     g_message ("%s: empty notebook page with non-empty label", G_STRLOC);
                 else
-                    gtk_notebook_set_tab_label (GTK_NOTEBOOK (parent),
+                    gtk_notebook_set_tab_label (GTK_NOTEBOOK (parent_widget),
                                                 page_child->widget->widget,
                                                 widget);
 
                 packed = TRUE;
             }
         }
-        else if (GTK_IS_MENU_ITEM (parent) && GTK_IS_MENU (widget))
+        else if (GTK_IS_MENU_ITEM (parent_widget) && GTK_IS_MENU (widget))
         {
-            gtk_menu_item_set_submenu (GTK_MENU_ITEM (parent), widget);
+            gtk_menu_item_set_submenu (GTK_MENU_ITEM (parent_widget), widget);
             packed = TRUE;
         }
-        else if (GTK_IS_OPTION_MENU (parent) && GTK_IS_MENU (widget))
+        else if (GTK_IS_OPTION_MENU (parent_widget) && GTK_IS_MENU (widget))
         {
-            gtk_option_menu_set_menu (GTK_OPTION_MENU (parent), widget);
+            gtk_option_menu_set_menu (GTK_OPTION_MENU (parent_widget), widget);
             packed = TRUE;
         }
         else if (child->widget->props->mask & PROP_RESPONSE_ID)
@@ -940,16 +940,16 @@ pack_children (MooGladeXML    *xml,
         }
 
         if (!packed)
-            gtk_container_add (GTK_CONTAINER (parent), widget);
+            gtk_container_add (GTK_CONTAINER (parent_widget), widget);
 
         if (child->props->n_params)
         {
             guint i;
             for (i = 0; i < child->props->n_params; ++i)
-                gtk_container_child_set_property (GTK_CONTAINER (parent),
-                        widget,
-                        child->props->params[i].name,
-                        &child->props->params[i].value);
+                gtk_container_child_set_property (GTK_CONTAINER (parent_widget),
+                                                  widget,
+                                                  child->props->params[i].name,
+                                                  &child->props->params[i].value);
         }
 
         set_special_props (xml, widget, child->widget->props);

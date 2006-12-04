@@ -25,16 +25,6 @@
 #include <string.h>
 
 
-#ifdef __WIN32__
-#if MOO_USER_TOOL_THIS_OS != MOO_USER_TOOL_WIN32
-#error "oops"
-#endif
-#else
-#if MOO_USER_TOOL_THIS_OS != MOO_USER_TOOL_UNIX
-#error "oops"
-#endif
-#endif
-
 #define N_TOOLS 2
 
 #define ITEM_TOOL       "tool"

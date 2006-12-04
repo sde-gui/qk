@@ -157,15 +157,12 @@ _moo_edit_update_global_config (void)
 void
 _moo_edit_apply_prefs (MooEdit *edit)
 {
-    GtkTextView *text_view;
     MooLangMgr *mgr;
     MooTextStyleScheme *scheme;
 
     g_return_if_fail (MOO_IS_EDIT (edit));
 
     g_object_freeze_notify (G_OBJECT (edit));
-
-    text_view = GTK_TEXT_VIEW (edit);
 
     g_object_set (edit,
                   "smart-home-end", get_bool (MOO_EDIT_PREFS_SMART_HOME_END),

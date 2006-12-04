@@ -102,7 +102,6 @@ static void    moo_font_selection_get_property       (GObject         *object,
 						      GValue          *value,
 						      GParamSpec      *pspec);
 static void    moo_font_selection_init		     (MooFontSelection      *fontsel);
-static void    moo_font_selection_finalize	     (GObject               *object);
 static void    moo_font_selection_screen_changed     (GtkWidget		    *widget,
 						      GdkScreen             *previous_screen);
 
@@ -138,9 +137,6 @@ static void    moo_font_selection_update_preview     (MooFontSelection *fs);
 static void    moo_font_selection_dialog_class_init  (MooFontSelectionDialogClass *klass);
 static void    moo_font_selection_dialog_init	     (MooFontSelectionDialog *fontseldiag);
 
-static GtkVBoxClass *font_selection_parent_class = NULL;
-static GtkWindowClass *font_selection_dialog_parent_class = NULL;
-
 G_DEFINE_TYPE(MooFontSelection, moo_font_selection, GTK_TYPE_VBOX)
 
 
@@ -149,8 +145,6 @@ moo_font_selection_class_init (MooFontSelectionClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
-
-  font_selection_parent_class = g_type_class_peek_parent (klass);
 
   gobject_class->set_property = moo_font_selection_set_property;
   gobject_class->get_property = moo_font_selection_get_property;
@@ -188,8 +182,6 @@ moo_font_selection_class_init (MooFontSelectionClass *klass)
                                                          P_("filter-visible"),
                                                          TRUE,
                                                          G_PARAM_READWRITE));
-
-  gobject_class->finalize = moo_font_selection_finalize;
 }
 
 static void
@@ -547,18 +539,6 @@ moo_font_selection_new (void)
   fontsel = g_object_new (MOO_TYPE_FONT_SELECTION, NULL);
 
   return GTK_WIDGET (fontsel);
-}
-
-static void
-moo_font_selection_finalize (GObject *object)
-{
-  MooFontSelection *fontsel;
-
-  g_return_if_fail (MOO_IS_FONT_SELECTION (object));
-
-  fontsel = MOO_FONT_SELECTION (object);
-
-  (* G_OBJECT_CLASS (font_selection_parent_class)->finalize) (object);
 }
 
 static void
@@ -1306,9 +1286,8 @@ moo_font_selection_set_filter_visible (MooFontSelection *fontsel,
 G_DEFINE_TYPE(MooFontSelectionDialog, moo_font_selection_dialog, GTK_TYPE_DIALOG)
 
 static void
-moo_font_selection_dialog_class_init (MooFontSelectionDialogClass *klass)
+moo_font_selection_dialog_class_init (G_GNUC_UNUSED MooFontSelectionDialogClass *klass)
 {
-  font_selection_dialog_parent_class = g_type_class_peek_parent (klass);
 }
 
 static void

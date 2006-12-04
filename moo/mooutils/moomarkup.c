@@ -728,7 +728,6 @@ moo_markup_set_prop (MooMarkupNode      *elm,
             else
             {
                 guint j;
-                char **attr_names, **attr_vals;
 
                 /* XXX just move them */
 
@@ -991,10 +990,9 @@ moo_markup_create_text_element (MooMarkupNode      *parent,
                                 const char         *content)
 {
     MooMarkupElement *elm;
-    MooMarkupNode *child;
 
     g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (parent) ||
-            MOO_MARKUP_IS_DOC (parent), NULL);
+                          MOO_MARKUP_IS_DOC (parent), NULL);
     g_return_val_if_fail (path != NULL, NULL);
     g_return_val_if_fail (content != NULL, NULL);
     g_return_val_if_fail (g_utf8_validate (content, -1, NULL), NULL);
@@ -1004,9 +1002,9 @@ moo_markup_create_text_element (MooMarkupNode      *parent,
     if (!elm)
         return NULL;
 
-    child = moo_markup_text_node_new (MOO_MARKUP_TEXT_NODE,
-                                      elm->doc, MOO_MARKUP_NODE (elm),
-                                      content, strlen (content));
+    moo_markup_text_node_new (MOO_MARKUP_TEXT_NODE,
+                              elm->doc, MOO_MARKUP_NODE (elm),
+                              content, strlen (content));
 
     g_free (elm->content);
     elm->content = g_strdup (content);

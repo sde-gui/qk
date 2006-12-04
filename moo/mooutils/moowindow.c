@@ -993,7 +993,7 @@ moo_window_class_get_name (MooWindowClass     *klass)
 static void
 moo_window_class_install_action (MooWindowClass     *klass,
                                  const char         *action_id,
-                                 MooActionFactory   *action,
+                                 MooActionFactory   *factory,
                                  const char         *group,
                                  char              **conditions)
 {
@@ -1003,7 +1003,7 @@ moo_window_class_install_action (MooWindowClass     *klass,
     GType type;
 
     g_return_if_fail (MOO_IS_WINDOW_CLASS (klass));
-    g_return_if_fail (MOO_IS_ACTION_FACTORY (action));
+    g_return_if_fail (MOO_IS_ACTION_FACTORY (factory));
     g_return_if_fail (action_id && action_id[0]);
 
     type = G_OBJECT_CLASS_TYPE (klass);
@@ -1012,7 +1012,7 @@ moo_window_class_install_action (MooWindowClass     *klass,
     if (g_hash_table_lookup (store->actions, action_id))
         moo_window_class_remove_action (klass, action_id);
 
-    info = action_info_new (action, group, conditions);
+    info = action_info_new (factory, group, conditions);
     g_hash_table_insert (store->actions, g_strdup (action_id), info);
 
     for (l = window_instances; l != NULL; l = l->next)

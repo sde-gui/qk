@@ -1091,12 +1091,9 @@ moo_prefs_load (const char     *file_rc,
                 const char     *file_state,
                 GError        **error)
 {
-    MooPrefs *prefs;
-
     g_return_val_if_fail (file_rc != NULL, FALSE);
     g_return_val_if_fail (file_state != NULL, FALSE);
 
-    prefs = instance ();
     moo_prefs_set_modified (FALSE);
 
     return load_file (file_rc, MOO_PREFS_RC, error) &&

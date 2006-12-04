@@ -455,11 +455,9 @@ set_initial_size (GtkWindow    *window,
                   PositionInfo *pinfo)
 {
     int width, height;
-    gboolean maximized;
 
     width = moo_prefs_get_int (pinfo->key_width);
     height = moo_prefs_get_int (pinfo->key_height);
-    maximized = moo_prefs_get_bool (pinfo->key_maximized);
 
     if (width > 0 && height > 0)
         gtk_window_set_default_size (window, width, height);
