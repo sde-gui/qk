@@ -54,15 +54,19 @@ struct _MooPyAPI {
 
     MooPyObject* (*run_simple_string)       (const char     *str);
     MooPyObject* (*run_string)              (const char     *str,
-                                             MooPyObject    *locals,
-                                             MooPyObject    *globals);
+                                             MooPyObject    *globals,
+                                             MooPyObject    *locals);
     MooPyObject* (*run_file)                (void           *fp,
-                                             const char     *filename);
+                                             const char     *filename,
+                                             MooPyObject    *globals,
+                                             MooPyObject    *locals);
     MooPyObject* (*run_code)                (const char     *str,
-                                             MooPyObject    *locals,
-                                             MooPyObject    *globals);
+                                             MooPyObject    *globals,
+                                             MooPyObject    *locals);
+    MooPyObject* (*create_script_dict)      (const char     *name);
 
     MooPyObject* (*py_object_from_gobject)  (gpointer        gobj);
+    gpointer     (*gobject_from_py_object)  (MooPyObject    *pyobj);
 
     MooPyObject* (*dict_get_item)           (MooPyObject    *dict,
                                              const char     *key);
@@ -114,6 +118,7 @@ void         moo_Py_DECREF          (MooPyObject    *obj);
 #define moo_python_run_string           moo_py_api->run_string
 #define moo_python_run_file             moo_py_api->run_file
 #define moo_python_run_code             moo_py_api->run_code
+#define moo_python_create_script_dict   moo_py_api->create_script_dict
 
 #define moo_py_dict_get_item            moo_py_api->dict_get_item
 #define moo_py_dict_set_item            moo_py_api->dict_set_item
@@ -121,6 +126,7 @@ void         moo_Py_DECREF          (MooPyObject    *obj);
 
 #define moo_py_import_exec              moo_py_api->import_exec
 #define moo_py_object_from_gobject      moo_py_api->py_object_from_gobject
+#define moo_gobject_from_py_object      moo_py_api->gobject_from_py_object
 
 #define moo_PyErr_Print                 moo_py_api->py_err_print
 #define moo_PyObject_CallMethod         moo_py_api->py_object_call_method

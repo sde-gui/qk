@@ -680,7 +680,7 @@ moo_app_python_run_file (MooApp      *app,
     file = _moo_fopen (filename, "r");
     g_return_val_if_fail (file != NULL, FALSE);
 
-    res = moo_python_run_file (file, filename);
+    res = moo_python_run_file (file, filename, NULL, NULL);
 
     fclose (file);
 

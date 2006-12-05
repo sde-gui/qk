@@ -34,7 +34,7 @@ moo_python_api_run_simple_string (const char *str)
 
 
 static MooPyObject *
-get_script_dict (const char *name)
+moo_python_api_create_script_dict (const char *name)
 {
     PyObject *dict, *builtins;
 
@@ -58,15 +58,15 @@ get_script_dict (const char *name)
 
 static MooPyObject*
 moo_python_api_run_string (const char  *str,
-                           MooPyObject *locals,
-                           MooPyObject *globals)
+                           MooPyObject *globals,
+                           MooPyObject *locals)
 {
     PyObject *ret;
 
     g_return_val_if_fail (str != NULL, NULL);
 
     if (!locals)
-        locals = get_script_dict ("__script__");
+        locals = moo_python_api_create_script_dict ("__script__");
     else
         moo_Py_INCREF (locals);
 
@@ -75,36 +75,25 @@ moo_python_api_run_string (const char  *str,
     if (!globals)
         globals = locals;
 
-    ret = PyRun_String (str, Py_file_input, (PyObject*) locals, (PyObject*) globals);
+    ret = PyRun_String (str, Py_file_input, (PyObject*) globals, (PyObject*) locals);
 
     moo_Py_DECREF (locals);
     return (MooPyObject*) ret;
 }
 
 
-static MooPyObject*
-moo_python_api_run_file (gpointer    fp,
-                         const char *filename)
-{
-    PyObject *dict, *main_mod;
-    g_return_val_if_fail (fp != NULL && filename != NULL, NULL);
-    main_mod = PyImport_AddModule ((char*)"__main__");
-    dict = PyModule_GetDict (main_mod);
-    return (MooPyObject*) PyRun_File (fp, filename, Py_file_input, dict, dict);
-}
-
-
 static MooPyObject *
-moo_python_api_run_code (const char  *str,
-                         MooPyObject *locals,
-                         MooPyObject *globals)
+moo_python_api_run_file (gpointer     fp,
+                         const char  *filename,
+                         MooPyObject *globals,
+                         MooPyObject *locals)
 {
     PyObject *ret;
 
-    g_return_val_if_fail (str != NULL, NULL);
+    g_return_val_if_fail (fp != NULL && filename != NULL, NULL);
 
     if (!locals)
-        locals = get_script_dict ("__script__");
+        locals = moo_python_api_create_script_dict ("__script__");
     else
         moo_Py_INCREF (locals);
 
@@ -113,7 +102,33 @@ moo_python_api_run_code (const char  *str,
     if (!globals)
         globals = locals;
 
-    ret = PyRun_String (str, Py_file_input, (PyObject*) locals, (PyObject*) globals);
+    ret = PyRun_File (fp, filename, Py_file_input, (PyObject*) globals, (PyObject*) locals);
+
+    moo_Py_DECREF (locals);
+    return (MooPyObject*) ret;
+}
+
+
+static MooPyObject *
+moo_python_api_run_code (const char  *str,
+                         MooPyObject *globals,
+                         MooPyObject *locals)
+{
+    PyObject *ret;
+
+    g_return_val_if_fail (str != NULL, NULL);
+
+    if (!locals)
+        locals = moo_python_api_create_script_dict ("__script__");
+    else
+        moo_Py_INCREF (locals);
+
+    g_return_val_if_fail (locals != NULL, NULL);
+
+    if (!globals)
+        globals = locals;
+
+    ret = PyRun_String (str, Py_file_input, (PyObject*) globals, (PyObject*) locals);
 
     if (ret)
     {
@@ -156,6 +171,27 @@ moo_python_api_py_object_from_gobject (gpointer gobj)
 {
     g_return_val_if_fail (!gobj || G_IS_OBJECT (gobj), NULL);
     return (MooPyObject*) pygobject_new (gobj);
+}
+
+static gpointer
+moo_python_api_gobject_from_py_object (MooPyObject *pyobj)
+{
+    GValue val;
+
+    g_return_val_if_fail (pyobj != NULL, NULL);
+
+    val.g_type = 0;
+    g_value_init (&val, G_TYPE_OBJECT);
+
+    if (pyg_value_from_pyobject (&val, (PyObject*) pyobj) == 0)
+    {
+        gpointer ret = g_value_get_object (&val);
+        g_value_unset (&val);
+        return ret;
+    }
+
+    PyErr_Clear ();
+    return NULL;
 }
 
 
@@ -402,7 +438,9 @@ moo_python_api_init (void)
         moo_python_api_run_string,
         moo_python_api_run_file,
         moo_python_api_run_code,
+        moo_python_api_create_script_dict,
         moo_python_api_py_object_from_gobject,
+        moo_python_api_gobject_from_py_object,
         moo_python_api_dict_get_item,
         moo_python_api_dict_set_item,
         moo_python_api_dict_del_item,
