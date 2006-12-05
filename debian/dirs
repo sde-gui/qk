@@ -1,6 +1,9 @@
 usr/bin
 usr/lib
+usr/lib/moo
 usr/share
 usr/share/applications
+usr/share/locale
+usr/share/moo
 usr/share/pixmaps
 usr/share/icons/hicolor/48x48/apps
