@@ -23,8 +23,10 @@ G_BEGIN_DECLS
 #define CMPL_PREFS_ROOT MOO_PLUGIN_PREFS_ROOT "/" CMPL_PLUGIN_ID
 #define CMPL_DIR "completion"
 #define CMPL_FILE_NONE "none"
-#define CMPL_FILE_SUFFIX ".lst"
-#define CMPL_CONFIG_SUFFIX ".cfg"
+
+#define CMPL_FILE_SUFFIX_LIST   ".lst"
+#define CMPL_FILE_SUFFIX_CONFIG ".cfg"
+#define CMPL_FILE_SUFFIX_PYTHON ".py"
 
 #define _completion_callback        _moo_completion_plugin_callback
 #define _completion_complete        _moo_completion_plugin_complete

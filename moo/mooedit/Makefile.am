@@ -16,12 +16,9 @@ moolangmgr-private.o: moolangmgr.o ; echo stamp > $(@F)
 unix_sources =				\
 	moocommand-exe-unix.c
 
-completion =				\
-	moocompletion.h			\
-	moocompletion.c
-
 mooedit_include_headers =		\
 	moocmdview.h			\
+	moocompletion.h			\
 	mooedit-bookmarks.h		\
 	mooedit-enums.h			\
 	mooedit-script.h		\
@@ -93,6 +90,7 @@ mooedit_sources =			\
 	moocommand-script.c		\
 	moocommand.c			\
 	moocommanddisplay.c		\
+	moocompletion.c			\
 	mooedit-bookmarks.c		\
 	mooedit-enums.c			\
 	mooedit-script.c		\
@@ -241,8 +239,7 @@ EXTRA_DIST =				\
 	glade/moopluginprefs.glade	\
 	glade/mooprint.glade		\
 	glade/mooprintpreview.glade	\
-	$(mooedit_tools_DATA)		\
-	$(completion)
+	$(mooedit_tools_DATA)
 
 if GTK_2_10
 mooedit_sources += $(mooedit_printing_sources)

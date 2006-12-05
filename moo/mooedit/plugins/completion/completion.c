@@ -13,9 +13,10 @@
 
 #include "completion.h"
 #include "mooedit/moocompletion.h"
+#include "mooedit/mookeyfile.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-fs.h"
-#include "mooutils/mooconfig.h"
+#include "mooutils/moopython.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
@@ -24,8 +25,11 @@
 
 typedef enum {
     DATA_FILE_SIMPLE,
-    DATA_FILE_CONFIG
+    DATA_FILE_CONFIG,
+    DATA_FILE_PYTHON
 } DataFileType;
+
+#define DATA_FILE_INVALID ((DataFileType) -1)
 
 typedef struct {
     char *path;
@@ -120,7 +124,7 @@ cmpl_data_read_simple_file (CmplData *data)
 
     list = parse_words (contents, NULL, data->path);
     data->cmpl = moo_completion_new_text (list);
-//     g_message ("read %d words from %s", g_list_length (list), data->path);
+    _moo_message ("read %d words from %s", g_list_length (list), data->path);
 
     g_free (contents);
 }
@@ -187,39 +191,39 @@ error:
 static void
 cmpl_data_read_config_file (CmplData *data)
 {
-    MooConfig *config;
+    MooKeyFile *key_file;
     guint i, n_items;
     MooCompletionGroup *group = NULL;
 
     g_return_if_fail (data->cmpl == NULL);
     g_return_if_fail (data->path != NULL);
 
-    config = moo_config_new_from_file (data->path, FALSE, NULL);
-    g_return_if_fail (config != NULL);
+    key_file = moo_key_file_new_from_file (data->path, NULL);
+    g_return_if_fail (key_file != NULL);
 
-    n_items = moo_config_n_items (config);
+    n_items = moo_key_file_n_items (key_file);
     g_return_if_fail (n_items != 0);
 
     data->cmpl = moo_completion_new_text (NULL);
 
     for (i = 0; i < n_items; ++i)
     {
-        MooConfigItem *item;
+        MooKeyFileItem *item;
         const char *pattern, *prefix, *suffix, *script;
         const char *groups;
         guint *parens;
         guint n_parens;
         GList *words;
 
-        item = moo_config_nth_item (config, i);
+        item = moo_key_file_nth_item (key_file, i);
 
-        pattern = moo_config_item_get (item, "pattern");
-        prefix = moo_config_item_get (item, "prefix");
-        suffix = moo_config_item_get (item, "insert-suffix");
-        script = moo_config_item_get (item, "insert-script");
+        pattern = moo_key_file_item_get (item, "pattern");
+        prefix = moo_key_file_item_get (item, "prefix");
+        suffix = moo_key_file_item_get (item, "insert-suffix");
+        script = moo_key_file_item_get (item, "insert-script");
 
-        groups = moo_config_item_get (item, "group");
-        groups = groups ? groups : moo_config_item_get (item, "groups");
+        groups = moo_key_file_item_get (item, "group");
+        groups = groups ? groups : moo_key_file_item_get (item, "groups");
         groups = groups ? groups : "0";
 
         if (!pattern)
@@ -236,7 +240,7 @@ cmpl_data_read_config_file (CmplData *data)
             continue;
         }
 
-        words = parse_words (moo_config_item_get_content (item),
+        words = parse_words (moo_key_file_item_get_content (item),
                              prefix, data->path);
 
         if (!words)
@@ -246,8 +250,8 @@ cmpl_data_read_config_file (CmplData *data)
             continue;
         }
 
-//         g_message ("read %d words for patttern '%s' from %s",
-//                    g_list_length (words), pattern, data->path);
+        _moo_message ("read %d words for patttern '%s' from %s",
+                      g_list_length (words), pattern, data->path);
 
         group = moo_completion_new_group (data->cmpl, NULL);
         moo_completion_group_add_data (group, words);
@@ -261,13 +265,71 @@ cmpl_data_read_config_file (CmplData *data)
         g_free (parens);
     }
 
-    g_object_unref (config);
+    g_object_unref (key_file);
 
     if (!group)
     {
         g_warning ("%s: no completions", G_STRLOC);
         return;
     }
+}
+
+
+static void
+cmpl_data_read_python_file (CmplData *data)
+{
+    FILE *file;
+    MooPyObject *dict = NULL;
+    MooPyObject *res = NULL;
+    MooPyObject *py_cmpl = NULL;
+    MooCompletion *cmpl;
+
+    g_return_if_fail (data->cmpl == NULL);
+    g_return_if_fail (data->path != NULL);
+
+    if (!moo_python_running ())
+        return;
+
+    file = _moo_fopen (data->path, "r");
+    g_return_if_fail (file != NULL);
+
+    dict = moo_python_create_script_dict ("__completion_module__");
+    res = moo_python_run_file (file, data->path, dict, dict);
+
+    fclose (file);
+
+    if (!res)
+    {
+        g_message ("error executing file '%s'", data->path);
+        moo_PyErr_Print ();
+        goto out;
+    }
+
+    py_cmpl = moo_py_dict_get_item (dict, "__completion__");
+
+    if (!py_cmpl)
+    {
+        g_message ("no '__completion__' variable in file '%s'", data->path);
+        goto out;
+    }
+
+    cmpl = moo_gobject_from_py_object (py_cmpl);
+
+    if (!MOO_IS_COMPLETION (cmpl))
+    {
+        g_message ("'__completion__' variable in file '%s' is not of type MooCompletion", data->path);
+        goto out;
+    }
+
+    data->cmpl = g_object_ref (cmpl);
+
+out:
+    if (!data->cmpl)
+        data->cmpl = moo_completion_new_text (NULL);
+
+    moo_Py_DECREF (dict);
+    moo_Py_DECREF (res);
+    moo_Py_DECREF (py_cmpl);
 }
 
 
@@ -280,12 +342,12 @@ cmpl_data_read_file (CmplData *data)
     switch (data->type)
     {
         case DATA_FILE_SIMPLE:
-            return cmpl_data_read_simple_file (data);
+            cmpl_data_read_simple_file (data);
         case DATA_FILE_CONFIG:
-            return cmpl_data_read_config_file (data);
+            cmpl_data_read_config_file (data);
+        case DATA_FILE_PYTHON:
+            cmpl_data_read_python_file (data);
     }
-
-    g_return_if_reached ();
 }
 
 
@@ -385,7 +447,7 @@ cmpl_plugin_check_file (CmplPlugin  *plugin,
     data->path = g_strdup (path);
     data->type = type;
     data->mtime = buf.st_mtime;
-//     g_message ("found file '%s' for lang '%s'", path, id);
+    _moo_message ("found file '%s' for lang '%s'", path, id);
 }
 
 
@@ -401,24 +463,41 @@ cmpl_plugin_load_dir (CmplPlugin *plugin,
 
     while ((base = g_dir_read_name (dir)))
     {
+        guint i, len;
         char *file, *name, *id;
-        guint base_len;
-        DataFileType type;
+        DataFileType type = DATA_FILE_INVALID;
 
-        base_len = strlen (base);
+        const char *suffixes[] = {
+            CMPL_FILE_SUFFIX_LIST,
+            CMPL_FILE_SUFFIX_CONFIG,
+            CMPL_FILE_SUFFIX_PYTHON
+        };
+        DataFileType types[] = {
+            DATA_FILE_SIMPLE,
+            DATA_FILE_CONFIG,
+            DATA_FILE_PYTHON
+        };
 
-        if (base_len <= strlen (CMPL_FILE_SUFFIX))
+        name = g_ascii_strdown (base, -1);
+        len = strlen (name);
+
+        for (i = 0; i < G_N_ELEMENTS (suffixes); ++i)
+        {
+            if (g_str_has_suffix (base, suffixes[i]))
+            {
+                name[len - strlen (suffixes[i])] = 0;
+
+                if (name[0])
+                    type = types[i];
+
+                break;
+            }
+        }
+
+        if (type == DATA_FILE_INVALID)
             continue;
 
-        if (g_str_has_suffix (base, CMPL_FILE_SUFFIX))
-            type = DATA_FILE_SIMPLE;
-        else if (g_str_has_suffix (base, CMPL_CONFIG_SUFFIX))
-            type = DATA_FILE_CONFIG;
-        else
-            continue;
-
-        name = g_strndup (base, base_len - strlen (CMPL_FILE_SUFFIX));
-        id = moo_lang_id_from_name (name);
+        id = _moo_lang_id_from_name (name);
         file = g_build_filename (path, base, NULL);
 
         cmpl_plugin_check_file (plugin, file, type, id);
@@ -467,7 +546,7 @@ _completion_complete (CmplPlugin *plugin,
 
     lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
 
-    data = cmpl_plugin_load_data (plugin, lang ? moo_lang_id (lang) : NULL);
+    data = cmpl_plugin_load_data (plugin, lang ? _moo_lang_id (lang) : NULL);
     g_return_if_fail (data != NULL);
 
     if (data->cmpl)

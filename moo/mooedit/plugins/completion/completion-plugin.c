@@ -77,7 +77,7 @@ cmpl_plugin_deinit (CmplPlugin *plugin)
 
 
 MOO_PLUGIN_DEFINE_INFO (cmpl,
-                        N_("Completion"), N_("Makes it complete"),
+                        N_("Completion"), N_("Provides text completion"),
                         "Yevgen Muntyan <muntyan@tamu.edu>",
                         MOO_VERSION, NULL)
 MOO_PLUGIN_DEFINE_FULL (Cmpl, cmpl,
