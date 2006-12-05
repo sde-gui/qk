@@ -42,6 +42,9 @@ GSList         *moo_lang_mgr_get_available_langs    (MooLangMgr     *mgr);
 /* list must be freed together with content */
 GSList         *moo_lang_mgr_get_sections           (MooLangMgr     *mgr);
 
+MooLang        *_moo_lang_mgr_find_lang             (MooLangMgr     *mgr,
+                                                     const char     *name);
+
 MooTextStyleScheme *_moo_lang_mgr_get_active_scheme (MooLangMgr     *mgr);
 void            _moo_lang_mgr_set_active_scheme     (MooLangMgr     *mgr,
                                                      const char     *scheme_name);

@@ -645,9 +645,9 @@ moo_edit_get_editor (MooEdit *doc)
 }
 
 
-typedef void (*SetVarFunc) (MooEdit *edit,
-                            char    *name,
-                            char    *val);
+typedef void (*SetVarFunc) (MooEdit    *edit,
+                            const char *name,
+                            char       *val);
 
 static void
 parse_mode_string (MooEdit    *edit,
@@ -734,9 +734,9 @@ parse_kate_mode_string (MooEdit *edit,
 
 
 static void
-set_emacs_var (MooEdit *edit,
-               char    *name,
-               char    *val)
+set_emacs_var (MooEdit    *edit,
+               const char *name,
+               char       *val)
 {
     if (!g_ascii_strcasecmp (name, "mode"))
     {
@@ -768,7 +768,16 @@ static void
 parse_emacs_mode_string (MooEdit *edit,
                          char    *string)
 {
-    parse_mode_string (edit, string, ":", set_emacs_var);
+    MooLangMgr *mgr;
+
+    g_strstrip (string);
+
+    mgr = moo_editor_get_lang_mgr (edit->priv->editor);
+
+    if (_moo_lang_mgr_find_lang (mgr, string))
+        set_emacs_var (edit, "mode", string);
+    else
+        parse_mode_string (edit, string, ":", set_emacs_var);
 }
 
 

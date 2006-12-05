@@ -203,12 +203,32 @@ MooLang *
 moo_lang_mgr_get_lang (MooLangMgr *mgr,
                        const char *name)
 {
+    MooLang *lang;
+
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+
+    if (!name)
+        return NULL;
+
+    lang = _moo_lang_mgr_find_lang (mgr, name);
+
+    if (!lang)
+        g_warning ("could not find language '%s'", name);
+
+    return lang;
+}
+
+MooLang *
+_moo_lang_mgr_find_lang (MooLangMgr *mgr,
+                         const char *name)
+{
     char *id;
     LangInfo *info;
 
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+    g_return_val_if_fail (name != NULL, NULL);
 
-    if (!name || !strcmp (name, MOO_LANG_NONE))
+    if (!strcmp (name, MOO_LANG_NONE))
         return NULL;
 
     if (!g_ascii_strcasecmp (name, "c++"))
@@ -217,11 +237,8 @@ moo_lang_mgr_get_lang (MooLangMgr *mgr,
     read_langs (mgr);
     id = _moo_lang_id_from_name (name);
     info = get_lang_info (mgr, id, FALSE);
-
-    if (!info)
-        g_warning ("could not find language '%s'", name);
-
     g_free (id);
+
     return info ? info->lang : NULL;
 }
 
