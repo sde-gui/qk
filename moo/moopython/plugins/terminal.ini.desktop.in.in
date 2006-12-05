@@ -1,11 +1,11 @@
 [module]
 type=Python
 file=terminal.py
-version=0.8
+version=@MOO_MODULE_VERSION_MAJOR@.@MOO_MODULE_VERSION_MINOR@
 
 [plugin]
 id=Terminal
 _name=Terminal
 _description=Terminal plugin
 author=Yevgen Muntyan <muntyan@math.tamu.edu>
-version=3.1415926
+version=@MOO_VERSION_UNQUOTED@

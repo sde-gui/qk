@@ -223,10 +223,13 @@ check_version (const char *version,
     if (*end != 0)
         goto invalid;
 
-    if (major != MOO_VERSION_MAJOR || minor > MOO_VERSION_MINOR)
+    if (!moo_module_check_version (major, minor))
     {
-        g_warning ("module version %s is not compatible with current version %d.%d",
-                   version, MOO_VERSION_MAJOR, MOO_VERSION_MINOR);
+        guint current_major, current_minor;
+        _moo_module_version (&current_major, &current_minor);
+        g_warning ("module version '%s' in file '%s' is not "
+                   "compatible with current version %u.%u",
+                   version, ini_file_path, current_major, current_minor);
         return FALSE;
     }
 

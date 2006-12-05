@@ -809,12 +809,22 @@ moo_plugin_unregister (GType type)
 }
 
 
+void
+_moo_module_version (guint *major,
+                     guint *minor)
+{
+    if (major)
+        *major = MOO_MODULE_VERSION_MAJOR;
+    if (minor)
+        *minor = MOO_MODULE_VERSION_MINOR;
+}
+
 gboolean
 moo_module_check_version (guint major,
                           guint minor)
 {
-    return major == MOO_VERSION_MAJOR &&
-            minor <= MOO_VERSION_MINOR;
+    return major == MOO_MODULE_VERSION_MAJOR &&
+            minor <= MOO_MODULE_VERSION_MINOR;
 }
 
 

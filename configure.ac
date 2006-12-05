@@ -7,6 +7,9 @@ m4_define([moo_minor_version], [8])
 m4_define([moo_micro_version], [0])
 m4_define([moo_version], [moo_major_version.moo_minor_version.moo_micro_version])
 
+m4_define([moo_module_major_version], [1])
+m4_define([moo_module_minor_version], [0])
+
 AC_INIT(medit, [moo_version], [muntyan@tamu.edu], medit)
 AM_INIT_AUTOMAKE(medit, [moo_version])
 AC_CANONICAL_HOST
@@ -93,7 +96,10 @@ moo/mooedit/plugins/fileselector/Makefile
 moo/mooapp/Makefile
 moo/moopython/Makefile
 moo/moopython/plugins/Makefile
+moo/moopython/plugins/python.ini.desktop.in
+moo/moopython/plugins/terminal.ini.desktop.in
 moo/moopython/plugins/pyproject/Makefile
+moo/moopython/plugins/pyproject/project-plugin.ini.desktop.in
 moo/moopython/pygtk/Makefile
 moo/mooutils/pcre/Makefile
 moo/mooutils/xdgmime/Makefile

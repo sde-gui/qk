@@ -180,6 +180,8 @@ GType       moo_plugin_params_get_type  (void) G_GNUC_CONST;
 
 gboolean    moo_module_check_version    (guint           major,
                                          guint           minor);
+void        _moo_module_version         (guint          *major,
+                                         guint          *minor);
 
 gboolean    moo_plugin_register         (const char     *id,
                                          GType           type,
