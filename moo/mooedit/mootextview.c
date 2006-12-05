@@ -756,7 +756,8 @@ moo_text_view_finalize (GObject *object)
 
     g_slist_free (view->priv->line_marks);
 
-    gdk_color_free (view->priv->current_line_color);
+    if (view->priv->current_line_color)
+        gdk_color_free (view->priv->current_line_color);
 
     G_OBJECT_CLASS (moo_text_view_parent_class)->finalize (object);
 }
@@ -1951,6 +1952,7 @@ moo_text_view_unrealize (GtkWidget *widget)
 static void
 update_current_line_gc (MooTextView *view)
 {
+    GdkColor *color = NULL;
     GtkWidget *widget = GTK_WIDGET (view);
     GdkColormap *colormap;
     GdkWindow *window;
@@ -1958,8 +1960,7 @@ update_current_line_gc (MooTextView *view)
     if (!GTK_WIDGET_REALIZED (widget))
         return;
 
-    if (!view->priv->current_line_color ||
-        !view->priv->highlight_current_line)
+    if (!view->priv->highlight_current_line)
     {
         if (view->priv->current_line_gc)
         {
@@ -1977,19 +1978,23 @@ update_current_line_gc (MooTextView *view)
                                        GTK_TEXT_WINDOW_TEXT);
     g_return_if_fail (window != NULL);
 
-    if (!gdk_colormap_alloc_color (colormap,
-                                   view->priv->current_line_color,
-                                   FALSE, TRUE))
+    if (view->priv->current_line_color)
     {
-        g_warning ("%s: failed to allocate color", G_STRLOC);
-        *view->priv->current_line_color = widget->style->bg[GTK_STATE_NORMAL];
+        if (!gdk_colormap_alloc_color (colormap,
+                                       view->priv->current_line_color,
+                                       FALSE, TRUE))
+            g_warning ("%s: failed to allocate color", G_STRLOC);
+        else
+            color = view->priv->current_line_color;
     }
+
+    if (!color)
+        color = &widget->style->bg[GTK_STATE_NORMAL];
 
     if (!view->priv->current_line_gc)
         view->priv->current_line_gc = gdk_gc_new (window);
 
-    gdk_gc_set_foreground (view->priv->current_line_gc,
-                           view->priv->current_line_color);
+    gdk_gc_set_foreground (view->priv->current_line_gc, color);
 }
 
 
