@@ -82,6 +82,17 @@ static int      list_sort_func                  (GtkTreeModel       *model,
                                                  GtkTreeIter        *b,
                                                  MooCompletion      *cmpl);
 
+static gboolean moo_completion_get_region       (MooCompletion      *cmpl,
+                                                 GtkTextIter        *start,
+                                                 GtkTextIter        *end);
+static void     moo_completion_set_region       (MooCompletion      *cmpl,
+                                                 const GtkTextIter  *start,
+                                                 const GtkTextIter  *end);
+
+static MooCompletion *moo_completion_new        (MooCompletionStringFunc string_func,
+                                                 MooCompletionFreeFunc free_func,
+                                                 MooCompletionCmpFunc cmp_func);
+
 static MooCompletionGroup *moo_completion_group_new
                                                 (const char         *name,
                                                  MooCompletionStringFunc string_func,
@@ -95,6 +106,7 @@ static gboolean moo_completion_group_find       (MooCompletionGroup *group,
 static GList   *moo_completion_group_complete   (MooCompletionGroup *group,
                                                  const char         *text,
                                                  char              **prefix);
+static void     moo_completion_hide             (MooCompletion      *cmpl);
 
 
 G_DEFINE_TYPE (MooCompletion, moo_completion, G_TYPE_OBJECT)
@@ -545,7 +557,7 @@ moo_completion_disconnect_popup (MooCompletion *cmpl)
 }
 
 
-void
+static void
 moo_completion_hide (MooCompletion *cmpl)
 {
     g_return_if_fail (MOO_IS_COMPLETION (cmpl));
@@ -596,23 +608,7 @@ moo_completion_set_doc (MooCompletion  *cmpl,
 }
 
 
-GtkTextView *
-moo_completion_get_doc (MooCompletion *cmpl)
-{
-    g_return_val_if_fail (MOO_IS_COMPLETION (cmpl), NULL);
-    return cmpl->priv->doc;
-}
-
-
-MooTextPopup *
-moo_completion_get_popup (MooCompletion *cmpl)
-{
-    g_return_val_if_fail (MOO_IS_COMPLETION (cmpl), NULL);
-    return cmpl->priv->popup;
-}
-
-
-gboolean
+static gboolean
 moo_completion_get_region (MooCompletion  *cmpl,
                                 GtkTextIter        *start,
                                 GtkTextIter        *end)
@@ -636,7 +632,7 @@ moo_completion_get_region (MooCompletion  *cmpl,
 }
 
 
-void
+static void
 moo_completion_set_region (MooCompletion      *cmpl,
                            const GtkTextIter  *start,
                            const GtkTextIter  *end)
@@ -661,7 +657,7 @@ moo_completion_set_region (MooCompletion      *cmpl,
 }
 
 
-MooCompletion *
+static MooCompletion *
 moo_completion_new (MooCompletionStringFunc string_func,
                     MooCompletionFreeFunc free_func,
                     MooCompletionCmpFunc cmp_func)
@@ -753,23 +749,6 @@ moo_completion_group_new (const char *name,
     group->free_func = free_func;
     group->name = g_strdup (name);
     return group;
-}
-
-
-void
-moo_completion_group_set_data (MooCompletionGroup *group,
-                               GList              *data)
-{
-    g_return_if_fail (group != NULL);
-
-    g_completion_clear_items (group->cmpl);
-
-    if (group->free_func)
-        g_list_foreach (group->data, (GFunc) group->free_func, NULL);
-    g_list_free (group->data);
-
-    group->data = data;
-    g_completion_add_items (group->cmpl, group->data);
 }
 
 
@@ -931,26 +910,6 @@ moo_completion_group_set_script (MooCompletionGroup *group,
 
     if (script)
         group->script = ms_script_parse (script);
-}
-
-
-const char *
-moo_completion_group_get_name (MooCompletionGroup *group)
-{
-    g_return_val_if_fail (group != NULL, NULL);
-    return group->name;
-}
-
-
-GType
-moo_completion_group_get_type (void)
-{
-    static GType type;
-
-    if (!type)
-        type = g_pointer_type_register_static ("MooCompletionGroup");
-
-    return type;
 }
 
 

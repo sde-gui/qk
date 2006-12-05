@@ -19,7 +19,6 @@
 
 G_BEGIN_DECLS
 
-#define MOO_TYPE_COMPLETION_GROUP       (moo_completion_group_get_type ())
 #define MOO_TYPE_COMPLETION             (moo_completion_get_type ())
 #define MOO_COMPLETION(object)          (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_COMPLETION, MooCompletion))
 #define MOO_COMPLETION_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_COMPLETION, MooCompletionClass))
@@ -61,11 +60,8 @@ typedef int   (*MooCompletionCmpFunc)       (gpointer       data1,
 
 
 GType           moo_completion_get_type             (void) G_GNUC_CONST;
-GType           moo_completion_group_get_type       (void) G_GNUC_CONST;
 
-/* these two steal data */
-void            moo_completion_group_set_data       (MooCompletionGroup *group,
-                                                     GList              *data);
+/* steals data */
 void            moo_completion_group_add_data       (MooCompletionGroup *group,
                                                      GList              *data);
 
@@ -77,11 +73,7 @@ void            moo_completion_group_set_suffix     (MooCompletionGroup *group,
                                                      const char         *suffix);
 void            moo_completion_group_set_script     (MooCompletionGroup *group,
                                                      const char         *script);
-const char     *moo_completion_group_get_name       (MooCompletionGroup *group);
 
-MooCompletion  *moo_completion_new                  (MooCompletionStringFunc string_func,
-                                                     MooCompletionFreeFunc free_func,
-                                                     MooCompletionCmpFunc cmp_func);
 /* steals words */
 MooCompletion  *moo_completion_new_text             (GList              *words);
 
@@ -90,22 +82,9 @@ MooCompletionGroup *moo_completion_new_group        (MooCompletion      *cmpl,
 
 void            moo_completion_try_complete         (MooCompletion      *cmpl,
                                                      gboolean            insert_unique);
-void            moo_completion_hide                 (MooCompletion      *cmpl);
 
 void            moo_completion_set_doc              (MooCompletion      *cmpl,
                                                      GtkTextView        *doc);
-GtkTextView    *moo_completion_get_doc              (MooCompletion      *cmpl);
-
-GtkListStore   *moo_completion_get_store            (MooCompletion      *cmpl);
-
-MooTextPopup   *moo_completion_get_popup            (MooCompletion      *cmpl);
-
-gboolean        moo_completion_get_region           (MooCompletion      *cmpl,
-                                                     GtkTextIter        *start,
-                                                     GtkTextIter        *end);
-void            moo_completion_set_region           (MooCompletion      *cmpl,
-                                                     const GtkTextIter  *start,
-                                                     const GtkTextIter  *end);
 
 
 G_END_DECLS
