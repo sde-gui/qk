@@ -97,7 +97,7 @@ struct _MooTextViewPrivate {
     MooTextStyleScheme *style_scheme;
     guint tab_width;
     gboolean highlight_current_line;
-    GdkColor current_line_color;
+    GdkColor *current_line_color;
     GdkGC *current_line_gc;
     gboolean draw_tabs;
     gboolean draw_trailing_spaces;

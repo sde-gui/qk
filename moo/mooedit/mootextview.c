@@ -95,7 +95,7 @@ static void     moo_text_view_paste_clipboard (GtkTextView      *text_view);
 static void     moo_text_view_populate_popup(GtkTextView        *text_view,
                                              GtkMenu            *menu);
 
-static void     create_current_line_gc      (MooTextView        *view);
+static void     update_current_line_gc      (MooTextView        *view);
 static void     update_tab_width            (MooTextView        *view);
 
 static GtkTextBuffer *get_buffer            (MooTextView        *view);
@@ -623,10 +623,12 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
 static void moo_text_view_init (MooTextView *view)
 {
     char *name;
+    GdkColor clr;
 
     view->priv = G_TYPE_INSTANCE_GET_PRIVATE (view, MOO_TYPE_TEXT_VIEW, MooTextViewPrivate);
 
-    gdk_color_parse (LIGHT_BLUE, &view->priv->current_line_color);
+    view->priv->current_line_color = gdk_color_copy (&clr);
+    gdk_color_parse (LIGHT_BLUE, view->priv->current_line_color);
 
     view->priv->drag_button = GDK_BUTTON_RELEASE;
     view->priv->drag_type = MOO_TEXT_VIEW_DRAG_NONE;
@@ -753,6 +755,8 @@ moo_text_view_finalize (GObject *object)
     }
 
     g_slist_free (view->priv->line_marks);
+
+    gdk_color_free (view->priv->current_line_color);
 
     G_OBJECT_CLASS (moo_text_view_parent_class)->finalize (object);
 }
@@ -1504,10 +1508,14 @@ moo_text_view_set_highlight_current_line (MooTextView    *view,
     view->priv->highlight_current_line = highlight;
     g_object_notify (G_OBJECT (view), "highlight-current-line");
 
-    if (GTK_WIDGET_DRAWABLE (view))
-        gtk_widget_queue_draw (GTK_WIDGET (view));
+    update_current_line_gc (view);
+    gtk_widget_queue_draw (GTK_WIDGET (view));
 }
 
+
+#define COLORS_EQUAL(c1, c2) ((c1) == c2 || \
+    ((c1) && (c2) && (c1)->red == (c2)->red && \
+     (c1)->green == (c2)->green && (c1)->blue == (c2)->blue))
 
 void
 moo_text_view_set_current_line_color (MooTextView    *view,
@@ -1515,38 +1523,28 @@ moo_text_view_set_current_line_color (MooTextView    *view,
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
-    if (color)
-    {
-        view->priv->current_line_color = *color;
+    if (COLORS_EQUAL (color, view->priv->current_line_color))
+        return;
 
-        if (view->priv->current_line_gc)
-        {
-            g_object_unref (view->priv->current_line_gc);
-            view->priv->current_line_gc = NULL;
-            create_current_line_gc (view);
-            if (GTK_WIDGET_DRAWABLE (view))
-                gtk_widget_queue_draw (GTK_WIDGET (view));
-        }
-
-        g_object_freeze_notify (G_OBJECT (view));
-        g_object_notify (G_OBJECT (view), "current-line-color-gdk");
-        g_object_notify (G_OBJECT (view), "current-line-color");
-        g_object_notify (G_OBJECT (view), "highlight-current-line");
-        g_object_thaw_notify (G_OBJECT (view));
-    }
+    if (view->priv->current_line_color && color)
+        *view->priv->current_line_color = *color;
+    else if (color)
+        view->priv->current_line_color = gdk_color_copy (color);
     else
     {
-        if (view->priv->current_line_gc)
-        {
-            g_object_unref (view->priv->current_line_gc);
-            view->priv->current_line_gc = NULL;
-        }
-
-        if (GTK_WIDGET_DRAWABLE (view))
-            gtk_widget_queue_draw (GTK_WIDGET (view));
-
-        g_object_notify (G_OBJECT (view), "highlight-current-line");
+        gdk_color_free (view->priv->current_line_color);
+        view->priv->current_line_color = NULL;
     }
+
+    update_current_line_gc (view);
+
+    if (GTK_WIDGET_DRAWABLE (view) && view->priv->highlight_current_line)
+        gtk_widget_queue_draw (GTK_WIDGET (view));
+
+    g_object_freeze_notify (G_OBJECT (view));
+    g_object_notify (G_OBJECT (view), "current-line-color-gdk");
+    g_object_notify (G_OBJECT (view), "current-line-color");
+    g_object_thaw_notify (G_OBJECT (view));
 }
 
 
@@ -1880,7 +1878,7 @@ moo_text_view_realize (GtkWidget *widget)
 
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->realize (widget);
 
-    create_current_line_gc (view);
+    update_current_line_gc (view);
     update_tab_width (view);
 
     update_left_margin (view);
@@ -1951,15 +1949,26 @@ moo_text_view_unrealize (GtkWidget *widget)
 
 
 static void
-create_current_line_gc (MooTextView *view)
+update_current_line_gc (MooTextView *view)
 {
     GtkWidget *widget = GTK_WIDGET (view);
     GdkColormap *colormap;
-    gboolean success;
     GdkWindow *window;
 
-    g_return_if_fail (GTK_WIDGET_REALIZED (widget));
-    g_return_if_fail (view->priv->current_line_gc == NULL);
+    if (!GTK_WIDGET_REALIZED (widget))
+        return;
+
+    if (!view->priv->current_line_color ||
+        !view->priv->highlight_current_line)
+    {
+        if (view->priv->current_line_gc)
+        {
+            g_object_unref (view->priv->current_line_gc);
+            view->priv->current_line_gc = NULL;
+        }
+
+        return;
+    }
 
     colormap = gtk_widget_get_colormap (widget);
     g_return_if_fail (colormap != NULL);
@@ -1968,19 +1977,19 @@ create_current_line_gc (MooTextView *view)
                                        GTK_TEXT_WINDOW_TEXT);
     g_return_if_fail (window != NULL);
 
-    success = gdk_colormap_alloc_color (colormap,
-                                        &view->priv->current_line_color,
-                                        FALSE, TRUE);
-
-    if (!success)
+    if (!gdk_colormap_alloc_color (colormap,
+                                   view->priv->current_line_color,
+                                   FALSE, TRUE))
     {
         g_warning ("%s: failed to allocate color", G_STRLOC);
-        view->priv->current_line_color = widget->style->bg[GTK_STATE_NORMAL];
+        *view->priv->current_line_color = widget->style->bg[GTK_STATE_NORMAL];
     }
 
-    view->priv->current_line_gc = gdk_gc_new (window);
+    if (!view->priv->current_line_gc)
+        view->priv->current_line_gc = gdk_gc_new (window);
+
     gdk_gc_set_foreground (view->priv->current_line_gc,
-                           &view->priv->current_line_color);
+                           view->priv->current_line_color);
 }
 
 
