@@ -99,6 +99,9 @@ static void     moo_file_selector_activate      (MooFileView    *fileview,
 static void     moo_file_selector_populate_popup(MooFileView    *fileview,
                                                  GList          *selected,
                                                  GtkMenu        *menu);
+
+static void     goto_current_doc_dir            (MooFileSelector *filesel);
+
 static gboolean moo_file_selector_drop          (MooFileView    *fileview,
                                                  const char     *path,
                                                  GtkWidget      *widget,
@@ -163,6 +166,14 @@ _moo_file_selector_class_init (MooFileSelectorClass *klass)
                                              "window",
                                              MOO_TYPE_EDIT_WINDOW,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    _moo_signal_new_cb ("goto-current-doc-dir",
+                        G_OBJECT_CLASS_TYPE (klass),
+                        G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                        G_CALLBACK (goto_current_doc_dir),
+                        NULL, NULL,
+                        _moo_marshal_VOID__VOID,
+                        G_TYPE_NONE, 0);
 }
 
 
@@ -555,12 +566,22 @@ moo_file_selector_constructor (GType           type,
     g_idle_add ((GSourceFunc) file_selector_go_home, g_object_ref (filesel));
 
     group = moo_action_collection_get_group (moo_file_view_get_actions (MOO_FILE_VIEW (fileview)), NULL);
+    xml = moo_file_view_get_ui_xml (MOO_FILE_VIEW (fileview));
+    merge_id = moo_ui_xml_new_merge_id (xml);
+
     moo_action_group_add_action (group, "GoToCurrentDocDir",
                                  "stock-id", GTK_STOCK_JUMP_TO,
                                  "tooltip", _("Go to current document directory"),
-                                 "closure-object", filesel,
-                                 "closure-callback", goto_current_doc_dir,
+                                 "closure-object", fileview,
+                                 "closure-signal", "goto-current-doc-dir",
                                  NULL);
+    moo_ui_xml_insert_markup (xml, merge_id,
+                              "MooFileView/Toolbar", -1,
+                              "<item action=\"GoToCurrentDocDir\"/>");
+    _moo_file_view_setup_button_drag_dest (MOO_FILE_VIEW (filesel),
+                                           "MooFileView/Toolbar/GoToCurrentDocDir",
+                                           "goto-current-doc-dir");
+
     moo_action_group_add_action (group, "NewFile",
                                  "label", _("New File..."),
                                  "tooltip", _("New File..."),
@@ -575,12 +596,6 @@ moo_file_selector_constructor (GType           type,
                                  "closure-object", filesel,
                                  "closure-callback", file_selector_open_files,
                                  NULL);
-
-    xml = moo_file_view_get_ui_xml (MOO_FILE_VIEW (fileview));
-    merge_id = moo_ui_xml_new_merge_id (xml);
-    moo_ui_xml_insert_markup (xml, merge_id,
-                              "MooFileView/Toolbar", -1,
-                              "<item action=\"GoToCurrentDocDir\"/>");
     moo_ui_xml_insert_markup_before (xml, merge_id,
                                      "MooFileView/Menu",
                                      "NewFolder",

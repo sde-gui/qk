@@ -63,6 +63,9 @@ struct _MooFileViewClass
 void        _moo_file_view_select_name                  (MooFileView    *fileview,
                                                          const char     *name);
 
+void        _moo_file_view_setup_button_drag_dest       (MooFileView    *fileview,
+                                                         const char     *xml_path,
+                                                         const char     *sig_name);
 void        _moo_file_view_add_target                   (MooFileView    *fileview,
                                                          GdkAtom         target,
                                                          guint           flags,
