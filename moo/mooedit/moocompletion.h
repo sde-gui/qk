@@ -19,6 +19,7 @@
 
 G_BEGIN_DECLS
 
+
 #define MOO_TYPE_COMPLETION             (moo_completion_get_type ())
 #define MOO_COMPLETION(object)          (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_COMPLETION, MooCompletion))
 #define MOO_COMPLETION_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_COMPLETION, MooCompletionClass))
@@ -26,13 +27,6 @@ G_BEGIN_DECLS
 #define MOO_IS_COMPLETION_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_COMPLETION))
 #define MOO_COMPLETION_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_COMPLETION, MooCompletionClass))
 
-#define MOO_COMPLETION_VAR_MATCH "match"
-#define MOO_COMPLETION_VAR_COMPLETION "completion"
-
-enum {
-    MOO_COMPLETION_COLUMN_DATA,
-    MOO_COMPLETION_COLUMN_GROUP
-};
 
 typedef struct _MooCompletion         MooCompletion;
 typedef struct _MooCompletionPrivate  MooCompletionPrivate;
@@ -49,14 +43,6 @@ struct _MooCompletionClass
 {
     GObjectClass parent_class;
 };
-
-
-/* same as GCompletionFunc - must not allocate a new string;
-   must allow two simultaneous calls */
-typedef char* (*MooCompletionStringFunc)    (gpointer       data);
-typedef void  (*MooCompletionFreeFunc)      (gpointer       data);
-typedef int   (*MooCompletionCmpFunc)       (gpointer       data1,
-                                             gpointer       data2);
 
 
 GType           moo_completion_get_type             (void) G_GNUC_CONST;

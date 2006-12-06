@@ -22,8 +22,20 @@
 #include <string.h>
 
 
-#define COLUMN_DATA  MOO_COMPLETION_COLUMN_DATA
-#define COLUMN_GROUP MOO_COMPLETION_COLUMN_GROUP
+#define MOO_COMPLETION_VAR_MATCH "match"
+#define MOO_COMPLETION_VAR_COMPLETION "completion"
+
+enum {
+    COLUMN_DATA,
+    COLUMN_GROUP
+};
+
+/* same as GCompletionFunc - must not allocate a new string;
+   must allow two simultaneous calls */
+typedef char* (*MooCompletionStringFunc)    (gpointer       data);
+typedef void  (*MooCompletionFreeFunc)      (gpointer       data);
+typedef int   (*MooCompletionCmpFunc)       (gpointer       data1,
+                                             gpointer       data2);
 
 struct _MooCompletionPrivate {
     GtkListStore *store;
