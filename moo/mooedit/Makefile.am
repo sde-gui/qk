@@ -18,7 +18,7 @@ unix_sources =				\
 
 mooedit_include_headers =		\
 	moocmdview.h			\
-	moocompletion.h			\
+	moocompletionsimple.h		\
 	mooedit-bookmarks.h		\
 	mooedit-enums.h			\
 	mooedit-script.h		\
@@ -35,6 +35,7 @@ mooedit_include_headers =		\
 	mooplugin-macro.h		\
 	mooplugin.h			\
 	mootextbuffer.h			\
+	mootextcompletion.h		\
 	mootextiter.h			\
 	mootextpopup.h			\
 	mootextsearch.h			\
@@ -90,7 +91,7 @@ mooedit_sources =			\
 	moocommand-script.c		\
 	moocommand.c			\
 	moocommanddisplay.c		\
-	moocompletion.c			\
+	moocompletionsimple.c		\
 	mooedit-bookmarks.c		\
 	mooedit-enums.c			\
 	mooedit-script.c		\
@@ -121,6 +122,7 @@ mooedit_sources =			\
 	mootextbox.c			\
 	mootextbtree.c			\
 	mootextbuffer.c			\
+	mootextcompletion.c		\
 	mootextfind.c			\
 	mootextpopup.c			\
 	mootextsearch.c			\

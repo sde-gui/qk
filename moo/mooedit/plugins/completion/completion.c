@@ -12,7 +12,7 @@
  */
 
 #include "completion.h"
-#include "mooedit/moocompletion.h"
+#include "mooedit/moocompletionsimple.h"
 #include "mooedit/mookeyfile.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-fs.h"
@@ -35,7 +35,7 @@ typedef struct {
     char *path;
     DataFileType type;
     time_t mtime;
-    MooCompletion *cmpl;
+    MooTextCompletion *cmpl;
 } CmplData;
 
 static CmplData *cmpl_data_new              (void);
@@ -74,7 +74,7 @@ parse_words (const char *string,
 
     words = g_strsplit_set (string, " \t\r\n", 0);
 
-    for (p = words; p && **p; ++p)
+    for (p = words; p && *p; ++p)
     {
         if (p[0][0] && p[0][1])
         {
@@ -123,7 +123,7 @@ cmpl_data_read_simple_file (CmplData *data)
     }
 
     list = parse_words (contents, NULL, data->path);
-    data->cmpl = moo_completion_new_text (list);
+    data->cmpl = moo_completion_simple_new_text (list);
     _moo_message ("read %d words from %s", g_list_length (list), data->path);
 
     g_free (contents);
@@ -194,17 +194,24 @@ cmpl_data_read_config_file (CmplData *data)
     MooKeyFile *key_file;
     guint i, n_items;
     MooCompletionGroup *group = NULL;
+    GError *error = NULL;
 
     g_return_if_fail (data->cmpl == NULL);
     g_return_if_fail (data->path != NULL);
 
-    key_file = moo_key_file_new_from_file (data->path, NULL);
-    g_return_if_fail (key_file != NULL);
+    data->cmpl = moo_completion_simple_new_text (NULL);
+
+    key_file = moo_key_file_new_from_file (data->path, &error);
+
+    if (!key_file)
+    {
+        g_warning ("%s", error->message);
+        g_error_free (error);
+        return;
+    }
 
     n_items = moo_key_file_n_items (key_file);
     g_return_if_fail (n_items != 0);
-
-    data->cmpl = moo_completion_new_text (NULL);
 
     for (i = 0; i < n_items; ++i)
     {
@@ -253,7 +260,7 @@ cmpl_data_read_config_file (CmplData *data)
         _moo_message ("read %d words for patttern '%s' from %s",
                       g_list_length (words), pattern, data->path);
 
-        group = moo_completion_new_group (data->cmpl, NULL);
+        group = moo_completion_simple_new_group (MOO_COMPLETION_SIMPLE (data->cmpl), NULL);
         moo_completion_group_add_data (group, words);
         moo_completion_group_set_pattern (group, pattern, parens, n_parens);
 
@@ -265,7 +272,7 @@ cmpl_data_read_config_file (CmplData *data)
         g_free (parens);
     }
 
-    g_object_unref (key_file);
+    moo_key_file_unref (key_file);
 
     if (!group)
     {
@@ -282,7 +289,7 @@ cmpl_data_read_python_file (CmplData *data)
     MooPyObject *dict = NULL;
     MooPyObject *res = NULL;
     MooPyObject *py_cmpl = NULL;
-    MooCompletion *cmpl;
+    MooCompletionSimple *cmpl;
 
     g_return_if_fail (data->cmpl == NULL);
     g_return_if_fail (data->path != NULL);
@@ -315,9 +322,9 @@ cmpl_data_read_python_file (CmplData *data)
 
     cmpl = moo_gobject_from_py_object (py_cmpl);
 
-    if (!MOO_IS_COMPLETION (cmpl))
+    if (!MOO_IS_TEXT_COMPLETION (cmpl))
     {
-        g_message ("'__completion__' variable in file '%s' is not of type MooCompletion", data->path);
+        g_message ("'__completion__' variable in file '%s' is not of type MooTextCompletion", data->path);
         goto out;
     }
 
@@ -325,7 +332,7 @@ cmpl_data_read_python_file (CmplData *data)
 
 out:
     if (!data->cmpl)
-        data->cmpl = moo_completion_new_text (NULL);
+        data->cmpl = moo_completion_simple_new_text (NULL);
 
     moo_Py_DECREF (dict);
     moo_Py_DECREF (res);
@@ -343,10 +350,13 @@ cmpl_data_read_file (CmplData *data)
     {
         case DATA_FILE_SIMPLE:
             cmpl_data_read_simple_file (data);
+            break;
         case DATA_FILE_CONFIG:
             cmpl_data_read_config_file (data);
+            break;
         case DATA_FILE_PYTHON:
             cmpl_data_read_python_file (data);
+            break;
     }
 }
 
@@ -551,7 +561,7 @@ _completion_complete (CmplPlugin *plugin,
 
     if (data->cmpl)
     {
-        moo_completion_set_doc (data->cmpl, GTK_TEXT_VIEW (doc));
-        moo_completion_try_complete (data->cmpl, TRUE);
+        moo_text_completion_set_doc (data->cmpl, GTK_TEXT_VIEW (doc));
+        moo_text_completion_try_complete (data->cmpl, TRUE);
     }
 }
