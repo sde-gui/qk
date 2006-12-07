@@ -33,6 +33,7 @@ struct _MooTextPopupPrivate {
 
     int max_len;
     guint hide_on_activate : 1;
+    guint activate_on_tab : 1;
 
     GtkWidget *window;
     GtkScrolledWindow *scrolled_window;
@@ -79,7 +80,8 @@ enum {
     PROP_MAX_LEN,
     PROP_POSITION,
     PROP_DOC,
-    PROP_MODEL
+    PROP_MODEL,
+    PROP_ACTIVATE_ON_TAB
 };
 
 static guint signals[NUM_SIGNALS];
@@ -126,6 +128,14 @@ moo_text_popup_class_init (MooTextPopupClass *klass)
                                              "hide-on-activate",
                                              "hide-on-activate",
                                              TRUE,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_ACTIVATE_ON_TAB,
+                                     g_param_spec_boolean ("activate-on-tab",
+                                             "activate-on-tab",
+                                             "activate-on-tab",
+                                             FALSE,
                                              G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
@@ -743,14 +753,20 @@ popup_key_press (MooTextPopup *popup,
 {
     switch (event->keyval)
     {
+        case GDK_Tab:
+        case GDK_KP_Tab:
+            if (popup->priv->activate_on_tab)
+            {
+                moo_text_popup_activate (popup);
+                return TRUE;
+            }
+            /* fall through */
         case GDK_Down:
         case GDK_Up:
         case GDK_KP_Down:
         case GDK_KP_Up:
         case GDK_Page_Down:
         case GDK_Page_Up:
-        case GDK_Tab:
-        case GDK_KP_Tab:
         case GDK_ISO_Left_Tab:
             popup_move_selection (popup, event);
             return TRUE;
@@ -974,6 +990,11 @@ moo_text_popup_set_property (GObject        *object,
             g_object_notify (object, "hide-on-activate");
             break;
 
+        case PROP_ACTIVATE_ON_TAB:
+            popup->priv->activate_on_tab = g_value_get_boolean (value) != 0;
+            g_object_notify (object, "activate-on-tab");
+            break;
+
         case PROP_MAX_LEN:
             popup->priv->max_len = g_value_get_int (value);
             g_object_notify (object, "max-len");
@@ -1010,6 +1031,10 @@ moo_text_popup_get_property (GObject        *object,
     {
         case PROP_HIDE_ON_ACTIVATE:
             g_value_set_boolean (value, popup->priv->hide_on_activate != 0);
+            break;
+
+        case PROP_ACTIVATE_ON_TAB:
+            g_value_set_boolean (value, popup->priv->activate_on_tab != 0);
             break;
 
         case PROP_MAX_LEN:
