@@ -43,7 +43,7 @@ struct _MooTextCompletionClass
     GObjectClass parent_class;
 
     void  (*try_complete)   (MooTextCompletion  *cmpl,
-                             gboolean            insert_unique);
+                             gboolean            automatic);
     void  (*finish)         (MooTextCompletion  *cmpl);
     void  (*update)         (MooTextCompletion  *cmpl);
 
@@ -64,7 +64,7 @@ typedef char *(*MooTextCompletionTextFunc) (GtkTreeModel *model,
 GType           moo_text_completion_get_type        (void) G_GNUC_CONST;
 
 void            moo_text_completion_try_complete    (MooTextCompletion  *cmpl,
-                                                     gboolean            insert_unique);
+                                                     gboolean            automatic);
 void            moo_text_completion_hide            (MooTextCompletion  *cmpl);
 void            moo_text_completion_show            (MooTextCompletion  *cmpl);
 

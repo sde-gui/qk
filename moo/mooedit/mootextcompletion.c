@@ -37,7 +37,7 @@ struct _MooTextCompletionPrivate {
 static void     moo_text_completion_dispose             (GObject            *object);
 
 static void     moo_text_completion_try_complete_real   (MooTextCompletion  *cmpl,
-                                                         gboolean            insert_unique);
+                                                         gboolean            automatic);
 static void     moo_text_completion_complete_real       (MooTextCompletion  *cmpl,
                                                          GtkTreeModel       *model,
                                                          GtkTreeIter        *iter);
@@ -120,7 +120,8 @@ moo_text_completion_init (MooTextCompletion *cmpl)
     cmpl->priv->text_func_data = GINT_TO_POINTER (0);
     cmpl->priv->text_func_data_notify = NULL;
 
-    cmpl->priv->popup = moo_text_popup_new (NULL);
+    cmpl->priv->popup = g_object_new (MOO_TYPE_TEXT_POPUP, "activate-on-tab", TRUE, NULL);
+
     cell = gtk_cell_renderer_text_new ();
     gtk_tree_view_column_pack_start (cmpl->priv->popup->column, cell, TRUE);
     gtk_tree_view_column_set_cell_data_func (cmpl->priv->popup->column, cell,
@@ -171,19 +172,19 @@ moo_text_completion_dispose (GObject *object)
 
 void
 moo_text_completion_try_complete (MooTextCompletion  *cmpl,
-                                  gboolean            insert_unique)
+                                  gboolean            automatic)
 {
     g_return_if_fail (MOO_IS_TEXT_COMPLETION (cmpl));
     g_return_if_fail (MOO_TEXT_COMPLETION_GET_CLASS (cmpl)->try_complete != NULL);
     g_return_if_fail (moo_text_completion_get_doc (cmpl) != NULL);
 
-    MOO_TEXT_COMPLETION_GET_CLASS (cmpl)->try_complete (cmpl, insert_unique);
+    MOO_TEXT_COMPLETION_GET_CLASS (cmpl)->try_complete (cmpl, automatic);
 }
 
 
 static void
 moo_text_completion_try_complete_real (MooTextCompletion *cmpl,
-                                       gboolean           insert_unique)
+                                       gboolean           automatic)
 {
     GtkTextIter start, end;
     GtkTreeIter iter;
@@ -209,35 +210,51 @@ moo_text_completion_try_complete_real (MooTextCompletion *cmpl,
     moo_text_completion_populate (cmpl, cmpl->priv->model, &end, line);
 
     if (moo_text_completion_empty (cmpl))
+        goto finish;
+
+    if (moo_text_completion_unique (cmpl, &iter))
     {
-        moo_text_completion_finish (cmpl);
-        goto out;
+        if (!automatic)
+        {
+            moo_text_completion_complete (cmpl, cmpl->priv->model, &iter);
+            goto finish;
+        }
+
+        moo_text_completion_get_region (cmpl, &start, &end);
+        text = gtk_text_iter_get_slice (&start, &end);
+        prefix = moo_text_completion_get_text (cmpl, cmpl->priv->model, &iter);
+
+        if (prefix && !strcmp (prefix, text))
+            goto finish;
     }
-
-    if (insert_unique && moo_text_completion_unique (cmpl, &iter))
+    else if (!automatic)
     {
-        moo_text_completion_complete (cmpl, cmpl->priv->model, &iter);
-        goto out;
-    }
+        moo_text_completion_get_region (cmpl, &start, &end);
+        text = gtk_text_iter_get_slice (&start, &end);
+        prefix = find_common_prefix (cmpl, text);
 
-    moo_text_completion_get_region (cmpl, &start, &end);
-    text = gtk_text_iter_get_slice (&start, &end);
-    prefix = find_common_prefix (cmpl, text);
-
-    if (prefix && strcmp (text, prefix) != 0)
-    {
-        gtk_text_buffer_begin_user_action (cmpl->priv->buffer);
-        gtk_text_buffer_delete (cmpl->priv->buffer, &start, &end);
-        gtk_text_buffer_insert (cmpl->priv->buffer, &start, prefix, -1);
-        gtk_text_buffer_end_user_action (cmpl->priv->buffer);
+        if (prefix && strcmp (text, prefix) != 0)
+        {
+            gtk_text_buffer_begin_user_action (cmpl->priv->buffer);
+            gtk_text_buffer_delete (cmpl->priv->buffer, &start, &end);
+            gtk_text_buffer_insert (cmpl->priv->buffer, &start, prefix, -1);
+            gtk_text_buffer_end_user_action (cmpl->priv->buffer);
+        }
     }
 
     moo_text_completion_show (cmpl);
 
-out:
     g_free (text);
     g_free (prefix);
     g_free (line);
+    return;
+
+finish:
+    moo_text_completion_finish (cmpl);
+    g_free (text);
+    g_free (prefix);
+    g_free (line);
+    return;
 }
 
 
