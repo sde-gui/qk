@@ -1730,8 +1730,8 @@ moo_plugin_call_methodv (const GValue *plugin_and_args,
         return;
     }
 
-    g_return_if_fail (return_val || meth->return_type == G_TYPE_NONE);
-    g_return_if_fail (!return_val || meth->return_type == G_VALUE_TYPE (return_val));
+    g_return_if_fail (meth->return_type == G_TYPE_NONE ||
+                      (return_val != NULL && meth->return_type == G_VALUE_TYPE (return_val)));
 
     g_closure_invoke (meth->closure, return_val, meth->n_params + 1, plugin_and_args, NULL);
 }
