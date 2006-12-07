@@ -14,6 +14,7 @@
 #include "mooedit/mootextcompletion.h"
 #include "mooutils/moomarshals.h"
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 #include <string.h>
 
 
@@ -47,7 +48,6 @@ static void     moo_text_completion_populate            (MooTextCompletion  *cmp
                                                          GtkTextIter        *cursor,
                                                          const char         *text);
 static void     moo_text_completion_complete            (MooTextCompletion  *cmpl,
-                                                         GtkTreeModel       *model,
                                                          GtkTreeIter        *iter);
 static char    *moo_text_completion_get_text            (MooTextCompletion  *cmpl,
                                                          GtkTreeModel       *model,
@@ -73,6 +73,8 @@ static void     cell_data_func                          (GtkTreeViewColumn  *col
 static void     on_popup_activate                       (MooTextCompletion  *cmpl,
                                                          GtkTreeModel       *model,
                                                          GtkTreeIter        *iter);
+static gboolean popup_key_press                         (MooTextCompletion  *cmpl,
+                                                         GdkEventKey        *event);
 
 enum {
     FINISH,
@@ -120,7 +122,7 @@ moo_text_completion_init (MooTextCompletion *cmpl)
     cmpl->priv->text_func_data = GINT_TO_POINTER (0);
     cmpl->priv->text_func_data_notify = NULL;
 
-    cmpl->priv->popup = g_object_new (MOO_TYPE_TEXT_POPUP, "activate-on-tab", TRUE, NULL);
+    cmpl->priv->popup = g_object_new (MOO_TYPE_TEXT_POPUP, NULL);
 
     cell = gtk_cell_renderer_text_new ();
     gtk_tree_view_column_pack_start (cmpl->priv->popup->column, cell, TRUE);
@@ -135,6 +137,8 @@ moo_text_completion_init (MooTextCompletion *cmpl)
                               G_CALLBACK (moo_text_completion_update), cmpl);
     g_signal_connect_swapped (cmpl->priv->popup, "hide",
                               G_CALLBACK (moo_text_completion_hide), cmpl);
+    g_signal_connect_swapped (cmpl->priv->popup, "key-press-event",
+                              G_CALLBACK (popup_key_press), cmpl);
 }
 
 
@@ -216,16 +220,22 @@ moo_text_completion_try_complete_real (MooTextCompletion *cmpl,
     {
         if (!automatic)
         {
-            moo_text_completion_complete (cmpl, cmpl->priv->model, &iter);
+            moo_text_completion_complete (cmpl, &iter);
             goto finish;
         }
 
-        moo_text_completion_get_region (cmpl, &start, &end);
-        text = gtk_text_iter_get_slice (&start, &end);
         prefix = moo_text_completion_get_text (cmpl, cmpl->priv->model, &iter);
 
-        if (prefix && !strcmp (prefix, text))
-            goto finish;
+        if (prefix)
+        {
+            moo_text_completion_get_region (cmpl, &start, NULL);
+            end = start;
+            gtk_text_iter_forward_chars (&end, g_utf8_strlen (prefix, -1));
+            text = gtk_text_iter_get_slice (&start, &end);
+
+            if (!strcmp (prefix, text))
+                goto finish;
+        }
     }
     else if (!automatic)
     {
@@ -260,11 +270,10 @@ finish:
 
 static void
 moo_text_completion_complete (MooTextCompletion *cmpl,
-                              GtkTreeModel      *model,
                               GtkTreeIter       *iter)
 {
     g_return_if_fail (MOO_TEXT_COMPLETION_GET_CLASS(cmpl)->complete != NULL);
-    MOO_TEXT_COMPLETION_GET_CLASS(cmpl)->complete (cmpl, model, iter);
+    MOO_TEXT_COMPLETION_GET_CLASS(cmpl)->complete (cmpl, cmpl->priv->model, iter);
     moo_text_completion_finish (cmpl);
 }
 
@@ -425,10 +434,31 @@ moo_text_completion_hide (MooTextCompletion *cmpl)
 
 static void
 on_popup_activate (MooTextCompletion *cmpl,
-                   GtkTreeModel      *model,
+                   G_GNUC_UNUSED GtkTreeModel *model,
                    GtkTreeIter       *iter)
 {
-    moo_text_completion_complete (cmpl, model, iter);
+    moo_text_completion_complete (cmpl, iter);
+}
+
+
+static gboolean
+popup_key_press (MooTextCompletion *cmpl,
+                 GdkEventKey       *event)
+{
+    GtkTreeIter iter;
+
+    switch (event->keyval)
+    {
+        case GDK_Tab:
+            if (moo_text_completion_unique (cmpl, &iter))
+            {
+                moo_text_completion_complete (cmpl, &iter);
+                return TRUE;
+            }
+        /* fall through */
+        default:
+            return FALSE;
+    }
 }
 
 

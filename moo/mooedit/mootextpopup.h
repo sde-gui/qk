@@ -43,13 +43,16 @@ struct _MooTextPopupClass
 {
     GObjectClass parent_class;
 
-    void     (*show)         (MooTextPopup *popup);
-    void     (*hide)         (MooTextPopup *popup);
+    void     (*show)            (MooTextPopup *popup);
+    void     (*hide)            (MooTextPopup *popup);
 
-    void     (*activate)     (MooTextPopup *popup,
-                              GtkTreeModel *model,
-                              GtkTreeIter  *iter);
-    void     (*text_changed) (MooTextPopup *popup);
+    void     (*activate)        (MooTextPopup *popup,
+                                 GtkTreeModel *model,
+                                 GtkTreeIter  *iter);
+    void     (*text_changed)    (MooTextPopup *popup);
+
+    gboolean (*key_press_event) (MooTextPopup *popup,
+                                 GdkEventKey  *event);
 };
 
 

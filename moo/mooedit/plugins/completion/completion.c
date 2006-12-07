@@ -17,6 +17,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/moopython.h"
+#include <gdk/gdkkeysyms.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
@@ -612,9 +613,8 @@ _completion_complete (CmplPlugin *plugin,
 
     if (cmpl)
     {
-        g_print ("complete complete\n");
-        moo_text_completion_set_doc (cmpl, GTK_TEXT_VIEW (doc));
         plugin->working = TRUE;
+        moo_text_completion_set_doc (cmpl, GTK_TEXT_VIEW (doc));
         g_signal_connect (cmpl, "finish", G_CALLBACK (completion_finished), plugin);
         moo_text_completion_try_complete (cmpl, automatic);
     }
@@ -634,28 +634,44 @@ popup_timeout (CmplPlugin *plugin)
 
 
 static void
-install_popup_timeout (CmplPlugin *plugin)
+remove_popup_timeout (CmplPlugin *plugin)
 {
-    if (!plugin->popup_timeout)
-        plugin->popup_timeout =
-            g_timeout_add (plugin->popup_interval, (GSourceFunc) popup_timeout, plugin);
+    if (plugin->popup_timeout)
+        g_source_remove (plugin->popup_timeout);
+    plugin->popup_timeout = 0;
 }
 
 static void
 reinstall_popup_timeout (CmplPlugin *plugin)
 {
-    if (plugin->popup_timeout)
-        g_source_remove (plugin->popup_timeout);
-    plugin->popup_timeout = 0;
+    remove_popup_timeout (plugin);
 
     if (!plugin->working)
-        install_popup_timeout (plugin);
+    {
+        if (!plugin->popup_timeout)
+            plugin->popup_timeout =
+                g_timeout_add (plugin->popup_interval, (GSourceFunc) popup_timeout, plugin);
+    }
 }
 
 static gboolean
-doc_key_release (CmplPlugin *plugin)
+doc_key_release (CmplPlugin  *plugin,
+                 GdkEventKey *event)
 {
-    reinstall_popup_timeout (plugin);
+    gboolean install = TRUE;
+
+    switch (event->keyval)
+    {
+        case GDK_Escape:
+            install = FALSE;
+            break;
+    }
+
+    if (install)
+        reinstall_popup_timeout (plugin);
+    else
+        remove_popup_timeout (plugin);
+
     return FALSE;
 }
 
@@ -672,10 +688,7 @@ static void
 disconnect_doc (CmplPlugin *plugin,
                 MooEdit    *doc)
 {
-    if (plugin->popup_timeout)
-        g_source_remove (plugin->popup_timeout);
-    plugin->popup_timeout = 0;
-
+    remove_popup_timeout (plugin);
     g_signal_handlers_disconnect_by_func (doc, (gpointer) doc_key_release, plugin);
 }
 
