@@ -79,6 +79,7 @@ moo/mooedit/plugins/fileselector/moofileselector-prefs.c
 moo/mooedit/plugins/moofind.c
 moo/mooedit/plugins/moofind.glade
 moo/mooedit/plugins/completion/completion-plugin.c
+moo/mooedit/plugins/completion/completion.glade
 
 moo/moofileview/moofileview-ui.xml
 moo/moofileview/moofileview.c
@@ -99,11 +100,11 @@ moo/mooutils/moowindow.c
 moo/mooutils/glade/accelprefs.glade
 moo/mooutils/glade/moologwindow.glade
 
-moo/moopython/plugins/terminal.ini.desktop.in
+moo/moopython/plugins/terminal.ini.desktop.in.in
 moo/moopython/plugins/terminal.py
-moo/moopython/plugins/python.ini.desktop.in
+moo/moopython/plugins/python.ini.desktop.in.in
 moo/moopython/plugins/python.py
-moo/moopython/plugins/pyproject/project-plugin.ini.desktop.in
+moo/moopython/plugins/pyproject/project-plugin.ini.desktop.in.in
 moo/moopython/plugins/pyproject/mprj/manager.py
 moo/moopython/plugins/pyproject/mprj/simple.py
 moo/moopython/plugins/pyproject/projects/c.py

@@ -1501,7 +1501,7 @@
   (of-object "MooTextCompletion")
   (return-type "none")
   (parameters
-    '("gboolean" "insert_unique")
+    '("gboolean" "automatic")
   )
 )
 
@@ -1539,7 +1539,7 @@
   (c-name "moo_text_completion_try_complete")
   (return-type "none")
   (parameters
-    '("gboolean" "insert_unique")
+    '("gboolean" "automatic")
   )
 )
 
@@ -1644,8 +1644,8 @@
   (c-name "moo_text_popup_new")
   (is-constructor-of "MooTextPopup")
   (return-type "MooTextPopup*")
-  (parameters
-    '("GtkTextView*" "doc")
+  (properties
+    '("doc" (optional))
   )
 )
 

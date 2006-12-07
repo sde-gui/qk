@@ -46,22 +46,6 @@ static CmplData *cmpl_plugin_load_data      (CmplPlugin *plugin,
                                              const char *id);
 
 
-void
-_completion_callback (MooEditWindow *window)
-{
-    CmplPlugin *plugin;
-    MooEdit *doc;
-
-    plugin = moo_plugin_lookup (CMPL_PLUGIN_ID);
-    g_return_if_fail (plugin != NULL);
-
-    doc = moo_edit_window_get_active_doc (window);
-    g_return_if_fail (doc != NULL);
-
-    _completion_complete (plugin, doc);
-}
-
-
 static GList *
 parse_words (const char *string,
              const char *prefix,
@@ -606,17 +590,111 @@ get_doc_completion (CmplPlugin *plugin,
 }
 
 
+static void
+completion_finished (MooTextCompletion *cmpl,
+                     CmplPlugin        *plugin)
+{
+    plugin->working = FALSE;
+    g_signal_handlers_disconnect_by_func (cmpl, (gpointer) completion_finished, plugin);
+}
+
 void
 _completion_complete (CmplPlugin *plugin,
-                      MooEdit    *doc)
+                      MooEdit    *doc,
+                      gboolean    automatic)
 {
     MooTextCompletion *cmpl;
+
+    g_return_if_fail (!plugin->working);
+    g_return_if_fail (MOO_IS_EDIT (doc));
 
     cmpl = get_doc_completion (plugin, doc);
 
     if (cmpl)
     {
+        g_print ("complete complete\n");
         moo_text_completion_set_doc (cmpl, GTK_TEXT_VIEW (doc));
-        moo_text_completion_try_complete (cmpl, TRUE);
+        plugin->working = TRUE;
+        g_signal_connect (cmpl, "finish", G_CALLBACK (completion_finished), plugin);
+        moo_text_completion_try_complete (cmpl, automatic);
+    }
+}
+
+
+static gboolean
+popup_timeout (CmplPlugin *plugin)
+{
+    plugin->popup_timeout = 0;
+
+    if (!plugin->working)
+        _completion_complete (plugin, plugin->focused_doc, TRUE);
+
+    return FALSE;
+}
+
+
+static void
+install_popup_timeout (CmplPlugin *plugin)
+{
+    if (!plugin->popup_timeout)
+        plugin->popup_timeout =
+            g_timeout_add (plugin->popup_interval, (GSourceFunc) popup_timeout, plugin);
+}
+
+static void
+reinstall_popup_timeout (CmplPlugin *plugin)
+{
+    if (plugin->popup_timeout)
+        g_source_remove (plugin->popup_timeout);
+    plugin->popup_timeout = 0;
+
+    if (!plugin->working)
+        install_popup_timeout (plugin);
+}
+
+static gboolean
+doc_key_release (CmplPlugin *plugin)
+{
+    reinstall_popup_timeout (plugin);
+    return FALSE;
+}
+
+static void
+connect_doc (CmplPlugin *plugin,
+             MooEdit    *doc)
+{
+    g_signal_connect_swapped (doc, "key-release-event",
+                              G_CALLBACK (doc_key_release),
+                              plugin);
+}
+
+static void
+disconnect_doc (CmplPlugin *plugin,
+                MooEdit    *doc)
+{
+    if (plugin->popup_timeout)
+        g_source_remove (plugin->popup_timeout);
+    plugin->popup_timeout = 0;
+
+    g_signal_handlers_disconnect_by_func (doc, (gpointer) doc_key_release, plugin);
+}
+
+void
+_cmpl_plugin_set_focused_doc (CmplPlugin *plugin,
+                              MooEdit    *doc)
+{
+    if (plugin->focused_doc == doc)
+        return;
+
+    if (plugin->focused_doc)
+    {
+        disconnect_doc (plugin, plugin->focused_doc);
+        plugin->focused_doc = NULL;
+    }
+
+    if (doc)
+    {
+        plugin->focused_doc = doc;
+        connect_doc (plugin, doc);
     }
 }

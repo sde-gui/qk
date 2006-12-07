@@ -6,12 +6,21 @@ completion_DATA =		\
 
 EXTRA_DIST =			\
 	$(completion_DATA)	\
+	completion.glade	\
 	files/texinfo.cfg
 
 completion_sources =		\
+	completion-glade.h	\
 	completion-plugin.c	\
 	completion.c		\
 	completion.h
+
+BUILT_SOURCES =			\
+	completion-glade.h
+
+XML2H = $(srcdir)/../../../mooutils/xml2h.sh
+completion-glade.h: completion.glade $(XML2H)
+	$(SHELL) $(XML2H) COMPLETION_PLUGIN_GLADE_XML $(srcdir)/completion.glade > completion-glade.h
 
 noinst_LTLIBRARIES = libcompletion.la
 libcompletion_la_SOURCES = $(completion_sources)
