@@ -48,9 +48,6 @@ MOO_AC_FUNCS
 #  Check debug options
 MOO_AC_DEBUG
 
-#  GTK libraries
-MOO_PKG_CHECK_GTK_VERSIONS
-
 #  File monitoring
 MOO_AC_FAM
 
