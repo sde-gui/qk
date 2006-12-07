@@ -141,31 +141,6 @@ gboolean         moo_editor_save_copy       (MooEditor      *editor,
                                              const char     *encoding,
                                              GError        **error);
 
-#ifdef MOOEDIT_COMPILATION
-void             _moo_edit_window_insert_doc    (MooEditWindow  *window,
-                                                 MooEdit        *doc,
-                                                 int             position);
-void             _moo_edit_window_remove_doc    (MooEditWindow  *window,
-                                                 MooEdit        *doc);
-
-gpointer         _moo_editor_get_file_watch     (MooEditor      *editor);
-void             _moo_editor_reload             (MooEditor      *editor,
-                                                 MooEdit        *doc,
-                                                 GError        **error);
-gboolean         _moo_editor_save               (MooEditor      *editor,
-                                                 MooEdit        *doc,
-                                                 GError        **error);
-gboolean         _moo_editor_save_as            (MooEditor      *editor,
-                                                 MooEdit        *doc,
-                                                 const char     *filename,
-                                                 const char     *encoding,
-                                                 GError        **error);
-void             _moo_editor_post_message       (MooEditor      *editor,
-                                                 GQuark          domain,
-                                                 const char     *message);
-void             _moo_editor_apply_prefs        (MooEditor      *editor);
-#endif /* MOOEDIT_COMPILATION */
-
 
 G_END_DECLS
 

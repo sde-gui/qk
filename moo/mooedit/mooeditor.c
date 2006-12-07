@@ -12,7 +12,7 @@
  */
 
 #define MOOEDIT_COMPILATION
-#include "mooedit/mooeditor.h"
+#include "mooedit/mooeditor-private.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditfileops.h"
 #include "mooedit/mooplugin.h"
@@ -120,6 +120,8 @@ struct _MooEditorPrivate {
     gboolean         allow_empty_window;
     gboolean         single_window;
 
+    MooEdit         *focused_doc;
+
     gboolean         save_backups;
     gboolean         strip_whitespace;
     gboolean         silent;
@@ -154,7 +156,8 @@ enum {
     PROP_STRIP_WHITESPACE,
     PROP_SILENT,
     PROP_AUTOSAVE,
-    PROP_AUTOSAVE_INTERVAL
+    PROP_AUTOSAVE_INTERVAL,
+    PROP_FOCUSED_DOC
 };
 
 enum {
@@ -248,6 +251,14 @@ moo_editor_class_init (MooEditorClass *klass)
                                              "autosave-interval",
                                              1, 1000, 5,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_FOCUSED_DOC,
+                                     g_param_spec_object ("focused-doc",
+                                             "focused-doc",
+                                             "focused-doc",
+                                             MOO_TYPE_EDIT,
+                                             G_PARAM_READABLE));
 
     signals[ALL_WINDOWS_CLOSED] =
             _moo_signal_new_cb ("all-windows-closed",
@@ -408,6 +419,9 @@ moo_editor_get_property (GObject        *object,
             g_value_set_uint (value, editor->priv->autosave_interval);
             break;
 
+        case PROP_FOCUSED_DOC:
+            g_value_set_object (value, editor->priv->focused_doc);
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -462,6 +476,37 @@ moo_editor_finalize (GObject *object)
     g_slist_free (editor->priv->messages);
 
     G_OBJECT_CLASS (moo_editor_parent_class)->finalize (object);
+}
+
+
+void
+_moo_editor_set_focused_doc (MooEditor *editor,
+                             MooEdit   *doc)
+{
+    g_return_if_fail (MOO_IS_EDITOR (editor));
+    g_return_if_fail (MOO_IS_EDIT (doc));
+    g_return_if_fail (doc->priv->editor == editor);
+
+    if (editor->priv->focused_doc != doc)
+    {
+        editor->priv->focused_doc = doc;
+        g_object_notify (G_OBJECT (editor), "focused-doc");
+    }
+}
+
+void
+_moo_editor_unset_focused_doc (MooEditor *editor,
+                               MooEdit   *doc)
+{
+    g_return_if_fail (MOO_IS_EDITOR (editor));
+    g_return_if_fail (MOO_IS_EDIT (doc));
+    g_return_if_fail (doc->priv->editor == editor);
+
+    if (editor->priv->focused_doc == doc)
+    {
+        editor->priv->focused_doc = NULL;
+        g_object_notify (G_OBJECT (editor), "focused-doc");
+    }
 }
 
 

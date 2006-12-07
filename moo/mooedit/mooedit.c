@@ -21,6 +21,7 @@
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/mooeditprogress-glade.h"
 #include "mooedit/mooeditfiltersettings.h"
+#include "mooedit/mooeditor-private.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mooutils-gobject.h"
@@ -47,6 +48,10 @@ static void     moo_edit_get_property       (GObject        *object,
                                              GValue         *value,
                                              GParamSpec     *pspec);
 
+static gboolean moo_edit_focus_in           (GtkWidget      *widget,
+                                             GdkEventFocus  *event);
+static gboolean moo_edit_focus_out          (GtkWidget      *widget,
+                                             GdkEventFocus  *event);
 static gboolean moo_edit_popup_menu         (GtkWidget      *widget);
 static gboolean moo_edit_drag_motion        (GtkWidget      *widget,
                                              GdkDragContext *context,
@@ -103,6 +108,8 @@ static void
 moo_edit_class_init (MooEditClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+    MooTextViewClass *textview_class = MOO_TEXT_VIEW_CLASS (klass);
 
     gobject_class->set_property = moo_edit_set_property;
     gobject_class->get_property = moo_edit_get_property;
@@ -110,10 +117,13 @@ moo_edit_class_init (MooEditClass *klass)
     gobject_class->finalize = moo_edit_finalize;
     gobject_class->dispose = moo_edit_dispose;
 
-    MOO_TEXT_VIEW_CLASS(klass)->line_mark_clicked = _moo_edit_line_mark_clicked;
-    GTK_WIDGET_CLASS(klass)->popup_menu = moo_edit_popup_menu;
-    GTK_WIDGET_CLASS(klass)->drag_motion = moo_edit_drag_motion;
-    GTK_WIDGET_CLASS(klass)->drag_drop = moo_edit_drag_drop;
+    widget_class->popup_menu = moo_edit_popup_menu;
+    widget_class->drag_motion = moo_edit_drag_motion;
+    widget_class->drag_drop = moo_edit_drag_drop;
+    widget_class->focus_in_event = moo_edit_focus_in;
+    widget_class->focus_out_event = moo_edit_focus_out;
+
+    textview_class->line_mark_clicked = _moo_edit_line_mark_clicked;
 
     klass->filename_changed = moo_edit_filename_changed;
     klass->config_notify = moo_edit_config_notify;
@@ -567,6 +577,38 @@ moo_edit_get_property (GObject        *object,
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
     }
+}
+
+
+static gboolean
+moo_edit_focus_in (GtkWidget     *widget,
+                   GdkEventFocus *event)
+{
+    gboolean retval = FALSE;
+    MooEdit *doc = MOO_EDIT (widget);
+
+    _moo_editor_set_focused_doc (doc->priv->editor, doc);
+
+    if (GTK_WIDGET_CLASS(moo_edit_parent_class)->focus_in_event)
+        retval = GTK_WIDGET_CLASS(moo_edit_parent_class)->focus_in_event (widget, event);
+
+    return retval;
+}
+
+
+static gboolean
+moo_edit_focus_out (GtkWidget     *widget,
+                    GdkEventFocus *event)
+{
+    gboolean retval = FALSE;
+    MooEdit *doc = MOO_EDIT (widget);
+
+    _moo_editor_unset_focused_doc (doc->priv->editor, doc);
+
+    if (GTK_WIDGET_CLASS(moo_edit_parent_class)->focus_out_event)
+        retval = GTK_WIDGET_CLASS(moo_edit_parent_class)->focus_out_event (widget, event);
+
+    return retval;
 }
 
 

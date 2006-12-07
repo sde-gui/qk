@@ -56,6 +56,7 @@ mooedit_noinst_headers =		\
 	mooeditdialogs.h		\
 	mooeditfileops.h		\
 	mooeditfiltersettings.h		\
+	mooeditor-private.h		\
 	mooeditprefs-glade.h		\
 	mooeditprogress-glade.h		\
 	mooeditsavemultiple-glade.h	\

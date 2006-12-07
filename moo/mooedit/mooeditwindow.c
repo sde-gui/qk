@@ -18,8 +18,8 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/statusbar-glade.h"
 #include "mooedit/mooedit-private.h"
+#include "mooedit/mooeditor-private.h"
 #include "mooedit/moolang.h"
-#include "mooedit/mooeditor.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooplugin.h"
