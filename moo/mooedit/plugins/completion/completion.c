@@ -367,7 +367,8 @@ cmpl_plugin_load_data (CmplPlugin *plugin,
 {
     CmplData *data;
 
-    id = id ? id : CMPL_FILE_NONE;
+    g_return_val_if_fail (id != NULL, NULL);
+
     data = g_hash_table_lookup (plugin->data, id);
 
     if (!data)
@@ -410,6 +411,39 @@ cmpl_data_free (CmplData *data)
         cmpl_data_clear (data);
         g_free (data);
     }
+}
+
+
+void
+_completion_plugin_set_lang_completion (CmplPlugin        *plugin,
+                                        const char        *lang,
+                                        MooTextCompletion *cmpl)
+{
+    CmplData *data;
+
+    g_return_if_fail (!cmpl || MOO_IS_TEXT_COMPLETION (cmpl));
+
+    if (!lang || !lang[0])
+        lang = _moo_lang_id (NULL);
+
+    data = cmpl_data_new ();
+    data->cmpl = g_object_ref (cmpl);
+    g_hash_table_insert (plugin->data, g_strdup (lang), data);
+}
+
+
+void
+_completion_plugin_set_doc_completion (CmplPlugin        *plugin,
+                                       MooEdit           *doc,
+                                       MooTextCompletion *cmpl)
+{
+    g_return_if_fail (MOO_IS_EDIT (doc));
+    g_return_if_fail (!cmpl || MOO_IS_TEXT_COMPLETION (cmpl));
+
+    g_object_set_qdata_full (G_OBJECT (doc),
+                             plugin->cmpl_quark,
+                             g_object_ref (cmpl),
+                             g_object_unref);
 }
 
 
@@ -547,21 +581,42 @@ _cmpl_plugin_clear (CmplPlugin *plugin)
 }
 
 
+static MooTextCompletion *
+get_doc_completion (CmplPlugin *plugin,
+                    MooEdit    *doc)
+{
+    MooTextCompletion *cmpl = NULL;
+
+    cmpl = g_object_get_qdata (G_OBJECT (doc), plugin->cmpl_quark);
+
+    if (!cmpl)
+    {
+        MooLang *lang;
+        CmplData *data;
+
+        lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
+
+        data = cmpl_plugin_load_data (plugin, _moo_lang_id (lang));
+        g_return_val_if_fail (data != NULL, NULL);
+
+        cmpl = data->cmpl;
+    }
+
+    return cmpl;
+}
+
+
 void
 _completion_complete (CmplPlugin *plugin,
                       MooEdit    *doc)
 {
-    MooLang *lang;
-    CmplData *data;
+    MooTextCompletion *cmpl;
 
-    lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
+    cmpl = get_doc_completion (plugin, doc);
 
-    data = cmpl_plugin_load_data (plugin, lang ? _moo_lang_id (lang) : NULL);
-    g_return_if_fail (data != NULL);
-
-    if (data->cmpl)
+    if (cmpl)
     {
-        moo_text_completion_set_doc (data->cmpl, GTK_TEXT_VIEW (doc));
-        moo_text_completion_try_complete (data->cmpl, TRUE);
+        moo_text_completion_set_doc (cmpl, GTK_TEXT_VIEW (doc));
+        moo_text_completion_try_complete (cmpl, TRUE);
     }
 }

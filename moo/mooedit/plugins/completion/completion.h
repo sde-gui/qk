@@ -12,6 +12,7 @@
  */
 
 #include "mooedit/mooplugin.h"
+#include "mooedit/mootextcompletion.h"
 
 #ifndef __COMPLETION_H__
 #define __COMPLETION_H__
@@ -22,34 +23,43 @@ G_BEGIN_DECLS
 #define CMPL_PLUGIN_ID "Completion"
 #define CMPL_PREFS_ROOT MOO_PLUGIN_PREFS_ROOT "/" CMPL_PLUGIN_ID
 #define CMPL_DIR "completion"
-#define CMPL_FILE_NONE "none"
 
 #define CMPL_FILE_SUFFIX_LIST   ".lst"
 #define CMPL_FILE_SUFFIX_CONFIG ".cfg"
 #define CMPL_FILE_SUFFIX_PYTHON ".py"
 
-#define _completion_callback        _moo_completion_plugin_callback
-#define _completion_complete        _moo_completion_plugin_complete
-#define _cmpl_plugin_load           _moo_completion_plugin_load
-#define _cmpl_plugin_clear          _moo_completion_plugin_clear
-#define _cmpl_plugin_prefs_page     _moo_completion_plugin_prefs_page
+#define _completion_callback                _moo_completion_plugin_callback
+#define _completion_complete                _moo_completion_plugin_complete
+#define _cmpl_plugin_load                   _moo_completion_plugin_load
+#define _cmpl_plugin_clear                  _moo_completion_plugin_clear
+#define _cmpl_plugin_prefs_page             _moo_completion_plugin_prefs_page
+#define _cmpl_plugin_set_lang_completion    _moo_completion_plugin_set_lang_completion
+#define _cmpl_plugin_set_doc_completion     _moo_completion_plugin_set_doc_completion
 
 
 typedef struct {
     MooPlugin parent;
     guint ui_merge_id;
+    GQuark cmpl_quark;
     GHashTable *data; /* char* -> CompletionData* */
 } CmplPlugin;
 
 
-GtkWidget  *_cmpl_plugin_prefs_page     (MooPlugin      *plugin);
+GtkWidget  *_cmpl_plugin_prefs_page                 (MooPlugin          *plugin);
 
-void        _completion_callback        (MooEditWindow  *window);
-void        _completion_complete        (CmplPlugin     *plugin,
-                                         MooEdit        *doc);
+void        _completion_callback                    (MooEditWindow      *window);
+void        _completion_complete                    (CmplPlugin         *plugin,
+                                                     MooEdit            *doc);
 
-void        _cmpl_plugin_load           (CmplPlugin     *plugin);
-void        _cmpl_plugin_clear          (CmplPlugin     *plugin);
+void        _cmpl_plugin_load                       (CmplPlugin         *plugin);
+void        _cmpl_plugin_clear                      (CmplPlugin         *plugin);
+
+void        _completion_plugin_set_lang_completion  (CmplPlugin         *plugin,
+                                                     const char         *lang,
+                                                     MooTextCompletion  *cmpl);
+void        _completion_plugin_set_doc_completion   (CmplPlugin         *plugin,
+                                                     MooEdit            *doc,
+                                                     MooTextCompletion  *cmpl);
 
 
 G_END_DECLS

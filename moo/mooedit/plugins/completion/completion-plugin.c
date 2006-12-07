@@ -18,6 +18,7 @@
 #include "mooedit/mooplugin-macro.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/moomarshals.h"
 
 
 static gboolean cmpl_plugin_init        (CmplPlugin     *plugin);
@@ -50,6 +51,7 @@ cmpl_plugin_init (CmplPlugin *plugin)
                              "CompleteWord", "CompleteWord", -1);
     }
 
+    plugin->cmpl_quark = g_quark_from_static_string ("moo-completion");
     _cmpl_plugin_load (plugin);
 
     g_type_class_unref (klass);
@@ -76,6 +78,23 @@ cmpl_plugin_deinit (CmplPlugin *plugin)
 }
 
 
+static void
+set_lang_completion_meth (CmplPlugin        *plugin,
+                          const char        *lang,
+                          MooTextCompletion *cmpl)
+{
+    _completion_plugin_set_lang_completion (plugin, lang, cmpl);
+}
+
+static void
+set_doc_completion_meth (CmplPlugin        *plugin,
+                         MooEdit           *doc,
+                         MooTextCompletion *cmpl)
+{
+    _completion_plugin_set_doc_completion (plugin, doc, cmpl);
+}
+
+
 MOO_PLUGIN_DEFINE_INFO (cmpl,
                         N_("Completion"), N_("Provides text completion"),
                         "Yevgen Muntyan <muntyan@tamu.edu>",
@@ -89,8 +108,27 @@ MOO_PLUGIN_DEFINE_FULL (Cmpl, cmpl,
 gboolean
 _moo_completion_plugin_init (void)
 {
-    return moo_plugin_register (CMPL_PLUGIN_ID,
-                                cmpl_plugin_get_type (),
-                                &cmpl_plugin_info,
-                                NULL);
+    GType ptype = cmpl_plugin_get_type ();
+
+    if (!moo_plugin_register (CMPL_PLUGIN_ID,
+                              cmpl_plugin_get_type (),
+                              &cmpl_plugin_info,
+                              NULL))
+        return FALSE;
+
+    moo_plugin_method_new ("set-lang-completion", ptype,
+                           G_CALLBACK (set_lang_completion_meth),
+                           _moo_marshal_VOID__STRING_OBJECT,
+                           G_TYPE_NONE, 2,
+                           G_TYPE_STRING,
+                           MOO_TYPE_TEXT_COMPLETION);
+
+    moo_plugin_method_new ("set-doc-completion", ptype,
+                           G_CALLBACK (set_doc_completion_meth),
+                           _moo_marshal_VOID__OBJECT_OBJECT,
+                           G_TYPE_NONE, 2,
+                           MOO_TYPE_EDIT,
+                           MOO_TYPE_TEXT_COMPLETION);
+
+    return TRUE;
 }
