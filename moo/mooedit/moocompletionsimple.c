@@ -312,8 +312,14 @@ moo_completion_simple_complete (MooTextCompletion *text_cmpl,
                 end = start;
                 gtk_text_iter_forward_to_line_end (&end);
                 old_suffix = gtk_text_iter_get_slice (&start, &end);
+
                 if (!strncmp (group->suffix, old_suffix, strlen (group->suffix)))
+                {
                     do_insert = FALSE;
+                    gtk_text_iter_forward_chars (&start, g_utf8_strlen (group->suffix, -1));
+                    set_cursor = TRUE;
+                }
+
                 g_free (old_suffix);
             }
 
