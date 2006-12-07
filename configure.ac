@@ -10,7 +10,7 @@ m4_define([moo_version], [moo_major_version.moo_minor_version.moo_micro_version]
 m4_define([moo_module_major_version], [1])
 m4_define([moo_module_minor_version], [0])
 
-AC_INIT(medit, [moo_version], [muntyan@tamu.edu], medit)
+AC_INIT([medit],[moo_version],[muntyan@tamu.edu],[medit])
 AM_INIT_AUTOMAKE(medit, [moo_version])
 AC_CANONICAL_HOST
 
@@ -75,7 +75,7 @@ MOO_AC_FLAGS(moo)
 ################################################################################
 #  Created files
 #
-AC_OUTPUT([
+AC_CONFIG_FILES([
 Makefile
 config.py
 moo/Makefile
@@ -114,6 +114,7 @@ tests/pyapp.py
 tests/medit.rc
 wininstaller/medit.iss
 ])
+AC_OUTPUT
 
 
 ################################################################################
