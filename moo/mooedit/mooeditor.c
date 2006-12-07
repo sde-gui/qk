@@ -421,6 +421,7 @@ moo_editor_get_property (GObject        *object,
 
         case PROP_FOCUSED_DOC:
             g_value_set_object (value, editor->priv->focused_doc);
+            break;
 
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
