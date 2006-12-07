@@ -455,6 +455,9 @@ moo_prefs_dialog_insert_page (MooPrefsDialog     *dialog,
                   "icon-stock-id", &icon_id,
                   NULL);
 
+    if (!icon_id)
+        icon_id = g_strdup (GTK_STOCK_PREFERENCES);
+
     gtk_list_store_set (dialog->store, &iter,
                         ICON_ID_COLUMN, icon_id,
                         ICON_COLUMN, icon,
