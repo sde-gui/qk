@@ -19,6 +19,10 @@ AC_DEFUN([MOO_AC_FLAGS],[
     MOO_CFLAGS="$MOO_CFLAGS -I"$moo_top_src_dir/$1" $GTK_CFLAGS $MOO_PCRE_CFLAGS -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\""
     MOO_LIBS="$MOO_LIBS $GTK_LIBS $MOO_PCRE_LIBS"
 
+    if test x$MOO_OS_MINGW = xyes; then
+        MOO_LIBS="$MOO_LIBS $GTHREAD_LIBS"
+    fi;
+    
     if test x$MOO_USE_FAM = xyes; then
         MOO_LIBS="$MOO_LIBS $FAM_LIBS"
     fi
