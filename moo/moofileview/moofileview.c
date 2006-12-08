@@ -1066,8 +1066,8 @@ init_actions (MooFileView *fileview)
     group = moo_action_collection_get_group (fileview->priv->actions, NULL);
 
     moo_action_group_add_action (group, "GoUp",
-                                 "label", _("Parent Folder"),
-                                 "tooltip", _("Parent Folder"),
+                                 "label", GTK_STOCK_GO_UP,
+                                 "tooltip", _("Go to Parent Folder"),
                                  "stock-id", GTK_STOCK_GO_UP,
                                  "accel", "<alt>Up",
                                  "force-accel-label", TRUE,

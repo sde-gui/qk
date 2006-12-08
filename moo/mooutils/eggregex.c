@@ -135,7 +135,7 @@ egg_regex_new (const gchar         *pattern,
       pcre_config (PCRE_CONFIG_UTF8, &support);
       if (!support)
 	{
-	  msg = _("PCRE library is compiled without UTF8 support");
+	  msg = "PCRE library is compiled without UTF8 support";
 	  g_critical (msg);
 	  g_set_error (error, EGG_REGEX_ERROR, EGG_REGEX_ERROR_COMPILE, msg);
 	  return NULL;
@@ -144,7 +144,7 @@ egg_regex_new (const gchar         *pattern,
       pcre_config (PCRE_CONFIG_UNICODE_PROPERTIES, &support);
       if (!support)
 	{
-	  msg = _("PCRE library is compiled without UTF8 properties support");
+	  msg = "PCRE library is compiled without UTF8 properties support";
 	  g_critical (msg);
 	  g_set_error (error, EGG_REGEX_ERROR, EGG_REGEX_ERROR_COMPILE, msg);
 	  return NULL;
@@ -1614,9 +1614,9 @@ expand_escape (const gchar        *replacement,
   tmp_error = g_error_new (EGG_REGEX_ERROR,
 			   EGG_REGEX_ERROR_REPLACE,
 			   _("Error while parsing replacement "
-			     "text \"%s\" at char %" G_GSSIZE_FORMAT ": %s"),
+			     "text \"%s\" at char %d: %s"),
 			   replacement,
-			   p - replacement,
+			   (int) (p - replacement),
 			   error_detail);
   g_propagate_error (error, tmp_error);
 

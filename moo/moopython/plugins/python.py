@@ -81,7 +81,7 @@ class Plugin(moo.edit.Plugin):
 
         swin.add(console)
         window.set_default_size(400,300)
-        window.set_title(_("pythony"))
+        window.set_title("pythony")
         window.show_all()
 
     def ensure_output(self, window):

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
 <!-- Generated with glade3
-	Version: 2.91.3
-	Date: Wed Aug  9 19:27:30 2006
+	Version: 3.0.0
+	Date: Fri Dec  8 17:47:39 2006
 	User: muntyan
 	Host: munt10
 -->
@@ -200,7 +200,7 @@
                                     <child>
                                       <widget class="GtkLabel" id="label32">
                                         <property name="visible">True</property>
-                                        <property name="label" translatable="yes">Indent width:</property>
+                                        <property name="label" translatable="yes">Indent width, spaces:</property>
                                         <property name="mnemonic_widget">tabswidth_spin</property>
                                       </widget>
                                       <packing>
@@ -220,17 +220,6 @@
                                       <packing>
                                         <property name="expand">False</property>
                                         <property name="position">1</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkLabel" id="label96">
-                                        <property name="visible">True</property>
-                                        <property name="label" translatable="yes">spaces</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">False</property>
-                                        <property name="position">2</property>
                                       </packing>
                                     </child>
                                   </widget>
@@ -297,7 +286,7 @@
                                   <widget class="GtkCheckButton" id="auto_save">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
-                                    <property name="label" translatable="yes">Auto save every</property>
+                                    <property name="label" translatable="yes" comments="Part of phrase &quot;Autosave every NNN minutes&quot;">Autosave every</property>
                                     <property name="use_underline">True</property>
                                     <property name="focus_on_click">False</property>
                                     <property name="draw_indicator">True</property>
@@ -326,7 +315,7 @@
                                 <child>
                                   <widget class="GtkLabel" id="auto_save_label">
                                     <property name="visible">True</property>
-                                    <property name="label" translatable="yes">minutes</property>
+                                    <property name="label" translatable="yes" comments="Part of phrase &quot;Autosave every NNN minutes&quot;">minutes</property>
                                     <property name="moo_sensitive">auto_save</property>
                                   </widget>
                                   <packing>
@@ -406,10 +395,11 @@
                             <child>
                               <widget class="GtkHBox" id="hbox131">
                                 <property name="visible">True</property>
+                                <property name="spacing">3</property>
                                 <child>
                                   <widget class="GtkLabel" id="label1021">
                                     <property name="visible">True</property>
-                                    <property name="label" translatable="yes">Default language: </property>
+                                    <property name="label" translatable="yes">Default language:</property>
                                   </widget>
                                   <packing>
                                     <property name="expand">False</property>
@@ -469,6 +459,8 @@
               </widget>
               <packing>
                 <property name="type">tab</property>
+                <property name="tab_expand">False</property>
+                <property name="tab_fill">False</property>
               </packing>
             </child>
             <child>
@@ -721,6 +713,9 @@
               </widget>
               <packing>
                 <property name="type">tab</property>
+                <property name="position">1</property>
+                <property name="tab_expand">False</property>
+                <property name="tab_fill">False</property>
               </packing>
             </child>
             <child>
@@ -746,27 +741,12 @@
                     <property name="n_rows">2</property>
                     <property name="n_columns">2</property>
                     <child>
-                      <widget class="GtkComboBox" id="color_scheme_combo">
+                      <widget class="GtkLabel" id="label99">
                         <property name="visible">True</property>
+                        <property name="label" translatable="yes">Font:</property>
+                        <property name="moo_sensitive">!use_default_font</property>
                       </widget>
                       <packing>
-                        <property name="left_attach">1</property>
-                        <property name="right_attach">2</property>
-                        <property name="top_attach">1</property>
-                        <property name="bottom_attach">2</property>
-                        <property name="x_options">GTK_FILL</property>
-                        <property name="y_options"></property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkLabel" id="label100">
-                        <property name="visible">True</property>
-                        <property name="xalign">0.000000</property>
-                        <property name="label" translatable="yes">Color scheme:</property>
-                      </widget>
-                      <packing>
-                        <property name="top_attach">1</property>
-                        <property name="bottom_attach">2</property>
                         <property name="x_options"></property>
                         <property name="y_options"></property>
                       </packing>
@@ -787,13 +767,28 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="label99">
+                      <widget class="GtkLabel" id="label100">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Font:</property>
-                        <property name="moo_sensitive">!use_default_font</property>
+                        <property name="xalign">0.000000</property>
+                        <property name="label" translatable="yes">Color scheme:</property>
                       </widget>
                       <packing>
+                        <property name="top_attach">1</property>
+                        <property name="bottom_attach">2</property>
                         <property name="x_options"></property>
+                        <property name="y_options"></property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkComboBox" id="color_scheme_combo">
+                        <property name="visible">True</property>
+                      </widget>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="right_attach">2</property>
+                        <property name="top_attach">1</property>
+                        <property name="bottom_attach">2</property>
+                        <property name="x_options">GTK_FILL</property>
                         <property name="y_options"></property>
                       </packing>
                     </child>
@@ -816,6 +811,9 @@
               </widget>
               <packing>
                 <property name="type">tab</property>
+                <property name="position">2</property>
+                <property name="tab_expand">False</property>
+                <property name="tab_fill">False</property>
               </packing>
             </child>
             <child>
@@ -837,28 +835,61 @@
                             <property name="n_rows">4</property>
                             <property name="n_columns">2</property>
                             <child>
-                              <widget class="GtkEntry" id="config">
+                              <widget class="GtkComboBox" id="lang_combo">
                                 <property name="visible">True</property>
-                                <property name="activates_default">True</property>
-                                <property name="tooltip">strip: bool; use-tabs: bool; indent-width: integer; tab-width: integer</property>
                               </widget>
                               <packing>
                                 <property name="left_attach">1</property>
                                 <property name="right_attach">2</property>
-                                <property name="top_attach">3</property>
-                                <property name="bottom_attach">4</property>
                                 <property name="y_options"></property>
                               </packing>
                             </child>
                             <child>
-                              <widget class="GtkLabel" id="label9">
+                              <widget class="GtkLabel" id="label768">
                                 <property name="visible">True</property>
                                 <property name="xalign">1.000000</property>
-                                <property name="label" translatable="yes">Options:</property>
+                                <property name="label" translatable="yes">Language:</property>
                               </widget>
                               <packing>
-                                <property name="top_attach">3</property>
-                                <property name="bottom_attach">4</property>
+                                <property name="x_options">GTK_FILL</property>
+                                <property name="y_options"></property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkEntry" id="extensions">
+                                <property name="visible">True</property>
+                                <property name="activates_default">True</property>
+                              </widget>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="right_attach">2</property>
+                                <property name="top_attach">2</property>
+                                <property name="bottom_attach">3</property>
+                                <property name="y_options"></property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkEntry" id="mimetypes">
+                                <property name="visible">True</property>
+                                <property name="activates_default">True</property>
+                              </widget>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="right_attach">2</property>
+                                <property name="top_attach">1</property>
+                                <property name="bottom_attach">2</property>
+                                <property name="y_options"></property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkLabel" id="label_extensions">
+                                <property name="visible">True</property>
+                                <property name="xalign">1.000000</property>
+                                <property name="label" translatable="yes">Extensions:</property>
+                              </widget>
+                              <packing>
+                                <property name="top_attach">2</property>
+                                <property name="bottom_attach">3</property>
                                 <property name="x_options">GTK_FILL</property>
                                 <property name="y_options"></property>
                               </packing>
@@ -877,62 +908,29 @@
                               </packing>
                             </child>
                             <child>
-                              <widget class="GtkLabel" id="label_extensions">
+                              <widget class="GtkLabel" id="label9">
                                 <property name="visible">True</property>
                                 <property name="xalign">1.000000</property>
-                                <property name="label" translatable="yes">Extensions:</property>
+                                <property name="label" translatable="yes">Options:</property>
                               </widget>
                               <packing>
-                                <property name="top_attach">2</property>
-                                <property name="bottom_attach">3</property>
+                                <property name="top_attach">3</property>
+                                <property name="bottom_attach">4</property>
                                 <property name="x_options">GTK_FILL</property>
                                 <property name="y_options"></property>
                               </packing>
                             </child>
                             <child>
-                              <widget class="GtkEntry" id="mimetypes">
+                              <widget class="GtkEntry" id="config">
                                 <property name="visible">True</property>
                                 <property name="activates_default">True</property>
+                                <property name="tooltip">strip: bool; use-tabs: bool; indent-width: integer; tab-width: integer</property>
                               </widget>
                               <packing>
                                 <property name="left_attach">1</property>
                                 <property name="right_attach">2</property>
-                                <property name="top_attach">1</property>
-                                <property name="bottom_attach">2</property>
-                                <property name="y_options"></property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkEntry" id="extensions">
-                                <property name="visible">True</property>
-                                <property name="activates_default">True</property>
-                              </widget>
-                              <packing>
-                                <property name="left_attach">1</property>
-                                <property name="right_attach">2</property>
-                                <property name="top_attach">2</property>
-                                <property name="bottom_attach">3</property>
-                                <property name="y_options"></property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkLabel" id="label768">
-                                <property name="visible">True</property>
-                                <property name="xalign">1.000000</property>
-                                <property name="label" translatable="yes">Language:</property>
-                              </widget>
-                              <packing>
-                                <property name="x_options">GTK_FILL</property>
-                                <property name="y_options"></property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkComboBox" id="lang_combo">
-                                <property name="visible">True</property>
-                              </widget>
-                              <packing>
-                                <property name="left_attach">1</property>
-                                <property name="right_attach">2</property>
+                                <property name="top_attach">3</property>
+                                <property name="bottom_attach">4</property>
                                 <property name="y_options"></property>
                               </packing>
                             </child>
@@ -1090,6 +1088,9 @@
               </widget>
               <packing>
                 <property name="type">tab</property>
+                <property name="position">3</property>
+                <property name="tab_expand">False</property>
+                <property name="tab_fill">False</property>
               </packing>
             </child>
           </widget>

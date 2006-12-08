@@ -714,6 +714,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "Comment", NULL,
+                                 /* action */
                                  "display-name", _("Comment"),
                                  "label", _("Comment"),
                                  "tooltip", _("Comment"),
@@ -723,6 +724,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "Uncomment", NULL,
+                                 /* action */
                                  "display-name", _("Uncomment"),
                                  "label", _("Uncomment"),
                                  "tooltip", _("Uncomment"),
