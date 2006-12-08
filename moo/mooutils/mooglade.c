@@ -1489,11 +1489,11 @@ get_property_text (MooMarkupNode *node,
         const char *translated;
 
         if (strip_context)
-            translated = g_strip_context (prop, dgettext (prop, translation_domain));
+            translated = g_strip_context (prop, dgettext (translation_domain, prop));
         else
-            translated = dgettext (prop, translation_domain);
+            translated = dgettext (translation_domain, prop);
 
-        if (strcmp (translated, translation_domain) != 0)
+        if (strcmp (translated, prop) != 0)
             return translated;
     }
 
