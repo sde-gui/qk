@@ -32,6 +32,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moomarshals.h"
+#include <glib/gstdio.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
