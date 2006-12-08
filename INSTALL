@@ -44,15 +44,8 @@ configure has the following medit-specific options:
     or if installed version of the library doesn't have unicode support (this is
     the case with default FreeBSD port), included copy will be built.
 
-  The following four options control components of libmoo which get built. Only
-  --without-mooterm may be used with medit, since it uses all other components.
-  By using --without-mooterm you will save a bit of compilation time and binary
-  size (and builtin terminal will not be available then).
-
-  --without-mooapp        disable building mooapp
-  --without-mooedit       disable building mooedit
-  --without-mooutils      disable building mooutils
-  --without-mooterm       disable building mooterm
+  --with-mooterm          whether to build terminal
+    Use this option if you want builtin terminal (it also requires python).
 
 Defaults for all the options are chosen in such a way that you do not need to
 use them. Only in case of problem they may be needed.

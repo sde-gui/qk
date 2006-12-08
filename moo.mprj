@@ -11,6 +11,9 @@
     </vars>
    </configure>
   </debug>
+  <mingw>
+   <build_dir>build/mingw</build_dir>
+  </mingw>
   <optimized>
    <build_dir>build/optimized</build_dir>
    <configure>
