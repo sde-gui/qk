@@ -132,8 +132,7 @@ struct _MooEditPrivate {
     MooEditStatus status;
 
     MooEditOnExternalChanges file_watch_policy;
-    int file_monitor_id;
-    gulong file_watch_event_handler_id;
+    guint file_monitor_id;
     gulong focus_in_handler_id;
     gboolean modified_on_disk;
     gboolean deleted_from_disk;

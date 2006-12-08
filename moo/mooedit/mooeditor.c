@@ -448,6 +448,7 @@ moo_editor_finalize (GObject *object)
     if (editor->priv->file_watch)
     {
         GError *error = NULL;
+
         if (!moo_file_watch_close (editor->priv->file_watch, &error))
         {
             g_warning ("%s: error in moo_file_watch_close", G_STRLOC);
@@ -457,7 +458,8 @@ moo_editor_finalize (GObject *object)
                 g_error_free (error);
             }
         }
-        g_object_unref (editor->priv->file_watch);
+
+        moo_file_watch_unref (editor->priv->file_watch);
     }
 
     if (editor->priv->windows)
@@ -545,7 +547,7 @@ _moo_editor_post_message (MooEditor      *editor,
 
 
 gpointer
-_moo_editor_get_file_watch (MooEditor      *editor)
+_moo_editor_get_file_watch (MooEditor *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
 

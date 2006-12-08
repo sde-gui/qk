@@ -22,12 +22,10 @@
   (gtype-id "MOO_TYPE_ENTRY")
 )
 
-(define-object FileWatch
+(define-boxed FileWatch
   (in-module "Moo")
-  (parent "GObject")
   (c-name "MooFileWatch")
   (gtype-id "MOO_TYPE_FILE_WATCH")
-  (final "true")
 )
 
 (define-object FilterMgr
@@ -226,15 +224,15 @@
   (release-func "moo_closure_unref")
 )
 
-(define-pointer FileWatchEvent
+(define-boxed FileEvent
   (in-module "Moo")
-  (c-name "MooFileWatchEvent")
-  (gtype-id "MOO_TYPE_FILE_WATCH_EVENT")
+  (c-name "MooFileEvent")
+  (gtype-id "MOO_TYPE_FILE_EVENT")
   (fields
-    '("MooFileWatchEventCode" "code")
+    '("MooFileEventCode" "code")
     '("int" "monitor_id")
     '("char*" "filename")
-    '("gpointer" "data")
+    '("GError*" "error")
   )
 )
 
@@ -256,16 +254,10 @@
   (gtype-id "MOO_TYPE_FILE_DIALOG_TYPE")
 )
 
-(define-enum FileWatchMethod
+(define-enum FileEventCode
   (in-module "Moo")
-  (c-name "MooFileWatchMethod")
-  (gtype-id "MOO_TYPE_FILE_WATCH_METHOD")
-)
-
-(define-enum FileWatchEventCode
-  (in-module "Moo")
-  (c-name "MooFileWatchEventCode")
-  (gtype-id "MOO_TYPE_FILE_WATCH_EVENT_CODE")
+  (c-name "MooFileEventCode")
+  (gtype-id "MOO_TYPE_FILE_EVENT_CODE")
 )
 
 (define-enum PanePosition
@@ -560,11 +552,6 @@
 
 ;; From ../mooutils/moofilewatch.h
 
-;; (define-function moo_file_watch_error_quark
-;;   (c-name "moo_file_watch_error_quark")
-;;   (return-type "GQuark")
-;; )
-
 (define-function moo_file_watch_new
   (c-name "moo_file_watch_new")
   (is-constructor-of "MooFileWatch")
@@ -583,24 +570,13 @@
   )
 )
 
-(define-method monitor_directory
+(define-method create_monitor
   (of-object "MooFileWatch")
-  (c-name "moo_file_watch_monitor_directory")
-  (return-type "int")
+  (c-name "moo_file_watch_create_monitor")
+  (return-type "guint")
   (parameters
     '("const-char*" "filename")
-    '("gpointer" "data")
-    '("GDestroyNotify" "data_notify")
-    '("GError**" "error")
-  )
-)
-
-(define-method monitor_file
-  (of-object "MooFileWatch")
-  (c-name "moo_file_watch_monitor_file")
-  (return-type "int")
-  (parameters
-    '("const-char*" "filename")
+    '("MooFileWatchCallback" "callback")
     '("gpointer" "data")
     '("GDestroyNotify" "data_notify")
     '("GError**" "error")
@@ -612,7 +588,7 @@
   (c-name "moo_file_watch_suspend_monitor")
   (return-type "none")
   (parameters
-    '("int" "monitor_id")
+    '("guint" "monitor_id")
   )
 )
 
@@ -621,7 +597,7 @@
   (c-name "moo_file_watch_resume_monitor")
   (return-type "none")
   (parameters
-    '("int" "monitor_id")
+    '("guint" "monitor_id")
   )
 )
 
@@ -630,14 +606,8 @@
   (c-name "moo_file_watch_cancel_monitor")
   (return-type "none")
   (parameters
-    '("int" "monitor_id")
+    '("guint" "monitor_id")
   )
-)
-
-(define-method get_method
-  (of-object "MooFileWatch")
-  (c-name "moo_file_watch_get_method")
-  (return-type "MooFileWatchMethod")
 )
 
 

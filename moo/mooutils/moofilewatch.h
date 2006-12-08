@@ -40,99 +40,60 @@ typedef enum
 GQuark  moo_file_watch_error_quark (void);
 
 
-#define MOO_TYPE_FILE_WATCH                (moo_file_watch_get_type ())
-#define MOO_FILE_WATCH(object)             (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FILE_WATCH, MooFileWatch))
-#define MOO_FILE_WATCH_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FILE_WATCH, MooFileWatchClass))
-#define MOO_IS_FILE_WATCH(object)          (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_FILE_WATCH))
-#define MOO_IS_FILE_WATCH_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FILE_WATCH))
-#define MOO_FILE_WATCH_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FILE_WATCH, MooFileWatchClass))
-
-#define MOO_TYPE_FILE_WATCH_EVENT          (moo_file_watch_event_get_type ())
-#define MOO_TYPE_FILE_WATCH_EVENT_CODE     (moo_file_watch_event_code_get_type ())
-#define MOO_TYPE_FILE_WATCH_METHOD         (moo_file_watch_method_get_type ())
+#define MOO_TYPE_FILE_WATCH         (moo_file_watch_get_type ())
+#define MOO_TYPE_FILE_EVENT         (moo_file_event_get_type ())
+#define MOO_TYPE_FILE_EVENT_CODE    (moo_file_event_code_get_type ())
 
 typedef enum {
-    MOO_FILE_WATCH_STAT,
-    MOO_FILE_WATCH_FAM,
-    MOO_FILE_WATCH_WIN32
-} MooFileWatchMethod;
+    MOO_FILE_EVENT_CHANGED,
+    MOO_FILE_EVENT_DELETED,
+    MOO_FILE_EVENT_ERROR
+} MooFileEventCode;
 
-/* Stripped FAMEventCode enumeration */
-typedef enum {
-    MOO_FILE_WATCH_EVENT_CHANGED         = 1,
-    MOO_FILE_WATCH_EVENT_DELETED         = 2,
-    MOO_FILE_WATCH_EVENT_CREATED         = 3,
-    MOO_FILE_WATCH_EVENT_MOVED           = 4,
-    MOO_FILE_WATCH_EVENT_ERROR           = 5
-} MooFileWatchEventCode;
-
-/*  The structure has the same meaning as the FAMEvent
-    (it is a simple copy of FAMEvent structure when
-    FAM is used). In the case when stat() is used, when
-    directory content is changed, MooFileWatch does not
-    try to learn what happened, and just emits CHANGED
-    event with filename set to directory name.
- */
-struct _MooFileWatchEvent {
-    MooFileWatchEventCode code; /* FAMEventCode */
-    int          monitor_id;    /* FAMRequest */
-    char        *filename;
-    GError      *error;
-    gpointer     data;
+struct _MooFileEvent {
+    MooFileEventCode code;
+    guint            monitor_id;
+    char            *filename;
+    GError          *error;
 };
 
 typedef struct _MooFileWatch          MooFileWatch;
-typedef struct _MooFileWatchPrivate   MooFileWatchPrivate;
-typedef struct _MooFileWatchClass     MooFileWatchClass;
-typedef struct _MooFileWatchEvent     MooFileWatchEvent;
+typedef struct _MooFileEvent          MooFileEvent;
 
-struct _MooFileWatch
-{
-    GObject parent;
-    MooFileWatchPrivate *priv;
-};
+typedef void (*MooFileWatchCallback) (MooFileWatch *watch,
+                                      MooFileEvent *event,
+                                      gpointer      user_data);
 
-struct _MooFileWatchClass
-{
-    GObjectClass parent_class;
-
-    void    (*event)    (MooFileWatch       *watch,
-                         MooFileWatchEvent  *event);
-    void    (*error)    (MooFileWatch       *watch,
-                         GError             *error);
-};
 
 GType           moo_file_watch_get_type             (void) G_GNUC_CONST;
-GType           moo_file_watch_event_get_type       (void) G_GNUC_CONST;
-GType           moo_file_watch_event_code_get_type  (void) G_GNUC_CONST;
-GType           moo_file_watch_method_get_type      (void) G_GNUC_CONST;
+GType           moo_file_event_get_type             (void) G_GNUC_CONST;
+GType           moo_file_event_code_get_type        (void) G_GNUC_CONST;
 
 /* FAMOpen */
 MooFileWatch   *moo_file_watch_new                  (GError        **error);
+
+MooFileWatch   *moo_file_watch_ref                  (MooFileWatch   *watch);
+void            moo_file_watch_unref                (MooFileWatch   *watch);
 
 /* FAMClose */
 gboolean        moo_file_watch_close                (MooFileWatch   *watch,
                                                      GError        **error);
 
 /* FAMMonitorDirectory, FAMMonitorFile */
-int             moo_file_watch_monitor_directory    (MooFileWatch   *watch,
+guint           moo_file_watch_create_monitor       (MooFileWatch   *watch,
                                                      const char     *filename,
+                                                     MooFileWatchCallback callback,
                                                      gpointer        data,
+                                                     GDestroyNotify  notify,
                                                      GError        **error);
-int             moo_file_watch_monitor_file         (MooFileWatch   *watch,
-                                                     const char     *filename,
-                                                     gpointer        data,
-                                                     GError        **error);
-
-/* FAMSuspendMonitor, FAMResumeMonitor, FAMCancelMonitor */
-void            moo_file_watch_suspend_monitor      (MooFileWatch   *watch,
-                                                     int             monitor_id);
-void            moo_file_watch_resume_monitor       (MooFileWatch   *watch,
-                                                     int             monitor_id);
+/* FAMCancelMonitor */
 void            moo_file_watch_cancel_monitor       (MooFileWatch   *watch,
-                                                     int             monitor_id);
-
-MooFileWatchMethod moo_file_watch_get_method        (MooFileWatch   *watch);
+                                                     guint           monitor_id);
+/* FAMSuspendMonitor, FAMResumeMonitor */
+void            moo_file_watch_suspend_monitor      (MooFileWatch   *watch,
+                                                     guint           monitor_id);
+void            moo_file_watch_resume_monitor       (MooFileWatch   *watch,
+                                                     guint           monitor_id);
 
 
 G_END_DECLS

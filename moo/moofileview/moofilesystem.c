@@ -158,7 +158,7 @@ moo_file_system_finalize (GObject *object)
     if (fs->priv->fam)
     {
         moo_file_watch_close (fs->priv->fam, NULL);
-        g_object_unref (fs->priv->fam);
+        moo_file_watch_unref (fs->priv->fam);
     }
 
     g_free (fs->priv);
@@ -302,19 +302,6 @@ _moo_file_system_get_absolute_path (MooFileSystem  *fs,
 }
 
 
-static void
-fam_error (MooFileWatch   *fam,
-           GError         *error,
-           MooFileSystem  *fs)
-{
-    g_return_if_fail (fs->priv->fam == fam);
-    g_warning ("%s: fam error", G_STRLOC);
-    g_warning ("%s: %s", G_STRLOC, error->message);
-    g_object_unref (fs->priv->fam);
-    fs->priv->fam = NULL;
-}
-
-
 MooFileWatch *
 _moo_file_system_get_file_watch (MooFileSystem *fs)
 {
@@ -329,11 +316,6 @@ _moo_file_system_get_file_watch (MooFileSystem *fs)
             g_warning ("%s: moo_fam_open failed", G_STRLOC);
             g_warning ("%s: %s", G_STRLOC, error->message);
             g_error_free (error);
-        }
-        else
-        {
-            g_signal_connect (fs->priv->fam, "error",
-                              G_CALLBACK (fam_error), fs);
         }
     }
 

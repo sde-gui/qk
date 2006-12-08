@@ -22,9 +22,10 @@ AC_DEFUN([MOO_AC_FLAGS],[
     if test x$MOO_OS_MINGW = xyes; then
         MOO_LIBS="$MOO_LIBS $GTHREAD_LIBS"
     fi;
-    
+
     if test x$MOO_USE_FAM = xyes; then
-        MOO_LIBS="$MOO_LIBS $FAM_LIBS"
+      MOO_CFLAGS="$MOO_CFLAGS $MOO_FAM_CFLAGS"
+        MOO_LIBS="$MOO_LIBS $MOO_FAM_LIBS"
     fi
 
     MOO_CFLAGS="$MOO_CFLAGS -DMOO_DATA_DIR=\\\"${MOO_DATA_DIR}\\\" -DMOO_LIB_DIR=\\\"${MOO_LIB_DIR}\\\""

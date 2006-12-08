@@ -112,7 +112,7 @@ struct _MooFolderPrivate {
     Debug debug;
     GTimer *timer;
     MooFileWatch *fam;
-    int fam_request;
+    guint fam_request;
     guint reload_idle;
 };
 
@@ -819,41 +819,28 @@ static void file_created    (MooFolder      *folder,
                              const char     *name);
 
 static void
-fam_event (MooFolder         *folder,
-           MooFileWatchEvent *event)
+fam_callback (MooFileWatch *watch,
+              MooFileEvent *event,
+              gpointer      data)
 {
-    if (event->data != folder)
-        return;
+    MooFolder *folder = MOO_FOLDER (data);
 
+    g_return_if_fail (watch == folder->priv->fam);
     g_return_if_fail (event->monitor_id == folder->priv->fam_request);
 
     switch (event->code)
     {
-        case MOO_FILE_WATCH_EVENT_CHANGED:
+        case MOO_FILE_EVENT_CHANGED:
             file_changed (folder, event->filename);
             break;
-        case MOO_FILE_WATCH_EVENT_DELETED:
+        case MOO_FILE_EVENT_DELETED:
             file_deleted (folder, event->filename);
             break;
-        case MOO_FILE_WATCH_EVENT_CREATED:
-            file_created (folder, event->filename);
-            break;
-        case MOO_FILE_WATCH_EVENT_ERROR:
-            /* XXX */
-            file_deleted (folder, folder->priv->path);
-            break;
-        case MOO_FILE_WATCH_EVENT_MOVED:
+        case MOO_FILE_EVENT_ERROR:
+            stop_monitor (folder);
+            file_changed (folder, folder->priv->path);
             break;
     }
-}
-
-
-static void
-fam_error (MooFolder *folder,
-           GError    *error)
-{
-    g_print ("fam error: %s\n", error->message);
-    stop_monitor (folder);
 }
 
 
@@ -868,22 +855,18 @@ start_monitor (MooFolder *folder)
     g_return_if_fail (folder->priv->fam != NULL);
 
     folder->priv->fam_request =
-            moo_file_watch_monitor_directory (folder->priv->fam,
-                                              folder->priv->path,
-                                              folder, &error);
+        moo_file_watch_create_monitor (folder->priv->fam,
+                                       folder->priv->path,
+                                       fam_callback, folder,
+                                       NULL, &error);
 
     if (!folder->priv->fam_request)
     {
-        g_warning ("%s: moo_fam_monitor_directory failed for path '%s'", G_STRLOC, folder->priv->path);
+        g_warning ("%s: moo_file_watch_create_monitor failed for path '%s'", G_STRLOC, folder->priv->path);
         g_warning ("%s: %s", G_STRLOC, error->message);
         g_error_free (error);
         return;
     }
-
-    g_signal_connect_swapped (folder->priv->fam, "event",
-                              G_CALLBACK (fam_event), folder);
-    g_signal_connect_swapped (folder->priv->fam, "error",
-                              G_CALLBACK (fam_error), folder);
 }
 
 
@@ -892,16 +875,8 @@ stop_monitor (MooFolder *folder)
 {
     if (folder->priv->fam_request)
     {
-        g_signal_handlers_disconnect_by_func (folder->priv->fam,
-                                              (gpointer)fam_event,
-                                              folder);
-        g_signal_handlers_disconnect_by_func (folder->priv->fam,
-                                              (gpointer)fam_error,
-                                              folder);
-
         moo_file_watch_cancel_monitor (folder->priv->fam,
                                        folder->priv->fam_request);
-
         folder->priv->fam = NULL;
         folder->priv->fam_request = 0;
     }

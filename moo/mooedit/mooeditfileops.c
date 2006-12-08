@@ -911,31 +911,30 @@ static void     unblock_buffer_signals      (MooEdit        *edit)
 
 
 static void
-file_watch_event (G_GNUC_UNUSED MooFileWatch *watch,
-                  MooFileWatchEvent  *event,
-                  MooEdit            *edit)
+file_watch_callback (G_GNUC_UNUSED MooFileWatch *watch,
+                     MooFileEvent  *event,
+                     gpointer       data)
 {
-    if (event->monitor_id != edit->priv->file_monitor_id)
-        return;
+    MooEdit *edit = MOO_EDIT (data);
 
+    g_return_if_fail (event->monitor_id == edit->priv->file_monitor_id);
     g_return_if_fail (edit->priv->filename != NULL);
     g_return_if_fail (!(edit->priv->status & MOO_EDIT_CHANGED_ON_DISK));
 
     switch (event->code)
     {
-        case MOO_FILE_WATCH_EVENT_CHANGED:
+        case MOO_FILE_EVENT_CHANGED:
             edit->priv->modified_on_disk = TRUE;
             break;
 
-        case MOO_FILE_WATCH_EVENT_DELETED:
+        case MOO_FILE_EVENT_DELETED:
             edit->priv->deleted_from_disk = TRUE;
             edit->priv->file_monitor_id = 0;
             break;
 
-        case MOO_FILE_WATCH_EVENT_CREATED:
-        case MOO_FILE_WATCH_EVENT_MOVED:
-        case MOO_FILE_WATCH_EVENT_ERROR:
-            g_return_if_reached ();
+        case MOO_FILE_EVENT_ERROR:
+            /* XXX and what to do now? */
+            break;
     }
 
     check_file_status (edit, TRUE);
@@ -949,7 +948,7 @@ _moo_edit_start_file_watch (MooEdit *edit)
     GError *error = NULL;
 
     watch = _moo_editor_get_file_watch (edit->priv->editor);
-    g_return_if_fail (MOO_IS_FILE_WATCH (watch));
+    g_return_if_fail (watch != NULL);
 
     if (edit->priv->file_monitor_id)
         moo_file_watch_cancel_monitor (watch, edit->priv->file_monitor_id);
@@ -958,9 +957,10 @@ _moo_edit_start_file_watch (MooEdit *edit)
     g_return_if_fail ((edit->priv->status & MOO_EDIT_CHANGED_ON_DISK) == 0);
     g_return_if_fail (edit->priv->filename != NULL);
 
-    edit->priv->file_monitor_id = moo_file_watch_monitor_file (watch,
-                                                               edit->priv->filename,
-                                                               edit, &error);
+    edit->priv->file_monitor_id =
+        moo_file_watch_create_monitor (watch, edit->priv->filename,
+                                       file_watch_callback,
+                                       edit, NULL, &error);
 
     if (!edit->priv->file_monitor_id)
     {
@@ -976,12 +976,6 @@ _moo_edit_start_file_watch (MooEdit *edit)
         return;
     }
 
-    /* XXX watch errors too */
-    if (!edit->priv->file_watch_event_handler_id)
-        edit->priv->file_watch_event_handler_id =
-                g_signal_connect (watch, "event",
-                                  G_CALLBACK (file_watch_event), edit);
-
     if (!edit->priv->focus_in_handler_id)
         edit->priv->focus_in_handler_id =
                 g_signal_connect (edit, "focus-in-event",
@@ -991,22 +985,16 @@ _moo_edit_start_file_watch (MooEdit *edit)
 
 
 void
-_moo_edit_stop_file_watch (MooEdit        *edit)
+_moo_edit_stop_file_watch (MooEdit *edit)
 {
     MooFileWatch *watch;
 
     watch = _moo_editor_get_file_watch (edit->priv->editor);
-    g_return_if_fail (MOO_IS_FILE_WATCH (watch));
+    g_return_if_fail (watch != NULL);
 
     if (edit->priv->file_monitor_id)
         moo_file_watch_cancel_monitor (watch, edit->priv->file_monitor_id);
     edit->priv->file_monitor_id = 0;
-
-    if (edit->priv->file_watch_event_handler_id)
-    {
-        g_signal_handler_disconnect (watch, edit->priv->file_watch_event_handler_id);
-        edit->priv->file_watch_event_handler_id = 0;
-    }
 
     if (edit->priv->focus_in_handler_id)
     {
