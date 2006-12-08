@@ -11,15 +11,16 @@ strip = "i586-mingw32msvc-strip"
 do_strip = True
 do_zip = False
 bin_only = False
+no_python = False
 installer = None
 data_dirs = []
 
 def usage():
-    print "Usage:", sys.argv[0], "[--no-strip] [--bin-only] [--zip] [build_dir] [additional_dir1] ..."
+    print "Usage:", sys.argv[0], "[--no-strip] [--bin-only] [--zip] [--no-python] [build_dir] [additional_dir1] ..."
     sys.exit(2)
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "", ["no-strip", "bin-only", "zip"])
+    opts, args = getopt.getopt(sys.argv[1:], "", ["no-strip", "no-python", "bin-only", "zip"])
 except getopt.GetoptError:
     usage()
 
@@ -28,6 +29,8 @@ for o, a in opts:
         do_strip = False
     if o == "--bin-only":
         bin_only = True
+    if o == "--no-python":
+        no_python = True
     if o == "--zip":
         do_zip = True
 if args:
@@ -69,17 +72,18 @@ def copy_files():
 
         do_cmd("cp -r %s/usr/local/share/moo %s/share/" % (installdir, moo_windir))
 
-        do_cmd("cp -r %s/usr/local/lib/moo/plugins %s/lib/moo/" % (installdir, moo_windir))
-        do_cmd("cp -r %s/usr/local/lib/moo/projects %s/lib/moo/" % (installdir, moo_windir))
+        if not no_python:
+            do_cmd("cp -r %s/usr/local/lib/moo/plugins %s/lib/moo/" % (installdir, moo_windir))
+            do_cmd("cp -r %s/usr/local/lib/moo/projects %s/lib/moo/" % (installdir, moo_windir))
 
-        do_cmd("mkdir -p %s/lib/moo/plugins/pymoo25 %s/lib/moo/plugins/pymoo24" % (moo_windir, moo_windir))
-        do_cmd("cp %s/usr/local/lib/pymoo25.dll %s/lib/moo/plugins/pymoo25/pymoo.dll" % (installdir, moo_windir))
-        do_cmd("cp %s/usr/local/lib/moo25.dll %s/lib/moo/plugins/pymoo25/moo.pyd" % (installdir, moo_windir))
-        do_cmd("cp %s/usr/local/lib/pymoo24.dll %s/lib/moo/plugins/pymoo24/pymoo.dll" % (installdir, moo_windir))
-        do_cmd("cp %s/usr/local/lib/moo24.dll %s/lib/moo/plugins/pymoo24/moo.pyd" % (installdir, moo_windir))
+            do_cmd("mkdir -p %s/lib/moo/plugins/pymoo25 %s/lib/moo/plugins/pymoo24" % (moo_windir, moo_windir))
+            do_cmd("cp %s/usr/local/lib/pymoo25.dll %s/lib/moo/plugins/pymoo25/pymoo.dll" % (installdir, moo_windir))
+            do_cmd("cp %s/usr/local/lib/moo25.dll %s/lib/moo/plugins/pymoo25/moo.pyd" % (installdir, moo_windir))
+            do_cmd("cp %s/usr/local/lib/pymoo24.dll %s/lib/moo/plugins/pymoo24/pymoo.dll" % (installdir, moo_windir))
+            do_cmd("cp %s/usr/local/lib/moo24.dll %s/lib/moo/plugins/pymoo24/moo.pyd" % (installdir, moo_windir))
 
     if do_strip:
-        if not bin_only:
+        if not bin_only and not no_python:
             do_cmd("%s %s/lib/moo/plugins/*/*.dll" % (strip, moo_windir))
         do_cmd("%s %s/bin/medit.exe %s/bin/libmoo.dll" % (strip, moo_windir, moo_windir))
 
