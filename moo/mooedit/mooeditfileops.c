@@ -923,17 +923,18 @@ file_watch_event (G_GNUC_UNUSED MooFileWatch *watch,
 
     switch (event->code)
     {
-        case MOO_FILE_WATCH_CHANGED:
+        case MOO_FILE_WATCH_EVENT_CHANGED:
             edit->priv->modified_on_disk = TRUE;
             break;
 
-        case MOO_FILE_WATCH_DELETED:
+        case MOO_FILE_WATCH_EVENT_DELETED:
             edit->priv->deleted_from_disk = TRUE;
             edit->priv->file_monitor_id = 0;
             break;
 
-        case MOO_FILE_WATCH_CREATED:
-        case MOO_FILE_WATCH_MOVED:
+        case MOO_FILE_WATCH_EVENT_CREATED:
+        case MOO_FILE_WATCH_EVENT_MOVED:
+        case MOO_FILE_WATCH_EVENT_ERROR:
             g_return_if_reached ();
     }
 

@@ -59,10 +59,11 @@ typedef enum {
 
 /* Stripped FAMEventCode enumeration */
 typedef enum {
-    MOO_FILE_WATCH_CHANGED         = 1,
-    MOO_FILE_WATCH_DELETED         = 2,
-    MOO_FILE_WATCH_CREATED         = 3,
-    MOO_FILE_WATCH_MOVED           = 4
+    MOO_FILE_WATCH_EVENT_CHANGED         = 1,
+    MOO_FILE_WATCH_EVENT_DELETED         = 2,
+    MOO_FILE_WATCH_EVENT_CREATED         = 3,
+    MOO_FILE_WATCH_EVENT_MOVED           = 4,
+    MOO_FILE_WATCH_EVENT_ERROR           = 5
 } MooFileWatchEventCode;
 
 /*  The structure has the same meaning as the FAMEvent
@@ -76,6 +77,7 @@ struct _MooFileWatchEvent {
     MooFileWatchEventCode code; /* FAMEventCode */
     int          monitor_id;    /* FAMRequest */
     char        *filename;
+    GError      *error;
     gpointer     data;
 };
 

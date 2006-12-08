@@ -20,6 +20,7 @@
 #endif
 
 #ifdef __WIN32__
+#include "mooutils/mooutils-thread.h"
 #include <windows.h>
 #include <io.h>
 #include <fcntl.h>
@@ -29,6 +30,7 @@
 #include <time.h>
 #endif
 
+#include <glib/gstdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
@@ -40,7 +42,7 @@
 #include "mooutils/moocompat.h"
 
 
-#if 0
+#if defined(__WIN32__) && 0
 #define DEBUG_PRINT g_message
 #else
 static void DEBUG_PRINT (G_GNUC_UNUSED const char *format, ...)
@@ -53,7 +55,8 @@ static const char *event_code_strings[] = {
     "CHANGED",
     "DELETED",
     "CREATED",
-    "MOVED"
+    "MOVED",
+    "ERROR"
 };
 
 typedef struct _Monitor Monitor;
@@ -87,7 +90,8 @@ typedef struct {
                          GError        **error);
     void    (*suspend)  (Monitor        *monitor);
     void    (*resume)   (Monitor        *monitor);
-    void    (*delete)   (Monitor        *monitor);
+    void    (*delete)   (MooFileWatch   *watch,
+                         Monitor        *monitor);
 } WatchFuncs;
 
 
@@ -96,6 +100,9 @@ struct _MooFileWatchPrivate {
 #ifdef MOO_USE_FAM
     FAMConnection fam_connection;
     guint fam_connection_watch;
+#endif
+#ifdef __WIN32__
+    guint id;
 #endif
     WatchFuncs funcs;
     MooFileWatchMethod method;
@@ -121,7 +128,8 @@ static Monitor *monitor_fam_create      (MooFileWatch   *watch,
                                          GError        **error);
 static void     monitor_fam_suspend     (Monitor        *monitor);
 static void     monitor_fam_resume      (Monitor        *monitor);
-static void     monitor_fam_delete      (Monitor        *monitor);
+static void     monitor_fam_delete      (MooFileWatch   *watch,
+                                         Monitor        *monitor);
 #endif /* MOO_USE_FAM */
 
 static gboolean watch_stat_start        (MooFileWatch   *watch,
@@ -136,7 +144,8 @@ static Monitor *monitor_stat_create     (MooFileWatch   *watch,
                                          GError        **error);
 static void     monitor_stat_suspend    (Monitor        *monitor);
 static void     monitor_stat_resume     (Monitor        *monitor);
-static void     monitor_stat_delete     (Monitor        *monitor);
+static void     monitor_stat_delete     (MooFileWatch   *watch,
+                                         Monitor        *monitor);
 
 #ifdef __WIN32__
 static gboolean watch_win32_start       (MooFileWatch   *watch,
@@ -151,7 +160,8 @@ static Monitor *monitor_win32_create    (MooFileWatch   *watch,
                                          GError        **error);
 static void     monitor_win32_suspend   (Monitor        *monitor);
 static void     monitor_win32_resume    (Monitor        *monitor);
-static void     monitor_win32_delete    (Monitor        *monitor);
+static void     monitor_win32_delete    (MooFileWatch   *watch,
+                                         Monitor        *monitor);
 #endif /* __WIN32__ */
 
 
@@ -339,10 +349,11 @@ moo_file_watch_event_code_get_type (void)
     if (!type)
     {
         static const GEnumValue values[] = {
-            {MOO_FILE_WATCH_CHANGED, (char*) "MOO_FILE_WATCH_CHANGED", (char*) "changed"},
-            {MOO_FILE_WATCH_DELETED, (char*) "MOO_FILE_WATCH_DELETED", (char*) "deleted"},
-            {MOO_FILE_WATCH_CREATED, (char*) "MOO_FILE_WATCH_CREATED", (char*) "created"},
-            {MOO_FILE_WATCH_MOVED, (char*) "MOO_FILE_WATCH_MOVED", (char*) "moved"},
+            { MOO_FILE_WATCH_EVENT_CHANGED, (char*) "MOO_FILE_WATCH_EVENT_CHANGED", (char*) "changed"},
+            { MOO_FILE_WATCH_EVENT_DELETED, (char*) "MOO_FILE_WATCH_EVENT_DELETED", (char*) "deleted"},
+            { MOO_FILE_WATCH_EVENT_CREATED, (char*) "MOO_FILE_WATCH_EVENT_CREATED", (char*) "created"},
+            { MOO_FILE_WATCH_EVENT_MOVED, (char*) "MOO_FILE_WATCH_EVENT_MOVED", (char*) "moved"},
+            { MOO_FILE_WATCH_EVENT_ERROR, (char*) "MOO_FILE_WATCH_EVENT_ERROR", (char*) "error"},
             { 0, NULL, NULL }
         };
 
@@ -450,7 +461,7 @@ moo_file_watch_cancel_monitor (MooFileWatch   *watch,
                                    GINT_TO_POINTER (monitor_id));
     g_return_if_fail (monitor != NULL);
 
-    watch->priv->funcs.delete (monitor);
+    watch->priv->funcs.delete (watch, monitor);
     watch->priv->monitors = g_slist_remove (watch->priv->monitors, monitor);
     g_hash_table_remove (watch->priv->requests,
                          GINT_TO_POINTER (monitor_id));
@@ -464,7 +475,7 @@ emit_event (MooFileWatch       *watch,
     DEBUG_PRINT ("watch %p, monitor %d: event %s for %s",
                  watch, event->monitor_id,
                  event_code_strings[event->code],
-                 event->filename);
+                 event->filename ? event->filename : "<NULL>");
     g_signal_emit (watch, signals[EVENT], 0, event);
 }
 
@@ -498,10 +509,12 @@ moo_file_watch_close (MooFileWatch   *watch,
 
     watch->priv->alive = FALSE;
 
-    g_slist_foreach (watch->priv->monitors,
-                     (GFunc) watch->priv->funcs.delete, NULL);
-    g_slist_free (watch->priv->monitors);
-    watch->priv->monitors = NULL;
+    while (watch->priv->monitors)
+    {
+        watch->priv->funcs.delete (watch, watch->priv->monitors->data);
+        watch->priv->monitors =
+            g_slist_delete_link (watch->priv->monitors, watch->priv->monitors);
+    }
 
     return watch->priv->funcs.shutdown (watch, error);
 }
@@ -697,7 +710,8 @@ monitor_fam_resume (Monitor *monitor)
 
 
 static void
-monitor_fam_delete (Monitor *monitor)
+monitor_fam_delete (G_GNUC_UNUSED MooFileWatch *watch,
+                    Monitor *monitor)
 {
     FAMRequest fr;
     int result;
@@ -793,20 +807,21 @@ read_fam_events (G_GNUC_UNUSED GIOChannel *source,
         event.monitor_id = fe.fr.reqnum;
         event.filename = fe.filename;
         event.data = fe.userdata;
+        event.error = NULL;
 
         switch (fe.code)
         {
             case FAMChanged:
-                event.code = MOO_FILE_WATCH_CHANGED;
+                event.code = MOO_FILE_WATCH_EVENT_CHANGED;
                 break;
             case FAMDeleted:
-                event.code = MOO_FILE_WATCH_DELETED;
+                event.code = MOO_FILE_WATCH_EVENT_DELETED;
                 break;
             case FAMCreated:
-                event.code = MOO_FILE_WATCH_CREATED;
+                event.code = MOO_FILE_WATCH_EVENT_CREATED;
                 break;
             case FAMMoved:
-                event.code = MOO_FILE_WATCH_MOVED;
+                event.code = MOO_FILE_WATCH_EVENT_MOVED;
                 break;
 
             case FAMStartExecuting:
@@ -886,7 +901,9 @@ monitor_stat_create (MooFileWatch   *watch,
     g_return_val_if_fail (MOO_IS_FILE_WATCH (watch), NULL);
     g_return_val_if_fail (filename != NULL, NULL);
 
-    if (stat (filename, &buf))
+    errno = 0;
+
+    if (g_stat (filename, &buf) != 0)
     {
         int saved_errno = errno;
         g_set_error (error, MOO_FILE_WATCH_ERROR,
@@ -950,7 +967,8 @@ monitor_stat_resume (Monitor *monitor)
 
 
 static void
-monitor_stat_delete (Monitor *monitor)
+monitor_stat_delete (G_GNUC_UNUSED MooFileWatch *watch,
+                     Monitor *monitor)
 {
     g_return_if_fail (monitor != NULL);
     DEBUG_PRINT ("removing monitor for '%s'", monitor->filename);
@@ -991,9 +1009,11 @@ do_stat (MooFileWatch *watch)
 
         old = monitor->statbuf.st_mtime;
 
-        if (stat (monitor->filename, &monitor->statbuf))
+        errno = 0;
+
+        if (g_stat (monitor->filename, &monitor->statbuf) != 0)
         {
-            event.code = MOO_FILE_WATCH_DELETED;
+            event.code = MOO_FILE_WATCH_EVENT_DELETED;
             event.monitor_id = monitor->request;
             event.filename = monitor->filename;
             event.data = monitor->user_data;
@@ -1007,7 +1027,7 @@ do_stat (MooFileWatch *watch)
         }
         else if (monitor->statbuf.st_mtime > old)
         {
-            event.code = MOO_FILE_WATCH_CHANGED;
+            event.code = MOO_FILE_WATCH_EVENT_CHANGED;
             event.monitor_id = monitor->request;
             event.filename = monitor->filename;
             event.data = monitor->user_data;
@@ -1062,11 +1082,473 @@ errno_to_file_error (int code)
  */
 #ifdef __WIN32__
 
+typedef struct {
+    guint watch_id;
+    guint request;
+    char *path;
+} FAMThreadWatch;
+
+typedef struct {
+    GMutex *lock;
+    GAsyncQueue *incoming;
+    HANDLE events[MAXIMUM_WAIT_OBJECTS];
+    FAMThreadWatch watches[MAXIMUM_WAIT_OBJECTS];
+    guint n_events;
+} FAMThread;
+
+typedef enum {
+    COMMAND_ADD_PATH,
+    COMMAND_REMOVE_PATH
+} FAMThreadCommandType;
+
+typedef struct {
+    FAMThreadCommandType type;
+    char *path;
+    guint watch_id;
+    guint request;
+} FAMThreadCommand;
+
+typedef struct {
+    FAMThread thread_data;
+    guint event_id;
+    gboolean running;
+    GSList *watches;
+} FAMWin32;
+
+typedef struct {
+    gboolean error;
+    guint watch_id;
+    guint request;
+    guint code;
+    char *msg;
+} FAMEvent;
+
+static FAMWin32 *fam;
+static guint last_watch_id;
+
+/****************************************************************************/
+/* Watch thread
+ */
+
+static void
+fam_event_free (FAMEvent *event)
+{
+    if (event)
+    {
+        g_free (event->msg);
+        g_free (event);
+    }
+}
+
+static void
+fam_thread_event (guint       code,
+                  gboolean    error,
+                  const char *msg,
+                  guint       watch_id,
+                  guint       request)
+{
+    FAMEvent *event = g_new0 (FAMEvent, 1);
+    event->error = error;
+    event->code = code;
+    event->watch_id = watch_id;
+    event->request = request;
+    event->msg = g_strdup (msg);
+    _moo_event_queue_push (fam->event_id, event, (GDestroyNotify) fam_event_free);
+}
+
+static void
+fam_thread_add_path (FAMThread  *thr,
+                     const char *path,
+                     guint       watch_id,
+                     guint       request)
+{
+    gunichar2 *win_path;
+
+    if (thr->n_events == MAXIMUM_WAIT_OBJECTS)
+    {
+        g_critical ("%s: too many folders watched", G_STRLOC);
+        return;
+    }
+
+    win_path = g_utf8_to_utf16 (path, -1, NULL, NULL, NULL);
+
+    if (!win_path)
+    {
+        char *msg = g_strdup_printf ("Could not convert filename '%s' to UTF16",
+                                     path);
+        fam_thread_event (MOO_FILE_WATCH_ERROR_BAD_FILENAME, TRUE, msg, watch_id, request);
+        g_free (msg);
+        return;
+    }
+
+    thr->events[thr->n_events] =
+        FindFirstChangeNotificationW (win_path, FALSE,
+                                      FILE_NOTIFY_CHANGE_FILE_NAME |
+                                      FILE_NOTIFY_CHANGE_DIR_NAME);
+
+    if (thr->events[thr->n_events] == INVALID_HANDLE_VALUE)
+    {
+        char *err = g_win32_error_message (GetLastError ());
+        char *msg = g_strdup_printf ("Could not convert start watch for '%s': %s", path, err);
+        fam_thread_event (MOO_FILE_WATCH_ERROR_FAILED, TRUE, msg, watch_id, request);
+        g_free (msg);
+        g_free (err);
+        return;
+    }
+
+    thr->watches[thr->n_events].watch_id = watch_id;
+    thr->watches[thr->n_events].request = request;
+    thr->watches[thr->n_events].path = g_strdup (path);
+
+    thr->n_events += 1;
+}
+
+static void
+fam_thread_remove_path (FAMThread  *thr,
+                        guint       watch_id,
+                        guint       request)
+{
+    guint i;
+
+    for (i = 1; i < thr->n_events; ++i)
+    {
+        if (thr->watches[i].watch_id == watch_id &&
+            thr->watches[i].request == request)
+        {
+            FindCloseChangeNotification (thr->events[i]);
+            g_free (thr->watches[i].path);
+
+            if (i < thr->n_events - 1)
+            {
+                memmove (&thr->watches[i], &thr->watches[i+1],
+                         (thr->n_events - i - 1) * sizeof(thr->watches[i]));
+                memmove (&thr->events[i], &thr->events[i+1],
+                         (thr->n_events - i - 1) * sizeof(thr->events[i]));
+            }
+
+            thr->n_events -= 1;
+
+            return;
+        }
+    }
+
+    g_critical ("%s: can't remove watch %d, request %d",
+                G_STRLOC, watch_id, request);
+}
+
+static void
+fam_thread_check_dir (FAMThread *thr,
+                      guint      idx)
+{
+    struct stat buf;
+
+    errno = 0;
+
+    if (g_stat (thr->watches[idx].path, &buf) != 0 &&
+        errno == ENOENT)
+    {
+        fam_thread_event (MOO_FILE_WATCH_EVENT_DELETED,
+                          FALSE, NULL,
+                          thr->watches[idx].watch_id,
+                          thr->watches[idx].request);
+        fam_thread_remove_path (thr,
+                                thr->watches[idx].watch_id,
+                                thr->watches[idx].request);
+    }
+    else
+    {
+        fam_thread_event (MOO_FILE_WATCH_EVENT_CHANGED,
+                          FALSE, NULL,
+                          thr->watches[idx].watch_id,
+                          thr->watches[idx].request);
+
+        if (!FindNextChangeNotification (thr->events[idx]))
+        {
+            char *err = g_win32_error_message (GetLastError ());
+            char *msg = g_strdup_printf ("Error in FindNextChangeNotification: %s", err);
+
+            fam_thread_event (MOO_FILE_WATCH_ERROR_FAILED, TRUE, msg,
+                              thr->watches[idx].watch_id,
+                              thr->watches[idx].request);
+            fam_thread_remove_path (thr,
+                                    thr->watches[idx].watch_id,
+                                    thr->watches[idx].request);
+
+            g_free (msg);
+            g_free (err);
+        }
+    }
+}
+
+static void
+fam_thread_do_command (FAMThread *thr)
+{
+    FAMThreadCommand *cmd;
+    GSList *list = NULL;
+
+    DEBUG_PRINT ("fam_thread_do_command start");
+
+    g_mutex_lock (thr->lock);
+    while ((cmd = g_async_queue_try_pop (thr->incoming)))
+        list = g_slist_prepend (list, cmd);
+    ResetEvent (thr->events[0]);
+    g_mutex_unlock (thr->lock);
+
+    list = g_slist_reverse (list);
+
+    while (list)
+    {
+        cmd = list->data;
+
+        switch (cmd->type)
+        {
+            case COMMAND_ADD_PATH:
+                fam_thread_add_path (thr, cmd->path, cmd->watch_id, cmd->request);
+                break;
+
+            case COMMAND_REMOVE_PATH:
+                fam_thread_remove_path (thr, cmd->watch_id, cmd->request);
+                break;
+        }
+
+        list = g_slist_delete_link (list, list);
+        g_free (cmd->path);
+        g_free (cmd);
+    }
+
+    DEBUG_PRINT ("fam_thread_do_command end");
+}
+
+
+static gpointer
+fam_thread_main (FAMThread *thr)
+{
+    while (TRUE)
+    {
+        int ret;
+
+        DEBUG_PRINT ("calling WaitForMultipleObjects for %d handles", thr->n_events);
+        ret = WaitForMultipleObjects (thr->n_events, thr->events, FALSE, INFINITE);
+        DEBUG_PRINT ("WaitForMultipleObjects returned %d", ret);
+
+        if (ret == (int) WAIT_FAILED)
+        {
+            char *msg = g_win32_error_message (GetLastError ());
+            g_critical ("%s: %s", G_STRLOC, msg);
+            g_free (msg);
+            break;
+        }
+
+        if (ret == WAIT_OBJECT_0)
+            fam_thread_do_command (thr);
+        else if (WAIT_OBJECT_0 < ret && ret < (int) thr->n_events)
+            fam_thread_check_dir (thr, ret - WAIT_OBJECT_0);
+        else
+        {
+            g_critical ("%s: oops", G_STRLOC);
+            break;
+        }
+    }
+
+    /* XXX cleanup */
+    return NULL;
+}
+
+static void
+fam_thread_command (FAMThreadCommandType type,
+                    const char          *filename,
+                    guint                watch_id,
+                    guint                request)
+{
+    FAMThreadCommand *cmd;
+
+    cmd = g_new0 (FAMThreadCommand, 1);
+    cmd->type = type;
+    cmd->path = g_strdup (filename);
+    cmd->watch_id = watch_id;
+    cmd->request = request;
+
+    g_mutex_lock (fam->thread_data.lock);
+    g_async_queue_push (fam->thread_data.incoming, cmd);
+    SetEvent (fam->thread_data.events[0]);
+    g_mutex_unlock (fam->thread_data.lock);
+}
+
+/****************************************************************************/
+/* Monitors
+ */
+
+static MooFileWatch *
+find_watch (guint id)
+{
+    GSList *l;
+
+    for (l = fam->watches; l != NULL; l = l->next)
+    {
+        MooFileWatch *watch = l->data;
+        if (watch->priv->id == id)
+            return watch;
+    }
+
+    return NULL;
+}
+
+static void
+do_event (FAMEvent *event)
+{
+    MooFileWatch *watch;
+    Monitor *monitor;
+    MooFileWatchEvent watch_event;
+
+    watch = find_watch (event->watch_id);
+
+    if (!watch)
+    {
+        DEBUG_PRINT ("got event for dead watch %d", event->watch_id);
+        return;
+    }
+
+    monitor = g_hash_table_lookup (watch->priv->requests,
+                                   GUINT_TO_POINTER (event->request));
+
+    if (!monitor)
+    {
+        DEBUG_PRINT ("got event for dead monitor %d", event->request);
+        return;
+    }
+
+    watch_event.monitor_id = event->request;
+    watch_event.filename = monitor->filename;
+    watch_event.data = monitor->user_data;
+    watch_event.error = NULL;
+
+    if (event->error)
+    {
+        watch_event.code = MOO_FILE_WATCH_EVENT_ERROR;
+        g_set_error (&watch_event.error, MOO_FILE_WATCH_ERROR,
+                     event->code,
+                     event->msg ? event->msg : "FAILED");
+        DEBUG_PRINT ("got error for watch %d: %s", event->watch_id, watch_event.error->message);
+    }
+    else
+    {
+        DEBUG_PRINT ("got event for filename %s", monitor->filename);
+        watch_event.code = event->code;
+    }
+
+    emit_event (watch, &watch_event);
+
+    if (watch_event.error)
+        g_error_free (watch_event.error);
+}
+
+static void
+event_callback (GList *events)
+{
+    GList *trimmed = NULL;
+
+    while (events)
+    {
+        GList *l;
+        FAMEvent *event = events->data;
+        gboolean found = FALSE;
+
+        event = events->data;
+        events = events->next;
+
+        for (l = trimmed; l != NULL; l = l->next)
+        {
+            FAMEvent *old_event = l->data;
+
+            if (old_event->watch_id == event->watch_id &&
+                old_event->request == event->request)
+            {
+                found = TRUE;
+
+                if (!old_event->error && event->error)
+                    l->data = event;
+
+                break;
+            }
+        }
+
+        if (!found)
+            trimmed = g_list_prepend (trimmed, event);
+    }
+
+    trimmed = g_list_reverse (trimmed);
+
+    while (trimmed)
+    {
+        do_event (trimmed->data);
+        trimmed = g_list_delete_link (trimmed, trimmed);
+    }
+}
+
+static gboolean
+fam_win32_init (void)
+{
+    if (!fam)
+    {
+        GError *error = NULL;
+
+        fam = g_new0 (FAMWin32, 1);
+        fam->running = FALSE;
+
+        fam->thread_data.n_events = 1;
+        fam->thread_data.events[0] = CreateEvent (NULL, TRUE, FALSE, NULL);;
+
+        if (!fam->thread_data.events[0])
+        {
+            char *msg = g_win32_error_message (GetLastError ());
+            g_critical ("%s: could not create incoming event", G_STRLOC);
+            g_critical ("%s: %s", G_STRLOC, msg);
+            g_free (msg);
+            return FALSE;
+        }
+
+        fam->thread_data.incoming = g_async_queue_new ();
+        fam->thread_data.lock = g_mutex_new ();
+        fam->event_id = _moo_event_queue_connect ((MooEventQueueCallback) event_callback,
+                                                  NULL, NULL);
+
+        if (!g_thread_create ((GThreadFunc) fam_thread_main, &fam->thread_data, FALSE, &error))
+        {
+            g_critical ("%s: could not start watch thread", G_STRLOC);
+            g_critical ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
+        else
+        {
+            fam->running = TRUE;
+            DEBUG_PRINT ("initialized folder watch");
+        }
+    }
+
+    return fam->running;
+}
+
 static gboolean
 watch_win32_start (MooFileWatch   *watch,
                    GError        **error)
 {
-    return watch_stat_start (watch, error);
+    if (!watch_stat_start (watch, error))
+        return FALSE;
+
+    if (!fam_win32_init ())
+    {
+        g_set_error (error, MOO_FILE_WATCH_ERROR,
+                     MOO_FILE_WATCH_ERROR_FAILED,
+                     "Could not initialize folder watch thread");
+        watch_stat_shutdown (watch, NULL);
+        return FALSE;
+    }
+
+    watch->priv->id = ++last_watch_id;
+    fam->watches = g_slist_prepend (fam->watches, watch);
+    DEBUG_PRINT ("started watch %d", watch->priv->id);
+
+    return TRUE;
 }
 
 
@@ -1086,20 +1568,61 @@ monitor_win32_create (MooFileWatch   *watch,
                       int            *request,
                       GError        **error)
 {
+    Monitor *monitor;
+    struct stat buf;
+
+    g_return_val_if_fail (MOO_IS_FILE_WATCH (watch), NULL);
     g_return_val_if_fail (filename != NULL, FALSE);
 
     if (type == MONITOR_FILE)
         return monitor_stat_create (watch, type, filename, data, request, error);
 
-#ifdef __GNUC__
-#warning "Implement monitor_win32_create()"
-#endif
+    errno = 0;
 
-    g_set_error (error, MOO_FILE_WATCH_ERROR,
-                 MOO_FILE_WATCH_ERROR_NOT_IMPLEMENTED,
-                 "watching folders is not implemented on win32");
+    if (g_stat (filename, &buf) != 0)
+    {
+        int saved_errno = errno;
+        g_set_error (error, MOO_FILE_WATCH_ERROR,
+                     errno_to_file_error (saved_errno),
+                     "stat: %s", g_strerror (saved_errno));
+        return NULL;
+    }
 
-    return NULL;
+    if (type == MONITOR_DIR && !S_ISDIR (buf.st_mode))
+    {
+        char *display_name = g_filename_display_name (filename);
+        g_set_error (error, MOO_FILE_WATCH_ERROR,
+                     MOO_FILE_WATCH_ERROR_NOT_DIR,
+                     "%s is not a directory", display_name);
+        g_free (display_name);
+        return NULL;
+    }
+    else if (type == MONITOR_FILE && S_ISDIR (buf.st_mode)) /* it's fatal on windows */
+    {
+        char *display_name = g_filename_display_name (filename);
+        g_set_error (error, MOO_FILE_WATCH_ERROR,
+                     MOO_FILE_WATCH_ERROR_IS_DIR,
+                     "%s is a directory", display_name);
+        g_free (display_name);
+        return NULL;
+    }
+
+    DEBUG_PRINT ("created monitor for '%s'", filename);
+
+    monitor = g_new0 (Monitor, 1);
+    monitor->parent = watch;
+    monitor->type = type;
+    monitor->filename = g_strdup (filename);
+    monitor->user_data = data;
+    monitor->request = ++last_monitor_id;
+    monitor->suspended = FALSE;
+
+    if (request)
+        *request = monitor->request;
+
+    fam_thread_command (COMMAND_ADD_PATH, filename, watch->priv->id, monitor->request);
+
+    return monitor;
 }
 
 
@@ -1112,9 +1635,12 @@ monitor_win32_suspend (Monitor *monitor)
         return;
 
     if (monitor->type == MONITOR_FILE)
-        return monitor_stat_suspend (monitor);
+    {
+        monitor_stat_suspend (monitor);
+        return;
+    }
 
-    g_return_if_reached ();
+    g_critical ("%s: implement me", G_STRFUNC);
 }
 
 
@@ -1127,20 +1653,30 @@ monitor_win32_resume (Monitor *monitor)
         return;
 
     if (monitor->type == MONITOR_FILE)
-        return monitor_stat_resume (monitor);
+    {
+        monitor_stat_resume (monitor);
+        return;
+    }
 
-    g_return_if_reached ();
+    g_critical ("%s: implement me", G_STRFUNC);
 }
 
 
 static void
-monitor_win32_delete (Monitor *monitor)
+monitor_win32_delete (MooFileWatch *watch,
+                      Monitor      *monitor)
 {
     g_return_if_fail (monitor != NULL);
 
     if (monitor->type == MONITOR_FILE)
-        return monitor_stat_delete (monitor);
+    {
+        monitor_stat_delete (watch, monitor);
+        return;
+    }
 
-    g_return_if_reached ();
+    DEBUG_PRINT ("removing monitor for '%s'", monitor->filename);
+    fam_thread_command (COMMAND_REMOVE_PATH, monitor->filename, watch->priv->id, monitor->request);
+    g_free (monitor->filename);
+    g_free (monitor);
 }
 #endif /* __WIN32__ */

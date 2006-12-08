@@ -828,16 +828,20 @@ fam_event (MooFolder         *folder,
 
     switch (event->code)
     {
-        case MOO_FILE_WATCH_CHANGED:
+        case MOO_FILE_WATCH_EVENT_CHANGED:
             file_changed (folder, event->filename);
             break;
-        case MOO_FILE_WATCH_DELETED:
+        case MOO_FILE_WATCH_EVENT_DELETED:
             file_deleted (folder, event->filename);
             break;
-        case MOO_FILE_WATCH_CREATED:
+        case MOO_FILE_WATCH_EVENT_CREATED:
             file_created (folder, event->filename);
             break;
-        default:
+        case MOO_FILE_WATCH_EVENT_ERROR:
+            /* XXX */
+            file_deleted (folder, folder->priv->path);
+            break;
+        case MOO_FILE_WATCH_EVENT_MOVED:
             break;
     }
 }
@@ -869,7 +873,7 @@ start_monitor (MooFolder *folder)
 
     if (!folder->priv->fam_request)
     {
-        g_warning ("%s: moo_fam_monitor_directory failed", G_STRLOC);
+        g_warning ("%s: moo_fam_monitor_directory failed for path '%s'", G_STRLOC, folder->priv->path);
         g_warning ("%s: %s", G_STRLOC, error->message);
         g_error_free (error);
         return;
@@ -1259,10 +1263,6 @@ _moo_file_unref (MooFile *file)
 }
 
 
-#ifdef __WIN32__
-#define lstat stat
-#endif
-
 static void
 moo_file_stat_unix (MooFile    *file,
                     const char *dirname)
@@ -1279,7 +1279,9 @@ moo_file_stat_unix (MooFile    *file,
     g_free (file->link_target);
     file->link_target = NULL;
 
-    if (lstat (fullname, &file->statbuf) != 0)
+    errno = 0;
+
+    if (g_lstat (fullname, &file->statbuf) != 0)
     {
         if (errno == ENOENT)
         {
@@ -1310,8 +1312,9 @@ moo_file_stat_unix (MooFile    *file,
             gssize len;
 
             file->info |= MOO_FILE_INFO_IS_LINK;
+            errno = 0;
 
-            if (stat (fullname, &file->statbuf) != 0)
+            if (g_stat (fullname, &file->statbuf) != 0)
             {
                 if (errno == ENOENT)
                 {
