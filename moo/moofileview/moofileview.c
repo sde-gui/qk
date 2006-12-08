@@ -1076,8 +1076,8 @@ init_actions (MooFileView *fileview)
                                  NULL);
 
     action = moo_action_group_add_action (group, "GoBack",
-                                          "label", _("Go Back"),
-                                          "tooltip", _("Go Back"),
+                                          "label", GTK_STOCK_GO_BACK,
+                                          "tooltip", GTK_STOCK_GO_BACK,
                                           "stock-id", GTK_STOCK_GO_BACK,
                                           "accel", "<alt>Left",
                                           "force-accel-label", TRUE,
@@ -1087,8 +1087,8 @@ init_actions (MooFileView *fileview)
     moo_bind_bool_property (action, "sensitive", fileview, "can-go-back", FALSE);
 
     action = moo_action_group_add_action (group, "GoForward",
-                                          "label", _("Go Forward"),
-                                          "tooltip", _("Go Forward"),
+                                          "label", GTK_STOCK_GO_FORWARD,
+                                          "tooltip", GTK_STOCK_GO_FORWARD,
                                           "stock-id", GTK_STOCK_GO_FORWARD,
                                           "accel", "<alt>Right",
                                           "force-accel-label", TRUE,
@@ -1098,8 +1098,8 @@ init_actions (MooFileView *fileview)
     moo_bind_bool_property (action, "sensitive", fileview, "can-go-forward", FALSE);
 
     moo_action_group_add_action (group, "GoHome",
-                                 "label", _("Home Folder"),
-                                 "tooltip", _("Home Folder"),
+                                 "label", GTK_STOCK_HOME,
+                                 "tooltip", GTK_STOCK_HOME,
                                  "stock-id", GTK_STOCK_HOME,
                                  "accel", "<alt>Home",
                                  "force-accel-label", TRUE,
@@ -1150,8 +1150,8 @@ init_actions (MooFileView *fileview)
     _moo_sync_toggle_action (action, fileview, "sort-case-sensitive", FALSE);
 
     action = moo_action_group_add_action (group, "Properties",
-                                          "label", _("Properties"),
-                                          "tooltip", _("Properties"),
+                                          "label", GTK_STOCK_PROPERTIES,
+                                          "tooltip", GTK_STOCK_PROPERTIES,
                                           "stock-id", GTK_STOCK_PROPERTIES,
                                           "accel", "<alt>Return",
                                           "force-accel-label", TRUE,
@@ -1186,8 +1186,8 @@ init_actions (MooFileView *fileview)
                                  NULL);
 
     action = moo_action_group_add_action (group, "Cut",
-                                          "label", _("Cut"),
-                                          "tooltip", _("Cut"),
+                                          "label", GTK_STOCK_CUT,
+                                          "tooltip", GTK_STOCK_CUT,
                                           "stock-id", GTK_STOCK_CUT,
                                           "accel", "<control>X",
                                           "force-accel-label", TRUE,
@@ -1197,8 +1197,8 @@ init_actions (MooFileView *fileview)
     moo_bind_bool_property (action, "sensitive", fileview, "has-selection", FALSE);
 
     action = moo_action_group_add_action (group, "Copy",
-                                          "label", _("Copy"),
-                                          "tooltip", _("Copy"),
+                                          "label", GTK_STOCK_COPY,
+                                          "tooltip", GTK_STOCK_COPY,
                                           "stock-id", GTK_STOCK_COPY,
                                           "force-accel-label", TRUE,
                                           "accel", "<control>C",
@@ -1208,8 +1208,8 @@ init_actions (MooFileView *fileview)
     moo_bind_bool_property (action, "sensitive", fileview, "has-selection", FALSE);
 
     action = moo_action_group_add_action (group, "Paste",
-                                          "label", _("Paste"),
-                                          "tooltip", _("Paste"),
+                                          "label", GTK_STOCK_PASTE,
+                                          "tooltip", GTK_STOCK_PASTE,
                                           "stock-id", GTK_STOCK_PASTE,
                                           "accel", "<control>V",
                                           "force-accel-label", TRUE,

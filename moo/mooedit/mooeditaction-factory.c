@@ -566,47 +566,47 @@ void
 _moo_edit_class_init_actions (MooEditClass *klass)
 {
     moo_edit_class_new_action (klass, "Undo",
-                               "display-name", "Undo",
-                               "label", "_Undo",
-                               "tooltip", "Undo",
+                               "display-name", GTK_STOCK_UNDO,
+                               "label", GTK_STOCK_UNDO,
+                               "tooltip", GTK_STOCK_UNDO,
                                "stock-id", GTK_STOCK_UNDO,
                                "closure-signal", "undo",
                                "condition::sensitive", "can-undo",
                                NULL);
 
     moo_edit_class_new_action (klass, "Redo",
-                               "display-name", "Redo",
-                               "label", "_Redo",
-                               "tooltip", "Redo",
+                               "display-name", GTK_STOCK_REDO,
+                               "label", GTK_STOCK_REDO,
+                               "tooltip", GTK_STOCK_REDO,
                                "stock-id", GTK_STOCK_REDO,
                                "closure-signal", "redo",
                                "condition::sensitive", "can-redo",
                                NULL);
 
     moo_edit_class_new_action (klass, "Cut",
-                               "display-name", "Cut",
+                               "display-name", GTK_STOCK_CUT,
                                "stock-id", GTK_STOCK_CUT,
                                "closure-signal", "cut-clipboard",
                                "condition::sensitive", "has-selection",
                                NULL);
 
     moo_edit_class_new_action (klass, "Copy",
-                               "display-name", "Copy",
+                               "display-name", GTK_STOCK_COPY,
                                "stock-id", GTK_STOCK_COPY,
                                "closure-signal", "copy-clipboard",
                                "condition::sensitive", "has-selection",
                                NULL);
 
     moo_edit_class_new_action (klass, "Paste",
-                               "display-name", "Paste",
+                               "display-name", GTK_STOCK_PASTE,
                                "stock-id", GTK_STOCK_PASTE,
                                "closure-signal", "paste-clipboard",
                                NULL);
 
     moo_edit_class_new_action (klass, "SelectAll",
-                               "display-name", "Select All",
-                               "label", "Select _All",
-                               "tooltip", "Select all",
+                               "display-name", GTK_STOCK_SELECT_ALL,
+                               "label", GTK_STOCK_SELECT_ALL,
+                               "tooltip", GTK_STOCK_SELECT_ALL,
                                "stock-id", GTK_STOCK_SELECT_ALL,
                                "closure-callback", moo_text_view_select_all,
                                "condition::sensitive", "has-text",

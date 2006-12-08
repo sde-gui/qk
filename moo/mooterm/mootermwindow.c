@@ -20,6 +20,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooprefs.h"
+#include "mooutils/moocompat.h"
 
 
 static void         moo_term_window_class_init  (MooTermWindowClass *klass);
@@ -72,9 +73,9 @@ static void moo_term_window_class_init (MooTermWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "SelectAll", NULL,
-                                 "display-name", "Select All",
-                                 "label", "Select _All",
-                                 "tooltip", "Select all",
+                                 "display-name", GTK_STOCK_SELECT_ALL,
+                                 "label", GTK_STOCK_SELECT_ALL,
+                                 "tooltip", GTK_STOCK_SELECT_ALL,
                                  "accel", "<alt>A",
                                  "closure-callback", moo_term_select_all,
                                  "closure-proxy-func", moo_term_window_get_term,

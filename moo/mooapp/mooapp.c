@@ -98,10 +98,9 @@ static MooAppInfo *moo_app_info_new     (void);
 static MooAppInfo *moo_app_info_copy    (const MooAppInfo   *info);
 static void     moo_app_info_free       (MooAppInfo         *info);
 
-static void     install_actions         (MooApp             *app,
-                                         GType               type);
-static void     install_editor_actions  (MooApp             *app);
-static void     install_terminal_actions(MooApp             *app);
+static void     install_actions         (GType               type);
+static void     install_editor_actions  (void);
+static void     install_terminal_actions(void);
 
 static void     moo_app_set_property    (GObject            *object,
                                          guint               prop_id,
@@ -423,8 +422,8 @@ moo_app_constructor (GType           type,
     signal (SIGINT, sigint_handler);
 #endif
 
-    install_editor_actions (app);
-    install_terminal_actions (app);
+    install_editor_actions ();
+    install_terminal_actions ();
 
     return object;
 }
@@ -1158,15 +1157,11 @@ moo_app_set_description (MooApp     *app,
 
 
 static void
-install_actions (MooApp *app,
-                 GType   type)
+install_actions (GType type)
 {
     MooWindowClass *klass = g_type_class_ref (type);
-    char *_about;
 
     g_return_if_fail (klass != NULL);
-
-    _about = g_strdup_printf (Q_("Menu item label|_About %s"), app->priv->info->full_name);
 
     moo_window_class_new_action (klass, "Preferences", NULL,
                                  "display-name", GTK_STOCK_PREFERENCES,
@@ -1178,19 +1173,18 @@ install_actions (MooApp *app,
 
     moo_window_class_new_action (klass, "About", NULL,
                                  "display-name", GTK_STOCK_ABOUT,
-                                 "label", _about,
+                                 "label", GTK_STOCK_ABOUT,
                                  "no-accel", TRUE,
                                  "stock-id", GTK_STOCK_ABOUT,
                                  "closure-callback", moo_app_about_dialog,
                                  NULL);
 
     g_type_class_unref (klass);
-    g_free (_about);
 }
 
 
 static void
-install_editor_actions (MooApp *app)
+install_editor_actions (void)
 {
 #ifdef MOO_BUILD_EDIT
     MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
@@ -1207,7 +1201,7 @@ install_editor_actions (MooApp *app)
                                  "closure-proxy-func", moo_app_get_instance,
                                  NULL);
 
-    install_actions (app, MOO_TYPE_EDIT_WINDOW);
+    install_actions (MOO_TYPE_EDIT_WINDOW);
 
     g_type_class_unref (klass);
 #endif /* MOO_BUILD_EDIT */
@@ -1232,13 +1226,13 @@ open_in_editor (MooTermWindow *terminal)
 
 
 static void
-install_terminal_actions (MooApp *app)
+install_terminal_actions (void)
 {
     MooWindowClass *klass = g_type_class_ref (MOO_TYPE_TERM_WINDOW);
 
     g_return_if_fail (klass != NULL);
 
-    install_actions (app, MOO_TYPE_TERM_WINDOW);
+    install_actions (MOO_TYPE_TERM_WINDOW);
 
     moo_window_class_new_action (klass, "NewEditor", NULL,
                                  "display-name", "New Editor",
@@ -1263,7 +1257,7 @@ install_terminal_actions (MooApp *app)
 }
 #else /* !(defined(MOO_BUILD_TERM) && defined(MOO_BUILD_EDIT)) */
 static void
-install_terminal_actions (G_GNUC_UNUSED MooApp *app)
+install_terminal_actions (void)
 {
 }
 #endif /* !(defined(MOO_BUILD_TERM) && defined(MOO_BUILD_EDIT)) */
