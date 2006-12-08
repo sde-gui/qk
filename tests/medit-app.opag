@@ -256,6 +256,11 @@ main (int argc, char *argv[])
     guint32 line = 0;
     const char *pid_string = NULL;
 
+#ifdef __WIN32__
+    g_thread_init (NULL);
+    gdk_threads_init ();
+#endif
+
     init_mem_stuff ();
 
     gtk_init (&argc, &argv);
@@ -383,7 +388,9 @@ main (int argc, char *argv[])
     g_signal_connect_swapped (editor, "all-windows-closed",
                               G_CALLBACK (moo_app_quit), app);
 
+    gdk_threads_enter ();
     retval = moo_app_run (app);
+    gdk_threads_leave ();
 
     g_object_unref (app);
     return retval;
