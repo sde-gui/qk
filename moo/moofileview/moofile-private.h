@@ -28,12 +28,6 @@ G_BEGIN_DECLS
 #define MOO_TYPE_FILE               (_moo_file_get_type ())
 #define MOO_TYPE_FILE_INFO          (_moo_file_info_get_type ())
 #define MOO_TYPE_FILE_FLAGS         (_moo_file_flags_get_type ())
-#define MOO_TYPE_FOLDER             (_moo_folder_get_type ())
-#define MOO_FOLDER(object)          (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FOLDER, MooFolder))
-#define MOO_FOLDER_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FOLDER, MooFolderClass))
-#define MOO_IS_FOLDER(object)       (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_FOLDER))
-#define MOO_IS_FOLDER_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FOLDER))
-#define MOO_FOLDER_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FOLDER, MooFolderClass))
 
 #ifdef __WIN32__
 /* FILETIME */
@@ -45,37 +39,6 @@ typedef GTime MooFileTime;
 #endif
 
 typedef gint64 MooFileSize;
-
-typedef struct _MooFolderPrivate MooFolderPrivate;
-typedef struct _MooFolderClass   MooFolderClass;
-typedef struct _MooFileSystem    MooFileSystem;
-
-/* should be ordered TODO why? */
-typedef enum {
-    MOO_FILE_HAS_STAT       = 1 << 1,
-    MOO_FILE_HAS_MIME_TYPE  = 1 << 2,
-    MOO_FILE_HAS_ICON       = 1 << 3,
-    MOO_FILE_ALL_FLAGS      = (1 << 4) - 1
-} MooFileFlags;
-
-struct _MooFolder
-{
-    GObject         parent;
-    MooFolderPrivate *priv;
-};
-
-struct _MooFolderClass
-{
-    GObjectClass    parent_class;
-
-    void     (*deleted)         (MooFolder  *folder);
-    void     (*files_added)     (MooFolder  *folder,
-                                 GSList     *files);
-    void     (*files_changed)   (MooFolder  *folder,
-                                 GSList     *files);
-    void     (*files_removed)   (MooFolder  *folder,
-                                 GSList     *files);
-};
 
 struct _MooFile
 {
@@ -97,7 +60,9 @@ struct _MooFile
 GType        _moo_file_get_type         (void) G_GNUC_CONST;
 GType        _moo_file_flags_get_type   (void) G_GNUC_CONST;
 GType        _moo_file_info_get_type    (void) G_GNUC_CONST;
-GType        _moo_folder_get_type       (void) G_GNUC_CONST;
+
+MooFile     *_moo_file_new              (const char     *dirname,
+                                         const char     *basename);
 
 MooFile     *_moo_file_ref              (MooFile        *file);
 void         _moo_file_unref            (MooFile        *file);
@@ -118,36 +83,19 @@ const char  *_moo_file_collation_key    (const MooFile  *file);
 const char  *_moo_file_case_display_name(const MooFile *file);
 
 #ifndef __WIN32__
-gconstpointer _moo_file_get_stat        (const MooFile  *file);
+const struct stat *_moo_file_get_stat   (const MooFile  *file);
 const char  *_moo_file_link_get_target  (const MooFile  *file);
 #endif
 
-const char  *_moo_folder_get_path       (MooFolder      *folder);
-/* list should be freed and elements unref'ed */
-GSList      *_moo_folder_list_files     (MooFolder      *folder);
-MooFile     *_moo_folder_get_file       (MooFolder      *folder,
-                                         const char     *basename);
-char        *_moo_folder_get_file_path  (MooFolder      *folder,
-                                         MooFile        *file);
-char        *_moo_folder_get_file_uri   (MooFolder      *folder,
-                                         MooFile        *file);
-/* result should be unref'ed */
-MooFolder   *_moo_folder_get_parent     (MooFolder      *folder,
-                                         MooFileFlags    wanted);
-char        *_moo_folder_get_parent_path(MooFolder      *folder);
-
-char       **_moo_folder_get_file_info  (MooFolder      *folder,
-                                         MooFile        *file);
-void         _moo_folder_reload         (MooFolder      *folder);
-
-
-MooFolder   *_moo_folder_new            (MooFileSystem  *fs,
-                                         const char     *path,
-                                         MooFileFlags    wanted,
-                                         GError        **error);
-void         _moo_folder_set_wanted     (MooFolder      *folder,
-                                         MooFileFlags    wanted,
-                                         gboolean        bit_now);
+guint8       _moo_file_icon_blank       (void);
+guint8       _moo_file_get_icon_type    (MooFile        *file,
+                                         const char     *dirname);
+void         _moo_file_stat             (MooFile        *file,
+                                         const char     *dirname);
+#ifndef __WIN32__
+void         _moo_file_find_mime_type   (MooFile        *file,
+                                         const char     *path);
+#endif
 
 
 G_END_DECLS

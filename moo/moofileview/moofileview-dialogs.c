@@ -14,6 +14,7 @@
 #define MOO_FILE_VIEW_COMPILATION
 #include "moofileview/moofileview-dialogs.h"
 #include "moofileview/moofilesystem.h"
+#include "moofileview/moofile-private.h"
 #include "moofileview/moofileprops-glade.h"
 #include "moofileview/moocreatefolder-glade.h"
 #include "moofileview/moofileviewdrop-glade.h"

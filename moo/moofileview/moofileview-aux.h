@@ -15,6 +15,7 @@
 #error "This file may not be included"
 #endif
 
+#include "moofileview/moofile-private.h"
 #include <string.h>
 #include <glib.h>
 

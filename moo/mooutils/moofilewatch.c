@@ -44,7 +44,7 @@
 #include "mooutils/moocompat.h"
 
 
-#if 1 || defined(__WIN32__) && 0
+#if 0 || defined(__WIN32__) && 0
 #define DEBUG_PRINT g_message
 #else
 static void DEBUG_PRINT (G_GNUC_UNUSED const char *format, ...)
@@ -1037,6 +1037,7 @@ typedef struct {
     HANDLE events[MAXIMUM_WAIT_OBJECTS];
     FAMThreadWatch watches[MAXIMUM_WAIT_OBJECTS];
     guint n_events;
+    gboolean running;
 } FAMThread;
 
 typedef enum {

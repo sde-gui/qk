@@ -13,6 +13,7 @@
 
 #define MOO_FILE_VIEW_COMPILATION
 #include "moofilesystem.h"
+#include "moofolder-private.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/moomarshals.h"
 #include <string.h>
@@ -25,16 +26,23 @@
 #endif
 
 #define BROKEN_NAME "<" "????" ">"
+#define FOLDERS_CACHE_SIZE 10
+
+typedef struct {
+    GQueue *queue;
+    GHashTable *paths;
+} FoldersCache;
 
 struct _MooFileSystemPrivate {
     GHashTable *folders;
     MooFileWatch *fam;
+    FoldersCache cache;
 };
 
 static MooFileSystem *fs_instance = NULL;
 
 
-static void moo_file_system_finalize    (GObject        *object);
+static void moo_file_system_dispose (GObject *object);
 
 static MooFolder   *get_folder              (MooFileSystem  *fs,
                                              const char     *path,
@@ -113,7 +121,7 @@ _moo_file_system_class_init (MooFileSystemClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
-    gobject_class->finalize = moo_file_system_finalize;
+    gobject_class->dispose = moo_file_system_dispose;
 
     klass->get_folder = get_folder;
     klass->create_folder = create_folder;
@@ -139,30 +147,76 @@ _moo_file_system_class_init (MooFileSystemClass *klass)
 
 
 static void
-_moo_file_system_init (MooFileSystem *fs)
+add_folder_cache (MooFileSystem *fs,
+                  MooFolderImpl *impl)
 {
-    fs->priv = g_new0 (MooFileSystemPrivate, 1);
+    FoldersCache *cache = &fs->priv->cache;
 
-    fs->priv->folders = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                               g_free, g_object_unref);
+    g_queue_push_head (cache->queue, impl);
+    g_hash_table_insert (cache->paths, impl->path, impl);
+
+    if (cache->queue->length > FOLDERS_CACHE_SIZE)
+    {
+        MooFolderImpl *old = g_queue_pop_tail (cache->queue);
+        g_hash_table_remove (cache->paths, old->path);
+        _moo_folder_impl_free (old);
+    }
+}
+
+
+void
+_moo_file_system_folder_finalized (MooFileSystem *fs,
+                                   MooFolder     *folder)
+{
+    MooFolderImpl *impl;
+
+    g_return_if_fail (MOO_IS_FILE_SYSTEM (fs));
+    g_return_if_fail (MOO_IS_FOLDER (folder));
+
+    impl = folder->impl;
+    folder->impl = NULL;
+    impl->proxy = NULL;
+
+    g_hash_table_remove (fs->priv->folders, impl->path);
+
+    if (!impl->deleted)
+        add_folder_cache (fs, impl);
+    else
+        _moo_folder_impl_free (impl);
 }
 
 
 static void
-moo_file_system_finalize (GObject *object)
+_moo_file_system_init (MooFileSystem *fs)
+{
+    fs->priv = g_new0 (MooFileSystemPrivate, 1);
+    fs->priv->folders = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+    fs->priv->cache.queue = g_queue_new ();
+    fs->priv->cache.paths = g_hash_table_new (g_str_hash, g_str_equal);
+}
+
+
+static void
+moo_file_system_dispose (GObject *object)
 {
     MooFileSystem *fs = MOO_FILE_SYSTEM (object);
 
-    g_hash_table_destroy (fs->priv->folders);
-
-    if (fs->priv->fam)
+    if (fs->priv)
     {
-        moo_file_watch_close (fs->priv->fam, NULL);
-        moo_file_watch_unref (fs->priv->fam);
-    }
+        g_hash_table_destroy (fs->priv->folders);
+        g_hash_table_destroy (fs->priv->cache.paths);
+        g_queue_foreach (fs->priv->cache.queue, (GFunc) _moo_folder_impl_free, NULL);
+        g_queue_free (fs->priv->cache.queue);
 
-    g_free (fs->priv);
-    fs->priv = NULL;
+        if (fs->priv->fam)
+        {
+            moo_file_watch_close (fs->priv->fam, NULL);
+            moo_file_watch_unref (fs->priv->fam);
+        }
+
+        g_free (fs->priv);
+        fs->priv = NULL;
+    }
 
     G_OBJECT_CLASS (_moo_file_system_parent_class)->finalize (object);
 }
@@ -324,23 +378,31 @@ _moo_file_system_get_file_watch (MooFileSystem *fs)
 
 
 /* TODO what's this? */
-static void
-folder_deleted (MooFolder      *folder,
-                MooFileSystem  *fs)
+void
+_moo_file_system_folder_deleted (MooFileSystem *fs,
+                                 MooFolderImpl *impl)
 {
-    g_signal_handlers_disconnect_by_func (folder,
-                                          (gpointer) folder_deleted, fs);
-    g_hash_table_remove (fs->priv->folders, _moo_folder_get_path (folder));
+    if (impl->proxy)
+    {
+        g_hash_table_remove (fs->priv->folders, impl->path);
+    }
+    else
+    {
+        g_hash_table_remove (fs->priv->cache.paths, impl->path);
+        g_queue_remove (fs->priv->cache.queue, impl);
+        _moo_folder_impl_free (impl);
+    }
 }
 
 
-MooFolder *
+static MooFolder *
 get_folder (MooFileSystem  *fs,
             const char     *path,
             MooFileFlags    wanted,
             GError        **error)
 {
     MooFolder *folder;
+    MooFolderImpl *impl;
     char *norm_path = NULL;
 
     g_return_val_if_fail (path != NULL, NULL);
@@ -374,6 +436,19 @@ get_folder (MooFileSystem  *fs,
         goto out;
     }
 
+    impl = g_hash_table_lookup (fs->priv->cache.paths, norm_path);
+
+    if (impl)
+    {
+        g_hash_table_remove (fs->priv->cache.paths, impl->path);
+        g_queue_remove (fs->priv->cache.queue, impl);
+        folder = _moo_folder_new_with_impl (impl);
+        g_hash_table_insert (fs->priv->folders, norm_path, folder);
+        norm_path = NULL;
+        _moo_folder_set_wanted (folder, wanted, TRUE);
+        goto out;
+    }
+
     if (!g_file_test (norm_path, G_FILE_TEST_EXISTS))
     {
         g_set_error (error, MOO_FILE_ERROR,
@@ -396,11 +471,7 @@ get_folder (MooFileSystem  *fs,
 
     if (folder)
     {
-        g_hash_table_insert (fs->priv->folders,
-                             norm_path,
-                             g_object_ref (folder));
-        g_signal_connect (folder, "deleted",
-                          G_CALLBACK (folder_deleted), fs);
+        g_hash_table_insert (fs->priv->folders, norm_path, folder);
         norm_path = NULL;
     }
 
@@ -411,7 +482,7 @@ out:
 
 
 /* TODO */
-gboolean
+static gboolean
 create_folder (G_GNUC_UNUSED MooFileSystem *fs,
                const char     *path,
                GError        **error)
@@ -559,7 +630,7 @@ normalize_path (const char *path)
 }
 
 
-gboolean
+static gboolean
 delete_file (G_GNUC_UNUSED MooFileSystem *fs,
              const char     *path,
              gboolean        recursive,

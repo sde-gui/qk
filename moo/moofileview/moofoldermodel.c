@@ -14,6 +14,7 @@
 #define MOO_FILE_VIEW_COMPILATION
 #include "moofoldermodel.h"
 #include "moofile-private.h"
+#include "moofolder-private.h"
 #include "moofoldermodel-private.h"
 #include <gtk/gtktreednd.h>
 

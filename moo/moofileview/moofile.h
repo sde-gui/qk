@@ -19,8 +19,16 @@
 G_BEGIN_DECLS
 
 
-typedef struct _MooFile          MooFile;
-typedef struct _MooFolder        MooFolder;
+typedef struct _MooFile   MooFile;
+typedef struct _MooFolder MooFolder;
+
+/* should be ordered TODO why? */
+typedef enum {
+    MOO_FILE_HAS_STAT       = 1 << 1,
+    MOO_FILE_HAS_MIME_TYPE  = 1 << 2,
+    MOO_FILE_HAS_ICON       = 1 << 3,
+    MOO_FILE_ALL_FLAGS      = (1 << 4) - 1
+} MooFileFlags;
 
 typedef enum {
     MOO_FILE_INFO_EXISTS         = 1 << 0,

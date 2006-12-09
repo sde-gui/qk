@@ -21,6 +21,7 @@
 #include "moofileview/moofileview-dialogs.h"
 #include "moofileview/moobookmarkmgr.h"
 #include "moofileview/moofilesystem.h"
+#include "moofileview/moofile-private.h"
 #include "moofileview/moofoldermodel.h"
 #include "moofileview/moofileentry.h"
 #include "moofileview/mooiconview.h"

@@ -24,7 +24,7 @@
 #ifndef __MOO_FILE_SYSTEM_H__
 #define __MOO_FILE_SYSTEM_H__
 
-#include "moofileview/moofile-private.h"
+#include "moofileview/moofolder.h"
 #include <mooutils/moofilewatch.h>
 #include <gtk/gtkwidget.h>
 
@@ -39,6 +39,7 @@ G_BEGIN_DECLS
 #define MOO_IS_FILE_SYSTEM_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FILE_SYSTEM))
 #define MOO_FILE_SYSTEM_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FILE_SYSTEM, MooFileSystemClass))
 
+typedef struct _MooFileSystem         MooFileSystem;
 typedef struct _MooFileSystemPrivate  MooFileSystemPrivate;
 typedef struct _MooFileSystemClass    MooFileSystemClass;
 

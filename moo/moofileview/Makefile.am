@@ -27,6 +27,9 @@ moofileview_sources =		\
 	moofileview-tools.c	\
 	moofileview-tools.h	\
 	moofileview-ui.h	\
+	moofolder-private.h	\
+	moofolder.c		\
+	moofolder.h		\
 	moofoldermodel.c	\
 	moofoldermodel.h	\
 	moofoldermodel-private.h\
