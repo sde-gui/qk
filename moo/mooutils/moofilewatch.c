@@ -39,13 +39,16 @@
 #include <string.h>
 /* sys/stat.h macros */
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/moofilewatch.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
 
 
-#if 0 || defined(__WIN32__) && 0
-#define DEBUG_PRINT g_message
+#if defined(__WIN32__)
+#define DEBUG_PRINT _moo_message_async
+#elif 0
+#define DEBUG_PRINT _moo_message
 #else
 static void DEBUG_PRINT (G_GNUC_UNUSED const char *format, ...)
 {
@@ -819,7 +822,7 @@ read_fam_events (G_GNUC_UNUSED GIOChannel *source,
     }
 
 out:
-    moo_file_watch_ref (watch);
+    moo_file_watch_unref (watch);
     return retval;
 }
 
@@ -912,7 +915,9 @@ watch_stat_start_monitor (MooFileWatch   *watch,
 static gboolean
 do_stat (MooFileWatch *watch)
 {
-    GSList *l, *list, *to_remove = NULL;
+    GSList *l;
+    GSList *list = NULL;
+    GSList *to_remove = NULL;
     gboolean result = TRUE;
 
     g_return_val_if_fail (watch != NULL, FALSE);
@@ -922,21 +927,23 @@ do_stat (MooFileWatch *watch)
     if (!watch->monitors)
         goto out;
 
-    list = g_slist_copy (watch->monitors);
+    for (l = watch->monitors; l != NULL; l = l->next)
+    {
+        Monitor *m = l->data;
+        list = g_slist_prepend (list, GUINT_TO_POINTER (m->id));
+    }
 
+    /* Order of list is correct now, watch->monitors is last-added-first */
     for (l = list; l != NULL; l = l->next)
     {
         gboolean do_emit = FALSE;
         MooFileEvent event;
-        Monitor *monitor = l->data;
+        Monitor *monitor;
         time_t old;
 
-        g_assert (monitor != NULL);
+        monitor = g_hash_table_lookup (watch->requests, l->data);
 
-        if (!g_hash_table_lookup (watch->requests, GUINT_TO_POINTER (monitor->id)))
-                continue;
-
-        if (monitor->suspended || !monitor->alive)
+        if (!monitor || monitor->suspended || !monitor->alive)
             continue;
 
         old = monitor->statbuf.st_mtime;
