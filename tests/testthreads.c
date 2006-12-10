@@ -24,9 +24,21 @@ callback (void)
 static gpointer
 thread_main (gpointer data)
 {
+    guint i;
+
     /* g_print may not be used here */
     printf ("thread %d: starting\n", GPOINTER_TO_UINT (data));
-    _moo_message_async ("thread %d: hi there");
+
+    for (i = 0; i < 10; ++i)
+    {
+        _moo_message_async ("thread %d: hi there #%d", GPOINTER_TO_UINT (data), i);
+        g_usleep (g_random_int_range (10, 100) * 1000);
+        gdk_threads_enter ();
+        _moo_message ("thread %d: hi there #%d again", GPOINTER_TO_UINT (data), i);
+        gdk_threads_leave ();
+        g_usleep (g_random_int_range (10, 100) * 1000);
+    }
+
     printf ("thread %d: exiting\n", GPOINTER_TO_UINT (data));
     return NULL;
 }

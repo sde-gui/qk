@@ -4,60 +4,82 @@
 #include <string.h>
 
 
-int main (int argc, char *argv[])
+static void
+show_it (MooGladeXML *xml,
+         const char  *name)
 {
-    MooGladeXML *my_xml;
-    gboolean check = FALSE;
-    const char *file;
-    GtkWidget *root;
+    GtkWidget *window, *widget;
 
-    gtk_init (&argc, &argv);
+    if (name)
+        widget = moo_glade_xml_get_widget (xml, name);
+    else
+        widget = moo_glade_xml_get_root (xml);
 
-    if (argc < 2)
+    g_return_if_fail (widget != NULL);
+
+    if (GTK_IS_WINDOW (widget))
     {
-        g_print ("usage: %s [--check] <filename>\n", argv[0]);
-        exit (1);
-    }
-
-    if (!strcmp (argv[1], "--check"))
-    {
-        if (argc < 3)
-        {
-            g_print ("usage: %s [--check] <filename>\n", argv[0]);
-            exit (1);
-        }
-        else
-        {
-            file = argv[2];
-            check = TRUE;
-        }
+        window = widget;
     }
     else
     {
-        file = argv[1];
+        window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+        gtk_container_add (GTK_CONTAINER (window), widget);
     }
 
-    my_xml = moo_glade_xml_new (file, NULL);
+    gtk_widget_show (widget);
+    gtk_widget_show (window);
+    g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
+    gtk_main ();
+}
 
-    if (!my_xml)
+int main (int argc, char *argv[])
+{
+    MooGladeXML *xml;
+    gboolean parse_only = FALSE;
+    char *root = NULL;
+    GOptionContext *opt_ctx;
+    GError *error = NULL;
+    const char *file;
+
+    GOptionEntry options[] = {
+        { "parse-only", 0, 0, G_OPTION_ARG_NONE, &parse_only, "do not show widgets", NULL },
+        { "root", 0, 0, G_OPTION_ARG_STRING, &root, "root widget to show", "ROOT" },
+        { NULL, 0, 0, 0, NULL, NULL, NULL },
+    };
+
+    opt_ctx = g_option_context_new ("FILE - test glade parser");
+    g_option_context_add_main_entries (opt_ctx, options, NULL);
+    g_option_context_add_group (opt_ctx, gtk_get_option_group (FALSE));
+
+    if (!g_option_context_parse (opt_ctx, &argc, &argv, &error))
     {
-        g_print ("could not parse '%s'\n", file);
+        g_print ("%s\n", error->message);
+        exit (1);
+    }
+
+    gtk_init_check (NULL, NULL);
+
+    if (argc != 2)
+    {
+        g_print ("usage: %s [OPTIONS] FILE\n", argv[0]);
+        exit (1);
+    }
+
+    file = argv[1];
+    xml = moo_glade_xml_new (file, root, NULL, &error);
+
+    if (!xml)
+    {
+        g_print ("could not parse file '%s': %s\n", file, error->message);
         exit (1);
     }
 
     g_print ("*** Success ***\n");
 
-    if (!check)
-    {
-        root = moo_glade_xml_get_root (my_xml);
+    if (!parse_only)
+        show_it (xml, root);
 
-        if (GTK_IS_WINDOW (root))
-        {
-            gtk_widget_show (root);
-            gtk_main ();
-        }
-    }
-
-    g_object_unref (my_xml);
+    g_object_unref (xml);
     return 0;
 }

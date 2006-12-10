@@ -5,13 +5,31 @@ AM_CFLAGS =			\
 	$(MOO_DEBUG_CFLAGS)
 
 noinst_PROGRAMS =
-EXTRA_PROGRAMS =			\
-	testhtml testtext medit mterm	\
-	markup termbuffer testfileview	\
-	testpaned testpanedfileview 	\
-	miniglade langparser testobject \
-	testfold ms testkeyfile		\
-	testthreads
+test_programs =				\
+	markup testpaned miniglade	\
+	testobject testthreads
+
+if MOO_BUILD_EDIT
+test_programs +=			\
+	testtext testfileview		\
+	testpanedfileview testfold	\
+	testkeyfile
+if MOO_OS_UNIX
+test_programs += ms
+endif
+endif
+if MOO_BUILD_TERM
+test_programs += mterm termbuffer
+endif
+if MOO_BUILD_APP
+test_programs += testhtml
+endif
+
+EXTRA_PROGRAMS = medit $(test_programs)
+
+if MOO_ENABLE_TESTS
+noinst_PROGRAMS += $(test_programs)
+endif
 
 all-tests: $(EXTRA_PROGRAMS)
 
@@ -68,12 +86,9 @@ bin_PROGRAMS = $(medit)
 
 ldflags = -export-dynamic $(PYTHON_EXTRA_LDFLAGS)
 ldadd = ../moo/libmoo.la
-test_ldflags = -export-dynamic $(PYTHON_EXTRA_LDFLAGS)
-test_ldadd = ../moo/libmoo-test.la
 
 if MOO_OS_MINGW
 ldflags += -mwindows
-test_ldflags += -mwindows
 endif MOO_OS_MINGW
 
 
@@ -110,10 +125,6 @@ testtext_LDFLAGS = $(ldflags)
 testtext_LDADD = $(ldadd)
 testtext_SOURCES = testtext.c
 
-
-langparser_LDFLAGS = $(ldflags)
-langparser_LDADD = $(ldadd)
-langparser_SOURCES = testparser.c
 
 testkeyfile_LDFLAGS = $(ldflags)
 testkeyfile_LDADD = $(ldadd)

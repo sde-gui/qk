@@ -52,17 +52,17 @@ test_closure (void)
     gpointer object;
 
     object = gtk_text_buffer_new (NULL);
-    cl = moo_closure_new_simple (object, NULL,
-                                 G_CALLBACK (do_something),
-                                 NULL);
+    cl = _moo_closure_new_simple (object, NULL,
+                                  G_CALLBACK (do_something),
+                                  NULL);
     moo_closure_invoke (cl);
     moo_closure_invoke (cl);
     moo_closure_unref (cl);
 
     object = gtk_text_buffer_new (NULL);
-    cl = moo_closure_new_simple (object, NULL,
-                                 G_CALLBACK (do_something2),
-                                 NULL);
+    cl = _moo_closure_new_simple (object, NULL,
+                                  G_CALLBACK (do_something2),
+                                  NULL);
     moo_closure_invoke (cl);
     g_object_unref (object);
     moo_closure_invoke (cl);
@@ -85,11 +85,11 @@ test_ptr (void)
     static gboolean really_died = FALSE;
 
     object = gtk_text_buffer_new (NULL);
-    ptr = moo_object_ptr_new (object, (GWeakNotify) object_died, &really_died);
+    ptr = _moo_object_ptr_new (object, (GWeakNotify) object_died, &really_died);
     g_object_unref (object);
 
     if (!really_died)
         g_error ("oops");
 
-    moo_object_ptr_free (ptr);
+    _moo_object_ptr_free (ptr);
 }

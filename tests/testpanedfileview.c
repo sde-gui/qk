@@ -53,9 +53,9 @@ static void create_window_with_paned (GtkPositionType pane_position)
                     "Click a button. Click a button. Click a button. Click a button. ",
             -1);
 
-    fileview = _moo_file_view_new ();
-    _moo_file_view_chdir (MOO_FILE_VIEW (fileview),
-                          g_get_home_dir (), NULL);
+    fileview = g_object_new (MOO_TYPE_FILE_VIEW, NULL);
+    moo_file_view_chdir (MOO_FILE_VIEW (fileview),
+                         g_get_home_dir (), NULL);
 
     label = moo_pane_label_new (GTK_STOCK_DIRECTORY, NULL, NULL,
                                 "File selector", "File selector");

@@ -20,14 +20,16 @@
 #include <readline/history.h>
 
 
-static void usage (const char *prg)
+static void
+usage (const char *prg)
 {
     g_print ("usage:\t%s <file>\n\t%s -c <script>\n", prg, prg);
     exit (1);
 }
 
 
-static int run_interactive (void)
+static int
+run_interactive (void)
 {
     MSContext *ctx;
 

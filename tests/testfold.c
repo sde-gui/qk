@@ -19,27 +19,27 @@ int main (int argc, char *argv[])
     memset (text, '\n', 999);
     gtk_text_buffer_set_text (GTK_TEXT_BUFFER (buffer), text, -1);
 
-    tree = moo_fold_tree_new (buffer);
+    tree = _moo_fold_tree_new (buffer);
 
-    f1 = moo_fold_tree_add (tree, 0, 2);
+    f1 = _moo_fold_tree_add (tree, 0, 2);
     g_assert (f1 != NULL);
 
-    g_assert (!moo_fold_tree_add (tree, 0, 3));
-    g_assert (!moo_fold_tree_add (tree, 2, 3));
-    g_assert (!moo_fold_tree_add (tree, 2, 3));
+    g_assert (!_moo_fold_tree_add (tree, 0, 3));
+    g_assert (!_moo_fold_tree_add (tree, 2, 3));
+    g_assert (!_moo_fold_tree_add (tree, 2, 3));
 
-    f2 = moo_fold_tree_add (tree, 1, 2);
+    f2 = _moo_fold_tree_add (tree, 1, 2);
     g_assert (f2 != NULL);
 
-    f3 = moo_fold_tree_add (tree, 10, 20);
+    f3 = _moo_fold_tree_add (tree, 10, 20);
     g_assert (f3 != NULL);
 
-    g_assert (!moo_fold_tree_add (tree, 0, 15));
-    g_assert (!moo_fold_tree_add (tree, 3, 15));
+    g_assert (!_moo_fold_tree_add (tree, 0, 15));
+    g_assert (!_moo_fold_tree_add (tree, 3, 15));
 
-    moo_fold_tree_remove (tree, f1);
-    moo_fold_tree_remove (tree, f2);
-    moo_fold_tree_remove (tree, f3);
+    _moo_fold_tree_remove (tree, f1);
+    _moo_fold_tree_remove (tree, f2);
+    _moo_fold_tree_remove (tree, f3);
 
     return 0;
 }
