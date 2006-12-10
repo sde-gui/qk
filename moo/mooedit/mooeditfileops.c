@@ -915,8 +915,9 @@ file_watch_callback (G_GNUC_UNUSED MooFileWatch *watch,
                      MooFileEvent  *event,
                      gpointer       data)
 {
-    MooEdit *edit = MOO_EDIT (data);
+    MooEdit *edit = data;
 
+    g_return_if_fail (MOO_IS_EDIT (data));
     g_return_if_fail (event->monitor_id == edit->priv->file_monitor_id);
     g_return_if_fail (edit->priv->filename != NULL);
     g_return_if_fail (!(edit->priv->status & MOO_EDIT_CHANGED_ON_DISK));
