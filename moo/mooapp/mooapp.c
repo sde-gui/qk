@@ -1172,11 +1172,16 @@ install_actions (GType type)
                                  NULL);
 
     moo_window_class_new_action (klass, "About", NULL,
-                                 "display-name", GTK_STOCK_ABOUT,
                                  "label", GTK_STOCK_ABOUT,
                                  "no-accel", TRUE,
                                  "stock-id", GTK_STOCK_ABOUT,
                                  "closure-callback", moo_app_about_dialog,
+                                 NULL);
+
+    moo_window_class_new_action (klass, "SystemInfo", NULL,
+                                 "label", _("System Info"),
+                                 "no-accel", TRUE,
+                                 "closure-callback", moo_app_system_info_dialog,
                                  NULL);
 
     g_type_class_unref (klass);
