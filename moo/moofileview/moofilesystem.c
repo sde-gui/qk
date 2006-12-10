@@ -11,6 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#include <config.h>
+
 #define MOO_FILE_VIEW_COMPILATION
 #include "moofilesystem.h"
 #include "moofolder-private.h"
@@ -23,6 +25,14 @@
 #include <sys/wait.h>
 #else
 #include <io.h>
+#endif
+
+#if 0 && MOO_DEBUG
+#define DEBUG_MESSAGE g_message
+#else
+static void DEBUG_MESSAGE (G_GNUC_UNUSED const char *format, ...)
+{
+}
 #endif
 
 #define BROKEN_NAME "<" "????" ">"
@@ -152,6 +162,7 @@ add_folder_cache (MooFileSystem *fs,
 {
     FoldersCache *cache = &fs->priv->cache;
 
+    DEBUG_MESSAGE ("%s: adding folder %s to cache", G_STRFUNC, impl->path);
     g_queue_push_head (cache->queue, impl);
     g_hash_table_insert (cache->paths, impl->path, impl);
 
@@ -159,6 +170,7 @@ add_folder_cache (MooFileSystem *fs,
     {
         MooFolderImpl *old = g_queue_pop_tail (cache->queue);
         g_hash_table_remove (cache->paths, old->path);
+        DEBUG_MESSAGE ("%s: removing folder %s from cache", G_STRFUNC, old->path);
         _moo_folder_impl_free (old);
     }
 }
@@ -180,9 +192,14 @@ _moo_file_system_folder_finalized (MooFileSystem *fs,
     g_hash_table_remove (fs->priv->folders, impl->path);
 
     if (!impl->deleted)
+    {
         add_folder_cache (fs, impl);
+    }
     else
+    {
+        DEBUG_MESSAGE ("%s: folder %s deleted, freeing", G_STRFUNC, impl->path);
         _moo_folder_impl_free (impl);
+    }
 }
 
 
@@ -385,9 +402,11 @@ _moo_file_system_folder_deleted (MooFileSystem *fs,
     if (impl->proxy)
     {
         g_hash_table_remove (fs->priv->folders, impl->path);
+        DEBUG_MESSAGE ("%s: folder %s deleted, proxy alive", G_STRFUNC, impl->path);
     }
     else
     {
+        DEBUG_MESSAGE ("%s: cached folder %s deleted, freeing", G_STRFUNC, impl->path);
         g_hash_table_remove (fs->priv->cache.paths, impl->path);
         g_queue_remove (fs->priv->cache.queue, impl);
         _moo_folder_impl_free (impl);
