@@ -151,7 +151,6 @@ moo_position_window_real (GtkWidget  *window,
     GtkWidget *toplevel = NULL;
 
     g_return_if_fail (GTK_IS_WINDOW (window));
-    g_return_if_fail (!GTK_WIDGET_REALIZED (window));
 
     if (parent)
         toplevel = gtk_widget_get_toplevel (parent);
@@ -162,6 +161,7 @@ moo_position_window_real (GtkWidget  *window,
     {
         gtk_window_set_transient_for (GTK_WINDOW (window), GTK_WINDOW (toplevel));
 #ifdef __WIN32__
+        g_signal_handlers_disconnect_by_func (window, (gpointer) on_hide, NULL);
         g_signal_connect (window, "unmap", G_CALLBACK (on_hide), NULL);
 #endif
     }
@@ -198,9 +198,18 @@ moo_position_window_real (GtkWidget  *window,
         coord->y = y;
         gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_NONE);
         g_object_set_data_full (G_OBJECT (window), "moo-coords", coord, g_free);
-        g_signal_connect (window, "realize",
-                          G_CALLBACK (position_window),
-                          NULL);
+
+        if (!GTK_WIDGET_REALIZED (window))
+        {
+            g_signal_handlers_disconnect_by_func (window, (gpointer) position_window, NULL);
+            g_signal_connect (window, "realize",
+                              G_CALLBACK (position_window),
+                              NULL);
+        }
+        else
+        {
+            position_window (GTK_WINDOW (window));
+        }
     }
 }
 
