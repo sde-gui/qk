@@ -6,6 +6,7 @@ import getopt
 
 dir = os.getcwd()
 builddir = dir
+thisscript = os.path.abspath(sys.argv[0])
 moo_windir = "/usr/local/win/medit"
 strip = "i586-mingw32msvc-strip"
 do_strip = True
@@ -13,14 +14,18 @@ do_zip = False
 bin_only = False
 no_python = False
 installer = None
+release = False
+name = None
+dry_run = False
 data_dirs = []
 
 def usage():
-    print "Usage:", sys.argv[0], "[--no-strip] [--bin-only] [--zip] [--no-python] [build_dir] [additional_dir1] ..."
+    print "Usage: %s [--dry-run] [--no-strip] [--bin-only] [--zip] [--no-python] [build_dir] [additional_dir1] ..." % (sys.argv[0],)
+    print "       %s [--dry-run] --release build_dir gtk_dir python_dir" % (sys.argv[0],)
     sys.exit(2)
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "", ["no-strip", "no-python", "bin-only", "zip"])
+    opts, args = getopt.getopt(sys.argv[1:], "", ["dry-run", "no-strip", "no-python", "bin-only", "zip", "release", "name="])
 except getopt.GetoptError:
     usage()
 
@@ -33,12 +38,22 @@ for o, a in opts:
         no_python = True
     if o == "--zip":
         do_zip = True
+    if o == "--release":
+        release = True
+    if o == "--name":
+        name = a
+    if o == "--dry-run":
+        dry_run = True
 if args:
     moo_builddir = os.path.abspath(args[0])
 else:
     moo_builddir = builddir
 if args[1:]:
     data_dirs = [os.path.abspath(d) for d in args[1:]]
+
+if release:
+    if len(data_dirs) != 2:
+        usage()
 
 installdir = dir + "/inst_"
 
@@ -51,11 +66,12 @@ class Error(Exception):
         Exception.__init__(self)
         self.status = status
 
-def do_cmd(cmd):
+def do_cmd(cmd, force=False):
     print cmd
-    status = os.system(cmd)
-    if status:
-        raise Error(status)
+    if force or not dry_run:
+        status = os.system(cmd)
+        if status:
+            raise Error(status)
 
 def copy_files():
     if data_dirs:
@@ -71,6 +87,7 @@ def copy_files():
         do_cmd("mkdir -p %s/lib/moo" % (moo_windir,))
 
         do_cmd("cp -r %s/usr/local/share/moo %s/share/" % (installdir, moo_windir))
+        do_cmd("cp -r %s/usr/local/lib/locale %s/lib/" % (installdir, moo_windir))
 
         if not no_python:
             do_cmd("cp -r %s/usr/local/lib/moo/plugins %s/lib/moo/" % (installdir, moo_windir))
@@ -95,6 +112,21 @@ def get_version():
 def build():
     global installer
 
+    if release:
+        script = thisscript
+        if dry_run:
+            script += " --dry-run"
+        installer_no_gtk = "medit-no-gtk-%s.exe" % (get_version(),)
+        installer_no_python = "medit-%s.exe" % (get_version(),)
+        installer_python = "medit-python-%s.exe" % (get_version(),)
+        do_cmd('%s --name=%s "%s"' % (script, installer_no_gtk, moo_builddir), True)
+        do_cmd('%s --name=%s "%s" "%s"' % (script, installer_no_python, moo_builddir, data_dirs[0]), True)
+        do_cmd('%s --name=%s "%s" "%s" "%s"' % (script, installer_python, moo_builddir, data_dirs[0], data_dirs[1]), True)
+        print ""
+        print "+++ Success +++"
+        print "Installers: %s, %s, %s" % (installer_no_gtk, installer_no_python, installer_python)
+        sys.exit(0)
+
     do_cmd("mkdir " + moo_windir)
     do_cmd("mkdir " + installdir)
     os.chdir(moo_builddir)
@@ -108,13 +140,13 @@ def build():
 
     if do_zip:
         zipdir = "medit-" + dbg + get_version()
-        installer = zipdir + ".zip"
+        installer = name or (zipdir + ".zip")
         do_cmd("rm -fr %s %s" % (zipdir, installer))
         do_cmd("mv %s ./%s" % (moo_windir, zipdir))
         do_cmd("zip -r9 %s %s" % (installer, zipdir))
         do_cmd("rm -fr %s" % (zipdir,))
     else:
-        installer = "meditsetup-" + dbg + get_version() + ".exe"
+        installer = name or ("medit-" + dbg + get_version() + ".exe")
         do_cmd("wine /usr/local/win/InnoSetup5/ISCC.exe " + iss)
         do_cmd("mv %s/wininstaller/Output/setup.exe %s/%s" % (moo_builddir, dir, installer))
 
