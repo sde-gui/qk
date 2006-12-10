@@ -125,6 +125,7 @@
 
     <item name="Help" _label="_Help">
       <separator/>
+      <item action="SystemInfo"/>
       <item action="About"/>
       <separator/>
     </item>
