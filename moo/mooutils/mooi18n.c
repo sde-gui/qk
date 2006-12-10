@@ -12,6 +12,7 @@
  */
 
 #include "mooutils/mooi18n.h"
+#include "mooutils/mooutils-misc.h"
 #include <glib.h>
 
 
@@ -27,7 +28,9 @@ moo_gettext (const char *string)
     {
         been_here = TRUE;
         bindtextdomain (GETTEXT_PACKAGE, MOO_LOCALE_DIR);
+#ifdef HAVE_BIND_TEXTDOMAIN_CODESET
         bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+#endif
     }
 
     return dgettext (GETTEXT_PACKAGE, string);

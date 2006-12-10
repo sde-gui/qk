@@ -86,6 +86,11 @@ char      **moo_get_data_subdirs            (const char     *subdir,
                                              guint          *n_dirs);
 #define moo_get_data_files moo_get_data_subdirs
 
+#ifdef __WIN32__
+#define MOO_LOCALE_DIR (_moo_get_locale_dir())
+const char *_moo_get_locale_dir             (void);
+#endif
+
 
 void        _moo_selection_data_set_pointer (GtkSelectionData *data,
                                              GdkAtom         type,

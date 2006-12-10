@@ -42,6 +42,33 @@
 #include <shellapi.h>
 #endif
 
+
+/****************************************************************************/
+/* Locale dir and stuff
+ */
+
+#ifdef __WIN32__
+G_WIN32_DLLMAIN_FOR_DLL_NAME(static, libmoo_dll_name)
+
+const char *
+_moo_get_locale_dir (void)
+{
+    static char *dir = NULL;
+
+    if (!dir)
+    {
+        char *tmp;
+        tmp = g_win32_get_package_installation_subdirectory (NULL, libmoo_dll_name,
+                                                             "lib\\locale");
+        dir = g_win32_locale_filename_from_utf8 (tmp);
+        g_free (tmp);
+    }
+
+    return dir;
+}
+#endif
+
+
 #ifdef __WIN32__
 
 static gboolean
@@ -1363,10 +1390,12 @@ moo_get_data_dirs (MooDataDirType type,
     switch (type)
     {
         case MOO_DATA_SHARE:
-            d = g_win32_get_package_installation_subdirectory (NULL, NULL, (char*) "share\\" MOO_PACKAGE_NAME);
+            d = g_win32_get_package_installation_subdirectory (NULL, libmoo_dll_name,
+                                                               "share\\" MOO_PACKAGE_NAME);
             break;
         case MOO_DATA_LIB:
-            d = g_win32_get_package_installation_subdirectory (NULL, NULL, (char*) "lib\\" MOO_PACKAGE_NAME);
+            d = g_win32_get_package_installation_subdirectory (NULL, libmoo_dll_name,
+                                                               "lib\\" MOO_PACKAGE_NAME);
             break;
     }
 
