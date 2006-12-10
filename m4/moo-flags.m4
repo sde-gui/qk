@@ -11,9 +11,15 @@ AC_DEFINE(HAVE_CONFIGARGS_H, 1, [configargs.h is created])
 # MOO_AC_FLAGS(moo_top_dir)
 #
 AC_DEFUN([MOO_AC_FLAGS],[
-    AC_REQUIRE([MOO_AC_FAM])
+    AC_REQUIRE([MOO_AC_FUNCS])
     AC_REQUIRE([MOO_PKG_CHECK_GTK_VERSIONS])
     AC_REQUIRE([MOO_AC_SET_DIRS])
+    AC_REQUIRE([MOO_AC_DEBUG])
+    AC_REQUIRE([MOO_AC_FAM])
+    AC_REQUIRE([MOO_AC_XML])
+    AC_REQUIRE([MOO_AC_XDGMIME])
+    AC_REQUIRE([MOO_AC_PYGTK])
+    AC_REQUIRE([MOO_AC_PCRE])
 
     moo_top_src_dir=`cd $srcdir && pwd`
     MOO_CFLAGS="$MOO_CFLAGS -I"$moo_top_src_dir/$1" $GTK_CFLAGS $MOO_PCRE_CFLAGS -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\""

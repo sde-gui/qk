@@ -31,61 +31,52 @@ AC_ARG_ENABLE(debug,
   MOO_DEBUG="no"
 ])
 
+_moo_all_gcc_warnings="no"
 AC_ARG_ENABLE(all-gcc-warnings,
 AC_HELP_STRING([--enable-all-gcc-warnings],[enable most of gcc warnings and turn on -pedantic mode (default = NO)]),[
-  if test "x$enable_all_gcc_warnings" = "xno"; then
-    all_gcc_warnings="no"
-  elif test "x$enable_all_gcc_warnings" = "xfatal"; then
-    all_gcc_warnings="yes"
-    warnings_fatal="yes"
-  else
-    all_gcc_warnings="yes"
-    warnings_fatal="no"
+  if test "x$enable_all_gcc_warnings" = "xyes"; then
+    _moo_all_gcc_warnings="yes"
   fi
-],[
-  all_gcc_warnings="no"
 ])
 
+_moo_all_intel_warnings="no"
 AC_ARG_ENABLE(all-intel-warnings,
 AC_HELP_STRING([--enable-all-intel-warnings], [enable most of intel compiler warnings (default = NO)]),[
-  if test x$enable_all_intel_warnings = "xno"; then
-    all_intel_warnings="no"
-  else
-    all_intel_warnings="yes"
+  if test "x$enable_all_intel_warnings" = "xyes"; then
+    _moo_all_intel_warnings="yes"
   fi
-],[
-  all_intel_warnings="no"
 ])
 
-if test x$all_intel_warnings = "xyes"; then
-    MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS -Wall -Wcheck -w2 -wd981 -wd188"
-elif test x$all_gcc_warnings = "xyes"; then
-MOO_DEBUG_CFLAGS="$MOO_DEBUG_GCC_CFLAGS $MOO_DEBUG_CFLAGS -W -Wall -Wpointer-arith dnl
+if test "x$_moo_all_intel_warnings" = "xyes"; then
+MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS -Wall -Wcheck -w2 -wd981 -wd188"
+elif test "x$_moo_all_gcc_warnings" = "xyes"; then
+MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS -W -Wall -Wpointer-arith dnl
 -Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
 -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations dnl
 -Wmissing-noreturn -Wmissing-format-attribute -Wnested-externs dnl
 -Wdisabled-optimization"
-MOO_PYTHON_DEBUG_CFLAGS="$MOO_DEBUG_GCC_CFLAGS $MOO_PYTHON_DEBUG_CFLAGS -Wall -Wpointer-arith dnl
+MOO_PYTHON_DEBUG_CFLAGS="$MOO_PYTHON_DEBUG_CFLAGS -Wall -Wpointer-arith dnl
 -Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
 -Wmissing-prototypes -Wmissing-declarations dnl
 -Wmissing-noreturn -Wmissing-format-attribute -Wnested-externs dnl
 -Wdisabled-optimization"
 elif test x$GCC = "xyes"; then
-    MOO_DEBUG_CFLAGS=$MOO_DEBUG_GCC_CFLAGS
+MOO_DEBUG_CFLAGS="-W -Wall"
+MOO_PYTHON_DEBUG_CFLAGS=
 fi
 
-if test x$MOO_DEBUG = "xyes"; then
-moo_debug_flags="-DG_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED dnl
+if test "x$MOO_DEBUG" = "xyes"; then
+_moo_debug_flags="-DG_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED dnl
 -DGDK_DISABLE_DEPRECATED -DENABLE_DEBUG -DENABLE_PROFILE dnl
 -DG_ENABLE_DEBUG -DG_ENABLE_PROFILE -DMOO_DEBUG=1"
 else
-  moo_debug_flags="-DNDEBUG=1 -DG_DISABLE_CAST_CHECKS -DG_DISABLE_ASSERT"
+_moo_debug_flags="-DNDEBUG=1 -DG_DISABLE_CAST_CHECKS -DG_DISABLE_ASSERT"
 fi
 
-MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS $moo_debug_flags"
-MOO_PYTHON_DEBUG_CFLAGS="$MOO_PYTHON_DEBUG_CFLAGS $moo_debug_flags"
+MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS $_moo_debug_flags"
+MOO_PYTHON_DEBUG_CFLAGS="$MOO_PYTHON_DEBUG_CFLAGS $_moo_debug_flags"
 
-if test x$MOO_ENABLE_TESTS = "xyes"; then
+if test "x$MOO_ENABLE_TESTS" = "xyes"; then
   MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS -DMOO_ENABLE_TESTS"
 fi
 

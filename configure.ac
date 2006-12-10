@@ -4,7 +4,7 @@
 
 m4_define([moo_major_version], [0])
 m4_define([moo_minor_version], [8])
-m4_define([moo_micro_version], [0])
+m4_define([moo_micro_version], [1])
 m4_define([moo_version], [moo_major_version.moo_minor_version.moo_micro_version])
 
 m4_define([moo_module_major_version], [1])
@@ -42,32 +42,9 @@ MOO_AC_PROGS
 
 ACLOCAL="$ACLOCAL $ACLOCAL_FLAGS"
 
-#  Misc stuff
-MOO_AC_FUNCS
-
-#  Check debug options
-MOO_AC_DEBUG
-
-#  File monitoring
-MOO_AC_FAM
-
-#  libxml2
-MOO_AC_XML
-
-#  xdgmime
-MOO_AC_XDGMIME
-
-#  Python stuff
-MOO_AC_PYGTK
-
-# pcre
-MOO_AC_PCRE
-
-
 MOO_SRC_PREFIX="moo"
 AC_SUBST(MOO_SRC_PREFIX)
 MOO_COMPONENTS(term)
-MOO_AC_RELOC
 MOO_AC_SET_DIRS(moo)
 MOO_AC_FLAGS(moo)
 
@@ -92,6 +69,9 @@ moo/mooedit/plugins/completion/Makefile
 moo/mooedit/plugins/fileselector/Makefile
 moo/mooapp/Makefile
 moo/moopython/Makefile
+moo/moopython/pymoo.ini
+moo/moopython/pymoo24.ini
+moo/moopython/pymoo25.ini
 moo/moopython/plugins/Makefile
 moo/moopython/plugins/python.ini.desktop.in
 moo/moopython/plugins/terminal.ini.desktop.in
