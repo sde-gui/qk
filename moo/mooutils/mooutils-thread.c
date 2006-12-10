@@ -13,6 +13,7 @@
 
 #include "config.h"
 #include "mooutils/mooutils-thread.h"
+#include "mooutils/mooutils-misc.h"
 
 #include <stdio.h>
 #include <errno.h>
@@ -47,7 +48,7 @@ typedef struct {
 
 
 static GStaticMutex queue_lock = G_STATIC_MUTEX_INIT;
-static EventQueue *queue;
+static volatile EventQueue *queue;
 
 
 static QueueClient *
@@ -80,7 +81,21 @@ invoke_callback (gpointer  id,
     client = get_event_client (GPOINTER_TO_UINT (id));
 
     if (client)
-        client->callback (events->head, client->callback_data);
+    {
+        GList *data_list = NULL;
+
+        for (l = events->head; l != NULL; l = l->next)
+        {
+            EventData *data = l->data;
+            data_list = g_list_prepend (data_list, data->data);
+        }
+
+        data_list = g_list_reverse (data_list);
+
+        client->callback (data_list, client->callback_data);
+
+        g_list_free (data_list);
+    }
 
     for (l = events->head; l != NULL; l = l->next)
     {
@@ -142,32 +157,37 @@ _moo_event_queue_do_events (guint event_id)
 static void
 init_queue (void)
 {
-    int fds[2];
+    g_static_mutex_lock (&queue_lock);
 
-    if (queue)
-        return;
-
-    if (pipe (fds) != 0)
+    if (!queue)
     {
-        perror ("pipe");
-        return;
-    }
+        int fds[2];
 
-    queue = g_new0 (EventQueue, 1);
+        if (pipe (fds) != 0)
+        {
+            perror ("pipe");
+            goto out;
+        }
 
-    queue->clients = NULL;
+        queue = g_new0 (EventQueue, 1);
 
-    queue->pipe_in = fds[1];
-    queue->pipe_out = fds[0];
+        queue->clients = NULL;
+
+        queue->pipe_in = fds[1];
+        queue->pipe_out = fds[0];
 
 #ifdef __WIN32__
-    queue->io = g_io_channel_win32_new_fd (queue->pipe_out);
+        queue->io = g_io_channel_win32_new_fd (queue->pipe_out);
 #else
-    queue->io = g_io_channel_unix_new (queue->pipe_out);
+        queue->io = g_io_channel_unix_new (queue->pipe_out);
 #endif
 
-    g_io_add_watch (queue->io, G_IO_IN, (GIOFunc) got_data, NULL);
-    queue->data = NULL;
+        g_io_add_watch (queue->io, G_IO_IN, (GIOFunc) got_data, NULL);
+        queue->data = NULL;
+    }
+
+out:
+    g_static_mutex_unlock (&queue_lock);
 }
 
 
@@ -183,12 +203,14 @@ _moo_event_queue_connect (MooEventQueueCallback callback,
     init_queue ();
 
     client = g_new0 (QueueClient, 1);
-    client->id = queue->last_id++;
     client->callback = callback;
     client->callback_data = data;
     client->notify = notify;
 
+    g_static_mutex_lock (&queue_lock);
+    client->id = queue->last_id++;
     queue->clients = g_slist_prepend (queue->clients, client);
+    g_static_mutex_unlock (&queue_lock);
 
     return client->id;
 }
@@ -202,12 +224,18 @@ _moo_event_queue_disconnect (guint event_id)
     g_return_if_fail (event_id != 0);
     g_return_if_fail (queue != NULL);
 
+    g_static_mutex_lock (&queue_lock);
+
     client = get_event_client (event_id);
-    g_return_if_fail (client != NULL);
 
-    queue->clients = g_slist_remove (queue->clients, client);
+    if (!client)
+        g_warning ("%s: no client with id %d", G_STRLOC, event_id);
+    else
+        queue->clients = g_slist_remove (queue->clients, client);
 
-    if (client->notify)
+    g_static_mutex_unlock (&queue_lock);
+
+    if (client && client->notify)
         client->notify (client->callback_data);
 
     g_free (client);
@@ -248,4 +276,86 @@ _moo_event_queue_push (guint          event_id,
     g_queue_push_tail (events, event_data);
 
     g_static_mutex_unlock (&queue_lock);
+}
+
+
+/****************************************************************************/
+/* Messages
+ */
+
+static GStaticMutex message_lock = G_STATIC_MUTEX_INIT;
+static volatile int message_event_id = 0;
+static volatile int print_event_id = 0;
+
+static void
+message_callback (GList *events, G_GNUC_UNUSED gpointer data)
+{
+    while (events)
+    {
+        gdk_threads_enter ();
+        _moo_message ("%s", (char*) events->data);
+        gdk_threads_leave ();
+        events = events->next;
+    }
+}
+
+static void
+print_callback (GList *events, G_GNUC_UNUSED gpointer data)
+{
+    while (events)
+    {
+        gdk_threads_enter ();
+        g_print ("%s", (char*) events->data);
+        gdk_threads_leave ();
+        events = events->next;
+    }
+}
+
+static void
+init_message_queue (void)
+{
+    g_static_mutex_lock (&message_lock);
+
+    if (!message_event_id)
+        message_event_id = _moo_event_queue_connect (message_callback, NULL, NULL);
+    if (!print_event_id)
+        print_event_id = _moo_event_queue_connect (print_callback, NULL, NULL);
+
+    g_static_mutex_unlock (&message_lock);
+}
+
+void
+_moo_print_async (const char *format,
+                  ...)
+{
+    char *msg;
+    va_list args;
+
+    va_start (args, format);
+    msg = g_strdup_vprintf (format, args);
+    va_end (args);
+
+    if (msg)
+    {
+        init_message_queue ();
+        _moo_event_queue_push (print_event_id, msg, g_free);
+    }
+}
+
+void
+_moo_message_async (const char *format,
+                    ...)
+{
+    char *msg;
+    va_list args;
+
+    va_start (args, format);
+    msg = g_strdup_vprintf (format, args);
+    va_end (args);
+
+    if (msg)
+    {
+        init_message_queue ();
+        _moo_event_queue_push (message_event_id, msg, g_free);
+    }
 }

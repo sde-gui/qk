@@ -10,7 +10,8 @@ EXTRA_PROGRAMS =			\
 	markup termbuffer testfileview	\
 	testpaned testpanedfileview 	\
 	miniglade langparser testobject \
-	testfold ms testkeyfile
+	testfold ms testkeyfile		\
+	testthreads
 
 all-tests: $(EXTRA_PROGRAMS)
 
@@ -117,6 +118,10 @@ langparser_SOURCES = testparser.c
 testkeyfile_LDFLAGS = $(ldflags)
 testkeyfile_LDADD = $(ldadd)
 testkeyfile_SOURCES = testkeyfile.c
+
+testthreads_LDFLAGS = $(ldflags)
+testthreads_LDADD = $(ldadd) $(GTHREAD_LIBS)
+testthreads_SOURCES = testthreads.c
 
 ms_LDFLAGS = $(ldflags)
 ms_LDADD = $(ldadd) -lreadline

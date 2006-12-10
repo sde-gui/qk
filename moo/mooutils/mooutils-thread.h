@@ -19,8 +19,8 @@
 G_BEGIN_DECLS
 
 
-typedef void (*MooEventQueueCallback) (GList   *events,
-                                       gpointer data);
+typedef void (*MooEventQueueCallback)   (GList   *events,
+                                         gpointer data);
 
 
 guint       _moo_event_queue_connect    (MooEventQueueCallback  callback,
@@ -34,6 +34,11 @@ void        _moo_event_queue_do_events  (guint                  event_id);
 void        _moo_event_queue_push       (guint                  event_id,
                                          gpointer               data,
                                          GDestroyNotify         data_destroy);
+
+void        _moo_print_async            (const char            *format,
+                                         ...);
+void        _moo_message_async          (const char            *format,
+                                         ...);
 
 
 G_END_DECLS
