@@ -1,0 +1,4 @@
+[module]
+type=C
+file=pymoo
+version=@MOO_MODULE_VERSION_MAJOR@.@MOO_MODULE_VERSION_MINOR@
