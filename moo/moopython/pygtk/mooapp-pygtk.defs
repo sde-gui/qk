@@ -90,7 +90,7 @@
   (c-name "moo_app_prefs_dialog")
   (return-type "none")
   (parameters
-    '("GtkWidget*" "parent")
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
   )
 )
 
@@ -98,8 +98,22 @@
   (c-name "moo_app_about_dialog")
   (return-type "none")
   (parameters
-    '("GtkWidget*" "parent")
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
   )
+)
+
+(define-function system_info_dialog
+  (c-name "moo_app_system_info_dialog")
+  (return-type "none")
+  (parameters
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+  )
+)
+
+(define-method get_system_info
+  (of-object "MooApp")
+  (c-name "moo_app_get_system_info")
+  (return-type "char*")
 )
 
 (define-method get_ui_xml
