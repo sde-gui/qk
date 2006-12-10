@@ -22,7 +22,7 @@ gtk_2_4_sources =			\
 	newgtk/gtkfontbutton.c		\
 	newgtk/gtkfontbutton.h
 
-win32_sources =				\
+thread_sources =			\
 	mooutils-thread.c		\
 	mooutils-thread.h
 
@@ -137,7 +137,11 @@ if !GTK_2_4
 mooutils_sources += $(moonewgtk_gtk_2_4_sources)
 endif
 if MOO_OS_MINGW
-mooutils_sources += $(win32_sources)
+mooutils_sources += $(thread_sources)
+else
+if MOO_ENABLE_TESTS
+mooutils_sources += $(thread_sources)
+endif
 endif
 
 nodist_mooutils_sources =		\
@@ -153,7 +157,7 @@ EXTRA_DIST =				\
 	xml2h.sh			\
 	$(gmappedfile_sources)		\
 	$(gtk_2_4_sources)		\
-	$(win32_sources)		\
+	$(thread_sources)		\
 	glade/accelbutton.glade		\
 	glade/accelprefs.glade		\
 	glade/moologwindow.glade	\
