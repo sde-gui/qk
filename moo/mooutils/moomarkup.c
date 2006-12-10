@@ -95,6 +95,8 @@ static void moo_markup_element_print            (MooMarkupElement   *node,
                                                  GString            *dest);
 static void moo_markup_text_node_print          (MooMarkupNode      *node,
                                                  GString            *dest);
+static void moo_markup_comment_node_print       (MooMarkupNode      *node,
+                                                 GString            *dest);
 
 
 static void start_element   (GMarkupParseContext    *context,
@@ -550,8 +552,10 @@ moo_markup_node_get_string (MooMarkupNode *node)
                 moo_markup_element_print (MOO_MARKUP_ELEMENT (child), str);
                 break;
             case MOO_MARKUP_TEXT_NODE:
-            case MOO_MARKUP_COMMENT_NODE:
                 moo_markup_text_node_print (child, str);
+                break;
+            case MOO_MARKUP_COMMENT_NODE:
+                moo_markup_comment_node_print (child, str);
                 break;
             default:
                 g_assert_not_reached ();
@@ -584,8 +588,10 @@ moo_markup_element_print (MooMarkupElement   *node,
                 case MOO_MARKUP_ELEMENT_NODE:
                     moo_markup_element_print (MOO_MARKUP_ELEMENT (child), str);
                     break;
-                case MOO_MARKUP_TEXT_NODE:
                 case MOO_MARKUP_COMMENT_NODE:
+                    moo_markup_comment_node_print (child, str);
+                    break;
+                case MOO_MARKUP_TEXT_NODE:
                     moo_markup_text_node_print (child, str);
                     break;
                 default:
@@ -614,6 +620,23 @@ moo_markup_text_node_print (MooMarkupNode  *node,
     escaped = g_markup_escape_text (text->text, -1);
     g_string_append (str, escaped);
     g_free (escaped);
+}
+
+
+static void
+moo_markup_comment_node_print (MooMarkupNode *node,
+                               GString       *str)
+{
+    char *p;
+    MooMarkupText *text = (MooMarkupText*) node;
+
+    if (!g_utf8_validate (text->text, -1, (const char**) &p))
+    {
+        g_critical ("%s: invalid UTF8", G_STRLOC);
+        *p = 0;
+    }
+
+    g_string_append (str, text->text);
 }
 
 
