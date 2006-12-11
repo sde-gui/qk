@@ -13,7 +13,7 @@
  */
 
 #include "medit-ui.h"
-#include "THANKS.h"
+#include "medit-credits.h"
 #include <moo.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>

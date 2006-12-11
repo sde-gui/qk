@@ -7,16 +7,17 @@ AC_DEFUN([MOO_COMPONENTS],[
   ])
 
   m4_foreach([name], $1,
-  [AC_ARG_WITH([name],
+  [AC_ARG_WITH([moo[]name],
     AC_HELP_STRING([--with-moo[]name], [enable moo[]name component (default = NO)]),
         [build_moo[]name=$withval],
         [build_moo[]name=no]
   )])
 
-  if test x$MOO_OS_CYGWIN = "xyes"; then
+  if test "x$MOO_OS_CYGWIN" = "xyes"; then
     build_mooutils="no"
     build_mooedit="no"
     build_mooapp="no"
+    build_mooterm="yes"
   fi
 
   if test "x$build_mooapp" != "xno"; then
