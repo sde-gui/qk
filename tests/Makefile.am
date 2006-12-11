@@ -38,14 +38,14 @@ EXTRA_DIST =		\
 	medit-ui.xml	\
 	medit-app.opag
 
-BUILT_SOURCES = medit-ui.h THANKS.h
+BUILT_SOURCES = medit-ui.h medit-credits.h
 
 XML2H = $(srcdir)/../moo/mooutils/xml2h.sh
 medit-ui.h: medit-ui.xml $(XML2H)
 	$(SHELL) $(XML2H) MEDIT_UI $(srcdir)/medit-ui.xml > medit-ui.h.tmp && \
 	mv medit-ui.h.tmp medit-ui.h
-THANKS.h: ../THANKS $(XML2H)
-	$(SHELL) $(XML2H) THANKS $(srcdir)/../THANKS > THANKS.h
+medit-credits.h: ../THANKS $(XML2H)
+	$(SHELL) $(XML2H) THANKS $(srcdir)/../THANKS > medit-credits.h
 
 # medit-app.c is not in BUILT_SOURCES, so the target must use absolute path to it
 $(srcdir)/medit-app.c: medit-app.opag medit-ui.h
@@ -105,7 +105,7 @@ endif
 
 medit_LDFLAGS = $(ldflags) $(medit_res_ldflag)
 medit_LDADD = $(ldadd)
-medit_SOURCES = medit-ui.h THANKS.h
+medit_SOURCES = medit-ui.h medit-credits.h
 nodist_medit_SOURCES =
 EXTRA_DIST += medit.rc.in medit-app.c
 
