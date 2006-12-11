@@ -12,25 +12,30 @@ AC_DEFUN([MOO_AC_CHECK_OS],[
     *-*-mingw32*)
         echo "++++ building for MINGW32 ++++"
         MOO_OS_MINGW="yes"
+        MOO_OS_NAME="Win32"
         ;;
     *-*-cygwin*)
         echo "++++ building for CYGWIN ++++"
         MOO_OS_CYGWIN="yes"
+        MOO_OS_NAME="CygWin"
         ;;
     *-*-darwin*)
         echo "++++ building for DARWIN ++++"
         MOO_OS_DARWIN="yes"
         MOO_OS_BSD="yes"
         MOO_OS_UNIX="yes"
+        MOO_OS_NAME="Darwin"
         ;;
     *-*-freebsd*)
         echo "++++ building for FREEBSD ++++"
         MOO_OS_BSD="yes"
         MOO_OS_UNIX="yes"
+        MOO_OS_NAME="FreeBSD"
         ;;
     *)
         echo "++++ building for UNIX ++++"
         MOO_OS_UNIX="yes"
+        MOO_OS_NAME="Unix"
         ;;
     esac
 

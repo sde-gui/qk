@@ -19,20 +19,6 @@ MOO_DEFINE_VERSIONS
 
 MOO_AC_I18N(moo, [ru])
 
-#  Check operating system
-MOO_AC_CHECK_OS
-
-if test x$MOO_OS_UNIX != xyes; then
-AM_CONDITIONAL(MOO_INSTALL_LIB, true)
-AM_CONDITIONAL(MOO_BUILD_PYTHON_MODULE, true)
-AM_CONDITIONAL(MOO_INSTALL_HEADERS, false)
-AC_DEFINE(MOO_BUILD_PYTHON_MODULE, 1, MOO_BUILD_PYTHON_MODULE)
-else
-AM_CONDITIONAL(MOO_INSTALL_LIB, false)
-AM_CONDITIONAL(MOO_BUILD_PYTHON_MODULE, false)
-AM_CONDITIONAL(MOO_INSTALL_HEADERS, false)
-fi
-
 AC_PROG_CC
 AC_DISABLE_SHARED
 AC_LIBTOOL_WIN32_DLL
@@ -55,6 +41,13 @@ MOO_AC_FLAGS(moo)
 AC_CONFIG_FILES([
 Makefile
 config.py
+moo/moo.pc
+moo/moo-version.h
+moo/libmoo.rc
+moo/moo24.rc
+moo/moo25.rc
+moo/pymoo24.rc
+moo/pymoo25.rc
 moo/Makefile
 moo/mooutils/Makefile
 moo/mooscript/Makefile
@@ -80,18 +73,11 @@ moo/moopython/plugins/pyproject/project-plugin.ini.desktop.in
 moo/moopython/pygtk/Makefile
 moo/mooutils/pcre/Makefile
 moo/mooutils/xdgmime/Makefile
-tests/Makefile
-po/Makefile.in
 moo/mooterm/termhelper_res.rc
-moo/moo.pc
-moo/moo-version.h
-moo/libmoo.rc
-moo/moo24.rc
-moo/moo25.rc
-moo/pymoo24.rc
-moo/pymoo25.rc
 tests/pyapp.py
 tests/medit.rc
+tests/Makefile
+po/Makefile.in
 wininstaller/medit.iss
 ])
 AC_OUTPUT
@@ -100,35 +86,21 @@ AC_OUTPUT
 ################################################################################
 #  Configuration info
 #
+echo
 if test x$MOO_OS_CYGWIN != "xyes"; then
-    if test "x$MOO_OS_MINGW" = "xyes"; then
-        system="MINGW"
-    elif test "x$MOO_OS_DARWIN" = "xyes"; then
-        system="UNIX (DARWIN)"
-    elif test "x$MOO_OS_BSD" = "xyes"; then
-        system="UNIX (BSD)"
-    else
-        system="UNIX"
-    fi
-
-    if test x$use_xml != "xyes"; then
-        use_xml="no"
-    fi
-
-    echo
-    echo "    OS                                        = $system"
-    echo "    python support                            = $MOO_USE_PYTHON"
-    echo "    pygtk support                             = $MOO_USE_PYGTK"
-    echo "    xml support                               = $MOO_USE_XML"
-    echo "    xdgmime support                           = $MOO_USE_XDGMIME"
-    echo "    build pcre library                        = $MOO_BUILD_PCRE"
-    echo
-    echo "    prefix                                    = $prefix"
-    echo "    editor lang files go to                   = $MOO_TEXT_LANG_FILES_DIR"
-    echo
-    echo "    components: $MOO_BUILD_COMPS"
+  echo "    OS                                        = $MOO_OS_NAME"
+  echo "    python support                            = $MOO_USE_PYTHON"
+  echo "    pygtk support                             = $MOO_USE_PYGTK"
+  echo "    xml support                               = $MOO_USE_XML"
+  echo "    xdgmime support                           = $MOO_USE_XDGMIME"
+  echo "    build pcre library                        = $MOO_BUILD_PCRE"
+  echo "    use FAM                                   = $MOO_USE_FAM"
+  echo
+  echo "    prefix                                    = $prefix"
+  echo "    editor lang files go to                   = $MOO_TEXT_LANG_FILES_DIR"
+  echo
+  echo "    components: $MOO_BUILD_COMPS"
 else
-    echo
-    echo "    Building termhelper.exe on CYGWIN"
-    echo
+  echo "    Building termhelper.exe on CYGWIN"
 fi
+echo
