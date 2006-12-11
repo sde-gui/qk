@@ -896,14 +896,16 @@ do_write (MooEdit        *edit,
 /* Aux stuff
  */
 
-static void     block_buffer_signals        (MooEdit        *edit)
+static void
+block_buffer_signals (MooEdit *edit)
 {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
     g_signal_handler_block (buffer, edit->priv->modified_changed_handler_id);
 }
 
 
-static void     unblock_buffer_signals      (MooEdit        *edit)
+static void
+unblock_buffer_signals (MooEdit *edit)
 {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
     g_signal_handler_unblock (buffer, edit->priv->modified_changed_handler_id);
@@ -938,7 +940,7 @@ file_watch_callback (G_GNUC_UNUSED MooFileWatch *watch,
             break;
     }
 
-    check_file_status (edit, TRUE);
+    check_file_status (edit, FALSE);
 }
 
 
