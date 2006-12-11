@@ -2,20 +2,12 @@
 #   moo/configure.ac
 #
 
-m4_define([moo_major_version], [0])
-m4_define([moo_minor_version], [8])
-m4_define([moo_micro_version], [1])
-m4_define([moo_version], [moo_major_version.moo_minor_version.moo_micro_version])
-
-m4_define([moo_module_major_version], [1])
-m4_define([moo_module_minor_version], [0])
-
-AC_INIT([medit],[moo_version],[muntyan@tamu.edu],[medit])
-AM_INIT_AUTOMAKE(medit, [moo_version])
+AC_INIT([medit],[0.8.1],[muntyan@tamu.edu],[medit])
+AM_INIT_AUTOMAKE(medit, [0.8.1])
 AC_CANONICAL_HOST
 
 AC_CONFIG_HEADERS(config.h)
-MOO_DEFINE_VERSIONS
+MOO_DEFINE_VERSIONS(moo,0,8,1)
 
 MOO_AC_I18N(moo, [ru])
 
