@@ -95,18 +95,20 @@ endif MOO_OS_MINGW
 ##############################################################################
 ##  medit
 ##
+nodist_medit_SOURCES =
+
 if MOO_OS_MINGW
-CLEANFILES = medit.res
+CLEANFILES = medit.res medit.rc
 medit_res_ldflag = -Wl,medit.res
-medit_DEPENDENCIES = medit.res
-medit.res: medit.rc
-	$(WINDRES) -i medit.rc --input-format=rc -o medit.res -O coff
+BUILT_SOURCES += medit.res
+nodist_medit_SOURCES += medit.res
+@MOO_WIN32_RC_IN_RULE@
+@MOO_WIN32_RC_RULE@
 endif
 
 medit_LDFLAGS = $(ldflags) $(medit_res_ldflag)
 medit_LDADD = $(ldadd)
 medit_SOURCES = medit-ui.h medit-credits.h
-nodist_medit_SOURCES =
 EXTRA_DIST += medit.rc.in medit-app.c
 
 if MOO_BUILD_APP

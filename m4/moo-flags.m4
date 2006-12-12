@@ -65,4 +65,13 @@ AC_DEFUN([MOO_AC_FLAGS],[
     AC_SUBST(MOO_LIBS)
 
     _MOO_AC_CONFIGURE_ARGS
+
+    MOO_INI_IN_IN_RULE='%.ini.desktop.in: %.ini.desktop.in.in $(top_builddir)/config.status ; cd $(top_builddir) && $(SHELL) ./config.status --file=$(subdir)/[$]@'
+    MOO_INI_IN_RULE='%.ini: %.ini.in $(top_builddir)/config.status ; cd $(top_builddir) && $(SHELL) ./config.status --file=$(subdir)/[$]@'
+    MOO_WIN32_RC_IN_RULE='%.rc: %.rc.in $(top_builddir)/config.status ; cd $(top_builddir) && $(SHELL) ./config.status --file=$(subdir)/[$]@'
+    MOO_WIN32_RC_RULE='%.res: %.rc ; $(WINDRES) -i $< --input-format=rc -o [$]@ -O coff'
+    AC_SUBST(MOO_INI_IN_IN_RULE)
+    AC_SUBST(MOO_INI_IN_RULE)
+    AC_SUBST(MOO_WIN32_RC_IN_RULE)
+    AC_SUBST(MOO_WIN32_RC_RULE)
 ])

@@ -104,7 +104,6 @@ EXTRA_DIST =				\
 	moopython-loader.c		\
 	moopython-utils.h		\
 	moopython-utils.c		\
-	pymoo.ini			\
 	codegen/__init__.py		\
 	codegen/argtypes.py		\
 	codegen/codegen.py		\
@@ -115,4 +114,5 @@ EXTRA_DIST =				\
 	codegen/mkskel.py		\
 	codegen/override.py		\
 	codegen/reversewrapper.py	\
-	codegen/scmexpr.py
+	codegen/scmexpr.py		\
+	$(ini_in_files)

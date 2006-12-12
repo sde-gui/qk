@@ -1,7 +1,9 @@
-ini_in_files = project-plugin.ini.desktop.in
+ini_in_in_files = project-plugin.ini.desktop.in.in
+@MOO_INI_IN_IN_RULE@
 @MOO_INTLTOOL_INI_RULE@
+ini_in_files = $(ini_in_in_files:.ini.desktop.in.in=.ini.desktop.in)
 ini_files = $(ini_in_files:.ini.desktop.in=.ini)
-CLEANFILES = $(ini_files)
+CLEANFILES = $(ini_files) $(ini_in_files)
 
 inidir = $(MOO_LIB_DIR)/plugins
 ini_DATA =				\
@@ -43,5 +45,5 @@ nobase_projects_DATA =			\
 
 EXTRA_DIST =				\
     $(nobase_plugin_DATA)		\
-    $(ini_in_files)			\
+    $(ini_in_in_files)			\
     $(nobase_projects_DATA)

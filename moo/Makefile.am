@@ -1,3 +1,14 @@
+rc_in_files = libmoo.rc.in moo24.rc.in moo25.rc.in pymoo24.rc.in pymoo25.rc.in
+ini_in_files = moopython/pymoo.ini.in moopython/pymoo24.ini.in moopython/pymoo25.ini.in
+ini_files = $(ini_in_files:.ini.in=.ini)
+@MOO_INI_IN_RULE@
+CLEANFILES = $(ini_files)
+
+EXTRA_DIST =		\
+	TODO		\
+	$(rc_in_files)	\
+	$(ini_in_files)
+
 moo_include_headers =	\
 	moo.h		\
 	moo-version.h
@@ -7,10 +18,6 @@ moo_include_HEADERS = $(moo_include_headers)
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = moo.pc
 endif
-
-EXTRA_DIST =		\
-	TODO		\
-	libmoo.rc.in
 
 subdirs =
 libs =
@@ -41,7 +48,6 @@ libs += moopython/libmoopython.la $(PYTHON_LIBS) $(PYTHON_EXTRA_LIBS)
 endif
 endif
 
-CLEANFILES =
 SUBDIRS = $(subdirs) .
 DIST_SUBDIRS = mooutils mooterm mooedit mooapp moopython mooscript moofileview
 
@@ -56,11 +62,16 @@ noinst_LTLIBRARIES += libmoo.la
 endif
 
 if MOO_OS_MINGW
+rc_files = $(rc_in_files:.rc.in=.rc)
+@MOO_WIN32_RC_IN_RULE@
+@MOO_WIN32_RC_RULE@
+CLEANFILES += $(rc_files)
+endif
+
+if MOO_OS_MINGW
 CLEANFILES += libmoo.res
 libmoo_res_ldflag = -Wl,libmoo.res
 BUILT_SOURCES += libmoo.res
-libmoo.res: libmoo.rc
-	$(WINDRES) -i libmoo.rc --input-format=rc -o libmoo.res -O coff
 endif
 
 if MOO_ENABLE_TESTS
@@ -103,14 +114,6 @@ if MOO_USE_PYGTK
 
 CLEANFILES += pymoo25.res moo25.res pymoo24.res moo24.res
 BUILT_SOURCES += pymoo25.res moo25.res pymoo24.res moo24.res
-pymoo25.res: pymoo25.rc
-	$(WINDRES) -i pymoo25.rc --input-format=rc -o pymoo25.res -O coff
-moo25.res: moo25.rc
-	$(WINDRES) -i moo25.rc --input-format=rc -o moo25.res -O coff
-pymoo24.res: pymoo24.rc
-	$(WINDRES) -i pymoo24.rc --input-format=rc -o pymoo24.res -O coff
-moo24.res: moo24.rc
-	$(WINDRES) -i moo24.rc --input-format=rc -o moo24.res -O coff
 
 lib_LTLIBRARIES += pymoo25.la moo25.la pymoo24.la moo24.la
 plugindir = $(MOO_LIB_DIR)/plugins
