@@ -1,3 +1,17 @@
+# _MOO_AC_CHECK_COMPILER_OPTIONS(var,options)
+AC_DEFUN([_MOO_AC_CHECK_COMPILER_OPTIONS],[
+  AC_LANG_SAVE
+  AC_LANG_C
+  for opt in $2; do
+    AC_MSG_CHECKING(whether C compiler accepts $opt)
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS $opt"
+    AC_TRY_COMPILE([],[],[$1="$[]$1 $opt"; AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)])
+    CFLAGS="$save_CFLAGS"
+  done
+  AC_LANG_RESTORE
+])
+
 ##############################################################################
 # MOO_AC_DEBUG()
 #
@@ -31,38 +45,27 @@ AC_ARG_ENABLE(debug,
   MOO_DEBUG="no"
 ])
 
-_moo_all_gcc_warnings="no"
-AC_ARG_ENABLE(all-gcc-warnings,
-AC_HELP_STRING([--enable-all-gcc-warnings],[enable most of gcc warnings and turn on -pedantic mode (default = NO)]),[
-  if test "x$enable_all_gcc_warnings" = "xyes"; then
-    _moo_all_gcc_warnings="yes"
-  fi
+_moo_all_warnings="no"
+AC_ARG_ENABLE(all-warnings,
+AC_HELP_STRING([--enable-all-warnings],[enable lot of compiler warnings (default = NO)]),[
+  _moo_all_warnings="$withval"
 ])
 
-_moo_all_intel_warnings="no"
-AC_ARG_ENABLE(all-intel-warnings,
-AC_HELP_STRING([--enable-all-intel-warnings], [enable most of intel compiler warnings (default = NO)]),[
-  if test "x$enable_all_intel_warnings" = "xyes"; then
-    _moo_all_intel_warnings="yes"
-  fi
-])
-
-if test "x$_moo_all_intel_warnings" = "xyes"; then
-MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS -Wall -Wcheck -w2 -wd981 -wd188"
-elif test "x$_moo_all_gcc_warnings" = "xyes"; then
-MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS -W -Wall -Wpointer-arith dnl
--Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
+MOO_DEBUG_CFLAGS=
+if test "x$_moo_all_warnings" = "xyes"; then
+  if test "x$GCC" = "xyes"; then
+    _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS,
+[-W -Wall -Wpointer-arith -Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
 -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations dnl
 -Wmissing-noreturn -Wmissing-format-attribute -Wnested-externs dnl
--Wdisabled-optimization"
-MOO_PYTHON_DEBUG_CFLAGS="$MOO_PYTHON_DEBUG_CFLAGS -Wall -Wpointer-arith dnl
--Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
--Wmissing-prototypes -Wmissing-declarations dnl
--Wmissing-noreturn -Wmissing-format-attribute -Wnested-externs dnl
--Wdisabled-optimization"
-elif test x$GCC = "xyes"; then
-MOO_DEBUG_CFLAGS="-W -Wall"
-MOO_PYTHON_DEBUG_CFLAGS=
+-Wdisabled-optimization])
+  elif test "x$CC" = "icc"; then
+    _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS, [-Wall -Wcheck -w2 -wd981 -wd188])
+  fi
+else
+  if test x$GCC = "xyes"; then
+    _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS, [-Wall -W])
+  fi
 fi
 
 if test "x$MOO_DEBUG" = "xyes"; then

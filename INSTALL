@@ -10,12 +10,7 @@ if you are not familiar with configure).
 configure has the following medit-specific options:
 
   --enable-debug          enable debug options (default = NO)
-  --enable-all-gcc-warnings
-                          enable most of gcc warnings and turn on -pedantic
-                          mode (default = NO)
-  --enable-all-intel-warnings
-                          enable most of intel compiler warnings (default =
-                          NO)
+  --enable-all-warnings   enable lot of compiler warnings (default = NO)
   --enable-relocation     do not hardcode data directories (default = NO)
     This option seems to be working, but it's useful only for custom binary
     distributions.
