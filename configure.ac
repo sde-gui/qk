@@ -57,10 +57,10 @@ moo/mooutils/pcre/Makefile
 moo/mooutils/xdgmime/Makefile
 moo/mooterm/termhelper_res.rc
 tests/pyapp.py
-tests/medit.rc
 tests/Makefile
+medit/Makefile
+medit/medit.iss
 po/Makefile.in
-wininstaller/medit.iss
 ])
 AC_OUTPUT
 

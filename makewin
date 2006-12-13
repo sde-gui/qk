@@ -57,7 +57,7 @@ if release:
 
 installdir = dir + "/inst_"
 
-issdir = "Z:%s/wininstaller" % (moo_builddir,)
+issdir = "Z:%s/medit" % (moo_builddir,)
 iss = issdir + "/medit.iss"
 
 
@@ -148,11 +148,11 @@ def build():
     else:
         installer = name or ("medit-" + dbg + get_version() + ".exe")
         do_cmd("wine /usr/local/win/InnoSetup5/ISCC.exe " + iss)
-        do_cmd("mv %s/wininstaller/Output/setup.exe %s/%s" % (moo_builddir, dir, installer))
+        do_cmd("mv %s/medit/Output/setup.exe %s/%s" % (moo_builddir, dir, installer))
 
 def clean():
     do_cmd("rm -rf %s %s %s" % (moo_windir, installdir,
-                                moo_builddir + "/wininstaller/Output"))
+                                moo_builddir + "/medit/Output"))
 
 try:
     build()

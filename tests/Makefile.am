@@ -25,7 +25,7 @@ if MOO_BUILD_APP
 test_programs += testhtml
 endif
 
-EXTRA_PROGRAMS = medit $(test_programs)
+EXTRA_PROGRAMS = $(test_programs)
 
 if MOO_ENABLE_TESTS
 noinst_PROGRAMS += $(test_programs)
@@ -34,36 +34,10 @@ endif
 all-tests: $(EXTRA_PROGRAMS)
 
 EXTRA_DIST =		\
-	pyapp.py.in	\
-	medit-ui.xml	\
-	medit-app.opag
-
-BUILT_SOURCES = medit-ui.h medit-credits.h
-
-XML2H = $(srcdir)/../moo/mooutils/xml2h.sh
-medit-ui.h: medit-ui.xml $(XML2H)
-	$(SHELL) $(XML2H) MEDIT_UI $(srcdir)/medit-ui.xml > medit-ui.h.tmp && \
-	mv medit-ui.h.tmp medit-ui.h
-medit-credits.h: ../THANKS $(XML2H)
-	$(SHELL) $(XML2H) THANKS $(srcdir)/../THANKS > medit-credits.h
-
-# medit-app.c is not in BUILT_SOURCES, so the target must use absolute path to it
-$(srcdir)/medit-app.c: medit-app.opag medit-ui.h
-	if test -z $(OPAG); then \
-		touch $(srcdir)/medit-app.c; \
-	else \
-		$(OPAG) -f _medit_parse_options -O _medit_opt_ -A _medit_arg_ $(srcdir)/medit-app.opag $(srcdir)/medit-app.c; \
-	fi
+	pyapp.py.in
 
 all-am: pyapp.py
 
-if MOO_BUILD_APP
-medit = medit
-endif
-if MOO_BUILD_EDIT
-medit = medit
-# noinst_PROGRAMS += testtext
-endif
 if MOO_BUILD_TERM
 if !MOO_OS_CYGWIN
 if !MOO_BUILD_APP
@@ -82,40 +56,12 @@ endif
 endif
 endif
 
-bin_PROGRAMS = $(medit)
-
 ldflags = -export-dynamic $(PYTHON_EXTRA_LDFLAGS)
 ldadd = ../moo/libmoo.la
 
 if MOO_OS_MINGW
 ldflags += -mwindows
 endif MOO_OS_MINGW
-
-
-##############################################################################
-##  medit
-##
-nodist_medit_SOURCES =
-
-if MOO_OS_MINGW
-CLEANFILES = medit.res medit.rc
-medit_res_ldflag = -Wl,medit.res
-BUILT_SOURCES += medit.res
-nodist_medit_SOURCES += medit.res
-@MOO_WIN32_RC_IN_RULE@
-@MOO_WIN32_RC_RULE@
-endif
-
-medit_LDFLAGS = $(ldflags) $(medit_res_ldflag)
-medit_LDADD = $(ldadd)
-medit_SOURCES = medit-ui.h medit-credits.h
-EXTRA_DIST += medit.rc.in medit-app.c
-
-if MOO_BUILD_APP
-medit_SOURCES += medit-app.c
-else
-medit_SOURCES += medit.c
-endif
 
 
 testfold_LDFLAGS = $(ldflags)

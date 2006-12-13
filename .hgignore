@@ -39,8 +39,8 @@ moo/mooutils/stock-moo.h$
 devcpp/Makefile\.win$
 devcpp/medit\.layout$
 .*\.Po$
-^wininstaller/medit\.iss$
-^tests/medit\.rc$
+^medit/medit\.iss$
+^medit/medit\.rc$
 ^tests/pyapp\.py$
 ^stamp-h1$
 ^medit$

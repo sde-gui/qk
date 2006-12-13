@@ -1,5 +1,5 @@
-medit.desktop.in
-tests/medit-ui.xml
+medit/medit.desktop.in
+medit/medit-ui.xml
 
 moo/mooapp/mooappabout.c
 moo/mooapp/mooapp.c

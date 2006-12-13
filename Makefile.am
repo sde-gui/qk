@@ -30,10 +30,9 @@ EXTRA_DIST =			\
 	intltool-extract.in	\
 	intltool-merge.in	\
 	intltool-update.in	\
-	mkpotsubdirs		\
-	medit.desktop.in
+	mkpotsubdirs
 
-all-am: pot-subdirs-stamp wininstaller/medit.iss m4-stamp
+all-am: pot-subdirs-stamp m4-stamp
 
 m4-stamp: $(m4files)
 	echo stamp > m4-stamp
@@ -47,38 +46,19 @@ pot-subdirs-stamp: po/POTFILES.in
 	$(SHELL) $(srcdir)/mkpotsubdirs "$(srcdir)"
 CLEANFILES = pot-subdirs-stamp
 
-DIST_SUBDIRS = moo tests po
+DIST_SUBDIRS = moo medit tests po
 # need to create pot-subdirs-stamp before it goes to po/
-SUBDIRS = . moo tests po
+SUBDIRS = . moo medit po
+
+if MOO_ENABLE_TESTS
+SUBDIRS += tests
+endif
 
 ACLOCAL_AMFLAGS = -I m4
-
-@INTLTOOL_DESKTOP_RULE@
-DESKTOP_IN_FILES = medit.desktop.in
-DESKTOP_FILES =$(DESKTOP_IN_FILES:.desktop.in=.desktop)
-desktopdir = $(datadir)/applications
-desktop_DATA = $(DESKTOP_FILES)
 
 DISTCLEANFILES =		\
 	m4-stamp		\
 	configargs.h		\
-	$(DESKTOP_FILES)	\
 	intltool-extract	\
 	intltool-merge		\
 	intltool-update
-
-appicondir = $(datadir)/pixmaps
-appicon_DATA = moo/mooutils/pixmaps/medit.png
-hicolor = $(datadir)/icons/hicolor
-iconthemedir = $(hicolor)/48x48/apps
-icontheme_DATA = moo/mooutils/pixmaps/medit.png
-
-# update_icon_cache = gtk-update-icon-cache -f -t $(hicolor)
-#
-# install-data-hook:
-# 	if echo "Updating icon cache" && $(update_icon_cache); then		\
-# 		echo "Done.";							\
-# 	else									\
-# 		echo "*** GTK icon cache not updated. After install, run this:";\
-# 		echo $(update_icon_cache);					\
-# 	fi
