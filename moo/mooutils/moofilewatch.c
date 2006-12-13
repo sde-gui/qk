@@ -59,6 +59,9 @@ typedef struct {
     guint id;
     MooFileWatch *watch;
     char *filename;
+#ifdef MOO_USE_FAM
+    int fam_request;
+#endif
 
     MooFileWatchCallback callback;
     GDestroyNotify notify;
@@ -152,11 +155,6 @@ static Monitor *monitor_new                 (MooFileWatch   *watch,
 static void     monitor_free                (Monitor        *monitor);
 
 
-static guint last_watch_id = 0;
-#if !defined(MOO_USE_FAM) || defined(WANT_STAT_MONITOR)
-static guint last_monitor_id = 0;
-#endif
-
 static struct WatchFuncs watch_funcs = {
 #if defined(MOO_USE_FAM)
     watch_fam_start,
@@ -181,6 +179,29 @@ static struct WatchFuncs watch_funcs = {
     NULL
 #endif
 };
+
+
+static guint
+get_new_monitor_id (void)
+{
+    static guint id = 0;
+
+    if (!++id)
+        ++id;
+
+    return id;
+}
+
+static guint
+get_new_watch_id (void)
+{
+    static guint id = 0;
+
+    if (!++id)
+        ++id;
+
+    return id;
+}
 
 
 MooFileWatch *
@@ -228,10 +249,7 @@ moo_file_watch_new (GError **error)
 
     watch->requests = g_hash_table_new (g_direct_hash, g_direct_equal);
 
-    if (!++last_watch_id)
-        ++last_watch_id;
-
-    watch->id = last_watch_id;
+    watch->id = get_new_watch_id ();
     watch->ref_count = 1;
 
     if (!watch_funcs.start (watch, error))
@@ -602,15 +620,16 @@ watch_fam_start_monitor (MooFileWatch   *watch,
     g_return_val_if_fail (monitor->filename != NULL, FALSE);
 
     monitor->isdir = g_file_test (monitor->filename, G_FILE_TEST_IS_DIR) != 0;
+    monitor->id = get_new_monitor_id ();
 
     if (monitor->isdir)
         result = FAMMonitorDirectory (&watch->fam_connection,
                                       monitor->filename, &fr,
-                                      NULL);
+                                      GUINT_TO_POINTER (monitor->id));
     else
         result = FAMMonitorFile (&watch->fam_connection,
                                  monitor->filename, &fr,
-                                 NULL);
+                                 GUINT_TO_POINTER (monitor->id));
 
     if (result != 0)
     {
@@ -630,7 +649,7 @@ watch_fam_start_monitor (MooFileWatch   *watch,
                      monitor->filename);
     }
 
-    monitor->id = fr.reqnum;
+    monitor->fam_request = fr.reqnum;
     return TRUE;
 }
 
@@ -644,7 +663,7 @@ watch_fam_suspend_monitor (MooFileWatch *watch,
 
     g_return_val_if_fail (monitor != NULL, FALSE);
 
-    fr.reqnum = monitor->id;
+    fr.reqnum = monitor->fam_request;
 
     result = FAMSuspendMonitor (&watch->fam_connection, &fr);
 
@@ -674,7 +693,7 @@ watch_fam_resume_monitor (MooFileWatch *watch,
 
     g_return_val_if_fail (monitor != NULL, FALSE);
 
-    fr.reqnum = monitor->id;
+    fr.reqnum = monitor->fam_request;
 
     result = FAMResumeMonitor (&watch->fam_connection, &fr);
 
@@ -704,7 +723,7 @@ watch_fam_stop_monitor (MooFileWatch *watch,
 
     g_return_if_fail (monitor != NULL);
 
-    fr.reqnum = monitor->id;
+    fr.reqnum = monitor->fam_request;
 
     result = FAMCancelMonitor (&watch->fam_connection, &fr);
 
@@ -777,7 +796,7 @@ read_fam_events (G_GNUC_UNUSED GIOChannel *source,
             goto out;
         }
 
-        monitor = g_hash_table_lookup (watch->requests, GUINT_TO_POINTER ((guint) fe.fr.reqnum));
+        monitor = g_hash_table_lookup (watch->requests, fe.userdata);
 
         if (!monitor || monitor->suspended)
             continue;
@@ -902,10 +921,7 @@ watch_stat_start_monitor (MooFileWatch   *watch,
     }
 #endif
 
-    if (!++last_monitor_id)
-        ++last_monitor_id;
-
-    monitor->id = last_monitor_id;
+    monitor->id = get_new_monitor_id ();
     memcpy (&monitor->statbuf, &buf, sizeof (buf));
 
     return TRUE;
@@ -1075,7 +1091,7 @@ typedef struct {
 } FAMEvent;
 
 static FAMWin32 *fam;
-static guint last_watch_id;
+
 
 /****************************************************************************/
 /* Watch thread
@@ -1538,7 +1554,7 @@ watch_win32_start_monitor (MooFileWatch   *watch,
 
     DEBUG_PRINT ("created monitor for '%s'", monitor->filename);
 
-    monitor->id = ++last_monitor_id;
+    monitor->id = get_new_monitor_id ();
 
     fam_thread_command (COMMAND_ADD_PATH, monitor->filename, watch->id, monitor->id);
 
