@@ -3,103 +3,189 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-12-08 17:49-0600\n"
+"POT-Creation-Date: 2006-12-12 23:50-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Last-Translator: Yevgen Muntyan <muntyan@tamu.edu>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../medit.desktop.in.h:1
+#: ../medit/medit.desktop.in.h:1
 msgid "Text editor"
 msgstr "Текстовый редактор"
 
-#: ../medit.desktop.in.h:2
+#: ../medit/medit.desktop.in.h:2
 msgid "medit"
 msgstr "medit"
 
-#: ../tests/medit-ui.xml.h:1
+#: ../medit/medit-ui.xml.h:1
 msgid "_Edit"
 msgstr "Правка"
 
-#: ../tests/medit-ui.xml.h:2
+#: ../medit/medit-ui.xml.h:2
 msgid "_File"
 msgstr "Файл"
 
-#: ../tests/medit-ui.xml.h:3
+#: ../medit/medit-ui.xml.h:3
 msgid "_Help"
 msgstr "Помощь"
 
-#: ../tests/medit-ui.xml.h:4
+#: ../medit/medit-ui.xml.h:4
 msgid "_Search"
 msgstr "Поиск"
 
-#: ../tests/medit-ui.xml.h:5
+#: ../medit/medit-ui.xml.h:5
 msgid "_Settings"
 msgstr "Настройки"
 
-#: ../tests/medit-ui.xml.h:6
+#: ../medit/medit-ui.xml.h:6
 msgid "_Tools"
 msgstr "Инструменты"
 
-#: ../tests/medit-ui.xml.h:7
+#: ../medit/medit-ui.xml.h:7
 msgid "_View"
 msgstr "Вид"
 
-#: ../tests/medit-ui.xml.h:8
+#: ../medit/medit-ui.xml.h:8
 msgid "_Window"
 msgstr "Окно"
 
-#. About dialog title
-#: ../moo/mooapp/glade/mooappabout.glade.h:2
-msgid "About"
-msgstr "О программе"
-
-#. Credits button label in About dialog
-#: ../moo/mooapp/glade/mooappabout.glade.h:4
-msgid "C_redits"
-msgstr "Благодарности"
-
-#. Credits dialog title
-#: ../moo/mooapp/glade/mooappabout.glade.h:6
-msgid "Credits"
-msgstr "Благодарности"
-
-#. License dialog title
-#: ../moo/mooapp/glade/mooappabout.glade.h:8
-msgid "License"
-msgstr "Лицензия"
-
-#. System Info dialog title
-#: ../moo/mooapp/glade/mooappabout.glade.h:10
+#: ../moo/mooapp/mooapp.c:1182
 msgid "System Info"
 msgstr "Информация о системе"
 
+#. Credits button label in About dialog
+#: ../moo/mooapp/glade/mooappabout.glade.h:2
+msgid "C_redits"
+msgstr "Благодарности"
+
 #. Tab label in Credits dialog
-#: ../moo/mooapp/glade/mooappabout.glade.h:12
+#: ../moo/mooapp/glade/mooappabout.glade.h:4
 msgid "Thanks"
 msgstr "Спасибо"
 
 #. Tab label in Credits dialog
-#: ../moo/mooapp/glade/mooappabout.glade.h:14
+#: ../moo/mooapp/glade/mooappabout.glade.h:6
 msgid "Written by"
 msgstr "Автор"
 
 #. License button label in About dialog
-#: ../moo/mooapp/glade/mooappabout.glade.h:16
+#: ../moo/mooapp/glade/mooappabout.glade.h:8
 msgid "_License"
 msgstr "Лицензия"
 
-#. System Info button label in About dialog
-#: ../moo/mooapp/glade/mooappabout.glade.h:18
-msgid "_System Info"
-msgstr "Информация о системе"
+#. Save dialog title
+#: ../moo/mooedit/mooeditdialogs.c:85
+#: ../moo/mooedit/plugins/fileselector/moofileselector.glade.h:2
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:984
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1009
+#: ../moo/moofileview/glade/drop.glade.h:1 ../moo/mooutils/moostock.c:42
+msgid "Save As"
+msgstr "Сохранить как"
+
+#: ../moo/mooedit/mooeditdialogs.c:138 ../moo/mooedit/mooeditdialogs.c:150
+#: ../moo/mooedit/mooeditdialogs.c:171
+#, c-format
+msgid "Save changes to document \"%s\" before closing?"
+msgstr ""
+
+#: ../moo/mooedit/mooeditdialogs.c:139 ../moo/mooedit/mooeditdialogs.c:151
+#: ../moo/mooedit/mooeditdialogs.c:172
+msgid "Save changes to document before closing?"
+msgstr ""
+
+#: ../moo/mooedit/mooeditdialogs.c:144 ../moo/mooedit/mooeditdialogs.c:154
+#: ../moo/mooedit/mooeditdialogs.c:180
+msgid "If you don't save, changes will be discarded"
+msgstr ""
+
+#: ../moo/mooedit/mooeditdialogs.c:187
+msgid "Close _without Saving"
+msgstr ""
+
+#. %u is number of documents greater than 1
+#: ../moo/mooedit/mooeditdialogs.c:418
+#, c-format
+msgid ""
+"There are %u documents with unsaved changes. Save changes before closing?"
+msgstr ""
+
+#. Could not save file foo.txt
+#: ../moo/mooedit/mooeditdialogs.c:471
+#, c-format
+msgid ""
+"Could not save file\n"
+"%s"
+msgstr ""
+
+#: ../moo/mooedit/mooeditdialogs.c:473
+msgid "Could not save file"
+msgstr ""
+
+#. Could not open file foo.txt
+#: ../moo/mooedit/mooeditdialogs.c:499
+#, c-format
+msgid ""
+"Could not open file\n"
+"%s"
+msgstr ""
+
+#: ../moo/mooedit/mooeditdialogs.c:501
+msgid "Could not open file"
+msgstr ""
+
+#. Could not reload file foo.txt
+#: ../moo/mooedit/mooeditdialogs.c:529
+#, c-format
+msgid ""
+"Could not reload file\n"
+"%s"
+msgstr ""
+
+#: ../moo/mooedit/mooeditdialogs.c:598
+#, c-format
+msgid "Discard changes in file '%s'?"
+msgstr ""
+
+#: ../moo/mooedit/mooeditdialogs.c:600
+msgid "If you reload the document, changes will be discarded"
+msgstr ""
+
+#: ../moo/mooedit/mooeditdialogs.c:601 ../moo/mooedit/mooeditwindow.c:395
+msgid "_Reload"
+msgstr "Обновить"
+
+#: ../moo/mooedit/mooeditdialogs.c:622
+#, c-format
+msgid "Overwrite modified file '%s'?"
+msgstr ""
+
+#: ../moo/mooedit/mooeditdialogs.c:623
+#, c-format
+msgid ""
+"File '%s' was modified on disk by another process. If you save it, changes "
+"on disk will be lost."
+msgstr ""
+
+#: ../moo/mooedit/mooeditdialogs.c:625
+msgid "Over_write"
+msgstr ""
+
+#: ../moo/mooedit/mooeditdialogs.c:646
+msgid ""
+"Beginning of document reached.\n"
+"Continue from the end?"
+msgstr ""
+
+#: ../moo/mooedit/mooeditdialogs.c:649
+msgid ""
+"End of document reached.\n"
+"Continue from the beginning?"
+msgstr ""
 
 #: ../moo/mooedit/moocommand-exe-unix.c:545
 msgid "Shell command"
@@ -160,13 +246,9 @@ msgstr "Открыть"
 msgid "Open..."
 msgstr "Открыть"
 
-#: ../moo/mooedit/mooeditwindow.c:394 ../moo/moofileview/moofileview.c:1222
-#: ../moo/moofileview/moofileview.c:1223
+#: ../moo/mooedit/mooeditwindow.c:394 ../moo/moofileview/moofileview.c:1223
+#: ../moo/moofileview/moofileview.c:1224
 msgid "Reload"
-msgstr "Обновить"
-
-#: ../moo/mooedit/mooeditwindow.c:395
-msgid "_Reload"
 msgstr "Обновить"
 
 #: ../moo/mooedit/mooeditwindow.c:396
@@ -354,7 +436,7 @@ msgstr "Экспорт в PDF..."
 
 #: ../moo/mooedit/mooeditwindow.c:1549
 #: ../moo/moofileview/moofileview-ui.xml.h:1
-#: ../moo/moofileview/moofileview.c:1164 ../moo/moofileview/moofileview.c:1165
+#: ../moo/moofileview/moofileview.c:1165 ../moo/moofileview/moofileview.c:1166
 msgid "Bookmarks"
 msgstr "Закладки"
 
@@ -730,13 +812,6 @@ msgstr ""
 msgid "Create File"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.glade.h:2
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:984
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1009
-#: ../moo/moofileview/glade/drop.glade.h:1 ../moo/mooutils/moostock.c:42
-msgid "Save As"
-msgstr ""
-
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:360
 #, c-format
 msgid "Create file in folder '%s':"
@@ -778,7 +853,7 @@ msgstr ""
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:610
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1443
 #: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.c:68
-#: ../moo/moofileview/moofileview.c:1061
+#: ../moo/moofileview/moofileview.c:1062
 msgid "File Selector"
 msgstr ""
 
@@ -926,35 +1001,35 @@ msgstr ""
 msgid "Open _With"
 msgstr "Открыть"
 
-#: ../moo/moofileview/moofileview.c:1070
+#: ../moo/moofileview/moofileview.c:1071
 msgid "Go to Parent Folder"
 msgstr "Вверх"
 
-#: ../moo/moofileview/moofileview.c:1111 ../moo/moofileview/moofileview.c:1112
+#: ../moo/moofileview/moofileview.c:1112 ../moo/moofileview/moofileview.c:1113
 msgid "New Folder..."
 msgstr "Создать папку"
 
-#: ../moo/moofileview/moofileview.c:1119 ../moo/moofileview/moofileview.c:1120
+#: ../moo/moofileview/moofileview.c:1120 ../moo/moofileview/moofileview.c:1121
 msgid "Delete..."
 msgstr "Удалить..."
 
-#: ../moo/moofileview/moofileview.c:1131 ../moo/moofileview/moofileview.c:1132
+#: ../moo/moofileview/moofileview.c:1132 ../moo/moofileview/moofileview.c:1133
 msgid "Show Hidden Files"
 msgstr "Показывать скрытые файлы"
 
-#: ../moo/moofileview/moofileview.c:1140 ../moo/moofileview/moofileview.c:1141
+#: ../moo/moofileview/moofileview.c:1141 ../moo/moofileview/moofileview.c:1142
 msgid "Show Parent Folder"
 msgstr ""
 
-#: ../moo/moofileview/moofileview.c:1147 ../moo/moofileview/moofileview.c:1148
+#: ../moo/moofileview/moofileview.c:1148 ../moo/moofileview/moofileview.c:1149
 msgid "Case Sensitive Sort"
 msgstr ""
 
-#: ../moo/moofileview/moofileview.c:1173 ../moo/moofileview/moofileview.c:1174
+#: ../moo/moofileview/moofileview.c:1174 ../moo/moofileview/moofileview.c:1175
 msgid "Add Bookmark"
 msgstr "Добавить закладку"
 
-#: ../moo/moofileview/moofileview.c:1181 ../moo/moofileview/moofileview.c:1182
+#: ../moo/moofileview/moofileview.c:1182 ../moo/moofileview/moofileview.c:1183
 msgid "Edit Bookmarks..."
 msgstr "Редактировать закладки"
 
@@ -1134,6 +1209,18 @@ msgstr ""
 #: ../moo/moopython/plugins/python.py:90
 msgid "Python Output"
 msgstr ""
+
+#~ msgid "About"
+#~ msgstr "О программе"
+
+#~ msgid "Credits"
+#~ msgstr "Благодарности"
+
+#~ msgid "License"
+#~ msgstr "Лицензия"
+
+#~ msgid "_System Info"
+#~ msgstr "Информация о системе"
 
 #~ msgid "spaces"
 #~ msgstr "пробелов"

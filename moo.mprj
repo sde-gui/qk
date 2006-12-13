@@ -35,7 +35,7 @@
  </configurations>
  <run>
   <args>--g-fatal-warnings --new-app</args>
-  <exe>tests/medit</exe>
+  <exe>medit/medit</exe>
   <vars>
    <var name="LANGUAGE">ru</var>
   </vars>

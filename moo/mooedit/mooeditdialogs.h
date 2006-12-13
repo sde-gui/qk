@@ -39,10 +39,6 @@ MooEditDialogResponse _moo_edit_save_multiple_changes_dialog (GSList *docs,
 
 gboolean         _moo_edit_reload_modified_dialog   (MooEdit        *edit);
 gboolean         _moo_edit_overwrite_modified_dialog (MooEdit        *edit);
-gboolean         _moo_edit_overwrite_deleted_dialog (MooEdit        *edit);
-
-void             _moo_edit_file_deleted_dialog      (MooEdit        *edit);
-int              _moo_edit_file_modified_on_disk_dialog (MooEdit    *edit);
 
 void             _moo_edit_save_error_dialog        (GtkWidget      *widget,
                                                      const char     *filename,
@@ -50,13 +46,10 @@ void             _moo_edit_save_error_dialog        (GtkWidget      *widget,
 void             _moo_edit_open_error_dialog        (GtkWidget      *widget,
                                                      const char     *filename,
                                                      const char     *err_msg);
-void             _moo_edit_reload_error_dialog      (GtkWidget      *widget,
+void             _moo_edit_reload_error_dialog      (MooEdit        *doc,
                                                      const char     *err_msg);
 
 
-void             _moo_text_nothing_found_dialog     (GtkWidget      *parent,
-                                                     const char     *text,
-                                                     gboolean        regex);
 gboolean         _moo_text_search_from_start_dialog (GtkWidget      *parent,
                                                      gboolean        backwards);
 void             _moo_text_regex_error_dialog       (GtkWidget      *parent,

@@ -5,6 +5,7 @@ moo/mooapp/mooappabout.c
 moo/mooapp/mooapp.c
 moo/mooapp/glade/mooappabout.glade
 
+moo/mooedit/mooeditdialogs.c
 moo/mooedit/moocommand-exe-unix.c
 moo/mooedit/moocommand-script.c
 moo/mooedit/mooeditwindow.c

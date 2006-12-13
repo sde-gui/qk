@@ -379,7 +379,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
-                <property name="label" translatable="yes" comments="System Info button label in About dialog">gtk-close</property>
+                <property name="label">gtk-close</property>
                 <property name="use_stock">True</property>
               </widget>
               <packing>

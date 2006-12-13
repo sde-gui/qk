@@ -81,7 +81,8 @@ _moo_edit_save_as_dialog (MooEdit        *edit,
                           MooFilterMgr   *mgr,
                           const char     *display_basename)
 {
-    const char *title = "Save File";
+    /* Save dialog title */
+    const char *title = _("Save As");
     const char *start = NULL;
     const char *filename = NULL;
     char *new_start;
@@ -134,55 +135,56 @@ _moo_edit_save_changes_dialog (MooEdit *edit)
         GTK_MESSAGE_WARNING,
         GTK_BUTTONS_NONE,
         name ?
-            "Save changes to document \"%s\" before closing?" :
-            "Save changes to document before closing?",
+            _("Save changes to document \"%s\" before closing?") :
+            _("Save changes to document before closing?"),
         name));
 
     gtk_message_dialog_format_secondary_text (
         GTK_MESSAGE_DIALOG (dialog),
-        "If you don't save, changes will be discarded");
+        _("If you don't save, changes will be discarded"));
 #elif GTK_CHECK_VERSION(2,4,0)
-    if (name)
+    {
+        char *question, *markup;
+
+        question = name ?
+            g_strdup_printf (_("Save changes to document \"%s\" before closing?"), name) :
+            g_strdup (_("Save changes to document before closing?"));
+        markup = g_markup_printf_escaped ("<span weight=\"bold\" size=\"larger\">%s</span>\n%s",
+                                          question,
+                                          _("If you don't save, changes will be discarded"));
+
         dialog = GTK_DIALOG (gtk_message_dialog_new_with_markup (
             GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
             GTK_DIALOG_MODAL,
             GTK_MESSAGE_WARNING,
             GTK_BUTTONS_NONE,
-            "<span weight=\"bold\" size=\"larger\">Save changes to "
-            "document \"%s\" before closing?</span>\n"
-            "If you don't save, changes will be discarded",
-            name));
-    else
-        dialog = GTK_DIALOG (gtk_message_dialog_new_with_markup (
-            GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
-            GTK_DIALOG_MODAL,
-            GTK_MESSAGE_WARNING,
-            GTK_BUTTONS_NONE,
-            "<span weight=\"bold\" size=\"larger\">Save changes to "
-            "document before closing?</span>\n"
-            "If you don't save, changes will be discarded"));
+            "%s", markup);
+
+        g_free (markup);
+        g_free (question);
+    }
 #else /* !GTK_CHECK_VERSION(2,4,0) */
-    if (name)
+    {
+        char *markup;
+
+        question = name ?
+            g_strdup_printf (_("Save changes to document \"%s\" before closing?"), name) :
+            g_strdup (_("Save changes to document before closing?"));
+
         dialog = GTK_DIALOG (gtk_message_dialog_new (
             GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
             GTK_DIALOG_MODAL,
             GTK_MESSAGE_WARNING,
             GTK_BUTTONS_NONE,
-            "Save changes to document \"%s\" before closing?\n"
-            "If you don't save, changes will be discarded",
-            name));
-    else
-        dialog = GTK_DIALOG (gtk_message_dialog_new (
-            GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
-            GTK_DIALOG_MODAL,
-            GTK_MESSAGE_WARNING,
-            GTK_BUTTONS_NONE,
-            "Save changes to document before closing?\n"
-            "If you don't save, changes will be discarded"));
+            "%s\n%s", question,
+            _("If you don't save, changes will be discarded"));
+
+        g_free (question);
+    }
 #endif /* !GTK_CHECK_VERSION(2,4,0) */
 
     gtk_dialog_add_buttons (dialog,
-        "Close _without Saving", GTK_RESPONSE_NO,
+        _("Close _without Saving"), GTK_RESPONSE_NO,
         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
         GTK_STOCK_SAVE, GTK_RESPONSE_YES,
         NULL);
@@ -378,7 +380,7 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
 {
     GSList *l;
     GtkWidget *dialog, *label, *treeview;
-    char *msg;
+    char *msg, *question;
     int response;
     MooEditDialogResponse retval;
     MooGladeXML *xml;
@@ -412,9 +414,11 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
 #endif /* GTK_CHECK_VERSION(2,6,0) */
 
     label = moo_glade_xml_get_widget (xml, "label");
-    msg = g_strdup_printf ("<span weight=\"bold\" size=\"larger\">There are %u "
-                           "documents with unsaved changes. Save changes before "
-                           "closing?</span>", g_slist_length (docs));
+    /* %u is number of documents greater than 1 */
+    question = g_strdup_printf (_("There are %u documents with unsaved changes. "
+                                  "Save changes before closing?"), g_slist_length (docs));
+    msg = g_markup_printf_escaped ("<span weight=\"bold\" size=\"larger\">%s</span>",
+                                   question);
     gtk_label_set_markup (GTK_LABEL (label), msg);
 
     treeview = moo_glade_xml_get_widget (xml, "treeview");
@@ -435,6 +439,7 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
             retval = MOO_EDIT_RESPONSE_CANCEL;
     }
 
+    g_free (question);
     g_free (msg);
     gtk_widget_destroy (dialog);
     g_object_unref (xml);
@@ -446,7 +451,6 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
 /* Error dialogs
  */
 
-/* XXX filename */
 void
 _moo_edit_save_error_dialog (GtkWidget      *widget,
                              const char     *filename,
@@ -462,9 +466,10 @@ _moo_edit_save_error_dialog (GtkWidget      *widget,
         g_critical ("%s: could not convert filename '%s' to utf8", G_STRLOC, filename);
 
     if (filename_utf8)
-        msg = g_strdup_printf ("Could not save file\n%s", filename_utf8);
+        /* Could not save file foo.txt */
+        msg = g_strdup_printf (_("Could not save file\n%s"), filename_utf8);
     else
-        msg = g_strdup ("Could not save file");
+        msg = g_strdup (_("Could not save file"));
 
     moo_error_dialog (widget, msg, err_msg);
 
@@ -473,7 +478,6 @@ _moo_edit_save_error_dialog (GtkWidget      *widget,
 }
 
 
-/* XXX filename */
 void
 _moo_edit_open_error_dialog (GtkWidget      *widget,
                              const char     *filename,
@@ -489,9 +493,10 @@ _moo_edit_open_error_dialog (GtkWidget      *widget,
         g_critical ("%s: could not convert filename '%s' to utf8", G_STRLOC, filename);
 
     if (filename_utf8)
-        msg = g_strdup_printf ("Could not open file\n%s", filename_utf8);
+        /* Could not open file foo.txt */
+        msg = g_strdup_printf (_("Could not open file\n%s"), filename_utf8);
     else
-        msg = g_strdup ("Could not open file");
+        msg = g_strdup (_("Could not open file"));
 
     moo_error_dialog (widget, msg, err_msg);
 
@@ -500,12 +505,28 @@ _moo_edit_open_error_dialog (GtkWidget      *widget,
 }
 
 
-/* XXX filename */
 void
-_moo_edit_reload_error_dialog (GtkWidget      *widget,
-                               const char     *err_msg)
+_moo_edit_reload_error_dialog (MooEdit    *doc,
+                               const char *err_msg)
 {
-    moo_error_dialog (widget, "Could not load file", err_msg);
+    const char *filename;
+    char *msg = NULL;
+
+    g_return_if_fail (MOO_IS_EDIT (doc));
+
+    filename = moo_edit_get_display_basename (doc);
+
+    if (!filename)
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        filename = "";
+    }
+
+    /* Could not reload file foo.txt */
+    msg = g_strdup_printf (_("Could not reload file\n%s"), filename);
+    moo_error_dialog (GTK_WIDGET (doc), msg, err_msg);
+
+    g_free (msg);
 }
 
 
@@ -516,27 +537,27 @@ _moo_edit_reload_error_dialog (GtkWidget      *widget,
 static gboolean
 moo_edit_question_dialog (MooEdit    *edit,
                           const char *text,
+                          const char *secondary,
                           const char *button)
 {
     int res;
     GtkWindow *parent = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit)));
+    GtkWidget *dialog;
 
-#if GTK_CHECK_VERSION(2,4,0)
-    GtkWidget *dialog = gtk_message_dialog_new_with_markup (
-        parent,
-        GTK_DIALOG_MODAL,
-        GTK_MESSAGE_WARNING,
-        GTK_BUTTONS_NONE,
-        "<span weight=\"bold\" size=\"larger\">%s</span>",
-        text);
-#else /* !GTK_CHECK_VERSION(2,4,0) */
-    GtkWidget *dialog = gtk_message_dialog_new (
-        parent,
-        GTK_DIALOG_MODAL,
-        GTK_MESSAGE_WARNING,
-        GTK_BUTTONS_NONE,
-        text);
-#endif /* !GTK_CHECK_VERSION(2,4,0) */
+#if !GTK_CHECK_VERSION(2,6,0)
+#warning "Implement me: moo_edit_question_dialog"
+    dialog = gtk_message_dialog_new (parent, GTK_DIALOG_MODAL,
+                                     GTK_MESSAGE_WARNING,
+                                     GTK_BUTTONS_NONE,
+                                     text);
+#else
+    dialog = gtk_message_dialog_new (parent, GTK_DIALOG_MODAL,
+                                     GTK_MESSAGE_WARNING,
+                                     GTK_BUTTONS_NONE,
+                                     text);
+    gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
+                                              "%s", secondary);
+#endif
 
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
                             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -559,77 +580,56 @@ moo_edit_question_dialog (MooEdit    *edit,
 gboolean
 _moo_edit_reload_modified_dialog (MooEdit    *edit)
 {
-    return moo_edit_question_dialog (edit, "Reload?", "Reload");
+    const char *name;
+    char *question;
+    gboolean result;
+
+    name = moo_edit_get_display_basename (edit);
+
+    if (!name)
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        name = "";
+    }
+
+    question = g_strdup_printf (_("Discard changes in file '%s'?"), name);
+    result = moo_edit_question_dialog (edit, question,
+                                       _("If you reload the document, changes will be discarded"),
+                                       _("_Reload"));
+
+    g_free (question);
+    return result;
 }
 
 gboolean
 _moo_edit_overwrite_modified_dialog (MooEdit    *edit)
 {
-    return moo_edit_question_dialog (edit, "Overwrite modified?", "Overwrite");
-}
+    const char *name;
+    char *question, *secondary;
+    gboolean result;
 
-gboolean
-_moo_edit_overwrite_deleted_dialog (MooEdit    *edit)
-{
-    return moo_edit_question_dialog (edit, "Overwrite deleted?", "Overwrite");
-}
+    name = moo_edit_get_display_basename (edit);
 
+    if (!name)
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        name = "";
+    }
 
-void
-_moo_edit_file_deleted_dialog (MooEdit    *edit)
-{
-    moo_error_dialog (GTK_WIDGET (edit),
-                      "File deleted",
-                      "File deleted");
-}
+    question = g_strdup_printf (_("Overwrite modified file '%s'?"), name);
+    secondary = g_strdup_printf (_("File '%s' was modified on disk by another process. If you save it, "
+                                   "changes on disk will be lost."), name);
+    result = moo_edit_question_dialog (edit, question, secondary, _("Over_write"));
 
-
-/* XXX */
-int
-_moo_edit_file_modified_on_disk_dialog (MooEdit *edit)
-{
-    moo_error_dialog (GTK_WIDGET (edit),
-                      "File modified on disk",
-                      "File modified on disk");
-    return GTK_RESPONSE_CANCEL;
+    g_free (question);
+    g_free (secondary);
+    return result;
 }
 
 
 /***************************************************************************/
 /* Search dialogs
  */
-
-void
-_moo_text_nothing_found_dialog (GtkWidget      *parent,
-                                const char     *text,
-                                gboolean        regex)
-{
-    GtkWidget *dialog;
-    char *msg_text;
-
-    g_return_if_fail (text != NULL);
-
-    if (regex)
-        msg_text = g_strdup_printf ("Search pattern '%s' not found!", text);
-    else
-        msg_text = g_strdup_printf ("Search string '%s' not found!", text);
-
-    dialog = gtk_message_dialog_new (NULL,
-                                     GTK_DIALOG_MODAL,
-                                     GTK_MESSAGE_INFO, GTK_BUTTONS_NONE,
-                                     msg_text);
-    moo_window_set_parent (dialog, parent);
-
-    gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CLOSE,
-                            GTK_RESPONSE_CANCEL, NULL);
-    gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
-
-    gtk_dialog_run (GTK_DIALOG (dialog));
-    gtk_widget_destroy (dialog);
-
-    g_free (msg_text);
-}
-
 
 gboolean
 _moo_text_search_from_start_dialog (GtkWidget *widget,
@@ -640,11 +640,11 @@ _moo_text_search_from_start_dialog (GtkWidget *widget,
     const char *msg;
 
     if (backwards)
-        msg = "Beginning of document reached.\n"
-              "Continue from the end?";
+        msg = _("Beginning of document reached.\n"
+                "Continue from the end?");
     else
-        msg = "End of document reached.\n"
-              "Continue from the beginning?";
+        msg = _("End of document reached.\n"
+                "Continue from the beginning?");
 
     dialog = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE,

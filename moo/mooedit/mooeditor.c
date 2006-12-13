@@ -1862,7 +1862,7 @@ _moo_editor_reload (MooEditor      *editor,
     if (!_moo_edit_loader_reload (loader, doc, &error_here))
     {
         if (!editor->priv->silent)
-            _moo_edit_reload_error_dialog (GTK_WIDGET (doc), error_here->message);
+            _moo_edit_reload_error_dialog (doc, error_here->message);
         else
             g_propagate_error (error, error_here);
 
