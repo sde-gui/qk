@@ -57,7 +57,7 @@ AC_DEFUN([MOO_AC_FLAGS],[
     #  MooEdit stuff
     #
     if test "x$build_mooedit" != "xno"; then
-        MOO_CFLAGS="$MOO_CFLAGS $XML_CFLAGS -DMOO_TEXT_LANG_FILES_DIR=\\\"${MOO_TEXT_LANG_FILES_DIR}\\\""
+        MOO_CFLAGS="$MOO_CFLAGS $XML_CFLAGS"
         MOO_LIBS="$MOO_LIBS $XML_LIBS"
     fi
 
@@ -68,10 +68,8 @@ AC_DEFUN([MOO_AC_FLAGS],[
 
     MOO_INI_IN_IN_RULE='%.ini.desktop.in: %.ini.desktop.in.in $(top_builddir)/config.status ; cd $(top_builddir) && $(SHELL) ./config.status --file=$(subdir)/[$]@'
     MOO_INI_IN_RULE='%.ini: %.ini.in $(top_builddir)/config.status ; cd $(top_builddir) && $(SHELL) ./config.status --file=$(subdir)/[$]@'
-    MOO_WIN32_RC_IN_RULE='%.rc: %.rc.in $(top_builddir)/config.status ; cd $(top_builddir) && $(SHELL) ./config.status --file=$(subdir)/[$]@'
-    MOO_WIN32_RC_RULE='%.res: %.rc ; $(WINDRES) -i $< --input-format=rc -o [$]@ -O coff'
+    MOO_WIN32_RC_RULE='%.res: %.rc.in $(top_builddir)/config.status ; cd $(top_builddir) && $(SHELL) ./config.status --file=$(subdir)/[$]*.rc && cd $(subdir) && $(WINDRES) -i [$]*.rc --input-format=rc -o [$]@ -O coff && rm [$]*.rc'
     AC_SUBST(MOO_INI_IN_IN_RULE)
     AC_SUBST(MOO_INI_IN_RULE)
-    AC_SUBST(MOO_WIN32_RC_IN_RULE)
     AC_SUBST(MOO_WIN32_RC_RULE)
 ])

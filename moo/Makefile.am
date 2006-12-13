@@ -62,16 +62,11 @@ noinst_LTLIBRARIES += libmoo.la
 endif
 
 if MOO_OS_MINGW
-rc_files = $(rc_in_files:.rc.in=.rc)
-@MOO_WIN32_RC_IN_RULE@
 @MOO_WIN32_RC_RULE@
-CLEANFILES += $(rc_files)
-endif
-
-if MOO_OS_MINGW
 CLEANFILES += libmoo.res
 libmoo_res_ldflag = -Wl,libmoo.res
 BUILT_SOURCES += libmoo.res
+nodist_libmoo_la_SOURCES = libmoo.res
 endif
 
 if MOO_ENABLE_TESTS
@@ -112,8 +107,14 @@ endif MOO_INSTALL_LIB
 else !MOO_OS_UNIX
 if MOO_USE_PYGTK
 
+if MOO_OS_MINGW
 CLEANFILES += pymoo25.res moo25.res pymoo24.res moo24.res
 BUILT_SOURCES += pymoo25.res moo25.res pymoo24.res moo24.res
+nodist_pymoo25_la_SOURCES = pymoo25.res
+nodist_moo25_la_SOURCES = moo25.res
+nodist_pymoo24_la_SOURCES = pymoo24.res
+nodist_moo24_la_SOURCES = moo24.res
+endif
 
 lib_LTLIBRARIES += pymoo25.la moo25.la pymoo24.la moo24.la
 plugindir = $(MOO_LIB_DIR)/plugins

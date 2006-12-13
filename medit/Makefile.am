@@ -22,12 +22,11 @@ medit_LDADD = ../moo/libmoo.la
 
 if MOO_OS_MINGW
 medit_LDFLAGS += -mwindows
-CLEANFILES = medit.res medit.rc
+CLEANFILES = medit.res
+@MOO_WIN32_RC_RULE@
 medit_res_ldflag = -Wl,medit.res
 BUILT_SOURCES += medit.res
 nodist_medit_SOURCES += medit.res
-@MOO_WIN32_RC_IN_RULE@
-@MOO_WIN32_RC_RULE@
 endif
 
 XML2H = $(srcdir)/../moo/mooutils/xml2h.sh
