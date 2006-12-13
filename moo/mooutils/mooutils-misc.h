@@ -63,9 +63,10 @@ typedef enum {
 
 GType       moo_data_dir_type_get_type      (void) G_GNUC_CONST;
 
-/* application directory on win32 */
-char       *moo_get_app_dir                 (void);
-char       *moo_get_dll_dir                 (const char     *dll);
+#ifdef __WIN32__
+char       *moo_win32_get_app_dir           (void);
+char       *moo_win32_get_dll_dir           (const char     *dll);
+#endif
 
 /* ~/.appname */
 gboolean    moo_make_user_data_dir          (const char     *path);

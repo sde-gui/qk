@@ -11,9 +11,6 @@ configure has the following medit-specific options:
 
   --enable-debug          enable debug options (default = NO)
   --enable-all-warnings   enable lot of compiler warnings (default = NO)
-  --enable-relocation     do not hardcode data directories (default = NO)
-    This option seems to be working, but it's useful only for custom binary
-    distributions.
 
   --with-xml              whether to use libxml2 (default = YES)
     This option is useful only for development, to test how medit works in absense

@@ -14,7 +14,6 @@ m4files =			\
 	m4/moo-progs.m4		\
 	m4/moo-pygtk.m4		\
 	m4/moo-python.m4	\
-	m4/moo-reloc.m4		\
 	m4/moo-version.m4	\
 	m4/moo-xdgmime.m4	\
 	m4/moo-xml.m4

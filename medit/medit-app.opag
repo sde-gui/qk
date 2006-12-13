@@ -222,7 +222,7 @@ push_appdir_to_path (void)
     const char *path;
     char *new_path;
 
-    appdir = moo_get_app_dir ();
+    appdir = moo_win32_get_app_dir ();
     g_return_if_fail (appdir != NULL);
 
     path = g_getenv ("Path");

@@ -14,7 +14,7 @@
   <gtk-cvs>
    <build_dir>/home/muntyan/projects/gtk/build/moo</build_dir>
    <configure>
-    <args>--enable-debug --enable-all-warnings --prefix=$PREFIX --with-fam</args>
+    <args>--enable-debug --enable-all-warnings --prefix=$PREFIX --with-fam --with-mooterm</args>
     <vars>
      <var name="CFLAGS">-g</var>
     </vars>

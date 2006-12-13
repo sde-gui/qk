@@ -112,7 +112,7 @@ MOO_MODULE_INIT_FUNC_DECL
     }
 
 #ifdef __WIN32__
-    dlldir = moo_get_dll_dir (MOO_PYTHON_MODULE_DLL_NAME);
+    dlldir = moo_win32_get_dll_dir (MOO_PYTHON_MODULE_DLL_NAME);
 #endif
 
     if (dlldir && !sys_path_add_dir (dlldir))

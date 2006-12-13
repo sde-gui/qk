@@ -1,7 +1,7 @@
 SUBDIRS = pyproject
 
-moopython_pluginsdir = $(MOO_LIB_DIR)/plugins
-moopython_plugins_libdir = $(MOO_LIB_DIR)/plugins/lib
+moopython_pluginsdir = ${MOO_PLUGINS_DIR}
+moopython_plugins_libdir = ${MOO_PLUGINS_DIR}/lib
 
 ini_in_in_files =			\
 	terminal.ini.desktop.in.in	\

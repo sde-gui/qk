@@ -53,18 +53,23 @@ G_WIN32_DLLMAIN_FOR_DLL_NAME(static, libmoo_dll_name)
 const char *
 _moo_get_locale_dir (void)
 {
-    static char *dir = NULL;
+    G_LOCK_DEFINE_STATIC (moo_locale_dir);
+    static char *moo_locale_dir = NULL;
 
-    if (!dir)
+    G_LOCK (moo_locale_dir);
+
+    if (!moo_locale_dir)
     {
         char *tmp;
         tmp = g_win32_get_package_installation_subdirectory (NULL, libmoo_dll_name,
                                                              "lib\\locale");
-        dir = g_win32_locale_filename_from_utf8 (tmp);
+        moo_locale_dir = g_win32_locale_filename_from_utf8 (tmp);
         g_free (tmp);
     }
 
-    return dir;
+    G_UNLOCK (moo_locale_dir);
+
+    return moo_locale_dir;
 }
 #endif
 
@@ -1169,39 +1174,48 @@ _moo_menu_item_set_label (GtkWidget  *item,
 const char *
 _moo_get_pid_string (void)
 {
-    static char *string;
+    G_LOCK_DEFINE_STATIC (moo_pid_string);
+    static char *moo_pid_string;
 
-    if (!string)
+    G_LOCK (moo_pid_string);
+
+    if (!moo_pid_string)
     {
 #ifdef __WIN32__
 #ifdef __GNUC__
 #warning "Implement _moo_get_pid_string()"
 #endif
-        string = g_strdup ("");
+        moo_pid_string = g_strdup ("");
 #else
-        string = g_strdup_printf ("%d", getpid ());
+        moo_pid_string = g_strdup_printf ("%d", getpid ());
 #endif
     }
 
-    return string;
+    G_UNLOCK (moo_pid_string);
+
+    return moo_pid_string;
 }
 
 
 #ifdef __WIN32__
 char *
-moo_get_app_dir (void)
+moo_win32_get_app_dir (void)
 {
-    static char *appdir;
+    static char *moo_app_dir;
+    G_LOCK_DEFINE_STATIC(moo_app_dir);
 
-    if (!appdir)
-        appdir = moo_get_dll_dir (NULL);
+    G_LOCK (moo_app_dir);
 
-    return g_strdup (appdir);
+    if (!moo_app_dir)
+        moo_app_dir = moo_win32_get_dll_dir (NULL);
+
+    G_UNLOCK (moo_app_dir);
+
+    return g_strdup (moo_app_dir);
 }
 
-
 char *
-moo_get_dll_dir (const char *dll)
+moo_win32_get_dll_dir (const char *dll)
 {
     char *dir;
     char *dllname = NULL;
@@ -1237,41 +1251,7 @@ moo_get_dll_dir (const char *dll)
 
     return dir;
 }
-
-#else
-char *
-moo_get_app_dir (void)
-{
-    g_return_val_if_reached (g_strdup ("."));
-}
-
-char *
-moo_get_dll_dir (G_GNUC_UNUSED const char *dll)
-{
-    g_return_val_if_reached (g_strdup ("."));
-}
 #endif
-
-
-static char *
-moo_get_data_dir (G_GNUC_UNUSED MooDataDirType type)
-{
-#ifdef __WIN32__
-    return moo_get_app_dir ();
-#elif !defined(MOO_ENABLE_RELOCATION)
-    switch (type)
-    {
-        case MOO_DATA_SHARE:
-            return g_strdup (MOO_DATA_DIR);
-        case MOO_DATA_LIB:
-            return g_strdup (MOO_LIB_DIR);
-    }
-
-    g_return_val_if_reached (NULL);
-#else
-    return NULL;
-#endif
-}
 
 
 static const char *
@@ -1339,106 +1319,177 @@ cmp_dirs (const char *dir1,
 }
 
 
+static GSList *
+add_dir_list_from_env (GSList     *list,
+                       const char *var)
+{
+    char **dirs, **p;
+
+#ifdef __WIN32__
+    dirs = g_strsplit (var, ";", 0);
+    p = moo_filenames_from_locale (dirs);
+    g_strfreev (dirs);
+    dirs = p;
+#else
+    dirs = g_strsplit (var, ":", 0);
+#endif
+
+    for (p = dirs; p && *p; ++p)
+        list = g_slist_prepend (list, *p);
+
+    g_free (dirs);
+    return list;
+}
+
+#ifdef __WIN32__
+static GSList *
+add_win32_data_dirs_for_dll (GSList     *list,
+                             const char *subdir_name,
+                             const char *dllname)
+{
+    char *dlldir, *datadir;
+
+    dlldir = moo_win32_get_dll_dir (dllname);
+
+    if (g_str_has_suffix (dlldir, "\\"))
+    {
+        char *tmp = g_strndup (dlldir, strlen(dlldir) - 1);
+        g_free (dlldir);
+        dlldir = tmp;
+    }
+
+    if (g_str_has_suffix (dlldir, "bin") ||
+        g_str_has_suffix (dlldir, "lib"))
+    {
+        char *tmp = g_path_get_dirname (dlldir);
+        datadir = g_build_filename (tmp, subdir_name, NULL);
+        g_free (tmp);
+    }
+    else
+    {
+        datadir = g_strdup (dlldir);
+    }
+
+    g_free (dlldir);
+    list = g_slist_prepend (list, datadir);
+    return list;
+}
+
+static GSList *
+add_win32_data_dirs (GSList     *list,
+                     const char *prefix)
+{
+    char *subdir;
+
+    subdir = g_strdup_printf ("%s\\" MOO_PACKAGE_NAME, prefix);
+    list = add_win32_data_dirs_for_dll (list, subdir, libmoo_dll_name);
+    list = add_win32_data_dirs_for_dll (list, subdir, NULL);
+
+    g_free (subdir);
+    return list;
+}
+#endif
+
+
 char **
 moo_get_data_dirs (MooDataDirType type,
                    guint         *n_dirs)
 {
-    const char *env[2];
-    GPtrArray *dirs;
-    GSList *list = NULL;
-    guint i;
-    char *d;
+    static char **moo_data_dirs[2];
+    static guint n_data_dirs[2];
+    G_LOCK_DEFINE_STATIC(moo_data_dirs);
 
-    dirs = g_ptr_array_sized_new (3);
-    env[0] = g_getenv ("MOO_APP_DIRS");
-    env[1] = type == MOO_DATA_SHARE ? g_getenv ("MOO_DATA_DIRS") : g_getenv ("MOO_LIB_DIRS");
+    g_return_val_if_fail (type < 2, NULL);
 
-    for (i = 0; i < 2; ++i)
+    G_LOCK (moo_data_dirs);
+
+    if (!moo_data_dirs[type])
     {
-        const char *var = env[i];
-        char **env_dirs, **p;
+        const char *env[2];
+        GPtrArray *dirs;
+        GSList *list = NULL;
+        guint i;
 
-        if (!var || !*var)
-            continue;
+        dirs = g_ptr_array_new ();
 
-#ifdef __WIN32__
-        env_dirs = g_strsplit (var, ";", 0);
-        p = moo_filenames_from_locale (env_dirs);
-        g_strfreev (env_dirs);
-        env_dirs = p;
-#else
-        env_dirs = g_strsplit (var, ":", 0);
-#endif
+        env[0] = g_getenv ("MOO_APP_DIRS");
+        env[1] = type == MOO_DATA_SHARE ? g_getenv ("MOO_DATA_DIRS") : g_getenv ("MOO_LIB_DIRS");
 
-        for (p = env_dirs; p && *p; ++p)
+        /* environment variables override everything */
+        if (env[0] || env[1])
         {
-            if (**p)
-                list = g_slist_prepend (list, *p);
+            if (env[1])
+                list = add_dir_list_from_env (list, env[1]);
             else
-                g_free (*p);
+                list = add_dir_list_from_env (list, env[0]);
         }
-
-        g_free (env_dirs);
-    }
-
-    if ((d = moo_get_data_dir (type)))
-        list = g_slist_prepend (list, d);
-
-#ifdef __WIN32__
-    d = NULL;
-
-    switch (type)
-    {
-        case MOO_DATA_SHARE:
-            d = g_win32_get_package_installation_subdirectory (NULL, libmoo_dll_name,
-                                                               "share\\" MOO_PACKAGE_NAME);
-            break;
-        case MOO_DATA_LIB:
-            d = g_win32_get_package_installation_subdirectory (NULL, libmoo_dll_name,
-                                                               "lib\\" MOO_PACKAGE_NAME);
-            break;
-    }
-
-    if (d)
-        list = g_slist_prepend (list, d);
-#endif
-
-    list = g_slist_prepend (list, moo_get_user_data_dir ());
-
-    list = g_slist_reverse (list);
-
-    while (list)
-    {
-        gboolean found = FALSE;
-
-        if (!list->data)
-        {
-            list = g_slist_delete_link (list, list);
-            continue;
-        }
-
-        for (i = 0; i < dirs->len; ++i)
-        {
-            if (cmp_dirs (list->data, dirs->pdata[i]))
-            {
-                found = TRUE;
-                break;
-            }
-        }
-
-        if (!found)
-            g_ptr_array_add (dirs, list->data);
         else
-            g_free (list->data);
+        {
+#ifdef __WIN32__
+            list = add_win32_data_dirs (list, type == MOO_DATA_SHARE ? "share" : "lib");
+#else
+            if (type == MOO_DATA_SHARE)
+            {
+                const char* const *p;
+                const char* const *sys_dirs;
 
-        list = g_slist_delete_link (list, list);
+                sys_dirs = g_get_system_data_dirs ();
+
+                for (p = sys_dirs; p && *p; ++p)
+                    list = g_slist_prepend (list, g_strdup (*p));
+
+                list = g_slist_prepend (list, g_strdup (MOO_DATA_DIR));
+            }
+            else
+            {
+                list = g_slist_prepend (list, g_strdup (MOO_LIB_DIR));
+            }
+#endif
+        }
+
+        list = g_slist_prepend (list, moo_get_user_data_dir ());
+        list = g_slist_reverse (list);
+
+        while (list)
+        {
+            gboolean found = FALSE;
+            char *path;
+
+            path = list->data;
+            list = g_slist_delete_link (list, list);
+
+            if (!path || !path[0])
+            {
+                g_free (path);
+                continue;
+            }
+
+            for (i = 0; i < dirs->len; ++i)
+            {
+                if (cmp_dirs (path, dirs->pdata[i]))
+                {
+                    found = TRUE;
+                    break;
+                }
+            }
+
+            if (!found)
+                g_ptr_array_add (dirs, path);
+            else
+                g_free (path);
+        }
+
+        g_ptr_array_add (dirs, NULL);
+        n_data_dirs[type] = dirs->len - 1;
+        moo_data_dirs[type] = (char**) g_ptr_array_free (dirs, FALSE);
     }
+
+    G_UNLOCK (moo_data_dirs);
 
     if (n_dirs)
-        *n_dirs = dirs->len;
+        *n_dirs = n_data_dirs[type];
 
-    g_ptr_array_add (dirs, NULL);
-    return (char**) g_ptr_array_free (dirs, FALSE);
+    return g_strdupv (moo_data_dirs[type]);
 }
 
 

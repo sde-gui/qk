@@ -6,7 +6,9 @@ datadir=@datadir@
 libdir=@libdir@
 
 langfilesdir=@MOO_TEXT_LANG_FILES_DIR@
-pluginsdir=@MOO_LIB_DIR@/plugins
+pluginsdir=@MOO_PLUGINS_DIR@
+moolibdir=@MOO_LIB_DIR@
+moodatadir=@MOO_DATA_DIR@
 
 Name: moo
 Description: A text editor and terminal emulator library
