@@ -34,6 +34,8 @@ AC_DEFUN([MOO_AC_CHECK_FAM],[
             AC_MSG_RESULT($FAM_LIBS)
         fi
 
+        AC_CHECK_FUNCS([FAMNoExists])
+
         MOO_FAM_CFLAGS="$FAM_CFLAGS"
         MOO_FAM_LIBS="$FAM_LIBS"
         ifelse([$1], , :, [$1])

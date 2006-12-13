@@ -584,6 +584,10 @@ watch_fam_start (MooFileWatch   *watch,
     if (FAMOpen (&watch->fam_connection) != 0)
         RETURN_FAM_ERROR (FAMOpen, error, FALSE);
 
+#ifdef HAVE_FAMNOEXISTS
+    FAMNoExists (&watch->fam_connection);
+#endif
+
     fam_socket = g_io_channel_unix_new (watch->fam_connection.fd);
     watch->fam_connection_watch =
             g_io_add_watch_full (fam_socket, MOO_FAM_SOCKET_WATCH_PRIORITY,
@@ -802,6 +806,7 @@ read_fam_events (G_GNUC_UNUSED GIOChannel *source,
             continue;
 
         /* TODO: check monitor here */
+        g_assert (monitor->fam_request == fe.fr.reqnum);
         event.monitor_id = monitor->id;
         event.filename = fe.filename;
         event.error = NULL;
