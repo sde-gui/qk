@@ -25,7 +25,6 @@
 #include "gtksourceview-i18n.h"
 #include "gtksourcecontextengine.h"
 #include "gtktextregion.h"
-#include "gtksourcetag.h"
 #include "gtksourcelanguage-private.h"
 #include "gtksourcebuffer.h"
 #include "eggregex.h"
@@ -533,18 +532,15 @@ create_tag (GtkSourceContextEngine *ce,
 {
 	GSList *tags;
 	GtkTextTag *new_tag;
-	GtkTextTagTable *table;
 
 	g_assert (style_name != NULL);
 
 	tags = g_hash_table_lookup (ce->priv->tags, style_name);
 
-	new_tag = g_object_new (GTK_TYPE_SOURCE_TAG, NULL);
-	table = gtk_text_buffer_get_tag_table (ce->priv->buffer);
-	gtk_text_tag_table_add (table, new_tag);
+	new_tag = gtk_text_buffer_create_tag (ce->priv->buffer, NULL, NULL);
 	set_tag_style (ce, new_tag, style_name);
 
-	tags = g_slist_prepend (tags, new_tag);
+	tags = g_slist_prepend (tags, g_object_ref (new_tag));
 	g_hash_table_insert (ce->priv->tags, g_strdup (style_name), tags);
 
 	return new_tag;

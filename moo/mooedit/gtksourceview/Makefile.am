@@ -49,7 +49,5 @@ libgtksourceview_la_SOURCES =		\
 	gtksourcestylemanager.h		\
 	gtksourcestylescheme.c		\
 	gtksourcestylescheme.h		\
-	gtksourcetag.c			\
-	gtksourcetag.h			\
 	gtktextregion.c			\
 	gtktextregion.h
