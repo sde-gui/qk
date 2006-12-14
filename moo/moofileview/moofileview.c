@@ -2955,7 +2955,7 @@ file_view_delete_selected (MooFileView *fileview)
     GError *error = NULL;
     GList *files, *l;
     gboolean one;
-    char *message, *path;
+    char *message;
     GtkWidget *dialog;
     int response;
 
@@ -3002,8 +3002,8 @@ file_view_delete_selected (MooFileView *fileview)
     {
         for (l = files; l != NULL; l = l->next)
         {
-            path = g_build_filename (_moo_folder_get_path (fileview->priv->current_dir),
-                                     _moo_file_name (l->data), NULL);
+            char *path = g_build_filename (_moo_folder_get_path (fileview->priv->current_dir),
+                                           _moo_file_name (l->data), NULL);
 
             if (!_moo_file_system_delete_file (fileview->priv->file_system, path, TRUE, &error))
             {
@@ -3037,6 +3037,7 @@ file_view_delete_selected (MooFileView *fileview)
 
     g_list_foreach (files, (GFunc) _moo_file_unref, NULL);
     g_list_free (files);
+    g_free (message);
 }
 
 
