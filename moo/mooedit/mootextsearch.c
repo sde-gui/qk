@@ -218,7 +218,7 @@ get_regex (const char          *pattern,
     {
         EggRegexCompileFlags re_flags = 0;
 
-        egg_regex_unref (saved_regex);
+        egg_regex_free (saved_regex);
         g_free (saved_pattern);
 
         saved_pattern = g_strdup (pattern);

@@ -1145,7 +1145,7 @@ moo_html_parse_url (const char     *url,
 
     if (egg_regex_match (regex, url, 0) < 1)
     {
-        egg_regex_unref (regex);
+        egg_regex_free (regex);
         return FALSE;
     }
 
@@ -1157,7 +1157,7 @@ moo_html_parse_url (const char     *url,
     if (!*base || !**base) {g_free (*base); *base = NULL;}
     if (!*anchor || !**anchor) {g_free (*anchor); *anchor = NULL;}
 
-    egg_regex_unref (regex);
+    egg_regex_free (regex);
     return TRUE;
 }
 

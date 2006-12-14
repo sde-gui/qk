@@ -904,7 +904,7 @@ pattern_free (Pattern             p,
     if (p.key)
     {
         if (type == MOO_PREFS_MATCH_REGEX)
-            egg_regex_unref (p.regex);
+            egg_regex_free (p.regex);
         else
             g_free (p.key);
     }

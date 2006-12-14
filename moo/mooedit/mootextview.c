@@ -3912,7 +3912,7 @@ quick_search_find_from (MooTextView *view,
             return;
         }
 
-        egg_regex_unref (re);
+        egg_regex_free (re);
     }
 
     buffer = get_buffer (view);

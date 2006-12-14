@@ -230,13 +230,13 @@ moo_find_finalize (GObject *object)
     MooFind *find = MOO_FIND (object);
 
     g_object_unref (find->xml);
-    egg_regex_unref (find->regex);
+    egg_regex_free (find->regex);
 
     G_OBJECT_CLASS(moo_find_parent_class)->finalize (object);
 }
 
 
-GtkWidget*
+GtkWidget *
 moo_find_new (gboolean replace)
 {
     return g_object_new (MOO_TYPE_FIND, "replace", replace, NULL);
@@ -444,7 +444,7 @@ moo_find_run (MooFind        *find,
     search_entry = moo_glade_xml_get_widget (find->xml, "search_entry");
     replace_entry = moo_glade_xml_get_widget (find->xml, "replace_entry");
 
-    egg_regex_unref (find->regex);
+    egg_regex_free (find->regex);
     find->regex = NULL;
 
     while (TRUE)
@@ -504,7 +504,7 @@ moo_find_run (MooFind        *find,
             {
                 _moo_text_regex_error_dialog (GTK_WIDGET (find), error);
                 g_error_free (error);
-                egg_regex_unref (find->regex);
+                egg_regex_free (find->regex);
                 find->regex = NULL;
                 continue;
             }
@@ -514,8 +514,8 @@ moo_find_run (MooFind        *find,
         moo_prefs_set_flags (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_FLAGS), flags);
         g_free (last_search);
         last_search = g_strdup (search_for);
-        egg_regex_unref (last_regex);
-        last_regex = egg_regex_ref (find->regex);
+        egg_regex_free (last_regex);
+        last_regex = egg_regex_copy (find->regex);
 
         moo_history_list_add (search_history, search_for);
 
@@ -580,7 +580,7 @@ moo_find_set_flags (MooFind        *find,
 }
 
 
-char*
+char *
 moo_find_get_text (MooFind *find)
 {
     MooCombo *entry;
@@ -590,15 +590,15 @@ moo_find_get_text (MooFind *find)
 }
 
 
-EggRegex*
+EggRegex *
 moo_find_get_regex (MooFind *find)
 {
     g_return_val_if_fail (MOO_IS_FIND (find), NULL);
-    return egg_regex_ref (find->regex);
+    return egg_regex_copy (find->regex);
 }
 
 
-char*
+char *
 moo_find_get_replacement (MooFind *find)
 {
     MooCombo *entry;
@@ -779,7 +779,7 @@ moo_text_view_run_find (GtkTextView    *view,
     }
 
     g_free (text);
-    egg_regex_unref (regex);
+    egg_regex_free (regex);
 }
 
 
@@ -816,7 +816,7 @@ moo_text_view_run_find_current_word (GtkTextView    *view,
 
     g_free (last_search);
     last_search = search_term;
-    egg_regex_unref (last_regex);
+    egg_regex_free (last_regex);
     last_regex = NULL;
     moo_history_list_add (search_history, search_term);
 
@@ -1263,7 +1263,7 @@ moo_text_view_run_replace (GtkTextView    *view,
 
     g_free (text);
     g_free (replacement);
-    egg_regex_unref (regex);
+    egg_regex_free (regex);
 }
 
 

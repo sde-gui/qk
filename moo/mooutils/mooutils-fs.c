@@ -870,7 +870,7 @@ _moo_glob_free (MooGlob *glob)
     if (glob)
     {
 #ifdef MOO_GLOB_REGEX
-        egg_regex_unref (glob->re);
+        egg_regex_free (glob->re);
 #else
         g_free (glob->pattern);
 #endif

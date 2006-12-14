@@ -623,7 +623,7 @@ moo_completion_group_set_pattern (MooCompletionGroup *group,
         g_error_free (error);
     }
 
-    egg_regex_unref (group->regex);
+    egg_regex_free (group->regex);
     group->regex = regex;
 
     g_free (group->parens);
@@ -646,7 +646,7 @@ err:
     if (error)
         g_error_free (error);
     g_free (real_pattern);
-    egg_regex_unref (regex);
+    egg_regex_free (regex);
 }
 
 
@@ -686,7 +686,7 @@ moo_completion_group_free (MooCompletionGroup *group)
 {
     g_return_if_fail (group != NULL);
 
-    egg_regex_unref (group->regex);
+    egg_regex_free (group->regex);
     g_free (group->parens);
     g_completion_free (group->cmpl);
     g_free (group->suffix);

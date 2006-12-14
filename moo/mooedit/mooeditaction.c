@@ -391,7 +391,7 @@ regex_ref_free (RegexRef *ref)
 {
     if (ref)
     {
-        egg_regex_unref (ref->regex);
+        egg_regex_free (ref->regex);
         g_free (ref);
     }
 }

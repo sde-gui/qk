@@ -44,7 +44,7 @@ filter_setting_free (FilterSetting *setting)
     if (setting)
     {
         g_free (setting->config);
-        egg_regex_unref (setting->regex);
+        egg_regex_free (setting->regex);
         g_free (setting);
     }
 }

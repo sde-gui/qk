@@ -1003,7 +1003,7 @@ expand_regex_vars (ParserState *parser_state, gchar *regex, gint len, GError **e
 	data.parser_state = parser_state;
 	data.error = NULL;
 	expanded_regex = egg_regex_replace_eval (egg_re, regex, len, 0, 0,
-						 replace_by_id, &data);
+						 replace_by_id, &data, NULL);
 
 	if (data.error == NULL)
         {
@@ -1011,7 +1011,7 @@ expand_regex_vars (ParserState *parser_state, gchar *regex, gint len, GError **e
 				  regex, expanded_regex));
         }
 
-	egg_regex_unref (egg_re);
+	egg_regex_free (egg_re);
 
 	if (data.error != NULL)
 	{
@@ -1087,12 +1087,12 @@ expand_regex_delimiters (ParserState *parser_state,
 	egg_re = egg_regex_new (re, 0, 0, NULL);
 
 	expanded_regex = egg_regex_replace_eval (egg_re, regex, len, 0, 0,
-						 replace_delimiter, parser_state);
+						 replace_delimiter, parser_state, NULL);
 
 	DEBUG (g_message ("expanded regex delims '%s' to '%s'",
 				regex, expanded_regex));
 
-	egg_regex_unref (egg_re);
+	egg_regex_free (egg_re);
 
 	return expanded_regex;
 }

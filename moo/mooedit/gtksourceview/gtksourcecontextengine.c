@@ -2305,7 +2305,7 @@ regex_unref (Regex *regex)
 	if (regex != NULL && --regex->ref_count == 0)
 	{
 		if (regex->resolved)
-			egg_regex_unref (regex->u.regex);
+			egg_regex_free (regex->u.regex);
 		else
 			g_free (regex->u.info.pattern);
 		g_free (regex);
@@ -2522,7 +2522,7 @@ regex_resolve (Regex       *regex,
 						 regex->u.info.pattern,
 						 -1, 0, 0,
 						 replace_start_regex,
-						 &data);
+						 &data, NULL);
 	new_regex = regex_new (expanded_regex, regex->u.info.flags, NULL);
 
 	if (new_regex == NULL || !new_regex->resolved)
@@ -2534,7 +2534,7 @@ regex_resolve (Regex       *regex,
 		new_regex = regex_new ("$never-match^", 0, NULL);
 	}
 
-	egg_regex_unref (start_ref);
+	egg_regex_free (start_ref);
 	return new_regex;
 }
 

@@ -248,7 +248,7 @@ filter_info_unref (FilterInfo *info)
 
     for (i = 0; i < info->n_patterns; ++i)
         if (info->patterns[i].re)
-            egg_regex_unref (info->patterns[i].re);
+            egg_regex_free (info->patterns[i].re);
 
     g_free (info->patterns);
     g_free (info);
