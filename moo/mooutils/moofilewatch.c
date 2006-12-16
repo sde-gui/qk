@@ -130,10 +130,6 @@ static gboolean watch_win32_shutdown        (MooFileWatch   *watch,
 static gboolean watch_win32_start_monitor   (MooFileWatch   *watch,
                                              Monitor        *monitor,
                                              GError        **error);
-static gboolean watch_win32_suspend_monitor (MooFileWatch   *watch,
-                                             Monitor        *monitor);
-static gboolean watch_win32_resume_monitor  (MooFileWatch   *watch,
-                                             Monitor        *monitor);
 static void     watch_win32_stop_monitor    (MooFileWatch   *watch,
                                              Monitor        *monitor);
 #endif /* __WIN32__ */
@@ -901,7 +897,7 @@ do_stat (MooFileWatch *watch)
 
         monitor = g_hash_table_lookup (watch->requests, l->data);
 
-        if (!monitor || monitor->suspended || !monitor->alive)
+        if (!monitor || !monitor->alive)
             continue;
 
         old = monitor->statbuf.st_mtime;
@@ -1501,28 +1497,6 @@ watch_win32_start_monitor (MooFileWatch   *watch,
     fam_thread_command (COMMAND_ADD_PATH, monitor->filename, watch->id, monitor->id);
 
     return TRUE;
-}
-
-
-static gboolean
-watch_win32_suspend_monitor (MooFileWatch *watch,
-                             Monitor      *monitor)
-{
-    g_return_val_if_fail (watch != NULL, FALSE);
-    g_return_val_if_fail (monitor != NULL, FALSE);
-    g_critical ("%s: implement me", G_STRFUNC);
-    return FALSE;
-}
-
-
-static gboolean
-watch_win32_resume_monitor (MooFileWatch *watch,
-                            Monitor      *monitor)
-{
-    g_return_val_if_fail (watch != NULL, FALSE);
-    g_return_val_if_fail (monitor != NULL, FALSE);
-    g_critical ("%s: implement me", G_STRFUNC);
-    return FALSE;
 }
 
 
