@@ -353,11 +353,11 @@ egg_regex_copy (const EggRegex *regex)
 {
   EggRegex *copy;
 
-  g_return_val_if_fail (regex != NULL, NULL);
+  if (regex == NULL)
+    return NULL;
 
   copy = g_new0 (EggRegex, 1);
   copy->pattern = regex_pattern_ref (regex->pattern);
-
   return copy;
 }
 
