@@ -38,7 +38,7 @@
       <useconfiguration>gtk-cvs</useconfiguration>
     </general>
     <run>
-      <mainprogram>tests/medit</mainprogram>
+      <mainprogram>medit/medit</mainprogram>
       <directoryradio>executable</directoryradio>
       <customdirectory>/</customdirectory>
       <programargs>-n</programargs>
@@ -50,7 +50,7 @@
     </run>
     <configurations>
       <debug>
-        <configargs>--enable-debug --enable-all-gcc-warnings</configargs>
+        <configargs>--enable-debug --enable-all-warnings --without-python --prefix=/tmp/medit</configargs>
         <builddir>build/debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>

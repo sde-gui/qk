@@ -938,6 +938,10 @@ file_watch_callback (G_GNUC_UNUSED MooFileWatch *watch,
         case MOO_FILE_EVENT_ERROR:
             /* XXX and what to do now? */
             break;
+
+        case MOO_FILE_EVENT_CREATED:
+            g_critical ("%s: oops", G_STRLOC);
+            break;
     }
 
     check_file_status (edit, FALSE);

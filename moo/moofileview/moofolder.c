@@ -184,23 +184,26 @@ folder_shutdown (MooFolderImpl *impl)
     stop_populate (impl);
     stop_monitor (impl);
     files_list_free (&impl->files_copy);
+
     if (impl->reload_idle)
         g_source_remove (impl->reload_idle);
+    impl->reload_idle = 0;
+
     if (impl->files)
         g_hash_table_destroy (impl->files);
+    impl->files = NULL;
+
     if (impl->dir)
         g_dir_close (impl->dir);
+    impl->dir = NULL;
+
     if (impl->populate_idle_id)
         g_source_remove (impl->populate_idle_id);
+    impl->populate_idle_id = 0;
+
     if (impl->timer)
         g_timer_destroy (impl->timer);
-    if (impl->reload_idle)
-        g_source_remove (impl->reload_idle);
-    impl->populate_idle_id = 0;
     impl->timer = NULL;
-    impl->reload_idle = 0;
-    impl->files = NULL;
-    impl->reload_idle = 0;
 }
 
 
@@ -777,6 +780,9 @@ fam_callback (MooFileWatch *watch,
         case MOO_FILE_EVENT_CHANGED:
             file_changed (impl, event->filename);
             break;
+        case MOO_FILE_EVENT_CREATED:
+            file_created (impl, event->filename);
+            break;
         case MOO_FILE_EVENT_DELETED:
             file_deleted (impl, event->filename);
             break;
@@ -874,11 +880,6 @@ file_changed (MooFolderImpl *impl,
     {
         if (!impl->reload_idle)
             impl->reload_idle = g_idle_add ((GSourceFunc) moo_folder_do_reload, impl);
-    }
-    else
-    {
-        /* XXX */
-        g_return_if_reached ();
     }
 }
 

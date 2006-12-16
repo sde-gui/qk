@@ -46,6 +46,7 @@ GQuark  moo_file_watch_error_quark (void);
 
 typedef enum {
     MOO_FILE_EVENT_CHANGED,
+    MOO_FILE_EVENT_CREATED,
     MOO_FILE_EVENT_DELETED,
     MOO_FILE_EVENT_ERROR
 } MooFileEventCode;
@@ -88,11 +89,6 @@ guint           moo_file_watch_create_monitor       (MooFileWatch   *watch,
                                                      GError        **error);
 /* FAMCancelMonitor */
 void            moo_file_watch_cancel_monitor       (MooFileWatch   *watch,
-                                                     guint           monitor_id);
-/* FAMSuspendMonitor, FAMResumeMonitor */
-void            moo_file_watch_suspend_monitor      (MooFileWatch   *watch,
-                                                     guint           monitor_id);
-void            moo_file_watch_resume_monitor       (MooFileWatch   *watch,
                                                      guint           monitor_id);
 
 

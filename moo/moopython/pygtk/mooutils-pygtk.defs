@@ -583,24 +583,6 @@
   )
 )
 
-(define-method suspend_monitor
-  (of-object "MooFileWatch")
-  (c-name "moo_file_watch_suspend_monitor")
-  (return-type "none")
-  (parameters
-    '("guint" "monitor_id")
-  )
-)
-
-(define-method resume_monitor
-  (of-object "MooFileWatch")
-  (c-name "moo_file_watch_resume_monitor")
-  (return-type "none")
-  (parameters
-    '("guint" "monitor_id")
-  )
-)
-
 (define-method cancel_monitor
   (of-object "MooFileWatch")
   (c-name "moo_file_watch_cancel_monitor")

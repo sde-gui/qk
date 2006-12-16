@@ -47,7 +47,7 @@
 
 #if defined(__WIN32__)
 #define DEBUG_PRINT _moo_message_async
-#elif 0
+#elif 1
 #define DEBUG_PRINT _moo_message
 #else
 static void DEBUG_PRINT (G_GNUC_UNUSED const char *format, ...)
@@ -70,7 +70,6 @@ typedef struct {
     struct stat statbuf;
 
     guint isdir : 1;
-    guint suspended : 1;
     guint alive : 1;
 } Monitor;
 
@@ -84,10 +83,6 @@ struct WatchFuncs {
                                  Monitor        *monitor,
                                  GError        **error);
     void     (*stop_monitor)    (MooFileWatch   *watch,
-                                 Monitor        *monitor);
-    gboolean (*suspend_monitor) (MooFileWatch   *watch,
-                                 Monitor        *monitor);
-    gboolean (*resume_monitor)  (MooFileWatch   *watch,
                                  Monitor        *monitor);
 };
 
@@ -113,10 +108,6 @@ static gboolean watch_fam_shutdown          (MooFileWatch   *watch,
 static gboolean watch_fam_start_monitor     (MooFileWatch   *watch,
                                              Monitor        *monitor,
                                              GError        **error);
-static gboolean watch_fam_suspend_monitor   (MooFileWatch   *watch,
-                                             Monitor        *monitor);
-static gboolean watch_fam_resume_monitor    (MooFileWatch   *watch,
-                                             Monitor        *monitor);
 static void     watch_fam_stop_monitor      (MooFileWatch   *watch,
                                              Monitor        *monitor);
 #endif /* MOO_USE_FAM */
@@ -160,22 +151,16 @@ static struct WatchFuncs watch_funcs = {
     watch_fam_start,
     watch_fam_shutdown,
     watch_fam_start_monitor,
-    watch_fam_stop_monitor,
-    watch_fam_suspend_monitor,
-    watch_fam_resume_monitor
+    watch_fam_stop_monitor
 #elif defined(__WIN32__)
     watch_win32_start,
     watch_win32_shutdown,
     watch_win32_start_monitor,
-    watch_win32_stop_monitor,
-    watch_win32_suspend_monitor,
-    watch_win32_resume_monitor
+    watch_win32_stop_monitor
 #else
     watch_stat_start,
     watch_stat_shutdown,
     watch_stat_start_monitor,
-    NULL,
-    NULL,
     NULL
 #endif
 };
@@ -452,49 +437,12 @@ moo_file_watch_cancel_monitor (MooFileWatch *watch,
     g_hash_table_remove (watch->requests, GUINT_TO_POINTER (monitor->id));
 
     if (monitor->alive && watch_funcs.stop_monitor)
+    {
+        DEBUG_PRINT ("stopped monitor for '%s'", monitor->filename);
         watch_funcs.stop_monitor (watch, monitor);
+    }
 
     monitor_free (monitor);
-}
-
-
-void
-moo_file_watch_suspend_monitor (MooFileWatch *watch,
-                                guint         monitor_id)
-{
-    Monitor *monitor;
-
-    g_return_if_fail (watch != NULL);
-
-    monitor = g_hash_table_lookup (watch->requests,
-                                   GUINT_TO_POINTER (monitor_id));
-    g_return_if_fail (monitor != NULL);
-
-    if (monitor->alive && !monitor->suspended)
-    {
-        if (!watch_funcs.suspend_monitor || watch_funcs.suspend_monitor (watch, monitor))
-            monitor->suspended = TRUE;
-    }
-}
-
-
-void
-moo_file_watch_resume_monitor (MooFileWatch *watch,
-                               guint         monitor_id)
-{
-    Monitor *monitor;
-
-    g_return_if_fail (watch != NULL);
-
-    monitor = g_hash_table_lookup (watch->requests,
-                                   GUINT_TO_POINTER (monitor_id));
-    g_return_if_fail (monitor != NULL);
-
-    if (monitor->alive && monitor->suspended)
-    {
-        if (!watch_funcs.resume_monitor || watch_funcs.resume_monitor (watch, monitor))
-            monitor->suspended = FALSE;
-    }
 }
 
 
@@ -505,8 +453,14 @@ moo_file_watch_emit_event (MooFileWatch *watch,
 {
     moo_file_watch_ref (watch);
 
-    if (!monitor->suspended || event->code == MOO_FILE_EVENT_ERROR)
+    if (monitor->alive || event->code == MOO_FILE_EVENT_ERROR)
+    {
+        static const char *names[] = {
+            "changed", "created", "deleted", "error"
+        };
+        DEBUG_PRINT ("emitting event %s for %s", names[event->code], monitor->filename);
         monitor->callback (watch, event, monitor->data);
+    }
 
     moo_file_watch_unref (watch);
 }
@@ -658,66 +612,6 @@ watch_fam_start_monitor (MooFileWatch   *watch,
 }
 
 
-static gboolean
-watch_fam_suspend_monitor (MooFileWatch *watch,
-                           Monitor      *monitor)
-{
-    FAMRequest fr;
-    int result;
-
-    g_return_val_if_fail (monitor != NULL, FALSE);
-
-    fr.reqnum = monitor->fam_request;
-
-    result = FAMSuspendMonitor (&watch->fam_connection, &fr);
-
-    if (result != 0)
-    {
-        DEBUG_PRINT ("Connection %d: FAMSuspendMonitor for '%s' failed",
-                     watch->fam_connection.fd,
-                     monitor->filename);
-    }
-    else
-    {
-        DEBUG_PRINT ("Connection %d: suspended monitor for '%s'",
-                     watch->fam_connection.fd,
-                     monitor->filename);
-    }
-
-    return result == 0;
-}
-
-
-static gboolean
-watch_fam_resume_monitor (MooFileWatch *watch,
-                          Monitor      *monitor)
-{
-    FAMRequest fr;
-    int result;
-
-    g_return_val_if_fail (monitor != NULL, FALSE);
-
-    fr.reqnum = monitor->fam_request;
-
-    result = FAMResumeMonitor (&watch->fam_connection, &fr);
-
-    if (result != 0)
-    {
-        DEBUG_PRINT ("Connection %d: FAMResumeMonitor for '%s' failed",
-                     watch->fam_connection.fd,
-                     monitor->filename);
-    }
-    else
-    {
-        DEBUG_PRINT ("Connection %d: resumed monitor for '%s'",
-                     watch->fam_connection.fd,
-                     monitor->filename);
-    }
-
-    return result == 0;
-}
-
-
 static void
 watch_fam_stop_monitor (MooFileWatch *watch,
                         Monitor      *monitor)
@@ -738,6 +632,81 @@ watch_fam_stop_monitor (MooFileWatch *watch,
 }
 
 
+static void
+do_events (MooFileWatch *watch,
+           GSList       *events)
+{
+    while (events)
+    {
+        MooFileEvent *e;
+        Monitor *monitor;
+
+        e = events->data;
+        events = events->next;
+
+        monitor = g_hash_table_lookup (watch->requests, GUINT_TO_POINTER (e->monitor_id));
+
+        if (!monitor || !monitor->alive)
+            continue;
+
+        moo_file_watch_emit_event (watch, e, monitor);
+    }
+}
+
+static MooFileEvent *
+fam_event_to_file_event (FAMEvent     *fe,
+                         MooFileWatch *watch)
+{
+    Monitor *monitor;
+    const char *filename;
+    MooFileEventCode code;
+
+    monitor = g_hash_table_lookup (watch->requests, fe->userdata);
+
+    if (!monitor)
+        return NULL;
+
+    g_assert (GUINT_TO_POINTER (monitor->id) == fe->userdata);
+    g_assert (monitor->fam_request == fe->fr.reqnum);
+
+    filename = fe->filename;
+
+    switch (fe->code)
+    {
+        case FAMCreated:
+            code = MOO_FILE_EVENT_CREATED;
+            break;
+
+        case FAMChanged:
+            code = MOO_FILE_EVENT_CHANGED;
+            break;
+
+        case FAMDeleted:
+            code = MOO_FILE_EVENT_DELETED;
+            break;
+
+        case FAMMoved:
+            /* XXX never happens with FAM, what about gamin? */
+            g_print ("file moved: %s\n", fe->filename);
+            code = MOO_FILE_EVENT_CHANGED;
+            filename = monitor->filename;
+            break;
+
+        case FAMStartExecuting:
+        case FAMStopExecuting:
+        case FAMAcknowledge:
+        case FAMExists:
+        case FAMEndExist:
+            return NULL;
+
+        default:
+            g_warning ("%s: unknown FAM code %d", G_STRLOC, fe->code);
+            return NULL;
+    }
+
+    return moo_file_event_new (filename, monitor->id, code);
+}
+
 static gboolean
 read_fam_events (G_GNUC_UNUSED GIOChannel *source,
                  GIOCondition    condition,
@@ -747,6 +716,8 @@ read_fam_events (G_GNUC_UNUSED GIOChannel *source,
     int result;
     FAMConnection *connection = &watch->fam_connection;
     gboolean retval = TRUE;
+    GSList *events = NULL;
+    guint n_events;
 
     moo_file_watch_ref (watch);
 
@@ -765,84 +736,50 @@ read_fam_events (G_GNUC_UNUSED GIOChannel *source,
         goto out;
     }
 
-    while ((result = FAMPending (connection)))
+    for (n_events = 0; !error && n_events < 4096 && (result = FAMPending (connection)); n_events++)
     {
-        FAMEvent fe;
-        MooFileEvent event;
-        gboolean emit = TRUE;
-        Monitor *monitor;
-
         if (result < 0)
         {
             SET_FAM_ERROR (FAMPending, &error);
             DEBUG_PRINT ("Connection %d: FAMPending failed", connection->fd);
         }
-        else if (FAMNextEvent (connection, &fe) != 1)
+        else
         {
-            SET_FAM_ERROR (FAMNextEvent, &error);
-            DEBUG_PRINT ("Connection %d: FAMNextEvent failed", connection->fd);
-        }
+            FAMEvent fe;
 
-        if (error)
-        {
-            g_warning ("Connection %d: error: %s", connection->fd, error->message);
-            g_error_free (error);
-            error = NULL;
-
-            if (!moo_file_watch_close (watch, &error))
+            if (FAMNextEvent (connection, &fe) != 1)
             {
-                g_warning ("%s: error in moo_file_watch_close()", G_STRLOC);
-                g_warning ("%s: %s", G_STRLOC, error->message);
-                g_error_free (error);
+                SET_FAM_ERROR (FAMNextEvent, &error);
+                DEBUG_PRINT ("Connection %d: FAMNextEvent failed", connection->fd);
             }
-
-            retval = FALSE;
-            goto out;
+            else
+            {
+                MooFileEvent *e;
+                if ((e = fam_event_to_file_event (&fe, watch)))
+                    events = g_slist_prepend (events, e);
+            }
         }
+    }
 
-        monitor = g_hash_table_lookup (watch->requests, fe.userdata);
+    events = g_slist_reverse (events);
+    do_events (watch, events);
+    g_slist_foreach (events, (GFunc) moo_file_event_free, NULL);
+    g_slist_free (events);
 
-        if (!monitor || monitor->suspended)
-            continue;
+    if (error)
+    {
+        g_warning ("Connection %d: error: %s", connection->fd, error->message);
+        g_error_free (error);
+        error = NULL;
 
-        /* TODO: check monitor here */
-        g_assert (monitor->fam_request == fe.fr.reqnum);
-        event.monitor_id = monitor->id;
-        event.filename = fe.filename;
-        event.error = NULL;
-
-        switch (fe.code)
+        if (!moo_file_watch_close (watch, &error))
         {
-            case FAMChanged:
-            case FAMCreated:
-                event.code = MOO_FILE_EVENT_CHANGED;
-                event.filename = monitor->filename;
-                break;
-            case FAMDeleted:
-                event.code = MOO_FILE_EVENT_DELETED;
-                break;
-
-            case FAMMoved:
-                /* XXX never happens with FAM, what about gamin? */
-                event.code = MOO_FILE_EVENT_CHANGED;
-                event.filename = monitor->filename;
-                break;
-
-            case FAMStartExecuting:
-            case FAMStopExecuting:
-            case FAMAcknowledge:
-            case FAMExists:
-            case FAMEndExist:
-                emit = FALSE;
-                break;
-
-            default:
-                emit = FALSE;
-                g_warning ("%s: unknown FAM code %d", G_STRLOC, fe.code);
+            g_warning ("%s: error in moo_file_watch_close()", G_STRLOC);
+            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
         }
 
-        if (emit)
-            moo_file_watch_emit_event (watch, &event, monitor);
+        retval = FALSE;
     }
 
 out:
