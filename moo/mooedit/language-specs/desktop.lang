@@ -1,101 +1,114 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE language SYSTEM "language.dtd">
-<language _name=".desktop" version="1.0" _section="Others" mimetypes="application/x-gnome-app-info;application/x-desktop">
+<language id="desktop" _name=".desktop" version="2.0" _section="Others">
+  <metadata>
+    <property name="mimetypes">application/x-gnome-app-info;application/x-desktop</property>
+    <property name="globs">*.desktop;*.kdelnk</property>
+  </metadata>
 
-	<line-comment _name = "Line Comment" style= "Comment">
-		<start-regex>#</start-regex>
-	</line-comment>
+  <styles>
+    <style id="comment" _name="Comment" map-to="def:comment"/>
+    <style id="floating-point" _name="Floating Point" map-to="def:floating-point"/>
+    <style id="keyword" _name="Keyword" map-to="def:keyword"/>
+    <style id="decimal" _name="Decimal" map-to="def:decimal"/>
+    <style id="data-type" _name="Data Type" map-to="def:data-type"/>
+    <style id="preprocessor" _name="Preprocessor" map-to="def:preprocessor"/>
+  </styles>
 
-	<syntax-item _name = "Group" style = "Keyword">
-		<start-regex>^\[</start-regex>
-		<end-regex>\]$</end-regex>
-	</syntax-item>
-
-	<keyword-list _name = "Standard Key" style = "Data Type" case-sensitive="TRUE"
-		match-empty-string-at-beginning = "FALSE"
-		match-empty-string-at-end = "FALSE"
-		beginning-regex = "^_?">
-		<keyword>Encoding</keyword>
-		<keyword>Version</keyword>
-		<keyword>Name</keyword>
-		<keyword>GenericName</keyword>
-		<keyword>Type</keyword>
-		<keyword>FilePattern</keyword>
-		<keyword>TryExec</keyword>
-		<keyword>NoDisplay</keyword>
-		<keyword>Comment</keyword>
-		<keyword>Exec</keyword>
-		<keyword>Actions</keyword>
-		<keyword>Icon</keyword>
-		<keyword>MiniIcon</keyword>
-		<keyword>Hidden</keyword>
-		<keyword>Path</keyword>
-		<keyword>Terminal</keyword>
-		<keyword>TerminalOptions</keyword>
-		<keyword>SwallowTitle</keyword>
-		<keyword>SwallowExec</keyword>
-		<keyword>MimeType</keyword>
-		<keyword>Patterns</keyword>
-		<keyword>DefaultApp</keyword>
-		<keyword>Dev</keyword>
-		<keyword>FSType</keyword>
-		<keyword>MountPoint</keyword>
-		<keyword>ReadOnly</keyword>
-		<keyword>UnmountIcon</keyword>
-		<keyword>SortOrder</keyword>
-		<keyword>URL</keyword>
-		<keyword>StartupNotify</keyword>
-		<keyword>Categories</keyword>
- 		<keyword>OnlyShowIn</keyword>
- 		<keyword>NotShowIn</keyword>
- 		<keyword>StartupWMClass</keyword>
- 		<keyword>Protocols</keyword>
- 		<keyword>Extensions</keyword>
- 		<keyword>BinaryPattern</keyword>
- 		<keyword>MapNotify</keyword>
-	</keyword-list>
-
-	<pattern-item _name = "Non Standard Key" style = "Data Type">
-		<regex>^_?X\-[a-zA-Z\-]+</regex>
-	</pattern-item>
-
-
-	<pattern-item _name = "Language" style = "Decimal">
-		<regex>\[[a-zA-Z_]+\]</regex>
-	</pattern-item>
-
-	<keyword-list _name = "Boolean Value" style = "Preprocessor" case-sensitive="TRUE">
-		<keyword>true</keyword>
-		<keyword>false</keyword>
-	</keyword-list>
-
-	<keyword-list _name = "Exec Parameter" style = "Preprocessor" case-sensitive="TRUE" 
-		match-empty-string-at-beginning="FALSE">
-		<keyword>%f</keyword>
-		<keyword>%F</keyword>
-		<keyword>%u</keyword>
-		<keyword>%U</keyword>
-		<keyword>%d</keyword>
-		<keyword>%D</keyword>
-		<keyword>%n</keyword>
-		<keyword>%N</keyword>
-		<keyword>%i</keyword>
-		<keyword>%m</keyword>
-		<keyword>%c</keyword>
-		<keyword>%k</keyword>
-		<keyword>%v</keyword>
-	</keyword-list>
-
-	<keyword-list _name = "Encoding" style = "Preprocessor" case-sensitive="TRUE">
-		<keyword>UTF\-8</keyword>
-		<keyword>Legacy\-Mixed</keyword>
-	</keyword-list>
-
-	<pattern-item _name = "Number" style = "Floating Point">
-		<regex>(.\b[0-9]+([Ll]?|[Ff]?)\b)|(b[0-9]*\.\W)</regex>
-	</pattern-item>
-
+  <definitions>
+    <context id="line-comment" style-ref="comment" end-at-line-end="true">
+      <start>#</start>
+    </context>
+    <context id="group" style-ref="keyword">
+      <start>^\[</start>
+      <end>\]$</end>
+    </context>
+    <context id="standard-key" style-ref="data-type">
+      <prefix>^_?</prefix>
+      <suffix></suffix>
+      <keyword>Encoding</keyword>
+      <keyword>Version</keyword>
+      <keyword>Name</keyword>
+      <keyword>GenericName</keyword>
+      <keyword>Type</keyword>
+      <keyword>FilePattern</keyword>
+      <keyword>TryExec</keyword>
+      <keyword>NoDisplay</keyword>
+      <keyword>Comment</keyword>
+      <keyword>Exec</keyword>
+      <keyword>Actions</keyword>
+      <keyword>Icon</keyword>
+      <keyword>MiniIcon</keyword>
+      <keyword>Hidden</keyword>
+      <keyword>Path</keyword>
+      <keyword>Terminal</keyword>
+      <keyword>TerminalOptions</keyword>
+      <keyword>SwallowTitle</keyword>
+      <keyword>SwallowExec</keyword>
+      <keyword>MimeType</keyword>
+      <keyword>Patterns</keyword>
+      <keyword>DefaultApp</keyword>
+      <keyword>Dev</keyword>
+      <keyword>FSType</keyword>
+      <keyword>MountPoint</keyword>
+      <keyword>ReadOnly</keyword>
+      <keyword>UnmountIcon</keyword>
+      <keyword>SortOrder</keyword>
+      <keyword>URL</keyword>
+      <keyword>StartupNotify</keyword>
+      <keyword>Categories</keyword>
+      <keyword>OnlyShowIn</keyword>
+      <keyword>NotShowIn</keyword>
+      <keyword>StartupWMClass</keyword>
+      <keyword>Protocols</keyword>
+      <keyword>Extensions</keyword>
+      <keyword>BinaryPattern</keyword>
+      <keyword>MapNotify</keyword>
+    </context>
+    <context id="non-standard-key" style-ref="data-type">
+      <match>^_?X\-[a-zA-Z\-]+</match>
+    </context>
+    <context id="language" style-ref="decimal">
+      <match>\[[a-zA-Z_]+\]</match>
+    </context>
+    <context id="boolean-value" style-ref="preprocessor">
+      <keyword>true</keyword>
+      <keyword>false</keyword>
+    </context>
+    <context id="exec-parameter" style-ref="preprocessor">
+      <prefix></prefix>
+      <keyword>%f</keyword>
+      <keyword>%F</keyword>
+      <keyword>%u</keyword>
+      <keyword>%U</keyword>
+      <keyword>%d</keyword>
+      <keyword>%D</keyword>
+      <keyword>%n</keyword>
+      <keyword>%N</keyword>
+      <keyword>%i</keyword>
+      <keyword>%m</keyword>
+      <keyword>%c</keyword>
+      <keyword>%k</keyword>
+      <keyword>%v</keyword>
+    </context>
+    <context id="encoding" style-ref="preprocessor">
+      <keyword>UTF\-8</keyword>
+      <keyword>Legacy\-Mixed</keyword>
+    </context>
+    <context id="number" style-ref="floating-point">
+      <match>(.\b[0-9]+([Ll]?|[Ff]?)\b)|(b[0-9]*\.\W)</match>
+    </context>
+    <context id="desktop">
+      <include>
+        <context ref="line-comment"/>
+        <context ref="group"/>
+        <context ref="standard-key"/>
+        <context ref="non-standard-key"/>
+        <context ref="language"/>
+        <context ref="boolean-value"/>
+        <context ref="exec-parameter"/>
+        <context ref="encoding"/>
+        <context ref="number"/>
+      </include>
+    </context>
+  </definitions>
 </language>
-
-
-

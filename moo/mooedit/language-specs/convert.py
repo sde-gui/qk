@@ -108,10 +108,10 @@ class LangFile(object):
             id = s
             name, map_to = styles[s]
             if map_to:
-                string += indent*2 + '<style id="%s" name="%s" map-to="%s"/>\n' % (id, name, map_to)
+                string += indent*2 + '<style id="%s" _name="%s" map-to="%s"/>\n' % (id, name, map_to)
             else:
-                string += indent*2 + '<style id="%s" name="%s"/>\n' % (id, name)
-        string += indent + "</styles>\n"
+                string += indent*2 + '<style id="%s" _name="%s"/>\n' % (id, name)
+        string += indent + "</styles>\n\n"
         return string
 
     def format_contexts(self, indent):
@@ -202,13 +202,13 @@ class KeywordList(Context):
 
         if self.beginning_regex:
             string += indent*3 + '<prefix>%s</prefix>\n' % (cgi.escape(self.beginning_regex),)
-        elif self.match_empty_string_at_beginning:
-            string += indent*3 + '<prefix>\\b</prefix>\n'
+        elif not self.match_empty_string_at_beginning:
+            string += indent*3 + '<prefix></prefix>\n'
 
         if self.end_regex:
             string += indent*3 + '<suffix>%s</suffix>\n' % (cgi.escape(self.end_regex),)
-        elif self.match_empty_string_at_end:
-            string += indent*3 + '<suffix>\\b</suffix>\n'
+        elif not self.match_empty_string_at_end:
+            string += indent*3 + '<suffix></suffix>\n'
 
         for kw in self.keywords:
             string += indent*3 + '<keyword>%s</keyword>\n' % (cgi.escape(kw),)
