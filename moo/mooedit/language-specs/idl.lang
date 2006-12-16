@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language _name="IDL" version="1.0" _section="Sources" mimetypes="text/x-idl" globs="*.idl">
+<language _name="IDL" version="1.0" _section="Sources" mimetypes="text/x-idl">
 
 	<escape-char>\</escape-char>
 
@@ -30,7 +30,7 @@
 
 	<keyword-list _name = "Keywords" style = "Keyword" case-sensitive="TRUE">
 		<keyword>abstract</keyword>
-		<keyword>attribute</keyword>
+		<keyword>attribute</keyword>		
 		<keyword>case</keyword>
 		<keyword>const</keyword>
 		<keyword>context</keyword>

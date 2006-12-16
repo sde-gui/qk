@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language _name="Pascal" version="1.0" _section="Sources" mimetypes="text/x-pascal" globs="*.p;*.pas">
+<language _name="Pascal" version="1.0" _section="Sources" mimetypes="text/x-pascal">
 
 	<string _name = "String" style = "String" end-at-line-end = "FALSE">
 		<start-regex>[uUrR]?&apos;</start-regex>
@@ -16,44 +16,44 @@
 		<regex>\b\$[0-9a-fA-F]*\b</regex>
 	</pattern-item>
 
-	<line-comment _name = "Line Comment" style= "Comment" end-at-line-end = "TRUE">
+	<line-comment _name = "Line Comment" style= "Comment">
 		<start-regex>//</start-regex>
 	</line-comment>
 
-	<block-comment _name = "Block Comment 1" style= "Comment" end-at-line-end = "FALSE">
+	<block-comment _name = "Block Comment 1" style= "Comment">
 		<start-regex>\(\*</start-regex>
 		<end-regex>\*\)</end-regex>
 	</block-comment>
 
-	<block-comment _name = "Block Comment 2" style= "Comment" end-at-line-end = "FALSE">
+	<block-comment _name = "Block Comment 2" style= "Comment">
 		<start-regex>\{[^\$]</start-regex>
 		<end-regex>\}</end-regex>
 	</block-comment>
 
-	<block-comment _name = "Preprocessor Defines" style= "Preprocessor" end-at-line-end = "TRUE">
+ 	<string _name = "Preprocessor Defines" style= "Preprocessor" end-at-line-end = "TRUE">
 		<start-regex>\{\$</start-regex>
 		<end-regex>\}</end-regex>
-	</block-comment>
+	</string>
 
 	<keyword-list _name = "General Format" style = "Keyword" case-sensitive="FALSE">
 		<!-- File Header -->
 		<keyword>Program</keyword>
 		<keyword>Library</keyword>
 		<keyword>Unit</keyword>
-
+		
 		<!-- File Sections -->
 		<keyword>Uses</keyword>
 		<keyword>Interface</keyword>
 		<keyword>Implementation</keyword>
-
+		
 		<!-- Unit Initialization/Finalization -->
 		<keyword>Initialization</keyword>
 		<keyword>Finalization</keyword>
-
+		
 		<!-- Code Block -->
 		<keyword>Begin</keyword>
 		<keyword>End</keyword>
-
+		
 		<!-- Variable and Constant -->
 		<keyword>Var</keyword>
 		<keyword>Const</keyword>
@@ -63,11 +63,11 @@
 		<!-- Function Declarations -->
 		<keyword>Function</keyword>
 		<keyword>Procedure</keyword>
-
+		
 		<!-- Function Modifiers -->
 		<keyword>Overload</keyword>
 
-		<keyword>cdecl</keyword>
+		<keyword>cdecl</keyword>		
 	</keyword-list>
 
 	<keyword-list _name = "Boolean Bitwise Operators" style = "Keyword" case-sensitive="FALSE">
@@ -106,7 +106,7 @@
 
 		<keyword>break</keyword>
 		<keyword>continue</keyword>
-
+		
 		<keyword>try</keyword>
 		<keyword>except</keyword>
 		<keyword>finally</keyword>
@@ -146,11 +146,11 @@
 		<keyword>Read</keyword>
 		<keyword>Write</keyword>
 		<keyword>default</keyword>
-
+				
 		<!-- Type casting -->
 		<keyword>With</keyword>
 		<keyword>As</keyword>
-
+		
 		<!-- Class Instance Reference-->
 		<keyword>self</keyword>
 

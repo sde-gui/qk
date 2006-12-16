@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language _name="Ruby" version="1.0" _section="Scripts" mimetypes="application/x-ruby;text/x-ruby" globs="*.rb">
+<language _name="Ruby" version="1.0" _section="Scripts" mimetypes="application/x-ruby;text/x-ruby">
 
 	<escape-char>\</escape-char>
 
@@ -127,7 +127,7 @@
 	</pattern-item>
 
 	<pattern-item _name = "Constants" style = "Decimal">
-		<regex>\b[A-Z_][A-Za-z0-9_]*\b</regex>
+ 		<regex>\b[A-Z_][A-Za-z0-9_:]*\b</regex>
 	</pattern-item>
 
 	<string _name = "Double Quoted String" style = "String" end-at-line-end = "TRUE">

@@ -20,9 +20,11 @@ langs2 =			\
 
 langs1 =			\
 	ada.lang		\
+	boo.lang		\
 	check.sh		\
 	csharp.lang		\
 	css.lang		\
+	d.lang			\
 	desktop.lang		\
 	diff.lang		\
 	fortran.lang		\

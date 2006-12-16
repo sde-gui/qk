@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language _name=".desktop" version="1.0" _section="Others" mimetypes="application/x-gnome-app-info;application/x-desktop" globs="*.desktop;*.kdelnk">
+<language _name=".desktop" version="1.0" _section="Others" mimetypes="application/x-gnome-app-info;application/x-desktop">
 
 	<line-comment _name = "Line Comment" style= "Comment">
 		<start-regex>#</start-regex>
@@ -46,6 +46,13 @@
 		<keyword>URL</keyword>
 		<keyword>StartupNotify</keyword>
 		<keyword>Categories</keyword>
+ 		<keyword>OnlyShowIn</keyword>
+ 		<keyword>NotShowIn</keyword>
+ 		<keyword>StartupWMClass</keyword>
+ 		<keyword>Protocols</keyword>
+ 		<keyword>Extensions</keyword>
+ 		<keyword>BinaryPattern</keyword>
+ 		<keyword>MapNotify</keyword>
 	</keyword-list>
 
 	<pattern-item _name = "Non Standard Key" style = "Data Type">
@@ -62,7 +69,7 @@
 		<keyword>false</keyword>
 	</keyword-list>
 
-	<keyword-list _name = "Exec Parameter" style = "Preprocessor" case-sensitive="TRUE"
+	<keyword-list _name = "Exec Parameter" style = "Preprocessor" case-sensitive="TRUE" 
 		match-empty-string-at-beginning="FALSE">
 		<keyword>%f</keyword>
 		<keyword>%F</keyword>

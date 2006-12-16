@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language _name="Tcl" version="1.0" _section="Scripts" mimetypes="text/x-tcl;application/x-tcl" globs="*.tcl;*.tk">
-
+<language _name="Tcl" version="1.0" _section="Scripts" mimetypes="text/x-tcl;application/x-tcl">
+	
 	<escape-char>\</escape-char>
 
 	<string _name="String" style="String" end-at-line-end="TRUE">

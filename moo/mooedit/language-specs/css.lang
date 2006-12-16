@@ -2,19 +2,19 @@
 <!DOCTYPE language SYSTEM "language.dtd">
 <!--
 	Proposed language specification for CSS (Cascading Style Sheet) files.
-
+ 
 	Reference used:
  		http://www.w3.org/TR/CSS2/
 
  	Tested with:
  		http://www.simplebits.com/css/simple.css
-
+ 
 	Submitted by Scott Martin (scott@coffeeblack.org)
 -->
-<language _name="CSS" version="1.0" _section="Others" mimetypes="text/css" globs="*.css;*.CSSL">
-
+<language _name="CSS" version="1.0" _section="Others" mimetypes="text/css">
+	
 	<escape-char>\</escape-char>
-
+	
 	<string _name="String" style="String" end-at-line-end="FALSE">
 		<start-regex>&quot;</start-regex>
 		<end-regex>&quot;</end-regex>
@@ -33,7 +33,7 @@
 	<line-comment _name="Line Comment" style="Comment">
 		<start-regex>//</start-regex>
 	</line-comment>
-
+	
 	<!--
 		Escaped unicode characters can contain either 6 hexadecimal characters
 		or 1-5 hex characters followed by one whitespace character.
@@ -41,25 +41,25 @@
 	<pattern-item _name="Unicode Character Reference" style="Others 2">
 		<regex>\\([a-fA-F0-9]{1,5}[ \t]|[a-fA-F0-9]{6})</regex>
 	</pattern-item>
-
+	
 	<!--
 		Brackets define a declaration block, parentheses define functions.
 	-->
 	<pattern-item _name="Punctuators" style="Others 3">
 		<regex>[{}();,]</regex>
 	</pattern-item>
-
+	
 	<!--
 		For CSS 2-style selectors: tag[attr="value"].
 	-->
 	<pattern-item _name="Attribute Value Delimiters" style="Others 2">
 		<regex>(\[|\])</regex>
 	</pattern-item>
-
+	
 	<pattern-item _name="Operators" style="Function">
 		<regex>[@%~|!=]</regex>
 	</pattern-item>
-
+	
 	<!--
 		Used to combine selectors. Example syntax:
 
@@ -79,7 +79,7 @@
 		<keyword>before</keyword>
 		<keyword>after</keyword>
 	</keyword-list>
-
+	
 	<!--
 		Pseudo-class rules. Good to have syntax highlighting for these
 		for mistypings.
@@ -93,7 +93,7 @@
 		<keyword>focus</keyword>
 		<keyword>lang</keyword>
 	</keyword-list>
-
+	
 	<!--
 		At rules must occur at the start of a line.
 	-->
@@ -104,7 +104,7 @@
 		<keyword>page</keyword>
 		<keyword>import</keyword>
 	</keyword-list>
-
+	
 	<!--
 		Hexadecimal method of specifying colors. Can either be 3 or 6 in
 		length: #ffcc00 = #fc0.
@@ -112,7 +112,7 @@
 	<pattern-item _name="Hexadecimal Color" style="Base-N Integer">
 		<regex>#([a-fA-F0-9]{3}|[a-fA-F0-9]{6})</regex>
 	</pattern-item>
-
+	
 	<!--
 		CSS functions, such as rgb(), clip(), or lang().
 	-->
@@ -120,14 +120,14 @@
 		<start-regex>[a-zA-Z][a-z0-9-]+\(</start-regex>
 		<end-regex>\)</end-regex>
 	</syntax-item>
-
+	
 	<!--
 		Value length specifier. Unless it is 0, must always be like: -1.2em.
 	-->
 	<pattern-item _name="Dimension" style="Floating Point">
 		<regex>[\+-]?([0-9]+|[0-9]*\.[0-9]+)(%|e(m|x)|p(x|t|c)|in|ft|(m|c)m|k?Hz|deg|g?rad|m?s)</regex>
 	</pattern-item>
-
+	
 	<!--
 		For values like: z-index: 2;
 		+/- before 0 is not allowed.
@@ -135,21 +135,21 @@
 	<pattern-item _name="Number" style="Decimal">
 		<regex>\b(0|[\+-]?[1-9][0-9]*)</regex>
 	</pattern-item>
-
+	
 	<!--
 		Unicode range values.
-	-->
+	-->	
 	<pattern-item _name="Unicode Range" style="Others 2">
 		<regex>[uU]\+[a-fA-F0-9]{1,6}(-[a-fA-F0-9]{1,6})?</regex>
 	</pattern-item>
-
+	
 	<!--
 		Upgrades a rule set's importance when several rule sets conflict.
 	-->
 	<pattern-item _name="Importance Modifier" style="Specials">
 		<regex>\![ \t]*important</regex>
 	</pattern-item>
-
+	
 	<keyword-list _name="Property Names" style="Keyword" case-sensitive="FALSE">
 		<keyword>azimuth</keyword>
 		<keyword>background</keyword>
@@ -197,7 +197,7 @@
 		<keyword>elevation</keyword>
 		<keyword>empty-cells</keyword>
 		<keyword>float</keyword>
-		<keyword>font</keyword>
+		<keyword>font</keyword>		
 		<keyword>font-family</keyword>
 		<keyword>font-size</keyword>
 		<keyword>font-size-adjust</keyword>
@@ -273,7 +273,7 @@
 		<keyword>word-spacing</keyword>
 		<keyword>z-index</keyword>
 	</keyword-list>
-
+	
 	<keyword-list _name="Known Property Values" style="Data Type" case-sensitive="FALSE">
 		<keyword>auto</keyword>
 		<keyword>none</keyword>
@@ -284,7 +284,7 @@
 		<keyword>right</keyword>
 		<keyword>top</keyword>
 		<keyword>bottom</keyword>
-		<keyword>center</keyword>
+		<keyword>center</keyword>		
 		<keyword>left-side</keyword>
 		<keyword>far-left</keyword>
 		<keyword>center-left</keyword>
@@ -481,6 +481,6 @@
 		<keyword>sans-serif</keyword>
 		<keyword>cursive</keyword>
 		<keyword>fantasy</keyword>
-		<keyword>monospace</keyword>
+		<keyword>monospace</keyword>										
 	</keyword-list>
 </language>
