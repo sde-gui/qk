@@ -24,7 +24,6 @@
     </context>
     <context id="standard-key" style-ref="data-type">
       <prefix>^_?</prefix>
-      <suffix></suffix>
       <keyword>Encoding</keyword>
       <keyword>Version</keyword>
       <keyword>Name</keyword>
