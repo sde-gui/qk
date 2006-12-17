@@ -84,6 +84,9 @@ mooutils_sources =			\
 	moocompat.h			\
 	moodialogs.c			\
 	moodialogs.h			\
+	mooencodings.c			\
+	mooencodings.h			\
+	mooencodings-data.h		\
 	mooentry.c			\
 	moofiledialog.c			\
 	moofiledialog.h			\

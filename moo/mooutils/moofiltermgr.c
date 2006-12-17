@@ -511,9 +511,9 @@ combo_changed (MooCombo       *combo,
 void
 moo_filter_mgr_attach (MooFilterMgr   *mgr,
                        GtkFileChooser *dialog,
+                       GtkWidget      *parent,
                        const char     *user_id)
 {
-    GtkWidget *alignment;
     GtkWidget *hbox;
     GtkWidget *label;
     GtkWidget *combo;
@@ -525,13 +525,9 @@ moo_filter_mgr_attach (MooFilterMgr   *mgr,
 
     mgr_load (mgr);
 
-    alignment = gtk_alignment_new (1, 0.5, 0, 1);
-    gtk_widget_show (alignment);
-    gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (dialog), alignment);
-
     hbox = gtk_hbox_new (FALSE, 0);
     gtk_widget_show (hbox);
-    gtk_container_add (GTK_CONTAINER (alignment), hbox);
+    gtk_box_pack_end (GTK_BOX (parent), hbox, FALSE, FALSE, 0);
 
     label = gtk_label_new_with_mnemonic ("_Filter:");
     gtk_widget_show (label);

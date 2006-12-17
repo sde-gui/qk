@@ -75,6 +75,10 @@ gboolean        moo_file_dialog_run             (MooFileDialog  *dialog);
 const char     *moo_file_dialog_get_filename    (MooFileDialog  *dialog);
 GSList         *moo_file_dialog_get_filenames   (MooFileDialog  *dialog);
 
+void            moo_file_dialog_set_encoding    (MooFileDialog  *dialog,
+                                                 const char     *encoding);
+const char     *moo_file_dialog_get_encoding    (MooFileDialog  *dialog);
+
 const char     *moo_file_dialog                 (GtkWidget      *parent,
                                                  MooFileDialogType type,
                                                  const char     *title,

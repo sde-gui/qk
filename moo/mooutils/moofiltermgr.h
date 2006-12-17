@@ -55,6 +55,7 @@ void             moo_filter_mgr_init_filter_combo   (MooFilterMgr   *mgr,
                                                      const char     *user_id);
 void             moo_filter_mgr_attach              (MooFilterMgr   *mgr,
                                                      GtkFileChooser *filechooser,
+                                                     GtkWidget      *box,
                                                      const char     *user_id);
 
 GtkFileFilter   *moo_filter_mgr_get_filter          (MooFilterMgr   *mgr,

@@ -50,6 +50,8 @@ moo/mooedit/language-specs/verilog.lang
 moo/mooedit/language-specs/vhdl.lang
 moo/mooedit/language-specs/xml.lang
 moo/mooedit/language-specs/yacc.lang
+moo/mooedit/language-specs/boo.lang
+moo/mooedit/language-specs/d.lang
 
 moo/moopython/plugins/pyproject/project-plugin.ini.desktop.in.in
 moo/moopython/plugins/pyproject/mprj/manager.py

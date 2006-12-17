@@ -612,15 +612,15 @@
   )
 )
 
-(define-method attach
-  (of-object "MooFilterMgr")
-  (c-name "moo_filter_mgr_attach")
-  (return-type "none")
-  (parameters
-    '("GtkFileChooser*" "filechooser")
-    '("const-char*" "user_id")
-  )
-)
+; (define-method attach
+;   (of-object "MooFilterMgr")
+;   (c-name "moo_filter_mgr_attach")
+;   (return-type "none")
+;   (parameters
+;     '("GtkFileChooser*" "filechooser")
+;     '("const-char*" "user_id")
+;   )
+; )
 
 (define-method get_filter
   (of-object "MooFilterMgr")

@@ -12,6 +12,8 @@ moo/mooedit/mooeditwindow.c
 moo/mooedit/mootextstylescheme.c
 moo/mooedit/moousertools.c
 moo/mooedit/moousertools-prefs.c
+moo/mooutils/mooencodings-data.h
+moo/mooutils/mooencodings.c
 
 moo/mooedit/glade/mooeditprefs.glade
 moo/mooedit/glade/mooeditprogress.glade

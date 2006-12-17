@@ -22,7 +22,9 @@
 #include "mooutils/mooglade.h"
 #include "mooutils/eggregex.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/mooencodings.h"
 #include <gtk/gtk.h>
+#include <string.h>
 
 
 static void
@@ -39,7 +41,7 @@ _moo_edit_open_dialog (GtkWidget      *widget,
                        MooFilterMgr   *mgr)
 {
     MooFileDialog *dialog;
-    const char *start;
+    const char *start, *encoding;
     char *new_start;
     GSList *filenames, *infos = NULL, *l;
 
@@ -48,6 +50,7 @@ _moo_edit_open_dialog (GtkWidget      *widget,
 
     dialog = moo_file_dialog_new (MOO_FILE_DIALOG_OPEN, widget,
                                   TRUE, "Open", start, NULL);
+    g_object_set (dialog, "enable-encodings", TRUE, NULL);
     g_signal_connect (dialog, "dialog-created", G_CALLBACK (open_dialog_created), NULL);
 
     if (mgr)
@@ -59,11 +62,16 @@ _moo_edit_open_dialog (GtkWidget      *widget,
         return NULL;
     }
 
+    encoding = moo_file_dialog_get_encoding (dialog);
+
+    if (encoding && !strcmp (encoding, MOO_ENCODING_AUTO))
+        encoding = NULL;
+
     filenames = moo_file_dialog_get_filenames (dialog);
     g_return_val_if_fail (filenames != NULL, NULL);
 
     for (l = filenames; l != NULL; l = l->next)
-        infos = g_slist_prepend (infos, moo_edit_file_info_new (l->data, NULL));
+        infos = g_slist_prepend (infos, moo_edit_file_info_new (l->data, encoding));
     infos = g_slist_reverse (infos);
 
     new_start = g_path_get_dirname (filenames->data);
@@ -85,6 +93,7 @@ _moo_edit_save_as_dialog (MooEdit        *edit,
     const char *title = _("Save As");
     const char *start = NULL;
     const char *filename = NULL;
+    const char *encoding;
     char *new_start;
     MooFileDialog *dialog;
     MooEditFileInfo *file_info;
@@ -95,6 +104,8 @@ _moo_edit_save_as_dialog (MooEdit        *edit,
 
     dialog = moo_file_dialog_new (MOO_FILE_DIALOG_SAVE, GTK_WIDGET (edit),
                                   FALSE, title, start, display_basename);
+    g_object_set (dialog, "enable-encodings", TRUE, NULL);
+    moo_file_dialog_set_encoding (dialog, moo_edit_get_encoding (edit));
 
     if (mgr)
         moo_file_dialog_set_filter_mgr (dialog, mgr, "MooEdit");
@@ -105,9 +116,10 @@ _moo_edit_save_as_dialog (MooEdit        *edit,
         return NULL;
     }
 
+    encoding = moo_file_dialog_get_encoding (dialog);
     filename = moo_file_dialog_get_filename (dialog);
     g_return_val_if_fail (filename != NULL, NULL);
-    file_info = moo_edit_file_info_new (filename, NULL);
+    file_info = moo_edit_file_info_new (filename, encoding);
 
     new_start = g_path_get_dirname (filename);
     moo_prefs_set_filename (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), new_start);

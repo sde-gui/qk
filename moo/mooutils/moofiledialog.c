@@ -17,6 +17,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/mooencodings.h"
 #include <string.h>
 
 
@@ -29,9 +30,11 @@ struct _MooFileDialogPrivate {
     GtkWidget *parent;
     MooFilterMgr *filter_mgr;
     char *filter_mgr_id;
+    gboolean enable_encodings;
 
     GSList *filenames;
     char *filename;
+    char *encoding;
 };
 
 
@@ -47,7 +50,8 @@ enum {
     PROP_TYPE,
     PROP_PARENT,
     PROP_FILTER_MGR,
-    PROP_FILTER_MGR_ID
+    PROP_FILTER_MGR_ID,
+    PROP_ENABLE_ENCODINGS
 };
 
 enum {
@@ -115,6 +119,11 @@ moo_file_dialog_set_property (GObject        *object,
             g_object_notify (object, "filter-mgr-id");
             break;
 
+        case PROP_ENABLE_ENCODINGS:
+            dialog->priv->enable_encodings = g_value_get_boolean (value);
+            g_object_notify (object, "enable-encodings");
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -164,6 +173,10 @@ moo_file_dialog_get_property (GObject        *object,
             g_value_set_string (value, dialog->priv->filter_mgr_id);
             break;
 
+        case PROP_ENABLE_ENCODINGS:
+            g_value_set_boolean (value, dialog->priv->enable_encodings);
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -189,6 +202,7 @@ moo_file_dialog_finalize (GObject *object)
     g_free (dialog->priv->name);
     g_free (dialog->priv->filter_mgr_id);
     g_free (dialog->priv->filename);
+    g_free (dialog->priv->encoding);
 
     string_slist_free (dialog->priv->filenames);
 
@@ -223,6 +237,14 @@ moo_file_dialog_class_init (MooFileDialogClass *klass)
                                      g_param_spec_boolean ("multiple",
                                              "multiple",
                                              "multiple",
+                                             FALSE,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_ENABLE_ENCODINGS,
+                                     g_param_spec_boolean ("enable-encodings",
+                                             "enable-encodings",
+                                             "enable-encodings",
                                              FALSE,
                                              G_PARAM_READWRITE));
 
@@ -394,6 +416,7 @@ moo_file_dialog_create_widget (MooFileDialog *dialog)
 {
     GtkFileChooserAction chooser_action;
     GtkWidget *widget = NULL;
+    GtkWidget *extra_box = NULL;
 
     switch (dialog->priv->type)
     {
@@ -431,10 +454,22 @@ moo_file_dialog_create_widget (MooFileDialog *dialog)
 
     gtk_dialog_set_default_response (GTK_DIALOG (widget), GTK_RESPONSE_OK);
 
+    if (dialog->priv->filter_mgr || dialog->priv->enable_encodings)
+    {
+        extra_box = gtk_hbox_new (FALSE, 0);
+        gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (widget), extra_box);
+        gtk_widget_show (extra_box);
+    }
+
     if (dialog->priv->filter_mgr)
         moo_filter_mgr_attach (dialog->priv->filter_mgr,
-                               GTK_FILE_CHOOSER (widget),
+                               GTK_FILE_CHOOSER (widget), extra_box,
                                dialog->priv->filter_mgr_id);
+
+    if (dialog->priv->enable_encodings)
+        _moo_encodings_attach_combo (widget, extra_box,
+                                     dialog->priv->type == MOO_FILE_DIALOG_SAVE,
+                                     dialog->priv->encoding);
 
     if (dialog->priv->parent)
         moo_window_set_parent (widget, dialog->priv->parent);
@@ -473,6 +508,24 @@ set_filenames (MooFileDialog *dialog,
 {
     string_slist_free (dialog->priv->filenames);
     dialog->priv->filenames = filenames;
+}
+
+
+static void
+set_encoding (MooFileDialog *dialog,
+              const char    *encoding)
+{
+    char *tmp = dialog->priv->encoding;
+    dialog->priv->encoding = g_strdup (encoding);
+    g_free (tmp);
+}
+
+void
+moo_file_dialog_set_encoding (MooFileDialog *dialog,
+                              const char    *encoding)
+{
+    g_return_if_fail (MOO_IS_FILE_DIALOG (dialog));
+    set_encoding (dialog, encoding);
 }
 
 
@@ -540,6 +593,7 @@ moo_file_dialog_run (MooFileDialog *dialog)
 
     set_filename (dialog, NULL);
     set_filenames (dialog, NULL);
+    set_encoding (dialog, NULL);
 
     filechooser = moo_file_dialog_create_widget (dialog);
 
@@ -622,6 +676,10 @@ moo_file_dialog_run (MooFileDialog *dialog)
     }
 
 out:
+    if (result && dialog->priv->enable_encodings)
+        set_encoding (dialog, _moo_encodings_combo_get (filechooser,
+                                    dialog->priv->type == MOO_FILE_DIALOG_SAVE));
+
     gtk_widget_destroy (filechooser);
     return result;
 }
@@ -640,6 +698,14 @@ moo_file_dialog_get_filenames (MooFileDialog *dialog)
 {
     g_return_val_if_fail (MOO_IS_FILE_DIALOG (dialog), NULL);
     return string_slist_copy (dialog->priv->filenames);
+}
+
+
+const char *
+moo_file_dialog_get_encoding (MooFileDialog *dialog)
+{
+    g_return_val_if_fail (MOO_IS_FILE_DIALOG (dialog), NULL);
+    return dialog->priv->encoding ? dialog->priv->encoding : MOO_ENCODING_UTF8;
 }
 
 
