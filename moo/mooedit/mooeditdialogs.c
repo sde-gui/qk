@@ -16,6 +16,7 @@
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootextfind-glade.h"
+#include "mooedit/mooeditfileops.h"
 #include "mooedit/mooeditsavemultiple-glade.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moostock.h"
@@ -466,7 +467,7 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
 void
 _moo_edit_save_error_dialog (GtkWidget      *widget,
                              const char     *filename,
-                             const char     *err_msg)
+                             GError         *error)
 {
     char *filename_utf8, *msg = NULL;
 
@@ -483,9 +484,42 @@ _moo_edit_save_error_dialog (GtkWidget      *widget,
     else
         msg = g_strdup (_("Could not save file"));
 
-    moo_error_dialog (widget, msg, err_msg);
+    moo_error_dialog (widget, msg, error ? error->message : NULL);
 
     g_free (msg);
+    g_free (filename_utf8);
+}
+
+void
+_moo_edit_save_error_enc_dialog (GtkWidget  *widget,
+                                 const char *filename,
+                                 const char *encoding)
+{
+    char *filename_utf8, *msg = NULL;
+    char *secondary;
+
+    g_return_if_fail (filename != NULL);
+    g_return_if_fail (encoding != NULL);
+
+    filename_utf8 = g_filename_to_utf8 (filename, -1, NULL, NULL, NULL);
+
+    if (!filename_utf8)
+        g_critical ("%s: could not convert filename '%s' to utf8", G_STRLOC, filename);
+
+    if (filename_utf8)
+        /* Could not save file foo.txt */
+        msg = g_strdup_printf (_("Error saving file\n%s"), filename_utf8);
+    else
+        msg = g_strdup (_("Error saving file"));
+
+    secondary = g_strdup_printf (_("Could not convert file to requested character "
+                                   "encoding %s. File was saved in UTF-8 encoding."),
+                                 encoding);
+
+    moo_error_dialog (widget, msg, secondary);
+
+    g_free (msg);
+    g_free (secondary);
     g_free (filename_utf8);
 }
 
@@ -493,9 +527,11 @@ _moo_edit_save_error_dialog (GtkWidget      *widget,
 void
 _moo_edit_open_error_dialog (GtkWidget      *widget,
                              const char     *filename,
-                             const char     *err_msg)
+                             const char     *encoding,
+                             GError         *error)
 {
     char *filename_utf8, *msg = NULL;
+    char *secondary;
 
     g_return_if_fail (filename != NULL);
 
@@ -510,16 +546,34 @@ _moo_edit_open_error_dialog (GtkWidget      *widget,
     else
         msg = g_strdup (_("Could not open file"));
 
-    moo_error_dialog (widget, msg, err_msg);
+    if (error && error->domain == MOO_EDIT_FILE_ERROR &&
+        error->code == MOO_EDIT_FILE_ERROR_ENCODING)
+    {
+        if (encoding)
+            secondary = g_strdup_printf (_("Could not open file using character encoding %s. "
+                                           "The file may be binary or encoding may be specified "
+                                           "incorrectly."), encoding);
+        else
+            secondary = g_strdup_printf (_("Could not detect file character encoding. "
+                                           "Please make sure the file is not binary and try to select "
+                                           "encoding in the Open dialog."));
+    }
+    else
+    {
+        secondary = error ? g_strdup (error->message) : NULL;
+    }
+
+    moo_error_dialog (widget, msg, secondary);
 
     g_free (msg);
+    g_free (secondary);
     g_free (filename_utf8);
 }
 
 
 void
-_moo_edit_reload_error_dialog (MooEdit    *doc,
-                               const char *err_msg)
+_moo_edit_reload_error_dialog (MooEdit *doc,
+                               GError  *error)
 {
     const char *filename;
     char *msg = NULL;
@@ -536,7 +590,8 @@ _moo_edit_reload_error_dialog (MooEdit    *doc,
 
     /* Could not reload file foo.txt */
     msg = g_strdup_printf (_("Could not reload file\n%s"), filename);
-    moo_error_dialog (GTK_WIDGET (doc), msg, err_msg);
+    /* XXX */
+    moo_error_dialog (GTK_WIDGET (doc), msg, error ? error->message : NULL);
 
     g_free (msg);
 }

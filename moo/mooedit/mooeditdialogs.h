@@ -42,12 +42,16 @@ gboolean         _moo_edit_overwrite_modified_dialog (MooEdit        *edit);
 
 void             _moo_edit_save_error_dialog        (GtkWidget      *widget,
                                                      const char     *filename,
-                                                     const char     *err_msg);
+                                                     GError         *error);
+void             _moo_edit_save_error_enc_dialog    (GtkWidget      *widget,
+                                                     const char     *filename,
+                                                     const char     *encoding);
 void             _moo_edit_open_error_dialog        (GtkWidget      *widget,
                                                      const char     *filename,
-                                                     const char     *err_msg);
+                                                     const char     *encoding,
+                                                     GError         *error);
 void             _moo_edit_reload_error_dialog      (MooEdit        *doc,
-                                                     const char     *err_msg);
+                                                     GError         *error);
 
 
 gboolean         _moo_text_search_from_start_dialog (GtkWidget      *parent,

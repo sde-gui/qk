@@ -624,35 +624,35 @@ moo_edit_file_info_get_type (void)
 }
 
 
-const char*
+const char *
 moo_edit_get_filename (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
     return edit->priv->filename;
 }
 
-const char*
+const char *
 moo_edit_get_basename (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
     return edit->priv->basename;
 }
 
-const char*
+const char *
 moo_edit_get_display_filename (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
     return edit->priv->display_filename;
 }
 
-const char*
+const char *
 moo_edit_get_display_basename (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
     return edit->priv->display_basename;
 }
 
-const char*
+const char *
 moo_edit_get_encoding (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
@@ -660,7 +660,7 @@ moo_edit_get_encoding (MooEdit *edit)
 }
 
 
-char*
+char *
 moo_edit_get_uri (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
@@ -672,7 +672,7 @@ moo_edit_get_uri (MooEdit *edit)
 }
 
 
-static GtkTextBuffer*
+static GtkTextBuffer *
 get_buffer (MooEdit *edit)
 {
     return gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));

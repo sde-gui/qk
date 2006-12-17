@@ -32,6 +32,10 @@ void         _moo_encodings_sync_combo      (GtkWidget  *dialog,
 const char  *_moo_encodings_combo_get       (GtkWidget  *dialog,
                                              gboolean    save_mode);
 
+const char  *_moo_encoding_locale           (void);
+gboolean     _moo_encodings_equal           (const char *enc1,
+                                             const char *enc2);
+
 
 G_END_DECLS
 

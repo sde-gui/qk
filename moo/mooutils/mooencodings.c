@@ -59,28 +59,41 @@ static void     combo_changed   (GtkComboBox    *combo,
 
 
 static Encoding *
-find_encoding (EncodingsManager *mgr,
-               const char       *name)
+lookup_encoding (EncodingsManager *mgr,
+                 const char       *name)
 {
-    Encoding *enc;
     char *upper;
+    Encoding *enc;
 
     g_return_val_if_fail (name != NULL, NULL);
 
     upper = g_ascii_strup (name, -1);
     enc = g_hash_table_lookup (mgr->encodings, upper);
 
+    g_free (upper);
+    return enc;
+}
+
+static Encoding *
+get_encoding (EncodingsManager *mgr,
+              const char       *name)
+{
+    Encoding *enc;
+
+    g_return_val_if_fail (name != NULL, NULL);
+
+    enc = lookup_encoding (mgr, name);
+
     if (!enc)
     {
         enc = g_new0 (Encoding, 1);
-        enc->name = g_strdup (upper);
+        enc->name = g_ascii_strup (name, -1);
         enc->short_display_name = enc->name;
         enc->display_name = g_strdup (name);
         mgr->user_defined = g_slist_prepend (mgr->user_defined, enc);
         g_hash_table_insert (mgr->encodings, (char*) enc->name, enc);
     }
 
-    g_free (upper);
     return enc;
 }
 
@@ -235,7 +248,7 @@ get_enc_mgr (void)
         if (!g_get_charset (&locale_charset))
             locale_charset = MOO_ENCODING_UTF8;
 
-        mgr->locale_encoding = find_encoding (mgr, locale_charset);
+        mgr->locale_encoding = get_encoding (mgr, locale_charset);
     }
 
     return mgr;
@@ -387,7 +400,7 @@ encoding_combo_set_active (GtkComboBox *combo,
         goto out;
     }
 
-    new_enc = find_encoding (mgr, enc_name);
+    new_enc = get_encoding (mgr, enc_name);
     g_return_if_fail (new_enc != NULL);
 
     set_last (mgr, new_enc->name, save_mode);
@@ -675,6 +688,38 @@ _moo_encodings_combo_get (GtkWidget *dialog,
     if (!strcmp (enc_name, MOO_ENCODING_LOCALE))
         enc_name = mgr->locale_encoding->name;
 
-    g_print ("encoding: %s\n", enc_name);
     return enc_name;
+}
+
+
+const char *
+_moo_encoding_locale (void)
+{
+    EncodingsManager *mgr;
+
+    mgr = get_enc_mgr ();
+
+    return mgr->locale_encoding->name;
+}
+
+
+gboolean
+_moo_encodings_equal (const char *enc1_name,
+                      const char *enc2_name)
+{
+    Encoding *enc1, *enc2;
+    EncodingsManager *mgr;
+
+    enc1_name = enc1_name && enc1_name[0] ? enc1_name : MOO_ENCODING_UTF8;
+    enc2_name = enc2_name && enc2_name[0] ? enc2_name : MOO_ENCODING_UTF8;
+
+    mgr = get_enc_mgr ();
+
+    enc1 = lookup_encoding (mgr, enc1_name);
+    enc2 = lookup_encoding (mgr, enc2_name);
+
+    if (!enc1 || !enc2)
+        return !strcmp (enc1_name, enc2_name);
+
+    return enc1 == enc2;
 }

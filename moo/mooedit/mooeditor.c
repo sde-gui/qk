@@ -70,9 +70,7 @@ static GtkAction    *create_recent_action   (MooEditWindow  *window);
 static MooEditWindow *create_window         (MooEditor      *editor);
 static void          moo_editor_add_doc     (MooEditor      *editor,
                                              MooEditWindow  *window,
-                                             MooEdit        *doc,
-                                             MooEditLoader  *loader,
-                                             MooEditSaver   *saver);
+                                             MooEdit        *doc);
 static void          do_close_window        (MooEditor      *editor,
                                              MooEditWindow  *window);
 static void          do_close_doc           (MooEditor      *editor,
@@ -81,10 +79,6 @@ static gboolean      close_docs_real        (MooEditor      *editor,
                                              GSList         *docs,
                                              gboolean        ask_confirm);
 static GSList       *find_modified          (GSList         *docs);
-static MooEditLoader*get_loader             (MooEditor      *editor,
-                                             MooEdit        *doc);
-static MooEditSaver *get_saver              (MooEditor      *editor,
-                                             MooEdit        *doc);
 
 static void          activate_history_item  (MooEditor      *editor,
                                              MooHistoryItem *item,
@@ -108,8 +102,6 @@ struct _MooEditorPrivate {
     GSList          *messages;
     WindowInfo      *windowless;
     GSList          *windows; /* WindowInfo* */
-    GHashTable      *loaders;
-    GHashTable      *savers;
     char            *app_name;
     MooUIXML        *ui_xml;
     MooFilterMgr    *filter_mgr;
@@ -303,13 +295,6 @@ moo_editor_init (MooEditor *editor)
     editor->priv->windows = NULL;
     editor->priv->windowless = window_info_new (NULL);
 
-    editor->priv->loaders =
-            g_hash_table_new_full (g_direct_hash, g_direct_equal,
-                                   NULL, (GDestroyNotify) _moo_edit_loader_unref);
-    editor->priv->savers =
-            g_hash_table_new_full (g_direct_hash, g_direct_equal,
-                                   NULL, (GDestroyNotify) _moo_edit_saver_unref);
-
     moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG),
                               MOO_LANG_NONE);
 
@@ -469,9 +454,6 @@ moo_editor_finalize (GObject *object)
     }
 
     window_info_free (editor->priv->windowless);
-
-    g_hash_table_destroy (editor->priv->loaders);
-    g_hash_table_destroy (editor->priv->savers);
 
     g_free (editor->priv->default_lang);
 
@@ -986,9 +968,7 @@ create_window (MooEditor *editor)
 static void
 moo_editor_add_doc (MooEditor      *editor,
                     MooEditWindow  *window,
-                    MooEdit        *doc,
-                    MooEditLoader  *loader,
-                    MooEditSaver   *saver)
+                    MooEdit        *doc)
 {
     WindowInfo *info;
 
@@ -1005,9 +985,6 @@ moo_editor_add_doc (MooEditor      *editor,
     g_return_if_fail (g_slist_find (info->docs, doc) == NULL);
 
     window_info_add (info, doc);
-
-    g_hash_table_insert (editor->priv->loaders, doc, _moo_edit_loader_ref (loader));
-    g_hash_table_insert (editor->priv->savers, doc, _moo_edit_saver_ref (saver));
 
     if (!moo_edit_get_filename (doc) &&
          !moo_edit_config_get_string (doc->config, "lang") &&
@@ -1035,9 +1012,7 @@ moo_editor_new_window (MooEditor *editor)
     {
         doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
         _moo_edit_window_insert_doc (window, doc, -1);
-        moo_editor_add_doc (editor, window, doc,
-                            _moo_edit_loader_get_default (),
-                            _moo_edit_saver_get_default ());
+        moo_editor_add_doc (editor, window, doc);
     }
 
     return window;
@@ -1052,23 +1027,19 @@ moo_editor_create_doc (MooEditor      *editor,
                        GError        **error)
 {
     MooEdit *doc;
-    MooEditLoader *loader;
-    MooEditSaver *saver;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
 
     doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
-    loader = _moo_edit_loader_get_default ();
-    saver = _moo_edit_saver_get_default ();
 
-    if (filename && !_moo_edit_loader_load (loader, doc, filename, encoding, error))
+    if (filename && !_moo_edit_load_file (doc, filename, encoding, error))
     {
         gtk_object_sink (g_object_ref (doc));
         g_object_unref (doc);
         return NULL;
     }
 
-    moo_editor_add_doc (editor, NULL, doc, loader, saver);
+    moo_editor_add_doc (editor, NULL, doc);
     _moo_doc_attach_plugins (NULL, doc);
 
     return doc;
@@ -1095,9 +1066,7 @@ moo_editor_new_doc (MooEditor      *editor,
 
     doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
     _moo_edit_window_insert_doc (window, doc, -1);
-    moo_editor_add_doc (editor, window, doc,
-                        _moo_edit_loader_get_default (),
-                        _moo_edit_saver_get_default ());
+    moo_editor_add_doc (editor, window, doc);
 
     return doc;
 }
@@ -1110,8 +1079,6 @@ moo_editor_open (MooEditor      *editor,
                  GSList         *files)
 {
     GSList *l;
-    MooEditLoader *loader;
-    MooEditSaver *saver;
     MooEdit *bring_to_front = NULL;
     gboolean result = TRUE;
 
@@ -1135,9 +1102,6 @@ moo_editor_open (MooEditor      *editor,
 
         return result;
     }
-
-    loader = _moo_edit_loader_get_default ();
-    saver = _moo_edit_saver_get_default ();
 
     for (l = files; l != NULL; l = l->next)
     {
@@ -1177,11 +1141,10 @@ moo_editor_open (MooEditor      *editor,
         }
 
         /* XXX open_single */
-        if (!_moo_edit_loader_load (loader, doc, filename, info->encoding, &error))
+        if (!_moo_edit_load_file (doc, filename, info->encoding, &error))
         {
             if (!editor->priv->silent)
-                _moo_edit_open_error_dialog (parent, filename,
-                                             error ? error->message : NULL);
+                _moo_edit_open_error_dialog (parent, filename, info->encoding, error);
             g_error_free (error);
             result = FALSE;
         }
@@ -1195,7 +1158,7 @@ moo_editor_open (MooEditor      *editor,
             if (new_doc)
             {
                 _moo_edit_window_insert_doc (window, doc, -1);
-                moo_editor_add_doc (editor, window, doc, loader, saver);
+                moo_editor_add_doc (editor, window, doc);
             }
             else
             {
@@ -1435,9 +1398,6 @@ do_close_doc (MooEditor      *editor,
         _moo_edit_window_remove_doc (info->window, doc);
     else
         _moo_doc_detach_plugins (NULL, doc);
-
-    g_hash_table_remove (editor->priv->loaders, doc);
-    g_hash_table_remove (editor->priv->savers, doc);
 }
 
 
@@ -1498,9 +1458,7 @@ moo_editor_close_docs (MooEditor      *editor,
             MooEdit *doc = g_object_new (get_doc_type (editor),
                                          "editor", editor, NULL);
             _moo_edit_window_insert_doc (info->window, doc, -1);
-            moo_editor_add_doc (editor, info->window, doc,
-                                _moo_edit_loader_get_default (),
-                                _moo_edit_saver_get_default ());
+            moo_editor_add_doc (editor, info->window, doc);
         }
 
         return TRUE;
@@ -1830,7 +1788,6 @@ _moo_editor_reload (MooEditor      *editor,
                     GError        **error)
 {
     WindowInfo *info;
-    MooEditLoader *loader;
     GError *error_here = NULL;
     int cursor_line, cursor_offset;
     GtkTextIter iter;
@@ -1842,9 +1799,6 @@ _moo_editor_reload (MooEditor      *editor,
 
     info = window_list_find_doc (editor, doc);
     g_return_if_fail (info != NULL);
-
-    loader = get_loader (editor, doc);
-    g_return_if_fail (loader != NULL);
 
     /* XXX */
     g_return_if_fail (moo_edit_get_filename (doc) != NULL);
@@ -1859,10 +1813,10 @@ _moo_editor_reload (MooEditor      *editor,
     cursor_line = gtk_text_iter_get_line (&iter);
     cursor_offset = moo_text_iter_get_visual_line_offset (&iter, 8);
 
-    if (!_moo_edit_loader_reload (loader, doc, &error_here))
+    if (!_moo_edit_reload_file (doc, &error_here))
     {
         if (!editor->priv->silent)
-            _moo_edit_reload_error_dialog (doc, error_here->message);
+            _moo_edit_reload_error_dialog (doc, error_here);
         else
             g_propagate_error (error, error_here);
 
@@ -1889,7 +1843,6 @@ moo_editor_get_save_flags (MooEditor *editor)
 
 static gboolean
 do_save (MooEditor    *editor,
-         MooEditSaver *saver,
          MooEdit      *doc,
          const char   *filename,
          const char   *encoding,
@@ -1904,8 +1857,9 @@ do_save (MooEditor    *editor,
         moo_text_view_strip_whitespace (MOO_TEXT_VIEW (doc));
 
     g_signal_emit_by_name (doc, "save-before");
-    result = _moo_edit_saver_save (saver, doc, filename, encoding,
-                                   moo_editor_get_save_flags (editor), error);
+    result = _moo_edit_save_file (doc, filename, encoding,
+                                  moo_editor_get_save_flags (editor),
+                                  error);
     g_signal_emit_by_name (doc, "save-after");
 
     return result;
@@ -1918,7 +1872,6 @@ _moo_editor_save (MooEditor      *editor,
                   GError        **error)
 {
     WindowInfo *info;
-    MooEditSaver *saver;
     GError *error_here = NULL;
     char *filename;
     char *encoding;
@@ -1932,9 +1885,6 @@ _moo_editor_save (MooEditor      *editor,
     info = window_list_find_doc (editor, doc);
     g_return_val_if_fail (info != NULL, FALSE);
 
-    saver = get_saver (editor, doc);
-    g_return_val_if_fail (saver != NULL, FALSE);
-
     if (!moo_edit_get_filename (doc))
         return _moo_editor_save_as (editor, doc, NULL, NULL, error);
 
@@ -1946,16 +1896,21 @@ _moo_editor_save (MooEditor      *editor,
          !_moo_edit_overwrite_modified_dialog (doc))
             goto out;
 
-    if (!do_save (editor, saver, doc, filename, encoding, &error_here))
+    if (!do_save (editor, doc, filename, encoding, &error_here))
     {
         if (!editor->priv->silent)
         {
-            _moo_edit_save_error_dialog (GTK_WIDGET (doc), filename,
-                                         error_here->message);
+            gboolean saved_utf8 = error_here->domain == MOO_EDIT_FILE_ERROR &&
+                                  error_here->code == MOO_EDIT_FILE_ERROR_ENCODING;
+            if (saved_utf8)
+                _moo_edit_save_error_enc_dialog (GTK_WIDGET (doc), filename, encoding);
+            else
+                _moo_edit_save_error_dialog (GTK_WIDGET (doc), filename, error_here);
             g_error_free (error_here);
         }
         else
         {
+            /* XXX */
             g_propagate_error (error, error_here);
         }
 
@@ -1981,7 +1936,6 @@ _moo_editor_save_as (MooEditor      *editor,
                      GError        **error)
 {
     WindowInfo *info;
-    MooEditSaver *saver;
     GError *error_here = NULL;
     MooEditFileInfo *file_info = NULL;
     gboolean result = FALSE;
@@ -1993,9 +1947,6 @@ _moo_editor_save_as (MooEditor      *editor,
 
     info = window_list_find_doc (editor, doc);
     g_return_val_if_fail (info != NULL, FALSE);
-
-    saver = get_saver (editor, doc);
-    g_return_val_if_fail (saver != NULL, FALSE);
 
     if (!filename)
     {
@@ -2010,17 +1961,25 @@ _moo_editor_save_as (MooEditor      *editor,
         file_info = moo_edit_file_info_new (filename, encoding);
     }
 
-    if (!do_save (editor, saver, doc, file_info->filename, file_info->encoding, &error_here))
+    if (!do_save (editor, doc, file_info->filename, file_info->encoding, &error_here))
     {
         if (!editor->priv->silent)
         {
-            _moo_edit_save_error_dialog (GTK_WIDGET (doc),
-                                         file_info->filename,
-                                         error_here->message);
+            gboolean saved_utf8 = error_here->domain == MOO_EDIT_FILE_ERROR &&
+                                  error_here->code == MOO_EDIT_FILE_ERROR_ENCODING;
+            if (saved_utf8)
+                _moo_edit_save_error_enc_dialog (GTK_WIDGET (doc),
+                                                 file_info->filename,
+                                                 file_info->encoding);
+            else
+                _moo_edit_save_error_dialog (GTK_WIDGET (doc),
+                                             file_info->filename,
+                                             error_here);
             g_error_free (error_here);
         }
         else
         {
+            /* XXX */
             g_propagate_error (error, error_here);
         }
 
@@ -2045,7 +2004,6 @@ moo_editor_save_copy (MooEditor      *editor,
                       GError        **error)
 {
     WindowInfo *info;
-    MooEditSaver *saver;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
     g_return_val_if_fail (filename != NULL, FALSE);
@@ -2053,26 +2011,7 @@ moo_editor_save_copy (MooEditor      *editor,
     info = window_list_find_doc (editor, doc);
     g_return_val_if_fail (info != NULL, FALSE);
 
-    saver = get_saver (editor, doc);
-    g_return_val_if_fail (saver != NULL, FALSE);
-
-    return _moo_edit_saver_save_copy (saver, doc, filename, encoding, error);
-}
-
-
-static MooEditLoader*
-get_loader (MooEditor      *editor,
-            MooEdit        *doc)
-{
-    return g_hash_table_lookup (editor->priv->loaders, doc);
-}
-
-
-static MooEditSaver*
-get_saver (MooEditor      *editor,
-           MooEdit        *doc)
-{
-    return g_hash_table_lookup (editor->priv->savers, doc);
+    return _moo_edit_save_file_copy (doc, filename, encoding, error);
 }
 
 

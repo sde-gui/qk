@@ -593,7 +593,6 @@ moo_file_dialog_run (MooFileDialog *dialog)
 
     set_filename (dialog, NULL);
     set_filenames (dialog, NULL);
-    set_encoding (dialog, NULL);
 
     filechooser = moo_file_dialog_create_widget (dialog);
 

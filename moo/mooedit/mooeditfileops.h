@@ -23,69 +23,27 @@
 G_BEGIN_DECLS
 
 
-typedef struct _MooEditLoader MooEditLoader;
-typedef struct _MooEditSaver  MooEditSaver;
-
 typedef enum {
     MOO_EDIT_SAVE_BACKUP = 1 << 0
 } MooEditSaveFlags;
 
-struct _MooEditLoader
-{
-    guint ref_count;
+#define MOO_EDIT_FILE_ERROR (_moo_edit_file_error_quark ())
+#define MOO_EDIT_FILE_ERROR_ENCODING 0
 
-    gboolean    (*load)     (MooEditLoader  *loader,
-                             MooEdit        *edit,
-                             const char     *file,
-                             const char     *encoding,
-                             GError        **error);
-    gboolean    (*reload)   (MooEditLoader  *loader,
-                             MooEdit        *edit,
-                             GError        **error);
-};
+GQuark           _moo_edit_file_error_quark (void) G_GNUC_CONST;
 
-struct _MooEditSaver
-{
-    guint ref_count;
-
-    gboolean    (*save)         (MooEditSaver   *saver,
-                                 MooEdit        *edit,
-                                 const char     *file,
-                                 const char     *encoding,
-                                 MooEditSaveFlags flags,
-                                 GError        **error);
-    gboolean    (*save_copy)    (MooEditSaver   *saver,
-                                 MooEdit        *edit,
-                                 const char     *file,
-                                 const char     *encoding,
-                                 GError        **error);
-};
-
-
-MooEditLoader   *_moo_edit_loader_get_default(void);
-MooEditSaver    *_moo_edit_saver_get_default (void);
-
-MooEditLoader   *_moo_edit_loader_ref       (MooEditLoader  *loader);
-void             _moo_edit_loader_unref     (MooEditLoader  *loader);
-MooEditSaver    *_moo_edit_saver_ref        (MooEditSaver   *saver);
-void             _moo_edit_saver_unref      (MooEditSaver   *saver);
-
-gboolean         _moo_edit_loader_load      (MooEditLoader  *loader,
-                                             MooEdit        *edit,
+gboolean         _moo_edit_load_file        (MooEdit        *edit,
                                              const char     *file,
                                              const char     *encoding,
                                              GError        **error);
-gboolean         _moo_edit_loader_reload    (MooEditLoader  *loader,
-                                             MooEdit        *edit,
+gboolean         _moo_edit_reload_file      (MooEdit        *edit,
                                              GError        **error);
-gboolean         _moo_edit_saver_save       (MooEditSaver   *saver,
-                                             MooEdit        *edit,
+gboolean         _moo_edit_save_file        (MooEdit        *edit,
                                              const char     *file,
                                              const char     *encoding,
                                              MooEditSaveFlags flags,
                                              GError        **error);
-gboolean         _moo_edit_saver_save_copy  (MooEditSaver   *saver,
-                                             MooEdit        *edit,
+gboolean         _moo_edit_save_file_copy   (MooEdit        *edit,
                                              const char     *file,
                                              const char     *encoding,
                                              GError        **error);
