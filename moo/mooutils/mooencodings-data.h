@@ -17,14 +17,7 @@ static const char * const moo_encoding_groups_names[] = {
     N_("Unicode")
 };
 
-static const struct {
-    const char *name;
-    const char *alias;
-} const moo_encoding_aliases[] = {
-    {"UTF-8", "UTF8"}
-};
-
-/* The stuff below if from profterm:
+/* The encodings list below is from profterm:
  *
  * Copyright (C) 2002 Red Hat, Inc.
  *
@@ -42,6 +35,8 @@ static const struct {
     guint group : 3;
 } const moo_encodings_data[] =
 {
+    { "ASCII",          N_("Ascii"),               "ASCII",            ENCODING_GROUP_WEST_EUROPEAN },
+
     { "ISO-8859-1",     N_("Western"),             "ISO-8859-1",       ENCODING_GROUP_WEST_EUROPEAN },
     { "ISO-8859-2",     N_("Central European"),    "ISO-8859-2",       ENCODING_GROUP_EAST_EUROPEAN },
     { "ISO-8859-3",     N_("South European"),      "ISO-8859-3",       ENCODING_GROUP_WEST_EUROPEAN },
@@ -124,4 +119,101 @@ static const struct {
     { "WINDOWS-1256",   N_("Arabic"),              "Windows-1256",     ENCODING_GROUP_MIDDLE_EASTERN },
     { "WINDOWS-1257",   N_("Baltic"),              "Windows-1257",     ENCODING_GROUP_EAST_EUROPEAN },
     { "WINDOWS-1258",   N_("Vietnamese"),          "Windows-1258",     ENCODING_GROUP_EAST_ASIAN }
+};
+
+
+/* The alias list is from config.charset
+ *
+#   Copyright (C) 2000-2002 Free Software Foundation, Inc.
+#
+#   This program is free software; you can redistribute it and/or modify it
+#   under the terms of the GNU Library General Public License as published
+#   by the Free Software Foundation; either version 2, or (at your option)
+#   any later version.
+ */
+
+static const struct {
+    const char *alias;
+    const char *name;
+} const moo_encoding_aliases[] = {
+    {"UTF8",        "UTF-8"},
+
+    {"646",         "ASCII"},
+    {"C",           "ASCII"},
+    {"US-ASCII",    "ASCII"},
+    {"CP20127",     "ASCII"},
+
+    {"CP20866",     "KOI8-R"},
+//     {"CP21866",   "KOI8-RU"},
+
+    {"CP936",       "GBK"},
+    {"CP1361",      "JOHAB"},
+    {"IBM-EUCCN",   "GB2312"},
+    {"EUCCN",       "GB2312"},
+    {"IBM-EUCJP",   "EUC-JP"},
+    {"EUCJP",       "EUC-JP"},
+    {"IBM-EUCKR",   "EUC-KR"},
+    {"EUCCR",       "EUC-KR"},
+    {"5601",        "EUC-KR"},
+    {"IBM-EUCTW",   "EUC-TW"},
+    {"EUCTW",       "EUC-TW"},
+    {"CNS11643",    "EUC-TW"},
+    {"PCK",         "SHIFT-JIS"},
+    {"SHIFT_JIS",   "SHIFT-JIS"},
+
+    {"CP28591",     "ISO-8859-1"},
+    {"CP28592",     "ISO-8859-2"},
+    {"CP28593",     "ISO-8859-3"},
+    {"CP28594",     "ISO-8859-4"},
+    {"CP28595",     "ISO-8859-5"},
+    {"CP28596",     "ISO-8859-6"},
+    {"CP28597",     "ISO-8859-7"},
+    {"CP28598",     "ISO-8859-8"},
+    {"CP28599",     "ISO-8859-9"},
+    {"CP28605",     "ISO-8859-15"},
+    {"ISO8859-1",   "ISO-8859-1"},
+    {"ISO8859-2",   "ISO-8859-2"},
+    {"ISO8859-3",   "ISO-8859-3"},
+    {"ISO8859-4",   "ISO-8859-4"},
+    {"ISO8859-5",   "ISO-8859-5"},
+    {"ISO8859-6",   "ISO-8859-6"},
+    {"ISO8859-7",   "ISO-8859-7"},
+    {"ISO8859-8",   "ISO-8859-8"},
+    {"ISO8859-9",   "ISO-8859-9"},
+    {"ISO8859-15",  "ISO-8859-15"},
+    {"ISO_8859-1",  "ISO-8859-1"},
+    {"ISO_8859-2",  "ISO-8859-2"},
+    {"ISO_8859-3",  "ISO-8859-3"},
+    {"ISO_8859-4",  "ISO-8859-4"},
+    {"ISO_8859-5",  "ISO-8859-5"},
+    {"ISO_8859-6",  "ISO-8859-6"},
+    {"ISO_8859-7",  "ISO-8859-7"},
+    {"ISO_8859-8",  "ISO-8859-8"},
+    {"ISO_8859-9",  "ISO-8859-9"},
+    {"ISO_8859-15", "ISO-8859-15"},
+    {"ISO88591",    "ISO-8859-1"},
+    {"ISO88592",    "ISO-8859-2"},
+    {"ISO88593",    "ISO-8859-3"},
+    {"ISO88594",    "ISO-8859-4"},
+    {"ISO88595",    "ISO-8859-5"},
+    {"ISO88596",    "ISO-8859-6"},
+    {"ISO88597",    "ISO-8859-7"},
+    {"ISO88598",    "ISO-8859-8"},
+    {"ISO88599",    "ISO-8859-9"},
+    {"ISO885915",   "ISO-8859-15"},
+
+    {"CP850",       "IBM850"},
+    {"IBM-850",     "IBM850"},
+    {"IBM-1252",    "WINDOWS-1252"},
+    {"CP1252",      "WINDOWS-1252"},
+    {"ANSI-1251",   "WINDOWS-1251"},
+    {"CP1251",      "WINDOWS-1251"},
+//     {"IBM-921",     "ISO-8859-13"},
+//     {"IBM-856",     "CP856"},
+//     {"IBM-922",     "CP922"},
+//     {"IBM-932",     "CP932"},
+//     {"IBM-943",     "CP943"},
+//     {"IBM-1046",    "CP1046"},
+//     {"IBM-1124",    "CP1124"},
+//     {"IBM-1129",    "CP1129"},
 };
