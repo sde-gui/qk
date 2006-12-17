@@ -8,7 +8,7 @@
 
   <styles>
     <style id="comment" _name="Comment" map-to="def:comment"/>
-    <style id="preprocessor" _name="Preprocessor" map-to="def:preprocessor"/>
+    <style id="boolean" _name="Boolean" map-to="def:keyword"/>
     <style id="string" _name="String" map-to="def:string"/>
     <style id="keyword" _name="Keyword" map-to="def:keyword"/>
     <style id="others" _name="Others"/>
@@ -250,7 +250,7 @@
       <keyword>write\b</keyword>
       <keyword>zero\?([ \t]|$)</keyword>
     </context>
-    <context id="boolean-value" style-ref="preprocessor">
+    <context id="boolean-value" style-ref="boolean">
       <match>#(f|t)</match>
     </context>
     <context id="scheme">
