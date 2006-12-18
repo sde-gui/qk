@@ -578,24 +578,34 @@ _moo_get_top_window (GSList *windows)
 #endif
 
 
+#ifdef GDK_WINDOWING_X11
+static void
+present_window_x11 (GtkWindow *window,
+                     guint32   stamp)
+{
+    if (!GTK_WIDGET_REALIZED (window))
+        gtk_widget_realize (GTK_WIDGET (window));
+
+    gdk_x11_window_move_to_current_desktop (GTK_WIDGET(window)->window);
+    gtk_widget_show (GTK_WIDGET (window));
+
+    if (!stamp)
+        stamp = gdk_x11_get_server_time (GTK_WIDGET (window)->window);
+
+    gdk_window_focus (GTK_WIDGET (window)->window, stamp);
+}
+#endif
+
 void
 _moo_window_present (GtkWindow *window,
                      G_GNUC_UNUSED guint32 stamp)
 {
     g_return_if_fail (GTK_IS_WINDOW (window));
 
-#if !GTK_CHECK_VERSION(2,8,0) || !defined(GDK_WINDOWING_X11)
+#if !defined(GDK_WINDOWING_X11)
     gtk_window_present (window);
 #else
-    if (!GTK_WIDGET_REALIZED (window))
-        gtk_widget_realize (GTK_WIDGET (window));
-
-    gdk_x11_window_move_to_current_desktop (GTK_WIDGET(window)->window);
-
-    if (!stamp)
-        stamp = gdk_x11_get_server_time (GTK_WIDGET (window)->window);
-
-    gtk_window_present_with_time (window, stamp);
+    present_window_x11 (window, stamp);
 #endif
 }
 
