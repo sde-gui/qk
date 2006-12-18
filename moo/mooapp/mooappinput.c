@@ -45,6 +45,7 @@ struct _MooAppInput
     int          pipe;
     char        *pipe_basename;
     char        *pipe_name;
+    char        *pipe_dir;
     GIOChannel  *io;
     guint        io_watch;
     GString     *buffer; /* messages are zero-terminated */
@@ -145,6 +146,13 @@ _moo_app_input_shutdown (MooAppInput *ch)
 #endif /* ! __WIN32__ */
         g_free (ch->pipe_name);
         ch->pipe_name = NULL;
+    }
+
+    if (ch->pipe_dir)
+    {
+        remove (ch->pipe_dir);
+        g_free (ch->pipe_dir);
+        ch->pipe_dir = NULL;
     }
 
     if (ch->io_watch)
@@ -464,13 +472,15 @@ listener_main (ListenerInfo *info)
  */
 #ifndef __WIN32__
 
+#define INPUT_PREFIX "input-"
+
 static char *
-get_prefix (const char *pipe_basename)
+get_pipe_dir (const char *pipe_basename)
 {
     GdkDisplay *display;
     char *display_name;
     char *user_name;
-    char *prefix;
+    char *name;
 
     g_return_val_if_fail (pipe_basename != NULL, NULL);
 
@@ -479,35 +489,34 @@ get_prefix (const char *pipe_basename)
 
     display_name = g_strcanon (g_strdup (gdk_display_get_name (display)),
                                G_CSET_A_2_Z G_CSET_a_2_z G_CSET_DIGITS,
-                               '_');
+                               '-');
     user_name = g_strcanon (g_strdup (g_get_user_name ()),
                             G_CSET_A_2_Z G_CSET_a_2_z G_CSET_DIGITS,
-                            '_');
+                            '-');
 
-    prefix = g_strdup_printf ("%s_%s_%s_in.", pipe_basename, user_name, display_name);
+    name = g_strdup_printf ("%s/%s-%s-%s", g_get_tmp_dir (), pipe_basename, user_name,
+                            display_name[0] == '-' ? &display_name[1] : display_name);
 
     g_free (display_name);
     g_free (user_name);
-    return prefix;
+    return name;
 }
 
 /* TODO: could you finally learn non-blocking io? */
 gboolean
 _moo_app_input_start (MooAppInput *ch)
 {
-    char *prefix;
-
     g_return_val_if_fail (!ch->ready, FALSE);
 
-    prefix = get_prefix (ch->pipe_basename);
-    g_return_val_if_fail (prefix != NULL, FALSE);
+    if (!ch->pipe_dir)
+        ch->pipe_dir = get_pipe_dir (ch->pipe_basename);
+    g_return_val_if_fail (ch->pipe_dir != NULL, FALSE);
 
-    ch->pipe_name =
-            g_strdup_printf ("%s/%s%d",
-                             g_get_tmp_dir(),
-                             prefix,
-                             getpid ());
-    g_free (prefix);
+    mkdir (ch->pipe_dir, S_IRWXU);
+
+    ch->pipe_name = g_strdup_printf ("%s/"INPUT_PREFIX"%d",
+                                     ch->pipe_dir,
+                                     getpid ());
 
     unlink (ch->pipe_name);
 
@@ -549,8 +558,7 @@ _moo_app_input_start (MooAppInput *ch)
 
 
 static gboolean
-try_send (const char *tmpdir_name,
-          const char *prefix,
+try_send (const char *pipe_dir_name,
           const char *pid_string,
           const char *data,
           gssize      data_len)
@@ -575,7 +583,7 @@ try_send (const char *tmpdir_name,
         goto out;
     }
 
-    filename = g_strdup_printf ("%s/%s%s", tmpdir_name, prefix, pid_string);
+    filename = g_strdup_printf ("%s/"INPUT_PREFIX"%s", pipe_dir_name, pid_string);
     _moo_message ("try_send: sending data to pid %s, filename %s", pid_string, filename);
 
     if (!g_file_test (filename, G_FILE_TEST_EXISTS))
@@ -633,15 +641,14 @@ out:
 }
 
 gboolean
-_moo_app_input_send_msg (const char     *pipe_basename,
-                         const char     *pid,
-                         const char     *data,
-                         gssize          data_len)
+_moo_app_input_send_msg (const char *pipe_basename,
+                         const char *pid,
+                         const char *data,
+                         gssize      data_len)
 {
-    const char *tmpdir_name, *entry;
-    GDir *tmpdir = NULL;
-    char *prefix = NULL;
-    guint prefix_len;
+    const char *entry;
+    GDir *pipe_dir = NULL;
+    char *pipe_dir_name;
     gboolean success = FALSE;
 
     g_return_val_if_fail (pipe_basename != NULL, FALSE);
@@ -649,30 +656,27 @@ _moo_app_input_send_msg (const char     *pipe_basename,
 
     _moo_message ("_moo_app_input_send_msg: sending data to pid %s", pid ? pid : "NONE");
 
-    prefix = get_prefix (pipe_basename);
-    g_return_val_if_fail (prefix != NULL, FALSE);
-
-    prefix_len = strlen (prefix);
-    tmpdir_name = g_get_tmp_dir ();
+    pipe_dir_name = get_pipe_dir (pipe_basename);
+    g_return_val_if_fail (pipe_dir_name != NULL, FALSE);
 
     if (pid)
     {
-        success = try_send (tmpdir_name, prefix, pid, data, data_len);
+        success = try_send (pipe_dir_name, pid, data, data_len);
         goto out;
     }
 
-    tmpdir = g_dir_open (tmpdir_name, 0, NULL);
+    pipe_dir = g_dir_open (pipe_dir_name, 0, NULL);
 
-    if (!tmpdir)
+    if (!pipe_dir)
         goto out;
 
-    while ((entry = g_dir_read_name (tmpdir)))
+    while ((entry = g_dir_read_name (pipe_dir)))
     {
-        if (!strncmp (entry, prefix, prefix_len))
+        if (!strncmp (entry, INPUT_PREFIX, strlen (INPUT_PREFIX)))
         {
-            const char *pid_string = entry + prefix_len;
+            const char *pid_string = entry + strlen (INPUT_PREFIX);
 
-            if (try_send (tmpdir_name, prefix, pid_string, data, data_len))
+            if (try_send (pipe_dir_name, pid_string, data, data_len))
             {
                 success = TRUE;
                 goto out;
@@ -681,9 +685,9 @@ _moo_app_input_send_msg (const char     *pipe_basename,
     }
 
 out:
-    if (tmpdir)
-        g_dir_close (tmpdir);
-    g_free (prefix);
+    if (pipe_dir)
+        g_dir_close (pipe_dir);
+    g_free (pipe_dir_name);
     return success;
 }
 
