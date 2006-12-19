@@ -315,13 +315,11 @@ moo_app_get_system_info (MooApp *app)
 #endif
 
 #ifdef MOO_USE_FAM
+#ifdef MOO_USE_GAMIN
+    g_string_append_printf (text, "FAM support: gamin\n");
+#else
     g_string_append_printf (text, "FAM support: yes\n");
 #endif
-
-#ifdef MOO_ENABLE_RELOCATION
-    g_string_append_printf (text, "relocation enabled\n");
-#else
-    g_string_append_printf (text, "relocation disabled\n");
 #endif
 
     g_string_append (text, "Data dirs: ");
