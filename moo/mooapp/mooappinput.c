@@ -426,6 +426,104 @@ out:
 
 #define INPUT_PREFIX "input-"
 
+static gboolean
+read_input (GIOChannel   *source,
+            GIOCondition  condition,
+            MooAppInput  *self)
+{
+    gboolean error_occured = FALSE;
+    GError *err = NULL;
+    gboolean again = TRUE;
+    gboolean got_zero = FALSE;
+
+    g_return_val_if_fail (source == self->io, FALSE);
+
+    /* XXX */
+    if (condition & (G_IO_ERR | G_IO_HUP))
+        error_occured = TRUE;
+
+    while (again && !error_occured && !err)
+    {
+        char c;
+        int bytes_read;
+
+        struct pollfd fd = {self->pipe, POLLIN | POLLPRI, 0};
+
+        switch (poll (&fd, 1, 0))
+        {
+            case -1:
+                if (errno != EINTR && errno != EAGAIN)
+                    error_occured = TRUE;
+                perror ("poll");
+                again = FALSE;
+                break;
+
+            case 0:
+                if (0)
+                    g_print ("%s: got nothing\n", G_STRLOC);
+                again = FALSE;
+                break;
+
+            case 1:
+                if (fd.revents & (POLLERR))
+                {
+                    if (errno != EINTR && errno != EAGAIN)
+                        error_occured = TRUE;
+                    perror ("poll");
+                }
+                else
+                {
+                    bytes_read = read (self->pipe, &c, 1);
+
+                    if (bytes_read == 1)
+                    {
+                        g_string_append_c (self->buffer, c);
+
+                        if (!c)
+                        {
+                            got_zero = TRUE;
+                            again = FALSE;
+                        }
+                    }
+                    else if (bytes_read == -1)
+                    {
+                        perror ("read");
+
+                        if (errno != EINTR && errno != EAGAIN)
+                            error_occured = TRUE;
+
+                        again = FALSE;
+                    }
+                    else
+                    {
+                        again = FALSE;
+                    }
+                }
+                break;
+
+            default:
+                g_assert_not_reached ();
+        }
+    }
+
+    if (error_occured || err)
+    {
+        g_critical ("%s: %s", G_STRLOC, err ? err->message : "error");
+
+        if (err)
+            g_error_free (err);
+
+        _moo_app_input_shutdown (self);
+        return FALSE;
+    }
+
+    if (got_zero)
+        commit (self);
+
+    return TRUE;
+}
+
+
 static char *
 get_pipe_dir (const char *pipe_basename)
 {
@@ -641,104 +739,6 @@ out:
         g_dir_close (pipe_dir);
     g_free (pipe_dir_name);
     return success;
-}
-
-
-static gboolean
-read_input (GIOChannel   *source,
-            GIOCondition  condition,
-            MooAppInput  *self)
-{
-    gboolean error_occured = FALSE;
-    GError *err = NULL;
-    gboolean again = TRUE;
-    gboolean got_zero = FALSE;
-
-    g_return_val_if_fail (source == self->io, FALSE);
-
-    /* XXX */
-    if (condition & (G_IO_ERR | G_IO_HUP))
-        error_occured = TRUE;
-
-    while (again && !error_occured && !err)
-    {
-        char c;
-        int bytes_read;
-
-        struct pollfd fd = {self->pipe, POLLIN | POLLPRI, 0};
-
-        switch (poll (&fd, 1, 0))
-        {
-            case -1:
-                if (errno != EINTR && errno != EAGAIN)
-                    error_occured = TRUE;
-                perror ("poll");
-                again = FALSE;
-                break;
-
-            case 0:
-                if (0)
-                    g_print ("%s: got nothing\n", G_STRLOC);
-                again = FALSE;
-                break;
-
-            case 1:
-                if (fd.revents & (POLLERR))
-                {
-                    if (errno != EINTR && errno != EAGAIN)
-                        error_occured = TRUE;
-                    perror ("poll");
-                }
-                else
-                {
-                    bytes_read = read (self->pipe, &c, 1);
-
-                    if (bytes_read == 1)
-                    {
-                        g_string_append_c (self->buffer, c);
-
-                        if (!c)
-                        {
-                            got_zero = TRUE;
-                            again = FALSE;
-                        }
-                    }
-                    else if (bytes_read == -1)
-                    {
-                        perror ("read");
-
-                        if (errno != EINTR && errno != EAGAIN)
-                            error_occured = TRUE;
-
-                        again = FALSE;
-                    }
-                    else
-                    {
-                        again = FALSE;
-                    }
-                }
-                break;
-
-            default:
-                g_assert_not_reached ();
-        }
-    }
-
-    if (error_occured || err)
-    {
-        g_critical ("%s: %s", G_STRLOC, err ? err->message : "error");
-
-        if (err)
-            g_error_free (err);
-
-        _moo_app_input_shutdown (self);
-        return FALSE;
-    }
-
-    if (got_zero)
-        commit (self);
-
-    return TRUE;
 }
 
 #endif /* ! __WIN32__ */
