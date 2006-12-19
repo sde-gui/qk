@@ -37,7 +37,7 @@ AC_DEFUN([MOO_AC_CHECK_FAM],[
         AC_CHECK_DECL([FAMNoExists],[
           AC_DEFINE(HAVE_FAMNOEXISTS, 1, [fam.h has FAMNoExists defined])
           AC_DEFINE(MOO_USE_GAMIN, 1, [whether libfam is provided by gamin])
-        ],[],[fam.h])
+        ],[],[#include <fam.h>])
 
         MOO_FAM_CFLAGS="$FAM_CFLAGS"
         MOO_FAM_LIBS="$FAM_LIBS"
