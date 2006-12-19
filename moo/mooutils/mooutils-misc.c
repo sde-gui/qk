@@ -1192,10 +1192,7 @@ _moo_get_pid_string (void)
     if (!moo_pid_string)
     {
 #ifdef __WIN32__
-#ifdef __GNUC__
-#warning "Implement _moo_get_pid_string()"
-#endif
-        moo_pid_string = g_strdup ("");
+        moo_pid_string = g_strdup_printf ("%ld", GetCurrentProcessId ());
 #else
         moo_pid_string = g_strdup_printf ("%d", getpid ());
 #endif

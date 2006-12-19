@@ -36,6 +36,7 @@
 #define MOO_APP_COMPILATION
 #include "mooapp/mooapp-private.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-thread.h"
 
 
 struct _MooAppInput
@@ -52,18 +53,12 @@ struct _MooAppInput
     gboolean     ready;
 
 #ifdef __WIN32__
-    HANDLE       listener;
+    guint        event_id;
 #endif /* __WIN32__ */
 };
 
 
 #define MAX_BUFFER_SIZE 4096
-
-
-static gboolean read_input              (GIOChannel     *source,
-                                         GIOCondition    condition,
-                                         MooAppInput      *ch);
-static void     commit                  (MooAppInput      *ch);
 
 
 MooAppInput *
@@ -78,9 +73,7 @@ _moo_app_input_new (const char *pipe_basename)
 
     ch->pipe_basename = g_strdup (pipe_basename);
 
-#ifdef __WIN32__
-    ch->listener = NULL;
-#else /* ! __WIN32__ */
+#ifndef __WIN32__
     ch->pipe = -1;
 #endif /* ! __WIN32__ */
     ch->pipe_name = NULL;
@@ -124,10 +117,10 @@ _moo_app_input_shutdown (MooAppInput *ch)
     g_return_if_fail (ch != NULL);
 
 #ifdef __WIN32__
-    if (ch->listener)
+    if (ch->event_id)
     {
-        CloseHandle (ch->listener);
-        ch->listener = NULL;
+        _moo_event_queue_disconnect (ch->event_id);
+        ch->event_id = 0;
     }
 #endif /* __WIN32__ */
 
@@ -211,192 +204,39 @@ commit (MooAppInput *self)
 
 
 typedef struct {
-    char *in;
-    int out;
+    char *pipe_name;
+    guint event_id;
 } ListenerInfo;
 
-static ListenerInfo *listener_info_new (const char *input, int output)
+static ListenerInfo *
+listener_info_new (const char *pipe_name,
+                   guint       event_id)
 {
     ListenerInfo *info = g_new (ListenerInfo, 1);
-    info->in = g_strdup (input);
-    info->out = output;
+    info->pipe_name = g_strdup (pipe_name);
+    info->event_id = event_id;
     return info;
 }
 
-static void listener_info_free (ListenerInfo *info)
+static void
+listener_info_free (ListenerInfo *info)
 {
-    if (!info) return;
-    g_free (info->in);
-    g_free (info);
-}
-
-static DWORD WINAPI listener_main (ListenerInfo *info);
-
-
-gboolean
-_moo_app_input_start (MooAppInput *ch)
-{
-    int listener_pipe[2] = {-1, -1};
-    DWORD id;
-    ListenerInfo *info;
-
-    g_return_val_if_fail (ch != NULL && !ch->ready, FALSE);
-
-    g_free (ch->pipe_name);
-    ch->pipe_name =
-            g_strdup_printf ("\\\\.\\pipe\\%s_in_%ld",
-                             ch->pipe_basename,
-                             GetCurrentProcessId());
-
-    if (_pipe (listener_pipe, 4096, _O_BINARY | _O_NOINHERIT))
+    if (info)
     {
-        g_critical ("%s: could not create listener pipe", G_STRLOC);
-        g_free (ch->pipe_name);
-        ch->pipe_name = NULL;
-        return FALSE;
+        g_free (info->pipe_name);
+        g_free (info);
     }
-
-    info = listener_info_new (ch->pipe_name, listener_pipe[1]);
-    ch->listener = CreateThread (NULL, 0,
-                                 (LPTHREAD_START_ROUTINE) listener_main,
-                                 info, 0, &id);
-    if (!ch->listener)
-    {
-        g_critical ("%s: could not start listener thread", G_STRLOC);
-        listener_info_free (info);
-        g_free (ch->pipe_name);
-        ch->pipe_name = NULL;
-        close (listener_pipe[0]);
-        close (listener_pipe[1]);
-        return FALSE;
-    }
-
-    ch->io = g_io_channel_win32_new_fd (listener_pipe[0]);
-    g_io_channel_set_encoding (ch->io, NULL, NULL);
-    g_io_channel_set_buffered (ch->io, FALSE);
-    ch->io_watch = g_io_add_watch (ch->io, G_IO_IN | G_IO_PRI | G_IO_HUP | G_IO_ERR,
-                                   (GIOFunc) read_input, ch);
-
-    ch->ready = TRUE;
-    return TRUE;
 }
 
 
-gboolean
-_moo_app_input_send_msg (G_GNUC_UNUSED const char *pipe_basename,
-                         G_GNUC_UNUSED const char *pid,
-                         G_GNUC_UNUSED const char *data,
-                         G_GNUC_UNUSED gssize len)
-{
-    g_return_val_if_fail (pipe_basename != NULL, FALSE);
-    g_return_val_if_fail (data != NULL, FALSE);
-
-#ifdef __GNUC__
-#warning "Implement _moo_app_input_send_msg()"
-#endif
-
-    return FALSE;
-}
-
-
-static gboolean
-read_input (GIOChannel     *source,
-            GIOCondition    condition,
-            MooAppInput    *self)
-{
-    gboolean error_occured = FALSE;
-    GError *err = NULL;
-    gboolean again = TRUE;
-    gboolean got_zero = FALSE;
-    char c;
-    guint bytes_read;
-
-    if (condition & (G_IO_ERR | G_IO_HUP))
-        error_occured = TRUE;
-
-    g_io_channel_read_chars (source, &c, 1, &bytes_read, &err);
-
-    if (bytes_read == 1)
-    {
-        /* XXX Why do I ignore \r ??? */
-        if (c != '\r')
-            g_string_append_c (self->buffer, c);
-
-        if (!c)
-        {
-            got_zero = TRUE;
-            again = FALSE;
-        }
-    }
-    else
-    {
-        again = FALSE;
-    }
-
-    while (again && !error_occured && !err)
-    {
-        if (g_io_channel_get_buffer_condition (source) & G_IO_IN)
-        {
-            g_io_channel_read_chars (source, &c, 1, &bytes_read, &err);
-
-            if (bytes_read == 1)
-            {
-                /* XXX Why do I ignore \r ??? */
-                if (c != '\r')
-                    g_string_append_c (self->buffer, c);
-
-                if (!c)
-                {
-                    got_zero = TRUE;
-                    again = FALSE;
-                }
-            }
-            else
-            {
-                again = FALSE;
-            }
-        }
-        else
-        {
-            again = FALSE;
-        }
-    }
-
-    if (error_occured || err)
-    {
-        g_critical ("%s: error", G_STRLOC);
-
-        if (err)
-        {
-            g_critical ("%s: %s", G_STRLOC, err->message);
-            g_error_free (err);
-        }
-
-        _moo_app_input_shutdown (self);
-        return FALSE;
-    }
-
-    if (got_zero)
-        commit (self);
-
-    return TRUE;
-}
-
-
-static DWORD WINAPI
+static gpointer
 listener_main (ListenerInfo *info)
 {
-    char *pipe_name;
-    int output;
     HANDLE input;
 
-    pipe_name = g_strdup (info->in);
-    output = info->out;
-    listener_info_free (info);
+    _moo_message_async ("%s: hi there", G_STRLOC);
 
-    g_message ("%s: hi there", G_STRLOC);
-
-    input = CreateNamedPipe (pipe_name,
+    input = CreateNamedPipe (info->pipe_name,
                              PIPE_ACCESS_DUPLEX,
                              PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
                              PIPE_UNLIMITED_INSTANCES,
@@ -404,14 +244,12 @@ listener_main (ListenerInfo *info)
 
     if (input == INVALID_HANDLE_VALUE)
     {
-        g_critical ("%s: could not create input pipe", G_STRLOC);
-        g_free (pipe_name);
-        return 1;
+        _moo_message_async ("%s: could not create input pipe", G_STRLOC);
+        listener_info_free (info);
+        return NULL;
     }
-    else
-    {
-        g_message ("%s: opened pipe %s", G_STRLOC, pipe_name);
-    }
+
+    _moo_message_async ("%s: opened pipe %s", G_STRLOC, info->pipe_name);
 
     while (TRUE)
     {
@@ -419,7 +257,7 @@ listener_main (ListenerInfo *info)
         char c;
 
         DisconnectNamedPipe (input);
-        g_message ("%s: opening connection", G_STRLOC);
+        _moo_message_async ("%s: opening connection", G_STRLOC);
 
         if (!ConnectNamedPipe (input, NULL))
         {
@@ -428,8 +266,8 @@ listener_main (ListenerInfo *info)
             if (err != ERROR_PIPE_CONNECTED)
             {
                 char *msg = g_win32_error_message (err);
-                g_critical ("%s: error in ConnectNamedPipe()", G_STRLOC);
-                g_critical ("%s: %s", G_STRLOC, msg);
+                _moo_message_async ("%s: error in ConnectNamedPipe()", G_STRLOC);
+                _moo_message_async ("%s: %s", G_STRLOC, msg);
                 CloseHandle (input);
                 g_free (msg);
                 break;
@@ -442,26 +280,140 @@ listener_main (ListenerInfo *info)
         {
             if (bytes_read == 1)
             {
-                if (_write (output, &c, 1) != 1)
-                {
-                    g_message ("%s: parent disconnected", G_STRLOC);
-                    break;
-                }
+                _moo_event_queue_push (info->event_id, GINT_TO_POINTER ((int) c), NULL);
             }
             else
             {
-                g_message ("%s: client disconnected", G_STRLOC);
+                _moo_message_async ("%s: client disconnected", G_STRLOC);
                 break;
             }
         }
     }
 
-    g_message ("%s: goodbye", G_STRLOC);
+    _moo_message_async ("%s: goodbye", G_STRLOC);
 
     CloseHandle (input);
+    listener_info_free (info);
+    return NULL;
+}
+
+
+static char *
+get_pipe_name (const char *pipe_basename,
+               const char *pid_string)
+{
+    if (!pid_string)
+        pid_string = _moo_get_pid_string ();
+
+    return g_strdup_printf ("\\\\.\\pipe\\%s_in_%s",
+                            pipe_basename, pid_string);
+}
+
+
+static void
+event_callback (GList       *events,
+                MooAppInput *chan)
+{
+    while (events)
+    {
+        char c = GPOINTER_TO_INT (events->data);
+
+        if (c != 0)
+            g_string_append_c (chan->buffer, c);
+        else
+            commit (chan);
+
+        events = events->next;
+    }
+}
+
+
+gboolean
+_moo_app_input_start (MooAppInput *ch)
+{
+    ListenerInfo *info;
+
+    g_return_val_if_fail (ch != NULL && !ch->ready, FALSE);
+
+    g_free (ch->pipe_name);
+    ch->pipe_name = get_pipe_name (ch->pipe_basename, NULL);
+    ch->event_id = _moo_event_queue_connect ((MooEventQueueCallback) event_callback,
+                                             ch, NULL);
+
+    info = listener_info_new (ch->pipe_name, ch->event_id);
+
+    if (!g_thread_create ((GThreadFunc) listener_main, info, FALSE, NULL))
+    {
+        g_critical ("could not start listener thread");
+        listener_info_free (info);
+        g_free (ch->pipe_name);
+        ch->pipe_name = NULL;
+        _moo_event_queue_disconnect (ch->event_id);
+        ch->event_id = 0;
+        return FALSE;
+    }
+
+    ch->ready = TRUE;
+    return TRUE;
+}
+
+
+gboolean
+_moo_app_input_send_msg (const char *pipe_basename,
+                         const char *pid,
+                         const char *data,
+                         gssize      len)
+{
+    char *err_msg = NULL;
+    char *pipe_name;
+    HANDLE pipe_handle;
+    gboolean result = FALSE;
+    DWORD bytes_written;
+
+    g_return_val_if_fail (pipe_basename != NULL, FALSE);
+    g_return_val_if_fail (data != NULL, FALSE);
+
+    if (len < 0)
+        len = strlen (data);
+
+    if (!len)
+        return TRUE;
+
+    if (!pid)
+        return FALSE;
+
+    pipe_name = get_pipe_name (pipe_basename, pid);
+    pipe_handle = CreateFile (pipe_name, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+
+    if (!pipe_handle)
+    {
+        err_msg = g_win32_error_message (GetLastError ());
+        g_warning ("could not open pipe '%s': %s", pipe_name, err_msg);
+        goto out;
+    }
+
+    if (!WriteFile(pipe_handle, data, len, &bytes_written, NULL))
+    {
+        err_msg = g_win32_error_message (GetLastError ());
+        g_warning ("could not write data to '%s': %s", pipe_name, err_msg);
+        goto out;
+    }
+
+    if (bytes_written < (DWORD) len)
+    {
+        g_warning ("written less data than requested to '%s'", pipe_name);
+        goto out;
+    }
+
+    result = TRUE;
+
+out:
+    if (pipe_handle != INVALID_HANDLE_VALUE)
+        CloseHandle (pipe_handle);
+
     g_free (pipe_name);
-    close (output);
-    return 0;
+    g_free (err_msg);
+    return result;
 }
 
 #endif /* __WIN32__ */
