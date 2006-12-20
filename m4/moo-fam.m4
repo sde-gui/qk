@@ -2,8 +2,8 @@
 # MOO_AC_CHECK_FAM(action-if-found,action-if-not-found)
 #
 AC_DEFUN([MOO_AC_CHECK_FAM],[
-    save_CFLAGS="$CFLAGS"
-    save_LDFLAGS="$LDFLAGS"
+    moo_ac_save_CFLAGS="$CFLAGS"
+    moo_ac_save_LDFLAGS="$LDFLAGS"
 
     if test x$FAM_LIBS = x; then
         FAM_LIBS=-lfam
@@ -52,8 +52,8 @@ AC_DEFUN([MOO_AC_CHECK_FAM],[
 
     AC_SUBST(MOO_FAM_CFLAGS)
     AC_SUBST(MOO_FAM_LIBS)
-    CFLAGS="$save_CFLAGS"
-    LDFLAGS="$save_LDFLAGS"
+    CFLAGS="$moo_ac_save_CFLAGS"
+    LDFLAGS="$moo_ac_save_LDFLAGS"
 ])
 
 

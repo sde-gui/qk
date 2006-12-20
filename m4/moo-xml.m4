@@ -4,35 +4,21 @@
 #
 AC_DEFUN([MOO_AC_CHECK_XML_STUFF],[
     PKG_CHECK_MODULES(XML,libxml-2.0,[
-        save_CPPFLAGS="$CPPFLAGS"
+        moo_ac_save_CPPFLAGS="$CPPFLAGS"
         CPPFLAGS="$CPPFLAGS $XML_CFLAGS"
-        save_CFLAGS="$CFLAGS"
+        moo_ac_save_CFLAGS="$CFLAGS"
         CFLAGS="$CFLAGS $XML_CFLAGS"
-        save_LDFLAGS="$LDFLAGS"
+        moo_ac_save_LDFLAGS="$LDFLAGS"
         LDFLAGS="$LDFLAGS $XML_LIBS"
 
         AC_CHECK_FUNCS(xmlReadFile xmlParseFile)
+        AC_CHECK_MEMBER([xmlNode.line],
+                        [AC_DEFINE(HAVE_XMLNODE_LINE,1,[Define if xmlNode structure has 'line' member])],
+                        [],[#include <libxml/tree.h>])
 
-        AC_MSG_CHECKING([for xmlNode.line])
-        AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-        #include <libxml/parser.h>
-        #include <libxml/tree.h>
-        int main ()
-        {
-            xmlNode *node;
-            int line;
-            line = node->line;
-            return 0;
-        }]])],[
-            AC_MSG_RESULT(present)
-            AC_DEFINE(HAVE_XMLNODE_LINE,1,[Define if xmlNode structure has 'line' member])
-        ],[
-            AC_MSG_RESULT(not present)
-        ])
-
-        LDFLAGS="$save_LDFLAGS"
-        CFLAGS="$save_CFLAGS"
-        CPPFLAGS="$save_CPPFLAGS"
+        LDFLAGS="$moo_ac_save_LDFLAGS"
+        CFLAGS="$moo_ac_save_CFLAGS"
+        CPPFLAGS="$moo_ac_save_CPPFLAGS"
 
         MOO_XML_PKG_NAME=libxml-2.0
 

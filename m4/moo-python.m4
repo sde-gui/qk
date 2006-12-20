@@ -25,11 +25,11 @@ AC_DEFUN([_MOO_AC_CHECK_PYTHON_MINGW],[
 
     # check whether Python.h and library exists
 
-    save_CPPFLAGS="$CPPFLAGS"
+    moo_ac_save_CPPFLAGS="$CPPFLAGS"
     CPPFLAGS="$CPPFLAGS $PYTHON[]$1[]_CFLAGS"
-    save_CFLAGS="$CFLAGS"
+    moo_ac_save_CFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS $PYTHON[]$1[]_CFLAGS"
-    save_LDFLAGS="$LDFLAGS"
+    moo_ac_save_LDFLAGS="$LDFLAGS"
     LDFLAGS="$LDFLAGS $PYTHON[]$1[]_LIBS"
 
     AC_MSG_CHECKING([PYTHON[]$1[]_CFLAGS])
@@ -59,9 +59,9 @@ AC_DEFUN([_MOO_AC_CHECK_PYTHON_MINGW],[
         $3
     ])
 
-    LDFLAGS="$save_LDFLAGS"
-    CFLAGS="$save_CFLAGS"
-    CPPFLAGS="$save_CPPFLAGS"
+    LDFLAGS="$moo_ac_save_LDFLAGS"
+    CFLAGS="$moo_ac_save_CFLAGS"
+    CPPFLAGS="$moo_ac_save_CPPFLAGS"
 ])
 
 

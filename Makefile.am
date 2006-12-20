@@ -9,6 +9,7 @@ m4files =			\
 	m4/moo-funcs.m4		\
 	m4/moo-gtk.m4		\
 	m4/moo-i18n.m4		\
+	m4/moo-lib.m4		\
 	m4/moo-os.m4		\
 	m4/moo-pcre.m4		\
 	m4/moo-progs.m4		\
@@ -47,7 +48,11 @@ CLEANFILES = pot-subdirs-stamp
 
 DIST_SUBDIRS = moo medit tests po
 # need to create pot-subdirs-stamp before it goes to po/
+if MOO_BUILD_MEDIT
 SUBDIRS = . moo medit po
+else
+SUBDIRS = . moo po
+endif
 
 if MOO_ENABLE_TESTS
 SUBDIRS += tests

@@ -28,11 +28,11 @@ if test x$MOO_BUILD_PCRE != xyes; then
     if test $have_pcre = yes; then
         AC_MSG_CHECKING(pcre UTF8 support)
 
-        save_CPPFLAGS="$CPPFLAGS"
+        moo_ac_save_CPPFLAGS="$CPPFLAGS"
         CPPFLAGS="$CPPFLAGS $PCRE_CFLAGS"
-        save_CFLAGS="$CFLAGS"
+        moo_ac_save_CFLAGS="$CFLAGS"
         CFLAGS="$CFLAGS $PCRE_CFLAGS"
-        save_LDFLAGS="$LDFLAGS"
+        moo_ac_save_LDFLAGS="$LDFLAGS"
         LDFLAGS="$LDFLAGS $PCRE_LIBS"
 
         AC_RUN_IFELSE([
@@ -64,9 +64,9 @@ if test x$MOO_BUILD_PCRE != xyes; then
             have_pcre=yes
         ])
 
-        CFLAGS="$save_CFLAGS"
-        CPPFLAGS="$save_CPPFLAGS"
-        LDFLAGS="$save_LDFLAGS"
+        CFLAGS="$moo_ac_save_CFLAGS"
+        CPPFLAGS="$moo_ac_save_CPPFLAGS"
+        LDFLAGS="$moo_ac_save_LDFLAGS"
     fi
 fi
 
