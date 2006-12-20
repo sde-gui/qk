@@ -21,6 +21,7 @@
 #include "moofileview/moofile-private.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooaction.h"
+#include "mooutils/mooutils-fs.h"
 #if MOO_USE_XDGMIME
 #include "mooutils/xdgmime/xdgmime.h"
 #endif
@@ -317,8 +318,11 @@ action_check_one (ToolAction *action,
 
     g_return_val_if_fail (file != NULL, FALSE);
 
+    if (!action->extensions && !action->mimetypes)
+        return TRUE;
+
     for (l = action->extensions; l != NULL; l = l->next)
-        if (g_pattern_match_simple (l->data, _moo_file_display_name (file)))
+        if (_moo_glob_match_simple (l->data, _moo_file_display_name (file)))
             return TRUE;
 
 #if MOO_USE_XDGMIME
@@ -342,12 +346,6 @@ action_check (ToolAction *action,
               GList      *files)
 {
     gboolean visible = TRUE;
-
-    if (!action->extensions && !action->mimetypes)
-    {
-        g_object_set (action, "visible", TRUE, NULL);
-        return;
-    }
 
     while (files)
     {
