@@ -1,3 +1,0 @@
-ChangeLog is no longer maintained. To get log use
-'hg diff' or 'hg diff --style=changelog', or use
-web interface at http://mooedit.sourceforge.net/hg/moo.
