@@ -20,6 +20,7 @@
 #include "mooedit/mooedit-private.h"
 #include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditfiltersettings.h"
+#include "mooedit/mooedit-ui.h"
 #include "mooutils/moomenuaction.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
@@ -103,6 +104,7 @@ struct _MooEditorPrivate {
     WindowInfo      *windowless;
     GSList          *windows; /* WindowInfo* */
     char            *app_name;
+    MooUIXML        *doc_ui_xml;
     MooUIXML        *ui_xml;
     MooFilterMgr    *filter_mgr;
     MooHistoryList  *history;
@@ -275,9 +277,13 @@ moo_editor_init (MooEditor *editor)
 {
     editor->priv = G_TYPE_INSTANCE_GET_PRIVATE (editor, MOO_TYPE_EDITOR, MooEditorPrivate);
 
+    editor->priv->doc_ui_xml = moo_ui_xml_new ();
+    moo_ui_xml_add_ui_from_string (editor->priv->doc_ui_xml,
+                                   MOO_EDIT_UI_XML, -1);
+
     editor->priv->lang_mgr = moo_lang_mgr_new ();
     g_signal_connect_swapped (editor->priv->lang_mgr, "loaded",
-                              G_CALLBACK (_moo_editor_apply_prefs),
+                              G_CALLBACK (moo_editor_apply_prefs),
                               editor);
 
     editor->priv->filter_mgr = moo_filter_mgr_new ();
@@ -299,7 +305,7 @@ moo_editor_init (MooEditor *editor)
                               MOO_LANG_NONE);
 
     _moo_edit_filter_settings_load ();
-    _moo_editor_apply_prefs (editor);
+    moo_editor_apply_prefs (editor);
 }
 
 
@@ -429,6 +435,7 @@ moo_editor_finalize (GObject *object)
     if (editor->priv->history)
         g_object_unref (editor->priv->history);
     g_object_unref (editor->priv->lang_mgr);
+    g_object_unref (editor->priv->doc_ui_xml);
 
     if (editor->priv->file_watch)
     {
@@ -679,27 +686,35 @@ moo_editor_set_app_name (MooEditor      *editor,
 }
 
 
-MooFilterMgr*
-moo_editor_get_filter_mgr (MooEditor      *editor)
+MooFilterMgr *
+moo_editor_get_filter_mgr (MooEditor *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     return editor->priv->filter_mgr;
 }
 
 
-MooHistoryList*
-moo_editor_get_history (MooEditor      *editor)
+MooHistoryList *
+moo_editor_get_history (MooEditor *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     return editor->priv->history;
 }
 
 
-MooUIXML*
-moo_editor_get_ui_xml (MooEditor      *editor)
+MooUIXML *
+moo_editor_get_ui_xml (MooEditor *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     return editor->priv->ui_xml;
+}
+
+
+MooUIXML *
+moo_editor_get_doc_ui_xml (MooEditor *editor)
+{
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+    return editor->priv->doc_ui_xml;
 }
 
 
@@ -2069,7 +2084,7 @@ set_default_lang (MooEditor  *editor,
 
 
 void
-_moo_editor_apply_prefs (MooEditor *editor)
+moo_editor_apply_prefs (MooEditor *editor)
 {
     GSList *docs;
     gboolean autosave, backups;

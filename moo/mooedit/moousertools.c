@@ -134,7 +134,16 @@ tools_store_add (MooUserToolType type,
 
     info = g_new0 (ToolInfo, 1);
     info->id = g_strdup (id);
-    info->xml = moo_editor_get_ui_xml (moo_editor_instance ());
+
+    switch (type)
+    {
+        case MOO_USER_TOOL_MENU:
+            info->xml = moo_editor_get_ui_xml (moo_editor_instance ());
+            break;
+        case MOO_USER_TOOL_CONTEXT:
+            info->xml = moo_editor_get_doc_ui_xml (moo_editor_instance ());
+            break;
+    }
 
     if (info->xml)
     {
@@ -352,7 +361,6 @@ load_tool (MooUserToolInfo *info)
 
         if (info->type == MOO_USER_TOOL_CONTEXT)
         {
-
             if (info->position == MOO_USER_TOOL_POS_START)
                 ui_path = "Editor/Popup/PopupStart";
             else

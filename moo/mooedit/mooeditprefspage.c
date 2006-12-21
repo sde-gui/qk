@@ -275,7 +275,7 @@ prefs_page_apply (MooPrefsDialogPage *page)
 
     prefs_page_apply_lang_prefs (page);
     apply_filter_settings (page);
-    _moo_editor_apply_prefs (editor);
+    moo_editor_apply_prefs (editor);
 }
 
 

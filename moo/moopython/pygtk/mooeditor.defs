@@ -248,6 +248,12 @@
   )
 )
 
+(define-method get_doc_ui_xml
+  (of-object "MooEditor")
+  (c-name "moo_editor_get_doc_ui_xml")
+  (return-type "MooUIXML*")
+)
+
 (define-method get_editor
   (of-object "MooEditWindow")
   (c-name "moo_edit_window_get_editor")
@@ -294,4 +300,9 @@
   (of-object "MooEditor")
   (c-name "moo_edit_prefs_page_new")
   (return-type "GtkWidget*")
+)
+
+(define-method apply_prefs
+  (of-object "MooEditor")
+  (c-name "moo_editor_apply_prefs")
 )

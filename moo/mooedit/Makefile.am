@@ -51,6 +51,7 @@ mooedit_noinst_headers =		\
 	moocommand.h			\
 	moocommanddisplay.h		\
 	mooedit-private.h		\
+	mooedit-ui.h			\
 	mooeditaction-factory.h		\
 	mooeditaction.h			\
 	mooeditdialogs.h		\
@@ -153,6 +154,7 @@ BUILT_SOURCES =				\
 	mooedittools-glade.h		\
 	mooedit-enums.c			\
 	mooedit-enums.h			\
+	mooedit-ui.h			\
 	mooprintpreview-glade.h
 
 mooedit_enums_headers =			\
@@ -230,7 +232,12 @@ mooprintpreview-glade.h: $(srcdir)/glade/mooprintpreview.glade $(XML2H)
 	$(SHELL) $(XML2H) MOO_PRINT_PREVIEW_GLADE_XML $(srcdir)/glade/mooprintpreview.glade \
 		> mooprintpreview-glade.h
 
+mooedit-ui.h: mooedit-ui.xml $(XML2H)
+	$(SHELL) $(XML2H) MOO_EDIT_UI_XML $(srcdir)/mooedit-ui.xml > mooedit-ui.h.tmp && \
+	mv mooedit-ui.h.tmp mooedit-ui.h
+
 EXTRA_DIST =				\
+	mooedit-ui.xml			\
 	glade/statusbar.glade		\
 	glade/quicksearch.glade		\
 	glade/mootextgotoline.glade	\

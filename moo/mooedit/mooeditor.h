@@ -124,6 +124,7 @@ MooFilterMgr    *moo_editor_get_filter_mgr  (MooEditor      *editor);
 MooUIXML        *moo_editor_get_ui_xml      (MooEditor      *editor);
 void             moo_editor_set_ui_xml      (MooEditor      *editor,
                                              MooUIXML       *xml);
+MooUIXML        *moo_editor_get_doc_ui_xml  (MooEditor      *editor);
 
 MooEditor       *moo_edit_window_get_editor (MooEditWindow  *window);
 MooEditor       *moo_edit_get_editor        (MooEdit        *doc);
@@ -140,6 +141,8 @@ gboolean         moo_editor_save_copy       (MooEditor      *editor,
                                              const char     *filename,
                                              const char     *encoding,
                                              GError        **error);
+
+void             moo_editor_apply_prefs     (MooEditor      *editor);
 
 
 G_END_DECLS

@@ -1584,7 +1584,7 @@ _moo_edit_do_popup (MooEdit        *edit,
     MooUIXML *xml;
     MooEditWindow *window;
 
-    xml = moo_editor_get_ui_xml (edit->priv->editor);
+    xml = moo_editor_get_doc_ui_xml (edit->priv->editor);
     g_return_if_fail (xml != NULL);
 
     if (!edit->priv->menu)
