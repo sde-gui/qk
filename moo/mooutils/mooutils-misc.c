@@ -586,7 +586,10 @@ present_window_x11 (GtkWindow *window,
     if (!GTK_WIDGET_REALIZED (window))
         gtk_widget_realize (GTK_WIDGET (window));
 
+#if GTK_CHECK_VERSION(2,8,0)
     gdk_x11_window_move_to_current_desktop (GTK_WIDGET(window)->window);
+#endif
+
     gtk_widget_show (GTK_WIDGET (window));
 
     if (!stamp)

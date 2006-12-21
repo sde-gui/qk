@@ -33,7 +33,7 @@ static const struct {
     const char *display_subgroup;
     const char *short_display_name;
     guint group : 3;
-} const moo_encodings_data[] =
+} moo_encodings_data[] =
 {
     { "ASCII",          N_("Ascii"),               "ASCII",            ENCODING_GROUP_WEST_EUROPEAN },
 
@@ -135,7 +135,7 @@ static const struct {
 static const struct {
     const char *alias;
     const char *name;
-} const moo_encoding_aliases[] = {
+} moo_encoding_aliases[] = {
     {"UTF8",        "UTF-8"},
 
     {"646",         "ASCII"},
