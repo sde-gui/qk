@@ -23,6 +23,8 @@ AC_DEFUN([MOO_AC_FLAGS],[
   AC_REQUIRE([MOO_AC_PCRE])
   AC_REQUIRE([_MOO_AC_LIB])
 
+  AC_SYS_LARGEFILE
+
   moo_top_src_dir=`cd $srcdir && pwd`
   MOO_CFLAGS="$MOO_CFLAGS -I"$moo_top_src_dir/$1" $GTK_CFLAGS $MOO_PCRE_CFLAGS -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\""
   MOO_LIBS="$MOO_LIBS $GTK_LIBS $MOO_PCRE_LIBS"
