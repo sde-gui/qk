@@ -202,7 +202,7 @@ set_lang_completion_meth (CmplPlugin        *plugin,
                           const char        *lang,
                           MooTextCompletion *cmpl)
 {
-    _completion_plugin_set_lang_completion (plugin, lang, cmpl);
+    _cmpl_plugin_set_lang_completion (plugin, lang, cmpl);
 }
 
 static void
@@ -210,7 +210,7 @@ set_doc_completion_meth (CmplPlugin        *plugin,
                          MooEdit           *doc,
                          MooTextCompletion *cmpl)
 {
-    _completion_plugin_set_doc_completion (plugin, doc, cmpl);
+    _cmpl_plugin_set_doc_completion (plugin, doc, cmpl);
 }
 
 

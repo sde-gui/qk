@@ -64,10 +64,10 @@ void        _cmpl_plugin_clear                      (CmplPlugin         *plugin)
 void        _cmpl_plugin_set_focused_doc            (CmplPlugin         *plugin,
                                                      MooEdit            *doc);
 
-void        _completion_plugin_set_lang_completion  (CmplPlugin         *plugin,
+void        _cmpl_plugin_set_lang_completion        (CmplPlugin         *plugin,
                                                      const char         *lang,
                                                      MooTextCompletion  *cmpl);
-void        _completion_plugin_set_doc_completion   (CmplPlugin         *plugin,
+void        _cmpl_plugin_set_doc_completion         (CmplPlugin         *plugin,
                                                      MooEdit            *doc,
                                                      MooTextCompletion  *cmpl);
 

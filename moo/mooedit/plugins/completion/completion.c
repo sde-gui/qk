@@ -400,9 +400,9 @@ cmpl_data_free (CmplData *data)
 
 
 void
-_completion_plugin_set_lang_completion (CmplPlugin        *plugin,
-                                        const char        *lang,
-                                        MooTextCompletion *cmpl)
+_cmpl_plugin_set_lang_completion (CmplPlugin        *plugin,
+                                  const char        *lang,
+                                  MooTextCompletion *cmpl)
 {
     CmplData *data;
 
@@ -418,9 +418,9 @@ _completion_plugin_set_lang_completion (CmplPlugin        *plugin,
 
 
 void
-_completion_plugin_set_doc_completion (CmplPlugin        *plugin,
-                                       MooEdit           *doc,
-                                       MooTextCompletion *cmpl)
+_cmpl_plugin_set_doc_completion (CmplPlugin        *plugin,
+                                 MooEdit           *doc,
+                                 MooTextCompletion *cmpl)
 {
     g_return_if_fail (MOO_IS_EDIT (doc));
     g_return_if_fail (!cmpl || MOO_IS_TEXT_COMPLETION (cmpl));
