@@ -424,7 +424,7 @@ moo_python_api_py_arg_parse_tuple (MooPyObject *args,
 
 
 static gboolean
-moo_python_api_init (void)
+moo_python_api_init (gboolean in_plugin)
 {
     static int argc;
     static char **argv;
@@ -465,28 +465,30 @@ moo_python_api_init (void)
 
     g_assert (moo_python_running ());
 
-    if (!argv)
+    if (in_plugin)
     {
-        argc = 1;
-        argv = g_new0 (char*, 2);
-        argv[0] = g_strdup ("");
-    }
+        if (!argv)
+        {
+            argc = 1;
+            argv = g_new0 (char*, 2);
+            argv[0] = g_strdup ("");
+        }
 
 #if PY_MINOR_VERSION >= 4
-    /* do not let python install signal handlers */
-    Py_InitializeEx (FALSE);
+        /* do not let python install signal handlers */
+        Py_InitializeEx (FALSE);
 #else
-    Py_Initialize ();
+        Py_Initialize ();
 #endif
+
+        /* pygtk wants sys.argv */
+        PySys_SetArgv (argc, argv);
+        moo_py_init_print_funcs ();
+    }
 
     api.py_none = (MooPyObject*) Py_None;
     api.py_true = (MooPyObject*) Py_True;
     api.py_false = (MooPyObject*) Py_False;
-
-    /* pygtk wants sys.argv */
-    PySys_SetArgv (argc, argv);
-
-    moo_py_init_print_funcs ();
 
     return TRUE;
 }

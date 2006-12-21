@@ -43,8 +43,10 @@ libs += mooapp/libmooapp.la
 endif
 if MOO_USE_PYGTK
 subdirs += moopython
-if !MOO_BUILD_PYTHON_MODULE
+if !MOO_BUILD_PYTHON_PLUGIN
+if !MOO_BUILD_MOO_MODULE
 libs += moopython/libmoopython.la $(PYTHON_LIBS) $(PYTHON_EXTRA_LIBS)
+endif
 endif
 endif
 
@@ -84,25 +86,23 @@ pymoo_la_ldflags = -no-undefined -module -avoid-version -export-symbols-regex mo
 
 if MOO_OS_UNIX
 
-if MOO_INSTALL_LIB
-
 if MOO_USE_PYGTK
+if MOO_BUILD_MOO_MODULE
 pyexec_LTLIBRARIES = moo.la
 moo_la_SOURCES = moo.h
 moo_la_LDFLAGS = $(moo_la_ldflags)
 moo_la_LIBADD = moopython/libmoomod.la libmoo.la $(MOO_LIBS) $(PYTHON_LIBS)
+endif MOO_BUILD_MOO_MODULE
 endif MOO_USE_PYGTK
 
-if MOO_BUILD_PYTHON_MODULE
+if MOO_BUILD_PYTHON_PLUGIN
 plugindir = $(MOO_LIB_DIR)/plugins
 plugin_LTLIBRARIES = pymoo.la
 plugin_DATA = moopython/pymoo.ini
 pymoo_la_SOURCES = moo.h
 pymoo_la_LDFLAGS = $(pymoo_la_ldflags) $(PYTHON_EXTRA_LDFLAGS)
 pymoo_la_LIBADD = moopython/libpymoo.la libmoo.la $(MOO_LIBS) $(PYTHON_LIBS) $(PYTHON_EXTRA_LIBS)
-endif MOO_BUILD_PYTHON_MODULE
-
-endif MOO_INSTALL_LIB
+endif MOO_BUILD_PYTHON_PLUGIN
 
 else !MOO_OS_UNIX
 if MOO_USE_PYGTK

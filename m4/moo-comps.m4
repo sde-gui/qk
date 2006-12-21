@@ -1,17 +1,20 @@
 ##############################################################################
-# MOO_COMPONENTS(optional-components)
+# MOO_COMPONENTS(default-yes,default-no)
 #
 AC_DEFUN([MOO_COMPONENTS],[
   m4_foreach([comp], [utils, edit, term, app],
-  [build_moo[]comp=yes
-  ])
+             [build_moo[]comp=yes])
+  m4_foreach([comp], $2,
+             [build_moo[]comp=no])
 
-  m4_foreach([name], $1,
-  [AC_ARG_WITH([moo[]name],
-    AC_HELP_STRING([--with-moo[]name], [enable moo[]name component (default = NO)]),
-        [build_moo[]name=$withval],
-        [build_moo[]name=no]
-  )])
+  m4_foreach([comp], [$1],
+  [AC_ARG_WITH([moo[]comp],
+    AC_HELP_STRING([--with-moo[]comp], [enable moo[]comp component (default = YES)]),
+    [build_moo[]comp=$withval])])
+  m4_foreach([comp], [$2],
+  [AC_ARG_WITH([moo[]comp],
+    AC_HELP_STRING([--with-moo[]comp], [enable moo[]comp component (default = NO)]),
+    [build_moo[]comp=$withval])])
 
   if test "x$MOO_OS_CYGWIN" = "xyes"; then
     build_mooutils="no"

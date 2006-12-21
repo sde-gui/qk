@@ -940,9 +940,11 @@ moo_plugin_read_dirs (void)
     moo_plugin_init_builtin ();
 
 #if MOO_USE_PYGTK
-#ifndef MOO_BUILD_PYTHON_MODULE
+#ifndef MOO_BUILD_PYTHON_PLUGIN
+#ifndef MOO_BUILD_MOO_MODULE
     /* XXX move it elsewhere */
     _moo_python_init ();
+#endif
 #endif
 #endif
 

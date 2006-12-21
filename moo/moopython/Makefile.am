@@ -34,7 +34,7 @@ if MOO_OS_UNIX
 
 if MOO_INSTALL_LIB
 noinst_LTLIBRARIES += libmoomod.la
-if MOO_BUILD_PYTHON_MODULE
+if MOO_BUILD_PYTHON_PLUGIN
 noinst_LTLIBRARIES += libpymoo.la
 else
 noinst_LTLIBRARIES += libmoopython.la

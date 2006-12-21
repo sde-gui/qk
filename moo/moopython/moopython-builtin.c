@@ -33,7 +33,7 @@ _moo_python_init (void)
 {
     if (!moo_python_running ())
     {
-        if (!moo_python_api_init ())
+        if (!moo_python_api_init (TRUE))
         {
             g_warning ("%s: oops", G_STRLOC);
             return FALSE;
