@@ -154,19 +154,19 @@ cat > $dir/file.y <<EOFEOF
 
 %%
 
-script:   program           { _ms_parser_set_top_node (parser, $1); }
+script:   program           { _ms_parser_set_top_node (parser, \$1); }
 ;
 
-program:  stmt_or_error             { $$ = node_list_add (parser, NULL, $1); }
-        | program stmt_or_error     { $$ = node_list_add (parser, MS_NODE_LIST ($1), $2); }
+program:  stmt_or_error             { \$\$ = node_list_add (parser, NULL, \$1); }
+        | program stmt_or_error     { \$\$ = node_list_add (parser, MS_NODE_LIST (\$1), \$2); }
 ;
 
 stmt_or_error:
-          error ';'         { $$ = NULL; }
-        | stmt ';'          { $$ = $1; }
+          error ';'         { \$\$ = NULL; }
+        | stmt ';'          { \$\$ = $1; }
 ;
 
-variable: IDENTIFIER                        { $$ = node_var (parser, $1); }
+variable: IDENTIFIER                        { \$\$ = node_var (parser, \$1); }
 ;
 
 %%

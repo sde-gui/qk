@@ -17,12 +17,14 @@
   <style name="def:floating-point"          foreground="#FF00FF"/>
   <style name="def:keyword"                 foreground="#A52A2A" bold="true"/>
   <style name="def:string"                  foreground="#FF00FF"/>
-  <style name="def:specials"                foreground="#FFFFFF" background="#FF0000"/>
   <style name="def:net-address-in-comment"  foreground="#0000FF" italic="true" underline="true"/>
   <style name="def:note"                    foreground="#0000FF" background="#FFFF00" bold="true"/>
   <style name="def:error"                   background="#FF0000" bold="true"/>
   <style name="def:escape"                  foreground="#9010D0"/>
   <style name="def:shebang"                 foreground="#0000FF" bold="true"/>
+
+  <style name="def:specials"                foreground="#FFFFFF" background="#FF0000"/>
+  <style name="def:preprocessor"            foreground="#A020F0"/>
 
   <style name="c:preprocessor"              foreground="#A020F0"/>
 

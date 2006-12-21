@@ -18,6 +18,8 @@
         <style id="shebang"                 _name="Shebang"/>
         <!-- FIXME this "specials" doesn't make sense -->
         <style id="specials"                _name="Specials"/>
+        <!-- FIXME and this is real nonsense -->
+        <style id="preprocessor"            _name="Preprocessor"/>
     </styles>
 
     <definitions>
