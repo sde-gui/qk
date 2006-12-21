@@ -2,25 +2,531 @@
 <language id="m4" _name="m4" _section="Scripts" version="2.0">
   <metadata>
     <property name="mimetypes">application/x-m4</property>
-    <property name="globs">*.m4</property>
+    <property name="globs">*.m4;configure.ac;configure.in</property>
     <property name="line-comment-start">#</property>
   </metadata>
 
   <styles>
-    <style id="m4-comment" name="m4-comment" map-to="def:comment"/>
+    <style id="m4-comment" name="m4-comment" map-to="sh:comment"/>
+    <style id="quote" name="quote"/>
+    <style id="parentheses" name="parentheses"/>
+    <style id="m4-macro" name="m4 Macro" map-to="def:keyword"/>
+    <style id="ac-macros" name="Autoconf Macros" map-to="def:keyword"/>
+    <style id="ac-macros-obsolete" name="Obsolete Autoconf Macros" map-to="def:keyword"/>
+    <style id="am-macros" name="Automake Macros" map-to="def:keyword"/>
+    <style id="misc-macros" name="Miscellaneous Macros" map-to="def:keyword"/>
   </styles>
 
   <definitions>
-    <context id="m4">
+    <context id="quote" style-ref="quote">
+      <start>\[</start>
+      <end>\]</end>
       <include>
-        <context id="m4-comment" style-ref="m4-comment" end-at-line-end="true">
-          <start>dnl</start>
+        <context ref="m4-comment"/>
+        <context ref="quote"/>
+      </include>
+    </context>
+
+    <context id="parentheses" style-ref="parentheses">
+      <start>\(</start>
+      <end>\)</end>
+      <include>
+        <context ref="m4-comment"/>
+        <context ref="parentheses"/>
+      </include>
+    </context>
+
+    <context id="m4-comment" style-ref="m4-comment" end-at-line-end="true">
+      <start>dnl</start>
+      <include>
+        <context ref="def:line-comment:*"/>
+      </include>
+    </context>
+
+    <context id="ac-defun">
+      <start>(AC_DEFUN)\s*\([^,]*,</start>
+      <end>\)</end>
+      <include>
+        <context sub-pattern="1" where="start" style-ref="ac-macros"/>
+        <context ref="ignore-quote:*"/>
+      </include>
+    </context>
+
+    <context id="m4-foreach">
+      <start extended="true">
+        (m4_foreach)\s*\(
+        ([^,]|\[[^\]]*\])*, # first argument
+        ([^,]|\[[^\]]*\])*, # second argument
+      </start>
+      <end>\)</end>
+      <include>
+        <context sub-pattern="1" where="start" style-ref="m4-macro"/>
+        <context ref="ignore-quote:*"/>
+      </include>
+    </context>
+
+    <context id="ignore-quote">
+      <include>
+        <context id="ignore-quote-1">
+          <start>\[</start>
+          <end>\]</end>
           <include>
-            <context ref="def:line-comment:*"/>
+            <context ref="m4:*"/>
           </include>
         </context>
+        <context ref="m4:*"/>
+      </include>
+    </context>
+
+    <context id="m4">
+      <include>
+        <context ref="m4-comment"/>
+        <context ref="ac-defun"/>
+        <context ref="m4-foreach"/>
+        <context ref="m4-macro"/>
+        <context ref="ac-macros"/>
+        <context ref="ac-macros-obsolete"/>
+        <context ref="am-macros"/>
+        <context ref="parentheses"/>
+        <context ref="quote"/>
         <context ref="sh:sh:*"/>
       </include>
+    </context>
+
+
+    <context id="m4-macro" style-ref="m4-macro">
+      <keyword>m4_append(_uniq)?</keyword>
+      <keyword>m4_bpatsubst</keyword>
+      <keyword>m4_bregexp</keyword>
+      <keyword>m4_builtin</keyword>
+      <keyword>m4_decr</keyword>
+      <keyword>m4_define</keyword>
+      <keyword>m4_defn</keyword>
+      <keyword>m4_dnl</keyword>
+      <keyword>m4_dquote</keyword>
+      <keyword>m4_dumpdef</keyword>
+      <keyword>m4_errprint</keyword>
+      <keyword>m4_esyscmd</keyword>
+      <keyword>m4_eval</keyword>
+      <keyword>m4_exit</keyword>
+      <keyword>m4_for(each(_w)?)?</keyword>
+      <keyword>m4_format</keyword>
+      <keyword>m4_if(def)?</keyword>
+      <keyword>m4_include</keyword>
+      <keyword>m4_incr</keyword>
+      <keyword>m4_index</keyword>
+      <keyword>m4_indir</keyword>
+      <keyword>m4_len</keyword>
+      <keyword>m4_maketemp</keyword>
+      <keyword>m4_mkstemp</keyword>
+      <keyword>m4_normalize</keyword>
+      <keyword>m4_pattern_(allow|forbid)</keyword>
+      <keyword>m4_popdef</keyword>
+      <keyword>m4_pushdef</keyword>
+      <keyword>m4_quote</keyword>
+      <keyword>m4_re_escape</keyword>
+      <keyword>m4_shift</keyword>
+      <keyword>m4_sinclude</keyword>
+      <keyword>m4_split</keyword>
+      <keyword>m4_substr</keyword>
+      <keyword>m4_syscmd</keyword>
+      <keyword>m4_sysval</keyword>
+      <keyword>m4_to(lower|upper)</keyword>
+      <keyword>m4_translit</keyword>
+      <keyword>m4_undefine</keyword>
+      <keyword>m4_wrap</keyword>
+    </context>
+
+    <context id="ac-macros" style-ref="ac-macros">
+      <keyword>AC_AC_PROG_MKDIR_P</keyword>
+      <keyword>AC_AIX</keyword>
+      <keyword>AC_ARG_(ENABLE|PROGRAM|VAR|WITH)</keyword>
+      <keyword>AC_BEFORE</keyword>
+      <keyword>AC_CACHE_(CHECK|LOAD|SAVE|VAL)</keyword>
+      <keyword>AC_CANONICAL_(BUILD|HOST|TARGET)</keyword>
+      <keyword>AC_C_BIGENDIAN</keyword>
+      <keyword>AC_C_CHAR_UNSIGNED</keyword>
+      <keyword>AC_C_CONST</keyword>
+      <keyword>AC_C_FLEXIBLE_ARRAY_MEMBER</keyword>
+      <keyword>AC_CHECK_ALIGNOF</keyword>
+      <keyword>AC_CHECK_DECL(S(_ONCE)?)?</keyword>
+      <keyword>AC_CHECK_FILES?</keyword>
+      <keyword>AC_CHECK_FUNC(S(_ONCE)?)?</keyword>
+      <keyword>AC_CHECK_HEADER(S(_ONCE)?)?</keyword>
+      <keyword>AC_CHECK_LIB</keyword>
+      <keyword>AC_CHECK_MEMBERS?</keyword>
+      <keyword>AC_CHECK_PROGS?</keyword>
+      <keyword>AC_CHECK_SIZEOF</keyword>
+      <keyword>AC_CHECK_TARGET_TOOLS?</keyword>
+      <keyword>AC_CHECK_TOOLS?</keyword>
+      <keyword>AC_CHECK_TYPES?</keyword>
+      <keyword>AC_C_INLINE</keyword>
+      <keyword>AC_COMPILE_IFELSE</keyword>
+      <keyword>AC_COMPUTE_INT</keyword>
+      <keyword>AC_CONFIG_AUX_DIR</keyword>
+      <keyword>AC_CONFIG_COMMANDS(_POST|_PRE)?</keyword>
+      <keyword>AC_CONFIG_FILES</keyword>
+      <keyword>AC_CONFIG_HEADERS</keyword>
+      <keyword>AC_CONFIG_LIBOBJ_DIR</keyword>
+      <keyword>AC_CONFIG_LINKS</keyword>
+      <keyword>AC_CONFIG_MACRO_DIR</keyword>
+      <keyword>AC_CONFIG_SRCDIR</keyword>
+      <keyword>AC_CONFIG_SUBDIRS</keyword>
+      <keyword>AC_CONFIG_TESTDIR</keyword>
+      <keyword>AC_COPYRIGHT</keyword>
+      <keyword>AC_C_PROTOTYPES</keyword>
+      <keyword>AC_C_RESTRICT</keyword>
+      <keyword>AC_C_STRINGIZE</keyword>
+      <keyword>AC_C_TYPEOF</keyword>
+      <keyword>AC_C_VARARRAYS</keyword>
+      <keyword>AC_C_VOLATILE</keyword>
+      <keyword>AC_DATAROOTDIR_CHECKED</keyword>
+      <keyword>AC_DEFINE(_UNQUOTED)?</keyword>
+      <keyword>AC_DEFUN(_ONCE)?</keyword>
+      <keyword>AC_DIAGNOSE</keyword>
+      <keyword>AC_EGREP_CPP</keyword>
+      <keyword>AC_EGREP_HEADER</keyword>
+      <keyword>AC_ENABLE</keyword>
+      <keyword>AC_ERLANG_CHECK_LIB</keyword>
+      <keyword>AC_ERLANG_NEED_ERLC?</keyword>
+      <keyword>AC_ERLANG_PATH_ERLC?</keyword>
+      <keyword>AC_ERLANG_SUBST_(LIB_DIR|ROOT_DIR|(INSTALL_LIB_(DIR|SUBDIR)))</keyword>
+      <keyword>AC_F77_DUMMY_MAIN</keyword>
+      <keyword>AC_F77_FUNC</keyword>
+      <keyword>AC_F77_LIBRARY_LDFLAGS</keyword>
+      <keyword>AC_F77_MAIN</keyword>
+      <keyword>AC_F77_WRAPPERS</keyword>
+      <keyword>AC_FATAL</keyword>
+      <keyword>AC_FC_FREEFORM</keyword>
+      <keyword>AC_FC_FUNC</keyword>
+      <keyword>AC_FC_LIBRARY_LDFLAGS</keyword>
+      <keyword>AC_FC_MAIN</keyword>
+      <keyword>AC_FC_SRCEXT</keyword>
+      <keyword>AC_FC_WRAPPERS</keyword>
+      <keyword>AC_FUNC_ALLOCA</keyword>
+      <keyword>AC_FUNC_CHOWN</keyword>
+      <keyword>AC_FUNC_CLOSEDIR_VOID</keyword>
+      <keyword>AC_FUNC_ERROR_AT_LINE</keyword>
+      <keyword>AC_FUNC_FNMATCH(_GNU)?</keyword>
+      <keyword>AC_FUNC_FORK</keyword>
+      <keyword>AC_FUNC_FSEEKO</keyword>
+      <keyword>AC_FUNC_GETGROUPS</keyword>
+      <keyword>AC_FUNC_GETLOADAVG</keyword>
+      <keyword>AC_FUNC_GETMNTENT</keyword>
+      <keyword>AC_FUNC_GETPGRP</keyword>
+      <keyword>AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK</keyword>
+      <keyword>AC_FUNC_LSTAT</keyword>
+      <keyword>AC_FUNC_MALLOC</keyword>
+      <keyword>AC_FUNC_MBRTOWC</keyword>
+      <keyword>AC_FUNC_MEMCMP</keyword>
+      <keyword>AC_FUNC_MKTIME</keyword>
+      <keyword>AC_FUNC_MMAP</keyword>
+      <keyword>AC_FUNC_OBSTACK</keyword>
+      <keyword>AC_FUNC_REALLOC</keyword>
+      <keyword>AC_FUNC_SELECT_ARGTYPES</keyword>
+      <keyword>AC_FUNC_SETPGRP</keyword>
+      <keyword>AC_FUNC_SETVBUF_REVERSED</keyword>
+      <keyword>AC_FUNC_STAT</keyword>
+      <keyword>AC_FUNC_STRCOLL</keyword>
+      <keyword>AC_FUNC_STRERROR_R</keyword>
+      <keyword>AC_FUNC_STRFTIME</keyword>
+      <keyword>AC_FUNC_STRNLEN</keyword>
+      <keyword>AC_FUNC_STRTOD</keyword>
+      <keyword>AC_FUNC_STRTOLD</keyword>
+      <keyword>AC_FUNC_UTIME_NULL</keyword>
+      <keyword>AC_FUNC_VPRINTF</keyword>
+      <keyword>AC_GNU_SOURCE</keyword>
+      <keyword>AC_HAVE_C_BACKSLASH_A</keyword>
+      <keyword>AC_HEADER_ASSERT</keyword>
+      <keyword>AC_HEADER_DIRENT</keyword>
+      <keyword>AC_HEADER_MAJOR</keyword>
+      <keyword>AC_HEADER_RESOLV</keyword>
+      <keyword>AC_HEADER_STAT</keyword>
+      <keyword>AC_HEADER_STDBOOL</keyword>
+      <keyword>AC_HEADER_STDC</keyword>
+      <keyword>AC_HEADER_SYS_WAIT</keyword>
+      <keyword>AC_HEADER_TIME</keyword>
+      <keyword>AC_HEADER_TIOCGWINSZ</keyword>
+      <keyword>AC_HELP_STRING</keyword>
+      <keyword>AC_INCLUDES_DEFAULT</keyword>
+      <keyword>AC_INIT</keyword>
+      <keyword>AC_ISC_POSIX</keyword>
+      <keyword>AC_LANG_ASSERT</keyword>
+      <keyword>AC_LANG_CALL</keyword>
+      <keyword>AC_LANG_CONFTEST</keyword>
+      <keyword>AC_LANG_FUNC_LINK_TRY</keyword>
+      <keyword>AC_LANG_POP</keyword>
+      <keyword>AC_LANG_PROGRAM</keyword>
+      <keyword>AC_LANG_PUSH</keyword>
+      <keyword>AC_LANG_SOURCE</keyword>
+      <keyword>AC_LANG_WERROR</keyword>
+      <keyword>AC_LIBOBJ</keyword>
+      <keyword>AC_LIBSOURCES?</keyword>
+      <keyword>AC_LINK_IFELSE</keyword>
+      <keyword>AC_MINIX</keyword>
+      <keyword>AC_MSG_CHECKING</keyword>
+      <keyword>AC_MSG_ERROR</keyword>
+      <keyword>AC_MSG_FAILURE</keyword>
+      <keyword>AC_MSG_NOTICE</keyword>
+      <keyword>AC_MSG_RESULT</keyword>
+      <keyword>AC_MSG_WARN</keyword>
+      <keyword>AC_OUTPUT</keyword>
+      <keyword>AC_PACKAGE_BUGREPORT</keyword>
+      <keyword>AC_PACKAGE_NAME</keyword>
+      <keyword>AC_PACKAGE_STRING</keyword>
+      <keyword>AC_PACKAGE_TARNAME</keyword>
+      <keyword>AC_PACKAGE_VERSION</keyword>
+      <keyword>AC_PATH_PROGS?</keyword>
+      <keyword>AC_PATH_TARGET_TOOL</keyword>
+      <keyword>AC_PATH_TOOL</keyword>
+      <keyword>AC_PATH_X</keyword>
+      <keyword>AC_PATH_XTRA</keyword>
+      <keyword>AC_PREFIX_DEFAULT</keyword>
+      <keyword>AC_PREFIX_PROGRAM</keyword>
+      <keyword>AC_PREPROC_IFELSE</keyword>
+      <keyword>AC_PREREQ</keyword>
+      <keyword>AC_PRESERVE_HELP_ORDER</keyword>
+      <keyword>AC_PROG_AWK</keyword>
+      <keyword>AC_PROG_CC(_C(89|99|_O))?</keyword>
+      <keyword>AC_PROG_CC_STDC</keyword>
+      <keyword>AC_PROG_CPP(_WERROR)?</keyword>
+      <keyword>AC_PROG_CXX(CPP|_C_O)?</keyword>
+      <keyword>AC_PROG_EGREP</keyword>
+      <keyword>AC_PROG_F77(_C_O)?</keyword>
+      <keyword>AC_PROG_FC(_C_O)?</keyword>
+      <keyword>AC_PROG_FGREP</keyword>
+      <keyword>AC_PROG_GCC_TRADITIONAL</keyword>
+      <keyword>AC_PROG_GREP</keyword>
+      <keyword>AC_PROG_INSTALL</keyword>
+      <keyword>AC_PROG_LEX</keyword>
+      <keyword>AC_PROG_LIBTOOL</keyword>
+      <keyword>AC_PROG_LN_S</keyword>
+      <keyword>AC_PROG_MAKE_SET</keyword>
+      <keyword>AC_PROG_OBJCCPP</keyword>
+      <keyword>AC_PROG_OBJC</keyword>
+      <keyword>AC_PROG_RANLIB</keyword>
+      <keyword>AC_PROG_SED</keyword>
+      <keyword>AC_PROG_YACC</keyword>
+      <keyword>AC_REPLACE_FNMATCH</keyword>
+      <keyword>AC_REPLACE_FUNCS</keyword>
+      <keyword>AC_REQUIRE_AUX_FILE</keyword>
+      <keyword>AC_REQUIRE_CPP</keyword>
+      <keyword>AC_REQUIRE</keyword>
+      <keyword>AC_REVISION</keyword>
+      <keyword>AC_RUN_IFELSE</keyword>
+      <keyword>AC_SEARCH_LIBS</keyword>
+      <keyword>AC_STRUCT_DIRENT_D_(INO|TYPE)</keyword>
+      <keyword>AC_STRUCT_ST_BLKSIZE</keyword>
+      <keyword>AC_STRUCT_ST_BLOCKS</keyword>
+      <keyword>AC_STRUCT_ST_RDEV</keyword>
+      <keyword>AC_STRUCT_TIMEZONE</keyword>
+      <keyword>AC_STRUCT_TM</keyword>
+      <keyword>AC_SUBST_FILE</keyword>
+      <keyword>AC_SUBST</keyword>
+      <keyword>AC_SYS_INTERPRETER</keyword>
+      <keyword>AC_SYS_LARGEFILE</keyword>
+      <keyword>AC_SYS_LONG_FILE_NAMES</keyword>
+      <keyword>AC_SYS_POSIX_TERMIOS</keyword>
+      <keyword>AC_TYPE_GETGROUPS</keyword>
+      <keyword>AC_TYPE_INT(16_T|32_T|64_T|8_T)</keyword>
+      <keyword>AC_TYPE_INTMAX_T</keyword>
+      <keyword>AC_TYPE_INTPTR_T</keyword>
+      <keyword>AC_TYPE_LONG_DOUBLE(_WIDER)?</keyword>
+      <keyword>AC_TYPE_LONG_LONG_INT</keyword>
+      <keyword>AC_TYPE_MBSTATE_T</keyword>
+      <keyword>AC_TYPE_MODE_T</keyword>
+      <keyword>AC_TYPE_OFF_T</keyword>
+      <keyword>AC_TYPE_PID_T</keyword>
+      <keyword>AC_TYPE_SIGNAL</keyword>
+      <keyword>AC_TYPE_SIZE_T</keyword>
+      <keyword>AC_TYPE_SSIZE_T</keyword>
+      <keyword>AC_TYPE_UID_T</keyword>
+      <keyword>AC_TYPE_UINT(16_T|32_T|64_T|8_T)</keyword>
+      <keyword>AC_TYPE_UINTMAX_T</keyword>
+      <keyword>AC_TYPE_UINTPTR_T</keyword>
+      <keyword>AC_TYPE_UNSIGNED_LONG_LONG_INT</keyword>
+      <keyword>AC_USE_SYSTEM_EXTENSIONS</keyword>
+      <keyword>AC_WARNING</keyword>
+      <keyword>AC_WITH</keyword>
+      <keyword>AH_BOTTOM</keyword>
+      <keyword>AH_HEADER</keyword>
+      <keyword>AH_TEMPLATE</keyword>
+      <keyword>AH_TOP</keyword>
+      <keyword>AH_VERBATIM</keyword>
+      <keyword>AS_BOURNE_COMPATIBLE</keyword>
+      <keyword>AS_CASE</keyword>
+      <keyword>AS_DIRNAME</keyword>
+      <keyword>AS_IF</keyword>
+      <keyword>AS_MESSAGE_FD</keyword>
+      <keyword>AS_MESSAGE_LOG_FD</keyword>
+      <keyword>AS_MKDIR_P</keyword>
+      <keyword>AS_ORIGINAL_STDIN_FD</keyword>
+      <keyword>AS_SET_CATFILE</keyword>
+      <keyword>AS_SHELL_SANITIZE</keyword>
+      <keyword>AS_TR_CPP</keyword>
+      <keyword>AS_TR_SH</keyword>
+      <keyword>AU_ALIAS</keyword>
+      <keyword>AU_DEFUN</keyword>
+    </context>
+
+    <context id="ac-macros-obsolete" style-ref="ac-macros-obsolete">
+      <keyword>AC_ALLOCA</keyword>
+      <keyword>AC_ARG_ARRAY</keyword>
+      <keyword>AC_CANONICAL_SYSTEM</keyword>
+      <keyword>AC_C_CROSS</keyword>
+      <keyword>AC_CHAR_UNSIGNED</keyword>
+      <keyword>AC_CHECKING</keyword>
+      <keyword>AC_CHECK_TYPE</keyword>
+      <keyword>AC_C_LONG_DOUBLE</keyword>
+      <keyword>AC_COMPILE_CHECK</keyword>
+      <keyword>AC_CONST</keyword>
+      <keyword>AC_CROSS_CHECK</keyword>
+      <keyword>AC_CYGWIN</keyword>
+      <keyword>AC_DECL_SYS_SIGLIST</keyword>
+      <keyword>AC_DECL_YYTEXT</keyword>
+      <keyword>AC_DIR_HEADER</keyword>
+      <keyword>AC_DISABLE_FAST_INSTALL</keyword>
+      <keyword>AC_DISABLE_SHARED</keyword>
+      <keyword>AC_DISABLE_STATIC</keyword>
+      <keyword>AC_DYNIX_SEQ</keyword>
+      <keyword>AC_EMXOS2</keyword>
+      <keyword>AC_ERROR</keyword>
+      <keyword>AC_EXEEXT</keyword>
+      <keyword>AC_FIND_X</keyword>
+      <keyword>AC_FIND_XTRA</keyword>
+      <keyword>AC_FOREACH</keyword>
+      <keyword>AC_FUNC_CHECK</keyword>
+      <keyword>AC_FUNC_WAIT3</keyword>
+      <keyword>AC_GCC_TRADITIONAL</keyword>
+      <keyword>AC_GETGROUPS_T</keyword>
+      <keyword>AC_GETLOADAVG</keyword>
+      <keyword>AC_HAVE_FUNCS</keyword>
+      <keyword>AC_HAVE_HEADERS</keyword>
+      <keyword>AC_HAVE_LIBRARY</keyword>
+      <keyword>AC_HAVE_POUNDBANG</keyword>
+      <keyword>AC_HEADER_CHECK</keyword>
+      <keyword>AC_HEADER_EGREP</keyword>
+      <keyword>AC_HELP_STRING</keyword>
+      <keyword>AC_INIT</keyword>
+      <keyword>AC_INLINE</keyword>
+      <keyword>AC_INT_16_BITS</keyword>
+      <keyword>AC_IRIX_SUN</keyword>
+      <keyword>AC_LANG_C</keyword>
+      <keyword>AC_LANG_CPLUSPLUS</keyword>
+      <keyword>AC_LANG_FORTRAN77</keyword>
+      <keyword>AC_LANG_RESTORE</keyword>
+      <keyword>AC_LANG_SAVE</keyword>
+      <keyword>AC_LIBTOOL_DLOPEN</keyword>
+      <keyword>AC_LIBTOOL_WIN32_DLL</keyword>
+      <keyword>AC_LINK_FILES</keyword>
+      <keyword>AC_LN_S</keyword>
+      <keyword>AC_LONG_64_BITS</keyword>
+      <keyword>AC_LONG_DOUBLE</keyword>
+      <keyword>AC_LONG_FILE_NAMES</keyword>
+      <keyword>AC_MAJOR_HEADER</keyword>
+      <keyword>AC_MEMORY_H</keyword>
+      <keyword>AC_MINGW32</keyword>
+      <keyword>AC_MINUS_C_MINUS_O</keyword>
+      <keyword>AC_MMAP</keyword>
+      <keyword>AC_MODE_T</keyword>
+      <keyword>AC_OBJEXT</keyword>
+      <keyword>AC_OBSOLETE</keyword>
+      <keyword>AC_OFF_T</keyword>
+      <keyword>AC_OUTPUT_COMMANDS</keyword>
+      <keyword>AC_OUTPUT</keyword>
+      <keyword>AC_PID_T</keyword>
+      <keyword>AC_PREFIX</keyword>
+      <keyword>AC_PROGRAM_CHECK</keyword>
+      <keyword>AC_PROGRAM_EGREP</keyword>
+      <keyword>AC_PROGRAM_PATH</keyword>
+      <keyword>AC_PROGRAMS_CHECK</keyword>
+      <keyword>AC_PROGRAMS_PATH</keyword>
+      <keyword>AC_REMOTE_TAPE</keyword>
+      <keyword>AC_RESTARTABLE_SYSCALLS</keyword>
+      <keyword>AC_RETSIGTYPE</keyword>
+      <keyword>AC_RSH</keyword>
+      <keyword>AC_SCO_INTL</keyword>
+      <keyword>AC_SET_MAKE</keyword>
+      <keyword>AC_SETVBUF_REVERSED</keyword>
+      <keyword>AC_SIZEOF_TYPE</keyword>
+      <keyword>AC_SIZE_T</keyword>
+      <keyword>AC_STAT_MACROS_BROKEN</keyword>
+      <keyword>AC_ST_BLKSIZE</keyword>
+      <keyword>AC_ST_BLOCKS</keyword>
+      <keyword>AC_STDC_HEADERS</keyword>
+      <keyword>AC_STRCOLL</keyword>
+      <keyword>AC_ST_RDEV</keyword>
+      <keyword>AC_SYS_RESTARTABLE_SYSCALLS</keyword>
+      <keyword>AC_SYS_SIGLIST_DECLARED</keyword>
+      <keyword>AC_TEST_CPP</keyword>
+      <keyword>AC_TEST_PROGRAM</keyword>
+      <keyword>AC_TIME_WITH_SYS_TIME</keyword>
+      <keyword>AC_TIMEZONE</keyword>
+      <keyword>AC_TRY_COMPILE</keyword>
+      <keyword>AC_TRY_CPP</keyword>
+      <keyword>AC_TRY_LINK_FUNC</keyword>
+      <keyword>AC_TRY_LINK</keyword>
+      <keyword>AC_TRY_RUN</keyword>
+      <keyword>AC_UID_T</keyword>
+      <keyword>AC_UNISTD_H</keyword>
+      <keyword>AC_USG</keyword>
+      <keyword>AC_UTIME_NULL</keyword>
+      <keyword>AC_VALIDATE_CACHED_SYSTEM_TUPLE</keyword>
+      <keyword>AC_VERBOSE</keyword>
+      <keyword>AC_VFORK</keyword>
+      <keyword>AC_VPRINTF</keyword>
+      <keyword>AC_WAIT3</keyword>
+      <keyword>AC_WARN</keyword>
+      <keyword>AC_WORDS_BIGENDIAN</keyword>
+      <keyword>AC_XENIX_DIR</keyword>
+      <keyword>AC_YYTEXT_POINTER</keyword>
+    </context>
+
+    <context id="am-macros" style-ref="am-macros">
+      <keyword>_AM_DEPENDENCIES</keyword>
+      <keyword>AM_CONDITIONAL</keyword>
+      <keyword>AM_CONFIG_HEADER</keyword>
+      <keyword>AM_C_PROTOTYPES</keyword>
+      <keyword>AM_DEP_TRACK</keyword>
+      <keyword>AM_DISABLE_SHARED</keyword>
+      <keyword>AM_DISABLE_STATIC</keyword>
+      <keyword>AM_ENABLE_MULTILIB</keyword>
+      <keyword>AM_GNU_GETTEXT</keyword>
+      <keyword>AM_HEADER_TIOCGWINSZ_NEEDS_SYS_IOCTL</keyword>
+      <keyword>AM_INIT_AUTOMAKE</keyword>
+      <keyword>AM_INSTALLCHECK_STD_OPTIONS_EXEMPT</keyword>
+      <keyword>AM_JAVACFLAGS</keyword>
+      <keyword>AM_MAINTAINER_MODE</keyword>
+      <keyword>AM_MAKE_INCLUDE</keyword>
+      <keyword>AM_MAKEINFOFLAGS</keyword>
+      <keyword>AM_OUTPUT_DEPENDENCY_COMMANDS</keyword>
+      <keyword>AM_PATH_LISPDIR</keyword>
+      <keyword>AM_PROG_AS</keyword>
+      <keyword>AM_PROG_CC_C_O</keyword>
+      <keyword>AM_PROG_CC_STDC</keyword>
+      <keyword>AM_PROG_GCJ</keyword>
+      <keyword>AM_PROG_INSTALL_STRIP</keyword>
+      <keyword>AM_PROG_LEX</keyword>
+      <keyword>AM_PROG_LIBTOOL</keyword>
+      <keyword>AM_RFLAGS</keyword>
+      <keyword>AM_RUNTESTFLAGS</keyword>
+      <keyword>AM_SANITY_CHECK</keyword>
+      <keyword>AM_SET_DEPDIR</keyword>
+      <keyword>AM_SYS_POSIX_TERMIOS</keyword>
+      <keyword>AM_WITH_DMALLOC</keyword>
+      <keyword>AM_WITH_REGEX</keyword>
+    </context>
+
+    <context id="misc-macros" style-ref="misc-macros">
+      <keyword>AM_GLIB_GNU_GETTEXT</keyword>
+      <keyword>AM_GLIB_DEFINE_LOCALEDIR</keyword>
+      <keyword>AM_GNU_GETTEXT(_VERSION|_NEED)?</keyword>
+      <keyword>AC_PROG_INTLTOOL</keyword>
+      <keyword>IT_PROG_INTLTOOL</keyword>
+      <keyword>AM_PATH_PROG_WITH_TEST</keyword>
+      <keyword>PKG_PROG_PKG_CONFIG</keyword>
+      <keyword>PKG_CHECK_EXISTS</keyword>
+      <keyword>PKG_CHECK_MODULES</keyword>
     </context>
   </definitions>
 </language>

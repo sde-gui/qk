@@ -58,6 +58,8 @@
 
   <style name="changelog:email"             use-style="c:preprocessor"/>
 
+<!--  <style name="m4:quote"                    background="grey"/>-->
+
   <style name="sh:dollar"                   foreground="#008000" bold="true"/>
 <!--  <style name="sh:single-quote"             background="pink"/>
   <style name="sh:double-quote"             background="lightgrey"/>

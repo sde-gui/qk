@@ -10,10 +10,12 @@
     <style id="comment" name="Comment" map-to="def:comment"/>
     <style id="string" name="String" map-to="def:string"/>
     <style id="keyword" name="Keyword" map-to="def:keyword"/>
-    <style id="others-3" name="Others 3"/>
-    <style id="others-2" name="Others 2"/>
+    <style id="variable1" name="Variable 1" map-to="def:data-type"/>
+    <style id="variable2" name="Variable 2" map-to="def:data-type"/>
     <style id="data-type" name="Data Type" map-to="def:data-type"/>
     <style id="others" name="Others"/>
+    <style id="common-command" name="Common Commands" map-to="def:keyword"/>
+    <style id="here-doc-bound" name="here-doc" map-to="def:keyword"/>
   </styles>
   <definitions>
     <context id="string" style-ref="string">
@@ -67,6 +69,14 @@
       <keyword>&lt;&lt;+[0-9]</keyword>
       <keyword>\b[0-9]+&lt;&lt;</keyword>
     </context>
+    <context id="here-doc">
+      <start>&lt;&lt;\s*(\S+)$</start>
+      <end>^\%{1@start}$</end>
+      <include>
+        <context sub-pattern="0" where="start" style-ref="here-doc-bound" />
+        <context sub-pattern="0" where="end" style-ref="here-doc-bound" />
+      </include>
+    </context>
     <context id="operator" style-ref="function">
       <keyword>\-a\b</keyword>
       <keyword>\-b\b</keyword>
@@ -105,13 +115,15 @@
       <keyword>\-gt\b</keyword>
       <keyword>\-ge\b</keyword>
     </context>
-    <context id="variable1" style-ref="others-3">
-      <keyword>[$]+[@?*{a-zA-Z0-9_][}a-zA-Z0-9_]*</keyword>
+    <context id="variable1" style-ref="variable1">
+      <match>\$+[@?*{a-zA-Z0-9_][}a-zA-Z0-9_]*</match>
     </context>
-    <context id="variable2" style-ref="others-2">
-      <keyword>[a-zA-Z_][a-zA-Z0-9_]*\=</keyword>
+    <context id="variable2" style-ref="variable2">
+      <match>[a-zA-Z_][a-zA-Z0-9_]*\=</match>
     </context>
     <context id="built-in-command" style-ref="keyword">
+      <prefix></prefix>
+      <suffix></suffix>
       <keyword>\!</keyword>
       <keyword>\{</keyword>
       <keyword>\}</keyword>
@@ -133,7 +145,7 @@
       <keyword>\bwhile\b</keyword>
       <keyword>\bbash\b</keyword>
       <keyword>\:</keyword>
-      <keyword>\.</keyword>
+      <keyword>(?&lt;=\s)\.(?=\s)</keyword>
       <keyword>\[</keyword>
       <keyword>\]</keyword>
       <keyword>[$]+\[</keyword>
@@ -190,9 +202,9 @@
       <keyword>\bunset\b</keyword>
       <keyword>\bwait\b</keyword>
     </context>
-    <context id="common-command" style-ref="others">
-      <prefix>\b</prefix>
-      <suffix>\b</suffix>
+    <context id="common-command" style-ref="common-command">
+      <prefix>(?&lt;![\w\-\.])</prefix>
+      <suffix>(?![\w\-\.])</suffix>
       <keyword>cp</keyword>
       <keyword>rm</keyword>
       <keyword>mv</keyword>
@@ -280,6 +292,7 @@
         <context ref="line-comment"/>
         <context ref="punctuator"/>
         <context ref="function"/>
+        <context ref="here-doc"/>
         <context ref="redirection"/>
         <context ref="operator"/>
         <context ref="variable1"/>

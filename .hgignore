@@ -57,3 +57,4 @@ moo/mooterm/termhelper_res\.rc$
 .*\.(new|old).*
 gmon\.out
 py-compile
+^moo/mooedit/language-specs/testfiles/.*$
