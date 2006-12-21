@@ -12,7 +12,7 @@
  */
 
 #include "mooedit/mootextsearch-private.h"
-#include "gtksourceview/gtksourceiter.h"
+#include "mooedit/gtksourceview/gtksourceview-api.h"
 #include <string.h>
 
 

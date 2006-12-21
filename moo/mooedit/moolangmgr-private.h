@@ -20,8 +20,7 @@
 
 #include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditconfig.h"
-#include "gtksourceview/gtksourcelanguagesmanager.h"
-#include "gtksourceview/gtksourcestylemanager.h"
+#include "mooedit/gtksourceview/gtksourceview-api.h"
 
 G_BEGIN_DECLS
 

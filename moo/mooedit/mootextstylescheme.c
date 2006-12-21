@@ -15,7 +15,7 @@
 #include "mooedit/mootextstylescheme.h"
 #include "mooedit/mootextview.h"
 #include "mooutils/mooi18n.h"
-#include "gtksourceview/gtksourcestylescheme.h"
+#include "mooedit/gtksourceview/gtksourceview-api.h"
 
 #define STYLE_HAS_FOREGROUND(s) ((s) && ((s)->mask & GTK_SOURCE_STYLE_USE_FOREGROUND))
 #define STYLE_HAS_BACKGROUND(s) ((s) && ((s)->mask & GTK_SOURCE_STYLE_USE_BACKGROUND))

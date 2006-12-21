@@ -2,10 +2,10 @@ moo/mooutils/newgtk/gmappedfile.c
 moo/mooutils/newgtk/gtkcolorbutton.c
 moo/mooutils/newgtk/gtkfontbutton.c
 
-moo/mooedit/gtksourceview/gtksourcelanguagesmanager.c
-moo/mooedit/gtksourceview/gtksourcestylescheme.c
-moo/mooedit/gtksourceview/gtksourcelanguage-parser-2.c
-moo/mooedit/gtksourceview/gtksourcecontextengine.c
+moo/mooedit/gtksourceview/upstream/gtksourcelanguagesmanager.c
+moo/mooedit/gtksourceview/upstream/gtksourcestylescheme.c
+moo/mooedit/gtksourceview/upstream/gtksourcelanguage-parser-2.c
+moo/mooedit/gtksourceview/upstream/gtksourcecontextengine.c
 
 moo/mooedit/language-specs/R.lang
 moo/mooedit/language-specs/ada.lang
@@ -62,9 +62,6 @@ moo/moopython/plugins/pyproject/projects/cproj/optdialog.py
 moo/moopython/plugins/pyproject/projects/cproj/options.glade
 moo/moopython/plugins/pyproject/projects/cproj/view.py
 moo/moopython/plugins/pyproject/projects/latex.py
-
-moo/moopython/plugins/terminal.ini.desktop.in.in
-moo/moopython/plugins/terminal.py
 
 moo/mooterm/mootermparser-yacc.c
 moo/mooterm/glade/mootermprefs.glade

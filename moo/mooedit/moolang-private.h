@@ -18,8 +18,7 @@
 #ifndef __MOO_LANG_PRIVATE_H__
 #define __MOO_LANG_PRIVATE_H__
 
-#include "gtksourceview/gtksourceengine.h"
-#include "gtksourceview/gtksourcelanguage.h"
+#include "mooedit/gtksourceview/gtksourceview-api.h"
 #include "mooedit/moolang.h"
 #include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditconfig.h"

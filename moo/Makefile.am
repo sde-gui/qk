@@ -74,6 +74,7 @@ endif
 if MOO_ENABLE_TESTS
 export_flags = -export-symbols-regex ".*"
 else
+# export_flags = -export-symbols-regex ".*"
 export_flags = -export-symbols-regex "^(moo_).*"
 endif
 

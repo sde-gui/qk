@@ -17,7 +17,6 @@
 #endif
 #include "mooedit/moolang-private.h"
 #include "mooutils/mooi18n.h"
-#include "gtksourceview/gtksourcelanguage-private.h"
 #include <libxml/xmlreader.h>
 #include <glib/gstdio.h>
 #include <sys/stat.h>
