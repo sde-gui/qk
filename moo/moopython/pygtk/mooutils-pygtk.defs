@@ -1328,21 +1328,6 @@
 )
 
 
-
-;; From ../mooutils/moostock.h
-
-(define-function create_stock_items
-  (c-name "moo_create_stock_items")
-  (return-type "none")
-)
-
-(define-function get_icon_size_real_small
-  (c-name "moo_get_icon_size_real_small")
-  (return-type "GtkIconSize")
-)
-
-
-
 ;; From ../mooutils/moowin.h
 
 ;; (define-function window_is_hidden

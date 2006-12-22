@@ -147,7 +147,8 @@ static void add_icon2   (GtkIconFactory *factory,
 #endif /* !GTK_CHECK_VERSION(2,4,0) */
 
 
-GtkIconSize moo_get_icon_size_real_small    (void)
+GtkIconSize
+_moo_get_icon_size_real_small (void)
 {
     static GtkIconSize size = 0;
 
@@ -169,7 +170,8 @@ static void register_stock_icon_alias (GtkIconFactory *factory,
 }
 
 
-void moo_create_stock_items (void)
+void
+_moo_stock_init (void)
 {
     static gboolean created = FALSE;
     GtkIconFactory *factory;

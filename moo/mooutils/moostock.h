@@ -42,7 +42,7 @@ G_BEGIN_DECLS
 #define MOO_STOCK_SAVE_NONE             "moo-save-none"
 #define MOO_STOCK_SAVE_SELECTED         "moo-save-selected"
 
-#define MOO_ICON_SIZE_REAL_SMALL        (moo_get_icon_size_real_small ())
+#define MOO_ICON_SIZE_REAL_SMALL        (_moo_get_icon_size_real_small ())
 
 #define MOO_STOCK_NEW_PROJECT           "moo-new-project"
 #define MOO_STOCK_OPEN_PROJECT          "moo-open-project"
@@ -66,8 +66,8 @@ G_BEGIN_DECLS
 #define MOO_STOCK_PLUGINS               GTK_STOCK_PREFERENCES
 
 
-void        moo_create_stock_items          (void);
-GtkIconSize moo_get_icon_size_real_small    (void) G_GNUC_CONST;
+void        _moo_stock_init                 (void);
+GtkIconSize _moo_get_icon_size_real_small   (void) G_GNUC_CONST;
 
 
 G_END_DECLS

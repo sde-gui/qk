@@ -259,8 +259,6 @@ moo_paned_class_init (MooPanedClass *klass)
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
 
-    moo_create_stock_items ();
-
     g_type_class_add_private (klass, sizeof (MooPanedPrivate));
 
     gobject_class->set_property = moo_paned_set_property;
@@ -467,6 +465,8 @@ static void
 moo_paned_init (MooPaned *paned)
 {
     GTK_WIDGET_UNSET_FLAGS (paned, GTK_NO_WINDOW);
+
+    _moo_stock_init ();
 
     paned->priv = G_TYPE_INSTANCE_GET_PRIVATE (paned,
                                                MOO_TYPE_PANED,
