@@ -5,7 +5,6 @@ AM_CFLAGS =			\
 	$(MOO_DEBUG_CFLAGS)
 
 EXTRA_DIST =		\
-	medit-ui.xml	\
 	medit-app.opag	\
 	medit.rc.in
 
@@ -13,8 +12,8 @@ all-am: medit.iss
 
 bin_PROGRAMS = medit
 
-medit_SOURCES = medit-ui.h medit-credits.h medit-app.c
-BUILT_SOURCES = medit-ui.h medit-credits.h medit-app.c
+medit_SOURCES = medit-credits.h medit-app.c
+BUILT_SOURCES = medit-credits.h medit-app.c
 nodist_medit_SOURCES =
 
 medit_LDFLAGS = -export-dynamic $(PYTHON_EXTRA_LDFLAGS) $(medit_res_ldflag)
@@ -30,13 +29,10 @@ nodist_medit_SOURCES += medit.res
 endif
 
 XML2H = $(srcdir)/../moo/mooutils/xml2h.sh
-medit-ui.h: medit-ui.xml $(XML2H)
-	$(SHELL) $(XML2H) MEDIT_UI $(srcdir)/medit-ui.xml > medit-ui.h.tmp && \
-	mv medit-ui.h.tmp medit-ui.h
 medit-credits.h: ../THANKS $(XML2H)
 	$(SHELL) $(XML2H) THANKS $(srcdir)/../THANKS > medit-credits.h
 
-medit-app.c: medit-app.opag medit-ui.h
+medit-app.c: medit-app.opag
 	if test -z $(OPAG); then \
 		touch $(srcdir)/medit-app.c; \
 	else \

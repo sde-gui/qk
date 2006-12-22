@@ -44,6 +44,7 @@ mooedit_include_headers =		\
 	mootextview.h
 
 mooedit_noinst_headers =		\
+	medit-ui.h			\
 	moocommand-exe.h		\
 	moocommand-script.h		\
 	moocommand-private.h		\
@@ -144,6 +145,7 @@ mooedit_printing_sources =		\
 BUILT_SOURCES =				\
 	quicksearch-glade.h		\
 	statusbar-glade.h		\
+	medit-ui.h			\
 	mootextgotoline-glade.h		\
 	mootextfind-glade.h		\
 	moopluginprefs-glade.h		\
@@ -235,8 +237,12 @@ mooprintpreview-glade.h: $(srcdir)/glade/mooprintpreview.glade $(XML2H)
 mooedit-ui.h: mooedit-ui.xml $(XML2H)
 	$(SHELL) $(XML2H) MOO_EDIT_UI_XML $(srcdir)/mooedit-ui.xml > mooedit-ui.h.tmp && \
 	mv mooedit-ui.h.tmp mooedit-ui.h
+medit-ui.h: medit-ui.xml $(XML2H)
+	$(SHELL) $(XML2H) MEDIT_UI_XML $(srcdir)/medit-ui.xml > medit-ui.h.tmp && \
+	mv medit-ui.h.tmp medit-ui.h
 
 EXTRA_DIST =				\
+	medit-ui.xml			\
 	mooedit-ui.xml			\
 	glade/statusbar.glade		\
 	glade/quicksearch.glade		\

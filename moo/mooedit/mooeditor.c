@@ -21,6 +21,7 @@
 #include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooedit/mooedit-ui.h"
+#include "mooedit/medit-ui.h"
 #include "mooutils/moomenuaction.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
@@ -28,6 +29,7 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/moofilewatch.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/moostock.h"
 #include <string.h>
 
 
@@ -276,6 +278,8 @@ static void
 moo_editor_init (MooEditor *editor)
 {
     editor->priv = G_TYPE_INSTANCE_GET_PRIVATE (editor, MOO_TYPE_EDITOR, MooEditorPrivate);
+
+    _moo_stock_init ();
 
     editor->priv->doc_ui_xml = moo_ui_xml_new ();
     moo_ui_xml_add_ui_from_string (editor->priv->doc_ui_xml,
@@ -706,6 +710,13 @@ MooUIXML *
 moo_editor_get_ui_xml (MooEditor *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+
+    if (!editor->priv->ui_xml)
+    {
+        editor->priv->ui_xml = moo_ui_xml_new ();
+        moo_ui_xml_add_ui_from_string (editor->priv->ui_xml, MEDIT_UI_XML, -1);
+    }
+
     return editor->priv->ui_xml;
 }
 
@@ -725,6 +736,7 @@ moo_editor_set_ui_xml (MooEditor      *editor,
     GSList *l;
 
     g_return_if_fail (MOO_IS_EDITOR (editor));
+    g_return_if_fail (MOO_IS_UI_XML (xml));
 
     if (editor->priv->ui_xml == xml)
         return;

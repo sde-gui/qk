@@ -198,8 +198,6 @@ moo_app_class_init (MooAppClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
-    moo_create_stock_items ();
-
     moo_app_parent_class = g_type_class_peek_parent (klass);
 
     gobject_class->constructor = moo_app_constructor;
@@ -373,6 +371,8 @@ static void
 moo_app_instance_init (MooApp *app)
 {
     g_return_if_fail (moo_app_instance == NULL);
+
+    _moo_stock_init ();
 
     moo_app_instance = app;
 
@@ -740,6 +740,8 @@ static void
 moo_app_init_editor (MooApp *app)
 {
     app->priv->editor = moo_editor_create_instance ();
+    /* if ui_xml wasn't set yet, then moo_app_get_ui_xml()
+       will get editor's xml */
     moo_editor_set_ui_xml (app->priv->editor,
                            moo_app_get_ui_xml (app));
     moo_editor_set_app_name (app->priv->editor,
@@ -756,12 +758,11 @@ moo_app_init_editor (MooApp *app)
 static void
 moo_app_init_ui (MooApp *app)
 {
-    MooUIXML *xml;
+    MooUIXML *xml = NULL;
     char **files;
     guint n_files;
     int i;
 
-    xml = moo_app_get_ui_xml (app);
     files = moo_get_data_files (MOO_UI_XML_FILE, MOO_DATA_SHARE, &n_files);
 
     for (i = n_files - 1; i >= 0; --i)
@@ -773,11 +774,12 @@ moo_app_init_ui (MooApp *app)
 
         if (file)
         {
+            xml = moo_ui_xml_new ();
             moo_ui_xml_add_ui_from_string (xml,
                                            g_mapped_file_get_contents (file),
                                            g_mapped_file_get_length (file));
             g_mapped_file_free (file);
-            goto out;
+            break;
         }
 
         if (error->domain != G_FILE_ERROR || error->code != G_FILE_ERROR_NOENT)
@@ -789,10 +791,19 @@ moo_app_init_ui (MooApp *app)
         g_error_free (error);
     }
 
-    if (app->priv->default_ui)
+    if (!xml && app->priv->default_ui)
+    {
+        xml = moo_ui_xml_new ();
         moo_ui_xml_add_ui_from_string (xml, app->priv->default_ui, -1);
+    }
 
-out:
+    if (xml)
+    {
+        if (app->priv->ui_xml)
+            g_object_unref (app->priv->ui_xml);
+        app->priv->ui_xml = xml;
+    }
+
     g_strfreev (files);
 }
 
@@ -1274,7 +1285,17 @@ moo_app_get_ui_xml (MooApp *app)
     g_return_val_if_fail (MOO_IS_APP (app), NULL);
 
     if (!app->priv->ui_xml)
-        app->priv->ui_xml = moo_ui_xml_new ();
+    {
+#ifdef MOO_BUILD_EDIT
+        if (app->priv->editor)
+        {
+            app->priv->ui_xml = moo_editor_get_ui_xml (app->priv->editor);
+            g_object_ref (app->priv->ui_xml);
+        }
+#endif
+        if (!app->priv->ui_xml)
+            app->priv->ui_xml = moo_ui_xml_new ();
+    }
 
     return app->priv->ui_xml;
 }

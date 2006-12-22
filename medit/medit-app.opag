@@ -11,7 +11,6 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "medit-ui.h"
 #include "medit-credits.h"
 #include <moo.h>
 #include <gtk/gtk.h>
@@ -310,7 +309,6 @@ main (int argc, char *argv[])
                         "description", "medit is a text editor",
                         "website", "http://mooedit.sourceforge.net/",
                         "website-label", "http://mooedit.sourceforge.net/",
-                        "default-ui", MEDIT_UI,
                         "logo", MOO_STOCK_MEDIT,
                         "credits", THANKS,
                         NULL);
