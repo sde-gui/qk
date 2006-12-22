@@ -10,6 +10,10 @@ class Plugin(moo.edit.Plugin):
     def do_init(self):
         editor = moo.edit.editor_instance()
         xml = editor.get_ui_xml()
+
+        if xml is None:
+            return False
+
         self.ui_merge_id = xml.new_merge_id()
 
         self.set_win_plugin_type(WinPlugin)
