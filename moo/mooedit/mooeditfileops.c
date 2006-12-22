@@ -775,13 +775,17 @@ do_write (MooEdit        *edit,
     if (encoding && (!g_ascii_strcasecmp (encoding, "UTF-8") || !g_ascii_strcasecmp (encoding, "UTF8")))
         encoding = NULL;
 
+#ifdef __WIN32__
+    mode = S_IRUSR | S_IWUSR;
+#else
     if (edit->priv->mode_set)
         mode = (edit->priv->mode & (S_IRWXU | S_IRWXG | S_IRWXO)) | S_IRUSR | S_IWUSR;
     else
         mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+#endif
 
     errno = 0;
-    fd = g_open (filename, O_WRONLY | O_CREAT | O_TRUNC, mode);
+    fd = g_open (filename, O_BINARY | O_WRONLY | O_CREAT | O_TRUNC, mode);
 
     if (fd == -1)
     {
