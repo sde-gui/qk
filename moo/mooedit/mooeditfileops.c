@@ -27,6 +27,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -222,6 +223,7 @@ typedef enum {
 static LoadResult   do_load     (MooEdit            *edit,
                                  const char         *file,
                                  const char         *encoding,
+                                 struct stat        *statbuf,
                                  GError            **error);
 #ifdef LOAD_BINARY
 static LoadResult   load_binary (MooEdit            *edit,
@@ -238,6 +240,7 @@ static LoadResult
 try_load (MooEdit            *edit,
           const char         *file,
           const char         *encoding,
+          struct stat        *statbuf,
           GError            **error)
 {
     GtkTextBuffer *buffer;
@@ -253,7 +256,7 @@ try_load (MooEdit            *edit,
 
     g_object_get (edit, "enable-highlight", &enable_highlight, NULL);
     g_object_set (edit, "enable-highlight", FALSE, NULL);
-    result = do_load (edit, file, encoding, error);
+    result = do_load (edit, file, encoding, statbuf, error);
     g_object_set (edit, "enable-highlight", enable_highlight, NULL);
 
     return result;
@@ -271,6 +274,7 @@ moo_edit_load_local (MooEdit     *edit,
     MooTextView *view;
     gboolean undo;
     LoadResult result = ERROR_FILE;
+    struct stat statbuf;
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
     g_return_val_if_fail (file && file[0], FALSE);
@@ -294,7 +298,7 @@ moo_edit_load_local (MooEdit     *edit,
 
     if (!encoding)
     {
-        result = try_load (edit, file, "UTF-8", error);
+        result = try_load (edit, file, "UTF-8", &statbuf, error);
 
         if (result == ERROR_ENCODING)
         {
@@ -304,7 +308,7 @@ moo_edit_load_local (MooEdit     *edit,
             {
                 g_clear_error (error);
                 encoding = locale_charset;
-                result = try_load (edit, file, encoding, error);
+                result = try_load (edit, file, encoding, &statbuf, error);
             }
         }
 
@@ -317,7 +321,7 @@ moo_edit_load_local (MooEdit     *edit,
                 g_clear_error (error);
 
                 encoding = common_encodings[i];
-                result = try_load (edit, file, encoding, error);
+                result = try_load (edit, file, encoding, &statbuf, error);
 
                 if (result == SUCCESS || result == ERROR_FILE)
                     break;
@@ -326,14 +330,14 @@ moo_edit_load_local (MooEdit     *edit,
     }
     else
     {
-        result = try_load (edit, file, encoding, error);
+        result = try_load (edit, file, encoding, &statbuf, error);
     }
 
 #ifdef LOAD_BINARY
     if (result == ERROR_ENCODING)
     {
         g_clear_error (error);
-        result = load_binary (edit, file, error);
+        result = load_binary (edit, file, &statbuf, error);
     }
 #endif
 
@@ -353,6 +357,8 @@ moo_edit_load_local (MooEdit     *edit,
         edit->priv->status = 0;
         moo_edit_set_modified (edit, FALSE);
         _moo_edit_set_filename (edit, file, encoding);
+        edit->priv->mode = statbuf.st_mode;
+        edit->priv->mode_set = TRUE;
         _moo_edit_start_file_watch (edit);
     }
     else
@@ -375,6 +381,7 @@ static LoadResult
 do_load (MooEdit            *edit,
          const char         *filename,
          const char         *encoding,
+         struct stat        *statbuf,
          GError            **error)
 {
     GIOChannel *file = NULL;
@@ -384,25 +391,24 @@ do_load (MooEdit            *edit,
     GString *text = NULL;
     char *line = NULL;
     LoadResult result = ERROR_FILE;
-    struct stat statbuf;
 
     g_return_val_if_fail (filename != NULL, ERROR_FILE);
     g_return_val_if_fail (encoding != NULL, ERROR_FILE);
 
-    if (g_stat (filename, &statbuf) == 0)
+    if (g_lstat (filename, statbuf) == 0)
     {
         if (
 #ifdef S_ISBLK
-            S_ISBLK (statbuf.st_mode) ||
+            S_ISBLK (statbuf->st_mode) ||
 #endif
 #ifdef S_ISCHR
-            S_ISCHR (statbuf.st_mode) ||
+            S_ISCHR (statbuf->st_mode) ||
 #endif
 #ifdef S_ISFIFO
-            S_ISFIFO (statbuf.st_mode) ||
+            S_ISFIFO (statbuf->st_mode) ||
 #endif
 #ifdef S_ISSOCK
-            S_ISSOCK (statbuf.st_mode) ||
+            S_ISSOCK (statbuf->st_mode) ||
 #endif
             0)
         {
@@ -754,6 +760,7 @@ do_write (MooEdit        *edit,
           const char     *encoding,
           GError        **error)
 {
+    int fd = -1;
     GIOChannel *file;
     GIOStatus status;
     GtkTextIter line_start;
@@ -761,16 +768,37 @@ do_write (MooEdit        *edit,
     MooEditLineEndType le_type = DEFAULT_LE_TYPE;
     const char *le = "\n";
     gssize le_len = 1;
+    mode_t mode;
 
     g_return_val_if_fail (filename != NULL, FALSE);
 
     if (encoding && (!g_ascii_strcasecmp (encoding, "UTF-8") || !g_ascii_strcasecmp (encoding, "UTF8")))
         encoding = NULL;
 
-    file = g_io_channel_new_file (filename, "w", error);
+    if (edit->priv->mode_set)
+        mode = (edit->priv->mode & (S_IRWXU | S_IRWXG | S_IRWXO)) | S_IRUSR | S_IWUSR;
+    else
+        mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
 
-    if (!file)
+    errno = 0;
+    fd = g_open (filename, O_WRONLY | O_CREAT | O_TRUNC, mode);
+
+    if (fd == -1)
+    {
+        int err = errno;
+        g_set_error (error, G_FILE_ERROR,
+                     g_file_error_from_errno (err),
+                     "%s", g_strerror (err));
         return FALSE;
+    }
+
+#ifndef __WIN32__
+    file = g_io_channel_unix_new (fd);
+#else
+    file = g_io_channel_win32_new_fd (fd);
+#endif
+
+    g_io_channel_set_close_on_unref (file, TRUE);
 
     if (encoding && g_io_channel_set_encoding (file, encoding, error) != G_IO_STATUS_NORMAL)
     {

@@ -21,6 +21,7 @@
 #include "mooedit/moolinemark.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mootextview.h"
+#include <sys/types.h>
 
 G_BEGIN_DECLS
 
@@ -112,7 +113,6 @@ typedef enum {
     MOO_EDIT_LINE_END_MIX
 } MooEditLineEndType;
 
-
 struct _MooEditPrivate {
     MooEditor *editor;
 
@@ -136,6 +136,9 @@ struct _MooEditPrivate {
     gulong focus_in_handler_id;
     gboolean modified_on_disk;
     gboolean deleted_from_disk;
+
+    mode_t mode;
+    guint mode_set : 1;
 
     /***********************************************************************/
     /* Progress dialog and stuff
