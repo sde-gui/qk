@@ -34,6 +34,10 @@ AC_DEFUN([_MOO_AC_LIB],[
       fi
     ])
 
+  if test "x$MOO_INSTALL_LIB" = "xyes"; then
+    MOO_BUILD_PYTHON_PLUGIN="yes"
+  fi
+
   AC_ARG_ENABLE(medit,
     AC_HELP_STRING([--disable-medit], [do not build medit (default = NO)]),
     [MOO_BUILD_MEDIT="$enableval"],[MOO_BUILD_MEDIT="yes"])
