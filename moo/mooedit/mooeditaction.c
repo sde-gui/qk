@@ -272,7 +272,7 @@ moo_edit_action_check_sensitive_real (MooEditAction *action)
     EggRegex *filter = action->priv->filters[FILTER_SENSITIVE];
 
     if (!action->priv->doc || !filter)
-        return gtk_action_get_visible (GTK_ACTION (action));
+        return gtk_action_get_sensitive (GTK_ACTION (action));
 
     line = get_current_line (action->priv->doc);
     return egg_regex_match (filter, line, 0);
