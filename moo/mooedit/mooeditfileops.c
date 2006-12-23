@@ -785,7 +785,7 @@ do_write (MooEdit        *edit,
 #endif
 
     errno = 0;
-    fd = g_open (filename, O_BINARY | O_WRONLY | O_CREAT | O_TRUNC, mode);
+    fd = g_open (filename, O_WRONLY | O_CREAT | O_TRUNC, mode);
 
     if (fd == -1)
     {
