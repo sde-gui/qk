@@ -28,8 +28,6 @@ moo/mooedit/moousertools-prefs.c
 
 moo/mooedit/plugins/moofind.c
 moo/mooedit/plugins/moofind.glade
-moo/mooedit/plugins/completion/completion.glade
-moo/mooedit/plugins/completion/completion-plugin.c
 moo/mooedit/plugins/fileselector/moofileselector.c
 moo/mooedit/plugins/fileselector/moofileselector.glade
 moo/mooedit/plugins/fileselector/moofileselector-prefs.c

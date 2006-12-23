@@ -46,7 +46,6 @@ moo/mooedit/language-specs/Makefile
 moo/mooedit/gtksourceview/Makefile
 moo/mooedit/plugins/Makefile
 moo/mooedit/plugins/activestrings/Makefile
-moo/mooedit/plugins/completion/Makefile
 moo/mooedit/plugins/fileselector/Makefile
 moo/mooapp/Makefile
 moo/moopython/Makefile

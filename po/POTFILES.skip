@@ -65,3 +65,6 @@ moo/moopython/plugins/pyproject/projects/latex.py
 
 moo/mooterm/mootermparser-yacc.c
 moo/mooterm/glade/mootermprefs.glade
+
+moo/mooedit/plugins/completion/completion.glade
+moo/mooedit/plugins/completion/completion-plugin.c
