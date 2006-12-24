@@ -4,6 +4,11 @@ import os
 import sys
 import getopt
 
+def get_version():
+    sys.path.insert(0, moo_builddir)
+    import config
+    return config.version
+
 dir = os.getcwd()
 builddir = dir
 thisscript = os.path.abspath(sys.argv[0])
@@ -11,6 +16,7 @@ moo_windir = "/usr/local/win/medit"
 strip = "i586-mingw32msvc-strip"
 do_strip = True
 do_zip = False
+pida = False
 bin_only = False
 no_python = False
 installer = None
@@ -20,12 +26,12 @@ dry_run = False
 data_dirs = []
 
 def usage():
-    print "Usage: %s [--dry-run] [--no-strip] [--bin-only] [--zip] [--no-python] [build_dir] [additional_dir1] ..." % (sys.argv[0],)
+    print "Usage: %s [--dry-run] [--no-strip] [--bin-only] [--zip] [--pida] [--no-python] [build_dir] [additional_dir1] ..." % (sys.argv[0],)
     print "       %s [--dry-run] --release build_dir gtk_dir python_dir" % (sys.argv[0],)
     sys.exit(2)
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "", ["dry-run", "no-strip", "no-python", "bin-only", "zip", "release", "name="])
+    opts, args = getopt.getopt(sys.argv[1:], "", ["dry-run", "no-strip", "no-python", "bin-only", "zip", "pida", "release", "name="])
 except getopt.GetoptError:
     usage()
 
@@ -38,6 +44,8 @@ for o, a in opts:
         no_python = True
     if o == "--zip":
         do_zip = True
+    if o == "--pida":
+        pida = True
     if o == "--release":
         release = True
     if o == "--name":
@@ -50,6 +58,10 @@ else:
     moo_builddir = builddir
 if args[1:]:
     data_dirs = [os.path.abspath(d) for d in args[1:]]
+
+if pida:
+    do_zip = True
+    name = "medit-pida-%s.zip" % (get_version(),)
 
 if release:
     if len(data_dirs) != 2:
@@ -79,8 +91,10 @@ def copy_files():
             do_cmd("cp -r %s/* %s/" % (d, moo_windir))
 
     do_cmd("mkdir -p %s/bin" % (moo_windir,))
-    do_cmd("cp -r %s/usr/local/bin/medit.exe %s/bin/" % (installdir, moo_windir))
     do_cmd("cp -r %s/usr/local/bin/libmoo.dll %s/bin/" % (installdir, moo_windir))
+
+    if not pida:
+        do_cmd("cp -r %s/usr/local/bin/medit.exe %s/bin/" % (installdir, moo_windir))
 
     if not bin_only:
         do_cmd("mkdir -p %s/share" % (moo_windir,))
@@ -93,21 +107,23 @@ def copy_files():
             do_cmd("cp -r %s/usr/local/lib/moo/plugins %s/lib/moo/" % (installdir, moo_windir))
             do_cmd("cp -r %s/usr/local/lib/moo/projects %s/lib/moo/" % (installdir, moo_windir))
 
-            do_cmd("mkdir -p %s/lib/moo/plugins/pymoo25 %s/lib/moo/plugins/pymoo24" % (moo_windir, moo_windir))
-            do_cmd("cp %s/usr/local/lib/pymoo25.dll %s/lib/moo/plugins/pymoo25/pymoo.dll" % (installdir, moo_windir))
-            do_cmd("cp %s/usr/local/lib/moo25.dll %s/lib/moo/plugins/pymoo25/moo.pyd" % (installdir, moo_windir))
-            do_cmd("cp %s/usr/local/lib/pymoo24.dll %s/lib/moo/plugins/pymoo24/pymoo.dll" % (installdir, moo_windir))
-            do_cmd("cp %s/usr/local/lib/moo24.dll %s/lib/moo/plugins/pymoo24/moo.pyd" % (installdir, moo_windir))
+            if pida:
+                do_cmd("mkdir -p %s/lib/site-packages" % (moo_windir,))
+                do_cmd("cp %s/usr/local/lib/moo25.dll %s/lib/site-packages/moo.pyd" % (installdir, moo_windir))
+            else:
+                do_cmd("mkdir -p %s/lib/moo/plugins/pymoo25 %s/lib/moo/plugins/pymoo24" % (moo_windir, moo_windir))
+                do_cmd("cp %s/usr/local/lib/pymoo25.dll %s/lib/moo/plugins/pymoo25/pymoo.dll" % (installdir, moo_windir))
+                do_cmd("cp %s/usr/local/lib/moo25.dll %s/lib/moo/plugins/pymoo25/moo.pyd" % (installdir, moo_windir))
+                do_cmd("cp %s/usr/local/lib/pymoo24.dll %s/lib/moo/plugins/pymoo24/pymoo.dll" % (installdir, moo_windir))
+                do_cmd("cp %s/usr/local/lib/moo24.dll %s/lib/moo/plugins/pymoo24/moo.pyd" % (installdir, moo_windir))
 
     if do_strip:
         if not bin_only and not no_python:
-            do_cmd("%s %s/lib/moo/plugins/*/*.dll" % (strip, moo_windir))
+            if not pida:
+                do_cmd("%s %s/lib/site-packages/*.dll" % (strip, moo_windir))
+            else:
+                do_cmd("%s %s/lib/moo/plugins/*/*.dll" % (strip, moo_windir))
         do_cmd("%s %s/bin/medit.exe %s/bin/libmoo.dll" % (strip, moo_windir, moo_windir))
-
-def get_version():
-    sys.path.insert(0, moo_builddir)
-    import config
-    return config.version
 
 def build():
     global installer
