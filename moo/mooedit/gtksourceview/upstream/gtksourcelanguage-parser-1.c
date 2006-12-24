@@ -49,11 +49,11 @@ fix_pattern (const gchar *pattern,
 }
 
 static gboolean
-engine_add_simple_pattern (GtkSourceContextEngine *ce,
-			   GtkSourceLanguage      *language,
-			   const gchar            *id,
-			   const gchar            *style,
-			   const gchar            *pattern)
+ctx_data_add_simple_pattern (GtkSourceContextData *ctx_data,
+			     GtkSourceLanguage    *language,
+			     const gchar          *id,
+			     const gchar          *style,
+			     const gchar          *pattern)
 {
 	gboolean result;
 	gchar *real_id, *root_id, *fixed;
@@ -66,13 +66,13 @@ engine_add_simple_pattern (GtkSourceContextEngine *ce,
 
 	fixed = fix_pattern (pattern, NULL);
 
-	result = _gtk_source_context_engine_define_context (ce, real_id,
-							    root_id,
-							    fixed, NULL, NULL,
-							    style,
-							    GTK_SOURCE_CONTEXT_EXTEND_PARENT |
+	result = _gtk_source_context_data_define_context (ctx_data, real_id,
+							  root_id,
+							  fixed, NULL, NULL,
+							  style,
+							  GTK_SOURCE_CONTEXT_EXTEND_PARENT |
 								GTK_SOURCE_CONTEXT_END_AT_LINE_END,
-							    &error);
+							  &error);
 
 	if (error != NULL)
 	{
@@ -87,13 +87,13 @@ engine_add_simple_pattern (GtkSourceContextEngine *ce,
 }
 
 static gboolean
-engine_add_syntax_pattern (GtkSourceContextEngine *ce,
-			   GtkSourceLanguage      *language,
-			   const gchar            *id,
-			   const gchar            *style,
-			   const gchar            *pattern_start,
-			   const gchar            *pattern_end,
-			   gboolean                end_at_line_end)
+ctx_data_add_syntax_pattern (GtkSourceContextData *ctx_data,
+			     GtkSourceLanguage    *language,
+			     const gchar          *id,
+			     const gchar          *style,
+			     const gchar          *pattern_start,
+			     const gchar          *pattern_end,
+			     gboolean              end_at_line_end)
 {
 	gboolean result;
 	gchar *real_id, *root_id;
@@ -112,13 +112,13 @@ engine_add_syntax_pattern (GtkSourceContextEngine *ce,
 	if (end_at_line_end)
 		options |= GTK_SOURCE_CONTEXT_END_AT_LINE_END;
 
-	result = _gtk_source_context_engine_define_context (ce, real_id, root_id,
-							    NULL,
-							    pattern_start,
-							    pattern_end,
-							    style,
-							    options,
-							    &error);
+	result = _gtk_source_context_data_define_context (ctx_data, real_id, root_id,
+							  NULL,
+							  pattern_start,
+							  pattern_end,
+							  style,
+							  options,
+							  &error);
 
 	if (error != NULL)
 	{
@@ -185,11 +185,11 @@ build_keyword_list (const GSList *keywords,
 }
 
 static void
-parseLineComment (xmlNodePtr              cur,
-		  gchar                  *id,
-		  xmlChar                *style,
-		  GtkSourceContextEngine *ce,
-		  GtkSourceLanguage      *language)
+parseLineComment (xmlNodePtr            cur,
+		  gchar                *id,
+		  xmlChar              *style,
+		  GtkSourceContextData *ctx_data,
+		  GtkSourceLanguage    *language)
 {
 	xmlNodePtr child;
 
@@ -201,10 +201,10 @@ parseLineComment (xmlNodePtr              cur,
 
 		start_regex = xmlNodeListGetString (child->doc, child->xmlChildrenNode, 1);
 
-		engine_add_syntax_pattern (ce, language, id,
-					   (gchar*) style,
-					   (gchar*) start_regex,
-					   NULL, TRUE);
+		ctx_data_add_syntax_pattern (ctx_data, language, id,
+					     (gchar*) style,
+					     (gchar*) start_regex,
+					     NULL, TRUE);
 
 		xmlFree (start_regex);
 	}
@@ -216,11 +216,11 @@ parseLineComment (xmlNodePtr              cur,
 }
 
 static void
-parseBlockComment (xmlNodePtr              cur,
-		   gchar                  *id,
-		   xmlChar                *style,
-		   GtkSourceContextEngine *ce,
-		   GtkSourceLanguage      *language)
+parseBlockComment (xmlNodePtr            cur,
+		   gchar                *id,
+		   xmlChar              *style,
+		   GtkSourceContextData *ctx_data,
+		   GtkSourceLanguage    *language)
 {
 	xmlChar *start_regex = NULL;
 	xmlChar *end_regex = NULL;
@@ -262,21 +262,22 @@ parseBlockComment (xmlNodePtr              cur,
 		return;
 	}
 
-	engine_add_syntax_pattern (ce, language, id, (gchar*) style,
-				   (gchar*) start_regex,
-				   (gchar*) end_regex,
-				   FALSE);
+	ctx_data_add_syntax_pattern (ctx_data, language, id,
+				     (gchar*) style,
+				     (gchar*) start_regex,
+				     (gchar*) end_regex,
+				     FALSE);
 
 	xmlFree (start_regex);
 	xmlFree (end_regex);
 }
 
 static void
-parseString (xmlNodePtr              cur,
-	     gchar                  *id,
-	     xmlChar                *style,
-	     GtkSourceContextEngine *ce,
-	     GtkSourceLanguage      *language)
+parseString (xmlNodePtr            cur,
+	     gchar                *id,
+	     xmlChar              *style,
+	     GtkSourceContextData *ctx_data,
+	     GtkSourceLanguage    *language)
 {
 	xmlChar *start_regex = NULL;
 	xmlChar *end_regex = NULL;
@@ -334,22 +335,22 @@ parseString (xmlNodePtr              cur,
 		return;
 	}
 
-	engine_add_syntax_pattern (ce, language, id,
-				   (gchar*) style,
-				   (gchar*) start_regex,
-				   (gchar*) end_regex,
-				   end_at_line_end);
+	ctx_data_add_syntax_pattern (ctx_data, language, id,
+				     (gchar*) style,
+				     (gchar*) start_regex,
+				     (gchar*) end_regex,
+				     end_at_line_end);
 
 	xmlFree (start_regex);
 	xmlFree (end_regex);
 }
 
 static void
-parseKeywordList (xmlNodePtr              cur,
-		  gchar                  *id,
-		  xmlChar                *style,
-		  GtkSourceContextEngine *ce,
-		  GtkSourceLanguage      *language)
+parseKeywordList (xmlNodePtr            cur,
+		  gchar                *id,
+		  xmlChar              *style,
+		  GtkSourceContextData *ctx_data,
+		  GtkSourceLanguage    *language)
 {
 	gboolean case_sensitive = TRUE;
 	gboolean match_empty_string_at_beginning = TRUE;
@@ -459,17 +460,17 @@ parseKeywordList (xmlNodePtr              cur,
 	g_slist_foreach (list, (GFunc) xmlFree, NULL);
 	g_slist_free (list);
 
-	engine_add_simple_pattern (ce, language, id, (gchar*) style, regex);
+	ctx_data_add_simple_pattern (ctx_data, language, id, (gchar*) style, regex);
 
 	g_free (regex);
 }
 
 static void
-parsePatternItem (xmlNodePtr              cur,
-		  gchar                  *id,
-		  xmlChar                *style,
-		  GtkSourceContextEngine *ce,
-		  GtkSourceLanguage      *language)
+parsePatternItem (xmlNodePtr            cur,
+		  gchar                *id,
+		  xmlChar              *style,
+		  GtkSourceContextData *ctx_data,
+		  GtkSourceLanguage    *language)
 {
 	xmlNodePtr child;
 
@@ -481,9 +482,9 @@ parsePatternItem (xmlNodePtr              cur,
 
 		regex = xmlNodeListGetString (child->doc, child->xmlChildrenNode, 1);
 
-		engine_add_simple_pattern (ce, language, id,
-					   (gchar*) style,
-					   (gchar*) regex);
+		ctx_data_add_simple_pattern (ctx_data, language, id,
+					     (gchar*) style,
+					     (gchar*) regex);
 
 		xmlFree (regex);
 	}
@@ -495,11 +496,11 @@ parsePatternItem (xmlNodePtr              cur,
 }
 
 static void
-parseSyntaxItem (xmlNodePtr              cur,
-		 const gchar            *id,
-		 xmlChar                *style,
-		 GtkSourceContextEngine *ce,
-		 GtkSourceLanguage      *language)
+parseSyntaxItem (xmlNodePtr            cur,
+		 const gchar          *id,
+		 xmlChar              *style,
+		 GtkSourceContextData *ctx_data,
+		 GtkSourceLanguage    *language)
 {
 	xmlChar *start_regex = NULL;
 	xmlChar *end_regex = NULL;
@@ -541,19 +542,20 @@ parseSyntaxItem (xmlNodePtr              cur,
 		return;
 	}
 
-	engine_add_syntax_pattern (ce, language, id, (gchar*) style,
-				   (gchar*) start_regex,
-				   (gchar*) end_regex,
-				   FALSE);
+	ctx_data_add_syntax_pattern (ctx_data, language, id,
+				     (gchar*) style,
+				     (gchar*) start_regex,
+				     (gchar*) end_regex,
+				     FALSE);
 
 	xmlFree (start_regex);
 	xmlFree (end_regex);
 }
 
 static void
-parseTag (GtkSourceLanguage      *language,
-	  xmlNodePtr              cur,
-	  GtkSourceContextEngine *ce)
+parseTag (GtkSourceLanguage    *language,
+	  xmlNodePtr            cur,
+	  GtkSourceContextData *ctx_data)
 {
 	xmlChar *name;
 	xmlChar *style;
@@ -581,35 +583,29 @@ parseTag (GtkSourceLanguage      *language,
 
 	style = xmlGetProp (cur, BAD_CAST "style");
 
-	if (style == NULL)
-	{
-		/* FIXME */
-		style = xmlStrdup (BAD_CAST "Normal");
-	}
-
 	if (!xmlStrcmp (cur->name, (const xmlChar*) "line-comment"))
 	{
-		parseLineComment (cur, (gchar*) id, style, ce, language);
+		parseLineComment (cur, (gchar*) id, style, ctx_data, language);
 	}
 	else if (!xmlStrcmp (cur->name, (const xmlChar*) "block-comment"))
 	{
-		parseBlockComment (cur, (gchar*) id, style, ce, language);
+		parseBlockComment (cur, (gchar*) id, style, ctx_data, language);
 	}
 	else if (!xmlStrcmp (cur->name, (const xmlChar*) "string"))
 	{
-		parseString (cur, (gchar*) id, style, ce, language);
+		parseString (cur, (gchar*) id, style, ctx_data, language);
 	}
 	else if (!xmlStrcmp (cur->name, (const xmlChar*) "keyword-list"))
 	{
-		parseKeywordList (cur, (gchar*) id, style, ce, language);
+		parseKeywordList (cur, (gchar*) id, style, ctx_data, language);
 	}
 	else if (!xmlStrcmp (cur->name, (const xmlChar*) "pattern-item"))
 	{
-		parsePatternItem (cur, (gchar*) id, style, ce, language);
+		parsePatternItem (cur, (gchar*) id, style, ctx_data, language);
 	}
 	else if (!xmlStrcmp (cur->name, (const xmlChar*) "syntax-item"))
 	{
-		parseSyntaxItem (cur, (gchar*) id, style, ce, language);
+		parseSyntaxItem (cur, (gchar*) id, style, ctx_data, language);
 	}
 	else
 	{
@@ -622,8 +618,8 @@ parseTag (GtkSourceLanguage      *language,
 }
 
 static gboolean
-define_root_context (GtkSourceContextEngine *ce,
-		     GtkSourceLanguage      *language)
+define_root_context (GtkSourceContextData *ctx_data,
+		     GtkSourceLanguage    *language)
 {
 	gboolean result;
 	gchar *id;
@@ -632,11 +628,11 @@ define_root_context (GtkSourceContextEngine *ce,
 	g_return_val_if_fail (language->priv->id != NULL, FALSE);
 
 	id = g_strdup_printf ("%s:%s", language->priv->id, language->priv->id);
-	result = _gtk_source_context_engine_define_context (ce, id,
-							    NULL, NULL, NULL, NULL,
-							    NULL,
-							    GTK_SOURCE_CONTEXT_EXTEND_PARENT,
-							    &error);
+	result = _gtk_source_context_data_define_context (ctx_data, id,
+							  NULL, NULL, NULL, NULL,
+							  NULL,
+							  GTK_SOURCE_CONTEXT_EXTEND_PARENT,
+							  &error);
 
 	if (error != NULL)
 	{
@@ -649,8 +645,8 @@ define_root_context (GtkSourceContextEngine *ce,
 }
 
 gboolean
-_gtk_source_language_file_parse_version1 (GtkSourceLanguage      *language,
-					  GtkSourceContextEngine *engine)
+_gtk_source_language_file_parse_version1 (GtkSourceLanguage    *language,
+					  GtkSourceContextData *ctx_data)
 {
 	xmlDocPtr doc;
 	xmlNodePtr cur;
@@ -710,7 +706,7 @@ _gtk_source_language_file_parse_version1 (GtkSourceLanguage      *language,
 		goto error;
 	}
 
-	if (!define_root_context (engine, language))
+	if (!define_root_context (ctx_data, language))
 	{
 		g_warning ("Could not create root context for file '%s'",
 			   language->priv->lang_file_name);
@@ -744,16 +740,14 @@ _gtk_source_language_file_parse_version1 (GtkSourceLanguage      *language,
 		}
 		else
 		{
-			parseTag (language,
-				  cur,
-				  engine);
+			parseTag (language, cur, ctx_data);
 		}
 
 		cur = cur->next;
 	}
 
 	if (esc_char != 0)
-		_gtk_source_context_engine_set_escape_char (engine, esc_char);
+		_gtk_source_context_data_set_escape_char (ctx_data, esc_char);
 
 	_gtk_source_language_define_language_styles (language);
 

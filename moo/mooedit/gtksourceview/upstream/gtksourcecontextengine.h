@@ -34,6 +34,7 @@ G_BEGIN_DECLS
 #define GTK_IS_SOURCE_CONTEXT_ENGINE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), GTK_TYPE_SOURCE_CONTEXT_ENGINE))
 #define GTK_SOURCE_CONTEXT_ENGINE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), GTK_TYPE_SOURCE_CONTEXT_ENGINE, GtkSourceContextEngineClass))
 
+typedef struct _GtkSourceContextData          GtkSourceContextData;
 typedef struct _GtkSourceContextEngine        GtkSourceContextEngine;
 typedef struct _GtkSourceContextEngineClass   GtkSourceContextEngineClass;
 typedef struct _GtkSourceContextEnginePrivate GtkSourceContextEnginePrivate;
@@ -64,10 +65,14 @@ typedef enum {
 
 GType		 _gtk_source_context_engine_get_type	(void) G_GNUC_CONST;
 
-GtkSourceContextEngine *_gtk_source_context_engine_new  (GtkSourceLanguage	*lang);
+GtkSourceContextData *_gtk_source_context_data_new	(GtkSourceLanguage	*lang);
+GtkSourceContextData *_gtk_source_context_data_ref	(GtkSourceContextData	*data);
+void		 _gtk_source_context_data_unref		(GtkSourceContextData	*data);
 
-gboolean	 _gtk_source_context_engine_define_context
-							(GtkSourceContextEngine	 *ce,
+GtkSourceContextEngine *_gtk_source_context_engine_new  (GtkSourceContextData	*data);
+
+gboolean	 _gtk_source_context_data_define_context
+							(GtkSourceContextData	 *data,
 							 const gchar		 *id,
 							 const gchar		 *parent_id,
 							 const gchar		 *match_regex,
@@ -77,8 +82,8 @@ gboolean	 _gtk_source_context_engine_define_context
 							 GtkSourceContextMatchOptions options,
 							 GError			**error);
 
-gboolean	 _gtk_source_context_engine_add_sub_pattern
-							(GtkSourceContextEngine	 *ce,
+gboolean	 _gtk_source_context_data_add_sub_pattern
+							(GtkSourceContextData	 *data,
 							 const gchar		 *id,
 							 const gchar		 *parent_id,
 							 const gchar		 *name,
@@ -86,7 +91,7 @@ gboolean	 _gtk_source_context_engine_add_sub_pattern
 							 const gchar		 *style,
 							 GError			**error);
 
-gboolean	 _gtk_source_context_engine_add_ref 	(GtkSourceContextEngine	 *ce,
+gboolean	 _gtk_source_context_data_add_ref 	(GtkSourceContextData	 *data,
 							 const gchar		 *parent_id,
 							 const gchar		 *ref_id,
 							 GtkSourceContextRefOptions options,
@@ -94,12 +99,13 @@ gboolean	 _gtk_source_context_engine_add_ref 	(GtkSourceContextEngine	 *ce,
 							 gboolean		  all,
 							 GError			**error);
 
-gboolean	 _gtk_source_context_engine_resolve_refs(GtkSourceContextEngine	 *ce,
+gboolean	 _gtk_source_context_data_resolve_refs	(GtkSourceContextData	 *data,
 							 GError			**error);
 
 /* Only for lang files version 1, do not use it */
-void		 _gtk_source_context_engine_set_escape_char (GtkSourceContextEngine	*ce,
-							     gunichar			 esc_char);
+void		 _gtk_source_context_data_set_escape_char
+							(GtkSourceContextData	 *data,
+							 gunichar		  esc_char);
 
 G_END_DECLS
 

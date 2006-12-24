@@ -48,6 +48,8 @@ struct _GtkSourceLanguagePrivate
 	GHashTable		*properties;
 
 	GtkSourceLanguagesManager *languages_manager;
+
+	GtkSourceContextData    *ctx_data;
 };
 
 GtkSourceLanguage *_gtk_source_language_new_from_file (const gchar			*filename,
@@ -58,9 +60,9 @@ const char *_gtk_source_languages_manager_get_rng_file (GtkSourceLanguagesManage
 
 void _gtk_source_language_define_language_styles  (GtkSourceLanguage      *language);
 gboolean _gtk_source_language_file_parse_version1 (GtkSourceLanguage      *language,
-						   GtkSourceContextEngine *engine);
+						   GtkSourceContextData   *ctx_data);
 gboolean _gtk_source_language_file_parse_version2 (GtkSourceLanguage      *language,
-						   GtkSourceContextEngine *engine);
+						   GtkSourceContextData   *ctx_data);
 GtkSourceEngine *_gtk_source_language_create_engine (GtkSourceLanguage *language);
 
 G_END_DECLS

@@ -44,7 +44,7 @@
 #include "gtksourcecontextengine.h"
 #include <eggregex.h>
 
-#define PARSER_ERROR parser_error_quark ()
+#define PARSER_ERROR (parser_error_quark ())
 #define ATTR_NO_STYLE ""
 
 typedef enum {
@@ -63,7 +63,7 @@ struct _ParserState
 	/* The args passed to _file_parse_version2() */
 	xmlTextReader *reader;
 	GtkSourceLanguage *language;
-	GtkSourceContextEngine *engine;
+	GtkSourceContextData *ctx_data;
 
 	/* A stack of id that representing parent contexts */
 	GQueue *curr_parents;
@@ -103,7 +103,7 @@ static gchar     *decorate_id                  (ParserState *parser_state,
                                                 const gchar *id);
 
 static ParserState *parser_state_new           (GtkSourceLanguage      *language,
-                                                GtkSourceContextEngine *engine,
+                                                GtkSourceContextData   *ctx_data,
                                                 GHashTable             *defined_regexes,
                                                 GHashTable             *styles_mapping,
                                                 xmlTextReader          *reader,
@@ -112,7 +112,7 @@ static void       parser_state_destroy         (ParserState *parser_state);
 
 static gboolean   file_parse                   (gchar                  *filename,
                                                 GtkSourceLanguage      *language,
-                                                GtkSourceContextEngine *engine,
+                                                GtkSourceContextData   *ctx_data,
                                                 GHashTable             *defined_regexes,
                                                 GHashTable             *styles,
                                                 GSList                **loaded_lang_ids,
@@ -311,7 +311,7 @@ create_definition (ParserState *parser_state,
 
 	GError *tmp_error = NULL;
 
-	g_assert (parser_state->engine != NULL);
+	g_assert (parser_state->ctx_data != NULL);
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
@@ -471,15 +471,15 @@ create_definition (ParserState *parser_state,
 		options |= GTK_SOURCE_CONTEXT_END_AT_LINE_END;
 
 	if (tmp_error == NULL)
-		_gtk_source_context_engine_define_context (parser_state->engine,
-							   id,
-							   parent_id,
-							   match,
-							   start,
-							   end,
-							   style,
-							   options,
-							   &tmp_error);
+		_gtk_source_context_data_define_context (parser_state->ctx_data,
+							 id,
+							 parent_id,
+							 match,
+							 start,
+							 end,
+							 style,
+							 options,
+							 &tmp_error);
 
 	g_free (match);
 	g_free (start);
@@ -535,7 +535,7 @@ add_ref (ParserState               *parser_state,
 			{
 				file_parse (imported_language->priv->lang_file_name,
 					    parser_state->language,
-					    parser_state->engine,
+					    parser_state->ctx_data,
 					    parser_state->defined_regexes,
 					    parser_state->styles_mapping,
 					    parser_state->loaded_lang_ids,
@@ -562,7 +562,7 @@ add_ref (ParserState               *parser_state,
 		ref_id = decorate_id (parser_state, ref);
 	}
 
-	if (tmp_error == NULL && parser_state->engine != NULL)
+	if (tmp_error == NULL && parser_state->ctx_data != NULL)
 	{
 		if (g_str_has_suffix (ref, ":*"))
 		{
@@ -580,20 +580,20 @@ add_ref (ParserState               *parser_state,
 		}
 	}
 
-	if (tmp_error == NULL && parser_state->engine != NULL)
+	if (tmp_error == NULL && parser_state->ctx_data != NULL)
 	{
 		container_id = g_queue_peek_head (parser_state->curr_parents);
 
 		/* If the document is validated container_id is never NULL */
 		g_assert (container_id);
 
-		_gtk_source_context_engine_add_ref (parser_state->engine,
-						    container_id,
-						    ref_id,
-						    options,
-						    style,
-						    all,
-						    &tmp_error);
+		_gtk_source_context_data_add_ref (parser_state->ctx_data,
+						  container_id,
+						  ref_id,
+						  options,
+						  style,
+						  all,
+						  &tmp_error);
 
 		DEBUG (g_message ("appended %s in %s", ref_id, container_id));
 	}
@@ -630,13 +630,13 @@ create_sub_pattern (ParserState *parser_state,
 
 	where = xmlTextReaderGetAttribute (parser_state->reader, BAD_CAST "where");
 
-	_gtk_source_context_engine_add_sub_pattern (parser_state->engine,
-						    id,
-						    container_id,
-						    sub_pattern,
-						    (gchar*) where,
-						    style,
-						    &tmp_error);
+	_gtk_source_context_data_add_sub_pattern (parser_state->ctx_data,
+						  id,
+						  container_id,
+						  sub_pattern,
+						  (gchar*) where,
+						  style,
+						  &tmp_error);
 
 	xmlFree (where);
 
@@ -732,7 +732,7 @@ handle_context_element (ParserState *parser_state,
 		g_free (freeme);
 		xmlFree (tmp);
 
-		if (parser_state->engine != NULL)
+		if (parser_state->ctx_data != NULL)
 		{
 			if (sub_pattern != NULL)
 			{
@@ -1189,7 +1189,7 @@ handle_define_regex_element (ParserState *parser_state,
 
 	g_return_if_fail (error != NULL && *error == NULL);
 
-	if (parser_state->engine == NULL)
+	if (parser_state->ctx_data == NULL)
 		return;
 
 	tmp = xmlTextReaderGetAttribute (parser_state->reader, BAD_CAST "id");
@@ -1252,7 +1252,7 @@ handle_default_regex_options_element (ParserState *parser_state,
 
 	g_return_if_fail (error != NULL && *error == NULL);
 
-	if (parser_state->engine == NULL)
+	if (parser_state->ctx_data == NULL)
 		return;
 
 	do {
@@ -1339,7 +1339,7 @@ parse_language_with_id (ParserState *parser_state,
 	{
 		file_parse (imported_language->priv->lang_file_name,
 			    parser_state->language,
-			    parser_state->engine,
+			    parser_state->ctx_data,
 			    parser_state->defined_regexes,
 			    parser_state->styles_mapping,
 			    parser_state->loaded_lang_ids,
@@ -1439,7 +1439,7 @@ handle_keyword_char_class_element (ParserState *parser_state,
 
 	g_return_if_fail (error != NULL && *error == NULL);
 
-	if (parser_state->engine == NULL)
+	if (parser_state->ctx_data == NULL)
 		return;
 
 	do {
@@ -1584,7 +1584,7 @@ text_reader_structured_error_func (GError     **gerror,
 static gboolean
 file_parse (gchar                     *filename,
 	    GtkSourceLanguage         *language,
-	    GtkSourceContextEngine    *engine,
+	    GtkSourceContextData      *ctx_data,
 	    GHashTable                *defined_regexes,
 	    GHashTable                *styles,
 	    GSList                   **loaded_lang_ids,
@@ -1641,7 +1641,7 @@ file_parse (gchar                     *filename,
 		goto error;
 	}
 
-	parser_state = parser_state_new (language, engine,
+	parser_state = parser_state_new (language, ctx_data,
 					 defined_regexes, styles,
 					 reader, loaded_lang_ids);
 	xmlTextReaderSetStructuredErrorHandler (reader,
@@ -1686,7 +1686,7 @@ error:
 
 static ParserState *
 parser_state_new (GtkSourceLanguage       *language,
-		  GtkSourceContextEngine  *engine,
+		  GtkSourceContextData    *ctx_data,
 		  GHashTable              *defined_regexes,
 		  GHashTable              *styles_mapping,
 		  xmlTextReader	          *reader,
@@ -1696,7 +1696,7 @@ parser_state_new (GtkSourceLanguage       *language,
 	parser_state = g_new (ParserState, 1);
 
 	parser_state->language = language;
-	parser_state->engine = engine;
+	parser_state->ctx_data = ctx_data;
 
 	parser_state->current_lang_id = NULL;
 
@@ -1749,7 +1749,7 @@ steal_styles_mapping (char       *style,
 
 gboolean
 _gtk_source_language_file_parse_version2 (GtkSourceLanguage       *language,
-					  GtkSourceContextEngine  *engine)
+					  GtkSourceContextData    *ctx_data)
 {
 	GHashTable *defined_regexes, *styles;
 	gboolean success;
@@ -1758,7 +1758,7 @@ _gtk_source_language_file_parse_version2 (GtkSourceLanguage       *language,
 	GSList *loaded_lang_ids = NULL;
 	GSList *l;
 
-	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (ctx_data != NULL, FALSE);
 
 	filename = language->priv->lang_file_name;
 
@@ -1776,12 +1776,12 @@ _gtk_source_language_file_parse_version2 (GtkSourceLanguage       *language,
 	styles = g_hash_table_new_full (g_str_hash, g_str_equal,
 					g_free, g_free);
 
-	success = file_parse (filename, language, engine,
+	success = file_parse (filename, language, ctx_data,
 			      defined_regexes, styles,
 			      &loaded_lang_ids, &error);
 
 	if (success)
-		success = _gtk_source_context_engine_resolve_refs (engine, &error);
+		success = _gtk_source_context_data_resolve_refs (ctx_data, &error);
 
 	if (success)
 		g_hash_table_foreach_steal (styles,

@@ -34,7 +34,7 @@
 #undef ENABLE_DEBUG
 #undef ENABLE_PROFILE
 #undef ENABLE_CHECK_TREE
-#define ENABLE_MEMORY_DEBUG /* define it to make it print memory usage information */
+#undef ENABLE_MEMORY_DEBUG /* define it to make it print memory usage information */
 
 #ifdef ENABLE_DEBUG
 #define DEBUG(x) (x)
@@ -75,8 +75,8 @@
 #define GTK_SOURCE_CONTEXT_ENGINE_ERROR (gtk_source_context_engine_error_quark ())
 
 /* Returns the definition corrsponding to the specified id. */
-#define LOOKUP_DEFINITION(ce, id) \
-	(g_hash_table_lookup ((ce)->priv->definitions, (id)))
+#define LOOKUP_DEFINITION(ctx_data, id) \
+	(g_hash_table_lookup ((ctx_data)->definitions, (id)))
 
 /* Can the context be terminated by ancestor? */
 /* Root context can't be terminated; its child may not be terminated by it;
@@ -101,6 +101,9 @@
 #define SEGMENT_IS_INVALID(s) ((s)->context == NULL)
 #define SEGMENT_IS_SIMPLE(s) CONTEXT_IS_SIMPLE ((s)->context)
 #define SEGMENT_IS_CONTAINER(s) CONTEXT_IS_CONTAINER ((s)->context)
+
+#define ENGINE_ID(ce) ((ce)->priv->ctx_data->lang->priv->id)
+#define ENGINE_STYLES_MAP(ce) ((ce)->priv->ctx_data->lang->priv->styles)
 
 typedef struct _RegexInfo RegexInfo;
 typedef struct _Regex Regex;
@@ -347,17 +350,23 @@ struct _InvalidRegion
 	gint			 delta;
 };
 
+struct _GtkSourceContextData
+{
+	guint			 ref_count;
+
+	GtkSourceLanguage	*lang;
+
+	/* Contains every ContextDefinition indexed by its id. */
+	GHashTable		*definitions;
+};
+
 struct _GtkSourceContextEnginePrivate
 {
-	/* Language id. */
-	gchar			*id;
-	GtkSourceLanguage	*lang;
+	GtkSourceContextData	*ctx_data;
 
 	GtkTextBuffer		*buffer;
 	GtkSourceStyleScheme	*style_scheme;
 
-	/* Contains every ContextDefinition indexed by its id. */
-	GHashTable		*definitions;
 	/* All tags indexed by style name: values are GSList's of tags, ref()'ed. */
 	GHashTable		*tags;
 
@@ -528,7 +537,7 @@ set_tag_style (GtkSourceContextEngine *ce,
 		{
 			/* FIXME This may be an infinite loop *if* we allow circular
 			 * references between lang files. */
-			map_to = g_hash_table_lookup (ce->priv->lang->priv->styles, map_to);
+			map_to = g_hash_table_lookup (ENGINE_STYLES_MAP(ce), map_to);
 
 			if (!map_to)
 				break;
@@ -2157,16 +2166,15 @@ gtk_source_context_engine_attach_buffer (GtkSourceEngine *engine,
 		GtkTextIter start, end;
 
 		/* Create the root context. */
-		root_id = g_strdup_printf ("%s:%s", ce->priv->id, ce->priv->id);
-		main_definition = g_hash_table_lookup (ce->priv->definitions,
-						       root_id);
+		root_id = g_strdup_printf ("%s:%s", ENGINE_ID (ce), ENGINE_ID (ce));
+		main_definition = LOOKUP_DEFINITION (ce->priv->ctx_data, root_id);
 		g_free (root_id);
 
 		if (main_definition == NULL)
 		{
 			g_warning (_("Missing main language "
 				     "definition (id = \"%s\".)"),
-				   ce->priv->id);
+				   ENGINE_ID (ce));
 			return;
 		}
 
@@ -2260,8 +2268,7 @@ gtk_source_context_engine_finalize (GObject *object)
 	g_assert (!ce->priv->first_update);
 	g_assert (!ce->priv->incremental_update);
 
-	g_hash_table_destroy (ce->priv->definitions);
-	g_free (ce->priv->id);
+	_gtk_source_context_data_unref (ce->priv->ctx_data);
 
 	if (ce->priv->style_scheme != NULL)
 		g_object_unref (ce->priv->style_scheme);
@@ -2291,20 +2298,17 @@ _gtk_source_context_engine_init (GtkSourceContextEngine *ce)
 {
 	ce->priv = G_TYPE_INSTANCE_GET_PRIVATE (ce, GTK_TYPE_SOURCE_CONTEXT_ENGINE,
 						GtkSourceContextEnginePrivate);
-	ce->priv->definitions = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
-						       (GDestroyNotify) context_definition_free);
 }
 
 GtkSourceContextEngine *
-_gtk_source_context_engine_new (GtkSourceLanguage *lang)
+_gtk_source_context_engine_new (GtkSourceContextData *ctx_data)
 {
 	GtkSourceContextEngine *ce;
 
-	g_return_val_if_fail (GTK_IS_SOURCE_LANGUAGE (lang), NULL);
+	g_return_val_if_fail (ctx_data != NULL, NULL);
 
 	ce = g_object_new (GTK_TYPE_SOURCE_CONTEXT_ENGINE, NULL);
-	ce->priv->id = g_strdup (lang->priv->id);
-	ce->priv->lang = lang;
+	ce->priv->ctx_data = _gtk_source_context_data_ref (ctx_data);
 
 #ifdef ENABLE_MEMORY_DEBUG
 	ce->priv->mem_usage_timeout =
@@ -2314,6 +2318,61 @@ _gtk_source_context_engine_new (GtkSourceLanguage *lang)
 	return ce;
 }
 
+/**
+ * _gtk_source_context_data_new:
+ *
+ * @lang: #GtkSourceLanguage.
+ *
+ * Creates new context definition set. It does not set lang->priv->ctx_data,
+ * that's lang business.
+ */
+GtkSourceContextData *
+_gtk_source_context_data_new (GtkSourceLanguage *lang)
+{
+	GtkSourceContextData *ctx_data;
+
+	g_return_val_if_fail (GTK_IS_SOURCE_LANGUAGE (lang), NULL);
+
+	ctx_data = g_new0 (GtkSourceContextData, 1);
+	ctx_data->ref_count = 1;
+	ctx_data->lang = lang;
+	ctx_data->definitions = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+						       (GDestroyNotify) context_definition_free);
+
+	return ctx_data;
+}
+
+GtkSourceContextData *
+_gtk_source_context_data_ref (GtkSourceContextData *ctx_data)
+{
+	g_return_val_if_fail (ctx_data != NULL, NULL);
+	ctx_data->ref_count++;
+	return ctx_data;
+}
+
+/**
+ * _gtk_source_context_data_unref:
+ *
+ * @ctx_data: #GtkSourceContextData.
+ *
+ * Decreases reference count in ctx_data. Then reference count
+ * drops to zero, ctx_data is freed, and ctx_data->lang->priv->ctx_data
+ * is unset.
+ */
+void
+_gtk_source_context_data_unref (GtkSourceContextData *ctx_data)
+{
+	g_return_if_fail (ctx_data != NULL);
+
+	if (--ctx_data->ref_count == 0)
+	{
+		if (ctx_data->lang != NULL && ctx_data->lang->priv != NULL &&
+		    ctx_data->lang->priv->ctx_data == ctx_data)
+			ctx_data->lang->priv->ctx_data = NULL;
+		g_hash_table_destroy (ctx_data->definitions);
+		g_free (ctx_data);
+	}
+}
 
 /* REGEX HANDLING --------------------------------------------------------- */
 
@@ -5475,28 +5534,28 @@ definition_iter_next (DefinitionsIter *iter)
 }
 
 gboolean
-_gtk_source_context_engine_define_context (GtkSourceContextEngine  *ce,
-					   const gchar             *id,
-					   const gchar             *parent_id,
-					   const gchar             *match_regex,
-					   const gchar             *start_regex,
-					   const gchar             *end_regex,
-					   const gchar             *style,
-					   GtkSourceContextMatchOptions options,
-					   GError                 **error)
+_gtk_source_context_data_define_context (GtkSourceContextData *ctx_data,
+					 const gchar          *id,
+					 const gchar          *parent_id,
+					 const gchar          *match_regex,
+					 const gchar          *start_regex,
+					 const gchar          *end_regex,
+					 const gchar          *style,
+					 GtkSourceContextMatchOptions options,
+					 GError              **error)
 {
 	ContextDefinition *definition, *parent = NULL;
 	ContextType type;
 
 	gboolean wrong_args = FALSE;
 
-	g_return_val_if_fail (GTK_IS_SOURCE_CONTEXT_ENGINE (ce), FALSE);
+	g_return_val_if_fail (ctx_data != NULL, FALSE);
 	g_return_val_if_fail (id != NULL, FALSE);
 
 	/* If the id is already present in the hashtable it is a duplicate,
 	 * so we report the error (probably there is a duplicate id in the
 	 * XML lang file) */
-	if (LOOKUP_DEFINITION (ce, id) != NULL)
+	if (LOOKUP_DEFINITION (ctx_data, id) != NULL)
 	{
 		g_set_error (error,
 			     GTK_SOURCE_CONTEXT_ENGINE_ERROR,
@@ -5539,7 +5598,7 @@ _gtk_source_context_engine_define_context (GtkSourceContextEngine  *ce,
 	}
 	else
 	{
-		parent = LOOKUP_DEFINITION (ce, parent_id);
+		parent = LOOKUP_DEFINITION (ctx_data, parent_id);
 		g_return_val_if_fail (parent != NULL, FALSE);
 	}
 
@@ -5549,7 +5608,7 @@ _gtk_source_context_engine_define_context (GtkSourceContextEngine  *ce,
 	if (definition == NULL)
 		return FALSE;
 
-	g_hash_table_insert (ce->priv->definitions, g_strdup (id), definition);
+	g_hash_table_insert (ctx_data->definitions, g_strdup (id), definition);
 
 	if (parent != NULL)
 		definition_child_new (parent, definition, NULL, NULL, FALSE, FALSE);
@@ -5558,20 +5617,20 @@ _gtk_source_context_engine_define_context (GtkSourceContextEngine  *ce,
 }
 
 gboolean
-_gtk_source_context_engine_add_sub_pattern (GtkSourceContextEngine  *ce,
-					    const gchar             *id,
-					    const gchar             *parent_id,
-					    const gchar             *name,
-					    const gchar             *where,
-					    const gchar             *style,
-					    GError                 **error)
+_gtk_source_context_data_add_sub_pattern (GtkSourceContextData *ctx_data,
+					  const gchar          *id,
+					  const gchar          *parent_id,
+					  const gchar          *name,
+					  const gchar          *where,
+					  const gchar          *style,
+					  GError              **error)
 {
 	ContextDefinition *parent;
 	SubPatternDefinition *sp_def;
 	SubPatternWhere where_num;
 	gint number;
 
-	g_return_val_if_fail (GTK_IS_SOURCE_CONTEXT_ENGINE (ce), FALSE);
+	g_return_val_if_fail (ctx_data != NULL, FALSE);
 	g_return_val_if_fail (id != NULL, FALSE);
 	g_return_val_if_fail (parent_id != NULL, FALSE);
 	g_return_val_if_fail (name != NULL, FALSE);
@@ -5579,7 +5638,7 @@ _gtk_source_context_engine_add_sub_pattern (GtkSourceContextEngine  *ce,
 	/* If the id is already present in the hashtable it is a duplicate,
 	 * so we report the error (probably there is a duplicate id in the
 	 * XML lang file) */
-	if (LOOKUP_DEFINITION (ce, id) != NULL)
+	if (LOOKUP_DEFINITION (ctx_data, id) != NULL)
 	{
 		g_set_error (error,
 			     GTK_SOURCE_CONTEXT_ENGINE_ERROR,
@@ -5588,7 +5647,7 @@ _gtk_source_context_engine_add_sub_pattern (GtkSourceContextEngine  *ce,
 		return FALSE;
 	}
 
-	parent = LOOKUP_DEFINITION (ce, parent_id);
+	parent = LOOKUP_DEFINITION (ctx_data, parent_id);
 	g_return_val_if_fail (parent != NULL, FALSE);
 
 	if (!where || !where[0] || !strcmp (where, "default"))
@@ -5658,13 +5717,13 @@ context_is_pure_container (ContextDefinition *def)
 }
 
 gboolean
-_gtk_source_context_engine_add_ref (GtkSourceContextEngine    *ce,
-				    const gchar               *parent_id,
-				    const gchar               *ref_id,
-				    GtkSourceContextRefOptions options,
-				    const gchar               *style,
-				    gboolean                   all,
-				    GError                   **error)
+_gtk_source_context_data_add_ref (GtkSourceContextData *ctx_data,
+				  const gchar          *parent_id,
+				  const gchar          *ref_id,
+				  GtkSourceContextRefOptions options,
+				  const gchar          *style,
+				  gboolean              all,
+				  GError              **error)
 {
 	ContextDefinition *parent;
 	ContextDefinition *ref;
@@ -5672,10 +5731,10 @@ _gtk_source_context_engine_add_ref (GtkSourceContextEngine    *ce,
 
 	g_return_val_if_fail (parent_id != NULL, FALSE);
 	g_return_val_if_fail (ref_id != NULL, FALSE);
-	g_return_val_if_fail (GTK_IS_SOURCE_CONTEXT_ENGINE (ce), FALSE);
+	g_return_val_if_fail (ctx_data != NULL, FALSE);
 
-	ref = LOOKUP_DEFINITION (ce, ref_id);
-	parent = LOOKUP_DEFINITION (ce, parent_id);
+	ref = LOOKUP_DEFINITION (ctx_data, ref_id);
+	parent = LOOKUP_DEFINITION (ctx_data, parent_id);
 	g_return_val_if_fail (parent != NULL, FALSE);
 
 	if (parent->type != CONTEXT_TYPE_CONTAINER)
@@ -5697,7 +5756,7 @@ _gtk_source_context_engine_add_ref (GtkSourceContextEngine    *ce,
 			     GTK_SOURCE_CONTEXT_ENGINE_ERROR_INVALID_STYLE,
 			     _("style override used with wildcard context reference"
 			       " in language '%s' in ref '%s'"),
-			     ce->priv->id, ref_id);
+			     ctx_data->lang->priv->id, ref_id);
 		return FALSE;
 	}
 
@@ -5714,10 +5773,10 @@ _gtk_source_context_engine_add_ref (GtkSourceContextEngine    *ce,
  * resolve_reference:
  *
  * Checks whether all children of a context definition refer to valid
- * contexts. Called from _gtk_source_context_engine_resolve_refs.
+ * contexts. Called from _gtk_source_context_data_resolve_refs.
  */
 struct ResolveRefData {
-	GtkSourceContextEngine *ce;
+	GtkSourceContextData *ctx_data;
 	GError *error;
 };
 
@@ -5741,7 +5800,7 @@ resolve_reference (G_GNUC_UNUSED const gchar *id,
 		if (child_def->resolved)
 			continue;
 
-		ref = g_hash_table_lookup (data->ce->priv->definitions, child_def->u.id);
+		ref = LOOKUP_DEFINITION (data->ctx_data, child_def->u.id);
 
 		if (ref != NULL)
 		{
@@ -5757,7 +5816,7 @@ resolve_reference (G_GNUC_UNUSED const gchar *id,
 						     GTK_SOURCE_CONTEXT_ENGINE_ERROR_INVALID_STYLE,
 						     "style override used with wildcard context reference"
 						     " in language '%s' in ref '%s'",
-						     data->ce->priv->id, ref->id);
+						     data->ctx_data->lang->priv->id, ref->id);
 				}
 				else
 				{
@@ -5775,9 +5834,9 @@ resolve_reference (G_GNUC_UNUSED const gchar *id,
 }
 
 /**
- * _gtk_source_context_engine_resolve_refs:
+ * _gtk_source_context_data_resolve_refs:
  *
- * @ce: #GtkSourceContextEngine.
+ * @ctx_data: #GtkSourceContextData.
  * @error: error structure to be filled in when failed.
  *
  * Checks all context references. Lang file may use cross-references
@@ -5793,18 +5852,18 @@ resolve_reference (G_GNUC_UNUSED const gchar *id,
  * references.
  */
 gboolean
-_gtk_source_context_engine_resolve_refs (GtkSourceContextEngine	 *ce,
-					 GError			**error)
+_gtk_source_context_data_resolve_refs (GtkSourceContextData *ctx_data,
+				       GError		   **error)
 {
 	struct ResolveRefData data;
 
-	g_return_val_if_fail (GTK_IS_SOURCE_CONTEXT_ENGINE (ce), FALSE);
+	g_return_val_if_fail (ctx_data != NULL, FALSE);
 	g_return_val_if_fail (error != NULL && *error == NULL, FALSE);
 
-	data.ce = ce;
+	data.ctx_data = ctx_data;
 	data.error = NULL;
 
-	g_hash_table_foreach (ce->priv->definitions, (GHFunc) resolve_reference, &data);
+	g_hash_table_foreach (ctx_data->definitions, (GHFunc) resolve_reference, &data);
 
 	if (data.error != NULL)
 	{
@@ -5818,24 +5877,24 @@ _gtk_source_context_engine_resolve_refs (GtkSourceContextEngine	 *ce,
 }
 
 static void
-add_escape_ref (ContextDefinition      *definition,
-		GtkSourceContextEngine *ce)
+add_escape_ref (ContextDefinition    *definition,
+		GtkSourceContextData *ctx_data)
 {
 	GError *error = NULL;
 
 	if (definition->type != CONTEXT_TYPE_CONTAINER)
 		return;
 
-	_gtk_source_context_engine_add_ref (ce, definition->id,
-					    "gtk-source-context-engine-escape",
-					    0, NULL, FALSE, &error);
+	_gtk_source_context_data_add_ref (ctx_data, definition->id,
+					  "gtk-source-context-engine-escape",
+					  0, NULL, FALSE, &error);
 
 	if (error)
 		goto out;
 
-	_gtk_source_context_engine_add_ref (ce, definition->id,
-					    "gtk-source-context-engine-line-escape",
-					    0, NULL, FALSE, &error);
+	_gtk_source_context_data_add_ref (ctx_data, definition->id,
+					  "gtk-source-context-engine-line-escape",
+					  0, NULL, FALSE, &error);
 
 out:
 	if (error)
@@ -5861,8 +5920,8 @@ prepend_definition (G_GNUC_UNUSED gchar *id,
    escaped char in the end of line means that the current contexts extends to the
    next line. */
 void
-_gtk_source_context_engine_set_escape_char (GtkSourceContextEngine *ce,
-					    gunichar                escape_char)
+_gtk_source_context_data_set_escape_char (GtkSourceContextData *ctx_data,
+					  gunichar              escape_char)
 {
 	GError *error = NULL;
 	char buf[10];
@@ -5870,7 +5929,7 @@ _gtk_source_context_engine_set_escape_char (GtkSourceContextEngine *ce,
 	char *escaped, *pattern;
 	GSList *definitions = NULL;
 
-	g_return_if_fail (GTK_IS_SOURCE_CONTEXT_ENGINE (ce));
+	g_return_if_fail (ctx_data != NULL);
 	g_return_if_fail (escape_char != 0);
 
 	len = g_unichar_to_utf8 (escape_char, buf);
@@ -5879,25 +5938,25 @@ _gtk_source_context_engine_set_escape_char (GtkSourceContextEngine *ce,
 	escaped = egg_regex_escape_string (buf, 1);
 	pattern = g_strdup_printf ("%s.", escaped);
 
-	g_hash_table_foreach (ce->priv->definitions, (GHFunc) prepend_definition, &definitions);
+	g_hash_table_foreach (ctx_data->definitions, (GHFunc) prepend_definition, &definitions);
 	definitions = g_slist_reverse (definitions);
 
-	if (!_gtk_source_context_engine_define_context (ce, "gtk-source-context-engine-escape",
-							NULL, pattern, NULL, NULL, NULL,
-							GTK_SOURCE_CONTEXT_EXTEND_PARENT,
-							&error))
+	if (!_gtk_source_context_data_define_context (ctx_data, "gtk-source-context-engine-escape",
+						      NULL, pattern, NULL, NULL, NULL,
+						      GTK_SOURCE_CONTEXT_EXTEND_PARENT,
+						      &error))
 		goto out;
 
 	g_free (pattern);
 	pattern = g_strdup_printf ("%s$", escaped);
 
-	if (!_gtk_source_context_engine_define_context (ce, "gtk-source-context-engine-line-escape",
-							NULL, NULL, pattern, "^", NULL,
-							GTK_SOURCE_CONTEXT_EXTEND_PARENT,
-							&error))
+	if (!_gtk_source_context_data_define_context (ctx_data, "gtk-source-context-engine-line-escape",
+						      NULL, NULL, pattern, "^", NULL,
+						      GTK_SOURCE_CONTEXT_EXTEND_PARENT,
+						      &error))
 		goto out;
 
-	g_slist_foreach (definitions, (GFunc) add_escape_ref, ce);
+	g_slist_foreach (definitions, (GFunc) add_escape_ref, ctx_data);
 
 out:
 	if (error)
@@ -6234,8 +6293,9 @@ static void
 get_definitions_mem (GtkSourceContextEngine *ce,
 		     MemInfo                *info)
 {
-	info->def_mem += get_hash_table_mem (ce->priv->definitions);
-	g_hash_table_foreach (ce->priv->definitions,
+	info->def_mem += sizeof (GtkSourceContextData);
+	info->def_mem += get_hash_table_mem (ce->priv->ctx_data->definitions);
+	g_hash_table_foreach (ce->priv->ctx_data->definitions,
 			      (GHFunc) get_def_mem_cb,
 			      info);
 }
@@ -6274,7 +6334,7 @@ mem_usage_timeout (GtkSourceContextEngine *ce)
 		info.ctx_mem += get_regex_mem (l->data);
 
 	g_print ("%s: definitions: %d bytes, contexts: %d bytes in %d contexts\n",
-		 ce->priv->id, info.def_mem, info.ctx_mem, info.n_ctx);
+		 ENGINE_ID (ce), info.def_mem, info.ctx_mem, info.n_ctx);
 
 	g_slist_free (info.def_regexes);
 	g_slist_free (info.ctx_regexes);

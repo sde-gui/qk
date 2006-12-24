@@ -136,6 +136,9 @@ gtk_source_language_finalize (GObject *object)
 
 	if (lang->priv != NULL)
 	{
+		if (lang->priv->ctx_data != NULL)
+			g_critical ("context data not freed in gtk_source_language_finalize");
+
 		g_free (lang->priv->lang_file_name);
 		g_free (lang->priv->translation_domain);
 		g_free (lang->priv->name);
@@ -533,26 +536,40 @@ _gtk_source_language_define_language_styles (GtkSourceLanguage *lang)
 GtkSourceEngine *
 _gtk_source_language_create_engine (GtkSourceLanguage *language)
 {
-	GtkSourceContextEngine *ce;
-	gboolean success = FALSE;
+	GtkSourceContextEngine *ce = NULL;
 
-	ce = _gtk_source_context_engine_new (language);
-
-	switch (language->priv->version)
+	if (language->priv->ctx_data == NULL)
 	{
-		case GTK_SOURCE_LANGUAGE_VERSION_1_0:
-			success = _gtk_source_language_file_parse_version1 (language, ce);
-			break;
+		gboolean success = FALSE;
+		GtkSourceContextData *ctx_data;
 
-		case GTK_SOURCE_LANGUAGE_VERSION_2_0:
-			success = _gtk_source_language_file_parse_version2 (language, ce);
-			break;
+		ctx_data = _gtk_source_context_data_new	(language);
+
+		switch (language->priv->version)
+		{
+			case GTK_SOURCE_LANGUAGE_VERSION_1_0:
+				success = _gtk_source_language_file_parse_version1 (language, ctx_data);
+				break;
+
+			case GTK_SOURCE_LANGUAGE_VERSION_2_0:
+				success = _gtk_source_language_file_parse_version2 (language, ctx_data);
+				break;
+		}
+
+		if (!success)
+			_gtk_source_context_data_unref (ctx_data);
+		else
+			language->priv->ctx_data = ctx_data;
+	}
+	else
+	{
+		_gtk_source_context_data_ref (language->priv->ctx_data);
 	}
 
-	if (!success)
+	if (language->priv->ctx_data)
 	{
-		g_object_unref (ce);
-		ce = NULL;
+		ce = _gtk_source_context_engine_new (language->priv->ctx_data);
+		_gtk_source_context_data_unref (language->priv->ctx_data);
 	}
 
 	return ce ? GTK_SOURCE_ENGINE (ce) : NULL;
