@@ -34,6 +34,7 @@
 #undef ENABLE_DEBUG
 #undef ENABLE_PROFILE
 #undef ENABLE_CHECK_TREE
+#define ENABLE_MEMORY_DEBUG /* define it to make it print memory usage information */
 
 #ifdef ENABLE_DEBUG
 #define DEBUG(x) (x)
@@ -78,11 +79,22 @@
 	(g_hash_table_lookup ((ce)->priv->definitions, (id)))
 
 /* Can the context be terminated by ancestor? */
-#define ANCESTOR_CAN_END_CONTEXT(context) \
-	(!(context)->definition->extend_parent || \
-	 !(context)->all_ancestors_extend)
+/* Root context can't be terminated; its child may not be terminated by it;
+ * grandchildren look at the flag */
+#define ANCESTOR_CAN_END_CONTEXT(ctx) \
+	((ctx)->parent != NULL && (ctx)->parent->parent != NULL && \
+		(!(ctx)->definition->extend_parent || !(ctx)->all_ancestors_extend))
 
-#define SEGMENT_END_AT_LINE_END(s) ((s)->context->definition->end_at_line_end)
+/* Root context and its children have this TRUE; grandchildren use the flag */
+#define CONTEXT_EXTENDS_PARENT(ctx) \
+	((ctx)->parent == NULL || (ctx)->parent->parent == NULL || \
+		(ctx)->definition->extend_parent)
+
+/* Does the segment terminate at line end? */
+/* Root segment doesn't, children look at the flag */
+#define CONTEXT_END_AT_LINE_END(ctx) \
+	((ctx)->parent != NULL && (ctx)->definition->end_at_line_end)
+#define SEGMENT_END_AT_LINE_END(s) CONTEXT_END_AT_LINE_END((s)->context)
 
 #define CONTEXT_IS_SIMPLE(c) ((c)->definition->type == CONTEXT_TYPE_SIMPLE)
 #define CONTEXT_IS_CONTAINER(c) ((c)->definition->type == CONTEXT_TYPE_CONTAINER)
@@ -369,6 +381,10 @@ struct _GtkSourceContextEnginePrivate
 
 	/* Views highlight requests. */
 	GtkTextRegion		*highlight_requests;
+
+#ifdef ENABLE_MEMORY_DEBUG
+	guint			 mem_usage_timeout;
+#endif
 };
 
 
@@ -440,6 +456,10 @@ static void		update_syntax		(GtkSourceContextEngine	*ce,
 						 gint			 time);
 static void		install_idle_worker	(GtkSourceContextEngine	*ce);
 static void		install_first_update	(GtkSourceContextEngine	*ce);
+
+#ifdef ENABLE_MEMORY_DEBUG
+static gboolean		mem_usage_timeout	(GtkSourceContextEngine *ce);
+#endif
 
 
 /* TAGS AND STUFF -------------------------------------------------------------- */
@@ -2229,6 +2249,11 @@ gtk_source_context_engine_finalize (GObject *object)
 		gtk_source_context_engine_attach_buffer (GTK_SOURCE_ENGINE (ce), NULL);
 	}
 
+#ifdef ENABLE_MEMORY_DEBUG
+	if (ce->priv->mem_usage_timeout)
+		g_source_remove (ce->priv->mem_usage_timeout);
+#endif
+
 	g_assert (!ce->priv->tags);
 	g_assert (!ce->priv->root_context);
 	g_assert (!ce->priv->root_segment);
@@ -2280,6 +2305,11 @@ _gtk_source_context_engine_new (GtkSourceLanguage *lang)
 	ce = g_object_new (GTK_TYPE_SOURCE_CONTEXT_ENGINE, NULL);
 	ce->priv->id = g_strdup (lang->priv->id);
 	ce->priv->lang = lang;
+
+#ifdef ENABLE_MEMORY_DEBUG
+	ce->priv->mem_usage_timeout =
+		g_timeout_add (5000, (GSourceFunc) mem_usage_timeout, ce);
+#endif
 
 	return ce;
 }
@@ -2831,22 +2861,28 @@ create_reg_all (Context           *context,
 
 		while (ANCESTOR_CAN_END_CONTEXT (tmp))
 		{
-			if (!tmp->definition->extend_parent)
+			if (!CONTEXT_EXTENDS_PARENT (tmp))
 			{
+				gboolean append = TRUE;
+
 				if (tmp->parent->end != NULL)
 					g_string_append (all, regex_get_pattern (tmp->parent->end));
 				/* FIXME ?
 				 * The old code insisted on having tmp->parent->end != NULL here,
 				 * though e.g. in case line-comment -> email-address it's not the case.
 				 * Apparently using $ fixes the problem. */
-				else if (tmp->parent->definition->end_at_line_end)
+				else if (CONTEXT_END_AT_LINE_END (tmp->parent))
 					g_string_append (all, "$");
 				/* FIXME it's not clear whether it can happen, maybe we need assert here
 				 * or parser need to check it */
 				else
+				{
 					g_critical ("%s: oops", G_STRLOC);
+					append = FALSE;
+				}
 
-				g_string_append (all, "|");
+				if (append)
+					g_string_append (all, "|");
 			}
 
 			tmp = tmp->parent;
@@ -2928,8 +2964,7 @@ context_new (Context           *parent,
 	context->parent = parent;
 	context->style = style;
 
-	if (!parent || (parent->all_ancestors_extend &&
-	    parent->definition->extend_parent))
+	if (!parent || (parent->all_ancestors_extend && CONTEXT_EXTENDS_PARENT (parent)))
 	{
 		context->all_ancestors_extend = TRUE;
 	}
@@ -3792,7 +3827,7 @@ ancestor_context_ends_here (Context                *state,
 	current_context = state;
 	while (ANCESTOR_CAN_END_CONTEXT (current_context))
 	{
-		if (!current_context->definition->extend_parent)
+		if (!CONTEXT_EXTENDS_PARENT (current_context))
 			check_ancestors = g_slist_prepend (check_ancestors,
 							   current_context->parent);
 		current_context = current_context->parent;
@@ -5247,7 +5282,6 @@ definition_child_free (DefinitionChild *ch)
 static ContextDefinition *
 context_definition_new (const gchar        *id,
 			ContextType         type,
-			ContextDefinition  *parent,
 			const gchar        *match,
 			const gchar        *start,
 			const gchar        *end,
@@ -5342,39 +5376,6 @@ context_definition_new (const gchar        *id,
 	definition->children = NULL;
 	definition->sub_patterns = NULL;
 	definition->n_sub_patterns = 0;
-
-	/* Main contexts (i.e. the contexts with id "language:language")
-	 * should have extend-parent="true" and end-at-line-end="false". */
-	if (parent == NULL && egg_regex_match_simple ("^(.+):\\1$", id, 0, 0))
-	{
-		if (definition->end_at_line_end)
-		{
-			g_warning ("end-at-line-end should be "
-				   "\"false\" for main contexts (id: %s)",
-				   id);
-			definition->end_at_line_end = FALSE;
-		}
-
-		if (!definition->extend_parent)
-		{
-			g_warning ("extend-parent should be "
-				   "\"true\" for main contexts (id: %s)",
-				   id);
-			definition->extend_parent = TRUE;
-		}
-	}
-
-	/* Children of toplevel context should have extend-parent = TRUE. */
-	if (parent != NULL && egg_regex_match_simple ("^(.+):\\1$", parent->id, 0, 0))
-	{
-		if (!definition->extend_parent)
-		{
-			g_warning ("extend-parent should be "
-				   "\"true\" for children of main context (id: %s)",
-				   id);
-			definition->extend_parent = TRUE;
-		}
-	}
 
 	return definition;
 }
@@ -5542,7 +5543,7 @@ _gtk_source_context_engine_define_context (GtkSourceContextEngine  *ce,
 		g_return_val_if_fail (parent != NULL, FALSE);
 	}
 
-	definition = context_definition_new (id, type, parent, match_regex,
+	definition = context_definition_new (id, type, match_regex,
 					     start_regex, end_regex, style,
 					     options, error);
 	if (definition == NULL)
@@ -5640,6 +5641,22 @@ _gtk_source_context_engine_add_sub_pattern (GtkSourceContextEngine  *ce,
 	return TRUE;
 }
 
+/**
+ * context_is_pure_container:
+ *
+ * @def: context definition.
+ *
+ * Checks whether context is a container with no start regex.
+ * References to such contexts are implicitly translated to
+ * wildcard references (context_id:*).
+ */
+static gboolean
+context_is_pure_container (ContextDefinition *def)
+{
+	return def->type == CONTEXT_TYPE_CONTAINER &&
+		def->u.start_end.start == NULL;
+}
+
 gboolean
 _gtk_source_context_engine_add_ref (GtkSourceContextEngine    *ce,
 				    const gchar               *parent_id,
@@ -5657,16 +5674,6 @@ _gtk_source_context_engine_add_ref (GtkSourceContextEngine    *ce,
 	g_return_val_if_fail (ref_id != NULL, FALSE);
 	g_return_val_if_fail (GTK_IS_SOURCE_CONTEXT_ENGINE (ce), FALSE);
 
-	if (all && (options & (GTK_SOURCE_CONTEXT_IGNORE_STYLE | GTK_SOURCE_CONTEXT_OVERRIDE_STYLE)))
-	{
-		g_set_error (error,
-			     GTK_SOURCE_CONTEXT_ENGINE_ERROR,
-			     GTK_SOURCE_CONTEXT_ENGINE_ERROR_INVALID_STYLE,
-			     "can't override style for '%s' reference",
-			     ref_id);
-		return FALSE;
-	}
-
 	ref = LOOKUP_DEFINITION (ce, ref_id);
 	parent = LOOKUP_DEFINITION (ce, parent_id);
 	g_return_val_if_fail (parent != NULL, FALSE);
@@ -5676,8 +5683,21 @@ _gtk_source_context_engine_add_ref (GtkSourceContextEngine    *ce,
 		g_set_error (error,
 			     GTK_SOURCE_CONTEXT_ENGINE_ERROR,
 			     GTK_SOURCE_CONTEXT_ENGINE_ERROR_INVALID_PARENT,
-			     "invalid parent type for the context '%s'",
+			     _("invalid parent type for the context '%s'"),
 			     ref_id);
+		return FALSE;
+	}
+
+	if (ref != NULL && context_is_pure_container (ref))
+		all = TRUE;
+
+	if (all && (options & (GTK_SOURCE_CONTEXT_IGNORE_STYLE | GTK_SOURCE_CONTEXT_OVERRIDE_STYLE)))
+	{
+		g_set_error (error, GTK_SOURCE_CONTEXT_ENGINE_ERROR,
+			     GTK_SOURCE_CONTEXT_ENGINE_ERROR_INVALID_STYLE,
+			     _("style override used with wildcard context reference"
+			       " in language '%s' in ref '%s'"),
+			     ce->priv->id, ref_id);
 		return FALSE;
 	}
 
@@ -5713,7 +5733,7 @@ resolve_reference (G_GNUC_UNUSED const gchar *id,
 	if (data->error != NULL)
 		return;
 
-	for (l = definition->children; l != NULL; l = l->next)
+	for (l = definition->children; l != NULL && data->error == NULL; l = l->next)
 	{
 		ContextDefinition *ref;
 		DefinitionChild *child_def = l->data;
@@ -5728,13 +5748,28 @@ resolve_reference (G_GNUC_UNUSED const gchar *id,
 			g_free (child_def->u.id);
 			child_def->u.definition = ref;
 			child_def->resolved = TRUE;
+
+			if (context_is_pure_container (ref))
+			{
+				if (child_def->override_style)
+				{
+					g_set_error (&data->error, GTK_SOURCE_CONTEXT_ENGINE_ERROR,
+						     GTK_SOURCE_CONTEXT_ENGINE_ERROR_INVALID_STYLE,
+						     "style override used with wildcard context reference"
+						     " in language '%s' in ref '%s'",
+						     data->ce->priv->id, ref->id);
+				}
+				else
+				{
+					child_def->is_ref_all = TRUE;
+				}
+			}
 		}
 		else
 		{
 			g_set_error (&data->error, GTK_SOURCE_CONTEXT_ENGINE_ERROR,
 				     GTK_SOURCE_CONTEXT_ENGINE_ERROR_INVALID_REF,
 				     "invalid reference '%s'", child_def->u.id);
-			break;
 		}
 	}
 }
@@ -6028,3 +6063,222 @@ check_segment_list (Segment *segment)
 	}
 }
 #endif /* ENABLE_CHECK_TREE */
+
+
+#ifdef ENABLE_MEMORY_DEBUG
+typedef struct {
+	GSList *def_regexes;
+	GSList *ctx_regexes;
+	gsize def_mem;
+	gsize ctx_mem;
+	guint n_ctx;
+} MemInfo;
+
+typedef struct
+{
+  gpointer   key;
+  gpointer   value;
+  gpointer   next;
+} HashNodeStruct;
+
+typedef struct
+{
+  gint             size;
+  gint             nnodes;
+  HashNodeStruct **nodes;
+  GHashFunc        hash_func;
+  GEqualFunc       key_equal_func;
+  volatile guint   ref_count;
+  GDestroyNotify   key_destroy_func;
+  GDestroyNotify   value_destroy_func;
+} HashTableStruct;
+
+static gsize
+get_hash_table_mem (GHashTable *ht)
+{
+	return sizeof (HashTableStruct) +
+		sizeof (HashNodeStruct) * g_hash_table_size (ht);
+}
+
+static void
+add_regex_mem (MemInfo *info,
+	       Regex   *regex,
+	       gboolean def)
+{
+	if (!regex)
+		return;
+
+	if (def)
+	{
+		if (!g_slist_find (info->def_regexes, regex))
+			info->def_regexes = g_slist_prepend (info->def_regexes, regex);
+	}
+	else
+	{
+		if (!g_slist_find (info->def_regexes, regex) &&
+		    !g_slist_find (info->ctx_regexes, regex))
+			info->ctx_regexes = g_slist_prepend (info->ctx_regexes, regex);
+	}
+}
+
+static gsize
+get_str_mem (const gchar *string)
+{
+	return string ? strlen (string) + 1 : 0;
+}
+
+static void
+get_def_mem (ContextDefinition *def,
+	     MemInfo           *info)
+{
+	GSList *l;
+
+	info->def_mem += sizeof (ContextDefinition);
+	info->def_mem += get_str_mem (def->id);
+	info->def_mem += get_str_mem (def->default_style);
+
+	if (def->type == CONTEXT_TYPE_CONTAINER)
+	{
+		add_regex_mem (info, def->u.start_end.start, TRUE);
+		add_regex_mem (info, def->u.start_end.end, TRUE);
+	}
+	else
+	{
+		add_regex_mem (info, def->u.match, TRUE);
+	}
+
+	for (l = def->children; l != NULL; l = l->next)
+	{
+		DefinitionChild *child_def = l->data;
+
+		info->def_mem += sizeof (DefinitionChild);
+		info->def_mem += get_str_mem (child_def->style);
+
+		if (child_def->resolved)
+			info->def_mem += get_str_mem (child_def->u.id);
+	}
+
+	for (l = def->sub_patterns; l != NULL; l = l->next)
+	{
+		SubPatternDefinition *sp_def = l->data;
+
+		info->def_mem += sizeof (SubPatternDefinition);
+		info->def_mem += get_str_mem (sp_def->style);
+#ifdef NEED_DEBUG_ID
+		info->def_mem += get_str_mem (sp_def->id);
+#endif
+
+		if (sp_def->is_named)
+			info->def_mem += get_str_mem (sp_def->u.name);
+	}
+
+	add_regex_mem (info, def->reg_all, TRUE);
+}
+
+static void get_context_mem (Context *ctx, MemInfo *info);
+
+static void
+get_context_mem_cb (const char *id,
+		    Context    *ctx,
+		    MemInfo    *info)
+{
+	info->ctx_mem += get_str_mem (id);
+	get_context_mem (ctx, info);
+}
+
+static void
+get_context_ptr_mem (ContextPtr *ptr,
+		     MemInfo    *info)
+{
+	if (ptr)
+	{
+		info->ctx_mem += sizeof (ContextPtr);
+
+		if (ptr->fixed)
+			get_context_mem (ptr->u.context, info);
+		else
+		{
+			info->ctx_mem += get_hash_table_mem (ptr->u.hash);
+			g_hash_table_foreach (ptr->u.hash, (GHFunc) get_context_mem_cb, info);
+		}
+
+		get_context_ptr_mem (ptr->next, info);
+	}
+}
+
+static void
+get_context_mem (Context *ctx,
+		 MemInfo *info)
+{
+	if (ctx)
+	{
+		info->ctx_mem += sizeof (Context);
+		add_regex_mem (info, ctx->end, FALSE);
+		add_regex_mem (info, ctx->reg_all, FALSE);
+		get_context_ptr_mem (ctx->children, info);
+		info->ctx_mem += ctx->definition->n_sub_patterns * sizeof (GtkTextTag*);
+		info->n_ctx += 1;
+	}
+}
+
+static void
+get_def_mem_cb (const char        *id,
+		ContextDefinition *def,
+		MemInfo           *info)
+{
+	info->def_mem += get_str_mem (id);
+	get_def_mem (def, info);
+}
+
+static void
+get_definitions_mem (GtkSourceContextEngine *ce,
+		     MemInfo                *info)
+{
+	info->def_mem += get_hash_table_mem (ce->priv->definitions);
+	g_hash_table_foreach (ce->priv->definitions,
+			      (GHFunc) get_def_mem_cb,
+			      info);
+}
+
+static gsize
+get_regex_mem (Regex *regex)
+{
+	gsize mem = 0;
+
+	if (!regex)
+		return 0;
+
+	mem += sizeof (Regex);
+
+	if (regex->resolved)
+		mem += _egg_regex_get_memory (regex->u.regex);
+	else
+		mem += get_str_mem (regex->u.info.pattern);
+
+	return mem;
+}
+
+static gboolean
+mem_usage_timeout (GtkSourceContextEngine *ce)
+{
+	GSList *l;
+	MemInfo info = {NULL, NULL, 0, 0, 0};
+
+	get_definitions_mem (ce, &info);
+	get_context_mem (ce->priv->root_context, &info);
+
+	for (l = info.def_regexes; l != NULL; l = l->next)
+		info.def_mem += get_regex_mem (l->data);
+
+	for (l = info.ctx_regexes; l != NULL; l = l->next)
+		info.ctx_mem += get_regex_mem (l->data);
+
+	g_print ("%s: definitions: %d bytes, contexts: %d bytes in %d contexts\n",
+		 ce->priv->id, info.def_mem, info.ctx_mem, info.n_ctx);
+
+	g_slist_free (info.def_regexes);
+	g_slist_free (info.ctx_regexes);
+
+	return TRUE;
+}
+#endif /* ENABLE_MEMORY_DEBUG */

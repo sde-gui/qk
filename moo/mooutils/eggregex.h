@@ -65,6 +65,7 @@ G_BEGIN_DECLS
 #define egg_regex_check_replacement _moo_egg_regex_check_replacement
 #define egg_regex_eval_replacement _moo_egg_regex_eval_replacement
 #define egg_regex_try_eval_replacement _moo_egg_regex_try_eval_replacement
+#define _egg_regex_get_memory _moo_egg_regex_get_memory
 
 
 typedef enum
@@ -245,6 +246,8 @@ char       *egg_regex_eval_replacement      (EggRegex   *regex,
 char       *egg_regex_try_eval_replacement  (EggRegex   *regex,
                                              const char *replacement,
                                              GError    **error);
+
+gsize       _egg_regex_get_memory           (EggRegex   *regex);
 
 
 G_END_DECLS

@@ -95,7 +95,7 @@ typedef struct _ParserState ParserState;
 
 
 static GQuark     parser_error_quark           (void);
-static gboolean   str_to_bool                  (gchar *string);
+static gboolean   str_to_bool                  (const xmlChar *string);
 static gchar     *generate_new_id              (ParserState *parser_state);
 static gboolean   id_is_decorated              (const gchar *id,
                                                 gchar **lang_id);
@@ -120,8 +120,8 @@ static gboolean   file_parse                   (gchar                  *filename
 
 static EggRegexCompileFlags
 		  update_regex_flags	       (EggRegexCompileFlags flags,
-						const gchar *option_name,
-						gboolean value);
+						const gchar   *option_name,
+						const xmlChar *bool_value);
 
 static gboolean   create_definition            (ParserState *parser_state,
                                                 gchar *id,
@@ -164,13 +164,10 @@ parser_error_quark (void)
 }
 
 static gboolean
-str_to_bool (gchar *string)
+str_to_bool (const xmlChar *string)
 {
-	g_assert (string);
-	if (g_ascii_strcasecmp ("true", string) == 0)
-		return TRUE;
-	else
-		return FALSE;
+	g_return_val_if_fail (string != NULL, FALSE);
+	return g_ascii_strcasecmp ("true", (const gchar *) string) == 0;
 }
 
 static gchar *
@@ -262,6 +259,36 @@ lang_id_is_already_loaded (ParserState *parser_state, gchar *lang_id)
 }
 
 
+static EggRegexCompileFlags
+get_regex_flags (xmlNode             *node,
+		 EggRegexCompileFlags flags)
+{
+	xmlAttr *attribute;
+
+	for (attribute = node->properties; attribute != NULL; attribute = attribute->next)
+	{
+		g_return_val_if_fail (attribute->children != NULL, flags);
+
+		if (xmlStrcmp (BAD_CAST "extended", attribute->name) == 0)
+		{
+			flags = update_regex_flags (flags, "extended",
+						    attribute->children->content);
+		}
+		else if (xmlStrcmp (BAD_CAST "case-insensitive", attribute->name) == 0)
+		{
+			flags = update_regex_flags (flags, "case-insensitive",
+						    attribute->children->content);
+		}
+		else if (xmlStrcmp (BAD_CAST "dot-match-all", attribute->name) == 0)
+		{
+			flags = update_regex_flags (flags, "dot-match-all",
+						    attribute->children->content);
+		}
+	}
+
+	return flags;
+}
+
 static gboolean
 create_definition (ParserState *parser_state,
 		   gchar       *id,
@@ -278,9 +305,9 @@ create_definition (ParserState *parser_state,
 
 	xmlNode *context_node, *child;
 
-	GString *all_items;
+	GString *all_items = NULL;
 
-	EggRegexCompileFlags flags, match_flags = 0, start_flags = 0, end_flags = 0;
+	EggRegexCompileFlags match_flags = 0, start_flags = 0, end_flags = 0;
 
 	GError *tmp_error = NULL;
 
@@ -291,15 +318,14 @@ create_definition (ParserState *parser_state,
 	/* extend-parent */
 	tmp = xmlTextReaderGetAttribute (parser_state->reader, BAD_CAST "extend-parent");
 	if (tmp != NULL)
-		extend_parent = str_to_bool ((gchar *)tmp);
+		extend_parent = str_to_bool (tmp);
 	xmlFree (tmp);
 
 	/* end-at-line-end */
 	tmp = xmlTextReaderGetAttribute (parser_state->reader, BAD_CAST "end-at-line-end");
 	if (tmp != NULL)
-		end_at_line_end = str_to_bool ((gchar *)tmp);
+		end_at_line_end = str_to_bool (tmp);
 	xmlFree (tmp);
-
 
 	DEBUG (g_message ("creating context %s, child of %s", id, parent_id ? parent_id : "(null)"));
 
@@ -310,47 +336,12 @@ create_definition (ParserState *parser_state,
 	/* The file should be validated so this should not happen */
 	g_assert (context_node != NULL);
 
-	child = context_node->children;
-	while (child != NULL)
+	for (child = context_node->children; child != NULL; child = child->next)
 	{
-		xmlAttr *attribute;
-
 		if (child->type != XML_READER_TYPE_ELEMENT)
-		{
-			child = child->next;
 			continue;
-		}
 
 		/* FIXME: add PCRE_EXTRA support in EggRegex */
-		flags = parser_state->regex_compile_flags;
-
-		for (attribute = child->properties;
-				attribute != NULL;
-				attribute = attribute->next)
-		{
-			g_assert (attribute->children);
-			tmp = attribute->children->content;
-			if (xmlStrcmp (BAD_CAST "extended", attribute->name) == 0)
-			{
-				flags = update_regex_flags (flags,
-							    "extended",
-							    str_to_bool ((gchar *)tmp));
-			}
-			else if (xmlStrcmp (BAD_CAST "case-insensitive", attribute->name) == 0)
-			{
-				flags = update_regex_flags (flags,
-							    "case-insensitive",
-							    str_to_bool ((gchar *)tmp));
-			}
-			else if (xmlStrcmp (BAD_CAST "dot-match-all", attribute->name) == 0)
-			{
-				flags = update_regex_flags (flags,
-							    "dot-match-all",
-							    str_to_bool ((gchar *)tmp));
-			}
-		}
-		/*flags = update_regex_flags (parser_state->regex_compile_flags,
-				"extended", TRUE);*/
 
 		g_assert (child->name);
 		if (xmlStrcmp (BAD_CAST "match", child->name) == 0
@@ -358,7 +349,7 @@ create_definition (ParserState *parser_state,
 		{
 			/* <match> */
 			match = g_strdup ((gchar *)child->children->content);
-			match_flags = flags;
+			match_flags = get_regex_flags (child, parser_state->regex_compile_flags);
 		}
 		else if (xmlStrcmp (BAD_CAST "start", child->name) == 0)
 		{
@@ -373,7 +364,7 @@ create_definition (ParserState *parser_state,
 				 * has no content use an empty string */
 				start = g_strdup ("");
 			}
-			start_flags = flags;
+			start_flags = get_regex_flags (child, parser_state->regex_compile_flags);
 		}
 		else if (xmlStrcmp (BAD_CAST "end", child->name) == 0)
 		{
@@ -386,7 +377,7 @@ create_definition (ParserState *parser_state,
 				 * has no content use an empty string */
 				end = g_strdup ("");
 			}
-			end_flags = flags;
+			end_flags = get_regex_flags (child, parser_state->regex_compile_flags);
 		}
 		else if (xmlStrcmp (BAD_CAST "prefix", child->name) == 0)
 		{
@@ -407,61 +398,44 @@ create_definition (ParserState *parser_state,
 		else if (xmlStrcmp (BAD_CAST "keyword", child->name) == 0 &&
 			 child->children != NULL)
 		{
+			/* FIXME: how to specify regex options for keywords?
+			 * They can be specified in prefix, so it's not really
+			 * important, but would be nice (case-sensitive). */
+
 			/* <keyword> */
-			all_items = g_string_new (NULL);
-			if (prefix != NULL)
-				g_string_append (all_items, prefix);
-			else
-				g_string_append (all_items,
-						 parser_state->opening_delimiter);
-			g_string_append (all_items, "(");
-
-			/* Read every keyword/symbol concatenating them
-			 * in a single string */
-			while (TRUE)
+			if (all_items == NULL)
 			{
-				/* TODO: check how pcre works with huge keyword lists,
-				 * and split big lists if needed, like in the old engine. */
+				all_items = g_string_new (NULL);
 
-				/* TODO: this could be done destructively,
-				 * modifing the string in place without the
-				 * copy */
+				if (prefix != NULL)
+					g_string_append (all_items, prefix);
+				else
+					g_string_append (all_items,
+							 parser_state->opening_delimiter);
+
+				g_string_append (all_items, "(");
 				g_string_append (all_items, (gchar*) child->children->content);
-
-				child = child->next;
-
-				/* Skip text nodes */
-				if (child != NULL && !xmlStrcmp (BAD_CAST "text", child->name))
-					child = child->next;
-
-				/* These are the conditions which control
-				 * the loop */
-				if (child == NULL)
-					break;
-				if (xmlStrcmp (BAD_CAST "keyword", child->name) != 0)
-					break;
-				if (child->children == NULL)
-					break;
-
-				/* If we get here the next node will be added
-				 * to the keywords/symbols list, so we add the
-				 * separator */
-				g_string_append (all_items, "|");
 			}
-
-			g_string_append (all_items, ")");
-			if (suffix != NULL)
-				g_string_append (all_items, suffix);
 			else
-				g_string_append (all_items,
-						 parser_state->closing_delimiter);
-
-			match = g_string_free (all_items, FALSE);
-			match_flags = flags;
+			{
+				g_string_append (all_items, "|");
+				g_string_append (all_items, (gchar*) child->children->content);
+			}
 		}
+	}
 
-		if (child != NULL)
-			child = child->next;
+	if (all_items != NULL)
+	{
+		g_string_append (all_items, ")");
+
+		if (suffix != NULL)
+			g_string_append (all_items, suffix);
+		else
+			g_string_append (all_items,
+					 parser_state->closing_delimiter);
+
+		match = g_string_free (all_items, FALSE);
+		match_flags = parser_state->regex_compile_flags;
 	}
 
 	DEBUG (g_message ("start: '%s'", start ? start : "(null)"));
@@ -695,7 +669,7 @@ handle_context_element (ParserState *parser_state,
 			BAD_CAST "sub-pattern");
 
 	tmp = xmlTextReaderGetAttribute (parser_state->reader, BAD_CAST "ignore-style");
-	if (tmp != NULL && str_to_bool ((gchar*) tmp))
+	if (tmp != NULL && str_to_bool (tmp))
 		ignore_style = TRUE;
 	xmlFree (tmp);
 
@@ -893,7 +867,7 @@ replace_by_id (const EggRegex *egg_regex,
 static EggRegexCompileFlags
 update_regex_flags (EggRegexCompileFlags flags,
 		    const gchar         *option_name,
-		    gboolean             value)
+		    const xmlChar       *value)
 {
 	EggRegexCompileFlags single_flag;
 
@@ -914,7 +888,7 @@ update_regex_flags (EggRegexCompileFlags flags,
 	else
 		return flags;
 
-	if (value)
+	if (str_to_bool (value))
 		flags |= single_flag;
 	else
 		flags &= ~single_flag;
@@ -1237,8 +1211,7 @@ handle_define_regex_element (ParserState *parser_state,
 		tmp = xmlTextReaderGetAttribute (parser_state->reader,
 						 BAD_CAST regex_options[i]);
 		if (tmp != NULL)
-			flags = update_regex_flags (flags, regex_options[i],
-						    str_to_bool ((gchar *)tmp));
+			flags = update_regex_flags (flags, regex_options[i], tmp);
 		xmlFree (tmp);
 	}
 

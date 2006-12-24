@@ -150,6 +150,42 @@ egg_regex_error_quark (void)
   return error_quark;
 }
 
+gsize
+_egg_regex_get_memory (EggRegex *regex)
+{
+  gsize mem = 0;
+
+  if (!regex)
+    return 0;
+
+  mem += sizeof (EggRegex);
+
+  if (regex->pattern)
+    {
+      int ret;
+      gsize ps = 0;
+
+      mem += sizeof *regex->pattern;
+      mem += strlen (regex->pattern->pattern) + 1;
+
+      ret = pcre_fullinfo (regex->pattern->pcre_re, regex->pattern->extra, PCRE_INFO_SIZE, &ps);
+      g_assert (ret == 0);
+      mem += ps;
+
+      ret = pcre_fullinfo (regex->pattern->pcre_re, regex->pattern->extra, PCRE_INFO_STUDYSIZE, &ps);
+      g_assert (ret == 0);
+      mem += ps;
+    }
+
+  if (regex->match)
+    {
+      mem += sizeof *regex->match;
+      mem += regex->match->n_offsets * sizeof (gint);
+    }
+
+  return mem;
+}
+
 static EggRegexPattern *
 regex_pattern_new (pcre              *re,
 		   const gchar       *pattern,
