@@ -67,9 +67,38 @@
             </include>
         </context>
 
-        <context id="doctype" style-ref="doctype">
-            <start>&lt;!DOCTYPE</start>
+        <context id="doctype">
+            <start>(&lt;!DOCTYPE)\s+(\%{name})</start>
             <end>&gt;</end>
+            <include>
+              <context sub-pattern="1" where="start" style-ref="doctype"/>
+              <context sub-pattern="2" where="start" style-ref="doctype"/>
+              <context sub-pattern="0" where="end" style-ref="doctype"/>
+              <context>
+                <match>(SYSTEM)\s+(\"[^\"]*\")</match>
+                <include>
+                  <context sub-pattern="1" style-ref="doctype"/>
+                  <context sub-pattern="2" style-ref="attribute-value"/>
+                </include>
+              </context>
+              <context>
+                <match>(PUBLIC)\s+(\"[^\"]*\")\s+(\"[^\"]*\")</match>
+                <include>
+                  <context sub-pattern="1" style-ref="doctype"/>
+                  <context sub-pattern="2" style-ref="attribute-value"/>
+                  <context sub-pattern="3" style-ref="attribute-value"/>
+                </include>
+              </context>
+              <context>
+                <start>\[</start>
+                <end>\]</end>
+                <include>
+                  <context sub-pattern="0" where="start" style-ref="doctype"/>
+                  <context sub-pattern="0" where="end" style-ref="doctype"/>
+                  <context ref="dtd:dtd"/>
+                </include>
+              </context>
+            </include>
         </context>
 
         <context id="cdata">

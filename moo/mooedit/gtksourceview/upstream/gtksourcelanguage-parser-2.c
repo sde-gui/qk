@@ -75,7 +75,11 @@ struct _ParserState
 	 * resolve references (the key is the id) */
 	GHashTable *defined_regexes;
 
-	/* The mapping between style ids and their default styles */
+	/* The mapping between style ids and their default styles.
+	 * If lang file contains this:
+	 * <style id="foo" map-to="def:blah"/>
+	 * <style id="bar"/>
+	 * then in styles_mapping: "foo"->"def:blah", "bar"->"bar". */
 	GHashTable *styles_mapping;
 
 	/* The list of loaded languages (the item are XmlChar pointers) */
@@ -1286,25 +1290,32 @@ map_style (ParserState *parser_state,
 	   gchar       *map_to,
 	   GError     **error)
 {
-	const gchar *mapped_style;
+	const gchar *real_map_to;
 
 	g_return_if_fail (error != NULL && *error == NULL);
+	g_return_if_fail (style_id != NULL);
 
 	if (map_to != NULL)
-		mapped_style = g_hash_table_lookup (parser_state->styles_mapping,
-						    map_to);
+	{
+		if (g_hash_table_lookup (parser_state->styles_mapping, map_to) != NULL)
+			real_map_to = map_to;
+		else
+			real_map_to = NULL;
+	}
 	else
-		mapped_style = style_id;
+	{
+		real_map_to = style_id;
+	}
 
 	DEBUG (g_message ("mapping the style of '%s' to '%s' -> '%s'",
 			  style_id,
 			  map_to ? map_to : "(null)",
 			  mapped_style));
 
-	if (mapped_style != NULL)
+	if (real_map_to != NULL)
 		g_hash_table_insert (parser_state->styles_mapping,
 				     g_strdup (style_id),
-				     g_strdup (mapped_style));
+				     g_strdup (real_map_to));
 	else
 		g_set_error (error,
 			     PARSER_ERROR,

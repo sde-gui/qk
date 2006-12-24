@@ -54,6 +54,9 @@
         <context id="c">
             <include>
 
+                <!-- gtk-doc -->
+                <context ref="gtk-doc:inline-docs"/>
+
                 <!-- Comments -->
                 <context id="comment" style-ref="comment" end-at-line-end="true">
                     <start>\/\/</start>

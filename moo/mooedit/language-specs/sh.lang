@@ -13,7 +13,7 @@
     <style id="variable1" name="Variable 1" map-to="def:data-type"/>
     <style id="variable2" name="Variable 2" map-to="def:data-type"/>
     <style id="data-type" name="Data Type" map-to="def:data-type"/>
-    <style id="others" name="Others"/>
+    <style id="others" name="Others" map-to="def:keyword"/>
     <style id="common-command" name="Common Commands" map-to="def:keyword"/>
     <style id="here-doc-bound" name="here-doc" map-to="def:keyword"/>
   </styles>
@@ -50,7 +50,7 @@
       </include>
     </context>
     <context id="punctuator" style-ref="others">
-      <match>[();\|&amp;/]</match>
+      <match>[;\|&amp;/]</match>
     </context>
     <context id="function" style-ref="function">
       <match>\b[a-zA-Z_][a-zA-Z0-9_]+[ \t]*\(\)</match>
@@ -69,12 +69,26 @@
       <keyword>&lt;&lt;+[0-9]</keyword>
       <keyword>\b[0-9]+&lt;&lt;</keyword>
     </context>
-    <context id="here-doc">
-      <start>&lt;&lt;\s*(\S+)$</start>
-      <end>^\%{1@start}$</end>
+    <context id="here-doc-1">
+      <start>&lt;&lt;-?\s*\\?(\S+)$</start>
+      <end>^\t*\%{1@start}$</end>
       <include>
-        <context sub-pattern="0" where="start" style-ref="here-doc-bound" />
-        <context sub-pattern="0" where="end" style-ref="here-doc-bound" />
+        <context sub-pattern="0" where="start" style-ref="here-doc-bound"/>
+        <context sub-pattern="0" where="end" style-ref="here-doc-bound"/>
+      </include>
+    </context>
+    <context id="here-doc-2">
+      <start>&lt;&lt;-?\s*\"\\?(\S+)\"$</start>
+      <end>^\t*(\%{1@start})$</end>
+      <include>
+        <context sub-pattern="0" where="start" style-ref="here-doc-bound"/>
+        <context sub-pattern="0" where="end" style-ref="here-doc-bound"/>
+      </include>
+    </context>
+    <context id="here-doc">
+      <include>
+        <context ref="here-doc-2"/>
+        <context ref="here-doc-1"/>
       </include>
     </context>
     <context id="operator" style-ref="function">
@@ -121,86 +135,89 @@
     <context id="variable2" style-ref="variable2">
       <match>[a-zA-Z_][a-zA-Z0-9_]*\=</match>
     </context>
-    <context id="built-in-command" style-ref="keyword">
+    <context id="built-in-command-1" style-ref="keyword">
       <prefix></prefix>
       <suffix></suffix>
       <keyword>\!</keyword>
       <keyword>\{</keyword>
       <keyword>\}</keyword>
-      <keyword>\bcase\b</keyword>
-      <keyword>\bdo\b</keyword>
-      <keyword>\bdone\b</keyword>
-      <keyword>\belif\b</keyword>
-      <keyword>\belse\b</keyword>
-      <keyword>\belse\b</keyword>
-      <keyword>\besac\b</keyword>
-      <keyword>\bfi\b</keyword>
-      <keyword>\bfor\b</keyword>
-      <keyword>\bfunction\b</keyword>
-      <keyword>\bif\b</keyword>
-      <keyword>\bin\b</keyword>
-      <keyword>\bselect\b</keyword>
-      <keyword>\bthen\b</keyword>
-      <keyword>\buntil\b</keyword>
-      <keyword>\bwhile\b</keyword>
-      <keyword>\bbash\b</keyword>
       <keyword>\:</keyword>
       <keyword>(?&lt;=\s)\.(?=\s)</keyword>
-      <keyword>\[</keyword>
-      <keyword>\]</keyword>
-      <keyword>[$]+\[</keyword>
-      <keyword>\balias\b</keyword>
-      <keyword>\bbg\b</keyword>
-      <keyword>\bbind\b</keyword>
-      <keyword>\bbreak\b</keyword>
-      <keyword>\bbuiltin\b</keyword>
-      <keyword>\bcd\b</keyword>
-      <keyword>\bcommand\b</keyword>
-      <keyword>\bcompgen\b</keyword>
-      <keyword>\bcomplete\b</keyword>
-      <keyword>\bcontinue\b</keyword>
-      <keyword>\bdeclare\b</keyword>
-      <keyword>\bdirs\b</keyword>
-      <keyword>\bdisown\b</keyword>
-      <keyword>\becho\b</keyword>
-      <keyword>\benable\b</keyword>
-      <keyword>\beval\b</keyword>
-      <keyword>\bexec\b</keyword>
-      <keyword>\bexit\b</keyword>
-      <keyword>\bexport\b</keyword>
-      <keyword>\bfc\b</keyword>
-      <keyword>\bfg\b</keyword>
-      <keyword>\bgetopts\b</keyword>
-      <keyword>\bhash\b</keyword>
-      <keyword>\bhelp\b</keyword>
-      <keyword>\bhistory\b</keyword>
-      <keyword>\bjobs\b</keyword>
-      <keyword>\bkill\b</keyword>
-      <keyword>\blet\b</keyword>
-      <keyword>\blocal\b</keyword>
-      <keyword>\blogout\b</keyword>
-      <keyword>\bpodp\b</keyword>
-      <keyword>\bprintf\b</keyword>
-      <keyword>\bpushd\b</keyword>
-      <keyword>\bpwd\b</keyword>
-      <keyword>\bread\b</keyword>
-      <keyword>\breadonly\b</keyword>
-      <keyword>\breturn\b</keyword>
-      <keyword>\bset\b</keyword>
-      <keyword>\bshift\b</keyword>
-      <keyword>\bshopt\b</keyword>
-      <keyword>\bsource\b</keyword>
-      <keyword>\bsuspend\b</keyword>
-      <keyword>\btest\b</keyword>
-      <keyword>\btimes\b</keyword>
-      <keyword>\btrap\b</keyword>
-      <keyword>\btype\b</keyword>
-      <keyword>\btypeset\b</keyword>
-      <keyword>\bulimit\b</keyword>
-      <keyword>\bumask\b</keyword>
-      <keyword>\bunalias\b</keyword>
-      <keyword>\bunset\b</keyword>
-      <keyword>\bwait\b</keyword>
+    </context>
+    <context id="built-in-command-2" style-ref="keyword">
+      <keyword>do</keyword>
+      <keyword>done</keyword>
+      <keyword>elif</keyword>
+      <keyword>else</keyword>
+      <keyword>else</keyword>
+      <keyword>fi</keyword>
+      <keyword>for</keyword>
+      <keyword>function</keyword>
+      <keyword>if</keyword>
+      <keyword>in</keyword>
+      <keyword>select</keyword>
+      <keyword>then</keyword>
+      <keyword>until</keyword>
+      <keyword>while</keyword>
+      <keyword>bash</keyword>
+      <keyword>alias</keyword>
+      <keyword>bg</keyword>
+      <keyword>bind</keyword>
+      <keyword>break</keyword>
+      <keyword>builtin</keyword>
+      <keyword>cd</keyword>
+      <keyword>command</keyword>
+      <keyword>compgen</keyword>
+      <keyword>complete</keyword>
+      <keyword>continue</keyword>
+      <keyword>declare</keyword>
+      <keyword>dirs</keyword>
+      <keyword>disown</keyword>
+      <keyword>echo</keyword>
+      <keyword>enable</keyword>
+      <keyword>eval</keyword>
+      <keyword>exec</keyword>
+      <keyword>exit</keyword>
+      <keyword>export</keyword>
+      <keyword>fc</keyword>
+      <keyword>fg</keyword>
+      <keyword>getopts</keyword>
+      <keyword>hash</keyword>
+      <keyword>help</keyword>
+      <keyword>history</keyword>
+      <keyword>jobs</keyword>
+      <keyword>kill</keyword>
+      <keyword>let</keyword>
+      <keyword>local</keyword>
+      <keyword>logout</keyword>
+      <keyword>podp</keyword>
+      <keyword>printf</keyword>
+      <keyword>pushd</keyword>
+      <keyword>pwd</keyword>
+      <keyword>read</keyword>
+      <keyword>readonly</keyword>
+      <keyword>return</keyword>
+      <keyword>set</keyword>
+      <keyword>shift</keyword>
+      <keyword>shopt</keyword>
+      <keyword>source</keyword>
+      <keyword>suspend</keyword>
+      <keyword>test</keyword>
+      <keyword>times</keyword>
+      <keyword>trap</keyword>
+      <keyword>type</keyword>
+      <keyword>typeset</keyword>
+      <keyword>ulimit</keyword>
+      <keyword>umask</keyword>
+      <keyword>unalias</keyword>
+      <keyword>unset</keyword>
+      <keyword>wait</keyword>
+    </context>
+    <context id="built-in-command">
+      <include>
+        <context ref="built-in-command-1"/>
+        <context ref="built-in-command-2"/>
+      </include>
     </context>
     <context id="common-command" style-ref="common-command">
       <prefix>(?&lt;![\w\-\.])</prefix>
@@ -279,8 +296,17 @@
       <keyword>xdialog</keyword>
       <keyword>zenity</keyword>
     </context>
-    <context id="self" style-ref="data-type">
-      <match>\bself\b</match>
+    <context id="case">
+      <start>\bcase\b</start>
+      <end>\besac\b</end>
+      <include>
+        <context sub-pattern="0" where="start" style-ref="keyword"/>
+        <context sub-pattern="0" where="end" style-ref="keyword"/>
+        <context style-ref="others">
+          <match>[^\)\s]+\)|;;</match>
+        </context>
+        <context ref="sh"/>
+      </include>
     </context>
     <context id="sh">
       <include>
@@ -290,6 +316,7 @@
         <context ref="string-2"/>
         <context ref="backtick-string"/>
         <context ref="line-comment"/>
+        <context ref="case"/>
         <context ref="punctuator"/>
         <context ref="function"/>
         <context ref="here-doc"/>
@@ -299,7 +326,6 @@
         <context ref="variable2"/>
         <context ref="built-in-command"/>
         <context ref="common-command"/>
-        <context ref="self"/>
       </include>
     </context>
   </definitions>

@@ -846,7 +846,7 @@ ensure_highlighted (GtkSourceContextEngine *ce,
  * refresh_region.
  *
  * Marks the area as updated - notifies view about it, and adds it to
- * refresh_region if %modify_refresh_region is TRUE (update_syntax may
+ * refresh_region if @modify_refresh_region is TRUE (update_syntax may
  * process huge area though actually updated is couple of lines, so in
  * that case update_syntax() takes care of refresh_region, and this
  * function only notifies the view).
@@ -888,6 +888,8 @@ refresh_range (GtkSourceContextEngine *ce,
  * @s2: second segment.
  *
  * Compares segments by their offset, used to sort list of invalid segments.
+ *
+ * Returns: an integer like strcmp() does.
  */
 static gint
 segment_cmp (Segment *s1,
@@ -1391,7 +1393,7 @@ simple_segment_split_ (GtkSourceContextEngine *ce,
  * @length: the length of the area.
  *
  * Adds the area to the invalid region and queues highlighting.
- * %length may be negative which means deletion; positive
+ * @length may be negative which means deletion; positive
  * means insertion; 0 means "something happened here", it's
  * treated as zero-length insertion.
  */
@@ -1464,7 +1466,7 @@ invalidate_region (GtkSourceContextEngine *ce,
  *
  * Updates segment tree after insertion: it updates tree
  * offsets as appropriate, and inserts a new invalid segment
- * or extends existing invalid segment as %offset, so
+ * or extends existing invalid segment as @offset, so
  * after the call segment [offset, offset + length) is marked
  * invalid in the tree.
  * It may be safely called with length == 0 at any moment
@@ -1601,7 +1603,7 @@ gtk_source_context_engine_text_inserted (GtkSourceEngine *engine,
  * @start: start of deleted text.
  * @length: length of deleted text.
  *
- * Returns new offset depending on location of %offset
+ * Returns new offset depending on location of @offset
  * relative to deleted text.
  * Called only from fix_offsets_delete_().
  */
@@ -1849,7 +1851,7 @@ update_tree (GtkSourceContextEngine *ce)
  *
  * GtkSourceEngine::update_highlight method.
  *
- * Makes sure the area is analyzed and highlighted. If %asynchronous
+ * Makes sure the area is analyzed and highlighted. If @asynchronous
  * is FALSE, then it queues idle worker.
  */
 static void
@@ -2498,7 +2500,7 @@ regex_new (const gchar           *pattern,
  *
  * @name: the string from lang file.
  *
- * Tries to convert %name to a number and assumes
+ * Tries to convert @name to a number and assumes
  * it's a name if that fails. Used for references in
  * subpattern contexts (e.g. \%{1@start} or \%{blah@start}).
  */
@@ -2936,7 +2938,7 @@ create_reg_all (Context           *context,
 				 * or parser need to check it */
 				else
 				{
-					g_critical ("%s: oops", G_STRLOC);
+//					g_critical ("%s: oops", G_STRLOC);
 					append = FALSE;
 				}
 
@@ -5054,13 +5056,13 @@ erase_segments (GtkSourceContextEngine *ce,
  * @time: maximal amount of time in milliseconds allowed to spend here
  * or 0 for 'unlimited'.
  *
- * Updates syntax tree. If %end is not NULL, then it analyzes
+ * Updates syntax tree. If @end is not NULL, then it analyzes
  * (reanalyzes invalid areas in) region from start of buffer
- * to %end. Otherwise, it analyzes batch of text starting at
+ * to @end. Otherwise, it analyzes batch of text starting at
  * first invalid line.
  * In order to avoid blocking ui it uses a timer and stops
- * when time elapsed is greater than %time, so analyzed region is
- * not necessarily what's requested (unless %time is 0).
+ * when time elapsed is greater than @time, so analyzed region is
+ * not necessarily what's requested (unless @time is 0).
  */
 /* XXX it needs to be refactored. */
 static void

@@ -10,8 +10,10 @@ langs2 =			\
 	def.lang		\
 	desktop.lang		\
 	diff.lang		\
+	dtd.lang		\
 	fortran.lang		\
 	gap.lang		\
+	gtk-doc.lang		\
 	gtkrc.lang		\
 	haskell.lang		\
 	html.lang		\
