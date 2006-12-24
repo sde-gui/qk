@@ -1,3 +1,5 @@
+DIST_SUBDIRS = upstream
+
 noinst_LTLIBRARIES = libgtksourceview.la
 
 AM_CFLAGS =				\
@@ -56,7 +58,6 @@ mangled_sources =				\
 	gtksourcestylescheme-mangled.h		\
 	gtktextregion-mangled.h
 
-EXTRA_DIST = $(upstream_sources) upstream/mangle.sh
 BUILT_SOURCES = $(mangled_sources)
 DISTCLEANFILES = $(mangled_sources)
 
@@ -66,6 +67,9 @@ DISTCLEANFILES = $(mangled_sources)
 %-mangled.h: upstream/%.h upstream/mangle.sh
 	$(SHELL) $(srcdir)/upstream/mangle.sh $< > mangled.tmp && \
 	mv mangled.tmp $@
+
+upstream/%.o:
+	$(MAKE) $*-mangled.o
 
 libgtksourceview_la_SOURCES =		\
 	$(mangled_sources)		\
