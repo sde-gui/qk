@@ -35,7 +35,6 @@ langs2 =			\
 	ruby.lang		\
 	scheme.lang		\
 	sh.lang			\
-	sh.lang			\
 	sql.lang		\
 	tcl.lang		\
 	texinfo.lang		\
