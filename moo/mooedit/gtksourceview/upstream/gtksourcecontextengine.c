@@ -78,22 +78,24 @@
 #define LOOKUP_DEFINITION(ctx_data, id) \
 	(g_hash_table_lookup ((ctx_data)->definitions, (id)))
 
+#define HAS_OPTION(def,opt) (((def)->match_options & GTK_SOURCE_CONTEXT_##opt) != 0)
+
 /* Can the context be terminated by ancestor? */
 /* Root context can't be terminated; its child may not be terminated by it;
  * grandchildren look at the flag */
 #define ANCESTOR_CAN_END_CONTEXT(ctx) \
 	((ctx)->parent != NULL && (ctx)->parent->parent != NULL && \
-		(!(ctx)->definition->extend_parent || !(ctx)->all_ancestors_extend))
+		(!HAS_OPTION ((ctx)->definition, EXTEND_PARENT) || !(ctx)->all_ancestors_extend))
 
 /* Root context and its children have this TRUE; grandchildren use the flag */
 #define CONTEXT_EXTENDS_PARENT(ctx) \
 	((ctx)->parent == NULL || (ctx)->parent->parent == NULL || \
-		(ctx)->definition->extend_parent)
+		HAS_OPTION ((ctx)->definition, EXTEND_PARENT))
 
 /* Does the segment terminate at line end? */
 /* Root segment doesn't, children look at the flag */
 #define CONTEXT_END_AT_LINE_END(ctx) \
-	((ctx)->parent != NULL && (ctx)->definition->end_at_line_end)
+	((ctx)->parent != NULL && HAS_OPTION ((ctx)->definition, END_AT_LINE_END))
 #define SEGMENT_END_AT_LINE_END(s) CONTEXT_END_AT_LINE_END((s)->context)
 
 #define CONTEXT_IS_SIMPLE(c) ((c)->definition->type == CONTEXT_TYPE_SIMPLE)
@@ -185,15 +187,7 @@ struct _ContextDefinition
 	 * context. */
 	Regex			*reg_all;
 
-	/* Should this context start only at the first line? */
-	guint			 first_line_only : 1;
-
-	/* Should this context end before end of the line (namely,
-	 * before the line terminating characters)? */
-	guint			 end_at_line_end : 1;
-
-	/* Can this context extend its parent? */
-	guint			 extend_parent : 1;
+	GtkSourceContextMatchOptions match_options;
 };
 
 struct _SubPatternDefinition
@@ -3676,7 +3670,7 @@ segment_destroy (GtkSourceContextEngine *ce,
 /**
  * container_context_starts_here:
  *
- * See child_starts_here.
+ * See child_starts_here().
  */
 static gboolean
 container_context_starts_here (GtkSourceContextEngine  *ce,
@@ -3735,7 +3729,7 @@ container_context_starts_here (GtkSourceContextEngine  *ce,
 /**
  * simple_context_starts_here:
  *
- * See child_starts_here.
+ * See child_starts_here().
  */
 static gboolean
 simple_context_starts_here (GtkSourceContextEngine *ce,
@@ -3840,7 +3834,7 @@ child_starts_here (GtkSourceContextEngine *ce,
  * @pos: the position inside @line.
  *
  * Checks whether given segment ends at pos. Unlike
- * child_starts_here it doesn't modify tree, it merely
+ * child_starts_here() it doesn't modify tree, it merely
  * calls regex_match() for the end regex.
  */
 static gboolean
@@ -4033,11 +4027,26 @@ next_segment (GtkSourceContextEngine  *ce,
 			/* If the child definition does not extend the parent
 			 * and the current context could end here we do not
 			 * need to examine this child. */
-			if (!child_def->u.definition->extend_parent && context_end_found)
+			if (!HAS_OPTION (child_def->u.definition, EXTEND_PARENT) && context_end_found)
 				try_this = FALSE;
 
-			if (child_def->u.definition->first_line_only && line->start_at != 0)
+			if (HAS_OPTION (child_def->u.definition, FIRST_LINE_ONLY) && line->start_at != 0)
 				try_this = FALSE;
+
+			if (HAS_OPTION (child_def->u.definition, ONCE_ONLY))
+			{
+				Segment *prev;
+
+				for (prev = state->children; prev != NULL; prev = prev->next)
+				{
+					if (prev->context != NULL &&
+					    prev->context->definition == child_def->u.definition)
+					{
+						try_this = FALSE;
+						break;
+					}
+				}
+			}
 
 			if (try_this)
 			{
@@ -5431,9 +5440,7 @@ context_definition_new (const gchar        *id,
 	definition->id = g_strdup (id);
 	definition->default_style = g_strdup (style);
 	definition->type = type;
-	definition->extend_parent = (options & GTK_SOURCE_CONTEXT_EXTEND_PARENT) != 0;
-	definition->end_at_line_end = (options & GTK_SOURCE_CONTEXT_END_AT_LINE_END) != 0;
-	definition->first_line_only = (options & GTK_SOURCE_CONTEXT_FIRST_LINE_ONLY) != 0;
+	definition->match_options = options;
 	definition->children = NULL;
 	definition->sub_patterns = NULL;
 	definition->n_sub_patterns = 0;

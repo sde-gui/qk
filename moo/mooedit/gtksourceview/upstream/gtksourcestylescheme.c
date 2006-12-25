@@ -347,7 +347,10 @@ parse_style (GtkSourceStyleScheme *scheme,
 	const gchar *fg = NULL, *bg = NULL;
 	const gchar *style_name = NULL;
 	GtkSourceStyleMask mask = 0;
-	gboolean bold, italic, underline, strikethrough;
+	gboolean bold = FALSE;
+	gboolean italic = FALSE;
+	gboolean underline = FALSE;
+	gboolean strikethrough = FALSE;
 
 	for ( ; names && *names; names++, values++)
 	{

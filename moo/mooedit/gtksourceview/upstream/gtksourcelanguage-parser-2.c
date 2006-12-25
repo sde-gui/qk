@@ -293,6 +293,38 @@ get_regex_flags (xmlNode             *node,
 	return flags;
 }
 
+static GtkSourceContextMatchOptions
+check_context_options (ParserState                  *parser_state,
+		       GtkSourceContextMatchOptions  options)
+{
+	guint i;
+	xmlChar *value;
+	const gchar *names[] = {
+		"extend-parent", "end-at-line-end", "first-line-only", "once-only"
+	};
+	GtkSourceContextMatchOptions flags[] = {
+		GTK_SOURCE_CONTEXT_EXTEND_PARENT, GTK_SOURCE_CONTEXT_END_AT_LINE_END,
+		GTK_SOURCE_CONTEXT_FIRST_LINE_ONLY, GTK_SOURCE_CONTEXT_ONCE_ONLY
+	};
+
+	for (i = 0; i < G_N_ELEMENTS (names); ++i)
+	{
+		value = xmlTextReaderGetAttribute (parser_state->reader, BAD_CAST names[i]);
+
+		if (value != NULL)
+		{
+			if (str_to_bool (value))
+				options |= flags[i];
+			else
+				options &= ~flags[i];
+		}
+
+		xmlFree (value);
+	}
+
+	return options;
+}
+
 static gboolean
 create_definition (ParserState *parser_state,
 		   gchar       *id,
@@ -302,10 +334,7 @@ create_definition (ParserState *parser_state,
 {
 	gchar *match = NULL, *start = NULL, *end = NULL;
 	gchar *prefix = NULL, *suffix = NULL;
-	xmlChar *tmp;
-	gboolean extend_parent = TRUE;
-	gboolean end_at_line_end = FALSE;
-	GtkSourceContextMatchOptions options = 0;
+	GtkSourceContextMatchOptions options;
 
 	xmlNode *context_node, *child;
 
@@ -319,17 +348,7 @@ create_definition (ParserState *parser_state,
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	/* extend-parent */
-	tmp = xmlTextReaderGetAttribute (parser_state->reader, BAD_CAST "extend-parent");
-	if (tmp != NULL)
-		extend_parent = str_to_bool (tmp);
-	xmlFree (tmp);
-
-	/* end-at-line-end */
-	tmp = xmlTextReaderGetAttribute (parser_state->reader, BAD_CAST "end-at-line-end");
-	if (tmp != NULL)
-		end_at_line_end = str_to_bool (tmp);
-	xmlFree (tmp);
+	options = check_context_options (parser_state, GTK_SOURCE_CONTEXT_EXTEND_PARENT);
 
 	DEBUG (g_message ("creating context %s, child of %s", id, parent_id ? parent_id : "(null)"));
 
@@ -468,11 +487,6 @@ create_definition (ParserState *parser_state,
 				      TRUE, FALSE, &tmp_error);
 		g_free (tmp);
 	}
-
-	if (extend_parent)
-		options |= GTK_SOURCE_CONTEXT_EXTEND_PARENT;
-	if (end_at_line_end)
-		options |= GTK_SOURCE_CONTEXT_END_AT_LINE_END;
 
 	if (tmp_error == NULL)
 		_gtk_source_context_data_define_context (parser_state->ctx_data,
