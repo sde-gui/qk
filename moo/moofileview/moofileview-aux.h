@@ -143,7 +143,7 @@ model_find_max_prefix (GtkTreeModel   *model,
                        gboolean       *unique_p,
                        GtkTreeIter    *unique_iter_p)
 {
-    GtkTreeIter iter, unique_iter;
+    GtkTreeIter iter;
     guint text_len;
     GString *prefix = NULL;
     gboolean unique = FALSE;
@@ -173,8 +173,10 @@ model_find_max_prefix (GtkTreeModel   *model,
         if (!prefix)
         {
             prefix = g_string_new (_moo_file_display_name (file));
-            unique_iter = iter;
             unique = TRUE;
+
+            if (unique_iter_p)
+                *unique_iter_p = iter;
 
             /* nothing to look for, just check if it's really unique */
             if (prefix->len == text_len)
@@ -205,8 +207,6 @@ model_find_max_prefix (GtkTreeModel   *model,
 out:
     if (unique_p)
         *unique_p = unique;
-    if (unique_iter_p)
-        *unique_iter_p = unique_iter;
     return prefix;
 }
 
