@@ -1,5 +1,17 @@
 #!/bin/sh
 
+# Langs covered here:
+# changelog.lang c.lang cpp.lang csharp.lang css.lang desktop.lang
+# diff.lang dtd.lang fortran.lang gap.lang gtkrc.lang html.lang ini.lang
+# java.lang latex.lang m4.lang makefile.lang ms.lang octave.lang
+# pascal.lang perl.lang php.lang po.lang python.lang ruby.lang
+# scheme.lang sh.lang sql.lang texinfo.lang xml.lang yacc.lang
+
+# Langs not covered:
+# ada.lang boo.lang def.lang d.lang gtk-doc.lang haskell.lang
+# idl.lang javascript.lang lua.lang msil.lang nemerle.lang python-console.lang
+# R.lang tcl.lang vbnet.lang verilog.lang vhdl.lang
+
 dir="testdir"
 mkdir -p $dir/
 
@@ -460,4 +472,22 @@ This is the second item.
 @printindex cp
 
 @bye
+EOFEOF
+
+cat > $dir/file.dtd <<EOFEOF
+<!-- FIXME: the "name" attribute can be "_name" to be marked for translation -->
+<!ENTITY % itemattrs
+ "name  CDATA #REQUIRED
+  style CDATA #REQUIRED">
+<!ELEMENT language (escape-char?,(line-comment|block-comment|string|syntax-item|pattern-item|keyword-list)+)>
+<!-- FIXME: the "name" and "section" attributes can be prefixed with
+     "_" to be marked for translation -->
+<!ELEMENT keyword-list (keyword+)>
+<!ATTLIST keyword-list
+  %itemattrs;
+  case-sensitive                  (true|false) "true"
+  match-empty-string-at-beginning (true|false) "false"
+  match-empty-string-at-end       (true|false) "false"
+  beginning-regex                 CDATA        #IMPLIED
+  end-regex                       CDATA        #IMPLIED>
 EOFEOF
