@@ -1655,7 +1655,7 @@ moo_prefs_match_type_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
     {
         static const GFlagsValue values[] = {
             { MOO_PREFS_MATCH_KEY, (char*)"MOO_PREFS_MATCH_KEY", (char*)"match-key" },
@@ -1675,7 +1675,7 @@ moo_prefs_type_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
     {
         static const GEnumValue values[] = {
             { MOO_PREFS_RC, (char*)"MOO_PREFS_RC", (char*)"rc" },

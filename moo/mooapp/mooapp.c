@@ -140,7 +140,7 @@ moo_app_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
     {
         static const GTypeInfo type_info = {
             sizeof (MooAppClass),
@@ -1383,7 +1383,7 @@ GType
 moo_app_info_get_type (void)
 {
     static GType type = 0;
-    if (!type)
+    if (G_UNLIKELY (!type))
         g_boxed_type_register_static ("MooAppInfo",
                                       (GBoxedCopyFunc) moo_app_info_copy,
                                       (GBoxedFreeFunc) moo_app_info_free);

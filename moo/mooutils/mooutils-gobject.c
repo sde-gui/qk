@@ -67,7 +67,7 @@ _moo_gtype_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
     {
         static GTypeValueTable val_table = {
             moo_gtype_value_init,
@@ -172,7 +172,7 @@ _moo_param_gtype_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
     {
         static GParamSpecTypeInfo info = {
             sizeof (MooParamSpecGType), /* instance_size */
@@ -1716,7 +1716,7 @@ _moo_ptr_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooPtr",
                                              (GBoxedCopyFunc) _moo_ptr_ref,
                                              (GBoxedFreeFunc) _moo_ptr_unref);
@@ -1769,7 +1769,7 @@ _moo_data_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooData",
                                              (GBoxedCopyFunc) _moo_data_ref,
                                              (GBoxedFreeFunc) _moo_data_unref);

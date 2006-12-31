@@ -50,7 +50,7 @@ _moo_folder_model_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
     {
         static GTypeInfo info = {
             /* interface types, classed types, instantiated types */

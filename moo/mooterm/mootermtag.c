@@ -367,7 +367,7 @@ moo_term_text_attr_mask_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
     {
         static const GFlagsValue values[] = {
             { MOO_TERM_TEXT_REVERSE, (char*)"MOO_TERM_TEXT_REVERSE", (char*)"reverse" },
@@ -391,7 +391,7 @@ moo_term_text_color_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
     {
         static const GEnumValue values[] = {
             { MOO_TERM_BLACK, (char*)"MOO_TERM_BLACK", (char*)"black" },
@@ -445,7 +445,7 @@ moo_term_text_attr_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooTermTextAttr",
                                              copy_attr, free_attr);
 

@@ -1732,7 +1732,7 @@ _ms_value_get_type (void)
 {
     static GType type;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MSValue",
                                              (GBoxedCopyFunc) ms_value_ref,
                                              (GBoxedFreeFunc) ms_value_unref);

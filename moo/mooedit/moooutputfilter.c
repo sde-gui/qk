@@ -254,7 +254,7 @@ moo_file_line_data_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooFileLineData",
                                              (GBoxedCopyFunc) moo_file_line_data_copy,
                                              (GBoxedFreeFunc) moo_file_line_data_free);

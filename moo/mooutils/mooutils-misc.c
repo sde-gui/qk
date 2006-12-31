@@ -1661,7 +1661,7 @@ moo_data_dir_type_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
     {
         static const GEnumValue values[] = {
             { MOO_DATA_SHARE, (char*) "MOO_DATA_SHARE", (char*) "share" },

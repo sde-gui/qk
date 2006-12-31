@@ -1080,7 +1080,7 @@ moo_command_data_get_type (void)
 {
     static GType type;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooCommandData",
                                              (GBoxedCopyFunc) moo_command_data_ref,
                                              (GBoxedFreeFunc) moo_command_data_unref);

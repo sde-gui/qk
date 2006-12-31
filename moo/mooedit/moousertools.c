@@ -918,7 +918,7 @@ _moo_user_tool_info_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooUserToolInfo",
                                              (GBoxedCopyFunc) _moo_user_tool_info_ref,
                                              (GBoxedFreeFunc) _moo_user_tool_info_unref);

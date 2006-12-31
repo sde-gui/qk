@@ -24,7 +24,7 @@ GType
 moo_markup_doc_get_type (void)
 {
     static GType type = 0;
-    if (type == 0)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooMarkupDoc",
                                              (GBoxedCopyFunc)moo_markup_doc_ref,
                                              (GBoxedFreeFunc)moo_markup_doc_unref);

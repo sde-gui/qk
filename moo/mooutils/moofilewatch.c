@@ -249,7 +249,7 @@ moo_file_watch_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooFileWatch",
                                              (GBoxedCopyFunc) moo_file_watch_ref,
                                              (GBoxedFreeFunc) moo_file_watch_unref);
@@ -316,7 +316,7 @@ moo_file_event_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooFileEvent",
                                              (GBoxedCopyFunc) moo_file_event_copy,
                                              (GBoxedFreeFunc) moo_file_event_free);
@@ -330,7 +330,7 @@ moo_file_event_code_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
     {
         static const GEnumValue values[] = {
             { MOO_FILE_EVENT_CHANGED, (char*) "MOO_FILE_EVENT_CHANGED", (char*) "changed"},
@@ -454,7 +454,7 @@ moo_file_watch_emit_event (MooFileWatch *watch,
         static const char *names[] = {
             "changed", "created", "deleted", "error"
         };
-        DEBUG_PRINT ("emitting event %s for %s", names[event->code], monitor->filename);
+        DEBUG_PRINT ("emitting event %s for %s", names[event->code], event->filename);
         monitor->callback (watch, event, monitor->data);
     }
 

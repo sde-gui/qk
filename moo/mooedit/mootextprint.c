@@ -285,7 +285,7 @@ _moo_print_settings_get_type (void)
 {
     static GType t = 0;
 
-    if (!t)
+    if (G_UNLIKELY (!t))
         t = g_boxed_type_register_static ("MooPrintSettings",
                                           (GBoxedCopyFunc) moo_print_settings_copy,
                                           (GBoxedFreeFunc) moo_print_settings_free);

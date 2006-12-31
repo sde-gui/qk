@@ -677,7 +677,7 @@ moo_history_item_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooHistoryItem",
                                              (GBoxedCopyFunc) moo_history_item_copy,
                                              (GBoxedFreeFunc) moo_history_item_free);

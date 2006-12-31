@@ -32,7 +32,7 @@ moo_text_style_scheme_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = GTK_TYPE_SOURCE_STYLE_SCHEME;
 
     return type;
@@ -44,7 +44,7 @@ moo_text_style_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = GTK_TYPE_SOURCE_STYLE;
 
     return type;

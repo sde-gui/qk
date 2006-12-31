@@ -3215,7 +3215,7 @@ GType       moo_pane_position_get_type  (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
     {
         static const GEnumValue values[] = {
             { MOO_PANE_POS_LEFT, (char*) "MOO_PANE_POS_LEFT", (char*) "left" },
@@ -3845,7 +3845,7 @@ moo_pane_label_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooPaneLabel",
                                              (GBoxedCopyFunc) moo_pane_label_copy,
                                              (GBoxedFreeFunc) moo_pane_label_free);
@@ -3859,7 +3859,7 @@ moo_pane_params_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooPaneParams",
                                              (GBoxedCopyFunc) moo_pane_params_copy,
                                              (GBoxedFreeFunc) moo_pane_params_free);

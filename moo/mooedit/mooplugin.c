@@ -1214,7 +1214,7 @@ moo_plugin_info_get_type (void)
 {
     static GType type;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooPluginInfo",
                                              (GBoxedCopyFunc) moo_plugin_info_copy,
                                              (GBoxedFreeFunc) moo_plugin_info_free);
@@ -1228,7 +1228,7 @@ moo_plugin_params_get_type (void)
 {
     static GType type;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooPluginParams",
                                              (GBoxedCopyFunc) moo_plugin_params_copy,
                                              (GBoxedFreeFunc) moo_plugin_params_free);

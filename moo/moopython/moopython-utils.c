@@ -275,7 +275,7 @@ moo_py_object_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooPyObject",
                                              (GBoxedCopyFunc) moo_py_object_ref,
                                              (GBoxedFreeFunc) moo_py_object_unref);

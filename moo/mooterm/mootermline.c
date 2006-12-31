@@ -695,7 +695,7 @@ moo_term_line_get_type (void)
 {
     static GType type = 0;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_pointer_type_register_static ("MooTermLine");
 
     return type;

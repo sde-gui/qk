@@ -282,7 +282,7 @@ GType
 _moo_bookmark_get_type (void)
 {
     static GType type = 0;
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooBookmark",
                                              (GBoxedCopyFunc) _moo_bookmark_copy,
                                              (GBoxedFreeFunc) _moo_bookmark_free);

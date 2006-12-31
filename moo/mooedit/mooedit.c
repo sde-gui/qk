@@ -616,7 +616,7 @@ GType
 moo_edit_file_info_get_type (void)
 {
     static GType type = 0;
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooEditFileInfo",
                                              (GBoxedCopyFunc) moo_edit_file_info_copy,
                                              (GBoxedFreeFunc) moo_edit_file_info_free);

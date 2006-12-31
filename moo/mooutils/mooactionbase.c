@@ -146,7 +146,7 @@ moo_action_base_get_type (void)
 {
     static GType type;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
     {
         static const GTypeInfo info = {
             sizeof (MooActionBaseClass), /* class_size */

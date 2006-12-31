@@ -3505,6 +3505,7 @@ moo_edit_window_get_output (MooEditWindow *window)
                                         GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
 
         cmd_view = moo_cmd_view_new ();
+        moo_text_view_set_font_from_string (MOO_TEXT_VIEW (cmd_view), "Monospace");
         gtk_container_add (GTK_CONTAINER (scrolled_window), cmd_view);
         gtk_widget_show_all (scrolled_window);
         g_object_set_data (G_OBJECT (scrolled_window), "moo-output", cmd_view);
