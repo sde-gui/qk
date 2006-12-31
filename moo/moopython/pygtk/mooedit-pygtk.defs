@@ -150,11 +150,11 @@
 
 ;; Enumerations and flags ...
 
-(define-enum OnExternalChanges
-  (in-module "Moo")
-  (c-name "MooEditOnExternalChanges")
-  (gtype-id "MOO_TYPE_EDIT_ON_EXTERNAL_CHANGES")
-)
+; (define-enum OnExternalChanges
+;   (in-module "Moo")
+;   (c-name "MooEditOnExternalChanges")
+;   (gtype-id "MOO_TYPE_EDIT_ON_EXTERNAL_CHANGES")
+; )
 
 (define-flags Status
   (in-module "Moo")

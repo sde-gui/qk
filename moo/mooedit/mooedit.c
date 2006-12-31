@@ -244,8 +244,6 @@ moo_edit_init (MooEdit *edit)
 
     edit->priv = G_TYPE_INSTANCE_GET_PRIVATE (edit, MOO_TYPE_EDIT, MooEditPrivate);
 
-    edit->priv->file_watch_policy = MOO_EDIT_RELOAD_IF_SAFE;
-
     edit->priv->actions = moo_action_collection_new ("MooEdit", "MooEdit");
 
     indent = moo_indenter_new (edit, NULL);

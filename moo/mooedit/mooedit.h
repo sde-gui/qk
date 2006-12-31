@@ -30,15 +30,6 @@ G_BEGIN_DECLS
 #define MOO_IS_EDIT_CLASS(klass)            (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT))
 #define MOO_EDIT_GET_CLASS(obj)             (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT, MooEditClass))
 
-
-typedef enum
-{
-    MOO_EDIT_DONT_WATCH_FILE = 0,
-    MOO_EDIT_ALWAYS_ALERT,
-    MOO_EDIT_ALWAYS_RELOAD,
-    MOO_EDIT_RELOAD_IF_SAFE
-} MooEditOnExternalChanges;
-
 typedef enum /*< flags >*/
 {
     MOO_EDIT_MODIFIED_ON_DISK   = 1 << 0,
