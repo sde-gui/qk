@@ -22,7 +22,7 @@ static void     moo_term_pt_finalize        (GObject        *object);
 
 
 /* MOO_TYPE_TERM_PT */
-G_DEFINE_TYPE (MooTermPt, moo_term_pt, G_TYPE_OBJECT)
+G_DEFINE_TYPE (MooTermPt, _moo_term_pt, G_TYPE_OBJECT)
 
 enum {
     CHILD_DIED,
@@ -36,7 +36,8 @@ enum {
 static guint signals[LAST_SIGNAL];
 
 
-static void moo_term_pt_class_init (MooTermPtClass *klass)
+static void
+_moo_term_pt_class_init (MooTermPtClass *klass)
 {
     GObjectClass   *gobject_class = G_OBJECT_CLASS (klass);
 
@@ -53,14 +54,16 @@ static void moo_term_pt_class_init (MooTermPtClass *klass)
 }
 
 
-static void     moo_term_pt_init            (MooTermPt      *pt)
+static void
+_moo_term_pt_init (MooTermPt *pt)
 {
     pt->priv = g_new0 (MooTermPtPrivate, 1);
     pt->priv->pending_write = g_queue_new ();
 }
 
 
-static void     moo_term_pt_finalize        (GObject            *object)
+static void
+moo_term_pt_finalize (GObject *object)
 {
     MooTermPt *pt = MOO_TERM_PT (object);
 
@@ -69,7 +72,7 @@ static void     moo_term_pt_finalize        (GObject            *object)
 
     g_free (pt->priv);
 
-    G_OBJECT_CLASS (moo_term_pt_parent_class)->finalize (object);
+    G_OBJECT_CLASS (_moo_term_pt_parent_class)->finalize (object);
 }
 
 

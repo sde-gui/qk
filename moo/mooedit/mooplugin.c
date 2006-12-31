@@ -630,7 +630,7 @@ plugin_store_remove (MooPlugin *plugin)
 }
 
 
-MooPlugin*
+static MooPlugin *
 moo_plugin_get (GType type)
 {
     g_return_val_if_fail (g_type_is_a (type, MOO_TYPE_PLUGIN), NULL);
@@ -798,7 +798,7 @@ moo_plugin_set_enabled (MooPlugin  *plugin,
 }
 
 
-void
+static void
 moo_plugin_unregister (GType type)
 {
     MooPlugin *plugin = moo_plugin_get (type);

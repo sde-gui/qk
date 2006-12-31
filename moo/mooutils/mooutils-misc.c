@@ -370,7 +370,7 @@ find_by_xid (GSList *windows, XID w)
 }
 
 
-GtkWindow*
+GtkWindow *
 _moo_get_top_window (GSList *windows)
 {
     GArray *xids;
@@ -471,13 +471,15 @@ _moo_get_top_window (GSList *windows)
 }
 
 
-gboolean
+#if 0
+static gboolean
 _moo_window_is_hidden (GtkWindow  *window)
 {
     g_return_val_if_fail (GTK_IS_WINDOW (window), FALSE);
     return is_minimized (GDK_WINDOW_XDISPLAY (GTK_WIDGET(window)->window),
                          GDK_WINDOW_XID (GTK_WIDGET(window)->window));
 }
+#endif
 
 
 #elif defined(__WIN32__)
@@ -491,7 +493,7 @@ _moo_window_is_hidden (GtkWindow  *window)
     gdk_win32_drawable_get_handle (GTK_WIDGET(w)->window)
 
 gboolean
-_moo_window_is_hidden (GtkWindow  *window)
+static _moo_window_is_hidden (GtkWindow  *window)
 {
     HANDLE h;
     WINDOWPLACEMENT info;
@@ -520,7 +522,7 @@ _moo_window_is_hidden (GtkWindow  *window)
 }
 
 
-GtkWindow*
+GtkWindow *
 _moo_get_top_window (GSList *windows)
 {
     GSList *l;
@@ -639,7 +641,8 @@ _moo_window_set_icon_from_stock (GtkWindow  *window,
 }
 
 
-GtkWindow*
+#if 0
+GtkWindow *
 _moo_get_toplevel_window (void)
 {
     GList *list, *l;
@@ -658,6 +661,7 @@ _moo_get_toplevel_window (void)
     g_slist_free (windows);
     return top;
 }
+#endif
 
 
 /***************************************************************************/
@@ -1792,6 +1796,7 @@ moo_enable_win32_error_message (void)
 }
 
 
+#if 0
 #undef _moo_str_equal
 gboolean
 _moo_str_equal (const char *s1,
@@ -1799,3 +1804,4 @@ _moo_str_equal (const char *s1,
 {
     return !strcmp (s1 ? s1 : "", s2 ? s2 : "");
 }
+#endif

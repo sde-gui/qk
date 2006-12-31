@@ -215,16 +215,6 @@ moo_position_window_real (GtkWidget  *window,
 
 
 void
-moo_position_window (GtkWidget  *window,
-                     GtkWidget  *parent,
-                     int         x,
-                     int         y)
-{
-    moo_position_window_real (window, parent, FALSE, TRUE, x, y);
-}
-
-
-void
 moo_position_window_at_pointer (GtkWidget  *window,
                                 GtkWidget  *parent)
 {
@@ -240,7 +230,7 @@ moo_window_set_parent (GtkWidget  *window,
 }
 
 
-void
+static void
 moo_message_dialog (GtkWidget  *parent,
                     GtkMessageType type,
                     const char *text,

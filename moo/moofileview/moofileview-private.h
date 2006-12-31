@@ -34,24 +34,6 @@ typedef enum {
 
 GType       _moo_file_view_type_get_type                (void) G_GNUC_CONST;
 
-GtkWidget  *_moo_file_view_new                          (void);
-
-void        _moo_file_view_select_display_name          (MooFileView    *fileview,
-                                                         const char     *name);
-
-
-void        _moo_file_view_set_view_type                (MooFileView    *fileview,
-                                                         MooFileViewType type);
-
-void        _moo_file_view_set_show_hidden              (MooFileView    *fileview,
-                                                         gboolean        show);
-void        _moo_file_view_set_show_parent              (MooFileView    *fileview,
-                                                         gboolean        show);
-void        _moo_file_view_set_sort_case_sensitive      (MooFileView    *fileview,
-                                                         gboolean        case_sensitive);
-void        _moo_file_view_set_typeahead_case_sensitive (MooFileView    *fileview,
-                                                         gboolean        case_sensitive);
-
 /* returns list of MooFile* pointers, must be freed, and elements must be unref'ed */
 GList      *_moo_file_view_get_files                    (MooFileView    *fileview);
 

@@ -24,6 +24,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/moofilewatch.h"
 #include "mooutils/mooencodings.h"
+#include "mooutils/mooi18n.h"
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -68,6 +69,8 @@ static gboolean moo_edit_save_copy_local    (MooEdit        *edit,
                                              const char     *filename,
                                              const char     *encoding,
                                              GError        **error);
+static char    *_moo_edit_filename_to_utf8  (const char     *filename);
+static void     _moo_edit_start_file_watch  (MooEdit        *edit);
 
 
 GQuark
@@ -968,7 +971,7 @@ file_watch_callback (G_GNUC_UNUSED MooFileWatch *watch,
 }
 
 
-void
+static void
 _moo_edit_start_file_watch (MooEdit *edit)
 {
     MooFileWatch *watch;
@@ -1152,9 +1155,9 @@ _moo_edit_set_filename (MooEdit    *edit,
         edit->priv->basename = NULL;
 
         if (n == 1)
-            edit->priv->display_filename = g_strdup ("Untitled");
+            edit->priv->display_filename = g_strdup (_("Untitled"));
         else
-            edit->priv->display_filename = g_strdup_printf ("Untitled %d", n);
+            edit->priv->display_filename = g_strdup_printf (_("Untitled %d"), n);
 
         edit->priv->display_basename = g_strdup (edit->priv->display_filename);
     }
@@ -1179,7 +1182,7 @@ _moo_edit_set_filename (MooEdit    *edit,
 }
 
 
-char*
+static char *
 _moo_edit_filename_to_utf8 (const char *filename)
 {
     GError *err = NULL;

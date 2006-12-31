@@ -20,21 +20,23 @@
 #define MOO_ACCEL_PREFS_KEY "Shortcuts"
 
 
-static void          accel_map_changed  (GtkAccelMap        *map,
-                                         gchar              *accel_path,
-                                         guint               accel_key,
-                                         GdkModifierType     accel_mods);
+static void          accel_map_changed      (GtkAccelMap        *map,
+                                             gchar              *accel_path,
+                                             guint               accel_key,
+                                             GdkModifierType     accel_mods);
 
-static const char   *get_accel          (const char         *accel_path);
-static void          prefs_new_accel    (const char         *accel_path,
-                                         const char         *default_accel);
-static const char   *prefs_get_accel    (const char         *accel_path);
-static void          prefs_set_accel    (const char         *accel_path,
-                                         const char         *accel);
+static const char   *get_accel              (const char         *accel_path);
+static void          prefs_new_accel        (const char         *accel_path,
+                                             const char         *default_accel);
+static const char   *prefs_get_accel        (const char         *accel_path);
+static void          prefs_set_accel        (const char         *accel_path,
+                                             const char         *accel);
 
-static gboolean      parse_accel        (const char         *accel,
-                                         guint              *key,
-                                         GdkModifierType    *mods);
+static gboolean      parse_accel            (const char         *accel,
+                                             guint              *key,
+                                             GdkModifierType    *mods);
+
+static char         *_moo_accel_normalize   (const char         *accel);
 
 
 static GHashTable *moo_accel_map = NULL;            /* char* -> char* */
@@ -529,7 +531,7 @@ out:
 }
 
 
-char *
+static char *
 _moo_accel_normalize (const char *accel)
 {
     guint key;

@@ -91,8 +91,6 @@ int         moo_menu_mgr_insert_separator   (MooMenuMgr         *mgr,
 void        moo_menu_mgr_remove             (MooMenuMgr         *mgr,
                                              const char         *parent_id,
                                              guint               position);
-void        moo_menu_mgr_remove_named       (MooMenuMgr         *mgr,
-                                             const char         *item_id);
 
 void        moo_menu_mgr_set_active         (MooMenuMgr         *mgr,
                                              const char         *item_id,

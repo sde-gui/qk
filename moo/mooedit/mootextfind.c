@@ -50,6 +50,14 @@ static void     moo_find_get_property   (GObject        *object,
                                          GParamSpec     *pspec);
 static void     moo_find_finalize       (GObject        *object);
 
+static void     moo_find_set_flags      (MooFind        *find,
+                                         MooFindFlags    flags);
+static MooFindFlags moo_find_get_flags  (MooFind        *find);
+/* returned string/regex must be freed/unrefed */
+static char    *moo_find_get_text       (MooFind        *find);
+static EggRegex *moo_find_get_regex     (MooFind        *find);
+static char    *moo_find_get_replacement (MooFind       *find);
+
 
 G_DEFINE_TYPE(MooFind, moo_find, GTK_TYPE_DIALOG)
 
@@ -236,7 +244,7 @@ moo_find_finalize (GObject *object)
 }
 
 
-GtkWidget *
+static GtkWidget *
 moo_find_new (gboolean replace)
 {
     return g_object_new (MOO_TYPE_FIND, "replace", replace, NULL);
@@ -347,7 +355,7 @@ get_search_term (GtkTextView *view,
 }
 
 
-void
+static void
 moo_find_setup (MooFind        *find,
                 GtkTextView    *view)
 {
@@ -433,7 +441,7 @@ print_message (MooFindMsgFunc func,
 }
 
 
-gboolean
+static gboolean
 moo_find_run (MooFind        *find,
               MooFindMsgFunc  msg_func,
               gpointer        data)
@@ -527,7 +535,7 @@ moo_find_run (MooFind        *find,
 }
 
 
-MooFindFlags
+static MooFindFlags
 moo_find_get_flags (MooFind *find)
 {
     MooFindFlags flags = 0;
@@ -556,7 +564,7 @@ moo_find_get_flags (MooFind *find)
 }
 
 
-void
+static void
 moo_find_set_flags (MooFind        *find,
                     MooFindFlags    flags)
 {
@@ -580,7 +588,7 @@ moo_find_set_flags (MooFind        *find,
 }
 
 
-char *
+static char *
 moo_find_get_text (MooFind *find)
 {
     MooCombo *entry;
@@ -590,7 +598,7 @@ moo_find_get_text (MooFind *find)
 }
 
 
-EggRegex *
+static EggRegex *
 moo_find_get_regex (MooFind *find)
 {
     g_return_val_if_fail (MOO_IS_FIND (find), NULL);
@@ -598,7 +606,7 @@ moo_find_get_regex (MooFind *find)
 }
 
 
-char *
+static char *
 moo_find_get_replacement (MooFind *find)
 {
     MooCombo *entry;

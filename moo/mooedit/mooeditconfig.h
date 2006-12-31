@@ -82,8 +82,6 @@ void            moo_edit_config_get             (MooEditConfig  *config,
 void            moo_edit_config_set_global      (MooEditConfigSource source,
                                                  const char     *first_setting,
                                                  ...) G_GNUC_NULL_TERMINATED; /* setting, value, ... */
-void            moo_edit_config_get_global      (const char     *first_setting,
-                                                 ...) G_GNUC_NULL_TERMINATED;  /* alias for g_object_get(global, ...) */
 
 void            moo_edit_config_parse_one       (MooEditConfig  *config,
                                                  const char     *setting_name,
@@ -103,16 +101,12 @@ GParamSpec     *moo_edit_config_lookup_spec     (const char     *name,
                                                  guint          *id,
                                                  gboolean        try_alias);
 
-int             moo_edit_config_get_source      (MooEditConfig  *config,
-                                                 const char     *setting);
 void            moo_edit_config_unset_by_source (MooEditConfig  *config,
                                                  MooEditConfigSource source);
 
 gboolean        moo_edit_config_parse_bool      (const char     *string,
                                                  gboolean       *value);
 
-void            moo_edit_config_compose         (MooEditConfig  *target,
-                                                 MooEditConfig  *src);
 void            moo_edit_config_update          (MooEditConfig  *config,
                                                  const char     *lang_id);
 

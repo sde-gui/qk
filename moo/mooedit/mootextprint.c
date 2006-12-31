@@ -1664,6 +1664,7 @@ get_options (MooGladeXML *xml)
 }
 
 
+#if 0
 void
 _moo_edit_print_options_dialog (GtkWidget *parent)
 {
@@ -1686,6 +1687,7 @@ _moo_edit_print_options_dialog (GtkWidget *parent)
     g_object_unref (xml);
     gtk_widget_destroy (dialog);
 }
+#endif
 
 
 static GtkWidget *

@@ -19,6 +19,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-debug.h"
+#include "mooutils/mootype-macros.h"
 #include <string.h>
 #include <errno.h>
 #include <gobject/gvaluecollector.h>
@@ -122,8 +123,7 @@ static void          moo_prefs_set_modified (gboolean    modified);
 
 
 /* MOO_TYPE_PREFS */
-GType _moo_prefs_get_type (void) G_GNUC_CONST;
-G_DEFINE_TYPE (MooPrefs, _moo_prefs, G_TYPE_OBJECT)
+MOO_DEFINE_TYPE_STATIC (MooPrefs, _moo_prefs, G_TYPE_OBJECT)
 
 
 static MooPrefs*
@@ -1689,6 +1689,7 @@ moo_prefs_type_get_type (void)
 }
 
 
+#if 0
 static void
 add_key (const char  *key,
          G_GNUC_UNUSED PrefsItem *item,
@@ -1724,3 +1725,4 @@ moo_prefs_list_keys (guint *n_keys)
         return (char**) g_ptr_array_free (array, FALSE);
     }
 }
+#endif

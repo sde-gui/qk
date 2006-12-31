@@ -91,8 +91,6 @@ void         _ms_value_class_add_method (MSValueClass   *klass,
 MSValue     *_ms_value_get_method       (MSValue        *value,
                                          const char     *name);
 
-char        *_ms_printf                 (const char     *format,
-                                         ...) G_GNUC_PRINTF (1, 2);
 char        *_ms_vaprintf               (const char     *format,
                                          va_list         args);
 

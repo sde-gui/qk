@@ -52,7 +52,6 @@ GType   _moo_print_operation_get_type           (void) G_GNUC_CONST;
 void    _moo_edit_page_setup                    (GtkWidget          *parent);
 void    _moo_edit_print                         (GtkTextView        *view,
                                                  GtkWidget          *parent);
-void    _moo_edit_print_options_dialog          (GtkWidget          *parent);
 void    _moo_edit_print_preview                 (GtkTextView        *view,
                                                  GtkWidget          *parent);
 void    _moo_edit_export_pdf                    (GtkTextView        *view,

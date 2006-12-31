@@ -105,10 +105,11 @@ static void     stop_writer         (MooTermPt      *pt);
 
 
 /* MOO_TYPE_TERM_PT_UNIX */
-G_DEFINE_TYPE (MooTermPtUnix, moo_term_pt_unix, MOO_TYPE_TERM_PT)
+G_DEFINE_TYPE (MooTermPtUnix, _moo_term_pt_unix, MOO_TYPE_TERM_PT)
 
 
-static void moo_term_pt_unix_class_init (MooTermPtUnixClass *klass)
+static void
+_moo_term_pt_unix_class_init (MooTermPtUnixClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     MooTermPtClass *pt_class = MOO_TERM_PT_CLASS (klass);
@@ -124,7 +125,8 @@ static void moo_term_pt_unix_class_init (MooTermPtUnixClass *klass)
 }
 
 
-static void     moo_term_pt_unix_init            (MooTermPtUnix      *pt)
+static void
+_moo_term_pt_unix_init (MooTermPtUnix *pt)
 {
     MOO_TERM_PT(pt)->priv->child_alive = FALSE;
 
@@ -140,17 +142,19 @@ static void     moo_term_pt_unix_init            (MooTermPtUnix      *pt)
 }
 
 
-static void     moo_term_pt_unix_finalize        (GObject            *object)
+static void
+moo_term_pt_unix_finalize (GObject *object)
 {
     MooTermPtUnix *pt = MOO_TERM_PT_UNIX (object);
     kill_child (MOO_TERM_PT (pt));
-    G_OBJECT_CLASS (moo_term_pt_unix_parent_class)->finalize (object);
+    G_OBJECT_CLASS (_moo_term_pt_unix_parent_class)->finalize (object);
 }
 
 
-static void     set_size        (MooTermPt      *pt,
-                                 guint           width,
-                                 guint           height)
+static void
+set_size (MooTermPt *pt,
+          guint      width,
+          guint      height)
 {
     MooTermPtUnix *ptu;
 

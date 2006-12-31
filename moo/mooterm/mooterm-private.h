@@ -288,8 +288,6 @@ void        _moo_term_set_ansi_modes        (MooTerm    *term,
 void        _moo_term_set_mode              (MooTerm    *term,
                                              int         mode,
                                              gboolean    set);
-void        _moo_term_set_ca_mode           (MooTerm    *term,
-                                             gboolean    set);
 void        _moo_term_decsc                 (MooTerm    *term);
 void        _moo_term_decrc                 (MooTerm    *term);
 

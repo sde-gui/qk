@@ -102,9 +102,6 @@ gpointer _moo_term_buffer_get_line_data         (MooTermBuffer  *buf,
 void    _moo_term_buffer_changed                (MooTermBuffer  *buf);
 void    _moo_term_buffer_scrollback_changed     (MooTermBuffer  *buf);
 void    _moo_term_buffer_cursor_moved           (MooTermBuffer  *buf);
-void    _moo_term_buffer_feed_child             (MooTermBuffer  *buf,
-                                                 const char     *string,
-                                                 int             len);
 
 void    _moo_term_buffer_freeze_changed_notify  (MooTermBuffer  *buf);
 void    _moo_term_buffer_freeze_cursor_notify   (MooTermBuffer  *buf);
@@ -129,10 +126,6 @@ void    _moo_term_buffer_cursor_move_to         (MooTermBuffer  *buf,
                                                  int             row,
                                                  int             col);
 
-guint   _moo_term_buffer_next_tab_stop          (MooTermBuffer  *buf,
-                                                 guint           current);
-guint   _moo_term_buffer_prev_tab_stop          (MooTermBuffer  *buf,
-                                                 guint           current);
 void    _moo_term_buffer_clear_tab_stop         (MooTermBuffer  *buf,
                                                  ClearTabType    what);
 void    _moo_term_buffer_set_tab_stop           (MooTermBuffer  *buf);
@@ -291,11 +284,6 @@ void    _moo_term_buffer_insert_char            (MooTermBuffer  *buf,
                                                  guint           n);
 void    _moo_term_buffer_insert_line            (MooTermBuffer  *buf,
                                                  guint           n);
-
-void    _moo_term_buffer_erase_range            (MooTermBuffer  *buf,
-                                                 guint           row,
-                                                 guint           col,
-                                                 guint           len);
 
 void    _moo_term_buffer_cup                    (MooTermBuffer  *buf,
                                                  guint           row,

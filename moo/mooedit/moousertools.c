@@ -22,6 +22,7 @@
 #include "mooutils/mooaccel.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooaction-private.h"
+#include "mooutils/mootype-macros.h"
 #include <string.h>
 
 
@@ -63,8 +64,7 @@ typedef struct {
 
 typedef MooEditActionClass MooToolActionClass;
 
-GType _moo_tool_action_get_type (void) G_GNUC_CONST;
-G_DEFINE_TYPE (MooToolAction, _moo_tool_action, MOO_TYPE_EDIT_ACTION)
+MOO_DEFINE_TYPE_STATIC (MooToolAction, _moo_tool_action, MOO_TYPE_EDIT_ACTION)
 #define MOO_TYPE_TOOL_ACTION    (_moo_tool_action_get_type())
 #define MOO_IS_TOOL_ACTION(obj) (G_TYPE_CHECK_INSTANCE_TYPE (obj, MOO_TYPE_TOOL_ACTION))
 #define MOO_TOOL_ACTION(obj)    (G_TYPE_CHECK_INSTANCE_CAST (obj, MOO_TYPE_TOOL_ACTION, MooToolAction))
@@ -76,6 +76,7 @@ static ToolStore *tools_stores[N_TOOLS];
 
 static MooCommandContext   *create_command_context  (gpointer        window,
                                                      gpointer        doc);
+static MooUserToolInfo     *_moo_user_tool_info_ref (MooUserToolInfo *info);
 
 
 static void
@@ -881,7 +882,7 @@ _moo_user_tool_info_new (void)
 }
 
 
-MooUserToolInfo *
+static MooUserToolInfo *
 _moo_user_tool_info_ref (MooUserToolInfo *info)
 {
     g_return_val_if_fail (info != NULL, NULL);

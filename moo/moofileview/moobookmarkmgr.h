@@ -72,21 +72,13 @@ GType           _moo_bookmark_mgr_get_type  (void) G_GNUC_CONST;
 MooBookmark    *_moo_bookmark_new           (const char     *name,
                                              const char     *path,
                                              const char     *icon);
-MooBookmark    *_moo_bookmark_copy          (MooBookmark    *bookmark);
 void            _moo_bookmark_free          (MooBookmark    *bookmark);
-
-void            _moo_bookmark_set_path      (MooBookmark    *bookmark,
-                                             const char     *path);
-void            _moo_bookmark_set_display_path(MooBookmark  *bookmark,
-                                             const char     *display_path);
-
 
 MooBookmarkMgr *_moo_bookmark_mgr_new       (void);
 GtkTreeModel   *_moo_bookmark_mgr_get_model (MooBookmarkMgr *mgr);
 
 void            _moo_bookmark_mgr_add       (MooBookmarkMgr *mgr,
                                              MooBookmark    *bookmark);
-gboolean        _moo_bookmark_mgr_is_empty  (MooBookmarkMgr *mgr);
 
 GtkWidget      *_moo_bookmark_mgr_get_editor(MooBookmarkMgr *mgr);
 

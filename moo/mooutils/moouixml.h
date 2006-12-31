@@ -119,8 +119,6 @@ void        moo_ui_xml_add_ui_from_string   (MooUIXML       *xml,
 
 MooUINode  *moo_ui_xml_get_node             (MooUIXML       *xml,
                                              const char     *path);
-MooUINode  *moo_ui_xml_find_node            (MooUIXML       *xml,
-                                             const char     *path_or_placeholder);
 MooUINode  *moo_ui_xml_find_placeholder     (MooUIXML       *xml,
                                              const char     *name);
 char       *moo_ui_node_get_path            (MooUINode      *node);

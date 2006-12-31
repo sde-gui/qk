@@ -23,6 +23,9 @@ static MSValue *MS_False;
 
 static MSValueClass types[MS_VALUE_INVALID];
 
+static gboolean ms_value_equal  (MSValue    *a,
+                                 MSValue    *b);
+
 #if GLIB_CHECK_VERSION(2,10,0)
 #define ms_value_alloc() g_slice_new0 (MSValue)
 #define ms_value_free(v) g_slice_free (MSValue, v)
@@ -105,6 +108,10 @@ ms_value_string (const char *string)
     return ms_value_take_string (g_strdup (string));
 }
 
+
+#if 0
+MSValue     *ms_value_string_printf     (const char     *format,
+                                         ...) G_GNUC_PRINTF (1, 2);
 MSValue *
 ms_value_string_printf (const char *format,
                         ...)
@@ -118,6 +125,7 @@ ms_value_string_printf (const char *format,
 
     return value;
 }
+#endif
 
 
 MSValue *
@@ -146,7 +154,7 @@ ms_value_take_string (char *string)
 }
 
 
-MSValue *
+static MSValue *
 ms_value_gvalue (const GValue *gval)
 {
     MSValue *val;
@@ -212,6 +220,7 @@ ms_value_from_gvalue (const GValue *gval)
 }
 
 
+#if 0
 gpointer
 ms_value_get_object (MSValue *value)
 {
@@ -219,7 +228,6 @@ ms_value_get_object (MSValue *value)
     g_return_val_if_fail (MS_VALUE_TYPE (value) == MS_VALUE_GVALUE, NULL);
     return g_value_get_object (value->u.gval);
 }
-
 
 MSValue *
 ms_value_object (gpointer object)
@@ -237,6 +245,7 @@ ms_value_object (gpointer object)
 
     return val;
 }
+#endif
 
 
 MSValue *
@@ -567,6 +576,7 @@ ms_value_get_int (MSValue    *val,
 }
 
 
+#if 0
 gboolean
 ms_value_get_gvalue (MSValue *val,
                      GValue  *dest)
@@ -606,6 +616,7 @@ ms_value_get_gvalue (MSValue *val,
 
     g_return_val_if_reached (FALSE);
 }
+#endif
 
 
 static char *
@@ -1058,7 +1069,7 @@ dict_equal (GHashTable *a,
 }
 
 
-gboolean
+static gboolean
 ms_value_equal (MSValue *a, MSValue *b)
 {
     if (a == b)
@@ -1476,7 +1487,7 @@ ms_value_func (MSFunc *func)
 }
 
 
-MSValue *
+static MSValue *
 ms_value_meth (MSFunc *func)
 {
     MSValue *val;
@@ -1487,7 +1498,7 @@ ms_value_meth (MSFunc *func)
 }
 
 
-MSValue *
+static MSValue *
 ms_value_bound_meth (MSFunc  *func,
                      MSValue *obj)
 {
@@ -1578,6 +1589,7 @@ _ms_value_class_add_method (MSValueClass   *klass,
 }
 
 
+#if 0
 void
 ms_value_add_method (MSValue    *val,
                      const char *name,
@@ -1594,6 +1606,7 @@ ms_value_add_method (MSValue    *val,
     g_object_ref (func);
     g_hash_table_insert (val->methods, g_strdup (name), func);
 }
+#endif
 
 
 MSValue *
@@ -1618,6 +1631,7 @@ _ms_value_get_method (MSValue    *value,
 }
 
 
+#if 0
 char *
 _ms_printf (const char     *format,
             ...)
@@ -1631,6 +1645,7 @@ _ms_printf (const char     *format,
 
     return string;
 }
+#endif
 
 
 char *

@@ -22,6 +22,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooactiongroup.h"
+#include "mooutils/mootype-macros.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
@@ -52,8 +53,7 @@ typedef MooPrefsDialogPageClass MooAccelPrefsPageClass;
 
 #define MOO_TYPE_ACCEL_PREFS_PAGE    (_moo_accel_prefs_page_get_type ())
 #define MOO_ACCEL_PREFS_PAGE(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_ACCEL_PREFS_PAGE, MooAccelPrefsPage))
-GType _moo_accel_prefs_page_get_type (void) G_GNUC_CONST;
-G_DEFINE_TYPE (MooAccelPrefsPage, _moo_accel_prefs_page, MOO_TYPE_PREFS_DIALOG_PAGE)
+MOO_DEFINE_TYPE_STATIC (MooAccelPrefsPage, _moo_accel_prefs_page, MOO_TYPE_PREFS_DIALOG_PAGE)
 
 
 typedef enum {

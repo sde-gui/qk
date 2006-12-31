@@ -23,6 +23,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moospawn.h"
+#include "mooutils/mootype-macros.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -64,8 +65,7 @@ G_DEFINE_TYPE (MooCommandExe, moo_command_exe, MOO_TYPE_COMMAND)
 
 typedef MooCommandType MooCommandTypeExe;
 typedef MooCommandTypeClass MooCommandTypeExeClass;
-GType _moo_command_type_exe_get_type (void) G_GNUC_CONST;
-G_DEFINE_TYPE (MooCommandTypeExe, _moo_command_type_exe, MOO_TYPE_COMMAND_TYPE)
+MOO_DEFINE_TYPE_STATIC (MooCommandTypeExe, _moo_command_type_exe, MOO_TYPE_COMMAND_TYPE)
 
 
 static void
@@ -553,6 +553,30 @@ _moo_command_type_exe_init (G_GNUC_UNUSED MooCommandTypeExe *type)
 }
 
 
+static MooCommand *
+_moo_command_exe_new (const char         *cmd_line,
+                      MooCommandOptions   options,
+                      MooCommandExeInput  input,
+                      MooCommandExeOutput output,
+                      const char         *filter)
+{
+    MooCommandExe *cmd;
+
+    g_return_val_if_fail (cmd_line && cmd_line[0], NULL);
+    g_return_val_if_fail (input < MOO_COMMAND_EXE_MAX_INPUT, NULL);
+    g_return_val_if_fail (output < MOO_COMMAND_EXE_MAX_OUTPUT, NULL);
+
+    cmd = g_object_new (MOO_TYPE_COMMAND_EXE, "options", options, NULL);
+
+    cmd->priv->cmd_line = g_strdup (cmd_line);
+    cmd->priv->input = input;
+    cmd->priv->output = output;
+    cmd->priv->filter = g_strdup (filter);
+
+    return MOO_COMMAND (cmd);
+}
+
+
 static gboolean
 parse_input (const char *string,
              int        *input)
@@ -915,28 +939,4 @@ _moo_command_type_exe_class_init (MooCommandTypeExeClass *klass)
     klass->load_data = exe_type_load_data;
     klass->save_data = exe_type_save_data;
     klass->data_equal = exe_type_data_equal;
-}
-
-
-MooCommand *
-_moo_command_exe_new (const char         *cmd_line,
-                      MooCommandOptions   options,
-                      MooCommandExeInput  input,
-                      MooCommandExeOutput output,
-                      const char         *filter)
-{
-    MooCommandExe *cmd;
-
-    g_return_val_if_fail (cmd_line && cmd_line[0], NULL);
-    g_return_val_if_fail (input < MOO_COMMAND_EXE_MAX_INPUT, NULL);
-    g_return_val_if_fail (output < MOO_COMMAND_EXE_MAX_OUTPUT, NULL);
-
-    cmd = g_object_new (MOO_TYPE_COMMAND_EXE, "options", options, NULL);
-
-    cmd->priv->cmd_line = g_strdup (cmd_line);
-    cmd->priv->input = input;
-    cmd->priv->output = output;
-    cmd->priv->filter = g_strdup (filter);
-
-    return MOO_COMMAND (cmd);
 }

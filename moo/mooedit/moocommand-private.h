@@ -35,9 +35,6 @@ void            _moo_command_format_item            (MooKeyFileItem     *item,
                                                      MooCommandType     *type,
                                                      char               *options);
 
-MooCommand     *_moo_command_type_create_command    (MooCommandType     *type,
-                                                     MooCommandData     *data,
-                                                     const char         *options);
 GtkWidget      *_moo_command_type_create_widget     (MooCommandType     *type);
 void            _moo_command_type_load_data         (MooCommandType     *type,
                                                      GtkWidget          *widget,

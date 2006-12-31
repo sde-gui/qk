@@ -22,6 +22,7 @@
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooaction.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/mootype-macros.h"
 #if MOO_USE_XDGMIME
 #include "mooutils/xdgmime/xdgmime.h"
 #endif
@@ -43,8 +44,7 @@ typedef struct {
 
 typedef MooActionClass ToolActionClass;
 
-GType _moo_file_view_tool_action_get_type (void) G_GNUC_CONST;
-G_DEFINE_TYPE (ToolAction, _moo_file_view_tool_action, MOO_TYPE_ACTION)
+MOO_DEFINE_TYPE_STATIC (ToolAction, _moo_file_view_tool_action, MOO_TYPE_ACTION)
 
 
 static void

@@ -2043,6 +2043,7 @@ moo_text_buffer_delete_fold (MooTextBuffer *buffer,
 }
 
 
+#if 0
 GSList *
 moo_text_buffer_get_folds_in_range (MooTextBuffer *buffer,
                                     int            first_line,
@@ -2059,6 +2060,7 @@ moo_text_buffer_get_folds_in_range (MooTextBuffer *buffer,
 
     return _moo_fold_tree_get (buffer->priv->fold_tree, first_line, last_line);
 }
+#endif
 
 
 MooFold *

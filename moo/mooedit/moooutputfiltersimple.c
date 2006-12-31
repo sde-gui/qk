@@ -387,7 +387,7 @@ filter_store_set_filters (GSList *list)
 }
 
 
-MooOutputFilterInfo *
+static MooOutputFilterInfo *
 _moo_output_filter_info_new (void)
 {
     MooOutputFilterInfo *info = g_new0 (MooOutputFilterInfo, 1);
@@ -396,7 +396,7 @@ _moo_output_filter_info_new (void)
 }
 
 
-MooOutputFilterInfo *
+static MooOutputFilterInfo *
 _moo_output_filter_info_ref (MooOutputFilterInfo *info)
 {
     g_return_val_if_fail (info != NULL, NULL);
@@ -415,7 +415,7 @@ moo_output_pattern_info_free (MooOutputPatternInfo *p)
     }
 }
 
-void
+static void
 _moo_output_filter_info_unref (MooOutputFilterInfo *info)
 {
     guint i;

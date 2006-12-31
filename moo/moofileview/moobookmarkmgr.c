@@ -61,6 +61,8 @@ static void mgr_remove_user                 (MooBookmarkMgr *mgr,
                                              UserInfo       *info);
 static gboolean mgr_update_menus            (MooBookmarkMgr *mgr);
 
+static MooBookmark *_moo_bookmark_copy      (MooBookmark    *bookmark);
+
 
 /* MOO_TYPE_BOOKMARK_MGR */
 G_DEFINE_TYPE (MooBookmarkMgr, _moo_bookmark_mgr, G_TYPE_OBJECT)
@@ -215,15 +217,6 @@ _moo_bookmark_mgr_get_model (MooBookmarkMgr *mgr)
 }
 
 
-gboolean
-_moo_bookmark_mgr_is_empty (MooBookmarkMgr *mgr)
-{
-    GtkTreeIter iter;
-    g_return_val_if_fail (MOO_IS_BOOKMARK_MGR (mgr), TRUE);
-    return !gtk_tree_model_get_iter_first (GTK_TREE_MODEL (mgr->priv->store), &iter);
-}
-
-
 MooBookmark*
 _moo_bookmark_new (const char     *label,
                    const char     *path,
@@ -242,7 +235,7 @@ _moo_bookmark_new (const char     *label,
 }
 
 
-MooBookmark*
+static MooBookmark*
 _moo_bookmark_copy (MooBookmark *bookmark)
 {
     MooBookmark *copy;
@@ -290,6 +283,7 @@ _moo_bookmark_get_type (void)
 }
 
 
+#if 0
 void
 _moo_bookmark_set_path (MooBookmark    *bookmark,
                         const char     *path)
@@ -306,9 +300,10 @@ _moo_bookmark_set_path (MooBookmark    *bookmark,
     bookmark->display_path = display_path;
     bookmark->path = g_strdup (path);
 }
+#endif
 
 
-void
+static void
 _moo_bookmark_set_display_path (MooBookmark  *bookmark,
                                 const char   *display_path)
 {

@@ -12,7 +12,7 @@
  */
 
 #define MOOTERM_COMPILATION
-#include "mooterm/mooterm-text-private.h"
+#include "mooterm/mooterm-text.h"
 #include "mooterm/mooterm-private.h"
 #include "mooterm/mootermbuffer-private.h"
 #include "mooterm/mooterm-selection.h"
@@ -23,6 +23,13 @@ typedef struct {
     MooTermIter start;
     MooTermIter end;
 } Segment;
+
+typedef enum
+{
+    MOO_TERM_SELECT_CHARS,
+    MOO_TERM_SELECT_WORDS,
+    MOO_TERM_SELECT_LINES
+} MooTermSelectionType;
 
 #define GET_SELECTION(term__) ((Segment*)(term__)->priv->selection)
 
@@ -63,6 +70,19 @@ static void CHECK_SEGMENT (const Segment *segment)
 #define CHECK_SEGMENT(segment__)
 #endif
 
+
+static gboolean _moo_term_extend_selection  (MooTerm            *term,
+                                             MooTermSelectionType type,
+                                             MooTermIter        *end,
+                                             MooTermIter        *start);
+static void     _moo_term_get_visible_rect  (MooTerm            *term,
+                                             GdkRectangle       *rect);
+static void     _moo_term_iter_order        (MooTermIter        *first,
+                                             MooTermIter        *second);
+static void     _moo_term_place_selection_end
+                                            (MooTerm            *term,
+                                             const MooTermIter  *where);
+static gboolean _moo_term_selection_empty   (MooTerm            *term);
 
 static void     get_start_iter      (MooTerm            *term,
                                      MooTermIter        *iter);
@@ -270,7 +290,7 @@ invalidate_segment (Segment *segm, guint num)
 }
 
 
-void
+static void
 _moo_term_select_range (MooTerm            *term,
                         const MooTermIter  *start,
                         const MooTermIter  *end)
@@ -718,18 +738,7 @@ start_selection_dnd (G_GNUC_UNUSED MooTerm    *term,
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-gboolean
+static gboolean
 _moo_term_selection_empty (MooTerm    *term)
 {
     return segment_empty (GET_SELECTION (term));
@@ -919,7 +928,7 @@ static void iter_set_start  (MooTermIter        *iter)
 }
 
 
-void
+static void
 _moo_term_iter_order (MooTermIter    *first,
                       MooTermIter    *second)
 {
@@ -932,7 +941,8 @@ _moo_term_iter_order (MooTermIter    *first,
 }
 
 
-gboolean
+#if 0
+static gboolean
 _moo_term_iter_in_range (const MooTermIter  *iter,
                          const MooTermIter  *start,
                          const MooTermIter  *end)
@@ -942,9 +952,10 @@ _moo_term_iter_in_range (const MooTermIter  *iter,
     CHECK_ITER (end);
     return iter_cmp (start, iter) <= 0 && iter_cmp (iter, end) <= 0;
 }
+#endif
 
 
-void
+static void
 _moo_term_place_selection_end (MooTerm            *term,
                                const MooTermIter  *where)
 {
@@ -953,7 +964,7 @@ _moo_term_place_selection_end (MooTerm            *term,
 }
 
 
-void
+static void
 _moo_term_get_visible_rect (MooTerm            *term,
                            GdkRectangle       *rect)
 {
@@ -1027,7 +1038,7 @@ static gboolean is_word_char            (const MooTermIter  *iter);
 static gunichar iter_get_char           (const MooTermIter  *iter);
 
 
-gboolean
+static gboolean
 _moo_term_extend_selection (MooTerm            *term,
                             MooTermSelectionType type,
                             MooTermIter        *end,

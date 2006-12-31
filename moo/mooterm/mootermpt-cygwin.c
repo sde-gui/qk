@@ -105,11 +105,11 @@ static gboolean run_in_helper       (const char *cmd,
 
 
 /* MOO_TYPE_TERM_PT_CYG */
-G_DEFINE_TYPE (MooTermPtCyg, moo_term_pt_cyg, MOO_TYPE_TERM_PT)
+G_DEFINE_TYPE (MooTermPtCyg, _moo_term_pt_cyg, MOO_TYPE_TERM_PT)
 
 
 static void
-moo_term_pt_cyg_class_init (MooTermPtCygClass *klass)
+_moo_term_pt_cyg_class_init (MooTermPtCygClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     MooTermPtClass *pt_class = MOO_TERM_PT_CLASS (klass);
@@ -126,7 +126,7 @@ moo_term_pt_cyg_class_init (MooTermPtCygClass *klass)
 
 
 static void
-moo_term_pt_cyg_init (MooTermPtCyg      *pt)
+_moo_term_pt_cyg_init (MooTermPtCyg      *pt)
 {
     MOO_TERM_PT(pt)->priv->child_alive = FALSE;
 
@@ -146,7 +146,7 @@ moo_term_pt_cyg_finalize (GObject    *object)
 {
     MooTermPtCyg *pt = MOO_TERM_PT_CYG (object);
     kill_child (MOO_TERM_PT (pt));
-    G_OBJECT_CLASS (moo_term_pt_cyg_parent_class)->finalize (object);
+    G_OBJECT_CLASS (_moo_term_pt_cyg_parent_class)->finalize (object);
 }
 
 

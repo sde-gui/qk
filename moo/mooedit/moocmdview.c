@@ -73,23 +73,6 @@ enum {
 G_DEFINE_TYPE (MooCmdView, moo_cmd_view, MOO_TYPE_LINE_VIEW)
 
 
-void
-moo_cmd_view_set_window (MooCmdView *view,
-                         gpointer    window)
-{
-    g_return_if_fail (MOO_IS_CMD_VIEW (view));
-    g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
-    view->priv->window = window;
-}
-
-gpointer
-moo_cmd_view_get_window (MooCmdView *view)
-{
-    g_return_val_if_fail (MOO_IS_CMD_VIEW (view), NULL);
-    return view->priv->window;
-}
-
-
 static void
 moo_cmd_view_class_init (MooCmdViewClass *klass)
 {

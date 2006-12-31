@@ -110,12 +110,6 @@ void         moo_edit_window_add_stop_client        (MooEditWindow  *window,
 void         moo_edit_window_remove_stop_client     (MooEditWindow  *window,
                                                      gpointer        client);
 void         moo_edit_window_abort_jobs             (MooEditWindow  *window);
-void         moo_edit_window_job_started            (MooEditWindow  *window,
-                                                     const char     *name,
-                                                     MooAbortJobFunc func,
-                                                     gpointer        job);
-void         moo_edit_window_job_finished           (MooEditWindow  *window,
-                                                     gpointer        job);
 
 void         moo_edit_window_present_output         (MooEditWindow  *window);
 GtkWidget   *moo_edit_window_get_output             (MooEditWindow  *window);

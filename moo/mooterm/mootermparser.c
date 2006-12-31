@@ -42,20 +42,22 @@ G_STMT_START {                                                  \
 #endif
 
 
-static void parser_finish       (MooTermParser  *parser);
-static void flush_chars         (MooTermParser  *parser);
+static void  parser_finish          (MooTermParser  *parser);
+static void  flush_chars            (MooTermParser  *parser);
 
-static void exec_escape_sequence(MooTermParser  *parser);
-static void exec_cmd            (MooTermParser  *parser,
-                                 guchar          cmd);
-static void exec_apc            (MooTermParser  *parser,
-                                 guchar          final);
-static void exec_pm             (MooTermParser  *parser,
-                                 guchar          final);
-static void exec_osc            (MooTermParser  *parser,
-                                 guchar          final);
-static void exec_csi            (MooTermParser  *parser);
-static void exec_dcs            (MooTermParser  *parser);
+static void  exec_escape_sequence   (MooTermParser  *parser);
+static void  exec_cmd               (MooTermParser  *parser,
+                                     guchar          cmd);
+static void  exec_apc               (MooTermParser  *parser,
+                                     guchar          final);
+static void  exec_pm                (MooTermParser  *parser,
+                                     guchar          final);
+static void  exec_osc               (MooTermParser  *parser,
+                                     guchar          final);
+static void  exec_csi               (MooTermParser  *parser);
+static void  exec_dcs               (MooTermParser  *parser);
+
+static char *_moo_term_nice_char    (guchar          c);
 
 
 #define iter_free g_free
@@ -426,6 +428,7 @@ _moo_term_parser_new (MooTerm *term)
 }
 
 
+#if 0
 void
 _moo_term_parser_reset (MooTermParser  *parser)
 {
@@ -435,6 +438,7 @@ _moo_term_parser_reset (MooTermParser  *parser)
     g_string_truncate (parser->data, 0);
     g_string_truncate (parser->input.old_data, 0);
 }
+#endif
 
 
 void
@@ -1221,7 +1225,7 @@ exec_osc (MooTermParser *parser,
 }
 
 
-char *
+static char *
 _moo_term_nice_char (guchar c)
 {
     if (' ' <= c && c <= '~')

@@ -73,9 +73,6 @@ GType       _moo_file_entry_completion_get_type         (void) G_GNUC_CONST;
 
 GtkWidget  *_moo_file_entry_new                         (void);
 
-void        _moo_file_entry_completion_set_visible_func (MooFileEntryCompletion *completion,
-                                                         MooFileVisibleFunc      func,
-                                                         gpointer                data);
 void        _moo_file_entry_completion_set_entry        (MooFileEntryCompletion *completion,
                                                          GtkEntry               *entry);
 

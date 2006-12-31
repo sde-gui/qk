@@ -19,6 +19,11 @@
 #include <string.h>
 
 
+static MooActionFactory *moo_action_factory_new_valist  (GType       action_type,
+                                                         const char *first_prop_name,
+                                                         va_list     var_args);
+
+
 G_DEFINE_TYPE(MooActionFactory, moo_action_factory, G_TYPE_OBJECT)
 
 
@@ -178,7 +183,7 @@ collect_valist (GType        type,
 }
 
 
-MooActionFactory *
+static MooActionFactory *
 moo_action_factory_new_valist (GType       action_type,
                                const char *first_prop_name,
                                va_list     var_args)
@@ -290,6 +295,7 @@ moo_action_factory_create_action (MooActionFactory   *factory,
 }
 
 
+#if 0
 MooActionFactory *
 moo_action_factory_new (GType       action_type,
                         const char *first_prop_name,
@@ -306,6 +312,7 @@ moo_action_factory_new (GType       action_type,
 
     return factory;
 }
+#endif
 
 
 MooActionFactory *

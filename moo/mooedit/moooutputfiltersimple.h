@@ -68,10 +68,6 @@ GType                _moo_output_filter_simple_get_type (void) G_GNUC_CONST;
 
 void                 _moo_command_filter_simple_load    (void);
 
-MooOutputFilterInfo *_moo_output_filter_info_new        (void);
-MooOutputFilterInfo *_moo_output_filter_info_ref        (MooOutputFilterInfo    *info);
-void                 _moo_output_filter_info_unref      (MooOutputFilterInfo    *info);
-
 
 G_END_DECLS
 

@@ -1036,6 +1036,7 @@ moo_markup_create_text_element (MooMarkupNode      *parent,
 }
 
 
+#if 0
 MooMarkupNode*
 moo_markup_create_file_element (MooMarkupNode      *parent,
                                 const char         *path,
@@ -1060,7 +1061,6 @@ moo_markup_create_file_element (MooMarkupNode      *parent,
     g_free (filename_utf8);
     return elm;
 }
-
 
 char *
 moo_markup_get_file_content (MooMarkupNode *node)
@@ -1093,6 +1093,7 @@ moo_markup_save (MooMarkupDoc       *doc,
     g_free (text);
     return result;
 }
+#endif
 
 
 #define INDENT_CHAR ' '
@@ -1196,6 +1197,7 @@ moo_markup_save_pretty (MooMarkupDoc       *doc,
 }
 
 
+#if 0
 char *
 moo_markup_node_get_pretty_string (MooMarkupNode *node,
                                    guint          indent)
@@ -1213,8 +1215,7 @@ moo_markup_node_get_pretty_string (MooMarkupNode *node,
 
     return g_string_free (str, FALSE);
 }
-
-
+#endif
 
 
 MooMarkupNode *

@@ -157,7 +157,6 @@ void                moo_command_data_set_code       (MooCommandData     *data,
 const char         *moo_command_data_get            (MooCommandData     *data,
                                                      guint               index_);
 const char         *moo_command_data_get_code       (MooCommandData     *data);
-void                moo_command_data_clear          (MooCommandData     *data);
 
 
 MooCommandContext  *moo_command_context_new         (gpointer            doc,
@@ -181,8 +180,6 @@ void                moo_command_context_unset       (MooCommandContext  *ctx,
 void                moo_command_context_set_string  (MooCommandContext *ctx,
                                                      const char         *name,
                                                      const char         *value);
-const char         *moo_command_context_get_string  (MooCommandContext *ctx,
-                                                     const char         *name);
 
 typedef void (*MooCommandContextForeachFunc)        (const char         *name,
                                                      const GValue       *value,

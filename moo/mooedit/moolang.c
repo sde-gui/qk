@@ -83,14 +83,6 @@ _moo_lang_get_engine (MooLang *lang)
 }
 
 
-MooLangMgr *
-_moo_lang_get_mgr (MooLang *lang)
-{
-    g_return_val_if_fail (MOO_IS_LANG (lang), NULL);
-    return MOO_LANG_MGR (_gtk_source_language_get_languages_manager (GTK_SOURCE_LANGUAGE (lang)));
-}
-
-
 const char *
 _moo_lang_id (MooLang *lang)
 {

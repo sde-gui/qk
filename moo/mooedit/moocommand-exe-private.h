@@ -37,13 +37,6 @@ typedef enum
 } MooCommandExeOutput;
 
 
-MooCommand *_moo_command_exe_new            (const char         *exe,
-                                             MooCommandOptions   options,
-                                             MooCommandExeInput  input,
-                                             MooCommandExeOutput output,
-                                             const char         *output_filter);
-
-
 G_END_DECLS
 
 #endif /* __MOO_COMMAND_EXE_PRIVATE_H__ */

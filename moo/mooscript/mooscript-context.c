@@ -230,12 +230,13 @@ ms_context_class_init (MSContextClass *klass)
 }
 
 
-MSContext *
-ms_context_new (gpointer window)
+static MSVariable *
+ms_context_lookup_var (MSContext  *ctx,
+                       const char *name)
 {
-    MSContext *ctx = g_object_new (MS_TYPE_CONTEXT,
-                                   "window", window, NULL);
-    return ctx;
+    g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
+    g_return_val_if_fail (name != NULL, NULL);
+    return g_hash_table_lookup (ctx->priv->vars, name);
 }
 
 
@@ -342,16 +343,6 @@ ms_context_assign_positional (MSContext  *ctx,
 
     g_free (name);
     return result;
-}
-
-
-MSVariable *
-ms_context_lookup_var (MSContext  *ctx,
-                       const char *name)
-{
-    g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
-    g_return_val_if_fail (name != NULL, NULL);
-    return g_hash_table_lookup (ctx->priv->vars, name);
 }
 
 
@@ -506,6 +497,7 @@ ms_variable_new_value (MSValue *value)
 }
 
 
+#if 0
 MSVariable *
 ms_variable_new_func (MSFunc *func)
 {
@@ -518,6 +510,7 @@ ms_variable_new_func (MSFunc *func)
 
     return var;
 }
+#endif
 
 
 MSVariable *
@@ -639,6 +632,7 @@ _ms_context_error_set (MSContext *ctx)
 }
 
 
+#if 0
 MSValue *
 ms_context_run_script (MSContext  *ctx,
                        const char *script)
@@ -657,6 +651,7 @@ ms_context_run_script (MSContext  *ctx,
     ms_node_unref (node);
     return result;
 }
+#endif
 
 
 MSValue *

@@ -86,7 +86,7 @@ _moo_app_input_new (const char *pipe_basename)
 }
 
 
-MooAppInput *
+static MooAppInput *
 _moo_app_input_ref (MooAppInput *ch)
 {
     g_return_val_if_fail (ch != NULL, NULL);

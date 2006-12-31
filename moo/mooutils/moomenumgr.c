@@ -917,6 +917,7 @@ moo_menu_mgr_remove (MooMenuMgr         *mgr,
 }
 
 
+#if 0
 void
 moo_menu_mgr_remove_named (MooMenuMgr         *mgr,
                            const char         *item_id)
@@ -931,6 +932,7 @@ moo_menu_mgr_remove_named (MooMenuMgr         *mgr,
 
     mgr_remove (mgr, node);
 }
+#endif
 
 
 int

@@ -38,17 +38,21 @@ enum {
 static guint signals[LAST_SIGNAL] = {0};
 
 
-static void moo_accel_button_finalize       (GObject        *object);
-static void moo_accel_button_set_property   (GObject        *object,
-                                             guint           param_id,
-                                             const GValue   *value,
-                                             GParamSpec     *pspec);
-static void moo_accel_button_get_property   (GObject        *object,
-                                             guint           param_id,
-                                             GValue         *value,
-                                             GParamSpec     *pspec);
+static void         moo_accel_button_finalize       (GObject        *object);
+static void         moo_accel_button_set_property   (GObject        *object,
+                                                     guint           param_id,
+                                                     const GValue   *value,
+                                                     GParamSpec     *pspec);
+static void         moo_accel_button_get_property   (GObject        *object,
+                                                     guint           param_id,
+                                                     GValue         *value,
+                                                     GParamSpec     *pspec);
 
-static void moo_accel_button_clicked        (GtkButton      *button);
+static void         moo_accel_button_clicked        (GtkButton      *button);
+
+static const char  *_moo_accel_button_get_title     (MooAccelButton *button);
+static void         _moo_accel_button_set_title     (MooAccelButton *button,
+                                                     const char     *title);
 
 
 G_DEFINE_TYPE (MooAccelButton, _moo_accel_button, GTK_TYPE_BUTTON)
@@ -166,14 +170,7 @@ moo_accel_button_get_property (GObject        *object,
 }
 
 
-GtkWidget *
-_moo_accel_button_new (const char *accel)
-{
-    return g_object_new (MOO_TYPE_ACCEL_BUTTON, "accel", accel, NULL);
-}
-
-
-const char *
+static const char *
 _moo_accel_button_get_title (MooAccelButton *button)
 {
     g_return_val_if_fail (MOO_IS_ACCEL_BUTTON (button), NULL);
@@ -181,7 +178,7 @@ _moo_accel_button_get_title (MooAccelButton *button)
 }
 
 
-void
+static void
 _moo_accel_button_set_title (MooAccelButton *button,
                              const char     *title)
 {

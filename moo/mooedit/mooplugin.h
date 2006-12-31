@@ -187,14 +187,11 @@ gboolean    moo_plugin_register         (const char     *id,
                                          GType           type,
                                          const MooPluginInfo *info,
                                          const MooPluginParams *params);
-void        moo_plugin_unregister       (GType           type);
 
 gboolean    moo_plugin_initialized      (MooPlugin      *plugin);
 gboolean    moo_plugin_enabled          (MooPlugin      *plugin);
 gboolean    moo_plugin_set_enabled      (MooPlugin      *plugin,
                                          gboolean        enabled);
-
-MooPlugin  *moo_plugin_get              (GType           type);
 
 gpointer    moo_plugin_lookup           (const char     *plugin_id);
 gpointer    moo_win_plugin_lookup       (const char     *plugin_id,

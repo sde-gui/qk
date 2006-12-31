@@ -106,7 +106,7 @@ _moo_gtype_get_type (void)
 }
 
 
-void
+static void
 _moo_value_set_gtype (GValue *value,
                       GType   v_gtype)
 {
@@ -193,6 +193,7 @@ _moo_param_gtype_get_type (void)
 }
 
 
+#if 0
 GParamSpec*
 _moo_param_spec_gtype (const char     *name,
                        const char     *nick,
@@ -210,6 +211,7 @@ _moo_param_spec_gtype (const char     *name,
 
     return G_PARAM_SPEC (pspec);
 }
+#endif
 
 
 /*****************************************************************************/
@@ -638,7 +640,7 @@ _moo_value_type_supported (GType type)
 }
 
 
-gboolean
+static gboolean
 _moo_value_convert_to_bool (const GValue *val)
 {
     GValue result;
@@ -649,7 +651,7 @@ _moo_value_convert_to_bool (const GValue *val)
 }
 
 
-int
+static int
 _moo_value_convert_to_int (const GValue *val)
 {
     GValue result;
@@ -657,30 +659,6 @@ _moo_value_convert_to_int (const GValue *val)
     g_value_init (&result, G_TYPE_INT);
     _moo_value_convert (val, &result);
     return g_value_get_int (&result);
-}
-
-
-int
-_moo_value_convert_to_enum (const GValue *val,
-                            GType         enum_type)
-{
-    GValue result;
-    result.g_type = 0;
-    g_value_init (&result, enum_type);
-    _moo_value_convert (val, &result);
-    return g_value_get_enum (&result);
-}
-
-
-int
-_moo_value_convert_to_flags (const GValue *val,
-                             GType         flags_type)
-{
-    GValue result;
-    result.g_type = 0;
-    g_value_init (&result, flags_type);
-    _moo_value_convert (val, &result);
-    return g_value_get_flags (&result);
 }
 
 
@@ -694,6 +672,29 @@ _moo_value_convert_to_double (const GValue *val)
     return g_value_get_double (&result);
 }
 
+
+#if 0
+int
+_moo_value_convert_to_flags (const GValue *val,
+                             GType         flags_type)
+{
+    GValue result;
+    result.g_type = 0;
+    g_value_init (&result, flags_type);
+    _moo_value_convert (val, &result);
+    return g_value_get_flags (&result);
+}
+
+int
+_moo_value_convert_to_enum (const GValue *val,
+                            GType         enum_type)
+{
+    GValue result;
+    result.g_type = 0;
+    g_value_init (&result, enum_type);
+    _moo_value_convert (val, &result);
+    return g_value_get_enum (&result);
+}
 
 const GdkColor*
 _moo_value_convert_to_color (const GValue *val)
@@ -710,6 +711,7 @@ _moo_value_convert_to_color (const GValue *val)
     else
         return g_value_get_boxed (&result);
 }
+#endif
 
 
 const char*
@@ -851,8 +853,11 @@ _moo_value_change_type (GValue *val,
 /* GParameter array manipulation
  */
 
+#if 0
 static void         copy_param          (GParameter *dest,
                                          GParameter *src);
+typedef GParamSpec* (*MooLookupProperty)    (GObjectClass *klass,
+                                             const char   *prop_name);
 
 GParameter*
 _moo_param_array_collect (GType       type,
@@ -872,7 +877,6 @@ _moo_param_array_collect (GType       type,
 
     return array;
 }
-
 
 GParameter*
 _moo_param_array_add (GType       type,
@@ -894,7 +898,6 @@ _moo_param_array_add (GType       type,
     return copy;
 }
 
-
 GParameter*
 _moo_param_array_add_type (GParameter *src,
                            guint       len,
@@ -914,6 +917,66 @@ _moo_param_array_add_type (GParameter *src,
     return copy;
 }
 
+GParameter*
+_moo_param_array_add_type_valist (GParameter *src,
+                                  guint       len,
+                                  guint      *new_len,
+                                  const char *first_prop_name,
+                                  va_list     var_args)
+{
+    const char *name;
+    GArray *copy;
+    guint i;
+
+    g_return_val_if_fail (src != NULL, NULL);
+
+    copy = g_array_new (FALSE, TRUE, sizeof (GParameter));
+    for (i = 0; i < len; ++i) {
+        GParameter param = {NULL, {0, {{0}, {0}}}};
+        copy_param (&param, &src[i]);
+        g_array_append_val (copy, param);
+    }
+
+    name = first_prop_name;
+    while (name)
+    {
+        char *error = NULL;
+        GParameter param = {NULL, {0, {{0}, {0}}}};
+        GType type;
+
+        type = va_arg (var_args, GType);
+
+        if (G_TYPE_FUNDAMENTAL (type) == G_TYPE_INVALID)
+        {
+            g_warning ("%s: invalid type id passed", G_STRLOC);
+            _moo_param_array_free ((GParameter*)copy->data, copy->len);
+            g_array_free (copy, FALSE);
+            return NULL;
+        }
+
+        param.name = g_strdup (name);
+        g_value_init (&param.value, type);
+        G_VALUE_COLLECT (&param.value, var_args, 0, &error);
+
+        if (error)
+        {
+            g_critical ("%s: %s", G_STRLOC, error);
+            g_free (error);
+            g_value_unset (&param.value);
+            g_free ((char*)param.name);
+            _moo_param_array_free ((GParameter*)copy->data, copy->len);
+            g_array_free (copy, FALSE);
+            return NULL;
+        }
+
+        g_array_append_val (copy, param);
+
+        name = va_arg (var_args, char*);
+    }
+
+    *new_len = copy->len;
+    return (GParameter*) g_array_free (copy, FALSE);
+}
 
 GParameter*
 _moo_param_array_add_valist (GType       type,
@@ -977,69 +1040,6 @@ _moo_param_array_add_valist (GType       type,
     *new_len = copy->len;
     return (GParameter*) g_array_free (copy, FALSE);
 }
-
-
-GParameter*
-_moo_param_array_add_type_valist (GParameter *src,
-                                  guint       len,
-                                  guint      *new_len,
-                                  const char *first_prop_name,
-                                  va_list     var_args)
-{
-    const char *name;
-    GArray *copy;
-    guint i;
-
-    g_return_val_if_fail (src != NULL, NULL);
-
-    copy = g_array_new (FALSE, TRUE, sizeof (GParameter));
-    for (i = 0; i < len; ++i) {
-        GParameter param = {NULL, {0, {{0}, {0}}}};
-        copy_param (&param, &src[i]);
-        g_array_append_val (copy, param);
-    }
-
-    name = first_prop_name;
-    while (name)
-    {
-        char *error = NULL;
-        GParameter param = {NULL, {0, {{0}, {0}}}};
-        GType type;
-
-        type = va_arg (var_args, GType);
-
-        if (G_TYPE_FUNDAMENTAL (type) == G_TYPE_INVALID)
-        {
-            g_warning ("%s: invalid type id passed", G_STRLOC);
-            _moo_param_array_free ((GParameter*)copy->data, copy->len);
-            g_array_free (copy, FALSE);
-            return NULL;
-        }
-
-        param.name = g_strdup (name);
-        g_value_init (&param.value, type);
-        G_VALUE_COLLECT (&param.value, var_args, 0, &error);
-
-        if (error)
-        {
-            g_critical ("%s: %s", G_STRLOC, error);
-            g_free (error);
-            g_value_unset (&param.value);
-            g_free ((char*)param.name);
-            _moo_param_array_free ((GParameter*)copy->data, copy->len);
-            g_array_free (copy, FALSE);
-            return NULL;
-        }
-
-        g_array_append_val (copy, param);
-
-        name = va_arg (var_args, char*);
-    }
-
-    *new_len = copy->len;
-    return (GParameter*) g_array_free (copy, FALSE);
-}
-
 
 GParameter*
 _moo_param_array_collect_valist (GType       type,
@@ -1107,6 +1107,16 @@ _moo_param_array_collect_valist (GType       type,
     return (GParameter*) g_array_free (params, FALSE);
 }
 
+static void
+copy_param (GParameter *dest,
+            GParameter *src)
+{
+    dest->name = g_strdup (src->name);
+    g_value_init (&dest->value, G_VALUE_TYPE (&src->value));
+    g_value_copy (&src->value, &dest->value);
+}
+#endif
+
 
 void
 _moo_param_array_free (GParameter *array,
@@ -1121,16 +1131,6 @@ _moo_param_array_free (GParameter *array,
     }
 
     g_free (array);
-}
-
-
-static void
-copy_param (GParameter *dest,
-            GParameter *src)
-{
-    dest->name = g_strdup (src->name);
-    g_value_init (&dest->value, G_VALUE_TYPE (&src->value));
-    g_value_copy (&src->value, &dest->value);
 }
 
 
@@ -1435,7 +1435,7 @@ prop_watch_check (PropWatch *watch)
 }
 
 
-void
+static void
 _moo_copy_boolean (GValue             *target,
                    const GValue       *source,
                    G_GNUC_UNUSED gpointer dummy)
@@ -1444,7 +1444,7 @@ _moo_copy_boolean (GValue             *target,
 }
 
 
-void
+static void
 _moo_invert_boolean (GValue             *target,
                      const GValue       *source,
                      G_GNUC_UNUSED gpointer dummy)
@@ -1473,6 +1473,7 @@ moo_bind_bool_property (gpointer            target,
 }
 
 
+#if 0
 gboolean
 _moo_sync_bool_property (gpointer            slave,
                          const char         *slave_prop,
@@ -1494,6 +1495,7 @@ _moo_sync_bool_property (gpointer            slave,
 
     return id1 && id2;
 }
+#endif
 
 
 void
@@ -1511,6 +1513,7 @@ moo_bind_sensitive (GtkWidget          *btn,
 }
 
 
+#if 0
 gboolean
 _moo_watch_remove (guint watch_id)
 {
@@ -1694,7 +1697,7 @@ _moo_bind_signal (gpointer            target,
 
     return watch->parent.id;
 }
-
+#endif
 
 
 /*****************************************************************************/
@@ -1711,21 +1714,28 @@ struct _MooData
 };
 
 
-GType
-_moo_ptr_get_type (void)
+static MooPtr *
+_moo_ptr_ref (MooPtr *ptr)
 {
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooPtr",
-                                             (GBoxedCopyFunc) _moo_ptr_ref,
-                                             (GBoxedFreeFunc) _moo_ptr_unref);
-
-    return type;
+    if (ptr)
+        ptr->ref_count++;
+    return ptr;
 }
 
 
-MooPtr*
+static void
+_moo_ptr_unref (MooPtr *ptr)
+{
+    if (ptr && !--(ptr->ref_count))
+    {
+        if (ptr->free_func)
+            ptr->free_func (ptr->data);
+        g_free (ptr);
+    }
+}
+
+
+static MooPtr *
 _moo_ptr_new (gpointer        data,
               GDestroyNotify  free_func)
 {
@@ -1743,23 +1753,36 @@ _moo_ptr_new (gpointer        data,
 }
 
 
-MooPtr *
-_moo_ptr_ref (MooPtr *ptr)
+GType
+_moo_ptr_get_type (void)
 {
-    if (ptr)
-        ptr->ref_count++;
-    return ptr;
+    static GType type = 0;
+
+    if (G_UNLIKELY (!type))
+        type = g_boxed_type_register_static ("MooPtr",
+                                             (GBoxedCopyFunc) _moo_ptr_ref,
+                                             (GBoxedFreeFunc) _moo_ptr_unref);
+
+    return type;
+}
+
+
+static MooData *
+_moo_data_ref (MooData *data)
+{
+    if (data)
+        data->ref_count++;
+    return data;
 }
 
 
 void
-_moo_ptr_unref (MooPtr *ptr)
+_moo_data_unref (MooData *data)
 {
-    if (ptr && !--(ptr->ref_count))
+    if (data && !--(data->ref_count))
     {
-        if (ptr->free_func)
-            ptr->free_func (ptr->data);
-        g_free (ptr);
+        g_hash_table_destroy (data->hash);
+        g_free (data);
     }
 }
 
@@ -1829,26 +1852,6 @@ _moo_data_new (GHashFunc       hash_func,
 }
 
 
-MooData *
-_moo_data_ref (MooData *data)
-{
-    if (data)
-        data->ref_count++;
-    return data;
-}
-
-
-void
-_moo_data_unref (MooData *data)
-{
-    if (data && !--(data->ref_count))
-    {
-        g_hash_table_destroy (data->hash);
-        g_free (data);
-    }
-}
-
-
 void
 _moo_data_insert_value (MooData        *data,
                         gpointer        key,
@@ -1907,13 +1910,13 @@ _moo_data_clear (MooData *data)
 }
 
 
+#if 0
 guint
 _moo_data_size (MooData *data)
 {
     g_return_val_if_fail (data != NULL, 0);
     return g_hash_table_size (data->hash);
 }
-
 
 gboolean
 _moo_data_has_key (MooData  *data,
@@ -1922,7 +1925,6 @@ _moo_data_has_key (MooData  *data,
     g_return_val_if_fail (data != NULL, FALSE);
     return g_hash_table_lookup (data->hash, key) != NULL;
 }
-
 
 GType
 _moo_data_get_value_type (MooData  *data,
@@ -1933,6 +1935,7 @@ _moo_data_get_value_type (MooData  *data,
     value = g_hash_table_lookup (data->hash, key);
     return value ? G_VALUE_TYPE (value) : G_TYPE_NONE;
 }
+#endif
 
 
 gboolean

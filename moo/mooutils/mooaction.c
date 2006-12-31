@@ -18,6 +18,10 @@
 #include <string.h>
 
 
+static void _moo_action_set_closure (MooAction  *action,
+                                     MooClosure *closure);
+
+
 gpointer
 _moo_action_get_window (gpointer action)
 {
@@ -328,7 +332,7 @@ moo_action_get_property (GObject    *object,
 }
 
 
-void
+static void
 _moo_action_set_closure (MooAction  *action,
                          MooClosure *closure)
 {
@@ -350,6 +354,9 @@ _moo_action_set_closure (MooAction  *action,
 /*****************************************************************************/
 /* MooToggleAction
  */
+
+typedef void (*MooToggleActionCallback)     (gpointer            data,
+                                             gboolean            active);
 
 struct _MooToggleActionPrivate {
     MooToggleActionCallback callback;
@@ -412,6 +419,31 @@ moo_toggle_action_toggled (GtkToggleAction *gtkaction)
 }
 
 
+static void
+_moo_toggle_action_set_callback (MooToggleAction    *action,
+                                 MooToggleActionCallback callback,
+                                 gpointer            data,
+                                 gboolean            object)
+{
+    g_return_if_fail (MOO_IS_TOGGLE_ACTION (action));
+    g_return_if_fail (!object || G_IS_OBJECT (data));
+
+    action->priv->callback = callback;
+    if (action->priv->ptr)
+        _moo_object_ptr_free (action->priv->ptr);
+    action->priv->ptr = NULL;
+    action->priv->data = NULL;
+
+    if (callback)
+    {
+        if (object)
+            action->priv->ptr = _moo_object_ptr_new (data, NULL, NULL);
+        else
+            action->priv->data = data;
+    }
+}
+
+
 static GObject *
 moo_toggle_action_constructor (GType                  type,
                                guint                  n_props,
@@ -449,31 +481,6 @@ moo_toggle_action_constructor (GType                  type,
     }
 
     return object;
-}
-
-
-void
-_moo_toggle_action_set_callback (MooToggleAction    *action,
-                                 MooToggleActionCallback callback,
-                                 gpointer            data,
-                                 gboolean            object)
-{
-    g_return_if_fail (MOO_IS_TOGGLE_ACTION (action));
-    g_return_if_fail (!object || G_IS_OBJECT (data));
-
-    action->priv->callback = callback;
-    if (action->priv->ptr)
-        _moo_object_ptr_free (action->priv->ptr);
-    action->priv->ptr = NULL;
-    action->priv->data = NULL;
-
-    if (callback)
-    {
-        if (object)
-            action->priv->ptr = _moo_object_ptr_new (data, NULL, NULL);
-        else
-            action->priv->data = data;
-    }
 }
 
 

@@ -23,9 +23,9 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_TERM_PT            (moo_term_pt_get_type ())
-#define MOO_TYPE_TERM_PT_CYG        (moo_term_pt_cyg_get_type ())
-#define MOO_TYPE_TERM_PT_UNIX       (moo_term_pt_unix_get_type ())
+#define MOO_TYPE_TERM_PT            (_moo_term_pt_get_type ())
+#define MOO_TYPE_TERM_PT_CYG        (_moo_term_pt_cyg_get_type ())
+#define MOO_TYPE_TERM_PT_UNIX       (_moo_term_pt_unix_get_type ())
 
 #define MOO_TERM_PT(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOO_TYPE_TERM_PT, MooTermPt))
 #define MOO_TERM_PT_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  MOO_TYPE_TERM_PT, MooTermPtClass))
@@ -67,9 +67,9 @@ struct _MooTermPtClass {
 };
 
 
-GType           moo_term_pt_get_type        (void) G_GNUC_CONST;
-GType           moo_term_pt_unix_get_type   (void) G_GNUC_CONST;
-GType           moo_term_pt_cyg_get_type    (void) G_GNUC_CONST;
+GType           _moo_term_pt_get_type       (void) G_GNUC_CONST;
+GType           _moo_term_pt_unix_get_type  (void) G_GNUC_CONST;
+GType           _moo_term_pt_cyg_get_type   (void) G_GNUC_CONST;
 
 /* creates MooTermPtCyg or MooTermPtUnix instance, depending on platform */
 MooTermPt      *_moo_term_pt_new            (struct _MooTerm *term);

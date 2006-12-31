@@ -695,6 +695,7 @@ get_icons_a_bit (MooFolderImpl *impl)
 }
 
 
+#if 0
 MooFile *
 _moo_folder_get_file (MooFolder  *folder,
                       const char *basename)
@@ -704,6 +705,7 @@ _moo_folder_get_file (MooFolder  *folder,
     g_return_val_if_fail (basename != NULL, NULL);
     return g_hash_table_lookup (folder->impl->files, basename);
 }
+#endif
 
 
 char *

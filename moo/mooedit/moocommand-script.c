@@ -21,6 +21,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mootype-macros.h"
 #include <string.h>
 
 
@@ -32,8 +33,11 @@ G_DEFINE_TYPE (MooCommandScript, moo_command_script, MOO_TYPE_COMMAND)
 
 typedef MooCommandType MooCommandTypeScript;
 typedef MooCommandTypeClass MooCommandTypeScriptClass;
-GType _moo_command_type_script_get_type (void) G_GNUC_CONST;
-G_DEFINE_TYPE (MooCommandTypeScript, _moo_command_type_script, MOO_TYPE_COMMAND_TYPE)
+MOO_DEFINE_TYPE_STATIC (MooCommandTypeScript, _moo_command_type_script, MOO_TYPE_COMMAND_TYPE)
+
+
+static MooCommand  *moo_command_script_new  (const char         *script,
+                                             MooCommandOptions   options);
 
 
 static void
@@ -248,7 +252,7 @@ moo_command_script_init (MooCommandScript *cmd)
 }
 
 
-MooCommand *
+static MooCommand *
 moo_command_script_new (const char       *script,
                         MooCommandOptions options)
 {

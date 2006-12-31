@@ -355,7 +355,7 @@ merge_nodes (BTNode *parent, guint first)
 }
 
 
-void
+static void
 _moo_text_btree_delete (BTree          *tree,
                         guint           index_,
                         GSList        **deleted_marks)

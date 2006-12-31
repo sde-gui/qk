@@ -80,10 +80,6 @@ gboolean    moo_cmd_view_run_command_full   (MooCmdView         *view,
                                              char              **envp,
                                              const char         *job_name);
 
-void        moo_cmd_view_set_window         (MooCmdView         *view,
-                                             gpointer            window);
-gpointer    moo_cmd_view_get_window         (MooCmdView         *view);
-
 void        moo_cmd_view_abort              (MooCmdView         *view);
 gboolean    moo_cmd_view_running            (MooCmdView         *view);
 

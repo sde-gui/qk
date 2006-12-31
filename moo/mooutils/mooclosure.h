@@ -67,7 +67,6 @@ void        moo_closure_invalidate          (MooClosure *closure);
 MooObjectPtr *_moo_object_ptr_new           (GObject    *object,
                                              GWeakNotify notify,
                                              gpointer    data);
-void        _moo_object_ptr_die             (MooObjectPtr *ptr);
 void        _moo_object_ptr_free            (MooObjectPtr *ptr);
 
 

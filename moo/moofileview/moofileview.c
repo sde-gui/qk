@@ -186,6 +186,20 @@ static gboolean     moo_file_view_chdir_real    (MooFileView    *fileview,
                                                  const char     *dir,
                                                  GError        **error);
 static void         moo_file_view_reload        (MooFileView    *fileview);
+static void         _moo_file_view_select_display_name (MooFileView *fileview,
+                                                 const char     *name);
+
+static void         _moo_file_view_set_show_hidden              (MooFileView    *fileview,
+                                                                 gboolean        show);
+static void         _moo_file_view_set_show_parent              (MooFileView    *fileview,
+                                                                 gboolean        show);
+static void         _moo_file_view_set_sort_case_sensitive      (MooFileView    *fileview,
+                                                                 gboolean        case_sensitive);
+static void         _moo_file_view_set_typeahead_case_sensitive (MooFileView    *fileview,
+                                                                 gboolean        case_sensitive);
+
+static void         _moo_file_view_set_view_type                (MooFileView    *fileview,
+                                                                 MooFileViewType type);
 
 static void         moo_file_view_go_up     (MooFileView    *fileview);
 static void         moo_file_view_go_home   (MooFileView    *fileview);
@@ -931,13 +945,6 @@ moo_file_view_hide (GtkWidget *widget)
 }
 
 
-GtkWidget *
-_moo_file_view_new (void)
-{
-    return GTK_WIDGET (g_object_new (MOO_TYPE_FILE_VIEW, NULL));
-}
-
-
 static void
 moo_file_view_set_current_dir (MooFileView  *fileview,
                                MooFolder    *folder)
@@ -1323,7 +1330,7 @@ focus_to_filter_entry (MooFileView *fileview)
 }
 
 
-void
+static void
 _moo_file_view_set_view_type (MooFileView    *fileview,
                               MooFileViewType type)
 {
@@ -2633,7 +2640,7 @@ out:
 /* Sorting and stuff
  */
 
-void
+static void
 _moo_file_view_set_sort_case_sensitive (MooFileView    *fileview,
                                         gboolean        case_sensitive)
 {
@@ -3284,7 +3291,7 @@ file_list_button_press (MooFileView    *fileview,
 }
 
 
-void
+static void
 _moo_file_view_set_show_hidden (MooFileView    *fileview,
                                gboolean        show)
 {
@@ -3302,7 +3309,7 @@ _moo_file_view_set_show_hidden (MooFileView    *fileview,
 }
 
 
-void
+static void
 _moo_file_view_set_show_parent (MooFileView    *fileview,
                                gboolean        show)
 {
@@ -3572,7 +3579,7 @@ _moo_file_view_select_name (MooFileView *fileview,
 }
 
 
-void
+static void
 _moo_file_view_select_display_name (MooFileView *fileview,
                                     const char  *name)
 {
@@ -4632,7 +4639,7 @@ typeahead_destroy (MooFileView *fileview)
 }
 
 
-void
+static void
 _moo_file_view_set_typeahead_case_sensitive (MooFileView *fileview,
                                              gboolean     case_sensitive)
 {

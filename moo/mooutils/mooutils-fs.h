@@ -70,22 +70,14 @@ char           *_moo_normalize_file_path    (const char *filename);
 
 int             _moo_unlink                 (const char *path);
 int             _moo_mkdir                  (const char *path); /* S_IRWXU on unix */
-int             _moo_rmdir                  (const char *path);
 int             _moo_remove                 (const char *path);
 gpointer        _moo_fopen                  (const char *path,
                                              const char *mode);
 int             _moo_rename                 (const char *old_name,
                                              const char *new_name);
-int             _moo_chdir                  (const char *path);
 
-
-typedef struct _MooGlob MooGlob;
-MooGlob        *_moo_glob_new               (const char *pattern);
-gboolean        _moo_glob_match             (MooGlob    *glob,
-                                             const char *filename);
 gboolean        _moo_glob_match_simple      (const char *pattern,
                                              const char *filename);
-void            _moo_glob_free              (MooGlob    *glob);
 
 
 G_END_DECLS

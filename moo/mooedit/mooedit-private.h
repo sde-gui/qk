@@ -74,9 +74,6 @@ void        _moo_edit_init_config               (void);
 void        _moo_edit_update_lang_config        (void);
 
 void        _moo_edit_apply_prefs               (MooEdit        *edit);
-void        _moo_edit_freeze_config_notify      (MooEdit        *edit);
-void        _moo_edit_thaw_config_notify        (MooEdit        *edit);
-void        _moo_edit_update_config_from_global (MooEdit        *edit);
 
 
 /***********************************************************************/
@@ -86,12 +83,9 @@ void        _moo_edit_update_config_from_global (MooEdit        *edit);
 void        _moo_edit_set_filename              (MooEdit        *edit,
                                                  const char     *file,
                                                  const char     *encoding);
-char        *_moo_edit_filename_to_utf8         (const char     *filename);
 
-void         _moo_edit_start_file_watch         (MooEdit        *edit);
 void         _moo_edit_stop_file_watch          (MooEdit        *edit);
 
-MooEdit     *_moo_edit_new                      (MooEditor      *editor);
 void         _moo_edit_set_status               (MooEdit        *edit,
                                                  MooEditStatus   status);
 

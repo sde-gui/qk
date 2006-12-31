@@ -48,11 +48,8 @@ GType        _moo_link_label_get_type   (void) G_GNUC_CONST;
 GtkWidget   *_moo_link_label_new        (const char     *text,
                                          const char     *url);
 
-const char  *_moo_link_label_get_text   (MooLinkLabel   *label);
 void         _moo_link_label_set_text   (MooLinkLabel   *label,
                                          const char     *text);
-
-const char  *_moo_link_label_get_url    (MooLinkLabel   *label);
 void         _moo_link_label_set_url    (MooLinkLabel   *label,
                                          const char     *url);
 

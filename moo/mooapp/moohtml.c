@@ -128,6 +128,9 @@ static gboolean moo_html_motion             (GtkWidget      *widget,
 
 static gboolean moo_html_load_url_real      (MooHtml        *html,
                                              const char     *url);
+static gboolean _moo_html_load_file         (MooHtml        *html,
+                                             const char     *file,
+                                             const char     *encoding);
 static void     moo_html_clear              (MooHtml        *html);
 static void     moo_html_set_doc            (MooHtml        *html,
                                              htmlDocPtr      doc);
@@ -160,8 +163,8 @@ static void     moo_html_make_heading_tag   (MooHtml        *html,
 static void     init_funcs                  (void);
 
 
-G_DEFINE_TYPE (MooHtml, moo_html, GTK_TYPE_TEXT_VIEW)
-G_DEFINE_TYPE (MooHtmlTag, moo_html_tag, GTK_TYPE_TEXT_TAG)
+G_DEFINE_TYPE (MooHtml, _moo_html, GTK_TYPE_TEXT_VIEW)
+G_DEFINE_TYPE (MooHtmlTag, _moo_html_tag, GTK_TYPE_TEXT_TAG)
 
 enum {
     HTML_PROP_0,
@@ -189,7 +192,7 @@ static guint html_signals[NUM_HTML_SIGNALS];
  */
 
 static void
-moo_html_tag_class_init (MooHtmlTagClass *klass)
+_moo_html_tag_class_init (MooHtmlTagClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
@@ -208,7 +211,7 @@ moo_html_tag_class_init (MooHtmlTagClass *klass)
 
 
 static void
-moo_html_tag_init (MooHtmlTag *tag)
+_moo_html_tag_init (MooHtmlTag *tag)
 {
     tag->href = NULL;
     tag->parent = NULL;
@@ -266,7 +269,7 @@ moo_html_tag_finalize (GObject        *object)
     moo_html_attr_free (tag->attr);
     g_free (tag->href);
 
-    G_OBJECT_CLASS(moo_html_tag_parent_class)->finalize (object);
+    G_OBJECT_CLASS(_moo_html_tag_parent_class)->finalize (object);
 }
 
 
@@ -275,7 +278,7 @@ moo_html_tag_finalize (GObject        *object)
  */
 
 static void
-moo_html_class_init (MooHtmlClass *klass)
+_moo_html_class_init (MooHtmlClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
@@ -332,7 +335,7 @@ moo_html_class_init (MooHtmlClass *klass)
 
 
 static void
-moo_html_init (MooHtml *html)
+_moo_html_init (MooHtml *html)
 {
     html->priv = g_new0 (MooHtmlPrivate, 1);
 
@@ -397,7 +400,7 @@ moo_html_set_property (GObject        *object,
             if (!string)
                 string = "";
 
-            moo_html_load_memory (html, string, -1, NULL, NULL);
+            _moo_html_load_memory (html, string, -1, NULL, NULL);
             break;
 
         default:
@@ -453,14 +456,7 @@ moo_html_finalize (GObject      *object)
 
     g_free (html->priv);
 
-    G_OBJECT_CLASS (moo_html_parent_class)->finalize (object);
-}
-
-
-GtkWidget*
-moo_html_new (void)
-{
-    return GTK_WIDGET (g_object_new (MOO_TYPE_HTML, NULL));
+    G_OBJECT_CLASS (_moo_html_parent_class)->finalize (object);
 }
 
 
@@ -502,7 +498,7 @@ moo_html_load_url_real (MooHtml        *html,
         {
             char *filename = g_build_filename (html->priv->dirname, base, NULL);
 
-            result = moo_html_load_file (html, filename, NULL);
+            result = _moo_html_load_file (html, filename, NULL);
 
             if (result && anchor)
                 moo_html_goto_anchor (html, anchor);
@@ -512,7 +508,7 @@ moo_html_load_url_real (MooHtml        *html,
     }
     else
     {
-        result = moo_html_load_file (html, base, NULL);
+        result = _moo_html_load_file (html, base, NULL);
 
         if (result && anchor)
             moo_html_goto_anchor (html, anchor);
@@ -566,11 +562,11 @@ moo_html_clear (MooHtml        *html)
 
 
 gboolean
-moo_html_load_memory (MooHtml            *html,
-                      const char         *buffer,
-                      int                 size,
-                      const char         *url,
-                      const char         *encoding)
+_moo_html_load_memory (MooHtml            *html,
+                       const char         *buffer,
+                       int                 size,
+                       const char         *url,
+                       const char         *encoding)
 {
     htmlDocPtr doc;
 
@@ -603,10 +599,10 @@ moo_html_load_memory (MooHtml            *html,
 }
 
 
-gboolean
-moo_html_load_file (MooHtml            *html,
-                    const char         *file,
-                    const char         *encoding)
+static gboolean
+_moo_html_load_file (MooHtml            *html,
+                     const char         *file,
+                     const char         *encoding)
 {
     htmlDocPtr doc;
 
@@ -1044,7 +1040,7 @@ moo_html_motion (GtkWidget      *widget,
     }
 
 out:
-    return GTK_WIDGET_CLASS(moo_html_parent_class)->motion_notify_event (widget, event);
+    return GTK_WIDGET_CLASS(_moo_html_parent_class)->motion_notify_event (widget, event);
 }
 
 
@@ -1086,7 +1082,7 @@ moo_html_button_press (GtkWidget      *widget,
     MooHtml *html = MOO_HTML (widget);
     html->priv->button_pressed = TRUE;
     html->priv->in_drag = FALSE;
-    return GTK_WIDGET_CLASS(moo_html_parent_class)->button_press_event (widget, event);
+    return GTK_WIDGET_CLASS(_moo_html_parent_class)->button_press_event (widget, event);
 }
 
 
@@ -1125,7 +1121,7 @@ moo_html_button_release (GtkWidget      *widget,
     }
 
 out:
-    return GTK_WIDGET_CLASS(moo_html_parent_class)->button_release_event (widget, event);
+    return GTK_WIDGET_CLASS(_moo_html_parent_class)->button_release_event (widget, event);
 }
 
 
@@ -1187,6 +1183,7 @@ moo_html_goto_anchor (MooHtml        *html,
 }
 
 
+#if 0
 void
 moo_html_set_font (MooHtml            *html,
                    const char         *string)
@@ -1202,6 +1199,7 @@ moo_html_set_font (MooHtml            *html,
     gtk_widget_modify_font (GTK_WIDGET (html), font);
     pango_font_description_free (font);
 }
+#endif
 
 
 static void
@@ -1213,7 +1211,7 @@ moo_html_size_allocate (GtkWidget      *widget,
     GSList *l;
     GdkWindow *window;
 
-    GTK_WIDGET_CLASS(moo_html_parent_class)->size_allocate (widget, allocation);
+    GTK_WIDGET_CLASS(_moo_html_parent_class)->size_allocate (widget, allocation);
 
     if (!GTK_WIDGET_REALIZED (widget))
         return;

@@ -63,12 +63,6 @@ GType               moo_action_factory_get_type     (void) G_GNUC_CONST;
 
 MooActionFactory   *moo_action_factory_new_func     (MooActionFactoryFunc factory_func,
                                                      gpointer            data);
-MooActionFactory   *moo_action_factory_new          (GType               action_type,
-                                                     const char         *first_prop_name,
-                                                     ...) G_GNUC_NULL_TERMINATED;
-MooActionFactory   *moo_action_factory_new_valist   (GType               object_type,
-                                                     const char         *first_prop_name,
-                                                     va_list             var_args);
 MooActionFactory   *moo_action_factory_new_a        (GType               object_type,
                                                      GParameter         *params,
                                                      guint               n_params);

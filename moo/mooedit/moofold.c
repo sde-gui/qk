@@ -25,6 +25,8 @@
 static void     moo_fold_finalize           (GObject    *object);
 static void     moo_fold_free_recursively   (MooFold    *fold);
 
+static int      _moo_fold_get_end           (MooFold    *fold);
+
 
 /* MOO_TYPE_FOLD */
 G_DEFINE_TYPE (MooFold, moo_fold, G_TYPE_OBJECT)
@@ -90,7 +92,7 @@ _moo_fold_get_start (MooFold *fold)
 }
 
 
-int
+static int
 _moo_fold_get_end (MooFold *fold)
 {
     g_return_val_if_fail (MOO_IS_FOLD (fold), -1);

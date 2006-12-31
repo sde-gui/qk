@@ -36,6 +36,13 @@
 
 G_DEFINE_TYPE (MooGladeXML, moo_glade_xml, G_TYPE_OBJECT)
 
+typedef enum {
+    MOO_GLADE_XML_ERROR_FAILED
+} MooGladeXMLError;
+
+#define MOO_GLADE_XML_ERROR (moo_glade_xml_error_quark ())
+static GQuark moo_glade_xml_error_quark (void) G_GNUC_CONST;
+
 
 #define FOREACH_ELM_START(parent,elm)                           \
 G_STMT_START {                                                  \
@@ -2553,7 +2560,7 @@ func_data_pair_free (FuncDataPair *pair)
 }
 
 
-GQuark
+static GQuark
 moo_glade_xml_error_quark (void)
 {
     return g_quark_from_static_string ("moo-glade-xml-error");

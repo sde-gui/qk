@@ -92,17 +92,7 @@ GtkTreeModel *_moo_icon_view_get_model        (MooIconView    *view);
 void          _moo_icon_view_set_model        (MooIconView    *view,
                                                GtkTreeModel   *model);
 
-void          _moo_icon_view_set_cell         (MooIconView    *view,
-                                               MooIconViewCell cell_type,
-                                               GtkCellRenderer*cell);
 GtkCellRenderer *_moo_icon_view_get_cell      (MooIconView    *view,
-                                               MooIconViewCell cell_type);
-
-void          _moo_icon_view_set_attributes   (MooIconView    *view,
-                                               MooIconViewCell cell_type,
-                                               const char     *first_attr,
-                                               ...) G_GNUC_NULL_TERMINATED;
-void          _moo_icon_view_clear_attributes (MooIconView    *view,
                                                MooIconViewCell cell_type);
 
 void          _moo_icon_view_set_cell_data_func(MooIconView    *view,
@@ -110,10 +100,6 @@ void          _moo_icon_view_set_cell_data_func(MooIconView    *view,
                                                MooIconCellDataFunc func,
                                                gpointer        func_data,
                                                GDestroyNotify  destroy);
-
-void          _moo_icon_view_set_adjustment   (MooIconView    *view,
-                                               GtkAdjustment  *adjustment);
-
 
 /* TreeView-like selection and cursor interface */
 void        _moo_icon_view_set_selection_mode   (MooIconView        *view,
@@ -125,17 +111,8 @@ void        _moo_icon_view_selected_foreach     (MooIconView        *view,
                                                  MooIconViewForeachFunc func,
                                                  gpointer data);
 GList*      _moo_icon_view_get_selected_rows    (MooIconView        *view);
-gint        _moo_icon_view_count_selected_rows  (MooIconView        *view);
-void        _moo_icon_view_select_path          (MooIconView        *view,
-                                                 GtkTreePath        *path);
-void        _moo_icon_view_unselect_path        (MooIconView        *view,
-                                                 GtkTreePath        *path);
-void        _moo_icon_view_select_range         (MooIconView        *view,
-                                                 GtkTreePath        *start,
-                                                 GtkTreePath        *end);
 gboolean    _moo_icon_view_path_is_selected     (MooIconView        *view,
                                                  GtkTreePath        *path);
-void        _moo_icon_view_select_all           (MooIconView        *view);
 void        _moo_icon_view_unselect_all         (MooIconView        *view);
 
 void        _moo_icon_view_scroll_to_cell       (MooIconView        *view,
@@ -143,9 +120,6 @@ void        _moo_icon_view_scroll_to_cell       (MooIconView        *view,
 void        _moo_icon_view_set_cursor           (MooIconView        *view,
                                                  GtkTreePath        *path,
                                                  gboolean            start_editing);
-GtkTreePath* _moo_icon_view_get_cursor          (MooIconView        *view);
-void        _moo_icon_view_row_activated        (MooIconView        *view,
-                                                 GtkTreePath        *path);
 
 void        _moo_icon_view_widget_to_abs_coords (MooIconView        *view,
                                                  int                 wx,
@@ -171,8 +145,6 @@ void        _moo_icon_view_enable_drag_source   (MooIconView        *view,
                                                  GtkTargetEntry     *targets,
                                                  gint                n_targets,
                                                  GdkDragAction       actions);
-GtkTargetList *_moo_icon_view_get_source_targets(MooIconView        *view);
-void        _moo_icon_view_disable_drag_source  (MooIconView        *view);
 
 void        _moo_icon_view_enable_drag_dest     (MooIconView        *view,
                                                  GtkTargetEntry     *targets,
@@ -180,7 +152,6 @@ void        _moo_icon_view_enable_drag_dest     (MooIconView        *view,
                                                  GdkDragAction       actions);
 void        _moo_icon_view_set_dest_targets     (MooIconView        *view,
                                                  GtkTargetList      *targets);
-void        _moo_icon_view_disable_drag_dest    (MooIconView        *view);
 void        _moo_icon_view_set_drag_dest_row    (MooIconView        *view,
                                                  GtkTreePath        *path);
 GtkTreePath *_moo_icon_view_get_drag_dest_row   (MooIconView        *view);

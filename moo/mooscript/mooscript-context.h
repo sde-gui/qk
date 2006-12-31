@@ -62,14 +62,8 @@ struct _MSContextClass {
 GType        ms_context_get_type            (void) G_GNUC_CONST;
 
 MSVariable  *ms_variable_new_value          (MSValue    *value);
-MSVariable  *ms_variable_new_func           (MSFunc     *func);
 MSVariable  *ms_variable_ref                (MSVariable *var);
 void         ms_variable_unref              (MSVariable *var);
-
-MSContext   *ms_context_new                 (gpointer    window);
-
-MSValue     *ms_context_run_script          (MSContext  *ctx,
-                                             const char *script);
 
 MSValue     *ms_context_eval_variable       (MSContext  *ctx,
                                              const char *name);
@@ -86,8 +80,6 @@ gboolean     ms_context_assign_string       (MSContext  *ctx,
 MSValue     *ms_context_get_env_variable    (MSContext  *ctx,
                                              const char *name);
 
-MSVariable  *ms_context_lookup_var          (MSContext  *ctx,
-                                             const char *name);
 gboolean     ms_context_set_var             (MSContext  *ctx,
                                              const char *name,
                                              MSVariable *var);

@@ -113,7 +113,7 @@ static GtkTargetEntry dest_targets[] = {
 static void     action_checks_init              (void);
 static void     moo_edit_window_check_actions   (MooEditWindow      *window);
 
-GObject        *moo_edit_window_constructor     (GType               type,
+static GObject *moo_edit_window_constructor     (GType               type,
                                                  guint               n_props,
                                                  GObjectConstructParam *props);
 static void     moo_edit_window_finalize        (GObject            *object);
@@ -1013,7 +1013,7 @@ moo_edit_window_set_title_prefix (MooEditWindow *window,
 /* Constructing
  */
 
-GObject *
+static GObject *
 moo_edit_window_constructor (GType                  type,
                              guint                  n_props,
                              GObjectConstructParam *props)
@@ -3308,6 +3308,13 @@ typedef struct {
     MooAbortJobFunc abort;
 } Job;
 
+static void moo_edit_window_job_finished (MooEditWindow  *window,
+                                          gpointer        job);
+static void moo_edit_window_job_started  (MooEditWindow  *window,
+                                          const char     *name,
+                                          MooAbortJobFunc func,
+                                          gpointer        job);
+
 
 static void
 client_died (MooEditWindow  *window,
@@ -3430,7 +3437,7 @@ moo_edit_window_abort_jobs (MooEditWindow *window)
 }
 
 
-void
+static void
 moo_edit_window_job_started (MooEditWindow  *window,
                              G_GNUC_UNUSED const char *name,
                              MooAbortJobFunc func,
@@ -3455,7 +3462,7 @@ moo_edit_window_job_started (MooEditWindow  *window,
 }
 
 
-void
+static void
 moo_edit_window_job_finished (MooEditWindow  *window,
                               gpointer        job)
 {

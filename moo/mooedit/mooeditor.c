@@ -506,6 +506,7 @@ _moo_editor_unset_focused_doc (MooEditor *editor,
 }
 
 
+#if 0
 static Message *
 message_new (GQuark      domain,
              const char *text)
@@ -515,6 +516,7 @@ message_new (GQuark      domain,
     msg->text = g_strdup (text);
     return msg;
 }
+#endif
 
 
 static void
@@ -528,6 +530,7 @@ message_free (Message *msg)
 }
 
 
+#if 0
 void
 _moo_editor_post_message (MooEditor      *editor,
                           GQuark          domain,
@@ -537,6 +540,7 @@ _moo_editor_post_message (MooEditor      *editor,
     editor->priv->messages = g_slist_prepend (editor->priv->messages,
                                               message_new (domain, text));
 }
+#endif
 
 
 gpointer

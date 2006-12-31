@@ -355,19 +355,6 @@ _moo_file_get_mime_type (const MooFile *file)
 }
 
 
-#ifndef __WIN32__
-const struct stat *
-_moo_file_get_stat (const MooFile *file)
-{
-    g_return_val_if_fail (file != NULL, NULL);
-    if (file->flags & MOO_FILE_HAS_STAT && file->info & MOO_FILE_INFO_EXISTS)
-        return &file->statbuf;
-    else
-        return NULL;
-}
-#endif
-
-
 GdkPixbuf *
 _moo_file_get_icon (const MooFile  *file,
                     GtkWidget      *widget,
@@ -398,6 +385,7 @@ _moo_file_link_get_target (const MooFile *file)
 #endif
 
 
+#if 0
 MooFileTime
 _moo_file_get_mtime (const MooFile *file)
 {
@@ -405,13 +393,25 @@ _moo_file_get_mtime (const MooFile *file)
     return file->statbuf.st_mtime;
 }
 
-
 MooFileSize
 _moo_file_get_size (const MooFile *file)
 {
     g_return_val_if_fail (file != NULL, 0);
     return file->statbuf.st_size;
 }
+
+#ifndef __WIN32__
+const struct stat *
+_moo_file_get_stat (const MooFile *file)
+{
+    g_return_val_if_fail (file != NULL, NULL);
+    if (file->flags & MOO_FILE_HAS_STAT && file->info & MOO_FILE_INFO_EXISTS)
+        return &file->statbuf;
+    else
+        return NULL;
+}
+#endif
+#endif
 
 
 GType

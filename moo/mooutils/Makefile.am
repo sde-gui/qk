@@ -113,6 +113,7 @@ mooutils_sources =			\
 	moospawn.h			\
 	moospawn.c			\
 	moostock.c			\
+	mootype-macros.h		\
 	moouixml.c			\
 	mooundo.c			\
 	mooutils-debug.h		\

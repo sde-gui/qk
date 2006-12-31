@@ -45,11 +45,6 @@ struct _MooAccelButtonClass {
 
 
 GType        _moo_accel_button_get_type         (void) G_GNUC_CONST;
-GtkWidget   *_moo_accel_button_new              (const char         *accel);
-
-const char  *_moo_accel_button_get_title        (MooAccelButton     *button);
-void         _moo_accel_button_set_title        (MooAccelButton     *button,
-                                                 const char         *title);
 
 const char  *_moo_accel_button_get_accel        (MooAccelButton     *button);
 gboolean     _moo_accel_button_set_accel        (MooAccelButton     *button,

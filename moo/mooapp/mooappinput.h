@@ -71,7 +71,6 @@ typedef struct _MooAppInput MooAppInput;
 
 MooAppInput *_moo_app_input_new         (const char     *pipe_basename);
 
-MooAppInput *_moo_app_input_ref         (MooAppInput    *ch);
 void         _moo_app_input_unref       (MooAppInput    *ch);
 
 gboolean     _moo_app_input_start       (MooAppInput    *ch);

@@ -31,6 +31,10 @@ enum {
     PROP_DISPLAY_NAME
 };
 
+static const char   *moo_action_collection_get_display_name (MooActionCollection    *coll);
+static void          moo_action_collection_set_display_name (MooActionCollection    *coll,
+                                                             const char             *name);
+
 
 G_DEFINE_TYPE (MooActionCollection, moo_action_collection, G_TYPE_OBJECT)
 
@@ -148,7 +152,7 @@ moo_action_collection_get_name (MooActionCollection *coll)
 }
 
 
-void
+static void
 moo_action_collection_set_display_name (MooActionCollection *coll,
                                         const char          *name)
 {
@@ -157,7 +161,7 @@ moo_action_collection_set_display_name (MooActionCollection *coll,
 }
 
 
-const char *
+static const char *
 moo_action_collection_get_display_name (MooActionCollection *coll)
 {
     g_return_val_if_fail (MOO_IS_ACTION_COLLECTION (coll), NULL);
@@ -269,6 +273,7 @@ moo_action_collection_remove_action (MooActionCollection *coll,
 }
 
 
+#if 0
 GList *
 moo_action_collection_list_actions (MooActionCollection *coll)
 {
@@ -285,6 +290,7 @@ moo_action_collection_list_actions (MooActionCollection *coll)
 
     return list;
 }
+#endif
 
 
 void

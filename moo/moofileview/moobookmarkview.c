@@ -278,19 +278,7 @@ label_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
 }
 
 
-static void
-row_activated (GtkTreeView        *treeview,
-               GtkTreePath        *path,
-               G_GNUC_UNUSED GtkTreeViewColumn *column)
-{
-    MooBookmark *bookmark;
-    bookmark = _moo_bookmark_view_get_bookmark (MOO_BOOKMARK_VIEW (treeview), path);
-    g_signal_emit (treeview, signals[BOOKMARK_ACTIVATED], 0, bookmark);
-    _moo_bookmark_free (bookmark);
-}
-
-
-MooBookmark *
+static MooBookmark *
 _moo_bookmark_view_get_bookmark (MooBookmarkView    *view,
                                  GtkTreePath        *path)
 {
@@ -307,4 +295,16 @@ _moo_bookmark_view_get_bookmark (MooBookmarkView    *view,
         return NULL;
 
     return get_bookmark (model, &iter);
+}
+
+
+static void
+row_activated (GtkTreeView        *treeview,
+               GtkTreePath        *path,
+               G_GNUC_UNUSED GtkTreeViewColumn *column)
+{
+    MooBookmark *bookmark;
+    bookmark = _moo_bookmark_view_get_bookmark (MOO_BOOKMARK_VIEW (treeview), path);
+    g_signal_emit (treeview, signals[BOOKMARK_ACTIVATED], 0, bookmark);
+    _moo_bookmark_free (bookmark);
 }

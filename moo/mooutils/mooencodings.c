@@ -635,7 +635,7 @@ _moo_encodings_attach_combo (GtkWidget  *dialog,
 }
 
 
-void
+static void
 _moo_encodings_sync_combo (GtkWidget *dialog,
                            gboolean   save_mode)
 {

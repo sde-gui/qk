@@ -42,9 +42,6 @@ struct _MooCommandScriptClass {
 
 GType       moo_command_script_get_type (void) G_GNUC_CONST;
 
-MooCommand *moo_command_script_new      (const char         *script,
-                                         MooCommandOptions   options);
-
 
 G_END_DECLS
 

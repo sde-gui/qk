@@ -29,6 +29,7 @@ _moo_line_buffer_new (void)
 }
 
 
+#if 0
 Line*
 _moo_line_buffer_insert (LineBuffer     *line_buf,
                          int             index)
@@ -36,6 +37,7 @@ _moo_line_buffer_insert (LineBuffer     *line_buf,
     Line *line = _moo_text_btree_insert (line_buf->tree, index);
     return line;
 }
+#endif
 
 
 void

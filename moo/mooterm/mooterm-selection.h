@@ -29,9 +29,6 @@ enum {
     PART_SELECTED   = 2
 };
 
-
-gboolean    _moo_term_selection_empty       (MooTerm    *term);
-
 gpointer    _moo_term_selection_new         (MooTerm    *term);
 
 

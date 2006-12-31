@@ -343,7 +343,7 @@ _moo_object_ptr_new (GObject    *object,
 }
 
 
-void
+static void
 _moo_object_ptr_die (MooObjectPtr *ptr)
 {
     if (ptr)

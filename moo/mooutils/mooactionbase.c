@@ -19,6 +19,7 @@
 #include <gtk/gtkstock.h>
 #include <string.h>
 
+
 enum {
     MOO_ACTION_BASE_PROPS(MOO_ACTION_BASE)
 };
@@ -594,13 +595,4 @@ _moo_action_get_default_accel (gpointer action)
 {
     g_return_val_if_fail (MOO_IS_ACTION_BASE (action), "");
     return moo_action_base_get_accel (action);
-}
-
-
-void
-_moo_action_set_default_accel (gpointer    action,
-                               const char *accel)
-{
-    g_return_if_fail (MOO_IS_ACTION_BASE (action));
-    moo_action_base_set_accel (action, accel);
 }

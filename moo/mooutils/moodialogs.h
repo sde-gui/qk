@@ -29,19 +29,6 @@ gboolean    moo_overwrite_file_dialog       (GtkWidget  *parent,
                                              const char *display_name,
                                              const char *display_dirname);
 
-void        moo_message_dialog              (GtkWidget  *parent,
-                                             GtkMessageType type,
-                                             const char *text,
-                                             const char *secondary_text,
-                                             gboolean    at_mouse,
-                                             gboolean    at_coords,
-                                             int         x,
-                                             int         y);
-
-void        moo_position_window             (GtkWidget  *window,
-                                             GtkWidget  *parent,
-                                             int         x,
-                                             int         y);
 void        moo_position_window_at_pointer  (GtkWidget  *window,
                                              GtkWidget  *parent);
 void        moo_window_set_parent           (GtkWidget  *window,

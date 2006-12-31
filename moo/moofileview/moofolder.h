@@ -33,8 +33,6 @@ GType        _moo_folder_get_type       (void) G_GNUC_CONST;
 const char  *_moo_folder_get_path       (MooFolder      *folder);
 /* list should be freed and elements unref'ed */
 GSList      *_moo_folder_list_files     (MooFolder      *folder);
-MooFile     *_moo_folder_get_file       (MooFolder      *folder,
-                                         const char     *basename);
 char        *_moo_folder_get_file_path  (MooFolder      *folder,
                                          MooFile        *file);
 char        *_moo_folder_get_file_uri   (MooFolder      *folder,

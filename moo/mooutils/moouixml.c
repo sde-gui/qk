@@ -198,6 +198,9 @@ static gboolean fill_toolbar            (MooUIXML       *xml,
 static gboolean create_toolbar          (MooUIXML       *xml,
                                          Toplevel       *toplevel);
 
+static MooUINode *moo_ui_xml_find_node  (MooUIXML       *xml,
+                                         const char     *path_or_placeholder);
+
 
 /* MOO_TYPE_UI_XML */
 G_DEFINE_TYPE (MooUIXML, moo_ui_xml, G_TYPE_OBJECT)
@@ -1282,7 +1285,7 @@ merge_remove_node (Merge          *merge,
 }
 
 
-MooUINode*
+MooUINode *
 moo_ui_xml_get_node (MooUIXML       *xml,
                      const char     *path)
 {
@@ -1293,7 +1296,7 @@ moo_ui_xml_get_node (MooUIXML       *xml,
 }
 
 
-MooUINode*
+static MooUINode *
 moo_ui_xml_find_node (MooUIXML       *xml,
                       const char     *path)
 {

@@ -25,12 +25,9 @@ gboolean    moo_open_email                  (const char *address,
                                              const char *subject,
                                              const char *body);
 
-
-gboolean    _moo_window_is_hidden           (GtkWindow  *window);
 void        _moo_window_present             (GtkWindow  *window,
                                              guint32     stamp);
 GtkWindow  *_moo_get_top_window             (GSList     *windows);
-GtkWindow  *_moo_get_toplevel_window        (void);
 
 gboolean    _moo_window_set_icon_from_stock (GtkWindow  *window,
                                              const char *stock_id);
@@ -112,9 +109,6 @@ void        _moo_widget_set_tooltip         (GtkWidget      *widget,
                                              const char     *tip);
 
 char      **_moo_splitlines                 (const char     *string);
-
-gboolean    _moo_str_equal                  (const char     *s1,
-                                             const char     *s2);
 
 static inline gboolean
 _moo_str_equal_inline (const char *s1,

@@ -115,6 +115,7 @@ static void     find_next_interactive       (MooTextView        *view);
 static void     find_prev_interactive       (MooTextView        *view);
 static void     goto_line_interactive       (MooTextView        *view);
 static gboolean start_quick_search          (MooTextView        *view);
+static void     moo_text_view_stop_quick_search (MooTextView    *view);
 
 static void     insert_text_cb              (MooTextView        *view,
                                              GtkTextIter        *iter,
@@ -158,14 +159,23 @@ static void     line_mark_changed           (MooTextView        *view,
                                              MooLineMark        *mark);
 static void     line_mark_moved             (MooTextView        *view,
                                              MooLineMark        *mark);
+static void     set_show_line_marks         (MooTextView        *view,
+                                             gboolean            show);
 static void     fold_added                  (MooTextView        *view,
                                              MooFold            *fold);
 static void     fold_deleted                (MooTextView        *view);
 static void     fold_toggled                (MooTextView        *view,
                                              MooFold            *fold);
+static void     set_enable_folding          (MooTextView        *view,
+                                             gboolean            show);
+
+static void     set_tab_key_action          (MooTextView        *view,
+                                             MooTextTabKeyAction action);
 
 static gboolean has_boxes                   (MooTextView        *view);
 static void     update_box_tag              (MooTextView        *view);
+static gboolean has_box_at_iter             (MooTextView        *view,
+                                             GtkTextIter        *iter);
 
 static gboolean text_iter_forward_visible_line (MooTextView     *view,
                                              GtkTextIter        *iter,
@@ -1051,11 +1061,11 @@ moo_text_view_set_property (GObject        *object,
             break;
 
         case PROP_SHOW_LINE_MARKS:
-            moo_text_view_set_show_line_marks (view, g_value_get_boolean (value));
+            set_show_line_marks (view, g_value_get_boolean (value));
             break;
 
         case PROP_ENABLE_FOLDING:
-            moo_text_view_set_enable_folding (view, g_value_get_boolean (value));
+            set_enable_folding (view, g_value_get_boolean (value));
             break;
 
         case PROP_ENABLE_QUICK_SEARCH:
@@ -1069,7 +1079,7 @@ moo_text_view_set_property (GObject        *object,
             break;
 
         case PROP_TAB_KEY_ACTION:
-            moo_text_view_set_tab_key_action (view, g_value_get_enum (value));
+            set_tab_key_action (view, g_value_get_enum (value));
             break;
 
         case PROP_AUTO_INDENT:
@@ -2140,7 +2150,7 @@ moo_text_view_draw_boxes (GtkTextView       *text_view,
 
     while (gtk_text_iter_compare (&iter, end) < 0)
     {
-        if (moo_text_view_has_box_at_iter (MOO_TEXT_VIEW (text_view), &iter))
+        if (has_box_at_iter (MOO_TEXT_VIEW (text_view), &iter))
             draw_box (text_view, event, &iter);
 
         if (!gtk_text_iter_forward_char (&iter))
@@ -2756,9 +2766,9 @@ _moo_text_view_pend_cursor_blink (MooTextView *view)
 }
 
 
-void
-moo_text_view_set_tab_key_action (MooTextView        *view,
-                                  MooTextTabKeyAction action)
+static void
+set_tab_key_action (MooTextView        *view,
+                    MooTextTabKeyAction action)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
@@ -3299,9 +3309,9 @@ _moo_text_view_set_line_numbers_font (MooTextView *view,
 }
 
 
-void
-moo_text_view_set_show_line_marks (MooTextView *view,
-                                   gboolean     show)
+static void
+set_show_line_marks (MooTextView *view,
+                     gboolean     show)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
@@ -3330,9 +3340,9 @@ moo_text_view_style_set (GtkWidget *widget,
 }
 
 
-void
-moo_text_view_set_enable_folding (MooTextView *view,
-                                  gboolean     show)
+static void
+set_enable_folding (MooTextView *view,
+                    gboolean     show)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
@@ -3798,6 +3808,27 @@ moo_text_view_remove (GtkContainer *container,
  */
 
 static void
+quick_search_set_widgets_from_flags (MooTextView *view);
+
+static void
+moo_text_view_set_quick_search_flags (MooTextView        *view,
+                                      MooTextSearchFlags  flags)
+{
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+
+    if (flags != view->priv->qs.flags)
+    {
+        view->priv->qs.flags = flags;
+
+        if (view->priv->qs.evbox)
+            quick_search_set_widgets_from_flags (view);
+
+        g_object_notify (G_OBJECT (view), "quick-search-flags");
+    }
+}
+
+
+static void
 quick_search_option_toggled (MooTextView *view)
 {
     MooTextSearchFlags flags = 0;
@@ -3831,24 +3862,6 @@ quick_search_set_widgets_from_flags (MooTextView *view)
                                        quick_search_option_toggled, view);
     g_signal_handlers_unblock_by_func (view->priv->qs.regex,
                                        quick_search_option_toggled, view);
-}
-
-
-void
-moo_text_view_set_quick_search_flags (MooTextView        *view,
-                                      MooTextSearchFlags  flags)
-{
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-
-    if (flags != view->priv->qs.flags)
-    {
-        view->priv->qs.flags = flags;
-
-        if (view->priv->qs.evbox)
-            quick_search_set_widgets_from_flags (view);
-
-        g_object_notify (G_OBJECT (view), "quick-search-flags");
-    }
 }
 
 
@@ -4044,7 +4057,7 @@ search_entry_key_press (MooTextView *view,
 }
 
 
-void
+static void
 moo_text_view_start_quick_search (MooTextView *view)
 {
     char *text = NULL;
@@ -4110,7 +4123,7 @@ moo_text_view_start_quick_search (MooTextView *view)
 }
 
 
-void
+static void
 moo_text_view_stop_quick_search (MooTextView *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
@@ -4282,9 +4295,9 @@ has_boxes (MooTextView *view)
 }
 
 
-gboolean
-moo_text_view_has_box_at_iter (MooTextView *view,
-                               GtkTextIter *iter)
+static gboolean
+has_box_at_iter (MooTextView *view,
+                 GtkTextIter *iter)
 {
     GtkTextChildAnchor *anchor;
 
@@ -4316,7 +4329,7 @@ moo_text_view_find_box_forward (MooTextView *view,
     while (gtk_text_iter_forward_search (&start, MOO_TEXT_UNKNOWN_CHAR_S,
                                          0, match_start, match_end, NULL))
     {
-        if (moo_text_view_has_box_at_iter (view, match_start))
+        if (has_box_at_iter (view, match_start))
             return TRUE;
         else
             start = *match_end;
@@ -4423,7 +4436,7 @@ moo_text_view_find_box_backward (MooTextView *view,
     while (gtk_text_iter_backward_search (&start, MOO_TEXT_UNKNOWN_CHAR_S,
                                           0, match_start, match_end, NULL))
     {
-        if (moo_text_view_has_box_at_iter (view, match_start))
+        if (has_box_at_iter (view, match_start))
         {
             start = *match_start;
             *match_start = *match_end;

@@ -22,24 +22,6 @@
 G_BEGIN_DECLS
 
 
-#define MOO_FILE_WATCH_ERROR (moo_file_watch_error_quark ())
-
-typedef enum
-{
-    MOO_FILE_WATCH_ERROR_CLOSED,
-    MOO_FILE_WATCH_ERROR_FAILED,
-    MOO_FILE_WATCH_ERROR_NOT_IMPLEMENTED,
-    MOO_FILE_WATCH_ERROR_TOO_MANY,
-    MOO_FILE_WATCH_ERROR_NOT_DIR,
-    MOO_FILE_WATCH_ERROR_IS_DIR,
-    MOO_FILE_WATCH_ERROR_NONEXISTENT,
-    MOO_FILE_WATCH_ERROR_BAD_FILENAME,
-    MOO_FILE_WATCH_ERROR_ACCESS_DENIED
-} MooFileWatchError;
-
-GQuark  moo_file_watch_error_quark (void);
-
-
 #define MOO_TYPE_FILE_WATCH         (moo_file_watch_get_type ())
 #define MOO_TYPE_FILE_EVENT         (moo_file_event_get_type ())
 #define MOO_TYPE_FILE_EVENT_CODE    (moo_file_event_code_get_type ())

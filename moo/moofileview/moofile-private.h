@@ -67,9 +67,6 @@ MooFile     *_moo_file_new              (const char     *dirname,
 MooFile     *_moo_file_ref              (MooFile        *file);
 void         _moo_file_unref            (MooFile        *file);
 
-MooFileTime  _moo_file_get_mtime        (const MooFile  *file);
-MooFileSize  _moo_file_get_size         (const MooFile  *file);
-
 MooFileInfo  _moo_file_get_info         (const MooFile  *file);
 
 const char  *_moo_file_name             (const MooFile  *file);
@@ -83,7 +80,6 @@ const char  *_moo_file_collation_key    (const MooFile  *file);
 const char  *_moo_file_case_display_name(const MooFile *file);
 
 #ifndef __WIN32__
-const struct stat *_moo_file_get_stat   (const MooFile  *file);
 const char  *_moo_file_link_get_target  (const MooFile  *file);
 #endif
 

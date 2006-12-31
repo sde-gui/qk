@@ -63,11 +63,7 @@ GType            _moo_folder_model_get_type      (void) G_GNUC_CONST;
 GtkTreeModel    *_moo_folder_model_new           (MooFolder      *folder);
 void             _moo_folder_model_set_folder    (MooFolderModel *model,
                                                  MooFolder      *folder);
-MooFolder       *_moo_folder_model_get_folder    (MooFolderModel *model);
 
-gboolean         _moo_folder_model_get_iter      (MooFolderModel *model,
-                                                 MooFile        *file,
-                                                 GtkTreeIter    *iter);
 gboolean         _moo_folder_model_get_iter_by_name
                                                 (MooFolderModel *model,
                                                  const char     *name,
@@ -76,11 +72,6 @@ gboolean         _moo_folder_model_get_iter_by_display_name
                                                 (MooFolderModel *model,
                                                  const char     *name,
                                                  GtkTreeIter    *iter);
-
-void             _moo_folder_model_set_sort_case_sensitive
-                                                (MooFolderModel *model,
-                                                 gboolean        case_sensitive);
-
 
 #define MOO_TYPE_FOLDER_FILTER            (_moo_folder_filter_get_type ())
 #define MOO_FOLDER_FILTER(object)         (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FOLDER_FILTER, MooFolderFilter))
@@ -109,7 +100,6 @@ MooFolderModel  *_moo_folder_filter_get_model       (MooFolderFilter    *filter)
 
 void             _moo_folder_filter_set_folder      (MooFolderFilter    *filter,
                                                      MooFolder          *folder);
-MooFolder       *_moo_folder_filter_get_folder      (MooFolderFilter    *filter);
 
 gboolean         _moo_folder_filter_get_iter        (MooFolderFilter    *filter,
                                                      MooFile            *file,

@@ -72,10 +72,10 @@ show_credits (void)
 
     written_by = moo_glade_xml_get_widget (xml, "written_by");
 #if defined(MOO_USE_XML) && !defined(__WIN32__)
-    moo_html_load_memory (written_by,
-                          "Yevgen Muntyan <a href=\"mailto://muntyan@tamu.edu\">"
-                                  "&lt;muntyan@tamu.edu&gt;</a>",
-                          -1, NULL, NULL);
+    _moo_html_load_memory (written_by,
+                           "Yevgen Muntyan <a href=\"mailto://muntyan@tamu.edu\">"
+                                   "&lt;muntyan@tamu.edu&gt;</a>",
+                           -1, NULL, NULL);
 #else
     /* XXX */
     {

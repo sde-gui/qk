@@ -93,14 +93,12 @@ void            _moo_term_parser_free   (MooTermParser  *parser);
 gboolean        _moo_term_parser_parse  (MooTermParser  *parser,
                                          const char     *string,
                                          guint           len);
-void            _moo_term_parser_reset  (MooTermParser  *parser);
 
 int             _moo_term_yylex         (MooTermParser  *parser);
 void            _moo_term_yyerror       (MooTermParser  *parser,
                                          const char     *string);
 
 char           *_moo_term_current_ctl   (MooTermParser  *parser);
-char           *_moo_term_nice_char     (guchar          c);
 char           *_moo_term_nice_bytes    (const char     *string,
                                          int             len);
 

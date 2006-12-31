@@ -333,22 +333,6 @@ _moo_link_label_class_init (MooLinkLabelClass *klass)
 }
 
 
-const char *
-_moo_link_label_get_url (MooLinkLabel *label)
-{
-    g_return_val_if_fail (MOO_IS_LINK_LABEL (label), NULL);
-    return label->priv->url;
-}
-
-
-const char *
-_moo_link_label_get_text (MooLinkLabel *label)
-{
-    g_return_val_if_fail (MOO_IS_LINK_LABEL (label), NULL);
-    return label->priv->text;
-}
-
-
 static void
 moo_link_label_update (MooLinkLabel *label)
 {

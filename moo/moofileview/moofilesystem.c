@@ -52,7 +52,11 @@ struct _MooFileSystemPrivate {
 static MooFileSystem *fs_instance = NULL;
 
 
-static void moo_file_system_dispose (GObject *object);
+static void         moo_file_system_dispose (GObject        *object);
+static char        *_moo_file_system_normalize_path (MooFileSystem *fs,
+                                             const char     *path,
+                                             gboolean        is_folder,
+                                             GError        **error);
 
 static MooFolder   *get_folder              (MooFileSystem  *fs,
                                              const char     *path,
@@ -334,7 +338,7 @@ _moo_file_system_make_path (MooFileSystem  *fs,
 }
 
 
-char *
+static char *
 _moo_file_system_normalize_path (MooFileSystem  *fs,
                                  const char     *path,
                                  gboolean        is_folder,

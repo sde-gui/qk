@@ -64,19 +64,22 @@ static gboolean moo_edit_drag_drop          (GtkWidget      *widget,
                                              gint            y,
                                              guint           time);
 
-static void     moo_edit_filename_changed   (MooEdit        *edit,
-                                             const char     *new_filename);
+static void     moo_edit_filename_changed       (MooEdit        *edit,
+                                                 const char     *new_filename);
 
-static void     config_changed              (MooEdit        *edit,
-                                             GParamSpec     *pspec);
-static void     moo_edit_config_notify      (MooEdit        *edit,
-                                             guint           var_id,
-                                             GParamSpec     *pspec);
+static void     config_changed                  (MooEdit        *edit,
+                                                 GParamSpec     *pspec);
+static void     moo_edit_config_notify          (MooEdit        *edit,
+                                                 guint           var_id,
+                                                 GParamSpec     *pspec);
+static void     _moo_edit_freeze_config_notify  (MooEdit        *edit);
+static void     _moo_edit_thaw_config_notify    (MooEdit        *edit);
+static void     _moo_edit_update_config_from_global (MooEdit    *edit);
 
-static GtkTextBuffer *get_buffer            (MooEdit        *edit);
+static GtkTextBuffer *get_buffer                (MooEdit        *edit);
 
-static void     modified_changed_cb         (GtkTextBuffer  *buffer,
-                                             MooEdit        *edit);
+static void     modified_changed_cb             (GtkTextBuffer  *buffer,
+                                                 MooEdit        *edit);
 
 
 enum {
@@ -373,16 +376,6 @@ moo_edit_dispose (GObject *object)
 }
 
 
-MooEdit*
-_moo_edit_new (MooEditor  *editor)
-{
-    MooEdit *edit = MOO_EDIT (g_object_new (MOO_TYPE_EDIT,
-                                            "editor", editor,
-                                            NULL));
-    return edit;
-}
-
-
 static void
 modified_changed_cb (GtkTextBuffer      *buffer,
                      MooEdit            *edit)
@@ -452,6 +445,7 @@ moo_edit_status_changed (MooEdit *edit)
 }
 
 
+#if 0
 void
 _moo_edit_set_status (MooEdit        *edit,
                       MooEditStatus   status)
@@ -464,6 +458,7 @@ _moo_edit_set_status (MooEdit        *edit,
         moo_edit_status_changed (edit);
     }
 }
+#endif
 
 
 MooEditFileInfo*
@@ -1016,7 +1011,7 @@ moo_edit_config_notify (MooEdit        *edit,
 }
 
 
-void
+static void
 _moo_edit_update_config_from_global (MooEdit *edit)
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
@@ -1132,15 +1127,14 @@ moo_edit_save_copy (MooEdit        *edit,
 }
 
 
-void
+static void
 _moo_edit_freeze_config_notify (MooEdit *edit)
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
     g_object_freeze_notify (G_OBJECT (edit->config));
 }
 
-
-void
+static void
 _moo_edit_thaw_config_notify (MooEdit *edit)
 {
     g_return_if_fail (MOO_IS_EDIT (edit));

@@ -31,6 +31,9 @@ static void     moo_tree_view_get_property  (GObject            *object,
                                              GValue             *value,
                                              GParamSpec         *pspec);
 
+static void     _moo_tree_view_set_model    (MooTreeView        *view,
+                                             GtkTreeModel       *model);
+
 static void     disconnect_child            (MooTreeView        *view);
 static Child   *find_child                  (MooTreeView        *view,
                                              GtkWidget          *real_view);
@@ -215,7 +218,7 @@ _moo_tree_view_get_model (gpointer view)
 }
 
 
-void
+static void
 _moo_tree_view_set_model (MooTreeView  *view,
                           GtkTreeModel *model)
 {
@@ -702,6 +705,7 @@ _moo_tree_view_widget_to_abs_coords (gpointer        view,
 }
 
 
+#if 0
 void
 _moo_tree_view_abs_to_widget_coords (gpointer        view,
                                      int             absx,
@@ -716,3 +720,4 @@ _moo_tree_view_abs_to_widget_coords (gpointer        view,
     else
         g_return_if_reached ();
 }
+#endif

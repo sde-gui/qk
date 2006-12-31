@@ -577,6 +577,7 @@ moo_edit_config_set_global (MooEditConfigSource source,
 }
 
 
+#if 0
 void
 moo_edit_config_get_global (const char     *first_setting,
                             ...)
@@ -589,6 +590,7 @@ moo_edit_config_get_global (const char     *first_setting,
     g_object_get_valist (G_OBJECT (global), first_setting, var_args);
     va_end (var_args);
 }
+#endif
 
 
 void
@@ -623,6 +625,7 @@ moo_edit_config_unset_by_source (MooEditConfig  *config,
 }
 
 
+#if 0
 int
 moo_edit_config_get_source (MooEditConfig *config,
                             const char    *setting)
@@ -637,7 +640,6 @@ moo_edit_config_get_source (MooEditConfig *config,
 
     return VALUE(config, id)->source;
 }
-
 
 void
 moo_edit_config_compose (MooEditConfig  *target,
@@ -668,6 +670,7 @@ moo_edit_config_compose (MooEditConfig  *target,
     g_object_thaw_notify (G_OBJECT (target));
     g_object_unref (target);
 }
+#endif
 
 
 guint

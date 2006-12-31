@@ -124,10 +124,6 @@ char        *_moo_file_system_make_path         (MooFileSystem  *fs,
                                                  const char     *base_path,
                                                  const char     *display_name,
                                                  GError        **error);
-char        *_moo_file_system_normalize_path    (MooFileSystem  *fs,
-                                                 const char     *path,
-                                                 gboolean        is_folder,
-                                                 GError        **error);
 gboolean     _moo_file_system_parse_path        (MooFileSystem  *fs,
                                                  const char     *path_utf8,
                                                  char          **dirname,

@@ -87,6 +87,9 @@ static void     emit_new_line                   (MooTerm        *term);
 static void     moo_term_reset_real             (MooTerm        *term);
 static void     moo_term_bell_real              (MooTerm        *term);
 
+static void     _moo_term_set_ca_mode           (MooTerm        *term,
+                                                 gboolean        set);
+
 
 enum {
     SET_SCROLL_ADJUSTMENTS,
@@ -1006,7 +1009,7 @@ moo_term_feed_child (MooTerm        *term,
 }
 
 
-void
+static void
 moo_term_send_intr (MooTerm *term)
 {
     g_return_if_fail (MOO_IS_TERM (term));
@@ -1524,7 +1527,7 @@ _moo_term_decrc (MooTerm    *term)
 }
 
 
-void
+static void
 _moo_term_set_ca_mode (MooTerm    *term,
                        gboolean    set)
 {

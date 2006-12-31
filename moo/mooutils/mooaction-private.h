@@ -21,16 +21,6 @@
 G_BEGIN_DECLS
 
 
-void        _moo_action_set_closure         (MooAction          *action,
-                                             MooClosure         *closure);
-
-typedef void (*MooToggleActionCallback)     (gpointer            data,
-                                             gboolean            active);
-void        _moo_toggle_action_set_callback (MooToggleAction    *action,
-                                             MooToggleActionCallback callback,
-                                             gpointer            data,
-                                             gboolean            object);
-
 void        _moo_sync_toggle_action         (GtkAction          *action,
                                              gpointer            master,
                                              const char         *prop,
@@ -55,8 +45,6 @@ void        _moo_action_set_accel_path      (gpointer            action,
                                              const char         *accel_path);
 const char *_moo_action_get_accel_path      (gpointer            action);
 const char *_moo_action_get_default_accel   (gpointer            action);
-void        _moo_action_set_default_accel   (gpointer            action,
-                                             const char         *accel);
 
 
 G_END_DECLS

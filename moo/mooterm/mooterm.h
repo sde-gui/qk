@@ -103,7 +103,6 @@ void        moo_term_feed                   (MooTerm        *term,
 void        moo_term_feed_child             (MooTerm        *term,
                                              const char     *string,
                                              int             len);
-void        moo_term_send_intr              (MooTerm        *term);
 void        moo_term_ctrl_c                 (MooTerm        *term);
 
 void        moo_term_get_screen_size        (MooTerm        *term,

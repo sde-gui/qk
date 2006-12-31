@@ -272,9 +272,6 @@ struct _MSNodeDictAssign {
 };
 
 
-MSValue        *_ms_node_eval               (MSNode     *node,
-                                             MSContext  *ctx);
-
 MSNodeList     *_ms_node_list_new           (void);
 void            _ms_node_list_add           (MSNodeList *list,
                                              MSNode     *node);

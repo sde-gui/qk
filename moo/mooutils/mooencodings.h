@@ -27,8 +27,6 @@ void         _moo_encodings_attach_combo    (GtkWidget  *dialog,
                                              GtkWidget  *box,
                                              gboolean    save_mode,
                                              const char *encoding);
-void         _moo_encodings_sync_combo      (GtkWidget  *dialog,
-                                             gboolean    save_mode);
 const char  *_moo_encodings_combo_get       (GtkWidget  *dialog,
                                              gboolean    save_mode);
 

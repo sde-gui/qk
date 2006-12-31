@@ -139,10 +139,6 @@ void         moo_text_view_set_style_scheme         (MooTextView        *view,
 
 void         moo_text_view_set_show_line_numbers    (MooTextView        *view,
                                                      gboolean            show);
-void         moo_text_view_set_show_line_marks      (MooTextView        *view,
-                                                     gboolean            show);
-void         moo_text_view_set_enable_folding       (MooTextView        *view,
-                                                     gboolean            show);
 void         moo_text_view_set_tab_width            (MooTextView        *view,
                                                      guint               width);
 
@@ -161,24 +157,14 @@ void         moo_text_view_add_child_in_border      (MooTextView        *view,
                                                      GtkWidget          *child,
                                                      GtkTextWindowType   which_border);
 
-void         moo_text_view_set_tab_key_action       (MooTextView        *view,
-                                                     MooTextTabKeyAction action);
-
 void         moo_text_view_insert_placeholder       (MooTextView        *view,
                                                      GtkTextIter        *iter,
                                                      const char         *text);
 gboolean     moo_text_view_next_placeholder         (MooTextView        *view);
 gboolean     moo_text_view_prev_placeholder         (MooTextView        *view);
-gboolean     moo_text_view_has_box_at_iter          (MooTextView        *view,
-                                                     GtkTextIter        *iter);
 
 void         moo_text_view_indent                   (MooTextView        *view);
 void         moo_text_view_unindent                 (MooTextView        *view);
-
-void         moo_text_view_start_quick_search       (MooTextView        *view);
-void         moo_text_view_stop_quick_search        (MooTextView        *view);
-void         moo_text_view_set_quick_search_flags   (MooTextView        *view,
-                                                     MooTextSearchFlags  flags);
 
 
 G_END_DECLS

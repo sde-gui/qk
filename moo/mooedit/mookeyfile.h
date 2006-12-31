@@ -19,7 +19,6 @@
 G_BEGIN_DECLS
 
 
-#define MOO_KEY_FILE_ERROR            (moo_key_file_error_quark ())
 #define MOO_TYPE_KEY_FILE_ITEM        (moo_key_file_item_get_type ())
 
 #define MOO_TYPE_KEY_FILE             (moo_key_file_get_type ())
@@ -30,36 +29,19 @@ G_BEGIN_DECLS
 #define MOO_KEY_FILE_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_KEY_FILE, MooKeyFileClass))
 
 
-typedef enum {
-    MOO_KEY_FILE_ERROR_PARSE,
-    MOO_KEY_FILE_ERROR_FILE
-} MooKeyFileError;
-
 typedef struct _MooKeyFile      MooKeyFile;
 typedef struct _MooKeyFileItem  MooKeyFileItem;
 
 
 GType           moo_key_file_get_type           (void) G_GNUC_CONST;
 GType           moo_key_file_item_get_type      (void) G_GNUC_CONST;
-GQuark          moo_key_file_error_quark        (void) G_GNUC_CONST;
 
 MooKeyFile     *moo_key_file_new                (void);
 MooKeyFile     *moo_key_file_new_from_file      (const char         *filename,
                                                  GError            **error);
-MooKeyFile      *moo_key_file_new_from_buffer   (const char         *string,
-                                                 gssize              len,
-                                                 GError            **error);
 
 MooKeyFile     *moo_key_file_ref                (MooKeyFile         *key_file);
 void            moo_key_file_unref              (MooKeyFile         *key_file);
-
-gboolean        moo_key_file_parse_buffer       (MooKeyFile         *key_file,
-                                                 const char         *string,
-                                                 gssize              len,
-                                                 GError            **error);
-gboolean        moo_key_file_parse_file         (MooKeyFile         *key_file,
-                                                 const char         *filename,
-                                                 GError            **error);
 
 char            *moo_key_file_format            (MooKeyFile         *key_file,
                                                  const char         *comment,
@@ -70,8 +52,6 @@ MooKeyFileItem  *moo_key_file_nth_item          (MooKeyFile         *key_file,
                                                  guint               n);
 MooKeyFileItem  *moo_key_file_new_item          (MooKeyFile         *key_file,
                                                  const char         *name);
-void             moo_key_file_delete_item       (MooKeyFile         *key_file,
-                                                 guint               index);
 
 const char      *moo_key_file_item_name         (MooKeyFileItem     *item);
 
@@ -82,9 +62,6 @@ char            *moo_key_file_item_steal        (MooKeyFileItem     *item,
 void             moo_key_file_item_set          (MooKeyFileItem     *item,
                                                  const char         *key,
                                                  const char         *value);
-gboolean         moo_key_file_item_get_bool     (MooKeyFileItem     *item,
-                                                 const char         *key,
-                                                 gboolean            default_val);
 gboolean         moo_key_file_item_steal_bool   (MooKeyFileItem     *item,
                                                  const char         *key,
                                                  gboolean            default_val);

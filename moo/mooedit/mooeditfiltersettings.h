@@ -24,13 +24,11 @@ G_BEGIN_DECLS
 
 
 void        _moo_edit_filter_settings_load              (void);
-void        _moo_edit_filter_settings_reload            (void);
 
 GSList     *_moo_edit_filter_settings_get_strings       (void);
 void        _moo_edit_filter_settings_set_strings       (GSList     *strings);
 
 const char *_moo_edit_filter_settings_get_for_file      (const char *filename);
-const char *_moo_edit_filter_settings_get_for_file_utf8 (const char *filename);
 
 
 G_END_DECLS

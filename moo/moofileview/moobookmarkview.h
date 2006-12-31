@@ -59,9 +59,6 @@ GtkWidget      *_moo_bookmark_view_new          (MooBookmarkMgr     *mgr);
 void            _moo_bookmark_view_set_mgr      (MooBookmarkView    *view,
                                                  MooBookmarkMgr     *mgr);
 
-MooBookmark    *_moo_bookmark_view_get_bookmark (MooBookmarkView    *view,
-                                                 GtkTreePath        *path);
-
 
 G_END_DECLS
 

@@ -30,7 +30,7 @@ node_unref (gpointer node)
 }
 
 
-MSValue *
+static MSValue *
 _ms_node_eval (MSNode     *node,
                MSContext  *ctx)
 {

@@ -177,7 +177,12 @@ static void     cell_data_func              (MooIconView        *view,
                                              GtkTreeModel       *model,
                                              GtkTreeIter        *iter,
                                              gpointer            cell_info);
+static void     _moo_icon_view_set_cell     (MooIconView        *view,
+                                             MooIconViewCell     cell_type,
+                                             GtkCellRenderer    *cell);
 
+static void     _moo_icon_view_set_adjustment   (MooIconView    *view,
+                                                 GtkAdjustment  *adjustment);
 static void     moo_icon_view_set_scroll_adjustments
                                                 (GtkWidget      *widget,
                                                  GtkAdjustment  *hadj,
@@ -190,6 +195,15 @@ static int      clamp_offset                    (MooIconView    *view,
 
 static void     moo_icon_view_invalidate_layout (MooIconView    *view);
 static gboolean moo_icon_view_update_layout     (MooIconView    *view);
+
+static GtkTreePath *_moo_icon_view_get_cursor   (MooIconView    *view);
+static void     _moo_icon_view_select_path      (MooIconView    *view,
+                                                 GtkTreePath    *path);
+static void     _moo_icon_view_select_range     (MooIconView    *view,
+                                                 GtkTreePath    *start,
+                                                 GtkTreePath    *end);
+static void     _moo_icon_view_unselect_path    (MooIconView    *view,
+                                                 GtkTreePath    *path);
 
 static void     init_selection              (MooIconView    *view);
 static void     free_selection              (MooIconView    *view);
@@ -661,7 +675,7 @@ _moo_icon_view_set_model (MooIconView    *view,
 }
 
 
-void
+static void
 _moo_icon_view_set_cell (MooIconView    *view,
                          MooIconViewCell cell_type,
                          GtkCellRenderer*cell)
@@ -700,7 +714,8 @@ static void     free_attributes (CellInfo   *info)
 }
 
 
-void
+#if 0
+static void
 _moo_icon_view_clear_attributes (MooIconView    *view,
                                  MooIconViewCell cell)
 {
@@ -719,7 +734,6 @@ _moo_icon_view_clear_attributes (MooIconView    *view,
 
     moo_icon_view_invalidate_layout (view);
 }
-
 
 static void
 moo_icon_view_set_attributesv (MooIconView    *view,
@@ -755,7 +769,6 @@ moo_icon_view_set_attributesv (MooIconView    *view,
     moo_icon_view_invalidate_layout (view);
 }
 
-
 void
 _moo_icon_view_set_attributes (MooIconView    *view,
                                MooIconViewCell cell_type,
@@ -772,6 +785,7 @@ _moo_icon_view_set_attributes (MooIconView    *view,
     moo_icon_view_set_attributesv (view, cell_type, first_attr, args);
     va_end (args);
 }
+#endif
 
 
 void
@@ -1638,7 +1652,7 @@ static void     moo_icon_view_update_adjustment (MooIconView    *view)
 }
 
 
-void
+static void
 _moo_icon_view_set_adjustment (MooIconView    *view,
                                GtkAdjustment  *adjustment)
 {
@@ -2580,12 +2594,14 @@ _moo_icon_view_get_selected_rows (MooIconView *view)
 }
 
 
+#if 0
 int
 _moo_icon_view_count_selected_rows (MooIconView *view)
 {
     g_return_val_if_fail (MOO_IS_ICON_VIEW (view), 0);
     return g_slist_length (view->priv->selection->selected);
 }
+#endif
 
 
 static int
@@ -2603,7 +2619,7 @@ row_reference_compare (GtkTreeRowReference *ref1,
 }
 
 
-void
+static void
 _moo_icon_view_select_path (MooIconView *view,
                             GtkTreePath *path)
 {
@@ -2642,7 +2658,7 @@ _moo_icon_view_select_path (MooIconView *view,
 }
 
 
-void
+static void
 _moo_icon_view_select_range (MooIconView  *view,
                              GtkTreePath  *start,
                              GtkTreePath  *end)
@@ -2684,7 +2700,7 @@ _moo_icon_view_select_range (MooIconView  *view,
 }
 
 
-void
+static void
 _moo_icon_view_unselect_path (MooIconView *view,
                               GtkTreePath *path)
 {
@@ -2755,6 +2771,7 @@ _moo_icon_view_path_is_selected (MooIconView *view,
 }
 
 
+#if 0
 void
 _moo_icon_view_select_all (MooIconView *view)
 {
@@ -2789,6 +2806,7 @@ _moo_icon_view_select_all (MooIconView *view)
     gtk_widget_queue_draw (GTK_WIDGET (view));
     selection_changed (view);
 }
+#endif
 
 
 void
@@ -2891,7 +2909,7 @@ _moo_icon_view_set_cursor (MooIconView *view,
 }
 
 
-GtkTreePath *
+static GtkTreePath *
 _moo_icon_view_get_cursor (MooIconView *view)
 {
     g_return_val_if_fail (MOO_IS_ICON_VIEW (view), NULL);
@@ -2918,7 +2936,7 @@ cursor_row_deleted (MooIconView *view)
 }
 
 
-void
+static void
 _moo_icon_view_row_activated (MooIconView *view,
                               GtkTreePath *path)
 {
@@ -2972,13 +2990,13 @@ _moo_icon_view_enable_drag_source (MooIconView        *view,
 }
 
 
+#if 0
 GtkTargetList*
 _moo_icon_view_get_source_targets (MooIconView *view)
 {
     g_return_val_if_fail (MOO_IS_ICON_VIEW (view), NULL);
     return view->priv->dnd_info->source_targets;
 }
-
 
 void
 _moo_icon_view_disable_drag_source (MooIconView *view)
@@ -2996,6 +3014,7 @@ _moo_icon_view_disable_drag_source (MooIconView *view)
         info->source_targets = NULL;
     }
 }
+#endif
 
 
 static gboolean
@@ -3124,6 +3143,7 @@ _moo_icon_view_set_dest_targets (MooIconView        *view,
 }
 
 
+#if 0
 void
 _moo_icon_view_disable_drag_dest (MooIconView *view)
 {
@@ -3140,6 +3160,7 @@ _moo_icon_view_disable_drag_dest (MooIconView *view)
         info->dest_targets = NULL;
     }
 }
+#endif
 
 
 static void

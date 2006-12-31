@@ -128,6 +128,11 @@ static void         moo_folder_model_folder_deleted (MooFolderModel *model);
 static void         moo_folder_model_disconnect_folder (MooFolderModel *model);
 
 
+static MooFolder   *_moo_folder_model_get_folder    (MooFolderModel *model);
+static void         _moo_folder_model_set_sort_case_sensitive
+                                                    (MooFolderModel *model,
+                                                     gboolean        case_sensitive);
+
 static GtkTreeModelFlags moo_folder_model_get_flags (GtkTreeModel *tree_model);
 static gint         moo_folder_model_get_n_columns  (GtkTreeModel *tree_model);
 static GType        moo_folder_model_get_column_type(GtkTreeModel *tree_model,
@@ -314,7 +319,7 @@ moo_folder_model_finalize (GObject *object)
 }
 
 
-void
+static void
 _moo_folder_model_set_sort_case_sensitive (MooFolderModel *model,
                                            gboolean        case_sensitive)
 {
@@ -927,7 +932,7 @@ _moo_folder_model_new (MooFolder *folder)
 }
 
 
-MooFolder *
+static MooFolder *
 _moo_folder_model_get_folder (MooFolderModel *model)
 {
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (model), NULL);
@@ -935,7 +940,8 @@ _moo_folder_model_get_folder (MooFolderModel *model)
 }
 
 
-gboolean
+#if 0
+static gboolean
 _moo_folder_model_get_iter (MooFolderModel *model,
                             MooFile        *file,
                             GtkTreeIter    *iter)
@@ -961,6 +967,7 @@ _moo_folder_model_get_iter (MooFolderModel *model,
         return FALSE;
     }
 }
+#endif
 
 
 gboolean
@@ -1109,6 +1116,7 @@ _moo_folder_filter_set_folder (MooFolderFilter    *filter,
 }
 
 
+#if 0
 MooFolder *
 _moo_folder_filter_get_folder (MooFolderFilter *filter)
 {
@@ -1118,3 +1126,4 @@ _moo_folder_filter_get_folder (MooFolderFilter *filter)
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (model), NULL);
     return _moo_folder_model_get_folder (MOO_FOLDER_MODEL (model));
 }
+#endif

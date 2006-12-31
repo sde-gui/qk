@@ -63,7 +63,6 @@ void            moo_prefs_new_key       (const char     *key,
                                          MooPrefsType    prefs_type);
 void            moo_prefs_delete_key    (const char     *key);
 
-char          **moo_prefs_list_keys     (guint          *n_keys);
 GType           moo_prefs_get_key_type  (const char     *key);
 gboolean        moo_prefs_key_registered(const char     *key);
 

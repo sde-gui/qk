@@ -18,6 +18,11 @@
 #include <string.h>
 
 
+typedef enum {
+    MOO_KEY_FILE_ERROR_PARSE,
+    MOO_KEY_FILE_ERROR_FILE
+} MooKeyFileError;
+
 struct _MooKeyFile {
     guint ref_count;
     GQueue *items;
@@ -40,6 +45,10 @@ typedef struct {
 } Parser;
 
 #define CHAR_IS_SPACE(c__) ((c__) == ' ' || (c__) == '\t')
+
+static gboolean          moo_key_file_parse_file    (MooKeyFile         *key_file,
+                                                     const char         *filename,
+                                                     GError            **error);
 
 static MooKeyFileItem   *key_file_item_new          (MooKeyFile         *key_file,
                                                      const char         *name);
@@ -74,6 +83,9 @@ static guint             get_indent                 (const char         *line,
 static gboolean          line_is_blank              (const char         *line,
                                                      gsize               line_len,
                                                      guint              *indent);
+
+#define MOO_KEY_FILE_ERROR            (moo_key_file_error_quark ())
+static GQuark            moo_key_file_error_quark   (void) G_GNUC_CONST;
 
 
 static void
@@ -442,7 +454,8 @@ parse_buffer (MooKeyFile *key_file,
     return result;
 }
 
-gboolean
+#if 0
+static gboolean
 moo_key_file_parse_buffer (MooKeyFile *key_file,
                            const char *string,
                            gssize      len,
@@ -452,6 +465,7 @@ moo_key_file_parse_buffer (MooKeyFile *key_file,
     g_return_val_if_fail (string != NULL, FALSE);
     return parse_buffer (key_file, string, len, NULL, error);
 }
+#endif
 
 
 MooKeyFile *
@@ -536,6 +550,7 @@ moo_key_file_new_from_file (const char  *filename,
 }
 
 
+#if 0
 MooKeyFile *
 moo_key_file_new_from_buffer (const char  *string,
                               gssize       len,
@@ -555,9 +570,10 @@ moo_key_file_new_from_buffer (const char  *string,
 
     return key_file;
 }
+#endif
 
 
-gboolean
+static gboolean
 moo_key_file_parse_file (MooKeyFile  *key_file,
                          const char  *filename,
                          GError     **error)
@@ -612,6 +628,7 @@ moo_key_file_new_item (MooKeyFile *key_file,
 }
 
 
+#if 0
 void
 moo_key_file_delete_item (MooKeyFile *key_file,
                           guint       index)
@@ -624,6 +641,7 @@ moo_key_file_delete_item (MooKeyFile *key_file,
     item = g_queue_pop_nth (key_file->items, index);
     key_file_item_free (item);
 }
+#endif
 
 
 const char *
@@ -679,6 +697,7 @@ moo_key_file_item_set (MooKeyFileItem *item,
 }
 
 
+#if 0
 gboolean
 moo_key_file_item_get_bool (MooKeyFileItem *item,
                             const char     *key,
@@ -696,6 +715,7 @@ moo_key_file_item_get_bool (MooKeyFileItem *item,
     else
         return _moo_convert_string_to_bool (val, default_val);
 }
+#endif
 
 
 gboolean
@@ -810,7 +830,7 @@ moo_key_file_item_get_type (void)
 }
 
 
-GQuark
+static GQuark
 moo_key_file_error_quark (void)
 {
     return g_quark_from_static_string ("moo-key-file-error");

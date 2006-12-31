@@ -39,9 +39,6 @@ void     _moo_line_buffer_free          (LineBuffer     *line_buf);
 Line    *_moo_line_buffer_get_line      (LineBuffer     *line_buf,
                                          int             index);
 
-Line    *_moo_line_buffer_insert        (LineBuffer     *line_buf,
-                                         int             index);
-
 guint    _moo_line_buffer_get_stamp     (LineBuffer     *line_buf);
 int      _moo_line_buffer_get_line_index (LineBuffer    *line_buf,
                                          Line           *line);

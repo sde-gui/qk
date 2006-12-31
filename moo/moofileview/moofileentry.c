@@ -1439,6 +1439,7 @@ completion_default_visible_func (MooFile *file)
 }
 
 
+#if 0
 void
 _moo_file_entry_completion_set_visible_func (MooFileEntryCompletion *cmpl,
                                              MooFileVisibleFunc      func,
@@ -1452,6 +1453,7 @@ _moo_file_entry_completion_set_visible_func (MooFileEntryCompletion *cmpl,
     cmpl->priv->visible_func = func;
     cmpl->priv->visible_func_data = data;
 }
+#endif
 
 
 void

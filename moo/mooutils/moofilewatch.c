@@ -100,6 +100,24 @@ struct _MooFileWatch {
 };
 
 
+#define MOO_FILE_WATCH_ERROR (moo_file_watch_error_quark ())
+
+typedef enum
+{
+    MOO_FILE_WATCH_ERROR_CLOSED,
+    MOO_FILE_WATCH_ERROR_FAILED,
+    MOO_FILE_WATCH_ERROR_NOT_IMPLEMENTED,
+    MOO_FILE_WATCH_ERROR_TOO_MANY,
+    MOO_FILE_WATCH_ERROR_NOT_DIR,
+    MOO_FILE_WATCH_ERROR_IS_DIR,
+    MOO_FILE_WATCH_ERROR_NONEXISTENT,
+    MOO_FILE_WATCH_ERROR_BAD_FILENAME,
+    MOO_FILE_WATCH_ERROR_ACCESS_DENIED
+} MooFileWatchError;
+
+static GQuark moo_file_watch_error_quark (void);
+
+
 #ifdef MOO_USE_FAM
 static gboolean watch_fam_start             (MooFileWatch   *watch,
                                              GError        **error);
@@ -258,11 +276,11 @@ moo_file_watch_get_type (void)
 }
 
 
-GQuark
+static GQuark
 moo_file_watch_error_quark (void)
 {
     static GQuark quark = 0;
-    if (!quark)
+    if (G_UNLIKELY (!quark))
         quark = g_quark_from_static_string ("moo-file-watch-error");
     return quark;
 }

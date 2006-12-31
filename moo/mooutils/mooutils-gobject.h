@@ -142,7 +142,6 @@ MooData *_moo_data_new              (GHashFunc       hash_func,
                                      GDestroyNotify  key_destroy_func);
 
 /* these accept NULL */
-MooData *_moo_data_ref              (MooData        *data);
 void     _moo_data_unref            (MooData        *data);
 #define  _moo_data_destroy  _moo_data_unref
 

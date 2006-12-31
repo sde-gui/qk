@@ -105,9 +105,6 @@ MooFold    *moo_text_buffer_add_fold                    (MooTextBuffer      *buf
                                                          int                 end_line);
 void        moo_text_buffer_delete_fold                 (MooTextBuffer      *buffer,
                                                          MooFold            *fold);
-GSList     *moo_text_buffer_get_folds_in_range          (MooTextBuffer      *buffer,
-                                                         int                 first_line,
-                                                         int                 last_line);
 MooFold    *moo_text_buffer_get_fold_at_line            (MooTextBuffer      *buffer,
                                                          int                 line);
 void        moo_text_buffer_toggle_fold                 (MooTextBuffer      *buffer,

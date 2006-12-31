@@ -766,6 +766,7 @@ moo_term_buffer_print_unichar (MooTermBuffer  *buf,
 }
 
 
+#if 0
 void
 _moo_term_buffer_feed_child (MooTermBuffer  *buf,
                              const char     *string,
@@ -773,6 +774,7 @@ _moo_term_buffer_feed_child (MooTermBuffer  *buf,
 {
     g_signal_emit (buf, signals[FEED_CHILD], 0, string, len);
 }
+#endif
 
 
 static void
@@ -790,7 +792,7 @@ reset_tab_stops (MooTermBuffer  *buf)
     g_signal_emit (buf, signals[TABS_CHANGED], 0);
 }
 
-guint
+static guint
 _moo_term_buffer_next_tab_stop (MooTermBuffer  *buf,
                                 guint           current)
 {
@@ -806,7 +808,7 @@ _moo_term_buffer_next_tab_stop (MooTermBuffer  *buf,
         return buf_screen_width (buf) - 1;
 }
 
-guint
+static guint
 _moo_term_buffer_prev_tab_stop (MooTermBuffer  *buf,
                                 guint           current)
 {
@@ -1383,7 +1385,7 @@ _moo_term_buffer_delete_char (MooTermBuffer  *buf,
 }
 
 
-void
+static void
 _moo_term_buffer_erase_range (MooTermBuffer  *buf,
                               guint           row,
                               guint           col,

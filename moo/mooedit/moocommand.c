@@ -72,10 +72,14 @@ static GHashTable *registered_types;
 static GHashTable *registered_filters;
 
 
-static Variable *variable_new               (const GValue   *value);
-static void      variable_free              (Variable       *var);
-static void      moo_command_data_take_code (MooCommandData *data,
-                                             char           *code);
+static Variable    *variable_new                        (const GValue       *value);
+static void         variable_free                       (Variable           *var);
+static void         moo_command_data_take_code          (MooCommandData     *data,
+                                                         char               *code);
+
+static MooCommand  *_moo_command_type_create_command    (MooCommandType     *type,
+                                                         MooCommandData     *data,
+                                                         const char         *options);
 
 
 MooCommand *
@@ -192,7 +196,7 @@ moo_command_type_class_init (MooCommandTypeClass *klass)
 }
 
 
-MooCommand *
+static MooCommand *
 _moo_command_type_create_command (MooCommandType    *type,
                                   MooCommandData    *data,
                                   const char        *options)
@@ -598,6 +602,7 @@ moo_command_context_get (MooCommandContext  *ctx,
 }
 
 
+#if 0
 const char *
 moo_command_context_get_string (MooCommandContext  *ctx,
                                 const char         *name)
@@ -615,6 +620,7 @@ moo_command_context_get_string (MooCommandContext  *ctx,
     g_return_val_if_fail (G_VALUE_TYPE (&var->value) == G_TYPE_STRING, NULL);
     return g_value_get_string (&var->value);
 }
+#endif
 
 
 void
@@ -978,6 +984,7 @@ moo_command_data_new (guint len)
 }
 
 
+#if 0
 void
 moo_command_data_clear (MooCommandData *data)
 {
@@ -991,6 +998,7 @@ moo_command_data_clear (MooCommandData *data)
         data->data[i] = NULL;
     }
 }
+#endif
 
 
 MooCommandData *

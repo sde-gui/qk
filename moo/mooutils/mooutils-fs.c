@@ -42,6 +42,10 @@
 #define BROKEN_NAME "<" "????" ">"
 
 
+static int  _moo_chdir  (const char *path);
+static int  _moo_rmdir  (const char *path);
+
+
 /* XXX fix this */
 gboolean
 _moo_save_file_utf8 (const char *name,
@@ -524,7 +528,7 @@ _moo_unlink (const char *path)
 }
 
 
-int
+static int
 _moo_rmdir (const char *path)
 {
 #ifdef __WIN32__
@@ -535,7 +539,7 @@ _moo_rmdir (const char *path)
 }
 
 
-int
+static int
 _moo_chdir (const char *path)
 {
 #ifdef __WIN32__
@@ -710,14 +714,13 @@ _moo_rename (const char *old_name,
 #include <mooutils/eggregex.h>
 #endif
 
-
-struct _MooGlob {
+typedef struct _MooGlob {
 #ifdef MOO_GLOB_REGEX
     EggRegex *re;
 #else
     char *pattern;
 #endif
-};
+} MooGlob;
 
 #ifdef MOO_GLOB_REGEX
 static char *
@@ -815,7 +818,7 @@ error:
 }
 
 
-MooGlob *
+static MooGlob *
 _moo_glob_new (const char *pattern)
 {
     MooGlob *gl;
@@ -851,7 +854,7 @@ _moo_glob_new (const char *pattern)
 }
 
 
-gboolean
+static gboolean
 _moo_glob_match (MooGlob    *glob,
                  const char *filename_utf8)
 {
@@ -864,7 +867,7 @@ _moo_glob_match (MooGlob    *glob,
 #endif
 
 
-void
+static void
 _moo_glob_free (MooGlob *glob)
 {
     if (glob)

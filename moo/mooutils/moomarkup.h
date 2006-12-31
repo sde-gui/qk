@@ -139,17 +139,12 @@ MooMarkupDoc       *moo_markup_parse_file           (const char         *filenam
 MooMarkupDoc       *moo_markup_parse_memory         (const char         *buffer,
                                                      int                 size,
                                                      GError            **error);
-gboolean            moo_markup_save                 (MooMarkupDoc       *doc,
-                                                     const char         *filename,
-                                                     GError            **error);
 gboolean            moo_markup_save_pretty          (MooMarkupDoc       *doc,
                                                      const char         *filename,
                                                      guint               indent,
                                                      GError            **error);
 
 char               *moo_markup_node_get_string      (MooMarkupNode      *node);
-char               *moo_markup_node_get_pretty_string (MooMarkupNode    *node,
-                                                     guint               indent);
 
 MooMarkupDoc       *moo_markup_doc_ref              (MooMarkupDoc       *doc);
 void                moo_markup_doc_unref            (MooMarkupDoc       *doc);
@@ -196,10 +191,6 @@ MooMarkupNode      *moo_markup_create_element       (MooMarkupNode      *parent,
 MooMarkupNode      *moo_markup_create_text_element  (MooMarkupNode      *parent,
                                                      const char         *path,
                                                      const char         *content);
-MooMarkupNode      *moo_markup_create_file_element  (MooMarkupNode      *parent,
-                                                     const char         *path,
-                                                     const char         *filename);
-char               *moo_markup_get_file_content     (MooMarkupNode      *node);
 
 void                _moo_markup_set_modified        (MooMarkupDoc       *doc,
                                                      gboolean            modified);
