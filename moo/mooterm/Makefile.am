@@ -15,7 +15,6 @@ mooterm_sources =                      \
 	mooterm-private.h              \
 	mooterm-selection.h            \
 	mooterm-text.c                 \
-	mooterm-text-private.h         \
 	mooterm-vt.h                   \
 	mooterm-vtctls.h               \
 	mooterm-draw.c                 \
