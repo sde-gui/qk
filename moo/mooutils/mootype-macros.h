@@ -17,7 +17,7 @@
 #include <glib-object.h>
 
 
-#if !GLIB_CHECK_VERSION(2,8,0)
+#if !GLIB_CHECK_VERSION(2,12,0)
 #define _MOO_REGISTER_TYPE(TypeName,type_name,TYPE_PARENT,flags)                            \
     static const GTypeInfo type_info = {                                                    \
         sizeof (TypeName##Class),                                                           \
@@ -56,8 +56,8 @@ static gpointer type_name##_parent_class = NULL;                                
                                                                                             \
 static void     type_name##_class_intern_init (gpointer klass)                              \
 {                                                                                           \
-  type_name##_parent_class = g_type_class_peek_parent (klass);                              \
-  type_name##_class_init ((TypeName##Class*) klass);                                        \
+    type_name##_parent_class = g_type_class_peek_parent (klass);                            \
+    type_name##_class_init ((TypeName##Class*) klass);                                      \
 }                                                                                           \
                                                                                             \
 static GType                                                                                \
