@@ -109,6 +109,8 @@ static void         moo_window_add_action               (MooWindow      *window,
 static void         moo_window_remove_action            (MooWindow      *window,
                                                          const char     *action_id);
 
+static gboolean     moo_window_key_press_event          (GtkWidget      *widget,
+                                                         GdkEventKey    *event);
 static gboolean     moo_window_delete_event             (GtkWidget      *widget,
                                                          GdkEventAny    *event);
 
@@ -152,6 +154,7 @@ static guint signals[LAST_SIGNAL] = {0};
 
 /* MOO_TYPE_WINDOW */
 G_DEFINE_TYPE (MooWindow, moo_window, GTK_TYPE_WINDOW)
+static gpointer moo_window_grand_parent_class;
 
 
 static void
@@ -160,12 +163,15 @@ moo_window_class_init (MooWindowClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
+    moo_window_grand_parent_class = g_type_class_peek_parent (moo_window_parent_class);
+
     gobject_class->constructor = moo_window_constructor;
     gobject_class->dispose = moo_window_dispose;
     gobject_class->set_property = moo_window_set_property;
     gobject_class->get_property = moo_window_get_property;
 
     widget_class->delete_event = moo_window_delete_event;
+    widget_class->key_press_event = moo_window_key_press_event;
 
     moo_window_class_set_id (klass, "MooWindow", "Window");
 
@@ -415,6 +421,18 @@ moo_window_delete_event (GtkWidget      *widget,
     gboolean result = FALSE;
     g_signal_emit_by_name (widget, "close", &result);
     return result;
+}
+
+
+static gboolean
+moo_window_key_press_event (GtkWidget   *widget,
+                            GdkEventKey *event)
+{
+    return gtk_window_propagate_key_event (GTK_WINDOW (widget), event) ||
+           gtk_window_activate_key (GTK_WINDOW (widget), event) ||
+           /* GtkWindowClass would call two guys above again and then chain up
+            * to the parent, so it's a shortcut */
+           GTK_WIDGET_CLASS (moo_window_grand_parent_class)->key_press_event (widget, event);
 }
 
 
