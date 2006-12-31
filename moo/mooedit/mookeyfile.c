@@ -789,7 +789,7 @@ moo_key_file_get_type (void)
 {
     static GType type;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooKeyFile",
                                              (GBoxedCopyFunc) moo_key_file_ref,
                                              (GBoxedFreeFunc) moo_key_file_unref);
@@ -803,7 +803,7 @@ moo_key_file_item_get_type (void)
 {
     static GType type;
 
-    if (!type)
+    if (G_UNLIKELY (!type))
         type = g_pointer_type_register_static ("MooKeyFileItem");
 
     return type;
