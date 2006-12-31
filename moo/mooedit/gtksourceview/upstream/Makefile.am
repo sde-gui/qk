@@ -23,5 +23,7 @@ upstream_sources =			\
 
 EXTRA_DIST = $(upstream_sources) mangle.sh
 
+%.lo:
+	cd .. && make upstream/$*.o
 %.o:
 	cd .. && make upstream/$@
