@@ -50,10 +50,14 @@ struct _MooTextStyle
 };
 
 
-GType   moo_text_style_get_type         (void) G_GNUC_CONST;
-void    moo_text_style_free             (MooTextStyle       *style);
-void    _moo_text_style_apply_to_tag    (const MooTextStyle *style,
-                                         GtkTextTag         *tag);
+GType            moo_text_style_get_type        (void) G_GNUC_CONST;
+
+MooTextStyle    *moo_text_style_new             (MooTextStyleMask    mask);
+MooTextStyle    *moo_text_style_copy            (const MooTextStyle *style);
+void             moo_text_style_free            (MooTextStyle       *style);
+
+void             _moo_text_style_apply_to_tag   (const MooTextStyle *style,
+                                                 GtkTextTag         *tag);
 
 
 G_END_DECLS

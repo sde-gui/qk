@@ -124,24 +124,20 @@
 ;; )
 
 
-;; (define-boxed TextStyle
-;;   (in-module "Moo")
-;;   (c-name "MooTextStyle")
-;;   (gtype-id "MOO_TYPE_TEXT_STYLE")
-;;   (copy-func "moo_text_style_copy")
-;;   (release-func "moo_text_style_free")
-;;   (fields
-;;     '("char*" "default_style")
-;;     '("GdkColor" "foreground")
-;;     '("GdkColor" "background")
-;;     '("gboolean" "bold")
-;;     '("gboolean" "italic")
-;;     '("gboolean" "underline")
-;;     '("gboolean" "strikethrough")
-;;     '("gboolean" "modified")
-;;     '("MooTextStyleMask" "mask")
-;;   )
-;; )
+(define-boxed TextStyle
+  (in-module "Moo")
+  (c-name "MooTextStyle")
+  (gtype-id "MOO_TYPE_TEXT_STYLE")
+  (fields
+    '("MooTextStyleMask" "mask")
+    '("GdkColor" "foreground")
+    '("GdkColor" "background")
+    '("gboolean" "bold")
+    '("gboolean" "italic")
+    '("gboolean" "underline")
+    '("gboolean" "strikethrough")
+  )
+)
 
 
 (include "mooplugin.defs")
@@ -863,24 +859,6 @@
   (return-type "gboolean")
 )
 
-(define-method set_bracket_match_style
-  (of-object "MooTextBuffer")
-  (c-name "moo_text_buffer_set_bracket_match_style")
-  (return-type "none")
-  (parameters
-    '("const-MooTextStyle*" "style")
-  )
-)
-
-(define-method set_bracket_mismatch_style
-  (of-object "MooTextBuffer")
-  (c-name "moo_text_buffer_set_bracket_mismatch_style")
-  (return-type "none")
-  (parameters
-    '("const-MooTextStyle*" "style")
-  )
-)
-
 (define-method set_brackets
   (of-object "MooTextBuffer")
   (c-name "moo_text_buffer_set_brackets")
@@ -998,36 +976,15 @@
   (is-constructor-of "MooTextStyle")
   (return-type "MooTextStyle*")
   (parameters
-    '("const-char*" "default_style" (null-ok) (default "NULL"))
-    '("const-GdkColor*" "foreground")
-    '("const-GdkColor*" "background")
-    '("gboolean" "bold")
-    '("gboolean" "italic")
-    '("gboolean" "underline")
-    '("gboolean" "strikethrough")
-    '("MooTextStyleMask" "mask")
-    '("gboolean" "modified")
+    '("MooTextStyleMask" "mask" (null-ok) (default "0"))
   )
 )
 
-(define-method copy_content
+(define-method moo_text_style_copy
+  (c-name "moo_text_style_copy")
   (of-object "MooTextStyle")
-  (c-name "moo_text_style_copy_content")
-  (return-type "none")
-  (parameters
-    '("const-MooTextStyle*" "src")
-  )
+  (return-type "MooTextStyle*")
 )
-
-(define-method compose
-  (of-object "MooTextStyle")
-  (c-name "moo_text_style_compose")
-  (return-type "none")
-  (parameters
-    '("const-MooTextStyle*" "src")
-  )
-)
-
 
 
 ;; From mootextstylescheme.h

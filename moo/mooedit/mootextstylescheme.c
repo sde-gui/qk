@@ -50,6 +50,17 @@ moo_text_style_get_type (void)
     return type;
 }
 
+MooTextStyle *
+moo_text_style_new (MooTextStyleMask mask)
+{
+    return (MooTextStyle*) gtk_source_style_new (mask);
+}
+
+MooTextStyle *
+moo_text_style_copy (const MooTextStyle *style)
+{
+    return style ? (MooTextStyle*) gtk_source_style_copy ((GtkSourceStyle*) style) : NULL;
+}
 
 void
 moo_text_style_free (MooTextStyle *style)
