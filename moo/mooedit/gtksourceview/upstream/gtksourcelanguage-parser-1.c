@@ -99,7 +99,7 @@ ctx_data_add_syntax_pattern (GtkSourceContextData *ctx_data,
 	gchar *real_id, *root_id;
 	gchar *fixed_start, *fixed_end;
 	GError *error = NULL;
-	GtkSourceContextMatchOptions options = GTK_SOURCE_CONTEXT_EXTEND_PARENT;
+	GtkSourceContextFlags flags = GTK_SOURCE_CONTEXT_EXTEND_PARENT;
 
 	g_return_val_if_fail (id != NULL, FALSE);
 
@@ -110,14 +110,14 @@ ctx_data_add_syntax_pattern (GtkSourceContextData *ctx_data,
 	fixed_end = fix_pattern (pattern_end, &end_at_line_end);
 
 	if (end_at_line_end)
-		options |= GTK_SOURCE_CONTEXT_END_AT_LINE_END;
+		flags |= GTK_SOURCE_CONTEXT_END_AT_LINE_END;
 
 	result = _gtk_source_context_data_define_context (ctx_data, real_id, root_id,
 							  NULL,
 							  pattern_start,
 							  pattern_end,
 							  style,
-							  options,
+							  flags,
 							  &error);
 
 	if (error != NULL)

@@ -46,7 +46,7 @@
                         <context id="comment-continue">
                             <match>\\\n</match>
                         </context>
-                        <context ref="def:comment:*"/>
+                        <context ref="def:in-comment"/>
                     </include>
                 </context>
 
@@ -54,7 +54,7 @@
                     <start>\/\*</start>
                     <end>\*\/</end>
                     <include>
-                        <context ref="def:comment:*"/>
+                        <context ref="def:in-comment"/>
                     </include>
                 </context>
 

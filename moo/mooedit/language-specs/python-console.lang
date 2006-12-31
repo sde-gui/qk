@@ -11,7 +11,7 @@
           <start>^(>>>|\.\.\.)\ </start>
           <include>
             <context sub-pattern="1" where="start" style-ref="ps"/>
-            <context ref="python:python:*"/>
+            <context ref="python:python"/>
           </include>
         </context>
       </include>

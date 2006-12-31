@@ -1,3 +1,4 @@
+#!/bin/sh
 # -%- strip: true; indent-width: 2 -%-
 
 if test -z "$1"; then

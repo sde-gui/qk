@@ -68,7 +68,7 @@
                     <keyword>__cplusplus</keyword>
                 </context>
 
-                <context ref="c:c:*"/>
+                <context ref="c:c"/>
 
             </include>
         </context>

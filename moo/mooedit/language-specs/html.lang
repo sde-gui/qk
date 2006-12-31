@@ -88,7 +88,7 @@
                     <start>&lt;!--</start>
                     <end>--&gt;</end>
                     <include>
-                        <context ref="def:comment:*"/>
+                        <context ref="def:in-comment"/>
                     </include>
                 </context>
 
@@ -106,12 +106,12 @@
                     <include>
                         <context sub-pattern="0" where="start" style-ref="tag"/>
                         <context sub-pattern="0" where="end" style-ref="tag"/>
-                        <context ref="generic-tag:*"/>
+                        <context ref="generic-tag"/>
                         <context id="js-code" extend-parent="false">
                             <start>&gt;</start>
                             <include>
                                 <context sub-pattern="0" where="start" style-ref="tag"/>
-                                <context ref="js:js:*"/>
+                                <context ref="js:js"/>
                             </include>
                         </context>
                     </include>
@@ -123,7 +123,7 @@
                     <include>
                         <context sub-pattern="0" where="start" style-ref="tag"/>
                         <context sub-pattern="0" where="end" style-ref="tag"/>
-                        <context ref="generic-tag:*"/>
+                        <context ref="generic-tag"/>
                     </include>
                 </context>
 

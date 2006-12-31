@@ -26,19 +26,19 @@
   (gtype-id "MOO_TYPE_INDENTER")
 )
 
-;; (define-object LangMgr
-;;   (in-module "Moo")
-;;   (parent "GObject")
-;;   (c-name "MooLangMgr")
-;;   (gtype-id "MOO_TYPE_LANG_MGR")
-;; )
-;;
-;; (define-object Lang
-;;   (in-module "Moo")
-;;   (parent "GObject")
-;;   (c-name "MooLangMgr")
-;;   (gtype-id "MOO_TYPE_LANG_MGR")
-;; )
+(define-object LangMgr
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooLangMgr")
+  (gtype-id "MOO_TYPE_LANG_MGR")
+)
+
+(define-object Lang
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooLang")
+  (gtype-id "MOO_TYPE_LANG")
+)
 
 (define-object TextBuffer
   (in-module "Moo")
@@ -687,23 +687,23 @@
   )
 )
 
-(define-method get_lang_for_filename
-  (of-object "MooLangMgr")
-  (c-name "moo_lang_mgr_get_lang_for_filename")
-  (return-type "MooLang*")
-  (parameters
-    '("const-char*" "filename")
-  )
-)
-
-(define-method get_lang_for_mime_type
-  (of-object "MooLangMgr")
-  (c-name "moo_lang_mgr_get_lang_for_mime_type")
-  (return-type "MooLang*")
-  (parameters
-    '("const-char*" "mime_type")
-  )
-)
+; (define-method get_lang_for_filename
+;   (of-object "MooLangMgr")
+;   (c-name "moo_lang_mgr_get_lang_for_filename")
+;   (return-type "MooLang*")
+;   (parameters
+;     '("const-char*" "filename")
+;   )
+; )
+;
+; (define-method get_lang_for_mime_type
+;   (of-object "MooLangMgr")
+;   (c-name "moo_lang_mgr_get_lang_for_mime_type")
+;   (return-type "MooLang*")
+;   (parameters
+;     '("const-char*" "mime_type")
+;   )
+; )
 
 (define-method get_lang
   (of-object "MooLangMgr")

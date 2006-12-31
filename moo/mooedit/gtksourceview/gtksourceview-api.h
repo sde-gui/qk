@@ -35,6 +35,8 @@
 #define _gtk_source_engine_set_style_scheme			_moo_gtk_source_engine_set_style_scheme
 #define gtk_source_iter_forward_search				_moo_gtk_source_iter_forward_search
 #define gtk_source_iter_backward_search				_moo_gtk_source_iter_backward_search
+#define gtk_source_style_new					_moo_gtk_source_style_new
+#define gtk_source_style_copy					_moo_gtk_source_style_copy
 #define gtk_source_style_free					_moo_gtk_source_style_free
 #define gtk_source_style_scheme_get_id				_moo_gtk_source_style_scheme_get_id
 #define gtk_source_style_scheme_get_name			_moo_gtk_source_style_scheme_get_name

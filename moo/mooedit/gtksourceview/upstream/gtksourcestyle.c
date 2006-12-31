@@ -25,7 +25,7 @@ gtk_source_style_get_type (void)
 {
 	static GType type;
 
-	if (type == 0)
+	if (G_UNLIKELY (type == 0))
 		type = g_boxed_type_register_static ("GtkSourceStyle",
 						     (GBoxedCopyFunc) gtk_source_style_copy,
 						     (GBoxedFreeFunc) gtk_source_style_free);
@@ -33,6 +33,15 @@ gtk_source_style_get_type (void)
 	return type;
 }
 
+/**
+ * gtk_source_style_new:
+ * @mask: a #GtkSourceStyleMask which defines what fields will be used.
+ *
+ * Returns: newly allocated #GtkSourceStyle structure, free with
+ * gtk_source_style_free().
+ *
+ * Since: 2.0
+ */
 GtkSourceStyle *
 gtk_source_style_new (GtkSourceStyleMask mask)
 {
@@ -41,18 +50,46 @@ gtk_source_style_new (GtkSourceStyleMask mask)
 	return style;
 }
 
+/**
+ * gtk_source_style_copy:
+ * @style: a #GtkSourceStyle structure to copy.
+ *
+ * Returns: copy of @style, free it with gtk_source_style_free().
+ *
+ * Since: 2.0
+ */
 GtkSourceStyle *
 gtk_source_style_copy (const GtkSourceStyle *style)
 {
 	return g_memdup (style, sizeof (GtkSourceStyle));
 }
 
+/**
+ * gtk_source_style_free:
+ * @style: a #GtkSourceStyle structure to free.
+ *
+ * Frees #GtkSourceStyle structure allocated with gtk_source_style_new() or
+ * gtk_source_style_copy().
+ *
+ * Since: 2.0
+ */
 void
 gtk_source_style_free (GtkSourceStyle *style)
 {
 	g_free (style);
 }
 
+/**
+ * _gtk_source_style_apply:
+ * @style: a #GtkSourceStyle to apply.
+ * @tag: a #GtkTextTag to apply styles to.
+ *
+ * Applies text styles set in @style if it's not %NULL, or
+ * unsets style fields in @tag set with _gtk_source_style_apply()
+ * if @style is %NULL.
+ *
+ * Since: 2.0
+ */
 void
 _gtk_source_style_apply (const GtkSourceStyle *style,
 			 GtkTextTag           *tag)

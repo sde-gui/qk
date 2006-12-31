@@ -61,7 +61,7 @@
                 <context id="comment" style-ref="comment" end-at-line-end="true">
                     <start>\/\/</start>
                     <include>
-                      <context ref="def:line-comment"/>
+                      <context ref="def:in-line-comment"/>
                     </include>
                 </context>
 
@@ -69,7 +69,7 @@
                     <start>\/\*</start>
                     <end>\*\/</end>
                     <include>
-                        <context ref="def:comment:*"/>
+                        <context ref="def:in-comment"/>
                     </include>
                 </context>
 
@@ -89,6 +89,7 @@
                             <end>\%{preproc-start}endif\b</end>
                             <include>
                                 <context ref="if-in-if0"/>
+                                <context ref="def:in-comment"/>
                             </include>
                         </context>
                     </include>
@@ -97,7 +98,7 @@
                 <context id="include" style-ref="preprocessor">
                     <match extended="true">
                             \%{preproc-start}
-                            include\s*
+                            (include|import)\s*
                             (".*?"|&lt;.*&gt;)
                     </match>
                     <include>

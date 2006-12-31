@@ -109,7 +109,7 @@
           <start>`</start>
           <end>`</end>
           <include>
-            <context ref="python:*"/>
+            <context ref="python"/>
           </include>
         </context>
 

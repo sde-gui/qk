@@ -130,6 +130,14 @@ gtk_source_style_scheme_class_init (GtkSourceStyleSchemeClass *klass)
 	object_class->set_property = gtk_source_style_scheme_set_property;
 	object_class->get_property = gtk_source_style_scheme_get_property;
 
+	/**
+	 * GtkSourceStyleScheme:id:
+	 *
+	 * Style scheme id, a unique string used to identify the style scheme
+	 * in #GtkSourceStyleManager.
+	 *
+	 * Since: 2.0
+	 */
 	g_object_class_install_property (object_class,
 					 PROP_ID,
 					 g_param_spec_string ("id",
@@ -138,6 +146,13 @@ gtk_source_style_scheme_class_init (GtkSourceStyleSchemeClass *klass)
 							      NULL,
 							      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
+	/**
+	 * GtkSourceStyleScheme:name:
+	 *
+	 * Style scheme name, a translatable string to present to user.
+	 *
+	 * Since: 2.0
+	 */
 	g_object_class_install_property (object_class,
 					 PROP_NAME,
 					 g_param_spec_string ("name",
@@ -158,6 +173,14 @@ gtk_source_style_scheme_init (GtkSourceStyleScheme *scheme)
 						      (GDestroyNotify) gtk_source_style_free);
 }
 
+/**
+ * gtk_source_style_scheme_get_id:
+ * @scheme: a #GtkSourceStyleScheme.
+ *
+ * Returns: @scheme id.
+ *
+ * Since: 2.0
+ */
 const gchar *
 gtk_source_style_scheme_get_id (GtkSourceStyleScheme *scheme)
 {
@@ -166,6 +189,14 @@ gtk_source_style_scheme_get_id (GtkSourceStyleScheme *scheme)
 	return scheme->priv->id;
 }
 
+/**
+ * gtk_source_style_scheme_get_name:
+ * @scheme: a #GtkSourceStyleScheme.
+ *
+ * Returns: @scheme name.
+ *
+ * Since: 2.0
+ */
 const gchar *
 gtk_source_style_scheme_get_name (GtkSourceStyleScheme *scheme)
 {
@@ -174,6 +205,15 @@ gtk_source_style_scheme_get_name (GtkSourceStyleScheme *scheme)
 	return scheme->priv->name;
 }
 
+/**
+ * _gtk_source_style_scheme_new:
+ * @id: scheme id.
+ * @name: scheme name.
+ *
+ * Returns: new empty #GtkSourceStyleScheme.
+ *
+ * Since: 2.0
+ */
 GtkSourceStyleScheme *
 _gtk_source_style_scheme_new (const gchar *id,
 			      const gchar *name)
@@ -189,6 +229,17 @@ _gtk_source_style_scheme_new (const gchar *id,
 	return scheme;
 }
 
+/**
+ * gtk_source_style_scheme_get_style:
+ * @scheme: a #GtkSourceStyleScheme.
+ * @style_name: style name to find.
+ *
+ * Returns: style which corresponds to @style_name in the @scheme,
+ * or %NULL when no style with this name found. Free it with
+ * gtk_source_style_free().
+ *
+ * Since: 2.0
+ */
 GtkSourceStyle *
 gtk_source_style_scheme_get_style (GtkSourceStyleScheme *scheme,
 				   const gchar          *style_name)
@@ -210,6 +261,14 @@ gtk_source_style_scheme_get_style (GtkSourceStyleScheme *scheme,
 		return NULL;
 }
 
+/**
+ * gtk_source_style_scheme_set_style:
+ * @scheme: a #GtkSourceStyleScheme.
+ * @name: style name.
+ * @style: style to set or %NULL.
+ *
+ * Since: 2.0
+ */
 void
 gtk_source_style_scheme_set_style (GtkSourceStyleScheme *scheme,
 				   const gchar          *name,
@@ -225,6 +284,15 @@ gtk_source_style_scheme_set_style (GtkSourceStyleScheme *scheme,
 		g_hash_table_remove (scheme->priv->styles, name);
 }
 
+/**
+ * gtk_source_style_scheme_get_matching_brackets_style:
+ * @scheme: a #GtkSourceStyleScheme.
+ *
+ * Returns: style which corresponds to "bracket-match" name, to use
+ * in an editor. Free it with gtk_source_style_free().
+ *
+ * Since: 2.0
+ */
 GtkSourceStyle *
 gtk_source_style_scheme_get_matching_brackets_style (GtkSourceStyleScheme *scheme)
 {
@@ -232,6 +300,16 @@ gtk_source_style_scheme_get_matching_brackets_style (GtkSourceStyleScheme *schem
 	return gtk_source_style_scheme_get_style (scheme, STYLE_BRACKET_MATCH);
 }
 
+/**
+ * gtk_source_style_scheme_get_current_line_color:
+ * @scheme: a #GtkSourceStyleScheme.
+ * @color: a #GdkColor structure to fill.
+ *
+ * Returns: %TRUE if @scheme has style for current line set, or %FALSE
+ * otherwise.
+ *
+ * Since: 2.0
+ */
 gboolean
 gtk_source_style_scheme_get_current_line_color (GtkSourceStyleScheme *scheme,
 						GdkColor             *color)
@@ -290,6 +368,15 @@ set_cursor_color (GtkWidget      *widget,
 	g_print ("implement me\n");
 }
 
+/**
+ * _gtk_source_style_scheme_apply:
+ * @scheme: a #GtkSourceStyleScheme.
+ * @widget: a #GtkWidget to apply styles to.
+ *
+ * Sets text colors from @scheme in the @widget.
+ *
+ * Since: 2.0
+ */
 void
 _gtk_source_style_scheme_apply (GtkSourceStyleScheme *scheme,
 				GtkWidget            *widget)
@@ -575,6 +662,15 @@ end_element (G_GNUC_UNUSED GMarkupParseContext *context,
 		data->done = TRUE;
 }
 
+/**
+ * _gtk_source_style_scheme_new_from_file:
+ * @filename: file to parse.
+ *
+ * Returns: new #GtkSourceStyleScheme created from file, or
+ * %NULL on error.
+ *
+ * Since: 2.0
+ */
 GtkSourceStyleScheme *
 _gtk_source_style_scheme_new_from_file (const gchar *filename)
 {
@@ -615,6 +711,14 @@ _gtk_source_style_scheme_new_from_file (const gchar *filename)
 	return data.scheme;
 }
 
+/**
+ * _gtk_source_style_scheme_get_parent_id:
+ * @scheme: a #GtkSourceStyleScheme.
+ *
+ * Returns: parent style scheme id or %NULL.
+ *
+ * Since: 2.0
+ */
 const gchar *
 _gtk_source_style_scheme_get_parent_id (GtkSourceStyleScheme *scheme)
 {
@@ -622,6 +726,17 @@ _gtk_source_style_scheme_get_parent_id (GtkSourceStyleScheme *scheme)
 	return scheme->priv->parent_id;
 }
 
+/**
+ * _gtk_source_style_scheme_set_parent:
+ * @scheme: a #GtkSourceStyleScheme.
+ * @parent_scheme: parent #GtkSourceStyleScheme for @scheme.
+ *
+ * Sets @parent_scheme as parent scheme for @scheme, @scheme will
+ * look for styles in @parent_scheme if it doesn't have style set
+ * for given name.
+ *
+ * Since: 2.0
+ */
 void
 _gtk_source_style_scheme_set_parent (GtkSourceStyleScheme *scheme,
 				     GtkSourceStyleScheme *parent_scheme)
@@ -636,6 +751,13 @@ _gtk_source_style_scheme_set_parent (GtkSourceStyleScheme *scheme,
 	scheme->priv->parent = parent_scheme;
 }
 
+/**
+ * _gtk_source_style_scheme_default_new:
+ *
+ * Returns: new default style scheme. Not clear what it means though.
+ *
+ * Since: 2.0
+ */
 GtkSourceStyleScheme *
 _gtk_source_style_scheme_default_new (void)
 {

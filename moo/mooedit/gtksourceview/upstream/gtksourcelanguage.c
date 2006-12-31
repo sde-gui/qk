@@ -384,7 +384,7 @@ process_language_node (xmlTextReaderPtr reader, const gchar *filename)
  *
  * Returns the ID of the language. The ID is not locale-dependent.
  *
- * Return value: the ID of @language, it must be freed it with g_free.
+ * Returns: the ID of @language, it must be freed it with g_free.
  **/
 gchar *
 gtk_source_language_get_id (GtkSourceLanguage *language)
@@ -401,7 +401,7 @@ gtk_source_language_get_id (GtkSourceLanguage *language)
  *
  * Returns the localized name of the language.
  *
- * Return value: the name of @language.
+ * Returns: the name of @language.
  **/
 gchar *
 gtk_source_language_get_name (GtkSourceLanguage *language)
@@ -420,7 +420,7 @@ gtk_source_language_get_name (GtkSourceLanguage *language)
  * Each language belong to a section (ex. HTML belogs to the
  * Markup section).
  *
- * Return value: the section of @language.
+ * Returns: the section of @language.
  **/
 gchar *
 gtk_source_language_get_section	(GtkSourceLanguage *language)
@@ -431,57 +431,14 @@ gtk_source_language_get_section	(GtkSourceLanguage *language)
 	return g_strdup (language->priv->section);
 }
 
-gint
-gtk_source_language_get_version (GtkSourceLanguage *language)
-{
-	g_return_val_if_fail (GTK_IS_SOURCE_LANGUAGE (language), 0);
-
-	return language->priv->version;
-}
-
-/**
- * gtk_source_language_get_mime_types:
- * @language: a #GtkSourceLanguage.
- *
- * Returns a list of mime types for the given @language.  After usage you should
- * free each element of the list as well as the list itself.
- *
- * Return value: a list of mime types (strings).
- **/
-GSList *
-gtk_source_language_get_mime_types (GtkSourceLanguage *language)
-{
-	const gchar *prop;
-	gchar **mtl;
-	gint i;
-	GSList *list = NULL;
-
-	g_return_val_if_fail (GTK_IS_SOURCE_LANGUAGE (language), NULL);
-
-	prop = gtk_source_language_get_property (language, "mimetypes");
-
-	if (!prop)
-		return NULL;
-
-	mtl = g_strsplit_set (prop, ";,", 0);
-
-	for (i = 0; mtl[i] != NULL; i++)
-		/* steal the strings from the array */
-		list = g_slist_prepend (list, mtl[i]);
-
-	g_free (mtl);
-
-	return g_slist_reverse (list);
-}
-
 /**
  * gtk_source_language_get_property:
  *
  * @language: a #GtkSourceLanguage.
  * @name: property name.
  *
- * Returns value of property %name if it's set in the lang file
- * and NULL otherwise.
+ * Returns: value of property %name if it's set in @language
+ * and %NULL otherwise.
  **/
 const gchar *
 gtk_source_language_get_property (GtkSourceLanguage *language,
@@ -497,9 +454,7 @@ gtk_source_language_get_property (GtkSourceLanguage *language,
  * _gtk_source_language_get_languages_manager:
  * @language: a #GtkSourceLanguage.
  *
- * Returns the #GtkSourceLanguagesManager for the #GtkSourceLanguage.
- *
- * Return value: #GtkSourceLanguagesManager for @language.
+ * Returns: #GtkSourceLanguagesManager for @language.
  **/
 GtkSourceLanguagesManager *
 _gtk_source_language_get_languages_manager (GtkSourceLanguage *language)

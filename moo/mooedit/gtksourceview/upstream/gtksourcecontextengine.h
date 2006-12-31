@@ -54,10 +54,12 @@ struct _GtkSourceContextEngineClass
 
 typedef enum {
 	GTK_SOURCE_CONTEXT_EXTEND_PARENT	= 1 << 0,
-	GTK_SOURCE_CONTEXT_END_AT_LINE_END	= 1 << 1,
-	GTK_SOURCE_CONTEXT_FIRST_LINE_ONLY	= 1 << 2,
-	GTK_SOURCE_CONTEXT_ONCE_ONLY		= 1 << 3
-} GtkSourceContextMatchOptions;
+	GTK_SOURCE_CONTEXT_END_PARENT		= 1 << 1,
+	GTK_SOURCE_CONTEXT_END_AT_LINE_END	= 1 << 2,
+	GTK_SOURCE_CONTEXT_FIRST_LINE_ONLY	= 1 << 3,
+	GTK_SOURCE_CONTEXT_ONCE_ONLY		= 1 << 4,
+	GTK_SOURCE_CONTEXT_STYLE_INSIDE		= 1 << 5
+} GtkSourceContextFlags;
 
 typedef enum {
 	GTK_SOURCE_CONTEXT_IGNORE_STYLE		= 1 << 0,
@@ -80,7 +82,7 @@ gboolean	 _gtk_source_context_data_define_context
 							 const gchar		 *start_regex,
 							 const gchar		 *end_regex,
 							 const gchar		 *style,
-							 GtkSourceContextMatchOptions options,
+							 GtkSourceContextFlags    flags,
 							 GError			**error);
 
 gboolean	 _gtk_source_context_data_add_sub_pattern

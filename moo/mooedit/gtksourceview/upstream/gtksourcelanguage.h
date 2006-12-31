@@ -57,10 +57,7 @@ gchar	 		*gtk_source_language_get_id			(GtkSourceLanguage       *language);
 
 gchar	 		*gtk_source_language_get_name			(GtkSourceLanguage       *language);
 gchar			*gtk_source_language_get_section		(GtkSourceLanguage       *language);
-gint			 gtk_source_language_get_version		(GtkSourceLanguage       *language);
 
-/* Should free the list (and free each string in it also). */
-GSList			*gtk_source_language_get_mime_types		(GtkSourceLanguage       *language);
 const gchar		*gtk_source_language_get_property		(GtkSourceLanguage       *language,
 									 const gchar		 *name);
 

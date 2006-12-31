@@ -39,6 +39,7 @@ enum {
 
 struct _GtkSourceLanguagesManagerPrivate
 {
+	GHashTable	*language_ids;
 	GSList 		*available_languages;
 	GSList		*language_specs_directories;
 	char		*rng_file;
@@ -142,7 +143,7 @@ gtk_source_languages_manager_init (GtkSourceLanguagesManager *lm)
  *
  * Creates a new language manager.
  *
- * Return value: a #GtkSourceLanguagesManager.
+ * Returns: a #GtkSourceLanguagesManager.
  **/
 GtkSourceLanguagesManager *
 gtk_source_languages_manager_new (void)
@@ -156,6 +157,9 @@ gtk_source_languages_manager_finalize (GObject *object)
 	GtkSourceLanguagesManager *lm;
 
 	lm = GTK_SOURCE_LANGUAGES_MANAGER (object);
+
+	if (lm->priv->language_ids)
+		g_hash_table_destroy (lm->priv->language_ids);
 
 	g_slist_foreach (lm->priv->available_languages, (GFunc) g_object_unref, NULL);
 	g_slist_free (lm->priv->available_languages);
@@ -234,7 +238,7 @@ gtk_source_languages_manager_set_specs_dirs (GtkSourceLanguagesManager *lm,
  *
  * Gets a list of language files directories for the given language manager.
  *
- * Return value: a list of language files directories (as strings).
+ * Returns: a list of language files directories (as strings).
  **/
 const GSList *
 gtk_source_languages_manager_get_lang_files_dirs (GtkSourceLanguagesManager *lm)
@@ -291,112 +295,59 @@ prepend_lang (G_GNUC_UNUSED gchar       *id,
 		g_slist_prepend (lm->priv->available_languages, lang);
 }
 
+static void
+ensure_languages (GtkSourceLanguagesManager *lm)
+{
+	GSList *filenames, *l;
+
+	if (lm->priv->language_ids != NULL)
+		return;
+
+	/* Build list of availables languages */
+	filenames = get_lang_files (lm);
+	lm->priv->language_ids = g_hash_table_new (g_str_hash, g_str_equal);
+
+	for (l = filenames; l != NULL; l = l->next)
+	{
+		GtkSourceLanguage *lang;
+		const gchar *filename;
+
+		filename = l->data;
+		lang = _gtk_source_language_new_from_file (filename, lm);
+
+		if (lang == NULL)
+		{
+			g_warning ("Error reading language specification file '%s'", filename);
+			continue;
+		}
+
+		if (g_hash_table_lookup (lm->priv->language_ids, lang->priv->id) == NULL)
+			g_hash_table_insert (lm->priv->language_ids,
+					     lang->priv->id,
+					     lang);
+		else
+			g_object_unref (lang);
+	}
+
+	g_hash_table_foreach (lm->priv->language_ids, (GHFunc) prepend_lang, lm);
+	slist_deep_free (filenames);
+}
+
 /**
  * gtk_source_languages_manager_get_available_languages:
  * @lm: a #GtkSourceLanguagesManager.
  *
  * Gets a list of available languages for the given language manager.
- * This function returns a pointer to a internal list, so there is no need to
- * free it after usage.
  *
- * Return value: a list of #GtkSourceLanguage.
+ * Returns: a list of #GtkSourceLanguage. Return value is owned by @lm and should
+ * not be modified or freed.
  **/
 const GSList *
 gtk_source_languages_manager_get_available_languages (GtkSourceLanguagesManager *lm)
 {
-	GSList *filenames, *l;
-	GHashTable *lang_hash;
-
 	g_return_val_if_fail (GTK_IS_SOURCE_LANGUAGES_MANAGER (lm), NULL);
-
-	if (lm->priv->available_languages != NULL)
-	{
-		return lm->priv->available_languages;
-	}
-
-	/* Build list of availables languages */
-	filenames = get_lang_files (lm);
-
-	lang_hash = g_hash_table_new (g_str_hash, g_str_equal);
-
-	for (l = filenames; l != NULL; l = l->next)
-	{
-		GtkSourceLanguage *lang;
-
-		lang = _gtk_source_language_new_from_file ((const gchar*)l->data,
-							   lm);
-
-		if (lang == NULL)
-		{
-			g_warning ("Error reading language specification file '%s'",
-				   (const gchar*)l->data);
-			continue;
-		}
-
-		if (g_hash_table_lookup (lang_hash, lang->priv->id) == NULL)
-		{
-			g_hash_table_insert (lang_hash,
-					     lang->priv->id,
-					     lang);
-		}
-	}
-
-	slist_deep_free (filenames);
-
-	g_hash_table_foreach (lang_hash, (GHFunc) prepend_lang, lm);
-
-	g_hash_table_destroy (lang_hash);
-
+	ensure_languages (lm);
 	return lm->priv->available_languages;
-}
-
-/**
- * gtk_source_languages_manager_get_language_for_mime_type:
- * @lm: a #GtkSourceLanguagesManager.
- * @mime_type: a mime type.
- *
- * Gets the #GtkSourceLanguage which is associated with the given @mime_type
- * in the language manager.
- *
- * Return value: a #GtkSourceLanguage, or %NULL if there is no language
- * associated with the given @mime_type.
- **/
-/* FIXME use hash table here */
-GtkSourceLanguage *
-gtk_source_languages_manager_get_language_for_mime_type (GtkSourceLanguagesManager *lm,
-							 const gchar               *mime_type)
-{
-	const GSList *languages;
-	g_return_val_if_fail (mime_type != NULL, NULL);
-
-	languages = gtk_source_languages_manager_get_available_languages (lm);
-
-	while (languages != NULL)
-	{
-		GSList *mime_types, *tmp;
-
-		GtkSourceLanguage *lang = GTK_SOURCE_LANGUAGE (languages->data);
-
-		tmp = mime_types = gtk_source_language_get_mime_types (lang);
-
-		while (tmp != NULL)
-		{
-			if (strcmp ((const gchar*)tmp->data, mime_type) == 0)
-			{
-				break;
-			}
-
-			tmp = g_slist_next (tmp);
-		}
-
-		slist_deep_free (mime_types);
-		if (tmp != NULL)
-			return lang;
-
-		languages = g_slist_next (languages);
-	}
-
-	return NULL;
 }
 
 /**
@@ -407,41 +358,17 @@ gtk_source_languages_manager_get_language_for_mime_type (GtkSourceLanguagesManag
  * Gets the #GtkSourceLanguage identified by the given @id in the language
  * manager.
  *
- * Return value: a #GtkSourceLanguage, or %NULL if there is no language
- * identified by the given @id.
+ * Returns: a #GtkSourceLanguage, or %NULL if there is no language
+ * identified by the given @id. Return value is owned by @lm and should not
+ * be freed.
  **/
 GtkSourceLanguage *
 gtk_source_languages_manager_get_language_by_id (GtkSourceLanguagesManager *lm,
 						 const gchar               *id)
 {
-	const GSList *languages;
-	gboolean found = FALSE;
 	g_return_val_if_fail (id != NULL, NULL);
-
-	languages = gtk_source_languages_manager_get_available_languages (lm);
-
-	while (languages != NULL)
-	{
-		gchar *lang_id;
-
-		GtkSourceLanguage *lang = GTK_SOURCE_LANGUAGE (languages->data);
-
-		lang_id = gtk_source_language_get_id (lang);
-
-		if (lang_id != NULL && (strcmp (lang_id, id) == 0))
-		{
-			found = TRUE;
-		}
-
-		g_free (lang_id);
-
-		if (found)
-			return lang;
-
-		languages = g_slist_next (languages);
-	}
-
-	return NULL;
+	ensure_languages (lm);
+	return g_hash_table_lookup (lm->priv->language_ids, id);
 }
 
 static GSList *

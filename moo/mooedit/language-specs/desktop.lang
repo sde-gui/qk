@@ -23,7 +23,7 @@
     <context id="line-comment" style-ref="comment" end-at-line-end="true">
       <start>#</start>
       <include>
-        <context ref="def:comment:*"/>
+        <context ref="def:in-comment"/>
       </include>
     </context>
 
@@ -119,7 +119,7 @@
       <include>
         <context ref="line-comment"/>
         <context ref="group"/>
-        <context ref="key:*"/>
+        <context ref="key"/>
         <context id="lang-and-value" end-at-line-end="true">
           <start>(\[[a-zA-Z_]+\])?\s*=\s*</start>
           <include>

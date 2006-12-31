@@ -185,6 +185,11 @@
             </attribute>
         </optional>
         <optional>
+            <attribute name="end-parent">
+                <ref name="boolean-value"/>
+            </attribute>
+        </optional>
+        <optional>
             <attribute name="first-line-only">
                 <ref name="boolean-value"/>
             </attribute>
@@ -237,7 +242,17 @@
             </attribute>
         </optional>
         <optional>
+            <attribute name="style-inside">
+                <ref name="boolean-value"/>
+            </attribute>
+        </optional>
+        <optional>
             <attribute name="extend-parent">
+                <ref name="boolean-value"/>
+            </attribute>
+        </optional>
+        <optional>
+            <attribute name="end-parent">
                 <ref name="boolean-value"/>
             </attribute>
         </optional>

@@ -42,7 +42,6 @@
           <start>^((@@)|[0-9]|\*\*\*\*)</start>
           <include>
             <context ref="def:escape"/>
-            <context ref="def:line-continue"/>
           </include>
         </context>
 

@@ -76,14 +76,15 @@ struct _ParserState
 	GHashTable *defined_regexes;
 
 	/* The mapping between style ids and their default styles.
-	 * If lang file contains this:
+	 * If lang file 'mama' contains this:
 	 * <style id="foo" map-to="def:blah"/>
 	 * <style id="bar"/>
-	 * then in styles_mapping: "foo"->"def:blah", "bar"->"bar". */
+	 * then in styles_mapping: "mama:foo"->"def:blah", "mama:bar"->"mama:bar". */
 	GHashTable *styles_mapping;
 
-	/* The list of loaded languages (the item are XmlChar pointers) */
-	GSList **loaded_lang_ids;
+	/* The list of loaded languages (the item are xmlChar pointers),
+	 * mapping is id -> id */
+	GHashTable *loaded_lang_ids;
 
 	/* A serial number incremented to get unique generated names */
 	guint id_cookie;
@@ -111,7 +112,7 @@ static ParserState *parser_state_new           (GtkSourceLanguage      *language
                                                 GHashTable             *defined_regexes,
                                                 GHashTable             *styles_mapping,
                                                 xmlTextReader          *reader,
-                                                GSList                **loaded_lang_ids);
+                                                GHashTable             *loaded_lang_ids);
 static void       parser_state_destroy         (ParserState *parser_state);
 
 static gboolean   file_parse                   (gchar                  *filename,
@@ -119,7 +120,7 @@ static gboolean   file_parse                   (gchar                  *filename
                                                 GtkSourceContextData   *ctx_data,
                                                 GHashTable             *defined_regexes,
                                                 GHashTable             *styles,
-                                                GSList                **loaded_lang_ids,
+                                                GHashTable             *loaded_lang_ids,
                                                 GError                **error);
 
 static EggRegexCompileFlags
@@ -194,34 +195,18 @@ id_is_decorated (const gchar *id,
 	/* This function is quite simple because the XML validator check for
 	 * the correctness of the id with a regex */
 
-	gchar **tokens;
-	gboolean is_decorated;
+	const gchar *colon;
+	gboolean is_decorated = FALSE;
 
-	tokens = g_strsplit (id, ":", 2);
+	colon = strchr (id, ':');
 
-	g_return_val_if_fail (tokens != NULL, FALSE);
-
-	if (tokens [1] == NULL)
-	{
-		/* There is no ":" in the id */
-		is_decorated = FALSE;
-	}
-	else if (tokens [1] != NULL && strcmp ("*", tokens[1]) == 0)
-	{
-		/* This is an undecorated "import all", and not a decorated
-		 * reference */
-		is_decorated = FALSE;
-	}
-	else
+	if (colon != NULL && strcmp ("*", colon + 1) != 0)
 	{
 		is_decorated = TRUE;
-		if (lang_id != NULL)
-		{
-			*lang_id = g_strdup (tokens[0]);
-		}
-	}
 
-	g_strfreev (tokens);
+		if (lang_id != NULL)
+			*lang_id = g_strndup (id, colon - id);
+	}
 
 	return is_decorated;
 }
@@ -243,23 +228,7 @@ decorate_id (ParserState *parser_state,
 static gboolean
 lang_id_is_already_loaded (ParserState *parser_state, gchar *lang_id)
 {
-	GSList *l;
-	gchar *loaded_lang;
-
-	l = *(parser_state->loaded_lang_ids);
-
-	g_return_val_if_fail (lang_id != NULL, FALSE);
-
-	while (l != NULL)
-	{
-		loaded_lang = l->data;
-		if (strcmp (loaded_lang, lang_id) == 0)
-		{
-			return TRUE;
-		}
-		l = g_slist_next (l);
-	}
-	return FALSE;
+	return g_hash_table_lookup (parser_state->loaded_lang_ids, lang_id) != NULL;
 }
 
 
@@ -293,19 +262,26 @@ get_regex_flags (xmlNode             *node,
 	return flags;
 }
 
-static GtkSourceContextMatchOptions
-check_context_options (ParserState                  *parser_state,
-		       GtkSourceContextMatchOptions  options)
+static GtkSourceContextFlags
+get_context_flags (ParserState *parser_state)
 {
 	guint i;
 	xmlChar *value;
+	GtkSourceContextFlags flags = GTK_SOURCE_CONTEXT_EXTEND_PARENT;
 	const gchar *names[] = {
-		"extend-parent", "end-at-line-end", "first-line-only", "once-only"
+		"extend-parent", "end-parent", "end-at-line-end",
+		"first-line-only", "once-only", "style-inside"
 	};
-	GtkSourceContextMatchOptions flags[] = {
-		GTK_SOURCE_CONTEXT_EXTEND_PARENT, GTK_SOURCE_CONTEXT_END_AT_LINE_END,
-		GTK_SOURCE_CONTEXT_FIRST_LINE_ONLY, GTK_SOURCE_CONTEXT_ONCE_ONLY
+	GtkSourceContextFlags values[] = {
+		GTK_SOURCE_CONTEXT_EXTEND_PARENT,
+		GTK_SOURCE_CONTEXT_END_PARENT,
+		GTK_SOURCE_CONTEXT_END_AT_LINE_END,
+		GTK_SOURCE_CONTEXT_FIRST_LINE_ONLY,
+		GTK_SOURCE_CONTEXT_ONCE_ONLY,
+		GTK_SOURCE_CONTEXT_STYLE_INSIDE
 	};
+
+	g_assert (G_N_ELEMENTS (names) == G_N_ELEMENTS (values));
 
 	for (i = 0; i < G_N_ELEMENTS (names); ++i)
 	{
@@ -314,15 +290,15 @@ check_context_options (ParserState                  *parser_state,
 		if (value != NULL)
 		{
 			if (str_to_bool (value))
-				options |= flags[i];
+				flags |= values[i];
 			else
-				options &= ~flags[i];
+				flags &= ~values[i];
 		}
 
 		xmlFree (value);
 	}
 
-	return options;
+	return flags;
 }
 
 static gboolean
@@ -334,7 +310,7 @@ create_definition (ParserState *parser_state,
 {
 	gchar *match = NULL, *start = NULL, *end = NULL;
 	gchar *prefix = NULL, *suffix = NULL;
-	GtkSourceContextMatchOptions options;
+	GtkSourceContextFlags flags;
 
 	xmlNode *context_node, *child;
 
@@ -348,7 +324,7 @@ create_definition (ParserState *parser_state,
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	options = check_context_options (parser_state, GTK_SOURCE_CONTEXT_EXTEND_PARENT);
+	flags = get_context_flags (parser_state);
 
 	DEBUG (g_message ("creating context %s, child of %s", id, parent_id ? parent_id : "(null)"));
 
@@ -496,7 +472,7 @@ create_definition (ParserState *parser_state,
 							 start,
 							 end,
 							 style,
-							 options,
+							 flags,
 							 &tmp_error);
 
 	g_free (match);
@@ -718,6 +694,7 @@ handle_context_element (ParserState *parser_state,
 			g_warning ("style-ref and ignore-style used simultaneously");
 	}
 
+	/* XXX */
 	if (!ignore_style && style_ref != NULL &&
 	    g_hash_table_lookup (parser_state->styles_mapping, style_ref) == NULL)
 	{
@@ -821,10 +798,8 @@ handle_language_element (ParserState *parser_state,
 
 	lang_id = xmlTextReaderGetAttribute (parser_state->reader, BAD_CAST "id");
 
-	parser_state->current_lang_id = g_strdup ((gchar *)lang_id);
-
-	*(parser_state->loaded_lang_ids) = g_slist_prepend (
-			*(parser_state->loaded_lang_ids), lang_id);
+	parser_state->current_lang_id = g_strdup ((gchar *) lang_id);
+	g_hash_table_insert (parser_state->loaded_lang_ids, lang_id, lang_id);
 
 	xmlFree (lang_version);
 }
@@ -1299,46 +1274,6 @@ handle_default_regex_options_element (ParserState *parser_state,
 }
 
 static void
-map_style (ParserState *parser_state,
-	   gchar       *style_id,
-	   gchar       *map_to,
-	   GError     **error)
-{
-	const gchar *real_map_to;
-
-	g_return_if_fail (error != NULL && *error == NULL);
-	g_return_if_fail (style_id != NULL);
-
-	if (map_to != NULL)
-	{
-		if (g_hash_table_lookup (parser_state->styles_mapping, map_to) != NULL)
-			real_map_to = map_to;
-		else
-			real_map_to = NULL;
-	}
-	else
-	{
-		real_map_to = style_id;
-	}
-
-	DEBUG (g_message ("mapping the style of '%s' to '%s' -> '%s'",
-			  style_id,
-			  map_to ? map_to : "(null)",
-			  mapped_style));
-
-	if (real_map_to != NULL)
-		g_hash_table_insert (parser_state->styles_mapping,
-				     g_strdup (style_id),
-				     g_strdup (real_map_to));
-	else
-		g_set_error (error,
-			     PARSER_ERROR,
-			     PARSER_ERROR_WRONG_ID,
-			     "unable to map style '%s' to '%s'",
-			     style_id, map_to);
-}
-
-static void
 parse_language_with_id (ParserState *parser_state,
 		gchar *lang_id,
 		GError **error)
@@ -1403,6 +1338,7 @@ parse_style (ParserState *parser_state,
 	name = xmlTextReaderGetAttribute (parser_state->reader,
 					  BAD_CAST "_name");
 
+	/* FIXME: actually use this name somehow */
 	if (name != NULL)
 	{
 		tmp = xmlStrdup (BAD_CAST dgettext (parser_state->language->priv->translation_domain,
@@ -1441,7 +1377,8 @@ parse_style (ParserState *parser_state,
 			  name, id, map_to ? (char*) map_to : "(null)"));
 
 	if (tmp_error == NULL)
-		map_style (parser_state, id, (gchar*) map_to, &tmp_error);
+		g_hash_table_insert (parser_state->styles_mapping, g_strdup (id),
+				     map_to ? g_strdup ((char*) map_to) : g_strdup (id));
 
 	g_free (lang_id);
 	g_free (id);
@@ -1612,7 +1549,7 @@ file_parse (gchar                     *filename,
 	    GtkSourceContextData      *ctx_data,
 	    GHashTable                *defined_regexes,
 	    GHashTable                *styles,
-	    GSList                   **loaded_lang_ids,
+	    GHashTable                *loaded_lang_ids,
 	    GError                   **error)
 {
 	ParserState *parser_state;
@@ -1715,7 +1652,7 @@ parser_state_new (GtkSourceLanguage       *language,
 		  GHashTable              *defined_regexes,
 		  GHashTable              *styles_mapping,
 		  xmlTextReader	          *reader,
-		  GSList                 **loaded_lang_ids)
+		  GHashTable              *loaded_lang_ids)
 {
 	ParserState *parser_state;
 	parser_state = g_new (ParserState, 1);
@@ -1780,8 +1717,7 @@ _gtk_source_language_file_parse_version2 (GtkSourceLanguage       *language,
 	gboolean success;
 	GError *error = NULL;
 	gchar *filename;
-	GSList *loaded_lang_ids = NULL;
-	GSList *l;
+	GHashTable *loaded_lang_ids;
 
 	g_return_val_if_fail (ctx_data != NULL, FALSE);
 
@@ -1800,10 +1736,13 @@ _gtk_source_language_file_parse_version2 (GtkSourceLanguage       *language,
 						 g_free, g_free);
 	styles = g_hash_table_new_full (g_str_hash, g_str_equal,
 					g_free, g_free);
+	loaded_lang_ids = g_hash_table_new_full (g_str_hash, g_str_equal,
+						 (GDestroyNotify) xmlFree,
+						 NULL);
 
 	success = file_parse (filename, language, ctx_data,
 			      defined_regexes, styles,
-			      &loaded_lang_ids, &error);
+			      loaded_lang_ids, &error);
 
 	if (success)
 		success = _gtk_source_context_data_resolve_refs (ctx_data, &error);
@@ -1813,12 +1752,7 @@ _gtk_source_language_file_parse_version2 (GtkSourceLanguage       *language,
 					    (GHRFunc) steal_styles_mapping,
 					    language->priv->styles);
 
-	for (l = loaded_lang_ids; l != NULL; l = l->next)
-	{
-		xmlFree (l->data);
-	}
-	g_slist_free (loaded_lang_ids);
-
+	g_hash_table_destroy (loaded_lang_ids);
 	g_hash_table_destroy (defined_regexes);
 	g_hash_table_destroy (styles);
 

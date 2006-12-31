@@ -34,20 +34,8 @@
         </context>
 
         <context id="attribute" style-ref="attribute-value">
-            <start>((\%{prefix}:)?\%{name}\s*=\s*)"</start>
-            <end>"</end>
-            <include>
-                <context sub-pattern="1" where="start" style-ref="attribute-name" />
-                <context sub-pattern="2" where="start" style-ref="namespace" />
-                <context ref="entity"/>
-                <context ref="unallowed-chars"/>
-            </include>
-        </context>
-
-        <!-- FIXME: having almost identical "attribute" and "attribute2" is not nice -->
-        <context id="attribute2" style-ref="attribute-value">
-            <start>((\%{prefix}:)?\%{name}\s*=\s*)'</start>
-            <end>'</end>
+            <start>((\%{prefix}:)?\%{name}\s*=\s*)(["'])</start>
+            <end>\%{3@start}</end>
             <include>
                 <context sub-pattern="1" where="start" style-ref="attribute-name" />
                 <context sub-pattern="2" where="start" style-ref="namespace" />
@@ -63,7 +51,7 @@
                 <context style-ref="error" extend-parent="false">
                     <match>--+</match>
                 </context>
-                <context ref="def:comment:*"/>
+                <context ref="def:in-comment"/>
             </include>
         </context>
 
@@ -117,7 +105,6 @@
                 <context sub-pattern="0" where="start" style-ref="processing-instruction"/>
                 <context sub-pattern="0" where="end" style-ref="processing-instruction"/>
                 <context ref="attribute"/>
-                <context ref="attribute2"/>
             </include>
         </context>
 
@@ -145,7 +132,6 @@
                 <context sub-pattern="0" where="end" style-ref="tags" />
 
                 <context ref="attribute"/>
-                <context ref="attribute2"/>
 
                 <context id="tag-internal">
                 <!-- This matches the internal portion

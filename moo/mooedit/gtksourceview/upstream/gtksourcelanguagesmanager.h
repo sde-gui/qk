@@ -63,9 +63,6 @@ const GSList	*gtk_source_languages_manager_get_available_languages (GtkSourceLan
 
 GtkSourceLanguage *gtk_source_languages_manager_get_language_by_id    (GtkSourceLanguagesManager *lm,
 							  	       const gchar               *id);
-GtkSourceLanguage *gtk_source_languages_manager_get_language_for_mime_type
-								      (GtkSourceLanguagesManager *lm,
-							  	       const gchar               *mime_type);
 
 /* Property */
 const GSList	*gtk_source_languages_manager_get_lang_files_dirs     (GtkSourceLanguagesManager *lm);

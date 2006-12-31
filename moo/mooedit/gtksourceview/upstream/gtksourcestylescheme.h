@@ -58,7 +58,7 @@ const gchar             *gtk_source_style_scheme_get_name       (GtkSourceStyleS
 
 /* Return value must be freed with gtk_source_style_free */
 GtkSourceStyle		*gtk_source_style_scheme_get_style	(GtkSourceStyleScheme *scheme,
-								 const gchar          *style);
+								 const gchar          *style_name);
 GtkSourceStyle		*gtk_source_style_scheme_get_matching_brackets_style
 								(GtkSourceStyleScheme *scheme);
 gboolean		 gtk_source_style_scheme_get_current_line_color
