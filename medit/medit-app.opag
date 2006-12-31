@@ -255,10 +255,9 @@ main (int argc, char *argv[])
     guint32 line = 0;
     const char *pid_string = NULL;
 
-#ifdef __WIN32__
+    /* Tim Janik said */
     g_thread_init (NULL);
     gdk_threads_init ();
-#endif
 
     init_mem_stuff ();
 

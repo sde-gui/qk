@@ -26,7 +26,7 @@
     </ignoreparts>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description/>
+    <description></description>
     <secondaryLanguages>
       <language>C</language>
     </secondaryLanguages>
@@ -35,7 +35,7 @@
   <kdevautoproject>
     <general>
       <activetarget>moo/libmoo.la</activetarget>
-      <useconfiguration>gtk-cvs</useconfiguration>
+      <useconfiguration>gcc-4.0</useconfiguration>
     </general>
     <run>
       <mainprogram>medit/medit</mainprogram>
@@ -45,6 +45,7 @@
       <terminal>false</terminal>
       <autocompile>false</autocompile>
       <envvars>
+        <envvar value="always-malloc" name="G_SLICE" />
         <envvar value="ru_RU.KOI8-R" name="LANGUAGE" />
       </envvars>
     </run>
@@ -121,7 +122,7 @@
         <f77flags/>
       </intel>
       <optimized>
-        <configargs> --enable-all-gcc-warnings --enable-printing</configargs>
+        <configargs>--enable-all-warnings --with-fam --with-mooterm --without-xml</configargs>
         <builddir>build/optimized</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
@@ -138,21 +139,21 @@
         <f77flags/>
       </optimized>
       <gcc-4.0>
-        <configargs>--enable-all-gcc-warnings=fatal  --enable-debug=full </configargs>
+        <configargs>--enable-all-warnings  --enable-debug --without-python</configargs>
         <builddir>build/gcc-4.0</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
-        <cflags>-O0 -g3</cflags>
-        <cxxflags>-O3 -g0</cxxflags>
+        <cflags>-g</cflags>
+        <cxxflags>-g</cxxflags>
         <envvars/>
-        <topsourcedir/>
-        <cppflags/>
-        <ldflags/>
-        <ccompilerbinary>gcc-4.0</ccompilerbinary>
-        <cxxcompilerbinary/>
-        <f77compilerbinary/>
-        <f77flags/>
+        <topsourcedir></topsourcedir>
+        <cppflags></cppflags>
+        <ldflags></ldflags>
+        <ccompilerbinary></ccompilerbinary>
+        <cxxcompilerbinary></cxxcompilerbinary>
+        <f77compilerbinary></f77compilerbinary>
+        <f77flags></f77flags>
       </gcc-4.0>
       <mingw>
         <envvars>
@@ -245,10 +246,10 @@
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>true</floatingtoolbar>
-      <gdbpath/>
-      <configGdbScript/>
-      <runShellScript/>
-      <runGdbScript/>
+      <gdbpath></gdbpath>
+      <configGdbScript></configGdbScript>
+      <runShellScript></runShellScript>
+      <runGdbScript></runGdbScript>
     </general>
     <display>
       <staticmembers>true</staticmembers>
@@ -310,16 +311,16 @@
   </kdevdoctreeview>
   <kdevfilecreate>
     <filetypes>
-      <type icon="source" ext="g" name="GAP source" create="template" >
+      <type icon="source" ext="g" create="template" name="GAP source" >
         <descr>A new empty GAP source file</descr>
       </type>
-      <type icon="source_cpp" ext="cpp" name="C++ Source" create="template" >
+      <type icon="source_cpp" ext="cpp" create="template" name="C++ Source" >
         <descr>A new empty C++ file.</descr>
       </type>
-      <type icon="source_h" ext="h" name="C/C++ Header" create="template" >
+      <type icon="source_h" ext="h" create="template" name="C/C++ Header" >
         <descr>A new empty header file for C/C++.</descr>
       </type>
-      <type icon="source_c" ext="c" name="C Source" create="template" >
+      <type icon="source_c" ext="c" create="template" name="C Source" >
         <descr>A new empty C file.</descr>
       </type>
     </filetypes>
@@ -346,7 +347,7 @@
     </codecompletion>
     <references/>
     <creategettersetter>
-      <prefixGet/>
+      <prefixGet></prefixGet>
       <prefixSet>set</prefixSet>
       <prefixVariable>m_,_</prefixVariable>
       <parameterName>theValue</parameterName>
@@ -356,7 +357,7 @@
     <qt>
       <used>false</used>
       <version>3</version>
-      <root/>
+      <root></root>
     </qt>
   </kdevcppsupport>
   <kdevdocumentation>
