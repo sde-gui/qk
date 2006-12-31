@@ -52,9 +52,9 @@ sed -e 's/#include \"gtksourcecontextengine.h\"/#include \"gtksourcecontextengin
 																\
     -e 's/GtkSource/MooGtkSource/g'												\
     -e 's/GtkTextRegion/MooGtkTextRegion/g'											\
-    -e 's/\bgtk_source/_moo_gtk_source/g'											\
-    -e 's/\b_gtk_source/_moo_gtk_source/g'											\
-    -e 's/\bgtk_text_region/_moo_gtk_text_region/g'										\
-    -e 's/\b_gtk_text_region/_moo_gtk_text_region/g'										\
+    -e 's/_gtk_source/gtk_source/g'												\
+    -e 's/gtk_source/_moo_gtk_source/g'												\
+    -e 's/_gtk_text_region/gtk_text_region/g'											\
+    -e 's/gtk_text_region/_moo_gtk_text_region/g'										\
 																\
     $custom_cmd "$1" || exit $?
