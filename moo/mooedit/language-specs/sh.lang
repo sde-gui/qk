@@ -85,8 +85,17 @@
         <context sub-pattern="0" where="end" style-ref="here-doc-bound"/>
       </include>
     </context>
+    <context id="here-doc-3">
+      <start>&lt;&lt;-?\s*\'\\?(\S+)\'$</start>
+      <end>^\t*(\%{1@start})$</end>
+      <include>
+        <context sub-pattern="0" where="start" style-ref="here-doc-bound"/>
+        <context sub-pattern="0" where="end" style-ref="here-doc-bound"/>
+      </include>
+    </context>
     <context id="here-doc">
       <include>
+        <context ref="here-doc-3"/>
         <context ref="here-doc-2"/>
         <context ref="here-doc-1"/>
       </include>
