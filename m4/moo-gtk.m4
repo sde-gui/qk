@@ -1,7 +1,8 @@
 ##############################################################################
-# _MOO_CHECK_VERSION(pkg-name)
+# MOO_CHECK_VERSION(PKG_NAME,pkg-name)
 #
-AC_DEFUN([_MOO_CHECK_VERSION],[
+dnl used also in moo-pygtk.m4
+AC_DEFUN([MOO_CHECK_VERSION],[
 if test x$MOO_OS_CYGWIN != xyes; then
   PKG_CHECK_MODULES($1,$2)
 
@@ -17,6 +18,16 @@ if test x$MOO_OS_CYGWIN != xyes; then
   [AM_CONDITIONAL($1[]_2_[]num, test $[]$1[]_MINOR_VERSION -ge num)])
 
   AC_MSG_RESULT($[]$1[]_MAJOR_VERSION.$[]$1[]_MINOR_VERSION.$[]$1[]_MICRO_VERSION)
+fi
+])
+
+##############################################################################
+# _MOO_CHECK_MODULE_AND_VERSION(PKG_NAME,pkg-name)
+#
+AC_DEFUN([_MOO_CHECK_MODULE_AND_VERSION],[
+if test x$MOO_OS_CYGWIN != xyes; then
+  PKG_CHECK_MODULES([$1],[$2])
+  MOO_CHECK_VERSION([$1],[$2])
 fi
 ])
 
@@ -41,11 +52,11 @@ fi
 ##############################################################################
 # MOO_PKG_CHECK_GTK_VERSIONS
 #
-AC_DEFUN([MOO_PKG_CHECK_GTK_VERSIONS],[
+AC_DEFUN_ONCE([MOO_PKG_CHECK_GTK_VERSIONS],[
 AC_REQUIRE([MOO_AC_CHECK_OS])
-_MOO_CHECK_VERSION(GTK, gtk+-2.0)
-_MOO_CHECK_VERSION(GLIB, glib-2.0)
-_MOO_CHECK_VERSION(GTHREAD, gthread-2.0)
-_MOO_CHECK_VERSION(GDK, gdk-2.0)
+_MOO_CHECK_MODULE_AND_VERSION(GTK, gtk+-2.0)
+_MOO_CHECK_MODULE_AND_VERSION(GLIB, glib-2.0)
+_MOO_CHECK_MODULE_AND_VERSION(GTHREAD, gthread-2.0)
+_MOO_CHECK_MODULE_AND_VERSION(GDK, gdk-2.0)
 dnl _MOO_CHECK_BROKEN_GTK_THEME
 ])

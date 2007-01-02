@@ -2,22 +2,22 @@
 # _MOO_AC_PYGTK_CODEGEN
 #
 AC_DEFUN([_MOO_AC_PYGTK_CODEGEN],[
-    AC_ARG_WITH([custom-codegen], AC_HELP_STRING([--with-custom-codegen], [whether to use custom copy of pygtk codegen (default = YES)]),[
-        if test x$with_custom_codegen = "xno"; then
-            MOO_USE_CUSTOM_CODEGEN="no"
-            AC_MSG_NOTICE([using installed codegen])
-        else
-            MOO_USE_CUSTOM_CODEGEN="yes"
-            AC_MSG_NOTICE([using patched codegen])
-        fi
-    ],[
-        MOO_USE_CUSTOM_CODEGEN="yes"
-        AC_MSG_NOTICE([using patched codegen])
-    ])
+  MOO_USE_CUSTOM_CODEGEN=true
 
-    if test x$MOO_USE_CUSTOM_CODEGEN != xyes; then
-        AC_MSG_NOTICE([pygtk codegen dir: $PYGTK_CODEGEN_DIR])
+  AC_ARG_WITH([custom-codegen], AC_HELP_STRING([--with-custom-codegen],[whether to use custom copy of pygtk codegen (default = YES)]),[
+    if test x$with_custom_codegen = "xno"; then
+      MOO_USE_CUSTOM_CODEGEN=false
     fi
+  ])
+
+  if $MOO_USE_CUSTOM_CODEGEN; then
+    AC_MSG_NOTICE([using patched codegen])
+  else
+    AC_MSG_NOTICE([using installed codegen])
+    AC_MSG_NOTICE([pygtk codegen dir: $PYGTK_CODEGEN_DIR])
+  fi
+
+  AM_CONDITIONAL(MOO_USE_CUSTOM_CODEGEN, $MOO_USE_CUSTOM_CODEGEN)
 ])
 
 
@@ -82,57 +82,51 @@ AC_DEFUN([_MOO_AC_CHECK_PYGTK_MINGW],[
 # checks pygtk stuff
 #
 AC_DEFUN([_MOO_AC_CHECK_PYGTK_UNIX],[
-    # _AC_CHECK_PYGTK_UNIX
-    AC_MSG_CHECKING([for pygtk headers])
-    PKG_CHECK_MODULES(PYGTK,pygtk-2.0 >= 2.6.0,[
-        AC_MSG_RESULT([found])
-        AC_MSG_CHECKING([whether pygtk can be used])
-        save_CPPFLAGS="$CPPFLAGS"
-        CPPFLAGS="$CPPFLAGS $PYGTK_CFLAGS $PYTHON_CFLAGS"
-        save_CFLAGS="$CFLAGS"
-        CFLAGS="$CFLAGS $PYGTK_CFLAGS $PYTHON_CFLAGS"
+  PKG_CHECK_MODULES(PYGTK,pygtk-2.0 >= 2.6.0,[
+    AC_MSG_CHECKING([whether pygtk can be used])
+    save_CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$CPPFLAGS $PYGTK_CFLAGS $PYTHON_CFLAGS"
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS $PYGTK_CFLAGS $PYTHON_CFLAGS"
 
-        # start AC_COMPILE_IFELSE in _AC_CHECK_PYGTK_UNIX
-        AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-        #include <pygobject.h>
-        int main ()
-        {
-            PyObject *object = pygobject_new (NULL);
-            return 0;
-        }]])],[
-            AC_MSG_RESULT(yes)
-            $2
-            PYGTK_DEFS_DIR=`$PKG_CONFIG --variable=defsdir pygtk-2.0`
-            AC_SUBST(PYGTK_DEFS_DIR)
-            PYGTK_CODEGEN_DIR=`$PKG_CONFIG --variable=codegendir pygtk-2.0`
-            AC_SUBST(PYGTK_CODEGEN_DIR)
-            AC_MSG_NOTICE([pygtk defs dir: $PYGTK_DEFS_DIR])
-            _MOO_AC_PYGTK_CODEGEN
-        ],[
-            AC_MSG_RESULT(no)
-            $3
-        ])
-        # end AC_COMPILE_IFELSE in _AC_CHECK_PYGTK_UNIX
-
-        CFLAGS="$save_CFLAGS"
-        CPPFLAGS="$save_CPPFLAGS"
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+    #include <pygobject.h>
+    int main ()
+    {
+        PyObject *object = pygobject_new (NULL);
+        return 0;
+    }]])],[
+        AC_MSG_RESULT(yes)
+        $2
+        PYGTK_DEFS_DIR=`$PKG_CONFIG --variable=defsdir pygtk-2.0`
+        AC_SUBST(PYGTK_DEFS_DIR)
+        PYGTK_CODEGEN_DIR=`$PKG_CONFIG --variable=codegendir pygtk-2.0`
+        AC_SUBST(PYGTK_CODEGEN_DIR)
+        AC_MSG_NOTICE([pygtk defs dir: $PYGTK_DEFS_DIR])
+        _MOO_AC_PYGTK_CODEGEN
     ],[
-        AC_MSG_RESULT([not found])
+        AC_MSG_RESULT([no])
         $3
     ])
+
+    CFLAGS="$save_CFLAGS"
+    CPPFLAGS="$save_CPPFLAGS"
+  ],[
+    m4_if([$3],[],[:],[$3])
+  ])
 ])
 
 
 ##############################################################################
-# MOO_AC_CHECK_PYGTK(version,action-if-found,action-if-not-found)
+# _MOO_AC_CHECK_PYGTK(version,action-if-found,action-if-not-found)
 # checks pygtk stuff
 # version argument is passed to _AC_CHECK_PYGTK_MINGW only
 #
-AC_DEFUN([MOO_AC_CHECK_PYGTK],[
+AC_DEFUN([_MOO_AC_CHECK_PYGTK],[
     AC_REQUIRE([MOO_AC_CHECK_OS])
 
-    if test x$MOO_OS_CYGWIN != xyes; then
-        if test x$MOO_OS_MINGW = xyes; then
+    if test "x$MOO_OS_CYGWIN" != "xyes"; then
+        if test "x$MOO_OS_MINGW" = "xyes"; then
             _MOO_AC_CHECK_PYGTK_MINGW([24],[$2],[$3])
             _MOO_AC_CHECK_PYGTK_MINGW([25],[$2],[$3])
         else
@@ -143,100 +137,57 @@ AC_DEFUN([MOO_AC_CHECK_PYGTK],[
 
 
 ##############################################################################
-# MOO_AC_PYGTK()
+# MOO_AC_PYTHON()
 #
-AC_DEFUN([MOO_AC_PYGTK],[
-    AC_REQUIRE([MOO_AC_CHECK_OS])
+AC_DEFUN_ONCE([MOO_AC_PYTHON],[
+  AC_REQUIRE([MOO_AC_CHECK_OS])
 
-    AC_ARG_WITH([pygtk], AC_HELP_STRING([--with-pygtk], [whether to compile pygtk support (default = YES)]),[
-        if test x$with_pygtk = "xno"; then
-            MOO_USE_PYGTK="no"
-        else
-            MOO_USE_PYGTK="yes"
-        fi
-    ],[
-        MOO_USE_PYGTK="yes"
-    ])
+  MOO_USE_PYTHON=true
+  _moo_want_python="auto"
+  _moo_python_version=2.2
 
-    AC_ARG_WITH([python],AC_HELP_STRING([--with-python], [whether to compile python support (default = YES)]),[
-        if test x$with_python = "xno"; then
-            MOO_USE_PYTHON="no"
-            MOO_USE_PYGTK="no"
-        else
-            if test x$with_python = "xyes"; then
-                moo_python_version=2.2
-            else
-                moo_python_version=$with_python
-            fi
-            MOO_USE_PYTHON="yes"
-        fi
-    ],[
-        if test x$MOO_USE_PYTGK = xyes; then
-            MOO_USE_PYTHON="yes"
-        else
-            MOO_USE_PYTHON="auto"
-            MOO_USE_PYTGK="no"
-        fi
-        moo_python_version=2.2
-    ])
-
-    if test x$MOO_OS_CYGWIN = xyes; then
-        MOO_USE_PYTHON=no
-        MOO_USE_PYGTK=no
+  AC_ARG_WITH([python],AC_HELP_STRING([--with-python], [whether to compile python support (default = YES)]),[
+    if test "x$with_python" = "xno"; then
+      MOO_USE_PYTHON=false
+    elif test "x$with_python" = "xyes"; then
+      _moo_want_python="yes"
+      _moo_python_version="2.2"
+    else
+      _moo_want_python="yes"
+      _moo_python_version="$with_python"
     fi
+  ])
 
-    if test x$MOO_USE_PYTHON != "xno"; then
-        MOO_AC_CHECK_PYTHON($moo_python_version,[
-            MOO_USE_PYTHON="yes"
-            AC_MSG_NOTICE([compiling python support])
-        ],[
-            if test x$MOO_USE_PYTHON = "xyes"; then
-                AC_MSG_ERROR([Python not found])
-            else
-                AC_MSG_WARN([Python support will be disabled])
-            fi
-            MOO_USE_PYTHON="no"
-            MOO_USE_PYGTK="no"
-        ])
-    fi
+  if test "x$MOO_OS_CYGWIN" = "xyes"; then
+    MOO_USE_PYTHON=false
+  fi
 
-    AM_CONDITIONAL(MOO_USE_PYTHON, test x$MOO_USE_PYTHON = "xyes")
-    if test x$MOO_USE_PYTHON = "xyes"; then
-        AC_DEFINE(MOO_USE_PYTHON, 1, [MOO_USE_PYTHON])
-    fi
-
-    ### Pygtk
-
-    if test x$MOO_USE_PYGTK = xyes; then
-        MOO_AC_CHECK_PYGTK([$moo_python_version],[
-            MOO_USE_PYGTK="yes"
-            AC_MSG_NOTICE([compiling pygtk support])
-        ],[
-            MOO_USE_PYGTK="no"
-            AC_MSG_NOTICE([usable pygtk not found])
-        ])
-    fi
-
-    AM_CONDITIONAL(MOO_USE_PYGTK, test x$MOO_USE_PYGTK = "xyes")
-    if test x$MOO_USE_PYGTK = "xyes"; then
-        AC_DEFINE(MOO_USE_PYGTK, 1, [MOO_USE_PYGTK])
-
-        PYGTK_VERSION=`$PKG_CONFIG --modversion pygtk-2.0`
-        i=0
-        for part in `echo $PYGTK_VERSION | sed 's/\./ /g'`; do
-            i=`expr $i + 1`
-            eval part$i=$part
-        done
-
-        PYGTK_MAJOR_VERSION=$part1
-        PYGTK_MINOR_VERSION=$part2
-        PYGTK_MICRO_VERSION=$part3
-
+  if $MOO_USE_PYTHON; then
+    MOO_USE_PYTHON=false
+    MOO_AC_CHECK_PYTHON($_moo_python_version,[
+      _MOO_AC_CHECK_PYGTK([$_moo_python_version],[
+        MOO_USE_PYTHON=true
+        MOO_CHECK_VERSION(PYGTK, pygtk-2.0)
         AC_SUBST(PYGTK_VERSION)
         AC_SUBST(PYGTK_MAJOR_VERSION)
         AC_SUBST(PYGTK_MINOR_VERSION)
         AC_SUBST(PYGTK_MICRO_VERSION)
-    fi
+      ])
+    ])
 
-    AM_CONDITIONAL(MOO_USE_CUSTOM_CODEGEN, test x$MOO_USE_CUSTOM_CODEGEN = "xyes")
+    if $MOO_USE_PYTHON; then
+      AC_MSG_NOTICE([compiling python support])
+    elif test "x$_moo_want_python" = "xyes"; then
+      AC_MSG_ERROR([python support requested but python cannot be used])
+    elif test "x$_moo_want_python" = "xauto"; then
+      AC_MSG_WARN([disabled python support])
+    else
+      AC_MSG_NOTICE([disabled python support])
+    fi
+  fi
+
+  AM_CONDITIONAL(MOO_USE_PYTHON, $MOO_USE_PYTHON)
+  if $MOO_USE_PYTHON; then
+    AC_DEFINE(MOO_USE_PYTHON, 1, [build python bindings and plugin])
+  fi
 ])

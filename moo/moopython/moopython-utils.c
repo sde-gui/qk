@@ -23,7 +23,7 @@
 
 
 PyObject *
-moo_strv_to_pyobject (char **strv)
+_moo_strv_to_pyobject (char **strv)
 {
     PyObject *result;
     guint len, i;
@@ -45,8 +45,8 @@ moo_strv_to_pyobject (char **strv)
 
 
 static char **
-moo_pyobject_to_strv_no_check (PyObject *seq,
-                               int       len)
+_moo_pyobject_to_strv_no_check (PyObject *seq,
+                                int       len)
 {
 #define CACHE_SIZE 10
     static char **cache[CACHE_SIZE];
@@ -73,7 +73,7 @@ moo_pyobject_to_strv_no_check (PyObject *seq,
 }
 
 
-int moo_pyobject_to_strv (PyObject *obj, char ***dest)
+int _moo_pyobject_to_strv (PyObject *obj, char ***dest)
 {
     int len, i;
 
@@ -113,15 +113,15 @@ int moo_pyobject_to_strv (PyObject *obj, char ***dest)
         }
     }
 
-    *dest = moo_pyobject_to_strv_no_check (obj, len);
+    *dest = _moo_pyobject_to_strv_no_check (obj, len);
 
     return TRUE;
 }
 
 
 int
-moo_pyobject_to_strv_no_null (PyObject  *obj,
-                              char    ***dest)
+_moo_pyobject_to_strv_no_null (PyObject  *obj,
+                               char    ***dest)
 {
     if (obj == Py_None)
     {
@@ -130,11 +130,11 @@ moo_pyobject_to_strv_no_null (PyObject  *obj,
         return FALSE;
     }
 
-    return moo_pyobject_to_strv (obj, dest);
+    return _moo_pyobject_to_strv (obj, dest);
 }
 
 
-PyObject *moo_gvalue_to_pyobject (const GValue *val)
+PyObject *_moo_gvalue_to_pyobject (const GValue *val)
 {
     PyObject *obj;
 
@@ -152,8 +152,8 @@ PyObject *moo_gvalue_to_pyobject (const GValue *val)
 
 
 void
-moo_pyobject_to_gvalue (PyObject *object,
-                        GValue   *value)
+_moo_pyobject_to_gvalue (PyObject *object,
+                         GValue   *value)
 {
     GType type;
 
@@ -216,7 +216,7 @@ slist_to_pyobject (GSList  *list,
 
 
 PyObject *
-moo_object_slist_to_pyobject (GSList *list)
+_moo_object_slist_to_pyobject (GSList *list)
 {
     return slist_to_pyobject (list, (PtrToPy) pygobject_new, NULL);
 }
@@ -232,7 +232,7 @@ string_to_pyobject (gpointer str)
 }
 
 PyObject *
-moo_string_slist_to_pyobject (GSList *list)
+_moo_string_slist_to_pyobject (GSList *list)
 {
     return slist_to_pyobject (list, (PtrToPy) string_to_pyobject, NULL);
 }
@@ -246,8 +246,8 @@ boxed_to_pyobject (gpointer boxed,
 }
 
 PyObject *
-moo_boxed_slist_to_pyobject (GSList *list,
-                             GType   type)
+_moo_boxed_slist_to_pyobject (GSList *list,
+                              GType   type)
 {
     g_return_val_if_fail (g_type_is_a (type, G_TYPE_BOXED), NULL);
     return slist_to_pyobject (list, boxed_to_pyobject,
@@ -256,7 +256,7 @@ moo_boxed_slist_to_pyobject (GSList *list,
 
 
 PyObject *
-moo_py_object_ref (PyObject *obj)
+_moo_py_object_ref (PyObject *obj)
 {
     Py_XINCREF (obj);
     return obj;
@@ -264,28 +264,28 @@ moo_py_object_ref (PyObject *obj)
 
 
 void
-moo_py_object_unref (PyObject *obj)
+_moo_py_object_unref (PyObject *obj)
 {
     Py_XDECREF (obj);
 }
 
 
 GType
-moo_py_object_get_type (void)
+_moo_py_object_get_type (void)
 {
     static GType type = 0;
 
     if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooPyObject",
-                                             (GBoxedCopyFunc) moo_py_object_ref,
-                                             (GBoxedFreeFunc) moo_py_object_unref);
+                                             (GBoxedCopyFunc) _moo_py_object_ref,
+                                             (GBoxedFreeFunc) _moo_py_object_unref);
 
     return type;
 }
 
 
 char *
-moo_py_err_string (void)
+_moo_py_err_string (void)
 {
     PyObject *exc, *value, *tb;
     PyObject *str_exc, *str_value, *str_tb;
@@ -332,21 +332,21 @@ typedef struct {
 
 
 static PyObject *
-moo_py_file_close (G_GNUC_UNUSED PyObject *self)
+_moo_py_file_close (G_GNUC_UNUSED PyObject *self)
 {
     return_None;
 }
 
 
 static PyObject *
-moo_py_file_flush (G_GNUC_UNUSED PyObject *self)
+_moo_py_file_flush (G_GNUC_UNUSED PyObject *self)
 {
     return_None;
 }
 
 
 static PyObject *
-moo_py_file_write (PyObject *self, PyObject *args)
+_moo_py_file_write (PyObject *self, PyObject *args)
 {
     char *string;
     MooPyFile *file = (MooPyFile *) self;
@@ -363,9 +363,9 @@ moo_py_file_write (PyObject *self, PyObject *args)
 
 
 static PyMethodDef MooPyFile_methods[] = {
-    { (char*) "close", (PyCFunction) moo_py_file_close, METH_NOARGS, NULL },
-    { (char*) "flush", (PyCFunction) moo_py_file_flush, METH_NOARGS, NULL },
-    { (char*) "write", (PyCFunction) moo_py_file_write, METH_VARARGS, NULL },
+    { (char*) "close", (PyCFunction) _moo_py_file_close, METH_NOARGS, NULL },
+    { (char*) "flush", (PyCFunction) _moo_py_file_flush, METH_NOARGS, NULL },
+    { (char*) "write", (PyCFunction) _moo_py_file_write, METH_VARARGS, NULL },
     { NULL, NULL, 0, NULL }
 };
 
@@ -441,7 +441,7 @@ set_file (const char *name,
 
 
 void
-moo_py_init_print_funcs (void)
+_moo_py_init_print_funcs (void)
 {
     static gboolean done;
 

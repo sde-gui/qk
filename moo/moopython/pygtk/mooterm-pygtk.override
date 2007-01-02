@@ -1,15 +1,11 @@
-/* kate: lang C; indent-width 4; space-indent on; strip on; */
+/* -%- lang: C; indent-width: 4; use-tabs: no; strip: yes -%- */
 %%
 headers
 #include <Python.h>
 #define NO_IMPORT_PYGOBJECT
 #include "pygobject.h"
 #include "pygtk/pygtk.h"
-#include "mooterm/mooterm.h"
-#include "mooterm/mootermwindow.h"
-#include "mooterm/mooterm-text.h"
-#include "mooterm/mootermbuffer.h"
-#include "mooterm/mooterm-prefs.h"
+#include <moo.h>
 #include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
 
@@ -378,9 +374,9 @@ _wrap_moo_term_command_new (PyGBoxed *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTupleAndKeywords (args, kwargs,(char*) "|zO&zO&:MooTermCommand.__init__",
                                       kwlist,
                                       &cmd_line,
-                                      moo_pyobject_to_strv, &argv,
+                                      _moo_pyobject_to_strv, &argv,
                                       &working_dir,
-                                      moo_pyobject_to_strv, &envp))
+                                      _moo_pyobject_to_strv, &envp))
         return -1;
 
     if (!argv || !cmd_line)

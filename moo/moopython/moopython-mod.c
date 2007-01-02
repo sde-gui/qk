@@ -105,7 +105,7 @@ MOO_MODULE_INIT_FUNC_DECL
     if (moo_python_running ())
         return FALSE;
 
-    if (!moo_python_api_init (TRUE))
+    if (!moo_python_api_init ())
     {
         g_warning ("%s: oops", G_STRLOC);
         return FALSE;

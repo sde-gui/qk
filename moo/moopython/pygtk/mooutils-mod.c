@@ -34,7 +34,7 @@ pyobj_from_gval (const GValue *value)
 {
     if (!G_VALUE_HOLDS (value, MOO_TYPE_PY_OBJECT))
         return_RuntimeError ("invalid value passed");
-    return moo_py_object_ref (g_value_get_boxed (value));
+    return _moo_py_object_ref (g_value_get_boxed (value));
 }
 
 

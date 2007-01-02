@@ -4,14 +4,16 @@ ini_files = $(ini_in_files:.ini.in=.ini)
 @MOO_INI_IN_RULE@
 CLEANFILES = $(ini_files)
 
+moo_include_headers =	\
+	moo.h		\
+	moo-config.h
+
+BUILT_SOURCES = moo-config.h
+
 EXTRA_DIST =		\
 	TODO		\
 	$(rc_in_files)	\
 	$(ini_in_files)
-
-moo_include_headers =	\
-	moo.h		\
-	moo-version.h
 
 if MOO_INSTALL_HEADERS
 moo_include_HEADERS = $(moo_include_headers)
@@ -33,21 +35,21 @@ if MOO_BUILD_TERM
 subdirs += mooterm
 libs += mooterm/libmooterm.la
 endif
+if MOO_BUILD_SCRIPT
+subdirs += mooscript
+libs += mooscript/libmooscript.la
+endif
 if MOO_BUILD_EDIT
-subdirs += mooscript mooedit
-libs += mooscript/libmooscript.la mooedit/libmooedit.la
+subdirs += mooedit
+libs += mooedit/libmooedit.la
 endif
 if MOO_BUILD_APP
 subdirs += mooapp
 libs += mooapp/libmooapp.la
 endif
-if MOO_USE_PYGTK
+
+if MOO_USE_PYTHON
 subdirs += moopython
-if !MOO_BUILD_PYTHON_PLUGIN
-if !MOO_BUILD_MOO_MODULE
-libs += moopython/libmoopython.la $(PYTHON_LIBS) $(PYTHON_EXTRA_LIBS)
-endif
-endif
 endif
 
 SUBDIRS = $(subdirs) .
@@ -55,8 +57,10 @@ DIST_SUBDIRS = mooutils mooterm mooedit mooapp moopython mooscript moofileview
 
 lib_LTLIBRARIES =
 noinst_LTLIBRARIES =
-BUILT_SOURCES =
 
+############################################################################
+# libmoo
+#
 if MOO_INSTALL_LIB
 lib_LTLIBRARIES += libmoo.la
 else
@@ -79,22 +83,36 @@ export_flags = -export-symbols-regex "^(moo_).*"
 endif
 
 libmoo_la_LIBADD = $(libs) $(MOO_LIBS)
-libmoo_la_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) $(libmoo_res_ldflag) -no-undefined -avoid-version $(export_flags)
+libmoo_la_LDFLAGS = $(libmoo_res_ldflag) -no-undefined -avoid-version $(export_flags)
 libmoo_la_SOURCES = $(moo_include_headers)
+
+if MOO_PYTHON_BUILTIN
+if !MOO_BUILD_MOO_MODULE
+libmoo_la_LIBADD += $(PYTHON_LIBS) $(PYTHON_EXTRA_LIBS) moopython/libmoopython.la
+libmoo_la_LDFLAGS += $(PYTHON_LDFLAGS) $(PYTHON_EXTRA_LDFLAGS)
+endif !MOO_BUILD_MOO_MODULE
+endif
+
+
+############################################################################
+# python stuff
+#
+if MOO_USE_PYTHON
 
 moo_la_ldflags = -no-undefined -module -avoid-version -export-symbols-regex initmoo
 pymoo_la_ldflags = -no-undefined -module -avoid-version -export-symbols-regex moo_module_init
 
+############################################################################
+# Unix
+#
 if MOO_OS_UNIX
 
-if MOO_USE_PYGTK
 if MOO_BUILD_MOO_MODULE
 pyexec_LTLIBRARIES = moo.la
 moo_la_SOURCES = moo.h
 moo_la_LDFLAGS = $(moo_la_ldflags)
 moo_la_LIBADD = moopython/libmoomod.la libmoo.la $(MOO_LIBS) $(PYTHON_LIBS)
 endif MOO_BUILD_MOO_MODULE
-endif MOO_USE_PYGTK
 
 if MOO_BUILD_PYTHON_PLUGIN
 plugindir = $(MOO_LIB_DIR)/plugins
@@ -105,8 +123,10 @@ pymoo_la_LDFLAGS = $(pymoo_la_ldflags) $(PYTHON_EXTRA_LDFLAGS)
 pymoo_la_LIBADD = moopython/libpymoo.la libmoo.la $(MOO_LIBS) $(PYTHON_LIBS) $(PYTHON_EXTRA_LIBS)
 endif MOO_BUILD_PYTHON_PLUGIN
 
+############################################################################
+# Win32
+#
 else !MOO_OS_UNIX
-if MOO_USE_PYGTK
 
 if MOO_OS_MINGW
 CLEANFILES += pymoo25.res moo25.res pymoo24.res moo24.res
@@ -135,5 +155,6 @@ moo24_la_SOURCES = moo.h
 moo24_la_LDFLAGS = $(moo_la_ldflags) -Wl,moo24.res
 moo24_la_LIBADD = moopython/libmoomod24.la libmoo.la $(MOO_LIBS) $(PYTHON24_LIBS)
 
-endif MOO_USE_PYGTK
 endif !MOO_OS_UNIX
+
+endif MOO_USE_PYTHON

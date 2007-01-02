@@ -2,7 +2,7 @@
 # MOO_AC_FUNCS()
 # various checks needed in moo
 #
-AC_DEFUN([MOO_AC_FUNCS],[
+AC_DEFUN_ONCE([MOO_AC_FUNCS],[
     # backtrace() and friends
     AC_CHECK_HEADERS(execinfo.h)
     AC_CHECK_FUNCS(backtrace)

@@ -120,20 +120,20 @@ class StrvArg(ArgType):
             info.varlist.add('char', '**' + pname)
         info.arglist.append(pname)
         if pnull:
-            info.add_parselist('O&', ['moo_pyobject_to_strv', '&' + pname], [pname])
+            info.add_parselist('O&', ['_moo_pyobject_to_strv', '&' + pname], [pname])
         else:
-            info.add_parselist('O&', ['moo_pyobject_to_strv_no_null', '&' + pname], [pname])
+            info.add_parselist('O&', ['_moo_pyobject_to_strv_no_null', '&' + pname], [pname])
     def write_return(self, ptype, ownsreturn, info):
         if ownsreturn:
             # have to free result ...
             info.varlist.add('char', '**ret')
             info.varlist.add('PyObject', '*py_ret')
-            info.codeafter.append('    py_ret = moo_strv_to_pyobject (ret);\n' +
+            info.codeafter.append('    py_ret = _moo_strv_to_pyobject (ret);\n' +
                                   '    g_strfreev (ret);\n' +
                                   '    return py_ret;')
         else:
             info.varlist.add('char', '**ret')
-            info.codeafter.append('    return moo_strv_to_pyobject (ret);')
+            info.codeafter.append('    return _moo_strv_to_pyobject (ret);')
 
 class StringSListArg(ArgType):
     def write_return(self, ptype, ownsreturn, info):
@@ -141,13 +141,13 @@ class StringSListArg(ArgType):
             # have to free result ...
             info.varlist.add('GSList', '*ret')
             info.varlist.add('PyObject', '*py_ret')
-            info.codeafter.append('    py_ret = moo_string_slist_to_pyobject (ret);\n' +
+            info.codeafter.append('    py_ret = _moo_string_slist_to_pyobject (ret);\n' +
                                   '    g_slist_foreach (ret, (GFunc) g_free, NULL);\n' +
                                   '    g_slist_free (ret);\n' +
                                   '    return py_ret;')
         else:
             info.varlist.add('GSList', '*ret')
-            info.codeafter.append('    return moo_string_slist_to_pyobject (ret);')
+            info.codeafter.append('    return _moo_string_slist_to_pyobject (ret);')
 
 class ObjectSListArg(ArgType):
     def write_return(self, ptype, ownsreturn, info):
@@ -155,13 +155,13 @@ class ObjectSListArg(ArgType):
             # have to free result ...
             info.varlist.add('GSList', '*ret')
             info.varlist.add('PyObject', '*py_ret')
-            info.codeafter.append('    py_ret = moo_object_slist_to_pyobject (ret);\n' +
+            info.codeafter.append('    py_ret = _moo_object_slist_to_pyobject (ret);\n' +
                                   '    g_slist_foreach (ret, (GFunc) g_object_unref, NULL);\n' +
                                   '    g_slist_free (ret);\n' +
                                   '    return py_ret;')
         else:
             info.varlist.add('GSList', '*ret')
-            info.codeafter.append('    return moo_object_slist_to_pyobject (ret);')
+            info.codeafter.append('    return _moo_object_slist_to_pyobject (ret);')
 
 class NoRefObjectSListArg(ArgType):
     def write_return(self, ptype, ownsreturn, info):
@@ -169,12 +169,12 @@ class NoRefObjectSListArg(ArgType):
             # have to free result ...
             info.varlist.add('GSList', '*ret')
             info.varlist.add('PyObject', '*py_ret')
-            info.codeafter.append('    py_ret = moo_object_slist_to_pyobject (ret);\n' +
+            info.codeafter.append('    py_ret = _moo_object_slist_to_pyobject (ret);\n' +
                                   '    g_slist_free (ret);\n' +
                                   '    return py_ret;')
         else:
             info.varlist.add('GSList', '*ret')
-            info.codeafter.append('    return moo_object_slist_to_pyobject (ret);')
+            info.codeafter.append('    return _moo_object_slist_to_pyobject (ret);')
 
 class UCharArg(ArgType):
     # allows strings with embedded NULLs.

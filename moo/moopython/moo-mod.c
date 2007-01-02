@@ -30,7 +30,7 @@ void initmoo (void)
     if (!_moo_pygtk_init ())
         return;
 
-    if (!moo_python_running() && !moo_python_api_init (FALSE))
+    if (!moo_python_running() && !moo_python_api_init ())
         return;
 
     if (!moo_plugin_loader_lookup (MOO_PYTHON_PLUGIN_LOADER_ID))

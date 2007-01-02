@@ -66,7 +66,7 @@ py_object_from_moo_py_object (const GValue *value)
     if (!obj)
         obj = Py_None;
 
-    return moo_py_object_ref (obj);
+    return _moo_py_object_ref (obj);
 }
 
 

@@ -50,13 +50,13 @@ AC_DEFUN([_MOO_AC_CHECK_PYTHON_MINGW],[
         AC_SUBST(PYTHON[]$1[]_CFLAGS)
         AC_SUBST(PYTHON[]$1[]_LIBS)
         pyexecdir=$PYTHON[]$1[]_PREFIX/Lib/site-packages
-        $2
+        m4_if([$2],[],[:],[$2])
     ],[
         AC_MSG_RESULT([Not found])
         PYTHON[]$1[]_CFLAGS=""
         PYTHON[]$1[]_LIBS=""
         PYTHON[]$1[]_EXTRA_LIBS=""
-        $3
+        m4_if([$3],[],[:],[$3])
     ])
 
     LDFLAGS="$moo_ac_save_LDFLAGS"
@@ -108,14 +108,14 @@ Please check your Python installation.])
     if test $python_found = yes; then
 	AC_MSG_CHECKING([Python linker flags])
 
-        if test -z "$PYTHON_LIBS"; then
+        if test "x$PYTHON_LIBS" = "x"; then
             # (makes two attempts to ensure we've got a version number
             # from the interpreter)
             py_version=`$PYTHON -c "from distutils.sysconfig import *; \
                         from string import join; \
                         print join(get_config_vars('VERSION'))"`
-            if test "$py_version" == "[None]"; then
-                if test -n "$PYTHON_VERSION"; then
+            if test "x$py_version" = "x[None]"; then
+                if test "x$PYTHON_VERSION" != "x"; then
                     py_version=$PYTHON_VERSION
                 else
                     py_version=`$PYTHON -c "import sys; \
@@ -137,7 +137,7 @@ Please check your Python installation.])
     # if PYTHON_EXTRA_LIBS is set, do not do anything
     if test $python_found = yes; then
 
-        if test -z "$PYTHON_EXTRA_LIBS"; then
+        if test "x$PYTHON_EXTRA_LIBS" = "x"; then
             PYTHON_EXTRA_LIBS=`$PYTHON -c "import distutils.sysconfig; \
                                            conf = distutils.sysconfig.get_config_var; \
                                            print conf('LOCALMODLIBS'), conf('LIBS')"`
@@ -155,9 +155,9 @@ Please check your Python installation.])
     fi
 
     if test $python_found = yes; then
-        $1
+        m4_if([$1],[],[:],[$1])
     else
-        $2
+        m4_if([$2],[],[:],[$2])
     fi
 ])
 
@@ -179,12 +179,12 @@ AC_DEFUN([_MOO_AC_CHECK_PYTHON_UNIX],[
     ])
 
     if test x$python_found = xyes; then
-        $2
+        m4_if([$2],[],[:],[$2])
     else
         PYTHON_CFLAGS=""
         PYTHON_LIBS=""
         PYTHON_EXTRA_LIBS=""
-        $3
+        m4_if([$3],[],[:],[$3])
     fi
 ])
 

@@ -424,7 +424,7 @@ moo_python_api_py_arg_parse_tuple (MooPyObject *args,
 
 
 static gboolean
-moo_python_api_init (gboolean in_plugin)
+moo_python_api_init (void)
 {
     static int argc;
     static char **argv;
@@ -465,7 +465,7 @@ moo_python_api_init (gboolean in_plugin)
 
     g_assert (moo_python_running ());
 
-    if (in_plugin)
+    if (!Py_IsInitialized ())
     {
         if (!argv)
         {
@@ -483,7 +483,7 @@ moo_python_api_init (gboolean in_plugin)
 
         /* pygtk wants sys.argv */
         PySys_SetArgv (argc, argv);
-        moo_py_init_print_funcs ();
+        _moo_py_init_print_funcs ();
     }
 
     api.py_none = (MooPyObject*) Py_None;

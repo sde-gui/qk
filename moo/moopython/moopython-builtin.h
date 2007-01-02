@@ -19,7 +19,7 @@
 G_BEGIN_DECLS
 
 
-gboolean    _moo_python_init    (void);
+gboolean _moo_python_builtin_init (void);
 
 
 G_END_DECLS

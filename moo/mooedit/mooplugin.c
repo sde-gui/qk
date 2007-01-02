@@ -939,13 +939,9 @@ moo_plugin_read_dirs (void)
 
     moo_plugin_init_builtin ();
 
-#if MOO_USE_PYGTK
-#ifndef MOO_BUILD_PYTHON_PLUGIN
-#ifndef MOO_BUILD_MOO_MODULE
+#ifdef MOO_PYTHON_BUILTIN
     /* XXX move it elsewhere */
-    _moo_python_init ();
-#endif
-#endif
+    _moo_python_builtin_init ();
 #endif
 
     for (d = plugin_store->dirs; d && *d; ++d)
@@ -974,7 +970,7 @@ moo_plugin_shutdown (void)
     }
 
     /* XXX */
-#if 0 && defined(MOO_USE_PYGTK)
+#if 0 && defined(MOO_USE_PYTHON)
     _moo_python_plugin_deinit ();
 #endif
 

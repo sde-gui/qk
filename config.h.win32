@@ -171,19 +171,19 @@
 #define MATCH_LIMIT 10000000
 
 /* build mooapp */
-#define MOO_BUILD_APP 
+#define MOO_BUILD_APP
 
 /* build mooedit */
-#define MOO_BUILD_EDIT 
+#define MOO_BUILD_EDIT
 
 /* MOO_BUILD_PCRE - bulid pcre library */
-#define MOO_BUILD_PCRE 
+#define MOO_BUILD_PCRE
 
 /* build mooterm */
 /* #undef MOO_BUILD_TERM */
 
 /* build mooutils */
-#define MOO_BUILD_UTILS 
+#define MOO_BUILD_UTILS
 
 /* enable printing */
 /* #undef MOO_ENABLE_PRINTING */
@@ -208,9 +208,6 @@
 
 /* package name */
 #define MOO_PACKAGE_NAME "moo"
-
-/* MOO_USE_PYGTK */
-/* #undef MOO_USE_PYGTK */
 
 /* MOO_USE_PYTHON */
 /* #undef MOO_USE_PYTHON */
@@ -258,7 +255,7 @@
 #define PCRE_DATE $PCRE_DATE
 
 /* PCRE_EXPORT - empty since we do not need pcre api be exported */
-#define PCRE_EXPORT 
+#define PCRE_EXPORT
 
 /* pcre library major version */
 #define PCRE_MAJOR $PCRE_MAJOR
@@ -276,10 +273,10 @@
 #define STDC_HEADERS 1
 
 /* SUPPORT_UCP */
-#define SUPPORT_UCP 
+#define SUPPORT_UCP
 
 /* SUPPORT_UTF8 */
-#define SUPPORT_UTF8 
+#define SUPPORT_UTF8
 
 /* Version number of package */
 #define VERSION "0.6.999"

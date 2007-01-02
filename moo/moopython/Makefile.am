@@ -3,10 +3,10 @@ SUBDIRS = plugins pygtk .
 libmoomod_la_sources =		\
 	moo-mod.c		\
 	moopython-api.h		\
-	moopython-loader.h	\
-	moopython-loader.c	\
 	moopython-utils.h	\
-	moopython-utils.c
+	moopython-utils.c	\
+	moopython-loader.h	\
+	moopython-loader.c
 
 libpymoo_la_sources =		\
 	moopython-mod.c		\
@@ -25,22 +25,30 @@ libmoopython_la_sources =	\
 	moopython-loader.c	\
 	moopython-utils.h	\
 	moopython-utils.c
+if !MOO_BUILD_MOO_MODULE
 libmoopython_la_libadd =	\
 	pygtk/libmoopygtk.la
+endif
 
 noinst_LTLIBRARIES =
 
 if MOO_OS_UNIX
 
-if MOO_INSTALL_LIB
-noinst_LTLIBRARIES += libmoomod.la
-if MOO_BUILD_PYTHON_PLUGIN
-noinst_LTLIBRARIES += libpymoo.la
-else
+if MOO_PYTHON_BUILTIN
 noinst_LTLIBRARIES += libmoopython.la
 endif
-else
-noinst_LTLIBRARIES += libmoopython.la
+
+if MOO_BUILD_PYTHON_PLUGIN
+noinst_LTLIBRARIES += libpymoo.la
+endif
+
+if MOO_BUILD_MOO_MODULE
+noinst_LTLIBRARIES += libmoomod.la
+if MOO_PYTHON_BUILTIN
+libmoomod_la_sources +=		\
+	moopython-builtin.h	\
+	moopython-builtin.c
+endif
 endif
 
 else !MOO_OS_UNIX
@@ -77,12 +85,12 @@ py24_cflags =			\
 	-DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
 
 libmoomod_la_SOURCES = $(libmoomod_la_sources)
-libmoomod_la_LIBADD = pygtk/libmoopygtk.la
+libmoomod_la_LIBADD = pygtk/libmoopygtk.la $(libmoomod_la_libadd)
 libmoomod25_la_SOURCES = $(libmoomod_la_sources)
-libmoomod25_la_LIBADD = pygtk/libmoopygtk25.la
+libmoomod25_la_LIBADD = pygtk/libmoopygtk25.la $(libmoomod_la_libadd)
 libmoomod25_la_CFLAGS = $(py25_cflags)
 libmoomod24_la_SOURCES = $(libmoomod_la_sources)
-libmoomod24_la_LIBADD = pygtk/libmoopygtk24.la
+libmoomod24_la_LIBADD = pygtk/libmoopygtk24.la $(libmoomod_la_libadd)
 libmoomod24_la_CFLAGS = $(py24_cflags)
 
 libpymoo_la_SOURCES = $(libpymoo_la_sources)

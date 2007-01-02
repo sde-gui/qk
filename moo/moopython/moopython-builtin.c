@@ -29,11 +29,11 @@
 #include "mooutils/mooutils-misc.h"
 
 gboolean
-_moo_python_init (void)
+_moo_python_builtin_init (void)
 {
     if (!moo_python_running ())
     {
-        if (!moo_python_api_init (TRUE))
+        if (!moo_python_api_init ())
         {
             g_warning ("%s: oops", G_STRLOC);
             return FALSE;
@@ -47,14 +47,16 @@ _moo_python_init (void)
             return FALSE;
         }
 
+#ifndef MOO_BUILD_MOO_MODULE
         reset_log_func ();
+#endif
+    }
 
-        if (!moo_plugin_loader_lookup (MOO_PYTHON_PLUGIN_LOADER_ID))
-        {
-            MooPluginLoader *loader = _moo_python_get_plugin_loader ();
-            moo_plugin_loader_register (loader, MOO_PYTHON_PLUGIN_LOADER_ID);
-            g_free (loader);
-        }
+    if (!moo_plugin_loader_lookup (MOO_PYTHON_PLUGIN_LOADER_ID))
+    {
+        MooPluginLoader *loader = _moo_python_get_plugin_loader ();
+        moo_plugin_loader_register (loader, MOO_PYTHON_PLUGIN_LOADER_ID);
+        g_free (loader);
     }
 
     return TRUE;

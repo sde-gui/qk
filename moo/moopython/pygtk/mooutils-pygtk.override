@@ -1,31 +1,11 @@
-/* kate: lang C; indent-width 4; space-indent on; strip on; */
+/* -%- lang: C; indent-width: 4; use-tabs: no; strip: yes -%- */
 %%
 headers
 #include <Python.h>
 #define NO_IMPORT_PYGOBJECT
 #include "pygobject.h"
-#include "mooutils/moobigpaned.h"
-#include "mooutils/moocombo.h"
-#include "mooutils/moofiltermgr.h"
-#include "mooutils/moofilewatch.h"
-#include "mooutils/moohistorylist.h"
-#include "mooutils/moomenumgr.h"
-#include "mooutils/moouixml.h"
-#include "mooutils/moodialogs.h"
-#include "mooutils/mooutils-misc.h"
-#include "mooutils/moowindow.h"
-#include "mooutils/mooprefsdialog.h"
-#include "mooutils/moohistorycombo.h"
-#include "mooutils/mooprefs.h"
-#include "mooutils/moonotebook.h"
-#include "mooutils/mooentry.h"
-#include "mooutils/moostock.h"
-#include "mooutils/moouixml.h"
-#include "mooutils/moomenuaction.h"
-#include "mooutils/mooactionbase.h"
-#include "mooutils/mooundo.h"
+#include <moo.h>
 #include "mooutils/mooi18n.h"
-#include "moofileview/moofileview.h"
 #include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
 

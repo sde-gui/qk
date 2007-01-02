@@ -19,31 +19,31 @@
 
 G_BEGIN_DECLS
 
-#define MOO_TYPE_PY_OBJECT (moo_py_object_get_type())
+#define MOO_TYPE_PY_OBJECT (_moo_py_object_get_type())
 
-PyObject    *moo_py_object_ref              (PyObject       *obj);
-void         moo_py_object_unref            (PyObject       *obj);
-GType        moo_py_object_get_type         (void) G_GNUC_CONST;
+PyObject    *_moo_py_object_ref             (PyObject       *obj);
+void         _moo_py_object_unref           (PyObject       *obj);
+GType        _moo_py_object_get_type        (void) G_GNUC_CONST;
 
-PyObject    *moo_strv_to_pyobject           (char          **strv);
+PyObject    *_moo_strv_to_pyobject          (char          **strv);
 
 /* result may not be freed */
-int          moo_pyobject_to_strv           (PyObject       *obj,
+int          _moo_pyobject_to_strv          (PyObject       *obj,
                                              char         ***dest);
-int          moo_pyobject_to_strv_no_null   (PyObject       *obj,
+int          _moo_pyobject_to_strv_no_null  (PyObject       *obj,
                                              char         ***dest);
 
-PyObject    *moo_object_slist_to_pyobject   (GSList         *list);
-PyObject    *moo_string_slist_to_pyobject   (GSList         *list);
-PyObject    *moo_boxed_slist_to_pyobject    (GSList         *list,
+PyObject    *_moo_object_slist_to_pyobject  (GSList         *list);
+PyObject    *_moo_string_slist_to_pyobject  (GSList         *list);
+PyObject    *_moo_boxed_slist_to_pyobject   (GSList         *list,
                                              GType           type);
 
-PyObject    *moo_gvalue_to_pyobject         (const GValue   *val);
-void         moo_pyobject_to_gvalue         (PyObject       *object,
+PyObject    *_moo_gvalue_to_pyobject        (const GValue   *val);
+void         _moo_pyobject_to_gvalue        (PyObject       *object,
                                              GValue         *value);
 
-char        *moo_py_err_string              (void);
-void         moo_py_init_print_funcs        (void);
+char        *_moo_py_err_string             (void);
+void         _moo_py_init_print_funcs       (void);
 
 
 #define return_None     G_STMT_START {Py_INCREF(Py_None); return Py_None;} G_STMT_END

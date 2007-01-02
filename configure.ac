@@ -35,7 +35,7 @@ AC_CONFIG_FILES([
 Makefile
 config.py
 moo/moo.pc
-moo/moo-version.h
+moo/moo-config.h
 moo/Makefile
 moo/mooutils/Makefile
 moo/mooscript/Makefile
@@ -68,21 +68,22 @@ AC_OUTPUT
 ################################################################################
 #  Configuration info
 #
-echo
 if test x$MOO_OS_CYGWIN != "xyes"; then
-  echo "    OS                                        = $MOO_OS_NAME"
-  echo "    python support                            = $MOO_USE_PYTHON"
-  echo "    pygtk support                             = $MOO_USE_PYGTK"
-  echo "    xml support                               = $MOO_USE_XML"
-  echo "    xdgmime support                           = $MOO_USE_XDGMIME"
-  echo "    build pcre library                        = $MOO_BUILD_PCRE"
-  echo "    use FAM                                   = $MOO_USE_FAM"
   echo
-  echo "    prefix                                    = $prefix"
-  echo "    editor lang files go to                   = $MOO_TEXT_LANG_FILES_DIR"
+  echo "    OS ...................................... $MOO_OS_NAME"
+  echo "    use python .............................. $MOO_USE_PYTHON"
+  echo "    use xml ................................. $MOO_USE_XML"
+  echo "    use xdgmime ............................. $MOO_USE_XDGMIME"
+  echo "    build pcre library ...................... $MOO_BUILD_PCRE"
+  echo "    use FAM ................................. $MOO_USE_FAM"
+  echo
+  echo "    prefix .................................. $prefix"
+  echo "    editor lang files go to ................. $MOO_TEXT_LANG_FILES_DIR"
   echo
   echo "    components: $MOO_BUILD_COMPS"
+  echo
 else
+  echo
   echo "    Building termhelper.exe on CYGWIN"
+  echo
 fi
-echo

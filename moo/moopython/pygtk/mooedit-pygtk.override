@@ -1,20 +1,10 @@
+/* -%- lang: C; indent-width: 4; use-tabs: no; strip: yes -%- */
 %%
 headers
 #include <Python.h>
 #define NO_IMPORT_PYGOBJECT
 #include "pygobject.h"
-#include "mooedit/mooeditor.h"
-#include "mooedit/mootextsearch.h"
-#include "mooedit/mootextbuffer.h"
-#include "mooedit/mootextiter.h"
-#include "mooedit/mooeditprefs.h"
-#include "mooedit/moocmdview.h"
-#include "mooedit/mooeditaction-factory.h"
-#include "mooedit/mooeditaction.h"
-#include "mooedit/mooplugin.h"
-#include "mooedit/moocommand.h"
-#include "mooedit/mooedit-enums.h"
-#include "mooedit/moooutputfilter.h"
+#include <moo.h>
 #include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
 
@@ -140,7 +130,7 @@ _wrap_moo_edit_window_list_docs (PyObject *self)
     PyObject *result;
 
     list = moo_edit_window_list_docs (MOO_EDIT_WINDOW (pygobject_get (self)));
-    result = moo_object_slist_to_pyobject (list);
+    result = _moo_object_slist_to_pyobject (list);
 
     g_slist_free (list);
     return result;
@@ -154,7 +144,7 @@ _wrap_moo_editor_list_windows (PyObject *self)
     PyObject *result;
 
     list = moo_editor_list_windows (MOO_EDITOR (pygobject_get (self)));
-    result = moo_object_slist_to_pyobject (list);
+    result = _moo_object_slist_to_pyobject (list);
 
     g_slist_free (list);
     return result;
@@ -168,7 +158,7 @@ _wrap_moo_editor_list_docs (PyObject *self)
     PyObject *result;
 
     list = moo_editor_list_docs (MOO_EDITOR (pygobject_get (self)));
-    result = moo_object_slist_to_pyobject (list);
+    result = _moo_object_slist_to_pyobject (list);
 
     g_slist_free (list);
     return result;
@@ -407,7 +397,7 @@ _wrap_moo_lang_mgr_get_available_langs (PyGObject *self)
     PyObject *result;
 
     list = moo_lang_mgr_get_available_langs (MOO_LANG_MGR (pygobject_get (self)));
-    result = moo_boxed_slist_to_pyobject (list, MOO_TYPE_LANG);
+    result = _moo_boxed_slist_to_pyobject (list, MOO_TYPE_LANG);
 
     g_slist_free (list);
     return result;
@@ -513,7 +503,7 @@ _wrap_moo_command_context_set (PyGObject *self, PyObject *args, PyObject *kwargs
         return_TypeError ("MooCommandContext.set: value may not be None");
 
     value.g_type = 0;
-    moo_pyobject_to_gvalue (py_value, &value);
+    _moo_pyobject_to_gvalue (py_value, &value);
 
     moo_command_context_set (MOO_COMMAND_CONTEXT (self->obj), name, &value);
 
@@ -539,7 +529,7 @@ _wrap_moo_command_context_get (PyGObject *self, PyObject *args, PyObject *kwargs
     if (!moo_command_context_get (MOO_COMMAND_CONTEXT (self->obj), name, &value))
         return_None;
 
-    py_value = moo_gvalue_to_pyobject (&value);
+    py_value = _moo_gvalue_to_pyobject (&value);
     g_assert (py_value || PyErr_Occurred ());
 
     g_value_unset (&value);

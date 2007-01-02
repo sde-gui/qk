@@ -54,7 +54,7 @@ init_pygtk_mod (void)
 }
 
 
-static gboolean
+inline static gboolean
 check_pygtk_version (const char *module,
                      int         req_major,
                      int         req_minor,

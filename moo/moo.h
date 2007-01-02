@@ -15,11 +15,15 @@
 #define __MOO_H__
 
 
-#include <moo-version.h>
+#include <moo-config.h>
 
 #include <mooedit/moocmdview.h>
+#include <mooedit/moocommand.h>
 #include <mooedit/mooedit.h>
 #include <mooedit/mooedit-bookmarks.h>
+#include <mooedit/mooedit-enums.h>
+#include <mooedit/mooeditaction.h>
+#include <mooedit/mooeditaction-factory.h>
 #include <mooedit/mooeditconfig.h>
 #include <mooedit/mooeditor.h>
 #include <mooedit/mooeditprefs.h>
@@ -46,6 +50,8 @@
 #include <mooterm/mooterm-text.h>
 #include <mooterm/mootermline.h>
 #include <mooterm/mootermtag.h>
+#include <mooterm/mootermbuffer.h>
+#include <mooterm/mooterm-prefs.h>
 
 #include <mooutils/mooaccelbutton.h>
 #include <mooutils/mooaction.h>
@@ -54,7 +60,10 @@
 #include <mooutils/moobigpaned.h>
 #include <mooutils/mooclosure.h>
 #include <mooutils/moocombo.h>
+#include <mooutils/moodialogs.h>
 #include <mooutils/mooentry.h>
+#include <mooutils/moofiledialog.h>
+#include <mooutils/moofilewatch.h>
 #include <mooutils/moofiltermgr.h>
 #include <mooutils/mooglade.h>
 #include <mooutils/moohistorycombo.h>
@@ -83,6 +92,8 @@
 #include <mooscript/mooscript-parser.h>
 #include <mooscript/mooscript-value.h>
 #include <mooscript/mooscript-zenity.h>
+
+#include <moofileview/moofileview.h>
 
 #include <mooapp/mooapp.h>
 

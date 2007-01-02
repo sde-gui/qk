@@ -2,7 +2,7 @@
 # MOO_AC_CHECK_XML_STUFF(action-if-found,action-if-not-found)
 # checks whether libxml2 is available, checks some functions and structures
 #
-AC_DEFUN([MOO_AC_CHECK_XML_STUFF],[
+AC_DEFUN_ONCE([MOO_AC_CHECK_XML_STUFF],[
     PKG_CHECK_MODULES(XML,libxml-2.0,[
         moo_ac_save_CPPFLAGS="$CPPFLAGS"
         CPPFLAGS="$CPPFLAGS $XML_CFLAGS"
@@ -35,7 +35,7 @@ AC_DEFUN([MOO_AC_CHECK_XML_STUFF],[
 ##############################################################################
 # MOO_AC_XML([])
 #
-AC_DEFUN([MOO_AC_XML],[
+AC_DEFUN_ONCE([MOO_AC_XML],[
     AC_REQUIRE([MOO_AC_CHECK_OS])
 
     MOO_USE_XML="no"

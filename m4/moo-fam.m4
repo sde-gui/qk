@@ -1,7 +1,7 @@
 ##############################################################################
-# MOO_AC_CHECK_FAM(action-if-found,action-if-not-found)
+# _MOO_AC_CHECK_FAM(action-if-found,action-if-not-found)
 #
-AC_DEFUN([MOO_AC_CHECK_FAM],[
+AC_DEFUN_ONCE([_MOO_AC_CHECK_FAM],[
     moo_ac_save_CFLAGS="$CFLAGS"
     moo_ac_save_LDFLAGS="$LDFLAGS"
 
@@ -57,8 +57,8 @@ AC_DEFUN([MOO_AC_CHECK_FAM],[
 ])
 
 
-AC_DEFUN([MOO_AC_FAM],[
-    AC_REQUIRE([MOO_AC_CHECK_OS])
+AC_DEFUN_ONCE([MOO_AC_FAM],[
+   AC_REQUIRE([MOO_AC_CHECK_OS])
 
    AC_ARG_WITH([fam], AC_HELP_STRING([--with-fam], [whether to use fam or gamin for monitoring files in the editor (default = NO)]), [
            if test x$with_fam = "xyes"; then
@@ -71,7 +71,7 @@ AC_DEFUN([MOO_AC_FAM],[
    ])
 
    if test x$MOO_OS_UNIX = xyes -a x$MOO_USE_FAM = xyes; then
-       MOO_AC_CHECK_FAM([moo_has_fam=yes],[moo_has_fam=no])
+       _MOO_AC_CHECK_FAM([moo_has_fam=yes],[moo_has_fam=no])
        if test x$moo_has_fam = xyes; then
            MOO_USE_FAM="yes"
            AC_DEFINE(MOO_USE_FAM, 1, [use libfam for monitoring files])

@@ -1,10 +1,10 @@
-/* kate: lang C; indent-width 4; space-indent on; strip on; */
+/* -%- lang: C; indent-width: 4; use-tabs: no; strip: yes -%- */
 %%
 headers
 #include <Python.h>
 #define NO_IMPORT_PYGOBJECT
 #include "pygobject.h"
-#include "mooapp/mooapp.h"
+#include <moo.h>
 #include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
 

@@ -3,7 +3,7 @@
 # This is essentially pcre's configure.in, contains checks and defines
 # needed for pcre
 #
-AC_DEFUN([MOO_AC_PCRE],[
+AC_DEFUN_ONCE([MOO_AC_PCRE],[
 
 AC_ARG_WITH([system-pcre],
 AC_HELP_STRING([--with-system-pcre], [whether to use system copy of pcre library (default = YES)]),[

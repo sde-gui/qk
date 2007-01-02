@@ -15,7 +15,7 @@ AC_DEFUN([_MOO_AC_CHECK_COMPILER_OPTIONS],[
 ##############################################################################
 # MOO_AC_DEBUG()
 #
-AC_DEFUN([MOO_AC_DEBUG],[
+AC_DEFUN_ONCE([MOO_AC_DEBUG],[
 
 AC_REQUIRE([MOO_PKG_CHECK_GTK_VERSIONS])
 
