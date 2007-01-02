@@ -1098,7 +1098,7 @@ create_command_context (gpointer window,
     if (MOO_IS_EDIT (doc) && moo_edit_get_filename (doc))
     {
         const char *filename, *basename;
-        char *dirname, *base, *extension;
+        char *dirname, *base = NULL, *extension = NULL;
 
         filename = moo_edit_get_filename (doc);
         basename = moo_edit_get_basename (doc);

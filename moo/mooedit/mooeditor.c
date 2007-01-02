@@ -96,8 +96,6 @@ typedef struct {
     char *text;
 } Message;
 
-static Message      *message_new            (GQuark          domain,
-                                             const char     *text);
 static void          message_free           (Message        *message);
 
 
