@@ -62,11 +62,9 @@ BUILT_SOURCES = $(mangled_sources)
 DISTCLEANFILES = $(mangled_sources)
 
 %-mangled.c: upstream/%.c upstream/mangle.sh
-	$(SHELL) $(srcdir)/upstream/mangle.sh $< > mangled.tmp && \
-	mv mangled.tmp $@
+	$(SHELL) $(srcdir)/upstream/mangle.sh $< > $@.tmp && mv $@.tmp $@
 %-mangled.h: upstream/%.h upstream/mangle.sh
-	$(SHELL) $(srcdir)/upstream/mangle.sh $< > mangled.tmp && \
-	mv mangled.tmp $@
+	$(SHELL) $(srcdir)/upstream/mangle.sh $< > $@.tmp && mv $@.tmp $@
 
 upstream/%.o:
 	$(MAKE) $*-mangled.o
