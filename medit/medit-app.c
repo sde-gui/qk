@@ -588,11 +588,11 @@ main (int argc, char *argv[])
     guint32 line = 0;
     const char *pid_string = NULL;
 
+    init_mem_stuff ();
+
     /* Tim Janik said */
     g_thread_init (NULL);
     gdk_threads_init ();
-
-    init_mem_stuff ();
 
     gtk_init (&argc, &argv);
     stamp = TIMESTAMP ();
