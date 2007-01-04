@@ -1,7 +1,7 @@
 /*
  *   moofileentry.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
+#define MOD_MASK() (gtk_accelerator_get_default_mod_mask ())
 
 #define COMPLETION_POPUP_LEN 15
 #define COLUMN_FILE MOO_FOLDER_MODEL_COLUMN_FILE
@@ -37,6 +38,7 @@
 
 struct _MooFileEntryCompletionPrivate {
     MooFileSystem *fs;
+    MooFolder *folder;
     char *current_dir;
     GtkEntry *entry;
 
@@ -50,6 +52,7 @@ struct _MooFileEntryCompletionPrivate {
     gboolean dirs_only;
     gboolean show_hidden;
 
+    guint resize_popup_idle;
     GtkWidget *popup;
     GtkTreeView *treeview;
     GtkTreeViewColumn *column;
@@ -82,6 +85,7 @@ static void     completion_create_popup         (MooFileEntryCompletion *cmpl);
 static void     completion_connect_folder       (MooFileEntryCompletion *cmpl,
                                                  MooFolder              *folder);
 static void     completion_disconnect_folder    (MooFileEntryCompletion *cmpl);
+static gboolean completion_popup_shown          (MooFileEntryCompletion *cmpl);
 static void     completion_popup                (MooFileEntryCompletion *cmpl);
 static void     completion_popdown              (MooFileEntryCompletion *cmpl);
 static gboolean completion_resize_popup         (MooFileEntryCompletion *cmpl);
@@ -104,8 +108,7 @@ static gboolean completion_popup_key_press      (GtkWidget              *popup_w
 static gboolean completion_list_button_press    (MooFileEntryCompletion *cmpl,
                                                  GdkEventButton         *event);
 
-static void     completion_entry_changed        (GtkEntry               *entry,
-                                                 MooFileEntryCompletion *cmpl);
+static void     completion_entry_changed        (MooFileEntryCompletion *cmpl);
 static gboolean completion_entry_key_press      (GtkEntry               *entry,
                                                  GdkEventKey            *event,
                                                  MooFileEntryCompletion *cmpl);
@@ -435,8 +438,7 @@ completion_finish (MooFileEntryCompletion *cmpl,
 
 
 static void
-completion_entry_changed (G_GNUC_UNUSED GtkEntry *entry,
-                          MooFileEntryCompletion *cmpl)
+completion_entry_changed (MooFileEntryCompletion *cmpl)
 {
     int n_items, selected;
     GtkTreePath *path;
@@ -652,8 +654,11 @@ completion_tab_key (MooFileEntryCompletion *cmpl)
         g_string_free (prefix, TRUE);
     }
 
-    /* XXX scroll to selected */
-    completion_popup (cmpl);
+    if (!completion_popup_shown (cmpl))
+        completion_popup (cmpl);
+    else
+        /* XXX scroll to selected */
+        completion_resize_popup (cmpl);
 }
 
 
@@ -710,7 +715,13 @@ completion_popup_tab_key_press (MooFileEntryCompletion *cmpl)
         {
             text = g_strdup_printf ("%s%s", cmpl->priv->display_dirname,
                                     prefix->str);
-            completion_finish (cmpl, text);
+
+            gtk_entry_set_text (GTK_ENTRY (cmpl->priv->entry), text);
+            gtk_editable_set_position (GTK_EDITABLE (cmpl->priv->entry), -1);
+
+            if (gtk_tree_model_iter_n_children (cmpl->priv->model, NULL) <= 1)
+                completion_finish (cmpl, NULL);
+
             g_free (text);
             g_string_free (prefix, TRUE);
             return TRUE;
@@ -751,13 +762,20 @@ completion_set_case_sensitive (MooFileEntryCompletion *cmpl,
 }
 
 
+static gboolean
+completion_popup_shown (MooFileEntryCompletion *cmpl)
+{
+    return cmpl->priv->popup && GTK_WIDGET_MAPPED (cmpl->priv->popup);
+}
+
+
 static void
 completion_popup (MooFileEntryCompletion *cmpl)
 {
     GtkWidget *window;
     GtkTreeSelection *selection;
 
-    if (GTK_WIDGET_MAPPED (cmpl->priv->popup))
+    if (completion_popup_shown (cmpl))
         return;
 
     window = gtk_widget_get_toplevel (GTK_WIDGET (cmpl->priv->entry));
@@ -1085,17 +1103,29 @@ completion_popup_key_press (G_GNUC_UNUSED GtkWidget *popup,
         case GDK_KP_Up:
         case GDK_Page_Down:
         case GDK_Page_Up:
-            completion_move_selection (cmpl, event);
-            return TRUE;
+            if (!(event->state & MOD_MASK()))
+            {
+                completion_move_selection (cmpl, event);
+                return TRUE;
+            }
+            break;
 
         case GDK_Tab:
         case GDK_KP_Tab:
-            if (cmpl->priv->recheck_prefix && completion_popup_tab_key_press (cmpl))
+            if (!(event->state & MOD_MASK()))
+            {
+                if (cmpl->priv->walking_list)
+                {
+                    completion_entry_changed (cmpl);
+                    completion_tab_key (cmpl);
+                }
+                else
+                {
+                    completion_popup_tab_key_press (cmpl);
+                }
                 return TRUE;
-            /* fallthrough */
-        case GDK_ISO_Left_Tab:
-            completion_move_selection (cmpl, event);
-            return TRUE;
+            }
+            break;
 
         case GDK_Escape:
             completion_popdown (cmpl);
@@ -1104,34 +1134,87 @@ completion_popup_key_press (G_GNUC_UNUSED GtkWidget *popup,
         case GDK_Return:
         case GDK_ISO_Enter:
         case GDK_KP_Enter:
-            return completion_return_key (cmpl);
+            if (!(event->state & MOD_MASK()))
+                return completion_return_key (cmpl);
+            break;
+    }
 
-        default:
-            if (gtk_widget_event (GTK_WIDGET (cmpl->priv->entry), (GdkEvent*) event))
-            {
-                completion_entry_changed (cmpl->priv->entry, cmpl);
-                return TRUE;
-            }
-            else
-            {
-                return FALSE;
-            }
+    if (gtk_widget_event (GTK_WIDGET (cmpl->priv->entry), (GdkEvent*) event))
+    {
+        completion_entry_changed (cmpl);
+        return TRUE;
+    }
+    else
+    {
+        return FALSE;
     }
 }
 
+
+static gboolean
+resize_popup_idle (MooFileEntryCompletion *cmpl)
+{
+    if (cmpl->priv->popup && GTK_WIDGET_MAPPED (cmpl->priv->popup))
+        completion_resize_popup (cmpl);
+    cmpl->priv->resize_popup_idle = 0;
+    return FALSE;
+}
+
+static void
+folder_contents_changed (MooFileEntryCompletion *cmpl)
+{
+    if (!cmpl->priv->resize_popup_idle)
+        cmpl->priv->resize_popup_idle =
+            g_idle_add ((GSourceFunc) resize_popup_idle, cmpl);
+}
+
+static void
+folder_deleted (MooFileEntryCompletion *cmpl)
+{
+    completion_finish (cmpl, NULL);
+    completion_disconnect_folder (cmpl);
+}
 
 static void
 completion_connect_folder (MooFileEntryCompletion *cmpl,
                            MooFolder              *folder)
 {
+    g_return_if_fail (MOO_IS_FOLDER (folder));
+
+    completion_disconnect_folder (cmpl);
+
+    cmpl->priv->folder = g_object_ref (folder);
     _moo_folder_filter_set_folder (MOO_FOLDER_FILTER (cmpl->priv->model), folder);
+
+    g_signal_connect_swapped (folder, "files-added",
+                              G_CALLBACK (folder_contents_changed), cmpl);
+    g_signal_connect_swapped (folder, "files-removed",
+                              G_CALLBACK (folder_contents_changed), cmpl);
+    g_signal_connect_swapped (folder, "deleted", G_CALLBACK (folder_deleted), cmpl);
 }
 
 
 static void
 completion_disconnect_folder (MooFileEntryCompletion *cmpl)
 {
-    _moo_folder_filter_set_folder (MOO_FOLDER_FILTER (cmpl->priv->model), NULL);
+    if (cmpl->priv->folder)
+    {
+        g_signal_handlers_disconnect_by_func (cmpl->priv->folder,
+                                              (gpointer) folder_contents_changed,
+                                              cmpl);
+        g_signal_handlers_disconnect_by_func (cmpl->priv->folder,
+                                              (gpointer) folder_deleted,
+                                              cmpl);
+
+        if (cmpl->priv->resize_popup_idle)
+            g_source_remove (cmpl->priv->resize_popup_idle);
+        cmpl->priv->resize_popup_idle = 0;
+
+        _moo_folder_filter_set_folder (MOO_FOLDER_FILTER (cmpl->priv->model), NULL);
+
+        g_object_unref (cmpl->priv->folder);
+        cmpl->priv->folder = NULL;
+    }
 }
 
 
@@ -1290,6 +1373,10 @@ completion_resize_popup (MooFileEntryCompletion *cmpl)
 
     g_return_val_if_fail (GTK_WIDGET_REALIZED (cmpl->priv->entry), FALSE);
 
+    if (cmpl->priv->resize_popup_idle)
+        g_source_remove (cmpl->priv->resize_popup_idle);
+    cmpl->priv->resize_popup_idle = 0;
+
     gdk_window_get_origin (widget->window, &x, &y);
     /* XXX */
     entry_get_borders (GTK_ENTRY (cmpl->priv->entry), &x_border, &y_border);
@@ -1402,8 +1489,8 @@ _moo_file_entry_completion_set_entry (MooFileEntryCompletion *cmpl,
                            cmpl);
         if (!cmpl->priv->managed)
         {
-            g_signal_connect (cmpl->priv->entry, "changed",
-                              G_CALLBACK (completion_entry_changed), cmpl);
+            g_signal_connect_swapped (cmpl->priv->entry, "changed",
+                                      G_CALLBACK (completion_entry_changed), cmpl);
             g_signal_connect (cmpl->priv->entry, "key-press-event",
                               G_CALLBACK (completion_entry_key_press), cmpl);
         }
@@ -1420,9 +1507,7 @@ completion_entry_key_press (GtkEntry               *entry,
 {
     g_return_val_if_fail (entry == cmpl->priv->entry, FALSE);
 
-    if (cmpl->priv->enabled &&
-        !(event->state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)) &&
-        event->keyval == GDK_Tab)
+    if (cmpl->priv->enabled && !(event->state & MOD_MASK()) && event->keyval == GDK_Tab)
     {
         completion_tab_key (cmpl);
         return TRUE;
