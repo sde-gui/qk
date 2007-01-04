@@ -1,7 +1,7 @@
 /*
  *   mooapp/mooappabout.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -29,10 +29,10 @@
 #include <libxml/xmlversion.h>
 #endif
 
-static GtkWidget *about_dialog;
-static GtkWidget *license_dialog;
-static GtkWidget *credits_dialog;
-static GtkWidget *system_info_dialog;
+static gpointer about_dialog;
+static gpointer license_dialog;
+static gpointer credits_dialog;
+static gpointer system_info_dialog;
 
 
 #ifndef MOO_USE_XML
@@ -67,7 +67,7 @@ show_credits (void)
 
     credits_dialog = moo_glade_xml_get_widget (xml, "credits");
     g_return_if_fail (credits_dialog != NULL);
-    g_object_add_weak_pointer (G_OBJECT (credits_dialog), (gpointer*) &credits_dialog);
+    g_object_add_weak_pointer (G_OBJECT (credits_dialog), &credits_dialog);
     g_signal_connect (credits_dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
 
     written_by = moo_glade_xml_get_widget (xml, "written_by");
@@ -117,7 +117,7 @@ show_license (void)
 
     license_dialog = moo_glade_xml_get_widget (xml, "license");
     g_return_if_fail (license_dialog != NULL);
-    g_object_add_weak_pointer (G_OBJECT (license_dialog), (gpointer*) &license_dialog);
+    g_object_add_weak_pointer (G_OBJECT (license_dialog), &license_dialog);
     g_signal_connect (license_dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
 
     textview = moo_glade_xml_get_widget (xml, "textview");
@@ -169,7 +169,7 @@ create_about_dialog (void)
     title = g_strdup_printf ("About %s", info->full_name);
     gtk_window_set_title (GTK_WINDOW (dialog), title);
 
-    g_object_add_weak_pointer (G_OBJECT (dialog), (gpointer*) &about_dialog);
+    g_object_add_weak_pointer (G_OBJECT (dialog), &about_dialog);
     g_signal_connect (dialog, "delete-event", G_CALLBACK (gtk_widget_hide_on_delete), NULL);
 
     label = moo_glade_xml_get_widget (xml, "name");
@@ -244,7 +244,7 @@ create_system_info_dialog (void)
 
     system_info_dialog = moo_glade_xml_get_widget (xml, "system");
     g_return_if_fail (system_info_dialog != NULL);
-    g_object_add_weak_pointer (G_OBJECT (system_info_dialog), (gpointer*) &system_info_dialog);
+    g_object_add_weak_pointer (G_OBJECT (system_info_dialog), &system_info_dialog);
     g_signal_connect (system_info_dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
 
     textview = moo_glade_xml_get_widget (xml, "textview");

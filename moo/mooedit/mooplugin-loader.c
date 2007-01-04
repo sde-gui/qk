@@ -1,7 +1,7 @@
 /*
  *   mooplugin-loader.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -415,7 +415,8 @@ load_c_module (const char *module_file,
                G_GNUC_UNUSED const char *ini_file,
                G_GNUC_UNUSED gpointer data)
 {
-    MooModuleInitFunc init_func;
+    gpointer init_func_ptr;
+    MooModuleInitFunc init_func = init_func_ptr;
     GModule *module;
 
     module = module_open (module_file);
@@ -423,9 +424,8 @@ load_c_module (const char *module_file,
     if (!module)
         return;
 
-    if (g_module_symbol (module, MOO_MODULE_INIT_FUNC_NAME,
-                         (gpointer*) &init_func) &&
-        init_func ())
+    if (g_module_symbol (module, MOO_MODULE_INIT_FUNC_NAME, &init_func_ptr) &&
+        (init_func = init_func_ptr) && init_func ())
     {
         g_module_make_resident (module);
     }
@@ -442,6 +442,7 @@ load_c_plugin (const char      *plugin_file,
                G_GNUC_UNUSED const char *ini_file,
                G_GNUC_UNUSED gpointer data)
 {
+    gpointer init_func_ptr;
     MooPluginModuleInitFunc init_func;
     GModule *module;
     GType type = 0;
@@ -451,13 +452,9 @@ load_c_plugin (const char      *plugin_file,
     if (!module)
         return;
 
-    if (!g_module_symbol (module, MOO_PLUGIN_INIT_FUNC_NAME, (gpointer*) &init_func))
-    {
-        g_module_close (module);
-        return;
-    }
-
-    if (!init_func (&type))
+    if (!g_module_symbol (module, MOO_PLUGIN_INIT_FUNC_NAME, &init_func_ptr) ||
+        !(init_func = init_func_ptr) ||
+        !init_func (&type))
     {
         g_module_close (module);
         return;

@@ -1,7 +1,7 @@
 /*
  *   mooutils-misc.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@
  */
 
 #ifdef __WIN32__
+BOOL WINAPI DllMain (HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved);
 G_WIN32_DLLMAIN_FOR_DLL_NAME(static, libmoo_dll_name)
 
 const char *
@@ -492,8 +493,8 @@ _moo_window_is_hidden (GtkWindow  *window)
 #define get_handle(w) \
     gdk_win32_drawable_get_handle (GTK_WIDGET(w)->window)
 
-gboolean
-static _moo_window_is_hidden (GtkWindow  *window)
+static gboolean
+_moo_window_is_hidden (GtkWindow  *window)
 {
     HANDLE h;
     WINDOWPLACEMENT info;
@@ -726,12 +727,12 @@ moo_log_window_new (void)
 static MooLogWindow*
 moo_log_window (void)
 {
-    static MooLogWindow *log = NULL;
+    static gpointer log = NULL;
 
     if (!log)
     {
         log = moo_log_window_new ();
-        g_object_add_weak_pointer (G_OBJECT (log->window), (gpointer*) &log);
+        g_object_add_weak_pointer (G_OBJECT (((MooLogWindow*)log)->window), &log);
     }
 
     return log;

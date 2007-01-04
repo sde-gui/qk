@@ -1,7 +1,7 @@
 /*
  *   mookeyfile.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -666,14 +666,13 @@ char *
 moo_key_file_item_steal (MooKeyFileItem *item,
                          const char     *key)
 {
-    char *orig_key, *value;
+    gpointer orig_key, value;
 
     g_return_val_if_fail (item != NULL, NULL);
     g_return_val_if_fail (key != NULL, NULL);
 
     if (!g_hash_table_lookup_extended (item->keys, key,
-                                       (gpointer*) &orig_key,
-                                       (gpointer*) &value))
+                                       &orig_key, &value))
         return NULL;
 
     g_hash_table_steal (item->keys, key);
