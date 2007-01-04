@@ -1,7 +1,7 @@
 /*
  *   moofilesystem.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -73,13 +73,14 @@ static gboolean     delete_file             (MooFileSystem  *fs,
                                              gboolean        recursive,
                                              GError        **error);
 
-#ifndef __WIN32__
-static MooFolder   *get_root_folder_unix    (MooFileSystem  *fs,
-                                             MooFileFlags    wanted);
 static gboolean     move_file_unix          (MooFileSystem  *fs,
                                              const char     *old_path,
                                              const char     *new_path,
                                              GError        **error);
+
+#ifndef __WIN32__
+static MooFolder   *get_root_folder_unix    (MooFileSystem  *fs,
+                                             MooFileFlags    wanted);
 static char        *normalize_path_unix     (MooFileSystem  *fs,
                                              const char     *path,
                                              gboolean        is_folder,
@@ -102,10 +103,12 @@ static char        *get_absolute_path_unix  (MooFileSystem  *fs,
 
 static MooFolder   *get_root_folder_win32   (MooFileSystem  *fs,
                                              MooFileFlags    wanted);
+#if 0
 static gboolean     move_file_win32         (MooFileSystem  *fs,
                                              const char     *old_path,
                                              const char     *new_path,
                                              GError        **error);
+#endif
 static char        *normalize_path_win32    (MooFileSystem  *fs,
                                              const char     *path,
                                              gboolean        is_folder,
@@ -144,7 +147,7 @@ _moo_file_system_class_init (MooFileSystemClass *klass)
 
 #ifdef __WIN32__
     klass->get_root_folder = get_root_folder_win32;
-    klass->move_file = move_file_win32;
+    klass->move_file = move_file_unix;
     klass->normalize_path = normalize_path_win32;
     klass->make_path = make_path_win32;
     klass->parse_path = parse_path_win32;
@@ -692,16 +695,6 @@ delete_file (G_GNUC_UNUSED MooFileSystem *fs,
 /***************************************************************************/
 /* UNIX methods
  */
-#ifndef __WIN32__
-
-static MooFolder *
-get_root_folder_unix (MooFileSystem  *fs,
-                      MooFileFlags    wanted)
-{
-    return _moo_file_system_get_folder (fs, "/", wanted, NULL);
-}
-
-
 static gboolean
 move_file_unix (G_GNUC_UNUSED MooFileSystem *fs,
                 const char     *old_path,
@@ -723,6 +716,16 @@ move_file_unix (G_GNUC_UNUSED MooFileSystem *fs,
     }
 
     return TRUE;
+}
+
+
+#ifndef __WIN32__
+
+static MooFolder *
+get_root_folder_unix (MooFileSystem  *fs,
+                      MooFileFlags    wanted)
+{
+    return _moo_file_system_get_folder (fs, "/", wanted, NULL);
 }
 
 
@@ -927,6 +930,7 @@ get_root_folder_win32 (MooFileSystem  *fs,
 }
 
 
+#if 0
 static gboolean
 move_file_win32 (G_GNUC_UNUSED MooFileSystem  *fs,
                  G_GNUC_UNUSED const char *old_path,
@@ -941,6 +945,7 @@ move_file_win32 (G_GNUC_UNUSED MooFileSystem  *fs,
                  "Renaming files is not implemented on win32");
     return FALSE;
 }
+#endif
 
 
 static void
