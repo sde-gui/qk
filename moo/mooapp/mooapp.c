@@ -1,7 +1,7 @@
 /*
  *   mooapp/mooapp.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -1032,6 +1032,7 @@ static void
 moo_app_quit_real (MooApp *app)
 {
     GSList *l, *list;
+    guint i;
 
     if (!app->priv->running)
         return;
@@ -1067,7 +1068,12 @@ moo_app_quit_real (MooApp *app)
     if (app->priv->quit_handler_id)
         gtk_quit_remove (app->priv->quit_handler_id);
 
-    gtk_main_quit ();
+    i = 0;
+    while (gtk_main_level () && i < 1000)
+    {
+        gtk_main_quit ();
+        i++;
+    }
 
     if (app->priv->tmpdir)
     {
