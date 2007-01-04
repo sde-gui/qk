@@ -21,9 +21,9 @@
 
 #if GTK_CHECK_VERSION(2,8,0) && defined(GDK_WINDOWING_X11)
 #include <gdk/gdkx.h>
-#define TIMESTAMP (gdk_x11_display_get_user_time (gdk_display_get_default ()))
+#define TIMESTAMP() (gdk_x11_display_get_user_time (gdk_display_get_default ()))
 #else
-#define TIMESTAMP (0)
+#define TIMESTAMP() (0)
 #endif
 
 
@@ -595,7 +595,7 @@ main (int argc, char *argv[])
     init_mem_stuff ();
 
     gtk_init (&argc, &argv);
-    stamp = TIMESTAMP;
+    stamp = TIMESTAMP ();
 
 #if 0
     gdk_window_set_debug_updates (TRUE);
