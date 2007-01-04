@@ -34,7 +34,7 @@
         <context ref="def:line-continue"/>
       </include>
     </context>
-    <context id="backtick-string" style-ref="function" end-at-line-end="true">
+    <context id="backtick-string" style-ref="function">
       <start>`</start>
       <end>`</end>
       <include>
