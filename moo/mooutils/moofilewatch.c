@@ -1,7 +1,7 @@
 /*
  *   moofilewatch.h
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -692,6 +692,10 @@ fam_event_to_file_event (FAMEvent     *fe,
             break;
 
         case FAMChanged:
+            /* Do not emit CHANGED for folders, since we are interested only in
+             * folder contents */
+            if (monitor->isdir)
+                return NULL;
             code = MOO_FILE_EVENT_CHANGED;
             break;
 
