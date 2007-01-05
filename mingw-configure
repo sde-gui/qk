@@ -72,10 +72,10 @@ export STRINGS="$MINGW_TOOL_PREFIX-strings"
 export STRIP="$MINGW_TOOL_PREFIX-strip"
 export WINDRES="$MINGW_TOOL_PREFIX-windres"
 
-export LDFLAGS="-L$GTK_PREFIX/lib $LDFLAGS"
-export CPPFLAGS="-I$GTK_PREFIX/include $CPPFLAGS"
-export CFLAGS="${CFLAGS:-"-O2 -g"} -I$GTK_PREFIX/include -mms-bitfields -march=i686"
-export CXXFLAGS="${CFLAGS:-"-O2 -g"} -I$GTK_PREFIX/include -mms-bitfields -march=i686"
+export LDFLAGS="-L$GTK_PREFIX/lib"
+export CPPFLAGS="-I$GTK_PREFIX/include"
+export CFLAGS="${CFLAGS:-"-O2"} -I$GTK_PREFIX/include -mms-bitfields -march=i686"
+export CXXFLAGS="${CFLAGS:-"-O2"} -I$GTK_PREFIX/include -mms-bitfields -march=i686"
 
 mkdir -p fake-bin
 write_pkg_config fake-bin/pkg-config
