@@ -118,6 +118,27 @@ xdg_dir_time_list_free (XdgDirTimeList *list)
     }
 }
 
+const char *
+xdg_mime_intern_mime_type (const char *mime_type)
+{
+  char *copy;
+  static GHashTable *hash;
+
+  if (!mime_type)
+    return XDG_MIME_TYPE_UNKNOWN;
+
+  if (G_UNLIKELY (!hash))
+    hash = g_hash_table_new (g_str_hash, g_str_equal);
+
+  if (!(copy = g_hash_table_lookup (hash, mime_type)))
+    {
+      copy = g_strdup (mime_type);
+      g_hash_table_insert (hash, copy, copy);
+    }
+
+  return copy;
+}
+
 static int
 xdg_mime_init_from_directory (const char *directory)
 {
@@ -449,12 +470,12 @@ xdg_mime_get_mime_type_for_data (const void *data,
   xdg_mime_init ();
 
   if (_xdg_mime_caches)
-    return _xdg_mime_cache_get_mime_type_for_data (data, len);
+    return xdg_mime_intern_mime_type (_xdg_mime_cache_get_mime_type_for_data (data, len));
 
   mime_type = _xdg_mime_magic_lookup_data (global_magic, data, len, NULL, 0);
 
   if (mime_type)
-    return mime_type;
+    return xdg_mime_intern_mime_type (mime_type);
 
   return XDG_MIME_TYPE_UNKNOWN;
 }
@@ -490,7 +511,7 @@ xdg_mime_get_mime_type_for_file (const char  *file_name,
   n = _xdg_glob_hash_lookup_file_name (global_hash, base_name, mime_types, 5);
 
   if (n == 1)
-    return mime_types[0];
+    return xdg_mime_intern_mime_type (mime_types[0]);
 
   if (!statbuf)
     {
@@ -533,7 +554,7 @@ xdg_mime_get_mime_type_for_file (const char  *file_name,
   fclose (file);
 
   if (mime_type)
-    return mime_type;
+    return xdg_mime_intern_mime_type (mime_type);
 
   return XDG_MIME_TYPE_UNKNOWN;
 }
@@ -546,10 +567,10 @@ xdg_mime_get_mime_type_from_file_name (const char *file_name)
   xdg_mime_init ();
 
   if (_xdg_mime_caches)
-    return _xdg_mime_cache_get_mime_type_from_file_name (file_name);
+    return xdg_mime_intern_mime_type (_xdg_mime_cache_get_mime_type_from_file_name (file_name));
 
   if (_xdg_glob_hash_lookup_file_name (global_hash, file_name, mime_types, 2) == 1)
-    return mime_types[0];
+    return xdg_mime_intern_mime_type (mime_types[0]);
   else
     return XDG_MIME_TYPE_UNKNOWN;
 }
