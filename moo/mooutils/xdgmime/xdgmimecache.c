@@ -75,6 +75,7 @@
 struct _XdgMimeCache
 {
   int ref_count;
+  char   *filename;
 
   size_t  size;
   char   *buffer;
@@ -100,6 +101,7 @@ _xdg_mime_cache_unref (XdgMimeCache *cache)
 #ifdef HAVE_MMAP
       munmap (cache->buffer, cache->size);
 #endif
+      g_free (cache->filename);
       free (cache);
     }
 }
@@ -141,6 +143,7 @@ _xdg_mime_cache_new_from_file (const char *file_name)
   cache->ref_count = 1;
   cache->buffer = buffer;
   cache->size = st.st_size;
+  cache->filename = g_strdup (file_name);
 
  done:
   if (fd != -1)
@@ -246,11 +249,10 @@ cache_magic_compare_to_data (XdgMimeCache *cache,
 
   for (i = 0; i < n_matchlets; i++)
     {
-      if (cache_magic_matchlet_compare (cache, matchlet_offset + i * 32,
-					data, len))
+      if (cache_magic_matchlet_compare (cache, matchlet_offset + i * 32, data, len) &&
+	  cache->buffer[mimetype_offset])
 	{
 	  *prio = priority;
-
 	  return cache->buffer + mimetype_offset;
 	}
     }
@@ -336,7 +338,7 @@ cache_alias_lookup (const char *alias)
 	  else
 	    {
 	      offset = GET_UINT32 (cache->buffer, list_offset + 4 + 8 * mid + 4);
-	      return cache->buffer + offset;
+	      return cache->buffer[offset] ? cache->buffer + offset : NULL;
 	    }
 	}
     }
@@ -376,9 +378,13 @@ cache_glob_lookup_literal (const char *file_name,
 	  else
 	    {
 	      offset = GET_UINT32 (cache->buffer, list_offset + 4 + 8 * mid + 4);
-	      mime_types[0] = (const char *)(cache->buffer + offset);
-
-	      return 1;
+	      if (cache->buffer[offset])
+		{
+		  mime_types[0] = cache->buffer + offset;
+		  return 1;
+		}
+	      else
+		return 0;
 	    }
 	}
     }
@@ -412,8 +418,8 @@ cache_glob_lookup_fnmatch (const char *file_name,
 	  mime_type = cache->buffer + mimetype_offset;
 
 	  /* FIXME: Not UTF-8 safe */
-	  if (fnmatch (ptr, file_name, 0) == 0)
-	    mime_types[n++] = mime_type;
+	  if (*mime_type && fnmatch (ptr, file_name, 0) == 0)
+            mime_types[n++] = mime_type;
 	}
 
       if (n > 0)
@@ -463,7 +469,8 @@ cache_glob_node_lookup_suffix (XdgMimeCache *cache,
 	    {
 	      mimetype_offset = GET_UINT32 (cache->buffer, offset + 16 * mid + 4);
 	      n = 0;
-	      mime_types[n++] = cache->buffer + mimetype_offset;
+	      if (cache->buffer[mimetype_offset])
+		mime_types[n++] = cache->buffer + mimetype_offset;
 
 	      n_children = GET_UINT32 (cache->buffer, offset + 16 * mid + 8);
 	      child_offset = GET_UINT32 (cache->buffer, offset + 16 * mid + 12);
@@ -475,7 +482,8 @@ cache_glob_node_lookup_suffix (XdgMimeCache *cache,
 		  if (match_char != 0)
 		    break;
 
-		  mime_types[n++] = cache->buffer + mimetype_offset;
+		  if (cache->buffer[mimetype_offset])
+		    mime_types[n++] = cache->buffer + mimetype_offset;
 		  i++;
 		}
 
@@ -639,20 +647,20 @@ cache_get_mime_type_for_data (const void *data,
 
       match = cache_magic_lookup_data (cache, data, len, &prio,
 				       mime_types, n_mime_types);
-      if (prio > priority)
+      if (prio > priority && match && *match)
 	{
 	  priority = prio;
 	  mime_type = match;
 	}
     }
 
-  if (priority > 0)
+  if (priority > 0 && mime_type && *mime_type)
     return mime_type;
 
   for (n = 0; n < n_mime_types; n++)
     {
-      if (mime_types[n])
-	return mime_types[n];
+      if (mime_types[n] && *mime_types[n])
+        return mime_types[n];
     }
 
   return XDG_MIME_TYPE_UNKNOWN;
