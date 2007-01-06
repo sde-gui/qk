@@ -137,6 +137,13 @@ class CConfig(SimpleConfig):
         else:
             self.active = self.configurations.keys()[0]
 
+    def set_active_conf(self, name):
+        if self.active == name:
+            return
+        if not self.configurations.has_key(self.active):
+            raise RuntimeError("no configuration named '%s'" % (name,))
+        self.active = name
+
     def get_active_conf(self):
         if len(self.configurations) == 0:
             raise RuntimeError("no configurations")

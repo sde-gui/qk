@@ -1,6 +1,7 @@
 import gtk
 import moo
 import os.path
+import gobject
 
 import mprj.utils
 from mprj.simple import SimpleProject
@@ -62,11 +63,8 @@ class CProject(SimpleProject):
                             display_name=c[1], label=c[1],
                             stock_id=c[2], accel=c[3],
                             callback=CProject.DoCmd(self, c[4]))
-
-        #self.add_action("CProjectOptions",
-        #                name="Options", label="Options",
-        #                icon_stock_id=_STOCK_PROJECT_OPTIONS,
-        #                callback=self.options)
+        self.add_action("CProjectBuildConfiguration",
+                        factory=_BuildConfigurationAction(self))
 
         editor = moo.edit.editor_instance()
         xml = editor.get_ui_xml()
@@ -92,13 +90,12 @@ class CProject(SimpleProject):
                           <item action="CProjectExecute"/>
                           <separator/>
                           """)
-#         xml.insert_markup_before(self.merge_id,
-#             "Editor/Menubar/Project", "CloseProject",
-#             """
-#             <item name="BuildConfiguration" label="Build Configuration"/>
-#             <!-- <item action="CProjectOptions"/> -->
-#             <separator/>
-#             """)
+        xml.insert_markup_before(self.merge_id,
+            "Editor/Menubar/Project", "ProjectOptions",
+            """
+            <separator/>
+            <item action="CProjectBuildConfiguration"/>
+            """)
 
     def get_build_pane(self, window):
         pane = window.get_pane(_BUILD_PANE_ID)
@@ -261,9 +258,36 @@ class _BuildConfigurationAction(object):
         object.__init__(self)
         self.project = project
     def __call__(self, window):
-        return moo.utils.MenuAction("BuildConfigurationMenu",
-                                    "Build Configuration")
-
+        action = gobject.new(moo.utils.Action,
+                             name="CProjectBuildConfiguration",
+                             label="Build Configuration",
+                             no_accel="True")
+        action.connect('connect-proxy', self.create_menu)
+        return action
+    def create_menu(self, action, menuitem):
+        menu = gtk.Menu()
+        menuitem.set_submenu(menu)
+        group = None
+        self.active = None
+        self.items = {}
+        for name in self.project.config.configurations:
+            item = gtk.RadioMenuItem(group, name)
+            self.items[name] = item
+            group = item
+            item.set_data('conf_name', name)
+            item.show()
+            item.connect('toggled', self.conf_toggled, name)
+            menu.add(item)
+        self.active = self.project.config.active
+        self.items[self.active].set_active(True)
+    def conf_toggled(self, item, name):
+        if not item.get_active() or not self.active \
+           or item.get_data('conf_name') == self.active:
+            return
+        self.project.config.set_active_conf(item.get_data('conf_name'))
+        self.active = self.project.config.active
+        self.items[self.active].set_active(True)
+        self.project.save_config()
 
 __project__ = CProject
 __project_type__ = "C"
