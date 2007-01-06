@@ -7,6 +7,9 @@ AC_DEFUN_ONCE([MOO_AC_FUNCS],[
     AC_CHECK_HEADERS(execinfo.h)
     AC_CHECK_FUNCS(backtrace)
 
+    # for xdgmime
+    AC_CHECK_HEADERS(fnmatch.h netinet/in.h)
+
     # for pcre
     AC_CHECK_FUNCS(memmove bcopy strerror)
 

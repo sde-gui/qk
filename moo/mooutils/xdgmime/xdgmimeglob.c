@@ -35,7 +35,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#include <fnmatch.h>
+#include <mooutils/mooutils-win32.h>
 
 #ifndef	FALSE
 #define	FALSE	(0)

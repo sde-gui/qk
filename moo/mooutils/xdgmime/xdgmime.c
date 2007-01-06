@@ -43,6 +43,12 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <assert.h>
+#include <errno.h>
+
+#ifdef __WIN32__
+#include <mooutils/mooutils-win32.h>
+#include <mooutils/mooutils-misc.h>
+#endif
 
 typedef struct XdgDirTimeList XdgDirTimeList;
 typedef struct XdgCallbackList XdgCallbackList;
@@ -148,9 +154,9 @@ xdg_mime_init_from_directory (const char *directory)
 
   assert (directory != NULL);
 
-#ifdef HAVE_MMAP
-  file_name = malloc (strlen (directory) + strlen ("/mime/mime.cache") + 1);
-  strcpy (file_name, directory); strcat (file_name, "/mime/mime.cache");
+#ifdef XDG_MIME_USE_CACHE
+  file_name = g_build_filename (directory, "mime", "mime.cache", NULL);
+  errno = 0;
   if (stat (file_name, &st) == 0)
     {
       XdgMimeCache *cache = _xdg_mime_cache_new_from_file (file_name);
@@ -171,11 +177,12 @@ xdg_mime_init_from_directory (const char *directory)
 	  return FALSE;
 	}
     }
-  free (file_name);
-#endif /* HAVE_MMAP */
+  g_free (file_name);
+#endif /* XDG_MIME_USE_CACHE */
 
   file_name = malloc (strlen (directory) + strlen ("/mime/globs") + 1);
   strcpy (file_name, directory); strcat (file_name, "/mime/globs");
+  errno = 0;
   if (stat (file_name, &st) == 0)
     {
       _xdg_mime_glob_read_from_file (global_hash, file_name);
@@ -193,6 +200,7 @@ xdg_mime_init_from_directory (const char *directory)
 
   file_name = malloc (strlen (directory) + strlen ("/mime/magic") + 1);
   strcpy (file_name, directory); strcat (file_name, "/mime/magic");
+  errno = 0;
   if (stat (file_name, &st) == 0)
     {
       _xdg_mime_magic_read_from_file (global_magic, file_name);
@@ -221,6 +229,26 @@ xdg_mime_init_from_directory (const char *directory)
   return FALSE; /* Keep processing */
 }
 
+#ifdef __WIN32__
+/* Runs a command on all the directories in the search path */
+static void
+xdg_run_command_on_dirs (XdgDirectoryFunc  func,
+			 void             *user_data)
+{
+  char **dirs, **p;
+
+  dirs = moo_get_data_dirs (MOO_DATA_SHARE, NULL);
+
+  for (p = dirs; p && *p; ++p)
+    {
+      if (func (*p, user_data))
+	goto out;
+    }
+
+out:
+  g_strfreev (dirs);
+}
+#else
 /* Runs a command on all the directories in the search path */
 static void
 xdg_run_command_on_dirs (XdgDirectoryFunc  func,
@@ -296,6 +324,7 @@ xdg_run_command_on_dirs (XdgDirectoryFunc  func,
       ptr = end_ptr;
     }
 }
+#endif
 
 /* Checks file_path to make sure it has the same mtime as last time it was
  * checked.  If it has a different mtime, or if the file doesn't exist, it
@@ -310,6 +339,7 @@ xdg_check_file (const char *file_path,
   struct stat st;
 
   /* If the file exists */
+  errno = 0;
   if (stat (file_path, &st) == 0)
     {
       XdgDirTimeList *list;
@@ -348,7 +378,7 @@ xdg_check_dir (const char *directory,
 
   assert (directory != NULL);
 
-#ifdef HAVE_MMAP
+#ifdef XDG_MIME_USE_CACHE
   /* Check the mime.cache file */
   file_name = malloc (strlen (directory) + strlen ("/mime/mime.cache") + 1);
   strcpy (file_name, directory); strcat (file_name, "/mime/mime.cache");
@@ -361,7 +391,7 @@ xdg_check_dir (const char *directory,
     }
   else if (exists)
     return FALSE;
-#endif
+#endif /* XDG_MIME_USE_CACHE */
 
   /* Check the globs file */
   file_name = malloc (strlen (directory) + strlen ("/mime/globs") + 1);
@@ -515,6 +545,8 @@ xdg_mime_get_mime_type_for_file (const char  *file_name,
 
   if (!statbuf)
     {
+      errno = 0;
+
       if (stat (file_name, &buf) != 0)
 	return XDG_MIME_TYPE_UNKNOWN;
 

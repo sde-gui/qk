@@ -88,10 +88,8 @@ guint8       _moo_file_get_icon_type    (MooFile        *file,
                                          const char     *dirname);
 void         _moo_file_stat             (MooFile        *file,
                                          const char     *dirname);
-#ifndef __WIN32__
 void         _moo_file_find_mime_type   (MooFile        *file,
                                          const char     *path);
-#endif
 
 
 G_END_DECLS

@@ -13,7 +13,7 @@ dir = os.getcwd()
 builddir = dir
 thisscript = os.path.abspath(sys.argv[0])
 moo_windir = "/usr/local/win/medit"
-strip = "i586-mingw32msvc-strip"
+strip = "i586-mingw32msvc-strip --strip-unneeded"
 do_strip = True
 do_zip = False
 pida = False
@@ -119,7 +119,7 @@ def copy_files():
 
     if do_strip:
         if not bin_only and not no_python:
-            if not pida:
+            if pida:
                 do_cmd("%s %s/lib/site-packages/*.dll" % (strip, moo_windir))
             else:
                 do_cmd("%s %s/lib/moo/plugins/*/*.dll" % (strip, moo_windir))

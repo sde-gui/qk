@@ -35,10 +35,6 @@
 #include <gtk/gtkiconfactory.h>
 #include <gtk/gtkstock.h>
 
-#ifndef __WIN32__
-#include "mooutils/xdgmime/xdgmime.h"
-#endif
-
 #define NORMAL_PRIORITY         G_PRIORITY_DEFAULT_IDLE
 #define NORMAL_TIMEOUT          0.04
 #define BACKGROUND_PRIORITY     G_PRIORITY_LOW
@@ -1031,7 +1027,6 @@ _moo_folder_get_file_info (MooFolder      *folder,
 
     _moo_file_stat (file, folder->impl->path);
 
-#ifndef __WIN32__
     if (file->info & MOO_FILE_INFO_EXISTS &&
         !(file->flags & MOO_FILE_HAS_MIME_TYPE))
     {
@@ -1043,7 +1038,6 @@ _moo_folder_get_file_info (MooFolder      *folder,
         file->icon = _moo_file_get_icon_type (file, folder->impl->path);
         g_free (path);
     }
-#endif
 
     array = g_ptr_array_new ();
 

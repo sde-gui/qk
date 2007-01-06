@@ -34,10 +34,20 @@
 
 #include <fcntl.h>
 #include <unistd.h>
-#include <fnmatch.h>
 #include <assert.h>
+#include <errno.h>
 
+#ifdef HAVE_FNMATCH_H
+#include <fnmatch.h>
+#endif
+
+#ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h> /* for ntohl/ntohs */
+#endif
+#ifdef __WIN32__
+#include <winsock2.h>
+#include <mooutils/mooutils-win32.h>
+#endif
 
 #ifdef HAVE_MMAP
 #include <sys/mman.h>
@@ -79,6 +89,10 @@ struct _XdgMimeCache
 
   size_t  size;
   char   *buffer;
+
+#ifndef HAVE_MMAP
+  GMappedFile *mf;
+#endif
 };
 
 #define GET_UINT16(cache,offset) (ntohs(*(xdg_uint16_t*)((cache) + (offset))))
@@ -100,6 +114,8 @@ _xdg_mime_cache_unref (XdgMimeCache *cache)
     {
 #ifdef HAVE_MMAP
       munmap (cache->buffer, cache->size);
+#else
+      g_mapped_file_free (cache->mf);
 #endif
       g_free (cache->filename);
       free (cache);
@@ -148,6 +164,36 @@ _xdg_mime_cache_new_from_file (const char *file_name)
  done:
   if (fd != -1)
     close (fd);
+
+#else
+
+  GMappedFile *mf;
+  char *buffer;
+  size_t length;
+
+  mf = g_mapped_file_new (file_name, FALSE, NULL);
+
+  if (!mf)
+    return NULL;
+
+  buffer = g_mapped_file_get_contents (mf);
+  length = g_mapped_file_get_length (mf);
+
+  /* Verify version */
+  if (length < 2 ||
+      GET_UINT16 (buffer, 0) != MAJOR_VERSION ||
+      GET_UINT16 (buffer, 2) != MINOR_VERSION)
+    {
+      g_mapped_file_free (mf);
+      return NULL;
+    }
+
+  cache = (XdgMimeCache *) malloc (sizeof (XdgMimeCache));
+  cache->ref_count = 1;
+  cache->buffer = buffer;
+  cache->size = length;
+  cache->filename = g_strdup (file_name);
+  cache->mf = mf;
 
 #endif  /* HAVE_MMAP */
 
@@ -701,6 +747,8 @@ _xdg_mime_cache_get_mime_type_for_file (const char  *file_name,
 
   if (!statbuf)
     {
+      errno = 0;
+
       if (stat (file_name, &buf) != 0)
 	return XDG_MIME_TYPE_UNKNOWN;
 

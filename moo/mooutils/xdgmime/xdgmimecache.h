@@ -29,6 +29,8 @@
 
 #include "xdgmime.h"
 
+#define XDG_MIME_USE_CACHE 1
+
 typedef struct _XdgMimeCache XdgMimeCache;
 
 #ifdef XDG_PREFIX

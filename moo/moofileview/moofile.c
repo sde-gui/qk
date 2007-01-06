@@ -32,6 +32,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/xdgmime/xdgmime.h"
 #include <glib/gstdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -44,10 +45,6 @@
 #include <gtk/gtkicontheme.h>
 #include <gtk/gtkiconfactory.h>
 #include <gtk/gtkstock.h>
-
-#ifndef __WIN32__
-#include "mooutils/xdgmime/xdgmime.h"
-#endif
 
 #ifdef MOO_US_XDGMIME
 #define MIME_TYPE_UNKNOWN xdg_mime_type_unknown
@@ -83,7 +80,6 @@ static GdkPixbuf *render_icon_for_path      (const char     *path,
 #define MAKE_PATH(dirname,file) g_build_filename (dirname, file->name, NULL)
 
 
-#ifndef __WIN32__
 void
 _moo_file_find_mime_type (MooFile    *file,
                           const char *path)
@@ -103,7 +99,6 @@ _moo_file_find_mime_type (MooFile    *file,
 
     file->flags |= MOO_FILE_HAS_MIME_TYPE;
 }
-#endif /* !__WIN32__ */
 
 
 /********************************************************************/

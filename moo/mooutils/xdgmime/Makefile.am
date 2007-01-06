@@ -16,5 +16,7 @@ mooxdgmime_sources =	\
 
 noinst_LTLIBRARIES = libxdgmime.la
 libxdgmime_la_SOURCES = $(mooxdgmime_sources)
-AM_CFLAGS =		\
-	$(MOO_CFLAGS)
+AM_CFLAGS =			\
+	$(MOO_CFLAGS)		\
+	$(MOO_DEBUG_CFLAGS)	\
+	-Wno-sign-compare
