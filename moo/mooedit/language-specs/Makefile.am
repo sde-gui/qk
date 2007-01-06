@@ -10,6 +10,7 @@ langs2 =			\
 	def.lang		\
 	desktop.lang		\
 	diff.lang		\
+	dpatch.lang		\
 	dtd.lang		\
 	fortran.lang		\
 	gap.lang		\
@@ -65,4 +66,25 @@ languagespecs_DATA =		\
 	$(langs1)		\
 	$(langs2)
 
-EXTRA_DIST = $(languagespecs_DATA)
+packagesdir = $(mimedir)/packages
+packages_DATA = moo.xml
+update_mime = update-mime-database $(DESTDIR)${mimedir}
+@INTLTOOL_XML_RULE@
+
+install-data-hook:
+	if echo "Updating mime database... " && $(update_mime); then		\
+		echo "Done.";							\
+	else									\
+		echo "*** ";							\
+		echo "*** Mime database not updated. After install, run this:";	\
+		echo $(update_mime);						\
+		echo "*** ";							\
+	fi
+uninstall-hook:
+	echo "Updating mime database" && $(update_mime) && echo "Done."
+
+EXTRA_DIST =			\
+	$(languagespecs_DATA)	\
+	moo.xml.in
+CLEANFILES =			\
+	moo.xml

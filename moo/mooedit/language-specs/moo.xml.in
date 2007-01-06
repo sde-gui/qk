@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="text/x-dpatch">
+    <sub-class-of type="text/plain"/>
+    <_comment>DPatch</_comment>
+    <glob pattern="*.dpatch"/>
+  </mime-type>
+  <mime-type type="text/x-gap">
+    <sub-class-of type="text/plain"/>
+    <_comment>GAP source file</_comment>
+    <glob pattern="*.g"/>
+    <glob pattern="*.gd"/>
+    <glob pattern="*.gi"/>
+  </mime-type>
+</mime-info>
