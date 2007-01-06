@@ -17,6 +17,7 @@
 
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/mooutils-win32.h"
 #include "mooutils/moologwindow-glade.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
@@ -43,59 +44,12 @@
 #endif
 
 
-/****************************************************************************/
-/* Locale dir and stuff
- */
-
-#ifdef __WIN32__
-BOOL WINAPI DllMain (HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved);
-G_WIN32_DLLMAIN_FOR_DLL_NAME(static, libmoo_dll_name)
-
-const char *
-_moo_get_locale_dir (void)
-{
-    G_LOCK_DEFINE_STATIC (moo_locale_dir);
-    static char *moo_locale_dir = NULL;
-
-    G_LOCK (moo_locale_dir);
-
-    if (!moo_locale_dir)
-    {
-        char *tmp;
-        tmp = g_win32_get_package_installation_subdirectory (NULL, libmoo_dll_name,
-                                                             "lib\\locale");
-        moo_locale_dir = g_win32_locale_filename_from_utf8 (tmp);
-        g_free (tmp);
-    }
-
-    G_UNLOCK (moo_locale_dir);
-
-    return moo_locale_dir;
-}
-#endif
-
-
 #ifdef __WIN32__
 
 static gboolean
-open_uri (const char *uri,
-          G_GNUC_UNUSED gboolean email)
+open_uri (const char *uri, G_GNUC_UNUSED gboolean email)
 {
-    HINSTANCE h;
-
-    g_return_val_if_fail (uri != NULL, FALSE);
-
-    h = ShellExecute (NULL, "open", uri, NULL, NULL, SW_SHOWNORMAL);
-
-    if ((int)h <= 32)
-    {
-        char *msg = g_win32_error_message (GetLastError());
-        g_warning ("%s: %s", G_STRLOC, msg);
-        g_free (msg);
-        return FALSE;
-    }
-
-    return TRUE;
+    return _moo_win32_open_uri (uri);
 }
 
 #else /* ! __WIN32__ */
@@ -857,45 +811,6 @@ moo_print_err (const char *string)
 
 
 /*
- * Win32 message box for fatal errors
- */
-
-#ifdef __WIN32__
-
-#ifndef PACKAGE
-#define PACKAGE ""
-#endif
-
-#ifndef PACKAGE_BUGREPORT
-#define PACKAGE_BUGREPORT "emuntyan@sourceforge.net"
-#endif
-
-#define PLEASE_REPORT \
-    "Please report it to " PACKAGE_BUGREPORT " and provide "\
-    "steps needed to reproduce this error."
-
-static void
-show_fatal_error_win32 (const char *domain,
-                        const char *logmsg)
-{
-    char *msg = NULL;
-
-    if (domain)
-        msg = g_strdup_printf ("Fatal " PACKAGE " error:\n---\n%s: %s\n---\n"
-                PLEASE_REPORT, domain, logmsg);
-    else
-        msg = g_strdup_printf ("Fatal " PACKAGE " error:\n---\n%s\n---\n"
-                PLEASE_REPORT, logmsg);
-
-    MessageBox (NULL, msg, "Error",
-                MB_ICONERROR | MB_APPLMODAL | MB_SETFOREGROUND);
-
-    g_free (msg);
-}
-#endif /* __WIN32__ */
-
-
-/*
  * Display log messages in a window
  */
 
@@ -912,7 +827,7 @@ log_func_window (const gchar    *log_domain,
 #ifdef __WIN32__
     if (flags & (G_LOG_LEVEL_ERROR | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION))
     {
-        show_fatal_error_win32 (log_domain, message);
+        _moo_win32_show_fatal_error (log_domain, message);
         return;
     }
 #endif /* __WIN32__ */
@@ -1005,7 +920,7 @@ log_func_file (const char       *log_domain,
 #ifdef __WIN32__
     if (flags & (G_LOG_LEVEL_ERROR | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION))
     {
-        show_fatal_error_win32 (log_domain, message);
+        _moo_win32_show_fatal_error (log_domain, message);
         return;
     }
 #endif /* __WIN32__ */
@@ -1048,7 +963,7 @@ log_func_silent (G_GNUC_UNUSED const gchar    *log_domain,
 #ifdef __WIN32__
     if (flags & (G_LOG_LEVEL_ERROR | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION))
     {
-        show_fatal_error_win32 (log_domain, message);
+        _moo_win32_show_fatal_error (log_domain, message);
         return;
     }
 #endif /* __WIN32__ */
@@ -1212,63 +1127,6 @@ _moo_get_pid_string (void)
 }
 
 
-#ifdef __WIN32__
-char *
-moo_win32_get_app_dir (void)
-{
-    static char *moo_app_dir;
-    G_LOCK_DEFINE_STATIC(moo_app_dir);
-
-    G_LOCK (moo_app_dir);
-
-    if (!moo_app_dir)
-        moo_app_dir = moo_win32_get_dll_dir (NULL);
-
-    G_UNLOCK (moo_app_dir);
-
-    return g_strdup (moo_app_dir);
-}
-
-char *
-moo_win32_get_dll_dir (const char *dll)
-{
-    char *dir;
-    char *dllname = NULL;
-    HMODULE handle;
-
-    handle = GetModuleHandle (dll);
-    g_return_val_if_fail (handle != NULL, g_strdup ("."));
-
-    if (G_WIN32_HAVE_WIDECHAR_API ())
-    {
-        wchar_t buf[MAX_PATH+1];
-
-        if (GetModuleFileNameW (handle, buf, G_N_ELEMENTS (buf)) > 0)
-            dllname = g_utf16_to_utf8 (buf, -1, NULL, NULL, NULL);
-    }
-    else
-    {
-        gchar buf[MAX_PATH+1];
-
-        if (GetModuleFileNameA (handle, buf, G_N_ELEMENTS (buf)) > 0)
-            dllname = g_locale_to_utf8 (buf, -1, NULL, NULL, NULL);
-    }
-
-    if (dllname)
-    {
-        dir = g_path_get_dirname (dllname);
-        g_free (dllname);
-    }
-    else
-    {
-        dir = g_strdup (".");
-    }
-
-    return dir;
-}
-#endif
-
-
 static const char *
 moo_get_prgname (void)
 {
@@ -1356,55 +1214,6 @@ add_dir_list_from_env (GSList     *list,
     return list;
 }
 
-#ifdef __WIN32__
-static GSList *
-add_win32_data_dirs_for_dll (GSList     *list,
-                             const char *subdir_name,
-                             const char *dllname)
-{
-    char *dlldir, *datadir;
-
-    dlldir = moo_win32_get_dll_dir (dllname);
-
-    if (g_str_has_suffix (dlldir, "\\"))
-    {
-        char *tmp = g_strndup (dlldir, strlen(dlldir) - 1);
-        g_free (dlldir);
-        dlldir = tmp;
-    }
-
-    if (g_str_has_suffix (dlldir, "bin") ||
-        g_str_has_suffix (dlldir, "lib"))
-    {
-        char *tmp = g_path_get_dirname (dlldir);
-        datadir = g_build_filename (tmp, subdir_name, NULL);
-        g_free (tmp);
-    }
-    else
-    {
-        datadir = g_strdup (dlldir);
-    }
-
-    g_free (dlldir);
-    list = g_slist_prepend (list, datadir);
-    return list;
-}
-
-static GSList *
-add_win32_data_dirs (GSList     *list,
-                     const char *prefix)
-{
-    char *subdir;
-
-    subdir = g_strdup_printf ("%s\\" MOO_PACKAGE_NAME, prefix);
-    list = add_win32_data_dirs_for_dll (list, subdir, libmoo_dll_name);
-    list = add_win32_data_dirs_for_dll (list, subdir, NULL);
-
-    g_free (subdir);
-    return list;
-}
-#endif
-
 
 char **
 moo_get_data_dirs (MooDataDirType type,
@@ -1441,7 +1250,7 @@ moo_get_data_dirs (MooDataDirType type,
         else
         {
 #ifdef __WIN32__
-            list = add_win32_data_dirs (list, type == MOO_DATA_SHARE ? "share" : "lib");
+            list = _moo_win32_add_data_dirs (list, type == MOO_DATA_SHARE ? "share" : "lib");
 #else
             if (type == MOO_DATA_SHARE)
             {

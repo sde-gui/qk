@@ -14,6 +14,7 @@
 
 #include "medit-credits.h"
 #include <moo.h>
+#include <mooutils/mooutils-win32.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>

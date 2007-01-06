@@ -6,11 +6,15 @@ if MOO_BUILD_PCRE
 subdirs += pcre
 libs += pcre/libpcre.la
 endif
-if MOO_OS_UNIX
+if MOO_USE_XDGMIME
 subdirs += xdgmime
 libs += xdgmime/libxdgmime.la
 endif
 SUBDIRS = $(subdirs) .
+
+win32_sources =				\
+	mooutils-win32.h		\
+	mooutils-win32.c
 
 gmappedfile_sources =			\
 	newgtk/gmappedfile.c		\
@@ -141,7 +145,7 @@ if !GTK_2_4
 mooutils_sources += $(moonewgtk_gtk_2_4_sources)
 endif
 if MOO_OS_MINGW
-mooutils_sources += $(thread_sources)
+mooutils_sources += $(thread_sources) $(win32_sources)
 else
 if MOO_ENABLE_TESTS
 mooutils_sources += $(thread_sources)
@@ -162,6 +166,7 @@ EXTRA_DIST =				\
 	$(gmappedfile_sources)		\
 	$(gtk_2_4_sources)		\
 	$(thread_sources)		\
+	$(win32_sources)		\
 	glade/accelbutton.glade		\
 	glade/accelprefs.glade		\
 	glade/moologwindow.glade	\

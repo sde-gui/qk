@@ -1,7 +1,7 @@
 /*
  *   mooutils-misc.h
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -60,11 +60,6 @@ typedef enum {
 
 GType       moo_data_dir_type_get_type      (void) G_GNUC_CONST;
 
-#ifdef __WIN32__
-char       *moo_win32_get_app_dir           (void);
-char       *moo_win32_get_dll_dir           (const char     *dll);
-#endif
-
 /* ~/.appname */
 gboolean    moo_make_user_data_dir          (const char     *path);
 char       *moo_get_user_data_dir           (void);
@@ -83,12 +78,6 @@ char      **moo_get_data_subdirs            (const char     *subdir,
                                              MooDataDirType  type,
                                              guint          *n_dirs);
 #define moo_get_data_files moo_get_data_subdirs
-
-#ifdef __WIN32__
-#undef MOO_LOCALE_DIR
-#define MOO_LOCALE_DIR (_moo_get_locale_dir())
-const char *_moo_get_locale_dir             (void);
-#endif
 
 
 void        _moo_selection_data_set_pointer (GtkSelectionData *data,
