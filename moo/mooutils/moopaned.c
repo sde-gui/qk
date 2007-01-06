@@ -43,7 +43,7 @@ typedef struct {
     GtkWidget    *detach_button;
 
     /* XXX weak pointer */
-    GtkWidget    *focus_child;
+    gpointer      focus_child;
 
     GtkWidget    *window;
     GtkWidget    *keep_on_top_button;
@@ -61,7 +61,7 @@ struct _MooPanedPrivate {
     gboolean     raise_pane;  /* need to raise pane window in size_allocate */
 
     /* XXX weak pointer */
-    GtkWidget   *focus_child; /* focused grandchild of bin->child */
+    gpointer     focus_child; /* focused grandchild of bin->child */
     Pane        *focus_pane;
     FocusPosition focus;
     gboolean     button_real_focus; /* button was focused by keyboard navigation */
@@ -2656,14 +2656,14 @@ static void     moo_paned_set_focus_child   (GtkContainer   *container,
             if (new_focus != FOCUS_CHILD)
             {
                 if (paned->priv->focus_child)
-                    g_object_remove_weak_pointer (G_OBJECT (paned->priv->focus_child),
-                                                  (gpointer*) &paned->priv->focus_child);
+                    g_object_remove_weak_pointer (paned->priv->focus_child,
+                                                  &paned->priv->focus_child);
 
                 paned->priv->focus_child = find_focus_child (paned);
 
                 if (paned->priv->focus_child)
-                    g_object_add_weak_pointer (G_OBJECT (paned->priv->focus_child),
-                                               (gpointer*) &paned->priv->focus_child);
+                    g_object_add_weak_pointer (paned->priv->focus_child,
+                                               &paned->priv->focus_child);
             }
             break;
 
@@ -2672,14 +2672,14 @@ static void     moo_paned_set_focus_child   (GtkContainer   *container,
             if (new_focus_pane != old_focus_pane)
             {
                 if (old_focus_pane->focus_child)
-                    g_object_remove_weak_pointer (G_OBJECT (old_focus_pane->focus_child),
-                                                  (gpointer*) &old_focus_pane->focus_child);
+                    g_object_remove_weak_pointer (old_focus_pane->focus_child,
+                                                  &old_focus_pane->focus_child);
 
                 old_focus_pane->focus_child = find_pane_focus_child (old_focus_pane);
 
                 if (old_focus_pane->focus_child)
-                    g_object_add_weak_pointer (G_OBJECT (old_focus_pane->focus_child),
-                                               (gpointer*) &old_focus_pane->focus_child);
+                    g_object_add_weak_pointer (old_focus_pane->focus_child,
+                                               &old_focus_pane->focus_child);
             }
             break;
     }
@@ -3705,12 +3705,10 @@ moo_paned_attach_pane_real (MooPaned       *paned,
     pane->params->detached = FALSE;
 
     if (pane->focus_child)
-        g_object_remove_weak_pointer (G_OBJECT (pane->focus_child),
-                                      (gpointer*) &pane->focus_child);
+        g_object_remove_weak_pointer (pane->focus_child, &pane->focus_child);
     pane->focus_child = find_focus (pane->child);
     if (pane->focus_child)
-        g_object_add_weak_pointer (G_OBJECT (pane->focus_child),
-                                   (gpointer*) &pane->focus_child);
+        g_object_add_weak_pointer (pane->focus_child, &pane->focus_child);
 
     reparent (pane->child, pane->window_child_holder, pane->child_holder);
 
