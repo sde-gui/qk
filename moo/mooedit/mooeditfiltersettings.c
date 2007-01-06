@@ -225,18 +225,24 @@ filter_settings_store_get_setting (FilterSettingsStore *store,
                                    const char          *filename)
 {
     GSList *l;
+    GString *result = NULL;
 
     for (l = store->settings; l != NULL; l = l->next)
     {
-        const char *result;
+        const char *match;
 
-        result = filter_setting_match (l->data, filename);
+        match = filter_setting_match (l->data, filename);
 
-        if (result)
-            return result;
+        if (match)
+        {
+            if (!result)
+                result = g_string_new (match);
+            else
+                g_string_append_printf (result, ";%s", match);
+        }
     }
 
-    return NULL;
+    return result ? g_string_free (result, FALSE) : NULL;
 }
 
 
