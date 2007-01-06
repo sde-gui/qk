@@ -462,16 +462,16 @@ class FileArg(ArgType):
                               '    return Py_None;')
 
 class EnumArg(ArgType):
-    enum = ('    if (pyg_enum_get_value(%(typecode)s, py_%(name)s, (gint *)&%(name)s))\n'
+    enum = ('    if (pyg_enum_get_value(%(typecode)s, py_%(name)s, &%(name)s))\n'
             '        return NULL;\n')
     def __init__(self, enumname, typecode):
         self.enumname = enumname
         self.typecode = typecode
     def write_param(self, ptype, pname, pdflt, pnull, info):
         if pdflt:
-            info.varlist.add(self.enumname, pname + ' = ' + pdflt)
+            info.varlist.add('int', pname + ' = ' + pdflt)
         else:
-            info.varlist.add(self.enumname, pname)
+            info.varlist.add('int', pname)
         info.varlist.add('PyObject', '*py_' + pname + ' = NULL')
         info.codebefore.append(self.enum % { 'typecode': self.typecode,
                                              'name': pname})
@@ -482,17 +482,17 @@ class EnumArg(ArgType):
         info.codeafter.append('    return pyg_enum_from_gtype(%s, ret);' % self.typecode)
 
 class FlagsArg(ArgType):
-    flag = ('    if (%(default)spyg_flags_get_value(%(typecode)s, py_%(name)s, (gint *)&%(name)s))\n'
+    flag = ('    if (%(default)spyg_flags_get_value(%(typecode)s, py_%(name)s, &%(name)s))\n'
             '        return NULL;\n')
     def __init__(self, flagname, typecode):
         self.flagname = flagname
         self.typecode = typecode
     def write_param(self, ptype, pname, pdflt, pnull, info):
         if pdflt:
-            info.varlist.add(self.flagname, pname + ' = ' + pdflt)
+            info.varlist.add('int', pname + ' = ' + pdflt)
             default = "py_%s && " % (pname,)
         else:
-            info.varlist.add(self.flagname, pname)
+            info.varlist.add('int', pname)
             default = ""
         info.varlist.add('PyObject', '*py_' + pname + ' = NULL')
         info.codebefore.append(self.flag % {'default':default,
