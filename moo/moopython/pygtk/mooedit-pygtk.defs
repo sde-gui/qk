@@ -1163,7 +1163,7 @@
   (parameters
     '("int" "line")
     '("int" "offset")
-    '("int" "offset_visual")
+    '("gboolean" "offset_visual")
     '("gboolean" "in_idle")
   )
 )
