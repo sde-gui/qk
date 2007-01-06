@@ -11,19 +11,17 @@
     <style id="changed-line"  _name="Changed line"/> <!--Preprocessor-->
     <style id="special-case"  _name="Special case"/> <!--String-->
     <style id="location"      _name="Location"/> <!--Keyword-->
-    <style id="comment"       _name="Comment" map-to="def:comment"/>
+    <style id="ignore"        _name="Ignore" map-to="def:comment"/>
     <style id="diff-file"     _name=""/> <!--Data Type-->
   </styles>
 
   <definitions>
+    <define-regex id="diff-file">^(diff |\+\+\+ |Index: |==== |\*\*\* |--- )</define-regex>
+
     <context id="diff">
       <include>
         <context id="diff-file" style-ref="diff-file" end-at-line-end="true">
-          <start>^(diff |\+\+\+ |Index: |==== |\*\*\* |--- )</start>
-          <include>
-            <context ref="def:escape"/>
-            <context ref="def:line-continue"/>
-          </include>
+          <start>\%{diff-file}</start>
         </context>
 
         <context id="removed-line" style-ref="removed-line">
@@ -56,11 +54,8 @@
           <keyword>No newline at end of file .*</keyword>
         </context>
 
-        <context id="line-comment" style-ref="comment" end-at-line-end="true">
-          <start>^#</start>
-          <include>
-            <context ref="def:line-continue"/>
-          </include>
+        <context style-ref="ignore" end-at-line-end="true">
+          <start>^\S</start>
         </context>
       </include>
     </context>
