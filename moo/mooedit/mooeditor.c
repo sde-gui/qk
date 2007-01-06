@@ -1,7 +1,7 @@
 /*
  *   mooeditor.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@
 
 #define RECENT_ACTION_ID "OpenRecent"
 
-static MooEditor *editor_instance = NULL;
+static gpointer editor_instance = NULL;
 
 
 typedef struct {
@@ -559,8 +559,7 @@ moo_editor_create_instance (void)
     if (!editor_instance)
     {
         editor_instance = g_object_new (MOO_TYPE_EDITOR, NULL);
-        g_object_add_weak_pointer (G_OBJECT (editor_instance),
-                                   (gpointer*) &editor_instance);
+        g_object_add_weak_pointer (editor_instance, &editor_instance);
     }
     else
     {
