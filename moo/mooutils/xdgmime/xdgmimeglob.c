@@ -38,7 +38,9 @@
 #ifdef HAVE_FNMATCH_H
 #include <fnmatch.h>
 #endif
+#ifdef __WIN32__
 #include <mooutils/mooutils-win32.h>
+#endif
 
 #ifndef	FALSE
 #define	FALSE	(0)

@@ -38,7 +38,9 @@
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
+#ifdef __WIN32__
 #include <mooutils/mooutils-win32.h>
+#endif
 
 #ifndef	FALSE
 #define	FALSE	(0)
@@ -475,7 +477,6 @@ _xdg_mime_magic_parse_magic_line (FILE              *magic_file,
       /* We clean up the matchlet, byte swapping if needed */
       if (matchlet->word_size > 1)
 	{
-	  int i;
 	  if (matchlet->value_length % matchlet->word_size != 0)
 	    {
 	      _xdg_mime_magic_matchlet_free (matchlet);
