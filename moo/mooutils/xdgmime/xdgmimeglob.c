@@ -35,6 +35,9 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#ifdef HAVE_FNMATCH_H
+#include <fnmatch.h>
+#endif
 #include <mooutils/mooutils-win32.h>
 
 #ifndef	FALSE
