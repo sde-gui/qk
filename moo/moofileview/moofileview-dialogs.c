@@ -98,8 +98,7 @@ moo_file_props_dialog_response (GtkDialog  *dialog,
             g_warning ("%s: unknown response code", G_STRLOC);
     }
 
-    _moo_file_props_dialog_set_file (MOO_FILE_PROPS_DIALOG (dialog), NULL, NULL);
-    gtk_widget_hide (GTK_WIDGET (dialog));
+    gtk_widget_destroy (GTK_WIDGET (dialog));
 }
 
 
@@ -195,6 +194,19 @@ set_file (MooFilePropsDialog *dialog,
 }
 
 
+static void
+container_cleanup (GtkContainer *container)
+{
+    GList *children = gtk_container_get_children (container);
+    g_list_foreach (children, (GFunc) g_object_ref, NULL);
+    while (children)
+    {
+        gtk_container_remove (container, children->data);
+        g_object_unref (children->data);
+        children = g_list_delete_link (children, children);
+    }
+}
+
 void
 _moo_file_props_dialog_set_file (MooFilePropsDialog *dialog,
                                  MooFile            *file,
@@ -210,22 +222,20 @@ _moo_file_props_dialog_set_file (MooFilePropsDialog *dialog,
     if (!file)
     {
         gtk_widget_set_sensitive (dialog->notebook, FALSE);
-        gtk_container_foreach (GTK_CONTAINER (dialog->table),
-                               (GtkCallback) gtk_widget_destroy, NULL);
+        container_cleanup (GTK_CONTAINER (dialog->table));
         set_file (dialog, NULL, NULL);
         return;
     }
-    else
-    {
-        gtk_widget_set_sensitive (dialog->notebook, TRUE);
-    }
 
+    gtk_widget_set_sensitive (dialog->notebook, TRUE);
     info = _moo_folder_get_file_info (folder, file);
     g_return_if_fail (info != NULL);
 
     gtk_image_set_from_pixbuf (GTK_IMAGE (dialog->icon),
                                _moo_file_get_icon (file, GTK_WIDGET (dialog), GTK_ICON_SIZE_DIALOG));
     set_file (dialog, file, folder);
+
+    container_cleanup (GTK_CONTAINER (dialog->table));
 
     for (p = info, i = 0; *p != NULL; ++i)
     {

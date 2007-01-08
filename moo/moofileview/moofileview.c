@@ -142,6 +142,8 @@ struct _MooFileViewPrivate {
     MooUIXML        *ui_xml;
     gboolean         has_selection;
 
+    gpointer         props_dialog;
+
     GtkTargetList   *targets;
     GSList          *drag_dest_widgets;
 
@@ -168,6 +170,7 @@ static void         moo_file_view_get_property  (GObject        *object,
                                                  GValue         *value,
                                                  GParamSpec     *pspec);
 
+static void         moo_file_view_destroy       (GtkObject      *object);
 static void         moo_file_view_hide          (GtkWidget      *widget);
 static gboolean     moo_file_view_key_press     (MooFileView    *fileview,
                                                  GtkWidget      *widget,
@@ -468,6 +471,7 @@ static void
 moo_file_view_class_init (MooFileViewClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+    GtkObjectClass *gtkobject_class = GTK_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     GtkBindingSet *binding_set;
 
@@ -477,6 +481,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
     gobject_class->set_property = moo_file_view_set_property;
     gobject_class->get_property = moo_file_view_get_property;
 
+    gtkobject_class->destroy = moo_file_view_destroy;
     widget_class->hide = moo_file_view_hide;
     widget_class->popup_menu = moo_file_view_popup_menu;
     widget_class->unrealize = moo_file_view_unrealize;
@@ -882,6 +887,21 @@ moo_file_view_init (MooFileView *fileview)
     path_entry_init (fileview);
 
     _moo_file_view_tools_load (fileview);
+}
+
+
+static void
+moo_file_view_destroy (GtkObject *object)
+{
+    MooFileView *fileview = MOO_FILE_VIEW (object);
+
+    if (fileview->priv->props_dialog)
+    {
+        gtk_widget_destroy (fileview->priv->props_dialog);
+        fileview->priv->props_dialog = NULL;
+    }
+
+    GTK_OBJECT_CLASS (moo_file_view_parent_class)->destroy (object);
 }
 
 
@@ -3104,11 +3124,21 @@ out:
 }
 
 
+static void
+props_dialog_destroyed (GtkWidget   *dialog,
+                        MooFileView *fileview)
+{
+    g_signal_handlers_disconnect_by_func (dialog,
+                                          (gpointer) props_dialog_destroyed,
+                                          fileview);
+    if (fileview->priv->props_dialog == dialog)
+        fileview->priv->props_dialog = NULL;
+}
+
 /* XXX */
 static void
 file_view_properties_dialog (MooFileView *fileview)
 {
-    GtkWidget *dialog;
     GList *files;
 
     if (!fileview->priv->current_dir)
@@ -3130,23 +3160,17 @@ file_view_properties_dialog (MooFileView *fileview)
         return;
     }
 
-    dialog = g_object_get_data (G_OBJECT (fileview),
-                                "moo-file-view-properties-dialog");
-
-    if (!dialog)
+    if (!fileview->priv->props_dialog)
     {
-        dialog = _moo_file_props_dialog_new (GTK_WIDGET (fileview));
-        gtk_object_sink (g_object_ref (dialog));
-        g_object_set_data_full (G_OBJECT (fileview),
-                                "moo-file-view-properties-dialog",
-                                dialog, g_object_unref);
-        g_signal_connect (dialog, "delete-event",
-                          G_CALLBACK (gtk_widget_hide_on_delete), NULL);
+        fileview->priv->props_dialog = _moo_file_props_dialog_new (GTK_WIDGET (fileview));
+        g_signal_connect (fileview->priv->props_dialog, "destroy",
+                          G_CALLBACK (props_dialog_destroyed), fileview);
     }
 
-    _moo_file_props_dialog_set_file (MOO_FILE_PROPS_DIALOG (dialog),
-                                     files->data, fileview->priv->current_dir);
-    gtk_window_present (GTK_WINDOW (dialog));
+    _moo_file_props_dialog_set_file (fileview->priv->props_dialog,
+                                     files->data,
+                                     fileview->priv->current_dir);
+    gtk_window_present (GTK_WINDOW (fileview->priv->props_dialog));
 
     g_list_foreach (files, (GFunc) _moo_file_unref, NULL);
     g_list_free (files);
