@@ -1090,7 +1090,7 @@ _create_icon_for_mime_type (GtkIconTheme   *icon_theme,
     if (pixbuf)
         return pixbuf;
 
-#ifndef __WIN32__
+#ifdef MOO_USE_XDGMIME
     parent_types = xdg_mime_list_mime_parents (mime_type);
 
     if (parent_types && parent_types[0] && strcmp (parent_types[0], MIME_TYPE_UNKNOWN) != 0)
