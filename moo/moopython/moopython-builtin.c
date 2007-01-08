@@ -31,6 +31,9 @@
 gboolean
 _moo_python_builtin_init (void)
 {
+    if (g_getenv ("MOO_DEBUG_NO_PYTHON"))
+        return FALSE;
+
     if (!moo_python_running ())
     {
         if (!moo_python_api_init ())

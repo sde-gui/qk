@@ -103,6 +103,9 @@ MOO_MODULE_INIT_FUNC_DECL
     PyObject *moo_mod;
     char *dlldir = NULL;
 
+    if (g_getenv ("MOO_DEBUG_NO_PYTHON"))
+        return FALSE;
+
     if (moo_python_running ())
         return FALSE;
 
