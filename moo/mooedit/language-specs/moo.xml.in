@@ -12,4 +12,36 @@
     <glob pattern="*.gd"/>
     <glob pattern="*.gi"/>
   </mime-type>
+  <mime-type type="text/x-todo">
+    <sub-class-of type="text/plain"/>
+    <comment>TODO document</comment>
+    <glob pattern="TODO*"/>
+  </mime-type>
+  <mime-type type="text/x-news">
+    <sub-class-of type="text/plain"/>
+    <comment>NEWS document</comment>
+    <glob pattern="NEWS*"/>
+  </mime-type>
+  <mime-type type="text/x-copying">
+    <sub-class-of type="text/plain"/>
+    <comment>COPYING file</comment>
+    <glob pattern="COPYING*"/>
+  </mime-type>
+  <mime-type type="text/x-thanks">
+    <sub-class-of type="text/plain"/>
+    <comment>THANKS file</comment>
+    <glob pattern="THANKS*"/>
+  </mime-type>
+  <mime-type type="text/x-automake">
+    <sub-class-of type="text/x-makefile"/>
+    <comment>Automake makefile template</comment>
+    <glob pattern="Makefile.am"/>
+    <glob pattern="Makefile.in"/>
+  </mime-type>
+  <mime-type type="text/x-configure-in">
+    <sub-class-of type="application/x-m4"/>
+    <comment>configure.in</comment>
+    <glob pattern="configure.in"/>
+    <glob pattern="configure.ac"/>
+  </mime-type>
 </mime-info>
