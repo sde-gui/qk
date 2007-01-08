@@ -1065,20 +1065,6 @@ doc_move (MooFileSelector *filesel,
 }
 
 
-static gboolean
-really_destroy_menu (GtkWidget *menu)
-{
-    g_object_unref (menu);
-    return FALSE;
-}
-
-static void
-destroy_menu (GtkWidget *menu)
-{
-    g_idle_add ((GSourceFunc) really_destroy_menu, menu);
-}
-
-
 typedef enum {
     DROP_DOC_ASK = 1,
     DROP_DOC_SAVE_AS,
@@ -1213,8 +1199,7 @@ create_drop_doc_menu (MooFileSelector *filesel,
     GSList *items = NULL;
 
     menu = gtk_menu_new ();
-    MOO_OBJECT_REF_SINK (menu);
-    g_signal_connect (menu, "deactivate", G_CALLBACK (destroy_menu), NULL);
+    gtk_menu_attach_to_widget (GTK_MENU (menu), GTK_WIDGET (filesel), NULL);
     g_signal_connect (menu, "key-press-event", G_CALLBACK (menu_key_event), NULL);
     g_signal_connect (menu, "key-release-event", G_CALLBACK (menu_key_event), NULL);
 

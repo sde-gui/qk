@@ -1,7 +1,7 @@
 /*
  *   moolinklabel.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -200,8 +200,7 @@ moo_link_label_button_press (GtkWidget      *widget,
         return FALSE;
 
     menu = gtk_menu_new ();
-    MOO_OBJECT_REF_SINK (menu);
-    g_object_set_data_full (G_OBJECT (widget), "moo-menu", menu, g_object_unref);
+    gtk_menu_attach_to_widget (GTK_MENU (menu), widget, NULL);
 
     item = gtk_image_menu_item_new_with_label ("Copy Link");
     image = gtk_image_new_from_stock (GTK_STOCK_COPY, GTK_ICON_SIZE_MENU);

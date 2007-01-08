@@ -3120,13 +3120,13 @@ static gboolean moo_notebook_do_popup       (MooNotebook    *nb,
     menu = nb->priv->popup_func (nb, page->child, nb->priv->popup_user_data);
     g_return_val_if_fail (GTK_IS_MENU (menu), FALSE);
 
-    MOO_OBJECT_REF_SINK (menu);
+    gtk_menu_attach_to_widget (GTK_MENU (menu), GTK_WIDGET (nb), NULL);
 
     g_signal_emit (nb, signals[POPULATE_POPUP], 0, page->child, menu, &dont);
 
     if (dont)
     {
-        g_object_unref (menu);
+        gtk_menu_detach (GTK_MENU (menu));
         return FALSE;
     }
 
@@ -3138,8 +3138,6 @@ static gboolean moo_notebook_do_popup       (MooNotebook    *nb,
                     popup_position_func, &data,
                     event ? event->button : 0,
                     event ? event->time : gtk_get_current_event_time ());
-
-    g_object_unref (menu);
     return TRUE;
 }
 

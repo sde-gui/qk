@@ -1,7 +1,7 @@
 /*
  *   moofileview.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -3157,19 +3157,6 @@ file_view_properties_dialog (MooFileView *fileview)
 /* Popup menu
  */
 
-static gboolean
-really_destroy_menu (GtkWidget *menu)
-{
-    g_object_unref (menu);
-    return FALSE;
-}
-
-static void
-destroy_menu (GtkWidget *menu)
-{
-    g_idle_add ((GSourceFunc) really_destroy_menu, menu);
-}
-
 /* TODO */
 static void
 menu_position_func (G_GNUC_UNUSED GtkMenu *menu,
@@ -3218,8 +3205,7 @@ do_popup (MooFileView    *fileview,
                                      MOO_UI_MENU, "MooFileView/Menu",
                                      fileview->priv->actions,
                                      NULL);
-    gtk_object_sink (g_object_ref (menu));
-    g_signal_connect (menu, "deactivate", G_CALLBACK (destroy_menu), NULL);
+    gtk_menu_attach_to_widget (GTK_MENU (menu), GTK_WIDGET (fileview), NULL);
 
     _moo_file_view_tools_check (fileview);
     g_signal_emit (fileview, signals[POPULATE_POPUP], 0, files, menu);
@@ -5681,8 +5667,7 @@ moo_file_view_drop_uris (MooFileView    *fileview,
         char *dir_copy = g_strdup (destdir);
 
         menu = gtk_menu_new ();
-        gtk_object_sink (g_object_ref (menu));
-        g_signal_connect (menu, "deactivate", G_CALLBACK (destroy_menu), NULL);
+        gtk_menu_attach_to_widget (GTK_MENU (menu), GTK_WIDGET (fileview), NULL);
         g_object_set_data_full (G_OBJECT (menu), "moo-file-view-drop-files",
                                 filenames, (GDestroyNotify) free_string_list);
         g_object_set_data_full (G_OBJECT (menu), "moo-file-view-drop-dir",
