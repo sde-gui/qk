@@ -28,7 +28,7 @@
 #define MOO_FILE_VIEW_COMPILATION
 #include "moofileview/moofilesystem.h"
 #include "moofileview/moofile-private.h"
-#include "moofileview/symlink.h"
+#include "moofileview/moofileicons.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moomarshals.h"
@@ -70,12 +70,15 @@ G_STMT_START {              \
     g_timer_stop (timer);   \
 } G_STMT_END
 
-static GdkPixbuf *render_icon               (const MooFile  *file,
-                                             GtkWidget      *widget,
-                                             GtkIconSize     size);
-static GdkPixbuf *render_icon_for_path      (const char     *path,
-                                             GtkWidget      *widget,
-                                             GtkIconSize     size);
+static MooIconType   _get_folder_icon           (const char     *path);
+static MooIconEmblem _get_icon_flags            (const MooFile  *file);
+
+static GdkPixbuf    *render_icon                (const MooFile  *file,
+                                                 GtkWidget      *widget,
+                                                 GtkIconSize     size);
+static GdkPixbuf    *render_icon_for_path       (const char     *path,
+                                                 GtkWidget      *widget,
+                                                 GtkIconSize     size);
 
 #define MAKE_PATH(dirname,file) g_build_filename (dirname, file->name, NULL)
 
@@ -659,155 +662,13 @@ static gchar *g_utf8_collate_key_for_filename   (const gchar *str,
 #endif /* !GLIB_CHECK_VERSION(2,8,0) */
 
 
-/***************************************************************************/
-
-/* XXX check out IconTheme changes */
-
-typedef enum {
-    MOO_ICON_LINK       = 1 << 0,
-    MOO_ICON_LOCK       = 1 << 1,
-    MOO_ICON_FLAGS_LEN  = 1 << 2
-} MooIconFlags;
-
-typedef enum {
-    MOO_ICON_MIME = 0,
-    MOO_ICON_HOME,
-    MOO_ICON_DESKTOP,
-    MOO_ICON_TRASH,
-    MOO_ICON_DIRECTORY,
-    MOO_ICON_BROKEN_LINK,
-    MOO_ICON_NONEXISTENT,
-    MOO_ICON_BLOCK_DEVICE,
-    MOO_ICON_CHARACTER_DEVICE,
-    MOO_ICON_FIFO,
-    MOO_ICON_SOCKET,
-    MOO_ICON_FILE,
-    MOO_ICON_BLANK,
-    MOO_ICON_MAX
-} MooIconType;
-
-typedef struct {
-    GdkPixbuf *data[MOO_ICON_FLAGS_LEN];
-} MooIconVars;
-
-typedef struct {
-    MooIconVars *special_icons[MOO_ICON_MAX];
-    GHashTable  *mime_icons;                    /* char* -> MooIconVars* */
-} MooIconCache;
-
-static MooIconCache *moo_icon_cache_new         (void);
-static void          moo_icon_cache_free        (MooIconCache   *cache);
-static MooIconVars  *moo_icon_cache_lookup      (MooIconCache   *cache,
-                                                 MooIconType     icon,
-                                                 const char     *mime_type);
-static void          moo_icon_cache_insert      (MooIconCache   *cache,
-                                                 MooIconType     icon,
-                                                 const char     *mime_type,
-                                                 MooIconVars    *pixbufs);
-static MooIconVars  *moo_icon_vars_new          (void);
-
-static GdkPixbuf    *_create_icon_simple        (GtkIconTheme   *icon_theme,
-                                                 MooIconType     icon,
-                                                 const char     *mime_type,
-                                                 GtkWidget      *widget,
-                                                 GtkIconSize     size);
-static GdkPixbuf    *_create_icon_with_flags    (GdkPixbuf      *original,
-                                                 MooIconFlags    flags,
-                                                 GtkIconTheme   *icon_theme,
-                                                 GtkWidget      *widget,
-                                                 GtkIconSize     size);
-static GdkPixbuf    *_create_icon_for_mime_type (GtkIconTheme   *icon_theme,
-                                                 const char     *mime_type,
-                                                 GtkWidget      *widget,
-                                                 GtkIconSize     size,
-                                                 int             pixel_size);
-static GdkPixbuf    *_create_named_icon         (GtkIconTheme   *icon_theme,
-                                                 const char     *name,
-                                                 const char     *fallback_name,
-                                                 const char     *fallback_stock,
-                                                 GtkWidget      *widget,
-                                                 GtkIconSize     size,
-                                                 int             pixel_size);
-static GdkPixbuf    *_create_broken_link_icon   (GtkIconTheme   *icon_theme,
-                                                 GtkWidget      *widget,
-                                                 GtkIconSize     size);
-static GdkPixbuf    *_create_broken_icon        (GtkIconTheme   *icon_theme,
-                                                 GtkWidget      *widget,
-                                                 GtkIconSize     size);
-
-static MooIconType   _get_folder_icon           (const char     *path);
-static MooIconFlags  _get_icon_flags            (const MooFile  *file);
-
-
-static GdkPixbuf *
-_render_icon (MooIconType     icon,
-              const char     *mime_type,
-              MooIconFlags    flags,
-              GtkWidget      *widget,
-              GtkIconSize     size)
-{
-    GtkIconTheme *icon_theme;
-    GHashTable *all_sizes_cache;
-    MooIconCache *cache;
-    MooIconVars *pixbufs;
-
-    g_return_val_if_fail (flags < MOO_ICON_FLAGS_LEN,
-                          _render_icon (icon, mime_type, 0, widget, size));
-
-    icon_theme = gtk_icon_theme_get_for_screen (gtk_widget_get_screen (widget));
-    all_sizes_cache = g_object_get_data (G_OBJECT (icon_theme), "moo-file-icon-cache");
-
-    if (!all_sizes_cache)
-    {
-        all_sizes_cache =
-                g_hash_table_new_full (g_direct_hash, g_direct_equal,
-                                       NULL,
-                                       (GDestroyNotify) moo_icon_cache_free);
-        g_object_set_data_full (G_OBJECT (icon_theme),
-                                "moo-file-icon-cache",
-                                all_sizes_cache,
-                                (GDestroyNotify) g_hash_table_destroy);
-    }
-
-    cache = g_hash_table_lookup (all_sizes_cache, GINT_TO_POINTER (size));
-
-    if (!cache)
-    {
-        cache = moo_icon_cache_new ();
-        g_hash_table_insert (all_sizes_cache, GINT_TO_POINTER (size), cache);
-    }
-
-    pixbufs = moo_icon_cache_lookup (cache, icon, mime_type);
-
-    if (!pixbufs)
-    {
-        pixbufs = moo_icon_vars_new ();
-        pixbufs->data[0] = _create_icon_simple (icon_theme, icon, mime_type, widget, size);
-        g_assert (pixbufs->data[0] != NULL);
-        moo_icon_cache_insert (cache, icon, mime_type, pixbufs);
-    }
-
-    if (!pixbufs->data[flags])
-    {
-        g_assert (flags != 0);
-        g_assert (pixbufs->data[0] != NULL);
-        pixbufs->data[flags] =
-                _create_icon_with_flags (pixbufs->data[0], flags,
-                                         icon_theme, widget, size);
-        g_assert (pixbufs->data[flags] != NULL);
-    }
-
-    return pixbufs->data[flags];
-}
-
-
 static GdkPixbuf *
 render_icon (const MooFile  *file,
              GtkWidget      *widget,
              GtkIconSize     size)
 {
-    GdkPixbuf *pixbuf = _render_icon (file->icon, file->mime_type,
-                                      _get_icon_flags (file), widget, size);
+    GdkPixbuf *pixbuf = _moo_get_icon (widget, file->icon, file->mime_type,
+                                       _get_icon_flags (file), size);
     g_assert (pixbuf != NULL);
     return pixbuf;
 }
@@ -834,152 +695,7 @@ render_icon_for_path (const char     *path,
 #endif
 #endif
 
-    return _render_icon (MOO_ICON_MIME, mime_type, 0, widget, size);
-}
-
-
-static GdkPixbuf *
-_create_icon_simple (GtkIconTheme   *icon_theme,
-                     MooIconType     icon,
-                     const char     *mime_type,
-                     GtkWidget      *widget,
-                     GtkIconSize     size)
-{
-    int width, height;
-    GdkPixbuf *pixbuf;
-
-    g_return_val_if_fail (icon < MOO_ICON_MAX, NULL);
-    g_return_val_if_fail (icon != MOO_ICON_MIME || mime_type != NULL, NULL);
-
-    if (!gtk_icon_size_lookup (size, &width, &height))
-        if (!gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &width, &height))
-            width = height = 16;
-
-    switch (icon)
-    {
-        case MOO_ICON_MIME:
-            pixbuf = _create_icon_for_mime_type (icon_theme, mime_type,
-                                                 widget, size, width);
-
-            if (pixbuf)
-                return pixbuf;
-            else
-                return _create_icon_simple (icon_theme, MOO_ICON_FILE,
-                                            NULL, widget, size);
-
-        case MOO_ICON_HOME:
-            return _create_named_icon (icon_theme,
-                                       "gnome-fs-home",
-                                       NULL,
-                                       GTK_STOCK_HOME,
-                                       widget, size, width);
-        case MOO_ICON_DESKTOP:
-            return _create_named_icon (icon_theme,
-                                       "gnome-fs-desktop",
-                                       "gnome-fs-directory",
-                                       GTK_STOCK_DIRECTORY,
-                                       widget, size, width);
-        case MOO_ICON_TRASH:
-            return _create_named_icon (icon_theme,
-                                       "gnome-fs-trash-full",
-                                       "gnome-fs-directory",
-                                       GTK_STOCK_DIRECTORY,
-                                       widget, size, width);
-        case MOO_ICON_DIRECTORY:
-            return _create_named_icon (icon_theme,
-                                       "gnome-fs-directory",
-                                       NULL,
-                                       GTK_STOCK_DIRECTORY,
-                                       widget, size, width);
-        case MOO_ICON_BROKEN_LINK:
-            return _create_broken_link_icon (icon_theme, widget, size);
-        case MOO_ICON_NONEXISTENT:
-            return _create_broken_icon (icon_theme, widget, size);
-        case MOO_ICON_BLOCK_DEVICE:
-            return _create_named_icon (icon_theme,
-                                       "gnome-fs-blockdev",
-                                       NULL,
-                                       GTK_STOCK_HARDDISK,
-                                       widget, size, width);
-        case MOO_ICON_CHARACTER_DEVICE:
-            return _create_named_icon (icon_theme,
-                                       "gnome-fs-chardev",
-                                       "gnome-fs-regular",
-                                       GTK_STOCK_FILE,
-                                       widget, size, width);
-        case MOO_ICON_FIFO:
-            return _create_named_icon (icon_theme,
-                                       "gnome-fs-fifo",
-                                       "gnome-fs-regular",
-                                       GTK_STOCK_FILE,
-                                       widget, size, width);
-        case MOO_ICON_SOCKET:
-            return _create_named_icon (icon_theme,
-                                       "gnome-fs-socket",
-                                       "gnome-fs-regular",
-                                       GTK_STOCK_FILE,
-                                       widget, size, width);
-        case MOO_ICON_FILE:
-            return _create_named_icon (icon_theme,
-                                       "gnome-fs-regular",
-                                       NULL,
-                                       GTK_STOCK_FILE,
-                                       widget, size, width);
-        case MOO_ICON_BLANK:
-            return _create_named_icon (icon_theme,
-                                       "gnome-fs-regular",
-                                       NULL,
-                                       GTK_STOCK_FILE,
-                                       widget, size, width);
-
-        case MOO_ICON_MAX:
-            g_return_val_if_reached (NULL);
-    }
-
-    g_return_val_if_reached (NULL);
-}
-
-
-static GdkPixbuf *
-_create_named_icon (GtkIconTheme   *icon_theme,
-                    const char     *name,
-                    const char     *fallback_name,
-                    const char     *fallback_stock,
-                    GtkWidget      *widget,
-                    GtkIconSize     size,
-                    int             pixel_size)
-{
-    GdkPixbuf *pixbuf;
-
-    g_return_val_if_fail (name != NULL, NULL);
-
-    pixbuf = gtk_icon_theme_load_icon (icon_theme, name, pixel_size, 0, NULL);
-
-    if (!pixbuf && 0)
-        g_warning ("could not load '%s' icon", name);
-
-    if (!pixbuf && fallback_name)
-    {
-        pixbuf = gtk_icon_theme_load_icon (icon_theme, fallback_name, pixel_size, 0, NULL);
-        if (!pixbuf && 0)
-            g_warning ("could not load '%s' icon", fallback_name);
-    }
-
-    if (!pixbuf && fallback_stock)
-    {
-        pixbuf = gtk_widget_render_icon (widget, fallback_stock, size, NULL);
-        if (!pixbuf && 0)
-            g_warning ("could not load stock '%s' icon", fallback_stock);
-    }
-
-    if (!pixbuf)
-    {
-        pixbuf = gtk_widget_render_icon (widget, GTK_STOCK_FILE, size, NULL);
-        if (!pixbuf && 0)
-            g_warning ("could not load stock '%s' icon", GTK_STOCK_FILE);
-    }
-
-    return pixbuf;
+    return _moo_get_icon (widget, MOO_ICON_MIME, mime_type, 0, size);
 }
 
 
@@ -1027,174 +743,6 @@ _moo_file_icon_blank (void)
 }
 
 
-static GdkPixbuf *
-_create_icon_for_mime_type (GtkIconTheme   *icon_theme,
-                            const char     *mime_type,
-                            GtkWidget      *widget,
-                            GtkIconSize     size,
-                            int             pixel_size)
-{
-    const char *separator;
-    GString *icon_name;
-    GdkPixbuf *pixbuf;
-    char **parent_types;
-
-    if (!strcmp (mime_type, MIME_TYPE_UNKNOWN))
-        return _create_icon_simple (icon_theme, MOO_ICON_FILE, NULL,
-                                    widget, size);
-
-    separator = strchr (mime_type, '/');
-    if (!separator)
-    {
-        g_warning ("%s: mime type '%s' is invalid",
-                   G_STRLOC, mime_type);
-        return _create_icon_simple (icon_theme, MOO_ICON_FILE, NULL,
-                                    widget, size);
-    }
-
-    icon_name = g_string_new ("gnome-mime-");
-    g_string_append_len (icon_name, mime_type, separator - mime_type);
-    g_string_append_c (icon_name, '-');
-    g_string_append (icon_name, separator + 1);
-    pixbuf = gtk_icon_theme_load_icon (icon_theme, icon_name->str,
-                                       pixel_size, 0, NULL);
-    g_string_free (icon_name, TRUE);
-
-    if (pixbuf)
-        return pixbuf;
-
-    icon_name = g_string_new ("gnome-mime-");
-    g_string_append_len (icon_name, mime_type, separator - mime_type);
-    pixbuf = gtk_icon_theme_load_icon (icon_theme, icon_name->str,
-                                       pixel_size, 0, NULL);
-    g_string_free (icon_name, TRUE);
-
-    if (pixbuf)
-        return pixbuf;
-
-    icon_name = g_string_new_len (mime_type, separator - mime_type);
-    g_string_append_c (icon_name, '-');
-    g_string_append (icon_name, separator + 1);
-    pixbuf = gtk_icon_theme_load_icon (icon_theme, icon_name->str,
-                                       pixel_size, 0, NULL);
-    g_string_free (icon_name, TRUE);
-
-    if (pixbuf)
-        return pixbuf;
-
-    icon_name = g_string_new_len (mime_type, separator - mime_type);
-    pixbuf = gtk_icon_theme_load_icon (icon_theme, icon_name->str,
-                                       pixel_size, 0, NULL);
-    g_string_free (icon_name, TRUE);
-
-    if (pixbuf)
-        return pixbuf;
-
-#ifdef MOO_USE_XDGMIME
-    parent_types = xdg_mime_list_mime_parents (mime_type);
-
-    if (parent_types && parent_types[0] && strcmp (parent_types[0], MIME_TYPE_UNKNOWN) != 0)
-        pixbuf = _create_icon_for_mime_type (icon_theme, parent_types[0],
-                                             widget, size, pixel_size);
-
-    if (parent_types)
-        free (parent_types);
-
-    if (pixbuf)
-        return pixbuf;
-#endif
-
-    _moo_message ("%s: could not find icon for mime type '%s'",
-                  G_STRLOC, mime_type);
-    return _create_icon_simple (icon_theme, MOO_ICON_FILE, NULL,
-                                widget, size);
-}
-
-
-static GdkPixbuf *
-_create_broken_link_icon (G_GNUC_UNUSED GtkIconTheme *icon_theme,
-                          GtkWidget      *widget,
-                          GtkIconSize     size)
-{
-    /* XXX */
-    return gtk_widget_render_icon (widget, GTK_STOCK_MISSING_IMAGE, size, NULL);
-}
-
-
-static GdkPixbuf *
-_create_broken_icon (G_GNUC_UNUSED GtkIconTheme *icon_theme,
-                     GtkWidget      *widget,
-                     GtkIconSize     size)
-{
-    /* XXX */
-    return gtk_widget_render_icon (widget, GTK_STOCK_MISSING_IMAGE, size, NULL);
-}
-
-
-static GdkPixbuf *
-_create_icon_with_flags (GdkPixbuf      *original,
-                         MooIconFlags    flags,
-                         G_GNUC_UNUSED GtkIconTheme *icon_theme,
-                         G_GNUC_UNUSED GtkWidget *widget,
-                         GtkIconSize     size)
-{
-    static GdkPixbuf *arrow = NULL, *small_arrow = NULL;
-    int width, height;
-    GdkPixbuf *pixbuf;
-
-    /* XXX */
-    g_assert (flags != 0);
-
-    if (!gtk_icon_size_lookup (size, &width, &height))
-    {
-        width = gdk_pixbuf_get_width (original);
-        height = gdk_pixbuf_get_height (original);
-    }
-
-    if (flags & MOO_ICON_LINK)
-    {
-        GdkPixbuf *emblem;
-
-        if (!arrow)
-        {
-            arrow = gdk_pixbuf_new_from_inline (-1, SYMLINK_ARROW, TRUE, NULL);
-            g_return_val_if_fail (arrow != NULL, g_object_ref (original));
-        }
-
-        if (!small_arrow)
-        {
-            small_arrow = gdk_pixbuf_new_from_inline (-1, SYMLINK_ARROW_SMALL, TRUE, NULL);
-            g_return_val_if_fail (arrow != NULL, g_object_ref (original));
-        }
-
-        if (size == GTK_ICON_SIZE_MENU)
-            emblem = small_arrow;
-        else
-            emblem = arrow;
-
-        pixbuf = gdk_pixbuf_copy (original);
-        g_return_val_if_fail (pixbuf != NULL, g_object_ref (original));
-
-        gdk_pixbuf_composite (emblem, pixbuf,
-                              0,
-                              gdk_pixbuf_get_height (pixbuf) - gdk_pixbuf_get_height (emblem),
-                              gdk_pixbuf_get_width (emblem),
-                              gdk_pixbuf_get_height (emblem),
-                              0,
-                              gdk_pixbuf_get_height (pixbuf) - gdk_pixbuf_get_height (emblem),
-                              1, 1,
-                              GDK_INTERP_BILINEAR,
-                              255);
-    }
-    else
-    {
-        pixbuf = g_object_ref (original);
-    }
-
-    return pixbuf;
-}
-
-
 static MooIconType
 _get_folder_icon (const char *path)
 {
@@ -1229,104 +777,12 @@ _get_folder_icon (const char *path)
 }
 
 
-static MooIconFlags
+static MooIconEmblem
 _get_icon_flags (const MooFile *file)
 {
-    return (MOO_FILE_IS_LOCKED (file) ? MOO_ICON_LOCK : 0) |
-            (MOO_FILE_IS_LINK (file) ? MOO_ICON_LINK : 0);
-}
-
-
-static MooIconVars *
-moo_icon_vars_new (void)
-{
-    return g_new0 (MooIconVars, 1);
-}
-
-
-static void
-moo_icon_vars_free (MooIconVars *pixbufs)
-{
-    if (pixbufs)
-    {
-        guint i;
-
-        for (i = 0; i < MOO_ICON_FLAGS_LEN; ++i)
-        {
-            if (pixbufs->data[i])
-                g_object_unref (pixbufs->data[i]);
-            pixbufs->data[i] = NULL;
-        }
-
-        g_free (pixbufs);
-    }
-}
-
-
-static MooIconCache *
-moo_icon_cache_new (void)
-{
-    MooIconCache *cache = g_new0 (MooIconCache, 1);
-    cache->mime_icons = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                               g_free,
-                                               (GDestroyNotify) moo_icon_vars_free);
-    return cache;
-}
-
-
-static void
-moo_icon_cache_free (MooIconCache *cache)
-{
-    if (cache)
-    {
-        guint i;
-
-        for (i = 0; i < MOO_ICON_MAX; ++i)
-        {
-            moo_icon_vars_free (cache->special_icons[i]);
-            cache->special_icons[i] = NULL;
-        }
-
-        g_hash_table_destroy (cache->mime_icons);
-        g_free (cache);
-    }
-}
-
-
-static MooIconVars *
-moo_icon_cache_lookup (MooIconCache   *cache,
-                       MooIconType     icon,
-                       const char     *mime_type)
-{
-    if (icon != MOO_ICON_MIME)
-    {
-        g_assert (icon < MOO_ICON_MAX);
-        return cache->special_icons[icon];
-    }
-    else
-    {
-        g_assert (mime_type != NULL);
-        return g_hash_table_lookup (cache->mime_icons, mime_type);
-    }
-}
-
-
-static void
-moo_icon_cache_insert (MooIconCache   *cache,
-                       MooIconType     icon,
-                       const char     *mime_type,
-                       MooIconVars    *pixbufs)
-{
-    if (icon != MOO_ICON_MIME)
-    {
-        g_assert (icon < MOO_ICON_MAX);
-        g_assert (pixbufs != NULL);
-        cache->special_icons[icon] = pixbufs;
-    }
-    else
-    {
-        g_assert (mime_type != NULL);
-        g_assert (pixbufs != NULL);
-        g_hash_table_insert (cache->mime_icons, g_strdup (mime_type), pixbufs);
-    }
+    return
+#if 0
+        (MOO_FILE_IS_LOCKED (file) ? MOO_ICON_EMBLEM_LOCK : 0) |
+#endif
+        (MOO_FILE_IS_LINK (file) ? MOO_ICON_EMBLEM_LINK : 0);
 }

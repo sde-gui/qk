@@ -15,6 +15,8 @@ moofileview_sources =		\
 	moofile-private.h	\
 	moofileentry.c		\
 	moofileentry.h		\
+	moofileicons.c		\
+	moofileicons.h		\
 	moofileprops-glade.h	\
 	moofilesystem.c		\
 	moofilesystem.h		\
