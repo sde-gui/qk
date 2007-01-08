@@ -610,9 +610,28 @@ xdg_mime_get_mime_type_from_file_name (const char *file_name)
 int
 xdg_mime_is_valid_mime_type (const char *mime_type)
 {
-  /* FIXME: We should make this a better test
-   */
-  return _xdg_utf8_validate (mime_type);
+  const char *slash;
+  const char *p;
+
+  if (!mime_type)
+    return FALSE;
+
+  if (!(slash = strchr (mime_type, '/')))
+    return FALSE;
+
+  if (slash == mime_type || slash[1] == 0)
+    return FALSE;
+
+#define IS_VALID_MIME_CHAR(c) ((c) == '.' || (c) == '+' || (c) == '-' || ('a' <= (c) && (c) <= 'z') || ('0' <= (c) && (c) <= '9'))
+  for (p = mime_type; p != slash; p++)
+    if (!IS_VALID_MIME_CHAR (*p))
+      return FALSE;
+  for (p = slash + 1; *p != 0; p++)
+    if (!IS_VALID_MIME_CHAR (*p))
+      return FALSE;
+#undef IS_VALID_MIME_CHAR
+
+  return TRUE;
 }
 
 void
