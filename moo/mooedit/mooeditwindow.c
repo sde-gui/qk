@@ -1,7 +1,7 @@
 /*
  *   mooeditwindow.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -2509,7 +2509,7 @@ moo_edit_window_add_pane (MooEditWindow  *window,
 
     g_return_val_if_fail (moo_edit_window_get_pane (window, user_id) == NULL, FALSE);
 
-    gtk_object_sink (g_object_ref (widget));
+    MOO_OBJECT_REF_SINK (widget);
 
     params = load_pane_params (user_id);
     position = (params && params->position >= 0) ?

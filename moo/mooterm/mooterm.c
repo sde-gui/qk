@@ -1,7 +1,7 @@
 /*
  *   mooterm/mooterm.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -644,8 +644,7 @@ void             moo_term_set_adjustment    (MooTerm        *term,
 
     if (term->priv->adjustment)
     {
-        g_object_ref (term->priv->adjustment);
-        gtk_object_sink (GTK_OBJECT (term->priv->adjustment));
+        MOO_OBJECT_REF_SINK (term->priv->adjustment);
 
         update_adjustment (term);
         g_signal_connect_swapped (term->priv->adjustment,
@@ -1853,7 +1852,7 @@ _moo_term_do_popup_menu (MooTerm        *term,
         g_object_unref (term->priv->menu);
 
     term->priv->menu = gtk_menu_new ();
-    gtk_object_sink (g_object_ref (term->priv->menu));
+    MOO_OBJECT_REF_SINK (term->priv->menu);
 
     item = gtk_image_menu_item_new_from_stock (GTK_STOCK_COPY, NULL);
     gtk_widget_set_sensitive (item, moo_term_get_selection_bounds (term, NULL, NULL));

@@ -1,7 +1,7 @@
 /*
  *   moonotebook.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 
 #include "mooutils/moomarshals.h"
 #include "mooutils/moonotebook.h"
+#include "mooutils/mooutils-gobject.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <string.h>
@@ -515,8 +516,7 @@ static void     notebook_create_arrows          (MooNotebook    *nb)
     gtk_box_pack_start (GTK_BOX (box), button, FALSE, FALSE, 0);
 
     nb->priv->arrows = box;
-    g_object_ref (box);
-    gtk_object_sink (GTK_OBJECT (box));
+    MOO_OBJECT_REF_SINK (box);
     gtk_widget_set_parent (box, GTK_WIDGET (nb));
 
     g_signal_connect (nb->priv->left_arrow, "clicked",
@@ -1358,8 +1358,7 @@ static void     moo_notebook_remove         (GtkContainer   *container,
         page->label->text = g_strdup_printf ("Page %d", page_index (nb, page));
         widget = gtk_label_new (page->label->text);
 
-        g_object_ref (widget);
-        gtk_object_sink (GTK_OBJECT (widget));
+        MOO_OBJECT_REF_SINK (widget);
 
         if (GTK_WIDGET_REALIZED (nb))
             gtk_widget_set_parent_window (widget, nb->priv->tab_window);
@@ -1520,10 +1519,8 @@ gint        moo_notebook_insert_page        (MooNotebook    *nb,
 
     page->label->widget = label;
 
-    g_object_ref (child);
-    gtk_object_sink (GTK_OBJECT (child));
-    g_object_ref (label);
-    gtk_object_sink (GTK_OBJECT (label));
+    MOO_OBJECT_REF_SINK (child);
+    MOO_OBJECT_REF_SINK (label);
 
     if (GTK_WIDGET_REALIZED (nb))
         gtk_widget_set_parent_window (label, nb->priv->tab_window);
@@ -1854,8 +1851,7 @@ void        moo_notebook_set_action_widget  (MooNotebook    *notebook,
     if (widget)
     {
         *widget_ptr = widget;
-        g_object_ref (widget);
-        gtk_object_sink (GTK_OBJECT (widget));
+        MOO_OBJECT_REF_SINK (widget);
         gtk_widget_set_parent (widget, GTK_WIDGET (notebook));
     }
 
@@ -1950,8 +1946,7 @@ void        moo_notebook_set_tab_label      (MooNotebook    *notebook,
     page->label->text = NULL;
 
     page->label->widget = tab_label;
-    g_object_ref (tab_label);
-    gtk_object_sink (GTK_OBJECT (tab_label));
+    MOO_OBJECT_REF_SINK (tab_label);
 
     if (GTK_WIDGET_REALIZED (notebook))
         gtk_widget_set_parent_window (tab_label, notebook->priv->tab_window);
@@ -3125,8 +3120,7 @@ static gboolean moo_notebook_do_popup       (MooNotebook    *nb,
     menu = nb->priv->popup_func (nb, page->child, nb->priv->popup_user_data);
     g_return_val_if_fail (GTK_IS_MENU (menu), FALSE);
 
-    g_object_ref (menu);
-    gtk_object_sink (GTK_OBJECT (menu));
+    MOO_OBJECT_REF_SINK (menu);
 
     g_signal_emit (nb, signals[POPULATE_POPUP], 0, page->child, menu, &dont);
 

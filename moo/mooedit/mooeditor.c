@@ -1062,7 +1062,7 @@ moo_editor_create_doc (MooEditor      *editor,
 
     if (filename && !_moo_edit_load_file (doc, filename, encoding, error))
     {
-        gtk_object_sink (g_object_ref (doc));
+        MOO_OBJECT_REF_SINK (doc);
         g_object_unref (doc);
         return NULL;
     }
@@ -1164,7 +1164,7 @@ moo_editor_open (MooEditor      *editor,
         if (!doc)
         {
             doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
-            gtk_object_sink (g_object_ref (doc));
+            MOO_OBJECT_REF_SINK (doc);
             new_doc = TRUE;
         }
 

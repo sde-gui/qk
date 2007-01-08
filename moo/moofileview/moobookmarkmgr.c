@@ -1,7 +1,7 @@
 /*
  *   moobookmarkmgr.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooactionfactory.h"
+#include "mooutils/mooutils-gobject.h"
 #include <string.h>
 #include <errno.h>
 #ifdef HAVE_UNISTD_H
@@ -838,7 +839,7 @@ _moo_bookmark_mgr_get_editor (MooBookmarkMgr *mgr)
                       G_CALLBACK (dialog_show), mgr);
 
     mgr->priv->editor = dialog;
-    gtk_object_sink (g_object_ref (dialog));
+    MOO_OBJECT_REF_SINK (dialog);
 
     return dialog;
 }

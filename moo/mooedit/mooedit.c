@@ -1,7 +1,7 @@
 /*
  *   mooedit.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -1588,7 +1588,7 @@ _moo_edit_do_popup (MooEdit        *edit,
                 moo_ui_xml_create_widget (xml, MOO_UI_MENU, "Editor/Popup",
                                           edit->priv->actions,
                                           window ? MOO_WINDOW(window)->accel_group : NULL);
-        gtk_object_sink (g_object_ref (edit->priv->menu));
+        MOO_OBJECT_REF_SINK (edit->priv->menu);
 
         if (show_im_menu)
         {

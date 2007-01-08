@@ -1,7 +1,7 @@
 /*
  *   mooutils/mooprefsdialogpage.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -377,7 +377,7 @@ moo_prefs_dialog_page_new_from_xml (const char         *label,
 
     if (!moo_prefs_dialog_page_fill_from_xml (page, xml, buffer, page_id, prefs_root))
     {
-        gtk_object_sink (g_object_ref (page));
+        MOO_OBJECT_REF_SINK (page);
         g_object_unref (page);
         return NULL;
     }

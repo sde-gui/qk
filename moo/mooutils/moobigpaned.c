@@ -1,7 +1,7 @@
 /*
  *   moobigpaned.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -13,6 +13,7 @@
 
 #include "mooutils/moobigpaned.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/mooutils-gobject.h"
 
 
 static void     moo_big_paned_finalize      (GObject        *object);
@@ -206,8 +207,7 @@ static void moo_big_paned_init      (MooBigPaned *paned)
                               "pane-position", (MooPanePosition) i,
                               NULL);
 
-        g_object_ref (child);
-        gtk_object_sink (GTK_OBJECT (child));
+        MOO_OBJECT_REF_SINK (child);
         gtk_widget_show (child);
 
         g_signal_connect (child, "hide-pane",

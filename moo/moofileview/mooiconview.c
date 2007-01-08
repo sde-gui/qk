@@ -1,7 +1,7 @@
 /*
  *   mooiconview.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -465,7 +465,7 @@ _moo_icon_view_init (MooIconView *view)
     view->priv = g_new0 (MooIconViewPrivate, 1);
 
     view->priv->pixbuf.cell = gtk_cell_renderer_pixbuf_new ();
-    gtk_object_sink (g_object_ref (view->priv->pixbuf.cell));
+    MOO_OBJECT_REF_SINK (view->priv->pixbuf.cell);
     view->priv->pixbuf.attributes = NULL;
     view->priv->pixbuf.func = cell_data_func;
     view->priv->pixbuf.func_data = &view->priv->pixbuf;
@@ -473,7 +473,7 @@ _moo_icon_view_init (MooIconView *view)
     view->priv->pixbuf.show = TRUE;
 
     view->priv->text.cell = gtk_cell_renderer_text_new ();
-    gtk_object_sink (g_object_ref (view->priv->text.cell));
+    MOO_OBJECT_REF_SINK (view->priv->text.cell);
     view->priv->text.attributes = NULL;
     view->priv->text.func = cell_data_func;
     view->priv->text.func_data = &view->priv->text;
@@ -698,7 +698,7 @@ _moo_icon_view_set_cell (MooIconView    *view,
     g_object_unref (info->cell);
 
     info->cell = cell;
-    gtk_object_sink (g_object_ref (cell));
+    MOO_OBJECT_REF_SINK (cell);
 
     moo_icon_view_invalidate_layout (view);
 }
@@ -1671,7 +1671,7 @@ _moo_icon_view_set_adjustment (MooIconView    *view,
     }
 
     view->priv->adjustment = adjustment;
-    gtk_object_sink (g_object_ref (adjustment));
+    MOO_OBJECT_REF_SINK (adjustment);
 
     g_signal_connect_swapped (adjustment, "value-changed",
                               G_CALLBACK (value_changed),

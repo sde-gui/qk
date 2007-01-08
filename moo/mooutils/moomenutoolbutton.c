@@ -1,7 +1,7 @@
 /*
  *   moomenutoolbutton.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -12,6 +12,7 @@
  */
 
 #include "mooutils/moomenutoolbutton.h"
+#include "mooutils/mooutils-gobject.h"
 #include <gtk/gtk.h>
 
 
@@ -145,7 +146,7 @@ moo_menu_tool_button_set_menu (MooMenuToolButton  *button,
 
     if (menu)
     {
-        gtk_object_sink (g_object_ref (menu));
+        MOO_OBJECT_REF_SINK (menu);
         g_signal_connect_swapped (menu, "deactivate",
                                   G_CALLBACK (menu_deactivated),
                                   button);

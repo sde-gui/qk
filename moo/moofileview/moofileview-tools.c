@@ -1,7 +1,7 @@
 /*
  *   moofileview-tools.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 #include "mooutils/mooaction.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mootype-macros.h"
-#if MOO_USE_XDGMIME
+#ifdef MOO_USE_XDGMIME
 #include "mooutils/xdgmime/xdgmime.h"
 #endif
 #include <string.h>
@@ -325,7 +325,7 @@ action_check_one (ToolAction *action,
         if (_moo_glob_match_simple (l->data, _moo_file_display_name (file)))
             return TRUE;
 
-#if MOO_USE_XDGMIME
+#ifdef MOO_USE_XDGMIME
     mime = _moo_file_get_mime_type (file);
     g_return_val_if_fail (mime != NULL, FALSE);
 

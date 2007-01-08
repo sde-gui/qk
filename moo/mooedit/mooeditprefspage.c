@@ -1,7 +1,7 @@
 /*
  *   mooeditprefspage.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -858,7 +858,7 @@ filter_treeview_init (MooGladeXML *xml)
                                    moo_glade_xml_get_widget (xml, "delete_filter_setting"),
                                    moo_glade_xml_get_widget (xml, "filter_setting_up"),
                                    moo_glade_xml_get_widget (xml, "filter_setting_down"));
-    gtk_object_sink (g_object_ref (helper));
+    MOO_OBJECT_REF_SINK (helper);
     g_object_set_data_full (G_OBJECT (filter_treeview), "tree-helper", helper, g_object_unref);
 
     g_object_unref (store);

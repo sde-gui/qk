@@ -1,7 +1,7 @@
 /*
  *   moofiltermgr.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -13,6 +13,7 @@
 
 #include "mooutils/moofiltermgr.h"
 #include "mooutils/mooprefs.h"
+#include "mooutils/mooutils-gobject.h"
 #include <string.h>
 #include <gtk/gtk.h>
 
@@ -818,13 +819,13 @@ filter_new (const char *description,
     filter->user = user;
 
     filter->filter = gtk_file_filter_new ();
-    gtk_object_sink (g_object_ref (filter->filter));
+    MOO_OBJECT_REF_SINK (filter->filter);
     gtk_file_filter_set_name (filter->filter, description);
 
     if (negative)
     {
         filter->aux = gtk_file_filter_new ();
-        gtk_object_sink (g_object_ref (filter->aux));
+        MOO_OBJECT_REF_SINK (filter->aux);
 
         for (p = globs; *p != NULL; p++)
             gtk_file_filter_add_pattern (filter->aux, *p);

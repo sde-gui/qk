@@ -1,7 +1,7 @@
 /*
  *   moopaned.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moocompat.h"
+#include "mooutils/mooutils-gobject.h"
 #include <string.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
@@ -529,7 +530,7 @@ moo_paned_constructor (GType                  type,
             break;
     }
 
-    gtk_object_sink (g_object_ref (paned->button_box));
+    MOO_OBJECT_REF_SINK (paned->button_box);
     gtk_widget_set_parent (paned->button_box, GTK_WIDGET (paned));
     gtk_widget_show (paned->button_box);
     g_signal_connect_swapped (paned->button_box, "notify::visible",
@@ -2406,7 +2407,7 @@ int         moo_paned_insert_pane       (MooPaned       *paned,
     pane = pane_new (pane_label);
 
     pane->frame = create_frame_widget (paned, pane, TRUE);
-    gtk_object_sink (g_object_ref (pane->frame));
+    MOO_OBJECT_REF_SINK (pane->frame);
 
     if (GTK_WIDGET_REALIZED (paned))
         gtk_widget_set_parent_window (pane->frame,
@@ -3453,8 +3454,7 @@ moo_pane_label_new (const char     *stock_id,
     if (icon)
     {
         label->icon_widget = icon;
-        g_object_ref (icon);
-        gtk_object_sink (GTK_OBJECT (icon));
+        MOO_OBJECT_REF_SINK (icon);
         g_signal_connect (icon, "destroy",
                           G_CALLBACK (label_icon_destroyed),
                           label);
@@ -3483,8 +3483,7 @@ moo_pane_label_copy (MooPaneLabel   *label)
     if (label->icon_widget)
     {
         copy->icon_widget = label->icon_widget;
-        g_object_ref (copy->icon_widget);
-        gtk_object_sink (GTK_OBJECT (copy->icon_widget));
+        MOO_OBJECT_REF_SINK (copy->icon_widget);
         g_signal_connect (copy->icon_widget, "destroy",
                           G_CALLBACK (label_icon_destroyed),
                           copy);

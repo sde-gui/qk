@@ -1,7 +1,7 @@
 /*
  *   moocommanddisplay.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -14,6 +14,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/moocommanddisplay.h"
 #include "mooedit/moocommand-private.h"
+#include "mooutils/mooutils-gobject.h"
 #include <string.h>
 
 
@@ -276,7 +277,7 @@ _moo_command_display_new (GtkComboBox        *type_combo,
                               new_btn, delete_btn, up_btn, down_btn);
     init_type_combo (display, type_combo, notebook);
 
-    gtk_object_sink (g_object_ref (display));
+    MOO_OBJECT_REF_SINK (display);
     return display;
 }
 

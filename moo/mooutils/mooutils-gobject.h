@@ -1,7 +1,7 @@
 /*
  *   mooutils-gobject.h
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -26,6 +26,13 @@
 #endif
 
 G_BEGIN_DECLS
+
+
+#if GLIB_CHECK_VERSION(2,10,0)
+#define MOO_OBJECT_REF_SINK(obj) g_object_ref_sink (obj)
+#else
+#define MOO_OBJECT_REF_SINK(obj) gtk_object_sink (g_object_ref (obj))
+#endif
 
 
 /*****************************************************************************/

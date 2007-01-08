@@ -1,7 +1,7 @@
 /*
  *   fileselector.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -1213,7 +1213,7 @@ create_drop_doc_menu (MooFileSelector *filesel,
     GSList *items = NULL;
 
     menu = gtk_menu_new ();
-    gtk_object_sink (g_object_ref (menu));
+    MOO_OBJECT_REF_SINK (menu);
     g_signal_connect (menu, "deactivate", G_CALLBACK (destroy_menu), NULL);
     g_signal_connect (menu, "key-press-event", G_CALLBACK (menu_key_event), NULL);
     g_signal_connect (menu, "key-release-event", G_CALLBACK (menu_key_event), NULL);

@@ -1,7 +1,7 @@
 /*
  *   mooutils-treeview.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -760,7 +760,7 @@ _moo_tree_helper_new (GtkWidget *widget,
     g_return_val_if_fail (GTK_IS_TREE_VIEW (widget) || GTK_IS_COMBO_BOX (widget), NULL);
 
     helper = g_object_new (MOO_TYPE_TREE_HELPER, NULL);
-    gtk_object_sink (g_object_ref (helper));
+    MOO_OBJECT_REF_SINK (helper);
 
     _moo_tree_helper_connect (helper, widget, new_btn, delete_btn, up_btn, down_btn);
 

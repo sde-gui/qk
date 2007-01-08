@@ -1,7 +1,7 @@
 /*
  *   mootextview.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -3627,7 +3627,7 @@ moo_text_view_add_child_in_border (MooTextView        *view,
     child = &view->priv->children[pos];
     g_return_if_fail (*child == NULL);
 
-    gtk_object_sink (g_object_ref (widget));
+    MOO_OBJECT_REF_SINK (widget);
 
     *child = widget;
 

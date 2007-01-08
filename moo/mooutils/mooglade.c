@@ -1,7 +1,7 @@
 /*
  *   mooglade.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -1878,7 +1878,7 @@ parse_property (GParamSpec     *param_spec,
         }
         else
         {
-            gtk_object_sink (g_object_ref (adjustment));
+            MOO_OBJECT_REF_SINK (adjustment);
             g_value_set_object (&param->value, adjustment);
             g_object_unref (adjustment);
         }
