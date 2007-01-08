@@ -14,6 +14,7 @@
 #include "mooapp/moolinklabel.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-gobject.h"
 #include <gtk/gtk.h>
 
 
@@ -199,7 +200,7 @@ moo_link_label_button_press (GtkWidget      *widget,
         return FALSE;
 
     menu = gtk_menu_new ();
-    gtk_object_sink (g_object_ref (menu));
+    MOO_OBJECT_REF_SINK (menu);
     g_object_set_data_full (G_OBJECT (widget), "moo-menu", menu, g_object_unref);
 
     item = gtk_image_menu_item_new_with_label ("Copy Link");
@@ -344,8 +345,20 @@ moo_link_label_update (MooLinkLabel *label)
     else
     {
         char *markup;
-        markup = g_markup_printf_escaped ("<span foreground=\"#0000EE\">%s</span>",
-                                          label->priv->text);
+        const char *color = NULL;
+#if GTK_CHECK_VERSION(2,10,0)
+        GValue val;
+        val.g_type = 0;
+        g_value_init (&val, GDK_TYPE_COLOR);
+        gtk_widget_ensure_style (GTK_WIDGET (label));
+        gtk_widget_style_get_property (GTK_WIDGET (label), "link-color", &val);
+        color = _moo_value_convert_to_string (&val);
+        g_value_unset (&val);
+#endif
+        if (!color)
+            color = "#0000EE";
+        markup = g_markup_printf_escaped ("<span foreground=\"%s\">%s</span>",
+                                          color, label->priv->text);
         gtk_label_set_markup (GTK_LABEL (label), markup);
         set_cursor (GTK_WIDGET (label), TRUE);
         g_free (markup);
