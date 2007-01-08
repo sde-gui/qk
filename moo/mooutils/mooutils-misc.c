@@ -797,19 +797,6 @@ moo_reset_log_func (void)
 }
 
 
-void
-moo_print (const char *string)
-{
-    g_print ("%s", string);
-}
-
-void
-moo_print_err (const char *string)
-{
-    g_printerr ("%s", string);
-}
-
-
 /*
  * Display log messages in a window
  */

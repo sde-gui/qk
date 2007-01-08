@@ -439,6 +439,17 @@ set_file (const char *name,
     Py_DECREF (file);
 }
 
+static void
+print_func (const char *string)
+{
+    g_print ("%s", string);
+}
+
+static void
+printerr_func (const char *string)
+{
+    g_printerr ("%s", string);
+}
 
 void
 _moo_py_init_print_funcs (void)
@@ -456,6 +467,6 @@ _moo_py_init_print_funcs (void)
         return;
     }
 
-    set_file ("stdout", moo_print);
-    set_file ("stderr", moo_print_err);
+    set_file ("stdout", print_func);
+    set_file ("stderr", printerr_func);
 }

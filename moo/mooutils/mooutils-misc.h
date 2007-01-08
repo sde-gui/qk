@@ -35,10 +35,6 @@ gboolean    _moo_window_set_icon_from_stock (GtkWindow  *window,
 void        moo_log_window_show             (void);
 void        moo_log_window_hide             (void);
 
-/* these two are wrappers for g_print, needed for python stdout/stderr */
-void        moo_print                       (const char     *string);
-void        moo_print_err                   (const char     *string);
-
 void        moo_set_log_func_window         (gboolean        show_now);
 void        moo_set_log_func_file           (const char     *log_file);
 void        moo_set_log_func_silent         (void);
