@@ -535,7 +535,7 @@ xdg_mime_get_mime_type_for_file (const char  *file_name,
   xdg_mime_init ();
 
   if (_xdg_mime_caches)
-    return _xdg_mime_cache_get_mime_type_for_file (file_name, statbuf);
+    return xdg_mime_intern_mime_type (_xdg_mime_cache_get_mime_type_for_file (file_name, statbuf));
 
   base_name = _xdg_get_base_name (file_name);
   n = _xdg_glob_hash_lookup_file_name (global_hash, base_name, mime_types, 5);
