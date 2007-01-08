@@ -122,5 +122,4 @@ EXTRA_DIST =				\
 	codegen/mkskel.py		\
 	codegen/override.py		\
 	codegen/reversewrapper.py	\
-	codegen/scmexpr.py		\
-	$(ini_in_files)
+	codegen/scmexpr.py
