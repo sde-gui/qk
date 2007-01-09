@@ -86,6 +86,14 @@ static void         moo_window_class_new_actionv        (MooWindowClass *klass,
                                                          const char     *group,
                                                          const char     *first_prop_name,
                                                          va_list         props);
+static void         moo_window_class_new_action_cbv     (MooWindowClass *klass,
+                                                         const char     *id,
+                                                         const char     *group,
+                                                         GCallback       callback,
+                                                         GSignalCMarshaller marshal,
+                                                         GType           return_type,
+                                                         guint           n_args,
+                                                         va_list         args_and_props);
 
 static GObject     *moo_window_constructor              (GType           type,
                                                          guint           n_props,
@@ -844,9 +852,18 @@ typedef struct {
 } ActionStore;
 
 typedef struct {
+    GValue *args;
+    guint n_args;
+    GType return_type;
+    GCallback callback;
+    GSignalCMarshaller marshal;
+} ClosureInfo;
+
+typedef struct {
     MooActionFactory *action;
     char *group;
     char **conditions;
+    ClosureInfo *closure;
 } ActionInfo;
 
 
@@ -871,7 +888,8 @@ get_quark__ (guint n)
 static ActionInfo*
 action_info_new (MooActionFactory *action,
                  const char       *group,
-                 char            **conditions)
+                 char            **conditions,
+                 ClosureInfo      *closure)
 {
     ActionInfo *info;
 
@@ -881,6 +899,7 @@ action_info_new (MooActionFactory *action,
     info->action = g_object_ref (action);
     info->group = g_strdup (group);
     info->conditions = g_strdupv (conditions);
+    info->closure = closure;
 
     return info;
 }
@@ -891,6 +910,14 @@ action_info_free (ActionInfo *info)
 {
     if (info)
     {
+        if (info->closure)
+        {
+            guint i;
+            for (i = 0; i < info->closure->n_args; ++i)
+                g_value_unset (&info->closure->args[i]);
+            g_free (info->closure);
+        }
+
         g_object_unref (info->action);
         g_strfreev (info->conditions);
         g_free (info->group);
@@ -931,6 +958,59 @@ type_ensure_store (GType type)
     return store;
 }
 
+
+static void
+action_activated (GtkAction   *action,
+                  ClosureInfo *info)
+{
+    GClosure *closure;
+    GValue return_value;
+    GValue *retval_ptr = NULL;
+    GValue *instance_and_params;
+
+    closure = g_object_get_data (G_OBJECT (action), "moo-window-action-closure");
+    g_return_if_fail (closure != NULL);
+
+    instance_and_params = g_new (GValue, info->n_args + 1);
+    if (info->n_args)
+        memcpy (&instance_and_params[1], info->args, info->n_args * sizeof (GValue));
+
+    instance_and_params->g_type = 0;
+    /* closure was created with closure_new_swap(), so first argument is NULL, 
+     * and it will be passed as last to the callback */
+    g_value_init (instance_and_params, G_TYPE_POINTER);
+
+    if (info->return_type != G_TYPE_NONE)
+    {
+        return_value.g_type = 0;
+        g_value_init (&return_value, info->return_type);
+        retval_ptr = &return_value;
+    }
+
+    g_closure_invoke (closure, retval_ptr, info->n_args + 1, instance_and_params, NULL);
+
+    if (info->return_type != G_TYPE_NONE)
+        g_value_unset (&return_value);
+
+    g_free (instance_and_params);
+}
+
+static void
+connect_closure (GtkAction   *action,
+                 ClosureInfo *info,
+                 MooWindow   *window)
+{
+    GClosure *closure;
+
+    closure = g_cclosure_new_object_swap (info->callback, G_OBJECT (window));
+    g_closure_set_marshal (closure, info->marshal);
+    g_closure_ref (closure);
+    g_closure_sink (closure);
+    g_object_set_data_full (G_OBJECT (action), "moo-window-action-closure",
+                            closure, (GDestroyNotify) g_closure_unref);
+
+    g_signal_connect (action, "activate", G_CALLBACK (action_activated), info);
+}
 
 static GtkAction *
 create_action (const char *action_id,
@@ -980,6 +1060,9 @@ create_action (const char *action_id,
         }
     }
 
+    if (info->closure)
+        connect_closure (action, info->closure, window);
+
     return action;
 }
 
@@ -1013,7 +1096,8 @@ moo_window_class_install_action (MooWindowClass     *klass,
                                  const char         *action_id,
                                  MooActionFactory   *factory,
                                  const char         *group,
-                                 char              **conditions)
+                                 char              **conditions,
+                                 ClosureInfo        *closure_info)
 {
     ActionStore *store;
     ActionInfo *info;
@@ -1030,7 +1114,7 @@ moo_window_class_install_action (MooWindowClass     *klass,
     if (g_hash_table_lookup (store->actions, action_id))
         moo_window_class_remove_action (klass, action_id);
 
-    info = action_info_new (factory, group, conditions);
+    info = action_info_new (factory, group, conditions, closure_info);
     g_hash_table_insert (store->actions, g_strdup (action_id), info);
 
     for (l = window_instances; l != NULL; l = l->next)
@@ -1086,7 +1170,7 @@ moo_window_class_new_action_custom (MooWindowClass     *klass,
     g_object_set_data_full (G_OBJECT (action_factory), "moo-window-class-action-func-data",
                             data, notify);
 
-    moo_window_class_install_action (klass, action_id, action_factory, group, NULL);
+    moo_window_class_install_action (klass, action_id, action_factory, group, NULL, NULL);
     g_object_unref (action_factory);
 }
 
@@ -1102,6 +1186,23 @@ moo_window_class_new_action (MooWindowClass     *klass,
     va_start (args, first_prop_name);
     moo_window_class_new_actionv (klass, action_id, group, first_prop_name, args);
     va_end (args);
+}
+
+
+void
+_moo_window_class_new_action_callback (MooWindowClass     *klass,
+                                       const char         *id,
+                                       const char         *group,
+                                       GCallback           callback,
+                                       GSignalCMarshaller  marshal,
+                                       GType               return_type,
+                                       guint               n_args,
+                                       ...)
+{
+    va_list ap;
+    va_start (ap, n_args);
+    moo_window_class_new_action_cbv (klass, id, group, callback, marshal, return_type, n_args, ap);
+    va_end (ap);
 }
 
 
@@ -1417,6 +1518,7 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
     GPtrArray *conditions = NULL;
 
     g_return_if_fail (MOO_IS_WINDOW_CLASS (klass));
+    g_return_if_fail (action_id != NULL);
     g_return_if_fail (first_prop_name != NULL);
 
     action_params = g_array_new (FALSE, TRUE, sizeof (GParameter));
@@ -1542,7 +1644,8 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
                                          action_id,
                                          action_factory,
                                          group,
-                                         (char**) conditions->pdata);
+                                         (char**) conditions->pdata,
+                                         NULL);
 
         g_strfreev ((char**) conditions->pdata);
         g_ptr_array_free (conditions, FALSE);
@@ -1581,4 +1684,249 @@ error:
 
     if (action_class)
         g_type_class_unref (action_class);
+}
+
+
+#define COLLECT_ARGS(n_args__,args_array__,vargs__,error__)     \
+G_STMT_START {                                                  \
+    guint i__;                                                  \
+                                                                \
+    for (i__ = 0; i__ < (n_args__); ++i__)                      \
+    {                                                           \
+        GValue value__;                                         \
+        GType type__;                                           \
+                                                                \
+        type__ = va_arg ((vargs__), GType);                     \
+                                                                \
+        if (!G_TYPE_IS_VALUE_TYPE (type__))                     \
+        {                                                       \
+            *(error__) = g_strdup_printf ("%s: invalid type",   \
+                                          G_STRLOC);            \
+            break;                                              \
+        }                                                       \
+                                                                \
+        value__.g_type = 0;                                     \
+        g_value_init (&value__, type__);                        \
+        G_VALUE_COLLECT (&value__, (vargs__), 0, (error__));    \
+                                                                \
+        if (*(error__))                                         \
+            break;                                              \
+                                                                \
+        g_array_append_val ((args_array__), value__);           \
+    }                                                           \
+} G_STMT_END
+
+
+#define COLLECT_PROPS(action_class__,action_type__,action_params__,conditions__,prop_name__,vargs__,error__)    \
+G_STMT_START {                                                                                                  \
+    while (prop_name__)                                                                                         \
+    {                                                                                                           \
+        GParameter param__ = {NULL, {0, {{0}, {0}}}};                                                           \
+                                                                                                                \
+        /* ignore id property */                                                                                \
+        if (!strcmp ((prop_name__), "id") || !strcmp ((prop_name__), "name"))                                   \
+        {                                                                                                       \
+            *(error__) = g_strdup_printf ("%s: id property specified", G_STRLOC);                               \
+            break;                                                                                              \
+        }                                                                                                       \
+                                                                                                                \
+        if (!strcmp ((prop_name__), "action-type::") || !strcmp ((prop_name__), "action_type::"))               \
+        {                                                                                                       \
+            g_value_init (&param__.value, MOO_TYPE_GTYPE);                                                      \
+            G_VALUE_COLLECT (&param__.value, (vargs__), 0, (error__));                                          \
+                                                                                                                \
+            if (*(error__))                                                                                     \
+                break;                                                                                          \
+                                                                                                                \
+            *(action_type__) = _moo_value_get_gtype (&param__.value);                                           \
+                                                                                                                \
+            if (!g_type_is_a (*(action_type__), MOO_TYPE_ACTION_BASE))                                          \
+            {                                                                                                   \
+                *(error__) = g_strdup_printf ("%s: invalid action type %s",                                     \
+                                              G_STRLOC, g_type_name (*(action_type__)));                        \
+                break;                                                                                          \
+            }                                                                                                   \
+                                                                                                                \
+            *(action_class__) = g_type_class_ref (*(action_type__));                                            \
+        }                                                                                                       \
+        else if (!strncmp ((prop_name__), "condition::", strlen ("condition::")))                               \
+        {                                                                                                       \
+            const char *suffix__ = strstr ((prop_name__), "::");                                                \
+                                                                                                                \
+            if (!suffix__ || !suffix__[1] || !suffix__[2])                                                      \
+            {                                                                                                   \
+                *(error__) = g_strdup_printf ("%s: invalid condition name '%s'",                                \
+                                              G_STRLOC, (prop_name__));                                         \
+                break;                                                                                          \
+            }                                                                                                   \
+                                                                                                                \
+            g_ptr_array_add ((conditions__), g_strdup (suffix__ + 2));                                          \
+                                                                                                                \
+            (prop_name__) = va_arg ((vargs__), gchar*);                                                         \
+                                                                                                                \
+            if (!(prop_name__))                                                                                 \
+            {                                                                                                   \
+                *(error__) = g_strdup_printf ("%s: unterminated '%s' property", G_STRLOC,                       \
+                                              (char*) g_ptr_array_index ((conditions__),                        \
+                                                                         (conditions__)->len - 1));             \
+                break;                                                                                          \
+            }                                                                                                   \
+                                                                                                                \
+            g_ptr_array_add ((conditions__), g_strdup (prop_name__));                                           \
+        }                                                                                                       \
+        else                                                                                                    \
+        {                                                                                                       \
+            GParamSpec *pspec__;                                                                                \
+                                                                                                                \
+            if (!*(action_class__))                                                                             \
+            {                                                                                                   \
+                if (!*(action_type__))                                                                          \
+                    *(action_type__) = MOO_TYPE_ACTION;                                                         \
+                *(action_class__) = g_type_class_ref (*(action_type__));                                        \
+            }                                                                                                   \
+                                                                                                                \
+            pspec__ = g_object_class_find_property (*(action_class__), (prop_name__));                          \
+                                                                                                                \
+            if (!pspec__)                                                                                       \
+            {                                                                                                   \
+                *(error__) = g_strdup_printf ("%s: no property '%s' in class '%s'",                             \
+                                              G_STRLOC, (prop_name__),                                          \
+                                              g_type_name (*(action_type__)));                                  \
+                break;                                                                                          \
+            }                                                                                                   \
+                                                                                                                \
+            g_value_init (&param__.value, G_PARAM_SPEC_VALUE_TYPE (pspec__));                                   \
+            G_VALUE_COLLECT (&param__.value, (vargs__), 0, (error__));                                          \
+                                                                                                                \
+            if (*(error__))                                                                                     \
+            {                                                                                                   \
+                g_value_unset (&param__.value);                                                                 \
+                break;                                                                                          \
+            }                                                                                                   \
+                                                                                                                \
+            param__.name = g_strdup (prop_name__);                                                              \
+            g_array_append_val ((action_params__), param__);                                                    \
+        }                                                                                                       \
+                                                                                                                \
+        (prop_name__) = va_arg ((vargs__), char*);                                                              \
+    }                                                                                                           \
+} G_STMT_END
+
+static void
+moo_window_class_new_action_cbv (MooWindowClass *klass,
+                                 const char     *id,
+                                 const char     *group,
+                                 GCallback       callback,
+                                 GSignalCMarshaller marshal,
+                                 GType           return_type,
+                                 guint           n_args,
+                                 va_list         args_and_props)
+{
+    GArray *callback_args = NULL;
+    const char *prop_name;
+    GType action_type = 0;
+    GObjectClass *action_class = NULL;
+    GArray *action_params = NULL;
+    GPtrArray *conditions = NULL;
+    char *error = NULL;
+
+    g_return_if_fail (MOO_IS_WINDOW_CLASS (klass));
+    g_return_if_fail (id != NULL);
+    g_return_if_fail (callback != NULL);
+
+    conditions = g_ptr_array_new ();
+    action_params = g_array_new (FALSE, TRUE, sizeof (GParameter));
+    callback_args = g_array_sized_new (FALSE, FALSE, sizeof (GValue), n_args);
+
+    COLLECT_ARGS (n_args, callback_args, args_and_props, &error);
+
+    if (error)
+        goto error;
+
+    prop_name = va_arg (args_and_props, char*);
+
+    COLLECT_PROPS (&action_class, &action_type, action_params, conditions,
+                   prop_name, args_and_props, &error);
+
+    if (error)
+        goto error;
+
+    {
+        MooActionFactory *action_factory = NULL;
+        ClosureInfo *closure_info;
+
+        action_factory = moo_action_factory_new_a (action_type,
+                                                   (GParameter*) action_params->data,
+                                                   action_params->len);
+
+        if (!action_factory)
+        {
+            g_warning ("%s: error in moo_action_factory_new_a()", G_STRLOC);
+            goto error;
+        }
+
+        _moo_param_array_free ((GParameter*) action_params->data, action_params->len);
+        g_array_free (action_params, FALSE);
+        action_params = NULL;
+
+        g_ptr_array_add (conditions, NULL);
+
+        closure_info = g_new0 (ClosureInfo, 1);
+        closure_info->n_args = n_args;
+        closure_info->args = (GValue*) g_array_free (callback_args, FALSE);
+        callback_args = NULL;
+        closure_info->return_type = return_type;
+        closure_info->callback = callback;
+        closure_info->marshal = marshal;
+
+        moo_window_class_install_action (klass, id, action_factory, group,
+                                         (char**) conditions->pdata,
+                                         closure_info);
+
+        g_strfreev ((char**) conditions->pdata);
+        g_ptr_array_free (conditions, FALSE);
+
+        if (action_class)
+            g_type_class_unref (action_class);
+        if (action_factory)
+            g_object_unref (action_factory);
+
+        return;
+    }
+
+error:
+    if (action_params)
+    {
+        guint i;
+        GParameter *params = (GParameter*) action_params->data;
+
+        for (i = 0; i < action_params->len; ++i)
+        {
+            g_value_unset (&params[i].value);
+            g_free ((char*) params[i].name);
+        }
+
+        g_array_free (action_params, TRUE);
+    }
+
+    if (callback_args)
+    {
+        guint i;
+        for (i = 0; i < callback_args->len; ++i)
+            g_value_unset (&g_array_index (callback_args, GValue, i));
+        g_array_free (callback_args, TRUE);
+    }
+
+    if (conditions)
+    {
+        guint i;
+        for (i = 0; i < conditions->len; ++i)
+            g_free (g_ptr_array_index (conditions, i));
+        g_ptr_array_free (conditions, TRUE);
+    }
+
+    if (action_class)
+        g_type_class_unref (action_class);
+
+    g_free (error);
 }

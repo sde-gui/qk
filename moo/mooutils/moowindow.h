@@ -82,6 +82,15 @@ void        moo_window_class_new_action_custom (MooWindowClass  *klass,
                                              MooWindowActionFunc func,
                                              gpointer            data,
                                              GDestroyNotify      notify);
+void        _moo_window_class_new_action_callback
+                                            (MooWindowClass     *klass,
+                                             const char         *id,
+                                             const char         *group,
+                                             GCallback           callback,
+                                             GSignalCMarshaller  marshal,
+                                             GType               return_type,
+                                             guint               n_args,
+                                             ...) G_GNUC_NULL_TERMINATED;
 
 gboolean    moo_window_class_find_action    (MooWindowClass     *klass,
                                              const char         *id);
