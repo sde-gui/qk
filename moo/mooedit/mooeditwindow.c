@@ -220,6 +220,8 @@ static void action_close_tab                    (MooEditWindow      *window);
 static void action_close_all                    (MooEditWindow      *window);
 static void action_previous_tab                 (MooEditWindow      *window);
 static void action_next_tab                     (MooEditWindow      *window);
+static void action_switch_to_tab                (MooEditWindow      *window,
+                                                 guint               n);
 #ifdef ENABLE_BOOKMARKS
 static void action_toggle_bookmark              (MooEditWindow      *window);
 static void action_next_bookmark                (MooEditWindow      *window);
@@ -648,6 +650,23 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "condition::sensitive", "has-jobs-running",
                                  "condition::visible", "has-stop-clients",
                                  NULL);
+
+    for (i = 1; i < 10; ++i)
+    {
+        char *action_id = g_strdup_printf ("SwitchToTab%u", i);
+        char *accel = g_strdup_printf ("<Alt>%u", i);
+        _moo_window_class_new_action_callback (window_class, action_id, NULL,
+                                               G_CALLBACK (action_switch_to_tab),
+                                               _moo_marshal_VOID__UINT,
+                                               G_TYPE_NONE, 1,
+                                               G_TYPE_UINT, i - 1,
+                                               "accel", accel,
+                                               "connect-accel", TRUE,
+                                               "visible", FALSE,
+                                               NULL);
+        g_free (accel);
+        g_free (action_id);
+    }
 
 #ifdef ENABLE_BOOKMARKS
     for (i = 1; i < 10; ++i)
@@ -1213,32 +1232,56 @@ action_close_all (MooEditWindow *window)
 
 
 static void
-action_previous_tab (MooEditWindow *window)
+switch_to_tab (MooEditWindow *window,
+               int            n)
 {
     MooEdit *doc;
-    int n = moo_notebook_get_current_page (window->priv->notebook);
-    if (n > 0)
-        moo_notebook_set_current_page (window->priv->notebook, n - 1);
-    else
-        moo_notebook_set_current_page (window->priv->notebook, -1);
-    doc = moo_edit_window_get_active_doc (window);
-    if (doc)
+
+    if (n < 0)
+        n = moo_edit_window_num_docs (window) - 1;
+
+    if (n < 0 || n >= moo_edit_window_num_docs (window))
+        return;
+
+    moo_notebook_set_current_page (window->priv->notebook, n);
+
+    if ((doc = moo_edit_window_get_active_doc (window)))
         gtk_widget_grab_focus (GTK_WIDGET (doc));
+}
+
+static void
+action_previous_tab (MooEditWindow *window)
+{
+    int n;
+
+    n = moo_notebook_get_current_page (window->priv->notebook);
+
+    if (n > 0)
+        switch_to_tab (window, n - 1);
+    else
+        switch_to_tab (window, -1);
 }
 
 
 static void
 action_next_tab (MooEditWindow *window)
 {
-    MooEdit *doc;
-    int n = moo_notebook_get_current_page (window->priv->notebook);
+    int n;
+
+    n = moo_notebook_get_current_page (window->priv->notebook);
+
     if (n < moo_notebook_get_n_pages (window->priv->notebook) - 1)
-        moo_notebook_set_current_page (window->priv->notebook, n + 1);
+        switch_to_tab (window, n + 1);
     else
-        moo_notebook_set_current_page (window->priv->notebook, 0);
-    doc = moo_edit_window_get_active_doc (window);
-    if (doc)
-        gtk_widget_grab_focus (GTK_WIDGET (doc));
+        switch_to_tab (window, 0);
+}
+
+
+static void
+action_switch_to_tab (MooEditWindow *window,
+                      guint          n)
+{
+    switch_to_tab (window, n);
 }
 
 
@@ -1993,7 +2036,7 @@ moo_edit_window_list_docs (MooEditWindow *window)
 }
 
 
-guint
+int
 moo_edit_window_num_docs (MooEditWindow *window)
 {
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), 0);

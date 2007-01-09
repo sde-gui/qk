@@ -86,7 +86,7 @@ MooEdit     *moo_edit_window_get_nth_doc            (MooEditWindow  *window,
                                                      guint           n);
 /* list must be freed, elements must not be unref'ed */
 GSList      *moo_edit_window_list_docs              (MooEditWindow  *window);
-guint        moo_edit_window_num_docs               (MooEditWindow  *window);
+int          moo_edit_window_num_docs               (MooEditWindow  *window);
 
 void         moo_edit_window_set_title_prefix       (MooEditWindow  *window,
                                                      const char     *prefix);

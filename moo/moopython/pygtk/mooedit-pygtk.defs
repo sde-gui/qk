@@ -468,7 +468,7 @@
 (define-method num_docs
   (of-object "MooEditWindow")
   (c-name "moo_edit_window_num_docs")
-  (return-type "guint")
+  (return-type "int")
 )
 
 (define-method close_all
