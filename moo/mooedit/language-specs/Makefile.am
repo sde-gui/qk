@@ -23,6 +23,7 @@ langs2 =			\
 	java.lang		\
 	javascript.lang		\
 	latex.lang		\
+	libtool.lang		\
 	m4.lang			\
 	makefile.lang		\
 	ms.lang			\

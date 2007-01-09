@@ -11,7 +11,8 @@ langs="c.lang cpp.lang changelog.lang def.lang
        gtkrc.lang haskell.lang idl.lang ini.lang
        java.lang octave.lang pascal.lang php.lang
        po.lang ruby.lang scheme.lang sql.lang tcl.lang
-       texinfo.lang gtk-doc.lang dtd.lang dpatch.lang"
+       texinfo.lang gtk-doc.lang dtd.lang dpatch.lang
+       libtool.lang"
 
 styles="gvim.styles kate.styles"
 

@@ -44,4 +44,11 @@
     <glob pattern="configure.in"/>
     <glob pattern="configure.ac"/>
   </mime-type>
+  <mime-type type="text/x-libtool">
+    <sub-class-of type="text/plain"/>
+    <comment>libtool archive</comment>
+    <glob pattern="*.la"/>
+    <glob pattern="*.lai"/>
+    <glob pattern="*.lo"/>
+  </mime-type>
 </mime-info>
