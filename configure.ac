@@ -3,7 +3,7 @@
 #
 
 AC_INIT([medit],[0.8.1],[muntyan@tamu.edu],[medit])
-AM_INIT_AUTOMAKE(medit, [0.8.1])
+AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AC_CANONICAL_HOST
 
 AC_CONFIG_HEADERS(config.h)
