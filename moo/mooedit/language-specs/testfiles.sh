@@ -6,7 +6,7 @@
 # java.lang latex.lang m4.lang makefile.lang ms.lang octave.lang
 # pascal.lang perl.lang php.lang po.lang python.lang ruby.lang
 # scheme.lang sh.lang sql.lang texinfo.lang xml.lang yacc.lang
-# libtool.lang
+# libtool.lang pkgconfig.lang
 
 # Langs not covered:
 # ada.lang boo.lang def.lang d.lang gtk-doc.lang haskell.lang
@@ -530,4 +530,25 @@ dlpreopen=''
 # Directory that this library needs to be installed in:
 libdir='/usr/local/gtk/lib/python2.4/site-packages'
 relink_command="(cd /home/muntyan/projects/gtk/build/moo/moo; /bin/sh ../libtool  --tag=CC --mode=relink gcc -g -L/usr/local/gtk/lib -o moo.la -rpath /usr/local/gtk/lib/python2.4/site-packages -no-undefined -module -avoid-version -export-symbols-regex initmoo moopython/libmoomod.la libmoo.la -lutil -L/usr/local/gtk/lib -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -lm -lpangocairo-1.0 -lpango-1.0 -lcairo -lgobject-2.0 -lgmodule-2.0 -ldl -lglib-2.0 -pthread -L/usr/local/gtk/lib -lgthread-2.0 -lglib-2.0 -lpcre -lfam -lxml2 -L/usr/lib/python2.4 -lpython2.4 @inst_prefix_dir@)"
+EOFEOF
+
+cat > $dir/file.pc <<EOFEOF
+prefix=/usr/local/gtk
+exec_prefix=${prefix}
+includedir=${prefix}/include
+datarootdir=${prefix}/share
+datadir=${datarootdir}
+libdir=${exec_prefix}/lib
+
+langfilesdir=${datarootdir}/moo/language-specs
+pluginsdir=${exec_prefix}/lib/moo/plugins
+moolibdir=${exec_prefix}/lib/moo
+moodatadir=${datarootdir}/moo
+
+Name: moo
+Description: A text editor and terminal emulator library
+Requires: gtk+-2.0 libxml-2.0
+Version:
+Cflags: -I${prefix}/include/moo
+Libs: -L${libdir} -lmoo -L/usr/lib/python2.4 -lpython2.4  -lpthread -ldl  -lutil
 EOFEOF

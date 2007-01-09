@@ -51,4 +51,9 @@
     <glob pattern="*.lai"/>
     <glob pattern="*.lo"/>
   </mime-type>
+  <mime-type type="text/x-pkg-config">
+    <sub-class-of type="text/plain"/>
+    <comment>pkg-config file</comment>
+    <glob pattern="*.pc"/>
+  </mime-type>
 </mime-info>

@@ -31,6 +31,7 @@ langs2 =			\
 	pascal.lang		\
 	perl.lang		\
 	php.lang		\
+	pkgconfig.lang		\
 	po.lang			\
 	python-console.lang	\
 	python.lang		\
