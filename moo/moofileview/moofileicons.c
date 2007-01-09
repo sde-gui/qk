@@ -628,7 +628,7 @@ create_mime_icon_type (GtkIconTheme *icon_theme,
         icon_name = g_string_new ("gnome-mime-");
         g_string_append_len (icon_name, mime_type, separator - mime_type);
         pixbuf = get_named_icon (icon_theme, icon_name->str, pixel_size);
-        if (pixbuf)
+        if (0 && pixbuf)
             g_message ("got icon '%s' for mime type '%s'", icon_name->str, mime_type);
         g_string_free (icon_name, TRUE);
     }
@@ -638,7 +638,7 @@ create_mime_icon_type (GtkIconTheme *icon_theme,
         /* foo */
         icon_name = g_string_new_len (mime_type, separator - mime_type);
         pixbuf = get_named_icon (icon_theme, icon_name->str, pixel_size);
-        if (pixbuf)
+        if (0 && pixbuf)
             g_message ("got icon '%s' for mime type '%s'", icon_name->str, mime_type);
         g_string_free (icon_name, TRUE);
     }
@@ -671,7 +671,7 @@ create_mime_icon_exact (GtkIconTheme *icon_theme,
         g_string_append_c (icon_name, '-');
         g_string_append (icon_name, separator + 1);
         pixbuf = get_named_icon (icon_theme, icon_name->str, pixel_size);
-        if (pixbuf)
+        if (0 && pixbuf)
             g_message ("got icon '%s' for mime type '%s'", icon_name->str, mime_type);
         g_string_free (icon_name, TRUE);
     }
@@ -684,7 +684,7 @@ create_mime_icon_exact (GtkIconTheme *icon_theme,
         g_string_append_c (icon_name, '-');
         g_string_append (icon_name, separator + 1);
         pixbuf = get_named_icon (icon_theme, icon_name->str, pixel_size);
-        if (pixbuf)
+        if (0 && pixbuf)
             g_message ("got icon '%s' for mime type '%s'", icon_name->str, mime_type);
         g_string_free (icon_name, TRUE);
     }
@@ -708,7 +708,8 @@ create_mime_icon (GtkWidget    *widget,
 
     if (!strcmp (mime_type, XDG_MIME_TYPE_UNKNOWN))
     {
-        g_message ("getting fallback icon for mime type '%s'", mime_type);
+        if (0)
+            g_message ("getting fallback icon for mime type '%s'", mime_type);
         return create_fallback_icon (widget, size);
     }
 
@@ -723,15 +724,10 @@ create_mime_icon (GtkWidget    *widget,
         {
             char **p;
 
-            g_print ("%s: ", mime_type);
-            for (p = parent_types; *p; ++p)
-                g_print ("%s%s", p != parent_types ? ", " : "", *p);
-            g_print ("\n");
-
             for (p = parent_types; *p && !pixbuf; ++p)
             {
                 pixbuf = create_mime_icon (widget, *p, size);
-                if (pixbuf)
+                if (0 && pixbuf)
                     g_message ("used mime type '%s' icon for '%s'", *p, mime_type);
             }
 
