@@ -742,13 +742,15 @@ filter_store_set_modified (gpointer store,
     g_return_if_fail (GTK_IS_LIST_STORE (store));
     g_object_set_data (store, "filter-store-modified",
                        GINT_TO_POINTER (modified));
+    _moo_tree_helper_set_modified (g_object_get_data (store, "tree-helper"), FALSE);
 }
 
 static gboolean
 filter_store_get_modified (gpointer store)
 {
     g_return_val_if_fail (GTK_IS_LIST_STORE (store), FALSE);
-    return g_object_get_data (store, "filter-store-modified") != NULL;
+    return g_object_get_data (store, "filter-store-modified") != NULL ||
+           _moo_tree_helper_get_modified (g_object_get_data (store, "tree-helper"));
 }
 
 static void
@@ -860,6 +862,7 @@ filter_treeview_init (MooGladeXML *xml)
                                    moo_glade_xml_get_widget (xml, "filter_setting_down"));
     MOO_OBJECT_REF_SINK (helper);
     g_object_set_data_full (G_OBJECT (filter_treeview), "tree-helper", helper, g_object_unref);
+    g_object_set_data (G_OBJECT (store), "tree-helper", helper);
 
     g_object_unref (store);
 }
