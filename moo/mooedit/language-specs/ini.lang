@@ -65,8 +65,8 @@
         <context ref="boolean-value"/>
         <context ref="single-quoted-string"/>
         <context ref="double-quoted-string"/>
-        <context ref="integer"/>
         <context ref="decimal-number"/>
+        <context ref="integer"/>
       </include>
     </context>
   </definitions>
