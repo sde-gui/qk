@@ -32,6 +32,10 @@
 
 #define GTK_TEXT_UNKNOWN_CHAR 0xFFFC
 
+#define g_utf8_strcasestr	gtk_source_strcasestr
+#define g_utf8_strrcasestr	gtk_source_strrcasestr
+#define g_utf8_caselessnmatch	gtk_source_caselessnmatch
+
 /* this function acts like g_utf8_offset_to_pointer() except that if it finds a
  * decomposable character it consumes the decomposition length from the given
  * offset.  So it's useful when the offset was calculated for the normalized
