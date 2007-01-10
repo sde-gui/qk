@@ -128,15 +128,14 @@ endif MOO_BUILD_PYTHON_PLUGIN
 #
 else !MOO_OS_UNIX
 
-if MOO_OS_MINGW
 CLEANFILES += pymoo25.res moo25.res pymoo24.res moo24.res
 BUILT_SOURCES += pymoo25.res moo25.res pymoo24.res moo24.res
 nodist_pymoo25_la_SOURCES = pymoo25.res
 nodist_moo25_la_SOURCES = moo25.res
 nodist_pymoo24_la_SOURCES = pymoo24.res
 nodist_moo24_la_SOURCES = moo24.res
-endif
 
+moo_la_ldflags += -shrext ".pyd"
 lib_LTLIBRARIES += pymoo25.la moo25.la pymoo24.la moo24.la
 plugindir = $(MOO_LIB_DIR)/plugins
 plugin_DATA = moopython/pymoo25.ini moopython/pymoo24.ini
