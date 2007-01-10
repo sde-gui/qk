@@ -76,7 +76,7 @@ Please check your Python installation.])
                                            print conf('LOCALMODLIBS'), conf('LIBS')"`
             PYTHON_EXTRA_LDFLAGS=`$PYTHON -c "import distutils.sysconfig; \
                                               conf = distutils.sysconfig.get_config_var; \
-                                              print conf('LINKFORSHARED'), conf('LDFLAGS')"`
+                                              print conf('LDFLAGS')"`
         fi
 
 	AC_MSG_CHECKING([Python extra libs])
