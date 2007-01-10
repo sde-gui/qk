@@ -24,25 +24,13 @@
 #define LIBDIR "lib"
 
 
-static PyObject *sys_module;
-
-
 static gboolean
 sys_path_add_dir (const char *dir)
 {
     PyObject *path;
     PyObject *s;
 
-    if (!sys_module)
-        sys_module = PyImport_ImportModule ((char*) "sys");
-
-    if (!sys_module)
-    {
-        PyErr_Print ();
-        return FALSE;
-    }
-
-    path = PyObject_GetAttrString (sys_module, (char*) "path");
+    path = PySys_GetObject ((char*) "path");
 
     if (!path)
     {
@@ -53,7 +41,6 @@ sys_path_add_dir (const char *dir)
     if (!PyList_Check (path))
     {
         g_critical ("sys.path is not a list");
-        Py_DECREF (path);
         return FALSE;
     }
 
@@ -61,7 +48,6 @@ sys_path_add_dir (const char *dir)
     PyList_Append (path, s);
 
     Py_DECREF (s);
-    Py_DECREF (path);
     return TRUE;
 }
 
@@ -71,10 +57,7 @@ sys_path_remove_dir (const char *dir)
     PyObject *path;
     int i;
 
-    if (!sys_module)
-        return;
-
-    path = PyObject_GetAttrString (sys_module, (char*) "path");
+    path = PySys_GetObject ((char*) "path");
 
     if (!path || !PyList_Check (path))
         return;
@@ -91,8 +74,6 @@ sys_path_remove_dir (const char *dir)
             break;
         }
     }
-
-    Py_DECREF (path);
 }
 
 static void
