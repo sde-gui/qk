@@ -97,11 +97,12 @@ def copy_files():
         do_cmd("cp -r %s/usr/local/bin/medit.exe %s/bin/" % (installdir, moo_windir))
 
     if not bin_only:
-        do_cmd("mkdir -p %s/share" % (moo_windir,))
+        do_cmd("mkdir -p %s/share/mime" % (moo_windir,))
         do_cmd("mkdir -p %s/lib/moo" % (moo_windir,))
 
         do_cmd("cp -r %s/usr/local/share/moo %s/share/" % (installdir, moo_windir))
         do_cmd("cp -r %s/usr/local/lib/locale %s/lib/" % (installdir, moo_windir))
+        do_cmd("cp -r %s/usr/local/share/mime/mime.cache %s/share/mime/" % (installdir, moo_windir))
 
         if not no_python:
             do_cmd("cp -r %s/usr/local/lib/moo/plugins %s/lib/moo/" % (installdir, moo_windir))
@@ -109,20 +110,22 @@ def copy_files():
 
             if pida:
                 do_cmd("mkdir -p %s/lib/site-packages" % (moo_windir,))
-                do_cmd("cp %s/usr/local/lib/moo25.dll %s/lib/site-packages/moo.pyd" % (installdir, moo_windir))
+                do_cmd("cp %s/usr/local/lib/moo25.pyd %s/lib/site-packages/moo.pyd" % (installdir, moo_windir))
             else:
                 do_cmd("mkdir -p %s/lib/moo/plugins/pymoo25 %s/lib/moo/plugins/pymoo24" % (moo_windir, moo_windir))
                 do_cmd("cp %s/usr/local/lib/pymoo25.dll %s/lib/moo/plugins/pymoo25/pymoo.dll" % (installdir, moo_windir))
-                do_cmd("cp %s/usr/local/lib/moo25.dll %s/lib/moo/plugins/pymoo25/moo.pyd" % (installdir, moo_windir))
+                do_cmd("cp %s/usr/local/lib/moo25.pyd %s/lib/moo/plugins/pymoo25/moo.pyd" % (installdir, moo_windir))
                 do_cmd("cp %s/usr/local/lib/pymoo24.dll %s/lib/moo/plugins/pymoo24/pymoo.dll" % (installdir, moo_windir))
-                do_cmd("cp %s/usr/local/lib/moo24.dll %s/lib/moo/plugins/pymoo24/moo.pyd" % (installdir, moo_windir))
+                do_cmd("cp %s/usr/local/lib/moo24.pyd %s/lib/moo/plugins/pymoo24/moo.pyd" % (installdir, moo_windir))
 
     if do_strip:
         if not bin_only and not no_python:
             if pida:
-                do_cmd("%s %s/lib/site-packages/*.dll" % (strip, moo_windir))
+                do_cmd("%s %s/lib/site-packages/*.pyd" % (strip, moo_windir))
             else:
                 do_cmd("%s %s/lib/moo/plugins/*/*.dll" % (strip, moo_windir))
+                do_cmd("%s %s/lib/moo/plugins/*/*.pyd" % (strip, moo_windir))
+                do_cmd("%s %s/bin/medit.exe %s/bin/libmoo.dll" % (strip, moo_windir, moo_windir))
         do_cmd("%s %s/bin/medit.exe %s/bin/libmoo.dll" % (strip, moo_windir, moo_windir))
 
 def build():
