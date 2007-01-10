@@ -22,66 +22,10 @@ AC_DEFUN([_MOO_AC_PYGTK_CODEGEN],[
 
 
 ##############################################################################
-# _MOO_AC_CHECK_PYGTK_MINGW(version,action-if-found,action-if-not-found)
-# checks pygtk stuff for mingw, it's broken
-#
-AC_DEFUN([_MOO_AC_CHECK_PYGTK_MINGW],[
-    # _AC_CHECK_PYGTK_MINGW
-
-    if test -z "$PYTHON[]$1[]_PARENT_DIR"; then
-        PYTHON[]$1[]_PARENT_DIR=/usr/local/win
-    fi
-    if test -z "$PYTHON[]$1[]_PREFIX"; then
-        PYTHON[]$1[]_PREFIX=$PYTHON[]$1[]_PARENT_DIR/Python$1
-    fi
-    if test -z "$PYGTK[]$1[]_CFLAGS"; then
-        PYGTK[]$1[]_CFLAGS="-I$PYTHON[]$1[]_PREFIX/include/pygtk-2.0 $PYTHON[]$1[]_CFLAGS $GTK_CFLAGS"
-    fi
-
-    dnl check whether pygtk.h exists
-    save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$CPPFLAGS $PYGTK[]$1[]_CFLAGS"
-    save_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS $PYGTK[]$1[]_CFLAGS"
-
-    AC_MSG_CHECKING([for pygtk$1 headers])
-    # start AC_COMPILE_IFELSE in _AC_CHECK_PYGTK_MINGW
-    AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-    #include <pygtk/pygtk.h>
-    int main ()
-    {
-            init_pygtk();
-            return 0;
-    }]])],[
-        AC_MSG_RESULT([$PYGTK[]$1[]_CFLAGS])
-        AC_SUBST(PYGTK[]$1[]_CFLAGS)
-        PYGTK[]$1[]_DEFS_DIR=$PYTHON[]$1[]_PREFIX/share/pygtk/2.0/defs
-        AC_SUBST(PYGTK[]$1[]_DEFS_DIR)
-        PYGTK_DEFS_DIR=$PYTHON[]$1[]_PREFIX/share/pygtk/2.0/defs
-        AC_SUBST(PYGTK_DEFS_DIR)
-        PYGTK[]$1[]_CODEGEN_DIR=$PYTHON[]$1[]_PREFIX/share/pygtk/2.0/codegen
-        AC_SUBST(PYGTK[]$1[]_CODEGEN_DIR)
-        PYGTK_CODEGEN_DIR=$PYTHON[]$1[]_PREFIX/share/pygtk/2.0/codegen
-        AC_SUBST(PYGTK_CODEGEN_DIR)
-        AC_MSG_NOTICE([pygtk defs dir: $PYGTK[]$1[]_DEFS_DIR])
-        $2
-        _MOO_AC_PYGTK_CODEGEN
-    ],[
-        AC_MSG_RESULT([not found])
-        $3
-    ])
-    # end AC_COMPILE_IFELSE in _AC_CHECK_PYGTK_MINGW
-
-    CFLAGS="$save_CFLAGS"
-    CPPFLAGS="$save_CPPFLAGS"
-])
-
-
-##############################################################################
-# _MOO_AC_CHECK_PYGTK_UNIX(python-version,action-if-found,action-if-not-found)
+# _MOO_AC_CHECK_PYGTK_REAL(python-version,action-if-found,action-if-not-found)
 # checks pygtk stuff
 #
-AC_DEFUN([_MOO_AC_CHECK_PYGTK_UNIX],[
+AC_DEFUN([_MOO_AC_CHECK_PYGTK_REAL],[
   PKG_CHECK_MODULES(PYGTK$1,pygtk-2.0 >= 2.6.0,[
     AC_MSG_CHECKING([whether pygtk can be used])
     save_CPPFLAGS="$CPPFLAGS"
@@ -122,19 +66,17 @@ AC_DEFUN([_MOO_AC_CHECK_PYGTK_UNIX],[
 
 
 ##############################################################################
-# _MOO_AC_CHECK_PYGTK(version,action-if-found,action-if-not-found)
+# _MOO_AC_CHECK_PYGTK(action-if-found,action-if-not-found)
 # checks pygtk stuff
-# version argument is passed to _AC_CHECK_PYGTK_MINGW only
 #
 AC_DEFUN([_MOO_AC_CHECK_PYGTK],[
     AC_REQUIRE([MOO_AC_CHECK_OS])
-
     if test "x$MOO_OS_CYGWIN" != "xyes"; then
         if test "x$MOO_OS_MINGW" = "xyes"; then
-            _MOO_AC_CHECK_PYGTK_UNIX([24],[$2],[$3])
-            _MOO_AC_CHECK_PYGTK_UNIX([25],[$2],[$3])
+            _MOO_AC_CHECK_PYGTK_REAL([24],[$1],[$2])
+            _MOO_AC_CHECK_PYGTK_REAL([25],[$1],[$2])
         else
-            _MOO_AC_CHECK_PYGTK_UNIX(,[$2],[$3])
+            _MOO_AC_CHECK_PYGTK_REAL(,[$1],[$2])
         fi
     fi
 ])
@@ -169,7 +111,7 @@ AC_DEFUN_ONCE([MOO_AC_PYTHON],[
   if $MOO_USE_PYTHON; then
     MOO_USE_PYTHON=false
     MOO_AC_CHECK_PYTHON($_moo_python_version,[
-      _MOO_AC_CHECK_PYGTK([$_moo_python_version],[
+      _MOO_AC_CHECK_PYGTK([
         MOO_USE_PYTHON=true
         MOO_CHECK_VERSION(PYGTK, pygtk-2.0)
         AC_SUBST(PYGTK_VERSION)
