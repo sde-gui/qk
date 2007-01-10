@@ -109,7 +109,8 @@ mooutils-pygtk.c: mooutils-pygtk.defs mooutils-pygtk.override $(mooutils_defs_fi
 		--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 		--override $(srcdir)/mooutils-pygtk.override \
 		--outfilename mooutils-pygtk.c \
-		$(srcdir)/mooutils-pygtk.defs > mooutils-pygtk.c
+		$(srcdir)/mooutils-pygtk.defs > $@.tmp && \
+		mv $@.tmp $@
 
 mooterm-pygtk.c: mooterm-pygtk.defs mooterm-pygtk.override $(codegen_files)
 	$(codegen) --prefix _moo_term \
@@ -118,7 +119,8 @@ mooterm-pygtk.c: mooterm-pygtk.defs mooterm-pygtk.override $(codegen_files)
 		--register $(srcdir)/mooutils-pygtk.defs \
 		--override $(srcdir)/mooterm-pygtk.override \
 		--outfilename mooterm-pygtk.c \
-		$(srcdir)/mooterm-pygtk.defs > mooterm-pygtk.c
+		$(srcdir)/mooterm-pygtk.defs > $@.tmp && \
+		mv $@.tmp $@
 
 mooedit-pygtk.c: mooedit-pygtk.defs mooedit-pygtk.override $(mooedit_defs_files) $(codegen_files)
 	$(codegen) --prefix _moo_edit \
@@ -127,7 +129,8 @@ mooedit-pygtk.c: mooedit-pygtk.defs mooedit-pygtk.override $(mooedit_defs_files)
 		--register $(srcdir)/mooutils-pygtk.defs \
 		--override $(srcdir)/mooedit-pygtk.override \
 		--outfilename mooedit-pygtk.c \
-		$(srcdir)/mooedit-pygtk.defs > mooedit-pygtk.c
+		$(srcdir)/mooedit-pygtk.defs > $@.tmp && \
+		mv $@.tmp $@
 
 mooapp-pygtk.c: mooapp-pygtk.defs mooapp-pygtk.override $(codegen_files)
 	$(codegen) --prefix _moo_app \
@@ -138,19 +141,25 @@ mooapp-pygtk.c: mooapp-pygtk.defs mooapp-pygtk.override $(codegen_files)
 		--register $(srcdir)/mooutils-pygtk.defs \
 		--override $(srcdir)/mooapp-pygtk.override \
 		--outfilename mooapp-pygtk.c \
-		$(srcdir)/mooapp-pygtk.defs > mooapp-pygtk.c
+		$(srcdir)/mooapp-pygtk.defs > $@.tmp && \
+		mv $@.tmp $@
 
 PY2H = $(srcdir)/../../mooutils/py2h.sh
 moo-mod.h: $(srcdir)/moo-mod.py $(PY2H)
-	$(SHELL) $(PY2H) MOO_PY $(srcdir)/moo-mod.py > moo-mod.h
+	$(SHELL) $(PY2H) MOO_PY $(srcdir)/moo-mod.py > $@.tmp && \
+	mv $@.tmp $@
 mooedit-mod.h: $(srcdir)/mooedit-mod.py $(PY2H)
-	$(SHELL) $(PY2H) MOO_EDIT_PY $(srcdir)/mooedit-mod.py > mooedit-mod.h
+	$(SHELL) $(PY2H) MOO_EDIT_PY $(srcdir)/mooedit-mod.py > $@.tmp && \
+	mv $@.tmp $@
 mooapp-mod.h: mooapp-mod.py $(PY2H)
-	$(SHELL) $(PY2H) MOO_APP_PY $(srcdir)/mooapp-mod.py > mooapp-mod.h
+	$(SHELL) $(PY2H) MOO_APP_PY $(srcdir)/mooapp-mod.py > $@.tmp && \
+	mv $@.tmp $@
 mooutils-mod.h: mooutils-mod.py $(PY2H)
-	$(SHELL) $(PY2H) MOO_UTILS_PY $(srcdir)/mooutils-mod.py > mooutils-mod.h
+	$(SHELL) $(PY2H) MOO_UTILS_PY $(srcdir)/mooutils-mod.py > $@.tmp && \
+	mv $@.tmp $@
 mooterm-mod.h: mooterm-mod.py $(PY2H)
-	$(SHELL) $(PY2H) MOO_TERM_PY $(srcdir)/mooterm-mod.py > mooterm-mod.h
+	$(SHELL) $(PY2H) MOO_TERM_PY $(srcdir)/mooterm-mod.py > $@.tmp && \
+	mv $@.tmp $@
 
 
 if MOO_OS_UNIX
@@ -171,7 +180,7 @@ AM_CFLAGS =			\
 	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
-	$(PYTHON_CFLAGS)	\
+	$(PYTHON_INCLUDES)	\
 	$(PYGTK_CFLAGS)
 
 libmoopygtk25_la_CFLAGS =	\
@@ -179,7 +188,7 @@ libmoopygtk25_la_CFLAGS =	\
 	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
-	$(PYTHON25_CFLAGS)	\
+	$(PYTHON25_INCLUDES)	\
 	$(PYGTK25_CFLAGS)
 
 libmoopygtk24_la_CFLAGS =	\
@@ -187,5 +196,5 @@ libmoopygtk24_la_CFLAGS =	\
 	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
-	$(PYTHON24_CFLAGS)	\
+	$(PYTHON24_INCLUDES)	\
 	$(PYGTK24_CFLAGS)

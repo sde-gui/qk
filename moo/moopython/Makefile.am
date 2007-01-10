@@ -63,7 +63,7 @@ AM_CFLAGS =			\
 	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
-	$(PYTHON_CFLAGS)	\
+	$(PYTHON_INCLUDES)	\
 	$(PYGTK_CFLAGS)
 
 py25_cflags =			\
@@ -71,7 +71,7 @@ py25_cflags =			\
 	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
-	$(PYTHON25_CFLAGS)	\
+	$(PYTHON25_INCLUDES)	\
 	$(PYGTK25_CFLAGS)	\
 	-DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
 
@@ -80,7 +80,7 @@ py24_cflags =			\
 	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
-	$(PYTHON24_CFLAGS)	\
+	$(PYTHON24_INCLUDES)	\
 	$(PYGTK24_CFLAGS)	\
 	-DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
 
