@@ -78,16 +78,16 @@ AC_DEFUN([_MOO_AC_CHECK_PYGTK_MINGW],[
 
 
 ##############################################################################
-# _MOO_AC_CHECK_PYGTK_UNIX(action-if-found,action-if-not-found)
+# _MOO_AC_CHECK_PYGTK_UNIX(python-version,action-if-found,action-if-not-found)
 # checks pygtk stuff
 #
 AC_DEFUN([_MOO_AC_CHECK_PYGTK_UNIX],[
-  PKG_CHECK_MODULES(PYGTK,pygtk-2.0 >= 2.6.0,[
+  PKG_CHECK_MODULES(PYGTK$1,pygtk-2.0 >= 2.6.0,[
     AC_MSG_CHECKING([whether pygtk can be used])
     save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$CPPFLAGS $PYGTK_CFLAGS $PYTHON_CFLAGS"
+    CPPFLAGS="$CPPFLAGS $PYGTK[]$1[]_CFLAGS $PYTHON[]$1[]_INCLUDES"
     save_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS $PYGTK_CFLAGS $PYTHON_CFLAGS"
+    CFLAGS="$CFLAGS $PYGTK[]$1[]_CFLAGS $PYTHON[]$1[]_INCLUDES"
 
     AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
     #include <pygobject.h>
@@ -97,16 +97,20 @@ AC_DEFUN([_MOO_AC_CHECK_PYGTK_UNIX],[
         return 0;
     }]])],[
         AC_MSG_RESULT(yes)
-        $2
         PYGTK_DEFS_DIR=`$PKG_CONFIG --variable=defsdir pygtk-2.0`
         AC_SUBST(PYGTK_DEFS_DIR)
         PYGTK_CODEGEN_DIR=`$PKG_CONFIG --variable=codegendir pygtk-2.0`
         AC_SUBST(PYGTK_CODEGEN_DIR)
+        m4_if([$1],,,[
+          AC_SUBST(PYGTK[]$1[]_DEFS_DIR,[$PYGTK_DEFS_DIR])
+          AC_SUBST(PYGTK[]$1[]_CODEGEN_DIR,[$PYGTK_CODEGEN_DIR])
+        ])
         AC_MSG_NOTICE([pygtk defs dir: $PYGTK_DEFS_DIR])
         _MOO_AC_PYGTK_CODEGEN
+        m4_if([$2],[],[:],[$2])
     ],[
         AC_MSG_RESULT([no])
-        $3
+        m4_if([$3],[],[:],[$3])
     ])
 
     CFLAGS="$save_CFLAGS"
@@ -127,10 +131,10 @@ AC_DEFUN([_MOO_AC_CHECK_PYGTK],[
 
     if test "x$MOO_OS_CYGWIN" != "xyes"; then
         if test "x$MOO_OS_MINGW" = "xyes"; then
-            _MOO_AC_CHECK_PYGTK_MINGW([24],[$2],[$3])
-            _MOO_AC_CHECK_PYGTK_MINGW([25],[$2],[$3])
+            _MOO_AC_CHECK_PYGTK_UNIX([24],[$2],[$3])
+            _MOO_AC_CHECK_PYGTK_UNIX([25],[$2],[$3])
         else
-            _MOO_AC_CHECK_PYGTK_UNIX([$1],[$2],[$3])
+            _MOO_AC_CHECK_PYGTK_UNIX(,[$2],[$3])
         fi
     fi
 ])

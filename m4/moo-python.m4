@@ -1,71 +1,4 @@
 ##############################################################################
-# _MOO_AC_CHECK_PYTHON_MINGW(version,action-if-found,action-if-not-found)
-# checks python stuff when building for mingw. it's broken
-#
-AC_DEFUN([_MOO_AC_CHECK_PYTHON_MINGW],[
-    if test -z "$PYTHON[]$1[]_PARENT_DIR"; then
-        PYTHON[]$1[]_PARENT_DIR=/usr/local/win
-    fi
-    if test -z "$PYTHON[]$1[]_PREFIX"; then
-        PYTHON[]$1[]_PREFIX=$PYTHON[]$1[]_PARENT_DIR/Python$1
-    fi
-    if test -z "$PYTHON[]$1[]_CFLAGS"; then
-        PYTHON[]$1[]_CFLAGS="-I$PYTHON[]$1[]_PREFIX/include -mno-cygwin"
-    fi
-    if test -z "$PYTHON[]$1[]_LIBS"; then
-        PYTHON[]$1[]_LIBS="-L$PYTHON[]$1[]_PREFIX/libs -lpython$1 -mno-cygwin"
-    fi
-    if test -z "$PYTHON[]$1"; then
-        PYTHON[]$1="python"
-    fi
-
-    PYTHON_PARENT_DIR="$PYTHON[]$1[]_PARENT_DIR"
-    PYTHON_PREFIX="$PYTHON[]$1[]_PREFIX"
-    PYTHON="$PYTHON[]$1[]"
-
-    # check whether Python.h and library exists
-
-    moo_ac_save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$CPPFLAGS $PYTHON[]$1[]_CFLAGS"
-    moo_ac_save_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS $PYTHON[]$1[]_CFLAGS"
-    moo_ac_save_LDFLAGS="$LDFLAGS"
-    LDFLAGS="$LDFLAGS $PYTHON[]$1[]_LIBS"
-
-    AC_MSG_CHECKING([PYTHON[]$1[]_CFLAGS])
-    AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-    #include <Python.h>
-    int main ()
-    {
-        Py_Initialize();
-        PyRun_SimpleString("from time import time,ctime\n"
-                            "print 'Today is',ctime(time())\n");
-        Py_Finalize();
-        return 0;
-    }]])],[
-        AC_MSG_RESULT([$PYTHON[]$1[]_CFLAGS])
-        AC_MSG_CHECKING([PYTHON[]$1[]_LIBS])
-        AC_MSG_RESULT([$PYTHON[]$1[]_LIBS])
-        AC_MSG_NOTICE([Did not do real linking])
-        AC_SUBST(PYTHON[]$1[]_CFLAGS)
-        AC_SUBST(PYTHON[]$1[]_LIBS)
-        pyexecdir=$PYTHON[]$1[]_PREFIX/Lib/site-packages
-        m4_if([$2],[],[:],[$2])
-    ],[
-        AC_MSG_RESULT([Not found])
-        PYTHON[]$1[]_CFLAGS=""
-        PYTHON[]$1[]_LIBS=""
-        PYTHON[]$1[]_EXTRA_LIBS=""
-        m4_if([$3],[],[:],[$3])
-    ])
-
-    LDFLAGS="$moo_ac_save_LDFLAGS"
-    CFLAGS="$moo_ac_save_CFLAGS"
-    CPPFLAGS="$moo_ac_save_CPPFLAGS"
-])
-
-
-##############################################################################
 # _MOO_AC_PYTHON_DEVEL(action-if-found,action-if-not-found)
 # checks python headers and libs. it's
 # http://www.gnu.org/software/ac-archive/htmldoc/ac_python_devel.html,
@@ -86,21 +19,21 @@ Please check your Python installation.])
     fi
 
     # Check for Python include path
-    # if PYTHON_CFLAGS is set, do not do anything
+    # if PYTHON_INCLUDES is set, do not do anything
     if test $python_found = yes; then
 	AC_MSG_CHECKING([for Python include path])
 
-        if test -z "$PYTHON_CFLAGS"; then
+        if test -z "$PYTHON_INCLUDES"; then
             python_path=`$PYTHON -c "import distutils.sysconfig; \
                                      print distutils.sysconfig.get_python_inc();"`
             if test -n "${python_path}"; then
                 python_path="-I$python_path"
             fi
-            PYTHON_CFLAGS=$python_path
+            PYTHON_INCLUDES=$python_path
         fi
 
-        AC_MSG_RESULT([$PYTHON_CFLAGS])
-	AC_SUBST([PYTHON_CFLAGS])
+        AC_MSG_RESULT([$PYTHON_INCLUDES])
+	AC_SUBST([PYTHON_INCLUDES])
     fi
 
     # Check for Python linker flags
@@ -181,7 +114,7 @@ AC_DEFUN([_MOO_AC_CHECK_PYTHON_UNIX],[
     if test x$python_found = xyes; then
         m4_if([$2],[],[:],[$2])
     else
-        PYTHON_CFLAGS=""
+        PYTHON_INCLUDES=""
         PYTHON_LIBS=""
         PYTHON_EXTRA_LIBS=""
         m4_if([$3],[],[:],[$3])
@@ -198,10 +131,10 @@ AC_MSG_NOTICE([checking for headers and libs required to compile python extensio
     AC_REQUIRE([MOO_AC_CHECK_OS])
     if test x$MOO_OS_CYGWIN != xyes; then
         if test x$MOO_OS_MINGW = xyes; then
-            _MOO_AC_CHECK_PYTHON_MINGW([24],[$2],[$3])
-            _MOO_AC_CHECK_PYTHON_MINGW([25],[$2],[$3])
+          AM_PYTHON_DEVEL_CROSS_MINGW([$2],[$3],[2.4])
+          AM_PYTHON_DEVEL_CROSS_MINGW([$2],[$3],[2.5])
         else
-            _MOO_AC_CHECK_PYTHON_UNIX([$1],[$2],[$3])
+          _MOO_AC_CHECK_PYTHON_UNIX([$1],[$2],[$3])
         fi
     fi
 ])

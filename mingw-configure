@@ -9,32 +9,33 @@ cat > $1 << ENDSRIPT
 export PKG_CONFIG_LIBDIR="$GTK_PREFIX/lib/pkgconfig":"$PYTHON_PREFIX/Lib/pkgconfig"
 export PKG_CONFIG_PATH=\$PKG_CONFIG_LIBDIR
 
-if [ "x\$1" = "x--atleast-pkgconfig-version" -o "x\$1" = "x--atleast-version" ]; then
+# pkg-config doesn't like --define-variable with these
+if [ "x\`echo "\$*" | grep -- --atleast-pkgconfig-version\`" != x -o \\
+     "x\`echo "\$*" | grep -- --atleast-version\`" != x ]; then
   exec "$PKG_CONFIG_PROGRAM" \$*
 else
-  if [ "x\$2" = "xpygtk-2.0" -o "x\$2" = "xpygobject-2.0" -o \\
-       "x\$3" = "xpygtk-2.0" -o "x\$3" = "xpygobject-2.0" ];
-  then
-    prefix="$PYTHON_PREFIX"
-  else
-    prefix="$GTK_PREFIX"
-  fi
-
-  exec "$PKG_CONFIG_PROGRAM" --define-variable=prefix=\$prefix \$*
+  exec "$PKG_CONFIG_PROGRAM" --define-variable=prefix="$GTK_PREFIX" \$*
 fi
 ENDSRIPT
 chmod +x $1
 }
 
-export PKG_CONFIG_PROGRAM=${PKG_CONFIG_PROGRAM:-/usr/bin/pkg-config}
-export MINGW_TOOL_PREFIX=${MINGW_TOOL_PREFIX:-/usr/bin/i586-mingw32msvc}
+PKG_CONFIG_PROGRAM=${PKG_CONFIG_PROGRAM:-/usr/bin/pkg-config}
+MINGW_TOOL_PREFIX=${MINGW_TOOL_PREFIX:-/usr/bin/i586-mingw32msvc-}
+
 export GTK_PREFIX=${GTK_PREFIX:-/usr/local/win/gtk}
 
 if [ "x$1" = "x--with-python=2.5" -o "x$2" = "x--with-python=2.5" ]; then
-    export PYTHON_PREFIX=${PYTHON_PREFIX:-/usr/local/win/Python25}
+  export PYTHON_PREFIX=${PYTHON_PREFIX:-/usr/local/win/Python25}
+  export PYTHON25_HOME=$PYTHON_PREFIX
 else
-    export PYTHON_PREFIX=${PYTHON_PREFIX:-/usr/local/win/Python24}
+  export PYTHON_PREFIX=${PYTHON_PREFIX:-/usr/local/win/Python24}
+  export PYTHON24_HOME=$PYTHON_PREFIX
 fi
+
+export PYTHON_HOME=$PYTHON_PREFIX
+export PYTHON24_HOME=${PYTHON24_HOME:-/usr/local/win/Python24}
+export PYTHON25_HOME=${PYTHON25_HOME:-/usr/local/win/Python25}
 
 if [ x$CONFIGURE = x ]; then
     CONFIGURE="configure"
@@ -51,31 +52,35 @@ if [ x$CONFIGURE = x ]; then
     CONFIG_GUESS="$configure_dir"/config.guess
 fi
 
-export ADDR2LINE="$MINGW_TOOL_PREFIX-addr2line"
-export AR="$MINGW_TOOL_PREFIX-ar"
-export AS="$MINGW_TOOL_PREFIX-as"
-export CC="$MINGW_TOOL_PREFIX-gcc"
-export CPP="$MINGW_TOOL_PREFIX-cpp"
-export CPPFILT="$MINGW_TOOL_PREFIX-c++filt"
-export CXX="$MINGW_TOOL_PREFIX-g++"
-export DLLTOOL="$MINGW_TOOL_PREFIX-dlltool"
-export DLLWRAP="$MINGW_TOOL_PREFIX-dllwrap"
-export GCOV="$MINGW_TOOL_PREFIX-gcov"
-export LD="$MINGW_TOOL_PREFIX-ld"
-export NM="$MINGW_TOOL_PREFIX-nm"
-export OBJCOPY="$MINGW_TOOL_PREFIX-objcopy"
-export OBJDUMP="$MINGW_TOOL_PREFIX-objdump"
-export RANLIB="$MINGW_TOOL_PREFIX-ranlib"
-export READELF="$MINGW_TOOL_PREFIX-readelf"
-export SIZE="$MINGW_TOOL_PREFIX-size"
-export STRINGS="$MINGW_TOOL_PREFIX-strings"
-export STRIP="$MINGW_TOOL_PREFIX-strip"
-export WINDRES="$MINGW_TOOL_PREFIX-windres"
+# autoconf is not intelligent enough to guess that
+# i586-pc-mingw32msvc target has anything to do with
+# debian /usr/bin/i586-mingw32msvc-gcc or freebsd
+# /usr/local/mingw32/bin/gcc, hence these variables
+export ADDR2LINE="${MINGW_TOOL_PREFIX}addr2line"
+export AS="${MINGW_TOOL_PREFIX}as"
+export CC="${MINGW_TOOL_PREFIX}gcc"
+export CPP="${MINGW_TOOL_PREFIX}cpp"
+export CPPFILT="${MINGW_TOOL_PREFIX}c++filt"
+export CXX="${MINGW_TOOL_PREFIX}g++"
+export DLLTOOL="${MINGW_TOOL_PREFIX}dlltool"
+export DLLWRAP="${MINGW_TOOL_PREFIX}dllwrap"
+export GCOV="${MINGW_TOOL_PREFIX}gcov"
+export LD="${MINGW_TOOL_PREFIX}ld"
+export NM="${MINGW_TOOL_PREFIX}nm"
+export OBJCOPY="${MINGW_TOOL_PREFIX}objcopy"
+export OBJDUMP="${MINGW_TOOL_PREFIX}objdump"
+export READELF="${MINGW_TOOL_PREFIX}readelf"
+export SIZE="${MINGW_TOOL_PREFIX}size"
+export STRINGS="${MINGW_TOOL_PREFIX}strings"
+export WINDRES="${MINGW_TOOL_PREFIX}windres"
+export AR="${MINGW_TOOL_PREFIX}ar"
+export RANLIB="${MINGW_TOOL_PREFIX}ranlib"
+export STRIP="${MINGW_TOOL_PREFIX}strip"
 
-export LDFLAGS="-L$GTK_PREFIX/lib"
+export LDFLAGS="-L$GTK_PREFIX/lib -mno-cygwin"
 export CPPFLAGS="-I$GTK_PREFIX/include"
-export CFLAGS="${CFLAGS:-"-O2"} -I$GTK_PREFIX/include -mms-bitfields -march=i686"
-export CXXFLAGS="${CFLAGS:-"-O2"} -I$GTK_PREFIX/include -mms-bitfields -march=i686"
+export CFLAGS="${CFLAGS:-"-O2"} -I$GTK_PREFIX/include -mno-cygwin -mms-bitfields -march=i686"
+export CXXFLAGS="${CFLAGS:-"-O2"} -I$GTK_PREFIX/include -mno-cygwin -mms-bitfields -march=i686"
 
 mkdir -p fake-bin
 write_pkg_config fake-bin/pkg-config
@@ -84,5 +89,17 @@ export PATH=`pwd`/fake-bin:$MINGW_BIN:/usr/i586-mingw32msvc/bin:/usr/local/mingw
 
 TARGET=i586-pc-mingw32msvc
 
-echo sh $CONFIGURE --build=`$CONFIG_GUESS` --host=$TARGET --target=$TARGET --enable-all-warnings $*
-exec sh $CONFIGURE --build=`$CONFIG_GUESS` --host=$TARGET --target=$TARGET --enable-all-warnings $*
+echo sh $CONFIGURE --build=`$CONFIG_GUESS` --host=$TARGET --target=$TARGET \
+--enable-all-warnings --enable-maintainer-mode \
+PKG_CONFIG="$PKG_CONFIG" GTK_PREFIX="$GTK_PREFIX" \
+PYTHON_PREFIX="$PYTHON_PREFIX" PYTHON_HOME="$PYTHON_HOME" \
+PYTHON24_HOME="$PYTHON24_HOME" PYTHON25_HOME="$PYTHON25_HOME" \
+AR="$AR" RANLIB="$RANLIB" STRIP="$STRIP" AS="$AS" DLLTOOL="$DLLTOOL" \
+OBJDUMP="$OBJDUMP" NM="$NM" $@
+exec sh $CONFIGURE --build=`$CONFIG_GUESS` --host=$TARGET --target=$TARGET \
+--enable-all-warnings --enable-maintainer-mode \
+PKG_CONFIG="$PKG_CONFIG" GTK_PREFIX="$GTK_PREFIX" \
+PYTHON_PREFIX="$PYTHON_PREFIX" PYTHON_HOME="$PYTHON_HOME" \
+PYTHON24_HOME="$PYTHON24_HOME" PYTHON25_HOME="$PYTHON25_HOME" \
+AR="$AR" RANLIB="$RANLIB" STRIP="$STRIP" AS="$AS" DLLTOOL="$DLLTOOL" \
+OBJDUMP="$OBJDUMP" NM="$NM" $@
