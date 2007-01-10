@@ -68,8 +68,8 @@ mootermparser_yacc: mootermparser-yacc.y
 
 XML2H = $(srcdir)/../mooutils/xml2h.sh
 mootermprefs-glade.h: glade/mootermprefs.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_TERM_PREFS_GLADE_UI $(srcdir)/glade/mootermprefs.glade \
-		> mootermprefs-glade.h
+	$(SHELL) $(XML2H) MOO_TERM_PREFS_GLADE_UI $(srcdir)/glade/mootermprefs.glade > $@.tmp && \
+	mv $@.tmp $@
 
 
 noinst_LTLIBRARIES = libmooterm.la

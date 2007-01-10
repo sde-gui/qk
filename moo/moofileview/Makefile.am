@@ -59,23 +59,27 @@ BUILT_SOURCES =			\
 	moobookmarkmgr-glade.h
 
 symlink.h: $(moofileview_pixmaps)
-	gdk-pixbuf-csource --static --build-list		\
-		SYMLINK_ARROW $(srcdir)/symlink.png		\
-		SYMLINK_ARROW_SMALL $(srcdir)/symlink-small.png	\
-			> symlink.h
+	gdk-pixbuf-csource --static --build-list	\
+		SYMLINK_ARROW $(srcdir)/symlink.png	\
+		SYMLINK_ARROW_SMALL $(srcdir)/symlink-small.png > $@.tmp && mv $@.tmp $@
 
 XML2H = $(srcdir)/../mooutils/xml2h.sh
 
 moofileview-ui.h: $(srcdir)/moofileview-ui.xml $(XML2H)
-	$(SHELL) $(XML2H) MOO_FILE_VIEW_UI $(srcdir)/moofileview-ui.xml > moofileview-ui.h
+	$(SHELL) $(XML2H) MOO_FILE_VIEW_UI $(srcdir)/moofileview-ui.xml > $@.tmp && \
+	mv $@.tmp $@
 moofileprops-glade.h: $(srcdir)/glade/moofileprops.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_FILE_PROPS_GLADE_UI $(srcdir)/glade/moofileprops.glade > moofileprops-glade.h
+	$(SHELL) $(XML2H) MOO_FILE_PROPS_GLADE_UI $(srcdir)/glade/moofileprops.glade > $@.tmp && \
+	mv $@.tmp $@
 moocreatefolder-glade.h: $(srcdir)/glade/moocreatefolder.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_CREATE_FOLDER_GLADE_UI $(srcdir)/glade/moocreatefolder.glade > moocreatefolder-glade.h
+	$(SHELL) $(XML2H) MOO_CREATE_FOLDER_GLADE_UI $(srcdir)/glade/moocreatefolder.glade > $@.tmp && \
+	mv $@.tmp $@
 moobookmarkmgr-glade.h: $(srcdir)/glade/bookmark_editor.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_BOOKMARK_MGR_GLADE_UI $(srcdir)/glade/bookmark_editor.glade > moobookmarkmgr-glade.h
+	$(SHELL) $(XML2H) MOO_BOOKMARK_MGR_GLADE_UI $(srcdir)/glade/bookmark_editor.glade > $@.tmp && \
+	mv $@.tmp $@
 moofileviewdrop-glade.h: $(srcdir)/glade/drop.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_FILE_VIEW_DROP_GLADE_UI $(srcdir)/glade/drop.glade > moofileviewdrop-glade.h
+	$(SHELL) $(XML2H) MOO_FILE_VIEW_DROP_GLADE_UI $(srcdir)/glade/drop.glade > $@.tmp && \
+	mv $@.tmp $@
 
 
 EXTRA_DIST =				\

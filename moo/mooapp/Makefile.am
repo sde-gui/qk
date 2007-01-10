@@ -36,7 +36,8 @@ endif
 
 XML2H = $(srcdir)/../mooutils/xml2h.sh
 mooappabout-glade.h: $(srcdir)/glade/mooappabout.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_APP_ABOUT_GLADE_UI $(srcdir)/glade/mooappabout.glade > mooappabout-glade.h
+	$(SHELL) $(XML2H) MOO_APP_ABOUT_GLADE_UI $(srcdir)/glade/mooappabout.glade > $@.tmp && \
+	mv $@.tmp $@
 
 noinst_LTLIBRARIES = libmooapp.la
 libmooapp_la_SOURCES = $(mooapp_sources)

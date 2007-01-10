@@ -195,45 +195,45 @@ stamp-mooedit-enums.c: $(mooedit_enums_headers) Makefile
 
 XML2H = $(srcdir)/../mooutils/xml2h.sh
 mootextgotoline-glade.h: $(srcdir)/glade/mootextgotoline.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_TEXT_GOTO_LINE_GLADE_UI $(srcdir)/glade/mootextgotoline.glade \
-		> mootextgotoline-glade.h
+	$(SHELL) $(XML2H) MOO_TEXT_GOTO_LINE_GLADE_UI $(srcdir)/glade/mootextgotoline.glade > $@.tmp && \
+	mv $@.tmp $@
 mootextfind-glade.h: $(srcdir)/glade/mootextfind.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_TEXT_FIND_GLADE_UI $(srcdir)/glade/mootextfind.glade \
-		> mootextfind-glade.h
+	$(SHELL) $(XML2H) MOO_TEXT_FIND_GLADE_UI $(srcdir)/glade/mootextfind.glade > $@.tmp && \
+	mv $@.tmp $@
 mooeditprefs-glade.h: $(srcdir)/glade/mooeditprefs.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_EDIT_PREFS_GLADE_UI $(srcdir)/glade/mooeditprefs.glade \
-		> mooeditprefs-glade.h
+	$(SHELL) $(XML2H) MOO_EDIT_PREFS_GLADE_UI $(srcdir)/glade/mooeditprefs.glade > $@.tmp && \
+	mv $@.tmp $@
 mooeditprogress-glade.h: $(srcdir)/glade/mooeditprogress.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_EDIT_PROGRESS_GLADE_XML $(srcdir)/glade/mooeditprogress.glade \
-		> mooeditprogress-glade.h
+	$(SHELL) $(XML2H) MOO_EDIT_PROGRESS_GLADE_XML $(srcdir)/glade/mooeditprogress.glade > $@.tmp && \
+	mv $@.tmp $@
 moopluginprefs-glade.h: $(srcdir)/glade/moopluginprefs.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_PLUGIN_PREFS_GLADE_UI $(srcdir)/glade/moopluginprefs.glade \
-		> moopluginprefs-glade.h
+	$(SHELL) $(XML2H) MOO_PLUGIN_PREFS_GLADE_UI $(srcdir)/glade/moopluginprefs.glade > $@.tmp && \
+	mv $@.tmp $@
 mooeditsavemultiple-glade.h: $(srcdir)/glade/mooeditsavemult.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_EDIT_SAVE_MULTIPLE_GLADE_UI $(srcdir)/glade/mooeditsavemult.glade \
-		> mooeditsavemultiple-glade.h
+	$(SHELL) $(XML2H) MOO_EDIT_SAVE_MULTIPLE_GLADE_UI $(srcdir)/glade/mooeditsavemult.glade > $@.tmp && \
+	mv $@.tmp $@
 quicksearch-glade.h: $(srcdir)/glade/quicksearch.glade $(XML2H)
-	$(SHELL) $(XML2H) QUICK_SEARCH_GLADE_XML $(srcdir)/glade/quicksearch.glade \
-		> quicksearch-glade.h
+	$(SHELL) $(XML2H) QUICK_SEARCH_GLADE_XML $(srcdir)/glade/quicksearch.glade > $@.tmp && \
+	mv $@.tmp $@
 statusbar-glade.h: $(srcdir)/glade/statusbar.glade $(XML2H)
-	$(SHELL) $(XML2H) STATUSBAR_GLADE_XML $(srcdir)/glade/statusbar.glade \
-		> statusbar-glade.h
+	$(SHELL) $(XML2H) STATUSBAR_GLADE_XML $(srcdir)/glade/statusbar.glade > $@.tmp && \
+	mv $@.tmp $@
 mooprint-glade.h: $(srcdir)/glade/mooprint.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_PRINT_GLADE_XML $(srcdir)/glade/mooprint.glade \
-		> mooprint-glade.h
+	$(SHELL) $(XML2H) MOO_PRINT_GLADE_XML $(srcdir)/glade/mooprint.glade > $@.tmp && \
+	mv $@.tmp $@
 mooedittools-glade.h: $(srcdir)/glade/mooedittools.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_EDIT_TOOLS_GLADE_XML $(srcdir)/glade/mooedittools.glade \
-		> mooedittools-glade.h
+	$(SHELL) $(XML2H) MOO_EDIT_TOOLS_GLADE_XML $(srcdir)/glade/mooedittools.glade > $@.tmp && \
+	mv $@.tmp $@
 mooprintpreview-glade.h: $(srcdir)/glade/mooprintpreview.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_PRINT_PREVIEW_GLADE_XML $(srcdir)/glade/mooprintpreview.glade \
-		> mooprintpreview-glade.h
+	$(SHELL) $(XML2H) MOO_PRINT_PREVIEW_GLADE_XML $(srcdir)/glade/mooprintpreview.glade > $@.tmp && \
+	mv $@.tmp $@
 
 mooedit-ui.h: mooedit-ui.xml $(XML2H)
-	$(SHELL) $(XML2H) MOO_EDIT_UI_XML $(srcdir)/mooedit-ui.xml > mooedit-ui.h.tmp && \
-	mv mooedit-ui.h.tmp mooedit-ui.h
+	$(SHELL) $(XML2H) MOO_EDIT_UI_XML $(srcdir)/mooedit-ui.xml > $@.tmp && \
+	mv $@.tmp $@
 medit-ui.h: medit-ui.xml $(XML2H)
-	$(SHELL) $(XML2H) MEDIT_UI_XML $(srcdir)/medit-ui.xml > medit-ui.h.tmp && \
-	mv medit-ui.h.tmp medit-ui.h
+	$(SHELL) $(XML2H) MEDIT_UI_XML $(srcdir)/medit-ui.xml > $@.tmp && \
+	mv $@.tmp $@
 
 EXTRA_DIST =				\
 	medit-ui.xml			\

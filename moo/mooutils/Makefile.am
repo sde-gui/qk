@@ -190,23 +190,28 @@ BUILT_SOURCES =				\
 	stock-moo.h
 
 moomarshals.c: moomarshals.list
-	echo '#include "moomarshals.h"' > moomarshals.c && \
-	glib-genmarshal --prefix=_moo_marshal --body \
-	       $(srcdir)/moomarshals.list >> moomarshals.c
+	echo '#include "moomarshals.h"' > $@.tmp &&	\
+	glib-genmarshal --prefix=_moo_marshal --body	\
+	       $(srcdir)/moomarshals.list >> $@.tmp &&	\
+	mv $@.tmp $@
 moomarshals.h: moomarshals.list
-	glib-genmarshal --prefix=_moo_marshal --header \
-	       $(srcdir)/moomarshals.list > moomarshals.h
+	glib-genmarshal --prefix=_moo_marshal --header	\
+	       $(srcdir)/moomarshals.list > $@.tmp &&	\
+	mv $@.tmp $@
 
 XML2H = $(srcdir)/xml2h.sh
 mooaccelbutton-glade.h: $(srcdir)/glade/accelbutton.glade $(XML2H)
 	$(SHELL) $(XML2H) MOO_ACCEL_BUTTON_GLADE_UI \
-	   $(srcdir)/glade/accelbutton.glade > mooaccelbutton-glade.h
+	   $(srcdir)/glade/accelbutton.glade > $@.tmp && \
+	mv $@.tmp $@
 mooaccelprefs-glade.h: $(srcdir)/glade/accelprefs.glade $(XML2H)
 	$(SHELL) $(XML2H) MOO_ACCEL_PREFS_GLADE_UI \
-	   $(srcdir)/glade/accelprefs.glade > mooaccelprefs-glade.h
+	   $(srcdir)/glade/accelprefs.glade > $@.tmp && \
+	mv $@.tmp $@
 moologwindow-glade.h: $(srcdir)/glade/moologwindow.glade $(XML2H)
 	$(SHELL) $(XML2H) MOO_LOG_WINDOW_GLADE_UI \
-	   $(srcdir)/glade/moologwindow.glade > moologwindow-glade.h
+	   $(srcdir)/glade/moologwindow.glade > $@.tmp && \
+	mv $@.tmp $@
 
 mooutils_pixmaps =			\
 	$(srcdir)/pixmaps/gap.png	\
@@ -228,7 +233,7 @@ stock-moo.h: $(mooutils_pixmaps)
 		MOO_DETACH_ICON $(srcdir)/pixmaps/detach.png		\
 		MOO_ATTACH_ICON $(srcdir)/pixmaps/attach.png		\
 		MOO_KEEP_ON_TOP_ICON $(srcdir)/pixmaps/keepontop.png	\
-			> stock-moo.h
+			> $@.tmp && mv $@.tmp $@
 
 noinst_LTLIBRARIES = libmooutils.la
 libmooutils_la_SOURCES = $(mooutils_sources)

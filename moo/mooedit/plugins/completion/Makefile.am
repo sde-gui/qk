@@ -20,7 +20,8 @@ BUILT_SOURCES =			\
 
 XML2H = $(srcdir)/../../../mooutils/xml2h.sh
 completion-glade.h: completion.glade $(XML2H)
-	$(SHELL) $(XML2H) COMPLETION_PLUGIN_GLADE_XML $(srcdir)/completion.glade > completion-glade.h
+	$(SHELL) $(XML2H) COMPLETION_PLUGIN_GLADE_XML $(srcdir)/completion.glade > $@.tmp && \
+	mv $@.tmp $@
 
 noinst_LTLIBRARIES = libcompletion.la
 libcompletion_la_SOURCES = $(completion_sources)
