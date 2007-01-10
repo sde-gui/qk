@@ -1,17 +1,17 @@
 #!/bin/sh
 
 # Langs covered here:
-# changelog.lang c.lang cpp.lang csharp.lang css.lang desktop.lang
-# diff.lang dtd.lang fortran.lang gap.lang gtkrc.lang html.lang ini.lang
-# java.lang latex.lang m4.lang makefile.lang ms.lang octave.lang
-# pascal.lang perl.lang php.lang po.lang python.lang ruby.lang
-# scheme.lang sh.lang sql.lang texinfo.lang xml.lang yacc.lang
-# libtool.lang pkgconfig.lang
+# changelog.lang c.lang cpp.lang desktop.lang diff.lang dtd.lang
+# gap.lang gtkrc.lang html.lang ini.lang latex.lang m4.lang
+# makefile.lang ms.lang perl.lang po.lang python.lang sh.lang
+# texinfo.lang xml.lang yacc.lang libtool.lang pkgconfig.lang
 
 # Langs not covered:
-# ada.lang boo.lang def.lang d.lang gtk-doc.lang haskell.lang
-# idl.lang javascript.lang lua.lang msil.lang nemerle.lang python-console.lang
-# R.lang tcl.lang vbnet.lang verilog.lang vhdl.lang dpatch.lang
+# ada.lang boo.lang csharp.lang css.lang def.lang d.lang gtk-doc.lang
+# fortran.lang haskell.lang idl.lang java.lang javascript.lang lua.lang
+# msil.lang nemerle.lang octave.lang pascal.lang php.lang python-console.lang
+# R.lang ruby.lang scheme.lang sql.lang tcl.lang vbnet.lang verilog.lang
+# vhdl.lang dpatch.lang
 
 dir="testdir"
 mkdir -p $dir/
@@ -185,15 +185,6 @@ variable: IDENTIFIER                        { \$\$ = node_var (parser, \$1); }
 %%
 EOFEOF
 
-
-cat > $dir/file.cs <<EOFEOF
-Does someone know C#?
-EOFEOF
-
-cat > $dir/file.css <<EOFEOF
-Does someone know css?
-EOFEOF
-
 cat > $dir/file.desktop <<EOFEOF
 [Desktop Entry]
 Encoding=UTF-8
@@ -223,10 +214,6 @@ diff -r 231ed68760a0 moo/moofileview/moofileview.c
      _moo_file_view_setup_button_drag_dest (fileview, "MooFileView/Toolbar/GoBack", "go-back");
 EOFEOF
 
-cat > $dir/file.f <<EOFEOF
-Fortran anyone?
-EOFEOF
-
 cat > $dir/gtkrc <<EOFEOF
 # -- THEME AUTO-WRITTEN DO NOT EDIT
 include "/usr/share/themes/Clearlooks/gtk-2.0/gtkrc"
@@ -251,18 +238,6 @@ _description=A plugin
 author=Some Guy
 # this is a plugin version, can be anything
 version=3.1415926
-EOFEOF
-
-cat > $dir/file.java <<EOFEOF
-JAVA SUCKS!
-EOFEOF
-
-cat > $dir/file.m <<EOFEOF
-function and now what?
-EOFEOF
-
-cat > $dir/file.pas <<EOFEOF
-Um, pascal
 EOFEOF
 
 cat > $dir/file.pl <<EOFEOF
@@ -378,10 +353,6 @@ Minor updates by Adam Di Carlo E<lt>adam@onshore.comE<gt> and Peter Eisentraut E
 =cut
 EOFEOF
 
-cat > $dir/file.php <<EOFEOF
-???
-EOFEOF
-
 cat > $dir/file.po <<EOFEOF
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
@@ -407,18 +378,6 @@ msgstr ""
 #: ../medit/medit.desktop.in.h:2
 msgid "medit"
 msgstr ""
-EOFEOF
-
-cat > $dir/file.rb <<EOFEOF
-Ruby ruby
-EOFEOF
-
-cat > $dir/file.scm <<EOFEOF
-Scheme?
-EOFEOF
-
-cat > $dir/file.sql <<EOFEOF
-SQL
 EOFEOF
 
 cat > $dir/file.texi <<EOFEOF
