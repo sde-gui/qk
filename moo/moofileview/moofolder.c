@@ -839,7 +839,10 @@ file_deleted (MooFolderImpl *impl,
     g_return_if_fail (!impl->deleted);
 
     if (!strcmp (name, impl->path))
-        return folder_emit_deleted (impl);
+    {
+        folder_emit_deleted (impl);
+        return;
+    }
 
     file = g_hash_table_lookup (impl->files, name);
     if (!file) return;

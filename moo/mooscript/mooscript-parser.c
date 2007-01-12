@@ -252,28 +252,22 @@ ms_lex_parse_word (MSLex    *lex,
 #define NEXT            (lex->input[lex->ptr+1])
 #define NEXT2           (lex->input[lex->ptr+2])
 
-#define RETURN1(what)               \
-G_STMT_START {                      \
-    lex->ptr += 1;                  \
-    return what;                    \
-} G_STMT_END
-
 #define CHECK1(c_, what_)           \
 G_STMT_START {                      \
     if (THIS == c_)                 \
-        RETURN1 (what_);            \
-} G_STMT_END
-
-#define RETURN2(what)               \
-G_STMT_START {                      \
-    lex->ptr += 2;                  \
-    return what;                    \
+    {                               \
+        lex->ptr += 1;              \
+        return what_;               \
+    }                               \
 } G_STMT_END
 
 #define CHECK2(c1_, c2_, what_)     \
 G_STMT_START {                      \
     if (THIS == c1_ && NEXT == c2_) \
-        RETURN2 (what_);            \
+    {                               \
+        lex->ptr += 2;              \
+        return what_;               \
+    }                               \
 } G_STMT_END
 
 

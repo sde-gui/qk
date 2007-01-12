@@ -416,9 +416,13 @@ read_child_out (G_GNUC_UNUSED GIOChannel     *source,
 
     while (again && !error_occured && current < to_read)
     {
-        struct pollfd fd = {pt->master, POLLIN | POLLPRI, 0};
+        int res;
+        struct pollfd fd;
 
-        int res = poll (&fd, 1, POLL_TIME);
+        fd.fd = pt->master;
+        fd.events = POLLIN | POLLPRI;
+        fd.revents = 0;
+        res = poll (&fd, 1, POLL_TIME);
 
         switch (res)
         {

@@ -880,7 +880,7 @@ closure_match (Closure            *closure,
 
         case MOO_PREFS_MATCH_REGEX:
             egg_regex_clear (closure->pattern.regex);
-            return egg_regex_match (closure->pattern.regex, key, 0) > 0;
+            return egg_regex_match (closure->pattern.regex, key, 0);
 
         default:
             g_return_val_if_reached (FALSE);
@@ -1524,7 +1524,10 @@ moo_prefs_set_filename (const char     *key,
     g_return_if_fail (key != NULL);
 
     if (!val)
-        return moo_prefs_set_string (key, NULL);
+    {
+        moo_prefs_set_string (key, NULL);
+        return;
+    }
 
     utf8_val = g_filename_display_name (val);
 

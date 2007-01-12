@@ -69,10 +69,6 @@ static MooBookmark *_moo_bookmark_copy      (MooBookmark    *bookmark);
 G_DEFINE_TYPE (MooBookmarkMgr, _moo_bookmark_mgr, G_TYPE_OBJECT)
 
 enum {
-    PROP_0,
-};
-
-enum {
     CHANGED,
     ACTIVATE,
     LAST_SIGNAL

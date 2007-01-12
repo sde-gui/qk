@@ -152,7 +152,9 @@ _moo_term_font_free (MooTermFont    *font)
 void
 _moo_term_invalidate (MooTerm *term)
 {
-    GdkRectangle rec = {0, 0, term->priv->width, term->priv->height};
+    GdkRectangle rec = {0, 0, 0, 0};
+    rec.width = term->priv->width;
+    rec.height = term->priv->height;
     _moo_term_invalidate_screen_rect (term, &rec);
 }
 
@@ -163,12 +165,12 @@ _moo_term_invalidate_screen_rect (MooTerm      *term,
 {
     if (GTK_WIDGET_REALIZED (term))
     {
-        GdkRectangle r = {
-            rect->x * CHAR_WIDTH(term),
-            rect->y * CHAR_HEIGHT(term),
-            rect->width * CHAR_WIDTH(term),
-            rect->height * CHAR_HEIGHT(term)
-        };
+        GdkRectangle r;
+
+        r.x = rect->x * CHAR_WIDTH(term);
+        r.y = rect->y * CHAR_HEIGHT(term);
+        r.width = rect->width * CHAR_WIDTH(term);
+        r.height = rect->height * CHAR_HEIGHT(term);
 
         gdk_window_invalidate_rect (GTK_WIDGET(term)->window,
                                     &r, FALSE);
@@ -426,10 +428,12 @@ moo_term_draw (MooTerm     *term,
     int top_line = term_top_line (term);
     int width = term->priv->width;
     int height = term->priv->height;
-    GdkRectangle clip = {0, 0, width, height};
+    GdkRectangle clip = {0, 0, 0, 0};
 
     g_return_if_fail (region != NULL);
 
+    clip.width = width;
+    clip.height = height;
     gdk_region_get_rectangles (region, &rects, &n_rects);
 
     for (i = 0; i < n_rects; ++i)
@@ -465,14 +469,40 @@ rect_screen_to_window (MooTerm      *term,
 }
 
 
-inline static void
-region_union_with_rect (GdkRegion   **region,
-                        GdkRectangle *rect)
+static GdkRegion *
+region_rectangle (int x,
+                  int y,
+                  int width,
+                  int height)
 {
+    GdkRectangle rect;
+
+    rect.x = x;
+    rect.y = y;
+    rect.width = width;
+    rect.height = height;
+
+    return gdk_region_rectangle (&rect);
+}
+
+static void
+region_union_with_rect (GdkRegion **region,
+                        int         x,
+                        int         y,
+                        int         width,
+                        int         height)
+{
+    GdkRectangle rect;
+
+    rect.x = x;
+    rect.y = y;
+    rect.width = width;
+    rect.height = height;
+
     if (*region)
-        gdk_region_union_with_rect (*region, rect);
+        gdk_region_union_with_rect (*region, &rect);
     else
-        *region = gdk_region_rectangle (rect);
+        *region = gdk_region_rectangle (&rect);
 }
 
 
@@ -480,7 +510,6 @@ gboolean
 _moo_term_expose_event (GtkWidget      *widget,
                         GdkEventExpose *event)
 {
-    GdkRectangle text_rec = {0, 0, 0, 0};
     GdkRegion *text_region;
     MooTerm *term = MOO_TERM (widget);
 
@@ -489,9 +518,7 @@ _moo_term_expose_event (GtkWidget      *widget,
 
     g_assert (term_top_line (term) <= buf_scrollback (term->priv->buffer));
 
-    text_rec.width = PIXEL_WIDTH (term);
-    text_rec.height = PIXEL_HEIGHT (term);
-    text_region = gdk_region_rectangle (&text_rec);
+    text_region = region_rectangle (0, 0, PIXEL_WIDTH (term), PIXEL_HEIGHT (term));
     gdk_region_intersect (text_region, event->region);
 
     if (!gdk_region_empty (text_region))
@@ -898,12 +925,11 @@ add_buffer_changed (MooTerm *term)
 
     if (top_line != scrollback)
     {
-        GdkRectangle clip = {0, 0, term->priv->width, height};
         GdkRegion *tmp;
 
         gdk_region_offset (changed, 0, scrollback - top_line);
 
-        tmp = gdk_region_rectangle (&clip);
+        tmp = region_rectangle (0, 0, term->priv->width, height);
         gdk_region_intersect (changed, tmp);
         gdk_region_destroy (tmp);
     }
@@ -936,7 +962,6 @@ invalidate_window (MooTerm *term)
     int scrollback = buf_scrollback (term->priv->buffer);
     GdkWindow *window = GTK_WIDGET(term)->window;
     gboolean need_redraw = FALSE;
-    GdkRectangle clip = {0, 0, term->priv->width, term->priv->height};
 
     if (!GTK_WIDGET_DRAWABLE (term))
         return FALSE;
@@ -967,20 +992,22 @@ invalidate_window (MooTerm *term)
         if (term->priv->cursor_col < term->priv->width &&
             row >= 0 && row < (int) term->priv->height)
         {
-            GdkRectangle rect = {term->priv->cursor_col, row, 1, 1};
-            gdk_region_union_with_rect (changed, &rect);
+            region_union_with_rect (&changed,
+                                    term->priv->cursor_col,
+                                    row, 1, 1);
         }
 
         row = scrollback + term->priv->cursor_row_old - top_line;
         if (term->priv->cursor_col_old < term->priv->width &&
             row >= 0 && row < (int) term->priv->height)
         {
-            GdkRectangle rect = {term->priv->cursor_col_old, row, 1, 1};
-            gdk_region_union_with_rect (changed, &rect);
+            region_union_with_rect (&changed,
+                                    term->priv->cursor_col_old,
+                                    row, 1, 1);
         }
     }
 
-    clip_region = gdk_region_rectangle (&clip);
+    clip_region = region_rectangle (0, 0, term->priv->width, term->priv->height);
     gdk_region_intersect (changed, clip_region);
     gdk_region_destroy (clip_region);
 
@@ -1078,8 +1105,9 @@ _moo_term_buffer_scrolled (MooTermBuffer  *buf,
 {
     if (lines && term->priv->buffer == buf && GTK_WIDGET_DRAWABLE (term))
     {
-        GdkRectangle rect = {0, 0, term->priv->width, term->priv->height};
-        region_union_with_rect (&term->priv->changed, &rect);
+        region_union_with_rect (&term->priv->changed, 0, 0,
+                                term->priv->width,
+                                term->priv->height);
         add_update_timeout (term);
     }
 }

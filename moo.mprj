@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <medit-project version="1.0" type="C" name="moo">
  <active>gtk-cvs</active>
+ <commands>
+  <compile>cd $(builddir) &amp;&amp; $(make) $(base).lo</compile>
+ </commands>
  <configurations>
   <debug>
    <build_dir>build/debug</build_dir>

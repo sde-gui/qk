@@ -2831,7 +2831,10 @@ fileview_set_filter (MooFileView    *fileview,
     g_return_if_fail (null_filter != NULL);
 
     if (filter == null_filter)
-        return fileview_set_filter (fileview, NULL);
+    {
+        fileview_set_filter (fileview, NULL);
+        return;
+    }
 
     if (filter && (gtk_file_filter_get_needed (filter) & GTK_FILE_FILTER_URI))
     {
@@ -3791,7 +3794,8 @@ entry_changed (GtkEntry       *entry,
     else
     {
         fileview->priv->entry_state = ENTRY_STATE_TYPEAHEAD;
-        return typeahead_try (fileview, need_to_refilter);
+        typeahead_try (fileview, need_to_refilter);
+        return;
     }
 }
 

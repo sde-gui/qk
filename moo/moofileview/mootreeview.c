@@ -502,10 +502,12 @@ _moo_tree_view_unselect_all (MooTreeView *view)
     switch (child->type)
     {
         case MOO_TREE_VIEW_TREE:
-            return gtk_tree_selection_unselect_all (child->u.tree.selection);
+            gtk_tree_selection_unselect_all (child->u.tree.selection);
+            break;
 
         case MOO_TREE_VIEW_ICON:
-            return _moo_icon_view_unselect_all (child->u.icon.view);
+            _moo_icon_view_unselect_all (child->u.icon.view);
+            break;
     }
 }
 
@@ -620,10 +622,12 @@ _moo_tree_view_set_cursor (MooTreeView    *view,
     switch (child->type)
     {
         case MOO_TREE_VIEW_TREE:
-            return gtk_tree_view_set_cursor (child->u.tree.view, path, NULL, start_editing);
+            gtk_tree_view_set_cursor (child->u.tree.view, path, NULL, start_editing);
+            break;
 
         case MOO_TREE_VIEW_ICON:
-            return _moo_icon_view_set_cursor (child->u.icon.view, path, FALSE);
+            _moo_icon_view_set_cursor (child->u.icon.view, path, FALSE);
+            break;
     }
 }
 
@@ -643,10 +647,12 @@ _moo_tree_view_scroll_to_cell (MooTreeView    *view,
     switch (child->type)
     {
         case MOO_TREE_VIEW_TREE:
-            return gtk_tree_view_scroll_to_cell (child->u.tree.view, path, NULL, FALSE, 0, 0);
+            gtk_tree_view_scroll_to_cell (child->u.tree.view, path, NULL, FALSE, 0, 0);
+            break;
 
         case MOO_TREE_VIEW_ICON:
-            return _moo_icon_view_scroll_to_cell (child->u.icon.view, path);
+            _moo_icon_view_scroll_to_cell (child->u.icon.view, path);
+            break;
     }
 }
 
@@ -667,10 +673,12 @@ _moo_tree_view_selected_foreach (MooTreeView    *view,
     switch (child->type)
     {
         case MOO_TREE_VIEW_TREE:
-            return gtk_tree_selection_selected_foreach (child->u.tree.selection, func, data);
+            gtk_tree_selection_selected_foreach (child->u.tree.selection, func, data);
+            break;
 
         case MOO_TREE_VIEW_ICON:
-            return _moo_icon_view_selected_foreach (child->u.icon.view, func, data);
+            _moo_icon_view_selected_foreach (child->u.icon.view, func, data);
+            break;
     }
 }
 

@@ -606,7 +606,10 @@ moo_tree_helper_delete_row (MooTreeHelper *helper)
     selection = gtk_tree_view_get_selection (helper->widget);
 
     if (!gtk_tree_selection_get_selected (selection, &model, &iter))
-        g_return_if_reached ();
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        return;
+    }
 
     path = gtk_tree_model_get_path (model, &iter);
 
@@ -640,7 +643,10 @@ moo_tree_helper_row_move (MooTreeHelper *helper,
     selection = gtk_tree_view_get_selection (helper->widget);
 
     if (!gtk_tree_selection_get_selected (selection, &model, &iter))
-        g_return_if_reached ();
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        return;
+    }
 
     path = gtk_tree_model_get_path (model, &iter);
     new_path = gtk_tree_path_copy (path);

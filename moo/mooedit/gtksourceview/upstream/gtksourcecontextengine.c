@@ -3038,7 +3038,7 @@ create_reg_all (Context           *context,
 				 * or parser need to check it */
 				else
 				{
-//					g_critical ("%s: oops", G_STRLOC);
+					/* g_critical ("%s: oops", G_STRLOC); */
 					append = FALSE;
 				}
 

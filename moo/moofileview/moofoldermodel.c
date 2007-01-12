@@ -678,7 +678,10 @@ moo_folder_model_get_iter_impl (GtkTreeModel *tree_model,
     model = MOO_FOLDER_MODEL (tree_model);
 
     if (gtk_tree_path_get_depth (path) != 1)
-        g_return_val_if_reached (FALSE);
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        return FALSE;
+    }
 
     index_ = gtk_tree_path_get_indices(path)[0];
 

@@ -734,18 +734,21 @@ text_view_start_selection_dnd (GtkTextView       *text_view,
     GdkDragContext *context;
     GtkTargetList *target_list;
 
-    static const GtkTargetEntry target_table[] = {
 #if !GTK_CHECK_VERSION(2,10,0)
+    static const GtkTargetEntry target_table[] = {
         { (char*) "GTK_TEXT_BUFFER_CONTENTS", GTK_TARGET_SAME_APP, 0 }
-#endif
     };
+
+    target_list = gtk_target_list_new (target_table, G_N_ELEMENTS (target_table));
+#else
+    target_list = gtk_target_list_new (NULL, 0);
+#endif
+
+    gtk_target_list_add_text_targets (target_list, 0);
 
     text_view->drag_start_x = -1;
     text_view->drag_start_y = -1;
     text_view->pending_place_cursor_button = 0;
-
-    target_list = gtk_target_list_new (target_table, G_N_ELEMENTS (target_table));
-    gtk_target_list_add_text_targets (target_list, 0);
 
     context = gtk_drag_begin (GTK_WIDGET (text_view), target_list,
                               (GdkDragAction) (GDK_ACTION_COPY | GDK_ACTION_MOVE),

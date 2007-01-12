@@ -46,11 +46,13 @@ char        *_moo_py_err_string             (void);
 void         _moo_py_init_print_funcs       (void);
 
 
-#define return_None     G_STMT_START {Py_INCREF(Py_None); return Py_None;} G_STMT_END
-#define return_Self     G_STMT_START {Py_INCREF((PyObject*)self); return (PyObject*)self;} G_STMT_END
+#define return_None     return Py_INCREF(Py_None), (Py_None)
+#define return_Self     return Py_INCREF(self), (self)
 
-#define return_True     G_STMT_START {Py_INCREF(Py_True); return Py_True;} G_STMT_END
-#define return_False    G_STMT_START {Py_INCREF(Py_False); return Py_False;} G_STMT_END
+#define return_True     return Py_INCREF(Py_True), (Py_True)
+#define return_False    return Py_INCREF(Py_False), (Py_False)
+
+#define return_Int(v)   return Py_BuildValue ((char*)"i", (v))
 
 #define return_Bool(v)          \
 G_STMT_START {                  \
@@ -65,17 +67,14 @@ G_STMT_START {                  \
     }                           \
 } G_STMT_END
 
-#define return_Int(v)   return Py_BuildValue ((char*)"i", (v))
-
-
-#define return_AttrError(msg)       G_STMT_START {PyErr_SetString(PyExc_AttributeError, msg); return NULL;} G_STMT_END
-#define return_AttrErrorInt(msg)    G_STMT_START {PyErr_SetString(PyExc_AttributeError, msg); return -1;} G_STMT_END
-#define return_TypeError(msg)       G_STMT_START {PyErr_SetString(PyExc_TypeError, msg); return NULL;} G_STMT_END
-#define return_TypeErrorInt(msg)    G_STMT_START {PyErr_SetString(PyExc_TypeError, msg); return -1;} G_STMT_END
-#define return_RuntimeError(msg)    G_STMT_START {PyErr_SetString(PyExc_RuntimeError, msg); return NULL;} G_STMT_END
-#define return_RuntimeErrorInt(msg) G_STMT_START {PyErr_SetString(PyExc_RuntimeError, msg); return -1;} G_STMT_END
-#define return_ValueError(msg)      G_STMT_START {PyErr_SetString(PyExc_ValueError, msg); return NULL;} G_STMT_END
-#define return_ValueErrorInt(msg)   G_STMT_START {PyErr_SetString(PyExc_ValueError, msg); return -1;} G_STMT_END
+#define return_AttrError(msg)       return PyErr_SetString (PyExc_AttributeError, msg), NULL
+#define return_AttrErrorInt(msg)    return PyErr_SetString (PyExc_AttributeError, msg), -1
+#define return_TypeError(msg)       return PyErr_SetString (PyExc_TypeError, msg), NULL
+#define return_TypeErrorInt(msg)    return PyErr_SetString (PyExc_TypeError, msg), -1
+#define return_RuntimeError(msg)    return PyErr_SetString (PyExc_RuntimeError, msg), NULL
+#define return_RuntimeErrorInt(msg) return PyErr_SetString (PyExc_RuntimeError, msg), -1
+#define return_ValueError(msg)      return PyErr_SetString (PyExc_ValueError, msg), NULL
+#define return_ValueErrorInt(msg)   return PyErr_SetString (PyExc_ValueError, msg), -1
 
 
 G_END_DECLS

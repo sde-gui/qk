@@ -462,6 +462,11 @@ egg_regex_optimize (EggRegex  *regex,
 {
   const gchar *errmsg;
   pcre_extra *extra;
+  union
+  {
+    gpointer *p;
+    pcre_extra **extra;
+  } u;
 
   g_return_val_if_fail (regex != NULL, FALSE);
   g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -488,11 +493,6 @@ egg_regex_optimize (EggRegex  *regex,
     return TRUE;
 
   /* hack to silent gcc about strict-aliasing */
-  union
-  {
-    gpointer *p;
-    pcre_extra **extra;
-  } u;
   u.extra = &extra;
   if (!g_atomic_pointer_compare_and_exchange (u.p, NULL, extra))
     /* someone else has optimized the regex while this functions was running */

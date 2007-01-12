@@ -646,9 +646,9 @@ exe_type_create_command (G_GNUC_UNUSED MooCommandType *type,
     g_return_val_if_fail (cmd_line && *cmd_line, NULL);
 
     if (!parse_input (moo_command_data_get (data, KEY_INPUT), &input))
-        g_return_val_if_reached (NULL);
+        return NULL;
     if (!parse_output (moo_command_data_get (data, KEY_OUTPUT), &output))
-        g_return_val_if_reached (NULL);
+        return NULL;
 
     cmd = _moo_command_exe_new (cmd_line,
                                 moo_command_options_parse (options),

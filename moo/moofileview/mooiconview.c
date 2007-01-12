@@ -1355,17 +1355,23 @@ static void     calculate_pixbuf_size   (MooIconView    *view)
     int width, height;
 
     if (!view->priv->pixbuf.show)
-        return set_pixbuf_size (view, 0, 0);
+    {
+        set_pixbuf_size (view, 0, 0);
+        return;
+    }
 
     if (view->priv->pixel_icon_size >= 0)
-        return set_pixbuf_size (view,
-                                view->priv->pixel_icon_size,
-                                view->priv->pixel_icon_size);
-
-    if (view->priv->icon_size >= 0)
     {
-        if (gtk_icon_size_lookup (view->priv->icon_size, &width, &height))
-            return set_pixbuf_size (view, width, height);
+        set_pixbuf_size (view, view->priv->pixel_icon_size,
+                         view->priv->pixel_icon_size);
+        return;
+    }
+
+    if (view->priv->icon_size >= 0 &&
+        gtk_icon_size_lookup (view->priv->icon_size, &width, &height))
+    {
+        set_pixbuf_size (view, width, height);
+        return;
     }
 
     g_object_get (view->priv->pixbuf.cell,
@@ -1374,7 +1380,10 @@ static void     calculate_pixbuf_size   (MooIconView    *view)
                   NULL);
 
     if (height >= 0 && width >= 0)
-        return set_pixbuf_size (view, width, height);
+    {
+        set_pixbuf_size (view, width, height);
+        return;
+    }
 
     gtk_tree_model_get_iter_first (view->priv->model, &iter);
     view->priv->pixbuf.func (view, view->priv->pixbuf.cell,
@@ -1404,14 +1413,20 @@ static void     calculate_row_height    (MooIconView    *view)
     int height;
 
     if (!view->priv->text.show)
-        return set_text_height (view, 0);
+    {
+        set_text_height (view, 0);
+        return;
+    }
 
     g_object_get (view->priv->text.cell,
                   "height", &height,
                   NULL);
 
     if (height >= 0)
-        return set_text_height (view, height);
+    {
+        set_text_height (view, height);
+        return;
+    }
 
     gtk_tree_model_get_iter_first (view->priv->model, &iter);
     view->priv->text.func (view, view->priv->text.cell,
@@ -2678,7 +2693,8 @@ _moo_icon_view_select_range (MooIconView  *view,
     if (selection->mode != GTK_SELECTION_MULTIPLE)
     {
         g_return_if_fail (!gtk_tree_path_compare (start, end));
-        return _moo_icon_view_select_path (view, start);
+        _moo_icon_view_select_path (view, start);
+        return;
     }
 
     start_index = gtk_tree_path_get_indices(start)[0];

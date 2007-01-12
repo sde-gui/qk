@@ -504,7 +504,7 @@ as_set_match (ASSet      *set,
     reversed = g_utf8_strreverse (text, -1);
     egg_regex_clear (set->regex);
 
-    if (egg_regex_match (set->regex, reversed, 0) <= 0)
+    if (!egg_regex_match (set->regex, reversed, 0))
         goto out;
 
     for (i = 0; i < set->n_strings; ++i)

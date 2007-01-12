@@ -64,11 +64,6 @@ enum {
 static guint signals[LAST_SIGNAL];
 
 
-enum {
-    PROP_0,
-};
-
-
 /* MOO_TYPE_CMD_VIEW */
 G_DEFINE_TYPE (MooCmdView, moo_cmd_view, MOO_TYPE_LINE_VIEW)
 

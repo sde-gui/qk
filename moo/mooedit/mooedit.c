@@ -837,7 +837,8 @@ try_mode_string (MooEdit    *edit,
     if ((start = strstr (string, KATE_MODE_STRING)))
     {
         start += strlen (KATE_MODE_STRING);
-        return parse_kate_mode_string (edit, start);
+        parse_kate_mode_string (edit, start);
+        return;
     }
 
     if ((start = strstr (string, EMACS_MODE_STRING)))
@@ -847,7 +848,8 @@ try_mode_string (MooEdit    *edit,
         if ((end = strstr (start, EMACS_MODE_STRING)) && end > start)
         {
             end[0] = 0;
-            return parse_emacs_mode_string (edit, start);
+            parse_emacs_mode_string (edit, start);
+            return;
         }
     }
 
@@ -858,7 +860,8 @@ try_mode_string (MooEdit    *edit,
         if ((end = strstr (start, MOO_MODE_STRING)) && end > start)
         {
             end[0] = 0;
-            return parse_moo_mode_string (edit, start);
+            parse_moo_mode_string (edit, start);
+            return;
         }
     }
 }

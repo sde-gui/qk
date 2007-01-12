@@ -244,7 +244,10 @@ page_get_scheme (MooPrefsDialogPage *page)
     g_return_val_if_fail (combo != NULL, NULL);
 
     if (!gtk_combo_box_get_active_iter (combo, &iter))
-        g_return_val_if_reached (NULL);
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        return NULL;
+    }
 
     model = gtk_combo_box_get_model (combo);
     gtk_tree_model_get (model, &iter, 0, &scheme, -1);
@@ -550,7 +553,10 @@ page_get_default_lang (MooPrefsDialogPage *page)
     g_return_val_if_fail (combo != NULL, NULL);
 
     if (!gtk_combo_box_get_active_iter (combo, &iter))
-        g_return_val_if_reached (NULL);
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        return NULL;
+    }
 
     model = gtk_combo_box_get_model (combo);
     gtk_tree_model_get (model, &iter, COLUMN_ID, &lang, -1);

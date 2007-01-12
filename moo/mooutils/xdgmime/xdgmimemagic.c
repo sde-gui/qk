@@ -29,6 +29,7 @@
 #include <config.h>
 #endif
 
+#define _GNU_SOURCE
 #include <assert.h>
 #include "xdgmimemagic.h"
 #include "xdgmimeint.h"

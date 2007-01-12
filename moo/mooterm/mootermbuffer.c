@@ -399,13 +399,10 @@ set_screen_width (MooTermBuffer  *buf,
 
         if (old_width < width)
         {
-            GdkRectangle changed = {
-                0, old_width,
-                buf->priv->screen_height,
-                width - old_width
-            };
-
-            buf_changed_add_rect (buf, changed);
+            /* XXX width and height swapped here? */
+            buf_changed_add_rect_dim (buf, 0, old_width,
+                                      buf->priv->screen_height,
+                                      width - old_width);
             _moo_term_buffer_changed (buf);
         }
 
@@ -442,13 +439,12 @@ static void     set_screen_height   (MooTermBuffer  *buf,
         if (height > old_height)
         {
             guint add = height - old_height;
-            GdkRectangle changed = {0, old_height, width, add};
 
             for (i = 0; i < height - old_height; ++i)
                 g_ptr_array_add (buf->priv->lines,
                                  _moo_term_line_new (width, buf->priv->current_attr));
 
-            buf_changed_add_rect (buf, changed);
+            buf_changed_add_rect_dim (buf, 0, old_height, width, add);
             content_changed = TRUE;
         }
         else /* height < old_height */
@@ -479,13 +475,12 @@ static void     set_screen_height   (MooTermBuffer  *buf,
         if (height > old_height)
         {
             guint add = height - old_height;
-            GdkRectangle changed = {0, old_height, width, add};
 
             for (i = 0; i < height - old_height; ++i)
                 g_ptr_array_add (buf->priv->lines,
                                  _moo_term_line_new (width, buf->priv->current_attr));
 
-            buf_changed_add_rect (buf, changed);
+            buf_changed_add_rect_dim (buf, 0, old_height, width, add);
             content_changed = TRUE;
         }
         else /* height < old_height */
@@ -1112,10 +1107,6 @@ _moo_term_buffer_index (MooTermBuffer  *buf)
 
         if (cursor == bottom)
         {
-            GdkRectangle changed = {
-                0, buf->priv->top_margin, width, bottom - top + 1
-            };
-
             delete_line (buf, g_ptr_array_index (buf->priv->lines, top), TRUE, TRUE);
 
             memmove (&buf->priv->lines->pdata[top],
@@ -1125,7 +1116,8 @@ _moo_term_buffer_index (MooTermBuffer  *buf)
             buf->priv->lines->pdata[bottom] =
                     _moo_term_line_new (width, buf->priv->current_attr);
 
-            buf_changed_add_rect (buf, changed);
+            buf_changed_add_rect_dim (buf, 0, buf->priv->top_margin,
+                                      width, bottom - top + 1);
         }
         else
         {
@@ -1171,10 +1163,6 @@ _moo_term_buffer_reverse_index (MooTermBuffer  *buf)
 
     if (cursor == top)
     {
-        GdkRectangle changed = {
-            0, buf->priv->top_margin, width, bottom - top + 1
-        };
-
         delete_line (buf, g_ptr_array_index (buf->priv->lines, bottom), TRUE, TRUE);
 
         memmove (&buf->priv->lines->pdata[top+1],
@@ -1184,7 +1172,8 @@ _moo_term_buffer_reverse_index (MooTermBuffer  *buf)
         buf->priv->lines->pdata[top] =
                 _moo_term_line_new (width, buf->priv->current_attr);
 
-        buf_changed_add_rect (buf, changed);
+        buf_changed_add_rect_dim (buf, 0, buf->priv->top_margin,
+                                  width, bottom - top + 1);
     }
     else
     {
@@ -1560,12 +1549,6 @@ _moo_term_buffer_delete_line (MooTermBuffer  *buf,
     guint bottom = buf->priv->bottom_margin + buf->priv->screen_offset;
     guint i;
 
-    GdkRectangle changed = {
-        0, buf->priv->_cursor_row,
-        buf->priv->screen_width,
-        bottom - cursor + 1
-    };
-
     g_return_if_fail (n != 0);
     g_return_if_fail (top <= cursor && cursor <= bottom);
 
@@ -1587,7 +1570,9 @@ _moo_term_buffer_delete_line (MooTermBuffer  *buf,
                 _moo_term_line_new (buf->priv->screen_width,
                                     buf->priv->current_attr);
 
-    buf_changed_add_rect (buf, changed);
+    buf_changed_add_rect_dim (buf, 0, buf->priv->_cursor_row,
+                              buf->priv->screen_width,
+                              bottom - cursor + 1);
     _moo_term_buffer_changed (buf);
 }
 
@@ -1600,12 +1585,6 @@ _moo_term_buffer_insert_line (MooTermBuffer  *buf,
     guint top = buf->priv->top_margin + buf->priv->screen_offset;
     guint bottom = buf->priv->bottom_margin + buf->priv->screen_offset;
     guint i;
-
-    GdkRectangle changed = {
-        0, buf->priv->_cursor_row,
-        buf->priv->screen_width,
-        buf->priv->bottom_margin - buf->priv->_cursor_row + 1
-    };
 
     g_return_if_fail (n != 0);
     g_return_if_fail (top <= cursor && cursor <= bottom);
@@ -1628,7 +1607,9 @@ _moo_term_buffer_insert_line (MooTermBuffer  *buf,
                 _moo_term_line_new (buf->priv->screen_width,
                                     buf->priv->current_attr);
 
-    buf_changed_add_rect (buf, changed);
+    buf_changed_add_rect_dim (buf, 0, buf->priv->_cursor_row,
+                              buf->priv->screen_width,
+                              buf->priv->bottom_margin - buf->priv->_cursor_row + 1);
     _moo_term_buffer_changed (buf);
 }
 

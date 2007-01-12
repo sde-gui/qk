@@ -2698,8 +2698,9 @@ translate_coords (GdkWindow *parent_window,
 }
 
 
-static void     tab_drag_start              (MooNotebook    *nb,
-                                             GdkEventMotion *event)
+static void
+tab_drag_start (MooNotebook    *nb,
+                GdkEventMotion *event)
 {
     Page *page;
     GdkRectangle rect;
@@ -2711,7 +2712,10 @@ static void     tab_drag_start              (MooNotebook    *nb,
     event_y = event->y;
 
     if (!translate_coords (nb->priv->tab_window, event->window, &event_x, &event_y))
-        g_return_if_reached ();
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        return;
+    }
 
     page = nb->priv->current_page;
     g_return_if_fail (page != NULL);
@@ -2753,7 +2757,10 @@ static void     tab_drag_motion             (MooNotebook    *nb,
         event_y = event->y;
 
         if (!translate_coords (nb->priv->tab_window, event->window, &event_x, &event_y))
-            g_return_if_reached ();
+        {
+            g_critical ("%s: oops", G_STRLOC);
+            return;
+        }
     }
     else
     {
@@ -3155,7 +3162,10 @@ static gboolean moo_notebook_maybe_popup    (MooNotebook    *nb,
     event_y = event->y;
 
     if (!translate_coords (nb->priv->tab_window, event->window, &event_x, &event_y))
-        g_return_val_if_reached (FALSE);
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        return FALSE;
+    }
 
     page = find_label_at_xy (nb, event_x, event_y, FALSE);
 
@@ -3182,7 +3192,10 @@ void    moo_notebook_set_popup_creation_func(MooNotebook    *notebook,
     g_return_if_fail (MOO_IS_NOTEBOOK (notebook));
 
     if (!func)
-        return moo_notebook_set_popup_creation_func (notebook, popup_func, NULL);
+    {
+        moo_notebook_set_popup_creation_func (notebook, popup_func, NULL);
+        return;
+    }
 
     notebook->priv->popup_func = func;
     notebook->priv->popup_user_data = user_data;

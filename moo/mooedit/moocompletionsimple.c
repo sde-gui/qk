@@ -547,7 +547,7 @@ moo_completion_group_find (MooCompletionGroup *group,
 
     egg_regex_clear (group->regex);
 
-    if (egg_regex_match (group->regex, line, 0) >= 1)
+    if (egg_regex_match (group->regex, line, 0))
     {
         guint i;
 

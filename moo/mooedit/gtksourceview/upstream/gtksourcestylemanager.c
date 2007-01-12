@@ -408,22 +408,24 @@ gtk_source_style_manager_prepend_search_path (GtkSourceStyleManager *manager,
 	g_free (new_dirs);
 }
 
-// gboolean
-// gtk_source_style_manager_add_scheme (GtkSourceStyleManager *manager,
-// 				     const gchar           *filename)
-// {
-// 	GtkSourceStyleScheme *scheme;
-//
-// 	g_return_val_if_fail (GTK_IS_SOURCE_STYLE_MANAGER (manager), FALSE);
-// 	g_return_val_if_fail (filename != NULL, FALSE);
-//
-// 	scheme = _gtk_source_style_scheme_new_from_file (filename);
-//
-// 	if (scheme == NULL)
-// 		return FALSE;
-//
-// 	/* ??? */
-// }
+#if 0
+gboolean
+gtk_source_style_manager_add_scheme (GtkSourceStyleManager *manager,
+				     const gchar           *filename)
+{
+	GtkSourceStyleScheme *scheme;
+
+	g_return_val_if_fail (GTK_IS_SOURCE_STYLE_MANAGER (manager), FALSE);
+	g_return_val_if_fail (filename != NULL, FALSE);
+
+	scheme = _gtk_source_style_scheme_new_from_file (filename);
+
+	if (scheme == NULL)
+		return FALSE;
+
+	/* ??? */
+}
+#endif
 
 static void
 reload_if_needed (GtkSourceStyleManager *mgr)

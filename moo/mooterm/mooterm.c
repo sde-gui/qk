@@ -840,7 +840,10 @@ static void     scroll_abs                      (MooTerm        *term,
     }
 
     if (line >= buf_scrollback (term->priv->buffer))
-        return scroll_to_bottom (term, update_adj);
+    {
+        scroll_to_bottom (term, update_adj);
+        return;
+    }
 
     term->priv->top_line = line;
     term->priv->scrolled = TRUE;

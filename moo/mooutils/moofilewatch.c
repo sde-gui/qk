@@ -16,6 +16,8 @@
 #endif
 
 #ifdef MOO_USE_FAM
+/* need PATH_MAX even with -ansi */
+#define _GNU_SOURCE
 #include <fam.h>
 #else
 #define WANT_STAT_MONITOR
@@ -520,21 +522,12 @@ monitor_free (Monitor *monitor)
 #ifdef MOO_USE_FAM
 
 #define SET_FAM_ERROR(func,error)                       \
-G_STMT_START {                                          \
     g_set_error (error, MOO_FILE_WATCH_ERROR,           \
                  MOO_FILE_WATCH_ERROR_FAILED,           \
                  #func " failed: %s",                   \
                  ((FAMErrno && FamErrlist[FAMErrno]) ?  \
                     FamErrlist[FAMErrno] :              \
-                    "unknown error"));                  \
-} G_STMT_END
-
-#define RETURN_FAM_ERROR(func,error,ret)                \
-G_STMT_START {                                          \
-    SET_FAM_ERROR (func,error);                         \
-    return ret;                                         \
-} G_STMT_END
-
+                    "unknown error"))
 
 #define MOO_FAM_SOCKET_WATCH_PRIORITY   G_PRIORITY_DEFAULT
 
@@ -550,7 +543,10 @@ watch_fam_start (MooFileWatch   *watch,
     GIOChannel *fam_socket;
 
     if (FAMOpen (&watch->fam_connection) != 0)
-        RETURN_FAM_ERROR (FAMOpen, error, FALSE);
+    {
+        SET_FAM_ERROR (FAMOpen, error);
+        return FALSE;
+    }
 
 #ifdef HAVE_FAMNOEXISTS
     FAMNoExists (&watch->fam_connection);
@@ -575,9 +571,12 @@ watch_fam_shutdown (MooFileWatch   *watch,
         g_source_remove (watch->fam_connection_watch);
 
     if (FAMClose (&watch->fam_connection))
-        RETURN_FAM_ERROR (FAMOpen, error, FALSE);
-    else
-        return TRUE;
+    {
+        SET_FAM_ERROR (FAMClose, error);
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 
@@ -609,9 +608,11 @@ watch_fam_start_monitor (MooFileWatch   *watch,
                      watch->fam_connection.fd, monitor->filename);
 
         if (monitor->isdir)
-            RETURN_FAM_ERROR (FAMMonitorDirectory, error, FALSE);
+            SET_FAM_ERROR (FAMMonitorDirectory, error);
         else
-            RETURN_FAM_ERROR (FAMMonitorFile, error, FALSE);
+            SET_FAM_ERROR (FAMMonitorFile, error);
+
+        return FALSE;
     }
     else
     {

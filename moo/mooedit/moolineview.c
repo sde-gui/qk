@@ -259,7 +259,10 @@ moo_line_view_move_cursor (GtkTextView    *text_view,
         handle = FALSE;
 
     if (!handle)
-        return GTK_TEXT_VIEW_CLASS(moo_line_view_parent_class)->move_cursor (text_view, step, count, extend_selection);
+    {
+        GTK_TEXT_VIEW_CLASS(moo_line_view_parent_class)->move_cursor (text_view, step, count, extend_selection);
+        return;
+    }
 
     view = MOO_LINE_VIEW (text_view);
     buffer = gtk_text_view_get_buffer (text_view);
@@ -599,7 +602,10 @@ moo_line_view_set_boxed (MooLineView    *view,
     g_return_if_fail (g_type_is_a (type, G_TYPE_BOXED));
 
     if (!data)
-        return moo_line_view_set_data (view, line, NULL, NULL);
+    {
+        moo_line_view_set_data (view, line, NULL, NULL);
+        return;
+    }
 
     gval.g_type = 0;
     g_value_init (&gval, type);

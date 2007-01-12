@@ -1214,14 +1214,16 @@ child_new (MooGladeXML    *xml,
         return NULL;
     }
 
-//     if (!strcmp (class_name, "GtkToolbar"))
-//     {
-//         g_warning ("Ignoring %s", class_name);
-//         child = g_new0 (Child, 1);
-//         child->empty = TRUE;
-//         child->parent_node = parent;
-//         return child;
-//     }
+#if 0
+    if (!strcmp (class_name, "GtkToolbar"))
+    {
+        g_warning ("Ignoring %s", class_name);
+        child = g_new0 (Child, 1);
+        child->empty = TRUE;
+        child->parent_node = parent;
+        return child;
+    }
+#endif
 
     internal_child = moo_markup_get_prop (node, "internal-child");
 

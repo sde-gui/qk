@@ -613,7 +613,10 @@ filter_store_list_user_filters (FilterStore *store)
     offset = store->num_builtin + (store->has_separator ? 1 : 0);
 
     if (!gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (store->filters), &iter, NULL, offset))
-        g_return_val_if_reached (NULL);
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        return NULL;
+    }
 
     do
     {

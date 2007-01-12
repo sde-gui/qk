@@ -29,6 +29,7 @@
 #include <config.h>
 #endif
 
+#define _GNU_SOURCE
 #include "xdgmimeglob.h"
 #include "xdgmimeint.h"
 #include <stdlib.h>

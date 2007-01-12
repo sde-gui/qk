@@ -397,6 +397,28 @@ save_all (MooEdit *doc)
 }
 
 
+static gboolean
+check_context (MooCommandOptions options,
+               gpointer          doc,
+               gpointer          window)
+{
+    if ((options & MOO_COMMAND_NEED_WINDOW) &&
+        !MOO_IS_EDIT_WINDOW (window))
+            return FALSE;
+
+    if ((options & MOO_COMMAND_NEED_DOC) && doc == NULL)
+        return FALSE;
+
+    if ((options & MOO_COMMAND_NEED_FILE) &&
+        !(MOO_IS_EDIT (doc) && moo_edit_get_filename (doc) != NULL))
+            return FALSE;
+
+    if ((options & MOO_COMMAND_NEED_SAVE) && !MOO_IS_EDIT (doc))
+        return FALSE;
+
+    return TRUE;
+}
+
 void
 moo_command_run (MooCommand         *cmd,
                  MooCommandContext  *ctx)
@@ -410,17 +432,7 @@ moo_command_run (MooCommand         *cmd,
     doc = moo_command_context_get_doc (ctx);
     window = moo_command_context_get_window (ctx);
 
-    if (cmd->options & MOO_COMMAND_NEED_WINDOW)
-        g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-
-    if (cmd->options & MOO_COMMAND_NEED_DOC)
-        g_return_if_fail (doc != NULL);
-
-    if (cmd->options & MOO_COMMAND_NEED_FILE)
-        g_return_if_fail (MOO_IS_EDIT (doc) && moo_edit_get_filename (doc) != NULL);
-
-    if (cmd->options & MOO_COMMAND_NEED_SAVE)
-        g_return_if_fail (MOO_IS_EDIT (doc));
+    g_return_if_fail (check_context (cmd->options, doc, window));
 
     if (cmd->options & MOO_COMMAND_NEED_SAVE_ALL)
     {

@@ -197,24 +197,38 @@ inline static GdkRegion *buf_get_changed(MooTermBuffer  *buf)
 
 #define buf_changed_add_rect(buf,rect)                              \
 G_STMT_START {                                                      \
-    if (buf->priv->changed)                                         \
-        gdk_region_union_with_rect (buf->priv->changed, &rect);     \
+    if ((buf)->priv->changed)                                       \
+        gdk_region_union_with_rect ((buf)->priv->changed, rect);    \
     else                                                            \
-        buf->priv->changed = gdk_region_rectangle (&rect);          \
+        (buf)->priv->changed = gdk_region_rectangle (rect);         \
+} G_STMT_END
+
+#define buf_changed_add_rect_dim(buf,x_,y_,w_,h_)                   \
+G_STMT_START {                                                      \
+    GdkRectangle rect__;                                            \
+    rect__.x = x_;                                                  \
+    rect__.y = y_;                                                  \
+    rect__.width = w_;                                              \
+    rect__.height = h_;                                             \
+    buf_changed_add_rect (buf, &rect__);                            \
 } G_STMT_END
 
 #define buf_changed_add_range(buf, row, start, len)                 \
 G_STMT_START {                                                      \
-    GdkRectangle rec_ = {start, row, len, 1};                       \
-    buf_changed_add_rect (buf, rec_);                               \
+    GdkRectangle rec__;                                             \
+    rec__.x = start;                                                \
+    rec__.y = row;                                                  \
+    rec__.width = len;                                              \
+    rec__.height = 1;                                               \
+    buf_changed_add_rect (buf, &rec__);                             \
 } G_STMT_END
 
 #define buf_changed_set_all(buf)                                    \
 G_STMT_START {                                                      \
-    GdkRectangle rec_ = {                                           \
-        0, 0, buf->priv->screen_width, buf->priv->screen_height     \
-    };                                                              \
-    buf_changed_add_rect (buf, rec_);                               \
+    GdkRectangle rec__ = {0, 0, 0, 0};                              \
+    rec__.width = (buf)->priv->screen_width;                        \
+    rec__.height = (buf)->priv->screen_height;                      \
+    buf_changed_add_rect (buf, &rec__);                             \
 } G_STMT_END
 
 

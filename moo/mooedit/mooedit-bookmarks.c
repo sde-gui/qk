@@ -27,7 +27,6 @@ static void     disconnect_bookmark         (MooEditBookmark *bk);
 static void
 moo_edit_bookmark_finalize (GObject *object)
 {
-//     MooEditBookmark *bk = MOO_EDIT_BOOKMARK (object);
     G_OBJECT_CLASS(moo_edit_bookmark_parent_class)->finalize (object);
 }
 

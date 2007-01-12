@@ -75,7 +75,7 @@ typedef enum {
     MOO_HTML_HEADING            = 1 << 14,
     MOO_HTML_FONT_SIZE          = 1 << 15,
     MOO_HTML_FONT_PT_SIZE       = 1 << 16,
-    MOO_HTML_FONT_FACE          = 1 << 17,
+    MOO_HTML_FONT_FACE          = 1 << 17
 } MooHtmlAttrMask;
 
 struct _MooHtmlAttr
@@ -471,7 +471,10 @@ moo_html_load_url_real (MooHtml        *html,
     g_return_val_if_fail (url != NULL, FALSE);
 
     if (!moo_html_parse_url (url, &scheme, &base, &anchor))
-        g_return_val_if_reached (FALSE);
+    {
+        g_warning ("%s: invalid url '%s'", G_STRLOC, url);
+        return FALSE;
+    }
 
     if (!scheme)
         scheme = g_strdup ("file://");
@@ -1139,7 +1142,7 @@ moo_html_parse_url (const char     *url,
     regex = egg_regex_new ("^([a-zA-Z]+://)?([^#]*)(#(.*))?$", 0, 0, NULL);
     g_return_val_if_fail (regex != NULL, FALSE);
 
-    if (egg_regex_match (regex, url, 0) < 1)
+    if (!egg_regex_match (regex, url, 0))
     {
         egg_regex_free (regex);
         return FALSE;
@@ -1388,7 +1391,10 @@ moo_html_insert_text (MooHtml        *html,
     const char *p;
 
     if (tag && tag->attr && (tag->attr->mask & MOO_HTML_PRE))
-        return moo_html_insert_verbatim (html, buffer, iter, tag, text);
+    {
+        moo_html_insert_verbatim (html, buffer, iter, tag, text);
+        return;
+    }
 
     while (*text)
     {

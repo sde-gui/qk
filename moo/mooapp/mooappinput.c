@@ -447,7 +447,11 @@ read_input (GIOChannel   *source,
         char c;
         int bytes_read;
 
-        struct pollfd fd = {self->pipe, POLLIN | POLLPRI, 0};
+        struct pollfd fd;
+
+        fd.fd = self->pipe;
+        fd.events = POLLIN | POLLPRI;
+        fd.revents = 0;
 
         switch (poll (&fd, 1, 0))
         {
