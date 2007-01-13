@@ -1,16 +1,13 @@
-import moo
 import gtk
 import gobject
 import pango
-import re
-import sys
 import os
-from moo.utils import _
 
-if os.name == 'nt':
-    PYTHON_COMMAND = '"' + sys.exec_prefix + '\\pythonw.exe" -u'
-else:
-    PYTHON_COMMAND = 'python -u'
+import moo
+from moo.utils import _
+import medit.runpython
+
+MASTER_FILE = 'PYTHON_MASTER_FILE'
 
 try:
     import pyconsole
@@ -19,12 +16,6 @@ except ImportError:
     have_pyconsole = False
 
 PLUGIN_ID = "Python"
-
-class FileLine(object):
-    def __init__(self, filename, line):
-        object.__init__(self)
-        self.filename = filename
-        self.line = line
 
 class Plugin(moo.edit.Plugin):
     def do_init(self):
@@ -46,10 +37,6 @@ class Plugin(moo.edit.Plugin):
                          "PythonConsole", "PythonConsole", -1)
 
         """ Run file """
-        self.patterns = [
-            [re.compile(r'\s*File\s*"([^"]+)",\s*line\s*(\d+).*'), 1, 2],
-            [re.compile(r'\s*([^:]+):(\d+):.*'), 1, 2]
-        ]
         moo.utils.window_class_add_action(moo.edit.EditWindow, "RunFile",
                                           display_name=_("Run File"),
                                           label=_("Run File"),
@@ -89,84 +76,22 @@ class Plugin(moo.edit.Plugin):
         window.set_title("pythony")
         window.show_all()
 
-    def ensure_output(self, window):
-        pane = window.get_pane(PLUGIN_ID)
-        if not pane:
-            label = moo.utils.PaneLabel(icon_stock_id=moo.utils.STOCK_EXECUTE, label=_("Python Output"))
-            output = moo.edit.CmdView()
-            output.set_property("highlight-current-line", True)
-            output.connect("activate", self.output_activate)
-            output.connect("stderr-line", self.stderr_line)
-
-            pane = gtk.ScrolledWindow()
-            pane.set_shadow_type(gtk.SHADOW_ETCHED_IN)
-            pane.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-            pane.add(output)
-            pane.show_all()
-
-            pane.output = output
-            window.add_pane(PLUGIN_ID, pane, label, moo.utils.PANE_POS_BOTTOM)
-            window.add_stop_client(output)
-        return pane
-
-    def output_activate(self, output, line):
-        data = output.get_line_data(line)
-
-        if not data:
-            return False
-
-        editor = moo.edit.editor_instance()
-        editor.open_file(None, output, data.filename)
-
-        doc = editor.get_doc(data.filename)
-
-        if not doc:
-            return True
-
-        editor.set_active_doc(doc)
-        doc.grab_focus()
-
-        if data.line > 0:
-            doc.move_cursor(data.line, -1, False, True)
-
-        return True
-
-    def stderr_line(self, output, line):
-        data = None
-
-        for p in self.patterns:
-            match = p[0].match(line)
-            if match:
-                data = FileLine(match.group(p[1]), int(match.group(p[2])) - 1)
-                break
-
-        if not data:
-            return False
-
-        line_no = output.start_line()
-        output.write(line, -1, output.lookup_tag("error"))
-        output.end_line()
-        output.set_line_data(line_no, data)
-
-        return True
-
     def run_file(self, window):
-        doc = window.get_active_doc()
+        filename = os.environ.get(MASTER_FILE)
 
-        if not doc:
-            return
-        if not doc.get_filename() or doc.get_status() & moo.edit.EDIT_MODIFIED:
-            if not doc.save():
+        if filename is None:
+            doc = window.get_active_doc()
+
+            if not doc:
                 return
+            if not doc.get_filename() or doc.get_status() & moo.edit.EDIT_MODIFIED:
+                if not doc.save():
+                    return
 
-        pane = self.ensure_output(window)
+            filename = doc.get_filename()
 
-        if pane.output.running():
-            return
-
-        pane.output.clear()
-        window.paned.present_pane(pane)
-        pane.output.run_command(PYTHON_COMMAND + ' "%s"' % doc.get_filename())
+        r = medit.runpython.Runner(window, pane_id=PLUGIN_ID)
+        r.run(filename)
 
     def do_detach_win(self, window):
         window.remove_pane(PLUGIN_ID)

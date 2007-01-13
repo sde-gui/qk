@@ -1,0 +1,126 @@
+import gtk
+import os.path
+import gobject
+
+import moo
+from moo.utils import _, N_
+
+import medit
+import mprj.utils
+from mprj.simple import SimpleProject
+from mprj.utils import print_error
+
+from pyproj.config import PyConfig
+from pyproj.optdialog import Dialog as OptionsDialog
+
+
+_STOCK_EXECUTE = moo.utils.STOCK_EXECUTE
+_STOCK_PROJECT_OPTIONS = moo.utils.STOCK_PROJECT_OPTIONS
+
+_OUTPUT_PANE_ID   = "PyProjectOutput"
+_CMD_EXECUTE      = 'execute'
+_CMD_EXECUTE_FILE = 'execute_file'
+
+
+class PyProject(SimpleProject):
+    __config__ = PyConfig
+
+    class DoCmd(object):
+        def __init__(self, proj, *args):
+            object.__init__(self)
+            self.proj = proj
+            self.args = args
+        def __call__(self, window):
+            return self.proj.do_command(window, *self.args)
+
+    def init_ui(self):
+        SimpleProject.init_ui(self)
+
+        self.panes.extend([_OUTPUT_PANE_ID])
+
+        commands = [
+            ["Execute", _("Execute Program"), _STOCK_EXECUTE, "F9", _CMD_EXECUTE],
+            ["ExecuteFile", _("Execute File"), _STOCK_EXECUTE, "<shift>F9", _CMD_EXECUTE_FILE],
+        ]
+
+        for c in commands:
+            self.add_action("PyProject" + c[0],
+                            display_name=c[1], label=c[1],
+                            stock_id=c[2], accel=c[3],
+                            callback=PyProject.DoCmd(self, c[4]))
+
+        editor = moo.edit.editor_instance()
+        xml = editor.get_ui_xml()
+        xml.insert_markup_after(self.merge_id, "Editor/Menubar",
+                                "Project", """
+                                <item name="Build" _label="%s">
+                                  <item action="PyProjectExecute"/>
+                                  <item action="PyProjectExecuteFile"/>
+                                </item>
+                                """ % (N_("_Build"),))
+        xml.insert_markup(self.merge_id, "Editor/Toolbar/BuildToolbar",
+                          0, """
+                          <item action="PyProjectExecute"/>
+                          <separator/>
+                          """)
+
+    def get_file_path(self, file):
+        if os.path.exists(file):
+            return file
+        bd = self.config.get_build_dir(self.topdir)
+        f = os.path.join(bd, file)
+        if os.path.exists(f):
+            return f
+        f = os.path.join(self.topdir, file)
+        if os.path.exists(f):
+            return f
+        return None
+
+    def save_all(self, window):
+        docs = window.list_docs()
+        for d in docs:
+            if d.get_filename() and d.get_status() & moo.edit.EDIT_MODIFIED:
+                d.save()
+
+    def do_command(self, window, cmd):
+        try:
+            self.before_command(window, cmd) and \
+            self.exec_command(window, cmd)   and \
+            self.after_command(window, cmd)
+        except Exception, e:
+            mprj.utils.oops(window, e)
+
+
+    def before_command(self, window, cmd):
+        self.save_all(window)
+        return True
+
+    def after_command(self, window, cmd):
+        return True
+
+    def __cmd_execute(self, window):
+        filename, args, working_dir = self.config.get_exe(self.topdir)
+        r = medit.runpython.Runner(window, pane_id=_OUTPUT_PANE_ID)
+        r.run(filename, args, working_dir)
+        return True
+
+    def __cmd_execute_file(self, window):
+        r = medit.runpython.Runner(window, pane_id=_OUTPUT_PANE_ID)
+        r.run()
+        return True
+
+    def exec_command(self, window, cmd):
+        if cmd == _CMD_EXECUTE:
+            return self.__cmd_execute(window)
+        elif cmd == _CMD_EXECUTE_FILE:
+            return self.__cmd_execute_file(window)
+        else:
+            mprj.utils.implement_me(window, "Command " + cmd)
+            return False
+
+    def create_options_dialog(self):
+        return OptionsDialog(self)
+
+__project__ = PyProject
+__project_type__ = "Python"
+__project_version__ = "1.0"

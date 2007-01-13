@@ -1,7 +1,7 @@
 SUBDIRS = pyproject
 
 moopython_pluginsdir = ${MOO_PLUGINS_DIR}
-moopython_plugins_libdir = ${MOO_PLUGINS_DIR}/lib
+plugins_libdir = ${MOO_PLUGINS_DIR}/lib
 
 ini_in_in_files =			\
 	terminal.ini.desktop.in.in	\
@@ -22,10 +22,12 @@ moopython_plugins_DATA =	\
 	$(ini_files)		\
 	$(plugins)
 
-moopython_plugins_lib_DATA =	\
-	pyconsole.py
+nobase_plugins_lib_DATA =	\
+	pyconsole.py		\
+	medit/__init__.py	\
+	medit/runpython.py
 
-EXTRA_DIST =				\
-    $(moopython_plugins_lib_DATA)	\
-    $(plugins)				\
+EXTRA_DIST =		\
+    $(plugins_lib_DATA)	\
+    $(plugins)		\
     $(ini_in_in_files)

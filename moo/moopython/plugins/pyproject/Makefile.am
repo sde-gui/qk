@@ -33,15 +33,21 @@ nobase_plugin_DATA =			\
 projectsdir = $(MOO_LIB_DIR)
 nobase_projects_DATA =			\
 	projects/c.py			\
-	projects/latex.py		\
 	projects/cproj/config.py	\
 	projects/cproj/__init__.py	\
 	projects/cproj/optdialog.py	\
 	projects/cproj/parser.py	\
 	projects/cproj/view.py		\
 	projects/cproj/options.glade	\
+	projects/latex.py		\
 	projects/ltxproj/config.py	\
-	projects/ltxproj/__init__.py
+	projects/ltxproj/__init__.py	\
+	projects/python.py		\
+	projects/pyproj/config.py	\
+	projects/pyproj/__init__.py	\
+	projects/pyproj/optdialog.py	\
+	projects/pyproj/view.py		\
+	projects/pyproj/options.glade
 
 EXTRA_DIST =				\
     $(nobase_plugin_DATA)		\
