@@ -1,10 +1,10 @@
 #!/bin/sh
 
 if test "x$1" = "x"; then
-    echo usage: $0 srcdir
+    echo "usage: $0 <srcdir>"
     exit 1
 fi
 
-potfiles=`cat $1/po/POTFILES.in` && \
+potfiles=`cat $1/POTFILES.in` && cd .. && \
 for potfile in $potfiles; do mkdir -p `dirname $potfile`; done && \
-echo stamp > pot-subdirs-stamp
+echo stamp > po/pot-subdirs-stamp

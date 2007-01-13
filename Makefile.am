@@ -17,7 +17,8 @@ m4files =			\
 	m4/moo-python.m4	\
 	m4/moo-version.m4	\
 	m4/moo-xdgmime.m4	\
-	m4/moo-xml.m4
+	m4/moo-xml.m4		\
+	m4/python-cross-mingw.m4
 
 EXTRA_DIST =			\
 	$(m4files)		\
@@ -29,29 +30,28 @@ EXTRA_DIST =			\
 	THANKS			\
 	intltool-extract.in	\
 	intltool-merge.in	\
-	intltool-update.in	\
-	mkpotsubdirs
+	intltool-update.in
 
-all-am: pot-subdirs-stamp m4-stamp
-
-m4-stamp: $(m4files)
-	echo stamp > m4-stamp
-	for f in $(m4files); do						\
-		if test $(srcdir)/$$f -nt $(srcdir)/configure; then	\
-			touch $(srcdir)/configure.ac;			\
-		fi							\
-	done
-
-pot-subdirs-stamp: po/POTFILES.in
-	$(SHELL) $(srcdir)/mkpotsubdirs "$(srcdir)"
-CLEANFILES = pot-subdirs-stamp
+# all-am: pot-subdirs-stamp m4-stamp
+#
+# m4-stamp: $(m4files)
+# 	echo stamp > m4-stamp
+# 	for f in $(m4files); do						\
+# 		if test $(srcdir)/$$f -nt $(srcdir)/configure; then	\
+# 			touch $(srcdir)/configure.ac;			\
+# 		fi							\
+# 	done
+#
+# pot-subdirs-stamp: po/POTFILES.in
+# 	$(SHELL) $(srcdir)/mkpotsubdirs "$(srcdir)"
+# CLEANFILES = pot-subdirs-stamp
 
 DIST_SUBDIRS = moo medit tests po
 # need to create pot-subdirs-stamp before it goes to po/
 if MOO_BUILD_MEDIT
-SUBDIRS = . moo medit po
+SUBDIRS = moo medit po
 else
-SUBDIRS = . moo po
+SUBDIRS = moo po
 endif
 
 if MOO_ENABLE_TESTS
