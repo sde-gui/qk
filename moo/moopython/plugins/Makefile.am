@@ -27,7 +27,7 @@ nobase_plugins_lib_DATA =	\
 	medit/__init__.py	\
 	medit/runpython.py
 
-EXTRA_DIST =		\
-    $(plugins_lib_DATA)	\
-    $(plugins)		\
+EXTRA_DIST =			\
+    $(nobase_plugins_lib_DATA)	\
+    $(plugins)			\
     $(ini_in_in_files)
