@@ -37,7 +37,7 @@
   </optimized>
  </configurations>
  <run>
-  <args>--g-fatal-warnings --new-app /tmp/file.tex</args>
+  <args>--g-fatal-warnings --new-app --mode=project</args>
   <exe>medit/medit</exe>
   <vars>
    <var name="LANGUAGE">ru</var>

@@ -3,14 +3,14 @@
 #
 AC_DEFUN_ONCE([_MOO_AC_CHECK_FAM],[
     moo_ac_save_CFLAGS="$CFLAGS"
-    moo_ac_save_LDFLAGS="$LDFLAGS"
+    moo_ac_save_LIBS="$LIBS"
 
     if test x$FAM_LIBS = x; then
         FAM_LIBS=-lfam
     fi
 
     CFLAGS="$CFLAGS $FAM_CFLAGS"
-    LDFLAGS="$LDFLAGS $FAM_LIBS"
+    LIBS="$LIBS $FAM_LIBS"
 
     AC_CHECK_HEADERS(fam.h,[
         AC_CHECK_FUNCS([FAMMonitorDirectory FAMOpen],[fam_found=yes],[fam_found=no])
@@ -53,7 +53,7 @@ AC_DEFUN_ONCE([_MOO_AC_CHECK_FAM],[
     AC_SUBST(MOO_FAM_CFLAGS)
     AC_SUBST(MOO_FAM_LIBS)
     CFLAGS="$moo_ac_save_CFLAGS"
-    LDFLAGS="$moo_ac_save_LDFLAGS"
+    LIBS="$moo_ac_save_LIBS"
 ])
 
 

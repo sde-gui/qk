@@ -4,18 +4,23 @@
 #
 AC_DEFUN_ONCE([MOO_AC_CHECK_XML_STUFF],[
     PKG_CHECK_MODULES(XML,libxml-2.0,[
+        _moo_ac_xml_libs=`$PKG_CONFIG --libs-only-l libxml-2.0`
+        _moo_ac_xml_ldflags=`$PKG_CONFIG --libs-only-L libxml-2.0`
         moo_ac_save_CPPFLAGS="$CPPFLAGS"
         CPPFLAGS="$CPPFLAGS $XML_CFLAGS"
         moo_ac_save_CFLAGS="$CFLAGS"
         CFLAGS="$CFLAGS $XML_CFLAGS"
         moo_ac_save_LDFLAGS="$LDFLAGS"
-        LDFLAGS="$LDFLAGS $XML_LIBS"
+        LDFLAGS="$LDFLAGS $_moo_ac_xml_ldflags"
+        moo_ac_save_LIBS="$LIBS"
+        LIBS="$LIBS $_moo_ac_xml_libs"
 
         AC_CHECK_FUNCS(xmlReadFile xmlParseFile)
         AC_CHECK_MEMBER([xmlNode.line],
                         [AC_DEFINE(HAVE_XMLNODE_LINE,1,[Define if xmlNode structure has 'line' member])],
                         [],[#include <libxml/tree.h>])
 
+        LIBS="$moo_ac_save_LIBS"
         LDFLAGS="$moo_ac_save_LDFLAGS"
         CFLAGS="$moo_ac_save_CFLAGS"
         CPPFLAGS="$moo_ac_save_CPPFLAGS"

@@ -56,35 +56,36 @@ AC_DEFUN([AM_PYTHON_DEVEL_CROSS_MINGW],[
     _ac_pylibs="-L$PYTHON[]_ac_m4_pyver[]_HOME/libs -lpython$_ac_pyversion_no_dot"
   fi
 
+  if test "x$PYTHON[]_ac_m4_pyver[]_LDFLAGS" != x; then
+    _ac_pyldflags=$PYTHON[]_ac_m4_pyver[]_LDFLAGS
+  else
+    _ac_pyldflags=
+  fi
+
   _ac_have_pydev=false
   _ac_save_CPPFLAGS="$CPPFLAGS"
   _ac_save_LDFLAGS="$LDFLAGS"
+  _ac_save_LIBS="$LIBS"
   CPPFLAGS="$CPPFLAGS $_ac_pyincludes"
-  LDFLAGS="$LDFLAGS $_ac_pylibs"
+  LDFLAGS="$LDFLAGS $_ac_pyldflags"
+  LIBS="$LIBS $_ac_pylibs"
   AC_MSG_CHECKING(python headers and linker flags)
-  dnl AC_TRY_LINK is buggy, it puts libs before source file on compilation
-  dnl command line
-  AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-  #include <Python.h>
-  int main ()
-  {
-      Py_Initialize();
-      return 0;
-  }]])],[
-    AC_MSG_RESULT([$_ac_pyincludes $_ac_pylibs])
+  AC_TRY_LINK([#include <Python.h>],[Py_Initialize();],[
+    AC_MSG_RESULT([$_ac_pyincludes $_ac_pyldflags $_ac_pylibs])
     _ac_have_pydev=true
   ],[
     AC_MSG_RESULT(not found)
   ])
   CPPFLAGS="$_ac_save_CPPFLAGS"
   LDFLAGS="$_ac_save_LDFLAGS"
+  LIBS="$_ac_save_LIBS"
 
   if $_ac_have_pydev; then
     AC_SUBST(PYTHON[]_ac_m4_pyver[]_PLATFORM, [nt])
     AC_SUBST(PYTHON[]_ac_m4_pyver[]_INCLUDES,[$_ac_pyincludes])
     AC_SUBST(PYTHON[]_ac_m4_pyver[]_LIBS,[$_ac_pylibs])
     AC_SUBST(PYTHON[]_ac_m4_pyver[]_EXTRA_LIBS,[])
-    AC_SUBST(PYTHON[]_ac_m4_pyver[]_LDFLAGS,[])
+    AC_SUBST(PYTHON[]_ac_m4_pyver[]_LDFLAGS,[$_ac_pyldflags])
     AC_SUBST(PYTHON[]_ac_m4_pyver[]_EXTRA_LDFLAGS,[])
     AC_SUBST(python[]_ac_m4_pyver[]dir,[$_ac_pythondir])
     AC_SUBST(pyexec[]_ac_m4_pyver[]dir,[$_ac_pythondir])
