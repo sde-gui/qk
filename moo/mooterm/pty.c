@@ -89,7 +89,8 @@
 #include <libutil.h>
 #endif
 #include <assert.h>
-#include "mooterm/pty.h"
+#include "pty.h"
+#include <glib.h>
 
 #ifdef MSG_NOSIGNAL
 #define PTY_RECVMSG_FLAGS MSG_NOSIGNAL
@@ -649,7 +650,7 @@ _vte_pty_ptsname(int master)
 	char *buf = NULL;
 	int i;
 	do {
-		buf = (char*)calloc (sizeof(char), len);
+		buf = g_new0 (char, len);
 		i = ptsname_r(master, buf, len - 1);
 		switch (i) {
 		case 0:
@@ -657,7 +658,7 @@ _vte_pty_ptsname(int master)
 			return buf;
 			break;
 		default:
-			free(buf);
+			g_free(buf);
 			buf = NULL;
 			break;
 		}
@@ -666,7 +667,7 @@ _vte_pty_ptsname(int master)
 #elif defined(HAVE_PTSNAME)
 	char *p;
 	if ((p = ptsname(master)) != NULL) {
-		return strdup (p);
+		return g_strdup (p);
 	}
 #elif defined(TIOCGPTN)
 	int pty = 0;
@@ -736,6 +737,35 @@ _vte_pty_unlockpt(int fd)
 #ifndef MOO_OS_BSD
 
 static int
+_vte_pty_open_pt_unix98 (char **name)
+{
+	int fd;
+	char *buf;
+
+	/* Attempt to open the master. */
+	fd = _vte_pty_getpt();
+	*name = NULL;
+	buf = NULL;
+
+	if (fd != -1) {
+		/* Read the slave number and unlock it. */
+		if (((buf = _vte_pty_ptsname(fd)) == NULL) ||
+		    (_vte_pty_grantpt(fd) != 0) ||
+		    (_vte_pty_unlockpt(fd) != 0)) {
+			close(fd);
+			fd = -1;
+		}
+	}
+
+	if (fd != -1 && name != NULL)
+		*name = buf;
+	else
+		g_free (buf);
+
+	return fd;
+}
+
+static int
 _vte_pty_open_unix98(pid_t *child, char **env_add,
 		     const char *command, char **argv,
 		     const char *directory, int columns, int rows)
@@ -761,13 +791,34 @@ _vte_pty_open_unix98(pid_t *child, char **env_add,
 				close(fd);
 				fd = -1;
 			}
-			free(buf);
+			g_free(buf);
 		}
 	}
 	return fd;
 }
 
 #else /* MOO_OS_BSD */
+
+static int
+_vte_pty_open_pt_bsd (char **name)
+{
+	int master, slave;
+	char slave_name[80];
+
+	if (openpty (&master, &slave, slave_name, NULL, NULL) != -1) {
+		close (slave);
+		/* Read the slave number and unlock it. */
+		if ((_vte_pty_grantpt(master) != 0) ||
+		    (_vte_pty_unlockpt(master) != 0)) {
+			close (master);
+			master = -1;
+		} else {
+			if (name != NULL)
+				*name = g_strdup (slave_name);
+		}
+	}
+	return master;
+}
 
 static int
 _vte_pty_open_bsd   (pid_t *child, char **env_add,
@@ -868,6 +919,24 @@ _vte_pty_open_bsd   (pid_t *child, char **env_add,
 // #endif
 #endif
 
+
+/**
+ * _vte_pty_open_pt:
+ * @name: location to store filename or NULL, must be freed with g_free()
+ *
+ * Creates new pseudo-terminal.
+ *
+ * Returns: file descriptor of new pseudo-terminal or -1 on error
+ */
+int
+_vte_pty_open_pt(char **name)
+{
+#ifndef MOO_OS_BSD
+        return _vte_pty_open_pt_unix98(name);
+#else /* MOO_OS_BSD */
+        return _vte_pty_open_pt_bsd(name);
+#endif /* MOO_OS_BSD */
+}
 
 /**
  * _vte_pty_open:

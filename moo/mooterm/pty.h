@@ -35,6 +35,7 @@ extern "C" {
 #define _vte_pty_close      _moo_vte_pty_close
 #define _vte_pty_n_read     _moo_vte_pty_n_read
 #define _vte_pty_n_write    _moo_vte_pty_n_write
+#define _vte_pty_open_pt    _moo_vte_pty_open_pt
 
 
 /* Start up the given binary (exact path, not interpreted at all) in a
@@ -45,6 +46,8 @@ int _vte_pty_open(pid_t *child, char **env_add,
 		  const char *command, char **argv, const char *directory,
 		  int columns, int rows,
 		  int lastlog, int utmp, int wtmp);
+
+int _vte_pty_open_pt(char **name);
 
 /* Set or read the size of a terminal.  Returns 0 on success, -1 on failure,
  * with errno set to defined return codes from ioctl(). */
