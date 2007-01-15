@@ -497,6 +497,41 @@ _wrap_moo_prefs_notify_connect (G_GNUC_UNUSED PyObject *self, PyObject *args)
     }
 }
 %%
+override moo_prefs_new_key varargs
+static PyObject *
+_wrap_moo_prefs_new_key (G_GNUC_UNUSED PyObject *self, PyObject *args)
+{
+    const char *key;
+    GType type;
+    GValue default_value;
+    int prefs_type;
+    PyObject *py_prefs_type, *py_default, *py_type;
+
+    if (!PyArg_ParseTuple (args, (char*) "sOOO:prefs_new_key", &key,
+                           &py_type, &py_default, &py_prefs_type))
+        return NULL;
+    if (pyg_enum_get_value (MOO_TYPE_DATA_DIR_TYPE, py_prefs_type, &prefs_type) != 0)
+        return NULL;
+    if (!(type = pyg_type_from_object (py_type)))
+        return NULL;
+    if (!G_TYPE_IS_VALUE (type))
+        return_TypeError ("given type is not a value type");
+
+    default_value.g_type = 0;
+    g_value_init (&default_value, type);
+
+    if (pyg_value_from_pyobject (&default_value, py_default))
+    {
+        g_value_unset (&default_value);
+        return_TypeError ("could not convert default value to given type");
+    }
+
+    moo_prefs_new_key (key, type, &default_value, prefs_type);
+
+    g_value_unset (&default_value);
+    return_None;
+}
+%%
 override moo_file_dialog_get_filenames noargs
 static PyObject *
 _wrap_moo_file_dialog_get_filenames (PyGObject *self)
