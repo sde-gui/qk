@@ -304,18 +304,36 @@ command_out_or_err (MooCmd         *cmd,
                     GIOCondition    condition,
                     gboolean        out)
 {
-    char *line;
-    gsize line_end;
+    GSList *lines;
     GError *error = NULL;
     GIOStatus status;
+    gsize count;
 
-    status = g_io_channel_read_line (channel, &line, NULL, &line_end, &error);
+    count = 0;
+    lines = NULL;
 
-    if (line)
+    while (count < 4096)
     {
+        char *line = NULL;
+        gsize line_end;
+
+        status = g_io_channel_read_line (channel, &line, NULL, &line_end, &error);
+
+        if (!line)
+            break;
+
+        count += line_end;
         line[line_end] = 0;
-        process_line (cmd, line, !out);
-        g_free (line);
+        lines = g_slist_prepend (lines, line);
+    }
+
+    lines = g_slist_reverse (lines);
+
+    while (lines)
+    {
+        process_line (cmd, lines->data, !out);
+        g_free (lines->data);
+        lines = g_slist_delete_link (lines, lines);
     }
 
     if (error)
