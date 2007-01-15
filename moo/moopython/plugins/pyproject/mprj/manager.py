@@ -11,8 +11,10 @@ from moo.utils import _, N_
 PROJECT_VERSION = "1.0"
 
 
-moo.utils.prefs_new_key_string('Plugins/Project/last', None)
-moo.utils.prefs_new_key_string('Plugins/Project/last_dir', None)
+moo.utils.prefs_new_key('Plugins/Project/last', str, None, moo.utils.PREFS_STATE)
+moo.utils.prefs_new_key('Plugins/Project/last_dir', str, None, moo.utils.PREFS_STATE)
+# moo.utils.prefs_new_key_string('Plugins/Project/last', None)
+# moo.utils.prefs_new_key_string('Plugins/Project/last_dir', None)
 
 
 class _ProjectStore(object):

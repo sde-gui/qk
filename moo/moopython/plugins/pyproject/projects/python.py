@@ -17,7 +17,7 @@ from pyproj.optdialog import Dialog as OptionsDialog
 _STOCK_EXECUTE = moo.utils.STOCK_EXECUTE
 _STOCK_PROJECT_OPTIONS = moo.utils.STOCK_PROJECT_OPTIONS
 
-_OUTPUT_PANE_ID   = "PyProjectOutput"
+_OUTPUT_PANE_ID   = "PythonOutput"
 _CMD_EXECUTE      = 'execute'
 _CMD_EXECUTE_FILE = 'execute_file'
 

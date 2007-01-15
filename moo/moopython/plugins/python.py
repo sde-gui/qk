@@ -90,7 +90,7 @@ class Plugin(moo.edit.Plugin):
 
             filename = doc.get_filename()
 
-        r = medit.runpython.Runner(window, pane_id=PLUGIN_ID)
+        r = medit.runpython.Runner(window)
         r.run(filename)
 
     def do_detach_win(self, window):

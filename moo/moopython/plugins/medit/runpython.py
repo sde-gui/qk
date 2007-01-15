@@ -53,7 +53,7 @@ class Runner(object):
             self.window.add_stop_client(output)
         return pane
 
-    def run(self, filename, args_string=None, working_dir=None):
+    def run(self, filename=None, args_string=None, working_dir=None):
         pane = self.__get_output()
 
         if pane is not None and pane.output.running():
@@ -79,6 +79,7 @@ class Runner(object):
         cmd_line = self.python_command + ' "%s"' % filename
         if args_string is not None:
             cmd_line += ' %s' % (args_string,)
+        self.working_dir = working_dir
         pane.output.run_command(cmd_line, working_dir)
 
     def __output_activate(self, output, line):
@@ -88,9 +89,13 @@ class Runner(object):
             return False
 
         editor = moo.edit.editor_instance()
-        editor.open_file(None, output, data.filename)
 
-        doc = editor.get_doc(data.filename)
+        filename = data.filename
+        if not os.path.isabs(filename):
+            filename = os.path.join(self.working_dir, filename)
+        editor.open_file(None, output, filename)
+
+        doc = editor.get_doc(filename)
 
         if not doc:
             return True
