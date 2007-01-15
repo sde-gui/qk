@@ -25,7 +25,7 @@ struct _MooLineViewPrivate {
     GtkTextMark *end_mark;
 };
 
-static void      moo_line_view_finalize     (GObject        *object);
+static void      moo_line_view_finalize         (GObject        *object);
 
 static void      moo_line_view_realize          (GtkWidget      *widget);
 static gboolean  moo_line_view_button_release   (GtkWidget      *widget,
@@ -417,6 +417,7 @@ moo_line_view_write_line (MooLineView    *view,
 }
 
 
+#if 0
 static void
 check_if_scrolled (MooLineView *view)
 {
@@ -440,6 +441,15 @@ check_if_scrolled (MooLineView *view)
     else
         view->priv->scrolled = FALSE;
 }
+#else
+static void
+check_if_scrolled (MooLineView *view)
+{
+    GtkAdjustment *adj = GTK_TEXT_VIEW (view)->vadjustment;
+    view->priv->scrolled = adj && GTK_WIDGET_REALIZED (view) &&
+                           ABS (adj->value - (adj->upper - adj->page_size)) > 10;
+}
+#endif
 
 
 int
