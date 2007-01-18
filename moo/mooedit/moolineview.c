@@ -23,10 +23,13 @@ struct _MooLineViewPrivate {
     gboolean busy;
     gboolean scrolled;
     GtkTextMark *end_mark;
+    GtkWidget *hscrollbar;
 };
 
 static void      moo_line_view_finalize         (GObject        *object);
 
+static void      moo_line_view_parent_set       (GtkWidget      *widget,
+                                                 GtkWidget      *old_parent);
 static void      moo_line_view_realize          (GtkWidget      *widget);
 static gboolean  moo_line_view_button_release   (GtkWidget      *widget,
                                                  GdkEventButton *event);
@@ -59,7 +62,8 @@ static guint signals[LAST_SIGNAL];
 G_DEFINE_TYPE (MooLineView, moo_line_view, MOO_TYPE_TEXT_VIEW)
 
 
-static void moo_line_view_class_init (MooLineViewClass *klass)
+static void
+moo_line_view_class_init (MooLineViewClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
@@ -70,6 +74,7 @@ static void moo_line_view_class_init (MooLineViewClass *klass)
 
     widget_class->realize = moo_line_view_realize;
     widget_class->button_release_event = moo_line_view_button_release;
+    widget_class->parent_set = moo_line_view_parent_set;
 
     textview_class->move_cursor = moo_line_view_move_cursor;
     textview_class->populate_popup = moo_line_view_populate_popup;
@@ -102,10 +107,12 @@ static void moo_line_view_class_init (MooLineViewClass *klass)
 }
 
 
-static void moo_line_view_init (MooLineView *view)
+static void
+moo_line_view_init (MooLineView *view)
 {
     view->priv = G_TYPE_INSTANCE_GET_PRIVATE (view, MOO_TYPE_LINE_VIEW, MooLineViewPrivate);
 
+    view->priv->hscrollbar = NULL;
     view->priv->line_data = _moo_data_new (g_direct_hash,
                                            g_direct_equal,
                                            NULL);
@@ -119,13 +126,30 @@ static void moo_line_view_init (MooLineView *view)
 }
 
 
-static void moo_line_view_finalize       (GObject      *object)
+static void
+moo_line_view_finalize (GObject *object)
 {
     MooLineView *view = MOO_LINE_VIEW (object);
 
     _moo_data_destroy (view->priv->line_data);
 
     G_OBJECT_CLASS (moo_line_view_parent_class)->finalize (object);
+}
+
+
+static void
+moo_line_view_parent_set (GtkWidget *widget,
+                          GtkWidget *old_parent)
+{
+    MooLineView *view = MOO_LINE_VIEW (widget);
+
+    view->priv->hscrollbar = NULL;
+
+    if (widget->parent && GTK_IS_SCROLLED_WINDOW (widget->parent))
+        view->priv->hscrollbar = GTK_SCROLLED_WINDOW(widget->parent)->hscrollbar;
+
+    if (GTK_WIDGET_CLASS (moo_line_view_parent_class)->parent_set)
+        GTK_WIDGET_CLASS (moo_line_view_parent_class)->parent_set (widget, old_parent);
 }
 
 
@@ -445,10 +469,20 @@ check_if_scrolled (MooLineView *view)
 static void
 check_if_scrolled (MooLineView *view)
 {
+    int delta;
     GtkAdjustment *adj = GTK_TEXT_VIEW (view)->vadjustment;
+
+    delta = 10;
+
+    if (view->priv->hscrollbar && GTK_WIDGET_VISIBLE (view->priv->hscrollbar))
+    {
+        int space;
+        gtk_widget_style_get (GTK_WIDGET (view)->parent, "scrollbar-spacing", &space, NULL);
+        delta = MAX (delta - 1, space + view->priv->hscrollbar->allocation.height) + 1;
+    }
+
     view->priv->scrolled = adj && GTK_WIDGET_REALIZED (view) &&
-                                                                            /* XXX get scrollbar size here */
-                           ABS (adj->value - (adj->upper - adj->page_size)) > 20;
+                           ABS (adj->value - (adj->upper - adj->page_size)) > delta;
 }
 #endif
 
