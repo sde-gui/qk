@@ -2,62 +2,44 @@
 # MOO_AC_CHECK_OS([])
 #
 AC_DEFUN([MOO_AC_CHECK_OS],[
-    MOO_OS_CYGWIN="no"
-    MOO_OS_MINGW="no"
-    MOO_OS_DARWIN="no"
-    MOO_OS_UNIX="no"
-    MOO_OS_BSD="no"
+AC_REQUIRE([AC_CANONICAL_HOST])
+m4_foreach([name], [CYGWIN, MINGW, DARWIN, UNIX, BSD, LINUX], [MOO_OS_[]name=""; ])
 
-    case $host in
-    *-*-mingw32*)
-        echo "++++ building for MINGW32 ++++"
-        MOO_OS_MINGW="yes"
-        MOO_OS_NAME="Win32"
-        ;;
-    *-*-cygwin*)
-        echo "++++ building for CYGWIN ++++"
-        MOO_OS_CYGWIN="yes"
-        MOO_OS_NAME="CygWin"
-        ;;
-    *-*-darwin*)
-        echo "++++ building for DARWIN ++++"
-        MOO_OS_DARWIN="yes"
-        MOO_OS_BSD="yes"
-        MOO_OS_UNIX="yes"
-        MOO_OS_NAME="Darwin"
-        ;;
-    *-*-freebsd*)
-        echo "++++ building for FREEBSD ++++"
-        MOO_OS_BSD="yes"
-        MOO_OS_UNIX="yes"
-        MOO_OS_NAME="FreeBSD"
-        ;;
-    *)
-        echo "++++ building for UNIX ++++"
-        MOO_OS_UNIX="yes"
-        MOO_OS_NAME="Unix"
-        ;;
-    esac
+case $host in
+*-*-mingw32*)
+  MOO_OS_MINGW="yes"
+  MOO_OS_NAME="Win32"
+  ;;
+*-*-cygwin*)
+  MOO_OS_CYGWIN="yes"
+  MOO_OS_NAME="CygWin"
+  ;;
+*-*-darwin*)
+  MOO_OS_DARWIN="yes"
+  MOO_OS_NAME="Darwin"
+  ;;
+*-*-freebsd*)
+  MOO_OS_BSD="yes"
+  MOO_OS_NAME="FreeBSD"
+  ;;
+*-*-linux*)
+  MOO_OS_LINUX="yes"
+  MOO_OS_NAME="Linux"
+  ;;
+*)
+  MOO_OS_UNIX="yes"
+  MOO_OS_NAME="Unix"
+  ;;
+esac
 
-    if test x$MOO_OS_DARWIN = xyes; then
-        AC_DEFINE(MOO_OS_DARWIN, 1, [darwin])
-    fi
-    if test x$MOO_OS_BSD = xyes; then
-        AC_DEFINE(MOO_OS_BSD, 1, [bsd])
-    fi
-    if test x$MOO_OS_UNIX = xyes; then
-        AC_DEFINE(MOO_OS_UNIX, 1, [unix])
-    fi
-    if test x$MOO_OS_MINGW = xyes; then
-        AC_DEFINE(MOO_OS_MINGW, 1, [mingw])
-    fi
-    if test x$MOO_OS_CYGWIN = xyes; then
-        AC_DEFINE(MOO_OS_CYGWIN, 1, [cygwin])
-    fi
+if test x$MOO_OS_DARWIN = xyes; then MOO_OS_BSD=yes; fi
+if test x$MOO_OS_BSD = xyes; then MOO_OS_UNIX=yes; fi
+if test x$MOO_OS_LINUX = xyes; then MOO_OS_UNIX=yes; fi
 
-    AM_CONDITIONAL(MOO_OS_UNIX, test x$MOO_OS_UNIX = "xyes")
-    AM_CONDITIONAL(MOO_OS_MINGW, test x$MOO_OS_MINGW = "xyes")
-    AM_CONDITIONAL(MOO_OS_CYGWIN, test x$MOO_OS_CYGWIN = "xyes")
-    AM_CONDITIONAL(MOO_OS_DARWIN, test x$MOO_OS_DARWIN = "xyes")
-    AM_CONDITIONAL(MOO_OS_BSD, test x$MOO_OS_BSD = "xyes")
+m4_foreach([name], [CYGWIN, MINGW, DARWIN, UNIX, BSD, LINUX], [dnl
+if test x$MOO_OS_[]name = xyes; then
+  AC_DEFINE(MOO_OS_[]name, 1, [name])
+fi
+AM_CONDITIONAL(MOO_OS_[]name, test x$MOO_OS_[]name = xyes)
+])
 ])
