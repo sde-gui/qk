@@ -31,8 +31,8 @@ AC_DEFUN([MOO_COMPONENTS],[
   if $build_mooedit; then
     build_mooutils=true
   fi
-  if $build_mooterm -a x$MOO_OS_CYGWIN != "xyes"; then
-    build_mooutils=true
+  if test "x$MOO_OS_CYGWIN" != "xyes"; then
+    $build_mooterm && build_mooutils=true
   fi
 
   build_mooscript=$build_mooedit
@@ -54,7 +54,7 @@ AC_DEFUN([MOO_COMPONENTS],[
 
   MOO_BUILD_SCRIPT=$MOO_BUILD_EDIT
 
-  if $build_mooterm -a "x$MOO_OS_BSD" = "xyes"; then
-    MOO_LIBS="-lutil $MOO_LIBS"
+  if test "x$MOO_OS_BSD" = "xyes"; then
+    $build_mooterm && MOO_LIBS="-lutil $MOO_LIBS"
   fi
 ])
