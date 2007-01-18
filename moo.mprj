@@ -8,7 +8,7 @@
   <debug>
    <build_dir>build/debug</build_dir>
    <configure>
-    <args>--enable-debug=full --enable-all-warnings --enable-libmoo</args>
+    <args>--enable-debug=full --enable-all-warnings --enable-libmoo --with-mooterm</args>
     <vars>
      <var name="CFLAGS">-g</var>
     </vars>
