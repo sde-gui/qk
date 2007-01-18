@@ -447,7 +447,8 @@ check_if_scrolled (MooLineView *view)
 {
     GtkAdjustment *adj = GTK_TEXT_VIEW (view)->vadjustment;
     view->priv->scrolled = adj && GTK_WIDGET_REALIZED (view) &&
-                           ABS (adj->value - (adj->upper - adj->page_size)) > 10;
+                                                                            /* XXX get scrollbar size here */
+                           ABS (adj->value - (adj->upper - adj->page_size)) > 20;
 }
 #endif
 
@@ -510,7 +511,7 @@ moo_line_view_write (MooLineView    *view,
 }
 
 
-static GtkTextMark*
+static GtkTextMark *
 get_end_mark (MooLineView *view)
 {
     GtkTextIter iter;
