@@ -27,8 +27,8 @@ AUTOCONF=${AUTOCONF:-autoconf}
 echo $LIBTOOLIZE --automake --copy
 $LIBTOOLIZE --automake --copy || exit $?
 
-echo glib-gettextize --force
-glib-gettextize --force
+echo glib-gettextize
+glib-gettextize
 echo intltoolize --automake
 intltoolize --automake
 
