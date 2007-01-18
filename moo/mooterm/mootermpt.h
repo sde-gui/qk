@@ -61,6 +61,8 @@ struct _MooTermPtClass {
     void        (*kill_child)           (MooTermPt  *pt);
     char        (*get_erase_char)       (MooTermPt  *pt);
     void        (*send_intr)            (MooTermPt  *pt);
+    gboolean    (*set_fd)               (MooTermPt  *pt,
+                                         int         master);
 
     /* signals */
     void        (*child_died)   (MooTermPt  *pt);
@@ -87,8 +89,11 @@ gboolean        _moo_term_pt_fork_command   (MooTermPt      *pt,
                                              const struct _MooTermCommand *cmd,
                                              GError        **error);
 void            _moo_term_pt_kill_child     (MooTermPt      *pt);
-
 gboolean        _moo_term_pt_child_alive    (MooTermPt      *pt);
+gboolean        _moo_term_pt_alive          (MooTermPt      *pt);
+
+gboolean        _moo_term_pt_set_fd         (MooTermPt      *pt,
+                                             int             master);
 
 void            _moo_term_pt_write          (MooTermPt      *pt,
                                              const char     *data,

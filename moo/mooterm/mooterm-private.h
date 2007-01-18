@@ -212,7 +212,8 @@ void        _moo_term_buffer_scrolled       (MooTermBuffer  *buf,
                                              guint           lines,
                                              MooTerm        *term);
 
-void        _moo_term_size_changed          (MooTerm        *term);
+void        _moo_term_update_size           (MooTerm        *term,
+                                             gboolean        force);
 
 void        _moo_term_init_font_stuff       (MooTerm        *term);
 void        _moo_term_init_palette          (MooTerm        *term);

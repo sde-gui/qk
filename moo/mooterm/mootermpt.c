@@ -59,6 +59,8 @@ _moo_term_pt_init (MooTermPt *pt)
 {
     pt->priv = g_new0 (MooTermPtPrivate, 1);
     pt->priv->pending_write = g_queue_new ();
+    pt->priv->child_alive = FALSE;
+    pt->priv->alive = FALSE;
 }
 
 
@@ -145,7 +147,24 @@ _moo_term_pt_write (MooTermPt      *pt,
 
 
 gboolean
-_moo_term_pt_child_alive (MooTermPt      *pt)
+_moo_term_pt_child_alive (MooTermPt *pt)
 {
-    return pt->priv->child_alive;
+    return pt->priv->child_alive || pt->priv->alive;
+}
+
+gboolean
+_moo_term_pt_alive (MooTermPt *pt)
+{
+    return pt->priv->alive;
+}
+
+
+gboolean
+_moo_term_pt_set_fd (MooTermPt *pt,
+                     int        master)
+{
+    g_return_val_if_fail (MOO_IS_TERM_PT (pt), FALSE);
+    g_return_val_if_fail (!pt->priv->child_alive, FALSE);
+    g_return_val_if_fail (MOO_TERM_PT_GET_CLASS(pt)->set_fd != NULL, FALSE);
+    return MOO_TERM_PT_GET_CLASS(pt)->set_fd (pt, master);
 }

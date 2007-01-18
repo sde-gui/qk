@@ -131,6 +131,9 @@ void        moo_term_set_font_from_string   (MooTerm        *term,
 void        moo_term_set_cursor_blink_time  (MooTerm        *term,
                                              guint           ms);
 
+void        moo_term_set_fd                 (MooTerm        *term,
+                                             int             master);
+
 void        moo_term_reset                  (MooTerm        *term);
 void        moo_term_soft_reset             (MooTerm        *term);
 

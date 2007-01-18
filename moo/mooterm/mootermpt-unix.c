@@ -92,6 +92,8 @@ static void     pt_write            (MooTermPt      *pt,
 static void     kill_child          (MooTermPt      *pt);
 static void     send_intr           (MooTermPt      *pt);
 static char     get_erase_char      (MooTermPt      *pt);
+static gboolean set_fd              (MooTermPt      *pt,
+                                     int             master);
 
 static gboolean read_child_out      (GIOChannel     *source,
                                      GIOCondition    condition,
@@ -122,14 +124,13 @@ _moo_term_pt_unix_class_init (MooTermPtUnixClass *klass)
     pt_class->kill_child = kill_child;
     pt_class->get_erase_char = get_erase_char;
     pt_class->send_intr = send_intr;
+    pt_class->set_fd = set_fd;
 }
 
 
 static void
 _moo_term_pt_unix_init (MooTermPtUnix *pt)
 {
-    MOO_TERM_PT(pt)->priv->child_alive = FALSE;
-
     pt->child_pid = (GPid)-1;
 
     pt->master = -1;
@@ -162,11 +163,51 @@ set_size (MooTermPt *pt,
 
     ptu = MOO_TERM_PT_UNIX (pt);
 
-    if (pt->priv->child_alive)
+    if (pt->priv->alive)
         _vte_pty_set_size (ptu->master, width, height);
 
     ptu->width = width;
     ptu->height = height;
+}
+
+
+static gboolean
+setup_master_fd (MooTermPtUnix *pt,
+                 int            master)
+{
+    int flags;
+
+    g_return_val_if_fail (master >= 0, FALSE);
+
+#if 1
+    _moo_message ("%s: attached to fd %d",
+                  G_STRLOC, pt->master);
+#endif
+
+    pt->non_block = FALSE;
+    if ((flags = fcntl (master, F_GETFL)) < 0)
+        g_critical ("%s: F_GETFL on master", G_STRLOC);
+    else if (-1 == fcntl (master, F_SETFL, O_NONBLOCK | flags))
+        g_critical ("%s: F_SETFL on master", G_STRLOC);
+    else
+        pt->non_block = TRUE;
+
+    pt->io =  g_io_channel_unix_new (master);
+    g_return_val_if_fail (pt->io != NULL, FALSE);
+
+    g_io_channel_set_encoding (pt->io, NULL, NULL);
+    g_io_channel_set_buffered (pt->io, FALSE);
+
+    pt->io_watch_id = g_io_add_watch_full (pt->io,
+                                           PT_READER_PRIORITY,
+                                           G_IO_IN | G_IO_PRI | G_IO_HUP,
+                                           (GIOFunc) read_child_out,
+                                           pt, NULL);
+
+    pt->master = master;
+    MOO_TERM_PT(pt)->priv->alive = TRUE;
+
+    return TRUE;
 }
 
 
@@ -180,9 +221,9 @@ fork_argv (MooTermPt      *pt_gen,
     MooTermPtUnix *pt;
     int env_len = 0;
     char **new_env;
-    int status, flags;
+    int status;
     int i;
-    GSource *src;
+    int master;
 
     g_return_val_if_fail (argv != NULL, FALSE);
     g_return_val_if_fail (MOO_IS_TERM_PT_UNIX (pt_gen), FALSE);
@@ -213,15 +254,15 @@ fork_argv (MooTermPt      *pt_gen,
     new_env[env_len] = g_strdup ("TERM=" TERM_EMULATION);
     new_env[env_len + 1] = NULL;
 
-    pt->master = _vte_pty_open (&pt->child_pid, new_env,
-                                 argv[0],
-                                 argv,
-                                 working_dir,
-                                 pt->width, pt->height,
-                                 FALSE, FALSE, FALSE);
+    master = _vte_pty_open (&pt->child_pid, new_env,
+                            argv[0],
+                            argv,
+                            working_dir,
+                            pt->width, pt->height,
+                            FALSE, FALSE, FALSE);
     g_strfreev (new_env);
 
-    if (pt->master == -1)
+    if (master == -1)
     {
         g_critical ("%s: could not fork child", G_STRLOC);
 
@@ -241,42 +282,31 @@ fork_argv (MooTermPt      *pt_gen,
     {
 #if 1
         _moo_message ("%s: forked child pid %d on fd %d",
-                      G_STRLOC, pt->child_pid, pt->master);
+                      G_STRLOC, pt->child_pid, master);
 #endif
+        pt_gen->priv->child_alive = TRUE;
+        pt_gen->priv->alive = TRUE;
     }
 
     if (waitpid (-1, &status, WNOHANG) == -1)
         g_critical ("%s: error in waitpid", G_STRLOC);
 
-    if ((flags = fcntl (pt->master, F_GETFL)) < 0)
-        g_critical ("%s: F_GETFL on master", G_STRLOC);
-    else if (-1 == fcntl (pt->master, F_SETFL, O_NONBLOCK | flags))
-        g_critical ("%s: F_SETFL on master", G_STRLOC);
-    else
-        pt->non_block = TRUE;
-
-    pt->io =  g_io_channel_unix_new (pt->master);
-    g_return_val_if_fail (pt->io != NULL, FALSE);
-
-    g_io_channel_set_encoding (pt->io, NULL, NULL);
-    g_io_channel_set_buffered (pt->io, FALSE);
-
-    pt->io_watch_id = g_io_add_watch_full (pt->io,
-                                           G_PRIORITY_DEFAULT_IDLE,
-                                           G_IO_IN | G_IO_PRI | G_IO_HUP,
-                                           (GIOFunc) read_child_out,
-                                           pt, NULL);
-
-    src = g_main_context_find_source_by_id (NULL, pt->io_watch_id);
-
-    if (src)
-        g_source_set_priority (src, PT_READER_PRIORITY);
-    else
-        g_warning ("%s: could not find io_watch_id source", G_STRLOC);
-
-    pt_gen->priv->child_alive = TRUE;
+    setup_master_fd (pt, master);
 
     return TRUE;
+}
+
+
+static gboolean
+set_fd (MooTermPt *pt_gen,
+        int        master)
+{
+    kill_child (pt_gen);
+
+    if (master >= 0)
+        return setup_master_fd (MOO_TERM_PT_UNIX (pt_gen), master);
+    else
+        return TRUE;
 }
 
 
@@ -323,6 +353,7 @@ kill_child (MooTermPt *pt_gen)
     pt->non_block = FALSE;
 
     pt->child_pid = (GPid)-1;
+    pt_gen->priv->alive = FALSE;
 
     if (pt_gen->priv->child_alive)
     {
@@ -351,7 +382,6 @@ read_child_out (G_GNUC_UNUSED GIOChannel     *source,
         int bytes;
 
         _moo_message ("%s: G_IO_HUP", G_STRLOC);
-        error_no = errno;
 
         bytes = read (pt->master, buf, sizeof (buf));
 
@@ -527,10 +557,11 @@ feed_buffer (MooTermPtUnix  *pt,
 /* writes given data to file, returns TRUE on successful write,
    FALSE when could not write al teh data, puts start of leftover
    to string, length of it to len, and fills err in case of error */
-static gboolean do_write        (MooTermPt      *pt_gen,
-                                 const char    **string,
-                                 guint          *plen,
-                                 int            *err)
+static gboolean
+do_write (MooTermPt      *pt_gen,
+          const char    **string,
+          guint          *plen,
+          int            *err)
 {
     int written;
 
@@ -569,9 +600,10 @@ static gboolean do_write        (MooTermPt      *pt_gen,
 }
 
 
-static void     append                  (MooTermPt      *pt,
-                                         const char     *data,
-                                         guint           len)
+static void
+append (MooTermPt      *pt,
+        const char     *data,
+        guint           len)
 {
     GByteArray *ar = g_byte_array_sized_new (len);
     g_byte_array_append (ar, (const guint8*)data, len);
@@ -579,13 +611,15 @@ static void     append                  (MooTermPt      *pt,
 }
 
 
-static gboolean write_cb        (MooTermPt      *pt)
+static gboolean
+write_cb (MooTermPt *pt)
 {
     pt_write (pt, NULL, 0);
     return TRUE;
 }
 
-static void     start_writer    (MooTermPt      *pt)
+static void
+start_writer (MooTermPt *pt)
 {
     if (!pt->priv->pending_write_id)
         pt->priv->pending_write_id =
@@ -594,7 +628,8 @@ static void     start_writer    (MooTermPt      *pt)
                                  pt, NULL);
 }
 
-static void     stop_writer     (MooTermPt      *pt)
+static void
+stop_writer (MooTermPt *pt)
 {
     if (pt->priv->pending_write_id)
     {
@@ -604,12 +639,13 @@ static void     stop_writer     (MooTermPt      *pt)
 }
 
 
-static void     pt_write        (MooTermPt      *pt,
-                                 const char     *data,
-                                 gssize          data_len)
+static void
+pt_write (MooTermPt      *pt,
+          const char     *data,
+          gssize          data_len)
 {
     g_return_if_fail (data == NULL || data_len != 0);
-    g_return_if_fail (pt->priv->child_alive);
+    g_return_if_fail (pt->priv->alive);
 
     while (data || !g_queue_is_empty (pt->priv->pending_write))
     {
@@ -699,7 +735,7 @@ get_erase_char (MooTermPt *pt_gen)
 static void
 send_intr (MooTermPt *pt)
 {
-    g_return_if_fail (pt->priv->child_alive);
+    g_return_if_fail (pt->priv->alive);
     pt_discard_pending_write (pt);
     pt_write (pt, "\003", 1);
 }

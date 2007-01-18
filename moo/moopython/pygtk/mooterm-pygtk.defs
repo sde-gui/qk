@@ -474,6 +474,15 @@
   (return-type "none")
 )
 
+(define-method set_fd
+  (of-object "MooTerm")
+  (c-name "moo_term_set_fd")
+  (return-type "none")
+  (parameters
+    '("int" "fd")
+  )
+)
+
 (define-function set_helper_directory
   (c-name "moo_term_set_helper_directory")
   (return-type "none")

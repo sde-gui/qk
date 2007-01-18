@@ -27,6 +27,7 @@ G_BEGIN_DECLS
 struct _MooTermPtPrivate {
     struct _MooTerm *term;
     gboolean         child_alive;
+    gboolean         alive;
     GQueue          *pending_write;  /* list->data is GByteArray* */
     guint            pending_write_id;
 };

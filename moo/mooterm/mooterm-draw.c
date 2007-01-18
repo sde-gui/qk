@@ -91,7 +91,7 @@ moo_term_update_font (MooTerm *term)
     font_calculate (term->priv->font);
 
     if (GTK_WIDGET_REALIZED (term))
-        _moo_term_size_changed (term);
+        _moo_term_update_size (term, FALSE);
 }
 
 

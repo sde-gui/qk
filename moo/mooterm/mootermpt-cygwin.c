@@ -126,10 +126,8 @@ _moo_term_pt_cyg_class_init (MooTermPtCygClass *klass)
 
 
 static void
-_moo_term_pt_cyg_init (MooTermPtCyg      *pt)
+_moo_term_pt_cyg_init (MooTermPtCyg *pt)
 {
-    MOO_TERM_PT(pt)->priv->child_alive = FALSE;
-
     pt->pid = (GPid) -1;
     pt->process_id = 0;
     pt->watch_id = 0;
@@ -142,7 +140,7 @@ _moo_term_pt_cyg_init (MooTermPtCyg      *pt)
 
 
 static void
-moo_term_pt_cyg_finalize (GObject    *object)
+moo_term_pt_cyg_finalize (GObject *object)
 {
     MooTermPtCyg *pt = MOO_TERM_PT_CYG (object);
     kill_child (MOO_TERM_PT (pt));

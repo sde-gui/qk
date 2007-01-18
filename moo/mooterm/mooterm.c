@@ -493,7 +493,7 @@ static void moo_term_size_allocate          (GtkWidget          *widget,
             old_height / term_char_height(term) !=
             allocation->height / term_char_height(term))
         {
-            _moo_term_size_changed (term);
+            _moo_term_update_size (term, FALSE);
         }
     }
 }
@@ -554,7 +554,7 @@ moo_term_realize (GtkWidget *widget)
 
     _moo_term_init_font_stuff (term);
     _moo_term_update_palette (term);
-    _moo_term_size_changed (term);
+    _moo_term_update_size (term, FALSE);
 
     term->priv->im = gtk_im_multicontext_new ();
     gtk_im_context_set_client_window (term->priv->im, widget->window);
@@ -886,7 +886,8 @@ static void     scroll_to_bottom                (MooTerm        *term,
 
 
 void
-_moo_term_size_changed (MooTerm        *term)
+_moo_term_update_size (MooTerm *term,
+                       gboolean force)
 {
     GtkWidget *widget = GTK_WIDGET (term);
     MooTermFont *font = term->priv->font;
@@ -898,7 +899,7 @@ _moo_term_size_changed (MooTerm        *term)
     old_width = term->priv->width;
     old_height = term->priv->height;
 
-    if (width == old_width && height == old_height)
+    if (!force && width == old_width && height == old_height)
         return;
 
     width = CLAMP (width, MIN_TERMINAL_WIDTH, MAX_TERMINAL_WIDTH);
@@ -1002,7 +1003,7 @@ moo_term_feed_child (MooTerm        *term,
                      int             len)
 {
     g_return_if_fail (MOO_IS_TERM (term) && string != NULL);
-    if (_moo_term_pt_child_alive (term->priv->pt))
+    if (_moo_term_pt_alive (term->priv->pt))
         _moo_term_pt_write (term->priv->pt, string, len);
 }
 
@@ -1012,7 +1013,7 @@ moo_term_send_intr (MooTerm *term)
 {
     g_return_if_fail (MOO_IS_TERM (term));
 
-    if (_moo_term_pt_child_alive (term->priv->pt))
+    if (_moo_term_pt_alive (term->priv->pt))
         _moo_term_pt_send_intr (term->priv->pt);
 }
 
@@ -1960,10 +1961,10 @@ _moo_term_release_selection (MooTerm        *term)
 
 
 gboolean
-moo_term_child_alive (MooTerm        *term)
+moo_term_child_alive (MooTerm *term)
 {
     g_return_val_if_fail (MOO_IS_TERM (term), FALSE);
-    return _moo_term_pt_child_alive (term->priv->pt);
+    return _moo_term_pt_alive (term->priv->pt);
 }
 
 
@@ -1973,6 +1974,16 @@ moo_term_kill_child (MooTerm        *term)
     g_return_if_fail (MOO_IS_TERM (term));
     if (_moo_term_pt_child_alive (term->priv->pt))
         _moo_term_pt_kill_child (term->priv->pt);
+}
+
+
+void
+moo_term_set_fd (MooTerm *term,
+                 int      master)
+{
+    g_return_if_fail (MOO_IS_TERM (term));
+    if (_moo_term_pt_set_fd (term->priv->pt, master) && GTK_WIDGET_REALIZED (term))
+        _moo_term_update_size (term, TRUE);
 }
 
 
