@@ -1977,6 +1977,9 @@ file_list_row_activated (MooFileView    *fileview,
                 g_warning ("%s: %s", G_STRLOC, error->message);
                 g_error_free (error);
             }
+
+            _moo_folder_check_exists (fileview->priv->current_dir,
+                                      _moo_file_name (file));
         }
     }
     else

@@ -46,6 +46,9 @@ char       **_moo_folder_get_file_info  (MooFolder      *folder,
                                          MooFile        *file);
 void         _moo_folder_reload         (MooFolder      *folder);
 
+void         _moo_folder_check_exists   (MooFolder      *folder,
+                                         const char     *name);
+
 
 G_END_DECLS
 

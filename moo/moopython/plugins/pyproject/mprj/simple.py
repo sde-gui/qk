@@ -5,12 +5,16 @@ from moo.utils import _
 
 from mprj.project import Project
 from mprj.config import Config, Dict
+from mprj.settings import Filename
 from mprj.utils import print_error
 from mprj.session import Session
 
 
 class SimpleConfig(Config):
-    __items__ = { 'vars' : Dict(str, name=_('Environment variables')) }
+    __items__ = {
+        'vars' : Dict(str, name=_('Environment variables')),
+        'file_selector_dir' : Filename,
+    }
 
 
 class SimpleProject(Project):
@@ -22,17 +26,28 @@ class SimpleProject(Project):
 
         self.filesel = None
         self.filesel_merge_id = 0
+        self.__filesel_cb_id = 0
 
         plugin = moo.edit.plugin_lookup('FileSelector')
         if plugin:
             try:
                 self.filesel = plugin.call_method('get-widget', self.window)
                 if self.filesel:
-                    self.filesel.chdir(self.topdir)
-            except Exception:
+                    last_dir = self.config.file_selector_dir
+                    if not last_dir:
+                        last_dir = self.topdir
+                    self.filesel.chdir(last_dir)
+                    self.__filesel_cb_id = self.filesel.connect('notify::current-directory', self.__filesel_cb)
+            except:
                 print_error()
 
+    def __filesel_cb(self, filesel, *whatever):
+        self.config.file_selector_dir = filesel.get_property('current-directory')
+
     def deinit_ui(self):
+        if self.__filesel_cb_id:
+            self.filesel.disconnect(self.__filesel_cb_id)
+            self.__filesel_cb_id = 0
         if self.filesel and self.filesel_merge_id:
             xml = self.filesel.get_ui_xml()
             xml.remove_ui(self.filesel_merge_id)
@@ -46,6 +61,7 @@ class SimpleProject(Project):
 
     def close(self):
         self.save_session()
+        self.save_config()
         return self.window.close_all()
 
     def get_session_file(self):

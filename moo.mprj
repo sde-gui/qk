@@ -36,6 +36,7 @@
    </configure>
   </optimized>
  </configurations>
+ <file_selector_dir>/home/muntyan/projects/moo/</file_selector_dir>
  <run>
   <args>--g-fatal-warnings --new-app --mode=project</args>
   <exe>medit/medit</exe>

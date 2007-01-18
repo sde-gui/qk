@@ -235,7 +235,7 @@ moo_file_selector_get_property (GObject        *object,
 }
 
 
-static gboolean
+static void
 file_selector_go_home (MooFileView *fileview)
 {
     const char *dir;
@@ -249,10 +249,7 @@ file_selector_go_home (MooFileView *fileview)
     if (!real_dir || !moo_file_view_chdir (fileview, real_dir, NULL))
         g_signal_emit_by_name (fileview, "go-home");
 
-    /* it's refed in g_idle_add() */
-    g_object_unref (fileview);
     g_free (real_dir);
-    return FALSE;
 }
 
 
@@ -563,7 +560,7 @@ moo_file_selector_constructor (GType           type,
 
     g_return_val_if_fail (filesel->window != NULL, object);
 
-    g_idle_add ((GSourceFunc) file_selector_go_home, g_object_ref (filesel));
+    file_selector_go_home (MOO_FILE_VIEW (fileview));
 
     group = moo_action_collection_get_group (moo_file_view_get_actions (MOO_FILE_VIEW (fileview)), NULL);
     xml = moo_file_view_get_ui_xml (MOO_FILE_VIEW (fileview));

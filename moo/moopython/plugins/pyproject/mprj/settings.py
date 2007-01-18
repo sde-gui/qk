@@ -22,6 +22,8 @@ class String(Setting):
     def set_string(self, text):
         self.set_value(text)
 
+Filename = String
+
 class Bool(Setting):
     __item_data_type__ = bool
     __item_cell_type__ = CellToggle

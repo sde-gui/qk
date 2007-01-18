@@ -922,6 +922,30 @@ file_created (MooFolderImpl *impl,
 }
 
 
+void
+_moo_folder_check_exists (MooFolder  *folder,
+                          const char *name)
+{
+    MooFile *file;
+    char *path;
+    gboolean exists;
+
+    g_return_if_fail (MOO_IS_FOLDER (folder));
+    g_return_if_fail (name != NULL);
+
+    file = g_hash_table_lookup (folder->impl->files, name);
+    path = g_build_filename (folder->impl->path, name, NULL);
+    exists = g_file_test (path, G_FILE_TEST_EXISTS);
+
+    if (exists && !file)
+        file_created (folder->impl, name);
+    else if (!exists && file)
+        file_deleted (folder->impl, name);
+
+    g_free (path);
+}
+
+
 /* TODO */
 static gboolean
 moo_folder_do_reload (MooFolderImpl *impl)
