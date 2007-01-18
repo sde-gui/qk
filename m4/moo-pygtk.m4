@@ -16,8 +16,6 @@ AC_DEFUN([_MOO_AC_PYGTK_CODEGEN],[
     AC_MSG_NOTICE([using installed codegen])
     AC_MSG_NOTICE([pygtk codegen dir: $PYGTK_CODEGEN_DIR])
   fi
-
-  AM_CONDITIONAL(MOO_USE_CUSTOM_CODEGEN, $MOO_USE_CUSTOM_CODEGEN)
 ])
 
 
@@ -50,7 +48,6 @@ AC_DEFUN([_MOO_AC_CHECK_PYGTK_REAL],[
           AC_SUBST(PYGTK[]$1[]_CODEGEN_DIR,[$PYGTK_CODEGEN_DIR])
         ])
         AC_MSG_NOTICE([pygtk defs dir: $PYGTK_DEFS_DIR])
-        _MOO_AC_PYGTK_CODEGEN
         m4_if([$2],[],[:],[$2])
     ],[
         AC_MSG_RESULT([no])
@@ -113,7 +110,7 @@ AC_DEFUN_ONCE([MOO_AC_PYTHON],[
     MOO_AC_CHECK_PYTHON($_moo_python_version,[
       _MOO_AC_CHECK_PYGTK([
         MOO_USE_PYTHON=true
-        MOO_CHECK_VERSION(PYGTK, pygtk-2.0)
+        _MOO_SPLIT_VERSION(PYGTK, pygtk-2.0)
         AC_SUBST(PYGTK_VERSION)
         AC_SUBST(PYGTK_MAJOR_VERSION)
         AC_SUBST(PYGTK_MINOR_VERSION)
@@ -135,5 +132,10 @@ AC_DEFUN_ONCE([MOO_AC_PYTHON],[
   AM_CONDITIONAL(MOO_USE_PYTHON, $MOO_USE_PYTHON)
   if $MOO_USE_PYTHON; then
     AC_DEFINE(MOO_USE_PYTHON, 1, [build python bindings and plugin])
+    _MOO_AC_PYGTK_CODEGEN
+  else
+    MOO_USE_CUSTOM_CODEGEN=false
   fi
+
+  AM_CONDITIONAL(MOO_USE_CUSTOM_CODEGEN, $MOO_USE_CUSTOM_CODEGEN)
 ])

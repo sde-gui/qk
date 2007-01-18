@@ -1,23 +1,30 @@
 ##############################################################################
+# _MOO_SPLIT_VERSION(PKG_NAME,pkg-name)
+#
+AC_DEFUN([_MOO_SPLIT_VERSION],[
+AC_MSG_CHECKING($1 version)
+_moo_ac_version=`$PKG_CONFIG --modversion $2`
+$1[]_VERSION=$_moo_ac_version
+$1[]_MAJOR_VERSION=`echo "$_moo_ac_version" | $SED 's/\([[^.]][[^.]]*\).*/\1/'`
+$1[]_MINOR_VERSION=`echo "$_moo_ac_version" | $SED 's/[[^.]][[^.]]*.\([[^.]][[^.]]*\).*/\1/'`
+$1[]_MICRO_VERSION=`echo "$_moo_ac_version" | $SED 's/[[^.]][[^.]]*.[[^.]][[^.]]*.\(.*\)/\1/'`
+AC_MSG_RESULT($[]$1[]_MAJOR_VERSION.$[]$1[]_MINOR_VERSION.$[]$1[]_MICRO_VERSION)
+])
+
+
+##############################################################################
 # MOO_CHECK_VERSION(PKG_NAME,pkg-name)
 #
 dnl used also in moo-pygtk.m4
 AC_DEFUN([MOO_CHECK_VERSION],[
 if test x$MOO_OS_CYGWIN != xyes; then
   PKG_CHECK_MODULES($1,$2)
-
-  AC_MSG_CHECKING($1 version)
-  _moo_ac_version=`$PKG_CONFIG --modversion $2`
-
-  $1[]_VERSION=$_moo_ac_version
-  $1[]_MAJOR_VERSION=`echo "$_moo_ac_version" | $SED 's/\([[^.]][[^.]]*\).*/\1/'`
-  $1[]_MINOR_VERSION=`echo "$_moo_ac_version" | $SED 's/[[^.]][[^.]]*.\([[^.]][[^.]]*\).*/\1/'`
-  $1[]_MICRO_VERSION=`echo "$_moo_ac_version" | $SED 's/[[^.]][[^.]]*.[[^.]][[^.]]*.\(.*\)/\1/'`
-
+  _MOO_SPLIT_VERSION($1,$2)
   m4_foreach([num],[2,4,6,8,10,12,14],
   [AM_CONDITIONAL($1[]_2_[]num, test $[]$1[]_MINOR_VERSION -ge num)])
-
-  AC_MSG_RESULT($[]$1[]_MAJOR_VERSION.$[]$1[]_MINOR_VERSION.$[]$1[]_MICRO_VERSION)
+else
+  m4_foreach([num],[2,4,6,8,10,12,14],
+  [AM_CONDITIONAL($1[]_2_[]num, false)])
 fi
 ])
 
