@@ -407,6 +407,8 @@ init_dir_entry (MooHistoryCombo *hist_combo,
     MooHistoryList *list;
     GtkWidget *entry;
 
+    g_return_if_fail (hist_combo != NULL);
+
     list = moo_history_combo_get_list (hist_combo);
     entry = MOO_COMBO (hist_combo)->entry;
 
@@ -480,7 +482,7 @@ init_find_dialog (MooEditWindow *window,
 
     pattern_entry = MOO_COMBO(moo_glade_xml_get_widget (stuff->find_xml, "pattern_combo"))->entry;
 
-    init_dir_entry (moo_glade_xml_get_widget (stuff->grep_xml, "dir_combo"),
+    init_dir_entry (moo_glade_xml_get_widget (stuff->find_xml, "dir_combo"),
                     moo_edit_window_get_active_doc (window));
 
     gtk_widget_grab_focus (pattern_entry);
