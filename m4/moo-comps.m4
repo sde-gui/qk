@@ -9,7 +9,7 @@ AC_DEFUN([MOO_COMPONENTS],[
 
   m4_foreach([comp], [$1],
   [AC_ARG_WITH([moo[]comp],
-    AC_HELP_STRING([--with-moo[]comp], [enable moo[]comp component (default = YES)]),
+    AC_HELP_STRING([--without-moo[]comp], [disable moo[]comp component (default = NO)]),
     [if test "x$withval" = "xyes"; then build_moo[]comp=true; else build_moo[]comp=false; fi])
   ])
 
