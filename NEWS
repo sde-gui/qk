@@ -1,3 +1,26 @@
+2007-01-20  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    * === Released 0.8.1 ===
+
+    Added syntax highlighting for pkgconfig, libtool, dpatch, dtd.
+    Improved highlighting for shell, python, desktop, m4, xml.
+    Improved compiler and python output views.
+    Added simple python project type.
+    Made Alt-<number> shortcuts switch tabs (stonecrest).
+    All filter settings matching given filename are applied now,
+    in order they are specified, so it's easy to set settings
+    for a folder or single glob, and then tweak them for individual
+    files.
+    Added character encoding selectors to Open and Save dialogs.
+    File permissions are now preserved when using Save As.
+    Input fifo's are created in a separate subdirectory of /tmp,
+    to pollute it less.
+    Windows build uses mime types database from freedesktop.org
+    now.
+    Implemented folder watching on windows: file selector updates
+    automatically when folder content changes.
+    Drag'n'drop in file selector works with Go to Current Doc Folder button.
+    Added bunch of tools for LaTeX documents.
+
 2006-11-30  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.8.0 ===
 
