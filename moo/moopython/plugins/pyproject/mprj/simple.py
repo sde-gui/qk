@@ -1,6 +1,15 @@
-import moo
+if __name__ == '__main__':
+    import sys
+    import os.path
+    dir = os.path.dirname(__file__)
+    sys.path.insert(0, os.path.join(dir, '../..'))
+    sys.path.insert(0, os.path.join(dir, '..'))
+
+import gobject
 import os.path
 import shutil
+
+import moo
 from moo.utils import _
 
 from mprj.project import Project
@@ -8,6 +17,7 @@ from mprj.config import Config, Dict
 from mprj.settings import Filename
 from mprj.utils import print_error
 from mprj.session import Session
+import mprj.optdialog
 
 
 class SimpleConfig(Config):
@@ -101,6 +111,24 @@ class SimpleProject(Project):
 
     def create_options_dialog(self):
         return None
+
+
+class ConfigPage(mprj.optdialog.ConfigPage):
+    __label__ = _("General")
+    __types__ = {}
+
+    def __init__(self, config):
+        mprj.optdialog.ConfigPage.__init__(self, "page", config,
+                                           os.path.join(os.path.dirname(__file__), "simple.glade"))
+
+    def do_init(self):
+        mprj.optdialog.ConfigPage.do_init(self)
+
+    def do_apply(self):
+        mprj.optdialog.ConfigPage.do_apply(self)
+
+
+gobject.type_register(ConfigPage)
 
 
 if __name__ == '__main__':

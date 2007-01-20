@@ -2,49 +2,22 @@ if __name__ == '__main__':
     import sys
     import os.path
     dir = os.path.dirname(__file__)
+    sys.path.insert(0, os.path.join(dir, '../..'))
     sys.path.insert(0, os.path.join(dir, '..'))
 
 import gobject
+import gtk
 import os.path
+
 import moo
 from moo.utils import _
 
-from cproj.view import *
+import mprj.optdialog
+from mprj.config.view import *
 from cproj.config import *
 
-dir = os.path.dirname(__file__)
 
-def create_page(cls, page_id, config, types={}, label=None, file='options.glade'):
-    file = os.path.join(dir, file)
-
-    xml = moo.utils.GladeXML(moo.utils.GETTEXT_PACKAGE)
-    xml.map_id(page_id, cls)
-
-    if not types and hasattr(cls, '__types__'):
-        types = getattr(cls, '__types__')
-    for id in types:
-        xml.map_id(id, types[id])
-
-    page = cls()
-    file = open(file)
-    try:
-        xml.fill_widget(page, file.read(), page_id)
-        assert xml.get_widget(page_id) is page
-    finally:
-        file.close()
-
-    if not label and hasattr(cls, '__label__'):
-        label = getattr(cls, '__label__')
-    if label:
-        page.set_property('label', label)
-
-    page.xml = xml
-    page.config = config
-
-    return page
-
-
-class ConfigsPage(moo.utils.PrefsDialogPage):
+class ConfigsPage(mprj.optdialog.ConfigPage):
     __label__ = _('Configurations')
     __types__ = {'build_dir' : Entry,
                  'args' : Entry,
@@ -83,26 +56,22 @@ class ConfigsPage(moo.utils.PrefsDialogPage):
         combo.connect('changed', self.combo_changed)
 
     def do_init(self):
-        self.widgets = [self.xml.w_build_dir, self.xml.w_args]
+        mprj.optdialog.ConfigPage.do_init(self)
         self.init_combo()
         self.combo_changed()
 
-    def do_apply(self):
-        for widget in self.widgets:
-            widget.apply()
 
-
-class RunOptionsPage(moo.utils.PrefsDialogPage):
+class RunOptionsPage(mprj.optdialog.ConfigPage):
     __label__ = _('Run options')
     __types__ = {'vars' : DictView,
                  'exe' : Entry,
                  'args' : Entry}
 
     def do_init(self):
+        mprj.optdialog.ConfigPage.do_init(self)
         self.xml.w_vars.set_dict(self.config.run.vars)
         self.xml.w_exe.set_setting(self.config.run['exe'])
         self.xml.w_args.set_setting(self.config.run['args'])
-        self.widgets = [self.xml.get_widget(name) for name in ['vars', 'exe', 'args']]
 
         run_from = self.config.run.run_from
         if run_from == RUN_FROM_BUILD_DIR:
@@ -116,8 +85,7 @@ class RunOptionsPage(moo.utils.PrefsDialogPage):
                                  self.xml.w_custom_dir_entry)
 
     def do_apply(self):
-        for widget in self.widgets:
-            widget.apply()
+        mprj.optdialog.ConfigPage.do_apply(self)
 
         if self.xml.w_build_dir.get_active():
             self.config.run.run_from = RUN_FROM_BUILD_DIR
@@ -127,35 +95,23 @@ class RunOptionsPage(moo.utils.PrefsDialogPage):
             self.config.run.run_from = self.xml.w_custom_dir_entry.get_text()
 
 
-class BuildCommandsPage(moo.utils.PrefsDialogPage):
+class BuildCommandsPage(mprj.optdialog.ConfigPage):
     __label__ = _('Build commands')
     __types__ = {'commands' : GroupView}
 
     def do_init(self):
+        mprj.optdialog.ConfigPage.do_init(self)
         self.xml.w_commands.set_items(self.config.commands.items())
-        self.widgets = [self.xml.get_widget(name) for name in ['commands']]
-
-    def do_apply(self):
-        for widget in self.widgets:
-            widget.apply()
 
 
-class Dialog(moo.utils.PrefsDialog):
-    def __init__(self, project, title=_('Project Options')):
-        moo.utils.PrefsDialog.__init__(self, title)
-        self.project = project
-        self.config_copy = project.config.copy()
-        self.append_page(create_page(ConfigsPage, 'page_configs', self.config_copy))
-        self.append_page(create_page(RunOptionsPage, 'page_run', self.config_copy))
-        self.append_page(create_page(BuildCommandsPage, 'page_commands', self.config_copy))
-
-    def do_apply(self):
-        moo.utils.PrefsDialog.do_apply(self)
-        self.project.config.copy_from(self.config_copy)
-        self.project.save_config()
-#         print '============================='
-#         print self.project.config.dump_xml()
-#         print '============================='
+class Dialog(mprj.optdialog.Dialog):
+    def __init__(self, project):
+        mprj.optdialog.Dialog.__init__(self, project)
+        glade_file = os.path.join(os.path.dirname(__file__), 'options.glade')
+#         self.append_page(mprj.simple.ConfigPage(self.config_copy))
+        self.append_page(ConfigsPage('page_configs', self.config_copy, glade_file))
+        self.append_page(RunOptionsPage('page_run', self.config_copy, glade_file))
+        self.append_page(BuildCommandsPage('page_commands', self.config_copy, glade_file))
 
 
 gobject.type_register(ConfigsPage)
@@ -171,8 +127,9 @@ if __name__ == '__main__':
     from c import CProject
 
     editor = moo.edit.create_editor_instance()
-    config = CConfig(File(_sample_file, '/tmp/fake/file'))
-    project = CProject(None, config)
+    config_file = File(_sample_file, '/tmp/fake/file')
+    config = CConfig(config_file)
+    project = CProject(None, config, config_file)
     dialog = Dialog(project)
     dialog.connect('destroy', gtk.main_quit)
     dialog.run()

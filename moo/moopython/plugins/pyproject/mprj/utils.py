@@ -57,7 +57,7 @@ def oops(window, error):
     moo.utils.error_dialog(window, "OOPS", format_error(error))
 
 def print_error(error=None):
-    print format_error(error)
+    print >> sys.stderr, format_error(error)
 
 def format_error(error=None):
     if error:

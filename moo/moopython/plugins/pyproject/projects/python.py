@@ -1,3 +1,10 @@
+if __name__ == '__main__':
+    import sys
+    import os.path
+    dir = os.path.dirname(__file__)
+    sys.path.insert(0, os.path.join(dir, '../..'))
+    sys.path.insert(0, os.path.join(dir, '..'))
+
 import gtk
 import os.path
 import gobject

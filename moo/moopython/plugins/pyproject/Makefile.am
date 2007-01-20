@@ -15,9 +15,11 @@ nobase_plugin_DATA =			\
 	mprj/__init__.py		\
 	mprj/manager.py			\
 	mprj/project.py			\
+	mprj/optdialog.py		\
 	mprj/session.py			\
 	mprj/settings.py		\
 	mprj/simple.py			\
+	mprj/simple.glade		\
 	mprj/test.py			\
 	mprj/utils.py			\
 	mprj/config/_config.py		\
@@ -37,7 +39,6 @@ nobase_projects_DATA =			\
 	projects/cproj/__init__.py	\
 	projects/cproj/optdialog.py	\
 	projects/cproj/parser.py	\
-	projects/cproj/view.py		\
 	projects/cproj/options.glade	\
 	projects/latex.py		\
 	projects/ltxproj/config.py	\
@@ -46,7 +47,6 @@ nobase_projects_DATA =			\
 	projects/pyproj/config.py	\
 	projects/pyproj/__init__.py	\
 	projects/pyproj/optdialog.py	\
-	projects/pyproj/view.py		\
 	projects/pyproj/options.glade
 
 EXTRA_DIST =				\
