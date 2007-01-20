@@ -114,6 +114,7 @@
         </context>
 
 	<context id="special-variables" style-ref="special-variables">
+          <prefix>(?&lt;![\w\.])</prefix>
           <keyword>self</keyword>
           <keyword>False</keyword>
           <keyword>None</keyword>
@@ -187,6 +188,7 @@
         </context>
 
         <context id="builtins" style-ref="builtins">
+          <prefix>(?&lt;![\w\.])</prefix>
           <keyword>ArithmeticError</keyword>
           <keyword>AssertionError</keyword>
           <keyword>AttributeError</keyword>
