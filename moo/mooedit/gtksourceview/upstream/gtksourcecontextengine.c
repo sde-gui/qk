@@ -1994,7 +1994,11 @@ all_analyzed (GtkSourceContextEngine *ce)
 static gboolean
 idle_worker (GtkSourceContextEngine *ce)
 {
+	gboolean retval = TRUE;
+
 	g_return_val_if_fail (ce->priv->buffer != NULL, FALSE);
+
+	gdk_threads_enter ();
 
 	/* analyze batch of text */
 	update_syntax (ce, NULL, INCREMENTAL_UPDATE_TIME_SLICE);
@@ -2003,10 +2007,12 @@ idle_worker (GtkSourceContextEngine *ce)
 	if (all_analyzed (ce))
 	{
 		ce->priv->incremental_update = 0;
-		return FALSE;
+		retval = FALSE;
 	}
 
-	return TRUE;
+	gdk_threads_leave ();
+
+	return retval;
 }
 
 /**
@@ -2022,6 +2028,8 @@ first_update_callback (GtkSourceContextEngine *ce)
 {
 	g_return_val_if_fail (ce->priv->buffer != NULL, FALSE);
 
+	gdk_threads_enter ();
+
 	/* analyze batch of text */
 	update_syntax (ce, NULL, FIRST_UPDATE_TIME_SLICE);
 	CHECK_TREE (ce);
@@ -2030,6 +2038,8 @@ first_update_callback (GtkSourceContextEngine *ce)
 
 	if (!all_analyzed (ce))
 		install_idle_worker (ce);
+
+	gdk_threads_leave ();
 
 	return FALSE;
 }

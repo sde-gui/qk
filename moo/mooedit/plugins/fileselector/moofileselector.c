@@ -704,9 +704,9 @@ button_drag_motion (GtkWidget      *button,
     }
 
     if (!filesel->open_pane_timeout)
-        filesel->open_pane_timeout = g_timeout_add (OPEN_PANE_TIMEOUT,
-                                                    (GSourceFunc) drag_open_pane,
-                                                    filesel);
+        filesel->open_pane_timeout = _moo_timeout_add (OPEN_PANE_TIMEOUT,
+                                                       (GSourceFunc) drag_open_pane,
+                                                       filesel);
 
     gdk_drag_status (context, 0, time);
 

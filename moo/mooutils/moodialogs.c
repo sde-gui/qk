@@ -445,7 +445,7 @@ configure_event (GtkWindow *window,
                  PositionInfo *pinfo)
 {
     if (!pinfo->save_size_idle)
-        pinfo->save_size_idle = g_idle_add ((GSourceFunc) save_size, window);
+        pinfo->save_size_idle = _moo_idle_add ((GSourceFunc) save_size, window);
     return FALSE;
 }
 

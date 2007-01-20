@@ -198,11 +198,11 @@ setup_master_fd (MooTermPtUnix *pt,
     g_io_channel_set_encoding (pt->io, NULL, NULL);
     g_io_channel_set_buffered (pt->io, FALSE);
 
-    pt->io_watch_id = g_io_add_watch_full (pt->io,
-                                           PT_READER_PRIORITY,
-                                           G_IO_IN | G_IO_PRI | G_IO_HUP,
-                                           (GIOFunc) read_child_out,
-                                           pt, NULL);
+    pt->io_watch_id = _moo_io_add_watch_full (pt->io,
+                                              PT_READER_PRIORITY,
+                                              G_IO_IN | G_IO_PRI | G_IO_HUP,
+                                              (GIOFunc) read_child_out,
+                                              pt, NULL);
 
     pt->master = master;
     MOO_TERM_PT(pt)->priv->alive = TRUE;
@@ -623,9 +623,9 @@ start_writer (MooTermPt *pt)
 {
     if (!pt->priv->pending_write_id)
         pt->priv->pending_write_id =
-                g_idle_add_full (PT_WRITER_PRIORITY,
-                                 (GSourceFunc) write_cb,
-                                 pt, NULL);
+                _moo_idle_add_full (PT_WRITER_PRIORITY,
+                                    (GSourceFunc) write_cb,
+                                    pt, NULL);
 }
 
 static void

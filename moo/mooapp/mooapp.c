@@ -972,7 +972,7 @@ moo_app_run_real (MooApp *app)
     app->priv->quit_handler_id =
             gtk_quit_add (1, (GtkFunction) on_gtk_main_quit, app);
 
-    g_timeout_add (100, (GSourceFunc) check_signal, NULL);
+    _moo_timeout_add (100, (GSourceFunc) check_signal, NULL);
 
     gtk_main ();
 

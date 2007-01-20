@@ -21,6 +21,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/moocompat.h"
+#include "mooutils/mooutils-misc.h"
 
 
 static void         moo_term_window_class_init  (MooTermWindowClass *klass);
@@ -203,7 +204,7 @@ prefs_notify (G_GNUC_UNUSED const char *key,
 
     if (!window->apply_prefs_idle)
         window->apply_prefs_idle =
-                g_idle_add ((GSourceFunc) apply_prefs, window);
+                _moo_idle_add ((GSourceFunc) apply_prefs, window);
 }
 
 

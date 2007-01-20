@@ -13,6 +13,7 @@
 
 #include "mooutils/moomarshals.h"
 #include "mooutils/moohistorycombo.h"
+#include "mooutils/mooutils-misc.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
@@ -420,9 +421,9 @@ moo_history_combo_changed (MooCombo *combo)
         if (hist_combo->priv->completion_popup_timeout_id)
             g_source_remove (hist_combo->priv->completion_popup_timeout_id);
         hist_combo->priv->completion_popup_timeout_id =
-                g_timeout_add (hist_combo->priv->completion_popup_timeout,
-                               (GSourceFunc) popup,
-                               combo);
+                _moo_timeout_add (hist_combo->priv->completion_popup_timeout,
+                                  (GSourceFunc) popup,
+                                  combo);
     }
     else
     {

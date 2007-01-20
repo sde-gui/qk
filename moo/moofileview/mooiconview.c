@@ -15,6 +15,7 @@
 #include "mooiconview.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-misc.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <string.h>
@@ -971,9 +972,9 @@ moo_icon_view_invalidate_layout (MooIconView *view)
 {
     if (!view->priv->update_idle)
         view->priv->update_idle =
-                g_idle_add_full (G_PRIORITY_HIGH,
-                                 (GSourceFunc) moo_icon_view_update_layout,
-                                 view, NULL);
+                _moo_idle_add_full (G_PRIORITY_HIGH,
+                                    (GSourceFunc) moo_icon_view_update_layout,
+                                    view, NULL);
 }
 
 
@@ -3310,9 +3311,9 @@ drag_scroll_check (MooIconView *view,
 
         if (!info->scroll_timeout)
             info->scroll_timeout =
-                    g_timeout_add (DRAG_SCROLL_TIMEOUT,
-                                   (GSourceFunc) drag_scroll_timeout,
-                                   view);
+                    _moo_timeout_add (DRAG_SCROLL_TIMEOUT,
+                                      (GSourceFunc) drag_scroll_timeout,
+                                      view);
     }
     else
     {

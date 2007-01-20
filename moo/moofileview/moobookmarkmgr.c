@@ -25,6 +25,7 @@
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-misc.h"
 #include <string.h>
 #include <errno.h>
 #ifdef HAVE_UNISTD_H
@@ -167,7 +168,7 @@ moo_bookmark_mgr_changed (MooBookmarkMgr *mgr)
     if (!mgr->priv->loading)
         moo_bookmark_mgr_save (mgr);
     if (!mgr->priv->update_idle)
-        mgr->priv->update_idle = g_idle_add ((GSourceFunc) mgr_update_menus, mgr);
+        mgr->priv->update_idle = _moo_idle_add ((GSourceFunc) mgr_update_menus, mgr);
 }
 
 

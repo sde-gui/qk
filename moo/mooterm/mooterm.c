@@ -596,34 +596,39 @@ moo_term_unrealize (GtkWidget *widget)
 }
 
 
-static void     im_preedit_start    (MooTerm        *term)
+static void
+im_preedit_start (MooTerm *term)
 {
     term->priv->im_preedit_active = TRUE;
 }
 
 
-static void     im_preedit_end      (MooTerm        *term)
+static void
+im_preedit_end (MooTerm *term)
 {
     term->priv->im_preedit_active = FALSE;
 }
 
 
-static void     child_died                      (MooTerm        *term)
+static void
+child_died (MooTerm *term)
 {
     g_signal_emit (term, signals[CHILD_DIED], 0);
 }
 
 
-static void     moo_term_set_scroll_adjustments (GtkWidget      *widget,
-                                                 G_GNUC_UNUSED GtkAdjustment  *hadj,
-                                                 GtkAdjustment  *vadj)
+static void
+moo_term_set_scroll_adjustments (GtkWidget      *widget,
+                                 G_GNUC_UNUSED GtkAdjustment  *hadj,
+                                 GtkAdjustment  *vadj)
 {
     moo_term_set_adjustment (MOO_TERM (widget), vadj);
 }
 
 
-void             moo_term_set_adjustment    (MooTerm        *term,
-                                             GtkAdjustment  *vadj)
+void
+moo_term_set_adjustment (MooTerm       *term,
+                         GtkAdjustment *vadj)
 {
     if (term->priv->adjustment == vadj)
         return;
@@ -675,8 +680,9 @@ scrollback_changed (MooTerm        *term,
 }
 
 
-static void     buf_size_changed                (MooTerm        *term,
-                                                 MooTermBuffer  *buf)
+static void
+buf_size_changed (MooTerm       *term,
+                  MooTermBuffer *buf)
 {
     if (buf == term->priv->buffer)
     {
@@ -697,7 +703,8 @@ static void     buf_size_changed                (MooTerm        *term,
 
 #define EQUAL(a, b) (ABS((a)-(b)) < 0.4)
 
-static void     update_adjustment               (MooTerm        *term)
+static void
+update_adjustment (MooTerm *term)
 {
     double upper, value, page_size;
     GtkAdjustment *adj = term->priv->adjustment;
@@ -729,7 +736,8 @@ static void     update_adjustment               (MooTerm        *term)
 }
 
 
-static void     update_adjustment_value         (MooTerm        *term)
+static void
+update_adjustment_value (MooTerm *term)
 {
     double value = term_top_line (term);
     gboolean now = FALSE;
@@ -750,7 +758,8 @@ static void     update_adjustment_value         (MooTerm        *term)
 #undef EQUAL
 
 
-static void     adjustment_value_changed        (MooTerm        *term)
+static void
+adjustment_value_changed (MooTerm *term)
 {
     guint val, real_val;
 
@@ -782,16 +791,16 @@ queue_adjustment_changed (MooTerm  *term,
     else if (!term->priv->pending_adjustment_changed)
     {
         term->priv->pending_adjustment_changed =
-                g_idle_add_full (ADJUSTMENT_PRIORITY,
-                                 (GSourceFunc) emit_adjustment_changed,
-                                 term,
-                                 NULL);
+                _moo_idle_add_full (ADJUSTMENT_PRIORITY,
+                                    (GSourceFunc) emit_adjustment_changed,
+                                    term, NULL);
     }
 }
 
 
-static void     queue_adjustment_value_changed  (MooTerm        *term,
-                                                 gboolean        now)
+static void
+queue_adjustment_value_changed (MooTerm  *term,
+                                gboolean  now)
 {
     if (now)
     {
@@ -803,15 +812,15 @@ static void     queue_adjustment_value_changed  (MooTerm        *term,
     else if (!term->priv->pending_adjustment_value_changed)
     {
         term->priv->pending_adjustment_value_changed =
-                g_idle_add_full(ADJUSTMENT_PRIORITY,
-                                (GSourceFunc) emit_adjustment_value_changed,
-                                term,
-                                NULL);
+                _moo_idle_add_full(ADJUSTMENT_PRIORITY,
+                                   (GSourceFunc) emit_adjustment_value_changed,
+                                   term, NULL);
     }
 }
 
 
-static gboolean emit_adjustment_changed         (MooTerm        *term)
+static gboolean
+emit_adjustment_changed (MooTerm *term)
 {
     term->priv->pending_adjustment_changed = 0;
     gtk_adjustment_changed (term->priv->adjustment);
@@ -819,7 +828,8 @@ static gboolean emit_adjustment_changed         (MooTerm        *term)
 }
 
 
-static gboolean emit_adjustment_value_changed   (MooTerm        *term)
+static gboolean
+emit_adjustment_value_changed (MooTerm *term)
 {
     term->priv->pending_adjustment_value_changed = 0;
     gtk_adjustment_value_changed (term->priv->adjustment);
@@ -827,9 +837,10 @@ static gboolean emit_adjustment_value_changed   (MooTerm        *term)
 }
 
 
-static void     scroll_abs                      (MooTerm        *term,
-                                                 guint           line,
-                                                 gboolean        update_adj)
+static void
+scroll_abs (MooTerm  *term,
+            guint     line,
+            gboolean  update_adj)
 {
     if (term_top_line (term) == line)
     {
@@ -855,8 +866,9 @@ static void     scroll_abs                      (MooTerm        *term,
 }
 
 
-static void     scroll_to_bottom                (MooTerm        *term,
-                                                 gboolean        update_adj)
+static void
+scroll_to_bottom (MooTerm  *term,
+                  gboolean  update_adj)
 {
     guint scrollback = buf_scrollback (term->priv->buffer);
     gboolean update_full = FALSE;
@@ -1107,9 +1119,9 @@ process_incoming (MooTerm *term)
 
     if (!done)
         term->priv->process_timeout =
-                g_timeout_add (PROCESS_INCOMING_TIMEOUT,
-                               (GSourceFunc) process_incoming,
-                               term);
+                _moo_timeout_add (PROCESS_INCOMING_TIMEOUT,
+                                  (GSourceFunc) process_incoming,
+                                  term);
 
     return FALSE;
 }
@@ -1134,9 +1146,9 @@ moo_term_feed (MooTerm    *term,
 
     if (!term->priv->process_timeout)
         term->priv->process_timeout =
-                g_timeout_add (PROCESS_INCOMING_TIMEOUT,
-                               (GSourceFunc) process_incoming,
-                               term);
+                _moo_timeout_add (PROCESS_INCOMING_TIMEOUT,
+                                  (GSourceFunc) process_incoming,
+                                  term);
 }
 
 

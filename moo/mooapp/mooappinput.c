@@ -601,10 +601,10 @@ _moo_app_input_start (MooAppInput *ch)
 
     ch->io = g_io_channel_unix_new (ch->pipe);
     g_io_channel_set_encoding (ch->io, NULL, NULL);
-    ch->io_watch = g_io_add_watch (ch->io,
-                                   G_IO_IN | G_IO_PRI | G_IO_HUP | G_IO_ERR,
-                                   (GIOFunc) read_input,
-                                   ch);
+    ch->io_watch = _moo_io_add_watch (ch->io,
+                                      G_IO_IN | G_IO_PRI | G_IO_HUP | G_IO_ERR,
+                                      (GIOFunc) read_input,
+                                      ch);
 
     ch->ready = TRUE;
     return TRUE;

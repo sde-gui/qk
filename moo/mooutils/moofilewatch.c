@@ -554,9 +554,9 @@ watch_fam_start (MooFileWatch   *watch,
 
     fam_socket = g_io_channel_unix_new (watch->fam_connection.fd);
     watch->fam_connection_watch =
-            g_io_add_watch_full (fam_socket, MOO_FAM_SOCKET_WATCH_PRIORITY,
-                                 G_IO_IN | G_IO_PRI | G_IO_HUP,
-                                 (GIOFunc) read_fam_events, watch, NULL);
+            _moo_io_add_watch_full (fam_socket, MOO_FAM_SOCKET_WATCH_PRIORITY,
+                                    G_IO_IN | G_IO_PRI | G_IO_HUP,
+                                    (GIOFunc) read_fam_events, watch, NULL);
     g_io_channel_unref (fam_socket);
 
     return TRUE;
@@ -828,10 +828,10 @@ watch_stat_start (MooFileWatch *watch,
                   G_GNUC_UNUSED GError **error)
 {
     watch->stat_timeout =
-            g_timeout_add_full (MOO_STAT_PRIORITY,
-                                MOO_STAT_TIMEOUT,
-                                (GSourceFunc) do_stat,
-                                watch, NULL);
+            _moo_timeout_add_full (MOO_STAT_PRIORITY,
+                                   MOO_STAT_TIMEOUT,
+                                   (GSourceFunc) do_stat,
+                                   watch, NULL);
     return TRUE;
 }
 

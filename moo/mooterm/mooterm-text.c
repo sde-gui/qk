@@ -17,6 +17,7 @@
 #include "mooterm/mootermbuffer-private.h"
 #include "mooterm/mooterm-selection.h"
 #include "mooterm/mootermline-private.h"
+#include "mooutils/mooutils-misc.h"
 
 
 typedef struct {
@@ -657,9 +658,9 @@ start_drag_scroll (MooTerm *term)
 {
     if (!MOUSE_STUFF(term)->drag_scroll_timeout)
         MOUSE_STUFF(term)->drag_scroll_timeout =
-                g_timeout_add (SCROLL_TIMEOUT,
-                               (GSourceFunc) drag_scroll_timeout_func,
-                               term);
+                _moo_timeout_add (SCROLL_TIMEOUT,
+                                  (GSourceFunc) drag_scroll_timeout_func,
+                                  term);
 
     drag_scroll_timeout_func (term);
 }

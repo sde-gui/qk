@@ -16,6 +16,7 @@
 #include "mooterm/mooterm-selection.h"
 #include "mooterm/mootermbuffer-private.h"
 #include "mooterm/mootermline-private.h"
+#include "mooutils/mooutils-misc.h"
 #include <string.h>
 
 #define CHAR_WIDTH(term__)    ((term__)->priv->font->width)
@@ -1065,10 +1066,10 @@ update_timeout (MooTerm *term)
     /* Set a timer such that we do not invalidate for a while. */
     /* This limits the number of times we draw to ~40fps. */
     term->priv->update_timer =
-            g_timeout_add_full (G_PRIORITY_DEFAULT_IDLE,
-                                UPDATE_REPEAT_TIMEOUT,
-                                (GSourceFunc) update_delay_timeout,
-                                term, NULL);
+            _moo_timeout_add_full (G_PRIORITY_DEFAULT_IDLE,
+                                   UPDATE_REPEAT_TIMEOUT,
+                                   (GSourceFunc) update_delay_timeout,
+                                   term, NULL);
 
     return FALSE;
 }
@@ -1078,10 +1079,10 @@ add_update_timeout (MooTerm *term)
 {
     if (!term->priv->update_timer)
         term->priv->update_timer =
-                g_timeout_add_full (G_PRIORITY_DEFAULT_IDLE,
-                                    UPDATE_TIMEOUT,
-                                    (GSourceFunc) update_timeout,
-                                    term, NULL);
+                _moo_timeout_add_full (G_PRIORITY_DEFAULT_IDLE,
+                                       UPDATE_TIMEOUT,
+                                       (GSourceFunc) update_timeout,
+                                       term, NULL);
 }
 
 void
@@ -1153,9 +1154,9 @@ start_cursor_blinking (MooTerm        *term)
 {
     if (!term->priv->cursor_blink_timeout_id && term->priv->cursor_blinks)
         term->priv->cursor_blink_timeout_id =
-                g_timeout_add (term->priv->cursor_blink_time,
-                               (GSourceFunc) blink,
-                               term);
+                _moo_timeout_add (term->priv->cursor_blink_time,
+                                  (GSourceFunc) blink,
+                                  term);
 }
 
 

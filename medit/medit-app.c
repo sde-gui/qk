@@ -591,9 +591,10 @@ main (int argc, char *argv[])
 
     init_mem_stuff ();
 
-    /* Tim Janik said */
     g_thread_init (NULL);
     gdk_threads_init ();
+
+    gdk_threads_enter ();
 
     gtk_init (&argc, &argv);
     stamp = TIMESTAMP ();
@@ -719,11 +720,11 @@ main (int argc, char *argv[])
     g_signal_connect_swapped (editor, "all-windows-closed",
                               G_CALLBACK (moo_app_quit), app);
 
-    gdk_threads_enter ();
     retval = moo_app_run (app);
-    gdk_threads_leave ();
 
     g_object_unref (app);
+
+    gdk_threads_leave ();
     return retval;
 }
 

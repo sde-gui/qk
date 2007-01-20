@@ -14,6 +14,7 @@
 #include "mooutils/moofiltermgr.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-misc.h"
 #include <string.h>
 #include <gtk/gtk.h>
 
@@ -1134,5 +1135,5 @@ static void
 mgr_save (MooFilterMgr *mgr)
 {
     if (!mgr->priv->save_idle_id)
-        mgr->priv->save_idle_id = g_idle_add ((GSourceFunc) mgr_do_save, mgr);
+        mgr->priv->save_idle_id = _moo_idle_add ((GSourceFunc) mgr_do_save, mgr);
 }

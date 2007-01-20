@@ -18,6 +18,7 @@
 #include "mooutils/moomarshals.h"
 #include "mooutils/moonotebook.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-misc.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <string.h>
@@ -2557,15 +2558,17 @@ static void     drag_scroll_stop            (MooNotebook    *nb);
 static gboolean drag_scroll                 (MooNotebook    *nb);
 
 
-static void     tab_drag_cancel             (MooNotebook    *nb)
+static void
+tab_drag_cancel (MooNotebook *nb)
 {
     g_print ("cancel\n");
     tab_drag_end (nb, FALSE);
 }
 
 
-static void     drag_scroll_start           (MooNotebook    *nb,
-                                             gboolean        right)
+static void
+drag_scroll_start (MooNotebook *nb,
+                   gboolean     right)
 {
     if (nb->priv->drag_scroll_id)
     {
@@ -2576,13 +2579,14 @@ static void     drag_scroll_start           (MooNotebook    *nb,
     }
 
     nb->priv->drag_scroll_right = right;
-    nb->priv->drag_scroll_id = g_timeout_add (SCROLL_TIMEOUT,
-                                              (GSourceFunc) drag_scroll,
-                                              nb);
+    nb->priv->drag_scroll_id = _moo_timeout_add (SCROLL_TIMEOUT,
+                                                 (GSourceFunc) drag_scroll,
+                                                 nb);
 }
 
 
-static void     drag_scroll_stop            (MooNotebook    *nb)
+static void
+drag_scroll_stop (MooNotebook *nb)
 {
     if (nb->priv->drag_scroll_id)
         g_source_remove (nb->priv->drag_scroll_id);
@@ -2590,17 +2594,24 @@ static void     drag_scroll_stop            (MooNotebook    *nb)
 }
 
 
-static gboolean drag_scroll                 (MooNotebook    *nb)
+static gboolean
+drag_scroll (MooNotebook *nb)
 {
     int delta;
-    int offset = nb->priv->labels_offset;
-    int max_offset = nb->priv->labels_width - nb->priv->labels_visible_width;
-    int width = nb->priv->drag_page->label->width;
+    int offset, max_offset;
+    int width;
+    gboolean retval = TRUE;
+
+    offset = nb->priv->labels_offset;
+    max_offset = nb->priv->labels_width - nb->priv->labels_visible_width;
+    width = nb->priv->drag_page->label->width;
 
     if (max_offset <= 0)
     {
         drag_scroll_stop (nb);
-        g_return_val_if_reached (FALSE);
+        g_critical ("%s: oops", G_STRLOC);
+        retval = FALSE;
+        goto out;
     }
 
     if (nb->priv->drag_scroll_right)
@@ -2624,19 +2635,21 @@ static gboolean drag_scroll                 (MooNotebook    *nb)
             delta = MIN (-offset, 0);
     }
 
-    if (!delta)
-        return TRUE;
+    if (delta)
+    {
+        nb->priv->labels_offset += delta;
+        nb->priv->drag_tab_x -= delta;
+        tab_drag_motion (nb, NULL);
+    }
 
-    nb->priv->labels_offset += delta;
-    nb->priv->drag_tab_x -= delta;
-
-    tab_drag_motion (nb, NULL);
+out:
     return TRUE;
 }
 
 
-static void     tab_drag_end                (MooNotebook    *nb,
-                                             gboolean        drop)
+static void
+tab_drag_end (MooNotebook *nb,
+              gboolean     drop)
 {
     int index_;
     Page *old_page;
@@ -2737,8 +2750,9 @@ tab_drag_start (MooNotebook    *nb,
 }
 
 
-static void     tab_drag_motion             (MooNotebook    *nb,
-                                             GdkEventMotion *event)
+static void
+tab_drag_motion (MooNotebook    *nb,
+                 GdkEventMotion *event)
 {
     int x, new_index, width, offset, num, i;
     GSList *visible, *l;

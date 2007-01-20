@@ -107,6 +107,31 @@ _moo_str_equal_inline (const char *s1,
 
 const char *_moo_get_pid_string             (void);
 
+guint       _moo_idle_add_full              (gint            priority,
+                                             GSourceFunc     function,
+                                             gpointer        data,
+                                             GDestroyNotify  notify);
+guint       _moo_idle_add                   (GSourceFunc     function,
+                                             gpointer        data);
+guint       _moo_timeout_add_full           (gint            priority,
+                                             guint           interval,
+                                             GSourceFunc     function,
+                                             gpointer        data,
+                                             GDestroyNotify  notify);
+guint       _moo_timeout_add                (guint           interval,
+                                             GSourceFunc     function,
+                                             gpointer        data);
+guint       _moo_io_add_watch               (GIOChannel     *channel,
+                                             GIOCondition    condition,
+                                             GIOFunc         func,
+                                             gpointer        data);
+guint       _moo_io_add_watch_full          (GIOChannel     *channel,
+                                             int             priority,
+                                             GIOCondition    condition,
+                                             GIOFunc         func,
+                                             gpointer        data,
+                                             GDestroyNotify  notify);
+
 
 G_END_DECLS
 

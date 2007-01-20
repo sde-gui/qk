@@ -181,7 +181,7 @@ fork_command (MooTermPt      *pt_gen,
 
     pt->in_io = g_io_channel_win32_new_fd (pt->in);
     g_io_channel_set_encoding (pt->in_io, NULL, NULL);
-//     pt->priv->in_watch_id = g_io_add_watch (pt->priv->in_io,
+//     pt->priv->in_watch_id = _moo_io_add_watch (pt->priv->in_io,
 //                                              (GIOCondition)(G_IO_ERR | G_IO_HUP),
 //                                              (GIOFunc)helper_in_hup,
 //                                              pt);
@@ -189,11 +189,11 @@ fork_command (MooTermPt      *pt_gen,
     pt->out_io = g_io_channel_win32_new_fd (pt->out);
     g_io_channel_set_encoding (pt->out_io, NULL, NULL);
     g_io_channel_set_buffered (pt->in_io, FALSE);
-    pt->out_watch_id = g_io_add_watch_full (pt->out_io,
-                                            G_PRIORITY_DEFAULT_IDLE,
-                                            G_IO_IN | G_IO_PRI | G_IO_HUP,
-                                            (GIOFunc) read_helper_out,
-                                            pt, NULL);
+    pt->out_watch_id = _moo_io_add_watch_full (pt->out_io,
+                                               G_PRIORITY_DEFAULT_IDLE,
+                                               G_IO_IN | G_IO_PRI | G_IO_HUP,
+                                               (GIOFunc) read_helper_out,
+                                               pt, NULL);
 
 //     GSource *src = g_main_context_find_source_by_id (NULL, helper.out_watch_id);
 //     if (src) g_source_set_priority (src, READ_HELPER_OUT_PRIORITY);
@@ -396,24 +396,24 @@ do_write (MooTermPt      *pt_gen,
 
 
 static gboolean
-write_cb (MooTermPt      *pt)
+write_cb (MooTermPt *pt)
 {
     pt_write (pt, NULL, 0);
     return TRUE;
 }
 
 static void
-start_writer (MooTermPt      *pt)
+start_writer (MooTermPt *pt)
 {
     if (!pt->priv->pending_write_id)
         pt->priv->pending_write_id =
-                g_idle_add_full (PT_WRITER_PRIORITY,
-                                 (GSourceFunc) write_cb,
-                                 pt, NULL);
+                _moo_idle_add_full (PT_WRITER_PRIORITY,
+                                    (GSourceFunc) write_cb,
+                                    pt, NULL);
 }
 
 static void
-stop_writer (MooTermPt      *pt)
+stop_writer (MooTermPt *pt)
 {
     if (pt->priv->pending_write_id)
     {

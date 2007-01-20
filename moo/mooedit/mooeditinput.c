@@ -17,6 +17,7 @@
 #include "mooedit/mootextiter.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooutils/moocompat.h"
+#include "mooutils/mooutils-misc.h"
 #include <gdk/gdkkeysyms.h>
 
 
@@ -864,9 +865,9 @@ start_drag_scroll (MooTextView *view)
 {
     if (!view->priv->drag_scroll_timeout)
         view->priv->drag_scroll_timeout =
-            g_timeout_add (SCROLL_TIMEOUT,
-                           (GSourceFunc)drag_scroll_timeout_func,
-                           view);
+            _moo_timeout_add (SCROLL_TIMEOUT,
+                              (GSourceFunc)drag_scroll_timeout_func,
+                              view);
     drag_scroll_timeout_func (view);
 }
 

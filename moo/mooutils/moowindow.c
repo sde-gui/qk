@@ -23,6 +23,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/mooutils-misc.h"
 #include <gtk/gtk.h>
 #include <gobject/gvaluecollector.h>
 #include <string.h>
@@ -460,7 +461,7 @@ moo_window_save_size (MooWindow *window)
 {
     if (!window->priv->save_size_id)
         window->priv->save_size_id =
-                g_idle_add ((GSourceFunc)save_size, window);
+                _moo_idle_add ((GSourceFunc)save_size, window);
     return FALSE;
 }
 

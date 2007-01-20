@@ -16,6 +16,7 @@
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooutils/moostock.h"
+#include "mooutils/mooutils-misc.h"
 
 
 G_DEFINE_TYPE (MooEditBookmark, moo_edit_bookmark, MOO_TYPE_LINE_MARK)
@@ -315,7 +316,7 @@ _moo_edit_line_mark_moved (MooEdit     *edit,
         !edit->priv->update_bookmarks_idle)
     {
         edit->priv->update_bookmarks_idle =
-                g_idle_add ((GSourceFunc) update_bookmarks, edit);
+                _moo_idle_add ((GSourceFunc) update_bookmarks, edit);
         bookmarks_changed (edit);
     }
 }

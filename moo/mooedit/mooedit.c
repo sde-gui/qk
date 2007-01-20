@@ -27,6 +27,7 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/mooutils-misc.h"
 #include <string.h>
 
 
@@ -996,9 +997,9 @@ moo_edit_queue_apply_config (MooEdit *edit)
 {
     if (!edit->priv->apply_config_idle)
         edit->priv->apply_config_idle =
-                g_idle_add_full (G_PRIORITY_HIGH,
-                                 (GSourceFunc) do_apply_config,
-                                 edit, NULL);
+                _moo_idle_add_full (G_PRIORITY_HIGH,
+                                    (GSourceFunc) do_apply_config,
+                                    edit, NULL);
 }
 
 
@@ -1749,9 +1750,9 @@ show_progress (MooEdit *edit)
     update_progress (edit);
 
     edit->priv->progress_timeout =
-            g_timeout_add (PROGRESS_TIMEOUT,
-                           (GSourceFunc) pulse_progress,
-                           edit);
+            _moo_timeout_add (PROGRESS_TIMEOUT,
+                              (GSourceFunc) pulse_progress,
+                              edit);
 
     g_object_unref (xml);
     return FALSE;
@@ -1798,9 +1799,9 @@ _moo_edit_set_state (MooEdit        *edit,
     {
         if (!edit->priv->progress_timeout)
             edit->priv->progress_timeout =
-                    g_timeout_add (PROGRESS_TIMEOUT,
-                                   (GSourceFunc) show_progress,
-                                   edit);
+                    _moo_timeout_add (PROGRESS_TIMEOUT,
+                                      (GSourceFunc) show_progress,
+                                      edit);
         edit->priv->progress_text = g_strdup (text);
     }
 }

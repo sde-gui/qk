@@ -1452,8 +1452,8 @@ moo_text_view_move_cursor (gpointer      view,
     scroll->visual = offset_visual;
 
     if (in_idle)
-        g_idle_add ((GSourceFunc) do_move_cursor,
-                     scroll);
+        _moo_idle_add ((GSourceFunc) do_move_cursor,
+                       scroll);
     else
         do_move_cursor (scroll);
 }
@@ -2319,9 +2319,9 @@ highlight_updated (GtkTextView       *text_view,
 
         if (!view->priv->update_idle)
             view->priv->update_idle =
-                    g_idle_add_full (G_PRIORITY_HIGH_IDLE,
-                                     (GSourceFunc) invalidate_rectangle,
-                                     view, NULL);
+                    _moo_idle_add_full (G_PRIORITY_HIGH_IDLE,
+                                        (GSourceFunc) invalidate_rectangle,
+                                        view, NULL);
     }
     else
     {
@@ -2695,7 +2695,7 @@ blink_cb (MooTextView *view)
     else
         time *= CURSOR_ON_MULTIPLIER;
 
-    view->priv->blink_timeout = g_timeout_add (time, (GSourceFunc) blink_cb, view);
+    view->priv->blink_timeout = _moo_timeout_add (time, (GSourceFunc) blink_cb, view);
     view->priv->cursor_visible = !view->priv->cursor_visible;
     invalidate_cursor (text_view);
 
@@ -2726,7 +2726,7 @@ check_cursor_blink (MooTextView *view)
             {
                 int time = get_cursor_time (GTK_WIDGET (view)) * CURSOR_OFF_MULTIPLIER;
                 view->priv->cursor_visible = TRUE;
-                view->priv->blink_timeout = g_timeout_add (time, (GSourceFunc) blink_cb, view);
+                view->priv->blink_timeout = _moo_timeout_add (time, (GSourceFunc) blink_cb, view);
             }
         }
         else
@@ -2761,7 +2761,7 @@ _moo_text_view_pend_cursor_blink (MooTextView *view)
         view->priv->cursor_visible = TRUE;
 
         time = get_cursor_time (GTK_WIDGET (view)) * CURSOR_PEND_MULTIPLIER;
-        view->priv->blink_timeout = g_timeout_add (time, (GSourceFunc) blink_cb, view);
+        view->priv->blink_timeout = _moo_timeout_add (time, (GSourceFunc) blink_cb, view);
     }
 }
 
@@ -2964,9 +2964,9 @@ buffer_changed (MooTextView *view)
         !view->priv->update_n_lines_idle)
     {
         view->priv->update_n_lines_idle =
-            g_idle_add_full (G_PRIORITY_HIGH,
-                             (GSourceFunc) update_n_lines_idle,
-                             view, NULL);
+            _moo_idle_add_full (G_PRIORITY_HIGH,
+                                (GSourceFunc) update_n_lines_idle,
+                                view, NULL);
     }
 }
 

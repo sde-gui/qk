@@ -1533,7 +1533,7 @@ static void
 bookmarks_toplevel_hide (GtkWidget   *toplevel,
                          GtkMenuItem *bk_item)
 {
-    g_idle_add ((GSourceFunc) erase_bookmarks_menu, g_object_ref (bk_item));
+    _moo_idle_add ((GSourceFunc) erase_bookmarks_menu, g_object_ref (bk_item));
     g_signal_handlers_disconnect_by_func (toplevel,
                                           (gpointer) bookmarks_toplevel_hide,
                                           bk_item);
@@ -2831,7 +2831,7 @@ pane_params_changed (MooEditWindow      *window,
 
         if (!window->priv->save_params_idle)
             window->priv->save_params_idle =
-                    g_idle_add ((GSourceFunc) do_save_panes, window);
+                    _moo_idle_add ((GSourceFunc) do_save_panes, window);
     }
 }
 
@@ -3743,8 +3743,8 @@ moo_edit_window_update_doc_list (MooEditWindow *window)
 {
     if (!window->priv->doc_list_update_idle)
         window->priv->doc_list_update_idle =
-                g_idle_add ((GSourceFunc) do_update_doc_list,
-                            window);
+                _moo_idle_add ((GSourceFunc) do_update_doc_list,
+                               window);
 }
 
 

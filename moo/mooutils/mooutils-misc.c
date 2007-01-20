@@ -1602,3 +1602,142 @@ _moo_str_equal (const char *s1,
     return !strcmp (s1 ? s1 : "", s2 ? s2 : "");
 }
 #endif
+
+
+typedef struct {
+    GSourceFunc func;
+    gpointer data;
+    GDestroyNotify notify;
+} SourceData;
+
+static void
+source_data_free (gpointer data)
+{
+    SourceData *sd = data;
+    if (sd && sd->notify)
+        sd->notify (sd->data);
+    g_free (sd);
+}
+
+static gboolean
+thread_source_func (gpointer data)
+{
+    SourceData *sd = data;
+    gboolean ret = FALSE;
+
+    gdk_threads_enter ();
+
+#if GLIB_CHECK_VERSION(2,12,0)
+    if (!g_source_is_destroyed (g_main_current_source ()))
+#endif
+        ret = sd->func (sd->data);
+
+    gdk_threads_leave ();
+    return ret;
+}
+
+guint
+_moo_idle_add_full (gint           priority,
+                    GSourceFunc    function,
+                    gpointer       data,
+                    GDestroyNotify notify)
+{
+    SourceData *sd;
+
+    sd = g_new (SourceData, 1);
+    sd->func = function;
+    sd->data = data;
+    sd->notify = notify;
+
+    return g_idle_add_full (priority, thread_source_func,
+                            sd, source_data_free);
+}
+
+
+guint
+_moo_idle_add (GSourceFunc function,
+               gpointer    data)
+{
+    return _moo_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
+                               function, data, NULL);
+}
+
+
+guint
+_moo_timeout_add_full (gint           priority,
+                       guint          interval,
+                       GSourceFunc    function,
+                       gpointer       data,
+                       GDestroyNotify notify)
+{
+    SourceData *sd;
+
+    sd = g_new (SourceData, 1);
+    sd->func = function;
+    sd->data = data;
+    sd->notify = notify;
+
+    return g_timeout_add_full (priority, interval,
+                               thread_source_func,
+                               sd, source_data_free);
+}
+
+
+guint
+_moo_timeout_add (guint       interval,
+                  GSourceFunc function,
+                  gpointer    data)
+{
+    return _moo_timeout_add_full (G_PRIORITY_DEFAULT, interval,
+                                  function, data, NULL);
+}
+
+
+static gboolean
+thread_io_func (GIOChannel  *source,
+                GIOCondition condition,
+                gpointer     data)
+{
+    SourceData *sd = data;
+    gboolean ret = FALSE;
+
+    gdk_threads_enter ();
+
+#if GLIB_CHECK_VERSION(2,12,0)
+    if (!g_source_is_destroyed (g_main_current_source ()))
+#endif
+        ret = ((GIOFunc) sd->func) (source, condition, sd->data);
+
+    gdk_threads_leave ();
+    return ret;
+}
+
+guint
+_moo_io_add_watch (GIOChannel   *channel,
+                   GIOCondition  condition,
+                   GIOFunc       func,
+                   gpointer      data)
+{
+    return _moo_io_add_watch_full (channel, G_PRIORITY_DEFAULT,
+                                   condition, func, data, NULL);
+}
+
+
+guint
+_moo_io_add_watch_full (GIOChannel    *channel,
+                        int            priority,
+                        GIOCondition   condition,
+                        GIOFunc        func,
+                        gpointer       data,
+                        GDestroyNotify notify)
+{
+    SourceData *sd;
+
+    sd = g_new (SourceData, 1);
+    sd->func = (GSourceFunc) func;
+    sd->data = data;
+    sd->notify = notify;
+
+    return g_io_add_watch_full (channel, priority, condition,
+                                thread_io_func, sd, source_data_free);
+}

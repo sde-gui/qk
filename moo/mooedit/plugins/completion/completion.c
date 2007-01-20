@@ -650,7 +650,7 @@ reinstall_popup_timeout (CmplPlugin *plugin)
     {
         if (!plugin->popup_timeout)
             plugin->popup_timeout =
-                g_timeout_add (plugin->popup_interval, (GSourceFunc) popup_timeout, plugin);
+                _moo_timeout_add (plugin->popup_interval, (GSourceFunc) popup_timeout, plugin);
     }
 }
 
