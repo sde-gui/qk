@@ -209,6 +209,7 @@
   (return-type "gboolean")
   (parameters
     '("gboolean" "ask_confirm")
+    '("gboolean" "leave_one" (default "FALSE"))
   )
 )
 
