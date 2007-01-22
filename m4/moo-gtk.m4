@@ -1,13 +1,20 @@
 ##############################################################################
-# _MOO_SPLIT_VERSION(PKG_NAME,pkg-name)
+# _MOO_SPLIT_VERSION(NAME,version)
 #
-AC_DEFUN([_MOO_SPLIT_VERSION],[
+AC_DEFUN([_MOO_SPLIT_VERSION],[AC_REQUIRE([AC_PROG_SED])
+$1[]_VERSION="$2"
+$1[]_MAJOR_VERSION=`echo "$2" | $SED 's/\([[^.]][[^.]]*\).*/\1/'`
+$1[]_MINOR_VERSION=`echo "$2" | $SED 's/[[^.]][[^.]]*.\([[^.]][[^.]]*\).*/\1/'`
+$1[]_MICRO_VERSION=`echo "$2" | $SED 's/[[^.]][[^.]]*.[[^.]][[^.]]*.\(.*\)/\1/'`
+])
+
+##############################################################################
+# _MOO_SPLIT_VERSION_PKG(PKG_NAME,pkg-name)
+#
+AC_DEFUN([_MOO_SPLIT_VERSION_PKG],[
 AC_MSG_CHECKING($1 version)
 _moo_ac_version=`$PKG_CONFIG --modversion $2`
-$1[]_VERSION=$_moo_ac_version
-$1[]_MAJOR_VERSION=`echo "$_moo_ac_version" | $SED 's/\([[^.]][[^.]]*\).*/\1/'`
-$1[]_MINOR_VERSION=`echo "$_moo_ac_version" | $SED 's/[[^.]][[^.]]*.\([[^.]][[^.]]*\).*/\1/'`
-$1[]_MICRO_VERSION=`echo "$_moo_ac_version" | $SED 's/[[^.]][[^.]]*.[[^.]][[^.]]*.\(.*\)/\1/'`
+_MOO_SPLIT_VERSION([$1],[$_moo_ac_version])
 AC_MSG_RESULT($[]$1[]_MAJOR_VERSION.$[]$1[]_MINOR_VERSION.$[]$1[]_MICRO_VERSION)
 ])
 
@@ -19,7 +26,7 @@ dnl used also in moo-pygtk.m4
 AC_DEFUN([MOO_CHECK_VERSION],[
 if test x$MOO_OS_CYGWIN != xyes; then
   PKG_CHECK_MODULES($1,$2)
-  _MOO_SPLIT_VERSION($1,$2)
+  _MOO_SPLIT_VERSION_PKG($1,$2)
   m4_foreach([num],[2,4,6,8,10,12,14],
   [AM_CONDITIONAL($1[]_2_[]num, test $[]$1[]_MINOR_VERSION -ge num)])
 else
@@ -66,4 +73,21 @@ _MOO_CHECK_MODULE_AND_VERSION(GLIB, glib-2.0)
 _MOO_CHECK_MODULE_AND_VERSION(GTHREAD, gthread-2.0)
 _MOO_CHECK_MODULE_AND_VERSION(GDK, gdk-2.0)
 dnl _MOO_CHECK_BROKEN_GTK_THEME
+
+gdk_target=`$PKG_CONFIG --variable=target gdk-2.0`
+
+GDK_X11=false
+GDK_WIN32=false
+
+case $gdk_target in
+x11)
+  GDK_X11=true
+  ;;
+win32)
+  GDK_WIN32=true
+  ;;
+esac
+
+AM_CONDITIONAL(GDK_X11, $GDK_X11)
+AM_CONDITIONAL(GDK_WIN32, $GDK_WIN32)
 ])
