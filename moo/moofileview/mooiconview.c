@@ -2428,10 +2428,14 @@ cursor_moved (MooIconView *view)
 static void
 selection_clear (MooIconView *view)
 {
-    g_slist_foreach (view->priv->selection->selected,
-                     (GFunc) gtk_tree_row_reference_free, NULL);
-    g_slist_free (view->priv->selection->selected);
-    selection_changed (view);
+    if (view->priv->selection && view->priv->selection->selected)
+    {
+        g_slist_foreach (view->priv->selection->selected,
+                         (GFunc) gtk_tree_row_reference_free, NULL);
+        g_slist_free (view->priv->selection->selected);
+        view->priv->selection->selected = NULL;
+        selection_changed (view);
+    }
 }
 
 
@@ -2570,23 +2574,36 @@ _moo_icon_view_selected_foreach (MooIconView *view,
                                  gpointer data)
 {
     Selection *selection;
-    GSList *link;
+    GSList *link, *selected;
     GtkTreePath *path;
     GtkTreeIter iter;
 
     g_return_if_fail (MOO_IS_ICON_VIEW (view));
     g_return_if_fail (func != NULL);
 
+    g_object_ref (view);
+
     selection = view->priv->selection;
 
-    for (link = selection->selected; link != NULL; link = link->next)
+    for (link = selection->selected, selected = NULL; link != NULL; link = link->next)
+        selected = g_slist_prepend (selected, gtk_tree_row_reference_copy (link->data));
+    selected = g_slist_reverse (selected);
+
+    while (selected)
     {
-        g_assert (gtk_tree_row_reference_valid (link->data));
-        path = gtk_tree_row_reference_get_path (link->data);
-        gtk_tree_model_get_iter (view->priv->model, &iter, path);
-        func (view->priv->model, path, &iter, data);
-        gtk_tree_path_free (path);
+        if (gtk_tree_row_reference_valid (selected->data))
+        {
+            path = gtk_tree_row_reference_get_path (link->data);
+            gtk_tree_model_get_iter (view->priv->model, &iter, path);
+            func (view->priv->model, path, &iter, data);
+            gtk_tree_path_free (path);
+        }
+
+        gtk_tree_row_reference_free (selected->data);
+        selected = g_slist_delete_link (selected, selected);
     }
+
+    g_object_unref (view);
 }
 
 
