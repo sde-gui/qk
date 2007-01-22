@@ -1593,7 +1593,8 @@ find_modified (GSList *docs)
 /* XXX ask in each window, then close */
 gboolean
 moo_editor_close_all (MooEditor *editor,
-                      gboolean   ask_confirm)
+                      gboolean   ask_confirm,
+                      gboolean   leave_one)
 {
     GSList *windows, *l;
 
@@ -1603,7 +1604,20 @@ moo_editor_close_all (MooEditor *editor,
 
     for (l = windows; l != NULL; l = l->next)
     {
-        if (!moo_editor_close_window (editor, l->data, ask_confirm))
+        gboolean closed = FALSE;
+
+        if (l->next || !leave_one || !ask_confirm)
+        {
+            closed = moo_editor_close_window (editor, l->data, ask_confirm);
+        }
+        else
+        {
+            GSList *docs = moo_edit_window_list_docs (l->data);
+            closed = moo_editor_close_docs (editor, docs, ask_confirm);
+            g_slist_free (docs);
+        }
+
+        if (!closed)
         {
             g_slist_free (windows);
             return FALSE;
