@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <medit-project version="1.0" type="C" name="moo">
- <active>optimized</active>
+ <active>debug</active>
  <commands>
   <compile>cd $(builddir) &amp;&amp; $(make) $(base).lo</compile>
  </commands>
@@ -36,7 +36,7 @@
    </configure>
   </optimized>
  </configurations>
- <file_selector_dir>/home/muntyan/projects/moo/</file_selector_dir>
+ <file_selector_dir>/home/muntyan/projects/moo/moo/mooapp/smclient/</file_selector_dir>
  <run>
   <args>--g-fatal-warnings --new-app --mode=project</args>
   <exe>medit/medit</exe>

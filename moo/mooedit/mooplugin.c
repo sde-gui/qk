@@ -814,17 +814,17 @@ _moo_module_version (guint *major,
                      guint *minor)
 {
     if (major)
-        *major = MOO_MODULE_VERSION_MAJOR;
+        *major = MOO_MODULE_MAJOR_VERSION;
     if (minor)
-        *minor = MOO_MODULE_VERSION_MINOR;
+        *minor = MOO_MODULE_MINOR_VERSION;
 }
 
 gboolean
 moo_module_check_version (guint major,
                           guint minor)
 {
-    return major == MOO_MODULE_VERSION_MAJOR &&
-            minor <= MOO_MODULE_VERSION_MINOR;
+    return major == MOO_MODULE_MAJOR_VERSION &&
+            minor <= MOO_MODULE_MINOR_VERSION;
 }
 
 

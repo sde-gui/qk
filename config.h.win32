@@ -222,13 +222,13 @@
 #define MOO_VERSION "0.6.999"
 
 /* "libmoo major version" */
-#define MOO_VERSION_MAJOR 0
+#define MOO_MAJOR_VERSION 0
 
 /* "libmoo micro version" */
-#define MOO_VERSION_MICRO 999
+#define MOO_MICRO_VERSION 2
 
 /* "libmoo minor version" */
-#define MOO_VERSION_MINOR 6
+#define MOO_MINOR_VERSION 8
 
 /* The value of NEWLINE determines the newline character */
 #define NEWLINE '\n'

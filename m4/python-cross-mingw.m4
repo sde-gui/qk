@@ -1,5 +1,6 @@
 dnl AM_PYTHON_DEVEL_CROSS_MINGW([action-if-found[,action-if-not-found[,version]]])
 AC_DEFUN([AM_PYTHON_DEVEL_CROSS_MINGW],[
+  AC_REQUIRE([AC_PROG_SED])
   m4_if([$3],[],[
     m4_define([_ac_m4_pyver],[])
   ],[

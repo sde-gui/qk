@@ -1,7 +1,7 @@
 [module]
 type=Python
 file=terminal.py
-version=@MOO_MODULE_VERSION_MAJOR@.@MOO_MODULE_VERSION_MINOR@
+version=@MOO_MODULE_MAJOR_VERSION@.@MOO_MODULE_MINOR_VERSION@
 
 [plugin]
 id=Terminal
