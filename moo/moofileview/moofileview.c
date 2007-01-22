@@ -435,6 +435,7 @@ enum {
     PROP_COMPLETION_CASE_SENSITIVE,
     PROP_SHOW_HIDDEN_FILES,
     PROP_SHOW_PARENT_FOLDER,
+    PROP_VIEW_TYPE,
     /* Aux properties */
     PROP_HAS_SELECTION,
     PROP_CAN_GO_BACK,
@@ -580,6 +581,15 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                              "show-parent-folder",
                                              "show-parent-folder",
                                              FALSE,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_VIEW_TYPE,
+                                     g_param_spec_enum ("view-type",
+                                             "view-type",
+                                             "view-type",
+                                             MOO_TYPE_FILE_VIEW_TYPE,
+                                             MOO_FILE_VIEW_ICON,
                                              G_PARAM_READWRITE));
 
     signals[CHDIR] =
@@ -1618,6 +1628,9 @@ file_list_selection_changed (MooFileView *fileview,
 {
     gboolean has_selection;
 
+    g_return_if_fail (MOO_IS_FILE_VIEW (fileview));
+    g_return_if_fail (MOO_IS_TREE_VIEW (view));
+
     if (fileview->priv->select_file_idle)
         g_source_remove (fileview->priv->select_file_idle);
     fileview->priv->select_file_idle = 0;
@@ -2263,6 +2276,10 @@ moo_file_view_set_property (GObject        *object,
             _moo_file_view_set_show_parent (fileview, g_value_get_boolean (value));
             break;
 
+        case PROP_VIEW_TYPE:
+            _moo_file_view_set_view_type (fileview, g_value_get_enum (value));
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -2336,6 +2353,10 @@ moo_file_view_get_property (GObject        *object,
 
         case PROP_SHOW_PARENT_FOLDER:
             g_value_set_boolean (value, fileview->priv->show_two_dots);
+            break;
+
+        case PROP_VIEW_TYPE:
+            g_value_set_enum (value, fileview->priv->file_view_type);
             break;
 
         default:
@@ -5911,3 +5932,24 @@ out:
     return TRUE;
 }
 #endif
+
+
+GType
+_moo_file_view_type_get_type (void)
+{
+    static GType type;
+
+    if (G_UNLIKELY (!type))
+    {
+        static const GEnumValue values[] = {
+            { MOO_FILE_VIEW_LIST, (char*) "MOO_FILE_VIEW_LIST", (char*) "list" },
+            { MOO_FILE_VIEW_ICON, (char*) "MOO_FILE_VIEW_ICON", (char*) "icon" },
+            { MOO_FILE_VIEW_BOOKMARK, (char*) "MOO_FILE_VIEW_BOOKMARK", (char*) "bookmark" },
+            { 0, NULL, NULL }
+        };
+
+        type = g_enum_register_static ("MooFileViewType", values);
+    }
+
+    return type;
+}
