@@ -58,3 +58,4 @@ moo/mooterm/termhelper_res\.rc$
 gmon\.out
 py-compile
 ^moo/mooedit/language-specs/testdir/.*$
+^moo/mooapp/smclient/(README|egg-session-end.c|eggdesktopfile.[ch]|eggsmclient-libgnomeui.[ch]|eggsmclient-osx.c|gedit.diff|smclient.patch)

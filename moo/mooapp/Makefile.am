@@ -1,3 +1,5 @@
+SUBDIRS = smclient
+
 BUILT_SOURCES =			\
 	mooappabout-glade.h
 
@@ -41,6 +43,8 @@ mooappabout-glade.h: $(srcdir)/glade/mooappabout.glade $(XML2H)
 
 noinst_LTLIBRARIES = libmooapp.la
 libmooapp_la_SOURCES = $(mooapp_sources)
+libmooapp_la_LIBADD = smclient/libsmclient.la
+
 AM_CFLAGS =			\
 	-I..			\
 	-I$(top_builddir)	\

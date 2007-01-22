@@ -19,6 +19,7 @@
 #define WANT_MOO_APP_CMD_CHARS
 #include "mooapp/mooappinput.h"
 #include "mooapp/mooapp-private.h"
+#include "mooapp/smclient/eggsmclient.h"
 #include "mooterm/mootermwindow.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
@@ -35,6 +36,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-win32.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/xdgmime/xdgmime.h"
 #include <string.h>
@@ -60,6 +62,8 @@
 static MooApp *moo_app_instance = NULL;
 static MooAppInput *moo_app_input = NULL;
 
+static volatile int signal_received;
+
 
 struct _MooAppPrivate {
     char      **argv;
@@ -76,6 +80,8 @@ struct _MooAppPrivate {
     GSList     *terminals;
     MooTermWindow *term_window;
 
+    EggSMClient *sm_client;
+
     MooUIXML   *ui_xml;
     char       *default_ui;
     guint       quit_handler_id;
@@ -83,7 +89,6 @@ struct _MooAppPrivate {
     gboolean    use_terminal;
 
     char       *tmpdir;
-    guint       sigintr : 1;
 };
 
 
@@ -386,12 +391,21 @@ moo_app_instance_init (MooApp *app)
 
 
 #if defined(HAVE_SIGNAL)
-static RETSIGTYPE
-sigint_handler (G_GNUC_UNUSED int sig)
+static void
+setup_signals (void(*handler)(int))
 {
-    if (moo_app_instance && moo_app_instance->priv)
-        moo_app_instance->priv->sigintr = TRUE;
-    signal (SIGINT, SIG_DFL);
+    signal (SIGINT, handler);
+#ifdef SIGHUP
+    /* TODO: maybe detach from terminal in this case? */
+    signal (SIGHUP, handler);
+#endif
+}
+
+static void
+sigint_handler (int sig)
+{
+    signal_received = sig;
+    setup_signals (SIG_DFL);
 }
 #endif
 
@@ -419,7 +433,7 @@ moo_app_constructor (GType           type,
         app->priv->info->full_name = g_strdup (app->priv->info->short_name);
 
 #if defined(HAVE_SIGNAL) && defined(SIGINT)
-    signal (SIGINT, sigint_handler);
+    setup_signals (sigint_handler);
 #endif
 
     install_editor_actions ();
@@ -839,7 +853,7 @@ moo_app_init_real (MooApp *app)
 #if defined(__WIN32__) && defined(MOO_BUILD_TERM)
     if (app->priv->use_terminal)
     {
-        char *dir = moo_get_app_dir ();
+        char *dir = moo_win32_get_app_dir ();
         moo_term_set_helper_directory (dir);
         g_free (dir);
     }
@@ -953,14 +967,53 @@ on_gtk_main_quit (MooApp *app)
 static gboolean
 check_signal (void)
 {
-    if (moo_app_instance && moo_app_instance->priv->sigintr)
+    if (signal_received)
     {
-        moo_app_instance->priv->sigintr = FALSE;
+        printf ("%s\n", g_strsignal (signal_received));
         MOO_APP_GET_CLASS(moo_app_instance)->quit (moo_app_instance);
-        gtk_main_quit ();
+        exit (0);
     }
 
     return TRUE;
+}
+
+
+static gboolean
+moo_app_try_quit (MooApp *app)
+{
+    gboolean stopped = FALSE;
+
+    g_return_val_if_fail (MOO_IS_APP (app), FALSE);
+
+    if (!app->priv->running)
+        return TRUE;
+
+    app->priv->in_try_quit = TRUE;
+    g_signal_emit (app, signals[TRY_QUIT], 0, &stopped);
+    app->priv->in_try_quit = FALSE;
+
+    return !stopped;
+}
+
+
+static void
+sm_quit_requested (MooApp *app)
+{
+    EggSMClient *sm_client;
+
+    sm_client = app->priv->sm_client;
+    g_return_if_fail (sm_client != NULL);
+
+    g_object_ref (sm_client);
+    egg_sm_client_will_quit (sm_client, moo_app_try_quit (app));
+    g_object_unref (sm_client);
+}
+
+static void
+sm_quit (MooApp *app)
+{
+    if (!moo_app_quit (app))
+        MOO_APP_GET_CLASS(app)->quit (app);
 }
 
 static int
@@ -973,6 +1026,16 @@ moo_app_run_real (MooApp *app)
             gtk_quit_add (1, (GtkFunction) on_gtk_main_quit, app);
 
     _moo_timeout_add (100, (GSourceFunc) check_signal, NULL);
+
+    app->priv->sm_client = egg_sm_client_get ();
+    /* make it install log handler */
+    g_option_group_free (egg_sm_client_get_option_group ());
+    g_signal_connect_swapped (app->priv->sm_client, "quit-requested",
+                              G_CALLBACK (sm_quit_requested), app);
+    g_signal_connect_swapped (app->priv->sm_client, "quit",
+                              G_CALLBACK (sm_quit), app);
+    if (EGG_SM_CLIENT_GET_CLASS (app->priv->sm_client)->startup)
+        EGG_SM_CLIENT_GET_CLASS (app->priv->sm_client)->startup (app->priv->sm_client, NULL);
 
     gtk_main ();
 
@@ -989,7 +1052,7 @@ moo_app_try_quit_real (MooApp *app)
         return FALSE;
 
 #ifdef MOO_BUILD_EDIT
-    if (!moo_editor_close_all (app->priv->editor, TRUE))
+    if (!moo_editor_close_all (app->priv->editor, TRUE, TRUE))
         return TRUE;
 #endif /* MOO_BUILD_EDIT */
 
@@ -1039,6 +1102,9 @@ moo_app_quit_real (MooApp *app)
     else
         app->priv->running = FALSE;
 
+    g_object_unref (app->priv->sm_client);
+    app->priv->sm_client = NULL;
+
     if (moo_app_input)
     {
         _moo_app_input_shutdown (moo_app_input);
@@ -1055,7 +1121,7 @@ moo_app_quit_real (MooApp *app)
     app->priv->term_window = NULL;
 
 #ifdef MOO_BUILD_EDIT
-    moo_editor_close_all (app->priv->editor, FALSE);
+    moo_editor_close_all (app->priv->editor, FALSE, FALSE);
 
     moo_plugin_shutdown ();
 
@@ -1119,18 +1185,12 @@ moo_app_run (MooApp *app)
 gboolean
 moo_app_quit (MooApp *app)
 {
-    gboolean stopped = FALSE;
-
     g_return_val_if_fail (MOO_IS_APP (app), FALSE);
 
     if (app->priv->in_try_quit || !app->priv->running)
         return TRUE;
 
-    app->priv->in_try_quit = TRUE;
-    g_signal_emit (app, signals[TRY_QUIT], 0, &stopped);
-    app->priv->in_try_quit = FALSE;
-
-    if (!stopped)
+    if (moo_app_try_quit (app))
     {
         MOO_APP_GET_CLASS(app)->quit (app);
         return TRUE;
