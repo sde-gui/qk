@@ -10,6 +10,7 @@
    <configure>
     <args>--enable-debug=full --enable-all-warnings --enable-libmoo --with-mooterm</args>
     <vars>
+     <var name="CC">gcc-3.4</var>
      <var name="CFLAGS">-g</var>
     </vars>
    </configure>
@@ -31,12 +32,13 @@
    <configure>
     <args>--enable-all-warnings</args>
     <vars>
+     <var name="CC">gcc-3.4</var>
      <var name="CFLAGS">-g -O2</var>
     </vars>
    </configure>
   </optimized>
  </configurations>
- <file_selector_dir>/home/muntyan/projects/moo/moo/mooapp/smclient/</file_selector_dir>
+ <file_selector_dir>/home/muntyan/projects/moo/moo/mooedit/gtksourceview/upstream/</file_selector_dir>
  <run>
   <args>--g-fatal-warnings --new-app --mode=project</args>
   <exe>medit/medit</exe>

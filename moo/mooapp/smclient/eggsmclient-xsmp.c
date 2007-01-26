@@ -1175,10 +1175,9 @@ process_ice_messages (IceConn ice_conn)
 
     case IceProcessMessagesConnectionClosed:
       return FALSE;
-
-    default:
-      g_assert_not_reached ();
     }
+
+  g_return_val_if_reached (FALSE);
 }
 
 static gboolean

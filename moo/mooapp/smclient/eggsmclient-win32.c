@@ -17,7 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "eggsmclient-private.h"
 #include <gtk/gtk.h>
@@ -43,7 +45,7 @@ struct _EggSMClientWin32 {
   char *state_dir;
 #endif
 
-  gboolean in_filter;
+  guint in_filter;
   gboolean will_quit;
   gboolean will_quit_set;
 };
@@ -199,17 +201,34 @@ sm_client_win32_end_session (EggSMClient         *client,
 static gboolean
 will_quit (EggSMClientWin32 *win32)
 {
+  gboolean emit_quit_requested;
+
   /* Will this really work? Or do we need to do something kinky like
    * arrange to have at least one WM_QUERYENDSESSION message delivered
    * to another thread and then have that thread wait for the main
    * thread to process the quit_requested signal asynchronously before
    * returning? FIXME
    */
-  win32->will_quit_set = FALSE;
 
-  egg_sm_client_quit_requested ((EggSMClient *)win32);
+  win32->in_filter++;
+  g_message ("hi there");
+
+  if (win32->in_filter == 1)
+    {
+      win32->will_quit_set = FALSE;
+      g_message ("calling gtk_dialog_run in will_quit");
+      gtk_dialog_run (gtk_dialog_new ());
+      g_message ("done");
+      egg_sm_client_quit_requested ((EggSMClient *)win32);
+    }
+
   while (!win32->will_quit_set)
     gtk_main_iteration ();
+
+  g_assert (win32->in_filter > 0);
+
+  if (--win32->in_filter == 0)
+    win32->will_quit_set = FALSE;
 
   return win32->will_quit;
 }
@@ -224,35 +243,26 @@ egg_sm_client_win32_filter (GdkXEvent *xevent,
   MSG *msg = (MSG *)xevent;
   GdkFilterReturn retval;
 
-  if (win32->in_filter)
-    {
-      g_message ("win32->in_filter");
-      return GDK_FILTER_CONTINUE;
-    }
-
   /* FIXME: I think these messages are delivered per-window, not
    * per-app, so we need to make sure we only act on them once. (Does
    * the win32 backend have client leader windows like x11?)
    */
 
-  win32->in_filter = TRUE;
-
   switch (msg->message)
     {
     case WM_QUERYENDSESSION:
-      /* If we return GDK_FILTER_CONTINUE, the event will eventually
-       * get passed on to DefWindowProc, which will return TRUE,
-       * allowing the logout to continue. If we return
-       * GDK_FILTER_REMOVE, then inner_window_procedure will return
-       * its default value, 0, aka FALSE, causing the logout to be
-       * aborted.
-       */
-      retval = will_quit (win32) ? GDK_FILTER_CONTINUE : GDK_FILTER_REMOVE;
-      break;
+      return will_quit (win32) ? GDK_FILTER_CONTINUE : GDK_FILTER_REMOVE;
 
     case WM_ENDSESSION:
       if (msg->wParam)
 	{
+	  /* Make sure we don't spin main loop in will_quit() */
+	  if (win32->in_filter)
+	    {
+	      win32->will_quit_set = TRUE;
+	      win32->will_quit = TRUE;
+	    }
+
 	  /* The session is ending */
 #ifdef VISTA
 	  if ((msg->lParam & ENDSESSION_CLOSEAPP) && win32->registered)
@@ -276,16 +286,11 @@ egg_sm_client_win32_filter (GdkXEvent *xevent,
        * to return, although the docs don't say what happens if you return
        * any other value.
        */
-      retval = GDK_FILTER_REMOVE;
-      break;
+      return GDK_FILTER_REMOVE;
 
     default:
-      retval = GDK_FILTER_CONTINUE;
-      break;
+      return GDK_FILTER_CONTINUE;
     }
-
-  win32->in_filter = FALSE;
-  return retval;
 }
 
 #ifdef VISTA

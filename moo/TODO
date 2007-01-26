@@ -6,7 +6,6 @@
 Editor
 ========
 
-1. Make messages in xml parser include file name.
 2. File saving: permissions, backups, symlinks.
 3. moo_editor_save_tmp(), moo_editor_save_fake() ?
 
@@ -17,18 +16,3 @@ Terminal
 0. FIX IT!
 1. Think about profiles, can they help?
 2. Terminal settings.
-
-
-App
-========
-
-
-Misc
-========
-
-1. Make MooNotebook subclass GtkNotebook so stupid themes don't break.
-
-
-Bugs
-========
-1. HistoryList - make it load when needed.

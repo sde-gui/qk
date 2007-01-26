@@ -2574,7 +2574,7 @@ _moo_icon_view_selected_foreach (MooIconView *view,
                                  gpointer data)
 {
     Selection *selection;
-    GSList *link, *selected;
+    GSList *l, *selected;
     GtkTreePath *path;
     GtkTreeIter iter;
 
@@ -2585,15 +2585,15 @@ _moo_icon_view_selected_foreach (MooIconView *view,
 
     selection = view->priv->selection;
 
-    for (link = selection->selected, selected = NULL; link != NULL; link = link->next)
-        selected = g_slist_prepend (selected, gtk_tree_row_reference_copy (link->data));
+    for (l = selection->selected, selected = NULL; l != NULL; l = l->next)
+        selected = g_slist_prepend (selected, gtk_tree_row_reference_copy (l->data));
     selected = g_slist_reverse (selected);
 
     while (selected)
     {
         if (gtk_tree_row_reference_valid (selected->data))
         {
-            path = gtk_tree_row_reference_get_path (link->data);
+            path = gtk_tree_row_reference_get_path (selected->data);
             gtk_tree_model_get_iter (view->priv->model, &iter, path);
             func (view->priv->model, path, &iter, data);
             gtk_tree_path_free (path);
