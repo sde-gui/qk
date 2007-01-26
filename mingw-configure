@@ -77,10 +77,10 @@ export AR="${MINGW_TOOL_PREFIX}ar"
 export RANLIB="${MINGW_TOOL_PREFIX}ranlib"
 export STRIP="${MINGW_TOOL_PREFIX}strip"
 
-export LDFLAGS="-L$GTK_PREFIX/lib -mno-cygwin"
-export CPPFLAGS="-I$GTK_PREFIX/include"
-export CFLAGS="${CFLAGS:-"-O2"} -I$GTK_PREFIX/include -mno-cygwin -mms-bitfields -march=i686"
-export CXXFLAGS="${CFLAGS:-"-O2"} -I$GTK_PREFIX/include -mno-cygwin -mms-bitfields -march=i686"
+export LDFLAGS="-L$GTK_PREFIX/lib -mno-cygwin $LDFLAGS"
+export CPPFLAGS="-I$GTK_PREFIX/include $CPPFLAGS"
+export CFLAGS="-I$GTK_PREFIX/include -mno-cygwin -mms-bitfields -march=i686 ${CFLAGS:-"-O2"}"
+export CXXFLAGS="-I$GTK_PREFIX/include -mno-cygwin -mms-bitfields -march=i686 ${CFLAGS:-"-O2"}"
 
 mkdir -p fake-bin
 write_pkg_config fake-bin/pkg-config
