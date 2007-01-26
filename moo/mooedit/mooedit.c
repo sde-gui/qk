@@ -959,7 +959,7 @@ moo_edit_apply_lang_config (MooEdit *edit)
 {
     const char *lang_id = moo_edit_config_get_string (edit->config, "lang");
     MooLangMgr *mgr = moo_editor_get_lang_mgr (edit->priv->editor);
-    MooLang *lang = lang_id ? moo_lang_mgr_get_lang (mgr, lang_id) : NULL;
+    MooLang *lang = lang_id ? _moo_lang_mgr_find_lang (mgr, lang_id) : NULL;
     moo_edit_set_lang (edit, lang);
 }
 

@@ -536,7 +536,7 @@ get_lang_for_mime_type (MooLangMgr *mgr,
 static void
 read_langs (MooLangMgr *mgr)
 {
-    const GSList *langs;
+    const GSList *langs = NULL;
 
     if (mgr->got_langs)
         return;
@@ -544,7 +544,10 @@ read_langs (MooLangMgr *mgr)
     read_schemes (mgr);
 
     mgr->got_langs = TRUE;
+
+#ifdef MOO_USE_XML
     langs = gtk_source_languages_manager_get_available_languages (GTK_SOURCE_LANGUAGES_MANAGER (mgr));
+#endif
 
     get_lang_info (mgr, MOO_LANG_NONE, TRUE);
 
@@ -759,13 +762,15 @@ GSList *
 moo_lang_mgr_get_sections (MooLangMgr *mgr)
 {
     GSList *sections = NULL;
-    const GSList *list;
+    const GSList *list = NULL;
 
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
 
     read_langs (mgr);
 
+#ifdef MOO_USE_XML
     list = gtk_source_languages_manager_get_available_languages (GTK_SOURCE_LANGUAGES_MANAGER (mgr));
+#endif
 
     while (list)
     {
@@ -783,13 +788,15 @@ GSList *
 moo_lang_mgr_get_available_langs (MooLangMgr *mgr)
 {
     GSList *langs = NULL;
-    const GSList *list;
+    const GSList *list = NULL;
 
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
 
     read_langs (mgr);
 
+#ifdef MOO_USE_XML
     list = gtk_source_languages_manager_get_available_languages (GTK_SOURCE_LANGUAGES_MANAGER (mgr));
+#endif
 
     while (list)
     {

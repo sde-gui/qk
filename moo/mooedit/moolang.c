@@ -17,7 +17,6 @@
 #endif
 #include "mooedit/moolang-private.h"
 #include "mooutils/mooi18n.h"
-#include <libxml/xmlreader.h>
 #include <glib/gstdio.h>
 #include <sys/stat.h>
 #include <fcntl.h>

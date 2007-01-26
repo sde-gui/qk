@@ -17,6 +17,7 @@ upstream_sources =				\
 	upstream/gtksourceengine.c		\
 	upstream/gtksourceiter.c		\
 	upstream/gtksourcelanguage.c		\
+	upstream/gtksourcelanguage-noxml.c	\
 	upstream/gtksourcelanguage-parser-1.c	\
 	upstream/gtksourcelanguage-parser-2.c	\
 	upstream/gtksourcelanguagesmanager.c	\
@@ -35,13 +36,10 @@ upstream_sources =				\
 	upstream/gtksourcestylescheme.h		\
 	upstream/gtktextregion.h
 
-mangled_sources =				\
+gtksourceview_sources =				\
 	gtksourcecontextengine-mangled.c	\
 	gtksourceengine-mangled.c		\
 	gtksourceiter-mangled.c			\
-	gtksourcelanguage-mangled.c		\
-	gtksourcelanguage-parser-1-mangled.c	\
-	gtksourcelanguage-parser-2-mangled.c	\
 	gtksourcelanguagesmanager-mangled.c	\
 	gtksourcestyle-mangled.c		\
 	gtksourcestylemanager-mangled.c		\
@@ -50,16 +48,24 @@ mangled_sources =				\
 	gtksourcecontextengine-mangled.h	\
 	gtksourceengine-mangled.h		\
 	gtksourceiter-mangled.h			\
-	gtksourcelanguage-mangled.h		\
-	gtksourcelanguage-private-mangled.h	\
 	gtksourcelanguagesmanager-mangled.h	\
 	gtksourcestyle-mangled.h		\
 	gtksourcestylemanager-mangled.h		\
 	gtksourcestylescheme-mangled.h		\
 	gtktextregion-mangled.h
 
-BUILT_SOURCES = $(mangled_sources)
-DISTCLEANFILES = $(mangled_sources)
+xml_sources =					\
+	gtksourcelanguage-mangled.c		\
+	gtksourcelanguage-parser-1-mangled.c	\
+	gtksourcelanguage-parser-2-mangled.c	\
+	gtksourcelanguage-mangled.h		\
+	gtksourcelanguage-private-mangled.h
+
+no_xml_sources =				\
+	gtksourcelanguage-noxml-mangled.c
+
+BUILT_SOURCES = $(xml_sources) $(no_xml_sources) $(gtksourceview_sources)
+DISTCLEANFILES = $(xml_sources) $(no_xml_sources) $(gtksourceview_sources)
 
 %-mangled.c: upstream/%.c upstream/mangle.sh
 	$(SHELL) $(srcdir)/upstream/mangle.sh $(srcdir)/upstream/$*.c > $@.tmp && mv $@.tmp $@
@@ -70,5 +76,13 @@ upstream/%.o:
 	$(MAKE) $*-mangled.o
 
 libgtksourceview_la_SOURCES =		\
-	$(mangled_sources)		\
+	$(gtksourceview_sources)	\
 	gtksourceview-api.h
+
+if MOO_USE_XML
+libgtksourceview_la_SOURCES += $(xml_sources)
+EXTRA_DIST = $(no_xml_sources)
+else
+libgtksourceview_la_SOURCES += $(no_xml_sources)
+EXTRA_DIST = $(xml_sources)
+endif
