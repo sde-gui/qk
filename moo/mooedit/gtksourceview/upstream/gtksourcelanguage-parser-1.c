@@ -36,7 +36,36 @@ static gchar *
 fix_pattern (const gchar *pattern,
 	     gboolean    *end_at_line_end)
 {
-	if (pattern != NULL && g_str_has_suffix (pattern, "\\n"))
+	char *slash;
+
+	if (pattern == NULL)
+		return NULL;
+
+	slash = strchr (pattern, '/');
+
+	if (slash != NULL)
+	{
+		GString *str;
+
+		str = g_string_new_len (pattern, slash - pattern);
+		g_string_append (str, "\\/");
+		pattern = slash + 1;
+
+		while ((slash = strchr (pattern, '/')) != NULL)
+		{
+			g_string_append_len (str, pattern, slash - pattern);
+			g_string_append (str, "\\/");
+			pattern = slash + 1;
+		}
+
+		if (g_str_has_suffix (pattern, "\\n"))
+			g_string_append_len (str, pattern, strlen(pattern) - 2);
+		else
+			g_string_append (str, pattern);
+
+		return g_string_free (str, FALSE);
+	}
+	else if (g_str_has_suffix (pattern, "\\n"))
 	{
 		if (end_at_line_end)
 			*end_at_line_end = TRUE;
