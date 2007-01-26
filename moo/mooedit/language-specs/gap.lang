@@ -40,6 +40,7 @@
       <keyword>fi</keyword>
       <keyword>break</keyword>
       <keyword>continue</keyword>
+      <keyword>repeat</keyword>
       <keyword>return</keyword>
       <keyword>for</keyword>
       <keyword>do</keyword>

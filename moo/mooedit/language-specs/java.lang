@@ -26,7 +26,7 @@
       <end>'</end>
     </context>
     <context id="line-comment" style-ref="comment" end-at-line-end="true">
-      <start>//</start>
+      <start>\/\/</start>
     </context>
     <context id="block-comment" style-ref="comment">
       <start>\/\*</start>

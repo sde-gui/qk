@@ -92,6 +92,7 @@
                                 <context ref="def:in-comment"/>
                             </include>
                         </context>
+                        <context ref="def:in-comment"/>
                     </include>
                 </context>
 

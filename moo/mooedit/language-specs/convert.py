@@ -28,6 +28,15 @@ def escape_escape_char(ch):
         return ch
     raise RuntimeError("don't know how to escape '%s'" % (ch,))
 
+def escape_regex(s):
+    new = ''
+    for c in s:
+        if c == '/':
+            new += '\\/'
+        else:
+            new += c
+    return cgi.escape(new)
+
 def normalize_id(id):
     if id == "C#":
         return "c-sharp"
@@ -201,17 +210,17 @@ class KeywordList(Context):
         string = indent*2 + '<context id="%s" style-ref="%s">\n' % (self.id, self.style)
 
         if self.beginning_regex:
-            string += indent*3 + '<prefix>%s</prefix>\n' % (cgi.escape(self.beginning_regex),)
+            string += indent*3 + '<prefix>%s</prefix>\n' % (escape_regex(self.beginning_regex),)
         elif not self.match_empty_string_at_beginning:
             string += indent*3 + '<prefix></prefix>\n'
 
         if self.end_regex:
-            string += indent*3 + '<suffix>%s</suffix>\n' % (cgi.escape(self.end_regex),)
+            string += indent*3 + '<suffix>%s</suffix>\n' % (escape_regex(self.end_regex),)
         elif not self.match_empty_string_at_end:
             string += indent*3 + '<suffix></suffix>\n'
 
         for kw in self.keywords:
-            string += indent*3 + '<keyword>%s</keyword>\n' % (cgi.escape(kw),)
+            string += indent*3 + '<keyword>%s</keyword>\n' % (escape_regex(kw),)
 
         string += self.format_escape(indent, esc_ctx, line_esc_ctx)
         string += indent*2 + '</context>\n'
@@ -225,7 +234,7 @@ class PatternItem(Context):
 
     def format(self, indent, esc_ctx, line_esc_ctx):
         string = indent*2 + '<context id="%s" style-ref="%s">\n' % (self.id, self.style)
-        string += indent*3 + '<match>%s</match>\n' % (cgi.escape(self.pattern),)
+        string += indent*3 + '<match>%s</match>\n' % (escape_regex(self.pattern),)
         string += self.format_escape(indent, esc_ctx, line_esc_ctx)
         string += indent*2 + '</context>\n'
         return string
@@ -239,7 +248,7 @@ class LineComment(Context):
 
     def format(self, indent, esc_ctx, line_esc_ctx):
         string = indent*2 + '<context id="%s" style-ref="%s" end-at-line-end="true">\n' % (self.id, self.style)
-        string += indent*3 + '<start>%s</start>\n' % (cgi.escape(self.start),)
+        string += indent*3 + '<start>%s</start>\n' % (escape_regex(self.start),)
         string += self.format_escape(indent, esc_ctx, line_esc_ctx)
         string += indent*2 + '</context>\n'
         return string
@@ -254,8 +263,8 @@ class BlockComment(Context):
 
     def format(self, indent, esc_ctx, line_esc_ctx):
         string = indent*2 + '<context id="%s" style-ref="%s">\n' % (self.id, self.style)
-        string += indent*3 + '<start>%s</start>\n' % (cgi.escape(self.start),)
-        string += indent*3 + '<end>%s</end>\n' % (cgi.escape(self.end),)
+        string += indent*3 + '<start>%s</start>\n' % (escape_regex(self.start),)
+        string += indent*3 + '<end>%s</end>\n' % (escape_regex(self.end),)
         string += self.format_escape(indent, esc_ctx, line_esc_ctx)
         string += indent*2 + '</context>\n'
         return string
@@ -279,9 +288,9 @@ class String(Context):
         string += '>\n'
 
         if self.start:
-            string += indent*3 + '<start>%s</start>\n' % (cgi.escape(self.start),)
+            string += indent*3 + '<start>%s</start>\n' % (escape_regex(self.start),)
         if self.end:
-            string += indent*3 + '<end>%s</end>\n' % (cgi.escape(self.end),)
+            string += indent*3 + '<end>%s</end>\n' % (escape_regex(self.end),)
 
         string += self.format_escape(indent, esc_ctx, line_esc_ctx)
         string += indent*2 + '</context>\n'
@@ -306,9 +315,9 @@ class SyntaxItem(Context):
         string += '>\n'
 
         if self.start:
-            string += indent*3 + '<start>%s</start>\n' % (cgi.escape(self.start),)
+            string += indent*3 + '<start>%s</start>\n' % (escape_regex(self.start),)
         if self.end:
-            string += indent*3 + '<end>%s</end>\n' % (cgi.escape(self.end),)
+            string += indent*3 + '<end>%s</end>\n' % (escape_regex(self.end),)
 
         string += self.format_escape(indent, esc_ctx, line_esc_ctx)
         string += indent*2 + '</context>\n'

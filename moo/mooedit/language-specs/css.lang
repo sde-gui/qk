@@ -59,7 +59,7 @@
       </include>
     </context>
     <context id="line-comment" style-ref="comment" end-at-line-end="true">
-      <start>//</start>
+      <start>\/\/</start>
       <include>
         <context ref="def:escape"/>
         <context ref="def:line-continue"/>
