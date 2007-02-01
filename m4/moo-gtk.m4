@@ -1,7 +1,7 @@
 ##############################################################################
 # _MOO_SPLIT_VERSION(NAME,version)
 #
-AC_DEFUN([_MOO_SPLIT_VERSION],[AC_REQUIRE([MOO_AC_PROG_SED])
+AC_DEFUN([_MOO_SPLIT_VERSION],[AC_REQUIRE([AC_PROG_SED])
 $1[]_VERSION="$2"
 $1[]_MAJOR_VERSION=`echo "$2" | $SED 's/\([[^.]][[^.]]*\).*/\1/'`
 $1[]_MINOR_VERSION=`echo "$2" | $SED 's/[[^.]][[^.]]*.\([[^.]][[^.]]*\).*/\1/'`
