@@ -12,11 +12,6 @@ configure has the following medit-specific options:
   --enable-debug          enable debug options (default = NO)
   --enable-all-warnings   enable lot of compiler warnings (default = NO)
 
-  --with-xml              whether to use libxml2 (default = YES)
-    This option is useful only for development, to test how medit works in absense
-    of libxml2. libxml2 is required for syntax highlighting, so you most likely
-    do not want to use this option (if it works at all).
-
   --with-fam              whether to use FAM (or gamin) for file monitoring
                           (default = NO)
     FAM seems to work well, but gamin seems to be much less stable. This option
@@ -42,6 +37,10 @@ configure has the following medit-specific options:
 
   --without-mooterm       whether to disable builtin terminal (default = NO)
     Use this option if you want builtin terminal (it also requires python).
+
+  --with-xml              whether to use libxml2 (default = YES)
+    If libxml2 is not available or --without-xml is used, syntax highlighting
+    will be disabled.
 
   --without-mooapp
   --without-mooedit
