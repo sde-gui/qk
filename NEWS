@@ -1,3 +1,12 @@
+2007-02-03  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    * === Released 0.8.2 ===
+
+    Made medit ask whether to save changes on logout.
+    Fixed build without libxml2.
+    Fixed PHP and Java syntax highlighting.
+    Double-click in file selector now opens text files in the editor,
+    and uses default applications for the rest of files.
+
 2007-01-20  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.8.1 ===
 
