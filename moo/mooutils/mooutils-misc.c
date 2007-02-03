@@ -47,7 +47,8 @@
 #ifdef __WIN32__
 
 static gboolean
-open_uri (const char *uri, G_GNUC_UNUSED gboolean email)
+open_uri (const char *uri,
+          G_GNUC_UNUSED gboolean want_browser)
 {
     return _moo_win32_open_uri (uri);
 }
@@ -65,7 +66,7 @@ typedef enum {
 
 
 static gboolean open_uri (const char *uri,
-                          gboolean email /* = FALSE */)
+                          gboolean    want_browser)
 {
     gboolean result = FALSE;
     char **argv = NULL;
@@ -75,7 +76,7 @@ static gboolean open_uri (const char *uri,
     char *gnome_open = g_find_program_in_path ("gnome-open");
     char *x_www_browser = g_find_program_in_path ("x-www-browser");
 
-    if (!email && x_www_browser &&
+    if (want_browser && x_www_browser &&
         g_file_test ("/etc/debian_version", G_FILE_TEST_EXISTS))
             desktop = DEBIAN;
 
@@ -105,7 +106,7 @@ static gboolean open_uri (const char *uri,
 
     if (desktop == UNKNOWN)
     {
-        if (!email && x_www_browser)
+        if (want_browser && x_www_browser)
             desktop = DEBIAN;
         else if (kfmclient)
             desktop = KDE;
@@ -191,7 +192,7 @@ moo_open_email (const char *address,
     if (body)
         g_string_append_printf (uri, "body=%s", body);
 
-    res = open_uri (uri->str, TRUE);
+    res = open_uri (uri->str, FALSE);
     g_string_free (uri, TRUE);
     return res;
 }
@@ -201,9 +202,26 @@ gboolean
 moo_open_url (const char *url)
 {
     g_return_val_if_fail (url != NULL, FALSE);
-    return open_uri (url, FALSE);
+    return open_uri (url, TRUE);
 }
 
+
+gboolean
+_moo_open_file (const char *path)
+{
+    char *uri;
+    gboolean ret;
+
+    g_return_val_if_fail (path != NULL, FALSE);
+
+    uri = g_filename_to_uri (path, NULL, NULL);
+    g_return_val_if_fail (uri != NULL, FALSE);
+
+    ret = open_uri (uri, FALSE);
+
+    g_free (uri);
+    return ret;
+}
 
 
 /********************************************************************/

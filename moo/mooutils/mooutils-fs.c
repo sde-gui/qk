@@ -24,6 +24,7 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <glib/gstdio.h>
 
 #ifdef __WIN32__
 #define WIN32_LEAN_AND_MEAN
@@ -37,6 +38,10 @@
 #endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
+#ifdef MOO_USE_XDGMIME
+#include <mooutils/xdgmime/xdgmime.h>
 #endif
 
 #define BROKEN_NAME "<" "????" ">"
@@ -248,7 +253,7 @@ _moo_create_dir (const char *path,
 
     errno = 0;
 
-    if (stat (path, &buf) != 0 && errno != ENOENT)
+    if (g_stat (path, &buf) != 0 && errno != ENOENT)
     {
         int err_code = errno;
         utf8_path = g_filename_display_name (path);
@@ -460,6 +465,39 @@ _moo_normalize_file_path (const char *filename)
     g_free (working_dir);
 
     return real_filename;
+}
+
+
+gboolean
+_moo_file_is_text (const char *path)
+{
+    struct stat buf;
+
+    g_return_val_if_fail (path != NULL, FALSE);
+
+    errno = 0;
+
+    if (g_stat (path, &buf) != 0)
+    {
+        int err = errno;
+        g_warning ("%s: error in stat(%s): %s", G_STRLOC, path, g_strerror (err));
+        return FALSE;
+    }
+
+#ifdef MOO_USE_XDGMIME
+    {
+        const char *mime;
+
+        mime = xdg_mime_get_mime_type_for_file (path, &buf);
+
+        if (!strcmp (mime, XDG_MIME_TYPE_UNKNOWN) || xdg_mime_mime_type_subclass (mime, "text/*"))
+            return TRUE;
+
+        return FALSE;
+    }
+#endif
+
+    return TRUE;
 }
 
 

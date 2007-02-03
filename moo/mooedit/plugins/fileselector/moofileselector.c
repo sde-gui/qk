@@ -279,8 +279,12 @@ moo_file_selector_activate (MooFileView    *fileview,
                             const char     *path)
 {
     MooFileSelector *filesel = MOO_FILE_SELECTOR (fileview);
-    moo_editor_open_file (moo_edit_window_get_editor (filesel->window),
-                          filesel->window, GTK_WIDGET (filesel), path, NULL);
+
+    if (_moo_file_is_text (path))
+        moo_editor_open_file (moo_edit_window_get_editor (filesel->window),
+                              filesel->window, GTK_WIDGET (filesel), path, NULL);
+    else
+        _moo_open_file (path);
 }
 
 

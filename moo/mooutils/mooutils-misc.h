@@ -24,6 +24,7 @@ gboolean    moo_open_url                    (const char *url);
 gboolean    moo_open_email                  (const char *address,
                                              const char *subject,
                                              const char *body);
+gboolean    _moo_open_file                  (const char *path);
 
 void        _moo_window_present             (GtkWindow  *window,
                                              guint32     stamp);
