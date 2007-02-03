@@ -28,7 +28,12 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <string.h>
+
+#ifdef MOO_BUILD_PCRE
+#include <mooutils/pcre/pcre.h>
+#else
 #include <pcre.h>
+#endif
 
 /* Mask of all the possible values for EggRegexCompileFlags. */
 #define EGG_REGEX_COMPILE_MASK (EGG_REGEX_CASELESS		| \
