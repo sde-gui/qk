@@ -1,3 +1,8 @@
+moo/mooapp/smclient/egg-session-end.c
+moo/mooapp/smclient/eggdesktopfile.c
+moo/mooapp/smclient/eggsmclient-libgnomeui.c
+moo/mooapp/smclient/eggsmclient.c
+
 moo/mooutils/newgtk/gmappedfile.c
 moo/mooutils/newgtk/gtkcolorbutton.c
 moo/mooutils/newgtk/gtkfontbutton.c
@@ -52,6 +57,11 @@ moo/mooedit/language-specs/xml.lang
 moo/mooedit/language-specs/yacc.lang
 moo/mooedit/language-specs/boo.lang
 moo/mooedit/language-specs/d.lang
+moo/mooedit/language-specs/dpatch.lang
+moo/mooedit/language-specs/dtd.lang
+moo/mooedit/language-specs/gtk-doc.lang
+moo/mooedit/language-specs/libtool.lang
+moo/mooedit/language-specs/pkgconfig.lang
 
 moo/moopython/plugins/pyproject/project-plugin.ini.desktop.in.in
 moo/moopython/plugins/pyproject/mprj/manager.py
@@ -60,7 +70,6 @@ moo/moopython/plugins/pyproject/projects/c.py
 moo/moopython/plugins/pyproject/projects/cproj/config.py
 moo/moopython/plugins/pyproject/projects/cproj/optdialog.py
 moo/moopython/plugins/pyproject/projects/cproj/options.glade
-moo/moopython/plugins/pyproject/projects/cproj/view.py
 moo/moopython/plugins/pyproject/projects/latex.py
 
 moo/mooterm/mootermparser-yacc.c

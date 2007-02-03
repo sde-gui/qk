@@ -32,26 +32,15 @@ EXTRA_DIST =			\
 	intltool-merge.in	\
 	intltool-update.in
 
-# all-am: pot-subdirs-stamp m4-stamp
-#
-# m4-stamp: $(m4files)
-# 	echo stamp > m4-stamp
-# 	for f in $(m4files); do						\
-# 		if test $(srcdir)/$$f -nt $(srcdir)/configure; then	\
-# 			touch $(srcdir)/configure.ac;			\
-# 		fi							\
-# 	done
-#
-# pot-subdirs-stamp: po/POTFILES.in
-# 	$(SHELL) $(srcdir)/mkpotsubdirs "$(srcdir)"
-# CLEANFILES = pot-subdirs-stamp
+@MOO_PO_SUBDIRS_RULE@
+BUILT_SOURCES = po-subdirs-stamp
 
 DIST_SUBDIRS = moo medit tests po
-# need to create pot-subdirs-stamp before it goes to po/
+
 if MOO_BUILD_MEDIT
-SUBDIRS = moo medit po
+SUBDIRS = . moo medit po
 else
-SUBDIRS = moo po
+SUBDIRS = . moo po
 endif
 
 if MOO_ENABLE_TESTS
@@ -65,6 +54,7 @@ DISTCLEANFILES =		\
 	configargs.h		\
 	intltool-extract	\
 	intltool-merge		\
-	intltool-update
+	intltool-update		\
+	po-subdirs-stamp
 
 distuninstallcheck_listfiles = find . -type f -print | grep -v share/mime/ | grep -v share/icons/hicolor

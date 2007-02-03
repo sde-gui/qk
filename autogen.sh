@@ -27,10 +27,10 @@ AUTOCONF=${AUTOCONF:-autoconf}
 echo $LIBTOOLIZE --automake --copy
 $LIBTOOLIZE --automake --copy || exit $?
 
-echo glib-gettextize
-glib-gettextize
-echo intltoolize --automake
-intltoolize --automake
+echo glib-gettextize --force
+glib-gettextize --force
+echo intltoolize --automake --force
+intltoolize --automake --force
 
 echo $ACLOCAL $ACLOCAL_FLAGS
 $ACLOCAL $ACLOCAL_FLAGS || exit $?
