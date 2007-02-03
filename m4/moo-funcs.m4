@@ -25,7 +25,6 @@ AC_DEFUN_ONCE([MOO_AC_FUNCS],[
 
     #for mooapp.c
     AC_CHECK_HEADERS(signal.h)
-    AC_TYPE_SIGNAL
 
     ################################################################################
     #  Terminal stuff
