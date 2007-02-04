@@ -2,12 +2,12 @@
 #   moo/configure.ac
 #
 
-AC_INIT([medit],[0.8.2],[muntyan@tamu.edu],[medit])
+AC_INIT([medit],[0.8.3],[muntyan@tamu.edu],[medit])
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AC_CANONICAL_HOST
 
 AC_CONFIG_HEADERS(config.h)
-MOO_DEFINE_VERSIONS(moo,0,8,2)
+MOO_DEFINE_VERSIONS(moo,0,8,3)
 MOO_DEFINE_MODULE_VERSIONS(1,0)
 
 MOO_AC_I18N(moo)
