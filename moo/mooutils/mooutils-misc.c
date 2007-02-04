@@ -61,6 +61,7 @@ typedef enum {
     KDE,
     GNOME,
     DEBIAN,
+    XFCE,
     UNKNOWN
 } Desktop;
 
@@ -75,10 +76,7 @@ static gboolean open_uri (const char *uri,
     char *kfmclient = g_find_program_in_path ("kfmclient");
     char *gnome_open = g_find_program_in_path ("gnome-open");
     char *x_www_browser = g_find_program_in_path ("x-www-browser");
-
-    if (want_browser && x_www_browser &&
-        g_file_test ("/etc/debian_version", G_FILE_TEST_EXISTS))
-            desktop = DEBIAN;
+    char *exo_open = g_find_program_in_path ("exo-open");
 
     if (desktop == UNKNOWN)
     {
@@ -100,6 +98,8 @@ static gboolean open_uri (const char *uri,
                 desktop = KDE;
             else if (!g_ascii_strcasecmp (wm, "metacity") && gnome_open)
                 desktop = GNOME;
+            else if (!g_ascii_strcasecmp (wm, "xfwm4") && exo_open)
+                desktop = XFCE;
         }
     }
 #endif /* GDK_WINDOWING_X11 */
@@ -112,6 +112,8 @@ static gboolean open_uri (const char *uri,
             desktop = KDE;
         else if (gnome_open)
             desktop = GNOME;
+        else if (exo_open)
+            desktop = XFCE;
     }
 
     switch (desktop)
@@ -126,6 +128,12 @@ static gboolean open_uri (const char *uri,
         case GNOME:
             argv = g_new0 (char*, 3);
             argv[0] = g_strdup (gnome_open);
+            argv[1] = g_strdup (uri);
+            break;
+
+        case XFCE:
+            argv = g_new0 (char*, 3);
+            argv[0] = g_strdup (exo_open);
             argv[1] = g_strdup (uri);
             break;
 
@@ -167,6 +175,7 @@ static gboolean open_uri (const char *uri,
     g_free (gnome_open);
     g_free (kfmclient);
     g_free (x_www_browser);
+    g_free (exo_open);
 
     return result;
 }
