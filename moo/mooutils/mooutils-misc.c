@@ -55,7 +55,6 @@ open_uri (const char *uri,
 
 #else /* ! __WIN32__ */
 
-#include <gdk/gdkx.h>
 
 typedef enum {
     KDE,
