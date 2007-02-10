@@ -193,10 +193,20 @@ create_about_dialog (void)
     logo = moo_glade_xml_get_widget (xml, "logo");
 
     if (info->logo)
-        gtk_image_set_from_stock (GTK_IMAGE (logo), info->logo,
-                                  GTK_ICON_SIZE_DIALOG);
+    {
+        GtkStockItem dummy;
+
+        if (gtk_stock_lookup (info->logo, &dummy))
+            gtk_image_set_from_stock (GTK_IMAGE (logo), info->logo,
+                                      GTK_ICON_SIZE_DIALOG);
+        else
+            gtk_image_set_from_icon_name (GTK_IMAGE (logo), info->logo,
+                                          GTK_ICON_SIZE_DIALOG);
+    }
     else
+    {
         gtk_widget_hide (logo);
+    }
 
     button = moo_glade_xml_get_widget (xml, "credits_button");
     g_signal_connect (button, "clicked", G_CALLBACK (show_credits), NULL);
