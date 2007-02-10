@@ -110,7 +110,7 @@
                 <context id="preprocessor" style-ref="preprocessor" end-at-line-end="true">
                     <start extended="true">
                             \%{preproc-start}
-                            (define|undef|error|pragma|if(n?def)?|else|elif|endif|line|warning)
+                            (define|undef|error|pragma|ident|if(n?def)?|else|elif|endif|line|warning)
                             \b
                     </start>
                     <include>
