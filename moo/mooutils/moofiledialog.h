@@ -15,7 +15,7 @@
 #define __MOO_FILE_DIALOG_H__
 
 #include <gtk/gtkwidget.h>
-#include "mooutils/moofiltermgr.h"
+#include <mooutils/moofiltermgr.h>
 
 G_BEGIN_DECLS
 
