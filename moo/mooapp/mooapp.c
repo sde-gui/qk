@@ -1511,7 +1511,7 @@ moo_app_present (MooApp *app)
 
     g_return_if_fail (window != NULL);
 
-    _moo_window_present (window, 0);
+    moo_window_present (window, 0);
 }
 
 
@@ -1718,7 +1718,7 @@ moo_app_create_prefs_dialog (MooApp *app)
 #ifdef MOO_BUILD_EDIT
     moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new (moo_app_get_editor (app)));
     moo_prefs_dialog_append_page (dialog, _moo_user_tools_prefs_page_new ());
-    _moo_plugin_attach_prefs (GTK_WIDGET (dialog));
+    moo_plugin_attach_prefs (GTK_WIDGET (dialog));
 #endif
 
     g_signal_connect_after (dialog, "apply",

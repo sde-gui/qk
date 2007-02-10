@@ -1242,7 +1242,7 @@ moo_editor_present (MooEditor *editor,
         window = moo_editor_new_window (editor);
 
     g_return_if_fail (window != NULL);
-    _moo_window_present (GTK_WINDOW (window), stamp);
+    moo_window_present (GTK_WINDOW (window), stamp);
 }
 
 
@@ -1275,7 +1275,7 @@ moo_editor_set_active_doc (MooEditor      *editor,
     g_return_if_fail (info != NULL);
     g_return_if_fail (info->window != NULL);
 
-    _moo_window_present (GTK_WINDOW (info->window), 0);
+    moo_window_present (GTK_WINDOW (info->window), 0);
     moo_edit_window_set_active_doc (info->window, doc);
 }
 

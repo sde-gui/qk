@@ -176,8 +176,10 @@ _moo_stock_init (void)
     static gboolean created = FALSE;
     GtkIconFactory *factory;
 
-    if (created) return;
-    else created = TRUE;
+    if (created)
+        return;
+
+    created = TRUE;
 
     factory = gtk_icon_factory_new ();
 
@@ -185,12 +187,8 @@ _moo_stock_init (void)
 
     add_icon (factory, MOO_STOCK_TERMINAL,
               24, MOO_GNOME_TERMINAL_ICON);
-    add_icon (factory, MOO_STOCK_GGAP,
-              24, GGAP_ICON);
     add_icon (factory, MOO_STOCK_MEDIT,
               24, MEDIT_ICON);
-    add_icon (factory, MOO_STOCK_GAP,
-              24, GAP_ICON);
     add_icon (factory, MOO_STOCK_CLOSE,
               REAL_SMALL, MOO_CLOSE_ICON);
     add_icon (factory, MOO_STOCK_STICKY,

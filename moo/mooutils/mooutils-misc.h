@@ -26,7 +26,7 @@ gboolean    moo_open_email                  (const char *address,
                                              const char *body);
 gboolean    _moo_open_file                  (const char *path);
 
-void        _moo_window_present             (GtkWindow  *window,
+void        moo_window_present              (GtkWindow  *window,
                                              guint32     stamp);
 GtkWindow  *_moo_get_top_window             (GSList     *windows);
 

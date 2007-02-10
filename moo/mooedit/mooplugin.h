@@ -239,7 +239,7 @@ void        _moo_doc_attach_plugins     (MooEditWindow  *window,
 void        _moo_doc_detach_plugins     (MooEditWindow  *window,
                                          MooEdit        *doc);
 
-void        _moo_plugin_attach_prefs    (GtkWidget      *prefs_dialog);
+void         moo_plugin_attach_prefs    (GtkWidget      *prefs_dialog);
 
 
 MooPluginMeth *moo_plugin_lookup_method (gpointer        plugin,

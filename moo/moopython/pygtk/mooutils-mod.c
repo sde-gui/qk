@@ -69,9 +69,7 @@ _moo_utils_mod_init (void)
 
     add_constant (mod, "GETTEXT_PACKAGE", GETTEXT_PACKAGE);
 
-    add_constant (mod, "STOCK_GGAP", MOO_STOCK_GGAP);
     add_constant (mod, "STOCK_MEDIT", MOO_STOCK_MEDIT);
-    add_constant (mod, "STOCK_GAP", MOO_STOCK_GAP);
     add_constant (mod, "STOCK_TERMINAL", MOO_STOCK_TERMINAL);
     add_constant (mod, "STOCK_KEYBOARD", MOO_STOCK_KEYBOARD);
     add_constant (mod, "STOCK_RESTART", MOO_STOCK_RESTART);

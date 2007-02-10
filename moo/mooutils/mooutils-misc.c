@@ -583,8 +583,8 @@ present_window_x11 (GtkWindow *window,
 #endif
 
 void
-_moo_window_present (GtkWindow *window,
-                     G_GNUC_UNUSED guint32 stamp)
+moo_window_present (GtkWindow *window,
+                    G_GNUC_UNUSED guint32 stamp)
 {
     g_return_if_fail (GTK_IS_WINDOW (window));
 

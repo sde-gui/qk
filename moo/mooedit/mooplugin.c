@@ -1471,7 +1471,7 @@ enable_toggled (GtkCellRendererToggle *cell,
 
 
 void
-_moo_plugin_attach_prefs (GtkWidget *dialog)
+moo_plugin_attach_prefs (GtkWidget *dialog)
 {
     MooPrefsDialogPage *page;
     MooGladeXML *xml;

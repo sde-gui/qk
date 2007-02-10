@@ -30,6 +30,10 @@ G_BEGIN_DECLS
 
 #define MOO_FILE_ERROR (_moo_file_error_quark ())
 
+/* XXX */
+#define _moo_save_file_utf8 moo_save_file_utf8
+#define _moo_unlink moo_unlink
+
 typedef enum
 {
     MOO_FILE_ERROR_NONEXISTENT,

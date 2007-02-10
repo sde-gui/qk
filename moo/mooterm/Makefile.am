@@ -1,6 +1,7 @@
 mooterm_include_headers =	       \
 	mooterm.h                      \
 	mootermwindow.h                \
+	mooterm-prefs.h                \
 	mooterm-text.h                 \
 	mootermline.h                  \
 	mootermtag.h
@@ -11,7 +12,6 @@ mooterm_sources =                      \
 	mooterm-input.c                \
 	mooterm-keymap.h               \
 	mooterm-prefs.c                \
-	mooterm-prefs.h                \
 	mooterm-private.h              \
 	mooterm-selection.h            \
 	mooterm-text.c                 \

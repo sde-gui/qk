@@ -38,6 +38,7 @@ mooutils_include_headers =		\
 	mooclosure.h			\
 	moocombo.h			\
 	mooentry.h			\
+	moofiledialog.h			\
 	moofiltermgr.h			\
 	mooglade.h			\
 	moohistorycombo.h		\
@@ -53,9 +54,11 @@ mooutils_include_headers =		\
 	mooprefsdialog.h		\
 	mooprefsdialogpage.h		\
 	moopython.h			\
+	mooregex.h			\
 	moostock.h			\
 	moouixml.h			\
 	mooundo.h			\
+	mooutils-fs.h			\
 	mooutils-gobject.h		\
 	mooutils-misc.h			\
 	moowindow.h
@@ -93,7 +96,6 @@ mooutils_sources =			\
 	mooencodings-data.h		\
 	mooentry.c			\
 	moofiledialog.c			\
-	moofiledialog.h			\
 	moofilewatch.c			\
 	moofilewatch.h			\
 	moofiltermgr.c			\
@@ -114,6 +116,7 @@ mooutils_sources =			\
 	mooprefsdialog.c		\
 	mooprefsdialogpage.c		\
 	moopython.c			\
+	mooregex.c			\
 	moospawn.h			\
 	moospawn.c			\
 	moostock.c			\
@@ -121,7 +124,6 @@ mooutils_sources =			\
 	moouixml.c			\
 	mooundo.c			\
 	mooutils-debug.h		\
-	mooutils-fs.h			\
 	mooutils-fs.c			\
 	mooutils-gobject-private.h	\
 	mooutils-gobject.c		\
@@ -170,9 +172,6 @@ EXTRA_DIST =				\
 	glade/accelbutton.glade		\
 	glade/accelprefs.glade		\
 	glade/moologwindow.glade	\
-	pixmaps/ggap.png		\
-	pixmaps/ggap.ico		\
-	pixmaps/gap.png                 \
 	pixmaps/medit.png               \
 	pixmaps/medit.ico               \
 	pixmaps/close.png               \
@@ -214,8 +213,6 @@ moologwindow-glade.h: $(srcdir)/glade/moologwindow.glade $(XML2H)
 	mv $@.tmp $@
 
 mooutils_pixmaps =			\
-	$(srcdir)/pixmaps/gap.png	\
-	$(srcdir)/pixmaps/ggap.png	\
 	$(srcdir)/pixmaps/medit.png	\
 	$(srcdir)/pixmaps/close.png	\
 	$(srcdir)/pixmaps/detach.png	\
@@ -225,8 +222,6 @@ mooutils_pixmaps =			\
 
 stock-moo.h: $(mooutils_pixmaps)
 	gdk-pixbuf-csource --static --build-list			\
-		GAP_ICON  $(srcdir)/pixmaps/gap.png			\
-		GGAP_ICON $(srcdir)/pixmaps/ggap.png			\
 		MEDIT_ICON $(srcdir)/pixmaps/medit.png			\
 		MOO_CLOSE_ICON $(srcdir)/pixmaps/close.png		\
 		MOO_STICKY_ICON $(srcdir)/pixmaps/sticky.png		\
