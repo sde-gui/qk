@@ -2592,8 +2592,8 @@ replace_start_regex (const EggRegex *regex,
 
 	if (num < 0)
 		subst = egg_regex_fetch_named (data->start_regex->u.regex,
-					       data->matched_text,
-					       num_string);
+					       num_string,
+					       data->matched_text);
 	else
 		subst = egg_regex_fetch (data->start_regex->u.regex,
 					 num,
