@@ -1112,19 +1112,47 @@ egg_regex_fetch_named (const EggRegex *regex,
 		     const gchar  *name,
 		     const gchar  *string)
 {
-  /* we cannot use pcre_get_named_substring() because it allocates the
-   * string using pcre_malloc(). */
-  gint num;
+  gint ret;
+  gchar buf[1024];
+  gchar *substring;
+  gchar *substring_copy;
 
   g_return_val_if_fail (regex != NULL, NULL);
   g_return_val_if_fail (string != NULL, NULL);
   g_return_val_if_fail (name != NULL, NULL);
 
-  num = egg_regex_get_string_number (regex, name);
-  if (num == -1)
+  if (regex->match == NULL)
     return NULL;
-  else
-    return egg_regex_fetch (regex, num, string);
+
+  if (regex->match->string_len < 0)
+    return NULL;
+
+  ret = pcre_copy_named_substring (regex->pattern->pcre_re,
+				   string,
+				   regex->match->offsets,
+				   regex->match->matches,
+				   name,
+				   buf,
+				   sizeof buf);
+
+  if (ret == PCRE_ERROR_NOSUBSTRING)
+    return NULL;
+
+  /* buf is too small, ask pcre for malloc'ed substring */
+  ret = pcre_get_named_substring (regex->pattern->pcre_re,
+				  string,
+				  regex->match->offsets,
+				  regex->match->matches,
+				  name,
+				  &substring);
+
+  if (ret < 0)
+    /* not enough memory or something */
+    return NULL;
+
+  substring_copy = g_strndup (substring, ret);
+  pcre_free (substring);
+  return substring_copy;
 }
 
 /**
@@ -2599,4 +2627,29 @@ egg_regex_eval_replacement (EggRegex   *regex,
     g_list_free (list);
 
     return g_string_free (result, FALSE);
+}
+
+/**
+ * egg_regex_get_backrefmax:
+ * @regex: #EggRegex.
+ *
+ * A wrapper around pcre_fullinfo(..., PCRE_INFO_BACKREFMAX).
+ *
+ * Not stock eggregex from Marco.
+ *
+ * Returns: The number of the highest back reference in the @regex's
+ * pattern. Zero is returned if there are no back references.
+ */
+gint
+egg_regex_get_backrefmax (EggRegex *regex)
+{
+  gint ret;
+
+  g_return_val_if_fail (regex != NULL, 0);
+
+  pcre_fullinfo (regex->pattern->pcre_re,
+		 REGEX_GET_EXTRA (regex),
+		 PCRE_INFO_BACKREFMAX,
+		 &ret);
+  return ret;
 }
