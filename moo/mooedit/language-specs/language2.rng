@@ -100,6 +100,11 @@
             <ref name="boolean-value"/>
         </attribute>
     </optional>
+    <optional>
+        <attribute name="dupnames">
+            <ref name="boolean-value"/>
+        </attribute>
+    </optional>
 </define>
 
 

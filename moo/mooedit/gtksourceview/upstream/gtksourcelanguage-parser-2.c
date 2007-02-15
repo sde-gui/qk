@@ -257,6 +257,11 @@ get_regex_flags (xmlNode             *node,
 			flags = update_regex_flags (flags, "dot-match-all",
 						    attribute->children->content);
 		}
+		else if (xmlStrcmp (BAD_CAST "dupnames", attribute->name) == 0)
+		{
+			flags = update_regex_flags (flags, "dupnames",
+						    attribute->children->content);
+		}
 	}
 
 	return flags;
@@ -867,17 +872,13 @@ update_regex_flags (EggRegexCompileFlags flags,
 	DEBUG (g_message ("setting the '%s' regex flag to %d", option_name, value));
 
 	if (strcmp ("case-insensitive", option_name) == 0)
-	{
 		single_flag = EGG_REGEX_CASELESS;
-	}
 	else if (strcmp ("extended", option_name) == 0)
-	{
 		single_flag = EGG_REGEX_EXTENDED;
-	}
 	else if (strcmp ("dot-match-all", option_name) == 0)
-	{
 		single_flag = EGG_REGEX_DOTALL;
-	}
+	else if (strcmp ("dupnames", option_name) == 0)
+		single_flag = EGG_REGEX_DUPNAMES;
 	else
 		return flags;
 
@@ -1083,6 +1084,28 @@ expand_regex (ParserState *parser_state,
 	if (regex == NULL)
 		return NULL;
 
+	if (egg_regex_match_simple ("(?<!\\\\)(\\\\\\\\)*\\\\[0-9]", regex, 0, 0))
+	{
+		/* This may be a backreference, or it may be an octal character */
+		EggRegex *compiled;
+
+		compiled = egg_regex_new (regex, flags, 0, error);
+
+		if (!compiled)
+			return NULL;
+
+		if (egg_regex_get_backrefmax (compiled) > 0)
+		{
+			g_set_error (error, PARSER_ERROR, PARSER_ERROR_MALFORMED_REGEX,
+				     _("in regex '%s': backreferences are not supported"), 
+				     regex);
+			egg_regex_free (compiled);
+			return NULL;
+		}
+
+		egg_regex_free (compiled);
+	}
+
 	if (g_utf8_get_char (regex) == '/')
 	{
 		gchar *regex_end = g_utf8_strrchr (regex, -1, '/');
@@ -1134,9 +1157,13 @@ expand_regex (ParserState *parser_state,
 			g_string_append (expanded_regex, "x");
 		if (flags & EGG_REGEX_DOTALL)
 			g_string_append (expanded_regex, "s");
+		/* J is added here if it's used, but -J isn't added
+		 * below */
+		if (flags & EGG_REGEX_DUPNAMES)
+			g_string_append (expanded_regex, "J");
 	}
 	if (flags != (EGG_REGEX_CASELESS | EGG_REGEX_EXTENDED |
-		EGG_REGEX_DOTALL))
+		      EGG_REGEX_DOTALL | EGG_REGEX_DUPNAMES))
 	{
 		g_string_append (expanded_regex, "-");
 		if (!(flags & EGG_REGEX_CASELESS))

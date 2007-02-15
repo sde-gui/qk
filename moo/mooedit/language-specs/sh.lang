@@ -69,35 +69,18 @@
       <keyword>&lt;&lt;+[0-9]</keyword>
       <keyword>\b[0-9]+&lt;&lt;</keyword>
     </context>
-    <context id="here-doc-1">
-      <start>&lt;&lt;-?\s*\\?(\S+)$</start>
-      <end>^\t*\%{1@start}$</end>
-      <include>
-        <context sub-pattern="0" where="start" style-ref="here-doc-bound"/>
-        <context sub-pattern="0" where="end" style-ref="here-doc-bound"/>
-      </include>
-    </context>
-    <context id="here-doc-2">
-      <start>&lt;&lt;-?\s*\"\\?(\S+)\"$</start>
-      <end>^\t*(\%{1@start})$</end>
-      <include>
-        <context sub-pattern="0" where="start" style-ref="here-doc-bound"/>
-        <context sub-pattern="0" where="end" style-ref="here-doc-bound"/>
-      </include>
-    </context>
-    <context id="here-doc-3">
-      <start>&lt;&lt;-?\s*\'\\?(\S+)\'$</start>
-      <end>^\t*(\%{1@start})$</end>
-      <include>
-        <context sub-pattern="0" where="start" style-ref="here-doc-bound"/>
-        <context sub-pattern="0" where="end" style-ref="here-doc-bound"/>
-      </include>
-    </context>
     <context id="here-doc">
+      <start extended="true" dupnames="true">
+        &lt;&lt;-?\s*\\?(
+          \"(?P&lt;HDB&gt;\S+)\" | # "EOF"
+          \'(?P&lt;HDB&gt;\S+)\' | # 'EOF'
+          (?P&lt;HDB&gt;\S+)       # EOF
+        )$
+      </start>
+      <end>^\t*\%{HDB@start}$</end>
       <include>
-        <context ref="here-doc-3"/>
-        <context ref="here-doc-2"/>
-        <context ref="here-doc-1"/>
+        <context sub-pattern="0" where="start" style-ref="here-doc-bound"/>
+        <context sub-pattern="0" where="end" style-ref="here-doc-bound"/>
       </include>
     </context>
     <context id="operator" style-ref="function">
