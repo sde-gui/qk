@@ -49,29 +49,42 @@ AC_HELP_STRING([--enable-all-warnings],[enable lot of compiler warnings (default
   _moo_all_warnings="$withval"
 ])
 
+# icc pretends to be gcc or configure thinks it's gcc, but icc doesn't
+# error on unknown options, so just don't try gcc options with icc
+_MOO_ICC=false
+_MOO_GCC=false
+if test "$CC" = "icc"; then
+  _MOO_ICC=true
+elif test "x$GCC" = "xyes"; then
+  _MOO_GCC=true
+fi
+
 MOO_DEBUG_CFLAGS=
 if test "x$_moo_all_warnings" = "xyes"; then
-  if test "x$GCC" = "xyes"; then
+  if $_MOO_ICC; then
+    _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS, [-Wall -Wcheck -w2 -wd981 -wd188 -wd869 -wd556 -wd810])
+  elif $_MOO_GCC; then
     _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS,
 [-W -Wall -Wpointer-arith -Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
 -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations dnl
 -Wmissing-noreturn -Wmissing-format-attribute -Wnested-externs dnl
 -Wdisabled-optimization])
-  elif test "x$CC" = "icc"; then
-    _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS, [-Wall -Wcheck -w2 -wd981 -wd188])
   fi
 else
-  if test x$GCC = "xyes"; then
+  if $_MOO_GCC; then
     _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS, [-Wall -W])
   fi
 fi
 
-if test x$GCC = "xyes"; then
-  _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_W_NO_MISSING_FIELD_INITIALIZERS, [-Wno-missing-field-initializers])
-  _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_W_NO_UNUSED, [-Wno-unused])
-  AC_SUBST(MOO_W_NO_MISSING_FIELD_INITIALIZERS)
-  AC_SUBST(MOO_W_NO_UNUSED)
+m4_foreach([wname],[missing-field-initializers, unused, sign-compare],[dnl
+m4_define([_moo_WNAME],[MOO_W_NO_[]m4_bpatsubst(m4_toupper(wname),-,_)])
+_moo_WNAME=
+if $_MOO_GCC; then
+  _MOO_AC_CHECK_COMPILER_OPTIONS(_moo_WNAME,[-Wno-wname])
 fi
+AC_SUBST(_moo_WNAME)
+m4_undefine([_moo_WNAME])
+])
 
 if test "x$MOO_DEBUG" = "xyes"; then
 _moo_debug_flags="-DG_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED dnl
