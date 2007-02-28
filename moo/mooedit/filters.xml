@@ -1,0 +1,42 @@
+<filter id="bison" name="Bison">
+  <match what="stderr" pattern="(?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+)\.(\d+|\d+\-\d+):"/>
+</filter>
+
+<filter id="python" name="Python">
+  <match what="stderr" pattern='\s*File\s*\"(?P&lt;file&gt;[^"]+)\",\s*line\s*(?P&lt;line&gt;\d+).*' style="output-error"/>
+  <match what="stderr" pattern='\s*(?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+):.*' style="output-error"/>
+</filter>
+
+<filter id="latex" name="LaTeX">
+  <match what="stdout" pattern="^l\.(?P&lt;line&gt;\d+)" style="output-error" span="2"/>
+  <match what="stdout" pattern="^LaTeX Warning: .* on input line (?P&lt;line&gt;\d+)\." style="output-error"/>
+  <match what="stdout" pattern="^(Over|Under)full \\[vh]box .* detected at line (?P&lt;line&gt;\d+)" style="output-error"/>
+  <match what="stdout" pattern="^(Over|Under)full \\[vh]box .* in paragraph at lines (?P&lt;line&gt;\d+)\-\-\d+" style="output-error"/>
+  <match what="stdout" pattern="^LaTeX Warning: .*" style="output-error"/>
+  <match what="stdout" pattern="^\! LaTeX Error: .*" style="output-error"/>
+  <match what="stdout" pattern="\((?P&lt;file&gt;[/.][^\(\)\s]+)">
+    <action type="push" name="file" substring="file"/>
+  </match>
+  <match what="stdout" pattern="\(">
+    <action type="push" name="file"/>
+  </match>
+  <match what="stdout" pattern="\)">
+    <action type="pop" name="file"/>
+  </match>
+</filter>
+
+<filter id="make" name="Make">
+  <match what="stderr" pattern="In file included from (?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+):.*" style="output-error"/>
+  <match what="stderr" pattern="(?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+):(\d+:)?\s*error\s*:.*" style="output-error"/>
+  <match what="stderr" pattern="(?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+):.*" style="output-error"/>
+  <match what="stderr" pattern="(?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+):(\d+:)?\s*warning\s*:.*" style="output-error"/>
+
+  <match what="stderr" pattern="(?P&lt;file&gt;[^:]+)\((?P&lt;line&gt;\d+)\):(\d+:)?\s*(warning|remark).*" style="output-error"/>
+
+  <match what="stdout" pattern="^make\[\d+\]: Entering directory `(?P&lt;dir&gt;.*)'">
+    <action type="push" name="directory" substring="dir"/>
+  </match>
+  <match what="stdout" pattern="^make\[\d+\]: Leaving directory">
+    <action type="pop" name="directory"/>
+  </match>
+</filter>

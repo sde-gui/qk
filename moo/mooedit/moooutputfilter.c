@@ -20,8 +20,8 @@
 
 struct _MooOutputFilterPrivate {
     MooLineView *view;
-    char *working_dir;
-    char *filename;
+    char *active_dir;
+    char *active_file;
     MooEditWindow *window;
 };
 
@@ -49,8 +49,8 @@ moo_output_filter_finalize (GObject *object)
 {
     MooOutputFilter *filter = MOO_OUTPUT_FILTER (object);
 
-    g_free (filter->priv->working_dir);
-    g_free (filter->priv->filename);
+    g_free (filter->priv->active_dir);
+    g_free (filter->priv->active_file);
 
     G_OBJECT_CLASS (moo_output_filter_parent_class)->finalize (object);
 }
@@ -219,14 +219,14 @@ moo_output_filter_stderr_line (MooOutputFilter *filter,
 
 void
 moo_output_filter_cmd_start (MooOutputFilter *filter,
-                             const char      *working_dir)
+                             const char      *active_dir)
 {
     char *tmp;
 
     g_return_if_fail (MOO_IS_OUTPUT_FILTER (filter));
 
-    tmp = filter->priv->working_dir;
-    filter->priv->working_dir = g_strdup (working_dir);
+    tmp = filter->priv->active_dir;
+    filter->priv->active_dir = g_strdup (active_dir);
     g_free (tmp);
 
     g_signal_emit (filter, signals[CMD_START], 0);
@@ -303,14 +303,12 @@ moo_file_line_data_get_type (void)
 }
 
 
-#if 0
 const char *
 moo_output_filter_get_active_file (MooOutputFilter *filter)
 {
     g_return_val_if_fail (MOO_IS_OUTPUT_FILTER (filter), NULL);
-    return filter->priv->filename;
+    return filter->priv->active_file;
 }
-#endif
 
 
 void
@@ -321,9 +319,17 @@ moo_output_filter_set_active_file (MooOutputFilter *filter,
 
     g_return_if_fail (MOO_IS_OUTPUT_FILTER (filter));
 
-    tmp = filter->priv->filename;
-    filter->priv->filename = g_strdup (filename);
+    tmp = filter->priv->active_file;
+    filter->priv->active_file = g_strdup (filename);
     g_free (tmp);
+}
+
+
+const char *
+moo_output_filter_get_active_dir (MooOutputFilter *filter)
+{
+    g_return_val_if_fail (MOO_IS_OUTPUT_FILTER (filter), NULL);
+    return filter->priv->active_dir;
 }
 
 
@@ -337,13 +343,6 @@ moo_output_filter_set_window (MooOutputFilter *filter,
 }
 
 #if 0
-const char *
-moo_output_filter_get_working_dir (MooOutputFilter *filter)
-{
-    g_return_val_if_fail (MOO_IS_OUTPUT_FILTER (filter), NULL);
-    return filter->priv->working_dir;
-}
-
 gpointer
 moo_output_filter_get_window (MooOutputFilter *filter)
 {
@@ -364,16 +363,16 @@ moo_output_filter_open_file_line (MooOutputFilter *filter,
     g_return_if_fail (MOO_IS_OUTPUT_FILTER (filter));
     g_return_if_fail (data != NULL);
 
-    filename = data->file ? data->file : filter->priv->filename;
+    filename = data->file ? data->file : filter->priv->active_file;
     g_return_if_fail (filename != NULL);
 
     if (g_path_is_absolute (filename))
     {
         path = filename;
     }
-    else if (filter->priv->working_dir)
+    else if (filter->priv->active_dir)
     {
-        freeme = g_build_filename (filter->priv->working_dir, filename, NULL);
+        freeme = g_build_filename (filter->priv->active_dir, filename, NULL);
         path = freeme;
     }
 

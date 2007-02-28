@@ -2,7 +2,7 @@
 SUBDIRS = gtksourceview plugins language-specs
 
 mooedit_toolsdir = $(MOO_DATA_DIR)
-mooedit_tools_DATA = context.cfg menu.cfg filters.cfg
+mooedit_tools_DATA = context.cfg menu.cfg filters.xml
 
 dummy_targets =				\
 	moocommand-exe.o		\
@@ -42,91 +42,88 @@ mooedit_include_headers =		\
 	mootextstylescheme.h		\
 	mootextview.h
 
-mooedit_noinst_headers =		\
-	medit-ui.h			\
-	moocommand-exe.h		\
-	moocommand-script.h		\
-	moocommand-private.h		\
-	moocommand-exe-private.h	\
-	moocommand.h			\
-	moocommanddisplay.h		\
-	mooedit-private.h		\
-	mooedit-ui.h			\
-	mooeditaction-factory.h		\
-	mooeditaction.h			\
-	mooeditdialogs.h		\
-	mooeditfileops.h		\
-	mooeditfiltersettings.h		\
-	mooeditor-private.h		\
-	mooeditprefs-glade.h		\
-	mooeditprogress-glade.h		\
-	mooeditsavemultiple-glade.h	\
-	mooedittools-glade.h		\
-	moofold.h			\
-	mookeyfile.h			\
-	moolang-private.h		\
-	moolangmgr-private.h		\
-	moolinebuffer.h			\
-	moooutputfiltersimple.h		\
-	moopluginprefs-glade.h		\
-	mooprint-glade.h		\
-	mootext-private.h		\
-	mootextbox.h			\
-	mootextbtree.h			\
-	mootextfind-glade.h		\
-	mootextfind.h			\
-	mootextgotoline-glade.h		\
-	mootextsearch-private.h		\
-	mootextview-private.h		\
-	moousertools-prefs.h		\
-	moousertools.h			\
-	quicksearch-glade.h		\
-	statusbar-glade.h
-
 mooedit_sources =			\
 	$(mooedit_include_headers)	\
-	$(mooedit_noinst_headers)	\
 	$(moocommand_stuff)		\
+	medit-ui.h			\
 	moocmdview.c			\
-	moocommand-script.c		\
 	moocommand.c			\
 	moocommanddisplay.c		\
-	mooedit-bookmarks.c		\
-	mooedit-enums.c			\
-	mooedit-script.c		\
-	mooedit.c			\
-	mooeditaction-factory.c		\
+	moocommanddisplay.h		\
+	moocommand-exe.h		\
+	moocommand-exe-private.h	\
+	moocommand.h			\
+	moocommand-private.h		\
+	moocommand-script.c		\
+	moocommand-script.h		\
 	mooeditaction.c			\
+	mooeditaction-factory.c		\
+	mooeditaction-factory.h		\
+	mooeditaction.h			\
+	mooedit-bookmarks.c		\
+	mooedit.c			\
 	mooeditconfig.c			\
 	mooeditdialogs.c		\
+	mooeditdialogs.h		\
+	mooedit-enums.c			\
 	mooeditfileops.c		\
+	mooeditfileops.h		\
 	mooeditfiltersettings.c		\
+	mooeditfiltersettings.h		\
 	mooeditinput.c			\
 	mooeditor.c			\
+	mooeditor-private.h		\
 	mooeditprefs.c			\
+	mooeditprefs-glade.h		\
 	mooeditprefspage.c		\
+	mooedit-private.h		\
+	mooeditprogress-glade.h		\
+	mooeditsavemultiple-glade.h	\
+	mooedit-script.c		\
+	mooedittools-glade.h		\
+	mooedit-ui.h			\
 	mooeditwindow.c			\
 	moofold.c			\
+	moofold.h			\
 	mooindenter.c			\
 	mookeyfile.c			\
+	mookeyfile.h			\
 	moolang.c			\
 	moolangmgr.c			\
+	moolangmgr-private.h		\
+	moolang-private.h		\
 	moolinebuffer.c			\
+	moolinebuffer.h			\
 	moolinemark.c			\
 	moolineview.c			\
 	moooutputfilter.c		\
-	moooutputfiltersimple.c		\
-	mooplugin-loader.c		\
+	moooutputfilterregex.c		\
+	moooutputfilterregex.h		\
 	mooplugin.c			\
+	mooplugin-loader.c		\
+	moopluginprefs-glade.h		\
+	mooprint-glade.h		\
 	mootextbox.c			\
+	mootextbox.h			\
 	mootextbtree.c			\
+	mootextbtree.h			\
 	mootextbuffer.c			\
 	mootextfind.c			\
+	mootextfind-glade.h		\
+	mootextfind.h			\
+	mootextgotoline-glade.h		\
+	mootext-private.h		\
 	mootextsearch.c			\
+	mootextsearch-private.h		\
 	mootextstylescheme.c		\
 	mootextview.c			\
+	mootextview-private.h		\
+	moousertools.c			\
+	moousertools.h			\
 	moousertools-prefs.c		\
-	moousertools.c
+	moousertools-prefs.h		\
+	quicksearch-glade.h		\
+	statusbar-glade.h
 
 mooedit_printing_sources =		\
 	mooprintpreview.h		\
