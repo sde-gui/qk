@@ -19,5 +19,5 @@ libxdgmime_la_SOURCES = $(mooxdgmime_sources)
 AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
-	-Wno-sign-compare	\
-	-Wno-unused
+	$(MOO_W_NO_SIGN_COMPARE)\
+	$(MOO_W_NO_UNUSED)

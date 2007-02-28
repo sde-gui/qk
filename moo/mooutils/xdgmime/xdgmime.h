@@ -99,6 +99,9 @@ int          xdg_mime_register_reload_callback     (XdgMimeCallback  callback,
 						    XdgMimeDestroy   destroy);
 void         xdg_mime_remove_callback              (int              callback_id);
 
+int	     _xdg_buffer_is_text		   (unsigned char   *buffer,
+						    int              len);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -130,7 +130,8 @@ xdg_mime_intern_mime_type (const char *mime_type)
   char *copy;
   static GHashTable *hash;
 
-  if (!mime_type)
+  if (!mime_type || mime_type == XDG_MIME_TYPE_UNKNOWN ||
+      !strcmp (mime_type, XDG_MIME_TYPE_UNKNOWN))
     return XDG_MIME_TYPE_UNKNOWN;
 
   if (G_UNLIKELY (!hash))
@@ -582,13 +583,14 @@ xdg_mime_get_mime_type_for_file (const char  *file_name,
   mime_type = _xdg_mime_magic_lookup_data (global_magic, data, bytes_read,
 					   mime_types, n);
 
+  if ((!mime_type || mime_type == XDG_MIME_TYPE_UNKNOWN) &&
+      _xdg_buffer_is_text (data, bytes_read))
+    mime_type = "text/plain";
+
   free (data);
   fclose (file);
 
-  if (mime_type)
-    return xdg_mime_intern_mime_type (mime_type);
-
-  return XDG_MIME_TYPE_UNKNOWN;
+  return xdg_mime_intern_mime_type (mime_type);
 }
 
 const char *
@@ -900,4 +902,19 @@ xdg_mime_remove_callback (int callback_id)
 	  return;
 	}
     }
+}
+
+int
+_xdg_buffer_is_text (unsigned char *buffer,
+		     int            len)
+{
+  const char *end;
+  gunichar ch;
+
+  if (!len || g_utf8_validate ((const char*) buffer, len, &end))
+    return TRUE;
+
+  ch = g_utf8_get_char_validated (end, len - (end - (const char*) buffer));
+
+  return ch == -2;
 }

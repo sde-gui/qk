@@ -785,6 +785,10 @@ _xdg_mime_cache_get_mime_type_for_file (const char  *file_name,
   mime_type = cache_get_mime_type_for_data (data, bytes_read,
 					    mime_types, n);
 
+  if ((!mime_type || mime_type == XDG_MIME_TYPE_UNKNOWN) &&
+      _xdg_buffer_is_text (data, bytes_read))
+    mime_type = "text/plain";
+
   free (data);
   fclose (file);
 
