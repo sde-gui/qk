@@ -8,7 +8,7 @@
 
   <styles>
     <style id="comment" _name="Comment" map-to="def:comment"/>
-    <style id="others-2" _name="Others 2"/>
+    <style id="location" _name="Location" map-to="def:comment"/>
     <style id="string" _name="String" map-to="def:string"/>
     <style id="keyword" _name="Keyword" map-to="def:keyword"/>
   </styles>
@@ -29,7 +29,7 @@
         <context ref="def:line-continue"/>
       </include>
     </context>
-    <context id="location" style-ref="others-2" end-at-line-end="true">
+    <context id="location" style-ref="location" end-at-line-end="true">
       <start>^#:</start>
       <include>
         <context ref="def:escape"/>
