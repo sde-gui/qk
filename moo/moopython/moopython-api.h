@@ -68,7 +68,7 @@ moo_python_api_run_string (const char  *str,
     if (!locals)
         locals = moo_python_api_create_script_dict ("__script__");
     else
-        moo_Py_INCREF (locals);
+        Py_INCREF ((PyObject*) locals);
 
     g_return_val_if_fail (locals != NULL, NULL);
 
@@ -77,7 +77,7 @@ moo_python_api_run_string (const char  *str,
 
     ret = PyRun_String (str, Py_file_input, (PyObject*) globals, (PyObject*) locals);
 
-    moo_Py_DECREF (locals);
+    Py_DECREF ((PyObject*) locals);
     return (MooPyObject*) ret;
 }
 
@@ -95,7 +95,7 @@ moo_python_api_run_file (gpointer     fp,
     if (!locals)
         locals = moo_python_api_create_script_dict ("__script__");
     else
-        moo_Py_INCREF (locals);
+        Py_INCREF ((PyObject*) locals);
 
     g_return_val_if_fail (locals != NULL, NULL);
 
@@ -104,7 +104,7 @@ moo_python_api_run_file (gpointer     fp,
 
     ret = PyRun_File (fp, filename, Py_file_input, (PyObject*) globals, (PyObject*) locals);
 
-    moo_Py_DECREF (locals);
+    Py_DECREF ((PyObject*) locals);
     return (MooPyObject*) ret;
 }
 
@@ -121,7 +121,7 @@ moo_python_api_run_code (const char  *str,
     if (!locals)
         locals = moo_python_api_create_script_dict ("__script__");
     else
-        moo_Py_INCREF (locals);
+        Py_INCREF ((PyObject*) locals);
 
     g_return_val_if_fail (locals != NULL, NULL);
 
@@ -140,7 +140,7 @@ moo_python_api_run_code (const char  *str,
             ret = NULL;
     }
 
-    moo_Py_DECREF (locals);
+    Py_DECREF ((PyObject*) locals);
     return (MooPyObject*) ret;
 }
 
@@ -148,21 +148,14 @@ moo_python_api_run_code (const char  *str,
 static MooPyObject*
 moo_python_api_incref (MooPyObject *obj)
 {
-    if (obj)
-    {
-        Py_INCREF ((PyObject*) obj);
-    }
-
+    Py_XINCREF ((PyObject*) obj);
     return obj;
 }
 
 static void
 moo_python_api_decref (MooPyObject *obj)
 {
-    if (obj)
-    {
-        Py_DECREF ((PyObject*) obj);
-    }
+    Py_XDECREF ((PyObject*) obj);
 }
 
 

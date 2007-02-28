@@ -64,8 +64,7 @@ _wrap_moo_term_copy_clipboard (PyGObject *self, PyObject *args, PyObject *kwargs
     if (PyErr_Occurred())
         return NULL;
     moo_term_copy_clipboard(MOO_TERM(self->obj), selection);
-    Py_INCREF(Py_None);
-    return Py_None;
+    return_None;
 }
 %%
 override moo_term_paste_clipboard kwargs
@@ -82,8 +81,7 @@ _wrap_moo_term_paste_clipboard(PyGObject *self, PyObject *args, PyObject *kwargs
     if (PyErr_Occurred())
         return NULL;
     moo_term_paste_clipboard(MOO_TERM(self->obj), selection);
-    Py_INCREF(Py_None);
-    return Py_None;
+    return_None;
 }
 %%
 override moo_term_get_iter_at_line varargs

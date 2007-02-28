@@ -726,8 +726,7 @@ _wrap_moo_file_dialog (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *k
     if (ret)
         return PyString_FromString(ret);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return_None;
 }
 %%
 override moo_bind_sensitive kwargs
@@ -748,8 +747,7 @@ _wrap_moo_bind_sensitive (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject
                         (GtkWidget**) &dependent->obj, 1,
                         invert);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return_None;
 }
 %%
 override-slot MooGladeXML.tp_getattr
