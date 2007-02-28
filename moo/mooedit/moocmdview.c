@@ -285,6 +285,29 @@ moo_cmd_view_run_command (MooCmdView *view,
 }
 
 
+static char *
+make_display_cmd_line (const char *cmd,
+                       const char *display_cmd,
+                       const char *working_dir)
+{
+    char *display_cmd_line;
+
+    display_cmd = display_cmd ? display_cmd : cmd;
+
+    if (!working_dir)
+    {
+        display_cmd_line = g_strdup (display_cmd);
+    }
+    else
+    {
+        char *display_dir = g_filename_display_name (working_dir);
+        display_cmd_line = g_strdup_printf ("[%s] %s", display_dir, display_cmd);
+        g_free (display_dir);
+    }
+
+    return display_cmd_line;
+}
+
 gboolean
 moo_cmd_view_run_command_full (MooCmdView  *view,
                                const char  *cmd,
@@ -296,14 +319,17 @@ moo_cmd_view_run_command_full (MooCmdView  *view,
     GError *error = NULL;
     char **argv = NULL;
     gboolean result = FALSE;
+    char *display_cmd_line;
 
     g_return_val_if_fail (MOO_IS_CMD_VIEW (view), FALSE);
     g_return_val_if_fail (cmd && cmd[0], FALSE);
     g_return_val_if_fail (!view->priv->cmd, FALSE);
 
+    display_cmd_line = make_display_cmd_line (cmd, display_cmd, working_dir);
     moo_line_view_write_line (MOO_LINE_VIEW (view),
-                              display_cmd ? display_cmd : cmd, -1,
+                              display_cmd_line, -1,
                               view->priv->message_tag);
+    g_free (display_cmd_line);
 
 #ifdef __WIN32__
     g_shell_parse_argv (cmd, NULL, &argv, &error);
