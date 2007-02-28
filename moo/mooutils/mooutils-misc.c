@@ -1597,8 +1597,9 @@ _moo_splitlines (const char *string)
 }
 
 
-G_GNUC_UNUSED static guint
-saved_win32_error_mode;
+#if defined(__WIN32__)
+static guint saved_win32_error_mode;
+#endif
 
 void
 moo_disable_win32_error_message (void)
