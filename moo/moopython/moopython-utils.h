@@ -77,6 +77,25 @@ G_STMT_START {                  \
 #define return_ValueErrorInt(msg)   return PyErr_SetString (PyExc_ValueError, msg), -1
 
 
+#if PY_MINOR_VERSION < 4
+#define Py_InitializeEx(arg) Py_Initialize()
+
+#define Py_IncRef _moo_Py_IncRef
+#define Py_DecRef _moo_Py_DecRef
+inline static void
+Py_IncRef (PyObject *obj)
+{
+    Py_XINCREF (obj);
+}
+
+inline static void
+Py_DecRef (PyObject *obj)
+{
+    Py_XDECREF (obj);
+}
+#endif
+
+
 G_END_DECLS
 
 #endif /* __MOO_PYTHON_UTILS_H__ */
