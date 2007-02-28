@@ -42,6 +42,41 @@ static gpointer system_info_dialog;
 #endif
 
 static void
+set_translator_credits (MooGladeXML *xml)
+{
+    GtkWidget *notebook, *page;
+    const char *credits, *credits_markup;
+    MooHtml *html;
+
+    /* Translators: this goes into About box, under Translated by tab */
+    credits = _("translator_credits");
+    /* Translators: this goes into About box, under Translated by tab,
+       this must be valid html markup, e.g.
+       "Some Guy <a href=\"mailto://someguy@domain.net\">&lt;someguy@domain.net&gt;</a>" */
+    credits_markup = _("translator_credits_markup");
+
+    if (!strcmp (credits, "translator_credits"))
+    {
+        notebook = moo_glade_xml_get_widget (xml, "notebook");
+        page = gtk_notebook_get_nth_page (GTK_NOTEBOOK (notebook), 2);
+        gtk_widget_hide (page);
+        return;
+    }
+
+    html = moo_glade_xml_get_widget (xml, "translated_by");
+
+#if defined(MOO_USE_XML) && !defined(__WIN32__)
+    if (strcmp (credits_markup, "translator_credits_markup") != 0)
+        _moo_html_load_memory (html, credits_markup, -1, NULL, NULL);
+    else
+#endif
+    {
+        GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (html));
+        gtk_text_buffer_insert_at_cursor (buffer, credits, -1);
+    }
+}
+
+static void
 show_credits (void)
 {
     MooGladeXML *xml;
@@ -63,6 +98,7 @@ show_credits (void)
 
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "written_by", MOO_TYPE_HTML);
+    moo_glade_xml_map_id (xml, "translated_by", MOO_TYPE_HTML);
     moo_glade_xml_parse_memory (xml, MOO_APP_ABOUT_GLADE_UI, -1, "credits", NULL);
 
     credits_dialog = moo_glade_xml_get_widget (xml, "credits");
@@ -84,6 +120,8 @@ show_credits (void)
                                           "Yevgen Muntyan <muntyan@tamu.edu>", -1);
     }
 #endif
+
+    set_translator_credits (xml);
 
     thanks = moo_glade_xml_get_widget (xml, "thanks");
     buffer = gtk_text_view_get_buffer (thanks);
@@ -153,7 +191,7 @@ create_about_dialog (void)
     MooGladeXML *xml;
     GtkWidget *dialog, *logo, *button;
     const MooAppInfo *info;
-    char *markup, *title;
+    char *markup;
     GtkLabel *label;
     MooLinkLabel *url;
 
@@ -165,9 +203,6 @@ create_about_dialog (void)
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");
     g_signal_connect (dialog, "key-press-event", G_CALLBACK (about_dialog_key_press), NULL);
-
-    title = g_strdup_printf ("About %s", info->full_name);
-    gtk_window_set_title (GTK_WINDOW (dialog), title);
 
     g_object_add_weak_pointer (G_OBJECT (dialog), &about_dialog);
     g_signal_connect (dialog, "delete-event", G_CALLBACK (gtk_widget_hide_on_delete), NULL);
@@ -215,7 +250,6 @@ create_about_dialog (void)
     button = moo_glade_xml_get_widget (xml, "close_button");
     g_signal_connect_swapped (button, "clicked", G_CALLBACK (gtk_widget_hide), dialog);
 
-    g_free (title);
     g_object_unref (xml);
 
     return dialog;
