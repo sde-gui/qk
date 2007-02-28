@@ -430,6 +430,18 @@ _moo_normalize_file_path (const char *filename)
         filename = freeme;
     }
 
+    /* It's an error to call this function for a directory, so if
+     * it's the case, just return what we got. */
+    if (g_file_test (filename, G_FILE_TEST_IS_DIR) ||
+        /* and this totally screws up dirname/basename */
+        g_str_has_suffix (filename, G_DIR_SEPARATOR_S))
+    {
+        if (!freeme)
+            freeme = g_strdup (filename);
+        g_free (working_dir);
+        return freeme;
+    }
+
     dirname = g_path_get_dirname (filename);
     basename = g_path_get_basename (filename);
     g_return_val_if_fail (dirname && basename, g_strdup (filename));
