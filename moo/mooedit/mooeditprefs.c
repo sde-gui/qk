@@ -110,6 +110,8 @@ _moo_edit_init_prefs (void)
                    MOO_TYPE_TEXT_SEARCH_FLAGS,
                    MOO_TEXT_SEARCH_CASELESS);
     NEW_KEY_STRING (MOO_EDIT_PREFS_LINE_NUMBERS_FONT, NULL);
+
+    NEW_KEY_STRING (MOO_EDIT_PREFS_ENCODINGS, NULL);
 }
 
 

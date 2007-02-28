@@ -23,10 +23,11 @@
 # include <config.h>
 #endif
 
+#include <mooutils/mooi18n.h>
+
 #include "eggregex.h"
 
 #include <glib.h>
-#include <glib/gi18n.h>
 #include <string.h>
 
 #ifdef MOO_BUILD_PCRE
@@ -110,27 +111,38 @@ struct _EggRegex
 #define IS_PCRE_ERROR(ret) ((ret) < PCRE_ERROR_NOMATCH && (ret) != PCRE_ERROR_PARTIAL)
 
 static const gchar *match_errors[] =
-{N_("unknown error"),		/* Generic error */
+{/* Generic error */
+ N_("unknown error"),
  NULL,				/* PCRE_ERROR_NOMATCH, not an error */
  NULL,				/* PCRE_ERROR_NULL, NULL argument, should not happen */
- N_(""),			/* PCRE_ERROR_BADOPTION */
- N_("corrupted object"),	/* PCRE_ERROR_BADMAGIC */
- N_("internal error or corrupted object"), /* PCRE_ERROR_UNKNOWN_NODE */
- N_("out of memory"),		/* PCRE_ERROR_NOMEMORY */
+ /* PCRE_ERROR_BADOPTION */
+ N_("bad option"),
+ /* PCRE_ERROR_BADMAGIC */
+ N_("corrupted object"),
+ /* PCRE_ERROR_UNKNOWN_NODE */
+ N_("internal error or corrupted object"),
+ /* PCRE_ERROR_NOMEMORY */
+ N_("out of memory"),
  NULL,				/* PCRE_ERROR_NOSUBSTRING, not used by pcre_exec() */
- N_("backtracking limit reached"), /* PCRE_ERROR_MATCHLIMIT */
+ /* PCRE_ERROR_MATCHLIMIT */
+ N_("backtracking limit reached"),
  NULL,				/* PCRE_ERROR_CALLOUT, used with callouts */
  NULL,				/* PCRE_ERROR_BADUTF8, we do not check UTF-8*/
  NULL,				/* PCRE_ERROR_BADUTF8_OFFSET, we do not check UTF-8 */
  NULL,				/* PCRE_ERROR_PARTIAL, not an error */
- N_("the pattern contains items not supported for partial matching"), /* PCRE_ERROR_BADPARTIAL */
- N_("internal error"),		/* PCRE_ERROR_INTERNAL */
+ /* PCRE_ERROR_BADPARTIAL */
+ N_("the pattern contains items not supported for partial matching"),
+ /* PCRE_ERROR_INTERNAL */
+ N_("internal error"),
  NULL,				/* PCRE_ERROR_BADCOUNT, negative ovecsize, should not happen */
- N_("the pattern contains items not supported for partial matching"), /* PCRE_ERROR_DFA_UITEM */
- N_("back references as conditions are not supported for partial matching"), /* PCRE_ERROR_DFA_UCOND */
+ /* PCRE_ERROR_DFA_UITEM */
+ N_("the pattern contains items not supported for partial matching"),
+ /* PCRE_ERROR_DFA_UCOND */
+ N_("back references as conditions are not supported for partial matching"),
  NULL,				/* PCRE_ERROR_DFA_UMLIMIT, should not happen */
  NULL,				/* PCRE_ERROR_DFA_WSSIZE, handled expanding the workspace */
- N_("recursion limit reached")	/* PCRE_ERROR_RECURSIONLIMIT */
+ /* PCRE_ERROR_RECURSIONLIMIT */
+ N_("recursion limit reached")
 };
 
 static const gchar *
@@ -141,7 +153,7 @@ match_error (gint errcode)
     errcode = 0;
   if (match_errors[errcode] == NULL)
     errcode = 0;
-  return gettext (match_errors[errcode]);
+  return _(match_errors[errcode]);
 }
 
 GQuark
@@ -302,7 +314,7 @@ egg_regex_new (const gchar         *pattern,
 	{
 	  msg = N_("PCRE library is compiled without UTF8 support");
 	  g_critical (msg);
-	  g_set_error (error, EGG_REGEX_ERROR, EGG_REGEX_ERROR_COMPILE, gettext (msg));
+	  g_set_error (error, EGG_REGEX_ERROR, EGG_REGEX_ERROR_COMPILE, _(msg));
 	  return NULL;
 	}
 
@@ -311,7 +323,7 @@ egg_regex_new (const gchar         *pattern,
 	{
 	  msg = N_("PCRE library is compiled without UTF8 properties support");
 	  g_critical (msg);
-	  g_set_error (error, EGG_REGEX_ERROR, EGG_REGEX_ERROR_COMPILE, gettext (msg));
+	  g_set_error (error, EGG_REGEX_ERROR, EGG_REGEX_ERROR_COMPILE, _(msg));
 	  return NULL;
 	}
 
@@ -1931,9 +1943,9 @@ expand_escape (const gchar        *replacement,
   tmp_error = g_error_new (EGG_REGEX_ERROR,
 			   EGG_REGEX_ERROR_REPLACE,
 			   _("Error while parsing replacement "
-			     "text \"%s\" at char %"G_GSSIZE_FORMAT": %s"),
+			     "text \"%s\" at char %lu: %s"),
 			   replacement,
-			   p - replacement,
+			   (gulong) (p - replacement),
 			   error_detail);
   g_propagate_error (error, tmp_error);
 

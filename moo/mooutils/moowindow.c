@@ -171,9 +171,7 @@ moo_window_class_init (MooWindowClass *klass)
     moo_window_class_set_id (klass, "MooWindow", "Window");
 
     moo_window_class_new_action (klass, "ConfigureShortcuts", NULL,
-                                 "display-name", "Configure Shortcuts",
-                                 "label", "Configure _Shortcuts...",
-                                 "tooltip", "Configure _Shortcuts...",
+                                 "label", _("Configure _Shortcuts..."),
                                  "no-accel", TRUE,
                                  "stock-id", MOO_STOCK_KEYBOARD,
                                  "closure-callback", moo_window_shortcuts_prefs_dialog,
@@ -181,17 +179,15 @@ moo_window_class_init (MooWindowClass *klass)
 
     moo_window_class_new_action (klass, "ShowToolbar", NULL,
                                  "action-type::", MOO_TYPE_TOGGLE_ACTION,
-                                 "display-name", "Show Toolbar",
-                                 "label", "Show Toolbar",
-                                 "tooltip", "Show Toolbar",
+                                 "display-name", _("Show Toolbar"),
+                                 "label", _("Show Toolbar"),
                                  "condition::active", "toolbar-visible",
                                  NULL);
 
     moo_window_class_new_action (klass, "ShowMenubar", NULL,
                                  "action-type::", MOO_TYPE_TOGGLE_ACTION,
-                                 "display-name", "Show Menubar",
-                                 "label", "Show Menubar",
-                                 "tooltip", "Show Menubar",
+                                 "display-name", _("Show Menubar"),
+                                 "label", _("Show Menubar"),
                                  "no-accel", TRUE,
                                  "condition::active", "menubar-visible",
                                  NULL);

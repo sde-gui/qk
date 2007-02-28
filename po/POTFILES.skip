@@ -7,6 +7,8 @@ moo/mooutils/newgtk/gmappedfile.c
 moo/mooutils/newgtk/gtkcolorbutton.c
 moo/mooutils/newgtk/gtkfontbutton.c
 
+moo/mooedit/filters.xml
+
 moo/mooedit/gtksourceview/upstream/gtksourcelanguagesmanager.c
 moo/mooedit/gtksourceview/upstream/gtksourcestylescheme.c
 moo/mooedit/gtksourceview/upstream/gtksourcelanguage-parser-2.c
@@ -66,11 +68,18 @@ moo/mooedit/language-specs/pkgconfig.lang
 moo/moopython/plugins/pyproject/project-plugin.ini.desktop.in.in
 moo/moopython/plugins/pyproject/mprj/manager.py
 moo/moopython/plugins/pyproject/mprj/simple.py
+moo/moopython/plugins/pyproject/mprj/config/view.py
+moo/moopython/plugins/pyproject/mprj/optdialog.py
+moo/moopython/plugins/pyproject/mprj/simple.glade
 moo/moopython/plugins/pyproject/projects/c.py
 moo/moopython/plugins/pyproject/projects/cproj/config.py
 moo/moopython/plugins/pyproject/projects/cproj/optdialog.py
 moo/moopython/plugins/pyproject/projects/cproj/options.glade
 moo/moopython/plugins/pyproject/projects/latex.py
+moo/moopython/plugins/pyproject/projects/pyproj/config.py
+moo/moopython/plugins/pyproject/projects/pyproj/optdialog.py
+moo/moopython/plugins/pyproject/projects/pyproj/options.glade
+moo/moopython/plugins/pyproject/projects/python.py
 
 moo/mooterm/mootermparser-yacc.c
 moo/mooterm/glade/mootermprefs.glade

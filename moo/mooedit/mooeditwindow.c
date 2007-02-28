@@ -375,7 +375,9 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
     moo_window_class_set_id (window_class, "Editor", "Editor");
 
     moo_window_class_new_action (window_class, "NewDoc", NULL,
+                                 /* translators: do not translate the part before the | */
                                  "display-name", Q_("New document|New"),
+                                 /* translators: do not translate the part before the | */
                                  "label", Q_("New document|New"),
                                  "tooltip", _("Create new document"),
                                  "stock-id", GTK_STOCK_NEW,
@@ -549,7 +551,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
 
     moo_window_class_new_action (window_class, "FindNext", NULL,
                                  "display-name", _("Find Next"),
-                                 "label", ("Find _Next"),
+                                 "label", _("Find _Next"),
                                  "tooltip", _("Find next"),
                                  "stock-id", GTK_STOCK_GO_FORWARD,
                                  "accel", "F3",
@@ -632,8 +634,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
 
     moo_window_class_new_action (window_class, "FocusDoc", NULL,
                                  "display-name", _("Focus Document"),
-                                 "label", _("Focus Document"),
-                                 "tooltip", _("Focus Document"),
+                                 "label", _("_Focus Document"),
                                  "accel", "<alt>C",
                                  "closure-callback", gtk_widget_grab_focus,
                                  "closure-proxy-func", moo_edit_window_get_active_doc,
@@ -684,9 +685,8 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                         NULL, NULL);
 
     moo_window_class_new_action (window_class, "ToggleBookmark", NULL,
-                                 "display-name", "Toggle Bookmark",
-                                 "label", "Toggle Bookmark",
-                                 "tooltip", "Toggle bookmark",
+                                 "display-name", _("Toggle Bookmark"),
+                                 "label", _("Toggle Bookmark"),
                                  "stock-id", MOO_STOCK_EDIT_BOOKMARK,
                                  "accel", "<ctrl>B",
                                  "closure-callback", action_toggle_bookmark,
@@ -694,9 +694,8 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "NextBookmark", NULL,
-                                 "display-name", "Next Bookmark",
-                                 "label", "Next Bookmark",
-                                 "tooltip", "Next bookmark",
+                                 "display-name", _("Next Bookmark"),
+                                 "label", _("Next Bookmark"),
                                  "accel", "<alt>Down",
                                  "connect-accel", TRUE,
                                  "closure-callback", action_next_bookmark,
@@ -704,9 +703,8 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "PreviousBookmark", NULL,
-                                 "display-name", "Previous Bookmark",
-                                 "label", "Previous Bookmark",
-                                 "tooltip", "Previous bookmark",
+                                 "display-name", _("Previous Bookmark"),
+                                 "label", _("Previous Bookmark"),
                                  "accel", "<alt>Up",
                                  "connect-accel", TRUE,
                                  "closure-callback", action_prev_bookmark,
@@ -773,6 +771,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "NoDocuments", NULL,
+                                 /* Insensitive menu item which appears in Window menu with no documents open */
                                  "label", _("No Documents"),
                                  "no-accel", TRUE,
                                  "sensitive", FALSE,
@@ -1085,6 +1084,7 @@ update_window_title (MooEditWindow *window)
     MooEditStatus status;
     GString *title;
     gboolean modified;
+    const char *doc_title_format;
 
     edit = ACTIVE_DOC (window);
 
@@ -1110,20 +1110,39 @@ update_window_title (MooEditWindow *window)
     if (window->priv->prefix)
         g_string_append_printf (title, "%s - ", window->priv->prefix);
 
-    g_string_append_printf (title, "%s", name);
-
     modified = (status & MOO_EDIT_MODIFIED) && !(status & MOO_EDIT_CLEAN);
 
-    if ((status & MOO_EDIT_NEW) && !modified)
-        g_string_append (title, " [new file]");
+    if (!modified)
+    {
+        if (status & MOO_EDIT_NEW)
+            /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [new file]" */
+            doc_title_format = _("%s [new file]");
+        else if (status & MOO_EDIT_MODIFIED_ON_DISK)
+            /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified on disk]" */
+            doc_title_format = _("%s [modified on disk]");
+        else if (status & MOO_EDIT_DELETED)
+            /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [deleted]" */
+            doc_title_format = _("%s [deleted]");
+        else
+            doc_title_format = "%s";
+    }
+    else
+    {
+        if (status & MOO_EDIT_NEW)
+            /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [new file] [modified]" */
+            doc_title_format = _("%s [new file] [modified]");
+        else if (status & MOO_EDIT_MODIFIED_ON_DISK)
+            /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified on disk] [modified]" */
+            doc_title_format = _("%s [modified on disk] [modified]");
+        else if (status & MOO_EDIT_DELETED)
+            /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [deleted] [modified]" */
+            doc_title_format = _("%s [deleted] [modified]");
+        else
+            /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified]" */
+            doc_title_format = _("%s [modified]");
+    }
 
-    if (status & MOO_EDIT_MODIFIED_ON_DISK)
-        g_string_append (title, " [modified on disk]");
-    else if (status & MOO_EDIT_DELETED)
-        g_string_append (title, " [deleted]");
-
-    if (modified)
-        g_string_append (title, " [modified]");
+    g_string_append_printf (title, doc_title_format, name);
 
     gtk_window_set_title (GTK_WINDOW (window), title->str);
     g_string_free (title, TRUE);
@@ -3016,7 +3035,7 @@ create_lang_action (MooEditWindow      *window)
     langs = moo_lang_mgr_get_available_langs (lang_mgr);
     langs = g_slist_sort (langs, (GCompareFunc) cmp_langs);
 
-    action = moo_menu_action_new (LANG_ACTION_ID, "Language");
+    action = moo_menu_action_new (LANG_ACTION_ID, _("_Language"));
     menu_mgr = moo_menu_action_get_mgr (MOO_MENU_ACTION (action));
 
     moo_menu_mgr_append (menu_mgr, NULL,
@@ -3552,7 +3571,7 @@ moo_edit_window_get_output (MooEditWindow *window)
     {
         scrolled_window = gtk_scrolled_window_new (NULL, NULL);
         gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
-                                        GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+                                        GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
 
         cmd_view = moo_cmd_view_new ();
         moo_text_view_set_font_from_string (MOO_TEXT_VIEW (cmd_view), "Monospace");

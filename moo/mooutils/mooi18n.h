@@ -37,6 +37,7 @@ const char *moo_gettext (const char *string);
 #undef gettext
 #undef dgettext
 #undef dcgettext
+#undef ngettext
 #undef bindtextdomain
 #undef bind_textdomain_codeset
 #define _(String) (String)
@@ -48,6 +49,8 @@ const char *moo_gettext (const char *string);
 #define gettext(String) (String)
 #define dgettext(Domain,String) (String)
 #define dcgettext(Domain,String,Type) (String)
+#define ngettext(str,str_pl,n) ((n) > 1 ? (str_pl) ? (str))
+#define dngettext(dom,str,str_pl,n) ((n) > 1 ? (str_pl) ? (str))
 #define bindtextdomain(Domain,Directory) (Domain)
 #define bind_textdomain_codeset(Domain,Codeset) (Codeset)
 

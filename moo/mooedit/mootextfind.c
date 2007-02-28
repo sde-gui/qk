@@ -468,8 +468,7 @@ moo_find_run (MooFind        *find,
 
         if (!search_for[0])
         {
-            print_message (msg_func, data,
-                           "No search term entered");
+            print_message (msg_func, data, _("No search term entered"));
             return FALSE;
         }
 
@@ -772,10 +771,12 @@ moo_text_view_run_find (GtkTextView    *view,
         scroll_to_found (view);
 
         if (wrapped)
-            print_message (msg_func, data,
-                           "Search hit %s, continuing at %s",
-                           flags & MOO_FIND_BACKWARDS ? "top" : "bottom",
-                           flags & MOO_FIND_BACKWARDS ? "bottom" : "top");
+        {
+            if (flags & MOO_FIND_BACKWARDS)
+                print_message (msg_func, data, _("Search hit top, continuing at bottom"));
+            else
+                print_message (msg_func, data, _("Search hit bottom, continuing at top"));
+        }
     }
     else
     {
@@ -783,7 +784,7 @@ moo_text_view_run_find (GtkTextView    *view,
         gtk_text_buffer_get_iter_at_mark (buffer, &insert,
                                           gtk_text_buffer_get_insert (buffer));
         gtk_text_buffer_place_cursor (buffer, &insert);
-        print_message (msg_func, data, "Pattern not found: %s", text);
+        print_message (msg_func, data, _("Pattern not found: %s"), text);
     }
 
     g_free (text);
@@ -871,15 +872,15 @@ moo_text_view_run_find_current_word (GtkTextView    *view,
                 gtk_text_iter_equal (&word_end, &match_end))
             {
                 print_message (msg_func, data,
-                               "Found single instance of pattern '%s'",
+                               _("Found single instance of pattern '%s'"),
                                last_search);
             }
             else
             {
-                print_message (msg_func, data,
-                               "Search hit %s, continuing at %s",
-                               forward ? "bottom" : "top",
-                               forward ? "top" : "bottom");
+                if (forward)
+                    print_message (msg_func, data, _("Search hit bottom, continuing at top"));
+                else
+                    print_message (msg_func, data, _("Search hit top, continuing at bottom"));
             }
         }
     }
@@ -889,7 +890,7 @@ moo_text_view_run_find_current_word (GtkTextView    *view,
         gtk_text_buffer_get_iter_at_mark (buffer, &insert,
                                           gtk_text_buffer_get_insert (buffer));
         gtk_text_buffer_place_cursor (buffer, &insert);
-        print_message (msg_func, data, "Pattern not found: %s", last_search);
+        print_message (msg_func, data, _("Pattern not found: %s"), last_search);
     }
 }
 
@@ -957,7 +958,7 @@ moo_text_view_run_find_next (GtkTextView    *view,
         scroll_to_found (view);
         if (wrapped)
             print_message (msg_func, data,
-                           "Search hit bottom, continuing at top");
+                           _("Search hit bottom, continuing at top"));
     }
     else
     {
@@ -965,7 +966,7 @@ moo_text_view_run_find_next (GtkTextView    *view,
         gtk_text_buffer_get_iter_at_mark (buffer, &insert,
                                           gtk_text_buffer_get_insert (buffer));
         gtk_text_buffer_place_cursor (buffer, &insert);
-        print_message (msg_func, data, "Pattern not found: %s", last_search);
+        print_message (msg_func, data, _("Pattern not found: %s"), last_search);
     }
 }
 
@@ -1034,7 +1035,7 @@ moo_text_view_run_find_prev (GtkTextView    *view,
 
         if (wrapped)
             print_message (msg_func, data,
-                           "Search hit top, continuing at bottom");
+                           _("Search hit top, continuing at bottom"));
     }
     else
     {
@@ -1042,7 +1043,7 @@ moo_text_view_run_find_prev (GtkTextView    *view,
         gtk_text_buffer_get_iter_at_mark (buffer, &insert,
                                           gtk_text_buffer_get_insert (buffer));
         gtk_text_buffer_place_cursor (buffer, &insert);
-        print_message (msg_func, data, "Pattern not found: %s", last_search);
+        print_message (msg_func, data, _("Pattern not found: %s"), last_search);
     }
 }
 
@@ -1076,11 +1077,18 @@ replaced_n_message (guint          n,
                     gpointer       data)
 {
     if (!n)
-        print_message (msg_func, data, "No replacement made");
-    else if (n == 1)
-        print_message (msg_func, data, "1 replacement made");
+    {
+        print_message (msg_func, data, _("No replacement made"));
+    }
     else
-        print_message (msg_func, data, "%d replacements made", n);
+    {
+        print_message (msg_func, data,
+                       dngettext (GETTEXT_PACKAGE,
+                                  "%u replacement made",
+                                  "%u replacements made",
+                                  n),
+                       n);
+    }
 }
 
 

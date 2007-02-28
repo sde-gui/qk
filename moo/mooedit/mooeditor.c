@@ -30,6 +30,7 @@
 #include "mooutils/moofilewatch.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/moostock.h"
+#include "mooutils/mooi18n.h"
 #include <string.h>
 
 
@@ -943,7 +944,7 @@ create_recent_action (MooEditWindow  *window)
 
     g_return_val_if_fail (editor != NULL, NULL);
 
-    action = moo_menu_action_new (RECENT_ACTION_ID, "Open Recent");
+    action = moo_menu_action_new (RECENT_ACTION_ID, _("Open Recent"));
     mgr = moo_history_list_get_menu_mgr (editor->priv->history);
     moo_menu_mgr_set_show_tooltips (mgr, TRUE);
     moo_menu_action_set_mgr (MOO_MENU_ACTION (action), mgr);

@@ -141,6 +141,14 @@ fill_encoding_group (EncodingGroup *group,
 static void
 sort_encoding_groups (EncodingsManager *mgr)
 {
+    /* Translators: 012345 denotes order in which character encoding
+       groups should appear, e.g. 543210 means inverse order.
+       0 - "West European",
+       1 - "East European",
+       2 - "East Asian",
+       3 - "SE & SW Asian",
+       4 - "Middle Eastern",
+       5 - "Unicode" */
     const char *order = N_("012345");
     const char *new_order_s;
     int new_order[N_ENCODING_GROUPS] = {0, 0, 0, 0, 0, 0};

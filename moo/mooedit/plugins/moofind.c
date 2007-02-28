@@ -879,10 +879,16 @@ command_exit (MooLineView *view,
 
         /* xargs exits with code 123 if it's command exited with status 1-125*/
         if (cmd == CMD_GREP && (!exit_code || exit_code == 123))
-            msg = g_strdup_printf (_("*** %d matches found ***"),
+            msg = g_strdup_printf (dngettext (GETTEXT_PACKAGE,
+                                              "*** %u match found ***",
+                                              "*** %u matches found ***",
+                                              stuff->match_count),
                                    stuff->match_count);
         else if (cmd == CMD_FIND && !exit_code)
-            msg = g_strdup_printf (_("*** %d files found ***"),
+            msg = g_strdup_printf (dngettext (GETTEXT_PACKAGE,
+                                              "*** %u file found ***",
+                                              "*** %u files found ***",
+                                              stuff->match_count),
                                    stuff->match_count);
         else
             return FALSE;

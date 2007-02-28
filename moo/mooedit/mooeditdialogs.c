@@ -149,7 +149,7 @@ _moo_edit_save_changes_dialog (MooEdit *edit)
         GTK_BUTTONS_NONE,
         name ?
             _("Save changes to document \"%s\" before closing?") :
-            _("Save changes to document before closing?"),
+            _("Save changes to the document before closing?"),
         name));
 
     gtk_message_dialog_format_secondary_text (
@@ -161,7 +161,7 @@ _moo_edit_save_changes_dialog (MooEdit *edit)
 
         question = name ?
             g_strdup_printf (_("Save changes to document \"%s\" before closing?"), name) :
-            g_strdup (_("Save changes to document before closing?"));
+            g_strdup (_("Save changes to the document before closing?"));
         markup = g_markup_printf_escaped ("<span weight=\"bold\" size=\"larger\">%s</span>\n%s",
                                           question,
                                           _("If you don't save, changes will be discarded"));
@@ -182,7 +182,7 @@ _moo_edit_save_changes_dialog (MooEdit *edit)
 
         question = name ?
             g_strdup_printf (_("Save changes to document \"%s\" before closing?"), name) :
-            g_strdup (_("Save changes to document before closing?"));
+            g_strdup (_("Save changes to the document before closing?"));
 
         dialog = GTK_DIALOG (gtk_message_dialog_new (
             GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
@@ -197,6 +197,7 @@ _moo_edit_save_changes_dialog (MooEdit *edit)
 #endif /* !GTK_CHECK_VERSION(2,4,0) */
 
     gtk_dialog_add_buttons (dialog,
+        /* Translators: this is a button label (it's "Do Not Save" in some toolkits), try to keep it short */
         _("Close _without Saving"), GTK_RESPONSE_NO,
         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
         GTK_STOCK_SAVE, GTK_RESPONSE_YES,
@@ -427,9 +428,15 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
 #endif /* GTK_CHECK_VERSION(2,6,0) */
 
     label = moo_glade_xml_get_widget (xml, "label");
-    /* %u is number of documents greater than 1 */
-    question = g_strdup_printf (_("There are %u documents with unsaved changes. "
-                                  "Save changes before closing?"), g_slist_length (docs));
+    question = g_strdup_printf (dngettext (GETTEXT_PACKAGE,
+                                           /* Translators: number of documents here is always greater than one, so
+                                              ignore singular form (which is simply copy of the plural here) */
+                                           "There are %u documents with unsaved changes. "
+                                            "Save changes before closing?",
+                                           "There are %u documents with unsaved changes. "
+                                            "Save changes before closing?",
+                                           g_slist_length (docs)),
+                                g_slist_length (docs));
     msg = g_markup_printf_escaped ("<span weight=\"bold\" size=\"larger\">%s</span>",
                                    question);
     gtk_label_set_markup (GTK_LABEL (label), msg);
@@ -507,7 +514,7 @@ _moo_edit_save_error_enc_dialog (GtkWidget  *widget,
         g_critical ("%s: could not convert filename '%s' to utf8", G_STRLOC, filename);
 
     if (filename_utf8)
-        /* Could not save file foo.txt */
+        /* Error saving file foo.txt */
         msg = g_strdup_printf (_("Error saving file\n%s"), filename_utf8);
     else
         msg = g_strdup (_("Error saving file"));

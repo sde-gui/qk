@@ -18,6 +18,7 @@ moo/mooedit/glade/statusbar.glade
 
 moo/mooedit/medit-ui.xml
 moo/mooedit/mooedit-ui.xml
+moo/mooedit/mooeditor.c
 moo/mooedit/moocommand-exe-unix.c
 moo/mooedit/moocommand-script.c
 moo/mooedit/mooeditdialogs.c
@@ -26,6 +27,7 @@ moo/mooedit/mootextstylescheme.c
 moo/mooedit/moousertools.c
 moo/mooedit/moousertools-prefs.c
 moo/mooedit/mooeditfileops.c
+moo/mooedit/mootextfind.c
 
 moo/mooedit/language-specs/moo.xml.in
 
@@ -43,18 +45,12 @@ moo/moofileview/glade/moofileprops.glade
 moo/moofileview/moofileview.c
 moo/moofileview/moofileview-ui.xml
 
+moo/moopython/plugins/pycmd.py
 moo/moopython/plugins/python.ini.desktop.in.in
 moo/moopython/plugins/python.py
 moo/moopython/plugins/terminal.ini.desktop.in.in
 moo/moopython/plugins/terminal.py
 moo/moopython/plugins/medit/runpython.py
-moo/moopython/plugins/pyproject/mprj/config/view.py
-moo/moopython/plugins/pyproject/mprj/optdialog.py
-moo/moopython/plugins/pyproject/mprj/simple.glade
-moo/moopython/plugins/pyproject/projects/pyproj/config.py
-moo/moopython/plugins/pyproject/projects/pyproj/optdialog.py
-moo/moopython/plugins/pyproject/projects/pyproj/options.glade
-moo/moopython/plugins/pyproject/projects/python.py
 
 moo/mooscript/mooscript-yacc.c
 
