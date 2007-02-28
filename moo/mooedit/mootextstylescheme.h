@@ -33,12 +33,15 @@ const char         *moo_text_style_scheme_get_id        (MooTextStyleScheme *sch
 const char         *moo_text_style_scheme_get_name      (MooTextStyleScheme *scheme);
 
 /* result must be freed with moo_text_style_free */
-MooTextStyle       *moo_text_style_scheme_get_bracket_match_style
+MooTextStyle       *_moo_text_style_scheme_get_bracket_match_style
                                                         (MooTextStyleScheme *scheme);
-MooTextStyle       *moo_text_style_scheme_get_bracket_mismatch_style
+MooTextStyle       *_moo_text_style_scheme_get_bracket_mismatch_style
                                                         (MooTextStyleScheme *scheme);
 void                _moo_text_style_scheme_apply        (MooTextStyleScheme *scheme,
                                                          GtkWidget          *widget);
+/* result must be freed with moo_text_style_free */
+MooTextStyle       *_moo_text_style_scheme_lookup_style (MooTextStyleScheme *scheme,
+                                                         const char         *name);
 
 
 G_END_DECLS

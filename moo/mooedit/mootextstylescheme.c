@@ -87,7 +87,7 @@ moo_text_style_scheme_get_name (MooTextStyleScheme *scheme)
 
 
 MooTextStyle *
-moo_text_style_scheme_get_bracket_match_style (MooTextStyleScheme *scheme)
+_moo_text_style_scheme_get_bracket_match_style (MooTextStyleScheme *scheme)
 {
     g_return_val_if_fail (MOO_IS_TEXT_STYLE_SCHEME (scheme), NULL);
     return (MooTextStyle*) gtk_source_style_scheme_get_style (GTK_SOURCE_STYLE_SCHEME (scheme),
@@ -96,11 +96,22 @@ moo_text_style_scheme_get_bracket_match_style (MooTextStyleScheme *scheme)
 
 
 MooTextStyle *
-moo_text_style_scheme_get_bracket_mismatch_style (MooTextStyleScheme *scheme)
+_moo_text_style_scheme_get_bracket_mismatch_style (MooTextStyleScheme *scheme)
 {
     g_return_val_if_fail (MOO_IS_TEXT_STYLE_SCHEME (scheme), NULL);
     return (MooTextStyle*) gtk_source_style_scheme_get_style (GTK_SOURCE_STYLE_SCHEME (scheme),
                                                               STYLE_BRACKET_MISMATCH);
+}
+
+
+MooTextStyle *
+_moo_text_style_scheme_lookup_style (MooTextStyleScheme *scheme,
+                                     const char         *name)
+{
+    g_return_val_if_fail (MOO_IS_TEXT_STYLE_SCHEME (scheme), NULL);
+    g_return_val_if_fail (name != NULL, NULL);
+    return (MooTextStyle*) gtk_source_style_scheme_get_style (GTK_SOURCE_STYLE_SCHEME (scheme),
+                                                              name);
 }
 
 

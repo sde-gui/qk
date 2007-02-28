@@ -980,11 +980,11 @@ _moo_text_buffer_set_style_scheme (MooTextBuffer      *buffer,
         g_object_unref (buffer->priv->style_scheme);
     buffer->priv->style_scheme = g_object_ref (scheme);
 
-    style = moo_text_style_scheme_get_bracket_match_style (scheme);
+    style = _moo_text_style_scheme_get_bracket_match_style (scheme);
     moo_text_buffer_set_bracket_match_style (buffer, style);
     moo_text_style_free (style);
 
-    style = moo_text_style_scheme_get_bracket_mismatch_style (scheme);
+    style = _moo_text_style_scheme_get_bracket_mismatch_style (scheme);
     moo_text_buffer_set_bracket_mismatch_style (buffer, style);
     moo_text_style_free (style);
 
