@@ -3,7 +3,7 @@
 #
 AC_DEFUN([MOO_DEFINE_VERSIONS],[
 m4_toupper($1)_VERSION=\"$2.$3.$4\"
-m4_toupper($1)_VERSION_UNQOTED=$2.$3.$4
+m4_toupper($1)_VERSION_UNQUOTED=$2.$3.$4
 m4_toupper($1)_MAJOR_VERSION=$2
 m4_toupper($1)_MINOR_VERSION=$3
 m4_toupper($1)_MICRO_VERSION=$4
