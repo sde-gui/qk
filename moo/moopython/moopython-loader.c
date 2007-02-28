@@ -20,6 +20,7 @@
 
 #include "moopython/moopython-loader.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-debug.h"
 
 #define LIBDIR "lib"
 
@@ -174,7 +175,9 @@ load_python_module (const char *module_file,
                     G_GNUC_UNUSED const char *ini_file,
                     G_GNUC_UNUSED gpointer data)
 {
-    Py_XDECREF (load_file (module_file));
+    PyObject *mod;
+    mod = load_file (module_file);
+    Py_XDECREF (mod);
 }
 
 
