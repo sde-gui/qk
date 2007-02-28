@@ -28,21 +28,21 @@ void            _moo_command_init                   (void);
 MooCommandData *_moo_command_parse_item             (MooKeyFileItem     *item,
                                                      const char         *name,
                                                      const char         *filename,
-                                                     MooCommandType    **type,
+                                                     MooCommandFactory **factory,
                                                      char              **options);
 void            _moo_command_format_item            (MooKeyFileItem     *item,
                                                      MooCommandData     *data,
-                                                     MooCommandType     *type,
+                                                     MooCommandFactory  *factory,
                                                      char               *options);
 
-GtkWidget      *_moo_command_type_create_widget     (MooCommandType     *type);
-void            _moo_command_type_load_data         (MooCommandType     *type,
+GtkWidget      *_moo_command_factory_create_widget  (MooCommandFactory  *factory);
+void            _moo_command_factory_load_data      (MooCommandFactory  *factory,
                                                      GtkWidget          *widget,
                                                      MooCommandData     *data);
-gboolean        _moo_command_type_save_data         (MooCommandType     *type,
+gboolean        _moo_command_factory_save_data      (MooCommandFactory  *factory,
                                                      GtkWidget          *widget,
                                                      MooCommandData     *data);
-gboolean        _moo_command_type_data_equal        (MooCommandType     *type,
+gboolean        _moo_command_factory_data_equal     (MooCommandFactory  *factory,
                                                      MooCommandData     *data1,
                                                      MooCommandData     *data2);
 

@@ -20,18 +20,18 @@
 
 typedef struct {
     MooCommandData *data;
-    MooCommandType *type;
+    MooCommandFactory *factory;
     gboolean changed;
 } Data;
 
 struct _MooCommandDisplay {
     MooTreeHelper base;
 
-    GtkComboBox *type_combo;
+    GtkComboBox *factory_combo;
     GtkNotebook *notebook;
 
     Data *data;
-    int n_types;
+    int n_factories;
     int active;
     int original;
 };
@@ -50,7 +50,7 @@ static void     combo_changed   (MooCommandDisplay *display);
 static void
 block_combo (MooCommandDisplay *display)
 {
-    g_signal_handlers_block_by_func (display->type_combo,
+    g_signal_handlers_block_by_func (display->factory_combo,
                                      (gpointer) combo_changed,
                                      display);
 }
@@ -59,7 +59,7 @@ block_combo (MooCommandDisplay *display)
 static void
 unblock_combo (MooCommandDisplay *display)
 {
-    g_signal_handlers_unblock_by_func (display->type_combo,
+    g_signal_handlers_unblock_by_func (display->factory_combo,
                                        (gpointer) combo_changed,
                                        display);
 }
@@ -70,29 +70,29 @@ combo_changed (MooCommandDisplay *display)
 {
     GtkWidget *widget;
     int index;
-    MooCommandType *type;
+    MooCommandFactory *factory;
 
-    index = gtk_combo_box_get_active (display->type_combo);
+    index = gtk_combo_box_get_active (display->factory_combo);
     g_return_if_fail (index >= 0);
 
     if (index == display->active)
         return;
 
     widget = gtk_notebook_get_nth_page (display->notebook, display->active);
-    if (_moo_command_type_save_data (display->data[display->active].type, widget,
-                                     display->data[display->active].data))
+    if (_moo_command_factory_save_data (display->data[display->active].factory, widget,
+                                        display->data[display->active].data))
         display->data[display->active].changed = TRUE;
 
     display->active = index;
-    type = display->data[index].type;
-    g_return_if_fail (type != NULL);
+    factory = display->data[index].factory;
+    g_return_if_fail (factory != NULL);
 
     if (!display->data[index].data)
-        display->data[index].data = moo_command_data_new (type->n_keys);
+        display->data[index].data = moo_command_data_new (factory->n_keys);
 
     gtk_notebook_set_current_page (display->notebook, index);
     widget = gtk_notebook_get_nth_page (display->notebook, index);
-    _moo_command_type_load_data (type, widget, display->data[index].data);
+    _moo_command_factory_load_data (factory, widget, display->data[index].data);
 }
 
 
@@ -101,7 +101,7 @@ combo_set_active (MooCommandDisplay  *display,
                   int                 index)
 {
     block_combo (display);
-    gtk_combo_box_set_active (display->type_combo, index);
+    gtk_combo_box_set_active (display->factory_combo, index);
     unblock_combo (display);
 
     if (index < 0)
@@ -117,18 +117,18 @@ combo_set_active (MooCommandDisplay  *display,
 
 
 static int
-combo_find_type (MooCommandDisplay  *display,
-                 MooCommandType     *type)
+combo_find_factory (MooCommandDisplay *display,
+                    MooCommandFactory *factory)
 {
     int i;
 
-    g_return_val_if_fail (!type || MOO_IS_COMMAND_TYPE (type), -1);
+    g_return_val_if_fail (!factory || MOO_IS_COMMAND_FACTORY (factory), -1);
 
-    if (!type)
+    if (!factory)
         return -1;
 
-    for (i = 0; i < display->n_types; ++i)
-        if (display->data[i].type == type)
+    for (i = 0; i < display->n_factories; ++i)
+        if (display->data[i].factory == factory)
             return i;
 
     g_return_val_if_reached (-1);
@@ -137,17 +137,17 @@ combo_find_type (MooCommandDisplay  *display,
 
 void
 _moo_command_display_set (MooCommandDisplay  *display,
-                          MooCommandType     *type,
+                          MooCommandFactory  *factory,
                           MooCommandData     *data)
 {
     int index;
     GtkWidget *widget;
 
     g_return_if_fail (MOO_IS_COMMAND_DISPLAY (display));
-    g_return_if_fail (!type || MOO_IS_COMMAND_TYPE (type));
-    g_return_if_fail (!type == !data);
+    g_return_if_fail (!factory || MOO_IS_COMMAND_FACTORY (factory));
+    g_return_if_fail (!factory == !data);
 
-    for (index = 0; index < display->n_types; ++index)
+    for (index = 0; index < display->n_factories; ++index)
     {
         display->data[index].changed = FALSE;
         if (display->data[index].data)
@@ -155,7 +155,7 @@ _moo_command_display_set (MooCommandDisplay  *display,
         display->data[index].data = NULL;
     }
 
-    index = combo_find_type (display, type);
+    index = combo_find_factory (display, factory);
 
     display->active = index;
     display->original = index;
@@ -165,14 +165,14 @@ _moo_command_display_set (MooCommandDisplay  *display,
     {
         display->data[index].data = moo_command_data_ref (data);
         widget = gtk_notebook_get_nth_page (display->notebook, index);
-        _moo_command_type_load_data (type, widget, data);
+        _moo_command_factory_load_data (factory, widget, data);
     }
 }
 
 
 gboolean
 _moo_command_display_get (MooCommandDisplay  *display,
-                          MooCommandType    **type_p,
+                          MooCommandFactory **factory_p,
                           MooCommandData    **data_p)
 {
     GtkWidget *widget;
@@ -186,13 +186,13 @@ _moo_command_display_get (MooCommandDisplay  *display,
     data = &display->data[display->active];
     widget = gtk_notebook_get_nth_page (display->notebook, display->active);
 
-    if (_moo_command_type_save_data (data->type, widget, data->data))
+    if (_moo_command_factory_save_data (data->factory, widget, data->data))
         data->changed = TRUE;
 
     if (display->active == display->original && !data->changed)
         return FALSE;
 
-    *type_p = data->type;
+    *factory_p = data->factory;
     *data_p = data->data;
     data->changed = FALSE;
     display->original = display->active;
@@ -202,42 +202,42 @@ _moo_command_display_get (MooCommandDisplay  *display,
 
 
 static void
-init_type_combo (MooCommandDisplay *display,
-                 GtkComboBox       *combo,
-                 GtkNotebook       *notebook)
+init_factory_combo (MooCommandDisplay *display,
+                    GtkComboBox       *combo,
+                    GtkNotebook       *notebook)
 {
     GtkListStore *store;
-    GSList *types;
+    GSList *factories;
     GtkCellRenderer *cell;
 
     g_return_if_fail (MOO_IS_COMMAND_DISPLAY (display));
     g_return_if_fail (GTK_IS_COMBO_BOX (combo));
     g_return_if_fail (GTK_IS_NOTEBOOK (notebook));
 
-    display->type_combo = combo;
+    display->factory_combo = combo;
     display->notebook = notebook;
 
     cell = gtk_cell_renderer_text_new ();
-    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (display->type_combo), cell, TRUE);
-    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (display->type_combo), cell, "text", 0, NULL);
+    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (display->factory_combo), cell, TRUE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (display->factory_combo), cell, "text", 0, NULL);
 
     store = gtk_list_store_new (1, G_TYPE_STRING);
-    gtk_combo_box_set_model (display->type_combo, GTK_TREE_MODEL (store));
+    gtk_combo_box_set_model (display->factory_combo, GTK_TREE_MODEL (store));
 
-    types = moo_command_list_types ();
+    factories = moo_command_list_factories ();
     display->active = -1;
     display->original = -1;
-    display->n_types = 0;
-    display->data = g_new0 (Data, g_slist_length (types));
+    display->n_factories = 0;
+    display->data = g_new0 (Data, g_slist_length (factories));
 
-    while (types)
+    while (factories)
     {
         GtkTreeIter iter;
-        MooCommandType *cmd_type;
+        MooCommandFactory *cmd_factory;
         GtkWidget *widget;
 
-        cmd_type = types->data;
-        widget = _moo_command_type_create_widget (cmd_type);
+        cmd_factory = factories->data;
+        widget = _moo_command_factory_create_widget (cmd_factory);
 
         if (widget)
         {
@@ -245,16 +245,16 @@ init_type_combo (MooCommandDisplay *display,
             gtk_notebook_append_page (display->notebook, widget, NULL);
 
             gtk_list_store_append (store, &iter);
-            gtk_list_store_set (store, &iter, 0, cmd_type->display_name, -1);
+            gtk_list_store_set (store, &iter, 0, cmd_factory->display_name, -1);
 
-            display->data[display->n_types].type = cmd_type;
-            display->n_types++;
+            display->data[display->n_factories].factory = cmd_factory;
+            display->n_factories++;
         }
 
-        types = g_slist_delete_link (types, types);
+        factories = g_slist_delete_link (factories, factories);
     }
 
-    g_signal_connect_swapped (display->type_combo, "changed",
+    g_signal_connect_swapped (display->factory_combo, "changed",
                               G_CALLBACK (combo_changed), display);
 
     g_object_unref (store);
@@ -262,7 +262,7 @@ init_type_combo (MooCommandDisplay *display,
 
 
 MooCommandDisplay *
-_moo_command_display_new (GtkComboBox        *type_combo,
+_moo_command_display_new (GtkComboBox        *factory_combo,
                           GtkNotebook        *notebook,
                           GtkWidget          *treeview,
                           GtkWidget          *new_btn,
@@ -275,7 +275,7 @@ _moo_command_display_new (GtkComboBox        *type_combo,
     display = g_object_new (MOO_TYPE_COMMAND_DISPLAY, NULL);
     _moo_tree_helper_connect (MOO_TREE_HELPER (display), treeview,
                               new_btn, delete_btn, up_btn, down_btn);
-    init_type_combo (display, type_combo, notebook);
+    init_factory_combo (display, factory_combo, notebook);
 
     MOO_OBJECT_REF_SINK (display);
     return display;
@@ -291,7 +291,7 @@ moo_command_display_dispose (GObject *object)
     {
         int i;
 
-        for (i = 0; i < display->n_types; ++i)
+        for (i = 0; i < display->n_factories; ++i)
             if (display->data[i].data)
                 moo_command_data_unref (display->data[i].data);
 

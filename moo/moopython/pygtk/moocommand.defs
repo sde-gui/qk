@@ -7,11 +7,11 @@
   (gtype-id "MOO_TYPE_COMMAND_CONTEXT")
 )
 
-(define-object CommandType
+(define-object CommandFactory
   (in-module "Moo")
   (parent "GObject")
-  (c-name "MooCommandType")
-  (gtype-id "MOO_TYPE_COMMAND_TYPE")
+  (c-name "MooCommandFactory")
+  (gtype-id "MOO_TYPE_COMMAND_FACTORY")
   (fields
     '("char*" "name")
     '("char*" "display_name")
@@ -59,20 +59,20 @@
   )
 )
 
-(define-function command_type_register
-  (c-name "moo_command_type_register")
+(define-function command_factory_register
+  (c-name "moo_command_factory_register")
   (return-type "none")
   (parameters
     '("const-char*" "name")
     '("const-char*" "display_name")
-    '("MooCommandType*" "type")
+    '("MooCommandFactory*" "factory")
     '("strv" "data_keys" (null-ok))
   )
 )
 
-(define-function command_type_lookup
-  (c-name "moo_command_type_lookup")
-  (return-type "MooCommandType*")
+(define-function command_factory_lookup
+  (c-name "moo_command_factory_lookup")
+  (return-type "MooCommandFactory*")
   (parameters
     '("const-char*" "name")
   )
@@ -80,7 +80,7 @@
 
 
 (define-virtual create_command
-  (of-object "MooCommandType")
+  (of-object "MooCommandFactory")
   (return-type "MooCommand*")
   (parameters
     '("MooCommandData*" "data")
@@ -89,12 +89,12 @@
 )
 
 (define-virtual create_widget
-  (of-object "MooCommandType")
+  (of-object "MooCommandFactory")
   (return-type "GtkWidget*")
 )
 
 (define-virtual load_data
-  (of-object "MooCommandType")
+  (of-object "MooCommandFactory")
   (return-type "none")
   (parameters
     '("GtkWidget*" "widget")
@@ -103,11 +103,20 @@
 )
 
 (define-virtual save_data
-  (of-object "MooCommandType")
+  (of-object "MooCommandFactory")
   (return-type "gboolean")
   (parameters
     '("GtkWidget*" "widget")
     '("MooCommandData*" "data")
+  )
+)
+
+(define-virtual data_equal
+  (of-object "MooCommandFactory")
+  (return-type "gboolean")
+  (parameters
+    '("MooCommandData*" "data1")
+    '("MooCommandData*" "data2")
   )
 )
 

@@ -5,7 +5,8 @@ plugins_libdir = ${MOO_PLUGINS_DIR}/lib
 
 ini_in_in_files =			\
 	terminal.ini.desktop.in.in	\
-	python.ini.desktop.in.in
+	python.ini.desktop.in.in	\
+	pycmd.ini.desktop.in.in
 
 ini_in_files = $(ini_in_in_files:.ini.desktop.in.in=.ini.desktop.in)
 ini_files = $(ini_in_files:.ini.desktop.in=.ini)
@@ -16,7 +17,8 @@ CLEANFILES = $(ini_files) $(ini_in_files)
 
 plugins =			\
 	terminal.py		\
-	python.py
+	python.py		\
+	pycmd.py
 
 moopython_plugins_DATA =	\
 	$(ini_files)		\

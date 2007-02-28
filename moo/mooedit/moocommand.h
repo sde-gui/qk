@@ -34,12 +34,12 @@ G_BEGIN_DECLS
 #define MOO_IS_COMMAND_CONTEXT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_COMMAND_CONTEXT))
 #define MOO_COMMAND_CONTEXT_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_COMMAND_CONTEXT, MooCommandContextClass))
 
-#define MOO_TYPE_COMMAND_TYPE               (moo_command_type_get_type ())
-#define MOO_COMMAND_TYPE(object)            (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_COMMAND_TYPE, MooCommandType))
-#define MOO_COMMAND_TYPE_CLASS(klass)       (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_COMMAND_TYPE, MooCommandTypeClass))
-#define MOO_IS_COMMAND_TYPE(object)         (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_COMMAND_TYPE))
-#define MOO_IS_COMMAND_TYPE_CLASS(klass)    (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_COMMAND_TYPE))
-#define MOO_COMMAND_TYPE_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_COMMAND_TYPE, MooCommandTypeClass))
+#define MOO_TYPE_COMMAND_FACTORY            (moo_command_factory_get_type ())
+#define MOO_COMMAND_FACTORY(object)         (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_COMMAND_FACTORY, MooCommandFactory))
+#define MOO_COMMAND_FACTORY_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_COMMAND_FACTORY, MooCommandFactoryClass))
+#define MOO_IS_COMMAND_FACTORY(object)      (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_COMMAND_FACTORY))
+#define MOO_IS_COMMAND_FACTORY_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_COMMAND_FACTORY))
+#define MOO_COMMAND_FACTORY_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_COMMAND_FACTORY, MooCommandFactoryClass))
 
 #define MOO_TYPE_COMMAND_DATA               (moo_command_data_get_type ())
 
@@ -49,8 +49,8 @@ typedef struct _MooCommandContext           MooCommandContext;
 typedef struct _MooCommandContextPrivate    MooCommandContextPrivate;
 typedef struct _MooCommandContextClass      MooCommandContextClass;
 typedef struct _MooCommandData              MooCommandData;
-typedef struct _MooCommandType              MooCommandType;
-typedef struct _MooCommandTypeClass         MooCommandTypeClass;
+typedef struct _MooCommandFactory           MooCommandFactory;
+typedef struct _MooCommandFactoryClass      MooCommandFactoryClass;
 
 typedef enum /*< flags >*/
 {
@@ -86,7 +86,7 @@ struct _MooCommandClass {
                                      MooCommandContext  *ctx);
 };
 
-struct _MooCommandType {
+struct _MooCommandFactory {
     GObject base;
     char *name;
     char *display_name;
@@ -94,20 +94,20 @@ struct _MooCommandType {
     guint n_keys;
 };
 
-struct _MooCommandTypeClass {
+struct _MooCommandFactoryClass {
     GObjectClass base_class;
 
-    MooCommand *(*create_command) (MooCommandType    *type,
+    MooCommand *(*create_command) (MooCommandFactory *factory,
                                    MooCommandData    *data,
                                    const char        *options);
-    GtkWidget  *(*create_widget)  (MooCommandType    *type);
-    void        (*load_data)      (MooCommandType    *type,
+    GtkWidget  *(*create_widget)  (MooCommandFactory *factory);
+    void        (*load_data)      (MooCommandFactory *factory,
                                    GtkWidget         *widget,
                                    MooCommandData    *data);
-    gboolean    (*save_data)      (MooCommandType    *type,
+    gboolean    (*save_data)      (MooCommandFactory *factory,
                                    GtkWidget         *widget,
                                    MooCommandData    *data);
-    gboolean    (*data_equal)     (MooCommandType    *type,
+    gboolean    (*data_equal)     (MooCommandFactory *factory,
                                    MooCommandData    *data1,
                                    MooCommandData    *data2);
 };
@@ -116,7 +116,7 @@ struct _MooCommandTypeClass {
 GType               moo_command_get_type            (void) G_GNUC_CONST;
 GType               moo_command_context_get_type    (void) G_GNUC_CONST;
 GType               moo_command_data_get_type       (void) G_GNUC_CONST;
-GType               moo_command_type_get_type       (void) G_GNUC_CONST;
+GType               moo_command_factory_get_type    (void) G_GNUC_CONST;
 
 MooCommand         *moo_command_create              (const char         *name,
                                                      const char         *options,
@@ -136,13 +136,13 @@ MooCommandOptions   moo_command_get_options         (MooCommand         *cmd);
 
 MooCommandOptions   moo_command_options_parse       (const char         *string);
 
-void                moo_command_type_register       (const char         *name,
+void                moo_command_factory_register    (const char         *name,
                                                      const char         *display_name,
-                                                     MooCommandType     *type,
+                                                     MooCommandFactory  *factory,
                                                      char              **data_keys);
-MooCommandType     *moo_command_type_lookup         (const char         *name);
-/* returns list of MooCommandType instances, list should be freed */
-GSList             *moo_command_list_types          (void);
+MooCommandFactory  *moo_command_factory_lookup      (const char         *name);
+/* returns list of MooCommandFactory instances, list should be freed */
+GSList             *moo_command_list_factories      (void);
 
 
 MooCommandData     *moo_command_data_new            (guint               len);

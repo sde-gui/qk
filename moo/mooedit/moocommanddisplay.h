@@ -42,10 +42,10 @@ MooCommandDisplay  *_moo_command_display_new        (GtkComboBox        *type_co
                                                      GtkWidget          *down_btn);
 
 void                _moo_command_display_set        (MooCommandDisplay  *display,
-                                                     MooCommandType     *type,
+                                                     MooCommandFactory  *factory,
                                                      MooCommandData     *data);
 gboolean            _moo_command_display_get        (MooCommandDisplay  *display,
-                                                     MooCommandType    **type,
+                                                     MooCommandFactory **factory,
                                                      MooCommandData    **data);
 
 

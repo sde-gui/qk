@@ -52,7 +52,7 @@ typedef struct {
     char                *options;
     MooUserToolPosition  position;
     MooUserToolOSType    os_type;
-    MooCommandType      *cmd_type;
+    MooCommandFactory   *cmd_factory;
     MooCommandData      *cmd_data;
     MooUserToolType      type;
     char                *file;

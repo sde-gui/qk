@@ -16,7 +16,7 @@
 #include "mooedit/moocommand-script.h"
 #include "mooedit/moocommand-exe.h"
 #include "mooedit/mooeditwindow.h"
-#include "mooedit/moooutputfiltersimple.h"
+#include "mooedit/moooutputfilterregex.h"
 #include "mooedit/mooedit-enums.h"
 #include "mooutils/mooutils-misc.h"
 #include <gtk/gtkwindow.h>
@@ -29,7 +29,7 @@
 
 
 G_DEFINE_TYPE (MooCommand, moo_command, G_TYPE_OBJECT)
-G_DEFINE_TYPE (MooCommandType, moo_command_type, G_TYPE_OBJECT)
+G_DEFINE_TYPE (MooCommandFactory, moo_command_factory, G_TYPE_OBJECT)
 G_DEFINE_TYPE (MooCommandContext, moo_command_context, G_TYPE_OBJECT)
 
 enum {
@@ -68,7 +68,7 @@ typedef struct {
 } FilterInfo;
 
 
-static GHashTable *registered_types;
+static GHashTable *registered_factories;
 static GHashTable *registered_filters;
 
 
@@ -77,7 +77,7 @@ static void         variable_free                       (Variable           *var
 static void         moo_command_data_take_code          (MooCommandData     *data,
                                                          char               *code);
 
-static MooCommand  *_moo_command_type_create_command    (MooCommandType     *type,
+static MooCommand  *_moo_command_factory_create_command (MooCommandFactory  *factory,
                                                          MooCommandData     *data,
                                                          const char         *options);
 
@@ -87,178 +87,179 @@ moo_command_create (const char     *name,
                     const char     *options,
                     MooCommandData *data)
 {
-    MooCommandType *type;
+    MooCommandFactory *factory;
 
     g_return_val_if_fail (name != NULL, NULL);
 
-    type = moo_command_type_lookup (name);
-    g_return_val_if_fail (type != NULL, NULL);
+    factory = moo_command_factory_lookup (name);
+    g_return_val_if_fail (factory != NULL, NULL);
 
-    return _moo_command_type_create_command (type, data, options);
+    return _moo_command_factory_create_command (factory, data, options);
 }
 
 
 void
-moo_command_type_register (const char     *name,
-                           const char     *display_name,
-                           MooCommandType *type,
-                           char          **keys)
+moo_command_factory_register (const char        *name,
+                              const char        *display_name,
+                              MooCommandFactory *factory,
+                              char             **keys)
 {
-    MooCommandTypeClass *klass;
+    MooCommandFactoryClass *klass;
 
     g_return_if_fail (name != NULL);
     g_return_if_fail (display_name != NULL);
-    g_return_if_fail (MOO_IS_COMMAND_TYPE (type));
+    g_return_if_fail (MOO_IS_COMMAND_FACTORY (factory));
 
-    klass = MOO_COMMAND_TYPE_GET_CLASS (type);
+    klass = MOO_COMMAND_FACTORY_GET_CLASS (factory);
     g_return_if_fail (klass->create_command != NULL);
     g_return_if_fail (klass->create_widget != NULL);
     g_return_if_fail (klass->load_data != NULL);
     g_return_if_fail (klass->save_data != NULL);
     g_return_if_fail (klass->data_equal != NULL);
 
-    if (registered_types != NULL)
+    if (registered_factories != NULL)
     {
-        MooCommandType *old = g_hash_table_lookup (registered_types, name);
+        MooCommandFactory *old = g_hash_table_lookup (registered_factories, name);
 
         if (old)
         {
-            g_warning ("reregistering command type '%s'", name);
-            g_hash_table_remove (registered_types, name);
+            _moo_message ("command factory '%s' already registered", name);
+            g_hash_table_remove (registered_factories, name);
             g_object_unref (old);
         }
     }
 
-    if (!registered_types)
-        registered_types = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+    if (!registered_factories)
+        registered_factories = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
-    type->name = g_strdup (name);
-    type->display_name = g_strdup (display_name);
-    type->keys = g_strdupv (keys);
-    type->n_keys = keys ? g_strv_length (keys) : 0;
+    factory->name = g_strdup (name);
+    factory->display_name = g_strdup (display_name);
+    factory->keys = g_strdupv (keys);
+    factory->n_keys = keys ? g_strv_length (keys) : 0;
 
-    g_hash_table_insert (registered_types, g_strdup (name), g_object_ref (type));
+    g_hash_table_insert (registered_factories, g_strdup (name), g_object_ref (factory));
 }
 
 
-MooCommandType *
-moo_command_type_lookup (const char *name)
+MooCommandFactory *
+moo_command_factory_lookup (const char *name)
 {
-    MooCommandType *type = NULL;
+    MooCommandFactory *factory = NULL;
 
     g_return_val_if_fail (name != NULL, FALSE);
 
-    if (registered_types != NULL)
-        type = g_hash_table_lookup (registered_types, name);
+    if (registered_factories != NULL)
+        factory = g_hash_table_lookup (registered_factories, name);
 
-    return type;
+    return factory;
 }
 
 
 static void
-add_type_hash_cb (G_GNUC_UNUSED const char *name,
-                  MooCommandType *type,
-                  GSList **list)
+add_factory_hash_cb (G_GNUC_UNUSED const char *name,
+                     MooCommandFactory *factory,
+                     GSList **list)
 {
-    *list = g_slist_prepend (*list, type);
+    *list = g_slist_prepend (*list, factory);
 }
 
 GSList *
-moo_command_list_types (void)
+moo_command_list_factories (void)
 {
     GSList *list = NULL;
 
-    if (registered_types)
-        g_hash_table_foreach (registered_types, (GHFunc) add_type_hash_cb, &list);
+    if (registered_factories)
+        g_hash_table_foreach (registered_factories, (GHFunc) add_factory_hash_cb, &list);
 
     return g_slist_reverse (list);
 }
 
 
 static void
-moo_command_type_init (G_GNUC_UNUSED MooCommandType *type)
+moo_command_factory_init (G_GNUC_UNUSED MooCommandFactory *factory)
 {
 }
 
 static void
-moo_command_type_finalize (GObject *object)
+moo_command_factory_finalize (GObject *object)
 {
-    MooCommandType *type = MOO_COMMAND_TYPE (object);
-    g_free (type->name);
-    g_free (type->display_name);
-    G_OBJECT_CLASS (moo_command_type_parent_class)->finalize (object);
+    MooCommandFactory *factory = MOO_COMMAND_FACTORY (object);
+    g_free (factory->name);
+    g_free (factory->display_name);
+    g_strfreev (factory->keys);
+    G_OBJECT_CLASS (moo_command_factory_parent_class)->finalize (object);
 }
 
 static void
-moo_command_type_class_init (MooCommandTypeClass *klass)
+moo_command_factory_class_init (MooCommandFactoryClass *klass)
 {
-    G_OBJECT_CLASS (klass)->finalize = moo_command_type_finalize;
+    G_OBJECT_CLASS (klass)->finalize = moo_command_factory_finalize;
 }
 
 
 static MooCommand *
-_moo_command_type_create_command (MooCommandType    *type,
-                                  MooCommandData    *data,
-                                  const char        *options)
+_moo_command_factory_create_command (MooCommandFactory *factory,
+                                     MooCommandData    *data,
+                                     const char        *options)
 {
     MooCommand *cmd;
 
-    g_return_val_if_fail (MOO_IS_COMMAND_TYPE (type), NULL);
-    g_return_val_if_fail (MOO_COMMAND_TYPE_GET_CLASS(type)->create_command != NULL, NULL);
+    g_return_val_if_fail (MOO_IS_COMMAND_FACTORY (factory), NULL);
+    g_return_val_if_fail (MOO_COMMAND_FACTORY_GET_CLASS(factory)->create_command != NULL, NULL);
 
     if (data)
         moo_command_data_ref (data);
     else
-        data = moo_command_data_new (type->n_keys);
+        data = moo_command_data_new (factory->n_keys);
 
-    cmd = MOO_COMMAND_TYPE_GET_CLASS (type)->create_command (type, data, options);
+    cmd = MOO_COMMAND_FACTORY_GET_CLASS (factory)->create_command (factory, data, options);
 
     moo_command_data_unref (data);
     return cmd;
 }
 
 GtkWidget *
-_moo_command_type_create_widget (MooCommandType *type)
+_moo_command_factory_create_widget (MooCommandFactory *factory)
 {
-    g_return_val_if_fail (MOO_IS_COMMAND_TYPE (type), NULL);
-    g_return_val_if_fail (MOO_COMMAND_TYPE_GET_CLASS(type)->create_widget != NULL, NULL);
-    return MOO_COMMAND_TYPE_GET_CLASS (type)->create_widget (type);
+    g_return_val_if_fail (MOO_IS_COMMAND_FACTORY (factory), NULL);
+    g_return_val_if_fail (MOO_COMMAND_FACTORY_GET_CLASS(factory)->create_widget != NULL, NULL);
+    return MOO_COMMAND_FACTORY_GET_CLASS (factory)->create_widget (factory);
 }
 
 void
-_moo_command_type_load_data (MooCommandType    *type,
-                             GtkWidget         *widget,
-                             MooCommandData    *data)
+_moo_command_factory_load_data (MooCommandFactory *factory,
+                                GtkWidget         *widget,
+                                MooCommandData    *data)
 {
-    g_return_if_fail (MOO_IS_COMMAND_TYPE (type));
-    g_return_if_fail (MOO_COMMAND_TYPE_GET_CLASS(type)->load_data != NULL);
+    g_return_if_fail (MOO_IS_COMMAND_FACTORY (factory));
+    g_return_if_fail (MOO_COMMAND_FACTORY_GET_CLASS(factory)->load_data != NULL);
     g_return_if_fail (GTK_IS_WIDGET (widget));
     g_return_if_fail (data != NULL);
-    MOO_COMMAND_TYPE_GET_CLASS(type)->load_data (type, widget, data);
+    MOO_COMMAND_FACTORY_GET_CLASS(factory)->load_data (factory, widget, data);
 }
 
 gboolean
-_moo_command_type_save_data (MooCommandType    *type,
-                             GtkWidget         *widget,
-                             MooCommandData    *data)
+_moo_command_factory_save_data (MooCommandFactory *factory,
+                                GtkWidget         *widget,
+                                MooCommandData    *data)
 {
-    g_return_val_if_fail (MOO_IS_COMMAND_TYPE (type), FALSE);
-    g_return_val_if_fail (MOO_COMMAND_TYPE_GET_CLASS(type)->save_data != NULL, FALSE);
+    g_return_val_if_fail (MOO_IS_COMMAND_FACTORY (factory), FALSE);
+    g_return_val_if_fail (MOO_COMMAND_FACTORY_GET_CLASS(factory)->save_data != NULL, FALSE);
     g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
     g_return_val_if_fail (data != NULL, FALSE);
-    return MOO_COMMAND_TYPE_GET_CLASS (type)->save_data (type, widget, data);
+    return MOO_COMMAND_FACTORY_GET_CLASS (factory)->save_data (factory, widget, data);
 }
 
 gboolean
-_moo_command_type_data_equal (MooCommandType *type,
-                              MooCommandData *data1,
-                              MooCommandData *data2)
+_moo_command_factory_data_equal (MooCommandFactory *factory,
+                                 MooCommandData    *data1,
+                                 MooCommandData    *data2)
 {
-    g_return_val_if_fail (MOO_IS_COMMAND_TYPE (type), FALSE);
-    g_return_val_if_fail (MOO_COMMAND_TYPE_GET_CLASS(type)->data_equal != NULL, FALSE);
+    g_return_val_if_fail (MOO_IS_COMMAND_FACTORY (factory), FALSE);
+    g_return_val_if_fail (MOO_COMMAND_FACTORY_GET_CLASS(factory)->data_equal != NULL, FALSE);
     g_return_val_if_fail (data1 != NULL, FALSE);
     g_return_val_if_fail (data2 != NULL, FALSE);
-    return MOO_COMMAND_TYPE_GET_CLASS (type)->data_equal (type, data1, data2);
+    return MOO_COMMAND_FACTORY_GET_CLASS (factory)->data_equal (factory, data1, data2);
 }
 
 
@@ -843,13 +844,13 @@ moo_command_context_get_window (MooCommandContext *ctx)
 
 
 static int
-find_key (MooCommandType *type,
-          const char     *key)
+find_key (MooCommandFactory *factory,
+          const char        *key)
 {
     guint i;
 
-    for (i = 0; i < type->n_keys; ++i)
-        if (!strcmp (type->keys[i], key))
+    for (i = 0; i < factory->n_keys; ++i)
+        if (!strcmp (factory->keys[i], key))
             return i;
 
     return -1;
@@ -863,7 +864,7 @@ item_foreach_func (const char *key,
     int index;
 
     struct {
-        MooCommandType *type;
+        MooCommandFactory *factory;
         MooCommandData *cmd_data;
         gboolean error;
         const char *filename;
@@ -873,7 +874,7 @@ item_foreach_func (const char *key,
     if (data->error)
         return;
 
-    index = find_key (data->type, key);
+    index = find_key (data->factory, key);
 
     if (index < 0)
     {
@@ -887,17 +888,17 @@ item_foreach_func (const char *key,
 }
 
 MooCommandData *
-_moo_command_parse_item (MooKeyFileItem    *item,
-                         const char        *name,
-                         const char        *filename,
-                         MooCommandType   **type_p,
-                         char             **options_p)
+_moo_command_parse_item (MooKeyFileItem     *item,
+                         const char         *name,
+                         const char         *filename,
+                         MooCommandFactory **factory_p,
+                         char              **options_p)
 {
     MooCommandData *data;
-    MooCommandType *type;
-    char *type_name, *options;
+    MooCommandFactory *factory;
+    char *factory_name, *options;
     struct {
-        MooCommandType *type;
+        MooCommandFactory *factory;
         MooCommandData *cmd_data;
         gboolean error;
         const char *filename;
@@ -906,27 +907,27 @@ _moo_command_parse_item (MooKeyFileItem    *item,
 
     g_return_val_if_fail (item != NULL, NULL);
 
-    type_name = moo_key_file_item_steal (item, KEY_TYPE);
+    factory_name = moo_key_file_item_steal (item, KEY_TYPE);
     options = moo_key_file_item_steal (item, KEY_OPTIONS);
 
-    if (!type_name)
+    if (!factory_name)
     {
         g_warning ("no type attribute in item %s in file %s", name, filename);
         goto error;
     }
 
-    type = moo_command_type_lookup (type_name);
+    factory = moo_command_factory_lookup (factory_name);
 
-    if (!type)
+    if (!factory)
     {
         g_warning ("unknown command type %s in item %s in file %s",
-                   type_name, name, filename);
+                   factory_name, name, filename);
         goto error;
     }
 
-    data = moo_command_data_new (type->n_keys);
+    data = moo_command_data_new (factory->n_keys);
 
-    parse_data.type = type;
+    parse_data.factory = factory;
     parse_data.cmd_data = data;
     parse_data.error = FALSE;
     parse_data.filename = filename;
@@ -942,35 +943,35 @@ _moo_command_parse_item (MooKeyFileItem    *item,
 
     moo_command_data_take_code (data, moo_key_file_item_steal_content (item));
 
-    if (type_p)
-        *type_p = type;
+    if (factory_p)
+        *factory_p = factory;
 
     if (options_p)
         *options_p = options;
     else
         g_free (options);
 
-    g_free (type_name);
+    g_free (factory_name);
 
     return data;
 
 error:
-    g_free (type_name);
+    g_free (factory_name);
     g_free (options);
     return NULL;
 }
 
 
 void
-_moo_command_format_item (MooKeyFileItem *item,
-                          MooCommandData *data,
-                          MooCommandType *type,
-                          char           *options)
+_moo_command_format_item (MooKeyFileItem    *item,
+                          MooCommandData    *data,
+                          MooCommandFactory *factory,
+                          char              *options)
 {
     g_return_if_fail (item != NULL);
-    g_return_if_fail (MOO_IS_COMMAND_TYPE (type));
+    g_return_if_fail (MOO_IS_COMMAND_FACTORY (factory));
 
-    moo_key_file_item_set (item, KEY_TYPE, type->name);
+    moo_key_file_item_set (item, KEY_TYPE, factory->name);
 
     if (options && options[0])
         moo_key_file_item_set (item, KEY_OPTIONS, options);
@@ -978,8 +979,8 @@ _moo_command_format_item (MooKeyFileItem *item,
     if (data)
     {
         guint i;
-        for (i = 0; i < type->n_keys; ++i)
-            moo_key_file_item_set (item, type->keys[i], moo_command_data_get (data, i));
+        for (i = 0; i < factory->n_keys; ++i)
+            moo_key_file_item_set (item, factory->keys[i], moo_command_data_get (data, i));
         moo_key_file_item_set_content (item, moo_command_data_get_code (data));
     }
 }
@@ -1120,7 +1121,7 @@ _moo_command_init (void)
 #ifndef __WIN32__
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_EXE));
 #endif
-        _moo_command_filter_simple_load ();
+        _moo_command_filter_regex_load ();
         been_here = TRUE;
     }
 }

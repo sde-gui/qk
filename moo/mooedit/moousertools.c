@@ -259,7 +259,7 @@ check_info (MooUserToolInfo *info,
         g_warning ("menu specified in tool %s in file %s",
                    info->name, info->file);
 
-    if (!info->cmd_type)
+    if (!info->cmd_factory)
     {
         g_warning ("command type missing in tool '%s' in file %s",
                    info->name, info->file);
@@ -267,7 +267,7 @@ check_info (MooUserToolInfo *info,
     }
 
     if (!info->cmd_data)
-        info->cmd_data = moo_command_data_new (info->cmd_type->n_keys);
+        info->cmd_data = moo_command_data_new (info->cmd_factory->n_keys);
 
     return TRUE;
 }
@@ -297,9 +297,9 @@ load_tool (MooUserToolInfo *info)
         return;
 #endif
 
-    g_return_if_fail (MOO_IS_COMMAND_TYPE (info->cmd_type));
+    g_return_if_fail (MOO_IS_COMMAND_FACTORY (info->cmd_factory));
 
-    cmd = moo_command_create (info->cmd_type->name,
+    cmd = moo_command_create (info->cmd_factory->name,
                               info->options,
                               info->cmd_data);
 
@@ -387,10 +387,44 @@ load_tool (MooUserToolInfo *info)
 }
 
 
+static void
+init_tools_environment (void)
+{
+    static gboolean done;
+
+    if (!done)
+    {
+        char **script_dirs;
+        guint n_script_dirs;
+        const char *old_path;
+        char *new_path, *my_path;
+
+        done = TRUE;
+
+        script_dirs = moo_get_data_subdirs ("scripts", MOO_DATA_LIB, &n_script_dirs);
+        g_return_if_fail (n_script_dirs != 0);
+
+        old_path = g_getenv ("PATH");
+        g_return_if_fail (old_path != NULL);
+
+        my_path = g_strjoinv (G_SEARCHPATH_SEPARATOR_S, script_dirs);
+        new_path = g_strdup_printf ("%s%s%s", my_path, G_SEARCHPATH_SEPARATOR_S, old_path);
+
+        g_setenv ("PATH", new_path, TRUE);
+
+        g_free (my_path);
+        g_free (new_path);
+        g_strfreev (script_dirs);
+    }
+}
+
+
 void
 _moo_edit_load_user_tools (MooUserToolType type)
 {
     GSList *list;
+
+    init_tools_environment ();
 
     unload_user_tools (type);
 
@@ -468,7 +502,7 @@ parse_item (MooKeyFileItem  *item,
     }
 
     info->cmd_data = _moo_command_parse_item (item, info->name, file,
-                                              &info->cmd_type,
+                                              &info->cmd_factory,
                                               &info->options);
 
     if (!info->cmd_data)
@@ -737,13 +771,13 @@ info_equal (MooUserToolInfo *info1,
            info1->os_type == info2->os_type &&
            info1->position == info2->position &&
            info1->position == info2->position &&
-           info1->cmd_type == info2->cmd_type &&
+           info1->cmd_factory == info2->cmd_factory &&
            _moo_str_equal (info1->name, info2->name) &&
            _moo_str_equal (info1->accel, info2->accel) &&
            _moo_str_equal (info1->menu, info2->menu) &&
            _moo_str_equal (info1->langs, info2->langs) &&
            _moo_str_equal (info1->options, info2->options) &&
-           _moo_command_type_data_equal (info1->cmd_type, info1->cmd_data, info2->cmd_data);
+           _moo_command_factory_data_equal (info1->cmd_factory, info1->cmd_data, info2->cmd_data);
 }
 
 static GSList *
@@ -848,7 +882,7 @@ _moo_edit_save_user_tools (MooUserToolType  type,
 
             _moo_command_format_item (item,
                                       info->cmd_data,
-                                      info->cmd_type,
+                                      info->cmd_factory,
                                       info->options);
         }
 

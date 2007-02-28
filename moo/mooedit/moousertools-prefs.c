@@ -101,8 +101,8 @@ new_row (MooPrefsDialogPage *page,
     GtkTreeViewColumn *column;
 
     info = _moo_user_tool_info_new ();
-    info->cmd_type = moo_command_type_lookup ("moo-script");
-    info->cmd_data = info->cmd_type ? moo_command_data_new (info->cmd_type->n_keys) : NULL;
+    info->cmd_factory = moo_command_factory_lookup ("moo-script");
+    info->cmd_data = info->cmd_factory ? moo_command_data_new (info->cmd_factory->n_keys) : NULL;
     info->name = g_strdup (_("New Command"));
     info->options = g_strdup ("need-doc");
     info->enabled = TRUE;
@@ -158,7 +158,7 @@ update_widgets (MooPrefsDialogPage *page,
         gtk_tree_model_get (model, iter, COLUMN_INFO, &info, -1);
         g_return_if_fail (info != NULL);
 
-        _moo_command_display_set (helper, info->cmd_type, info->cmd_data);
+        _moo_command_display_set (helper, info->cmd_factory, info->cmd_data);
 
         gtk_toggle_button_set_active (GET_WID ("enabled"), info->enabled);
         set_text (page, "langs", info->langs);
@@ -204,7 +204,7 @@ update_model (MooPrefsDialogPage *page,
               GtkTreeIter        *iter)
 {
     MooCommandDisplay *helper;
-    MooCommandType *type;
+    MooCommandFactory *factory;
     MooCommandData *data;
     MooUserToolInfo *info;
     gboolean changed = FALSE;
@@ -213,11 +213,11 @@ update_model (MooPrefsDialogPage *page,
     gtk_tree_model_get (model, iter, COLUMN_INFO, &info, -1);
     g_return_if_fail (info != NULL);
 
-    if (_moo_command_display_get (helper, &type, &data))
+    if (_moo_command_display_get (helper, &factory, &data))
     {
         moo_command_data_unref (info->cmd_data);
         info->cmd_data = moo_command_data_ref (data);
-        info->cmd_type = type;
+        info->cmd_factory = factory;
         gtk_list_store_set (GTK_LIST_STORE (model), iter, COLUMN_INFO, info, -1);
         changed = TRUE;
     }

@@ -63,9 +63,9 @@ struct _MooCommandExePrivate {
 
 G_DEFINE_TYPE (MooCommandExe, moo_command_exe, MOO_TYPE_COMMAND)
 
-typedef MooCommandType MooCommandTypeExe;
-typedef MooCommandTypeClass MooCommandTypeExeClass;
-MOO_DEFINE_TYPE_STATIC (MooCommandTypeExe, _moo_command_type_exe, MOO_TYPE_COMMAND_TYPE)
+typedef MooCommandFactory MooCommandFactoryExe;
+typedef MooCommandFactoryClass MooCommandFactoryExeClass;
+MOO_DEFINE_TYPE_STATIC (MooCommandFactoryExe, _moo_command_factory_exe, MOO_TYPE_COMMAND_FACTORY)
 
 
 static void
@@ -533,7 +533,7 @@ moo_command_exe_check_sensitive (MooCommand *cmd_base,
 static void
 moo_command_exe_class_init (MooCommandExeClass *klass)
 {
-    MooCommandType *type;
+    MooCommandFactory *factory;
 
     G_OBJECT_CLASS(klass)->finalize = moo_command_exe_finalize;
     MOO_COMMAND_CLASS(klass)->run = moo_command_exe_run;
@@ -541,14 +541,14 @@ moo_command_exe_class_init (MooCommandExeClass *klass)
 
     g_type_class_add_private (klass, sizeof (MooCommandExePrivate));
 
-    type = g_object_new (_moo_command_type_exe_get_type (), NULL);
-    moo_command_type_register ("exe", _("Shell command"), type, (char**) data_keys);
-    g_object_unref (type);
+    factory = g_object_new (_moo_command_factory_exe_get_type (), NULL);
+    moo_command_factory_register ("exe", _("Shell command"), factory, (char**) data_keys);
+    g_object_unref (factory);
 }
 
 
 static void
-_moo_command_type_exe_init (G_GNUC_UNUSED MooCommandTypeExe *type)
+_moo_command_factory_exe_init (G_GNUC_UNUSED MooCommandFactoryExe *factory)
 {
 }
 
@@ -634,9 +634,9 @@ parse_output (const char *string,
 }
 
 static MooCommand *
-exe_type_create_command (G_GNUC_UNUSED MooCommandType *type,
-                         MooCommandData *data,
-                         const char     *options)
+exe_factory_create_command (G_GNUC_UNUSED MooCommandFactory *factory,
+                            MooCommandData *data,
+                            const char     *options)
 {
     MooCommand *cmd;
     const char *cmd_line;
@@ -703,7 +703,8 @@ init_filter_combo (GtkComboBox *combo)
     gtk_combo_box_set_model (combo, GTK_TREE_MODEL (store));
 
     gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter, COLUMN_NAME, _("None"), -1);
+    /* Translators: "None" means no filter for a shell command, do not translate the part before | */
+    gtk_list_store_set (store, &iter, COLUMN_NAME, Q_("Filter|None"), -1);
 
     ids = moo_command_filter_list ();
 
@@ -773,14 +774,16 @@ set_filter_combo (GtkComboBox *combo,
 }
 
 static GtkWidget *
-exe_type_create_widget (G_GNUC_UNUSED MooCommandType *type)
+exe_factory_create_widget (G_GNUC_UNUSED MooCommandFactory *factory)
 {
     GtkWidget *page;
     MooGladeXML *xml;
     MooTextView *textview;
 
-    static const char *input_names[4] = {N_("None"), N_("Selected lines"), N_("Selection"), N_("Whole document")};
-    static const char *output_names[5] = {N_("None"), N_("None, asynchronous"), N_("Output pane"), N_("Insert into the document"), N_("New document")};
+    /* Translators: these are kinds of input for a shell command, do not translate the part before | */
+    static const char *input_names[4] = {N_("Input|None"), N_("Input|Selected lines"), N_("Input|Selection"), N_("Input|Whole document")};
+    /* Translators: these are actions for output of a shell command, do not translate the part before | */
+    static const char *output_names[5] = {N_("Output|None"), N_("Output|None, asynchronous"), N_("Output|Output pane"), N_("Output|Insert into the document"), N_("Output|New document")};
 
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "textview", MOO_TYPE_TEXT_VIEW);
@@ -802,9 +805,9 @@ exe_type_create_widget (G_GNUC_UNUSED MooCommandType *type)
 
 
 static void
-exe_type_load_data (G_GNUC_UNUSED MooCommandType *type,
-                    GtkWidget      *page,
-                    MooCommandData *data)
+exe_factory_load_data (G_GNUC_UNUSED MooCommandFactory *factory,
+                       GtkWidget      *page,
+                       MooCommandData *data)
 {
     MooGladeXML *xml;
     GtkTextView *textview;
@@ -835,9 +838,9 @@ exe_type_load_data (G_GNUC_UNUSED MooCommandType *type,
 
 
 static gboolean
-exe_type_save_data (G_GNUC_UNUSED MooCommandType *type,
-                    GtkWidget      *page,
-                    MooCommandData *data)
+exe_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
+                       GtkWidget      *page,
+                       MooCommandData *data)
 {
     MooGladeXML *xml;
     GtkTextView *textview;
@@ -913,9 +916,9 @@ exe_type_save_data (G_GNUC_UNUSED MooCommandType *type,
 
 
 static gboolean
-exe_type_data_equal (G_GNUC_UNUSED MooCommandType *type,
-                     MooCommandData *data1,
-                     MooCommandData *data2)
+exe_factory_data_equal (G_GNUC_UNUSED MooCommandFactory *factory,
+                        MooCommandData *data1,
+                        MooCommandData *data2)
 {
     guint i;
 
@@ -932,11 +935,11 @@ exe_type_data_equal (G_GNUC_UNUSED MooCommandType *type,
 
 
 static void
-_moo_command_type_exe_class_init (MooCommandTypeExeClass *klass)
+_moo_command_factory_exe_class_init (MooCommandFactoryExeClass *klass)
 {
-    klass->create_command = exe_type_create_command;
-    klass->create_widget = exe_type_create_widget;
-    klass->load_data = exe_type_load_data;
-    klass->save_data = exe_type_save_data;
-    klass->data_equal = exe_type_data_equal;
+    klass->create_command = exe_factory_create_command;
+    klass->create_widget = exe_factory_create_widget;
+    klass->load_data = exe_factory_load_data;
+    klass->save_data = exe_factory_save_data;
+    klass->data_equal = exe_factory_data_equal;
 }

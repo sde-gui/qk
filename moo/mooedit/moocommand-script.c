@@ -31,9 +31,9 @@ struct _MooCommandScriptPrivate {
 
 G_DEFINE_TYPE (MooCommandScript, moo_command_script, MOO_TYPE_COMMAND)
 
-typedef MooCommandType MooCommandTypeScript;
-typedef MooCommandTypeClass MooCommandTypeScriptClass;
-MOO_DEFINE_TYPE_STATIC (MooCommandTypeScript, _moo_command_type_script, MOO_TYPE_COMMAND_TYPE)
+typedef MooCommandFactory MooCommandFactoryScript;
+typedef MooCommandFactoryClass MooCommandFactoryScriptClass;
+MOO_DEFINE_TYPE_STATIC (MooCommandFactoryScript, _moo_command_factory_script, MOO_TYPE_COMMAND_FACTORY)
 
 
 static MooCommand  *moo_command_script_new  (const char         *script,
@@ -112,9 +112,9 @@ moo_command_script_dispose (GObject *object)
 
 
 static MooCommand *
-script_type_create_command (G_GNUC_UNUSED MooCommandType *type,
-                            MooCommandData *data,
-                            const char     *options)
+script_factory_create_command (G_GNUC_UNUSED MooCommandFactory *factory,
+                               MooCommandData *data,
+                               const char     *options)
 {
     MooCommand *cmd;
     const char *code;
@@ -131,7 +131,7 @@ script_type_create_command (G_GNUC_UNUSED MooCommandType *type,
 
 
 static GtkWidget *
-script_type_create_widget (G_GNUC_UNUSED MooCommandType *type)
+script_factory_create_widget (G_GNUC_UNUSED MooCommandFactory *factory)
 {
     GtkWidget *page;
     MooGladeXML *xml;
@@ -153,9 +153,9 @@ script_type_create_widget (G_GNUC_UNUSED MooCommandType *type)
 
 
 static void
-script_type_load_data (G_GNUC_UNUSED MooCommandType *type,
-                       GtkWidget      *page,
-                       MooCommandData *data)
+script_factory_load_data (G_GNUC_UNUSED MooCommandFactory *factory,
+                          GtkWidget      *page,
+                          MooCommandData *data)
 {
     MooGladeXML *xml;
     GtkTextView *textview;
@@ -172,9 +172,9 @@ script_type_load_data (G_GNUC_UNUSED MooCommandType *type,
 
 
 static gboolean
-script_type_save_data (G_GNUC_UNUSED MooCommandType *type,
-                       GtkWidget      *page,
-                       MooCommandData *data)
+script_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
+                          GtkWidget      *page,
+                          MooCommandData *data)
 {
     MooGladeXML *xml;
     GtkTextView *textview;
@@ -201,9 +201,9 @@ script_type_save_data (G_GNUC_UNUSED MooCommandType *type,
 
 
 static gboolean
-script_type_data_equal (G_GNUC_UNUSED MooCommandType *type,
-                        MooCommandData *data1,
-                        MooCommandData *data2)
+script_factory_data_equal (G_GNUC_UNUSED MooCommandFactory *factory,
+                           MooCommandData *data1,
+                           MooCommandData *data2)
 {
     const char *val1 = moo_command_data_get_code (data1);
     const char *val2 = moo_command_data_get_code (data2);
@@ -212,34 +212,34 @@ script_type_data_equal (G_GNUC_UNUSED MooCommandType *type,
 
 
 static void
-_moo_command_type_script_init (G_GNUC_UNUSED MooCommandType *type)
+_moo_command_factory_script_init (G_GNUC_UNUSED MooCommandFactory *factory)
 {
 }
 
 static void
-_moo_command_type_script_class_init (MooCommandTypeClass *klass)
+_moo_command_factory_script_class_init (MooCommandFactoryClass *klass)
 {
-    klass->create_command = script_type_create_command;
-    klass->create_widget = script_type_create_widget;
-    klass->load_data = script_type_load_data;
-    klass->save_data = script_type_save_data;
-    klass->data_equal = script_type_data_equal;
+    klass->create_command = script_factory_create_command;
+    klass->create_widget = script_factory_create_widget;
+    klass->load_data = script_factory_load_data;
+    klass->save_data = script_factory_save_data;
+    klass->data_equal = script_factory_data_equal;
 }
 
 
 static void
 moo_command_script_class_init (MooCommandScriptClass *klass)
 {
-    MooCommandType *type;
+    MooCommandFactory *factory;
 
     G_OBJECT_CLASS(klass)->dispose = moo_command_script_dispose;
     MOO_COMMAND_CLASS(klass)->run = moo_command_script_run;
 
     g_type_class_add_private (klass, sizeof (MooCommandScriptPrivate));
 
-    type = g_object_new (_moo_command_type_script_get_type (), NULL);
-    moo_command_type_register ("moo-script", _("MooScript"), type, NULL);
-    g_object_unref (type);
+    factory = g_object_new (_moo_command_factory_script_get_type (), NULL);
+    moo_command_factory_register ("moo-script", _("MooScript"), factory, NULL);
+    g_object_unref (factory);
 }
 
 

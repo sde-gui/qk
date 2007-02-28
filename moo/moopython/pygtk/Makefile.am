@@ -23,6 +23,8 @@ mooedit_defs_files =		\
 	moocommand.defs
 moocommand.o: mooedit-pygtk.o
 	echo stamp > moocommand.o
+moocommand.lo: mooedit-pygtk.lo
+	echo stamp > moocommand.lo
 mooplugin.o: mooedit-pygtk.o
 	echo stamp > mooplugin.o
 mooeditor.o: mooedit-pygtk.o
