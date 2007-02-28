@@ -21,6 +21,7 @@
 #include "mooedit/mooeditfileops.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mootextbuffer.h"
+#include "mooedit/mooeditprefs.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moofilewatch.h"
 #include "mooutils/mooencodings.h"
@@ -40,6 +41,8 @@
 #endif
 
 #undef LOAD_BINARY
+#define DEFAULT_ENCODING_LIST ""
+#define ENCODING_LOCALE "LOCALE"
 
 static GSList *UNTITLED = NULL;
 static GHashTable *UNTITLED_NO = NULL;
@@ -234,10 +237,61 @@ static LoadResult   load_binary (MooEdit            *edit,
                                  GError            **error);
 #endif
 
-static const char *common_encodings[] = {
-    "ISO_8859-15",
-    "ISO_8859-1"
-};
+static GSList *
+get_encodings (void)
+{
+    /* Translators: if translated, it should be a comma-separated list
+       of encodings to try when opening files. Encodings names should be
+       those understood by iconv, or "LOCALE" which means user's locale
+       charset. For instance, the default value is "UTF-8,LOCALE,ISO_8859-15,ISO_8859-1".
+       You want to add common preferred non-UTF8 encodings used in your locale.
+       Do not remove ISO_8859-15 and ISO_8859-1, instead leave them at the end,
+       these are common source files encodings. */
+    const char *to_translate = N_("encodings_list");
+    const char *encodings;
+    char **raw, **p;
+    GSList *result;
+
+    encodings = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_ENCODINGS));
+
+    if (!encodings)
+    {
+        encodings = _(to_translate);
+        if (!strcmp (encodings, to_translate))
+            encodings = "UTF-8," ENCODING_LOCALE ",ISO_8859-15,ISO_8859-1";
+    }
+
+    result = NULL;
+    raw = g_strsplit (encodings, ",", 0);
+
+    for (p = raw; p && *p; ++p)
+    {
+        const char *enc;
+
+        if (!g_ascii_strcasecmp (*p, ENCODING_LOCALE))
+        {
+            if (g_get_charset (&enc))
+                enc = "UTF-8";
+        }
+        else
+        {
+            enc = *p;
+        }
+
+        if (!g_slist_find_custom (result, enc, (GCompareFunc) g_ascii_strcasecmp))
+            result = g_slist_prepend (result, g_strdup (enc));
+    }
+
+    if (!result)
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        result = g_slist_prepend (NULL, g_strdup ("UTF-8"));
+    }
+
+    g_strfreev (raw);
+    return g_slist_reverse (result);
+}
+
 
 static LoadResult
 try_load (MooEdit            *edit,
@@ -301,35 +355,28 @@ moo_edit_load_local (MooEdit     *edit,
 
     if (!encoding)
     {
-        result = try_load (edit, file, "UTF-8", &statbuf, error);
+        GSList *encodings;
 
-        if (result == ERROR_ENCODING)
+        encodings = get_encodings ();
+        result = ERROR_ENCODING;
+
+        while (encodings)
         {
-            const char *locale_charset;
+            char *enc = encodings->data;
 
-            if (!g_get_charset (&locale_charset))
-            {
-                g_clear_error (error);
-                encoding = locale_charset;
-                result = try_load (edit, file, encoding, &statbuf, error);
-            }
+            enc = encodings->data;
+            encodings = g_slist_delete_link (encodings, encodings);
+
+            g_clear_error (error);
+            result = try_load (edit, file, enc, &statbuf, error);
+            g_free (enc);
+
+            if (result != ERROR_ENCODING)
+                break;
         }
 
-        if (result == ERROR_ENCODING)
-        {
-            guint i;
-
-            for (i = 0; i < G_N_ELEMENTS (common_encodings); ++i)
-            {
-                g_clear_error (error);
-
-                encoding = common_encodings[i];
-                result = try_load (edit, file, encoding, &statbuf, error);
-
-                if (result == SUCCESS || result == ERROR_FILE)
-                    break;
-            }
-        }
+        g_slist_foreach (encodings, (GFunc) g_free, NULL);
+        g_slist_free (encodings);
     }
     else
     {
