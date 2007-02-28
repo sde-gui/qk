@@ -41,6 +41,7 @@
 #include "mooutils/xdgmime/xdgmime.h"
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
 #ifdef HAVE_SIGNAL_H
 #include <signal.h>
@@ -1256,6 +1257,7 @@ install_actions (GType type)
                                  NULL);
 
     moo_window_class_new_action (klass, "SystemInfo", NULL,
+                                 /* menu item label */
                                  "label", _("System Info"),
                                  "no-accel", TRUE,
                                  "closure-callback", moo_app_system_info_dialog,
@@ -1481,10 +1483,42 @@ moo_app_new_file (MooApp       *app,
 
     if (filename)
     {
-        if (line > 0)
-            moo_editor_open_file_line (editor, filename, line - 1, NULL);
+        char *norm_name = _moo_normalize_file_path (filename);
+
+        /* Normal case, like 'medit /foo/ *', ignore directories here;
+         * usual errors will be handled in editor code. */
+        if (g_str_has_suffix (filename, "/") ||
+            g_file_test (norm_name, G_FILE_TEST_IS_DIR))
+        {
+            _moo_message ("%s: %s is a directory", G_STRLOC, norm_name);
+        }
         else
-            moo_editor_new_file (editor, NULL, NULL, filename, NULL);
+        {
+            char *colon;
+
+            if ((colon = strrchr (norm_name, ':')) &&
+                colon != norm_name &&
+                strspn (colon + 1, "0123456789") == strlen (colon + 1) &&
+                !g_file_test (norm_name, G_FILE_TEST_EXISTS))
+            {
+                if (colon[1])
+                {
+                    errno = 0;
+                    line = strtol (colon + 1, NULL, 10);
+                    if (errno)
+                        line = 0;
+                }
+
+                *colon = 0;
+            }
+
+            if (line > 0)
+                moo_editor_open_file_line (editor, norm_name, line - 1, NULL);
+            else
+                moo_editor_new_file (editor, NULL, NULL, norm_name, NULL);
+        }
+
+        g_free (norm_name);
     }
     else
     {
