@@ -18,10 +18,6 @@ AC_DEFUN_ONCE([MOO_AC_SET_DIRS],[
     MOO_PLUGINS_DIR="${MOO_LIB_DIR}/plugins"
     AC_SUBST(MOO_PLUGINS_DIR)
 
-    # copied from po/Makefile.in.in
-    MOO_LOCALE_DIR="${prefix}/${DATADIRNAME}/locale"
-    AC_SUBST(MOO_LOCALE_DIR)
-
     MOO_TEXT_LANG_FILES_DIR="${MOO_DATA_DIR}/language-specs"
     AC_SUBST(MOO_TEXT_LANG_FILES_DIR)
 

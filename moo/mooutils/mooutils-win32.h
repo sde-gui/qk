@@ -26,9 +26,6 @@ G_BEGIN_DECLS
 #define gettimeofday _moo_win32_gettimeofday
 #define getc_unlocked getc
 
-#undef MOO_LOCALE_DIR
-#define MOO_LOCALE_DIR (_moo_win32_get_locale_dir())
-
 char       *moo_win32_get_app_dir           (void);
 char       *moo_win32_get_dll_dir           (const char     *dll);
 

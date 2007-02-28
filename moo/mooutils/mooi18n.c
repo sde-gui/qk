@@ -16,6 +16,12 @@
 #include <glib.h>
 
 
+#ifdef __WIN32__
+#undef MOO_LOCALE_DIR
+#define MOO_LOCALE_DIR (_moo_win32_get_locale_dir())
+#endif /* __WIN32__ */
+
+
 const char *
 moo_gettext (const char *string)
 {
