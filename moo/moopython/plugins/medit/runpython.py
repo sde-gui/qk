@@ -12,17 +12,6 @@ else:
 
 PANE_ID = 'PythonOutput'
 
-error_patterns = [
-    [re.compile(r'\s*File\s*"([^"]+)",\s*line\s*(\d+).*'), 1, 2],
-    [re.compile(r'\s*([^:]+):(\d+):.*'), 1, 2]
-]
-
-class FileLine(object):
-    def __init__(self, filename, line):
-        object.__init__(self)
-        self.filename = filename
-        self.line = line
-
 class Runner(object):
     def __init__(self, window, python_command=PYTHON_COMMAND, pane_id=PANE_ID, pane_label=None):
         self.window = window
@@ -39,8 +28,7 @@ class Runner(object):
                                                            label=_("Python Output"))
             output = moo.edit.CmdView()
             output.set_property("highlight-current-line", True)
-            output.connect("activate", self.__output_activate)
-            output.connect("stderr-line", self.__stderr_line)
+            output.set_filter(moo.edit.command_filter_create("python"))
 
             pane = gtk.ScrolledWindow()
             pane.set_shadow_type(gtk.SHADOW_ETCHED_IN)
@@ -76,53 +64,7 @@ class Runner(object):
 
         if working_dir is None:
             working_dir = os.path.dirname(filename)
-        cmd_line = self.python_command + ' "%s"' % filename
+        cmd_line = self.python_command + ' "%s"' % os.path.basename(filename)
         if args_string is not None:
             cmd_line += ' %s' % (args_string,)
-        self.working_dir = working_dir
         pane.output.run_command(cmd_line, working_dir)
-
-    def __output_activate(self, output, line):
-        data = output.get_line_data(line)
-
-        if not data:
-            return False
-
-        editor = moo.edit.editor_instance()
-
-        filename = data.filename
-        if not os.path.isabs(filename):
-            filename = os.path.join(self.working_dir, filename)
-        editor.open_file(None, output, filename)
-
-        doc = editor.get_doc(filename)
-
-        if not doc:
-            return True
-
-        editor.set_active_doc(doc)
-        doc.grab_focus()
-
-        if data.line >= 0:
-            doc.move_cursor(data.line, -1, False, True)
-
-        return True
-
-    def __stderr_line(self, output, line):
-        data = None
-
-        for p in error_patterns:
-            match = p[0].match(line)
-            if match:
-                data = FileLine(match.group(p[1]), int(match.group(p[2])) - 1)
-                break
-
-        if not data:
-            return False
-
-        line_no = output.start_line()
-        output.write(line, -1, output.lookup_tag("error"))
-        output.end_line()
-        output.set_line_data(line_no, data)
-
-        return True
