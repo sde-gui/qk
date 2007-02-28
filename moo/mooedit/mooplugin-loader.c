@@ -364,19 +364,20 @@ _moo_plugin_load (const char *dir,
 
     module_info = parse_ini_file (dir, ini_file);
 
-    if (!module_info)
-        return;
-
-    loader = moo_plugin_loader_lookup (module_info->loader);
-
-    if (!loader)
+    if (module_info)
     {
-        waiting_list = g_slist_append (waiting_list, module_info);
-        return;
-    }
+        loader = moo_plugin_loader_lookup (module_info->loader);
 
-    moo_plugin_loader_load (loader, module_info);
-    module_info_free (module_info);
+        if (!loader)
+        {
+            waiting_list = g_slist_append (waiting_list, module_info);
+        }
+        else
+        {
+            moo_plugin_loader_load (loader, module_info);
+            module_info_free (module_info);
+        }
+    }
 }
 
 
