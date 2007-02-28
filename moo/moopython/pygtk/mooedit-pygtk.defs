@@ -226,6 +226,15 @@
   (return-type "gboolean")
 )
 
+(define-method set_filter
+  (of-object "MooCmdView")
+  (c-name "moo_cmd_view_set_filter")
+  (return-type "none")
+  (parameters
+    '("MooOutputFilter*" "filter" (null-ok))
+  )
+)
+
 
 
 ;; From mooedit.h
