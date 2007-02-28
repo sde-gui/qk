@@ -22,6 +22,8 @@ G_BEGIN_DECLS
 #define MOO_PYTHON_PLUGIN_LOADER_ID "Python"
 MooPluginLoader *_moo_python_get_plugin_loader (void);
 
+#define _moo_python_plugin_loader_free g_free
+
 
 G_END_DECLS
 

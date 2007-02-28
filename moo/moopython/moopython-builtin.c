@@ -59,7 +59,7 @@ _moo_python_builtin_init (void)
     {
         MooPluginLoader *loader = _moo_python_get_plugin_loader ();
         moo_plugin_loader_register (loader, MOO_PYTHON_PLUGIN_LOADER_ID);
-        g_free (loader);
+        _moo_python_plugin_loader_free (loader);
     }
 
     return TRUE;
