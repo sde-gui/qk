@@ -4,8 +4,15 @@ import sys
 import os
 import re
 
-def _expand(string, dic):
-    return re.sub(r'\$\(([a-zA-Z_]\w*)\)', r'%(\1)s', string) % dic
+def _expand(command, dic):
+    if isinstance(command, str) or isinstance(command, unicode):
+        working_dir = ''
+        cmd = command
+    else:
+        working_dir = command[0]
+        cmd = command[1]
+    return [re.sub(r'\$\(([a-zA-Z_]\w*)\)', r'%(\1)s', working_dir) % dic,
+            re.sub(r'\$\(([a-zA-Z_]\w*)\)', r'%(\1)s', cmd) % dic]
 
 def expand_command(command, vars, filename, top_srcdir, top_builddir=None):
     dic = get_file_paths(filename, top_srcdir, top_builddir)
@@ -68,12 +75,12 @@ def format_error(error=None):
 
 
 if __name__ == '__main__':
-    print expand_command('cd $(builddir) && make $(base).o',
+    print expand_command(['$(builddir)', 'make $(base).o'],
                          None,
                          '/blah/project/subdir/file.c',
                          '/blah/project',
                          '/blah/project/build')
-    print expand_command('cd $(top_builddir) && $(make)',
+    print expand_command(['$(top_builddir)', '$(make)'],
                          {'make' : 'make'},
                          None,
                          '/blah/project',

@@ -8,8 +8,8 @@ from mprj.simple import SimpleProject, SimpleConfig
 
 class Commands(Group):
     __items__ = {
-        'latex' : [String, {'default' : 'cd $(srcdir) && latex $(basename)'}],
-        'viewdvi' : [String, {'default' : 'cd $(srcdir) && kdvi $(base).dvi'}]
+        'latex' : Command(default=['$(srcdir)', 'latex $(basename)']),
+        'viewdvi' : Command(default=['$(srcdir)', 'kdvi $(base).dvi)']),
     }
 
 

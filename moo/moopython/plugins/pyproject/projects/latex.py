@@ -81,14 +81,14 @@ class LatexProject(SimpleProject):
 
     def __cmd_simple(self, cmd, filename, window):
         try:
-            command = self.config.get_command(cmd, filename, self.topdir)
+            working_dir, command = self.config.get_command(cmd, filename, self.topdir)
         except Exception, e:
             print_error(e)
             return False
         output = self.window.get_output()
         output.clear()
         window.present_output()
-        output.run_command(command)
+        output.run_command(command, working_dir)
         return True
 
     def exec_command(self, window, cmd):

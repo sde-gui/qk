@@ -24,6 +24,28 @@ class String(Setting):
 
 Filename = String
 
+class Command(Setting):
+    def copy_from(self, other):
+        return Setting.copy_from(self, other)
+
+    def set_value(self, value):
+        if len(value) != 2:
+            raise ValueError("invalid Command value %s" % (value,))
+        return Setting.set_value(self, value)
+
+    def load(self, node):
+        cmd = node.get_child('cmd').get()
+        working_dir = node.get_child('working_dir').get()
+        return self.set_value([working_dir, cmd])
+
+    def save(self):
+        if not self.is_default():
+            value = self.get_value()
+            items = [XMLItem('working_dir', value[0]), XMLItem('cmd', value[1])]
+            return [XMLGroup(self.get_id(), items)]
+        else:
+            return []
+
 class Bool(Setting):
     __item_data_type__ = bool
     __item_cell_type__ = CellToggle

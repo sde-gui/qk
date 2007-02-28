@@ -118,13 +118,7 @@ class CProject(SimpleProject):
                 output.set_property("highlight-current-line", False)
                 output.set_wrap_mode(gtk.WRAP_CHAR)
 
-            output.connect("activate", self.output_activate)
-            output.connect("stderr-line", self.output_stderr_line)
-
-            buf = output.get_buffer()
-            buf.create_tag('make-stderr', foreground='#800000')
-            buf.create_tag('make-error', foreground='red')
-            buf.create_tag('make-warning', foreground='#C00000')
+            output.set_filter(moo.edit.command_filter_create('make'))
 
             pane = gtk.ScrolledWindow()
             pane.set_shadow_type(gtk.SHADOW_ETCHED_IN)
@@ -168,33 +162,6 @@ class CProject(SimpleProject):
             return f
         return None
 
-    def output_activate(self, output, lineno):
-        errinfo = output.get_line_data(lineno)
-        if not errinfo:
-            return False
-
-        file = self.get_file_path(errinfo.file)
-        if not file:
-            return False
-
-        editor = moo.edit.editor_instance()
-        editor.open_file_line(file, errinfo.line)
-        return True
-
-    def output_stderr_line(self, output, line):
-        errinfo = parse_make_error(line)
-        if errinfo:
-            if errinfo.type == 'warning':
-                tag = 'make-warning'
-            else:
-                tag = 'make-error'
-        else:
-            tag = 'make-stderr'
-        n = output.write_line(line, -1, output.lookup_tag(tag))
-        if errinfo:
-            output.set_line_data(n, errinfo)
-        return True
-
     def save_all(self, window):
         docs = window.list_docs()
         for d in docs:
@@ -228,14 +195,14 @@ class CProject(SimpleProject):
 
     def __cmd_simple(self, cmd, filename, window):
         try:
-            command = self.config.get_command(cmd, filename, self.topdir)
+            working_dir, command = self.config.get_command(cmd, filename, self.topdir)
         except Exception, e:
             print_error(e)
             return False
         pane = self.get_build_pane(window)
         pane.output.clear()
         window.paned.present_pane(pane)
-        pane.output.run_command(command)
+        pane.output.run_command(command, working_dir)
         return True
 
     def exec_command(self, window, cmd):

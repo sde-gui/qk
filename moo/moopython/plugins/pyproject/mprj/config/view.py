@@ -332,36 +332,6 @@ class GroupView(gtk.TreeView):
         item = model.get_value(iter, 0)
         item.set_string(text)
 
-#     def delete_activated(self, item, path):
-#         model = self.get_model()
-#         iter = model.get_iter(path)
-#         if not iter:
-#             return
-#         data = model.get_value(iter, 0)
-#         del self.dct[data[0]]
-#         model.remove(iter)
-
-#     def do_button_press_event(self, event):
-#         if event.button != 3:
-#             return gtk.TreeView.do_button_press_event(self, event)
-#         pos = self.get_path_at_pos(int(event.x), int(event.y))
-#         if pos is None:
-#             return gtk.TreeView.do_button_press_event(self, event)
-#         model = self.get_model()
-#         if model is None:
-#             return gtk.TreeView.do_button_press_event(self, event)
-#         iter = model.get_iter(pos[0])
-#         data = model.get_value(iter, 0)
-#         if data[0] is None:
-#             return gtk.TreeView.do_button_press_event(self, event)
-#         self.get_selection().select_iter(iter)
-#         menu = gtk.Menu()
-#         item = gtk.MenuItem(_("Delete"), False)
-#         item.show()
-#         item.connect('activate', self.delete_activated, pos[0])
-#         menu.add(item)
-#         menu.popup(None, None, None, event.button, event.time)
-
     def apply(self):
         pass
 

@@ -1,3 +1,10 @@
+if __name__ == '__main__':
+    import sys
+    import os.path
+    dir = os.path.dirname(__file__)
+    sys.path.insert(0, os.path.join(dir, '../..'))
+    sys.path.insert(0, os.path.join(dir, '..'))
+
 import os.path
 import moo
 from moo.utils import _
@@ -5,7 +12,7 @@ from moo.utils import _
 from mprj.utils import expand_command
 from mprj.settings import *
 from mprj.simple import SimpleProject, SimpleConfig
-
+from mprj.config._xml import XMLItem, XMLGroup
 
 class MakeOptions(Group):
     __items__ = {
@@ -26,13 +33,13 @@ class ConfigureOptions(Group):
 
 class Commands(Group):
     __items__ = {
-        'build' : String(default='cd $(top_builddir) && $(make)'),
-        'compile' : String(default='cd $(builddir) && $(make) $(base).o'),
-        'configure' : String(default='cd $(top_builddir) && $(configure_vars) $(top_srcdir)/configure $(configure_args)'),
-        'autogen' : String(default='cd $(top_builddir) && $(configure_vars) $(top_srcdir)/autogen.sh $(configure_args)'),
-        'clean' : String(default='cd $(top_builddir) && $(make) clean'),
-        'distclean' : String(default='cd $(top_builddir) && $(make) distclean'),
-        'install' : String(default='cd $(top_builddir) && $(make) install'),
+        'build' : Command(default=['$(top_builddir)', '$(make)']),
+        'compile' : Command(default=['$(builddir)', '$(make) $(base).o']),
+        'configure' : Command(default=['$(top_builddir)', '$(configure_vars) $(top_srcdir)/configure $(configure_args)']),
+        'autogen' : Command(default=['$(top_builddir)', '$(configure_vars) $(top_srcdir)/autogen.sh $(configure_args)']),
+        'clean' : Command(default=['$(top_builddir)', '$(make) clean']),
+        'distclean' : Command(default=['$(top_builddir)', '$(make) distclean']),
+        'install' : Command(default=['$(top_builddir)', '$(make) install']),
     }
     __item_name__ = _('Build commands')
 
@@ -219,6 +226,12 @@ class CConfig(SimpleConfig):
 
 _sample_file = """
     <medit-project name="moo" type="C" version="2.0">
+      <commands>
+        <compile>
+          <cmd>foolala</cmd>
+          <working_dir>foolala</working_dir>
+        </compile>
+      </commands>
       <make>
         <flags>-j 3</flags>
       </make>
