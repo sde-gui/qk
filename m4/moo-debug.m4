@@ -86,6 +86,10 @@ AC_SUBST(_moo_WNAME)
 m4_undefine([_moo_WNAME])
 ])
 
+if $_MOO_GCC; then
+  _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_CFLAGS,[-fno-strict-aliasing])
+fi
+
 if test "x$MOO_DEBUG" = "xyes"; then
 _moo_debug_flags="-DG_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED dnl
 -DGDK_DISABLE_DEPRECATED -DENABLE_DEBUG -DENABLE_PROFILE dnl
