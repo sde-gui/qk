@@ -33,10 +33,10 @@
 
   <match what="stderr" pattern="(?P&lt;file&gt;[^:]+)\((?P&lt;line&gt;\d+)\):(\d+:)?\s*(warning|remark).*" style="output-error"/>
 
-  <match what="stdout" pattern="^make\[\d+\]: Entering directory `(?P&lt;dir&gt;.*)'">
+  <match what="stdout" pattern="^g?make\[\d+\]: Entering directory `(?P&lt;dir&gt;.*)'">
     <action type="push" name="directory" substring="dir"/>
   </match>
-  <match what="stdout" pattern="^make\[\d+\]: Leaving directory">
+  <match what="stdout" pattern="^g?make\[\d+\]: Leaving directory">
     <action type="pop" name="directory"/>
   </match>
 </filter>
