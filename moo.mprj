@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <medit-project version="1.0" type="C" name="moo">
  <active>debug</active>
- <commands>
-  <compile>cd $(builddir) &amp;&amp; $(make) $(base).lo</compile>
- </commands>
  <configurations>
   <debug>
    <build_dir>build/debug</build_dir>
    <configure>
-    <args>--enable-debug=full --enable-all-warnings --enable-libmoo --with-mooterm</args>
+    <args>--enable-debug=full --enable-all-warnings --enable-libmoo --with-mooterm --enable-libmoo-headers</args>
     <vars>
      <var name="CC">gcc-3.4</var>
      <var name="CFLAGS">-g</var>
@@ -30,20 +27,20 @@
   <optimized>
    <build_dir>build/optimized</build_dir>
    <configure>
-    <args>--enable-all-warnings</args>
+    <args>--enable-all-warnings --enable-libmoo --without-system-pcre</args>
     <vars>
-     <var name="CC">gcc-3.4</var>
-     <var name="CFLAGS">-g -O2</var>
+     <var name="CC">c99</var>
+     <var name="CFLAGS">-O6</var>
     </vars>
    </configure>
   </optimized>
  </configurations>
- <file_selector_dir>/home/muntyan/projects/moo/build/optimized/</file_selector_dir>
+ <file_selector_dir>/home/muntyan/projects/moo/moo/mooedit/</file_selector_dir>
  <run>
   <args>--g-fatal-warnings --new-app --mode=project</args>
   <exe>medit/medit</exe>
   <vars>
-   <var name="LANGUAGE">ru</var>
+   <var name="LANGUAGE">fr</var>
   </vars>
  </run>
 </medit-project>

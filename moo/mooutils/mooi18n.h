@@ -29,8 +29,6 @@ G_BEGIN_DECLS
 #define D_(String,Domain) dgettext (Domain, String)
 #define QD_(String,Domain) g_strip_context ((String), D_ (String, Domain))
 
-const char *moo_gettext (const char *string);
-
 #else /* !ENABLE_NLS */
 
 #undef textdomain
@@ -55,6 +53,9 @@ const char *moo_gettext (const char *string);
 #define bind_textdomain_codeset(Domain,Codeset) (Codeset)
 
 #endif /* !ENABLE_NLS */
+
+
+const char *moo_gettext (const char *string);
 
 
 G_END_DECLS
