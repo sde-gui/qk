@@ -2,6 +2,8 @@
 # MOO_COMPONENTS(default-yes,default-no)
 #
 AC_DEFUN([MOO_COMPONENTS],[
+  AC_REQUIRE([MOO_AC_CHECK_OS])
+
   m4_foreach([comp], [utils, edit, term, app],
              [build_moo[]comp=true])
   m4_foreach([comp], $2,
