@@ -47,8 +47,8 @@ G_BEGIN_DECLS
 #define gettext(String) (String)
 #define dgettext(Domain,String) (String)
 #define dcgettext(Domain,String,Type) (String)
-#define ngettext(str,str_pl,n) ((n) > 1 ? (str_pl) ? (str))
-#define dngettext(dom,str,str_pl,n) ((n) > 1 ? (str_pl) ? (str))
+#define ngettext(str,str_pl,n) ((n) > 1 ? (str_pl) : (str))
+#define dngettext(dom,str,str_pl,n) ((n) > 1 ? (str_pl) : (str))
 #define bindtextdomain(Domain,Directory) (Domain)
 #define bind_textdomain_codeset(Domain,Codeset) (Codeset)
 

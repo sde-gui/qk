@@ -245,7 +245,7 @@ AM_CFLAGS =			\
 	$(pcre_include)		\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
-	-DMOO_LOCALE_DIR=\"${localedir}\"
+	-DMOO_LOCALE_DIR=\"$(datadir)/locale\"
 
 if MOO_INSTALL_HEADERS
 mooutils_includedir = $(moo_includedir)/mooutils
