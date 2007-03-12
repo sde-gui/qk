@@ -15,7 +15,7 @@
 
     <definitions>
       <context id="skip-asterisk">
-        <match>^\s*\*\s*</match>
+        <match>^\s*\*(?!\/)\s*</match>
       </context>
 
       <context id="inline-docs-body">
