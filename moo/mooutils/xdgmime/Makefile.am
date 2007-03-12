@@ -7,12 +7,13 @@ mooxdgmime_sources =	\
 	xdgmimeglob.c	\
 	xdgmimeglob.h	\
 	xdgmime.h	\
-	xdgmimeint.c	\
 	xdgmimeint.h	\
 	xdgmimemagic.c	\
 	xdgmimemagic.h	\
 	xdgmimeparent.c	\
 	xdgmimeparent.h
+
+EXTRA_DIST = xdgmimeint.c
 
 noinst_LTLIBRARIES = libxdgmime.la
 libxdgmime_la_SOURCES = $(mooxdgmime_sources)

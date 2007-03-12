@@ -30,6 +30,7 @@
 
 #include "xdgmime.h"
 #include <glib.h>
+#include <string.h>
 
 #ifndef	FALSE
 #define	FALSE (0)
@@ -39,12 +40,12 @@
 #define	TRUE (!FALSE)
 #endif
 
-typedef guint32 xdg_unichar_t;
-typedef guchar xdg_uchar8_t;
-typedef gushort xdg_uint16_t;
-typedef guint32 xdg_uint32_t;
+typedef gunichar xdg_unichar_t;
+typedef guint8   xdg_uchar8_t;
+typedef guint16  xdg_uint16_t;
+typedef guint32  xdg_uint32_t;
 
-#ifdef XDG_PREFIX
+#if 0 && defined(XDG_PREFIX)
 #define _xdg_utf8_to_ucs4   XDG_ENTRY(utf8_to_ucs4)
 #define _xdg_ucs4_to_lower   XDG_ENTRY(ucs4_to_lower)
 #define _xdg_utf8_validate   XDG_ENTRY(utf8_validate)
@@ -52,19 +53,44 @@ typedef guint32 xdg_uint32_t;
 #define _xdg_utf8_skip       XDG_ENTRY(utf8_skip)
 #endif
 
-#define SWAP_BE16_TO_LE16(val) (xdg_uint16_t)(((xdg_uint16_t)(val) << 8)|((xdg_uint16_t)(val) >> 8))
+#define SWAP_BE16_TO_LE16 GUINT16_SWAP_LE_BE
+#define SWAP_BE32_TO_LE32 GUINT32_SWAP_LE_BE
 
-#define SWAP_BE32_TO_LE32(val) (xdg_uint32_t)((((xdg_uint32_t)(val) & 0xFF000000U) >> 24) |	\
-					      (((xdg_uint32_t)(val) & 0x00FF0000U) >> 8) |	\
-					      (((xdg_uint32_t)(val) & 0x0000FF00U) << 8) |	\
-					      (((xdg_uint32_t)(val) & 0x000000FFU) << 24))
 /* UTF-8 utils
  */
 #define _xdg_utf8_next_char g_utf8_next_char
+#define _xdg_utf8_to_ucs4   g_utf8_get_char
+#define _xdg_ucs4_to_lower  g_unichar_tolower
 
+#define _xdg_utf8_validate(s) g_utf8_validate ((s), -1, NULL)
+
+inline static const char *
+_xdg_get_base_name (const char *file_name)
+{
+  const char *base_name;
+
+  if (file_name == NULL)
+    return NULL;
+
+  base_name = strrchr (file_name, '/');
+
+  if (base_name == NULL)
+    return file_name;
+  else
+    return base_name + 1;
+}
+
+/*
 xdg_unichar_t  _xdg_utf8_to_ucs4  (const char    *source);
 xdg_unichar_t  _xdg_ucs4_to_lower (xdg_unichar_t  source);
 int            _xdg_utf8_validate (const char    *source);
 const char    *_xdg_get_base_name (const char    *file_name);
+*/
+
+#define malloc g_try_malloc
+#define realloc g_try_realloc
+#define free g_free
+#define strdup g_strdup
+#define calloc(nmemb,size) g_malloc0 ((nmemb)*(size))
 
 #endif /* __XDG_MIME_INT_H__ */
