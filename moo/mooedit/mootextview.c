@@ -917,7 +917,8 @@ moo_text_view_redo (MooTextView    *view)
 {
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
 
-    if (moo_undo_stack_can_redo (get_undo_stack (view)))
+    if (moo_undo_stack_can_redo (get_undo_stack (view)) &&
+        gtk_text_view_get_editable (GTK_TEXT_VIEW (view)))
     {
         moo_text_buffer_freeze (get_moo_buffer (view));
         moo_undo_stack_redo (get_undo_stack (view));
@@ -939,7 +940,8 @@ moo_text_view_undo (MooTextView    *view)
 {
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
 
-    if (moo_undo_stack_can_undo (get_undo_stack (view)))
+    if (moo_undo_stack_can_undo (get_undo_stack (view)) &&
+        gtk_text_view_get_editable (GTK_TEXT_VIEW (view)))
     {
         moo_text_buffer_freeze (get_moo_buffer (view));
         moo_undo_stack_undo (get_undo_stack (view));
