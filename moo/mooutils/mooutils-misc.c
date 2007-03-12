@@ -1584,6 +1584,16 @@ _moo_splitlines (const char *string)
                 line = ++p;
                 break;
 
+            case '\xe2': /* Unicode paragraph separator "\xe2\x80\xa9" */
+                if (p[1] == '\x80' && p[2] == '\xa9')
+                {
+                    g_ptr_array_add (array, g_strndup (line, p - line));
+                    p += 3;
+                    line = p;
+                    break;
+                }
+                /* fallthrough */
+
             default:
                 ++p;
         }
