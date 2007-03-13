@@ -134,6 +134,17 @@ guint       _moo_io_add_watch_full          (GIOChannel     *channel,
                                              GDestroyNotify  notify);
 
 
+#if GLIB_CHECK_VERSION(2,10,0)
+#define _moo_new            g_slice_new
+#define _moo_new0           g_slice_new0
+#define _moo_free           g_slice_free
+#else
+#define _moo_new(type)      g_new (type, 1)
+#define _moo_new0(type)     g_new0 (type, 1)
+#define _moo_free(type,mem) g_free (mem)
+#endif
+
+
 G_END_DECLS
 
 #endif /* __MOO_UTILS_MISC_H__ */
