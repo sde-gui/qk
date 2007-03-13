@@ -21,36 +21,19 @@
 
 /* macro from glib/gmacros.h */
 #if     __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 4)
-#define G_GNUC_PRINTF( format_idx, arg_idx )    \
-  __attribute__((__format__ (__printf__, format_idx, arg_idx)))
-#define G_GNUC_SCANF( format_idx, arg_idx )     \
-  __attribute__((__format__ (__scanf__, format_idx, arg_idx)))
-#define G_GNUC_FORMAT( arg_idx )                \
-  __attribute__((__format_arg__ (arg_idx)))
-#define G_GNUC_NORETURN                         \
-  __attribute__((__noreturn__))
-#define G_GNUC_CONST                            \
-  __attribute__((__const__))
 #define G_GNUC_UNUSED                           \
   __attribute__((__unused__))
-#define G_GNUC_NO_INSTRUMENT			\
-  __attribute__((__no_instrument_function__))
 #else   /* !__GNUC__ */
-#define G_GNUC_PRINTF( format_idx, arg_idx )
-#define G_GNUC_SCANF( format_idx, arg_idx )
-#define G_GNUC_FORMAT( arg_idx )
-#define G_GNUC_NORETURN
-#define G_GNUC_CONST
 #define G_GNUC_UNUSED
-#define G_GNUC_NO_INSTRUMENT
 #endif  /* !__GNUC__ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif /*  HAVE_CONFIG_H */
 
+#define _GNU_SOURCE /* to get the declaration of ptsname_r */
+
 #ifdef HAVE_PTSNAME_R
-#define _GNU_SOURCE
 #include <stdlib.h>
 #endif
 
@@ -682,7 +665,7 @@ _vte_pty_ptsname(int master)
 
 #ifndef MOO_OS_BSD
 static int
-_vte_pty_getpt()
+_vte_pty_getpt (void)
 {
 	int fd, flags;
 #ifdef HAVE_GETPT
