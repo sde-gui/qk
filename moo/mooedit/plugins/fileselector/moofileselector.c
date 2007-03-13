@@ -30,10 +30,17 @@
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooi18n.h"
-#include <string.h>
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#include <glib/gstdio.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/stat.h>
+
+#ifdef MOO_USE_XDGMIME
+#include <mooutils/xdgmime/xdgmime.h>
+#endif
 
 #ifndef MOO_VERSION
 #define MOO_VERSION NULL
@@ -278,12 +285,34 @@ static void
 moo_file_selector_activate (MooFileView    *fileview,
                             const char     *path)
 {
+    struct stat statbuf;
     MooFileSelector *filesel = MOO_FILE_SELECTOR (fileview);
+    gboolean is_text = TRUE, is_exe = FALSE;
 
-    if (_moo_file_is_text (path))
+    g_return_if_fail (path != NULL);
+
+    errno = 0;
+
+    if (g_stat (path, &statbuf) != 0)
+    {
+        int err = errno;
+        g_warning ("%s: error in stat(%s): %s", G_STRLOC, path, g_strerror (err));
+        return;
+    }
+
+#ifdef MOO_USE_XDGMIME
+    {
+        const char *mime_type = xdg_mime_get_mime_type_for_file (path, &statbuf);
+        is_text = !strcmp (mime_type, "application/octet-stream") ||
+                   xdg_mime_mime_type_subclass (mime_type, "text/*");
+        is_exe = !strcmp (mime_type, "application/x-executable");
+    }
+#endif
+
+    if (is_text)
         moo_editor_open_file (moo_edit_window_get_editor (filesel->window),
                               filesel->window, GTK_WIDGET (filesel), path, NULL);
-    else
+    else if (!is_exe)
         _moo_open_file (path);
 }
 
