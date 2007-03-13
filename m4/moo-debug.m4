@@ -68,7 +68,7 @@ if test "x$_moo_all_warnings" = "xyes"; then
 [-W -Wall -Wpointer-arith -Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
 -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations dnl
 -Wmissing-noreturn -Wmissing-format-attribute -Wnested-externs dnl
--Wdisabled-optimization])
+-Wdisabled-optimization -Wendif-labels -Wstrict-prototypes])
   fi
 else
   if $_MOO_GCC; then
