@@ -231,6 +231,31 @@ moo_folder_dispose (GObject *object)
 }
 
 
+static void
+add_file_size (G_GNUC_UNUSED const char *filename,
+               MooFile *file,
+               gsize *mem)
+{
+    *mem += sizeof *file;
+#define STRING_SIZE(s) ((s) ? (strlen (s) + 1) : 0)
+    *mem += STRING_SIZE (file->name);
+    *mem += STRING_SIZE (file->link_target);
+    *mem += STRING_SIZE (file->display_name);
+    *mem += STRING_SIZE (file->case_display_name);
+    *mem += STRING_SIZE (file->collation_key);
+#undef STRING_SIZE
+}
+
+gsize
+_moo_folder_mem_usage (MooFolder *folder)
+{
+    gsize mem = 0;
+    mem += sizeof (MooFolderImpl);
+    g_hash_table_foreach (folder->impl->files, (GHFunc) add_file_size, &mem);
+    return mem;
+}
+
+
 MooFolder *
 _moo_folder_new_with_impl (MooFolderImpl *impl)
 {
@@ -472,6 +497,7 @@ get_names (MooFolderImpl *impl)
             file->icon = _moo_file_icon_blank ();
             g_hash_table_insert (impl->files, g_strdup (name), file);
             added = g_slist_prepend (added, file);
+            _moo_file_stat (file, impl->path);
         }
         else
         {
@@ -655,6 +681,7 @@ get_icons_a_bit (MooFolderImpl *impl)
         }
 #endif
 
+        _moo_file_free_statbuf (file);
         _moo_file_unref (file);
         g_slist_free (changed);
 
@@ -914,6 +941,8 @@ file_created (MooFolderImpl *impl,
     }
 #endif
 
+    _moo_file_free_statbuf (file);
+
     g_hash_table_insert (impl->files, g_strdup (name), file);
     list = g_slist_append (NULL, file);
     folder_emit_files (impl, FILES_ADDED, list);
@@ -1011,9 +1040,10 @@ moo_file_get_type_string (MooFile *file)
 
 /* XXX */
 static char *
-moo_file_get_size_string (MooFile *file)
+get_size_string (struct stat *statbuf)
 {
-    return g_strdup_printf ("%" G_GINT64_FORMAT, (MooFileSize) file->statbuf.st_size);
+    g_return_val_if_fail (statbuf != NULL, NULL);
+    return g_strdup_printf ("%" G_GINT64_FORMAT, (MooFileSize) statbuf->st_size);
 }
 
 
@@ -1031,7 +1061,9 @@ moo_file_get_mtime_string (MooFile *file)
         return NULL;
 #endif
 
-    if (strftime (buf, 1024, "%x %X", localtime ((time_t*)&file->statbuf.st_mtime)))
+    g_return_val_if_fail (file->statbuf != NULL, NULL);
+
+    if (strftime (buf, 1024, "%x %X", localtime ((time_t*)&file->statbuf->st_mtime)))
         return g_strdup (buf);
     else
         return NULL;
@@ -1092,7 +1124,7 @@ _moo_folder_get_file_info (MooFolder      *folder,
         if (!(file->info & MOO_FILE_INFO_IS_DIR))
         {
             g_ptr_array_add (array, g_strdup ("Size:"));
-            g_ptr_array_add (array, moo_file_get_size_string (file));
+            g_ptr_array_add (array, get_size_string (file->statbuf));
         }
 
         mtime = moo_file_get_mtime_string (file);

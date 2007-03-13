@@ -87,10 +87,7 @@ void
 _moo_file_find_mime_type (MooFile    *file,
                           const char *path)
 {
-    if (file->flags & MOO_FILE_HAS_STAT)
-        file->mime_type = xdg_mime_get_mime_type_for_file (path, &file->statbuf);
-    else
-        file->mime_type = xdg_mime_get_mime_type_for_file (path, NULL);
+    file->mime_type = xdg_mime_get_mime_type_for_file (path, file->statbuf);
 
     if (!file->mime_type || !file->mime_type[0])
     {
@@ -131,7 +128,7 @@ _moo_file_new (const char *dirname,
         g_return_val_if_fail (display_name != NULL, NULL);
     }
 
-    file = g_new0 (MooFile, 1);
+    file = _moo_new0 (MooFile);
     file->ref_count = 1;
 
     file->name = g_strdup (basename);
@@ -171,7 +168,8 @@ _moo_file_unref (MooFile *file)
         g_free (file->case_display_name);
         g_free (file->collation_key);
         g_free (file->link_target);
-        g_free (file);
+        _moo_free (struct stat, file->statbuf);
+        _moo_free (MooFile, file);
     }
 }
 
@@ -194,7 +192,10 @@ _moo_file_stat (MooFile    *file,
 
     errno = 0;
 
-    if (g_lstat (fullname, &file->statbuf) != 0)
+    if (!file->statbuf)
+        file->statbuf = _moo_new (struct stat);
+
+    if (g_lstat (fullname, file->statbuf) != 0)
     {
         if (errno == ENOENT)
         {
@@ -219,7 +220,7 @@ _moo_file_stat (MooFile    *file,
     else
     {
 #ifdef S_ISLNK
-        if (S_ISLNK (file->statbuf.st_mode))
+        if (S_ISLNK (file->statbuf->st_mode))
         {
             static char buf[1024];
             gssize len;
@@ -227,7 +228,7 @@ _moo_file_stat (MooFile    *file,
             file->info |= MOO_FILE_INFO_IS_LINK;
             errno = 0;
 
-            if (g_stat (fullname, &file->statbuf) != 0)
+            if (g_stat (fullname, file->statbuf) != 0)
             {
                 if (errno == ENOENT)
                 {
@@ -272,22 +273,22 @@ _moo_file_stat (MooFile    *file,
     if ((file->info & MOO_FILE_INFO_EXISTS) &&
          !(file->info & MOO_FILE_INFO_IS_LOCKED))
     {
-        if (S_ISDIR (file->statbuf.st_mode))
+        if (S_ISDIR (file->statbuf->st_mode))
             file->info |= MOO_FILE_INFO_IS_DIR;
 #ifdef S_ISBLK
-        else if (S_ISBLK (file->statbuf.st_mode))
+        else if (S_ISBLK (file->statbuf->st_mode))
             file->info |= MOO_FILE_INFO_IS_BLOCK_DEV;
 #endif
 #ifdef S_ISCHR
-        else if (S_ISCHR (file->statbuf.st_mode))
+        else if (S_ISCHR (file->statbuf->st_mode))
             file->info |= MOO_FILE_INFO_IS_CHAR_DEV;
 #endif
 #ifdef S_ISFIFO
-        else if (S_ISFIFO (file->statbuf.st_mode))
+        else if (S_ISFIFO (file->statbuf->st_mode))
             file->info |= MOO_FILE_INFO_IS_FIFO;
 #endif
 #ifdef S_ISSOCK
-        else if (S_ISSOCK (file->statbuf.st_mode))
+        else if (S_ISSOCK (file->statbuf->st_mode))
             file->info |= MOO_FILE_INFO_IS_SOCKET;
 #endif
     }
@@ -304,6 +305,15 @@ _moo_file_stat (MooFile    *file,
         file->info |= MOO_FILE_INFO_IS_HIDDEN;
 
     g_free (fullname);
+}
+
+void
+_moo_file_free_statbuf (MooFile *file)
+{
+    g_return_if_fail (file != NULL);
+    _moo_free (struct stat, file->statbuf);
+    file->statbuf = NULL;
+    file->flags &= ~MOO_FILE_HAS_STAT;
 }
 
 

@@ -47,6 +47,7 @@ struct _MooFileSystemPrivate {
     GHashTable *folders;
     MooFileWatch *fam;
     FoldersCache cache;
+    guint debug_timeout;
 };
 
 static MooFileSystem *fs_instance = NULL;
@@ -211,12 +212,34 @@ _moo_file_system_folder_finalized (MooFileSystem *fs,
 
 
 static void
+calc_mem_hash_cb (G_GNUC_UNUSED const char *name,
+                  MooFolder *folder,
+                  gsize *mem)
+{
+    mem[0] += _moo_folder_mem_usage (folder);
+    mem[1] += g_hash_table_size (folder->impl->files);
+}
+
+static gboolean
+debug_timeout (MooFileSystem *fs)
+{
+    gsize mem[2] = {0, 0};
+    g_hash_table_foreach (fs->priv->folders, (GHFunc) calc_mem_hash_cb, mem);
+    g_print ("%u bytes in %u files\n", mem[0], mem[1]);
+    return TRUE;
+}
+
+
+static void
 _moo_file_system_init (MooFileSystem *fs)
 {
     fs->priv = g_new0 (MooFileSystemPrivate, 1);
     fs->priv->folders = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
     fs->priv->cache.queue = g_queue_new ();
     fs->priv->cache.paths = g_hash_table_new (g_str_hash, g_str_equal);
+
+    if (0)
+        fs->priv->debug_timeout = g_timeout_add (5000, (GSourceFunc) debug_timeout, fs);
 }
 
 
@@ -237,6 +260,9 @@ moo_file_system_dispose (GObject *object)
             moo_file_watch_close (fs->priv->fam, NULL);
             moo_file_watch_unref (fs->priv->fam);
         }
+
+        if (fs->priv->debug_timeout)
+            g_source_remove (fs->priv->debug_timeout);
 
         g_free (fs->priv);
         fs->priv = NULL;

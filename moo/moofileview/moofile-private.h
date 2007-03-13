@@ -52,8 +52,7 @@ struct _MooFile
     guint8          icon;
     const char     *mime_type;
     int             ref_count;
-/* TODO: who needs whole structure? */
-    struct stat     statbuf;
+    struct stat    *statbuf;
 };
 
 
@@ -88,6 +87,7 @@ guint8       _moo_file_get_icon_type    (MooFile        *file,
                                          const char     *dirname);
 void         _moo_file_stat             (MooFile        *file,
                                          const char     *dirname);
+void         _moo_file_free_statbuf     (MooFile        *file);
 void         _moo_file_find_mime_type   (MooFile        *file,
                                          const char     *path);
 
