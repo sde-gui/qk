@@ -19,7 +19,7 @@ AC_HELP_STRING([--with-system-pcre], [whether to use system copy of pcre library
 if test x$MOO_BUILD_PCRE != xyes; then
     have_pcre="no"
 
-    PKG_CHECK_MODULES(PCRE, [libpcre >= 6.4], [
+    PKG_CHECK_MODULES(PCRE, [libpcre >= 6.7], [
         have_pcre="yes"
     ], [
         have_pcre="no"
