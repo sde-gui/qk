@@ -445,7 +445,7 @@ do_load (MooEdit            *edit,
     g_return_val_if_fail (filename != NULL, ERROR_FILE);
     g_return_val_if_fail (encoding != NULL, ERROR_FILE);
 
-    if (g_lstat (filename, statbuf) == 0)
+    if (g_stat (filename, statbuf) == 0)
     {
         if (
 #ifdef S_ISBLK
