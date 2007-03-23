@@ -663,7 +663,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                                G_TYPE_UINT, i - 1,
                                                "accel", accel,
                                                "connect-accel", TRUE,
-                                               "visible", FALSE,
+                                               "accel-editable", FALSE,
                                                NULL);
         g_free (accel);
         g_free (action_id);
