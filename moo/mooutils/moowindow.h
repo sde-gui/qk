@@ -112,6 +112,9 @@ MooActionCollection *moo_window_get_actions (MooWindow          *window);
 GtkAction  *moo_window_get_action           (MooWindow          *window,
                                              const char         *action);
 
+void        moo_window_set_global_accels    (MooWindow          *window,
+                                             gboolean            global);
+
 
 G_END_DECLS
 

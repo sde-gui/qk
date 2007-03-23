@@ -57,6 +57,8 @@ struct _MooWindowPrivate {
     MooActionCollection *actions;
     char *name;
     char *id;
+
+    guint global_accels : 1;
 };
 
 
@@ -419,11 +421,25 @@ static gboolean
 moo_window_key_press_event (GtkWidget   *widget,
                             GdkEventKey *event)
 {
-    return gtk_window_propagate_key_event (GTK_WINDOW (widget), event) ||
-           gtk_window_activate_key (GTK_WINDOW (widget), event) ||
-           /* GtkWindowClass would call two guys above again and then chain up
-            * to the parent, so it's a shortcut */
-           GTK_WIDGET_CLASS (moo_window_grand_parent_class)->key_press_event (widget, event);
+    MooWindow *window = MOO_WINDOW (widget);
+
+    if (window->priv->global_accels)
+        return GTK_WIDGET_CLASS (moo_window_parent_class)->key_press_event (widget, event);
+    else
+        return gtk_window_propagate_key_event (GTK_WINDOW (widget), event) ||
+               gtk_window_activate_key (GTK_WINDOW (widget), event) ||
+               /* GtkWindowClass would call two guys above again and then chain up
+                * to the parent, so it's a shortcut */
+               GTK_WIDGET_CLASS (moo_window_grand_parent_class)->key_press_event (widget, event);
+}
+
+
+void
+moo_window_set_global_accels (MooWindow *window,
+                              gboolean   global)
+{
+    g_return_if_fail (MOO_IS_WINDOW (window));
+    window->priv->global_accels = global != 0;
 }
 
 
