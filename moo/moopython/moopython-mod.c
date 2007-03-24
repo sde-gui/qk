@@ -23,7 +23,7 @@
 #include "moopython/moopython-pygtkmod.h"
 #include "mooedit/mooplugin-macro.h"
 #include "mooutils/moopython.h"
-#include "mooutils/mooutils-win32.h"
+#include "mooutils/mooutils-misc.h"
 
 
 static gboolean

@@ -46,7 +46,6 @@
 #include <errno.h>
 
 #ifdef __WIN32__
-#include <mooutils/mooutils-win32.h>
 #include <mooutils/mooutils-misc.h>
 #endif
 

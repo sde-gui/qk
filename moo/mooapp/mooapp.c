@@ -36,7 +36,6 @@
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
-#include "mooutils/mooutils-win32.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/xdgmime/xdgmime.h"
 #include <string.h>

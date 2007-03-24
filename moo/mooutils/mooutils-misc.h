@@ -147,4 +147,40 @@ guint       _moo_io_add_watch_full          (GIOChannel     *channel,
 
 G_END_DECLS
 
+
+#ifdef G_OS_WIN32
+#include <gtk/gtk.h>
+#include <string.h>
+#include <sys/time.h>
+
+G_BEGIN_DECLS
+
+
+#define fnmatch _moo_win32_fnmatch
+#define gettimeofday _moo_win32_gettimeofday
+#define getc_unlocked getc
+
+char       *moo_win32_get_app_dir           (void);
+char       *moo_win32_get_dll_dir           (const char     *dll);
+
+GSList     *_moo_win32_add_data_dirs        (GSList         *list,
+                                             const char     *prefix);
+
+const char *_moo_win32_get_locale_dir       (void);
+
+gboolean    _moo_win32_open_uri             (const char     *uri);
+void        _moo_win32_show_fatal_error     (const char     *domain,
+                                             const char     *logmsg);
+
+int         _moo_win32_fnmatch              (const char     *pattern,
+                                             const char     *string,
+                                             int             flags);
+int         _moo_win32_gettimeofday         (struct timeval *tp,
+                                             gpointer        tzp);
+
+
+G_END_DECLS
+
+#endif /* G_OS_WIN32 */
+
 #endif /* __MOO_UTILS_MISC_H__ */

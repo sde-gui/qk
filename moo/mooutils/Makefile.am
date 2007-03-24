@@ -13,7 +13,6 @@ endif
 SUBDIRS = $(subdirs) .
 
 win32_sources =				\
-	mooutils-win32.h		\
 	mooutils-win32.c
 
 gmappedfile_sources =			\

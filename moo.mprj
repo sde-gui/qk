@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <medit-project version="1.0" type="C" name="moo">
- <active>debug</active>
+ <active>mingw</active>
  <configurations>
   <debug>
    <build_dir>build/debug</build_dir>

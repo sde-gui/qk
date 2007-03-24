@@ -15,10 +15,9 @@
 #include "config.h"
 #endif
 
-#include "mooutils/mooutils-win32.h"
-#include "mooutils/mooutils-fs.h"
-
 #define WIN32_LEAN_AND_MEAN
+#include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-fs.h"
 #include <windows.h>
 #include <shellapi.h>
 #include <time.h>

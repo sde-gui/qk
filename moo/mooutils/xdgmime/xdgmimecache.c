@@ -46,7 +46,7 @@
 #endif
 #ifdef __WIN32__
 #include <winsock2.h>
-#include <mooutils/mooutils-win32.h>
+#include <mooutils/mooutils-misc.h>
 #endif
 
 #ifdef HAVE_MMAP

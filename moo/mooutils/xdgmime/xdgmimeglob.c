@@ -40,7 +40,7 @@
 #include <fnmatch.h>
 #endif
 #ifdef __WIN32__
-#include <mooutils/mooutils-win32.h>
+#include <mooutils/mooutils-misc.h>
 #endif
 
 #ifndef	FALSE

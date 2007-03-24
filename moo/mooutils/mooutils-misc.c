@@ -17,7 +17,6 @@
 
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-fs.h"
-#include "mooutils/mooutils-win32.h"
 #include "mooutils/moologwindow-glade.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"

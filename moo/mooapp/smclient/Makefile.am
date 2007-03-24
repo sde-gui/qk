@@ -22,10 +22,10 @@ libsmclient_la_LIBADD += -lSM -lICE
 libsmclient_la_SOURCES += eggsmclient-xsmp.c
 endif GDK_X11
 
-if GDK_WIN32
-AM_CFLAGS += -DEGG_SM_CLIENT_BACKEND_WIN32
-libsmclient_la_SOURCES += eggsmclient-win32.c
-endif
+# if GDK_WIN32
+# AM_CFLAGS += -DEGG_SM_CLIENT_BACKEND_WIN32
+# libsmclient_la_SOURCES += eggsmclient-win32.c
+# endif
 
 EXTRA_DIST =					\
 	eggsmclient-xsmp.c			\
