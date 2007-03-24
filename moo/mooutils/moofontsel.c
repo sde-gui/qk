@@ -1062,7 +1062,7 @@ moo_font_selection_update_preview (MooFontSelection *fontsel)
   rc_style->font_desc = moo_font_selection_get_font_description (fontsel);
 
   gtk_widget_modify_style (preview_entry, rc_style);
-  gtk_rc_style_unref (rc_style);
+  g_object_unref (rc_style);
 
   gtk_widget_size_request (preview_entry, NULL);
 
