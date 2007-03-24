@@ -73,6 +73,7 @@ CLEANFILES += libmoo.res
 libmoo_res_ldflag = -Wl,libmoo.res
 BUILT_SOURCES += libmoo.res
 nodist_libmoo_la_SOURCES = libmoo.res
+libs += -lwsock32
 endif
 
 if MOO_ENABLE_TESTS
