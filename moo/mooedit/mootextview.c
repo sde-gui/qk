@@ -2209,8 +2209,9 @@ moo_text_view_expose (GtkWidget      *widget,
         update_n_lines_idle (view);
 
     if (view->priv->highlight_current_line &&
+        GTK_WIDGET_SENSITIVE (view) &&
         view->priv->current_line_gc &&
-        event->window == text_window && view->priv->current_line_gc)
+        event->window == text_window)
             moo_text_view_draw_current_line (text_view, event);
 
     if (event->window == left_window)
