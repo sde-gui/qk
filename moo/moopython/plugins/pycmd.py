@@ -43,6 +43,8 @@ class PyCmdFactory(moo.edit.CommandFactory):
 
     def do_create_widget(self):
         swin = gtk.ScrolledWindow()
+        swin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        swin.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         textview = moo.edit.TextView()
         swin.add(textview)
         swin.show_all()
