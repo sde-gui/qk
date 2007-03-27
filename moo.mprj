@@ -7,7 +7,6 @@
    <configure>
     <args>--enable-debug=full --enable-all-warnings --enable-libmoo --with-mooterm --enable-libmoo-headers</args>
     <vars>
-     <var name="CC">gcc-3.4</var>
      <var name="CFLAGS">-g</var>
     </vars>
    </configure>
@@ -29,18 +28,18 @@
    <configure>
     <args>--enable-all-warnings --enable-libmoo --without-system-pcre</args>
     <vars>
-     <var name="CC">c99</var>
+     <var name="CC">gcc-3.4</var>
      <var name="CFLAGS">-O6</var>
     </vars>
    </configure>
   </optimized>
  </configurations>
- <file_selector_dir>/home/muntyan/projects/moo/moo/</file_selector_dir>
+ <file_selector_dir>/home/muntyan/projects/moo/moo/mooedit/glade/</file_selector_dir>
  <run>
   <args>--g-fatal-warnings --new-app --mode=project</args>
   <exe>medit/medit</exe>
   <vars>
-   <var name="LANGUAGE">fr</var>
+   <var name="LANGUAGEEE">fr</var>
   </vars>
  </run>
 </medit-project>

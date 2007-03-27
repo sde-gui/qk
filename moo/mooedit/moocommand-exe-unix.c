@@ -680,7 +680,7 @@ init_combo (GtkComboBox *combo,
     {
         GtkTreeIter iter;
         gtk_list_store_append (store, &iter);
-        gtk_list_store_set (store, &iter, 0, _(items[i]), -1);
+        gtk_list_store_set (store, &iter, 0, Q_(items[i]), -1);
     }
 
     g_object_unref (store);
