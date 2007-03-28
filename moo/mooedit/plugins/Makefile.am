@@ -2,8 +2,8 @@ DIST_SUBDIRS = activestrings fileselector
 
 # subdirs = activestrings completion
 # libs = activestrings/libastrings.la completion/libcompletion.la
-subdirs =
-libs =
+subdirs = completion
+libs = completion/libcompletion.la
 if GTK_2_6
 subdirs += fileselector
 libs += fileselector/libfileselector.la

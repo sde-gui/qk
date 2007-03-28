@@ -34,7 +34,7 @@
    </configure>
   </optimized>
  </configurations>
- <file_selector_dir>/home/muntyan/projects/moo/moo/mooedit/glade/</file_selector_dir>
+ <file_selector_dir>/home/muntyan/projects/gap/gap4r4/src/</file_selector_dir>
  <run>
   <args>--g-fatal-warnings --new-app --mode=project</args>
   <exe>medit/medit</exe>

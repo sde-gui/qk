@@ -56,6 +56,8 @@ mooedit_sources =			\
 	moocommand-private.h		\
 	moocommand-script.c		\
 	moocommand-script.h		\
+	moocompletionsimple.c		\
+	moocompletionsimple.h		\
 	mooeditaction.c			\
 	mooeditaction-factory.c		\
 	mooeditaction-factory.h		\
@@ -103,16 +105,20 @@ mooedit_sources =			\
 	mooplugin-loader.c		\
 	moopluginprefs-glade.h		\
 	mooprint-glade.h		\
+	mootext-private.h		\
 	mootextbox.c			\
 	mootextbox.h			\
 	mootextbtree.c			\
 	mootextbtree.h			\
 	mootextbuffer.c			\
+	mootextcompletion.c		\
+	mootextcompletion.h		\
 	mootextfind.c			\
 	mootextfind-glade.h		\
 	mootextfind.h			\
 	mootextgotoline-glade.h		\
-	mootext-private.h		\
+	mootextpopup.c			\
+	mootextpopup.h			\
 	mootextsearch.c			\
 	mootextsearch-private.h		\
 	mootextstylescheme.c		\

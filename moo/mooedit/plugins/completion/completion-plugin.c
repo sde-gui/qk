@@ -130,6 +130,7 @@ cmpl_plugin_init (CmplPlugin *plugin)
                                  "tooltip", _("Complete Word"),
                                  "accel", "<Ctrl>space",
                                  "closure-callback", completion_callback,
+                                 "condition::sensitive", "has-open-document",
                                  NULL);
 
     if (xml)

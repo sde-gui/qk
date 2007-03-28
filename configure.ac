@@ -48,6 +48,7 @@ moo/mooedit/gtksourceview/upstream/Makefile
 moo/mooedit/plugins/Makefile
 moo/mooedit/plugins/activestrings/Makefile
 moo/mooedit/plugins/fileselector/Makefile
+moo/mooedit/plugins/completion/Makefile
 moo/mooapp/Makefile
 moo/mooapp/smclient/Makefile
 moo/moopython/Makefile
