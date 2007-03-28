@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-02-23 09:20-0600\n"
+"POT-Creation-Date: 2007-03-13 03:14-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Yevgen Muntyan <muntyan@tamu.edu>\n"
 "MIME-Version: 1.0\n"
@@ -25,7 +25,7 @@ msgid "medit"
 msgstr "medit"
 
 #. menu item label
-#: ../moo/mooapp/mooapp.c:1260
+#: ../moo/mooapp/mooapp.c:1261
 msgid "System Info"
 msgstr "Информация о системе"
 
@@ -383,7 +383,7 @@ msgid "Don't prompt on replace"
 msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:3
-#: ../moo/mooedit/plugins/moofind.c:927
+#: ../moo/mooedit/plugins/moofind.c:930
 msgid "Find"
 msgstr ""
 
@@ -504,54 +504,54 @@ msgstr "Вид"
 msgid "_Window"
 msgstr "Окно"
 
-#: ../moo/mooedit/mooeditor.c:947
+#: ../moo/mooedit/mooeditor.c:954
 msgid "Open Recent"
 msgstr ""
 
-#: ../moo/mooedit/moocommand-exe-unix.c:545
+#: ../moo/mooedit/moocommand-exe-unix.c:550
 msgid "Shell command"
 msgstr ""
 
 #. Translators: "None" means no filter for a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-exe-unix.c:707
+#: ../moo/mooedit/moocommand-exe-unix.c:712
 msgid "Filter|None"
 msgstr ""
 
 #. Translators: these are kinds of input for a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-exe-unix.c:784
+#: ../moo/mooedit/moocommand-exe-unix.c:789
 msgid "Input|None"
 msgstr ""
 
-#: ../moo/mooedit/moocommand-exe-unix.c:784
+#: ../moo/mooedit/moocommand-exe-unix.c:789
 msgid "Input|Selected lines"
 msgstr "Выделенные строки"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:784
+#: ../moo/mooedit/moocommand-exe-unix.c:789
 msgid "Input|Selection"
 msgstr "Выделенный текст"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:784
+#: ../moo/mooedit/moocommand-exe-unix.c:789
 msgid "Input|Whole document"
 msgstr "Целый документ"
 
 #. Translators: these are actions for output of a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:791
 msgid "Output|None"
 msgstr ""
 
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:791
 msgid "Output|None, asynchronous"
 msgstr ""
 
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:791
 msgid "Output|Output pane"
 msgstr ""
 
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:791
 msgid "Output|Insert into the document"
 msgstr ""
 
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:791
 msgid "Output|New document"
 msgstr "Новый документ"
 
@@ -561,8 +561,8 @@ msgstr ""
 
 #. Save dialog title
 #: ../moo/mooedit/mooeditdialogs.c:94
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:985
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1010
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1017
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1048
 #: ../moo/mooedit/plugins/fileselector/moofileselector.glade.h:2
 #: ../moo/moofileview/glade/drop.glade.h:1 ../moo/mooutils/moostock.c:42
 msgid "Save As"
@@ -585,13 +585,13 @@ msgid "If you don't save, changes will be discarded"
 msgstr ""
 
 #. Translators: this is a button label (it's "Do Not Save" in some toolkits), try to keep it short
-#: ../moo/mooedit/mooeditdialogs.c:201
+#: ../moo/mooedit/mooeditdialogs.c:203
 msgid "Close _without Saving"
 msgstr ""
 
 #. Translators: number of documents here is always greater than one, so
 #. ignore singular form (which is simply copy of the plural here)
-#: ../moo/mooedit/mooeditdialogs.c:434
+#: ../moo/mooedit/mooeditdialogs.c:440
 #, c-format
 msgid ""
 "There are %u documents with unsaved changes. Save changes before closing?"
@@ -603,30 +603,30 @@ msgstr[2] ""
 msgstr[3] ""
 
 #. Could not save file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:490
+#: ../moo/mooedit/mooeditdialogs.c:496
 #, c-format
 msgid ""
 "Could not save file\n"
 "%s"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:492
+#: ../moo/mooedit/mooeditdialogs.c:498
 msgid "Could not save file"
 msgstr ""
 
 #. Error saving file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:518
+#: ../moo/mooedit/mooeditdialogs.c:524
 #, c-format
 msgid ""
 "Error saving file\n"
 "%s"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:520
+#: ../moo/mooedit/mooeditdialogs.c:526
 msgid "Error saving file"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:522
+#: ../moo/mooedit/mooeditdialogs.c:528
 #, c-format
 msgid ""
 "Could not convert file to requested character encoding %s. File was saved in "
@@ -634,74 +634,74 @@ msgid ""
 msgstr ""
 
 #. Could not open file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:552
+#: ../moo/mooedit/mooeditdialogs.c:558
 #, c-format
 msgid ""
 "Could not open file\n"
 "%s"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:554
+#: ../moo/mooedit/mooeditdialogs.c:560
 msgid "Could not open file"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:560
+#: ../moo/mooedit/mooeditdialogs.c:566
 #, c-format
 msgid ""
 "Could not open file using character encoding %s. The file may be binary or "
 "encoding may be specified incorrectly."
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:564
+#: ../moo/mooedit/mooeditdialogs.c:570
 msgid ""
 "Could not detect file character encoding. Please make sure the file is not "
 "binary and try to select encoding in the Open dialog."
 msgstr ""
 
 #. Could not reload file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:599
+#: ../moo/mooedit/mooeditdialogs.c:605
 #, c-format
 msgid ""
 "Could not reload file\n"
 "%s"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:669
+#: ../moo/mooedit/mooeditdialogs.c:676
 #, c-format
 msgid "Discard changes in file '%s'?"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:671
+#: ../moo/mooedit/mooeditdialogs.c:678
 msgid "If you reload the document, changes will be discarded"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:672 ../moo/mooedit/mooeditwindow.c:399
+#: ../moo/mooedit/mooeditdialogs.c:679 ../moo/mooedit/mooeditwindow.c:399
 msgid "_Reload"
 msgstr "Обновить"
 
-#: ../moo/mooedit/mooeditdialogs.c:693
+#: ../moo/mooedit/mooeditdialogs.c:701
 #, c-format
 msgid "Overwrite modified file '%s'?"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:694
+#: ../moo/mooedit/mooeditdialogs.c:702
 #, c-format
 msgid ""
 "File '%s' was modified on disk by another process. If you save it, changes "
 "on disk will be lost."
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:696
+#: ../moo/mooedit/mooeditdialogs.c:704
 msgid "Over_write"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:717
+#: ../moo/mooedit/mooeditdialogs.c:726
 msgid ""
 "Beginning of document reached.\n"
 "Continue from the end?"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:720
+#: ../moo/mooedit/mooeditdialogs.c:729
 msgid ""
 "End of document reached.\n"
 "Continue from the beginning?"
@@ -965,13 +965,13 @@ msgstr ""
 msgid "%s [modified]"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1611 ../moo/moofileview/moofileview.c:1202
+#: ../moo/mooedit/mooeditwindow.c:1612 ../moo/moofileview/moofileview.c:1202
 #: ../moo/moofileview/moofileview.c:1203
 #: ../moo/moofileview/moofileview-ui.xml.h:1
 msgid "Bookmarks"
 msgstr "Закладки"
 
-#: ../moo/mooedit/mooeditwindow.c:3038
+#: ../moo/mooedit/mooeditwindow.c:3046
 msgid "_Language"
 msgstr ""
 
@@ -990,16 +990,16 @@ msgstr "Новая комманда"
 #. You want to add common preferred non-UTF8 encodings used in your locale.
 #. Do not remove ISO_8859-15 and ISO_8859-1, instead leave them at the end,
 #. these are common source files encodings.
-#: ../moo/mooedit/mooeditfileops.c:250
+#: ../moo/mooedit/mooeditfileops.c:293
 msgid "encodings_list"
 msgstr ""
 
-#: ../moo/mooedit/mooeditfileops.c:1205
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:486
+#: ../moo/mooedit/mooeditfileops.c:1277
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:517
 msgid "Untitled"
 msgstr "Без имени"
 
-#: ../moo/mooedit/mooeditfileops.c:1207
+#: ../moo/mooedit/mooeditfileops.c:1279
 #, c-format
 msgid "Untitled %d"
 msgstr "Без имени %d"
@@ -1063,7 +1063,7 @@ msgid "Find in files"
 msgstr ""
 
 #: ../moo/mooedit/plugins/moofind.c:247 ../moo/mooedit/plugins/moofind.c:248
-#: ../moo/mooedit/plugins/moofind.c:830
+#: ../moo/mooedit/plugins/moofind.c:833
 msgid "Find File"
 msgstr ""
 
@@ -1075,11 +1075,11 @@ msgstr ""
 msgid "CVS and SVN dirs"
 msgstr ""
 
-#: ../moo/mooedit/plugins/moofind.c:803
+#: ../moo/mooedit/plugins/moofind.c:806
 msgid "Find in Files"
 msgstr ""
 
-#: ../moo/mooedit/plugins/moofind.c:883
+#: ../moo/mooedit/plugins/moofind.c:886
 #, c-format
 msgid "*** %u match found ***"
 msgid_plural "*** %u matches found ***"
@@ -1088,7 +1088,7 @@ msgstr[1] "Найдены %u совпадения"
 msgstr[2] "Найдены %u совпадений"
 msgstr[3] "Найдено %u совпадение"
 
-#: ../moo/mooedit/plugins/moofind.c:889
+#: ../moo/mooedit/plugins/moofind.c:892
 #, c-format
 msgid "*** %u file found ***"
 msgid_plural "*** %u files found ***"
@@ -1097,7 +1097,7 @@ msgstr[1] "Найдены %u файла"
 msgstr[2] "Найдены %u файлов"
 msgstr[3] "Найден %u файл"
 
-#: ../moo/mooedit/plugins/moofind.c:927
+#: ../moo/mooedit/plugins/moofind.c:930
 msgid "Finds everything"
 msgstr ""
 
@@ -1121,95 +1121,95 @@ msgstr ""
 msgid "_Pattern:"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:361
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:392
 #, c-format
 msgid "Create file in folder '%s':"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:417
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:448
 #, c-format
 msgid "Could not create file '%s'"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:418
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:901
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:449
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:932
 #, c-format
 msgid ""
 "Could not convert '%s' to filename encoding. Please consider simpler name, "
 "such as foo.blah or blah.foo"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:433
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:464
 #, c-format
 msgid "File '%s' already exists"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:575
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:606
 msgid "Go to current document directory"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:587
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:588
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:618
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:619
 msgid "New File..."
 msgstr ""
 
 #. button
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:610
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:611
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1429
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:641
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:642
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1476
 #: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.c:68
 #: ../moo/moofileview/moofileview.c:1099
 msgid "File Selector"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:900
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:931
 #, c-format
 msgid "Could not save file as '%s'"
 msgstr "Не удалось сохранить файл как '%s'"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1030
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1071
 msgid "Save Copy As"
 msgstr "Сохранить копию как"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1052
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1096
 msgid "Rename To"
 msgstr "Переименовать"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1209
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1253
 msgid "Move Here"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1210
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1254
 msgid "Move/Rename..."
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1218
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1262
 msgid "Save Here"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1219
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1263
 msgid "Save As..."
 msgstr "Сохранить как..."
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1227
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1271
 #: ../moo/mooutils/moostock.c:43
 msgid "Save Copy"
 msgstr "Сохранить копию"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1228
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1272
 msgid "Save Copy As..."
 msgstr "Сохранить копию как..."
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1340
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1341
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1387
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1388
 msgid "Show File Selector"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1342
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1389
 msgid "Show file selector"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1430
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1477
 msgid "File selector pane for editor window"
 msgstr ""
 
@@ -1369,35 +1369,35 @@ msgid "Python Output"
 msgstr ""
 
 #. Generic error
-#: ../moo/mooutils/eggregex.c:114
+#: ../moo/mooutils/eggregex.c:115
 msgid "unknown error"
 msgstr ""
 
 #. PCRE_ERROR_NOMATCH, not an error
 #. PCRE_ERROR_NULL, NULL argument, should not happen
 #. PCRE_ERROR_BADOPTION
-#: ../moo/mooutils/eggregex.c:118
+#: ../moo/mooutils/eggregex.c:119
 msgid "bad option"
 msgstr ""
 
 #. PCRE_ERROR_BADMAGIC
-#: ../moo/mooutils/eggregex.c:120
+#: ../moo/mooutils/eggregex.c:121
 msgid "corrupted object"
 msgstr ""
 
 #. PCRE_ERROR_UNKNOWN_NODE
-#: ../moo/mooutils/eggregex.c:122
+#: ../moo/mooutils/eggregex.c:123
 msgid "internal error or corrupted object"
 msgstr ""
 
 #. PCRE_ERROR_NOMEMORY
-#: ../moo/mooutils/eggregex.c:124
+#: ../moo/mooutils/eggregex.c:125
 msgid "out of memory"
 msgstr ""
 
 #. PCRE_ERROR_NOSUBSTRING, not used by pcre_exec()
 #. PCRE_ERROR_MATCHLIMIT
-#: ../moo/mooutils/eggregex.c:127
+#: ../moo/mooutils/eggregex.c:128
 msgid "backtracking limit reached"
 msgstr ""
 
@@ -1408,94 +1408,94 @@ msgstr ""
 #. PCRE_ERROR_BADPARTIAL
 #. PCRE_ERROR_BADCOUNT, negative ovecsize, should not happen
 #. PCRE_ERROR_DFA_UITEM
-#: ../moo/mooutils/eggregex.c:133 ../moo/mooutils/eggregex.c:138
+#: ../moo/mooutils/eggregex.c:134 ../moo/mooutils/eggregex.c:139
 msgid "the pattern contains items not supported for partial matching"
 msgstr ""
 
 #. PCRE_ERROR_INTERNAL
-#: ../moo/mooutils/eggregex.c:135
+#: ../moo/mooutils/eggregex.c:136
 msgid "internal error"
 msgstr ""
 
 #. PCRE_ERROR_DFA_UCOND
-#: ../moo/mooutils/eggregex.c:140
+#: ../moo/mooutils/eggregex.c:141
 msgid "back references as conditions are not supported for partial matching"
 msgstr ""
 
 #. PCRE_ERROR_DFA_UMLIMIT, should not happen
 #. PCRE_ERROR_DFA_WSSIZE, handled expanding the workspace
 #. PCRE_ERROR_RECURSIONLIMIT
-#: ../moo/mooutils/eggregex.c:144
+#: ../moo/mooutils/eggregex.c:145
 msgid "recursion limit reached"
 msgstr ""
 
-#: ../moo/mooutils/eggregex.c:314
+#: ../moo/mooutils/eggregex.c:315
 msgid "PCRE library is compiled without UTF8 support"
 msgstr ""
 
-#: ../moo/mooutils/eggregex.c:323
+#: ../moo/mooutils/eggregex.c:324
 msgid "PCRE library is compiled without UTF8 properties support"
 msgstr ""
 
-#: ../moo/mooutils/eggregex.c:355
+#: ../moo/mooutils/eggregex.c:356
 #, c-format
 msgid "Error while compiling regular expression %s at char %d: %s"
 msgstr ""
 
-#: ../moo/mooutils/eggregex.c:500
+#: ../moo/mooutils/eggregex.c:501
 #, c-format
 msgid "Error while optimizing regular expression %s: %s"
 msgstr ""
 
-#: ../moo/mooutils/eggregex.c:633 ../moo/mooutils/eggregex.c:752
-#: ../moo/mooutils/eggregex.c:901
+#: ../moo/mooutils/eggregex.c:634 ../moo/mooutils/eggregex.c:753
+#: ../moo/mooutils/eggregex.c:902
 #, c-format
 msgid "Error while matching regular expression %s: %s"
 msgstr ""
 
-#: ../moo/mooutils/eggregex.c:715
+#: ../moo/mooutils/eggregex.c:716
 msgid ""
 "egg_regex_match_next_full: called without a previous call to egg_regex_clear"
 "()"
 msgstr ""
 
-#: ../moo/mooutils/eggregex.c:1768
+#: ../moo/mooutils/eggregex.c:1769
 msgid "hexadecimal digit or '}' expected"
 msgstr ""
 
-#: ../moo/mooutils/eggregex.c:1784
+#: ../moo/mooutils/eggregex.c:1785
 msgid "hexadecimal digit expected"
 msgstr ""
 
-#: ../moo/mooutils/eggregex.c:1824
+#: ../moo/mooutils/eggregex.c:1825
 msgid "missing '<' in symbolic reference"
 msgstr ""
 
-#: ../moo/mooutils/eggregex.c:1833
+#: ../moo/mooutils/eggregex.c:1834
 msgid "unfinished symbolic reference"
 msgstr ""
 
-#: ../moo/mooutils/eggregex.c:1840
+#: ../moo/mooutils/eggregex.c:1841
 msgid "zero-length symbolic reference"
 msgstr ""
 
-#: ../moo/mooutils/eggregex.c:1851
+#: ../moo/mooutils/eggregex.c:1852
 msgid "digit expected"
 msgstr ""
 
-#: ../moo/mooutils/eggregex.c:1869
+#: ../moo/mooutils/eggregex.c:1870
 msgid "illegal symbolic reference"
 msgstr ""
 
-#: ../moo/mooutils/eggregex.c:1931
+#: ../moo/mooutils/eggregex.c:1932
 msgid "stray final '\\'"
 msgstr ""
 
-#: ../moo/mooutils/eggregex.c:1935
+#: ../moo/mooutils/eggregex.c:1936
 msgid "unknown escape sequence"
 msgstr ""
 
-#: ../moo/mooutils/eggregex.c:1944
+#: ../moo/mooutils/eggregex.c:1945
 #, c-format
 msgid "Error while parsing replacement text \"%s\" at char %lu: %s"
 msgstr ""
