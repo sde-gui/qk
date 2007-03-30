@@ -34,6 +34,7 @@
 
 #include <string.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <libxml/xmlreader.h>
 #include <glib/gstdio.h>
 #include "gtksourceview-i18n.h"
@@ -1097,7 +1098,7 @@ expand_regex (ParserState *parser_state,
 		if (egg_regex_get_backrefmax (compiled) > 0)
 		{
 			g_set_error (error, PARSER_ERROR, PARSER_ERROR_MALFORMED_REGEX,
-				     _("in regex '%s': backreferences are not supported"), 
+				     _("in regex '%s': backreferences are not supported"),
 				     regex);
 			egg_regex_free (compiled);
 			return NULL;
@@ -1582,7 +1583,7 @@ file_parse (gchar                     *filename,
 	ParserState *parser_state;
 	xmlTextReader *reader = NULL;
 	int ret;
-	int fd;
+	int fd = -1;
 	GError *tmp_error = NULL;
 	GtkSourceLanguagesManager *lm;
 	const gchar *rng_lang_schema;
@@ -1666,9 +1667,13 @@ file_parse (gchar                     *filename,
 	if (tmp_error != NULL)
 		goto error;
 
+	close (fd);
+
 	return TRUE;
 
 error:
+	if (fd != -1)
+		close (fd);
 	g_propagate_error (error, tmp_error);
 	return FALSE;
 }
