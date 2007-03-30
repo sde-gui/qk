@@ -614,7 +614,12 @@ _moo_text_view_button_release_event (GtkWidget          *widget,
         case MOO_TEXT_VIEW_DRAG_DRAG:
             /* if we were really dragging, drop it
              * otherwise, it was just a single click in selected text */
-            g_assert (!view->priv->drag_moved); /* parent should handle drag */
+            if (view->priv->drag_moved)
+            {
+                /* parent should handle drag */
+                clear_drag_stuff (view);
+                g_return_val_if_reached (FALSE);
+            }
             gtk_text_view_get_iter_at_location (text_view, &iter,
                                                 view->priv->drag_start_x,
                                                 view->priv->drag_start_y);
