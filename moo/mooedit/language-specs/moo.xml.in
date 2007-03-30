@@ -11,6 +11,11 @@
     <glob pattern="*.g"/>
     <glob pattern="*.gd"/>
     <glob pattern="*.gi"/>
+    <magic priority="50">
+      <match value="#I  file=&quot;" type="string" offset="0">
+        <match value="#F  file=&quot;" type="string" offset="0:100"/>
+      </match>
+    </magic>
   </mime-type>
   <mime-type type="text/x-todo">
     <sub-class-of type="text/plain"/>
