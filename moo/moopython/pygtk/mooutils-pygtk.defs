@@ -2632,7 +2632,7 @@
 
 (define-function get_data_dirs
   (c-name "moo_get_data_dirs")
-  (return-type "char*")
+  (return-type "char**")
   (parameters
     '("MooDataDirType" "type")
     '("guint*" "n_dirs")
@@ -2641,7 +2641,7 @@
 
 (define-function get_data_files
   (c-name "moo_get_data_files")
-  (return-type "char*")
+  (return-type "char**")
   (parameters
     '("MooDataDirType" "type")
     '("guint*" "n_files")

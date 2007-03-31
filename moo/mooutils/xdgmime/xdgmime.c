@@ -45,9 +45,7 @@
 #include <assert.h>
 #include <errno.h>
 
-#ifdef __WIN32__
 #include <mooutils/mooutils-misc.h>
-#endif
 
 typedef struct XdgDirTimeList XdgDirTimeList;
 typedef struct XdgCallbackList XdgCallbackList;
@@ -229,102 +227,20 @@ xdg_mime_init_from_directory (const char *directory)
   return FALSE; /* Keep processing */
 }
 
-#ifdef __WIN32__
 /* Runs a command on all the directories in the search path */
 static void
 xdg_run_command_on_dirs (XdgDirectoryFunc  func,
 			 void             *user_data)
 {
-  char **dirs, **p;
+  const char* const *dirs;
+  const char* const *p;
 
-  dirs = moo_get_data_dirs (MOO_DATA_SHARE, NULL);
+  dirs = _moo_get_shared_data_dirs ();
 
   for (p = dirs; p && *p; ++p)
-    {
-      if (func (*p, user_data))
-	goto out;
-    }
-
-out:
-  g_strfreev (dirs);
+    if (func (*p, user_data))
+      break;
 }
-#else
-/* Runs a command on all the directories in the search path */
-static void
-xdg_run_command_on_dirs (XdgDirectoryFunc  func,
-			 void             *user_data)
-{
-  const char *xdg_data_home;
-  const char *xdg_data_dirs;
-  const char *ptr;
-
-  xdg_data_home = getenv ("XDG_DATA_HOME");
-  if (xdg_data_home)
-    {
-      if ((func) (xdg_data_home, user_data))
-	return;
-    }
-  else
-    {
-      const char *home;
-
-      home = getenv ("HOME");
-      if (home != NULL)
-	{
-	  char *guessed_xdg_home;
-	  int stop_processing;
-
-	  guessed_xdg_home = malloc (strlen (home) + strlen ("/.local/share/") + 1);
-	  strcpy (guessed_xdg_home, home);
-	  strcat (guessed_xdg_home, "/.local/share/");
-	  stop_processing = (func) (guessed_xdg_home, user_data);
-	  free (guessed_xdg_home);
-
-	  if (stop_processing)
-	    return;
-	}
-    }
-
-  xdg_data_dirs = getenv ("XDG_DATA_DIRS");
-  if (xdg_data_dirs == NULL)
-    xdg_data_dirs = "/usr/local/share/:/usr/share/";
-
-  ptr = xdg_data_dirs;
-
-  while (*ptr != '\000')
-    {
-      const char *end_ptr;
-      char *dir;
-      int len;
-      int stop_processing;
-
-      end_ptr = ptr;
-      while (*end_ptr != ':' && *end_ptr != '\000')
-	end_ptr ++;
-
-      if (end_ptr == ptr)
-	{
-	  ptr++;
-	  continue;
-	}
-
-      if (*end_ptr == ':')
-	len = end_ptr - ptr;
-      else
-	len = end_ptr - ptr + 1;
-      dir = malloc (len + 1);
-      strncpy (dir, ptr, len);
-      dir[len] = '\0';
-      stop_processing = (func) (dir, user_data);
-      free (dir);
-
-      if (stop_processing)
-	return;
-
-      ptr = end_ptr;
-    }
-}
-#endif
 
 /* Checks file_path to make sure it has the same mtime as last time it was
  * checked.  If it has a different mtime, or if the file doesn't exist, it

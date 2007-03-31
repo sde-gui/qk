@@ -76,6 +76,8 @@ char      **moo_get_data_subdirs            (const char     *subdir,
                                              guint          *n_dirs);
 #define moo_get_data_files moo_get_data_subdirs
 
+const char *const *_moo_get_shared_data_dirs (void);
+
 
 void        _moo_selection_data_set_pointer (GtkSelectionData *data,
                                              GdkAtom         type,

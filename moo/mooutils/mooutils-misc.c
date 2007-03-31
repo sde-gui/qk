@@ -1272,7 +1272,7 @@ moo_get_data_dirs (MooDataDirType type,
                 sys_dirs = g_get_system_data_dirs ();
 
                 for (p = sys_dirs; p && *p; ++p)
-                    list = g_slist_prepend (list, g_strdup (*p));
+                    list = g_slist_prepend (list, g_build_filename (*p, MOO_PACKAGE_NAME, NULL));
 
                 list = g_slist_prepend (list, g_strdup (MOO_DATA_DIR));
             }
@@ -1326,6 +1326,50 @@ moo_get_data_dirs (MooDataDirType type,
         *n_dirs = n_data_dirs[type];
 
     return g_strdupv (moo_data_dirs[type]);
+}
+
+
+/* For xdgmime: should not contain duplicates */
+const char* const *
+_moo_get_shared_data_dirs (void)
+{
+    static char **data_dirs = NULL;
+    G_LOCK_DEFINE_STATIC(data_dirs);
+
+    G_LOCK (data_dirs);
+
+    if (!data_dirs)
+    {
+        guint i, n_dirs;
+        GSList *dirs = NULL;
+        const char* const *sys_dirs;
+
+        sys_dirs = g_get_system_data_dirs ();
+
+#ifndef __WIN32__
+        dirs = g_slist_prepend (NULL, g_strdup (g_get_user_data_dir ()));
+#endif
+
+        for (i = 0; sys_dirs[i] && sys_dirs[i][0]; ++i)
+            if (!g_slist_find_custom (dirs, sys_dirs[i], (GCompareFunc) strcmp))
+                dirs = g_slist_prepend (dirs, g_strdup (sys_dirs[i]));
+
+        dirs = g_slist_reverse (dirs);
+        n_dirs = g_slist_length (dirs);
+        data_dirs = g_new (char*, n_dirs + 1);
+
+        for (i = 0; i < n_dirs; ++i)
+        {
+            data_dirs[i] = dirs->data;
+            dirs = g_slist_delete_link (dirs, dirs);
+        }
+
+        data_dirs[n_dirs] = NULL;
+    }
+
+    G_UNLOCK (data_dirs);
+
+    return (const char* const*) data_dirs;
 }
 
 
