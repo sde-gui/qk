@@ -303,6 +303,22 @@ moo_file_selector_activate (MooFileView    *fileview,
 #ifdef MOO_USE_XDGMIME
     {
         const char *mime_type = xdg_mime_get_mime_type_for_file (path, &statbuf);
+
+        if (!strcmp (mime_type, "application/x-trash"))
+        {
+            guint i;
+            const char *bak_suffixes[] = {"~", "%", ".bak", ".old", ".sik"};
+
+            for (i = 0; i < G_N_ELEMENTS (bak_suffixes); ++i)
+                if (g_str_has_suffix (path, bak_suffixes[i]))
+                {
+                    char *tmp = g_strndup (path, strlen (path) - strlen (bak_suffixes[i]));
+                    mime_type = xdg_mime_get_mime_type_from_file_name (tmp);
+                    g_free (tmp);
+                    break;
+                }
+        }
+
         is_text = !strcmp (mime_type, "application/octet-stream") ||
                    xdg_mime_mime_type_subclass (mime_type, "text/plain");
         is_exe = !strcmp (mime_type, "application/x-executable");
