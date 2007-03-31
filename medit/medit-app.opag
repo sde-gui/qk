@@ -315,7 +315,7 @@ main (int argc, char *argv[])
                         "description", "medit is a text editor",
                         "website", "http://mooedit.sourceforge.net/",
                         "website-label", "http://mooedit.sourceforge.net/",
-                        "logo", MOO_STOCK_MEDIT,
+                        "logo", "medit",
                         "credits", THANKS,
                         NULL);
 
