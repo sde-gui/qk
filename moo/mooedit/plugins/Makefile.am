@@ -1,4 +1,4 @@
-DIST_SUBDIRS = activestrings fileselector
+DIST_SUBDIRS = completion activestrings fileselector
 
 # subdirs = activestrings completion
 # libs = activestrings/libastrings.la completion/libcompletion.la
