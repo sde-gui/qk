@@ -16,6 +16,9 @@ class PyCmd(moo.edit.Command):
         dic = {}
         dic['doc'] = ctx.get_doc()
         dic['window'] = ctx.get_window()
+        dic['buffer'] = ctx.get_doc() and ctx.get_doc().get_buffer()
+        dic['editor'] = moo.edit.editor_instance()
+        dic['moo'] = moo
 
         ctx.foreach(self.__set_variable, dic)
 
