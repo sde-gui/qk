@@ -281,6 +281,7 @@ is_minimized (Display *display, XID w)
     gulong nitems_return;
     gulong bytes_after_return;
     Atom *data;
+    guchar *cdata;
     int ret;
     gulong i;
 
@@ -302,7 +303,8 @@ is_minimized (Display *display, XID w)
                               &actual_format_return,
                               &nitems_return,
                               &bytes_after_return,
-                              (guchar**) &data);
+                              &cdata);
+    data = (Atom*) cdata;
 
     if (gdk_error_trap_pop () || ret != Success)
     {
@@ -360,6 +362,7 @@ _moo_get_top_window (GSList *windows)
     gulong nitems_return;
     gulong bytes_after_return;
     XID *data;
+    guchar *cdata;
     int ret;
     long i;
     GSList *l;
@@ -408,7 +411,8 @@ _moo_get_top_window (GSList *windows)
                               &actual_format_return,
                               &nitems_return,
                               &bytes_after_return,
-                              (guchar**) &data);
+                              &cdata);
+    data = (XID*) cdata;
 
     if (gdk_error_trap_pop () || ret != Success)
     {
