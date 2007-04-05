@@ -2109,6 +2109,14 @@ get_page_num (MooEditWindow *window,
 }
 
 
+int
+_moo_edit_window_get_doc_no (MooEditWindow *window,
+                             MooEdit       *doc)
+{
+    return get_page_num (window, doc);
+}
+
+
 void
 _moo_edit_window_insert_doc (MooEditWindow  *window,
                              MooEdit        *edit,
@@ -2172,7 +2180,8 @@ _moo_edit_window_insert_doc (MooEditWindow  *window,
 
 void
 _moo_edit_window_remove_doc (MooEditWindow  *window,
-                             MooEdit        *doc)
+                             MooEdit        *doc,
+                             gboolean        destroy)
 {
     int page;
     GtkAction *action;
@@ -2210,7 +2219,12 @@ _moo_edit_window_remove_doc (MooEditWindow  *window,
 
     moo_edit_window_update_doc_list (window);
 
+    /* removing scrolled window from the notebook will destroy the scrolled window,
+     * and that in turn will destroy the doc if it's not removed before */
+    if (!destroy)
+        gtk_container_remove (GTK_WIDGET(doc)->parent, doc);
     moo_notebook_remove_page (window->priv->notebook, page);
+
     edit_changed (window, NULL);
 
     g_signal_emit (window, signals[CLOSE_DOC_AFTER], 0);
@@ -3851,10 +3865,9 @@ notebook_drag_data_recv (GtkWidget          *widget,
 
             toplevel = gtk_widget_get_toplevel (GTK_WIDGET (doc));
 
-            if (toplevel == GTK_WIDGET (window))
-                goto out;
+            if (toplevel != GTK_WIDGET (window))
+                _moo_editor_move_doc (window->priv->editor, doc, window, TRUE);
 
-            g_print ("%s: implement me\n", G_STRLOC);
             goto out;
         }
         else if ((uris = gtk_selection_data_get_uris (data)))

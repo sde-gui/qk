@@ -1027,7 +1027,7 @@ moo_editor_add_doc (MooEditor      *editor,
 }
 
 
-MooEditWindow*
+MooEditWindow *
 moo_editor_new_window (MooEditor *editor)
 {
     MooEditWindow *window;
@@ -1049,7 +1049,7 @@ moo_editor_new_window (MooEditor *editor)
 
 
 /* this creates MooEdit instance which can not be put into a window */
-MooEdit*
+MooEdit *
 moo_editor_create_doc (MooEditor      *editor,
                        const char     *filename,
                        const char     *encoding,
@@ -1075,7 +1075,7 @@ moo_editor_create_doc (MooEditor      *editor,
 }
 
 
-MooEdit*
+MooEdit *
 moo_editor_new_doc (MooEditor      *editor,
                     MooEditWindow  *window)
 {
@@ -1098,6 +1098,59 @@ moo_editor_new_doc (MooEditor      *editor,
     moo_editor_add_doc (editor, window, doc);
 
     return doc;
+}
+
+
+void
+_moo_editor_move_doc (MooEditor     *editor,
+                      MooEdit       *doc,
+                      MooEditWindow *dest,
+                      gboolean       focus)
+{
+    WindowInfo *old, *new;
+    MooEdit *old_doc;
+    int new_pos = -1;
+
+    g_return_if_fail (MOO_IS_EDITOR (editor));
+    g_return_if_fail (MOO_IS_EDIT (doc) && doc->priv->editor == editor);
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (dest) && moo_edit_window_get_editor (dest) == editor);
+
+    old = window_list_find_doc (editor, doc);
+    new = window_list_find (editor, dest);
+    g_return_if_fail (old != NULL && new != NULL);
+
+    g_object_ref (doc);
+
+    window_info_remove (old, doc);
+
+    if (old->window)
+    {
+        _moo_edit_window_remove_doc (old->window, doc, FALSE);
+
+        if (!moo_edit_window_get_active_doc (old->window) &&
+            !editor->priv->allow_empty_window)
+        {
+            moo_editor_new_doc (editor, old->window);
+        }
+    }
+
+    old_doc = moo_edit_window_get_active_doc (dest);
+
+    if (old_doc && moo_edit_is_empty (old_doc))
+        new_pos = _moo_edit_window_get_doc_no (dest, old_doc);
+    else
+        old_doc = NULL;
+
+    _moo_edit_window_insert_doc (dest, doc, new_pos);
+    moo_editor_add_doc (editor, dest, doc);
+
+    if (old_doc)
+        moo_editor_close_doc (editor, old_doc, FALSE);
+
+    if (focus)
+        moo_editor_set_active_doc (editor, doc);
+
+    g_object_unref (doc);
 }
 
 
@@ -1424,7 +1477,7 @@ do_close_doc (MooEditor      *editor,
     window_info_remove (info, doc);
 
     if (info->window)
-        _moo_edit_window_remove_doc (info->window, doc);
+        _moo_edit_window_remove_doc (info->window, doc, TRUE);
     else
         _moo_doc_detach_plugins (NULL, doc);
 }

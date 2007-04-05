@@ -34,9 +34,9 @@
    </configure>
   </optimized>
  </configurations>
- <file_selector_dir>/home/muntyan/projects/moo/moo/moopython/plugins/</file_selector_dir>
+ <file_selector_dir>/home/muntyan/projects/moo/moo/moofileview/</file_selector_dir>
  <run>
-  <args>--g-fatal-warnings --new-app --mode=project</args>
+  <args>--g-fatal-warnings --new-app</args>
   <exe>medit/medit</exe>
   <vars>
    <var name="LANGUAGEEE">fr</var>

@@ -27,12 +27,20 @@ void             _moo_edit_window_insert_doc    (MooEditWindow  *window,
                                                  MooEdit        *doc,
                                                  int             position);
 void             _moo_edit_window_remove_doc    (MooEditWindow  *window,
+                                                 MooEdit        *doc,
+                                                 gboolean        destroy);
+int              _moo_edit_window_get_doc_no    (MooEditWindow  *window,
                                                  MooEdit        *doc);
 
 void             _moo_editor_set_focused_doc    (MooEditor      *editor,
                                                  MooEdit        *doc);
 void             _moo_editor_unset_focused_doc  (MooEditor      *editor,
                                                  MooEdit        *doc);
+
+void             _moo_editor_move_doc           (MooEditor      *editor,
+                                                 MooEdit        *doc,
+                                                 MooEditWindow  *dest,
+                                                 gboolean        focus);
 
 gpointer         _moo_editor_get_file_watch     (MooEditor      *editor);
 void             _moo_editor_reload             (MooEditor      *editor,
