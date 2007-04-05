@@ -299,6 +299,7 @@ static void     file_view_properties_dialog (MooFileView    *fileview);
 
 static void     view_files                  (MooFileView    *fileview);
 static void     view_bookmarks              (MooFileView    *fileview);
+static void     view_bookmarks_handler      (MooFileView    *fileview);
 static void     add_bookmark                (MooFileView    *fileview);
 static void     edit_bookmarks              (MooFileView    *fileview);
 
@@ -453,6 +454,7 @@ enum {
     FOCUS_TO_FILTER_ENTRY,
     FOCUS_TO_FILE_VIEW,
     TOGGLE_SHOW_HIDDEN,
+    TOGGLE_SHOW_BOOKMARKS,
     DELETE_TO_CURSOR,
     PROPERTIES_DIALOG,
     DELETE_SELECTED,
@@ -687,6 +689,15 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                _moo_marshal_VOID__VOID,
                                G_TYPE_NONE, 0);
 
+    signals[TOGGLE_SHOW_BOOKMARKS] =
+            _moo_signal_new_cb("toggle-show-bookmarks",
+                               G_OBJECT_CLASS_TYPE (klass),
+                               G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                               G_CALLBACK (view_bookmarks_handler),
+                               NULL, NULL,
+                               _moo_marshal_VOID__VOID,
+                               G_TYPE_NONE, 0);
+
     signals[DELETE_TO_CURSOR] =
             _moo_signal_new_cb("delete-to-cursor",
                                G_OBJECT_CLASS_TYPE (klass),
@@ -839,6 +850,9 @@ moo_file_view_class_init (MooFileViewClass *klass)
     gtk_binding_entry_add_signal (binding_set,
                                   GDK_h, GDK_MOD1_MASK | GDK_SHIFT_MASK,
                                   "toggle-show-hidden", 0);
+    gtk_binding_entry_add_signal (binding_set,
+                                  GDK_k, GDK_MOD1_MASK | GDK_SHIFT_MASK,
+                                  "toggle-show-bookmarks", 0);
 
     gtk_binding_entry_add_signal (binding_set,
                                   GDK_c, GDK_CONTROL_MASK,
@@ -3434,6 +3448,12 @@ moo_file_view_set_bookmark_mgr  (MooFileView    *fileview,
     g_object_notify (G_OBJECT (fileview), "bookmark-mgr");
 }
 
+
+static void
+view_bookmarks_handler (MooFileView *fileview)
+{
+    view_bookmarks (fileview);
+}
 
 static void
 view_bookmarks (MooFileView *fileview)
