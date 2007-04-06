@@ -180,6 +180,8 @@ static gboolean has_box_at_iter             (MooTextView        *view,
 static gboolean text_iter_forward_visible_line (MooTextView     *view,
                                              GtkTextIter        *iter,
                                              int                *line);
+static int      get_border_window_size      (GtkTextView        *text_view,
+                                             GtkTextWindowType   type);
 
 
 enum {
@@ -256,6 +258,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     gobject_class->get_property = moo_text_view_get_property;
     gobject_class->constructor = moo_text_view_constructor;
     gobject_class->finalize = moo_text_view_finalize;
+
 
     widget_class->button_press_event = _moo_text_view_button_press_event;
     widget_class->button_release_event = _moo_text_view_button_release_event;
@@ -640,10 +643,10 @@ static void moo_text_view_init (MooTextView *view)
     view->priv->current_line_color = gdk_color_copy (&clr);
     gdk_color_parse (LIGHT_BLUE, view->priv->current_line_color);
 
-    view->priv->drag_button = GDK_BUTTON_RELEASE;
-    view->priv->drag_type = MOO_TEXT_VIEW_DRAG_NONE;
-    view->priv->drag_start_x = -1;
-    view->priv->drag_start_y = -1;
+    view->priv->dnd.button = GDK_BUTTON_RELEASE;
+    view->priv->dnd.type = MOO_TEXT_VIEW_DRAG_NONE;
+    view->priv->dnd.start_x = -1;
+    view->priv->dnd.start_y = -1;
 
     view->priv->last_search_stamp = -1;
 
@@ -1951,6 +1954,12 @@ moo_text_view_unrealize (GtkWidget *widget)
         view->priv->blink_timeout = 0;
     }
 
+    if (view->priv->dnd.scroll_timeout)
+    {
+        g_source_remove (view->priv->dnd.scroll_timeout);
+        view->priv->dnd.scroll_timeout = 0;
+    }
+
 #if GTK_CHECK_VERSION(2,6,0)
     clipboard = gtk_widget_get_clipboard (widget, GDK_SELECTION_CLIPBOARD);
     if (gtk_clipboard_get_owner (clipboard) == G_OBJECT (view))
@@ -2883,6 +2892,7 @@ update_digit_width (MooTextView *view)
 
     layout = create_line_numbers_layout (view);
     view->priv->lm.digit_width = 0;
+    view->priv->lm.numbers_width = 0;
 
     for (i = 0; i < 10; ++i)
     {
@@ -2908,6 +2918,8 @@ static void
 update_left_margin (MooTextView *view)
 {
     int margin_size;
+    int old_size;
+    GtkTextView *text_view = GTK_TEXT_VIEW (view);
 
     if (!GTK_WIDGET_REALIZED (view))
         return;
@@ -2923,8 +2935,8 @@ update_left_margin (MooTextView *view)
     if (view->priv->lm.show_numbers)
     {
         update_digit_width (view);
-        margin_size += view->priv->lm.digit_width * get_n_digits (view) +
-                        LINE_NUMBER_LPAD + LINE_NUMBER_RPAD;
+        view->priv->lm.numbers_width = view->priv->lm.digit_width * get_n_digits (view);
+        margin_size += view->priv->lm.numbers_width + LINE_NUMBER_LPAD + LINE_NUMBER_RPAD;
     }
 
     if (view->priv->lm.show_folds)
@@ -2933,9 +2945,19 @@ update_left_margin (MooTextView *view)
         margin_size += view->priv->lm.fold_width;
     }
 
-    gtk_text_view_set_border_window_size (GTK_TEXT_VIEW (view),
+    old_size = get_border_window_size (text_view, GTK_TEXT_WINDOW_LEFT);
+    gtk_text_view_set_border_window_size (text_view,
                                           GTK_TEXT_WINDOW_LEFT,
                                           margin_size);
+
+    if (old_size == 0 && margin_size != 0)
+    {
+        GdkWindow *window = gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_LEFT);
+        GdkCursor *cursor = gdk_cursor_new (GDK_RIGHT_PTR);
+        gdk_window_set_cursor (window, cursor);
+        gdk_cursor_unref (cursor);
+    }
+
     /* XXX do not invalidate whole widget */
     gtk_widget_queue_draw (GTK_WIDGET (view));
 }
@@ -3075,7 +3097,7 @@ draw_left_margin (MooTextView    *view,
     if (view->priv->lm.show_numbers)
     {
         layout = create_line_numbers_layout (view);
-        text_width = view->priv->lm.digit_width * get_n_digits (view);
+        text_width = view->priv->lm.numbers_width;
     }
 
     if (view->priv->lm.show_icons)

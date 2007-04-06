@@ -387,11 +387,11 @@ extend_selection (MooTextView          *view,
 inline static void
 clear_drag_stuff (MooTextView *view)
 {
-    view->priv->drag_moved = FALSE;
-    view->priv->drag_type = MOO_TEXT_VIEW_DRAG_NONE;
-    view->priv->drag_start_x = -1;
-    view->priv->drag_start_y = -1;
-    view->priv->drag_button = GDK_BUTTON_RELEASE;
+    view->priv->dnd.moved = FALSE;
+    view->priv->dnd.type = MOO_TEXT_VIEW_DRAG_NONE;
+    view->priv->dnd.start_x = -1;
+    view->priv->dnd.start_y = -1;
+    view->priv->dnd.button = GDK_BUTTON_RELEASE;
 }
 
 #define get_buf(view) \
@@ -428,17 +428,19 @@ left_window_to_line (GtkTextView *text_view,
 
 static gboolean
 left_window_click (GtkTextView    *text_view,
-                   GdkEventButton *event)
+                   GdkEventButton *event,
+                   gboolean       *line_numbers)
 {
-    int line, window_width;
+    int window_width;
     MooTextView *view = MOO_TEXT_VIEW (text_view);
 
+    *line_numbers = FALSE;
     gdk_drawable_get_size (event->window, &window_width, NULL);
 
     if (view->priv->lm.show_icons && event->x >= 0 && event->x < view->priv->lm.icon_width)
     {
         gboolean ret;
-        line = left_window_to_line (text_view, event->y);
+        int line = left_window_to_line (text_view, event->y);
         g_signal_emit_by_name (text_view, "line-mark-clicked", line, &ret);
         return ret;
     }
@@ -448,6 +450,7 @@ left_window_click (GtkTextView    *text_view,
     {
         MooTextBuffer *buffer = MOO_TEXT_BUFFER (gtk_text_view_get_buffer (text_view));
         MooFold *fold;
+        int line;
 
         line = left_window_to_line (text_view, event->y);
         fold = moo_text_buffer_get_fold_at_line (buffer, line);
@@ -462,8 +465,62 @@ left_window_click (GtkTextView    *text_view,
             return FALSE;
         }
     }
+    else if (view->priv->lm.show_numbers &&
+             event->x >= view->priv->lm.icon_width &&
+             event->x < view->priv->lm.icon_width + view->priv->lm.numbers_width)
+    {
+        *line_numbers = TRUE;
+        return TRUE;
+    }
 
     return FALSE;
+}
+
+static void
+select_range (GtkTextBuffer     *buffer,
+              const GtkTextIter *sel_bound,
+              const GtkTextIter *cursor)
+{
+    GtkTextIter sel_start, sel_end;
+
+    gtk_text_buffer_get_iter_at_mark (buffer, &sel_start, gtk_text_buffer_get_selection_bound (buffer));
+    gtk_text_buffer_get_iter_at_mark (buffer, &sel_end, gtk_text_buffer_get_insert (buffer));
+
+    if (gtk_text_iter_compare (sel_bound, &sel_start))
+    {
+        if (gtk_text_iter_compare (cursor, &sel_end))
+            gtk_text_buffer_select_range (buffer, cursor, sel_bound);
+        else
+            gtk_text_buffer_move_mark_by_name (buffer, "selection_bound", sel_bound);
+    }
+    else if (gtk_text_iter_compare (cursor, &sel_end))
+    {
+        gtk_text_buffer_move_mark_by_name (buffer, "insert", cursor);
+    }
+}
+
+static void
+select_lines (MooTextView *view,
+              int          y)
+{
+    GtkTextView *text_view;
+    GtkTextBuffer *buffer;
+    GtkTextIter start, end;
+    int cmp;
+
+    text_view = GTK_TEXT_VIEW (view);
+    buffer = gtk_text_view_get_buffer (text_view);
+
+    start = view->priv->dnd.start_iter;
+    gtk_text_view_get_line_at_y (text_view, &end, y, NULL);
+    cmp = gtk_text_iter_compare (&start, &end);
+
+    if (cmp <= 0)
+        gtk_text_iter_forward_line (&end);
+    else
+        gtk_text_iter_forward_line (&start);
+
+    select_range (buffer, &start, &end);
 }
 
 
@@ -486,6 +543,8 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
     GtkTextBuffer *buffer;
     int x, y;
     GtkTextIter iter;
+    gboolean line_numbers = FALSE;
+    gboolean ret;
 
     text_view = GTK_TEXT_VIEW (widget);
     text_view_unobscure_mouse_cursor (text_view);
@@ -496,7 +555,10 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
             break;
 
         case GTK_TEXT_WINDOW_LEFT:
-            return left_window_click (text_view, event);
+            ret = left_window_click (text_view, event, &line_numbers);
+            if (!line_numbers)
+                return ret;
+            break;
 
         default:
             return FALSE;
@@ -508,40 +570,89 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
 
     text_view_reset_im_context (text_view);
 
-    gtk_text_view_window_to_buffer_coords (text_view, GTK_TEXT_WINDOW_TEXT,
-                                           (int)event->x, (int)event->y, &x, &y);
-
-    gtk_text_view_get_iter_at_location (text_view, &iter, x, y);
+    if (!line_numbers)
+    {
+        gtk_text_view_window_to_buffer_coords (text_view, GTK_TEXT_WINDOW_TEXT,
+                                               event->x, event->y, &x, &y);
+        gtk_text_view_get_iter_at_location (text_view, &iter, x, y);
+    }
+    else
+    {
+        int line;
+        gtk_text_view_window_to_buffer_coords (text_view, GTK_TEXT_WINDOW_LEFT,
+                                               event->x, event->y, &x, &y);
+        line = left_window_to_line (text_view, event->y);
+        gtk_text_buffer_get_iter_at_line (buffer, &iter, line);
+    }
 
     if (event->type == GDK_BUTTON_PRESS)
     {
-        if (event->button == 1) {
+        if (event->button == 1)
+        {
             GtkTextIter sel_start, sel_end;
 
-            view->priv->drag_button = GDK_BUTTON_PRESS;
-            view->priv->drag_start_x = x;
-            view->priv->drag_start_y = y;
+            view->priv->dnd.button = GDK_BUTTON_PRESS;
+            view->priv->dnd.start_x = x;
+            view->priv->dnd.start_y = y;
 
             /* if clicked in selected, start drag */
-            if (gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end))
+            if (!line_numbers && gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end))
             {
                 gtk_text_iter_order (&sel_start, &sel_end);
-                if (gtk_text_iter_in_range (&iter, &sel_start, &sel_end)) {
+
+                if (gtk_text_iter_in_range (&iter, &sel_start, &sel_end))
+                {
                     /* clicked inside of selection,
                      * set up drag and return */
-                    view->priv->drag_type = MOO_TEXT_VIEW_DRAG_DRAG;
+                    view->priv->dnd.type = MOO_TEXT_VIEW_DRAG_DRAG;
                     return TRUE;
                 }
             }
 
-            /* otherwise, clear selection, and position cursor at clicked point */
-            if (event->state & GDK_SHIFT_MASK)
-                gtk_text_buffer_move_mark (buffer,
-                                           gtk_text_buffer_get_insert (buffer),
-                                           &iter);
+            view->priv->dnd.start_iter = iter;
+
+            if (!line_numbers)
+            {
+                /* otherwise, clear selection, and position cursor at clicked point */
+                if (event->state & GDK_SHIFT_MASK)
+                {
+                    gtk_text_buffer_get_iter_at_mark (buffer,
+                                                      &view->priv->dnd.start_iter,
+                                                      gtk_text_buffer_get_selection_bound (buffer));
+                    gtk_text_buffer_move_mark (buffer,
+                                               gtk_text_buffer_get_insert (buffer),
+                                               &iter);
+                }
+                else
+                {
+                    gtk_text_buffer_place_cursor (buffer, &iter);
+                }
+            }
             else
-                gtk_text_buffer_place_cursor (buffer, &iter);
-            view->priv->drag_type = MOO_TEXT_VIEW_DRAG_SELECT;
+            {
+                if (event->state & GDK_SHIFT_MASK)
+                {
+                    gtk_text_buffer_get_iter_at_mark (buffer,
+                                                      &view->priv->dnd.start_iter,
+                                                      gtk_text_buffer_get_selection_bound (buffer));
+                    if (gtk_text_iter_starts_line (&view->priv->dnd.start_iter))
+                    {
+                        GtkTextIter tmp;
+                        gtk_text_buffer_get_iter_at_mark (buffer, &tmp,
+                                                          gtk_text_buffer_get_insert (buffer));
+                        if (gtk_text_iter_compare (&view->priv->dnd.start_iter, &tmp) > 0)
+                            gtk_text_iter_backward_line (&view->priv->dnd.start_iter);
+                    }
+                }
+
+                gtk_text_iter_set_line_offset (&view->priv->dnd.start_iter, 0);
+                select_lines (view, y);
+            }
+
+            if (!line_numbers)
+                view->priv->dnd.type = MOO_TEXT_VIEW_DRAG_SELECT;
+            else
+                view->priv->dnd.type = MOO_TEXT_VIEW_DRAG_SELECT_LINES;
         }
         else if (event->button == 3 && MOO_IS_EDIT (widget))
         {
@@ -567,38 +678,39 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
             gtk_text_buffer_place_cursor (buffer, &iter);
         }
 
-        view->priv->drag_button = GDK_2BUTTON_PRESS;
-        view->priv->drag_start_x = x;
-        view->priv->drag_start_y = y;
-        view->priv->drag_type = MOO_TEXT_VIEW_DRAG_SELECT;
+        view->priv->dnd.button = GDK_2BUTTON_PRESS;
+        view->priv->dnd.start_x = x;
+        view->priv->dnd.start_y = y;
+        view->priv->dnd.type = MOO_TEXT_VIEW_DRAG_SELECT;
 
         bound = iter;
         if (extend_selection (view, MOO_TEXT_SELECT_WORDS, &iter, &bound))
-            gtk_text_buffer_select_range (buffer, &iter, &bound);
+            select_range (buffer, &bound, &iter);
     }
     else if (event->type == GDK_3BUTTON_PRESS && event->button == 1)
     {
         GtkTextIter bound = iter;
-        view->priv->drag_button = GDK_3BUTTON_PRESS;
-        view->priv->drag_start_x = x;
-        view->priv->drag_start_y = y;
-        view->priv->drag_type = MOO_TEXT_VIEW_DRAG_SELECT;
+        view->priv->dnd.button = GDK_3BUTTON_PRESS;
+        view->priv->dnd.start_x = x;
+        view->priv->dnd.start_y = y;
+        view->priv->dnd.type = MOO_TEXT_VIEW_DRAG_SELECT;
         if (extend_selection (view, MOO_TEXT_SELECT_LINES, &iter, &bound))
-            gtk_text_buffer_select_range (buffer, &iter, &bound);
+            select_range (buffer, &bound, &iter);
     }
+
     return TRUE;
 }
 
 
 int
-_moo_text_view_button_release_event (GtkWidget          *widget,
+_moo_text_view_button_release_event (GtkWidget      *widget,
                                      G_GNUC_UNUSED GdkEventButton *event)
 {
     GtkTextView *text_view = GTK_TEXT_VIEW (widget);
     MooTextView *view = MOO_TEXT_VIEW (widget);
-    GtkTextIter iter;
 
-    switch (view->priv->drag_type) {
+    switch (view->priv->dnd.type)
+    {
         case MOO_TEXT_VIEW_DRAG_NONE:
             /* it may happen after right-click, or clicking outside
              * of widget or something like that
@@ -606,6 +718,7 @@ _moo_text_view_button_release_event (GtkWidget          *widget,
             break;
 
         case MOO_TEXT_VIEW_DRAG_SELECT:
+        case MOO_TEXT_VIEW_DRAG_SELECT_LINES:
             /* everything should be done already in button_press and
              * motion_notify handlers */
             stop_drag_scroll (view);
@@ -614,21 +727,15 @@ _moo_text_view_button_release_event (GtkWidget          *widget,
         case MOO_TEXT_VIEW_DRAG_DRAG:
             /* if we were really dragging, drop it
              * otherwise, it was just a single click in selected text */
-            if (view->priv->drag_moved)
+            if (view->priv->dnd.moved)
             {
                 /* parent should handle drag */
                 clear_drag_stuff (view);
                 g_return_val_if_reached (FALSE);
             }
-            gtk_text_view_get_iter_at_location (text_view, &iter,
-                                                view->priv->drag_start_x,
-                                                view->priv->drag_start_y);
             gtk_text_buffer_place_cursor (gtk_text_view_get_buffer (text_view),
-                                          &iter);
+                                          &view->priv->dnd.start_iter);
             break;
-
-        default:
-            g_assert_not_reached ();
     }
 
     clear_drag_stuff (view);
@@ -653,26 +760,51 @@ _moo_text_view_motion_event (GtkWidget          *widget,
 
     text_view_unobscure_mouse_cursor (text_view);
 
-    if (!view->priv->drag_type) return FALSE;
+    if (!view->priv->dnd.type)
+        return FALSE;
 
     if (event->is_hint)
+    {
         gdk_window_get_pointer (event->window, &event_x, &event_y, NULL);
-    else {
-        event_x = (int)event->x;
-        event_y = (int)event->y;
     }
+    else
+    {
+        event_x = event->x;
+        event_y = event->y;
+    }
+
     gtk_text_view_window_to_buffer_coords (text_view,
                                            gtk_text_view_get_window_type (text_view, event->window),
                                            event_x, event_y, &x, &y);
+
+    if (view->priv->dnd.type == MOO_TEXT_VIEW_DRAG_SELECT_LINES)
+    {
+        GdkRectangle rect;
+        GdkWindow *window;
+
+        window = gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_LEFT);
+        gtk_text_view_get_visible_rect (text_view, &rect);
+
+        select_lines (view, y);
+
+        if (y < rect.y || y >= rect.y + rect.height)
+            start_drag_scroll (view);
+        else
+            stop_drag_scroll (view);
+
+        return TRUE;
+    }
+
     gtk_text_view_get_iter_at_location (text_view, &iter, x, y);
 
-    if (view->priv->drag_type == MOO_TEXT_VIEW_DRAG_SELECT) {
+    if (view->priv->dnd.type == MOO_TEXT_VIEW_DRAG_SELECT)
+    {
         GdkRectangle rect;
         GtkTextIter start;
         MooTextSelectionType t;
         GtkTextBuffer *buffer;
 
-        view->priv->drag_moved = TRUE;
+        view->priv->dnd.moved = TRUE;
         gtk_text_view_get_visible_rect (text_view, &rect);
 
         if (OUTSIDE (x, y, rect))
@@ -684,47 +816,34 @@ _moo_text_view_motion_event (GtkWidget          *widget,
         stop_drag_scroll (view);
 
         buffer = gtk_text_view_get_buffer (text_view);
-        gtk_text_view_get_iter_at_location (text_view, &start,
-                                            view->priv->drag_start_x,
-                                            view->priv->drag_start_y);
+        start = view->priv->dnd.start_iter;
 
-        if (view->priv->drag_button == GDK_BUTTON_PRESS)
+        if (view->priv->dnd.button == GDK_BUTTON_PRESS)
             t = MOO_TEXT_SELECT_CHARS;
-        else if (view->priv->drag_button == GDK_2BUTTON_PRESS)
+        else if (view->priv->dnd.button == GDK_2BUTTON_PRESS)
             t = MOO_TEXT_SELECT_WORDS;
         else
             t = MOO_TEXT_SELECT_LINES;
 
         if (extend_selection (view, t, &start, &iter))
-            gtk_text_buffer_select_range (buffer, &iter, &start);
+            select_range (buffer, &start, &iter);
         else
             gtk_text_buffer_place_cursor (buffer, &iter);
     }
-    else {
+    else
+    {
         /* this piece is from gtktextview.c */
         int x, y;
         gdk_window_get_pointer (gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_TEXT),
                                 &x, &y, NULL);
 
         if (gtk_drag_check_threshold (widget,
-                                      view->priv->drag_start_x,
-                                      view->priv->drag_start_y,
+                                      view->priv->dnd.start_x,
+                                      view->priv->dnd.start_y,
                                       x, y))
         {
-            GtkTextIter iter;
-            int buffer_x, buffer_y;
-
-            gtk_text_view_window_to_buffer_coords (text_view,
-                                                   GTK_TEXT_WINDOW_TEXT,
-                                                   view->priv->drag_start_x,
-                                                   view->priv->drag_start_y,
-                                                   &buffer_x,
-                                                   &buffer_y);
-
-            gtk_text_view_get_iter_at_location (text_view, &iter, buffer_x, buffer_y);
-
-            view->priv->drag_type = MOO_TEXT_VIEW_DRAG_NONE;
-            text_view_start_selection_dnd (text_view, &iter, event);
+            view->priv->dnd.type = MOO_TEXT_VIEW_DRAG_NONE;
+            text_view_start_selection_dnd (text_view, &view->priv->dnd.start_iter, event);
         }
     }
 
@@ -791,7 +910,7 @@ _moo_text_view_extend_selection (MooTextView        *view,
     {
         int ch_class;
 
-        if (!order && view->priv->double_click_selects_brackets)
+        if (!order && view->priv->dnd.double_click_selects_brackets)
         {
             GtkTextIter rstart = *start;
             if (moo_text_iter_at_bracket (&rstart) &&
@@ -803,14 +922,14 @@ _moo_text_view_extend_selection (MooTextView        *view,
                 {
                     if (gtk_text_iter_compare (&rstart, &rend) > 0)
                     {   /*  <rend>(     <rstart>) */
-                        if (view->priv->double_click_selects_inside)
+                        if (view->priv->dnd.double_click_selects_inside)
                             gtk_text_iter_forward_char (&rend);
                         else
                             gtk_text_iter_forward_char (&rstart);
                     }
                     else
                     {   /*  <rstart>(     <rend>) */
-                        if (view->priv->double_click_selects_inside)
+                        if (view->priv->dnd.double_click_selects_inside)
                             gtk_text_iter_forward_char (&rstart);
                         else
                             gtk_text_iter_forward_char (&rend);
@@ -868,8 +987,8 @@ _moo_text_view_extend_selection (MooTextView        *view,
 static void
 start_drag_scroll (MooTextView *view)
 {
-    if (!view->priv->drag_scroll_timeout)
-        view->priv->drag_scroll_timeout =
+    if (!view->priv->dnd.scroll_timeout)
+        view->priv->dnd.scroll_timeout =
             _moo_timeout_add (SCROLL_TIMEOUT,
                               (GSourceFunc)drag_scroll_timeout_func,
                               view);
@@ -880,9 +999,9 @@ start_drag_scroll (MooTextView *view)
 static void
 stop_drag_scroll (MooTextView *view)
 {
-    if (view->priv->drag_scroll_timeout)
-        g_source_remove (view->priv->drag_scroll_timeout);
-    view->priv->drag_scroll_timeout = 0;
+    if (view->priv->dnd.scroll_timeout)
+        g_source_remove (view->priv->dnd.scroll_timeout);
+    view->priv->dnd.scroll_timeout = 0;
 }
 
 
@@ -896,7 +1015,7 @@ drag_scroll_timeout_func (MooTextView *view)
     MooTextSelectionType t;
     GtkTextBuffer *buffer;
 
-    g_assert (view->priv->drag_type == MOO_TEXT_VIEW_DRAG_SELECT);
+    g_assert (view->priv->dnd.type == MOO_TEXT_VIEW_DRAG_SELECT);
 
     text_view = GTK_TEXT_VIEW (view);
 
@@ -909,18 +1028,18 @@ drag_scroll_timeout_func (MooTextView *view)
     buffer = gtk_text_view_get_buffer (text_view);
 
     gtk_text_view_get_iter_at_location (text_view, &start,
-                                        view->priv->drag_start_x,
-                                        view->priv->drag_start_y);
+                                        view->priv->dnd.start_x,
+                                        view->priv->dnd.start_y);
 
-    if (view->priv->drag_button == GDK_BUTTON_PRESS)
+    if (view->priv->dnd.button == GDK_BUTTON_PRESS)
         t = MOO_TEXT_SELECT_CHARS;
-    else if (view->priv->drag_button == GDK_2BUTTON_PRESS)
+    else if (view->priv->dnd.button == GDK_2BUTTON_PRESS)
         t = MOO_TEXT_SELECT_WORDS;
     else
         t = MOO_TEXT_SELECT_LINES;
 
     if (extend_selection (view, t, &start, &iter))
-        gtk_text_buffer_select_range (buffer, &iter, &start);
+        select_range (buffer, &start, &iter);
     else
         gtk_text_buffer_place_cursor (buffer, &iter);
     gtk_text_view_scroll_mark_onscreen (text_view,

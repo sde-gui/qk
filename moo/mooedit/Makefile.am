@@ -7,11 +7,13 @@ mooedit_tools_DATA = context.cfg menu.cfg filters.xml
 dummy_targets =				\
 	moocommand-exe.o		\
 	moocommand-exe-private.o	\
-	moolangmgr-private.o
+	moolangmgr-private.o		\
+	mootextview-private.o
 CLEANFILES = $(dummy_targets)
 moocommand-exe.o: moocommand-exe-unix.o ; echo stamp > $(@F)
 moocommand-exe-private.o: moocommand-exe-unix.o ; echo stamp > $(@F)
 moolangmgr-private.o: moolangmgr.o ; echo stamp > $(@F)
+mootextview-private.o: mootextview.o ; echo stamp > $(@F)
 
 unix_sources =				\
 	moocommand-exe-unix.c

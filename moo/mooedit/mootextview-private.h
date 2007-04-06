@@ -64,7 +64,8 @@ void        _moo_text_view_set_line_numbers_font (MooTextView       *view,
 typedef enum {
     MOO_TEXT_VIEW_DRAG_NONE = 0,
     MOO_TEXT_VIEW_DRAG_SELECT,
-    MOO_TEXT_VIEW_DRAG_DRAG
+    MOO_TEXT_VIEW_DRAG_DRAG,
+    MOO_TEXT_VIEW_DRAG_SELECT_LINES
 } MooTextViewDragType;
 
 typedef enum {
@@ -109,6 +110,7 @@ struct _MooTextViewPrivate {
         int icon_width;
         gboolean show_numbers;
         int digit_width;
+        int numbers_width;
         PangoFontDescription *numbers_font;
         gboolean show_folds;
         int fold_width;
@@ -149,14 +151,17 @@ struct _MooTextViewPrivate {
     /***********************************************************************/
     /* Selection and drag
      */
-    guint           drag_scroll_timeout;
-    GdkEventType    drag_button;
-    MooTextViewDragType drag_type;
-    int             drag_start_x;
-    int             drag_start_y;
-    guint           drag_moved                      : 1;
-    guint           double_click_selects_brackets   : 1;
-    guint           double_click_selects_inside     : 1;
+    struct {
+        guint           scroll_timeout;
+        GdkEventType    button;
+        MooTextViewDragType type;
+        int             start_x; /* buffer coordinates */
+        int             start_y; /* buffer coordinates */
+        GtkTextIter     start_iter;
+        guint           moved                           : 1;
+        guint           double_click_selects_brackets   : 1;
+        guint           double_click_selects_inside     : 1;
+    } dnd;
 
     /***********************************************************************/
     /* Drag'n'drop from outside
