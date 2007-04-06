@@ -1,3 +1,21 @@
+2007-04-06  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    * === Released 0.8.3 ===
+
+    French translation by Collilieux.
+    Finally made tools written in Python work.
+    Fixed Stop button in replace confirmation dialog.
+    Number following colon after filename on command line is treated as line number,
+    e.g. 'medit /home/user/foo:134'.
+
+    File selector fixes:
+      Use exo-open when running on XFCE.
+      Correctly determine mime type of backup files and text files.
+      Executable files do not get passed to gnome-open and alike, so they are not
+      executed on double-click.
+      Improved performance and memory consumption.
+
+    Improved syntax highlighting: C, C++, po, gtk-doc, Makefile,
+
 2007-02-03  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.8.2 ===
 
