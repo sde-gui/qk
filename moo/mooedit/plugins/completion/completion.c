@@ -655,23 +655,16 @@ reinstall_popup_timeout (CmplPlugin *plugin)
 }
 
 static gboolean
-doc_key_release (CmplPlugin  *plugin,
-                 GdkEventKey *event)
+doc_key_press (CmplPlugin *plugin)
 {
-    gboolean install = TRUE;
+    remove_popup_timeout (plugin);
+    return FALSE;
+}
 
-    switch (event->keyval)
-    {
-        case GDK_Escape:
-            install = FALSE;
-            break;
-    }
-
-    if (install)
-        reinstall_popup_timeout (plugin);
-    else
-        remove_popup_timeout (plugin);
-
+static gboolean
+doc_char_inserted (CmplPlugin *plugin)
+{
+    reinstall_popup_timeout (plugin);
     return FALSE;
 }
 
@@ -679,8 +672,11 @@ static void
 connect_doc (CmplPlugin *plugin,
              MooEdit    *doc)
 {
-    g_signal_connect_swapped (doc, "key-release-event",
-                              G_CALLBACK (doc_key_release),
+    g_signal_connect_swapped (doc, "key-press-event",
+                              G_CALLBACK (doc_key_press),
+                              plugin);
+    g_signal_connect_swapped (doc, "char-inserted",
+                              G_CALLBACK (doc_char_inserted),
                               plugin);
 }
 
@@ -689,7 +685,8 @@ disconnect_doc (CmplPlugin *plugin,
                 MooEdit    *doc)
 {
     remove_popup_timeout (plugin);
-    g_signal_handlers_disconnect_by_func (doc, (gpointer) doc_key_release, plugin);
+    g_signal_handlers_disconnect_by_func (doc, (gpointer) doc_key_press, plugin);
+    g_signal_handlers_disconnect_by_func (doc, (gpointer) doc_char_inserted, plugin);
 }
 
 void
