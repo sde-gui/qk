@@ -33,8 +33,10 @@ Filename: {app}\bin\medit.exe; Description: {cm:LaunchProgram,medit}; Flags: now
 [UninstallDelete]
 Name: {app}\lib\moo\plugins\*.pyc; Type: files; Tasks: 
 Name: {app}\lib\moo\plugins\lib\*.pyc; Type: files; Tasks: 
-
+Name: {app}\lib\moo\plugins\lib\medit\*.pyc; Type: files; Tasks: 
+Name: {app}\lib\moo\plugins\pymoo25\*.pyc; Type: files; Tasks: 
+Name: {app}\lib\moo\plugins\pymoo25\cairo\*.pyc; Type: files; Tasks: 
+Name: {app}\lib\moo\plugins\pymoo25\gobject\*.pyc; Type: files; Tasks: 
+Name: {app}\lib\moo\plugins\pymoo25\gtk\*.pyc; Type: files; Tasks: 
 Name: {app}\lib\moo\plugins\project\mprj\*.pyc; Type: files; Tasks: 
 Name: {app}\lib\moo\plugins\project\mprj\config\*.pyc; Type: files; Tasks: 
-[Types]
-
