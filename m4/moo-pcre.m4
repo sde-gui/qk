@@ -102,7 +102,7 @@ fi
 if test x$MOO_BUILD_PCRE = xyes; then
     AC_C_CONST
     AC_TYPE_SIZE_T
-    AC_CHECK_FUNCS(bcopy memmove strerror)
+    AC_CHECK_FUNCS(memmove strerror)
 
     AC_DEFINE(NEWLINE, '\n', [The value of NEWLINE determines the newline character used in pcre])
 
