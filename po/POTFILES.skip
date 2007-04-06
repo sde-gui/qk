@@ -14,6 +14,9 @@ moo/mooedit/gtksourceview/upstream/gtksourcestylescheme.c
 moo/mooedit/gtksourceview/upstream/gtksourcelanguage-parser-2.c
 moo/mooedit/gtksourceview/upstream/gtksourcecontextengine.c
 
+moo/mooedit/plugins/completion/completion.glade
+moo/mooedit/plugins/completion/completion-plugin.c
+
 moo/mooedit/language-specs/R.lang
 moo/mooedit/language-specs/ada.lang
 moo/mooedit/language-specs/c.lang

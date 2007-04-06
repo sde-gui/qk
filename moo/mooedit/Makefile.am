@@ -42,6 +42,14 @@ mooedit_include_headers =		\
 	mootextstylescheme.h		\
 	mootextview.h
 
+completion_sources =			\
+	moocompletionsimple.c		\
+	moocompletionsimple.h		\
+	mootextcompletion.c		\
+	mootextcompletion.h		\
+	mootextpopup.c			\
+	mootextpopup.h
+
 mooedit_sources =			\
 	$(mooedit_include_headers)	\
 	$(moocommand_stuff)		\
@@ -56,8 +64,6 @@ mooedit_sources =			\
 	moocommand-private.h		\
 	moocommand-script.c		\
 	moocommand-script.h		\
-	moocompletionsimple.c		\
-	moocompletionsimple.h		\
 	mooeditaction.c			\
 	mooeditaction-factory.c		\
 	mooeditaction-factory.h		\
@@ -111,14 +117,10 @@ mooedit_sources =			\
 	mootextbtree.c			\
 	mootextbtree.h			\
 	mootextbuffer.c			\
-	mootextcompletion.c		\
-	mootextcompletion.h		\
 	mootextfind.c			\
 	mootextfind-glade.h		\
 	mootextfind.h			\
 	mootextgotoline-glade.h		\
-	mootextpopup.c			\
-	mootextpopup.h			\
 	mootextsearch.c			\
 	mootextsearch-private.h		\
 	mootextstylescheme.c		\
