@@ -34,12 +34,12 @@
    </configure>
   </optimized>
  </configurations>
- <file_selector_dir>/home/muntyan/projects/moo/</file_selector_dir>
+ <file_selector_dir>/home/muntyan/projects/moo/moo/mooutils/</file_selector_dir>
  <run>
   <args>--g-fatal-warnings --new-app</args>
   <exe>medit/medit</exe>
   <vars>
-   <var name="LANGUAGEEE">fr</var>
+   <var name="LANGUAGE">ru</var>
   </vars>
  </run>
 </medit-project>

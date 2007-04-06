@@ -747,11 +747,10 @@ toolbar_style_toggled (MooWindow            *window,
 }
 
 
-#define N_STYLES 4
+#define N_STYLES 3
 #define ICONS_ONLY "icons-only"
 #define LABELS_ONLY "labels-only"
 #define ICONS_AND_LABELS "icons-and-labels"
-#define ICONS_AND_IMPORTANT_LABELS "icons-and-important-labels"
 
 static GtkAction*
 create_toolbar_style_action (MooWindow      *window,
@@ -765,15 +764,13 @@ create_toolbar_style_action (MooWindow      *window,
     const char *labels[N_STYLES] = {
         N_("_Icons Only"),
         N_("_Labels Only"),
-        N_("Icons _and Labels"),
-        N_("Icons and I_mportant Labels")
+        N_("Icons _and Labels")
     };
 
     const char *ids[N_STYLES] = {
         ICONS_ONLY,
         LABELS_ONLY,
-        ICONS_AND_LABELS,
-        ICONS_AND_IMPORTANT_LABELS
+        ICONS_AND_LABELS
     };
 
     action = moo_menu_action_new (TOOLBAR_STYLE_ACTION_ID, "Toolbar _Style");

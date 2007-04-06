@@ -375,10 +375,8 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
     moo_window_class_set_id (window_class, "Editor", "Editor");
 
     moo_window_class_new_action (window_class, "NewDoc", NULL,
-                                 /* translators: do not translate the part before the | */
-                                 "display-name", Q_("New document|New"),
-                                 /* translators: do not translate the part before the | */
-                                 "label", Q_("New document|New"),
+                                 "display-name", GTK_STOCK_NEW,
+                                 "label", GTK_STOCK_NEW,
                                  "tooltip", _("Create new document"),
                                  "stock-id", GTK_STOCK_NEW,
                                  "accel", "<ctrl>N",
@@ -602,8 +600,8 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
 
     moo_window_class_new_action (window_class, "GoToLine", NULL,
                                  "display-name", _("Go to Line"),
-                                 "label", _("_Go to Line"),
-                                 "tooltip", _("Go to line"),
+                                 "label", _("_Go to Line..."),
+                                 "tooltip", _("Go to line..."),
                                  "accel", "<ctrl>G",
                                  "closure-signal", "goto-line-interactive",
                                  "closure-proxy-func", moo_edit_window_get_active_doc,
