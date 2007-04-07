@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-04-06 09:51-0500\n"
+"POT-Creation-Date: 2007-04-06 14:37-0500\n"
 "PO-Revision-Date: 2007-02-20 23:15+0100\n"
 "Last-Translator: Collilieux <mccnews@free.fr>\n"
 "Language-Team: \n"
@@ -386,7 +386,7 @@ msgid "Find"
 msgstr "Rechercher"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:4
-#: ../moo/mooedit/mooeditwindow.c:554
+#: ../moo/mooedit/mooeditwindow.c:552
 msgid "Find _Next"
 msgstr "Rechercher le _suivant"
 
@@ -447,7 +447,7 @@ msgid "_Replace"
 msgstr "_Remplacer"
 
 #: ../moo/mooedit/glade/mootextgotoline.glade.h:1
-#: ../moo/mooedit/mooeditwindow.c:604
+#: ../moo/mooedit/mooeditwindow.c:602
 msgid "Go to Line"
 msgstr "Aller à la ligne"
 
@@ -687,7 +687,7 @@ msgstr "Annuler les modifications du fichier '%s' ?"
 msgid "If you reload the document, changes will be discarded"
 msgstr "Si vous rechargez le document, les modifications seront perdues"
 
-#: ../moo/mooedit/mooeditdialogs.c:672 ../moo/mooedit/mooeditwindow.c:399
+#: ../moo/mooedit/mooeditdialogs.c:672 ../moo/mooedit/mooeditwindow.c:397
 msgid "_Reload"
 msgstr "_Recharger"
 
@@ -725,271 +725,266 @@ msgstr ""
 "Fin du document atteinte.\n"
 "Continuer au début ?"
 
-#. translators: do not translate the part before the |
-#: ../moo/mooedit/mooeditwindow.c:379 ../moo/mooedit/mooeditwindow.c:381
-msgid "New document|New"
-msgstr "Nouveau"
-
-#: ../moo/mooedit/mooeditwindow.c:382
+#: ../moo/mooedit/mooeditwindow.c:380
 msgid "Create new document"
 msgstr "Créer un nouveau document"
 
-#: ../moo/mooedit/mooeditwindow.c:390
+#: ../moo/mooedit/mooeditwindow.c:388
 msgid "_Open..."
 msgstr "_Ouvrir..."
 
-#: ../moo/mooedit/mooeditwindow.c:391
+#: ../moo/mooedit/mooeditwindow.c:389
 msgid "Open..."
 msgstr "Ouvrir..."
 
-#: ../moo/mooedit/mooeditwindow.c:398 ../moo/moofileview/moofileview.c:1274
+#: ../moo/mooedit/mooeditwindow.c:396 ../moo/moofileview/moofileview.c:1274
 #: ../moo/moofileview/moofileview.c:1275
 msgid "Reload"
 msgstr "Recharger"
 
-#: ../moo/mooedit/mooeditwindow.c:400
+#: ../moo/mooedit/mooeditwindow.c:398
 msgid "Reload document"
 msgstr "Recharger le document"
 
-#: ../moo/mooedit/mooeditwindow.c:419
+#: ../moo/mooedit/mooeditwindow.c:417
 msgid "Save _As..."
 msgstr "Enregistrer _sous..."
 
-#: ../moo/mooedit/mooeditwindow.c:420
+#: ../moo/mooedit/mooeditwindow.c:418
 msgid "Save as..."
 msgstr "Enregistrer sous..."
 
-#: ../moo/mooedit/mooeditwindow.c:430
+#: ../moo/mooedit/mooeditwindow.c:428
 msgid "Close document"
 msgstr "Fermer le document"
 
-#: ../moo/mooedit/mooeditwindow.c:438
+#: ../moo/mooedit/mooeditwindow.c:436
 msgid "Close All"
 msgstr "Tout fermer"
 
-#: ../moo/mooedit/mooeditwindow.c:439
+#: ../moo/mooedit/mooeditwindow.c:437
 msgid "Close _All"
 msgstr "_Tout fermer"
 
-#: ../moo/mooedit/mooeditwindow.c:440
+#: ../moo/mooedit/mooeditwindow.c:438
 msgid "Close all documents"
 msgstr "Fermer tous les documents"
 
-#: ../moo/mooedit/mooeditwindow.c:512 ../moo/mooutils/moostock.c:48
+#: ../moo/mooedit/mooeditwindow.c:510 ../moo/mooutils/moostock.c:48
 msgid "Select All"
 msgstr "Tout sélectionner"
 
-#: ../moo/mooedit/mooeditwindow.c:513
+#: ../moo/mooedit/mooeditwindow.c:511
 msgid "Select _All"
 msgstr "_Tout sélectionner"
 
-#: ../moo/mooedit/mooeditwindow.c:514
+#: ../moo/mooedit/mooeditwindow.c:512
 msgid "Select all"
 msgstr "Tout sélectionner"
 
-#: ../moo/mooedit/mooeditwindow.c:522
+#: ../moo/mooedit/mooeditwindow.c:520
 msgid "Previous Tab"
 msgstr "Onglet précédent"
 
-#: ../moo/mooedit/mooeditwindow.c:523
+#: ../moo/mooedit/mooeditwindow.c:521
 msgid "_Previous Tab"
 msgstr "Onglet _précédent"
 
-#: ../moo/mooedit/mooeditwindow.c:524
+#: ../moo/mooedit/mooeditwindow.c:522
 msgid "Previous tab"
 msgstr "Onglet précédent"
 
-#: ../moo/mooedit/mooeditwindow.c:532
+#: ../moo/mooedit/mooeditwindow.c:530
 msgid "Next Tab"
 msgstr "Onglet suivant"
 
-#: ../moo/mooedit/mooeditwindow.c:533
+#: ../moo/mooedit/mooeditwindow.c:531
 msgid "_Next Tab"
 msgstr "Onglet _suivant"
 
-#: ../moo/mooedit/mooeditwindow.c:534
+#: ../moo/mooedit/mooeditwindow.c:532
 msgid "Next tab"
 msgstr "Onglet suivant"
 
-#: ../moo/mooedit/mooeditwindow.c:553
+#: ../moo/mooedit/mooeditwindow.c:551
 msgid "Find Next"
 msgstr "Rechercher le suivant"
 
-#: ../moo/mooedit/mooeditwindow.c:555
+#: ../moo/mooedit/mooeditwindow.c:553
 msgid "Find next"
 msgstr "Rechercher le suivant"
 
-#: ../moo/mooedit/mooeditwindow.c:564
+#: ../moo/mooedit/mooeditwindow.c:562
 msgid "Find Previous"
 msgstr "Rechercher le précédent"
 
-#: ../moo/mooedit/mooeditwindow.c:565
+#: ../moo/mooedit/mooeditwindow.c:563
 msgid "Find _Previous"
 msgstr "Rechercher le _précédent"
 
-#: ../moo/mooedit/mooeditwindow.c:566
+#: ../moo/mooedit/mooeditwindow.c:564
 msgid "Find previous"
 msgstr "Rechercher le précédent"
 
-#: ../moo/mooedit/mooeditwindow.c:586
+#: ../moo/mooedit/mooeditwindow.c:584
 msgid "Find Current Word"
 msgstr "Rechercher le mot actuel"
 
-#: ../moo/mooedit/mooeditwindow.c:587
+#: ../moo/mooedit/mooeditwindow.c:585
 msgid "Find Current _Word"
 msgstr "Rechercher le _mot actuel"
 
-#: ../moo/mooedit/mooeditwindow.c:595
+#: ../moo/mooedit/mooeditwindow.c:593
 msgid "Find Current Word Backwards"
 msgstr "Rechercher le mot actuel en arrière"
 
-#: ../moo/mooedit/mooeditwindow.c:596
+#: ../moo/mooedit/mooeditwindow.c:594
 msgid "Find Current Word _Backwards"
 msgstr "Rechercher le m_ot actuel en arrière"
 
-#: ../moo/mooedit/mooeditwindow.c:605
-msgid "_Go to Line"
-msgstr "_Aller à la ligne"
+#: ../moo/mooedit/mooeditwindow.c:603
+msgid "_Go to Line..."
+msgstr "_Aller à la ligne..."
 
-#: ../moo/mooedit/mooeditwindow.c:606
-msgid "Go to line"
-msgstr "Aller à la ligne"
+#: ../moo/mooedit/mooeditwindow.c:604
+msgid "Go to line..."
+msgstr "Aller à la ligne..."
 
-#: ../moo/mooedit/mooeditwindow.c:614
+#: ../moo/mooedit/mooeditwindow.c:612
 msgid "_Document"
 msgstr "_Document"
 
-#: ../moo/mooedit/mooeditwindow.c:621
+#: ../moo/mooedit/mooeditwindow.c:619
 msgid "Toggle Text Wrapping"
 msgstr "Modifier le renvoi des lignes"
 
-#: ../moo/mooedit/mooeditwindow.c:622
+#: ../moo/mooedit/mooeditwindow.c:620
 msgid "_Wrap Text"
 msgstr "_Renvoi des lignes"
 
-#: ../moo/mooedit/mooeditwindow.c:629
+#: ../moo/mooedit/mooeditwindow.c:627
 msgid "Toggle Line Numbers Display"
 msgstr "Modifier l'affichage des numéros de lignes"
 
-#: ../moo/mooedit/mooeditwindow.c:630
+#: ../moo/mooedit/mooeditwindow.c:628
 msgid "_Show Line Numbers"
 msgstr "Afficher les _numéros de ligne"
 
-#: ../moo/mooedit/mooeditwindow.c:636
+#: ../moo/mooedit/mooeditwindow.c:634
 msgid "Focus Document"
 msgstr "Focus sur document"
 
-#: ../moo/mooedit/mooeditwindow.c:637
+#: ../moo/mooedit/mooeditwindow.c:635
 msgid "_Focus Document"
 msgstr "_Focus sur document"
 
-#: ../moo/mooedit/mooeditwindow.c:688 ../moo/mooedit/mooeditwindow.c:689
+#: ../moo/mooedit/mooeditwindow.c:686 ../moo/mooedit/mooeditwindow.c:687
 msgid "Toggle Bookmark"
 msgstr "(Dés)Installer un signet"
 
-#: ../moo/mooedit/mooeditwindow.c:697 ../moo/mooedit/mooeditwindow.c:698
+#: ../moo/mooedit/mooeditwindow.c:695 ../moo/mooedit/mooeditwindow.c:696
 msgid "Next Bookmark"
 msgstr "Signet suivant"
 
-#: ../moo/mooedit/mooeditwindow.c:706 ../moo/mooedit/mooeditwindow.c:707
+#: ../moo/mooedit/mooeditwindow.c:704 ../moo/mooedit/mooeditwindow.c:705
 msgid "Previous Bookmark"
 msgstr "Signet précédent"
 
-#: ../moo/mooedit/mooeditwindow.c:716 ../moo/mooedit/mooeditwindow.c:717
+#: ../moo/mooedit/mooeditwindow.c:714 ../moo/mooedit/mooeditwindow.c:715
 msgid "Next Placeholder"
 msgstr "Placeholder suivant"
 
-#: ../moo/mooedit/mooeditwindow.c:718
+#: ../moo/mooedit/mooeditwindow.c:716
 msgid "Go to next placeholder"
 msgstr "Aller au placeholder suivant"
 
-#: ../moo/mooedit/mooeditwindow.c:725 ../moo/mooedit/mooeditwindow.c:726
+#: ../moo/mooedit/mooeditwindow.c:723 ../moo/mooedit/mooeditwindow.c:724
 msgid "Previous Placeholder"
 msgstr "Placeholder précédent"
 
-#: ../moo/mooedit/mooeditwindow.c:727
+#: ../moo/mooedit/mooeditwindow.c:725
 msgid "Go to previous placeholder"
 msgstr "Aller au placeholder précédent"
 
 #. action
-#: ../moo/mooedit/mooeditwindow.c:735 ../moo/mooedit/mooeditwindow.c:736
-#: ../moo/mooedit/mooeditwindow.c:737
+#: ../moo/mooedit/mooeditwindow.c:733 ../moo/mooedit/mooeditwindow.c:734
+#: ../moo/mooedit/mooeditwindow.c:735
 msgid "Comment"
 msgstr "Commenter"
 
 #. action
-#: ../moo/mooedit/mooeditwindow.c:745 ../moo/mooedit/mooeditwindow.c:746
-#: ../moo/mooedit/mooeditwindow.c:747
+#: ../moo/mooedit/mooeditwindow.c:743 ../moo/mooedit/mooeditwindow.c:744
+#: ../moo/mooedit/mooeditwindow.c:745
 msgid "Uncomment"
 msgstr "Décommenter"
 
 #. Insensitive menu item which appears in Window menu with no documents open
-#: ../moo/mooedit/mooeditwindow.c:775
+#: ../moo/mooedit/mooeditwindow.c:773
 msgid "No Documents"
 msgstr "Pas de document"
 
-#: ../moo/mooedit/mooeditwindow.c:783 ../moo/mooedit/mooeditwindow.c:784
-#: ../moo/mooedit/mooeditwindow.c:785
+#: ../moo/mooedit/mooeditwindow.c:781 ../moo/mooedit/mooeditwindow.c:782
+#: ../moo/mooedit/mooeditwindow.c:783
 msgid "Page Setup"
 msgstr "Gestion de page"
 
-#: ../moo/mooedit/mooeditwindow.c:810 ../moo/mooedit/mooeditwindow.c:812
+#: ../moo/mooedit/mooeditwindow.c:808 ../moo/mooedit/mooeditwindow.c:810
 msgid "Export as PDF"
 msgstr "Exporter en PDF"
 
-#: ../moo/mooedit/mooeditwindow.c:811
+#: ../moo/mooedit/mooeditwindow.c:809
 msgid "Export as PDF..."
 msgstr "Exporter en PDF..."
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [new file]"
-#: ../moo/mooedit/mooeditwindow.c:1119
+#: ../moo/mooedit/mooeditwindow.c:1117
 #, c-format
 msgid "%s [new file]"
 msgstr ""
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified on disk]"
-#: ../moo/mooedit/mooeditwindow.c:1122
+#: ../moo/mooedit/mooeditwindow.c:1120
 #, c-format
 msgid "%s [modified on disk]"
 msgstr ""
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [deleted]"
-#: ../moo/mooedit/mooeditwindow.c:1125
+#: ../moo/mooedit/mooeditwindow.c:1123
 #, c-format
 msgid "%s [deleted]"
 msgstr ""
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [new file] [modified]"
-#: ../moo/mooedit/mooeditwindow.c:1133
+#: ../moo/mooedit/mooeditwindow.c:1131
 #, c-format
 msgid "%s [new file] [modified]"
 msgstr ""
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified on disk] [modified]"
-#: ../moo/mooedit/mooeditwindow.c:1136
+#: ../moo/mooedit/mooeditwindow.c:1134
 #, c-format
 msgid "%s [modified on disk] [modified]"
 msgstr ""
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [deleted] [modified]"
-#: ../moo/mooedit/mooeditwindow.c:1139
+#: ../moo/mooedit/mooeditwindow.c:1137
 #, c-format
 msgid "%s [deleted] [modified]"
 msgstr ""
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified]"
-#: ../moo/mooedit/mooeditwindow.c:1142
+#: ../moo/mooedit/mooeditwindow.c:1140
 #, c-format
 msgid "%s [modified]"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1611 ../moo/moofileview/moofileview.c:1216
+#: ../moo/mooedit/mooeditwindow.c:1609 ../moo/moofileview/moofileview.c:1216
 #: ../moo/moofileview/moofileview.c:1217
 #: ../moo/moofileview/moofileview-ui.xml.h:1
 msgid "Bookmarks"
 msgstr "Signets"
 
-#: ../moo/mooedit/mooeditwindow.c:3052
+#: ../moo/mooedit/mooeditwindow.c:3050
 msgid "_Language"
 msgstr "_Langage"
 
@@ -1773,21 +1768,17 @@ msgstr "Afficher la barre d'outils"
 msgid "Show Menubar"
 msgstr "Afficher la barre de menu"
 
-#: ../moo/mooutils/moowindow.c:766
+#: ../moo/mooutils/moowindow.c:765
 msgid "_Icons Only"
 msgstr "_Icones seules"
 
-#: ../moo/mooutils/moowindow.c:767
+#: ../moo/mooutils/moowindow.c:766
 msgid "_Labels Only"
 msgstr "_Labels seuls"
 
-#: ../moo/mooutils/moowindow.c:768
+#: ../moo/mooutils/moowindow.c:767
 msgid "Icons _and Labels"
 msgstr "Icones _et labels"
-
-#: ../moo/mooutils/moowindow.c:769
-msgid "Icons and I_mportant Labels"
-msgstr "Icones et labels i_mportants"
 
 #: ../moo/mooutils/glade/accelprefs.glade.h:1
 msgid "Configure Shortcuts"
@@ -1815,6 +1806,12 @@ msgstr "Par défaut"
 #: ../moo/mooutils/glade/accelprefs.glade.h:9
 msgid "Shortcut|None"
 msgstr "Aucun"
+
+#~ msgid "New document|New"
+#~ msgstr "Nouveau"
+
+#~ msgid "Icons and I_mportant Labels"
+#~ msgstr "Icones et labels i_mportants"
 
 #~ msgid "Name"
 #~ msgstr "Nom"

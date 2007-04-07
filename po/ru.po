@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-04-06 14:37-0500\n"
+"POT-Creation-Date: 2007-04-07 01:57-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Yevgen Muntyan <muntyan@tamu.edu>\n"
 "MIME-Version: 1.0\n"
@@ -504,9 +504,21 @@ msgstr "Вид"
 msgid "_Window"
 msgstr "Окно"
 
+#: ../moo/mooedit/mooeditor.c:622
+msgid "New Window"
+msgstr "Новое окно"
+
+#: ../moo/mooedit/mooeditor.c:623
+msgid "_New Window"
+msgstr "Новое _окно"
+
+#: ../moo/mooedit/mooeditor.c:624
+msgid "Open new editor window"
+msgstr "Открыть новое окно"
+
 #: ../moo/mooedit/mooeditor.c:947
 msgid "Open Recent"
-msgstr ""
+msgstr "Последние файлы"
 
 #: ../moo/mooedit/moocommand-exe-unix.c:545
 msgid "Shell command"
