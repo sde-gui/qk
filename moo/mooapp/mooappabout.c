@@ -168,7 +168,7 @@ show_license (void)
 
 
 #define COPYRIGHT_SYMBOL "\302\251"
-static const char *copyright = COPYRIGHT_SYMBOL " 2004-2006 Yevgen Muntyan";
+static const char *copyright = COPYRIGHT_SYMBOL " 2004-2007 Yevgen Muntyan";
 
 
 static gboolean
