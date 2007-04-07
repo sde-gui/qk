@@ -14,9 +14,11 @@
 #include "mooutils/moostock.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/stock-terminal-24.h"
+#include "mooutils/stock-file-selector-24.h"
 #include "mooutils/stock-moo.h"
 #include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
+#include <string.h>
 
 #if !GTK_CHECK_VERSION(2,6,0)
 #include "mooutils/stock-about-16.h"
@@ -98,14 +100,23 @@ register_stock_icon (GtkIconFactory *factory,
 
 
 static void
-add_default_image (const gchar  *stock_id,
-                   gint          size,
-                   const guchar *inline_data)
+add_default_image (gint          size,
+                   const guchar *inline_data,
+                   const char   *name1,
+                   const char   *name2)
 {
-    GdkPixbuf *pixbuf = gdk_pixbuf_new_from_inline (-1, inline_data, FALSE, NULL);
+    GdkPixbuf *pixbuf;
+
+    g_return_if_fail (name1 != NULL);
+    g_return_if_fail (inline_data != NULL);
+
+    pixbuf = gdk_pixbuf_new_from_inline (-1, inline_data, FALSE, NULL);
     g_return_if_fail (pixbuf != NULL);
 
-    gtk_icon_theme_add_builtin_icon (stock_id, size, pixbuf);
+    gtk_icon_theme_add_builtin_icon (name1, size, pixbuf);
+
+    if (name2)
+        gtk_icon_theme_add_builtin_icon (name2, size, pixbuf);
 
     g_object_unref (pixbuf);
 }
@@ -119,7 +130,7 @@ add_icon (GtkIconFactory *factory,
           const guchar   *data)
 {
     if (data)
-        add_default_image (stock_id, size, data);
+        add_default_image (size, data, stock_id, icon_name);
     register_stock_icon (factory, stock_id, icon_name);
 }
 
@@ -147,8 +158,8 @@ static void add_icon2   (GtkIconFactory *factory,
                          gint            size2,
                          const guchar   *data2)
 {
-    add_default_image (stock_id, size1, data1);
-    add_default_image (stock_id, size2, data2);
+    add_default_image (size1, data1, stock_id, NULL);
+    add_default_image (size2, data2, stock_id, NULL);
     register_stock_icon (factory, stock_id, icon_name);
 }
 #endif /* !GTK_CHECK_VERSION(2,10,0) */
@@ -240,6 +251,8 @@ _moo_stock_init (void)
 {
     static gboolean created = FALSE;
     GtkIconFactory *factory;
+    GtkSettings *settings;
+    char *icon_theme_name;
 
     if (created)
         return;
@@ -249,6 +262,21 @@ _moo_stock_init (void)
     factory = gtk_icon_factory_new ();
 
     gtk_icon_factory_add_default (factory);
+
+    settings = gtk_settings_get_default ();
+    g_object_get (settings, "gtk-icon-theme-name", &icon_theme_name, NULL);
+
+    /* XXX */
+    if (icon_theme_name && !strcmp (icon_theme_name, "gnome"))
+    {
+        add_icon (factory, MOO_STOCK_FILE_SELECTOR, "gnome-fs-directory", 24, MOO_FILE_SELECTOR_ICON);
+    }
+    else
+    {
+        add_icon (factory, MOO_STOCK_FILE_SELECTOR, NULL, 24, MOO_FILE_SELECTOR_ICON);
+        add_icon_name (factory, MOO_STOCK_FILE_SELECTOR, "folder");
+        add_icon_name (factory, MOO_STOCK_FILE_SELECTOR, "file-manager");
+    }
 
     add_icon (factory, MOO_STOCK_TERMINAL, "terminal", 24, MOO_GNOME_TERMINAL_ICON);
 
@@ -293,6 +321,9 @@ _moo_stock_init (void)
     register_stock_icon_alias (factory, GTK_STOCK_FIND, MOO_STOCK_FIND_FILE, NULL);
 
     register_stock_icon_alias (factory, GTK_STOCK_ABOUT, MOO_STOCK_EDIT_BOOKMARK, "bookmark");
+    register_stock_icon_alias (factory, GTK_STOCK_ABOUT, MOO_STOCK_FILE_BOOKMARK, "gnome-fs-bookmark");
+    add_icon_name (factory, MOO_STOCK_FILE_BOOKMARK, "bookmark");
 
+    g_free (icon_theme_name);
     g_object_unref (G_OBJECT (factory));
 }

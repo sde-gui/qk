@@ -1215,7 +1215,7 @@ init_actions (MooFileView *fileview)
     moo_action_group_add_action (group, "BookmarksMenu",
                                  "label", _("Bookmarks"),
                                  "tooltip", _("Bookmarks"),
-                                 "stock-id", GTK_STOCK_ABOUT,
+                                 "stock-id", MOO_STOCK_FILE_BOOKMARK,
                                  "closure-object", fileview,
                                  "closure-callback", view_bookmarks,
                                  "has-submenu", TRUE,
