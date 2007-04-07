@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-04-07 01:57-0500\n"
+"POT-Creation-Date: 2007-04-07 02:48-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Yevgen Muntyan <muntyan@tamu.edu>\n"
 "MIME-Version: 1.0\n"
@@ -576,7 +576,7 @@ msgstr ""
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1030
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1055
 #: ../moo/mooedit/plugins/fileselector/moofileselector.glade.h:2
-#: ../moo/moofileview/glade/drop.glade.h:1 ../moo/mooutils/moostock.c:42
+#: ../moo/moofileview/glade/drop.glade.h:1
 msgid "Save As"
 msgstr "Сохранить как"
 
@@ -764,11 +764,11 @@ msgstr "Закрыть Все"
 msgid "Close all documents"
 msgstr "Закрыть все документы"
 
-#: ../moo/mooedit/mooeditwindow.c:510 ../moo/mooutils/moostock.c:48
+#: ../moo/mooedit/mooeditwindow.c:510
 msgid "Select All"
 msgstr "Выделить Всё"
 
-#: ../moo/mooedit/mooeditwindow.c:511
+#: ../moo/mooedit/mooeditwindow.c:511 ../moo/mooutils/moostock.c:48
 msgid "Select _All"
 msgstr "Выделить Всё"
 
@@ -1515,24 +1515,24 @@ msgstr ""
 #. 3 - "SE & SW Asian",
 #. 4 - "Middle Eastern",
 #. 5 - "Unicode"
-#: ../moo/mooutils/mooencodings.c:152
+#: ../moo/mooutils/mooencodings.c:159
 msgid "012345"
 msgstr ""
 
-#: ../moo/mooutils/mooencodings.c:280
+#: ../moo/mooutils/mooencodings.c:370
 #, c-format
 msgid "Current locale (%s)"
 msgstr "Текущая локаль (%s)"
 
-#: ../moo/mooutils/mooencodings.c:283
+#: ../moo/mooutils/mooencodings.c:373
 msgid "Current locale"
 msgstr "Текущая локаль"
 
-#: ../moo/mooutils/mooencodings.c:524
+#: ../moo/mooutils/mooencodings.c:614
 msgid "Auto Detected"
 msgstr "Автоопределение"
 
-#: ../moo/mooutils/mooencodings.c:625
+#: ../moo/mooutils/mooencodings.c:715
 msgid "Charact_er encoding:"
 msgstr "Кодировку символов"
 
@@ -1735,10 +1735,6 @@ msgstr "Не сохранять"
 #: ../moo/mooutils/moostock.c:38
 msgid "Save _Selected"
 msgstr "Сохранить выделенные"
-
-#: ../moo/mooutils/moostock.c:39
-msgid "Copy"
-msgstr "Копировать"
 
 #: ../moo/mooutils/moostock.c:40
 msgid "Move"

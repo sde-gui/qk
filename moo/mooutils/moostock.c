@@ -1,7 +1,7 @@
 /*
  *   mooutils/moostock.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -36,16 +36,16 @@
 static GtkStockItem stock_items[] = {
     {(char*) MOO_STOCK_SAVE_NONE, (char*) N_("Save _None"), 0, 0, (char*) GETTEXT_PACKAGE},
     {(char*) MOO_STOCK_SAVE_SELECTED, (char*) N_("Save _Selected"), 0, 0, (char*) GETTEXT_PACKAGE},
-    {(char*) MOO_STOCK_FILE_COPY, (char*) N_("Copy"), 0, 0, (char*) GETTEXT_PACKAGE},
+    {(char*) MOO_STOCK_FILE_COPY, (char*) "_Copy", 0, 0, (char*) "gtk20"},
     {(char*) MOO_STOCK_FILE_MOVE, (char*) N_("Move"), 0, 0, (char*) GETTEXT_PACKAGE},
     {(char*) MOO_STOCK_FILE_LINK, (char*) N_("Link"), 0, 0, (char*) GETTEXT_PACKAGE},
-    {(char*) MOO_STOCK_FILE_SAVE_AS, (char*) N_("Save As"), 0, 0, (char*) GETTEXT_PACKAGE},
+    {(char*) MOO_STOCK_FILE_SAVE_AS, (char*) "Save _As", 0, 0, (char*) "gtk20"},
     {(char*) MOO_STOCK_FILE_SAVE_COPY, (char*) N_("Save Copy"), 0, 0, (char*) GETTEXT_PACKAGE}
 };
 
 #if !GTK_CHECK_VERSION(2,10,0)
 static GtkStockItem stock_items_2_10[] = {
-    {(char*) GTK_STOCK_SELECT_ALL, (char*) N_("Select All"), 0, 0, (char*) GETTEXT_PACKAGE},
+    {(char*) GTK_STOCK_SELECT_ALL, (char*) N_("Select _All"), 0, 0, (char*) GETTEXT_PACKAGE},
 };
 #endif
 
