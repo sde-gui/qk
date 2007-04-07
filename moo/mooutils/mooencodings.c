@@ -14,6 +14,7 @@
 #include "mooutils/mooencodings.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooencodings-data.h"
+#include "mooutils/mooprefs.h"
 #include <gtk/gtk.h>
 #include <string.h>
 #include <stdlib.h>
@@ -22,6 +23,11 @@
 #define ROW_RECENT(save_mode) ((save_mode) ? 1 : 3)
 #define ROW_LOCALE(save_mode) ((save_mode) ? 0 : 2)
 #define ROW_AUTO              0
+
+#define ELM_ENCODINGS   "Editor/encodings"
+#define ELM_RECENT      "recent"
+#define ELM_LAST_OPEN   "last-open"
+#define ELM_LAST_SAVE   "last-save"
 
 
 typedef struct {
@@ -54,8 +60,9 @@ enum {
 };
 
 
-static void     combo_changed   (GtkComboBox    *combo,
-                                 gpointer        save_mode);
+static void     combo_changed   (GtkComboBox        *combo,
+                                 gpointer            save_mode);
+static void     enc_mgr_load    (EncodingsManager   *enc_mgr);
 
 
 static Encoding *
@@ -257,6 +264,8 @@ get_enc_mgr (void)
             locale_charset = MOO_ENCODING_UTF8;
 
         mgr->locale_encoding = get_encoding (mgr, locale_charset);
+
+        enc_mgr_load (mgr);
     }
 
     return mgr;
@@ -266,6 +275,87 @@ get_enc_mgr (void)
 static void
 enc_mgr_save (EncodingsManager *enc_mgr)
 {
+    MooMarkupDoc *doc;
+    MooMarkupNode *root;
+    GString *string = NULL;
+
+    doc = moo_prefs_get_markup (MOO_PREFS_STATE);
+    g_return_if_fail (doc != NULL);
+
+    if (!(root = moo_markup_get_element (MOO_MARKUP_NODE (doc), ELM_ENCODINGS)))
+    {
+        root = moo_markup_create_element (MOO_MARKUP_NODE (doc), ELM_ENCODINGS);
+        moo_markup_create_element (root, ELM_RECENT);
+        moo_markup_create_element (root, ELM_LAST_OPEN);
+        moo_markup_create_element (root, ELM_LAST_SAVE);
+    }
+
+    if (enc_mgr->recent)
+    {
+        GSList *l;
+
+        string = g_string_new (NULL);
+
+        for (l = enc_mgr->recent; l != NULL; l = l->next)
+        {
+            if (l != enc_mgr->recent)
+                g_string_append (string, ",");
+            g_string_append (string, ((Encoding*)l->data)->name);
+        }
+    }
+
+    if (string)
+        moo_markup_set_content (moo_markup_get_element (root, ELM_RECENT), string->str);
+    else
+        moo_markup_set_content (moo_markup_get_element (root, ELM_RECENT), NULL);
+
+    moo_markup_set_content (moo_markup_get_element (root, ELM_LAST_OPEN), enc_mgr->last_open);
+    moo_markup_set_content (moo_markup_get_element (root, ELM_LAST_SAVE), enc_mgr->last_save);
+}
+
+static void
+enc_mgr_load (EncodingsManager *enc_mgr)
+{
+    MooMarkupDoc *doc;
+    MooMarkupNode *root;
+    MooMarkupNode *node;
+
+    g_return_if_fail (enc_mgr->recent == NULL);
+
+    if (!(doc = moo_prefs_get_markup (MOO_PREFS_STATE)) ||
+        !(root = moo_markup_get_element (MOO_MARKUP_NODE (doc), ELM_ENCODINGS)))
+            return;
+
+    if ((node = moo_markup_get_element (root, ELM_RECENT)))
+    {
+        const char *string = moo_markup_get_content (node);
+
+        if (string && *string)
+        {
+            char **encs, **p;
+            encs = g_strsplit (string, ",", 0);
+            for (p = encs; p && *p; ++p)
+            {
+                Encoding *e = get_encoding (enc_mgr, *p);
+                if (e)
+                    enc_mgr->recent = g_slist_prepend (enc_mgr->recent, e);
+            }
+            enc_mgr->recent = g_slist_reverse (enc_mgr->recent);
+            g_strfreev (encs);
+        }
+    }
+
+    if ((node = moo_markup_get_element (root, ELM_LAST_OPEN)))
+    {
+        g_free (enc_mgr->last_open);
+        enc_mgr->last_open = g_strdup (moo_markup_get_content (node));
+    }
+
+    if ((node = moo_markup_get_element (root, ELM_LAST_SAVE)))
+    {
+        g_free (enc_mgr->last_save);
+        enc_mgr->last_save = g_strdup (moo_markup_get_content (node));
+    }
 }
 
 

@@ -1,15 +1,2 @@
-0.7:
-----
-1. Printing.
-2. Tools. Finally decide what and how.
-3. Fix gvim and dark schemes. The rest of theme business
-should go to gtksourceview.
-4. Project manager:
-  a. Open/save sessions.
-  b. C, Python, LaTex.
-5. Encodings.
-6. Bookmarks ?
-
-0.8:
-----
-1. GtkSourceView.
+Project manager
+Encodings
