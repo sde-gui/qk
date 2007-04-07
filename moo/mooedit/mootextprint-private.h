@@ -18,7 +18,7 @@
 #ifndef __MOO_TEXT_PRINT_PRIVATE_H__
 #define __MOO_TEXT_PRINT_PRIVATE_H__
 
-#include <mooedit/mootextprint.h>
+#include <mooedit/mooprintpreview.h>
 
 G_BEGIN_DECLS
 
@@ -27,11 +27,12 @@ G_BEGIN_DECLS
 
 
 typedef enum {
-    MOO_PRINT_WRAP       = 1 << 0,
-    MOO_PRINT_ELLIPSIZE  = 1 << 1,
-    MOO_PRINT_USE_STYLES = 1 << 2,
-    MOO_PRINT_HEADER     = 1 << 3,
-    MOO_PRINT_FOOTER     = 1 << 4
+    MOO_PRINT_WRAP          = 1 << 0,
+    MOO_PRINT_ELLIPSIZE     = 1 << 1,
+    MOO_PRINT_USE_STYLES    = 1 << 2,
+    MOO_PRINT_HEADER        = 1 << 3,
+    MOO_PRINT_FOOTER        = 1 << 4,
+    MOO_PRINT_LINE_NUMBERS  = 1 << 5
 } MooPrintFlags;
 
 typedef enum {
@@ -55,7 +56,9 @@ typedef struct {
 } MooPrintHeaderFooter;
 
 typedef struct {
-    char *font;             /* overrides font set in the doc */
+    char *font; /* overrides font set in the doc */
+    char *ln_font;
+    guint ln_step;
     MooPrintFlags flags;
     PangoWrapMode wrap_mode;
     MooPrintHeaderFooter *header;

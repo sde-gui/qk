@@ -40,6 +40,8 @@
 #define PREFS_USE_CUSTOM_FONT           MOO_EDIT_PREFS_PREFIX "/print/use_font"
 #define PREFS_WRAP                      MOO_EDIT_PREFS_PREFIX "/print/wrap"
 #define PREFS_ELLIPSIZE                 MOO_EDIT_PREFS_PREFIX "/print/ellipsize"
+#define PREFS_LINE_NUMBERS              MOO_EDIT_PREFS_PREFIX "/print/line_numbers"
+#define PREFS_LINE_NUMBERS_STEP         MOO_EDIT_PREFS_PREFIX "/print/line_numbers_step"
 
 #define PREFS_PRINT_HEADER              MOO_EDIT_PREFS_PREFIX "/print/header/print"
 #define PREFS_PRINT_HEADER_SEPARATOR    MOO_EDIT_PREFS_PREFIX "/print/header/separator"
@@ -58,6 +60,10 @@ typedef struct {
     double y;
     double width;
     double height;
+    double text_x;
+    double text_width;
+    double ln_margin;
+    double ln_space;
 } Page;
 
 struct _MooPrintOperationPrivate {
@@ -78,6 +84,8 @@ struct _MooPrintOperationPrivate {
     /* aux stuff */
     GArray *pages;          /* GtkTextIter's pointing to pages start */
     PangoLayout *layout;
+    double ln_height;
+    PangoLayout *ln_layout;
 
     Page page;                 /* text area */
 };
@@ -245,6 +253,7 @@ moo_print_settings_new_default (void)
     settings->wrap_mode = PANGO_WRAP_WORD_CHAR;
     settings->header = moo_print_header_footer_new ();
     settings->footer = moo_print_header_footer_new ();
+    settings->ln_step = 1;
     return settings;
 }
 
@@ -256,11 +265,10 @@ moo_print_settings_copy (MooPrintSettings *settings)
 
     g_return_val_if_fail (settings != NULL, NULL);
 
-    copy = g_new0 (MooPrintSettings, 1);
+    copy = g_memdup (settings, sizeof (MooPrintSettings));
 
     copy->font = g_strdup (settings->font);
-    copy->flags = settings->flags;
-    copy->wrap_mode = settings->wrap_mode;
+    copy->ln_font = g_strdup (settings->ln_font);
     copy->header = moo_print_header_footer_copy (settings->header);
     copy->footer = moo_print_header_footer_copy (settings->footer);
 
@@ -273,6 +281,8 @@ moo_print_settings_free (MooPrintSettings *settings)
 {
     if (settings)
     {
+        g_free (settings->font);
+        g_free (settings->ln_font);
         moo_print_header_footer_free (settings->header);
         moo_print_header_footer_free (settings->footer);
         g_free (settings);
@@ -616,6 +626,54 @@ header_footer_get_size (MooPrintHeaderFooter *hf,
 }
 
 
+static gsize
+get_n_digits (guint n)
+{
+    gsize d = 1;
+    while (n /= 10)
+        d++;
+    return d;
+}
+
+static void
+create_ln_layout (MooPrintOperation    *op,
+                  GtkPrintContext      *context,
+                  PangoFontDescription *default_font)
+{
+    PangoFontDescription *freeme = NULL;
+    PangoFontDescription *font = default_font;
+    char *string;
+    gsize n_digits;
+
+    if (op->priv->ln_layout)
+        g_object_unref (op->priv->ln_layout);
+
+    op->priv->ln_layout = create_layout (context);
+
+    if (op->priv->settings->ln_font)
+        freeme = font = pango_font_description_from_string (op->priv->settings->ln_font);
+
+    if (font)
+        pango_layout_set_font_description (op->priv->ln_layout, font);
+
+    n_digits = get_n_digits (op->priv->last_line);
+    string = g_strnfill (n_digits, '9');
+    pango_layout_set_text (op->priv->ln_layout, string, -1);
+    get_layout_size (op->priv->ln_layout, &op->priv->page.ln_margin, &op->priv->ln_height);
+    op->priv->page.ln_space = 3.;
+
+    op->priv->page.text_x = op->priv->page.x + op->priv->page.ln_margin + op->priv->page.ln_space;
+    op->priv->page.text_width = op->priv->page.width - op->priv->page.text_x;
+
+    pango_layout_set_alignment (op->priv->ln_layout, PANGO_ALIGN_RIGHT);
+    pango_layout_set_width (op->priv->ln_layout, op->priv->page.ln_margin);
+
+    if (freeme)
+        pango_font_description_free (freeme);
+    g_free (string);
+}
+
+
 static void
 moo_print_operation_calc_page_size (MooPrintOperation    *op,
                                     GtkPrintContext      *context,
@@ -630,6 +688,12 @@ moo_print_operation_calc_page_size (MooPrintOperation    *op,
     page->y = 0.;
     page->width = gtk_print_context_get_width (context);
     page->height = gtk_print_context_get_height (context);
+
+    page->ln_margin = 0.;
+    page->ln_space = 0.;
+    page->text_x = page->x;
+    page->text_width = page->width;
+
     _moo_message ("page size: %f, %f - %f in, %f in",
                   page->width, page->height,
                   page->width / gtk_print_context_get_dpi_x (context),
@@ -666,6 +730,9 @@ moo_print_operation_calc_page_size (MooPrintOperation    *op,
                   page->width, page->height,
                   page->width / gtk_print_context_get_dpi_x (context),
                   page->height / gtk_print_context_get_dpi_y (context));
+
+    if (GET_OPTION (op, MOO_PRINT_LINE_NUMBERS))
+        create_ln_layout (op, context, default_font);
 }
 
 
@@ -683,12 +750,22 @@ localtime_r (const time_t *timep,
 #endif
 
 
+static gboolean
+line_number_displayed (MooPrintOperation *op,
+                       int                line_no)
+{
+    return GET_OPTION (op, MOO_PRINT_LINE_NUMBERS) &&
+           ((line_no+1) % op->priv->settings->ln_step) == 0;
+}
+
+
 static void
 moo_print_operation_paginate (MooPrintOperation *op)
 {
     GtkTextIter iter, print_end;
     double page_height;
     gboolean use_styles;
+    int line_no;
 
     _moo_message ("moo_print_operation_paginate");
     _moo_message ("page height: %f", op->priv->page.height);
@@ -704,6 +781,7 @@ moo_print_operation_paginate (MooPrintOperation *op)
     gtk_text_iter_forward_line (&print_end);
     g_array_append_val (op->priv->pages, iter);
     page_height = 0;
+    line_no = op->priv->first_line;
 
     use_styles = GET_OPTION (op, MOO_PRINT_USE_STYLES);
 
@@ -726,6 +804,9 @@ moo_print_operation_paginate (MooPrintOperation *op)
 
         get_layout_size (op->priv->layout, NULL, &line_height);
 
+        if (line_number_displayed (op, line_no))
+            line_height = MAX (line_height, op->priv->ln_height);
+
 #define EPS (.1)
         if (page_height > EPS && page_height + line_height > op->priv->page.height + EPS)
         {
@@ -735,6 +816,7 @@ moo_print_operation_paginate (MooPrintOperation *op)
             {
                 double part_height = 0;
                 PangoLayoutIter *layout_iter;
+                gboolean is_first_line = TRUE;
 
                 layout_iter = pango_layout_get_iter (op->priv->layout);
 
@@ -746,9 +828,13 @@ moo_print_operation_paginate (MooPrintOperation *op)
                     layout_line = pango_layout_iter_get_line (layout_iter);
                     get_layout_line_size (layout_line, NULL, &layout_line_height);
 
+                    if (is_first_line && line_number_displayed (op, line_no))
+                        layout_line_height = MAX (layout_line_height, op->priv->ln_height);
+
                     if (page_height + part_height + layout_line_height > op->priv->page.height + EPS)
                         break;
 
+                    is_first_line = FALSE;
                     part_height += layout_line_height;
                     part = TRUE;
                 }
@@ -852,12 +938,12 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
 
     if (GET_OPTION (op, MOO_PRINT_WRAP))
     {
-        pango_layout_set_width (op->priv->layout, op->priv->page.width * PANGO_SCALE);
+        pango_layout_set_width (op->priv->layout, op->priv->page.text_width * PANGO_SCALE);
         pango_layout_set_wrap (op->priv->layout, settings->wrap_mode);
     }
     else if (GET_OPTION (op, MOO_PRINT_ELLIPSIZE))
     {
-        pango_layout_set_width (op->priv->layout, op->priv->page.width * PANGO_SCALE);
+        pango_layout_set_width (op->priv->layout, op->priv->page.text_width * PANGO_SCALE);
         pango_layout_set_ellipsize (op->priv->layout, PANGO_ELLIPSIZE_END);
     }
 
@@ -1176,6 +1262,53 @@ print_header_footer (MooPrintOperation    *op,
 
 
 static void
+print_line_number (MooPrintOperation *op,
+                   int                line_no,
+                   double             offset,
+                   PangoLayout       *ln_layout,
+                   PangoLayout       *text_layout,
+                   double            *text_offset,
+                   double            *line_height,
+                   cairo_t           *cr)
+{
+    char *string;
+    PangoLayoutIter *ln_iter, *text_iter;
+    double text_baseline, ln_baseline;
+    double ln_offset;
+    double ln_height, text_height;
+
+    string = g_strdup_printf ("%d", line_no+1);
+    pango_layout_set_text (ln_layout, string, -1);
+
+    text_iter = pango_layout_get_iter (text_layout);
+    text_baseline = (double) pango_layout_iter_get_baseline (text_iter) / (double) PANGO_SCALE;
+    get_layout_size (text_layout, NULL, &text_height);
+    ln_iter = pango_layout_get_iter (ln_layout);
+    ln_baseline = (double) pango_layout_iter_get_baseline (ln_iter) / (double) PANGO_SCALE;
+    get_layout_size (ln_layout, NULL, &ln_height);
+
+    if (text_baseline > ln_baseline)
+    {
+        ln_offset = offset + text_baseline - ln_baseline;
+        *text_offset = offset;
+        *line_height = MAX (text_height, text_baseline + ln_height - ln_baseline);
+    }
+    else
+    {
+        ln_offset = offset;
+        *text_offset = offset + ln_baseline - text_baseline;
+        *line_height = MAX (ln_height, ln_baseline + text_height - text_baseline);
+    }
+
+    cairo_move_to (cr, op->priv->page.x + op->priv->page.ln_margin, ln_offset);
+    pango_cairo_show_layout (cr, ln_layout);
+
+    pango_layout_iter_free (ln_iter);
+    pango_layout_iter_free (text_iter);
+    g_free (string);
+}
+
+static void
 print_page (MooPrintOperation *op,
             const GtkTextIter *start,
             const GtkTextIter *end,
@@ -1185,6 +1318,7 @@ print_page (MooPrintOperation *op,
     MooPrintSettings *settings = op->priv->settings;
     GtkTextIter line_start, line_end;
     double offset;
+    int line_no;
 
     _moo_message ("print_page %d", page);
 
@@ -1197,10 +1331,12 @@ print_page (MooPrintOperation *op,
 
     line_start = *start;
     offset = op->priv->page.y;
+    line_no = gtk_text_iter_get_line (start);
 
     while (gtk_text_iter_compare (&line_start, end) < 0)
     {
         double line_height;
+        gboolean print_line_no;
 
         if (gtk_text_iter_ends_line (&line_start))
         {
@@ -1219,12 +1355,28 @@ print_page (MooPrintOperation *op,
                          GET_OPTION (op, MOO_PRINT_USE_STYLES));
         }
 
-        cairo_move_to (cr, op->priv->page.x, offset);
-        pango_cairo_show_layout (cr, op->priv->layout);
+        print_line_no = gtk_text_iter_starts_line (&line_start) &&
+                        line_number_displayed (op, line_no);
 
-        get_layout_size (op->priv->layout, NULL, &line_height);
+        if (!print_line_no)
+        {
+            get_layout_size (op->priv->layout, NULL, &line_height);
+            cairo_move_to (cr, op->priv->page.text_x, offset);
+        }
+        else
+        {
+            double text_offset;
+            print_line_number (op, line_no, offset,
+                               op->priv->ln_layout, op->priv->layout,
+                               &text_offset, &line_height, cr);
+            cairo_move_to (cr, op->priv->page.text_x, text_offset);
+        }
+
+        pango_cairo_show_layout (cr, op->priv->layout);
         offset += line_height;
+
         gtk_text_iter_forward_line (&line_start);
+        line_no += 1;
     }
 
     _moo_message ("print_page done");
@@ -1424,6 +1576,9 @@ get_settings_from_prefs (void)
     SET_FLAG (settings->flags, MOO_PRINT_USE_STYLES, moo_prefs_get_bool (PREFS_USE_STYLES));
     SET_FLAG (settings->flags, MOO_PRINT_WRAP, moo_prefs_get_bool (PREFS_WRAP));
     SET_FLAG (settings->flags, MOO_PRINT_ELLIPSIZE, moo_prefs_get_bool (PREFS_ELLIPSIZE));
+    SET_FLAG (settings->flags, MOO_PRINT_LINE_NUMBERS, moo_prefs_get_bool (PREFS_LINE_NUMBERS));
+
+    settings->ln_step = moo_prefs_get_int (PREFS_LINE_NUMBERS_STEP);
 
     return settings;
 }
@@ -1604,6 +1759,8 @@ moo_print_init_prefs (void)
     moo_prefs_new_key_bool (PREFS_USE_CUSTOM_FONT, FALSE);
     moo_prefs_new_key_bool (PREFS_WRAP, TRUE);
     moo_prefs_new_key_bool (PREFS_ELLIPSIZE, FALSE);
+    moo_prefs_new_key_bool (PREFS_LINE_NUMBERS, FALSE);
+    moo_prefs_new_key_int (PREFS_LINE_NUMBERS_STEP, 1);
 }
 
 
@@ -1632,6 +1789,10 @@ set_options (MooGladeXML *xml)
     SET_BOOL ("use_custom_font", PREFS_USE_CUSTOM_FONT);
     SET_BOOL ("wrap", PREFS_WRAP);
     SET_BOOL ("ellipsize", PREFS_ELLIPSIZE);
+    SET_BOOL ("line_numbers", PREFS_LINE_NUMBERS);
+
+    gtk_spin_button_set_value (moo_glade_xml_get_widget (xml, "line_numbers_step"),
+                               moo_prefs_get_int (PREFS_LINE_NUMBERS_STEP));
 
     if ((s = moo_prefs_get_string (PREFS_FONT)))
         gtk_font_button_set_font_name (moo_glade_xml_get_widget (xml, "font"), s);
@@ -1657,6 +1818,19 @@ get_options (MooGladeXML *xml)
     GET_BOOL ("use_custom_font", PREFS_USE_CUSTOM_FONT);
     GET_BOOL ("wrap", PREFS_WRAP);
     GET_BOOL ("ellipsize", PREFS_ELLIPSIZE);
+    GET_BOOL ("line_numbers", PREFS_LINE_NUMBERS);
+
+    if (gtk_toggle_button_get_active (moo_glade_xml_get_widget (xml, "line_numbers")))
+    {
+        GtkSpinButton *btn = moo_glade_xml_get_widget (xml, "line_numbers_step");
+        int step = gtk_spin_button_get_value_as_int (btn);
+        if (step < 1)
+        {
+            step = 1;
+            gtk_spin_button_set_value (btn, 1);
+        }
+        moo_prefs_set_int (PREFS_LINE_NUMBERS_STEP, step);
+    }
 
     if (gtk_toggle_button_get_active (moo_glade_xml_get_widget (xml, "use_custom_font")))
         moo_prefs_set_string (PREFS_FONT,
@@ -1693,7 +1867,7 @@ _moo_edit_print_options_dialog (GtkWidget *parent)
 static GtkWidget *
 moo_print_operation_create_custom_widget (G_GNUC_UNUSED GtkPrintOperation *operation)
 {
-    GtkWidget *page, *font_button;
+    GtkWidget *page, *font_button, *line_numbers_hbox;
     MooGladeXML *xml;
 
     xml = moo_glade_xml_new_from_buf (MOO_PRINT_GLADE_XML, -1, "page", GETTEXT_PACKAGE, NULL);
@@ -1702,6 +1876,10 @@ moo_print_operation_create_custom_widget (G_GNUC_UNUSED GtkPrintOperation *opera
     font_button = moo_glade_xml_get_widget (xml, "font");
     moo_bind_sensitive (moo_glade_xml_get_widget (xml, "use_custom_font"),
                         &font_button, 1, FALSE);
+
+    line_numbers_hbox = moo_glade_xml_get_widget (xml, "line_numbers_hbox");
+    moo_bind_sensitive (moo_glade_xml_get_widget (xml, "line_numbers"),
+                        &line_numbers_hbox, 1, FALSE);
 
     page = moo_glade_xml_get_widget (xml, "page");
     g_return_val_if_fail (page != NULL, NULL);

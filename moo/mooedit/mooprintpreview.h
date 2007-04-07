@@ -31,6 +31,7 @@ G_BEGIN_DECLS
 #define MOO_IS_PRINT_PREVIEW_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_PRINT_PREVIEW))
 #define MOO_PRINT_PREVIEW_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_PRINT_PREVIEW, MooPrintPreviewClass))
 
+typedef struct _MooPrintPreview           MooPrintPreview;
 typedef struct _MooPrintPreviewPrivate  MooPrintPreviewPrivate;
 typedef struct _MooPrintPreviewClass    MooPrintPreviewClass;
 
