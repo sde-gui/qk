@@ -594,6 +594,7 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
             view->priv->dnd.button = GDK_BUTTON_PRESS;
             view->priv->dnd.start_x = x;
             view->priv->dnd.start_y = y;
+            view->priv->dnd.start_iter = iter;
 
             /* if clicked in selected, start drag */
             if (!line_numbers && gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end))
@@ -608,8 +609,6 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
                     return TRUE;
                 }
             }
-
-            view->priv->dnd.start_iter = iter;
 
             if (!line_numbers)
             {
