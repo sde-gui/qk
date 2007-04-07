@@ -1007,7 +1007,7 @@ moo_markup_create_element (MooMarkupNode      *parent,
 }
 
 
-MooMarkupNode*
+MooMarkupNode *
 moo_markup_create_text_element (MooMarkupNode      *parent,
                                 const char         *path,
                                 const char         *content)
@@ -1033,6 +1033,28 @@ moo_markup_create_text_element (MooMarkupNode      *parent,
     elm->content = g_strdup (content);
 
     return MOO_MARKUP_NODE (elm);
+}
+
+
+void
+moo_markup_set_content (MooMarkupNode *node,
+                        const char    *content)
+{
+    MooMarkupElement *elm;
+
+    g_return_if_fail (MOO_MARKUP_IS_ELEMENT (node));
+
+    elm = MOO_MARKUP_ELEMENT (node);
+    g_free (elm->content);
+    elm->content = g_strdup (content);
+
+    while (node->children)
+        moo_markup_delete_node (node->children);
+
+    if (content)
+        moo_markup_text_node_new (MOO_MARKUP_TEXT_NODE,
+                                  elm->doc, node,
+                                  content, strlen (content));
 }
 
 
