@@ -2220,7 +2220,7 @@ _moo_edit_window_remove_doc (MooEditWindow  *window,
     /* removing scrolled window from the notebook will destroy the scrolled window,
      * and that in turn will destroy the doc if it's not removed before */
     if (!destroy)
-        gtk_container_remove (GTK_WIDGET(doc)->parent, doc);
+        gtk_container_remove (GTK_CONTAINER (GTK_WIDGET(doc)->parent), GTK_WIDGET (doc));
     moo_notebook_remove_page (window->priv->notebook, page);
 
     edit_changed (window, NULL);
