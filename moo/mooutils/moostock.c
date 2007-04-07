@@ -219,12 +219,19 @@ register_stock_icon_alias (GtkIconFactory *factory,
                            const char     *new_stock_id,
                            const char     *icon_name)
 {
+    GtkIconSet *set;
+
     /* must use gtk_icon_factory_lookup_default() to initialize gtk icons */
-    GtkIconSet *set = gtk_icon_factory_lookup_default (stock_id);
+    set = gtk_icon_factory_lookup_default (stock_id);
     g_return_if_fail (set != NULL);
+
+    set = gtk_icon_set_copy (set);
     gtk_icon_factory_add (factory, new_stock_id, set);
+
     if (icon_name)
-        add_icon (factory, new_stock_id, icon_name, 0, NULL);
+        add_icon_name (factory, new_stock_id, icon_name);
+
+    gtk_icon_set_unref (set);
 }
 
 
@@ -285,8 +292,7 @@ _moo_stock_init (void)
     register_stock_icon_alias (factory, GTK_STOCK_FIND, MOO_STOCK_FIND_IN_FILES, NULL);
     register_stock_icon_alias (factory, GTK_STOCK_FIND, MOO_STOCK_FIND_FILE, NULL);
 
-    register_stock_icon_alias (factory, GTK_STOCK_ABOUT, MOO_STOCK_EDIT_BOOKMARK, "gnome-fs-bookmark");
-    add_icon_name (factory, MOO_STOCK_EDIT_BOOKMARK, "bookmark");
+    register_stock_icon_alias (factory, GTK_STOCK_ABOUT, MOO_STOCK_EDIT_BOOKMARK, "bookmark");
 
     g_object_unref (G_OBJECT (factory));
 }
