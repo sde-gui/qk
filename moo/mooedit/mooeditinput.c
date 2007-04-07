@@ -1013,34 +1013,41 @@ drag_scroll_timeout_func (MooTextView *view)
     GtkTextIter start;
     MooTextSelectionType t;
     GtkTextBuffer *buffer;
+    GtkTextWindowType win_type;
 
-    g_assert (view->priv->dnd.type == MOO_TEXT_VIEW_DRAG_SELECT);
+    g_assert (view->priv->dnd.type == MOO_TEXT_VIEW_DRAG_SELECT ||
+              view->priv->dnd.type == MOO_TEXT_VIEW_DRAG_SELECT_LINES);
 
     text_view = GTK_TEXT_VIEW (view);
+    buffer = gtk_text_view_get_buffer (text_view);
+    win_type = view->priv->dnd.type == MOO_TEXT_VIEW_DRAG_SELECT ?
+        GTK_TEXT_WINDOW_TEXT : GTK_TEXT_WINDOW_LEFT;
 
-    gdk_window_get_pointer (gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_TEXT),
-                            &px, &py, NULL);
-    gtk_text_view_window_to_buffer_coords (text_view, GTK_TEXT_WINDOW_TEXT,
-                                           px, py, &x, &y);
+    gdk_window_get_pointer (gtk_text_view_get_window (text_view, win_type), &px, &py, NULL);
+    gtk_text_view_window_to_buffer_coords (text_view, win_type, px, py, &x, &y);
     gtk_text_view_get_iter_at_location (text_view, &iter, x, y);
 
-    buffer = gtk_text_view_get_buffer (text_view);
+    start = view->priv->dnd.start_iter;
 
-    gtk_text_view_get_iter_at_location (text_view, &start,
-                                        view->priv->dnd.start_x,
-                                        view->priv->dnd.start_y);
+    if (view->priv->dnd.type == MOO_TEXT_VIEW_DRAG_SELECT)
+    {
+        if (view->priv->dnd.button == GDK_BUTTON_PRESS)
+            t = MOO_TEXT_SELECT_CHARS;
+        else if (view->priv->dnd.button == GDK_2BUTTON_PRESS)
+            t = MOO_TEXT_SELECT_WORDS;
+        else
+            t = MOO_TEXT_SELECT_LINES;
 
-    if (view->priv->dnd.button == GDK_BUTTON_PRESS)
-        t = MOO_TEXT_SELECT_CHARS;
-    else if (view->priv->dnd.button == GDK_2BUTTON_PRESS)
-        t = MOO_TEXT_SELECT_WORDS;
+        if (extend_selection (view, t, &start, &iter))
+            select_range (buffer, &start, &iter);
+        else
+            gtk_text_buffer_place_cursor (buffer, &iter);
+    }
     else
-        t = MOO_TEXT_SELECT_LINES;
+    {
+        select_lines (view, y);
+    }
 
-    if (extend_selection (view, t, &start, &iter))
-        select_range (buffer, &start, &iter);
-    else
-        gtk_text_buffer_place_cursor (buffer, &iter);
     gtk_text_view_scroll_mark_onscreen (text_view,
                                         gtk_text_buffer_get_insert (buffer));
     return TRUE;
