@@ -619,9 +619,9 @@ add_new_window_action (void)
 
     if (!moo_window_class_find_action (klass, "NewWindow"))
         moo_window_class_new_action (klass, "NewWindow", NULL,
-                                     "display-name", "New Window",
-                                     "label", "_New Window",
-                                     "tooltip", "Open new editor window",
+                                     "display-name", _("New Window"),
+                                     "label", _("_New Window"),
+                                     "tooltip", _("Open new editor window"),
                                      "stock-id", GTK_STOCK_NEW,
                                      "accel", "<shift><ctrl>N",
                                      "closure-callback", moo_editor_new_window,

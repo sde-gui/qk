@@ -363,7 +363,7 @@ moo_edit_dispose (GObject *object)
 
     if (edit->priv->menu)
     {
-        g_object_unref (edit->priv->menu);
+        gtk_widget_destroy (GTK_WIDGET (edit->priv->menu));
         edit->priv->menu = NULL;
     }
 
@@ -1573,6 +1573,12 @@ popup_position_func (GtkMenu   *menu,
     *push_in = FALSE;
 }
 
+static void
+popup_detach_func (MooEdit *edit)
+{
+    edit->priv->menu = NULL;
+}
+
 void
 _moo_edit_do_popup (MooEdit        *edit,
                     GdkEventButton *event)
@@ -1580,53 +1586,31 @@ _moo_edit_do_popup (MooEdit        *edit,
     MooUIXML *xml;
     MooEditWindow *window;
 
+    window = moo_edit_get_window (edit);
     xml = moo_editor_get_doc_ui_xml (edit->priv->editor);
     g_return_if_fail (xml != NULL);
 
-    if (!edit->priv->menu)
-    {
-        gboolean show_im_menu = TRUE;
+    if (edit->priv->menu)
+        gtk_widget_destroy (GTK_WIDGET (edit->priv->menu));
 
-        window = moo_edit_get_window (edit);
-        edit->priv->menu =
-                moo_ui_xml_create_widget (xml, MOO_UI_MENU, "Editor/Popup",
-                                          edit->priv->actions,
-                                          window ? MOO_WINDOW(window)->accel_group : NULL);
-        MOO_OBJECT_REF_SINK (edit->priv->menu);
-
-        if (show_im_menu)
-        {
-            GtkWidget *item, *submenu;
-
-            item = gtk_separator_menu_item_new ();
-            gtk_widget_show (item);
-            gtk_menu_shell_append (GTK_MENU_SHELL (edit->priv->menu), item);
-
-            item = gtk_menu_item_new_with_label ("Input Methods");
-            gtk_widget_show (item);
-
-            submenu = gtk_menu_new ();
-            gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), submenu);
-            gtk_menu_shell_append (GTK_MENU_SHELL (edit->priv->menu), item);
-
-            gtk_im_multicontext_append_menuitems (GTK_IM_MULTICONTEXT (GTK_TEXT_VIEW (edit)->im_context),
-                                                  GTK_MENU_SHELL (submenu));
-        }
-    }
-
+    edit->priv->menu =
+        moo_ui_xml_create_widget (xml, MOO_UI_MENU, "Editor/Popup", edit->priv->actions,
+                                  window ? MOO_WINDOW(window)->accel_group : NULL);
     g_return_if_fail (edit->priv->menu != NULL);
+    gtk_menu_attach_to_widget (edit->priv->menu, GTK_WIDGET (edit),
+                               (GtkMenuDetachFunc) popup_detach_func);
 
     _moo_edit_check_actions (edit);
 
     if (event)
     {
-        gtk_menu_popup (GTK_MENU (edit->priv->menu),
+        gtk_menu_popup (edit->priv->menu,
                         NULL, NULL, NULL, NULL,
                         event->button, event->time);
     }
     else
     {
-        gtk_menu_popup (GTK_MENU (edit->priv->menu), NULL, NULL,
+        gtk_menu_popup (edit->priv->menu, NULL, NULL,
                         popup_position_func, edit,
                         0, gtk_get_current_event_time ());
         gtk_menu_shell_select_first (GTK_MENU_SHELL (edit->priv->menu), FALSE);

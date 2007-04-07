@@ -21,9 +21,6 @@
 G_BEGIN_DECLS
 
 
-typedef GtkAction *(*MooEditActionFunc)     (MooEdit            *edit,
-                                             gpointer            data);
-
 void    moo_edit_class_new_action           (MooEditClass       *klass,
                                              const char         *id,
                                              const char         *first_prop_name,

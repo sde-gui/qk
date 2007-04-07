@@ -31,12 +31,15 @@ G_BEGIN_DECLS
 typedef struct _MooMenuAction        MooMenuAction;
 typedef struct _MooMenuActionClass   MooMenuActionClass;
 
+typedef GtkWidget *(*MooMenuFunc) (GtkAction *action);
+
 struct _MooMenuAction
 {
-    MooAction base;
-    MooMenuMgr *mgr;
-    gpointer    data;
-    guint       is_object : 1;
+    MooAction       base;
+    MooMenuFunc     func;
+    MooMenuMgr     *mgr;
+    gpointer        data;
+    guint           is_object : 1;
 };
 
 struct _MooMenuActionClass
@@ -53,6 +56,8 @@ GtkAction  *moo_menu_action_new             (const char     *id,
 MooMenuMgr *moo_menu_action_get_mgr         (MooMenuAction  *action);
 void        moo_menu_action_set_mgr         (MooMenuAction  *action,
                                              MooMenuMgr     *mgr);
+void        moo_menu_action_set_func        (MooMenuAction  *action,
+                                             MooMenuFunc     func);
 
 void        moo_menu_action_set_menu_data   (MooMenuAction  *action,
                                              gpointer        data,

@@ -40,9 +40,9 @@ static void data_destroyed                  (MooMenuAction      *action,
 
 enum {
     PROP_0,
-    PROP_MENU_MGR
+    PROP_MENU_MGR,
+    PROP_MENU_FUNC
 };
-
 
 
 /* MOO_TYPE_MENU_ACTION */
@@ -68,13 +68,21 @@ moo_menu_action_class_init (MooMenuActionClass *klass)
                                              "menu-mgr",
                                              MOO_TYPE_MENU_MGR,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_MENU_FUNC,
+                                     g_param_spec_pointer ("menu-func",
+                                             "menu-func",
+                                             "menu-func",
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 }
 
 
 static void
 moo_menu_action_init (MooMenuAction *action)
 {
-    action->mgr = moo_menu_mgr_new ();
+    action->mgr = NULL;
+    action->func = NULL;
     _moo_action_set_no_accel (GTK_ACTION (action), TRUE);
 }
 
@@ -90,7 +98,11 @@ moo_menu_action_get_property (GObject        *object,
     switch (prop_id)
     {
         case PROP_MENU_MGR:
-            g_value_set_object (value, action->mgr);
+            g_value_set_object (value, moo_menu_action_get_mgr (action));
+            break;
+
+        case PROP_MENU_FUNC:
+            g_value_set_pointer (value, action->func);
             break;
 
         default:
@@ -113,6 +125,10 @@ moo_menu_action_set_property (GObject        *object,
             moo_menu_action_set_mgr (action, g_value_get_object (value));
             break;
 
+        case PROP_MENU_FUNC:
+            moo_menu_action_set_func (action, g_value_get_pointer (value));
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -130,6 +146,9 @@ moo_menu_action_create_menu_item (GtkAction *action)
 
     menu_action = MOO_MENU_ACTION (action);
 
+    if (menu_action->func)
+        return menu_action->func (GTK_ACTION (menu_action));
+
     if (menu_action->data && menu_action->is_object)
     {
         data = g_object_ref (menu_action->data);
@@ -143,8 +162,8 @@ moo_menu_action_create_menu_item (GtkAction *action)
 
     g_object_get (action, "label", &label, NULL);
 
-    item = moo_menu_mgr_create_item (menu_action->mgr, label,
-                                     0, data, destroy);
+    item = moo_menu_mgr_create_item (moo_menu_action_get_mgr (menu_action),
+                                     label, 0, data, destroy);
 
     g_free (label);
     return item;
@@ -163,32 +182,45 @@ moo_menu_action_new (const char *id,
 }
 
 
-MooMenuMgr*
+MooMenuMgr *
 moo_menu_action_get_mgr (MooMenuAction *action)
 {
     g_return_val_if_fail (MOO_IS_MENU_ACTION (action), NULL);
+
+    if (!action->func && !action->mgr)
+        action->mgr = moo_menu_mgr_new ();
+
     return action->mgr;
 }
 
 
 void
-moo_menu_action_set_mgr (MooMenuAction  *action,
-                         MooMenuMgr     *mgr)
+moo_menu_action_set_mgr (MooMenuAction *action,
+                         MooMenuMgr    *mgr)
 {
     g_return_if_fail (MOO_IS_MENU_ACTION (action));
     g_return_if_fail (!mgr || MOO_IS_MENU_MGR (mgr));
 
-    if (mgr == action->mgr)
-        return;
+    if (mgr != action->mgr)
+    {
+        if (action->mgr)
+            g_object_unref (action->mgr);
 
-    g_object_unref (action->mgr);
+        if (mgr)
+        {
+            action->mgr = g_object_ref (mgr);
+            action->func = NULL;
+        }
+        else
+        {
+            action->mgr = NULL;
+        }
 
-    if (mgr)
-        action->mgr = g_object_ref (mgr);
-    else
-        action->mgr = moo_menu_mgr_new ();
-
-    g_object_notify (G_OBJECT (action), "menu-mgr");
+        g_object_freeze_notify (G_OBJECT (action));
+        g_object_notify (G_OBJECT (action), "menu-func");
+        g_object_notify (G_OBJECT (action), "menu-mgr");
+        g_object_thaw_notify (G_OBJECT (action));
+    }
 }
 
 
@@ -228,4 +260,28 @@ moo_menu_action_set_menu_data (MooMenuAction  *action,
 
     if (action->data && action->is_object)
         g_object_weak_ref (action->data, (GWeakNotify) data_destroyed, action);
+}
+
+
+void
+moo_menu_action_set_func (MooMenuAction *action,
+                          MooMenuFunc    func)
+{
+    g_return_if_fail (MOO_IS_MENU_ACTION (action));
+
+    if (func != action->func)
+    {
+        if (action->mgr)
+        {
+            g_object_unref (action->mgr);
+            action->mgr = NULL;
+        }
+
+        action->func = func;
+
+        g_object_freeze_notify (G_OBJECT (action));
+        g_object_notify (G_OBJECT (action), "menu-func");
+        g_object_notify (G_OBJECT (action), "menu-mgr");
+        g_object_thaw_notify (G_OBJECT (action));
+    }
 }

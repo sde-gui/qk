@@ -17,6 +17,8 @@
       <separator/>
       <placeholder name="PopupEnd"/>
       <separator/>
+      <item action="InputMethods"/>
+      <item action="SpecialChars"/>
     </widget> <!-- Popup -->
   </object> <!-- Editor -->
 </ui>
