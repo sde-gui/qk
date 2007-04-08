@@ -1151,7 +1151,7 @@ egg_regex_fetch_named (const EggRegex *regex,
 				  regex->match->offsets,
 				  regex->match->matches,
 				  name,
-				  &substring);
+				  (const gchar**) &substring);
 
   if (ret < 0)
     /* not enough memory or something */
