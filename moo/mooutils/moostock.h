@@ -35,8 +35,12 @@ G_BEGIN_DECLS
 #define MOO_STOCK_DOC_MODIFIED_ON_DISK  GTK_STOCK_DIALOG_WARNING
 #define MOO_STOCK_DOC_MODIFIED          GTK_STOCK_SAVE
 
+#define MOO_STOCK_NEW_WINDOW            "moo-new-window"
+
 #define MOO_STOCK_FILE_SELECTOR         "moo-file-selector"
 #define MOO_STOCK_FILE_BOOKMARK         "moo-file-bookmark"
+#define MOO_STOCK_FOLDER                "moo-folder"
+#define MOO_STOCK_NEW_FOLDER            "moo-new-folder"
 
 #define MOO_STOCK_SAVE_NONE             "moo-save-none"
 #define MOO_STOCK_SAVE_SELECTED         "moo-save-selected"

@@ -1160,9 +1160,9 @@ init_actions (MooFileView *fileview)
                                  NULL);
 
     moo_action_group_add_action (group, "NewFolder",
-                                 "label", _("New Folder..."),
-                                 "tooltip", _("New Folder..."),
-                                 "stock-id", GTK_STOCK_DIRECTORY,
+                                 "label", MOO_STOCK_NEW_FOLDER,
+                                 "tooltip", MOO_STOCK_NEW_FOLDER,
+                                 "stock-id", MOO_STOCK_NEW_FOLDER,
                                  "closure-object", fileview,
                                  "closure-callback", file_view_create_folder,
                                  NULL);
@@ -3487,8 +3487,7 @@ add_bookmark (MooFileView *fileview)
 
     path = _moo_folder_get_path (fileview->priv->current_dir);
     display_path = g_filename_display_name (path);
-    bookmark = _moo_bookmark_new (display_path, path,
-                                  GTK_STOCK_DIRECTORY);
+    bookmark = _moo_bookmark_new (display_path, path, MOO_STOCK_FOLDER);
 
     _moo_bookmark_mgr_add (fileview->priv->bookmark_mgr,
                            bookmark);

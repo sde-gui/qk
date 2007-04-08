@@ -42,7 +42,9 @@ static GtkStockItem stock_items[] = {
     {(char*) MOO_STOCK_FILE_MOVE, (char*) N_("Move"), 0, 0, (char*) GETTEXT_PACKAGE},
     {(char*) MOO_STOCK_FILE_LINK, (char*) N_("Link"), 0, 0, (char*) GETTEXT_PACKAGE},
     {(char*) MOO_STOCK_FILE_SAVE_AS, (char*) "Save _As", 0, 0, (char*) "gtk20"},
-    {(char*) MOO_STOCK_FILE_SAVE_COPY, (char*) N_("Save Copy"), 0, 0, (char*) GETTEXT_PACKAGE}
+    {(char*) MOO_STOCK_FILE_SAVE_COPY, (char*) N_("Save Copy"), 0, 0, (char*) GETTEXT_PACKAGE},
+    {(char*) MOO_STOCK_NEW_FOLDER, (char*) N_("_New Folder"), 0, 0, (char*) GETTEXT_PACKAGE},
+    {(char*) MOO_STOCK_NEW_WINDOW, (char*) N_("New _Window"), 0, 0, (char*) GETTEXT_PACKAGE}
 };
 
 #if !GTK_CHECK_VERSION(2,10,0)
@@ -278,6 +280,9 @@ _moo_stock_init (void)
         add_icon_name (factory, MOO_STOCK_FILE_SELECTOR, "file-manager");
     }
 
+    add_icon (factory, MOO_STOCK_FOLDER, "gnome-fs-directory", 24, MOO_FILE_SELECTOR_ICON);
+    add_icon_name (factory, MOO_STOCK_FOLDER, "folder");
+
     add_icon (factory, MOO_STOCK_TERMINAL, "terminal", 24, MOO_GNOME_TERMINAL_ICON);
 
     add_icon (factory, MOO_STOCK_MEDIT, "medit", 24, MEDIT_ICON);
@@ -301,6 +306,11 @@ _moo_stock_init (void)
 #endif
 
     gtk_stock_add_static (stock_items, G_N_ELEMENTS (stock_items));
+
+    register_stock_icon_alias (factory, GTK_STOCK_DIRECTORY, MOO_STOCK_NEW_FOLDER, "folder_new");
+    add_icon_name (factory, MOO_STOCK_NEW_FOLDER, "folder-new");
+    register_stock_icon_alias (factory, GTK_STOCK_NEW, MOO_STOCK_NEW_WINDOW, "window_new");
+    add_icon_name (factory, MOO_STOCK_NEW_WINDOW, "window-new");
 
     register_stock_icon_alias (factory, GTK_STOCK_NO, MOO_STOCK_SAVE_NONE, "no");
     register_stock_icon_alias (factory, GTK_STOCK_SAVE, MOO_STOCK_SAVE_SELECTED, "filesave");

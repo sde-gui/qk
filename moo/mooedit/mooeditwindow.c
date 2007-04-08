@@ -507,9 +507,9 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "SelectAll", NULL,
-                                 "display-name", _("Select All"),
-                                 "label", _("Select _All"),
-                                 "tooltip", _("Select all"),
+                                 "display-name", GTK_STOCK_SELECT_ALL,
+                                 "label", GTK_STOCK_SELECT_ALL,
+                                 "tooltip", GTK_STOCK_SELECT_ALL,
                                  "accel", "<ctrl>A",
                                  "closure-callback", moo_text_view_select_all,
                                  "closure-proxy-func", moo_edit_window_get_active_doc,
