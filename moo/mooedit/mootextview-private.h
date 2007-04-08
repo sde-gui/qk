@@ -157,7 +157,7 @@ struct _MooTextViewPrivate {
         MooTextViewDragType type;
         int             start_x; /* buffer coordinates */
         int             start_y; /* buffer coordinates */
-        GtkTextIter     start_iter;
+        GtkTextMark    *start_mark;
         guint           moved                           : 1;
         guint           double_click_selects_brackets   : 1;
         guint           double_click_selects_inside     : 1;
