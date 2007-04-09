@@ -307,9 +307,7 @@ lang_mgr_get_lang_for_bak_filename (MooLangMgr *mgr,
 
     read_langs (mgr);
 
-    utf8_name = g_filename_to_utf8 (filename, -1, NULL, NULL, NULL);
-    g_return_val_if_fail (utf8_name != NULL, NULL);
-
+    utf8_name = g_filename_display_name (filename);
     len = strlen (utf8_name);
 
     for (i = 0; i < G_N_ELEMENTS (bak_globs); ++i)
