@@ -26,7 +26,7 @@
 </filter>
 
 <filter id="make" name="Make">
-  <match what="stderr" pattern="In file included from (?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+):.*" style="output-error"/>
+  <match what="stderr" pattern="from (?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+):.*" style="output-error"/>
   <match what="stderr" pattern="(?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+):(\d+:)?\s*error\s*:.*" style="output-error"/>
   <match what="stderr" pattern="(?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+):.*" style="output-error"/>
   <match what="stderr" pattern="(?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+):(\d+:)?\s*warning\s*:.*" style="output-error"/>
