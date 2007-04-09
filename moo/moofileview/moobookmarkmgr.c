@@ -290,7 +290,7 @@ _moo_bookmark_set_path (MooBookmark    *bookmark,
     g_return_if_fail (bookmark != NULL);
     g_return_if_fail (path != NULL);
 
-    display_path = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
+    display_path = g_filename_display_name (path);
     g_return_if_fail (display_path != NULL);
 
     g_free (bookmark->path);

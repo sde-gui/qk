@@ -704,7 +704,7 @@ delete_file (G_GNUC_UNUSED MooFileSystem *fs,
     if (_moo_remove (path))
     {
         int err = errno;
-        char *path_utf8 = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
+        char *path_utf8 = g_filename_display_name (path);
         g_set_error (error, MOO_FILE_ERROR,
                      _moo_file_error_from_errno (err),
                      "Could not delete file '%s': %s",
