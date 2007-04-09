@@ -44,6 +44,10 @@
 #define DEFAULT_ENCODING_LIST ""
 #define ENCODING_LOCALE "LOCALE"
 
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 static GSList *UNTITLED = NULL;
 static GHashTable *UNTITLED_NO = NULL;
 
@@ -469,7 +473,7 @@ do_load (MooEdit            *edit,
         }
     }
 
-    file = g_io_channel_new_file (filename, "r", error);
+    file = g_io_channel_new_file (filename, "rb", error);
 
     if (!file)
         return ERROR_FILE;
@@ -835,7 +839,7 @@ do_write (MooEdit        *edit,
 #endif
 
     errno = 0;
-    fd = g_open (filename, O_WRONLY | O_CREAT | O_TRUNC, mode);
+    fd = g_open (filename, O_BINARY | O_WRONLY | O_CREAT | O_TRUNC, mode);
 
     if (fd == -1)
     {
