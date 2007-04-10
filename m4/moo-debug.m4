@@ -42,6 +42,7 @@ AC_ARG_ENABLE(debug,
   ],[
   MOO_DEBUG="no"
 ])
+AM_CONDITIONAL(MOO_DEBUG, test x$MOO_DEBUG = "xyes")
 
 _moo_all_warnings="no"
 AC_ARG_ENABLE(all-warnings,
