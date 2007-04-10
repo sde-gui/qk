@@ -23,6 +23,8 @@
 G_BEGIN_DECLS
 
 
+const char *_moo_get_default_encodings (void);
+
 typedef enum {
     MOO_EDIT_SAVE_BACKUP = 1 << 0
 } MooEditSaveFlags;

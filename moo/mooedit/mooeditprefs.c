@@ -14,6 +14,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooedit-private.h"
+#include "mooedit/mooeditfileops.h"
 #include "mooedit/mootextview-private.h"
 #include "mooedit/mooedit-enums.h"
 #include "mooedit/mootextbuffer.h"
@@ -113,7 +114,7 @@ _moo_edit_init_prefs (void)
                    MOO_TEXT_SEARCH_CASELESS);
     NEW_KEY_STRING (MOO_EDIT_PREFS_LINE_NUMBERS_FONT, NULL);
 
-    NEW_KEY_STRING (MOO_EDIT_PREFS_ENCODINGS, NULL);
+    NEW_KEY_STRING (MOO_EDIT_PREFS_ENCODINGS, _moo_get_default_encodings ());
 }
 
 

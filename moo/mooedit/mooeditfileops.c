@@ -41,7 +41,6 @@
 #endif
 
 #undef LOAD_BINARY
-#define DEFAULT_ENCODING_LIST ""
 #define ENCODING_LOCALE "LOCALE"
 
 #ifndef O_BINARY
@@ -241,8 +240,8 @@ static LoadResult   load_binary (MooEdit            *edit,
                                  GError            **error);
 #endif
 
-static GSList *
-get_encodings (void)
+const char *
+_moo_get_default_encodings (void)
 {
     /* Translators: if translated, it should be a comma-separated list
        of encodings to try when opening files. Encodings names should be
@@ -253,17 +252,26 @@ get_encodings (void)
        these are common source files encodings. */
     const char *to_translate = N_("encodings_list");
     const char *encodings;
+
+    encodings = _(to_translate);
+
+    if (!strcmp (encodings, to_translate))
+        encodings = "UTF-8," ENCODING_LOCALE ",ISO_8859-1,ISO_8859-15";
+
+    return encodings;
+}
+
+static GSList *
+get_encodings (void)
+{
+    const char *encodings;
     char **raw, **p;
     GSList *result;
 
     encodings = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_ENCODINGS));
 
-    if (!encodings)
-    {
-        encodings = _(to_translate);
-        if (!strcmp (encodings, to_translate))
-            encodings = "UTF-8," ENCODING_LOCALE ",ISO_8859-15,ISO_8859-1";
-    }
+    if (!encodings || !encodings[0])
+        encodings = _moo_get_default_encodings ();
 
     result = NULL;
     raw = g_strsplit (encodings, ",", 0);
