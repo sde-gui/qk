@@ -80,17 +80,17 @@ text_iter_forward_word_start (GtkTextIter *iter)
             moved = TRUE;
         }
 
-        if (gtk_text_iter_is_end (iter))
-            return FALSE;
-
-        while (!gtk_text_iter_is_end (iter) &&
-//                is_space (iter) &&
-               !is_word_char (iter) &&
-               !gtk_text_iter_ends_line (iter))
-        {
-            gtk_text_iter_forward_cursor_position (iter);
-            moved = TRUE;
-        }
+//         if (gtk_text_iter_is_end (iter))
+//             return FALSE;
+//
+//         while (!gtk_text_iter_is_end (iter) &&
+// //                is_space (iter) &&
+//                !is_word_char (iter) &&
+//                !gtk_text_iter_ends_line (iter))
+//         {
+//             gtk_text_iter_forward_cursor_position (iter);
+//             moved = TRUE;
+//         }
     }
     else if (gtk_text_iter_ends_line (iter))
     {
@@ -112,6 +112,16 @@ text_iter_forward_word_start (GtkTextIter *iter)
         while (!gtk_text_iter_is_end (iter) &&
                !is_word_char (iter) &&
                !gtk_text_iter_ends_line (iter))
+        {
+            gtk_text_iter_forward_cursor_position (iter);
+            moved = TRUE;
+        }
+
+        if (gtk_text_iter_is_end (iter))
+            return FALSE;
+
+        while (!gtk_text_iter_is_end (iter) &&
+               is_word_char (iter))
         {
             gtk_text_iter_forward_cursor_position (iter);
             moved = TRUE;
