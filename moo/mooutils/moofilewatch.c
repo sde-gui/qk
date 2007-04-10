@@ -431,7 +431,7 @@ moo_file_watch_create_monitor (MooFileWatch   *watch,
     watch->monitors = g_slist_prepend (watch->monitors, monitor);
     g_hash_table_insert (watch->requests, GUINT_TO_POINTER (monitor->id), monitor);
 
-    DEBUG_PRINT ("created monitor for '%s'", monitor->filename);
+    DEBUG_PRINT ("created monitor %d for '%s'", monitor->id, monitor->filename);
 
     return monitor->id;
 }
@@ -452,11 +452,15 @@ moo_file_watch_cancel_monitor (MooFileWatch *watch,
     watch->monitors = g_slist_remove (watch->monitors, monitor);
     g_hash_table_remove (watch->requests, GUINT_TO_POINTER (monitor->id));
 
+    if (monitor->alive)
+        DEBUG_PRINT ("stopping monitor %d for '%s'",
+                     monitor->id, monitor->filename);
+    else
+        DEBUG_PRINT ("stopping dead monitor %d for '%s'",
+                     monitor->id, monitor->filename);
+
     if (monitor->alive && watch_funcs.stop_monitor)
-    {
-        DEBUG_PRINT ("stopped monitor for '%s'", monitor->filename);
         watch_funcs.stop_monitor (watch, monitor);
-    }
 
     monitor_free (monitor);
 }
