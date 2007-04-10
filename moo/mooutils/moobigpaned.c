@@ -565,6 +565,16 @@ moo_big_paned_get_button (MooBigPaned   *paned,
 }
 
 
+MooPaned *
+moo_big_paned_get_paned (MooBigPaned    *paned,
+                         MooPanePosition position)
+{
+    g_return_val_if_fail (MOO_IS_BIG_PANED (paned), NULL);
+    g_return_val_if_fail (position < 4, NULL);
+    return MOO_PANED (paned->paned[position]);
+}
+
+
 gboolean
 moo_big_paned_find_pane (MooBigPaned    *paned,
                          GtkWidget      *widget,

@@ -1698,6 +1698,15 @@
   (return-type "GtkWidget*")
 )
 
+(define-method get_paned
+  (of-object "MooBigPaned")
+  (c-name "moo_big_paned_get_paned")
+  (return-type "MooPaned*")
+  (parameters
+    '("MooPanePosition" "position")
+  )
+)
+
 (define-method insert_pane
   (of-object "MooBigPaned")
   (c-name "moo_big_paned_insert_pane")
