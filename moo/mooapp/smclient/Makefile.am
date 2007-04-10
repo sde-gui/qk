@@ -12,6 +12,7 @@ noinst_LTLIBRARIES =				\
 libsmclient_la_SOURCES =			\
 	eggsmclient.c				\
 	eggsmclient.h				\
+	eggsmclient-mangle.h			\
 	eggsmclient-private.h
 
 libsmclient_la_LIBADD =
