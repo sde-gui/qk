@@ -87,6 +87,12 @@ int            _xdg_utf8_validate (const char    *source);
 const char    *_xdg_get_base_name (const char    *file_name);
 */
 
+#ifdef XDG_PREFIX
+#define _xdg_mime_buffer_is_text  XDG_ENTRY(buffer_is_text)
+#endif
+int _xdg_mime_buffer_is_text (unsigned char *buffer,
+			      int            len);
+
 #define malloc g_try_malloc
 #define realloc g_try_realloc
 #define free g_free
