@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-04-07 02:48-0500\n"
+"POT-Creation-Date: 2007-04-10 02:17-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Yevgen Muntyan <muntyan@tamu.edu>\n"
 "MIME-Version: 1.0\n"
@@ -97,159 +97,173 @@ msgid "Color scheme:"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:3
-msgid "Default language:"
+msgid ""
+"Comma-separated list of encodings to try when opening a file. 'LOCALE' means "
+"current locale encoding."
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:4
-msgid "Do not split words"
+msgid "Default language:"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:5
-msgid "Enable auto indentation"
+msgid "Do not split words"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:6
-msgid "Enable syntax highlighting"
+msgid "Enable auto indentation"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:7
-msgid "Enable text wrapping"
+msgid "Enable syntax highlighting"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:8
+msgid "Enable text wrapping"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:9
+msgid "Encodings to autodetect"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:10
 #: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:3
 msgid "Extensions:"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:9
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:11
 msgid "File filters"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:10
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:12
 msgid "Font and colors"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:11
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:13
 msgid "Font:"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:12
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:14
 #: ../moo/moofileview/glade/moofileprops.glade.h:1
 msgid "General"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:13
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:15
 msgid "Highlight current line"
 msgstr "Подсвечивать текущую строку"
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:14
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:16
 msgid "Highlight matching brackets"
 msgstr "Подсвечивать совпадающие скобки"
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:15
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:17
 msgid "Highlight mismatching brackets"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:16
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:18
 msgid "Highlighting"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:17
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:19
 msgid "Indent width, spaces:"
 msgstr "Ширина отступа, в пробелах:"
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:18
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:20
 msgid "Indentation"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:19
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:21
 msgid "Indents text"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:20
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:22
 msgid "Keyboard"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:21
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:23
 msgid "Language-specific options"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:22
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:24
 msgid "Language:"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:23
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:25
 msgid "Languages and files"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:24
-msgid "Make backups"
-msgstr ""
-
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:25
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:6
-msgid "Mime types:"
-msgstr ""
-
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:26
-msgid "Misc"
+msgid "Loading and saving"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:27
-msgid "Moves cursor to next placeholder"
+msgid "Make backups"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:28
-msgid "Moves input focus"
+#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:5
+msgid "Mime types:"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:29
+msgid "Misc"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:30
+msgid "Moves cursor to next placeholder"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:31
+msgid "Moves input focus"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:32
 #: ../moo/mooedit/glade/mooedittools.glade.h:11
 msgid "Options:"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:30
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:33
 msgid "Remove trailing spaces"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:31
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:34
 msgid "Saving"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:32
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:35
 msgid "Show line numbers"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:33
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:36
 msgid "Show tabs"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:34
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:37
 msgid "Show trailing spaces"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:35
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:38
 msgid "Smart Home and End"
 msgstr ""
 
 #. Tab key: Moves input focus, Indents Text, ...
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:37
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:40
 msgid "Tab key:"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:38
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:41
 msgid "Text wrapping"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:39
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:42
 msgid "Use default theme font"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:40
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:43
 msgid "Use spaces to indent"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs.glade.h:41
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:44
 #: ../moo/moofileview/moofileview-ui.xml.h:3
 msgid "View"
 msgstr ""
@@ -267,7 +281,6 @@ msgid "Context menu"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooedittools.glade.h:3
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:2
 msgid "Delete item"
 msgstr "Удалить"
 
@@ -288,17 +301,14 @@ msgid "Input:"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooedittools.glade.h:8
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:7
 msgid "Move item down"
 msgstr "Переместить вниз"
 
 #: ../moo/mooedit/glade/mooedittools.glade.h:9
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:8
 msgid "Move item up"
 msgstr "Переместить вверх"
 
 #: ../moo/mooedit/glade/mooedittools.glade.h:10
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:9
 msgid "New item"
 msgstr ""
 
@@ -351,23 +361,35 @@ msgid "Print header"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooprint.glade.h:8
-msgid "Print separator line"
+msgid "Print line numbers"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooprint.glade.h:9
-msgid "Print using text styles"
+msgid "Print separator line"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooprint.glade.h:10
-msgid "Right:"
+msgid "Print using text styles"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooprint.glade.h:11
-msgid "Use custom font:"
+msgid "Right:"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooprint.glade.h:12
+msgid "Use custom font:"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooprint.glade.h:13
 msgid "Wrap long lines"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooprint.glade.h:14
+msgid "every"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooprint.glade.h:15
+msgid "lines"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooprintpreview.glade.h:1
@@ -503,14 +525,6 @@ msgstr "Вид"
 #: ../moo/mooedit/medit-ui.xml.h:15
 msgid "_Window"
 msgstr "Окно"
-
-#: ../moo/mooedit/mooeditor.c:622
-msgid "New Window"
-msgstr "Новое окно"
-
-#: ../moo/mooedit/mooeditor.c:623
-msgid "_New Window"
-msgstr "Новое _окно"
 
 #: ../moo/mooedit/mooeditor.c:624
 msgid "Open new editor window"
@@ -764,18 +778,6 @@ msgstr "Закрыть Все"
 msgid "Close all documents"
 msgstr "Закрыть все документы"
 
-#: ../moo/mooedit/mooeditwindow.c:510
-msgid "Select All"
-msgstr "Выделить Всё"
-
-#: ../moo/mooedit/mooeditwindow.c:511 ../moo/mooutils/moostock.c:48
-msgid "Select _All"
-msgstr "Выделить Всё"
-
-#: ../moo/mooedit/mooeditwindow.c:512
-msgid "Select all"
-msgstr "Выделить всё"
-
 #: ../moo/mooedit/mooeditwindow.c:520
 msgid "Previous Tab"
 msgstr "Предыдущая Закладка"
@@ -988,7 +990,7 @@ msgstr "Инструменты"
 
 #: ../moo/mooedit/moousertools-prefs.c:106
 msgid "New Command"
-msgstr "Новая комманда"
+msgstr "Новая команда"
 
 #. Translators: if translated, it should be a comma-separated list
 #. of encodings to try when opening files. Encodings names should be
@@ -997,16 +999,16 @@ msgstr "Новая комманда"
 #. You want to add common preferred non-UTF8 encodings used in your locale.
 #. Do not remove ISO_8859-15 and ISO_8859-1, instead leave them at the end,
 #. these are common source files encodings.
-#: ../moo/mooedit/mooeditfileops.c:250
+#: ../moo/mooedit/mooeditfileops.c:253
 msgid "encodings_list"
-msgstr "UTF-8,LOCALE,KOI8-R,WINDOWS-1251,ISO_8859-15,ISO_8859-1"
+msgstr "UTF-8,LOCALE,KOI8-R,WINDOWS-1251,ISO_8859-1,ISO_8859-15"
 
-#: ../moo/mooedit/mooeditfileops.c:1205
+#: ../moo/mooedit/mooeditfileops.c:1217
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:531
 msgid "Untitled"
 msgstr "Без имени"
 
-#: ../moo/mooedit/mooeditfileops.c:1207
+#: ../moo/mooedit/mooeditfileops.c:1219
 #, c-format
 msgid "Untitled %d"
 msgstr "Без имени %d"
@@ -1164,7 +1166,7 @@ msgstr "Создать файл..."
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:655
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:656
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1474
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.c:68
+#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.c:69
 #: ../moo/moofileview/moofileview.c:1113
 msgid "File Selector"
 msgstr ""
@@ -1199,7 +1201,7 @@ msgid "Save As..."
 msgstr "Сохранить как..."
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1272
-#: ../moo/mooutils/moostock.c:43
+#: ../moo/mooutils/moostock.c:45
 msgid "Save Copy"
 msgstr "Сохранить копию"
 
@@ -1230,15 +1232,33 @@ msgstr "Сохранить как"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:1
 msgid "Command:"
-msgstr "Комманда"
+msgstr "Команда:"
+
+#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:2
+#: ../moo/moofileview/glade/bookmark_editor.glade.h:4
+msgid "Delete"
+msgstr "Удалить"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:4
-msgid "Label:"
-msgstr ""
-
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:5
 msgid "Menu item label"
 msgstr ""
+
+#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:6
+msgid "Move down"
+msgstr "Переместить вниз"
+
+#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:7
+msgid "Move up"
+msgstr "Переместить вверх"
+
+#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:8
+msgid "Name:"
+msgstr ""
+
+#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:9
+#: ../moo/moofileview/glade/bookmark_editor.glade.h:8
+msgid "New"
+msgstr "Создать"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:10
 msgid "Open With"
@@ -1272,10 +1292,6 @@ msgstr "Добавить закладку"
 msgid "Add separator"
 msgstr "Добавить разделитель"
 
-#: ../moo/moofileview/glade/bookmark_editor.glade.h:4
-msgid "Delete"
-msgstr "Удалить"
-
 #: ../moo/moofileview/glade/bookmark_editor.glade.h:5
 msgid "Delete selected items"
 msgstr "Удалить выделенное"
@@ -1288,10 +1304,6 @@ msgstr "Редактировать закладки"
 msgid "Icon:"
 msgstr ""
 
-#: ../moo/moofileview/glade/bookmark_editor.glade.h:8
-msgid "New"
-msgstr "Создать"
-
 #: ../moo/moofileview/glade/bookmark_editor.glade.h:9
 msgid "Path:"
 msgstr "Путь:"
@@ -1303,10 +1315,6 @@ msgstr "Создать папку"
 #: ../moo/moofileview/moofileview.c:1122
 msgid "Go to Parent Folder"
 msgstr "Вверх"
-
-#: ../moo/moofileview/moofileview.c:1163 ../moo/moofileview/moofileview.c:1164
-msgid "New Folder..."
-msgstr "Создать папку"
 
 #: ../moo/moofileview/moofileview.c:1171 ../moo/moofileview/moofileview.c:1172
 msgid "Delete..."
@@ -1728,21 +1736,33 @@ msgstr "Тайская"
 msgid "Show only fixed width fonts"
 msgstr "Показывать только моноширинные шрифты"
 
-#: ../moo/mooutils/moostock.c:37
+#: ../moo/mooutils/moostock.c:39
 msgid "Save _None"
 msgstr "Не сохранять"
 
-#: ../moo/mooutils/moostock.c:38
+#: ../moo/mooutils/moostock.c:40
 msgid "Save _Selected"
 msgstr "Сохранить выделенные"
 
-#: ../moo/mooutils/moostock.c:40
+#: ../moo/mooutils/moostock.c:42
 msgid "Move"
 msgstr "Переместить"
 
-#: ../moo/mooutils/moostock.c:41
+#: ../moo/mooutils/moostock.c:43
 msgid "Link"
 msgstr ""
+
+#: ../moo/mooutils/moostock.c:46
+msgid "_New Folder"
+msgstr "Создать папку"
+
+#: ../moo/mooutils/moostock.c:47
+msgid "New _Window"
+msgstr "Новое _окно"
+
+#: ../moo/mooutils/moostock.c:52
+msgid "Select _All"
+msgstr "Выделить Всё"
 
 #: ../moo/mooutils/moowindow.c:176
 msgid "Configure _Shortcuts..."
@@ -1794,6 +1814,12 @@ msgstr ""
 #: ../moo/mooutils/glade/accelprefs.glade.h:9
 msgid "Shortcut|None"
 msgstr ""
+
+#~ msgid "Select All"
+#~ msgstr "Выделить Всё"
+
+#~ msgid "Select all"
+#~ msgstr "Выделить всё"
 
 #~ msgid "Arguments"
 #~ msgstr "Параметры"
