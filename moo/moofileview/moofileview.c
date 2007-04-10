@@ -1119,7 +1119,7 @@ init_actions (MooFileView *fileview)
 
     moo_action_group_add_action (group, "GoUp",
                                  "label", GTK_STOCK_GO_UP,
-                                 "tooltip", _("Go to Parent Folder"),
+                                 "tooltip", _("Go to parent folder"),
                                  "stock-id", GTK_STOCK_GO_UP,
                                  "accel", "<alt>Up",
                                  "force-accel-label", TRUE,

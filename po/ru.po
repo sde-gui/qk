@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-04-10 02:17-0500\n"
+"POT-Creation-Date: 2007-04-10 09:45-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Yevgen Muntyan <muntyan@tamu.edu>\n"
 "MIME-Version: 1.0\n"
@@ -1313,7 +1313,7 @@ msgid "Create Folder"
 msgstr "Создать папку"
 
 #: ../moo/moofileview/moofileview.c:1122
-msgid "Go to Parent Folder"
+msgid "Go to parent folder"
 msgstr "Вверх"
 
 #: ../moo/moofileview/moofileview.c:1171 ../moo/moofileview/moofileview.c:1172

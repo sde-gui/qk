@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-04-10 02:17-0500\n"
+"POT-Creation-Date: 2007-04-10 09:45-0500\n"
 "PO-Revision-Date: 2007-02-20 23:15+0100\n"
 "Last-Translator: Collilieux <mccnews@free.fr>\n"
 "Language-Team: \n"
@@ -1327,7 +1327,7 @@ msgid "Create Folder"
 msgstr "Créer un dossier"
 
 #: ../moo/moofileview/moofileview.c:1122
-msgid "Go to Parent Folder"
+msgid "Go to parent folder"
 msgstr "Aller au dossier parent"
 
 #: ../moo/moofileview/moofileview.c:1171 ../moo/moofileview/moofileview.c:1172
