@@ -740,9 +740,9 @@ main (int argc, char *argv[])
 
 int __stdcall
 WinMain (HINSTANCE hInstance,
-	     HINSTANCE hPrevInstance,
-		 char     *lpszCmdLine,
-		 int       nCmdShow)
+         HINSTANCE hPrevInstance,
+         char     *lpszCmdLine,
+         int       nCmdShow)
 {
 	return main (__argc, __argv);
 }

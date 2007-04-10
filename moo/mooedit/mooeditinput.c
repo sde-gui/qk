@@ -68,58 +68,76 @@ static gboolean
 text_iter_forward_word_start (GtkTextIter *iter)
 {
     gboolean moved = FALSE;
-    if (gtk_text_iter_is_end (iter)) return FALSE;
 
-    /* if iter points to word char, then go to the first non-space char after the word
-     * otherwise, go to the next word char
-     * stop at end of line
-     */
+    if (gtk_text_iter_is_end (iter))
+        return FALSE;
 
-    if (is_word_char (iter)) {
+    if (is_word_char (iter))
+    {
         while (!gtk_text_iter_is_end (iter) && is_word_char (iter))
         {
-            gtk_text_iter_forward_char (iter);
+            gtk_text_iter_forward_cursor_position (iter);
             moved = TRUE;
         }
-        if (gtk_text_iter_is_end (iter)) return FALSE;
+
+        if (gtk_text_iter_is_end (iter))
+            return FALSE;
+
         while (!gtk_text_iter_is_end (iter) &&
-               is_space (iter) &&
+//                is_space (iter) &&
+               !is_word_char (iter) &&
                !gtk_text_iter_ends_line (iter))
         {
-            gtk_text_iter_forward_char (iter);
+            gtk_text_iter_forward_cursor_position (iter);
             moved = TRUE;
         }
     }
-    else {
-        if (gtk_text_iter_ends_line (iter)) {
-            gtk_text_iter_forward_char (iter);
+    else if (gtk_text_iter_ends_line (iter))
+    {
+        gtk_text_iter_forward_cursor_position (iter);
+        moved = TRUE;
+    }
+//     else if (is_space (iter))
+//     {
+//         while (!gtk_text_iter_is_end (iter) &&
+//                is_space (iter) &&
+//                !gtk_text_iter_ends_line (iter))
+//         {
+//             gtk_text_iter_forward_cursor_position (iter);
+//             moved = TRUE;
+//         }
+//     }
+    else
+    {
+        while (!gtk_text_iter_is_end (iter) &&
+               !is_word_char (iter) &&
+               !gtk_text_iter_ends_line (iter))
+        {
+            gtk_text_iter_forward_cursor_position (iter);
             moved = TRUE;
         }
-        else {
-            while (!gtk_text_iter_is_end (iter) &&
-                   !is_word_char (iter) &&
-                   !gtk_text_iter_ends_line (iter))
-            {
-                gtk_text_iter_forward_char (iter);
-                moved = TRUE;
-            }
-        }
     }
+
     return moved && !gtk_text_iter_is_end (iter);
 }
 
 inline static gboolean
 text_iter_forward_word_start_n (GtkTextIter *iter, guint count)
 {
-    if (!count) return FALSE;
-    while (count) {
-        if (!text_iter_forward_word_start (iter)) {
+    if (!count)
+        return FALSE;
+
+    while (count)
+    {
+        if (!text_iter_forward_word_start (iter))
+        {
             gtk_text_iter_forward_to_end (iter);
             return FALSE;
         }
-        else
-            --count;
+
+        --count;
     }
+
     return TRUE;
 }
 
@@ -128,18 +146,19 @@ inline static gboolean
 text_iter_backward_word_start (GtkTextIter *iter)
 {
     gboolean moved = FALSE;
-    if (gtk_text_iter_starts_line (iter)) {
-        moved = gtk_text_iter_backward_char (iter);
-        /* it may point now to \n in \r\n combination */
-        if (moved && !gtk_text_iter_ends_line (iter))
-            gtk_text_iter_backward_char (iter);
+
+    if (gtk_text_iter_starts_line (iter))
+    {
+        moved = gtk_text_iter_backward_cursor_position (iter);
     }
-    else {
-        while (gtk_text_iter_backward_char (iter) &&
+    else
+    {
+        while (gtk_text_iter_backward_cursor_position (iter) &&
                !is_word_start (iter) &&
                !gtk_text_iter_starts_line (iter))
             moved = TRUE;
     }
+
     return moved;
 }
 
@@ -147,10 +166,13 @@ inline static gboolean
 text_iter_backward_word_start_n (GtkTextIter *iter, guint count)
 {
     gboolean moved = FALSE;
-    while (count && text_iter_backward_word_start (iter)) {
+
+    while (count && text_iter_backward_word_start (iter))
+    {
         moved = TRUE;
         --count;
     }
+
     return moved;
 }
 
