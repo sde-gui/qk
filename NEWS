@@ -1,5 +1,5 @@
 2007-04-09  Yevgen Muntyan  <muntyan@math.tamu.edu>
-    * === Released 0.8.4 ===
+    * === Released 0.8.5 ===
 
     Fixed ciritical win32 bug: editor duplicated line endings on save,
     screwing up files and everything (Thomas Gilgin).
@@ -8,6 +8,8 @@
     margin (stonecrest).
     Made it save user-chosen encodings in Open and Save dialog.
     It's now possible to print line numbers.
+
+    Version 0.8.4 broke loading files on unix, and was deleted.
 
 2007-04-06  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.8.3 ===
