@@ -233,11 +233,12 @@ class Wrapper:
     constructor_tmpl = None
     method_tmpl = None
 
-    def __init__(self, parser, objinfo, overrides, fp=FileOutput(sys.stdout)):
+    def __init__(self, parser, objinfo, overrides, fp=FileOutput(sys.stdout), warnings=True):
         self.parser = parser
         self.objinfo = objinfo
         self.overrides = overrides
         self.fp = fp
+        self.warnings = warnings
 
     def get_lower_name(self):
         return string.lower(string.replace(self.objinfo.typecode,
@@ -413,7 +414,7 @@ class Wrapper:
                         # implemented in GObjectWrapper
                         return self.write_property_based_constructor(
                             constructor)
-                    elif pygtk_version >= 8:
+                    elif pygtk_version >= 8 and self.warnings:
                         sys.stderr.write(
                             "Warning: generating old-style constructor for:" +
                             constructor.c_name + '\n')
@@ -427,8 +428,9 @@ class Wrapper:
                 self.fp.write(code)
             initfunc = '_wrap_' + funcname
         except:
-            sys.stderr.write('Could not write constructor for %s: %s\n'
-                             % (self.objinfo.c_name, exc_info()))
+            if self.warnings:
+                sys.stderr.write('Could not write constructor for %s: %s\n'
+                                 % (self.objinfo.c_name, exc_info()))
 
             initfunc = self.write_noconstructor()
         return initfunc
@@ -505,8 +507,9 @@ class Wrapper:
                 methods_coverage.declare_wrapped()
             except:
                 methods_coverage.declare_not_wrapped()
-                sys.stderr.write('Could not write method %s.%s: %s\n'
-                                % (klass, meth.name, exc_info()))
+                if self.warnings:
+                    sys.stderr.write('Could not write method %s.%s: %s\n'
+                                    % (klass, meth.name, exc_info()))
 
         # Now try to see if there are any defined in the override
         for method_name in self.overrides.get_defines_for(klass):
@@ -527,8 +530,9 @@ class Wrapper:
                 methods_coverage.declare_wrapped()
             except:
                 methods_coverage.declare_not_wrapped()
-                sys.stderr.write('Could not write method %s.%s: %s\n'
-                                % (klass, meth.name, exc_info()))
+                if self.warnings:
+                    sys.stderr.write('Could not write method %s.%s: %s\n'
+                                     % (klass, meth.name, exc_info()))
 
         # Add GObject virtual method accessors, for chaining to parent
         # virtuals from subclasses
@@ -581,9 +585,10 @@ class Wrapper:
                 vaccessors_coverage.declare_wrapped()
             except:
                 vaccessors_coverage.declare_not_wrapped()
-                sys.stderr.write(
-                    'Could not write virtual accessor method %s.%s: %s\n'
-                    % (klass, meth.name, exc_info()))
+                if self.warnings:
+                    sys.stderr.write(
+                        'Could not write virtual accessor method %s.%s: %s\n'
+                        % (klass, meth.name, exc_info()))
         return methods
 
     def write_virtuals(self):
@@ -625,8 +630,9 @@ class Wrapper:
             except (KeyError, ValueError):
                 vproxies_coverage.declare_not_wrapped()
                 virtuals.append((fixname(meth.name), None))
-                sys.stderr.write('Could not write virtual proxy %s.%s: %s\n'
-                                % (klass, meth.name, exc_info()))
+                if self.warnings:
+                    sys.stderr.write('Could not write virtual proxy %s.%s: %s\n'
+                                    % (klass, meth.name, exc_info()))
         if virtuals:
             # Write a 'pygtk class init' function for this object,
             # except when the object type is explicitly ignored (like
@@ -711,9 +717,10 @@ class Wrapper:
                                     'codeafter': info.get_codeafter() })
                     gettername = funcname
                 except:
-                    sys.stderr.write(
-                        "Could not write getter for %s.%s: %s\n"
-                        % (self.objinfo.c_name, fname, exc_info()))
+                    if self.warnings:
+                        sys.stderr.write(
+                            "Could not write getter for %s.%s: %s\n"
+                            % (self.objinfo.c_name, fname, exc_info()))
             if gettername != '0' or settername != '0':
                 getsets.append('    { (char*) "%s", (getter)%s, (setter)%s, NULL, NULL },\n' %
                                (fixname(fname), gettername, settername))
@@ -756,8 +763,9 @@ class Wrapper:
                 functions_coverage.declare_wrapped()
             except:
                 functions_coverage.declare_not_wrapped()
-                sys.stderr.write('Could not write function %s: %s\n'
-                                 % (func.name, exc_info()))
+                if self.warnings:
+                    sys.stderr.write('Could not write function %s: %s\n'
+                                     % (func.name, exc_info()))
 
         # Now try to see if there are any defined in the override
         for funcname in self.overrides.get_functions():
@@ -773,8 +781,9 @@ class Wrapper:
                 functions_coverage.declare_wrapped()
             except:
                 functions_coverage.declare_not_wrapped()
-                sys.stderr.write('Could not write function %s: %s\n'
-                                 % (funcname, exc_info()))
+                if self.warnings:
+                    sys.stderr.write('Could not write function %s: %s\n'
+                                     % (funcname, exc_info()))
 
         # write the PyMethodDef structure
         functions.append('    { NULL, NULL, 0, NULL }\n')
@@ -817,8 +826,8 @@ class GObjectWrapper(Wrapper):
         '%(codeafter)s\n'
         '}\n\n'
         )
-    def __init__(self, parser, objinfo, overrides, fp=FileOutput(sys.stdout)):
-        Wrapper.__init__(self, parser, objinfo, overrides, fp)
+    def __init__(self, parser, objinfo, overrides, fp=FileOutput(sys.stdout), warnings=True):
+        Wrapper.__init__(self, parser, objinfo, overrides, fp, warnings)
         if self.objinfo:
             self.castmacro = string.replace(self.objinfo.typecode,
                                             '_TYPE_', '_', 1)
@@ -1049,8 +1058,9 @@ class GInterfaceWrapper(GObjectWrapper):
             except (KeyError, ValueError):
                 iproxies_coverage.declare_not_wrapped()
                 proxies.append((fixname(meth.name), None))
-                sys.stderr.write('Could not write interface proxy %s.%s: %s\n'
-                                % (klass, meth.name, exc_info()))
+                if self.warnings:
+                    sys.stderr.write('Could not write interface proxy %s.%s: %s\n'
+                                    % (klass, meth.name, exc_info()))
 
         if not proxies:
             return
@@ -1198,11 +1208,14 @@ class GPointerWrapper(GBoxedWrapper):
         return substdict
 
 class SourceWriter:
-    def __init__(self, parser, overrides, prefix, fp=FileOutput(sys.stdout)):
+    def __init__(self, parser, overrides, prefix,
+                 fp=FileOutput(sys.stdout),
+                 warnings=True):
         self.parser = parser
         self.overrides = overrides
         self.prefix = prefix
         self.fp = fp
+        self.warnings = warnings
 
     def write(self):
         self.write_headers()
@@ -1211,7 +1224,7 @@ class SourceWriter:
         self.write_body()
         self.write_classes()
 
-        wrapper = Wrapper(self.parser, None, self.overrides, self.fp)
+        wrapper = Wrapper(self.parser, None, self.overrides, self.fp, warnings=self.warnings)
         wrapper.write_functions(self.prefix)
 
         self.write_enums()
@@ -1283,7 +1296,7 @@ class SourceWriter:
                              (GObjectWrapper, objects),
                              (GInterfaceWrapper, self.parser.interfaces)):
             for item in items:
-                instance = klass(self.parser, item, self.overrides, self.fp)
+                instance = klass(self.parser, item, self.overrides, self.fp, warnings=self.warnings)
                 instance.write_class()
                 self.fp.write('\n')
 
@@ -1404,10 +1417,11 @@ class SourceWriter:
                     '    pyg_set_object_has_new_constructor(%s);\n' %
                     obj.typecode)
             elif not obj.final:
-                print >> sys.stderr, (
-                    "Warning: Constructor for %s needs to be updated to new API\n"
-                    "         See http://live.gnome.org/PyGTK_2fWhatsNew28"
-                    "#update-constructors") % obj.c_name
+                if self.warnings:
+                    print >> sys.stderr, (
+                        "Warning: Constructor for %s needs to be updated to new API\n"
+                        "         See http://live.gnome.org/PyGTK_2fWhatsNew28"
+                        "#update-constructors") % obj.c_name
             if obj.class_init_func is not None:
                 self.fp.write(
                     '    pyg_register_class_init(%s, %s);\n' %
@@ -1436,9 +1450,11 @@ def main(argv):
     prefix = 'pygtk'
     outfilename = None
     errorfilename = None
+    warnings = False
     opts, args = getopt.getopt(argv[1:], "o:p:r:t:D:I:",
                         ["override=", "prefix=", "register=", "outfilename=",
-                         "load-types=", "errorfilename=", "platform=", "pygtk-version="])
+                         "load-types=", "errorfilename=", "platform=", "pygtk-version=",
+                         "enable-warnings"])
     defines = {} # -Dkey[=val] options
     for opt, arg in opts:
         if opt in ('-o', '--override'):
@@ -1451,6 +1467,8 @@ def main(argv):
             p.startParsing()
             register_types(p)
             del p
+        elif opt == '--enable-warnings':
+            warnings = True
         elif opt == '--outfilename':
             outfilename = arg
         elif opt == '--errorfilename':
@@ -1484,7 +1502,7 @@ def main(argv):
     p.startParsing()
 
     register_types(p)
-    sw = SourceWriter(p, o, prefix, FileOutput(sys.stdout, outfilename))
+    sw = SourceWriter(p, o, prefix, FileOutput(sys.stdout, outfilename), warnings=warnings)
     sw.write()
 
     functions_coverage.printstats()

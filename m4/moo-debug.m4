@@ -49,6 +49,7 @@ AC_ARG_ENABLE(all-warnings,
 AC_HELP_STRING([--enable-all-warnings],[enable lot of compiler warnings (default = NO)]),[
   _moo_all_warnings="$withval"
 ])
+AM_CONDITIONAL(MOO_ALL_WARNINGS, test x$_moo_all_warnings = "xyes")
 
 # icc pretends to be gcc or configure thinks it's gcc, but icc doesn't
 # error on unknown options, so just don't try gcc options with icc

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <medit-project version="1.0" type="C" name="moo">
- <active>debug</active>
+ <active>optimized</active>
  <configurations>
   <debug>
    <build_dir>build/debug</build_dir>
@@ -26,7 +26,7 @@
   <optimized>
    <build_dir>build/optimized</build_dir>
    <configure>
-    <args>--enable-debug --enable-all-warnings --enable-libmoo --without-system-pcre</args>
+    <args>--enable-debug --enable-libmoo --without-system-pcre</args>
     <vars>
      <var name="CC">gcc-3.4</var>
      <var name="CFLAGS">-O6</var>
@@ -34,7 +34,7 @@
    </configure>
   </optimized>
  </configurations>
- <file_selector_dir>/home/muntyan/projects/moo/</file_selector_dir>
+ <file_selector_dir>/home/muntyan/projects/moo/moo/moopython/codegen/</file_selector_dir>
  <run>
   <args>--g-fatal-warnings --new-app --mode=project</args>
   <exe>medit/medit</exe>

@@ -99,8 +99,13 @@ codegen_files =					\
 	$(srcdir)/../codegen/argtypes.py	\
 	$(srcdir)/../codegen/reversewrapper.py
 
+if MOO_ALL_WARNINGS
+warnings_flag = --enable-warnings
+else
+warnings_flag =
+endif
 codegen_script = $(srcdir)/../codegen/codegen.py
-codegen = $(PYTHON) $(codegen_script) $(codegen_platform) --pygtk-version=$(PYGTK_MINOR_VERSION)
+codegen = $(PYTHON) $(codegen_script) $(codegen_platform) --pygtk-version=$(PYGTK_MINOR_VERSION) $(warnings_flag)
 else
 codegen = $(PYTHON) $(PYGTK_CODEGEN_DIR)/codegen.py $(PYGTK_CODEGEN_ARGS)
 endif
