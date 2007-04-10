@@ -473,7 +473,7 @@ do_load (MooEdit            *edit,
         }
     }
 
-    file = g_io_channel_new_file (filename, "rb", error);
+    file = g_io_channel_new_file (filename, "r", error);
 
     if (!file)
         return ERROR_FILE;
