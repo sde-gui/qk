@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-04-10 09:45-0500\n"
+"POT-Creation-Date: 2007-04-11 15:48-0500\n"
 "PO-Revision-Date: 2007-04-11 02:15+0100\n"
 "Last-Translator: Chaosye <chao-7410@163.com>\n"
 "Language-Team: \n"
@@ -1203,7 +1203,7 @@ msgid "Save As..."
 msgstr "另存为..."
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1272
-#: ../moo/mooutils/moostock.c:45
+#: ../moo/mooutils/moostock.c:46
 msgid "Save Copy"
 msgstr "保存副本"
 
@@ -1738,31 +1738,31 @@ msgstr "泰语"
 msgid "Show only fixed width fonts"
 msgstr ""
 
-#: ../moo/mooutils/moostock.c:39
+#: ../moo/mooutils/moostock.c:40
 msgid "Save _None"
 msgstr "不保存(_N)"
 
-#: ../moo/mooutils/moostock.c:40
+#: ../moo/mooutils/moostock.c:41
 msgid "Save _Selected"
 msgstr "保存被选中的(_S)"
 
-#: ../moo/mooutils/moostock.c:42
+#: ../moo/mooutils/moostock.c:43
 msgid "Move"
 msgstr "移动"
 
-#: ../moo/mooutils/moostock.c:43
+#: ../moo/mooutils/moostock.c:44
 msgid "Link"
 msgstr "链接"
 
-#: ../moo/mooutils/moostock.c:46
+#: ../moo/mooutils/moostock.c:47
 msgid "_New Folder"
 msgstr "创建目录(N)"
 
-#: ../moo/mooutils/moostock.c:47
+#: ../moo/mooutils/moostock.c:48
 msgid "New _Window"
 msgstr ""
 
-#: ../moo/mooutils/moostock.c:52
+#: ../moo/mooutils/moostock.c:53
 msgid "Select _All"
 msgstr "选中全部(_A)"
 

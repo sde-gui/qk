@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-04-10 09:45-0500\n"
+"POT-Creation-Date: 2007-04-11 15:48-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Yevgen Muntyan <muntyan@tamu.edu>\n"
 "MIME-Version: 1.0\n"
@@ -1201,7 +1201,7 @@ msgid "Save As..."
 msgstr "Сохранить как..."
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1272
-#: ../moo/mooutils/moostock.c:45
+#: ../moo/mooutils/moostock.c:46
 msgid "Save Copy"
 msgstr "Сохранить копию"
 
@@ -1736,31 +1736,31 @@ msgstr "Тайская"
 msgid "Show only fixed width fonts"
 msgstr "Показывать только моноширинные шрифты"
 
-#: ../moo/mooutils/moostock.c:39
+#: ../moo/mooutils/moostock.c:40
 msgid "Save _None"
 msgstr "Не сохранять"
 
-#: ../moo/mooutils/moostock.c:40
+#: ../moo/mooutils/moostock.c:41
 msgid "Save _Selected"
 msgstr "Сохранить выделенные"
 
-#: ../moo/mooutils/moostock.c:42
+#: ../moo/mooutils/moostock.c:43
 msgid "Move"
 msgstr "Переместить"
 
-#: ../moo/mooutils/moostock.c:43
+#: ../moo/mooutils/moostock.c:44
 msgid "Link"
 msgstr ""
 
-#: ../moo/mooutils/moostock.c:46
+#: ../moo/mooutils/moostock.c:47
 msgid "_New Folder"
 msgstr "Создать папку"
 
-#: ../moo/mooutils/moostock.c:47
+#: ../moo/mooutils/moostock.c:48
 msgid "New _Window"
 msgstr "Новое _окно"
 
-#: ../moo/mooutils/moostock.c:52
+#: ../moo/mooutils/moostock.c:53
 msgid "Select _All"
 msgstr "Выделить Всё"
 

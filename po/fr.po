@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-04-10 09:45-0500\n"
+"POT-Creation-Date: 2007-04-11 15:48-0500\n"
 "PO-Revision-Date: 2007-02-20 23:15+0100\n"
 "Last-Translator: Collilieux <mccnews@free.fr>\n"
 "Language-Team: \n"
@@ -1215,7 +1215,7 @@ msgid "Save As..."
 msgstr "Enregistrer sous..."
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1272
-#: ../moo/mooutils/moostock.c:45
+#: ../moo/mooutils/moostock.c:46
 msgid "Save Copy"
 msgstr "Enregistrer une copie"
 
@@ -1756,31 +1756,31 @@ msgstr "Thaï"
 msgid "Show only fixed width fonts"
 msgstr "Ne montrer que les polices à chasse fixe"
 
-#: ../moo/mooutils/moostock.c:39
+#: ../moo/mooutils/moostock.c:40
 msgid "Save _None"
 msgstr "Ne _rien enregistrer"
 
-#: ../moo/mooutils/moostock.c:40
+#: ../moo/mooutils/moostock.c:41
 msgid "Save _Selected"
 msgstr "Enregistrer _Sélection"
 
-#: ../moo/mooutils/moostock.c:42
+#: ../moo/mooutils/moostock.c:43
 msgid "Move"
 msgstr "Déplacer"
 
-#: ../moo/mooutils/moostock.c:43
+#: ../moo/mooutils/moostock.c:44
 msgid "Link"
 msgstr "Lien"
 
-#: ../moo/mooutils/moostock.c:46
+#: ../moo/mooutils/moostock.c:47
 msgid "_New Folder"
 msgstr ""
 
-#: ../moo/mooutils/moostock.c:47
+#: ../moo/mooutils/moostock.c:48
 msgid "New _Window"
 msgstr ""
 
-#: ../moo/mooutils/moostock.c:52
+#: ../moo/mooutils/moostock.c:53
 msgid "Select _All"
 msgstr "_Tout sélectionner"
 
