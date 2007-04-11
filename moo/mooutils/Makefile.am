@@ -134,6 +134,7 @@ mooutils_sources =			\
 	stock-about-24.h		\
 	stock-edit-16.h			\
 	stock-edit-24.h			\
+	stock-file-24.h			\
 	stock-file-selector-24.h	\
 	stock-moo.h			\
 	stock-select-all-16.h		\
