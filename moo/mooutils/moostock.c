@@ -15,6 +15,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/stock-terminal-24.h"
 #include "mooutils/stock-file-selector-24.h"
+#include "mooutils/stock-file-24.h"
 #include "mooutils/stock-moo.h"
 #include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
@@ -279,6 +280,9 @@ _moo_stock_init (void)
         add_icon_name (factory, MOO_STOCK_FILE_SELECTOR, "folder");
         add_icon_name (factory, MOO_STOCK_FILE_SELECTOR, "file-manager");
     }
+
+    add_icon (factory, MOO_STOCK_FILE, "unknown", 24, MOO_FILE_ICON);
+    add_icon_name (factory, MOO_STOCK_FILE, "gnome-fs-regular");
 
     add_icon (factory, MOO_STOCK_FOLDER, "gnome-fs-directory", 24, MOO_FILE_SELECTOR_ICON);
     add_icon_name (factory, MOO_STOCK_FOLDER, "folder");

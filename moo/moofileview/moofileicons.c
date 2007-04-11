@@ -459,13 +459,7 @@ create_named_icon (GtkIconTheme   *icon_theme,
     }
 
     if (!pixbuf)
-        pixbuf = get_named_icon (icon_theme, "gnome-fs-regular", pixel_size);
-
-    if (!pixbuf)
-        pixbuf = get_named_icon (icon_theme, "unknown", pixel_size);
-
-    if (!pixbuf)
-        pixbuf = get_stock_icon (widget, GTK_STOCK_FILE, size);
+        pixbuf = get_stock_icon (widget, MOO_STOCK_FILE, size);
 
     return pixbuf;
 }
