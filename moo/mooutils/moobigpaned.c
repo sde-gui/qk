@@ -11,9 +11,22 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooutils/moobigpaned.h"
-#include "mooutils/moomarshals.h"
-#include "mooutils/mooutils-gobject.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include "moobigpaned.h"
+#include "moomarshals.h"
+
+#ifdef MOO_COMPILATION
+#include "mooutils-gobject.h"
+#else
+#if GLIB_CHECK_VERSION(2,10,0)
+#define MOO_OBJECT_REF_SINK(obj) g_object_ref_sink (obj)
+#else
+#define MOO_OBJECT_REF_SINK(obj) gtk_object_sink (g_object_ref (obj))
+#endif
+#endif
 
 
 static void     moo_big_paned_finalize      (GObject        *object);

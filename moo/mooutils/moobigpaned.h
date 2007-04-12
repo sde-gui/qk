@@ -1,7 +1,7 @@
 /*
  *   moobigpaned.h
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -11,11 +11,11 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_BIG_PANED_H__
-#define __MOO_BIG_PANED_H__
+#ifndef MOO_BIG_PANED_H
+#define MOO_BIG_PANED_H
 
-#include <mooutils/moopaned.h>
 #include <gtk/gtkframe.h>
+#include "moopaned.h"
 
 G_BEGIN_DECLS
 
@@ -123,4 +123,4 @@ void            moo_big_paned_set_pane_params   (MooBigPaned    *paned,
 
 G_END_DECLS
 
-#endif /* __MOO_BIG_PANED_H__ */
+#endif /* MOO_BIG_PANED_H */

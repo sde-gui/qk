@@ -11,15 +11,93 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "moomarshals.h"
 #include "moopaned.h"
+
+#include <string.h>
+#include <gdk/gdkkeysyms.h>
+#include <gtk/gtk.h>
+
+
+#ifdef MOO_COMPILATION
+
 #include "moostock.h"
 #include "mooutils-misc.h"
 #include "moocompat.h"
 #include "mooutils-gobject.h"
-#include <string.h>
-#include <gdk/gdkkeysyms.h>
-#include <gtk/gtk.h>
+
+#else
+
+static GtkIconSize
+_moo_get_icon_size_real_small (void)
+{
+    static GtkIconSize size = 0;
+
+    if (!size)
+        size = gtk_icon_size_register ("moo-real-small", 4, 4);
+
+    return size;
+}
+
+static void
+_moo_widget_set_tooltip (GtkWidget  *widget,
+                         const char *tip)
+{
+    static GtkTooltips *tooltips;
+
+    g_return_if_fail (GTK_IS_WIDGET (widget));
+
+    if (!tooltips)
+        tooltips = gtk_tooltips_new ();
+
+    if (GTK_IS_TOOL_ITEM (widget))
+        gtk_tool_item_set_tooltip (GTK_TOOL_ITEM (widget), tooltips, tip, NULL);
+    else
+        gtk_tooltips_set_tip (tooltips, widget, tip, tip);
+}
+
+gboolean
+_moo_window_set_icon_from_stock (GtkWindow  *window,
+                                 const char *stock_id)
+{
+    GdkPixbuf *icon;
+
+    g_return_val_if_fail (GTK_IS_WINDOW (window), FALSE);
+    g_return_val_if_fail (stock_id != NULL, FALSE);
+
+    icon = gtk_widget_render_icon (GTK_WIDGET (window), stock_id,
+                                   GTK_ICON_SIZE_BUTTON, 0);
+
+    if (icon)
+    {
+        gtk_window_set_icon (GTK_WINDOW (window), icon);
+        gdk_pixbuf_unref (icon);
+        return TRUE;
+    }
+    else
+    {
+        return FALSE;
+    }
+}
+
+#define MOO_ICON_SIZE_REAL_SMALL (_moo_get_icon_size_real_small ())
+#define MOO_STOCK_CLOSE         "moo-close"
+#define MOO_STOCK_STICKY        "moo-sticky"
+#define MOO_STOCK_DETACH        "moo-detach"
+#define MOO_STOCK_ATTACH        "moo-attach"
+#define MOO_STOCK_KEEP_ON_TOP   "moo-keep-on-top"
+
+#if GLIB_CHECK_VERSION(2,10,0)
+#define MOO_OBJECT_REF_SINK(obj) g_object_ref_sink (obj)
+#else
+#define MOO_OBJECT_REF_SINK(obj) gtk_object_sink (g_object_ref (obj))
+#endif
+
+#endif
 
 
 #define MIN_PANE_SIZE 10
@@ -468,7 +546,9 @@ moo_paned_init (MooPaned *paned)
 {
     GTK_WIDGET_SET_FLAGS (paned, GTK_NO_WINDOW);
 
+#ifdef MOO_COMPILATION
     _moo_stock_init ();
+#endif
 
     paned->priv = G_TYPE_INSTANCE_GET_PRIVATE (paned,
                                                MOO_TYPE_PANED,
@@ -2230,11 +2310,12 @@ static GtkWidget *moo_pane_label_get_widget (MooPaneLabel   *label,
 }
 
 
-static GtkWidget    *create_button  (Pane           *pane,
-                                     GtkWidget      *toolbar,
-                                     const char     *tip,
-                                     gboolean        toggle,
-                                     const char     *stock_id)
+static GtkWidget *
+create_button (Pane       *pane,
+               GtkWidget  *toolbar,
+               const char *tip,
+               gboolean    toggle,
+               const char *stock_id)
 {
     GtkWidget *button;
     GtkWidget *icon;
@@ -2256,9 +2337,10 @@ static GtkWidget    *create_button  (Pane           *pane,
     return button;
 }
 
-static GtkWidget   *create_frame_widget (MooPaned   *paned,
-                                         Pane       *pane,
-                                         gboolean    embedded)
+static GtkWidget *
+create_frame_widget (MooPaned *paned,
+                     Pane     *pane,
+                     gboolean  embedded)
 {
     GtkWidget *vbox, *toolbar, *separator, *handle, *hbox = NULL, *child_holder;
 
@@ -2369,10 +2451,11 @@ static GtkWidget   *create_frame_widget (MooPaned   *paned,
 }
 
 
-int         moo_paned_insert_pane       (MooPaned       *paned,
-                                         GtkWidget      *pane_widget,
-                                         MooPaneLabel   *pane_label,
-                                         int             position)
+int
+moo_paned_insert_pane (MooPaned       *paned,
+                       GtkWidget      *pane_widget,
+                       MooPaneLabel   *pane_label,
+                       int             position)
 {
     GtkWidget *button, *label_widget;
     Pane *pane;

@@ -25,6 +25,8 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   dnl must be called after MOO_AC_PYTHON
   MOO_AC_LIB
 
+  AC_DEFINE(MOO_COMPILATION, 1, [must be 1])
+
   moo_top_src_dir=`cd $srcdir && pwd`
   MOO_CFLAGS="$MOO_CFLAGS -I"$moo_top_src_dir/$1" $GTK_CFLAGS $MOO_PCRE_CFLAGS -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\""
   MOO_LIBS="$MOO_LIBS $GTK_LIBS $GTHREAD_LIBS $MOO_PCRE_LIBS"
