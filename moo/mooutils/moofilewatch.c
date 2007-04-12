@@ -47,14 +47,14 @@
 #include "mooutils/moocompat.h"
 
 
-#if defined(__WIN32__)
-#define DEBUG_PRINT _moo_message_async
-#elif 1
-#define DEBUG_PRINT _moo_message
-#else
+#if 1
 static void DEBUG_PRINT (G_GNUC_UNUSED const char *format, ...)
 {
 }
+#elif defined(__WIN32__)
+#define DEBUG_PRINT _moo_message_async
+#else
+#define DEBUG_PRINT _moo_message
 #endif
 
 typedef struct {
