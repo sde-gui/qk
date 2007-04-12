@@ -344,6 +344,7 @@ moo_edit_load_local (MooEdit     *edit,
     gboolean undo;
     LoadResult result = ERROR_FILE;
     struct stat statbuf;
+    char *freeme = NULL;
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
     g_return_val_if_fail (file && file[0], FALSE);
@@ -381,10 +382,14 @@ moo_edit_load_local (MooEdit     *edit,
 
             g_clear_error (error);
             result = try_load (edit, file, enc, &statbuf, error);
-            g_free (enc);
 
             if (result != ERROR_ENCODING)
+            {
+                encoding = freeme = enc;
                 break;
+            }
+
+            g_free (enc);
         }
 
         g_slist_foreach (encodings, (GFunc) g_free, NULL);
@@ -435,6 +440,7 @@ moo_edit_load_local (MooEdit     *edit,
 
     moo_text_buffer_end_non_interactive_action (MOO_TEXT_BUFFER (buffer));
 
+    g_free (freeme);
     return result == SUCCESS;
 }
 
