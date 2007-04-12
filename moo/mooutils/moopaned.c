@@ -32,16 +32,13 @@
 
 #else
 
-static GtkIconSize
-_moo_get_icon_size_real_small (void)
-{
-    static GtkIconSize size = 0;
+#include "stock-moo.h"
 
-    if (!size)
-        size = gtk_icon_size_register ("moo-real-small", 4, 4);
-
-    return size;
-}
+#define MOO_STOCK_CLOSE ((const char*)MOO_CLOSE_ICON)
+#define MOO_STOCK_STICKY ((const char*)MOO_STICKY_ICON)
+#define MOO_STOCK_DETACH ((const char*)MOO_DETACH_ICON)
+#define MOO_STOCK_ATTACH ((const char*)MOO_ATTACH_ICON)
+#define MOO_STOCK_KEEP_ON_TOP ((const char*)MOO_KEEP_ON_TOP_ICON)
 
 static void
 _moo_widget_set_tooltip (GtkWidget  *widget,
@@ -83,13 +80,6 @@ _moo_window_set_icon_from_stock (GtkWindow  *window,
         return FALSE;
     }
 }
-
-#define MOO_ICON_SIZE_REAL_SMALL (_moo_get_icon_size_real_small ())
-#define MOO_STOCK_CLOSE         "moo-close"
-#define MOO_STOCK_STICKY        "moo-sticky"
-#define MOO_STOCK_DETACH        "moo-detach"
-#define MOO_STOCK_ATTACH        "moo-attach"
-#define MOO_STOCK_KEEP_ON_TOP   "moo-keep-on-top"
 
 #if GLIB_CHECK_VERSION(2,10,0)
 #define MOO_OBJECT_REF_SINK(obj) g_object_ref_sink (obj)
@@ -2315,7 +2305,7 @@ create_button (Pane       *pane,
                GtkWidget  *toolbar,
                const char *tip,
                gboolean    toggle,
-               const char *stock_id)
+               const char *data)
 {
     GtkWidget *button;
     GtkWidget *icon;
@@ -2329,7 +2319,18 @@ create_button (Pane       *pane,
     gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
     gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
     _moo_widget_set_tooltip (button, tip);
-    icon = gtk_image_new_from_stock (stock_id, MOO_ICON_SIZE_REAL_SMALL);
+
+#ifdef MOO_COMPILATION
+    icon = gtk_image_new_from_stock (data, MOO_ICON_SIZE_REAL_SMALL);
+#else
+    {
+        GdkPixbuf *pixbuf;
+        pixbuf = gdk_pixbuf_new_from_inline (-1, (const guchar*)data, FALSE, NULL);
+        icon = gtk_image_new_from_pixbuf (pixbuf);
+        g_object_unref (pixbuf);
+    }
+#endif
+
     gtk_container_add (GTK_CONTAINER (button), icon);
     gtk_box_pack_end (GTK_BOX (toolbar), button, FALSE, FALSE, 0);
 
