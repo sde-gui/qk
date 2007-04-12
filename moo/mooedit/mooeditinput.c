@@ -68,86 +68,58 @@ static gboolean
 text_iter_forward_word_start (GtkTextIter *iter)
 {
     gboolean moved = FALSE;
+    if (gtk_text_iter_is_end (iter)) return FALSE;
 
-    if (gtk_text_iter_is_end (iter))
-        return FALSE;
+    /* if iter points to word char, then go to the first non-space char after the word
+     * otherwise, go to the next word char
+     * stop at end of line
+     */
 
-    if (is_word_char (iter))
-    {
+    if (is_word_char (iter)) {
         while (!gtk_text_iter_is_end (iter) && is_word_char (iter))
         {
             gtk_text_iter_forward_cursor_position (iter);
             moved = TRUE;
         }
-
-//         if (gtk_text_iter_is_end (iter))
-//             return FALSE;
-//
-//         while (!gtk_text_iter_is_end (iter) &&
-// //                is_space (iter) &&
-//                !is_word_char (iter) &&
-//                !gtk_text_iter_ends_line (iter))
-//         {
-//             gtk_text_iter_forward_cursor_position (iter);
-//             moved = TRUE;
-//         }
-    }
-    else if (gtk_text_iter_ends_line (iter))
-    {
-        gtk_text_iter_forward_cursor_position (iter);
-        moved = TRUE;
-    }
-//     else if (is_space (iter))
-//     {
-//         while (!gtk_text_iter_is_end (iter) &&
-//                is_space (iter) &&
-//                !gtk_text_iter_ends_line (iter))
-//         {
-//             gtk_text_iter_forward_cursor_position (iter);
-//             moved = TRUE;
-//         }
-//     }
-    else
-    {
+        if (gtk_text_iter_is_end (iter)) return FALSE;
         while (!gtk_text_iter_is_end (iter) &&
-               !is_word_char (iter) &&
+               is_space (iter) &&
                !gtk_text_iter_ends_line (iter))
         {
             gtk_text_iter_forward_cursor_position (iter);
             moved = TRUE;
         }
-
-        if (gtk_text_iter_is_end (iter))
-            return FALSE;
-
-        while (!gtk_text_iter_is_end (iter) &&
-               is_word_char (iter))
-        {
+    }
+    else {
+        if (gtk_text_iter_ends_line (iter)) {
             gtk_text_iter_forward_cursor_position (iter);
             moved = TRUE;
         }
+        else {
+            while (!gtk_text_iter_is_end (iter) &&
+                   !is_word_char (iter) &&
+                   !gtk_text_iter_ends_line (iter))
+            {
+                gtk_text_iter_forward_cursor_position (iter);
+                moved = TRUE;
+            }
+        }
     }
-
     return moved && !gtk_text_iter_is_end (iter);
 }
 
 inline static gboolean
 text_iter_forward_word_start_n (GtkTextIter *iter, guint count)
 {
-    if (!count)
-        return FALSE;
-
-    while (count)
-    {
-        if (!text_iter_forward_word_start (iter))
-        {
+    if (!count) return FALSE;
+    while (count) {
+        if (!text_iter_forward_word_start (iter)) {
             gtk_text_iter_forward_to_end (iter);
             return FALSE;
         }
-
-        --count;
+        else
+            --count;
     }
-
     return TRUE;
 }
 
@@ -156,19 +128,18 @@ inline static gboolean
 text_iter_backward_word_start (GtkTextIter *iter)
 {
     gboolean moved = FALSE;
-
-    if (gtk_text_iter_starts_line (iter))
-    {
+    if (gtk_text_iter_starts_line (iter)) {
         moved = gtk_text_iter_backward_cursor_position (iter);
+        /* it may point now to \n in \r\n combination, fixed in gtk-2.10 */
+        if (moved && !gtk_text_iter_ends_line (iter))
+            gtk_text_iter_backward_char (iter);
     }
-    else
-    {
+    else {
         while (gtk_text_iter_backward_cursor_position (iter) &&
                !is_word_start (iter) &&
                !gtk_text_iter_starts_line (iter))
             moved = TRUE;
     }
-
     return moved;
 }
 
@@ -176,13 +147,10 @@ inline static gboolean
 text_iter_backward_word_start_n (GtkTextIter *iter, guint count)
 {
     gboolean moved = FALSE;
-
-    while (count && text_iter_backward_word_start (iter))
-    {
+    while (count && text_iter_backward_word_start (iter)) {
         moved = TRUE;
         --count;
     }
-
     return moved;
 }
 
@@ -249,7 +217,7 @@ moo_text_view_home_end (MooTextView *view,
         while (!gtk_text_iter_ends_line (&first))
         {
             if (is_space (&first))
-                gtk_text_iter_forward_char (&first);
+                gtk_text_iter_forward_cursor_position (&first);
             else
                 break;
         }
@@ -267,11 +235,11 @@ moo_text_view_home_end (MooTextView *view,
         {
             while (!gtk_text_iter_starts_line (&last))
             {
-                gtk_text_iter_backward_char (&last);
+                gtk_text_iter_backward_cursor_position (&last);
 
                 if (!is_space (&last))
                 {
-                    gtk_text_iter_forward_char (&last);
+                    gtk_text_iter_forward_cursor_position (&last);
                     break;
                 }
             }
@@ -986,16 +954,16 @@ _moo_text_view_extend_selection (MooTextView        *view,
                     if (gtk_text_iter_compare (&rstart, &rend) > 0)
                     {   /*  <rend>(     <rstart>) */
                         if (view->priv->dnd.double_click_selects_inside)
-                            gtk_text_iter_forward_char (&rend);
+                            gtk_text_iter_forward_cursor_position (&rend);
                         else
-                            gtk_text_iter_forward_char (&rstart);
+                            gtk_text_iter_forward_cursor_position (&rstart);
                     }
                     else
                     {   /*  <rstart>(     <rend>) */
                         if (view->priv->dnd.double_click_selects_inside)
-                            gtk_text_iter_forward_char (&rstart);
+                            gtk_text_iter_forward_cursor_position (&rstart);
                         else
-                            gtk_text_iter_forward_char (&rend);
+                            gtk_text_iter_forward_cursor_position (&rend);
                     }
                     *start = rstart;
                     *end = rend;
@@ -1015,7 +983,7 @@ _moo_text_view_extend_selection (MooTextView        *view,
         while (!gtk_text_iter_ends_line (end) &&
                 char_class (end) == ch_class)
         {
-            gtk_text_iter_forward_char (end);
+            gtk_text_iter_forward_cursor_position (end);
         }
 
         ch_class = char_class (start);
@@ -1023,11 +991,11 @@ _moo_text_view_extend_selection (MooTextView        *view,
         while (!gtk_text_iter_starts_line (start) &&
                 char_class (start) == ch_class)
         {
-            gtk_text_iter_backward_char (start);
+            gtk_text_iter_backward_cursor_position (start);
         }
 
         if (char_class (start) != ch_class)
-            gtk_text_iter_forward_char (start);
+            gtk_text_iter_forward_cursor_position (start);
 
         return gtk_text_iter_compare (start, end);
     }
