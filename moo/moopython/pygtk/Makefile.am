@@ -32,7 +32,9 @@ mooeditor.o: mooedit-pygtk.o
 CLEANFILES += moocommand.o mooplugin.o mooeditor.o
 
 mooutils_defs_files =		\
-	moofileview.defs
+	moofileview.defs	\
+	moopaned.defs
+
 moofileview.o: mooutils-pygtk.o
 	echo stamp > moofileview.o
 CLEANFILES += moofileview.o
