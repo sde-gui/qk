@@ -26,6 +26,7 @@
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moostock.h"
 #include <string.h>
 #include <errno.h>
 #ifdef HAVE_UNISTD_H
@@ -1192,7 +1193,7 @@ new_clicked (MooGladeXML *xml)
     store = GTK_LIST_STORE (gtk_tree_view_get_model (GTK_TREE_VIEW (treeview)));
 
     bookmark = _moo_bookmark_new ("New bookmark", NULL,
-                                  GTK_STOCK_DIRECTORY);
+                                  MOO_STOCK_FOLDER);
     gtk_list_store_append (store, &iter);
     set_bookmark (store, &iter, bookmark);
 
