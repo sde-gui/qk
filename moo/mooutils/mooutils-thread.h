@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_UTILS_WIN32_H__
-#define __MOO_UTILS_WIN32_H__
+#ifndef MOO_UTILS_WIN32_H
+#define MOO_UTILS_WIN32_H
 
 #include <glib.h>
 
@@ -43,4 +43,4 @@ void        _moo_message_async          (const char            *format,
 
 G_END_DECLS
 
-#endif /* __MOO_UTILS_WIN32_H__ */
+#endif /* MOO_UTILS_WIN32_H */

@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_UTILS_TREE_VIEW_H__
-#define __MOO_UTILS_TREE_VIEW_H__
+#ifndef MOO_UTILS_TREE_VIEW_H
+#define MOO_UTILS_TREE_VIEW_H
 
 #include <gtk/gtk.h>
 
@@ -99,4 +99,4 @@ void             _moo_combo_box_select_first        (GtkComboBox        *combo);
 
 G_END_DECLS
 
-#endif /* __MOO_UTILS_TREE_VIEW_H__ */
+#endif /* MOO_UTILS_TREE_VIEW_H */

@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_ACTION_PRIVATE_H__
-#define __MOO_ACTION_PRIVATE_H__
+#ifndef MOO_ACTION_PRIVATE_H
+#define MOO_ACTION_PRIVATE_H
 
 #include <mooutils/mooaction.h>
 #include <mooutils/mooclosure.h>
@@ -49,4 +49,4 @@ const char *_moo_action_get_default_accel   (gpointer            action);
 
 G_END_DECLS
 
-#endif /* __MOO_ACTION_PRIVATE_H__ */
+#endif /* MOO_ACTION_PRIVATE_H */

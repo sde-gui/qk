@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_HISTORY_COMBO_H__
-#define __MOO_HISTORY_COMBO_H__
+#ifndef MOO_HISTORY_COMBO_H
+#define MOO_HISTORY_COMBO_H
 
 #include <mooutils/moocombo.h>
 #include <mooutils/moohistorylist.h>
@@ -63,4 +63,4 @@ void            moo_history_combo_commit    (MooHistoryCombo    *combo);
 
 G_END_DECLS
 
-#endif /* __MOO_HISTORY_COMBO_H__ */
+#endif /* MOO_HISTORY_COMBO_H */

@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_MENU_ACTION_H__
-#define __MOO_MENU_ACTION_H__
+#ifndef MOO_MENU_ACTION_H
+#define MOO_MENU_ACTION_H
 
 #include <mooutils/mooaction.h>
 #include <mooutils/moomenumgr.h>
@@ -66,4 +66,4 @@ void        moo_menu_action_set_menu_data   (MooMenuAction  *action,
 
 G_END_DECLS
 
-#endif /* __MOO_MENU_ACTION_H__ */
+#endif /* MOO_MENU_ACTION_H */

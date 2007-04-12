@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_ACTION_BASE_PRIVATE_H__
-#define __MOO_ACTION_BASE_PRIVATE_H__
+#ifndef MOO_ACTION_BASE_PRIVATE_H
+#define MOO_ACTION_BASE_PRIVATE_H
 
 #include <mooutils/mooactionbase.h>
 
@@ -67,4 +67,4 @@ void        _moo_action_base_get_property   (GObject        *object,
 
 G_END_DECLS
 
-#endif /* __MOO_ACTION_BASE_PRIVATE_H__ */
+#endif /* MOO_ACTION_BASE_PRIVATE_H */

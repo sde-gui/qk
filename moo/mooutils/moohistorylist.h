@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_HISTORY_LIST_H__
-#define __MOO_HISTORY_LIST_H__
+#ifndef MOO_HISTORY_LIST_H
+#define MOO_HISTORY_LIST_H
 
 #include <gtk/gtktreemodel.h>
 #include <mooutils/moomenumgr.h>
@@ -129,4 +129,4 @@ void             moo_history_item_free              (MooHistoryItem *item);
 
 G_END_DECLS
 
-#endif /* __MOO_HISTORY_LIST_H__ */
+#endif /* MOO_HISTORY_LIST_H */

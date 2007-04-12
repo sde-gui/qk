@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_UTILS_DEBUG_H__
-#define __MOO_UTILS_DEBUG_H__
+#ifndef MOO_UTILS_DEBUG_H
+#define MOO_UTILS_DEBUG_H
 
 #include "config.h"
 #include <glib.h>
@@ -51,4 +51,4 @@ G_STMT_START {                                                  \
 
 G_END_DECLS
 
-#endif /* __MOO_UTILS_DEBUG_H__ */
+#endif /* MOO_UTILS_DEBUG_H */

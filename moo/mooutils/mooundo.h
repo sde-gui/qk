@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_UNDO_H__
-#define __MOO_UNDO_H__
+#ifndef MOO_UNDO_H
+#define MOO_UNDO_H
 
 #include <glib-object.h>
 
@@ -101,4 +101,4 @@ gboolean        moo_undo_stack_can_redo     (MooUndoStack       *stack);
 
 G_END_DECLS
 
-#endif /* __MOO_UNDO_H__ */
+#endif /* MOO_UNDO_H */

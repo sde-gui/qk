@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_ENCODINGS_H__
-#define __MOO_ENCODINGS_H__
+#ifndef MOO_ENCODINGS_H
+#define MOO_ENCODINGS_H
 
 #include <gtk/gtkwidget.h>
 
@@ -37,4 +37,4 @@ gboolean     _moo_encodings_equal           (const char *enc1,
 
 G_END_DECLS
 
-#endif /* __MOO_ENCODINGS_H__ */
+#endif /* MOO_ENCODINGS_H */

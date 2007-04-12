@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_ACCEL_PREFS_H__
-#define __MOO_ACCEL_PREFS_H__
+#ifndef MOO_ACCEL_PREFS_H
+#define MOO_ACCEL_PREFS_H
 
 #include <mooutils/mooactioncollection.h>
 
@@ -25,4 +25,4 @@ void    _moo_accel_prefs_dialog_run (MooActionCollection    *coll,
 
 G_END_DECLS
 
-#endif /* __MOO_ACCEL_PREFS_H__ */
+#endif /* MOO_ACCEL_PREFS_H */

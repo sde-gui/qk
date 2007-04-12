@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_REGEX_H__
-#define __MOO_REGEX_H__
+#ifndef MOO_REGEX_H
+#define MOO_REGEX_H
 
 #include <glib.h>
 
@@ -66,4 +66,4 @@ gchar       *moo_regex_fetch    (MooRegex               *regex,
 
 G_END_DECLS
 
-#endif /* __MOO_REGEX_H__ */
+#endif /* MOO_REGEX_H */

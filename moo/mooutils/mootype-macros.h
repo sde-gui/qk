@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_TYPE_MACROS_H__
-#define __MOO_TYPE_MACROS_H__
+#ifndef MOO_TYPE_MACROS_H
+#define MOO_TYPE_MACROS_H
 
 #include <glib-object.h>
 
@@ -74,4 +74,4 @@ type_name##_get_type (void)                                                     
 } /* closes type_name##_get_type() */
 
 
-#endif /* __MOO_TYPE_MACROS_H__ */
+#endif /* MOO_TYPE_MACROS_H */

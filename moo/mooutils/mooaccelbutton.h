@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_ACCEL_BUTTON_H__
-#define __MOO_ACCEL_BUTTON_H__
+#ifndef MOO_ACCEL_BUTTON_H
+#define MOO_ACCEL_BUTTON_H
 
 #include <gtk/gtkbutton.h>
 
@@ -54,4 +54,4 @@ gboolean     _moo_accel_button_set_accel        (MooAccelButton     *button,
 G_END_DECLS
 
 
-#endif /* __MOO_ACCEL_BUTTON_H__ */
+#endif /* MOO_ACCEL_BUTTON_H */

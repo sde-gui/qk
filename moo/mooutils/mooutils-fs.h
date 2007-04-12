@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_UTILS_FS_H__
-#define __MOO_UTILS_FS_H__
+#ifndef MOO_UTILS_FS_H
+#define MOO_UTILS_FS_H
 
 #include <glib.h>
 
@@ -86,4 +86,4 @@ gboolean        _moo_glob_match_simple      (const char *pattern,
 
 G_END_DECLS
 
-#endif /* __MOO_UTILS_FS_H__ */
+#endif /* MOO_UTILS_FS_H */

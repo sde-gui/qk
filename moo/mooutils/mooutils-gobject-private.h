@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_UTILS_GOBJECT_PRIVATE_H__
-#define __MOO_UTILS_GOBJECT_PRIVATE_H__
+#ifndef MOO_UTILS_GOBJECT_PRIVATE_H
+#define MOO_UTILS_GOBJECT_PRIVATE_H
 
 #include <mooutils/mooutils-gobject.h>
 
@@ -84,4 +84,4 @@ GType    _moo_data_get_type         (void) G_GNUC_CONST;
 
 G_END_DECLS
 
-#endif /* __MOO_UTILS_GOBJECT_PRIVATE_H__ */
+#endif /* MOO_UTILS_GOBJECT_PRIVATE_H */

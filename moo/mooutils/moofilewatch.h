@@ -14,8 +14,8 @@
 /* Files and directory monitor. Uses FAM if present, or stat() otherwise.
    On win32 does FindFirstChangeNotification and ReadDirectoryChangesW. */
 
-#ifndef __MOO_FILE_WATCH_H__
-#define __MOO_FILE_WATCH_H__
+#ifndef MOO_FILE_WATCH_H
+#define MOO_FILE_WATCH_H
 
 #include <glib-object.h>
 
@@ -76,4 +76,4 @@ void            moo_file_watch_cancel_monitor       (MooFileWatch   *watch,
 
 G_END_DECLS
 
-#endif /* __MOO_FILE_WATCH_H__ */
+#endif /* MOO_FILE_WATCH_H */

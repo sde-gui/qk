@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_COMBO_H__
-#define __MOO_COMBO_H__
+#ifndef MOO_COMBO_H
+#define MOO_COMBO_H
 
 #include <gtk/gtktable.h>
 #include <gtk/gtktreemodel.h>
@@ -117,4 +117,4 @@ void        moo_combo_entry_set_activates_default   (MooCombo       *combo,
 
 G_END_DECLS
 
-#endif /* __MOO_COMBO_H__ */
+#endif /* MOO_COMBO_H */

@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_GLADE_H__
-#define __MOO_GLADE_H__
+#ifndef MOO_GLADE_H
+#define MOO_GLADE_H
 
 #include <gtk/gtkwidget.h>
 
@@ -118,4 +118,4 @@ GtkWidget   *moo_glade_xml_get_root         (MooGladeXML    *xml);
 
 G_END_DECLS
 
-#endif /* __MOO_GLADE_H__ */
+#endif /* MOO_GLADE_H */

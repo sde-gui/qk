@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_UI_XML_H__
-#define __MOO_UI_XML_H__
+#ifndef MOO_UI_XML_H
+#define MOO_UI_XML_H
 
 #include <mooutils/moomarkup.h>
 #include <mooutils/mooactioncollection.h>
@@ -184,5 +184,4 @@ void        moo_ui_xml_remove_node          (MooUIXML       *xml,
 
 G_END_DECLS
 
-#endif /* __MOO_UI_XML_H__ */
-
+#endif /* MOO_UI_XML_H */

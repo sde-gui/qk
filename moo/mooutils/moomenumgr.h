@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_MENU_MGR_H__
-#define __MOO_MENU_MGR_H__
+#ifndef MOO_MENU_MGR_H
+#define MOO_MENU_MGR_H
 
 #include <gtk/gtkwidget.h>
 
@@ -110,4 +110,4 @@ void        moo_menu_mgr_set_show_tooltips  (MooMenuMgr         *mgr,
 
 G_END_DECLS
 
-#endif /* __MOO_MENU_MGR_H__ */
+#endif /* MOO_MENU_MGR_H */

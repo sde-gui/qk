@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_SPAWN_H__
-#define __MOO_SPAWN_H__
+#ifndef MOO_SPAWN_H
+#define MOO_SPAWN_H
 
 #include <glib-object.h>
 
@@ -83,4 +83,4 @@ char      **_moo_env_add            (char      **add);
 
 G_END_DECLS
 
-#endif /* __MOO_SPAWN_H__ */
+#endif /* MOO_SPAWN_H */

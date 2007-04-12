@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_PREFS_DIALOG_PAGE_H__
-#define __MOO_PREFS_DIALOG_PAGE_H__
+#ifndef MOO_PREFS_DIALOG_PAGE_H
+#define MOO_PREFS_DIALOG_PAGE_H
 
 #include <gtk/gtk.h>
 #include <mooutils/mooglade.h>
@@ -76,5 +76,4 @@ void        moo_prefs_dialog_page_bind_setting  (MooPrefsDialogPage *page,
 
 G_END_DECLS
 
-#endif /* __MOO_PREFS_DIALOG_PAGE_H__ */
-
+#endif /* MOO_PREFS_DIALOG_PAGE_H */

@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_UTILS_GOBJECT_H__
-#define __MOO_UTILS_GOBJECT_H__
+#ifndef MOO_UTILS_GOBJECT_H
+#define MOO_UTILS_GOBJECT_H
 
 #include <gtk/gtkwidget.h>
 #include <mooutils/mooclosure.h>
@@ -174,4 +174,4 @@ gpointer _moo_data_get_ptr          (MooData        *data,
 
 G_END_DECLS
 
-#endif /* __MOO_UTILS_GOBJECT_H__ */
+#endif /* MOO_UTILS_GOBJECT_H */

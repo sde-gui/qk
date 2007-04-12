@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_ACTION_FACTORY_H__
-#define __MOO_ACTION_FACTORY_H__
+#ifndef MOO_ACTION_FACTORY_H
+#define MOO_ACTION_FACTORY_H
 
 #include <gtk/gtkactiongroup.h>
 
@@ -81,4 +81,4 @@ GtkAction          *moo_action_group_add_action     (GtkActionGroup     *group,
 
 G_END_DECLS
 
-#endif /* __MOO_ACTION_FACTORY_H__ */
+#endif /* MOO_ACTION_FACTORY_H */

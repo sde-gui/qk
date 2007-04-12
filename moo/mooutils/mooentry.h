@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_ENTRY_H__
-#define __MOO_ENTRY_H__
+#ifndef MOO_ENTRY_H
+#define MOO_ENTRY_H
 
 #include <gtk/gtkentry.h>
 
@@ -62,4 +62,4 @@ void        moo_entry_set_use_special_chars_menu(MooEntry   *entry,
 
 G_END_DECLS
 
-#endif /* __MOO_ENTRY_H__ */
+#endif /* MOO_ENTRY_H */

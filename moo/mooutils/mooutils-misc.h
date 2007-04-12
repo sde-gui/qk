@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_UTILS_MISC_H__
-#define __MOO_UTILS_MISC_H__
+#ifndef MOO_UTILS_MISC_H
+#define MOO_UTILS_MISC_H
 
 #include <gtk/gtk.h>
 #include <string.h>
@@ -185,4 +185,4 @@ G_END_DECLS
 
 #endif /* G_OS_WIN32 */
 
-#endif /* __MOO_UTILS_MISC_H__ */
+#endif /* MOO_UTILS_MISC_H */

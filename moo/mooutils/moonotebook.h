@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_NOTEBOOK_H__
-#define __MOO_NOTEBOOK_H__
+#ifndef MOO_NOTEBOOK_H
+#define MOO_NOTEBOOK_H
 
 #include <gtk/gtkmenu.h>
 #include <gtk/gtknotebook.h>
@@ -122,4 +122,4 @@ void        moo_notebook_enable_reordering          (MooNotebook    *notebook,
 
 G_END_DECLS
 
-#endif /* __MOO_NOTEBOOK_H__ */
+#endif /* MOO_NOTEBOOK_H */

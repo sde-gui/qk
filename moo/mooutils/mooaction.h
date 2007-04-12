@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_ACTION_H__
-#define __MOO_ACTION_H__
+#ifndef MOO_ACTION_H
+#define MOO_ACTION_H
 
 #include <gtk/gtkradioaction.h>
 
@@ -87,4 +87,4 @@ GType           moo_radio_action_get_type   (void) G_GNUC_CONST;
 
 G_END_DECLS
 
-#endif /* __MOO_ACTION_H__ */
+#endif /* MOO_ACTION_H */

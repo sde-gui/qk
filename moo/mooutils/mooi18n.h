@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_I18N_H__
-#define __MOO_I18N_H__
+#ifndef MOO_I18N_H
+#define MOO_I18N_H
 
 #include <config.h>
 #include <glib/gstrfuncs.h>
@@ -60,4 +60,4 @@ const char *moo_gettext (const char *string);
 
 G_END_DECLS
 
-#endif /* __MOO_I18N_H__ */
+#endif /* MOO_I18N_H */

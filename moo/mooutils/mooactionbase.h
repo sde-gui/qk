@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_ACTION_BASE_H__
-#define __MOO_ACTION_BASE_H__
+#ifndef MOO_ACTION_BASE_H
+#define MOO_ACTION_BASE_H
 
 #include <gtk/gtkwidget.h>
 
@@ -42,4 +42,4 @@ GType   moo_action_base_get_type    (void) G_GNUC_CONST;
 
 G_END_DECLS
 
-#endif /* __MOO_ACTION_BASE_H__ */
+#endif /* MOO_ACTION_BASE_H */

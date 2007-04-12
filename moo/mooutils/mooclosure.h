@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_CLOSURE_H__
-#define __MOO_CLOSURE_H__
+#ifndef MOO_CLOSURE_H
+#define MOO_CLOSURE_H
 
 #include <glib-object.h>
 
@@ -78,5 +78,4 @@ MooClosure *_moo_closure_new_simple         (gpointer    object,
 
 G_END_DECLS
 
-#endif /* __MOO_CLOSURE_H__ */
-/* kate: strip on; indent-width 4; */
+#endif /* MOO_CLOSURE_H */

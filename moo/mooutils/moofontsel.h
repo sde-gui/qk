@@ -32,8 +32,8 @@
  * gtkfontsel.* copied and modified to allow choosing monospace fonts
  */
 
-#ifndef __MOO_FONTSEL_H__
-#define __MOO_FONTSEL_H__
+#ifndef MOO_FONTSEL_H
+#define MOO_FONTSEL_H
 
 
 #include <gdk/gdk.h>
@@ -258,4 +258,4 @@ void                  moo_font_button_set_filter_visible (MooFontButton *font_bu
 G_END_DECLS
 
 
-#endif /* __MOO_FONTSEL_H__ */
+#endif /* MOO_FONTSEL_H */

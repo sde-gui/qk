@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_FILE_DIALOG_H__
-#define __MOO_FILE_DIALOG_H__
+#ifndef MOO_FILE_DIALOG_H
+#define MOO_FILE_DIALOG_H
 
 #include <gtk/gtkwidget.h>
 #include <mooutils/moofiltermgr.h>
@@ -92,4 +92,4 @@ const char     *moo_file_dialogp                (GtkWidget      *parent,
 
 G_END_DECLS
 
-#endif /* MOOUTILS_DIALOGS_H */
+#endif /* MOO_FILE_DIALOG_H */

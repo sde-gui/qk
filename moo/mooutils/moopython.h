@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_PYTHON_H__
-#define __MOO_PYTHON_H__
+#ifndef MOO_PYTHON_H
+#define MOO_PYTHON_H
 
 #include <glib.h>
 
@@ -141,4 +141,4 @@ void         moo_Py_DECREF          (MooPyObject    *obj);
 
 G_END_DECLS
 
-#endif /* __MOO_PYTHON_H__ */
+#endif /* MOO_PYTHON_H */

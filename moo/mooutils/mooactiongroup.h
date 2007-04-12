@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_ACTION_GROUP_H__
-#define __MOO_ACTION_GROUP_H__
+#ifndef MOO_ACTION_GROUP_H
+#define MOO_ACTION_GROUP_H
 
 #include <mooutils/mooactioncollection.h>
 
@@ -57,4 +57,4 @@ void                 _moo_action_group_set_collection   (MooActionGroup         
 
 G_END_DECLS
 
-#endif /* __MOO_ACTION_GROUP_H__ */
+#endif /* MOO_ACTION_GROUP_H */
