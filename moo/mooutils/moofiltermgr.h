@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOO_FILTER_MGR
-#define MOO_FILTER_MGR
+#ifndef MOO_FILTER_MGR_H
+#define MOO_FILTER_MGR_H
 
 #include <gtk/gtkfilefilter.h>
 #include <gtk/gtkfilechooser.h>
@@ -80,4 +80,4 @@ GtkFileFilter   *moo_filter_mgr_new_builtin_filter  (MooFilterMgr   *mgr,
 
 G_END_DECLS
 
-#endif /* MOO_FILTER_MGR */
+#endif /* MOO_FILTER_MGR_H */
