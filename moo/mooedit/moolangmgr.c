@@ -233,6 +233,8 @@ _moo_lang_mgr_find_lang (MooLangMgr *mgr,
 
     if (!g_ascii_strcasecmp (name, "c++"))
         name = "cpp";
+    else if (!g_ascii_strcasecmp (name, "nxml"))
+        name = "xml";
 
     read_langs (mgr);
     id = _moo_lang_id_from_name (name);
