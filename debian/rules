@@ -26,8 +26,7 @@ endif
 
 config.status: configure
 	dh_testdir
-	./configure --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr
-
+	./configure --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr --enable-python
 
 build: build-stamp
 
@@ -50,7 +49,6 @@ ifneq "$(wildcard /usr/share/misc/config.guess)" ""
 	cp -f /usr/share/misc/config.guess config.guess
 endif
 
-
 	dh_clean
 
 install: build
@@ -61,7 +59,14 @@ install: build
 
 	# Add here commands to install the package into debian/medit.
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/medit
-
+	rm -f $(CURDIR)/debian/medit/usr/share/icons/hicolor/icon-theme.cache
+	rm -f $(CURDIR)/debian/medit/usr/share/mime/aliases
+	rm -f $(CURDIR)/debian/medit/usr/share/mime/globs
+	rm -f $(CURDIR)/debian/medit/usr/share/mime/magic
+	rm -f $(CURDIR)/debian/medit/usr/share/mime/mime.cache
+	rm -f $(CURDIR)/debian/medit/usr/share/mime/XMLnamespaces
+	rm -f $(CURDIR)/debian/medit/usr/share/mime/subclasses
+	rm -fr $(CURDIR)/debian/medit/usr/share/mime/text/
 
 # Build architecture-independent files here.
 binary-indep: build install
@@ -73,24 +78,15 @@ binary-arch: build install
 	dh_testroot
 # 	dh_installchangelogs ChangeLog
 	dh_installdocs
-	dh_installexamples
 	dh_install
 	dh_installmenu
-#	dh_installdebconf
-#	dh_installlogrotate
-#	dh_installemacsen
-#	dh_installpam
-#	dh_installmime
-#	dh_installinit
-#	dh_installcron
-#	dh_installinfo
+	dh_installmime
 	dh_installman
 	dh_link
 	dh_strip
 	dh_compress
 	dh_fixperms
-#	dh_perl
-	dh_python
+	dh_python /usr/lib/moo
 	dh_makeshlibs
 	dh_installdeb
 	dh_shlibdeps

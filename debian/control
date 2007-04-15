@@ -2,11 +2,11 @@ Source: medit
 Section: unknown
 Priority: optional
 Maintainer: Yevgen Muntyan <muntyan@tamu.edu>
-Build-Depends: debhelper (>= 4.0.0), autotools-dev, libgtk2.0-dev, libxml2-dev, python-gtk2-dev
+Build-Depends: debhelper (>= 4.0.0), autotools-dev, libgtk2.0-dev, libxml2-dev, python-gtk2-dev, libpcre3 (>= 6.7)
 Standards-Version: 3.6.2
 
 Package: medit
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, libpcre3 (>= 6.7)
 Description: Text editor
  medit is a text editor.
