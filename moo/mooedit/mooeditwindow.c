@@ -2726,22 +2726,22 @@ load_pane_params (const char *pane_id)
 {
     MooMarkupNode *node;
     PaneParams *params;
+    GdkRectangle rect;
 
     node = get_pane_element (pane_id, FALSE);
 
     if (!node)
         return NULL;
 
-    params = pane_params_new ();
-    params->params = moo_pane_params_new ();
+    rect.x = moo_markup_get_int_prop (node, PROP_PANE_WINDOW_X, 0);
+    rect.y = moo_markup_get_int_prop (node, PROP_PANE_WINDOW_Y, 0);
+    rect.width = moo_markup_get_int_prop (node, PROP_PANE_WINDOW_WIDTH, 0);
+    rect.height = moo_markup_get_int_prop (node, PROP_PANE_WINDOW_HEIGHT, 0);
 
-    params->params->window_position.x = moo_markup_get_int_prop (node, PROP_PANE_WINDOW_X, 0);
-    params->params->window_position.y = moo_markup_get_int_prop (node, PROP_PANE_WINDOW_Y, 0);
-    params->params->window_position.width = moo_markup_get_int_prop (node, PROP_PANE_WINDOW_WIDTH, 0);
-    params->params->window_position.height = moo_markup_get_int_prop (node, PROP_PANE_WINDOW_HEIGHT, 0);
-    params->params->detached = moo_markup_get_bool_prop (node, PROP_PANE_WINDOW_DETACHED, FALSE);
-    params->params->maximized = moo_markup_get_bool_prop (node, PROP_PANE_WINDOW_MAXIMIZED, FALSE);
-    params->params->keep_on_top = moo_markup_get_bool_prop (node, PROP_PANE_WINDOW_KEEP_ON_TOP, FALSE);
+    params = pane_params_new ();
+    params->params = moo_pane_params_new (&rect, moo_markup_get_bool_prop (node, PROP_PANE_WINDOW_DETACHED, FALSE),
+                                          moo_markup_get_bool_prop (node, PROP_PANE_WINDOW_MAXIMIZED, FALSE),
+                                          moo_markup_get_bool_prop (node, PROP_PANE_WINDOW_KEEP_ON_TOP, FALSE));
 
     params->position = moo_markup_get_int_prop (node, PROP_PANE_POSITION, -1);
 

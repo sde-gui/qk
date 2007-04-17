@@ -3,7 +3,8 @@
 headers
 #include <Python.h>
 #define NO_IMPORT_PYGOBJECT
-#include "pygobject.h"
+#include <pygobject.h>
+#include <pygtk/pygtk.h>
 #include <moo.h>
 #include "mooutils/mooi18n.h"
 #include "moopython/moopython-utils.h"
