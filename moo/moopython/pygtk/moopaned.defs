@@ -142,6 +142,24 @@
   )
 )
 
+(define-method attach_pane
+  (of-object "MooBigPaned")
+  (c-name "moo_big_paned_attach_pane")
+  (return-type "none")
+  (parameters
+    '("GtkWidget*" "pane_widget")
+  )
+)
+
+(define-method detach_pane
+  (of-object "MooBigPaned")
+  (c-name "moo_big_paned_detach_pane")
+  (return-type "none")
+  (parameters
+    '("GtkWidget*" "pane_widget")
+  )
+)
+
 (define-method get_pane_params
   (of-object "MooBigPaned")
   (c-name "moo_big_paned_get_pane_params")
