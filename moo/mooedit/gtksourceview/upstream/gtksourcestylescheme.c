@@ -339,14 +339,14 @@ set_text_style (GtkWidget      *widget,
 {
 	GdkColor *color;
 
-	if (STYLE_HAS_BACKGROUND (style))
+	if (style != NULL && STYLE_HAS_BACKGROUND (style))
 		color = &style->background;
 	else
 		color = NULL;
 
 	gtk_widget_modify_base (widget, state, color);
 
-	if (STYLE_HAS_FOREGROUND (style))
+	if (style != NULL && STYLE_HAS_FOREGROUND (style))
 		color = &style->foreground;
 	else
 		color = NULL;
@@ -360,7 +360,7 @@ set_cursor_color (GtkWidget      *widget,
 {
 	GdkColor *color;
 
-	if (STYLE_HAS_FOREGROUND (style))
+	if (style != NULL && STYLE_HAS_FOREGROUND (style))
 		color = &style->foreground;
 	else
 		color = &widget->style->text[GTK_STATE_NORMAL];
@@ -370,7 +370,7 @@ set_cursor_color (GtkWidget      *widget,
 
 /**
  * _gtk_source_style_scheme_apply:
- * @scheme: a #GtkSourceStyleScheme.
+ * @scheme: a #GtkSourceStyleScheme or NULL.
  * @widget: a #GtkWidget to apply styles to.
  *
  * Sets text colors from @scheme in the @widget.
@@ -381,27 +381,39 @@ void
 _gtk_source_style_scheme_apply (GtkSourceStyleScheme *scheme,
 				GtkWidget            *widget)
 {
-	GtkSourceStyle *style;
-
-	g_return_if_fail (GTK_IS_SOURCE_STYLE_SCHEME (scheme));
+	g_return_if_fail (!scheme || GTK_IS_SOURCE_STYLE_SCHEME (scheme));
 	g_return_if_fail (GTK_IS_WIDGET (widget));
 
-	gtk_widget_ensure_style (widget);
+	if (scheme != NULL)
+	{
+		GtkSourceStyle *style;
 
-	style = gtk_source_style_scheme_get_style (scheme, STYLE_TEXT);
-	set_text_style (widget, style, GTK_STATE_NORMAL);
-	set_text_style (widget, style, GTK_STATE_ACTIVE);
-	set_text_style (widget, style, GTK_STATE_PRELIGHT);
-	set_text_style (widget, style, GTK_STATE_INSENSITIVE);
-	gtk_source_style_free (style);
+		gtk_widget_ensure_style (widget);
 
-	style = gtk_source_style_scheme_get_style (scheme, STYLE_SELECTED);
-	set_text_style (widget, style, GTK_STATE_SELECTED);
-	gtk_source_style_free (style);
+		style = gtk_source_style_scheme_get_style (scheme, STYLE_TEXT);
+		set_text_style (widget, style, GTK_STATE_NORMAL);
+		set_text_style (widget, style, GTK_STATE_ACTIVE);
+		set_text_style (widget, style, GTK_STATE_PRELIGHT);
+		set_text_style (widget, style, GTK_STATE_INSENSITIVE);
+		gtk_source_style_free (style);
 
-	style = gtk_source_style_scheme_get_style (scheme, STYLE_CURSOR);
-	set_cursor_color (widget, style);
-	gtk_source_style_free (style);
+		style = gtk_source_style_scheme_get_style (scheme, STYLE_SELECTED);
+		set_text_style (widget, style, GTK_STATE_SELECTED);
+		gtk_source_style_free (style);
+
+		style = gtk_source_style_scheme_get_style (scheme, STYLE_CURSOR);
+		set_cursor_color (widget, style);
+		gtk_source_style_free (style);
+	}
+	else
+	{
+		set_text_style (widget, NULL, GTK_STATE_NORMAL);
+		set_text_style (widget, NULL, GTK_STATE_ACTIVE);
+		set_text_style (widget, NULL, GTK_STATE_PRELIGHT);
+		set_text_style (widget, NULL, GTK_STATE_INSENSITIVE);
+		set_text_style (widget, NULL, GTK_STATE_SELECTED);
+		set_cursor_color (widget, NULL);
+	}
 }
 
 /* --- PARSER ---------------------------------------------------------------- */
