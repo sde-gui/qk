@@ -1,5 +1,4 @@
-;; kate: lang scheme; strip on;
-;; hand-edited
+;; -*- scheme -*-
 
 ; object definitions ...
 (define-object EditWindow

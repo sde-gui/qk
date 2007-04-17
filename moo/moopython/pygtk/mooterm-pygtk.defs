@@ -1,5 +1,4 @@
 ;; -*- scheme -*-
-;; Hand-edited
 
 ; object definitions ...
 (define-object Term

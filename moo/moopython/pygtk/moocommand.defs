@@ -1,4 +1,4 @@
-;; -*- Mode: scheme; strip on; -*-
+;; -*- scheme -*-
 
 (define-object CommandContext
   (in-module "Moo")

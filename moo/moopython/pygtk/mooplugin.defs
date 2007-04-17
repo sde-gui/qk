@@ -1,3 +1,5 @@
+;; -*- scheme -*-
+
 (define-object Plugin
   (in-module "Moo")
   (parent "GObject")

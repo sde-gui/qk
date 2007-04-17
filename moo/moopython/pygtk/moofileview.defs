@@ -1,3 +1,5 @@
+;; -*- scheme -*-
+
 (define-object FileView
   (in-module "Moo")
   (parent "GtkVBox")

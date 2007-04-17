@@ -1,5 +1,4 @@
-;; -*- Mode: scheme; strip on; -*-
-;; hand-edited
+;; -*- scheme -*-
 
 (define-function editor_instance
   (c-name "moo_editor_instance")

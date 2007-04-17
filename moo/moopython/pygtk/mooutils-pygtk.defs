@@ -1,5 +1,4 @@
-;; kate: lang scheme; strip on;
-;; Hand-edited
+;; -*- scheme -*-
 
 (define-object Combo
   (in-module "Moo")
