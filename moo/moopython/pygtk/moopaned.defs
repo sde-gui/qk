@@ -53,6 +53,17 @@
   (return-type "GtkWidget*")
 )
 
+(define-method find_pane
+  (of-object "MooBigPaned")
+  (c-name "moo_big_paned_find_pane")
+  (return-type "gboolean")
+  (parameters
+    '("GtkWidget*" "pane_widget")
+    '("MooPaned**" "child_paned")
+    '("int*" "pane_index")
+  )
+)
+
 (define-method set_pane_order
   (of-object "MooBigPaned")
   (c-name "moo_big_paned_set_pane_order")

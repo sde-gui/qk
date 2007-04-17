@@ -37,6 +37,8 @@ CLEANFILES += moocommand.o mooplugin.o mooeditor.o moopaned.o \
 mooutils_defs_files =		\
 	moofileview.defs	\
 	moopaned.defs
+mooutils_override_files =	\
+	moopaned.override
 
 moofileview.o: mooutils-pygtk.o
 	echo stamp > moofileview.o
@@ -115,7 +117,7 @@ else
 codegen = $(PYTHON) $(PYGTK_CODEGEN_DIR)/codegen.py $(PYGTK_CODEGEN_ARGS)
 endif
 
-mooutils-pygtk.c: mooutils-pygtk.defs mooutils-pygtk.override $(mooutils_defs_files) $(codegen_files)
+mooutils-pygtk.c: mooutils-pygtk.defs mooutils-pygtk.override $(mooutils_override_files) $(mooutils_defs_files) $(codegen_files)
 	$(codegen) --prefix _moo_utils \
 		--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 		--register $(PYGTK_DEFS_DIR)/gdk-types.defs \

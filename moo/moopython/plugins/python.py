@@ -63,9 +63,13 @@ class Plugin(moo.edit.Plugin):
         swin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
         window.add(swin)
 
+        dic = {}
+        dic['editor'] = moo.edit.editor_instance()
+        dic['window'] = moo.edit.editor_instance().get_active_window()
+        dic['doc'] = moo.edit.editor_instance().get_active_doc()
         console_type = pyconsole.ConsoleType(moo.edit.TextView)
         console = console_type(use_rlcompleter=False, start_script=
-                               "import moo\nimport gtk\n")
+                               "import moo\nimport gtk\n", locals=dic)
         console.set_property("highlight-current-line", False)
         editor = moo.edit.editor_instance()
         console.set_lang_by_id("python-console")

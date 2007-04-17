@@ -40,6 +40,8 @@ import gtk.AccelGroup as PyGtkAccelGroup_Type
 ignore-glob
   *_get_type
 %%
+include moopaned.override
+%%
 override moo_window_class_add_action varargs
 static GtkAction*
 py_action_factory_func (MooWindow  *window,
