@@ -1,3 +1,5 @@
+/**/
+%%
 override moo_big_paned_find_pane kwargs
 static PyObject *
 _wrap_moo_big_paned_find_pane (PyGObject *self, PyObject *args, PyObject *kwargs)
@@ -15,7 +17,10 @@ _wrap_moo_big_paned_find_pane (PyGObject *self, PyObject *args, PyObject *kwargs
 
     if (!moo_big_paned_find_pane (MOO_BIG_PANED (self->obj), GTK_WIDGET (widget->obj),
                                   &child, &index))
-        return_None;
+    {
+        Py_INCREF (Py_None);
+        return Py_None;
+    }
 
     ret = PyTuple_New (2);
     PyTuple_SET_ITEM (ret, 0, pygobject_new (G_OBJECT (child)));
@@ -23,3 +28,4 @@ _wrap_moo_big_paned_find_pane (PyGObject *self, PyObject *args, PyObject *kwargs
 
     return ret;
 }
+%%
