@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-04-11 15:48-0500\n"
+"POT-Creation-Date: 2007-04-18 11:03-0500\n"
 "PO-Revision-Date: 2007-04-11 02:15+0100\n"
 "Last-Translator: Chaosye <chao-7410@163.com>\n"
 "Language-Team: \n"
@@ -1011,12 +1011,12 @@ msgstr "创建命令"
 msgid "encodings_list"
 msgstr ""
 
-#: ../moo/mooedit/mooeditfileops.c:1217
+#: ../moo/mooedit/mooeditfileops.c:1223
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:531
 msgid "Untitled"
 msgstr ""
 
-#: ../moo/mooedit/mooeditfileops.c:1219
+#: ../moo/mooedit/mooeditfileops.c:1225
 #, c-format
 msgid "Untitled %d"
 msgstr ""
