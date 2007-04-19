@@ -3654,6 +3654,7 @@ create_pane_window (MooPaned       *paned,
     int height = -1;
     GtkWidget *frame;
     GtkWindow *window;
+    const char *title;
 
     if (pane->window)
         return;
@@ -3662,9 +3663,12 @@ create_pane_window (MooPaned       *paned,
     window = GTK_WINDOW (pane->window);
 
     if (pane->label->window_title)
-        gtk_window_set_title (window, pane->label->window_title);
-    else if (pane->label->label)
-        gtk_window_set_title (window, pane->label->label);
+        title = pane->label->window_title;
+    else
+        title = pane->label->label;
+
+    if (title)
+        gtk_window_set_title (window, title);
 
     if (pane->label->icon_pixbuf)
         gtk_window_set_icon (window, pane->label->icon_pixbuf);
