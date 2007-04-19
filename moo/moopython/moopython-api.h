@@ -479,9 +479,16 @@ moo_python_api_init (void)
         _moo_py_init_print_funcs ();
     }
 
-    api.py_none = (MooPyObject*) Py_None;
+    api.py_none = (gpointer) Py_None;
+
+#ifndef MOO_DEBUG
     api.py_true = (MooPyObject*) Py_True;
     api.py_false = (MooPyObject*) Py_False;
+#else
+    /* avoid strict aliasing warnings */
+    api.py_true = (gpointer) &(_Py_TrueStruct);
+    api.py_false = (gpointer) &(_Py_ZeroStruct);
+#endif
 
     return TRUE;
 }

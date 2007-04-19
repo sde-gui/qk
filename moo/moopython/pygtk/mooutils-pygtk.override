@@ -739,6 +739,7 @@ _wrap_moo_bind_sensitive (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject
     static char *kwlist[] = { (char*) "toggle_btn", (char*) "dependent", (char*) "invert", NULL };
     PyGObject *toggle_btn, *dependent;
     int invert = FALSE;
+    GtkWidget *widget;
 
     if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "O!O!|i:moo_bind_sensitive", kwlist,
                                       &PyGtkWidget_Type, &toggle_btn,
@@ -746,9 +747,8 @@ _wrap_moo_bind_sensitive (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject
                                       &invert))
         return NULL;
 
-    moo_bind_sensitive (GTK_WIDGET (toggle_btn->obj),
-                        (GtkWidget**) &dependent->obj, 1,
-                        invert);
+    widget = GTK_WIDGET (dependent->obj);
+    moo_bind_sensitive (GTK_WIDGET (toggle_btn->obj), &widget, 1, invert);
 
     return_None;
 }
