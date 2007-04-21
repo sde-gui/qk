@@ -48,8 +48,8 @@ static GtkSourceLanguage *process_language_node 		(xmlTextReaderPtr 		 reader,
 
 
 GtkSourceLanguage *
-_gtk_source_language_new_from_file (const gchar			*filename,
-				    GtkSourceLanguagesManager	*lm)
+_gtk_source_language_new_from_file (const gchar              *filename,
+				    GtkSourceLanguageManager *lm)
 {
 	GtkSourceLanguage *lang = NULL;
 	xmlTextReaderPtr reader = NULL;
@@ -107,7 +107,7 @@ _gtk_source_language_new_from_file (const gchar			*filename,
     	}
 
 	if (lang != NULL)
-		lang->priv->languages_manager = lm;
+		lang->priv->language_manager = lm;
 
 	return lang;
 }
@@ -451,18 +451,18 @@ gtk_source_language_get_property (GtkSourceLanguage *language,
 }
 
 /**
- * _gtk_source_language_get_languages_manager:
+ * _gtk_source_language_get_language_manager:
  * @language: a #GtkSourceLanguage.
  *
- * Returns: #GtkSourceLanguagesManager for @language.
+ * Returns: #GtkSourceLanguageManager for @language.
  **/
-GtkSourceLanguagesManager *
-_gtk_source_language_get_languages_manager (GtkSourceLanguage *language)
+GtkSourceLanguageManager *
+_gtk_source_language_get_language_manager (GtkSourceLanguage *language)
 {
 	g_return_val_if_fail (GTK_IS_SOURCE_LANGUAGE (language), NULL);
 	g_return_val_if_fail (language->priv->id != NULL, NULL);
 
-	return language->priv->languages_manager;
+	return language->priv->language_manager;
 }
 
 /* Highlighting engine creation ------------------------------------------ */

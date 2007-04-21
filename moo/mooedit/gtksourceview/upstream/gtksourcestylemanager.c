@@ -333,7 +333,7 @@ gtk_source_style_manager_get_search_path (GtkSourceStyleManager	*mgr,
 		const gchar * const *xdg_dirs;
 
 		mgr->priv->dirs = g_slist_prepend (NULL,
-						   g_build_filename (g_get_user_config_dir (),
+						   g_build_filename (g_get_user_data_dir (),
 								     SOURCEVIEW_DIR,
 								     STYLES_DIR,
 								     NULL));

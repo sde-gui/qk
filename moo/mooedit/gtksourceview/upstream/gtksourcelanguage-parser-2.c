@@ -40,7 +40,6 @@
 #include "gtksourceview-i18n.h"
 #include "gtksourcebuffer.h"
 #include "gtksourcelanguage.h"
-#include "gtksourcelanguagesmanager.h"
 #include "gtksourcelanguage-private.h"
 #include "gtksourcecontextengine.h"
 #include <eggregex.h>
@@ -508,7 +507,7 @@ add_ref (ParserState               *parser_state,
 	gchar *ref_id;
 	gchar *lang_id;
 
-	GtkSourceLanguagesManager *lm;
+	GtkSourceLanguageManager *lm;
 	GtkSourceLanguage *imported_language;
 
 	GError *tmp_error = NULL;
@@ -520,8 +519,8 @@ add_ref (ParserState               *parser_state,
 	{
 		if (!lang_id_is_already_loaded (parser_state, lang_id))
 		{
-			lm = _gtk_source_language_get_languages_manager (parser_state->language);
-			imported_language = gtk_source_languages_manager_get_language_by_id (lm, lang_id);
+			lm = _gtk_source_language_get_language_manager (parser_state->language);
+			imported_language = gtk_source_language_manager_get_language_by_id (lm, lang_id);
 
 			if (imported_language == NULL)
 			{
@@ -1306,14 +1305,14 @@ parse_language_with_id (ParserState *parser_state,
 		gchar *lang_id,
 		GError **error)
 {
-	GtkSourceLanguagesManager *lm;
+	GtkSourceLanguageManager *lm;
 	GtkSourceLanguage *imported_language;
 	GError *tmp_error = NULL;
 
 	g_return_if_fail (error != NULL && *error == NULL);
 
-	lm = _gtk_source_language_get_languages_manager (parser_state->language);
-	imported_language = gtk_source_languages_manager_get_language_by_id (lm, lang_id);
+	lm = _gtk_source_language_get_language_manager (parser_state->language);
+	imported_language = gtk_source_language_manager_get_language_by_id (lm, lang_id);
 
 	if (imported_language == NULL)
 	{
@@ -1585,7 +1584,7 @@ file_parse (gchar                     *filename,
 	int ret;
 	int fd = -1;
 	GError *tmp_error = NULL;
-	GtkSourceLanguagesManager *lm;
+	GtkSourceLanguageManager *lm;
 	const gchar *rng_lang_schema;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -1609,8 +1608,8 @@ file_parse (gchar                     *filename,
 		goto error;
 	}
 
-	lm = _gtk_source_language_get_languages_manager (language);
-	rng_lang_schema = _gtk_source_languages_manager_get_rng_file (lm);
+	lm = _gtk_source_language_get_language_manager (language);
+	rng_lang_schema = _gtk_source_language_manager_get_rng_file (lm);
 
 	if (rng_lang_schema == NULL)
 	{

@@ -29,7 +29,6 @@
 #include "gtksourceview-i18n.h"
 #include "gtksourcebuffer.h"
 #include "gtksourcelanguage.h"
-#include "gtksourcelanguagesmanager.h"
 #include "gtksourcelanguage-private.h"
 
 static gchar *

@@ -23,7 +23,7 @@
 
 #include <glib.h>
 #include "gtksourcecontextengine.h"
-#include "gtksourcelanguagesmanager.h"
+#include "gtksourcelanguagemanager.h"
 
 G_BEGIN_DECLS
 
@@ -47,16 +47,16 @@ struct _GtkSourceLanguagePrivate
 
 	GHashTable		*properties;
 
-	GtkSourceLanguagesManager *languages_manager;
+	GtkSourceLanguageManager *language_manager;
 
 	GtkSourceContextData    *ctx_data;
 };
 
-GtkSourceLanguage *_gtk_source_language_new_from_file (const gchar			*filename,
-						       GtkSourceLanguagesManager	*lm);
+GtkSourceLanguage *_gtk_source_language_new_from_file (const gchar		*filename,
+						       GtkSourceLanguageManager	*lm);
 
-GtkSourceLanguagesManager *_gtk_source_language_get_languages_manager (GtkSourceLanguage *language);
-const char *_gtk_source_languages_manager_get_rng_file (GtkSourceLanguagesManager *lm);
+GtkSourceLanguageManager *_gtk_source_language_get_language_manager (GtkSourceLanguage *language);
+const char *_gtk_source_language_manager_get_rng_file (GtkSourceLanguageManager *lm);
 
 void _gtk_source_language_define_language_styles  (GtkSourceLanguage      *language);
 gboolean _gtk_source_language_file_parse_version1 (GtkSourceLanguage      *language,

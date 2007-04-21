@@ -27,7 +27,7 @@ sed -e 's/#include \"gtksourcecontextengine.h\"/#include \"gtksourcecontextengin
     -e 's/#include \"gtksourceiter.h\"/#include \"gtksourceiter-mangled.h\"/'							\
     -e 's/#include \"gtksourcelanguage.h\"/#include \"gtksourcelanguage-mangled.h\"/'						\
     -e 's/#include \"gtksourcelanguage-private.h\"/#include \"gtksourcelanguage-private-mangled.h\"/'				\
-    -e 's/#include \"gtksourcelanguagesmanager.h\"/#include \"gtksourcelanguagesmanager-mangled.h\"/'				\
+    -e 's/#include \"gtksourcelanguagemanager.h\"/#include \"gtksourcelanguagemanager-mangled.h\"/'				\
     -e 's/#include \"gtksourcestyle.h\"/#include \"gtksourcestyle-mangled.h\"/'							\
     -e 's/#include \"gtksourcestylemanager.h\"/#include \"gtksourcestylemanager-mangled.h\"/'					\
     -e 's/#include \"gtksourcestylescheme.h\"/#include \"gtksourcestylescheme-mangled.h\"/'					\
@@ -38,7 +38,7 @@ sed -e 's/#include \"gtksourcecontextengine.h\"/#include \"gtksourcecontextengin
     -e 's@#include <gtksourceview/gtksourceiter.h>@#include <gtksourceview/gtksourceiter-mangled.h>@'				\
     -e 's@#include <gtksourceview/gtksourcelanguage.h>@#include <gtksourceview/gtksourcelanguage-mangled.h>@'			\
     -e 's@#include <gtksourceview/gtksourcelanguage-private.h>@#include <gtksourceview/gtksourcelanguage-private-mangled.h>@'	\
-    -e 's@#include <gtksourceview/gtksourcelanguagesmanager.h>@#include <gtksourceview/gtksourcelanguagesmanager-mangled.h>@'	\
+    -e 's@#include <gtksourceview/gtksourcelanguagemanager.h>@#include <gtksourceview/gtksourcelanguagemanager-mangled.h>@'	\
     -e 's@#include <gtksourceview/gtksourcestyle.h>@#include <gtksourceview/gtksourcestyle-mangled.h>@'				\
     -e 's@#include <gtksourceview/gtksourcestylemanager.h>@#include <gtksourceview/gtksourcestylemanager-mangled.h>@'		\
     -e 's@#include <gtksourceview/gtksourcestylescheme.h>@#include <gtksourceview/gtksourcestylescheme-mangled.h>@'		\
