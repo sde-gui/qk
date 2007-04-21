@@ -107,7 +107,7 @@ class CProject(SimpleProject):
         pane = window.get_pane(_BUILD_PANE_ID)
         if not pane:
             label = moo.utils.PaneLabel(icon_stock_id=_STOCK_BUILD,
-                                        label=_("Build Messages"))
+                                        label_text=_("Build Messages"))
             output = moo.edit.CmdView()
             window.add_stop_client(output)
 
@@ -134,7 +134,7 @@ class CProject(SimpleProject):
         pane = window.get_pane(_OUTPUT_PANE_ID)
         if not pane:
             label = moo.utils.PaneLabel(icon_stock_id=_STOCK_EXECUTE,
-                                        label=_("Output"))
+                                        label_text=_("Output"))
             output = moo.edit.CmdView()
             window.add_stop_client(output)
             output.set_property("highlight-current-line", False)

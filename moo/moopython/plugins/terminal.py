@@ -45,8 +45,7 @@ class WinPlugin(moo.edit.WinPlugin):
 
     def do_create(self):
         label = moo.utils.PaneLabel(icon_stock_id = moo.utils.STOCK_TERMINAL,
-                                    label=_("Terminal"),
-                                    window_title=_("Terminal"))
+                                    label_text=_("Terminal"))
 
         self.terminal = moo.term.Term()
         self.terminal.connect("child-died", self.start)
