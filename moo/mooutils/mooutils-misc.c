@@ -1208,8 +1208,8 @@ cmp_dirs (const char *dir1,
 }
 
 
-static GSList *
-add_dir_list_from_env (GSList     *list,
+static void
+add_dir_list_from_env (GPtrArray  *list,
                        const char *var)
 {
     char **dirs, **p;
@@ -1224,10 +1224,9 @@ add_dir_list_from_env (GSList     *list,
 #endif
 
     for (p = dirs; p && *p; ++p)
-        list = g_slist_prepend (list, *p);
+        g_ptr_array_add (list, *p);
 
     g_free (dirs);
-    return list;
 }
 
 
@@ -1247,56 +1246,55 @@ moo_get_data_dirs (MooDataDirType type,
     {
         const char *env[2];
         GPtrArray *dirs;
-        GSList *list = NULL;
+        GPtrArray *all_dirs;
+        char **ptr;
         guint i;
 
+        all_dirs = g_ptr_array_new ();
         dirs = g_ptr_array_new ();
 
         env[0] = g_getenv ("MOO_APP_DIRS");
         env[1] = type == MOO_DATA_SHARE ? g_getenv ("MOO_DATA_DIRS") : g_getenv ("MOO_LIB_DIRS");
 
+        g_ptr_array_add (all_dirs, moo_get_user_data_dir ());
+
         /* environment variables override everything */
         if (env[0] || env[1])
         {
             if (env[1])
-                list = add_dir_list_from_env (list, env[1]);
+                add_dir_list_from_env (all_dirs, env[1]);
             else
-                list = add_dir_list_from_env (list, env[0]);
+                add_dir_list_from_env (all_dirs, env[0]);
         }
         else
         {
 #ifdef __WIN32__
-            list = _moo_win32_add_data_dirs (list, type == MOO_DATA_SHARE ? "share" : "lib");
+            _moo_win32_add_data_dirs (all_dirs, type == MOO_DATA_SHARE ? "share" : "lib");
 #else
             if (type == MOO_DATA_SHARE)
             {
                 const char* const *p;
-                const char* const *sys_dirs;
 
-                sys_dirs = g_get_system_data_dirs ();
+                for (p = g_get_system_data_dirs (); p && *p; ++p)
+                    g_ptr_array_add (all_dirs, g_build_filename (*p, MOO_PACKAGE_NAME, NULL));
 
-                for (p = sys_dirs; p && *p; ++p)
-                    list = g_slist_prepend (list, g_build_filename (*p, MOO_PACKAGE_NAME, NULL));
-
-                list = g_slist_prepend (list, g_strdup (MOO_DATA_DIR));
+                g_ptr_array_add (all_dirs, g_strdup (MOO_DATA_DIR));
             }
             else
             {
-                list = g_slist_prepend (list, g_strdup (MOO_LIB_DIR));
+                g_ptr_array_add (all_dirs, g_strdup (MOO_LIB_DIR));
             }
 #endif
         }
 
-        list = g_slist_prepend (list, moo_get_user_data_dir ());
-        list = g_slist_reverse (list);
+        g_ptr_array_add (all_dirs, NULL);
 
-        while (list)
+        for (ptr = (char**) all_dirs->pdata; *ptr; ++ptr)
         {
             gboolean found = FALSE;
             char *path;
 
-            path = list->data;
-            list = g_slist_delete_link (list, list);
+            path = *ptr;
 
             if (!path || !path[0])
             {
@@ -1322,6 +1320,7 @@ moo_get_data_dirs (MooDataDirType type,
         g_ptr_array_add (dirs, NULL);
         n_data_dirs[type] = dirs->len - 1;
         moo_data_dirs[type] = (char**) g_ptr_array_free (dirs, FALSE);
+        g_ptr_array_free (all_dirs, TRUE);
     }
 
     G_UNLOCK (moo_data_dirs);
@@ -1651,6 +1650,26 @@ _moo_splitlines (const char *string)
 
     g_ptr_array_add (array, NULL);
     return (char**) g_ptr_array_free (array, FALSE);
+}
+
+char **
+_moo_strv_reverse (char **str_array)
+{
+    guint i, len;
+
+    if (str_array)
+    {
+        for (len = 0; str_array[len]; len++) ;
+
+        for (i = 0; i < len/2; ++i)
+        {
+            char *tmp = str_array[i];
+            str_array[i] = str_array[len-i-1];
+            str_array[len-i-1] = tmp;
+        }
+    }
+
+    return str_array;
 }
 
 

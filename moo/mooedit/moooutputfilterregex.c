@@ -1018,7 +1018,7 @@ _moo_command_filter_regex_load (void)
 {
     char **files, **p;
 
-    files = moo_get_data_files (FILTERS_FILE, MOO_DATA_SHARE, NULL);
+    files = _moo_strv_reverse (moo_get_data_files (FILTERS_FILE, MOO_DATA_SHARE, NULL));
 
     for (p = files; p && *p; ++p)
         parse_filter_file (*p);

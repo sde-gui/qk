@@ -66,7 +66,7 @@ gboolean    moo_save_user_data_file         (const char     *basename,
                                              gssize          len,
                                              GError        **error);
 
-/* user data comes last; MOO_DATA_DIR comes first */
+/* user data comes first; MOO_DATA_DIR comes last */
 /* $MOO_APP_DIR:$MOO_DATA_DIRS:$prefix/share/appname or
    $MOO_APP_DIR:$MOO_LIB_DIRS:$prefix/lib/appname */
 char      **moo_get_data_dirs               (MooDataDirType  type,
@@ -97,6 +97,7 @@ void        _moo_widget_set_tooltip         (GtkWidget      *widget,
                                              const char     *tip);
 
 char      **_moo_splitlines                 (const char     *string);
+char      **_moo_strv_reverse               (char          **str_array);
 
 static inline gboolean
 _moo_str_equal_inline (const char *s1,
@@ -165,7 +166,7 @@ G_BEGIN_DECLS
 char       *moo_win32_get_app_dir           (void);
 char       *moo_win32_get_dll_dir           (const char     *dll);
 
-GSList     *_moo_win32_add_data_dirs        (GSList         *list,
+void        _moo_win32_add_data_dirs        (GPtrArray      *list,
                                              const char     *prefix);
 
 const char *_moo_win32_get_locale_dir       (void);

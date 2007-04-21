@@ -774,12 +774,11 @@ moo_app_init_ui (MooApp *app)
 {
     MooUIXML *xml = NULL;
     char **files;
-    guint n_files;
-    int i;
+    guint n_files, i;
 
     files = moo_get_data_files (MOO_UI_XML_FILE, MOO_DATA_SHARE, &n_files);
 
-    for (i = n_files - 1; i >= 0; --i)
+    for (i = 0; i < n_files; ++i)
     {
         GError *error = NULL;
         GMappedFile *file;

@@ -174,7 +174,7 @@ find_user_tools_file (int     type,
     *sys_files_p = NULL;
     *user_file_p = NULL;
 
-    files = moo_get_data_files (FILENAMES[type], MOO_DATA_SHARE, &n_files);
+    files = _moo_strv_reverse (moo_get_data_files (FILENAMES[type], MOO_DATA_SHARE, &n_files));
 
     if (!n_files)
         return;

@@ -263,6 +263,7 @@ class Manager(object):
 
         dirs = moo.utils.get_data_subdirs("projects", moo.utils.DATA_LIB)
         dirs = filter(lambda d: os.path.isdir(d), dirs)
+        dirs.reverse()
 
         if not dirs:
             return

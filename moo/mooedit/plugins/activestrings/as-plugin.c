@@ -1087,14 +1087,13 @@ _as_plugin_load_config (void)
     if (!file || !g_file_test (file, G_FILE_TEST_EXISTS))
     {
         char **files;
-        guint n_files;
-        int i;
+        guint n_files, i;
 
         g_free (file);
         file = NULL;
         files = moo_get_data_files (AS_FILE, MOO_DATA_SHARE, &n_files);
 
-        for (i = n_files - 1; !file && i >= 0; --i)
+        for (i = 0; !file && i < n_files; ++i)
             if (g_file_test (files[i], G_FILE_TEST_EXISTS))
                 file = g_strdup (files[i]);
 

@@ -74,8 +74,8 @@ _moo_win32_get_locale_dir (void)
 }
 
 
-static GSList *
-add_win32_data_dirs_for_dll (GSList     *list,
+static void
+add_win32_data_dirs_for_dll (GPtrArray  *list,
                              const char *subdir_name,
                              const char *dllname)
 {
@@ -103,22 +103,20 @@ add_win32_data_dirs_for_dll (GSList     *list,
     }
 
     g_free (dlldir);
-    list = g_slist_prepend (list, datadir);
-    return list;
+    g_ptr_array_add (list, datadir);
 }
 
-GSList *
-_moo_win32_add_data_dirs (GSList     *list,
+void
+_moo_win32_add_data_dirs (GPtrArray  *list,
                           const char *prefix)
 {
     char *subdir;
 
     subdir = g_strdup_printf ("%s\\" MOO_PACKAGE_NAME, prefix);
-    list = add_win32_data_dirs_for_dll (list, subdir, libmoo_dll_name);
-    list = add_win32_data_dirs_for_dll (list, subdir, NULL);
+    add_win32_data_dirs_for_dll (list, subdir, NULL);
+    add_win32_data_dirs_for_dll (list, subdir, libmoo_dll_name);
 
     g_free (subdir);
-    return list;
 }
 
 

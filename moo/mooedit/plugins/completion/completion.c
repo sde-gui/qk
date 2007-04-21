@@ -549,7 +549,7 @@ _cmpl_plugin_load (CmplPlugin *plugin)
     plugin->data = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
                                           (GDestroyNotify) cmpl_data_free);
 
-    dirs = moo_get_data_subdirs (CMPL_DIR, MOO_DATA_SHARE, &n_dirs);
+    dirs = _moo_strv_reverse (moo_get_data_subdirs (CMPL_DIR, MOO_DATA_SHARE, &n_dirs));
 
     for (i = 0; i < n_dirs; ++i)
         cmpl_plugin_load_dir (plugin, dirs[i]);
