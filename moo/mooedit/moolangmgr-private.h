@@ -32,7 +32,7 @@ G_BEGIN_DECLS
 typedef struct _MooLangMgrClass MooLangMgrClass;
 
 struct _MooLangMgr {
-    GtkSourceLanguagesManager base;
+    GtkSourceLanguageManager base;
 
     GtkSourceStyleManager *style_mgr;
 
@@ -49,7 +49,7 @@ struct _MooLangMgr {
 
 struct _MooLangMgrClass
 {
-    GtkSourceLanguagesManagerClass base_class;
+    GtkSourceLanguageManagerClass base_class;
 };
 
 
