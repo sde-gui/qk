@@ -55,6 +55,7 @@ completion_sources =			\
 mooedit_sources =			\
 	$(mooedit_include_headers)	\
 	$(moocommand_stuff)		\
+	$(completion_sources)		\
 	medit-ui.h			\
 	moocmdview.c			\
 	moocommand.c			\
