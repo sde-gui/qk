@@ -261,7 +261,7 @@ class Manager(object):
         self.project_types = _ProjectStore()
         self.project_types.add("Simple", SimpleProject)
 
-        dirs = moo.utils.get_data_subdirs("projects", moo.utils.DATA_LIB)
+        dirs = list(moo.utils.get_data_subdirs("projects", moo.utils.DATA_LIB))
         dirs = filter(lambda d: os.path.isdir(d), dirs)
         dirs.reverse()
 
