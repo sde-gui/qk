@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2007-04-18 11:03-0500\n"
-"PO-Revision-Date: 2007-04-11 02:15+0100\n"
+"PO-Revision-Date: 2007-04-25 15:15+0100\n"
 "Last-Translator: Chaosye <chao-7410@163.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -99,6 +99,7 @@ msgid ""
 "Comma-separated list of encodings to try when opening a file. 'LOCALE' means "
 "current locale encoding."
 msgstr ""
+"打开文件时尝试使用的编码列表,\"LOCAL\"为本地默认编码"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:4
 msgid "Default language:"
@@ -122,7 +123,7 @@ msgstr "启用换行"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:9
 msgid "Encodings to autodetect"
-msgstr ""
+msgstr "用于自动检测的编码"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:10
 #: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:3
@@ -192,7 +193,7 @@ msgstr "语言和文档"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:26
 msgid "Loading and saving"
-msgstr ""
+msgstr "载入与保存"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:27
 msgid "Make backups"
@@ -201,7 +202,7 @@ msgstr "创建备份"
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:28
 #: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:5
 msgid "Mime types:"
-msgstr "Mime types:"
+msgstr "Mime类型:"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:29
 msgid "Misc"
@@ -209,7 +210,7 @@ msgstr "其它"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:30
 msgid "Moves cursor to next placeholder"
-msgstr "移动光标到下一个占位符"
+msgstr "移动光标到下一个占位符处"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:31
 msgid "Moves input focus"
@@ -242,7 +243,7 @@ msgstr "显示后面的空格"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:38
 msgid "Smart Home and End"
-msgstr ""
+msgstr "启用智能Home键和End键"
 
 #. Tab key: Moves input focus, Indents Text, ...
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:40
@@ -332,7 +333,7 @@ msgstr "<b>版本:</b>"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:1
 msgid "Center:"
-msgstr ":"
+msgstr "居中:"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:2
 msgid "Ellipsize long lines"
@@ -340,27 +341,27 @@ msgstr ""
 
 #: ../moo/mooedit/glade/mooprint.glade.h:3
 msgid "Footer"
-msgstr ""
+msgstr "页脚"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:4
 msgid "Header"
-msgstr ""
+msgstr "标题"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:5
 msgid "Left:"
-msgstr ""
+msgstr "左"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:6
 msgid "Print footer"
-msgstr ""
+msgstr "打印页脚"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:7
 msgid "Print header"
-msgstr ""
+msgstr "打印标题"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:8
 msgid "Print line numbers"
-msgstr ""
+msgstr "打印行号"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:9
 msgid "Print separator line"
@@ -368,11 +369,11 @@ msgstr "打印分隔线"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:10
 msgid "Print using text styles"
-msgstr ""
+msgstr "使用文本风格打印"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:11
 msgid "Right:"
-msgstr ""
+msgstr "右"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:12
 msgid "Use custom font:"
@@ -384,15 +385,15 @@ msgstr "长行换行"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:14
 msgid "every"
-msgstr ""
+msgstr "所有"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:15
 msgid "lines"
-msgstr ""
+msgstr "行"
 
 #: ../moo/mooedit/glade/mooprintpreview.glade.h:1
 msgid "Print..."
-msgstr "打印..."
+msgstr "打印"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:1
 msgid "Case sensitive"
@@ -418,7 +419,7 @@ msgstr "向前查找"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:6
 msgid "From cursor"
-msgstr "用光标处开始"
+msgstr "从光标处开始"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:7
 msgid "Literal replacement"
@@ -446,7 +447,7 @@ msgstr "是否替换?"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:13
 msgid "Replacement text:"
-msgstr ""
+msgstr "字符替换"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:14
 msgid "Selected text"
@@ -458,7 +459,7 @@ msgstr "停止(_S)"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:16
 msgid "Text to find:"
-msgstr ""
+msgstr "要查找的字符串"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:17
 msgid "Whole words only"
@@ -526,7 +527,7 @@ msgstr "窗口(_W)"
 
 #: ../moo/mooedit/mooeditor.c:624
 msgid "Open new editor window"
-msgstr ""
+msgstr "新建编辑窗口"
 
 #: ../moo/mooedit/mooeditor.c:947
 msgid "Open Recent"
@@ -747,11 +748,11 @@ msgstr "新建"
 
 #: ../moo/mooedit/mooeditwindow.c:388
 msgid "_Open..."
-msgstr "打开(_O)..."
+msgstr "打开(_O)"
 
 #: ../moo/mooedit/mooeditwindow.c:389
 msgid "Open..."
-msgstr "开打..."
+msgstr "打开"
 
 #: ../moo/mooedit/mooeditwindow.c:396 ../moo/moofileview/moofileview.c:1274
 #: ../moo/moofileview/moofileview.c:1275
@@ -764,11 +765,11 @@ msgstr "重新加载"
 
 #: ../moo/mooedit/mooeditwindow.c:417
 msgid "Save _As..."
-msgstr "另存为(_A)..."
+msgstr "另存为(_A)"
 
 #: ../moo/mooedit/mooeditwindow.c:418
 msgid "Save as..."
-msgstr "另存为..."
+msgstr "另存为"
 
 #: ../moo/mooedit/mooeditwindow.c:428
 msgid "Close document"
@@ -860,7 +861,7 @@ msgstr "文档(_D)"
 
 #: ../moo/mooedit/mooeditwindow.c:619
 msgid "Toggle Text Wrapping"
-msgstr ""
+msgstr "切换换行"
 
 #: ../moo/mooedit/mooeditwindow.c:620
 msgid "_Wrap Text"
@@ -868,7 +869,7 @@ msgstr "换行(_W)"
 
 #: ../moo/mooedit/mooeditwindow.c:627
 msgid "Toggle Line Numbers Display"
-msgstr ""
+msgstr "切换行号显示"
 
 #: ../moo/mooedit/mooeditwindow.c:628
 msgid "_Show Line Numbers"
@@ -876,15 +877,15 @@ msgstr "显示行号"
 
 #: ../moo/mooedit/mooeditwindow.c:634
 msgid "Focus Document"
-msgstr ""
+msgstr "聚焦到文档"
 
 #: ../moo/mooedit/mooeditwindow.c:635
 msgid "_Focus Document"
-msgstr ""
+msgstr "聚焦到文档(_F)"
 
 #: ../moo/mooedit/mooeditwindow.c:686 ../moo/mooedit/mooeditwindow.c:687
 msgid "Toggle Bookmark"
-msgstr "添加到书签"
+msgstr "书签切换"
 
 #: ../moo/mooedit/mooeditwindow.c:695 ../moo/mooedit/mooeditwindow.c:696
 msgid "Next Bookmark"
@@ -920,7 +921,7 @@ msgstr "备注"
 #: ../moo/mooedit/mooeditwindow.c:743 ../moo/mooedit/mooeditwindow.c:744
 #: ../moo/mooedit/mooeditwindow.c:745
 msgid "Uncomment"
-msgstr ""
+msgstr "撤消备注"
 
 #. Insensitive menu item which appears in Window menu with no documents open
 #: ../moo/mooedit/mooeditwindow.c:773
@@ -938,7 +939,7 @@ msgstr "导出为PDF文档"
 
 #: ../moo/mooedit/mooeditwindow.c:809
 msgid "Export as PDF..."
-msgstr "导出为PDF文档..."
+msgstr "导出为PDF文档"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [new file]"
 #: ../moo/mooedit/mooeditwindow.c:1117
@@ -1014,12 +1015,12 @@ msgstr ""
 #: ../moo/mooedit/mooeditfileops.c:1223
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:531
 msgid "Untitled"
-msgstr ""
+msgstr "未命名"
 
 #: ../moo/mooedit/mooeditfileops.c:1225
 #, c-format
 msgid "Untitled %d"
-msgstr ""
+msgstr "未命名 %d"
 
 #: ../moo/mooedit/mootextfind.c:471
 msgid "No search term entered"
@@ -1088,7 +1089,7 @@ msgstr "查找文档"
 
 #: ../moo/mooedit/plugins/moofind.c:365
 msgid "CVS and SVN dirs"
-msgstr "CVS t SVN 目录"
+msgstr "CVS 和 SVN 目录"
 
 #: ../moo/mooedit/plugins/moofind.c:803
 msgid "Find in Files"
@@ -1149,6 +1150,8 @@ msgid ""
 "Could not convert '%s' to filename encoding. Please consider simpler name, "
 "such as foo.blah or blah.foo"
 msgstr ""
+"无法以 %s 命名文件，请尝试更简单的名称"
+"如 foo.blah 或 blah.foo"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:478
 #, c-format
@@ -1162,7 +1165,7 @@ msgstr "打开当前文档目录"
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:632
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:633
 msgid "New File..."
-msgstr "新建..."
+msgstr "新建"
 
 #. button
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:655
@@ -1176,7 +1179,7 @@ msgstr "文件选择器"
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:945
 #, c-format
 msgid "Could not save file as '%s'"
-msgstr " 无法另存文档为'%s'"
+msgstr "无法保存文档为'%s'"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1075
 msgid "Save Copy As"
@@ -1192,7 +1195,7 @@ msgstr "移动到这里"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1255
 msgid "Move/Rename..."
-msgstr "移动/重命名..."
+msgstr "移动/重命名"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1263
 msgid "Save Here"
@@ -1200,7 +1203,7 @@ msgstr "保存到这里"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1264
 msgid "Save As..."
-msgstr "另存为..."
+msgstr "另存为"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1272
 #: ../moo/mooutils/moostock.c:46
@@ -1209,7 +1212,7 @@ msgstr "保存副本"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1273
 msgid "Save Copy As..."
-msgstr "保存副本为..."
+msgstr "保存副本为"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1385
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1386
@@ -1222,7 +1225,7 @@ msgstr "显示文件选择器"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1475
 msgid "File selector pane for editor window"
-msgstr ""
+msgstr "编辑窗口的文件选择器面板"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector.glade.h:1
 msgid "Create File"
@@ -1247,15 +1250,15 @@ msgstr "菜单项目标题"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:6
 msgid "Move down"
-msgstr ""
+msgstr "下移"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:7
 msgid "Move up"
-msgstr ""
+msgstr "上移"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:8
 msgid "Name:"
-msgstr ""
+msgstr "名称: "
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:9
 #: ../moo/moofileview/glade/bookmark_editor.glade.h:8
@@ -1320,7 +1323,7 @@ msgstr "打开父目录"
 
 #: ../moo/moofileview/moofileview.c:1171 ../moo/moofileview/moofileview.c:1172
 msgid "Delete..."
-msgstr "删除..."
+msgstr "删除"
 
 #: ../moo/moofileview/moofileview.c:1183 ../moo/moofileview/moofileview.c:1184
 msgid "Show Hidden Files"
@@ -1340,7 +1343,7 @@ msgstr "添加到书签"
 
 #: ../moo/moofileview/moofileview.c:1233 ../moo/moofileview/moofileview.c:1234
 msgid "Edit Bookmarks..."
-msgstr "编辑书签..."
+msgstr "编辑书签"
 
 #: ../moo/moofileview/moofileview-ui.xml.h:2
 msgid "Open _With"
@@ -1416,7 +1419,7 @@ msgstr "没有足够的内存"
 #. PCRE_ERROR_MATCHLIMIT
 #: ../moo/mooutils/eggregex.c:128
 msgid "backtracking limit reached"
-msgstr ""
+msgstr "已到达回溯上限"
 
 #. PCRE_ERROR_CALLOUT, used with callouts
 #. PCRE_ERROR_BADUTF8, we do not check UTF-8
@@ -1444,7 +1447,7 @@ msgstr ""
 #. PCRE_ERROR_RECURSIONLIMIT
 #: ../moo/mooutils/eggregex.c:145
 msgid "recursion limit reached"
-msgstr ""
+msgstr "已到达递归上限"
 
 #: ../moo/mooutils/eggregex.c:315
 msgid "PCRE library is compiled without UTF8 support"
@@ -1457,7 +1460,7 @@ msgstr "PCRE编译时没有加入对UTF8编码的支持"
 #: ../moo/mooutils/eggregex.c:356
 #, c-format
 msgid "Error while compiling regular expression %s at char %d: %s"
-msgstr ""
+msgstr "编译常规表达式 %s 时发生错误: %s"
 
 #: ../moo/mooutils/eggregex.c:497
 #, c-format
@@ -1702,7 +1705,7 @@ msgstr ""
 
 #: ../moo/mooutils/mooencodings-data.h:93
 msgid "Croatian"
-msgstr ""
+msgstr "克罗地亚语"
 
 #: ../moo/mooutils/mooencodings-data.h:95
 msgid "Hindi"
@@ -1736,7 +1739,7 @@ msgstr "泰语"
 
 #: ../moo/mooutils/moofontsel.c:502
 msgid "Show only fixed width fonts"
-msgstr ""
+msgstr "只显示固定宽度的字体"
 
 #: ../moo/mooutils/moostock.c:40
 msgid "Save _None"
@@ -1760,7 +1763,7 @@ msgstr "创建目录(N)"
 
 #: ../moo/mooutils/moostock.c:48
 msgid "New _Window"
-msgstr ""
+msgstr "新建窗口(_W)"
 
 #: ../moo/mooutils/moostock.c:53
 msgid "Select _All"
@@ -1836,7 +1839,7 @@ msgstr "无"
 #~ msgstr "标题"
 
 #~ msgid "New Folder..."
-#~ msgstr "创建目录..."
+#~ msgstr "创建目录"
 
 #~ msgid "Copy"
 #~ msgstr "复制"
