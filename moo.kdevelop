@@ -31,27 +31,34 @@
       <language>C</language>
     </secondaryLanguages>
     <versioncontrol>kdevsubversion</versioncontrol>
+    <projectname>moo</projectname>
+    <defaultencoding/>
   </general>
   <kdevautoproject>
     <general>
       <activetarget>moo/libmoo.la</activetarget>
-      <useconfiguration>gtk-cvs</useconfiguration>
+      <useconfiguration>debug</useconfiguration>
     </general>
     <run>
-      <mainprogram>medit/medit</mainprogram>
+      <mainprogram>/home/muntyan/projects/moo/build/debug/medit/medit</mainprogram>
       <directoryradio>executable</directoryradio>
       <customdirectory>/</customdirectory>
-      <programargs>--mode=project</programargs>
+      <programargs>-n</programargs>
       <terminal>false</terminal>
       <autocompile>false</autocompile>
       <envvars>
         <envvar value="always-malloc" name="G_SLICE" />
         <envvar value="ru_RU.KOI8-R" name="LANGUAGE" />
       </envvars>
+      <globaldebugarguments>-n</globaldebugarguments>
+      <globalcwd>/home/muntyan/projects/moo/build/debug</globalcwd>
+      <useglobalprogram>true</useglobalprogram>
+      <autoinstall>false</autoinstall>
+      <autokdesu>false</autokdesu>
     </run>
     <configurations>
       <debug>
-        <configargs>--enable-debug --enable-all-warnings</configargs>
+        <configargs>--enable-debug --enable-all-warnings --without-python</configargs>
         <builddir>build/debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
@@ -88,7 +95,7 @@
         <f77flags/>
       </gtk-print>
       <gtk-cvs>
-        <configargs>--enable-debug --enable-all-gcc-warnings --prefix=/usr/local/gtk</configargs>
+        <configargs>--enable-debug --enable-all-gcc-warnings --prefix=/usr/local/gtk --without-python</configargs>
         <builddir>/home/muntyan/projects/gtk/build/moo</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
@@ -344,6 +351,21 @@
       <codeCompletionDelay>250</codeCompletionDelay>
       <argumentsHintDelay>400</argumentsHintDelay>
       <headerCompletionDelay>250</headerCompletionDelay>
+      <showOnlyAccessibleItems>false</showOnlyAccessibleItems>
+      <completionBoxItemOrder>0</completionBoxItemOrder>
+      <howEvaluationContextMenu>true</howEvaluationContextMenu>
+      <showCommentWithArgumentHint>true</showCommentWithArgumentHint>
+      <statusBarTypeEvaluation>false</statusBarTypeEvaluation>
+      <namespaceAliases>std=_GLIBCXX_STD;__gnu_cxx=std</namespaceAliases>
+      <processPrimaryTypes>true</processPrimaryTypes>
+      <processFunctionArguments>false</processFunctionArguments>
+      <preProcessAllHeaders>false</preProcessAllHeaders>
+      <parseMissingHeaders>false</parseMissingHeaders>
+      <resolveIncludePaths>true</resolveIncludePaths>
+      <alwaysParseInBackground>true</alwaysParseInBackground>
+      <usePermanentCaching>true</usePermanentCaching>
+      <alwaysIncludeNamespaces>false</alwaysIncludeNamespaces>
+      <includePaths>.;</includePaths>
     </codecompletion>
     <references/>
     <creategettersetter>
@@ -357,8 +379,18 @@
     <qt>
       <used>false</used>
       <version>3</version>
-      <root/>
+      <root>/usr/share/qt3</root>
+      <includestyle>3</includestyle>
+      <designerintegration>EmbeddedKDevDesigner</designerintegration>
+      <qmake>/usr/bin/qmake-qt3</qmake>
+      <designer>/usr/bin/designer-qt3</designer>
+      <designerpluginpaths/>
     </qt>
+    <splitheadersource>
+      <enabled>false</enabled>
+      <synchronize>true</synchronize>
+      <orientation>Vertical</orientation>
+    </splitheadersource>
   </kdevcppsupport>
   <kdevdocumentation>
     <projectdoc>

@@ -26,20 +26,20 @@
 G_BEGIN_DECLS
 
 #define GTK_TYPE_SOURCE_LANGUAGE_MANAGER		(gtk_source_language_manager_get_type ())
-#define GTK_SOURCE_LANGUAGE_MANAGER(obj)		(GTK_CHECK_CAST ((obj), GTK_TYPE_SOURCE_LANGUAGE_MANAGER, GtkSourceLanguageManager))
-#define GTK_SOURCE_LANGUAGE_MANAGER_CLASS(klass)	(GTK_CHECK_CLASS_CAST ((klass), GTK_TYPE_SOURCE_LANGUAGE_MANAGER, GtkSourceLanguageManagerClass))
-#define GTK_IS_SOURCE_LANGUAGE_MANAGER(obj)		(GTK_CHECK_TYPE ((obj), GTK_TYPE_SOURCE_LANGUAGE_MANAGER))
-#define GTK_IS_SOURCE_LANGUAGE_MANAGER_CLASS(klass)	(GTK_CHECK_CLASS_TYPE ((klass), GTK_TYPE_SOURCE_LANGUAGE_MANAGER))
+#define GTK_SOURCE_LANGUAGE_MANAGER(obj)		(G_TYPE_CHECK_INSTANCE_CAST((obj), GTK_TYPE_SOURCE_LANGUAGE_MANAGER, GtkSourceLanguageManager))
+#define GTK_SOURCE_LANGUAGE_MANAGER_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST((klass), GTK_TYPE_SOURCE_LANGUAGE_MANAGER, GtkSourceLanguageManagerClass))
+#define GTK_IS_SOURCE_LANGUAGE_MANAGER(obj)		(G_TYPE_CHECK_INSTANCE_TYPE((obj), GTK_TYPE_SOURCE_LANGUAGE_MANAGER))
+#define GTK_IS_SOURCE_LANGUAGE_MANAGER_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE ((klass), GTK_TYPE_SOURCE_LANGUAGE_MANAGER))
+#define GTK_SOURCE_LANGUAGE_MANAGER_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS((obj), GTK_TYPE_SOURCE_LANGUAGE_MANAGER, GtkSourceLanguageManagerClass))
 
 
-typedef struct _GtkSourceLanguageManager		GtkSourceLanguageManager;
-typedef struct _GtkSourceLanguageManagerClass		GtkSourceLanguageManagerClass;
-
-typedef struct _GtkSourceLanguageManagerPrivate	GtkSourceLanguageManagerPrivate;
+typedef struct _GtkSourceLanguageManager	GtkSourceLanguageManager;
+typedef struct _GtkSourceLanguageManagerClass	GtkSourceLanguageManagerClass;
+typedef struct _GtkSourceLanguageManagerPrivate GtkSourceLanguageManagerPrivate;
 
 struct _GtkSourceLanguageManager
 {
-	GObject                   parent;
+	GObject parent;
 
 	GtkSourceLanguageManagerPrivate *priv;
 };
@@ -51,6 +51,8 @@ struct _GtkSourceLanguageManagerClass
 	/* Padding for future expansion */
 	void (*_gtk_source_reserved1) (void);
 	void (*_gtk_source_reserved2) (void);
+	void (*_gtk_source_reserved3) (void);
+	void (*_gtk_source_reserved4) (void);
 };
 
 
@@ -58,14 +60,13 @@ GType			  gtk_source_language_manager_get_type			(void) G_GNUC_CONST;
 
 GtkSourceLanguageManager *gtk_source_language_manager_new			(void);
 
-
 const GSList		 *gtk_source_language_manager_get_available_languages	(GtkSourceLanguageManager *lm);
 
 GtkSourceLanguage	 *gtk_source_language_manager_get_language_by_id	(GtkSourceLanguageManager *lm,
 										 const gchar              *id);
 
-gchar			**gtk_source_language_manager_get_lang_files_dirs	(GtkSourceLanguageManager *lm);
-void			  gtk_source_language_manager_set_lang_files_dirs	(GtkSourceLanguageManager *lm,
+gchar			**gtk_source_language_manager_get_search_path		(GtkSourceLanguageManager *lm);
+void			  gtk_source_language_manager_set_search_path		(GtkSourceLanguageManager *lm,
 										 gchar                   **dirs);
 
 G_END_DECLS

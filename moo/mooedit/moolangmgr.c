@@ -74,9 +74,9 @@ moo_lang_mgr_init (MooLangMgr *mgr)
                                          g_free, g_free);
 
     dirs = moo_get_data_subdirs (LANGUAGE_DIR, MOO_DATA_SHARE, &n_dirs);
-    g_object_set (mgr, "lang-files-dirs", dirs, NULL);
+    g_object_set (mgr, "search-path", dirs, NULL);
     mgr->style_mgr = gtk_source_style_manager_new ();
-    gtk_source_style_manager_set_search_path (mgr->style_mgr, dirs, n_dirs);
+    gtk_source_style_manager_set_search_path (mgr->style_mgr, dirs);
 
     load_config (mgr);
 

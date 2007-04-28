@@ -19,7 +19,9 @@ upstream_sources =			\
 	gtksourcestyle.h		\
 	gtksourcestylemanager.h		\
 	gtksourcestylescheme.h		\
-	gtktextregion.h
+	gtktextregion.h			\
+	gtksourceview-utils.h		\
+	gtksourceview-utils.c
 
 EXTRA_DIST = $(upstream_sources) mangle.sh
 

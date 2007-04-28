@@ -46,6 +46,10 @@ struct _GtkSourceStyleScheme
 struct _GtkSourceStyleSchemeClass
 {
 	GObjectClass base_class;
+
+	/* Padding for future expansion */
+	void (*_gtk_source_reserved1) (void);
+	void (*_gtk_source_reserved2) (void);
 };
 
 GType			 gtk_source_style_scheme_get_type	(void) G_GNUC_CONST;

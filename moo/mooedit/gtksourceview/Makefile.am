@@ -34,7 +34,9 @@ upstream_sources =				\
 	upstream/gtksourcestyle.h		\
 	upstream/gtksourcestylemanager.h	\
 	upstream/gtksourcestylescheme.h		\
-	upstream/gtktextregion.h
+	upstream/gtktextregion.h		\
+	upstream/gtksourceview-utils.h		\
+	upstream/gtksourceview-utils.c
 
 gtksourceview_sources =				\
 	gtksourcecontextengine-mangled.c	\
@@ -45,6 +47,7 @@ gtksourceview_sources =				\
 	gtksourcestylemanager-mangled.c		\
 	gtksourcestylescheme-mangled.c		\
 	gtktextregion-mangled.c			\
+	gtksourceview-utils-mangled.c		\
 	gtksourcecontextengine-mangled.h	\
 	gtksourceengine-mangled.h		\
 	gtksourceiter-mangled.h			\
@@ -52,7 +55,8 @@ gtksourceview_sources =				\
 	gtksourcestyle-mangled.h		\
 	gtksourcestylemanager-mangled.h		\
 	gtksourcestylescheme-mangled.h		\
-	gtktextregion-mangled.h
+	gtktextregion-mangled.h			\
+	gtksourceview-utils-mangled.h
 
 xml_sources =					\
 	gtksourcelanguage-mangled.c		\

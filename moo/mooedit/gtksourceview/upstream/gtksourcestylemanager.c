@@ -20,17 +20,18 @@
 
 #include "gtksourcestylemanager.h"
 #include "gtksourceview-marshal.h"
+#include "gtksourceview-i18n.h"
+#include "gtksourceview-utils.h"
 #include <string.h>
 
 #define SCHEME_FILE_SUFFIX	".styles"
-#define SOURCEVIEW_DIR		"gtksourceview-2.0"
 #define STYLES_DIR		"styles"
 
 
 struct _GtkSourceStyleManagerPrivate
 {
 	GSList		*schemes;
-	GSList		*dirs;
+	gchar	       **_dirs;
 	gboolean	 need_reload;
 };
 
@@ -39,37 +40,61 @@ enum {
 	N_SIGNALS
 };
 
+enum {
+	PROP_0,
+	PROP_SEARCH_PATH
+};
+
 static guint signals[N_SIGNALS];
 
 G_DEFINE_TYPE (GtkSourceStyleManager, gtk_source_style_manager, G_TYPE_OBJECT)
 
-
-static void	 gtk_source_style_manager_finalize	 	(GObject	*object);
-
-
 static void
-gtk_source_style_manager_class_init (GtkSourceStyleManagerClass *klass)
+gtk_source_style_manager_set_property (GObject 	    *object,
+				       guint 	     prop_id,
+				       const GValue *value,
+				       GParamSpec   *pspec)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	GtkSourceStyleManager *sm;
 
-	object_class->finalize	= gtk_source_style_manager_finalize;
+	sm = GTK_SOURCE_STYLE_MANAGER (object);
 
-	signals[CHANGED] = g_signal_new ("changed",
-					 G_OBJECT_CLASS_TYPE (object_class),
-					 G_SIGNAL_RUN_LAST,
-					 G_STRUCT_OFFSET (GtkSourceStyleManagerClass, changed),
-					 NULL, NULL,
-					 _gtksourceview_marshal_VOID__VOID,
-					 G_TYPE_NONE, 0);
+	switch (prop_id)
+	{
+		case PROP_SEARCH_PATH:
+			gtk_source_style_manager_set_search_path (sm, g_value_get_boxed (value));
+			break;
+
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID (object,
+							   prop_id,
+							   pspec);
+			break;
+	}
 }
 
 static void
-gtk_source_style_manager_init (GtkSourceStyleManager *mgr)
+gtk_source_style_manager_get_property (GObject    *object,
+				       guint       prop_id,
+				       GValue     *value,
+				       GParamSpec *pspec)
 {
-	mgr->priv = g_new0 (GtkSourceStyleManagerPrivate, 1);
-	mgr->priv->schemes = NULL;
-	mgr->priv->dirs = NULL;
-	mgr->priv->need_reload = TRUE;
+	GtkSourceStyleManager *sm;
+
+	sm = GTK_SOURCE_STYLE_MANAGER (object);
+
+	switch (prop_id)
+	{
+		case PROP_SEARCH_PATH:
+			g_value_set_boxed (value, gtk_source_style_manager_get_search_path (sm));
+			break;
+
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID (object,
+							   prop_id,
+							   pspec);
+			break;
+	}
 }
 
 static void
@@ -84,66 +109,55 @@ gtk_source_style_manager_finalize (GObject *object)
 	mgr->priv->schemes = NULL;
 	g_slist_foreach (schemes, (GFunc) g_object_unref, NULL);
 	g_slist_free (schemes);
-	g_slist_foreach (mgr->priv->dirs, (GFunc) g_free, NULL);
-	g_slist_free (mgr->priv->dirs);
-	g_free (mgr->priv);
+	g_strfreev (mgr->priv->_dirs);
 
 	G_OBJECT_CLASS (gtk_source_style_manager_parent_class)->finalize (object);
+}
+
+static void
+gtk_source_style_manager_class_init (GtkSourceStyleManagerClass *klass)
+{
+	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+	object_class->finalize	= gtk_source_style_manager_finalize;
+	object_class->set_property = gtk_source_style_manager_set_property;
+	object_class->get_property = gtk_source_style_manager_get_property;
+
+	g_object_class_install_property (object_class,
+					 PROP_SEARCH_PATH,
+					 g_param_spec_boxed ("search-path",
+						 	     _("Style scheme directories"),
+							     _("List of directories where the "
+							       "style scheme files (.styles) "
+							       "are located"),
+							     G_TYPE_STRV,
+							     G_PARAM_READWRITE));
+
+	signals[CHANGED] = g_signal_new ("changed",
+					 G_OBJECT_CLASS_TYPE (object_class),
+					 G_SIGNAL_RUN_LAST,
+					 G_STRUCT_OFFSET (GtkSourceStyleManagerClass, changed),
+					 NULL, NULL,
+					 _gtksourceview_marshal_VOID__VOID,
+					 G_TYPE_NONE, 0);
+
+	g_type_class_add_private (object_class, sizeof(GtkSourceStyleManagerPrivate));
+}
+
+static void
+gtk_source_style_manager_init (GtkSourceStyleManager *mgr)
+{
+	mgr->priv = G_TYPE_INSTANCE_GET_PRIVATE (mgr, GTK_TYPE_SOURCE_STYLE_MANAGER,
+						GtkSourceStyleManagerPrivate);
+	mgr->priv->schemes = NULL;
+	mgr->priv->_dirs = NULL;
+	mgr->priv->need_reload = TRUE;
 }
 
 GtkSourceStyleManager *
 gtk_source_style_manager_new (void)
 {
 	return g_object_new (GTK_TYPE_SOURCE_STYLE_MANAGER, NULL);
-}
-
-static GSList *
-build_file_listing (const gchar *directory,
-		    GSList      *filenames)
-{
-	GDir *dir;
-	const gchar *name;
-
-	dir = g_dir_open (directory, 0, NULL);
-
-	if (dir == NULL)
-		return filenames;
-
-	while ((name = g_dir_read_name (dir)) != NULL)
-	{
-		gchar *full_path = g_build_filename (directory, name, NULL);
-
-		if (!g_file_test (full_path, G_FILE_TEST_IS_DIR) &&
-		    g_str_has_suffix (name, SCHEME_FILE_SUFFIX))
-		{
-			filenames = g_slist_prepend (filenames, full_path);
-		}
-		else
-		{
-			g_free (full_path);
-		}
-	}
-
-	g_dir_close (dir);
-
-	return filenames;
-}
-
-static GSList *
-get_scheme_files (GtkSourceStyleManager *mgr)
-{
-	gchar **dirs;
-	guint n_dirs;
-	guint i;
-	GSList *files = NULL;
-
-	gtk_source_style_manager_get_search_path (mgr, &dirs, &n_dirs);
-
-	for (i = 0; i < n_dirs; ++i)
-		files = build_file_listing (dirs[i], files);
-
-	g_strfreev (dirs);
-	return files;
 }
 
 static gboolean
@@ -244,6 +258,7 @@ gtk_source_style_manager_reload (GtkSourceStyleManager *mgr)
 	GHashTable *schemes_hash;
 	GSList *schemes;
 	GSList *files;
+	GSList *l;
 	GtkSourceStyleScheme *def_scheme;
 
 	g_return_if_fail (GTK_IS_SOURCE_STYLE_MANAGER (mgr));
@@ -253,19 +268,22 @@ gtk_source_style_manager_reload (GtkSourceStyleManager *mgr)
 	g_slist_foreach (schemes, (GFunc) g_object_unref, NULL);
 	g_slist_free (schemes);
 
-	files = get_scheme_files (mgr);
 	schemes_hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
 	def_scheme = _gtk_source_style_scheme_default_new ();
 	schemes = g_slist_prepend (NULL, def_scheme);
-	g_hash_table_insert (schemes_hash, g_strdup (gtk_source_style_scheme_get_id (def_scheme)),
+	g_hash_table_insert (schemes_hash,
+			     g_strdup (gtk_source_style_scheme_get_id (def_scheme)),
 			     g_object_ref (def_scheme));
 
-	while (files != NULL)
+	files = _gtk_source_view_get_file_list (gtk_source_style_manager_get_search_path (mgr),
+						SCHEME_FILE_SUFFIX);
+
+	for (l = files; l != NULL; l = l->next)
 	{
 		GtkSourceStyleScheme *scheme;
-		gchar *filename = files->data;
+		gchar *filename;
 
-		files = g_slist_delete_link (files, files);
+		filename = l->data;
 
 		scheme = _gtk_source_style_scheme_new_from_file (filename);
 
@@ -282,12 +300,13 @@ gtk_source_style_manager_reload (GtkSourceStyleManager *mgr)
 			schemes = g_slist_prepend (schemes, scheme);
 			g_hash_table_insert (schemes_hash, g_strdup (id), g_object_ref (scheme));
 		}
-
-		g_free (filename);
 	}
 
 	schemes = check_parents (schemes, schemes_hash);
 	g_hash_table_destroy (schemes_hash);
+
+	g_slist_foreach (files, (GFunc) g_free, NULL);
+	g_slist_free (files);
 
 	mgr->priv->schemes = schemes;
 	mgr->priv->need_reload = FALSE;
@@ -295,117 +314,29 @@ gtk_source_style_manager_reload (GtkSourceStyleManager *mgr)
 
 void
 gtk_source_style_manager_set_search_path (GtkSourceStyleManager	*mgr,
-					  gchar		       **path,
-					  gint			 n_elements)
+					  gchar		       **dirs)
 {
-	int i;
+	char **tmp;
 
 	g_return_if_fail (GTK_IS_SOURCE_STYLE_MANAGER (mgr));
-	g_return_if_fail (path != NULL || n_elements == 0);
 
-	if (n_elements < 0)
-		n_elements = g_strv_length (path);
+	tmp = mgr->priv->_dirs;
+	mgr->priv->_dirs = g_strdupv (dirs);
+	g_strfreev (tmp);
 
-	g_slist_foreach (mgr->priv->dirs, (GFunc) g_free, NULL);
-	mgr->priv->dirs = NULL;
-
-	for (i = 0; i < n_elements; ++i)
-		mgr->priv->dirs = g_slist_prepend (mgr->priv->dirs, g_strdup (path[i]));
-
-	mgr->priv->dirs = g_slist_reverse (mgr->priv->dirs);
-
+	g_object_notify (G_OBJECT (mgr), "search-path");
 	gtk_source_style_manager_changed (mgr);
 }
 
-void
-gtk_source_style_manager_get_search_path (GtkSourceStyleManager	*mgr,
-					  gchar		      ***path,
-					  guint			*n_elements)
+gchar **
+gtk_source_style_manager_get_search_path (GtkSourceStyleManager	*mgr)
 {
-	guint n, i;
-	GSList *l;
+	g_return_val_if_fail (GTK_IS_SOURCE_STYLE_MANAGER (mgr), NULL);
 
-	g_return_if_fail (GTK_IS_SOURCE_STYLE_MANAGER (mgr));
-	g_return_if_fail (path != NULL);
+	if (mgr->priv->_dirs == NULL)
+		mgr->priv->_dirs = _gtk_source_view_get_default_dirs (STYLES_DIR, FALSE);
 
-	if (mgr->priv->dirs == NULL)
-	{
-		const gchar * const *xdg_dirs;
-
-		mgr->priv->dirs = g_slist_prepend (NULL,
-						   g_build_filename (g_get_user_data_dir (),
-								     SOURCEVIEW_DIR,
-								     STYLES_DIR,
-								     NULL));
-
-		for (xdg_dirs = g_get_system_data_dirs (); xdg_dirs && *xdg_dirs; ++xdg_dirs)
-			mgr->priv->dirs = g_slist_prepend (mgr->priv->dirs,
-							   g_build_filename (*xdg_dirs,
-									     SOURCEVIEW_DIR,
-									     STYLES_DIR,
-									     NULL));
-
-		mgr->priv->dirs = g_slist_reverse (mgr->priv->dirs);
-	}
-
-	n = g_slist_length (mgr->priv->dirs);
-	*path = g_new0 (char*, n + 1);
-
-	for (i = 0, l = mgr->priv->dirs; l != NULL; ++i, l = l->next)
-		(*path)[i] = g_strdup (l->data);
-
-	if (n_elements != NULL)
-		*n_elements = n;
-}
-
-void
-gtk_source_style_manager_append_search_path (GtkSourceStyleManager *manager,
-					     const gchar           *directory)
-{
-	char **dirs, **new_dirs;
-	guint n_dirs;
-
-	g_return_if_fail (GTK_IS_SOURCE_STYLE_MANAGER (manager));
-	g_return_if_fail (directory != NULL);
-
-	gtk_source_style_manager_get_search_path (manager, &dirs, &n_dirs);
-	new_dirs = g_new (char*, n_dirs + 2);
-
-	if (n_dirs)
-		memcpy (new_dirs, dirs, n_dirs * sizeof(char*));
-
-	new_dirs[n_dirs] = (char*) directory;
-	new_dirs[n_dirs + 1] = NULL;
-
-	gtk_source_style_manager_set_search_path (manager, new_dirs, n_dirs + 1);
-
-	g_strfreev (dirs);
-	g_free (new_dirs);
-}
-
-void
-gtk_source_style_manager_prepend_search_path (GtkSourceStyleManager *manager,
-					      const gchar           *directory)
-{
-	char **dirs, **new_dirs;
-	guint n_dirs;
-
-	g_return_if_fail (GTK_IS_SOURCE_STYLE_MANAGER (manager));
-	g_return_if_fail (directory != NULL);
-
-	gtk_source_style_manager_get_search_path (manager, &dirs, &n_dirs);
-	new_dirs = g_new (char*, n_dirs + 2);
-
-	if (n_dirs)
-		memcpy (new_dirs + 1, dirs, n_dirs * sizeof(char*));
-
-	new_dirs[0] = (char*) directory;
-	new_dirs[n_dirs + 1] = NULL;
-
-	gtk_source_style_manager_set_search_path (manager, new_dirs, n_dirs + 1);
-
-	g_strfreev (dirs);
-	g_free (new_dirs);
+	return mgr->priv->_dirs;
 }
 
 static void

@@ -47,6 +47,7 @@
       <include>
         <context ref="def:escape"/>
         <context ref="def:line-continue"/>
+        <context ref="def:in-comment"/>
       </include>
     </context>
     <context id="punctuator" style-ref="others">

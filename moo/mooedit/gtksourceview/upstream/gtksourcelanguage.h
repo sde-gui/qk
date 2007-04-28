@@ -28,21 +28,21 @@
 G_BEGIN_DECLS
 
 #define GTK_TYPE_SOURCE_LANGUAGE		(gtk_source_language_get_type ())
-#define GTK_SOURCE_LANGUAGE(obj)		(GTK_CHECK_CAST ((obj), GTK_TYPE_SOURCE_LANGUAGE, GtkSourceLanguage))
-#define GTK_SOURCE_LANGUAGE_CLASS(klass)	(GTK_CHECK_CLASS_CAST ((klass), GTK_TYPE_SOURCE_LANGUAGE, GtkSourceLanguageClass))
-#define GTK_IS_SOURCE_LANGUAGE(obj)		(GTK_CHECK_TYPE ((obj), GTK_TYPE_SOURCE_LANGUAGE))
-#define GTK_IS_SOURCE_LANGUAGE_CLASS(klass)	(GTK_CHECK_CLASS_TYPE ((klass), GTK_TYPE_SOURCE_LANGUAGE))
+#define GTK_SOURCE_LANGUAGE(obj)		(G_TYPE_CHECK_INSTANCE_CAST((obj), GTK_TYPE_SOURCE_LANGUAGE, GtkSourceLanguage))
+#define GTK_SOURCE_LANGUAGE_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST((klass), GTK_TYPE_SOURCE_LANGUAGE, GtkSourceLanguageClass))
+#define GTK_IS_SOURCE_LANGUAGE(obj)		(G_TYPE_CHECK_INSTANCE_TYPE((obj), GTK_TYPE_SOURCE_LANGUAGE))
+#define GTK_IS_SOURCE_LANGUAGE_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE ((klass), GTK_TYPE_SOURCE_LANGUAGE))
 #define GTK_SOURCE_LANGUAGE_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), GTK_TYPE_SOURCE_LANGUAGE, GtkSourceLanguageClass))
 
 
 typedef struct _GtkSourceLanguage		GtkSourceLanguage;
 typedef struct _GtkSourceLanguageClass		GtkSourceLanguageClass;
-
 typedef struct _GtkSourceLanguagePrivate	GtkSourceLanguagePrivate;
 
 struct _GtkSourceLanguage
 {
 	GObject                   parent;
+
 	GtkSourceLanguagePrivate *priv;
 };
 
@@ -53,13 +53,19 @@ struct _GtkSourceLanguageClass
 
 GType            	 gtk_source_language_get_type 			(void) G_GNUC_CONST;
 
-gchar	 		*gtk_source_language_get_id			(GtkSourceLanguage       *language);
+const gchar 		*gtk_source_language_get_id			(GtkSourceLanguage       *language);
 
-gchar	 		*gtk_source_language_get_name			(GtkSourceLanguage       *language);
-gchar			*gtk_source_language_get_section		(GtkSourceLanguage       *language);
+const gchar 		*gtk_source_language_get_name			(GtkSourceLanguage       *language);
 
-const gchar		*gtk_source_language_get_property		(GtkSourceLanguage       *language,
+const gchar		*gtk_source_language_get_section		(GtkSourceLanguage       *language);
+
+const gchar		*gtk_source_language_get_metadata		(GtkSourceLanguage       *language,
 									 const gchar		 *name);
+
+gchar			**gtk_source_language_get_mime_types		(GtkSourceLanguage       *language);
+
+gchar			**gtk_source_language_get_globs			(GtkSourceLanguage       *language);
+
 
 G_END_DECLS
 
