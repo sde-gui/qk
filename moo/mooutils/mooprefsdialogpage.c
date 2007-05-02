@@ -393,6 +393,8 @@ moo_prefs_dialog_page_fill_from_xml (MooPrefsDialogPage *page,
                                      const char         *page_id,
                                      const char         *prefs_root)
 {
+    GError *error = NULL;
+
     struct {
         const char *prefs_root;
         const char *page_id;
@@ -415,9 +417,14 @@ moo_prefs_dialog_page_fill_from_xml (MooPrefsDialogPage *page,
     moo_glade_xml_set_signal_func (xml, connect_signals, &data);
     moo_glade_xml_set_prop_func (xml, set_props, &data);
 
-    if (!moo_glade_xml_fill_widget (xml, GTK_WIDGET (page), buffer, -1, page_id, NULL))
+    if (!moo_glade_xml_fill_widget (xml, GTK_WIDGET (page), buffer, -1, page_id, &error))
     {
         g_critical ("%s: could not parse xml", G_STRLOC);
+        if (error)
+        {
+            g_critical ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
         g_object_unref (xml);
         return FALSE;
     }

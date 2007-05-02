@@ -795,6 +795,10 @@ create_child (MooGladeXML    *xml,
         {
             widget = GTK_DIALOG (real_parent)->action_area;
         }
+        else if (!strcmp (child->internal_child, "entry") && GTK_IS_COMBO_BOX_ENTRY (real_parent))
+        {
+            widget = GTK_BIN (real_parent)->child;
+        }
         else if (!strcmp (child->internal_child, "entry") && GTK_IS_COMBO (real_parent))
         {
             widget = GTK_COMBO (real_parent)->entry;
@@ -1229,22 +1233,28 @@ child_new (MooGladeXML    *xml,
 
     if (internal_child)
     {
-        GType parent_type;
+        GType parent_types[2] = {0, 0};
+        guint n_parent_types = 1;
         Widget *real_parent;
 
         if (!strcmp (internal_child, "vbox") ||
              !strcmp (internal_child, "action_area"))
         {
-            parent_type = GTK_TYPE_DIALOG;
+            parent_types[0] = GTK_TYPE_DIALOG;
         }
-        else if (!strcmp (internal_child, "entry") ||
-                  !strcmp (internal_child, "list"))
+        else if (!strcmp (internal_child, "entry"))
         {
-            parent_type = GTK_TYPE_COMBO;
+            parent_types[0] = GTK_TYPE_COMBO;
+            parent_types[1] = GTK_TYPE_COMBO_BOX_ENTRY;
+            n_parent_types = 2;
+        }
+        else if (!strcmp (internal_child, "list"))
+        {
+            parent_types[0] = GTK_TYPE_COMBO;
         }
         else if (!strcmp (internal_child, "image"))
         {
-            parent_type = GTK_TYPE_IMAGE_MENU_ITEM;
+            parent_types[0] = GTK_TYPE_IMAGE_MENU_ITEM;
         }
         else
         {
@@ -1259,7 +1269,14 @@ child_new (MooGladeXML    *xml,
 
         while (TRUE)
         {
-            if (!g_type_is_a (real_parent->type, parent_type))
+            guint i;
+            GType pt = 0;
+
+            for (i = 0; i < n_parent_types && pt == 0; ++i)
+                if (g_type_is_a (real_parent->type, parent_types[i]))
+                    pt = parent_types[i];
+
+            if (pt == 0)
             {
                 if (!real_parent->parent_node)
                 {
