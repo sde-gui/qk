@@ -25,6 +25,7 @@
 #include "mooutils/moofontsel.h"
 #include "mooutils/mooutils-treeview.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooencodings.h"
 #include "mooutils/mooi18n.h"
 #include <string.h>
 
@@ -54,6 +55,9 @@ static void     lang_combo_init             (GtkComboBox        *combo,
 static void     filter_treeview_init        (MooGladeXML        *xml);
 
 static GtkTreeModel *create_lang_model      (MooEditor          *editor);
+
+static void     save_encoding_combo_init    (MooGladeXML        *xml);
+static void     save_encoding_combo_apply   (MooGladeXML        *xml);
 
 static MooEditor *page_get_editor           (MooPrefsDialogPage *page);
 static GtkTreeModel *page_get_lang_model    (MooPrefsDialogPage *page);
@@ -97,6 +101,8 @@ moo_edit_prefs_page_new (MooEditor *editor)
     lang_combo_init (lang_combo, page);
 
     filter_treeview_init (page->xml);
+
+    save_encoding_combo_init (page->xml);
 
     return GTK_WIDGET (page);
 }
@@ -275,6 +281,8 @@ prefs_page_apply (MooPrefsDialogPage *page)
     lang = page_get_default_lang (page);
     moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG), lang);
     g_free (lang);
+
+    save_encoding_combo_apply (page->xml);
 
     prefs_page_apply_lang_prefs (page);
     apply_filter_settings (page);
@@ -918,4 +926,37 @@ apply_filter_settings (MooPrefsDialogPage *page)
 
     g_slist_foreach (strings, (GFunc) g_free, NULL);
     g_slist_free (strings);
+}
+
+
+/**************************************************************************/
+/* Encoding combos
+ */
+
+static void
+save_encoding_combo_init (MooGladeXML *xml)
+{
+    GtkComboBox *combo;
+    const char *enc;
+
+    combo = moo_glade_xml_get_widget (xml, "encoding_save");
+    g_return_if_fail (combo != NULL);
+
+    _moo_encodings_combo_init (combo, MOO_ENCODING_COMBO_SAVE);
+    enc = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_ENCODING_SAVE));
+    _moo_encodings_combo_set_enc (combo, enc, MOO_ENCODING_COMBO_SAVE);
+}
+
+
+static void
+save_encoding_combo_apply (MooGladeXML *xml)
+{
+    GtkComboBox *combo;
+    const char *enc;
+
+    combo = moo_glade_xml_get_widget (xml, "encoding_save");
+    g_return_if_fail (combo != NULL);
+
+    enc = _moo_encodings_combo_get_enc (combo, MOO_ENCODING_COMBO_SAVE);
+    moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_ENCODING_SAVE), enc);
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.0.3 on Tue Apr 10 02:07:47 2007 by muntyan@munt10
+<!--Generated with glade3 3.0.3 on Tue May  1 22:25:47 2007 by muntyan@munt10
 	Version: 3.0.0
 	Date: Fri Dec  8 17:47:39 2006
 	User: muntyan
@@ -723,20 +723,33 @@
                         <property name="left_padding">3</property>
                         <property name="right_padding">3</property>
                         <child>
-                          <widget class="GtkVBox" id="vbox6">
+                          <widget class="GtkTable" id="table2">
                             <property name="visible">True</property>
+                            <property name="n_rows">1</property>
+                            <property name="n_columns">2</property>
+                            <child>
+                              <widget class="GtkLabel" id="label12">
+                                <property name="visible">True</property>
+                                <property name="xalign">1</property>
+                                <property name="label" translatable="yes">Encodings to autodetect:</property>
+                              </widget>
+                              <packing>
+                                <property name="x_options">GTK_FILL</property>
+                                <property name="y_options"></property>
+                                <property name="x_padding">3</property>
+                              </packing>
+                            </child>
                             <child>
                               <widget class="GtkEntry" id="entry1">
                                 <property name="visible">True</property>
                                 <property name="moo_prefs_key">encodings</property>
                                 <property name="tooltip" translatable="yes">Comma-separated list of encodings to try when opening a file. 'LOCALE' means current locale encoding.</property>
                               </widget>
-                            </child>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="right_attach">2</property>
+                                <property name="y_options"></property>
+                              </packing>
                             </child>
                           </widget>
                         </child>
@@ -745,7 +758,7 @@
                     <child>
                       <widget class="GtkLabel" id="label11">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Encodings to autodetect</property>
+                        <property name="label" translatable="yes">Loading</property>
                       </widget>
                       <packing>
                         <property name="type">label_item</property>
@@ -769,25 +782,10 @@
                         <property name="left_padding">3</property>
                         <property name="right_padding">3</property>
                         <child>
-                          <widget class="GtkVBox" id="vbox191">
+                          <widget class="GtkTable" id="table3">
                             <property name="visible">True</property>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <widget class="GtkCheckButton" id="checkbutton11">
-                                <property name="can_focus">True</property>
-                                <property name="label" translatable="yes">Make backups</property>
-                                <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
-                                <property name="moo_prefs_key">make_backups</property>
-                              </widget>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">False</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
+                            <property name="n_rows">3</property>
+                            <property name="n_columns">2</property>
                             <child>
                               <widget class="GtkCheckButton" id="checkbutton21">
                                 <property name="visible">True</property>
@@ -798,9 +796,51 @@
                                 <property name="moo_prefs_key">strip</property>
                               </widget>
                               <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">False</property>
-                                <property name="position">2</property>
+                                <property name="right_attach">2</property>
+                                <property name="top_attach">1</property>
+                                <property name="bottom_attach">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkCheckButton" id="checkbutton11">
+                                <property name="can_focus">True</property>
+                                <property name="label" translatable="yes">Make backups</property>
+                                <property name="use_underline">True</property>
+                                <property name="draw_indicator">True</property>
+                                <property name="moo_prefs_key">make_backups</property>
+                              </widget>
+                              <packing>
+                                <property name="right_attach">2</property>
+                                <property name="top_attach">2</property>
+                                <property name="bottom_attach">3</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkLabel" id="label14">
+                                <property name="visible">True</property>
+                                <property name="xalign">1</property>
+                                <property name="label" translatable="yes">Encoding for new files:</property>
+                              </widget>
+                              <packing>
+                                <property name="x_options">GTK_FILL</property>
+                                <property name="y_options"></property>
+                                <property name="x_padding">3</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkComboBoxEntry" id="encoding_save">
+                                <property name="visible">True</property>
+                                <child internal-child="entry">
+                                  <widget class="GtkEntry" id="comboboxentry-entry2">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                  </widget>
+                                </child>
+                              </widget>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="right_attach">2</property>
+                                <property name="y_options"></property>
                               </packing>
                             </child>
                           </widget>

@@ -18,6 +18,7 @@
 #include "mooedit/mootextview-private.h"
 #include "mooedit/mooedit-enums.h"
 #include "mooedit/mootextbuffer.h"
+#include "mooutils/mooencodings.h"
 #include <string.h>
 
 
@@ -115,6 +116,7 @@ _moo_edit_init_prefs (void)
     NEW_KEY_STRING (MOO_EDIT_PREFS_LINE_NUMBERS_FONT, NULL);
 
     NEW_KEY_STRING (MOO_EDIT_PREFS_ENCODINGS, _moo_get_default_encodings ());
+    NEW_KEY_STRING (MOO_EDIT_PREFS_ENCODING_SAVE, MOO_ENCODING_UTF8);
 }
 
 

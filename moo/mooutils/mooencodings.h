@@ -14,7 +14,7 @@
 #ifndef MOO_ENCODINGS_H
 #define MOO_ENCODINGS_H
 
-#include <gtk/gtkwidget.h>
+#include <gtk/gtkcombobox.h>
 
 G_BEGIN_DECLS
 
@@ -23,12 +23,25 @@ G_BEGIN_DECLS
 #define MOO_ENCODING_AUTO   "auto"
 #define MOO_ENCODING_UTF8   "UTF-8"
 
-void         _moo_encodings_attach_combo    (GtkWidget  *dialog,
-                                             GtkWidget  *box,
-                                             gboolean    save_mode,
-                                             const char *encoding);
-const char  *_moo_encodings_combo_get       (GtkWidget  *dialog,
-                                             gboolean    save_mode);
+typedef enum {
+    MOO_ENCODING_COMBO_OPEN,
+    MOO_ENCODING_COMBO_SAVE
+} MooEncodingComboType;
+
+void         _moo_encodings_combo_init      (GtkComboBox           *combo,
+                                             MooEncodingComboType   type);
+void         _moo_encodings_combo_set_enc   (GtkComboBox           *combo,
+                                             const char            *enc,
+                                             MooEncodingComboType   type);
+const char  *_moo_encodings_combo_get_enc   (GtkComboBox           *combo,
+                                             MooEncodingComboType   type);
+
+void         _moo_encodings_attach_combo    (GtkWidget              *dialog,
+                                             GtkWidget              *box,
+                                             gboolean                save_mode,
+                                             const char             *encoding);
+const char  *_moo_encodings_combo_get       (GtkWidget              *dialog,
+                                             gboolean                save_mode);
 
 const char  *_moo_encoding_locale           (void);
 gboolean     _moo_encodings_equal           (const char *enc1,

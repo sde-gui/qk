@@ -475,6 +475,9 @@ encoding_combo_set_active (GtkComboBox *combo,
 
     mgr = get_enc_mgr ();
 
+    if (!validate_encoding_name (enc_name))
+        enc_name = save_mode ? MOO_ENCODING_UTF8 : MOO_ENCODING_AUTO;
+
     if (!strcmp (enc_name, mgr->locale_encoding->name))
         enc_name = MOO_ENCODING_LOCALE;
 
@@ -697,6 +700,24 @@ setup_combo (GtkComboBox      *combo,
 
 
 void
+_moo_encodings_combo_init (GtkComboBox          *combo,
+                           MooEncodingComboType  type)
+{
+    g_return_if_fail (GTK_IS_COMBO_BOX (combo));
+    setup_combo (combo, get_enc_mgr (), type == MOO_ENCODING_COMBO_SAVE);
+}
+
+void
+_moo_encodings_combo_set_enc (GtkComboBox         *combo,
+                              const char          *enc,
+                              MooEncodingComboType type)
+{
+    g_return_if_fail (GTK_IS_COMBO_BOX (combo));
+    encoding_combo_set_active (combo, enc, type == MOO_ENCODING_COMBO_SAVE);
+}
+
+
+void
 _moo_encodings_attach_combo (GtkWidget  *dialog,
                              GtkWidget  *parent,
                              gboolean    save_mode,
@@ -723,26 +744,18 @@ _moo_encodings_attach_combo (GtkWidget  *dialog,
     setup_combo (GTK_COMBO_BOX (combo), get_enc_mgr (), save_mode);
 
     if (save_mode && encoding)
-    {
-        if (!validate_encoding_name (encoding))
-            encoding = MOO_ENCODING_UTF8;
         encoding_combo_set_active (GTK_COMBO_BOX (combo), encoding, save_mode);
-    }
 
     g_object_set_data (G_OBJECT (dialog), "moo-encodings-combo", combo);
 }
 
 
 static void
-_moo_encodings_sync_combo (GtkWidget *dialog,
-                           gboolean   save_mode)
+sync_combo (GtkComboBox *combo,
+            gboolean     save_mode)
 {
-    GtkComboBox *combo;
     const char *enc_name;
     GtkTreeIter dummy;
-
-    combo = g_object_get_data (G_OBJECT (dialog), "moo-encodings-combo");
-    g_return_if_fail (combo != NULL);
 
     if (gtk_combo_box_get_active_iter (combo, &dummy))
         return;
@@ -756,14 +769,14 @@ _moo_encodings_sync_combo (GtkWidget *dialog,
 }
 
 
-const char *
-_moo_encodings_combo_get (GtkWidget *dialog,
-                          gboolean   save_mode)
+static const char  *
+combo_get (GtkComboBox *combo,
+           gboolean     save_mode)
 {
     const char *enc_name;
     EncodingsManager *mgr;
 
-    _moo_encodings_sync_combo (dialog, save_mode);
+    sync_combo (combo, save_mode);
 
     mgr = get_enc_mgr ();
     enc_mgr_save (mgr);
@@ -787,6 +800,26 @@ _moo_encodings_combo_get (GtkWidget *dialog,
         enc_name = mgr->locale_encoding->name;
 
     return enc_name;
+}
+
+const char *
+_moo_encodings_combo_get (GtkWidget *dialog,
+                          gboolean   save_mode)
+{
+    GtkComboBox *combo;
+
+    combo = g_object_get_data (G_OBJECT (dialog), "moo-encodings-combo");
+    g_return_val_if_fail (GTK_IS_COMBO_BOX (combo), MOO_ENCODING_UTF8);
+
+    return combo_get (combo, save_mode);
+}
+
+const char *
+_moo_encodings_combo_get_enc (GtkComboBox          *combo,
+                              MooEncodingComboType  type)
+{
+    g_return_val_if_fail (GTK_IS_COMBO_BOX (combo), MOO_ENCODING_UTF8);
+    return combo_get (combo, type == MOO_ENCODING_COMBO_SAVE);
 }
 
 
