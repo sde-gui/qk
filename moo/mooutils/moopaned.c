@@ -2562,6 +2562,7 @@ gboolean    moo_paned_remove_pane       (MooPaned   *paned,
 {
     Pane *pane;
     GtkWidget *label;
+    int index;
 
     g_return_val_if_fail (MOO_IS_PANED (paned), FALSE);
     g_return_val_if_fail (GTK_IS_WIDGET (pane_widget), FALSE);
@@ -2572,7 +2573,20 @@ gboolean    moo_paned_remove_pane       (MooPaned   *paned,
     g_return_val_if_fail (g_slist_find (paned->priv->panes, pane) != NULL, FALSE);
 
     if (paned->priv->current_pane == pane)
-        moo_paned_hide_pane (paned);
+    {
+        index = pane_index (paned, pane);
+        if (index > 0)
+            index = index - 1;
+        else if (moo_paned_n_panes (paned) > 1)
+            index = 1;
+        else
+            index = -1;
+
+        if (index >= 0)
+            moo_paned_open_pane (paned, index);
+        else
+            moo_paned_hide_pane (paned);
+    }
 
     if (pane->params->detached)
     {
