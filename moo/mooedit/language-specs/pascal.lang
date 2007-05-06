@@ -16,31 +16,40 @@
   </styles>
 
   <definitions>
+
     <context id="string" style-ref="string">
       <start>[uUrR]?'</start>
       <end>'</end>
     </context>
-    <context id="number" style-ref="decimal">
-      <match>\b(([0-9]+)|([0-9]+\.[0-9]+([Ee][-]?[0-9]+)?))\b</match>
-    </context>
-    <context id="hex-number" style-ref="decimal">
-      <match>\b\$[0-9a-fA-F]*\b</match>
-    </context>
+
     <context id="line-comment" style-ref="comment" end-at-line-end="true">
       <start>\/\/</start>
+      <include>
+        <context ref="def:in-comment"/>
+      </include>
     </context>
+
     <context id="block-comment-1" style-ref="comment">
       <start>\(\*</start>
       <end>\*\)</end>
+      <include>
+        <context ref="def:in-comment"/>
+      </include>
     </context>
+
     <context id="block-comment-2" style-ref="comment">
       <start>\{[^\$]</start>
       <end>\}</end>
+      <include>
+        <context ref="def:in-comment"/>
+      </include>
     </context>
+
     <context id="preprocessor-defines" style-ref="preprocessor" end-at-line-end="true">
       <start>\{\$</start>
       <end>\}</end>
     </context>
+
     <context id="general-format" style-ref="keyword">
       <keyword>Program</keyword>
       <keyword>Library</keyword>
@@ -55,12 +64,14 @@
       <keyword>Var</keyword>
       <keyword>Const</keyword>
     </context>
+
     <context id="functions-and-function-modifiers" style-ref="keyword">
       <keyword>Function</keyword>
       <keyword>Procedure</keyword>
       <keyword>Overload</keyword>
       <keyword>cdecl</keyword>
     </context>
+
     <context id="boolean-bitwise-operators" style-ref="keyword">
       <keyword>if</keyword>
       <keyword>then</keyword>
@@ -73,10 +84,12 @@
       <keyword>shr</keyword>
       <keyword>shl</keyword>
     </context>
+
     <context id="math-operators" style-ref="keyword">
       <keyword>div</keyword>
       <keyword>mod</keyword>
     </context>
+
     <context id="loop-flow-and-exceptions-keywords" style-ref="keyword">
       <keyword>while</keyword>
       <keyword>do</keyword>
@@ -93,6 +106,7 @@
       <keyword>finally</keyword>
       <keyword>raise</keyword>
     </context>
+
     <context id="type-class-and-object-keywords" style-ref="keyword">
       <keyword>Type</keyword>
       <keyword>Packed</keyword>
@@ -118,6 +132,7 @@
       <keyword>self</keyword>
       <keyword>Inherited</keyword>
     </context>
+
     <context id="builtin-types" style-ref="data-type">
       <keyword>Char</keyword>
       <keyword>String</keyword>
@@ -126,6 +141,7 @@
       <keyword>Boolean</keyword>
       <keyword>Pointer</keyword>
     </context>
+
     <context id="builtin-functions" style-ref="keyword">
       <keyword>chr</keyword>
       <keyword>ord</keyword>
@@ -145,16 +161,32 @@
       <keyword>eof</keyword>
       <keyword>eoln</keyword>
     </context>
+
     <context id="builtin-values" style-ref="keyword">
       <keyword>nil</keyword>
       <keyword>False</keyword>
       <keyword>True</keyword>
     </context>
+
+    <context id="number" style-ref="decimal">
+      <match extended="true">
+        (?&lt;![\w\.])
+        (([0-9]+)|([0-9]+\.[0-9]+([Ee][-]?[0-9]+)?))
+        (?![\w\.])
+      </match>
+    </context>
+
+    <context id="hex-number" style-ref="decimal">
+      <match extended="true">
+        (?&lt;![\w\.])
+        \$[0-9a-fA-F]*
+        (?![\w\.])
+      </match>
+    </context>
+
     <context id="pascal">
       <include>
         <context ref="string"/>
-        <context ref="number"/>
-        <context ref="hex-number"/>
         <context ref="line-comment"/>
         <context ref="block-comment-1"/>
         <context ref="block-comment-2"/>
@@ -168,7 +200,10 @@
         <context ref="builtin-types"/>
         <context ref="builtin-functions"/>
         <context ref="builtin-values"/>
+        <context ref="number"/>
+        <context ref="hex-number"/>
       </include>
     </context>
+
   </definitions>
 </language>

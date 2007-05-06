@@ -15,13 +15,6 @@
   </styles>
 
   <definitions>
-<!--    <context id="stuff">
-      <match>\b(DeclareGlobalVariable|DeclareGlobalFunction)\s*\((\"[\w_]+\")</match>
-      <include>
-        <context sub-pattern="2" style-ref="keyword"/>
-      </include>
-    </context>-->
-
     <context id="character" style-ref="character">
       <match>\'(\\[trn\\]|[^\\])\'</match>
     </context>

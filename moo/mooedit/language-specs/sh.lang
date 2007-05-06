@@ -123,7 +123,7 @@
       <keyword>\-ge\b</keyword>
     </context>
     <context id="variable1" style-ref="variable1">
-      <match>\$+[@?*{a-zA-Z0-9_][}a-zA-Z0-9_]*</match>
+      <match>\$+[@?*#\${a-zA-Z0-9_][}a-zA-Z0-9_]*</match>
     </context>
     <context id="variable2" style-ref="variable2">
       <match>[a-zA-Z_][a-zA-Z0-9_]*\=</match>
