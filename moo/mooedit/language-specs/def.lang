@@ -91,25 +91,25 @@
             </include>
         </context>
 
+        <!-- A line comment starting with # -->
+        <context id="shell-like-comment" style-ref="comment" end-at-line-end="true">
+          <start>#</start>
+          <include>
+            <context ref="in-comment"/>
+          </include>
+        </context>
+
         <context id="line-continue" style-ref="escape">
             <start>\\$</start>
             <end>^</end>
         </context>
 
-        <!-- this is intended to be used from line comments starting not with #,
-             see shell-like-comment below -->
+        <!-- this is intended to be used from line comments
+             that can continue on a different line after "\" -->
         <context id="in-line-comment">
           <include>
             <context ref="line-continue" ignore-style="true"/>
             <context ref="in-comment"/>
-          </include>
-        </context>
-
-        <!-- A line comment starting with #, with \ as escape-new-line char -->
-        <context id="shell-like-comment" style-ref="comment" end-at-line-end="true">
-          <start>#</start>
-          <include>
-            <context ref="in-line-comment"/>
           </include>
         </context>
 

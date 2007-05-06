@@ -66,6 +66,9 @@
 
   <style name="changelog:email"             use-style="c:preprocessor"/>
 
+  <style name="scheme:parens"               use-style="def:keyword"/>
+  <style name="scheme:any-function"         use-style="def:keyword"/>
+
 <!--  <style name="m4:quote"                    background="grey"/>-->
 
   <style name="sh:dollar"                   foreground="#008000" bold="true"/>

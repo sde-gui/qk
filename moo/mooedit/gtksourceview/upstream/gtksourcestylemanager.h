@@ -76,10 +76,6 @@ GSList			*gtk_source_style_manager_list_schemes		(GtkSourceStyleManager	*manager
 GtkSourceStyleScheme	*gtk_source_style_manager_get_scheme		(GtkSourceStyleManager	*manager,
 									 const gchar		*scheme_id);
 
-GtkSourceStyleScheme	*gtk_source_style_manager_get_default_scheme	(GtkSourceStyleManager	*manager);
-void			 gtk_source_style_manager_set_default_scheme	(GtkSourceStyleManager	*manager,
-									 GtkSourceStyleScheme	*scheme);
-
 G_END_DECLS
 
 #endif /* __GTK_SOURCE_STYLE_MANAGER_H__ */

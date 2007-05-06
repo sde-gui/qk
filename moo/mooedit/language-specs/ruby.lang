@@ -8,7 +8,6 @@
 
   <styles>
     <style id="comment" _name="Comment" map-to="def:comment"/>
-    <style id="string" _name="String" map-to="def:string"/>
     <style id="keyword" _name="Keyword" map-to="def:keyword"/>
     <style id="decimal" _name="Decimal" map-to="def:decimal"/>
     <style id="data-type" _name="Data Type" map-to="def:data-type"/>
@@ -17,12 +16,23 @@
   </styles>
 
   <definitions>
+
+    <context id="multiline-comment" style-ref="comment">
+      <start>^=begin</start>
+      <end>^=end</end>
+      <include>
+        <context ref="def:escape"/>
+        <context ref="def:line-continue"/>
+      </include>
+    </context>
+
     <context id="attribute-definitions" style-ref="others">
       <keyword>attr</keyword>
       <keyword>attr_writer</keyword>
       <keyword>attr_reader</keyword>
       <keyword>attr_accessor</keyword>
     </context>
+
     <context id="definitions" style-ref="keyword">
       <keyword>alias</keyword>
       <keyword>class</keyword>
@@ -30,6 +40,7 @@
       <keyword>def</keyword>
       <keyword>undef</keyword>
     </context>
+
     <context id="pseudo-variables" style-ref="data-type">
       <keyword>self</keyword>
       <keyword>super</keyword>
@@ -39,11 +50,13 @@
       <keyword>__FILE__</keyword>
       <keyword>__LINE__</keyword>
     </context>
+
     <context id="module-handlers" style-ref="preprocessor">
       <keyword>require</keyword>
       <keyword>include</keyword>
       <keyword>load</keyword>
     </context>
+
     <context id="keywords" style-ref="keyword">
       <keyword>BEGIN</keyword>
       <keyword>END</keyword>
@@ -79,6 +92,7 @@
       <keyword>while</keyword>
       <keyword>yield</keyword>
     </context>
+
     <context id="builtins" style-ref="others">
       <keyword>Array</keyword>
       <keyword>Bignum</keyword>
@@ -113,57 +127,38 @@
       <keyword>Time</keyword>
       <keyword>TrueClass</keyword>
     </context>
+
     <context id="class-variables" style-ref="data-type">
       <match>@@[a-zA-Z_][a-zA-Z0-9_]*</match>
     </context>
+
     <context id="instance-variables" style-ref="data-type">
       <match>@[a-zA-Z_][a-zA-Z0-9_]*</match>
     </context>
+
     <context id="global-variables" style-ref="data-type">
       <match>\$[a-zA-Z_][a-zA-Z0-9_]*</match>
     </context>
+
     <context id="symbols" style-ref="data-type">
       <match>:[a-zA-Z0-9_]+</match>
     </context>
+
     <context id="regexp-variables" style-ref="decimal">
       <match>\$[1-9][0-9]*</match>
     </context>
+
     <context id="constants" style-ref="decimal">
       <match>\b[A-Z_][A-Za-z0-9_:]*\b</match>
     </context>
-    <context id="double-quoted-string" style-ref="string" end-at-line-end="true">
-      <start>"</start>
-      <end>"</end>
-      <include>
-        <context ref="def:escape"/>
-        <context ref="def:line-continue"/>
-      </include>
-    </context>
-    <context id="single-quoted-string" style-ref="string" end-at-line-end="true">
-      <start>'</start>
-      <end>'</end>
-      <include>
-        <context ref="def:escape"/>
-        <context ref="def:line-continue"/>
-      </include>
-    </context>
-    <context id="line-comment" style-ref="comment" end-at-line-end="true">
-      <start>#</start>
-      <include>
-        <context ref="def:escape"/>
-        <context ref="def:line-continue"/>
-      </include>
-    </context>
-    <context id="multiline-comment" style-ref="comment">
-      <start>^=begin</start>
-      <end>^=end</end>
-      <include>
-        <context ref="def:escape"/>
-        <context ref="def:line-continue"/>
-      </include>
-    </context>
+
     <context id="ruby">
       <include>
+        <context ref="def:shebang"/>
+        <context ref="def:shell-like-comment"/>
+        <context ref="def:string"/>
+        <context ref="def:single-quoted-string"/>
+        <context ref="multiline-comment"/>
         <context ref="attribute-definitions"/>
         <context ref="definitions"/>
         <context ref="pseudo-variables"/>
@@ -176,10 +171,6 @@
         <context ref="symbols"/>
         <context ref="regexp-variables"/>
         <context ref="constants"/>
-        <context ref="double-quoted-string"/>
-        <context ref="single-quoted-string"/>
-        <context ref="line-comment"/>
-        <context ref="multiline-comment"/>
       </include>
     </context>
   </definitions>

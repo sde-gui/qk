@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<language id="octave" _name="Octave" version="2.0" _section="Scientific">
+<language id="octave" _name="Octave" version="2.0" _section="Scripts">
   <metadata>
     <property name="mimetypes">text/x-octave;text/x-matlab</property>
     <property name="globs">*.m</property>

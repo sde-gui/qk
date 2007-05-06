@@ -13,7 +13,9 @@
     <style id="keyword" name="Keyword" map-to="def:keyword"/>
     <style id="others" name="Others"/>
   </styles>
+
   <definitions>
+
     <context id="pod" style-ref="comment">
       <start>^=[a-z]</start>
       <end>^=cut</end>
@@ -22,7 +24,10 @@
         <context ref="def:line-continue"/>
       </include>
     </context>
-    <context id="string" style-ref="string">
+
+    <!-- perl strings do not end at line end,
+         so we cannot use def:string -->
+    <context id="double-quoted-string" style-ref="string">
       <start>"</start>
       <end>"</end>
       <include>
@@ -30,7 +35,8 @@
         <context ref="def:line-continue"/>
       </include>
     </context>
-    <context id="string2" style-ref="string">
+
+    <context id="single-quoted-string" style-ref="string">
       <start>'</start>
       <end>'</end>
       <include>
@@ -38,7 +44,8 @@
         <context ref="def:line-continue"/>
       </include>
     </context>
-    <context id="string3" style-ref="string">
+
+    <context id="backtick-quoted-string" style-ref="string">
       <start>`</start>
       <end>`</end>
       <include>
@@ -46,22 +53,19 @@
         <context ref="def:line-continue"/>
       </include>
     </context>
-    <context id="line-comment" style-ref="comment" end-at-line-end="true">
-      <start>[^\$]#|^#</start>
-      <include>
-        <context ref="def:escape"/>
-        <context ref="def:line-continue"/>
-      </include>
-    </context>
+
     <context id="variables" style-ref="data-type">
       <match>[$@%][$]?[a-zA-Z_][a-zA-Z0-9_]*</match>
     </context>
+
     <context id="function-call" style-ref="others">
       <match>&amp;[a-zA-Z_][a-zA-Z0-9_]*</match>
     </context>
+
     <context id="method-call" style-ref="others">
       <match>-&gt;[a-zA-Z_][a-zA-Z0-9_]*</match>
     </context>
+
     <context id="keywords" style-ref="keyword">
       <keyword>eq</keyword>
       <keyword>ne</keyword>
@@ -278,18 +282,22 @@
       <keyword>localtime</keyword>
       <keyword>time</keyword>
     </context>
+
     <context id="perl">
       <include>
+        <context ref="def:shebang"/>
+        <context ref="def:shell-like-comment"/>
         <context ref="pod"/>
-        <context ref="string"/>
-        <context ref="string2"/>
-        <context ref="string3"/>
-        <context ref="line-comment"/>
+        <context ref="double-quoted-string"/>
+        <context ref="single-quoted-string"/>
+        <context ref="backtick-quoted-string"/>
         <context ref="variables"/>
         <context ref="function-call"/>
         <context ref="method-call"/>
         <context ref="keywords"/>
       </include>
     </context>
+
   </definitions>
+
 </language>

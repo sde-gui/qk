@@ -7,6 +7,7 @@
 
   <styles>
     <style id="comment" _name="Comment" map-to="def:comment"/>
+    <style id="error" _name="Error" map-to="def:error"/>
     <style id="data-type" _name="Data Type" map-to="def:data-type"/>
     <style id="string" _name="String" map-to="def:string"/>
     <style id="keyword" _name="Keyword" map-to="def:keyword"/>
@@ -14,22 +15,56 @@
   </styles>
 
   <definitions>
-    <context id="string" style-ref="string" end-at-line-end="true">
-      <start>"</start>
-      <end>"</end>
+
+    <context id="line-comment" style-ref="comment" end-at-line-end="true">
+      <start>\/\/</start>
       <include>
-        <context ref="def:escape"/>
-        <context ref="def:line-continue"/>
+        <context ref="def:in-line-comment"/>
       </include>
     </context>
-    <context id="string-2" style-ref="string" end-at-line-end="true">
-      <start>'</start>
-      <end>'</end>
+
+    <context id="multiline-comment" style-ref="comment">
+      <start>\/\*</start>
+      <end>\*\/</end>
       <include>
-        <context ref="def:escape"/>
-        <context ref="def:line-continue"/>
+        <context ref="def:in-comment"/>
       </include>
     </context>
+
+    <context id="close-comment-outside-comment" style-ref="error">
+      <match>\*\/(?!\*)</match>
+    </context>
+
+    <define-regex id="preproc-start">^\s*#\s*</define-regex>
+
+    <context id="if-false-comment" style-ref="comment">
+      <start>\%{preproc-start}if\s*false\b</start>
+      <end>\%{preproc-start}(endif|else|elif)\b</end>
+      <include>
+        <context id="if-in-if-false">
+          <start>\%{preproc-start}if(n?def)?\b</start>
+          <end>\%{preproc-start}endif\b</end>
+          <include>
+            <context ref="if-in-if-false"/>
+            <context ref="def:in-comment"/>
+          </include>
+        </context>
+        <context ref="def:in-comment"/>
+      </include>
+    </context>
+
+    <context id="preprocessor" style-ref="preprocessor" end-at-line-end="true">
+      <start extended="true">
+        \%{preproc-start}
+        (define|undef|if(n?def)?|else|elif|endif|line|error|warning|region|endregion)
+        \b
+      </start>
+      <include>
+        <context ref="line-comment"/>
+        <context ref="multiline-comment"/>
+      </include>
+    </context>
+
     <context id="multiline-string" style-ref="string">
       <start>@"([^"]|"")*</start>
       <end>"</end>
@@ -38,21 +73,7 @@
         <context ref="def:line-continue"/>
       </include>
     </context>
-    <context id="line-comment" style-ref="comment" end-at-line-end="true">
-      <start>\/\/</start>
-      <include>
-        <context ref="def:escape"/>
-        <context ref="def:line-continue"/>
-      </include>
-    </context>
-    <context id="block-comment" style-ref="comment">
-      <start>\/\*</start>
-      <end>\*\/</end>
-      <include>
-        <context ref="def:escape"/>
-        <context ref="def:line-continue"/>
-      </include>
-    </context>
+
     <context id="keywords" style-ref="keyword">
       <keyword>class</keyword>
       <keyword>delegate</keyword>
@@ -124,6 +145,7 @@
       <keyword>while</keyword>
       <keyword>yield</keyword>
     </context>
+
     <context id="primitives" style-ref="data-type">
       <keyword>bool</keyword>
       <keyword>byte</keyword>
@@ -142,30 +164,19 @@
       <keyword>ulong</keyword>
       <keyword>ushort</keyword>
     </context>
-    <context id="preprocessor-definitions" style-ref="preprocessor">
-      <prefix>^[ \t]*#[ \t]*</prefix>
-      <keyword>if</keyword>
-      <keyword>ifdef</keyword>
-      <keyword>ifndef</keyword>
-      <keyword>else</keyword>
-      <keyword>elif</keyword>
-      <keyword>define</keyword>
-      <keyword>endif</keyword>
-      <keyword>undef</keyword>
-      <keyword>error</keyword>
-      <keyword>region</keyword>
-      <keyword>endregion</keyword>
-    </context>
+
     <context id="c-sharp">
       <include>
-        <context ref="string"/>
-        <context ref="string-2"/>
-        <context ref="multiline-string"/>
+        <context ref="def:string"/>
+        <context ref="def:single-quoted-string"/>
         <context ref="line-comment"/>
-        <context ref="block-comment"/>
+        <context ref="multiline-comment"/>
+        <context ref="close-comment-outside-comment"/>
+        <context ref="multiline-string"/>
+        <context ref="if-false-comment"/>
+        <context ref="preprocessor"/>
         <context ref="keywords"/>
         <context ref="primitives"/>
-        <context ref="preprocessor-definitions"/>
       </include>
     </context>
   </definitions>

@@ -7,39 +7,16 @@
   </metadata>
 
   <styles>
-    <style id="comment" _name="Comment" map-to="def:comment"/>
     <style id="data-type" _name="Data Type" map-to="def:data-type"/>
-    <style id="string" _name="String" map-to="def:string"/>
     <style id="keyword" _name="Keyword" map-to="def:keyword"/>
   </styles>
 
   <definitions>
-    <context id="string" style-ref="string" end-at-line-end="true">
-      <start>"</start>
-      <end>"</end>
-      <include>
-        <context ref="def:escape"/>
-        <context ref="def:line-continue"/>
-      </include>
-    </context>
-    <context id="string2" style-ref="string" end-at-line-end="true">
-      <start>'</start>
-      <end>'</end>
-      <include>
-        <context ref="def:escape"/>
-        <context ref="def:line-continue"/>
-      </include>
-    </context>
-    <context id="line-comment" style-ref="comment" end-at-line-end="true">
-      <start>#</start>
-      <include>
-        <context ref="def:escape"/>
-        <context ref="def:line-continue"/>
-      </include>
-    </context>
+
     <context id="variable" style-ref="data-type">
       <match>[$@%][$]?[a-zA-Z_][a-zA-Z0-9_]*</match>
     </context>
+
     <context id="keyword" style-ref="keyword">
       <keyword>string</keyword>
       <keyword>subst</keyword>
@@ -130,14 +107,18 @@
       <keyword>pid</keyword>
       <keyword>exit</keyword>
     </context>
+
     <context id="tcl">
       <include>
-        <context ref="string"/>
-        <context ref="string2"/>
-        <context ref="line-comment"/>
+        <context ref="def:shebang"/>
+        <context ref="def:shell-like-comment"/>
+        <context ref="def:string"/>
+        <context ref="def:single-quoted-string"/>
         <context ref="variable"/>
         <context ref="keyword"/>
       </include>
     </context>
+
   </definitions>
+
 </language>

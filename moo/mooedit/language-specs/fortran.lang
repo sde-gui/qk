@@ -8,7 +8,6 @@
   <styles>
     <style id="comment" _name="Comment" map-to="def:comment"/>
     <style id="floating-point" _name="Floating Point" map-to="def:floating-point"/>
-    <style id="string" _name="String" map-to="def:string"/>
     <style id="keyword" _name="Keyword" map-to="def:keyword"/>
     <style id="base-n-integer" _name="Base-N Integer" map-to="def:base-n-integer"/>
     <style id="decimal" _name="Decimal" map-to="def:decimal"/>
@@ -16,29 +15,16 @@
   </styles>
 
   <definitions>
+
+    <!-- Note: contains an hack to avoid considering ^COMMON a comment -->
     <context id="line-comment" style-ref="comment" end-at-line-end="true">
       <start>!|(^[Cc](\b|[^Oo]))</start>
       <include>
         <context ref="def:escape"/>
-        <context ref="def:line-continue"/>
+        <context ref="def:in-line-comment"/>
       </include>
     </context>
-    <context id="string" style-ref="string" end-at-line-end="true">
-      <start>"</start>
-      <end>"</end>
-      <include>
-        <context ref="def:escape"/>
-        <context ref="def:line-continue"/>
-      </include>
-    </context>
-    <context id="string-2" style-ref="string" end-at-line-end="true">
-      <start>'</start>
-      <end>'</end>
-      <include>
-        <context ref="def:escape"/>
-        <context ref="def:line-continue"/>
-      </include>
-    </context>
+
     <context id="operators" style-ref="keyword">
       <prefix>\.</prefix>
       <suffix>\.</suffix>
@@ -57,6 +43,7 @@
       <keyword>LT</keyword>
       <keyword>LE</keyword>
     </context>
+
     <context id="keywords" style-ref="keyword">
       <keyword>block data</keyword>
       <keyword>CALL</keyword>
@@ -96,6 +83,7 @@
       <keyword>where</keyword>
       <keyword>while</keyword>
     </context>
+
     <context id="read-write" style-ref="keyword">
       <keyword>backspace</keyword>
       <keyword>close</keyword>
@@ -107,6 +95,7 @@
       <keyword>write</keyword>
       <keyword>print</keyword>
     </context>
+
     <context id="input-output" style-ref="keyword">
       <keyword>unit</keyword>
       <keyword>file</keyword>
@@ -137,6 +126,7 @@
       <keyword>advance</keyword>
       <keyword>nml</keyword>
     </context>
+
     <context id="intrinsics" style-ref="keyword">
       <keyword>adjustl</keyword>
       <keyword>adjustr</keyword>
@@ -345,6 +335,7 @@
       <keyword>zsin</keyword>
       <keyword>zsqrt</keyword>
     </context>
+
     <context id="types" style-ref="data-type">
       <keyword>REAL</keyword>
       <keyword>INTEGER</keyword>
@@ -363,23 +354,28 @@
       <keyword>target</keyword>
       <keyword>allocatable</keyword>
     </context>
+
     <context id="decimal" style-ref="decimal">
       <match>\b([1-9][0-9]*|0)([Uu]([Ll]|LL|ll)?|([Ll]|LL|ll)[Uu]?)?\b</match>
     </context>
+
     <context id="floating-point-number" style-ref="floating-point">
       <match>\b([0-9]+[Ee][-]?[0-9]+|([0-9]*\.[0-9]+|[0-9]+\.)([Ee][-]?[0-9]+)?)[fFlL]?</match>
     </context>
+
     <context id="octal-number" style-ref="base-n-integer">
       <match>\b0[0-7]+([Uu]([Ll]|LL|ll)?|([Ll]|LL|ll)[Uu]?)?\b</match>
     </context>
+
     <context id="hex-number" style-ref="base-n-integer">
       <match>\b0[xX][0-9a-fA-F]+([Uu]([Ll]|LL|ll)?|([Ll]|LL|ll)[Uu]?)?\b</match>
     </context>
+
     <context id="fortran">
       <include>
+        <context ref="def:string"/>
+        <context ref="def:single-quoted-string"/>
         <context ref="line-comment"/>
-        <context ref="string"/>
-        <context ref="string-2"/>
         <context ref="operators"/>
         <context ref="keywords"/>
         <context ref="read-write"/>
@@ -392,5 +388,6 @@
         <context ref="hex-number"/>
       </include>
     </context>
+
   </definitions>
 </language>

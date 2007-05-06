@@ -3,10 +3,10 @@
   <metadata>
     <property name="mimetypes">application/x-gnome-app-info;application/x-desktop</property>
     <property name="globs">*.desktop;*.kdelnk</property>
+    <property name="line-comment-start">#</property>
   </metadata>
 
   <styles>
-    <style id="comment" _name="Comment" map-to="def:comment"/>
     <style id="group" _name="Group" map-to="def:keyword"/>
     <style id="key" _name="Key" map-to="def:data-type"/>
     <style id="language" _name="Translation" map-to="def:decimal"/>
@@ -19,13 +19,6 @@
 
   <definitions>
     <define-regex id="key-suffix">(?=(\[[a-zA-Z_]+\])?\s*=\s*)</define-regex>
-
-    <context id="line-comment" style-ref="comment" end-at-line-end="true">
-      <start>#</start>
-      <include>
-        <context ref="def:in-comment"/>
-      </include>
-    </context>
 
     <context id="group" style-ref="group">
       <start>^\[</start>
@@ -117,7 +110,7 @@
 
     <context id="desktop">
       <include>
-        <context ref="line-comment"/>
+        <context ref="def:shell-like-comment"/>
         <context ref="group"/>
         <context ref="key"/>
         <context id="lang-and-value" end-at-line-end="true">
