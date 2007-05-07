@@ -599,28 +599,22 @@ moo_window_present (GtkWindow *window,
 }
 
 
-/* XXX check what gtk_window_set_icon_name() does */
-gboolean
+void
 _moo_window_set_icon_from_stock (GtkWindow  *window,
-                                 const char *stock_id)
+                                 const char *name)
 {
     GdkPixbuf *icon;
 
-    g_return_val_if_fail (GTK_IS_WINDOW (window), FALSE);
-    g_return_val_if_fail (stock_id != NULL, FALSE);
+    g_return_if_fail (GTK_IS_WINDOW (window));
+    g_return_if_fail (name != NULL);
 
-    icon = gtk_widget_render_icon (GTK_WIDGET (window), stock_id,
+    icon = gtk_widget_render_icon (GTK_WIDGET (window), name,
                                    GTK_ICON_SIZE_BUTTON, 0);
 
     if (icon)
     {
         gtk_window_set_icon (GTK_WINDOW (window), icon);
         gdk_pixbuf_unref (icon);
-        return TRUE;
-    }
-    else
-    {
-        return FALSE;
     }
 }
 

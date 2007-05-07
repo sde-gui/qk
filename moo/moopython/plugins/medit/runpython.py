@@ -24,7 +24,7 @@ class Runner(object):
     def __ensure_output(self):
         pane = self.__get_output()
         if pane is None:
-            label = self.pane_label or moo.utils.PaneLabel(icon_stock_id=moo.utils.STOCK_EXECUTE,
+            label = self.pane_label or moo.utils.PaneLabel(icon_name=moo.utils.STOCK_EXECUTE,
                                                            label_text=_("Python Output"))
             output = moo.edit.CmdView()
             output.set_property("highlight-current-line", True)

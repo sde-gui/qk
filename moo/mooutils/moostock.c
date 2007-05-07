@@ -290,6 +290,7 @@ _moo_stock_init (void)
     add_icon (factory, MOO_STOCK_TERMINAL, "terminal", 24, MOO_GNOME_TERMINAL_ICON);
 
     add_icon (factory, MOO_STOCK_MEDIT, "medit", 24, MEDIT_ICON);
+    add_icon (factory, MOO_STOCK_HIDE, NULL, REAL_SMALL, MOO_HIDE_ICON);
     add_icon (factory, MOO_STOCK_CLOSE, NULL, REAL_SMALL, MOO_CLOSE_ICON);
     add_icon (factory, MOO_STOCK_STICKY, NULL, REAL_SMALL, MOO_STICKY_ICON);
     add_icon (factory, MOO_STOCK_DETACH, NULL, REAL_SMALL, MOO_DETACH_ICON);

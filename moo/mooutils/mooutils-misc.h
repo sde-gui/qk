@@ -30,8 +30,8 @@ void        moo_window_present              (GtkWindow  *window,
                                              guint32     stamp);
 GtkWindow  *_moo_get_top_window             (GSList     *windows);
 
-gboolean    _moo_window_set_icon_from_stock (GtkWindow  *window,
-                                             const char *stock_id);
+void        _moo_window_set_icon_from_stock (GtkWindow  *window,
+                                             const char *name);
 
 void        moo_log_window_show             (void);
 void        moo_log_window_hide             (void);

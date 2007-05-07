@@ -178,9 +178,9 @@ static void     create_paned                    (MooEditWindow      *window);
 static PaneParams *load_pane_params             (const char         *pane_id);
 static gboolean save_pane_params                (const char         *pane_id,
                                                  PaneParams         *params);
-static void     pane_params_changed             (MooEditWindow      *window,
-                                                 MooPanePosition     position,
-                                                 guint               index);
+static void     pane_params_changed             (MooPane            *pane,
+                                                 GParamSpec         *pspec,
+                                                 MooEditWindow      *window);
 static void     pane_size_changed               (MooEditWindow      *window,
                                                  MooPanePosition     position);
 static PaneParams *pane_params_new              (void);
@@ -2557,9 +2557,6 @@ create_paned (MooEditWindow *window)
         g_free (key);
     }
 
-    g_signal_connect_swapped (paned, "pane-params-changed",
-                              G_CALLBACK (pane_params_changed),
-                              window);
     g_signal_connect_swapped (paned, "set-pane-size",
                               G_CALLBACK (pane_size_changed),
                               window);
@@ -2573,7 +2570,7 @@ moo_edit_window_add_pane (MooEditWindow  *window,
                           MooPaneLabel   *label,
                           MooPanePosition position)
 {
-    int result;
+    MooPane *pane;
     PaneParams *params;
 
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
@@ -2589,24 +2586,26 @@ moo_edit_window_add_pane (MooEditWindow  *window,
     position = (params && params->position >= 0) ?
             (MooPanePosition) params->position : position;
 
-    result = moo_big_paned_insert_pane (window->paned, widget, label,
-                                        position, -1);
+    pane = moo_big_paned_insert_pane (window->paned, widget, label, position, -1);
 
-    if (result >= 0)
+    if (pane != NULL)
     {
+        moo_pane_set_removable (pane, FALSE);
         g_hash_table_insert (window->priv->panes,
                              g_strdup (user_id), widget);
         g_object_set_data_full (G_OBJECT (widget), "moo-edit-window-pane-user-id",
                                 g_strdup (user_id), g_free);
 
         if (params)
-            moo_big_paned_set_pane_params (window->paned, position, result, params->params);
+            moo_pane_set_params (pane, params->params);
+
+        g_signal_connect (pane, "notify::params", G_CALLBACK (pane_params_changed), window);
     }
 
     pane_params_free (params);
     g_object_unref (widget);
 
-    return result >= 0;
+    return pane != NULL;
 }
 
 
@@ -2614,8 +2613,8 @@ gboolean
 moo_edit_window_remove_pane (MooEditWindow  *window,
                              const char     *user_id)
 {
+    MooPane *pane;
     GtkWidget *widget;
-    gboolean result;
 
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
     g_return_val_if_fail (user_id != NULL, FALSE);
@@ -2625,10 +2624,11 @@ moo_edit_window_remove_pane (MooEditWindow  *window,
     if (!widget)
         return FALSE;
 
+    pane = moo_big_paned_find_pane (window->paned, widget, NULL);
+    g_signal_handlers_disconnect_by_func (pane, (gpointer) pane_params_changed, window);
     g_hash_table_remove (window->priv->panes, user_id);
+    moo_big_paned_remove_pane (window->paned, widget);
 
-    result = moo_big_paned_remove_pane (window->paned, widget);
-    g_return_val_if_fail (result, FALSE);
     return TRUE;
 }
 
@@ -2839,23 +2839,23 @@ pane_params_free (PaneParams *params)
 
 
 static void
-pane_params_changed (MooEditWindow      *window,
-                     MooPanePosition     position,
-                     guint               index)
+pane_params_changed (MooPane       *pane,
+                     G_GNUC_UNUSED GParamSpec *pspec,
+                     MooEditWindow *window)
 {
     GtkWidget *widget;
     const char *id;
     PaneParams *params;
 
-    widget = moo_big_paned_get_pane (window->paned, position, index);
+    widget = moo_pane_get_child (pane);
     g_return_if_fail (widget != NULL);
     id = g_object_get_data (G_OBJECT (widget), "moo-edit-window-pane-user-id");
 
     if (id)
     {
         params = pane_params_new ();
-        params->params = moo_big_paned_get_pane_params (window->paned, position, index);
-        params->position = position;
+        params->params = moo_pane_get_params (pane);
+        params->position = _moo_paned_get_position (_moo_pane_get_parent (pane));
 
         g_hash_table_insert (window->priv->panes_to_save,
                              g_strdup (id), params);
@@ -3591,7 +3591,7 @@ moo_edit_window_get_output (MooEditWindow *window)
         gtk_widget_show_all (scrolled_window);
         g_object_set_data (G_OBJECT (scrolled_window), "moo-output", cmd_view);
 
-        label = moo_pane_label_new (MOO_STOCK_TERMINAL, NULL, NULL, "Output", "Output");
+        label = moo_pane_label_new (MOO_STOCK_TERMINAL, NULL, "Output", "Output");
 
         if (!moo_edit_window_add_pane (window, "moo-edit-window-output",
                                        scrolled_window, label, MOO_PANE_POS_BOTTOM))

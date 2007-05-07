@@ -48,6 +48,7 @@ mooutils_include_headers =		\
 	moomenumgr.h			\
 	moomenutoolbutton.h		\
 	moonotebook.h			\
+	moopane.h			\
 	moopaned.h			\
 	mooprefs.h			\
 	mooprefsdialog.h		\
@@ -110,6 +111,7 @@ mooutils_sources =			\
 	moomenumgr.c			\
 	moomenutoolbutton.c		\
 	moonotebook.c			\
+	moopane.c			\
 	moopaned.c			\
 	mooprefs.c			\
 	mooprefsdialog.c		\
@@ -173,12 +175,13 @@ EXTRA_DIST =				\
 	glade/accelbutton.glade		\
 	glade/accelprefs.glade		\
 	glade/moologwindow.glade	\
-	pixmaps/medit.png               \
-	pixmaps/medit.ico               \
-	pixmaps/close.png               \
-	pixmaps/sticky.png              \
-	pixmaps/detach.png              \
-	pixmaps/attach.png              \
+	pixmaps/medit.png		\
+	pixmaps/medit.ico		\
+	pixmaps/hide.png		\
+	pixmaps/close.png		\
+	pixmaps/sticky.png		\
+	pixmaps/detach.png		\
+	pixmaps/attach.png		\
 	pixmaps/keepontop.png
 
 BUILT_SOURCES =				\
@@ -215,6 +218,7 @@ moologwindow-glade.h: $(srcdir)/glade/moologwindow.glade $(XML2H)
 
 mooutils_pixmaps =			\
 	$(srcdir)/pixmaps/medit.png	\
+	$(srcdir)/pixmaps/hide.png	\
 	$(srcdir)/pixmaps/close.png	\
 	$(srcdir)/pixmaps/detach.png	\
 	$(srcdir)/pixmaps/attach.png	\
@@ -224,6 +228,7 @@ mooutils_pixmaps =			\
 stock-moo.h: $(mooutils_pixmaps)
 	gdk-pixbuf-csource --static --build-list			\
 		MEDIT_ICON $(srcdir)/pixmaps/medit.png			\
+		MOO_HIDE_ICON $(srcdir)/pixmaps/hide.png		\
 		MOO_CLOSE_ICON $(srcdir)/pixmaps/close.png		\
 		MOO_STICKY_ICON $(srcdir)/pixmaps/sticky.png		\
 		MOO_DETACH_ICON $(srcdir)/pixmaps/detach.png		\

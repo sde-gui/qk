@@ -44,7 +44,7 @@ class WinPlugin(moo.edit.WinPlugin):
             self.terminal.start_default_shell()
 
     def do_create(self):
-        label = moo.utils.PaneLabel(icon_stock_id = moo.utils.STOCK_TERMINAL,
+        label = moo.utils.PaneLabel(icon_name=moo.utils.STOCK_TERMINAL,
                                     label_text=_("Terminal"))
 
         self.terminal = moo.term.Term()

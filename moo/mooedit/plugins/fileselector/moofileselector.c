@@ -652,14 +652,14 @@ moo_file_selector_constructor (GType           type,
                               "<item action=\"Open\"/>");
 
     label = moo_pane_label_new (MOO_STOCK_FILE_SELECTOR,
-                                NULL, NULL/*button*/, _("File Selector"),
+                                NULL, _("File Selector"),
                                 _("File Selector"));
     moo_edit_window_add_pane (filesel->window, MOO_FILE_SELECTOR_PLUGIN_ID,
                               GTK_WIDGET (filesel), label, MOO_PANE_POS_RIGHT);
     moo_pane_label_free (label);
 
-    filesel->button = moo_big_paned_get_button (filesel->window->paned,
-                                       GTK_WIDGET (filesel));
+    filesel->button = _moo_pane_get_button (moo_big_paned_find_pane (filesel->window->paned,
+                                                                     GTK_WIDGET (filesel), NULL));
     g_return_val_if_fail (filesel->button != NULL, object);
 
     gtk_drag_dest_set (filesel->button, 0,
@@ -692,18 +692,20 @@ button_drag_leave (GtkWidget      *button,
 static gboolean
 drag_open_pane (MooFileSelector *filesel)
 {
+    MooPane *pane;
     MooPaned *paned;
-    int pane_index;
 
-    if (!moo_big_paned_find_pane (filesel->window->paned,
-                                  GTK_WIDGET (filesel),
-                                  &paned, &pane_index))
+    pane = moo_big_paned_find_pane (filesel->window->paned,
+                                    GTK_WIDGET (filesel),
+                                    &paned);
+
+    if (!pane)
     {
         g_critical ("%s: oops", G_STRLOC);
         goto out;
     }
 
-    moo_paned_open_pane (paned, pane_index);
+    moo_pane_open (pane);
 
     if (filesel->button_highlight)
         gtk_drag_unhighlight (filesel->button);
@@ -723,25 +725,25 @@ button_drag_motion (GtkWidget      *button,
                     G_GNUC_UNUSED guint time,
                     MooFileSelector *filesel)
 {
+    MooPane *pane;
     MooPaneParams *params = NULL;
     MooPaned *paned;
-    int pane_index;
 
-    if (!moo_big_paned_find_pane (filesel->window->paned,
-                                  GTK_WIDGET (filesel),
-                                  &paned, &pane_index))
+    pane = moo_big_paned_find_pane (filesel->window->paned, GTK_WIDGET (filesel), &paned);
+
+    if (!pane)
     {
         g_critical ("%s: oops", G_STRLOC);
         goto out;
     }
 
     if (moo_paned_is_open (paned) &&
-        moo_paned_get_open_pane (paned) == pane_index)
+        moo_paned_get_open_pane (paned) == pane)
     {
         goto out;
     }
 
-    params = moo_paned_get_pane_params (paned, pane_index);
+    params = moo_pane_get_params (pane);
 
     if (params->detached)
         goto out;

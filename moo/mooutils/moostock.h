@@ -25,6 +25,7 @@ G_BEGIN_DECLS
 #define MOO_STOCK_KEYBOARD              GTK_STOCK_SELECT_FONT
 #define MOO_STOCK_MENU                  GTK_STOCK_INDEX
 #define MOO_STOCK_RESTART               GTK_STOCK_REFRESH
+#define MOO_STOCK_HIDE                  "moo-hide"
 #define MOO_STOCK_CLOSE                 "moo-close"
 #define MOO_STOCK_STICKY                "moo-sticky"
 #define MOO_STOCK_DETACH                "moo-detach"

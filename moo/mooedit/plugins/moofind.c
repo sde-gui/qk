@@ -171,7 +171,7 @@ ensure_output (WindowStuff *stuff)
     if (stuff->output)
         return;
 
-    label = moo_pane_label_new (MOO_STOCK_FIND_IN_FILES, NULL, NULL,
+    label = moo_pane_label_new (MOO_STOCK_FIND_IN_FILES, NULL,
                                 _("Search Results"), _("Search Results"));
     stuff->output = g_object_new (MOO_TYPE_CMD_VIEW,
                                   "highlight-current-line", TRUE,
