@@ -5,7 +5,7 @@ upstream_sources =			\
 	gtksourcelanguage.c		\
 	gtksourcelanguage-parser-1.c	\
 	gtksourcelanguage-parser-2.c	\
-	gtksourcelanguagesmanager.c	\
+	gtksourcelanguagemanager.c	\
 	gtksourcestyle.c		\
 	gtksourcestylemanager.c		\
 	gtksourcestylescheme.c		\
@@ -15,7 +15,7 @@ upstream_sources =			\
 	gtksourceiter.h			\
 	gtksourcelanguage.h		\
 	gtksourcelanguage-private.h	\
-	gtksourcelanguagesmanager.h	\
+	gtksourcelanguagemanager.h	\
 	gtksourcestyle.h		\
 	gtksourcestylemanager.h		\
 	gtksourcestylescheme.h		\
