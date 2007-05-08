@@ -93,6 +93,11 @@ const char    *_xdg_get_base_name (const char    *file_name);
 int _xdg_mime_buffer_is_text (unsigned char *buffer,
 			      int            len);
 
+#undef malloc
+#undef realloc
+#undef free
+#undef strdup
+#undef calloc
 #define malloc g_try_malloc
 #define realloc g_try_realloc
 #define free g_free

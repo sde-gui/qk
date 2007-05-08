@@ -54,7 +54,6 @@ mooutils_include_headers =		\
 	mooprefsdialog.h		\
 	mooprefsdialogpage.h		\
 	moopython.h			\
-	mooregex.h			\
 	moostock.h			\
 	moouixml.h			\
 	mooundo.h			\
@@ -117,7 +116,6 @@ mooutils_sources =			\
 	mooprefsdialog.c		\
 	mooprefsdialogpage.c		\
 	moopython.c			\
-	mooregex.c			\
 	moospawn.h			\
 	moospawn.c			\
 	moostock.c			\

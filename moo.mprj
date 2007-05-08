@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <medit-project version="1.0" type="C" name="moo">
- <active>optimized</active>
+ <active>debug</active>
  <configurations>
   <debug>
    <build_dir>build/debug</build_dir>
    <configure>
-    <args>--enable-debug=full --enable-all-warnings --enable-libmoo --with-mooterm --enable-libmoo-headers</args>
+    <args>--enable-debug=full --enable-all-warnings --enable-libmoo --with-mooterm --enable-libmoo-headers --enable-project</args>
     <vars>
      <var name="CFLAGS">-g</var>
     </vars>

@@ -1,4 +1,9 @@
-SUBDIRS = pyproject
+DIST_SUBDIRS = pyproject
+SUBDIRS = .
+
+if MOO_ENABLE_PROJECT
+SUBDIRS += pyproject
+endif
 
 moopython_pluginsdir = ${MOO_PLUGINS_DIR}
 plugins_libdir = ${MOO_PLUGINS_DIR}/lib

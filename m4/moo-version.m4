@@ -1,5 +1,5 @@
 ##############################################################################
-# MOO_DEFINE_VERSIONS(pkg,major,minor,micro)
+# MOO_DEFINE_VERSIONS(pkg,version)
 #
 AC_DEFUN([MOO_DEFINE_VERSIONS],[
 _MOO_SPLIT_VERSION([m4_toupper($1)], [$2])

@@ -59,4 +59,9 @@ AC_DEFUN([MOO_COMPONENTS],[
   if test "x$MOO_OS_BSD" = "xyes"; then
     $build_mooterm && MOO_LIBS="-lutil $MOO_LIBS"
   fi
+
+  AC_ARG_ENABLE(project,
+    AC_HELP_STRING(--enable-project, [enable project plugin (default = NO)]),
+    [:],[enable_project=no])
+  AM_CONDITIONAL(MOO_ENABLE_PROJECT, test "x$enable_project" = xyes)
 ])

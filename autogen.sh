@@ -10,6 +10,8 @@ echo "srcdir=" $srcdir
 
 if test -d $rel_srcdir/m4 ; then
   aclocal_extra="-I m4"
+elif test -d $rel_srcdir/moo/m4 ; then
+  aclocal_extra="-I moo/m4"
 fi
 
 cd $srcdir
