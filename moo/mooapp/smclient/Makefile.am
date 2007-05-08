@@ -18,8 +18,8 @@ libsmclient_la_SOURCES =			\
 libsmclient_la_LIBADD =
 
 if GDK_X11
-AM_CFLAGS += -DEGG_SM_CLIENT_BACKEND_XSMP
-libsmclient_la_LIBADD += -lSM -lICE
+AM_CFLAGS += $(X_CFLAGS) -DEGG_SM_CLIENT_BACKEND_XSMP
+libsmclient_la_LIBADD += $(X_LIBS) $(X_EXTRA_LIBS) -lSM -lICE
 libsmclient_la_SOURCES += eggsmclient-xsmp.c
 endif GDK_X11
 
