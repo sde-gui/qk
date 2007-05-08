@@ -16,12 +16,6 @@
 #include <glib.h>
 
 
-#ifdef __WIN32__
-#undef MOO_LOCALE_DIR
-#define MOO_LOCALE_DIR (_moo_win32_get_locale_dir())
-#endif /* __WIN32__ */
-
-
 const char *
 moo_gettext (const char *string)
 {
@@ -33,7 +27,7 @@ moo_gettext (const char *string)
     if (!been_here)
     {
         been_here = TRUE;
-        bindtextdomain (GETTEXT_PACKAGE, MOO_LOCALE_DIR);
+        bindtextdomain (GETTEXT_PACKAGE, _moo_get_locale_dir ());
 #ifdef HAVE_BIND_TEXTDOMAIN_CODESET
         bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 #endif

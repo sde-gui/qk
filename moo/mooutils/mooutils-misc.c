@@ -1326,6 +1326,18 @@ moo_get_data_dirs (MooDataDirType type,
 }
 
 
+const char *
+_moo_get_locale_dir (void)
+{
+#ifdef __WIN32__
+    return _moo_win32_get_locale_dir ();
+#else
+    const char *dir = g_getenv ("MOO_LOCALE_DIR");
+    return dir && dir[0] ? dir : MOO_LOCALE_DIR;
+#endif
+}
+
+
 /* For xdgmime: should not contain duplicates */
 const char* const *
 _moo_get_shared_data_dirs (void)
