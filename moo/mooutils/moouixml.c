@@ -397,20 +397,22 @@ translate_string (const char *string,
                   const char *translation_domain,
                   gboolean    translatable)
 {
+    const char *translated;
+
     if (!string || !string[0] || !translatable)
         return g_strdup (string);
 
     if (translation_domain)
-    {
-        const char *translated = D_ (string, translation_domain);
+        translated = D_(string, translation_domain);
+    else
+        translated = gettext (string);
 
-        if (!strcmp (translated, string))
-            translated = _(string);
+    if (translated == string)
+        translated = _(string);
+    if (translated == string)
+        translated = D_(string, "gtk20");
 
-        return g_strdup (translated);
-    }
-
-    return g_strdup (_(string));
+    return g_strdup (translated);
 }
 
 static Item *
