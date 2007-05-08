@@ -14,7 +14,7 @@ AC_DEFUN([_MOO_AC_PYTHON_DEVEL],[
     else
         python_found=no
     	AC_MSG_RESULT([no])
-    	AC_MSG_ERROR([cannot import Python module "distutils".
+    	AC_MSG_WARN([cannot import Python module "distutils".
 Please check your Python installation.])
     fi
 
