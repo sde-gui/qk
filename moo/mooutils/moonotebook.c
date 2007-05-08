@@ -3028,8 +3028,9 @@ moo_notebook_scroll_event (GtkWidget      *widget,
 }
 
 
-static gboolean moo_notebook_key_press      (GtkWidget      *widget,
-                                             GdkEventKey    *event)
+static gboolean
+moo_notebook_key_press (GtkWidget   *widget,
+                        GdkEventKey *event)
 {
     MooNotebook *nb = MOO_NOTEBOOK (widget);
 
@@ -3037,6 +3038,19 @@ static gboolean moo_notebook_key_press      (GtkWidget      *widget,
     {
         tab_drag_end (nb, FALSE);
         return TRUE;
+    }
+    else if (GTK_WIDGET_HAS_FOCUS (nb) &&
+             nb->priv->focus == FOCUS_NONE &&
+             nb->priv->focus_page &&
+             nb->priv->focus_page != nb->priv->current_page)
+    {
+        switch (event->keyval)
+        {
+            case GDK_Return:
+            case GDK_space:
+                moo_notebook_set_current_page (nb, page_index (nb, nb->priv->focus_page));
+                return TRUE;
+        }
     }
 
     return FALSE;
