@@ -75,10 +75,12 @@ void         moo_glade_xml_map_custom       (MooGladeXML    *xml,
                                              gpointer        data);
 void         moo_glade_xml_set_signal_func  (MooGladeXML    *xml,
                                              MooGladeSignalFunc func,
-                                             gpointer        data);
+                                             gpointer        data,
+                                             GDestroyNotify  notify);
 void         moo_glade_xml_set_prop_func    (MooGladeXML    *xml,
                                              MooGladePropFunc func,
-                                             gpointer        data);
+                                             gpointer        data,
+                                             GDestroyNotify  notify);
 
 void         moo_glade_xml_set_property     (MooGladeXML    *xml,
                                              const char     *widget,

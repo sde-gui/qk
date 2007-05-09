@@ -684,13 +684,14 @@
   )
 )
 
-(define-method map_signal
+(define-method set_signal_func
   (of-object "MooGladeXML")
-  (c-name "moo_glade_xml_map_signal")
+  (c-name "moo_glade_xml_set_signal_func")
   (return-type "none")
   (parameters
     '("MooGladeSignalFunc" "func")
     '("gpointer" "data")
+    '("GDestroyNotify" "notify")
   )
 )
 
@@ -700,7 +701,7 @@
   (return-type "gboolean")
   (parameters
     '("const-char*" "file")
-    '("const-char*" "root")
+    '("const-char*" "root" (null-ok) (default "NULL"))
     '("GError**" "error")
   )
 )

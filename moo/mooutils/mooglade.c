@@ -145,8 +145,10 @@ struct _MooGladeXMLPrivate {
 
     MooGladeSignalFunc signal_func;
     gpointer signal_func_data;
+    GDestroyNotify signal_func_notify;
     MooGladePropFunc prop_func;
     gpointer prop_func_data;
+    GDestroyNotify prop_func_notify;
 
     guint done : 1;
 };
@@ -2435,11 +2437,17 @@ moo_glade_xml_cleanup (MooGladeXML *xml)
         g_hash_table_destroy (xml->priv->id_to_func);
     if (xml->priv->props)
         g_hash_table_destroy (xml->priv->props);
+    if (xml->priv->signal_func_data && xml->priv->signal_func_notify)
+        xml->priv->signal_func_notify (xml->priv->signal_func_data);
+    if (xml->priv->prop_func_data && xml->priv->prop_func_notify)
+        xml->priv->prop_func_notify (xml->priv->prop_func_data);
 
     xml->priv->class_to_type = NULL;
     xml->priv->id_to_type = NULL;
     xml->priv->id_to_func = NULL;
     xml->priv->props = NULL;
+    xml->priv->signal_func_data = NULL;
+    xml->priv->prop_func_data = NULL;
 }
 
 
@@ -2537,22 +2545,34 @@ void         moo_glade_xml_map_custom   (MooGladeXML    *xml,
 void
 moo_glade_xml_set_signal_func (MooGladeXML    *xml,
                                MooGladeSignalFunc func,
-                               gpointer        data)
+                               gpointer        data,
+                               GDestroyNotify  notify)
 {
     g_return_if_fail (xml != NULL);
+
+    if (xml->priv->signal_func_data && xml->priv->signal_func_notify)
+        xml->priv->signal_func_notify (xml->priv->signal_func_data);
+
     xml->priv->signal_func = func;
     xml->priv->signal_func_data = data;
+    xml->priv->signal_func_notify = notify;
 }
 
 
 void
 moo_glade_xml_set_prop_func (MooGladeXML    *xml,
                              MooGladePropFunc func,
-                             gpointer        data)
+                             gpointer        data,
+                             GDestroyNotify  notify)
 {
     g_return_if_fail (xml != NULL);
+
+    if (xml->priv->prop_func_data && xml->priv->prop_func_notify)
+        xml->priv->prop_func_notify (xml->priv->prop_func_data);
+
     xml->priv->prop_func = func;
     xml->priv->prop_func_data = data;
+    xml->priv->prop_func_notify = notify;
 }
 
 

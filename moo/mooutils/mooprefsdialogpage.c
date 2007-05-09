@@ -414,8 +414,8 @@ moo_prefs_dialog_page_fill_from_xml (MooPrefsDialogPage *page,
     data.prefs_root = prefs_root;
     data.page_id = page_id;
 
-    moo_glade_xml_set_signal_func (xml, connect_signals, &data);
-    moo_glade_xml_set_prop_func (xml, set_props, &data);
+    moo_glade_xml_set_signal_func (xml, connect_signals, &data, NULL);
+    moo_glade_xml_set_prop_func (xml, set_props, &data, NULL);
 
     if (!moo_glade_xml_fill_widget (xml, GTK_WIDGET (page), buffer, -1, page_id, &error))
     {

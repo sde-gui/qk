@@ -767,3 +767,113 @@ _wrap_moo_glade_xml_tp_getattr (PyObject *self, char *attr)
 
     return Py_FindMethod ((PyMethodDef*) _PyMooGladeXML_methods, self, attr);
 }
+%%
+override moo_glade_xml_set_signal_func varargs
+
+typedef struct {
+    PyObject *func;
+    PyObject *args;
+} Closure;
+
+#define closure_new() g_new0 (Closure, 1)
+
+static void
+closure_free (Closure *closure)
+{
+    if (closure)
+    {
+        Py_XDECREF (closure->func);
+        Py_XDECREF (closure->args);
+        g_free (closure);
+    }
+}
+
+static gboolean
+signal_func (MooGladeXML *xml,
+             const char  *widget_id,
+             GtkWidget   *widget,
+             const char  *signal,
+             const char  *handler,
+             const char  *object,
+             gpointer     data)
+{
+    Closure *closure = data;
+    PyObject *result, *args;
+    gboolean ret;
+
+    args = PyTuple_New (6 + (closure->args ? PyTuple_GET_SIZE (closure->args) : 0));
+    PyTuple_SET_ITEM (args, 0, pygobject_new (G_OBJECT (xml)));
+    PyTuple_SET_ITEM (args, 1, PyString_FromString (widget_id));
+    PyTuple_SET_ITEM (args, 2, pygobject_new (G_OBJECT (widget)));
+    PyTuple_SET_ITEM (args, 3, PyString_FromString (signal));
+    PyTuple_SET_ITEM (args, 4, PyString_FromString (handler));
+    PyTuple_SET_ITEM (args, 5, object ? PyString_FromString (object) : Py_None);
+
+    if (!object)
+        Py_INCREF (Py_None);
+
+    if (closure->args)
+    {
+        int i;
+
+        for (i = 0; i < PyTuple_GET_SIZE (closure->args); ++i)
+        {
+            PyTuple_SET_ITEM (args, i + 6, PyTuple_GET_ITEM (closure->args, i));
+            Py_INCREF (PyTuple_GET_ITEM (closure->args, i));
+        }
+    }
+
+    result = PyObject_CallObject (closure->func, args);
+
+    Py_DECREF (args);
+
+    if (result)
+    {
+        ret = PyObject_IsTrue (result);
+        Py_DECREF (result);
+    }
+    else
+    {
+        ret = FALSE;
+        PyErr_Print ();
+    }
+
+    return FALSE;
+}
+
+static PyObject *
+_wrap_moo_glade_xml_set_signal_func (PyGObject *self, PyObject *args)
+{
+    PyObject *py_func;
+    PyObject *func_args = NULL;
+    Closure *closure;
+
+    if (!args)
+        return_TypeError ("arguments required");
+
+    if (PyTuple_GET_SIZE (args) < 1)
+        return_TypeError ("function argument required");
+
+    py_func = PyTuple_GET_ITEM (args, 0);
+
+    if (!PyCallable_Check (py_func))
+        return_TypeError ("function must be callable");
+
+    if (PyTuple_GET_SIZE (args) > 1)
+    {
+        func_args = PyTuple_GetSlice (args, 1, PyTuple_GET_SIZE (args));
+        if (!func_args)
+            return NULL;
+    }
+
+    closure = closure_new ();
+    closure->func = py_func;
+    Py_INCREF (closure->func);
+    closure->args = func_args;
+
+    moo_glade_xml_set_signal_func (MOO_GLADE_XML (self->obj),
+                                   signal_func, closure,
+                                   (GDestroyNotify) closure_free);
+
+    return_None;
+}
