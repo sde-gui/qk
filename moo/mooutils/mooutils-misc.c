@@ -1327,7 +1327,7 @@ moo_get_data_dirs (MooDataDirType type,
 
 
 const char *
-_moo_get_locale_dir (void)
+moo_get_locale_dir (void)
 {
 #ifdef __WIN32__
     return _moo_win32_get_locale_dir ();

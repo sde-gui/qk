@@ -27,7 +27,7 @@ moo_gettext (const char *string)
     if (!been_here)
     {
         been_here = TRUE;
-        bindtextdomain (GETTEXT_PACKAGE, _moo_get_locale_dir ());
+        bindtextdomain (GETTEXT_PACKAGE, moo_get_locale_dir ());
 #ifdef HAVE_BIND_TEXTDOMAIN_CODESET
         bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 #endif

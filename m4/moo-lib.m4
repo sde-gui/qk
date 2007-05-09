@@ -23,7 +23,10 @@ AC_DEFUN_ONCE([MOO_AC_LIB],[
   fi
 
   MOO_INSTALL_HEADERS=false
-  MOO_BUILD_MEDIT=true
+
+  if test "x$MOO_BUILD_MEDIT" != "xfalse"; then
+    MOO_BUILD_MEDIT=true
+  fi
 
   _MOO_OPTION([libmoo],[--enable-libmoo],[build and install libmoo library (default = NO)],[MOO_INSTALL_LIB])
   _MOO_OPTION([libmoo-headers],[--enable-libmoo-headers], [install libmoo library headers (default = NO)],[MOO_INSTALL_HEADERS])

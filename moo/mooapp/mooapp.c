@@ -134,6 +134,8 @@ static void     moo_app_set_name        (MooApp             *app,
                                          const char         *full_name);
 static void     moo_app_set_description (MooApp             *app,
                                          const char         *description);
+static void     moo_app_set_version     (MooApp             *app,
+                                         const char         *version);
 
 static void     start_input             (MooApp             *app);
 
@@ -173,6 +175,7 @@ enum {
     PROP_ARGV,
     PROP_SHORT_NAME,
     PROP_FULL_NAME,
+    PROP_VERSION,
     PROP_DESCRIPTION,
     PROP_RUN_INPUT,
     PROP_USE_EDITOR,
@@ -238,6 +241,14 @@ moo_app_class_init (MooAppClass *klass)
                                      g_param_spec_string ("full-name",
                                              "full-name",
                                              "full-name",
+                                             NULL,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_VERSION,
+                                     g_param_spec_string ("version",
+                                             "version",
+                                             "version",
                                              NULL,
                                              G_PARAM_READWRITE));
 
@@ -492,6 +503,10 @@ moo_app_set_property (GObject        *object,
             moo_app_set_name (app, NULL, g_value_get_string (value));
             break;
 
+        case PROP_VERSION:
+            moo_app_set_version (app, g_value_get_string (value));
+            break;
+
         case PROP_WEBSITE:
             g_free (app->priv->info->website);
             app->priv->info->website = g_strdup (g_value_get_string (value));
@@ -555,6 +570,10 @@ moo_app_get_property (GObject        *object,
             break;
         case PROP_FULL_NAME:
             g_value_set_string (value, app->priv->info->full_name);
+            break;
+
+        case PROP_VERSION:
+            g_value_set_string (value, app->priv->info->version);
             break;
 
         case PROP_DESCRIPTION:
@@ -1229,6 +1248,15 @@ moo_app_set_description (MooApp     *app,
     g_free (app->priv->info->description);
     app->priv->info->description = g_strdup (description);
     g_object_notify (G_OBJECT (app), "description");
+}
+
+static void
+moo_app_set_version (MooApp     *app,
+                     const char *version)
+{
+    g_free (app->priv->info->version);
+    app->priv->info->version = g_strdup (version);
+    g_object_notify (G_OBJECT (app), "version");
 }
 
 
