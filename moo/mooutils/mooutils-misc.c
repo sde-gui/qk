@@ -214,7 +214,7 @@ moo_open_url (const char *url)
 
 
 gboolean
-_moo_open_file (const char *path)
+moo_open_file (const char *path)
 {
     char *uri;
     gboolean ret;
