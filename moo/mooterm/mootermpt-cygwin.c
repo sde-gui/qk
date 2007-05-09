@@ -163,6 +163,7 @@ fork_command (MooTermPt      *pt_gen,
     MooTermPtCyg *pt;
     gboolean result;
 
+    g_return_val_if_fail (!pt_gen->priv->alive, FALSE);
     g_return_val_if_fail (!pt_gen->priv->child_alive, FALSE);
     g_return_val_if_fail (cmd->cmd_line != NULL, FALSE);
 
@@ -199,6 +200,7 @@ fork_command (MooTermPt      *pt_gen,
 //     if (src) g_source_set_priority (src, READ_HELPER_OUT_PRIORITY);
 //     else g_warning ("%s: could not find helper_io_watch source", G_STRLOC);
 
+    pt_gen->priv->alive = TRUE;
     pt_gen->priv->child_alive = TRUE;
     return TRUE;
 }
@@ -332,6 +334,7 @@ kill_child (MooTermPt *pt_gen)
     pt->in = -1;
     pt->out = -1;
     pt->process_id = 0;
+    pt_gen->priv->alive = FALSE;
 
     if (pt_gen->priv->child_alive)
     {
@@ -430,6 +433,7 @@ pt_write (MooTermPt      *pt,
 {
     g_return_if_fail (data == NULL || data_len != 0);
     g_return_if_fail (pt->priv->child_alive);
+    g_return_if_fail (pt->priv->alive);
 
     while (data || !g_queue_is_empty (pt->priv->pending_write))
     {
@@ -793,6 +797,7 @@ static void
 send_intr (MooTermPt *pt)
 {
     g_return_if_fail (pt->priv->child_alive);
+    g_return_if_fail (pt->priv->alive);
     pt_discard_pending_write (pt);
     pt_write (pt, "\3", 1);
 }
