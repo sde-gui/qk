@@ -556,6 +556,9 @@ moo_find_get_flags (MooFind *find)
     if (gtk_toggle_button_get_active (moo_glade_xml_get_widget (find->xml, "dont_prompt")))
         flags |= MOO_FIND_DONT_PROMPT;
 
+    if (!(flags & MOO_FIND_REGEX))
+        flags |= MOO_FIND_REPL_LITERAL;
+
     if (!gtk_toggle_button_get_active (moo_glade_xml_get_widget (find->xml, "case_sensitive")))
         flags |= MOO_FIND_CASELESS;
 
