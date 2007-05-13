@@ -6,7 +6,7 @@ rel_srcdir=`dirname $0`
 test -z "$rel_srcdir" && rel_srcdir=.
 
 srcdir=`cd $rel_srcdir && pwd`
-echo "srcdir=" $srcdir
+echo "srcdir="$srcdir
 
 if test -d $rel_srcdir/m4 ; then
   aclocal_extra="-I m4"
@@ -26,13 +26,13 @@ LIBTOOLIZE=${LIBTOOLIZE:-libtoolize}
 AUTOHEADER=${AUTOHEADER:-autoheader}
 AUTOCONF=${AUTOCONF:-autoconf}
 
-echo $LIBTOOLIZE --automake --copy
-$LIBTOOLIZE --automake --copy || exit $?
+echo $LIBTOOLIZE --automake --copy --force
+$LIBTOOLIZE --automake --copy --force || exit $?
 
-echo glib-gettextize --force
-glib-gettextize --force
-echo intltoolize --automake --force
-intltoolize --automake --force
+echo glib-gettextize --force --copy
+glib-gettextize --force --copy
+echo intltoolize --automake --force --copy
+intltoolize --automake --force --copy
 
 echo $ACLOCAL $ACLOCAL_FLAGS
 $ACLOCAL $ACLOCAL_FLAGS || exit $?
@@ -40,8 +40,8 @@ $ACLOCAL $ACLOCAL_FLAGS || exit $?
 echo $AUTOHEADER
 $AUTOHEADER || exit $?
 
-echo $AUTOMAKE --add-missing --copy --foreign
-$AUTOMAKE --add-missing --copy --foreign || exit $?
+echo $AUTOMAKE --add-missing --foreign --copy
+$AUTOMAKE --add-missing --foreign --copy || exit $?
 
 echo $AUTOCONF
 $AUTOCONF || exit $?
