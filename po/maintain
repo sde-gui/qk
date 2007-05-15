@@ -1,5 +1,7 @@
 #!/bin/sh
 
+for f in pot dist; do if test ! -e $f; then ln -s maintain $f; fi; done
+
 case `basename $0` in
     pot)
         args="--gettext-package=moo -p"
@@ -8,7 +10,7 @@ case `basename $0` in
         args="--gettext-package=moo -d"
         ;;
     *)
-        args="-m"
+        args="--gettext-package=moo -m"
         ;;
 esac
 
