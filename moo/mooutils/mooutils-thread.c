@@ -77,7 +77,7 @@ invoke_callback (gpointer  id,
     GList *l;
     QueueClient *client;
 
-    g_message ("processing events for id %u", GPOINTER_TO_UINT (id));
+    _moo_message ("processing events for id %u", GPOINTER_TO_UINT (id));
     client = get_event_client (GPOINTER_TO_UINT (id));
 
     if (client)
@@ -162,6 +162,7 @@ init_queue (void)
     if (!queue)
     {
         int fds[2];
+        GSource *source;
 
         if (pipe (fds) != 0)
         {
@@ -182,7 +183,11 @@ init_queue (void)
         queue->io = g_io_channel_unix_new (queue->pipe_out);
 #endif
 
-        g_io_add_watch (queue->io, G_IO_IN, (GIOFunc) got_data, NULL);
+        source = g_io_create_watch (queue->io, G_IO_IN);
+        g_source_set_callback (source, (GSourceFunc) got_data, NULL, NULL);
+        g_source_set_can_recurse (source, TRUE);
+        g_source_attach (source, NULL);
+
         queue->data = NULL;
     }
 

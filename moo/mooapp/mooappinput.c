@@ -169,31 +169,39 @@ _moo_app_input_get_name (MooAppInput *ch)
 static void
 commit (MooAppInput *self)
 {
-    _moo_app_input_ref (self);
-
-    if (0)
-        g_print ("%s: commit %c\n%s\n-----\n", G_STRLOC,
-                 self->buffer->str[0], self->buffer->str + 1);
+    char buf[MAX_BUFFER_SIZE];
+    GString *freeme = NULL;
+    char *ptr;
+    gsize len;
 
     if (!self->buffer->len)
-        g_warning ("%s: got empty command", G_STRLOC);
-    else
-        _moo_app_exec_cmd (moo_app_get_instance (),
-                           self->buffer->str[0],
-                           self->buffer->str + 1,
-                           self->buffer->len - 1);
-
-    if (self->buffer->len > MAX_BUFFER_SIZE)
     {
-        g_string_free (self->buffer, TRUE);
+        g_warning ("%s: got empty command", G_STRLOC);
+        return;
+    }
+
+    if (self->buffer->len + 1 > MAX_BUFFER_SIZE)
+    {
+        freeme = self->buffer;
         self->buffer = g_string_new_len (NULL, MAX_BUFFER_SIZE);
+        ptr = freeme->str;
+        len = freeme->len;
     }
     else
     {
+        memcpy (buf, self->buffer->str, self->buffer->len + 1);
+        ptr = buf;
+        len = self->buffer->len;
         g_string_truncate (self->buffer, 0);
     }
 
-    _moo_app_input_unref (self);
+    if (0)
+        g_print ("%s: commit %c\n%s\n-----\n", G_STRLOC, ptr[0], ptr + 1);
+
+    _moo_app_exec_cmd (moo_app_get_instance (), ptr[0], ptr + 1, len - 1);
+
+    if (freeme)
+        g_string_free (freeme, TRUE);
 }
 
 
@@ -274,7 +282,7 @@ listener_main (ListenerInfo *info)
             }
         }
 
-        g_message ("%s: client connected", G_STRLOC);
+        _moo_message_async ("%s: client connected", G_STRLOC);
 
         while (ReadFile (input, &c, 1, &bytes_read, NULL))
         {
@@ -321,7 +329,11 @@ event_callback (GList       *events,
         if (c != 0)
             g_string_append_c (chan->buffer, c);
         else
+        {
+            gdk_threads_enter ();
             commit (chan);
+            gdk_threads_leave ();
+        }
 
         events = events->next;
     }
@@ -560,6 +572,8 @@ get_pipe_dir (const char *pipe_basename)
 gboolean
 _moo_app_input_start (MooAppInput *ch)
 {
+    GSource *source;
+
     g_return_val_if_fail (!ch->ready, FALSE);
 
     if (!ch->pipe_dir)
@@ -605,6 +619,9 @@ _moo_app_input_start (MooAppInput *ch)
                                       G_IO_IN | G_IO_PRI | G_IO_HUP | G_IO_ERR,
                                       (GIOFunc) read_input,
                                       ch);
+
+    source = g_main_context_find_source_by_id (NULL, ch->io_watch);
+    g_source_set_can_recurse (source, TRUE);
 
     ch->ready = TRUE;
     return TRUE;
