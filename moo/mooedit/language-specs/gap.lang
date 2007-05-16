@@ -16,7 +16,7 @@
 
   <definitions>
     <context id="character" style-ref="character">
-      <match>\'(\\[trn\\]|[^\\])\'</match>
+      <match>\'(\\[trnb\\\'\"]|[^\\])\'</match>
     </context>
     <context id="keyword" style-ref="keyword">
       <keyword>and</keyword>
