@@ -1,6 +1,7 @@
 moopygtk_sources =		\
 	moo-pygtk.c		\
 	moo-pygtk.h		\
+	canvas-mod.h		\
 	mooapp-mod.h		\
 	mooedit-mod.h		\
 	mooterm-mod.h		\
@@ -8,6 +9,7 @@ moopygtk_sources =		\
 	moo-mod.h
 
 BUILT_SOURCES =			\
+	canvas-mod.h		\
 	mooapp-mod.h		\
 	mooedit-mod.h		\
 	mooterm-mod.h		\
@@ -51,6 +53,10 @@ EXTRA_DIST =			\
 	mooapp-pygtk.defs	\
 	mooapp-pygtk.override	\
 	mooapp-mod.c		\
+	canvas-mod.py		\
+	canvas-pygtk.defs	\
+	canvas-pygtk.override	\
+	canvas-mod.c		\
 	$(mooedit_defs_files)	\
 	mooedit-mod.py		\
 	mooedit-pygtk.defs	\
@@ -88,6 +94,13 @@ nodist_moopygtk_sources += mooedit-pygtk.c
 BUILT_SOURCES += mooedit-pygtk.c
 CLEANFILES += mooedit-pygtk.c
 endif MOO_BUILD_EDIT
+
+if MOO_BUILD_CANVAS
+moopygtk_sources += canvas-mod.c
+nodist_moopygtk_sources += canvas-pygtk.c
+BUILT_SOURCES += canvas-pygtk.c
+CLEANFILES += canvas-pygtk.c
+endif MOO_BUILD_CANVAS
 
 if MOO_BUILD_APP
 moopygtk_sources += mooapp-mod.c
@@ -146,6 +159,15 @@ mooedit-pygtk.c: mooedit-pygtk.defs mooedit-pygtk.override $(mooedit_defs_files)
 		$(srcdir)/mooedit-pygtk.defs > $@.tmp && \
 		mv $@.tmp $@
 
+canvas-pygtk.c: canvas-pygtk.defs canvas-pygtk.override $(codegen_files)
+	$(codegen) --prefix _moo_canvas \
+		--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
+		--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
+		--override $(srcdir)/canvas-pygtk.override \
+		--outfilename canvas-pygtk.c \
+		$(srcdir)/canvas-pygtk.defs > $@.tmp && \
+		mv $@.tmp $@
+
 mooapp-pygtk.c: mooapp-pygtk.defs mooapp-pygtk.override $(codegen_files)
 	$(codegen) --prefix _moo_app \
 		--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
@@ -167,6 +189,9 @@ mooedit-mod.h: $(srcdir)/mooedit-mod.py $(PY2H)
 	mv $@.tmp $@
 mooapp-mod.h: mooapp-mod.py $(PY2H)
 	$(SHELL) $(PY2H) MOO_APP_PY $(srcdir)/mooapp-mod.py > $@.tmp && \
+	mv $@.tmp $@
+canvas-mod.h: canvas-mod.py $(PY2H)
+	$(SHELL) $(PY2H) MOO_CANVAS_PY $(srcdir)/canvas-mod.py > $@.tmp && \
 	mv $@.tmp $@
 mooutils-mod.h: mooutils-mod.py $(PY2H)
 	$(SHELL) $(PY2H) MOO_UTILS_PY $(srcdir)/mooutils-mod.py > $@.tmp && \

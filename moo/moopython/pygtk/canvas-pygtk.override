@@ -1,0 +1,293 @@
+/* -%- lang: C; indent-width: 4; use-tabs: no; strip: yes -%- */
+%%
+headers
+#include <Python.h>
+#define NO_IMPORT_PYGOBJECT
+#include "pygobject.h"
+#include "moopython/moopython-utils.h"
+#include "moopython/pygtk/moo-pygtk.h"
+#include "libfoocanvas/libfoocanvas.h"
+
+#define NEW_RECT(Typ, py_func, func)            \
+static PyObject *                               \
+func (Typ x1, Typ y1, Typ x2, Typ y2)           \
+{                                               \
+    PyObject *tuple = PyTuple_New (4);          \
+    PyTuple_SET_ITEM (tuple, 0, py_func (x1));  \
+    PyTuple_SET_ITEM (tuple, 1, py_func (y1));  \
+    PyTuple_SET_ITEM (tuple, 2, py_func (x2));  \
+    PyTuple_SET_ITEM (tuple, 3, py_func (y2));  \
+    return tuple;                               \
+}
+
+#define NEW_PAIR(Typ, py_func, func)            \
+static PyObject *                               \
+func (Typ x, Typ y)                             \
+{                                               \
+    PyObject *tuple = PyTuple_New (2);          \
+    PyTuple_SET_ITEM (tuple, 0, py_func (x));   \
+    PyTuple_SET_ITEM (tuple, 1, py_func (y));   \
+    return tuple;                               \
+}
+
+NEW_RECT (double, PyFloat_FromDouble, new_rect_d)
+NEW_PAIR (double, PyFloat_FromDouble, new_pair_d)
+NEW_PAIR (long, PyInt_FromLong, new_pair_l)
+
+%%
+modulename moo.canvas
+%%
+import gtk.Object as PyGtkObject_Type
+import gtk.Widget as PyGtkWidget_Type
+import gtk.Layout as PyGtkLayout_Type
+import gtk.gdk.GC as PyGdkGC_Type
+%%
+ignore-glob
+  *_get_type
+%%
+override foo_canvas_get_scroll_region noargs
+static PyObject *
+_wrap_foo_canvas_get_scroll_region (PyGObject *self)
+{
+    double x1, y1, x2, y2;
+    foo_canvas_get_scroll_region (FOO_CANVAS (self->obj), &x1, &y1, &x2, &y2);
+    return new_rect_d (x1, y1, x2, y2);
+}
+%%
+override foo_canvas_get_scroll_offsets noargs
+static PyObject *
+_wrap_foo_canvas_get_scroll_offsets (PyGObject *self)
+{
+    int cx, cy;
+    foo_canvas_get_scroll_offsets (FOO_CANVAS (self->obj), &cx, &cy);
+    return new_pair_l (cx, cy);
+}
+%%
+override foo_canvas_w2c_rect_d varargs
+static PyObject *
+_wrap_foo_canvas_w2c_rect_d (PyGObject *self, PyObject *args)
+{
+    double x1, y1, x2, y2;
+
+    if (!PyArg_ParseTuple (args, (char*) "(dddd):FooCanvas.w2c_rect_d",
+                           &x1, &y1, &x2, &y2))
+        return NULL;
+
+    foo_canvas_w2c_rect_d (FOO_CANVAS (self->obj), &x1, &y1, &x2, &y2);
+    return new_rect_d (x1, y1, x2, y2);
+}
+%%
+override foo_canvas_w2c varargs
+static PyObject *
+_wrap_foo_canvas_w2c (PyGObject *self, PyObject *args)
+{
+    double wx, wy;
+    int cx, cy;
+
+    if (!PyArg_ParseTuple (args, (char*) "(dd):FooCanvas.w2c", &wx, &wy))
+        return NULL;
+
+    foo_canvas_w2c (FOO_CANVAS (self->obj), wx, wy, &cx, &cy);
+    return new_pair_l (cx, cy);
+}
+%%
+override foo_canvas_w2c_d varargs
+static PyObject *
+_wrap_foo_canvas_w2c_d (PyGObject *self, PyObject *args)
+{
+    double wx, wy;
+    double cx, cy;
+
+    if (!PyArg_ParseTuple (args, (char*) "(dd):FooCanvas.w2c_d", &wx, &wy))
+        return NULL;
+
+    foo_canvas_w2c_d (FOO_CANVAS (self->obj), wx, wy, &cx, &cy);
+    return new_pair_d (cx, cy);
+}
+%%
+override foo_canvas_c2w varargs
+static PyObject *
+_wrap_foo_canvas_c2w (PyGObject *self, PyObject *args)
+{
+    double wx, wy;
+    int cx, cy;
+
+    if (!PyArg_ParseTuple (args, (char*) "(ii):FooCanvas.c2w", &cx, &cy))
+        return NULL;
+
+    foo_canvas_c2w (FOO_CANVAS (self->obj), cx, cy, &wx, &wy);
+    return new_pair_d (wx, wy);
+}
+%%
+override foo_canvas_get_color varargs
+static PyObject *
+_wrap_foo_canvas_get_color (PyGObject *self, PyObject *args)
+{
+    const char *spec;
+    GdkColor color;
+
+    if (!PyArg_ParseTuple (args, (char*) "s:FooCanvas.get_color", &spec))
+        return NULL;
+
+    if (foo_canvas_get_color (FOO_CANVAS (self->obj), spec, &color))
+        return pyg_boxed_new (GDK_TYPE_COLOR, &color, TRUE, TRUE);
+    else
+        return_None;
+}
+%%
+override foo_canvas_item_w2i varargs
+static PyObject *
+_wrap_foo_canvas_item_w2i (PyGObject *self, PyObject *args)
+{
+    double x, y;
+
+    if (!PyArg_ParseTuple (args, (char*) "(dd):FooCanvas.w2i", &x, &y))
+        return NULL;
+
+    foo_canvas_item_w2i (FOO_CANVAS_ITEM (self->obj), &x, &y);
+    return new_pair_d (x, y);
+}
+%%
+override foo_canvas_item_i2w varargs
+static PyObject *
+_wrap_foo_canvas_item_i2w (PyGObject *self, PyObject *args)
+{
+    double x, y;
+
+    if (!PyArg_ParseTuple (args, (char*) "(dd):FooCanvas.i2w", &x, &y))
+        return NULL;
+
+    foo_canvas_item_i2w (FOO_CANVAS_ITEM (self->obj), &x, &y);
+    return new_pair_d (x, y);
+}
+%%
+override foo_canvas_item_get_bounds varargs
+static PyObject *
+_wrap_foo_canvas_item_get_bounds (PyGObject *self, PyObject *args)
+{
+    double x1, y1, x2, y2;
+
+    if (!PyArg_ParseTuple (args, (char*) "(dddd):FooCanvas.get_bounds", &x1, &y1, &x2, &y2))
+        return NULL;
+
+    foo_canvas_item_get_bounds (FOO_CANVAS_ITEM (self->obj), &x1, &y1, &x2, &y2);
+    return new_rect_d (x1, y1, x2, y2);
+}
+%%
+override foo_canvas_get_miter_points varargs
+static PyObject *
+_wrap_foo_canvas_get_miter_points (G_GNUC_UNUSED PyGObject *self, PyObject *args)
+{
+    double x1, y1, x2, y2, x3, y3;
+    double mx1, my1, mx2, my2;
+    double width;
+
+    if (!PyArg_ParseTuple (args, (char*) "(dd)(dd)(dd)d:foo_canvas_get_miter_points",
+                           &x1, &y1, &x2, &y2, &x3, &y3, &width))
+        return NULL;
+
+    if (foo_canvas_get_miter_points (x1, y1, x2, y2, x3, y3, width, &mx1, &my1, &mx2, &my2))
+        return new_rect_d (mx1, my1, mx2, my2);
+    else
+        return_None;
+}
+%%
+override foo_canvas_get_butt_points varargs
+static PyObject *
+_wrap_foo_canvas_get_butt_points (G_GNUC_UNUSED PyGObject *self, PyObject *args)
+{
+    double x1, y1, x2, y2;
+    double width;
+    gboolean project;
+    double mx1, my1, mx2, my2;
+
+    if (!PyArg_ParseTuple (args, (char*) "(dd)(dd)di:foo_canvas_get_butt_points",
+                           &x1, &y1, &x2, &y2, &width, &project))
+        return NULL;
+
+    foo_canvas_get_butt_points (x1, y1, x2, y2, width, project, &mx1, &my1, &mx2, &my2);
+    return new_rect_d (mx1, my1, mx2, my2);
+}
+%%
+override foo_canvas_polygon_to_point varargs
+static PyObject *
+_wrap_foo_canvas_polygon_to_point (G_GNUC_UNUSED PyGObject *self, PyObject *args)
+{
+    PyObject *py_points;
+    double *points;
+    gsize n_points;
+    double x, y;
+    double dist;
+    int i;
+
+    if (!PyArg_ParseTuple (args, (char*) "O(dd):foo_canvas_polygon_to_point",
+                           &py_points, &x, &y))
+        return NULL;
+
+    if (!PyTuple_Check (py_points))
+        return_TypeError ("foo_canvas_polygon_to_point: argument must be a tuple of pairs");
+
+    n_points = PyTuple_GET_SIZE (py_points);
+    points = g_new (double, n_points * 2);
+
+    for (i = 0; i < PyTuple_GET_SIZE (py_points); ++i)
+    {
+        PyObject *pt = PyTuple_GET_ITEM (py_points, i);
+
+        if (!PyTuple_Check (pt) || PyTuple_GET_SIZE (pt) != 2 ||
+            !PyFloat_Check (PyTuple_GET_ITEM (pt, 0)) ||
+            !PyFloat_Check (PyTuple_GET_ITEM (pt, 1)))
+        {
+            g_free (points);
+            return_TypeError ("foo_canvas_polygon_to_point: argument must be a tuple of pairs");
+        }
+
+        points[2*i] = PyFloat_AsDouble (PyTuple_GET_ITEM (pt, 0));
+        points[2*i+1] = PyFloat_AsDouble (PyTuple_GET_ITEM (pt, 1));
+    }
+
+    dist = foo_canvas_polygon_to_point (points, n_points, x, y);
+
+    g_free (points);
+    return PyFloat_FromDouble (dist);
+}
+%%
+override foo_canvas_points_new varargs
+static int
+_wrap_foo_canvas_points_new (PyGBoxed *self, PyObject *args)
+{
+    FooCanvasPoints *points;
+    PyObject *py_points;
+    int n_points, i;
+
+    if (!PyArg_ParseTuple (args, (char*) "O:FooCanvasPoints.__init__", &py_points))
+        return -1;
+
+    if (!PyTuple_Check (py_points))
+        return_TypeErrorInt ("FooCanvasPoints.__init__: argument must be a tuple of pairs");
+
+    n_points = PyTuple_GET_SIZE (py_points);
+    points = foo_canvas_points_new (n_points);
+
+    for (i = 0; i < PyTuple_GET_SIZE (py_points); ++i)
+    {
+        PyObject *pt = PyTuple_GET_ITEM (py_points, i);
+
+        if (!PyTuple_Check (pt) || PyTuple_GET_SIZE (pt) != 2 ||
+            !PyFloat_Check (PyTuple_GET_ITEM (pt, 0)) ||
+            !PyFloat_Check (PyTuple_GET_ITEM (pt, 1)))
+        {
+            foo_canvas_points_free (points);
+            return_TypeErrorInt ("FooCanvasPoints.__init__: argument must be a tuple of pairs");
+        }
+
+        points->coords[2*i] = PyFloat_AsDouble (PyTuple_GET_ITEM (pt, 0));
+        points->coords[2*i+1] = PyFloat_AsDouble (PyTuple_GET_ITEM (pt, 1));
+    }
+
+    self->gtype = FOO_TYPE_CANVAS_POINTS;
+    self->free_on_dealloc = TRUE;
+    self->boxed = points;
+
+    return 0;
+}

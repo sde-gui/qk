@@ -5,7 +5,7 @@
   <debug>
    <build_dir>build/debug</build_dir>
    <configure>
-    <args>--enable-debug=full --enable-all-warnings --enable-libmoo --with-mooterm --enable-libmoo-headers --enable-project</args>
+    <args>--enable-debug=full --enable-all-warnings --enable-libmoo --with-mooterm --enable-libmoo-headers --enable-project --enable-canvas</args>
     <vars>
      <var name="CFLAGS">-g</var>
     </vars>
@@ -34,7 +34,7 @@
    </configure>
   </optimized>
  </configurations>
- <file_selector_dir>/home/muntyan/projects/moo/medit/</file_selector_dir>
+ <file_selector_dir>/home/muntyan/projects/moo/moo/moopython/pygtk/</file_selector_dir>
  <run>
   <args>--new-app --mode=project</args>
   <exe>medit/medit</exe>

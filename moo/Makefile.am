@@ -43,6 +43,10 @@ if MOO_BUILD_EDIT
 subdirs += mooedit
 libs += mooedit/libmooedit.la
 endif
+if MOO_BUILD_CANVAS
+subdirs += libfoocanvas
+libs += libfoocanvas/libfoocanvas.la
+endif
 if MOO_BUILD_APP
 subdirs += mooapp
 libs += mooapp/libmooapp.la
@@ -53,7 +57,7 @@ subdirs += moopython
 endif
 
 SUBDIRS = $(subdirs) .
-DIST_SUBDIRS = mooutils mooterm mooedit mooapp moopython mooscript moofileview
+DIST_SUBDIRS = mooutils mooterm mooedit mooapp libfoocanvas moopython mooscript moofileview
 
 lib_LTLIBRARIES =
 noinst_LTLIBRARIES =

@@ -26,6 +26,13 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   dnl must be called after MOO_AC_PYTHON
   MOO_AC_LIB
 
+  AC_CHECK_LIB(Xrender, XRenderFindFormat,[
+    AC_SUBST(RENDER_LIBS, "-lXrender -lXext")
+    AC_DEFINE(HAVE_RENDER, 1, [Define if libXrender is available.])
+  ],[
+    AC_SUBST(RENDER_LIBS, "")
+  ],[-lXext])
+
   AC_DEFINE(MOO_COMPILATION, 1, [must be 1])
 
   moo_top_src_dir=`cd $srcdir && pwd`

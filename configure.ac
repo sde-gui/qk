@@ -51,6 +51,7 @@ moo/mooedit/plugins/fileselector/Makefile
 moo/mooedit/plugins/completion/Makefile
 moo/mooapp/Makefile
 moo/mooapp/smclient/Makefile
+moo/libfoocanvas/Makefile
 moo/moopython/Makefile
 moo/moopython/plugins/Makefile
 moo/moopython/plugins/pyproject/Makefile

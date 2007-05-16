@@ -60,6 +60,14 @@ AC_DEFUN([MOO_COMPONENTS],[
     $build_mooterm && MOO_LIBS="-lutil $MOO_LIBS"
   fi
 
+  AC_ARG_ENABLE(canvas,
+    AC_HELP_STRING(--enable-canvas, [build foocanvas (default = NO)]),
+    [:],[enable_canvas=${MOO_BUILD_CANVAS:-no}])
+  AM_CONDITIONAL(MOO_BUILD_CANVAS, test "x$enable_canvas" = xyes)
+  if test "x$enable_canvas" = xyes; then
+    AC_DEFINE(MOO_BUILD_CANVAS, [1], [build foocanvas])
+  fi
+
   AC_ARG_ENABLE(project,
     AC_HELP_STRING(--enable-project, [enable project plugin (default = NO)]),
     [:],[enable_project=no])
