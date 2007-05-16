@@ -34,7 +34,7 @@ G_BEGIN_DECLS
 #define MOO_HTML_TAG_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_HTML_TAG, MooHtmlTagClass))
 
 typedef struct _MooHtml             MooHtml;
-typedef struct _MooHtmlPrivate      MooHtmlPrivate;
+typedef struct _MooHtmlData         MooHtmlData;
 typedef struct _MooHtmlClass        MooHtmlClass;
 typedef struct _MooHtmlTag          MooHtmlTag;
 typedef struct _MooHtmlTagClass     MooHtmlTagClass;
@@ -43,7 +43,7 @@ typedef struct _MooHtmlAttr         MooHtmlAttr;
 struct _MooHtml
 {
     GtkTextView parent;
-    MooHtmlPrivate *priv;
+    MooHtmlData *data;
 };
 
 struct _MooHtmlClass
@@ -73,14 +73,17 @@ struct _MooHtmlTagClass
 };
 
 
-GType           _moo_html_get_type      (void) G_GNUC_CONST;
-GType           _moo_html_tag_get_type  (void) G_GNUC_CONST;
+GType           _moo_html_get_type          (void) G_GNUC_CONST;
+GType           _moo_html_tag_get_type      (void) G_GNUC_CONST;
 
-gboolean        _moo_html_load_memory   (MooHtml            *html,
-                                         const char         *buffer,
-                                         int                 size,
-                                         const char         *url,
-                                         const char         *encoding);
+gboolean        _moo_html_load_memory       (GtkTextView    *view,
+                                             const char     *buffer,
+                                             int             size,
+                                             const char     *url,
+                                             const char     *encoding);
+
+void            moo_text_view_set_markup    (GtkTextView    *view,
+                                             const char     *markup);
 
 
 G_END_DECLS

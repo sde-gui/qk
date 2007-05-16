@@ -11,21 +11,23 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#include "config.h"
 #include "mooapp/moohtml.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/eggregex.h"
 #include "mooutils/mooutils-misc.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
-#include <libxml/HTMLtree.h>
 #include <string.h>
 #include <errno.h>
 
+#if defined(MOO_USE_XML)
+#include <libxml/HTMLtree.h>
 
 #define DEFAULT_PAR_SPACING 6
 
 
-struct _MooHtmlPrivate {
+struct _MooHtmlData {
     GHashTable *root_tags; /* char* -> MooHtmlTag* */
     GSList *href_tags;
 
@@ -107,6 +109,8 @@ static void     moo_html_get_property       (GObject        *object,
                                              GValue         *value,
                                              GParamSpec     *pspec);
 
+static MooHtmlData *moo_html_get_data       (gpointer        object);
+
 static void     moo_html_tag_finalize       (GObject        *object);
 static void     moo_html_tag_set_property   (GObject        *object,
                                              guint           prop_id,
@@ -117,6 +121,8 @@ static void     moo_html_tag_get_property   (GObject        *object,
                                              GValue         *value,
                                              GParamSpec     *pspec);
 
+static void     moo_html_size_allocate_cb   (GtkWidget      *widget,
+                                             GtkAllocation  *allocation);
 static void     moo_html_size_allocate      (GtkWidget      *widget,
                                              GtkAllocation  *allocation);
 static gboolean moo_html_button_press       (GtkWidget      *widget,
@@ -128,35 +134,33 @@ static gboolean moo_html_motion             (GtkWidget      *widget,
 
 static gboolean moo_html_load_url_real      (MooHtml        *html,
                                              const char     *url);
-static gboolean _moo_html_load_file         (MooHtml        *html,
+static gboolean moo_html_load_file          (GtkTextView    *view,
                                              const char     *file,
                                              const char     *encoding);
-static void     moo_html_clear              (MooHtml        *html);
-static void     moo_html_set_doc            (MooHtml        *html,
+static void     moo_html_clear              (GtkTextView    *view);
+static void     moo_html_set_doc            (GtkTextView    *view,
                                              htmlDocPtr      doc);
-static void     moo_html_load_doc           (MooHtml        *html,
+static void     moo_html_load_doc           (GtkTextView    *view,
                                              htmlDocPtr      doc);
 
-static MooHtmlTag *moo_html_create_tag      (MooHtml        *html,
+static MooHtmlTag *moo_html_create_tag      (GtkTextView    *view,
                                              const MooHtmlAttr *attr,
                                              MooHtmlTag     *parent,
                                              gboolean        force);
-static void     moo_html_create_anchor      (MooHtml        *html,
+static void     moo_html_create_anchor      (GtkTextView    *view,
                                              GtkTextBuffer  *buffer,
                                              GtkTextIter    *iter,
                                              const char     *name);
-static MooHtmlTag *moo_html_get_link_tag    (MooHtml        *html,
-                                             GtkTextIter    *iter);
-static MooHtmlTag *moo_html_get_tag         (MooHtml        *html,
-                                             GtkTextIter    *iter);
+static MooHtmlTag *moo_html_get_link_tag    (GtkTextIter    *iter);
+static MooHtmlTag *moo_html_get_tag         (GtkTextIter    *iter);
 
 static gboolean moo_html_parse_url          (const char     *url,
                                              char          **scheme,
                                              char          **base,
                                              char          **anchor);
-static gboolean moo_html_goto_anchor        (MooHtml        *html,
+static gboolean moo_html_goto_anchor        (GtkTextView    *view,
                                              const char     *anchor);
-static void     moo_html_make_heading_tag   (MooHtml        *html,
+static void     moo_html_make_heading_tag   (GtkTextView    *view,
                                              MooHtmlTag     *tag,
                                              guint           heading);
 
@@ -334,46 +338,117 @@ _moo_html_class_init (MooHtmlClass *klass)
 }
 
 
+static MooHtmlData *
+moo_html_data_new (void)
+{
+    MooHtmlData *data = g_new0 (MooHtmlData, 1);
+
+    data->anchors = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                           g_free, NULL);
+    data->root_tags = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                             g_free, NULL);
+    data->href_tags = NULL;
+    data->doc = NULL;
+
+    data->filename = NULL;
+    data->basename = NULL;
+    data->dirname = NULL;
+
+    data->font_sizes[0] = PANGO_SCALE_X_SMALL;
+    data->font_sizes[1] = PANGO_SCALE_SMALL;
+    data->font_sizes[2] = PANGO_SCALE_MEDIUM;
+    data->font_sizes[3] = PANGO_SCALE_LARGE;
+    data->font_sizes[4] = PANGO_SCALE_X_LARGE;
+    data->font_sizes[5] = PANGO_SCALE_XX_LARGE;
+    data->font_sizes[6] = PANGO_SCALE_XX_LARGE * PANGO_SCALE_LARGE;
+
+    data->heading_sizes[0] = PANGO_SCALE_XX_LARGE * PANGO_SCALE_LARGE;
+    data->heading_sizes[1] = PANGO_SCALE_XX_LARGE;
+    data->heading_sizes[2] = PANGO_SCALE_X_LARGE;
+    data->heading_sizes[3] = PANGO_SCALE_LARGE;
+    data->heading_sizes[4] = PANGO_SCALE_MEDIUM;
+    data->heading_sizes[5] = PANGO_SCALE_SMALL;
+
+    data->monospace = g_strdup ("Monospace");
+    data->font_faces = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+
+    return data;
+}
+
+static void
+moo_html_data_free (MooHtmlData *data)
+{
+    if (data)
+    {
+        int i;
+
+        g_hash_table_destroy (data->anchors);
+        g_hash_table_destroy (data->root_tags);
+        g_slist_free (data->href_tags);
+
+        g_free (data->title);
+        g_free (data->hover_link);
+
+        if (data->doc)
+            xmlFreeDoc (data->doc);
+
+        g_hash_table_destroy (data->font_faces);
+        g_free (data->monospace);
+        for (i = 0; i < 6; ++i)
+            g_free (data->heading_faces[i]);
+
+        g_free (data->filename);
+        g_free (data->basename);
+        g_free (data->dirname);
+
+        g_free (data);
+    }
+}
+
+static MooHtmlData *
+moo_html_get_data (gpointer object)
+{
+    MooHtmlData *data;
+
+    data = g_object_get_data (object, "moo-html-data");
+
+    if (!data)
+    {
+        data = moo_html_data_new ();
+        g_object_set_data_full (object, "moo-html-data", data,
+                                (GDestroyNotify) moo_html_data_free);
+        g_signal_connect (object, "size-allocate", G_CALLBACK (moo_html_size_allocate_cb), NULL);
+    }
+
+    return data;
+}
+
+
 static void
 _moo_html_init (MooHtml *html)
 {
-    html->priv = g_new0 (MooHtmlPrivate, 1);
-
-    html->priv->anchors = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                                 g_free, NULL);
-    html->priv->root_tags = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                                   g_free, NULL);
-    html->priv->href_tags = NULL;
-    html->priv->doc = NULL;
-
-    html->priv->filename = NULL;
-    html->priv->basename = NULL;
-    html->priv->dirname = NULL;
-
+    html->data = moo_html_data_new ();
+    g_object_set_data (G_OBJECT (html), "moo-html-data", html->data);
     g_object_set (html,
                   "cursor-visible", FALSE,
                   "editable", FALSE,
                   "wrap-mode", GTK_WRAP_WORD,
                   "pixels-below-lines", DEFAULT_PAR_SPACING,
                   NULL);
+}
 
-    html->priv->font_sizes[0] = PANGO_SCALE_X_SMALL;
-    html->priv->font_sizes[1] = PANGO_SCALE_SMALL;
-    html->priv->font_sizes[2] = PANGO_SCALE_MEDIUM;
-    html->priv->font_sizes[3] = PANGO_SCALE_LARGE;
-    html->priv->font_sizes[4] = PANGO_SCALE_X_LARGE;
-    html->priv->font_sizes[5] = PANGO_SCALE_XX_LARGE;
-    html->priv->font_sizes[6] = PANGO_SCALE_XX_LARGE * PANGO_SCALE_LARGE;
 
-    html->priv->heading_sizes[0] = PANGO_SCALE_XX_LARGE * PANGO_SCALE_LARGE;
-    html->priv->heading_sizes[1] = PANGO_SCALE_XX_LARGE;
-    html->priv->heading_sizes[2] = PANGO_SCALE_X_LARGE;
-    html->priv->heading_sizes[3] = PANGO_SCALE_LARGE;
-    html->priv->heading_sizes[4] = PANGO_SCALE_MEDIUM;
-    html->priv->heading_sizes[5] = PANGO_SCALE_SMALL;
+static void
+moo_html_set_title (GtkTextView *view,
+                    const char  *title)
+{
+    MooHtmlData *data = moo_html_get_data (view);
 
-    html->priv->monospace = g_strdup ("Monospace");
-    html->priv->font_faces = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+    g_free (data->title);
+    data->title = g_strdup (title);
+
+    if (MOO_IS_HTML (view))
+        g_object_notify (G_OBJECT (view), "title");
 }
 
 
@@ -389,9 +464,7 @@ moo_html_set_property (GObject        *object,
     switch (prop_id)
     {
         case HTML_PROP_TITLE:
-            g_free (html->priv->title);
-            html->priv->title = g_strdup (g_value_get_string (value));
-            g_object_notify (object, "title");
+            moo_html_set_title (GTK_TEXT_VIEW (html), g_value_get_string (value));
             break;
 
         case HTML_PROP_MARKUP:
@@ -400,7 +473,7 @@ moo_html_set_property (GObject        *object,
             if (!string)
                 string = "";
 
-            _moo_html_load_memory (html, string, -1, NULL, NULL);
+            _moo_html_load_memory (GTK_TEXT_VIEW (html), string, -1, NULL, NULL);
             break;
 
         default:
@@ -420,7 +493,7 @@ moo_html_get_property (GObject        *object,
     switch (prop_id)
     {
         case HTML_PROP_TITLE:
-            g_value_set_string (value, html->priv->title);
+            g_value_set_string (value, html->data->title);
             break;
 
         default:
@@ -430,44 +503,23 @@ moo_html_get_property (GObject        *object,
 
 
 static void
-moo_html_finalize (GObject      *object)
+moo_html_finalize (GObject *object)
 {
-    int i;
     MooHtml *html = MOO_HTML (object);
-
-    g_hash_table_destroy (html->priv->anchors);
-    g_hash_table_destroy (html->priv->root_tags);
-    g_slist_free (html->priv->href_tags);
-
-    g_free (html->priv->title);
-    g_free (html->priv->hover_link);
-
-    if (html->priv->doc)
-        xmlFreeDoc (html->priv->doc);
-
-    g_hash_table_destroy (html->priv->font_faces);
-    g_free (html->priv->monospace);
-    for (i = 0; i < 6; ++i)
-        g_free (html->priv->heading_faces[i]);
-
-    g_free (html->priv->filename);
-    g_free (html->priv->basename);
-    g_free (html->priv->dirname);
-
-    g_free (html->priv);
-
+    moo_html_data_free (html->data);
     G_OBJECT_CLASS (_moo_html_parent_class)->finalize (object);
 }
 
 
 static gboolean
-moo_html_load_url_real (MooHtml        *html,
-                        const char     *url)
+moo_html_load_url (GtkTextView *view,
+                   const char  *url)
 {
     char *scheme, *base, *anchor;
     gboolean result = FALSE;
+    MooHtmlData *data = moo_html_get_data (view);
 
-    g_return_val_if_fail (MOO_IS_HTML (html), FALSE);
+    g_return_val_if_fail (GTK_IS_TEXT_VIEW (view), FALSE);
     g_return_val_if_fail (url != NULL, FALSE);
 
     if (!moo_html_parse_url (url, &scheme, &base, &anchor))
@@ -488,33 +540,33 @@ moo_html_load_url_real (MooHtml        *html,
     if (strcmp (scheme, "file://"))
         goto out;
 
-    if (!base || (html->priv->basename && !strcmp (html->priv->basename, base)))
+    if (!base || (data->basename && !strcmp (data->basename, base)))
     {
         if (anchor)
-            result = moo_html_goto_anchor (html, anchor);
+            result = moo_html_goto_anchor (view, anchor);
         else
             result = TRUE;
     }
     else if (!g_path_is_absolute (base))
     {
-        if (html->priv->dirname)
+        if (data->dirname)
         {
-            char *filename = g_build_filename (html->priv->dirname, base, NULL);
+            char *filename = g_build_filename (data->dirname, base, NULL);
 
-            result = _moo_html_load_file (html, filename, NULL);
+            result = moo_html_load_file (view, filename, NULL);
 
             if (result && anchor)
-                moo_html_goto_anchor (html, anchor);
+                moo_html_goto_anchor (view, anchor);
 
             g_free (filename);
         }
     }
     else
     {
-        result = _moo_html_load_file (html, base, NULL);
+        result = moo_html_load_file (view, base, NULL);
 
         if (result && anchor)
-            moo_html_goto_anchor (html, anchor);
+            moo_html_goto_anchor (view, anchor);
     }
 
 out:
@@ -522,6 +574,14 @@ out:
     g_free (base);
     g_free (anchor);
     return result;
+}
+
+
+static gboolean
+moo_html_load_url_real (MooHtml        *html,
+                        const char     *url)
+{
+    return moo_html_load_url (GTK_TEXT_VIEW (html), url);
 }
 
 
@@ -534,47 +594,61 @@ remove_tag (GtkTextTag      *tag,
 
 
 static void
-moo_html_clear (MooHtml        *html)
+moo_html_clear (GtkTextView *view)
 {
     GtkTextBuffer *buffer;
     GtkTextTagTable *table;
     GtkTextIter start, end;
+    MooHtmlData *data = moo_html_get_data (view);
 
-    g_hash_table_destroy (html->priv->anchors);
-    html->priv->anchors = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+    g_hash_table_destroy (data->anchors);
+    data->anchors = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (html));
+    buffer = gtk_text_view_get_buffer (view);
     table = gtk_text_buffer_get_tag_table (buffer);
-    g_slist_foreach (html->priv->href_tags, (GFunc) remove_tag, table);
-    g_slist_free (html->priv->href_tags);
-    html->priv->href_tags = NULL;
+    g_slist_foreach (data->href_tags, (GFunc) remove_tag, table);
+    g_slist_free (data->href_tags);
+    data->href_tags = NULL;
 
     gtk_text_buffer_get_bounds (buffer, &start, &end);
     gtk_text_buffer_delete (buffer, &start, &end);
 
-    html->priv->new_line = TRUE;
-    html->priv->space = TRUE;
+    data->new_line = TRUE;
+    data->space = TRUE;
 
-    if (html->priv->doc)
-        xmlFreeDoc (html->priv->doc);
-    html->priv->doc = NULL;
+    if (data->doc)
+        xmlFreeDoc (data->doc);
+    data->doc = NULL;
 
-    g_slist_free (html->priv->rulers);
-    html->priv->rulers = NULL;
+    g_slist_free (data->rulers);
+    data->rulers = NULL;
+}
+
+
+void
+moo_text_view_set_markup (GtkTextView *view,
+                          const char  *markup)
+{
+    g_return_if_fail (GTK_IS_TEXT_VIEW (view));
+    g_return_if_fail (markup != NULL);
+    _moo_html_load_memory (view, markup, -1, NULL, NULL);
 }
 
 
 gboolean
-_moo_html_load_memory (MooHtml            *html,
-                       const char         *buffer,
-                       int                 size,
-                       const char         *url,
-                       const char         *encoding)
+_moo_html_load_memory (GtkTextView *view,
+                       const char  *buffer,
+                       int          size,
+                       const char  *url,
+                       const char  *encoding)
 {
     htmlDocPtr doc;
+    MooHtmlData *data;
 
-    g_return_val_if_fail (MOO_IS_HTML (html), FALSE);
+    g_return_val_if_fail (GTK_IS_TEXT_VIEW (view), FALSE);
     g_return_val_if_fail (buffer != NULL, FALSE);
+
+    data = moo_html_get_data (view);
 
     if (size < 0)
         size = strlen (buffer);
@@ -588,14 +662,14 @@ _moo_html_load_memory (MooHtml            *html,
         return FALSE;
     }
 
-    g_free (html->priv->filename);
-    g_free (html->priv->basename);
-    g_free (html->priv->dirname);
-    html->priv->filename = NULL;
-    html->priv->basename = NULL;
-    html->priv->dirname = NULL;
+    g_free (data->filename);
+    g_free (data->basename);
+    g_free (data->dirname);
+    data->filename = NULL;
+    data->basename = NULL;
+    data->dirname = NULL;
 
-    moo_html_set_doc (html, doc);
+    moo_html_set_doc (view, doc);
 
     xmlCleanupParser ();
     return TRUE;
@@ -603,13 +677,14 @@ _moo_html_load_memory (MooHtml            *html,
 
 
 static gboolean
-_moo_html_load_file (MooHtml            *html,
-                     const char         *file,
-                     const char         *encoding)
+moo_html_load_file (GtkTextView *view,
+                    const char  *file,
+                    const char  *encoding)
 {
     htmlDocPtr doc;
+    MooHtmlData *data = moo_html_get_data (view);
 
-    g_return_val_if_fail (MOO_IS_HTML (html), FALSE);
+    g_return_val_if_fail (GTK_IS_TEXT_VIEW (view), FALSE);
     g_return_val_if_fail (file != NULL, FALSE);
 
     doc = htmlReadFile (file, encoding, HTML_PARSE_NONET);
@@ -617,15 +692,15 @@ _moo_html_load_file (MooHtml            *html,
     if (!doc)
         return FALSE;
 
-    g_free (html->priv->filename);
-    g_free (html->priv->basename);
-    g_free (html->priv->dirname);
+    g_free (data->filename);
+    g_free (data->basename);
+    g_free (data->dirname);
 
-    html->priv->filename = g_strdup (file);
-    html->priv->basename = g_path_get_basename (file);
-    html->priv->dirname = g_path_get_dirname (file);
+    data->filename = g_strdup (file);
+    data->basename = g_path_get_basename (file);
+    data->dirname = g_path_get_dirname (file);
 
-    moo_html_set_doc (html, doc);
+    moo_html_set_doc (view, doc);
 
     xmlCleanupParser ();
     return TRUE;
@@ -633,16 +708,20 @@ _moo_html_load_file (MooHtml            *html,
 
 
 static void
-moo_html_set_doc (MooHtml        *html,
-                  htmlDocPtr      doc)
+moo_html_set_doc (GtkTextView *view,
+                  htmlDocPtr   doc)
 {
+    MooHtmlData *data;
+
     g_return_if_fail (doc != NULL);
-    g_return_if_fail (doc != html->priv->doc);
 
-    moo_html_clear (html);
+    data = moo_html_get_data (view);
+    g_return_if_fail (doc != data->doc);
 
-    html->priv->doc = doc;
-    moo_html_load_doc (html, doc);
+    moo_html_clear (view);
+
+    data->doc = doc;
+    moo_html_load_doc (view, doc);
 }
 
 
@@ -768,8 +847,10 @@ attr_compose (MooHtmlAttr       *dest,
 static void
 attr_apply (const MooHtmlAttr *attr,
             MooHtmlTag        *tag,
-            MooHtml           *html)
+            GtkTextView       *view)
 {
+    MooHtmlData *data = moo_html_get_data (view);
+
     g_return_if_fail (attr != NULL && tag != NULL);
 
     moo_html_attr_free (tag->attr);
@@ -810,13 +891,13 @@ attr_apply (const MooHtmlAttr *attr,
                       NULL);
 
     if (attr->mask & MOO_HTML_MONOSPACE)
-        g_object_set (tag, "font", html->priv->monospace, NULL);
+        g_object_set (tag, "font", data->monospace, NULL);
     else if (attr->mask & MOO_HTML_FONT_FACE)
         g_object_set (tag, "font", attr->font_face, NULL);
 
     if (attr->mask & MOO_HTML_HEADING)
     {
-        moo_html_make_heading_tag (html, tag, attr->heading);
+        moo_html_make_heading_tag (view, tag, attr->heading);
     }
     else if (attr->mask & MOO_HTML_LARGER)
     {
@@ -824,8 +905,8 @@ attr_apply (const MooHtmlAttr *attr,
         int space;
         int size = 3 + attr->scale;
         size = CLAMP (size, 1, 7);
-        scale = html->priv->font_sizes[size - 1];
-        space = html->priv->par_spacing[size - 1];
+        scale = data->font_sizes[size - 1];
+        space = data->par_spacing[size - 1];
         g_object_set (tag,
                       "scale", scale,
                       "pixels-below-lines", DEFAULT_PAR_SPACING + space,
@@ -837,8 +918,8 @@ attr_apply (const MooHtmlAttr *attr,
         int space;
         int size = 3 - attr->scale;
         size = CLAMP (size, 1, 7);
-        scale = html->priv->font_sizes[size - 1];
-        space = html->priv->par_spacing[size - 1];
+        scale = data->font_sizes[size - 1];
+        space = data->par_spacing[size - 1];
         g_object_set (tag,
                       "scale", scale,
                       "pixels-below-lines", DEFAULT_PAR_SPACING + space,
@@ -848,9 +929,9 @@ attr_apply (const MooHtmlAttr *attr,
     {
         g_assert (1 <= attr->font_size && attr->font_size <= 7);
         g_object_set (tag,
-                      "scale", html->priv->font_sizes[attr->font_size - 1],
+                      "scale", data->font_sizes[attr->font_size - 1],
                       "pixels-below-lines",
-                      DEFAULT_PAR_SPACING + html->priv->par_spacing[attr->font_size - 1],
+                      DEFAULT_PAR_SPACING + data->par_spacing[attr->font_size - 1],
                       NULL);
     }
     else if (attr->mask & MOO_HTML_FONT_PT_SIZE)
@@ -861,32 +942,35 @@ attr_apply (const MooHtmlAttr *attr,
 
 
 static void
-moo_html_make_heading_tag (MooHtml        *html,
+moo_html_make_heading_tag (GtkTextView    *view,
                            MooHtmlTag     *tag,
                            guint           heading)
 {
+    MooHtmlData *data = moo_html_get_data (view);
+
     g_assert (1 <= heading && heading <= 6);
 
     g_object_set (tag,
                   "pixels-below-lines",
-                  DEFAULT_PAR_SPACING + html->priv->heading_spacing[heading - 1],
-                  "scale", html->priv->heading_sizes[heading - 1],
+                  DEFAULT_PAR_SPACING + data->heading_spacing[heading - 1],
+                  "scale", data->heading_sizes[heading - 1],
                   "weight", PANGO_WEIGHT_BOLD, NULL);
 
-    if (html->priv->heading_faces[heading - 1])
+    if (data->heading_faces[heading - 1])
         g_object_set (tag, "family",
-                      html->priv->heading_faces[heading - 1], NULL);
+                      data->heading_faces[heading - 1], NULL);
 }
 
 
 static MooHtmlTag*
-moo_html_create_tag (MooHtml           *html,
+moo_html_create_tag (GtkTextView       *view,
                      const MooHtmlAttr *attr,
                      MooHtmlTag        *parent,
                      gboolean           force)
 {
     MooHtmlTag *tag;
     MooHtmlAttr real_attr;
+    MooHtmlData *data = moo_html_get_data (view);
 
     g_return_val_if_fail (attr != NULL, NULL);
 
@@ -904,14 +988,14 @@ moo_html_create_tag (MooHtml           *html,
     }
 
     tag = g_object_new (MOO_TYPE_HTML_TAG, NULL);
-    gtk_text_tag_table_add (gtk_text_buffer_get_tag_table (gtk_text_view_get_buffer (GTK_TEXT_VIEW (html))),
+    gtk_text_tag_table_add (gtk_text_buffer_get_tag_table (gtk_text_view_get_buffer (view)),
                             GTK_TEXT_TAG (tag));
     g_object_unref (tag);
 
     if (tag->href)
-        html->priv->href_tags = g_slist_prepend (html->priv->href_tags, tag);
+        data->href_tags = g_slist_prepend (data->href_tags, tag);
 
-    attr_apply (&real_attr, tag, html);
+    attr_apply (&real_attr, tag, view);
 
     return tag;
 }
@@ -951,13 +1035,14 @@ moo_html_attr_free (MooHtmlAttr        *attr)
 
 
 static void
-moo_html_create_anchor (MooHtml        *html,
+moo_html_create_anchor (GtkTextView    *view,
                         GtkTextBuffer  *buffer,
                         GtkTextIter    *iter,
                         const char     *name)
 {
     GtkTextMark *mark;
     char *alt_name;
+    MooHtmlData *data = moo_html_get_data (view);
 
     g_return_if_fail (name != NULL && (name[0] != '#' || name[1]));
 
@@ -968,8 +1053,8 @@ moo_html_create_anchor (MooHtml        *html,
     else
         alt_name = g_strdup_printf ("#%s", name);
 
-    g_hash_table_insert (html->priv->anchors, g_strdup (name), mark);
-    g_hash_table_insert (html->priv->anchors, alt_name, mark);
+    g_hash_table_insert (data->anchors, g_strdup (name), mark);
+    g_hash_table_insert (data->anchors, alt_name, mark);
 }
 
 
@@ -984,8 +1069,8 @@ moo_html_motion (GtkWidget      *widget,
     GdkModifierType state;
     MooHtmlTag *tag;
 
-    if (html->priv->button_pressed)
-        html->priv->in_drag = TRUE;
+    if (html->data->button_pressed)
+        html->data->in_drag = TRUE;
 
     if (event->window != gtk_text_view_get_window (textview, GTK_TEXT_WINDOW_TEXT))
         goto out;
@@ -1008,18 +1093,18 @@ moo_html_motion (GtkWidget      *widget,
                                            x, y, &buf_x, &buf_y);
     gtk_text_view_get_iter_at_position (textview, &iter, &dummy, buf_x, buf_y);
 
-    tag = moo_html_get_link_tag (html, &iter);
+    tag = moo_html_get_link_tag (&iter);
 
     if (tag)
     {
         g_return_val_if_fail (tag->href != NULL, FALSE);
 
-        if (!html->priv->hover_link || strcmp (html->priv->hover_link, tag->href))
+        if (!html->data->hover_link || strcmp (html->data->hover_link, tag->href))
         {
             GdkCursor *cursor;
 
-            g_free (html->priv->hover_link);
-            html->priv->hover_link = g_strdup (tag->href);
+            g_free (html->data->hover_link);
+            html->data->hover_link = g_strdup (tag->href);
 
             cursor = gdk_cursor_new (GDK_HAND2);
             gdk_window_set_cursor (event->window, cursor);
@@ -1028,12 +1113,12 @@ moo_html_motion (GtkWidget      *widget,
             g_signal_emit (html, html_signals[HOVER_LINK], 0, tag->href);
         }
     }
-    else if (html->priv->hover_link)
+    else if (html->data->hover_link)
     {
         GdkCursor *cursor;
 
-        g_free (html->priv->hover_link);
-        html->priv->hover_link = NULL;
+        g_free (html->data->hover_link);
+        html->data->hover_link = NULL;
 
         cursor = gdk_cursor_new (GDK_XTERM);
         gdk_window_set_cursor (event->window, cursor);
@@ -1048,17 +1133,15 @@ out:
 
 
 static MooHtmlTag*
-moo_html_get_link_tag (MooHtml        *html,
-                       GtkTextIter    *iter)
+moo_html_get_link_tag (GtkTextIter *iter)
 {
-    MooHtmlTag *tag = moo_html_get_tag (html, iter);
+    MooHtmlTag *tag = moo_html_get_tag (iter);
     return (tag && tag->href) ? tag : NULL;
 }
 
 
 static MooHtmlTag*
-moo_html_get_tag (G_GNUC_UNUSED MooHtml *html,
-                  GtkTextIter    *iter)
+moo_html_get_tag (GtkTextIter *iter)
 {
     MooHtmlTag *tag = NULL;
     GSList *l;
@@ -1083,8 +1166,8 @@ moo_html_button_press (GtkWidget      *widget,
                        GdkEventButton *event)
 {
     MooHtml *html = MOO_HTML (widget);
-    html->priv->button_pressed = TRUE;
-    html->priv->in_drag = FALSE;
+    html->data->button_pressed = TRUE;
+    html->data->in_drag = FALSE;
     return GTK_WIDGET_CLASS(_moo_html_parent_class)->button_press_event (widget, event);
 }
 
@@ -1099,11 +1182,11 @@ moo_html_button_release (GtkWidget      *widget,
     int buf_x, buf_y, dummy;
     MooHtmlTag *tag;
 
-    html->priv->button_pressed = FALSE;
+    html->data->button_pressed = FALSE;
 
-    if (html->priv->in_drag)
+    if (html->data->in_drag)
     {
-        html->priv->in_drag = FALSE;
+        html->data->in_drag = FALSE;
         goto out;
     }
 
@@ -1114,7 +1197,7 @@ moo_html_button_release (GtkWidget      *widget,
                                            event->x, event->y, &buf_x, &buf_y);
     gtk_text_view_get_iter_at_position (textview, &iter, &dummy, buf_x, buf_y);
 
-    tag = moo_html_get_link_tag (html, &iter);
+    tag = moo_html_get_link_tag (&iter);
 
     if (tag)
     {
@@ -1162,14 +1245,15 @@ moo_html_parse_url (const char     *url,
 
 
 static gboolean
-moo_html_goto_anchor (MooHtml        *html,
-                      const char     *anchor)
+moo_html_goto_anchor (GtkTextView *view,
+                      const char  *anchor)
 {
     GtkTextMark *mark;
+    MooHtmlData *data = moo_html_get_data (view);
 
     g_return_val_if_fail (anchor != NULL, FALSE);
 
-    mark = g_hash_table_lookup (html->priv->anchors, anchor);
+    mark = g_hash_table_lookup (data->anchors, anchor);
 
     if (!mark)
     {
@@ -1179,8 +1263,7 @@ moo_html_goto_anchor (MooHtml        *html,
     }
     else
     {
-        gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (html), mark,
-                                      0.1, TRUE, 0, 0);
+        gtk_text_view_scroll_to_mark (view, mark, 0.1, TRUE, 0, 0);
         return TRUE;
     }
 }
@@ -1206,15 +1289,13 @@ moo_html_set_font (MooHtml            *html,
 
 
 static void
-moo_html_size_allocate (GtkWidget      *widget,
-                        GtkAllocation  *allocation)
+moo_html_size_allocate_real (GtkWidget *widget,
+                             G_GNUC_UNUSED GtkAllocation *allocation)
 {
-    MooHtml *html = MOO_HTML (widget);
     int border_width, child_width, height;
     GSList *l;
     GdkWindow *window;
-
-    GTK_WIDGET_CLASS(_moo_html_parent_class)->size_allocate (widget, allocation);
+    MooHtmlData *data = moo_html_get_data (widget);
 
     if (!GTK_WIDGET_REALIZED (widget))
         return;
@@ -1229,11 +1310,26 @@ moo_html_size_allocate (GtkWidget      *widget,
             gtk_text_view_get_right_margin (GTK_TEXT_VIEW (widget));
     child_width = MAX (child_width, 0);
 
-    for (l = html->priv->rulers; l != NULL; l = l->next)
+    for (l = data->rulers; l != NULL; l = l->next)
     {
         GtkWidget *ruler = l->data;
         gtk_widget_set_size_request (ruler, child_width, -1);
     }
+}
+
+static void
+moo_html_size_allocate (GtkWidget      *widget,
+                        GtkAllocation  *allocation)
+{
+    GTK_WIDGET_CLASS(_moo_html_parent_class)->size_allocate (widget, allocation);
+    moo_html_size_allocate_real (widget, allocation);
+}
+
+static void
+moo_html_size_allocate_cb (GtkWidget     *widget,
+                           GtkAllocation *allocation)
+{
+    moo_html_size_allocate_real (widget, allocation);
 }
 
 
@@ -1264,21 +1360,21 @@ moo_html_size_allocate (GtkWidget      *widget,
 #define STR_FREE(s__) if (s__) xmlFree (s__)
 
 
-static void moo_html_load_head      (MooHtml        *html,
+static void moo_html_load_head      (GtkTextView    *view,
                                      xmlNode        *node);
-static void moo_html_load_body      (MooHtml        *html,
+static void moo_html_load_body      (GtkTextView    *view,
                                      xmlNode        *node);
-static void moo_html_new_line       (MooHtml        *html,
+static void moo_html_new_line       (GtkTextView    *view,
                                      GtkTextBuffer  *buffer,
                                      GtkTextIter    *iter,
                                      MooHtmlTag     *tag,
                                      gboolean        force);
-static void moo_html_insert_text    (MooHtml        *html,
+static void moo_html_insert_text    (GtkTextView    *view,
                                      GtkTextBuffer  *buffer,
                                      GtkTextIter    *iter,
                                      MooHtmlTag     *tag,
                                      const char     *text);
-static void moo_html_insert_verbatim(MooHtml        *html,
+static void moo_html_insert_verbatim(GtkTextView    *view,
                                      GtkTextBuffer  *buffer,
                                      GtkTextIter    *iter,
                                      MooHtmlTag     *tag,
@@ -1286,8 +1382,8 @@ static void moo_html_insert_verbatim(MooHtml        *html,
 
 
 static void
-moo_html_load_doc (MooHtml        *html,
-                   htmlDocPtr      doc)
+moo_html_load_doc (GtkTextView *view,
+                   htmlDocPtr   doc)
 {
     xmlNode *root, *node;
 
@@ -1303,11 +1399,11 @@ moo_html_load_doc (MooHtml        *html,
     {
         if (IS_HEAD_ELEMENT (node))
         {
-            moo_html_load_head (html, node);
+            moo_html_load_head (view, node);
         }
         else if (IS_BODY_ELEMENT (node))
         {
-            moo_html_load_body (html, node);
+            moo_html_load_body (view, node);
         }
         else
         {
@@ -1318,8 +1414,8 @@ moo_html_load_doc (MooHtml        *html,
 
 
 static void
-moo_html_load_head (MooHtml        *html,
-                    xmlNode        *node)
+moo_html_load_head (GtkTextView *view,
+                    xmlNode     *node)
 {
     xmlNode *child;
 
@@ -1328,7 +1424,7 @@ moo_html_load_head (MooHtml        *html,
         if (IS_TITLE_ELEMENT (child))
         {
             xmlChar *title = xmlNodeGetContent (child);
-            g_object_set (html, "title", title, NULL);
+            moo_html_set_title (view, (char *) title);
             STR_FREE (title);
         }
         else if (IS_META_ELEMENT (child))
@@ -1346,13 +1442,15 @@ moo_html_load_head (MooHtml        *html,
 
 
 static void
-moo_html_new_line (MooHtml        *html,
-                   GtkTextBuffer  *buffer,
-                   GtkTextIter    *iter,
-                   MooHtmlTag     *tag,
-                   gboolean        force)
+moo_html_new_line (GtkTextView   *view,
+                   GtkTextBuffer *buffer,
+                   GtkTextIter   *iter,
+                   MooHtmlTag    *tag,
+                   gboolean       force)
 {
-    if (!html->priv->new_line || force)
+    MooHtmlData *data = moo_html_get_data (view);
+
+    if (!data->new_line || force)
     {
         if (tag)
             gtk_text_buffer_insert_with_tags (buffer, iter, "\n", 1,
@@ -1361,8 +1459,8 @@ moo_html_new_line (MooHtml        *html,
             gtk_text_buffer_insert (buffer, iter, "\n", 1);
     }
 
-    html->priv->new_line = TRUE;
-    html->priv->space = TRUE;
+    data->new_line = TRUE;
+    data->space = TRUE;
 }
 
 
@@ -1382,17 +1480,18 @@ str_find_separator (const char *str)
 
 
 static void
-moo_html_insert_text (MooHtml        *html,
-                      GtkTextBuffer  *buffer,
-                      GtkTextIter    *iter,
-                      MooHtmlTag     *tag,
-                      const char     *text)
+moo_html_insert_text (GtkTextView   *view,
+                      GtkTextBuffer *buffer,
+                      GtkTextIter   *iter,
+                      MooHtmlTag    *tag,
+                      const char    *text)
 {
     const char *p;
+    MooHtmlData *data = moo_html_get_data (view);
 
     if (tag && tag->attr && (tag->attr->mask & MOO_HTML_PRE))
     {
-        moo_html_insert_verbatim (html, buffer, iter, tag, text);
+        moo_html_insert_verbatim (view, buffer, iter, tag, text);
         return;
     }
 
@@ -1418,16 +1517,16 @@ moo_html_insert_text (MooHtml        *html,
                     gtk_text_buffer_insert (buffer, iter, " ", 1);
                 }
 
-                html->priv->space = TRUE;
-                html->priv->new_line = FALSE;
+                data->space = TRUE;
+                data->new_line = FALSE;
                 text = ++p;
             }
             else
             {
-                if (!html->priv->space)
+                if (!data->space)
                 {
                     gtk_text_buffer_insert (buffer, iter, " ", 1);
-                    html->priv->space = TRUE;
+                    data->space = TRUE;
                 }
 
                 text++;
@@ -1441,8 +1540,8 @@ moo_html_insert_text (MooHtml        *html,
                                                   GTK_TEXT_TAG (tag), NULL);
             else
                 gtk_text_buffer_insert (buffer, iter, text, -1);
-            html->priv->new_line = FALSE;
-            html->priv->space = FALSE;
+            data->new_line = FALSE;
+            data->space = FALSE;
             break;
         }
     }
@@ -1479,17 +1578,18 @@ str_has_trailing_space (const char *text, int len)
 
 
 static void
-moo_html_insert_verbatim (MooHtml        *html,
-                          GtkTextBuffer  *buffer,
-                          GtkTextIter    *iter,
-                          MooHtmlTag     *tag,
-                          const char     *text)
+moo_html_insert_verbatim (GtkTextView   *view,
+                          GtkTextBuffer *buffer,
+                          GtkTextIter   *iter,
+                          MooHtmlTag    *tag,
+                          const char    *text)
 {
     guint len;
+    MooHtmlData *data = moo_html_get_data (view);
 
     g_return_if_fail (text != NULL);
 
-    if (text[0] == '\n' && html->priv->new_line)
+    if (text[0] == '\n' && data->new_line)
         text++;
 
     len = strlen (text);
@@ -1504,90 +1604,91 @@ moo_html_insert_verbatim (MooHtml        *html,
     else
         gtk_text_buffer_insert (buffer, iter, text, len);
 
-    html->priv->new_line = str_has_trailing_nl (text, len);
+    data->new_line = str_has_trailing_nl (text, len);
 
-    if (html->priv->new_line)
-        html->priv->space = TRUE;
+    if (data->new_line)
+        data->space = TRUE;
     else
-        html->priv->space = str_has_trailing_space (text, len);
+        data->space = str_has_trailing_space (text, len);
 }
 
 
-static void process_elm_body    (MooHtml        *html,
+static void process_elm_body    (GtkTextView    *view,
                                  GtkTextBuffer  *buffer,
                                  xmlNode        *elm,
                                  MooHtmlTag     *current,
                                  GtkTextIter    *iter);
-static void process_text_node   (MooHtml        *html,
+static void process_text_node   (GtkTextView    *view,
                                  GtkTextBuffer  *buffer,
                                  xmlNode        *node,
                                  MooHtmlTag     *current,
                                  GtkTextIter    *iter);
-static void process_heading_elm (MooHtml        *html,
+static void process_heading_elm (GtkTextView    *view,
                                  GtkTextBuffer  *buffer,
                                  xmlNode        *elm,
                                  MooHtmlTag     *current,
                                  GtkTextIter    *iter);
-static void process_format_elm  (MooHtml        *html,
+static void process_format_elm  (GtkTextView    *view,
                                  MooHtmlAttr    *attr,
                                  GtkTextBuffer  *buffer,
                                  xmlNode        *elm,
                                  MooHtmlTag     *current,
                                  GtkTextIter    *iter);
 
-static void process_img_elm     (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_img_elm     (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *current, GtkTextIter *iter);
-static void process_p_elm       (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_p_elm       (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
-static void process_a_elm       (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_a_elm       (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
-static void process_pre_elm     (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_pre_elm     (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
-static void process_ol_elm      (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_ol_elm      (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
-static void process_ul_elm      (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_ul_elm      (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
-static void process_font_elm    (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_font_elm    (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
-static void process_cite_elm    (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_cite_elm    (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
-static void process_li_elm      (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_li_elm      (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
-static void process_dt_elm      (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_dt_elm      (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
-static void process_dl_elm      (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_dl_elm      (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
-static void process_dd_elm      (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_dd_elm      (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
-static void process_br_elm      (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_br_elm      (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
-static void process_div_elm     (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_div_elm     (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
-static void process_span_elm    (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_span_elm    (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
-static void process_hr_elm      (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_hr_elm      (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
 
-static void process_table_elm   (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_table_elm   (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
-static void process_tr_elm      (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+static void process_tr_elm      (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                                  MooHtmlTag *parent, GtkTextIter *iter);
 
 
 static void
-moo_html_load_body (MooHtml        *html,
-                    xmlNode        *node)
+moo_html_load_body (GtkTextView *view,
+                    xmlNode     *node)
 {
     GtkTextIter iter;
     GtkTextBuffer *buffer;
+    MooHtmlData *data = moo_html_get_data (view);
 
-    html->priv->new_line = TRUE;
-    html->priv->space = TRUE;
+    data->new_line = TRUE;
+    data->space = TRUE;
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (html));
+    buffer = gtk_text_view_get_buffer (view);
     gtk_text_buffer_get_end_iter (buffer, &iter);
 
-    process_elm_body (html, buffer, node, NULL, &iter);
+    process_elm_body (view, buffer, node, NULL, &iter);
 }
 
 
@@ -1653,7 +1754,7 @@ get_format_elm_attr (xmlNode *node)
 }
 
 
-typedef void (*ProcessElm) (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+typedef void (*ProcessElm) (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                             MooHtmlTag *parent, GtkTextIter *iter);
 
 static GHashTable *proc_elm_funcs__ = NULL;
@@ -1703,7 +1804,7 @@ get_proc_elm_func (xmlNode *node)
 
 
 static void
-process_elm_body (MooHtml        *html,
+process_elm_body (GtkTextView    *view,
                   GtkTextBuffer  *buffer,
                   xmlNode        *elm,
                   MooHtmlTag     *current,
@@ -1717,31 +1818,31 @@ process_elm_body (MooHtml        *html,
     {
 
         if (IS_TEXT (child))
-            process_text_node (html, buffer, child, current, iter);
+            process_text_node (view, buffer, child, current, iter);
         else if (IS_HEADING_ELEMENT (child))
-            process_heading_elm (html, buffer, child, current, iter);
+            process_heading_elm (view, buffer, child, current, iter);
         else if ((func = get_proc_elm_func (child)))
-            func (html, buffer, child, current, iter);
+            func (view, buffer, child, current, iter);
         else if ((attr = get_format_elm_attr (child)))
-            process_format_elm (html, attr, buffer, child, current, iter);
+            process_format_elm (view, attr, buffer, child, current, iter);
 
         else if (IS_NAMED_ELM_ (child, "table"))
-            process_table_elm (html, buffer, child, current, iter);
+            process_table_elm (view, buffer, child, current, iter);
         else if (IS_NAMED_ELM_ (child, "tr"))
-            process_tr_elm (html, buffer, child, current, iter);
+            process_tr_elm (view, buffer, child, current, iter);
 
         else if (IS_NAMED_ELM_ (child, "td") ||
                  IS_NAMED_ELM_ (child, "th") ||
                  IS_NAMED_ELM_ (child, "tbody") ||
                  IS_NAMED_ELM_ (child, "col"))
         {
-            process_elm_body (html, buffer, child, current, iter);
+            process_elm_body (view, buffer, child, current, iter);
         }
 
         else if (IS_ELEMENT (child))
         {
             g_message ("%s: unknown node '%s'", G_STRLOC, child->name);
-            process_elm_body (html, buffer, child, current, iter);
+            process_elm_body (view, buffer, child, current, iter);
         }
         else if (IS_COMMENT (child))
         {
@@ -1756,20 +1857,20 @@ process_elm_body (MooHtml        *html,
 
 
 static void
-process_p_elm (MooHtml        *html,
+process_p_elm (GtkTextView    *view,
                GtkTextBuffer  *buffer,
                xmlNode        *elm,
                MooHtmlTag     *current,
                GtkTextIter    *iter)
 {
-    moo_html_new_line (html, buffer, iter, current, FALSE);
-    process_elm_body (html, buffer, elm, current, iter);
-    moo_html_new_line (html, buffer, iter, current, FALSE);
+    moo_html_new_line (view, buffer, iter, current, FALSE);
+    process_elm_body (view, buffer, elm, current, iter);
+    moo_html_new_line (view, buffer, iter, current, FALSE);
 }
 
 
 static void
-process_heading_elm (MooHtml        *html,
+process_heading_elm (GtkTextView    *view,
                      GtkTextBuffer  *buffer,
                      xmlNode        *elm,
                      MooHtmlTag     *parent,
@@ -1786,22 +1887,22 @@ process_heading_elm (MooHtml        *html,
 
     attr.mask = MOO_HTML_HEADING;
     attr.heading = n;
-    current = moo_html_create_tag (html, &attr, parent, FALSE);
+    current = moo_html_create_tag (view, &attr, parent, FALSE);
 
-    moo_html_new_line (html, buffer, iter, current, FALSE);
-    process_elm_body (html, buffer, elm, current, iter);
-    moo_html_new_line (html, buffer, iter, current, FALSE);
+    moo_html_new_line (view, buffer, iter, current, FALSE);
+    process_elm_body (view, buffer, elm, current, iter);
+    moo_html_new_line (view, buffer, iter, current, FALSE);
 }
 
 
 static void
-process_text_node (MooHtml        *html,
+process_text_node (GtkTextView    *view,
                    GtkTextBuffer  *buffer,
                    xmlNode        *node,
                    MooHtmlTag     *current,
                    GtkTextIter    *iter)
 {
-    moo_html_insert_text (html, buffer, iter, current, (char*) node->content);
+    moo_html_insert_text (view, buffer, iter, current, (char*) node->content);
 }
 
 
@@ -1810,7 +1911,7 @@ process_text_node (MooHtml        *html,
 
 
 static void
-process_a_elm (MooHtml        *html,
+process_a_elm (GtkTextView    *view,
                GtkTextBuffer  *buffer,
                xmlNode        *elm,
                MooHtmlTag     *parent,
@@ -1832,12 +1933,12 @@ process_a_elm (MooHtml        *html,
         attr.mask = MOO_HTML_LINK;
         attr.link = (char*) href;
 
-        current = moo_html_create_tag (html, &attr, parent, FALSE);
-        process_elm_body (html, buffer, elm, current, iter);
+        current = moo_html_create_tag (view, &attr, parent, FALSE);
+        process_elm_body (view, buffer, elm, current, iter);
     }
     else if (name)
     {
-        moo_html_create_anchor (html, buffer, iter, (char*) name);
+        moo_html_create_anchor (view, buffer, iter, (char*) name);
     }
 
     STR_FREE (href);
@@ -1902,7 +2003,7 @@ make_li_number (int     count,
 }
 
 static void
-process_ol_elm (MooHtml        *html,
+process_ol_elm (GtkTextView    *view,
                 GtkTextBuffer  *buffer,
                 xmlNode        *elm,
                 MooHtmlTag     *current,
@@ -1912,6 +2013,7 @@ process_ol_elm (MooHtml        *html,
     OLType list_type = OL_NUM;
     xmlNode *child;
     xmlChar *start = NULL, *type = NULL;
+    MooHtmlData *data = moo_html_get_data (view);
 
     count = 1;
     start = GET_PROP (elm, "start");
@@ -1936,7 +2038,7 @@ process_ol_elm (MooHtml        *html,
         }
     }
 
-    moo_html_new_line (html, buffer, iter, current, FALSE);
+    moo_html_new_line (view, buffer, iter, current, FALSE);
 
     for (child = elm->children; child != NULL; child = child->next)
     {
@@ -1950,12 +2052,12 @@ process_ol_elm (MooHtml        *html,
             parse_int ((char*) value, &count);
 
             number = make_li_number (count, list_type);
-            had_new_line = html->priv->new_line;
+            had_new_line = data->new_line;
 
-            moo_html_insert_verbatim (html, buffer, iter, current, number);
-            html->priv->new_line = had_new_line;
-            process_elm_body (html, buffer, child, current, iter);
-            moo_html_new_line (html, buffer, iter, current, FALSE);
+            moo_html_insert_verbatim (view, buffer, iter, current, number);
+            data->new_line = had_new_line;
+            process_elm_body (view, buffer, child, current, iter);
+            moo_html_new_line (view, buffer, iter, current, FALSE);
             count++;
 
             g_free (number);
@@ -1964,7 +2066,7 @@ process_ol_elm (MooHtml        *html,
         else
         {
             g_message ("%s: unknown node '%s'", G_STRLOC, child->name);
-            process_elm_body (html, buffer, child, current, iter);
+            process_elm_body (view, buffer, child, current, iter);
         }
     }
 
@@ -1974,7 +2076,7 @@ process_ol_elm (MooHtml        *html,
 
 
 static void
-process_ul_elm (MooHtml        *html,
+process_ul_elm (GtkTextView    *view,
                 GtkTextBuffer  *buffer,
                 xmlNode        *elm,
                 MooHtmlTag     *current,
@@ -1982,32 +2084,33 @@ process_ul_elm (MooHtml        *html,
 {
     xmlNode *child;
     for (child = elm->children; child != NULL; child = child->next)
-        process_elm_body (html, buffer, child, current, iter);
+        process_elm_body (view, buffer, child, current, iter);
 }
 
 
 static void
-process_li_elm (MooHtml        *html,
+process_li_elm (GtkTextView    *view,
                 GtkTextBuffer  *buffer,
                 xmlNode        *elm,
                 MooHtmlTag     *current,
                 GtkTextIter    *iter)
 {
     gboolean had_new_line;
+    MooHtmlData *data = moo_html_get_data (view);
 
-    moo_html_new_line (html, buffer, iter, current, FALSE);
+    moo_html_new_line (view, buffer, iter, current, FALSE);
 
-    had_new_line = html->priv->new_line;
-    moo_html_insert_verbatim (html, buffer, iter, current, " * ");
-    html->priv->new_line = had_new_line;
+    had_new_line = data->new_line;
+    moo_html_insert_verbatim (view, buffer, iter, current, " * ");
+    data->new_line = had_new_line;
 
-    process_elm_body (html, buffer, elm, current, iter);
-    moo_html_new_line (html, buffer, iter, current, FALSE);
+    process_elm_body (view, buffer, elm, current, iter);
+    moo_html_new_line (view, buffer, iter, current, FALSE);
 }
 
 
 static void
-process_pre_elm (MooHtml        *html,
+process_pre_elm (GtkTextView    *view,
                  GtkTextBuffer  *buffer,
                  xmlNode        *elm,
                  MooHtmlTag     *parent,
@@ -2017,14 +2120,14 @@ process_pre_elm (MooHtml        *html,
     MooHtmlTag *current;
 
     attr.mask = MOO_HTML_MONOSPACE | MOO_HTML_PRE;
-    current = moo_html_create_tag (html, &attr, parent, FALSE);
+    current = moo_html_create_tag (view, &attr, parent, FALSE);
 
-    process_elm_body (html, buffer, elm, current, iter);
+    process_elm_body (view, buffer, elm, current, iter);
 }
 
 
 static void
-process_font_elm (MooHtml       *html,
+process_font_elm (GtkTextView   *view,
                   GtkTextBuffer *buffer,
                   xmlNode       *elm,
                   MooHtmlTag    *parent,
@@ -2097,8 +2200,8 @@ process_font_elm (MooHtml       *html,
         attr.font_face = (char*) face;
     }
 
-    current = moo_html_create_tag (html, &attr, parent, FALSE);
-    process_elm_body (html, buffer, elm, current, iter);
+    current = moo_html_create_tag (view, &attr, parent, FALSE);
+    process_elm_body (view, buffer, elm, current, iter);
 
     STR_FREE (size__);
     STR_FREE (color);
@@ -2107,18 +2210,18 @@ process_font_elm (MooHtml       *html,
 
 
 static void
-process_cite_elm (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+process_cite_elm (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                   MooHtmlTag *parent, GtkTextIter *iter)
 {
     static MooHtmlAttr attr;
     MooHtmlTag *current;
-    current = moo_html_create_tag (html, &attr, parent, FALSE);
-    process_elm_body (html, buffer, elm, current, iter);
+    current = moo_html_create_tag (view, &attr, parent, FALSE);
+    process_elm_body (view, buffer, elm, current, iter);
 }
 
 
 static void
-process_format_elm (MooHtml        *html,
+process_format_elm (GtkTextView    *view,
                     MooHtmlAttr    *attr,
                     GtkTextBuffer  *buffer,
                     xmlNode        *elm,
@@ -2126,33 +2229,33 @@ process_format_elm (MooHtml        *html,
                     GtkTextIter    *iter)
 {
     MooHtmlTag *current;
-    current = moo_html_create_tag (html, attr, parent, FALSE);
-    process_elm_body (html, buffer, elm, current, iter);
+    current = moo_html_create_tag (view, attr, parent, FALSE);
+    process_elm_body (view, buffer, elm, current, iter);
 }
 
 
 static void
-process_dt_elm (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+process_dt_elm (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                 MooHtmlTag *parent, GtkTextIter *iter)
 {
-    moo_html_new_line (html, buffer, iter, parent, FALSE);
-    process_elm_body (html, buffer, elm, parent, iter);
-    moo_html_new_line (html, buffer, iter, parent, FALSE);
+    moo_html_new_line (view, buffer, iter, parent, FALSE);
+    process_elm_body (view, buffer, elm, parent, iter);
+    moo_html_new_line (view, buffer, iter, parent, FALSE);
 }
 
 
 static void
-process_dl_elm (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+process_dl_elm (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                 MooHtmlTag *parent, GtkTextIter *iter)
 {
-    moo_html_new_line (html, buffer, iter, parent, FALSE);
-    process_elm_body (html, buffer, elm, parent, iter);
-    moo_html_new_line (html, buffer, iter, parent, FALSE);
+    moo_html_new_line (view, buffer, iter, parent, FALSE);
+    process_elm_body (view, buffer, elm, parent, iter);
+    moo_html_new_line (view, buffer, iter, parent, FALSE);
 }
 
 
 static void
-process_dd_elm (MooHtml         *html,
+process_dd_elm (GtkTextView     *view,
                 GtkTextBuffer   *buffer,
                 xmlNode         *elm,
                 MooHtmlTag      *parent,
@@ -2162,48 +2265,48 @@ process_dd_elm (MooHtml         *html,
     MooHtmlTag *current;
     attr.mask = MOO_HTML_LEFT_MARGIN;
     attr.left_margin = 20;
-    current = moo_html_create_tag (html, &attr, parent, FALSE);
-    moo_html_new_line (html, buffer, iter, current, FALSE);
-    process_elm_body (html, buffer, elm, current, iter);
-    moo_html_new_line (html, buffer, iter, current, FALSE);
+    current = moo_html_create_tag (view, &attr, parent, FALSE);
+    moo_html_new_line (view, buffer, iter, current, FALSE);
+    process_elm_body (view, buffer, elm, current, iter);
+    moo_html_new_line (view, buffer, iter, current, FALSE);
 }
 
 
 static void
-process_br_elm (MooHtml *html,
+process_br_elm (GtkTextView *view,
                 GtkTextBuffer *buffer,
                 G_GNUC_UNUSED xmlNode *elm,
                 MooHtmlTag *parent,
                 GtkTextIter *iter)
 {
-    moo_html_new_line (html, buffer, iter, parent, TRUE);
+    moo_html_new_line (view, buffer, iter, parent, TRUE);
 }
 
 
 static void
-process_div_elm (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+process_div_elm (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                  MooHtmlTag *parent, GtkTextIter *iter)
 {
     static MooHtmlAttr attr;
     MooHtmlTag *current;
-    current = moo_html_create_tag (html, &attr, parent, FALSE);
-    process_elm_body (html, buffer, elm, current, iter);
+    current = moo_html_create_tag (view, &attr, parent, FALSE);
+    process_elm_body (view, buffer, elm, current, iter);
 }
 
 
 static void
-process_span_elm (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+process_span_elm (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                   MooHtmlTag *parent, GtkTextIter *iter)
 {
     static MooHtmlAttr attr;
     MooHtmlTag *current;
-    current = moo_html_create_tag (html, &attr, parent, FALSE);
-    process_elm_body (html, buffer, elm, current, iter);
+    current = moo_html_create_tag (view, &attr, parent, FALSE);
+    process_elm_body (view, buffer, elm, current, iter);
 }
 
 
 static void
-process_hr_elm (MooHtml *html,
+process_hr_elm (GtkTextView *view,
                 GtkTextBuffer *buffer,
                 G_GNUC_UNUSED xmlNode *elm,
                 MooHtmlTag *parent,
@@ -2211,22 +2314,23 @@ process_hr_elm (MooHtml *html,
 {
     GtkTextChildAnchor *anchor;
     GtkWidget *line;
+    MooHtmlData *data = moo_html_get_data (view);
 
     line = gtk_hseparator_new ();
     gtk_widget_show (line);
 
-    moo_html_new_line (html, buffer, iter, parent, FALSE);
+    moo_html_new_line (view, buffer, iter, parent, FALSE);
 
     anchor = gtk_text_buffer_create_child_anchor (buffer, iter);
-    gtk_text_view_add_child_at_anchor (GTK_TEXT_VIEW (html), line, anchor);
-    html->priv->rulers = g_slist_prepend (html->priv->rulers, line);
+    gtk_text_view_add_child_at_anchor (GTK_TEXT_VIEW (view), line, anchor);
+    data->rulers = g_slist_prepend (data->rulers, line);
 
-    moo_html_new_line (html, buffer, iter, parent, TRUE);
+    moo_html_new_line (view, buffer, iter, parent, TRUE);
 }
 
 
 static void
-process_img_elm (MooHtml        *html,
+process_img_elm (GtkTextView    *view,
                  GtkTextBuffer  *buffer,
                  xmlNode        *elm,
                  MooHtmlTag     *current,
@@ -2239,16 +2343,17 @@ process_img_elm (MooHtml        *html,
     GError *error = NULL;
     int offset;
     GtkTextIter before;
+    MooHtmlData *data = moo_html_get_data (view);
 
     src = GET_PROP (elm, "src");
     alt = GET_PROP (elm, "alt");
 
     g_return_if_fail (src != NULL);
 
-    if (!html->priv->dirname)
+    if (!data->dirname)
         goto try_alt;
 
-    path = g_build_filename (html->priv->dirname, src, NULL);
+    path = g_build_filename (data->dirname, src, NULL);
     g_return_if_fail (path != NULL);
 
     pixbuf = gdk_pixbuf_new_from_file (path, &error);
@@ -2276,7 +2381,7 @@ try_alt:
     if (alt)
     {
         char *text = g_strdup_printf ("[%s]", alt);
-        moo_html_insert_text (html, buffer, iter, current, text);
+        moo_html_insert_text (view, buffer, iter, current, text);
         g_free (text);
     }
 
@@ -2288,20 +2393,35 @@ out:
 
 
 static void
-process_table_elm (MooHtml *html,
+process_table_elm (GtkTextView *view,
                    GtkTextBuffer *buffer,
                    xmlNode *elm,
                    MooHtmlTag *parent,
                    GtkTextIter *iter)
 {
-    process_elm_body (html, buffer, elm, parent, iter);
+    process_elm_body (view, buffer, elm, parent, iter);
 }
 
 static void
-process_tr_elm (MooHtml *html, GtkTextBuffer *buffer, xmlNode *elm,
+process_tr_elm (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
                 MooHtmlTag *parent, GtkTextIter *iter)
 {
-    moo_html_new_line (html, buffer, iter, parent, FALSE);
-    process_elm_body (html, buffer, elm, parent, iter);
-    moo_html_new_line (html, buffer, iter, parent, FALSE);
+    moo_html_new_line (view, buffer, iter, parent, FALSE);
+    process_elm_body (view, buffer, elm, parent, iter);
+    moo_html_new_line (view, buffer, iter, parent, FALSE);
 }
+
+#else /* !MOO_USE_XML */
+void
+moo_text_view_set_markup (GtkTextView *view,
+                          const char  *markup)
+{
+    GtkTextBuffer *buffer;
+
+    g_return_if_fail (GTK_IS_TEXT_VIEW (view));
+    g_return_if_fail (markup != NULL);
+
+    buffer = gtk_text_view_get_buffer (view);
+    gtk_text_buffer_set_text (buffer, markup, -1);
+}
+#endif /* MOO_USE_XML */

@@ -46,7 +46,7 @@ set_translator_credits (MooGladeXML *xml)
 {
     GtkWidget *notebook, *page;
     const char *credits, *credits_markup;
-    MooHtml *html;
+    GtkTextView *view;
 
     /* Translators: this goes into About box, under Translated by tab */
     credits = _("translator_credits");
@@ -63,15 +63,15 @@ set_translator_credits (MooGladeXML *xml)
         return;
     }
 
-    html = moo_glade_xml_get_widget (xml, "translated_by");
+    view = moo_glade_xml_get_widget (xml, "translated_by");
 
 #if defined(MOO_USE_XML) && !defined(__WIN32__)
     if (strcmp (credits_markup, "translator_credits_markup") != 0)
-        _moo_html_load_memory (html, credits_markup, -1, NULL, NULL);
+        _moo_html_load_memory (view, credits_markup, -1, NULL, NULL);
     else
 #endif
     {
-        GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (html));
+        GtkTextBuffer *buffer = gtk_text_view_get_buffer (view);
         gtk_text_buffer_insert_at_cursor (buffer, credits, -1);
     }
 }
@@ -80,7 +80,7 @@ static void
 show_credits (void)
 {
     MooGladeXML *xml;
-    MooHtml *written_by;
+    GtkTextView *written_by;
     GtkTextView *thanks;
     GtkTextBuffer *buffer;
     const MooAppInfo *info;
@@ -110,12 +110,12 @@ show_credits (void)
 #if defined(MOO_USE_XML) && !defined(__WIN32__)
     _moo_html_load_memory (written_by,
                            "Yevgen Muntyan <a href=\"mailto://muntyan@tamu.edu\">"
-                                   "&lt;muntyan@tamu.edu&gt;</a>",
+                                    "&lt;muntyan@tamu.edu&gt;</a>",
                            -1, NULL, NULL);
 #else
     /* XXX */
     {
-        buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (written_by));
+        buffer = gtk_text_view_get_buffer (written_by);
         gtk_text_buffer_insert_at_cursor (buffer,
                                           "Yevgen Muntyan <muntyan@tamu.edu>", -1);
     }

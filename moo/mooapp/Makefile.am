@@ -14,27 +14,21 @@ endif
 mooapp_sources =			\
 	$(mooapp_include_headers)	\
 	mooappabout-glade.h		\
-	mooappabout.c                   \
-	mooappabout.h                   \
-	mooapp.c                        \
-	mooapp.h                        \
-	mooapp-private.h                \
-	mooappinput.c                   \
+	mooappabout.c			\
+	mooappabout.h			\
+	mooapp.c			\
+	mooapp.h			\
+	mooapp-private.h		\
+	mooappinput.c			\
 	mooappinput.h			\
+	moohtml.h			\
+	moohtml.c			\
 	moolinklabel.h			\
 	moolinklabel.c
 
 EXTRA_DIST =				\
-	gpl                             \
-	moohtml.c                       \
-	moohtml.h			\
+	gpl				\
 	glade/mooappabout.glade
-
-if MOO_USE_XML
-mooapp_sources +=                       \
-	moohtml.c                       \
-	moohtml.h
-endif
 
 XML2H = $(srcdir)/../mooutils/xml2h.sh
 mooappabout-glade.h: $(srcdir)/glade/mooappabout.glade $(XML2H)
