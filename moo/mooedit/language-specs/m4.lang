@@ -76,6 +76,14 @@
       </include>
     </context>
 
+    <context id="TO-ARGS-M">
+      <start>,</start>
+      <end>(?=[,\)])</end>
+      <include>
+        <context ref="ARGS-M"/>
+      </include>
+    </context>
+
     <context id="TO-ARGS-MS">
       <start>,</start>
       <end>(?=[,\)])</end>
@@ -84,11 +92,35 @@
       </include>
     </context>
 
+    <context id="TO-ARGS-SM">
+      <start>,</start>
+      <end>(?=[,\)])</end>
+      <include>
+        <context ref="ARGS-SM"/>
+      </include>
+    </context>
+
+    <context id="TO-ARGS-MSSM">
+      <start>,</start>
+      <end>(?=[,\)])</end>
+      <include>
+        <context ref="ARGS-MSSM"/>
+      </include>
+    </context>
+
     <context id="TO-ARGS-MSS">
       <start>,</start>
       <end>(?=[,\)])</end>
       <include>
         <context ref="ARGS-MSS"/>
+      </include>
+    </context>
+
+    <context id="TO-ARGS-SSM">
+      <start>,</start>
+      <end>(?=[,\)])</end>
+      <include>
+        <context ref="ARGS-SSM"/>
       </include>
     </context>
 
@@ -105,8 +137,23 @@
       <context ref="NO-ARGS"/>
     </include></context>
 
+    <context id="ARGS-M"><include>
+      <context ref="ARG-M"/>
+      <context ref="NO-ARGS"/>
+    </include></context>
+
     <context id="ARGS-MS"><include>
       <context ref="ARG-M"/>
+      <context ref="TO-ARGS-S"/>
+    </include></context>
+
+    <context id="ARGS-SM"><include>
+      <context ref="ARG-S"/>
+      <context ref="TO-ARGS-M"/>
+    </include></context>
+
+    <context id="ARGS-SS"><include>
+      <context ref="ARG-S"/>
       <context ref="TO-ARGS-S"/>
     </include></context>
 
@@ -115,9 +162,9 @@
       <context ref="TO-ARGS-SS"/>
     </include></context>
 
-    <context id="ARGS-SS"><include>
+    <context id="ARGS-SSM"><include>
       <context ref="ARG-S"/>
-      <context ref="TO-ARGS-S"/>
+      <context ref="TO-ARGS-SM"/>
     </include></context>
 
     <context id="ARGS-MMS"><include>
@@ -128,6 +175,16 @@
     <context id="ARGS-MMSS"><include>
       <context ref="ARG-M"/>
       <context ref="TO-ARGS-MSS"/>
+    </include></context>
+
+    <context id="ARGS-MSSM"><include>
+      <context ref="ARG-M"/>
+      <context ref="TO-ARGS-SSM"/>
+    </include></context>
+
+    <context id="ARGS-MMSSM"><include>
+      <context ref="ARG-M"/>
+      <context ref="TO-ARGS-MSSM"/>
     </include></context>
 
     <context id="func-ms">
@@ -153,13 +210,24 @@
     </context>
 
     <context id="func-mmss">
-      <start>\b(AC_ARG_ENABLE|AC_ARG_WITH|AC_TRY_LINK|AC_TRY_COMPILE|AC_CHECK_LIB|PKG_CHECK_MODULES|)\s*(\()</start>
+      <start>\b(AC_ARG_ENABLE|AC_ARG_WITH|AC_TRY_LINK|AC_TRY_COMPILE|PKG_CHECK_MODULES)\s*(\()</start>
       <end>\)</end>
       <include>
         <context sub-pattern="1" where="start" style-ref="ac-macro"/>
         <context sub-pattern="2" where="start" style-ref="ac-macro"/>
         <context sub-pattern="0" where="end" style-ref="ac-macro"/>
         <context ref="ARGS-MMSS"/>
+      </include>
+    </context>
+
+    <context id="func-mmssm">
+      <start>\b(AC_CHECK_LIB|AC_SEARCH_LIBS)\s*(\()</start>
+      <end>\)</end>
+      <include>
+        <context sub-pattern="1" where="start" style-ref="ac-macro"/>
+        <context sub-pattern="2" where="start" style-ref="ac-macro"/>
+        <context sub-pattern="0" where="end" style-ref="ac-macro"/>
+        <context ref="ARGS-MMSSM"/>
       </include>
     </context>
 
