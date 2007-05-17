@@ -41,6 +41,7 @@ import gtk.Object as PyGtkObject_Type
 import gtk.Widget as PyGtkWidget_Type
 import gtk.Layout as PyGtkLayout_Type
 import gtk.gdk.GC as PyGdkGC_Type
+import gtk.gdk.Drawable as PyGdkDrawable_Type
 %%
 ignore-glob
   *_get_type

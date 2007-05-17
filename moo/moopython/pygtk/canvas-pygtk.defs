@@ -128,6 +128,85 @@
 ;   )
 ; )
 
+(define-virtual update
+  (of-object "FooCanvasItem")
+  (return-type "none")
+  (parameters
+    '("double" "i2w_dx")
+    '("double" "i2w_dy")
+    '("int" "flags")
+  )
+)
+
+(define-virtual realize
+  (of-object "FooCanvasItem")
+  (return-type "none")
+)
+
+(define-virtual unrealize
+  (of-object "FooCanvasItem")
+  (return-type "none")
+)
+
+(define-virtual map
+  (of-object "FooCanvasItem")
+  (return-type "none")
+)
+
+(define-virtual unmap
+  (of-object "FooCanvasItem")
+  (return-type "none")
+)
+
+(define-virtual draw
+  (of-object "FooCanvasItem")
+  (return-type "none")
+  (parameters
+    '("GdkDrawable*" "drawable")
+    '("GdkEventExpose*" "event")
+  )
+)
+
+(define-virtual point
+  (of-object "FooCanvasItem")
+  (return-type "double")
+  (parameters
+    '("double" "x")
+    '("double" "y")
+    '("int" "cx")
+    '("int" "cy")
+    '("FooCanvasItem**" "actual_item" (direction "out"))
+  )
+)
+
+(define-virtual translate
+  (of-object "FooCanvasItem")
+  (return-type "none")
+  (parameters
+    '("double" "dx")
+    '("double" "dy")
+  )
+)
+
+(define-virtual bounds
+  (of-object "FooCanvasItem")
+  (return-type "none")
+  (parameters
+    '("double*" "x1" (direction "out"))
+    '("double*" "y1" (direction "out"))
+    '("double*" "x2" (direction "out"))
+    '("double*" "y2" (direction "out"))
+  )
+)
+
+(define-virtual event
+  (of-object "FooCanvasItem")
+  (return-type "gboolean")
+  (parameters
+    '("GdkEvent*" "event")
+  )
+)
+
 (define-method move
   (of-object "FooCanvasItem")
   (c-name "foo_canvas_item_move")
@@ -284,6 +363,17 @@
   (c-name "foo_canvas_new")
   (is-constructor-of "FooCanvas")
   (return-type "GtkWidget*")
+)
+
+(define-virtual draw_background
+  (of-object "FooCanvas")
+  (return-type "none")
+  (parameters
+    '("int" "x")
+    '("int" "y")
+    '("int" "width")
+    '("int" "height")
+  )
 )
 
 (define-method root
