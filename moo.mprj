@@ -34,7 +34,7 @@
    </configure>
   </optimized>
  </configurations>
- <file_selector_dir>/home/muntyan/projects/moo/m4/</file_selector_dir>
+ <file_selector_dir>/home/muntyan/projects/moo/moo/libfoocanvas/</file_selector_dir>
  <run>
   <args>--new-app --mode=project</args>
   <exe>medit/medit</exe>
