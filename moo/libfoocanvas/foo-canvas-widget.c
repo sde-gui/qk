@@ -432,7 +432,7 @@ foo_canvas_widget_update (FooCanvasItem *item, double i2w_dx, double i2w_dy, int
 			witem->cheight = (int) (witem->height * item->canvas->pixels_per_unit + 0.5);
 		}
 
-		gtk_widget_set_usize (witem->widget, witem->cwidth, witem->cheight);
+		gtk_widget_set_size_request (witem->widget, witem->cwidth, witem->cheight);
 	} else {
 		witem->cwidth = 0.0;
 		witem->cheight = 0.0;
