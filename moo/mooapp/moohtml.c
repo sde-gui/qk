@@ -414,6 +414,7 @@ moo_html_get_data (gpointer object)
 
     if (!data)
     {
+        init_funcs ();
         data = moo_html_data_new ();
         g_object_set_data_full (object, "moo-html-data", data,
                                 (GDestroyNotify) moo_html_data_free);
