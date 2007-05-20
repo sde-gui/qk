@@ -85,6 +85,15 @@ def do_cmd(cmd, force=False):
         if status:
             raise Error(status)
 
+def copy_mime():
+    do_cmd("mkdir -p %s/mime/packages" % (installdir,))
+    do_cmd("cp %s/usr/local/win/gtk/share/mime/packages/moo.xml %s/mime/packages" % (installdir, installdir))
+    do_cmd("cp /usr/share/mime/packages/freedesktop.org.xml %s/mime/packages" % (installdir,))
+    do_cmd("update-mime-database %s/mime" % (installdir,))
+    do_cmd("mkdir -p %s/share/mime/" % (moo_windir,))
+    do_cmd("cp %s/mime/mime.cache %s/share/mime/" % (installdir, moo_windir))
+    do_cmd("rm -fr %s/mime/" % (installdir,))
+
 def copy_files():
     if data_dirs:
         for d in data_dirs:
@@ -102,7 +111,7 @@ def copy_files():
 
         do_cmd("cp -r %s/usr/local/win/gtk/share/moo %s/share/" % (installdir, moo_windir))
         do_cmd("cp -r %s/usr/local/win/gtk/lib/locale %s/lib/" % (installdir, moo_windir))
-        do_cmd("cp -r %s/usr/local/win/gtk/share/mime/mime.cache %s/share/mime/" % (installdir, moo_windir))
+        copy_mime()
 
         if not no_python:
             do_cmd("cp -r %s/usr/local/win/gtk/lib/moo/plugins %s/lib/moo/" % (installdir, moo_windir))
