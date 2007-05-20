@@ -55,7 +55,6 @@ completion_sources =			\
 mooedit_sources =			\
 	$(mooedit_include_headers)	\
 	$(moocommand_stuff)		\
-	$(completion_sources)		\
 	medit-ui.h			\
 	moocmdview.c			\
 	moocommand.c			\
@@ -244,6 +243,7 @@ medit-ui.h: medit-ui.xml $(XML2H)
 	mv $@.tmp $@
 
 EXTRA_DIST =				\
+	$(completion_sources)		\
 	medit-ui.xml			\
 	mooedit-ui.xml			\
 	glade/statusbar.glade		\
