@@ -29,13 +29,14 @@ extern "C" {
 #endif
 
 
-#define _vte_pty_open       _moo_vte_pty_open
-#define _vte_pty_get_size   _moo_vte_pty_get_size
-#define _vte_pty_set_size   _moo_vte_pty_set_size
-#define _vte_pty_close      _moo_vte_pty_close
-#define _vte_pty_n_read     _moo_vte_pty_n_read
-#define _vte_pty_n_write    _moo_vte_pty_n_write
-#define _vte_pty_open_pt    _moo_vte_pty_open_pt
+#define _vte_pty_open		_moo_vte_pty_open
+#define _vte_pty_get_size	_moo_vte_pty_get_size
+#define _vte_pty_set_size	_moo_vte_pty_set_size
+#define _vte_pty_set_echo_input	_moo_vte_pty_set_echo_input
+#define _vte_pty_close		_moo_vte_pty_close
+#define _vte_pty_n_read		_moo_vte_pty_n_read
+#define _vte_pty_n_write	_moo_vte_pty_n_write
+#define _vte_pty_open_pt	_moo_vte_pty_open_pt
 
 
 /* Start up the given binary (exact path, not interpreted at all) in a
@@ -53,6 +54,7 @@ int _vte_pty_open_pt(char **name);
  * with errno set to defined return codes from ioctl(). */
 int _vte_pty_get_size(int master, int *columns, int *rows);
 int _vte_pty_set_size(int master, int columns, int rows);
+int _vte_pty_set_echo_input(int master, int echo);
 
 /* Close a pty. */
 void _vte_pty_close(int pty);

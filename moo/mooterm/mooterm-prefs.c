@@ -1,7 +1,7 @@
 /*
  *   mooterm/mooterm-prefs.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -77,8 +77,10 @@ _moo_term_init_settings (void)
 
 
 void
-_moo_term_apply_settings (MooTerm *term)
+moo_term_apply_settings (MooTerm *term)
 {
+    g_return_if_fail (MOO_IS_TERM (term));
+
     moo_term_set_font_from_string (term, GET_STRING (MOO_TERM_PREFS_FONT));
 
     gtk_widget_modify_text (GTK_WIDGET (term), GTK_STATE_NORMAL,

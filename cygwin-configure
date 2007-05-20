@@ -1,38 +1,12 @@
 #!/bin/sh
 
-if [ -z $CYGWIN_BIN_DIR ]; then
-    CYGWIN_BIN_DIR=/opt/cygwin/bin
-fi
+# Prefix of cygwin tools. prefix + tool should make up full path
+# to the tool, e.g. prefix is '/usr/bin/i586-mingw32msvc-' on Debian
+# or '/usr/local/mingw32/bin/' on FreeBSD.
+CYGWIN_TOOL_PREFIX=${CYGWIN_TOOL_PREFIX:-/opt/i686-pc-cygwin/bin/i686-pc-cygwin-}
 
-TARGET=i686-pc-cygwin
-
-export PATH=/opt/cygwin/i686-pc-cygwin/bin:/opt/cygwin/bin:$PATH
-
-export ADDR2LINE="$CYGWIN_BIN_DIR/$TARGET-addr2line"
-export AR="$CYGWIN_BIN_DIR/$TARGET-ar"
-export AS="$CYGWIN_BIN_DIR/$TARGET-as"
-export CC="$CYGWIN_BIN_DIR/$TARGET-gcc"
-export CPP="$CYGWIN_BIN_DIR/$TARGET-cpp"
-export CPPFILT="$CYGWIN_BIN_DIR/$TARGET-c++filt"
-export CXX="$CYGWIN_BIN_DIR/$TARGET-g++"
-export DLLTOOL="$CYGWIN_BIN_DIR/$TARGET-dlltool"
-export DLLWRAP="$CYGWIN_BIN_DIR/$TARGET-dllwrap"
-export GCOV="$CYGWIN_BIN_DIR/$TARGET-gcov"
-export LD="$CYGWIN_BIN_DIR/$TARGET-ld"
-export NM="$CYGWIN_BIN_DIR/$TARGET-nm"
-export OBJCOPY="$CYGWIN_BIN_DIR/$TARGET-objcopy"
-export OBJDUMP="$CYGWIN_BIN_DIR/$TARGET-objdump"
-export RANLIB="$CYGWIN_BIN_DIR/$TARGET-ranlib"
-export READELF="$CYGWIN_BIN_DIR/$TARGET-readelf"
-export SIZE="$CYGWIN_BIN_DIR/$TARGET-size"
-export STRINGS="$CYGWIN_BIN_DIR/$TARGET-strings"
-export STRIP="$CYGWIN_BIN_DIR/$TARGET-strip"
-export WINDRES="$CYGWIN_BIN_DIR/$TARGET-windres"
-
-export CFLAGS="${CFLAGS:-"-O2 -g"} -mms-bitfields -march=i686"
-export CXXFLAGS="${CFLAGS:-"-O2 -g"} -mms-bitfields -march=i686"
-
-if [ "x$CONFIGURE" = "x" ]; then
+# Find configure script to run
+if [ x$CONFIGURE = x ]; then
     CONFIGURE="configure"
     if [ ! -e $CONFIGURE ]; then
         CONFIGURE=`dirname $0`/configure
@@ -41,7 +15,45 @@ if [ "x$CONFIGURE" = "x" ]; then
         echo "Can't find configure script"
         exit 1
     fi
+    configure_dir=`dirname "$CONFIGURE"`
+    configure_dir=`cd "$configure_dir" && pwd`
+    CONFIGURE="$configure_dir"/configure
+    CONFIG_GUESS="$configure_dir"/config.guess
 fi
 
-sh $CONFIGURE --target=$TARGET --host=$TARGET $*
-exit $?
+export ADDR2LINE="${CYGWIN_TOOL_PREFIX}addr2line"
+export AS="${CYGWIN_TOOL_PREFIX}as"
+export CC="${CYGWIN_TOOL_PREFIX}gcc"
+export CPP="${CYGWIN_TOOL_PREFIX}cpp"
+export CPPFILT="${CYGWIN_TOOL_PREFIX}c++filt"
+export CXX="${CYGWIN_TOOL_PREFIX}g++"
+export DLLTOOL="${CYGWIN_TOOL_PREFIX}dlltool"
+export DLLWRAP="${CYGWIN_TOOL_PREFIX}dllwrap"
+export GCOV="${CYGWIN_TOOL_PREFIX}gcov"
+export LD="${CYGWIN_TOOL_PREFIX}ld"
+export NM="${CYGWIN_TOOL_PREFIX}nm"
+export OBJCOPY="${CYGWIN_TOOL_PREFIX}objcopy"
+export OBJDUMP="${CYGWIN_TOOL_PREFIX}objdump"
+export READELF="${CYGWIN_TOOL_PREFIX}readelf"
+export SIZE="${CYGWIN_TOOL_PREFIX}size"
+export STRINGS="${CYGWIN_TOOL_PREFIX}strings"
+export WINDRES="${CYGWIN_TOOL_PREFIX}windres"
+export AR="${CYGWIN_TOOL_PREFIX}ar"
+export RANLIB="${CYGWIN_TOOL_PREFIX}ranlib"
+export STRIP="${CYGWIN_TOOL_PREFIX}strip"
+
+TARGET=i686-pc-cygwin
+
+# Now actually run configure. FOO=foo arguments *must* be there if you
+# want automatic re-configuring (which happens if you modify configure.ac and
+# run make) work.
+# NOTE: --build *must* be here, it's autoconf bug (aka 'feature'), confirmed and
+# *documented*.
+echo sh $CONFIGURE --build=`$CONFIG_GUESS` --host=$TARGET --target=$TARGET \
+--enable-all-warnings --enable-maintainer-mode \
+AR="$AR" RANLIB="$RANLIB" STRIP="$STRIP" AS="$AS" DLLTOOL="$DLLTOOL" \
+OBJDUMP="$OBJDUMP" NM="$NM" WINDRES="$WINDRES" $@
+exec sh $CONFIGURE --build=`$CONFIG_GUESS` --host=$TARGET --target=$TARGET \
+--enable-all-warnings --enable-maintainer-mode \
+AR="$AR" RANLIB="$RANLIB" STRIP="$STRIP" AS="$AS" DLLTOOL="$DLLTOOL" \
+OBJDUMP="$OBJDUMP" NM="$NM" WINDRES="$WINDRES" $@

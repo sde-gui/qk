@@ -85,6 +85,8 @@ static gboolean read_helper_out (GIOChannel *source,
 static void     set_size            (MooTermPt      *pt,
                                      guint           width,
                                      guint           height);
+static void     set_echo_input      (MooTermPt      *pt,
+                                     gboolean        echo);
 static gboolean fork_command        (MooTermPt      *pt,
                                      const MooTermCommand *cmd,
                                      GError        **error);
@@ -99,6 +101,7 @@ static gboolean run_in_helper       (const char *cmd,
                                      const char *working_dir,
                                      char **env,
                                      guint width, guint height,
+                                     gboolean echo,
                                      int *hin, int *hout,
                                      GPid *hpid, gulong *hproc_id,
                                      GError        **error);
@@ -117,6 +120,7 @@ _moo_term_pt_cyg_class_init (MooTermPtCygClass *klass)
     gobject_class->finalize = moo_term_pt_cyg_finalize;
 
     pt_class->set_size = set_size;
+    pt_class->set_echo_input = set_echo_input;
     pt_class->fork_command = fork_command;
     pt_class->write = pt_write;
     pt_class->kill_child = kill_child;
@@ -163,15 +167,16 @@ fork_command (MooTermPt      *pt_gen,
     MooTermPtCyg *pt;
     gboolean result;
 
-    g_return_val_if_fail (!pt_gen->priv->alive, FALSE);
-    g_return_val_if_fail (!pt_gen->priv->child_alive, FALSE);
+    g_return_val_if_fail (!pt_gen->alive, FALSE);
+    g_return_val_if_fail (!pt_gen->child_alive, FALSE);
     g_return_val_if_fail (cmd->cmd_line != NULL, FALSE);
 
     pt = MOO_TERM_PT_CYG (pt_gen);
 
     result = run_in_helper (cmd->cmd_line,
                             cmd->working_dir, cmd->envp,
-                            TERM_WIDTH (pt), TERM_HEIGHT (pt),
+                            pt_gen->width, pt_gen->height,
+                            pt_gen->echo,
                             &pt->in, &pt->out, &pt->pid,
                             &pt->process_id, error);
 
@@ -200,8 +205,8 @@ fork_command (MooTermPt      *pt_gen,
 //     if (src) g_source_set_priority (src, READ_HELPER_OUT_PRIORITY);
 //     else g_warning ("%s: could not find helper_io_watch source", G_STRLOC);
 
-    pt_gen->priv->alive = TRUE;
-    pt_gen->priv->child_alive = TRUE;
+    pt_gen->alive = TRUE;
+    pt_gen->child_alive = TRUE;
     return TRUE;
 }
 
@@ -232,8 +237,7 @@ read_helper_out (GIOChannel     *source,
         gsize count = 0, read, to_read;
         int again = TRY_NUM;
 
-        to_read = _moo_term_get_input_chunk_len (MOO_TERM_PT(pt)->priv->term);
-        g_assert (to_read <= sizeof (buf));
+        to_read = _moo_term_pt_get_input_chunk_len (MOO_TERM_PT (pt), sizeof buf);
 
         if (!to_read)
             return TRUE;
@@ -262,7 +266,7 @@ read_helper_out (GIOChannel     *source,
         }
 
         if (count)
-            moo_term_feed (MOO_TERM_PT(pt)->priv->term, buf, count);
+            _moo_term_pt_process_data (MOO_TERM_PT (pt), buf, count);
 
         error_occured = (err != NULL);
     }
@@ -299,8 +303,9 @@ kill_child (MooTermPt *pt_gen)
 
     if (pt->in_io)
     {
-        char cmd[2] = {HELPER_CMD_CHAR, HELPER_GOODBYE};
-        pt_write (MOO_TERM_PT (pt), cmd, 2);
+        char cmd[HELPER_CMD_SIZE];
+        HELPER_GOODBYE_CMD (cmd);
+        pt_write (MOO_TERM_PT (pt), cmd, HELPER_CMD_SIZE);
         g_io_channel_shutdown (pt->in_io, TRUE, NULL);
         g_io_channel_unref (pt->in_io);
         pt->in_io = NULL;
@@ -334,11 +339,11 @@ kill_child (MooTermPt *pt_gen)
     pt->in = -1;
     pt->out = -1;
     pt->process_id = 0;
-    pt_gen->priv->alive = FALSE;
+    pt_gen->alive = FALSE;
 
-    if (pt_gen->priv->child_alive)
+    if (pt_gen->child_alive)
     {
-        pt_gen->priv->child_alive = FALSE;
+        pt_gen->child_alive = FALSE;
         g_signal_emit_by_name (pt, "child-died");
     }
 }
@@ -349,8 +354,29 @@ set_size (MooTermPt      *pt,
           guint           width,
           guint           height)
 {
-    if (pt->priv->child_alive)
-        pt_write (MOO_TERM_PT (pt), set_size_cmd (width, height), SIZE_CMD_LEN);
+    if (pt->child_alive)
+    {
+        char cmd[HELPER_CMD_SIZE];
+        HELPER_SET_SIZE_CMD (cmd, width, height);
+        pt_write (MOO_TERM_PT (pt), cmd, HELPER_CMD_SIZE);
+    }
+
+    pt->width = width;
+    pt->height = height;
+}
+
+static void
+set_echo_input (MooTermPt *pt,
+                gboolean   echo)
+{
+    if (pt->child_alive)
+    {
+        char cmd[HELPER_CMD_SIZE];
+        HELPER_SET_ECHO_CMD (cmd, echo);
+        pt_write (MOO_TERM_PT (pt), cmd, HELPER_CMD_SIZE);
+    }
+
+    pt->echo = echo;
 }
 
 
@@ -361,7 +387,7 @@ append (MooTermPt      *pt,
 {
     GByteArray *ar = g_byte_array_sized_new (len);
     g_byte_array_append (ar, (const guint8*)data, len);
-    g_queue_push_tail (pt->priv->pending_write, ar);
+    g_queue_push_tail (pt->pending_write, ar);
 }
 
 
@@ -408,8 +434,8 @@ write_cb (MooTermPt *pt)
 static void
 start_writer (MooTermPt *pt)
 {
-    if (!pt->priv->pending_write_id)
-        pt->priv->pending_write_id =
+    if (!pt->pending_write_id)
+        pt->pending_write_id =
                 _moo_idle_add_full (PT_WRITER_PRIORITY,
                                     (GSourceFunc) write_cb,
                                     pt, NULL);
@@ -418,10 +444,10 @@ start_writer (MooTermPt *pt)
 static void
 stop_writer (MooTermPt *pt)
 {
-    if (pt->priv->pending_write_id)
+    if (pt->pending_write_id)
     {
-        g_source_remove (pt->priv->pending_write_id);
-        pt->priv->pending_write_id = 0;
+        g_source_remove (pt->pending_write_id);
+        pt->pending_write_id = 0;
     }
 }
 
@@ -432,17 +458,17 @@ pt_write (MooTermPt      *pt,
           gssize          data_len)
 {
     g_return_if_fail (data == NULL || data_len != 0);
-    g_return_if_fail (pt->priv->child_alive);
-    g_return_if_fail (pt->priv->alive);
+    g_return_if_fail (pt->child_alive);
+    g_return_if_fail (pt->alive);
 
-    while (data || !g_queue_is_empty (pt->priv->pending_write))
+    while (data || !g_queue_is_empty (pt->pending_write))
     {
         GError *err = NULL;
         const char *string;
         guint len;
         GByteArray *freeme = NULL;
 
-        if (!g_queue_is_empty (pt->priv->pending_write))
+        if (!g_queue_is_empty (pt->pending_write))
         {
             if (data)
             {
@@ -450,7 +476,7 @@ pt_write (MooTermPt      *pt,
                 data = NULL;
             }
 
-            freeme = g_queue_peek_head (pt->priv->pending_write);
+            freeme = g_queue_peek_head (pt->pending_write);
             string = (const char *) freeme->data;
             len = freeme->len;
         }
@@ -480,7 +506,7 @@ pt_write (MooTermPt      *pt,
             else if (freeme)
             {
                 g_byte_array_free (freeme, TRUE);
-                g_queue_pop_head (pt->priv->pending_write);
+                g_queue_pop_head (pt->pending_write);
             }
         }
         else
@@ -496,7 +522,7 @@ pt_write (MooTermPt      *pt,
         }
     }
 
-    if (!g_queue_is_empty (pt->priv->pending_write))
+    if (!g_queue_is_empty (pt->pending_write))
         start_writer (pt);
     else
         stop_writer (pt);
@@ -514,9 +540,10 @@ run_in_helper (const char *cmd,
                const char *working_dir,
                char **env,
                guint width, guint height,
+               gboolean echo,
                int *hin, int *hout,
                GPid *hpid, gulong *hproc_id,
-               GError        **error)
+               GError **error)
 {
     /* char *cwidth = NULL, *cheight = NULL; */
     int my_stdin = _dup(0);
@@ -605,8 +632,8 @@ run_in_helper (const char *cmd,
 
     g_message ("%s: helper '%s'", G_STRLOC, helper_binary->str);
 
-    cmd_line = g_strdup_printf ("%s %d %d %s", HELPER_BINARY,
-                                width, height, cmd);
+    cmd_line = g_strdup_printf ("%s %d %d %s %s", HELPER_BINARY,
+                                width, height, echo ? "y" : "n", cmd);
 
     saved_env = g_ptr_array_new ();
 
@@ -757,9 +784,7 @@ error:
 //     if (cwidth) g_free (cwidth);
 //     if (cheight) g_free (cheight);
 #endif
-    if (cmd_line)
-        g_free (cmd_line);
-
+    g_free (cmd_line);
     CloseHandle ((HANDLE)helper);
 
     if (helper_binary)
@@ -796,8 +821,8 @@ get_erase_char (G_GNUC_UNUSED MooTermPt *pt)
 static void
 send_intr (MooTermPt *pt)
 {
-    g_return_if_fail (pt->priv->child_alive);
-    g_return_if_fail (pt->priv->alive);
+    g_return_if_fail (pt->child_alive);
+    g_return_if_fail (pt->alive);
     pt_discard_pending_write (pt);
     pt_write (pt, "\3", 1);
 }

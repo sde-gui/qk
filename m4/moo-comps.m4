@@ -63,6 +63,10 @@ AC_DEFUN([MOO_COMPONENTS],[
   AC_ARG_ENABLE(canvas,
     AC_HELP_STRING(--enable-canvas, [build foocanvas (default = NO)]),
     [:],[enable_canvas=${MOO_BUILD_CANVAS:-no}])
+  if test "x$MOO_OS_CYGWIN" = "xyes"; then
+    enable_canvas=no
+    MOO_BUILD_CANVAS=no
+  fi
   AM_CONDITIONAL(MOO_BUILD_CANVAS, test "x$enable_canvas" = xyes)
   if test "x$enable_canvas" = xyes; then
     AC_DEFINE(MOO_BUILD_CANVAS, [1], [build foocanvas])

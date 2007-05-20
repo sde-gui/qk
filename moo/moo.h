@@ -46,7 +46,6 @@
 #include <mooedit/mooedit-enums.h>
 
 #include <mooterm/mooterm.h>
-#include <mooterm/mootermwindow.h>
 #include <mooterm/mooterm-text.h>
 #include <mooterm/mootermline.h>
 #include <mooterm/mootermtag.h>

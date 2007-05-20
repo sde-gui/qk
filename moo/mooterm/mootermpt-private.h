@@ -24,13 +24,62 @@
 G_BEGIN_DECLS
 
 
-struct _MooTermPtPrivate {
-    struct _MooTerm *term;
-    gboolean         child_alive;
-    gboolean         alive;
-    GQueue          *pending_write;  /* list->data is GByteArray* */
-    guint            pending_write_id;
+#define MOO_TYPE_TERM_PT_CYG        (_moo_term_pt_cyg_get_type ())
+#define MOO_TYPE_TERM_PT_UNIX       (_moo_term_pt_unix_get_type ())
+
+struct _MooTermPt {
+    GObject             parent;
+
+    MooTermIOFunc       io_func;
+    gpointer            io_func_data;
+    MooTermIOSizeFunc   size_func;
+    gpointer            size_func_data;
+
+    gboolean            child_alive;
+    gboolean            alive;
+    GQueue             *pending_write;  /* list->data is GByteArray* */
+    guint               pending_write_id;
+
+    int                 priority;
+    int                 width;
+    int                 height;
+    guint               echo : 1;
 };
+
+struct _MooTermPtClass {
+    GObjectClass  parent_class;
+
+    /* virtual methods */
+    void        (*set_size)             (MooTermPt  *pt,
+                                         guint       width,
+                                         guint       height);
+    void        (*set_echo_input)       (MooTermPt  *pt,
+                                         gboolean    echo);
+    gboolean    (*fork_command)         (MooTermPt  *pt,
+                                         const MooTermCommand *cmd,
+                                         GError    **error);
+    void        (*write)                (MooTermPt  *pt,
+                                         const char *data,
+                                         gssize      len);
+    void        (*kill_child)           (MooTermPt  *pt);
+    char        (*get_erase_char)       (MooTermPt  *pt);
+    void        (*send_intr)            (MooTermPt  *pt);
+    gboolean    (*set_fd)               (MooTermPt  *pt,
+                                         int         master);
+
+    /* signals */
+    void        (*child_died)   (MooTermPt  *pt);
+};
+
+
+GType   _moo_term_pt_unix_get_type          (void) G_GNUC_CONST;
+GType   _moo_term_pt_cyg_get_type           (void) G_GNUC_CONST;
+
+void    _moo_term_pt_process_data           (MooTermPt  *pt,
+                                             const char *data,
+                                             int         len);
+gsize   _moo_term_pt_get_input_chunk_len    (MooTermPt  *pt,
+                                             gsize       max_len);
 
 
 inline static void pt_discard (GSList **list)
@@ -48,11 +97,11 @@ inline static void pt_discard_pending_write (MooTermPt *pt)
 {
     GList *l;
 
-    for (l = pt->priv->pending_write->head; l != NULL; l = l->next)
+    for (l = pt->pending_write->head; l != NULL; l = l->next)
         g_byte_array_free (l->data, TRUE);
 
-    while (!g_queue_is_empty (pt->priv->pending_write))
-        g_queue_pop_head (pt->priv->pending_write);
+    while (!g_queue_is_empty (pt->pending_write))
+        g_queue_pop_head (pt->pending_write);
 }
 
 inline static void pt_add_data (GSList **list, const char *data, gssize len)

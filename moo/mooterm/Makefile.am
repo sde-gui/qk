@@ -1,6 +1,5 @@
 mooterm_include_headers =	       \
 	mooterm.h                      \
-	mootermwindow.h                \
 	mooterm-prefs.h                \
 	mooterm-text.h                 \
 	mootermline.h                  \
@@ -33,7 +32,6 @@ mooterm_sources =                      \
 	mootermpt-private.h            \
 	mootermtag-private.h           \
 	mootermtag.c                   \
-	mootermwindow.c                \
 	mootermprefs-glade.h
 
 mooterm_unix_sources =			\
@@ -46,7 +44,7 @@ mooterm_win32_sources =			\
 	mootermpt-cygwin.c
 
 termhelper_sources =			\
-	termhelper_res.res		\
+	mootermhelper_res.res		\
 	mootermhelper.c			\
 	mootermhelper.h			\
 	pty.c				\
@@ -55,7 +53,7 @@ termhelper_sources =			\
 EXTRA_DIST =				\
 	mootermparser-yacc.y		\
 	$(termhelper_sources)		\
-	termhelper_res.rc.in		\
+	mootermhelper_res.rc.in		\
 	glade/mootermprefs.glade
 
 BUILT_SOURCES =				\
@@ -71,8 +69,11 @@ mootermprefs-glade.h: glade/mootermprefs.glade $(XML2H)
 	$(SHELL) $(XML2H) MOO_TERM_PREFS_GLADE_UI $(srcdir)/glade/mootermprefs.glade > $@.tmp && \
 	mv $@.tmp $@
 
+noinst_LTLIBRARIES =
 
-noinst_LTLIBRARIES = libmooterm.la
+if !MOO_OS_CYGWIN
+noinst_LTLIBRARIES += libmooterm.la
+endif
 
 libmooterm_la_SOURCES = $(mooterm_sources)
 
@@ -98,8 +99,8 @@ AM_CFLAGS =			\
 if MOO_OS_CYGWIN
 noinst_PROGRAMS = termhelper
 termhelper_SOURCES = $(termhelper_sources)
-nodist_termhelper_SOURCES = termhelper_res.res
-CLEANFILES = termhelper_res.res
+nodist_termhelper_SOURCES = mootermhelper_res.res
+CLEANFILES = mootermhelper_res.res
 termhelper_CFLAGS =                         \
     -I$(top_builddir)                       \
     -I$(top_srcdir)                         \
@@ -107,11 +108,11 @@ termhelper_CFLAGS =                         \
     -I$(top_builddir)/$(MOO_SRC_PREFIX)     \
     $(MOO_DEBUG_CFLAGS)                     \
     $(CFLAGS)
-termhelper_res.res: termhelper_res.rc
-	$(WINDRES) -i $(srcdir)/termhelper_res.rc --input-format=rc -o termhelper_res.res -O coff
-termhelper_LDADD = termhelper_res.res
+mootermhelper_res.res: mootermhelper_res.rc
+	$(WINDRES) -i mootermhelper_res.rc --input-format=rc -o mootermhelper_res.res -O coff
+termhelper_LDADD = mootermhelper_res.res
 else
-termhelper_res.res: termhelper_res.rc
-	touch termhelper_res.res
-CLEANFILES = termhelper_res.res
+mootermhelper_res.res: mootermhelper_res.rc
+	touch mootermhelper_res.res
+CLEANFILES = mootermhelper_res.res
 endif

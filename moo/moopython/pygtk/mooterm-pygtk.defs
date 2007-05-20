@@ -23,13 +23,6 @@
   (gtype-id "MOO_TYPE_TERM_TAG")
 )
 
-(define-object Window
-  (in-module "Moo")
-  (parent "MooWindow")
-  (c-name "MooTermWindow")
-  (gtype-id "MOO_TYPE_TERM_WINDOW")
-)
-
 
 (define-boxed Iter
   (in-module "Moo")
@@ -771,29 +764,5 @@
              "mask - combination of TextAttrMask values\n"
              "foreground - text color as TextColor value, has effect only if TEXT_FOREGROUND mask is set\n"
              "background - background color as TextColor value, has effect only if TEXT_BACKGROUND mask is set\n"
-  )
-)
-
-
-;; From mootermwindow.h
-
-(define-function moo_term_window_new
-  (c-name "moo_term_window_new")
-  (is-constructor-of "MooTermWindow")
-  (return-type "GtkWidget*")
-)
-
-(define-method get_term
-  (of-object "MooTermWindow")
-  (c-name "moo_term_window_get_term")
-  (return-type "MooTerm*")
-)
-
-(define-method set_term_type
-  (of-object "MooTermWindow")
-  (c-name "moo_term_window_set_term_type")
-  (return-type "none")
-  (parameters
-    '("GType" "type")
   )
 )

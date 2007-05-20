@@ -15,41 +15,46 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_TERM_HELPER_H__
-#define __MOO_TERM_HELPER_H__
+#ifndef MOO_TERM_HELPER_H
+#define MOO_TERM_HELPER_H
 
 
 #define MOO_TERM_HELPER_ENV "MOO_TERM_HELPER_WORKING_DIR"
 
 typedef enum {
-    HELPER_CMD_CHAR = 0,
-    HELPER_SET_SIZE = 1,
-    HELPER_GOODBYE  = 2,
-    HELPER_OK       = 3
+    HELPER_CHAR_CMD     = 0,
+    HELPER_CMD_SET_SIZE = 1,
+    HELPER_CMD_SET_ECHO = 2,
+    HELPER_CMD_GOODBYE  = 3,
+    HELPER_CMD_OK       = 4
 } HelperCmdCode;
 
+#define HELPER_CMD_SIZE 6
 
-inline static unsigned
-CHARS_TO_UINT (guchar first, guchar second)
-{
-    return ((unsigned) second << 2) + first;
-}
+#define HELPER_CMD_GET_WIDTH(cmd) ((unsigned char)(cmd)[2] + (((unsigned char)(cmd)[3]) << 2))
+#define HELPER_CMD_GET_HEIGHT(cmd) ((unsigned char)(cmd)[4] + (((unsigned char)(cmd)[5]) << 2))
+#define HELPER_CMD_GET_ECHO(cmd) ((cmd)[2] != 0)
+
+#define HELPER_SET_SIZE_CMD(buf, width, height)     \
+    (buf)[0] = HELPER_CHAR_CMD;                     \
+    (buf)[1] = HELPER_CMD_SET_SIZE;                 \
+    (buf)[2] = ((unsigned)width) & 0xFF;            \
+    (buf)[3] = (((unsigned)width) & 0xFF00) >> 2;   \
+    (buf)[4] = ((unsigned)height) & 0xFF;           \
+    (buf)[5] = (((unsigned)height) & 0xFF00) >> 2;
+
+#define HELPER_SET_ECHO_CMD(buf, echo)              \
+    (buf)[0] = HELPER_CHAR_CMD;                     \
+    (buf)[1] = HELPER_CMD_SET_ECHO;                 \
+    (buf)[2] = !!(echo);
+
+#define HELPER_OK_CMD(buf)                          \
+    (buf)[0] = HELPER_CHAR_CMD;                     \
+    (buf)[1] = HELPER_CMD_OK;
+
+#define HELPER_GOODBYE_CMD(buf)                     \
+    (buf)[0] = HELPER_CHAR_CMD;                     \
+    (buf)[1] = HELPER_CMD_GOODBYE;
 
 
-#define SIZE_CMD_LEN 6
-inline static const char *set_size_cmd (guint16 width, guint16 height)
-{
-    static char cmd[SIZE_CMD_LEN] = {
-        HELPER_CMD_CHAR,
-        HELPER_SET_SIZE,
-        0, 0, 0, 0
-    };
-    cmd[2] = width & 0xFF;
-    cmd[3] = (width & 0xFF00) >> 2;
-    cmd[4] = height & 0xFF;
-    cmd[5] = (height & 0xFF00) >> 2;
-    return cmd;
-}
-
-
-#endif /* __MOO_TERM_HELPER_H__ */
+#endif /* MOO_TERM_HELPER_H */

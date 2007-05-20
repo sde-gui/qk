@@ -1,7 +1,7 @@
 /*
  *   mooterm-prefs.h
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_TERM_PREFS_H__
-#define __MOO_TERM_PREFS_H__
+#ifndef MOO_TERM_PREFS_H
+#define MOO_TERM_PREFS_H
 
 #include <gtk/gtkwidget.h>
 
@@ -34,4 +34,4 @@ const char     *moo_term_setting            (const char *setting_name);
 
 G_END_DECLS
 
-#endif /* __MOO_TERM_PREFS_H__ */
+#endif /* MOO_TERM_PREFS_H */

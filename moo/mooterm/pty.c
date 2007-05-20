@@ -73,7 +73,13 @@
 #endif
 #include <assert.h>
 #include "pty.h"
+
+#ifdef MOO_OS_CYGWIN
+#define g_strdup strdup
+#define g_free free
+#else
 #include <glib.h>
+#endif
 
 #ifdef MSG_NOSIGNAL
 #define PTY_RECVMSG_FLAGS MSG_NOSIGNAL
@@ -572,6 +578,42 @@ _vte_pty_fork_on_pty_name(const char *path, int parent_fd, char **env_add,
 #endif
 
 /**
+ * vte_pty_set_echo_input:
+ * @master: the file descriptor of the pty master
+ * @echo: whether input should be echoed.
+ *
+ * Attempts to disable/enable echoing input on @master.
+ *
+ * Returns: 0 on success, -1 on failure.
+ */
+int
+_vte_pty_set_echo_input(int master, int echo)
+{
+	struct termios tio;
+
+	memset(&tio, 0, sizeof tio);
+
+	if (tcgetattr(master, &tio) == -1)
+	{
+		perror ("tcgetattr");
+		return -1;
+	}
+
+	if (echo)
+		tio.c_lflag |= (ECHO);
+	else
+		tio.c_lflag &= ~(ECHO);
+
+	if (tcsetattr(master, TCSANOW, &tio) == -1)
+	{
+		perror ("tcsetattr");
+		return -1;
+	}
+
+	return 0;
+}
+
+/**
  * vte_pty_set_size:
  * @master: the file descriptor of the pty master
  * @columns: the desired number of columns
@@ -649,7 +691,8 @@ _vte_pty_ptsname(int master)
 	} while ((i != 0) && (errno == ERANGE));
 #elif defined(HAVE_PTSNAME)
 	char *p;
-	if ((p = ptsname(master)) != NULL) {
+	if ((p = ptsname(master)) != NULL)
+	{
 		return g_strdup (p);
 	}
 #elif defined(TIOCGPTN)

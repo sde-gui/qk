@@ -15,9 +15,7 @@
 #include "config.h"
 #endif
 
-#ifdef __CYGWIN__
 #include <windows.h>
-#endif /* __CYGWIN__ */
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
@@ -29,42 +27,71 @@
 #include <assert.h>
 #include <poll.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include "pty.h"
 #define MOOTERM_COMPILATION
 #include "mootermhelper.h"
 
+#ifndef MIN
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+#endif
+
+#if     __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 4)
+#define G_GNUC_UNUSED __attribute__((__unused__))
+#else   /* !__GNUC__ */
+#define G_GNUC_UNUSED
+#endif  /* !__GNUC__ */
 
 #define WRITE_LOG     0
 #define WRITE_LOGFILE 1
-#define LOGFILE       "helper.log"
+#define LOGFILE       "c:\\helper.log"
 
 #if WRITE_LOG
 #if WRITE_LOGFILE
-static int firsttime = 1;
-#define writelog(...) \
-{\
-    FILE *logfile;\
-    if (firsttime) {\
-        logfile = fopen (LOGFILE, "w+");\
-        firsttime = 0;\
-    }\
-    else\
-        logfile = fopen (LOGFILE, "a+");\
-    if (!logfile) {\
-        printf ("could not open logfile");\
-        _exit (1);\
-    }\
-    fprintf (logfile, __VA_ARGS__);\
-    fclose (logfile);\
+static void
+writelog (const char *format, ...)
+{
+    FILE *logfile;
+    static int been_here;
+    va_list args;
+
+    if (been_here)
+    {
+        logfile = fopen (LOGFILE, "a+");
+    }
+    else
+    {
+        logfile = fopen (LOGFILE, "w+");
+        been_here = 1;
+    }
+
+    if (!logfile)
+    {
+        printf ("could not open logfile");
+        _exit (1);
+    }
+
+    va_start (args, format);
+    vfprintf (logfile, format, args);
+    va_end (args);
+
+    fclose (logfile);
 }
 #else /* ! WRITE_LOGFILE */
-#define writelog(...) \
-{\
-    fprintf (stderr, __VA_ARGS__);\
+static void
+writelog (const char *format, ...)
+{
+    va_list args;
+    va_start (args, format);
+    vfprintf (stderr, format, args);
+    va_end (args);
 }
 #endif /* ! WRITE_LOGFILE */
 #else /* ! WRITE_LOG */
-#define writelog(...)
+static void
+writelog (G_GNUC_UNUSED const char *format, ...)
+{
+}
 #endif /* WRITE_LOG */
 
 
@@ -79,7 +106,8 @@ int child_pid = -1;
 #endif /* ! HAVE_PID_T */
 
 
-void doexit (int status)
+void
+doexit (int status)
 {
     /* XXX man, it's all stupid (and race conditions, and infinite loops, and crash)! */
     writelog ("helper: exiting\r\n");
@@ -92,13 +120,15 @@ void doexit (int status)
     exit (status);
 }
 
-static void sigchld_handler (int sig)
+static void
+sigchld_handler (G_GNUC_UNUSED int sig)
 {
     writelog ("helper: child died\r\n");
     doexit (0);
 }
 
-static void sigint_handler (int sig)
+static void
+sigint_handler (G_GNUC_UNUSED int sig)
 {
     writelog ("helper: got SIGINT\r\n");
     writelog ("helper: child pid %d\r\n", child_pid);
@@ -106,23 +136,28 @@ static void sigint_handler (int sig)
         _vte_pty_n_write (master, "\3", 1);
 }
 
-static void sigany_handler (int num)
+static void
+sigany_handler (G_GNUC_UNUSED int num)
 {
     writelog ("helper: got signal %d\r\n", num);
     doexit (0);
 }
 
 
-int main (int argc, char **argv)
+#define GAP_ARGS_OFFSET 4
+
+int
+main (int argc, char **argv)
 {
     int i;
     int status, flags;
     unsigned width, height;
+    int echo;
     char *working_dir;
-    const char *env[] = {"TERM=dumb", NULL};
 
-    if (argc < 4 && (argc != 2 || strcmp (argv[1], "--test"))) {
-        printf ("usage: %s <term_width> <term_height> <binary> [args]\n", argv[0]);
+    if (argc < GAP_ARGS_OFFSET + 1 && (argc != 2 || strcmp (argv[1], "--test")))
+    {
+        printf ("usage: %s <term_width> <term_height> <echo> <binary> [args]\n", argv[0]);
         exit (1);
     }
 
@@ -141,89 +176,106 @@ int main (int argc, char **argv)
 
     width = strtol (argv[1], NULL, 10);
     height = strtol (argv[2], NULL, 10);
+    echo = !strcmp (argv[3], "y");
 
     working_dir = getenv (MOO_TERM_HELPER_ENV);
-    if (working_dir && strlen (working_dir)) {
+
+    if (working_dir && strlen (working_dir))
+    {
         writelog ("helper: chdir to '%s'\r\n", working_dir);
         chdir (working_dir);
     }
-    else {
+    else
+    {
         writelog ("helper: no %s environment variable\r\n", MOO_TERM_HELPER_ENV);
     }
 
-    master = _vte_pty_open(&child_pid, (char**)env,
-                           argv[3],
-                           argv + 3,
-                           NULL,
-                           width, height,
-                           0, 0, 0);
+    master = _vte_pty_open (&child_pid, NULL,
+                            argv[GAP_ARGS_OFFSET],
+                            argv + GAP_ARGS_OFFSET,
+                            NULL,
+                            width, height,
+                            0, 0, 0);
+
     writelog ("helper: forked child pid %d\r\n", child_pid);
-    for (i = 3; argv[i] != NULL; ++i)
+    for (i = GAP_ARGS_OFFSET; argv[i] != NULL; ++i)
         writelog ("%s ", argv[i]);
     writelog ("\r\n");
 
-    if (master == -1) {
+    if (master == -1)
+    {
         writelog ("helper: could not open pty\r\n");
         doexit (1);
     }
 
-    if (waitpid (child_pid, &status, WNOHANG) == -1) {
+    if (_vte_pty_set_echo_input (master, echo) == -1)
+        writelog ("error in _vte_pty_set_echo_input\r\n");
+
+    if (waitpid (child_pid, &status, WNOHANG) == -1)
         writelog ("error in waitpid\r\n");
-    }
 
-    if ((flags = fcntl (master, F_GETFL)) < 0) {
+    if ((flags = fcntl (master, F_GETFL)) < 0)
         writelog ("F_GETFL on master\r\n");
-    }
-    else if (-1 == fcntl (master, F_SETFL, O_NONBLOCK | flags)) {
+    else if (-1 == fcntl (master, F_SETFL, O_NONBLOCK | flags))
         writelog ("F_SETFL on master\r\n");
-    }
-    if ((flags = fcntl (0, F_GETFL)) < 0) {
-        writelog ("F_GETFL on stdin\r\n");
-    }
-    else if (-1 == fcntl (0, F_SETFL, O_NONBLOCK | flags)) {
-        writelog ("F_SETFL on stdin\r\n");
-    }
 
-    while (1) {
+    if ((flags = fcntl (0, F_GETFL)) < 0)
+        writelog ("F_GETFL on stdin\r\n");
+    else if (-1 == fcntl (0, F_SETFL, O_NONBLOCK | flags))
+        writelog ("F_SETFL on stdin\r\n");
+
+    while (1)
+    {
         int res = 0;
         int again = 1;
         char buf[BUFSIZE];
         int num_read;
 
-        struct pollfd fds[] = {
+        struct pollfd fds[] =
+        {
             {master, POLLIN | POLLPRI | POLLHUP | POLLERR, 0},
             {0, POLLIN | POLLPRI | POLLHUP | POLLERR, 0}
         };
 
-        while (again) {
+        while (again)
+        {
             res = poll (fds, 2, -1);
-            if (res != -1 && res != 1 && res != 2) {
+
+            if (res != -1 && res != 1 && res != 2)
+            {
                 writelog ("helper: poll returned bogus value %d\r\n", res);
                 doexit (1);
             }
-            if (res == -1) {
-                switch (errno) {
-                case EAGAIN:
-                    writelog ("helper: poll error: EAGAIN\r\n");
-                    break;
-                case EINTR:
-                    writelog ("helper: poll error: EINTR\r\n");
-                    break;
-                default:
-                    writelog ("helper: poll error\r\n");
-                    writelog ("helper: %s\r\n", strerror (errno));
-                    doexit (1);
+
+            if (res == -1)
+            {
+                switch (errno)
+                {
+                    case EAGAIN:
+                        writelog ("helper: poll error: EAGAIN\r\n");
+                        break;
+                    case EINTR:
+                        writelog ("helper: poll error: EINTR\r\n");
+                        break;
+                    default:
+                        writelog ("helper: poll error\r\n");
+                        writelog ("helper: %s\r\n", strerror (errno));
+                        doexit (1);
                 }
             }
             else
+            {
                 again = 0;
+            }
         }
 
-        if (fds[0].revents & POLLHUP) {
+        if (fds[0].revents & POLLHUP)
+        {
             writelog ("helper: got POLLHUP from child\r\n");
             doexit (0);
         }
-        if (fds[1].revents & POLLHUP) {
+        if (fds[1].revents & POLLHUP)
+        {
             writelog ("helper: got POLLHUP from parent\r\n");
             doexit (0);
         }
@@ -241,89 +293,124 @@ int main (int argc, char **argv)
         }
 
         /********** reading child **********/
-        if (fds[0].revents & (POLLIN | POLLPRI)) {
+        if (fds[0].revents & (POLLIN | POLLPRI))
+        {
             num_read = read (master, buf, BUFSIZE);
-            if (num_read < 1 && errno != EAGAIN && errno != EINTR) {
+
+            if (num_read < 1 && errno != EAGAIN && errno != EINTR)
+            {
                 writelog ("helper: error reading from child\r\n");
                 doexit (1);
             }
-            if (num_read > 0 && _vte_pty_n_write (1, buf, num_read) != num_read) {
+
+            if (num_read > 0 && _vte_pty_n_write (1, buf, num_read) != num_read)
+            {
                 writelog ("helper: error writing to parent\r\n");
                 doexit (1);
             }
         }
 
         /********** reading parent **********/
-        if (fds[1].revents & (POLLIN | POLLPRI)) {
+        if (fds[1].revents & (POLLIN | POLLPRI))
+        {
             int count = 0;
 
             num_read = read (0, buf, BUFSIZE);
-            if (num_read < 1 && errno != EAGAIN && errno != EINTR) {
+
+            if (num_read < 1 && errno != EAGAIN && errno != EINTR)
+            {
                 writelog ("helper: error reading from parent\r\n");
                 doexit (1);
             }
 
-            while (count < num_read) {
+            while (count < num_read)
+            {
                 int i;
-                char cmd;
+                char cmd[HELPER_CMD_SIZE];
 
-                for (i = count; i < num_read && buf[i] != HELPER_CMD_CHAR; ++i) ;
+                for (i = count; i < num_read && buf[i] != HELPER_CHAR_CMD; ++i) ;
+
                 if (i > count &&
-                    _vte_pty_n_write (master, buf + count, i - count) != i - count) {
+                    _vte_pty_n_write (master, buf + count, i - count) != i - count)
+                {
                     writelog ("helper: error writing to child\r\n");
                     doexit (1);
                 }
+
                 count = i;
 
-                if (count == num_read) break;
+                if (count == num_read)
+                    break;
 
                 writelog ("helper: got command\r\n");
-                ++count;
-                if (count == num_read) {
-                    if (_vte_pty_n_read (0, &cmd, 1) != 1) {
+
+                if (num_read > count)
+                    memcpy (cmd, buf + count, MIN (HELPER_CMD_SIZE, num_read - count));
+
+                if (count + HELPER_CMD_SIZE > num_read)
+                {
+                    if (_vte_pty_n_read (0, cmd + num_read - count,
+                                         HELPER_CMD_SIZE - (num_read - count)) !=
+                            HELPER_CMD_SIZE - (num_read - count))
+                    {
                         writelog ("helper: error reading command\r\n");
                         doexit (1);
                     }
                 }
-                else
-                    cmd = buf[count++];
 
-                switch (cmd) {
-                    case HELPER_OK:
+                count += HELPER_CMD_SIZE;
+                assert (cmd[0] == HELPER_CHAR_CMD);
+
+                switch (cmd[1])
+                {
+                    case HELPER_CMD_OK:
                         writelog ("helper: HELPER_OK\r\n");
                         break;
 
-                    case HELPER_GOODBYE:
+                    case HELPER_CMD_GOODBYE:
                         writelog ("helper: HELPER_GOODBYE\r\n");
                         doexit (0);
                         break;
 
-                    case HELPER_SET_SIZE:
+                    case HELPER_CMD_SET_SIZE:
                         writelog ("helper: HELPER_SET_SIZE\r\n");
-                    {
-                        char size[4];
-                        int width, height, j;
+                        {
+                            int width, height;
 
-                        for (i = 0; count + i < num_read; ++i)
-                            size[i] = buf[count + i];
-                        count += i;
-                        if (i < 4)
-                            for (j = i; j < 4; ++j)
-                                if (_vte_pty_n_read (0, size + j, 1) != 1) {
-                                    writelog ("helper: could not read size\r\n");
-                                    doexit (1);
-                                }
+                            width = HELPER_CMD_GET_WIDTH (cmd);
+                            height = HELPER_CMD_GET_HEIGHT (cmd);
 
-                        width = CHARS_TO_UINT (size[0], size[1]);
-                        height = CHARS_TO_UINT (size[2], size[3]);
-                        writelog ("helper: SET_SIZE %d, %d\r\n", width, height);
-                        if (_vte_pty_set_size (master, width, height) == -1) {
-                            writelog ("helper: could not set size\r\n");
+                            writelog ("helper: SET_SIZE %d, %d\r\n", width, height);
+
+                            if (_vte_pty_set_size (master, width, height) == -1)
+                            {
+                                writelog ("helper: could not set size\r\n");
+                            }
+                            else
+                            {
+                                writelog ("helper: success\r\n", width, height);
+                            }
                         }
-                        else {
-                            writelog ("helper: success\r\n", width, height);
+                        break;
+
+                    case HELPER_CMD_SET_ECHO:
+                        writelog ("helper: HELPER_SET_ECHO\r\n");
+                        {
+                            int echo;
+
+                            echo = HELPER_CMD_GET_ECHO(cmd);
+
+                            writelog ("helper: SET_ECHO %s\r\n", echo ? "true" : "false");
+
+                            if (_vte_pty_set_echo_input (master, echo) == -1)
+                            {
+                                writelog ("helper: could not set echo mode\r\n");
+                            }
+                            else
+                            {
+                                writelog ("helper: success\r\n", width, height);
+                            }
                         }
-                    }
                         break;
 
                     default:

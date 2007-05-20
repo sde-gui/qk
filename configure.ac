@@ -58,7 +58,7 @@ moo/moopython/plugins/pyproject/Makefile
 moo/moopython/pygtk/Makefile
 moo/mooutils/pcre/Makefile
 moo/mooutils/xdgmime/Makefile
-moo/mooterm/termhelper_res.rc
+moo/mooterm/mootermhelper_res.rc
 tests/pyapp.py
 tests/Makefile
 medit/Makefile

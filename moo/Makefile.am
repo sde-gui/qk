@@ -65,10 +65,12 @@ noinst_LTLIBRARIES =
 ############################################################################
 # libmoo
 #
+if !MOO_OS_CYGWIN
 if MOO_INSTALL_LIB
 lib_LTLIBRARIES += libmoo.la
 else
 noinst_LTLIBRARIES += libmoo.la
+endif
 endif
 
 if MOO_OS_MINGW
@@ -86,7 +88,7 @@ else
 if MOO_DEBUG # && !MOO_ENABLE_TESTS
 export_flags = -export-symbols-regex ".*"
 else # !MOO_DEBUG && !MOO_ENABLE_TESTS
-export_flags = -export-symbols-regex "^(moo_).*"
+export_flags = -export-symbols-regex "^(moo_|foo_canvas_).*"
 endif
 endif
 

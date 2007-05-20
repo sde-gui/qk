@@ -20,7 +20,6 @@
 #include "mooapp/mooappinput.h"
 #include "mooapp/mooapp-private.h"
 #include "mooapp/smclient/eggsmclient.h"
-#include "mooterm/mootermwindow.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"
@@ -76,17 +75,12 @@ struct _MooAppPrivate {
     gboolean    running;
     gboolean    in_try_quit;
 
-    GType       term_window_type;
-    GSList     *terminals;
-    MooTermWindow *term_window;
-
     EggSMClient *sm_client;
 
     MooUIXML   *ui_xml;
     char       *default_ui;
     guint       quit_handler_id;
     gboolean    use_editor;
-    gboolean    use_terminal;
 
     char       *tmpdir;
 };
@@ -103,9 +97,8 @@ static MooAppInfo *moo_app_info_new     (void);
 static MooAppInfo *moo_app_info_copy    (const MooAppInfo   *info);
 static void     moo_app_info_free       (MooAppInfo         *info);
 
-static void     install_actions         (GType               type);
+static void     install_common_actions  (void);
 static void     install_editor_actions  (void);
-static void     install_terminal_actions(void);
 
 static void     moo_app_set_property    (GObject            *object,
                                          guint               prop_id,
@@ -179,7 +172,6 @@ enum {
     PROP_DESCRIPTION,
     PROP_RUN_INPUT,
     PROP_USE_EDITOR,
-    PROP_USE_TERMINAL,
     PROP_DEFAULT_UI,
     PROP_LOGO,
     PROP_WEBSITE,
@@ -297,14 +289,6 @@ moo_app_class_init (MooAppClass *klass)
                                      g_param_spec_boolean ("use-editor",
                                              "use-editor",
                                              "use-editor",
-                                             TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_USE_TERMINAL,
-                                     g_param_spec_boolean ("use-terminal",
-                                             "use-terminal",
-                                             "use-terminal",
                                              TRUE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
@@ -447,8 +431,8 @@ moo_app_constructor (GType           type,
     setup_signals (sigint_handler);
 #endif
 
+    install_common_actions ();
     install_editor_actions ();
-    install_terminal_actions ();
 
     return object;
 }
@@ -530,10 +514,6 @@ moo_app_set_property (GObject        *object,
             app->priv->use_editor = g_value_get_boolean (value);
             break;
 
-        case PROP_USE_TERMINAL:
-            app->priv->use_terminal = g_value_get_boolean (value);
-            break;
-
         case PROP_DEFAULT_UI:
             g_free (app->priv->default_ui);
             app->priv->default_ui = g_strdup (g_value_get_string (value));
@@ -593,10 +573,6 @@ moo_app_get_property (GObject        *object,
 
         case PROP_USE_EDITOR:
             g_value_set_boolean (value, app->priv->use_editor);
-            break;
-
-        case PROP_USE_TERMINAL:
-            g_value_set_boolean (value, app->priv->use_terminal);
             break;
 
         default:
@@ -868,15 +844,6 @@ moo_app_init_real (MooApp *app)
         moo_app_init_editor (app);
 #endif
 
-#if defined(__WIN32__) && defined(MOO_BUILD_TERM)
-    if (app->priv->use_terminal)
-    {
-        char *dir = moo_win32_get_app_dir ();
-        moo_term_set_helper_directory (dir);
-        g_free (dir);
-    }
-#endif /* __WIN32__ && MOO_BUILD_TERM */
-
     start_input (app);
 
     return TRUE;
@@ -1064,8 +1031,6 @@ moo_app_run_real (MooApp *app)
 static gboolean
 moo_app_try_quit_real (MooApp *app)
 {
-    GSList *l, *list;
-
     if (!app->priv->running)
         return FALSE;
 
@@ -1073,17 +1038,6 @@ moo_app_try_quit_real (MooApp *app)
     if (!moo_editor_close_all (app->priv->editor, TRUE, TRUE))
         return TRUE;
 #endif /* MOO_BUILD_EDIT */
-
-    list = g_slist_copy (app->priv->terminals);
-    for (l = list; l != NULL; l = l->next)
-    {
-        if (!moo_window_close (MOO_WINDOW (l->data)))
-        {
-            g_slist_free (list);
-            return TRUE;
-        }
-    }
-    g_slist_free (list);
 
     return FALSE;
 }
@@ -1112,7 +1066,6 @@ moo_app_save_prefs (MooApp *app)
 static void
 moo_app_quit_real (MooApp *app)
 {
-    GSList *l, *list;
     guint i;
 
     if (!app->priv->running)
@@ -1129,14 +1082,6 @@ moo_app_quit_real (MooApp *app)
         _moo_app_input_unref (moo_app_input);
         moo_app_input = NULL;
     }
-
-    list = g_slist_copy (app->priv->terminals);
-    for (l = list; l != NULL; l = l->next)
-        moo_window_close (MOO_WINDOW (l->data));
-    g_slist_free (list);
-    g_slist_free (app->priv->terminals);
-    app->priv->terminals = NULL;
-    app->priv->term_window = NULL;
 
 #ifdef MOO_BUILD_EDIT
     moo_editor_close_all (app->priv->editor, FALSE, FALSE);
@@ -1261,9 +1206,9 @@ moo_app_set_version (MooApp     *app,
 
 
 static void
-install_actions (GType type)
+install_common_actions (void)
 {
-    MooWindowClass *klass = g_type_class_ref (type);
+    MooWindowClass *klass = g_type_class_ref (MOO_TYPE_WINDOW);
 
     g_return_if_fail (klass != NULL);
 
@@ -1289,18 +1234,6 @@ install_actions (GType type)
                                  "closure-callback", moo_app_system_info_dialog,
                                  NULL);
 
-    g_type_class_unref (klass);
-}
-
-
-static void
-install_editor_actions (void)
-{
-#ifdef MOO_BUILD_EDIT
-    MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
-
-    g_return_if_fail (klass != NULL);
-
     moo_window_class_new_action (klass, "Quit", NULL,
                                  "display-name", GTK_STOCK_QUIT,
                                  "label", GTK_STOCK_QUIT,
@@ -1311,66 +1244,19 @@ install_editor_actions (void)
                                  "closure-proxy-func", moo_app_get_instance,
                                  NULL);
 
-    install_actions (MOO_TYPE_EDIT_WINDOW);
+    g_type_class_unref (klass);
+}
 
+
+static void
+install_editor_actions (void)
+{
+#ifdef MOO_BUILD_EDIT
+    MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+    g_return_if_fail (klass != NULL);
     g_type_class_unref (klass);
 #endif /* MOO_BUILD_EDIT */
 }
-
-
-#if defined(MOO_BUILD_TERM) && defined(MOO_BUILD_EDIT)
-static void
-new_editor (MooApp *app)
-{
-    g_return_if_fail (app != NULL);
-    gtk_window_present (GTK_WINDOW (moo_editor_new_window (app->priv->editor)));
-}
-
-static void
-open_in_editor (MooTermWindow *terminal)
-{
-    MooApp *app = moo_app_get_instance ();
-    g_return_if_fail (app != NULL);
-    moo_editor_open (app->priv->editor, NULL, GTK_WIDGET (terminal), NULL);
-}
-
-
-static void
-install_terminal_actions (void)
-{
-    MooWindowClass *klass = g_type_class_ref (MOO_TYPE_TERM_WINDOW);
-
-    g_return_if_fail (klass != NULL);
-
-    install_actions (MOO_TYPE_TERM_WINDOW);
-
-    moo_window_class_new_action (klass, "NewEditor", NULL,
-                                 "display-name", "New Editor",
-                                 "label", "_New Editor",
-                                 "tooltip", "New Editor",
-                                 "stock-id", GTK_STOCK_EDIT,
-                                 "accel", "<Alt>E",
-                                 "closure-callback", new_editor,
-                                 "closure-proxy-func", moo_app_get_instance,
-                                 NULL);
-
-    moo_window_class_new_action (klass, "OpenInEditor", NULL,
-                                 "display-name", "Open In Editor",
-                                 "label", "_Open In Editor",
-                                 "tooltip", "Open In Editor",
-                                 "stock-id", GTK_STOCK_OPEN,
-                                 "accel", "<Alt>O",
-                                 "closure-callback", open_in_editor,
-                                 NULL);
-
-    g_type_class_unref (klass);
-}
-#else /* !(defined(MOO_BUILD_TERM) && defined(MOO_BUILD_EDIT)) */
-static void
-install_terminal_actions (void)
-{
-}
-#endif /* !(defined(MOO_BUILD_TERM) && defined(MOO_BUILD_EDIT)) */
 
 
 MooUIXML *
@@ -1399,8 +1285,6 @@ void
 moo_app_set_ui_xml (MooApp     *app,
                     MooUIXML   *xml)
 {
-    GSList *l;
-
     g_return_if_fail (MOO_IS_APP (app));
 
     if (app->priv->ui_xml == xml)
@@ -1418,9 +1302,6 @@ moo_app_set_ui_xml (MooApp     *app,
     if (app->priv->editor)
         moo_editor_set_ui_xml (app->priv->editor, xml);
 #endif /* MOO_BUILD_EDIT */
-
-    for (l = app->priv->terminals; l != NULL; l = l->next)
-        moo_window_set_ui_xml (l->data, xml);
 }
 
 
@@ -1562,16 +1443,15 @@ moo_app_new_file (MooApp       *app,
 static void
 moo_app_present (MooApp *app)
 {
-    gpointer window = app->priv->term_window;
+    gpointer window = NULL;
 
 #ifdef MOO_BUILD_EDIT
     if (!window && app->priv->editor)
         window = moo_editor_get_active_window (app->priv->editor);
 #endif /* MOO_BUILD_EDIT */
 
-    g_return_if_fail (window != NULL);
-
-    moo_window_present (window, 0);
+    if (window)
+        moo_window_present (window, 0);
 }
 
 
@@ -1770,10 +1650,6 @@ moo_app_create_prefs_dialog (MooApp *app)
     title = g_strdup_printf ("%s Preferences", info->full_name);
     dialog = MOO_PREFS_DIALOG (moo_prefs_dialog_new (title));
     g_free (title);
-
-#if 0 && defined(MOO_BUILD_TERM)
-    moo_prefs_dialog_append_page (dialog, moo_term_prefs_page_new ());
-#endif
 
 #ifdef MOO_BUILD_EDIT
     moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new (moo_app_get_editor (app)));

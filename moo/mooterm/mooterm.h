@@ -15,11 +15,10 @@
 #define __MOO_TERM_H__
 
 #include <gtk/gtkwidget.h>
+#include <mooterm/mootermpt.h>
 
 G_BEGIN_DECLS
 
-
-#define MOO_TYPE_TERM_COMMAND       (moo_term_command_get_type ())
 
 #define MOO_TYPE_TERM               (moo_term_get_type ())
 #define MOO_TERM(object)            (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_TERM, MooTerm))
@@ -31,7 +30,6 @@ G_BEGIN_DECLS
 typedef struct _MooTerm             MooTerm;
 typedef struct _MooTermPrivate      MooTermPrivate;
 typedef struct _MooTermClass        MooTermClass;
-typedef struct _MooTermCommand      MooTermCommand;
 
 
 struct _MooTerm
@@ -73,7 +71,6 @@ typedef enum {
 GQuark      moo_term_error_quark            (void) G_GNUC_CONST;
 
 GType       moo_term_get_type               (void) G_GNUC_CONST;
-GType       moo_term_command_get_type       (void) G_GNUC_CONST;
 
 void        moo_term_set_adjustment         (MooTerm        *term,
                                              GtkAdjustment  *vadj);
@@ -93,9 +90,6 @@ gboolean    moo_term_fork_argv              (MooTerm        *term,
                                              GError        **error);
 gboolean    moo_term_child_alive            (MooTerm        *term);
 void        moo_term_kill_child             (MooTerm        *term);
-
-/* makes sense only for win32 */
-void        moo_term_set_helper_directory   (const char     *dir);
 
 void        moo_term_feed                   (MooTerm        *term,
                                              const char     *data,
@@ -143,18 +137,11 @@ guint       moo_term_char_width             (MooTerm        *term);
 gboolean    moo_term_start_default_shell    (MooTerm        *term,
                                              GError        **error);
 
-MooTermCommand  *moo_term_command_new_argv  (char          **argv,
-                                             const char     *working_dir,
-                                             char          **envp);
-MooTermCommand  *moo_term_command_new_command_line (const char *cmd_line,
-                                             const char     *working_dir,
-                                             char          **envp);
-MooTermCommand  *moo_term_command_copy      (const MooTermCommand *cmd);
-void             moo_term_command_free      (MooTermCommand *cmd);
-
 void        moo_term_set_colors             (MooTerm        *term,
                                              GdkColor       *colors,
                                              guint           n_colors);
+
+void        moo_term_apply_settings         (MooTerm        *term);
 
 
 G_END_DECLS

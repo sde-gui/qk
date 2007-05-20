@@ -76,6 +76,10 @@ static void     buf_size_changed                (MooTerm        *term,
 static void     im_preedit_start                (MooTerm        *term);
 static void     im_preedit_end                  (MooTerm        *term);
 
+static void     moo_term_io_func                (const char     *buf,
+                                                 gsize           len,
+                                                 gpointer        data);
+static gsize    moo_term_io_size_func           (gpointer        data);
 static void     child_died                      (MooTerm        *term);
 
 static void     clear_saved_cursor              (MooTerm        *term);
@@ -145,7 +149,7 @@ static void moo_term_class_init (MooTermClass *klass)
     widget_class->focus_out_event = moo_term_focus_out;
 
     klass->set_scroll_adjustments = moo_term_set_scroll_adjustments;
-    klass->apply_settings = _moo_term_apply_settings;
+    klass->apply_settings = moo_term_apply_settings;
     klass->reset = moo_term_reset_real;
     klass->bell = moo_term_bell_real;
 
@@ -272,7 +276,8 @@ moo_term_init (MooTerm *term)
 
     term->priv = g_new0 (MooTermPrivate, 1);
 
-    term->priv->pt = _moo_term_pt_new (term);
+    term->priv->pt = moo_term_pt_new (moo_term_io_func, term);
+    _moo_term_pt_set_io_size_func (term->priv->pt, moo_term_io_size_func, term);
     g_signal_connect_swapped (term->priv->pt, "child-died",
                               G_CALLBACK (child_died), term);
     term->priv->incoming = g_string_new_len (NULL, INPUT_CHUNK_SIZE);
@@ -945,25 +950,9 @@ moo_term_fork_command (MooTerm        *term,
                        const MooTermCommand *cmd,
                        GError        **error)
 {
-    MooTermCommand *copy;
-    gboolean result;
-
     g_return_val_if_fail (MOO_IS_TERM (term), FALSE);
     g_return_val_if_fail (cmd != NULL, FALSE);
-
-    copy = moo_term_command_copy (cmd);
-    result = _moo_term_check_cmd (copy, error);
-
-    if (!result)
-    {
-        moo_term_command_free (copy);
-        return FALSE;
-    }
-
-    result = _moo_term_pt_fork_command (term->priv->pt, copy, error);
-
-    moo_term_command_free (copy);
-    return result;
+    return moo_term_pt_fork_command (term->priv->pt, cmd, error);
 }
 
 
@@ -1016,7 +1005,7 @@ moo_term_feed_child (MooTerm        *term,
 {
     g_return_if_fail (MOO_IS_TERM (term) && string != NULL);
     if (_moo_term_pt_alive (term->priv->pt))
-        _moo_term_pt_write (term->priv->pt, string, len);
+        moo_term_pt_write (term->priv->pt, string, len);
 }
 
 
@@ -1026,7 +1015,7 @@ moo_term_send_intr (MooTerm *term)
     g_return_if_fail (MOO_IS_TERM (term));
 
     if (_moo_term_pt_alive (term->priv->pt))
-        _moo_term_pt_send_intr (term->priv->pt);
+        moo_term_pt_send_intr (term->priv->pt);
 }
 
 
@@ -1151,10 +1140,19 @@ moo_term_feed (MooTerm    *term,
                                   term);
 }
 
-
-gsize
-_moo_term_get_input_chunk_len (MooTerm *term)
+static void
+moo_term_io_func (const char *buf,
+                  gsize       len,
+                  gpointer    data)
 {
+    moo_term_feed (data, buf, len);
+}
+
+static gsize
+moo_term_io_size_func (gpointer data)
+{
+    MooTerm *term = data;
+
     switch (term->priv->incoming->len / INPUT_CHUNK_SIZE)
     {
         case 0:
@@ -1984,8 +1982,8 @@ void
 moo_term_kill_child (MooTerm        *term)
 {
     g_return_if_fail (MOO_IS_TERM (term));
-    if (_moo_term_pt_child_alive (term->priv->pt))
-        _moo_term_pt_kill_child (term->priv->pt);
+    if (moo_term_pt_child_alive (term->priv->pt))
+        moo_term_pt_kill_child (term->priv->pt);
 }
 
 

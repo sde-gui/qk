@@ -1,7 +1,7 @@
 /*
  *   mooapp.h
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_APP_H__
-#define __MOO_APP_H__
+#ifndef MOO_APP_H
+#define MOO_APP_H
 
 #include <mooedit/mooeditor.h>
 
@@ -119,4 +119,4 @@ void             moo_app_reload_python_plugins  (void);
 
 G_END_DECLS
 
-#endif /* __MOO_APP_H__ */
+#endif /* MOO_APP_H */
