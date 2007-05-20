@@ -473,7 +473,7 @@ moo_window_save_size (MooWindow *window)
 {
     if (!window->priv->save_size_id)
         window->priv->save_size_id =
-                _moo_idle_add ((GSourceFunc)save_size, window);
+                moo_idle_add ((GSourceFunc)save_size, window);
     return FALSE;
 }
 

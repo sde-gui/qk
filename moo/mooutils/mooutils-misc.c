@@ -1545,7 +1545,7 @@ moo_data_dir_type_get_type (void)
         static const GEnumValue values[] = {
             { MOO_DATA_SHARE, (char*) "MOO_DATA_SHARE", (char*) "share" },
             { MOO_DATA_LIB, (char*) "MOO_DATA_LIB", (char*) "lib" },
-            { 0, NULL, NULL },
+            { 0, NULL, NULL }
         };
 
         type = g_enum_register_static ("MooDataDirType", values);
@@ -1604,6 +1604,69 @@ _moo_widget_set_tooltip (GtkWidget  *widget,
         gtk_tool_item_set_tooltip (GTK_TOOL_ITEM (widget), tooltips, tip, NULL);
     else
         gtk_tooltips_set_tip (tooltips, widget, tip, tip);
+}
+
+
+char **
+moo_strnsplit_lines (const char *string,
+                     gssize      len,
+                     guint      *n_tokens)
+{
+    GPtrArray *array;
+    gssize i, line;
+
+    if (!string || !string[0])
+    {
+        if (n_tokens)
+            *n_tokens = 0;
+        return NULL;
+    }
+
+    if (len < 0)
+        len = strlen (string);
+
+    array = g_ptr_array_new ();
+    line = i = 0;
+
+    while (i < len)
+    {
+        switch (string[i])
+        {
+            case '\r':
+                g_ptr_array_add (array, g_strndup (string + line, i - line));
+                if (++i < len && string[i] == '\n')
+                    ++i;
+                line = i;
+                break;
+
+            case '\n':
+                g_ptr_array_add (array, g_strndup (string + line, i - line));
+                ++i;
+                line = i;
+                break;
+
+            case '\xe2': /* Unicode paragraph separator "\xe2\x80\xa9" */
+                if (i+2 < len && string[i+1] == '\x80' && string[i+2] == '\xa9')
+                {
+                    g_ptr_array_add (array, g_strndup (string + line, i - line));
+                    i += 3;
+                    line = i;
+                    break;
+                }
+                /* fallthrough */
+
+            default:
+                ++i;
+        }
+    }
+
+    g_ptr_array_add (array, g_strndup (string + line, i - line));
+
+    if (n_tokens)
+        *n_tokens = array->len;
+
+    g_ptr_array_add (array, NULL);
+    return (char**) g_ptr_array_free (array, FALSE);
 }
 
 
@@ -1764,8 +1827,8 @@ _moo_idle_add_full (gint           priority,
 
 
 guint
-_moo_idle_add (GSourceFunc function,
-               gpointer    data)
+moo_idle_add (GSourceFunc function,
+              gpointer    data)
 {
     return _moo_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
                                function, data, NULL);

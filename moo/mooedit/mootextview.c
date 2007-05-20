@@ -1457,8 +1457,8 @@ moo_text_view_move_cursor (gpointer      view,
     scroll->visual = offset_visual;
 
     if (in_idle)
-        _moo_idle_add ((GSourceFunc) do_move_cursor,
-                       scroll);
+        moo_idle_add ((GSourceFunc) do_move_cursor,
+                      scroll);
     else
         do_move_cursor (scroll);
 }

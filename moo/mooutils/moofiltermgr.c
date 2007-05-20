@@ -1135,5 +1135,5 @@ static void
 mgr_save (MooFilterMgr *mgr)
 {
     if (!mgr->priv->save_idle_id)
-        mgr->priv->save_idle_id = _moo_idle_add ((GSourceFunc) mgr_do_save, mgr);
+        mgr->priv->save_idle_id = moo_idle_add ((GSourceFunc) mgr_do_save, mgr);
 }

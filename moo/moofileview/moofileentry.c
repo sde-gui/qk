@@ -1165,7 +1165,7 @@ folder_contents_changed (MooFileEntryCompletion *cmpl)
 {
     if (!cmpl->priv->resize_popup_idle)
         cmpl->priv->resize_popup_idle =
-            _moo_idle_add ((GSourceFunc) resize_popup_idle, cmpl);
+            moo_idle_add ((GSourceFunc) resize_popup_idle, cmpl);
 }
 
 static void

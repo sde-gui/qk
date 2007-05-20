@@ -316,7 +316,7 @@ _moo_edit_line_mark_moved (MooEdit     *edit,
         !edit->priv->update_bookmarks_idle)
     {
         edit->priv->update_bookmarks_idle =
-                _moo_idle_add ((GSourceFunc) update_bookmarks, edit);
+                moo_idle_add ((GSourceFunc) update_bookmarks, edit);
         bookmarks_changed (edit);
     }
 }

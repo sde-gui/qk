@@ -97,6 +97,9 @@ void        _moo_menu_item_set_label        (GtkWidget      *menu_item,
 void        _moo_widget_set_tooltip         (GtkWidget      *widget,
                                              const char     *tip);
 
+char      **moo_strnsplit_lines             (const char     *string,
+                                             gssize          len,
+                                             guint          *n_tokens);
 char      **_moo_splitlines                 (const char     *string);
 char      **_moo_strv_reverse               (char          **str_array);
 
@@ -116,7 +119,7 @@ guint       _moo_idle_add_full              (gint            priority,
                                              GSourceFunc     function,
                                              gpointer        data,
                                              GDestroyNotify  notify);
-guint       _moo_idle_add                   (GSourceFunc     function,
+guint        moo_idle_add                   (GSourceFunc     function,
                                              gpointer        data);
 guint       _moo_timeout_add_full           (gint            priority,
                                              guint           interval,

@@ -907,7 +907,7 @@ file_changed (MooFolderImpl *impl,
     if (!strcmp (name, impl->path))
     {
         if (!impl->reload_idle)
-            impl->reload_idle = _moo_idle_add ((GSourceFunc) moo_folder_do_reload, impl);
+            impl->reload_idle = moo_idle_add ((GSourceFunc) moo_folder_do_reload, impl);
     }
 }
 

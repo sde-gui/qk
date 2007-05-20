@@ -3688,7 +3688,7 @@ file_added (MooFileView *fileview)
 {
     if (fileview->priv->select_file && !fileview->priv->select_file_idle)
         fileview->priv->select_file_idle =
-                _moo_idle_add ((GSourceFunc) do_select_name, fileview);
+                moo_idle_add ((GSourceFunc) do_select_name, fileview);
 }
 
 
