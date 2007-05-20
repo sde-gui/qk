@@ -451,7 +451,7 @@ ms_script_parse (const char *string)
     MSParser *parser;
     MSNode *script;
 
-    g_return_val_if_fail (string != NULL, FALSE);
+    g_return_val_if_fail (string != NULL, NULL);
 
     if (!string[0])
         return NULL;

@@ -361,8 +361,8 @@ _moo_file_system_make_path (MooFileSystem  *fs,
                             const char     *display_name,
                             GError        **error)
 {
-    g_return_val_if_fail (MOO_IS_FILE_SYSTEM (fs), FALSE);
-    g_return_val_if_fail (base_path != NULL && display_name != NULL, FALSE);
+    g_return_val_if_fail (MOO_IS_FILE_SYSTEM (fs), NULL);
+    g_return_val_if_fail (base_path != NULL && display_name != NULL, NULL);
     return MOO_FILE_SYSTEM_GET_CLASS(fs)->make_path (fs, base_path, display_name, error);
 }
 
@@ -373,8 +373,8 @@ _moo_file_system_normalize_path (MooFileSystem  *fs,
                                  gboolean        is_folder,
                                  GError        **error)
 {
-    g_return_val_if_fail (MOO_IS_FILE_SYSTEM (fs), FALSE);
-    g_return_val_if_fail (path != NULL, FALSE);
+    g_return_val_if_fail (MOO_IS_FILE_SYSTEM (fs), NULL);
+    g_return_val_if_fail (path != NULL, NULL);
     return MOO_FILE_SYSTEM_GET_CLASS(fs)->normalize_path (fs, path, is_folder, error);
 }
 

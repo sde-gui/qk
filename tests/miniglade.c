@@ -45,7 +45,7 @@ int main (int argc, char *argv[])
     GOptionEntry options[] = {
         { "parse-only", 0, 0, G_OPTION_ARG_NONE, &parse_only, "do not show widgets", NULL },
         { "root", 0, 0, G_OPTION_ARG_STRING, &root, "root widget to show", "ROOT" },
-        { NULL, 0, 0, 0, NULL, NULL, NULL },
+        { NULL, 0, 0, 0, NULL, NULL, NULL }
     };
 
     opt_ctx = g_option_context_new ("FILE - test glade parser");

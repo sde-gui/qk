@@ -414,8 +414,8 @@ moo_big_paned_find_pane (MooBigPaned    *paned,
     int i;
     MooPane *pane;
 
-    g_return_val_if_fail (MOO_IS_BIG_PANED (paned), FALSE);
-    g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
+    g_return_val_if_fail (MOO_IS_BIG_PANED (paned), NULL);
+    g_return_val_if_fail (GTK_IS_WIDGET (widget), NULL);
 
     if (child_paned)
         *child_paned = NULL;

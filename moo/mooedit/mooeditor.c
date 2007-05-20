@@ -1732,9 +1732,9 @@ moo_editor_open_file (MooEditor      *editor,
 {
     gboolean result;
 
-    g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
-    g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), FALSE);
-    g_return_val_if_fail (!parent || GTK_IS_WIDGET (parent), FALSE);
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+    g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), NULL);
+    g_return_val_if_fail (!parent || GTK_IS_WIDGET (parent), NULL);
 
     if (!filename)
     {

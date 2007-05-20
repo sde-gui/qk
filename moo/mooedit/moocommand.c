@@ -146,7 +146,7 @@ moo_command_factory_lookup (const char *name)
 {
     MooCommandFactory *factory = NULL;
 
-    g_return_val_if_fail (name != NULL, FALSE);
+    g_return_val_if_fail (name != NULL, NULL);
 
     if (registered_factories != NULL)
         factory = g_hash_table_lookup (registered_factories, name);

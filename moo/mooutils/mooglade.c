@@ -1544,10 +1544,10 @@ widget_props_new (MooMarkupNode  *node,
     GObjectClass *klass;
     WidgetProps *props;
 
-    g_return_val_if_fail (node != NULL, FALSE);
+    g_return_val_if_fail (node != NULL, NULL);
 
     klass = g_type_class_ref (type);
-    g_return_val_if_fail (klass != NULL, FALSE);
+    g_return_val_if_fail (klass != NULL, NULL);
 
     props = g_new0 (WidgetProps, 1);
     params = g_array_new (FALSE, FALSE, sizeof (GParameter));
@@ -1606,7 +1606,7 @@ error:
     g_array_free (params, FALSE);
     g_type_class_unref (klass);
     widget_props_free (props);
-    return FALSE;
+    return NULL;
 }
 
 
@@ -1622,10 +1622,10 @@ packing_props_new (MooMarkupNode  *node,
     if (!node && !container_type)
         return g_new0 (PackingProps, 1);
 
-    g_return_val_if_fail (node != NULL, FALSE);
+    g_return_val_if_fail (node != NULL, NULL);
 
     klass = g_type_class_ref (container_type);
-    g_return_val_if_fail (klass != NULL, FALSE);
+    g_return_val_if_fail (klass != NULL, NULL);
 
     props = g_new0 (PackingProps, 1);
     params = g_array_new (FALSE, FALSE, sizeof (GParameter));

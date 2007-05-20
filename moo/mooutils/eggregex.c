@@ -1226,8 +1226,8 @@ egg_regex_fetch_all (const EggRegex *regex,
   gchar **result;
   gint i;
 
-  g_return_val_if_fail (regex != NULL, FALSE);
-  g_return_val_if_fail (string != NULL, FALSE);
+  g_return_val_if_fail (regex != NULL, NULL);
+  g_return_val_if_fail (string != NULL, NULL);
 
   if (regex->match == NULL)
     return NULL;

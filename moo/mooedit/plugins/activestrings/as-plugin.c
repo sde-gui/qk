@@ -499,7 +499,7 @@ as_set_match (ASSet      *set,
     gboolean found = FALSE;
     guint i;
 
-    g_return_val_if_fail (text != NULL, -1);
+    g_return_val_if_fail (text != NULL, FALSE);
 
     reversed = g_utf8_strreverse (text, -1);
     egg_regex_clear (set->regex);

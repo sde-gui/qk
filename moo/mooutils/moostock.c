@@ -50,7 +50,7 @@ static GtkStockItem stock_items[] = {
 
 #if !GTK_CHECK_VERSION(2,10,0)
 static GtkStockItem stock_items_2_10[] = {
-    {(char*) GTK_STOCK_SELECT_ALL, (char*) N_("Select _All"), 0, 0, (char*) GETTEXT_PACKAGE},
+    {(char*) GTK_STOCK_SELECT_ALL, (char*) N_("Select _All"), 0, 0, (char*) GETTEXT_PACKAGE}
 };
 #endif
 

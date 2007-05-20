@@ -416,7 +416,7 @@ moo_file_watch_create_monitor (MooFileWatch   *watch,
                      MOO_FILE_WATCH_ERROR_CLOSED,
                      "MooFileWatch %d closed",
                      watch->id);
-        return FALSE;
+        return 0;
     }
 
     monitor = monitor_new (watch, filename, callback, data, notify);
