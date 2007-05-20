@@ -30,6 +30,8 @@
   <match what="stderr" pattern="(?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+):(\d+:)?\s*error\s*:.*" style="output-error"/>
   <match what="stderr" pattern="(?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+):.*" style="output-error"/>
   <match what="stderr" pattern="(?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+):(\d+:)?\s*warning\s*:.*" style="output-error"/>
+  <match what="stderr" pattern="(?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+).\d+-\d+:.*" style="output-error"/>
+  <match what="stderr" pattern="(?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+):.*" style="output-error"/>
 
   <match what="stderr" pattern="(?P&lt;file&gt;[^:]+)\((?P&lt;line&gt;\d+)\):(\d+:)?\s*(warning|remark).*" style="output-error"/>
 
