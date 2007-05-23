@@ -1508,6 +1508,30 @@ moo_app_open_uris (MooApp     *app,
 #endif /* MOO_BUILD_EDIT */
 }
 
+void
+moo_app_open_files (MooApp     *app,
+                    char      **files,
+                    guint32     line,
+                    guint32     stamp)
+{
+#ifdef MOO_BUILD_EDIT
+    char **p;
+
+    if (line > G_MAXINT)
+        line = 0;
+
+    for (p = files; p && *p; ++p)
+    {
+        if (p == files && line > 0)
+            moo_app_new_file (app, *p, line);
+        else
+            moo_app_new_file (app, *p, 0);
+    }
+
+    moo_editor_present (app->priv->editor, stamp);
+#endif /* MOO_BUILD_EDIT */
+}
+
 
 static MooAppCmdCode
 get_cmd_code (char cmd)

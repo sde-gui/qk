@@ -708,17 +708,7 @@ main (int argc, char *argv[])
     window = moo_editor_new_window (editor);
 
     if (files && *files)
-    {
-        char **p;
-
-        for (p = files; p && *p; ++p)
-        {
-            if (p == files && line > 0)
-                moo_editor_open_file_line (editor, *p, line - 1, window);
-            else
-                moo_editor_new_file (editor, window, NULL, *p, NULL);
-        }
-    }
+        moo_app_open_files (app, files, line, stamp);
 
     g_strfreev (files);
 
