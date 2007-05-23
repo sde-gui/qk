@@ -183,8 +183,7 @@ foo_canvas_item_set_property (GObject *gobject, guint param_id,
 	switch (param_id) {
 	case ITEM_PROP_PARENT:
 		if (item->parent != NULL) {
-		    g_warning ("Cannot set `parent' argument after item has "
-			       "already been constructed.");
+			foo_canvas_item_reparent (item, g_value_get_object (value));
 		} else if (g_value_get_object (value)) {
 			item->parent = FOO_CANVAS_ITEM (g_value_get_object (value));
 			item->canvas = item->parent->canvas;
