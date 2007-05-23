@@ -34,6 +34,145 @@ NEW_RECT (double, PyFloat_FromDouble, new_rect_d)
 NEW_PAIR (double, PyFloat_FromDouble, new_pair_d)
 NEW_PAIR (long, PyInt_FromLong, new_pair_l)
 
+static gboolean
+double_from_pyobject (PyObject *obj,
+                      double   *ret)
+{
+    PyObject *fl_obj;
+
+    if ((fl_obj = PyNumber_Float (obj)))
+    {
+        *ret = PyFloat_AsDouble (fl_obj);
+        Py_DECREF (fl_obj);
+    }
+
+    return !PyErr_Occurred ();
+}
+
+static gboolean
+double_pair_from_pyobject (PyObject *obj,
+                           double   *ret)
+{
+    guint i;
+    gboolean error = FALSE;
+
+    if (!PySequence_Check (obj) || PySequence_Size (obj) != 2)
+    {
+        PyErr_Format (PyExc_TypeError, "argument must be a tuple");
+        return FALSE;
+    }
+
+    for (i = 0; i < 2 && !error; ++i)
+    {
+        PyObject *elm;
+
+        if (!(elm = PySequence_ITEM (obj, i)))
+            return FALSE;
+
+        if (!double_from_pyobject (elm, &ret[i]))
+            error = TRUE;
+
+        Py_DECREF (elm);
+    }
+
+    return !error;
+}
+
+static FooCanvasPoints *
+points_from_pyobject (PyObject *obj)
+{
+    FooCanvasPoints *points;
+    int n_points, i;
+
+    if (!PySequence_Check (obj))
+        return_TypeError ("FooCanvasPoints.__init__: argument must be a sequence of points");
+
+    if ((n_points = PySequence_Size (obj)) < 0)
+        return NULL;
+
+    if (n_points == 0)
+        return foo_canvas_points_new (0);
+
+    points = foo_canvas_points_new (n_points);
+
+    for (i = 0; i < n_points; ++i)
+    {
+        PyObject *pt = PySequence_ITEM (obj, i);
+
+        if (!pt || !double_pair_from_pyobject (pt, &points->coords[2*i]))
+        {
+            Py_XDECREF (pt);
+            foo_canvas_points_free (points);
+            return NULL;
+        }
+    }
+
+    return points;
+}
+
+static gboolean
+arg_parse_two_points (PyObject   *args,
+                      double     *x1,
+                      double     *y1,
+                      double     *x2,
+                      double     *y2,
+                      const char *func_name)
+{
+    if (PyArg_ParseTuple (args, (char*) "(dddd)",
+                          x1, y1, x2, y2))
+        return TRUE;
+    PyErr_Clear ();
+    if (PyArg_ParseTuple (args, (char*) "dddd",
+                          x1, y1, x2, y2))
+        return TRUE;
+    PyErr_Clear ();
+    if (PyArg_ParseTuple (args, (char*) "(dd)(dd)",
+                          x1, y1, x2, y2))
+        return TRUE;
+    PyErr_Clear ();
+    if (PyArg_ParseTuple (args, (char*) "((dd)(dd))",
+                          x1, y1, x2, y2))
+        return TRUE;
+    PyErr_Clear ();
+    PyErr_Format (PyExc_TypeError, "%s: arguments must (a tuple of) four numbers",
+                  func_name);
+    return FALSE;
+}
+
+static gboolean
+arg_parse_point (PyObject   *args,
+                 double     *x,
+                 double     *y,
+                 const char *func_name)
+{
+    if (PyArg_ParseTuple (args, (char*) "(dd)", x, y))
+        return TRUE;
+    PyErr_Clear ();
+    if (PyArg_ParseTuple (args, (char*) "dd", x, y))
+        return TRUE;
+    PyErr_Clear ();
+    PyErr_Format (PyExc_TypeError, "%s: arguments must (a tuple of) two numbers",
+                  func_name);
+    return FALSE;
+}
+
+static gboolean
+arg_parse_point_i (PyObject   *args,
+                   int        *x,
+                   int        *y,
+                   const char *func_name)
+{
+    if (PyArg_ParseTuple (args, (char*) "(ii)", x, y))
+        return TRUE;
+    PyErr_Clear ();
+    if (PyArg_ParseTuple (args, (char*) "ii", x, y))
+        return TRUE;
+    PyErr_Clear ();
+    PyErr_Format (PyExc_TypeError, "%s: arguments must (a tuple of) two numbers",
+                  func_name);
+    return FALSE;
+}
+
 %%
 modulename moo.canvas
 %%
@@ -55,6 +194,19 @@ _wrap_foo_canvas_get_scroll_region (PyGObject *self)
     return new_rect_d (x1, y1, x2, y2);
 }
 %%
+override foo_canvas_set_scroll_region varargs
+static PyObject *
+_wrap_foo_canvas_set_scroll_region (PyGObject *self, PyObject *args)
+{
+    double x1, y1, x2, y2;
+
+    if (!arg_parse_two_points (args, &x1, &y1, &x2, &y2, "FooCanvas.set_scroll_region"))
+        return NULL;
+
+    foo_canvas_set_scroll_region (FOO_CANVAS (self->obj), x1, y1, x2, y2);
+    return_None;
+}
+%%
 override foo_canvas_get_scroll_offsets noargs
 static PyObject *
 _wrap_foo_canvas_get_scroll_offsets (PyGObject *self)
@@ -64,14 +216,28 @@ _wrap_foo_canvas_get_scroll_offsets (PyGObject *self)
     return new_pair_l (cx, cy);
 }
 %%
+override foo_canvas_get_item_at varargs
+static PyObject *
+_wrap_foo_canvas_get_item_at (PyGObject *self, PyObject *args)
+{
+    double x, y;
+    FooCanvasItem *item;
+
+    if (!arg_parse_point (args, &x, &y, "FooCanvas.get_item_at"))
+        return NULL;
+
+    item = foo_canvas_get_item_at (FOO_CANVAS (self->obj), x, y);
+
+    return pygobject_new (G_OBJECT (item));
+}
+%%
 override foo_canvas_w2c_rect_d varargs
 static PyObject *
 _wrap_foo_canvas_w2c_rect_d (PyGObject *self, PyObject *args)
 {
     double x1, y1, x2, y2;
 
-    if (!PyArg_ParseTuple (args, (char*) "(dddd):FooCanvas.w2c_rect_d",
-                           &x1, &y1, &x2, &y2))
+    if (!arg_parse_two_points (args, &x1, &y1, &x2, &y2, "FooCanvas.w2c_rect_d"))
         return NULL;
 
     foo_canvas_w2c_rect_d (FOO_CANVAS (self->obj), &x1, &y1, &x2, &y2);
@@ -85,7 +251,7 @@ _wrap_foo_canvas_w2c (PyGObject *self, PyObject *args)
     double wx, wy;
     int cx, cy;
 
-    if (!PyArg_ParseTuple (args, (char*) "(dd):FooCanvas.w2c", &wx, &wy))
+    if (!arg_parse_point (args, &wx, &wy, "FooCanvas.w2c"))
         return NULL;
 
     foo_canvas_w2c (FOO_CANVAS (self->obj), wx, wy, &cx, &cy);
@@ -99,7 +265,7 @@ _wrap_foo_canvas_w2c_d (PyGObject *self, PyObject *args)
     double wx, wy;
     double cx, cy;
 
-    if (!PyArg_ParseTuple (args, (char*) "(dd):FooCanvas.w2c_d", &wx, &wy))
+    if (!arg_parse_point (args, &wx, &wy, "FooCanvas.w2c_d"))
         return NULL;
 
     foo_canvas_w2c_d (FOO_CANVAS (self->obj), wx, wy, &cx, &cy);
@@ -113,7 +279,7 @@ _wrap_foo_canvas_c2w (PyGObject *self, PyObject *args)
     double wx, wy;
     int cx, cy;
 
-    if (!PyArg_ParseTuple (args, (char*) "(ii):FooCanvas.c2w", &cx, &cy))
+    if (!arg_parse_point_i (args, &cx, &cy, "FooCanvas.c2w"))
         return NULL;
 
     foo_canvas_c2w (FOO_CANVAS (self->obj), cx, cy, &wx, &wy);
@@ -142,7 +308,7 @@ _wrap_foo_canvas_item_w2i (PyGObject *self, PyObject *args)
 {
     double x, y;
 
-    if (!PyArg_ParseTuple (args, (char*) "(dd):FooCanvas.w2i", &x, &y))
+    if (!arg_parse_point (args, &x, &y, "FooCanvasItem.w2i"))
         return NULL;
 
     foo_canvas_item_w2i (FOO_CANVAS_ITEM (self->obj), &x, &y);
@@ -155,7 +321,7 @@ _wrap_foo_canvas_item_i2w (PyGObject *self, PyObject *args)
 {
     double x, y;
 
-    if (!PyArg_ParseTuple (args, (char*) "(dd):FooCanvas.i2w", &x, &y))
+    if (!arg_parse_point (args, &x, &y, "FooCanvasItem.i2w"))
         return NULL;
 
     foo_canvas_item_i2w (FOO_CANVAS_ITEM (self->obj), &x, &y);
@@ -168,7 +334,7 @@ _wrap_foo_canvas_item_get_bounds (PyGObject *self, PyObject *args)
 {
     double x1, y1, x2, y2;
 
-    if (!PyArg_ParseTuple (args, (char*) "(dddd):FooCanvas.get_bounds", &x1, &y1, &x2, &y2))
+    if (!arg_parse_two_points (args, &x1, &y1, &x2, &y2, "FooCanvasItem.get_bounds"))
         return NULL;
 
     foo_canvas_item_get_bounds (FOO_CANVAS_ITEM (self->obj), &x1, &y1, &x2, &y2);
@@ -259,32 +425,15 @@ _wrap_foo_canvas_points_new (PyGBoxed *self, PyObject *args)
 {
     FooCanvasPoints *points;
     PyObject *py_points;
-    int n_points, i;
 
     if (!PyArg_ParseTuple (args, (char*) "O:FooCanvasPoints.__init__", &py_points))
-        return -1;
-
-    if (!PyTuple_Check (py_points))
-        return_TypeErrorInt ("FooCanvasPoints.__init__: argument must be a tuple of pairs");
-
-    n_points = PyTuple_GET_SIZE (py_points);
-    points = foo_canvas_points_new (n_points);
-
-    for (i = 0; i < PyTuple_GET_SIZE (py_points); ++i)
     {
-        PyObject *pt = PyTuple_GET_ITEM (py_points, i);
-
-        if (!PyTuple_Check (pt) || PyTuple_GET_SIZE (pt) != 2 ||
-            !PyFloat_Check (PyTuple_GET_ITEM (pt, 0)) ||
-            !PyFloat_Check (PyTuple_GET_ITEM (pt, 1)))
-        {
-            foo_canvas_points_free (points);
-            return_TypeErrorInt ("FooCanvasPoints.__init__: argument must be a tuple of pairs");
-        }
-
-        points->coords[2*i] = PyFloat_AsDouble (PyTuple_GET_ITEM (pt, 0));
-        points->coords[2*i+1] = PyFloat_AsDouble (PyTuple_GET_ITEM (pt, 1));
+        PyErr_Clear ();
+        py_points = args;
     }
+
+    if (!(points = points_from_pyobject (py_points)))
+        return -1;
 
     self->gtype = FOO_TYPE_CANVAS_POINTS;
     self->free_on_dealloc = TRUE;

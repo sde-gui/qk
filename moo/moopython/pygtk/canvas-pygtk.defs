@@ -83,6 +83,18 @@
   (gtype-id "FOO_TYPE_CANVAS_POINTS")
 )
 
+(define-flags ItemFlags
+  (in-module "Foo")
+  (c-name "FooCanvasItemFlags")
+  (gtype-id "foo_canvas_item_flags_get_type ()")
+)
+
+(define-flags UpdateFlags
+  (in-module "Foo")
+  (c-name "FooCanvasUpdateFlags")
+  (gtype-id "foo_canvas_update_flags_get_type ()")
+)
+
 ;; From foo-canvas.h
 
 ; (define-function foo_canvas_item_new
@@ -134,7 +146,7 @@
   (parameters
     '("double" "i2w_dx")
     '("double" "i2w_dy")
-    '("int" "flags")
+    '("FooCanvasUpdateFlags" "flags")
   )
 )
 

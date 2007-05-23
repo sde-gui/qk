@@ -86,20 +86,20 @@ typedef struct _FooCanvasGroupClass FooCanvasGroupClass;
  */
 
 /* Object flags for items */
-enum {
+typedef enum {
 	FOO_CANVAS_ITEM_REALIZED         = 1 << 4,
 	FOO_CANVAS_ITEM_MAPPED           = 1 << 5,
 	FOO_CANVAS_ITEM_ALWAYS_REDRAW    = 1 << 6,
 	FOO_CANVAS_ITEM_VISIBLE          = 1 << 7,
 	FOO_CANVAS_ITEM_NEED_UPDATE      = 1 << 8,
 	FOO_CANVAS_ITEM_NEED_DEEP_UPDATE = 1 << 9
-};
+} FooCanvasItemFlags;
 
 /* Update flags for items */
-enum {
+typedef enum {
 	FOO_CANVAS_UPDATE_REQUESTED  = 1 << 0,
 	FOO_CANVAS_UPDATE_DEEP       = 1 << 1
-};
+} FooCanvasUpdateFlags;
 
 #define FOO_TYPE_CANVAS_ITEM            (foo_canvas_item_get_type ())
 #define FOO_CANVAS_ITEM(obj)            (GTK_CHECK_CAST ((obj), FOO_TYPE_CANVAS_ITEM, FooCanvasItem))
@@ -130,7 +130,7 @@ struct _FooCanvasItemClass {
 	 * queued state, and recompute and request its repaint area. The
 	 * update method also recomputes the bounding box of the item.
 	 */
-	void (* update) (FooCanvasItem *item, double i2w_dx, double i2w_dy, int flags);
+	void (* update) (FooCanvasItem *item, double i2w_dx, double i2w_dy, FooCanvasUpdateFlags flags);
 
 	/* Realize an item -- create GCs, etc. */
 	void (* realize) (FooCanvasItem *item);
@@ -178,6 +178,8 @@ struct _FooCanvasItemClass {
 
 /* Standard Gtk function */
 GType foo_canvas_item_get_type (void) G_GNUC_CONST;
+GType foo_canvas_item_flags_get_type (void) G_GNUC_CONST;
+GType foo_canvas_update_flags_get_type (void) G_GNUC_CONST;
 
 /* Create a canvas item using the standard Gtk argument mechanism.  The item is
  * automatically inserted at the top of the specified canvas group.  The last

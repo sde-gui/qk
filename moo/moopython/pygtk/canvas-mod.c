@@ -33,6 +33,7 @@ _moo_canvas_mod_init (void)
     if (!mod)
         return FALSE;
 
+    _moo_canvas_add_constants (mod, "FOO_CANVAS_");
     _moo_canvas_register_classes (PyModule_GetDict (mod));
 
     if (!PyErr_Occurred ())

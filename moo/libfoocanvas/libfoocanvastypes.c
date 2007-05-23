@@ -33,11 +33,53 @@ foo_canvas_points_get_type (void)
 {
     static GType type_canvas_points = 0;
 
-    if (!type_canvas_points)
+    if (G_UNLIKELY (!type_canvas_points))
 	type_canvas_points = g_boxed_type_register_static
 	    ("FooCanvasPoints", 
 	     (GBoxedCopyFunc) foo_canvas_points_ref,
 	     (GBoxedFreeFunc) foo_canvas_points_unref);
 
     return type_canvas_points;
+}
+
+GType 
+foo_canvas_item_flags_get_type (void)
+{
+    static GType type;
+
+    if (G_UNLIKELY (!type))
+    {
+	static const GFlagsValue values[] = {
+		{FOO_CANVAS_ITEM_REALIZED, "FOO_CANVAS_ITEM_REALIZED", "realized"},
+		{FOO_CANVAS_ITEM_MAPPED, "FOO_CANVAS_ITEM_MAPPED", "mapped"},
+		{FOO_CANVAS_ITEM_ALWAYS_REDRAW, "FOO_CANVAS_ITEM_ALWAYS_REDRAW", "always-redraw"},
+		{FOO_CANVAS_ITEM_VISIBLE, "FOO_CANVAS_ITEM_VISIBLE", "visible"},
+		{FOO_CANVAS_ITEM_NEED_UPDATE, "FOO_CANVAS_ITEM_NEED_UPDATE", "need-update"},
+		{FOO_CANVAS_ITEM_NEED_DEEP_UPDATE, "FOO_CANVAS_ITEM_NEED_DEEP_UPDATE", "need-deep-update"},
+		{0, NULL, NULL}
+	};
+
+	type = g_flags_register_static ("FooCanvasItemFlags", values);
+    }
+
+    return type;
+}
+
+GType 
+foo_canvas_update_flags_get_type (void)
+{
+    static GType type;
+
+    if (G_UNLIKELY (!type))
+    {
+	static const GFlagsValue values[] = {
+		{FOO_CANVAS_UPDATE_REQUESTED, "FOO_CANVAS_UPDATE_REQUESTED", "requested"},
+		{FOO_CANVAS_UPDATE_DEEP, "FOO_CANVAS_UPDATE_DEEP", "deep"},
+		{0, NULL, NULL}
+	};
+
+	type = g_flags_register_static ("FooCanvasUpdateFlags", values);
+    }
+
+    return type;
 }
