@@ -20,6 +20,7 @@
 #include <Python.h>
 #define NO_IMPORT_PYGOBJECT
 #include "pygobject.h"
+#include <glib/gprintf.h>
 
 
 static MooPyObject *
@@ -233,6 +234,43 @@ moo_python_api_dict_del_item (MooPyObject *dict,
 
 
 static void
+moo_python_api_set_error (int         type,
+                          const char *format,
+                          ...)
+{
+    PyObject *exception = NULL;
+    char *msg = NULL;
+    va_list args;
+
+    va_start (args, format);
+    g_vasprintf (&msg, format, args);
+    va_end (args);
+
+    g_return_if_fail (msg != NULL);
+
+    switch (type)
+    {
+        case MOO_PY_RUNTIME_ERROR:
+            exception = PyExc_RuntimeError;
+            break;
+        case MOO_PY_TYPE_ERROR:
+            exception = PyExc_TypeError;
+            break;
+        case MOO_PY_VALUE_ERROR:
+            exception = PyExc_ValueError;
+            break;
+        case MOO_PY_NOT_IMPLEMENTED_ERROR:
+            exception = PyExc_NotImplementedError;
+            break;
+    }
+
+    g_return_if_fail (exception != NULL);
+
+    PyErr_SetString (exception, (char*) msg);
+}
+
+
+static void
 moo_python_api_py_err_print (void)
 {
     PyErr_Print ();
@@ -439,6 +477,7 @@ moo_python_api_init (void)
         moo_python_api_dict_del_item,
         moo_python_api_import_exec,
 
+        moo_python_api_set_error,
         moo_python_api_py_err_print,
         moo_python_api_py_object_call_method,
         moo_python_api_py_object_call_function,

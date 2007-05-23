@@ -18,7 +18,7 @@
 
 G_BEGIN_DECLS
 
-#define MOO_PY_API_VERSION 93
+#define MOO_PY_API_VERSION 94
 
 typedef struct _MooPyAPI MooPyAPI;
 typedef struct _MooPyObject MooPyObject;
@@ -33,6 +33,13 @@ enum {
     MOO_PY_METH_O        = 1 << 3,
     MOO_PY_METH_CLASS    = 1 << 4,
     MOO_PY_METH_STATIC   = 1 << 5
+};
+
+enum {
+    MOO_PY_RUNTIME_ERROR,
+    MOO_PY_TYPE_ERROR,
+    MOO_PY_VALUE_ERROR,
+    MOO_PY_NOT_IMPLEMENTED_ERROR
 };
 
 struct _MooPyMethodDef {
@@ -79,6 +86,9 @@ struct _MooPyAPI {
     MooPyObject* (*import_exec)             (const char     *name,
                                              const char     *string);
 
+    void         (*set_error)               (int             type,
+                                             const char     *format,
+                                             ...);
     void         (*py_err_print)            (void);
     MooPyObject* (*py_object_call_method)   (MooPyObject    *object,
                                              const char     *method,
@@ -127,6 +137,8 @@ void         moo_Py_DECREF          (MooPyObject    *obj);
 #define moo_py_import_exec              moo_py_api->import_exec
 #define moo_py_object_from_gobject      moo_py_api->py_object_from_gobject
 #define moo_gobject_from_py_object      moo_py_api->gobject_from_py_object
+
+#define moo_py_set_error                moo_py_api->set_error
 
 #define moo_PyErr_Print                 moo_py_api->py_err_print
 #define moo_PyObject_CallMethod         moo_py_api->py_object_call_method
