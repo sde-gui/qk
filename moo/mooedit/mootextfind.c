@@ -574,8 +574,10 @@ moo_find_set_flags (MooFind        *find,
 
     gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "regex"),
                                   (flags & MOO_FIND_REGEX) ? TRUE : FALSE);
-    gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "repl_literal"),
-                                  (flags & MOO_FIND_REPL_LITERAL) ? TRUE : FALSE);
+    if ((flags & MOO_FIND_REPL_LITERAL) && (flags & MOO_FIND_REGEX))
+        gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "repl_literal"), TRUE);
+    else
+        gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "repl_literal"), FALSE);
     gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "whole_words"),
                                   (flags & MOO_FIND_WHOLE_WORDS) ? TRUE : FALSE);
     gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "from_cursor"),
