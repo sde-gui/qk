@@ -43,7 +43,6 @@
 #define BROKEN_NAME "<" "????" ">"
 
 
-static int  _moo_chdir  (const char *path);
 static int  _moo_rmdir  (const char *path);
 
 
@@ -408,71 +407,324 @@ moo_filename_from_locale (const char *file)
 }
 
 
+#if 0
+static int
+_moo_chdir (const char *path)
+{
+#ifdef __WIN32__
+    CCALL_1 (_chdir, _wchdir, path);
+#else
+    return chdir (path);
+#endif
+}
+
+// char *
+// _moo_normalize_file_path (const char *filename)
+// {
+//     char *freeme = NULL;
+//     char *working_dir, *basename, *dirname;
+//     char *real_filename = NULL;
+//
+//     g_return_val_if_fail (filename != NULL, NULL);
+//
+//     working_dir = g_get_current_dir ();
+//     g_return_val_if_fail (working_dir != NULL, g_strdup (filename));
+//
+//     if (!g_path_is_absolute (filename))
+//     {
+//         freeme = g_build_filename (working_dir, filename, NULL);
+//         filename = freeme;
+//     }
+//
+//     /* It's an error to call this function for a directory, so if
+//      * it's the case, just return what we got. */
+//     if (g_file_test (filename, G_FILE_TEST_IS_DIR) ||
+//         /* and this totally screws up dirname/basename */
+//         g_str_has_suffix (filename, G_DIR_SEPARATOR_S))
+//     {
+//         if (!freeme)
+//             freeme = g_strdup (filename);
+//         g_free (working_dir);
+//         return freeme;
+//     }
+//
+//     dirname = g_path_get_dirname (filename);
+//     basename = g_path_get_basename (filename);
+//     g_return_val_if_fail (dirname && basename, g_strdup (filename));
+//
+//     errno = 0;
+//
+//     if (_moo_chdir (dirname) != 0)
+//     {
+//         int err = errno;
+//         g_warning ("%s: %s", G_STRLOC, g_strerror (err));
+//     }
+//     else
+//     {
+//         char *real_dirname = g_get_current_dir ();
+//         real_filename = g_build_filename (real_dirname, basename, NULL);
+//         g_free (real_dirname);
+//
+//         errno = 0;
+//
+//         if (_moo_chdir (working_dir) != 0)
+//         {
+//             int err = errno;
+//             g_warning ("%s: %s", G_STRLOC, g_strerror (err));
+//         }
+//     }
+//
+//     if (!real_filename)
+//         real_filename = g_strdup (filename);
+//
+//     g_free (freeme);
+//     g_free (dirname);
+//     g_free (basename);
+//     g_free (working_dir);
+//
+//     return real_filename;
+// }
+#endif
+
+
+static char *
+normalize_path_string (const char *path)
+{
+    GPtrArray *comps;
+    gboolean first_slash;
+    char **pieces, **p;
+    char *normpath;
+
+    g_return_val_if_fail (path != NULL, NULL);
+
+    first_slash = (path[0] == G_DIR_SEPARATOR);
+
+    pieces = g_strsplit (path, G_DIR_SEPARATOR_S, 0);
+    g_return_val_if_fail (pieces != NULL, NULL);
+
+    comps = g_ptr_array_new ();
+
+    for (p = pieces; *p != NULL; ++p)
+    {
+        char *s = *p;
+        gboolean push = TRUE;
+        gboolean pop = FALSE;
+
+        if (!strcmp (s, "") || !strcmp (s, "."))
+        {
+            push = FALSE;
+        }
+        else if (!strcmp (s, ".."))
+        {
+            if (!comps->len && first_slash)
+            {
+                push = FALSE;
+            }
+            else if (comps->len)
+            {
+                push = FALSE;
+                pop = TRUE;
+            }
+        }
+
+        if (pop)
+        {
+            g_free (comps->pdata[comps->len - 1]);
+            g_ptr_array_remove_index (comps, comps->len - 1);
+        }
+
+        if (push)
+            g_ptr_array_add (comps, g_strdup (s));
+    }
+
+    g_ptr_array_add (comps, NULL);
+
+    if (comps->len == 1)
+    {
+        if (first_slash)
+            normpath = g_strdup (G_DIR_SEPARATOR_S);
+        else
+            normpath = g_strdup (".");
+    }
+    else
+    {
+        char *tmp = g_strjoinv (G_DIR_SEPARATOR_S, (char**) comps->pdata);
+
+        if (first_slash)
+        {
+            guint len = strlen (tmp);
+            normpath = g_new (char, len + 2);
+            memcpy (normpath + 1, tmp, len + 1);
+            normpath[0] = G_DIR_SEPARATOR;
+            g_free (tmp);
+        }
+        else
+        {
+            normpath = tmp;
+        }
+    }
+
+    g_strfreev (pieces);
+    g_strfreev ((char**) comps->pdata);
+    g_ptr_array_free (comps, FALSE);
+
+    return normpath;
+}
+
+
+#ifndef __WIN32__
+static char *
+normalize_full_path (const char *path,
+                     const char *is_folder)
+{
+    guint len;
+    char *normpath, *tmp;
+
+    g_return_val_if_fail (path != NULL, NULL);
+
+    tmp = normalize_path_string (path);
+
+    if (!is_folder)
+        return tmp;
+
+    len = strlen (tmp);
+    g_return_val_if_fail (len > 0, tmp);
+
+    if (tmp[len-1] != G_DIR_SEPARATOR)
+    {
+        normpath = g_new (char, len + 2);
+        memcpy (normpath, tmp, len);
+        normpath[len] = G_DIR_SEPARATOR;
+        normpath[len+1] = 0;
+        g_free (tmp);
+    }
+    else
+    {
+        g_assert (1 || len == 1);
+        normpath = tmp;
+    }
+
+    return normpath;
+}
+#else
+static void
+splitdrive (const char *fullpath,
+            char      **drive,
+            char      **path)
+{
+    if (fullpath[0] && fullpath[1] == ':')
+    {
+        *drive = g_strndup (fullpath, 2);
+        *path = g_strdup (fullpath + 2);
+    }
+    else
+    {
+        *drive = NULL;
+        *path = g_strdup (fullpath);
+    }
+}
+
+static char *
+normalize_full_path (const char *fullpath,
+                     gboolean    is_folder)
+{
+    char *drive, *path, *normpath;
+    guint slashes;
+
+    g_return_val_if_fail (fullpath != NULL, NULL);
+
+    splitdrive (fullpath, &drive, &path);
+    g_strdelimit (path, "/", '\\');
+
+    for (slashes = 0; path[slashes] == '\\'; ++slashes) ;
+
+    if (drive && path[0] != '\\')
+    {
+        char *tmp = path;
+        path = g_strdup_printf ("\\%s", path);
+        g_free (tmp);
+    }
+
+    if (!drive)
+    {
+        char *tmp = path;
+        drive = g_strndup (path, slashes);
+        path = g_strdup (tmp + slashes);
+        g_free (tmp);
+    }
+#if 0
+//     else if (path[0] == '\\')
+//     {
+//         char *tmp;
+//
+//         tmp = drive;
+//         drive = g_strdup_printf ("%s\\", drive);
+//         g_free (tmp);
+//
+//         tmp = path;
+//         path = g_strdup (path + slashes);
+//         g_free (tmp);
+//     }
+#endif
+
+    normpath = normalize_path_string (path);
+
+    if (!normpath[0] && !drive)
+    {
+        char *tmp = normpath;
+        normpath = g_strdup (".");
+        g_free (tmp);
+    }
+    else if (drive)
+    {
+        char *tmp = normpath;
+
+        if (normpath[0] == '\\')
+            normpath = g_strdup_printf ("%s%s", drive, normpath);
+        else
+            normpath = g_strdup_printf ("%s\\%s", drive, normpath);
+
+        g_free (tmp);
+    }
+
+    if (is_folder)
+    {
+        guint len = strlen (normpath);
+
+        if (!len || normpath[len -1] != '\\')
+        {
+            char *tmp = normpath;
+            normpath = g_strdup_printf ("%s\\", normpath);
+            g_free (tmp);
+        }
+    }
+
+    g_free (drive);
+    g_free (path);
+    return normpath;
+}
+#endif
+
 char *
 _moo_normalize_file_path (const char *filename)
 {
     char *freeme = NULL;
-    char *working_dir, *basename, *dirname;
-    char *real_filename = NULL;
+    char *norm_filename;
 
     g_return_val_if_fail (filename != NULL, NULL);
 
-    working_dir = g_get_current_dir ();
-    g_return_val_if_fail (working_dir != NULL, g_strdup (filename));
-
     if (!g_path_is_absolute (filename))
     {
+        char *working_dir = g_get_current_dir ();
+        g_return_val_if_fail (working_dir != NULL, g_strdup (filename));
         freeme = g_build_filename (working_dir, filename, NULL);
         filename = freeme;
     }
 
-    /* It's an error to call this function for a directory, so if
-     * it's the case, just return what we got. */
-    if (g_file_test (filename, G_FILE_TEST_IS_DIR) ||
-        /* and this totally screws up dirname/basename */
-        g_str_has_suffix (filename, G_DIR_SEPARATOR_S))
-    {
-        if (!freeme)
-            freeme = g_strdup (filename);
-        g_free (working_dir);
-        return freeme;
-    }
-
-    dirname = g_path_get_dirname (filename);
-    basename = g_path_get_basename (filename);
-    g_return_val_if_fail (dirname && basename, g_strdup (filename));
-
-    errno = 0;
-
-    if (_moo_chdir (dirname) != 0)
-    {
-        int err = errno;
-        g_warning ("%s: %s", G_STRLOC, g_strerror (err));
-    }
-    else
-    {
-        char *real_dirname = g_get_current_dir ();
-        real_filename = g_build_filename (real_dirname, basename, NULL);
-        g_free (real_dirname);
-
-        errno = 0;
-
-        if (_moo_chdir (working_dir) != 0)
-        {
-            int err = errno;
-            g_warning ("%s: %s", G_STRLOC, g_strerror (err));
-        }
-    }
-
-    if (!real_filename)
-        real_filename = g_strdup (filename);
+    norm_filename = normalize_full_path (filename, FALSE);
 
     g_free (freeme);
-    g_free (dirname);
-    g_free (basename);
-    g_free (working_dir);
-
-    return real_filename;
+    return norm_filename;
 }
 
 
@@ -548,17 +800,6 @@ _moo_rmdir (const char *path)
     CCALL_1 (rmdir, _wrmdir, path);
 #else
     return rmdir (path);
-#endif
-}
-
-
-static int
-_moo_chdir (const char *path)
-{
-#ifdef __WIN32__
-    CCALL_1 (_chdir, _wchdir, path);
-#else
-    return chdir (path);
 #endif
 }
 
