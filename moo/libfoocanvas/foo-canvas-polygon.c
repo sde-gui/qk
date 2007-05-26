@@ -83,8 +83,8 @@ static void foo_canvas_polygon_get_property (GObject              *object,
 					       GParamSpec           *pspec);
 
 static void   foo_canvas_polygon_update      (FooCanvasItem *item,
-						double i2w_dx, double i2w_dy,
-						int flags);
+					      double i2w_dx, double i2w_dy,
+					      FooCanvasUpdateFlags flags);
 static void   foo_canvas_polygon_realize     (FooCanvasItem *item);
 static void   foo_canvas_polygon_unrealize   (FooCanvasItem *item);
 static void   foo_canvas_polygon_draw        (FooCanvasItem *item, GdkDrawable *drawable,
@@ -634,8 +634,8 @@ foo_canvas_polygon_get_property (GObject              *object,
 
 static void
 foo_canvas_polygon_update (FooCanvasItem *item,
-			     double i2w_dx, double i2w_dy,
-			     int flags)
+			   double i2w_dx, double i2w_dy,
+			   FooCanvasUpdateFlags flags)
 {
 	FooCanvasPolygon *poly;
 	double x1, y1, x2, y2;

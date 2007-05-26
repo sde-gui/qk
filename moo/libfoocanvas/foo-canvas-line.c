@@ -94,8 +94,8 @@ static void foo_canvas_line_get_property (GObject              *object,
 					    GParamSpec           *pspec);
 
 static void   foo_canvas_line_update      (FooCanvasItem *item,
-					     double i2w_dx, double i2w_dy,
-					     int flags);
+					   double i2w_dx, double i2w_dy,
+					   FooCanvasUpdateFlags flags);
 static void   foo_canvas_line_realize     (FooCanvasItem *item);
 static void   foo_canvas_line_unrealize   (FooCanvasItem *item);
 static void   foo_canvas_line_draw        (FooCanvasItem *item, GdkDrawable *drawable,
@@ -919,7 +919,7 @@ foo_canvas_line_get_property (GObject              *object,
 }
 
 static void
-foo_canvas_line_update (FooCanvasItem *item, double i2w_dx, double i2w_dy, int flags)
+foo_canvas_line_update (FooCanvasItem *item, double i2w_dx, double i2w_dy, FooCanvasUpdateFlags flags)
 {
 	FooCanvasLine *line;
 	double x1, y1, x2, y2;

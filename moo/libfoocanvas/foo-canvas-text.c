@@ -113,9 +113,9 @@ static void foo_canvas_text_get_property (GObject            *object,
 					    GParamSpec         *pspec);
 
 static void   foo_canvas_text_update    (FooCanvasItem  *item,
-					   double            i2w_dx,
-					   double            i2w_dy,
-					   int               flags);
+					 double            i2w_dx,
+					 double            i2w_dy,
+					 FooCanvasUpdateFlags flags);
 static void   foo_canvas_text_realize   (FooCanvasItem  *item);
 static void   foo_canvas_text_unrealize (FooCanvasItem  *item);
 static void   foo_canvas_text_draw      (FooCanvasItem  *item,
@@ -1334,7 +1334,7 @@ foo_canvas_text_set_markup (FooCanvasText *textitem,
 
 /* Update handler for the text item */
 static void
-foo_canvas_text_update (FooCanvasItem *item, double i2w_dx, double i2w_dy, int flags)
+foo_canvas_text_update (FooCanvasItem *item, double i2w_dx, double i2w_dy, FooCanvasUpdateFlags flags)
 {
 	FooCanvasText *text;
 	double x1, y1, x2, y2;

@@ -60,15 +60,12 @@ static void foo_canvas_widget_set_property (GObject            *object,
 					      const GValue       *value,
 					      GParamSpec         *pspec);
 
-static void   foo_canvas_widget_update      (FooCanvasItem *item, double i2w_dx, double i2w_dy, int flags);
+static void   foo_canvas_widget_update      (FooCanvasItem *item, double i2w_dx, double i2w_dy, FooCanvasUpdateFlags flags);
 static double foo_canvas_widget_point       (FooCanvasItem *item, double x, double y,
-					       int cx, int cy, FooCanvasItem **actual_item);
+					     int cx, int cy, FooCanvasItem **actual_item);
 static void   foo_canvas_widget_translate   (FooCanvasItem *item, double dx, double dy);
 static void   foo_canvas_widget_bounds      (FooCanvasItem *item, double *x1, double *y1, double *x2, double *y2);
 
-static void foo_canvas_widget_draw (FooCanvasItem *item,
-				      GdkDrawable *drawable,
-				      GdkEventExpose   *event);
 static void foo_canvas_widget_map   (FooCanvasItem *item);
 static void foo_canvas_widget_unmap (FooCanvasItem *item);
 
@@ -138,7 +135,6 @@ foo_canvas_widget_class_init (FooCanvasWidgetClass *class)
 	item_class->point = foo_canvas_widget_point;
 	item_class->translate = foo_canvas_widget_translate;
 	item_class->bounds = foo_canvas_widget_bounds;
-	item_class->draw = foo_canvas_widget_draw;
 	item_class->map   = foo_canvas_widget_map;
 	item_class->unmap = foo_canvas_widget_unmap;
 }
@@ -252,7 +248,7 @@ recalc_bounds (FooCanvasWidget *witem)
 }
 
 static void
-do_destroy (GtkObject *object, gpointer data)
+do_destroy (G_GNUC_UNUSED GtkObject *object, gpointer data)
 {
 	FooCanvasWidget *witem;
 
@@ -414,7 +410,7 @@ foo_canvas_widget_get_property (GObject            *object,
 }
 
 static void
-foo_canvas_widget_update (FooCanvasItem *item, double i2w_dx, double i2w_dy, int flags)
+foo_canvas_widget_update (FooCanvasItem *item, double i2w_dx, double i2w_dy, FooCanvasUpdateFlags flags)
 {
 	FooCanvasWidget *witem;
 
@@ -442,20 +438,6 @@ foo_canvas_widget_update (FooCanvasItem *item, double i2w_dx, double i2w_dy, int
 }
 
 static void
-foo_canvas_widget_draw (FooCanvasItem *item,
-			  GdkDrawable *drawable,
-			  GdkEventExpose *event)
-{
-#if 0
-	FooCanvasWidget *witem;
-
-	witem = FOO_CANVAS_WIDGET (item);
-
-	if (witem->widget)
-		gtk_widget_queue_draw (witem->widget);
-#endif
-}
-static void
 foo_canvas_widget_map (FooCanvasItem *item)
 {
 	FooCanvasWidget *witem = FOO_CANVAS_WIDGET (item);
@@ -476,7 +458,8 @@ foo_canvas_widget_unmap (FooCanvasItem *item)
 
 static double
 foo_canvas_widget_point (FooCanvasItem *item, double x, double y,
-			   int cx, int cy, FooCanvasItem **actual_item)
+			 G_GNUC_UNUSED int cx, G_GNUC_UNUSED int cy, 
+			 FooCanvasItem **actual_item)
 {
 	FooCanvasWidget *witem;
 	double x1, y1, x2, y2;

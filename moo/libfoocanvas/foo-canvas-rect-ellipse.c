@@ -86,8 +86,8 @@ static void foo_canvas_re_realize     (FooCanvasItem *item);
 static void foo_canvas_re_unrealize   (FooCanvasItem *item);
 static void foo_canvas_re_bounds      (FooCanvasItem *item, double *x1, double *y1, double *x2, double *y2);
 static void foo_canvas_re_translate   (FooCanvasItem *item, double dx, double dy);
-static void foo_canvas_rect_update      (FooCanvasItem *item, double i2w_dx, double i2w_dy, int flags);
-static void foo_canvas_ellipse_update      (FooCanvasItem *item, double i2w_dx, double i2w_dy, int flags);
+static void foo_canvas_rect_update    (FooCanvasItem *item, double i2w_dx, double i2w_dy, FooCanvasUpdateFlags flags);
+static void foo_canvas_ellipse_update (FooCanvasItem *item, double i2w_dx, double i2w_dy, FooCanvasUpdateFlags flags);
 
 typedef struct {
   /*< public >*/
@@ -981,7 +981,9 @@ foo_canvas_rect_draw (FooCanvasItem *item, GdkDrawable *drawable, GdkEventExpose
 }
 
 static double
-foo_canvas_rect_point (FooCanvasItem *item, double x, double y, int cx, int cy, FooCanvasItem **actual_item)
+foo_canvas_rect_point (FooCanvasItem *item, double x, double y, 
+		       G_GNUC_UNUSED int cx, G_GNUC_UNUSED int cy,
+		       FooCanvasItem **actual_item)
 {
 	FooCanvasRE *re;
 	double x1, y1, x2, y2;
@@ -1083,7 +1085,7 @@ request_redraw_borders (FooCanvas *canvas,
 
 
 static void
-foo_canvas_rect_update (FooCanvasItem *item, double i2w_dx, double i2w_dy, gint flags)
+foo_canvas_rect_update (FooCanvasItem *item, double i2w_dx, double i2w_dy, FooCanvasUpdateFlags flags)
 {
 	FooCanvasRE *re;
 	double x1, y1, x2, y2;
@@ -1215,6 +1217,7 @@ foo_canvas_ellipse_draw (FooCanvasItem *item, GdkDrawable *drawable, GdkEventExp
 		if (re->fill_stipple)
 			foo_canvas_set_stipple_origin (item->canvas, re->fill_gc);
 
+		gdk_gc_set_clip_rectangle (re->fill_gc, &expose->area);
 		gdk_draw_arc (drawable,
 			      re->fill_gc,
 			      TRUE,
@@ -1230,6 +1233,7 @@ foo_canvas_ellipse_draw (FooCanvasItem *item, GdkDrawable *drawable, GdkEventExp
 		if (re->outline_stipple)
 			foo_canvas_set_stipple_origin (item->canvas, re->outline_gc);
 
+		gdk_gc_set_clip_rectangle (re->outline_gc, &expose->area);
 		gdk_draw_arc (drawable,
 			      re->outline_gc,
 			      FALSE,
@@ -1243,7 +1247,9 @@ foo_canvas_ellipse_draw (FooCanvasItem *item, GdkDrawable *drawable, GdkEventExp
 }
 
 static double
-foo_canvas_ellipse_point (FooCanvasItem *item, double x, double y, int cx, int cy, FooCanvasItem **actual_item)
+foo_canvas_ellipse_point (FooCanvasItem *item, double x, double y,
+			  G_GNUC_UNUSED int cx, G_GNUC_UNUSED int cy,
+			  FooCanvasItem **actual_item)
 {
 	FooCanvasRE *re;
 	double dx, dy;
@@ -1315,7 +1321,7 @@ foo_canvas_ellipse_point (FooCanvasItem *item, double x, double y, int cx, int c
 }
 
 static void
-foo_canvas_ellipse_update (FooCanvasItem *item, double i2w_dx, double i2w_dy, gint flags)
+foo_canvas_ellipse_update (FooCanvasItem *item, double i2w_dx, double i2w_dy, FooCanvasUpdateFlags flags)
 {
 	FooCanvasRE *re;
 	double x0, y0, x1, y1;

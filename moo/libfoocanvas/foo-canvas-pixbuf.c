@@ -102,7 +102,7 @@ static void foo_canvas_pixbuf_get_property (GObject *object,
 
 static void foo_canvas_pixbuf_update    (FooCanvasItem *item,
 					 double i2w_dx, double i2w_dy,
-					 int flags);
+					 FooCanvasUpdateFlags flags);
 static void foo_canvas_pixbuf_draw      (FooCanvasItem *item, GdkDrawable *drawable,
 					 GdkEventExpose *expose);
 static double foo_canvas_pixbuf_point   (FooCanvasItem *item, double x, double y, int cx, int cy,
@@ -613,8 +613,8 @@ compute_bounding_box (FooCanvasPixbuf *gcp,
 /* Update handler for the pixbuf canvas item */
 static void
 foo_canvas_pixbuf_update (FooCanvasItem *item,
-			    double i2w_dx, double i2w_dy,
-			    int flags)
+			  double i2w_dx, double i2w_dy,
+			  FooCanvasUpdateFlags flags)
 {
 	FooCanvasPixbuf *gcp;
 	PixbufPrivate *priv;
@@ -727,8 +727,9 @@ foo_canvas_pixbuf_draw (FooCanvasItem *item, GdkDrawable *drawable,
 
 /* Point handler for the pixbuf canvas item */
 static double
-foo_canvas_pixbuf_point (FooCanvasItem *item, double x, double y, int cx, int cy,
-			   FooCanvasItem **actual_item)
+foo_canvas_pixbuf_point (FooCanvasItem *item, double x, double y,
+			 G_GNUC_UNUSED int cx, G_GNUC_UNUSED int cy,
+			 FooCanvasItem **actual_item)
 {
 	FooCanvasPixbuf *gcp;
 	PixbufPrivate *priv;

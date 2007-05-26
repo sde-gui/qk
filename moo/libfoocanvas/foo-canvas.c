@@ -188,6 +188,7 @@ foo_canvas_item_set_property (GObject *gobject, guint param_id,
 			item->parent = FOO_CANVAS_ITEM (g_value_get_object (value));
 			item->canvas = item->parent->canvas;
 			item_post_create_setup (item);
+			g_object_notify (G_OBJECT (item), "parent");
 		}
 		break;
 	case ITEM_PROP_VISIBLE:
@@ -351,7 +352,10 @@ foo_canvas_item_unmap (FooCanvasItem *item)
 
 /* Update handler for canvas items */
 static void
-foo_canvas_item_update (FooCanvasItem *item, double i2w_dx, double i2w_dy, int flags)
+foo_canvas_item_update (FooCanvasItem *item,
+			G_GNUC_UNUSED double i2w_dx,
+			G_GNUC_UNUSED double i2w_dy,
+			G_GNUC_UNUSED FooCanvasUpdateFlags flags)
 {
 	GTK_OBJECT_UNSET_FLAGS (item, FOO_CANVAS_ITEM_NEED_UPDATE);
 	GTK_OBJECT_UNSET_FLAGS (item, FOO_CANVAS_ITEM_NEED_DEEP_UPDATE);
@@ -754,6 +758,7 @@ foo_canvas_item_show (FooCanvasItem *item)
 		}
 
 		redraw_and_repick_if_mapped (item);
+		g_object_notify (G_OBJECT (item), "visible");
 	}
 }
 
@@ -779,6 +784,7 @@ foo_canvas_item_hide (FooCanvasItem *item)
 			(* FOO_CANVAS_ITEM_GET_CLASS (item)->unmap) (item);
 
 		/* No need to unrealize when we just want to hide */
+		g_object_notify (G_OBJECT (item), "visible");
 	}
 }
 
@@ -961,6 +967,7 @@ foo_canvas_item_reparent (FooCanvasItem *item, FooCanvasGroup *new_group)
 
 	redraw_and_repick_if_mapped (item);
 
+	g_object_notify (G_OBJECT (item), "parent");
 	g_object_unref (GTK_OBJECT (item));
 }
 
@@ -1115,9 +1122,9 @@ static void foo_canvas_group_get_property(GObject               *object,
 static void foo_canvas_group_destroy     (GtkObject             *object);
 
 static void   foo_canvas_group_update      (FooCanvasItem *item,
-					      double           i2w_dx,
-					      double           i2w_dy,
-					      int              flags);
+					    double           i2w_dx,
+					    double           i2w_dy,
+					    FooCanvasUpdateFlags flags);
 static void   foo_canvas_group_unrealize   (FooCanvasItem *item);
 static void   foo_canvas_group_map         (FooCanvasItem *item);
 static void   foo_canvas_group_unmap       (FooCanvasItem *item);
@@ -1286,7 +1293,7 @@ foo_canvas_group_destroy (GtkObject *object)
 
 /* Update handler for canvas groups */
 static void
-foo_canvas_group_update (FooCanvasItem *item, double i2w_dx, double i2w_dy, int flags)
+foo_canvas_group_update (FooCanvasItem *item, double i2w_dx, double i2w_dy, FooCanvasUpdateFlags flags)
 {
 	FooCanvasGroup *group;
 	GList *list;
@@ -1668,33 +1675,7 @@ static guint canvas_signals[LAST_SIGNAL];
 G_DEFINE_TYPE (FooCanvas, foo_canvas, GTK_TYPE_LAYOUT)
 
 static void
-foo_canvas_get_property (GObject    *object, 
-			   guint       prop_id,
-			   GValue     *value,
-			   GParamSpec *pspec)
-{
-	switch (prop_id) {
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
-}
-
-static void
-foo_canvas_set_property (GObject      *object, 
-			   guint         prop_id,
-			   const GValue *value,
-			   GParamSpec   *pspec)
-{
-	switch (prop_id) {
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
-}
-
-static void
-foo_canvas_accessible_adjustment_changed (GtkAdjustment *adjustment,
+foo_canvas_accessible_adjustment_changed (G_GNUC_UNUSED GtkAdjustment *adjustment,
 					  gpointer       data)
 {
 	AtkObject *atk_obj;
@@ -1907,9 +1888,6 @@ foo_canvas_class_init (FooCanvasClass *klass)
 	gobject_class = (GObjectClass *)klass;
 	object_class  = (GtkObjectClass *) klass;
 	widget_class  = (GtkWidgetClass *) klass;
-
-	gobject_class->set_property = foo_canvas_set_property;
-	gobject_class->get_property = foo_canvas_get_property;
 
 	object_class->destroy = foo_canvas_destroy;
 
@@ -3454,22 +3432,6 @@ foo_canvas_set_stipple_origin (FooCanvas *canvas, GdkGC *gc)
 	gdk_gc_set_ts_origin (gc, 0, 0);
 }
 
-static gboolean
-boolean_handled_accumulator (GSignalInvocationHint *ihint,
-			     GValue                *return_accu,
-			     const GValue          *handler_return,
-			     gpointer               dummy)
-{
-	gboolean continue_emission;
-	gboolean signal_handled;
-	
-	signal_handled = g_value_get_boolean (handler_return);
-	g_value_set_boolean (return_accu, signal_handled);
-	continue_emission = !signal_handled;
-	
-	return continue_emission;
-}
-
 static guint
 foo_canvas_item_accessible_add_focus_handler (AtkComponent    *component,
                                               AtkFocusHandler handler)
@@ -3871,7 +3833,7 @@ foo_canvas_item_class_init (FooCanvasItemClass *class)
 			      G_TYPE_FROM_CLASS (class),
 			      G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (FooCanvasItemClass, event),
-			      boolean_handled_accumulator, NULL,
+			      g_signal_accumulator_true_handled, NULL,
 			      foo_canvas_marshal_BOOLEAN__BOXED,
 			      G_TYPE_BOOLEAN, 1,
 			      GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
