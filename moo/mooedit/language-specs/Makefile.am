@@ -48,10 +48,13 @@ langs1 =			\
 	boo.lang		\
 	check.sh		\
 	d.lang			\
+	docbook.lang		\
 	lua.lang		\
 	msil.lang		\
 	nemerle.lang		\
+	ocaml.lang		\
 	R.lang			\
+	spec.lang		\
 	vbnet.lang		\
 	verilog.lang		\
 	vhdl.lang

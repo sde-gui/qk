@@ -38,3 +38,35 @@ moo_gettext (const char *string)
     return string;
 #endif /* !ENABLE_NLS */
 }
+
+char *
+_moo_dgettext (const char *domain, const char *string)
+{
+#ifdef ENABLE_NLS
+    gchar *tmp;
+    const gchar *translated;
+
+    g_return_val_if_fail (string != NULL, NULL);
+
+    if (domain == NULL)
+        return g_strdup (moo_gettext (string));
+
+    translated = dgettext (domain, string);
+    g_print ("translated %s to %s in domain %s\n", string, translated, domain);
+
+    if (strcmp (translated, string) == 0)
+        return g_strdup (moo_gettext (string));
+
+    if (g_utf8_validate (translated, -1, NULL))
+        return g_strdup (translated);
+
+    tmp = g_locale_to_utf8 (translated, -1, NULL, NULL, NULL);
+
+    if (tmp == NULL)
+        return g_strdup (string);
+    else
+        return tmp;
+#else
+    return g_strdup (string);
+#endif /* !ENABLE_NLS */
+}

@@ -4,10 +4,13 @@
     <property name="mimetypes">text/x-java</property>
     <property name="globs">*.java</property>
     <property name="line-comment-start">//</property>
+    <property name="block-comment-start">/*</property>
+    <property name="block-comment-end">*/</property>
   </metadata>
 
   <styles>
     <style id="comment" _name="Comment" map-to="def:comment"/>
+    <style id="error" _name="Error" map-to="def:error"/>
     <style id="string" _name="String" map-to="def:string"/>
     <style id="keyword" _name="Keyword" map-to="def:keyword"/>
     <style id="decimal" _name="Decimal" map-to="def:decimal"/>
@@ -17,21 +20,36 @@
   </styles>
 
   <definitions>
+
     <context id="string" style-ref="string" end-at-line-end="true">
       <start>"</start>
       <end>"</end>
     </context>
+
     <context id="string-2" style-ref="string" end-at-line-end="true">
       <start>'</start>
       <end>'</end>
     </context>
+
     <context id="line-comment" style-ref="comment" end-at-line-end="true">
       <start>\/\/</start>
+      <include>
+        <context ref="def:in-line-comment"/>
+      </include>
     </context>
+
     <context id="block-comment" style-ref="comment">
       <start>\/\*</start>
       <end>\*\/</end>
+      <include>
+        <context ref="def:in-comment"/>
+      </include>
     </context>
+
+    <context id="close-comment-outside-comment" style-ref="error">
+      <match>\*\/(?!\*)</match>
+    </context>
+
     <context id="declarations" style-ref="keyword">
       <keyword>class</keyword>
       <keyword>enum</keyword>
@@ -45,6 +63,7 @@
       <keyword>volatile</keyword>
       <keyword>throws</keyword>
     </context>
+
     <context id="primitives" style-ref="data-type">
       <keyword>boolean</keyword>
       <keyword>byte</keyword>
@@ -55,6 +74,7 @@
       <keyword>long</keyword>
       <keyword>short</keyword>
     </context>
+
     <context id="flow" style-ref="keyword">
       <keyword>assert</keyword>
       <keyword>break</keyword>
@@ -74,6 +94,7 @@
       <keyword>try</keyword>
       <keyword>while</keyword>
     </context>
+
     <context id="modifiers" style-ref="keyword">
       <keyword>abstract</keyword>
       <keyword>final</keyword>
@@ -84,6 +105,7 @@
       <keyword>strictfp</keyword>
       <keyword>transient</keyword>
     </context>
+
     <context id="memory" style-ref="others">
       <keyword>false</keyword>
       <keyword>new</keyword>
@@ -93,19 +115,23 @@
       <keyword>true</keyword>
       <keyword>void</keyword>
     </context>
+
     <context id="future-reserved-words" style-ref="specials">
       <keyword>const</keyword>
       <keyword>goto</keyword>
     </context>
+
     <context id="numeric" style-ref="decimal">
       <match>(\b([0-9]+|0[xX][0-9a-fA-F]+)[Ll]?\b|\b(([0-9]+[Ee][-]?[0-9]+|([0-9]*\.[0-9]+|[0-9]+\.)([Ee][-]?[0-9]+)?)[fFdD]?|[0-9]+[FfDd]))</match>
     </context>
+
     <context id="java">
       <include>
         <context ref="string"/>
         <context ref="string-2"/>
         <context ref="line-comment"/>
         <context ref="block-comment"/>
+        <context ref="close-comment-outside-comment"/>
         <context ref="declarations"/>
         <context ref="primitives"/>
         <context ref="flow"/>
@@ -115,5 +141,6 @@
         <context ref="numeric"/>
       </include>
     </context>
+
   </definitions>
 </language>

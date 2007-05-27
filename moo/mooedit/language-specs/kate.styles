@@ -69,57 +69,7 @@
   <style name="scheme:parens"               use-style="def:keyword"/>
   <style name="scheme:any-function"         use-style="def:keyword"/>
 
-<!--  <style name="m4:quote"                    background="grey"/>-->
-
   <style name="sh:dollar"                   foreground="#008000" bold="true"/>
-<!--  <style name="sh:single-quote"             background="pink"/>
-  <style name="sh:double-quote"             background="lightgrey"/>
-  <style name="sh:escape"                   use-style="def:escape"/>
-  <style name="sh:dollar"                   background="green"/>
-  <style name="sh:backquote"                background="lightblue"/>
-  <style name="sh:operator"                 background="darkgrey" bold="true"/>
-  <style name="sh:compound-list"            background="darkgrey" bold="true"/>-->
 
   <style name="makefile:trailing-tab"       background="pink"/>
-<!--  <style name="makefile:assignment-rhs"  background="red"/>-->
-<!--  <style name="makefile:assignment-lhs"  background="blue"/>-->
-<!--  <style name="makefile:prereq"          background="yellow"/>-->
-<!--  <style name="makefile:command"         background="green"/>-->
-
-<!--  <style name="html:comment" background="grey"/>
-  <style name="html:tag" background="blue"/>
-  <style name="html:attrib-name" background="green"/>
-  <style name="html:attrib-value" background="yellow"/>
-  <style name="html:dtd" background="red"/>
-  <style name="html:entity" background="purple"/>
-  <style name="html:error" background="red" strikethrough="true"/>-->
-
-  <style name="test:red"       foreground="red"/>
-  <style name="test:orange"    foreground="orange"/>
-  <style name="test:yellow"    foreground="yellow"/>
-  <style name="test:green"     foreground="green"/>
-  <style name="test:blue"      foreground="blue"/>
-  <style name="test:violet"    foreground="violet"/>
-  <style name="test:_red"      background="red"/>
-  <style name="test:_orange"   background="orange"/>
-  <style name="test:_yellow"   background="yellow"/>
-  <style name="test:_green"    background="green"/>
-  <style name="test:_blue"     background="blue"/>
-  <style name="test:_violet"   background="violet"/>
-  <style name="test:red-bold"     foreground="red"     bold="true"/>
-  <style name="test:orange-bold"  foreground="orange"  bold="true"/>
-  <style name="test:yellow-bold"  foreground="yellow"  bold="true"/>
-  <style name="test:green-bold"   foreground="green"   bold="true"/>
-  <style name="test:blue-bold"    foreground="blue"    bold="true"/>
-  <style name="test:violet-bold"  foreground="violet"  bold="true"/>
-  <style name="test:_red-bold"    background="red"     bold="true"/>
-  <style name="test:_orange-bold" background="orange"  bold="true"/>
-  <style name="test:_yellow-bold" background="yellow"  bold="true"/>
-  <style name="test:_green-bold"  background="green"   bold="true"/>
-  <style name="test:_blue-bold"   background="blue"    bold="true"/>
-  <style name="test:_violet-bold" background="violet"  bold="true"/>
-  <style name="test:underline"    underline="true"/>
-  <style name="test:bold"         bold="true"/>
-  <style name="test:italic"       italic="true"/>
-
 </style-scheme>
