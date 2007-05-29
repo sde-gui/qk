@@ -52,7 +52,6 @@ _moo_dgettext (const char *domain, const char *string)
         return g_strdup (moo_gettext (string));
 
     translated = dgettext (domain, string);
-    g_print ("translated %s to %s in domain %s\n", string, translated, domain);
 
     if (strcmp (translated, string) == 0)
         return g_strdup (moo_gettext (string));
