@@ -54,7 +54,6 @@ moo/moopython/plugins/medit/runpython.py
 
 moo/mooscript/mooscript-yacc.c
 
-moo/mooutils/eggregex.c
 moo/mooutils/mooencodings.c
 moo/mooutils/mooencodings-data.h
 moo/mooutils/moofontsel.c

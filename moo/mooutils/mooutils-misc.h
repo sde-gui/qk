@@ -141,6 +141,11 @@ guint       _moo_io_add_watch_full          (GIOChannel     *channel,
                                              GDestroyNotify  notify);
 
 
+gboolean    _moo_regex_escape               (const char *string,
+                                             int         bytes,
+                                             GString    *dest);
+
+
 #if GLIB_CHECK_VERSION(2,10,0)
 #define _moo_new            g_slice_new
 #define _moo_new0           g_slice_new0

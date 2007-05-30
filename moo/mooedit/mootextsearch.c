@@ -13,18 +13,20 @@
 
 #include "mooedit/mootextsearch-private.h"
 #include "mooedit/gtksourceview/gtksourceview-api.h"
+#include <glib/gregex.h>
 #include <string.h>
 
 
 gboolean
 _moo_text_search_regex_forward (const GtkTextIter      *search_start,
                                 const GtkTextIter      *search_end,
-                                EggRegex               *regex,
+                                GRegex                 *regex,
                                 GtkTextIter            *match_start,
                                 GtkTextIter            *match_end,
                                 char                  **string,
                                 int                    *match_offset,
-                                int                    *match_len)
+                                int                    *match_len,
+                                GMatchInfo            **match_infop)
 {
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
@@ -48,21 +50,23 @@ _moo_text_search_regex_forward (const GtkTextIter      *search_start,
 
     while (TRUE)
     {
+        GMatchInfo *match_info = NULL;
+
         text = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
         text_start = g_utf8_offset_to_pointer (text, start_offset);
 
-        egg_regex_clear (regex);
-
-        if (egg_regex_match_full (regex, text, -1, text_start - text, 0, NULL))
+        if (g_regex_match_full (regex, text, -1, text_start - text, 0, &match_info, NULL))
         {
             int start_pos, end_pos;
-            egg_regex_fetch_pos (regex, 0, &start_pos, &end_pos);
+
+            g_match_info_fetch_pos (match_info, 0, &start_pos, &end_pos);
 
             *match_start = start;
             gtk_text_iter_forward_chars (match_start, g_utf8_pointer_to_offset (text, text + start_pos));
 
             if (search_end && gtk_text_iter_compare (match_start, search_end) > 0)
             {
+                g_match_info_free (match_info);
                 g_free (text);
                 return FALSE;
             }
@@ -80,8 +84,15 @@ _moo_text_search_regex_forward (const GtkTextIter      *search_start,
             if (match_len)
                 *match_len = end_pos - start_pos;
 
+            if (match_infop)
+                *match_infop = match_info;
+            else
+                g_match_info_free (match_info);
+
             return TRUE;
         }
+
+        g_match_info_free (match_info);
 
         start = end;
         start_offset = 0;
@@ -103,26 +114,38 @@ _moo_text_search_regex_forward (const GtkTextIter      *search_start,
 
 
 static gboolean
-find_last_match (EggRegex          *regex,
+find_last_match (GRegex            *regex,
                  const char        *text,
-                 EggRegexMatchFlags flags,
+                 GRegexMatchFlags   flags,
                  int               *start_pos,
-                 int               *end_pos)
+                 int               *end_pos,
+                 GMatchInfo       **match_infop)
 {
     int len, start;
+    GMatchInfo *match_info = NULL;
 
     *start_pos = -1;
-    egg_regex_clear (regex);
     len = strlen (text);
     start = 0;
 
-    while (egg_regex_match_full (regex, text, len, start, flags, NULL))
+    /* XXX a leak!!! */
+    while (g_regex_match_full (regex, text, len, start, flags, &match_info, NULL))
     {
-        egg_regex_fetch_pos (regex, 0, start_pos, end_pos);
+        g_match_info_fetch_pos (match_info, 0, start_pos, end_pos);
+
         start = *start_pos + 1;
+
         if (start >= len)
             break;
+
+        g_match_info_free (match_info);
+        match_info = NULL;
     }
+
+    if (*start_pos >= 0 && match_infop)
+        *match_infop = match_info;
+    else if (match_info)
+        g_match_info_free (match_info);
 
     return *start_pos >= 0;
 }
@@ -131,17 +154,18 @@ find_last_match (EggRegex          *regex,
 gboolean
 _moo_text_search_regex_backward (const GtkTextIter      *search_start,
                                  const GtkTextIter      *search_end,
-                                 EggRegex               *regex,
+                                 GRegex                 *regex,
                                  GtkTextIter            *match_start,
                                  GtkTextIter            *match_end,
                                  char                  **string,
                                  int                    *match_offset,
-                                 int                    *match_len)
+                                 int                    *match_len,
+                                 GMatchInfo            **match_info)
 {
     GtkTextIter slice_start, slice_end;
     GtkTextBuffer *buffer;
     char *text;
-    EggRegexMatchFlags flags;
+    GRegexMatchFlags flags;
 
     g_return_val_if_fail (search_start != NULL, FALSE);
     g_return_val_if_fail (match_start != NULL && match_end != NULL, FALSE);
@@ -154,7 +178,7 @@ _moo_text_search_regex_backward (const GtkTextIter      *search_start,
     flags = 0;
 
     if (!gtk_text_iter_ends_line (&slice_end))
-        flags |= EGG_REGEX_MATCH_NOTEOL;
+        flags |= G_REGEX_MATCH_NOTEOL;
 
     while (TRUE)
     {
@@ -162,13 +186,20 @@ _moo_text_search_regex_backward (const GtkTextIter      *search_start,
 
         text = gtk_text_buffer_get_slice (buffer, &slice_start, &slice_end, TRUE);
 
-        if (find_last_match (regex, text, flags, &start_pos, &end_pos))
+        if (find_last_match (regex, text, flags, &start_pos, &end_pos, match_info))
         {
             *match_start = slice_start;
             gtk_text_iter_forward_chars (match_start, g_utf8_pointer_to_offset (text, text + start_pos));
 
+            /* XXX how about not last match? */
             if (search_end && gtk_text_iter_compare (match_start, search_end) < 0)
             {
+                if (match_info && *match_info)
+                {
+                    g_match_info_free (*match_info);
+                    *match_info = NULL;
+                }
+
                 g_free (text);
                 return FALSE;
             }
@@ -205,29 +236,31 @@ _moo_text_search_regex_backward (const GtkTextIter      *search_start,
 }
 
 
-static EggRegex *
+static GRegex *
 get_regex (const char          *pattern,
            MooTextSearchFlags   flags,
            GError             **error)
 {
-    static EggRegex *saved_regex;
+    static GRegex *saved_regex;
     static char *saved_pattern;
     static MooTextSearchFlags saved_flags;
 
     if (!saved_pattern || strcmp (saved_pattern, pattern) || saved_flags != flags)
     {
-        EggRegexCompileFlags re_flags = 0;
+        GRegexCompileFlags re_flags = 0;
 
-        egg_regex_free (saved_regex);
+        g_regex_unref (saved_regex);
         g_free (saved_pattern);
 
         saved_pattern = g_strdup (pattern);
         saved_flags = flags;
 
         if (flags & MOO_TEXT_SEARCH_CASELESS)
-            re_flags |= EGG_REGEX_CASELESS;
+            re_flags |= G_REGEX_CASELESS;
 
-        saved_regex = egg_regex_new (saved_pattern, re_flags, 0, error);
+        saved_regex = g_regex_new (saved_pattern,
+                                   re_flags | G_REGEX_OPTIMIZE,
+                                   0, error);
 
         if (!saved_regex)
         {
@@ -235,8 +268,6 @@ get_regex (const char          *pattern,
             saved_pattern = NULL;
             return NULL;
         }
-
-        egg_regex_optimize (saved_regex, NULL);
     }
 
     return saved_regex;
@@ -282,7 +313,7 @@ moo_text_search_forward (const GtkTextIter      *start,
                          GtkTextIter            *match_end,
                          const GtkTextIter      *end)
 {
-    EggRegex *regex;
+    GRegex *regex;
     GError *error = NULL;
 
     g_return_val_if_fail (start != NULL, FALSE);
@@ -339,7 +370,7 @@ moo_text_search_forward (const GtkTextIter      *start,
 
     return _moo_text_search_regex_forward (start, end, regex,
                                            match_start, match_end,
-                                           NULL, NULL, NULL);
+                                           NULL, NULL, NULL, NULL);
 }
 
 
@@ -351,7 +382,7 @@ moo_text_search_backward (const GtkTextIter      *start,
                           GtkTextIter            *match_end,
                           const GtkTextIter      *end)
 {
-    EggRegex *regex;
+    GRegex *regex;
     GError *error = NULL;
 
     g_return_val_if_fail (start != NULL, FALSE);
@@ -396,14 +427,14 @@ moo_text_search_backward (const GtkTextIter      *start,
 
     return _moo_text_search_regex_backward (start, end, regex,
                                             match_start, match_end,
-                                            NULL, NULL, NULL);
+                                            NULL, NULL, NULL, NULL);
 }
 
 
 static int
 moo_text_replace_regex_all_real (GtkTextIter            *start,
                                  GtkTextIter            *end,
-                                 EggRegex               *regex,
+                                 GRegex                 *regex,
                                  const char             *replacement,
                                  gboolean                replacement_literal,
                                  MooTextReplaceFunc      func,
@@ -431,7 +462,7 @@ moo_text_replace_regex_all_real (GtkTextIter            *start,
     {
         gboolean has_references = FALSE;
 
-        if (!egg_regex_check_replacement (replacement, &has_references, &error))
+        if (!g_regex_check_replacement (replacement, &has_references, &error))
         {
             g_warning ("%s: %s", G_STRLOC, error->message);
             g_error_free (error);
@@ -440,7 +471,7 @@ moo_text_replace_regex_all_real (GtkTextIter            *start,
 
         if (!has_references)
         {
-            freeme = egg_regex_try_eval_replacement (regex, replacement, &error);
+            freeme = g_regex_eval_replacement (NULL, replacement, &error);
 
             if (error)
             {
@@ -483,9 +514,10 @@ moo_text_replace_regex_all_real (GtkTextIter            *start,
         const char *real_replacement;
         char *string;
         int match_len;
+        GMatchInfo *match_info = NULL;
 
         if (!_moo_text_search_regex_forward (start, end, regex, &match_start, &match_end,
-                                             &string, NULL, &match_len))
+                                             &string, NULL, &match_len, &match_info))
             goto out;
 
         if (!match_len)
@@ -494,6 +526,7 @@ moo_text_replace_regex_all_real (GtkTextIter            *start,
             {
                 was_zero_match = FALSE;
                 g_free (string);
+                g_match_info_free (match_info);
 
                 if (!gtk_text_iter_forward_char (start))
                     goto out;
@@ -515,13 +548,14 @@ moo_text_replace_regex_all_real (GtkTextIter            *start,
         }
         else
         {
-            freeme_here = egg_regex_eval_replacement (regex, string, replacement, &error);
+            freeme_here = g_regex_eval_replacement (match_info, replacement, &error);
             g_free (string);
 
             if (!freeme_here)
             {
                 g_warning ("%s: %s", G_STRLOC, error->message);
                 g_error_free (error);
+                g_match_info_free (match_info);
                 goto out;
             }
 
@@ -535,6 +569,7 @@ moo_text_replace_regex_all_real (GtkTextIter            *start,
             if (!response)
             {
                 g_free (freeme_here);
+                g_match_info_free (match_info);
                 goto out;
             }
         }
@@ -570,6 +605,7 @@ moo_text_replace_regex_all_real (GtkTextIter            *start,
             if (gtk_text_iter_is_end (start))
             {
                 g_free (freeme_here);
+                g_match_info_free (match_info);
                 goto out;
             }
 
@@ -580,6 +616,7 @@ moo_text_replace_regex_all_real (GtkTextIter            *start,
         if (end)
             gtk_text_buffer_get_iter_at_mark (buffer, end, end_mark);
 
+        g_match_info_free (match_info);
         g_free (freeme_here);
     }
 
@@ -596,7 +633,7 @@ out:
 int
 _moo_text_replace_regex_all (GtkTextIter            *start,
                              GtkTextIter            *end,
-                             EggRegex               *regex,
+                             GRegex                 *regex,
                              const char             *replacement,
                              gboolean                replacement_literal)
 {
@@ -612,7 +649,7 @@ _moo_text_replace_regex_all (GtkTextIter            *start,
 int
 _moo_text_replace_regex_all_interactive (GtkTextIter            *start,
                                          GtkTextIter            *end,
-                                         EggRegex               *regex,
+                                         GRegex                 *regex,
                                          const char             *replacement,
                                          gboolean                replacement_literal,
                                          MooTextReplaceFunc      func,
@@ -648,7 +685,7 @@ moo_text_replace_all (GtkTextIter            *start,
     if (flags & MOO_TEXT_SEARCH_REGEX)
     {
         GError *error = NULL;
-        EggRegex *regex = get_regex (text, flags, &error);
+        GRegex *regex = get_regex (text, flags, &error);
 
         if (error)
         {
@@ -726,7 +763,7 @@ _moo_text_replace_all_interactive (GtkTextIter            *start,
     if (flags & MOO_TEXT_SEARCH_REGEX)
     {
         GError *error = NULL;
-        EggRegex *regex = get_regex (text, flags, &error);
+        GRegex *regex = get_regex (text, flags, &error);
 
         if (error)
         {

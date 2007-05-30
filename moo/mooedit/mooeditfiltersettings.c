@@ -15,8 +15,8 @@
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooutils/mooprefs.h"
-#include "mooutils/eggregex.h"
 #include "mooutils/mooutils-misc.h"
+#include <glib/gregex.h>
 #include <string.h>
 
 
@@ -27,7 +27,7 @@
 
 
 typedef struct {
-    EggRegex *regex;
+    GRegex *regex;
     char *config;
 } FilterSetting;
 
@@ -48,7 +48,7 @@ filter_setting_free (FilterSetting *setting)
     if (setting)
     {
         g_free (setting->config);
-        egg_regex_free (setting->regex);
+        g_regex_unref (setting->regex);
         g_free (setting);
     }
 }
@@ -62,17 +62,13 @@ filter_setting_new (const char *filter,
 
     setting = g_new0 (FilterSetting, 1);
 
-    setting->regex = egg_regex_new (filter, EGG_REGEX_DOTALL, 0, NULL);
+    setting->regex = g_regex_new (filter, G_REGEX_DOTALL | G_REGEX_OPTIMIZE, 0, NULL);
     setting->config = g_strdup (config);
 
     if (!setting->regex || !setting->config)
     {
         filter_setting_free (setting);
         setting = NULL;
-    }
-    else
-    {
-        egg_regex_optimize (setting->regex, NULL);
     }
 
     return setting;
@@ -207,11 +203,11 @@ static const char *
 filter_setting_match (FilterSetting *setting,
                       const char    *filename)
 {
-    if (egg_regex_match (setting->regex, filename, 0))
+    if (g_regex_match (setting->regex, filename, 0, NULL))
     {
         if (0)
             _moo_message ("file '%s' matched pattern '%s': config '%s'",
-                          filename, egg_regex_get_pattern (setting->regex),
+                          filename, g_regex_get_pattern (setting->regex),
                           setting->config);
         return setting->config;
     }
@@ -301,7 +297,7 @@ _moo_edit_filter_settings_get_strings (void)
     for (l = settings_store->settings; l != NULL; l = l->next)
     {
         FilterSetting *setting = l->data;
-        strings = g_slist_prepend (strings, g_strdup (egg_regex_get_pattern (setting->regex)));
+        strings = g_slist_prepend (strings, g_strdup (g_regex_get_pattern (setting->regex)));
         strings = g_slist_prepend (strings, g_strdup (setting->config));
     }
 

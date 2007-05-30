@@ -28,6 +28,7 @@
 #include "mooutils/mooentry.h"
 #include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
+#include <glib/gregex.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
 
@@ -3940,7 +3941,7 @@ quick_search_find_from (MooTextView *view,
     if (view->priv->qs.flags & MOO_TEXT_SEARCH_REGEX)
     {
         GError *error = NULL;
-        EggRegex *re = egg_regex_new (text, 0, 0, &error);
+        GRegex *re = g_regex_new (text, 0, 0, &error);
 
         if (!re)
         {
@@ -3950,7 +3951,7 @@ quick_search_find_from (MooTextView *view,
             return;
         }
 
-        egg_regex_free (re);
+        g_regex_unref (re);
     }
 
     buffer = get_buffer (view);

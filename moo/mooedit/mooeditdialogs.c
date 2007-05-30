@@ -21,10 +21,10 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooglade.h"
-#include "mooutils/eggregex.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooencodings.h"
 #include <gtk/gtk.h>
+#include <glib/gregex.h>
 #include <string.h>
 
 
@@ -753,13 +753,14 @@ _moo_text_regex_error_dialog (GtkWidget  *parent,
 
     if (error)
     {
-        if (error->domain != EGG_REGEX_ERROR)
+        if (error->domain != G_REGEX_ERROR)
         {
             g_warning ("%s: unknown error domain", G_STRLOC);
         }
-        else if (error->code != EGG_REGEX_ERROR_COMPILE &&
-                 error->code != EGG_REGEX_ERROR_OPTIMIZE &&
-                 error->code != EGG_REGEX_ERROR_REPLACE)
+        else if (error->code != G_REGEX_ERROR_COMPILE &&
+                 error->code != G_REGEX_ERROR_OPTIMIZE &&
+                 error->code != G_REGEX_ERROR_REPLACE &&
+                 error->code != G_REGEX_ERROR_MATCH)
         {
             g_warning ("%s: unknown error code", G_STRLOC);
         }

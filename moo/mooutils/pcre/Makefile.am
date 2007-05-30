@@ -8,8 +8,10 @@ moopcre_sources =			\
 	pcre_get.c			\
 	pcre_globals.c			\
 	pcre.h				\
+	pcre-real.h			\
 	pcre_info.c			\
 	pcre_internal.h			\
+	pcre_newline.c			\
 	pcre_ord2utf8.c			\
 	pcre_study.c			\
 	pcre_tables.c			\
@@ -26,8 +28,8 @@ EXTRA_DIST =				\
 	ChangeLog			\
 	COPYING.pcre			\
 	NEWS				\
-	ucptable.c			\
-	pcre_printint.src
+	pcre_printint.src		\
+	ucptable.c
 
 noinst_LTLIBRARIES = libpcre.la
 libpcre_la_SOURCES = $(moopcre_sources)

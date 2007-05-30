@@ -14,10 +14,10 @@
 #include "config.h"
 #include "mooapp/moohtml.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/eggregex.h"
 #include "mooutils/mooutils-misc.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
+#include <glib/gregex.h>
 #include <string.h>
 #include <errno.h>
 
@@ -1218,29 +1218,32 @@ moo_html_parse_url (const char     *url,
                     char          **base,
                     char          **anchor)
 {
-    EggRegex *regex;
+    GRegex *regex;
+    GMatchInfo *match_info;
 
     g_return_val_if_fail (url != NULL, FALSE);
     g_return_val_if_fail (scheme && base && anchor, FALSE);
 
-    regex = egg_regex_new ("^([a-zA-Z]+://)?([^#]*)(#(.*))?$", 0, 0, NULL);
+    regex = g_regex_new ("^([a-zA-Z]+://)?([^#]*)(#(.*))?$", 0, 0, NULL);
     g_return_val_if_fail (regex != NULL, FALSE);
 
-    if (!egg_regex_match (regex, url, 0))
+    if (!g_regex_match (regex, url, 0, &match_info))
     {
-        egg_regex_free (regex);
+        g_match_info_free (match_info);
+        g_regex_unref (regex);
         return FALSE;
     }
 
-    *scheme = egg_regex_fetch (regex, 1, url);
-    *base = egg_regex_fetch (regex, 2, url);
-    *anchor = egg_regex_fetch (regex, 4, url);
+    *scheme = g_match_info_fetch (match_info, 1);
+    *base = g_match_info_fetch (match_info, 2);
+    *anchor = g_match_info_fetch (match_info, 4);
 
     if (!*scheme || !**scheme) {g_free (*scheme); *scheme = NULL;}
     if (!*base || !**base) {g_free (*base); *base = NULL;}
     if (!*anchor || !**anchor) {g_free (*anchor); *anchor = NULL;}
 
-    egg_regex_free (regex);
+    g_match_info_free (match_info);
+    g_regex_unref (regex);
     return TRUE;
 }
 

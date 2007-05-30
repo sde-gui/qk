@@ -205,7 +205,7 @@ append_escaped (GString    *pattern,
     if (len < 0)
         len = strlen (string);
 
-    if (!egg_regex_escape (string, len, pattern))
+    if (!_moo_regex_escape (string, len, pattern))
         g_string_append_len (pattern, string, len);
 }
 
@@ -397,7 +397,7 @@ as_set_new (ASStringInfo **strings,
         g_string_append_len (pattern, strings[i]->pattern, strings[i]->pattern_len);
     }
 
-    set->regex = egg_regex_new (pattern->str, EGG_REGEX_ANCHORED, 0, &error);
+    set->regex = g_regex_new (pattern->str, G_REGEX_ANCHORED | G_REGEX_OPTIMIZE, 0, &error);
 #if AS_DEBUG
     g_print ("pattern: %s\n", pattern->str);
 #endif
@@ -407,14 +407,6 @@ as_set_new (ASStringInfo **strings,
         g_critical ("%s: %s", G_STRLOC, error->message);
         g_error_free (error);
         goto error;
-    }
-
-    egg_regex_optimize (set->regex, &error);
-
-    if (error)
-    {
-        g_critical ("%s: %s", G_STRLOC, error->message);
-        g_error_free (error);
     }
 
     set->scripts = g_new0 (char*, n_strings);
@@ -452,7 +444,7 @@ as_set_new (ASStringInfo **strings,
         char name[32];
 
         g_snprintf (name, 32, "%d", i);
-        no = egg_regex_get_string_number (set->regex, name);
+        no = g_regex_get_string_number (set->regex, name);
         g_assert (no > 0);
 
         set->strings[i]->whole = no;
@@ -462,7 +454,7 @@ as_set_new (ASStringInfo **strings,
         for (j = 0; j < n_parens; ++j)
         {
             g_snprintf (name, 32, "%d_%d", i, j);
-            no = egg_regex_get_string_number (set->regex, name);
+            no = g_regex_get_string_number (set->regex, name);
             g_assert (no > 0);
             set->strings[i]->parens[n_parens - j - 1] = no;
         }
@@ -498,20 +490,20 @@ as_set_match (ASSet      *set,
     int start_pos, end_pos;
     gboolean found = FALSE;
     guint i;
+    GMatchInfo *match_info = NULL;
 
     g_return_val_if_fail (text != NULL, FALSE);
 
     reversed = g_utf8_strreverse (text, -1);
-    egg_regex_clear (set->regex);
 
-    if (!egg_regex_match (set->regex, reversed, 0))
+    if (!g_regex_match (set->regex, reversed, 0, &match_info))
         goto out;
 
     for (i = 0; i < set->n_strings; ++i)
     {
-        egg_regex_fetch_pos (set->regex,
-                             set->strings[i]->whole,
-                             &start_pos, &end_pos);
+        g_match_info_fetch_pos (match_info,
+                                set->strings[i]->whole,
+                                &start_pos, &end_pos);
 
         if (start_pos >= 0)
         {
@@ -536,9 +528,9 @@ as_set_match (ASSet      *set,
 
             for (j = 0; j < match->n_parens; ++j)
             {
-                egg_regex_fetch_pos (set->regex,
-                                     set->strings[i]->parens[j],
-                                     &start_pos, &end_pos);
+                g_match_info_fetch_pos (match_info,
+                                        set->strings[i]->parens[j],
+                                        &start_pos, &end_pos);
                 g_assert (start_pos >= 0);
                 g_assert (end_pos >= 0);
 
@@ -556,6 +548,8 @@ as_set_match (ASSet      *set,
     }
 
 out:
+    if (match_info)
+        g_match_info_free (match_info);
     g_free (reversed);
     return found;
 }
@@ -593,7 +587,7 @@ as_set_unref (ASSet *set)
 
         g_free (set->strings);
         g_free (set->scripts);
-        egg_regex_unref (set->regex);
+        g_regex_free (set->regex);
         g_free (set->last_chars);
         g_free (set);
     }

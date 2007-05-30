@@ -25,11 +25,12 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
+#include <glib/gregex.h>
 #include <glib/gprintf.h>
 
 
 static char *last_search;
-static EggRegex *last_regex;
+static GRegex *last_regex;
 static MooFindFlags last_search_flags;
 static MooHistoryList *search_history;
 static MooHistoryList *replace_history;
@@ -55,7 +56,7 @@ static void     moo_find_set_flags      (MooFind        *find,
 static MooFindFlags moo_find_get_flags  (MooFind        *find);
 /* returned string/regex must be freed/unrefed */
 static char    *moo_find_get_text       (MooFind        *find);
-static EggRegex *moo_find_get_regex     (MooFind        *find);
+static GRegex  *moo_find_get_regex      (MooFind        *find);
 static char    *moo_find_get_replacement (MooFind       *find);
 
 
@@ -238,7 +239,7 @@ moo_find_finalize (GObject *object)
     MooFind *find = MOO_FIND (object);
 
     g_object_unref (find->xml);
-    egg_regex_free (find->regex);
+    g_regex_unref (find->regex);
 
     G_OBJECT_CLASS(moo_find_parent_class)->finalize (object);
 }
@@ -452,7 +453,7 @@ moo_find_run (MooFind        *find,
     search_entry = moo_glade_xml_get_widget (find->xml, "search_entry");
     replace_entry = moo_glade_xml_get_widget (find->xml, "replace_entry");
 
-    egg_regex_free (find->regex);
+    g_regex_unref (find->regex);
     find->regex = NULL;
 
     while (TRUE)
@@ -476,14 +477,14 @@ moo_find_run (MooFind        *find,
 
         if (flags & MOO_FIND_REGEX)
         {
-            EggRegex *regex;
-            EggRegexCompileFlags re_flags = 0;
+            GRegex *regex;
+            GRegexCompileFlags re_flags = 0;
             GError *error = NULL;
 
             if (flags & MOO_FIND_CASELESS)
-                re_flags |= EGG_REGEX_CASELESS;
+                re_flags |= G_REGEX_CASELESS;
 
-            regex = egg_regex_new (search_for, re_flags, 0, &error);
+            regex = g_regex_new (search_for, re_flags | G_REGEX_OPTIMIZE, 0, &error);
 
             if (!regex)
             {
@@ -493,25 +494,17 @@ moo_find_run (MooFind        *find,
             }
 
             find->regex = regex;
-
-            egg_regex_optimize (regex, &error);
-
-            if (error)
-            {
-                g_warning ("%s", error->message);
-                g_error_free (error);
-            }
         }
 
         if (find->replace && !(flags & MOO_FIND_REPL_LITERAL))
         {
             GError *error = NULL;
 
-            if (!egg_regex_check_replacement (replace_with, NULL, &error))
+            if (!g_regex_check_replacement (replace_with, NULL, &error))
             {
                 _moo_text_regex_error_dialog (GTK_WIDGET (find), error);
                 g_error_free (error);
-                egg_regex_free (find->regex);
+                g_regex_unref (find->regex);
                 find->regex = NULL;
                 continue;
             }
@@ -521,8 +514,8 @@ moo_find_run (MooFind        *find,
         moo_prefs_set_flags (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_FLAGS), flags);
         g_free (last_search);
         last_search = g_strdup (search_for);
-        egg_regex_free (last_regex);
-        last_regex = egg_regex_copy (find->regex);
+        g_regex_unref (last_regex);
+        last_regex = find->regex ? g_regex_ref (find->regex) : NULL;
 
         moo_history_list_add (search_history, search_for);
 
@@ -602,11 +595,11 @@ moo_find_get_text (MooFind *find)
 }
 
 
-static EggRegex *
+static GRegex *
 moo_find_get_regex (MooFind *find)
 {
     g_return_val_if_fail (MOO_IS_FIND (find), NULL);
-    return egg_regex_copy (find->regex);
+    return g_regex_ref (find->regex);
 }
 
 
@@ -624,7 +617,7 @@ static gboolean
 do_find (const GtkTextIter *start,
          const GtkTextIter *end,
          MooFindFlags       flags,
-         EggRegex          *regex,
+         GRegex            *regex,
          const char        *text,
          GtkTextIter       *match_start,
          GtkTextIter       *match_end)
@@ -633,10 +626,10 @@ do_find (const GtkTextIter *start,
     {
         if (flags & MOO_FIND_BACKWARDS)
             return _moo_text_search_regex_backward (start, end, regex, match_start,
-                                                    match_end, NULL, NULL, NULL);
+                                                    match_end, NULL, NULL, NULL, NULL);
         else
             return _moo_text_search_regex_forward (start, end, regex, match_start,
-                                                   match_end, NULL, NULL, NULL);
+                                                   match_end, NULL, NULL, NULL, NULL);
     }
     else
     {
@@ -734,7 +727,7 @@ moo_text_view_run_find (GtkTextView    *view,
     GtkWidget *find;
     MooFindFlags flags;
     char *text;
-    EggRegex *regex;
+    GRegex *regex;
     GtkTextIter start, end;
     GtkTextIter match_start, match_end;
     GtkTextBuffer *buffer;
@@ -793,7 +786,7 @@ moo_text_view_run_find (GtkTextView    *view,
     }
 
     g_free (text);
-    egg_regex_free (regex);
+    g_regex_unref (regex);
 }
 
 
@@ -830,7 +823,7 @@ moo_text_view_run_find_current_word (GtkTextView    *view,
 
     g_free (last_search);
     last_search = search_term;
-    egg_regex_free (last_regex);
+    g_regex_unref (last_regex);
     last_regex = NULL;
     moo_history_list_add (search_history, search_term);
 
@@ -1058,7 +1051,7 @@ do_replace_silent (GtkTextIter       *start,
                    GtkTextIter       *end,
                    MooFindFlags       flags,
                    const char        *text,
-                   EggRegex          *regex,
+                   GRegex            *regex,
                    const char        *replacement)
 {
     MooTextSearchFlags search_flags = 0;
@@ -1100,7 +1093,7 @@ replaced_n_message (guint          n,
 static void
 run_replace_silent (GtkTextView   *view,
                     const char    *text,
-                    EggRegex      *regex,
+                    GRegex        *regex,
                     const char    *replacement,
                     MooFindFlags   flags,
                     MooFindMsgFunc msg_func,
@@ -1130,7 +1123,7 @@ run_replace_silent (GtkTextView   *view,
 
 static MooTextReplaceResponse
 replace_func (G_GNUC_UNUSED const char *text,
-              G_GNUC_UNUSED EggRegex *regex,
+              G_GNUC_UNUSED GRegex *regex,
               G_GNUC_UNUSED const char *replacement,
               const GtkTextIter  *to_replace_start,
               const GtkTextIter  *to_replace_end,
@@ -1177,7 +1170,7 @@ do_replace_interactive (GtkTextView       *view,
                         GtkTextIter       *end,
                         MooFindFlags       flags,
                         const char        *text,
-                        EggRegex          *regex,
+                        GRegex            *regex,
                         const char        *replacement,
                         int               *replaced)
 {
@@ -1216,7 +1209,7 @@ do_replace_interactive (GtkTextView       *view,
 static void
 run_replace_interactive (GtkTextView   *view,
                          const char    *text,
-                         EggRegex      *regex,
+                         GRegex        *regex,
                          const char    *replacement,
                          MooFindFlags   flags,
                          MooFindMsgFunc msg_func,
@@ -1256,7 +1249,7 @@ moo_text_view_run_replace (GtkTextView    *view,
     GtkWidget *find;
     MooFindFlags flags;
     char *text, *replacement;
-    EggRegex *regex;
+    GRegex *regex;
 
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
 
@@ -1284,7 +1277,7 @@ moo_text_view_run_replace (GtkTextView    *view,
 
     g_free (text);
     g_free (replacement);
-    egg_regex_free (regex);
+    g_regex_unref (regex);
 }
 
 

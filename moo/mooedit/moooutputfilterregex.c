@@ -17,10 +17,10 @@
 #include "mooedit/moocommand.h"
 #include "mooedit/mookeyfile.h"
 #include "mooedit/mooeditprefs.h"
-#include "mooutils/eggregex.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moomarkup.h"
+#include <glib/gregex.h>
 #include <string.h>
 
 #define FILTERS_FILE        "filters.xml"
@@ -64,13 +64,14 @@ struct FilterState {
     guint ref_count;
     PatternInfo **patterns;
     guint n_patterns;
-    EggRegex *re_out;
-    EggRegex *re_err;
+    GRegex *re_out;
+    GRegex *re_err;
 };
 
 struct PatternInfo {
     OutputType type;
-    EggRegex *re;
+    GRegex *re;
+    GMatchInfo *mi;
     char *style;
     GSList *actions;
     guint span;
@@ -244,7 +245,7 @@ parse_file_line (MooOutputFilterRegex *filter,
 
 static MooFileLineData *
 process_location (MooOutputFilterRegex *filter,
-                  EggRegex             *regex,
+                  PatternInfo          *pattern,
                   const char           *text,
                   MooLineView          *view,
                   int                   line_no)
@@ -252,9 +253,9 @@ process_location (MooOutputFilterRegex *filter,
     char *file, *line, *character;
     MooFileLineData *data = NULL;
 
-    file = egg_regex_fetch_named (regex, "file", text);
-    line = egg_regex_fetch_named (regex, "line", text);
-    character = egg_regex_fetch_named (regex, "character", text);
+    file = g_match_info_fetch_named (pattern->mi, "file");
+    line = g_match_info_fetch_named (pattern->mi, "line");
+    character = g_match_info_fetch_named (pattern->mi, "character");
 
     if (file || line)
     {
@@ -287,7 +288,8 @@ find_match (const char   *text,
             int          *end)
 {
     guint i;
-    EggRegex *re_all;
+    GRegex *re_all;
+    GMatchInfo *match_info = NULL;
 
     if (type == OUTPUT_STDOUT)
         re_all = state->re_out;
@@ -297,10 +299,14 @@ find_match (const char   *text,
     if (!re_all)
         return FALSE;
 
-    if (!egg_regex_match_full (re_all, text, -1, pos, 0, NULL))
+    if (!g_regex_match_full (re_all, text, -1, pos, 0, &match_info, NULL))
+    {
+        g_match_info_free (match_info);
         return FALSE;
+    }
 
-    egg_regex_fetch_pos (re_all, 0, start, end);
+    g_match_info_fetch_pos (match_info, 0, start, end);
+    g_match_info_free (match_info);
 
     for (i = 0; i < state->n_patterns; ++i)
     {
@@ -310,11 +316,18 @@ find_match (const char   *text,
         if (pattern->type != type && pattern->type != OUTPUT_ALL)
             continue;
 
-        if (!egg_regex_match_full (pattern->re, text, -1, *start,
-                                   EGG_REGEX_MATCH_ANCHORED, NULL))
+        if (pattern->mi)
+        {
+            g_match_info_free (pattern->mi);
+            pattern->mi = NULL;
+        }
+
+        if (!g_regex_match_full (pattern->re, text, -1, *start,
+                                 G_REGEX_MATCH_ANCHORED,
+                                 &pattern->mi, NULL))
             continue;
 
-        egg_regex_fetch_pos (pattern->re, 0, &p_start, &p_end);
+        g_match_info_fetch_pos (pattern->mi, 0, &p_start, &p_end);
 
         if (p_start == pos && p_end == pos)
         {
@@ -405,7 +418,7 @@ process_action (MooOutputFilterRegex *filter,
         case ACTION_PUSH:
             data = NULL;
             if (action->data)
-                data = egg_regex_fetch_named (pattern->re, action->data, text);
+                data = g_match_info_fetch_named (pattern->mi, action->data);
             if (!data)
             {
                 if (*list)
@@ -488,7 +501,7 @@ process_line (MooOutputFilterRegex  *filter,
                                  match_end - match_start,
                                  get_tag (view, type, pattern->style));
 
-        line_data = process_location (filter, pattern->re, text, view, line_no);
+        line_data = process_location (filter, pattern, text, view, line_no);
 
         for (l = pattern->actions; l != NULL; l = l->next)
             process_action (filter, pattern, l->data, text);
@@ -622,11 +635,11 @@ pattern_info_new (OutputType  type,
                   GSList     *actions,
                   guint       span)
 {
-    EggRegex *re;
+    GRegex *re;
     PatternInfo *info;
     GError *error = NULL;
 
-    re = egg_regex_new (pattern, 0, 0, &error);
+    re = g_regex_new (pattern, 0, 0, &error);
 
     if (!re)
     {
@@ -638,6 +651,7 @@ pattern_info_new (OutputType  type,
     info = g_new0 (PatternInfo, 1);
     info->type = type;
     info->re = re;
+    info->mi = NULL;
     info->style = g_strdup (style);
     info->actions = actions;
     info->span = span;
@@ -650,7 +664,9 @@ pattern_info_free (PatternInfo *pattern)
 {
     if (pattern)
     {
-        egg_regex_free (pattern->re);
+        if (pattern->mi)
+            g_match_info_free (pattern->mi);
+        g_regex_unref (pattern->re);
         g_slist_foreach (pattern->actions, (GFunc) action_info_free, NULL);
         g_slist_free (pattern->actions);
         g_free (pattern->style);
@@ -659,12 +675,12 @@ pattern_info_free (PatternInfo *pattern)
 }
 
 
-static EggRegex *
+static GRegex *
 get_re_all (GSList    *patterns,
             OutputType type)
 {
     GString *str = NULL;
-    EggRegex *regex;
+    GRegex *regex;
     GError *error = NULL;
 
     while (patterns)
@@ -682,13 +698,13 @@ get_re_all (GSList    *patterns,
         else
             g_string_append_c (str, '|');
 
-        g_string_append (str, egg_regex_get_pattern (pat->re));
+        g_string_append (str, g_regex_get_pattern (pat->re));
     }
 
     if (!str)
         return NULL;
 
-    regex = egg_regex_new (str->str, EGG_REGEX_DUPNAMES, 0, &error);
+    regex = g_regex_new (str->str, G_REGEX_DUPNAMES, 0, &error);
 
     if (!regex)
     {
@@ -730,9 +746,9 @@ filter_state_unref (FilterState *state)
             pattern_info_free (state->patterns[i]);
 
         if (state->re_out)
-            egg_regex_free (state->re_out);
+            g_regex_unref (state->re_out);
         if (state->re_err)
-            egg_regex_free (state->re_err);
+            g_regex_unref (state->re_err);
 
         g_free (state->patterns);
         g_free (state);

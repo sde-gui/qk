@@ -13,7 +13,6 @@
 
 #include "mooutils/mooprefs.h"
 #include "mooutils/moocompat.h"
-#include "mooutils/eggregex.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moomarkup.h"
 #include "mooutils/mooutils-fs.h"
@@ -23,6 +22,7 @@
 #include <string.h>
 #include <errno.h>
 #include <gobject/gvaluecollector.h>
+#include <glib/gregex.h>
 
 #define PREFS_TYPE_LAST 2
 #define PREFS_ROOT "Prefs"
@@ -710,7 +710,7 @@ item_set_default (PrefsItem      *item,
 
 typedef union {
     char        *key;
-    EggRegex    *regex;
+    GRegex    *regex;
 } Pattern;
 
 typedef struct {
@@ -797,7 +797,7 @@ closure_new (MooPrefs           *prefs,
              gpointer            data,
              GDestroyNotify      notify)
 {
-    EggRegex *regex;
+    GRegex *regex;
     Closure *closure;
     GError *err = NULL;
 
@@ -812,7 +812,7 @@ closure_new (MooPrefs           *prefs,
 
     switch (match_type) {
         case MOO_PREFS_MATCH_REGEX:
-            regex = egg_regex_new (pattern, EGG_REGEX_EXTENDED, 0, &err);
+            regex = g_regex_new (pattern, G_REGEX_EXTENDED | G_REGEX_OPTIMIZE, 0, &err);
 
             if (!regex)
             {
@@ -820,14 +820,6 @@ closure_new (MooPrefs           *prefs,
                 g_error_free (err);
                 g_free (closure);
                 return NULL;
-            }
-
-            egg_regex_optimize (regex, &err);
-
-            if (err)
-            {
-                g_warning ("%s: %s", G_STRLOC, err->message);
-                g_error_free (err);
             }
 
             closure->pattern.regex = regex;
@@ -879,8 +871,7 @@ closure_match (Closure            *closure,
                 return TRUE;
 
         case MOO_PREFS_MATCH_REGEX:
-            egg_regex_clear (closure->pattern.regex);
-            return egg_regex_match (closure->pattern.regex, key, 0);
+            return g_regex_match (closure->pattern.regex, key, 0, NULL);
 
         default:
             g_return_val_if_reached (FALSE);
@@ -904,7 +895,7 @@ pattern_free (Pattern             p,
     if (p.key)
     {
         if (type == MOO_PREFS_MATCH_REGEX)
-            egg_regex_free (p.regex);
+            g_regex_unref (p.regex);
         else
             g_free (p.key);
     }

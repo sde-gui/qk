@@ -27,7 +27,10 @@ if test x$MOO_OS_CYGWIN != xyes; then
   PKG_CHECK_MODULES($1,$2)
   _MOO_SPLIT_VERSION_PKG($1,$2)
   m4_foreach([num],[2,4,6,8,10,12,14],
-  [AM_CONDITIONAL($1[]_2_[]num, test $[]$1[]_MINOR_VERSION -ge num)])
+  [AM_CONDITIONAL($1[]_2_[]num, test $[]$1[]_MINOR_VERSION -ge num)
+   if test $[]$1[]_MINOR_VERSION -ge num; then
+     $1[]_2_[]num=yes
+   fi])
 else
   m4_foreach([num],[2,4,6,8,10,12,14],
   [AM_CONDITIONAL($1[]_2_[]num, false)])

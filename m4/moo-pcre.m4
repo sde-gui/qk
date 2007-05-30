@@ -4,22 +4,27 @@
 # needed for pcre
 #
 AC_DEFUN_ONCE([MOO_AC_PCRE],[
+AC_REQUIRE([MOO_PKG_CHECK_GTK_VERSIONS])
 
-AC_ARG_WITH([system-pcre],
-AC_HELP_STRING([--with-system-pcre], [whether to use system copy of pcre library (default = YES)]),[
+if test "x$GLIB_2_14" = xyes; then
+  MOO_BUILD_PCRE="no"
+else
+  AC_ARG_WITH([system-pcre],
+  AC_HELP_STRING([--with-system-pcre], [whether to use system copy of pcre library (default = YES)]),[
     if test x$with_system_pcre = "xyes"; then
-        MOO_BUILD_PCRE="no"
+      MOO_BUILD_PCRE="no"
     else
-        MOO_BUILD_PCRE="yes"
+      MOO_BUILD_PCRE="yes"
     fi
-],[
+  ],[
     MOO_BUILD_PCRE="auto"
-])
+  ])
+fi;
 
 if test x$MOO_BUILD_PCRE != xyes; then
     have_pcre="no"
 
-    PKG_CHECK_MODULES(PCRE, [libpcre >= 6.7], [
+    PKG_CHECK_MODULES(PCRE, [libpcre >= 7.0], [
         have_pcre="yes"
     ], [
         have_pcre="no"
@@ -104,7 +109,7 @@ if test x$MOO_BUILD_PCRE = xyes; then
     AC_TYPE_SIZE_T
     AC_CHECK_FUNCS(memmove strerror)
 
-    AC_DEFINE(NEWLINE, '\n', [The value of NEWLINE determines the newline character used in pcre])
+    AC_DEFINE(NEWLINE, -1, [The value of NEWLINE determines the newline character used in pcre])
 
     AC_DEFINE(LINK_SIZE, 2, [The value of LINK_SIZE determines the number of bytes used to store dnl
     links as offsets within the compiled regex. The default is 2, which allows for dnl

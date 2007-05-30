@@ -37,8 +37,6 @@ POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------------
 */
 
-/* This file has been modified to use glib instead of the internal table
- * in ucptable.c -- Marco Barisione */
 
 /* This module contains code for searching the table of Unicode character
 properties. */
@@ -47,11 +45,7 @@ properties. */
 
 #include "ucp.h"               /* Category definitions */
 #include "ucpinternal.h"       /* Internal table details */
-
-#include <glib.h>
-
-
-static guint16 script_for_unichar(gunichar ch);
+#include "ucptable.c"          /* The table itself */
 
 
 /* Table to translate from particular type value to the general value. */
@@ -87,14 +81,43 @@ Returns:      the character type category
 int
 _pcre_ucp_findprop(const unsigned int c, int *type_ptr, int *script_ptr)
 {
-/* Note that the Unicode types have the same values in glib and in
- * PCRE, so ucp_Ll == G_UNICODE_LOWERCASE_LETTER,
- * ucp_Zs == G_UNICODE_SPACE_SEPARATOR, and so on. */
-*type_ptr = g_unichar_type(c);
-*script_ptr = script_for_unichar(c);
+int bot = 0;
+int top = sizeof(ucp_table)/sizeof(cnode);
+int mid;
+
+/* The table is searched using a binary chop. You might think that using
+intermediate variables to hold some of the common expressions would speed
+things up, but tests with gcc 3.4.4 on Linux showed that, on the contrary, it
+makes things a lot slower. */
+
+for (;;)
+  {
+  if (top <= bot)
+    {
+    *type_ptr = ucp_Cn;
+    *script_ptr = ucp_Common;
+    return ucp_C;
+    }
+  mid = (bot + top) >> 1;
+  if (c == (ucp_table[mid].f0 & f0_charmask)) break;
+  if (c < (ucp_table[mid].f0 & f0_charmask)) top = mid;
+  else
+    {
+    if ((ucp_table[mid].f0 & f0_rangeflag) != 0 &&
+        c <= (ucp_table[mid].f0 & f0_charmask) +
+             (ucp_table[mid].f1 & f1_rangemask)) break;
+    bot = mid + 1;
+    }
+  }
+
+/* Found an entry in the table. Set the script and detailed type values, and
+return the general type. */
+
+*script_ptr = (ucp_table[mid].f0 & f0_scriptmask) >> f0_scriptshift;
+*type_ptr = (ucp_table[mid].f1 & f1_typemask) >> f1_typeshift;
+
 return ucp_gentype[*type_ptr];
 }
-
 
 
 
@@ -108,71 +131,45 @@ letter, return the other case. Otherwise, return -1.
 Arguments:
   c           the character value
 
-Returns:      the other case or -1 if none
+Returns:      the other case or NOTACHAR if none
 */
 
-int
-_pcre_ucp_othercase(const int c)
+unsigned int
+_pcre_ucp_othercase(const unsigned int c)
 {
-int other_case = -1;
+int bot = 0;
+int top = sizeof(ucp_table)/sizeof(cnode);
+int mid, offset;
 
-if (g_unichar_islower(c))
-  other_case = g_unichar_toupper(c);
-else if (g_unichar_isupper(c))
-  other_case = g_unichar_tolower(c);
+/* The table is searched using a binary chop. You might think that using
+intermediate variables to hold some of the common expressions would speed
+things up, but tests with gcc 3.4.4 on Linux showed that, on the contrary, it
+makes things a lot slower. */
 
-if (other_case == c)
-  other_case = -1;
+for (;;)
+  {
+  if (top <= bot) return -1;
+  mid = (bot + top) >> 1;
+  if (c == (ucp_table[mid].f0 & f0_charmask)) break;
+  if (c < (ucp_table[mid].f0 & f0_charmask)) top = mid;
+  else
+    {
+    if ((ucp_table[mid].f0 & f0_rangeflag) != 0 &&
+        c <= (ucp_table[mid].f0 & f0_charmask) +
+             (ucp_table[mid].f1 & f1_rangemask)) break;
+    bot = mid + 1;
+    }
+  }
 
-return other_case;
+/* Found an entry in the table. Return NOTACHAR for a range entry. Otherwise
+return the other case if there is one, else NOTACHAR. */
+
+if ((ucp_table[mid].f0 & f0_rangeflag) != 0) return NOTACHAR;
+
+offset = ucp_table[mid].f1 & f1_casemask;
+if ((offset & f1_caseneg) != 0) offset |= f1_caseneg;
+return (offset == 0)? NOTACHAR : c + offset;
 }
 
 
 /* End of pcre_ucp_searchfuncs.c */
-
-
-/* This code, copied from Pango, is used to get the script of a character.
- *
- * For more info see bug #348348 (http://bugzilla.gnome.org/show_bug.cgi?id=348348)
- * and http://mail.gnome.org/archives/gtk-devel-list/2006-July/msg00135.html
- *
- * Copyright (C) 2002 Red Hat Software
- */
-
-/* Tables for the scripts. */
-#include <ucptable.c>
-
-#define SCRIPT_TABLE_MIDPOINT (G_N_ELEMENTS (script_table) / 2)
-
-static inline guint16
-script_for_unichar_bsearch (gunichar ch)
-{
-  int lower = 0;
-  int upper = G_N_ELEMENTS (script_table) - 1;
-  static int saved_mid = SCRIPT_TABLE_MIDPOINT;
-  int mid = saved_mid;
-
-  do
-    {
-      if (ch < script_table[mid].start)
-	upper = mid - 1;
-      else if (ch >= script_table[mid].start + script_table[mid].chars)
-	lower = mid + 1;
-      else
-	return script_table[saved_mid = mid].script;
-
-      mid = (lower + upper) / 2;
-    }
-  while (lower <= upper);
-
-  return ucp_Common;
-}
-
-static guint16
-script_for_unichar (gunichar ch)
-{
-  if (ch < EASY_SCRIPTS_RANGE)
-    return script_easy_table[ch];
-  else
-    return script_for_unichar_bsearch (ch);
-}

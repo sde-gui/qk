@@ -1,4 +1,4 @@
-DIST_SUBDIRS = pcre xdgmime
+DIST_SUBDIRS = pcre xdgmime newgtk
 
 subdirs =
 libs =
@@ -9,6 +9,10 @@ endif
 if MOO_USE_XDGMIME
 subdirs += xdgmime
 libs += xdgmime/libxdgmime.la
+endif
+if !GLIB_2_14
+subdirs += newgtk
+libs += newgtk/glib/libgregex.la
 endif
 SUBDIRS = $(subdirs) .
 
@@ -64,8 +68,6 @@ mooutils_include_headers =		\
 
 mooutils_sources =			\
 	$(mooutils_include_headers)	\
-	eggregex.h			\
-	eggregex.c			\
 	mooaccel.h			\
 	mooaccel.c			\
 	mooaccelbutton-glade.h		\
@@ -239,14 +241,9 @@ libmooutils_la_SOURCES = $(mooutils_sources)
 nodist_libmooutils_la_SOURCES =	$(nodist_mooutils_sources)
 libmooutils_la_LIBADD = $(libs)
 
-if MOO_BUILD_PCRE
-pcre_include = -I$(srcdir)/pcre
-endif
-
 AM_CFLAGS =			\
 	-I$(top_builddir)	\
 	-I..			\
-	$(pcre_include)		\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
 	-DMOO_LOCALE_DIR=\"$(datadir)/locale\"

@@ -1,7 +1,7 @@
 /*
  *   mootextfind.h
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 #include <gtk/gtkdialog.h>
 #include "mooutils/moohistorylist.h"
 #include "mooutils/mooglade.h"
-#include "mooutils/eggregex.h"
+#include <glib/gregex.h>
 
 G_BEGIN_DECLS
 
@@ -50,7 +50,7 @@ struct _MooFind
 {
     GtkDialog base;
     MooGladeXML *xml;
-    EggRegex *regex;
+    GRegex *regex;
     guint replace : 1;
 };
 

@@ -965,12 +965,12 @@ _moo_rename (const char *old_name,
 #include <fnmatch.h>
 #else
 #define MOO_GLOB_REGEX
-#include <mooutils/eggregex.h>
+#include <glib/gregex.h>
 #endif
 
 typedef struct _MooGlob {
 #ifdef MOO_GLOB_REGEX
-    EggRegex *re;
+    GRegex *re;
 #else
     char *pattern;
 #endif
@@ -1021,11 +1021,11 @@ glob_to_re (const char *pattern)
                 if (p[1] == '^')
                 {
                     g_string_append_c (string, '^');
-                    escaped = egg_regex_escape_string (p + 2, bracket - p - 2);
+                    escaped = g_regex_escape_string (p + 2, bracket - p - 2);
                 }
                 else
                 {
-                    escaped = egg_regex_escape_string (p + 1, bracket - p - 1);
+                    escaped = g_regex_escape_string (p + 1, bracket - p - 1);
                 }
                 g_string_append (string, escaped);
                 g_free (escaped);
@@ -1076,30 +1076,32 @@ static MooGlob *
 _moo_glob_new (const char *pattern)
 {
     MooGlob *gl;
-    EggRegex *re;
+    GRegex *re;
     char *re_pattern;
-    EggRegexCompileFlags flags = 0;
+    GRegexCompileFlags flags = 0;
     GError *error = NULL;
 
     g_return_val_if_fail (pattern != NULL, NULL);
 
 #ifdef __WIN32__
-    flags = EGG_REGEX_CASELESS;
+    flags = G_REGEX_CASELESS;
 #endif
 
     if (!(re_pattern = glob_to_re (pattern)))
         return NULL;
 
-    re = egg_regex_new (re_pattern, flags, 0, &error);
+    re = g_regex_new (re_pattern, flags, 0, &error);
 
     g_free (re_pattern);
 
-    if (!re)
+    if (error)
     {
         g_warning ("%s: %s", G_STRLOC, error->message);
         g_error_free (error);
-        return NULL;
     }
+
+    if (!re)
+        return NULL;
 
     gl = g_new0 (MooGlob, 1);
     gl->re = re;
@@ -1116,7 +1118,7 @@ _moo_glob_match (MooGlob    *glob,
     g_return_val_if_fail (filename_utf8 != NULL, FALSE);
     g_return_val_if_fail (g_utf8_validate (filename_utf8, -1, NULL), FALSE);
 
-    return egg_regex_match (glob->re, filename_utf8, 0);
+    return g_regex_match (glob->re, filename_utf8, 0, NULL);
 }
 #endif
 
@@ -1127,7 +1129,7 @@ _moo_glob_free (MooGlob *glob)
     if (glob)
     {
 #ifdef MOO_GLOB_REGEX
-        egg_regex_free (glob->re);
+        g_regex_unref (glob->re);
 #else
         g_free (glob->pattern);
 #endif

@@ -2,13 +2,20 @@
 *      Perl-Compatible Regular Expressions       *
 *************************************************/
 
-/* This file is automatically written by the dftables auxiliary
-program. If you edit it by hand, you might like to edit the Makefile to
+/* This file is automatically written by the dftables auxiliary 
+program. If you edit it by hand, you might like to edit the Makefile to 
 prevent its ever being regenerated.
 
 This file contains the default tables for characters with codes less than
 128 (ASCII characters). These tables are used when no external tables are
-passed to PCRE. */
+passed to PCRE.
+
+The following #include is present because without it gcc 4.x may remove
+the array definition from the final binary if PCRE is built into a static
+library and dead code stripping is activated. This leads to link errors.
+Pulling in the header ensures that the array gets flagged as "someone
+outside this compilation unit might reference this" and so it will always
+be supplied to the linker. */
 
 #include "pcre_internal.h"
 
@@ -160,7 +167,7 @@ print, punct, and cntrl. Other classes are built from combinations. */
   0x00,0x1a,0x1a,0x1a,0x1a,0x1a,0x1a,0x12, /*  @ - G  */
   0x12,0x12,0x12,0x12,0x12,0x12,0x12,0x12, /*  H - O  */
   0x12,0x12,0x12,0x12,0x12,0x12,0x12,0x12, /*  P - W  */
-  0x12,0x12,0x12,0x80,0x00,0x00,0x80,0x10, /*  X - _  */
+  0x12,0x12,0x12,0x80,0x80,0x00,0x80,0x10, /*  X - _  */
   0x00,0x1a,0x1a,0x1a,0x1a,0x1a,0x1a,0x12, /*  ` - g  */
   0x12,0x12,0x12,0x12,0x12,0x12,0x12,0x12, /*  h - o  */
   0x12,0x12,0x12,0x12,0x12,0x12,0x12,0x12, /*  p - w  */

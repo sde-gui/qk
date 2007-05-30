@@ -1,7 +1,7 @@
 /*
  *   mooeditaction.c
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 #include "mooedit/mooeditaction.h"
 #include "mooedit/mooeditaction-factory.h"
 #include "mooedit/mooedit-private.h"
-#include "mooutils/eggregex.h"
+#include <glib/gregex.h>
 #include <string.h>
 
 
@@ -29,11 +29,11 @@ typedef enum {
 struct _MooEditActionPrivate {
     MooEdit *doc;
     GSList *langs;
-    EggRegex *filters[N_FILTERS];
+    GRegex *filters[N_FILTERS];
 };
 
 typedef struct {
-    EggRegex *regex;
+    GRegex *regex;
     guint use_count;
 } RegexRef;
 
@@ -54,8 +54,8 @@ enum {
 };
 
 
-static EggRegex *get_filter_regex   (const char *pattern);
-static void      unuse_filter_regex (EggRegex   *regex);
+static GRegex   *get_filter_regex   (const char *pattern);
+static void      unuse_filter_regex (GRegex     *regex);
 
 static gboolean moo_edit_action_check_visible   (MooEditAction  *action);
 static gboolean moo_edit_action_check_sensitive (MooEditAction  *action);
@@ -85,7 +85,7 @@ moo_edit_action_get_filter (MooEditAction *action,
 {
     g_assert (type < N_FILTERS);
     return action->priv->filters[type] ?
-            egg_regex_get_pattern (action->priv->filters[type]) : NULL;
+            g_regex_get_pattern (action->priv->filters[type]) : NULL;
 }
 
 
@@ -148,7 +148,7 @@ moo_edit_action_set_filter (MooEditAction *action,
                             const char    *filter,
                             FilterType     type)
 {
-    EggRegex *tmp;
+    GRegex *tmp;
 
     g_assert (type < N_FILTERS);
 
@@ -236,7 +236,7 @@ moo_edit_action_check_visible_real (MooEditAction *action)
 {
     MooLang *lang;
     gboolean visible = TRUE;
-    EggRegex *filter = action->priv->filters[FILTER_VISIBLE];
+    GRegex *filter = action->priv->filters[FILTER_VISIBLE];
 
     if (!action->priv->doc)
         return gtk_action_get_visible (GTK_ACTION (action));
@@ -257,7 +257,7 @@ moo_edit_action_check_visible_real (MooEditAction *action)
     if (visible && filter)
     {
         const char *line = get_current_line (action->priv->doc);
-        if (!egg_regex_match (filter, line, 0))
+        if (!g_regex_match (filter, line, 0, NULL))
             visible = FALSE;
     }
 
@@ -269,13 +269,13 @@ static gboolean
 moo_edit_action_check_sensitive_real (MooEditAction *action)
 {
     const char *line;
-    EggRegex *filter = action->priv->filters[FILTER_SENSITIVE];
+    GRegex *filter = action->priv->filters[FILTER_SENSITIVE];
 
     if (!action->priv->doc || !filter)
         return gtk_action_get_sensitive (GTK_ACTION (action));
 
     line = get_current_line (action->priv->doc);
-    return egg_regex_match (filter, line, 0);
+    return g_regex_match (filter, line, 0, NULL);
 }
 
 
@@ -391,7 +391,7 @@ regex_ref_free (RegexRef *ref)
 {
     if (ref)
     {
-        egg_regex_free (ref->regex);
+        g_regex_unref (ref->regex);
         g_free (ref);
     }
 }
@@ -405,7 +405,7 @@ init_filter_store (void)
 }
 
 
-static EggRegex *
+static GRegex *
 get_filter_regex (const char *pattern)
 {
     RegexRef *ref;
@@ -418,10 +418,10 @@ get_filter_regex (const char *pattern)
 
     if (!ref)
     {
-        EggRegex *regex;
+        GRegex *regex;
         GError *error = NULL;
 
-        regex = egg_regex_new (pattern, 0, 0, &error);
+        regex = g_regex_new (pattern, G_REGEX_OPTIMIZE, 0, &error);
 
         if (!regex)
         {
@@ -429,8 +429,6 @@ get_filter_regex (const char *pattern)
             g_error_free (error);
             return NULL;
         }
-
-        egg_regex_optimize (regex, NULL);
 
         ref = g_new0 (RegexRef, 1);
         ref->regex = regex;
@@ -444,7 +442,7 @@ get_filter_regex (const char *pattern)
 
 
 static void
-unuse_filter_regex (EggRegex *regex)
+unuse_filter_regex (GRegex *regex)
 {
     RegexRef *ref;
     const char *pattern;
@@ -453,7 +451,7 @@ unuse_filter_regex (EggRegex *regex)
 
     init_filter_store ();
 
-    pattern = egg_regex_get_pattern (regex);
+    pattern = g_regex_get_pattern (regex);
     ref = g_hash_table_lookup (filter_store.hash, pattern);
     g_return_if_fail (ref != NULL);
 

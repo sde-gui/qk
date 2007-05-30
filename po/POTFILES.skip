@@ -67,6 +67,9 @@ moo/mooedit/language-specs/dtd.lang
 moo/mooedit/language-specs/gtk-doc.lang
 moo/mooedit/language-specs/libtool.lang
 moo/mooedit/language-specs/pkgconfig.lang
+moo/mooedit/language-specs/docbook.lang
+moo/mooedit/language-specs/ocaml.lang
+moo/mooedit/language-specs/spec.lang
 
 moo/moopython/plugins/pyproject/project-plugin.ini.desktop.in.in
 moo/moopython/plugins/pyproject/mprj/manager.py
@@ -86,3 +89,12 @@ moo/moopython/plugins/pyproject/projects/python.py
 
 moo/mooterm/mootermparser-yacc.c
 moo/mooterm/glade/mootermprefs.glade
+
+moo/libfoocanvas/foo-canvas-text.c
+moo/libfoocanvas/foo-canvas.c
+moo/mooapp/moohtml.c
+moo/mooedit/gtksourceview/upstream/gtksourcelanguagemanager.c
+moo/mooedit/gtksourceview/upstream/gtksourcestylemanager.c
+moo/mooedit/mooeditaction-factory.c
+moo/mooutils/moopane.c
+moo/mooutils/newgtk/glib/gregex.c
