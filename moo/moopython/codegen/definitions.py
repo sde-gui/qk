@@ -10,7 +10,7 @@ def unescape(s):
     return s.replace('\r', '\\r').replace('\n', '\\n')
 
 def make_docstring(lines):
-    return "(char *) " + '\n'.join(['"%s"' % unescape(s) for s in lines])
+    return '\n'.join(['"%s"' % unescape(s) for s in lines])
 
 # New Parameter class, wich emulates a tuple for compatibility reasons
 class Parameter(object):

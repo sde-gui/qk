@@ -64,7 +64,8 @@ AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
 	$(PYTHON_INCLUDES)	\
-	$(PYGTK_CFLAGS)
+	$(PYGTK_CFLAGS)		\
+	$(MOO_W_NO_WRITE_STRINGS)
 
 py25_cflags =			\
 	-I..			\
@@ -73,6 +74,7 @@ py25_cflags =			\
 	$(MOO_DEBUG_CFLAGS)	\
 	$(PYTHON25_INCLUDES)	\
 	$(PYGTK25_CFLAGS)	\
+	$(MOO_W_NO_WRITE_STRINGS)
 	-DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
 
 py24_cflags =			\
@@ -82,6 +84,7 @@ py24_cflags =			\
 	$(MOO_DEBUG_CFLAGS)	\
 	$(PYTHON24_INCLUDES)	\
 	$(PYGTK24_CFLAGS)	\
+	$(MOO_W_NO_WRITE_STRINGS)
 	-DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
 
 libmoomod_la_SOURCES = $(libmoomod_la_sources)

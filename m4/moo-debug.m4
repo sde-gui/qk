@@ -78,7 +78,7 @@ else
   fi
 fi
 
-m4_foreach([wname],[missing-field-initializers, unused, sign-compare],[dnl
+m4_foreach([wname],[missing-field-initializers, unused, sign-compare, write-strings],[dnl
 m4_define([_moo_WNAME],[MOO_W_NO_[]m4_bpatsubst(m4_toupper(wname),-,_)])
 _moo_WNAME=
 if $_MOO_GCC; then

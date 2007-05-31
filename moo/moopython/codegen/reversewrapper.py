@@ -269,7 +269,7 @@ class ReverseWrapper(object):
                             failure_expression="!py_retval")
         else:
             self.add_declaration("PyObject *py_method;")
-            self.write_code("py_method = PyObject_GetAttrString(%s, (char*) \"%s\");"
+            self.write_code("py_method = PyObject_GetAttrString(%s, \"%s\");"
                             % (self.called_pyobj, self.method_name),
                             cleanup="Py_DECREF(py_method);",
                             failure_expression="!py_method")
@@ -294,11 +294,11 @@ class ReverseWrapper(object):
         if len(self.pyret_parse_items) == 1:
             ## if retval is one item only, pack it in a tuple so we
             ## can use PyArg_ParseTuple as usual..
-            self.write_code('py_retval = Py_BuildValue((char*) "(N)", py_retval);')
+            self.write_code('py_retval = Py_BuildValue("(N)", py_retval);')
         if len(self.pyret_parse_items) > 0:
             ## Parse return values using PyArg_ParseTuple
             self.write_code(code=None, failure_expression=(
-                '!PyArg_ParseTuple(py_retval, (char*) "%s", %s)' % (
+                '!PyArg_ParseTuple(py_retval, "%s", %s)' % (
                 "".join([format for format, param in self.pyret_parse_items]),
                 ", ".join([param for format, param in self.pyret_parse_items]))))
 

@@ -34,7 +34,7 @@ sys_path_add_dir (const char *dir)
 
     g_return_val_if_fail (dir != NULL, FALSE);
 
-    path = PySys_GetObject ((char*)"path");
+    path = PySys_GetObject ("path");
 
     if (!path)
     {
@@ -59,7 +59,7 @@ sys_path_add_dir (const char *dir)
         return FALSE;
     }
 
-    if (PySys_SetObject ((char*)"path", new_path) != 0)
+    if (PySys_SetObject ("path", new_path) != 0)
     {
         PyErr_Print ();
         Py_DECREF (new_path);
@@ -79,7 +79,7 @@ sys_path_remove_dir (const char *dir)
 
     g_return_if_fail (dir != NULL);
 
-    path = PySys_GetObject ((char*) "path");
+    path = PySys_GetObject ("path");
 
     if (!path)
     {
@@ -145,7 +145,7 @@ MOO_MODULE_INIT_FUNC_DECL
         dlldir = NULL;
     }
 
-    moo_mod = PyImport_ImportModule ((char*) "moo");
+    moo_mod = PyImport_ImportModule ("moo");
 
     if (dlldir)
     {

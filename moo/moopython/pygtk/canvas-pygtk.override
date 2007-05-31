@@ -118,19 +118,19 @@ arg_parse_two_points (PyObject   *args,
                       double     *y2,
                       const char *func_name)
 {
-    if (PyArg_ParseTuple (args, (char*) "(dddd)",
+    if (PyArg_ParseTuple (args, "(dddd)",
                           x1, y1, x2, y2))
         return TRUE;
     PyErr_Clear ();
-    if (PyArg_ParseTuple (args, (char*) "dddd",
+    if (PyArg_ParseTuple (args, "dddd",
                           x1, y1, x2, y2))
         return TRUE;
     PyErr_Clear ();
-    if (PyArg_ParseTuple (args, (char*) "(dd)(dd)",
+    if (PyArg_ParseTuple (args, "(dd)(dd)",
                           x1, y1, x2, y2))
         return TRUE;
     PyErr_Clear ();
-    if (PyArg_ParseTuple (args, (char*) "((dd)(dd))",
+    if (PyArg_ParseTuple (args, "((dd)(dd))",
                           x1, y1, x2, y2))
         return TRUE;
     PyErr_Clear ();
@@ -145,10 +145,10 @@ arg_parse_point (PyObject   *args,
                  double     *y,
                  const char *func_name)
 {
-    if (PyArg_ParseTuple (args, (char*) "(dd)", x, y))
+    if (PyArg_ParseTuple (args, "(dd)", x, y))
         return TRUE;
     PyErr_Clear ();
-    if (PyArg_ParseTuple (args, (char*) "dd", x, y))
+    if (PyArg_ParseTuple (args, "dd", x, y))
         return TRUE;
     PyErr_Clear ();
     PyErr_Format (PyExc_TypeError, "%s: arguments must (a tuple of) two numbers",
@@ -162,10 +162,10 @@ arg_parse_point_i (PyObject   *args,
                    int        *y,
                    const char *func_name)
 {
-    if (PyArg_ParseTuple (args, (char*) "(ii)", x, y))
+    if (PyArg_ParseTuple (args, "(ii)", x, y))
         return TRUE;
     PyErr_Clear ();
-    if (PyArg_ParseTuple (args, (char*) "ii", x, y))
+    if (PyArg_ParseTuple (args, "ii", x, y))
         return TRUE;
     PyErr_Clear ();
     PyErr_Format (PyExc_TypeError, "%s: arguments must (a tuple of) two numbers",
@@ -293,7 +293,7 @@ _wrap_foo_canvas_get_color (PyGObject *self, PyObject *args)
     const char *spec;
     GdkColor color;
 
-    if (!PyArg_ParseTuple (args, (char*) "s:FooCanvas.get_color", &spec))
+    if (!PyArg_ParseTuple (args, "s:FooCanvas.get_color", &spec))
         return NULL;
 
     if (foo_canvas_get_color (FOO_CANVAS (self->obj), spec, &color))
@@ -349,7 +349,7 @@ _wrap_foo_canvas_get_miter_points (G_GNUC_UNUSED PyGObject *self, PyObject *args
     double mx1, my1, mx2, my2;
     double width;
 
-    if (!PyArg_ParseTuple (args, (char*) "(dd)(dd)(dd)d:foo_canvas_get_miter_points",
+    if (!PyArg_ParseTuple (args, "(dd)(dd)(dd)d:foo_canvas_get_miter_points",
                            &x1, &y1, &x2, &y2, &x3, &y3, &width))
         return NULL;
 
@@ -368,7 +368,7 @@ _wrap_foo_canvas_get_butt_points (G_GNUC_UNUSED PyGObject *self, PyObject *args)
     gboolean project;
     double mx1, my1, mx2, my2;
 
-    if (!PyArg_ParseTuple (args, (char*) "(dd)(dd)di:foo_canvas_get_butt_points",
+    if (!PyArg_ParseTuple (args, "(dd)(dd)di:foo_canvas_get_butt_points",
                            &x1, &y1, &x2, &y2, &width, &project))
         return NULL;
 
@@ -387,7 +387,7 @@ _wrap_foo_canvas_polygon_to_point (G_GNUC_UNUSED PyGObject *self, PyObject *args
     double dist;
     int i;
 
-    if (!PyArg_ParseTuple (args, (char*) "O(dd):foo_canvas_polygon_to_point",
+    if (!PyArg_ParseTuple (args, "O(dd):foo_canvas_polygon_to_point",
                            &py_points, &x, &y))
         return NULL;
 
@@ -426,7 +426,7 @@ _wrap_foo_canvas_points_new (PyGBoxed *self, PyObject *args)
     FooCanvasPoints *points;
     PyObject *py_points;
 
-    if (!PyArg_ParseTuple (args, (char*) "O:FooCanvasPoints.__init__", &py_points))
+    if (!PyArg_ParseTuple (args, "O:FooCanvasPoints.__init__", &py_points))
     {
         PyErr_Clear ();
         py_points = args;

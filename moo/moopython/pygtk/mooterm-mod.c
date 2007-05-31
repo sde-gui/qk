@@ -20,7 +20,7 @@
 #include "moopython/moopython-utils.h"
 
 
-static char *moo_term_module_doc = (char*)"_moo_term module.";
+static char *moo_term_module_doc = "_moo_term module.";
 
 
 gboolean
@@ -28,8 +28,8 @@ _moo_term_mod_init (void)
 {
     PyObject *mod;
 
-    mod = Py_InitModule3 ((char*) "_moo_term", _moo_term_functions, moo_term_module_doc);
-    PyImport_AddModule ((char*) "moo.term");
+    mod = Py_InitModule3 ("_moo_term", _moo_term_functions, moo_term_module_doc);
+    PyImport_AddModule ("moo.term");
 
     if (!mod)
         return FALSE;
@@ -46,7 +46,7 @@ _moo_term_mod_init (void)
         if (!code)
             return FALSE;
 
-        fake_mod = PyImport_ExecCodeModule ((char*) "moo.term", code);
+        fake_mod = PyImport_ExecCodeModule ("moo.term", code);
         Py_DECREF (code);
 
         if (!fake_mod)

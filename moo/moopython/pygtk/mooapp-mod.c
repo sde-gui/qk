@@ -19,7 +19,7 @@
 #include "moopython/pygtk/mooapp-mod.h"
 
 
-static char *moo_app_module_doc = (char*) "_moo_app module.";
+static char *moo_app_module_doc = "_moo_app module.";
 
 
 gboolean
@@ -27,8 +27,8 @@ _moo_app_mod_init (void)
 {
     PyObject *mod;
 
-    mod = Py_InitModule3 ((char*) "_moo_app", _moo_app_functions, moo_app_module_doc);
-    PyImport_AddModule ((char*) "moo.app");
+    mod = Py_InitModule3 ("_moo_app", _moo_app_functions, moo_app_module_doc);
+    PyImport_AddModule ("moo.app");
 
     if (!mod)
         return FALSE;
@@ -44,7 +44,7 @@ _moo_app_mod_init (void)
         if (!code)
             return FALSE;
 
-        fake_mod = PyImport_ExecCodeModule ((char*) "moo.app", code);
+        fake_mod = PyImport_ExecCodeModule ("moo.app", code);
         Py_DECREF (code);
 
         if (!fake_mod)

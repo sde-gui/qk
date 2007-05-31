@@ -220,7 +220,8 @@ AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
 	$(PYTHON_INCLUDES)	\
-	$(PYGTK_CFLAGS)
+	$(PYGTK_CFLAGS)		\
+	$(MOO_W_NO_WRITE_STRINGS)
 
 libmoopygtk25_la_CFLAGS =	\
 	-I../..			\
@@ -228,7 +229,8 @@ libmoopygtk25_la_CFLAGS =	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
 	$(PYTHON25_INCLUDES)	\
-	$(PYGTK25_CFLAGS)
+	$(PYGTK25_CFLAGS)	\
+	$(MOO_W_NO_WRITE_STRINGS)
 
 libmoopygtk24_la_CFLAGS =	\
 	-I../..			\
@@ -236,4 +238,5 @@ libmoopygtk24_la_CFLAGS =	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
 	$(PYTHON24_INCLUDES)	\
-	$(PYGTK24_CFLAGS)
+	$(PYGTK24_CFLAGS)	\
+	$(MOO_W_NO_WRITE_STRINGS)

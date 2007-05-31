@@ -61,7 +61,7 @@ class WrapperInfo:
         for kw in keywords:
             if keyword.iskeyword(kw):
                 kw = kw + '_'
-            self.kwlist.append('(char*) "%s"' % kw)
+            self.kwlist.append('"%s"' % kw)
 
 class ArgType:
     def write_param(self, ptype, pname, pdflt, pnull, info):

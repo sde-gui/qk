@@ -53,11 +53,11 @@ override moo_term_copy_clipboard kwargs
 static PyObject *
 _wrap_moo_term_copy_clipboard (PyGObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = { (char*) "selection", NULL };
+    static char *kwlist[] = { "selection", NULL };
     PyObject *py_selection = NULL;
     GdkAtom selection;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char*) "O:MooTerm.copy_clipboard", kwlist, &py_selection))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O:MooTerm.copy_clipboard", kwlist, &py_selection))
         return NULL;
     selection = atom_from_pyobject(py_selection);
     if (PyErr_Occurred())
@@ -70,11 +70,11 @@ override moo_term_paste_clipboard kwargs
 static PyObject *
 _wrap_moo_term_paste_clipboard(PyGObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = { (char*) "selection", NULL };
+    static char *kwlist[] = { "selection", NULL };
     PyObject *py_selection = NULL;
     GdkAtom selection;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char*) "O:MooTerm.paste_clipboard", kwlist, &py_selection))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O:MooTerm.paste_clipboard", kwlist, &py_selection))
         return NULL;
     selection = atom_from_pyobject(py_selection);
     if (PyErr_Occurred())
@@ -90,7 +90,7 @@ _wrap_moo_term_get_iter_at_line (PyGObject *self, PyObject *args)
     int line;
     MooTermIter iter;
 
-    if (!PyArg_ParseTuple (args, (char*) "i:MooTerm.get_iter_at_line", &line))
+    if (!PyArg_ParseTuple (args, "i:MooTerm.get_iter_at_line", &line))
         return NULL;
 
     if (moo_term_get_iter_at_line (MOO_TERM(self->obj), &iter, line))
@@ -106,7 +106,7 @@ _wrap_moo_term_get_iter_at_line_offset (PyGObject *self, PyObject *args)
     int line, offset;
     MooTermIter iter;
 
-    if (!PyArg_ParseTuple (args, (char*) "ii:MooTerm.get_iter_at_line_offset", &line, &offset))
+    if (!PyArg_ParseTuple (args, "ii:MooTerm.get_iter_at_line_offset", &line, &offset))
         return NULL;
 
     if (moo_term_get_iter_at_line_offset (MOO_TERM(self->obj), &iter, line, offset))
@@ -132,7 +132,7 @@ _wrap_moo_term_get_iter_at_location (PyGObject *self, PyObject *args)
     int x, y;
     MooTermIter iter;
 
-    if (!PyArg_ParseTuple (args, (char*) "ii:MooTerm.get_iter_at_location", &x, &y))
+    if (!PyArg_ParseTuple (args, "ii:MooTerm.get_iter_at_location", &x, &y))
         return NULL;
 
     moo_term_get_iter_at_location (MOO_TERM(self->obj), &iter, x, y);
@@ -146,7 +146,7 @@ _wrap_moo_term_get_iter_at_pos (PyGObject *self, PyObject *args)
     int x, y;
     MooTermIter iter;
 
-    if (!PyArg_ParseTuple (args, (char*) "ii:MooTerm.get_iter_at_pos", &x, &y))
+    if (!PyArg_ParseTuple (args, "ii:MooTerm.get_iter_at_pos", &x, &y))
         return NULL;
 
     moo_term_get_iter_at_pos (MOO_TERM(self->obj), &iter, x, y);
@@ -171,11 +171,11 @@ _wrap_moo_term_window_to_buffer_coords (PyGObject *self, PyObject *args)
     int x, y;
     int buf_x, buf_y;
 
-    if (!PyArg_ParseTuple (args, (char*) "ii:MooTerm.window_to_buffer_coords", &x, &y))
+    if (!PyArg_ParseTuple (args, "ii:MooTerm.window_to_buffer_coords", &x, &y))
         return NULL;
 
     moo_term_window_to_buffer_coords (MOO_TERM(self->obj), x, y, &buf_x, &buf_y);
-    return Py_BuildValue((char*) "(ii)", buf_x, buf_y);
+    return Py_BuildValue("(ii)", buf_x, buf_y);
 }
 %%
 override moo_term_feed varargs
@@ -185,7 +185,7 @@ _wrap_moo_term_feed (PyGObject *self, PyObject *args)
     char *string;
     int len;
 
-    if (!PyArg_ParseTuple (args, (char*) "s#:MooTerm.feed", &string, &len))
+    if (!PyArg_ParseTuple (args, "s#:MooTerm.feed", &string, &len))
         return NULL;
 
     moo_term_feed (MOO_TERM (self->obj), string, len);
@@ -199,7 +199,7 @@ _wrap_moo_term_feed_child (PyGObject *self, PyObject *args)
     char *string;
     int len;
 
-    if (!PyArg_ParseTuple (args, (char*) "s#:MooTerm.feed_child", &string, &len))
+    if (!PyArg_ParseTuple (args, "s#:MooTerm.feed_child", &string, &len))
         return NULL;
 
     moo_term_feed_child (MOO_TERM (self->obj), string, len);
@@ -212,7 +212,7 @@ _wrap_moo_term_get_screen_size (PyGObject *self)
 {
     guint columns, rows;
     moo_term_get_screen_size (MOO_TERM (self->obj), &columns, &rows);
-    return Py_BuildValue ((char*) "(ii)", columns, rows);
+    return Py_BuildValue ("(ii)", columns, rows);
 }
 %%
 override moo_term_command_copy noargs
@@ -234,7 +234,7 @@ _wrap_moo_term_set_colors (PyGObject *self, PyObject *args)
     guint i, n_colors;
     PyObject *py_colors;
 
-    if (!PyArg_ParseTuple (args, (char*) "O:MooTerm.set_colors", &py_colors))
+    if (!PyArg_ParseTuple (args, "O:MooTerm.set_colors", &py_colors))
         return NULL;
 
     if (!PySequence_Check (py_colors))
@@ -365,10 +365,10 @@ override moo_term_command_new kwargs
 static int
 _wrap_moo_term_command_new (PyGBoxed *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = { (char*) "cmd_line", (char*) "argv", (char*) "working_dir", (char*) "envp", NULL };
+    static char *kwlist[] = { "cmd_line", "argv", "working_dir", "envp", NULL };
     char *cmd_line = NULL, **argv = NULL, *working_dir = NULL, **envp = NULL;
 
-    if (!PyArg_ParseTupleAndKeywords (args, kwargs,(char*) "|zO&zO&:MooTermCommand.__init__",
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, "|zO&zO&:MooTermCommand.__init__",
                                       kwlist,
                                       &cmd_line,
                                       _moo_pyobject_to_strv, &argv,

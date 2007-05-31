@@ -34,7 +34,7 @@ _wrap_moo_python_plugin_register (G_GNUC_UNUSED PyObject *self, PyObject *args)
 {
     PyObject *plugin_type, *win_plugin_type = NULL, *doc_plugin_type = NULL;
 
-    if (!PyArg_ParseTuple (args, (char*) "O|OO:plugin_register", &plugin_type,
+    if (!PyArg_ParseTuple (args, "O|OO:plugin_register", &plugin_type,
                            &win_plugin_type, &doc_plugin_type))
         return NULL;
 
@@ -112,10 +112,10 @@ override moo_plugin_lookup_method kwargs
 static PyObject *
 _wrap_moo_plugin_lookup_method (PyGObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = { (char*) "name", NULL };
+    static char *kwlist[] = { "name", NULL };
     char *name;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char*)"s:MooPlugin.lookup_method", kwlist, &name))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s:MooPlugin.lookup_method", kwlist, &name))
         return NULL;
 
     return PyBool_FromLong (moo_plugin_lookup_method (MOO_PLUGIN(self->obj), name) != 0);
@@ -187,7 +187,7 @@ _wrap_moo_line_view_set_line_data (PyObject *self, PyObject *args)
     MooLineView *view;
     GValue data;
 
-    if (!PyArg_ParseTuple (args, (char*) "iO:LineView.set_line_data", &line, &py_data))
+    if (!PyArg_ParseTuple (args, "iO:LineView.set_line_data", &line, &py_data))
         return NULL;
 
     view = MOO_LINE_VIEW (pygobject_get (self));
@@ -216,7 +216,7 @@ _wrap_moo_line_view_get_line_data (PyObject *self, PyObject *args)
     GValue data;
     PyObject *obj;
 
-    if (!PyArg_ParseTuple (args, (char*) "i:LineView.get_line_data", &line))
+    if (!PyArg_ParseTuple (args, "i:LineView.get_line_data", &line))
         return NULL;
 
     view = MOO_LINE_VIEW (pygobject_get (self));
@@ -241,7 +241,7 @@ _wrap_moo_text_search_forward (G_GNUC_UNUSED PyObject *self, PyObject *args)
     const GtkTextIter *start, *end = NULL;
     GtkTextIter match_start, match_end;
 
-    if (!PyArg_ParseTuple(args, (char*) "OsO|O:search_forward", &py_start, &str, &py_flags, &py_end))
+    if (!PyArg_ParseTuple(args, "OsO|O:search_forward", &py_start, &str, &py_flags, &py_end))
         return NULL;
 
     if (pyg_boxed_check (py_start, GTK_TYPE_TEXT_ITER))
@@ -280,7 +280,7 @@ _wrap_moo_text_search_backward (G_GNUC_UNUSED PyObject *self, PyObject *args)
     const GtkTextIter *start, *end = NULL;
     GtkTextIter match_start, match_end;
 
-    if (!PyArg_ParseTuple (args, (char*) "OsO|O:search_backward", &py_start, &str, &py_flags, &py_end))
+    if (!PyArg_ParseTuple (args, "OsO|O:search_backward", &py_start, &str, &py_flags, &py_end))
         return NULL;
 
     if (pyg_boxed_check (py_start, GTK_TYPE_TEXT_ITER))
@@ -351,13 +351,13 @@ override moo_edit_class_remove_action kwargs
 static PyObject *
 _wrap_moo_edit_class_remove_action (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = {(char*) "class", (char*) "id", NULL};
+    static char *kwlist[] = {"class", "id", NULL};
     PyObject *py_type;
     GType type;
     const char *action_id;
     MooEditClass *klass;
 
-    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "Os:window_class_remove_action", kwlist, &py_type, &action_id))
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, "Os:window_class_remove_action", kwlist, &py_type, &action_id))
         return NULL;
 
     type = pyg_type_from_object (py_type);
@@ -490,12 +490,12 @@ override moo_command_context_set kwargs
 static PyObject *
 _wrap_moo_command_context_set (PyGObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = {(char*) "name", (char*) "value", NULL};
+    static char *kwlist[] = {"name", "value", NULL};
     char *name;
     PyObject *py_value;
     GValue value;
 
-    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "sO:MooCommandContext.set", kwlist,
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, "sO:MooCommandContext.set", kwlist,
                                       &name, &py_value))
         return NULL;
 
@@ -515,12 +515,12 @@ override moo_command_context_get kwargs
 static PyObject *
 _wrap_moo_command_context_get (PyGObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = {(char*) "name", NULL};
+    static char *kwlist[] = {"name", NULL};
     char *name;
     PyObject *py_value;
     GValue value;
 
-    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "s:MooCommandContext.get",
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, "s:MooCommandContext.get",
                                       kwlist, &name))
         return NULL;
 

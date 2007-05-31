@@ -97,7 +97,7 @@ class Wrapper:
         'static PyTypeObject Py%(typename)s_Type = {\n'
         '    PyObject_HEAD_INIT(NULL)\n'
         '    0,                                 /* ob_size */\n'
-        '    (char*) "%(classname)s",           /* tp_name */\n'
+        '    "%(classname)s",                   /* tp_name */\n'
         '    sizeof(%(tp_basicsize)s),          /* tp_basicsize */\n'
         '    0,                                 /* tp_itemsize */\n'
         '    /* methods */\n'
@@ -162,8 +162,8 @@ class Wrapper:
         )
 
     parse_tmpl = (
-        '    if (!PyArg_ParseTupleAndKeywords(args, kwargs,'
-        '(char*) "%(typecodes)s:%(name)s"%(parselist)s))\n'
+        '    if (!PyArg_ParseTupleAndKeywords(args, kwargs, '
+        '"%(typecodes)s:%(name)s"%(parselist)s))\n'
         '        return %(errorreturn)s;\n'
         )
 
@@ -174,7 +174,7 @@ class Wrapper:
         )
 
     methdef_tmpl = (
-        '    { (char*) "%(name)s", (PyCFunction)%(cname)s, %(flags)s,\n'
+        '    { "%(name)s", (PyCFunction)%(cname)s, %(flags)s,\n'
         '      %(docstring)s },\n'
         )
 
@@ -668,7 +668,7 @@ class Wrapper:
                                   'is currently not supported */\n' % vars())
                 else:
                     self.fp.write('''
-    o = PyObject_GetAttrString((PyObject *) pyclass, (char*) "%(do_name)s");
+    o = PyObject_GetAttrString((PyObject *) pyclass, "%(do_name)s");
     if (o == NULL)
         PyErr_Clear();
     else {
@@ -722,7 +722,7 @@ class Wrapper:
                             "Could not write getter for %s.%s: %s\n"
                             % (self.objinfo.c_name, fname, exc_info()))
             if gettername != '0' or settername != '0':
-                getsets.append('    { (char*) "%s", (getter)%s, (setter)%s, NULL, NULL },\n' %
+                getsets.append('    { "%s", (getter)%s, (setter)%s, NULL, NULL },\n' %
                                (fixname(fname), gettername, settername))
 
         if not getsets:
@@ -883,7 +883,7 @@ class GObjectWrapper(Wrapper):
         def py_str_list_to_c(arg):
             if arg:
                 return "{" + ", ".join(
-                    map(lambda s: '(char*) "' + s + '"', arg)) + ", NULL }"
+                    map(lambda s: '"' + s + '"', arg)) + ", NULL }"
             else:
                 return "{ NULL }"
 
@@ -919,7 +919,7 @@ class GObjectWrapper(Wrapper):
                 print >> out, '        return -1;'
                 print >> out
             out.write("    if (!PyArg_ParseTupleAndKeywords(args, kwargs, ")
-            template = '(char*) "'
+            template = '"'
             if mandatory_arguments:
                 template += "O"*len(mandatory_arguments)
             if optional_arguments:
@@ -955,7 +955,7 @@ class GObjectWrapper(Wrapper):
 
             out.write(
                 '    if (!PyArg_ParseTupleAndKeywords(args, kwargs,\n'
-                '                                     (char*) ":%s.__init__",\n'
+                '                                     ":%s.__init__",\n'
                 '                                     kwlist))\n'
                 '        return -1;\n'
                 '\n'
@@ -1085,7 +1085,7 @@ class GInterfaceWrapper(GObjectWrapper):
 
             self.fp.write((
                 '    py_method = pytype? PyObject_GetAttrString('
-                '(PyObject *) pytype, (char*) "%(do_name)s") : NULL;\n'
+                '(PyObject *) pytype, "%(do_name)s") : NULL;\n'
                 '    if (py_method && !PyObject_TypeCheck(py_method, '
                 '&PyCFunction_Type)) {\n'
                 '        iface->%(name)s = %(cname)s;\n'
@@ -1341,7 +1341,7 @@ class SourceWriter:
             self.fp.write('    PyObject *module;\n\n')
             for module in bymod:
                 self.fp.write(
-                    '    if ((module = PyImport_ImportModule((char*) "%s")) != NULL) {\n'
+                    '    if ((module = PyImport_ImportModule("%s")) != NULL) {\n'
                     % module)
                 self.fp.write(
                     '        PyObject *moddict = PyModule_GetDict(module);\n\n')
@@ -1404,7 +1404,7 @@ class SourceWriter:
                 self.fp.write(
                     '    pygobject_register_class(d, "' + obj.c_name +
                     '", ' + obj.typecode + ', &Py' + obj.c_name +
-                    '_Type, Py_BuildValue((char*) "(' + 'O' * len(bases) + ')", ' +
+                    '_Type, Py_BuildValue("(' + 'O' * len(bases) + ')", ' +
                     string.join(map(lambda s: '&Py'+s+'_Type', bases), ', ') +
                     '));\n')
             else:

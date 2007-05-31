@@ -22,7 +22,7 @@ init_pygtk_mod (void)
     PyObject *mdict;
     PyObject *cobject;
 
-    if (!(gobject = PyImport_ImportModule ((char*) "gobject")))
+    if (!(gobject = PyImport_ImportModule ("gobject")))
         return;
 
     mdict = PyModule_GetDict (gobject);
@@ -37,7 +37,7 @@ init_pygtk_mod (void)
 
     _PyGObject_API = (struct _PyGObject_Functions *) PyCObject_AsVoidPtr (cobject);
 
-    if (!(pygtk = PyImport_ImportModule((char*) "gtk._gtk")))
+    if (!(pygtk = PyImport_ImportModule("gtk._gtk")))
         return;
 
     mdict = PyModule_GetDict (pygtk);
@@ -76,8 +76,7 @@ check_pygtk_version (const char *module,
     if (!version)
         return FALSE;
 
-    if (!PyArg_ParseTuple (version, (char*) "iii",
-                           &found_major, &found_minor, &found_micro))
+    if (!PyArg_ParseTuple (version, "iii", &found_major, &found_minor, &found_micro))
     {
         PyErr_Print ();
         return FALSE;

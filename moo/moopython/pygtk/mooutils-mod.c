@@ -24,9 +24,9 @@
 #include "mooutils/moostock.h"
 
 
-static char *moo_utils_module_doc = (char*)"__moo_utils__ module.";
+static char *moo_utils_module_doc = "__moo_utils__ module.";
 
-#define add_constant(mod_,name_,val_) PyModule_AddStringConstant (mod, (char*) name_, (char*) val_)
+#define add_constant(mod_,name_,val_) PyModule_AddStringConstant (mod, name_, val_)
 
 
 static PyObject *
@@ -55,8 +55,8 @@ _moo_utils_mod_init (void)
 
     pyg_register_boxed_custom (MOO_TYPE_PY_OBJECT, pyobj_from_gval, gval_from_pyobj);
 
-    mod = Py_InitModule3 ((char*) "__moo_utils__", _moo_utils_functions, moo_utils_module_doc);
-    PyImport_AddModule ((char*) "moo.utils");
+    mod = Py_InitModule3 ("__moo_utils__", _moo_utils_functions, moo_utils_module_doc);
+    PyImport_AddModule ("moo.utils");
 
     if (!mod)
         return FALSE;
@@ -105,7 +105,7 @@ _moo_utils_mod_init (void)
         if (!code)
             return FALSE;
 
-        fake_mod = PyImport_ExecCodeModule ((char*) "moo.utils", code);
+        fake_mod = PyImport_ExecCodeModule ("moo.utils", code);
         Py_DECREF (code);
 
         if (!fake_mod)

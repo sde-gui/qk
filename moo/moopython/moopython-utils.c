@@ -351,7 +351,7 @@ _moo_py_file_write (PyObject *self, PyObject *args)
     char *string;
     MooPyFile *file = (MooPyFile *) self;
 
-    if (!PyArg_ParseTuple (args, (char*) "s", &string))
+    if (!PyArg_ParseTuple (args, "s", &string))
         return NULL;
 
     if (!file->write_func)
@@ -363,9 +363,9 @@ _moo_py_file_write (PyObject *self, PyObject *args)
 
 
 static PyMethodDef MooPyFile_methods[] = {
-    { (char*) "close", (PyCFunction) _moo_py_file_close, METH_NOARGS, NULL },
-    { (char*) "flush", (PyCFunction) _moo_py_file_flush, METH_NOARGS, NULL },
-    { (char*) "write", (PyCFunction) _moo_py_file_write, METH_VARARGS, NULL },
+    { "close", (PyCFunction) _moo_py_file_close, METH_NOARGS, NULL },
+    { "flush", (PyCFunction) _moo_py_file_flush, METH_NOARGS, NULL },
+    { "write", (PyCFunction) _moo_py_file_write, METH_VARARGS, NULL },
     { NULL, NULL, 0, NULL }
 };
 
@@ -373,7 +373,7 @@ static PyMethodDef MooPyFile_methods[] = {
 static PyTypeObject MooPyFile_Type = {
     PyObject_HEAD_INIT(NULL)
     0,                                  /* ob_size */
-    (char*) "MooPyFile",                /* tp_name */
+    "MooPyFile",                /* tp_name */
     sizeof (MooPyFile),                 /* tp_basicsize */
     0,                                  /* tp_itemsize */
     /* methods */

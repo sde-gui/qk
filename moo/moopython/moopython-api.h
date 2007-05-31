@@ -28,7 +28,7 @@ moo_python_api_run_simple_string (const char *str)
 {
     PyObject *dict, *main_mod;
     g_return_val_if_fail (str != NULL, NULL);
-    main_mod = PyImport_AddModule ((char*)"__main__");
+    main_mod = PyImport_AddModule ("__main__");
     dict = PyModule_GetDict (main_mod);
     return (MooPyObject*) PyRun_String (str, Py_file_input, dict, dict);
 }
@@ -39,16 +39,16 @@ moo_python_api_create_script_dict (const char *name)
 {
     PyObject *dict, *builtins;
 
-    builtins = PyImport_ImportModule ((char*) "__builtin__");
+    builtins = PyImport_ImportModule ("__builtin__");
     g_return_val_if_fail (builtins != NULL, NULL);
 
     dict = PyDict_New ();
-    PyDict_SetItemString (dict, (char*) "__builtins__", builtins);
+    PyDict_SetItemString (dict, "__builtins__", builtins);
 
     if (name)
     {
         PyObject *py_name = PyString_FromString (name);
-        PyDict_SetItemString (dict, (char*) "__name__", py_name);
+        PyDict_SetItemString (dict, "__name__", py_name);
         Py_XDECREF (py_name);
     }
 
@@ -135,8 +135,8 @@ moo_python_api_run_code (const char  *str,
     {
         Py_DECREF (ret);
 
-        if (PyMapping_HasKeyString ((PyObject*) locals, (char*) "__retval__"))
-            ret = PyMapping_GetItemString ((PyObject*) locals, (char*) "__retval__");
+        if (PyMapping_HasKeyString ((PyObject*) locals, "__retval__"))
+            ret = PyMapping_GetItemString ((PyObject*) locals, "__retval__");
         else
             ret = NULL;
     }

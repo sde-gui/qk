@@ -31,7 +31,7 @@ sys_path_add_dir (const char *dir)
     PyObject *path;
     PyObject *s;
 
-    path = PySys_GetObject ((char*) "path");
+    path = PySys_GetObject ("path");
 
     if (!path)
     {
@@ -58,7 +58,7 @@ sys_path_remove_dir (const char *dir)
     PyObject *path;
     int i;
 
-    path = PySys_GetObject ((char*) "path");
+    path = PySys_GetObject ("path");
 
     if (!path || !PyList_Check (path))
         return;
@@ -196,7 +196,7 @@ load_python_plugin (const char      *plugin_file,
     if (!(mod = load_file (plugin_file)))
         return;
 
-    py_plugin_type = PyObject_GetAttrString (mod, (char*) "__plugin__");
+    py_plugin_type = PyObject_GetAttrString (mod, "__plugin__");
 
     if (!py_plugin_type)
     {

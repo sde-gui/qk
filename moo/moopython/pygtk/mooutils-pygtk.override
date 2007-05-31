@@ -160,14 +160,14 @@ override moo_window_class_find_action kwargs
 static PyObject *
 _wrap_moo_window_class_find_action (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = {(char*) "cls", (char*) "name", NULL};
+    static char *kwlist[] = {"cls", "name", NULL};
     PyObject *py_type;
     GType type;
     const char *action_id;
     MooWindowClass *klass;
     gboolean ret;
 
-    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "Os:window_class_find_action", kwlist, &py_type, &action_id))
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, "Os:window_class_find_action", kwlist, &py_type, &action_id))
         return NULL;
 
     type = pyg_type_from_object (py_type);
@@ -189,13 +189,13 @@ override moo_window_class_remove_action kwargs
 static PyObject *
 _wrap_moo_window_class_remove_action (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = {(char*) "cls", (char*) "name", NULL};
+    static char *kwlist[] = {"cls", "name", NULL};
     PyObject *py_type;
     GType type;
     const char *action_id;
     MooWindowClass *klass;
 
-    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "Os:window_class_remove_action", kwlist, &py_type, &action_id))
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, "Os:window_class_remove_action", kwlist, &py_type, &action_id))
         return NULL;
 
     type = pyg_type_from_object (py_type);
@@ -217,13 +217,13 @@ override moo_window_class_new_group kwargs
 static PyObject *
 _wrap_moo_window_class_new_group (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = {(char*) "cls", (char*) "name", (char*) "display_name", NULL};
+    static char *kwlist[] = {"cls", "name", "display_name", NULL};
     PyObject *py_type;
     GType type;
     const char *name, *display_name;
     MooWindowClass *klass;
 
-    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "Oss:window_class_new_group", kwlist,
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, "Oss:window_class_new_group", kwlist,
                                       &py_type, &name, &display_name))
         return NULL;
 
@@ -246,14 +246,14 @@ override moo_window_class_find_group kwargs
 static PyObject *
 _wrap_moo_window_class_find_group (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = {(char*) "cls", (char*) "name", NULL};
+    static char *kwlist[] = {"cls", "name", NULL};
     PyObject *py_type;
     GType type;
     const char *name;
     MooWindowClass *klass;
     gboolean ret;
 
-    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "Os:window_class_find_group", kwlist,
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, "Os:window_class_find_group", kwlist,
                                       &py_type, &name))
         return NULL;
 
@@ -276,13 +276,13 @@ override moo_window_class_remove_group kwargs
 static PyObject *
 _wrap_moo_window_class_remove_group (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = {(char*) "cls", (char*) "name", NULL};
+    static char *kwlist[] = {"cls", "name", NULL};
     PyObject *py_type;
     GType type;
     const char *name;
     MooWindowClass *klass;
 
-    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "Os:window_class_remove_group", kwlist,
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, "Os:window_class_remove_group", kwlist,
                                       &py_type, &name))
         return NULL;
 
@@ -510,7 +510,7 @@ _wrap_moo_prefs_new_key (G_GNUC_UNUSED PyObject *self, PyObject *args)
     int prefs_type;
     PyObject *py_prefs_type, *py_default, *py_type;
 
-    if (!PyArg_ParseTuple (args, (char*) "sOOO:prefs_new_key", &key,
+    if (!PyArg_ParseTuple (args, "sOOO:prefs_new_key", &key,
                            &py_type, &py_default, &py_prefs_type))
         return NULL;
     if (pyg_enum_get_value (MOO_TYPE_DATA_DIR_TYPE, py_prefs_type, &prefs_type) != 0)
@@ -572,7 +572,7 @@ _wrap_moo_get_data_dirs (G_GNUC_UNUSED PyObject *self, PyObject *args)
     char **dirs;
     guint n_dirs, i;
 
-    if (!PyArg_ParseTuple (args, (char*) "O:get_data_dirs", &py_type))
+    if (!PyArg_ParseTuple (args, "O:get_data_dirs", &py_type))
         return NULL;
     if (pyg_enum_get_value(MOO_TYPE_DATA_DIR_TYPE, py_type, &type))
         return NULL;
@@ -603,7 +603,7 @@ _wrap_moo_get_data_subdirs (G_GNUC_UNUSED PyObject *self, PyObject *args)
     guint n_dirs, i;
     char *subdir;
 
-    if (!PyArg_ParseTuple (args, (char*) "sO:get_data_dirs", &subdir, &py_type))
+    if (!PyArg_ParseTuple (args, "sO:get_data_dirs", &subdir, &py_type))
         return NULL;
     if (pyg_enum_get_value(MOO_TYPE_DATA_DIR_TYPE, py_type, &type))
         return NULL;
@@ -627,12 +627,12 @@ override moo_file_watch_monitor_directory kwargs
 static PyObject *
 _wrap_moo_file_watch_monitor_directory (PyGObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = { (char*) "filename", NULL };
+    static char *kwlist[] = { "filename", NULL };
     char *filename;
     int ret;
     GError *error = NULL;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs,(char*) "s:MooFileWatch.monitor_directory", kwlist, &filename))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s:MooFileWatch.monitor_directory", kwlist, &filename))
         return NULL;
 
     ret = moo_file_watch_monitor_directory (MOO_FILE_WATCH(self->obj), filename, NULL, &error);
@@ -647,12 +647,12 @@ override moo_file_watch_monitor_file kwargs
 static PyObject *
 _wrap_moo_file_watch_monitor_file (PyGObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = { (char*) "filename", NULL };
+    static char *kwlist[] = { "filename", NULL };
     char *filename;
     int ret;
     GError *error = NULL;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs,(char*) "s:MooFileWatch.monitor_file", kwlist, &filename))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s:MooFileWatch.monitor_file", kwlist, &filename))
         return NULL;
 
     ret = moo_file_watch_monitor_file (MOO_FILE_WATCH (self->obj), filename, NULL, &error);
@@ -667,14 +667,14 @@ override moo_glade_xml_fill_widget kwargs
 static PyObject *
 _wrap_moo_glade_xml_fill_widget (PyGObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = { (char*) "target", (char*) "buffer", (char*) "target_name", NULL };
+    static char *kwlist[] = { "target", "buffer", "target_name", NULL };
     PyGObject *target;
     char *buffer, *target_name;
     GError *error = NULL;
     int ret;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     (char*) "O!ss:MooGladeXML.fill_widget", kwlist,
+                                     "O!ss:MooGladeXML.fill_widget", kwlist,
                                      &PyGtkWidget_Type, &target,
                                      &buffer, &target_name))
         return NULL;
@@ -695,7 +695,7 @@ override moo_file_dialog kwargs
 static PyObject *
 _wrap_moo_file_dialog (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = { (char*) "type", (char*) "parent", (char*) "title", (char*) "start_dir", NULL };
+    static char *kwlist[] = { "type", "parent", "title", "start_dir", NULL };
     PyObject *py_type = NULL;
     int type;
     char *title = NULL, *start_dir = NULL;
@@ -703,7 +703,7 @@ _wrap_moo_file_dialog (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *k
     GtkWidget *parent = NULL;
     PyGObject *py_parent = NULL;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char*) "O|Ozz:file_dialog", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|Ozz:file_dialog", kwlist,
                                      &py_type, &py_parent, &title, &start_dir))
         return NULL;
 
@@ -736,12 +736,12 @@ override moo_bind_sensitive kwargs
 static PyObject *
 _wrap_moo_bind_sensitive (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = { (char*) "toggle_btn", (char*) "dependent", (char*) "invert", NULL };
+    static char *kwlist[] = { "toggle_btn", "dependent", "invert", NULL };
     PyGObject *toggle_btn, *dependent;
     int invert = FALSE;
     GtkWidget *widget;
 
-    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "O!O!|i:moo_bind_sensitive", kwlist,
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, "O!O!|i:moo_bind_sensitive", kwlist,
                                       &PyGtkWidget_Type, &toggle_btn,
                                       &PyGtkWidget_Type, &dependent,
                                       &invert))

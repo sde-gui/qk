@@ -51,7 +51,7 @@ static PyMethodDef _moo_functions[] = {
     {NULL, NULL, 0, NULL}
 };
 
-static char *_moo_module_doc = (char*)"_moo module.";
+static char *_moo_module_doc = "_moo module.";
 
 
 static PyObject *
@@ -91,45 +91,45 @@ _moo_pygtk_init (void)
                                py_object_from_moo_py_object,
                                py_object_to_moo_py_object);
 
-    _moo_module = Py_InitModule3 ((char*) "_moo", _moo_functions, _moo_module_doc);
+    _moo_module = Py_InitModule3 ("_moo", _moo_functions, _moo_module_doc);
 
     if (PyErr_Occurred ())
         return FALSE;
 
-    PyImport_AddModule ((char*) "moo");
+    PyImport_AddModule ("moo");
 
-    PyModule_AddObject (_moo_module, (char*) "version", moo_version());
-    PyModule_AddObject (_moo_module, (char*) "detailed_version", moo_detailed_version());
+    PyModule_AddObject (_moo_module, "version", moo_version());
+    PyModule_AddObject (_moo_module, "detailed_version", moo_detailed_version());
 
 #ifdef MOO_BUILD_UTILS
     if (!_moo_utils_mod_init ())
         return FALSE;
-    submod = PyImport_ImportModule ((char*) "moo.utils");
-    PyModule_AddObject (_moo_module, (char*) "utils", submod);
+    submod = PyImport_ImportModule ("moo.utils");
+    PyModule_AddObject (_moo_module, "utils", submod);
 #endif
 #ifdef MOO_BUILD_TERM
     if (!_moo_term_mod_init ())
         return FALSE;
-    submod = PyImport_ImportModule ((char*) "moo.term");
-    PyModule_AddObject (_moo_module, (char*) "term", submod);
+    submod = PyImport_ImportModule ("moo.term");
+    PyModule_AddObject (_moo_module, "term", submod);
 #endif
 #ifdef MOO_BUILD_EDIT
     if (!_moo_edit_mod_init ())
         return FALSE;
-    submod = PyImport_ImportModule ((char*) "moo.edit");
-    PyModule_AddObject (_moo_module, (char*) "edit", submod);
+    submod = PyImport_ImportModule ("moo.edit");
+    PyModule_AddObject (_moo_module, "edit", submod);
 #endif
 #ifdef MOO_BUILD_CANVAS
     if (!_moo_canvas_mod_init ())
         return FALSE;
-    submod = PyImport_ImportModule ((char*) "moo.canvas");
-    PyModule_AddObject (_moo_module, (char*) "canvas", submod);
+    submod = PyImport_ImportModule ("moo.canvas");
+    PyModule_AddObject (_moo_module, "canvas", submod);
 #endif
 #ifdef MOO_BUILD_APP
     if (!_moo_app_mod_init ())
         return FALSE;
-    submod = PyImport_ImportModule ((char*) "moo.app");
-    PyModule_AddObject (_moo_module, (char*) "app", submod);
+    submod = PyImport_ImportModule ("moo.app");
+    PyModule_AddObject (_moo_module, "app", submod);
 #endif
 
     code = Py_CompileString (MOO_PY, "moo/__init__.py", Py_file_input);
@@ -137,7 +137,7 @@ _moo_pygtk_init (void)
     if (!code)
         return FALSE;
 
-    moo_mod = PyImport_ExecCodeModule ((char*) "moo", code);
+    moo_mod = PyImport_ExecCodeModule ("moo", code);
     Py_DECREF (code);
 
     if (!moo_mod)

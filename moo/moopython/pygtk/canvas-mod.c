@@ -19,7 +19,7 @@
 #include "moopython/pygtk/canvas-mod.h"
 
 
-static char *moo_canvas_module_doc = (char*) "_foo_canvas module.";
+static char *moo_canvas_module_doc = "_foo_canvas module.";
 
 
 gboolean
@@ -27,8 +27,8 @@ _moo_canvas_mod_init (void)
 {
     PyObject *mod;
 
-    mod = Py_InitModule3 ((char*) "foocanvas", _moo_canvas_functions, moo_canvas_module_doc);
-    PyImport_AddModule ((char*) "moo.canvas");
+    mod = Py_InitModule3 ("foocanvas", _moo_canvas_functions, moo_canvas_module_doc);
+    PyImport_AddModule ("moo.canvas");
 
     if (!mod)
         return FALSE;
@@ -45,7 +45,7 @@ _moo_canvas_mod_init (void)
         if (!code)
             return FALSE;
 
-        fake_mod = PyImport_ExecCodeModule ((char*) "moo.canvas", code);
+        fake_mod = PyImport_ExecCodeModule ("moo.canvas", code);
         Py_DECREF (code);
 
         if (!fake_mod)
