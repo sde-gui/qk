@@ -40,7 +40,7 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   MOO_LIBS="$MOO_LIBS $GTK_LIBS $GTHREAD_LIBS $MOO_PCRE_LIBS"
 
   if test "x$GLIB_2_14" != xno; then
-    MOO_CFLAGS="$MOO_CFLAGS -I$moo_top_src_dir/$1/mooutils/newgtk"
+    MOO_CFLAGS="-I$moo_top_src_dir/$1/mooutils/newgtk $MOO_CFLAGS"
   fi
 
   if test x$MOO_USE_FAM = xyes; then

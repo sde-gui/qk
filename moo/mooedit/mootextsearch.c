@@ -471,7 +471,7 @@ moo_text_replace_regex_all_real (GtkTextIter            *start,
 
         if (!has_references)
         {
-            freeme = g_regex_eval_replacement (NULL, replacement, &error);
+            freeme = g_match_info_expand_references (NULL, replacement, &error);
 
             if (error)
             {
@@ -548,7 +548,7 @@ moo_text_replace_regex_all_real (GtkTextIter            *start,
         }
         else
         {
-            freeme_here = g_regex_eval_replacement (match_info, replacement, &error);
+            freeme_here = g_match_info_expand_references (match_info, replacement, &error);
             g_free (string);
 
             if (!freeme_here)
