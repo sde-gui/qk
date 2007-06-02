@@ -664,9 +664,9 @@ pattern_info_free (PatternInfo *pattern)
 {
     if (pattern)
     {
-        if (pattern->mi)
-            g_match_info_free (pattern->mi);
-        g_regex_unref (pattern->re);
+        if (pattern->re)
+            g_regex_unref (pattern->re);
+        g_match_info_free (pattern->mi);
         g_slist_foreach (pattern->actions, (GFunc) action_info_free, NULL);
         g_slist_free (pattern->actions);
         g_free (pattern->style);

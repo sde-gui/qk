@@ -29,6 +29,12 @@
 #include <glib/gprintf.h>
 
 
+#define REGEX_FREE(re) G_STMT_START {   \
+    if (re)                             \
+        g_regex_unref (re);             \
+    (re) = NULL;                        \
+} G_STMT_END
+
 static char *last_search;
 static GRegex *last_regex;
 static MooFindFlags last_search_flags;
@@ -239,7 +245,7 @@ moo_find_finalize (GObject *object)
     MooFind *find = MOO_FIND (object);
 
     g_object_unref (find->xml);
-    g_regex_unref (find->regex);
+    REGEX_FREE (find->regex);
 
     G_OBJECT_CLASS(moo_find_parent_class)->finalize (object);
 }
@@ -453,8 +459,7 @@ moo_find_run (MooFind        *find,
     search_entry = moo_glade_xml_get_widget (find->xml, "search_entry");
     replace_entry = moo_glade_xml_get_widget (find->xml, "replace_entry");
 
-    g_regex_unref (find->regex);
-    find->regex = NULL;
+    REGEX_FREE (find->regex);
 
     while (TRUE)
     {
@@ -504,8 +509,7 @@ moo_find_run (MooFind        *find,
             {
                 _moo_text_regex_error_dialog (GTK_WIDGET (find), error);
                 g_error_free (error);
-                g_regex_unref (find->regex);
-                find->regex = NULL;
+                REGEX_FREE (find->regex);
                 continue;
             }
         }
@@ -514,7 +518,7 @@ moo_find_run (MooFind        *find,
         moo_prefs_set_flags (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_FLAGS), flags);
         g_free (last_search);
         last_search = g_strdup (search_for);
-        g_regex_unref (last_regex);
+        REGEX_FREE (last_regex);
         last_regex = find->regex ? g_regex_ref (find->regex) : NULL;
 
         moo_history_list_add (search_history, search_for);
@@ -786,7 +790,7 @@ moo_text_view_run_find (GtkTextView    *view,
     }
 
     g_free (text);
-    g_regex_unref (regex);
+    REGEX_FREE (regex);
 }
 
 
@@ -823,8 +827,7 @@ moo_text_view_run_find_current_word (GtkTextView    *view,
 
     g_free (last_search);
     last_search = search_term;
-    g_regex_unref (last_regex);
-    last_regex = NULL;
+    REGEX_FREE (last_regex);
     moo_history_list_add (search_history, search_term);
 
     if (forward)
@@ -1277,7 +1280,7 @@ moo_text_view_run_replace (GtkTextView    *view,
 
     g_free (text);
     g_free (replacement);
-    g_regex_unref (regex);
+    REGEX_FREE (regex);
 }
 
 

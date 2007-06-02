@@ -249,7 +249,8 @@ get_regex (const char          *pattern,
     {
         GRegexCompileFlags re_flags = 0;
 
-        g_regex_unref (saved_regex);
+        if (saved_regex)
+            g_regex_unref (saved_regex);
         g_free (saved_pattern);
 
         saved_pattern = g_strdup (pattern);
