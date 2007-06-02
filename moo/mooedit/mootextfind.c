@@ -603,7 +603,7 @@ static GRegex *
 moo_find_get_regex (MooFind *find)
 {
     g_return_val_if_fail (MOO_IS_FIND (find), NULL);
-    return g_regex_ref (find->regex);
+    return find->regex ? g_regex_ref (find->regex) : NULL;
 }
 
 
