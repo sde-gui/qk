@@ -133,7 +133,8 @@ _xdg_ucs4_to_lower (xdg_unichar_t source)
 int
 _xdg_utf8_validate (const char *source)
 {
-  return g_utf8_validate (source, -1, NULL);
+  /* FIXME: actually write */
+  return TRUE;
 }
 
 const char *

@@ -22,7 +22,6 @@
  */
 #include "xdgmime.h"
 #include "xdgmimeglob.h"
-#include "xdgmimeint.h"
 #include <string.h>
 #include <stdio.h>
 

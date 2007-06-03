@@ -33,7 +33,6 @@
 typedef struct XdgMimeMagic XdgMimeMagic;
 
 #ifdef XDG_PREFIX
-#define _xdg_mime_glob_read_from_file             XDG_ENTRY(glob_read_from_file)
 #define _xdg_mime_magic_new                       XDG_ENTRY(magic_new)
 #define _xdg_mime_magic_read_from_file            XDG_ENTRY(magic_read_from_file)
 #define _xdg_mime_magic_free                      XDG_ENTRY(magic_free)

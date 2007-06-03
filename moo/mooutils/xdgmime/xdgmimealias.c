@@ -29,13 +29,13 @@
 #include <config.h>
 #endif
 
-#define _GNU_SOURCE
 #include "xdgmimealias.h"
 #include "xdgmimeint.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <fnmatch.h>
 
 #ifndef	FALSE
 #define	FALSE	(0)
@@ -105,7 +105,7 @@ _xdg_mime_alias_list_lookup (XdgAliasList *list,
   if (list->n_aliases > 0)
     {
       key.alias = (char *)alias;
-      key.mime_type = 0;
+      key.mime_type = NULL;
 
       entry = bsearch (&key, list->aliases, list->n_aliases,
 		       sizeof (XdgAlias), alias_entry_cmp);
