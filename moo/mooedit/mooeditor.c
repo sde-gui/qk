@@ -1206,6 +1206,9 @@ moo_editor_open (MooEditor      *editor,
             bring_to_front = NULL;
         }
 
+        if (!window)
+            window = moo_editor_get_active_window (editor);
+
         if (window)
         {
             doc = moo_edit_window_get_active_doc (window);
