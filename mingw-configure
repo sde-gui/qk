@@ -31,12 +31,12 @@ MINGW_TOOL_PREFIX=${MINGW_TOOL_PREFIX:-/usr/bin/i586-mingw32msvc-}
 export GTK_PREFIX=${GTK_PREFIX:-/usr/local/win/gtk}
 
 # These python variables are medit-only
-if [ "x$1" = "x--with-python=2.5" -o "x$2" = "x--with-python=2.5" ]; then
-  export PYTHON_PREFIX=${PYTHON_PREFIX:-/usr/local/win/Python25}
-  export PYTHON25_HOME=$PYTHON_PREFIX
-else
+if [ "x$1" = "x--with-python=2.4" -o "x$2" = "x--with-python=2.4" ]; then
   export PYTHON_PREFIX=${PYTHON_PREFIX:-/usr/local/win/Python24}
   export PYTHON24_HOME=$PYTHON_PREFIX
+else
+  export PYTHON_PREFIX=${PYTHON_PREFIX:-/usr/local/win/Python25}
+  export PYTHON25_HOME=$PYTHON_PREFIX
 fi
 export PYTHON_HOME=$PYTHON_PREFIX
 export PYTHON24_HOME=${PYTHON24_HOME:-/usr/local/win/Python24}
@@ -106,14 +106,14 @@ TARGET=i586-pc-mingw32msvc
 # run make) work.
 # NOTE: --build *must* be here, it's autoconf bug (aka 'feature'), confirmed and
 # *documented*.
-echo sh $CONFIGURE --build=`$CONFIG_GUESS` --host=$TARGET --target=$TARGET \
+echo sh $CONFIGURE --prefix=$GTK_PREFIX --build=`$CONFIG_GUESS` --host=$TARGET --target=$TARGET \
 --enable-all-warnings --enable-maintainer-mode \
 PKG_CONFIG="$PKG_CONFIG" GTK_PREFIX="$GTK_PREFIX" \
 PYTHON_PREFIX="$PYTHON_PREFIX" PYTHON_HOME="$PYTHON_HOME" \
 PYTHON24_HOME="$PYTHON24_HOME" PYTHON25_HOME="$PYTHON25_HOME" \
 AR="$AR" RANLIB="$RANLIB" STRIP="$STRIP" AS="$AS" DLLTOOL="$DLLTOOL" \
 OBJDUMP="$OBJDUMP" NM="$NM" WINDRES="$WINDRES" $@
-exec sh $CONFIGURE --build=`$CONFIG_GUESS` --host=$TARGET --target=$TARGET \
+exec sh $CONFIGURE --prefix=$GTK_PREFIX --build=`$CONFIG_GUESS` --host=$TARGET --target=$TARGET \
 --enable-all-warnings --enable-maintainer-mode \
 PKG_CONFIG="$PKG_CONFIG" GTK_PREFIX="$GTK_PREFIX" \
 PYTHON_PREFIX="$PYTHON_PREFIX" PYTHON_HOME="$PYTHON_HOME" \
