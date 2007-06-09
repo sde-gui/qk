@@ -108,17 +108,19 @@ static void
 connect_proxy (GtkAction *action,
                GtkWidget *widget)
 {
-    GtkActionClass *parent;
+    GtkActionClass *parent_class;
 
     if (MOO_IS_ACTION (action))
-        parent = moo_action_parent_class;
+        parent_class = moo_action_parent_class;
     else if (MOO_IS_TOGGLE_ACTION (action))
-        parent = moo_toggle_action_parent_class;
+        parent_class = moo_toggle_action_parent_class;
     else
-        parent = moo_radio_action_parent_class;
+        parent_class = moo_radio_action_parent_class;
 
-    parent->connect_proxy (action, widget);
+    parent_class->connect_proxy (action, widget);
     g_signal_emit_by_name (action, "connect-proxy", widget);
+
+    _moo_action_base_connect_proxy (action, widget);
 }
 
 static void
@@ -161,6 +163,7 @@ static void
 moo_action_init (MooAction *action)
 {
     action->priv = g_new0 (MooActionPrivate, 1);
+    _moo_action_base_init_instance (action);
 }
 
 
@@ -376,6 +379,7 @@ static void
 moo_toggle_action_init (MooToggleAction *action)
 {
     action->priv = g_new0 (MooToggleActionPrivate, 1);
+    _moo_action_base_init_instance (action);
 }
 
 
@@ -557,8 +561,9 @@ enum {
 
 
 static void
-moo_radio_action_init (G_GNUC_UNUSED MooRadioAction *action)
+moo_radio_action_init (MooRadioAction *action)
 {
+    _moo_action_base_init_instance (action);
 }
 
 

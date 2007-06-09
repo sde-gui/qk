@@ -15,6 +15,7 @@
 #define MOO_ACTION_BASE_PRIVATE_H
 
 #include <mooutils/mooactionbase.h>
+#include <gtk/gtkaction.h>
 
 G_BEGIN_DECLS
 
@@ -30,6 +31,7 @@ G_BEGIN_DECLS
     prefix##_PROP_DEAD,                             \
     prefix##_PROP_ACTIVE,                           \
     prefix##_PROP_HAS_SUBMENU,                      \
+    prefix##_PROP_USE_UNDERLINE,                    \
     /* these are overridden GtkAction properties */ \
     prefix##_PROP_LABEL,                            \
     prefix##_PROP_TOOLTIP
@@ -45,6 +47,7 @@ G_BEGIN_DECLS
     case prefix##_PROP_DEAD:                            \
     case prefix##_PROP_ACTIVE:                          \
     case prefix##_PROP_HAS_SUBMENU:                     \
+    case prefix##_PROP_USE_UNDERLINE:                   \
     case prefix##_PROP_LABEL:                           \
     case prefix##_PROP_TOOLTIP:                         \
         func (object, property_id, value, pspec);       \
@@ -63,6 +66,9 @@ void        _moo_action_base_get_property   (GObject        *object,
                                              guint           property_id,
                                              GValue         *value,
                                              GParamSpec     *pspec);
+void        _moo_action_base_connect_proxy  (GtkAction      *action,
+                                             GtkWidget      *proxy);
+void        _moo_action_base_init_instance  (gpointer        action);
 
 
 G_END_DECLS

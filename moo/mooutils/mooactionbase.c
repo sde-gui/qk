@@ -15,9 +15,12 @@
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooactiongroup.h"
 #include "mooutils/moomarshals.h"
-#include <gtk/gtkaction.h>
-#include <gtk/gtkstock.h>
+#include <gtk/gtk.h>
 #include <string.h>
+
+
+static void proxy_set_use_underline       (GtkWidget *proxy,
+                                           gboolean   use_underline);
 
 
 enum {
@@ -91,6 +94,10 @@ class_init (gpointer g_iface)
                                          g_param_spec_boolean ("has-submenu", "has-submenu", "has-submenu",
                                                                FALSE,
                                                                G_PARAM_READWRITE));
+    g_object_interface_install_property (g_iface,
+                                         g_param_spec_boolean ("use-underline", "use-underline", "use-underline",
+                                                               TRUE,
+                                                               G_PARAM_READWRITE));
 }
 
 
@@ -133,6 +140,11 @@ _moo_action_base_init_class (GObjectClass *klass)
                                      g_param_spec_boolean ("has-submenu", "has-submenu", "has-submenu",
                                                            FALSE,
                                                            G_PARAM_READWRITE));
+    g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_USE_UNDERLINE,
+                                     g_param_spec_boolean ("use-underline", "use-underline", "use-underline",
+                                                           TRUE,
+                                                           G_PARAM_READWRITE));
+
     g_object_class_override_property (klass,
                                       MOO_ACTION_BASE_PROP_LABEL,
                                       "label");
@@ -397,6 +409,41 @@ _moo_action_get_has_submenu (gpointer action)
 
 
 static void
+sync_proxies_use_underline (gpointer action,
+                            gboolean use_underline)
+{
+    GSList *proxies;
+
+    proxies = g_slist_copy (gtk_action_get_proxies (action));
+    g_slist_foreach (proxies, (GFunc) g_object_ref, NULL);
+
+    while (proxies)
+    {
+        proxy_set_use_underline (proxies->data, use_underline);
+        g_object_unref (proxies->data);
+        proxies = g_slist_delete_link (proxies, proxies);
+    }
+}
+
+static void
+moo_action_base_set_use_underline (gpointer action,
+                                   gboolean use_underline)
+{
+    g_return_if_fail (MOO_IS_ACTION_BASE (action));
+    set_bool (action, "moo-action-use-underline", use_underline);
+    sync_proxies_use_underline (action, use_underline);
+    g_object_notify (G_OBJECT (action), "use-underline");
+}
+
+static gboolean
+moo_action_base_get_use_underline (gpointer action)
+{
+    g_return_val_if_fail (MOO_IS_ACTION_BASE (action), FALSE);
+    return get_bool (action, "moo-action-use-underline");
+}
+
+
+static void
 moo_action_base_set_label (MooActionBase *ab,
                            const char    *label)
 {
@@ -408,6 +455,8 @@ moo_action_base_set_label (MooActionBase *ab,
         label = stock_item.label;
 
     g_object_set (G_OBJECT (ab), "GtkAction::label", label, NULL);
+
+    sync_proxies_use_underline (ab, moo_action_base_get_use_underline (ab));
 }
 
 
@@ -474,6 +523,9 @@ _moo_action_base_set_property (GObject      *object,
         case MOO_ACTION_BASE_PROP_TOOLTIP:
             moo_action_base_set_tooltip (ab, g_value_get_string (value));
             break;
+        case MOO_ACTION_BASE_PROP_USE_UNDERLINE:
+            moo_action_base_set_use_underline (ab, g_value_get_boolean (value));
+            break;
 
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -514,6 +566,9 @@ _moo_action_base_get_property (GObject    *object,
             break;
         case MOO_ACTION_BASE_PROP_HAS_SUBMENU:
             g_value_set_boolean (value, _moo_action_get_has_submenu (ab));
+            break;
+        case MOO_ACTION_BASE_PROP_USE_UNDERLINE:
+            g_value_set_boolean (value, moo_action_base_get_use_underline (ab));
             break;
 
         case MOO_ACTION_BASE_PROP_LABEL:
@@ -595,4 +650,34 @@ _moo_action_get_default_accel (gpointer action)
 {
     g_return_val_if_fail (MOO_IS_ACTION_BASE (action), "");
     return moo_action_base_get_accel (action);
+}
+
+
+void
+_moo_action_base_connect_proxy (GtkAction *action,
+                                GtkWidget *proxy)
+{
+    g_return_if_fail (MOO_IS_ACTION_BASE (action));
+    g_return_if_fail (GTK_IS_WIDGET (proxy));
+    proxy_set_use_underline (proxy, moo_action_base_get_use_underline (action));
+}
+
+static void
+proxy_set_use_underline (GtkWidget *proxy,
+                         gboolean   use_underline)
+{
+    g_return_if_fail (GTK_IS_WIDGET (proxy));
+
+    if (GTK_IS_MENU_ITEM (proxy) && GTK_BIN (proxy)->child && GTK_IS_LABEL (GTK_BIN (proxy)->child))
+        gtk_label_set_use_underline (GTK_LABEL (GTK_BIN (proxy)->child), use_underline);
+    else if (GTK_IS_BUTTON (proxy))
+        gtk_button_set_use_underline (GTK_BUTTON (proxy), use_underline);
+}
+
+
+void
+_moo_action_base_init_instance (gpointer action)
+{
+    g_return_if_fail (MOO_IS_ACTION_BASE (action));
+    set_bool (action, "moo-action-use-underline", TRUE);
 }
