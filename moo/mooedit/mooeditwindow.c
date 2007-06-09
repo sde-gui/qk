@@ -3728,6 +3728,7 @@ do_update_doc_list (MooEditWindow *window)
                                    "name", name,
                                    "label", moo_edit_get_display_basename (doc),
                                    "tooltip", moo_edit_get_display_filename (doc),
+                                   "use-underline", FALSE,
                                    NULL);
             g_object_set_data_full (doc, "moo-doc-list-action", action, g_object_unref);
             g_object_set_data (G_OBJECT (action), "moo-edit", doc);
