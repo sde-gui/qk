@@ -1,7 +1,7 @@
 /*
- *   mooedit.h
+ *   mootextview.h
  *
- *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_TEXT_VIEW_H__
-#define __MOO_TEXT_VIEW_H__
+#ifndef MOO_TEXT_VIEW_H
+#define MOO_TEXT_VIEW_H
 
 #include <gtk/gtktextview.h>
 #include <mooedit/mooindenter.h>
@@ -132,8 +132,9 @@ void         moo_text_view_set_highlight_current_line
                                                      gboolean            highlight);
 void         moo_text_view_set_current_line_color   (MooTextView        *view,
                                                      const GdkColor     *color);
-void         moo_text_view_set_cursor_color         (MooTextView        *view,
-                                                     const GdkColor     *color);
+void         moo_text_view_set_cursor_colors        (MooTextView        *view,
+                                                     const GdkColor     *prrimary,
+                                                     const GdkColor     *secondary);
 void         moo_text_view_set_style_scheme         (MooTextView        *view,
                                                      MooTextStyleScheme *scheme);
 
@@ -169,4 +170,4 @@ void         moo_text_view_unindent                 (MooTextView        *view);
 
 G_END_DECLS
 
-#endif /* __MOO_TEXT_VIEW_H__ */
+#endif /* MOO_TEXT_VIEW_H */

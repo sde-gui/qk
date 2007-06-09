@@ -1194,12 +1194,13 @@
   )
 )
 
-(define-method set_cursor_color
+(define-method set_cursor_colors
   (of-object "MooTextView")
-  (c-name "moo_text_view_set_cursor_color")
+  (c-name "moo_text_view_set_cursor_colors")
   (return-type "none")
   (parameters
-    '("const-GdkColor*" "color")
+    '("const-GdkColor*" "primary" (null-ok))
+    '("const-GdkColor*" "secondary" (null-ok) (default "NULL"))
   )
 )
 

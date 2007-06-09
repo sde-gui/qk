@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_TEXT_STYLE_SCHEME_H__
-#define __MOO_TEXT_STYLE_SCHEME_H__
+#ifndef MOO_TEXT_STYLE_SCHEME_H
+#define MOO_TEXT_STYLE_SCHEME_H
 
 #include <mooedit/mootextstyle.h>
 #include <gtk/gtkwidget.h>
@@ -46,4 +46,4 @@ MooTextStyle       *_moo_text_style_scheme_lookup_style (MooTextStyleScheme *sch
 
 G_END_DECLS
 
-#endif /* __MOO_TEXT_STYLE_SCHEME_H__ */
+#endif /* MOO_TEXT_STYLE_SCHEME_H */

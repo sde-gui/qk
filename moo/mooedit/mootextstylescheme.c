@@ -25,7 +25,9 @@
 #define STYLE_BRACKET_MATCH	"bracket-match"
 #define STYLE_BRACKET_MISMATCH	"bracket-mismatch"
 #define STYLE_CURSOR		"cursor"
+#define STYLE_SECONDARY_CURSOR	"secondary-cursor"
 #define STYLE_CURRENT_LINE	"current-line"
+#define STYLE_LINE_NUMBERS	"line-numbers"
 
 GType
 moo_text_style_scheme_get_type (void)
@@ -137,11 +139,31 @@ set_text_style (GtkWidget      *widget,
 	gtk_widget_modify_text (widget, state, color);
 }
 
+static void
+set_line_numbers_style (GtkWidget      *widget,
+			GtkSourceStyle *style)
+{
+	gint i;
+	GdkColor *fg = NULL;
+	GdkColor *bg = NULL;
+
+	if (style != NULL && STYLE_HAS_FOREGROUND (style))
+		fg = &style->foreground;
+	if (style != NULL && STYLE_HAS_BACKGROUND (style))
+		bg = &style->background;
+
+	for (i = 0; i < 5; ++i)
+	{
+		gtk_widget_modify_fg (widget, i, fg);
+		gtk_widget_modify_bg (widget, i, bg);
+	}
+}
+
 void
 _moo_text_style_scheme_apply (MooTextStyleScheme *scheme,
                               GtkWidget          *widget)
 {
-	GtkSourceStyle *style;
+	GtkSourceStyle *style, *style2;
 
 	g_return_if_fail (MOO_IS_TEXT_STYLE_SCHEME (scheme));
 	g_return_if_fail (GTK_IS_WIDGET (widget));
@@ -159,10 +181,18 @@ _moo_text_style_scheme_apply (MooTextStyleScheme *scheme,
 	set_text_style (widget, style, GTK_STATE_SELECTED);
 	gtk_source_style_free (style);
 
+    	style = gtk_source_style_scheme_get_style (GTK_SOURCE_STYLE_SCHEME (scheme), STYLE_LINE_NUMBERS);
+    	set_line_numbers_style (widget, style);
+    	gtk_source_style_free (style);
+
         if (MOO_IS_TEXT_VIEW (widget))
         {
             style = gtk_source_style_scheme_get_style (GTK_SOURCE_STYLE_SCHEME (scheme), STYLE_CURSOR);
-            moo_text_view_set_cursor_color (MOO_TEXT_VIEW (widget), style ? &style->foreground : NULL);
+            style2 = gtk_source_style_scheme_get_style (GTK_SOURCE_STYLE_SCHEME (scheme), STYLE_SECONDARY_CURSOR);
+            moo_text_view_set_cursor_colors (MOO_TEXT_VIEW (widget),
+                                             style ? &style->foreground : NULL,
+                                             style2 ? &style2->foreground : NULL);
+            gtk_source_style_free (style2);
             gtk_source_style_free (style);
 
             style = gtk_source_style_scheme_get_style (GTK_SOURCE_STYLE_SCHEME (scheme), STYLE_CURRENT_LINE);

@@ -2399,36 +2399,53 @@ moo_text_view_lookup_tag (MooTextView    *view,
 
 
 void
-moo_text_view_set_cursor_color (MooTextView    *view,
-                                const GdkColor *color)
+moo_text_view_set_cursor_colors (MooTextView    *view,
+                                 const GdkColor *primary,
+                                 const GdkColor *secondary)
 {
+#if !GTK_CHECK_VERSION(2,11,3)
     char *rc_string;
+    GdkColor color = {0, 0, 0, 0};
 
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
-    if (!color)
+    gtk_widget_ensure_style (GTK_WIDGET (view));
+
+    if (!primary)
     {
-        gtk_widget_ensure_style (GTK_WIDGET (view));
         g_return_if_fail (GTK_WIDGET (view)->style != NULL);
-        color = &GTK_WIDGET(view)->style->text[GTK_STATE_NORMAL];
+        primary = &GTK_WIDGET(view)->style->text[GTK_STATE_NORMAL];
+        secondary = &GTK_WIDGET(view)->style->text_aa[GTK_STATE_NORMAL];
     }
 
-    g_return_if_fail (color != NULL);
+    if (!secondary)
+    {
+    	GdkColor tmp = GTK_WIDGET(view)->style->base[GTK_STATE_NORMAL];
+    	color.red = ((gint) tmp.red + primary->red) / 2;
+    	color.green = ((gint) tmp.green + primary->green) / 2;
+    	color.blue = ((gint) tmp.blue + primary->blue) / 2;
+    	secondary = &color;
+    }
 
     rc_string = g_strdup_printf (
         "style \"%p\"\n"
         "{\n"
         "   GtkWidget::cursor-color = \"#%02x%02x%02x\"\n"
+        "   GtkWidget::secondary-cursor-color = \"#%02x%02x%02x\"\n"
         "}\n"
         "widget \"*.%s\" style \"%p\"\n",
         (gpointer) view,
-        color->red >> 8, color->green >> 8, color->blue >> 8,
+        primary->red >> 8, primary->green >> 8, primary->blue >> 8,
+        secondary->red >> 8, secondary->green >> 8, secondary->blue >> 8,
         gtk_widget_get_name (GTK_WIDGET (view)), (gpointer) view
     );
 
     gtk_rc_parse_string (rc_string);
 
     g_free (rc_string);
+#else
+    gtk_widget_modify_cursor (GTK_WIDGET (view), primary, secondary);
+#endif
 }
 
 
