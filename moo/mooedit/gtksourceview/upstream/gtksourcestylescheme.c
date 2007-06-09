@@ -22,7 +22,6 @@
 #include "gtksourcestylescheme.h"
 #include "gtksourceview.h"
 #include "gtksourcelanguage-private.h"
-#include <gtk/gtk.h>
 #include <string.h>
 
 #define STYLE_HAS_FOREGROUND(s) ((s) && ((s)->mask & GTK_SOURCE_STYLE_USE_FOREGROUND))
