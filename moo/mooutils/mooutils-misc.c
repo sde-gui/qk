@@ -43,6 +43,10 @@
 #endif
 
 
+G_LOCK_DEFINE_STATIC (moo_user_data_dir);
+static char *moo_user_data_dir;
+
+
 #ifdef __WIN32__
 
 static gboolean
@@ -1154,14 +1158,43 @@ moo_get_prgname (void)
 }
 
 
+static char *
+moo_get_user_cache_dir (void)
+{
+    return g_strdup_printf ("%s/%s", g_get_user_cache_dir (), moo_get_prgname ());
+}
+
 char *
 moo_get_user_data_dir (void)
 {
+    G_LOCK (moo_user_data_dir);
+
+    if (!moo_user_data_dir)
+    {
 #ifdef __WIN32__
-    return g_build_filename (g_get_home_dir (), moo_get_prgname (), NULL);
+        moo_user_data_dir = g_build_filename (g_get_home_dir (), moo_get_prgname (), NULL);
 #else
-    return g_strdup_printf ("%s/.%s", g_get_home_dir (), moo_get_prgname ());
+        moo_user_data_dir = g_strdup_printf ("%s/%s", g_get_user_data_dir (), moo_get_prgname ());
 #endif
+    }
+
+    G_UNLOCK (moo_user_data_dir);
+
+    return moo_user_data_dir;
+}
+
+void
+_moo_set_user_data_dir (const char *path)
+{
+    G_LOCK (moo_user_data_dir);
+
+    if (moo_user_data_dir)
+        g_critical ("%s: user data dir already set", G_STRLOC);
+
+    g_free (moo_user_data_dir);
+    moo_user_data_dir = g_strdup (path);
+
+    G_UNLOCK (moo_user_data_dir);
 }
 
 
@@ -1176,7 +1209,7 @@ moo_make_user_data_dir (const char *path)
     g_return_val_if_fail (user_dir != NULL, FALSE);
 
     full_path = g_build_filename (user_dir, path, NULL);
-    result = g_mkdir_with_parents (full_path, S_IRWXU);
+    result = _moo_mkdir_with_parents (full_path);
 
     if (result != 0)
     {
@@ -1408,20 +1441,37 @@ moo_get_data_subdirs (const char    *subdir,
 }
 
 
-char *
-moo_get_user_data_file (const char *basename)
+static char *
+get_user_data_file (const char *basename,
+                    gboolean    cache)
 {
     char *dir, *file;
 
     g_return_val_if_fail (basename && basename[0], NULL);
 
-    dir = moo_get_user_data_dir ();
+    if (cache)
+        dir = moo_get_user_cache_dir ();
+    else
+        dir = moo_get_user_data_dir ();
+
     g_return_val_if_fail (dir != NULL, NULL);
 
     file = g_build_filename (dir, basename, NULL);
 
     g_free (dir);
     return file;
+}
+
+char *
+moo_get_user_data_file (const char *basename)
+{
+    return get_user_data_file (basename, FALSE);
+}
+
+char *
+moo_get_user_cache_file (const char *basename)
+{
+    return get_user_data_file (basename, TRUE);
 }
 
 
@@ -1495,11 +1545,12 @@ out:
     return equal;
 }
 
-gboolean
-moo_save_user_data_file (const char     *basename,
-                         const char     *content,
-                         gssize          len,
-                         GError        **error)
+static gboolean
+save_user_data_file (const char     *basename,
+                     gboolean        cache,
+                     const char     *content,
+                     gssize          len,
+                     GError        **error)
 {
     char *dir, *file;
     gboolean result = FALSE;
@@ -1510,8 +1561,17 @@ moo_save_user_data_file (const char     *basename,
     if (len < 0)
         len = strlen (content);
 
-    dir = moo_get_user_data_dir ();
-    file = moo_get_user_data_file (basename);
+    if (cache)
+    {
+        dir = moo_get_user_cache_dir ();
+        file = moo_get_user_cache_file (basename);
+    }
+    else
+    {
+        dir = moo_get_user_data_dir ();
+        file = moo_get_user_data_file (basename);
+    }
+
     g_return_val_if_fail (dir && file, FALSE);
 
     if (!_moo_create_dir (dir, error))
@@ -1532,6 +1592,24 @@ out:
     g_free (dir);
     g_free (file);
     return result;
+}
+
+gboolean
+moo_save_user_data_file (const char  *basename,
+                         const char  *content,
+                         gssize       len,
+                         GError     **error)
+{
+    return save_user_data_file (basename, FALSE, content, len, error);
+}
+
+gboolean
+moo_save_user_cache_file (const char  *basename,
+                          const char  *content,
+                          gssize       len,
+                          GError     **error)
+{
+    return save_user_data_file (basename, TRUE, content, len, error);
 }
 
 

@@ -41,7 +41,6 @@ struct _MooAppInfo
     char *version;
     char *website;
     char *website_label;
-    char *rc_file;
     char *logo;
     char *credits;
 };
@@ -86,8 +85,6 @@ void             moo_app_set_exit_code          (MooApp     *app,
 const MooAppInfo*moo_app_get_info               (MooApp     *app);
 
 char            *moo_app_create_user_data_dir   (MooApp     *app);
-const char      *moo_app_get_rc_file_name       (MooApp     *app,
-                                                 MooPrefsType prefs_type);
 const char      *moo_app_get_input_pipe_name    (MooApp     *app);
 
 MooEditor       *moo_app_get_editor             (MooApp     *app);

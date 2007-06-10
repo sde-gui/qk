@@ -59,6 +59,7 @@ gboolean        _moo_remove_dir             (const char *path,
                                              GError    **error);
 gboolean        _moo_create_dir             (const char *path,
                                              GError    **error);
+int             _moo_mkdir_with_parents     (const char *path); /* S_IRWXU on unix */
 gboolean        _moo_rename_file            (const char *path,
                                              const char *new_path,
                                              GError    **error);

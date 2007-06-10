@@ -237,6 +237,13 @@ _moo_remove_dir (const char *path,
 }
 
 
+int
+_moo_mkdir_with_parents (const char *path)
+{
+    return g_mkdir_with_parents (path, S_IRWXU);
+}
+
+
 gboolean
 _moo_create_dir (const char *path,
                  GError    **error)

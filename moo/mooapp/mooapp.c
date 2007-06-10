@@ -122,6 +122,9 @@ static void     moo_app_exec_cmd_real   (MooApp             *app,
                                          guint               len);
 static GtkWidget *moo_app_create_prefs_dialog (MooApp       *app);
 
+static void     moo_app_load_prefs      (MooApp             *app);
+static void     moo_app_save_prefs      (MooApp             *app);
+
 static void     moo_app_set_name        (MooApp             *app,
                                          const char         *short_name,
                                          const char         *full_name);
@@ -614,40 +617,6 @@ moo_app_get_input_pipe_name (G_GNUC_UNUSED MooApp *app)
 }
 
 
-const char *
-moo_app_get_rc_file_name (MooApp      *app,
-                          MooPrefsType prefs_type)
-{
-    g_return_val_if_fail (MOO_IS_APP (app), NULL);
-    g_return_val_if_fail (prefs_type < 2, NULL);
-
-    if (!app->priv->rc_files[prefs_type])
-    {
-#ifdef __WIN32__
-        const char *templates[] = {"%s.ini", "%s.state"};
-        char *basename = g_strdup_printf (templates[prefs_type],
-                                          app->priv->info->short_name);
-        app->priv->rc_files[prefs_type] =
-                g_build_filename (g_get_user_config_dir (),
-                                  basename,
-                                  NULL);
-        g_free (basename);
-#else
-        const char *templates[] = {".%src", ".%s.state"};
-        char *basename = g_strdup_printf (templates[prefs_type],
-                                          app->priv->info->short_name);
-        app->priv->rc_files[prefs_type] =
-                g_build_filename (g_get_home_dir (),
-                                  basename,
-                                  NULL);
-        g_free (basename);
-#endif
-    }
-
-    return app->priv->rc_files[prefs_type];
-}
-
-
 char *
 moo_app_create_user_data_dir (MooApp *app)
 {
@@ -819,24 +788,10 @@ moo_app_init_ui (MooApp *app)
 static gboolean
 moo_app_init_real (MooApp *app)
 {
-    GError *error = NULL;
-
     gdk_set_program_class (app->priv->info->full_name);
     gtk_window_set_default_icon_name (app->priv->info->short_name);
 
-    if (!moo_prefs_load (moo_app_get_rc_file_name (app, MOO_PREFS_RC),
-                         moo_app_get_rc_file_name (app, MOO_PREFS_STATE),
-                         &error))
-    {
-        g_warning ("%s: could not read config file", G_STRLOC);
-
-        if (error)
-        {
-            g_warning ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
-    }
-
+    moo_app_load_prefs (app);
     moo_app_init_ui (app);
 
 #ifdef MOO_BUILD_EDIT
@@ -1040,26 +995,6 @@ moo_app_try_quit_real (MooApp *app)
 #endif /* MOO_BUILD_EDIT */
 
     return FALSE;
-}
-
-
-static void
-moo_app_save_prefs (MooApp *app)
-{
-    GError *error = NULL;
-
-    if (!moo_prefs_save (moo_app_get_rc_file_name (app, MOO_PREFS_RC),
-                         moo_app_get_rc_file_name (app, MOO_PREFS_STATE),
-                         &error))
-    {
-        g_warning ("%s: could not save config file", G_STRLOC);
-
-        if (error)
-        {
-            g_warning ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
-    }
 }
 
 
@@ -1327,7 +1262,6 @@ moo_app_info_copy (const MooAppInfo *info)
     copy->version = g_strdup (info->version);
     copy->website = g_strdup (info->website);
     copy->website_label = g_strdup (info->website_label);
-    copy->rc_file = g_strdup (info->rc_file);
     copy->logo = g_strdup (info->logo);
     copy->credits = g_strdup (info->credits);
 
@@ -1346,7 +1280,6 @@ moo_app_info_free (MooAppInfo *info)
         g_free (info->version);
         g_free (info->website);
         g_free (info->website_label);
-        g_free (info->rc_file);
         g_free (info->logo);
         g_free (info->credits);
         g_free (info);
@@ -1686,4 +1619,128 @@ moo_app_create_prefs_dialog (MooApp *app)
                             NULL);
 
     return GTK_WIDGET (dialog);
+}
+
+
+#ifndef __WIN32__
+static void
+move_rc_files (MooApp *app)
+{
+    char *old_dir;
+    char *new_dir;
+    char *cache_dir;
+
+    old_dir = g_strdup_printf ("%s/.%s", g_get_home_dir (), g_get_prgname ());
+    new_dir = g_strdup_printf ("%s/%s", g_get_user_data_dir (), g_get_prgname ());
+    cache_dir = g_strdup_printf ("%s/%s", g_get_user_cache_dir (), g_get_prgname ());
+
+    /* do not be too clever here, there are way too many possible errors */
+
+    if (!g_file_test (new_dir, G_FILE_TEST_EXISTS) &&
+        g_file_test (old_dir, G_FILE_TEST_EXISTS) &&
+        _moo_rename (old_dir, new_dir) != 0)
+    {
+        _moo_set_user_data_dir (old_dir);
+    }
+
+    {
+        char *new_file;
+        char *old_file;
+
+        new_file = g_strdup_printf ("%s/%src", g_get_user_config_dir (), g_get_prgname ());
+        old_file = g_strdup_printf ("%s/.%src", g_get_home_dir (), g_get_prgname ());
+
+        if (!g_file_test (new_file, G_FILE_TEST_EXISTS) &&
+            g_file_test (old_file, G_FILE_TEST_EXISTS) &&
+            _moo_rename (old_file, new_file) != 0)
+        {
+            app->priv->rc_files[MOO_PREFS_RC] = old_file;
+            old_file = NULL;
+        }
+        else
+        {
+            app->priv->rc_files[MOO_PREFS_RC] = new_file;
+            new_file = NULL;
+
+            if (!g_file_test (g_get_user_config_dir (), G_FILE_TEST_EXISTS))
+                _moo_mkdir_with_parents (g_get_user_config_dir ());
+        }
+
+        g_free (old_file);
+        g_free (new_file);
+    }
+
+    if (!g_file_test (cache_dir, G_FILE_TEST_EXISTS))
+        _moo_mkdir_with_parents (cache_dir);
+
+    {
+        const char *new_file;
+        char *old_file = g_strdup_printf ("%s/.%s.state", g_get_home_dir (), g_get_prgname ());
+
+        app->priv->rc_files[MOO_PREFS_STATE] =
+            g_strdup_printf ("%s/%s.state", cache_dir, g_get_prgname ());
+        new_file = app->priv->rc_files[MOO_PREFS_STATE];
+
+        if (!g_file_test (new_file, G_FILE_TEST_EXISTS) &&
+            g_file_test (old_file, G_FILE_TEST_EXISTS))
+        {
+            _moo_rename (old_file, new_file);
+        }
+
+        g_free (old_file);
+    }
+
+    g_free (cache_dir);
+    g_free (new_dir);
+    g_free (old_dir);
+}
+#endif
+
+
+static void
+moo_app_load_prefs (MooApp *app)
+{
+    GError *error = NULL;
+
+#ifndef __WIN32__
+    move_rc_files (app);
+#else
+    app->priv->rc_files[MOO_PREFS_RC] =
+        g_strdup_printf ("%s/%s.ini", g_get_user_config_dir (), g_get_prgname ());
+    app->priv->rc_files[MOO_PREFS_STATE] =
+        g_strdup_printf ("%s/%s.state", g_get_user_config_dir (), g_get_prgname ());
+#endif
+
+    if (!moo_prefs_load (app->priv->rc_files[MOO_PREFS_RC],
+                         app->priv->rc_files[MOO_PREFS_STATE],
+                         &error))
+    {
+        g_warning ("%s: could not read config file", G_STRLOC);
+
+        if (error)
+        {
+            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
+    }
+}
+
+
+static void
+moo_app_save_prefs (MooApp *app)
+{
+    GError *error = NULL;
+
+    if (!moo_prefs_save (app->priv->rc_files[MOO_PREFS_RC],
+                         app->priv->rc_files[MOO_PREFS_STATE],
+                         &error))
+    {
+        g_warning ("%s: could not save config file", G_STRLOC);
+
+        if (error)
+        {
+            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
+    }
 }
