@@ -2442,6 +2442,7 @@ create_tab_label (MooEditWindow *window,
     gtk_widget_show (hbox);
 
     evbox = gtk_event_box_new ();
+    gtk_event_box_set_visible_window (GTK_EVENT_BOX (evbox), FALSE);
     gtk_box_pack_start (GTK_BOX (hbox), evbox, FALSE, FALSE, 0);
     icon = gtk_image_new ();
     gtk_container_add (GTK_CONTAINER (evbox), icon);
