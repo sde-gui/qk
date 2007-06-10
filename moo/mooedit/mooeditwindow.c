@@ -3854,8 +3854,9 @@ moo_edit_window_update_doc_list (MooEditWindow *window)
 {
     if (!window->priv->doc_list_update_idle)
         window->priv->doc_list_update_idle =
-                moo_idle_add ((GSourceFunc) do_update_doc_list,
-                              window);
+                _moo_idle_add_full (G_PRIORITY_HIGH,
+                                    (GSourceFunc) do_update_doc_list,
+                                    window, NULL);
 }
 
 
