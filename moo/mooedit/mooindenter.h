@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_INDENTER_H__
-#define __MOO_INDENTER_H__
+#ifndef MOO_INDENTER_H
+#define MOO_INDENTER_H
 
 #include <gtk/gtktextbuffer.h>
 
@@ -93,4 +93,4 @@ guint        moo_text_iter_get_prev_stop        (const GtkTextIter *start,
 
 G_END_DECLS
 
-#endif /* __MOO_INDENTER_H__ */
+#endif /* MOO_INDENTER_H */

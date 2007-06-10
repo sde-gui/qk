@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_FILE_ENTRY_H__
-#define __MOO_FILE_ENTRY_H__
+#ifndef MOO_FILE_ENTRY_H
+#define MOO_FILE_ENTRY_H
 
 #include <mooutils/mooentry.h>
 #include <moofileview/moofile.h>
@@ -83,4 +83,4 @@ void        _moo_file_entry_completion_set_path         (MooFileEntryCompletion 
 
 G_END_DECLS
 
-#endif /* __MOO_FILE_ENTRY_H__ */
+#endif /* MOO_FILE_ENTRY_H */

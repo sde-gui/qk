@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_FILE_SELECTOR_H__
-#define __MOO_FILE_SELECTOR_H__
+#ifndef MOO_FILE_SELECTOR_H
+#define MOO_FILE_SELECTOR_H
 
 #include "mooedit/mooplugin.h"
 #include "moofileview/moofileview-impl.h"
@@ -79,4 +79,4 @@ G_STMT_START {                                                                  
 
 G_END_DECLS
 
-#endif /* __MOO_FILE_SELECTOR_H__ */
+#endif /* MOO_FILE_SELECTOR_H */

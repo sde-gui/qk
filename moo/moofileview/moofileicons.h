@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_FILE_ICONS_H__
-#define __MOO_FILE_ICONS_H__
+#ifndef MOO_FILE_ICONS_H
+#define MOO_FILE_ICONS_H
 
 #include <gtk/gtkwidget.h>
 
@@ -50,4 +50,4 @@ GdkPixbuf   *_moo_get_icon  (GtkWidget      *widget,
 
 G_END_DECLS
 
-#endif /* __MOO_FILE_ICONS_H__ */
+#endif /* MOO_FILE_ICONS_H */

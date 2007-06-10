@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_ICON_VIEW_H__
-#define __MOO_ICON_VIEW_H__
+#ifndef MOO_ICON_VIEW_H
+#define MOO_ICON_VIEW_H
 
 #include <gtk/gtkvbox.h>
 #include <gtk/gtktreemodel.h>
@@ -159,4 +159,4 @@ GtkTreePath *_moo_icon_view_get_drag_dest_row   (MooIconView        *view);
 
 G_END_DECLS
 
-#endif /* __MOO_ICON_VIEW_H__ */
+#endif /* MOO_ICON_VIEW_H */

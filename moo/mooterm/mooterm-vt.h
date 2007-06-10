@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_TERM_VT_H__
-#define __MOO_TERM_VT_H__
+#ifndef MOO_TERM_VT_H
+#define MOO_TERM_VT_H
 
 enum {
     MODE_IRM,       /*  Insert/Replace Mode
@@ -380,4 +380,4 @@ typedef enum {
 #define FINAL_DECSTBM   "r"
 
 
-#endif /* __MOO_TERM_VT_H__ */
+#endif /* MOO_TERM_VT_H */

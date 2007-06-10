@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_PLUGIN_LOADER_H__
-#define __MOO_PLUGIN_LOADER_H__
+#ifndef MOO_PLUGIN_LOADER_H
+#define MOO_PLUGIN_LOADER_H
 
 #include <mooedit/mooplugin.h>
 
@@ -50,4 +50,4 @@ void             _moo_plugin_finish_load    (void);
 
 G_END_DECLS
 
-#endif /* __MOO_PLUGIN_LOADER_H__ */
+#endif /* MOO_PLUGIN_LOADER_H */

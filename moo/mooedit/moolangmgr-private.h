@@ -15,8 +15,8 @@
 #error "This file may not be used"
 #endif
 
-#ifndef __MOO_LANG_MGR_PRIVATE_H__
-#define __MOO_LANG_MGR_PRIVATE_H__
+#ifndef MOO_LANG_MGR_PRIVATE_H
+#define MOO_LANG_MGR_PRIVATE_H
 
 #include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditconfig.h"
@@ -55,4 +55,4 @@ struct _MooLangMgrClass
 
 G_END_DECLS
 
-#endif /* __MOO_LANG_MGR_PRIVATE_H__ */
+#endif /* MOO_LANG_MGR_PRIVATE_H */

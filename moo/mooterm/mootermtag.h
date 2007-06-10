@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_TERM_TAG_H__
-#define __MOO_TERM_TAG_H__
+#ifndef MOO_TERM_TAG_H
+#define MOO_TERM_TAG_H
 
 #include <glib-object.h>
 
@@ -86,4 +86,4 @@ const MooTermTextAttr *moo_term_tag_get_attr    (MooTermTag         *tag);
 
 G_END_DECLS
 
-#endif /* __MOO_TERM_TAG_H__ */
+#endif /* MOO_TERM_TAG_H */

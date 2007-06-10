@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_TERM_H__
-#define __MOO_TERM_H__
+#ifndef MOO_TERM_H
+#define MOO_TERM_H
 
 #include <gtk/gtkwidget.h>
 #include <mooterm/mootermpt.h>
@@ -146,4 +146,4 @@ void        moo_term_apply_settings         (MooTerm        *term);
 
 G_END_DECLS
 
-#endif /* __MOO_TERM_H__ */
+#endif /* MOO_TERM_H */

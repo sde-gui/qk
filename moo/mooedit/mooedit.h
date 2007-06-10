@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_EDIT_H__
-#define __MOO_EDIT_H__
+#ifndef MOO_EDIT_H
+#define MOO_EDIT_H
 
 #include <mooedit/mootextview.h>
 #include <mooedit/mooeditconfig.h>
@@ -138,4 +138,4 @@ void             moo_edit_uncomment             (MooEdit        *edit);
 
 G_END_DECLS
 
-#endif /* __MOO_EDIT_H__ */
+#endif /* MOO_EDIT_H */

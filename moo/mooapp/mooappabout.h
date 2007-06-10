@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_APP_ABOUT_H__
-#define __MOO_APP_ABOUT_H__
+#ifndef MOO_APP_ABOUT_H
+#define MOO_APP_ABOUT_H
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -148,4 +148,4 @@ get_python_info (void)
 }
 
 
-#endif /* __MOO_APP_ABOUT_H__ */
+#endif /* MOO_APP_ABOUT_H */

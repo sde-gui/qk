@@ -15,8 +15,8 @@
 #include <gtk/gtkvbox.h>
 #include <gtk/gtkmenu.h>
 
-#ifndef __MOO_FILE_VIEW_IMPL_H__
-#define __MOO_FILE_VIEW_IMPL_H__
+#ifndef MOO_FILE_VIEW_IMPL_H
+#define MOO_FILE_VIEW_IMPL_H
 
 
 typedef struct _MooFileViewPrivate  MooFileViewPrivate;
@@ -82,4 +82,4 @@ void        _moo_file_view_drag_finish                  (MooFileView    *filevie
 GList      *_moo_file_view_get_filenames                (MooFileView    *fileview);
 
 
-#endif /* __MOO_FILE_VIEW_IMPL_H__ */
+#endif /* MOO_FILE_VIEW_IMPL_H */

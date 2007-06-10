@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_EDIT_PLUGINS_H__
-#define __MOO_EDIT_PLUGINS_H__
+#ifndef MOO_EDIT_PLUGINS_H
+#define MOO_EDIT_PLUGINS_H
 
 #include <gtk/gtkversion.h>
 
@@ -33,4 +33,4 @@ gboolean _moo_file_selector_plugin_init     (void);
 
 G_END_DECLS
 
-#endif /* __MOO_EDIT_PLUGINS_H__ */
+#endif /* MOO_EDIT_PLUGINS_H */

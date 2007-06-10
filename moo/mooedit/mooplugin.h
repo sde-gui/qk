@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_PLUGIN_H__
-#define __MOO_PLUGIN_H__
+#ifndef MOO_PLUGIN_H
+#define MOO_PLUGIN_H
 
 #include <mooedit/mooeditor.h>
 
@@ -281,4 +281,4 @@ void        moo_plugin_method_new_valist(const char     *name,
 
 G_END_DECLS
 
-#endif /* __MOO_PLUGIN_H__ */
+#endif /* MOO_PLUGIN_H */

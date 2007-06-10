@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_LANG_H__
-#define __MOO_LANG_H__
+#ifndef MOO_LANG_H
+#define MOO_LANG_H
 
 #include <glib-object.h>
 
@@ -52,4 +52,4 @@ GSList      *_moo_lang_parse_string_list        (const char *string);
 
 G_END_DECLS
 
-#endif /* __MOO_LANG_H__ */
+#endif /* MOO_LANG_H */

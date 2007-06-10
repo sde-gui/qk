@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_FOLDER_MODEL_H__
-#define __MOO_FOLDER_MODEL_H__
+#ifndef MOO_FOLDER_MODEL_H
+#define MOO_FOLDER_MODEL_H
 
 #include <moofileview/moofile.h>
 #include <gtk/gtktreemodelfilter.h>
@@ -115,4 +115,4 @@ gboolean         _moo_folder_filter_get_iter_by_display_name
 
 G_END_DECLS
 
-#endif /* __MOO_FOLDER_MODEL_H__ */
+#endif /* MOO_FOLDER_MODEL_H */

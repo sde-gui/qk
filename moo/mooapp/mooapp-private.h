@@ -15,8 +15,8 @@
 #error "This file may not be used"
 #endif
 
-#ifndef __MOO_APP_PRIVATE_H__
-#define __MOO_APP_PRIVATE_H__
+#ifndef MOO_APP_PRIVATE_H
+#define MOO_APP_PRIVATE_H
 
 #include <mooapp/mooapp.h>
 
@@ -32,4 +32,4 @@ GtkWidget       *_moo_app_create_prefs_dialog   (MooApp     *app);
 
 G_END_DECLS
 
-#endif /* __MOO_APP_PRIVATE_H__ */
+#endif /* MOO_APP_PRIVATE_H */

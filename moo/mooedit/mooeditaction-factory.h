@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_EDIT_ACTION_FACTORY_H__
-#define __MOO_EDIT_ACTION_FACTORY_H__
+#ifndef MOO_EDIT_ACTION_FACTORY_H
+#define MOO_EDIT_ACTION_FACTORY_H
 
 #include <mooutils/mooaction.h>
 #include <mooedit/mooedit.h>
@@ -39,4 +39,4 @@ GtkAction *moo_edit_get_action_by_id        (MooEdit            *edit,
 
 G_END_DECLS
 
-#endif /* __MOO_EDIT_ACTION_FACTORY_H__ */
+#endif /* MOO_EDIT_ACTION_FACTORY_H */

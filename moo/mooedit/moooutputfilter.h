@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_OUTPUT_FILTER_H__
-#define __MOO_OUTPUT_FILTER_H__
+#ifndef MOO_OUTPUT_FILTER_H
+#define MOO_OUTPUT_FILTER_H
 
 #include <mooedit/moolineview.h>
 
@@ -96,4 +96,4 @@ void             moo_output_filter_set_window       (MooOutputFilter    *filter,
 
 G_END_DECLS
 
-#endif /* __MOO_OUTPUT_FILTER_H__ */
+#endif /* MOO_OUTPUT_FILTER_H */

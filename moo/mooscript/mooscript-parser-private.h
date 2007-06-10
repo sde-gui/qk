@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_SCRIPT_PARSER_PRIV_H__
-#define __MOO_SCRIPT_PARSER_PRIV_H__
+#ifndef MOO_SCRIPT_PARSER_PRIV_H
+#define MOO_SCRIPT_PARSER_PRIV_H
 
 #include "mooscript-node-private.h"
 
@@ -35,4 +35,4 @@ void        _ms_parser_add_node         (MSParser   *parser,
 
 G_END_DECLS
 
-#endif /* __MOO_SCRIPT_PARSER_PRIV_H__ */
+#endif /* MOO_SCRIPT_PARSER_PRIV_H */

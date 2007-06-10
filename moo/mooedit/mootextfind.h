@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_TEXT_FIND_H__
-#define __MOO_TEXT_FIND_H__
+#ifndef MOO_TEXT_FIND_H
+#define MOO_TEXT_FIND_H
 
 #include <gtk/gtktextview.h>
 #include <gtk/gtkdialog.h>
@@ -87,4 +87,4 @@ void            moo_text_view_run_goto_line (GtkTextView    *view);
 
 G_END_DECLS
 
-#endif /* __MOO_TEXT_FIND_H__ */
+#endif /* MOO_TEXT_FIND_H */

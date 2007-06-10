@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_SCRIPT_NODE_H__
-#define __MOO_SCRIPT_NODE_H__
+#ifndef MOO_SCRIPT_NODE_H
+#define MOO_SCRIPT_NODE_H
 
 #include <mooscript/mooscript-func.h>
 
@@ -31,4 +31,4 @@ MSValue        *ms_top_node_eval            (MSNode     *node,
 
 G_END_DECLS
 
-#endif /* __MOO_SCRIPT_NODE_H__ */
+#endif /* MOO_SCRIPT_NODE_H */

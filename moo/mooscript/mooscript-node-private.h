@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_SCRIPT_NODE_PRIVATE_H__
-#define __MOO_SCRIPT_NODE_PRIVATE_H__
+#ifndef MOO_SCRIPT_NODE_PRIVATE_H
+#define MOO_SCRIPT_NODE_PRIVATE_H
 
 #include "mooscript-node.h"
 #include "mooscript-value-private.h"
@@ -329,4 +329,4 @@ MSNodeDictAssign *_ms_node_dict_assign_new  (MSNode     *dict,
 
 G_END_DECLS
 
-#endif /* __MOO_SCRIPT_NODE_PRIVATE_H__ */
+#endif /* MOO_SCRIPT_NODE_PRIVATE_H */

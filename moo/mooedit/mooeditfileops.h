@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_EDIT_FILE_OPS_H__
-#define __MOO_EDIT_FILE_OPS_H__
+#ifndef MOO_EDIT_FILE_OPS_H
+#define MOO_EDIT_FILE_OPS_H
 
 #include "mooedit/mooedit.h"
 
@@ -53,4 +53,4 @@ gboolean         _moo_edit_save_file_copy   (MooEdit        *edit,
 
 G_END_DECLS
 
-#endif /* __MOO_EDIT_FILE_OPS_H__ */
+#endif /* MOO_EDIT_FILE_OPS_H */

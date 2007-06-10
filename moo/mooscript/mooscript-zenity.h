@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_SCRIPT_ZENITY_H__
-#define __MOO_SCRIPT_ZENITY_H__
+#ifndef MOO_SCRIPT_ZENITY_H
+#define MOO_SCRIPT_ZENITY_H
 
 #include <mooscript/mooscript-func.h>
 
@@ -39,4 +39,4 @@ MSFunc  *ms_zenity_choose_file_save (void); /* ChooseFileSave(title = none, star
 
 G_END_DECLS
 
-#endif /* __MOO_SCRIPT_ZENITY_H__ */
+#endif /* MOO_SCRIPT_ZENITY_H */

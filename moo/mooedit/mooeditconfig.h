@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_EDIT_CONFIG_H__
-#define __MOO_EDIT_CONFIG_H__
+#ifndef MOO_EDIT_CONFIG_H
+#define MOO_EDIT_CONFIG_H
 
 #include <glib-object.h>
 
@@ -113,4 +113,4 @@ void            moo_edit_config_update          (MooEditConfig  *config,
 
 G_END_DECLS
 
-#endif /* __MOO_EDIT_CONFIG_H__ */
+#endif /* MOO_EDIT_CONFIG_H */

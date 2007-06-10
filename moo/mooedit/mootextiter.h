@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_TEXT_ITER_H__
-#define __MOO_TEXT_ITER_H__
+#ifndef MOO_TEXT_ITER_H
+#define MOO_TEXT_ITER_H
 
 #include <gtk/gtktextbuffer.h>
 
@@ -48,4 +48,4 @@ void        moo_text_iter_set_visual_line_offset    (GtkTextIter        *iter,
 
 G_END_DECLS
 
-#endif /* __MOO_TEXT_ITER_H__ */
+#endif /* MOO_TEXT_ITER_H */

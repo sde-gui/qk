@@ -15,8 +15,8 @@
 #error "This file may not be used directly"
 #endif
 
-#ifndef __MOO_EDITOR_PRIVATE_H__
-#define __MOO_EDITOR_PRIVATE_H__
+#ifndef MOO_EDITOR_PRIVATE_H
+#define MOO_EDITOR_PRIVATE_H
 
 #include "mooedit/mooeditor.h"
 
@@ -61,4 +61,4 @@ void             _moo_editor_post_message       (MooEditor      *editor,
 
 G_END_DECLS
 
-#endif /* __MOO_EDITOR_PRIVATE_H__ */
+#endif /* MOO_EDITOR_PRIVATE_H */

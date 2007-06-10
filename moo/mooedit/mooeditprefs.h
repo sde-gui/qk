@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_EDIT_PREFS_H__
-#define __MOO_EDIT_PREFS_H__
+#ifndef MOO_EDIT_PREFS_H
+#define MOO_EDIT_PREFS_H
 
 #include <mooedit/mooeditor.h>
 
@@ -72,4 +72,4 @@ const char *moo_edit_setting                (const char     *setting_name);
 
 G_END_DECLS
 
-#endif /* __MOO_EDIT_PREFS_H__ */
+#endif /* MOO_EDIT_PREFS_H */

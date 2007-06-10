@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_KEY_FILE_H__
-#define __MOO_KEY_FILE_H__
+#ifndef MOO_KEY_FILE_H
+#define MOO_KEY_FILE_H
 
 #include <glib-object.h>
 
@@ -80,4 +80,4 @@ void             moo_key_file_item_set_content  (MooKeyFileItem     *item,
 
 G_END_DECLS
 
-#endif /* __MOO_KEY_FILE_H__ */
+#endif /* MOO_KEY_FILE_H */

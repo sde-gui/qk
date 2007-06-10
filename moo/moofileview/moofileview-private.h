@@ -19,8 +19,8 @@
 #include <gtk/gtkvbox.h>
 #include <gtk/gtkmenu.h>
 
-#ifndef __MOO_FILE_VIEW_PRIVATE_H__
-#define __MOO_FILE_VIEW_PRIVATE_H__
+#ifndef MOO_FILE_VIEW_PRIVATE_H
+#define MOO_FILE_VIEW_PRIVATE_H
 
 
 #define MOO_TYPE_FILE_VIEW_TYPE         (_moo_file_view_type_get_type ())
@@ -38,4 +38,4 @@ GType       _moo_file_view_type_get_type                (void) G_GNUC_CONST;
 GList      *_moo_file_view_get_files                    (MooFileView    *fileview);
 
 
-#endif /* __MOO_FILE_VIEW_PRIVATE_H__ */
+#endif /* MOO_FILE_VIEW_PRIVATE_H */

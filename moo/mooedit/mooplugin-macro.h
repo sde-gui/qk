@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_PLUGIN_MACRO_H__
-#define __MOO_PLUGIN_MACRO_H__
+#ifndef MOO_PLUGIN_MACRO_H
+#define MOO_PLUGIN_MACRO_H
 
 #include <mooedit/mooplugin.h>
 
@@ -191,4 +191,4 @@ name__##_doc_plugin_get_type (void)                                         \
 }
 
 
-#endif /* __MOO_PLUGIN_MACRO_H__ */
+#endif /* MOO_PLUGIN_MACRO_H */

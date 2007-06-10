@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_SCRIPT_VALUE_H__
-#define __MOO_SCRIPT_VALUE_H__
+#ifndef MOO_SCRIPT_VALUE_H
+#define MOO_SCRIPT_VALUE_H
 
 #include <glib-object.h>
 
@@ -85,4 +85,4 @@ MSValue     *ms_value_func              (MSFunc         *func);
 
 G_END_DECLS
 
-#endif /* __MOO_SCRIPT_VALUE_H__ */
+#endif /* MOO_SCRIPT_VALUE_H */

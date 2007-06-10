@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_LINE_MARK_H__
-#define __MOO_LINE_MARK_H__
+#ifndef MOO_LINE_MARK_H
+#define MOO_LINE_MARK_H
 
 #include <gtk/gtkwidget.h>
 
@@ -89,4 +89,4 @@ GdkGC      *moo_line_mark_get_background_gc     (MooLineMark    *mark);
 
 G_END_DECLS
 
-#endif /* __MOO_LINE_MARK_H__ */
+#endif /* MOO_LINE_MARK_H */

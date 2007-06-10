@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_BOOKMARK_VIEW_H__
-#define __MOO_BOOKMARK_VIEW_H__
+#ifndef MOO_BOOKMARK_VIEW_H
+#define MOO_BOOKMARK_VIEW_H
 
 #include <moofileview/moobookmarkmgr.h>
 #include <gtk/gtktreeview.h>
@@ -62,4 +62,4 @@ void            _moo_bookmark_view_set_mgr      (MooBookmarkView    *view,
 
 G_END_DECLS
 
-#endif /* __MOO_BOOKMARK_VIEW_H__ */
+#endif /* MOO_BOOKMARK_VIEW_H */

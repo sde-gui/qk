@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_FOLDER_PRIVATE_H__
-#define __MOO_FOLDER_PRIVATE_H__
+#ifndef MOO_FOLDER_PRIVATE_H
+#define MOO_FOLDER_PRIVATE_H
 
 #include "moofileview/moofolder.h"
 #include "moofileview/moofile-private.h"
@@ -109,4 +109,4 @@ gsize        _moo_folder_mem_usage              (MooFolder      *folder);
 
 G_END_DECLS
 
-#endif /* __MOO_FOLDER_PRIVATE_H__ */
+#endif /* MOO_FOLDER_PRIVATE_H */

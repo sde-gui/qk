@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_TERM_LINE_PRIVATE_H__
-#define __MOO_TERM_LINE_PRIVATE_H__
+#ifndef MOO_TERM_LINE_PRIVATE_H
+#define MOO_TERM_LINE_PRIVATE_H
 
 #include "mooterm/mootermline.h"
 
@@ -148,4 +148,4 @@ gboolean     _moo_term_line_wrapped_chk__   (MooTermLine    *line);
 
 G_END_DECLS
 
-#endif /* __MOO_TERM_LINE_PRIVATE_H__ */
+#endif /* MOO_TERM_LINE_PRIVATE_H */

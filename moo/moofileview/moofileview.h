@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_FILE_VIEW_H__
-#define __MOO_FILE_VIEW_H__
+#ifndef MOO_FILE_VIEW_H
+#define MOO_FILE_VIEW_H
 
 #include <mooutils/moouixml.h>
 
@@ -41,4 +41,4 @@ MooActionCollection    *moo_file_view_get_actions   (MooFileView    *fileview);
 
 G_END_DECLS
 
-#endif /* __MOO_FILE_VIEW_H__ */
+#endif /* MOO_FILE_VIEW_H */

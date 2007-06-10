@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_PYGTK_H__
-#define __MOO_PYGTK_H__
+#ifndef MOO_PYGTK_H
+#define MOO_PYGTK_H
 
 #include <Python.h>
 #include <glib.h>
@@ -54,4 +54,4 @@ void        _moo_app_add_constants      (PyObject       *module,
 
 G_END_DECLS
 
-#endif /* __MOO_PYGTK_H__ */
+#endif /* MOO_PYGTK_H */

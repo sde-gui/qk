@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_FOLDER_H__
-#define __MOO_FOLDER_H__
+#ifndef MOO_FOLDER_H
+#define MOO_FOLDER_H
 
 #include "moofileview/moofile.h"
 
@@ -52,4 +52,4 @@ void         _moo_folder_check_exists   (MooFolder      *folder,
 
 G_END_DECLS
 
-#endif /* __MOO_FOLDER_H__ */
+#endif /* MOO_FOLDER_H */

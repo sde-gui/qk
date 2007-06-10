@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_TEXT_POPUP_H__
-#define __MOO_TEXT_POPUP_H__
+#ifndef MOO_TEXT_POPUP_H
+#define MOO_TEXT_POPUP_H
 
 #include <gtk/gtktextview.h>
 #include <gtk/gtktreeviewcolumn.h>
@@ -86,4 +86,4 @@ void            moo_text_popup_select       (MooTextPopup       *popup,
 
 G_END_DECLS
 
-#endif /* __MOO_TEXT_POPUP_H__ */
+#endif /* MOO_TEXT_POPUP_H */

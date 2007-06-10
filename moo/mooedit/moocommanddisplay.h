@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_COMMAND_DISPLAY_H__
-#define __MOO_COMMAND_DISPLAY_H__
+#ifndef MOO_COMMAND_DISPLAY_H
+#define MOO_COMMAND_DISPLAY_H
 
 #include <mooutils/mooutils-treeview.h>
 #include <mooedit/moocommand.h>
@@ -51,4 +51,4 @@ gboolean            _moo_command_display_get        (MooCommandDisplay  *display
 
 G_END_DECLS
 
-#endif /* __MOO_COMMAND_DISPLAY_H__ */
+#endif /* MOO_COMMAND_DISPLAY_H */

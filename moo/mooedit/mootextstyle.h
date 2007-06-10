@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_TEXT_STYLE_H__
-#define __MOO_TEXT_STYLE_H__
+#ifndef MOO_TEXT_STYLE_H
+#define MOO_TEXT_STYLE_H
 
 #include <gdk/gdkcolor.h>
 #include <gtk/gtktexttag.h>
@@ -62,4 +62,4 @@ void             _moo_text_style_apply_to_tag   (const MooTextStyle *style,
 
 G_END_DECLS
 
-#endif /* __MOO_TEXT_STYLE_H__ */
+#endif /* MOO_TEXT_STYLE_H */

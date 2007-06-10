@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_TERM_KEYMAP_H__
-#define __MOO_TERM_KEYMAP_H__
+#ifndef MOO_TERM_KEYMAP_H
+#define MOO_TERM_KEYMAP_H
 
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
@@ -737,4 +737,4 @@ static gboolean key_is_modifier (guint  keyval)
 }
 
 
-#endif /* __MOO_TERM_KEYMAP_H__ */
+#endif /* MOO_TERM_KEYMAP_H */

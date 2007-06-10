@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_SCRIPT_FUNC_H__
-#define __MOO_SCRIPT_FUNC_H__
+#ifndef MOO_SCRIPT_FUNC_H
+#define MOO_SCRIPT_FUNC_H
 
 #include <mooscript/mooscript-value.h>
 
@@ -96,4 +96,4 @@ MSFunc         *ms_cfunc_new_4      (MSCFunc_4   cfunc);
 
 G_END_DECLS
 
-#endif /* __MOO_SCRIPT_FUNC_H__ */
+#endif /* MOO_SCRIPT_FUNC_H */

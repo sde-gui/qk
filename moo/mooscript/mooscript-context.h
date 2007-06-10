@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_SCRIPT_CONTEXT_H__
-#define __MOO_SCRIPT_CONTEXT_H__
+#ifndef MOO_SCRIPT_CONTEXT_H
+#define MOO_SCRIPT_CONTEXT_H
 
 #include <mooscript/mooscript-func.h>
 
@@ -102,4 +102,4 @@ void         ms_context_clear_error         (MSContext  *ctx);
 
 G_END_DECLS
 
-#endif /* __MOO_SCRIPT_CONTEXT_H__ */
+#endif /* MOO_SCRIPT_CONTEXT_H */

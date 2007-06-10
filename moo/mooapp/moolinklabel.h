@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_LINK_LABEL_H__
-#define __MOO_LINK_LABEL_H__
+#ifndef MOO_LINK_LABEL_H
+#define MOO_LINK_LABEL_H
 
 #include <gtk/gtklabel.h>
 
@@ -56,4 +56,4 @@ void         _moo_link_label_set_url    (MooLinkLabel   *label,
 
 G_END_DECLS
 
-#endif /* __MOO_LINK_LABEL_H__ */
+#endif /* MOO_LINK_LABEL_H */

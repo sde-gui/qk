@@ -15,8 +15,8 @@
 #error "This file may not be used directly"
 #endif
 
-#ifndef __MOO_OUTPUT_FILTER_REGEX_H__
-#define __MOO_OUTPUT_FILTER_REGEX_H__
+#ifndef MOO_OUTPUT_FILTER_REGEX_H
+#define MOO_OUTPUT_FILTER_REGEX_H
 
 #include <mooedit/moooutputfilter.h>
 
@@ -51,4 +51,4 @@ void                 _moo_command_filter_regex_load    (void);
 
 G_END_DECLS
 
-#endif /* __MOO_OUTPUT_FILTER_REGEX_SIMPLE_H__ */
+#endif /* MOO_OUTPUT_FILTER_REGEX_SIMPLE_H */

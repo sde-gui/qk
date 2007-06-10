@@ -19,8 +19,8 @@
 #include <string.h>
 #include <glib.h>
 
-#ifndef __MOO_FILE_VIEW_AUX_H__
-#define __MOO_FILE_VIEW_AUX_H__
+#ifndef MOO_FILE_VIEW_AUX_H
+#define MOO_FILE_VIEW_AUX_H
 
 
 #define COLUMN_FILE MOO_FOLDER_MODEL_COLUMN_FILE
@@ -211,4 +211,4 @@ out:
 }
 
 
-#endif /* __MOO_FILE_VIEW_AUX_H__ */
+#endif /* MOO_FILE_VIEW_AUX_H */

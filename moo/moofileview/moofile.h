@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_FILE_H__
-#define __MOO_FILE_H__
+#ifndef MOO_FILE_H
+#define MOO_FILE_H
 
 #include <gtk/gtkwidget.h>
 
@@ -69,4 +69,4 @@ const char  *_moo_file_display_name     (const MooFile  *file);
 
 G_END_DECLS
 
-#endif /* __MOO_FILE_H__ */
+#endif /* MOO_FILE_H */

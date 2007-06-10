@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_TERM_TEXT_H__
-#define __MOO_TERM_TEXT_H__
+#ifndef MOO_TERM_TEXT_H
+#define MOO_TERM_TEXT_H
 
 #include <mooterm/mooterm.h>
 #include <mooterm/mootermtag.h>
@@ -116,4 +116,4 @@ char        *moo_term_get_text                  (MooTermIter        *start,
                                                  MooTermIter        *end);
 
 
-#endif /* __MOO_TERM_TEXT_H__ */
+#endif /* MOO_TERM_TEXT_H */

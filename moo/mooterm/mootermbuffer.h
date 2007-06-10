@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_TERM_BUFFER_H__
-#define __MOO_TERM_BUFFER_H__
+#ifndef MOO_TERM_BUFFER_H
+#define MOO_TERM_BUFFER_H
 
 #include <glib-object.h>
 
@@ -58,4 +58,4 @@ void    moo_term_buffer_print_unichar       (MooTermBuffer  *buf,
 
 G_END_DECLS
 
-#endif /* __MOO_TERM_BUFFER_H__ */
+#endif /* MOO_TERM_BUFFER_H */

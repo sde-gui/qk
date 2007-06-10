@@ -15,8 +15,8 @@
 #error "Do not include this file"
 #endif
 
-#ifndef __MOO_EDIT_PRIVATE_H__
-#define __MOO_EDIT_PRIVATE_H__
+#ifndef MOO_EDIT_PRIVATE_H
+#define MOO_EDIT_PRIVATE_H
 
 #include "mooedit/moolinemark.h"
 #include "mooedit/mooeditor.h"
@@ -161,4 +161,4 @@ struct _MooEditPrivate {
 
 G_END_DECLS
 
-#endif /* __MOO_EDIT_PRIVATE_H__ */
+#endif /* MOO_EDIT_PRIVATE_H */

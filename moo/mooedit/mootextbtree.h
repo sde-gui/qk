@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_TEXT_BTREE_H__
-#define __MOO_TEXT_BTREE_H__
+#ifndef MOO_TEXT_BTREE_H
+#define MOO_TEXT_BTREE_H
 
 #ifndef MOOEDIT_COMPILATION
 #error "This file may not be included"
@@ -91,4 +91,4 @@ void        _moo_text_btree_update_n_marks  (BTree      *tree,
 
 G_END_DECLS
 
-#endif /* __MOO_TEXT_BTREE_H__ */
+#endif /* MOO_TEXT_BTREE_H */

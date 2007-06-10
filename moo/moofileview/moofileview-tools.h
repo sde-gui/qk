@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_FILE_VIEW_TOOLS_H__
-#define __MOO_FILE_VIEW_TOOLS_H__
+#ifndef MOO_FILE_VIEW_TOOLS_H
+#define MOO_FILE_VIEW_TOOLS_H
 
 #include "moofileview/moofileview.h"
 
@@ -25,4 +25,4 @@ void    _moo_file_view_tools_check  (MooFileView    *fileview);
 
 G_END_DECLS
 
-#endif /* __MOO_FILE_VIEW_TOOLS_H__ */
+#endif /* MOO_FILE_VIEW_TOOLS_H */

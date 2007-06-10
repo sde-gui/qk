@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_TERM_PRIVATE_H__
-#define __MOO_TERM_PRIVATE_H__
+#ifndef MOO_TERM_PRIVATE_H
+#define MOO_TERM_PRIVATE_H
 
 #include "mooterm/mooterm.h"
 #include "mooterm/mootermtag.h"
@@ -327,4 +327,4 @@ void            _moo_term_font_free         (MooTermFont            *info);
 
 G_END_DECLS
 
-#endif /* __MOO_TERM_PRIVATE_H__ */
+#endif /* MOO_TERM_PRIVATE_H */

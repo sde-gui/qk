@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_TERM_BUFFER_GRAPH_H__
-#define __MOO_TERM_BUFFER_GRAPH_H__
+#ifndef MOO_TERM_BUFFER_GRAPH_H
+#define MOO_TERM_BUFFER_GRAPH_H
 
 
 #define ACS_STERLING    "\302\243"      /* U+00A3 POUND SIGN */
@@ -146,4 +146,4 @@ static void init_drawing_sets (void)
 }
 
 
-#endif /* __MOO_TERM_BUFFER_GRAPH_H__ */
+#endif /* MOO_TERM_BUFFER_GRAPH_H */

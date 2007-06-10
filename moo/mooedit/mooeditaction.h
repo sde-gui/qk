@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_EDIT_ACTION_H__
-#define __MOO_EDIT_ACTION_H__
+#ifndef MOO_EDIT_ACTION_H
+#define MOO_EDIT_ACTION_H
 
 #include <mooutils/mooaction.h>
 #include <mooedit/mooedit.h>
@@ -58,4 +58,4 @@ GSList *_moo_edit_parse_langs               (const char     *string);
 
 G_END_DECLS
 
-#endif /* __MOO_EDIT_ACTION_H__ */
+#endif /* MOO_EDIT_ACTION_H */

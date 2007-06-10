@@ -15,8 +15,8 @@
 #error "Do not include this file"
 #endif
 
-#ifndef __MOO_TEXT_VIEW_PRIVATE_H__
-#define __MOO_TEXT_VIEW_PRIVATE_H__
+#ifndef MOO_TEXT_VIEW_PRIVATE_H
+#define MOO_TEXT_VIEW_PRIVATE_H
 
 #include "mooedit/mootextview.h"
 #include "mooedit/mootextsearch.h"
@@ -198,4 +198,4 @@ enum {
 
 G_END_DECLS
 
-#endif /* __MOO_TEXT_VIEW_PRIVATE_H__ */
+#endif /* MOO_TEXT_VIEW_PRIVATE_H */

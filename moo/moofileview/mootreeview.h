@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_TREE_VIEW_H__
-#define __MOO_TREE_VIEW_H__
+#ifndef MOO_TREE_VIEW_H
+#define MOO_TREE_VIEW_H
 
 #include <gtk/gtktreeview.h>
 #include "moofileview/mooiconview.h"
@@ -141,4 +141,4 @@ void            _moo_tree_view_set_drag_dest_row    (gpointer        view,
 
 G_END_DECLS
 
-#endif /* __MOO_TREE_VIEW_H__ */
+#endif /* MOO_TREE_VIEW_H */

@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_TEXT_COMPLETION_H__
-#define __MOO_TEXT_COMPLETION_H__
+#ifndef MOO_TEXT_COMPLETION_H
+#define MOO_TEXT_COMPLETION_H
 
 #include "mooedit/mootextpopup.h"
 #include <gtk/gtkliststore.h>
@@ -95,4 +95,4 @@ MooTextPopup   *moo_text_completion_get_popup       (MooTextCompletion  *cmpl);
 
 G_END_DECLS
 
-#endif /* __MOO_TEXT_COMPLETION_H__ */
+#endif /* MOO_TEXT_COMPLETION_H */

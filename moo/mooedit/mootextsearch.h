@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_TEXT_SEARCH_H__
-#define __MOO_TEXT_SEARCH_H__
+#ifndef MOO_TEXT_SEARCH_H
+#define MOO_TEXT_SEARCH_H
 
 #include <mooedit/mootextiter.h>
 
@@ -57,4 +57,4 @@ int      moo_text_replace_all               (GtkTextIter            *start,
 
 G_END_DECLS
 
-#endif /* __MOO_TEXT_SEARCH_H__ */
+#endif /* MOO_TEXT_SEARCH_H */

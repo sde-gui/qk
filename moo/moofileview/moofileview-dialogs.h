@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_FILE_VIEW_DIALOGS_H__
-#define __MOO_FILE_VIEW_DIALOGS_H__
+#ifndef MOO_FILE_VIEW_DIALOGS_H
+#define MOO_FILE_VIEW_DIALOGS_H
 
 #include "moofileview/moofile.h"
 #include "mooutils/mooglade.h"
@@ -69,4 +69,4 @@ char       *_moo_file_view_save_drop_dialog     (GtkWidget          *parent,
 
 G_END_DECLS
 
-#endif /* __MOO_FILE_VIEW_DIALOGS_H__ */
+#endif /* MOO_FILE_VIEW_DIALOGS_H */

@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_USER_TOOLS_PREFS_H__
-#define __MOO_USER_TOOLS_PREFS_H__
+#ifndef MOO_USER_TOOLS_PREFS_H
+#define MOO_USER_TOOLS_PREFS_H
 
 #include <gtk/gtkwidget.h>
 
@@ -24,4 +24,4 @@ GtkWidget  *_moo_user_tools_prefs_page_new  (void);
 
 G_END_DECLS
 
-#endif /* __MOO_USER_TOOLS_PREFS_H__ */
+#endif /* MOO_USER_TOOLS_PREFS_H */

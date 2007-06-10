@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_TEXT_BUFFER_H__
-#define __MOO_TEXT_BUFFER_H__
+#ifndef MOO_TEXT_BUFFER_H
+#define MOO_TEXT_BUFFER_H
 
 #include <gtk/gtktextbuffer.h>
 #include <mooedit/moolang.h>
@@ -113,4 +113,4 @@ void        moo_text_buffer_toggle_fold                 (MooTextBuffer      *buf
 
 G_END_DECLS
 
-#endif /* __MOO_TEXT_BUFFER_H__ */
+#endif /* MOO_TEXT_BUFFER_H */

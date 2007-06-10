@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_LINE_BUFFER_H__
-#define __MOO_LINE_BUFFER_H__
+#ifndef MOO_LINE_BUFFER_H
+#define MOO_LINE_BUFFER_H
 
 #include <gtk/gtktextbuffer.h>
 #include "mooedit/mootextbtree.h"
@@ -68,4 +68,4 @@ void     _moo_line_buffer_delete        (LineBuffer     *line_buf,
 
 G_END_DECLS
 
-#endif /* __MOO_LINE_BUFFER_H__ */
+#endif /* MOO_LINE_BUFFER_H */

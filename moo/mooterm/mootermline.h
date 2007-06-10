@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_TERM_LINE_H__
-#define __MOO_TERM_LINE_H__
+#ifndef MOO_TERM_LINE_H
+#define MOO_TERM_LINE_H
 
 #include <mooterm/mootermtag.h>
 
@@ -37,4 +37,4 @@ char       *moo_term_line_get_text      (MooTermLine    *line,
 
 G_END_DECLS
 
-#endif /* __MOO_TERM_LINE_H__ */
+#endif /* MOO_TERM_LINE_H */

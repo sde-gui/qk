@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_FILE_PRIVATE_H__
-#define __MOO_FILE_PRIVATE_H__
+#ifndef MOO_FILE_PRIVATE_H
+#define MOO_FILE_PRIVATE_H
 
 #include "moofileview/moofile.h"
 #include <sys/stat.h>
@@ -94,4 +94,4 @@ void         _moo_file_find_mime_type   (MooFile        *file,
 
 G_END_DECLS
 
-#endif /* __MOO_FILE_PRIVATE_H__ */
+#endif /* MOO_FILE_PRIVATE_H */

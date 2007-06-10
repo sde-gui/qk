@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_BOOKMARK_MGR_H__
-#define __MOO_BOOKMARK_MGR_H__
+#ifndef MOO_BOOKMARK_MGR_H
+#define MOO_BOOKMARK_MGR_H
 
 #include <gtk/gtkwidget.h>
 #include <gtk/gtktreemodel.h>
@@ -93,4 +93,4 @@ void            _moo_bookmark_mgr_remove_user(MooBookmarkMgr *mgr,
 
 G_END_DECLS
 
-#endif /* __MOO_BOOKMARK_MGR_H__ */
+#endif /* MOO_BOOKMARK_MGR_H */

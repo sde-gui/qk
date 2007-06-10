@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_EDIT_SCRIPT_H__
-#define __MOO_EDIT_SCRIPT_H__
+#ifndef MOO_EDIT_SCRIPT_H
+#define MOO_EDIT_SCRIPT_H
 
 #include <mooedit/mooedit.h>
 #include <mooscript/mooscript-context.h>
@@ -53,4 +53,4 @@ void         moo_edit_script_context_set_doc    (MooEditScriptContext   *ctx,
 
 G_END_DECLS
 
-#endif /* __MOO_EDIT_SCRIPT_H__ */
+#endif /* MOO_EDIT_SCRIPT_H */

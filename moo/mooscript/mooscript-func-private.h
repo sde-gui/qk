@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_SCRIPT_FUNC_PRIVATE_H__
-#define __MOO_SCRIPT_FUNC_PRIVATE_H__
+#ifndef MOO_SCRIPT_FUNC_PRIVATE_H
+#define MOO_SCRIPT_FUNC_PRIVATE_H
 
 #include "mooscript-func.h"
 #include "mooscript-value-private.h"
@@ -33,4 +33,4 @@ MSCFunc_1       _ms_unary_op_cfunc  (MSUnaryOp       op);
 
 G_END_DECLS
 
-#endif /* __MOO_SCRIPT_FUNC_PRIVATE_H__ */
+#endif /* MOO_SCRIPT_FUNC_PRIVATE_H */

@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_COMPLETION_SIMPLE_H__
-#define __MOO_COMPLETION_SIMPLE_H__
+#ifndef MOO_COMPLETION_SIMPLE_H
+#define MOO_COMPLETION_SIMPLE_H
 
 #include "mooedit/mootextcompletion.h"
 #include <gtk/gtkliststore.h>
@@ -69,4 +69,4 @@ MooCompletionGroup *moo_completion_simple_new_group     (MooCompletionSimple    
 
 G_END_DECLS
 
-#endif /* __MOO_COMPLETION_SIMPLE_H__ */
+#endif /* MOO_COMPLETION_SIMPLE_H */

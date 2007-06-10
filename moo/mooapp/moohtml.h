@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_HTML_H__
-#define __MOO_HTML_H__
+#ifndef MOO_HTML_H
+#define MOO_HTML_H
 
 #include <gtk/gtktextview.h>
 
@@ -88,4 +88,4 @@ void            moo_text_view_set_markup    (GtkTextView    *view,
 
 G_END_DECLS
 
-#endif /* __MOO_HTML_H__ */
+#endif /* MOO_HTML_H */

@@ -15,8 +15,8 @@
 #error "This file may not be used"
 #endif
 
-#ifndef __MOO_EDIT_FILTER_SETTINGS_H__
-#define __MOO_EDIT_FILTER_SETTINGS_H__
+#ifndef MOO_EDIT_FILTER_SETTINGS_H
+#define MOO_EDIT_FILTER_SETTINGS_H
 
 #include <glib.h>
 
@@ -33,4 +33,4 @@ const char *_moo_edit_filter_settings_get_for_file      (const char *filename);
 
 G_END_DECLS
 
-#endif /* __MOO_EDIT_FILTER_SETTINGS_H__ */
+#endif /* MOO_EDIT_FILTER_SETTINGS_H */

@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_TERM_TAG_PRIVATE_H__
-#define __MOO_TERM_TAG_PRIVATE_H__
+#ifndef MOO_TERM_TAG_PRIVATE_H
+#define MOO_TERM_TAG_PRIVATE_H
 
 #include <mooterm/mootermtag.h>
 
@@ -46,4 +46,4 @@ void    _moo_term_tag_remove_line           (MooTermTag         *tag,
 
 G_END_DECLS
 
-#endif /* __MOO_TERM_TAG_PRIVATE_H__ */
+#endif /* MOO_TERM_TAG_PRIVATE_H */

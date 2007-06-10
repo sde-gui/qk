@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_TERM_PARSER_H__
-#define __MOO_TERM_PARSER_H__
+#ifndef MOO_TERM_PARSER_H
+#define MOO_TERM_PARSER_H
 
 #include "mooterm/mooterm-private.h"
 
@@ -108,4 +108,4 @@ int             _moo_term_yyparse       (MooTermParser  *parser);
 
 G_END_DECLS
 
-#endif /* __MOO_TERM_PARSER_H__ */
+#endif /* MOO_TERM_PARSER_H */

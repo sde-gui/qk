@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_FOLDER_MODEL_PRIVATE_H__
-#define __MOO_FOLDER_MODEL_PRIVATE_H__
+#ifndef MOO_FOLDER_MODEL_PRIVATE_H
+#define MOO_FOLDER_MODEL_PRIVATE_H
 
 #include <glib.h>
 #include <string.h>
@@ -567,4 +567,4 @@ static void      _list_sort             (GList         **list,
 
 G_END_DECLS
 
-#endif /* __MOO_FOLDER_MODEL_PRIVATE_H__ */
+#endif /* MOO_FOLDER_MODEL_PRIVATE_H */

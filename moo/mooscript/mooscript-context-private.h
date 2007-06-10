@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_SCRIPT_CONTEXT_PRIVATE_H__
-#define __MOO_SCRIPT_CONTEXT_PRIVATE_H__
+#ifndef MOO_SCRIPT_CONTEXT_PRIVATE_H
+#define MOO_SCRIPT_CONTEXT_PRIVATE_H
 
 #include "mooscript-context.h"
 
@@ -42,4 +42,4 @@ gboolean     _ms_context_error_set          (MSContext  *ctx);
 
 G_END_DECLS
 
-#endif /* __MOO_SCRIPT_CONTEXT_PRIVATE_H__ */
+#endif /* MOO_SCRIPT_CONTEXT_PRIVATE_H */

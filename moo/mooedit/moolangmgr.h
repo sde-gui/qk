@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_LANG_MGR_H__
-#define __MOO_LANG_MGR_H__
+#ifndef MOO_LANG_MGR_H
+#define MOO_LANG_MGR_H
 
 #include <mooedit/moolang.h>
 #include <mooedit/mootextstylescheme.h>
@@ -76,4 +76,4 @@ void            _moo_lang_mgr_save_config           (MooLangMgr     *mgr);
 
 G_END_DECLS
 
-#endif /* __MOO_LANG_MGR_H__ */
+#endif /* MOO_LANG_MGR_H */

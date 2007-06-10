@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_USER_TOOLS_H__
-#define __MOO_USER_TOOLS_H__
+#ifndef MOO_USER_TOOLS_H
+#define MOO_USER_TOOLS_H
 
 #include <mooutils/moouixml.h>
 #include <mooedit/moocommand.h>
@@ -80,4 +80,4 @@ void    _moo_edit_save_user_tools       (MooUserToolType         type,
 
 G_END_DECLS
 
-#endif /* __MOO_USER_TOOLS_H__ */
+#endif /* MOO_USER_TOOLS_H */

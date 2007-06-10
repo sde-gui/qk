@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_TERM_SELECTION_H__
-#define __MOO_TERM_SELECTION_H__
+#ifndef MOO_TERM_SELECTION_H
+#define MOO_TERM_SELECTION_H
 
 #include <mooterm/mooterm.h>
 
@@ -48,4 +48,4 @@ gboolean    _moo_term_get_selected_cells    (MooTerm    *term,
 
 G_END_DECLS
 
-#endif /* __MOO_TERM_SELECTION_H__ */
+#endif /* MOO_TERM_SELECTION_H */

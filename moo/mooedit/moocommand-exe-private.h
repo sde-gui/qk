@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_COMMAND_EXE_PRIVATE_H__
-#define __MOO_COMMAND_EXE_PRIVATE_H__
+#ifndef MOO_COMMAND_EXE_PRIVATE_H
+#define MOO_COMMAND_EXE_PRIVATE_H
 
 #include <mooedit/moocommand-exe.h>
 
@@ -39,4 +39,4 @@ typedef enum
 
 G_END_DECLS
 
-#endif /* __MOO_COMMAND_EXE_PRIVATE_H__ */
+#endif /* MOO_COMMAND_EXE_PRIVATE_H */

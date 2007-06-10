@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_TEXT_BOX_H__
-#define __MOO_TEXT_BOX_H__
+#ifndef MOO_TEXT_BOX_H
+#define MOO_TEXT_BOX_H
 
 #include <gtk/gtklabel.h>
 #include <gtk/gtktextview.h>
@@ -75,4 +75,4 @@ GType       _moo_text_anchor_get_type   (void) G_GNUC_CONST;
 
 G_END_DECLS
 
-#endif /* __MOO_TEXT_BOX_H__ */
+#endif /* MOO_TEXT_BOX_H */

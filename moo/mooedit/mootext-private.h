@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_TEXT_PRIVATE_H__
-#define __MOO_TEXT_PRIVATE_H__
+#ifndef MOO_TEXT_PRIVATE_H
+#define MOO_TEXT_PRIVATE_H
 
 #include "mooedit/moofold.h"
 #include "mooedit/moolinebuffer.h"
@@ -62,4 +62,4 @@ void        _moo_text_buffer_set_style_scheme       (MooTextBuffer      *buffer,
 
 G_END_DECLS
 
-#endif /* __MOO_TEXT_PRIVATE_H__ */
+#endif /* MOO_TEXT_PRIVATE_H */

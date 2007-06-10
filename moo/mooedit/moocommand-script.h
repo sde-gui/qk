@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_COMMAND_SCRIPT_H__
-#define __MOO_COMMAND_SCRIPT_H__
+#ifndef MOO_COMMAND_SCRIPT_H
+#define MOO_COMMAND_SCRIPT_H
 
 #include <mooedit/moocommand.h>
 
@@ -45,4 +45,4 @@ GType       moo_command_script_get_type (void) G_GNUC_CONST;
 
 G_END_DECLS
 
-#endif /* __MOO_COMMAND_SCRIPT_H__ */
+#endif /* MOO_COMMAND_SCRIPT_H */

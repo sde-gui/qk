@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_PYTHON_BUILTIN_H__
-#define __MOO_PYTHON_BUILTIN_H__
+#ifndef MOO_PYTHON_BUILTIN_H
+#define MOO_PYTHON_BUILTIN_H
 
 #include <glib.h>
 
@@ -24,4 +24,4 @@ gboolean _moo_python_builtin_init (void);
 
 G_END_DECLS
 
-#endif /* __MOO_PYTHON_BUILTIN_H__ */
+#endif /* MOO_PYTHON_BUILTIN_H */

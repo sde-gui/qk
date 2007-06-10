@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_EDIT_DIALOGS_H__
-#define __MOO_EDIT_DIALOGS_H__
+#ifndef MOO_EDIT_DIALOGS_H
+#define MOO_EDIT_DIALOGS_H
 
 #include "mooedit/mooedit.h"
 #include "mooutils/moofiltermgr.h"
@@ -66,4 +66,4 @@ GtkWidget       *_moo_text_prompt_on_replace_dialog (GtkWidget      *parent);
 
 G_END_DECLS
 
-#endif /* __MOO_EDIT_DIALOGS_H__ */
+#endif /* MOO_EDIT_DIALOGS_H */

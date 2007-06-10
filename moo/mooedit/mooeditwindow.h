@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_EDIT_WINDOW_H__
-#define __MOO_EDIT_WINDOW_H__
+#ifndef MOO_EDIT_WINDOW_H
+#define MOO_EDIT_WINDOW_H
 
 #include <mooedit/mooedit.h>
 #include <mooutils/moowindow.h>
@@ -121,4 +121,4 @@ void         moo_edit_window_message                (MooEditWindow  *window,
 
 G_END_DECLS
 
-#endif /* __MOO_EDIT_WINDOW_H__ */
+#endif /* MOO_EDIT_WINDOW_H */

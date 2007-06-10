@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_COMMAND_H__
-#define __MOO_COMMAND_H__
+#ifndef MOO_COMMAND_H
+#define MOO_COMMAND_H
 
 #include <gtk/gtkwidget.h>
 #include <mooedit/moooutputfilter.h>
@@ -207,4 +207,4 @@ MooOutputFilter    *moo_command_filter_create       (const char         *id);
 
 G_END_DECLS
 
-#endif /* __MOO_COMMAND_H__ */
+#endif /* MOO_COMMAND_H */

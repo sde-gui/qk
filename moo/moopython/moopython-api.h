@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_PYTHON_API_H__
-#define __MOO_PYTHON_API_H__
+#ifndef MOO_PYTHON_API_H
+#define MOO_PYTHON_API_H
 
 
 #include "moopython/moopython-utils.h"
@@ -540,4 +540,4 @@ moo_python_api_deinit (void)
 }
 
 
-#endif /* __MOO_PYTHON_API_H__ */
+#endif /* MOO_PYTHON_API_H */

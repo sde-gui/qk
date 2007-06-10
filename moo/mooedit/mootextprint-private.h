@@ -15,8 +15,8 @@
 #error "This file may not be used directly"
 #endif
 
-#ifndef __MOO_TEXT_PRINT_PRIVATE_H__
-#define __MOO_TEXT_PRINT_PRIVATE_H__
+#ifndef MOO_TEXT_PRINT_PRIVATE_H
+#define MOO_TEXT_PRINT_PRIVATE_H
 
 #include <mooedit/mooprintpreview.h>
 
@@ -76,4 +76,4 @@ int     _moo_print_operation_get_n_pages        (MooPrintOperation  *print);
 
 G_END_DECLS
 
-#endif /* __MOO_TEXT_PRINT_PRIVATE_H__ */
+#endif /* MOO_TEXT_PRINT_PRIVATE_H */

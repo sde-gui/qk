@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_PYTHON_UTILS_H__
-#define __MOO_PYTHON_UTILS_H__
+#ifndef MOO_PYTHON_UTILS_H
+#define MOO_PYTHON_UTILS_H
 
 #include <Python.h>
 #include <glib-object.h>
@@ -99,4 +99,4 @@ Py_DecRef (PyObject *obj)
 
 G_END_DECLS
 
-#endif /* __MOO_PYTHON_UTILS_H__ */
+#endif /* MOO_PYTHON_UTILS_H */

@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_FOLD_H__
-#define __MOO_FOLD_H__
+#ifndef MOO_FOLD_H
+#define MOO_FOLD_H
 
 #include <mooedit/moolinemark.h>
 
@@ -82,4 +82,4 @@ void         _moo_fold_tree_collapse(MooFoldTree    *tree,
 
 G_END_DECLS
 
-#endif /* __MOO_FOLD_H__ */
+#endif /* MOO_FOLD_H */

@@ -15,8 +15,8 @@
 #error "This file may not be used directly"
 #endif
 
-#ifndef __MOO_PRINT_PREVIEW_H__
-#define __MOO_PRINT_PREVIEW_H__
+#ifndef MOO_PRINT_PREVIEW_H
+#define MOO_PRINT_PREVIEW_H
 
 #include <mooedit/mootextprint.h>
 #include <mooutils/mooglade.h>
@@ -64,4 +64,4 @@ GtkPrintOperationPreview *_moo_print_preview_get_gtk_preview (MooPrintPreview   
 
 G_END_DECLS
 
-#endif /* __MOO_PRINT_PREVIEW_H__ */
+#endif /* MOO_PRINT_PREVIEW_H */

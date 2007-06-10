@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_TERM_BUFFER_PRIVATE_H__
-#define __MOO_TERM_BUFFER_PRIVATE_H__
+#ifndef MOO_TERM_BUFFER_PRIVATE_H
+#define MOO_TERM_BUFFER_PRIVATE_H
 
 #include <gdk/gdkregion.h>
 #include "mooterm/mootermbuffer.h"
@@ -308,4 +308,4 @@ void    _moo_term_buffer_decaln                 (MooTermBuffer  *buf);
 
 G_END_DECLS
 
-#endif /* __MOO_TERM_BUFFER_PRIVATE_H__ */
+#endif /* MOO_TERM_BUFFER_PRIVATE_H */

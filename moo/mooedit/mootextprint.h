@@ -15,8 +15,8 @@
 #error "This file may not be used directly"
 #endif
 
-#ifndef __MOO_TEXT_PRINT_H__
-#define __MOO_TEXT_PRINT_H__
+#ifndef MOO_TEXT_PRINT_H
+#define MOO_TEXT_PRINT_H
 
 #include <gtk/gtk.h>
 
@@ -59,4 +59,4 @@ void    _moo_edit_export_pdf                    (GtkTextView        *view,
 
 G_END_DECLS
 
-#endif /* __MOO_TEXT_PRINT_H__ */
+#endif /* MOO_TEXT_PRINT_H */

@@ -15,8 +15,8 @@
 #error "This file may not be used"
 #endif
 
-#ifndef __MOO_COMMAND_PRIVATE_H__
-#define __MOO_COMMAND_PRIVATE_H__
+#ifndef MOO_COMMAND_PRIVATE_H
+#define MOO_COMMAND_PRIVATE_H
 
 #include <mooedit/mookeyfile.h>
 #include <mooedit/moocommand.h>
@@ -49,4 +49,4 @@ gboolean        _moo_command_factory_data_equal     (MooCommandFactory  *factory
 
 G_END_DECLS
 
-#endif /* __MOO_COMMAND_PRIVATE_H__ */
+#endif /* MOO_COMMAND_PRIVATE_H */

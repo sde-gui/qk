@@ -15,8 +15,8 @@
 #error "This file may not be used"
 #endif
 
-#ifndef __MOO_LANG_PRIVATE_H__
-#define __MOO_LANG_PRIVATE_H__
+#ifndef MOO_LANG_PRIVATE_H
+#define MOO_LANG_PRIVATE_H
 
 #include "mooedit/gtksourceview/gtksourceview-api.h"
 #include "mooedit/moolang.h"
@@ -47,4 +47,4 @@ GtkSourceEngine *_moo_lang_get_engine   (MooLang    *lang);
 
 G_END_DECLS
 
-#endif /* __MOO_LANG_H__ */
+#endif /* MOO_LANG_H */

@@ -15,8 +15,8 @@
 #error "This file may not be included"
 #endif
 
-#ifndef __MOO_TERM_PT_PRIVATE_H__
-#define __MOO_TERM_PT_PRIVATE_H__
+#ifndef MOO_TERM_PT_PRIVATE_H
+#define MOO_TERM_PT_PRIVATE_H
 
 #include "mooterm/mootermpt.h"
 #include <string.h>
@@ -122,4 +122,4 @@ inline static void pt_add_data (GSList **list, const char *data, gssize len)
 
 G_END_DECLS
 
-#endif /* __MOO_TERM_PT_PRIVATE_H__ */
+#endif /* MOO_TERM_PT_PRIVATE_H */

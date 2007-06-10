@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_EDIT_BOOKMARKS_H__
-#define __MOO_EDIT_BOOKMARKS_H__
+#ifndef MOO_EDIT_BOOKMARKS_H
+#define MOO_EDIT_BOOKMARKS_H
 
 #include <mooedit/mooedit.h>
 #include <mooedit/moolinemark.h>
@@ -72,4 +72,4 @@ char            *_moo_edit_bookmark_get_text    (MooEditBookmark *bookmark);
 
 G_END_DECLS
 
-#endif /* __MOO_EDIT_BOOKMARKS_H__ */
+#endif /* MOO_EDIT_BOOKMARKS_H */

@@ -178,11 +178,11 @@ mooedit-enums.c: stamp-mooedit-enums.c
 	@true
 stamp-mooedit-enums.h: $(mooedit_enums_headers) Makefile
 	( cd $(srcdir) && glib-mkenums \
-			--fhead "#ifndef __MOO_EDIT_ENUMS_H__\n#define __MOO_EDIT_ENUMS_H__\n\n#include <glib-object.h>\n" \
+			--fhead "#ifndef MOO_EDIT_ENUMS_H\n#define MOO_EDIT_ENUMS_H\n\n#include <glib-object.h>\n" \
 			--fhead "\nG_BEGIN_DECLS\n\n\n" \
 			--fprod "/* enumerations from \"mooedit/@filename@\" */\n" \
 			--vhead "GType @enum_name@_get_type (void) G_GNUC_CONST;\n#define MOO_TYPE_@ENUMSHORT@ (@enum_name@_get_type())\n\n" \
-			--ftail "\nG_END_DECLS\n\n#endif /* __MOO_EDIT_ENUMS_H__ */" \
+			--ftail "\nG_END_DECLS\n\n#endif /* MOO_EDIT_ENUMS_H */" \
 		$(mooedit_enums_headers) ) > xgen-gtbh \
 	&& (cmp -s xgen-gtbh mooedit-enums.h || cp xgen-gtbh mooedit-enums.h ) \
 	&& rm -f xgen-gtbh \

@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_SCRIPT_PARSER_H__
-#define __MOO_SCRIPT_PARSER_H__
+#ifndef MOO_SCRIPT_PARSER_H
+#define MOO_SCRIPT_PARSER_H
 
 #include <mooscript/mooscript-node.h>
 #include <mooscript/mooscript-context.h>
@@ -31,4 +31,4 @@ MSNode              *ms_script_parse    (const char *string);
 
 G_END_DECLS
 
-#endif /* __MOO_SCRIPT_PARSER_H__ */
+#endif /* MOO_SCRIPT_PARSER_H */
