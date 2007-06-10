@@ -39,6 +39,7 @@
 #include "moofileview/moofile.h"
 #include <string.h>
 #include <gtk/gtk.h>
+#include <math.h>
 
 #if GTK_CHECK_VERSION(2,10,0)
 #define ENABLE_PRINTING
@@ -2429,6 +2430,60 @@ tab_icon_drag_end (GtkWidget      *evbox,
 }
 
 
+static void
+update_evbox_shape (GtkWidget *image,
+                    GtkWidget *evbox)
+{
+    GtkMisc *misc;
+    GdkPixbuf *pixbuf;
+    GdkBitmap *mask;
+    int width, height;
+    int x, y;
+
+    g_return_if_fail (GTK_IS_EVENT_BOX (evbox));
+    g_return_if_fail (GTK_IS_IMAGE (image));
+
+    if (!GTK_WIDGET_REALIZED (image) || !(pixbuf = gtk_image_get_pixbuf (GTK_IMAGE (image))))
+        return;
+
+    width = gdk_pixbuf_get_width (pixbuf);
+    height = gdk_pixbuf_get_height (pixbuf);
+    g_return_if_fail (width < 2000 && height < 2000);
+
+    gdk_pixbuf_render_pixmap_and_mask (pixbuf, NULL, &mask, 1);
+    g_return_if_fail (mask != NULL);
+
+    misc = GTK_MISC (image);
+    x = floor (image->allocation.x + misc->xpad
+             + ((image->allocation.width - image->requisition.width) * misc->xalign));
+    y = floor (image->allocation.y + misc->ypad
+             + ((image->allocation.height - image->requisition.height) * misc->yalign));
+
+    gtk_widget_shape_combine_mask (evbox, NULL, 0, 0);
+    gtk_widget_shape_combine_mask (evbox, mask, x, y);
+
+    g_object_unref (mask);
+}
+
+static void
+icon_size_allocate (GtkWidget     *image,
+                    GtkAllocation *allocation,
+                    GtkWidget     *evbox)
+{
+    GtkAllocation *old_allocation;
+
+    old_allocation = g_object_get_data (G_OBJECT (image), "moo-icon-allocation");
+
+    if (!old_allocation || memcmp (old_allocation, allocation, sizeof *allocation) != 0)
+    {
+        GtkAllocation *copy = g_new (GtkAllocation, 1);
+        memcpy (copy, allocation, sizeof *copy);
+        g_object_set_data_full (G_OBJECT (image), "moo-icon-allocation", copy, g_free);
+        update_evbox_shape (image, evbox);
+    }
+}
+
+
 static GtkWidget *
 create_tab_label (MooEditWindow *window,
                   MooEdit       *edit)
@@ -2443,9 +2498,13 @@ create_tab_label (MooEditWindow *window,
 
     evbox = gtk_event_box_new ();
     gtk_box_pack_start (GTK_BOX (hbox), evbox, FALSE, FALSE, 0);
+
     icon = gtk_image_new ();
     gtk_container_add (GTK_CONTAINER (evbox), icon);
     gtk_widget_show_all (evbox);
+
+    g_signal_connect (icon, "realize", G_CALLBACK (update_evbox_shape), evbox);
+    g_signal_connect (icon, "size-allocate", G_CALLBACK (icon_size_allocate), evbox);
 
     label = gtk_label_new (moo_edit_get_display_basename (edit));
     gtk_label_set_single_line_mode (GTK_LABEL (label), TRUE);
@@ -2469,6 +2528,26 @@ create_tab_label (MooEditWindow *window,
     return hbox;
 }
 
+
+static void
+set_tab_icon (GtkWidget *image,
+              GtkWidget *evbox,
+              GdkPixbuf *pixbuf)
+{
+    GdkPixbuf *old_pixbuf;
+
+    /* file icons are cached, so it's likely the same pixbuf
+     * object as before (and it happens every time you switch tabs) */
+    old_pixbuf = gtk_image_get_pixbuf (GTK_IMAGE (image));
+
+    if (old_pixbuf != pixbuf)
+    {
+        gtk_image_set_from_pixbuf (GTK_IMAGE (image), pixbuf);
+
+        if (GTK_WIDGET_REALIZED (evbox))
+            update_evbox_shape (image, evbox);
+    }
+}
 
 static void
 update_tab_label (MooEditWindow *window,
@@ -2508,7 +2587,7 @@ update_tab_label (MooEditWindow *window,
     /* XXX */
     pixbuf = _moo_get_icon_for_path (moo_edit_get_filename (doc),
                                      icon, GTK_ICON_SIZE_MENU);
-    gtk_image_set_from_pixbuf (GTK_IMAGE (icon), pixbuf);
+    set_tab_icon (icon, evbox, pixbuf);
 
     g_free (label_text);
 }
