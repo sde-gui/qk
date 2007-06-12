@@ -154,10 +154,41 @@ gtk_source_style_manager_init (GtkSourceStyleManager *mgr)
 	mgr->priv->need_reload = TRUE;
 }
 
+/**
+ * gtk_source_style_manager_new:
+ *
+ * Creates a new style manager. If you do not need more than one style
+ * manager then use gtk_source_style_manager_get_default() instead.
+ *
+ * Returns: a #GtkSourceStyleManager.
+ **/
 GtkSourceStyleManager *
 gtk_source_style_manager_new (void)
 {
 	return g_object_new (GTK_TYPE_SOURCE_STYLE_MANAGER, NULL);
+}
+
+/**
+ * gtk_source_style_manager_get_default:
+ *
+ * Returns the default #GtkSourceStyleManager instance.
+ *
+ * Returns: a #GtkSourceStyleManager. Return value is owned
+ * by GtkSourceView library and must not be unref'ed.
+ **/
+GtkSourceStyleManager *
+gtk_source_style_manager_get_default (void)
+{
+	static GtkSourceStyleManager *instance;
+
+	if (instance == NULL)
+	{
+		instance = gtk_source_style_manager_new ();
+		g_object_add_weak_pointer (G_OBJECT (instance),
+					   (gpointer*) &instance);
+	}
+
+	return instance;
 }
 
 static gboolean
@@ -256,10 +287,9 @@ static void
 gtk_source_style_manager_reload (GtkSourceStyleManager *mgr)
 {
 	GHashTable *schemes_hash;
-	GSList *schemes;
+	GSList *schemes = NULL;
 	GSList *files;
 	GSList *l;
-	GtkSourceStyleScheme *def_scheme;
 
 	g_return_if_fail (GTK_IS_SOURCE_STYLE_MANAGER (mgr));
 
@@ -269,12 +299,6 @@ gtk_source_style_manager_reload (GtkSourceStyleManager *mgr)
 	g_slist_free (schemes);
 
 	schemes_hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
-	def_scheme = _gtk_source_style_scheme_default_new ();
-	schemes = g_slist_prepend (NULL, def_scheme);
-	g_hash_table_insert (schemes_hash,
-			     g_strdup (gtk_source_style_scheme_get_id (def_scheme)),
-			     g_object_ref (def_scheme));
-
 	files = _gtk_source_view_get_file_list (gtk_source_style_manager_get_search_path (mgr),
 						SCHEME_FILE_SUFFIX);
 
