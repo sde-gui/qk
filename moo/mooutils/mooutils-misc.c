@@ -1180,7 +1180,7 @@ moo_get_user_data_dir (void)
 
     G_UNLOCK (moo_user_data_dir);
 
-    return moo_user_data_dir;
+    return g_strdup (moo_user_data_dir);
 }
 
 void
