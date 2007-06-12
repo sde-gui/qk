@@ -288,6 +288,8 @@ get_word_at_iter (GtkTextBuffer *buffer,
         while (p >= line && is_word (p))
         {
             word_start = p;
+            if (p == line)
+                break;
             p = g_utf8_prev_char (p);
         }
     }

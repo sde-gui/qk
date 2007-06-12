@@ -581,7 +581,7 @@ moo_command_context_set_string (MooCommandContext *ctx,
         GValue gval;
         gval.g_type = 0;
         g_value_init (&gval, G_TYPE_STRING);
-        g_value_set_string (&gval, value);
+        g_value_set_static_string (&gval, value);
         moo_command_context_set (ctx, name, &gval);
         g_value_unset (&gval);
     }
