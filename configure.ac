@@ -78,7 +78,6 @@ if test x$MOO_OS_CYGWIN != "xyes"; then
   echo "    OS ...................................... $MOO_OS_NAME"
   echo "    use python .............................. $MOO_USE_PYTHON"
   echo "    use xml ................................. $MOO_USE_XML"
-  echo "    use xdgmime ............................. $MOO_USE_XDGMIME"
   echo "    build pcre library ...................... $MOO_BUILD_PCRE"
   echo "    use FAM ................................. $MOO_USE_FAM"
   echo
