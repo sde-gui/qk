@@ -17,6 +17,7 @@
 
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moocompat.h"
 
 #include <string.h>
 #include <stdio.h>
