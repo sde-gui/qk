@@ -115,7 +115,8 @@ def copy_files():
 
         if not no_python:
             do_cmd("cp -r %s/usr/local/win/gtk/lib/moo/plugins %s/lib/moo/" % (installdir, moo_windir))
-            do_cmd("cp -r %s/usr/local/win/gtk/lib/moo/projects %s/lib/moo/" % (installdir, moo_windir))
+            if os.path.exists("%s/usr/local/win/gtk/lib/moo/projects" % (installdir,)):
+                do_cmd("cp -r %s/usr/local/win/gtk/lib/moo/projects %s/lib/moo/" % (installdir, moo_windir))
 
             if pida:
                 do_cmd("mkdir -p %s/lib/site-packages" % (moo_windir,))
