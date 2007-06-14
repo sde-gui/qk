@@ -17,16 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
-#include <errno.h>
-#include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <unistd.h>
-
 #include <glib/gi18n.h>
 
 #include "eggsmclient.h"
@@ -47,9 +40,16 @@ enum {
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
+struct _EggSMClientPrivate {
+  GKeyFile *state_file;
+};
+
+#define EGG_SM_CLIENT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), EGG_TYPE_SM_CLIENT, EggSMClientPrivate))
+
 G_DEFINE_TYPE (EggSMClient, egg_sm_client, G_TYPE_OBJECT)
 
 static EggSMClient *global_client;
+static EggSMClientMode global_client_mode = EGG_SM_CLIENT_MODE_NORMAL;
 
 static void
 egg_sm_client_init (EggSMClient *client)
@@ -62,25 +62,26 @@ egg_sm_client_class_init (EggSMClientClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
+  g_type_class_add_private (klass, sizeof (EggSMClientPrivate));
+
   /**
    * EggSMClient::save_state:
    * @client: the client
-   * @state_dir: directory to save state into
+   * @state_file: a #GKeyFile to save state information into
    *
    * Emitted when the session manager has requested that the
    * application save information about its current state. The
-   * application should create whatever sort of files it needs in
-   * @state_dir in order to remember its state; the session manager
-   * may then restart the application in a future session and tell it
-   * to initialize itself from that state.
+   * application should save its state into @state_file, and then the
+   * session manager may then restart the application in a future
+   * session and tell it to initialize itself from that state.
    *
-   * The @state_dir will be different every time this signal is
-   * emitted, and there is no reason for the application to keep track
-   * of it after it is done saving its state; #EggSMClient will
-   * arrange for the directory to be deleted when it is no longer
-   * needed.
+   * You should not save any data into @state_file's "start group"
+   * (ie, the %NULL group). Instead, applications should save their
+   * data into groups with names that start with the application name,
+   * and libraries that connect to this signal should save their data
+   * into groups with names that start with the library name.
    *
-   * Alternatively, rather than (or in addition to) using @state_dir,
+   * Alternatively, rather than (or in addition to) using @state_file,
    * the application can save its state by calling
    * egg_sm_client_set_restart_command() during the processing of this
    * signal (eg, to include a list of files to open).
@@ -91,9 +92,9 @@ egg_sm_client_class_init (EggSMClientClass *klass)
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (EggSMClientClass, save_state),
                   NULL, NULL,
-                  g_cclosure_marshal_VOID__STRING,
+                  g_cclosure_marshal_VOID__POINTER,
                   G_TYPE_NONE,
-                  1, G_TYPE_STRING);
+                  1, G_TYPE_POINTER);
 
   /**
    * EggSMClient::quit_requested:
@@ -175,20 +176,16 @@ egg_sm_client_class_init (EggSMClientClass *klass)
 }
 
 static gboolean sm_client_disable = FALSE;
-static char *sm_client_state_dir = NULL;
-static char *sm_client_config_prefix = NULL;
+static char *sm_client_state_file = NULL;
 static char *sm_client_id = NULL;
 
 static GOptionEntry entries[] = {
   { "sm-client-disable", 0, 0,
     G_OPTION_ARG_NONE, &sm_client_disable,
     N_("Disable connection to session manager"), NULL },
-  { "sm-client-state-dir", 0, 0,
-    G_OPTION_ARG_STRING, &sm_client_state_dir,
-    N_("Specify directory containing saved configuration"), N_("DIR") },
-  { "sm-config-prefix", 0, G_OPTION_FLAG_HIDDEN,
-    G_OPTION_ARG_STRING, &sm_client_config_prefix,
-    NULL, NULL },
+  { "sm-client-state-file", 0, 0,
+    G_OPTION_ARG_STRING, &sm_client_state_file,
+    N_("Specify file containing saved configuration"), N_("FILE") },
   { "sm-client-id", 0, 0,
     G_OPTION_ARG_STRING, &sm_client_id,
     N_("Specify session management ID"), N_("ID") },
@@ -237,50 +234,56 @@ egg_sm_client_get_option_group (void)
 }
 
 /**
- * egg_sm_client_register:
- * @desktop_path: Path to the application's .desktop file (or %NULL)
+ * egg_sm_client_set_mode:
+ * @mode: an #EggSMClient mode
  *
- * Registers the application with the session manager. This MAY
- * (depending on session manager policies and user preferences) mean
- * that the application will be automatically restarted on future
- * logins. (See also egg_sm_client_get().)
+ * Sets the "mode" of #EggSMClient as follows:
  *
- * @desktop_path is used to find various information about the
- * application, including its (localized) name and description, its
- * icon, the command used to invoke it, and whether or not it wants to
- * be restarted by the session manager if it crashes. (On Windows and
- * OS X, the name and icon are determined automatically, and you can
- * simply pass %NULL for @desktop_path. Under X11, if you pass %NULL
- * for @desktop_path, the restart command defaults to the return value
- * of g_get_prgname(). You can use egg_sm_client_set_restart_command()
- * to set an alternate restart command if necessary.)
+ *    %EGG_SM_CLIENT_MODE_DISABLED: Session management is completely
+ *    disabled. The application will not even connect to the session
+ *    manager. (egg_sm_client_get() will still return an #EggSMClient,
+ *    but it will just be a dummy object.)
  *
- * Return value: the #EggSMClient instance for this application
+ *    %EGG_SM_CLIENT_MODE_NO_RESTART: The application will connect to
+ *    the session manager (and thus will receive notification when the
+ *    user is logging out, etc), but will request to not be
+ *    automatically restarted with saved state in future sessions.
+ *
+ *    %EGG_SM_CLIENT_MODE_NORMAL: The default. #EggSMCLient will
+ *    function normally.
+ *
+ * This must be called before the application's main loop begins.
  **/
-EggSMClient *
-egg_sm_client_register (const char *desktop_path)
+void
+egg_sm_client_set_mode (EggSMClientMode mode)
 {
-  EggSMClient *client = egg_sm_client_get ();
+  global_client_mode = mode;
+}
 
-  if (!sm_client_disable &&
-      EGG_SM_CLIENT_GET_CLASS (client)->register_client)
-    EGG_SM_CLIENT_GET_CLASS (client)->register_client (client, desktop_path);
-  return client;
+/**
+ * egg_sm_client_get_mode:
+ *
+ * Gets the global #EggSMClientMode. See egg_sm_client_set_mode()
+ * for details.
+ *
+ * Return value: the global #EggSMClientMode
+ **/
+EggSMClientMode
+egg_sm_client_get_mode (void)
+{
+  return global_client_mode;
 }
 
 /**
  * egg_sm_client_get:
  *
- * Returns the master #EggSMClient.
+ * Returns the master #EggSMClient for the application.
  *
- * This method (as opposed to egg_sm_client_register()) can be used by
- * an application that wants to listen to the logout-related signals,
- * or that wants to call egg_sm_client_end_session(), but that does
- * not ever want to be restarted automatically in future sessions.
- *
- * This method can also be used by libraries that want to connect to
- * the ::save_state signal (although that signal will only be emitted
- * if the application calls egg_sm_client_register().)
+ * On platforms that support saved sessions (ie, POSIX/X11), the
+ * application will only request to be restarted by the session
+ * manager if you call egg_set_desktop_file() to set an application
+ * desktop file. In particular, if the desktop file contains the key
+ * "X
  *
  * Return value: the master #EggSMClient.
  **/
@@ -289,22 +292,27 @@ egg_sm_client_get (void)
 {
   if (!global_client)
     {
-#if defined (EGG_SM_CLIENT_BACKEND_WIN32)
-      global_client = egg_sm_client_win32_new ();
-# elif defined (EGG_SM_CLIENT_BACKEND_OSX)
-      global_client = egg_sm_client_osx_new ();
+      if (global_client_mode != EGG_SM_CLIENT_MODE_DISABLED &&
+	  !sm_client_disable)
+	{
+#if defined (GDK_WINDOWING_WIN32)
+	  global_client = _egg_sm_client_win32_new ();
+#elif defined (GDK_WINDOWING_QUARTZ) && 0
+	  global_client = _egg_sm_client_osx_new ();
 #else
-      /* If both D-Bus and XSMP are compiled in, try D-Bus first and fall
-       * back to XSMP if D-Bus session management isn't available.
-       */
+	  /* If both D-Bus and XSMP are compiled in, try D-Bus first
+	   * and fall back to XSMP if D-Bus session management isn't
+	   * available.
+	   */
 # ifdef EGG_SM_CLIENT_BACKEND_DBUS
-      global_client = egg_sm_client_dbus_new ();
+	  global_client = _egg_sm_client_dbus_new ();
 # endif
 # ifdef EGG_SM_CLIENT_BACKEND_XSMP
-      if (!global_client)
-	global_client = egg_sm_client_xsmp_new ();
+	  if (!global_client)
+	    global_client = _egg_sm_client_xsmp_new ();
 # endif
 #endif
+	}
 
       /* Fallback: create a dummy client, so that callers don't have
        * to worry about a %NULL return value.
@@ -322,8 +330,8 @@ egg_sm_client_get (void)
  *
  * Checks whether or not the current session has been resumed from
  * a previous saved session. If so, the application should call
- * egg_sm_client_get_state_dir() and restore its state from the files
- * contained there.
+ * egg_sm_client_get_state_file() and restore its state from the
+ * returned #GKeyFile.
  *
  * Return value: %TRUE if the session has been resumed
  **/
@@ -332,51 +340,59 @@ egg_sm_client_is_resumed (EggSMClient *client)
 {
   g_return_val_if_fail (client == global_client, FALSE);
 
-  /* FIXME: should this actually check both state_dir and config_prefix?
-   * Or just state_dir? Or is there really not any need for this method
-   * at all?
-   */
-
-  return sm_client_state_dir != NULL || sm_client_config_prefix != NULL;
+  return sm_client_state_file != NULL;
 }
 
 /**
- * egg_sm_client_get_state_dir:
+ * egg_sm_client_get_state_file:
  * @client: the client
  *
  * If the application was resumed by the session manager, this will
- * return the path to the directory containing its state from the
- * previous session.
+ * return the #GKeyFile containing its state from the previous
+ * session.
  *
- * Return value: the directory containing the application's earlier
- * state, or %NULL
+ * Note that other libraries and #EggSMClient itself may also store
+ * state in the key file, so if you call egg_sm_client_get_groups(),
+ * on it, the return value will likely include groups that you did not
+ * put there yourself. (It is also not guaranteed that the first
+ * group created by the application will still be the "start group"
+ * when it is resumed.)
+ *
+ * Return value: the #GKeyFile containing the application's earlier
+ * state, or %NULL on error. You should not free this key file; it
+ * is owned by @client.
  **/
-const char *
-egg_sm_client_get_state_dir (EggSMClient *client)
+GKeyFile *
+egg_sm_client_get_state_file (EggSMClient *client)
 {
+  EggSMClientPrivate *priv = EGG_SM_CLIENT_GET_PRIVATE (client);
+  char *state_file_path;
+  GError *err = NULL;
+
   g_return_val_if_fail (client == global_client, NULL);
 
-  return sm_client_state_dir;
-}
+  if (!sm_client_state_file)
+    return NULL;
+  if (priv->state_file)
+    return priv->state_file;
 
-/**
- * egg_sm_client_get_config_prefix:
- * @client: the client
- *
- * If the application was resumed by the session manager with the
- * command-line argument "--sm-config-prefix ...", this will return
- * the prefix specified (and egg_sm_client_get_state_dir() will return
- * %NULL). This can be used by applications that used to use
- * #GnomeClient, and that want to support upgrading old saved states.
- *
- * Return value: the specified "config prefix", or %NULL
- **/
-const char *
-egg_sm_client_get_config_prefix (EggSMClient *client)
-{
-  g_return_val_if_fail (client == global_client, NULL);
+  if (!strncmp (sm_client_state_file, "file://", 7))
+    state_file_path = g_filename_from_uri (sm_client_state_file, NULL, NULL);
+  else
+    state_file_path = g_strdup (sm_client_state_file);
 
-  return sm_client_config_prefix;
+  priv->state_file = g_key_file_new ();
+  if (!g_key_file_load_from_file (priv->state_file, state_file_path, 0, &err))
+    {
+      g_warning ("Could not load SM state file '%s': %s",
+		 sm_client_state_file, err->message);
+      g_clear_error (&err);
+      g_key_file_free (priv->state_file);
+      priv->state_file = NULL;
+    }
+
+  g_free (state_file_path);
+  return priv->state_file;
 }
 
 /**
@@ -433,7 +449,6 @@ egg_sm_client_will_quit (EggSMClient *client,
 
 /**
  * egg_sm_client_end_session:
- * @client: the client
  * @style: a hint at how to end the session
  * @request_confirmation: whether or not the user should get a chance
  * to confirm the action
@@ -449,10 +464,11 @@ egg_sm_client_will_quit (EggSMClient *client,
  * be (eg, because it could not connect to the session manager).
  **/
 gboolean
-egg_sm_client_end_session (EggSMClient         *client,
-			   EggSMClientEndStyle  style,
+egg_sm_client_end_session (EggSMClientEndStyle  style,
 			   gboolean             request_confirmation)
 {
+  EggSMClient *client = egg_sm_client_get ();
+
   g_return_val_if_fail (EGG_IS_SM_CLIENT (client), FALSE);
 
   if (EGG_SM_CLIENT_GET_CLASS (client)->end_session)
@@ -466,60 +482,35 @@ egg_sm_client_end_session (EggSMClient         *client,
 
 /* Signal-emitting callbacks from platform-specific code */
 
-#ifdef EGG_SM_CLIENT_BACKEND_XSMP
-char *
-egg_sm_client_save_state (EggSMClient *client)
+GKeyFile *
+_egg_sm_client_save_state (EggSMClient *client)
 {
-  char *state_dir;
-  gboolean success;
+  GKeyFile *state_file;
+  char *group;
 
   g_return_val_if_fail (client == global_client, NULL);
 
-  if (!g_signal_has_handler_pending (client, signals[SAVE_STATE], 0, FALSE))
-    return NULL;
-
-  state_dir = g_strdup_printf ("%s%csession-state%c%s-XXXXXX",
-			       g_get_user_config_dir (),
-			       G_DIR_SEPARATOR, G_DIR_SEPARATOR,
-			       g_get_prgname ());
-
-  success = mkdtemp (state_dir) != NULL;
-  if (!success && errno == ENOENT)
-    {
-      char *sep = strrchr (state_dir, G_DIR_SEPARATOR);
-
-      *sep = '\0';
-      if (g_mkdir_with_parents (state_dir, 0755) == 0)
-	{
-	  sprintf (sep, "%c%s-XXXXXX", G_DIR_SEPARATOR, g_get_prgname ());
-	  success = mkdtemp (state_dir) != NULL;
-	}
-    }
-
-  if (!success)
-    {
-      g_warning ("Could not create session state directory '%s': %s",
-		 state_dir, g_strerror (errno));
-      g_free (state_dir);
-      return NULL;
-    }
+  state_file = g_key_file_new ();
 
   g_debug ("Emitting save_state");
-  g_signal_emit (client, signals[SAVE_STATE], 0, state_dir);
+  g_signal_emit (client, signals[SAVE_STATE], 0, state_file);
   g_debug ("Done emitting save_state");
 
-  if (rmdir (state_dir) == 0)
+  group = g_key_file_get_start_group (state_file);
+  if (group)
     {
-      g_free (state_dir);
+      g_free (group);
+      return state_file;
+    }
+  else
+    {
+      g_key_file_free (state_file);
       return NULL;
     }
-
-  return state_dir;
 }
-#endif /* EGG_SM_CLIENT_BACKEND_XSMP */
 
 void
-egg_sm_client_quit_requested (EggSMClient *client)
+_egg_sm_client_quit_requested (EggSMClient *client)
 {
   g_return_if_fail (client == global_client);
 
@@ -536,7 +527,7 @@ egg_sm_client_quit_requested (EggSMClient *client)
 }
 
 void
-egg_sm_client_quit_cancelled (EggSMClient *client)
+_egg_sm_client_quit_cancelled (EggSMClient *client)
 {
   g_return_if_fail (client == global_client);
 
@@ -546,7 +537,7 @@ egg_sm_client_quit_cancelled (EggSMClient *client)
 }
 
 void
-egg_sm_client_quit (EggSMClient *client)
+_egg_sm_client_quit (EggSMClient *client)
 {
   g_return_if_fail (client == global_client);
 
@@ -555,7 +546,6 @@ egg_sm_client_quit (EggSMClient *client)
   g_debug ("Done emitting quit");
 
   /* FIXME: should we just call gtk_main_quit() here? */
-  /* Of course not! */
 }
 
 static void

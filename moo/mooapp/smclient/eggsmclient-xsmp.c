@@ -26,15 +26,18 @@
 #include "eggsmclient.h"
 #include "eggsmclient-private.h"
 
+#include "eggdesktopfile.h"
+
+#include <errno.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <X11/SM/SMlib.h>
 
-/* for gdk_set_sm_client_id */
 #include <gdk/gdk.h>
 
-#define EGG_TYPE_SM_CLIENT_XSMP            (egg_sm_client_xsmp_get_type ())
+#define EGG_TYPE_SM_CLIENT_XSMP            (_egg_sm_client_xsmp_get_type ())
 #define EGG_SM_CLIENT_XSMP(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), EGG_TYPE_SM_CLIENT_XSMP, EggSMClientXSMP))
 #define EGG_SM_CLIENT_XSMP_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), EGG_TYPE_SM_CLIENT_XSMP, EggSMClientXSMPClass))
 #define EGG_IS_SM_CLIENT_XSMP(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), EGG_TYPE_SM_CLIENT_XSMP))
@@ -60,7 +63,7 @@ typedef enum
   XSMP_STATE_INTERACT,
   XSMP_STATE_SAVE_YOURSELF_DONE,
   XSMP_STATE_SHUTDOWN_CANCELLED,
-  XSMP_STATE_CONNECTION_CLOSED
+  XSMP_STATE_CONNECTION_CLOSED,
 } EggSMClientXSMPState;
 
 static const char *state_names[] = {
@@ -84,11 +87,9 @@ struct _EggSMClientXSMP
   char *client_id;
 
   EggSMClientXSMPState state;
-  char *desktop_file;
   char **restart_command;
   gboolean set_restart_command;
   int restart_style;
-  char *state_dir;
 
   guint idle;
 
@@ -114,8 +115,6 @@ struct _EggSMClientXSMPClass
 
 static void     sm_client_xsmp_startup (EggSMClient *client,
 					const char  *client_id);
-static void     sm_client_xsmp_register_client (EggSMClient *client,
-						const char  *desktop_path);
 static void     sm_client_xsmp_set_restart_command (EggSMClient  *client,
 						    int           argc,
 						    const char  **argv);
@@ -151,8 +150,10 @@ static SmProp *card8_prop        (const char    *name,
 
 static void set_properties         (EggSMClientXSMP *xsmp, ...);
 static void delete_properties      (EggSMClientXSMP *xsmp, ...);
-static void set_restart_properties (EggSMClientXSMP *xsmp);
-static void set_commands           (EggSMClientXSMP *xsmp);
+
+static GPtrArray *generate_command (char       **restart_command,
+				    const char  *client_id,
+				    const char  *state_file);
 
 static void save_state            (EggSMClientXSMP *xsmp);
 static void do_save_yourself      (EggSMClientXSMP *xsmp);
@@ -168,30 +169,29 @@ static void     smc_error_handler    (SmcConn       smc_conn,
 				      int           severity,
 				      SmPointer     values);
 
-G_DEFINE_TYPE (EggSMClientXSMP, egg_sm_client_xsmp, EGG_TYPE_SM_CLIENT)
+G_DEFINE_TYPE (EggSMClientXSMP, _egg_sm_client_xsmp, EGG_TYPE_SM_CLIENT)
 
 static void
-egg_sm_client_xsmp_init (EggSMClientXSMP *xsmp)
+_egg_sm_client_xsmp_init (EggSMClientXSMP *xsmp)
 {
   xsmp->state = XSMP_STATE_CONNECTION_CLOSED;
   xsmp->connection = NULL;
-  xsmp->restart_style = SmRestartNever;
+  xsmp->restart_style = SmRestartIfRunning;
 }
 
 static void
-egg_sm_client_xsmp_class_init (EggSMClientXSMPClass *klass)
+_egg_sm_client_xsmp_class_init (EggSMClientXSMPClass *klass)
 {
   EggSMClientClass *sm_client_class = EGG_SM_CLIENT_CLASS (klass);
 
   sm_client_class->startup             = sm_client_xsmp_startup;
-  sm_client_class->register_client     = sm_client_xsmp_register_client;
   sm_client_class->set_restart_command = sm_client_xsmp_set_restart_command;
   sm_client_class->will_quit           = sm_client_xsmp_will_quit;
   sm_client_class->end_session         = sm_client_xsmp_end_session;
 }
 
 EggSMClient *
-egg_sm_client_xsmp_new (void)
+_egg_sm_client_xsmp_new (void)
 {
   if (!g_getenv ("SESSION_MANAGER"))
     return NULL;
@@ -199,7 +199,7 @@ egg_sm_client_xsmp_new (void)
   return g_object_new (EGG_TYPE_SM_CLIENT_XSMP, NULL);
 }
 
-static void
+static gboolean
 sm_client_xsmp_connect (gpointer user_data)
 {
   EggSMClientXSMP *xsmp = user_data;
@@ -207,6 +207,8 @@ sm_client_xsmp_connect (gpointer user_data)
   char *client_id;
   char error_string_ret[256];
   char pid_str[64];
+  EggDesktopFile *desktop_file;
+  GPtrArray *clone, *restart;
 
   g_source_remove (xsmp->idle);
   xsmp->idle = 0;
@@ -241,7 +243,7 @@ sm_client_xsmp_connect (gpointer user_data)
 		 error_string_ret[0] ?
 		 error_string_ret : "no error message given");
       xsmp->state = XSMP_STATE_CONNECTION_CLOSED;
-      return;
+      return FALSE;
     }
 
   /* We expect a pointless initial SaveYourself if either (a) we
@@ -258,34 +260,86 @@ sm_client_xsmp_connect (gpointer user_data)
       xsmp->client_id = g_strdup (client_id);
       free (client_id);
 
+      gdk_threads_enter ();
       gdk_set_sm_client_id (xsmp->client_id);
+      gdk_threads_leave ();
+
       g_debug ("Got client ID \"%s\"", xsmp->client_id);
     }
+
+  if (egg_sm_client_get_mode () == EGG_SM_CLIENT_MODE_NO_RESTART)
+    xsmp->restart_style = SmRestartNever;
+
+  /* Parse info out of desktop file */
+  desktop_file = egg_get_desktop_file ();
+  if (desktop_file)
+    {
+      GKeyFile *key_file;
+      GError *err = NULL;
+      char *cmdline, **argv;
+      int argc;
+
+      key_file = egg_desktop_file_get_key_file (desktop_file);
+
+      if (xsmp->restart_style == SmRestartIfRunning)
+	{
+	  if (g_key_file_has_key (key_file, EGG_DESKTOP_FILE_GROUP,
+				  "X-GNOME-AutoRestart", NULL) &&
+	      g_key_file_get_boolean (key_file, EGG_DESKTOP_FILE_GROUP,
+				      "X-GNOME-AutoRestart", NULL))
+	    xsmp->restart_style = SmRestartImmediately;
+	}
+
+      if (!xsmp->set_restart_command)
+	{
+	  cmdline = egg_desktop_file_parse_exec (desktop_file, NULL, &err);
+	  if (cmdline && g_shell_parse_argv (cmdline, &argc, &argv, &err))
+	    {
+	      egg_sm_client_set_restart_command (EGG_SM_CLIENT (xsmp),
+						 argc, (const char **)argv);
+	      g_strfreev (argv);
+	    }
+	  else
+	    {
+	      g_warning ("Could not parse Exec line in desktop file: %s",
+			 err->message);
+	      g_error_free (err);
+	    }
+	}
+    }
+
+  if (!xsmp->set_restart_command)
+    xsmp->restart_command = g_strsplit (g_get_prgname (), " ", -1);
+
+  clone = generate_command (xsmp->restart_command, NULL, NULL);
+  restart = generate_command (xsmp->restart_command, xsmp->client_id, NULL);
 
   g_debug ("Setting initial properties");
 
   /* Program, CloneCommand, RestartCommand, and UserID are required.
-   * (CloneCommand and RestartCommand will be set by
-   * set_restart_properties().) ProcessID isn't required, but the SM
-   * may be able to do something useful with it.
+   * ProcessID isn't required, but the SM may be able to do something
+   * useful with it.
    */
   g_snprintf (pid_str, sizeof (pid_str), "%lu", (gulong) getpid ());
   set_properties (xsmp,
-		  string_prop (SmProgram, g_get_prgname ()),
-		  string_prop (SmUserID, g_get_user_name ()),
-		  string_prop (SmProcessID, pid_str),
+		  string_prop   (SmProgram, g_get_prgname ()),
+		  ptrarray_prop (SmCloneCommand, clone),
+		  ptrarray_prop (SmRestartCommand, restart),
+		  string_prop   (SmUserID, g_get_user_name ()),
+		  string_prop   (SmProcessID, pid_str),
+		  card8_prop    (SmRestartStyleHint, xsmp->restart_style),
 		  NULL);
-  set_restart_properties (xsmp);
+  g_ptr_array_free (clone, TRUE);
+  g_ptr_array_free (restart, TRUE);
+
+  if (desktop_file)
+    {
+      set_properties (xsmp,
+		      string_prop ("_GSM_DesktopFile", egg_desktop_file_get_source (desktop_file)),
+		      NULL);
+    }
 
   xsmp->state = XSMP_STATE_IDLE;
-}
-
-static gboolean
-sm_client_xsmp_connect_idle_func (gpointer user_data)
-{
-  gdk_threads_enter ();
-  sm_client_xsmp_connect (user_data);
-  gdk_threads_leave ();
   return FALSE;
 }
 
@@ -325,23 +379,11 @@ sm_client_xsmp_startup (EggSMClient *client,
 
   /* Don't connect to the session manager until we reach the main
    * loop, since the session manager may assume we're fully up and
-   * running once we connect.
+   * running once we connect. (This also gives the application a
+   * chance to call egg_set_desktop_file() before we set the initial
+   * properties.)
    */
-  xsmp->idle = g_idle_add (sm_client_xsmp_connect_idle_func, client);
-}
-
-static void
-sm_client_xsmp_register_client (EggSMClient *client,
-				const char  *desktop_path)
-{
-  EggSMClientXSMP *xsmp = (EggSMClientXSMP *)client;
-
-  xsmp->desktop_file = g_strdup (desktop_path);
-  xsmp->restart_style = SmRestartIfRunning;
-
-  /* If we're already connected, update properties */
-  if (xsmp->connection)
-    set_restart_properties (xsmp);
+  xsmp->idle = g_idle_add (sm_client_xsmp_connect, client);
 }
 
 static void
@@ -360,9 +402,6 @@ sm_client_xsmp_set_restart_command (EggSMClient  *client,
   xsmp->restart_command[i] = NULL;
 
   xsmp->set_restart_command = TRUE;
-
-  if (xsmp->connection)
-    set_commands (xsmp);
 }
 
 static void
@@ -507,14 +546,14 @@ idle_do_pending_events (gpointer data)
   if (xsmp->waiting_to_emit_quit)
     {
       xsmp->waiting_to_emit_quit = FALSE;
-      egg_sm_client_quit (client);
+      _egg_sm_client_quit (client);
       goto out;
     }
 
   if (xsmp->waiting_to_emit_quit_cancelled)
     {
       xsmp->waiting_to_emit_quit_cancelled = FALSE;
-      egg_sm_client_quit_cancelled (client);
+      _egg_sm_client_quit_cancelled (client);
       xsmp->state = XSMP_STATE_IDLE;
     }
 
@@ -524,7 +563,7 @@ idle_do_pending_events (gpointer data)
       do_save_yourself (xsmp);
     }
 
-out:
+ out:
   gdk_threads_leave ();
   return FALSE;
 }
@@ -727,17 +766,158 @@ do_save_yourself (EggSMClientXSMP *xsmp)
 }
 
 static void
+merge_keyfiles (GKeyFile *dest, GKeyFile *source)
+{
+  int g, k;
+  char **groups, **keys, *value;
+
+  groups = g_key_file_get_groups (source, NULL);
+  for (g = 0; groups[g]; g++)
+    {
+      keys = g_key_file_get_keys (source, groups[g], NULL, NULL);
+      for (k = 0; keys[k]; k++)
+	{
+	  value = g_key_file_get_value (source, groups[g], keys[k], NULL);
+	  if (value)
+	    {
+	      g_key_file_set_value (dest, groups[g], keys[k], value);
+	      g_free (value);
+	    }
+	}
+      g_strfreev (keys);
+    }
+  g_strfreev (groups);
+}
+
+static void
 save_state (EggSMClientXSMP *xsmp)
 {
+  GKeyFile *state_file;
+  char *state_file_path, *data;
+  EggDesktopFile *desktop_file;
+  GPtrArray *restart;
+  int offset, fd;
+
+  /* We set xsmp->state before emitting save_state, but our caller is
+   * responsible for setting it back afterward.
+   */
   xsmp->state = XSMP_STATE_SAVE_YOURSELF;
 
-  g_free (xsmp->state_dir);
-  xsmp->state_dir = egg_sm_client_save_state ((EggSMClient *)xsmp);
-  set_commands (xsmp);
+  state_file = _egg_sm_client_save_state ((EggSMClient *)xsmp);
+  if (!state_file)
+    {
+      restart = generate_command (xsmp->restart_command, xsmp->client_id, NULL);
+      set_properties (xsmp,
+		      ptrarray_prop (SmRestartCommand, restart),
+		      NULL);
+      g_ptr_array_free (restart, TRUE);
+      delete_properties (xsmp, SmDiscardCommand, NULL);
+      return;
+    }
 
-  /* The caller is responsible for setting client->state to
-   * the right value after we return.
+  desktop_file = egg_get_desktop_file ();
+  if (desktop_file)
+    {
+      GKeyFile *merged_file;
+      char *exec;
+      guint i;
+
+      merged_file = g_key_file_new ();
+      merge_keyfiles (merged_file, egg_desktop_file_get_key_file (desktop_file));
+      merge_keyfiles (merged_file, state_file);
+
+      g_key_file_free (state_file);
+      state_file = merged_file;
+
+      /* Update Exec key using "--sm-client-state-file %k" */
+      restart = generate_command (xsmp->restart_command,
+				  NULL, "%k");
+      for (i = 0; i < restart->len; i++)
+	restart->pdata[i] = g_shell_quote (restart->pdata[i]);
+      g_ptr_array_add (restart, NULL);
+      exec = g_strjoinv (" ", (char **)restart->pdata);
+      g_strfreev ((char **)restart->pdata);
+      g_ptr_array_free (restart, FALSE);
+
+      g_key_file_set_string (state_file, EGG_DESKTOP_FILE_GROUP,
+			     EGG_DESKTOP_FILE_KEY_EXEC,
+			     exec);
+      g_free (exec);
+    }
+
+  /* Now write state_file to disk. (We can't use mktemp(), because
+   * that requires the filename to end with "XXXXXX", and we want
+   * it to end with ".desktop".)
    */
+
+  data = g_key_file_to_data (state_file, NULL, NULL);
+  g_key_file_free (state_file);
+
+  offset = 0;
+  while (1)
+    {
+      state_file_path = g_strdup_printf ("%s%csession-state%c%s-%ld.%s",
+					 g_get_user_config_dir (),
+					 G_DIR_SEPARATOR, G_DIR_SEPARATOR,
+					 g_get_prgname (),
+					 (long)time (NULL) + offset,
+					 desktop_file ? "desktop" : "state");
+
+      fd = open (state_file_path, O_WRONLY | O_CREAT | O_EXCL, 0644);
+      if (fd == -1)
+	{
+	  if (errno == EEXIST)
+	    {
+	      offset++;
+	      g_free (state_file_path);
+	      continue;
+	    }
+	  else if (errno == ENOTDIR || errno == ENOENT)
+	    {
+	      char *sep = strrchr (state_file_path, G_DIR_SEPARATOR);
+
+	      *sep = '\0';
+	      if (g_mkdir_with_parents (state_file_path, 0755) != 0)
+		{
+		  g_warning ("Could not create directory '%s'",
+			     state_file_path);
+		  g_free (state_file_path);
+		  state_file_path = NULL;
+		  break;
+		}
+
+	      continue;
+	    }
+
+	  g_warning ("Could not create file '%s': %s",
+		     state_file_path, g_strerror (errno));
+	  g_free (state_file_path);
+	  state_file_path = NULL;
+	  break;
+	}
+
+      close (fd);
+      g_file_set_contents (state_file_path, data, -1, NULL);
+      break;
+    }
+  g_free (data);
+
+  restart = generate_command (xsmp->restart_command, xsmp->client_id,
+			      state_file_path);
+  set_properties (xsmp,
+		  ptrarray_prop (SmRestartCommand, restart),
+		  NULL);
+  g_ptr_array_free (restart, TRUE);
+
+  if (state_file_path)
+    {
+      set_properties (xsmp,
+		      array_prop (SmDiscardCommand,
+				  "/bin/rm", "-rf", state_file_path,
+				  NULL),
+		      NULL);
+      g_free (state_file_path);
+    }
 }
 
 static void
@@ -757,7 +937,7 @@ xsmp_interact (SmcConn   smc_conn,
     }
 
   xsmp->state = XSMP_STATE_INTERACT;
-  egg_sm_client_quit_requested (client);
+  _egg_sm_client_quit_requested (client);
 }
 
 static void
@@ -771,7 +951,7 @@ xsmp_die (SmcConn   smc_conn,
 	   EGG_SM_CLIENT_XSMP_STATE (xsmp));
 
   sm_client_xsmp_disconnect (xsmp);
-  egg_sm_client_quit (client);
+  _egg_sm_client_quit (client);
 }
 
 static void
@@ -807,7 +987,7 @@ xsmp_shutdown_cancelled (SmcConn   smc_conn,
        * cancel the shutdown.
        */
       xsmp->state = XSMP_STATE_IDLE;
-      egg_sm_client_quit_cancelled (client);
+      _egg_sm_client_quit_cancelled (client);
     }
   else if (xsmp->state == XSMP_STATE_SHUTDOWN_CANCELLED)
     {
@@ -845,111 +1025,40 @@ xsmp_shutdown_cancelled (SmcConn   smc_conn,
 
 /* Utilities */
 
-static void
-set_restart_properties (EggSMClientXSMP *xsmp)
+/* Create a restart/clone/Exec command based on @restart_command.
+ * If @client_id is non-%NULL, add "--sm-client-id @client_id".
+ * If @state_file is non-%NULL, add "--sm-client-state-file @state_file".
+ *
+ * None of the input strings are g_strdup()ed; the caller must keep
+ * them around until it is done with the returned GPtrArray, and must
+ * then free the array, but not its contents.
+ */
+static GPtrArray *
+generate_command (char **restart_command, const char *client_id,
+		  const char *state_file)
 {
-#if 0
-  if (xsmp->desktop_file)
-    {
-      EggDesktopFile *desktop;
-      GError *err = NULL;
-      char *cmdline, **argv;
-      int argc;
-
-      desktop = egg_desktop_file_new (xsmp->desktop_file, &err);
-      if (err)
-	{
-	  g_warning ("Could not open desktop file '%s': %s",
-		     xsmp->desktop_file, err->message);
-	  g_error_free (err);
-	}
-      else
-	{
-	  set_properties (xsmp,
-			  string_prop ("_GSM_DesktopFile", xsmp->desktop_file),
-			  NULL);
-	  if (egg_desktop_file_get_boolean (desktop, "X-GNOME-AutoRestart", NULL))
-	    xsmp->restart_style = SmRestartImmediately;
-
-	  if (!xsmp->set_restart_command)
-	    {
-	      cmdline = egg_desktop_file_exec_line (desktop, &err);
-	      if (cmdline && g_shell_parse_argv (cmdline, &argc, &argv, &err))
-		{
-		  egg_sm_client_set_restart_command (EGG_SM_CLIENT (xsmp),
-						     argc, (const char **)argv);
-		  g_strfreev (argv);
-		}
-	      else
-		{
-		  g_warning ("Could not parse Exec line in '%s': %s",
-			     xsmp->desktop_file, err->message);
-		  g_error_free (err);
-		}
-	    }
-	}
-    }
-#endif
-
-  if (!xsmp->set_restart_command)
-    xsmp->restart_command = g_strsplit (g_get_prgname (), " ", -1);
-
-  set_properties (xsmp,
-		  card8_prop (SmRestartStyleHint, xsmp->restart_style),
-		  NULL);
-  set_commands (xsmp);
-}
-
-static void
-set_commands (EggSMClientXSMP *xsmp)
-{
-  GPtrArray *restart, *clone;
+  GPtrArray *cmd;
   int i;
 
-  restart = g_ptr_array_new ();
-  clone = g_ptr_array_new ();
+  cmd = g_ptr_array_new ();
+  g_ptr_array_add (cmd, restart_command[0]);
 
-  g_ptr_array_add (restart, xsmp->restart_command[0]);
-  g_ptr_array_add (clone, xsmp->restart_command[0]);
-
-  if (xsmp->client_id)
+  if (client_id)
     {
-      g_ptr_array_add (restart, (char*) "--sm-client-id");
-      g_ptr_array_add (restart, xsmp->client_id);
+      g_ptr_array_add (cmd, (char *)"--sm-client-id");
+      g_ptr_array_add (cmd, (char *)client_id);
     }
 
-  if (xsmp->state_dir)
+  if (state_file)
     {
-      g_ptr_array_add (restart, (char*) "--sm-client-state-dir");
-      g_ptr_array_add (restart, xsmp->state_dir);
-      g_ptr_array_add (clone, (char*) "--sm-client-state-dir");
-      g_ptr_array_add (clone, xsmp->state_dir);
+      g_ptr_array_add (cmd, (char *)"--sm-client-state-file");
+      g_ptr_array_add (cmd, (char *)state_file);
     }
 
-  for (i = 1; xsmp->restart_command[i]; i++)
-    {
-      g_ptr_array_add (restart, xsmp->restart_command[i]);
-      g_ptr_array_add (clone, xsmp->restart_command[i]);
-    }
+  for (i = 1; restart_command[i]; i++)
+    g_ptr_array_add (cmd, restart_command[i]);
 
-  set_properties (xsmp,
-		  ptrarray_prop (SmRestartCommand, restart),
-		  ptrarray_prop (SmCloneCommand, clone),
-		  NULL);
-  g_ptr_array_free (restart, TRUE);
-  g_ptr_array_free (clone, TRUE);
-
-  if (xsmp->state_dir)
-    {
-      set_properties (xsmp,
-		      array_prop (SmDiscardCommand,
-				  "/bin/rm", "-rf",
-				  xsmp->state_dir,
-				  NULL),
-		      NULL);
-    }
-  else
-    delete_properties (xsmp, SmDiscardCommand, NULL);
+  return cmd;
 }
 
 /* Takes a NULL-terminated list of SmProp * values, created by
@@ -1024,8 +1133,8 @@ array_prop (const char *name, ...)
   va_list ap;
 
   prop = g_new (SmProp, 1);
-  prop->name = (char*) name;
-  prop->type = (char*) SmLISTofARRAY8;
+  prop->name = (char *)name;
+  prop->type = (char *)SmLISTofARRAY8;
 
   vals = g_array_new (FALSE, FALSE, sizeof (SmPropValue));
 
@@ -1058,8 +1167,8 @@ ptrarray_prop (const char *name, GPtrArray *values)
   guint i;
 
   prop = g_new (SmProp, 1);
-  prop->name = (char*) name;
-  prop->type = (char*) SmLISTofARRAY8;
+  prop->name = (char *)name;
+  prop->type = (char *)SmLISTofARRAY8;
 
   vals = g_array_new (FALSE, FALSE, sizeof (SmPropValue));
 
@@ -1088,8 +1197,8 @@ string_prop (const char *name, const char *value)
   SmProp *prop;
 
   prop = g_new (SmProp, 1);
-  prop->name = (char*) name;
-  prop->type = (char*) SmARRAY8;
+  prop->name = (char *)name;
+  prop->type = (char *)SmARRAY8;
 
   prop->num_vals = 1;
   prop->vals = g_new (SmPropValue, 1);
@@ -1113,8 +1222,8 @@ card8_prop (const char *name, unsigned char value)
    */
 
   prop = g_new (SmProp, 1);
-  prop->name = (char*) name;
-  prop->type = (char*) SmCARD8;
+  prop->name = (char *)name;
+  prop->type = (char *)SmCARD8;
 
   prop->num_vals = 1;
   prop->vals = g_new (SmPropValue, 2);
@@ -1164,7 +1273,13 @@ ice_init (void)
 static gboolean
 process_ice_messages (IceConn ice_conn)
 {
-  switch (IceProcessMessages (ice_conn, NULL, NULL))
+  IceProcessMessagesStatus status;
+
+  gdk_threads_enter ();
+  status = IceProcessMessages (ice_conn, NULL, NULL);
+  gdk_threads_leave ();
+
+  switch (status)
     {
     case IceProcessMessagesSuccess:
       return TRUE;
@@ -1175,9 +1290,10 @@ process_ice_messages (IceConn ice_conn)
 
     case IceProcessMessagesConnectionClosed:
       return FALSE;
-    }
 
-  g_return_val_if_reached (FALSE);
+    default:
+      g_assert_not_reached ();
+    }
 }
 
 static gboolean
@@ -1185,13 +1301,7 @@ ice_iochannel_watch (GIOChannel   *channel,
 		     GIOCondition  condition,
 		     gpointer      client_data)
 {
-  gboolean ret;
-
-  gdk_threads_enter ();
-  ret = process_ice_messages (client_data);
-  gdk_threads_leave ();
-
-  return ret;
+  return process_ice_messages (client_data);
 }
 
 static void

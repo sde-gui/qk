@@ -20,8 +20,15 @@ libsmclient_la_LIBADD =
 if GDK_X11
 AM_CFLAGS += $(X_CFLAGS) -DEGG_SM_CLIENT_BACKEND_XSMP
 libsmclient_la_LIBADD += $(X_LIBS) $(X_EXTRA_LIBS) -lSM -lICE
-libsmclient_la_SOURCES += eggsmclient-xsmp.c
+libsmclient_la_SOURCES +=			\
+	eggsmclient-xsmp.c			\
+	eggdesktopfile.c			\
+	eggdesktopfile.h
 endif GDK_X11
+if GDK_WIN32
+libsmclient_la_SOURCES +=			\
+	eggsmclient-win32.c
+endif GDK_WIN32
 
 # if GDK_WIN32
 # AM_CFLAGS += -DEGG_SM_CLIENT_BACKEND_WIN32
@@ -29,5 +36,7 @@ endif GDK_X11
 # endif
 
 EXTRA_DIST =					\
+	eggdesktopfile.c			\
+	eggdesktopfile.h			\
 	eggsmclient-xsmp.c			\
 	eggsmclient-win32.c
