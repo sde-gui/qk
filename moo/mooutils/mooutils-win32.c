@@ -22,6 +22,8 @@
 #include <shellapi.h>
 #include <time.h>
 #include <errno.h>
+#include <sys/stat.h>
+#include <io.h>
 
 
 static char *libmoo_dll_name;
@@ -256,4 +258,127 @@ _moo_win32_fnmatch (const char *pattern,
     }
 
     return _moo_glob_match_simple (pattern, string) ? 0 : 1;
+}
+
+
+/***************************************************************************
+ * mmap for poor
+ */
+static GHashTable *mapped_files;
+
+#define MAPPING_ALLOCATED ((HANDLE) -2)
+
+static void
+add_mapped_file (gpointer buffer,
+                 HANDLE   mapping)
+{
+    if (!mapped_files)
+        mapped_files = g_hash_table_new (g_direct_hash, g_direct_equal);
+
+    g_hash_table_insert (mapped_files, buffer, mapping);
+}
+
+static gboolean
+remove_mapped_file (gpointer buffer)
+{
+    HANDLE mapping;
+
+    if (!mapped_files)
+        return FALSE;
+
+    mapping = g_hash_table_lookup (mapped_files, buffer);
+    g_return_val_if_fail (mapping != NULL, FALSE);
+
+    g_hash_table_remove (mapped_files, buffer);
+
+    if (mapping == MAPPING_ALLOCATED)
+    {
+        g_free (buffer);
+    }
+    else
+    {
+        UnmapViewOfFile (buffer);
+        CloseHandle (mapping);
+    }
+
+    if (g_hash_table_size (mapped_files) == 0)
+    {
+        g_hash_table_destroy (mapped_files);
+        mapped_files = NULL;
+    }
+
+    return TRUE;
+}
+
+void *
+_moo_win32_mmap (gpointer start,
+                 guint64  length,
+                 int      prot,
+                 int      flags,
+                 int      fd,
+                 guint64  offset)
+{
+    struct stat st;
+    HANDLE mapping;
+    char *buffer;
+
+    g_return_val_if_fail (start == NULL, NULL);
+    g_return_val_if_fail (prot == PROT_READ, NULL);
+    g_return_val_if_fail (flags == MAP_SHARED, NULL);
+    g_return_val_if_fail (offset == 0, NULL);
+
+    errno = 0;
+    if (fstat (fd, &st) != 0)
+        return MAP_FAILED;
+
+    if ((guint64) st.st_size != length)
+    {
+        errno = EINVAL;
+        return MAP_FAILED;
+    }
+
+    if (length == 0)
+    {
+        buffer = g_new (char, 1);
+        buffer[0] = 0;
+        add_mapped_file (buffer, MAPPING_ALLOCATED);
+        return buffer;
+    }
+
+    mapping = CreateFileMapping ((HANDLE) _get_osfhandle (fd), NULL,
+                                 PAGE_READONLY, 0, 0, NULL);
+
+    if (!mapping)
+    {
+        errno = EINVAL;
+        return MAP_FAILED;
+    }
+
+    buffer = MapViewOfFile (mapping, FILE_MAP_READ, 0, 0, 0);
+
+    if (!buffer)
+    {
+        CloseHandle (mapping);
+        errno = EINVAL;
+        return MAP_FAILED;
+    }
+
+    add_mapped_file (buffer, mapping);
+
+    return buffer;
+}
+
+int
+_moo_win32_munmap (gpointer start,
+                   G_GNUC_UNUSED gsize length)
+{
+    if (!remove_mapped_file (start))
+    {
+        errno = EINVAL;
+        return -1;
+    }
+    else
+    {
+        return 0;
+    }
 }
