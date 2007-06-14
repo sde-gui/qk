@@ -641,8 +641,8 @@ static void moo_text_view_init (MooTextView *view)
 
     view->priv = G_TYPE_INSTANCE_GET_PRIVATE (view, MOO_TYPE_TEXT_VIEW, MooTextViewPrivate);
 
+    gdk_color_parse (LIGHT_BLUE, &clr);
     view->priv->current_line_color = gdk_color_copy (&clr);
-    gdk_color_parse (LIGHT_BLUE, view->priv->current_line_color);
 
     view->priv->dnd.button = GDK_BUTTON_RELEASE;
     view->priv->dnd.type = MOO_TEXT_VIEW_DRAG_NONE;
