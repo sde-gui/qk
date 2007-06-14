@@ -25,7 +25,6 @@
                     <child>
                       <widget class="GtkCheckButton" id="cursor_blinks">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="label" translatable="yes">_Cursor blinks   </property>
                         <property name="use_underline">True</property>
                         <property name="focus_on_click">False</property>
@@ -54,7 +53,6 @@
                     <child>
                       <widget class="GtkSpinButton" id="cursor_blink_time">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="adjustment">1.000000 0.000000 100000.000000 1.000000 10.000000 10.000000</property>
                         <property name="climb_rate">1</property>
                         <property name="moo_prefs_key">cursor_blink_time</property>
@@ -117,7 +115,6 @@
                     <child>
                       <widget class="GtkFontButton" id="font">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="focus_on_click">False</property>
                         <property name="use_font">True</property>
                         <property name="use_size">True</property>
@@ -145,7 +142,6 @@
                     <child>
                       <widget class="GtkColorButton" id="background">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="focus_on_click">False</property>
                         <property name="title">Pick Terminal Background Color</property>
                         <property name="moo_prefs_key">background</property>
@@ -162,7 +158,6 @@
                     <child>
                       <widget class="GtkColorButton" id="foreground">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="focus_on_click">False</property>
                         <property name="title">Pick Terminal Foreground Color</property>
                         <property name="moo_prefs_key">foreground</property>
