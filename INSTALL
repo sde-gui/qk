@@ -16,6 +16,8 @@ configure has the following medit-specific options:
                           (default = NO)
     FAM seems to work well, but gamin seems to be much less stable. This option
     is not recommended if FAM is provided by gamin on your system.
+    Note that file monitoring will work even without FAM, so it's unlikely you
+    want to use this option.
 
   --with-python           whether to compile python support (default = YES)
     This option tells whether pygtk bindings should be built. If medit is built
@@ -31,12 +33,12 @@ configure has the following medit-specific options:
 
   --with-system-pcre      whether to use system copy of pcre library (default
                           = YES)
-    medit needs pcre library version not older than 6.4. If it's not available
+    medit needs pcre library version not older than 7.0. If it's not available
     or if installed version of the library doesn't have unicode support (this is
     the case with default FreeBSD port), included copy will be built.
 
   --without-mooterm       whether to disable builtin terminal (default = NO)
-    Use this option if you want builtin terminal (it also requires python).
+    Use this option if you do not want builtin terminal for some reason.
 
   --with-xml              whether to use libxml2 (default = YES)
     If libxml2 is not available or --without-xml is used, syntax highlighting
