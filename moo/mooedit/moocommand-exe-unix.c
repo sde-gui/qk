@@ -674,7 +674,6 @@ init_combo (GtkComboBox *combo,
     gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (combo), cell, "text", 0, NULL);
 
     store = gtk_list_store_new (1, G_TYPE_STRING);
-    gtk_combo_box_set_model (combo, GTK_TREE_MODEL (store));
 
     for (i = 0; i < n_items; ++i)
     {
@@ -682,6 +681,8 @@ init_combo (GtkComboBox *combo,
         gtk_list_store_append (store, &iter);
         gtk_list_store_set (store, &iter, 0, Q_(items[i]), -1);
     }
+
+    gtk_combo_box_set_model (combo, GTK_TREE_MODEL (store));
 
     g_object_unref (store);
 }
@@ -700,7 +701,6 @@ init_filter_combo (GtkComboBox *combo)
                                     "text", COLUMN_NAME, NULL);
 
     store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
-    gtk_combo_box_set_model (combo, GTK_TREE_MODEL (store));
 
     gtk_list_store_append (store, &iter);
     /* Translators: "None" means no filter for a shell command, do not translate the part before | */
@@ -731,6 +731,8 @@ init_filter_combo (GtkComboBox *combo)
 
         g_free (id);
     }
+
+    gtk_combo_box_set_model (combo, GTK_TREE_MODEL (store));
 
     g_object_unref (store);
 }

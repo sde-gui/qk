@@ -571,6 +571,7 @@ combo_changed (GtkComboBox *combo,
 }
 
 
+#if 0
 static gboolean
 row_separator_func (GtkTreeModel *model,
                     GtkTreeIter  *iter)
@@ -584,6 +585,8 @@ row_separator_func (GtkTreeModel *model,
     g_free (text);
     return separator;
 }
+#endif
+
 
 static void
 cell_data_func (G_GNUC_UNUSED GtkCellLayout *layout,
@@ -638,8 +641,8 @@ setup_combo (GtkComboBox      *combo,
     }
 
     gtk_tree_store_append (store, &iter, NULL);
-    gtk_tree_store_append (store, &iter, NULL);
-    gtk_tree_store_set (store, &iter, COLUMN_DISPLAY, "Other", -1);
+    /* Translators: do not translate the part before | */
+    gtk_tree_store_set (store, &iter, COLUMN_DISPLAY, _("Encodings combo submenu|Other"), -1);
 
     for (i = 0; i < enc_mgr->n_groups; ++i)
     {
@@ -663,9 +666,7 @@ setup_combo (GtkComboBox      *combo,
 
     gtk_combo_box_set_model (combo, GTK_TREE_MODEL (store));
     gtk_combo_box_entry_set_text_column (GTK_COMBO_BOX_ENTRY (combo), COLUMN_DISPLAY);
-    gtk_combo_box_set_row_separator_func (combo,
-                                          (GtkTreeViewRowSeparatorFunc) row_separator_func,
-                                          NULL, NULL);
+
     cell = gtk_cell_renderer_text_new ();
     gtk_cell_layout_clear (GTK_CELL_LAYOUT (combo));
     gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combo), cell, TRUE);

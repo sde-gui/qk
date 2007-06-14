@@ -222,7 +222,6 @@ init_factory_combo (MooCommandDisplay *display,
     gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (display->factory_combo), cell, "text", 0, NULL);
 
     store = gtk_list_store_new (1, G_TYPE_STRING);
-    gtk_combo_box_set_model (display->factory_combo, GTK_TREE_MODEL (store));
 
     factories = moo_command_list_factories ();
     display->active = -1;
@@ -253,6 +252,8 @@ init_factory_combo (MooCommandDisplay *display,
 
         factories = g_slist_delete_link (factories, factories);
     }
+
+    gtk_combo_box_set_model (display->factory_combo, GTK_TREE_MODEL (store));
 
     g_signal_connect_swapped (display->factory_combo, "changed",
                               G_CALLBACK (combo_changed), display);

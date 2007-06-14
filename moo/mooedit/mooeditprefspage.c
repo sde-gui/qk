@@ -392,9 +392,6 @@ create_lang_model (MooEditor *editor)
     g_free (ext);
     g_free (mime);
 
-    /* separator */
-    gtk_tree_store_append (store, &iter, NULL);
-
     while (sections)
     {
         char *section = sections->data;
@@ -440,6 +437,7 @@ create_lang_model (MooEditor *editor)
 }
 
 
+#if 0
 static gboolean
 separator_func (GtkTreeModel *model,
                 GtkTreeIter  *iter,
@@ -455,6 +453,8 @@ separator_func (GtkTreeModel *model,
     g_free (name);
     return FALSE;
 }
+#endif
+
 
 static void
 set_sensitive (G_GNUC_UNUSED GtkCellLayout *cell_layout,
@@ -480,9 +480,6 @@ default_lang_combo_init (GtkComboBox        *combo,
     model = page_get_lang_model (page);
     g_return_if_fail (model != NULL);
 
-    gtk_combo_box_set_model (combo, model);
-    gtk_combo_box_set_row_separator_func (combo, separator_func, NULL, NULL);
-
     cell = gtk_cell_renderer_text_new ();
     gtk_cell_layout_clear (GTK_CELL_LAYOUT (combo));
     gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combo), cell, TRUE);
@@ -490,6 +487,8 @@ default_lang_combo_init (GtkComboBox        *combo,
                                     "text", COLUMN_NAME, NULL);
     gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (combo), cell,
                                         set_sensitive, NULL, NULL);
+
+    gtk_combo_box_set_model (combo, model);
 }
 
 
@@ -656,9 +655,6 @@ lang_combo_init (GtkComboBox        *combo,
     model = page_get_lang_model (page);
     g_return_if_fail (model != NULL);
 
-    gtk_combo_box_set_model (combo, model);
-    gtk_combo_box_set_row_separator_func (combo, separator_func, NULL, NULL);
-
     cell = gtk_cell_renderer_text_new ();
     gtk_cell_layout_clear (GTK_CELL_LAYOUT (combo));
     gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combo), cell, TRUE);
@@ -666,6 +662,8 @@ lang_combo_init (GtkComboBox        *combo,
                                     "text", COLUMN_NAME, NULL);
     gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (combo), cell,
                                         set_sensitive, NULL, NULL);
+
+    gtk_combo_box_set_model (combo, model);
 
     _moo_combo_box_select_first (combo);
     helper = _moo_tree_helper_new (GTK_WIDGET (combo), NULL, NULL, NULL, NULL);

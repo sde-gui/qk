@@ -300,7 +300,6 @@ command_page_init (MooPrefsDialogPage *page,
 
     treeview = moo_glade_xml_get_widget (page->xml, "treeview");
     store = gtk_list_store_new (N_COLUMNS, MOO_TYPE_USER_TOOL_INFO);
-    gtk_tree_view_set_model (treeview, GTK_TREE_MODEL (store));
 
     cell = gtk_cell_renderer_text_new ();
     column = gtk_tree_view_column_new ();
@@ -329,6 +328,8 @@ command_page_init (MooPrefsDialogPage *page,
     g_signal_connect_swapped (helper, "move-row", G_CALLBACK (move_row), page);
     g_signal_connect_swapped (helper, "update-widgets", G_CALLBACK (update_widgets), page);
     g_signal_connect_swapped (helper, "update-model", G_CALLBACK (update_model), page);
+
+    gtk_tree_view_set_model (treeview, GTK_TREE_MODEL (store));
 
     _moo_tree_view_select_first (treeview);
     _moo_tree_helper_update_widgets (MOO_TREE_HELPER (helper));
