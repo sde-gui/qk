@@ -1,4 +1,5 @@
 medit/medit.desktop.in
+medit/medit-app.c
 
 moo/mooapp/mooapp.c
 moo/mooapp/mooappabout.c
