@@ -6,4 +6,5 @@ AC_DEFUN_ONCE([MOO_AC_XDGMIME],[
     MOO_USE_XDGMIME=true
     AC_DEFINE(MOO_USE_XDGMIME, 1, [use xdgmime])
     AM_CONDITIONAL(MOO_USE_XDGMIME, true)
+    AC_CHECK_FUNCS(getc_unlocked)
 ])
