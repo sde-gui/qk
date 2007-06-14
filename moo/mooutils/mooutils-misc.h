@@ -121,6 +121,8 @@ _moo_str_equal_inline (const char *s1,
 
 const char *_moo_get_pid_string             (void);
 
+const char *_moo_intern_string              (const char     *string);
+
 guint       _moo_idle_add_full              (gint            priority,
                                              GSourceFunc     function,
                                              gpointer        data,
@@ -176,7 +178,6 @@ G_BEGIN_DECLS
 
 #define fnmatch _moo_win32_fnmatch
 #define gettimeofday _moo_win32_gettimeofday
-#define getc_unlocked getc
 
 char       *moo_win32_get_app_dir           (void);
 char       *moo_win32_get_dll_dir           (const char     *dll);
@@ -195,6 +196,19 @@ int         _moo_win32_fnmatch              (const char     *pattern,
                                              int             flags);
 int         _moo_win32_gettimeofday         (struct timeval *tp,
                                              gpointer        tzp);
+
+void       *_moo_win32_mmap                 (gpointer        start,
+                                             guint64         length,
+                                             int             prot,
+                                             int             flags,
+                                             int             fd,
+                                             guint64         offset);
+int         _moo_win32_munmap               (gpointer        start,
+                                             gsize           length);
+
+#define PROT_READ   1
+#define MAP_SHARED  1
+#define MAP_FAILED  ((gpointer) -1)
 
 
 G_END_DECLS
