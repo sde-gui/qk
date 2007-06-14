@@ -21,6 +21,16 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef __WIN32__
+#include <windows.h>
+#endif
+
+#ifdef __WIN32__
+#ifndef pipe
+#define pipe(phandles)	_pipe (phandles, 4096, _O_BINARY)
+#endif
+#endif
+
 
 typedef struct {
     MooEventQueueCallback callback;
