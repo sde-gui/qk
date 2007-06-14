@@ -21,18 +21,15 @@
         <child>
           <widget class="GtkNotebook" id="notebook">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
             <child>
               <widget class="GtkScrolledWindow" id="scrolledwindow4">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                 <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                 <property name="shadow_type">GTK_SHADOW_IN</property>
                 <child>
                   <widget class="GtkTextView" id="thanks">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
                   </widget>
                 </child>
               </widget>
@@ -54,14 +51,12 @@
             <child>
               <widget class="GtkScrolledWindow" id="scrolledwindow1">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                 <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                 <property name="shadow_type">GTK_SHADOW_IN</property>
                 <child>
                   <widget class="GtkTextView" id="written_by">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
                     <property name="editable">False</property>
                     <property name="cursor_visible">False</property>
                   </widget>
@@ -87,14 +82,12 @@
             <child>
               <widget class="GtkScrolledWindow" id="scrolledwindow5">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                 <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                 <property name="shadow_type">GTK_SHADOW_IN</property>
                 <child>
                   <widget class="GtkTextView" id="translated_by">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
                     <property name="editable">False</property>
                     <property name="cursor_visible">False</property>
                   </widget>
@@ -161,14 +154,12 @@
         <child>
           <widget class="GtkScrolledWindow" id="scrolledwindow2">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
             <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
             <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
             <property name="shadow_type">GTK_SHADOW_IN</property>
             <child>
               <widget class="GtkTextView" id="textview">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="editable">False</property>
                 <property name="cursor_visible">False</property>
               </widget>
@@ -185,7 +176,6 @@
             <child>
               <widget class="GtkButton" id="close">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="has_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>
@@ -217,14 +207,12 @@
         <child>
           <widget class="GtkScrolledWindow" id="scrolledwindow3">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
             <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
             <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
             <property name="shadow_type">GTK_SHADOW_IN</property>
             <child>
               <widget class="GtkTextView" id="textview">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="editable">False</property>
                 <property name="wrap_mode">GTK_WRAP_CHAR</property>
               </widget>
@@ -241,7 +229,6 @@
             <child>
               <widget class="GtkButton" id="close">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="has_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>
@@ -288,7 +275,6 @@
             <child>
               <widget class="GtkLabel" id="name">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="label" context="yes">&lt;span size="xx-large"&gt;&lt;b&gt;The App&lt;/b&gt;&lt;/span&gt;</property>
                 <property name="use_markup">True</property>
                 <property name="selectable">True</property>
@@ -302,7 +288,6 @@
             <child>
               <widget class="GtkLabel" id="description">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="label" context="yes">The App is an app</property>
                 <property name="selectable">True</property>
               </widget>
@@ -315,7 +300,6 @@
             <child>
               <widget class="GtkLabel" id="copyright">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="label" context="yes">&lt;small&gt;© 2004-2006 The Author&lt;/small&gt;</property>
                 <property name="use_markup">True</property>
                 <property name="selectable">True</property>

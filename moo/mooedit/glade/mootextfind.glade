@@ -63,7 +63,6 @@
                             <child>
                               <widget class="GtkCheckButton" id="regex">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Regular expression</property>
                                 <property name="use_underline">True</property>
                                 <property name="focus_on_click">False</property>
@@ -72,7 +71,6 @@
                             </child>
                             <child>
                               <widget class="GtkButton" id="edit">
-                                <property name="can_focus">True</property>
                                 <property name="label">  Edit...  </property>
                                 <property name="use_underline">True</property>
                                 <property name="focus_on_click">False</property>
@@ -151,7 +149,6 @@
                             <child>
                               <widget class="GtkCheckButton" id="repl_literal">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Literal replacement</property>
                                 <property name="use_underline">True</property>
                                 <property name="focus_on_click">False</property>
@@ -205,7 +202,6 @@
                         <child>
                           <widget class="GtkCheckButton" id="dont_prompt">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
                             <property name="label" translatable="yes">Don't prompt on replace</property>
                             <property name="use_underline">True</property>
                             <property name="focus_on_click">False</property>
@@ -223,7 +219,6 @@
                         <child>
                           <widget class="GtkCheckButton" id="backwards">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
                             <property name="label" translatable="yes">Find backwards</property>
                             <property name="use_underline">True</property>
                             <property name="focus_on_click">False</property>
@@ -238,7 +233,6 @@
                         <child>
                           <widget class="GtkCheckButton" id="case_sensitive">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
                             <property name="label" translatable="yes">Case sensitive</property>
                             <property name="use_underline">True</property>
                             <property name="focus_on_click">False</property>
@@ -251,7 +245,6 @@
                         <child>
                           <widget class="GtkCheckButton" id="selected">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
                             <property name="label" translatable="yes">Selected text</property>
                             <property name="use_underline">True</property>
                             <property name="focus_on_click">False</property>
@@ -269,7 +262,6 @@
                         <child>
                           <widget class="GtkCheckButton" id="from_cursor">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
                             <property name="label" translatable="yes">From cursor</property>
                             <property name="use_underline">True</property>
                             <property name="focus_on_click">False</property>
@@ -285,7 +277,6 @@
                         <child>
                           <widget class="GtkCheckButton" id="whole_words">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
                             <property name="label" translatable="yes">Whole words only</property>
                             <property name="use_underline">True</property>
                             <property name="focus_on_click">False</property>
@@ -330,7 +321,6 @@
             <child>
               <widget class="GtkButton" id="cancel_btn">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="label">gtk-cancel</property>
                 <property name="use_stock">True</property>
@@ -341,7 +331,6 @@
             <child>
               <widget class="GtkButton" id="ok_btn">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>
                 <property name="label">gtk-find</property>
@@ -387,7 +376,6 @@
             <child>
               <widget class="GtkButton" id="button1">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>
                 <property name="label" translatable="yes">_Replace</property>
@@ -399,7 +387,6 @@
             <child>
               <widget class="GtkButton" id="button3">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="label" translatable="yes">Replace _All</property>
                 <property name="use_underline">True</property>
@@ -413,7 +400,6 @@
             <child>
               <widget class="GtkButton" id="button4">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="label" translatable="yes">Find _Next</property>
                 <property name="use_underline">True</property>
@@ -427,7 +413,6 @@
             <child>
               <widget class="GtkButton" id="button5">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="label" translatable="yes">Sto_p</property>
                 <property name="use_underline">True</property>

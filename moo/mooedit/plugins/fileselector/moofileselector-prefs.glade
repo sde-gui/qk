@@ -11,25 +11,21 @@
         <child>
           <widget class="GtkNotebook" id="notebook1">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
             <child>
               <widget class="GtkHPaned" id="hpaned1">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <child>
                   <widget class="GtkVBox" id="vbox2">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkScrolledWindow" id="scrolledwindow1">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                         <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                         <property name="shadow_type">GTK_SHADOW_IN</property>
                         <child>
                           <widget class="GtkTreeView" id="treeview">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
                             <property name="border_width">3</property>
                             <property name="headers_visible">False</property>
                           </widget>
@@ -43,7 +39,6 @@
                         <child>
                           <widget class="GtkButton" id="new">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
                             <property name="focus_on_click">False</property>
                             <property name="tooltip" translatable="yes">New</property>
                             <child>
@@ -61,7 +56,6 @@
                         <child>
                           <widget class="GtkButton" id="delete">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
                             <property name="focus_on_click">False</property>
                             <property name="tooltip" translatable="yes">Delete</property>
                             <child>
@@ -81,7 +75,6 @@
                         <child>
                           <widget class="GtkButton" id="up">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
                             <property name="focus_on_click">False</property>
                             <property name="tooltip" translatable="yes">Move up</property>
                             <child>
@@ -101,7 +94,6 @@
                         <child>
                           <widget class="GtkButton" id="down">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
                             <property name="focus_on_click">False</property>
                             <property name="tooltip" translatable="yes">Move down</property>
                             <child>
@@ -142,8 +134,6 @@
                         <child>
                           <widget class="GtkEntry" id="mimetypes">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="invisible_char">●</property>
                             <property name="activates_default">True</property>
                             <property name="tooltip" translatable="yes">Semicolon-separated list of mime types, e.g. 'text/*;application/x-glade'</property>
                           </widget>
@@ -158,8 +148,6 @@
                         <child>
                           <widget class="GtkEntry" id="extensions">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="invisible_char">●</property>
                             <property name="activates_default">True</property>
                             <property name="tooltip" translatable="yes">Semicolon-separated list of file globs, e.g. '*.txt;foo.*;*bar*'</property>
                           </widget>
@@ -174,8 +162,6 @@
                         <child>
                           <widget class="GtkEntry" id="command">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="invisible_char">●</property>
                             <property name="activates_default">True</property>
                             <property name="tooltip" translatable="yes">Shell command to open the file: '%f' is replaced with file path, e.g. 'foobar %f'</property>
                           </widget>
@@ -190,8 +176,6 @@
                         <child>
                           <widget class="GtkEntry" id="label">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="invisible_char">●</property>
                             <property name="activates_default">True</property>
                             <property name="tooltip" translatable="yes">Menu item label</property>
                           </widget>

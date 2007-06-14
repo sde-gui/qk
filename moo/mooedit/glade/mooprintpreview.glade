@@ -82,7 +82,6 @@
             <child>
               <widget class="GtkScrolledWindow" id="swin">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                 <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                 <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
@@ -113,7 +112,6 @@
             <child>
               <widget class="GtkButton" id="button1">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="label">gtk-close</property>
                 <property name="use_stock">True</property>
@@ -124,7 +122,6 @@
             <child>
               <widget class="GtkButton" id="button2">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>
                 <property name="focus_on_click">False</property>
@@ -188,7 +185,6 @@
         <child>
           <widget class="GtkEntry" id="entry">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
           </widget>
           <packing>
             <property name="expand">False</property>

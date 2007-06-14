@@ -114,13 +114,6 @@
 		      <child>
 			<widget class="GtkEntry" id="custom_dir_entry">
 			  <property name="visible">True</property>
-			  <property name="can_focus">True</property>
-			  <property name="editable">True</property>
-			  <property name="visibility">True</property>
-			  <property name="max_length">0</property>
-			  <property name="text" translatable="yes"></property>
-			  <property name="has_frame">True</property>
-			  <property name="invisible_char">*</property>
 			  <property name="activates_default">True</property>
 			</widget>
 			<packing>
@@ -202,12 +195,6 @@
 		  <child>
 		    <widget class="GtkEntry" id="args">
 		      <property name="visible">True</property>
-		      <property name="editable">True</property>
-		      <property name="visibility">True</property>
-		      <property name="max_length">0</property>
-		      <property name="text" translatable="yes"></property>
-		      <property name="has_frame">True</property>
-		      <property name="invisible_char">*</property>
 		      <property name="activates_default">True</property>
 		    </widget>
 		    <packing>
@@ -222,12 +209,6 @@
 		  <child>
 		    <widget class="GtkEntry" id="exe">
 		      <property name="visible">True</property>
-		      <property name="editable">True</property>
-		      <property name="visibility">True</property>
-		      <property name="max_length">0</property>
-		      <property name="text" translatable="yes"></property>
-		      <property name="has_frame">True</property>
-		      <property name="invisible_char">*</property>
 		      <property name="activates_default">True</property>
 		    </widget>
 		    <packing>
@@ -449,7 +430,6 @@
 	      <child>
 		<widget class="GtkScrolledWindow" id="scrolledwindow2">
 		  <property name="visible">True</property>
-		  <property name="can_focus">True</property>
 		  <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
 		  <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
 		  <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
@@ -557,12 +537,6 @@
 		  <child>
 		    <widget class="GtkEntry" id="args">
 		      <property name="visible">True</property>
-		      <property name="editable">True</property>
-		      <property name="visibility">True</property>
-		      <property name="max_length">0</property>
-		      <property name="text" translatable="yes"></property>
-		      <property name="has_frame">True</property>
-		      <property name="invisible_char">*</property>
 		      <property name="activates_default">True</property>
 		    </widget>
 		    <packing>
@@ -577,12 +551,6 @@
 		  <child>
 		    <widget class="GtkEntry" id="build_dir">
 		      <property name="visible">True</property>
-		      <property name="editable">True</property>
-		      <property name="visibility">True</property>
-		      <property name="max_length">0</property>
-		      <property name="text" translatable="yes"></property>
-		      <property name="has_frame">True</property>
-		      <property name="invisible_char">*</property>
 		      <property name="activates_default">True</property>
 		    </widget>
 		    <packing>
@@ -665,7 +633,6 @@
 		      <child>
 			<widget class="GtkScrolledWindow" id="scrolledwindow4">
 			  <property name="visible">True</property>
-			  <property name="can_focus">True</property>
 			  <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
 			  <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
 			  <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
@@ -833,12 +800,6 @@
 	      <child>
 		<widget class="GtkEntry" id="make_flags">
 		  <property name="visible">True</property>
-		  <property name="editable">True</property>
-		  <property name="visibility">True</property>
-		  <property name="max_length">0</property>
-		  <property name="text" translatable="yes"></property>
-		  <property name="has_frame">True</property>
-		  <property name="invisible_char">*</property>
 		  <property name="activates_default">True</property>
 		</widget>
 		<packing>
@@ -853,12 +814,6 @@
 	      <child>
 		<widget class="GtkEntry" id="make_command">
 		  <property name="visible">True</property>
-		  <property name="editable">True</property>
-		  <property name="visibility">True</property>
-		  <property name="max_length">0</property>
-		  <property name="text" translatable="yes"></property>
-		  <property name="has_frame">True</property>
-		  <property name="invisible_char">*</property>
 		  <property name="activates_default">True</property>
 		</widget>
 		<packing>
@@ -929,7 +884,6 @@
 	      <child>
 		<widget class="GtkScrolledWindow" id="scrolledwindow3">
 		  <property name="visible">True</property>
-		  <property name="can_focus">True</property>
 		  <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
 		  <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
 		  <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>

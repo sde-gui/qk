@@ -32,7 +32,6 @@
                     <child>
                       <widget class="GtkEntry" id="skip_combo">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="activates_default">True</property>
                         <property name="tooltip">Enter semicolon-separated list of globs</property>
                       </widget>
@@ -47,7 +46,6 @@
                     <child>
                       <widget class="GtkEntry" id="dir_combo">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="activates_default">True</property>
                         <property name="tooltip">You can use Tab completion in this entry</property>
                       </widget>
@@ -62,7 +60,6 @@
                     <child>
                       <widget class="GtkEntry" id="glob_combo">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="activates_default">True</property>
                         <property name="tooltip">Enter semicolon-separated list of globs</property>
                       </widget>
@@ -77,7 +74,6 @@
                     <child>
                       <widget class="GtkEntry" id="pattern_combo">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="activates_default">True</property>
                         <property name="tooltip">This entry content will be passed to grep</property>
                       </widget>
@@ -184,7 +180,6 @@
                     <child>
                       <widget class="GtkCheckButton" id="case_sensitive_button">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="label" translatable="yes">Case _sensitive</property>
                         <property name="use_underline">True</property>
                         <property name="active">True</property>
@@ -212,7 +207,6 @@
             <child>
               <widget class="GtkButton" id="button1">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="label">gtk-cancel</property>
                 <property name="use_stock">True</property>
@@ -223,7 +217,6 @@
             <child>
               <widget class="GtkButton" id="button2">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>
                 <property name="label">gtk-find</property>
@@ -268,7 +261,6 @@
                     <child>
                       <widget class="GtkEntry" id="skip_combo">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="activates_default">True</property>
                       </widget>
                       <packing>
@@ -282,7 +274,6 @@
                     <child>
                       <widget class="GtkEntry" id="dir_combo">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="activates_default">True</property>
                       </widget>
                       <packing>
@@ -296,7 +287,6 @@
                     <child>
                       <widget class="GtkEntry" id="pattern_combo">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="activates_default">True</property>
                       </widget>
                       <packing>
@@ -386,7 +376,6 @@
             <child>
               <widget class="GtkButton" id="button3">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="label">gtk-cancel</property>
                 <property name="use_stock">True</property>
@@ -397,7 +386,6 @@
             <child>
               <widget class="GtkButton" id="button4">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>
                 <property name="label">gtk-find</property>

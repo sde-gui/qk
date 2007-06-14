@@ -30,7 +30,6 @@
             <child>
               <widget class="GtkEntry" id="seach">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
               </widget>
               <packing>
                 <property name="position">1</property>
@@ -45,13 +44,11 @@
         <child>
           <widget class="GtkScrolledWindow" id="scrolledwindow">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
             <property name="hscrollbar_policy">GTK_POLICY_NEVER</property>
             <property name="shadow_type">GTK_SHADOW_IN</property>
             <child>
               <widget class="GtkTreeView" id="treeview">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="has_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="rules_hint">True</property>
@@ -82,7 +79,6 @@
                         <child>
                           <widget class="GtkRadioButton" id="shortcut_none">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
                             <property name="label" translatable="yes" context="yes" comments="Translators: do not translate the part before |">Shortcut|None</property>
                             <property name="use_underline">True</property>
                             <property name="focus_on_click">False</property>
@@ -96,7 +92,6 @@
                         <child>
                           <widget class="GtkRadioButton" id="shortcut_default">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
                             <property name="label" translatable="yes" context="yes" comments="Translators: do not translate the part before |">Shortcut|Default</property>
                             <property name="use_underline">True</property>
                             <property name="focus_on_click">False</property>
@@ -113,7 +108,6 @@
                         <child>
                           <widget class="GtkRadioButton" id="shortcut_custom">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
                             <property name="label" translatable="yes" context="yes" comments="Translators: do not translate the part before |">Shortcut|Custom</property>
                             <property name="use_underline">True</property>
                             <property name="focus_on_click">False</property>
@@ -129,7 +123,6 @@
                         <child>
                           <widget class="GtkButton" id="shortcut">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
                             <property name="use_underline">True</property>
                             <property name="focus_on_click">False</property>
                           </widget>
@@ -226,7 +219,6 @@
             <child>
               <widget class="GtkButton" id="cancel">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="label">gtk-cancel</property>
                 <property name="use_stock">True</property>
@@ -237,7 +229,6 @@
             <child>
               <widget class="GtkButton" id="ok">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>
                 <property name="label">gtk-ok</property>

@@ -36,7 +36,6 @@
 	    <widget class="GtkButton" id="cancelbutton1">
 	      <property name="visible">True</property>
 	      <property name="can_default">True</property>
-	      <property name="can_focus">True</property>
 	      <property name="label">gtk-cancel</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
@@ -50,7 +49,6 @@
 	      <property name="visible">True</property>
 	      <property name="can_default">True</property>
 	      <property name="has_default">True</property>
-	      <property name="can_focus">True</property>
 	      <property name="label">gtk-ok</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
@@ -79,7 +77,6 @@
 	  <child>
 	    <widget class="GtkScrolledWindow" id="scrolledwindow">
 	      <property name="visible">True</property>
-	      <property name="can_focus">True</property>
 	      <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
 	      <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
 	      <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
@@ -88,7 +85,6 @@
 	      <child>
 		<widget class="GtkTreeView" id="treeview">
 		  <property name="visible">True</property>
-		  <property name="can_focus">True</property>
 		  <property name="has_focus">True</property>
 		  <property name="headers_visible">True</property>
 		  <property name="rules_hint">True</property>
@@ -130,7 +126,6 @@
 		    <widget class="GtkButton" id="new_button">
 		      <property name="visible">True</property>
 		      <property name="tooltip" translatable="yes">Add bookmark</property>
-		      <property name="can_focus">True</property>
 		      <property name="relief">GTK_RELIEF_NORMAL</property>
 		      <property name="focus_on_click">False</property>
 
@@ -209,7 +204,6 @@
 		    <widget class="GtkButton" id="separator_button">
 		      <property name="visible">True</property>
 		      <property name="tooltip" translatable="yes">Add separator</property>
-		      <property name="can_focus">True</property>
 		      <property name="label" translatable="yes">Add Separator</property>
 		      <property name="use_underline">True</property>
 		      <property name="relief">GTK_RELIEF_NORMAL</property>
@@ -237,7 +231,6 @@
 		    <widget class="GtkButton" id="delete_button">
 		      <property name="visible">True</property>
 		      <property name="tooltip" translatable="yes">Delete selected items</property>
-		      <property name="can_focus">True</property>
 		      <property name="relief">GTK_RELIEF_NORMAL</property>
 		      <property name="focus_on_click">False</property>
 

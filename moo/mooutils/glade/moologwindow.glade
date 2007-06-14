@@ -23,7 +23,6 @@
   <child>
     <widget class="GtkScrolledWindow" id="scrolledwindow1">
       <property name="visible">True</property>
-      <property name="can_focus">True</property>
       <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
       <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
       <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
@@ -32,7 +31,6 @@
       <child>
 	<widget class="GtkTextView" id="textview">
 	  <property name="visible">True</property>
-	  <property name="can_focus">True</property>
 	  <property name="editable">False</property>
 	  <property name="overwrite">False</property>
 	  <property name="accepts_tab">True</property>
@@ -45,7 +43,6 @@
 	  <property name="left_margin">0</property>
 	  <property name="right_margin">0</property>
 	  <property name="indent">0</property>
-	  <property name="text" translatable="yes"></property>
 	</widget>
       </child>
     </widget>

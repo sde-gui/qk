@@ -16,7 +16,6 @@
         <child>
           <widget class="GtkNotebook" id="notebook">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
             <child>
               <widget class="GtkVBox" id="vbox3">
                 <property name="visible">True</property>
@@ -37,7 +36,6 @@
                             <child>
                               <widget class="GtkCheckButton" id="smarthome">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Smart Home and End</property>
                                 <property name="use_underline">True</property>
                                 <property name="focus_on_click">False</property>
@@ -178,7 +176,6 @@
                             <child>
                               <widget class="GtkCheckButton" id="usespaces">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Use spaces to indent</property>
                                 <property name="use_underline">True</property>
                                 <property name="focus_on_click">False</property>
@@ -213,7 +210,6 @@
                                     <child>
                                       <widget class="GtkSpinButton" id="tabswidth_spin">
                                         <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
                                         <property name="adjustment">4 1 100 1 10 10</property>
                                         <property name="climb_rate">1</property>
                                         <property name="numeric">True</property>
@@ -375,7 +371,6 @@
                             <child>
                               <widget class="GtkCheckButton" id="enable_wrapping">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Enable text wrapping</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
@@ -389,7 +384,6 @@
                             <child>
                               <widget class="GtkCheckButton" id="dont_split_words">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Do not split words</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
@@ -438,7 +432,6 @@
                             <child>
                               <widget class="GtkCheckButton" id="checkbutton5">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Enable syntax highlighting</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
@@ -452,7 +445,6 @@
                             <child>
                               <widget class="GtkCheckButton" id="checkbutton6">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Highlight matching brackets</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
@@ -467,7 +459,6 @@
                             <child>
                               <widget class="GtkCheckButton" id="checkbutton7">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Highlight mismatching brackets</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
@@ -482,7 +473,6 @@
                             <child>
                               <widget class="GtkCheckButton" id="checkbutton9">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Highlight current line</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
@@ -531,7 +521,6 @@
                             <child>
                               <widget class="GtkCheckButton" id="show_line_numbers">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Show line numbers</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
@@ -545,7 +534,6 @@
                             <child>
                               <widget class="GtkCheckButton" id="checkbutton3">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Show tabs</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
@@ -560,7 +548,6 @@
                             <child>
                               <widget class="GtkCheckButton" id="checkbutton4">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Show trailing spaces</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
@@ -616,7 +603,6 @@
                 <child>
                   <widget class="GtkCheckButton" id="use_default_font">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
                     <property name="label" translatable="yes">Use default theme font</property>
                     <property name="use_underline">True</property>
                     <property name="draw_indicator">True</property>
@@ -646,7 +632,6 @@
                     <child>
                       <widget class="GtkFontButton" id="fontbutton">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="use_font">True</property>
                         <property name="use_size">True</property>
                         <property name="moo_prefs_key">font</property>
@@ -789,7 +774,6 @@
                             <child>
                               <widget class="GtkCheckButton" id="checkbutton21">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Remove trailing spaces</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
@@ -803,7 +787,6 @@
                             </child>
                             <child>
                               <widget class="GtkCheckButton" id="checkbutton11">
-                                <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Make backups</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
@@ -833,7 +816,6 @@
                                 <child internal-child="entry">
                                   <widget class="GtkEntry" id="comboboxentry-entry2">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
                                   </widget>
                                 </child>
                               </widget>

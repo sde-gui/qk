@@ -11,21 +11,18 @@
         <child>
           <widget class="GtkHPaned" id="hpaned1">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
             <child>
               <widget class="GtkVBox" id="vbox2">
                 <property name="visible">True</property>
                 <child>
                   <widget class="GtkScrolledWindow" id="scrolledwindow1">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
                     <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                     <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                     <property name="shadow_type">GTK_SHADOW_IN</property>
                     <child>
                       <widget class="GtkTreeView" id="treeview">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="border_width">3</property>
                         <property name="headers_visible">False</property>
                       </widget>
@@ -39,7 +36,6 @@
                     <child>
                       <widget class="GtkButton" id="new">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="focus_on_click">False</property>
                         <property name="tooltip" translatable="yes">New item</property>
                         <child>
@@ -57,7 +53,6 @@
                     <child>
                       <widget class="GtkButton" id="delete">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="focus_on_click">False</property>
                         <property name="tooltip" translatable="yes">Delete item</property>
                         <child>
@@ -77,7 +72,6 @@
                     <child>
                       <widget class="GtkButton" id="up">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="focus_on_click">False</property>
                         <property name="tooltip" translatable="yes">Move item up</property>
                         <child>
@@ -97,7 +91,6 @@
                     <child>
                       <widget class="GtkButton" id="down">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="focus_on_click">False</property>
                         <property name="tooltip" translatable="yes">Move item down</property>
                         <child>
@@ -138,7 +131,6 @@
                     <child>
                       <widget class="GtkCheckButton" id="enabled">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="label" translatable="yes">Enabled</property>
                         <property name="use_underline">True</property>
                         <property name="focus_on_click">False</property>
@@ -165,7 +157,6 @@
                     <child>
                       <widget class="GtkEntry" id="langs">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                       </widget>
                       <packing>
                         <property name="left_attach">1</property>
@@ -191,7 +182,6 @@
                     <child>
                       <widget class="GtkEntry" id="options">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                       </widget>
                       <packing>
                         <property name="left_attach">1</property>
@@ -215,7 +205,6 @@
                     </child>
                     <child>
                       <widget class="GtkEntry" id="filter">
-                        <property name="can_focus">True</property>
                       </widget>
                       <packing>
                         <property name="left_attach">1</property>
@@ -301,14 +290,12 @@
         <child>
           <widget class="GtkScrolledWindow" id="scrolledwindow2">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
             <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
             <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
             <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
             <child>
               <widget class="GtkTextView" id="textview">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
               </widget>
             </child>
           </widget>
@@ -325,7 +312,6 @@
         <child>
           <widget class="GtkNotebook" id="notebook">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
             <child>
               <widget class="GtkVBox" id="page_menu">
                 <property name="visible">True</property>
@@ -479,14 +465,12 @@ Something
         <child>
           <widget class="GtkScrolledWindow" id="scrolledwindow4">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
             <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
             <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
             <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
             <child>
               <widget class="GtkTextView" id="textview">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
               </widget>
             </child>
           </widget>
@@ -506,14 +490,12 @@ Something
         <child>
           <widget class="GtkScrolledWindow" id="scrolledwindow3">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
             <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
             <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
             <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
             <child>
               <widget class="GtkTextView" id="textview">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
               </widget>
             </child>
           </widget>

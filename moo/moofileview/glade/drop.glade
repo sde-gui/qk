@@ -35,7 +35,6 @@
 	    <widget class="GtkButton" id="cancelbutton1">
 	      <property name="visible">True</property>
 	      <property name="can_default">True</property>
-	      <property name="can_focus">True</property>
 	      <property name="label">gtk-cancel</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
@@ -49,7 +48,6 @@
 	      <property name="visible">True</property>
 	      <property name="can_default">True</property>
 	      <property name="has_default">True</property>
-	      <property name="can_focus">True</property>
 	      <property name="label">gtk-ok</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
@@ -112,13 +110,7 @@
 	      <child>
 		<widget class="GtkEntry" id="entry">
 		  <property name="visible">True</property>
-		  <property name="can_focus">True</property>
-		  <property name="editable">True</property>
-		  <property name="visibility">True</property>
-		  <property name="max_length">0</property>
 		  <property name="text">rgwrgwr</property>
-		  <property name="has_frame">True</property>
-		  <property name="invisible_char">*</property>
 		  <property name="activates_default">True</property>
 		</widget>
 		<packing>

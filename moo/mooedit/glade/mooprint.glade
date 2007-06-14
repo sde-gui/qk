@@ -112,7 +112,6 @@
                     <child>
                       <widget class="GtkSpinButton" id="line_numbers_step">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="adjustment">1 1 100 1 10 10</property>
                         <property name="climb_rate">1</property>
                         <property name="numeric">True</property>
@@ -152,14 +151,12 @@
             <child>
               <widget class="GtkNotebook" id="notebook1">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <child>
                   <widget class="GtkVBox" id="vbox1">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkCheckButton" id="print_header">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="label" translatable="yes">Print header</property>
                         <property name="use_underline">True</property>
                         <property name="draw_indicator">True</property>
@@ -179,7 +176,6 @@
                             <child>
                               <widget class="GtkCheckButton" id="header_separator">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Print separator line</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
@@ -197,8 +193,6 @@
                                 <child>
                                   <widget class="GtkEntry" id="header_right">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="invisible_char">●</property>
                                     <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
 %Ef - printed document name;
 %EF - full path of printed document;
@@ -216,8 +210,6 @@
                                 <child>
                                   <widget class="GtkEntry" id="header_center">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="invisible_char">●</property>
                                     <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
 %Ef - printed document name;
 %EF - full path of printed document;
@@ -235,8 +227,6 @@
                                 <child>
                                   <widget class="GtkEntry" id="header_left">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="invisible_char">●</property>
                                     <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
 %Ef - printed document name;
 %EF - full path of printed document;
@@ -321,7 +311,6 @@
                     <child>
                       <widget class="GtkCheckButton" id="print_footer">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
                         <property name="label" translatable="yes">Print footer</property>
                         <property name="use_underline">True</property>
                         <property name="draw_indicator">True</property>
@@ -341,7 +330,6 @@
                             <child>
                               <widget class="GtkCheckButton" id="footer_separator">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Print separator line</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
@@ -359,8 +347,6 @@
                                 <child>
                                   <widget class="GtkEntry" id="footer_right">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="invisible_char">●</property>
                                     <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
 %Ef - printed document name;
 %EF - full path of printed document;
@@ -378,8 +364,6 @@
                                 <child>
                                   <widget class="GtkEntry" id="footer_center">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="invisible_char">●</property>
                                     <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
 %Ef - printed document name;
 %EF - full path of printed document;
@@ -397,8 +381,6 @@
                                 <child>
                                   <widget class="GtkEntry" id="footer_left">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="invisible_char">●</property>
                                     <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
 %Ef - printed document name;
 %EF - full path of printed document;
@@ -497,7 +479,6 @@
             <child>
               <widget class="GtkButton" id="cancelbutton1">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="label">gtk-cancel</property>
                 <property name="use_stock">True</property>
@@ -508,7 +489,6 @@
             <child>
               <widget class="GtkButton" id="okbutton1">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="label">gtk-ok</property>
                 <property name="use_stock">True</property>
