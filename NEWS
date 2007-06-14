@@ -31,7 +31,7 @@
 2007-04-09  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.8.5 ===
 
-    Fixed ciritical win32 bug: editor duplicated line endings on save,
+    Fixed critical win32 bug: editor duplicated line endings on save,
     screwing up files and everything (Thomas Gilgin).
 
     Implemented selecting whole lines on click/drag over line numbers
