@@ -1017,11 +1017,13 @@ collect_signals (MooMarkupNode  *node,
             handler = moo_markup_get_prop (elm, "handler");
             object = moo_markup_get_prop (elm, "object");
             g_return_if_fail (name != NULL && handler != NULL);
-            widget->signals = g_slist_append (widget->signals,
-                                              signal_new (name, handler, object));
+            widget->signals = g_slist_prepend (widget->signals,
+                                               signal_new (name, handler, object));
         }
     }
     FOREACH_ELM_END;
+
+    widget->signals = g_slist_reverse (widget->signals);
 }
 
 
