@@ -1,3 +1,33 @@
+2007-06-14  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    * === Released 0.8.6 ===
+
+    Chinese translation by Chaosye.
+    German translation by Christian Dywan.
+
+    User config and data files are moved into ~/.config, ~/.share, etc.,
+    according to XDG specification. medit will move old files into new
+    locations on startup, so transition should be smooth and invisible (Oliwer).
+
+    Improved file encodings handling, and fixed some bugs related to it.
+    Made it use more stock items and icons from icon themes.
+    Improved paned widget behavior, no more nasty drawing artifacts.
+    Fixed Find dialog which treated replacement text as a regular
+    expression.
+    Made editor recognize "nxml" emacs mode as xml.
+    freedesktop.org mime type database is used now on windows, so it knows
+    how to highlight files of common types.
+    'medit filename' behaves better when another isntance is already running.
+    Underline character in a filename is no longer treated as mnemonic
+    underline in the Window menu.
+    Fixed tab icons background bug (Christian Dywan).
+
+    Improved syntax highlighting:
+      c csharp css desktop fortran gap gtkrc idl java javascript latex m4
+      ocaml octave pascal perl pkgconfig po ruby scheme sh sql tcl verilog
+      vhdl xml
+    New syntax ghighlighting:
+      docbook ocaml spec
+
 2007-04-09  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.8.5 ===
 
