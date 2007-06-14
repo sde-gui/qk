@@ -29,7 +29,6 @@
 #include <config.h>
 #endif
 
-#define _GNU_SOURCE
 #include <assert.h>
 #include "xdgmimemagic.h"
 #include "xdgmimeint.h"
@@ -39,9 +38,6 @@
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
-#ifdef __WIN32__
-#include <mooutils/mooutils-misc.h>
-#endif
 
 #ifndef	FALSE
 #define	FALSE	(0)
@@ -49,6 +45,10 @@
 
 #ifndef	TRUE
 #define	TRUE	(!FALSE)
+#endif
+
+#if !defined getc_unlocked && !defined HAVE_GETC_UNLOCKED
+#define getc_unlocked(fp) getc (fp)
 #endif
 
 typedef struct XdgMimeMagicMatch XdgMimeMagicMatch;
@@ -476,11 +476,32 @@ _xdg_mime_magic_parse_magic_line (FILE              *magic_file,
       /* We clean up the matchlet, byte swapping if needed */
       if (matchlet->word_size > 1)
 	{
+#if LITTLE_ENDIAN
+	  int i;
+#endif
 	  if (matchlet->value_length % matchlet->word_size != 0)
 	    {
 	      _xdg_mime_magic_matchlet_free (matchlet);
 	      return XDG_MIME_MAGIC_ERROR;
 	    }
+	  /* FIXME: need to get this defined in a <config.h> style file */
+#if LITTLE_ENDIAN
+	  for (i = 0; i < matchlet->value_length; i = i + matchlet->word_size)
+	    {
+	      if (matchlet->word_size == 2)
+		*((xdg_uint16_t *) matchlet->value + i) = SWAP_BE16_TO_LE16 (*((xdg_uint16_t *) (matchlet->value + i)));
+	      else if (matchlet->word_size == 4)
+		*((xdg_uint32_t *) matchlet->value + i) = SWAP_BE32_TO_LE32 (*((xdg_uint32_t *) (matchlet->value + i)));
+	      if (matchlet->mask)
+		{
+		  if (matchlet->word_size == 2)
+		    *((xdg_uint16_t *) matchlet->mask + i) = SWAP_BE16_TO_LE16 (*((xdg_uint16_t *) (matchlet->mask + i)));
+		  else if (matchlet->word_size == 4)
+		    *((xdg_uint32_t *) matchlet->mask + i) = SWAP_BE32_TO_LE32 (*((xdg_uint32_t *) (matchlet->mask + i)));
+
+		}
+	    }
+#endif
 	}
 
       matchlet->next = match->matchlet;
@@ -654,13 +675,13 @@ _xdg_mime_magic_lookup_data (XdgMimeMagic *mime_magic,
       if (_xdg_mime_magic_match_compare_to_data (match, data, len))
 	{
 	  if (!had_match || match->priority > priority ||
-	      (mime_type != NULL && xdg_mime_mime_type_subclass (match->mime_type, mime_type)))
+	      (mime_type != NULL && _xdg_mime_mime_type_subclass (match->mime_type, mime_type)))
 	    {
 	      mime_type = match->mime_type;
 	      priority = match->priority;
 	    }
 	  else if (had_match && match->priority == priority &&
-		   !xdg_mime_mime_type_subclass (mime_type, match->mime_type))
+		   !_xdg_mime_mime_type_subclass (mime_type, match->mime_type))
 	    /* multiple unrelated patterns with the same priority matched,
 	     * so we can't tell what type this is. */
 	    mime_type = NULL;
@@ -672,7 +693,7 @@ _xdg_mime_magic_lookup_data (XdgMimeMagic *mime_magic,
 	  for (n = 0; n < n_mime_types; n++)
 	    {
 	      if (mime_types[n] && 
-		  xdg_mime_mime_type_equal (mime_types[n], match->mime_type))
+		  _xdg_mime_mime_type_equal (mime_types[n], match->mime_type))
 		mime_types[n] = NULL;
 	    }
 	}

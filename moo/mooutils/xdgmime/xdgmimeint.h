@@ -29,8 +29,7 @@
 #define __XDG_MIME_INT_H__
 
 #include "xdgmime.h"
-#include <glib.h>
-#include <string.h>
+
 
 #ifndef	FALSE
 #define	FALSE (0)
@@ -40,29 +39,83 @@
 #define	TRUE (!FALSE)
 #endif
 
-typedef gunichar xdg_unichar_t;
-typedef guint8   xdg_uchar8_t;
-typedef guint16  xdg_uint16_t;
-typedef guint32  xdg_uint32_t;
+/* FIXME: Needs to be configure check */
+typedef unsigned int   xdg_unichar_t;
+typedef unsigned char  xdg_uchar8_t;
+typedef unsigned short xdg_uint16_t;
+typedef unsigned int   xdg_uint32_t;
 
-#if 0 && defined(XDG_PREFIX)
-#define _xdg_utf8_to_ucs4   XDG_ENTRY(utf8_to_ucs4)
-#define _xdg_ucs4_to_lower   XDG_ENTRY(ucs4_to_lower)
-#define _xdg_utf8_validate   XDG_ENTRY(utf8_validate)
-#define _xdg_get_base_name   XDG_ENTRY(get_base_name)
-#define _xdg_utf8_skip       XDG_ENTRY(utf8_skip)
+#ifdef XDG_PREFIX
+#define _xdg_utf8_skip       XDG_RESERVED_ENTRY(utf8_skip)
+#define _xdg_utf8_to_ucs4    XDG_RESERVED_ENTRY(utf8_to_ucs4)
+#define _xdg_ucs4_to_lower   XDG_RESERVED_ENTRY(ucs4_to_lower)
+#define _xdg_utf8_validate   XDG_RESERVED_ENTRY(utf8_validate)
+#define _xdg_get_base_name   XDG_RESERVED_ENTRY(get_base_name)
 #endif
 
-#define SWAP_BE16_TO_LE16 GUINT16_SWAP_LE_BE
-#define SWAP_BE32_TO_LE32 GUINT32_SWAP_LE_BE
+#define SWAP_BE16_TO_LE16(val) (xdg_uint16_t)(((xdg_uint16_t)(val) << 8)|((xdg_uint16_t)(val) >> 8))
 
+#define SWAP_BE32_TO_LE32(val) (xdg_uint32_t)((((xdg_uint32_t)(val) & 0xFF000000U) >> 24) |	\
+					      (((xdg_uint32_t)(val) & 0x00FF0000U) >> 8) |	\
+					      (((xdg_uint32_t)(val) & 0x0000FF00U) << 8) |	\
+					      (((xdg_uint32_t)(val) & 0x000000FFU) << 24))
 /* UTF-8 utils
  */
-#define _xdg_utf8_next_char g_utf8_next_char
-#define _xdg_utf8_to_ucs4   g_utf8_get_char
-#define _xdg_ucs4_to_lower  g_unichar_tolower
+extern const char *const _xdg_utf8_skip;
+#define _xdg_utf8_next_char(p) (char *)((p) + _xdg_utf8_skip[*(unsigned char *)(p)])
+#define _xdg_utf8_char_size(p) (int) (_xdg_utf8_skip[*(unsigned char *)(p)])
 
-#define _xdg_utf8_validate(s) g_utf8_validate ((s), -1, NULL)
+xdg_unichar_t  _xdg_utf8_to_ucs4  (const char    *source);
+xdg_unichar_t  _xdg_ucs4_to_lower (xdg_unichar_t  source);
+int            _xdg_utf8_validate (const char    *source);
+const char    *_xdg_get_base_name (const char    *file_name);
+
+
+/* start muntyan's stuff */
+
+#include <string.h>
+#include <errno.h>
+#include "mooutils/mooutils-misc.h"
+
+/* make xdgmime use glib */
+#undef malloc
+#undef realloc
+#undef free
+#undef strdup
+#undef calloc
+#define malloc g_try_malloc
+#define realloc g_try_realloc
+#define free g_free
+#define strdup g_strdup
+#define calloc(nmemb,size) g_malloc0 ((nmemb)*(size))
+
+
+#undef _xdg_utf8_skip
+#undef _xdg_utf8_to_ucs4
+#undef _xdg_ucs4_to_lower
+#undef _xdg_utf8_validate
+#undef _xdg_get_base_name
+#undef _xdg_utf8_next_char
+#undef _xdg_utf8_char_size
+#undef SWAP_BE16_TO_LE16
+#undef SWAP_BE32_TO_LE32
+
+#define _xdg_utf8_to_ucs4	g_utf8_get_char
+#define _xdg_ucs4_to_lower	g_unichar_tolower
+#define _xdg_utf8_validate(s)	(g_utf8_validate(s, -1, NULL))
+#define _xdg_utf8_next_char(p)	g_utf8_next_char(p)
+#define SWAP_BE16_TO_LE16(val)	GUINT16_SWAP_LE_BE(val)
+#define SWAP_BE32_TO_LE32(val)	GUINT32_SWAP_LE_BE(val)
+
+inline static const char *
+xdg_mime_intern_mime_type (const char *mime_type)
+{
+  if (!mime_type || mime_type == XDG_MIME_TYPE_UNKNOWN ||
+      !strcmp (mime_type, XDG_MIME_TYPE_UNKNOWN))
+    return XDG_MIME_TYPE_UNKNOWN;
+  else
+    return _moo_intern_string (mime_type);
+}
 
 inline static const char *
 _xdg_get_base_name (const char *file_name)
@@ -80,28 +133,47 @@ _xdg_get_base_name (const char *file_name)
     return base_name + 1;
 }
 
-/*
-xdg_unichar_t  _xdg_utf8_to_ucs4  (const char    *source);
-xdg_unichar_t  _xdg_ucs4_to_lower (xdg_unichar_t  source);
-int            _xdg_utf8_validate (const char    *source);
-const char    *_xdg_get_base_name (const char    *file_name);
-*/
+inline static int
+_xdg_mime_buffer_is_text (unsigned char *buffer,
+			  int            len)
+{
+  const char *end;
+  gunichar ch;
 
-#ifdef XDG_PREFIX
-#define _xdg_mime_buffer_is_text  XDG_ENTRY(buffer_is_text)
+  if (!len || g_utf8_validate ((const char*) buffer, len, &end))
+    return TRUE;
+
+  ch = g_utf8_get_char_validated (end, len - (end - (const char*) buffer));
+
+  return ch == -2;
+}
+
+#ifdef __WIN32__
+#include <glib/gstdio.h>
+
+inline static int
+_xdg_mime_stat (const char  *path,
+		struct stat *buf)
+{
+  errno = 0;
+  return g_stat (path, buf);
+}
+
+inline static int
+_xdg_mime_fstat (int          fd,
+		 struct stat *buf)
+{
+  errno = 0;
+  return fstat (fd, buf);
+}
+
+#define XDG_MIME_STAT  _xdg_mime_stat
+#define XDG_MIME_FSTAT _xdg_mime_fstat
+#else
+#define XDG_MIME_STAT  stat
+#define XDG_MIME_FSTAT fstat
 #endif
-int _xdg_mime_buffer_is_text (unsigned char *buffer,
-			      int            len);
 
-#undef malloc
-#undef realloc
-#undef free
-#undef strdup
-#undef calloc
-#define malloc g_try_malloc
-#define realloc g_try_realloc
-#define free g_free
-#define strdup g_strdup
-#define calloc(nmemb,size) g_malloc0 ((nmemb)*(size))
+/* end muntyan's stuff */
 
 #endif /* __XDG_MIME_INT_H__ */

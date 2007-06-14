@@ -29,19 +29,13 @@
 #include <config.h>
 #endif
 
-#define _GNU_SOURCE
 #include "xdgmimeglob.h"
 #include "xdgmimeint.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#ifdef HAVE_FNMATCH_H
 #include <fnmatch.h>
-#endif
-#ifdef __WIN32__
-#include <mooutils/mooutils-misc.h>
-#endif
 
 #ifndef	FALSE
 #define	FALSE	(0)
@@ -314,13 +308,16 @@ _xdg_glob_hash_node_lookup_file_name (XdgGlobHashNode *glob_hash_node,
 	  if (*file_name == '\000')
 	    {
 	      n = 0;
-	      if (node->mime_type)
-		mime_types[n++] = node->mime_type;
+
+	      if (node->mime_type != NULL)
+	        mime_types[n++] = node->mime_type;
+
 	      node = node->child;
 	      while (n < n_mime_types && node && node->character == 0)
 		{
-		  if (node->mime_type)
+		  if (node->mime_type != NULL)
 		    mime_types[n++] = node->mime_type;
+
 		  node = node->next;
 		}
 	    }
