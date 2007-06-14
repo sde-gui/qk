@@ -67,24 +67,24 @@ AM_CFLAGS =			\
 	$(PYGTK_CFLAGS)		\
 	$(MOO_W_NO_WRITE_STRINGS)
 
-py25_cflags =			\
-	-I..			\
-	-I$(top_builddir)	\
-	$(MOO_CFLAGS)		\
-	$(MOO_DEBUG_CFLAGS)	\
-	$(PYTHON25_INCLUDES)	\
-	$(PYGTK25_CFLAGS)	\
-	$(MOO_W_NO_WRITE_STRINGS)
+py25_cflags =				\
+	-I..				\
+	-I$(top_builddir)		\
+	$(MOO_CFLAGS)			\
+	$(MOO_DEBUG_CFLAGS)		\
+	$(PYTHON25_INCLUDES)		\
+	$(PYGTK25_CFLAGS)		\
+	$(MOO_W_NO_WRITE_STRINGS)	\
 	-DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
 
-py24_cflags =			\
-	-I..			\
-	-I$(top_builddir)	\
-	$(MOO_CFLAGS)		\
-	$(MOO_DEBUG_CFLAGS)	\
-	$(PYTHON24_INCLUDES)	\
-	$(PYGTK24_CFLAGS)	\
-	$(MOO_W_NO_WRITE_STRINGS)
+py24_cflags =				\
+	-I..				\
+	-I$(top_builddir)		\
+	$(MOO_CFLAGS)			\
+	$(MOO_DEBUG_CFLAGS)		\
+	$(PYTHON24_INCLUDES)		\
+	$(PYGTK24_CFLAGS)		\
+	$(MOO_W_NO_WRITE_STRINGS)	\
 	-DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
 
 libmoomod_la_SOURCES = $(libmoomod_la_sources)
