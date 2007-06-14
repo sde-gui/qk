@@ -20,3 +20,11 @@ Makefile(\.in)?$
 ^moo/mooterm/termhelper_res\.rc$
 ^moo/mooutils/(moomarshals\.[ch]|stock-moo\.h)$
 ^moo/mooapp/smclient/(README|egg-session-end\.c|eggdesktopfile\.[ch]|eggsmclient-libgnomeui\.[ch]|eggsmclient-osx\.c|gedit\.diff|smclient\.patch)$
+^moo/mooutils/xdgmime/.cvsignore$
+^moo/mooutils/xdgmime/CVS/Entries$
+^moo/mooutils/xdgmime/CVS/Repository$
+^moo/mooutils/xdgmime/CVS/Root$
+^moo/mooapp/smclient/ChangeLog$
+^moo/mooapp/smclient/NEWS$
+^moo/mooapp/smclient/egg-launch.c$
+^moo/mooapp/smclient/logout-test.c$
