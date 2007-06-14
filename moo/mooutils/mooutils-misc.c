@@ -2052,3 +2052,27 @@ _moo_io_add_watch_full (GIOChannel    *channel,
     return g_io_add_watch_full (channel, priority, condition,
                                 thread_io_func, sd, source_data_free);
 }
+
+
+const char *
+_moo_intern_string (const char *string)
+{
+    static GHashTable *hash;
+    gpointer original;
+    gpointer dummy;
+
+    if (!string)
+        return NULL;
+
+    if (G_UNLIKELY (!hash))
+        hash = g_hash_table_new (g_str_hash, g_str_equal);
+
+    if (!g_hash_table_lookup_extended (hash, string, &original, &dummy))
+    {
+        char *copy = g_strdup (string);
+        g_hash_table_insert (hash, copy, NULL);
+        original = copy;
+    }
+
+    return original;
+}
