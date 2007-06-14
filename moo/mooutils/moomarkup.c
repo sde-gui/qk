@@ -15,6 +15,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-debug.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/moocompat.h"
 #include <string.h>
 #include <glib.h>
@@ -294,7 +295,7 @@ passthrough (G_GNUC_UNUSED GMarkupParseContext    *ctx,
 static MooMarkupDoc*
 moo_markup_doc_new_priv (const char *name)
 {
-    MooMarkupDoc *doc = g_new0 (MooMarkupDoc, 1);
+    MooMarkupDoc *doc = _moo_new0 (MooMarkupDoc);
 
     doc->type = MOO_MARKUP_DOC_NODE;
     doc->name = g_strdup (name ? name : "");
@@ -333,7 +334,9 @@ moo_markup_element_new (MooMarkupDoc   *doc,
                         const char    **attribute_names,
                         const char    **attribute_values)
 {
-    MooMarkupElement *elm = g_new0 (MooMarkupElement, 1);
+    MooMarkupElement *elm;
+
+    elm = _moo_new0 (MooMarkupElement);
     add_node (doc, parent, MOO_MARKUP_NODE (elm));
 
     elm->type = MOO_MARKUP_ELEMENT_NODE;
@@ -360,7 +363,8 @@ moo_markup_text_node_new (MooMarkupNodeType   type,
     MooMarkupText *node;
 
     g_assert (type == MOO_MARKUP_TEXT_NODE || type == MOO_MARKUP_COMMENT_NODE);
-    node = g_new0 (MooMarkupText, 1);
+
+    node = _moo_new0 (MooMarkupText);
     add_node (doc, parent, MOO_MARKUP_NODE (node));
 
     node->type = type;
@@ -460,15 +464,17 @@ static void
 moo_markup_node_free (MooMarkupNode *node)
 {
     MooMarkupNode *child;
-    GSList *children = NULL, *l;
 
     g_return_if_fail (node != NULL);
 
-    for (child = node->children; child != NULL; child = child->next)
-        children = g_slist_prepend (children, child);
+    child = node->children;
 
-    for (l = children; l != NULL; l = l->next)
-        moo_markup_node_free (l->data);
+    while (child)
+    {
+        MooMarkupNode *next = child->next;
+        moo_markup_node_free (child);
+        child = next;
+    }
 
     g_free (node->name);
 
@@ -476,20 +482,23 @@ moo_markup_node_free (MooMarkupNode *node)
     {
         case MOO_MARKUP_DOC_NODE:
             moo_markup_doc_unref_private (MOO_MARKUP_DOC (node));
+            _moo_free (MooMarkupDoc, (MooMarkupDoc*) node);
             break;
         case MOO_MARKUP_ELEMENT_NODE:
             moo_markup_element_free (MOO_MARKUP_ELEMENT (node));
+            _moo_free (MooMarkupElement, (MooMarkupElement*) node);
             break;
         case MOO_MARKUP_TEXT_NODE:
+            moo_markup_text_node_free (node);
+            _moo_free (MooMarkupText, (MooMarkupText*) node);
+            break;
         case MOO_MARKUP_COMMENT_NODE:
             moo_markup_text_node_free (node);
+            _moo_free (MooMarkupComment, (MooMarkupComment*) node);
             break;
         default:
             g_assert_not_reached ();
     }
-
-    g_slist_free (children);
-    g_free (node);
 }
 
 
