@@ -16,6 +16,7 @@
 
 #include "medit-credits.h"
 #include <moo.h>
+#include <mooutils/mooi18n.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>
@@ -645,7 +646,7 @@ main (int argc, char *argv[])
                         "run-input", run_input,
                         "short-name", "medit",
                         "full-name", "medit",
-                        "description", "medit is a text editor",
+                        "description", _("medit is a text editor"),
                         "website", "http://mooedit.sourceforge.net/",
                         "website-label", "http://mooedit.sourceforge.net/",
                         "logo", "medit",
