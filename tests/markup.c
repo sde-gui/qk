@@ -17,15 +17,42 @@
 
 
 const char *markup =
+"<doc>\n"
 "<blah>\n"
 "<!-- COMMENT -->\n"
 "    <bam a=\"ddd\" g=\"ferfer\"> ffff </bam>\n"
 "<!-- COMMENT -->\n"
+"<!---->\n"
 "    <rgrg/>\n"
 "</blah>\n"
 "<!-- COMMENT -->\n"
 "<fffff/>\n"
+"</doc>\n"
 ;
+
+#define NTIMES 1000
+
+static void
+profile (const char *filename)
+{
+    guint i;
+    char *content;
+    double time = 0.;
+
+    if (!g_file_get_contents (filename, &content, NULL, NULL))
+        g_error ("oops");
+
+    for (i = 0; i < NTIMES; ++i)
+    {
+        GTimer *timer = g_timer_new ();
+        MooMarkupDoc *doc = moo_markup_parse_memory (content, -1, NULL);
+        time += g_timer_elapsed (timer, NULL);
+        moo_markup_doc_unref (doc);
+        g_timer_destroy (timer);
+    }
+
+    g_print ("%f\n", time / NTIMES);
+}
 
 int main (int argc, char *argv[])
 {
@@ -41,7 +68,11 @@ int main (int argc, char *argv[])
         print = FALSE;
 
     if (file)
+    {
+        profile (file);
+        return 0;
         doc = moo_markup_parse_file (file, &err);
+    }
     else
         doc = moo_markup_parse_memory (markup, -1, &err);
 
@@ -51,7 +82,7 @@ int main (int argc, char *argv[])
 
         if (err)
         {
-            g_print (err->message);
+            g_print ("%s\n", err->message);
             g_error_free (err);
         }
     }

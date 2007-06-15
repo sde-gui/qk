@@ -134,9 +134,6 @@ static gboolean moo_html_motion             (GtkWidget      *widget,
 
 static gboolean moo_html_load_url_real      (MooHtml        *html,
                                              const char     *url);
-static gboolean moo_html_load_file          (GtkTextView    *view,
-                                             const char     *file,
-                                             const char     *encoding);
 static void     moo_html_clear              (GtkTextView    *view);
 static void     moo_html_set_doc            (GtkTextView    *view,
                                              htmlDocPtr      doc);
@@ -554,7 +551,7 @@ moo_html_load_url (GtkTextView *view,
         {
             char *filename = g_build_filename (data->dirname, base, NULL);
 
-            result = moo_html_load_file (view, filename, NULL);
+            result = _moo_html_load_file (view, filename, NULL);
 
             if (result && anchor)
                 moo_html_goto_anchor (view, anchor);
@@ -564,7 +561,7 @@ moo_html_load_url (GtkTextView *view,
     }
     else
     {
-        result = moo_html_load_file (view, base, NULL);
+        result = _moo_html_load_file (view, base, NULL);
 
         if (result && anchor)
             moo_html_goto_anchor (view, anchor);
@@ -677,10 +674,10 @@ _moo_html_load_memory (GtkTextView *view,
 }
 
 
-static gboolean
-moo_html_load_file (GtkTextView *view,
-                    const char  *file,
-                    const char  *encoding)
+gboolean
+_moo_html_load_file (GtkTextView *view,
+                     const char  *file,
+                     const char  *encoding)
 {
     htmlDocPtr doc;
     MooHtmlData *data = moo_html_get_data (view);

@@ -57,12 +57,12 @@ static void create_window_with_paned (GtkPositionType pane_position)
     moo_file_view_chdir (MOO_FILE_VIEW (fileview),
                          g_get_home_dir (), NULL);
 
-    label = moo_pane_label_new (GTK_STOCK_DIRECTORY, NULL, NULL,
+    label = moo_pane_label_new (GTK_STOCK_DIRECTORY, NULL,
                                 "File selector", "File selector");
     moo_paned_insert_pane (MOO_PANED (paned), fileview, label, -1);
     moo_pane_label_free (label);
 
-    label = moo_pane_label_new (GTK_STOCK_BOLD, NULL, NULL,
+    label = moo_pane_label_new (GTK_STOCK_BOLD, NULL,
                                 "Label", "Label");
     evbox = gtk_event_box_new ();
     gtk_container_add (GTK_CONTAINER (evbox),

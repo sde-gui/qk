@@ -27,6 +27,7 @@ typedef enum {
 } MSScriptCheckResult;
 
 MSNode              *ms_script_parse    (const char *string);
+MSScriptCheckResult  ms_script_check    (const char *string);
 
 
 G_END_DECLS

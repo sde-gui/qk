@@ -469,7 +469,7 @@ ms_script_parse (const char *string)
 }
 
 
-#if 0
+#if 1
 #define HEAD        (stack ? GPOINTER_TO_INT (stack->data) : 0)
 #define PUSH(tok)   stack = g_slist_prepend (stack, GINT_TO_POINTER (tok))
 #define POP()       stack = g_slist_delete_link (stack, stack)
