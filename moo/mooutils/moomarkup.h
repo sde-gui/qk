@@ -21,11 +21,6 @@ G_BEGIN_DECLS
 
 #define MOO_TYPE_MARKUP_DOC (moo_markup_doc_get_type())
 
-#if 0
-// #define MOO_TYPE_MARKUP_NODE_TYPE (moo_markup_node_type_get_type ())
-// GType moo_markup_node_type_get_type (void);
-#endif
-
 typedef enum {
     MOO_MARKUP_DOC_NODE,
     MOO_MARKUP_ELEMENT_NODE,
@@ -41,18 +36,18 @@ typedef struct _MooMarkupText MooMarkupText;
 typedef struct _MooMarkupText MooMarkupComment;
 
 
-#ifndef ENABLE_DEBUG
-#define MOO_MARKUP_NODE(n)      ((MooMarkupNode*)n)
-#define MOO_MARKUP_DOC(n)       ((MooMarkupDoc*)(n))
-#define MOO_MARKUP_ELEMENT(n)   ((MooMarkupElement*)(n))
-#define MOO_MARKUP_TEXT(n)      ((MooMarkupText*)(n))
-#define MOO_MARKUP_COMMENT(n)   ((MooMarkupComment*)(n))
-#else /* ENABLE_DEBUG */
+#if 0 && defined(ENABLE_DEBUG)
 #define MOO_MARKUP_NODE(n)      (MOO_MARKUP_NODE_CHECK_CAST(n))
 #define MOO_MARKUP_DOC(n)       (MOO_MARKUP_DOC_CHECK_CAST(n))
 #define MOO_MARKUP_ELEMENT(n)   (MOO_MARKUP_ELEMENT_CHECK_CAST(n))
 #define MOO_MARKUP_TEXT(n)      (MOO_MARKUP_TEXT_CHECK_CAST(n))
 #define MOO_MARKUP_COMMENT(n)   (MOO_MARKUP_COMMENT_CHECK_CAST(n))
+#else /* ENABLE_DEBUG */
+#define MOO_MARKUP_NODE(n)      ((MooMarkupNode*)n)
+#define MOO_MARKUP_DOC(n)       ((MooMarkupDoc*)(n))
+#define MOO_MARKUP_ELEMENT(n)   ((MooMarkupElement*)(n))
+#define MOO_MARKUP_TEXT(n)      ((MooMarkupText*)(n))
+#define MOO_MARKUP_COMMENT(n)   ((MooMarkupComment*)(n))
 #endif /* ENABLE_DEBUG */
 
 #define MOO_MARKUP_IS_DOC(n)        ((n) != NULL && MOO_MARKUP_NODE(n)->type == MOO_MARKUP_DOC_NODE)
@@ -62,7 +57,6 @@ typedef struct _MooMarkupText MooMarkupComment;
 
 
 struct _MooMarkupNode {
-    void                    *_private;  /* application data */
     MooMarkupNodeType        type;      /* type of the node */
     char                    *name;      /* the name of the node */
     MooMarkupNode           *children;  /* parent->childs link */
@@ -75,7 +69,6 @@ struct _MooMarkupNode {
 
 
 struct _MooMarkupDoc {
-    void                    *_private;  /* application data */
     MooMarkupNodeType        type;      /* MOO_MARKUP_DOC_NODE */
     char                    *name;      /* name/filename/URI of the document */
     MooMarkupNode           *children;  /* the document tree */
@@ -84,6 +77,7 @@ struct _MooMarkupDoc {
     MooMarkupNode           *next;      /* NULL */
     MooMarkupNode           *prev;      /* NULL */
     MooMarkupDoc            *doc;       /* self */
+
     guint                    ref_count;
     guint                    modified : 1;
     guint                    track_modified : 1;
@@ -91,7 +85,6 @@ struct _MooMarkupDoc {
 
 
 struct _MooMarkupElement {
-    void                    *_private;  /* application data */
     MooMarkupNodeType        type;      /* MOO_MARKUP_ELEMENT_NODE */
     char                    *name;      /* name */
     MooMarkupNode           *children;  /* content */
@@ -109,7 +102,6 @@ struct _MooMarkupElement {
 
 
 struct _MooMarkupText {
-    void                    *_private;  /* application data */
     MooMarkupNodeType        type;      /* MOO_MARKUP_TEXT_NODE */
     char                    *name;      /* "TEXT" */
     MooMarkupNode           *children;  /* NULL */

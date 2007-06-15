@@ -25,10 +25,12 @@ GType
 moo_markup_doc_get_type (void)
 {
     static GType type = 0;
+
     if (G_UNLIKELY (!type))
         type = g_boxed_type_register_static ("MooMarkupDoc",
-                                             (GBoxedCopyFunc)moo_markup_doc_ref,
-                                             (GBoxedFreeFunc)moo_markup_doc_unref);
+                                             (GBoxedCopyFunc) moo_markup_doc_ref,
+                                             (GBoxedFreeFunc) moo_markup_doc_unref);
+
     return type;
 }
 
@@ -54,14 +56,10 @@ typedef void (*markup_passthrough_func)     (GMarkupParseContext    *context,
                                              gpointer                user_data,
                                              GError                **error);
 
-
 typedef struct {
     MooMarkupDoc   *doc;
     MooMarkupNode  *current;
 } ParserState;
-
-
-#define BUFSIZE 1024
 
 
 static MooMarkupDoc     *moo_markup_doc_new_priv    (const char         *name);
@@ -76,7 +74,12 @@ static MooMarkupNode    *moo_markup_text_node_new   (MooMarkupNodeType   type,
                                                      MooMarkupDoc       *doc,
                                                      MooMarkupNode      *parent,
                                                      const char         *text,
-                                                     gsize               text_len);
+                                                     gssize              text_len);
+static MooMarkupNode    *moo_markup_text_node_new_take_string (MooMarkupNodeType   type,
+                                                     MooMarkupDoc       *doc,
+                                                     MooMarkupNode      *parent,
+                                                     char               *text,
+                                                     gssize              text_len);
 static void              add_node                   (MooMarkupDoc       *doc,
                                                      MooMarkupNode      *parent,
                                                      MooMarkupNode      *node);
@@ -90,7 +93,7 @@ static void moo_markup_node_free                (MooMarkupNode      *node);
 static void collect_text_content                (MooMarkupElement   *node);
 static void moo_markup_text_node_add_text       (MooMarkupText      *node,
                                                  const char         *text,
-                                                 gsize               text_len);
+                                                 gssize              text_len);
 
 static void moo_markup_element_print            (MooMarkupElement   *node,
                                                  GString            *dest);
@@ -167,57 +170,66 @@ _moo_markup_get_modified (MooMarkupDoc *doc)
 }
 
 
-MooMarkupDoc*
-moo_markup_parse_memory (const char     *buffer,
-                         int             size,
-                         GError        **error)
+static MooMarkupDoc *
+markup_parse_memory (const char     *buffer,
+                     gssize          len,
+                     G_GNUC_UNUSED const char *filename,
+                     GError        **error)
 {
-    GMarkupParser parser = {(markup_start_element_func)start_element,
-                            (markup_end_element_func)end_element,
-                            (markup_text_func)text,
-                            (markup_passthrough_func)passthrough,
-                            NULL};
+    GMarkupParser parser = { (markup_start_element_func) start_element,
+                             (markup_end_element_func) end_element,
+                             (markup_text_func) text,
+                             (markup_passthrough_func) passthrough,
+                             NULL};
 
-    MooMarkupDoc *doc;
     ParserState state;
     GMarkupParseContext *context;
 
-    if (size < 0)
-        size = strlen (buffer);
+    if (len < 0)
+        len = strlen (buffer);
 
-    doc = moo_markup_doc_new_priv (NULL);
-    state.doc = doc;
-    state.current = MOO_MARKUP_NODE (doc);
-    context = g_markup_parse_context_new (&parser, (GMarkupParseFlags)0, &state, NULL);
+    state.doc = moo_markup_doc_new_priv (NULL);
+    _moo_markup_set_modified (state.doc, TRUE);
 
-    _moo_markup_set_modified (doc, TRUE);
+    state.current = MOO_MARKUP_NODE (state.doc);
+    context = g_markup_parse_context_new (&parser, (GMarkupParseFlags) 0, &state, NULL);
 
-    if (!g_markup_parse_context_parse (context, buffer, size, error) ||
+    if (!g_markup_parse_context_parse (context, buffer, len, error) ||
          !g_markup_parse_context_end_parse (context, error))
     {
         g_markup_parse_context_free (context);
-        moo_markup_doc_unref (doc);
+        moo_markup_doc_unref (state.doc);
         return NULL;
     }
 
     g_markup_parse_context_free (context);
-    return doc;
+    return state.doc;
+}
+
+MooMarkupDoc *
+moo_markup_parse_memory (const char     *buffer,
+                         int             size,
+                         GError        **error)
+{
+    g_return_val_if_fail (buffer != NULL, NULL);
+    return markup_parse_memory (buffer, size, "memory", error);
 }
 
 
-MooMarkupDoc*
+MooMarkupDoc *
 moo_markup_parse_file (const char     *filename,
                        GError        **error)
 {
     char *content;
     MooMarkupDoc *doc;
+    gsize len;
 
     g_return_val_if_fail (filename != NULL, NULL);
 
-    if (!g_file_get_contents (filename, &content, NULL, error))
+    if (!g_file_get_contents (filename, &content, &len, error))
         return NULL;
 
-    doc = moo_markup_parse_memory (content, -1, error);
+    doc = markup_parse_memory (content, len, filename, error);
 
     if (doc)
         moo_markup_doc_set_name (doc, filename);
@@ -292,7 +304,7 @@ passthrough (G_GNUC_UNUSED GMarkupParseContext    *ctx,
 }
 
 
-static MooMarkupDoc*
+static MooMarkupDoc *
 moo_markup_doc_new_priv (const char *name)
 {
     MooMarkupDoc *doc = _moo_new0 (MooMarkupDoc);
@@ -320,14 +332,14 @@ moo_markup_doc_set_name (MooMarkupDoc *doc,
 }
 
 
-MooMarkupDoc*
+MooMarkupDoc *
 moo_markup_doc_new (const char *name)
 {
     return moo_markup_doc_new_priv (name);
 }
 
 
-static MooMarkupNode*
+static MooMarkupNode *
 moo_markup_element_new (MooMarkupDoc   *doc,
                         MooMarkupNode  *parent,
                         const char     *name,
@@ -342,8 +354,8 @@ moo_markup_element_new (MooMarkupDoc   *doc,
     elm->type = MOO_MARKUP_ELEMENT_NODE;
     elm->name = g_strdup (name);
 
-    elm->attr_names = g_strdupv ((char**)attribute_names);
-    elm->attr_vals = g_strdupv ((char**)attribute_values);
+    elm->attr_names = g_strdupv ((char**) attribute_names);
+    elm->attr_vals = g_strdupv ((char**) attribute_values);
     if (elm->attr_names)
         for (elm->n_attrs = 0; attribute_names[elm->n_attrs]; ++elm->n_attrs) ;
     else
@@ -353,12 +365,12 @@ moo_markup_element_new (MooMarkupDoc   *doc,
 }
 
 
-static MooMarkupNode*
-moo_markup_text_node_new (MooMarkupNodeType   type,
-                          MooMarkupDoc       *doc,
-                          MooMarkupNode      *parent,
-                          const char         *text,
-                          gsize               text_len)
+static MooMarkupNode *
+moo_markup_text_node_new_take_string (MooMarkupNodeType   type,
+                                      MooMarkupDoc       *doc,
+                                      MooMarkupNode      *parent,
+                                      char               *text,
+                                      gssize              text_len)
 {
     MooMarkupText *node;
 
@@ -374,10 +386,28 @@ moo_markup_text_node_new (MooMarkupNodeType   type,
     else
         node->name = g_strdup ("COMMENT");
 
-    node->text = g_strndup (text, text_len);
+    if (text_len < 0)
+        text_len = strlen (text);
+
+    node->text = text;
     node->size = text_len;
 
     return MOO_MARKUP_NODE (node);
+}
+
+static MooMarkupNode *
+moo_markup_text_node_new (MooMarkupNodeType   type,
+                          MooMarkupDoc       *doc,
+                          MooMarkupNode      *parent,
+                          const char         *text,
+                          gssize              text_len)
+{
+    if (text_len < 0)
+        text_len = strlen (text);
+
+    return moo_markup_text_node_new_take_string (type, doc, parent,
+                                                 g_strndup (text, text_len),
+                                                 text_len);
 }
 
 
@@ -414,9 +444,17 @@ add_node (MooMarkupDoc     *doc,
 static void
 moo_markup_text_node_add_text (MooMarkupText  *node,
                                const char     *text,
-                               gsize           text_len)
+                               gssize          text_len)
 {
-    char *tmp = g_new (char, node->size + text_len + 1);
+    char *tmp;
+
+    if (text_len < 0)
+        text_len = strlen (text);
+
+    if (text_len == 0)
+        return;
+
+    tmp = g_new (char, node->size + text_len + 1);
     memcpy (tmp, node->text, node->size);
     memcpy (tmp + node->size, text, text_len);
     g_free (node->text);
@@ -645,7 +683,7 @@ moo_markup_comment_node_print (MooMarkupNode *node,
         *p = 0;
     }
 
-    g_string_append (str, text->text);
+    g_string_append_printf (str, "<!--%s-->", text->text);
 }
 
 
