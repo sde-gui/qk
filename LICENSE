@@ -1,0 +1,31 @@
+medit is distributed under GPL licence, its text you can
+find in COPYING file.
+
+Portions of code are written not by me, those are clearly
+marked as such (copyright headers in files copied from other
+projects, or comments in source).
+
+< here will be the list of foreign files with their licenses and stuff >
+
+GPL is used simply because it happened so, and I am using
+LGPL-ed sources, and I have no idea how I can use LGPL-ed
+sources in a BSD-licensed program for instance (nor I really
+want to learn about it). If you want to use my code and GPL
+doesn't work for you because you have special clause in your
+license which is not GPL-compatible, or other crap like that,
+I will gladly release it under double license, or do something
+like that. Just tell me what exactly is needed.
+
+If you aren't too picky about legal stuff, then you can simply
+take code and use it in free software as you like, provided
+you leave the copyright and project name in there (unless it's a
+small portion of code of course, simple copy/paste must be free
+as in WTFL). This applies to all files (and only to those) which
+do have copyright notice inside; WTFL will work fine for the rest.
+
+Please tell me if I violated someone's rights, or didn't give
+proper credit to someone, I'll fix it (I haven't, to my best
+knowledge, with the exception of the application icon (proper
+credit part), which I am fixing right now).
+
+                            Yevgen Muntyan <muntyan@tamu.edu>

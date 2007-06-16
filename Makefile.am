@@ -27,6 +27,7 @@ EXTRA_DIST =			\
 	cygwin-configure	\
 	makewin			\
 	COPYING.lib		\
+	LICENSE			\
 	THANKS			\
 	intltool-extract.in	\
 	intltool-merge.in	\
