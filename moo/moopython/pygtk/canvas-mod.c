@@ -18,23 +18,19 @@
 #include "moopython/pygtk/moo-pygtk.h"
 #include "moopython/pygtk/canvas-mod.h"
 
-
-static char *moo_canvas_module_doc = "_foo_canvas module.";
-
+void _moo_initgoocanvas (void);
 
 gboolean
 _moo_canvas_mod_init (void)
 {
     PyObject *mod;
 
-    mod = Py_InitModule3 ("foocanvas", _moo_canvas_functions, moo_canvas_module_doc);
-    PyImport_AddModule ("moo.canvas");
+    _moo_initgoocanvas ();
 
-    if (!mod)
+    if (PyErr_Occurred ())
         return FALSE;
 
-    _moo_canvas_add_constants (mod, "FOO_CANVAS_");
-    _moo_canvas_register_classes (PyModule_GetDict (mod));
+    PyImport_AddModule ("moo.canvas");
 
     if (!PyErr_Occurred ())
     {

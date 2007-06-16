@@ -32,6 +32,7 @@
 #define g_regex_split MANGLE_REGEX(g_regex_split)
 #define g_regex_split_full MANGLE_REGEX(g_regex_split_full)
 #define g_regex_replace MANGLE_REGEX(g_regex_replace)
+#define g_regex_replace_eval MANGLE_REGEX(g_regex_replace_eval)
 #define g_regex_replace_literal MANGLE_REGEX(g_regex_replace_literal)
 #define g_regex_check_replacement MANGLE_REGEX(g_regex_check_replacement)
 #define g_match_info_get_regex MANGLE_REGEX(g_match_info_get_regex)

@@ -459,3 +459,29 @@ void gtk_alignment_set_padding (GtkAlignment *alignment,
 }
 
 #endif /* !GTK_CHECK_VERSION(2,4,0) */
+
+
+#if !GTK_CHECK_VERSION(2,10,0)
+
+GType
+gtk_unit_get_type (void)
+{
+    static GType type;
+
+    if (G_UNLIKELY (!type))
+    {
+        static const GEnumValue values[] = {
+            { GTK_UNIT_PIXEL, "GTK_UNIT_PIXEL", "pixel" },
+            { GTK_UNIT_POINTS, "GTK_UNIT_POINTS", "points" },
+            { GTK_UNIT_INCH, "GTK_UNIT_INCH", "inch" },
+            { GTK_UNIT_MM, "GTK_UNIT_MM", "mm" },
+            { 0, NULL, NULL }
+        };
+
+        type = g_enum_register_static ("GtkUnit", values);
+    }
+
+    return type;
+}
+
+#endif /* !GTK_CHECK_VERSION(2,10,0) */

@@ -1,3 +1,10 @@
+DIST_SUBDIRS = goocanvas
+SUBDIRS =
+
+if MOO_BUILD_CANVAS
+SUBDIRS += goocanvas
+endif MOO_BUILD_CANVAS
+
 moopygtk_sources =		\
 	moo-pygtk.c		\
 	moo-pygtk.h		\
@@ -46,33 +53,35 @@ moofileview.o: mooutils-pygtk.o
 	echo stamp > moofileview.o
 CLEANFILES += moofileview.o
 
-EXTRA_DIST =			\
-	moo-mod.py		\
-	moo-pygtk.c		\
-	mooapp-mod.py		\
-	mooapp-pygtk.defs	\
-	mooapp-pygtk.override	\
-	mooapp-mod.c		\
-	canvas-mod.py		\
-	canvas-pygtk.defs	\
-	canvas-pygtk.override	\
-	canvas-mod.c		\
-	$(mooedit_defs_files)	\
-	mooedit-mod.py		\
-	mooedit-pygtk.defs	\
-	mooedit-pygtk.override	\
-	mooedit-mod.c		\
-	mooterm-mod.py		\
-	mooterm-pygtk.defs	\
-	mooterm-pygtk.override	\
-	mooterm-mod.c		\
-	mooutils-mod.py		\
-	mooutils-pygtk.defs	\
-	mooutils-pygtk.override	\
-	mooutils-mod.c		\
-	$(mooutils_defs_files)	\
-	$(mooutils_override_files)
-
+EXTRA_DIST =				\
+	moo-mod.py			\
+	moo-pygtk.c			\
+	mooapp-mod.py			\
+	mooapp-pygtk.defs		\
+	mooapp-pygtk.override		\
+	mooapp-mod.c			\
+	$(mooedit_defs_files)		\
+	mooedit-mod.py			\
+	mooedit-pygtk.defs		\
+	mooedit-pygtk.override		\
+	mooedit-mod.c			\
+	mooterm-mod.py			\
+	mooterm-pygtk.defs		\
+	mooterm-pygtk.override		\
+	mooterm-mod.c			\
+	mooutils-mod.py			\
+	mooutils-pygtk.defs		\
+	mooutils-pygtk.override		\
+	mooutils-mod.c			\
+	$(mooutils_defs_files)		\
+	$(mooutils_override_files)	\
+	canvas-mod.py			\
+	canvas-mod.c			\
+	pygoocanvas/arg-types.py	\
+	pygoocanvas/AUTHORS		\
+	pygoocanvas/goocanvas.defs	\
+	pygoocanvas/goocanvas.override	\
+	pygoocanvas/goocanvasmodule.c
 
 if MOO_BUILD_UTILS
 moopygtk_sources += mooutils-mod.c
@@ -96,10 +105,10 @@ CLEANFILES += mooedit-pygtk.c
 endif MOO_BUILD_EDIT
 
 if MOO_BUILD_CANVAS
-moopygtk_sources += canvas-mod.c
-nodist_moopygtk_sources += canvas-pygtk.c
-BUILT_SOURCES += canvas-pygtk.c
-CLEANFILES += canvas-pygtk.c
+moopygtk_sources += canvas-mod.c pygoocanvas/goocanvasmodule.c
+nodist_moopygtk_sources += pygoocanvas-pygtk.c
+BUILT_SOURCES += pygoocanvas-pygtk.c
+CLEANFILES += pygoocanvas-pygtk.c
 endif MOO_BUILD_CANVAS
 
 if MOO_BUILD_APP
@@ -128,6 +137,7 @@ endif
 
 mooutils-pygtk.c: mooutils-pygtk.defs mooutils-pygtk.override $(mooutils_override_files) $(mooutils_defs_files) $(codegen_files)
 	$(codegen) --prefix _moo_utils \
+		--load-types $(srcdir)/../codegen/argtypes_m.py \
 		--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 		--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 		--override $(srcdir)/mooutils-pygtk.override \
@@ -137,6 +147,7 @@ mooutils-pygtk.c: mooutils-pygtk.defs mooutils-pygtk.override $(mooutils_overrid
 
 mooterm-pygtk.c: mooterm-pygtk.defs mooterm-pygtk.override $(codegen_files)
 	$(codegen) --prefix _moo_term \
+		--load-types $(srcdir)/../codegen/argtypes_m.py \
 		--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 		--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 		--register $(srcdir)/mooutils-pygtk.defs \
@@ -147,6 +158,7 @@ mooterm-pygtk.c: mooterm-pygtk.defs mooterm-pygtk.override $(codegen_files)
 
 mooedit-pygtk.c: mooedit-pygtk.defs mooedit-pygtk.override $(mooedit_defs_files) $(codegen_files)
 	$(codegen) --prefix _moo_edit \
+		--load-types $(srcdir)/../codegen/argtypes_m.py \
 		--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 		--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 		--register $(srcdir)/mooutils-pygtk.defs \
@@ -155,17 +167,20 @@ mooedit-pygtk.c: mooedit-pygtk.defs mooedit-pygtk.override $(mooedit_defs_files)
 		$(srcdir)/mooedit-pygtk.defs > $@.tmp && \
 		mv $@.tmp $@
 
-canvas-pygtk.c: canvas-pygtk.defs canvas-pygtk.override $(codegen_files)
-	$(codegen) --prefix _moo_canvas \
+pygoocanvas-pygtk.c: pygoocanvas/goocanvas.defs pygoocanvas/goocanvas.override pygoocanvas/arg-types.py $(codegen_files)
+	$(codegen) --prefix pygoocanvas \
+		--load-types $(srcdir)/pygoocanvas/arg-types.py \
 		--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
+		--register $(PYGTK_DEFS_DIR)/pango-types.defs \
 		--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
-		--override $(srcdir)/canvas-pygtk.override \
-		--outfilename canvas-pygtk.c \
-		$(srcdir)/canvas-pygtk.defs > $@.tmp && \
+		--override $(srcdir)/pygoocanvas/goocanvas.override \
+		--outfilename pygoocanvas-pygtk.c \
+		$(srcdir)/pygoocanvas/goocanvas.defs > $@.tmp && \
 		mv $@.tmp $@
 
 mooapp-pygtk.c: mooapp-pygtk.defs mooapp-pygtk.override $(codegen_files)
 	$(codegen) --prefix _moo_app \
+		--load-types $(srcdir)/../codegen/argtypes_m.py \
 		--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 		--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 		--register $(srcdir)/mooedit-pygtk.defs \
@@ -209,36 +224,47 @@ libmoopygtk24_la_SOURCES = $(moopygtk_sources)
 nodist_libmoopygtk_la_SOURCES = $(nodist_moopygtk_sources)
 nodist_libmoopygtk25_la_SOURCES = $(nodist_moopygtk_sources)
 nodist_libmoopygtk24_la_SOURCES = $(nodist_moopygtk_sources)
+libmoopygtk_la_LIBADD =
+libmoopygtk24_la_LIBADD =
+libmoopygtk25_la_LIBADD =
+
+if MOO_BUILD_CANVAS
+libmoopygtk_la_LIBADD += goocanvas/libgoocanvas.la
+libmoopygtk24_la_LIBADD += goocanvas/libgoocanvas.la
+libmoopygtk25_la_LIBADD += goocanvas/libgoocanvas.la
+endif MOO_BUILD_CANVAS
+
+canvas_cflags =			\
+	-I$(srcdir)/goocanvas	\
+	-Igoocanvas		\
+	-DPYGOOCANVAS_MAJOR_VERSION=0\
+	-DPYGOOCANVAS_MINOR_VERSION=8\
+	-DPYGOOCANVAS_MICRO_VERSION=0
+
+common_cflags =			\
+	-I../..			\
+	-I$(top_builddir)	\
+	$(MOO_CFLAGS)		\
+	$(MOO_DEBUG_CFLAGS)	\
+	$(MOO_W_NO_WRITE_STRINGS)\
+	$(MOO_W_NO_MISSING_FIELD_INITIALIZERS)\
+	$(MOO_W_NO_UNUSED)
+
+if MOO_BUILD_CANVAS
+common_cflags += $(canvas_cflags)
+endif MOO_BUILD_CANVAS
 
 AM_CFLAGS =			\
-	-I../..			\
-	-I$(top_builddir)	\
-	$(MOO_CFLAGS)		\
-	$(MOO_DEBUG_CFLAGS)	\
+	$(common_cflags)	\
 	$(PYTHON_INCLUDES)	\
-	$(PYGTK_CFLAGS)		\
-	$(MOO_W_NO_WRITE_STRINGS)\
-	$(MOO_W_NO_MISSING_FIELD_INITIALIZERS)\
-	$(MOO_W_NO_UNUSED)
+	$(PYGTK_CFLAGS)
 
 libmoopygtk25_la_CFLAGS =	\
-	-I../..			\
-	-I$(top_builddir)	\
-	$(MOO_CFLAGS)		\
-	$(MOO_DEBUG_CFLAGS)	\
+	$(common_cflags)	\
 	$(PYTHON25_INCLUDES)	\
-	$(PYGTK25_CFLAGS)	\
-	$(MOO_W_NO_WRITE_STRINGS)\
-	$(MOO_W_NO_MISSING_FIELD_INITIALIZERS)\
-	$(MOO_W_NO_UNUSED)
+	$(PYGTK25_CFLAGS)
 
 libmoopygtk24_la_CFLAGS =	\
-	-I../..			\
-	-I$(top_builddir)	\
-	$(MOO_CFLAGS)		\
-	$(MOO_DEBUG_CFLAGS)	\
+	$(common_cflags)	\
 	$(PYTHON24_INCLUDES)	\
-	$(PYGTK24_CFLAGS)	\
-	$(MOO_W_NO_WRITE_STRINGS)\
-	$(MOO_W_NO_MISSING_FIELD_INITIALIZERS)\
-	$(MOO_W_NO_UNUSED)
+	$(PYGTK24_CFLAGS)

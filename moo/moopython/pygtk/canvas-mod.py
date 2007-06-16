@@ -1,2 +1,2 @@
 """moo.canvas module"""
-from foocanvas import *
+from goocanvas import *

@@ -6,7 +6,6 @@ import string
 import sys
 
 import argtypes
-import argtypes_m
 import definitions
 import defsparser
 import override

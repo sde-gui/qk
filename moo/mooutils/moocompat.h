@@ -224,6 +224,16 @@ guint  g_strv_length (gchar **str_array);
 #define GTK_STOCK_SELECT_ALL  "gtk-select-all"
 #endif
 
+typedef enum {
+  GTK_UNIT_PIXEL,
+  GTK_UNIT_POINTS,
+  GTK_UNIT_INCH,
+  GTK_UNIT_MM
+} GtkUnit;
+
+#define GTK_TYPE_UNIT (gtk_unit_get_type ())
+GType gtk_unit_get_type (void) G_GNUC_CONST;
+
 #endif /* !GTK_CHECK_VERSION(2,10,0) */
 
 

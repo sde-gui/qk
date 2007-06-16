@@ -117,6 +117,7 @@ EXTRA_DIST =				\
 	moopython-utils.c		\
 	codegen/__init__.py		\
 	codegen/argtypes.py		\
+	codegen/argtypes_m.py		\
 	codegen/codegen.py		\
 	codegen/definitions.py		\
 	codegen/defsparser.py		\

@@ -1,0 +1,11 @@
+#ifndef GOO_CANVAS_MARSHAL_H
+#define GOO_CANVAS_MARSHAL_H
+
+#include "mooutils/moomarshals.h"
+#define goo_canvas_marshal_BOOLEAN__OBJECT_BOXED _moo_marshal_BOOLEAN__OBJECT_BOXED
+#define goo_canvas_marshal_VOID__INT _moo_marshal_VOID__INT
+#define goo_canvas_marshal_VOID__INT_INT _moo_marshal_VOID__INT_INT
+#define goo_canvas_marshal_VOID__BOOLEAN _moo_marshal_VOID__BOOLEAN
+#define goo_canvas_marshal_VOID__OBJECT_OBJECT _moo_marshal_VOID__OBJECT_OBJECT
+
+#endif /* GOO_CANVAS_MARSHAL_H */

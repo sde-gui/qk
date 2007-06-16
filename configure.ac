@@ -53,11 +53,11 @@ moo/mooedit/plugins/fileselector/Makefile
 moo/mooedit/plugins/completion/Makefile
 moo/mooapp/Makefile
 moo/mooapp/smclient/Makefile
-moo/libfoocanvas/Makefile
 moo/moopython/Makefile
 moo/moopython/plugins/Makefile
 moo/moopython/plugins/pyproject/Makefile
 moo/moopython/pygtk/Makefile
+moo/moopython/pygtk/goocanvas/Makefile
 moo/mooutils/pcre/Makefile
 moo/mooutils/xdgmime/Makefile
 moo/mooterm/mootermhelper_res.rc

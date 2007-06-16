@@ -43,10 +43,6 @@ if MOO_BUILD_EDIT
 subdirs += mooedit
 libs += mooedit/libmooedit.la
 endif
-if MOO_BUILD_CANVAS
-subdirs += libfoocanvas
-libs += libfoocanvas/libfoocanvas.la
-endif
 if MOO_BUILD_APP
 subdirs += mooapp
 libs += mooapp/libmooapp.la
@@ -57,7 +53,7 @@ subdirs += moopython
 endif
 
 SUBDIRS = $(subdirs) .
-DIST_SUBDIRS = mooutils mooterm mooedit mooapp libfoocanvas moopython mooscript moofileview
+DIST_SUBDIRS = mooutils mooterm mooedit mooapp moopython mooscript moofileview
 
 lib_LTLIBRARIES =
 noinst_LTLIBRARIES =
@@ -88,7 +84,7 @@ else
 if MOO_DEBUG # && !MOO_ENABLE_TESTS
 export_flags = -export-symbols-regex ".*"
 else # !MOO_DEBUG && !MOO_ENABLE_TESTS
-export_flags = -export-symbols-regex "^(moo_|foo_canvas_).*"
+export_flags = -export-symbols-regex "^(moo_).*"
 endif
 endif
 
