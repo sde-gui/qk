@@ -13,7 +13,7 @@
   (parent "GObject")
   (c-name "MooTermBuffer")
   (gtype-id "MOO_TYPE_TERM_BUFFER")
-  (final "true")
+;   (final "true")
 )
 
 (define-object Tag
@@ -45,7 +45,7 @@
   (gtype-id "MOO_TYPE_TERM_COMMAND")
   (copy-func "moo_term_command_copy")
   (release-func "moo_term_command_free")
-  (final "true")
+;   (final "true")
 )
 
 (define-pointer Line
@@ -165,38 +165,38 @@
   )
 )
 
-(define-method set_line_data
-  (of-object "MooTerm")
-  (c-name "moo_term_set_line_data")
-  (return-type "none")
-  (parameters
-    '("MooTermLine*" "line")
-    '("const-char*" "key")
-    '("gpointer" "data")
-  )
-)
+; (define-method set_line_data
+;   (of-object "MooTerm")
+;   (c-name "moo_term_set_line_data")
+;   (return-type "none")
+;   (parameters
+;     '("MooTermLine*" "line")
+;     '("const-char*" "key")
+;     '("gpointer" "data")
+;   )
+; )
 
-(define-method set_line_data_full
-  (of-object "MooTerm")
-  (c-name "moo_term_set_line_data_full")
-  (return-type "none")
-  (parameters
-    '("MooTermLine*" "line")
-    '("const-char*" "key")
-    '("gpointer" "data")
-    '("GDestroyNotify" "destroy")
-  )
-)
+; (define-method set_line_data_full
+;   (of-object "MooTerm")
+;   (c-name "moo_term_set_line_data_full")
+;   (return-type "none")
+;   (parameters
+;     '("MooTermLine*" "line")
+;     '("const-char*" "key")
+;     '("gpointer" "data")
+;     '("GDestroyNotify" "destroy")
+;   )
+; )
 
-(define-method get_line_data
-  (of-object "MooTerm")
-  (c-name "moo_term_get_line_data")
-  (return-type "gpointer")
-  (parameters
-    '("MooTermLine*" "line")
-    '("const-char*" "key")
-  )
-)
+; (define-method get_line_data
+;   (of-object "MooTerm")
+;   (c-name "moo_term_get_line_data")
+;   (return-type "gpointer")
+;   (parameters
+;     '("MooTermLine*" "line")
+;     '("const-char*" "key")
+;   )
+; )
 
 (define-method create_tag
   (of-object "MooTerm")
@@ -225,11 +225,11 @@
   )
 )
 
-(define-method get_tag_table
-  (of-object "MooTerm")
-  (c-name "moo_term_get_tag_table")
-  (return-type "MooTermTagTable*")
-)
+; (define-method get_tag_table
+;   (of-object "MooTerm")
+;   (c-name "moo_term_get_tag_table")
+;   (return-type "MooTermTagTable*")
+; )
 
 (define-method get_iter_at_line
   (of-object "MooTerm")

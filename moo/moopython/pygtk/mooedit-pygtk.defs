@@ -577,17 +577,17 @@
   )
 )
 
-(define-function window_set_action_check
-  (c-name "moo_edit_window_set_action_check")
-  (return-type "none")
-  (parameters
-    '("const-char*" "action_id")
-    '("MooActionCheckType" "type")
-    '("MooActionCheckFunc" "func")
-    '("gpointer" "data")
-    '("GDestroyNotify" "notify")
-  )
-)
+; (define-function window_set_action_check
+;   (c-name "moo_edit_window_set_action_check")
+;   (return-type "none")
+;   (parameters
+;     '("const-char*" "action_id")
+;     '("MooActionCheckType" "type")
+;     '("MooActionCheckFunc" "func")
+;     '("gpointer" "data")
+;     '("GDestroyNotify" "notify")
+;   )
+; )
 
 
 ;; From mooindenter.h
@@ -722,17 +722,17 @@
   )
 )
 
-(define-method list_schemes
-  (of-object "MooLangMgr")
-  (c-name "moo_lang_mgr_list_schemes")
-  (return-type "GSList*")
-)
+; (define-method list_schemes
+;   (of-object "MooLangMgr")
+;   (c-name "moo_lang_mgr_list_schemes")
+;   (return-type "GSList*")
+; )
 
-(define-method get_active_scheme
-  (of-object "MooLangMgr")
-  (c-name "moo_lang_mgr_get_active_scheme")
-  (return-type "MooTextStyleScheme*")
-)
+; (define-method get_active_scheme
+;   (of-object "MooLangMgr")
+;   (c-name "moo_lang_mgr_get_active_scheme")
+;   (return-type "MooTextStyleScheme*")
+; )
 
 
 
@@ -764,16 +764,16 @@
   )
 )
 
-(define-method create_tag
-  (of-object "MooLineView")
-  (c-name "moo_line_view_create_tag")
-  (return-type "GtkTextTag*")
-  (parameters
-    '("const-char*" "tag_name")
-    '("const-char*" "first_property_name")
-  )
-  (varargs #t)
-)
+; (define-method create_tag
+;   (of-object "MooLineView")
+;   (c-name "moo_line_view_create_tag")
+;   (return-type "GtkTextTag*")
+;   (parameters
+;     '("const-char*" "tag_name")
+;     '("const-char*" "first_property_name")
+;   )
+;   (varargs #t)
+; )
 
 (define-method lookup_tag
   (of-object "MooLineView")
@@ -888,14 +888,14 @@
   (return-type "gboolean")
 )
 
-(define-method apply_scheme
-  (of-object "MooTextBuffer")
-  (c-name "moo_text_buffer_apply_scheme")
-  (return-type "none")
-  (parameters
-    '("MooTextStyleScheme*" "scheme" (null-ok))
-  )
-)
+; (define-method apply_scheme
+;   (of-object "MooTextBuffer")
+;   (c-name "moo_text_buffer_apply_scheme")
+;   (return-type "none")
+;   (parameters
+;     '("MooTextStyleScheme*" "scheme" (null-ok))
+;   )
+; )
 
 (define-method add_line_mark
   (of-object "MooTextBuffer")
@@ -926,15 +926,15 @@
   )
 )
 
-(define-method get_line_marks_in_range
-  (of-object "MooTextBuffer")
-  (c-name "moo_text_buffer_get_line_marks_in_range")
-  (return-type "GSList*")
-  (parameters
-    '("int" "first_line")
-    '("int" "last_line")
-  )
-)
+; (define-method get_line_marks_in_range
+;   (of-object "MooTextBuffer")
+;   (c-name "moo_text_buffer_get_line_marks_in_range")
+;   (return-type "GSList*")
+;   (parameters
+;     '("int" "first_line")
+;     '("int" "last_line")
+;   )
+; )
 
 (define-method add_fold
   (of-object "MooTextBuffer")
@@ -958,14 +958,14 @@
 
 ;; From mootextiter.h
 
-(define-function moo_text_iter_find_matching_bracket
-  (c-name "moo_text_iter_find_matching_bracket")
-  (return-type "MooBracketMatchType")
-  (parameters
-    '("GtkTextIter*" "iter")
-    '("int" "limit")
-  )
-)
+; (define-function moo_text_iter_find_matching_bracket
+;   (c-name "moo_text_iter_find_matching_bracket")
+;   (return-type "MooBracketMatchType")
+;   (parameters
+;     '("GtkTextIter*" "iter")
+;     '("int" "limit")
+;   )
+; )
 
 (define-function moo_text_iter_at_bracket
   (c-name "moo_text_iter_at_bracket")
@@ -997,19 +997,19 @@
 
 ;; From mootextstylescheme.h
 
-(define-function moo_text_style_scheme_new_empty
-  (c-name "moo_text_style_scheme_new_empty")
-  (return-type "MooTextStyleScheme*")
-  (parameters
-    '("const-char*" "name")
-    '("MooTextStyleScheme*" "base")
-  )
-)
+; (define-function moo_text_style_scheme_new_empty
+;   (c-name "moo_text_style_scheme_new_empty")
+;   (return-type "MooTextStyleScheme*")
+;   (parameters
+;     '("const-char*" "name")
+;     '("MooTextStyleScheme*" "base")
+;   )
+; )
 
-(define-function moo_text_style_scheme_new_default
-  (c-name "moo_text_style_scheme_new_default")
-  (return-type "MooTextStyleScheme*")
-)
+; (define-function moo_text_style_scheme_new_default
+;   (c-name "moo_text_style_scheme_new_default")
+;   (return-type "MooTextStyleScheme*")
+; )
 
 (define-method copy
   (of-object "MooTextStyleScheme")
@@ -1204,14 +1204,14 @@
   )
 )
 
-(define-method set_scheme
-  (of-object "MooTextView")
-  (c-name "moo_text_view_set_scheme")
-  (return-type "none")
-  (parameters
-    '("MooTextStyleScheme*" "scheme")
-  )
-)
+; (define-method set_scheme
+;   (of-object "MooTextView")
+;   (c-name "moo_text_view_set_scheme")
+;   (return-type "none")
+;   (parameters
+;     '("MooTextStyleScheme*" "scheme")
+;   )
+; )
 
 (define-method lookup_tag
   (of-object "MooTextView")
@@ -1291,19 +1291,19 @@
   )
 )
 
-(define-function replace_all_interactive
-  (c-name "moo_text_replace_all_interactive")
-  (return-type "int")
-  (parameters
-    '("GtkTextIter*" "start")
-    '("GtkTextIter*" "end")
-    '("const-char*" "text")
-    '("const-char*" "replacement")
-    '("MooTextSearchFlags" "flags")
-    '("MooTextReplaceFunc" "func")
-    '("gpointer" "data")
-  )
-)
+; (define-function replace_all_interactive
+;   (c-name "moo_text_replace_all_interactive")
+;   (return-type "int")
+;   (parameters
+;     '("GtkTextIter*" "start")
+;     '("GtkTextIter*" "end")
+;     '("const-char*" "text")
+;     '("const-char*" "replacement")
+;     '("MooTextSearchFlags" "flags")
+;     '("MooTextReplaceFunc" "func")
+;     '("gpointer" "data")
+;   )
+; )
 
 
 

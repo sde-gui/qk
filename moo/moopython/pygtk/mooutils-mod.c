@@ -55,7 +55,7 @@ _moo_utils_mod_init (void)
 
     pyg_register_boxed_custom (MOO_TYPE_PY_OBJECT, pyobj_from_gval, gval_from_pyobj);
 
-    mod = Py_InitModule3 ("__moo_utils__", _moo_utils_functions, moo_utils_module_doc);
+    mod = Py_InitModule3 ("__moo_utils__", (PyMethodDef*) _moo_utils_functions, moo_utils_module_doc);
     PyImport_AddModule ("moo.utils");
 
     if (!mod)

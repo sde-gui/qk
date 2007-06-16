@@ -117,15 +117,11 @@ if MOO_USE_CUSTOM_CODEGEN
 codegen_files =					\
 	$(srcdir)/../codegen/codegen.py		\
 	$(srcdir)/../codegen/argtypes.py	\
+	$(srcdir)/../codegen/argtypes_m.py	\
 	$(srcdir)/../codegen/reversewrapper.py
 
-if MOO_ALL_WARNINGS
-warnings_flag = --enable-warnings
-else
-warnings_flag =
-endif
 codegen_script = $(srcdir)/../codegen/codegen.py
-codegen = $(PYTHON) $(codegen_script) $(codegen_platform) --pygtk-version=$(PYGTK_MINOR_VERSION) $(warnings_flag)
+codegen = $(PYTHON) $(codegen_script) $(codegen_platform) --pygtk-version=$(PYGTK_MINOR_VERSION)
 else
 codegen = $(PYTHON) $(PYGTK_CODEGEN_DIR)/codegen.py $(PYGTK_CODEGEN_ARGS)
 endif
@@ -221,7 +217,9 @@ AM_CFLAGS =			\
 	$(MOO_DEBUG_CFLAGS)	\
 	$(PYTHON_INCLUDES)	\
 	$(PYGTK_CFLAGS)		\
-	$(MOO_W_NO_WRITE_STRINGS)
+	$(MOO_W_NO_WRITE_STRINGS)\
+	$(MOO_W_NO_MISSING_FIELD_INITIALIZERS)\
+	$(MOO_W_NO_UNUSED)
 
 libmoopygtk25_la_CFLAGS =	\
 	-I../..			\
@@ -230,7 +228,9 @@ libmoopygtk25_la_CFLAGS =	\
 	$(MOO_DEBUG_CFLAGS)	\
 	$(PYTHON25_INCLUDES)	\
 	$(PYGTK25_CFLAGS)	\
-	$(MOO_W_NO_WRITE_STRINGS)
+	$(MOO_W_NO_WRITE_STRINGS)\
+	$(MOO_W_NO_MISSING_FIELD_INITIALIZERS)\
+	$(MOO_W_NO_UNUSED)
 
 libmoopygtk24_la_CFLAGS =	\
 	-I../..			\
@@ -239,4 +239,6 @@ libmoopygtk24_la_CFLAGS =	\
 	$(MOO_DEBUG_CFLAGS)	\
 	$(PYTHON24_INCLUDES)	\
 	$(PYGTK24_CFLAGS)	\
-	$(MOO_W_NO_WRITE_STRINGS)
+	$(MOO_W_NO_WRITE_STRINGS)\
+	$(MOO_W_NO_MISSING_FIELD_INITIALIZERS)\
+	$(MOO_W_NO_UNUSED)

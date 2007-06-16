@@ -28,7 +28,7 @@ _moo_term_mod_init (void)
 {
     PyObject *mod;
 
-    mod = Py_InitModule3 ("_moo_term", _moo_term_functions, moo_term_module_doc);
+    mod = Py_InitModule3 ("_moo_term", (PyMethodDef*) _moo_term_functions, moo_term_module_doc);
     PyImport_AddModule ("moo.term");
 
     if (!mod)

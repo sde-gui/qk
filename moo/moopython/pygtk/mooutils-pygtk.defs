@@ -32,7 +32,7 @@
   (parent "GObject")
   (c-name "MooGladeXML")
   (gtype-id "MOO_TYPE_GLADE_XML")
-  (final "true")
+;   (final "true")
 )
 
 (define-object HistoryEntry
@@ -79,7 +79,7 @@
     '("char*" "label")
     '("GdkPixbuf*" "icon")
     '("char*" "icon_stock_id")
-    '("GSList*" "widgets")
+;     '("GSList*" "widgets")
     '("gboolean" "auto_apply")
 ;;     xml may not be wrapped
 ;;     '("MooGladeXML*" "xml")
@@ -198,7 +198,7 @@
     '("MooFileEventCode" "code")
     '("int" "monitor_id")
     '("char*" "filename")
-    '("GError*" "error")
+;     '("GError*" "error")
   )
 )
 
@@ -325,15 +325,15 @@
   )
 )
 
-(define-method set_row_separator_func
-  (of-object "MooCombo")
-  (c-name "moo_combo_set_row_separator_func")
-  (return-type "none")
-  (parameters
-    '("MooComboRowSeparatorFunc" "func")
-    '("gpointer" "data")
-  )
-)
+; (define-method set_row_separator_func
+;   (of-object "MooCombo")
+;   (c-name "moo_combo_set_row_separator_func")
+;   (return-type "none")
+;   (parameters
+;     '("MooComboRowSeparatorFunc" "func")
+;     '("gpointer" "data")
+;   )
+; )
 
 (define-method set_text_column
   (of-object "MooCombo")
@@ -350,15 +350,15 @@
   (return-type "int")
 )
 
-(define-method set_get_text_func
-  (of-object "MooCombo")
-  (c-name "moo_combo_set_get_text_func")
-  (return-type "none")
-  (parameters
-    '("MooComboGetTextFunc" "func")
-    '("gpointer" "data")
-  )
-)
+; (define-method set_get_text_func
+;   (of-object "MooCombo")
+;   (c-name "moo_combo_set_get_text_func")
+;   (return-type "none")
+;   (parameters
+;     '("MooComboGetTextFunc" "func")
+;     '("gpointer" "data")
+;   )
+; )
 
 (define-method get_text_at_iter
   (of-object "MooCombo")
@@ -531,18 +531,18 @@
   )
 )
 
-(define-method create_monitor
-  (of-object "MooFileWatch")
-  (c-name "moo_file_watch_create_monitor")
-  (return-type "guint")
-  (parameters
-    '("const-char*" "filename")
-    '("MooFileWatchCallback" "callback")
-    '("gpointer" "data")
-    '("GDestroyNotify" "data_notify")
-    '("GError**" "error")
-  )
-)
+; (define-method create_monitor
+;   (of-object "MooFileWatch")
+;   (c-name "moo_file_watch_create_monitor")
+;   (return-type "guint")
+;   (parameters
+;     '("const-char*" "filename")
+;     '("MooFileWatchCallback" "callback")
+;     '("gpointer" "data")
+;     '("GDestroyNotify" "data_notify")
+;     '("GError**" "error")
+;   )
+; )
 
 (define-method cancel_monitor
   (of-object "MooFileWatch")
@@ -673,16 +673,16 @@
   )
 )
 
-(define-method map_custom
-  (of-object "MooGladeXML")
-  (c-name "moo_glade_xml_map_custom")
-  (return-type "none")
-  (parameters
-    '("const-char*" "id")
-    '("MooGladeCreateFunc" "func")
-    '("gpointer" "data")
-  )
-)
+; (define-method map_custom
+;   (of-object "MooGladeXML")
+;   (c-name "moo_glade_xml_map_custom")
+;   (return-type "none")
+;   (parameters
+;     '("const-char*" "id")
+;     '("MooGladeCreateFunc" "func")
+;     '("gpointer" "data")
+;   )
+; )
 
 (define-method set_signal_func
   (of-object "MooGladeXML")
@@ -861,34 +861,34 @@
   )
 )
 
-(define-method set_display_func
-  (of-object "MooHistoryList")
-  (c-name "moo_history_list_set_display_func")
-  (return-type "none")
-  (parameters
-    '("MooHistoryDisplayFunc" "func")
-    '("gpointer" "data")
-  )
-)
+; (define-method set_display_func
+;   (of-object "MooHistoryList")
+;   (c-name "moo_history_list_set_display_func")
+;   (return-type "none")
+;   (parameters
+;     '("MooHistoryDisplayFunc" "func")
+;     '("gpointer" "data")
+;   )
+; )
 
-(define-method set_compare_func
-  (of-object "MooHistoryList")
-  (c-name "moo_history_list_set_compare_func")
-  (return-type "none")
-  (parameters
-    '("MooHistoryCompareFunc" "func")
-    '("gpointer" "data")
-  )
-)
+; (define-method set_compare_func
+;   (of-object "MooHistoryList")
+;   (c-name "moo_history_list_set_compare_func")
+;   (return-type "none")
+;   (parameters
+;     '("MooHistoryCompareFunc" "func")
+;     '("gpointer" "data")
+;   )
+; )
 
-(define-function moo_history_list_display_basename
-  (c-name "moo_history_list_display_basename")
-  (return-type "char*")
-  (parameters
-    '("const-char*" "entry")
-    '("gpointer" "data")
-  )
-)
+; (define-function moo_history_list_display_basename
+;   (c-name "moo_history_list_display_basename")
+;   (return-type "char*")
+;   (parameters
+;     '("const-char*" "entry")
+;     '("gpointer" "data")
+;   )
+; )
 
 (define-method is_empty
   (of-object "MooHistoryList")
@@ -1139,15 +1139,15 @@
   )
 )
 
-(define-method set_popup_creation_func
-  (of-object "MooNotebook")
-  (c-name "moo_notebook_set_popup_creation_func")
-  (return-type "none")
-  (parameters
-    '("MooNotebookPopupCreationFunc" "func")
-    '("gpointer" "user_data")
-  )
-)
+; (define-method set_popup_creation_func
+;   (of-object "MooNotebook")
+;   (c-name "moo_notebook_set_popup_creation_func")
+;   (return-type "none")
+;   (parameters
+;     '("MooNotebookPopupCreationFunc" "func")
+;     '("gpointer" "user_data")
+;   )
+; )
 
 (define-method enable_reordering
   (of-object "MooNotebook")
@@ -1268,16 +1268,16 @@
   )
 )
 
-(define-method bind_radio_setting
-  (of-object "MooPrefsDialogPage")
-  (c-name "moo_prefs_dialog_page_bind_radio_setting")
-  (return-type "none")
-  (parameters
-    '("const-char*" "setting")
-    '("GtkToggleButton**" "btns")
-    '("const-char**" "cvals")
-  )
-)
+; (define-method bind_radio_setting
+;   (of-object "MooPrefsDialogPage")
+;   (c-name "moo_prefs_dialog_page_bind_radio_setting")
+;   (return-type "none")
+;   (parameters
+;     '("const-char*" "setting")
+;     '("GtkToggleButton**" "btns")
+;     '("const-char**" "cvals")
+;   )
+; )
 
 (define-virtual init
   (of-object "MooPrefsDialogPage")
@@ -1338,31 +1338,31 @@
   (return-type "gboolean")
 )
 
-(define-function window_class_get_id
-  (c-name "moo_window_class_get_id")
-  (return-type "const-char*")
-  (parameters
-    '("MooWindowClass*" "cls")
-  )
-)
+; (define-function window_class_get_id
+;   (c-name "moo_window_class_get_id")
+;   (return-type "const-char*")
+;   (parameters
+;     '("MooWindowClass*" "cls")
+;   )
+; )
 
-(define-function window_class_get_name
-  (c-name "moo_window_class_get_name")
-  (return-type "const-char*")
-  (parameters
-    '("MooWindowClass*" "cls")
-  )
-)
+; (define-function window_class_get_name
+;   (c-name "moo_window_class_get_name")
+;   (return-type "const-char*")
+;   (parameters
+;     '("MooWindowClass*" "cls")
+;   )
+; )
 
-(define-function window_class_set_id
-  (c-name "moo_window_class_set_id")
-  (return-type "none")
-  (parameters
-    '("MooWindowClass*" "cls")
-    '("const-char*" "id")
-    '("const-char*" "name")
-  )
-)
+; (define-function window_class_set_id
+;   (c-name "moo_window_class_set_id")
+;   (return-type "none")
+;   (parameters
+;     '("MooWindowClass*" "cls")
+;     '("const-char*" "id")
+;     '("const-char*" "name")
+;   )
+; )
 
 (define-function _window_class_add_action
   (c-name "moo_window_class_add_action")
@@ -1387,15 +1387,15 @@
   )
 )
 
-(define-function window_class_add_group
-  (c-name "moo_window_class_add_group")
-  (return-type "none")
-  (parameters
-    '("MooWindowClass*" "cls")
-    '("const-char*" "name")
-    '("const-char*" "display_name")
-  )
-)
+; (define-function window_class_add_group
+;   (c-name "moo_window_class_add_group")
+;   (return-type "none")
+;   (parameters
+;     '("MooWindowClass*" "cls")
+;     '("const-char*" "name")
+;     '("const-char*" "display_name")
+;   )
+; )
 
 (define-function window_class_find_group
   (c-name "moo_window_class_find_group")
@@ -1736,15 +1736,15 @@
   )
 )
 
-(define-method set_menu_data
-  (of-object "MooMenuAction")
-  (c-name "moo_menu_action_set_menu_data")
-  (return-type "none")
-  (parameters
-    '("gpointer" "data")
-    '("gboolean" "is_object")
-  )
-)
+; (define-method set_menu_data
+;   (of-object "MooMenuAction")
+;   (c-name "moo_menu_action_set_menu_data")
+;   (return-type "none")
+;   (parameters
+;     '("gpointer" "data")
+;     '("gboolean" "is_object")
+;   )
+; )
 
 
 ;; From moo/mooutils/mooutils-gobject.h
@@ -1772,19 +1772,19 @@
   )
 )
 
-(define-function add_property_watch
-  (c-name "moo_add_property_watch")
-  (return-type "guint")
-  (parameters
-    '("GObject*" "target")
-    '("const-char*" "target_prop")
-    '("GObject*" "source")
-    '("const-char*" "source_prop")
-    '("MooTransformPropFunc" "transform")
-    '("gpointer" "transform_data")
-    '("GDestroyNotify" "destroy_notify")
-  )
-)
+; (define-function add_property_watch
+;   (c-name "moo_add_property_watch")
+;   (return-type "guint")
+;   (parameters
+;     '("GObject*" "target")
+;     '("const-char*" "target_prop")
+;     '("GObject*" "source")
+;     '("const-char*" "source_prop")
+;     '("MooTransformPropFunc" "transform")
+;     '("gpointer" "transform_data")
+;     '("GDestroyNotify" "destroy_notify")
+;   )
+; )
 
 ;; (define-function watch_add_signal
 ;;   (c-name "moo_watch_add_signal")
@@ -1929,13 +1929,13 @@
   )
 )
 
-(define-function prefs_get_markup
-  (c-name "moo_prefs_get_markup")
-  (return-type "MooMarkupDoc*")
-  (parameters
-    '("MooPrefsType" "prefs_type")
-  )
-)
+; (define-function prefs_get_markup
+;   (c-name "moo_prefs_get_markup")
+;   (return-type "MooMarkupDoc*")
+;   (parameters
+;     '("MooPrefsType" "prefs_type")
+;   )
+; )
 
 (define-function prefs_new_key
   (c-name "moo_prefs_new_key")
@@ -1972,39 +1972,39 @@
   )
 )
 
-(define-function prefs_get
-  (c-name "moo_prefs_get")
-  (return-type "const-GValue*")
-  (parameters
-    '("const-char*" "key")
-  )
-)
+; (define-function prefs_get
+;   (c-name "moo_prefs_get")
+;   (return-type "const-GValue*")
+;   (parameters
+;     '("const-char*" "key")
+;   )
+; )
 
-(define-function prefs_get_default
-  (c-name "moo_prefs_get_default")
-  (return-type "const-GValue*")
-  (parameters
-    '("const-char*" "key")
-  )
-)
+; (define-function prefs_get_default
+;   (c-name "moo_prefs_get_default")
+;   (return-type "const-GValue*")
+;   (parameters
+;     '("const-char*" "key")
+;   )
+; )
 
-(define-function prefs_set
-  (c-name "moo_prefs_set")
-  (return-type "none")
-  (parameters
-    '("const-char*" "key")
-    '("const-GValue*" "value")
-  )
-)
+; (define-function prefs_set
+;   (c-name "moo_prefs_set")
+;   (return-type "none")
+;   (parameters
+;     '("const-char*" "key")
+;     '("const-GValue*" "value")
+;   )
+; )
 
-(define-function prefs_set_default
-  (c-name "moo_prefs_set_default")
-  (return-type "none")
-  (parameters
-    '("const-char*" "key")
-    '("const-GValue*" "value")
-  )
-)
+; (define-function prefs_set_default
+;   (c-name "moo_prefs_set_default")
+;   (return-type "none")
+;   (parameters
+;     '("const-char*" "key")
+;     '("const-GValue*" "value")
+;   )
+; )
 
 (define-function prefs_new_key_bool
   (c-name "moo_prefs_new_key_bool")
@@ -2052,23 +2052,23 @@
   )
 )
 
-(define-function prefs_make_key
-  (c-name "moo_prefs_make_key")
-  (return-type "char*")
-  (parameters
-    '("const-char*" "first_comp")
-  )
-  (varargs #t)
-)
+; (define-function prefs_make_key
+;   (c-name "moo_prefs_make_key")
+;   (return-type "char*")
+;   (parameters
+;     '("const-char*" "first_comp")
+;   )
+;   (varargs #t)
+; )
 
-(define-function prefs_make_keyv
-  (c-name "moo_prefs_make_keyv")
-  (return-type "char*")
-  (parameters
-    '("const-char*" "first_comp")
-    '("va_list" "var_args")
-  )
-)
+; (define-function prefs_make_keyv
+;   (c-name "moo_prefs_make_keyv")
+;   (return-type "char*")
+;   (parameters
+;     '("const-char*" "first_comp")
+;     '("va_list" "var_args")
+;   )
+; )
 
 (define-function prefs_get_string
   (c-name "moo_prefs_get_string")
@@ -2269,8 +2269,9 @@
   (c-name "moo_get_data_files")
   (return-type "char**")
   (parameters
+    '("const-char*" "name")
     '("MooDataDirType" "type")
-    '("guint*" "n_files")
+    '("guint*" "n_dirs")
   )
 )
 
@@ -2278,7 +2279,7 @@
   (c-name "moo_get_data_subdirs")
   (return-type "char**")
   (parameters
-    '("const char*" "name")
+    '("const-char*" "name")
     '("MooDataDirType" "type")
     '("guint*" "n_dirs")
   )

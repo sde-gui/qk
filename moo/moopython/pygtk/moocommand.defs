@@ -379,17 +379,17 @@
 )
 
 
-(define-function command_filter_register
-  (c-name "moo_command_filter_register")
-  (return-type "none")
-  (parameters
-    '("const-char*" "id")
-    '("const-char*" "name")
-    '("MooCommandFilterFactory" "factory_func")
-    '("gpointer" "data")
-    '("GDestroyNotify" "data_notify")
-  )
-)
+; (define-function command_filter_register
+;   (c-name "moo_command_filter_register")
+;   (return-type "none")
+;   (parameters
+;     '("const-char*" "id")
+;     '("const-char*" "name")
+;     '("MooCommandFilterFactory" "factory_func")
+;     '("gpointer" "data")
+;     '("GDestroyNotify" "data_notify")
+;   )
+; )
 
 (define-function command_filter_unregister
   (c-name "moo_command_filter_unregister")

@@ -51,16 +51,16 @@
              "Opens or creates a new document. Raises gobject.GError if open fails.")
 )
 
-(define-method open
-  (of-object "MooEditor")
-  (c-name "moo_editor_open")
-  (return-type "gboolean")
-  (parameters
-    '("MooEditWindow*" "window" (null-ok) (default "NULL"))
-    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
-    '("GSList*" "files")
-  )
-)
+; (define-method open
+;   (of-object "MooEditor")
+;   (c-name "moo_editor_open")
+;   (return-type "gboolean")
+;   (parameters
+;     '("MooEditWindow*" "window" (null-ok) (default "NULL"))
+;     '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+;     '("GSList*" "files")
+;   )
+; )
 
 (define-method open_file
   (of-object "MooEditor")
@@ -192,15 +192,15 @@
   )
 )
 
-(define-method close_docs
-  (of-object "MooEditor")
-  (c-name "moo_editor_close_docs")
-  (return-type "gboolean")
-  (parameters
-    '("GSList*" "list")
-    '("gboolean" "ask_confirm")
-  )
-)
+; (define-method close_docs
+;   (of-object "MooEditor")
+;   (c-name "moo_editor_close_docs")
+;   (return-type "gboolean")
+;   (parameters
+;     '("GSList*" "list")
+;     '("gboolean" "ask_confirm")
+;   )
+; )
 
 (define-method close_all
   (of-object "MooEditor")

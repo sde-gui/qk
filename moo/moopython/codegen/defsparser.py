@@ -11,7 +11,7 @@ class IncludeParser(scmexpr.Parser):
     def include(self, input_filename):
         global include_path
         if os.path.isabs(input_filename):
-            filename = os.path.join(os.path.dirname(self.filename), input_filename)
+            filename = input_filename
             # set self.filename to the include name, to handle recursive includes
             oldfile = self.filename
             self.filename = filename
@@ -114,7 +114,7 @@ class DefsParser(IncludeParser):
             if obj.c_name == c_name:
                 return obj
         else:
-            raise ValueError, 'object not found'
+            raise ValueError('object %r not found' % c_name)
 
     def find_constructor(self, obj, overrides):
         for func in self.functions:

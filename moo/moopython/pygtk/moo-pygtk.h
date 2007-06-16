@@ -28,12 +28,11 @@ gboolean    _moo_canvas_mod_init        (void);
 gboolean    _moo_term_mod_init          (void);
 gboolean    _moo_app_mod_init           (void);
 
-
-extern PyMethodDef _moo_utils_functions[];
-extern PyMethodDef _moo_term_functions[];
-extern PyMethodDef _moo_edit_functions[];
-extern PyMethodDef _moo_canvas_functions[];
-extern PyMethodDef _moo_app_functions[];
+extern const PyMethodDef _moo_utils_functions[];
+extern const PyMethodDef _moo_term_functions[];
+extern const PyMethodDef _moo_edit_functions[];
+extern const PyMethodDef _moo_canvas_functions[];
+extern const PyMethodDef _moo_app_functions[];
 
 void        _moo_utils_register_classes (PyObject       *dict);
 void        _moo_utils_add_constants    (PyObject       *module,

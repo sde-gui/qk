@@ -28,7 +28,7 @@ _moo_edit_mod_init (void)
 {
     PyObject *mod;
 
-    mod = Py_InitModule3 ("_moo_edit", _moo_edit_functions, moo_edit_module_doc);
+    mod = Py_InitModule3 ("_moo_edit", (PyMethodDef*) _moo_edit_functions, moo_edit_module_doc);
     PyImport_AddModule ("moo.edit");
 
     if (!mod)

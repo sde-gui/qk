@@ -76,14 +76,14 @@
   (docstring "find_pane(pane_widget) -> (pane, paned) or None.")
 )
 
-(define-method set_pane_order
-  (of-object "MooBigPaned")
-  (c-name "moo_big_paned_set_pane_order")
-  (return-type "none")
-  (parameters
-    '("int*" "order")
-  )
-)
+; (define-method set_pane_order
+;   (of-object "MooBigPaned")
+;   (c-name "moo_big_paned_set_pane_order")
+;   (return-type "none")
+;   (parameters
+;     '("int*" "order")
+;   )
+; )
 
 (define-method add_child
   (of-object "MooBigPaned")
@@ -258,7 +258,7 @@
 (define-method list_panes
   (of-object "MooPaned")
   (c-name "moo_paned_list_panes")
-  (return-type "GSList*")
+  (return-type "no-ref-object-slist")
 )
 
 (define-method get_nth_pane

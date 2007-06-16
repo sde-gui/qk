@@ -623,6 +623,15 @@ _wrap_moo_get_data_subdirs (G_GNUC_UNUSED PyObject *self, PyObject *args)
     return ret;
 }
 %%
+override moo_get_data_files varargs
+static PyObject *
+_wrap_moo_get_data_subdirs (PyObject *self, PyObject *args);
+static PyObject *
+_wrap_moo_get_data_files (PyObject *self, PyObject *args)
+{
+    return _wrap_moo_get_data_subdirs (self, args);
+}
+%%
 override moo_file_watch_monitor_directory kwargs
 static PyObject *
 _wrap_moo_file_watch_monitor_directory (PyGObject *self, PyObject *args, PyObject *kwargs)

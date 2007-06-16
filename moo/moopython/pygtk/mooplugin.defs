@@ -10,7 +10,7 @@
     '("char*" "id")
     '("MooPluginInfo*" "info")
     '("MooPluginParams*" "params")
-    '("GSList*" "docs")
+;     '("GSList*" "docs")
     '("GType" "win_plugin_type")
     '("GType" "doc_plugin_type")
   )
@@ -335,33 +335,33 @@
 )
 
 
-(define-function plugin_method_new
-  (c-name "moo_plugin_method_new")
-  (return-type "none")
-  (parameters
-    '("const-char*" "name")
-    '("GType" "ptype")
-    '("GCallback" "method")
-    '("GClosureMarshal" "c_marshaller")
-    '("GType" "return_type")
-    '("guint" "n_params")
-  )
-  (varargs #t)
-)
+; (define-function plugin_method_new
+;   (c-name "moo_plugin_method_new")
+;   (return-type "none")
+;   (parameters
+;     '("const-char*" "name")
+;     '("GType" "ptype")
+;     '("GCallback" "method")
+;     '("GClosureMarshal" "c_marshaller")
+;     '("GType" "return_type")
+;     '("guint" "n_params")
+;   )
+;   (varargs #t)
+; )
 
-(define-function plugin_method_newv
-  (c-name "moo_plugin_method_newv")
-  (return-type "none")
-  (parameters
-    '("const-char*" "name")
-    '("GType" "ptype")
-    '("GClosure*" "closure")
-    '("GClosureMarshal" "c_marshaller")
-    '("GType" "return_type")
-    '("guint" "n_params")
-    '("const-GType*" "param_types")
-  )
-)
+; (define-function plugin_method_newv
+;   (c-name "moo_plugin_method_newv")
+;   (return-type "none")
+;   (parameters
+;     '("const-char*" "name")
+;     '("GType" "ptype")
+;     '("GClosure*" "closure")
+;     '("GClosureMarshal" "c_marshaller")
+;     '("GType" "return_type")
+;     '("guint" "n_params")
+;     '("const-GType*" "param_types")
+;   )
+; )
 
 (define-function module_check_version
   (c-name "moo_module_check_version")

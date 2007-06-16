@@ -3,6 +3,18 @@ import string
 import keyword
 import struct
 
+py_ssize_t_clean = False
+
+class ArgTypeError(Exception):
+    pass
+
+class ArgTypeNotFoundError(ArgTypeError):
+    pass
+
+class ArgTypeConfigurationError(ArgTypeError):
+    pass
+
+
 class VarList:
     """Nicely format a C variable list"""
     def __init__(self):
@@ -111,71 +123,6 @@ class StringArg(ArgType):
                                   '    Py_INCREF(Py_None);\n' +
                                   '    return Py_None;')
 
-class StrvArg(ArgType):
-    def write_param(self, ptype, pname, pdflt, pnull, info):
-        if pdflt:
-            if pdflt != 'NULL': raise TypeError("Only NULL is supported as a default char** value")
-            info.varlist.add('char', '**' + pname + ' = ' + pdflt)
-        else:
-            info.varlist.add('char', '**' + pname)
-        info.arglist.append(pname)
-        if pnull:
-            info.add_parselist('O&', ['_moo_pyobject_to_strv', '&' + pname], [pname])
-        else:
-            info.add_parselist('O&', ['_moo_pyobject_to_strv_no_null', '&' + pname], [pname])
-    def write_return(self, ptype, ownsreturn, info):
-        if ownsreturn:
-            # have to free result ...
-            info.varlist.add('char', '**ret')
-            info.varlist.add('PyObject', '*py_ret')
-            info.codeafter.append('    py_ret = _moo_strv_to_pyobject (ret);\n' +
-                                  '    g_strfreev (ret);\n' +
-                                  '    return py_ret;')
-        else:
-            info.varlist.add('char', '**ret')
-            info.codeafter.append('    return _moo_strv_to_pyobject (ret);')
-
-class StringSListArg(ArgType):
-    def write_return(self, ptype, ownsreturn, info):
-        if ownsreturn:
-            # have to free result ...
-            info.varlist.add('GSList', '*ret')
-            info.varlist.add('PyObject', '*py_ret')
-            info.codeafter.append('    py_ret = _moo_string_slist_to_pyobject (ret);\n' +
-                                  '    g_slist_foreach (ret, (GFunc) g_free, NULL);\n' +
-                                  '    g_slist_free (ret);\n' +
-                                  '    return py_ret;')
-        else:
-            info.varlist.add('GSList', '*ret')
-            info.codeafter.append('    return _moo_string_slist_to_pyobject (ret);')
-
-class ObjectSListArg(ArgType):
-    def write_return(self, ptype, ownsreturn, info):
-        if ownsreturn:
-            # have to free result ...
-            info.varlist.add('GSList', '*ret')
-            info.varlist.add('PyObject', '*py_ret')
-            info.codeafter.append('    py_ret = _moo_object_slist_to_pyobject (ret);\n' +
-                                  '    g_slist_foreach (ret, (GFunc) g_object_unref, NULL);\n' +
-                                  '    g_slist_free (ret);\n' +
-                                  '    return py_ret;')
-        else:
-            info.varlist.add('GSList', '*ret')
-            info.codeafter.append('    return _moo_object_slist_to_pyobject (ret);')
-
-class NoRefObjectSListArg(ArgType):
-    def write_return(self, ptype, ownsreturn, info):
-        if ownsreturn:
-            # have to free result ...
-            info.varlist.add('GSList', '*ret')
-            info.varlist.add('PyObject', '*py_ret')
-            info.codeafter.append('    py_ret = _moo_object_slist_to_pyobject (ret);\n' +
-                                  '    g_slist_free (ret);\n' +
-                                  '    return py_ret;')
-        else:
-            info.varlist.add('GSList', '*ret')
-            info.codeafter.append('    return _moo_object_slist_to_pyobject (ret);')
-
 class UCharArg(ArgType):
     # allows strings with embedded NULLs.
     def write_param(self, ptype, pname, pdflt, pnull, info):
@@ -183,7 +130,10 @@ class UCharArg(ArgType):
             info.varlist.add('guchar', '*' + pname + ' = "' + pdflt + '"')
         else:
             info.varlist.add('guchar', '*' + pname)
-        info.varlist.add('int', pname + '_len')
+        if py_ssize_t_clean:
+            info.varlist.add('Py_ssize_t', pname + '_len')
+        else:
+            info.varlist.add('int', pname + '_len')
         info.arglist.append(pname)
         if pnull:
             info.add_parselist('z#', ['&' + pname, '&' + pname + '_len'],
@@ -211,7 +161,7 @@ class GUniCharArg(ArgType):
                 '    }\n'
                 '#endif\n'
                 '    py_ret = (Py_UNICODE)ret;\n'
-                '    return PyUnicode_FromUnicode(&py_ret, 1);')
+                '    return PyUnicode_FromUnicode(&py_ret, 1);\n')
     def write_param(self, ptype, pname, pdflt, pnull, info):
         if pdflt:
             info.varlist.add('gunichar', pname + " = '" + pdflt + "'")
@@ -289,9 +239,9 @@ class SizeArg(ArgType):
     def write_return(self, ptype, ownsreturn, info):
         info.varlist.add(ptype, 'ret')
         if self.llp64:
-            info.codeafter.append('    return PyLong_FromUnsignedLongLong(ret);')
+            info.codeafter.append('    return PyLong_FromUnsignedLongLong(ret);\n')
         else:
-            info.codeafter.append('    return PyLong_FromUnsignedLong(ret);')
+            info.codeafter.append('    return PyLong_FromUnsignedLong(ret);\n')
 
 class SSizeArg(ArgType):
 
@@ -313,9 +263,9 @@ class SSizeArg(ArgType):
     def write_return(self, ptype, ownsreturn, info):
         info.varlist.add(ptype, 'ret')
         if self.llp64:
-            info.codeafter.append('    return PyLong_FromLongLong(ret);')
+            info.codeafter.append('    return PyLong_FromLongLong(ret);\n')
         else:
-            info.codeafter.append('    return PyLong_FromLong(ret);')
+            info.codeafter.append('    return PyLong_FromLong(ret);\n')
 
 class LongArg(ArgType):
     def write_param(self, ptype, pname, pdflt, pnull, info):
@@ -327,12 +277,12 @@ class LongArg(ArgType):
         info.add_parselist('l', ['&' + pname], [pname])
     def write_return(self, ptype, ownsreturn, info):
         info.varlist.add(ptype, 'ret')
-        info.codeafter.append('    return PyInt_FromLong(ret);')
+        info.codeafter.append('    return PyInt_FromLong(ret);\n')
 
 class BoolArg(IntArg):
     def write_return(self, ptype, ownsreturn, info):
         info.varlist.add('int', 'ret')
-        info.codeafter.append('    return PyBool_FromLong(ret);')
+        info.codeafter.append('    return PyBool_FromLong(ret);\n')
 
 class TimeTArg(ArgType):
     def write_param(self, ptype, pname, pdflt, pnull, info):
@@ -356,7 +306,7 @@ class ULongArg(ArgType):
         info.add_parselist('k', ['&' + pname], [pname])
     def write_return(self, ptype, ownsreturn, info):
         info.varlist.add(ptype, 'ret')
-        info.codeafter.append('    return PyLong_FromUnsignedLong(ret);')
+        info.codeafter.append('    return PyLong_FromUnsignedLong(ret);\n')
 
 class UInt32Arg(ULongArg):
     def write_param(self, ptype, pname, pdflt, pnull, info):
@@ -462,16 +412,16 @@ class FileArg(ArgType):
                               '    return Py_None;')
 
 class EnumArg(ArgType):
-    enum = ('    if (pyg_enum_get_value(%(typecode)s, py_%(name)s, &%(name)s))\n'
+    enum = ('    if (pyg_enum_get_value(%(typecode)s, py_%(name)s, (gpointer)&%(name)s))\n'
             '        return NULL;\n')
     def __init__(self, enumname, typecode):
         self.enumname = enumname
         self.typecode = typecode
     def write_param(self, ptype, pname, pdflt, pnull, info):
         if pdflt:
-            info.varlist.add('int', pname + ' = ' + pdflt)
+            info.varlist.add(self.enumname, pname + ' = ' + pdflt)
         else:
-            info.varlist.add('int', pname)
+            info.varlist.add(self.enumname, pname)
         info.varlist.add('PyObject', '*py_' + pname + ' = NULL')
         info.codebefore.append(self.enum % { 'typecode': self.typecode,
                                              'name': pname})
@@ -482,17 +432,17 @@ class EnumArg(ArgType):
         info.codeafter.append('    return pyg_enum_from_gtype(%s, ret);' % self.typecode)
 
 class FlagsArg(ArgType):
-    flag = ('    if (%(default)spyg_flags_get_value(%(typecode)s, py_%(name)s, &%(name)s))\n'
+    flag = ('    if (%(default)spyg_flags_get_value(%(typecode)s, py_%(name)s, (gpointer)&%(name)s))\n'
             '        return NULL;\n')
     def __init__(self, flagname, typecode):
         self.flagname = flagname
         self.typecode = typecode
     def write_param(self, ptype, pname, pdflt, pnull, info):
         if pdflt:
-            info.varlist.add('int', pname + ' = ' + pdflt)
+            info.varlist.add(self.flagname, pname + ' = ' + pdflt)
             default = "py_%s && " % (pname,)
         else:
-            info.varlist.add('int', pname)
+            info.varlist.add(self.flagname, pname)
             default = ""
         info.varlist.add('PyObject', '*py_' + pname + ' = NULL')
         info.codebefore.append(self.flag % {'default':default,
@@ -628,15 +578,13 @@ class BoxedArg(ArgType):
     ret_tmpl = '    /* pyg_boxed_new handles NULL checking */\n' \
                '    return pyg_boxed_new(%(typecode)s, %(ret)s, %(copy)s, TRUE);'
     def write_return(self, ptype, ownsreturn, info):
-        if ptype[:6] == 'const-':
-            decl_type = 'const ' + self.typename
-        else:
-            decl_type = self.typename
         if ptype[-1] == '*':
-            info.varlist.add(decl_type, '*ret')
+            decl_type = self.typename
             ret = 'ret'
             if ptype[:6] == 'const-':
+                decl_type = 'const ' + self.typename
                 ret = '(%s*) ret' % (self.typename,)
+            info.varlist.add(decl_type, '*ret')
         else:
             info.varlist.add(self.typename, 'ret')
             ret = '&ret'
@@ -890,7 +838,9 @@ class ArgMatcher:
         self.reverse_argtypes = {}
         self.reverse_rettypes = {}
 
-    def register(self, ptype, handler):
+    def register(self, ptype, handler, overwrite=False):
+        if not overwrite and ptype in self.argtypes:
+            return
         self.argtypes[ptype] = handler
     def register_reverse(self, ptype, handler):
         self.reverse_argtypes[ptype] = handler
@@ -899,12 +849,14 @@ class ArgMatcher:
 
     def register_enum(self, ptype, typecode):
         if typecode is None:
-            typecode = "G_TYPE_NONE"
-        self.register(ptype, EnumArg(ptype, typecode))
+            self.register(ptype, IntArg())
+        else:
+            self.register(ptype, EnumArg(ptype, typecode))
     def register_flag(self, ptype, typecode):
         if typecode is None:
-            typecode = "G_TYPE_NONE"
-        self.register(ptype, FlagsArg(ptype, typecode))
+            self.register(ptype, IntArg())
+        else:
+            self.register(ptype, FlagsArg(ptype, typecode))
     def register_object(self, ptype, parent, typecode):
         oa = ObjectArg(ptype, parent, typecode)
         self.register(ptype, oa)  # in case I forget the * in the .defs
@@ -936,7 +888,7 @@ class ArgMatcher:
         except KeyError:
             if ptype[:8] == 'GdkEvent' and ptype[-1] == '*':
                 return self.argtypes['GdkEvent*']
-            raise
+            raise ArgTypeNotFoundError("No ArgType for %s" % (ptype,))
     def _get_reverse_common(self, ptype, registry):
         props = dict(c_type=ptype)
         try:
@@ -948,7 +900,7 @@ class ArgMatcher:
                 if ptype.startswith('GdkEvent') and ptype.endswith('*'):
                     handler = self.argtypes['GdkEvent*']
                 else:
-                    raise
+                    raise ArgTypeNotFoundError("No ArgType for %s" % (ptype,))
             if isinstance(handler, ObjectArg):
                 return registry['GObject*'], props
             elif isinstance(handler, EnumArg):
@@ -964,7 +916,7 @@ class ArgMatcher:
                 props['typename'] = handler.typename
                 return registry['GBoxed'], props
             else:
-                raise
+                raise ArgTypeNotFoundError("No ArgType for %s" % (ptype,))
     def get_reverse(self, ptype):
         return self._get_reverse_common(ptype, self.reverse_argtypes)
     def get_reverse_ret(self, ptype):
@@ -991,16 +943,6 @@ matcher.register('const-gchar*', arg)
 matcher.register('gchar-const*', arg)
 matcher.register('string', arg)
 matcher.register('static_string', arg)
-
-arg = StrvArg()
-matcher.register('strv', arg)
-
-arg = StringSListArg()
-matcher.register('string-slist', arg)
-arg = ObjectSListArg()
-matcher.register('object-slist', arg)
-arg = NoRefObjectSListArg()
-matcher.register('no-ref-object-slist', arg)
 
 arg = UCharArg()
 matcher.register('unsigned-char*', arg)
