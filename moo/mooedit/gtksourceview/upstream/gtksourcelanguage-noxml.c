@@ -29,7 +29,7 @@ G_DEFINE_TYPE (GtkSourceLanguage, gtk_source_language, G_TYPE_OBJECT)
 
 GtkSourceLanguage *
 _gtk_source_language_new_from_file (G_GNUC_UNUSED const gchar *filename,
-				    G_GNUC_UNUSED GtkSourceLanguagesManager *lm)
+				    G_GNUC_UNUSED GtkSourceLanguageManager *lm)
 {
 	return NULL;
 }
@@ -44,33 +44,33 @@ gtk_source_language_init (G_GNUC_UNUSED GtkSourceLanguage *lang)
 {
 }
 
-gchar *
+const gchar *
 gtk_source_language_get_id (G_GNUC_UNUSED GtkSourceLanguage *language)
 {
 	g_return_val_if_reached (NULL);
 }
 
-gchar *
+const gchar *
 gtk_source_language_get_name (G_GNUC_UNUSED GtkSourceLanguage *language)
 {
 	g_return_val_if_reached (NULL);
 }
 
-gchar *
+const gchar *
 gtk_source_language_get_section	(G_GNUC_UNUSED GtkSourceLanguage *language)
 {
 	g_return_val_if_reached (NULL);
 }
 
 const gchar *
-gtk_source_language_get_property (G_GNUC_UNUSED GtkSourceLanguage *language,
+gtk_source_language_get_metadata (G_GNUC_UNUSED GtkSourceLanguage *language,
 				  G_GNUC_UNUSED const gchar       *name)
 {
 	g_return_val_if_reached (NULL);
 }
 
-GtkSourceLanguagesManager *
-_gtk_source_language_get_languages_manager (G_GNUC_UNUSED GtkSourceLanguage *language)
+GtkSourceLanguageManager *
+_gtk_source_language_get_language_manager (G_GNUC_UNUSED GtkSourceLanguage *language)
 {
 	g_return_val_if_reached (NULL);
 }
