@@ -45,9 +45,6 @@ sed -e 's/#include \"gtksourcecontextengine.h\"/#include \"gtksourcecontextengin
     -e 's@#include <gtksourceview/gtksourcestylescheme.h>@#include <gtksourceview/gtksourcestylescheme-mangled.h>@'		\
     -e 's@#include <gtksourceview/gtktextregion.h>@#include <gtksourceview/gtktextregion-mangled.h>@'				\
 																\
-    -e 's@#include \"gtksourceview-marshal.h\"@#include \"mooutils/moomarshals.h\"@'						\
-    -e 's/_gtksourceview_marshal_VOID__VOID/_moo_marshal_VOID__VOID/'								\
-    -e 's@#include \"gtksourceview-i18n.h\"@#include \"mooutils/mooi18n.h\"@'							\
     -e 's@#include \"gtksourcebuffer.h\"@@'											\
     -e 's@#include \"gtksourceview.h\"@@'											\
 																\

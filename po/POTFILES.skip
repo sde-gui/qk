@@ -1,18 +1,13 @@
+moo/mooapp/smclient/logout-test.c
 moo/mooapp/smclient/egg-session-end.c
 moo/mooapp/smclient/eggdesktopfile.c
 moo/mooapp/smclient/eggsmclient-libgnomeui.c
 moo/mooapp/smclient/eggsmclient.c
 
+moo/mooutils/newgtk/glib/gregex.c
 moo/mooutils/newgtk/gmappedfile.c
 moo/mooutils/newgtk/gtkcolorbutton.c
 moo/mooutils/newgtk/gtkfontbutton.c
-
-moo/mooedit/filters.xml
-
-moo/mooedit/gtksourceview/upstream/gtksourcelanguagesmanager.c
-moo/mooedit/gtksourceview/upstream/gtksourcestylescheme.c
-moo/mooedit/gtksourceview/upstream/gtksourcelanguage-parser-2.c
-moo/mooedit/gtksourceview/upstream/gtksourcecontextengine.c
 
 moo/mooedit/plugins/completion/completion.glade
 moo/mooedit/plugins/completion/completion-plugin.c
@@ -71,6 +66,9 @@ moo/mooedit/language-specs/docbook.lang
 moo/mooedit/language-specs/ocaml.lang
 moo/mooedit/language-specs/spec.lang
 
+moo/mooedit/language-specs/gvim.xml
+moo/mooedit/language-specs/kate.xml
+
 moo/moopython/plugins/pyproject/project-plugin.ini.desktop.in.in
 moo/moopython/plugins/pyproject/mprj/manager.py
 moo/moopython/plugins/pyproject/mprj/simple.py
@@ -90,11 +88,21 @@ moo/moopython/plugins/pyproject/projects/python.py
 moo/mooterm/mootermparser-yacc.c
 moo/mooterm/glade/mootermprefs.glade
 
-moo/libfoocanvas/foo-canvas-text.c
-moo/libfoocanvas/foo-canvas.c
-moo/mooapp/moohtml.c
+moo/moopython/pygtk/goocanvas/goocanvas.c
+moo/moopython/pygtk/goocanvas/goocanvasellipse.c
+moo/moopython/pygtk/goocanvas/goocanvasimage.c
+moo/moopython/pygtk/goocanvas/goocanvasitem.c
+moo/moopython/pygtk/goocanvas/goocanvasitemmodel.c
+moo/moopython/pygtk/goocanvas/goocanvasitemsimple.c
+moo/moopython/pygtk/goocanvas/goocanvaspath.c
+moo/moopython/pygtk/goocanvas/goocanvaspolyline.c
+moo/moopython/pygtk/goocanvas/goocanvasrect.c
+moo/moopython/pygtk/goocanvas/goocanvastable.c
+moo/moopython/pygtk/goocanvas/goocanvastext.c
+moo/moopython/pygtk/goocanvas/goocanvaswidget.c
+
+moo/mooedit/gtksourceview/upstream/gtksourcecontextengine.c
+moo/mooedit/gtksourceview/upstream/gtksourcelanguage-parser-2.c
 moo/mooedit/gtksourceview/upstream/gtksourcelanguagemanager.c
 moo/mooedit/gtksourceview/upstream/gtksourcestylemanager.c
-moo/mooedit/mooeditaction-factory.c
-moo/mooutils/moopane.c
-moo/mooutils/newgtk/glib/gregex.c
+moo/mooedit/gtksourceview/upstream/gtksourcestylescheme.c

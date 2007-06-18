@@ -1,0 +1,255 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2003 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Funda Wang <fundawang@linux.net.cn>, 2003.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gtksourceview\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-06-18 05:14-0500\n"
+"PO-Revision-Date: 2007-06-16 17:27+0800\n"
+"Last-Translator: Funda Wang <fundawang@linux.net.cn>\n"
+"Language-Team: zh_CN <i18n-translation@lists.linux.net.cn>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Missing main language definition (id = \"%s\".)"
+msgstr "缺少主要语言定义(id = “%s”)。"
+
+msgid "using \\C is not supported in language definitions"
+msgstr "语言定义中不支持使用 \\C"
+
+msgid ""
+"Cannot create a regex for all the transitions, the syntax highlighting "
+"process will be slower than usual.\n"
+"The error was: %s"
+msgstr ""
+
+msgid "context '%s' cannot contain a \\%%{...@start} command"
+msgstr ""
+
+msgid "duplicated context id '%s'"
+msgstr ""
+
+msgid ""
+"style override used with wildcard context reference in language '%s' in ref "
+"'%s'"
+msgstr ""
+
+msgid "invalid reference '%s'"
+msgstr ""
+
+msgid "Unknown id '%s' in regex '%s'"
+msgstr ""
+
+msgid "in regex '%s': backreferences are not supported"
+msgstr ""
+
+msgid "malformed regex '%s'"
+msgstr ""
+
+msgid "malformed regex options '%s'"
+msgstr ""
+
+msgid "Language specification directories"
+msgstr "语言规范目录"
+
+msgid ""
+"List of directories where the language specification files (.lang) are "
+"located"
+msgstr "列出语言规范文件(.lang)所在的目录"
+
+msgid "Style scheme directories"
+msgstr ""
+
+msgid "Style scheme id"
+msgstr ""
+
+msgid "Style scheme name"
+msgstr ""
+
+msgid "Scripts"
+msgstr "脚本"
+
+msgid "Ada"
+msgstr "Ada"
+
+msgid "Sources"
+msgstr "源代码"
+
+msgid "BibTeX"
+msgstr ""
+
+msgid "Others"
+msgstr "其它"
+
+msgid "C"
+msgstr "C"
+
+msgid "ChangeLog"
+msgstr "ChangeLog"
+
+msgid "C++"
+msgstr "C++"
+
+msgid "C#"
+msgstr "C#"
+
+msgid "CSS"
+msgstr "CSS"
+
+msgid "Block Comment"
+msgstr "块注释"
+
+msgid "D"
+msgstr "D"
+
+msgid "Nested Comment"
+msgstr "嵌入注释"
+
+msgid "Defaults"
+msgstr "默认值"
+
+msgid ".desktop"
+msgstr ".desktop"
+
+msgid "Diff"
+msgstr "Diff"
+
+msgid "DocBook"
+msgstr "DocBook"
+
+msgid "Markup"
+msgstr "标记语言"
+
+msgid "DPatch"
+msgstr ""
+
+msgid "DTD"
+msgstr "DTD"
+
+msgid "Fortran 95"
+msgstr "Fortran 95"
+
+msgid "GAP"
+msgstr ""
+
+msgid "Scientific"
+msgstr ""
+
+msgid "gtk-doc"
+msgstr ""
+
+msgid "GtkRC"
+msgstr "GtkRC"
+
+msgid "Color scheme used in GVim"
+msgstr ""
+
+msgid "GVim"
+msgstr ""
+
+msgid "Haskell"
+msgstr "Haskell"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "IDL"
+msgstr "IDL"
+
+msgid ".ini"
+msgstr ".ini"
+
+msgid "Java"
+msgstr "Java"
+
+msgid "Javascript"
+msgstr "Javascript"
+
+msgid "Color scheme used in Kate text editor"
+msgstr ""
+
+msgid "LaTeX"
+msgstr "LaTeX"
+
+msgid "libtool"
+msgstr ""
+
+msgid "Lua"
+msgstr "Lua"
+
+msgid "m4"
+msgstr ""
+
+msgid "Makefile"
+msgstr "Makefile"
+
+msgid "MSIL"
+msgstr "MSIL"
+
+msgid "Nemerle"
+msgstr "Nemerle"
+
+msgid "Objective Caml"
+msgstr "Objective Caml"
+
+msgid "Octave"
+msgstr "Octave"
+
+msgid "Pascal"
+msgstr "Pascal"
+
+msgid "Perl"
+msgstr "Perl"
+
+msgid "PHP"
+msgstr "PHP"
+
+msgid "pkg-config"
+msgstr ""
+
+msgid "gettext translation"
+msgstr "gettext 翻译"
+
+msgid "Python"
+msgstr "Python"
+
+msgid "Ruby"
+msgstr "Ruby"
+
+msgid "Scheme"
+msgstr "大纲"
+
+msgid "sh"
+msgstr "sh"
+
+msgid "RPM spec"
+msgstr "RPM spec"
+
+msgid "SQL"
+msgstr "SQL"
+
+msgid "Tcl"
+msgstr "Tcl"
+
+msgid "Texinfo"
+msgstr "Texinfo"
+
+msgid "VB.NET"
+msgstr "VB.NET"
+
+msgid "Verilog"
+msgstr "Verilog"
+
+msgid "VHDL"
+msgstr "VHDL"
+
+msgid "XML"
+msgstr "XML"
+
+msgid "Yacc"
+msgstr "Yacc"
+

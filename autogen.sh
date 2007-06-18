@@ -30,9 +30,11 @@ echo $LIBTOOLIZE --automake --copy --force
 $LIBTOOLIZE --automake --copy --force || exit $?
 
 echo glib-gettextize --force --copy
-glib-gettextize --force --copy
+glib-gettextize --force --copy || exit $?
 echo intltoolize --automake --force --copy
-intltoolize --automake --force --copy
+intltoolize --automake --force --copy || exit $?
+echo sed 's/@GETTEXT_PACKAGE@/@GETTEXT_PACKAGE@-gsv/' po/Makefile.in.in '>' po-gsv/Makefile.in.in
+sed 's/@GETTEXT_PACKAGE@/@GETTEXT_PACKAGE@-gsv/' po/Makefile.in.in > po-gsv/Makefile.in.in || exit $?
 
 echo $ACLOCAL $ACLOCAL_FLAGS
 $ACLOCAL $ACLOCAL_FLAGS || exit $?

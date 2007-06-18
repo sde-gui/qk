@@ -11,6 +11,7 @@ MOO_DEFINE_VERSIONS(moo, AC_PACKAGE_VERSION)
 MOO_DEFINE_MODULE_VERSIONS(1,0)
 
 MOO_AC_I18N(moo)
+MOO_AC_PO_GSV
 
 AC_PROG_CC
 AC_DISABLE_STATIC
@@ -66,9 +67,9 @@ tests/Makefile
 medit/Makefile
 medit/medit.iss
 po/Makefile.in
+po-gsv/Makefile.in
 ])
 AC_OUTPUT
-
 
 ################################################################################
 #  Configuration info

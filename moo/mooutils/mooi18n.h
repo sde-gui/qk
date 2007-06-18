@@ -28,7 +28,6 @@ G_BEGIN_DECLS
 #define N_(String) (String)
 #define D_(String,Domain) dgettext (Domain, String)
 #define QD_(String,Domain) g_strip_context ((String), D_ (String, Domain))
-#define GD_(Domain,String) _moo_dgettext (Domain, String)
 
 #else /* !ENABLE_NLS */
 
@@ -44,7 +43,6 @@ G_BEGIN_DECLS
 #define Q_(String) g_strip_context ((String), (String))
 #define D_(String,Domain) (String)
 #define QD_(String,Domain) g_strip_context ((String), (String))
-#define GD_(String,Domain) (String)
 #define textdomain(String) (String)
 #define gettext(String) (String)
 #define dgettext(Domain,String) (String)
@@ -58,7 +56,8 @@ G_BEGIN_DECLS
 
 
 const char *moo_gettext (const char *string);
-char *_moo_dgettext (const char *domain, const char *string);
+const char *_moo_gsv_gettext (const char *string);
+char *_moo_gsv_dgettext (const char *domain, const char *string);
 
 
 G_END_DECLS

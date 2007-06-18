@@ -1,0 +1,280 @@
+# German GtkSourceView translation.
+# Copyright (C) 2002-2005 Free Software Foundation, Inc.
+# This file is distributed under the same license as the GtkSourceView package.
+# Christian Neumair <chris@gnome-de.org>, 2003, 2004.
+# Hendrik Richter <hendrikr@gnome.org>, 2005, 2006, 2007.
+# Hendrik Brandt <heb@gnome-de.org>, 2007.
+# Hendrik Richter <hendrikr@gnome.org>, 2007.
+# 
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: GtkSourceView HEAD\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-06-18 05:14-0500\n"
+"PO-Revision-Date: 2007-02-17 19:28+0100\n"
+"Last-Translator: Hendrik Brandt <heb@gnome-de.org>\n"
+"Language-Team: German <gnome-de@gnome.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Missing main language definition (id = \"%s\".)"
+msgstr ""
+
+msgid "using \\C is not supported in language definitions"
+msgstr ""
+
+msgid ""
+"Cannot create a regex for all the transitions, the syntax highlighting "
+"process will be slower than usual.\n"
+"The error was: %s"
+msgstr ""
+
+msgid "context '%s' cannot contain a \\%%{...@start} command"
+msgstr ""
+
+msgid "duplicated context id '%s'"
+msgstr ""
+
+msgid ""
+"style override used with wildcard context reference in language '%s' in ref "
+"'%s'"
+msgstr ""
+
+msgid "invalid reference '%s'"
+msgstr ""
+
+msgid "Unknown id '%s' in regex '%s'"
+msgstr ""
+
+msgid "in regex '%s': backreferences are not supported"
+msgstr ""
+
+msgid "malformed regex '%s'"
+msgstr ""
+
+msgid "malformed regex options '%s'"
+msgstr ""
+
+msgid "Language specification directories"
+msgstr "Sprachspezifikationsverzeichnisse"
+
+msgid ""
+"List of directories where the language specification files (.lang) are "
+"located"
+msgstr ""
+"Liste der Verzeichnisse, in denen sich die Sprachspezifikationdateien (."
+"lang) befinden"
+
+msgid "Style scheme directories"
+msgstr ""
+
+"lang) befinden"
+
+msgid "Style scheme id"
+msgstr ""
+
+msgid "Style scheme name"
+msgstr ""
+
+msgid "Scripts"
+msgstr "Skripte"
+
+msgid "Ada"
+msgstr "Ada"
+
+msgid "Sources"
+msgstr "Quelltexte"
+
+msgid "BibTeX"
+msgstr ""
+
+msgid "Others"
+msgstr "Sonstige"
+
+msgid "C"
+msgstr "C"
+
+msgid "ChangeLog"
+msgstr "Änderungsprotokoll"
+
+msgid "C++"
+msgstr "C++"
+
+msgid "C#"
+msgstr "C#"
+
+msgid "CSS"
+msgstr "CSS"
+
+msgid "Block Comment"
+msgstr "Blockkommentar"
+
+msgid "D"
+msgstr "D"
+
+msgid "Nested Comment"
+msgstr "Verschachtelter Kommentar"
+
+msgid ".desktop"
+msgstr ".desktop"
+
+msgid "Diff"
+msgstr "Diff"
+
+msgid "DocBook"
+msgstr "DocBook"
+
+# CHECK
+msgid "Markup"
+msgstr "Auszeichnung"
+
+msgid "DTD"
+msgstr "DTD"
+
+msgid "Fortran 95"
+msgstr "Fortran 95"
+
+msgid "GAP"
+msgstr ""
+
+msgid "Scientific"
+msgstr ""
+
+msgid "gtk-doc"
+msgstr ""
+
+msgid "GtkRC"
+msgstr "GtkRC"
+
+msgid "Color scheme used in GVim"
+msgstr ""
+
+msgid "GVim"
+msgstr ""
+
+msgid "Haskell"
+msgstr "Haskell"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "IDL"
+msgstr "IDL"
+
+msgid ".ini"
+msgstr ".ini"
+
+msgid "Java"
+msgstr "Java"
+
+msgid "Color scheme used in Kate text editor"
+msgstr ""
+
+msgid "LaTeX"
+msgstr "LaTex"
+
+msgid "libtool"
+msgstr ""
+
+msgid "Lua"
+msgstr "Lua"
+
+msgid "m4"
+msgstr ""
+
+msgid "Makefile"
+msgstr "Makefile"
+
+msgid "MSIL"
+msgstr "MSIL"
+
+msgid "Nemerle"
+msgstr "Nemerle"
+
+msgid "Objective Caml"
+msgstr "Objective Caml"
+
+msgid "Octave"
+msgstr "Octave"
+
+msgid "Pascal"
+msgstr "Pascal"
+
+msgid "Perl"
+msgstr "Perl"
+
+msgid "PHP"
+msgstr "PHP"
+
+msgid "pkg-config"
+msgstr ""
+
+msgid "gettext translation"
+msgstr "gettext-Übersetzung"
+
+msgid "Python"
+msgstr "Python"
+
+msgid "Ruby"
+msgstr "Ruby"
+
+msgid "Scheme"
+msgstr "Scheme"
+
+msgid "sh"
+msgstr "sh"
+
+msgid "RPM spec"
+msgstr "RPM-Spezifikation"
+
+msgid "SQL"
+msgstr "SQL"
+
+msgid "Tcl"
+msgstr "Tcl"
+
+msgid "Texinfo"
+msgstr "Texinfo"
+
+msgid "VB.NET"
+msgstr "VB.NET"
+
+msgid "Verilog"
+msgstr "Verilog"
+
+msgid "VHDL"
+msgstr "VHDL"
+
+msgid "XML"
+msgstr "XML"
+
+msgid "Yacc"
+msgstr ""
+
+
+
+
+# CHECK
+
+
+# CHECK
+# CHECK
+# CHECK
+# CHECK
+# CHECK
+# CHECK
+# CHECK
+# CHECK
+# CHECK
+# CHECK
+# CHECK
+# CHECK
+# CHECK
+# CHECK
+# CHECK
+# CHECK
+# CHECK
+# CHECK
+# CHECK

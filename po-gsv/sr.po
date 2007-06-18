@@ -1,0 +1,255 @@
+# Serbian translation of gtksourceview
+# Courtesy of Prevod.org team (http://prevod.org/) -- 2003, 2004, 2005, 2006.
+#
+# This file is distributed under the same license as the gtksourceview package.
+#
+# Maintainer: Данило Шеган <dsegan@gmx.net>
+# Reviewed on 2005-09-03 by: Данило Шеган <dsegan@gmx.net>
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gtksourceview\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-06-18 05:14-0500\n"
+"PO-Revision-Date: 2006-01-31 01:59+0100\n"
+"Last-Translator: Слободан Д. Средојевић <slobo@akrep.be>\n"
+"Language-Team: Serbian (sr) <gnom@prevod.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Missing main language definition (id = \"%s\".)"
+msgstr ""
+
+msgid "using \\C is not supported in language definitions"
+msgstr ""
+
+msgid ""
+"Cannot create a regex for all the transitions, the syntax highlighting "
+"process will be slower than usual.\n"
+"The error was: %s"
+msgstr ""
+
+msgid "context '%s' cannot contain a \\%%{...@start} command"
+msgstr ""
+
+msgid "duplicated context id '%s'"
+msgstr ""
+
+msgid ""
+"style override used with wildcard context reference in language '%s' in ref "
+"'%s'"
+msgstr ""
+
+msgid "invalid reference '%s'"
+msgstr ""
+
+msgid "Unknown id '%s' in regex '%s'"
+msgstr ""
+
+msgid "in regex '%s': backreferences are not supported"
+msgstr ""
+
+msgid "malformed regex '%s'"
+msgstr ""
+
+msgid "malformed regex options '%s'"
+msgstr ""
+
+msgid "Language specification directories"
+msgstr "Директоријуми са дефиницијама језика"
+
+msgid ""
+"List of directories where the language specification files (.lang) are "
+"located"
+msgstr ""
+"Списак директоријума у којима се налазе датотеке са дефиницијама језика (."
+"lang)"
+
+msgid "Style scheme directories"
+msgstr ""
+
+"lang)"
+
+msgid "Style scheme id"
+msgstr ""
+
+msgid "Style scheme name"
+msgstr ""
+
+msgid "Scripts"
+msgstr "Скрипте"
+
+msgid "Ada"
+msgstr "Ада"
+
+msgid "Sources"
+msgstr "Извори"
+
+msgid "BibTeX"
+msgstr ""
+
+msgid "Others"
+msgstr "Остало"
+
+msgid "C"
+msgstr "C"
+
+msgid "ChangeLog"
+msgstr "Дневник промена"
+
+msgid "C++"
+msgstr "C++"
+
+msgid "C#"
+msgstr "C#"
+
+msgid "CSS"
+msgstr "CSS"
+
+msgid "Block Comment"
+msgstr "Примедба у блоку"
+
+msgid "D"
+msgstr ""
+
+msgid ".desktop"
+msgstr ".desktop"
+
+msgid "Diff"
+msgstr "Разлике (Diff)"
+
+msgid "DocBook"
+msgstr ""
+
+msgid "Markup"
+msgstr "Означавање"
+
+msgid "DTD"
+msgstr "ДТД"
+
+msgid "Fortran 95"
+msgstr "Фортран 95"
+
+msgid "GAP"
+msgstr ""
+
+msgid "Scientific"
+msgstr ""
+
+msgid "gtk-doc"
+msgstr ""
+
+msgid "GtkRC"
+msgstr "GtkRC"
+
+msgid "Color scheme used in GVim"
+msgstr ""
+
+msgid "GVim"
+msgstr ""
+
+msgid "Haskell"
+msgstr "Хаскел"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "IDL"
+msgstr "IDL"
+
+msgid ".ini"
+msgstr ".ini"
+
+msgid "Java"
+msgstr "Јава"
+
+msgid "Color scheme used in Kate text editor"
+msgstr ""
+
+msgid "LaTeX"
+msgstr "ЛаТеХ"
+
+msgid "libtool"
+msgstr ""
+
+msgid "Lua"
+msgstr "Луа"
+
+msgid "m4"
+msgstr ""
+
+msgid "Makefile"
+msgstr "Makefile"
+
+msgid "MSIL"
+msgstr "MSIL"
+
+msgid "Nemerle"
+msgstr "Nemerle"
+
+msgid "Objective Caml"
+msgstr ""
+
+msgid "Octave"
+msgstr "Октава"
+
+msgid "Pascal"
+msgstr "Паскал"
+
+msgid "Perl"
+msgstr "Перл"
+
+msgid "PHP"
+msgstr "ПХП"
+
+msgid "pkg-config"
+msgstr ""
+
+msgid "gettext translation"
+msgstr "геттекст превод"
+
+msgid "Python"
+msgstr "Питон"
+
+msgid "Ruby"
+msgstr "Руби"
+
+msgid "Scheme"
+msgstr "Схема"
+
+msgid "sh"
+msgstr "sh"
+
+msgid "RPM spec"
+msgstr ""
+
+msgid "SQL"
+msgstr "SQL"
+
+msgid "Tcl"
+msgstr "Tcl"
+
+msgid "Texinfo"
+msgstr "Техинфо"
+
+msgid "VB.NET"
+msgstr "ВБ.НЕТ"
+
+msgid "Verilog"
+msgstr "Верилог"
+
+msgid "VHDL"
+msgstr "VHDL"
+
+msgid "XML"
+msgstr "XML"
+
+msgid "Yacc"
+msgstr ""
+
+# bug: s/Math/Mathematical/
+# bug: s/Math/Mathematics/
+# bug: s/Math/Mathematical/
+# Мора мало зеза, не знам шта кажу наши „податковни рудари“ ;)
+# NLS = National Language System?

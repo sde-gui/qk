@@ -34,14 +34,15 @@ EXTRA_DIST =			\
 	intltool-update.in
 
 @MOO_PO_SUBDIRS_RULE@
-BUILT_SOURCES = po-subdirs-stamp
+@MOO_PO_SUBDIRS_RULE2@
+BUILT_SOURCES = po-subdirs-stamp po-subdirs-stamp-2
 
-DIST_SUBDIRS = moo medit tests po
+DIST_SUBDIRS = moo medit tests po po-gsv
 
 if MOO_BUILD_MEDIT
-SUBDIRS = . moo medit po
+SUBDIRS = . moo medit po po-gsv
 else
-SUBDIRS = . moo po
+SUBDIRS = . moo po po-gsv
 endif
 
 if MOO_ENABLE_TESTS

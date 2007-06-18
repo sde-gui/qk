@@ -81,6 +81,8 @@ upstream/%.o:
 
 libgtksourceview_la_SOURCES =		\
 	$(gtksourceview_sources)	\
+	gtksourceview-i18n.h		\
+	gtksourceview-marshal.h		\
 	gtksourceview-api.h
 
 if MOO_USE_XML

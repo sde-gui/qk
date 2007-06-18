@@ -3,6 +3,7 @@ medit/medit-app.c
 
 moo/mooapp/mooapp.c
 moo/mooapp/mooappabout.c
+moo/mooapp/moohtml.c
 moo/mooapp/glade/mooappabout.glade
 
 moo/mooedit/glade/mooeditprefs.glade
@@ -29,6 +30,7 @@ moo/mooedit/moousertools.c
 moo/mooedit/moousertools-prefs.c
 moo/mooedit/mooeditfileops.c
 moo/mooedit/mootextfind.c
+moo/mooedit/mooeditaction-factory.c
 
 moo/mooedit/language-specs/moo.xml.in
 
@@ -62,3 +64,4 @@ moo/mooutils/moostock.c
 moo/mooutils/moowindow.c
 moo/mooutils/glade/accelprefs.glade
 moo/mooutils/glade/moologwindow.glade
+moo/mooutils/moopane.c
