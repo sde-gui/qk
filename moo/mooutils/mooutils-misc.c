@@ -1661,7 +1661,7 @@ _moo_message (const char *format,
     {
         va_list args;
         va_start (args, format);
-        g_logv (G_LOG_DOMAIN, G_LOG_LEVEL_MESSAGE, format, args);
+        g_logv (G_LOG_DOMAIN "-debug", G_LOG_LEVEL_MESSAGE, format, args);
         va_end (args);
     }
 }
