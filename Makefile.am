@@ -36,6 +36,7 @@ EXTRA_DIST =			\
 @MOO_PO_SUBDIRS_RULE@
 @MOO_PO_SUBDIRS_RULE2@
 BUILT_SOURCES = po-subdirs-stamp po-subdirs-stamp-2
+CELANFILES = po-subdirs-stamp po-subdirs-stamp-2
 
 DIST_SUBDIRS = moo medit tests po po-gsv
 
