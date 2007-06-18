@@ -25,52 +25,15 @@
 #endif
 
 
-struct _MooLangPrivate {
-    char *version;      /* not NULL; "" by default */
-    char *author;       /* not NULL; "" by default */
-
-    char *brackets;
-    char *line_comment;
-    char *block_comment_start;
-    char *block_comment_end;
-
-    guint hidden : 1;
-};
-
-
-G_DEFINE_TYPE (MooLang, moo_lang, GTK_TYPE_SOURCE_LANGUAGE)
-
-
-static void
-moo_lang_init (MooLang *lang)
+GType
+moo_lang_get_type (void)
 {
-    lang->priv = G_TYPE_INSTANCE_GET_PRIVATE (lang, MOO_TYPE_LANG, MooLangPrivate);
-    lang->priv->version = g_strdup ("");
-    lang->priv->author = g_strdup ("");
-}
+    static GType type;
 
+    if (G_UNLIKELY (!type))
+        type = GTK_TYPE_SOURCE_LANGUAGE;
 
-static void
-moo_lang_finalize (GObject *object)
-{
-    MooLang *lang = MOO_LANG (object);
-
-    g_free (lang->priv->version);
-    g_free (lang->priv->author);
-    g_free (lang->priv->brackets);
-    g_free (lang->priv->line_comment);
-    g_free (lang->priv->block_comment_start);
-    g_free (lang->priv->block_comment_end);
-
-    G_OBJECT_CLASS (moo_lang_parent_class)->finalize (object);
-}
-
-
-static void
-moo_lang_class_init (MooLangClass *klass)
-{
-    G_OBJECT_CLASS (klass)->finalize = moo_lang_finalize;
-    g_type_class_add_private (klass, sizeof (MooLangPrivate));
+    return type;
 }
 
 

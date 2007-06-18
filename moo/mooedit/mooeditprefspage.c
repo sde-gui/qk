@@ -118,7 +118,7 @@ scheme_combo_init (GtkComboBox *combo,
     GtkCellRenderer *cell;
 
     mgr = moo_editor_get_lang_mgr (editor);
-    list = _moo_lang_mgr_list_schemes (mgr);
+    list = moo_lang_mgr_list_schemes (mgr);
     g_return_if_fail (list != NULL);
 
     store = gtk_list_store_new (1, MOO_TYPE_TEXT_STYLE_SCHEME);
@@ -171,7 +171,7 @@ prefs_page_init (MooPrefsDialogPage *page)
 
     editor = page_get_editor (page);
     mgr = moo_editor_get_lang_mgr (editor);
-    scheme = _moo_lang_mgr_get_active_scheme (mgr);
+    scheme = moo_lang_mgr_get_active_scheme (mgr);
     g_return_if_fail (scheme != NULL);
 
     scheme_combo = moo_glade_xml_get_widget (page->xml, "color_scheme_combo");

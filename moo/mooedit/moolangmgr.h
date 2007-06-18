@@ -45,11 +45,11 @@ GSList         *moo_lang_mgr_get_sections           (MooLangMgr     *mgr);
 MooLang        *_moo_lang_mgr_find_lang             (MooLangMgr     *mgr,
                                                      const char     *name);
 
-MooTextStyleScheme *_moo_lang_mgr_get_active_scheme (MooLangMgr     *mgr);
+MooTextStyleScheme *moo_lang_mgr_get_active_scheme  (MooLangMgr     *mgr);
 void            _moo_lang_mgr_set_active_scheme     (MooLangMgr     *mgr,
                                                      const char     *scheme_name);
 /* list must be freed, content unref'ed */
-GSList         *_moo_lang_mgr_list_schemes          (MooLangMgr     *mgr);
+GSList         *moo_lang_mgr_list_schemes           (MooLangMgr     *mgr);
 
 /* list must be freed together with content */
 GSList         *_moo_lang_mgr_get_globs             (MooLangMgr     *mgr,

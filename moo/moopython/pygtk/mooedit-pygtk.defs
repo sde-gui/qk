@@ -112,15 +112,12 @@
 ;   )
 ; )
 
-;; (define-object TextStyleScheme
-;;   (in-module "Moo")
-;;   (parent "GObject")
-;;   (c-name "MooTextStyleScheme")
-;;   (gtype-id "MOO_TYPE_TEXT_STYLE_SCHEME")
-;;   (fields
-;;     '("char*" "name")
-;;   )
-;; )
+(define-object TextStyleScheme
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooTextStyleScheme")
+  (gtype-id "MOO_TYPE_TEXT_STYLE_SCHEME")
+)
 
 
 (define-boxed TextStyle
@@ -722,17 +719,17 @@
   )
 )
 
-; (define-method list_schemes
-;   (of-object "MooLangMgr")
-;   (c-name "moo_lang_mgr_list_schemes")
-;   (return-type "GSList*")
-; )
+(define-method list_schemes
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_list_schemes")
+  (return-type "object-slist")
+)
 
-; (define-method get_active_scheme
-;   (of-object "MooLangMgr")
-;   (c-name "moo_lang_mgr_get_active_scheme")
-;   (return-type "MooTextStyleScheme*")
-; )
+(define-method get_active_scheme
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_active_scheme")
+  (return-type "MooTextStyleScheme*")
+)
 
 
 
@@ -888,15 +885,6 @@
   (return-type "gboolean")
 )
 
-; (define-method apply_scheme
-;   (of-object "MooTextBuffer")
-;   (c-name "moo_text_buffer_apply_scheme")
-;   (return-type "none")
-;   (parameters
-;     '("MooTextStyleScheme*" "scheme" (null-ok))
-;   )
-; )
-
 (define-method add_line_mark
   (of-object "MooTextBuffer")
   (c-name "moo_text_buffer_add_line_mark")
@@ -995,7 +983,7 @@
 )
 
 
-;; From mootextstylescheme.h
+; From mootextstylescheme.h
 
 ; (define-function moo_text_style_scheme_new_empty
 ;   (c-name "moo_text_style_scheme_new_empty")
@@ -1005,55 +993,49 @@
 ;     '("MooTextStyleScheme*" "base")
 ;   )
 ; )
-
+;
 ; (define-function moo_text_style_scheme_new_default
 ;   (c-name "moo_text_style_scheme_new_default")
 ;   (return-type "MooTextStyleScheme*")
 ; )
 
-(define-method copy
-  (of-object "MooTextStyleScheme")
-  (c-name "moo_text_style_scheme_copy")
-  (return-type "MooTextStyleScheme*")
-)
+; (define-method copy
+;   (of-object "MooTextStyleScheme")
+;   (c-name "moo_text_style_scheme_copy")
+;   (return-type "MooTextStyleScheme*")
+; )
 
-(define-method list_default
-  (of-object "MooTextStyleScheme")
-  (c-name "moo_text_style_scheme_list_default")
-  (return-type "GSList*")
-)
+; (define-method compose
+;   (of-object "MooTextStyleScheme")
+;   (c-name "moo_text_style_scheme_compose")
+;   (return-type "none")
+;   (parameters
+;     '("const-char*" "language_name" (null-ok))
+;     '("const-char*" "style_name")
+;     '("const-MooTextStyle*" "style")
+;   )
+; )
 
-(define-method compose
-  (of-object "MooTextStyleScheme")
-  (c-name "moo_text_style_scheme_compose")
-  (return-type "none")
-  (parameters
-    '("const-char*" "language_name" (null-ok))
-    '("const-char*" "style_name")
-    '("const-MooTextStyle*" "style")
-  )
-)
-
-(define-method set
-  (of-object "MooTextStyleScheme")
-  (c-name "moo_text_style_scheme_set")
-  (return-type "none")
-  (parameters
-    '("const-char*" "language_name" (null-ok))
-    '("const-char*" "style_name")
-    '("const-MooTextStyle*" "style")
-  )
-)
-
-(define-method get
-  (of-object "MooTextStyleScheme")
-  (c-name "moo_text_style_scheme_get")
-  (return-type "const-MooTextStyle*")
-  (parameters
-    '("const-char*" "language_name" (null-ok))
-    '("const-char*" "style_name")
-  )
-)
+; (define-method set
+;   (of-object "MooTextStyleScheme")
+;   (c-name "moo_text_style_scheme_set")
+;   (return-type "none")
+;   (parameters
+;     '("const-char*" "language_name" (null-ok))
+;     '("const-char*" "style_name")
+;     '("const-MooTextStyle*" "style")
+;   )
+; )
+;
+; (define-method get
+;   (of-object "MooTextStyleScheme")
+;   (c-name "moo_text_style_scheme_get")
+;   (return-type "const-MooTextStyle*")
+;   (parameters
+;     '("const-char*" "language_name" (null-ok))
+;     '("const-char*" "style_name")
+;   )
+; )
 
 
 
@@ -1204,14 +1186,14 @@
   )
 )
 
-; (define-method set_scheme
-;   (of-object "MooTextView")
-;   (c-name "moo_text_view_set_scheme")
-;   (return-type "none")
-;   (parameters
-;     '("MooTextStyleScheme*" "scheme")
-;   )
-; )
+(define-method set_style_scheme
+  (of-object "MooTextView")
+  (c-name "moo_text_view_set_style_scheme")
+  (return-type "none")
+  (parameters
+    '("MooTextStyleScheme*" "scheme" (null-ok))
+  )
+)
 
 (define-method lookup_tag
   (of-object "MooTextView")

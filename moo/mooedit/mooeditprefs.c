@@ -195,7 +195,7 @@ _moo_edit_apply_prefs (MooEdit *edit)
                                           get_string (MOO_EDIT_PREFS_LINE_NUMBERS_FONT));
 
     mgr = moo_editor_get_lang_mgr (edit->priv->editor);
-    scheme = _moo_lang_mgr_get_active_scheme (mgr);
+    scheme = moo_lang_mgr_get_active_scheme (mgr);
 
     if (scheme)
         moo_text_view_set_style_scheme (MOO_TEXT_VIEW (edit), scheme);

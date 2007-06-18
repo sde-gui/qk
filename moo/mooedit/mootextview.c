@@ -2473,7 +2473,7 @@ moo_text_view_set_lang_by_id (MooTextView *view,
 
     mgr = moo_editor_get_lang_mgr (editor);
     lang = moo_lang_mgr_get_lang (mgr, lang_id);
-    scheme = _moo_lang_mgr_get_active_scheme (mgr);
+    scheme = moo_lang_mgr_get_active_scheme (mgr);
 
     moo_text_view_set_style_scheme (view, scheme);
     moo_text_view_set_lang (view, lang);

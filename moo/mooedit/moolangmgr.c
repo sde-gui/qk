@@ -671,7 +671,7 @@ load_config (MooLangMgr *mgr)
 
 
 MooTextStyleScheme *
-_moo_lang_mgr_get_active_scheme (MooLangMgr *mgr)
+moo_lang_mgr_get_active_scheme (MooLangMgr *mgr)
 {
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
 
@@ -713,7 +713,7 @@ prepend_scheme (G_GNUC_UNUSED const char *name,
 }
 
 GSList *
-_moo_lang_mgr_list_schemes (MooLangMgr *mgr)
+moo_lang_mgr_list_schemes (MooLangMgr *mgr)
 {
     GSList *list = NULL;
 

@@ -370,7 +370,7 @@ get_tag (MooLineView *view,
 
         tag = moo_line_view_create_tag (view, name, NULL);
         lang_mgr = moo_editor_get_lang_mgr (moo_editor_instance ());
-        scheme = _moo_lang_mgr_get_active_scheme (lang_mgr);
+        scheme = moo_lang_mgr_get_active_scheme (lang_mgr);
 
         if (scheme)
             style = _moo_text_style_scheme_lookup_style (scheme, name);
