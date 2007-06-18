@@ -31,6 +31,7 @@ upstream_sources =				\
 	upstream/gtksourcelanguage.h		\
 	upstream/gtksourcelanguage-private.h	\
 	upstream/gtksourcelanguagemanager.h	\
+	upstream/gtksourcestyle-private.h	\
 	upstream/gtksourcestyle.h		\
 	upstream/gtksourcestylemanager.h	\
 	upstream/gtksourcestylescheme.h		\
@@ -52,6 +53,7 @@ gtksourceview_sources =				\
 	gtksourceengine-mangled.h		\
 	gtksourceiter-mangled.h			\
 	gtksourcelanguagemanager-mangled.h	\
+	gtksourcestyle-private-mangled.h	\
 	gtksourcestyle-mangled.h		\
 	gtksourcestylemanager-mangled.h		\
 	gtksourcestylescheme-mangled.h		\

@@ -31,6 +31,7 @@ sed -e 's/#include \"gtksourcecontextengine.h\"/#include \"gtksourcecontextengin
     -e 's/#include \"gtksourcestyle.h\"/#include \"gtksourcestyle-mangled.h\"/'							\
     -e 's/#include \"gtksourcestylemanager.h\"/#include \"gtksourcestylemanager-mangled.h\"/'					\
     -e 's/#include \"gtksourcestylescheme.h\"/#include \"gtksourcestylescheme-mangled.h\"/'					\
+    -e 's/#include \"gtksourcestyle-private.h\"/#include \"gtksourcestyle-private-mangled.h\"/'					\
     -e 's/#include \"gtktextregion.h\"/#include \"gtktextregion-mangled.h\"/'							\
     -e 's/#include \"gtksourceview-utils.h\"/#include \"gtksourceview-utils-mangled.h\"/'					\
 																\

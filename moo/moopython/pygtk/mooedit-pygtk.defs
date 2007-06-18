@@ -119,20 +119,11 @@
   (gtype-id "MOO_TYPE_TEXT_STYLE_SCHEME")
 )
 
-
-(define-boxed TextStyle
+(define-object TextStyle
   (in-module "Moo")
+  (parent "GObject")
   (c-name "MooTextStyle")
   (gtype-id "MOO_TYPE_TEXT_STYLE")
-  (fields
-    '("MooTextStyleMask" "mask")
-    '("GdkColor" "foreground")
-    '("GdkColor" "background")
-    '("gboolean" "bold")
-    '("gboolean" "italic")
-    '("gboolean" "underline")
-    '("gboolean" "strikethrough")
-  )
 )
 
 
@@ -170,12 +161,6 @@
   (in-module "Moo")
   (c-name "MooTextReplaceResponse")
   (gtype-id "MOO_TYPE_TEXT_REPLACE_RESPONSE")
-)
-
-(define-flags TextStyleMask
-  (in-module "Moo")
-  (c-name "MooTextStyleMask")
-  (gtype-id "MOO_TYPE_TEXT_STYLE_MASK")
 )
 
 (define-enum TextSelectionType
@@ -971,9 +956,6 @@
   (c-name "moo_text_style_new")
   (is-constructor-of "MooTextStyle")
   (return-type "MooTextStyle*")
-  (parameters
-    '("MooTextStyleMask" "mask" (null-ok) (default "0"))
-  )
 )
 
 (define-method moo_text_style_copy

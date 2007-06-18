@@ -17,6 +17,7 @@ upstream_sources =			\
 	gtksourcelanguage-private.h	\
 	gtksourcelanguagemanager.h	\
 	gtksourcestyle.h		\
+	gtksourcestyle-private.h	\
 	gtksourcestylemanager.h		\
 	gtksourcestylescheme.h		\
 	gtktextregion.h			\

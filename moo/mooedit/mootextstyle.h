@@ -21,38 +21,14 @@ G_BEGIN_DECLS
 
 
 #define MOO_TYPE_TEXT_STYLE         (moo_text_style_get_type ())
+#define MOO_TEXT_STYLE(obj)         (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOO_TYPE_TEXT_STYLE, MooTextStyle))
+#define MOO_IS_TEXT_STYLE(obj)      (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOO_TYPE_TEXT_STYLE))
 
 typedef struct _MooTextStyle MooTextStyle;
 
-/* must be the same as GtkSourceStyleMask */
-typedef enum
-{
-    MOO_TEXT_STYLE_USE_BACKGROUND    = 1 << 0,	/*< nick=use_background >*/
-    MOO_TEXT_STYLE_USE_FOREGROUND    = 1 << 1,	/*< nick=use_foreground >*/
-    MOO_TEXT_STYLE_USE_ITALIC        = 1 << 2,	/*< nick=use_italic >*/
-    MOO_TEXT_STYLE_USE_BOLD          = 1 << 3,	/*< nick=use_bold >*/
-    MOO_TEXT_STYLE_USE_UNDERLINE     = 1 << 4,	/*< nick=use_underline >*/
-    MOO_TEXT_STYLE_USE_STRIKETHROUGH = 1 << 5	/*< nick=use_strikethrough >*/
-} MooTextStyleMask;
-
-/* must be the same as GtkSourceStyle */
-struct _MooTextStyle
-{
-	MooTextStyleMask mask;
-
-	GdkColor foreground;
-	GdkColor background;
-
-	guint italic : 1;
-	guint bold : 1;
-	guint underline : 1;
-	guint strikethrough : 1;
-};
-
-
 GType            moo_text_style_get_type        (void) G_GNUC_CONST;
 
-MooTextStyle    *moo_text_style_new             (MooTextStyleMask    mask);
+MooTextStyle    *moo_text_style_new             (void);
 MooTextStyle    *moo_text_style_copy            (const MooTextStyle *style);
 void             moo_text_style_free            (MooTextStyle       *style);
 

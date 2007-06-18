@@ -200,7 +200,7 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
 
     g_object_class_install_property (gobject_class,
                                      PROP_BRACKET_MATCH_STYLE,
-                                     g_param_spec_boxed ("bracket-match-style",
+                                     g_param_spec_object ("bracket-match-style",
                                              "bracket-match-style",
                                              "bracket-match-style",
                                              MOO_TYPE_TEXT_STYLE,
@@ -208,7 +208,7 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
 
     g_object_class_install_property (gobject_class,
                                      PROP_BRACKET_MISMATCH_STYLE,
-                                     g_param_spec_boxed ("bracket-mismatch-style",
+                                     g_param_spec_object ("bracket-mismatch-style",
                                              "bracket-mismatch-style",
                                              "bracket-mismatch-style",
                                              MOO_TYPE_TEXT_STYLE,
@@ -856,11 +856,11 @@ moo_text_buffer_set_property (GObject        *object,
             break;
 
         case PROP_BRACKET_MATCH_STYLE:
-            moo_text_buffer_set_bracket_match_style (buffer, g_value_get_boxed (value));
+            moo_text_buffer_set_bracket_match_style (buffer, g_value_get_object (value));
             break;
 
         case PROP_BRACKET_MISMATCH_STYLE:
-            moo_text_buffer_set_bracket_mismatch_style (buffer, g_value_get_boxed (value));
+            moo_text_buffer_set_bracket_mismatch_style (buffer, g_value_get_object (value));
             break;
 
         case PROP_LANG:
@@ -1243,12 +1243,7 @@ static void
 moo_text_buffer_set_bracket_match_style (MooTextBuffer      *buffer,
                                          const MooTextStyle *style)
 {
-    static MooTextStyle empty;
-
     g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
-
-    if (!style)
-        style = &empty;
 
     if (!buffer->priv->correct_match_tag)
         buffer->priv->correct_match_tag =
@@ -1263,12 +1258,7 @@ static void
 moo_text_buffer_set_bracket_mismatch_style (MooTextBuffer      *buffer,
                                             const MooTextStyle *style)
 {
-    static MooTextStyle empty;
-
     g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
-
-    if (!style)
-        style = &empty;
 
     if (!buffer->priv->incorrect_match_tag)
         buffer->priv->incorrect_match_tag =

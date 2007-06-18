@@ -34,7 +34,7 @@
    </configure>
   </optimized>
  </configurations>
- <file_selector_dir>/home/muntyan/projects/moo/po-gsv/</file_selector_dir>
+ <file_selector_dir>/home/muntyan/projects/moo/moo/mooedit/</file_selector_dir>
  <run>
   <args>--new-app</args>
   <exe>medit/medit</exe>

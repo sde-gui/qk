@@ -6,6 +6,7 @@
 #include "mooedit/gtksourceview/gtksourcelanguagemanager-mangled.h"
 #include "mooedit/gtksourceview/gtksourcestylemanager-mangled.h"
 #include "mooedit/gtksourceview/gtksourceiter-mangled.h"
+#include "mooedit/gtksourceview/gtksourcestyle-private-mangled.h"
 
 #define GtkSourceLanguage		MooGtkSourceLanguage
 #define GtkSourceLanguageClass		MooGtkSourceLanguageClass
@@ -41,7 +42,8 @@
 #define gtk_source_style_scheme_get_id				_moo_gtk_source_style_scheme_get_id
 #define gtk_source_style_scheme_get_name			_moo_gtk_source_style_scheme_get_name
 #define gtk_source_style_scheme_get_style			_moo_gtk_source_style_scheme_get_style
-#define gtk_source_style_free					_moo_gtk_source_style_free
+#define gtk_source_style_scheme_get_current_line_color		_moo_gtk_source_style_scheme_get_current_line_color
+#define _gtk_source_style_scheme_apply				_moo_gtk_source_style_scheme_apply
 #define _gtk_source_style_apply					_moo_gtk_source_style_apply
 
 
