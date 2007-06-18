@@ -3,9 +3,8 @@ find in COPYING file.
 
 Portions of code are written not by me, those are clearly
 marked as such (copyright headers in files copied from other
-projects, or comments in source).
-
-< here will be the list of foreign files with their licenses and stuff >
+projects, or comments in source). Below is the list of
+thrid-party files/code with their copyrights and licenses.
 
 GPL is used simply because it happened so, and I am using
 LGPL-ed sources, and I have no idea how I can use LGPL-ed
@@ -25,7 +24,7 @@ do have copyright notice inside; WTFL will work fine for the rest.
 
 Please tell me if I violated someone's rights, or didn't give
 proper credit to someone, I'll fix it (I haven't, to my best
-knowledge, with the exception of the application icon (proper
-credit part), which I am fixing right now).
+knowledge).
 
                             Yevgen Muntyan <muntyan@tamu.edu>
+
