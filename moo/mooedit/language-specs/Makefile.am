@@ -60,8 +60,8 @@ langs1 =			\
 	vhdl.lang
 
 styles =			\
-	kate.styles		\
-	gvim.styles
+	kate.xml		\
+	gvim.xml
 
 languagespecs_DATA =		\
 	language.dtd		\

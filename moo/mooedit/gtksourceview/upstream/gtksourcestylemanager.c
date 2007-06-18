@@ -24,7 +24,7 @@
 #include "gtksourceview-utils.h"
 #include <string.h>
 
-#define SCHEME_FILE_SUFFIX	".styles"
+#define SCHEME_FILE_SUFFIX	".xml"
 #define STYLES_DIR		"styles"
 
 
@@ -128,7 +128,7 @@ gtk_source_style_manager_class_init (GtkSourceStyleManagerClass *klass)
 					 g_param_spec_boxed ("search-path",
 						 	     _("Style scheme directories"),
 							     _("List of directories where the "
-							       "style scheme files (.styles) "
+							       "style scheme files "
 							       "are located"),
 							     G_TYPE_STRV,
 							     G_PARAM_READWRITE));
