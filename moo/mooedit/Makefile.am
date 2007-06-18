@@ -21,7 +21,6 @@ unix_sources =				\
 mooedit_include_headers =		\
 	moocmdview.h			\
 	mooedit-bookmarks.h		\
-	mooedit-enums.h			\
 	mooedit-script.h		\
 	mooedit.h			\
 	mooeditconfig.h			\
@@ -75,7 +74,6 @@ mooedit_sources =			\
 	mooeditconfig.c			\
 	mooeditdialogs.c		\
 	mooeditdialogs.h		\
-	mooedit-enums.c			\
 	mooeditfileops.c		\
 	mooeditfileops.h		\
 	mooeditfiltersettings.c		\
@@ -143,6 +141,12 @@ mooedit_printing_sources =		\
 	mootextprint-private.h		\
 	mootextprint.h
 
+nodist_mooedit_sources =		\
+	mooedit-enums.c			\
+	mooedit-enums.h
+nodist_mooedit_include_headers =	\
+	mooedit-enums.h
+
 BUILT_SOURCES =				\
 	quicksearch-glade.h		\
 	statusbar-glade.h		\
@@ -170,8 +174,7 @@ mooedit_enums_headers =			\
 	mootextstyle.h			\
 	mootextview.h
 
-CLEANFILES += stamp-mooedit-enums.h stamp-mooedit-enums.c
-DISTCLEANFILES = mooedit-enums.h mooedit-enums.c
+CLEANFILES += stamp-mooedit-enums.h stamp-mooedit-enums.c mooedit-enums.h mooedit-enums.c
 mooedit-enums.h: stamp-mooedit-enums.h
 	@true
 mooedit-enums.c: stamp-mooedit-enums.c
@@ -273,6 +276,8 @@ endif
 
 noinst_LTLIBRARIES = libmooedit.la
 libmooedit_la_SOURCES = $(mooedit_sources)
+nodist_libmooedit_la_SOURCES = $(nodist_mooedit_sources)
+
 libmooedit_la_LIBADD = plugins/libmooeditplugins.la gtksourceview/libgtksourceview.la
 
 AM_CFLAGS =			\
@@ -283,5 +288,5 @@ AM_CFLAGS =			\
 
 if MOO_INSTALL_HEADERS
 mooedit_includedir = $(moo_includedir)/mooedit
-mooedit_include_HEADERS = $(mooedit_include_headers)
+mooedit_include_HEADERS = $(mooedit_include_headers) $(nodist_mooedit_include_headers)
 endif
