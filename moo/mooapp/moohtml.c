@@ -529,7 +529,8 @@ moo_html_load_url (GtkTextView *view,
     if (!scheme)
         scheme = g_strdup ("file://");
 
-    if (!strcmp (scheme, "mailto://"))
+    if (!strcmp (scheme, "mailto:") ||
+        !strcmp (scheme, "mailto://"))
     {
         result = moo_open_email (base, NULL, NULL);
         goto out;
@@ -1221,7 +1222,7 @@ moo_html_parse_url (const char     *url,
     g_return_val_if_fail (url != NULL, FALSE);
     g_return_val_if_fail (scheme && base && anchor, FALSE);
 
-    regex = g_regex_new ("^([a-zA-Z]+://)?([^#]*)(#(.*))?$", 0, 0, NULL);
+    regex = g_regex_new ("^([a-zA-Z]+:(//)?)?([^#]*)(#(.*))?$", 0, 0, NULL);
     g_return_val_if_fail (regex != NULL, FALSE);
 
     if (!g_regex_match (regex, url, 0, &match_info))
@@ -1232,8 +1233,8 @@ moo_html_parse_url (const char     *url,
     }
 
     *scheme = g_match_info_fetch (match_info, 1);
-    *base = g_match_info_fetch (match_info, 2);
-    *anchor = g_match_info_fetch (match_info, 4);
+    *base = g_match_info_fetch (match_info, 3);
+    *anchor = g_match_info_fetch (match_info, 5);
 
     if (!*scheme || !**scheme) {g_free (*scheme); *scheme = NULL;}
     if (!*base || !**base) {g_free (*base); *base = NULL;}
