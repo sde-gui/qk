@@ -43,7 +43,7 @@ msgstr "Chaosye <chao-7410@163.com>"
 #: ../moo/mooapp/mooappabout.c:56
 msgid "translator_credits_markup"
 msgstr ""
-"Chaosye <a href=\"mailto://chao-7410@163.com\">&lt;chao-7410@163.com&gt;</a>"
+"Chaosye <a href=\"mailto:chao-7410@163.com\">&lt;chao-7410@163.com&gt;</a>"
 
 #. Credits button label in About dialog
 #: ../moo/mooapp/glade/mooappabout.glade.h:2

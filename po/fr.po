@@ -43,7 +43,7 @@ msgstr "Collilieux <mccnews@free.fr>"
 #: ../moo/mooapp/mooappabout.c:56
 msgid "translator_credits_markup"
 msgstr ""
-"Collilieux <a href=\"mailto://mccnews@free.fr\">&lt;mccnews@free.fr&gt;</a>"
+"Collilieux <a href=\"mailto:mccnews@free.fr\">&lt;mccnews@free.fr&gt;</a>"
 
 #. Credits button label in About dialog
 #: ../moo/mooapp/glade/mooappabout.glade.h:2

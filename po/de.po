@@ -42,7 +42,7 @@ msgstr "Christian Dywan <christian@twotoasts.de>"
 #: ../moo/mooapp/mooappabout.c:56
 msgid "translator_credits_markup"
 msgstr ""
-"Christian Dywan <a href=\"mailto://christian@twotoasts.de\">&lt;"
+"Christian Dywan <a href=\"mailto:christian@twotoasts.de\">&lt;"
 "christian@twotoasts.de&gt;</a>"
 
 #. Credits button label in About dialog

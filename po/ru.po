@@ -44,7 +44,7 @@ msgstr "Евгений Мунтян <muntyan@tamu.edu>"
 #: ../moo/mooapp/mooappabout.c:56
 msgid "translator_credits_markup"
 msgstr ""
-"Евгений Мунтян <a href=\"mailto://muntyan@tamu.edu\">&lt;muntyan@tamu.edu&gt;"
+"Евгений Мунтян <a href=\"mailto:muntyan@tamu.edu\">&lt;muntyan@tamu.edu&gt;"
 "</a>"
 
 #. Credits button label in About dialog
