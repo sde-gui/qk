@@ -1138,26 +1138,6 @@ _moo_param_array_free (GParameter *array,
 /* Signal that does not require class method
  */
 
-static void
-void_marshal (G_GNUC_UNUSED GClosure *closure,
-              G_GNUC_UNUSED GValue *return_value,
-              G_GNUC_UNUSED guint n_param_values,
-              G_GNUC_UNUSED const GValue *param_values,
-              G_GNUC_UNUSED gpointer invocation_hint,
-              G_GNUC_UNUSED gpointer marshal_data)
-{
-}
-
-
-static GClosure*
-void_closure_new (void)
-{
-    GClosure *closure = g_closure_new_simple (sizeof (GClosure), NULL);
-    g_closure_set_marshal (closure, void_marshal);
-    return closure;
-}
-
-
 guint
 _moo_signal_new_cb (const gchar        *signal_name,
                     GType               itype,
@@ -1172,21 +1152,18 @@ _moo_signal_new_cb (const gchar        *signal_name,
 {
     va_list args;
     guint signal_id;
+    GClosure *closure = NULL;
 
     g_return_val_if_fail (signal_name != NULL, 0);
 
     va_start (args, n_params);
 
     if (handler)
-        signal_id = g_signal_new_valist (signal_name, itype, signal_flags,
-                                         g_cclosure_new (handler, NULL, NULL),
-                                         accumulator, accu_data, c_marshaller,
-                                         return_type, n_params, args);
-    else
-        signal_id = g_signal_new_valist (signal_name, itype, signal_flags,
-                                         void_closure_new (),
-                                         accumulator, accu_data, c_marshaller,
-                                         return_type, n_params, args);
+        closure = g_cclosure_new (handler, NULL, NULL);
+
+    signal_id = g_signal_new_valist (signal_name, itype, signal_flags, closure,
+                                     accumulator, accu_data, c_marshaller,
+                                     return_type, n_params, args);
 
     va_end (args);
 
