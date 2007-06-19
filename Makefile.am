@@ -29,9 +29,14 @@ EXTRA_DIST =			\
 	COPYING.lib		\
 	LICENSE			\
 	THANKS			\
+	xdg-utils/xdg-open	\
+	xdg-utils/xdg-email	\
 	intltool-extract.in	\
 	intltool-merge.in	\
 	intltool-update.in
+
+scriptsdir = ${MOO_DATA_DIR}/scripts
+scripts_SCRIPTS = xdg-utils/xdg-open xdg-utils/xdg-email
 
 @MOO_PO_SUBDIRS_RULE@
 @MOO_PO_SUBDIRS_RULE2@

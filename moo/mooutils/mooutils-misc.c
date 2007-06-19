@@ -51,133 +51,92 @@ static char *moo_user_data_dir;
 
 static gboolean
 open_uri (const char *uri,
-          G_GNUC_UNUSED gboolean want_browser)
+          G_GNUC_UNUSED gboolean email)
 {
     return _moo_win32_open_uri (uri);
 }
 
 #else /* ! __WIN32__ */
 
+static char *
+find_xdg_script (const char *name)
+{
+    char *path;
 
-typedef enum {
-    KDE,
-    GNOME,
-    DEBIAN,
-    XFCE,
-    UNKNOWN
-} Desktop;
+    path = g_find_program_in_path (name);
 
+    if (!path)
+    {
+        char **dirs, **p;
 
-static gboolean open_uri (const char *uri,
-                          gboolean    want_browser)
+        dirs = moo_get_data_subdirs ("scripts", MOO_DATA_SHARE, NULL);
+
+        for (p = dirs; p && *p; ++p)
+        {
+            path = g_build_filename (*p, name, NULL);
+
+            if (g_file_test (path, G_FILE_TEST_IS_EXECUTABLE))
+                break;
+
+            g_free (path);
+            path = NULL;
+        }
+
+        g_strfreev (dirs);
+    }
+
+    if (!path)
+    {
+        g_warning ("%s: could not find %s script", G_STRLOC, name);
+        path = g_strdup (name);
+    }
+
+    _moo_message ("%s: %s", name, path);
+    return path;
+}
+
+enum {
+    SCRIPT_XDG_OPEN,
+    SCRIPT_XDG_EMAIL
+};
+
+static const char *
+get_xdg_script (int type)
+{
+    static char *path[2];
+
+    g_return_val_if_fail (type < 2, NULL);
+
+    if (!path[0])
+    {
+        path[SCRIPT_XDG_OPEN] = find_xdg_script ("xdg-open");
+        path[SCRIPT_XDG_EMAIL] = find_xdg_script ("xdg-email");
+    }
+
+    return path[type];
+}
+
+static gboolean
+open_uri (const char *uri,
+          gboolean    email)
 {
     gboolean result = FALSE;
-    char **argv = NULL;
+    const char *argv[3];
+    GError *err = NULL;
 
-    Desktop desktop = UNKNOWN;
-    char *kfmclient = g_find_program_in_path ("kfmclient");
-    char *gnome_open = g_find_program_in_path ("gnome-open");
-    char *x_www_browser = g_find_program_in_path ("x-www-browser");
-    char *exo_open = g_find_program_in_path ("exo-open");
+    argv[0] = get_xdg_script (email ? SCRIPT_XDG_EMAIL : SCRIPT_XDG_OPEN);
+    argv[1] = uri;
+    argv[2] = NULL;
 
-    if (desktop == UNKNOWN)
+    result = g_spawn_async (NULL, (char**) argv, NULL, (GSpawnFlags) 0, NULL, NULL,
+                            NULL, &err);
+
+    if (err)
     {
-        if (kfmclient && g_getenv ("KDE_FULL_SESSION"))
-            desktop = KDE;
-        else if (gnome_open && g_getenv ("GNOME_DESKTOP_SESSION_ID"))
-            desktop = GNOME;
+        g_warning ("%s: error in g_spawn_async", G_STRLOC);
+        g_warning ("%s: %s", G_STRLOC, err->message);
+        g_error_free (err);
     }
-
-#ifdef GDK_WINDOWING_X11
-    if (desktop == UNKNOWN)
-    {
-        const char *wm =
-            gdk_x11_screen_get_window_manager_name (gdk_screen_get_default ());
-
-        if (wm)
-        {
-            if (!g_ascii_strcasecmp (wm, "kwin") && kfmclient)
-                desktop = KDE;
-            else if (!g_ascii_strcasecmp (wm, "metacity") && gnome_open)
-                desktop = GNOME;
-            else if (!g_ascii_strcasecmp (wm, "xfwm4") && exo_open)
-                desktop = XFCE;
-        }
-    }
-#endif /* GDK_WINDOWING_X11 */
-
-    if (desktop == UNKNOWN)
-    {
-        if (want_browser && x_www_browser)
-            desktop = DEBIAN;
-        else if (kfmclient)
-            desktop = KDE;
-        else if (gnome_open)
-            desktop = GNOME;
-        else if (exo_open)
-            desktop = XFCE;
-    }
-
-    switch (desktop)
-    {
-        case KDE:
-            argv = g_new0 (char*, 4);
-            argv[0] = g_strdup (kfmclient);
-            argv[1] = g_strdup ("exec");
-            argv[2] = g_strdup (uri);
-            break;
-
-        case GNOME:
-            argv = g_new0 (char*, 3);
-            argv[0] = g_strdup (gnome_open);
-            argv[1] = g_strdup (uri);
-            break;
-
-        case XFCE:
-            argv = g_new0 (char*, 3);
-            argv[0] = g_strdup (exo_open);
-            argv[1] = g_strdup (uri);
-            break;
-
-        case DEBIAN:
-            argv = g_new0 (char*, 3);
-            argv[0] = g_strdup (x_www_browser);
-            argv[1] = g_strdup (uri);
-            break;
-
-        case UNKNOWN:
-            if (uri)
-                g_warning ("could not find a way to open uri '%s'", uri);
-            else
-                g_warning ("could not find a way to open uri");
-            break;
-
-        default:
-            g_assert_not_reached ();
-    }
-
-    if (argv)
-    {
-        GError *err = NULL;
-
-        result = g_spawn_async (NULL, argv, NULL, (GSpawnFlags)0, NULL, NULL,
-                                NULL, &err);
-
-        if (err)
-        {
-            g_warning ("%s: error in g_spawn_async", G_STRLOC);
-            g_warning ("%s: %s", G_STRLOC, err->message);
-            g_error_free (err);
-        }
-    }
-
-    if (argv)
-        g_strfreev (argv);
-
-    g_free (gnome_open);
-    g_free (kfmclient);
-    g_free (x_www_browser);
-    g_free (exo_open);
 
     return result;
 }
@@ -203,7 +162,7 @@ moo_open_email (const char *address,
     if (body)
         g_string_append_printf (uri, "body=%s", body);
 
-    res = open_uri (uri->str, FALSE);
+    res = open_uri (uri->str, TRUE);
     g_string_free (uri, TRUE);
     return res;
 }
@@ -213,7 +172,7 @@ gboolean
 moo_open_url (const char *url)
 {
     g_return_val_if_fail (url != NULL, FALSE);
-    return open_uri (url, TRUE);
+    return open_uri (url, FALSE);
 }
 
 
