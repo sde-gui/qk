@@ -21,90 +21,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "mem-debug.h"
 
 #if GTK_CHECK_VERSION(2,8,0) && defined(GDK_WINDOWING_X11)
 #include <gdk/gdkx.h>
 #define TIMESTAMP() (gdk_x11_display_get_user_time (gdk_display_get_default ()))
 #else
 #define TIMESTAMP() (0)
-#endif
-
-#undef DEBUG_MEMORY
-
-#ifndef DEBUG_MEMORY
-static void
-init_mem_stuff (void)
-{
-}
-#else
-#define ALIGN 8
-#include <libxml/xmlmemory.h>
-
-static gpointer
-my_malloc (gsize n_bytes)
-{
-    char *mem = malloc (n_bytes + ALIGN);
-    return mem ? mem + ALIGN : NULL;
-}
-
-static gpointer
-my_realloc (gpointer mem,
-	    gsize    n_bytes)
-{
-    if (mem)
-    {
-        char *new_mem = realloc ((char*) mem - ALIGN, n_bytes + ALIGN);
-        return new_mem ? new_mem + ALIGN : NULL;
-    }
-    else
-    {
-        return my_malloc (n_bytes);
-    }
-}
-
-static char *
-my_strdup (const char *s)
-{
-    if (s)
-    {
-        char *new_s = my_malloc (strlen (s) + 1);
-	if (new_s)
-            strcpy (new_s, s);
-        return new_s;
-    }
-    else
-    {
-        return NULL;
-    }
-}
-
-static void
-my_free (gpointer mem)
-{
-    if (mem)
-        free ((char*) mem - ALIGN);
-}
-
-static void
-init_mem_stuff (void)
-{
-    GMemVTable mem_table = {
-        my_malloc,
-        my_realloc,
-        my_free,
-        NULL, NULL, NULL
-    };
-
-    if (1)
-    {
-        g_mem_set_vtable (&mem_table);
-        g_slice_set_config (G_SLICE_CONFIG_ALWAYS_MALLOC, TRUE);
-    }
-    else
-    {
-        xmlMemSetup (my_free, my_malloc, my_realloc, my_strdup);
-    }
-}
 #endif
 
 
@@ -168,6 +91,12 @@ int _medit_parse_options (const char *const program_name,
 #define STR_HELP_DEBUG "\
       --debug                    Run in debug mode\n"
 
+#define STR_HELP_SEND "\
+      --send=STRING              Send string to existing instance to execute\n"
+
+#define STR_HELP_SEND_FILE "\
+      --send-file=FILE           Send file to existing instance to execute\n"
+
 #define STR_HELP_VERSION "\
       --version                  Display version information and exit\n"
 
@@ -182,6 +111,8 @@ int _medit_parse_options (const char *const program_name,
   -l, --line=LINE                Open file and position cursor on line LINE\n\
       --log[=FILE]               Show debug output or write it to FILE\n\
       --debug                    Run in debug mode\n\
+      --send=STRING              Send string to existing instance to execute\n\
+      --send-file=FILE           Send file to existing instance to execute\n\
       --version                  Display version information and exit\n\
   -h, --help                     Display this help text and exit\n"
 
@@ -206,6 +137,12 @@ char _medit_opt_log;
 /* Set to 1 if option --debug has been specified.  */
 char _medit_opt_debug;
 
+/* Set to 1 if option --send has been specified.  */
+char _medit_opt_send;
+
+/* Set to 1 if option --send-file has been specified.  */
+char _medit_opt_send_file;
+
 /* Set to 1 if option --version has been specified.  */
 char _medit_opt_version;
 
@@ -227,6 +164,12 @@ const char *_medit_arg_line;
 /* Argument to option --log, or a null pointer if no argument.  */
 const char *_medit_arg_log;
 
+/* Argument to option --send.  */
+const char *_medit_arg_send;
+
+/* Argument to option --send-file.  */
+const char *_medit_arg_send_file;
+
 /* Parse command line options.  Return index of first non-option argument,
    or -1 if an error is encountered.  */
 int _medit_parse_options (const char *const program_name, const int argc, char **const argv)
@@ -237,6 +180,8 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   static const char *const optstr__project = "project";
   static const char *const optstr__line = "line";
   static const char *const optstr__debug = "debug";
+  static const char *const optstr__send = "send";
+  static const char *const optstr__send_file = "send-file";
   static const char *const optstr__version = "version";
   static const char *const optstr__help = "help";
   int i = 0;
@@ -247,6 +192,8 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   _medit_opt_line = 0;
   _medit_opt_log = 0;
   _medit_opt_debug = 0;
+  _medit_opt_send = 0;
+  _medit_opt_send_file = 0;
   _medit_opt_version = 0;
   _medit_opt_help = 0;
   _medit_arg_pid = 0;
@@ -254,6 +201,8 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   _medit_arg_project = 0;
   _medit_arg_line = 0;
   _medit_arg_log = 0;
+  _medit_arg_send = 0;
+  _medit_arg_send_file = 0;
   while (++i < argc)
   {
     const char *option = argv [i];
@@ -388,6 +337,40 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
           break;
         }
         goto error_unknown_long_opt;
+       case 's':
+        if (strncmp (option + 1, optstr__send + 1, option_len - 1) == 0)
+        {
+          if (option_len < 4)
+            goto error_long_opt_ambiguous;
+          if (argument != 0)
+            _medit_arg_send = argument;
+          else if (++i < argc)
+            _medit_arg_send = argv [i];
+          else
+          {
+            option = optstr__send;
+            goto error_missing_arg_long;
+          }
+          _medit_opt_send = 1;
+          break;
+        }
+        if (strncmp (option + 1, optstr__send_file + 1, option_len - 1) == 0)
+        {
+          if (option_len <= 4)
+            goto error_long_opt_ambiguous;
+          if (argument != 0)
+            _medit_arg_send_file = argument;
+          else if (++i < argc)
+            _medit_arg_send_file = argv [i];
+          else
+          {
+            option = optstr__send_file;
+            goto error_missing_arg_long;
+          }
+          _medit_opt_send_file = 1;
+          break;
+        }
+        goto error_unknown_long_opt;
        case 'v':
         if (strncmp (option + 1, optstr__version + 1, option_len - 1) == 0)
         {
@@ -467,6 +450,17 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   return i;
 }
 #line 135 "../../../medit/medit-app.opag"
+
+#undef STR_HELP
+#define STR_HELP        \
+    STR_HELP_NEW_APP    \
+    STR_HELP_PID        \
+    STR_HELP_LINE       \
+    STR_HELP_LOG        \
+    STR_HELP_DEBUG      \
+    STR_HELP_VERSION    \
+    STR_HELP_HELP
+
 /* end of generated code
  ********************************************************/
 
@@ -661,17 +655,22 @@ main (int argc, char *argv[])
     else if (!_medit_opt_new_app)
         pid_string = g_getenv ("MEDIT_PID");
 
+    if (_medit_opt_send || _medit_opt_send_file)
+    {
+        GString *msg;
+        msg = g_string_new (_medit_opt_send ? "p" : "P");
+        g_string_append (msg, _medit_opt_send ? _medit_arg_send : _medit_arg_send_file);
+        moo_app_send_msg (app, pid_string, msg->str, msg->len + 1);
+        exit (0);
+    }
+
     if (pid_string)
     {
         if (moo_app_send_files (app, files, line, stamp, pid_string))
-        {
             exit (0);
-        }
-        else
-        {
-            g_print ("Could not send files to pid %s\n", pid_string);
-            exit (1);
-        }
+
+        g_print ("Could not send files to pid %s\n", pid_string);
+        exit (1);
     }
 
     if ((!new_instance && moo_app_send_files (app, files, line, stamp, NULL)) ||

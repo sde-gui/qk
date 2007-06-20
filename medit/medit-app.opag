@@ -20,90 +20,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "mem-debug.h"
 
 #if GTK_CHECK_VERSION(2,8,0) && defined(GDK_WINDOWING_X11)
 #include <gdk/gdkx.h>
 #define TIMESTAMP() (gdk_x11_display_get_user_time (gdk_display_get_default ()))
 #else
 #define TIMESTAMP() (0)
-#endif
-
-#undef DEBUG_MEMORY
-
-#ifndef DEBUG_MEMORY
-static void
-init_mem_stuff (void)
-{
-}
-#else
-#define ALIGN 8
-#include <libxml/xmlmemory.h>
-
-static gpointer
-my_malloc (gsize n_bytes)
-{
-    char *mem = malloc (n_bytes + ALIGN);
-    return mem ? mem + ALIGN : NULL;
-}
-
-static gpointer
-my_realloc (gpointer mem,
-	    gsize    n_bytes)
-{
-    if (mem)
-    {
-        char *new_mem = realloc ((char*) mem - ALIGN, n_bytes + ALIGN);
-        return new_mem ? new_mem + ALIGN : NULL;
-    }
-    else
-    {
-        return my_malloc (n_bytes);
-    }
-}
-
-static char *
-my_strdup (const char *s)
-{
-    if (s)
-    {
-        char *new_s = my_malloc (strlen (s) + 1);
-	if (new_s)
-            strcpy (new_s, s);
-        return new_s;
-    }
-    else
-    {
-        return NULL;
-    }
-}
-
-static void
-my_free (gpointer mem)
-{
-    if (mem)
-        free ((char*) mem - ALIGN);
-}
-
-static void
-init_mem_stuff (void)
-{
-    GMemVTable mem_table = {
-        my_malloc,
-        my_realloc,
-        my_free,
-        NULL, NULL, NULL
-    };
-
-    if (1)
-    {
-        g_mem_set_vtable (&mem_table);
-        g_slice_set_config (G_SLICE_CONFIG_ALWAYS_MALLOC, TRUE);
-    }
-    else
-    {
-        xmlMemSetup (my_free, my_malloc, my_realloc, my_strdup);
-    }
-}
 #endif
 
 
@@ -124,16 +47,29 @@ int _medit_parse_options (const char *const program_name,
 #line 122 "medit-app.c"
 %%
 n  new-app      "Run new instance of application"
-   pid          "=PID Use existing instance with process id PID"    reqarg
-m  mode         "=[simple|project] Use specified mode"              reqarg
-p  project      "=PROJECT Open project file PROJECT"                reqarg
-l  line         "=LINE Open file and position cursor on line LINE"  reqarg
-   log          "[=FILE] Show debug output or write it to FILE"     optarg
+   pid          "=PID Use existing instance with process id PID"        reqarg
+m  mode         "=[simple|project] Use specified mode"                  reqarg
+p  project      "=PROJECT Open project file PROJECT"                    reqarg
+l  line         "=LINE Open file and position cursor on line LINE"      reqarg
+   log          "[=FILE] Show debug output or write it to FILE"         optarg
    debug        "Run in debug mode"
-   version      "Display version information and exit"              return
-h  help         "Display this help text and exit"                   return
+   send         "=STRING Send string to existing instance to execute"   reqarg
+   send-file    "=FILE Send file to existing instance to execute"       reqarg
+   version      "Display version information and exit"                  return
+h  help         "Display this help text and exit"                       return
 %%
 #line 135 "../../../medit/medit-app.opag"
+
+#undef STR_HELP
+#define STR_HELP        \
+    STR_HELP_NEW_APP    \
+    STR_HELP_PID        \
+    STR_HELP_LINE       \
+    STR_HELP_LOG        \
+    STR_HELP_DEBUG      \
+    STR_HELP_VERSION    \
+    STR_HELP_HELP
+
 /* end of generated code
  ********************************************************/
 
@@ -328,17 +264,22 @@ main (int argc, char *argv[])
     else if (!_medit_opt_new_app)
         pid_string = g_getenv ("MEDIT_PID");
 
+    if (_medit_opt_send || _medit_opt_send_file)
+    {
+        GString *msg;
+        msg = g_string_new (_medit_opt_send ? "p" : "P");
+        g_string_append (msg, _medit_opt_send ? _medit_arg_send : _medit_arg_send_file);
+        moo_app_send_msg (app, pid_string, msg->str, msg->len + 1);
+        exit (0);
+    }
+
     if (pid_string)
     {
         if (moo_app_send_files (app, files, line, stamp, pid_string))
-        {
             exit (0);
-        }
-        else
-        {
-            g_print ("Could not send files to pid %s\n", pid_string);
-            exit (1);
-        }
+
+        g_print ("Could not send files to pid %s\n", pid_string);
+        exit (1);
     }
 
     if ((!new_instance && moo_app_send_files (app, files, line, stamp, NULL)) ||

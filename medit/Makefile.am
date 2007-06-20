@@ -12,7 +12,7 @@ all-am: medit.iss
 
 bin_PROGRAMS = medit
 
-medit_SOURCES = medit-credits.h medit-app.c
+medit_SOURCES = medit-credits.h medit-app.c mem-debug.h
 BUILT_SOURCES = medit-credits.h medit-app.c
 nodist_medit_SOURCES =
 

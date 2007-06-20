@@ -34,7 +34,7 @@
    </configure>
   </optimized>
  </configurations>
- <file_selector_dir>/home/muntyan/projects/moo/moo/mooedit/plugins/fileselector/</file_selector_dir>
+ <file_selector_dir>/home/muntyan/projects/moo/moo/mooapp/</file_selector_dir>
  <run>
   <args>--new-app /tmp/file.rst</args>
   <exe>medit/medit</exe>
