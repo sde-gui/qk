@@ -5,18 +5,15 @@ AM_CFLAGS =			\
 	$(MOO_DEBUG_CFLAGS)
 
 EXTRA_DIST =		\
-	medit.1		\
 	medit-app.opag	\
 	medit.rc.in
 
-man_MANS = medit.1
-
-all-am: medit.iss
+dist_man_MANS = medit.1
 
 bin_PROGRAMS = medit
 
 medit_SOURCES = medit-credits.h medit-app.c mem-debug.h
-BUILT_SOURCES = medit-credits.h medit-app.c
+BUILT_SOURCES = medit-credits.h medit-app.c medit.iss
 nodist_medit_SOURCES =
 
 medit_LDFLAGS = -export-dynamic $(PYTHON_EXTRA_LDFLAGS) $(medit_res_ldflag)

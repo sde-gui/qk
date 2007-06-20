@@ -36,7 +36,7 @@ all-tests: $(EXTRA_PROGRAMS)
 EXTRA_DIST =		\
 	pyapp.py.in
 
-all-am: pyapp.py
+BUILT_SOURCES = pyapp.py
 
 if MOO_BUILD_TERM
 if !MOO_OS_CYGWIN
