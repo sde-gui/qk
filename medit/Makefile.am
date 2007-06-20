@@ -5,8 +5,11 @@ AM_CFLAGS =			\
 	$(MOO_DEBUG_CFLAGS)
 
 EXTRA_DIST =		\
+	medit.1		\
 	medit-app.opag	\
 	medit.rc.in
+
+man_MANS = medit.1
 
 all-am: medit.iss
 
