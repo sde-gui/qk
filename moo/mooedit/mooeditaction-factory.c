@@ -694,16 +694,16 @@ static const struct BidiMenuEntry {
   const char *label;
   gunichar ch;
 } bidi_menu_entries[] = {
-  { N_("LRM _Left-to-right mark"), 0x200E },
-  { N_("RLM _Right-to-left mark"), 0x200F },
-  { N_("LRE Left-to-right _embedding"), 0x202A },
-  { N_("RLE Right-to-left e_mbedding"), 0x202B },
-  { N_("LRO Left-to-right _override"), 0x202D },
-  { N_("RLO Right-to-left o_verride"), 0x202E },
-  { N_("PDF _Pop directional formatting"), 0x202C },
-  { N_("ZWS _Zero width space"), 0x200B },
-  { N_("ZWJ Zero width _joiner"), 0x200D },
-  { N_("ZWNJ Zero width _non-joiner"), 0x200C }
+  { "LRM _Left-to-right mark", 0x200E },
+  { "RLM _Right-to-left mark", 0x200F },
+  { "LRE Left-to-right _embedding", 0x202A },
+  { "RLE Right-to-left e_mbedding", 0x202B },
+  { "LRO Left-to-right _override", 0x202D },
+  { "RLO Right-to-left o_verride", 0x202E },
+  { "PDF _Pop directional formatting", 0x202C },
+  { "ZWS _Zero width space", 0x200B },
+  { "ZWJ Zero width _joiner", 0x200D },
+  { "ZWNJ Zero width _non-joiner", 0x200C }
 };
 
 static void
