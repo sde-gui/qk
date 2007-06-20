@@ -49,13 +49,13 @@ set_translator_credits (MooGladeXML *xml)
     GtkTextView *view;
 
     /* Translators: this goes into About box, under Translated by tab */
-    credits = _("translator_credits");
+    credits = _("translator-credits");
     /* Translators: this goes into About box, under Translated by tab,
        this must be valid html markup, e.g.
        "Some Guy <a href=\"mailto://someguy@domain.net\">&lt;someguy@domain.net&gt;</a>" */
-    credits_markup = _("translator_credits_markup");
+    credits_markup = _("translator-credits-markup");
 
-    if (!strcmp (credits, "translator_credits"))
+    if (!strcmp (credits, "translator-credits"))
     {
         notebook = moo_glade_xml_get_widget (xml, "notebook");
         page = gtk_notebook_get_nth_page (GTK_NOTEBOOK (notebook), 2);
@@ -66,7 +66,7 @@ set_translator_credits (MooGladeXML *xml)
     view = moo_glade_xml_get_widget (xml, "translated_by");
 
 #if defined(MOO_USE_XML) && !defined(__WIN32__)
-    if (strcmp (credits_markup, "translator_credits_markup") != 0)
+    if (strcmp (credits_markup, "translator-credits-markup") != 0)
         _moo_html_load_memory (view, credits_markup, -1, NULL, NULL);
     else
 #endif

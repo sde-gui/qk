@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-06-13 23:51-0500\n"
+"POT-Creation-Date: 2007-06-19 15:41-0500\n"
 "PO-Revision-Date: 2007-06-16 21:04-0600\n"
 "Last-Translator: Chaosye <chao-7410@163.com>\n"
 "MIME-Version: 1.0\n"
@@ -34,14 +34,14 @@ msgstr "系统信息"
 
 #. Translators: this goes into About box, under Translated by tab
 #: ../moo/mooapp/mooappabout.c:52
-msgid "translator_credits"
+msgid "translator-credits"
 msgstr "Chaosye <chao-7410@163.com>"
 
 #. Translators: this goes into About box, under Translated by tab,
 #. this must be valid html markup, e.g.
 #. "Some Guy <a href=\"mailto://someguy@domain.net\">&lt;someguy@domain.net&gt;</a>"
 #: ../moo/mooapp/mooappabout.c:56
-msgid "translator_credits_markup"
+msgid "translator-credits-markup"
 msgstr ""
 "Chaosye <a href=\"mailto:chao-7410@163.com\">&lt;chao-7410@163.com&gt;</a>"
 
@@ -544,40 +544,40 @@ msgid "Filter|None"
 msgstr "无"
 
 #. Translators: these are kinds of input for a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-exe-unix.c:784
+#: ../moo/mooedit/moocommand-exe-unix.c:786
 msgid "Input|None"
 msgstr "无"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:784
+#: ../moo/mooedit/moocommand-exe-unix.c:786
 msgid "Input|Selected lines"
 msgstr "分隔线"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:784
+#: ../moo/mooedit/moocommand-exe-unix.c:786
 msgid "Input|Selection"
 msgstr "选项"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:784
+#: ../moo/mooedit/moocommand-exe-unix.c:786
 msgid "Input|Whole document"
 msgstr "全部"
 
 #. Translators: these are actions for output of a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:788
 msgid "Output|None"
 msgstr "无"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:788
 msgid "Output|None, asynchronous"
 msgstr "无, 异步"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:788
 msgid "Output|Output pane"
 msgstr "输出网格"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:788
 msgid "Output|Insert into the document"
 msgstr "输入到文档"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:788
 msgid "Output|New document"
 msgstr "新建文档"
 
@@ -994,7 +994,7 @@ msgstr "书签"
 msgid "_Language"
 msgstr "语言(_L)"
 
-#: ../moo/mooedit/moousertools.c:321 ../moo/mooedit/moousertools-prefs.c:417
+#: ../moo/mooedit/moousertools.c:321 ../moo/mooedit/moousertools-prefs.c:418
 msgid "Tools"
 msgstr "工具"
 
@@ -1406,11 +1406,16 @@ msgstr "当前设置(%s)"
 msgid "Current locale"
 msgstr "当前设置"
 
-#: ../moo/mooutils/mooencodings.c:617
+#: ../moo/mooutils/mooencodings.c:620
 msgid "Auto Detected"
 msgstr "自动检测"
 
-#: ../moo/mooutils/mooencodings.c:736
+#. Translators: do not translate the part before |
+#: ../moo/mooutils/mooencodings.c:645
+msgid "Encodings combo submenu|Other"
+msgstr ""
+
+#: ../moo/mooutils/mooencodings.c:737
 msgid "Charact_er encoding:"
 msgstr "字符编码(_C):"
 
@@ -1684,6 +1689,30 @@ msgstr "默认"
 #: ../moo/mooutils/glade/accelprefs.glade.h:9
 msgid "Shortcut|None"
 msgstr "无"
+
+#: ../moo/mooutils/moopane.c:607
+msgid "Remove pane"
+msgstr ""
+
+#: ../moo/mooutils/moopane.c:615
+msgid "Hide pane"
+msgstr ""
+
+#: ../moo/mooutils/moopane.c:619
+msgid "Sticky"
+msgstr ""
+
+#: ../moo/mooutils/moopane.c:623
+msgid "Detach pane"
+msgstr ""
+
+#: ../moo/mooutils/moopane.c:636
+msgid "Attach"
+msgstr ""
+
+#: ../moo/mooutils/moopane.c:640
+msgid "Keep on top"
+msgstr ""
 
 #~ msgid "_Edit"
 #~ msgstr "编辑(_E)"

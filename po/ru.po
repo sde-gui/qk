@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-06-13 23:51-0500\n"
+"POT-Creation-Date: 2007-06-19 15:41-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Yevgen Muntyan <muntyan@tamu.edu>\n"
 "MIME-Version: 1.0\n"
@@ -35,17 +35,17 @@ msgstr "Информация о системе"
 
 #. Translators: this goes into About box, under Translated by tab
 #: ../moo/mooapp/mooappabout.c:52
-msgid "translator_credits"
+msgid "translator-credits"
 msgstr "Евгений Мунтян <muntyan@tamu.edu>"
 
 #. Translators: this goes into About box, under Translated by tab,
 #. this must be valid html markup, e.g.
 #. "Some Guy <a href=\"mailto://someguy@domain.net\">&lt;someguy@domain.net&gt;</a>"
 #: ../moo/mooapp/mooappabout.c:56
-msgid "translator_credits_markup"
+msgid "translator-credits-markup"
 msgstr ""
-"Евгений Мунтян <a href=\"mailto:muntyan@tamu.edu\">&lt;muntyan@tamu.edu&gt;"
-"</a>"
+"Евгений Мунтян <a href=\"mailto:muntyan@tamu.edu\">&lt;muntyan@tamu.edu&gt;</"
+"a>"
 
 #. Credits button label in About dialog
 #: ../moo/mooapp/glade/mooappabout.glade.h:2
@@ -546,40 +546,40 @@ msgid "Filter|None"
 msgstr ""
 
 #. Translators: these are kinds of input for a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-exe-unix.c:784
+#: ../moo/mooedit/moocommand-exe-unix.c:786
 msgid "Input|None"
 msgstr ""
 
-#: ../moo/mooedit/moocommand-exe-unix.c:784
+#: ../moo/mooedit/moocommand-exe-unix.c:786
 msgid "Input|Selected lines"
 msgstr "Выделенные строки"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:784
+#: ../moo/mooedit/moocommand-exe-unix.c:786
 msgid "Input|Selection"
 msgstr "Выделенный текст"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:784
+#: ../moo/mooedit/moocommand-exe-unix.c:786
 msgid "Input|Whole document"
 msgstr "Целый документ"
 
 #. Translators: these are actions for output of a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:788
 msgid "Output|None"
 msgstr ""
 
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:788
 msgid "Output|None, asynchronous"
 msgstr ""
 
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:788
 msgid "Output|Output pane"
 msgstr ""
 
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:788
 msgid "Output|Insert into the document"
 msgstr ""
 
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:788
 msgid "Output|New document"
 msgstr "Новый документ"
 
@@ -986,7 +986,7 @@ msgstr "Закладки"
 msgid "_Language"
 msgstr ""
 
-#: ../moo/mooedit/moousertools.c:321 ../moo/mooedit/moousertools-prefs.c:417
+#: ../moo/mooedit/moousertools.c:321 ../moo/mooedit/moousertools-prefs.c:418
 msgid "Tools"
 msgstr "Инструменты"
 
@@ -1404,11 +1404,16 @@ msgstr "Текущая локаль (%s)"
 msgid "Current locale"
 msgstr "Текущая локаль"
 
-#: ../moo/mooutils/mooencodings.c:617
+#: ../moo/mooutils/mooencodings.c:620
 msgid "Auto Detected"
 msgstr "Автоопределение"
 
-#: ../moo/mooutils/mooencodings.c:736
+#. Translators: do not translate the part before |
+#: ../moo/mooutils/mooencodings.c:645
+msgid "Encodings combo submenu|Other"
+msgstr ""
+
+#: ../moo/mooutils/mooencodings.c:737
 msgid "Charact_er encoding:"
 msgstr "Кодировку символов"
 
@@ -1681,6 +1686,30 @@ msgstr ""
 #. Translators: do not translate the part before |
 #: ../moo/mooutils/glade/accelprefs.glade.h:9
 msgid "Shortcut|None"
+msgstr ""
+
+#: ../moo/mooutils/moopane.c:607
+msgid "Remove pane"
+msgstr ""
+
+#: ../moo/mooutils/moopane.c:615
+msgid "Hide pane"
+msgstr ""
+
+#: ../moo/mooutils/moopane.c:619
+msgid "Sticky"
+msgstr ""
+
+#: ../moo/mooutils/moopane.c:623
+msgid "Detach pane"
+msgstr ""
+
+#: ../moo/mooutils/moopane.c:636
+msgid "Attach"
+msgstr ""
+
+#: ../moo/mooutils/moopane.c:640
+msgid "Keep on top"
 msgstr ""
 
 #~ msgid "_Edit"

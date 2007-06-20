@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-06-13 23:51-0500\n"
+"POT-Creation-Date: 2007-06-19 15:41-0500\n"
 "PO-Revision-Date: 2007-06-16 21:04-0600\n"
 "Last-Translator: Collilieux <mccnews@free.fr>\n"
 "MIME-Version: 1.0\n"
@@ -34,14 +34,14 @@ msgstr "Info système"
 
 #. Translators: this goes into About box, under Translated by tab
 #: ../moo/mooapp/mooappabout.c:52
-msgid "translator_credits"
+msgid "translator-credits"
 msgstr "Collilieux <mccnews@free.fr>"
 
 #. Translators: this goes into About box, under Translated by tab,
 #. this must be valid html markup, e.g.
 #. "Some Guy <a href=\"mailto://someguy@domain.net\">&lt;someguy@domain.net&gt;</a>"
 #: ../moo/mooapp/mooappabout.c:56
-msgid "translator_credits_markup"
+msgid "translator-credits-markup"
 msgstr ""
 "Collilieux <a href=\"mailto:mccnews@free.fr\">&lt;mccnews@free.fr&gt;</a>"
 
@@ -544,40 +544,40 @@ msgid "Filter|None"
 msgstr "Aucun"
 
 #. Translators: these are kinds of input for a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-exe-unix.c:784
+#: ../moo/mooedit/moocommand-exe-unix.c:786
 msgid "Input|None"
 msgstr "Aucun"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:784
+#: ../moo/mooedit/moocommand-exe-unix.c:786
 msgid "Input|Selected lines"
 msgstr "Lignes sélectionnées"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:784
+#: ../moo/mooedit/moocommand-exe-unix.c:786
 msgid "Input|Selection"
 msgstr "Sélection"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:784
+#: ../moo/mooedit/moocommand-exe-unix.c:786
 msgid "Input|Whole document"
 msgstr "Tout le document"
 
 #. Translators: these are actions for output of a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:788
 msgid "Output|None"
 msgstr "Aucun"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:788
 msgid "Output|None, asynchronous"
 msgstr "Aucun, asynchrone"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:788
 msgid "Output|Output pane"
 msgstr "Panneau de sortie"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:788
 msgid "Output|Insert into the document"
 msgstr "Insére dans le document"
 
-#: ../moo/mooedit/moocommand-exe-unix.c:786
+#: ../moo/mooedit/moocommand-exe-unix.c:788
 msgid "Output|New document"
 msgstr "Nouveau document"
 
@@ -1004,7 +1004,7 @@ msgstr "Signets"
 msgid "_Language"
 msgstr "_Langage"
 
-#: ../moo/mooedit/moousertools.c:321 ../moo/mooedit/moousertools-prefs.c:417
+#: ../moo/mooedit/moousertools.c:321 ../moo/mooedit/moousertools-prefs.c:418
 msgid "Tools"
 msgstr "Outils"
 
@@ -1418,11 +1418,16 @@ msgstr "Locale actuelle (%s)"
 msgid "Current locale"
 msgstr "Locale actuelle"
 
-#: ../moo/mooutils/mooencodings.c:617
+#: ../moo/mooutils/mooencodings.c:620
 msgid "Auto Detected"
 msgstr "Auto-détecté"
 
-#: ../moo/mooutils/mooencodings.c:736
+#. Translators: do not translate the part before |
+#: ../moo/mooutils/mooencodings.c:645
+msgid "Encodings combo submenu|Other"
+msgstr ""
+
+#: ../moo/mooutils/mooencodings.c:737
 msgid "Charact_er encoding:"
 msgstr "_Encodage :"
 
@@ -1696,6 +1701,30 @@ msgstr "Par défaut"
 #: ../moo/mooutils/glade/accelprefs.glade.h:9
 msgid "Shortcut|None"
 msgstr "Aucun"
+
+#: ../moo/mooutils/moopane.c:607
+msgid "Remove pane"
+msgstr ""
+
+#: ../moo/mooutils/moopane.c:615
+msgid "Hide pane"
+msgstr ""
+
+#: ../moo/mooutils/moopane.c:619
+msgid "Sticky"
+msgstr ""
+
+#: ../moo/mooutils/moopane.c:623
+msgid "Detach pane"
+msgstr ""
+
+#: ../moo/mooutils/moopane.c:636
+msgid "Attach"
+msgstr ""
+
+#: ../moo/mooutils/moopane.c:640
+msgid "Keep on top"
+msgstr ""
 
 #~ msgid "_Edit"
 #~ msgstr "É_diter"
