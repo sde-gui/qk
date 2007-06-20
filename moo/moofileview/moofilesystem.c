@@ -225,7 +225,7 @@ debug_timeout (MooFileSystem *fs)
 {
     gsize mem[2] = {0, 0};
     g_hash_table_foreach (fs->priv->folders, (GHFunc) calc_mem_hash_cb, mem);
-    g_print ("%u bytes in %u files\n", mem[0], mem[1]);
+    g_print ("%" G_GSIZE_FORMAT " bytes in %" G_GSIZE_FORMAT " files\n", mem[0], mem[1]);
     return TRUE;
 }
 
