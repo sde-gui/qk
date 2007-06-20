@@ -15,6 +15,10 @@
 #undef D_
 #undef QD_
 
+#else
+
+#define GD_(domain,string) (string)
+
 #endif /* ENABLE_NLS */
 
 #endif /* GTK_SOURCE_VIEW_I18N_H */

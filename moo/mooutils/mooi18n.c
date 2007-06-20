@@ -16,10 +16,10 @@
 #include <glib.h>
 
 
+#ifdef ENABLE_NLS
 static void
 init_gettext (void)
 {
-#ifdef ENABLE_NLS
     static gboolean been_here = FALSE;
 
     if (!been_here)
@@ -32,8 +32,8 @@ init_gettext (void)
         bind_textdomain_codeset (GETTEXT_PACKAGE "-gsv", "UTF-8");
 #endif
     }
-#endif /* ENABLE_NLS */
 }
+#endif /* ENABLE_NLS */
 
 const char *
 moo_gettext (const char *string)
