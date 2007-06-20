@@ -53,8 +53,8 @@ p  project      "=PROJECT Open project file PROJECT"                    reqarg
 l  line         "=LINE Open file and position cursor on line LINE"      reqarg
    log          "[=FILE] Show debug output or write it to FILE"         optarg
    debug        "Run in debug mode"
-   send         "=STRING Send string to existing instance to execute"   reqarg
-   send-file    "=FILE Send file to existing instance to execute"       reqarg
+   exec         "=CODE Execute python code in an existing instance"     reqarg
+   exec-file    "=FILE Execute python file in an existing instance"     reqarg
    version      "Display version information and exit"                  return
 h  help         "Display this help text and exit"                       return
 %%
@@ -97,6 +97,12 @@ check_args (int opt_remain)
         exit (0);
     }
 
+    if (_medit_opt_version)
+    {
+        version ();
+        exit (0);
+    }
+
     if (opt_remain < 0)
     {
         usage ();
@@ -105,18 +111,6 @@ check_args (int opt_remain)
 
     if (_medit_opt_pid)
     {
-        if (_medit_opt_mode)
-        {
-            g_print ("--mode can't be used together with --pid\n");
-            exit (1);
-        }
-
-        if (_medit_opt_project)
-        {
-            g_print ("--project can't be used together with --pid\n");
-            exit (1);
-        }
-
         if (_medit_opt_new_app)
         {
             g_print ("--new-app can't be used together with --pid\n");
@@ -128,30 +122,6 @@ check_args (int opt_remain)
             usage ();
             exit (1);
         }
-    }
-
-    if (_medit_opt_mode)
-    {
-        if (!_medit_arg_mode ||
-            (strcmp (_medit_arg_mode, "simple") &&
-             strcmp (_medit_arg_mode, "project")))
-        {
-            usage ();
-            exit (1);
-        }
-    }
-
-    if (_medit_opt_project && _medit_arg_mode &&
-        strcmp (_medit_arg_mode, "project"))
-    {
-        usage ();
-        exit (1);
-    }
-
-    if (_medit_opt_version)
-    {
-        version ();
-        exit (0);
     }
 }
 
@@ -264,11 +234,11 @@ main (int argc, char *argv[])
     else if (!_medit_opt_new_app)
         pid_string = g_getenv ("MEDIT_PID");
 
-    if (_medit_opt_send || _medit_opt_send_file)
+    if (_medit_opt_exec || _medit_opt_exec_file)
     {
         GString *msg;
-        msg = g_string_new (_medit_opt_send ? "p" : "P");
-        g_string_append (msg, _medit_opt_send ? _medit_arg_send : _medit_arg_send_file);
+        msg = g_string_new (_medit_opt_exec ? "p" : "P");
+        g_string_append (msg, _medit_opt_exec ? _medit_arg_exec : _medit_arg_exec_file);
         moo_app_send_msg (app, pid_string, msg->str, msg->len + 1);
         exit (0);
     }
