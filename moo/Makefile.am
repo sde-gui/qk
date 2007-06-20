@@ -4,16 +4,21 @@ ini_files = $(ini_in_files:.ini.in=.ini)
 @MOO_INI_IN_RULE@
 CLEANFILES = $(ini_files)
 
-moo_include_headers =	\
-	moo.h		\
+moo_include_headers =		\
+	moo.h			\
 	moo-config.h
 
 BUILT_SOURCES = moo-config.h
 
-EXTRA_DIST =		\
-	TODO		\
-	$(rc_in_files)	\
-	$(ini_in_files)
+scriptsdir = ${MOO_DATA_DIR}/scripts
+scripts_SCRIPTS =		\
+	xdg-utils/xdg-open	\
+	xdg-utils/xdg-email
+
+EXTRA_DIST =			\
+	$(rc_in_files)		\
+	$(ini_in_files)		\
+	$(scripts_SCRIPTS)
 
 if MOO_INSTALL_HEADERS
 moo_include_HEADERS = $(moo_include_headers)
