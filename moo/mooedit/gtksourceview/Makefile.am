@@ -24,6 +24,7 @@ upstream_sources =				\
 	upstream/gtksourcestyle.c		\
 	upstream/gtksourcestylemanager.c	\
 	upstream/gtksourcestylescheme.c		\
+	upstream/gtksourcestylescheme-noxml.c	\
 	upstream/gtktextregion.c		\
 	upstream/gtksourcecontextengine.h	\
 	upstream/gtksourceengine.h		\
@@ -46,7 +47,6 @@ gtksourceview_sources =				\
 	gtksourcelanguagemanager-mangled.c	\
 	gtksourcestyle-mangled.c		\
 	gtksourcestylemanager-mangled.c		\
-	gtksourcestylescheme-mangled.c		\
 	gtktextregion-mangled.c			\
 	gtksourceview-utils-mangled.c		\
 	gtksourcecontextengine-mangled.h	\
@@ -61,6 +61,7 @@ gtksourceview_sources =				\
 	gtksourceview-utils-mangled.h
 
 xml_sources =					\
+	gtksourcestylescheme-mangled.c		\
 	gtksourcelanguage-mangled.c		\
 	gtksourcelanguage-parser-1-mangled.c	\
 	gtksourcelanguage-parser-2-mangled.c	\
@@ -68,7 +69,8 @@ xml_sources =					\
 	gtksourcelanguage-private-mangled.h
 
 no_xml_sources =				\
-	gtksourcelanguage-noxml-mangled.c
+	gtksourcelanguage-noxml-mangled.c	\
+	gtksourcestylescheme-noxml-mangled.c
 
 BUILT_SOURCES = $(xml_sources) $(no_xml_sources) $(gtksourceview_sources)
 DISTCLEANFILES = $(xml_sources) $(no_xml_sources) $(gtksourceview_sources)
