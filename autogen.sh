@@ -17,9 +17,9 @@ fi
 cd $srcdir
 echo "Generating configuration files..."
 
-ACLOCAL=${ACLOCAL:-aclocal-1.9}
-ACLOCAL_FLAGS="$ACLOCAL_FLAGS $aclocal_extra"
-AUTOMAKE=${AUTOMAKE:-automake-1.9}
+ACLOCAL=${ACLOCAL:-aclocal-1.10}
+ACLOCAL_FLAGS="$aclocal_extra $ACLOCAL_FLAGS"
+AUTOMAKE=${AUTOMAKE:-automake-1.10}
 
 LIBTOOLIZE=${LIBTOOLIZE:-libtoolize}
 
@@ -33,8 +33,11 @@ echo glib-gettextize --force --copy
 glib-gettextize --force --copy || exit $?
 echo intltoolize --automake --force --copy
 intltoolize --automake --force --copy || exit $?
-echo sed 's/@GETTEXT_PACKAGE@/@GETTEXT_PACKAGE@-gsv/' po/Makefile.in.in '>' po-gsv/Makefile.in.in
-sed 's/@GETTEXT_PACKAGE@/@GETTEXT_PACKAGE@-gsv/' po/Makefile.in.in > po-gsv/Makefile.in.in || exit $?
+
+if [ -d po-gsv ] ; then
+  echo sed 's/@GETTEXT_PACKAGE@/@GETTEXT_PACKAGE@-gsv/' po/Makefile.in.in '>' po-gsv/Makefile.in.in
+  sed 's/@GETTEXT_PACKAGE@/@GETTEXT_PACKAGE@-gsv/' po/Makefile.in.in > po-gsv/Makefile.in.in || exit $?
+fi
 
 echo $ACLOCAL $ACLOCAL_FLAGS
 $ACLOCAL $ACLOCAL_FLAGS || exit $?
