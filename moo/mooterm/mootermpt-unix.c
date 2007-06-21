@@ -37,6 +37,11 @@
 #  include <sys/poll.h>
 #endif
 
+#undef WATCH_CHILD
+#if defined(MOO_OS_DARWIN)
+#define WATCH_CHILD
+#endif
+
 #define TERM_EMULATION          "xterm"
 #define WRITE_CHUNK_SIZE        4096
 #define POLL_TIME               5
@@ -63,8 +68,10 @@ struct _MooTermPtUnix {
     gboolean    non_block;
     GIOChannel *io;
     guint       io_watch_id;
+#ifdef WATCH_CHILD
+    guint       child_watch_id;
+#endif
 };
-
 
 struct _MooTermPtUnixClass {
     MooTermPtClass  parent_class;
@@ -139,6 +146,9 @@ _moo_term_pt_unix_init (MooTermPtUnix *pt)
     pt->non_block = FALSE;
     pt->io = NULL;
     pt->io_watch_id = 0;
+#ifdef WATCH_CHILD
+    pt->child_watch_id = 0;
+#endif
 }
 
 
@@ -213,7 +223,7 @@ setup_master_fd (MooTermPtUnix *pt,
 
     pt->io_watch_id = _moo_io_add_watch_full (pt->io,
                                               MOO_TERM_PT(pt)->priority,
-                                              G_IO_IN | G_IO_PRI | G_IO_HUP,
+                                              G_IO_IN | G_IO_PRI | G_IO_HUP | G_IO_ERR,
                                               (GIOFunc) read_child_out,
                                               pt, NULL);
 
@@ -225,6 +235,19 @@ setup_master_fd (MooTermPtUnix *pt,
     return TRUE;
 }
 
+#ifdef WATCH_CHILD
+static void
+child_died (GPid pid,
+            G_GNUC_UNUSED int status,
+            MooTermPtUnix *pt)
+{
+    g_return_if_fail (pid == pt->child_pid);
+    _moo_message ("%s: child exited", G_STRLOC);
+    gdk_threads_enter ();
+    kill_child (MOO_TERM_PT (pt));
+    gdk_threads_leave ();
+}
+#endif
 
 static gboolean
 fork_argv (MooTermPt      *pt_gen,
@@ -303,8 +326,15 @@ fork_argv (MooTermPt      *pt_gen,
         pt_gen->alive = TRUE;
     }
 
-    if (waitpid (-1, &status, WNOHANG) == -1)
+    if (waitpid (pt->child_pid, &status, WNOHANG) == -1)
         g_critical ("%s: error in waitpid", G_STRLOC);
+
+#ifdef WATCH_CHILD
+    pt->child_watch_id = g_child_watch_add_full (pt_gen->priority,
+                                                 pt->child_pid,
+                                                 (GChildWatchFunc) child_died,
+                                                 pt, NULL);
+#endif
 
     setup_master_fd (pt, master);
 
@@ -342,6 +372,14 @@ static void
 kill_child (MooTermPt *pt_gen)
 {
     MooTermPtUnix *pt = MOO_TERM_PT_UNIX (pt_gen);
+
+#ifdef WATCH_CHILD
+    if (pt->child_watch_id)
+    {
+        g_source_remove (pt->child_watch_id);
+        pt->child_watch_id = 0;
+    }
+#endif
 
     if (pt->io_watch_id)
     {
