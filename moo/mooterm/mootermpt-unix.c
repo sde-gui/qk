@@ -259,7 +259,7 @@ fork_argv (MooTermPt      *pt_gen,
     MooTermPtUnix *pt;
     int env_len = 0;
     char **new_env;
-    int status;
+    int status, ret;
     int i;
     int master;
 
@@ -316,18 +316,28 @@ fork_argv (MooTermPt      *pt_gen,
 
         return FALSE;
     }
-    else
+
+    ret = waitpid (pt->child_pid, &status, WNOHANG);
+
+    if (ret == -1 || ret > 0)
     {
-#if 1
-        _moo_message ("%s: forked child pid %d on fd %d",
-                      G_STRLOC, pt->child_pid, master);
-#endif
-        pt_gen->child_alive = TRUE;
-        pt_gen->alive = TRUE;
+        if (ret < 0)
+            g_critical ("%s: error in waitpid", G_STRLOC);
+        else
+            _moo_message ("%s: child died already", G_STRLOC);
+
+        pt->child_pid = -1;
+        kill_child (pt_gen);
+
+        return FALSE;
     }
 
-    if (waitpid (pt->child_pid, &status, WNOHANG) == -1)
-        g_critical ("%s: error in waitpid", G_STRLOC);
+    if (1)
+        _moo_message ("%s: forked child pid %d on fd %d",
+                      G_STRLOC, pt->child_pid, master);
+
+    pt_gen->child_alive = TRUE;
+    pt_gen->alive = TRUE;
 
 #ifdef WATCH_CHILD
     pt->child_watch_id = g_child_watch_add_full (pt_gen->priority,
@@ -465,6 +475,10 @@ read_child_out (G_GNUC_UNUSED GIOChannel     *source,
     {
         int bytes;
 
+        if (0)
+            _moo_message ("reading %" G_GSIZE_FORMAT " bytes\n", to_read);
+
+        errno = 0;
         bytes = read (pt->master, buf, to_read);
 
         switch (bytes)
