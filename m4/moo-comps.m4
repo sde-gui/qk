@@ -56,7 +56,7 @@ AC_DEFUN([MOO_COMPONENTS],[
 
   MOO_BUILD_SCRIPT=$MOO_BUILD_EDIT
 
-  if test "x$MOO_OS_BSD" = "xyes"; then
+  if test "x$MOO_OS_BSD" = "xyes" -a "x$MOO_OS_DARWIN" != "xyes"; then
     $build_mooterm && MOO_LIBS="-lutil $MOO_LIBS"
   fi
 
