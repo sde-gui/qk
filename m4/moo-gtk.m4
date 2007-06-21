@@ -30,7 +30,8 @@ if test x$MOO_OS_CYGWIN != xyes; then
   [AM_CONDITIONAL($1[]_2_[]num, test $[]$1[]_MINOR_VERSION -ge num)
    if test $[]$1[]_MINOR_VERSION -ge num; then
      $1[]_2_[]num=yes
-   fi])
+   fi
+  ])
 else
   m4_foreach([num],[2,4,6,8,10,12,14],
   [AM_CONDITIONAL($1[]_2_[]num, false)])
