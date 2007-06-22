@@ -17,9 +17,9 @@ fi
 cd $srcdir
 echo "Generating configuration files..."
 
-ACLOCAL=${ACLOCAL:-aclocal-1.10}
+ACLOCAL=${ACLOCAL:-aclocal-1.9}
 ACLOCAL_FLAGS="$aclocal_extra $ACLOCAL_FLAGS"
-AUTOMAKE=${AUTOMAKE:-automake-1.10}
+AUTOMAKE=${AUTOMAKE:-automake-1.9}
 
 LIBTOOLIZE=${LIBTOOLIZE:-libtoolize}
 
