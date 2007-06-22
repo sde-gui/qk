@@ -64,7 +64,6 @@ styles =			\
 	gvim.xml
 
 languagespecs_DATA =		\
-	language.dtd		\
 	language2.rng		\
 	check.sh		\
 	$(styles)		\
