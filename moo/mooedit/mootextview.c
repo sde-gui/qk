@@ -1435,7 +1435,6 @@ do_move_cursor (Scroll *scroll)
                                   gtk_text_buffer_get_insert (buffer),
                                   0.2, FALSE, 0, 0);
 
-    g_free (scroll);
     return FALSE;
 }
 
@@ -1447,21 +1446,22 @@ moo_text_view_move_cursor (gpointer      view,
                            gboolean      offset_visual,
                            gboolean      in_idle)
 {
-    Scroll *scroll;
+    Scroll scroll;
 
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
 
-    scroll = g_new (Scroll, 1);
-    scroll->view = view;
-    scroll->line = line;
-    scroll->character = offset;
-    scroll->visual = offset_visual;
+    scroll.view = view;
+    scroll.line = line;
+    scroll.character = offset;
+    scroll.visual = offset_visual;
+
+    do_move_cursor (&scroll);
 
     if (in_idle)
-        moo_idle_add ((GSourceFunc) do_move_cursor,
-                      scroll);
-    else
-        do_move_cursor (scroll);
+        _moo_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
+                            (GSourceFunc) do_move_cursor,
+                            g_memdup (&scroll, sizeof scroll),
+                            g_free);
 }
 
 
