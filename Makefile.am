@@ -26,7 +26,7 @@ EXTRA_DIST =			\
 	mingw-configure		\
 	cygwin-configure	\
 	makewin			\
-	COPYING.lib		\
+	COPYING.GPL		\
 	LICENSE			\
 	THANKS			\
 	intltool-extract.in	\
