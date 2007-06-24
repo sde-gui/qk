@@ -4,6 +4,7 @@ langs2 =			\
 	ada.lang		\
 	changelog.lang		\
 	c.lang			\
+	chdr.lang		\
 	cpp.lang		\
 	csharp.lang		\
 	css.lang		\
@@ -27,6 +28,7 @@ langs2 =			\
 	m4.lang			\
 	makefile.lang		\
 	ms.lang			\
+	objc.lang		\
 	octave.lang		\
 	pascal.lang		\
 	perl.lang		\
