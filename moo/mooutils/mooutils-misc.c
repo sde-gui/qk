@@ -1450,7 +1450,8 @@ save_with_backup (const char *filename,
     if (!_moo_save_file_utf8 (tmp_file, data, len, error))
         goto out;
 
-    _moo_rename_file (filename, bak_file, &error_move);
+    if (g_file_test (filename, G_FILE_TEST_EXISTS))
+        _moo_rename_file (filename, bak_file, &error_move);
 
     if (!_moo_rename_file (tmp_file, filename, error))
     {
