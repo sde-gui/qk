@@ -1265,6 +1265,24 @@ moo_markup_save_pretty (MooMarkupDoc       *doc,
     return result;
 }
 
+char *
+moo_markup_format_pretty (MooMarkupDoc *doc,
+                          guint         indent)
+{
+    GString *str;
+    MooMarkupNode *child;
+
+    g_return_val_if_fail (MOO_MARKUP_IS_DOC (doc), FALSE);
+
+    str = g_string_new ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+
+    for (child = doc->children; child != NULL; child = child->next)
+        if (MOO_MARKUP_IS_ELEMENT (child))
+            format_pretty_element (MOO_MARKUP_ELEMENT (child), str, 0, indent);
+
+    return g_string_free (str, FALSE);
+}
+
 
 #if 0
 char *

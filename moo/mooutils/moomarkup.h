@@ -135,7 +135,8 @@ gboolean            moo_markup_save_pretty          (MooMarkupDoc       *doc,
                                                      const char         *filename,
                                                      guint               indent,
                                                      GError            **error);
-
+char               *moo_markup_format_pretty        (MooMarkupDoc       *doc,
+                                                     guint               indent);
 char               *moo_markup_node_get_string      (MooMarkupNode      *node);
 
 MooMarkupDoc       *moo_markup_doc_ref              (MooMarkupDoc       *doc);
