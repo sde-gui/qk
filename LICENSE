@@ -1,19 +1,18 @@
 medit is distributed under GPL licence, its text you can
-find in COPYING file.
+find in COPYING.GPL file. Nevertheless, everything but
+several lang files (see list below) is under LGPL, see
+COPYING file.
 
 Portions of code are written not by me, those are clearly
 marked as such (copyright headers in files copied from other
 projects, or comments in source). Below is the list of
 thrid-party files/code with their copyrights and licenses.
 
-GPL is used simply because it happened so, and I am using
-LGPL-ed sources, and I have no idea how I can use LGPL-ed
-sources in a BSD-licensed program for instance (nor I really
-want to learn about it). If you want to use my code and GPL
-doesn't work for you because you have special clause in your
-license which is not GPL-compatible, or other crap like that,
-I will gladly release it under double license, or do something
-like that. Just tell me what exactly is needed.
+If you want to use my code and LGPL doesn't work for you
+because you have special clause in your license which is not
+LGPL-compatible, or other garbage like that, I will gladly
+release it under double license, or do something like that.
+Just tell me what exactly is needed.
 
 If you aren't too picky about legal stuff, then you can simply
 take code and use it in free software as you like, provided
@@ -22,9 +21,89 @@ small portion of code of course, simple copy/paste must be free
 as in WTFL). This applies to all files (and only to those) which
 do have copyright notice inside; WTFL will work fine for the rest.
 
-Please tell me if I violated someone's rights, or didn't give
-proper credit to someone, I'll fix it (I haven't, to my best
-knowledge).
 
-                            Yevgen Muntyan <muntyan@tamu.edu>
+Third-party stuff, for debian/copyright. Everything below
+is under LGPL unless noted otherwise.
 
+moo/mooutils/moofontsel.h:
+moo/mooutils/moofontsel.c:
+    GTK font selector modified to show monospace fonts
+    (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald
+
+moo/mooterm/pty.h:
+moo/mooterm/pty.c:
+    VTE terminal code modified to work under BSD.
+    (C) 2001,2002 Red Hat, Inc.
+
+mooterm/mooterm-input.c, moo_term_key_press():
+    VTE terminal code.
+    (C) 2001-2004 Red Hat, Inc.
+
+moo/mooutils/mooencodings-data.h:
+    (C) 2002 Red Hat, Inc.
+    (C) 2000-2002 Free Software Foundation, Inc.
+
+moo/mooapp/smclient/*: - eggsmclient library
+    (C) 2007 Novell, Inc.
+
+moo/mooutils/pcre/*: pcre library by by Philip Hazel
+    BSD-licensed, (C) 1997-2006 University of Cambridge
+
+moo/mooedit/gtksourceview/upstream/*:
+moo/mooedit/language-specs/*:
+    gtksourceview library
+    Written over many years by many people, see the files.
+
+    Among those, GPL'ed files:
+        moo/mooedit/language-specs/gtkrc.lang
+        moo/mooedit/language-specs/ini.lang
+        moo/mooedit/language-specs/lua.lang
+        moo/mooedit/language-specs/msil.lang
+        moo/mooedit/language-specs/nemerle.lang
+        moo/mooedit/language-specs/pascal.lang
+        moo/mooedit/language-specs/php.lang
+        moo/mooedit/language-specs/python.lang
+        moo/mooedit/language-specs/R.lang
+        moo/mooedit/language-specs/ruby.lang
+
+moo/moopython/codegen/*: pygtk codegen
+    (C) 2004 Gustavo Carneiro <gjc@gnome.org>
+    (C) ???? James Henstridge <james@daa.com.au>
+    (C) ???? Johan Dahlin <johan@gnome.org>
+
+moo/moopython/pygtk/goocanvas/*: GooCanvas library
+    (C) 2005-2007 Damon Chaplin
+
+moo/moopython/pygtk/pygoocanvas/*: pygoocanvas
+    (C) 2006,2007 Gian Mario Tagliaretti <gianmt@gnome.org>
+    (C) 2006,2007 Gustavo J. A. M. Carneiro <gjc@inescporto.pt>
+
+moo/mooutils/xdgmime/*: xdgmime library
+    (C) 2003,2004  Red Hat, Inc.
+    (C) 2003,2004  Jonathan Blandford <jrb@alum.mit.edu>
+
+moo/xdg-utils:
+    Looks like some sort of BSD license
+    (C) 2006 Kevin Krammer <kevin.krammer@gmx.at>
+    (C) 2006 Jeremy White <jwhite@codeweavers.com>
+
+moo/mooutils/newgtk/gtkfontbutton.[ch]:
+moo/mooutils/newgtk/gtkcolorbutton.[ch]:
+moo/mooutils/newgtk/gmappedfile.[ch]:
+moo/mooutils/newgtk/glib/gregex.[ch]:
+moo/mooutils/moocompat.[ch]:
+    Gtk and Glib code for older systems
+    (C) 1998 David Abilleira Freijeiro <odaf@nexo.es>
+    (C) 1998, 1999 Red Hat, Inc.
+    (C) 2005 Matthias Clasen
+    (C) 1999, 2000 Scott Wimer
+    (C) 2004, Matthias Clasen <mclasen@redhat.com>
+    (C) 2005 - 2007, Marco Barisione <marco@barisione.org>
+    (C) 2000-2001 Red Hat, Inc.
+    (C) 2000 Red Hat, Inc.
+    (C) 1995-1998  Peter Mattis, Spencer Kimball and Josh MacDonald
+    (C) 1998, 2001 Tim Janik
+
+moo/mooutils/pixmaps/medit.png:
+    xedit.png icon from Crystal Clear icon theme by Everaldo Coelho,
+    http://www.everaldo.com

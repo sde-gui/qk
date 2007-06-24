@@ -9,7 +9,7 @@
 #   it under the terms of the GNU Lesser General Public version 2.1 as
 #   published by the Free Software Foundation.
 #
-#   See COPYING.lib file that comes with this distribution for full text
+#   See COPYING file that comes with this distribution for full text
 #   of the license.
 #
 
