@@ -439,9 +439,7 @@ create_popup (MooCombo *combo)
     gtk_widget_set_size_request (GTK_WIDGET (combo->priv->treeview), -1, -1);
     gtk_tree_view_append_column (combo->priv->treeview, combo->priv->column);
     gtk_tree_view_set_headers_visible (combo->priv->treeview, FALSE);
-#if 1 && GTK_CHECK_VERSION(2,6,0)
     gtk_tree_view_set_hover_selection (combo->priv->treeview, TRUE);
-#endif
 
     selection = gtk_tree_view_get_selection (combo->priv->treeview);
     gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);

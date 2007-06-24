@@ -18,9 +18,6 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-/*
- * Taken from glib-2.8 for glib < 2.8
- */
 #ifndef __G_MAPPED_FILE_H__
 #define __G_MAPPED_FILE_H__
 
@@ -32,7 +29,7 @@ typedef struct _GMappedFile GMappedFile;
 
 GMappedFile *g_mapped_file_new          (const gchar  *filename,
 				         gboolean      writable,
-				         GError      **error);
+				         GError      **error) G_GNUC_MALLOC;
 gsize        g_mapped_file_get_length   (GMappedFile  *file);
 gchar       *g_mapped_file_get_contents (GMappedFile  *file);
 void         g_mapped_file_free         (GMappedFile  *file);

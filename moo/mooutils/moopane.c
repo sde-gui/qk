@@ -28,7 +28,6 @@
 
 #include "moostock.h"
 #include "mooutils-misc.h"
-#include "moocompat.h"
 #include "mooutils-gobject.h"
 #include "mooi18n.h"
 

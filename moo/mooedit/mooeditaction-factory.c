@@ -18,9 +18,9 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/mooactionbase.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/moomenuaction.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/moocompat.h"
 #include <string.h>
 #include <gobject/gvaluecollector.h>
 

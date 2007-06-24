@@ -1749,10 +1749,8 @@ moo_text_view_cut_or_copy (GtkTextView *text_view,
                                        G_OBJECT (text_view)))
         return;
 
-#if GTK_CHECK_VERSION(2,6,0)
     gtk_clipboard_set_can_store (clipboard, targets + 1,
                                  G_N_ELEMENTS (targets) - 1);
-#endif
 
     if (delete)
     {
@@ -1961,11 +1959,9 @@ moo_text_view_unrealize (GtkWidget *widget)
         view->priv->dnd.scroll_timeout = 0;
     }
 
-#if GTK_CHECK_VERSION(2,6,0)
     clipboard = gtk_widget_get_clipboard (widget, GDK_SELECTION_CLIPBOARD);
     if (gtk_clipboard_get_owner (clipboard) == G_OBJECT (view))
         gtk_clipboard_store (clipboard);
-#endif
 
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->unrealize (widget);
 }

@@ -30,13 +30,13 @@
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moopython.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/xdgmime/xdgmime.h"
+#include <glib/gmappedfile.h>
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>

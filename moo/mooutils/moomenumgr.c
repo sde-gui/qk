@@ -12,7 +12,6 @@
  */
 
 #include "mooutils/moomenumgr.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-misc.h"
 #include <gtk/gtk.h>

@@ -21,7 +21,6 @@
 #include "moofileview/moofileentry.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooprefs.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/mooutils-gobject.h"

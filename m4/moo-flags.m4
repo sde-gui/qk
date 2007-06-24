@@ -39,8 +39,14 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   MOO_CFLAGS="$MOO_CFLAGS -I"$moo_top_src_dir/$1" $GTK_CFLAGS $MOO_PCRE_CFLAGS -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\""
   MOO_LIBS="$MOO_LIBS $GTK_LIBS $GTHREAD_LIBS $MOO_PCRE_LIBS -lm"
 
-  if test "x$GLIB_2_14" != xno; then
-    MOO_CFLAGS="-I$moo_top_src_dir/$1/mooutils/newgtk $MOO_CFLAGS"
+  if test "x$GLIB_2_14" != xyes; then
+    MOO_CFLAGS="-I$moo_top_src_dir/$1/mooutils/newgtk/glib-2.14 $MOO_CFLAGS"
+  fi
+  if test "x$GLIB_2_12" != xyes; then
+    MOO_CFLAGS="-I$moo_top_src_dir/$1/mooutils/newgtk/glib-2.12 $MOO_CFLAGS"
+  fi
+  if test "x$GLIB_2_8" != xyes; then
+    MOO_CFLAGS="-I$moo_top_src_dir/$1/mooutils/newgtk/glib-2.8 $MOO_CFLAGS"
   fi
 
   if test x$MOO_USE_FAM = xyes; then

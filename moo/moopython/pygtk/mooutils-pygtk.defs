@@ -772,6 +772,7 @@
 
 ;; From ../mooutils/moohistoryentry.h
 
+(ifndef pygtk-2.6
 (define-function moo_history_combo_new
   (c-name "moo_history_combo_new")
   (is-constructor-of "MooHistoryCombo")
@@ -779,6 +780,7 @@
   (properties
     '("user_id" (optional))
   )
+)
 )
 
 (define-method set_list
@@ -809,6 +811,7 @@
 
 ;; From ../mooutils/moohistorylist.h
 
+(ifndef pygtk-2.6
 (define-function moo_history_list_new
   (c-name "moo_history_list_new")
   (is-constructor-of "MooHistoryList")
@@ -816,6 +819,7 @@
   (properties
     '("user_id")
   )
+)
 )
 
 (define-method get_model
@@ -1162,6 +1166,7 @@
 
 ;; From ../mooutils/mooprefsdialog.h
 
+(ifndef pygtk-2.6
 (define-function moo_prefs_dialog_new
   (c-name "moo_prefs_dialog_new")
   (is-constructor-of "MooPrefsDialog")
@@ -1169,6 +1174,7 @@
   (properties
     '("title" (optional))
   )
+)
 )
 
 (define-method run
@@ -1222,6 +1228,7 @@
 
 ;; From ../mooutils/mooprefsdialogpage.h
 
+(ifndef pygtk-2.6
 (define-function moo_prefs_dialog_page_new
   (c-name "moo_prefs_dialog_page_new")
   (is-constructor-of "MooPrefsDialogPage")
@@ -1230,6 +1237,7 @@
     '("label" (optional))
     '("icon_stock_id" (optional))
   )
+)
 )
 
 (define-function prefs_dialog_page_new_from_xml
@@ -1624,6 +1632,7 @@
 
 ;; From moo/mooutils/mooundo.h
 
+(ifndef pygtk-2.6
 (define-function moo_undo_stack_new
   (c-name "moo_undo_stack_new")
   (is-constructor-of "MooUndoStack")
@@ -1631,6 +1640,7 @@
   (properties
     '("document")
   )
+)
 )
 
 ;; (define-method add_action
@@ -2299,6 +2309,7 @@
 
 ;; mooutils/moofiledialog.h
 
+(ifndef pygtk-2.6
 (define-function moo_file_dialog_new
   (c-name "moo_file_dialog_new")
   (is-constructor-of "MooFileDialog")
@@ -2311,6 +2322,7 @@
     '("dir" (optional))
     '("name" (optional))
   )
+)
 )
 
 (define-method set_filter_mgr

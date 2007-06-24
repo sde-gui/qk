@@ -141,7 +141,6 @@ _moo_edit_save_changes_dialog (MooEdit *edit)
     g_return_val_if_fail (MOO_IS_EDIT (edit), MOO_EDIT_RESPONSE_CANCEL);
     name = moo_edit_get_display_basename (edit);
 
-#if GTK_CHECK_VERSION(2,6,0)
     dialog = GTK_DIALOG (gtk_message_dialog_new (
         GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
         GTK_DIALOG_MODAL,
@@ -155,46 +154,6 @@ _moo_edit_save_changes_dialog (MooEdit *edit)
     gtk_message_dialog_format_secondary_text (
         GTK_MESSAGE_DIALOG (dialog),
         _("If you don't save, changes will be discarded"));
-#elif GTK_CHECK_VERSION(2,4,0)
-    {
-        char *question, *markup;
-
-        question = name ?
-            g_strdup_printf (_("Save changes to document \"%s\" before closing?"), name) :
-            g_strdup (_("Save changes to the document before closing?"));
-        markup = g_markup_printf_escaped ("<span weight=\"bold\" size=\"larger\">%s</span>\n%s",
-                                          question,
-                                          _("If you don't save, changes will be discarded"));
-
-        dialog = GTK_DIALOG (gtk_message_dialog_new_with_markup (
-            GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
-            GTK_DIALOG_MODAL,
-            GTK_MESSAGE_WARNING,
-            GTK_BUTTONS_NONE,
-            "%s", markup);
-
-        g_free (markup);
-        g_free (question);
-    }
-#else /* !GTK_CHECK_VERSION(2,4,0) */
-    {
-        char *markup;
-
-        question = name ?
-            g_strdup_printf (_("Save changes to document \"%s\" before closing?"), name) :
-            g_strdup (_("Save changes to the document before closing?"));
-
-        dialog = GTK_DIALOG (gtk_message_dialog_new (
-            GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
-            GTK_DIALOG_MODAL,
-            GTK_MESSAGE_WARNING,
-            GTK_BUTTONS_NONE,
-            "%s\n%s", question,
-            _("If you don't save, changes will be discarded"));
-
-        g_free (question);
-    }
-#endif /* !GTK_CHECK_VERSION(2,4,0) */
 
     gtk_dialog_add_buttons (dialog,
         /* Translators: this is a button label (it's "Do Not Save" in some toolkits), try to keep it short */
@@ -203,10 +162,8 @@ _moo_edit_save_changes_dialog (MooEdit *edit)
         GTK_STOCK_SAVE, GTK_RESPONSE_YES,
         NULL);
 
-#if GTK_CHECK_VERSION(2,6,0)
     gtk_dialog_set_alternative_button_order (dialog,
         GTK_RESPONSE_YES, GTK_RESPONSE_NO, GTK_RESPONSE_CANCEL, -1);
-#endif /* GTK_CHECK_VERSION(2,6,0) */
 
     gtk_dialog_set_default_response (dialog, GTK_RESPONSE_YES);
 
@@ -420,12 +377,10 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
 
     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_YES);
 
-#if GTK_CHECK_VERSION(2,6,0)
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
                                              GTK_RESPONSE_YES,
                                              GTK_RESPONSE_NO,
                                              GTK_RESPONSE_CANCEL, -1);
-#endif /* GTK_CHECK_VERSION(2,6,0) */
 
     label = moo_glade_xml_get_widget (xml, "label");
     question = g_strdup_printf (dngettext (GETTEXT_PACKAGE,
@@ -618,32 +573,22 @@ moo_edit_question_dialog (MooEdit    *edit,
     GtkWindow *parent = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit)));
     GtkWidget *dialog;
 
-#if !GTK_CHECK_VERSION(2,6,0)
-#warning "Implement me: moo_edit_question_dialog"
-    dialog = gtk_message_dialog_new (parent, GTK_DIALOG_MODAL,
-                                     GTK_MESSAGE_WARNING,
-                                     GTK_BUTTONS_NONE,
-                                     text);
-#else
     dialog = gtk_message_dialog_new (parent, GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_WARNING,
                                      GTK_BUTTONS_NONE,
                                      text);
     gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
                                               "%s", secondary);
-#endif
 
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
                             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                             button, GTK_RESPONSE_YES,
                             NULL);
 
-#if GTK_CHECK_VERSION(2,6,0)
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
                                              GTK_RESPONSE_YES,
                                              GTK_RESPONSE_CANCEL,
                                              -1);
-#endif /* GTK_CHECK_VERSION(2,6,0) */
 
     res = gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);
@@ -730,12 +675,10 @@ _moo_text_search_from_start_dialog (GtkWidget *widget,
                             GTK_STOCK_YES, GTK_RESPONSE_YES,
                             NULL);
     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_YES);
-#if GTK_CHECK_VERSION(2,6,0)
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
                                              GTK_RESPONSE_YES,
                                              GTK_RESPONSE_CANCEL,
                                              -1);
-#endif /* GTK_CHECK_VERSION(2,6,0) */
 
     response = gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);

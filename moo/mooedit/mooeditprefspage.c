@@ -19,7 +19,6 @@
 #include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooutils/mooprefsdialog.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/moofontsel.h"

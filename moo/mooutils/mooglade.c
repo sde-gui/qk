@@ -15,7 +15,6 @@
 #include "mooutils/moomarkup.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooi18n.h"
@@ -1415,7 +1414,6 @@ widget_props_add (WidgetProps  *props,
         props->mask |= PROP_HISTORY;
         props->history = parse_int (value);
     }
-#if GTK_CHECK_VERSION(2,4,0)
     else if (!strcmp (name, "items") &&
              GTK_IS_COMBO_BOX_CLASS (klass))
     {
@@ -1424,7 +1422,6 @@ widget_props_add (WidgetProps  *props,
 //             g_message ("%s: ignoring ComboBox items property", G_STRLOC);
 #endif
     }
-#endif /* GTK_CHECK_VERSION(2,4,0) */
     else
     {
         special = FALSE;
@@ -2621,16 +2618,12 @@ get_type_by_name (const char *name)
     if (type)
         return type;
 
-#if GTK_CHECK_VERSION(2,6,0)
     REGISTER_TYPE ("GtkAboutDialog", GTK_TYPE_ABOUT_DIALOG);
     REGISTER_TYPE ("GtkCellRendererCombo", GTK_TYPE_CELL_RENDERER_COMBO);
     REGISTER_TYPE ("GtkCellRendererProgress", GTK_TYPE_CELL_RENDERER_PROGRESS);
     REGISTER_TYPE ("GtkCellView", GTK_TYPE_CELL_VIEW);
     REGISTER_TYPE ("GtkIconView", GTK_TYPE_ICON_VIEW);
     REGISTER_TYPE ("GtkMenuToolButton", GTK_TYPE_MENU_TOOL_BUTTON);
-#endif
-
-#if GTK_CHECK_VERSION(2,4,0)
     REGISTER_TYPE ("GtkAccelMap", GTK_TYPE_ACCEL_MAP);
     REGISTER_TYPE ("GtkAction", GTK_TYPE_ACTION);
     REGISTER_TYPE ("GtkActionGroup", GTK_TYPE_ACTION_GROUP);
@@ -2661,7 +2654,6 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkTreeModelFilter", GTK_TYPE_TREE_MODEL_FILTER);
     REGISTER_TYPE ("GtkUiManager", GTK_TYPE_UI_MANAGER);
     REGISTER_TYPE ("GtkUiManagerItemType", GTK_TYPE_UI_MANAGER_ITEM_TYPE);
-#endif /* GTK_CHECK_VERSION(2,4,0) */
     REGISTER_TYPE ("GtkAccelFlags", GTK_TYPE_ACCEL_FLAGS);
     REGISTER_TYPE ("GtkAccelGroup", GTK_TYPE_ACCEL_GROUP);
     REGISTER_TYPE ("GtkAccelLabel", GTK_TYPE_ACCEL_LABEL);

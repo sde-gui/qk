@@ -256,9 +256,7 @@ moo_text_popup_ensure_popup (MooTextPopup *popup)
         gtk_tree_view_set_headers_visible (popup->priv->treeview, FALSE);
         gtk_tree_view_append_column (popup->priv->treeview,
                                      popup->priv->column);
-#if GTK_CHECK_VERSION(2,6,0)
         gtk_tree_view_set_hover_selection (popup->priv->treeview, TRUE);
-#endif
 
         gtk_widget_show_all (frame);
 

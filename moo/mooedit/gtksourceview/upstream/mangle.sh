@@ -17,6 +17,12 @@ case "$base" in
 #     custom_cmd="-e s/g_object_new.*GTK_TYPE_SOURCE_LANGUAGE/g_object_new(MOO_TYPE_LANG/g"
 #     ;;
   gtksourcelanguage-parser-1.c)
+    echo '#include <glib/gmappedfile.h>'
+    ;;
+  gtksourcestyle.c)
+    echo '#include "mooutils/moocompat.h"'
+    ;;
+  gtksourcestylescheme.c)
     echo '#include "mooutils/moocompat.h"'
     ;;
 esac

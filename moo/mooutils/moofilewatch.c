@@ -44,7 +44,6 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moofilewatch.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/moocompat.h"
 
 
 #if 1

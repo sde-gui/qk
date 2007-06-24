@@ -14,7 +14,6 @@
 #define MOOPREFS_COMPILATION
 #include "mooutils/moomarshals.h"
 #include "mooutils/moostock.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooprefsdialogpage.h"
 #include "mooutils/mooutils-gobject.h"

@@ -20,7 +20,6 @@
 #include "mooterm/mooterm-private.h"
 #include "mooterm/pty.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/mooutils-misc.h"
 
 #include <sys/types.h>

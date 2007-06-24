@@ -25,6 +25,7 @@
 #include "moofileview/moofileicons.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/xdgmime/xdgmime.h"
 #include <glib/gstdio.h>

@@ -220,6 +220,7 @@
 
 ;; From ./moo/mooutils/moopaned.h
 
+(ifndef pygtk-2.6
 (define-function moo_paned_new
   (c-name "moo_paned_new")
   (is-constructor-of "MooPaned")
@@ -227,6 +228,7 @@
   (properties
     '("pane_position" (optional))
   )
+)
 )
 
 (define-method insert_pane

@@ -22,7 +22,6 @@
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/mooeditprefs.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/moofilewatch.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/mooi18n.h"

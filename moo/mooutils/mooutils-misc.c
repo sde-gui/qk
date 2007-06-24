@@ -20,8 +20,8 @@
 #include "mooutils/moologwindow-glade.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
-#include "mooutils/moocompat.h"
 #include <gtk/gtk.h>
+#include <glib/gmappedfile.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -2017,22 +2017,28 @@ _moo_io_add_watch_full (GIOChannel    *channel,
 const char *
 _moo_intern_string (const char *string)
 {
-    static GHashTable *hash;
-    gpointer original;
-    gpointer dummy;
-
     if (!string)
         return NULL;
 
-    if (G_UNLIKELY (!hash))
-        hash = g_hash_table_new (g_str_hash, g_str_equal);
-
-    if (!g_hash_table_lookup_extended (hash, string, &original, &dummy))
+#if GLIB_CHECK_VERSION(2,10,0)
+    return g_intern_string (string);
+#else
     {
-        char *copy = g_strdup (string);
-        g_hash_table_insert (hash, copy, NULL);
-        original = copy;
-    }
+        static GHashTable *hash;
+        gpointer original;
+        gpointer dummy;
 
-    return original;
+        if (G_UNLIKELY (!hash))
+            hash = g_hash_table_new (g_str_hash, g_str_equal);
+
+        if (!g_hash_table_lookup_extended (hash, string, &original, &dummy))
+        {
+            char *copy = g_strdup (string);
+            g_hash_table_insert (hash, copy, NULL);
+            original = copy;
+        }
+
+        return original;
+    }
+#endif
 }

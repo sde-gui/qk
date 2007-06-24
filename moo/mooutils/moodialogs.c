@@ -15,7 +15,6 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooutils-misc.h"
-#include "mooutils/moocompat.h"
 
 
 static GtkWidget *
@@ -26,7 +25,6 @@ create_message_dialog (GtkWindow  *parent,
 {
     GtkWidget *dialog;
 
-#if GTK_CHECK_VERSION(2,6,0)
     dialog = gtk_message_dialog_new_with_markup (parent,
                                                  GTK_DIALOG_MODAL,
                                                  type,
@@ -35,21 +33,6 @@ create_message_dialog (GtkWindow  *parent,
     if (secondary_text)
         gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
                                                   "%s", secondary_text);
-#elif GTK_CHECK_VERSION(2,4,0)
-    dialog = gtk_message_dialog_new_with_markup (parent,
-                                                 GTK_DIALOG_MODAL,
-                                                 type,
-                                                 GTK_BUTTONS_NONE,
-                                                 "<span weight=\"bold\" size=\"larger\">%s</span>\n%s",
-                                                 text, secondary_text ? secondary_text : "");
-#else /* !GTK_CHECK_VERSION(2,4,0) */
-    dialog = gtk_message_dialog_new (parent,
-                                     GTK_DIALOG_MODAL,
-                                     type,
-                                     GTK_BUTTONS_NONE,
-                                     "%s\n%s",
-                                     text, secondary_text ? secondary_text : "");
-#endif /* !GTK_CHECK_VERSION(2,4,0) */
 
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
                             GTK_STOCK_CLOSE, GTK_RESPONSE_CANCEL,
@@ -312,12 +295,10 @@ moo_overwrite_file_dialog (GtkWidget  *parent,
                                      "A file named \"%s\" already exists.  Do you want to replace it?",
                                      display_name);
 
-#if GTK_CHECK_VERSION(2,6,0)
     gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
                                               "The file already exists in \"%s\".  Replacing it will "
                                               "overwrite its contents.",
                                               display_dirname);
-#endif
 
     gtk_dialog_add_button (GTK_DIALOG (dialog), GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL);
 
@@ -327,12 +308,10 @@ moo_overwrite_file_dialog (GtkWidget  *parent,
     gtk_widget_show (button);
     gtk_dialog_add_action_widget (GTK_DIALOG (dialog), button, GTK_RESPONSE_YES);
 
-#if GTK_CHECK_VERSION(2,6,0)
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
                                              GTK_RESPONSE_YES,
                                              GTK_RESPONSE_CANCEL,
                                              -1);
-#endif /* GTK_CHECK_VERSION(2,6,0) */
 
     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
 

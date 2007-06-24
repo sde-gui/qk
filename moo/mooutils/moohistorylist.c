@@ -14,7 +14,6 @@
 #include "mooutils/moomarshals.h"
 #include "mooutils/moohistorylist.h"
 #include "mooutils/mooprefs.h"
-#include "mooutils/moocompat.h"
 #include <gtk/gtk.h>
 #include <string.h>
 

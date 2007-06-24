@@ -18,11 +18,6 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-/*
- * Taken from glib-2.8 for glib < 2.8. Added noop P_() and _().
- * Modified includes to make it compile outside of glib tarball.
- * Added empty file handling.
- */
 
 #include "config.h"
 
@@ -37,22 +32,17 @@
 #include <sys/mman.h>
 #endif
 
-#include <glib.h>
-#if GLIB_CHECK_VERSION(2,6,0)
-#include <glib/gstdio.h>
-#else
-#include "mooutils/mooutils-fs.h"
-#define g_open m_open
-#endif
-#include "mooutils/moocompat.h"
-
-#define P_(s) (s)
-#define _(s) (s)
+#include "glibconfig.h"
 
 #ifdef G_OS_WIN32
 #include <windows.h>
 #include <io.h>
 #endif
+
+#include "gmappedfile.h"
+
+
+#include "galias.h"
 
 #ifndef _O_BINARY
 #define _O_BINARY 0
@@ -141,9 +131,8 @@ g_mapped_file_new (const gchar  *filename,
 
   if (st.st_size == 0)
     {
-      static char zero = 0;
-      file->contents = &zero;
       file->length = 0;
+      file->contents = "";
       close (fd);
       return file;
     }
@@ -151,7 +140,7 @@ g_mapped_file_new (const gchar  *filename,
   file->contents = MAP_FAILED;
 
 #ifdef HAVE_MMAP
-  if ((gsize) st.st_size > G_MAXSIZE)
+  if (st.st_size > G_MAXSIZE)
     {
       errno = EINVAL;
     }
@@ -263,15 +252,18 @@ g_mapped_file_free (GMappedFile *file)
   g_return_if_fail (file != NULL);
 
   if (file->length)
-    {
+  {
 #ifdef HAVE_MMAP
-      munmap (file->contents, file->length);
+    munmap (file->contents, file->length);
 #endif
 #ifdef G_OS_WIN32
-      UnmapViewOfFile (file->contents);
-      CloseHandle (file->mapping);
+    UnmapViewOfFile (file->contents);
+    CloseHandle (file->mapping);
 #endif
-    }
+  }
 
   g_free (file);
 }
+
+
+#define __G_MAPPED_FILE_C__

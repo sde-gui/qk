@@ -1,25 +1,4 @@
 ##############################################################################
-# _MOO_AC_PYGTK_CODEGEN
-#
-AC_DEFUN([_MOO_AC_PYGTK_CODEGEN],[
-  MOO_USE_CUSTOM_CODEGEN=true
-
-  AC_ARG_WITH([custom-codegen], AC_HELP_STRING([--with-custom-codegen],[whether to use custom copy of pygtk codegen (default = YES)]),[
-    if test x$with_custom_codegen = "xno"; then
-      MOO_USE_CUSTOM_CODEGEN=false
-    fi
-  ])
-
-  if $MOO_USE_CUSTOM_CODEGEN; then
-    AC_MSG_NOTICE([using patched codegen])
-  else
-    AC_MSG_NOTICE([using installed codegen])
-    AC_MSG_NOTICE([pygtk codegen dir: $PYGTK_CODEGEN_DIR])
-  fi
-])
-
-
-##############################################################################
 # _MOO_AC_CHECK_PYGTK_REAL(python-version,action-if-found,action-if-not-found)
 # checks pygtk stuff
 #
@@ -133,10 +112,5 @@ AC_DEFUN_ONCE([MOO_AC_PYTHON],[
   AM_CONDITIONAL(MOO_USE_PYTHON, $MOO_USE_PYTHON)
   if $MOO_USE_PYTHON; then
     AC_DEFINE(MOO_USE_PYTHON, 1, [build python bindings and plugin])
-    _MOO_AC_PYGTK_CODEGEN
-  else
-    MOO_USE_CUSTOM_CODEGEN=false
   fi
-
-  AM_CONDITIONAL(MOO_USE_CUSTOM_CODEGEN, $MOO_USE_CUSTOM_CODEGEN)
 ])

@@ -13,7 +13,6 @@
 
 #include "mooutils/moomenuaction.h"
 #include "mooutils/mooaction-private.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include <gtk/gtk.h>
 #include <string.h>

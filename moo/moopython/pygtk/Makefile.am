@@ -122,18 +122,13 @@ if MOO_OS_MINGW
 codegen_platform = --platform win32
 endif
 
-if MOO_USE_CUSTOM_CODEGEN
 codegen_files =					\
 	$(srcdir)/../codegen/codegen.py		\
 	$(srcdir)/../codegen/argtypes.py	\
 	$(srcdir)/../codegen/argtypes_m.py	\
 	$(srcdir)/../codegen/reversewrapper.py
-
 codegen_script = $(srcdir)/../codegen/codegen.py
 codegen = $(PYTHON) $(codegen_script) $(codegen_platform) --pygtk-version=$(PYGTK_MINOR_VERSION)
-else
-codegen = $(PYTHON) $(PYGTK_CODEGEN_DIR)/codegen.py $(PYGTK_CODEGEN_ARGS)
-endif
 
 mooutils-pygtk.c: mooutils-pygtk.defs mooutils-pygtk.override $(mooutils_override_files) $(mooutils_defs_files) $(codegen_files)
 	$(codegen) --prefix _moo_utils \

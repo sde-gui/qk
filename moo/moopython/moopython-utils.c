@@ -16,7 +16,6 @@
 # include "config.h"
 #endif
 #include "moopython/moopython-utils.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/mooutils-misc.h"
 #define NO_IMPORT_PYGOBJECT
 #include "pygobject.h"

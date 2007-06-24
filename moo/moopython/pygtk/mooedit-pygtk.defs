@@ -1273,6 +1273,7 @@
 
 ;; From moo/mooedit/moolinemark.h
 
+(ifndef pygtk-2.6
 (define-function moo_line_mark_new
   (c-name "moo_line_mark_new")
   (is-constructor-of "MooLineMark")
@@ -1285,6 +1286,7 @@
     '("background" (optional))
     '("background_gdk" (optional))
   )
+)
 )
 
 (define-method set_background_gdk

@@ -14,7 +14,6 @@
 #include "mooutils/mooaccelbutton.h"
 #include "mooutils/mooaccelbutton-glade.h"
 #include "mooutils/mooglade.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
@@ -291,12 +290,10 @@ moo_accel_button_clicked (GtkButton *gtkbutton)
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");
 
-#if GTK_CHECK_VERSION(2,6,0)
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
                                              GTK_RESPONSE_OK,
                                              GTK_RESPONSE_CANCEL,
                                             -1);
-#endif /* GTK_CHECK_VERSION(2,6,0) */
 
     if (button->title)
         gtk_window_set_title (GTK_WINDOW (dialog), button->title);

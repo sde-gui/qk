@@ -21,13 +21,6 @@
 #include <gtk/gtk.h>
 #include <string.h>
 
-#if !GTK_CHECK_VERSION(2,6,0)
-#include "mooutils/stock-about-16.h"
-#include "mooutils/stock-about-24.h"
-#include "mooutils/stock-edit-16.h"
-#include "mooutils/stock-edit-24.h"
-#endif
-
 #if !GTK_CHECK_VERSION(2,10,0)
 #include "mooutils/stock-select-all-16.h"
 #include "mooutils/stock-select-all-24.h"
@@ -54,8 +47,6 @@ static GtkStockItem stock_items_2_10[] = {
 };
 #endif
 
-
-#if GTK_CHECK_VERSION(2,4,0)
 
 static void
 add_icon_name_if_present (GtkIconSet *set,
@@ -168,53 +159,6 @@ static void add_icon2   (GtkIconFactory *factory,
 #endif /* !GTK_CHECK_VERSION(2,10,0) */
 
 
-#else /* !GTK_CHECK_VERSION(2,4,0) */
-
-/* TODO: take code from gtk */
-
-
-static void
-add_icon (GtkIconFactory *factory,
-          const char     *stock_id,
-          G_GNUC_UNUSED const char *icon_name,
-          G_GNUC_UNUSED gint size,
-          const guchar   *data)
-{
-    GtkIconSet *set = NULL;
-    GdkPixbuf *pixbuf = NULL;
-
-    pixbuf = gdk_pixbuf_new_from_inline (-1, data, FALSE, NULL);
-
-    if (pixbuf)
-    {
-        set = gtk_icon_set_new_from_pixbuf (pixbuf);
-        gdk_pixbuf_unref (pixbuf);
-    }
-    else
-    {
-        set = gtk_icon_set_new ();
-    }
-
-    gtk_icon_factory_add (factory, stock_id, set);
-    gtk_icon_set_unref (set);
-}
-
-static void
-add_icon2 (GtkIconFactory *factory,
-           const char     *stock_id,
-           const char     *icon_name,
-           gint            size1,
-           const guchar   *data1,
-           G_GNUC_UNUSED gint size2,
-           G_GNUC_UNUSED const guchar *data2)
-{
-    add_icon (factory, stock_id, icon_name, size1, data1);
-}
-
-
-#endif /* !GTK_CHECK_VERSION(2,4,0) */
-
-
 GtkIconSize
 _moo_get_icon_size_real_small (void)
 {
@@ -296,13 +240,6 @@ _moo_stock_init (void)
     add_icon (factory, MOO_STOCK_DETACH, NULL, REAL_SMALL, MOO_DETACH_ICON);
     add_icon (factory, MOO_STOCK_ATTACH, NULL, REAL_SMALL, MOO_ATTACH_ICON);
     add_icon (factory, MOO_STOCK_KEEP_ON_TOP, NULL, REAL_SMALL, MOO_KEEP_ON_TOP_ICON);
-
-#if !GTK_CHECK_VERSION(2,6,0)
-    add_icon2 (factory, GTK_STOCK_ABOUT, "stock_about",
-               24, STOCK_ABOUT_24, 16, STOCK_ABOUT_16);
-    add_icon2 (factory, GTK_STOCK_EDIT, "stock_edit",
-               24, STOCK_EDIT_24, 16, STOCK_EDIT_16);
-#endif
 
 #if !GTK_CHECK_VERSION(2,10,0)
     add_icon2 (factory, GTK_STOCK_SELECT_ALL, "edit-select-all",

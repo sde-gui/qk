@@ -13,7 +13,6 @@
 
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/moodialogs.h"
 
 

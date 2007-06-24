@@ -16,7 +16,6 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooutils-misc.h"
-#include "mooutils/moocompat.h"
 #include <string.h>
 #include <glib.h>
 

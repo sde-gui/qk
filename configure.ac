@@ -40,7 +40,6 @@ moo/moo-config.h
 moo/Makefile
 moo/mooutils/Makefile
 moo/mooutils/newgtk/Makefile
-moo/mooutils/newgtk/glib/Makefile
 moo/mooscript/Makefile
 moo/moofileview/Makefile
 moo/mooterm/Makefile

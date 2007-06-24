@@ -15,7 +15,6 @@
 #include "mooterm/mootermpt-private.h"
 #include "mooterm/mooterm-private.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/moocompat.h"
 
 
 static void     moo_term_pt_finalize        (GObject        *object);

@@ -23,7 +23,6 @@
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooedit/mooeditor-private.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"

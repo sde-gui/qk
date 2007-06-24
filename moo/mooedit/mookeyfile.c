@@ -14,7 +14,6 @@
 #include "mooedit/mookeyfile.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
-#include "mooutils/moocompat.h"
 #include <string.h>
 
 

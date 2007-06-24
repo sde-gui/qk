@@ -1679,6 +1679,8 @@ def main(argv):
         elif opt == '--pygtk-version':
             global pygtk_version
             pygtk_version = int(arg)
+            if pygtk_version < 8:
+                defines['pygtk-2.6'] = '1'
         elif opt in ('-t', '--load-types'):
             globals = {}
             execfile(arg, globals)

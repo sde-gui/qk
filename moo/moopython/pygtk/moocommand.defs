@@ -154,6 +154,7 @@
 )
 
 
+(ifndef pygtk-2.6
 (define-function moo_command_context_new
   (c-name "moo_command_context_new")
   (is-constructor-of "MooCommandContext")
@@ -162,6 +163,7 @@
     '("doc" (optional))
     '("window" (optional))
   )
+)
 )
 
 (define-method set_doc

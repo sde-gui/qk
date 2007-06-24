@@ -14,7 +14,7 @@
 #ifndef MOO_EDIT_PLUGINS_H
 #define MOO_EDIT_PLUGINS_H
 
-#include <gtk/gtkversion.h>
+#include <glib.h>
 
 G_BEGIN_DECLS
 
@@ -25,10 +25,7 @@ gboolean _moo_find_plugin_init              (void);
 
 gboolean _moo_active_strings_plugin_init    (void);
 gboolean _moo_completion_plugin_init        (void);
-
-#if GTK_CHECK_VERSION(2,6,0)
 gboolean _moo_file_selector_plugin_init     (void);
-#endif
 
 
 G_END_DECLS

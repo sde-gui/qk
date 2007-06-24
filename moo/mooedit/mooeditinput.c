@@ -16,7 +16,6 @@
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mootextiter.h"
 #include "mooedit/mootextbuffer.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/mooutils-misc.h"
 #include <gdk/gdkkeysyms.h>
 

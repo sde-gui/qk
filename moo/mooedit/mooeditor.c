@@ -23,7 +23,6 @@
 #include "mooedit/mooedit-ui.h"
 #include "mooedit/medit-ui.h"
 #include "mooutils/moomenuaction.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-gobject.h"
@@ -31,6 +30,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooi18n.h"
+#include <glib/gbase64.h>
 #include <string.h>
 
 

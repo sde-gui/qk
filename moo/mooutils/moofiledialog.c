@@ -15,7 +15,6 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooutils-misc.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooencodings.h"
 #include <string.h>
@@ -317,8 +316,6 @@ moo_file_dialog_class_init (MooFileDialogClass *klass)
 }
 
 
-#if GTK_CHECK_VERSION(2,4,0)
-
 inline static
 GtkWidget *file_chooser_dialog_new (const char *title,
                                     GtkFileChooserAction action,
@@ -331,12 +328,10 @@ GtkWidget *file_chooser_dialog_new (const char *title,
                                          okbtn, GTK_RESPONSE_OK,
                                          NULL);
 
-#if GTK_CHECK_VERSION(2,6,0)
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
                                              GTK_RESPONSE_OK,
                                              GTK_RESPONSE_CANCEL,
                                              -1);
-#endif /* GTK_CHECK_VERSION(2,6,0) */
 
     if (start_dir)
         gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER(dialog),
@@ -352,42 +347,6 @@ GtkWidget *file_chooser_dialog_new (const char *title,
     (gtk_file_chooser_get_filenames (GTK_FILE_CHOOSER (dialog)))
 #define file_chooser_set_name(dialog, name) \
     gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), name)
-
-#else /* !GTK_CHECK_VERSION(2,4,0) */
-
-#define GtkFileChooserAction int
-#define GTK_FILE_CHOOSER_ACTION_SAVE            1
-#define GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER   2
-#define GTK_FILE_CHOOSER_ACTION_OPEN            3
-
-inline static
-GtkWidget *file_chooser_dialog_new (const char              *title,
-                                    G_GNUC_UNUSED GtkFileChooserAction action,
-                                    G_GNUC_UNUSED const char *okbtn,
-                                    const char              *start_dir)
-{
-    GtkWidget *dialog = gtk_file_selection_new (title);
-
-    if (start_dir)
-    {
-        char *dir = g_strdup_printf ("%s/", start_dir);
-        gtk_file_selection_set_filename (GTK_FILE_SELECTION (dialog), dir);
-        g_free (dir);
-    }
-
-    return dialog;
-}
-
-#define file_chooser_set_select_multiple(dialog,multiple) \
-    gtk_file_selection_set_select_multiple (GTK_FILE_SELECTION (dialog), multiple)
-#define file_chooser_get_filename(dialog) \
-    g_strdup (gtk_file_selection_get_filename (GTK_FILE_SELECTION (dialog)))
-#define file_chooser_get_filenames(dialog)  \
-    (gtk_file_selection_get_selections (GTK_FILE_SELECTION (dialog)))
-#define file_chooser_set_name(dialog, name)
-
-#endif /* !GTK_CHECK_VERSION(2,4,0) */
-
 
 const char *
 moo_file_dialog (GtkWidget  *parent,

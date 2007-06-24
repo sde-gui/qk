@@ -21,7 +21,6 @@
 #include "mooedit/mooedit-enums.h"
 #include "mooutils/moohistorycombo.h"
 #include "mooutils/mooentry.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>

@@ -14,20 +14,14 @@
 /*
  *  Some functions here are taken from GTK+ and GLIB (http://gtk.org/)
  *
- *  g_signal_accumulator_true_handled function is taken from gobject/gsignal.c;
- *  it's Copyright (C) 2000-2001 Red Hat, Inc.
- *
- *  g_mkdir_with_parents function is taken from glib/gfileutils.c;
+ *  g_mkdir_with_parents and g_file_set_contents are taken from glib/gfileutils.c;
  *  it's Copyright 2000 Red Hat, Inc.
+ *
+ *  g_utf8_collate_key_for_filename is from glib/gunicollate.c:
+ *  it's Copyright 2001,2005 Red Hat, Inc.
  *
  *  g_listenv function is taken from glib/gutils.c;
  *  it's Copyright (C) 1995-1998  Peter Mattis, Spencer Kimball and Josh MacDonald
- *
- *  substitute_underscores, and gtk_accelerator_get_label are taken from gtk/gtkaccelgroup.c.
- *  it's Copyright (C) 1998, 2001 Tim Janik
- *
- *  gtk_target_list_add_text_targets is from gtk/gtkselection.c
- *  Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald
  */
 
 #ifdef HAVE_CONFIG_H
@@ -48,6 +42,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <glib/gstdio.h>
 
 #ifdef G_OS_WIN32
 #include <windows.h>
@@ -61,60 +56,6 @@
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif
-
-#if GLIB_CHECK_VERSION(2,6,0)
-#include <glib/gstdio.h>
-#endif
-
-#include <string.h>
-
-
-#if !GLIB_CHECK_VERSION(2,4,0)
-
-/* from gsignal.c */
-gboolean
-g_signal_accumulator_true_handled (GSignalInvocationHint *ihint,
-				   GValue                *return_accu,
-				   const GValue          *handler_return,
-				   gpointer               dummy)
-{
-  gboolean continue_emission;
-  gboolean signal_handled;
-
-  signal_handled = g_value_get_boolean (handler_return);
-  g_value_set_boolean (return_accu, signal_handled);
-  continue_emission = !signal_handled;
-
-  return continue_emission;
-}
-
-
-void g_ptr_array_foreach (GPtrArray *array,
-                          GFunc      func,
-                          gpointer   data)
-{
-    guint i;
-    for (i = 0; i < array->len; ++i)
-        (*func) (array->pdata[i], data);
-}
-
-void g_ptr_array_remove_range (GPtrArray *array,
-                               guint      index,
-                               guint      length)
-{
-    g_return_if_fail (array);
-    g_return_if_fail (index < array->len);
-    g_return_if_fail (index + length <= array->len);
-
-    if (index + length != array->len)
-        g_memmove (&array->pdata[index],
-                    &array->pdata[index + length],
-                    (array->len - (index + length)) * sizeof (gpointer));
-
-    g_ptr_array_set_size (array, array->len - length);
-}
-
-#endif /* !GLIB_CHECK_VERSION(2,4,0) */
 
 
 #if !GLIB_CHECK_VERSION(2,8,0)
@@ -176,6 +117,475 @@ g_mkdir_with_parents (const gchar *pathname,
   g_free (fn);
 
   return 0;
+}
+
+
+/*
+ * create_temp_file based on the mkstemp implementation from the GNU C library.
+ * Copyright (C) 1991,92,93,94,95,96,97,98,99 Free Software Foundation, Inc.
+ */
+static gint
+create_temp_file (gchar *tmpl,
+		  int    permissions)
+{
+  char *XXXXXX;
+  int count, fd;
+  static const char letters[] =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  static const int NLETTERS = sizeof (letters) - 1;
+  glong value;
+  GTimeVal tv;
+  static int counter = 0;
+
+  /* find the last occurrence of "XXXXXX" */
+  XXXXXX = g_strrstr (tmpl, "XXXXXX");
+
+  if (!XXXXXX || strncmp (XXXXXX, "XXXXXX", 6))
+    {
+      errno = EINVAL;
+      return -1;
+    }
+
+  /* Get some more or less random data.  */
+  g_get_current_time (&tv);
+  value = (tv.tv_usec ^ tv.tv_sec) + counter++;
+
+  for (count = 0; count < 100; value += 7777, ++count)
+    {
+      glong v = value;
+
+      /* Fill in the random bits.  */
+      XXXXXX[0] = letters[v % NLETTERS];
+      v /= NLETTERS;
+      XXXXXX[1] = letters[v % NLETTERS];
+      v /= NLETTERS;
+      XXXXXX[2] = letters[v % NLETTERS];
+      v /= NLETTERS;
+      XXXXXX[3] = letters[v % NLETTERS];
+      v /= NLETTERS;
+      XXXXXX[4] = letters[v % NLETTERS];
+      v /= NLETTERS;
+      XXXXXX[5] = letters[v % NLETTERS];
+
+      /* tmpl is in UTF-8 on Windows, thus use g_open() */
+      fd = g_open (tmpl, O_RDWR | O_CREAT | O_EXCL | O_BINARY, permissions);
+
+      if (fd >= 0)
+	return fd;
+      else if (errno != EEXIST)
+	/* Any other error will apply also to other names we might
+	 *  try, and there are 2^32 or so of them, so give up now.
+	 */
+	return -1;
+    }
+
+  /* We got out of the loop because we ran out of combinations to try.  */
+  errno = EEXIST;
+  return -1;
+}
+
+static gboolean
+rename_file (const char *old_name,
+	     const char *new_name,
+	     GError **err)
+{
+  errno = 0;
+  if (g_rename (old_name, new_name) == -1)
+    {
+      int save_errno = errno;
+      gchar *display_old_name = g_filename_display_name (old_name);
+      gchar *display_new_name = g_filename_display_name (new_name);
+
+      g_set_error (err,
+		   G_FILE_ERROR,
+		   g_file_error_from_errno (save_errno),
+		   "Failed to rename file '%s' to '%s': g_rename() failed: %s",
+		   display_old_name,
+		   display_new_name,
+		   g_strerror (save_errno));
+
+      g_free (display_old_name);
+      g_free (display_new_name);
+
+      return FALSE;
+    }
+
+  return TRUE;
+}
+
+static gchar *
+write_to_temp_file (const gchar *contents,
+		    gssize length,
+		    const gchar *template,
+		    GError **err)
+{
+  gchar *tmp_name;
+  gchar *display_name;
+  gchar *retval;
+  FILE *file;
+  gint fd;
+  int save_errno;
+
+  retval = NULL;
+
+  tmp_name = g_strdup_printf ("%s.XXXXXX", template);
+
+  errno = 0;
+  fd = create_temp_file (tmp_name, 0666);
+  display_name = g_filename_display_name (tmp_name);
+
+  if (fd == -1)
+    {
+      save_errno = errno;
+      g_set_error (err,
+		   G_FILE_ERROR,
+		   g_file_error_from_errno (save_errno),
+		   "Failed to create file '%s': %s",
+		   display_name, g_strerror (save_errno));
+
+      goto out;
+    }
+
+  errno = 0;
+  file = fdopen (fd, "wb");
+  if (!file)
+    {
+      save_errno = errno;
+      g_set_error (err,
+		   G_FILE_ERROR,
+		   g_file_error_from_errno (save_errno),
+		   "Failed to open file '%s' for writing: fdopen() failed: %s",
+		   display_name,
+		   g_strerror (save_errno));
+
+      close (fd);
+      g_unlink (tmp_name);
+
+      goto out;
+    }
+
+  if (length > 0)
+    {
+      gsize n_written;
+
+      errno = 0;
+
+      n_written = fwrite (contents, 1, length, file);
+
+      if (n_written < (gsize) length)
+	{
+	  save_errno = errno;
+
+ 	  g_set_error (err,
+		       G_FILE_ERROR,
+		       g_file_error_from_errno (save_errno),
+		       "Failed to write file '%s': fwrite() failed: %s",
+		       display_name,
+		       g_strerror (save_errno));
+
+	  fclose (file);
+	  g_unlink (tmp_name);
+
+	  goto out;
+	}
+    }
+
+  errno = 0;
+  if (fclose (file) == EOF)
+    {
+      save_errno = 0;
+
+      g_set_error (err,
+		   G_FILE_ERROR,
+		   g_file_error_from_errno (save_errno),
+		   "Failed to close file '%s': fclose() failed: %s",
+		   display_name,
+		   g_strerror (save_errno));
+
+      g_unlink (tmp_name);
+
+      goto out;
+    }
+
+  retval = g_strdup (tmp_name);
+
+ out:
+  g_free (tmp_name);
+  g_free (display_name);
+
+  return retval;
+}
+
+gboolean
+g_file_set_contents (const gchar *filename,
+		     const gchar *contents,
+		     gssize	     length,
+		     GError	   **error)
+{
+  gchar *tmp_filename;
+  gboolean retval;
+  GError *rename_error = NULL;
+
+  g_return_val_if_fail (filename != NULL, FALSE);
+  g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+  g_return_val_if_fail (contents != NULL || length == 0, FALSE);
+  g_return_val_if_fail (length >= -1, FALSE);
+
+  if (length == -1)
+    length = strlen (contents);
+
+  tmp_filename = write_to_temp_file (contents, length, filename, error);
+
+  if (!tmp_filename)
+    {
+      retval = FALSE;
+      goto out;
+    }
+
+  if (!rename_file (tmp_filename, filename, &rename_error))
+    {
+#ifndef G_OS_WIN32
+
+      g_unlink (tmp_filename);
+      g_propagate_error (error, rename_error);
+      retval = FALSE;
+      goto out;
+
+#else /* G_OS_WIN32 */
+
+      /* Renaming failed, but on Windows this may just mean
+       * the file already exists. So if the target file
+       * exists, try deleting it and do the rename again.
+       */
+      if (!g_file_test (filename, G_FILE_TEST_EXISTS))
+	{
+	  g_unlink (tmp_filename);
+	  g_propagate_error (error, rename_error);
+	  retval = FALSE;
+	  goto out;
+	}
+
+      g_error_free (rename_error);
+
+      if (g_unlink (filename) == -1)
+	{
+          gchar *display_filename = g_filename_display_name (filename);
+
+	  int save_errno = errno;
+
+	  g_set_error (error,
+		       G_FILE_ERROR,
+		       g_file_error_from_errno (save_errno),
+		       _("Existing file '%s' could not be removed: g_unlink() failed: %s"),
+		       display_filename,
+		       g_strerror (save_errno));
+
+	  g_free (display_filename);
+	  g_unlink (tmp_filename);
+	  retval = FALSE;
+	  goto out;
+	}
+
+      if (!rename_file (tmp_filename, filename, error))
+	{
+	  g_unlink (tmp_filename);
+	  retval = FALSE;
+	  goto out;
+	}
+
+#endif
+    }
+
+  retval = TRUE;
+
+ out:
+  g_free (tmp_filename);
+  return retval;
+}
+
+
+/* This is a collation key that is very very likely to sort before any
+   collation key that libc strxfrm generates. We use this before any
+   special case (dot or number) to make sure that its sorted before
+   anything else.
+ */
+#define COLLATION_SENTINEL "\1\1\1"
+
+gchar*
+g_utf8_collate_key_for_filename (const gchar *str,
+				 gssize       len)
+{
+  GString *result;
+  GString *append;
+  const gchar *p;
+  const gchar *prev;
+  const gchar *end;
+  gchar *collate_key;
+  gint digits;
+  gint leading_zeros;
+
+  /*
+   * How it works:
+   *
+   * Split the filename into collatable substrings which do
+   * not contain [.0-9] and special-cased substrings. The collatable
+   * substrings are run through the normal g_utf8_collate_key() and the
+   * resulting keys are concatenated with keys generated from the
+   * special-cased substrings.
+   *
+   * Special cases: Dots are handled by replacing them with '\1' which
+   * implies that short dot-delimited substrings are before long ones,
+   * e.g.
+   *
+   *   a\1a   (a.a)
+   *   a-\1a  (a-.a)
+   *   aa\1a  (aa.a)
+   *
+   * Numbers are handled by prepending to each number d-1 superdigits
+   * where d = number of digits in the number and SUPERDIGIT is a
+   * character with an integer value higher than any digit (for instance
+   * ':'). This ensures that single-digit numbers are sorted before
+   * double-digit numbers which in turn are sorted separately from
+   * triple-digit numbers, etc. To avoid strange side-effects when
+   * sorting strings that already contain SUPERDIGITs, a '\2'
+   * is also prepended, like this
+   *
+   *   file\21      (file1)
+   *   file\25      (file5)
+   *   file\2:10    (file10)
+   *   file\2:26    (file26)
+   *   file\2::100  (file100)
+   *   file:foo     (file:foo)
+   *
+   * This has the side-effect of sorting numbers before everything else (except
+   * dots), but this is probably OK.
+   *
+   * Leading digits are ignored when doing the above. To discriminate
+   * numbers which differ only in the number of leading digits, we append
+   * the number of leading digits as a byte at the very end of the collation
+   * key.
+   *
+   * To try avoid conflict with any collation key sequence generated by libc we
+   * start each switch to a special cased part with a sentinel that hopefully
+   * will sort before anything libc will generate.
+   */
+
+  if (len < 0)
+    len = strlen (str);
+
+  result = g_string_sized_new (len * 2);
+  append = g_string_sized_new (0);
+
+  end = str + len;
+
+  /* No need to use utf8 functions, since we're only looking for ascii chars */
+  for (prev = p = str; p < end; p++)
+    {
+      switch (*p)
+	{
+	case '.':
+	  if (prev != p)
+	    {
+	      collate_key = g_utf8_collate_key (prev, p - prev);
+	      g_string_append (result, collate_key);
+	      g_free (collate_key);
+	    }
+
+	  g_string_append (result, COLLATION_SENTINEL "\1");
+
+	  /* skip the dot */
+	  prev = p + 1;
+	  break;
+
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+	  if (prev != p)
+	    {
+	      collate_key = g_utf8_collate_key (prev, p - prev);
+	      g_string_append (result, collate_key);
+	      g_free (collate_key);
+	    }
+
+	  g_string_append (result, COLLATION_SENTINEL "\2");
+
+	  prev = p;
+
+	  /* write d-1 colons */
+	  if (*p == '0')
+	    {
+	      leading_zeros = 1;
+	      digits = 0;
+	    }
+	  else
+	    {
+	      leading_zeros = 0;
+	      digits = 1;
+	    }
+
+	  while (++p < end)
+	    {
+	      if (*p == '0' && !digits)
+		++leading_zeros;
+	      else if (g_ascii_isdigit(*p))
+		++digits;
+	      else
+                {
+ 		  /* count an all-zero sequence as
+                   * one digit plus leading zeros
+                   */
+          	  if (!digits)
+                    {
+                      ++digits;
+                      --leading_zeros;
+                    }
+		  break;
+                }
+	    }
+
+	  while (digits > 1)
+	    {
+	      g_string_append_c (result, ':');
+	      --digits;
+	    }
+
+	  if (leading_zeros > 0)
+	    {
+	      g_string_append_c (append, (char)leading_zeros);
+	      prev += leading_zeros;
+	    }
+
+	  /* write the number itself */
+	  g_string_append_len (result, prev, p - prev);
+
+	  prev = p;
+	  --p;	  /* go one step back to avoid disturbing outer loop */
+	  break;
+
+	default:
+	  /* other characters just accumulate */
+	  break;
+	}
+    }
+
+  if (prev != p)
+    {
+      collate_key = g_utf8_collate_key (prev, p - prev);
+      g_string_append (result, collate_key);
+      g_free (collate_key);
+    }
+
+  g_string_append (result, append->str);
+  g_string_free (append, TRUE);
+
+  return g_string_free (result, FALSE);
 }
 
 
@@ -282,185 +692,6 @@ g_listenv (void)
 #endif /* !GLIB_CHECK_VERSION(2,8,0) */
 
 
-#if !GTK_CHECK_VERSION(2,6,0)
-
-GtkWidget *gtk_label_new_with_markup (const char *markup)
-{
-    GtkWidget *label = gtk_label_new ("");
-    gtk_label_set_markup (GTK_LABEL (label), markup);
-    return label;
-}
-
-
-/* substitute_underscores from gtk/gtkaccellabel.c */
-static void substitute_underscores (char *str)
-{
-  char *p;
-
-  for (p = str; *p; p++)
-    if (*p == '_')
-      *p = ' ';
-}
-
-/* _gtk_accel_label_class_get_accelerator_label from gtk/gtkaccellabel.c */
-char *gtk_accelerator_get_label (guint accelerator_key,
-                                 GdkModifierType accelerator_mods)
-{
-  GtkAccelLabelClass *klass;
-  GString *gstring;
-  gboolean seen_mod = FALSE;
-  gunichar ch;
-
-  klass = g_type_class_ref (GTK_TYPE_ACCEL_LABEL);
-
-  gstring = g_string_new ("");
-
-  if (accelerator_mods & GDK_SHIFT_MASK)
-    {
-      g_string_append (gstring, klass->mod_name_shift);
-      seen_mod = TRUE;
-    }
-  if (accelerator_mods & GDK_CONTROL_MASK)
-    {
-      if (seen_mod)
-	g_string_append (gstring, klass->mod_separator);
-      g_string_append (gstring, klass->mod_name_control);
-      seen_mod = TRUE;
-    }
-  if (accelerator_mods & GDK_MOD1_MASK)
-    {
-      if (seen_mod)
-	g_string_append (gstring, klass->mod_separator);
-      g_string_append (gstring, klass->mod_name_alt);
-      seen_mod = TRUE;
-    }
-  if (seen_mod)
-    g_string_append (gstring, klass->mod_separator);
-
-  ch = gdk_keyval_to_unicode (accelerator_key);
-  if (ch && (g_unichar_isgraph (ch) || ch == ' ') &&
-      (ch < 0x80 || klass->latin1_to_char))
-    {
-      switch (ch)
-	{
-	case ' ':
-	  g_string_append (gstring, "Space");
-	  break;
-	case '\\':
-	  g_string_append (gstring, "Backslash");
-	  break;
-	default:
-	  g_string_append_unichar (gstring, g_unichar_toupper (ch));
-	  break;
-	}
-    }
-  else
-    {
-      gchar *tmp;
-
-      tmp = gtk_accelerator_name (accelerator_key, 0);
-      if (tmp[0] != 0 && tmp[1] == 0)
-	tmp[0] = g_ascii_toupper (tmp[0]);
-      substitute_underscores (tmp);
-      g_string_append (gstring, tmp);
-      g_free (tmp);
-    }
-
-  g_type_class_unref (klass); /* klass is kept alive since gtk uses static types */
-  return g_string_free (gstring, FALSE);
-}
-
-
-/****************************************************************************/
-/** gtk_target_list_add_text_targets                                        */
-/** from gtk/gtkselection.c                                                 */
-
-static GdkAtom utf8_atom;
-static GdkAtom text_atom;
-static GdkAtom ctext_atom;
-static GdkAtom text_plain_atom;
-static GdkAtom text_plain_utf8_atom;
-static GdkAtom text_plain_locale_atom;
-static GdkAtom text_uri_list_atom;
-
-static void init_atoms (void)
-{
-  gchar *tmp;
-  const gchar *charset;
-
-  if (!utf8_atom)
-    {
-      utf8_atom = gdk_atom_intern ("UTF8_STRING", FALSE);
-      text_atom = gdk_atom_intern ("TEXT", FALSE);
-      ctext_atom = gdk_atom_intern ("COMPOUND_TEXT", FALSE);
-      text_plain_atom = gdk_atom_intern ("text/plain", FALSE);
-      text_plain_utf8_atom = gdk_atom_intern ("text/plain;charset=utf-8", FALSE);
-      g_get_charset (&charset);
-      tmp = g_strdup_printf ("text/plain;charset=%s", charset);
-      text_plain_locale_atom = gdk_atom_intern (tmp, FALSE);
-      g_free (tmp);
-
-      text_uri_list_atom = gdk_atom_intern ("text/uri-list", FALSE);
-    }
-}
-
-void  gtk_target_list_add_text_targets (GtkTargetList *list,
-                                        guint          info)
-{
-  g_return_if_fail (list != NULL);
-
-  init_atoms ();
-
-  /* Keep in sync with gtk_selection_data_targets_include_text()
-   */
-  gtk_target_list_add (list, utf8_atom, 0, info);
-  gtk_target_list_add (list, ctext_atom, 0, info);
-  gtk_target_list_add (list, text_atom, 0, info);
-  gtk_target_list_add (list, GDK_TARGET_STRING, 0, info);
-  gtk_target_list_add (list, text_plain_utf8_atom, 0, info);
-  gtk_target_list_add (list, text_plain_locale_atom, 0, info);
-  gtk_target_list_add (list, text_plain_atom, 0, info);
-}
-
-#endif /* !GTK_CHECK_VERSION(2,6,0) */
-
-
-#if !GTK_CHECK_VERSION(2,4,0)
-
-void gtk_text_buffer_select_range (GtkTextBuffer *buffer,
-                                   const GtkTextIter *ins,
-                                   const GtkTextIter *bound)
-{
-    gtk_text_buffer_place_cursor (buffer, bound);
-    gtk_text_buffer_move_mark (buffer,
-                               gtk_text_buffer_get_selection_bound (buffer), ins);
-}
-
-/* TODO: need to put real function here */
-/* TODO: why are they called at all? */
-#ifdef gtk_button_set_focus_on_click
-#undef gtk_button_set_focus_on_click
-#endif
-void gtk_button_set_focus_on_click (GtkWidget *wid, gboolean setting)
-{
-    g_warning ("%s: this function should not be called", G_STRLOC);
-}
-
-#ifdef gtk_alignment_set_padding
-#undef gtk_alignment_set_padding
-#endif
-void gtk_alignment_set_padding (GtkAlignment *alignment,
-                                guint padding_top,
-                                guint padding_bottom,
-                                guint padding_left,
-                                guint padding_right)
-{
-    g_warning ("%s: this function should not be called", G_STRLOC);
-}
-
-#endif /* !GTK_CHECK_VERSION(2,4,0) */
-
-
 #if !GTK_CHECK_VERSION(2,10,0)
 
 GType
@@ -471,10 +702,10 @@ gtk_unit_get_type (void)
     if (G_UNLIKELY (!type))
     {
         static const GEnumValue values[] = {
-            { GTK_UNIT_PIXEL, "GTK_UNIT_PIXEL", "pixel" },
-            { GTK_UNIT_POINTS, "GTK_UNIT_POINTS", "points" },
-            { GTK_UNIT_INCH, "GTK_UNIT_INCH", "inch" },
-            { GTK_UNIT_MM, "GTK_UNIT_MM", "mm" },
+            { GTK_UNIT_PIXEL, (char*) "GTK_UNIT_PIXEL", (char*) "pixel" },
+            { GTK_UNIT_POINTS, (char*) "GTK_UNIT_POINTS", (char*) "points" },
+            { GTK_UNIT_INCH, (char*) "GTK_UNIT_INCH", (char*) "inch" },
+            { GTK_UNIT_MM, (char*) "GTK_UNIT_MM", (char*) "mm" },
             { 0, NULL, NULL }
         };
 

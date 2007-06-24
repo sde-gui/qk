@@ -12,7 +12,6 @@
  */
 
 #include "mooutils/mooprefs.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moomarkup.h"
 #include "mooutils/mooutils-fs.h"
@@ -27,11 +26,6 @@
 #define PREFS_TYPE_LAST 2
 #define PREFS_ROOT "Prefs"
 /* #define DEBUG_READWRITE 1 */
-
-#if !GLIB_CHECK_VERSION(2,4,0)
-#define g_value_take_string g_value_set_string_take_ownership
-#endif
-
 
 #define MOO_TYPE_PREFS              (_moo_prefs_get_type ())
 #define MOO_PREFS(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_PREFS, MooPrefs))

@@ -17,7 +17,6 @@
 #include "mooterm/mootermhelper.h"
 #include "mooterm/mooterm-private.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/mooutils-misc.h"
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>

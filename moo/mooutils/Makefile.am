@@ -12,22 +12,12 @@ libs += xdgmime/libxdgmime.la
 endif
 if !GLIB_2_14
 subdirs += newgtk
-libs += newgtk/glib/libgregex.la
+libs += newgtk/libnewgtk.la
 endif
 SUBDIRS = $(subdirs) .
 
 win32_sources =				\
 	mooutils-win32.c
-
-gmappedfile_sources =			\
-	newgtk/gmappedfile.c		\
-	newgtk/gmappedfile.h
-
-gtk_2_4_sources =			\
-	newgtk/gtkcolorbutton.c		\
-	newgtk/gtkcolorbutton.h		\
-	newgtk/gtkfontbutton.c		\
-	newgtk/gtkfontbutton.h
 
 thread_sources =			\
 	mooutils-thread.c		\
@@ -132,10 +122,6 @@ mooutils_sources =			\
 	mooutils-treeview.h		\
 	mooutils-treeview.c		\
 	moowindow.c			\
-	stock-about-16.h		\
-	stock-about-24.h		\
-	stock-edit-16.h			\
-	stock-edit-24.h			\
 	stock-file-24.h			\
 	stock-file-selector-24.h	\
 	stock-moo.h			\
@@ -143,12 +129,6 @@ mooutils_sources =			\
 	stock-select-all-24.h		\
 	stock-terminal-24.h
 
-if !GLIB_2_10
-mooutils_sources += $(gmappedfile_sources)
-endif
-if !GTK_2_4
-mooutils_sources += $(moonewgtk_gtk_2_4_sources)
-endif
 if MOO_OS_MINGW
 mooutils_sources += $(thread_sources) $(win32_sources)
 else
@@ -168,8 +148,6 @@ EXTRA_DIST =				\
 	moomarshals.list		\
 	py2h.sh				\
 	xml2h.sh			\
-	$(gmappedfile_sources)		\
-	$(gtk_2_4_sources)		\
 	$(thread_sources)		\
 	$(win32_sources)		\
 	glade/accelbutton.glade		\

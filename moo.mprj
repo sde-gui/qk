@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <medit-project version="1.0" type="C" name="moo">
- <active>debug</active>
+ <active>gtk-2.6</active>
  <configurations>
   <debug>
    <build_dir>build/debug</build_dir>
@@ -11,6 +11,9 @@
     </vars>
    </configure>
   </debug>
+  <gtk-2.6>
+   <build_dir>/home/muntyan/projects/gtk-2.6/moo</build_dir>
+  </gtk-2.6>
   <gtk-cvs>
    <build_dir>/home/muntyan/projects/gtk/build/moo</build_dir>
    <configure>
@@ -34,7 +37,7 @@
    </configure>
   </optimized>
  </configurations>
- <file_selector_dir>/home/muntyan/projects/moo/moo/moopython/pygtk/</file_selector_dir>
+ <file_selector_dir>/home/muntyan/projects/moo/moo/mooutils/</file_selector_dir>
  <run>
   <args>-ns</args>
   <exe>medit/medit</exe>

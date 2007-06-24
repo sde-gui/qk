@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 #include <X11/SM/SMlib.h>
 
 #include <gdk/gdk.h>

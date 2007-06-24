@@ -33,7 +33,6 @@
 #include "pcre/pcre.h"
 #endif
 
-#include "galias.h"
 
 /* Mask of all the possible values for GRegexCompileFlags. */
 #define G_REGEX_COMPILE_MASK (G_REGEX_CASELESS		| \
@@ -410,8 +409,8 @@ g_match_info_get_match_count (const GMatchInfo *match_info)
  * GRegex supports the concept of partial matching by means of the
  * #G_REGEX_MATCH_PARTIAL flag. When this is set the return code for
  * g_regex_match() or g_regex_match_full() is, as usual, %TRUE
- * for a complete match, %FALSE otherwise. But, when this functions
- * returns %FALSE, you can check if the match was partial calling
+ * for a complete match, %FALSE otherwise. But, when these functions
+ * return %FALSE, you can check if the match was partial calling
  * g_match_info_is_partial_match().
  *
  * When using partial matching you cannot use g_match_info_fetch*().
@@ -617,18 +616,8 @@ get_matched_substring_number (const GMatchInfo *match_info,
   gchar *first, *last;
   guchar *entry;
 
-  /*
-   * FIXME: (?J) may be used inside the pattern as the equivalent of
-   * DUPNAMES compile option. In this case we can't know about it,
-   * and pcre doesn't tell us about it either, it uses private flag
-   * PCRE_JCHANGED for this. So we have to always search string
-   * table, unlike pcre which uses pcre_get_stringnumber() shortcut
-   * when possible. It shouldn't be actually bad since
-   * pcre_get_stringtable_entries() uses binary search; still would 
-   * be better to fix it, to be not worse than pcre.
-   */
-#if 0
-  if ((match_info->regex->compile_opts & G_REGEX_DUPNAMES) == 0)
+#if PCRE_MAJOR > 7 || PCRE_MINOR >= 2
+  if (!(match_info->regex->compile_opts & G_REGEX_DUPNAMES))
     return pcre_get_stringnumber (match_info->regex->pcre_re, name);
 #endif
 
@@ -857,7 +846,7 @@ g_regex_new (const gchar         *pattern,
   gint erroffset;
   gboolean optimize = FALSE;
   static gboolean initialized = FALSE;
-  
+
   g_return_val_if_fail (pattern != NULL, NULL);
   g_return_val_if_fail (error == NULL || *error == NULL, NULL);
   g_return_val_if_fail ((compile_options & ~G_REGEX_COMPILE_MASK) == 0, NULL);
@@ -932,6 +921,16 @@ g_regex_new (const gchar         *pattern,
 
       return NULL;
     }
+
+#if PCRE_MAJOR > 7 || PCRE_MINOR >= 2
+  if (!(compile_options & G_REGEX_DUPNAMES))
+    {
+      gboolean jchanged = FALSE;
+      pcre_fullinfo (re, NULL, PCRE_INFO_JCHANGED, &jchanged);
+      if (jchanged)
+	compile_options |= G_REGEX_DUPNAMES;
+    }
+#endif
 
   regex = g_new0 (GRegex, 1);
   regex->ref_count = 1;
@@ -1091,7 +1090,7 @@ g_regex_match_simple (const gchar        *pattern,
  *   GMatchInfo *match_info;
  *   &nbsp;
  *   regex = g_regex_new ("[A-Z]+", 0, 0, NULL);
- *   g_regex_match (regex, string, 0, &match_info);
+ *   g_regex_match (regex, string, 0, &amp;match_info);
  *   while (g_match_info_matches (match_info))
  *     {
  *       gchar *word = g_match_info_fetch (match_info, 0);
@@ -1160,13 +1159,13 @@ g_regex_match (const GRegex    *regex,
  *   GError *error = NULL;
  *   &nbsp;
  *   regex = g_regex_new ("[A-Z]+", 0, 0, NULL);
- *   g_regex_match_full (regex, string, -1, 0, 0, &match_info, &error);
+ *   g_regex_match_full (regex, string, -1, 0, 0, &amp;match_info, &amp;error);
  *   while (g_match_info_matches (match_info))
  *     {
  *       gchar *word = g_match_info_fetch (match_info, 0);
  *       g_print ("Found: %s\n", word);
  *       g_free (word);
- *       g_match_info_next (match_info, &error);
+ *       g_match_info_next (match_info, &amp;error);
  *     }
  *   g_match_info_free (match_info);
  *   g_regex_unref (regex);
@@ -2451,4 +2450,3 @@ g_regex_escape_string (const gchar *string,
 }
 
 #define __G_REGEX_C__
-#include "galiasdef.c"
