@@ -1154,7 +1154,6 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
     {
         switch (keyval)
         {
-            /* TODO TODO stupid X and gtk !!! */
             case GDK_ISO_Left_Tab:
             case GDK_KP_Tab:
                 handled = handle_tab (view, event);

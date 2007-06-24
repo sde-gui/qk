@@ -16,7 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-/* Modified by muntyan */
+/* Modified by muntyan so it works on BSD too */
 /* mooterm/pty.c */
 
 /* macro from glib/gmacros.h */

@@ -1322,7 +1322,8 @@ completion_visible_func (GtkTreeModel           *model,
 }
 
 
-/* XXX _gtk_entry_get_borders from gtkentry.c */
+/* XXX _gtk_entry_get_borders from gtkentry.c,
+ * this is just not good, there must be public gtk API for this */
 static void
 entry_get_borders (GtkEntry *entry,
                    gint     *xborder,
