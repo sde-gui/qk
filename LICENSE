@@ -87,22 +87,21 @@ moo/xdg-utils:
     (C) 2006 Kevin Krammer <kevin.krammer@gmx.at>
     (C) 2006 Jeremy White <jwhite@codeweavers.com>
 
-moo/mooutils/newgtk/gtkfontbutton.[ch]:
-moo/mooutils/newgtk/gtkcolorbutton.[ch]:
-moo/mooutils/newgtk/gmappedfile.[ch]:
-moo/mooutils/newgtk/glib/gregex.[ch]:
+moo/mooutils/newgtk/glib-2.8/glib/gmappedfile.[ch]:
+moo/mooutils/newgtk/glib-2.12/glib/gbase64.[ch]:
+moo/mooutils/newgtk/glib-2.14/glib/gregex.[ch]:
 moo/mooutils/moocompat.[ch]:
     Gtk and Glib code for older systems
-    (C) 1998 David Abilleira Freijeiro <odaf@nexo.es>
-    (C) 1998, 1999 Red Hat, Inc.
-    (C) 2005 Matthias Clasen
-    (C) 1999, 2000 Scott Wimer
-    (C) 2004, Matthias Clasen <mclasen@redhat.com>
-    (C) 2005 - 2007, Marco Barisione <marco@barisione.org>
-    (C) 2000-2001 Red Hat, Inc.
-    (C) 2000 Red Hat, Inc.
-    (C) 1995-1998  Peter Mattis, Spencer Kimball and Josh MacDonald
-    (C) 1998, 2001 Tim Janik
+    Copyright 2000 Red Hat, Inc.
+    Copyright 2001,2005 Red Hat, Inc.
+    Copyright (C) 1995-1998  Peter Mattis, Spencer Kimball and Josh MacDonald
+    Copyright (C) 1999, 2000 Scott Wimer
+    Copyright (C) 2004, Matthias Clasen <mclasen@redhat.com>
+    Copyright (C) 2005 - 2007, Marco Barisione <marco@barisione.org>
+    Copyright (C) 2005  Alexander Larsson <alexl@redhat.com>
+    Copyright (C) 2006 Alexander Larsson <alexl@redhat.com>
+    Copyright (C) 2000-2003 Ximian Inc.
+    Copyright 2005 Matthias Clasen
 
 moo/mooutils/pixmaps/medit.png:
     xedit.png icon from Crystal Clear icon theme by Everaldo Coelho,

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <medit-project version="1.0" type="C" name="moo">
- <active>gtk-2.6</active>
+ <active>mingw</active>
  <configurations>
   <debug>
    <build_dir>build/debug</build_dir>
@@ -37,7 +37,7 @@
    </configure>
   </optimized>
  </configurations>
- <file_selector_dir>/home/muntyan/projects/moo/moo/mooutils/</file_selector_dir>
+ <file_selector_dir>/home/muntyan/projects/moo/moo/moopython/</file_selector_dir>
  <run>
   <args>-ns</args>
   <exe>medit/medit</exe>

@@ -1,3 +1,13 @@
+2007-06-24  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    * === Released 0.8.7 ===
+
+    Implemented session support.
+    Use xdg-open to open files from file selector.
+    Fixed build on darwin.
+    Added translation for language files.
+
+    Change license of almost everything to LGPL.
+
 2007-06-14  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.8.6 ===
 
