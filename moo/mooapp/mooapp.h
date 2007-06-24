@@ -55,18 +55,23 @@ struct _MooAppClass
 {
     GObjectClass parent_class;
 
-    gboolean    (*init)         (MooApp     *app);
-    int         (*run)          (MooApp     *app);
-    void        (*quit)         (MooApp     *app);
+    gboolean    (*init)         (MooApp         *app);
+    int         (*run)          (MooApp         *app);
+    void        (*quit)         (MooApp         *app);
 
-    gboolean    (*try_quit)     (MooApp     *app);
+    gboolean    (*try_quit)     (MooApp         *app);
 
-    GtkWidget*  (*prefs_dialog) (MooApp     *app);
+    GtkWidget*  (*prefs_dialog) (MooApp         *app);
 
-    void        (*exec_cmd)     (MooApp     *app,
-                                 char        cmd,
-                                 const char *data,
-                                 guint       len);
+    void        (*exec_cmd)     (MooApp         *app,
+                                 char            cmd,
+                                 const char     *data,
+                                 guint           len);
+
+    void        (*load_session) (MooApp         *app,
+                                 MooMarkupNode  *xml);
+    void        (*save_session) (MooApp         *app,
+                                 MooMarkupNode  *xml);
 };
 
 
@@ -78,6 +83,8 @@ MooApp          *moo_app_get_instance           (void);
 gboolean         moo_app_init                   (MooApp     *app);
 int              moo_app_run                    (MooApp     *app);
 gboolean         moo_app_quit                   (MooApp     *app);
+
+void             moo_app_load_session           (MooApp     *app);
 
 void             moo_app_set_exit_code          (MooApp     *app,
                                                  int         code);

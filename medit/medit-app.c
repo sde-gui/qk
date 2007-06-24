@@ -73,6 +73,9 @@ int _medit_parse_options (const char *const program_name,
 #define STR_HELP_NEW_APP "\
   -n, --new-app                  Run new instance of application\n"
 
+#define STR_HELP_USE_SESSION "\
+  -s, --use-session              Load and save session\n"
+
 #define STR_HELP_PID "\
       --pid=PID                  Use existing instance with process id PID\n"
 
@@ -105,6 +108,7 @@ int _medit_parse_options (const char *const program_name,
 
 #define STR_HELP "\
   -n, --new-app                  Run new instance of application\n\
+  -s, --use-session              Load and save session\n\
       --pid=PID                  Use existing instance with process id PID\n\
   -m, --mode=[simple|project]    Use specified mode\n\
   -p, --project=PROJECT          Open project file PROJECT\n\
@@ -118,6 +122,9 @@ int _medit_parse_options (const char *const program_name,
 
 /* Set to 1 if option --new-app (-n) has been specified.  */
 char _medit_opt_new_app;
+
+/* Set to 1 if option --use-session (-s) has been specified.  */
+char _medit_opt_use_session;
 
 /* Set to 1 if option --pid has been specified.  */
 char _medit_opt_pid;
@@ -175,6 +182,7 @@ const char *_medit_arg_exec_file;
 int _medit_parse_options (const char *const program_name, const int argc, char **const argv)
 {
   static const char *const optstr__new_app = "new-app";
+  static const char *const optstr__use_session = "use-session";
   static const char *const optstr__pid = "pid";
   static const char *const optstr__mode = "mode";
   static const char *const optstr__project = "project";
@@ -186,6 +194,7 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   static const char *const optstr__help = "help";
   int i = 0;
   _medit_opt_new_app = 0;
+  _medit_opt_use_session = 0;
   _medit_opt_pid = 0;
   _medit_opt_mode = 0;
   _medit_opt_project = 0;
@@ -371,6 +380,18 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
           break;
         }
         goto error_unknown_long_opt;
+       case 'u':
+        if (strncmp (option + 1, optstr__use_session + 1, option_len - 1) == 0)
+        {
+          if (argument != 0)
+          {
+            option = optstr__use_session;
+            goto error_unexpec_arg_long;
+          }
+          _medit_opt_use_session = 1;
+          break;
+        }
+        goto error_unknown_long_opt;
        case 'v':
         if (strncmp (option + 1, optstr__version + 1, option_len - 1) == 0)
         {
@@ -438,6 +459,9 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
           option = "\0";
           _medit_opt_project = 1;
           break;
+         case 's':
+          _medit_opt_use_session = 1;
+          break;
          default:
           fprintf (stderr, STR_ERR_UNKNOWN_SHORT_OPT, program_name, *option);
           return -1;
@@ -449,7 +473,7 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   }
   return i;
 }
-#line 135 "../../../medit/medit-app.opag"
+#line 63 "../../../medit/medit-app.opag"
 
 #undef STR_HELP
 #define STR_HELP        \
@@ -542,6 +566,28 @@ push_appdir_to_path (void)
 #endif
 }
 
+static void
+project_mode (void)
+{
+    MooPlugin *plugin;
+
+    plugin = moo_plugin_lookup ("ProjectManager");
+
+    if (!plugin)
+    {
+        g_printerr ("Could not initialize project manager plugin\n");
+        exit (1);
+    }
+
+    if (_medit_arg_project && *_medit_arg_project)
+    {
+        char *project = moo_filename_from_locale (_medit_arg_project);
+        g_object_set (plugin, "project", _medit_arg_project, NULL);
+        g_free (project);
+    }
+
+    moo_plugin_set_enabled (plugin, TRUE);
+}
 
 int
 main (int argc, char *argv[])
@@ -550,7 +596,6 @@ main (int argc, char *argv[])
     int opt_remain;
     MooEditor *editor;
     char **files;
-    gpointer window;
     int retval;
     gboolean new_instance = FALSE;
     gboolean run_input = TRUE;
@@ -558,6 +603,7 @@ main (int argc, char *argv[])
     guint32 stamp;
     guint32 line = 0;
     const char *pid_string = NULL;
+    gboolean use_session = FALSE;
 
     init_mem_stuff ();
 
@@ -603,7 +649,8 @@ main (int argc, char *argv[])
     if (_medit_opt_new_app || mode == MODE_PROJECT)
         new_instance = TRUE;
 
-    files = moo_filenames_from_locale (argv + opt_remain);
+    run_input = !_medit_opt_new_app || _medit_opt_use_session || _medit_opt_project;
+    use_session = !_medit_opt_new_app || _medit_opt_use_session;
 
     app = g_object_new (MOO_TYPE_APP,
                         "argv", argv,
@@ -613,6 +660,7 @@ main (int argc, char *argv[])
                         "description", _("medit is a text editor"),
                         "website", "http://mooedit.sourceforge.net/",
                         "website-label", "http://mooedit.sourceforge.net/",
+                        "quit-on-editor-close", TRUE,
                         "logo", "medit",
                         "credits", THANKS,
                         NULL);
@@ -634,6 +682,8 @@ main (int argc, char *argv[])
         exit (0);
     }
 
+    files = moo_filenames_from_locale (argv + opt_remain);
+
     if (pid_string)
     {
         if (moo_app_send_files (app, files, line, stamp, pid_string))
@@ -653,37 +703,18 @@ main (int argc, char *argv[])
     }
 
     if (mode == MODE_PROJECT)
-    {
-        MooPlugin *plugin;
-
-        plugin = moo_plugin_lookup ("ProjectManager");
-
-        if (!plugin)
-        {
-            g_printerr ("Could not initialize project manager plugin\n");
-            exit (1);
-        }
-
-        if (_medit_arg_project && *_medit_arg_project)
-        {
-            char *project = moo_filename_from_locale (_medit_arg_project);
-            g_object_set (plugin, "project", _medit_arg_project, NULL);
-            g_free (project);
-        }
-
-        moo_plugin_set_enabled (plugin, TRUE);
-    }
+        project_mode ();
+    else if (use_session)
+        moo_app_load_session (app);
 
     editor = moo_app_get_editor (app);
-    window = moo_editor_new_window (editor);
+    if (!moo_editor_get_active_window (editor))
+        moo_editor_new_window (editor);
 
     if (files && *files)
         moo_app_open_files (app, files, line, stamp);
 
     g_strfreev (files);
-
-    g_signal_connect_swapped (editor, "all-windows-closed",
-                              G_CALLBACK (moo_app_quit), app);
 
     retval = moo_app_run (app);
 

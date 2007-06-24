@@ -75,6 +75,9 @@ static MooEditWindow *create_window         (MooEditor      *editor);
 static void          moo_editor_add_doc     (MooEditor      *editor,
                                              MooEditWindow  *window,
                                              MooEdit        *doc);
+static gboolean      close_window_handler   (MooEditor      *editor,
+                                             MooEditWindow  *window,
+                                             gboolean        ask_confirm);
 static void          do_close_window        (MooEditor      *editor,
                                              MooEditWindow  *window);
 static void          do_close_doc           (MooEditor      *editor,
@@ -156,7 +159,7 @@ enum {
 };
 
 enum {
-    ALL_WINDOWS_CLOSED,
+    CLOSE_WINDOW,
     LAST_SIGNAL
 };
 
@@ -176,6 +179,8 @@ moo_editor_class_init (MooEditorClass *klass)
     gobject_class->finalize = moo_editor_finalize;
     gobject_class->set_property = moo_editor_set_property;
     gobject_class->get_property = moo_editor_get_property;
+
+    klass->close_window = close_window_handler;
 
     _moo_edit_init_config ();
     g_type_class_unref (g_type_class_ref (MOO_TYPE_EDIT));
@@ -255,13 +260,16 @@ moo_editor_class_init (MooEditorClass *klass)
                                              MOO_TYPE_EDIT,
                                              G_PARAM_READABLE));
 
-    signals[ALL_WINDOWS_CLOSED] =
-            _moo_signal_new_cb ("all-windows-closed",
-                                G_OBJECT_CLASS_TYPE (klass),
-                                G_SIGNAL_RUN_LAST,
-                                NULL, NULL, NULL,
-                                _moo_marshal_VOID__VOID,
-                                G_TYPE_NONE, 0);
+    signals[CLOSE_WINDOW] =
+            g_signal_new ("close-window",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditorClass, close_window),
+                          g_signal_accumulator_true_handled, NULL,
+                          _moo_marshal_BOOLEAN__OBJECT_BOOLEAN,
+                          G_TYPE_BOOLEAN, 2,
+                          MOO_TYPE_EDIT_WINDOW,
+                          G_TYPE_BOOLEAN);
 
     edit_window_class = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     moo_window_class_new_action_custom (edit_window_class, RECENT_ACTION_ID, NULL,
@@ -1154,6 +1162,82 @@ _moo_editor_move_doc (MooEditor     *editor,
 }
 
 
+static gboolean
+moo_editor_load_file (MooEditor       *editor,
+                      MooEditWindow   *window,
+                      GtkWidget       *parent,
+                      MooEditFileInfo *info,
+                      gboolean         silent,
+                      gboolean         add_history,
+                      MooEdit        **docp)
+{
+    GError *error = NULL;
+    gboolean new_doc = FALSE;
+    MooEdit *doc = NULL;
+    char *filename;
+    gboolean result = TRUE;
+
+    *docp = NULL;
+    filename = _moo_normalize_file_path (info->filename);
+
+    if (window_list_find_file (editor, filename, docp))
+    {
+        if (add_history)
+            moo_history_list_add_filename (editor->priv->history, filename);
+        g_free (filename);
+        return FALSE;
+    }
+
+    if (window)
+    {
+        doc = moo_edit_window_get_active_doc (window);
+
+        if (doc && moo_edit_is_empty (doc))
+            g_object_ref (doc);
+        else
+            doc = NULL;
+    }
+
+    if (!doc)
+    {
+        doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
+        MOO_OBJECT_REF_SINK (doc);
+        new_doc = TRUE;
+    }
+
+    /* XXX open_single */
+    if (!_moo_edit_load_file (doc, filename, info->encoding, &error))
+    {
+        if (!silent)
+            _moo_edit_open_error_dialog (parent, filename, info->encoding, error);
+        g_error_free (error);
+        result = FALSE;
+    }
+    else
+    {
+        if (!window)
+            window = moo_editor_get_active_window (editor);
+        if (!window)
+            window = create_window (editor);
+
+        if (new_doc)
+        {
+            _moo_edit_window_insert_doc (window, doc, -1);
+            moo_editor_add_doc (editor, window, doc);
+        }
+
+        if (add_history)
+            moo_history_list_add_filename (editor->priv->history, filename);
+    }
+
+    if (result)
+        *docp = doc;
+
+    g_free (filename);
+    g_object_unref (doc);
+    return result;
+}
+
 gboolean
 moo_editor_open (MooEditor      *editor,
                  MooEditWindow  *window,
@@ -1185,78 +1269,21 @@ moo_editor_open (MooEditor      *editor,
         return result;
     }
 
+    bring_to_front = NULL;
+
     for (l = files; l != NULL; l = l->next)
     {
         MooEditFileInfo *info = l->data;
-        GError *error = NULL;
-        gboolean new_doc = FALSE;
         MooEdit *doc = NULL;
-        char *filename;
-
-        filename = _moo_normalize_file_path (info->filename);
-
-        if (window_list_find_file (editor, filename, &bring_to_front))
-        {
-            moo_history_list_add_filename (editor->priv->history, filename);
-            g_free (filename);
-            continue;
-        }
-        else
-        {
-            bring_to_front = NULL;
-        }
 
         if (!window)
             window = moo_editor_get_active_window (editor);
 
-        if (window)
-        {
-            doc = moo_edit_window_get_active_doc (window);
-            if (doc && moo_edit_is_empty (doc))
-                g_object_ref (doc);
-            else
-                doc = NULL;
-        }
+        if (moo_editor_load_file (editor, window, parent, info, editor->priv->silent, TRUE, &doc))
+            parent = GTK_WIDGET (doc);
 
-        if (!doc)
-        {
-            doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
-            MOO_OBJECT_REF_SINK (doc);
-            new_doc = TRUE;
-        }
-
-        /* XXX open_single */
-        if (!_moo_edit_load_file (doc, filename, info->encoding, &error))
-        {
-            if (!editor->priv->silent)
-                _moo_edit_open_error_dialog (parent, filename, info->encoding, error);
-            g_error_free (error);
-            result = FALSE;
-        }
-        else
-        {
-            if (!window)
-                window = moo_editor_get_active_window (editor);
-            if (!window)
-                window = create_window (editor);
-
-            if (new_doc)
-            {
-                _moo_edit_window_insert_doc (window, doc, -1);
-                moo_editor_add_doc (editor, window, doc);
-            }
-            else
-            {
-                bring_to_front = doc;
-            }
-
-            moo_history_list_add_filename (editor->priv->history, filename);
-
-            parent = GTK_WIDGET (window);
-        }
-
-        g_free (filename);
-        g_object_unref (doc);
+        if (doc)
+            bring_to_front = doc;
     }
 
     if (bring_to_front)
@@ -1351,10 +1378,10 @@ find_busy (GSList *docs)
 }
 
 
-gboolean
-moo_editor_close_window (MooEditor      *editor,
-                         MooEditWindow  *window,
-                         gboolean        ask_confirm)
+static gboolean
+close_window_handler (MooEditor     *editor,
+                      MooEditWindow *window,
+                      gboolean       ask_confirm)
 {
     WindowInfo *info;
     MooEditDialogResponse response;
@@ -1373,7 +1400,7 @@ moo_editor_close_window (MooEditor      *editor,
     if (busy)
     {
         moo_editor_set_active_doc (editor, busy);
-        return FALSE;
+        return TRUE;
     }
 
     modified = find_modified (info->docs);
@@ -1436,11 +1463,34 @@ moo_editor_close_window (MooEditor      *editor,
         }
     }
 
-    if (do_close)
+    g_slist_free (modified);
+    return !do_close;
+}
+
+
+gboolean
+moo_editor_close_window (MooEditor      *editor,
+                         MooEditWindow  *window,
+                         gboolean        ask_confirm)
+{
+    gboolean stopped = FALSE;
+
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
+
+    if (!window_list_find (editor, window))
+        return TRUE;
+
+    g_object_ref (window);
+
+    g_signal_emit (editor, signals[CLOSE_WINDOW], 0, window, ask_confirm, &stopped);
+
+    if (!stopped && window_list_find (editor, window))
         do_close_window (editor, window);
 
-    g_slist_free (modified);
-    return do_close;
+    g_object_unref (window);
+
+    return !stopped;
 }
 
 
@@ -1463,9 +1513,6 @@ do_close_window (MooEditor      *editor,
 
     _moo_window_detach_plugins (window);
     gtk_widget_destroy (GTK_WIDGET (window));
-
-    if (!editor->priv->windows)
-        g_signal_emit (editor, signals[ALL_WINDOWS_CLOSED], 0);
 
     g_slist_free (list);
 }
@@ -1683,6 +1730,237 @@ moo_editor_close_all (MooEditor *editor,
 
     g_slist_free (windows);
     return TRUE;
+}
+
+
+static char *
+filename_from_utf8 (const char *encoded)
+{
+    if (g_str_has_prefix (encoded, "base64"))
+    {
+        guchar *filename;
+        gsize len;
+
+        filename = g_base64_decode (encoded + strlen ("base64"), &len);
+
+        if (!filename || !len || filename[len-1] != 0)
+        {
+            g_critical ("%s: oops", G_STRLOC);
+            return NULL;
+        }
+
+        return (char*) filename;
+    }
+    else
+    {
+        return g_strdup (encoded);
+    }
+}
+
+static char *
+filename_to_utf8 (const char *filename)
+{
+    char *encoded, *ret;
+
+    if (g_utf8_validate (filename, -1, NULL))
+        return g_strdup (filename);
+
+    encoded = g_base64_encode ((const guchar *) filename, strlen (filename) + 1);
+    ret = g_strdup_printf ("base64%s", encoded);
+    g_free (encoded);
+    return ret;
+}
+
+static MooEdit *
+load_doc_session (MooEditor     *editor,
+                  MooEditWindow *window,
+                  MooMarkupNode *elm)
+{
+    char *filename;
+    const char *utf8_filename;
+    const char *encoding;
+    MooEdit *doc = NULL;
+    MooEditFileInfo *info;
+
+    utf8_filename = moo_markup_get_content (elm);
+
+    if (!utf8_filename || !utf8_filename[0])
+        return moo_editor_new_doc (editor, window);
+
+    filename = filename_from_utf8 (utf8_filename);
+    g_return_val_if_fail (filename != NULL, NULL);
+
+    encoding = moo_markup_get_prop (elm, "encoding");
+    info = moo_edit_file_info_new (filename, encoding);
+
+    moo_editor_load_file (editor, window, GTK_WIDGET (window), info, TRUE, FALSE, &doc);
+
+    if (doc)
+    {
+        int line = moo_markup_get_int_prop (elm, "line", 0);
+        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), line, 0, FALSE, TRUE);
+    }
+
+    moo_edit_file_info_free (info);
+    g_free (filename);
+
+    return doc;
+}
+
+static MooMarkupNode *
+save_doc_session (MooEdit       *doc,
+                  MooMarkupNode *elm)
+{
+    const char *filename;
+    const char *encoding;
+    MooMarkupNode *node;
+
+    filename = moo_edit_get_filename (doc);
+    encoding = moo_edit_get_encoding (doc);
+
+    if (filename)
+    {
+        char *utf8_filename;
+
+        utf8_filename = filename_to_utf8 (filename);
+        g_return_val_if_fail (utf8_filename != NULL, NULL);
+
+        node = moo_markup_create_text_element (elm, "document", utf8_filename);
+        moo_markup_set_int_prop (node, "line", moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc)));
+
+        if (encoding && encoding[0])
+            moo_markup_set_prop (node, "encoding", encoding);
+
+        g_free (utf8_filename);
+    }
+    else
+    {
+        node = moo_markup_create_element (elm, "document");
+    }
+
+    return node;
+}
+
+static MooEditWindow *
+load_window_session (MooEditor     *editor,
+                     MooMarkupNode *elm)
+{
+    MooEditWindow *window;
+    MooEdit *active_doc = NULL;
+    MooMarkupNode *node;
+
+    window = create_window (editor);
+
+    for (node = elm->children; node != NULL; node = node->next)
+    {
+        if (MOO_MARKUP_IS_ELEMENT (node))
+        {
+            MooEdit *doc;
+
+            doc = load_doc_session (editor, window, node);
+
+            if (doc && moo_markup_get_bool_prop (node, "active", FALSE))
+                active_doc = doc;
+        }
+    }
+
+    if (active_doc)
+        moo_edit_window_set_active_doc (window, active_doc);
+
+    return window;
+}
+
+static MooMarkupNode *
+save_window_session (MooEditWindow *window,
+                     MooMarkupNode *elm)
+{
+    MooMarkupNode *node;
+    MooEdit *active_doc;
+    GSList *docs;
+
+    active_doc = moo_edit_window_get_active_doc (window);
+    docs = moo_edit_window_list_docs (window);
+
+    node = moo_markup_create_element (elm, "window");
+
+    while (docs)
+    {
+        MooMarkupNode *doc_node;
+        MooEdit *doc = docs->data;
+
+        doc_node = save_doc_session (doc, node);
+
+        if (doc_node && doc == active_doc)
+            moo_markup_set_bool_prop (doc_node, "active", TRUE);
+
+        docs = g_slist_delete_link (docs, docs);
+    }
+
+    return node;
+}
+
+void
+_moo_editor_load_session (MooEditor     *editor,
+                          MooMarkupNode *xml)
+{
+    MooMarkupNode *editor_node;
+
+    g_return_if_fail (MOO_IS_EDITOR (editor));
+    g_return_if_fail (MOO_MARKUP_IS_ELEMENT (xml));
+
+    editor_node = moo_markup_get_element (xml, "editor");
+
+    if (editor_node)
+    {
+        MooEditWindow *active_window = NULL;
+        MooMarkupNode *node;
+
+        for (node = editor_node->children; node != NULL; node = node->next)
+        {
+            MooEditWindow *window;
+
+            if (!MOO_MARKUP_IS_ELEMENT (node))
+                continue;
+
+            window = load_window_session (editor, node);
+
+            if (window && moo_markup_get_bool_prop (node, "active", FALSE))
+                active_window = window;
+        }
+
+        if (active_window)
+            moo_editor_set_active_window (editor, active_window);
+    }
+}
+
+void
+_moo_editor_save_session (MooEditor     *editor,
+                          MooMarkupNode *xml)
+{
+    MooMarkupNode *node;
+    MooEditWindow *active_window;
+    GSList *windows;
+
+    g_return_if_fail (MOO_IS_EDITOR (editor));
+    g_return_if_fail (MOO_MARKUP_IS_ELEMENT (xml));
+
+    active_window = moo_editor_get_active_window (editor);
+    windows = moo_editor_list_windows (editor);
+
+    node = moo_markup_create_element (xml, "editor");
+
+    while (windows)
+    {
+        MooEditWindow *window = windows->data;
+        MooMarkupNode *window_node;
+
+        window_node = save_window_session (window, node);
+
+        if (window_node && window == active_window)
+            moo_markup_set_bool_prop (window_node, "active", TRUE);
+
+        windows = g_slist_delete_link (windows, windows);
+    }
 }
 
 

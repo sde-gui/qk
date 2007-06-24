@@ -58,6 +58,8 @@
 #define MOO_ACTIONS_FILE    "actions"
 #endif
 
+#define SESSION_VERSION "1.0"
+
 static MooApp *moo_app_instance = NULL;
 static MooAppInput *moo_app_input = NULL;
 
@@ -76,11 +78,14 @@ struct _MooAppPrivate {
     gboolean    in_try_quit;
 
     EggSMClient *sm_client;
+    char       *session_file;
+    MooMarkupDoc *session;
 
     MooUIXML   *ui_xml;
     char       *default_ui;
     guint       quit_handler_id;
     gboolean    use_editor;
+    gboolean    quit_on_editor_close;
 
     char       *tmpdir;
 };
@@ -120,6 +125,10 @@ static void     moo_app_exec_cmd_real   (MooApp             *app,
                                          char                cmd,
                                          const char         *data,
                                          guint               len);
+static void     moo_app_load_session_real (MooApp           *app,
+                                         MooMarkupNode      *xml);
+static void     moo_app_save_session_real (MooApp           *app,
+                                         MooMarkupNode      *xml);
 static GtkWidget *moo_app_create_prefs_dialog (MooApp       *app);
 
 static void     moo_app_load_prefs      (MooApp             *app);
@@ -132,6 +141,9 @@ static void     moo_app_set_description (MooApp             *app,
                                          const char         *description);
 static void     moo_app_set_version     (MooApp             *app,
                                          const char         *version);
+
+static void     moo_app_save_session    (MooApp             *app);
+static void     moo_app_write_session   (MooApp             *app);
 
 static void     start_input             (MooApp             *app);
 
@@ -175,6 +187,7 @@ enum {
     PROP_DESCRIPTION,
     PROP_RUN_INPUT,
     PROP_USE_EDITOR,
+    PROP_QUIT_ON_EDITOR_CLOSE,
     PROP_DEFAULT_UI,
     PROP_LOGO,
     PROP_WEBSITE,
@@ -189,6 +202,8 @@ enum {
     TRY_QUIT,
     PREFS_DIALOG,
     EXEC_CMD,
+    LOAD_SESSION,
+    SAVE_SESSION,
     LAST_SIGNAL
 };
 
@@ -214,6 +229,8 @@ moo_app_class_init (MooAppClass *klass)
     klass->try_quit = moo_app_try_quit_real;
     klass->prefs_dialog = moo_app_create_prefs_dialog;
     klass->exec_cmd = moo_app_exec_cmd_real;
+    klass->load_session = moo_app_load_session_real;
+    klass->save_session = moo_app_save_session_real;
 
     g_object_class_install_property (gobject_class,
                                      PROP_ARGV,
@@ -296,6 +313,14 @@ moo_app_class_init (MooAppClass *klass)
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
     g_object_class_install_property (gobject_class,
+                                     PROP_QUIT_ON_EDITOR_CLOSE,
+                                     g_param_spec_boolean ("quit-on-editor-close",
+                                             "quit-on-editor-close",
+                                             "quit-on-editor-close",
+                                             FALSE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+    g_object_class_install_property (gobject_class,
                                      PROP_DEFAULT_UI,
                                      g_param_spec_string ("default-ui",
                                              "default-ui",
@@ -367,6 +392,26 @@ moo_app_class_init (MooAppClass *klass)
                           G_TYPE_CHAR,
                           G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
                           G_TYPE_UINT);
+
+    signals[LOAD_SESSION] =
+            g_signal_new ("load-session",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooAppClass, load_session),
+                          NULL, NULL,
+                          _moo_marshal_VOID__POINTER,
+                          G_TYPE_NONE, 1,
+                          G_TYPE_POINTER);
+
+    signals[SAVE_SESSION] =
+            g_signal_new ("save-session",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooAppClass, save_session),
+                          NULL, NULL,
+                          _moo_marshal_VOID__POINTER,
+                          G_TYPE_NONE, 1,
+                          G_TYPE_POINTER);
 }
 
 
@@ -455,6 +500,10 @@ moo_app_finalize (GObject *object)
     moo_app_info_free (app->priv->info);
     g_free (app->priv->default_ui);
 
+    g_free (app->priv->session_file);
+    if (app->priv->session)
+        moo_markup_doc_unref (app->priv->session);
+
     if (app->priv->argv)
         g_strfreev (app->priv->argv);
     if (app->priv->editor)
@@ -517,6 +566,10 @@ moo_app_set_property (GObject        *object,
             app->priv->use_editor = g_value_get_boolean (value);
             break;
 
+        case PROP_QUIT_ON_EDITOR_CLOSE:
+            app->priv->quit_on_editor_close = g_value_get_boolean (value);
+            break;
+
         case PROP_DEFAULT_UI:
             g_free (app->priv->default_ui);
             app->priv->default_ui = g_strdup (g_value_get_string (value));
@@ -576,6 +629,10 @@ moo_app_get_property (GObject        *object,
 
         case PROP_USE_EDITOR:
             g_value_set_boolean (value, app->priv->use_editor);
+            break;
+
+        case PROP_QUIT_ON_EDITOR_CLOSE:
+            g_value_set_boolean (value, app->priv->quit_on_editor_close);
             break;
 
         default:
@@ -714,10 +771,36 @@ moo_app_get_info (MooApp     *app)
 
 
 #ifdef MOO_BUILD_EDIT
+static gboolean
+close_editor_window (MooApp *app)
+{
+    GSList *windows;
+    gboolean ret = FALSE;
+
+    if (!app->priv->running || app->priv->in_try_quit ||
+        !app->priv->quit_on_editor_close)
+        return FALSE;
+
+    windows = moo_editor_list_windows (app->priv->editor);
+
+    if (windows && !windows->next)
+    {
+        moo_app_quit (app);
+        ret = TRUE;
+    }
+
+    g_slist_free (windows);
+    return ret;
+}
+
 static void
 moo_app_init_editor (MooApp *app)
 {
     app->priv->editor = moo_editor_create_instance ();
+
+    g_signal_connect_swapped (app->priv->editor, "close-window",
+                              G_CALLBACK (close_editor_window), app);
+
     /* if ui_xml wasn't set yet, then moo_app_get_ui_xml()
        will get editor's xml */
     moo_editor_set_ui_xml (app->priv->editor,
@@ -989,6 +1072,8 @@ moo_app_try_quit_real (MooApp *app)
     if (!app->priv->running)
         return FALSE;
 
+    moo_app_save_session (app);
+
 #ifdef MOO_BUILD_EDIT
     if (!moo_editor_close_all (app->priv->editor, TRUE, TRUE))
         return TRUE;
@@ -1027,6 +1112,7 @@ moo_app_quit_real (MooApp *app)
     app->priv->editor = NULL;
 #endif /* MOO_BUILD_EDIT */
 
+    moo_app_write_session (app);
     moo_app_save_prefs (app);
 
     if (app->priv->quit_handler_id)
@@ -1370,6 +1456,121 @@ moo_app_new_file (MooApp       *app,
             moo_editor_new_doc (editor, NULL);
     }
 #endif /* MOO_BUILD_EDIT */
+}
+
+
+static void
+moo_app_load_session_real (MooApp        *app,
+                           MooMarkupNode *xml)
+{
+#ifdef MOO_BUILD_EDIT
+    MooEditor *editor;
+    editor = moo_app_get_editor (app);
+    g_return_if_fail (editor != NULL);
+    _moo_editor_load_session (editor, xml);
+#endif /* MOO_BUILD_EDIT */
+}
+
+static void
+moo_app_save_session_real (MooApp        *app,
+                           MooMarkupNode *xml)
+{
+#ifdef MOO_BUILD_EDIT
+    MooEditor *editor;
+    editor = moo_app_get_editor (app);
+    g_return_if_fail (editor != NULL);
+    _moo_editor_save_session (editor, xml);
+#endif /* MOO_BUILD_EDIT */
+}
+
+static void
+moo_app_save_session (MooApp *app)
+{
+    MooMarkupNode *root;
+
+    if (!app->priv->session_file)
+        return;
+
+    if (app->priv->session)
+        moo_markup_doc_unref (app->priv->session);
+
+    app->priv->session = moo_markup_doc_new ("session");
+    root = moo_markup_create_root_element (app->priv->session, "session");
+    moo_markup_set_prop (root, "version", SESSION_VERSION);
+
+    g_signal_emit (app, signals[SAVE_SESSION], 0, root);
+}
+
+static void
+moo_app_write_session (MooApp *app)
+{
+    char *string;
+    GError *error = NULL;
+
+    if (!app->priv->session_file)
+        return;
+
+    if (!app->priv->session)
+    {
+        char *file = moo_get_user_cache_file (app->priv->session_file);
+        _moo_unlink (file);
+        g_free (file);
+        return;
+    }
+
+    string = moo_markup_format_pretty (app->priv->session, 1);
+    moo_save_user_cache_file (app->priv->session_file, string, -1, &error);
+
+    if (error)
+    {
+        char *file = moo_get_user_cache_file (app->priv->session_file);
+        g_critical ("could not save session file %s: %s", file, error->message);
+        g_free (file);
+        g_error_free (error);
+    }
+}
+
+void
+moo_app_load_session (MooApp *app)
+{
+    MooMarkupDoc *doc;
+    MooMarkupNode *root;
+    GError *error = NULL;
+    const char *version;
+    char *session_file;
+
+    g_return_if_fail (MOO_IS_APP (app));
+
+    if (!app->priv->session_file)
+        app->priv->session_file = g_strdup_printf ("%s.session", g_get_prgname ());
+
+    session_file = moo_get_user_cache_file (app->priv->session_file);
+
+    if (!g_file_test (session_file, G_FILE_TEST_EXISTS) ||
+        !(doc = moo_markup_parse_file (session_file, &error)))
+    {
+        if (error)
+        {
+            g_warning ("could not open session file %s: %s",
+                       session_file, error->message);
+            g_error_free (error);
+        }
+
+        g_free (session_file);
+        return;
+    }
+
+    if (!(root = moo_markup_get_root_element (doc, "session")) ||
+        !(version = moo_markup_get_prop (root, "version")))
+        g_warning ("malformed session file %s, ignoring", session_file);
+    else if (strcmp (version, SESSION_VERSION) != 0)
+        g_warning ("invalid session file version %s in %s, ignoring",
+                   version, session_file);
+    else
+        g_signal_emit (app, signals[LOAD_SESSION], 0, root);
+
+    moo_markup_doc_unref (doc);
+    g_free (session_file);
 }
 
 

@@ -42,7 +42,11 @@ struct _MooEditor
 
 struct _MooEditorClass
 {
-    GObjectClass            parent_class;
+    GObjectClass parent_class;
+
+    gboolean (*close_window) (MooEditor     *editor,
+                              MooEditWindow *window,
+                              gboolean       ask_confirm);
 };
 
 
@@ -144,6 +148,11 @@ gboolean         moo_editor_save_copy       (MooEditor      *editor,
                                              GError        **error);
 
 void             moo_editor_apply_prefs     (MooEditor      *editor);
+
+void            _moo_editor_load_session    (MooEditor      *editor,
+                                             MooMarkupNode  *xml);
+void            _moo_editor_save_session    (MooEditor      *editor,
+                                             MooMarkupNode  *xml);
 
 
 G_END_DECLS
