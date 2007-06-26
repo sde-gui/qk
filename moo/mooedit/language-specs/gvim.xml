@@ -20,12 +20,12 @@
  Boston, MA 02111-1307, USA.
 
 -->
-<style-scheme id="gvim" _name="GVim">
+<style-scheme id="gvim" _name="GVim" version="1.0">
   <author>GtkSourceView team</author>
   <_description>Color scheme used in GVim</_description>
 
-  <style name="bracket-match"               foreground="white" background="grey" bold="true"/>
-  <style name="bracket-mismatch"            foreground="white" background="red" bold="true"/>
+  <style name="bracket-match"               foreground="#white" background="#grey" bold="true"/>
+  <style name="bracket-mismatch"            foreground="#white" background="#red" bold="true"/>
 
   <!-- legacy styles for old lang files -->
   <style name="Others"                      foreground="#2E8B57" bold="true"/>
@@ -69,6 +69,7 @@
   <style name="js:object"                   foreground="#2E8B57" bold="true"/>
   <style name="js:constructors"             foreground="#008B8B"/>
 
+  <style name="latex:display-math"          use-style="Others 3"/>
   <style name="latex:command"               foreground="#2E8B57" bold="true"/>
   <style name="latex:include"               use-style="c:preprocessor"/>
 

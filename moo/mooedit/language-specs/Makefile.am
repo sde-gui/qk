@@ -2,6 +2,7 @@ languagespecsdir = ${MOO_TEXT_LANG_FILES_DIR}
 
 langs2 =			\
 	ada.lang		\
+	awk.lang		\
 	changelog.lang		\
 	c.lang			\
 	chdr.lang		\
