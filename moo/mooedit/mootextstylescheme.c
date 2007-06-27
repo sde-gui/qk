@@ -52,25 +52,6 @@ moo_text_style_get_type (void)
     return type;
 }
 
-MooTextStyle *
-moo_text_style_new (void)
-{
-    return (MooTextStyle*) gtk_source_style_new ();
-}
-
-MooTextStyle *
-moo_text_style_copy (const MooTextStyle *style)
-{
-    return style ? (MooTextStyle*) gtk_source_style_copy ((GtkSourceStyle*) style) : NULL;
-}
-
-void
-moo_text_style_free (MooTextStyle *style)
-{
-    if (style)
-        g_object_unref (style);
-}
-
 
 const char *
 moo_text_style_scheme_get_id (MooTextStyleScheme *scheme)

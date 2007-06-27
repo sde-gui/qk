@@ -982,11 +982,9 @@ _moo_text_buffer_set_style_scheme (MooTextBuffer      *buffer,
 
     style = _moo_text_style_scheme_get_bracket_match_style (scheme);
     moo_text_buffer_set_bracket_match_style (buffer, style);
-    moo_text_style_free (style);
 
     style = _moo_text_style_scheme_get_bracket_mismatch_style (scheme);
     moo_text_buffer_set_bracket_mismatch_style (buffer, style);
-    moo_text_style_free (style);
 
     if (buffer->priv->engine)
         _gtk_source_engine_set_style_scheme (buffer->priv->engine,

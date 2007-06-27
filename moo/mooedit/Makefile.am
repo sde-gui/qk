@@ -39,7 +39,6 @@ mooedit_include_headers =		\
 	mootextbuffer.h			\
 	mootextiter.h			\
 	mootextsearch.h			\
-	mootextstyle.h			\
 	mootextstylescheme.h		\
 	mootextview.h
 
@@ -171,7 +170,6 @@ mooedit_enums_headers =			\
 	mooedit.h			\
 	mootextfind.h			\
 	mootextsearch.h			\
-	mootextstyle.h			\
 	mootextview.h
 
 CLEANFILES += stamp-mooedit-enums.h stamp-mooedit-enums.c mooedit-enums.h mooedit-enums.c

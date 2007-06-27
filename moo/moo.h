@@ -39,7 +39,6 @@
 #include <mooedit/mooplugin.h>
 #include <mooedit/mootextbuffer.h>
 #include <mooedit/mootextiter.h>
-#include <mooedit/mootextstyle.h>
 #include <mooedit/mootextstylescheme.h>
 #include <mooedit/mootextview.h>
 #include <mooedit/mooedit-script.h>

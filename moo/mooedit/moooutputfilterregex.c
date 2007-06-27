@@ -376,16 +376,10 @@ get_tag (MooLineView *view,
             style = _moo_text_style_scheme_lookup_style (scheme, name);
 
         if (style)
-        {
             _moo_text_style_apply_to_tag (style, tag);
-            moo_text_style_free (style);
-        }
-        else
-        {
-            if (type == OUTPUT_STDERR || !strcmp (name, "output-error") ||
-                !strcmp (name, "output-stderr"))
-                    g_object_set (tag, "foreground", "red", NULL);
-        }
+        else if (type == OUTPUT_STDERR || !strcmp (name, "output-error") ||
+                 !strcmp (name, "output-stderr"))
+            g_object_set (tag, "foreground", "red", NULL);
     }
 
     return tag;

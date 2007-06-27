@@ -952,17 +952,17 @@
 
 ;; From mootextstyle.h
 
-(define-function moo_text_style_new
-  (c-name "moo_text_style_new")
-  (is-constructor-of "MooTextStyle")
-  (return-type "MooTextStyle*")
-)
+; (define-function moo_text_style_new
+;   (c-name "moo_text_style_new")
+;   (is-constructor-of "MooTextStyle")
+;   (return-type "MooTextStyle*")
+; )
 
-(define-method moo_text_style_copy
-  (c-name "moo_text_style_copy")
-  (of-object "MooTextStyle")
-  (return-type "MooTextStyle*")
-)
+; (define-method moo_text_style_copy
+;   (c-name "moo_text_style_copy")
+;   (of-object "MooTextStyle")
+;   (return-type "MooTextStyle*")
+; )
 
 
 ; From mootextstylescheme.h
