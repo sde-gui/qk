@@ -80,8 +80,8 @@ DISTCLEANFILES = $(xml_sources) $(no_xml_sources) $(gtksourceview_sources)
 %-mangled.h: upstream/%.h upstream/mangle.sh
 	$(SHELL) $(srcdir)/upstream/mangle.sh $(srcdir)/upstream/$*.h > $@.tmp && mv $@.tmp $@
 
-upstream/%.o:
-	$(MAKE) $*-mangled.o
+upstream/%.lo:
+	$(MAKE) $*-mangled.lo
 
 libgtksourceview_la_SOURCES =		\
 	$(gtksourceview_sources)	\
