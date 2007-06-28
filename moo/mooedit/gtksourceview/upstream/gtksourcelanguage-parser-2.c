@@ -1208,7 +1208,7 @@ handle_define_regex_element (ParserState *parser_state,
 		regex = xmlStrdup (BAD_CAST "");
 
 	expanded_regex = expand_regex (parser_state, (gchar*) regex, flags,
-				       FALSE, TRUE, &tmp_error);
+				       TRUE, TRUE, &tmp_error);
 
 	if (tmp_error == NULL)
 	{
