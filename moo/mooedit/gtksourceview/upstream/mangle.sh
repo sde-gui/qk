@@ -16,6 +16,12 @@ case "$base" in
 #     echo '#include "mooedit/moolang.h"'
 #     custom_cmd="-e s/g_object_new.*GTK_TYPE_SOURCE_LANGUAGE/g_object_new(MOO_TYPE_LANG/g"
 #     ;;
+  gtksourcelanguage-parser-2.c)
+    echo '#include <mooutils/mooutils-misc.h>'
+    ;;
+  gtksourcecontextengine.c)
+    echo '#include <mooutils/mooutils-misc.h>'
+    ;;
   gtksourcelanguage-parser-1.c)
     echo '#include <glib/gmappedfile.h>'
     ;;
@@ -61,5 +67,8 @@ sed -e 's/#include \"gtksourcecontextengine.h\"/#include \"gtksourcecontextengin
     -e 's/gtk_source/_moo_gtk_source/g'												\
     -e 's/_gtk_text_region/gtk_text_region/g'											\
     -e 's/gtk_text_region/_moo_gtk_text_region/g'										\
+																\
+    -e 's/g_slice_new/_moo_new/g'												\
+    -e 's/g_slice_free/_moo_free/g'												\
 																\
     $custom_cmd "$1" || exit $?

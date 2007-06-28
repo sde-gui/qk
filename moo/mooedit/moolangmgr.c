@@ -530,7 +530,7 @@ get_lang_for_mime_type (MooLangMgr *mgr,
 static void
 read_langs (MooLangMgr *mgr)
 {
-    const GSList *langs = NULL;
+    GSList *langs = NULL;
 
     if (mgr->got_langs)
         return;
@@ -540,7 +540,7 @@ read_langs (MooLangMgr *mgr)
     mgr->got_langs = TRUE;
 
 #ifdef MOO_USE_XML
-    langs = gtk_source_language_manager_get_available_languages (GTK_SOURCE_LANGUAGE_MANAGER (mgr));
+    langs = gtk_source_language_manager_list_languages (GTK_SOURCE_LANGUAGE_MANAGER (mgr));
 #endif
 
     get_lang_info (mgr, MOO_LANG_NONE, TRUE);
@@ -559,7 +559,7 @@ read_langs (MooLangMgr *mgr)
         if (!info->mime_types_modified)
             info->mime_types = _moo_lang_get_mime_types (lang);
 
-        langs = langs->next;
+        langs = g_slist_delete_link (langs, langs);
     }
 
     g_signal_emit_by_name (mgr, "loaded");
@@ -756,14 +756,14 @@ GSList *
 moo_lang_mgr_get_sections (MooLangMgr *mgr)
 {
     GSList *sections = NULL;
-    const GSList *list = NULL;
+    GSList *list = NULL;
 
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
 
     read_langs (mgr);
 
 #ifdef MOO_USE_XML
-    list = gtk_source_language_manager_get_available_languages (GTK_SOURCE_LANGUAGE_MANAGER (mgr));
+    list = gtk_source_language_manager_list_languages (GTK_SOURCE_LANGUAGE_MANAGER (mgr));
 #endif
 
     while (list)
@@ -771,7 +771,7 @@ moo_lang_mgr_get_sections (MooLangMgr *mgr)
         const char *section = _moo_lang_get_section (list->data);
         if (section && !g_slist_find_custom (sections, section, (GCompareFunc) strcmp))
             sections = g_slist_prepend (sections, g_strdup (section));
-        list = list->next;
+        list = g_slist_delete_link (list, list);
     }
 
     return sections;
@@ -781,24 +781,19 @@ moo_lang_mgr_get_sections (MooLangMgr *mgr)
 GSList *
 moo_lang_mgr_get_available_langs (MooLangMgr *mgr)
 {
-    GSList *langs = NULL;
-    const GSList *list = NULL;
+    GSList *list = NULL;
 
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
 
     read_langs (mgr);
 
 #ifdef MOO_USE_XML
-    list = gtk_source_language_manager_get_available_languages (GTK_SOURCE_LANGUAGE_MANAGER (mgr));
+    list = gtk_source_language_manager_list_languages (GTK_SOURCE_LANGUAGE_MANAGER (mgr));
 #endif
 
-    while (list)
-    {
-        langs = g_slist_prepend (langs, g_object_ref (list->data));
-        list = list->next;
-    }
+    g_slist_foreach (list, (GFunc) g_object_ref, NULL);
 
-    return g_slist_reverse (langs);
+    return list;
 }
 
 
