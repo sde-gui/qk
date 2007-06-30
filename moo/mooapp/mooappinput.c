@@ -41,8 +41,6 @@
 
 struct _MooAppInput
 {
-    guint        ref_count;
-
     int          pipe;
     char        *pipe_basename;
     char        *pipe_name;
@@ -69,7 +67,6 @@ _moo_app_input_new (const char *pipe_basename)
     g_return_val_if_fail (pipe_basename != NULL, NULL);
 
     ch = g_new0 (MooAppInput, 1);
-    ch->ref_count = 1;
 
     ch->pipe_basename = g_strdup (pipe_basename);
 
@@ -86,22 +83,10 @@ _moo_app_input_new (const char *pipe_basename)
 }
 
 
-static MooAppInput *
-_moo_app_input_ref (MooAppInput *ch)
-{
-    g_return_val_if_fail (ch != NULL, NULL);
-    ++ch->ref_count;
-    return ch;
-}
-
-
 void
-_moo_app_input_unref (MooAppInput *ch)
+_moo_app_input_free (MooAppInput *ch)
 {
     g_return_if_fail (ch != NULL);
-
-    if (--ch->ref_count)
-        return;
 
     _moo_app_input_shutdown (ch);
 

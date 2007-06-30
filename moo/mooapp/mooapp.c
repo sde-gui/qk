@@ -23,7 +23,6 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"
-#include "mooedit/mooedit-script.h"
 #include "mooedit/moousertools.h"
 #include "mooedit/moousertools-prefs.h"
 #include "mooedit/plugins/mooeditplugins.h"
@@ -898,7 +897,7 @@ start_input (MooApp *app)
         if (!_moo_app_input_start (moo_app_input))
         {
             g_critical ("%s: oops", G_STRLOC);
-            _moo_app_input_unref (moo_app_input);
+            _moo_app_input_free (moo_app_input);
             moo_app_input = NULL;
         }
     }
@@ -1099,7 +1098,7 @@ moo_app_quit_real (MooApp *app)
     if (moo_app_input)
     {
         _moo_app_input_shutdown (moo_app_input);
-        _moo_app_input_unref (moo_app_input);
+        _moo_app_input_free (moo_app_input);
         moo_app_input = NULL;
     }
 
