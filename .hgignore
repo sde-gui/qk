@@ -28,3 +28,4 @@ Makefile(\.in)?$
 ^moo/mooapp/smclient/logout-test.c$
 ^moo/moopython/pygtk/goocanvas/CVS
 ^moo/moopython/pygtk/goocanvas/.cvsignore
+^patches/

@@ -63,6 +63,10 @@ DIST_SUBDIRS = mooutils mooterm mooedit mooapp moopython mooscript moofileview
 lib_LTLIBRARIES =
 noinst_LTLIBRARIES =
 
+if MOO_USE_OBJC
+objc_libs = -lobjc
+endif
+
 ############################################################################
 # libmoo
 #
@@ -93,7 +97,7 @@ export_flags = -export-symbols-regex "^(moo_).*"
 endif
 endif
 
-libmoo_la_LIBADD = $(libs) $(MOO_LIBS)
+libmoo_la_LIBADD = $(libs) $(MOO_LIBS) $(objc_libs)
 libmoo_la_LDFLAGS = $(libmoo_res_ldflag) -no-undefined -avoid-version $(export_flags)
 libmoo_la_SOURCES = $(moo_include_headers)
 

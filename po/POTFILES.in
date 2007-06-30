@@ -55,8 +55,6 @@ moo/moopython/plugins/terminal.ini.desktop.in.in
 moo/moopython/plugins/terminal.py
 moo/moopython/plugins/medit/runpython.py
 
-moo/mooscript/mooscript-yacc.c
-
 moo/mooutils/mooencodings.c
 moo/mooutils/mooencodings-data.h
 moo/mooutils/moofontsel.c

@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <medit-project version="1.0" type="C" name="moo">
+ <commands>
+  <compile>
+    <cmd>$(make) $(base).lo</cmd>
+    <working_dir>$(builddir)</working_dir>
+  </compile>
+ </commands>
  <active>debug</active>
  <configurations>
   <debug>
@@ -7,6 +13,7 @@
    <configure>
     <args>--enable-debug=full --enable-all-warnings --enable-libmoo --with-mooterm --enable-project --enable-canvas</args>
     <vars>
+     <var name="OBJCFLAGS">-g</var>
      <var name="CFLAGS">-g</var>
     </vars>
    </configure>
@@ -37,7 +44,7 @@
    </configure>
   </optimized>
  </configurations>
- <file_selector_dir>/home/muntyan/projects/moo/moo/mooedit/</file_selector_dir>
+ <file_selector_dir>/home/muntyan/projects/moo/moo/moopython/plugins/pyproject/projects/cproj/</file_selector_dir>
  <run>
   <args>-ns</args>
   <exe>medit/medit</exe>
