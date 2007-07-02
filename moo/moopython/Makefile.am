@@ -25,6 +25,7 @@ libmoopython_la_sources =	\
 	moopython-loader.c	\
 	moopython-utils.h	\
 	moopython-utils.c
+
 if !MOO_BUILD_MOO_MODULE
 libmoopython_la_libadd =	\
 	pygtk/libmoopygtk.la
@@ -53,8 +54,7 @@ endif
 
 else !MOO_OS_UNIX
 
-noinst_LTLIBRARIES += libmoomod25.la libmoomod24.la
-noinst_LTLIBRARIES += libpymoo25.la libpymoo24.la
+noinst_LTLIBRARIES += libmoomod.la libpymoo.la
 
 endif !MOO_OS_UNIX
 
@@ -67,40 +67,14 @@ AM_CFLAGS =			\
 	$(PYGTK_CFLAGS)		\
 	$(MOO_W_NO_WRITE_STRINGS)
 
-py25_cflags =				\
-	-I..				\
-	-I$(top_builddir)		\
-	$(MOO_CFLAGS)			\
-	$(MOO_DEBUG_CFLAGS)		\
-	$(PYTHON25_INCLUDES)		\
-	$(PYGTK25_CFLAGS)		\
-	$(MOO_W_NO_WRITE_STRINGS)	\
-	-DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
-
-py24_cflags =				\
-	-I..				\
-	-I$(top_builddir)		\
-	$(MOO_CFLAGS)			\
-	$(MOO_DEBUG_CFLAGS)		\
-	$(PYTHON24_INCLUDES)		\
-	$(PYGTK24_CFLAGS)		\
-	$(MOO_W_NO_WRITE_STRINGS)	\
-	-DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
+if MOO_OS_MINGW
+AM_CFLAGS += -DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
+endif
 
 libmoomod_la_SOURCES = $(libmoomod_la_sources)
 libmoomod_la_LIBADD = pygtk/libmoopygtk.la $(libmoomod_la_libadd)
-libmoomod25_la_SOURCES = $(libmoomod_la_sources)
-libmoomod25_la_LIBADD = pygtk/libmoopygtk25.la $(libmoomod_la_libadd)
-libmoomod25_la_CFLAGS = $(py25_cflags)
-libmoomod24_la_SOURCES = $(libmoomod_la_sources)
-libmoomod24_la_LIBADD = pygtk/libmoopygtk24.la $(libmoomod_la_libadd)
-libmoomod24_la_CFLAGS = $(py24_cflags)
 
 libpymoo_la_SOURCES = $(libpymoo_la_sources)
-libpymoo25_la_SOURCES = $(libpymoo_la_sources)
-libpymoo25_la_CFLAGS = $(py25_cflags)
-libpymoo24_la_SOURCES = $(libpymoo_la_sources)
-libpymoo24_la_CFLAGS = $(py24_cflags)
 
 libmoopython_la_SOURCES = $(libmoopython_la_sources)
 libmoopython_la_LIBADD = $(libmoopython_la_libadd)

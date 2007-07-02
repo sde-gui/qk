@@ -15,12 +15,12 @@ VS_VERSION_INFO VERSIONINFO
       BLOCK "040904B0"
       BEGIN
         VALUE "CompanyName", "Yevgen Muntyan"
-        VALUE "FileDescription", "libmoo bindings for python-2.4"
+        VALUE "FileDescription", "python-2.4 plugin for medit"
         VALUE "FileVersion", "@MOO_VERSION_UNQUOTED@.0"
-        VALUE "InternalName", "moo-mod-@MOO_VERSION_UNQUOTED@"
+        VALUE "InternalName", "pymoo-@MOO_VERSION_UNQUOTED@"
         VALUE "LegalCopyright", "(C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>"
-        VALUE "OriginalFilename", "moo.pyd"
-        VALUE "ProductName", "moo24.pyd"
+        VALUE "OriginalFilename", "pymoo.dll"
+        VALUE "ProductName", "pymoo.dll"
         VALUE "ProductVersion", @MOO_VERSION@
       END
     END

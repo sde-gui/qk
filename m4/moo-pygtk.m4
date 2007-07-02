@@ -1,14 +1,14 @@
 ##############################################################################
-# _MOO_AC_CHECK_PYGTK_REAL(python-version,action-if-found,action-if-not-found)
+# _MOO_AC_CHECK_PYGTK_REAL(action-if-found,action-if-not-found)
 # checks pygtk stuff
 #
 AC_DEFUN([_MOO_AC_CHECK_PYGTK_REAL],[
-  PKG_CHECK_MODULES(PYGTK$1,pygtk-2.0 >= 2.6.0 pycairo,[
+  PKG_CHECK_MODULES(PYGTK,pygtk-2.0 >= 2.6.0 pycairo,[
     AC_MSG_CHECKING([whether pygtk can be used])
     save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$CPPFLAGS $PYGTK[]$1[]_CFLAGS $PYTHON[]$1[]_INCLUDES"
+    CPPFLAGS="$CPPFLAGS $PYGTK_CFLAGS $PYTHON_INCLUDES"
     save_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS $PYGTK[]$1[]_CFLAGS $PYTHON[]$1[]_INCLUDES"
+    CFLAGS="$CFLAGS $PYGTK_CFLAGS $PYTHON_INCLUDES"
 
     AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
     #include <pygobject.h>
@@ -23,21 +23,17 @@ AC_DEFUN([_MOO_AC_CHECK_PYGTK_REAL],[
         AC_SUBST(PYGTK_DEFS_DIR)
         PYGTK_CODEGEN_DIR=`$PKG_CONFIG --variable=codegendir pygtk-2.0`
         AC_SUBST(PYGTK_CODEGEN_DIR)
-        m4_if([$1],,,[
-          AC_SUBST(PYGTK[]$1[]_DEFS_DIR,[$PYGTK_DEFS_DIR])
-          AC_SUBST(PYGTK[]$1[]_CODEGEN_DIR,[$PYGTK_CODEGEN_DIR])
-        ])
         AC_MSG_NOTICE([pygtk defs dir: $PYGTK_DEFS_DIR])
-        m4_if([$2],[],[:],[$2])
+        m4_if([$1],[],[:],[$1])
     ],[
         AC_MSG_RESULT([no])
-        m4_if([$3],[],[:],[$3])
+        m4_if([$2],[],[:],[$2])
     ])
 
     CFLAGS="$save_CFLAGS"
     CPPFLAGS="$save_CPPFLAGS"
   ],[
-    m4_if([$3],[],[:],[$3])
+    m4_if([$2],[],[:],[$2])
   ])
 ])
 
@@ -49,12 +45,7 @@ AC_DEFUN([_MOO_AC_CHECK_PYGTK_REAL],[
 AC_DEFUN([_MOO_AC_CHECK_PYGTK],[
     AC_REQUIRE([MOO_AC_CHECK_OS])
     if test "x$MOO_OS_CYGWIN" != "xyes"; then
-        if test "x$MOO_OS_MINGW" = "xyes"; then
-            _MOO_AC_CHECK_PYGTK_REAL([24],[$1],[$2])
-            _MOO_AC_CHECK_PYGTK_REAL([25],[$1],[$2])
-        else
-            _MOO_AC_CHECK_PYGTK_REAL(,[$1],[$2])
-        fi
+      _MOO_AC_CHECK_PYGTK_REAL([$1],[$2])
     fi
 ])
 

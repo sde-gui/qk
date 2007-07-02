@@ -19,7 +19,7 @@ m4files =			\
 	m4/moo-version.m4	\
 	m4/moo-xdgmime.m4	\
 	m4/moo-xml.m4		\
-	m4/python-cross-mingw.m4
+	m4/moo-python-cross-mingw.m4
 
 EXTRA_DIST =			\
 	$(m4files)		\

@@ -1043,7 +1043,7 @@ static char *
 get_size_string (struct stat *statbuf)
 {
     g_return_val_if_fail (statbuf != NULL, NULL);
-    return g_strdup_printf ("%" G_GINT64_FORMAT, (MooFileSize) statbuf->st_size);
+    return g_strdup_printf ("%" G_GINT64_FORMAT, (gint64) statbuf->st_size);
 }
 
 

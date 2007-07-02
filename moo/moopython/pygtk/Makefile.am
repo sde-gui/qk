@@ -207,26 +207,14 @@ mooterm-mod.h: mooterm-mod.py $(PY2H)
 	mv $@.tmp $@
 
 
-if MOO_OS_UNIX
 noinst_LTLIBRARIES = libmoopygtk.la
-else
-noinst_LTLIBRARIES = libmoopygtk25.la libmoopygtk24.la
-endif
 
 libmoopygtk_la_SOURCES = $(moopygtk_sources)
-libmoopygtk25_la_SOURCES = $(moopygtk_sources)
-libmoopygtk24_la_SOURCES = $(moopygtk_sources)
 nodist_libmoopygtk_la_SOURCES = $(nodist_moopygtk_sources)
-nodist_libmoopygtk25_la_SOURCES = $(nodist_moopygtk_sources)
-nodist_libmoopygtk24_la_SOURCES = $(nodist_moopygtk_sources)
 libmoopygtk_la_LIBADD =
-libmoopygtk24_la_LIBADD =
-libmoopygtk25_la_LIBADD =
 
 if MOO_BUILD_CANVAS
 libmoopygtk_la_LIBADD += goocanvas/libgoocanvas.la
-libmoopygtk24_la_LIBADD += goocanvas/libgoocanvas.la
-libmoopygtk25_la_LIBADD += goocanvas/libgoocanvas.la
 endif MOO_BUILD_CANVAS
 
 canvas_cflags =			\
@@ -253,13 +241,3 @@ AM_CFLAGS =			\
 	$(common_cflags)	\
 	$(PYTHON_INCLUDES)	\
 	$(PYGTK_CFLAGS)
-
-libmoopygtk25_la_CFLAGS =	\
-	$(common_cflags)	\
-	$(PYTHON25_INCLUDES)	\
-	$(PYGTK25_CFLAGS)
-
-libmoopygtk24_la_CFLAGS =	\
-	$(common_cflags)	\
-	$(PYTHON24_INCLUDES)	\
-	$(PYGTK24_CFLAGS)

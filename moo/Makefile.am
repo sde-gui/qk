@@ -1,5 +1,5 @@
-rc_in_files = libmoo.rc.in moo24.rc.in moo25.rc.in pymoo24.rc.in pymoo25.rc.in
-ini_in_files = moopython/pymoo.ini.in moopython/pymoo24.ini.in moopython/pymoo25.ini.in
+rc_in_files = libmoo.rc.in moo.rc.in pymoo.rc.in
+ini_in_files = moopython/pymoo.ini.in
 ini_files = $(ini_in_files:.ini.in=.ini)
 @MOO_INI_IN_RULE@
 CLEANFILES = $(ini_files)
@@ -143,31 +143,22 @@ endif MOO_BUILD_PYTHON_PLUGIN
 #
 else !MOO_OS_UNIX
 
-CLEANFILES += pymoo25.res moo25.res pymoo24.res moo24.res
-BUILT_SOURCES += pymoo25.res moo25.res pymoo24.res moo24.res
-nodist_pymoo25_la_SOURCES = pymoo25.res
-nodist_moo25_la_SOURCES = moo25.res
-nodist_pymoo24_la_SOURCES = pymoo24.res
-nodist_moo24_la_SOURCES = moo24.res
+CLEANFILES += pymoo.res moo.res
+BUILT_SOURCES += pymoo.res moo.res
+nodist_pymoo_la_SOURCES = pymoo.res
+nodist_moo_la_SOURCES = moo.res
 
 moo_la_ldflags += -shrext ".pyd"
-lib_LTLIBRARIES += pymoo25.la moo25.la pymoo24.la moo24.la
+lib_LTLIBRARIES += pymoo.la moo.la
 plugindir = $(MOO_LIB_DIR)/plugins
-plugin_DATA = moopython/pymoo25.ini moopython/pymoo24.ini
+plugin_DATA = moopython/pymoo.ini
 
-pymoo25_la_SOURCES = moo.h
-pymoo25_la_LDFLAGS = $(pymoo_la_ldflags) $(PYTHON25_LDFLAGS) $(PYTHON25_EXTRA_LDFLAGS) -Wl,pymoo25.res
-pymoo25_la_LIBADD = moopython/libpymoo25.la libmoo.la $(MOO_LIBS) $(PYTHON25_LIBS) $(PYTHON25_EXTRA_LIBS)
-moo25_la_SOURCES = moo.h
-moo25_la_LDFLAGS = $(moo_la_ldflags) $(PYTHON25_LDFLAGS) -Wl,moo25.res
-moo25_la_LIBADD = moopython/libmoomod25.la libmoo.la $(MOO_LIBS) $(PYTHON25_LIBS)
-
-pymoo24_la_SOURCES = moo.h
-pymoo24_la_LDFLAGS = $(pymoo_la_ldflags) $(PYTHON24_LDFLAGS) $(PYTHON24_EXTRA_LDFLAGS) -Wl,pymoo24.res
-pymoo24_la_LIBADD = moopython/libpymoo24.la libmoo.la $(MOO_LIBS) $(PYTHON24_LIBS) $(PYTHON24_EXTRA_LIBS)
-moo24_la_SOURCES = moo.h
-moo24_la_LDFLAGS = $(moo_la_ldflags) $(PYTHON24_LDFLAGS) -Wl,moo24.res
-moo24_la_LIBADD = moopython/libmoomod24.la libmoo.la $(MOO_LIBS) $(PYTHON24_LIBS)
+pymoo_la_SOURCES = moo.h
+pymoo_la_LDFLAGS = $(pymoo_la_ldflags) $(PYTHON_LDFLAGS) $(PYTHON_EXTRA_LDFLAGS) -Wl,pymoo.res
+pymoo_la_LIBADD = moopython/libpymoo.la libmoo.la $(MOO_LIBS) $(PYTHON_LIBS) $(PYTHON_EXTRA_LIBS)
+moo_la_SOURCES = moo.h
+moo_la_LDFLAGS = $(moo_la_ldflags) $(PYTHON_LDFLAGS) -Wl,moo.res
+moo_la_LIBADD = moopython/libmoomod.la libmoo.la $(MOO_LIBS) $(PYTHON_LIBS)
 
 endif !MOO_OS_UNIX
 

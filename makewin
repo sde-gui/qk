@@ -120,13 +120,11 @@ def copy_files():
 
             if pida:
                 do_cmd("mkdir -p %s/lib/site-packages" % (moo_windir,))
-                do_cmd("cp %s/usr/local/win/gtk/lib/moo25.pyd %s/lib/site-packages/moo.pyd" % (installdir, moo_windir))
+                do_cmd("cp %s/usr/local/win/gtk/lib/moo.pyd %s/lib/site-packages/moo.pyd" % (installdir, moo_windir))
             else:
-                do_cmd("mkdir -p %s/lib/moo/plugins/pymoo25 %s/lib/moo/plugins/pymoo24" % (moo_windir, moo_windir))
-                do_cmd("cp %s/usr/local/win/gtk/lib/pymoo25.dll %s/lib/moo/plugins/pymoo25/pymoo.dll" % (installdir, moo_windir))
-                do_cmd("cp %s/usr/local/win/gtk/lib/moo25.pyd %s/lib/moo/plugins/pymoo25/moo.pyd" % (installdir, moo_windir))
-                do_cmd("cp %s/usr/local/win/gtk/lib/pymoo24.dll %s/lib/moo/plugins/pymoo24/pymoo.dll" % (installdir, moo_windir))
-                do_cmd("cp %s/usr/local/win/gtk/lib/moo24.pyd %s/lib/moo/plugins/pymoo24/moo.pyd" % (installdir, moo_windir))
+                do_cmd("mkdir -p %s/lib/moo/plugins/pymoo" % (moo_windir,))
+                do_cmd("cp %s/usr/local/win/gtk/lib/pymoo.dll %s/lib/moo/plugins/pymoo/pymoo.dll" % (installdir, moo_windir))
+                do_cmd("cp %s/usr/local/win/gtk/lib/moo.pyd %s/lib/moo/plugins/pymoo/moo.pyd" % (installdir, moo_windir))
 
     if do_strip:
         if not bin_only and not no_python:

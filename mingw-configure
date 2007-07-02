@@ -2,8 +2,14 @@
 
 #
 # mignw-configure - configure for cross-compiling with mingw
-# Copyright (C) 2004-2007 Yevgen Muntyan <muntyan@math.tamu.edu>
+# by Yevgen Muntyan <muntyan@math.tamu.edu>
 # Ditributed under the terms of WTFL license
+#
+
+#
+# If you are not using this script, do not forget to use --build.
+# If you think --build is not needed because blah blah blah, then
+# read docs. Or just use --build. Or just use this script damn it.
 #
 
 write_pkg_config()
@@ -19,6 +25,8 @@ export PKG_CONFIG_PATH=\$PKG_CONFIG_LIBDIR
 if [ "x\`echo "\$*" | grep -- --atleast-pkgconfig-version\`" != x -o \\
      "x\`echo "\$*" | grep -- --atleast-version\`" != x ]; then
   exec "$PKG_CONFIG_PROGRAM" \$*
+elif [ "x\`echo "\$*" | grep -- codegendir\`" != x ]; then
+  exec "$PKG_CONFIG_PROGRAM" --define-variable=prefix="$PYTHON_PREFIX" \$*
 else
   exec "$PKG_CONFIG_PROGRAM" --define-variable=prefix="$GTK_PREFIX" \$*
 fi
@@ -36,17 +44,13 @@ MINGW_TOOL_PREFIX=${MINGW_TOOL_PREFIX:-/usr/bin/i586-mingw32msvc-}
 # Where gtk libraries are installed
 export GTK_PREFIX=${GTK_PREFIX:-/usr/local/win/gtk}
 
-# These python variables are medit-only
 if [ "x$1" = "x--with-python=2.4" -o "x$2" = "x--with-python=2.4" ]; then
   export PYTHON_PREFIX=${PYTHON_PREFIX:-/usr/local/win/Python24}
-  export PYTHON24_HOME=$PYTHON_PREFIX
 else
   export PYTHON_PREFIX=${PYTHON_PREFIX:-/usr/local/win/Python25}
-  export PYTHON25_HOME=$PYTHON_PREFIX
 fi
 export PYTHON_HOME=$PYTHON_PREFIX
-export PYTHON24_HOME=${PYTHON24_HOME:-/usr/local/win/Python24}
-export PYTHON25_HOME=${PYTHON25_HOME:-/usr/local/win/Python25}
+export PYTHON=${PYTHON:-python}
 
 # Find configure script to run
 if [ x$CONFIGURE = x ]; then
