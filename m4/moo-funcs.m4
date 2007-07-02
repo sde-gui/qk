@@ -10,9 +10,6 @@ AC_DEFUN_ONCE([MOO_AC_FUNCS],[
     # for xdgmime
     AC_CHECK_HEADERS(fnmatch.h netinet/in.h)
 
-    # for pcre
-    AC_CHECK_FUNCS(memmove bcopy strerror)
-
     #for GMappedFile
     AC_CHECK_HEADERS(unistd.h)
     AC_CHECK_FUNCS(mmap)
@@ -33,8 +30,6 @@ AC_DEFUN_ONCE([MOO_AC_FUNCS],[
     AC_CHECK_HEADERS([libutil.h util.h])
     AC_CHECK_FUNCS([poll pipe _pipe kill signal posix_openpt])
     AC_CHECK_FUNCS([cfmakeraw getpgid getpt grantpt unlockpt ptsname ptsname_r recvmsg])
-    AC_TYPE_SIGNAL
-    AC_TYPE_SIZE_T
     AC_TYPE_PID_T
     AC_HEADER_TIOCGWINSZ
     ################################################################################

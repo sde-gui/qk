@@ -69,7 +69,18 @@ be absolutely sure we get our version. */
 
 /* Get the definitions provided by running "configure" */
 
-#include "config.h"
+#define HAVE_MEMMOVE 1
+#define NEWLINE -1
+#define LINK_SIZE 2
+#define POSIX_MALLOC_THRESHOLD 10
+#define MATCH_LIMIT 10000000
+#define MATCH_LIMIT_RECURSION MATCH_LIMIT
+#define MAX_NAME_SIZE 32
+#define MAX_NAME_COUNT 10000
+#define MAX_DUPLENGTH 30000
+#define SUPPORT_UTF8 1
+#define SUPPORT_UCP 1
+#define EBCDIC 0
 
 /* Standard C headers plus the external interface definition. The only time
 setjmp and stdarg are used is when NO_RECURSE is set. */
