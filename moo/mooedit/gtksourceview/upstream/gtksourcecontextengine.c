@@ -2521,6 +2521,7 @@ regex_new (const gchar           *pattern,
 	   GError               **error)
 {
 	Regex *regex;
+	static GRegex *start_ref_re = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
@@ -2535,7 +2536,10 @@ regex_new (const gchar           *pattern,
 	regex = g_slice_new0 (Regex);
 	regex->ref_count = 1;
 
-	if (g_regex_match_simple (START_REF_REGEX, pattern, 0, 0))
+	if (start_ref_re == NULL)
+		start_ref_re = g_regex_new (START_REF_REGEX, G_REGEX_OPTIMIZE, 0, NULL);
+
+	if (g_regex_match (start_ref_re, pattern, 0, NULL))
 	{
 		regex->resolved = FALSE;
 		regex->u.info.pattern = g_strdup (pattern);
