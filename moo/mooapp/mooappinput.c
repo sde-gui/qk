@@ -595,8 +595,9 @@ _moo_app_input_start (MooAppInput *ch)
         return FALSE;
     }
 
-    _moo_message ("%s: opened input pipe %s with fd %d",
-                  G_STRLOC, ch->pipe_name, ch->pipe);
+    if (0)
+        _moo_message ("%s: opened input pipe %s with fd %d",
+                      G_STRLOC, ch->pipe_name, ch->pipe);
 
     ch->io = g_io_channel_unix_new (ch->pipe);
     g_io_channel_set_encoding (ch->io, NULL, NULL);
