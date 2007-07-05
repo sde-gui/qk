@@ -1457,6 +1457,7 @@ static void moo_font_button_set_property           (GObject            *object,
                                                     const GValue       *value,
                                                     GParamSpec         *pspec);
 
+static void moo_font_button_realize                 (GtkWidget         *widget);
 static void moo_font_button_clicked                 (GtkButton         *button);
 
 /* Dialog response functions */
@@ -1465,7 +1466,7 @@ static void dialog_cancel_clicked                   (MooFontButton     *font_but
 static void dialog_destroy                          (MooFontButton     *font_button);
 
 /* Auxiliary functions */
-static GtkWidget *moo_font_button_create_inside     (MooFontButton     *gfs);
+static void moo_font_button_update_inside           (MooFontButton     *gfs);
 static void moo_font_button_label_use_font          (MooFontButton     *gfs);
 static void moo_font_button_update_font_info        (MooFontButton     *gfs);
 
@@ -1479,16 +1480,20 @@ static void
 moo_font_button_class_init (MooFontButtonClass *klass)
 {
   GObjectClass *gobject_class;
+  GtkWidgetClass *widget_class;
   GtkButtonClass *button_class;
 
   gobject_class = (GObjectClass *) klass;
   button_class = (GtkButtonClass *) klass;
+  widget_class = (GtkWidgetClass *) klass;
 
   parent_class = g_type_class_peek_parent (klass);
 
   gobject_class->finalize = moo_font_button_finalize;
   gobject_class->set_property = moo_font_button_set_property;
   gobject_class->get_property = moo_font_button_get_property;
+
+  widget_class->realize = moo_font_button_realize;
 
   button_class->clicked = moo_font_button_clicked;
 
@@ -1637,8 +1642,7 @@ moo_font_button_init (MooFontButton *font_button)
   font_button->priv->monospace = FALSE;
   font_button->priv->filter_visible = TRUE;
 
-  font_button->priv->inside = moo_font_button_create_inside (font_button);
-  gtk_container_add (GTK_CONTAINER (font_button), font_button->priv->inside);
+  font_button->priv->inside = NULL;
 
   moo_font_button_update_font_info (font_button);
 }
@@ -1740,6 +1744,20 @@ moo_font_button_get_property (GObject    *object,
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, param_id, pspec);
       break;
     }
+}
+
+static void
+moo_font_button_realize (GtkWidget *widget)
+{
+  MooFontButton *font_button = MOO_FONT_BUTTON (widget);
+
+  GTK_WIDGET_CLASS (moo_font_button_parent_class)->realize (widget);
+  moo_font_button_update_inside (font_button);
+
+  if (font_button->priv->use_font)
+    moo_font_button_label_use_font (font_button);
+  else
+    gtk_widget_set_style (font_button->priv->font_label, NULL);
 }
 
 
@@ -1858,10 +1876,13 @@ moo_font_button_set_use_font (MooFontButton *font_button,
     {
       font_button->priv->use_font = use_font;
 
-      if (use_font)
-        moo_font_button_label_use_font (font_button);
-      else
-        gtk_widget_set_style (font_button->priv->font_label, NULL);
+      if (font_button->priv->font_label)
+        {
+          if (use_font)
+            moo_font_button_label_use_font (font_button);
+          else
+            gtk_widget_set_style (font_button->priv->font_label, NULL);
+        }
 
      g_object_notify (G_OBJECT (font_button), "use-font");
     }
@@ -1906,7 +1927,7 @@ moo_font_button_set_use_size (MooFontButton *font_button,
     {
       font_button->priv->use_size = use_size;
 
-      if (font_button->priv->use_font)
+      if (font_button->priv->use_font && font_button->priv->font_label)
         moo_font_button_label_use_font (font_button);
 
       g_object_notify (G_OBJECT (font_button), "use-size");
@@ -1996,13 +2017,7 @@ moo_font_button_set_show_size (MooFontButton *font_button,
   if (font_button->priv->show_size != show_size)
     {
       font_button->priv->show_size = show_size;
-
-      gtk_container_remove (GTK_CONTAINER (font_button), font_button->priv->inside);
-      font_button->priv->inside = moo_font_button_create_inside (font_button);
-      gtk_container_add (GTK_CONTAINER (font_button), font_button->priv->inside);
-
-      moo_font_button_update_font_info (font_button);
-
+      moo_font_button_update_inside (font_button);
       g_object_notify (G_OBJECT (font_button), "show-size");
     }
 }
@@ -2025,11 +2040,7 @@ moo_font_button_set_monospace (MooFontButton *font_button,
     {
       font_button->priv->monospace = monospace != 0;
 
-      gtk_container_remove (GTK_CONTAINER (font_button), font_button->priv->inside);
-      font_button->priv->inside = moo_font_button_create_inside (font_button);
-      gtk_container_add (GTK_CONTAINER (font_button), font_button->priv->inside);
-
-      moo_font_button_update_font_info (font_button);
+      moo_font_button_update_inside (font_button);
 
       if (font_button->priv->font_dialog)
         moo_font_selection_set_monospace (MOO_FONT_SELECTION (MOO_FONT_SELECTION_DIALOG (font_button->priv->font_dialog)->fontsel),
@@ -2234,6 +2245,21 @@ moo_font_button_create_inside (MooFontButton *font_button)
 }
 
 static void
+moo_font_button_update_inside (MooFontButton *font_button)
+{
+  if (GTK_WIDGET_REALIZED (font_button))
+    {
+      if (font_button->priv->inside)
+        gtk_container_remove (GTK_CONTAINER (font_button), font_button->priv->inside);
+
+      font_button->priv->inside = moo_font_button_create_inside (font_button);
+      gtk_container_add (GTK_CONTAINER (font_button), font_button->priv->inside);
+
+      moo_font_button_update_font_info (font_button);
+    }
+}
+
+static void
 moo_font_button_label_use_font (MooFontButton *font_button)
 {
   PangoFontDescription *desc;
@@ -2246,7 +2272,8 @@ moo_font_button_label_use_font (MooFontButton *font_button)
   if (!font_button->priv->use_size)
     pango_font_description_unset_fields (desc, PANGO_FONT_MASK_SIZE);
 
-  gtk_widget_modify_font (font_button->priv->font_label, desc);
+  if (font_button->priv->font_label)
+    gtk_widget_modify_font (font_button->priv->font_label, desc);
 
   pango_font_description_free (desc);
 }
@@ -2258,6 +2285,15 @@ moo_font_button_update_font_info (MooFontButton *font_button)
   const gchar *family;
   gchar *style;
   gchar *family_style;
+
+  if (!GTK_WIDGET_REALIZED (font_button))
+    return;
+
+  if (!font_button->priv->inside)
+    {
+      font_button->priv->inside = moo_font_button_create_inside (font_button);
+      gtk_container_add (GTK_CONTAINER (font_button), font_button->priv->inside);
+    }
 
   desc = pango_font_description_from_string (font_button->priv->fontname);
   family = pango_font_description_get_family (desc);
