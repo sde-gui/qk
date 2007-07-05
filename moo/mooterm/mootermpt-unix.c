@@ -201,7 +201,7 @@ setup_master_fd (MooTermPtUnix *pt,
 
     g_return_val_if_fail (master >= 0, FALSE);
 
-#if 1
+#if 0
     _moo_message ("%s: attached to fd %d",
                   G_STRLOC, pt->master);
 #endif
@@ -331,7 +331,7 @@ fork_argv (MooTermPt      *pt_gen,
         return FALSE;
     }
 
-    if (1)
+    if (0)
         _moo_message ("%s: forked child pid %d on fd %d",
                       G_STRLOC, pt->child_pid, master);
 
