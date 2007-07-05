@@ -75,6 +75,7 @@ fi
 export ADDR2LINE="${MINGW_TOOL_PREFIX}addr2line"
 export AS="${MINGW_TOOL_PREFIX}as"
 export CC="${MINGW_TOOL_PREFIX}gcc"
+export OBJC="${MINGW_TOOL_PREFIX}gcc"
 export CPP="${MINGW_TOOL_PREFIX}cpp"
 export CPPFILT="${MINGW_TOOL_PREFIX}c++filt"
 export CXX="${MINGW_TOOL_PREFIX}g++"
@@ -93,10 +94,11 @@ export AR="${MINGW_TOOL_PREFIX}ar"
 export RANLIB="${MINGW_TOOL_PREFIX}ranlib"
 export STRIP="${MINGW_TOOL_PREFIX}strip"
 
-export LDFLAGS="-L$GTK_PREFIX/lib -mno-cygwin $LDFLAGS"
+export LDFLAGS="-L$GTK_PREFIX/lib $LDFLAGS"
 export CPPFLAGS="-I$GTK_PREFIX/include $CPPFLAGS"
-export CFLAGS="-I$GTK_PREFIX/include -mno-cygwin -mms-bitfields -march=i686 ${CFLAGS:-"-O2"}"
-export CXXFLAGS="-I$GTK_PREFIX/include -mno-cygwin -mms-bitfields -march=i686 ${CFLAGS:-"-O2"}"
+export CFLAGS="-I$GTK_PREFIX/include -mms-bitfields -march=i686 ${CFLAGS:-"-O2"}"
+export CXXFLAGS="-I$GTK_PREFIX/include -mms-bitfields -march=i686 ${CXXFLAGS:-"-O2"}"
+export OBJCFLAGS="-I$GTK_PREFIX/include -mms-bitfields -march=i686 ${OBJCFLAGS:-"-O2"}"
 
 # Set up pkg-config invocation. Some broken packages do not use PKG_CONFIG macros
 # to find pkg-config, so the script must be named 'pkg-config'. Hence it's put
@@ -110,6 +112,7 @@ export PKG_CONFIG="`pwd`/fake-bin/pkg-config"
 export PATH=`pwd`/fake-bin:$MINGW_BIN:/usr/i586-mingw32msvc/bin:/usr/local/mingw32/bin:$PATH
 
 TARGET=i586-pc-mingw32msvc
+libs_flags="--enable-shared --disable-static"
 
 # Now actually run configure. FOO=foo arguments *must* be there if you
 # want automatic re-configuring (which happens if you modify configure.ac and
@@ -117,14 +120,14 @@ TARGET=i586-pc-mingw32msvc
 # NOTE: --build *must* be here, it's autoconf bug (aka 'feature'), confirmed and
 # *documented*.
 echo sh $CONFIGURE --prefix=$GTK_PREFIX --build=`$CONFIG_GUESS` --host=$TARGET --target=$TARGET \
---enable-all-warnings --enable-maintainer-mode \
+--enable-all-warnings --enable-maintainer-mode $libs_flags \
 PKG_CONFIG="$PKG_CONFIG" GTK_PREFIX="$GTK_PREFIX" \
 PYTHON_PREFIX="$PYTHON_PREFIX" PYTHON_HOME="$PYTHON_HOME" \
 PYTHON24_HOME="$PYTHON24_HOME" PYTHON25_HOME="$PYTHON25_HOME" \
 AR="$AR" RANLIB="$RANLIB" STRIP="$STRIP" AS="$AS" DLLTOOL="$DLLTOOL" \
 OBJDUMP="$OBJDUMP" NM="$NM" WINDRES="$WINDRES" $@
 exec sh $CONFIGURE --prefix=$GTK_PREFIX --build=`$CONFIG_GUESS` --host=$TARGET --target=$TARGET \
---enable-all-warnings --enable-maintainer-mode \
+--enable-all-warnings --enable-maintainer-mode $libs_flags \
 PKG_CONFIG="$PKG_CONFIG" GTK_PREFIX="$GTK_PREFIX" \
 PYTHON_PREFIX="$PYTHON_PREFIX" PYTHON_HOME="$PYTHON_HOME" \
 PYTHON24_HOME="$PYTHON24_HOME" PYTHON25_HOME="$PYTHON25_HOME" \
