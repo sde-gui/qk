@@ -18,7 +18,9 @@ langs2 =			\
 	gap.lang		\
 	gtk-doc.lang		\
 	gtkrc.lang		\
+	haddock.lang		\
 	haskell.lang		\
+	haskell-literate.lang	\
 	html.lang		\
 	idl.lang		\
 	ini.lang		\
@@ -30,6 +32,7 @@ langs2 =			\
 	makefile.lang		\
 	ms.lang			\
 	objc.lang		\
+	ocl.lang		\
 	octave.lang		\
 	pascal.lang		\
 	perl.lang		\
@@ -64,7 +67,8 @@ langs1 =			\
 
 styles =			\
 	kate.xml		\
-	gvim.xml
+	gvim.xml		\
+	tango.xml
 
 languagespecs_DATA =		\
 	language2.rng		\
