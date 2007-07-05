@@ -38,13 +38,13 @@ static void moo_prefs_dialog_destroy        (GtkObject      *object);
 static void moo_prefs_dialog_response       (GtkDialog      *dialog,
                                              int             response);
 
-static void moo_prefs_dialog_init_sig       (MooPrefsDialog *dialog);
 static void moo_prefs_dialog_apply          (MooPrefsDialog *dialog);
 
 static void setup_pages_list                (MooPrefsDialog *dialog);
 static void pages_list_selection_changed    (MooPrefsDialog *dialog,
                                              GtkTreeSelection *selection);
 
+static void init_page                       (MooPrefsDialogPage *page);
 
 
 enum {
@@ -77,7 +77,6 @@ static void moo_prefs_dialog_class_init (MooPrefsDialogClass *klass)
     gtkobject_class->destroy = moo_prefs_dialog_destroy;
     dialog_class->response = moo_prefs_dialog_response;
 
-    klass->init = moo_prefs_dialog_init_sig;
     klass->apply = moo_prefs_dialog_apply;
 
     g_object_class_install_property (gobject_class,
@@ -249,6 +248,9 @@ pages_list_selection_changed (MooPrefsDialog *dialog,
         MooPrefsDialogPage *page = NULL;
         gtk_tree_model_get (model, &iter, PAGE_COLUMN, &page, -1);
         g_return_if_fail (page != NULL);
+
+        init_page (page);
+
         gtk_notebook_set_current_page (dialog->notebook,
                                        gtk_notebook_page_num (dialog->notebook, GTK_WIDGET (page)));
         g_object_unref (page);
@@ -261,6 +263,24 @@ pages_list_selection_changed (MooPrefsDialog *dialog,
             gtk_tree_selection_select_iter (selection, &iter);
         else
             g_critical ("%s: list is empty", G_STRLOC);
+    }
+}
+
+
+static gboolean
+page_initialized (MooPrefsDialogPage *page)
+{
+    return g_object_get_data (G_OBJECT (page), "moo-prefs-dialog-page-initialized") != NULL;
+}
+
+static void
+init_page (MooPrefsDialogPage *page)
+{
+    if (!g_object_get_data (G_OBJECT (page), "moo-prefs-dialog-page-initialized"))
+    {
+        g_object_set_data (G_OBJECT (page), "moo-prefs-dialog-page-initialized",
+                           GINT_TO_POINTER (1));
+        g_signal_emit_by_name (page, "init");
     }
 }
 
@@ -373,20 +393,6 @@ get_nth_page (MooPrefsDialog *dialog,
 
 
 static void
-moo_prefs_dialog_init_sig (MooPrefsDialog *dialog)
-{
-    int n, i;
-
-    g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
-
-    n = get_n_pages (dialog);
-
-    for (i = 0; i < n; ++i)
-        g_signal_emit_by_name (get_nth_page (dialog, i), "init");
-}
-
-
-static void
 moo_prefs_dialog_apply (MooPrefsDialog *dialog)
 {
     int n, i;
@@ -408,8 +414,10 @@ moo_prefs_dialog_apply (MooPrefsDialog *dialog)
     {
         MooPrefsDialogPage *page = list->data;
 
-        if (!(GTK_OBJECT_FLAGS (page) & GTK_IN_DESTRUCTION) && page->auto_apply)
-            g_signal_emit_by_name (page, "apply");
+        if (!(GTK_OBJECT_FLAGS (page) & GTK_IN_DESTRUCTION) &&
+            page->auto_apply &&
+            page_initialized (page))
+                g_signal_emit_by_name (page, "apply");
 
         g_object_unref (page);
         list = g_slist_delete_link (list, list);
