@@ -2,7 +2,10 @@ AM_CFLAGS =				\
 	-I../../..			\
 	-I$(top_builddir)		\
 	$(MOO_CFLAGS)			\
-	$(MOO_DEBUG_CFLAGS)
+	$(MOO_DEBUG_CFLAGS)		\
+	$(MOO_W_NO_UNUSED)		\
+	$(MOO_W_NO_MISSING_FIELD_INITIALIZERS)\
+	$(MOO_W_NO_SIGN_COMPARE)
 
 noinst_LTLIBRARIES = libgoocanvas.la
 

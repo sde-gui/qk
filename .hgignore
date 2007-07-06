@@ -29,3 +29,4 @@ Makefile(\.in)?$
 ^moo/moopython/pygtk/goocanvas/CVS
 ^moo/moopython/pygtk/goocanvas/.cvsignore
 ^patches/
+^po(-gsv)?/(dist|pot)$
