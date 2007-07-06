@@ -23,7 +23,6 @@ import mprj.optdialog
 class SimpleConfig(Config):
     __items__ = {
         'vars' : Dict(str, name=_('Environment variables')),
-        'file_selector_dir' : Filename,
     }
 
 
@@ -31,19 +30,22 @@ class SimpleProject(Project):
 
     __config__ = SimpleConfig
 
-    def init_ui(self):
-        Project.init_ui(self)
-
+    def __init__(self, *args, **kwargs):
+        Project.__init__(self, *args, **kwargs)
+        self.__file_selector_dir = None
         self.filesel = None
         self.filesel_merge_id = 0
         self.__filesel_cb_id = 0
 
+    def __filesel_cb(self, filesel, *whatever):
+        self.__file_selector_dir = filesel.get_property('current-directory')
+    def __setup_file_selector(self):
         plugin = moo.edit.plugin_lookup('FileSelector')
         if plugin:
             try:
                 self.filesel = plugin.call_method('get-widget', self.window)
                 if self.filesel:
-                    last_dir = self.config.file_selector_dir
+                    last_dir = self.__file_selector_dir
                     if not last_dir:
                         last_dir = self.topdir
                     self.filesel.chdir(last_dir)
@@ -51,8 +53,8 @@ class SimpleProject(Project):
             except:
                 print_error()
 
-    def __filesel_cb(self, filesel, *whatever):
-        self.config.file_selector_dir = filesel.get_property('current-directory')
+    def init_ui(self):
+        Project.init_ui(self)
 
     def deinit_ui(self):
         if self.__filesel_cb_id:
@@ -81,15 +83,21 @@ class SimpleProject(Project):
     def load_session(self):
         try:
             file = self.get_session_file()
-            if os.path.exists(file):
-                Session(file).attach(self.window)
+            if not os.path.exists(file):
+                return
+            session = Session(file)
+            session.attach(self.window)
+            self.__file_selector_dir = session.get_file_selector_dir()
+            self.__setup_file_selector()
         except:
             print_error()
 
     def save_session(self):
         try:
             file = self.get_session_file()
-            Session(self.window).save(file)
+            session = Session(self.window)
+            session.set_file_selector_dir(self.__file_selector_dir)
+            session.save(file)
         except:
             print_error()
 

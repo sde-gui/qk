@@ -5,6 +5,7 @@ class Session(object):
     def __init__(self, data=None):
         object.__init__(self)
 
+        self.__file_selector_dir = None
         self.__docs = []
         self.__active = None
 
@@ -35,12 +36,19 @@ class Session(object):
         f.write(string)
         f.close()
 
+    def get_file_selector_dir(self):
+        return self.__file_selector_dir
+    def set_file_selector_dir(self, path):
+        self.__file_selector_dir = path
+
     def __format(self):
         root = XMLGroup('medit-session')
         for d in self.__docs:
             root.add_child(XMLItem('doc', d))
         if self.__active is not None:
             root.add_child(XMLItem('active', str(self.__active)))
+        if self.__file_selector_dir is not None:
+            root.add_child(XMLItem('file-selector', self.__file_selector_dir))
         return '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n' + \
                 root.get_string()
 
@@ -55,6 +63,8 @@ class Session(object):
                 self.__parse_doc(node)
             elif node.name == 'active':
                 self.__active = int(node.get())
+            elif node.name == 'file-selector':
+                self.__file_selector_dir = node.get()
             else:
                 raise RuntimeError("Uknown element '%s'" % (node.name,))
 
