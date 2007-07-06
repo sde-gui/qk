@@ -793,7 +793,7 @@ _wrap__get_symbol(PyObject *self, PyObject *args)
         for name, cname, flags, docstring in functions:
             self.fp.write('    else if (!strcmp(name, "%s")) {\n' % name)
             self.fp.write('        static PyMethodDef ml = { '
-                          '"%s", (PyCFunction)%s, %s, "%s"};\n' % (
+                          '"%s", (PyCFunction)%s, %s, %s};\n' % (
                 name, cname, flags, docstring))
             self.fp.write('        return PyCFunction_NewEx(&ml, NULL, modulename);\n')
             self.fp.write('    }\n')
