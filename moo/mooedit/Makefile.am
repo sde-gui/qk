@@ -81,7 +81,11 @@ mooedit_sources =			\
 	mooeditor.c			\
 	mooeditor-private.h		\
 	mooeditprefs.c			\
-	mooeditprefs-glade.h		\
+	mooeditprefs-general-glade.h	\
+	mooeditprefs-view-glade.h	\
+	mooeditprefs-font-glade.h	\
+	mooeditprefs-file-glade.h	\
+	mooeditprefs-langs-glade.h	\
 	mooeditprefspage.c		\
 	mooedit-private.h		\
 	mooeditprogress-glade.h		\
@@ -154,7 +158,11 @@ BUILT_SOURCES =				\
 	mootextfind-glade.h		\
 	moopluginprefs-glade.h		\
 	mooprint-glade.h		\
-	mooeditprefs-glade.h		\
+	mooeditprefs-general-glade.h	\
+	mooeditprefs-view-glade.h	\
+	mooeditprefs-font-glade.h	\
+	mooeditprefs-file-glade.h	\
+	mooeditprefs-langs-glade.h	\
 	mooeditprogress-glade.h		\
 	mooeditsavemultiple-glade.h	\
 	mooedittools-glade.h		\
@@ -208,8 +216,20 @@ mootextgotoline-glade.h: $(srcdir)/glade/mootextgotoline.glade $(XML2H)
 mootextfind-glade.h: $(srcdir)/glade/mootextfind.glade $(XML2H)
 	$(SHELL) $(XML2H) MOO_TEXT_FIND_GLADE_UI $(srcdir)/glade/mootextfind.glade > $@.tmp && \
 	mv $@.tmp $@
-mooeditprefs-glade.h: $(srcdir)/glade/mooeditprefs.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_EDIT_PREFS_GLADE_UI $(srcdir)/glade/mooeditprefs.glade > $@.tmp && \
+mooeditprefs-general-glade.h: $(srcdir)/glade/mooeditprefs-general.glade $(XML2H)
+	$(SHELL) $(XML2H) MOO_EDIT_PREFS_GENERAL_GLADE_UI $(srcdir)/glade/mooeditprefs-general.glade > $@.tmp && \
+	mv $@.tmp $@
+mooeditprefs-view-glade.h: $(srcdir)/glade/mooeditprefs-view.glade $(XML2H)
+	$(SHELL) $(XML2H) MOO_EDIT_PREFS_VIEW_GLADE_UI $(srcdir)/glade/mooeditprefs-view.glade > $@.tmp && \
+	mv $@.tmp $@
+mooeditprefs-font-glade.h: $(srcdir)/glade/mooeditprefs-font.glade $(XML2H)
+	$(SHELL) $(XML2H) MOO_EDIT_PREFS_FONT_GLADE_UI $(srcdir)/glade/mooeditprefs-font.glade > $@.tmp && \
+	mv $@.tmp $@
+mooeditprefs-file-glade.h: $(srcdir)/glade/mooeditprefs-file.glade $(XML2H)
+	$(SHELL) $(XML2H) MOO_EDIT_PREFS_FILE_GLADE_UI $(srcdir)/glade/mooeditprefs-file.glade > $@.tmp && \
+	mv $@.tmp $@
+mooeditprefs-langs-glade.h: $(srcdir)/glade/mooeditprefs-langs.glade $(XML2H)
+	$(SHELL) $(XML2H) MOO_EDIT_PREFS_LANGS_GLADE_UI $(srcdir)/glade/mooeditprefs-langs.glade > $@.tmp && \
 	mv $@.tmp $@
 mooeditprogress-glade.h: $(srcdir)/glade/mooeditprogress.glade $(XML2H)
 	$(SHELL) $(XML2H) MOO_EDIT_PROGRESS_GLADE_XML $(srcdir)/glade/mooeditprogress.glade > $@.tmp && \
@@ -251,7 +271,11 @@ EXTRA_DIST =				\
 	glade/quicksearch.glade		\
 	glade/mootextgotoline.glade	\
 	glade/mootextfind.glade		\
-	glade/mooeditprefs.glade	\
+	glade/mooeditprefs-general.glade\
+	glade/mooeditprefs-view.glade	\
+	glade/mooeditprefs-file.glade	\
+	glade/mooeditprefs-langs.glade	\
+	glade/mooeditprefs-font.glade	\
 	glade/mooeditprogress.glade	\
 	glade/mooeditsavemult.glade	\
 	glade/mooedittools.glade	\
