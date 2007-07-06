@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <medit-project version="1.0" type="C" name="moo">
+ <active>debug</active>
  <commands>
   <compile>
-    <cmd>$(make) $(base).lo</cmd>
-    <working_dir>$(builddir)</working_dir>
+   <cmd>$(make) $(base).lo</cmd>
+   <working_dir>$(builddir)</working_dir>
   </compile>
  </commands>
- <active>debug</active>
  <configurations>
   <debug>
    <build_dir>build/debug</build_dir>
    <configure>
-    <args>--enable-debug=full --enable-all-warnings --enable-libmoo --with-mooterm --enable-project --enable-canvas</args>
+    <args>--enable-debug=full --enable-all-warnings --enable-project</args>
     <vars>
-     <var name="OBJCFLAGS">-g</var>
      <var name="CFLAGS">-g</var>
+     <var name="OBJCFLAGS">-g</var>
     </vars>
    </configure>
   </debug>
@@ -36,20 +36,18 @@
   <optimized>
    <build_dir>build/optimized</build_dir>
    <configure>
-    <args>--enable-libmoo</args>
     <vars>
-     <var name="CC">gcc-3.4</var>
-     <var name="CFLAGS">-O6 -g</var>
+     <var name="CFLAGS">-O2 -g</var>
+     <var name="OBJCFLAGS">-O2 -g</var>
     </vars>
    </configure>
   </optimized>
  </configurations>
- <file_selector_dir>/home/muntyan/projects/moo/moo/moopython/plugins/pyproject/projects/cproj/</file_selector_dir>
  <run>
-  <args>-ns</args>
+  <args>--mode=project</args>
   <exe>medit/medit</exe>
   <vars>
-   <var name="LANGUAGE">de</var>
+   <var name="LANGUAGEE">de</var>
   </vars>
  </run>
 </medit-project>
