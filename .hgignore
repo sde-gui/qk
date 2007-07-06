@@ -3,7 +3,7 @@
 \~$
 ^(\..*\.session|.*\.kdevelop\.pcs|.*\.kdevses)$
 Makefile(\.in)?$
-^(autom4te\.cache|build)
+^(autom4te\.cache|build)/
 ^(compile|mkinstalldirs|config\..*|configargs\.h|configure|depcomp|install-sh|intltool-(extract|merge|update)|libtool|ltmain\.sh|missing|stamp-h1|aclocal\.m4)$
 ^intltool-(extract|merge|update)\.in$
 ^medit/medit(-credits\.h|\.(desktop|iss))?$
