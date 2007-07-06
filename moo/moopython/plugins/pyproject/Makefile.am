@@ -40,9 +40,6 @@ nobase_projects_DATA =			\
 	projects/cproj/optdialog.py	\
 	projects/cproj/parser.py	\
 	projects/cproj/options.glade	\
-	projects/latex.py		\
-	projects/ltxproj/config.py	\
-	projects/ltxproj/__init__.py	\
 	projects/python.py		\
 	projects/pyproj/config.py	\
 	projects/pyproj/__init__.py	\
