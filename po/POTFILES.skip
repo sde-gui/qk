@@ -4,10 +4,11 @@ moo/mooapp/smclient/eggdesktopfile.c
 moo/mooapp/smclient/eggsmclient-libgnomeui.c
 moo/mooapp/smclient/eggsmclient.c
 
-moo/mooutils/newgtk/glib/gregex.c
-moo/mooutils/newgtk/gmappedfile.c
-moo/mooutils/newgtk/gtkcolorbutton.c
-moo/mooutils/newgtk/gtkfontbutton.c
+moo/mooutils/newgtk/glib-2.14/glib/gregex.c
+moo/mooutils/newgtk/glib-2.8/glib/gmappedfile.c
+moo/mooutils/moocompat.c
+
+moo/mooscript/mooscript-yacc.c
 
 moo/mooedit/plugins/completion/completion.glade
 moo/mooedit/plugins/completion/completion-plugin.c
@@ -65,6 +66,13 @@ moo/mooedit/language-specs/pkgconfig.lang
 moo/mooedit/language-specs/docbook.lang
 moo/mooedit/language-specs/ocaml.lang
 moo/mooedit/language-specs/spec.lang
+moo/mooedit/language-specs/awk.lang
+moo/mooedit/language-specs/chdr.lang
+moo/mooedit/language-specs/haddock.lang
+moo/mooedit/language-specs/haskell-literate.lang
+moo/mooedit/language-specs/objc.lang
+moo/mooedit/language-specs/ocl.lang
+moo/mooedit/language-specs/tango.xml
 
 moo/mooedit/language-specs/gvim.xml
 moo/mooedit/language-specs/kate.xml
@@ -106,3 +114,5 @@ moo/mooedit/gtksourceview/upstream/gtksourcelanguage-parser-2.c
 moo/mooedit/gtksourceview/upstream/gtksourcelanguagemanager.c
 moo/mooedit/gtksourceview/upstream/gtksourcestylemanager.c
 moo/mooedit/gtksourceview/upstream/gtksourcestylescheme.c
+moo/mooedit/gtksourceview/upstream/gtksourcestyle.c
+moo/mooedit/gtksourceview/upstream/gtksourcestylescheme-noxml.c
