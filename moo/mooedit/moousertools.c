@@ -1129,13 +1129,13 @@ create_command_context (gpointer window,
 
     ctx = moo_command_context_new (doc, window);
 
-    if (MOO_IS_EDIT (doc) && moo_edit_get_filename (doc))
+    if (MOO_IS_EDIT (doc) && !moo_edit_is_untitled (doc))
     {
-        const char *filename, *basename;
+        char *filename, *basename;
         char *dirname, *base = NULL, *extension = NULL;
 
         filename = moo_edit_get_filename (doc);
-        basename = moo_edit_get_basename (doc);
+        basename = filename ? g_path_get_basename (filename) : NULL;
         dirname = g_path_get_dirname (filename);
         get_extension (basename, &base, &extension);
 
@@ -1147,6 +1147,8 @@ create_command_context (gpointer window,
         g_free (dirname);
         g_free (base);
         g_free (extension);
+        g_free (basename);
+        g_free (filename);
     }
 
     if (MOO_IS_EDIT (doc))

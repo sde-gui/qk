@@ -22,6 +22,7 @@
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/mooeditprefs.h"
+#include "moofileview/moofile.h"
 #include "mooutils/moofilewatch.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/mooi18n.h"
@@ -1203,10 +1204,9 @@ _moo_edit_set_filename (MooEdit    *edit,
                         const char *file,
                         const char *encoding)
 {
-    char *tmp1, *tmp2, *tmp3, *tmp4, *tmp5;
+    char *tmp1, *tmp3, *tmp4, *tmp5;
 
     tmp1 = edit->priv->filename;
-    tmp2 = edit->priv->basename;
     tmp3 = edit->priv->display_filename;
     tmp4 = edit->priv->display_basename;
     tmp5 = edit->priv->encoding;
@@ -1219,7 +1219,6 @@ _moo_edit_set_filename (MooEdit    *edit,
         int n = add_untitled (edit);
 
         edit->priv->filename = NULL;
-        edit->priv->basename = NULL;
 
         if (n == 1)
             edit->priv->display_filename = g_strdup (_("Untitled"));
@@ -1230,15 +1229,17 @@ _moo_edit_set_filename (MooEdit    *edit,
     }
     else
     {
+        char *basename;
+
         remove_untitled (NULL, edit);
 
         edit->priv->filename = g_strdup (file);
-        edit->priv->basename = g_path_get_basename (file);
+        edit->priv->display_filename = _moo_edit_filename_to_utf8 (file);
 
-        edit->priv->display_filename =
-                _moo_edit_filename_to_utf8 (file);
-        edit->priv->display_basename =
-                _moo_edit_filename_to_utf8 (edit->priv->basename);
+        basename = g_path_get_basename (file);
+        edit->priv->display_basename = _moo_edit_filename_to_utf8 (basename);
+
+        g_free (basename);
     }
 
     if (!encoding)
@@ -1249,7 +1250,6 @@ _moo_edit_set_filename (MooEdit    *edit,
     moo_edit_status_changed (edit);
 
     g_free (tmp1);
-    g_free (tmp2);
     g_free (tmp3);
     g_free (tmp4);
     g_free (tmp5);
@@ -1281,4 +1281,13 @@ _moo_edit_filename_to_utf8 (const char *filename)
     }
 
     return utf_filename;
+}
+
+
+GdkPixbuf *
+_moo_edit_get_icon (MooEdit     *doc,
+                    GtkWidget   *widget,
+                    GtkIconSize  size)
+{
+    return _moo_get_icon_for_path (doc->priv->filename, widget, size);
 }

@@ -36,7 +36,6 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooaction-private.h"
 #include "mooutils/moofiledialog.h"
-#include "moofileview/moofile.h"
 #include <string.h>
 #include <gtk/gtk.h>
 #include <math.h>
@@ -973,7 +972,7 @@ static void     moo_edit_window_get_property(GObject        *object,
 
         case PROP_CAN_RELOAD:
             doc = ACTIVE_DOC (window);
-            g_value_set_boolean (value, doc && moo_edit_get_filename (doc));
+            g_value_set_boolean (value, doc && !moo_edit_is_untitled (doc));
             break;
         case PROP_HAS_OPEN_DOCUMENT:
             g_value_set_boolean (value, ACTIVE_DOC (window) != NULL);
@@ -1095,7 +1094,7 @@ update_window_title (MooEditWindow *window)
     }
 
     if (window->priv->use_full_name)
-        name = moo_edit_get_display_filename (edit);
+        name = moo_edit_get_display_name (edit);
     else
         name = moo_edit_get_display_basename (edit);
 
@@ -1144,6 +1143,7 @@ update_window_title (MooEditWindow *window)
     g_string_append_printf (title, doc_title_format, name);
 
     gtk_window_set_title (GTK_WINDOW (window), title->str);
+
     g_string_free (title, TRUE);
 }
 
@@ -2584,9 +2584,7 @@ update_tab_label (MooEditWindow *window,
                                   moo_edit_get_display_basename (doc));
     gtk_label_set_text (GTK_LABEL (label), label_text);
 
-    /* XXX */
-    pixbuf = _moo_get_icon_for_path (moo_edit_get_filename (doc),
-                                     icon, GTK_ICON_SIZE_MENU);
+    pixbuf = _moo_edit_get_icon (doc, icon, GTK_ICON_SIZE_MENU);
     set_tab_icon (icon, evbox, pixbuf);
 
     g_free (label_text);
@@ -3736,11 +3734,16 @@ compare_doc_list_actions (gpointer a1,
                           gpointer a2)
 {
     MooEdit *d1, *d2;
+    int result;
+
     d1 = g_object_get_data (a1, "moo-edit");
     d2 = g_object_get_data (a2, "moo-edit");
     g_return_val_if_fail (d1 && d2, -1);
-    return strcmp (moo_edit_get_display_basename (d1),
-                   moo_edit_get_display_basename (d2));
+
+    result = strcmp (moo_edit_get_display_basename (d1),
+                     moo_edit_get_display_basename (d2));
+
+    return result;
 }
 
 
@@ -3796,7 +3799,7 @@ do_update_doc_list (MooEditWindow *window)
         {
             g_object_set (action,
                           "label", moo_edit_get_display_basename (doc),
-                          "tooltip", moo_edit_get_display_filename (doc),
+                          "tooltip", moo_edit_get_display_name (doc),
                           NULL);
         }
         else
@@ -3806,7 +3809,7 @@ do_update_doc_list (MooEditWindow *window)
             action = g_object_new (MOO_TYPE_RADIO_ACTION ,
                                    "name", name,
                                    "label", moo_edit_get_display_basename (doc),
-                                   "tooltip", moo_edit_get_display_filename (doc),
+                                   "tooltip", moo_edit_get_display_name (doc),
                                    "use-underline", FALSE,
                                    NULL);
             g_object_set_data_full (doc, "moo-doc-list-action", action, g_object_unref);

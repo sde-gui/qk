@@ -415,12 +415,15 @@ init_dir_entry (MooHistoryCombo *hist_combo,
     if (!gtk_entry_get_text(GTK_ENTRY (entry))[0])
     {
         MooFileEntryCompletion *completion;
+        char *filename;
 
         completion = g_object_get_data (G_OBJECT (entry), "find-plugin-file-completion");
 
-        if (doc && moo_edit_get_filename (doc))
+        filename = doc ? moo_edit_get_filename (doc) : NULL;
+
+        if (filename)
         {
-            char *dir = g_path_get_dirname (moo_edit_get_filename (doc));
+            char *dir = g_path_get_dirname (filename);
             _moo_file_entry_completion_set_path (completion, dir);
             g_free (dir);
         }
@@ -428,6 +431,8 @@ init_dir_entry (MooHistoryCombo *hist_combo,
         {
             _moo_file_entry_completion_set_path (completion, g_get_home_dir ());
         }
+
+        g_free (filename);
     }
 
 #if 0

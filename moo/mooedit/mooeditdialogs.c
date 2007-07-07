@@ -136,7 +136,7 @@ _moo_edit_save_changes_dialog (MooEdit *edit)
 {
     GtkDialog *dialog = NULL;
     int response;
-    const char *name = moo_edit_get_display_basename (edit);
+    const char *name;
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), MOO_EDIT_RESPONSE_CANCEL);
     name = moo_edit_get_display_basename (edit);

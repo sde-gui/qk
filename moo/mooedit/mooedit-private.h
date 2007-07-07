@@ -98,6 +98,16 @@ void         _moo_edit_create_progress_dialog   (MooEdit        *edit);
 void         _moo_edit_set_progress_text        (MooEdit        *edit,
                                                  const char     *text);
 
+GdkPixbuf   *_moo_edit_get_icon                 (MooEdit        *edit,
+                                                 GtkWidget      *widget,
+                                                 GtkIconSize     size);
+
+#define MOO_EDIT_IS_UNTITLED(edit) (!(edit)->priv->filename)
+
+struct _MooEditFileInfo {
+    char *filename;
+    char *encoding;
+};
 
 typedef enum {
     MOO_EDIT_LINE_END_NONE,
@@ -117,7 +127,6 @@ struct _MooEditPrivate {
     /* Document
      */
     char *filename;
-    char *basename;
     char *display_filename;
     char *display_basename;
 

@@ -151,18 +151,23 @@ moo_edit_script_context_set_doc (MooEditScriptContext *ctx,
 
     if (MOO_IS_EDIT (doc))
     {
+        char *filename = NULL, *basename = NULL;
         char *dirname = NULL, *base = NULL, *ext = NULL;
 
-        if (moo_edit_get_basename (MOO_EDIT (doc)))
-            get_extension (moo_edit_get_basename (MOO_EDIT (doc)), &base, &ext);
+        filename = moo_edit_get_filename (MOO_EDIT (doc));
 
-        if (moo_edit_get_filename (MOO_EDIT (doc)))
-            dirname = g_path_get_dirname (moo_edit_get_filename (MOO_EDIT (doc)));
+        if (filename)
+        {
+            basename = g_path_get_basename (filename);
 
-        ms_value_dict_set_string (val, MS_VAR_FILE,
-                                  moo_edit_get_filename (MOO_EDIT (doc)));
-        ms_value_dict_set_string (val, MS_VAR_NAME,
-                                  moo_edit_get_basename (MOO_EDIT (doc)));
+            if (basename)
+                get_extension (basename, &base, &ext);
+
+            dirname = g_path_get_dirname (filename);
+        }
+
+        ms_value_dict_set_string (val, MS_VAR_FILE, filename);
+        ms_value_dict_set_string (val, MS_VAR_NAME, basename);
         ms_value_dict_set_string (val, MS_VAR_BASE, base);
         ms_value_dict_set_string (val, MS_VAR_DIR, dirname);
         ms_value_dict_set_string (val, MS_VAR_EXT, ext);
@@ -170,6 +175,8 @@ moo_edit_script_context_set_doc (MooEditScriptContext *ctx,
         g_free (base);
         g_free (ext);
         g_free (dirname);
+        g_free (basename);
+        g_free (filename);
     }
     else
     {

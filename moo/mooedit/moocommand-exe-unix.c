@@ -241,8 +241,9 @@ run_in_pane (MooCommandExe     *cmd,
 
         if (filter)
         {
-            const char *fn = MOO_IS_EDIT (doc) ? moo_edit_get_filename (MOO_EDIT (doc)) : NULL;
+            char *fn = MOO_IS_EDIT (doc) ? moo_edit_get_filename (MOO_EDIT (doc)) : NULL;
             moo_output_filter_set_active_file (filter, fn);
+            g_free (fn);
         }
 
         moo_cmd_view_set_filter (MOO_CMD_VIEW (output), filter);
@@ -351,12 +352,15 @@ create_environment (MooCommandContext *ctx,
         *envp = NULL;
     }
 
+    *working_dir = NULL;
     doc = moo_command_context_get_doc (ctx);
 
-    if (doc && moo_edit_get_filename (doc))
-        *working_dir = g_path_get_dirname (moo_edit_get_filename (doc));
-    else
-        *working_dir = NULL;
+    if (doc && !moo_edit_is_untitled (doc))
+    {
+        char *filename = moo_edit_get_filename (doc);
+        *working_dir = g_path_get_dirname (filename);
+        g_free (filename);
+    }
 }
 
 

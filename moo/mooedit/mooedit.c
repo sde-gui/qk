@@ -298,7 +298,6 @@ moo_edit_finalize (GObject *object)
     MooEdit *edit = MOO_EDIT (object);
 
     g_free (edit->priv->filename);
-    g_free (edit->priv->basename);
     g_free (edit->priv->display_filename);
     g_free (edit->priv->display_basename);
     g_free (edit->priv->encoding);
@@ -502,12 +501,19 @@ moo_edit_is_empty (MooEdit *edit)
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
 
-    if (MOO_EDIT_IS_BUSY (edit) || MOO_EDIT_IS_MODIFIED (edit) || edit->priv->filename)
+    if (MOO_EDIT_IS_BUSY (edit) || MOO_EDIT_IS_MODIFIED (edit) || !MOO_EDIT_IS_UNTITLED (edit))
         return FALSE;
 
     gtk_text_buffer_get_bounds (get_buffer (edit), &start, &end);
 
     return !gtk_text_iter_compare (&start, &end);
+}
+
+gboolean
+moo_edit_is_untitled (MooEdit *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    return MOO_EDIT_IS_UNTITLED (edit);
 }
 
 
@@ -617,22 +623,15 @@ moo_edit_file_info_get_type (void)
 }
 
 
-const char *
+char *
 moo_edit_get_filename (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return edit->priv->filename;
+    return g_strdup (edit->priv->filename);
 }
 
 const char *
-moo_edit_get_basename (MooEdit *edit)
-{
-    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return edit->priv->basename;
-}
-
-const char *
-moo_edit_get_display_filename (MooEdit *edit)
+moo_edit_get_display_name (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
     return edit->priv->display_filename;
@@ -645,14 +644,6 @@ moo_edit_get_display_basename (MooEdit *edit)
     return edit->priv->display_basename;
 }
 
-const char *
-moo_edit_get_encoding (MooEdit *edit)
-{
-    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return edit->priv->encoding;
-}
-
-
 char *
 moo_edit_get_uri (MooEdit *edit)
 {
@@ -662,6 +653,13 @@ moo_edit_get_uri (MooEdit *edit)
         return g_filename_to_uri (edit->priv->filename, NULL, NULL);
     else
         return NULL;
+}
+
+const char *
+moo_edit_get_encoding (MooEdit *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    return edit->priv->encoding;
 }
 
 

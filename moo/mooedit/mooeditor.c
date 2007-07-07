@@ -802,11 +802,18 @@ window_info_remove (WindowInfo     *win,
 static int
 edit_and_file_cmp (MooEdit *edit, const char *filename)
 {
-    const char *edit_filename;
+    char *edit_filename;
+
     g_return_val_if_fail (MOO_IS_EDIT (edit) && filename != NULL, TRUE);
+
     edit_filename = moo_edit_get_filename (edit);
+
     if (edit_filename)
-        return strcmp (edit_filename, filename);
+    {
+        int result = strcmp (edit_filename, filename);
+        g_free (edit_filename);
+        return result;
+    }
     else
         return TRUE;
 }
@@ -1023,9 +1030,9 @@ moo_editor_add_doc (MooEditor      *editor,
 
     window_info_add (info, doc);
 
-    if (!moo_edit_get_filename (doc) &&
-         !moo_edit_config_get_string (doc->config, "lang") &&
-         editor->priv->default_lang)
+    if (moo_edit_is_untitled (doc) &&
+        !moo_edit_config_get_string (doc->config, "lang") &&
+        editor->priv->default_lang)
     {
         moo_edit_config_set (doc->config, MOO_EDIT_CONFIG_SOURCE_FILENAME,
                              "lang", editor->priv->default_lang, NULL);
@@ -1811,7 +1818,7 @@ static MooMarkupNode *
 save_doc_session (MooEdit       *doc,
                   MooMarkupNode *elm)
 {
-    const char *filename;
+    char *filename;
     const char *encoding;
     MooMarkupNode *node;
 
@@ -1838,6 +1845,7 @@ save_doc_session (MooEdit       *doc,
         node = moo_markup_create_element (elm, "document");
     }
 
+    g_free (filename);
     return node;
 }
 
@@ -2178,7 +2186,7 @@ _moo_editor_reload (MooEditor      *editor,
     g_return_if_fail (info != NULL);
 
     /* XXX */
-    g_return_if_fail (moo_edit_get_filename (doc) != NULL);
+    g_return_if_fail (!moo_edit_is_untitled (doc));
 
     if (!editor->priv->silent &&
          !MOO_EDIT_IS_CLEAN (doc) &&
@@ -2262,10 +2270,10 @@ _moo_editor_save (MooEditor      *editor,
     info = window_list_find_doc (editor, doc);
     g_return_val_if_fail (info != NULL, FALSE);
 
-    if (!moo_edit_get_filename (doc))
+    if (moo_edit_is_untitled (doc))
         return _moo_editor_save_as (editor, doc, NULL, NULL, error);
 
-    filename = g_strdup (moo_edit_get_filename (doc));
+    filename = moo_edit_get_filename (doc);
     encoding = g_strdup (moo_edit_get_encoding (doc));
 
     if (!editor->priv->silent &&

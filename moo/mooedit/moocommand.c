@@ -312,7 +312,7 @@ moo_command_check_sensitive_real (MooCommand *cmd,
     if ((cmd->options & MOO_COMMAND_NEED_DOC) && !doc)
         return FALSE;
 
-    if ((cmd->options & MOO_COMMAND_NEED_FILE) && (!MOO_IS_EDIT (doc) || !moo_edit_get_filename (doc)))
+    if ((cmd->options & MOO_COMMAND_NEED_FILE) && (!MOO_IS_EDIT (doc) || moo_edit_is_untitled (doc)))
         return FALSE;
 
     return TRUE;
@@ -411,7 +411,7 @@ check_context (MooCommandOptions options,
         return FALSE;
 
     if ((options & MOO_COMMAND_NEED_FILE) &&
-        !(MOO_IS_EDIT (doc) && moo_edit_get_filename (doc) != NULL))
+        !(MOO_IS_EDIT (doc) && !moo_edit_is_untitled (doc)))
             return FALSE;
 
     if ((options & MOO_COMMAND_NEED_SAVE) && !MOO_IS_EDIT (doc))
@@ -442,9 +442,7 @@ moo_command_run (MooCommand         *cmd,
     }
     else if (cmd->options & MOO_COMMAND_NEED_SAVE)
     {
-        if (!save_one (doc))
-            return;
-        if (!moo_edit_get_filename (doc))
+        if (!save_one (doc) || moo_edit_is_untitled (doc))
             return;
     }
 

@@ -58,11 +58,6 @@ typedef struct _MooEditPrivate  MooEditPrivate;
 typedef struct _MooEditClass    MooEditClass;
 
 
-struct _MooEditFileInfo {
-    char *filename;
-    char *encoding;
-};
-
 struct _MooEdit
 {
     MooTextView parent;
@@ -92,19 +87,19 @@ struct _MooEditClass
 };
 
 
-GType            moo_edit_get_type                      (void) G_GNUC_CONST;
-GType            moo_edit_file_info_get_type            (void) G_GNUC_CONST;
+GType            moo_edit_get_type              (void) G_GNUC_CONST;
+GType            moo_edit_file_info_get_type    (void) G_GNUC_CONST;
 
-const char      *moo_edit_get_filename          (MooEdit        *edit);
-const char      *moo_edit_get_basename          (MooEdit        *edit);
-const char      *moo_edit_get_display_filename  (MooEdit        *edit);
+char            *moo_edit_get_uri               (MooEdit        *edit);
+char            *moo_edit_get_filename          (MooEdit        *edit);
+char            *moo_edit_get_basename          (MooEdit        *edit);
+const char      *moo_edit_get_display_name      (MooEdit        *edit);
 const char      *moo_edit_get_display_basename  (MooEdit        *edit);
 
 const char      *moo_edit_get_encoding          (MooEdit        *edit);
 
-char            *moo_edit_get_uri               (MooEdit        *edit);
-
 gboolean         moo_edit_is_empty              (MooEdit        *edit);
+gboolean         moo_edit_is_untitled           (MooEdit        *edit);
 void             moo_edit_set_modified          (MooEdit        *edit,
                                                  gboolean        modified);
 gboolean         moo_edit_get_clean             (MooEdit        *edit);

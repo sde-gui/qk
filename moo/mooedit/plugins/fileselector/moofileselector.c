@@ -337,7 +337,7 @@ static void
 goto_current_doc_dir (MooFileSelector *filesel)
 {
     MooEdit *doc;
-    const char *filename;
+    char *filename;
 
     doc = moo_edit_window_get_active_doc (filesel->window);
     filename = doc ? moo_edit_get_filename (doc) : NULL;
@@ -349,6 +349,8 @@ goto_current_doc_dir (MooFileSelector *filesel)
         moo_file_selector_select_file (filesel, filename, dirname);
         g_free (dirname);
     }
+
+    g_free (filename);
 }
 
 
@@ -1092,7 +1094,9 @@ doc_move (MooFileSelector *filesel,
 {
     char *filename, *old_filename;
 
-    old_filename = g_strdup (moo_edit_get_filename (doc));
+    old_filename = moo_edit_get_filename (doc);
+    /* XXX non-local */
+    g_return_if_fail (old_filename != NULL);
 
     filename = save_as_dialog (GTK_WIDGET (filesel), destdir,
                                moo_edit_get_display_basename (doc),
@@ -1304,7 +1308,6 @@ moo_file_selector_drop_doc (MooFileSelector *filesel,
                             int             y,
                             guint           time)
 {
-    const char *filename;
     GdkModifierType mods;
     DropDocAction action;
 
@@ -1312,9 +1315,7 @@ moo_file_selector_drop_doc (MooFileSelector *filesel,
     g_return_if_fail (destdir != NULL);
     g_return_if_fail (GTK_IS_WIDGET (widget));
 
-    filename = moo_edit_get_filename (doc);
-
-    if (!filename)
+    if (moo_edit_is_untitled (doc))
     {
         gboolean result = drop_untitled (filesel, doc, destdir,
                                          widget, context, x, y, time);
