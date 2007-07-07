@@ -47,7 +47,7 @@ AM_CONDITIONAL(MOO_DEBUG, test x$MOO_DEBUG = "xyes")
 _moo_all_warnings="no"
 AC_ARG_ENABLE(all-warnings,
 AC_HELP_STRING([--enable-all-warnings],[enable lot of compiler warnings (default = NO)]),[
-  _moo_all_warnings="$withval"
+  _moo_all_warnings="$enableval"
 ])
 AM_CONDITIONAL(MOO_ALL_WARNINGS, test x$_moo_all_warnings = "xyes")
 
