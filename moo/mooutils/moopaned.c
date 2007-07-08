@@ -110,6 +110,8 @@ static void     moo_paned_map               (GtkWidget      *widget);
 static void     moo_paned_unmap             (GtkWidget      *widget);
 static gboolean moo_paned_focus             (GtkWidget      *widget,
                                              GtkDirectionType direction);
+static void     moo_paned_style_set         (GtkWidget      *widget,
+                                             GtkStyle       *old_style);
 
 static void     moo_paned_set_focus_child   (GtkContainer *container,
                                              GtkWidget      *widget);
@@ -230,6 +232,7 @@ moo_paned_class_init (MooPanedClass *klass)
 
     widget_class->realize = moo_paned_realize;
     widget_class->unrealize = moo_paned_unrealize;
+    widget_class->style_set = moo_paned_style_set;
     widget_class->map = moo_paned_map;
     widget_class->unmap = moo_paned_unmap;
     widget_class->expose_event = moo_paned_expose;
@@ -596,6 +599,16 @@ _moo_paned_get_position (MooPaned *paned)
 
 
 static void
+moo_paned_style_set (GtkWidget *widget,
+                     G_GNUC_UNUSED GtkStyle *old_style)
+{
+    MooPaned *paned = MOO_PANED (widget);
+
+    if (widget->style && paned->priv->bin_window)
+        gtk_style_set_background (widget->style, paned->priv->bin_window, GTK_STATE_NORMAL);
+}
+
+static void
 moo_paned_realize (GtkWidget       *widget)
 {
     static GdkWindowAttr attributes;
@@ -603,8 +616,6 @@ moo_paned_realize (GtkWidget       *widget)
     MooPaned *paned;
 
     paned = MOO_PANED (widget);
-
-    GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
 
     widget->window = gtk_widget_get_parent_window (widget);
     g_object_ref (widget->window);
@@ -629,6 +640,8 @@ moo_paned_realize (GtkWidget       *widget)
 
     widget->style = gtk_style_attach (widget->style, widget->window);
     gtk_style_set_background (widget->style, paned->priv->bin_window, GTK_STATE_NORMAL);
+
+    GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
 
     realize_pane (paned);
 
