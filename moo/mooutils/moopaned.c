@@ -604,8 +604,21 @@ moo_paned_style_set (GtkWidget *widget,
 {
     MooPaned *paned = MOO_PANED (widget);
 
-    if (widget->style && paned->priv->bin_window)
-        gtk_style_set_background (widget->style, paned->priv->bin_window, GTK_STATE_NORMAL);
+    if (widget->style)
+    {
+        if (paned->priv->bin_window)
+            gtk_style_set_background (widget->style,
+                                      paned->priv->bin_window,
+                                      GTK_STATE_NORMAL);
+        if (paned->priv->handle_window)
+            gtk_style_set_background (widget->style,
+                                      paned->priv->handle_window,
+                              GTK_STATE_NORMAL);
+        if (paned->priv->pane_window)
+            gtk_style_set_background (widget->style,
+                                      paned->priv->pane_window,
+                                      GTK_STATE_NORMAL);
+    }
 }
 
 static void
