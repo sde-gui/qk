@@ -42,6 +42,16 @@
     </vars>
    </configure>
   </optimized>
+  <test>
+   <build_dir>build/test</build_dir>
+   <configure>
+    <args>--enable-debug=full --enable-all-warnings --enable-project --prefix=/usr/local/test</args>
+    <vars>
+     <var name="OBJCFLAGS">-g</var>
+     <var name="CFLAGS">-g</var>
+    </vars>
+   </configure>
+  </test>
  </configurations>
  <run>
   <args>--mode=project</args>
