@@ -71,7 +71,9 @@ struct _MooAppPrivate {
     MooEditor  *editor;
     MooAppInfo *info;
     char       *rc_files[2];
+
     gboolean    run_input;
+    char       *instance_name;
 
     gboolean    running;
     gboolean    in_try_quit;
@@ -191,7 +193,8 @@ enum {
     PROP_LOGO,
     PROP_WEBSITE,
     PROP_WEBSITE_LABEL,
-    PROP_CREDITS
+    PROP_CREDITS,
+    PROP_INSTANCE_NAME
 };
 
 enum {
@@ -301,6 +304,14 @@ moo_app_class_init (MooAppClass *klass)
                                              "run-input",
                                              "run-input",
                                              TRUE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_INSTANCE_NAME,
+                                     g_param_spec_string ("instance-name",
+                                             "instance-name",
+                                             "instance-name",
+                                             NULL,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
     g_object_class_install_property (gobject_class,
@@ -510,6 +521,7 @@ moo_app_finalize (GObject *object)
     if (app->priv->ui_xml)
         g_object_unref (app->priv->ui_xml);
 
+    g_free (app->priv->instance_name);
     g_free (app->priv);
 
     G_OBJECT_CLASS (moo_app_parent_class)->finalize (object);
@@ -559,6 +571,11 @@ moo_app_set_property (GObject        *object,
 
         case PROP_RUN_INPUT:
             app->priv->run_input = g_value_get_boolean (value);
+            break;
+
+        case PROP_INSTANCE_NAME:
+            g_free (app->priv->instance_name);
+            app->priv->instance_name = g_value_dup_string (value);
             break;
 
         case PROP_USE_EDITOR:
@@ -625,6 +642,9 @@ moo_app_get_property (GObject        *object,
         case PROP_RUN_INPUT:
             g_value_set_boolean (value, app->priv->run_input);
             break;
+        case PROP_INSTANCE_NAME:
+            g_value_set_string (value, app->priv->instance_name);
+            break;
 
         case PROP_USE_EDITOR:
             g_value_set_boolean (value, app->priv->use_editor);
@@ -663,13 +683,6 @@ moo_app_set_exit_code (MooApp      *app,
 {
     g_return_if_fail (MOO_IS_APP (app));
     app->priv->exit_code = code;
-}
-
-
-const char *
-moo_app_get_input_pipe_name (G_GNUC_UNUSED MooApp *app)
-{
-    return moo_app_input ? _moo_app_input_get_name (moo_app_input) : NULL;
 }
 
 
@@ -891,16 +904,9 @@ static void
 start_input (MooApp *app)
 {
     if (app->priv->run_input)
-    {
-        moo_app_input = _moo_app_input_new (app->priv->info->short_name);
-
-        if (!_moo_app_input_start (moo_app_input))
-        {
-            g_critical ("%s: oops", G_STRLOC);
-            _moo_app_input_free (moo_app_input);
-            moo_app_input = NULL;
-        }
-    }
+        moo_app_input = _moo_app_input_new (app->priv->info->short_name,
+                                            app->priv->instance_name,
+                                            TRUE);
 }
 
 
@@ -1097,7 +1103,6 @@ moo_app_quit_real (MooApp *app)
 
     if (moo_app_input)
     {
-        _moo_app_input_shutdown (moo_app_input);
         _moo_app_input_free (moo_app_input);
         moo_app_input = NULL;
     }
@@ -1541,7 +1546,15 @@ moo_app_load_session (MooApp *app)
     g_return_if_fail (MOO_IS_APP (app));
 
     if (!app->priv->session_file)
-        app->priv->session_file = g_strdup_printf ("%s.session", g_get_prgname ());
+    {
+        if (app->priv->instance_name)
+            app->priv->session_file = g_strdup_printf ("%s.session.%s",
+                                                       g_get_prgname (),
+                                                       app->priv->instance_name);
+        else
+            app->priv->session_file = g_strdup_printf ("%s.session",
+                                                       g_get_prgname ());
+    }
 
     session_file = moo_get_user_cache_file (app->priv->session_file);
 
@@ -1877,8 +1890,18 @@ move_rc_files (MooApp *app)
         const char *new_file;
         char *old_file = g_strdup_printf ("%s/.%s.state", g_get_home_dir (), g_get_prgname ());
 
-        app->priv->rc_files[MOO_PREFS_STATE] =
-            g_strdup_printf ("%s/%s.state", cache_dir, g_get_prgname ());
+        if (app->priv->instance_name)
+            app->priv->rc_files[MOO_PREFS_STATE] =
+                g_strdup_printf ("%s/%s.state.%s",
+                                 cache_dir,
+                                 g_get_prgname (),
+                                 app->priv->instance_name);
+        else
+            app->priv->rc_files[MOO_PREFS_STATE] =
+                g_strdup_printf ("%s/%s.state",
+                                 cache_dir,
+                                 g_get_prgname ());
+
         new_file = app->priv->rc_files[MOO_PREFS_STATE];
 
         if (!g_file_test (new_file, G_FILE_TEST_EXISTS) &&

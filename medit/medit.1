@@ -41,6 +41,10 @@ Load and save session. By default \fBmedit\fP does it when \-n is not used.
 .B \-\-pid PID
 Use existing instance with process id \fBPID\fP.
 .TP
+.B \-\-app-name NAME
+Use instance name \fBNAME\fP. If an instance with this name is already running,
+then it will send files given on the command line to that instance and exit.
+.TP
 .B \-l, \-\-line LINE
 Open file and position cursor on line \fBLINE\fP.
 .TP
@@ -58,6 +62,7 @@ Execute python file in an existing instance.
 .TP
 .B files
 List of files to open. Filenames may include line numbers after colon, e.g. /tmp/file.txt:200.
+Trailing colon is also fine.
 .SH ENVIRONMENT
 .TP
 .B MEDIT_PID

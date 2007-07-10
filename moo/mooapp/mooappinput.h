@@ -65,21 +65,18 @@ static const char *moo_app_cmd_chars =
 
 #endif /* WANT_MOO_APP_CMD_CHARS */
 
+#define MOO_APP_INPUT_NAME_DEFAULT "main"
 
 typedef struct _MooAppInput MooAppInput;
 
 
-MooAppInput *_moo_app_input_new         (const char     *pipe_basename);
-
+MooAppInput *_moo_app_input_new         (const char     *appname,
+                                         const char     *name,
+                                         gboolean        bind_default);
 void         _moo_app_input_free        (MooAppInput    *ch);
 
-gboolean     _moo_app_input_start       (MooAppInput    *ch);
-void         _moo_app_input_shutdown    (MooAppInput    *ch);
-
-const char  *_moo_app_input_get_name    (MooAppInput    *ch);
-
-gboolean     _moo_app_input_send_msg    (const char     *pipe_basename,
-                                         const char     *pid,
+gboolean     _moo_app_input_send_msg    (const char     *appname,
+                                         const char     *name,
                                          const char     *data,
                                          gssize          len);
 

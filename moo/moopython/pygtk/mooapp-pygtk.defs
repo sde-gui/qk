@@ -64,12 +64,6 @@
 ;;   (return-type "const-MooAppInfo*")
 ;; )
 
-(define-method get_input_pipe_name
-  (of-object "MooApp")
-  (c-name "moo_app_get_input_pipe_name")
-  (return-type "const-char*")
-)
-
 (define-method get_editor
   (of-object "MooApp")
   (c-name "moo_app_get_editor")

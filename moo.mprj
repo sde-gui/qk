@@ -13,8 +13,8 @@
    <configure>
     <args>--enable-debug=full --enable-all-warnings --enable-project</args>
     <vars>
-     <var name="OBJCFLAGS">-g</var>
      <var name="CFLAGS">-g</var>
+     <var name="OBJCFLAGS">-g</var>
     </vars>
    </configure>
   </debug>
@@ -37,8 +37,8 @@
    <build_dir>build/optimized</build_dir>
    <configure>
     <vars>
-     <var name="OBJCFLAGS">-O2 -g</var>
      <var name="CFLAGS">-O2 -g</var>
+     <var name="OBJCFLAGS">-O2 -g</var>
     </vars>
    </configure>
   </optimized>
@@ -47,8 +47,8 @@
    <configure>
     <args>--enable-debug=full --enable-all-warnings --enable-project --prefix=/usr/local/test</args>
     <vars>
-     <var name="OBJCFLAGS">-g</var>
      <var name="CFLAGS">-g</var>
+     <var name="OBJCFLAGS">-g</var>
     </vars>
    </configure>
   </test>

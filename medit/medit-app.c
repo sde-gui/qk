@@ -79,6 +79,10 @@ int _medit_parse_options (const char *const program_name,
 #define STR_HELP_PID "\
       --pid=PID                  Use existing instance with process id PID\n"
 
+#define STR_HELP_APP_NAME "\
+      --app-name=NAME            Set instance name to NAME if it's not already\n\
+                                   running\n"
+
 #define STR_HELP_MODE "\
   -m, --mode=[simple|project]    Use specified mode\n"
 
@@ -110,6 +114,8 @@ int _medit_parse_options (const char *const program_name,
   -n, --new-app                  Run new instance of application\n\
   -s, --use-session              Load and save session\n\
       --pid=PID                  Use existing instance with process id PID\n\
+      --app-name=NAME            Set instance name to NAME if it's not already\n\
+                                   running\n\
   -m, --mode=[simple|project]    Use specified mode\n\
   -p, --project=PROJECT          Open project file PROJECT\n\
   -l, --line=LINE                Open file and position cursor on line LINE\n\
@@ -128,6 +134,9 @@ char _medit_opt_use_session;
 
 /* Set to 1 if option --pid has been specified.  */
 char _medit_opt_pid;
+
+/* Set to 1 if option --app-name has been specified.  */
+char _medit_opt_app_name;
 
 /* Set to 1 if option --mode (-m) has been specified.  */
 char _medit_opt_mode;
@@ -159,6 +168,9 @@ char _medit_opt_help;
 /* Argument to option --pid.  */
 const char *_medit_arg_pid;
 
+/* Argument to option --app-name.  */
+const char *_medit_arg_app_name;
+
 /* Argument to option --mode (-m).  */
 const char *_medit_arg_mode;
 
@@ -184,6 +196,7 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   static const char *const optstr__new_app = "new-app";
   static const char *const optstr__use_session = "use-session";
   static const char *const optstr__pid = "pid";
+  static const char *const optstr__app_name = "app-name";
   static const char *const optstr__mode = "mode";
   static const char *const optstr__project = "project";
   static const char *const optstr__line = "line";
@@ -196,6 +209,7 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   _medit_opt_new_app = 0;
   _medit_opt_use_session = 0;
   _medit_opt_pid = 0;
+  _medit_opt_app_name = 0;
   _medit_opt_mode = 0;
   _medit_opt_project = 0;
   _medit_opt_line = 0;
@@ -206,6 +220,7 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   _medit_opt_version = 0;
   _medit_opt_help = 0;
   _medit_arg_pid = 0;
+  _medit_arg_app_name = 0;
   _medit_arg_mode = 0;
   _medit_arg_project = 0;
   _medit_arg_line = 0;
@@ -234,6 +249,22 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
       {
        case '\0':
         return i + 1;
+       case 'a':
+        if (strncmp (option + 1, optstr__app_name + 1, option_len - 1) == 0)
+        {
+          if (argument != 0)
+            _medit_arg_app_name = argument;
+          else if (++i < argc)
+            _medit_arg_app_name = argv [i];
+          else
+          {
+            option = optstr__app_name;
+            goto error_missing_arg_long;
+          }
+          _medit_opt_app_name = 1;
+          break;
+        }
+        goto error_unknown_long_opt;
        case 'd':
         if (strncmp (option + 1, optstr__debug + 1, option_len - 1) == 0)
         {
@@ -473,12 +504,13 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   }
   return i;
 }
-#line 63 "../../../medit/medit-app.opag"
+#line 64 "../../../medit/medit-app.opag"
 
 #undef STR_HELP
 #define STR_HELP        \
     STR_HELP_NEW_APP    \
     STR_HELP_PID        \
+    STR_HELP_APP_NAME   \
     STR_HELP_LINE       \
     STR_HELP_LOG        \
     STR_HELP_DEBUG      \
@@ -489,11 +521,21 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
  ********************************************************/
 
 
-static void
-usage (void)
+G_GNUC_NORETURN static void
+usage (int status)
 {
-    g_print ("Usage: %s [OPTIONS] [FILES]\n", g_get_prgname ());
-    g_print ("Options:\n%s", STR_HELP);
+    if (status)
+    {
+        g_printerr ("Usage: %s [OPTIONS] [FILES]\n", g_get_prgname ());
+        g_printerr ("Options:\n%s", STR_HELP);
+    }
+    else
+    {
+        g_print ("Usage: %s [OPTIONS] [FILES]\n", g_get_prgname ());
+        g_print ("Options:\n%s", STR_HELP);
+    }
+
+    exit (status);
 }
 
 static void
@@ -507,10 +549,7 @@ static void
 check_args (int opt_remain)
 {
     if (_medit_opt_help)
-    {
-        usage ();
-        exit (0);
-    }
+        usage (0);
 
     if (_medit_opt_version)
     {
@@ -519,8 +558,11 @@ check_args (int opt_remain)
     }
 
     if (opt_remain < 0)
+        usage (1);
+
+    if (_medit_opt_pid && _medit_opt_app_name)
     {
-        usage ();
+        g_printerr ("--pid may not be used together with --app-name\n");
         exit (1);
     }
 
@@ -528,16 +570,16 @@ check_args (int opt_remain)
     {
         if (_medit_opt_new_app)
         {
-            g_print ("--new-app can't be used together with --pid\n");
+            g_printerr ("--new-app can't be used together with --pid\n");
             exit (1);
         }
 
         if (!_medit_arg_pid || !_medit_arg_pid[0])
-        {
-            usage ();
-            exit (1);
-        }
+            usage (1);
     }
+
+    if (_medit_opt_app_name && (!_medit_arg_app_name || !_medit_arg_app_name[0]))
+        usage (1);
 }
 
 
@@ -602,8 +644,8 @@ main (int argc, char *argv[])
     AppMode mode = MODE_SIMPLE;
     guint32 stamp;
     guint32 line = 0;
-    const char *pid_string = NULL;
     gboolean use_session = FALSE;
+    const char *name = NULL;
 
     init_mem_stuff ();
 
@@ -649,8 +691,8 @@ main (int argc, char *argv[])
     if (_medit_opt_new_app || mode == MODE_PROJECT)
         new_instance = TRUE;
 
-    run_input = !_medit_opt_new_app || _medit_opt_use_session || _medit_opt_project;
-    use_session = !_medit_opt_new_app || _medit_opt_use_session;
+    run_input = !_medit_opt_new_app || _medit_opt_app_name || _medit_opt_use_session || _medit_opt_project;
+    use_session = !_medit_opt_new_app || _medit_opt_use_session || _medit_opt_app_name;
 
     app = g_object_new (MOO_TYPE_APP,
                         "argv", argv,
@@ -663,37 +705,46 @@ main (int argc, char *argv[])
                         "quit-on-editor-close", TRUE,
                         "logo", "medit",
                         "credits", THANKS,
+                        "instance-name", _medit_opt_app_name ? _medit_arg_app_name : NULL,
                         NULL);
 
     if (_medit_arg_line)
         line = strtol (_medit_arg_line, NULL, 10);
 
     if (_medit_opt_pid)
-        pid_string = _medit_arg_pid;
+        name = _medit_arg_pid;
+    else if (_medit_opt_app_name)
+        name = _medit_arg_app_name;
     else if (!_medit_opt_new_app)
-        pid_string = g_getenv ("MEDIT_PID");
+        name = g_getenv ("MEDIT_PID");
+
+    if (name && !name[0])
+        name = NULL;
 
     if (_medit_opt_exec || _medit_opt_exec_file)
     {
         GString *msg;
         msg = g_string_new (_medit_opt_exec ? "p" : "P");
         g_string_append (msg, _medit_opt_exec ? _medit_arg_exec : _medit_arg_exec_file);
-        moo_app_send_msg (app, pid_string, msg->str, msg->len + 1);
+        moo_app_send_msg (app, name, msg->str, msg->len + 1);
         exit (0);
     }
 
     files = moo_filenames_from_locale (argv + opt_remain);
 
-    if (pid_string)
+    if (name)
     {
-        if (moo_app_send_files (app, files, line, stamp, pid_string))
+        if (moo_app_send_files (app, files, line, stamp, name))
             exit (0);
 
-        g_print ("Could not send files to pid %s\n", pid_string);
-        exit (1);
+        if (!_medit_opt_app_name)
+        {
+            g_printerr ("Could not send files to instance '%s'\n", name);
+            exit (1);
+        }
     }
 
-    if ((!new_instance && moo_app_send_files (app, files, line, stamp, NULL)) ||
+    if ((!new_instance && !_medit_opt_app_name && moo_app_send_files (app, files, line, stamp, NULL)) ||
          !moo_app_init (app))
     {
         gdk_notify_startup_complete ();

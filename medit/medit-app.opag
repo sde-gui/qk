@@ -48,23 +48,25 @@ int _medit_parse_options (const char *const program_name,
 %%
 n  new-app      "Run new instance of application"
 s  use-session  "Load and save session"
-   pid          "=PID Use existing instance with process id PID"        reqarg
-m  mode         "=[simple|project] Use specified mode"                  reqarg
-p  project      "=PROJECT Open project file PROJECT"                    reqarg
-l  line         "=LINE Open file and position cursor on line LINE"      reqarg
-   log          "[=FILE] Show debug output or write it to FILE"         optarg
+   pid          "=PID Use existing instance with process id PID"                reqarg
+   app-name     "=NAME Set instance name to NAME if it's not already running"   reqarg
+m  mode         "=[simple|project] Use specified mode"                          reqarg
+p  project      "=PROJECT Open project file PROJECT"                            reqarg
+l  line         "=LINE Open file and position cursor on line LINE"              reqarg
+   log          "[=FILE] Show debug output or write it to FILE"                 optarg
    debug        "Run in debug mode"
-   exec         "=CODE Execute python code in an existing instance"     reqarg
-   exec-file    "=FILE Execute python file in an existing instance"     reqarg
-   version      "Display version information and exit"                  return
-h  help         "Display this help text and exit"                       return
+   exec         "=CODE Execute python code in an existing instance"             reqarg
+   exec-file    "=FILE Execute python file in an existing instance"             reqarg
+   version      "Display version information and exit"                          return
+h  help         "Display this help text and exit"                               return
 %%
-#line 63 "../../../medit/medit-app.opag"
+#line 64 "../../../medit/medit-app.opag"
 
 #undef STR_HELP
 #define STR_HELP        \
     STR_HELP_NEW_APP    \
     STR_HELP_PID        \
+    STR_HELP_APP_NAME   \
     STR_HELP_LINE       \
     STR_HELP_LOG        \
     STR_HELP_DEBUG      \
@@ -75,11 +77,21 @@ h  help         "Display this help text and exit"                       return
  ********************************************************/
 
 
-static void
-usage (void)
+G_GNUC_NORETURN static void
+usage (int status)
 {
-    g_print ("Usage: %s [OPTIONS] [FILES]\n", g_get_prgname ());
-    g_print ("Options:\n%s", STR_HELP);
+    if (status)
+    {
+        g_printerr ("Usage: %s [OPTIONS] [FILES]\n", g_get_prgname ());
+        g_printerr ("Options:\n%s", STR_HELP);
+    }
+    else
+    {
+        g_print ("Usage: %s [OPTIONS] [FILES]\n", g_get_prgname ());
+        g_print ("Options:\n%s", STR_HELP);
+    }
+
+    exit (status);
 }
 
 static void
@@ -93,10 +105,7 @@ static void
 check_args (int opt_remain)
 {
     if (_medit_opt_help)
-    {
-        usage ();
-        exit (0);
-    }
+        usage (0);
 
     if (_medit_opt_version)
     {
@@ -105,8 +114,11 @@ check_args (int opt_remain)
     }
 
     if (opt_remain < 0)
+        usage (1);
+
+    if (_medit_opt_pid && _medit_opt_app_name)
     {
-        usage ();
+        g_printerr ("--pid may not be used together with --app-name\n");
         exit (1);
     }
 
@@ -114,16 +126,16 @@ check_args (int opt_remain)
     {
         if (_medit_opt_new_app)
         {
-            g_print ("--new-app can't be used together with --pid\n");
+            g_printerr ("--new-app can't be used together with --pid\n");
             exit (1);
         }
 
         if (!_medit_arg_pid || !_medit_arg_pid[0])
-        {
-            usage ();
-            exit (1);
-        }
+            usage (1);
     }
+
+    if (_medit_opt_app_name && (!_medit_arg_app_name || !_medit_arg_app_name[0]))
+        usage (1);
 }
 
 
@@ -188,8 +200,8 @@ main (int argc, char *argv[])
     AppMode mode = MODE_SIMPLE;
     guint32 stamp;
     guint32 line = 0;
-    const char *pid_string = NULL;
     gboolean use_session = FALSE;
+    const char *name = NULL;
 
     init_mem_stuff ();
 
@@ -235,8 +247,8 @@ main (int argc, char *argv[])
     if (_medit_opt_new_app || mode == MODE_PROJECT)
         new_instance = TRUE;
 
-    run_input = !_medit_opt_new_app || _medit_opt_use_session || _medit_opt_project;
-    use_session = !_medit_opt_new_app || _medit_opt_use_session;
+    run_input = !_medit_opt_new_app || _medit_opt_app_name || _medit_opt_use_session || _medit_opt_project;
+    use_session = !_medit_opt_new_app || _medit_opt_use_session || _medit_opt_app_name;
 
     app = g_object_new (MOO_TYPE_APP,
                         "argv", argv,
@@ -249,37 +261,46 @@ main (int argc, char *argv[])
                         "quit-on-editor-close", TRUE,
                         "logo", "medit",
                         "credits", THANKS,
+                        "instance-name", _medit_opt_app_name ? _medit_arg_app_name : NULL,
                         NULL);
 
     if (_medit_arg_line)
         line = strtol (_medit_arg_line, NULL, 10);
 
     if (_medit_opt_pid)
-        pid_string = _medit_arg_pid;
+        name = _medit_arg_pid;
+    else if (_medit_opt_app_name)
+        name = _medit_arg_app_name;
     else if (!_medit_opt_new_app)
-        pid_string = g_getenv ("MEDIT_PID");
+        name = g_getenv ("MEDIT_PID");
+
+    if (name && !name[0])
+        name = NULL;
 
     if (_medit_opt_exec || _medit_opt_exec_file)
     {
         GString *msg;
         msg = g_string_new (_medit_opt_exec ? "p" : "P");
         g_string_append (msg, _medit_opt_exec ? _medit_arg_exec : _medit_arg_exec_file);
-        moo_app_send_msg (app, pid_string, msg->str, msg->len + 1);
+        moo_app_send_msg (app, name, msg->str, msg->len + 1);
         exit (0);
     }
 
     files = moo_filenames_from_locale (argv + opt_remain);
 
-    if (pid_string)
+    if (name)
     {
-        if (moo_app_send_files (app, files, line, stamp, pid_string))
+        if (moo_app_send_files (app, files, line, stamp, name))
             exit (0);
 
-        g_print ("Could not send files to pid %s\n", pid_string);
-        exit (1);
+        if (!_medit_opt_app_name)
+        {
+            g_printerr ("Could not send files to instance '%s'\n", name);
+            exit (1);
+        }
     }
 
-    if ((!new_instance && moo_app_send_files (app, files, line, stamp, NULL)) ||
+    if ((!new_instance && !_medit_opt_app_name && moo_app_send_files (app, files, line, stamp, NULL)) ||
          !moo_app_init (app))
     {
         gdk_notify_startup_complete ();
