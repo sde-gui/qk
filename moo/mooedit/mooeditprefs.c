@@ -86,6 +86,7 @@ _moo_edit_init_prefs (void)
 
     NEW_KEY_BOOL (MOO_EDIT_PREFS_SPACES_NO_TABS, FALSE);
     NEW_KEY_INT (MOO_EDIT_PREFS_INDENT_WIDTH, 8);
+    NEW_KEY_INT (MOO_EDIT_PREFS_TAB_WIDTH, 8);
     NEW_KEY_ENUM (MOO_EDIT_PREFS_TAB_KEY_ACTION,
                   MOO_TYPE_TEXT_TAB_KEY_ACTION, MOO_TEXT_TAB_KEY_INDENT);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_AUTO_INDENT, TRUE);
@@ -131,11 +132,12 @@ void
 _moo_edit_update_global_config (void)
 {
     gboolean use_tabs, strip, show_line_numbers;
-    int indent_width;
+    int indent_width, tab_width;
     GtkWrapMode wrap_mode;
 
     use_tabs = !get_bool (MOO_EDIT_PREFS_SPACES_NO_TABS);
     indent_width = get_int (MOO_EDIT_PREFS_INDENT_WIDTH);
+    tab_width = get_int (MOO_EDIT_PREFS_TAB_WIDTH);
     strip = get_bool (MOO_EDIT_PREFS_STRIP);
     show_line_numbers = get_bool (MOO_EDIT_PREFS_SHOW_LINE_NUMBERS);
 
@@ -154,6 +156,7 @@ _moo_edit_update_global_config (void)
     moo_edit_config_set_global (MOO_EDIT_CONFIG_SOURCE_AUTO,
                                 "indent-use-tabs", use_tabs,
                                 "indent-width", indent_width,
+                                "tab-width", tab_width,
                                 "strip", strip,
                                 "show-line-numbers", show_line_numbers,
                                 "wrap-mode", wrap_mode,

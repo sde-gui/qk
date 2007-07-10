@@ -33,6 +33,7 @@ const char *moo_edit_setting                (const char     *setting_name);
 #define MOO_EDIT_PREFS_TAB_KEY_ACTION           "tab_key_action"
 #define MOO_EDIT_PREFS_SPACES_NO_TABS           "spaces_instead_of_tabs"
 #define MOO_EDIT_PREFS_INDENT_WIDTH             "indent_width"
+#define MOO_EDIT_PREFS_TAB_WIDTH                "tab_width"
 #define MOO_EDIT_PREFS_AUTO_INDENT              "auto_indent"
 #define MOO_EDIT_PREFS_BACKSPACE_INDENTS        "backspace_indents"
 
