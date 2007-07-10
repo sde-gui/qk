@@ -962,7 +962,7 @@ expand_regex_vars (ParserState *parser_state, gchar *regex, gint len, GError **e
 	if (regex == NULL)
 		return NULL;
 
-	egg_re = g_regex_new (re, 0, 0, NULL);
+	egg_re = g_regex_new (re, G_REGEX_NEWLINE_LF, 0, NULL);
 
 	data.parser_state = parser_state;
 	data.error = NULL;
@@ -1048,7 +1048,7 @@ expand_regex_delimiters (ParserState *parser_state,
 		return NULL;
 
 	if (egg_re == NULL)
-		egg_re = g_regex_new (re, G_REGEX_OPTIMIZE, 0, NULL);
+		egg_re = g_regex_new (re, G_REGEX_NEWLINE_LF | G_REGEX_OPTIMIZE, 0, NULL);
 
 	expanded_regex = g_regex_replace_eval (egg_re, regex, len, 0, 0,
 					       replace_delimiter, parser_state, NULL);
@@ -1079,14 +1079,16 @@ expand_regex (ParserState *parser_state,
 
 	if (backref_re == NULL)
 		backref_re = g_regex_new ("(?<!\\\\)(\\\\\\\\)*\\\\[0-9]",
-					  G_REGEX_OPTIMIZE, 0, NULL);
+					  G_REGEX_OPTIMIZE | G_REGEX_NEWLINE_LF,
+					  0,
+					  NULL);
 
 	if (g_regex_match (backref_re, regex, 0, NULL))
 	{
 		/* This may be a backreference, or it may be an octal character */
 		GRegex *compiled;
 
-		compiled = g_regex_new (regex, flags, 0, error);
+		compiled = g_regex_new (regex, flags | G_REGEX_NEWLINE_LF, 0, error);
 
 		if (compiled == NULL)
 			return NULL;
