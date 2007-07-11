@@ -42,9 +42,6 @@ class _GroupMeta(_ItemMeta):
         if items:
             setattr(cls, '__items__', items)
 
-def _cmp_nodes(n1, n2):
-    return (n1.name < n2.name and -1) or (n1.name > n2.name and 1) or 0
-
 class Group(Item):
     __metaclass__ = _GroupMeta
 
@@ -142,7 +139,6 @@ class Group(Item):
         if not children:
             return []
 
-        children.sort(_cmp_nodes)
         return [XMLGroup(self.get_id(), children)]
 
     def __eq__(self, other):

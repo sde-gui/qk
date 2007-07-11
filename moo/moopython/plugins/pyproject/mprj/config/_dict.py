@@ -151,6 +151,9 @@ def Dict(typ, **kwargs):
                 else:
                     self[c.name] = _load_instance(Dict.__elm_type__, c, c.name)
 
+    	def cmp_nodes(self, n1, n2):
+	    return cmp(n1.name, n2.name) or \
+		   cmp(n1.get_attr(self.__xml_attr_name), n2.get_attr(self.__xml_attr_name))
         def save(self):
             nodes = []
             for key in self:
@@ -159,7 +162,8 @@ def Dict(typ, **kwargs):
                 else:
                     nodes += _save_instance(None, None, key, self[key])
             if nodes:
-                return [XMLGroup(self.get_id(), nodes)]
+		nodes.sort(self.cmp_nodes)
+                return [XMLGroup(self.get_id(), nodes, sort=False)]
             else:
                 return []
 
