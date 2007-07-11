@@ -25,9 +25,10 @@ export PKG_CONFIG_PATH=\$PKG_CONFIG_LIBDIR
 if [ "x\`echo "\$*" | grep -- --atleast-pkgconfig-version\`" != x -o \\
      "x\`echo "\$*" | grep -- --atleast-version\`" != x ]; then
   exec "$PKG_CONFIG_PROGRAM" \$*
-elif [ "x\`echo "\$*" | grep -- codegendir\`" != x ]; then
-  exec "$PKG_CONFIG_PROGRAM" --define-variable=prefix="$PYTHON_PREFIX" \$*
 else
+  # pygtk pulls gtk and friends, so if they sit in different prefixes then
+  # we're screwed anyway, so pygtk and friends must be relocated to the
+  # same prefix as gtk after install, if installed with win32 installer
   exec "$PKG_CONFIG_PROGRAM" --define-variable=prefix="$GTK_PREFIX" \$*
 fi
 ENDSRIPT
