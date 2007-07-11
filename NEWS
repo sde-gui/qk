@@ -1,3 +1,18 @@
+2007-07-10  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    * === Released 0.8.8 ===
+
+    New command-line option --app-name: instances with different names
+    do not share sessions, and --app-name works as --pid argument when
+    an instance with given name is already running.
+    Added hidden setting for width of displayed Tab characters.
+    Fixed theming bug in the paned widget.
+    Improved Preferences dialog.
+    Updated German translation (Christian Dywan).
+
+    New and improved syntax highlighting:
+        ada, awk, c, changelog, cpp, haskell, html, java, lua, m4,
+        objc, ocl, ruby, scheme, sh.
+
 2007-06-24  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.8.7 ===
 
@@ -6,7 +21,7 @@
     Fixed build on darwin.
     Added translation for language files.
 
-    Change license of almost everything to LGPL.
+    Changed license of almost everything to LGPL.
 
 2007-06-14  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.8.6 ===
@@ -35,7 +50,7 @@
       c csharp css desktop fortran gap gtkrc idl java javascript latex m4
       ocaml octave pascal perl pkgconfig po ruby scheme sh sql tcl verilog
       vhdl xml
-    New syntax ghighlighting:
+    New syntax highlighting:
       docbook ocaml spec
 
 2007-04-09  Yevgen Muntyan  <muntyan@math.tamu.edu>
