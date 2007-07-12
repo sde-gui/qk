@@ -44,8 +44,10 @@ subdirs += mooterm
 libs += mooterm/libmooterm.la
 endif
 if MOO_BUILD_SCRIPT
+if MOO_USE_OBJC
 subdirs += mooscript
 libs += mooscript/libmooscript.la
+endif
 endif
 if MOO_BUILD_EDIT
 subdirs += mooedit

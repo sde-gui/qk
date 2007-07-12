@@ -11,6 +11,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #define MOOEDIT_COMPILATION
 #include "mooedit/moocommand-private.h"
 #include "mooedit/moocommand-script.h"
@@ -1139,7 +1143,9 @@ _moo_command_init (void)
     if (!been_here)
     {
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_BUILTIN));
+#ifdef MOO_USE_OBJC
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_SCRIPT));
+#endif
 #ifndef __WIN32__
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_EXE));
 #endif

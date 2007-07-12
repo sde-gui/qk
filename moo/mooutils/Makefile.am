@@ -125,6 +125,14 @@ mooutils_sources =			\
 	stock-select-all-24.h		\
 	stock-terminal-24.h
 
+objc_sources =				\
+	moocobject.h			\
+	moocobject.m
+
+if MOO_USE_OBJC
+mooutils_sources += $(objc_sources)
+endif
+
 if MOO_OS_MINGW
 mooutils_sources += $(thread_sources) $(win32_sources)
 else
@@ -139,6 +147,7 @@ EXTRA_DIST =				\
 	xml2h.sh			\
 	$(thread_sources)		\
 	$(win32_sources)		\
+	$(objc_sources)			\
 	pixmaps/medit.png		\
 	pixmaps/medit.ico		\
 	pixmaps/hide.png		\
@@ -213,6 +222,7 @@ AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
 	-DMOO_LOCALE_DIR=\"$(datadir)/locale\"
+AM_OBJCFLAGS = $(AM_CFLAGS)
 
 if MOO_INSTALL_HEADERS
 mooutils_includedir = $(moo_includedir)/mooutils

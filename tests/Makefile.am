@@ -3,6 +3,7 @@ AM_CFLAGS =			\
 	-I../moo		\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
+AM_OBJCFLAGS = $(AM_CFLAGS)
 
 noinst_PROGRAMS =
 test_programs =				\
@@ -15,7 +16,9 @@ test_programs +=			\
 	testpanedfileview testfold	\
 	testkeyfile
 if MOO_OS_UNIX
+if MOO_USE_OBJC
 test_programs += ms
+endif
 endif
 endif
 if MOO_BUILD_TERM
@@ -83,8 +86,8 @@ testthreads_LDADD = $(ldadd) $(GTHREAD_LIBS)
 testthreads_SOURCES = testthreads.c
 
 ms_LDFLAGS = $(ldflags)
-ms_LDADD = $(ldadd) -lreadline
-ms_SOURCES = mscript.c
+ms_LDADD = $(ldadd) -lreadline -lobjc
+ms_SOURCES = mscript.m
 
 testhtml_LDFLAGS = $(ldflags)
 testhtml_LDADD = $(ldadd)

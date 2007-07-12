@@ -9,13 +9,18 @@ moocommand-exe-private.lo: moocommand-exe-unix.lo
 moolangmgr-private.lo: moolangmgr.lo
 mootextview-private.lo: mootextview.lo
 
+objc_sources =				\
+	mooedit-script.h		\
+	mooedit-script.m		\
+	moocommand-script.h		\
+	moocommand-script.m
+
 unix_sources =				\
 	moocommand-exe-unix.c
 
 mooedit_include_headers =		\
 	moocmdview.h			\
 	mooedit-bookmarks.h		\
-	mooedit-script.h		\
 	mooedit.h			\
 	mooeditconfig.h			\
 	mooeditor.h			\
@@ -57,8 +62,6 @@ mooedit_sources =			\
 	moocommand-exe-private.h	\
 	moocommand.h			\
 	moocommand-private.h		\
-	moocommand-script.c		\
-	moocommand-script.h		\
 	mooeditaction.c			\
 	mooeditaction-factory.c		\
 	mooeditaction-factory.h		\
@@ -78,7 +81,6 @@ mooedit_sources =			\
 	mooeditprefs.c			\
 	mooeditprefspage.c		\
 	mooedit-private.h		\
-	mooedit-script.c		\
 	mooeditwindow.c			\
 	moofold.c			\
 	moofold.h			\
@@ -223,6 +225,12 @@ else
 EXTRA_DIST += $(unix_sources)
 endif
 
+if MOO_USE_OBJC
+mooedit_sources += $(objc_sources)
+else
+EXTRA_DIST += $(objc_sources)
+endif
+
 noinst_LTLIBRARIES = libmooedit.la
 libmooedit_la_SOURCES = $(mooedit_sources)
 nodist_libmooedit_la_SOURCES = $(nodist_mooedit_sources)
@@ -234,6 +242,7 @@ AM_CFLAGS =			\
 	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
+AM_OBJCFLAGS = $(AM_CFLAGS)
 
 if MOO_INSTALL_HEADERS
 mooedit_includedir = $(moo_includedir)/mooedit

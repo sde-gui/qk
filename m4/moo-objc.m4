@@ -1,12 +1,21 @@
 AC_DEFUN_ONCE([MOO_AC_OBJC],[
-  _MOO_OBJC_CHECK([
-    MOO_USE_OBJC=yes
-    MOO_OBJC_LIBS="-lobjc"
-    AC_DEFINE(MOO_USE_OBJC, 1, [Use Objective-C.])
-  ],[
-    MOO_USE_OBJC=no
-    MOO_OBJC_LIBS=""
+  MOO_USE_OBJC=auto
+  AC_ARG_WITH([objc], AC_HELP_STRING([--without-objc], [do not use Objective-C]), [
+    MOO_USE_OBJC=$with_objc
   ])
+
+  if test "x$MOO_USE_OBJC" != "xno"; then
+    _MOO_OBJC_CHECK([
+      MOO_USE_OBJC=yes
+      MOO_OBJC_LIBS="-lobjc"
+      AC_DEFINE(MOO_USE_OBJC, 1, [Use Objective-C.])
+    ],[
+      MOO_WARN_OBJC="Objective-C support is disabled, editor user tools will be disabled"
+      MOO_USE_OBJC=no
+      MOO_OBJC_LIBS=""
+    ])
+  fi
+
   AC_SUBST(MOO_OBJC_LIBS)
   AM_CONDITIONAL(MOO_USE_OBJC, test $MOO_USE_OBJC = yes)
 ])

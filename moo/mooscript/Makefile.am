@@ -3,12 +3,9 @@ EXTRA_DIST = mooscript.y
 # not using rule for auto-regenerating mooscript-yacc.[ch]
 mooscript_yacc: $(srcdir)/mooscript.y
 	touch mooscript_yacc
-	bison -o $(srcdir)/mooscript-yacc.c -d $(srcdir)/mooscript.y
+	bison -o $(srcdir)/mooscript-yacc.m -d $(srcdir)/mooscript.y
 
-mooscript.o: mooscript.y mooscript_yacc
-	$(MAKE) $(AM_MAKEFLAGS) mooscript-yacc.o
-	echo stamp > mooscript.o
-CLEANFILES = mooscript.o
+mooscript.lo: mooscript-yacc.lo
 
 mooscript_headers =			\
 	mooscript-context.h		\
@@ -20,20 +17,20 @@ mooscript_headers =			\
 
 mooscript_sources =			\
 	$(mooscript_headers)		\
-	mooscript-builtin.c		\
+	mooscript-builtin.m		\
 	mooscript-context-private.h	\
-	mooscript-context.c		\
+	mooscript-context.m		\
 	mooscript-func-private.h	\
-	mooscript-func.c		\
+	mooscript-func.m		\
 	mooscript-node-private.h	\
-	mooscript-node.c		\
-	mooscript-parser.c		\
+	mooscript-node.m		\
+	mooscript-parser.m		\
 	mooscript-parser-private.h	\
 	mooscript-value-private.h	\
-	mooscript-value.c		\
-	mooscript-yacc.c		\
+	mooscript-value.m		\
+	mooscript-yacc.m		\
 	mooscript-yacc.h		\
-	mooscript-zenity.c
+	mooscript-zenity.m
 
 # BUILT_SOURCES =			\
 # 	mooscript-yacc.c	\
@@ -47,6 +44,7 @@ AM_CFLAGS =			\
 	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
+AM_OBJCFLAGS = $(AM_CFLAGS)
 
 if MOO_INSTALL_HEADERS
 mooscript_includedir = $(moo_includedir)/mooscript

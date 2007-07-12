@@ -41,7 +41,6 @@
 #include <mooedit/mootextiter.h>
 #include <mooedit/mootextstylescheme.h>
 #include <mooedit/mootextview.h>
-#include <mooedit/mooedit-script.h>
 #include <mooedit/mooedit-enums.h>
 
 #include <mooterm/mooterm.h>
