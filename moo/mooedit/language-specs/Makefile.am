@@ -1,3 +1,5 @@
+TESTS = check.sh
+
 languagespecsdir = ${MOO_TEXT_LANG_FILES_DIR}
 
 langs2 =			\
