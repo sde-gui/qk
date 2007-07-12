@@ -17,7 +17,6 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditprefs-general-glade.h"
 #include "mooedit/mooeditprefs-view-glade.h"
-#include "mooedit/mooeditprefs-font-glade.h"
 #include "mooedit/mooeditprefs-file-glade.h"
 #include "mooedit/mooeditprefs-langs-glade.h"
 #include "mooedit/moolangmgr.h"
@@ -70,11 +69,11 @@ static GtkTreeModel *page_get_lang_model    (PrefsPage          *page);
 static MooTextStyleScheme *page_get_scheme  (PrefsPage          *page);
 static char    *page_get_default_lang       (PrefsPage          *page);
 
-static void     page_font_init_xml          (MooGladeXML        *xml);
+static void     page_view_init_xml          (MooGladeXML        *xml);
 static void     page_general_init           (PrefsPage          *page);
 static void     page_general_apply          (PrefsPage          *page);
-static void     page_font_init              (PrefsPage          *page);
-static void     page_font_apply             (PrefsPage          *page);
+static void     page_view_init              (PrefsPage          *page);
+static void     page_view_apply             (PrefsPage          *page);
 static void     page_file_init              (PrefsPage          *page);
 static void     page_file_apply             (PrefsPage          *page);
 static void     page_langs_init             (PrefsPage          *page);
@@ -184,11 +183,10 @@ moo_edit_prefs_page_new (MooEditor *editor)
     guint i;
 
     const PrefsPageInfo prefs_pages[] = {
-        {N_("General"), MOO_EDIT_PREFS_GENERAL_GLADE_UI, NULL, page_general_init, page_general_apply},
-        {N_("View"), MOO_EDIT_PREFS_VIEW_GLADE_UI, NULL, NULL, NULL},
-        {N_("Font and colors"), MOO_EDIT_PREFS_FONT_GLADE_UI, page_font_init_xml, page_font_init, page_font_apply},
-        {N_("Loading and saving"), MOO_EDIT_PREFS_FILE_GLADE_UI, NULL, page_file_init, page_file_apply},
-        {N_("Languages and files"), MOO_EDIT_PREFS_LANGS_GLADE_UI, NULL, page_langs_init, page_langs_apply}
+        { N_("General"), mooeditprefs_general_glade_xml, NULL, page_general_init, page_general_apply },
+        { N_("View"), mooeditprefs_view_glade_xml, page_view_init_xml, page_view_init, page_view_apply },
+        { N_("Loading and saving"), mooeditprefs_file_glade_xml, NULL, page_file_init, page_file_apply },
+        { N_("Languages and files"), mooeditprefs_langs_glade_xml, NULL, page_langs_init, page_langs_apply }
     };
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
@@ -252,7 +250,7 @@ moo_edit_prefs_page_new (MooEditor *editor)
 
 
 static void
-page_font_init_xml (MooGladeXML *xml)
+page_view_init_xml (MooGladeXML *xml)
 {
     moo_glade_xml_map_id (xml, "fontbutton", MOO_TYPE_FONT_BUTTON);
     moo_glade_xml_set_property (xml, "fontbutton", "monospace", "True");
@@ -275,14 +273,15 @@ page_general_init (PrefsPage *page)
 static void
 page_general_apply (PrefsPage *page)
 {
-    char *lang = page_get_default_lang (page);
+    char *lang;
+    lang = page_get_default_lang (page);
     moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG), lang);
     g_free (lang);
 }
 
 
 static void
-page_font_init (PrefsPage *page)
+page_view_init (PrefsPage *page)
 {
     MooTextStyleScheme *scheme;
     GtkComboBox *scheme_combo;
@@ -297,10 +296,9 @@ page_font_init (PrefsPage *page)
 }
 
 static void
-page_font_apply (PrefsPage *page)
+page_view_apply (PrefsPage *page)
 {
     MooTextStyleScheme *scheme;
-
     scheme = page_get_scheme (page);
     g_return_if_fail (scheme != NULL);
     moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_COLOR_SCHEME),
@@ -1207,7 +1205,7 @@ save_encoding_combo_init (MooGladeXML *xml)
     combo = moo_glade_xml_get_widget (xml, "encoding_save");
     g_return_if_fail (combo != NULL);
 
-    _moo_encodings_combo_init (combo, MOO_ENCODING_COMBO_SAVE);
+    _moo_encodings_combo_init (combo, MOO_ENCODING_COMBO_SAVE, TRUE);
     enc = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_ENCODING_SAVE));
     _moo_encodings_combo_set_enc (combo, enc, MOO_ENCODING_COMBO_SAVE);
 }
