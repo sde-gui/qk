@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-07 13:54-0500\n"
+"POT-Creation-Date: 2007-07-12 00:33-0500\n"
 "PO-Revision-Date: 2007-07-06 00:51+0100\n"
 "Last-Translator: Christian Dywan <christian@twotoasts.de>\n"
 "MIME-Version: 1.0\n"
@@ -22,24 +22,26 @@ msgstr "Texteditor"
 msgid "medit"
 msgstr "medit"
 
-#: ../../../medit/medit-app.opag:246
+#: ../../../medit/medit-app.opag:258
 msgid "medit is a text editor"
 msgstr "medit ist ein Texteditor"
 
 #. menu item label
-#: ../moo/mooapp/mooapp.c:1252
+#: ../moo/mooapp/mooapp.c:1257
 msgid "System Info"
 msgstr "Systeminfo"
 
-#. Translators: this goes into About box, under Translated by tab
-#: ../moo/mooapp/mooappabout.c:52
+#. Translators: this goes into About box, under Translated by tab,
+#. do not ignore it, markup isn't always used
+#: ../moo/mooapp/mooappabout.c:53
 msgid "translator-credits"
 msgstr "Christian Dywan <christian@twotoasts.de>"
 
 #. Translators: this goes into About box, under Translated by tab,
 #. this must be valid html markup, e.g.
 #. "Some Guy <a href=\"mailto://someguy@domain.net\">&lt;someguy@domain.net&gt;</a>"
-#: ../moo/mooapp/mooappabout.c:56
+#. Lines must be separated by <br>, like "First guy<br>Second Guy"
+#: ../moo/mooapp/mooappabout.c:58
 msgid "translator-credits-markup"
 msgstr ""
 "Christian Dywan <a href=\"mailto:christian@twotoasts.de\">&lt;"
@@ -90,49 +92,6 @@ msgstr "Geschrieben von"
 msgid "_License"
 msgstr "_Lizenz"
 
-#. Translators: if translated, it should be a comma-separated list
-#. of encodings to try when opening files. Encodings names should be
-#. those understood by iconv, or "LOCALE" which means user's locale
-#. charset. For instance, the default value is "UTF-8,LOCALE,ISO_8859-15,ISO_8859-1".
-#. You want to add common preferred non-UTF8 encodings used in your locale.
-#. Do not remove ISO_8859-15 and ISO_8859-1, instead leave them at the end,
-#. these are common source files encodings.
-#: ../moo/mooedit/mooeditfileop.c:259 ../moo/mooedit/mooeditfileops.c:253
-msgid "encodings_list"
-msgstr ""
-
-#: ../moo/mooedit/mooeditfileop.c:1246 ../moo/mooedit/mooeditfileops.c:1224
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:533
-msgid "Untitled"
-msgstr "Unbenannt"
-
-#: ../moo/mooedit/mooeditfileop.c:1248 ../moo/mooedit/mooeditfileops.c:1226
-#, c-format
-msgid "Untitled %d"
-msgstr "Unbenannt %d"
-
-#: ../moo/mooedit/mooeditprefspage.c:187
-#: ../moo/moofileview/glade/moofileprops.glade.h:1
-msgid "General"
-msgstr "Allgemein"
-
-#: ../moo/mooedit/mooeditprefspage.c:188
-#: ../moo/moofileview/moofileview-ui.xml.h:3
-msgid "View"
-msgstr "Ansicht"
-
-#: ../moo/mooedit/mooeditprefspage.c:189
-msgid "Font and colors"
-msgstr "Schrift und Farben"
-
-#: ../moo/mooedit/mooeditprefspage.c:190
-msgid "Loading and saving"
-msgstr "Laden und speichern"
-
-#: ../moo/mooedit/mooeditprefspage.c:191
-msgid "Languages and files"
-msgstr "Sprache und Dateien"
-
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:1
 msgid ""
 "Comma-separated list of encodings to try when opening a file. 'LOCALE' means "
@@ -165,18 +124,6 @@ msgstr "Entferne abschließende Leerzeichen"
 msgid "Saving"
 msgstr "Speichern"
 
-#: ../moo/mooedit/glade/mooeditprefs-font.glade.h:1
-msgid "Color scheme:"
-msgstr "Farbschema"
-
-#: ../moo/mooedit/glade/mooeditprefs-font.glade.h:2
-msgid "Font:"
-msgstr "Schrift:"
-
-#: ../moo/mooedit/glade/mooeditprefs-font.glade.h:3
-msgid "Use default theme font"
-msgstr "Voreingestellte Themenschriftart verwenden"
-
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:1
 msgid "Backspace key indents"
 msgstr "Einrücken mit Rücktaste"
@@ -194,40 +141,19 @@ msgid "Indent width, spaces:"
 msgstr "Einzugsweite in Leerzeichen:"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:5
-msgid "Indentation"
-msgstr "Einrückung"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
-msgid "Indents text"
-msgstr "Text einrücken"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:7
 msgid "Keyboard"
 msgstr "Tastatur"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:8
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:10
 msgid "Misc"
 msgstr "Sonstiges"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:9
-msgid "Moves cursor to next placeholder"
-msgstr "Bewegt den Cursor zum nächsten Platzhalter"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:10
-msgid "Moves input focus"
-msgstr "Bewegt den Eingabefocus"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:11
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:7
 msgid "Smart Home and End"
 msgstr "Intelligente Pos1- und Ende-Tasten"
 
-#. Tab key: Moves input focus, Indents Text, ...
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:13
-msgid "Tab key:"
-msgstr "Tabulatortaste:"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:14
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
 msgid "Use spaces to indent"
 msgstr "Leerzeichen für Einrückung benutzen"
 
@@ -259,48 +185,60 @@ msgid "Options:"
 msgstr "Optionen:"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:1
+msgid "Color scheme:"
+msgstr "Farbschema"
+
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:2
 msgid "Do not split words"
 msgstr "Wörter nicht trennen"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:2
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:3
 msgid "Enable syntax highlighting"
 msgstr "Syntaxhervorhebung aktivieren"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:3
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:4
 msgid "Enable text wrapping"
 msgstr "Zeilenumbrüche aktivieren"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:4
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:5
+msgid "Font and colors"
+msgstr "Schrift und Farben"
+
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:6
+msgid "Font:"
+msgstr "Schrift:"
+
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:7
 msgid "Highlight current line"
 msgstr "Aktuelle Zeile hervorheben"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:5
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:8
 msgid "Highlight matching brackets"
 msgstr "Zusammen gehörende Klammern hervorheben"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:6
-msgid "Highlight mismatching brackets"
-msgstr "Falsch platzierte Klammern hervorheben"
-
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:7
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:9
 msgid "Highlighting"
 msgstr "Hervorhebung:"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:9
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:11
 msgid "Show line numbers"
 msgstr "Zeilennummern anzeigen"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:10
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
 msgid "Show tabs"
 msgstr "Tabulatoren anzeigen"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:11
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
 msgid "Show trailing spaces"
 msgstr "Abschließende Leerzeichen anzeigen"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
 msgid "Text wrapping"
 msgstr "Textumbruch"
+
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:15
+msgid "Use default theme font"
+msgstr "Voreingestellte Themenschriftart verwenden"
 
 #: ../moo/mooedit/glade/mooeditsavemult.glade.h:1
 msgid "Select the documents you want to save:"
@@ -614,7 +552,7 @@ msgstr "MooSkript"
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1034
 #: ../moo/mooedit/plugins/fileselector/moofileselector.c:1059
 #: ../moo/mooedit/plugins/fileselector/moofileselector.glade.h:2
-#: ../moo/moofileview/glade/drop.glade.h:1
+#: ../moo/moofileview/glade/moofileview-drop.glade.h:1
 msgid "Save As"
 msgstr "Speichern unter"
 
@@ -1035,6 +973,27 @@ msgstr "Werkzeuge"
 msgid "New Command"
 msgstr "Neuer Befehl"
 
+#. Translators: if translated, it should be a comma-separated list
+#. of encodings to try when opening files. Encodings names should be
+#. those understood by iconv, or "LOCALE" which means user's locale
+#. charset. For instance, the default value is "UTF-8,LOCALE,ISO_8859-15,ISO_8859-1".
+#. You want to add common preferred non-UTF8 encodings used in your locale.
+#. Do not remove ISO_8859-15 and ISO_8859-1, instead leave them at the end,
+#. these are common source files encodings.
+#: ../moo/mooedit/mooeditfileops.c:243
+msgid "encodings_list"
+msgstr ""
+
+#: ../moo/mooedit/mooeditfileops.c:1214
+#: ../moo/mooedit/plugins/fileselector/moofileselector.c:533
+msgid "Untitled"
+msgstr "Unbenannt"
+
+#: ../moo/mooedit/mooeditfileops.c:1216
+#, c-format
+msgid "Untitled %d"
+msgstr "Unbenannt %d"
+
 #: ../moo/mooedit/mootextfind.c:478
 msgid "No search term entered"
 msgstr "Kein Suchbegriff eingegeben"
@@ -1070,6 +1029,24 @@ msgid "%u replacement made"
 msgid_plural "%u replacements made"
 msgstr[0] "%u Fund ersetzt"
 msgstr[1] "%u Funde ersetzt"
+
+#: ../moo/mooedit/mooeditprefspage.c:186
+#: ../moo/moofileview/glade/moofileprops.glade.h:1
+msgid "General"
+msgstr "Allgemein"
+
+#: ../moo/mooedit/mooeditprefspage.c:187
+#: ../moo/moofileview/moofileview-ui.xml.h:3
+msgid "View"
+msgstr "Ansicht"
+
+#: ../moo/mooedit/mooeditprefspage.c:188
+msgid "Loading and saving"
+msgstr "Laden und speichern"
+
+#: ../moo/mooedit/mooeditprefspage.c:189
+msgid "Languages and files"
+msgstr "Sprache und Dateien"
 
 #: ../moo/mooedit/language-specs/moo.xml.in.h:1
 msgid "DPatch"
@@ -1252,7 +1229,7 @@ msgid "Command:"
 msgstr "Befehl:"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:2
-#: ../moo/moofileview/glade/bookmark_editor.glade.h:4
+#: ../moo/moofileview/glade/moobookmark-editor.glade.h:4
 msgid "Delete"
 msgstr "Löschen"
 
@@ -1273,7 +1250,7 @@ msgid "Name:"
 msgstr "Name:"
 
 #: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:9
-#: ../moo/moofileview/glade/bookmark_editor.glade.h:8
+#: ../moo/moofileview/glade/moobookmark-editor.glade.h:8
 msgid "New"
 msgstr "Neu"
 
@@ -1300,31 +1277,31 @@ msgstr ""
 "Kommandozeilenbefehl zum öffnen der Datei: '%f' wird durch den Dateipfad "
 "ersetzt, z.B. 'foobar %f'"
 
-#: ../moo/moofileview/glade/bookmark_editor.glade.h:1
+#: ../moo/moofileview/glade/moobookmark-editor.glade.h:1
 msgid "Add Separator"
 msgstr "Trennlinie hinzufügen"
 
-#: ../moo/moofileview/glade/bookmark_editor.glade.h:2
+#: ../moo/moofileview/glade/moobookmark-editor.glade.h:2
 msgid "Add bookmark"
 msgstr "Lesezeichen hinzufügen"
 
-#: ../moo/moofileview/glade/bookmark_editor.glade.h:3
+#: ../moo/moofileview/glade/moobookmark-editor.glade.h:3
 msgid "Add separator"
 msgstr "Trennlinie hinzufügen"
 
-#: ../moo/moofileview/glade/bookmark_editor.glade.h:5
+#: ../moo/moofileview/glade/moobookmark-editor.glade.h:5
 msgid "Delete selected items"
 msgstr "Gewählte Einträge löschen"
 
-#: ../moo/moofileview/glade/bookmark_editor.glade.h:6
+#: ../moo/moofileview/glade/moobookmark-editor.glade.h:6
 msgid "Edit Bookmarks"
 msgstr "Lesezeichen bearbeiten"
 
-#: ../moo/moofileview/glade/bookmark_editor.glade.h:7
+#: ../moo/moofileview/glade/moobookmark-editor.glade.h:7
 msgid "Icon:"
 msgstr "Symbol:"
 
-#: ../moo/moofileview/glade/bookmark_editor.glade.h:9
+#: ../moo/moofileview/glade/moobookmark-editor.glade.h:9
 msgid "Path:"
 msgstr "Ort:"
 
@@ -1402,6 +1379,33 @@ msgstr "Terminal anzeigen"
 msgid "Python Output"
 msgstr "Python-Ausgabe"
 
+#: ../moo/mooutils/glade/mooaccelprefs.glade.h:1
+msgid "Configure Shortcuts"
+msgstr "Tastenkürzel einstellen"
+
+#: ../moo/mooutils/glade/mooaccelprefs.glade.h:2
+msgid "Default key:"
+msgstr "Standardtaste:"
+
+#: ../moo/mooutils/glade/mooaccelprefs.glade.h:3
+msgid "Shortcut for selected action"
+msgstr "Verknüpfung zu ausgewählter Aktion"
+
+#. Translators: do not translate the part before |
+#: ../moo/mooutils/glade/mooaccelprefs.glade.h:5
+msgid "Shortcut|Custom"
+msgstr "Benutzerdefiniert"
+
+#. Translators: do not translate the part before |
+#: ../moo/mooutils/glade/mooaccelprefs.glade.h:7
+msgid "Shortcut|Default"
+msgstr "Standard"
+
+#. Translators: do not translate the part before |
+#: ../moo/mooutils/glade/mooaccelprefs.glade.h:9
+msgid "Shortcut|None"
+msgstr "Keine"
+
 #. Translators: 012345 denotes order in which character encoding
 #. groups should appear, e.g. 543210 means inverse order.
 #. 0 - "West European",
@@ -1410,29 +1414,20 @@ msgstr "Python-Ausgabe"
 #. 3 - "SE & SW Asian",
 #. 4 - "Middle Eastern",
 #. 5 - "Unicode"
-#: ../moo/mooutils/mooencodings.c:159
+#: ../moo/mooutils/mooencodings.c:157
 msgid "012345"
 msgstr ""
 
-#: ../moo/mooutils/mooencodings.c:370
-#, c-format
-msgid "Current locale (%s)"
-msgstr "Aktuelle Lokalisierung (%s)"
-
-#: ../moo/mooutils/mooencodings.c:373
-msgid "Current locale"
-msgstr "Aktuelle Lokalisierung"
-
-#: ../moo/mooutils/mooencodings.c:620
+#: ../moo/mooutils/mooencodings.c:623
 msgid "Auto Detected"
 msgstr "Automatisch erkennen"
 
 #. Translators: do not translate the part before |
-#: ../moo/mooutils/mooencodings.c:645
+#: ../moo/mooutils/mooencodings.c:652
 msgid "Encodings combo submenu|Other"
 msgstr ""
 
-#: ../moo/mooutils/mooencodings.c:737
+#: ../moo/mooutils/mooencodings.c:751
 msgid "Charact_er encoding:"
 msgstr "Zeichen_kodierung:"
 
@@ -1680,32 +1675,9 @@ msgstr "Nur _Text"
 msgid "Icons _and Labels"
 msgstr "Symbole _und Text"
 
-#: ../moo/mooutils/glade/accelprefs.glade.h:1
-msgid "Configure Shortcuts"
-msgstr "Tastenkürzel einstellen"
-
-#: ../moo/mooutils/glade/accelprefs.glade.h:2
-msgid "Default key:"
-msgstr "Standardtaste:"
-
-#: ../moo/mooutils/glade/accelprefs.glade.h:3
-msgid "Shortcut for selected action"
-msgstr "Verknüpfung zu ausgewählter Aktion"
-
-#. Translators: do not translate the part before |
-#: ../moo/mooutils/glade/accelprefs.glade.h:5
-msgid "Shortcut|Custom"
-msgstr "Benutzerdefiniert"
-
-#. Translators: do not translate the part before |
-#: ../moo/mooutils/glade/accelprefs.glade.h:7
-msgid "Shortcut|Default"
-msgstr "Standard"
-
-#. Translators: do not translate the part before |
-#: ../moo/mooutils/glade/accelprefs.glade.h:9
-msgid "Shortcut|None"
-msgstr "Keine"
+#: ../moo/mooutils/moowindow.c:775
+msgid "Toolbar _Style"
+msgstr ""
 
 #: ../moo/mooutils/moopane.c:606
 msgid "Remove pane"
@@ -1730,6 +1702,30 @@ msgstr ""
 #: ../moo/mooutils/moopane.c:639
 msgid "Keep on top"
 msgstr ""
+
+#~ msgid "Indentation"
+#~ msgstr "Einrückung"
+
+#~ msgid "Indents text"
+#~ msgstr "Text einrücken"
+
+#~ msgid "Moves cursor to next placeholder"
+#~ msgstr "Bewegt den Cursor zum nächsten Platzhalter"
+
+#~ msgid "Moves input focus"
+#~ msgstr "Bewegt den Eingabefocus"
+
+#~ msgid "Tab key:"
+#~ msgstr "Tabulatortaste:"
+
+#~ msgid "Highlight mismatching brackets"
+#~ msgstr "Falsch platzierte Klammern hervorheben"
+
+#~ msgid "Current locale (%s)"
+#~ msgstr "Aktuelle Lokalisierung (%s)"
+
+#~ msgid "Current locale"
+#~ msgstr "Aktuelle Lokalisierung"
 
 #~ msgid "_Edit"
 #~ msgstr "_Bearbeiten"
