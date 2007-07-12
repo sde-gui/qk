@@ -57,7 +57,7 @@
   <args>--mode=project</args>
   <exe>medit/medit</exe>
   <vars>
-   <var name="LANGUAGEE">de</var>
+   <var name="LANGUAGE">ru</var>
   </vars>
  </run>
 </medit-project>
