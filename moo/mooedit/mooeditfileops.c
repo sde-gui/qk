@@ -95,18 +95,8 @@ static const char *
 normalize_encoding (const char *encoding,
                     gboolean    for_save)
 {
-    if (encoding)
-    {
-        if (!encoding[0] || !strcmp (encoding, MOO_ENCODING_AUTO))
-            encoding = for_save ? MOO_ENCODING_UTF8 : NULL;
-        else if (!strcmp (encoding, MOO_ENCODING_LOCALE))
-            encoding = _moo_encoding_locale ();
-    }
-    else
-    {
+    if (!encoding || !encoding[0] || !strcmp (encoding, MOO_ENCODING_AUTO))
         encoding = for_save ? MOO_ENCODING_UTF8 : NULL;
-    }
-
     return encoding;
 }
 

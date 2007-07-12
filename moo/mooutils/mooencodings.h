@@ -19,7 +19,6 @@
 G_BEGIN_DECLS
 
 
-#define MOO_ENCODING_LOCALE "locale"
 #define MOO_ENCODING_AUTO   "auto"
 #define MOO_ENCODING_UTF8   "UTF-8"
 
@@ -29,7 +28,8 @@ typedef enum {
 } MooEncodingComboType;
 
 void         _moo_encodings_combo_init      (GtkComboBox           *combo,
-                                             MooEncodingComboType   type);
+                                             MooEncodingComboType   type,
+					     gboolean		    use_separators);
 void         _moo_encodings_combo_set_enc   (GtkComboBox           *combo,
                                              const char            *enc,
                                              MooEncodingComboType   type);

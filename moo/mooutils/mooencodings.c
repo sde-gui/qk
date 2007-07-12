@@ -20,8 +20,6 @@
 #include <stdlib.h>
 
 #define MAX_RECENT_ENCODINGS 5
-#define ROW_RECENT(save_mode) ((save_mode) ? 1 : 3)
-#define ROW_LOCALE(save_mode) ((save_mode) ? 0 : 2)
 #define ROW_AUTO              0
 
 #define ELM_ENCODINGS   "Editor/encodings"
@@ -158,7 +156,7 @@ sort_encoding_groups (EncodingsManager *mgr)
        5 - "Unicode" */
     const char *order = N_("012345");
     const char *new_order_s;
-    int new_order[N_ENCODING_GROUPS] = {0, 0, 0, 0, 0, 0};
+    int new_order[N_ENCODING_GROUPS] = {-1, -1, -1, -1, -1, -1};
     guint i;
     EncodingGroup *new_array;
 
@@ -185,7 +183,7 @@ sort_encoding_groups (EncodingsManager *mgr)
 
     for (i = 0; i < mgr->n_groups; ++i)
     {
-        if (!new_order[i])
+        if (new_order[i] == -1)
         {
             g_critical ("invalid order string %s", new_order_s);
             return;
@@ -313,6 +311,15 @@ enc_mgr_save (EncodingsManager *enc_mgr)
     moo_markup_set_content (moo_markup_get_element (root, ELM_LAST_SAVE), enc_mgr->last_save);
 }
 
+static const char *
+get_rid_of_locale (const char *enc_name)
+{
+    if (!strcmp (enc_name, "locale"))
+        return _moo_encoding_locale ();
+    else
+        return enc_name;
+}
+
 static void
 enc_mgr_load (EncodingsManager *enc_mgr)
 {
@@ -336,7 +343,10 @@ enc_mgr_load (EncodingsManager *enc_mgr)
             encs = g_strsplit (string, ",", 0);
             for (p = encs; p && *p; ++p)
             {
-                Encoding *e = get_encoding (enc_mgr, *p);
+                Encoding *e;
+
+                e = get_encoding (enc_mgr, get_rid_of_locale (*p));
+
                 if (e)
                     enc_mgr->recent = g_slist_prepend (enc_mgr->recent, e);
             }
@@ -348,32 +358,14 @@ enc_mgr_load (EncodingsManager *enc_mgr)
     if ((node = moo_markup_get_element (root, ELM_LAST_OPEN)))
     {
         g_free (enc_mgr->last_open);
-        enc_mgr->last_open = g_strdup (moo_markup_get_content (node));
+        enc_mgr->last_open = g_strdup (get_rid_of_locale (moo_markup_get_content (node)));
     }
 
     if ((node = moo_markup_get_element (root, ELM_LAST_SAVE)))
     {
         g_free (enc_mgr->last_save);
-        enc_mgr->last_save = g_strdup (moo_markup_get_content (node));
+        enc_mgr->last_save = g_strdup (get_rid_of_locale (moo_markup_get_content (node)));
     }
-}
-
-
-static const char *
-current_locale_name (EncodingsManager *enc_mgr)
-{
-    static char *display_name;
-
-    if (!display_name)
-    {
-        if (enc_mgr->locale_encoding)
-            display_name = g_strdup_printf (_("Current locale (%s)"),
-                                            enc_mgr->locale_encoding->short_display_name);
-        else
-            display_name = g_strdup (_("Current locale"));
-    }
-
-    return display_name;
 }
 
 
@@ -422,11 +414,27 @@ find_encoding_iter (GtkTreeModel *model,
 }
 
 
+static int
+get_row_recent (GtkTreeStore *store)
+{
+    return GPOINTER_TO_INT (g_object_get_data (G_OBJECT (store), "moo-encodings-model-row-recent"));
+}
+
+static void
+set_row_recent (GtkTreeStore *store,
+		int           row)
+{
+    g_object_set_data (G_OBJECT (store),
+                       "moo-encodings-model-row-recent",
+                       GINT_TO_POINTER (row));
+}
+
+
 static void
 sync_recent_list (GtkTreeStore *store,
                   guint         n_old_items,
                   GSList       *list,
-                  gboolean      save_mode)
+                  gboolean      add_separator)
 {
     GtkTreeIter iter;
     guint i;
@@ -434,14 +442,17 @@ sync_recent_list (GtkTreeStore *store,
     for (i = 0; i < n_old_items; ++i)
     {
         gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (store), &iter,
-                                       NULL, ROW_RECENT (save_mode));
+                                       NULL, get_row_recent (store));
         gtk_tree_store_remove (store, &iter);
     }
+
+    if (add_separator)
+        gtk_tree_store_insert (store, &iter, NULL, get_row_recent (store));
 
     while (list)
     {
         Encoding *enc = list->data;
-        gtk_tree_store_insert (store, &iter, NULL, ROW_RECENT (save_mode));
+        gtk_tree_store_insert (store, &iter, NULL, get_row_recent (store));
         gtk_tree_store_set (store, &iter,
                             COLUMN_DISPLAY, enc->display_name,
                             COLUMN_ENCODING, enc->name, -1);
@@ -472,14 +483,12 @@ encoding_combo_set_active (GtkComboBox *combo,
     gboolean found_recent;
     guint n_recent;
     Encoding *new_enc;
+    gboolean need_separator = FALSE;
 
     mgr = get_enc_mgr ();
 
     if (!validate_encoding_name (enc_name))
         enc_name = save_mode ? MOO_ENCODING_UTF8 : MOO_ENCODING_AUTO;
-
-    if (!strcmp (enc_name, mgr->locale_encoding->name))
-        enc_name = MOO_ENCODING_LOCALE;
 
     set_last (mgr, enc_name, save_mode);
 
@@ -490,13 +499,6 @@ encoding_combo_set_active (GtkComboBox *combo,
     if (!strcmp (enc_name, MOO_ENCODING_AUTO))
     {
         gtk_tree_model_iter_nth_child (model, &iter, NULL, ROW_AUTO);
-        gtk_combo_box_set_active_iter (combo, &iter);
-        goto out;
-    }
-
-    if (!strcmp (enc_name, MOO_ENCODING_LOCALE))
-    {
-        gtk_tree_model_iter_nth_child (model, &iter, NULL, ROW_LOCALE (save_mode));
         gtk_combo_box_set_active_iter (combo, &iter);
         goto out;
     }
@@ -527,6 +529,9 @@ encoding_combo_set_active (GtkComboBox *combo,
 
     if (!found_recent)
     {
+        if (!mgr->recent)
+            need_separator = TRUE;
+
         mgr->recent = g_slist_prepend (mgr->recent, new_enc);
 
         if (g_slist_length (mgr->recent) > MAX_RECENT_ENCODINGS)
@@ -534,7 +539,7 @@ encoding_combo_set_active (GtkComboBox *combo,
     }
 
     recent_copy = g_slist_reverse (g_slist_copy (mgr->recent));
-    sync_recent_list (GTK_TREE_STORE (model), n_recent, recent_copy, save_mode);
+    sync_recent_list (GTK_TREE_STORE (model), n_recent, recent_copy, need_separator);
     g_slist_free (recent_copy);
 
     if (find_encoding_iter (model, &iter, new_enc->name))
@@ -571,7 +576,6 @@ combo_changed (GtkComboBox *combo,
 }
 
 
-#if 0
 static gboolean
 row_separator_func (GtkTreeModel *model,
                     GtkTreeIter  *iter)
@@ -585,8 +589,6 @@ row_separator_func (GtkTreeModel *model,
     g_free (text);
     return separator;
 }
-#endif
-
 
 static void
 cell_data_func (G_GNUC_UNUSED GtkCellLayout *layout,
@@ -602,7 +604,8 @@ cell_data_func (G_GNUC_UNUSED GtkCellLayout *layout,
 static void
 setup_combo (GtkComboBox      *combo,
              EncodingsManager *enc_mgr,
-             gboolean          save_mode)
+             gboolean          save_mode,
+	     gboolean	       use_separators)
 {
     GtkCellRenderer *cell;
     GtkTreeStore *store;
@@ -621,14 +624,15 @@ setup_combo (GtkComboBox      *combo,
                             COLUMN_ENCODING, MOO_ENCODING_AUTO,
                             -1);
 
-        gtk_tree_store_append (store, &iter, NULL);
-    }
+	if (use_separators)
+	    gtk_tree_store_append (store, &iter, NULL);
 
-    gtk_tree_store_append (store, &iter, NULL);
-    gtk_tree_store_set (store, &iter,
-                        COLUMN_DISPLAY, current_locale_name (enc_mgr),
-                        COLUMN_ENCODING, MOO_ENCODING_LOCALE,
-                        -1);
+        set_row_recent (store, use_separators ? 2 : 1);
+    }
+    else
+    {
+        set_row_recent (store, 0);
+    }
 
     for (l = enc_mgr->recent; l != NULL; l = l->next)
     {
@@ -639,6 +643,9 @@ setup_combo (GtkComboBox      *combo,
                             COLUMN_ENCODING, enc->name,
                             -1);
     }
+
+    if (enc_mgr->recent && use_separators)
+        gtk_tree_store_append (store, &iter, NULL);
 
     gtk_tree_store_append (store, &iter, NULL);
     /* Translators: do not translate the part before | */
@@ -676,6 +683,10 @@ setup_combo (GtkComboBox      *combo,
                                         (GtkCellLayoutDataFunc) cell_data_func,
 					NULL, NULL);
 
+    if (use_separators)
+	gtk_combo_box_set_row_separator_func (combo, (GtkTreeViewRowSeparatorFunc) row_separator_func,
+					      NULL, NULL);
+
     if (save_mode)
     {
         if (enc_mgr->last_save)
@@ -702,10 +713,13 @@ setup_combo (GtkComboBox      *combo,
 
 void
 _moo_encodings_combo_init (GtkComboBox          *combo,
-                           MooEncodingComboType  type)
+                           MooEncodingComboType  type,
+			   gboolean		 use_separators)
 {
     g_return_if_fail (GTK_IS_COMBO_BOX (combo));
-    setup_combo (combo, get_enc_mgr (), type == MOO_ENCODING_COMBO_SAVE);
+    setup_combo (combo, get_enc_mgr (),
+		 type == MOO_ENCODING_COMBO_SAVE,
+		 use_separators);
 }
 
 void
@@ -742,7 +756,7 @@ _moo_encodings_attach_combo (GtkWidget  *dialog,
     gtk_widget_show (combo);
     gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 0);
 
-    setup_combo (GTK_COMBO_BOX (combo), get_enc_mgr (), save_mode);
+    setup_combo (GTK_COMBO_BOX (combo), get_enc_mgr (), save_mode, TRUE);
 
     if (save_mode && encoding)
         encoding_combo_set_active (GTK_COMBO_BOX (combo), encoding, save_mode);
@@ -796,9 +810,6 @@ combo_get (GtkComboBox *combo,
         else
             enc_name = MOO_ENCODING_AUTO;
     }
-
-    if (!strcmp (enc_name, MOO_ENCODING_LOCALE))
-        enc_name = mgr->locale_encoding->name;
 
     return enc_name;
 }
