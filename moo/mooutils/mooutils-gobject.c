@@ -218,10 +218,8 @@ _moo_param_spec_gtype (const char     *name,
 /* Converting values forth and back
  */
 
-/* TODO */
 static char *
-flags_to_string (int   flags,
-                 GType type)
+flags_to_string (int flags)
 {
     if (flags)
         return g_strdup_printf ("%d", flags);
@@ -232,8 +230,7 @@ flags_to_string (int   flags,
 
 static gboolean
 string_to_flags (const char *string,
-                 int        *flags,
-                 GType       type)
+                 int        *flags)
 {
     GValue ival;
 
@@ -357,7 +354,7 @@ _moo_value_convert (const GValue *src,
 
         if (G_TYPE_IS_FLAGS (src_type))
         {
-            char *string = flags_to_string (g_value_get_flags (src), src_type);
+            char *string = flags_to_string (g_value_get_flags (src));
             g_value_set_string (dest, string);
             g_free (string);
             return TRUE;
@@ -508,7 +505,7 @@ _moo_value_convert (const GValue *src,
         {
             int flags;
 
-            if (string_to_flags (string, &flags, dest_type))
+            if (string_to_flags (string, &flags))
             {
                 g_value_set_flags (dest, flags);
                 return TRUE;
