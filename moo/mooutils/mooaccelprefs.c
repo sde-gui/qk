@@ -189,7 +189,7 @@ _moo_accel_prefs_page_init (MooAccelPrefsPage *page)
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_class (xml, "GtkButton", MOO_TYPE_ACCEL_BUTTON);
     moo_glade_xml_fill_widget (xml, GTK_WIDGET (page),
-                               MOO_ACCEL_PREFS_GLADE_UI, -1,
+                               mooaccelprefs_glade_xml, -1,
                                "page", NULL);
     g_object_set (page, "label", "Shortcuts", "icon-stock-id", MOO_STOCK_KEYBOARD, NULL);
 
@@ -723,7 +723,7 @@ _moo_accel_prefs_dialog_new (MooActionCollection *collection)
     GtkWidget *dialog, *page_holder;
     MooGladeXML *xml;
 
-    xml = moo_glade_xml_new_from_buf (MOO_ACCEL_PREFS_GLADE_UI, -1,
+    xml = moo_glade_xml_new_from_buf (mooaccelprefs_glade_xml, -1,
                                       "dialog", GETTEXT_PACKAGE, NULL);
     g_return_val_if_fail (xml != NULL, NULL);
 

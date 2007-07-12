@@ -1481,7 +1481,7 @@ moo_plugin_attach_prefs (GtkWidget *dialog)
     g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
 
     page = moo_prefs_dialog_page_new_from_xml ("Plugins", MOO_STOCK_PLUGINS,
-                                               NULL, MOO_PLUGIN_PREFS_GLADE_UI,
+                                               NULL, moopluginprefs_glade_xml,
                                                "page", MOO_PLUGIN_PREFS_ROOT);
     g_return_if_fail (page != NULL);
 

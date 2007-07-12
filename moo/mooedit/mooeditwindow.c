@@ -3039,7 +3039,7 @@ create_statusbar (MooEditWindow *window)
     MooGladeXML *xml;
     GtkWidget *hbox;
 
-    xml = moo_glade_xml_new_from_buf (STATUSBAR_GLADE_XML, -1,
+    xml = moo_glade_xml_new_from_buf (statusbar_glade_xml, -1,
                                       "hbox", GETTEXT_PACKAGE, NULL);
     hbox = moo_glade_xml_get_widget (xml, "hbox");
     g_return_if_fail (hbox != NULL);

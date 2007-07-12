@@ -4,16 +4,10 @@ SUBDIRS = gtksourceview plugins language-specs
 mooedit_toolsdir = $(MOO_DATA_DIR)
 mooedit_tools_DATA = context.cfg menu.cfg filters.xml
 
-dummy_targets =				\
-	moocommand-exe.o		\
-	moocommand-exe-private.o	\
-	moolangmgr-private.o		\
-	mootextview-private.o
-CLEANFILES = $(dummy_targets)
-moocommand-exe.o: moocommand-exe-unix.o ; echo stamp > $(@F)
-moocommand-exe-private.o: moocommand-exe-unix.o ; echo stamp > $(@F)
-moolangmgr-private.o: moolangmgr.o ; echo stamp > $(@F)
-mootextview-private.o: mootextview.o ; echo stamp > $(@F)
+moocommand-exe.lo: moocommand-exe-unix.lo
+moocommand-exe-private.lo: moocommand-exe-unix.lo
+moolangmgr-private.lo: moolangmgr.lo
+mootextview-private.lo: mootextview.lo
 
 unix_sources =				\
 	moocommand-exe-unix.c
@@ -53,7 +47,6 @@ completion_sources =			\
 mooedit_sources =			\
 	$(mooedit_include_headers)	\
 	$(moocommand_stuff)		\
-	medit-ui.h			\
 	moocmdview.c			\
 	moocommand.c			\
 	moocommanddisplay.c		\
@@ -81,18 +74,9 @@ mooedit_sources =			\
 	mooeditor.c			\
 	mooeditor-private.h		\
 	mooeditprefs.c			\
-	mooeditprefs-general-glade.h	\
-	mooeditprefs-view-glade.h	\
-	mooeditprefs-font-glade.h	\
-	mooeditprefs-file-glade.h	\
-	mooeditprefs-langs-glade.h	\
 	mooeditprefspage.c		\
 	mooedit-private.h		\
-	mooeditprogress-glade.h		\
-	mooeditsavemultiple-glade.h	\
 	mooedit-script.c		\
-	mooedittools-glade.h		\
-	mooedit-ui.h			\
 	mooeditwindow.c			\
 	moofold.c			\
 	moofold.h			\
@@ -112,8 +96,6 @@ mooedit_sources =			\
 	moooutputfilterregex.h		\
 	mooplugin.c			\
 	mooplugin-loader.c		\
-	moopluginprefs-glade.h		\
-	mooprint-glade.h		\
 	mootext-private.h		\
 	mootextbox.c			\
 	mootextbox.h			\
@@ -121,9 +103,7 @@ mooedit_sources =			\
 	mootextbtree.h			\
 	mootextbuffer.c			\
 	mootextfind.c			\
-	mootextfind-glade.h		\
 	mootextfind.h			\
-	mootextgotoline-glade.h		\
 	mootextsearch.c			\
 	mootextsearch-private.h		\
 	mootextstylescheme.c		\
@@ -132,13 +112,10 @@ mooedit_sources =			\
 	moousertools.c			\
 	moousertools.h			\
 	moousertools-prefs.c		\
-	moousertools-prefs.h		\
-	quicksearch-glade.h		\
-	statusbar-glade.h
+	moousertools-prefs.h
 
 mooedit_printing_sources =		\
 	mooprintpreview.h		\
-	mooprintpreview-glade.h		\
 	mooprintpreview.c		\
 	mootextprint.c			\
 	mootextprint-private.h		\
@@ -149,27 +126,12 @@ nodist_mooedit_sources =		\
 	mooedit-enums.h
 nodist_mooedit_include_headers =	\
 	mooedit-enums.h
-
 BUILT_SOURCES =				\
-	quicksearch-glade.h		\
-	statusbar-glade.h		\
-	medit-ui.h			\
-	mootextgotoline-glade.h		\
-	mootextfind-glade.h		\
-	moopluginprefs-glade.h		\
-	mooprint-glade.h		\
-	mooeditprefs-general-glade.h	\
-	mooeditprefs-view-glade.h	\
-	mooeditprefs-font-glade.h	\
-	mooeditprefs-file-glade.h	\
-	mooeditprefs-langs-glade.h	\
-	mooeditprogress-glade.h		\
-	mooeditsavemultiple-glade.h	\
-	mooedittools-glade.h		\
 	mooedit-enums.c			\
-	mooedit-enums.h			\
-	mooedit-ui.h			\
-	mooprintpreview-glade.h
+	mooedit-enums.h
+CLEANFILES =				\
+	mooedit-enums.c			\
+	mooedit-enums.h
 
 mooedit_enums_headers =			\
 	moocommand.h			\
@@ -180,7 +142,7 @@ mooedit_enums_headers =			\
 	mootextsearch.h			\
 	mootextview.h
 
-CLEANFILES += stamp-mooedit-enums.h stamp-mooedit-enums.c mooedit-enums.h mooedit-enums.c
+CLEANFILES += stamp-mooedit-enums.h stamp-mooedit-enums.c
 mooedit-enums.h: stamp-mooedit-enums.h
 	@true
 mooedit-enums.c: stamp-mooedit-enums.c
@@ -208,81 +170,44 @@ stamp-mooedit-enums.c: $(mooedit_enums_headers) Makefile
 	&& rm -f xgen-gtbc \
 	&& echo timestamp > $(@F)
 
+@MOO_GLADE_SUBDIR_RULE@
+glade_files =				\
+	glade/mooeditprefs-general.glade\
+	glade/mooeditprefs-view.glade	\
+	glade/mooeditprefs-file.glade	\
+	glade/mooeditprefs-langs.glade	\
+	glade/mooeditprogress.glade	\
+	glade/mooeditsavemult.glade	\
+	glade/mooedittools.glade	\
+	glade/moopluginprefs.glade	\
+	glade/mooprint.glade		\
+	glade/mootextfind.glade		\
+	glade/mootextgotoline.glade	\
+	glade/quicksearch.glade		\
+	glade/statusbar.glade		\
+	glade/mooprintpreview.glade
+glade_sources = $(patsubst glade/%.glade,%-glade.h,$(glade_files))
+nodist_mooedit_sources += $(glade_sources)
+BUILT_SOURCES += $(glade_sources)
+CLEANFILES += $(glade_sources)
+EXTRA_DIST = $(glade_files)
 
 XML2H = $(srcdir)/../mooutils/xml2h.sh
-mootextgotoline-glade.h: $(srcdir)/glade/mootextgotoline.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_TEXT_GOTO_LINE_GLADE_UI $(srcdir)/glade/mootextgotoline.glade > $@.tmp && \
-	mv $@.tmp $@
-mootextfind-glade.h: $(srcdir)/glade/mootextfind.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_TEXT_FIND_GLADE_UI $(srcdir)/glade/mootextfind.glade > $@.tmp && \
-	mv $@.tmp $@
-mooeditprefs-general-glade.h: $(srcdir)/glade/mooeditprefs-general.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_EDIT_PREFS_GENERAL_GLADE_UI $(srcdir)/glade/mooeditprefs-general.glade > $@.tmp && \
-	mv $@.tmp $@
-mooeditprefs-view-glade.h: $(srcdir)/glade/mooeditprefs-view.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_EDIT_PREFS_VIEW_GLADE_UI $(srcdir)/glade/mooeditprefs-view.glade > $@.tmp && \
-	mv $@.tmp $@
-mooeditprefs-font-glade.h: $(srcdir)/glade/mooeditprefs-font.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_EDIT_PREFS_FONT_GLADE_UI $(srcdir)/glade/mooeditprefs-font.glade > $@.tmp && \
-	mv $@.tmp $@
-mooeditprefs-file-glade.h: $(srcdir)/glade/mooeditprefs-file.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_EDIT_PREFS_FILE_GLADE_UI $(srcdir)/glade/mooeditprefs-file.glade > $@.tmp && \
-	mv $@.tmp $@
-mooeditprefs-langs-glade.h: $(srcdir)/glade/mooeditprefs-langs.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_EDIT_PREFS_LANGS_GLADE_UI $(srcdir)/glade/mooeditprefs-langs.glade > $@.tmp && \
-	mv $@.tmp $@
-mooeditprogress-glade.h: $(srcdir)/glade/mooeditprogress.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_EDIT_PROGRESS_GLADE_XML $(srcdir)/glade/mooeditprogress.glade > $@.tmp && \
-	mv $@.tmp $@
-moopluginprefs-glade.h: $(srcdir)/glade/moopluginprefs.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_PLUGIN_PREFS_GLADE_UI $(srcdir)/glade/moopluginprefs.glade > $@.tmp && \
-	mv $@.tmp $@
-mooeditsavemultiple-glade.h: $(srcdir)/glade/mooeditsavemult.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_EDIT_SAVE_MULTIPLE_GLADE_UI $(srcdir)/glade/mooeditsavemult.glade > $@.tmp && \
-	mv $@.tmp $@
-quicksearch-glade.h: $(srcdir)/glade/quicksearch.glade $(XML2H)
-	$(SHELL) $(XML2H) QUICK_SEARCH_GLADE_XML $(srcdir)/glade/quicksearch.glade > $@.tmp && \
-	mv $@.tmp $@
-statusbar-glade.h: $(srcdir)/glade/statusbar.glade $(XML2H)
-	$(SHELL) $(XML2H) STATUSBAR_GLADE_XML $(srcdir)/glade/statusbar.glade > $@.tmp && \
-	mv $@.tmp $@
-mooprint-glade.h: $(srcdir)/glade/mooprint.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_PRINT_GLADE_XML $(srcdir)/glade/mooprint.glade > $@.tmp && \
-	mv $@.tmp $@
-mooedittools-glade.h: $(srcdir)/glade/mooedittools.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_EDIT_TOOLS_GLADE_XML $(srcdir)/glade/mooedittools.glade > $@.tmp && \
-	mv $@.tmp $@
-mooprintpreview-glade.h: $(srcdir)/glade/mooprintpreview.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_PRINT_PREVIEW_GLADE_XML $(srcdir)/glade/mooprintpreview.glade > $@.tmp && \
-	mv $@.tmp $@
-
 mooedit-ui.h: mooedit-ui.xml $(XML2H)
 	$(SHELL) $(XML2H) MOO_EDIT_UI_XML $(srcdir)/mooedit-ui.xml > $@.tmp && \
 	mv $@.tmp $@
 medit-ui.h: medit-ui.xml $(XML2H)
 	$(SHELL) $(XML2H) MEDIT_UI_XML $(srcdir)/medit-ui.xml > $@.tmp && \
 	mv $@.tmp $@
+nodist_mooedit_sources += mooedit-ui.h medit-ui.h
+BUILT_SOURCES += mooedit-ui.h medit-ui.h
+CLEANFILES += mooedit-ui.h medit-ui.h
 
-EXTRA_DIST =				\
+EXTRA_DIST +=				\
 	$(completion_sources)		\
+	$(mooedit_tools_DATA)		\
 	medit-ui.xml			\
-	mooedit-ui.xml			\
-	glade/statusbar.glade		\
-	glade/quicksearch.glade		\
-	glade/mootextgotoline.glade	\
-	glade/mootextfind.glade		\
-	glade/mooeditprefs-general.glade\
-	glade/mooeditprefs-view.glade	\
-	glade/mooeditprefs-file.glade	\
-	glade/mooeditprefs-langs.glade	\
-	glade/mooeditprefs-font.glade	\
-	glade/mooeditprogress.glade	\
-	glade/mooeditsavemult.glade	\
-	glade/mooedittools.glade	\
-	glade/moopluginprefs.glade	\
-	glade/mooprint.glade		\
-	glade/mooprintpreview.glade	\
-	$(mooedit_tools_DATA)
+	mooedit-ui.xml
 
 if GTK_2_10
 mooedit_sources += $(mooedit_printing_sources)
@@ -310,5 +235,6 @@ AM_CFLAGS =			\
 
 if MOO_INSTALL_HEADERS
 mooedit_includedir = $(moo_includedir)/mooedit
-mooedit_include_HEADERS = $(mooedit_include_headers) $(nodist_mooedit_include_headers)
+mooedit_include_HEADERS = $(mooedit_include_headers)
+nodist_mooedit_include_HEADERS = $(nodist_mooedit_include_headers)
 endif

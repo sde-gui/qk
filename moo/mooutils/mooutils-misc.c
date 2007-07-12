@@ -631,7 +631,7 @@ moo_log_window_new (void)
     MooLogWindow *log;
     PangoFontDescription *font;
 
-    xml = moo_glade_xml_new_from_buf (MOO_LOG_WINDOW_GLADE_UI, -1,
+    xml = moo_glade_xml_new_from_buf (moologwindow_glade_xml, -1,
                                       NULL, GETTEXT_PACKAGE, NULL);
     log = g_new (MooLogWindow, 1);
 

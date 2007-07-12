@@ -772,7 +772,7 @@ create_toolbar_style_action (MooWindow      *window,
         ICONS_AND_LABELS
     };
 
-    action = moo_menu_action_new (TOOLBAR_STYLE_ACTION_ID, "Toolbar _Style");
+    action = moo_menu_action_new (TOOLBAR_STYLE_ACTION_ID, _("Toolbar _Style"));
     menu_mgr = moo_menu_action_get_mgr (MOO_MENU_ACTION (action));
     moo_menu_mgr_set_use_mnemonic (menu_mgr, TRUE);
 

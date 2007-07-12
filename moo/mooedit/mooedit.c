@@ -1710,7 +1710,7 @@ show_progress (MooEdit *edit)
 
     g_return_val_if_fail (!edit->priv->progress, FALSE);
 
-    xml = moo_glade_xml_new_from_buf (MOO_EDIT_PROGRESS_GLADE_XML, -1,
+    xml = moo_glade_xml_new_from_buf (mooeditprogress_glade_xml, -1,
                                       "eventbox", GETTEXT_PACKAGE, NULL);
     g_return_val_if_fail (xml != NULL, FALSE);
 

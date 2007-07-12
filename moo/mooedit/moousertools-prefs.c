@@ -416,17 +416,17 @@ _moo_user_tools_prefs_page_new (void)
     moo_glade_xml_map_id (xml, "page_menu", MOO_TYPE_PREFS_DIALOG_PAGE);
     moo_glade_xml_map_id (xml, "page_context", MOO_TYPE_PREFS_DIALOG_PAGE);
     page = moo_prefs_dialog_page_new_from_xml (_("Tools"), GTK_STOCK_EXECUTE,
-                                               xml, MOO_EDIT_TOOLS_GLADE_XML,
+                                               xml, mooedittools_glade_xml,
                                                "page", NULL);
     g_signal_connect (page, "init", G_CALLBACK (main_page_init), NULL);
     g_signal_connect (page, "apply", G_CALLBACK (main_page_apply), NULL);
 
     page_menu = moo_glade_xml_get_widget (xml, "page_menu");
-    moo_prefs_dialog_page_fill_from_xml (page_menu, NULL, MOO_EDIT_TOOLS_GLADE_XML,
+    moo_prefs_dialog_page_fill_from_xml (page_menu, NULL, mooedittools_glade_xml,
                                          "page_command", NULL);
 
     page_context = moo_glade_xml_get_widget (xml, "page_context");
-    moo_prefs_dialog_page_fill_from_xml (page_context, NULL, MOO_EDIT_TOOLS_GLADE_XML,
+    moo_prefs_dialog_page_fill_from_xml (page_context, NULL, mooedittools_glade_xml,
                                          "page_command", NULL);
 
     g_object_unref (xml);

@@ -17,7 +17,7 @@
 
 #define MOO_FILE_VIEW_COMPILATION
 #include "moofileview/moobookmarkmgr.h"
-#include "moofileview/moobookmarkmgr-glade.h"
+#include "moofileview/moobookmark-editor-glade.h"
 #include "moofileview/moofileentry.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooprefs.h"
@@ -814,7 +814,7 @@ _moo_bookmark_mgr_get_editor (MooBookmarkMgr *mgr)
     if (mgr->priv->editor)
         return mgr->priv->editor;
 
-    xml = moo_glade_xml_new_from_buf (MOO_BOOKMARK_MGR_GLADE_UI, -1,
+    xml = moo_glade_xml_new_from_buf (moobookmark_editor_glade_xml, -1,
                                       NULL, GETTEXT_PACKAGE, NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");

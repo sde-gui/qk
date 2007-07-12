@@ -124,7 +124,7 @@ GtkWidget  *moo_term_prefs_page_new   (void)
     moo_glade_xml_set_property (xml, "font", "filter-visible", "False");
 
     page = moo_prefs_dialog_page_new_from_xml ("Terminal", MOO_STOCK_TERMINAL,
-                                               xml, MOO_TERM_PREFS_GLADE_UI,
+                                               xml, mootermprefs_glade_xml,
                                                "page", MOO_TERM_PREFS_PREFIX);
 
     g_object_unref (xml);

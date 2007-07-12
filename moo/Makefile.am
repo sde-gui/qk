@@ -5,10 +5,12 @@ ini_files = $(ini_in_files:.ini.in=.ini)
 CLEANFILES = $(ini_files)
 
 moo_include_headers =		\
-	moo.h			\
+	moo.h
+nodist_moo_include_headers =	\
 	moo-config.h
 
 BUILT_SOURCES = moo-config.h
+CLEANFILES += moo-config.h
 
 scriptsdir = ${MOO_DATA_DIR}/scripts
 scripts_SCRIPTS =		\
@@ -22,6 +24,7 @@ EXTRA_DIST =			\
 
 if MOO_INSTALL_HEADERS
 moo_include_HEADERS = $(moo_include_headers)
+nodist_moo_include_HEADERS = $(nodist_moo_include_headers)
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = moo.pc
 endif
@@ -78,12 +81,15 @@ noinst_LTLIBRARIES += libmoo.la
 endif
 endif
 
+nodist_libmoo_la_SOURCES =
+
 if MOO_OS_MINGW
 @MOO_WIN32_RC_RULE@
 CLEANFILES += libmoo.res
 libmoo_res_ldflag = -Wl,libmoo.res
 BUILT_SOURCES += libmoo.res
-nodist_libmoo_la_SOURCES = libmoo.res
+CLEANFILES += libmoo.res
+nodist_libmoo_la_SOURCES += libmoo.res
 libs += -lwsock32
 endif
 
@@ -100,6 +106,7 @@ endif
 libmoo_la_LIBADD = $(libs) $(MOO_LIBS) $(objc_libs)
 libmoo_la_LDFLAGS = $(libmoo_res_ldflag) -no-undefined -avoid-version $(export_flags)
 libmoo_la_SOURCES = $(moo_include_headers)
+nodist_libmoo_la_SOURCES += $(nodist_moo_include_headers)
 
 if MOO_PYTHON_BUILTIN
 if !MOO_BUILD_MOO_MODULE

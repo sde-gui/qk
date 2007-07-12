@@ -31,8 +31,7 @@ mooterm_sources =                      \
 	mootermpt.h                    \
 	mootermpt-private.h            \
 	mootermtag-private.h           \
-	mootermtag.c                   \
-	mootermprefs-glade.h
+	mootermtag.c
 
 mooterm_unix_sources =			\
 	mootermpt-unix.c		\
@@ -53,21 +52,20 @@ termhelper_sources =			\
 EXTRA_DIST =				\
 	mootermparser-yacc.y		\
 	$(termhelper_sources)		\
-	mootermhelper_res.rc.in		\
-	glade/mootermprefs.glade
-
-BUILT_SOURCES =				\
-	mootermprefs-glade.h
+	mootermhelper_res.rc.in
 
 # not using rule for auto-regenerating mootermparser-yacc.[ch]
 mootermparser_yacc: mootermparser-yacc.y
 	touch mootermparser_yacc
 	bison -o $(srcdir)/mootermparser-yacc.c -d $(srcdir)/mootermparser-yacc.y
 
-XML2H = $(srcdir)/../mooutils/xml2h.sh
-mootermprefs-glade.h: glade/mootermprefs.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_TERM_PREFS_GLADE_UI $(srcdir)/glade/mootermprefs.glade > $@.tmp && \
-	mv $@.tmp $@
+@MOO_GLADE_SUBDIR_RULE@
+glade_files = glade/mootermprefs.glade
+glade_sources = $(patsubst glade/%.glade,%-glade.h,$(glade_files))
+nodist_mooterm_sources = $(glade_sources)
+BUILT_SOURCES = $(glade_sources)
+CLEANFILES = $(glade_sources)
+EXTRA_DIST += $(glade_files)
 
 noinst_LTLIBRARIES =
 
@@ -76,6 +74,7 @@ noinst_LTLIBRARIES += libmooterm.la
 endif
 
 libmooterm_la_SOURCES = $(mooterm_sources)
+nodist_libmooterm_la_SOURCES = $(nodist_mooterm_sources)
 
 if MOO_OS_UNIX
 libmooterm_la_SOURCES += $(mooterm_unix_sources)
@@ -100,7 +99,7 @@ if MOO_OS_CYGWIN
 noinst_PROGRAMS = termhelper
 termhelper_SOURCES = $(termhelper_sources)
 nodist_termhelper_SOURCES = mootermhelper_res.res
-CLEANFILES = mootermhelper_res.res
+CLEANFILES += mootermhelper_res.res
 termhelper_CFLAGS =                         \
     -I$(top_builddir)                       \
     -I$(top_srcdir)                         \
@@ -114,5 +113,5 @@ termhelper_LDADD = mootermhelper_res.res
 else
 mootermhelper_res.res: mootermhelper_res.rc
 	touch mootermhelper_res.res
-CLEANFILES = mootermhelper_res.res
+CLEANFILES += mootermhelper_res.res
 endif

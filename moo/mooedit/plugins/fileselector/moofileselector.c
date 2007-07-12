@@ -392,7 +392,7 @@ create_new_file_dialog (GtkWidget    *parent,
 
     *xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_class (*xml, "GtkEntry", MOO_TYPE_ENTRY);
-    moo_glade_xml_parse_memory (*xml, MOO_FILE_SELECTOR_GLADE_XML, -1,
+    moo_glade_xml_parse_memory (*xml, moofileselector_glade_xml, -1,
                                 "new_file_dialog", NULL);
 
     dialog = moo_glade_xml_get_widget (*xml, "new_file_dialog");
@@ -872,7 +872,7 @@ create_save_as_dialog (GtkWidget   *parent,
 
     *xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_class (*xml, "GtkEntry", MOO_TYPE_ENTRY);
-    moo_glade_xml_parse_memory (*xml, MOO_FILE_SELECTOR_GLADE_XML, -1,
+    moo_glade_xml_parse_memory (*xml, moofileselector_glade_xml, -1,
                                 "save_untitled_dialog", NULL);
 
     dialog = moo_glade_xml_get_widget (*xml, "save_untitled_dialog");

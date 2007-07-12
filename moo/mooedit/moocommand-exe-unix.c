@@ -793,7 +793,7 @@ exe_factory_create_widget (G_GNUC_UNUSED MooCommandFactory *factory)
 
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "textview", MOO_TYPE_TEXT_VIEW);
-    moo_glade_xml_parse_memory (xml, MOO_EDIT_TOOLS_GLADE_XML, -1, "exe_page", NULL);
+    moo_glade_xml_parse_memory (xml, mooedittools_glade_xml, -1, "exe_page", NULL);
     page = moo_glade_xml_get_widget (xml, "exe_page");
     g_return_val_if_fail (page != NULL, NULL);
 

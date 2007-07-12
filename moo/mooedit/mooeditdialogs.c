@@ -17,7 +17,7 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootextfind-glade.h"
 #include "mooedit/mooeditfileops.h"
-#include "mooedit/mooeditsavemultiple-glade.h"
+#include "mooedit/mooeditsavemult-glade.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooglade.h"
@@ -363,7 +363,7 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
     for (l = docs; l != NULL; l = l->next)
         g_return_val_if_fail (MOO_IS_EDIT (l->data), MOO_EDIT_RESPONSE_CANCEL);
 
-    xml = moo_glade_xml_new_from_buf (MOO_EDIT_SAVE_MULTIPLE_GLADE_UI, -1,
+    xml = moo_glade_xml_new_from_buf (mooeditsavemult_glade_xml, -1,
                                       "dialog", GETTEXT_PACKAGE, NULL);
     dialog = moo_glade_xml_get_widget (xml, "dialog");
 
@@ -737,7 +737,7 @@ _moo_text_prompt_on_replace_dialog (GtkWidget *parent)
     GtkWidget *dialog;
     MooGladeXML *xml;
 
-    xml = moo_glade_xml_new_from_buf (MOO_TEXT_FIND_GLADE_UI, -1,
+    xml = moo_glade_xml_new_from_buf (mootextfind_glade_xml, -1,
                                       "prompt_on_replace_dialog",
                                       GETTEXT_PACKAGE, NULL);
     dialog = moo_glade_xml_get_widget (xml, "prompt_on_replace_dialog");

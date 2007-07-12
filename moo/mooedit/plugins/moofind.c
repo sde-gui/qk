@@ -338,7 +338,7 @@ create_grep_dialog (MooEditWindow  *window,
     map_combo (stuff->grep_xml, "glob_combo", "FindPlugin/grep/glob");
     map_combo (stuff->grep_xml, "dir_combo", "FindPlugin/grep/dir");
     map_combo (stuff->grep_xml, "skip_combo", "FindPlugin/grep/skip");
-    moo_glade_xml_parse_memory (stuff->grep_xml, MOO_FIND_GLADE_XML, -1, "grep_dialog", NULL);
+    moo_glade_xml_parse_memory (stuff->grep_xml, moofind_glade_xml, -1, "grep_dialog", NULL);
 
     stuff->grep_dialog = moo_glade_xml_get_widget (stuff->grep_xml, "grep_dialog");
     g_return_if_fail (stuff->grep_dialog != NULL);
@@ -376,7 +376,7 @@ create_find_dialog (MooEditWindow  *window,
     map_combo (stuff->find_xml, "pattern_combo", "FindPlugin/find/pattern");
     map_combo (stuff->find_xml, "dir_combo", "FindPlugin/find/dir");
     map_combo (stuff->find_xml, "skip_combo", "FindPlugin/find/skip");
-    moo_glade_xml_parse_memory (stuff->find_xml, MOO_FIND_GLADE_XML, -1, "find_dialog", NULL);
+    moo_glade_xml_parse_memory (stuff->find_xml, moofind_glade_xml, -1, "find_dialog", NULL);
 
     stuff->find_dialog = moo_glade_xml_get_widget (stuff->find_xml, "find_dialog");
     g_return_if_fail (stuff->find_dialog != NULL);

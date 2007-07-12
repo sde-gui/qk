@@ -119,12 +119,6 @@ _moo_pygtk_init (void)
     submod = PyImport_ImportModule ("moo.edit");
     PyModule_AddObject (_moo_module, "edit", submod);
 #endif
-#ifdef MOO_BUILD_CANVAS
-    if (!_moo_canvas_mod_init ())
-        return FALSE;
-    submod = PyImport_ImportModule ("moo.canvas");
-    PyModule_AddObject (_moo_module, "canvas", submod);
-#endif
 #ifdef MOO_BUILD_APP
     if (!_moo_app_mod_init ())
         return FALSE;

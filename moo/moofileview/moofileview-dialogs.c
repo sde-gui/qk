@@ -17,7 +17,7 @@
 #include "moofileview/moofile-private.h"
 #include "moofileview/moofileprops-glade.h"
 #include "moofileview/moocreatefolder-glade.h"
-#include "moofileview/moofileviewdrop-glade.h"
+#include "moofileview/moofileview-drop-glade.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/moodialogs.h"
@@ -55,7 +55,7 @@ _moo_file_props_dialog_init (MooFilePropsDialog *dialog)
     dialog->xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_class (dialog->xml, "GtkEntry", MOO_TYPE_ENTRY);
 
-    if (!moo_glade_xml_parse_memory (dialog->xml, MOO_FILE_PROPS_GLADE_UI, -1, "notebook", NULL))
+    if (!moo_glade_xml_parse_memory (dialog->xml, moofileprops_glade_xml, -1, "notebook", NULL))
     {
         g_object_unref (dialog->xml);
         dialog->xml = NULL;
@@ -327,7 +327,7 @@ _moo_file_view_create_folder_dialog (GtkWidget  *parent,
 
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_class (xml, "GtkEntry", MOO_TYPE_ENTRY);
-    moo_glade_xml_parse_memory (xml, MOO_CREATE_FOLDER_GLADE_UI, -1, NULL, NULL);
+    moo_glade_xml_parse_memory (xml, moocreatefolder_glade_xml, -1, NULL, NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");
     g_return_val_if_fail (dialog != NULL, NULL);
@@ -431,7 +431,7 @@ _moo_file_view_save_drop_dialog (GtkWidget          *parent,
 
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_class (xml, "GtkEntry", MOO_TYPE_ENTRY);
-    moo_glade_xml_parse_memory (xml, MOO_FILE_VIEW_DROP_GLADE_UI, -1, NULL, NULL);
+    moo_glade_xml_parse_memory (xml, moofileview_drop_glade_xml, -1, NULL, NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "save_drop_dialog");
     g_return_val_if_fail (dialog != NULL, NULL);

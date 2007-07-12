@@ -48,11 +48,13 @@ set_translator_credits (MooGladeXML *xml)
     const char *credits, *credits_markup;
     GtkTextView *view;
 
-    /* Translators: this goes into About box, under Translated by tab */
+    /* Translators: this goes into About box, under Translated by tab,
+       do not ignore it, markup isn't always used */
     credits = _("translator-credits");
     /* Translators: this goes into About box, under Translated by tab,
        this must be valid html markup, e.g.
-       "Some Guy <a href=\"mailto://someguy@domain.net\">&lt;someguy@domain.net&gt;</a>" */
+       "Some Guy <a href=\"mailto://someguy@domain.net\">&lt;someguy@domain.net&gt;</a>"
+       Lines must be separated by <br>, like "First guy<br>Second Guy" */
     credits_markup = _("translator-credits-markup");
 
     if (!strcmp (credits, "translator-credits"))
@@ -99,7 +101,7 @@ show_credits (void)
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "written_by", MOO_TYPE_HTML);
     moo_glade_xml_map_id (xml, "translated_by", MOO_TYPE_HTML);
-    moo_glade_xml_parse_memory (xml, MOO_APP_ABOUT_GLADE_UI, -1, "credits", NULL);
+    moo_glade_xml_parse_memory (xml, mooappabout_glade_xml, -1, "credits", NULL);
 
     credits_dialog = moo_glade_xml_get_widget (xml, "credits");
     g_return_if_fail (credits_dialog != NULL);
@@ -151,7 +153,7 @@ show_license (void)
         return;
     }
 
-    xml = moo_glade_xml_new_from_buf (MOO_APP_ABOUT_GLADE_UI, -1, "license", GETTEXT_PACKAGE, NULL);
+    xml = moo_glade_xml_new_from_buf (mooappabout_glade_xml, -1, "license", GETTEXT_PACKAGE, NULL);
 
     license_dialog = moo_glade_xml_get_widget (xml, "license");
     g_return_if_fail (license_dialog != NULL);
@@ -198,7 +200,7 @@ create_about_dialog (void)
     info = moo_app_get_info (moo_app_get_instance());
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "url", MOO_TYPE_LINK_LABEL);
-    moo_glade_xml_parse_memory (xml, MOO_APP_ABOUT_GLADE_UI, -1, "dialog", NULL);
+    moo_glade_xml_parse_memory (xml, mooappabout_glade_xml, -1, "dialog", NULL);
     g_return_val_if_fail (xml != NULL, NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");
@@ -283,7 +285,7 @@ create_system_info_dialog (void)
     if (system_info_dialog != NULL)
         return;
 
-    xml = moo_glade_xml_new_from_buf (MOO_APP_ABOUT_GLADE_UI, -1,
+    xml = moo_glade_xml_new_from_buf (mooappabout_glade_xml, -1,
                                       "system", GETTEXT_PACKAGE, NULL);
 
     system_info_dialog = moo_glade_xml_get_widget (xml, "system");

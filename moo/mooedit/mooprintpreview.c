@@ -89,7 +89,7 @@ _moo_print_preview_init (MooPrintPreview *preview)
 
     preview->priv->xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_fill_widget (preview->priv->xml, GTK_WIDGET (preview),
-                               MOO_PRINT_PREVIEW_GLADE_XML, -1,
+                               mooprintpreview_glade_xml, -1,
                                "dialog", NULL);
 
     preview->priv->context = NULL;
@@ -583,7 +583,7 @@ _moo_print_preview_start (MooPrintPreview *preview)
                               G_CALLBACK (size_allocate), preview);
 
     entry_item = moo_glade_xml_get_widget (preview->priv->xml, "entry_item");
-    xml = moo_glade_xml_new_from_buf (MOO_PRINT_PREVIEW_GLADE_XML, -1,
+    xml = moo_glade_xml_new_from_buf (mooprintpreview_glade_xml, -1,
                                       "entry_hbox", GETTEXT_PACKAGE, NULL);
     box = moo_glade_xml_get_widget (xml, "entry_hbox");
     gtk_container_add (GTK_CONTAINER (entry_item), box);

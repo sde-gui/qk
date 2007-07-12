@@ -60,12 +60,10 @@ mooutils_sources =			\
 	$(mooutils_include_headers)	\
 	mooaccel.h			\
 	mooaccel.c			\
-	mooaccelbutton-glade.h		\
 	mooaccelbutton.c		\
 	mooaccelbutton.h		\
 	mooaccelprefs.h			\
 	mooaccelprefs.c			\
-	mooaccelprefs-glade.h		\
 	mooaction.c			\
 	mooaction-private.h		\
 	mooactionbase.c			\
@@ -96,7 +94,6 @@ mooutils_sources =			\
 	moohistorycombo.c		\
 	moohistorylist.c		\
 	mooi18n.c			\
-	moologwindow-glade.h		\
 	moomarkup.c			\
 	moomenuaction.c			\
 	moomenumgr.c			\
@@ -124,7 +121,6 @@ mooutils_sources =			\
 	moowindow.c			\
 	stock-file-24.h			\
 	stock-file-selector-24.h	\
-	stock-moo.h			\
 	stock-select-all-16.h		\
 	stock-select-all-24.h		\
 	stock-terminal-24.h
@@ -137,22 +133,12 @@ mooutils_sources += $(thread_sources)
 endif
 endif
 
-nodist_mooutils_sources =		\
-	moomarshals.c			\
-	moomarshals.h
-DISTCLEANFILES =			\
-	moomarshals.c			\
-	moomarshals.h
-
 EXTRA_DIST =				\
 	moomarshals.list		\
 	py2h.sh				\
 	xml2h.sh			\
 	$(thread_sources)		\
 	$(win32_sources)		\
-	glade/accelbutton.glade		\
-	glade/accelprefs.glade		\
-	glade/moologwindow.glade	\
 	pixmaps/medit.png		\
 	pixmaps/medit.ico		\
 	pixmaps/hide.png		\
@@ -164,11 +150,13 @@ EXTRA_DIST =				\
 
 BUILT_SOURCES =				\
 	moomarshals.c			\
-	moomarshals.h			\
-	mooaccelbutton-glade.h		\
-	mooaccelprefs-glade.h		\
-	moologwindow-glade.h		\
-	stock-moo.h
+	moomarshals.h
+nodist_mooutils_sources =		\
+	moomarshals.c			\
+	moomarshals.h
+CLEANFILES =				\
+	moomarshals.c			\
+	moomarshals.h
 
 moomarshals.c: moomarshals.list
 	echo '#include "moomarshals.h"' > $@.tmp &&	\
@@ -180,19 +168,16 @@ moomarshals.h: moomarshals.list
 	       $(srcdir)/moomarshals.list > $@.tmp &&	\
 	mv $@.tmp $@
 
-XML2H = $(srcdir)/xml2h.sh
-mooaccelbutton-glade.h: $(srcdir)/glade/accelbutton.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_ACCEL_BUTTON_GLADE_UI \
-	   $(srcdir)/glade/accelbutton.glade > $@.tmp && \
-	mv $@.tmp $@
-mooaccelprefs-glade.h: $(srcdir)/glade/accelprefs.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_ACCEL_PREFS_GLADE_UI \
-	   $(srcdir)/glade/accelprefs.glade > $@.tmp && \
-	mv $@.tmp $@
-moologwindow-glade.h: $(srcdir)/glade/moologwindow.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_LOG_WINDOW_GLADE_UI \
-	   $(srcdir)/glade/moologwindow.glade > $@.tmp && \
-	mv $@.tmp $@
+@MOO_GLADE_SUBDIR_RULE@
+glade_files =				\
+	glade/mooaccelbutton.glade	\
+	glade/mooaccelprefs.glade	\
+	glade/moologwindow.glade
+glade_sources = $(patsubst glade/%.glade,%-glade.h,$(glade_files))
+nodist_mooutils_sources += $(glade_sources)
+BUILT_SOURCES += $(glade_sources)
+CLEANFILES += $(glade_sources)
+EXTRA_DIST += $(glade_files)
 
 mooutils_pixmaps =			\
 	$(srcdir)/pixmaps/medit.png	\
@@ -203,6 +188,9 @@ mooutils_pixmaps =			\
 	$(srcdir)/pixmaps/keepontop.png	\
 	$(srcdir)/pixmaps/sticky.png
 
+CLEANFILES += stock-moo.h
+BUILT_SOURCES += stock-moo.h
+nodist_mooutils_sources += stock-moo.h
 stock-moo.h: $(mooutils_pixmaps)
 	gdk-pixbuf-csource --static --build-list			\
 		MEDIT_ICON $(srcdir)/pixmaps/medit.png			\

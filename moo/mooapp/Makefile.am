@@ -2,6 +2,8 @@ SUBDIRS = smclient
 
 BUILT_SOURCES =			\
 	mooappabout-glade.h
+CLEANFILES =			\
+	mooappabout-glade.h
 
 mooapp_include_headers =	\
 	mooapp.h
@@ -13,7 +15,6 @@ endif
 
 mooapp_sources =			\
 	$(mooapp_include_headers)	\
-	mooappabout-glade.h		\
 	mooappabout.c			\
 	mooappabout.h			\
 	mooapp.c			\
@@ -30,13 +31,11 @@ EXTRA_DIST =				\
 	gpl				\
 	glade/mooappabout.glade
 
-XML2H = $(srcdir)/../mooutils/xml2h.sh
-mooappabout-glade.h: $(srcdir)/glade/mooappabout.glade $(XML2H)
-	$(SHELL) $(XML2H) MOO_APP_ABOUT_GLADE_UI $(srcdir)/glade/mooappabout.glade > $@.tmp && \
-	mv $@.tmp $@
+@MOO_GLADE_SUBDIR_RULE@
 
 noinst_LTLIBRARIES = libmooapp.la
 libmooapp_la_SOURCES = $(mooapp_sources)
+nodist_libmooapp_la_SOURCES = mooappabout-glade.h
 libmooapp_la_LIBADD = smclient/libsmclient.la
 
 AM_CFLAGS =			\

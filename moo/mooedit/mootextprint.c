@@ -1873,7 +1873,7 @@ moo_print_operation_create_custom_widget (G_GNUC_UNUSED GtkPrintOperation *opera
     GtkWidget *page, *font_button, *line_numbers_hbox;
     MooGladeXML *xml;
 
-    xml = moo_glade_xml_new_from_buf (MOO_PRINT_GLADE_XML, -1, "page", GETTEXT_PACKAGE, NULL);
+    xml = moo_glade_xml_new_from_buf (mooprint_glade_xml, -1, "page", GETTEXT_PACKAGE, NULL);
     g_return_val_if_fail (xml != NULL, NULL);
 
     font_button = moo_glade_xml_get_widget (xml, "font");
