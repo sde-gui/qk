@@ -15,62 +15,32 @@
 #include "mooscript-func-private.h"
 
 
-MSValue *
-_ms_func_call (MSFunc     *func,
-               MSValue   **args,
-               guint       n_args,
-               MSContext  *ctx)
-{
-    MSFuncCall call;
+@implementation MSFunc : MooCObject
 
-    g_return_val_if_fail (MS_IS_FUNC (func), NULL);
+- (MSValue*) call:(MSValue**)args
+                 :(guint) n_args
+                 :(MSContext*) ctx
+{
     g_return_val_if_fail (!n_args || args, NULL);
     g_return_val_if_fail (ctx != NULL, NULL);
-
-    call = MS_FUNC_GET_CLASS(func)->call;
-    g_return_val_if_fail (call != NULL, NULL);
-
-    return call (func, args, n_args, ctx);
+    g_return_val_if_reached (NULL);
 }
 
+@end
 
-/******************************************************************/
-/* MSFunc
- */
 
-G_DEFINE_TYPE (MSFunc, ms_func, G_TYPE_OBJECT)
+@implementation MSCFunc : MSFunc
 
-static void
-ms_func_init (G_GNUC_UNUSED MSFunc *func)
+- init
 {
+    [super init];
+    n_args = -1;
+    return self;
 }
 
-static void
-ms_func_class_init (G_GNUC_UNUSED MSFuncClass *klass)
-{
-    ms_type_init ();
-}
-
-
-/******************************************************************/
-/* MSCFunc
- */
-
-G_DEFINE_TYPE (MSCFunc, ms_cfunc, MS_TYPE_FUNC)
-
-
-static void
-ms_cfunc_init (MSCFunc *func)
-{
-    func->n_args = -1;
-}
-
-
-static MSValue *
-ms_cfunc_call (MSFunc     *func_,
-               MSValue   **args,
-               guint       n_args,
-               MSContext  *ctx)
+- (MSValue*) call:(MSValue**) call_args
+                 :(guint) n_call_args
+                 :(MSContext*) ctx
 {
     MSCFunc_Var func_var;
     MSCFunc_0 func_0;
@@ -78,106 +48,90 @@ ms_cfunc_call (MSFunc     *func_,
     MSCFunc_2 func_2;
     MSCFunc_3 func_3;
     MSCFunc_4 func_4;
-    MSCFunc *func = MS_CFUNC (func_);
 
-    if (func->n_args >= 0 && func->n_args != (int) n_args)
+    if (n_args >= 0 && n_args != (int) n_call_args)
     {
-        ms_context_format_error (ctx, MS_ERROR_TYPE,
-                                 "function takes %d arguments, but %d given",
-                                 func->n_args, n_args);
+        [ctx formatError:MS_ERROR_TYPE
+                        :"function takes %d arguments, but %d given",
+                         n_args, n_call_args];
         return NULL;
     }
 
-    if (func->n_args < 0)
+    if (n_args < 0)
     {
-        func_var = (MSCFunc_Var) func->cfunc;
-        return func_var (args, n_args, ctx);
+        func_var = (MSCFunc_Var) cfunc;
+        return func_var (call_args, n_call_args, ctx);
     }
 
-    switch (func->n_args)
+    switch (n_args)
     {
         case 0:
-            func_0 = (MSCFunc_0) func->cfunc;
+            func_0 = (MSCFunc_0) cfunc;
             return func_0 (ctx);
         case 1:
-            func_1 = (MSCFunc_1) func->cfunc;
-            return func_1 (args[0], ctx);
+            func_1 = (MSCFunc_1) cfunc;
+            return func_1 (call_args[0], ctx);
         case 2:
-            func_2 = (MSCFunc_2) func->cfunc;
-            return func_2 (args[0], args[1], ctx);
+            func_2 = (MSCFunc_2) cfunc;
+            return func_2 (call_args[0], call_args[1], ctx);
         case 3:
-            func_3 = (MSCFunc_3) func->cfunc;
-            return func_3 (args[0], args[1], args[2], ctx);
+            func_3 = (MSCFunc_3) cfunc;
+            return func_3 (call_args[0], call_args[1], call_args[2], ctx);
         case 4:
-            func_4 = (MSCFunc_4) func->cfunc;
-            return func_4 (args[0], args[1], args[2], args[3], ctx);
+            func_4 = (MSCFunc_4) cfunc;
+            return func_4 (call_args[0], call_args[1], call_args[2], call_args[3], ctx);
     }
 
-    g_warning ("don't know how to call function with %d arguments", func->n_args);
+    g_warning ("don't know how to call function with %d arguments", n_args);
     return NULL;
 }
 
 
-static void
-ms_cfunc_class_init (MSCFuncClass *klass)
-{
-    MS_FUNC_CLASS(klass)->call = ms_cfunc_call;
-}
-
-
-static MSFunc *
-ms_cfunc_new (int       n_args,
-              GCallback cfunc)
++ (MSFunc*) new:(int) n_args
+               :(GCallback) cfunc
 {
     MSCFunc *func;
 
     g_return_val_if_fail (cfunc != NULL, NULL);
 
-    func = g_object_new (MS_TYPE_CFUNC, NULL);
+    func = [[self alloc] init];
     func->n_args = n_args;
     func->cfunc = cfunc;
 
-    return MS_FUNC (func);
+    return func;
 }
 
-
-MSFunc *
-ms_cfunc_new_var (MSCFunc_Var cfunc)
++ (MSFunc*) newVar:(MSCFunc_Var) cfunc
 {
-    return ms_cfunc_new (-1, G_CALLBACK (cfunc));
+    return [self new:-1 :G_CALLBACK (cfunc)];
 }
 
-
-MSFunc *
-ms_cfunc_new_0 (MSCFunc_0 cfunc)
++ (MSFunc*) new0  :(MSCFunc_0) cfunc
 {
-    return ms_cfunc_new (0, G_CALLBACK (cfunc));
+    return [self new:0 :G_CALLBACK (cfunc)];
 }
 
-
-MSFunc *
-ms_cfunc_new_1 (MSCFunc_1 cfunc)
++ (MSFunc*) new1  :(MSCFunc_1) cfunc
 {
-    return ms_cfunc_new (1, G_CALLBACK (cfunc));
+    return [self new:1 :G_CALLBACK (cfunc)];
 }
 
-
-MSFunc *
-ms_cfunc_new_2 (MSCFunc_2 cfunc)
++ (MSFunc*) new2  :(MSCFunc_2) cfunc
 {
-    return ms_cfunc_new (2, G_CALLBACK (cfunc));
+    return [self new:2 :G_CALLBACK (cfunc)];
 }
 
-
-MSFunc *
-ms_cfunc_new_3 (MSCFunc_3 cfunc)
++ (MSFunc*) new3  :(MSCFunc_3) cfunc
 {
-    return ms_cfunc_new (3, G_CALLBACK (cfunc));
+    return [self new:3 :G_CALLBACK (cfunc)];
 }
 
-
-MSFunc *
-ms_cfunc_new_4 (MSCFunc_4 cfunc)
++ (MSFunc*) new4  :(MSCFunc_4) cfunc
 {
-    return ms_cfunc_new (4, G_CALLBACK (cfunc));
+    return [self new:4 :G_CALLBACK (cfunc)];
 }
+
+@end
+
+
+/* -*- objc -*- */

@@ -14,27 +14,27 @@
 #ifndef MOO_SCRIPT_CONTEXT_H
 #define MOO_SCRIPT_CONTEXT_H
 
+#include <mooutils/moocobject.h>
 #include <mooscript/mooscript-func.h>
 
 G_BEGIN_DECLS
 
 
-#define MS_TYPE_CONTEXT                     (ms_context_get_type ())
-#define MS_CONTEXT(object)                  (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_CONTEXT, MSContext))
-#define MS_CONTEXT_CLASS(klass)             (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_CONTEXT, MSContextClass))
-#define MS_IS_CONTEXT(object)               (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_CONTEXT))
-#define MS_IS_CONTEXT_CLASS(klass)          (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_CONTEXT))
-#define MS_CONTEXT_GET_CLASS(obj)           (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_CONTEXT, MSContextClass))
-
 typedef struct _MSContextPrivate MSContextPrivate;
-typedef struct _MSContextClass MSContextClass;
-typedef struct _MSVariable MSVariable;
 
-struct _MSVariable {
-    guint ref_count;
+@interface MSVariable : MooCObject {
+@private
     MSValue *value;
     MSFunc *func; /* called with no arguments */
 };
+
++ (MSVariable*) new:(MSValue*) value;
+
+- (void) setValue:(MSValue*) value;
+- (MSValue*) value;
+- (void) setFunc:(MSFunc*) func;
+- (MSFunc*) func;
+@end
 
 typedef enum {
     MS_ERROR_NONE = 0,
@@ -45,59 +45,43 @@ typedef enum {
     MS_ERROR_LAST
 } MSError;
 
-struct _MSContext {
-    GObject object;
+@interface MSContext : MooCObject {
+@private
     MSContextPrivate *priv;
-    gpointer window;
-};
+}
 
-struct _MSContextClass {
-    GObjectClass object_class;
++ (MSContext*) new;
++ (MSContext*) new:(gpointer) window;
 
-    MSValue* (*get_env_var) (MSContext  *ctx,
-                             const char *name);
-};
+- (void) setWindow:(gpointer) window;
+- (gpointer) window;
 
+- (MSValue*) evalVariable:(CSTR) name;
+- (BOOL) assignVariable:(CSTR) name
+                       :(MSValue*) value;
+- (BOOL) assignPositional:(guint) n
+                         :(MSValue*) value;
+- (BOOL) assignString:(CSTR) name
+                     :(CSTR) value;
 
-GType        ms_context_get_type            (void) G_GNUC_CONST;
+- (MSValue*) getEnvVariable:(CSTR) name;
 
-MSVariable  *ms_variable_new_value          (MSValue    *value);
-MSVariable  *ms_variable_ref                (MSVariable *var);
-void         ms_variable_unref              (MSVariable *var);
+- (BOOL) setVar:(CSTR) name
+               :(MSVariable*) var;
 
-MSValue     *ms_context_eval_variable       (MSContext  *ctx,
-                                             const char *name);
-gboolean     ms_context_assign_variable     (MSContext  *ctx,
-                                             const char *name,
-                                             MSValue    *value);
-gboolean     ms_context_assign_positional   (MSContext  *ctx,
-                                             guint       n,
-                                             MSValue    *value);
-gboolean     ms_context_assign_string       (MSContext  *ctx,
-                                             const char *name,
-                                             const char *value);
+- (BOOL) setFunc:(CSTR) name
+                :(MSFunc*) func;
 
-MSValue     *ms_context_get_env_variable    (MSContext  *ctx,
-                                             const char *name);
+- (MSValue*) setError:(MSError) error;
+- (MSValue*) setError:(MSError) error
+                     :(CSTR) message;
+- (MSValue*) formatError:(MSError) error
+                        :(CSTR) format,
+                        ...;
 
-gboolean     ms_context_set_var             (MSContext  *ctx,
-                                             const char *name,
-                                             MSVariable *var);
-
-gboolean     ms_context_set_func            (MSContext  *ctx,
-                                             const char *name,
-                                             MSFunc     *func);
-
-MSValue     *ms_context_set_error           (MSContext  *ctx,
-                                             MSError     error,
-                                             const char *message);
-MSValue     *ms_context_format_error        (MSContext  *ctx,
-                                             MSError     error,
-                                             const char *format,
-                                             ...);
-
-const char  *ms_context_get_error_msg       (MSContext  *ctx);
-void         ms_context_clear_error         (MSContext  *ctx);
+- (CSTR) getErrorMsg;
+- (void) clearError;
+@end
 
 
 G_END_DECLS

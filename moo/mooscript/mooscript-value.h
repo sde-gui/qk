@@ -22,7 +22,7 @@ G_BEGIN_DECLS
 #define MS_VALUE_TYPE(val) (ms_value_type (val))
 
 typedef struct _MSValue MSValue;
-typedef struct _MSFunc MSFunc;
+@class MSFunc;
 
 typedef enum {
     MS_VALUE_NONE,

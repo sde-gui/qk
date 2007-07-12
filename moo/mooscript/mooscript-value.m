@@ -400,7 +400,7 @@ ms_value_unref (MSValue *val)
             break;
 
         case MS_VALUE_FUNC:
-            g_object_unref (val->u.func.func);
+            [val->u.func.func release];
             ms_value_unref (val->u.func.obj);
             break;
 
@@ -927,8 +927,7 @@ func_plus (MSValue *a, MSValue *b, MSContext *ctx)
     else if (MS_VALUE_TYPE (a) == MS_VALUE_STRING && MS_VALUE_TYPE (b) == MS_VALUE_STRING)
         return ms_value_take_string (g_strdup_printf ("%s%s", a->u.str, b->u.str));
 
-    return ms_context_set_error (ctx, MS_ERROR_TYPE,
-                                 "invalid PLUS");
+    return [ctx setError:MS_ERROR_TYPE :"invalid PLUS"];
 }
 
 
@@ -937,8 +936,7 @@ func_minus (MSValue *a, MSValue *b, MSContext *ctx)
 {
     if (MS_VALUE_TYPE (a) == MS_VALUE_INT && MS_VALUE_TYPE (b) == MS_VALUE_INT)
         return ms_value_int (a->u.ival - b->u.ival);
-    return ms_context_set_error (ctx, MS_ERROR_TYPE,
-                                 "invalid MINUS");
+    return [ctx setError:MS_ERROR_TYPE :"invalid MINUS"];
 }
 
 
@@ -955,8 +953,7 @@ func_mult (MSValue *a, MSValue *b, MSContext *ctx)
         int i;
 
         if (b->u.ival < 0)
-            return ms_context_set_error (ctx, MS_ERROR_TYPE,
-                                         "string * negative int");
+            return [ctx setError:MS_ERROR_TYPE :"string * negative int"];
         if (b->u.ival == 0)
             return ms_value_string ("");
 
@@ -970,8 +967,7 @@ func_mult (MSValue *a, MSValue *b, MSContext *ctx)
         return ms_value_take_string (s);
     }
 
-    return ms_context_set_error (ctx, MS_ERROR_TYPE,
-                                 "invalid MULT");
+    return [ctx setError:MS_ERROR_TYPE :"invalid MULT"];
 }
 
 
@@ -983,12 +979,10 @@ func_div (MSValue *a, MSValue *b, MSContext *ctx)
         if (b->u.ival)
             return ms_value_int (a->u.ival / b->u.ival);
         else
-            return ms_context_set_error (ctx, MS_ERROR_VALUE,
-                                         "division by zero");
+            return [ctx setError:MS_ERROR_VALUE: "division by zero"];
     }
 
-    return ms_context_set_error (ctx, MS_ERROR_TYPE,
-                                 "invalid DIV");
+    return [ctx setError:MS_ERROR_TYPE :"invalid DIV"];
 }
 
 
@@ -1293,9 +1287,9 @@ func_in (MSValue   *val,
         case MS_VALUE_STRING:
             return string_in (list, val);
         default:
-            ms_context_format_error (ctx, MS_ERROR_TYPE,
-                                     "invalid left hand side '%v' of operator in",
-                                     list);
+            [ctx formatError:MS_ERROR_TYPE
+                            :"invalid left hand side '%v' of operator in",
+                             list];
             return NULL;
     }
 }
@@ -1316,14 +1310,14 @@ format_value (char       format,
         case 'd':
             if (!ms_value_get_int (value, &ival))
             {
-                ms_context_set_error (ctx, MS_ERROR_TYPE, NULL);
+                [ctx setError:MS_ERROR_TYPE];
                 return NULL;
             }
 
             return g_strdup_printf ("%d", ival);
 
         default:
-            ms_context_set_error (ctx, MS_ERROR_VALUE, "invalid format");
+            [ctx setError:MS_ERROR_VALUE :"invalid format"];
             return NULL;
     }
 }
@@ -1338,7 +1332,7 @@ func_format (MSValue *format, MSValue *tuple, MSContext *ctx)
     MSValue *val;
 
     if (MS_VALUE_TYPE (format) != MS_VALUE_STRING)
-        return ms_context_set_error (ctx, MS_ERROR_TYPE, "invalid '%'");
+        return [ctx setError:MS_ERROR_TYPE :"invalid '%'"];
 
     if (MS_VALUE_TYPE (tuple) == MS_VALUE_LIST)
         n_items = tuple->u.list.n_elms;
@@ -1368,8 +1362,7 @@ func_format (MSValue *format, MSValue *tuple, MSContext *ctx)
                 case 'd':
                     if (items_written == n_items)
                     {
-                        ms_context_set_error (ctx, MS_ERROR_VALUE,
-                                              "invalid conversion");
+                        [ctx setError:MS_ERROR_VALUE :"invalid conversion"];
                         g_string_free (ret, TRUE);
                         return NULL;
                     }
@@ -1395,8 +1388,7 @@ func_format (MSValue *format, MSValue *tuple, MSContext *ctx)
                     break;
 
                 default:
-                    ms_context_set_error (ctx, MS_ERROR_VALUE,
-                                          "invalid conversion");
+                    [ctx setError:MS_ERROR_VALUE :"invalid conversion"];
                     g_string_free (ret, TRUE);
                     return NULL;
             }
@@ -1435,7 +1427,7 @@ func_uminus (MSValue    *val,
 {
     if (MS_VALUE_TYPE (val) == MS_VALUE_INT)
         return ms_value_int (-val->u.ival);
-    return ms_context_set_error (ctx, MS_ERROR_TYPE, NULL);
+    return [ctx setError:MS_ERROR_TYPE];
 }
 
 
@@ -1459,7 +1451,7 @@ func_len (MSValue    *val,
         case MS_VALUE_LIST:
             return ms_value_int (val->u.list.n_elms);
         default:
-            return ms_context_set_error (ctx, MS_ERROR_TYPE, NULL);
+            return [ctx setError:MS_ERROR_TYPE];
     }
 }
 
@@ -1480,9 +1472,9 @@ MSValue *
 ms_value_func (MSFunc *func)
 {
     MSValue *val;
-    g_return_val_if_fail (MS_IS_FUNC (func), NULL);
+    g_return_val_if_fail (func != nil, NULL);
     val = ms_value_new (&types[MS_VALUE_FUNC]);
-    val->u.func.func = g_object_ref (func);
+    val->u.func.func = [func retain];
     return val;
 }
 
@@ -1491,7 +1483,7 @@ static MSValue *
 ms_value_meth (MSFunc *func)
 {
     MSValue *val;
-    g_return_val_if_fail (MS_IS_FUNC (func), NULL);
+    g_return_val_if_fail (func != nil, NULL);
     val = ms_value_func (func);
     val->u.func.meth = TRUE;
     return val;
@@ -1503,7 +1495,7 @@ ms_value_bound_meth (MSFunc  *func,
                      MSValue *obj)
 {
     MSValue *val;
-    g_return_val_if_fail (MS_IS_FUNC (func), NULL);
+    g_return_val_if_fail (func != nil, NULL);
     g_return_val_if_fail (obj != NULL, NULL);
     val = ms_value_meth (func);
     val->u.func.obj = ms_value_ref (obj);
@@ -1531,11 +1523,11 @@ _ms_value_call (MSValue    *func,
 
     g_return_val_if_fail (func != NULL, NULL);
     g_return_val_if_fail (!n_args || args, NULL);
-    g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
+    g_return_val_if_fail (ctx != nil, NULL);
     g_return_val_if_fail (MS_VALUE_TYPE (func) == MS_VALUE_FUNC, NULL);
 
     if (!func->u.func.meth || !func->u.func.obj)
-        return _ms_func_call (func->u.func.func, args, n_args, ctx);
+        return [func->u.func.func call:args :n_args :ctx];
 
     real_args = ms_value_array_alloc (n_args + 1);
     real_args[0] = ms_value_ref (func->u.func.obj);
@@ -1543,7 +1535,7 @@ _ms_value_call (MSValue    *func,
     for (i = 0; i < n_args; ++i)
         real_args[i+1] = ms_value_ref (args[i]);
 
-    ret = _ms_func_call (func->u.func.func, real_args, n_args + 1, ctx);
+    ret = [func->u.func.func call:real_args :n_args + 1 :ctx];
 
     for (i = 0; i < n_args + 1; ++i)
         ms_value_unref (real_args[i]);
@@ -1571,6 +1563,12 @@ ms_type_init (void)
 }
 
 
+static void
+func_release (MSFunc *func)
+{
+    [func release];
+}
+
 void
 _ms_value_class_add_method (MSValueClass   *klass,
                             const char     *name,
@@ -1578,14 +1576,13 @@ _ms_value_class_add_method (MSValueClass   *klass,
 {
     g_return_if_fail (klass != NULL && klass->type < MS_VALUE_INVALID);
     g_return_if_fail (name != NULL);
-    g_return_if_fail (MS_IS_FUNC (func));
+    g_return_if_fail (func != nil);
 
     if (!klass->methods)
-        klass->methods = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                                g_free, g_object_unref);
+        klass->methods = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+                                                (GDestroyNotify) func_release);
 
-    g_object_ref (func);
-    g_hash_table_insert (klass->methods, g_strdup (name), func);
+    g_hash_table_insert (klass->methods, g_strdup (name), [func retain]);
 }
 
 
@@ -1597,13 +1594,13 @@ ms_value_add_method (MSValue    *val,
 {
     g_return_if_fail (val != NULL);
     g_return_if_fail (name != NULL);
-    g_return_if_fail (MS_IS_FUNC (func));
+    g_return_if_fail (func != nil);
 
     if (!val->methods)
         val->methods = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                              g_free, g_object_unref);
+                                              g_free, func_release);
 
-    g_object_ref (func);
+    [func retain];
     g_hash_table_insert (val->methods, g_strdup (name), func);
 }
 #endif
@@ -1754,3 +1751,5 @@ _ms_value_get_type (void)
 
     return type;
 }
+
+/* -*- objc -*- */

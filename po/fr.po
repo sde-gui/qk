@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-12 00:33-0500\n"
+"POT-Creation-Date: 2007-07-12 04:52-0500\n"
 "PO-Revision-Date: 2007-06-16 21:04-0600\n"
 "Last-Translator: Collilieux <mccnews@free.fr>\n"
 "MIME-Version: 1.0\n"
@@ -541,7 +541,7 @@ msgstr "Insére dans le document"
 msgid "Output|New document"
 msgstr "Nouveau document"
 
-#: ../moo/mooedit/moocommand-script.c:241
+#: ../moo/mooedit/moocommand-script.m:241
 msgid "MooScript"
 msgstr "Mooscript"
 

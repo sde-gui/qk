@@ -29,11 +29,12 @@ print_func (MSValue   **args,
     for (i = 0; i < n_args; ++i)
     {
         char *s = ms_value_print (args[i]);
-        _ms_context_print (ctx, s);
+        [ctx print:s];
         g_free (s);
     }
 
-    _ms_context_print (ctx, "\n");
+    [ctx print:"\n"];
+
     return ms_value_none ();
 }
 
@@ -51,7 +52,7 @@ len_func (MSValue    *val,
         case MS_VALUE_DICT:
             return ms_value_int (g_hash_table_size (val->u.hash));
         default:
-            return ms_context_set_error (ctx, MS_ERROR_TYPE, NULL);
+            return [ctx setError:MS_ERROR_TYPE];
     }
 }
 
@@ -59,7 +60,7 @@ len_func (MSValue    *val,
 static MSValue*
 abort_func (MSContext *ctx)
 {
-    return ms_context_format_error (ctx, MS_ERROR_RUNTIME, "Aborted");
+    return [ctx formatError:MS_ERROR_RUNTIME :"Aborted"];
 }
 
 
@@ -86,9 +87,9 @@ int_func (MSValue    *arg,
     if (!ms_value_get_int (arg, &ival))
     {
         char *str = ms_value_repr (arg);
-        ms_context_format_error (ctx, MS_ERROR_TYPE,
-                                 "could not convert %s to int",
-                                 str);
+        [ctx formatError:MS_ERROR_TYPE
+                        :"could not convert %s to int",
+                         str];
         g_free (str);
         return NULL;
     }
@@ -110,8 +111,8 @@ include_func (MSValue    *arg,
 
     if (!g_file_get_contents (file, &script, NULL, &error))
     {
-        ms_context_format_error (ctx, MS_ERROR_RUNTIME,
-                                 "%s", error->message);
+        [ctx formatError:MS_ERROR_RUNTIME
+                        :"%s", error->message];
         goto error;
     }
 
@@ -119,8 +120,8 @@ include_func (MSValue    *arg,
 
     if (!node)
     {
-        ms_context_format_error (ctx, MS_ERROR_RUNTIME,
-                                 "%s", error->message);
+        [ctx formatError:MS_ERROR_RUNTIME
+                        :"%s", error->message];
         goto error;
     }
 
@@ -154,8 +155,8 @@ prefs_get_func (MSValue   *arg,
 
     if (!key || !key[0])
     {
-        ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                 "empty prefs key");
+        [ctx formatError:MS_ERROR_VALUE
+                        :"empty prefs key"];
         goto out;
     }
 
@@ -189,8 +190,8 @@ prefs_set_func (MSValue   *arg1,
 
     if (!key || !key[0])
     {
-        ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                 "empty prefs key");
+        [ctx formatError:MS_ERROR_VALUE
+                        :"empty prefs key"];
         goto out;
     }
 
@@ -220,15 +221,15 @@ exec_func (MSValue   *arg,
 
     if (!cmd || !cmd[0])
     {
-        ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                 "empty command");
+        [ctx formatError:MS_ERROR_VALUE
+                        :"empty command"];
         goto out;
     }
 
     if (!g_spawn_command_line_sync (cmd, &cmd_out, NULL, NULL, &error))
     {
-        ms_context_format_error (ctx, MS_ERROR_RUNTIME,
-                                 "%s", error->message);
+        [ctx formatError:MS_ERROR_RUNTIME
+                        :"%s", error->message];
         g_error_free (error);
         goto out;
     }
@@ -270,15 +271,15 @@ exec_async_func (MSValue   *arg,
 
     if (!cmd || !cmd[0])
     {
-        ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                 "empty command");
+        [ctx formatError:MS_ERROR_VALUE
+                        :"empty command"];
         goto out;
     }
 
     if (!g_spawn_command_line_async (cmd, &error))
     {
-        ms_context_format_error (ctx, MS_ERROR_RUNTIME,
-                                 "%s", error->message);
+        [ctx formatError:MS_ERROR_RUNTIME
+                        :"%s", error->message];
         g_error_free (error);
         goto out;
     }
@@ -313,17 +314,17 @@ file_exists_func (MSValue *arg,
 #define ADD_FUNC(type_,func_,name_)             \
 G_STMT_START {                                  \
     MSFunc *msfunc__;                           \
-    msfunc__ = type_ (func_);                   \
-    ms_context_set_func (ctx, name_, msfunc__); \
-    g_object_unref (msfunc__);                  \
+    msfunc__ = [MSCFunc type_:func_];           \
+    [ctx setFunc:name_ :msfunc__];              \
+    [msfunc__ release];                         \
 } G_STMT_END
 
 #define ADD_FUNC_OBJ(factory_,name_)            \
 G_STMT_START {                                  \
     MSFunc *msfunc__;                           \
     msfunc__ = factory_ ();                     \
-    ms_context_set_func (ctx, name_, msfunc__); \
-    g_object_unref (msfunc__);                  \
+    [ctx setFunc:name_ :msfunc__];              \
+    [msfunc__ release];                         \
 } G_STMT_END
 
 #define ADD_CONSTANT(func_,name_)               \
@@ -331,9 +332,9 @@ G_STMT_START {                                  \
     MSVariable *var_;                           \
     MSValue *val_;                              \
     val_ = func_ ();                            \
-    var_ = ms_variable_new_value (val_);        \
-    ms_context_set_var (ctx, name_, var_);      \
-    ms_variable_unref (var_);                   \
+    var_ = [MSVariable new:val_];               \
+    [ctx setVar:name_ :var_];                   \
+    [var_ release];                             \
     ms_value_unref (val_);                      \
 } G_STMT_END;
 
@@ -347,29 +348,29 @@ _ms_context_add_builtin (MSContext *ctx)
     ADD_CONSTANT (ms_value_false, "false");
 
     for (i = 0; i < MS_BINARY_OP_LAST; ++i)
-        ADD_FUNC (ms_cfunc_new_2,
+        ADD_FUNC (new2,
                   _ms_binary_op_cfunc (i),
                   _ms_binary_op_name (i));
 
     for (i = 0; i < MS_UNARY_OP_LAST; ++i)
-        ADD_FUNC (ms_cfunc_new_1,
+        ADD_FUNC (new1,
                   _ms_unary_op_cfunc (i),
                   _ms_unary_op_name (i));
 
-    ADD_FUNC (ms_cfunc_new_1, str_func, "Str");
-    ADD_FUNC (ms_cfunc_new_1, int_func, "Int");
-    ADD_FUNC (ms_cfunc_new_1, len_func, "Len");
+    ADD_FUNC (new1, str_func, "Str");
+    ADD_FUNC (new1, int_func, "Int");
+    ADD_FUNC (new1, len_func, "Len");
 
-    ADD_FUNC (ms_cfunc_new_var, print_func, "Print");
-    ADD_FUNC (ms_cfunc_new_1, include_func, "Include");
-    ADD_FUNC (ms_cfunc_new_0, abort_func, "Abort");
+    ADD_FUNC (newVar, print_func, "Print");
+    ADD_FUNC (new1, include_func, "Include");
+    ADD_FUNC (new0, abort_func, "Abort");
 
-    ADD_FUNC (ms_cfunc_new_1, exec_func, "Exec");
-    ADD_FUNC (ms_cfunc_new_1, exec_async_func, "ExecAsync");
-    ADD_FUNC (ms_cfunc_new_1, file_exists_func, "FileExists");
+    ADD_FUNC (new1, exec_func, "Exec");
+    ADD_FUNC (new1, exec_async_func, "ExecAsync");
+    ADD_FUNC (new1, file_exists_func, "FileExists");
 
-    ADD_FUNC (ms_cfunc_new_1, prefs_get_func, "PrefsGet");
-    ADD_FUNC (ms_cfunc_new_2, prefs_set_func, "PrefsSet");
+    ADD_FUNC (new1, prefs_get_func, "PrefsGet");
+    ADD_FUNC (new2, prefs_set_func, "PrefsSet");
 
     ADD_FUNC_OBJ (ms_zenity_text, "Text");
     ADD_FUNC_OBJ (ms_zenity_entry, "Entry");
@@ -395,13 +396,13 @@ add_meth (MSValueClass *klass,
           MSFunc       *func)
 {
     _ms_value_class_add_method (klass, name, func);
-    g_object_unref (func);
+    [func release];
 }
 
 #define add_meth0(type, name, cfunc)                        \
-    add_meth (&types[type], name, ms_cfunc_new_1 (cfunc))
+    add_meth (&types[type], name, [MSCFunc new1:cfunc])
 #define add_meth1(type, name, cfunc)                        \
-    add_meth (&types[type], name, ms_cfunc_new_2 (cfunc))
+    add_meth (&types[type], name, [MSCFunc new2:cfunc])
 
 
 static void
@@ -486,8 +487,8 @@ list_max_func (MSValue   *val,
     MSValue *max;
 
     if (!val->u.list.n_elms)
-        return ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                        "requested MAX of empty list");
+        return [ctx formatError:MS_ERROR_VALUE
+                               :"requested MAX of empty list"];
 
     max = val->u.list.elms[0];
 
@@ -506,8 +507,8 @@ list_min_func (MSValue   *val,
     MSValue *min;
 
     if (!val->u.list.n_elms)
-        return ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                        "requested MIN of empty list");
+        return [ctx formatError:MS_ERROR_VALUE
+                               :"requested MIN of empty list"];
 
     min = val->u.list.elms[0];
 

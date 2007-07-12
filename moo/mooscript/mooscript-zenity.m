@@ -21,12 +21,12 @@
 #define CHECK_GTK(ctx)                                              \
 G_STMT_START {                                                      \
     if (!gtk_init_check (NULL, NULL))                               \
-        return ms_context_format_error (ctx, MS_ERROR_RUNTIME,      \
-                                        "could not open display");  \
+        return [ctx formatError:MS_ERROR_RUNTIME                    \
+                               :"could not open display"];          \
 } G_STMT_END
 
 
-static MSValue*
+static MSValue *
 entry_func (MSValue   **args,
             guint       n_args,
             MSContext  *ctx)
@@ -47,7 +47,7 @@ entry_func (MSValue   **args,
         hide_text = ms_value_get_bool (args[2]);
 
     dialog = gtk_dialog_new_with_buttons (NULL,
-                                          ctx->window,
+                                          [ctx window],
                                           GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR,
                                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                           GTK_STOCK_OK, GTK_RESPONSE_OK,
@@ -86,11 +86,11 @@ entry_func (MSValue   **args,
 MSFunc *
 ms_zenity_entry (void)
 {
-    return ms_cfunc_new_var (entry_func);
+    return [MSCFunc newVar:entry_func];
 }
 
 
-static MSValue*
+static MSValue *
 history_entry_func (MSValue   **args,
                     guint       n_args,
                     MSContext  *ctx)
@@ -110,7 +110,7 @@ history_entry_func (MSValue   **args,
         dialog_text = ms_value_print (args[2]);
 
     dialog = gtk_dialog_new_with_buttons (NULL,
-                                          ctx->window,
+                                          [ctx window],
                                           GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR,
                                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                           GTK_STOCK_OK, GTK_RESPONSE_OK,
@@ -164,11 +164,11 @@ history_entry_func (MSValue   **args,
 MSFunc *
 ms_zenity_history_entry (void)
 {
-    return ms_cfunc_new_var (history_entry_func);
+    return [MSCFunc newVar:history_entry_func];
 }
 
 
-static MSValue*
+static MSValue *
 text_func (MSValue   **args,
            guint       n_args,
            MSContext  *ctx)
@@ -187,7 +187,7 @@ text_func (MSValue   **args,
         dialog_text = ms_value_print (args[1]);
 
     dialog = gtk_dialog_new_with_buttons (NULL,
-                                          ctx->window,
+                                          [ctx window],
                                           GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR,
                                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                           GTK_STOCK_OK, GTK_RESPONSE_OK,
@@ -243,14 +243,14 @@ text_func (MSValue   **args,
     return result;
 }
 
-MSFunc*
+MSFunc *
 ms_zenity_text (void)
 {
-    return ms_cfunc_new_var (text_func);
+    return [MSCFunc newVar:text_func];
 }
 
 
-static MSValue*
+static MSValue *
 message_dialog (MSValue      **args,
                 guint          n_args,
                 MSContext     *ctx,
@@ -266,7 +266,7 @@ message_dialog (MSValue      **args,
     if (n_args > 0)
         dialog_text = ms_value_print (args[0]);
 
-    dialog = gtk_message_dialog_new (ctx->window,
+    dialog = gtk_message_dialog_new ([ctx window],
                                      GTK_DIALOG_MODAL,
                                      type, GTK_BUTTONS_NONE,
                                      "%s", dialog_text ? dialog_text : "");
@@ -305,7 +305,7 @@ message_dialog (MSValue      **args,
 }
 
 
-static MSValue*
+static MSValue *
 info_func (MSValue   **args,
            guint       n_args,
            MSContext  *ctx)
@@ -316,11 +316,11 @@ info_func (MSValue   **args,
 MSFunc *
 ms_zenity_info (void)
 {
-    return ms_cfunc_new_var (info_func);
+    return [MSCFunc newVar:info_func];
 }
 
 
-static MSValue*
+static MSValue *
 error_func (MSValue   **args,
             guint       n_args,
             MSContext  *ctx)
@@ -331,11 +331,11 @@ error_func (MSValue   **args,
 MSFunc *
 ms_zenity_error (void)
 {
-    return ms_cfunc_new_var (error_func);
+    return [MSCFunc newVar:error_func];
 }
 
 
-static MSValue*
+static MSValue *
 question_func (MSValue   **args,
                guint       n_args,
                MSContext  *ctx)
@@ -346,11 +346,11 @@ question_func (MSValue   **args,
 MSFunc *
 ms_zenity_question (void)
 {
-    return ms_cfunc_new_var (question_func);
+    return [MSCFunc newVar:question_func];
 }
 
 
-static MSValue*
+static MSValue *
 warning_func (MSValue   **args,
               guint       n_args,
               MSContext  *ctx)
@@ -361,11 +361,11 @@ warning_func (MSValue   **args,
 MSFunc *
 ms_zenity_warning (void)
 {
-    return ms_cfunc_new_var (warning_func);
+    return [MSCFunc newVar:warning_func];
 }
 
 
-static MSValue*
+static MSValue *
 file_selector_func (MSValue   **args,
                     guint       n_args,
                     MSContext  *ctx,
@@ -384,7 +384,7 @@ file_selector_func (MSValue   **args,
     if (n_args > 1)
         start = ms_value_print (args[1]);
 
-    dialog = moo_file_dialog_new (type, ctx->window, multiple, title, start, NULL);
+    dialog = moo_file_dialog_new (type, [ctx window], multiple, title, start, NULL);
 
     g_free (title);
     g_free (start);
@@ -423,7 +423,7 @@ file_selector_func (MSValue   **args,
 }
 
 
-static MSValue*
+static MSValue *
 choose_file_func (MSValue   **args,
                   guint       n_args,
                   MSContext  *ctx)
@@ -433,14 +433,14 @@ choose_file_func (MSValue   **args,
                                FALSE);
 }
 
-MSFunc*
+MSFunc *
 ms_zenity_choose_file (void)
 {
-    return ms_cfunc_new_var (choose_file_func);
+    return [MSCFunc newVar:choose_file_func];
 }
 
 
-static MSValue*
+static MSValue *
 choose_files_func (MSValue   **args,
                    guint       n_args,
                    MSContext  *ctx)
@@ -450,14 +450,14 @@ choose_files_func (MSValue   **args,
                                TRUE);
 }
 
-MSFunc*
+MSFunc *
 ms_zenity_choose_files (void)
 {
-    return ms_cfunc_new_var (choose_files_func);
+    return [MSCFunc newVar:choose_files_func];
 }
 
 
-static MSValue*
+static MSValue *
 choose_dir_func (MSValue   **args,
                  guint       n_args,
                  MSContext  *ctx)
@@ -467,14 +467,14 @@ choose_dir_func (MSValue   **args,
                                FALSE);
 }
 
-MSFunc*
+MSFunc *
 ms_zenity_choose_dir (void)
 {
-    return ms_cfunc_new_var (choose_dir_func);
+    return [MSCFunc newVar:choose_dir_func];
 }
 
 
-static MSValue*
+static MSValue *
 choose_file_save_func (MSValue   **args,
                        guint       n_args,
                        MSContext  *ctx)
@@ -484,8 +484,10 @@ choose_file_save_func (MSValue   **args,
                                FALSE);
 }
 
-MSFunc*
+MSFunc *
 ms_zenity_choose_file_save (void)
 {
-    return ms_cfunc_new_var (choose_file_save_func);
+    return [MSCFunc newVar:choose_file_save_func];
 }
+
+/* -*- objc -*- */

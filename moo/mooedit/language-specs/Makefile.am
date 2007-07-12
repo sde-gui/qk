@@ -104,6 +104,7 @@ endif
 
 EXTRA_DIST =			\
 	$(languagespecs_DATA)	\
-	moo.xml.in
+	moo.xml.in		\
+	styles.rng
 CLEANFILES =			\
 	moo.xml

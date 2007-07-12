@@ -35,7 +35,7 @@ _ms_node_eval (MSNode     *node,
                MSContext  *ctx)
 {
     g_return_val_if_fail (node != NULL, NULL);
-    g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
+    g_return_val_if_fail (ctx != nil, NULL);
     g_return_val_if_fail (node->eval != NULL, NULL);
     return node->eval (node, ctx);
 }
@@ -48,17 +48,17 @@ ms_top_node_eval (MSNode     *node,
     MSValue *ret;
 
     g_return_val_if_fail (node != NULL, NULL);
-    g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
+    g_return_val_if_fail (ctx != nil, NULL);
     g_return_val_if_fail (node->eval != NULL, NULL);
 
     ret = _ms_node_eval (node, ctx);
 
-    if (_ms_context_return_set (ctx))
-        _ms_context_unset_return (ctx);
-    if (_ms_context_break_set (ctx))
-        _ms_context_unset_break (ctx);
-    if (_ms_context_continue_set (ctx))
-        _ms_context_unset_continue (ctx);
+    if ([ctx returnSet])
+        [ctx unsetReturn];
+    if ([ctx breakSet])
+        [ctx unsetBreak];
+    if ([ctx continueSet])
+        [ctx unsetContinue];
 
     return ret;
 }
@@ -131,14 +131,14 @@ ms_node_list_eval (MSNode    *node,
         if (!ret)
             return NULL;
 
-        if (_ms_context_return_set (ctx))
+        if ([ctx returnSet])
         {
             ms_value_unref (ret);
-            ret = _ms_context_get_return (ctx);
+            ret = [ctx getReturn];
             break;
         }
 
-        if (_ms_context_break_set (ctx) || _ms_context_continue_set (ctx))
+        if ([ctx breakSet] || [ctx continueSet])
             break;
 
         if (i + 1 < list->n_nodes)
@@ -219,17 +219,17 @@ ms_node_env_var_eval (MSNode    *node,
 
     if (MS_VALUE_TYPE (name) != MS_VALUE_STRING || !name->u.str)
     {
-        ms_context_format_error (ctx, MS_ERROR_TYPE,
-                                 "in $(%v): variable name must be a string",
-                                 name);
+        [ctx formatError:MS_ERROR_TYPE
+                        :"in $(%v): variable name must be a string",
+                         name];
         ms_value_unref (name);
         return NULL;
     }
 
-    ret = ms_context_get_env_variable (ctx, name->u.str);
+    ret = [ctx getEnvVariable:name->u.str];
     ms_value_unref (name);
 
-    if (ret || _ms_context_error_set (ctx))
+    if (ret || [ctx errorSet])
         return ret;
 
     return var->dflt ? _ms_node_eval (var->dflt, ctx) : ms_value_none ();
@@ -273,7 +273,7 @@ ms_node_var_eval (MSNode    *node,
                   MSContext *ctx)
 {
     MSNodeVar *var = MS_NODE_VAR (node);
-    return ms_context_eval_variable (ctx, var->name);
+    return [ctx evalVariable:var->name];
 }
 
 
@@ -325,9 +325,9 @@ ms_node_function_eval (MSNode    *node_,
 
     if (!_ms_value_is_func (func))
     {
-        ms_context_format_error (ctx, MS_ERROR_TYPE,
-                                 "object <%r> is not a function",
-                                 func);
+        [ctx formatError:MS_ERROR_TYPE
+                        :"object <%r> is not a function",
+                         func];
         ms_value_unref (func);
         return NULL;
     }
@@ -497,10 +497,10 @@ ms_node_if_else_eval (MSNode    *node_,
 
     ret = _ms_node_eval (node_action, ctx);
 
-    if (_ms_context_return_set (ctx))
+    if ([ctx returnSet])
     {
         ms_value_unref (ret);
-        ret = _ms_context_get_return (ctx);
+        ret = [ctx getReturn];
     }
 
     return ret;
@@ -603,21 +603,21 @@ ms_loop_while (MSContext  *ctx,
             if (!ret)
                 return NULL;
 
-            if (_ms_context_return_set (ctx))
+            if ([ctx returnSet])
             {
                 ms_value_unref (ret);
-                ret = _ms_context_get_return (ctx);
+                ret = [ctx getReturn];
                 break;
             }
 
-            if (_ms_context_break_set (ctx))
+            if ([ctx breakSet])
             {
-                _ms_context_unset_break (ctx);
+                [ctx unsetBreak];
                 break;
             }
 
-            if (_ms_context_continue_set (ctx))
-                _ms_context_unset_continue (ctx);
+            if ([ctx continueSet])
+                [ctx unsetContinue];
         }
         else
         {
@@ -655,21 +655,21 @@ ms_loop_do_while (MSContext  *ctx,
         if (!ret)
             return NULL;
 
-        if (_ms_context_return_set (ctx))
+        if ([ctx returnSet])
         {
             ms_value_unref (ret);
-            ret = _ms_context_get_return (ctx);
+            ret = [ctx getReturn];
             break;
         }
 
-        if (_ms_context_break_set (ctx))
+        if ([ctx breakSet])
         {
-            _ms_context_unset_break (ctx);
+            [ctx unsetBreak];
             break;
         }
 
-        if (_ms_context_continue_set (ctx))
-            _ms_context_unset_continue (ctx);
+        if ([ctx continueSet])
+            [ctx unsetContinue];
 
         cond = _ms_node_eval (condition, ctx);
 
@@ -757,9 +757,9 @@ ms_node_for_eval (MSNode    *node,
     g_return_val_if_fail (loop->list != NULL, NULL);
 
     if (!MS_IS_NODE_VAR (loop->variable))
-        return ms_context_format_error (ctx, MS_ERROR_TYPE,
-                                        "illegal loop variable <%r>",
-                                        loop->variable);
+        return [ctx formatError:MS_ERROR_TYPE
+                               :"illegal loop variable <%r>",
+                                loop->variable];
 
     vallist = _ms_node_eval (loop->list, ctx);
 
@@ -767,15 +767,15 @@ ms_node_for_eval (MSNode    *node,
         return NULL;
 
     if (MS_VALUE_TYPE (vallist) != MS_VALUE_LIST)
-        return ms_context_format_error (ctx, MS_ERROR_TYPE,
-                                        "illegal loop list <%r>",
-                                        vallist);
+        return [ctx formatError:MS_ERROR_TYPE
+                               :"illegal loop list <%r>",
+                                vallist];
 
     var = MS_NODE_VAR (loop->variable);
 
     for (i = 0; i < vallist->u.list.n_elms; ++i)
     {
-        if (!ms_context_assign_variable (ctx, var->name, vallist->u.list.elms[i]))
+        if (![ctx assignVariable:var->name :vallist->u.list.elms[i]])
             goto error;
 
         ms_value_unref (ret);
@@ -788,21 +788,21 @@ ms_node_for_eval (MSNode    *node,
         if (!ret)
             goto error;
 
-        if (_ms_context_return_set (ctx))
+        if ([ctx returnSet])
         {
             ms_value_unref (ret);
-            ret = _ms_context_get_return (ctx);
+            ret = [ctx getReturn];
             break;
         }
 
-        if (_ms_context_break_set (ctx))
+        if ([ctx breakSet])
         {
-            _ms_context_unset_break (ctx);
+            [ctx unsetBreak];
             break;
         }
 
-        if (_ms_context_continue_set (ctx))
-            _ms_context_unset_continue (ctx);
+        if ([ctx continueSet])
+            [ctx unsetContinue];
     }
 
     if (!ret)
@@ -868,7 +868,7 @@ ms_node_assign_eval (MSNode    *node_,
     if (!value)
         return NULL;
 
-    if (!ms_context_assign_variable (ctx, node->var->name, value))
+    if (![ctx assignVariable:node->var->name :value])
     {
         ms_value_unref (value);
         return NULL;
@@ -977,9 +977,9 @@ ms_node_val_range_eval (MSNodeValList *node,
 
     if (!ms_value_get_int (vfirst, &first) || !ms_value_get_int (vlast, &last))
     {
-        ms_context_format_error (ctx, MS_ERROR_TYPE,
-                                 "illegal list bounds <%r> and <%r>",
-                                 vfirst, vlast);
+        [ctx formatError:MS_ERROR_TYPE
+                        :"illegal list bounds <%r> and <%r>",
+                         vfirst, vlast];
         ms_value_unref (vfirst);
         ms_value_unref (vlast);
         return NULL;
@@ -1127,8 +1127,9 @@ ms_node_get_item_eval (MSNode    *node_,
 
             if (!val)
             {
-                ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                         "no key '%s'", key->u.str);
+                [ctx formatError:MS_ERROR_VALUE
+                                :"no key '%s'",
+                                 key->u.str];
                 goto error;
             }
 
@@ -1136,25 +1137,25 @@ ms_node_get_item_eval (MSNode    *node_,
         }
         else
         {
-            ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                     "invalid dict key <%r>",
-                                     key);
+            [ctx formatError:MS_ERROR_VALUE
+                            :"invalid dict key <%r>",
+                             key];
             goto error;
         }
     }
 
     if (!ms_value_get_int (key, &index))
     {
-        ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                 "invalid list index <%r>",
-                                 key);
+        [ctx formatError:MS_ERROR_VALUE
+                        :"invalid list index <%r>",
+                         key];
         goto error;
     }
 
     if (index < 0)
     {
-        ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                 "index out of range");
+        [ctx formatError:MS_ERROR_VALUE
+                        :"index out of range"];
         goto error;
     }
 
@@ -1169,16 +1170,16 @@ ms_node_get_item_eval (MSNode    *node_,
             break;
 
         default:
-            ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                     "<%r> is not subscriptable",
-                                     obj);
+            [ctx formatError:MS_ERROR_VALUE
+                            :"<%r> is not subscriptable",
+                             obj];
             goto error;
     }
 
     if ((guint) index >= len)
     {
-        ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                 "index out of range");
+        [ctx formatError:MS_ERROR_VALUE
+                        :"index out of range"];
         goto error;
     }
 
@@ -1274,24 +1275,25 @@ ms_node_set_item_eval (MSNode    *node_,
         }
         else
         {
-            ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                     "invalid dict key <%r>",
-                                     key);
+            [ctx formatError:MS_ERROR_VALUE
+                            :"invalid dict key <%r>",
+                             key];
             goto error;
         }
     }
 
     if (!ms_value_get_int (key, &index))
     {
-        ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                 "invalid list index <%r>", key);
+        [ctx formatError:MS_ERROR_VALUE
+                        :"invalid list index <%r>",
+                         key];
         goto error;
     }
 
     if (index < 0)
     {
-        ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                 "index out of range");
+        [ctx formatError:MS_ERROR_VALUE
+                        :"index out of range"];
         goto error;
     }
 
@@ -1302,16 +1304,16 @@ ms_node_set_item_eval (MSNode    *node_,
             break;
 
         default:
-            ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                     "invalid list assignment for <%r>",
-                                     obj);
+            [ctx formatError:MS_ERROR_VALUE
+                            :"invalid list assignment for <%r>",
+                             obj];
             goto error;
     }
 
     if ((guint) index >= len)
     {
-        ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                 "index out of range");
+        [ctx formatError:MS_ERROR_VALUE
+                        :"index out of range"];
         goto error;
     }
 
@@ -1390,7 +1392,7 @@ ms_node_return_eval (MSNode    *node_,
         ret = ms_value_none ();
     }
 
-    _ms_context_set_return (ctx, ret);
+    [ctx setReturn:ret];
 
     return ret;
 }
@@ -1425,10 +1427,10 @@ ms_node_break_eval (MSNode    *node_,
     switch (node->type)
     {
         case MS_BREAK_BREAK:
-            _ms_context_set_break (ctx);
+            [ctx setBreak];
             break;
         case MS_BREAK_CONTINUE:
-            _ms_context_set_continue (ctx);
+            [ctx setContinue];
             break;
         default:
             g_assert_not_reached ();
@@ -1487,8 +1489,9 @@ ms_node_dict_elm_eval (MSNode    *node_,
     ms_value_unref (obj);
 
     if (!val)
-        return ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                        "no key '%s'", node->key);
+        return [ctx formatError:MS_ERROR_VALUE
+                               :"no key '%s'",
+                                node->key];
     else
         return val;
 }
@@ -1547,9 +1550,9 @@ ms_node_dict_assign_eval (MSNode    *node_,
 
     if (MS_VALUE_TYPE (obj) != MS_VALUE_DICT)
     {
-        ms_context_format_error (ctx, MS_ERROR_TYPE,
-                                 "<%r> is not a dict object",
-                                 obj);
+        [ctx formatError:MS_ERROR_TYPE
+                        :"<%r> is not a dict object",
+                         obj];
         goto error;
     }
 
@@ -1682,3 +1685,5 @@ _ms_node_dict_new (MSNodeList *entries)
 
     return node;
 }
+
+/* -*- objc -*- */

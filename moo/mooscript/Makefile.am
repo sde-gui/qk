@@ -6,6 +6,7 @@ mooscript_yacc: $(srcdir)/mooscript.y
 	bison -o $(srcdir)/mooscript-yacc.m -d $(srcdir)/mooscript.y
 
 mooscript.lo: mooscript-yacc.lo
+mooscript-context-private.lo: mooscript-context.lo
 
 mooscript_headers =			\
 	mooscript-context.h		\

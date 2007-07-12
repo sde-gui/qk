@@ -19,25 +19,28 @@
 G_BEGIN_DECLS
 
 
-void         _ms_context_add_builtin        (MSContext  *ctx);
+@interface MSContext (MSContextPrivate)
+- (MSVariable*) lookupVar:(CSTR)name;
 
-void         _ms_context_print              (MSContext  *ctx,
-                                             const char *string);
+- (void) print:(CSTR) string;
 
-void         _ms_context_set_return         (MSContext  *ctx,
-                                             MSValue    *val);
-MSValue     *_ms_context_get_return         (MSContext  *ctx);
+- (void) setReturn:(MSValue*) val;
+- (MSValue*) getReturn;
 
-void         _ms_context_set_break          (MSContext  *ctx);
-void         _ms_context_set_continue       (MSContext  *ctx);
-void         _ms_context_unset_return       (MSContext  *ctx);
-void         _ms_context_unset_break        (MSContext  *ctx);
-void         _ms_context_unset_continue     (MSContext  *ctx);
+- (void) setBreak;
+- (void) setContinue;
+- (void) unsetReturn;
+- (void) unsetBreak;
+- (void) unsetContinue;
 
-gboolean     _ms_context_return_set         (MSContext  *ctx);
-gboolean     _ms_context_break_set          (MSContext  *ctx);
-gboolean     _ms_context_continue_set       (MSContext  *ctx);
-gboolean     _ms_context_error_set          (MSContext  *ctx);
+- (BOOL) returnSet;
+- (BOOL) breakSet;
+- (BOOL) continueSet;
+- (BOOL) errorSet;
+@end
+
+
+void _ms_context_add_builtin (MSContext *ctx);
 
 
 G_END_DECLS

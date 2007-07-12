@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-12 00:33-0500\n"
+"POT-Creation-Date: 2007-07-12 04:52-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Yevgen Muntyan <muntyan@tamu.edu>\n"
 "MIME-Version: 1.0\n"
@@ -543,7 +543,7 @@ msgstr ""
 msgid "Output|New document"
 msgstr "Новый документ"
 
-#: ../moo/mooedit/moocommand-script.c:241
+#: ../moo/mooedit/moocommand-script.m:241
 msgid "MooScript"
 msgstr ""
 

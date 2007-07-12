@@ -83,12 +83,14 @@
 #include <mooutils/mooutils-misc.h>
 #include <mooutils/moowindow.h>
 
+#ifdef __OBJC__
 #include <mooscript/mooscript-context.h>
 #include <mooscript/mooscript-func.h>
 #include <mooscript/mooscript-node.h>
 #include <mooscript/mooscript-parser.h>
 #include <mooscript/mooscript-value.h>
 #include <mooscript/mooscript-zenity.h>
+#endif
 
 #include <moofileview/moofileview.h>
 

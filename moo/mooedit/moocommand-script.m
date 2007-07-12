@@ -51,7 +51,7 @@ set_variable (const char   *name,
     ms_value = ms_value_from_gvalue (value);
     g_return_if_fail (ms_value != NULL);
 
-    ms_context_assign_variable (ctx, name, ms_value);
+    [ctx assignVariable:name :ms_value];
     ms_value_unref (ms_value);
 }
 
@@ -68,8 +68,8 @@ moo_command_script_run (MooCommand        *cmd_base,
 
     g_return_if_fail (cmd->priv->script != NULL);
 
-    script_ctx = moo_edit_script_context_new (moo_command_context_get_doc (ctx),
-                                              moo_command_context_get_window (ctx));
+    script_ctx = [MooEditScriptContext new:moo_command_context_get_doc (ctx)
+                                          :moo_command_context_get_window (ctx)];
     g_return_if_fail (script_ctx != NULL);
 
     moo_command_context_foreach (ctx, set_variable, script_ctx);
@@ -87,12 +87,12 @@ moo_command_script_run (MooCommand        *cmd_base,
 
     if (!ret)
     {
-        g_print ("%s\n", ms_context_get_error_msg (script_ctx));
-        ms_context_clear_error (script_ctx);
+        g_print ("%s\n", [script_ctx getErrorMsg]);
+        [script_ctx clearError];
     }
 
     ms_value_unref (ret);
-    g_object_unref (script_ctx);
+    [script_ctx release];
 }
 
 
