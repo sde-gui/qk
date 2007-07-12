@@ -53,16 +53,13 @@ moo/mooedit/language-specs/Makefile
 moo/mooedit/gtksourceview/Makefile
 moo/mooedit/gtksourceview/upstream/Makefile
 moo/mooedit/plugins/Makefile
-moo/mooedit/plugins/activestrings/Makefile
 moo/mooedit/plugins/fileselector/Makefile
-moo/mooedit/plugins/completion/Makefile
 moo/mooapp/Makefile
 moo/mooapp/smclient/Makefile
 moo/moopython/Makefile
 moo/moopython/plugins/Makefile
 moo/moopython/plugins/pyproject/Makefile
 moo/moopython/pygtk/Makefile
-moo/moopython/pygtk/goocanvas/Makefile
 moo/mooutils/pcre/Makefile
 moo/mooutils/xdgmime/Makefile
 moo/mooterm/mootermhelper_res.rc
