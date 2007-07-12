@@ -61,7 +61,7 @@ struct _MooCommandExePrivate {
 };
 
 
-G_DEFINE_TYPE (MooCommandExe, moo_command_exe, MOO_TYPE_COMMAND)
+G_DEFINE_TYPE (MooCommandExe, _moo_command_exe, MOO_TYPE_COMMAND)
 
 typedef MooCommandFactory MooCommandFactoryExe;
 typedef MooCommandFactoryClass MooCommandFactoryExeClass;
@@ -69,7 +69,7 @@ MOO_DEFINE_TYPE_STATIC (MooCommandFactoryExe, _moo_command_factory_exe, MOO_TYPE
 
 
 static void
-moo_command_exe_init (MooCommandExe *cmd)
+_moo_command_exe_init (MooCommandExe *cmd)
 {
     cmd->priv = G_TYPE_INSTANCE_GET_PRIVATE (cmd,
                                              MOO_TYPE_COMMAND_EXE,
@@ -85,7 +85,7 @@ moo_command_exe_finalize (GObject *object)
     g_free (cmd->priv->filter);
     g_free (cmd->priv->cmd_line);
 
-    G_OBJECT_CLASS (moo_command_exe_parent_class)->finalize (object);
+    G_OBJECT_CLASS (_moo_command_exe_parent_class)->finalize (object);
 }
 
 
@@ -530,12 +530,12 @@ moo_command_exe_check_sensitive (MooCommand *cmd_base,
 
     moo_command_set_options (cmd_base, options);
 
-    return MOO_COMMAND_CLASS (moo_command_exe_parent_class)->check_sensitive (cmd_base, doc, window);
+    return MOO_COMMAND_CLASS (_moo_command_exe_parent_class)->check_sensitive (cmd_base, doc, window);
 }
 
 
 static void
-moo_command_exe_class_init (MooCommandExeClass *klass)
+_moo_command_exe_class_init (MooCommandExeClass *klass)
 {
     MooCommandFactory *factory;
 

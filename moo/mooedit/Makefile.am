@@ -51,6 +51,8 @@ mooedit_sources =			\
 	moocommand.c			\
 	moocommanddisplay.c		\
 	moocommanddisplay.h		\
+	moocommand-builtin.h		\
+	moocommand-builtin.c		\
 	moocommand-exe.h		\
 	moocommand-exe-private.h	\
 	moocommand.h			\

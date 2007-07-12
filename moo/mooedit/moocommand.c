@@ -15,6 +15,7 @@
 #include "mooedit/moocommand-private.h"
 #include "mooedit/moocommand-script.h"
 #include "mooedit/moocommand-exe.h"
+#include "mooedit/moocommand-builtin.h"
 #include "mooedit/mooeditwindow.h"
 #include "mooedit/moooutputfilterregex.h"
 #include "mooedit/mooedit-enums.h"
@@ -190,10 +191,34 @@ moo_command_factory_finalize (GObject *object)
     G_OBJECT_CLASS (moo_command_factory_parent_class)->finalize (object);
 }
 
+static GtkWidget *
+dummy_create_widget (G_GNUC_UNUSED MooCommandFactory *factory)
+{
+    return gtk_vbox_new (FALSE, FALSE);
+}
+
+static void
+dummy_load_data (G_GNUC_UNUSED MooCommandFactory *factory,
+                 G_GNUC_UNUSED GtkWidget *page,
+                 G_GNUC_UNUSED MooCommandData *data)
+{
+}
+
+static gboolean
+dummy_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
+                 G_GNUC_UNUSED GtkWidget *page,
+                 G_GNUC_UNUSED MooCommandData *data)
+{
+    return FALSE;
+}
+
 static void
 moo_command_factory_class_init (MooCommandFactoryClass *klass)
 {
     G_OBJECT_CLASS (klass)->finalize = moo_command_factory_finalize;
+    klass->create_widget = dummy_create_widget;
+    klass->load_data = dummy_load_data;
+    klass->save_data = dummy_save_data;
 }
 
 
@@ -613,7 +638,6 @@ moo_command_context_get (MooCommandContext  *ctx,
 }
 
 
-#if 0
 const char *
 moo_command_context_get_string (MooCommandContext  *ctx,
                                 const char         *name)
@@ -631,7 +655,6 @@ moo_command_context_get_string (MooCommandContext  *ctx,
     g_return_val_if_fail (G_VALUE_TYPE (&var->value) == G_TYPE_STRING, NULL);
     return g_value_get_string (&var->value);
 }
-#endif
 
 
 void
@@ -1115,6 +1138,7 @@ _moo_command_init (void)
 
     if (!been_here)
     {
+        g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_BUILTIN));
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_SCRIPT));
 #ifndef __WIN32__
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_EXE));

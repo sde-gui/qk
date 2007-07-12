@@ -29,7 +29,7 @@ struct _MooCommandScriptPrivate {
     MSNode *script;
 };
 
-G_DEFINE_TYPE (MooCommandScript, moo_command_script, MOO_TYPE_COMMAND)
+G_DEFINE_TYPE (MooCommandScript, _moo_command_script, MOO_TYPE_COMMAND)
 
 typedef MooCommandFactory MooCommandFactoryScript;
 typedef MooCommandFactoryClass MooCommandFactoryScriptClass;
@@ -107,7 +107,7 @@ moo_command_script_dispose (GObject *object)
         cmd->priv = NULL;
     }
 
-    G_OBJECT_CLASS(moo_command_script_parent_class)->dispose (object);
+    G_OBJECT_CLASS(_moo_command_script_parent_class)->dispose (object);
 }
 
 
@@ -228,7 +228,7 @@ _moo_command_factory_script_class_init (MooCommandFactoryClass *klass)
 
 
 static void
-moo_command_script_class_init (MooCommandScriptClass *klass)
+_moo_command_script_class_init (MooCommandScriptClass *klass)
 {
     MooCommandFactory *factory;
 
@@ -244,7 +244,7 @@ moo_command_script_class_init (MooCommandScriptClass *klass)
 
 
 static void
-moo_command_script_init (MooCommandScript *cmd)
+_moo_command_script_init (MooCommandScript *cmd)
 {
     cmd->priv = G_TYPE_INSTANCE_GET_PRIVATE (cmd,
                                              MOO_TYPE_COMMAND_SCRIPT,
