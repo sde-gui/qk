@@ -231,8 +231,10 @@ static GtkAction *create_goto_bookmark_action   (MooWindow          *window,
 static GtkAction *create_bookmarks_menu_action  (MooWindow          *window,
                                                  gpointer            data);
 #endif
+#if 0
 static void action_next_ph                      (MooEditWindow      *window);
 static void action_prev_ph                      (MooEditWindow      *window);
+#endif
 static void action_find_now_f                   (MooEditWindow      *window);
 static void action_find_now_b                   (MooEditWindow      *window);
 static void action_abort_jobs                   (MooEditWindow      *window);
@@ -710,23 +712,25 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 #endif
 
+#if 0
     moo_window_class_new_action (window_class, "NextPlaceholder", NULL,
-                                 "display-name", _("Next Placeholder"),
-                                 "label", _("Next Placeholder"),
-                                 "tooltip", _("Go to next placeholder"),
+                                 "display-name", "Next Placeholder",
+                                 "label", "Next Placeholder",
+                                 "tooltip", "Go to next placeholder",
                                  "stock-id", GTK_STOCK_GO_FORWARD,
                                  "closure-callback", action_next_ph,
                                  "condition::visible", "has-open-document",
                                  NULL);
 
     moo_window_class_new_action (window_class, "PrevPlaceholder", NULL,
-                                 "display-name", _("Previous Placeholder"),
-                                 "label", _("Previous Placeholder"),
-                                 "tooltip", _("Go to previous placeholder"),
+                                 "display-name", "Previous Placeholder",
+                                 "label", "Previous Placeholder",
+                                 "tooltip", "Go to previous placeholder",
                                  "stock-id", GTK_STOCK_GO_BACK,
                                  "closure-callback", action_prev_ph,
                                  "condition::visible", "has-open-document",
                                  NULL);
+#endif
 
     moo_window_class_new_action (window_class, "Comment", NULL,
                                  /* action */
@@ -1619,6 +1623,7 @@ create_bookmarks_menu_action (MooWindow *window,
 #endif
 
 
+#if 0
 static void
 action_next_ph (MooEditWindow *window)
 {
@@ -1635,6 +1640,7 @@ action_prev_ph (MooEditWindow *window)
     g_return_if_fail (doc != NULL);
     moo_text_view_prev_placeholder (MOO_TEXT_VIEW (doc));
 }
+#endif
 
 
 #ifdef ENABLE_PRINTING
