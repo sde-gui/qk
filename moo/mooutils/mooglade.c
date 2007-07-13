@@ -11,6 +11,15 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#ifdef GTK_DISABLE_DEPRECATED
+#undef GTK_DISABLE_DEPRECATED
+#include <gtk/gtkcombo.h>
+#include <gtk/gtklist.h>
+#include <gtk/gtklistitem.h>
+#include <gtk/gtkoptionmenu.h>
+#define GTK_DISABLE_DEPRECATED
+#endif
+
 #include "mooutils/mooglade.h"
 #include "mooutils/moomarkup.h"
 #include "mooutils/mooutils-gobject.h"
@@ -22,16 +31,6 @@
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
-
-#ifdef GTK_DISABLE_DEPRECATED
-#undef GTK_DISABLE_DEPRECATED
-#include <gtk/gtkcombo.h>
-#include <gtk/gtklist.h>
-#include <gtk/gtklistitem.h>
-#include <gtk/gtkoptionmenu.h>
-#define GTK_DISABLE_DEPRECATED
-#endif
-
 
 G_DEFINE_TYPE (MooGladeXML, moo_glade_xml, G_TYPE_OBJECT)
 
@@ -2821,7 +2820,6 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkToolbarChildType", GTK_TYPE_TOOLBAR_CHILD_TYPE);
     REGISTER_TYPE ("GtkToolbarSpaceStyle", GTK_TYPE_TOOLBAR_SPACE_STYLE);
     REGISTER_TYPE ("GtkToolbarStyle", GTK_TYPE_TOOLBAR_STYLE);
-    REGISTER_TYPE ("GtkTooltips", GTK_TYPE_TOOLTIPS);
     REGISTER_TYPE ("GtkTreeDragDest", GTK_TYPE_TREE_DRAG_DEST);
     REGISTER_TYPE ("GtkTreeDragSource", GTK_TYPE_TREE_DRAG_SOURCE);
     REGISTER_TYPE ("GtkTreeIter", GTK_TYPE_TREE_ITER);

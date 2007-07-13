@@ -1631,6 +1631,7 @@ void
 _moo_widget_set_tooltip (GtkWidget  *widget,
                          const char *tip)
 {
+#if !GTK_CHECK_VERSION(2,11,6)
     static GtkTooltips *tooltips;
 
     g_return_if_fail (GTK_IS_WIDGET (widget));
@@ -1642,6 +1643,14 @@ _moo_widget_set_tooltip (GtkWidget  *widget,
         gtk_tool_item_set_tooltip (GTK_TOOL_ITEM (widget), tooltips, tip, NULL);
     else
         gtk_tooltips_set_tip (tooltips, widget, tip, tip);
+#else
+    g_return_if_fail (GTK_IS_WIDGET (widget));
+
+    if (GTK_IS_TOOL_ITEM (widget))
+        gtk_tool_item_set_tooltip_text (GTK_TOOL_ITEM (widget), tip);
+    else
+        gtk_widget_set_tooltip_text (widget, tip);
+#endif
 }
 
 
