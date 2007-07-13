@@ -6142,7 +6142,7 @@ _gtk_source_context_data_finish_parse (GtkSourceContextData *ctx_data,
 	struct ResolveRefData data;
 
 	g_return_val_if_fail (ctx_data != NULL, FALSE);
-	g_return_val_if_fail (error != NULL && *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	while (overrides != NULL)
 	{
