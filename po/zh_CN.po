@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-13 14:47-0500\n"
+"POT-Creation-Date: 2007-07-13 16:05-0500\n"
 "PO-Revision-Date: 2007-06-16 21:04-0600\n"
 "Last-Translator: Chaosye <chao-7410@163.com>\n"
 "MIME-Version: 1.0\n"
@@ -330,35 +330,38 @@ msgstr "打印页脚"
 msgid "Print header"
 msgstr "打印标题"
 
-#: ../moo/mooedit/glade/mooprint.glade.h:8
+#. Part of the phrase "Print line numbers" "every" "1" "lines"
+#: ../moo/mooedit/glade/mooprint.glade.h:9
 msgid "Print line numbers"
 msgstr "打印行号"
 
-#: ../moo/mooedit/glade/mooprint.glade.h:9
+#: ../moo/mooedit/glade/mooprint.glade.h:10
 msgid "Print separator line"
 msgstr "打印分隔线"
 
-#: ../moo/mooedit/glade/mooprint.glade.h:10
+#: ../moo/mooedit/glade/mooprint.glade.h:11
 msgid "Print using text styles"
 msgstr "使用文本风格打印"
 
-#: ../moo/mooedit/glade/mooprint.glade.h:11
+#: ../moo/mooedit/glade/mooprint.glade.h:12
 msgid "Right:"
 msgstr "右"
 
-#: ../moo/mooedit/glade/mooprint.glade.h:12
+#: ../moo/mooedit/glade/mooprint.glade.h:13
 msgid "Use custom font:"
 msgstr "使用自定义字体:"
 
-#: ../moo/mooedit/glade/mooprint.glade.h:13
+#: ../moo/mooedit/glade/mooprint.glade.h:14
 msgid "Wrap long lines"
 msgstr "长行换行"
 
-#: ../moo/mooedit/glade/mooprint.glade.h:14
+#. Part of the phrase "Print line numbers" "every" "1" "lines"
+#: ../moo/mooedit/glade/mooprint.glade.h:16
 msgid "every"
 msgstr "所有"
 
-#: ../moo/mooedit/glade/mooprint.glade.h:15
+#. Part of the phrase "Print line numbers" "every" "1" "lines"
+#: ../moo/mooedit/glade/mooprint.glade.h:18
 msgid "lines"
 msgstr "行"
 
@@ -380,7 +383,7 @@ msgid "Find"
 msgstr "查找"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:4
-#: ../moo/mooedit/mooeditwindow.c:552
+#: ../moo/mooedit/mooeditwindow.c:554
 msgid "Find _Next"
 msgstr "查找下一个(_N)"
 
@@ -441,7 +444,7 @@ msgid "_Replace"
 msgstr "替换(_R)"
 
 #: ../moo/mooedit/glade/mootextgotoline.glade.h:1
-#: ../moo/mooedit/mooeditwindow.c:602
+#: ../moo/mooedit/mooeditwindow.c:604
 msgid "Go to Line"
 msgstr "跳到行"
 
@@ -664,7 +667,7 @@ msgstr "丢弃对文档'%s'的修改?"
 msgid "If you reload the document, changes will be discarded"
 msgstr "如果你重新加载文档,修改将会对丢弃"
 
-#: ../moo/mooedit/mooeditdialogs.c:617 ../moo/mooedit/mooeditwindow.c:397
+#: ../moo/mooedit/mooeditdialogs.c:617 ../moo/mooedit/mooeditwindow.c:399
 msgid "_Reload"
 msgstr "重新加载(_R)"
 
@@ -700,254 +703,238 @@ msgstr ""
 "已到达文档的底端.\n"
 "从项端继续吗?"
 
-#: ../moo/mooedit/mooeditwindow.c:380
+#: ../moo/mooedit/mooeditwindow.c:382
 msgid "Create new document"
 msgstr "新建"
 
-#: ../moo/mooedit/mooeditwindow.c:388
+#: ../moo/mooedit/mooeditwindow.c:390
 msgid "_Open..."
 msgstr "打开(_O)"
 
-#: ../moo/mooedit/mooeditwindow.c:389
+#: ../moo/mooedit/mooeditwindow.c:391
 msgid "Open..."
 msgstr "打开"
 
-#: ../moo/mooedit/mooeditwindow.c:396 ../moo/moofileview/moofileview.c:1274
+#: ../moo/mooedit/mooeditwindow.c:398 ../moo/moofileview/moofileview.c:1274
 #: ../moo/moofileview/moofileview.c:1275
 msgid "Reload"
 msgstr "重新加载"
 
-#: ../moo/mooedit/mooeditwindow.c:398
+#: ../moo/mooedit/mooeditwindow.c:400
 msgid "Reload document"
 msgstr "重新加载"
 
-#: ../moo/mooedit/mooeditwindow.c:417
+#: ../moo/mooedit/mooeditwindow.c:419
 msgid "Save _As..."
 msgstr "另存为(_A)"
 
-#: ../moo/mooedit/mooeditwindow.c:418
+#: ../moo/mooedit/mooeditwindow.c:420
 msgid "Save as..."
 msgstr "另存为"
 
-#: ../moo/mooedit/mooeditwindow.c:428
+#: ../moo/mooedit/mooeditwindow.c:430
 msgid "Close document"
 msgstr "关闭文档"
 
-#: ../moo/mooedit/mooeditwindow.c:436
+#: ../moo/mooedit/mooeditwindow.c:438
 msgid "Close All"
 msgstr "全部关闭"
 
-#: ../moo/mooedit/mooeditwindow.c:437
+#: ../moo/mooedit/mooeditwindow.c:439
 msgid "Close _All"
 msgstr "全部关闭(_A)"
 
-#: ../moo/mooedit/mooeditwindow.c:438
+#: ../moo/mooedit/mooeditwindow.c:440
 msgid "Close all documents"
 msgstr "全部关闭"
 
-#: ../moo/mooedit/mooeditwindow.c:520
+#: ../moo/mooedit/mooeditwindow.c:522
 msgid "Previous Tab"
 msgstr "上一个标签"
 
-#: ../moo/mooedit/mooeditwindow.c:521
+#: ../moo/mooedit/mooeditwindow.c:523
 msgid "_Previous Tab"
 msgstr "上一个标签(_P)"
 
-#: ../moo/mooedit/mooeditwindow.c:522
+#: ../moo/mooedit/mooeditwindow.c:524
 msgid "Previous tab"
 msgstr "上一个标签"
 
-#: ../moo/mooedit/mooeditwindow.c:530
+#: ../moo/mooedit/mooeditwindow.c:532
 msgid "Next Tab"
 msgstr "下一个标签"
 
-#: ../moo/mooedit/mooeditwindow.c:531
+#: ../moo/mooedit/mooeditwindow.c:533
 msgid "_Next Tab"
 msgstr "下一个标签(_N)"
 
-#: ../moo/mooedit/mooeditwindow.c:532
+#: ../moo/mooedit/mooeditwindow.c:534
 msgid "Next tab"
 msgstr "下一个标签"
 
-#: ../moo/mooedit/mooeditwindow.c:551
+#: ../moo/mooedit/mooeditwindow.c:553
 msgid "Find Next"
 msgstr "查找下一个"
 
-#: ../moo/mooedit/mooeditwindow.c:553
+#: ../moo/mooedit/mooeditwindow.c:555
 msgid "Find next"
 msgstr "查找下一个"
 
-#: ../moo/mooedit/mooeditwindow.c:562
+#: ../moo/mooedit/mooeditwindow.c:564
 msgid "Find Previous"
 msgstr "查找上一个"
 
-#: ../moo/mooedit/mooeditwindow.c:563
+#: ../moo/mooedit/mooeditwindow.c:565
 msgid "Find _Previous"
 msgstr "查找上一个(_P)"
 
-#: ../moo/mooedit/mooeditwindow.c:564
+#: ../moo/mooedit/mooeditwindow.c:566
 msgid "Find previous"
 msgstr "查找上一个"
 
-#: ../moo/mooedit/mooeditwindow.c:584
+#: ../moo/mooedit/mooeditwindow.c:586
 msgid "Find Current Word"
 msgstr "向后查找当前单词"
 
-#: ../moo/mooedit/mooeditwindow.c:585
+#: ../moo/mooedit/mooeditwindow.c:587
 msgid "Find Current _Word"
 msgstr "向后查找当前单词(_F)"
 
-#: ../moo/mooedit/mooeditwindow.c:593
+#: ../moo/mooedit/mooeditwindow.c:595
 msgid "Find Current Word Backwards"
 msgstr "向前查找当前单词"
 
-#: ../moo/mooedit/mooeditwindow.c:594
+#: ../moo/mooedit/mooeditwindow.c:596
 msgid "Find Current Word _Backwards"
 msgstr "向前查找当前单词(_B)"
 
-#: ../moo/mooedit/mooeditwindow.c:603
+#: ../moo/mooedit/mooeditwindow.c:605
 msgid "_Go to Line..."
 msgstr "跳到行(_G)"
 
-#: ../moo/mooedit/mooeditwindow.c:604
+#: ../moo/mooedit/mooeditwindow.c:606
 msgid "Go to line..."
 msgstr "跳到行"
 
-#: ../moo/mooedit/mooeditwindow.c:612
+#: ../moo/mooedit/mooeditwindow.c:614
 msgid "_Document"
 msgstr "文档(_D)"
 
-#: ../moo/mooedit/mooeditwindow.c:619
+#: ../moo/mooedit/mooeditwindow.c:621
 msgid "Toggle Text Wrapping"
 msgstr "切换换行"
 
-#: ../moo/mooedit/mooeditwindow.c:620
+#: ../moo/mooedit/mooeditwindow.c:622
 msgid "_Wrap Text"
 msgstr "换行(_W)"
 
-#: ../moo/mooedit/mooeditwindow.c:627
+#: ../moo/mooedit/mooeditwindow.c:629
 msgid "Toggle Line Numbers Display"
 msgstr "切换行号显示"
 
-#: ../moo/mooedit/mooeditwindow.c:628
+#: ../moo/mooedit/mooeditwindow.c:630
 msgid "_Show Line Numbers"
 msgstr "显示行号"
 
-#: ../moo/mooedit/mooeditwindow.c:634
+#: ../moo/mooedit/mooeditwindow.c:636
 msgid "Focus Document"
 msgstr "聚焦到文档"
 
-#: ../moo/mooedit/mooeditwindow.c:635
+#: ../moo/mooedit/mooeditwindow.c:637
 msgid "_Focus Document"
 msgstr "聚焦到文档(_F)"
 
-#: ../moo/mooedit/mooeditwindow.c:686 ../moo/mooedit/mooeditwindow.c:687
+#: ../moo/mooedit/mooeditwindow.c:688 ../moo/mooedit/mooeditwindow.c:689
 msgid "Toggle Bookmark"
 msgstr "书签切换"
 
-#: ../moo/mooedit/mooeditwindow.c:695 ../moo/mooedit/mooeditwindow.c:696
+#: ../moo/mooedit/mooeditwindow.c:697 ../moo/mooedit/mooeditwindow.c:698
 msgid "Next Bookmark"
 msgstr "下一个书签"
 
-#: ../moo/mooedit/mooeditwindow.c:704 ../moo/mooedit/mooeditwindow.c:705
+#: ../moo/mooedit/mooeditwindow.c:706 ../moo/mooedit/mooeditwindow.c:707
 msgid "Previous Bookmark"
 msgstr "上一个书签"
 
-#: ../moo/mooedit/mooeditwindow.c:714 ../moo/mooedit/mooeditwindow.c:715
-msgid "Next Placeholder"
-msgstr "下一个占位符"
-
-#: ../moo/mooedit/mooeditwindow.c:716
-msgid "Go to next placeholder"
-msgstr "回到下一个占位符"
-
-#: ../moo/mooedit/mooeditwindow.c:723 ../moo/mooedit/mooeditwindow.c:724
-msgid "Previous Placeholder"
-msgstr "前一个占位符"
-
-#: ../moo/mooedit/mooeditwindow.c:725
-msgid "Go to previous placeholder"
-msgstr "回到前一个占位符"
-
 #. action
-#: ../moo/mooedit/mooeditwindow.c:733 ../moo/mooedit/mooeditwindow.c:734
-#: ../moo/mooedit/mooeditwindow.c:735
+#: ../moo/mooedit/mooeditwindow.c:737 ../moo/mooedit/mooeditwindow.c:738
+#: ../moo/mooedit/mooeditwindow.c:739
 msgid "Comment"
 msgstr "备注"
 
 #. action
-#: ../moo/mooedit/mooeditwindow.c:743 ../moo/mooedit/mooeditwindow.c:744
-#: ../moo/mooedit/mooeditwindow.c:745
+#: ../moo/mooedit/mooeditwindow.c:747 ../moo/mooedit/mooeditwindow.c:748
+#: ../moo/mooedit/mooeditwindow.c:749
 msgid "Uncomment"
 msgstr "撤消备注"
 
 #. Insensitive menu item which appears in Window menu with no documents open
-#: ../moo/mooedit/mooeditwindow.c:773
+#: ../moo/mooedit/mooeditwindow.c:777
 msgid "No Documents"
 msgstr "没有文档"
 
-#: ../moo/mooedit/mooeditwindow.c:781 ../moo/mooedit/mooeditwindow.c:782
-#: ../moo/mooedit/mooeditwindow.c:783
+#: ../moo/mooedit/mooeditwindow.c:785 ../moo/mooedit/mooeditwindow.c:786
+#: ../moo/mooedit/mooeditwindow.c:787
 msgid "Page Setup"
 msgstr "页面设置"
 
-#: ../moo/mooedit/mooeditwindow.c:808 ../moo/mooedit/mooeditwindow.c:810
+#: ../moo/mooedit/mooeditwindow.c:812 ../moo/mooedit/mooeditwindow.c:814
 msgid "Export as PDF"
 msgstr "导出为PDF文档"
 
-#: ../moo/mooedit/mooeditwindow.c:809
+#: ../moo/mooedit/mooeditwindow.c:813
 msgid "Export as PDF..."
 msgstr "导出为PDF文档"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [new file]"
-#: ../moo/mooedit/mooeditwindow.c:1117
+#: ../moo/mooedit/mooeditwindow.c:1121
 #, c-format
 msgid "%s [new file]"
 msgstr ""
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified on disk]"
-#: ../moo/mooedit/mooeditwindow.c:1120
+#: ../moo/mooedit/mooeditwindow.c:1124
 #, c-format
 msgid "%s [modified on disk]"
 msgstr ""
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [deleted]"
-#: ../moo/mooedit/mooeditwindow.c:1123
+#: ../moo/mooedit/mooeditwindow.c:1127
 #, c-format
 msgid "%s [deleted]"
 msgstr ""
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [new file] [modified]"
-#: ../moo/mooedit/mooeditwindow.c:1131
+#: ../moo/mooedit/mooeditwindow.c:1135
 #, c-format
 msgid "%s [new file] [modified]"
 msgstr ""
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified on disk] [modified]"
-#: ../moo/mooedit/mooeditwindow.c:1134
+#: ../moo/mooedit/mooeditwindow.c:1138
 #, c-format
 msgid "%s [modified on disk] [modified]"
 msgstr ""
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [deleted] [modified]"
-#: ../moo/mooedit/mooeditwindow.c:1137
+#: ../moo/mooedit/mooeditwindow.c:1141
 #, c-format
 msgid "%s [deleted] [modified]"
 msgstr ""
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified]"
-#: ../moo/mooedit/mooeditwindow.c:1140
+#: ../moo/mooedit/mooeditwindow.c:1144
 #, c-format
 msgid "%s [modified]"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1610 ../moo/moofileview/moofileview.c:1216
+#: ../moo/mooedit/mooeditwindow.c:1614 ../moo/moofileview/moofileview.c:1216
 #: ../moo/moofileview/moofileview.c:1217
 #: ../moo/moofileview/moofileview-ui.xml.h:1
 msgid "Bookmarks"
 msgstr "书签"
 
-#: ../moo/mooedit/mooeditwindow.c:3127
+#: ../moo/mooedit/mooeditwindow.c:3133
 msgid "_Language"
 msgstr "语言(_L)"
 
@@ -1274,6 +1261,7 @@ msgid "Delete selected items"
 msgstr "删除己选中项目"
 
 #: ../moo/moofileview/glade/moobookmark-editor.glade.h:6
+#: ../moo/moofileview/moofileview.c:1233 ../moo/moofileview/moofileview.c:1234
 msgid "Edit Bookmarks"
 msgstr "编辑书签"
 
@@ -1312,10 +1300,6 @@ msgstr "排列时区分大小写"
 #: ../moo/moofileview/moofileview.c:1225 ../moo/moofileview/moofileview.c:1226
 msgid "Add Bookmark"
 msgstr "添加到书签"
-
-#: ../moo/moofileview/moofileview.c:1233 ../moo/moofileview/moofileview.c:1234
-msgid "Edit Bookmarks..."
-msgstr "编辑书签"
 
 #: ../moo/moofileview/moofileview-ui.xml.h:2
 msgid "Open _With"
@@ -1682,6 +1666,21 @@ msgstr ""
 #: ../moo/mooutils/moopane.c:639
 msgid "Keep on top"
 msgstr ""
+
+#~ msgid "Next Placeholder"
+#~ msgstr "下一个占位符"
+
+#~ msgid "Go to next placeholder"
+#~ msgstr "回到下一个占位符"
+
+#~ msgid "Previous Placeholder"
+#~ msgstr "前一个占位符"
+
+#~ msgid "Go to previous placeholder"
+#~ msgstr "回到前一个占位符"
+
+#~ msgid "Edit Bookmarks..."
+#~ msgstr "编辑书签"
 
 #~ msgid "Highlight mismatching brackets"
 #~ msgstr "高亮显示无匹配括号"
