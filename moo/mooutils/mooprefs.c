@@ -116,11 +116,10 @@ static void          moo_prefs_new_key_from_string (const char *key,
 static void          moo_prefs_set_modified (gboolean    modified);
 
 
-/* MOO_TYPE_PREFS */
 MOO_DEFINE_TYPE_STATIC (MooPrefs, _moo_prefs, G_TYPE_OBJECT)
 
 
-static MooPrefs*
+static MooPrefs *
 instance (void)
 {
     static MooPrefs *p = NULL;
@@ -376,6 +375,38 @@ moo_prefs_set_modified (gboolean modified)
 #endif
 
     prefs->rc_modified = modified;
+}
+
+
+static void
+prepend_key (const char *key,
+             PrefsItem  *item,
+             gpointer    pdata)
+{
+    struct {
+        GSList *list;
+        MooPrefsType prefs_type;
+    } *data = pdata;
+
+    if (data->prefs_type == item->prefs_type)
+        data->list = g_slist_prepend (data->list, g_strdup (key));
+}
+
+GSList *
+moo_prefs_list_keys (MooPrefsType prefs_type)
+{
+    MooPrefs *prefs = instance ();
+
+    struct {
+        GSList *list;
+        MooPrefsType prefs_type;
+    } data;
+
+    data.list = NULL;
+    data.prefs_type = prefs_type;
+    g_hash_table_foreach (prefs->data, (GHFunc) prepend_key, &data);
+
+    return g_slist_sort (data.list, (GCompareFunc) strcmp);
 }
 
 

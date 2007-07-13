@@ -34,7 +34,7 @@ class ConfigureOptions(Group):
 class Commands(Group):
     __items__ = {
         'build' : Command(default=['$(top_builddir)', '$(make)']),
-        'compile' : Command(default=['$(builddir)', '$(make) $(base).o']),
+        'compile' : Command(default=['$(builddir)', '$(make) $(base).lo']),
         'configure' : Command(default=['$(top_builddir)', '$(configure_vars) $(top_srcdir)/configure $(configure_args)']),
         'autogen' : Command(default=['$(top_builddir)', '$(configure_vars) $(top_srcdir)/autogen.sh $(configure_args)']),
         'clean' : Command(default=['$(top_builddir)', '$(make) clean']),

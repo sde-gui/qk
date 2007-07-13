@@ -2234,6 +2234,14 @@
   )
 )
 
+(define-function prefs_list_keys
+  (c-name "moo_prefs_list_keys")
+  (return-type "string-slist")
+  (parameters
+    '("MooPrefsType" "prefs_type")
+  )
+)
+
 (define-function make_user_data_dir
   (c-name "moo_make_user_data_dir")
   (return-type "gboolean")
