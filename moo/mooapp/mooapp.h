@@ -123,6 +123,8 @@ void             moo_app_open_files             (MooApp     *app,
 
 void             moo_app_reload_python_plugins  (void);
 
+const char      *moo_app_get_input_pipe_name    (void);
+
 
 G_END_DECLS
 

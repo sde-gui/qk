@@ -66,12 +66,14 @@ struct _MooAppInput
 {
     GSList *pipes;
     char *appname;
+    char *main_path;
 };
 
-static InputChannel *input_channel_new  (const char     *appname,
-                                         const char     *name,
-                                         gboolean        may_fail);
-static void          input_channel_free (InputChannel   *ch);
+static InputChannel *input_channel_new      (const char     *appname,
+                                             const char     *name,
+                                             gboolean        may_fail);
+static void          input_channel_free     (InputChannel   *ch);
+static char         *input_channel_get_path (InputChannel   *ch);
 
 
 MooAppInput *
@@ -90,7 +92,10 @@ _moo_app_input_new (const char *appname,
     ch->appname = g_strdup (appname);
 
     if ((ich = input_channel_new (appname, _moo_get_pid_string (), FALSE)))
+    {
         ch->pipes = g_slist_prepend (ch->pipes, ich);
+        ch->main_path = input_channel_get_path (ich);
+    }
 
     if (name && (ich = input_channel_new (appname, name, FALSE)))
         ch->pipes = g_slist_prepend (ch->pipes, ich);
@@ -108,8 +113,17 @@ _moo_app_input_free (MooAppInput *ch)
 
     g_slist_foreach (ch->pipes, (GFunc) input_channel_free, NULL);
 
+    g_free (ch->main_path);
     g_free (ch->appname);
     _moo_free (MooAppInput, ch);
+}
+
+
+const char *
+_moo_app_input_get_path (MooAppInput *ch)
+{
+    g_return_val_if_fail (ch != NULL, NULL);
+    return ch->main_path;
 }
 
 
@@ -353,6 +367,13 @@ struct InputChannel
     guint io_watch;
     GSList *connections;
 };
+
+static char *
+input_channel_get_path (InputChannel *ch)
+{
+    g_return_val_if_fail (ch != NULL, NULL);
+    return g_strdup (ch->path);
+}
 
 static void
 connection_free (Connection *conn)
@@ -629,6 +650,13 @@ struct InputChannel
     guint io_watch;
     GSList *connections;
 };
+
+static char *
+input_channel_get_path (InputChannel *ch)
+{
+    g_return_val_if_fail (ch != NULL, NULL);
+    return g_strdup (ch->path);
+}
 
 static void
 input_channel_shutdown (InputChannel *ch)
@@ -975,6 +1003,13 @@ struct InputChannel
     GString *buffer;
     guint event_id;
 };
+
+static char *
+input_channel_get_path (InputChannel *ch)
+{
+    g_return_val_if_fail (ch != NULL, NULL);
+    return g_strdup (ch->pipe_name);
+}
 
 static ListenerInfo *
 listener_info_new (const char *pipe_name,

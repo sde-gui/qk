@@ -79,6 +79,7 @@ gboolean     _moo_app_input_send_msg    (const char     *appname,
                                          const char     *name,
                                          const char     *data,
                                          gssize          len);
+const char  *_moo_app_input_get_path    (MooAppInput    *ch);
 
 
 G_END_DECLS

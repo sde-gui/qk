@@ -909,6 +909,12 @@ start_input (MooApp *app)
                                             TRUE);
 }
 
+const char *
+moo_app_get_input_pipe_name (void)
+{
+    return moo_app_input ? _moo_app_input_get_path (moo_app_input) : NULL;
+}
+
 
 gboolean
 moo_app_send_msg (MooApp     *app,

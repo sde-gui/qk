@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <medit-project version="1.0" type="C" name="moo">
  <active>debug</active>
- <commands>
-  <compile>
-   <cmd>$(make) $(base).lo</cmd>
-   <working_dir>$(builddir)</working_dir>
-  </compile>
- </commands>
  <configurations>
   <debug>
    <build_dir>build/debug</build_dir>
