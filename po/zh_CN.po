@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-12 04:52-0500\n"
+"POT-Creation-Date: 2007-07-13 14:47-0500\n"
 "PO-Revision-Date: 2007-06-16 21:04-0600\n"
 "Last-Translator: Chaosye <chao-7410@163.com>\n"
 "MIME-Version: 1.0\n"
@@ -28,7 +28,7 @@ msgid "medit is a text editor"
 msgstr ""
 
 #. menu item label
-#: ../moo/mooapp/mooapp.c:1257
+#: ../moo/mooapp/mooapp.c:1263
 msgid "System Info"
 msgstr "系统信息"
 
@@ -156,7 +156,7 @@ msgid "Use spaces to indent"
 msgstr "缩进时使用空格"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:1
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:3
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:3
 msgid "Extensions:"
 msgstr "扩展:"
 
@@ -173,7 +173,7 @@ msgid "Language:"
 msgstr "语言:"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:5
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:5
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:5
 msgid "Mime types:"
 msgstr "Mime类型:"
 
@@ -547,9 +547,9 @@ msgstr "Mooscript"
 
 #. Save dialog title
 #: ../moo/mooedit/mooeditdialogs.c:94
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1034
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1059
-#: ../moo/mooedit/plugins/fileselector/moofileselector.glade.h:2
+#: ../moo/mooedit/plugins/moofileselector.c:1034
+#: ../moo/mooedit/plugins/moofileselector.c:1059
+#: ../moo/mooedit/plugins/moofileselector.glade.h:2
 #: ../moo/moofileview/glade/moofileview-drop.glade.h:1
 msgid "Save As"
 msgstr "另存为"
@@ -971,7 +971,7 @@ msgid "encodings_list"
 msgstr ""
 
 #: ../moo/mooedit/mooeditfileops.c:1214
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:533
+#: ../moo/mooedit/plugins/moofileselector.c:533
 msgid "Untitled"
 msgstr "未命名"
 
@@ -1109,149 +1109,148 @@ msgstr "目录(_d):"
 msgid "_Pattern:"
 msgstr "模式(_p):"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:408
+#: ../moo/mooedit/plugins/moofileselector.c:408
 #, c-format
 msgid "Create file in folder '%s':"
 msgstr "在目录'%s'创建文档 :"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:464
+#: ../moo/mooedit/plugins/moofileselector.c:464
 #, c-format
 msgid "Could not create file '%s'"
 msgstr "无法创建文档'%s'"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:465
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:950
+#: ../moo/mooedit/plugins/moofileselector.c:465
+#: ../moo/mooedit/plugins/moofileselector.c:950
 #, c-format
 msgid ""
 "Could not convert '%s' to filename encoding. Please consider simpler name, "
 "such as foo.blah or blah.foo"
 msgstr "无法以 %s 命名文件，请尝试更简单的名称如 foo.blah 或 blah.foo"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:480
+#: ../moo/mooedit/plugins/moofileselector.c:480
 #, c-format
 msgid "File '%s' already exists"
 msgstr "文档 '%s' 已存在"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:622
+#: ../moo/mooedit/plugins/moofileselector.c:622
 msgid "Go to current document directory"
 msgstr "打开当前文档目录"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:634
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:635
+#: ../moo/mooedit/plugins/moofileselector.c:634
+#: ../moo/mooedit/plugins/moofileselector.c:635
 msgid "New File..."
 msgstr "新建"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:657
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:658
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1477
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.c:69
+#: ../moo/mooedit/plugins/moofileselector.c:657
+#: ../moo/mooedit/plugins/moofileselector.c:658
+#: ../moo/mooedit/plugins/moofileselector.c:1477
+#: ../moo/mooedit/plugins/moofileselector-prefs.c:69
 #: ../moo/moofileview/moofileview.c:1113
 msgid "File Selector"
 msgstr "文件选择器"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:949
+#: ../moo/mooedit/plugins/moofileselector.c:949
 #, c-format
 msgid "Could not save file as '%s'"
 msgstr "无法保存文档为'%s'"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1079
+#: ../moo/mooedit/plugins/moofileselector.c:1079
 msgid "Save Copy As"
 msgstr "保存副本为"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1103
+#: ../moo/mooedit/plugins/moofileselector.c:1103
 msgid "Rename To"
 msgstr "重命名为"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1260
+#: ../moo/mooedit/plugins/moofileselector.c:1260
 msgid "Move Here"
 msgstr "移动到这里"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1261
+#: ../moo/mooedit/plugins/moofileselector.c:1261
 msgid "Move/Rename..."
 msgstr "移动/重命名"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1269
+#: ../moo/mooedit/plugins/moofileselector.c:1269
 msgid "Save Here"
 msgstr "保存到这里"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1270
+#: ../moo/mooedit/plugins/moofileselector.c:1270
 msgid "Save As..."
 msgstr "另存为"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1278
-#: ../moo/mooutils/moostock.c:39
+#: ../moo/mooedit/plugins/moofileselector.c:1278 ../moo/mooutils/moostock.c:39
 msgid "Save Copy"
 msgstr "保存副本"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1279
+#: ../moo/mooedit/plugins/moofileselector.c:1279
 msgid "Save Copy As..."
 msgstr "保存副本为"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1388
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1389
+#: ../moo/mooedit/plugins/moofileselector.c:1388
+#: ../moo/mooedit/plugins/moofileselector.c:1389
 msgid "Show File Selector"
 msgstr "显示文件选择器"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1390
+#: ../moo/mooedit/plugins/moofileselector.c:1390
 msgid "Show file selector"
 msgstr "显示文件选择器"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1478
+#: ../moo/mooedit/plugins/moofileselector.c:1478
 msgid "File selector pane for editor window"
 msgstr "编辑窗口的文件选择器面板"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.glade.h:1
+#: ../moo/mooedit/plugins/moofileselector.glade.h:1
 msgid "Create File"
 msgstr "创建文档"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.glade.h:3
+#: ../moo/mooedit/plugins/moofileselector.glade.h:3
 msgid "Save as"
 msgstr "另存为"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:1
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:1
 msgid "Command:"
 msgstr "命令："
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:2
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:2
 #: ../moo/moofileview/glade/moobookmark-editor.glade.h:4
 msgid "Delete"
 msgstr "删除"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:4
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:4
 msgid "Menu item label"
 msgstr "菜单项目标题"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:6
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:6
 msgid "Move down"
 msgstr "下移"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:7
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:7
 msgid "Move up"
 msgstr "上移"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:8
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:8
 msgid "Name:"
 msgstr "名称: "
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:9
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:9
 #: ../moo/moofileview/glade/moobookmark-editor.glade.h:8
 msgid "New"
 msgstr "新建"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:10
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:10
 msgid "Open With"
 msgstr "打开"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:11
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:11
 msgid "Semicolon-separated list of file globs, e.g. '*.txt;foo.*;*bar*'"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:12
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:12
 msgid ""
 "Semicolon-separated list of mime types, e.g. 'text/*;application/x-glade'"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:14
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:14
 #, no-c-format
 msgid ""
 "Shell command to open the file: '%f' is replaced with file path, e.g. "

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-12 04:52-0500\n"
+"POT-Creation-Date: 2007-07-13 14:47-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Yevgen Muntyan <muntyan@tamu.edu>\n"
 "MIME-Version: 1.0\n"
@@ -29,7 +29,7 @@ msgid "medit is a text editor"
 msgstr "Текстовый редактор"
 
 #. menu item label
-#: ../moo/mooapp/mooapp.c:1257
+#: ../moo/mooapp/mooapp.c:1263
 msgid "System Info"
 msgstr "Информация о системе"
 
@@ -158,7 +158,7 @@ msgid "Use spaces to indent"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:1
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:3
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:3
 msgid "Extensions:"
 msgstr ""
 
@@ -175,7 +175,7 @@ msgid "Language:"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:5
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:5
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:5
 msgid "Mime types:"
 msgstr ""
 
@@ -549,9 +549,9 @@ msgstr ""
 
 #. Save dialog title
 #: ../moo/mooedit/mooeditdialogs.c:94
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1034
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1059
-#: ../moo/mooedit/plugins/fileselector/moofileselector.glade.h:2
+#: ../moo/mooedit/plugins/moofileselector.c:1034
+#: ../moo/mooedit/plugins/moofileselector.c:1059
+#: ../moo/mooedit/plugins/moofileselector.glade.h:2
 #: ../moo/moofileview/glade/moofileview-drop.glade.h:1
 msgid "Save As"
 msgstr "Сохранить как"
@@ -963,7 +963,7 @@ msgid "encodings_list"
 msgstr "UTF-8,LOCALE,KOI8-R,WINDOWS-1251,ISO_8859-1,ISO_8859-15"
 
 #: ../moo/mooedit/mooeditfileops.c:1214
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:533
+#: ../moo/mooedit/plugins/moofileselector.c:533
 msgid "Untitled"
 msgstr "Без имени"
 
@@ -1107,149 +1107,148 @@ msgstr ""
 msgid "_Pattern:"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:408
+#: ../moo/mooedit/plugins/moofileselector.c:408
 #, c-format
 msgid "Create file in folder '%s':"
 msgstr "Создать файл в папке '%s':"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:464
+#: ../moo/mooedit/plugins/moofileselector.c:464
 #, c-format
 msgid "Could not create file '%s'"
 msgstr "Не удалось создать файл '%s'"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:465
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:950
+#: ../moo/mooedit/plugins/moofileselector.c:465
+#: ../moo/mooedit/plugins/moofileselector.c:950
 #, c-format
 msgid ""
 "Could not convert '%s' to filename encoding. Please consider simpler name, "
 "such as foo.blah or blah.foo"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:480
+#: ../moo/mooedit/plugins/moofileselector.c:480
 #, c-format
 msgid "File '%s' already exists"
 msgstr "Файл '%s' уже существует"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:622
+#: ../moo/mooedit/plugins/moofileselector.c:622
 msgid "Go to current document directory"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:634
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:635
+#: ../moo/mooedit/plugins/moofileselector.c:634
+#: ../moo/mooedit/plugins/moofileselector.c:635
 msgid "New File..."
 msgstr "Создать файл..."
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:657
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:658
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1477
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.c:69
+#: ../moo/mooedit/plugins/moofileselector.c:657
+#: ../moo/mooedit/plugins/moofileselector.c:658
+#: ../moo/mooedit/plugins/moofileselector.c:1477
+#: ../moo/mooedit/plugins/moofileselector-prefs.c:69
 #: ../moo/moofileview/moofileview.c:1113
 msgid "File Selector"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:949
+#: ../moo/mooedit/plugins/moofileselector.c:949
 #, c-format
 msgid "Could not save file as '%s'"
 msgstr "Не удалось сохранить файл как '%s'"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1079
+#: ../moo/mooedit/plugins/moofileselector.c:1079
 msgid "Save Copy As"
 msgstr "Сохранить копию как"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1103
+#: ../moo/mooedit/plugins/moofileselector.c:1103
 msgid "Rename To"
 msgstr "Переименовать"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1260
+#: ../moo/mooedit/plugins/moofileselector.c:1260
 msgid "Move Here"
 msgstr "Переместить сюда"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1261
+#: ../moo/mooedit/plugins/moofileselector.c:1261
 msgid "Move/Rename..."
 msgstr "Переместить/переименовать"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1269
+#: ../moo/mooedit/plugins/moofileselector.c:1269
 msgid "Save Here"
 msgstr "Сохранить здесь"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1270
+#: ../moo/mooedit/plugins/moofileselector.c:1270
 msgid "Save As..."
 msgstr "Сохранить как..."
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1278
-#: ../moo/mooutils/moostock.c:39
+#: ../moo/mooedit/plugins/moofileselector.c:1278 ../moo/mooutils/moostock.c:39
 msgid "Save Copy"
 msgstr "Сохранить копию"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1279
+#: ../moo/mooedit/plugins/moofileselector.c:1279
 msgid "Save Copy As..."
 msgstr "Сохранить копию как..."
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1388
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1389
+#: ../moo/mooedit/plugins/moofileselector.c:1388
+#: ../moo/mooedit/plugins/moofileselector.c:1389
 msgid "Show File Selector"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1390
+#: ../moo/mooedit/plugins/moofileselector.c:1390
 msgid "Show file selector"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.c:1478
+#: ../moo/mooedit/plugins/moofileselector.c:1478
 msgid "File selector pane for editor window"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.glade.h:1
+#: ../moo/mooedit/plugins/moofileselector.glade.h:1
 msgid "Create File"
 msgstr "Создать файл"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector.glade.h:3
+#: ../moo/mooedit/plugins/moofileselector.glade.h:3
 msgid "Save as"
 msgstr "Сохранить как"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:1
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:1
 msgid "Command:"
 msgstr "Команда:"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:2
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:2
 #: ../moo/moofileview/glade/moobookmark-editor.glade.h:4
 msgid "Delete"
 msgstr "Удалить"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:4
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:4
 msgid "Menu item label"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:6
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:6
 msgid "Move down"
 msgstr "Переместить вниз"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:7
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:7
 msgid "Move up"
 msgstr "Переместить вверх"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:8
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:8
 msgid "Name:"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:9
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:9
 #: ../moo/moofileview/glade/moobookmark-editor.glade.h:8
 msgid "New"
 msgstr "Создать"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:10
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:10
 msgid "Open With"
 msgstr "Открыть с помощью"
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:11
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:11
 msgid "Semicolon-separated list of file globs, e.g. '*.txt;foo.*;*bar*'"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:12
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:12
 msgid ""
 "Semicolon-separated list of mime types, e.g. 'text/*;application/x-glade'"
 msgstr ""
 
-#: ../moo/mooedit/plugins/fileselector/moofileselector-prefs.glade.h:14
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:14
 #, no-c-format
 msgid ""
 "Shell command to open the file: '%f' is replaced with file path, e.g. "
