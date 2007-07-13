@@ -53,7 +53,6 @@ moo/mooedit/language-specs/Makefile
 moo/mooedit/gtksourceview/Makefile
 moo/mooedit/gtksourceview/upstream/Makefile
 moo/mooedit/plugins/Makefile
-moo/mooedit/plugins/fileselector/Makefile
 moo/mooapp/Makefile
 moo/mooapp/smclient/Makefile
 moo/moopython/Makefile

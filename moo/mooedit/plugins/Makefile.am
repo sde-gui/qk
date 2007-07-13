@@ -1,36 +1,60 @@
-DIST_SUBDIRS = fileselector
+noinst_LTLIBRARIES =
+EXTRA_DIST =
+BUILT_SOURCES =
+CLEANFILES =
 
-# subdirs = activestrings completion
-# libs = activestrings/libastrings.la completion/libcompletion.la
-subdirs =
-libs =
-if GTK_2_6
-subdirs += fileselector
-libs += fileselector/libfileselector.la
-endif
-SUBDIRS = $(subdirs) .
-
-noinst_LTLIBRARIES = libmooeditplugins.la
-libmooeditplugins_la_LIBADD = $(libs)
-
-libmooeditplugins_la_SOURCES =	\
-	mooeditplugins.h
-
-EXTRA_DIST =			\
-	moofind.glade		\
-	moofind.c
-
-BUILT_SOURCES = moofind-glade.h
-CLEANFILES = moofind-glade.h
 @MOO_GLADE_RULE@
-
-if MOO_OS_UNIX
-libmooeditplugins_la_SOURCES += moofind.c
-nodist_libmooeditplugins_la_SOURCES = moofind-glade.h
-endif
 
 AM_CFLAGS =			\
 	-I../..			\
 	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
+AM_OBJCFLAGS = $(AM_CFLAGS)
+
+###########################################################################
+# fileselector
+#
+noinst_LTLIBRARIES += libfileselector.la
+
+EXTRA_DIST +=				\
+	moofileselector.glade		\
+	moofileselector-prefs.glade
+
+libfileselector_la_SOURCES =		\
+	moofileselector-prefs.c		\
+	moofileselector.c		\
+	moofileselector.h
+
+nodist_libfileselector_la_SOURCES =	\
+	moofileselector-glade.h		\
+	moofileselector-prefs-glade.h
+
+BUILT_SOURCES +=			\
+	moofileselector-glade.h		\
+	moofileselector-prefs-glade.h
+CLEANFILES +=				\
+	moofileselector-glade.h		\
+	moofileselector-prefs-glade.h
+
+
+###########################################################################
+# libmooeditplugins
+#
+noinst_LTLIBRARIES += libmooeditplugins.la
+libmooeditplugins_la_LIBADD = libfileselector.la
+
+libmooeditplugins_la_SOURCES =	\
+	mooeditplugins.h
+
+EXTRA_DIST +=			\
+	moofind.glade		\
+	moofind.c
+
+BUILT_SOURCES += moofind-glade.h
+CLEANFILES += moofind-glade.h
+
+if MOO_OS_UNIX
+libmooeditplugins_la_SOURCES += moofind.c
+nodist_libmooeditplugins_la_SOURCES = moofind-glade.h
+endif

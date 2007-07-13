@@ -48,7 +48,7 @@
   </test>
  </configurations>
  <run>
-  <args>--mode=project</args>
+  <args>--app-name foobar</args>
   <exe>medit/medit</exe>
   <vars>
    <var name="LANGUAGE">ru</var>
