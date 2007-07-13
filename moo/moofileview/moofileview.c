@@ -1230,8 +1230,8 @@ init_actions (MooFileView *fileview)
                                  NULL);
 
     moo_action_group_add_action (group, "EditBookmarks",
-                                 "label", _("Edit Bookmarks..."),
-                                 "tooltip", _("Edit Bookmarks..."),
+                                 "label", _("Edit Bookmarks"),
+                                 "tooltip", _("Edit Bookmarks"),
                                  "stock-id", GTK_STOCK_EDIT,
                                  "closure-object", fileview,
                                  "closure-callback", edit_bookmarks,
