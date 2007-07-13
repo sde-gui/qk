@@ -314,7 +314,7 @@ enc_mgr_save (EncodingsManager *enc_mgr)
 static const char *
 get_rid_of_locale (const char *enc_name)
 {
-    if (!strcmp (enc_name, "locale"))
+    if (enc_name && !strcmp (enc_name, "locale"))
         return _moo_encoding_locale ();
     else
         return enc_name;
