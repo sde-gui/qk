@@ -2129,6 +2129,8 @@ moo_text_view_draw_right_margin (GtkTextView    *text_view,
 
     gdk_drawable_get_size (event->window, NULL, &y);
     x = view->priv->right_margin_pixel_offset + gtk_text_view_get_left_margin (text_view);
+    if (text_view->hadjustment)
+        x -= text_view->hadjustment->value;
     gdk_draw_rectangle (event->window, view->priv->gcs[MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN],
                         TRUE, x, 0, 1, y);
 }
