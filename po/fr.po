@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-13 16:05-0500\n"
+"POT-Creation-Date: 2007-07-15 04:47-0500\n"
 "PO-Revision-Date: 2007-06-16 21:04-0600\n"
 "Last-Translator: Collilieux <mccnews@free.fr>\n"
 "MIME-Version: 1.0\n"
@@ -143,7 +143,7 @@ msgid "Keyboard"
 msgstr "Clavier"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:10
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
 msgid "Misc"
 msgstr "Divers"
 
@@ -190,53 +190,63 @@ msgstr "Schéma de couleur :"
 msgid "Do not split words"
 msgstr "Ne pas couper les mots"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:3
+#. Part of the phrase "Draw right margin at column [XX]"
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:4
+msgid "Draw right margin"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:5
 msgid "Enable syntax highlighting"
 msgstr "Activer la mise en valeur syntaxique"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:4
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:6
 msgid "Enable text wrapping"
 msgstr "Activer le renvoi à la ligne"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:5
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:7
 msgid "Font and colors"
 msgstr "Polices et couleurs"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:6
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:8
 msgid "Font:"
 msgstr "Police :"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:7
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:9
 msgid "Highlight current line"
 msgstr "Mettre en valeur la ligne en cours"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:8
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:10
 msgid "Highlight matching brackets"
 msgstr "Montrer les parenthèses correspondantes"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:9
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:11
 msgid "Highlighting"
 msgstr "Mise en valeur"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:11
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
 msgid "Show line numbers"
 msgstr "Afficher les numéros de ligne"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
 msgid "Show tabs"
 msgstr "Montrer les tabulations"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:15
 msgid "Show trailing spaces"
 msgstr "Montrer les espaces en fin"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:16
 msgid "Text wrapping"
 msgstr "Renvoi du texte"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:15
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:17
 msgid "Use default theme font"
 msgstr "Utiliser la police du thème par défaut"
+
+#. Part of the phrase "Draw right margin at column [XX]"
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:19
+msgid "at column"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditsavemult.glade.h:1
 msgid "Select the documents you want to save:"

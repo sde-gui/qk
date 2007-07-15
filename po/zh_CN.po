@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-13 16:05-0500\n"
+"POT-Creation-Date: 2007-07-15 04:47-0500\n"
 "PO-Revision-Date: 2007-06-16 21:04-0600\n"
 "Last-Translator: Chaosye <chao-7410@163.com>\n"
 "MIME-Version: 1.0\n"
@@ -143,7 +143,7 @@ msgid "Keyboard"
 msgstr "键盘"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:10
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
 msgid "Misc"
 msgstr "其它"
 
@@ -190,53 +190,63 @@ msgstr "颜色方案:"
 msgid "Do not split words"
 msgstr "不拆分单词"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:3
+#. Part of the phrase "Draw right margin at column [XX]"
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:4
+msgid "Draw right margin"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:5
 msgid "Enable syntax highlighting"
 msgstr "启用语法高亮"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:4
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:6
 msgid "Enable text wrapping"
 msgstr "启用换行"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:5
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:7
 msgid "Font and colors"
 msgstr "字体和颜色"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:6
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:8
 msgid "Font:"
 msgstr "字体:"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:7
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:9
 msgid "Highlight current line"
 msgstr "高亮显示当前行"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:8
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:10
 msgid "Highlight matching brackets"
 msgstr "高亮显示匹配括号"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:9
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:11
 msgid "Highlighting"
 msgstr "高亮显示"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:11
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
 msgid "Show line numbers"
 msgstr "显示行号"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
 msgid "Show tabs"
 msgstr "显示制表符"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:15
 msgid "Show trailing spaces"
 msgstr "显示后面的空格"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:16
 msgid "Text wrapping"
 msgstr "文本换行"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:15
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:17
 msgid "Use default theme font"
 msgstr "使用主题默认字体"
+
+#. Part of the phrase "Draw right margin at column [XX]"
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:19
+msgid "at column"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditsavemult.glade.h:1
 msgid "Select the documents you want to save:"

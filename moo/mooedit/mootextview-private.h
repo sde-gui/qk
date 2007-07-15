@@ -76,6 +76,12 @@ typedef enum {
     MOO_TEXT_VIEW_POS_INVALID
 } MooTextViewPos;
 
+typedef enum {
+    MOO_TEXT_VIEW_COLOR_CURRENT_LINE,
+    MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN,
+    MOO_TEXT_VIEW_N_COLORS
+} MooTextViewColor;
+
 struct _MooTextViewPrivate {
     gboolean constructed;
 
@@ -97,9 +103,11 @@ struct _MooTextViewPrivate {
      */
     MooTextStyleScheme *style_scheme;
     guint tab_width;
-    gboolean highlight_current_line;
-    GdkColor *current_line_color;
-    GdkGC *current_line_gc;
+    gboolean color_settings[MOO_TEXT_VIEW_N_COLORS];
+    char *colors[MOO_TEXT_VIEW_N_COLORS];
+    GdkGC *gcs[MOO_TEXT_VIEW_N_COLORS];
+    guint right_margin_offset;
+    int right_margin_pixel_offset;
     gboolean draw_tabs;
     gboolean draw_trailing_spaces;
     gboolean highlight_matching_brackets;

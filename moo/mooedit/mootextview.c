@@ -32,10 +32,6 @@
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
 
-/* XXX connect to style set and update/invalidate:
-    current line gc;
-*/
-
 #define LIGHT_BLUE "#EEF6FF"
 #define BOOL_CMP(b1,b2) ((b1 && b2) || (!b1 && !b2))
 #define UPDATE_PRIORITY (GTK_TEXT_VIEW_PRIORITY_VALIDATE - 5)
@@ -56,7 +52,6 @@ static const GtkTargetEntry text_view_target_table[] = {
 };
 
 static GdkAtom moo_text_view_atom;
-
 
 static GObject *moo_text_view_constructor   (GType               type,
                                              guint               n_construct_properties,
@@ -96,8 +91,11 @@ static void     moo_text_view_paste_clipboard (GtkTextView      *text_view);
 static void     moo_text_view_populate_popup(GtkTextView        *text_view,
                                              GtkMenu            *menu);
 
-static void     update_current_line_gc      (MooTextView        *view);
+static void     invalidate_gcs              (MooTextView        *view);
+static void     update_gcs                  (MooTextView        *view);
 static void     update_tab_width            (MooTextView        *view);
+static void     invalidate_right_margin     (MooTextView        *view);
+static void     update_right_margin         (MooTextView        *view);
 
 static GtkTextBuffer *get_buffer            (MooTextView        *view);
 static MooTextBuffer *get_moo_buffer        (MooTextView        *view);
@@ -213,11 +211,13 @@ enum {
     PROP_AUTO_INDENT,
     PROP_BACKSPACE_INDENTS,
 
+    PROP_RIGHT_MARGIN_OFFSET,
+    PROP_DRAW_RIGHT_MARGIN,
+    PROP_RIGHT_MARGIN_COLOR,
     PROP_HIGHLIGHT_CURRENT_LINE,
     PROP_HIGHLIGHT_MATCHING_BRACKETS,
     PROP_HIGHLIGHT_MISMATCHING_BRACKETS,
     PROP_CURRENT_LINE_COLOR,
-    PROP_CURRENT_LINE_COLOR_GDK,
     PROP_TAB_WIDTH,
     PROP_DRAW_TABS,
     PROP_DRAW_TRAILING_SPACES,
@@ -307,6 +307,30 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
     g_object_class_install_property (gobject_class,
+                                     PROP_RIGHT_MARGIN_OFFSET,
+                                     g_param_spec_uint ("right-margin-offset",
+                                             "right-margin-offset",
+                                             "right-margin-offset",
+                                             1, G_MAXUINT, 80,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_DRAW_RIGHT_MARGIN,
+                                     g_param_spec_boolean ("draw-right-margin",
+                                             "draw-right-margin",
+                                             "draw-right-margin",
+                                             FALSE,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_RIGHT_MARGIN_COLOR,
+                                     g_param_spec_string ("right-margin-color",
+                                             "right-margin-color",
+                                             "right-margin-color",
+                                             LIGHT_BLUE,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
                                      PROP_HIGHLIGHT_CURRENT_LINE,
                                      g_param_spec_boolean ("highlight-current-line",
                                              "highlight-current-line",
@@ -331,20 +355,12 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
-                                     PROP_CURRENT_LINE_COLOR_GDK,
-                                     g_param_spec_boxed ("current-line-color-gdk",
-                                             "current-line-color-gdk",
-                                             "current-line-color-gdk",
-                                             GDK_TYPE_COLOR,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
                                      PROP_CURRENT_LINE_COLOR,
                                      g_param_spec_string ("current-line-color",
                                              "current-line-color",
                                              "current-line-color",
                                              LIGHT_BLUE,
-                                             G_PARAM_WRITABLE));
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_TAB_WIDTH,
@@ -634,15 +650,16 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
 }
 
 
-static void moo_text_view_init (MooTextView *view)
+static void
+moo_text_view_init (MooTextView *view)
 {
     char *name;
-    GdkColor clr;
 
     view->priv = G_TYPE_INSTANCE_GET_PRIVATE (view, MOO_TYPE_TEXT_VIEW, MooTextViewPrivate);
 
-    gdk_color_parse (LIGHT_BLUE, &clr);
-    view->priv->current_line_color = gdk_color_copy (&clr);
+    view->priv->colors[MOO_TEXT_VIEW_COLOR_CURRENT_LINE] = g_strdup (LIGHT_BLUE);
+    view->priv->colors[MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN] = g_strdup (LIGHT_BLUE);
+    view->priv->right_margin_offset = 80;
 
     view->priv->dnd.button = GDK_BUTTON_RELEASE;
     view->priv->dnd.type = MOO_TEXT_VIEW_DRAG_NONE;
@@ -754,8 +771,12 @@ moo_text_view_constructor (GType                  type,
 static void
 moo_text_view_finalize (GObject *object)
 {
+    int i;
     GSList *l;
     MooTextView *view = MOO_TEXT_VIEW (object);
+
+    for (i = 0; i < MOO_TEXT_VIEW_N_COLORS; ++i)
+        g_free (view->priv->colors[i]);
 
     if (view->priv->indenter)
         g_object_unref (view->priv->indenter);
@@ -769,9 +790,6 @@ moo_text_view_finalize (GObject *object)
     }
 
     g_slist_free (view->priv->line_marks);
-
-    if (view->priv->current_line_color)
-        gdk_color_free (view->priv->current_line_color);
 
     G_OBJECT_CLASS (moo_text_view_parent_class)->finalize (object);
 }
@@ -978,7 +996,6 @@ moo_text_view_set_property (GObject        *object,
 {
     MooTextView *view = MOO_TEXT_VIEW (object);
     GtkTextBuffer *buffer;
-    GdkColor color;
 
     switch (prop_id)
     {
@@ -1029,15 +1046,18 @@ moo_text_view_set_property (GObject        *object,
         case PROP_HIGHLIGHT_CURRENT_LINE:
             moo_text_view_set_highlight_current_line (view, g_value_get_boolean (value));
             break;
-
-        case PROP_CURRENT_LINE_COLOR_GDK:
-            moo_text_view_set_current_line_color (view, g_value_get_boxed (value));
+        case PROP_DRAW_RIGHT_MARGIN:
+            moo_text_view_set_draw_right_margin (view, g_value_get_boolean (value));
+            break;
+        case PROP_RIGHT_MARGIN_OFFSET:
+            moo_text_view_set_right_margin_offset (view, g_value_get_uint (value));
             break;
 
         case PROP_CURRENT_LINE_COLOR:
-            g_return_if_fail (g_value_get_string (value) != NULL);
-            gdk_color_parse (g_value_get_string (value), &color);
-            moo_text_view_set_current_line_color (view, &color);
+            moo_text_view_set_current_line_color (view, g_value_get_string (value));
+            break;
+        case PROP_RIGHT_MARGIN_COLOR:
+            moo_text_view_set_right_margin_color (view, g_value_get_string (value));
             break;
 
         case PROP_DRAW_TABS:
@@ -1125,7 +1145,13 @@ moo_text_view_get_property (GObject        *object,
             g_value_set_uint (value, view->priv->tab_width);
             break;
         case PROP_HIGHLIGHT_CURRENT_LINE:
-            g_value_set_boolean (value, view->priv->highlight_current_line);
+            g_value_set_boolean (value, view->priv->color_settings[MOO_TEXT_VIEW_COLOR_CURRENT_LINE]);
+            break;
+        case PROP_DRAW_RIGHT_MARGIN:
+            g_value_set_boolean (value, view->priv->color_settings[MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN]);
+            break;
+        case PROP_RIGHT_MARGIN_OFFSET:
+            g_value_set_uint (value, view->priv->right_margin_offset);
             break;
         case PROP_HIGHLIGHT_MATCHING_BRACKETS:
             g_object_get (get_buffer (view), "highlight-matching-brackets", &val, NULL);
@@ -1135,8 +1161,11 @@ moo_text_view_get_property (GObject        *object,
             g_object_get (get_buffer (view), "highlight-mismatching-brackets", &val, NULL);
             g_value_set_boolean (value, val);
             break;
-        case PROP_CURRENT_LINE_COLOR_GDK:
-            g_value_set_boxed (value, &view->priv->current_line_color);
+        case PROP_CURRENT_LINE_COLOR:
+            g_value_set_string (value, view->priv->colors[MOO_TEXT_VIEW_COLOR_CURRENT_LINE]);
+            break;
+        case PROP_RIGHT_MARGIN_COLOR:
+            g_value_set_string (value, view->priv->colors[MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN]);
             break;
         case PROP_DRAW_TABS:
             g_value_set_boolean (value, view->priv->draw_tabs != 0);
@@ -1440,11 +1469,11 @@ do_move_cursor (Scroll *scroll)
 
 
 void
-moo_text_view_move_cursor (gpointer      view,
-                           int           line,
-                           int           offset,
-                           gboolean      offset_visual,
-                           gboolean      in_idle)
+moo_text_view_move_cursor (gpointer view,
+                           int      line,
+                           int      offset,
+                           gboolean offset_visual,
+                           gboolean in_idle)
 {
     Scroll scroll;
 
@@ -1513,55 +1542,100 @@ get_insert (MooTextView    *view)
 }
 
 
-void
-moo_text_view_set_highlight_current_line (MooTextView    *view,
-                                          gboolean        highlight)
+static void
+moo_text_view_set_color_setting (MooTextView     *view,
+                                 const char      *prop,
+                                 gboolean         setting,
+                                 MooTextViewColor color_num)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
-    if (view->priv->highlight_current_line == highlight)
-        return;
+    if (view->priv->color_settings[color_num] != setting)
+    {
+        view->priv->color_settings[color_num] = setting;
+        invalidate_gcs (view);
+        gtk_widget_queue_draw (GTK_WIDGET (view));
+        g_object_notify (G_OBJECT (view), prop);
+    }
+}
 
-    view->priv->highlight_current_line = highlight;
-    g_object_notify (G_OBJECT (view), "highlight-current-line");
+void
+moo_text_view_set_highlight_current_line (MooTextView *view,
+                                          gboolean     highlight)
+{
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    moo_text_view_set_color_setting (view, "highlight-current-line", highlight,
+                                     MOO_TEXT_VIEW_COLOR_CURRENT_LINE);
+}
 
-    update_current_line_gc (view);
-    gtk_widget_queue_draw (GTK_WIDGET (view));
+void
+moo_text_view_set_draw_right_margin (MooTextView *view,
+                                     gboolean     draw)
+{
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    moo_text_view_set_color_setting (view, "draw-right-margin", draw,
+                                     MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN);
 }
 
 
-#define COLORS_EQUAL(c1, c2) ((c1) == c2 || \
-    ((c1) && (c2) && (c1)->red == (c2)->red && \
-     (c1)->green == (c2)->green && (c1)->blue == (c2)->blue))
-
 void
-moo_text_view_set_current_line_color (MooTextView    *view,
-                                      const GdkColor *color)
+moo_text_view_set_right_margin_offset (MooTextView *view,
+                                       guint        offset)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    g_return_if_fail (offset > 0);
 
-    if (COLORS_EQUAL (color, view->priv->current_line_color))
-        return;
-
-    if (view->priv->current_line_color && color)
-        *view->priv->current_line_color = *color;
-    else if (color)
-        view->priv->current_line_color = gdk_color_copy (color);
-    else
+    if (view->priv->right_margin_offset != offset)
     {
-        gdk_color_free (view->priv->current_line_color);
-        view->priv->current_line_color = NULL;
+        view->priv->right_margin_offset = offset;
+
+        invalidate_right_margin (view);
+
+        if (view->priv->color_settings[MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN])
+            gtk_widget_queue_draw (GTK_WIDGET (view));
+
+        g_object_notify (G_OBJECT (view), "right-margin-offset");
     }
+}
 
-    update_current_line_gc (view);
 
-    if (GTK_WIDGET_DRAWABLE (view) && view->priv->highlight_current_line)
+static void
+moo_text_view_set_color (MooTextView      *view,
+                         MooTextViewColor  color_num,
+                         const char       *color,
+                         const char       *propname)
+{
+    char *tmp;
+
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    g_return_if_fail (color_num < MOO_TEXT_VIEW_N_COLORS);
+
+    tmp = view->priv->colors[color_num];
+    view->priv->colors[color_num] = g_strdup (color);
+    g_free (tmp);
+
+    invalidate_gcs (view);
+
+    if (GTK_WIDGET_DRAWABLE (view) && view->priv->color_settings[color_num])
         gtk_widget_queue_draw (GTK_WIDGET (view));
 
-    g_object_freeze_notify (G_OBJECT (view));
-    g_object_notify (G_OBJECT (view), "current-line-color-gdk");
-    g_object_notify (G_OBJECT (view), "current-line-color");
-    g_object_thaw_notify (G_OBJECT (view));
+    g_object_notify (G_OBJECT (view), propname);
+}
+
+void
+moo_text_view_set_current_line_color (MooTextView *view,
+                                      const char  *color)
+{
+    moo_text_view_set_color (view, MOO_TEXT_VIEW_COLOR_CURRENT_LINE,
+                             color, "current-line-color");
+}
+
+void
+moo_text_view_set_right_margin_color (MooTextView *view,
+                                      const char  *color)
+{
+    moo_text_view_set_color (view, MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN,
+                             color, "right-margin-color");
 }
 
 
@@ -1893,9 +1967,7 @@ moo_text_view_realize (GtkWidget *widget)
 
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->realize (widget);
 
-    update_current_line_gc (view);
     update_tab_width (view);
-
     update_left_margin (view);
 
     if (view->priv->manage_clipboard)
@@ -1936,9 +2008,7 @@ moo_text_view_unrealize (GtkWidget *widget)
     g_free (view->priv->update_rectangle);
     view->priv->update_rectangle = NULL;
 
-    if (view->priv->current_line_gc)
-        g_object_unref (view->priv->current_line_gc);
-    view->priv->current_line_gc = NULL;
+    invalidate_gcs (view);
 
     if (view->priv->manage_clipboard)
     {
@@ -1968,9 +2038,23 @@ moo_text_view_unrealize (GtkWidget *widget)
 
 
 static void
-update_current_line_gc (MooTextView *view)
+invalidate_gcs (MooTextView *view)
 {
-    GdkColor *color = NULL;
+    int i;
+
+    for (i = 0; i < MOO_TEXT_VIEW_N_COLORS; ++i)
+    {
+        if (view->priv->gcs[i])
+            g_object_unref (view->priv->gcs[i]);
+        view->priv->gcs[i] = NULL;
+    }
+}
+
+static void
+update_gc (MooTextView     *view,
+           MooTextViewColor color_num)
+{
+    GdkColor color;
     GtkWidget *widget = GTK_WIDGET (view);
     GdkColormap *colormap;
     GdkWindow *window;
@@ -1978,16 +2062,21 @@ update_current_line_gc (MooTextView *view)
     if (!GTK_WIDGET_REALIZED (widget))
         return;
 
-    if (!view->priv->highlight_current_line)
+    g_return_if_fail (color_num < MOO_TEXT_VIEW_N_COLORS);
+
+    if (!view->priv->color_settings[color_num])
     {
-        if (view->priv->current_line_gc)
+        if (view->priv->gcs[color_num])
         {
-            g_object_unref (view->priv->current_line_gc);
-            view->priv->current_line_gc = NULL;
+            g_object_unref (view->priv->gcs[color_num]);
+            view->priv->gcs[color_num] = NULL;
         }
 
         return;
     }
+
+    if (view->priv->gcs[color_num])
+        return;
 
     colormap = gtk_widget_get_colormap (widget);
     g_return_if_fail (colormap != NULL);
@@ -1996,25 +2085,53 @@ update_current_line_gc (MooTextView *view)
                                        GTK_TEXT_WINDOW_TEXT);
     g_return_if_fail (window != NULL);
 
-    if (view->priv->current_line_color)
+    if (view->priv->colors[color_num])
     {
-        if (!gdk_colormap_alloc_color (colormap,
-                                       view->priv->current_line_color,
-                                       FALSE, TRUE))
+        if (!gdk_color_parse (view->priv->colors[color_num], &color))
+        {
+            g_warning ("%s: could not parse color %s", G_STRLOC,
+                       view->priv->colors[color_num]);
+            color = widget->style->bg[GTK_STATE_NORMAL];
+        }
+        else if (!gdk_colormap_alloc_color (colormap, &color, FALSE, TRUE))
+        {
             g_warning ("%s: failed to allocate color", G_STRLOC);
-        else
-            color = view->priv->current_line_color;
+            color = widget->style->bg[GTK_STATE_NORMAL];
+        }
+    }
+    else
+    {
+        color = widget->style->bg[GTK_STATE_NORMAL];
     }
 
-    if (!color)
-        color = &widget->style->bg[GTK_STATE_NORMAL];
+    if (!view->priv->gcs[color_num])
+        view->priv->gcs[color_num] = gdk_gc_new (window);
 
-    if (!view->priv->current_line_gc)
-        view->priv->current_line_gc = gdk_gc_new (window);
-
-    gdk_gc_set_foreground (view->priv->current_line_gc, color);
+    gdk_gc_set_foreground (view->priv->gcs[color_num], &color);
 }
 
+static void
+update_gcs (MooTextView *view)
+{
+    update_gc (view, MOO_TEXT_VIEW_COLOR_CURRENT_LINE);
+    update_gc (view, MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN);
+}
+
+
+static void
+moo_text_view_draw_right_margin (GtkTextView    *text_view,
+                                 GdkEventExpose *event)
+{
+    int x, y;
+    MooTextView *view = MOO_TEXT_VIEW (text_view);
+
+    update_right_margin (view);
+
+    gdk_drawable_get_size (event->window, NULL, &y);
+    x = view->priv->right_margin_pixel_offset + gtk_text_view_get_left_margin (text_view);
+    gdk_draw_rectangle (event->window, view->priv->gcs[MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN],
+                        TRUE, x, 0, 1, y);
+}
 
 static void
 moo_text_view_draw_current_line (GtkTextView    *text_view,
@@ -2053,7 +2170,7 @@ moo_text_view_draw_current_line (GtkTextView    *text_view,
     redraw_rect.height = visible_rect.height;
 
     gdk_draw_rectangle (event->window,
-                        MOO_TEXT_VIEW(text_view)->priv->current_line_gc,
+                        MOO_TEXT_VIEW(text_view)->priv->gcs[MOO_TEXT_VIEW_COLOR_CURRENT_LINE],
                         TRUE,
                         redraw_rect.x + MAX (0, gtk_text_view_get_left_margin (text_view) - 1),
                         win_y,
@@ -2209,16 +2326,23 @@ moo_text_view_expose (GtkWidget      *widget,
     GdkWindow *left_window = gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_LEFT);
     GtkTextIter start, end;
 
+    update_gcs (view);
+
     view->priv->in_expose = TRUE;
 
     if (view->priv->update_n_lines_idle)
         update_n_lines_idle (view);
 
-    if (view->priv->highlight_current_line &&
-        GTK_WIDGET_SENSITIVE (view) &&
-        view->priv->current_line_gc &&
-        event->window == text_window)
-            moo_text_view_draw_current_line (text_view, event);
+    if (GTK_WIDGET_SENSITIVE (view) && event->window == text_window)
+    {
+        if (view->priv->color_settings[MOO_TEXT_VIEW_COLOR_CURRENT_LINE] &&
+            view->priv->gcs[MOO_TEXT_VIEW_COLOR_CURRENT_LINE])
+                moo_text_view_draw_current_line (text_view, event);
+
+        if (view->priv->color_settings[MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN] &&
+            view->priv->gcs[MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN])
+                moo_text_view_draw_right_margin (text_view, event);
+    }
 
     if (event->window == left_window)
         draw_left_margin (view, event);
@@ -2377,7 +2501,7 @@ set_draw_trailing_spaces (MooTextView    *view,
 }
 
 
-GtkTextTag*
+GtkTextTag *
 moo_text_view_lookup_tag (MooTextView    *view,
                           const char     *name)
 {
@@ -3371,6 +3495,8 @@ moo_text_view_style_set (GtkWidget *widget,
 {
     MooTextView *view = MOO_TEXT_VIEW (widget);
 
+    invalidate_gcs (view);
+    invalidate_right_margin (view);
     update_box_tag (view);
     update_tab_width (view);
     update_left_margin (view);
@@ -3446,6 +3572,34 @@ moo_text_view_set_tab_width (MooTextView *view,
     update_tab_width (view);
 
     g_object_notify (G_OBJECT (view), "tab-width");
+}
+
+
+static void
+invalidate_right_margin (MooTextView *view)
+{
+    view->priv->right_margin_pixel_offset = -1;
+}
+
+static void
+update_right_margin (MooTextView *view)
+{
+    PangoLayout *layout;
+    char *string;
+
+    if (view->priv->right_margin_pixel_offset > 0 ||
+        !GTK_WIDGET_REALIZED (view))
+            return;
+
+    g_return_if_fail (view->priv->right_margin_offset > 0 &&
+                      view->priv->right_margin_offset < 1000);
+
+    string = g_strnfill (view->priv->right_margin_offset, '_');
+    layout = gtk_widget_create_pango_layout (GTK_WIDGET (view), string);
+    pango_layout_get_pixel_size (layout, &view->priv->right_margin_pixel_offset, NULL);
+
+    g_object_unref (layout);
+    g_free (string);
 }
 
 

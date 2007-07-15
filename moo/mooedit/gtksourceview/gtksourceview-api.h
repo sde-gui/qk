@@ -14,6 +14,7 @@
 #define GtkSourceLanguageManager	MooGtkSourceLanguageManager
 #define GtkSourceLanguageManagerClass	MooGtkSourceLanguageManagerClass
 #define GtkSourceStyle			MooGtkSourceStyle
+#define GtkSourceStyleScheme		MooGtkSourceStyleScheme
 #define GtkSourceStyleManager		MooGtkSourceStyleManager
 #define GtkSourceStyleManagerClass	MooGtkSourceStyleManagerClass
 #define GtkSourceSearchFlags		MooGtkSourceSearchFlags

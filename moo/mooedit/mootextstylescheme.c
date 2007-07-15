@@ -98,23 +98,39 @@ _moo_text_style_scheme_lookup_style (MooTextStyleScheme *scheme,
 }
 
 
+static const char *
+get_color (GtkSourceStyleScheme *scheme,
+           const char           *name)
+{
+    GtkSourceStyle *style;
+
+    style = gtk_source_style_scheme_get_style (scheme, name);
+
+    if (style && (style->mask & GTK_SOURCE_STYLE_USE_BACKGROUND))
+        return style->background;
+    else
+        return NULL;
+}
+
 void
 _moo_text_style_scheme_apply (MooTextStyleScheme *scheme,
                               GtkWidget          *widget)
 {
-	g_return_if_fail (MOO_IS_TEXT_STYLE_SCHEME (scheme));
-	g_return_if_fail (GTK_IS_WIDGET (widget));
+    g_return_if_fail (MOO_IS_TEXT_STYLE_SCHEME (scheme));
+    g_return_if_fail (GTK_IS_WIDGET (widget));
 
-        _gtk_source_style_scheme_apply (GTK_SOURCE_STYLE_SCHEME (scheme), widget);
+    _gtk_source_style_scheme_apply (GTK_SOURCE_STYLE_SCHEME (scheme), widget);
 
-        if (MOO_IS_TEXT_VIEW (widget))
-        {
-            GdkColor color;
-            if (gtk_source_style_scheme_get_current_line_color (GTK_SOURCE_STYLE_SCHEME (scheme), &color))
-                moo_text_view_set_current_line_color (MOO_TEXT_VIEW (widget), &color);
-            else
-                moo_text_view_set_current_line_color (MOO_TEXT_VIEW (widget), NULL);
-        }
+    if (MOO_IS_TEXT_VIEW (widget))
+    {
+        const char *color;
+
+        color = get_color (GTK_SOURCE_STYLE_SCHEME (scheme), "current-line");
+        moo_text_view_set_current_line_color (MOO_TEXT_VIEW (widget), color);
+
+        color = get_color (GTK_SOURCE_STYLE_SCHEME (scheme), "right-margin");
+        moo_text_view_set_right_margin_color (MOO_TEXT_VIEW (widget), color);
+    }
 }
 
 

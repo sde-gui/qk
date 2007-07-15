@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-13 16:05-0500\n"
+"POT-Creation-Date: 2007-07-15 04:47-0500\n"
 "PO-Revision-Date: 2007-07-11 10:00+0500\n"
 "Last-Translator: Andrey Fedoseev <andrey.fedoseev@gmail.com>\n"
 "Language-Team: Russian <ru@li.org>\n"
@@ -149,7 +149,7 @@ msgid "Keyboard"
 msgstr "Клавиатура"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:10
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
 msgid "Misc"
 msgstr "Прочее"
 
@@ -196,53 +196,63 @@ msgstr "Цветовая схема:"
 msgid "Do not split words"
 msgstr "Не разделять слова"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:3
+#. Part of the phrase "Draw right margin at column [XX]"
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:4
+msgid "Draw right margin"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:5
 msgid "Enable syntax highlighting"
 msgstr "Включить подстветку синтаксиса"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:4
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:6
 msgid "Enable text wrapping"
 msgstr "Включить перенос текста"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:5
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:7
 msgid "Font and colors"
 msgstr "Шрифт и цвета"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:6
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:8
 msgid "Font:"
 msgstr "Шрифт:"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:7
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:9
 msgid "Highlight current line"
 msgstr "Подсвечивать текущую строку"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:8
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:10
 msgid "Highlight matching brackets"
 msgstr "Подсвечивать совпадающие скобки"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:9
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:11
 msgid "Highlighting"
 msgstr "Подсветка"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:11
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
 msgid "Show line numbers"
 msgstr "Отображать номера строк"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
 msgid "Show tabs"
 msgstr "Отображать знаки табуляции"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:15
 msgid "Show trailing spaces"
 msgstr "Отображать пробелы в конце строки"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:16
 msgid "Text wrapping"
 msgstr "Перенос текста"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:15
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:17
 msgid "Use default theme font"
 msgstr "Использовать шрифт из системной темы"
+
+#. Part of the phrase "Draw right margin at column [XX]"
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:19
+msgid "at column"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditsavemult.glade.h:1
 msgid "Select the documents you want to save:"

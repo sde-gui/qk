@@ -51,6 +51,8 @@ const char *moo_edit_setting                (const char     *setting_name);
 #define MOO_EDIT_PREFS_HIGHLIGHT_MATCHING       "highlight_matching_brackets"
 #define MOO_EDIT_PREFS_HIGHLIGHT_MISMATCHING    "highlight_mismatching_brackets"
 #define MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE   "highlight_current_line"
+#define MOO_EDIT_PREFS_DRAW_RIGHT_MARGIN        "draw_right_margin"
+#define MOO_EDIT_PREFS_RIGHT_MARGIN_OFFSET      "right_margin_offset"
 #define MOO_EDIT_PREFS_SHOW_LINE_NUMBERS        "show_line_numbers"
 #define MOO_EDIT_PREFS_SHOW_TABS                "show_tabs"
 #define MOO_EDIT_PREFS_SHOW_TRAILING_SPACES     "show_trailing_spaces"

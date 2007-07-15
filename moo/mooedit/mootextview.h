@@ -131,7 +131,13 @@ void         moo_text_view_set_highlight_current_line
                                                     (MooTextView        *view,
                                                      gboolean            highlight);
 void         moo_text_view_set_current_line_color   (MooTextView        *view,
-                                                     const GdkColor     *color);
+                                                     const char         *color);
+void         moo_text_view_set_draw_right_margin    (MooTextView        *view,
+                                                     gboolean            draw);
+void         moo_text_view_set_right_margin_color   (MooTextView        *view,
+                                                     const char         *color);
+void         moo_text_view_set_right_margin_offset  (MooTextView        *view,
+                                                     guint               offset);
 void         moo_text_view_set_cursor_colors        (MooTextView        *view,
                                                      const GdkColor     *prrimary,
                                                      const GdkColor     *secondary);

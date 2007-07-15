@@ -106,6 +106,8 @@ _moo_edit_init_prefs (void)
     NEW_KEY_BOOL (MOO_EDIT_PREFS_HIGHLIGHT_MATCHING, TRUE);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_HIGHLIGHT_MISMATCHING, FALSE);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE, TRUE);
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_DRAW_RIGHT_MARGIN, FALSE);
+    NEW_KEY_INT (MOO_EDIT_PREFS_RIGHT_MARGIN_OFFSET, 80);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_SHOW_LINE_NUMBERS, FALSE);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_SHOW_TABS, FALSE);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_SHOW_TRAILING_SPACES, FALSE);
@@ -180,6 +182,8 @@ _moo_edit_apply_prefs (MooEdit *edit)
                   "highlight-matching-brackets", get_bool (MOO_EDIT_PREFS_HIGHLIGHT_MATCHING),
                   "highlight-mismatching-brackets", get_bool (MOO_EDIT_PREFS_HIGHLIGHT_MISMATCHING),
                   "highlight-current-line", get_bool (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE),
+                  "draw-right-margin", get_bool (MOO_EDIT_PREFS_DRAW_RIGHT_MARGIN),
+                  "right-margin-offset", get_int (MOO_EDIT_PREFS_RIGHT_MARGIN_OFFSET),
                   "draw-tabs", get_bool (MOO_EDIT_PREFS_SHOW_TABS),
                   "draw-trailing-spaces", get_bool (MOO_EDIT_PREFS_SHOW_TRAILING_SPACES),
                   "quick-search-flags", get_flags (MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS),

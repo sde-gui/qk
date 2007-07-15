@@ -1143,12 +1143,39 @@
   )
 )
 
+(define-method set_draw_right_margin
+  (of-object "MooTextView")
+  (c-name "moo_text_view_set_draw_right_margin")
+  (return-type "none")
+  (parameters
+    '("gboolean" "draw")
+  )
+)
+
+(define-method set_right_margin_offset
+  (of-object "MooTextView")
+  (c-name "moo_text_view_set_right_margin_offset")
+  (return-type "none")
+  (parameters
+    '("guint" "offset")
+  )
+)
+
 (define-method set_current_line_color
   (of-object "MooTextView")
   (c-name "moo_text_view_set_current_line_color")
   (return-type "none")
   (parameters
-    '("const-GdkColor*" "color")
+    '("const-char*" "color")
+  )
+)
+
+(define-method set_right_margin_color
+  (of-object "MooTextView")
+  (c-name "moo_text_view_set_right_margin_color")
+  (return-type "none")
+  (parameters
+    '("const-char*" "color")
   )
 )
 

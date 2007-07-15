@@ -32,6 +32,7 @@
   <color name="white"                       value="#FFFFFF"/>
 
   <style name="current-line"                background="#EEF6FF"/>
+  <style name="right-margin"                background="#ADD4FF"/>
   <style name="bracket-match"               background="#FFFF99" bold="true"/>
   <style name="bracket-mismatch"            background="red" bold="true"/>
 
