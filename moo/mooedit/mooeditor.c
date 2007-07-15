@@ -1216,7 +1216,13 @@ moo_editor_load_file (MooEditor       *editor,
     if (!_moo_edit_load_file (doc, filename, info->encoding, &error))
     {
         if (!silent)
+        {
+            if (!parent && !window)
+                window = moo_editor_get_active_window (editor);
+            if (!parent && window)
+                parent = GTK_WIDGET (window);
             _moo_edit_open_error_dialog (parent, filename, info->encoding, error);
+        }
         g_error_free (error);
         result = FALSE;
     }
