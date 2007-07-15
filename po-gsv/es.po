@@ -1,4 +1,4 @@
-# translation of es.po to Spanish
+# translation of gtksourceview.HEAD.es.po to Español
 # Spanish translation for GtkSourceView
 # Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gtksourceview package.
@@ -7,34 +7,81 @@
 # Francisco Javier F. Serrador <serrador@cvs.gnome.org>, 2003-2005, 2006.
 # Claudio Saavedra <csaavedra@alumnos.utalca.cl>, 2007.
 # Jorge González <jorgegonz@svn.gnome.org>, 2007.
+# Jorge Gonzalez <jorgegonz@svn.gnome.org>, 2007.
 msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview.HEAD.es\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-06-18 05:14-0500\n"
-"PO-Revision-Date: 2007-06-02 21:19+0200\n"
+"POT-Creation-Date: 2007-07-15 02:59-0500\n"
+"PO-Revision-Date: 2007-07-06 15:49+0200\n"
 "Last-Translator: Jorge González <jorgegonz@svn.gnome.org>\n"
 "Language-Team: Spanish <traductores@es.gnome.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
-"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
+"Plural-Forms:  nplurals=2; plural=(n != 1);"
+
+msgid ""
+"Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
+"The error was: %s"
+msgstr ""
+"No se puede crear una expresión regular para todas las transiciones, el proceso de resaltado de sintaxis será más lento de lo habitual.\n"
+"El error fue: %s"
+
+msgid "Color scheme used in GVim"
+msgstr "Esquema de colores a usar en GVim"
+
+msgid "Color scheme used in the Kate text editor"
+msgstr "Esquema de colores usado en el editor de textos Kate"
+
+msgid "Defaults"
+msgstr "Predeterminados"
+
+msgid "Javascript"
+msgstr "JavaScript"
+
+msgid "Language specification directories"
+msgstr "Directorios de especificaciones de idiomas"
+
+msgid "List of directories where the language specification files (.lang) are located"
+msgstr "Lista de directorios en los que se hallan los archivo de especificación de lenguajes (.lang)."
+
+msgid "List of directories where the style scheme files are located"
+msgstr "Lista de directorios en los que se hallan los archivos de estilos de esquemas"
+
+msgid "Markup"
+msgstr "Marcado"
 
 msgid "Missing main language definition (id = \"%s\".)"
 msgstr "Falta la definición de lenguaje principal (id = «%s».)"
 
-msgid "using \\C is not supported in language definitions"
-msgstr "el uso de \\C no está soportado en las definiciones del lenguaje"
+msgid "Others"
+msgstr "Otros"
 
-msgid ""
-"Cannot create a regex for all the transitions, the syntax highlighting "
-"process will be slower than usual.\n"
-"The error was: %s"
-msgstr ""
-"No se puede crear una expresión regular para todas las transiciones, el "
-"proceso de resaltado de sintaxis será más lento de lo habitual.\n"
-"El error fue: %s"
+msgid "RPM spec"
+msgstr "Especificación de RPM"
+
+msgid "Scheme"
+msgstr "Esquema"
+
+msgid "Scientific"
+msgstr "Científico"
+
+msgid "Sources"
+msgstr "Fuentes"
+
+msgid "Style scheme directories"
+msgstr "Directorios de estilos de esquemas"
+
+msgid "Style scheme id"
+msgstr "ID del estilo del esquema"
+
+msgid "Style scheme name"
+msgstr "Nombre del estilo del esquema"
+
+msgid "Unknown id '%s' in regex '%s'"
+msgstr "Id «%s» desconocido en la expresión regular «%s»"
 
 msgid "context '%s' cannot contain a \\%%{...@start} command"
 msgstr "el contexto «%s» no puede contener un comando \\%%{...@start} command"
@@ -42,231 +89,21 @@ msgstr "el contexto «%s» no puede contener un comando \\%%{...@start} command"
 msgid "duplicated context id '%s'"
 msgstr "id de contexto duplicado «%s»"
 
-msgid ""
-"style override used with wildcard context reference in language '%s' in ref "
-"'%s'"
-msgstr ""
-
-msgid "invalid reference '%s'"
-msgstr "referencia inválida «%s»"
-
-msgid "Unknown id '%s' in regex '%s'"
-msgstr "Id «%s» desconocido en la expresión regular «%s»"
+msgid "gettext translation"
+msgstr "traducción gettext"
 
 msgid "in regex '%s': backreferences are not supported"
 msgstr "en la expresión regular «%s»: las retroreferencias no se soportan"
 
-msgid "malformed regex '%s'"
-msgstr "expresión regular «%s» mal formada"
+msgid "invalid reference '%s'"
+msgstr "referencia inválida «%s»"
 
-msgid "malformed regex options '%s'"
-msgstr "opciones de la expresión regular «%s» mal formadas"
+msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
+msgstr "el salto de estilo se usó con comodín de contexto de referencia en el lenguaje «%s» referencia «%s»"
 
-msgid "Language specification directories"
-msgstr "Directorios de especificaciones de idiomas"
+msgid "unknown context '%s'"
+msgstr "contexto desconocido «%s»"
 
-msgid ""
-"List of directories where the language specification files (.lang) are "
-"located"
-msgstr ""
-"Lista de directorios en los que se hallan los archivo de especificación de "
-"lenguajes (.lang)."
-
-msgid "Style scheme directories"
-msgstr ""
-
-"estilos (.styles)"
-
-msgid "Style scheme id"
-msgstr ""
-
-msgid "Style scheme name"
-msgstr ""
-
-msgid "Scripts"
-msgstr "Scripts"
-
-msgid "Ada"
-msgstr "Ada"
-
-msgid "Sources"
-msgstr "Fuentes"
-
-msgid "BibTeX"
-msgstr ""
-
-msgid "Others"
-msgstr "Otros"
-
-msgid "C"
-msgstr "C"
-
-msgid "ChangeLog"
-msgstr "ChangeLog"
-
-msgid "C++"
-msgstr "C++"
-
-msgid "C#"
-msgstr "C#"
-
-msgid "CSS"
-msgstr "CSS"
-
-msgid "Block Comment"
-msgstr "Comentario de bloque"
-
-msgid "D"
-msgstr "D"
-
-msgid "Nested Comment"
-msgstr "Comentario anidado"
-
-msgid "Defaults"
-msgstr "Predeterminados"
-
-msgid ".desktop"
-msgstr ".desktop"
-
-msgid "Diff"
-msgstr "Diff"
-
-msgid "DocBook"
-msgstr "DocBook"
-
-msgid "Markup"
-msgstr "Marcado"
-
-msgid "DPatch"
-msgstr ""
-
-msgid "DTD"
-msgstr "DTD"
-
-msgid "Fortran 95"
-msgstr "Fortran 95"
-
-msgid "GAP"
-msgstr ""
-
-msgid "Scientific"
-msgstr "Científico"
-
-msgid "gtk-doc"
-msgstr "gtk-doc"
-
-msgid "GtkRC"
-msgstr "GtkRC"
-
-msgid "Color scheme used in GVim"
-msgstr ""
-
-msgid "GVim"
-msgstr ""
-
-msgid "Haskell"
-msgstr "Haskell"
-
-msgid "HTML"
-msgstr "HTML"
-
-msgid "IDL"
-msgstr "IDL"
-
-msgid ".ini"
-msgstr ".ini"
-
-msgid "Java"
-msgstr "Java"
-
-msgid "Javascript"
-msgstr "JavaScript"
-
-msgid "Color scheme used in Kate text editor"
-msgstr ""
-
-msgid "LaTeX"
-msgstr "LaTeX"
-
-msgid "libtool"
-msgstr "libtool"
-
-msgid "Lua"
-msgstr "Lua"
-
-msgid "m4"
-msgstr "m4"
-
-msgid "Makefile"
-msgstr "Makefile"
-
-msgid "MSIL"
-msgstr "MSIL"
-
-msgid "Nemerle"
-msgstr "Nemerle"
-
-msgid "Objective Caml"
-msgstr "Objective Caml"
-
-msgid "Octave"
-msgstr "Octave"
-
-msgid "Pascal"
-msgstr "Pascal"
-
-msgid "Perl"
-msgstr "Perl"
-
-msgid "PHP"
-msgstr "PHP"
-
-msgid "pkg-config"
-msgstr ""
-
-msgid "gettext translation"
-msgstr "traducción gettext"
-
-msgid "Python"
-msgstr "Python"
-
-msgid "Ruby"
-msgstr "Ruby"
-
-msgid "Scheme"
-msgstr "Scheme"
-
-msgid "sh"
-msgstr "sh"
-
-msgid "RPM spec"
-msgstr "Especificación de RPM"
-
-msgid "SQL"
-msgstr "SQL"
-
-msgid "Tcl"
-msgstr "Tcl"
-
-msgid "Texinfo"
-msgstr "Texinfo"
-
-msgid "VB.NET"
-msgstr "VB.NET"
-
-msgid "Verilog"
-msgstr "Verilog"
-
-msgid "VHDL"
-msgstr "VHDL"
-
-msgid "XML"
-msgstr "XML"
-
-msgid "Yacc"
-msgstr "Yacc"
-
-
-
-
+msgid "using \\C is not supported in language definitions"
+msgstr "el uso de \\C no está soportado en las definiciones del lenguaje"
 

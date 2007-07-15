@@ -9,7 +9,7 @@ mv POTFILES.in POTFILES.in.orig
 
 for file in $input_files; do
   if (echo $file | grep .lang$ > /dev/null); then
-    sed -r -e 's/<((style|string|line-comment|keyword-list|pattern-item) .*)_name\s*=\s*"/<\1name="/' ../$file > fake_input/`basename $file`
+    sed -r -e 's/<((style|string|(line|block)-comment|keyword-list|pattern-item) .*)_name\s*=\s*"/<\1name="/' ../$file > fake_input/`basename $file`
   else
     cp ../$file fake_input/
   fi
@@ -24,7 +24,9 @@ mv moo-gsv.pot.tmp moo-gsv.pot
 for lang in `sed 's/#.*//' LINGUAS`; do
   cp $lang.po $lang.po.bak
   ./dist $lang
-  sed '/#, fuzzy/,+3 d' $lang.po | sed '/#~ /,+2 d' > po-stripped/$lang.po
+  sed '/#, fuzzy/,+3 d' $lang.po | sed '/#~ /,+2 d' > $lang.po.tmp
+  python msgs.py $lang.po.tmp > po-stripped/$lang.po
+  rm $lang.po.tmp
   mv $lang.po.bak $lang.po
 done
 

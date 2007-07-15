@@ -8,192 +8,67 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-06-18 05:14-0500\n"
+"POT-Creation-Date: 2007-07-15 02:59-0500\n"
 "PO-Revision-Date: 2005-03-18 00:40+0200\n"
 "Last-Translator: Canonical Ltd <translations@canonical.com>\n"
 "Language-Team: Xhosa <xh-translate@ubuntu.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-
-msgid "Missing main language definition (id = \"%s\".)"
-msgstr ""
-
-msgid "using \\C is not supported in language definitions"
-msgstr ""
-
-msgid ""
-"Cannot create a regex for all the transitions, the syntax highlighting "
-"process will be slower than usual.\n"
-"The error was: %s"
-msgstr ""
-
-msgid "context '%s' cannot contain a \\%%{...@start} command"
-msgstr ""
-
-msgid "duplicated context id '%s'"
-msgstr ""
-
-msgid ""
-"style override used with wildcard context reference in language '%s' in ref "
-"'%s'"
-msgstr ""
-
-msgid "invalid reference '%s'"
-msgstr ""
-
-msgid "Unknown id '%s' in regex '%s'"
-msgstr ""
-
-msgid "in regex '%s': backreferences are not supported"
-msgstr ""
-
-msgid "malformed regex '%s'"
-msgstr ""
-
-msgid "malformed regex options '%s'"
-msgstr ""
-
-msgid "Language specification directories"
-msgstr "Oovimba befayili bokucacisa ulwimi"
-
-msgid ""
-"List of directories where the language specification files (.lang) are "
-"located"
-msgstr ""
-"Uluhlu loovimba beefayili apho iifayili zokucacisa ulwimi (.lang) zibekwe "
-"khona"
-
-msgid "Style scheme directories"
-msgstr ""
-
-"khona"
-
-msgid "Style scheme id"
-msgstr ""
-
-msgid "Style scheme name"
-msgstr ""
-
-msgid "Scripts"
-msgstr "Izikripti"
-
-msgid "Ada"
-msgstr "I-Ada"
-
-msgid "Sources"
-msgstr "Imithombo"
-
-msgid "BibTeX"
-msgstr ""
-
-msgid "Others"
-msgstr "Ezinye"
-
-msgid "C"
-msgstr "C"
-
-msgid "ChangeLog"
-msgstr ""
-
-msgid "C++"
-msgstr "C++"
-
-msgid "C#"
-msgstr "C#"
-
-msgid "CSS"
-msgstr ""
-
-msgid "Block Comment"
-msgstr "Inkcazo Yesithinteli"
-
-msgid "D"
-msgstr ""
+"Content-Transfer-Encoding: 8bit"
 
 msgid ".desktop"
 msgstr "I-.desktop"
 
-msgid "Diff"
-msgstr "Umahluko"
-
-msgid "DocBook"
-msgstr ""
-
-msgid "Markup"
-msgstr "Ukunyusa ixabiso"
+msgid "Ada"
+msgstr "I-Ada"
 
 msgid "DTD"
 msgstr "I-DTD"
 
+msgid "Diff"
+msgstr "Umahluko"
+
 msgid "Fortran 95"
 msgstr "I-Fortran 95"
-
-msgid "GAP"
-msgstr ""
-
-msgid "Scientific"
-msgstr ""
-
-msgid "gtk-doc"
-msgstr ""
 
 msgid "GtkRC"
 msgstr "I-GtkRC"
 
-msgid "Color scheme used in GVim"
-msgstr ""
-
-msgid "GVim"
-msgstr ""
+msgid "HTML"
+msgstr "I-HTML"
 
 msgid "Haskell"
 msgstr "I-Haskell"
 
-msgid "HTML"
-msgstr "I-HTML"
-
 msgid "IDL"
 msgstr "I-IDL"
-
-msgid ".ini"
-msgstr ".ini"
 
 msgid "Java"
 msgstr "I-Java"
 
-msgid "Javascript"
-msgstr ""
-
-msgid "Color scheme used in Kate text editor"
-msgstr ""
-
 msgid "LaTeX"
 msgstr "I-LaTeX"
 
-msgid "libtool"
-msgstr ""
+msgid "Language specification directories"
+msgstr "Oovimba befayili bokucacisa ulwimi"
+
+msgid "List of directories where the language specification files (.lang) are located"
+msgstr "Uluhlu loovimba beefayili apho iifayili zokucacisa ulwimi (.lang) zibekwe khona"
 
 msgid "Lua"
 msgstr "I-Lua"
 
-msgid "m4"
-msgstr ""
-
-msgid "Makefile"
-msgstr ""
-
-msgid "MSIL"
-msgstr ""
+msgid "Markup"
+msgstr "Ukunyusa ixabiso"
 
 msgid "Nemerle"
 msgstr "I-Nemerle"
 
-msgid "Objective Caml"
-msgstr ""
+msgid "Others"
+msgstr "Ezinye"
 
-msgid "Octave"
-msgstr ""
+msgid "PHP"
+msgstr "I-PHP"
 
 msgid "Pascal"
 msgstr "I-Pascal"
@@ -201,32 +76,23 @@ msgstr "I-Pascal"
 msgid "Perl"
 msgstr "I-Perl"
 
-msgid "PHP"
-msgstr "I-PHP"
-
-msgid "pkg-config"
-msgstr ""
-
-msgid "gettext translation"
-msgstr "uguqulelo lwe-gettext"
-
 msgid "Python"
 msgstr "I-Python"
 
 msgid "Ruby"
 msgstr "i-Ruby"
 
-msgid "Scheme"
-msgstr ""
-
-msgid "sh"
-msgstr "i-sh"
-
-msgid "RPM spec"
-msgstr ""
-
 msgid "SQL"
 msgstr "I-SQL"
+
+msgid "Scripts"
+msgstr "Izikripti"
+
+msgid "Sources"
+msgstr "Imithombo"
+
+msgid "Style scheme directories"
+msgstr "khona"
 
 msgid "Tcl"
 msgstr "I-Tcl"
@@ -237,17 +103,18 @@ msgstr "Ulwazi lombhalo"
 msgid "VB.NET"
 msgstr "I-VB.NET"
 
-msgid "Verilog"
-msgstr "I-Verilog"
-
 msgid "VHDL"
 msgstr "I-VHDL"
+
+msgid "Verilog"
+msgstr "I-Verilog"
 
 msgid "XML"
 msgstr "I-XML"
 
-msgid "Yacc"
-msgstr ""
+msgid "gettext translation"
+msgstr "uguqulelo lwe-gettext"
 
-
+msgid "sh"
+msgstr "i-sh"
 

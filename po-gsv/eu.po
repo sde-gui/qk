@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eu\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-06-18 05:14-0500\n"
+"POT-Creation-Date: 2007-07-15 02:59-0500\n"
 "PO-Revision-Date: 2007-03-31 18:16+0200\n"
 "Last-Translator: Iñaki Larrañaga Murgoitio <dooteo@euskalgnu.org>\n"
 "Language-Team: Basque <itzulpena@euskalgnu.org>\n"
@@ -17,238 +17,32 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"\n"
-
-msgid "Missing main language definition (id = \"%s\".)"
-msgstr ""
-
-msgid "using \\C is not supported in language definitions"
-msgstr ""
-
-msgid ""
-"Cannot create a regex for all the transitions, the syntax highlighting "
-"process will be slower than usual.\n"
-"The error was: %s"
-msgstr ""
-
-msgid "context '%s' cannot contain a \\%%{...@start} command"
-msgstr ""
-
-msgid "duplicated context id '%s'"
-msgstr ""
-
-msgid ""
-"style override used with wildcard context reference in language '%s' in ref "
-"'%s'"
-msgstr ""
-
-msgid "invalid reference '%s'"
-msgstr ""
-
-msgid "Unknown id '%s' in regex '%s'"
-msgstr ""
-
-msgid "in regex '%s': backreferences are not supported"
-msgstr ""
-
-msgid "malformed regex '%s'"
-msgstr ""
-
-msgid "malformed regex options '%s'"
-msgstr ""
+""
 
 msgid "Language specification directories"
 msgstr "Hikuntz-espezifikazioen direktorioak"
 
-msgid ""
-"List of directories where the language specification files (.lang) are "
-"located"
-msgstr ""
-"Direktorioen zerrenda, hizkuntz-espezifikazio fitxategien (.lang) kokapena"
-
-msgid "Style scheme directories"
-msgstr ""
-
-
-msgid "Style scheme id"
-msgstr ""
-
-msgid "Style scheme name"
-msgstr ""
-
-msgid "Scripts"
-msgstr "Skriptak"
-
-msgid "Ada"
-msgstr "Ada"
-
-msgid "Sources"
-msgstr "Iturburuak"
-
-msgid "BibTeX"
-msgstr ""
-
-msgid "Others"
-msgstr "Bestelakoak"
-
-msgid "C"
-msgstr "C"
-
-msgid "ChangeLog"
-msgstr "ChangeLog"
-
-msgid "C++"
-msgstr "C++"
-
-msgid "C#"
-msgstr "C#"
-
-msgid "CSS"
-msgstr "CSS"
-
-msgid "Block Comment"
-msgstr "Blokearen iruzkina"
-
-msgid "D"
-msgstr "D"
-
-msgid "Nested Comment"
-msgstr "Habiaratutako iruzkina"
-
-msgid ".desktop"
-msgstr ".desktop"
-
-msgid "Diff"
-msgstr "Diff"
-
-msgid "DocBook"
-msgstr "DocBook"
+msgid "List of directories where the language specification files (.lang) are located"
+msgstr "Direktorioen zerrenda, hizkuntz-espezifikazio fitxategien (.lang) kokapena"
 
 msgid "Markup"
 msgstr "Marka"
 
-msgid "DTD"
-msgstr "DTD"
-
-msgid "Fortran 95"
-msgstr "Fortran 95"
-
-msgid "GAP"
-msgstr ""
-
-msgid "Scientific"
-msgstr ""
-
-msgid "gtk-doc"
-msgstr ""
-
-msgid "GtkRC"
-msgstr "GtkRC"
-
-msgid "Color scheme used in GVim"
-msgstr ""
-
-msgid "GVim"
-msgstr ""
-
-msgid "Haskell"
-msgstr "Haskell"
-
-msgid "HTML"
-msgstr "HTML"
-
-msgid "IDL"
-msgstr "IDL"
-
-msgid ".ini"
-msgstr ".ini"
-
-msgid "Java"
-msgstr "Java"
-
-msgid "Color scheme used in Kate text editor"
-msgstr ""
-
-msgid "LaTeX"
-msgstr "LaTeX"
-
-msgid "libtool"
-msgstr ""
-
-msgid "Lua"
-msgstr "Lua"
-
-msgid "m4"
-msgstr ""
-
-msgid "Makefile"
-msgstr "Makefile"
-
-msgid "MSIL"
-msgstr "MSIL"
-
-msgid "Nemerle"
-msgstr "Nemerle"
-
-msgid "Objective Caml"
-msgstr "Objective Caml"
-
-msgid "Octave"
-msgstr "Octave"
-
-msgid "Pascal"
-msgstr "Pascal"
-
-msgid "Perl"
-msgstr "Perl"
-
-msgid "PHP"
-msgstr "PHP"
-
-msgid "pkg-config"
-msgstr ""
-
-msgid "gettext translation"
-msgstr "gettext itzulpena"
-
-msgid "Python"
-msgstr "Python"
-
-msgid "Ruby"
-msgstr "Ruby"
-
-msgid "Scheme"
-msgstr "Eskema"
-
-msgid "sh"
-msgstr "sh"
+msgid "Others"
+msgstr "Bestelakoak"
 
 msgid "RPM spec"
 msgstr "RPM zehaztapenak"
 
-msgid "SQL"
-msgstr "SQL"
+msgid "Scheme"
+msgstr "Eskema"
 
-msgid "Tcl"
-msgstr "Tcl"
+msgid "Scripts"
+msgstr "Skriptak"
 
-msgid "Texinfo"
-msgstr "Texinfo"
+msgid "Sources"
+msgstr "Iturburuak"
 
-msgid "VB.NET"
-msgstr "VB.NET"
-
-msgid "Verilog"
-msgstr "Verilog"
-
-msgid "VHDL"
-msgstr "VHDL"
-
-msgid "XML"
-msgstr "XML"
-
-msgid "Yacc"
-msgstr ""
-
-
+msgid "gettext translation"
+msgstr "gettext itzulpena"
 

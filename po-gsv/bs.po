@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview.HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-06-18 05:14-0500\n"
+"POT-Creation-Date: 2007-07-15 02:59-0500\n"
 "PO-Revision-Date: 2004-08-21 13:59-0700\n"
 "Last-Translator: Ahmet Mulalic <am@lugzdk.ba>\n"
 "Language-Team: Bosnian <lokal@linux.org.ba>\n"
@@ -15,236 +15,32 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.3.1\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
-"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-
-msgid "Missing main language definition (id = \"%s\".)"
-msgstr ""
-
-msgid "using \\C is not supported in language definitions"
-msgstr ""
-
-msgid ""
-"Cannot create a regex for all the transitions, the syntax highlighting "
-"process will be slower than usual.\n"
-"The error was: %s"
-msgstr ""
-
-msgid "context '%s' cannot contain a \\%%{...@start} command"
-msgstr ""
-
-msgid "duplicated context id '%s'"
-msgstr ""
-
-msgid ""
-"style override used with wildcard context reference in language '%s' in ref "
-"'%s'"
-msgstr ""
-
-msgid "invalid reference '%s'"
-msgstr ""
-
-msgid "Unknown id '%s' in regex '%s'"
-msgstr ""
-
-msgid "in regex '%s': backreferences are not supported"
-msgstr ""
-
-msgid "malformed regex '%s'"
-msgstr ""
-
-msgid "malformed regex options '%s'"
-msgstr ""
-
-msgid "Language specification directories"
-msgstr "Jezički specifikacijski direktoriji"
-
-msgid ""
-"List of directories where the language specification files (.lang) are "
-"located"
-msgstr ""
-"Lista direktorija gdje su jezičke specifikacijske datoteke (.lng) locirane"
-
-msgid "Style scheme directories"
-msgstr ""
-
-
-msgid "Style scheme id"
-msgstr ""
-
-msgid "Style scheme name"
-msgstr ""
-
-msgid "Scripts"
-msgstr "Skripte"
-
-msgid "Ada"
-msgstr "Ada"
-
-msgid "Sources"
-msgstr "Izvori"
-
-msgid "BibTeX"
-msgstr ""
-
-msgid "Others"
-msgstr "Ostali"
-
-msgid "C"
-msgstr "C"
-
-msgid "ChangeLog"
-msgstr ""
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);"
 
 msgid "C++"
 msgstr "C++7"
 
-msgid "C#"
-msgstr "C#"
+msgid "Language specification directories"
+msgstr "Jezički specifikacijski direktoriji"
 
-msgid "CSS"
-msgstr "CSS"
-
-msgid "Block Comment"
-msgstr "Blokiraj Komentar"
-
-msgid "D"
-msgstr ""
-
-msgid ".desktop"
-msgstr ".desktop"
-
-msgid "Diff"
-msgstr "Diff"
-
-msgid "DocBook"
-msgstr ""
+msgid "List of directories where the language specification files (.lang) are located"
+msgstr "Lista direktorija gdje su jezičke specifikacijske datoteke (.lng) locirane"
 
 msgid "Markup"
 msgstr "Označavanje"
 
-msgid "DTD"
-msgstr "DTD"
+msgid "Others"
+msgstr "Ostali"
 
-msgid "Fortran 95"
-msgstr "Fortran 95"
+msgid "Scripts"
+msgstr "Skripte"
 
-msgid "GAP"
-msgstr ""
-
-msgid "Scientific"
-msgstr ""
-
-msgid "gtk-doc"
-msgstr ""
-
-msgid "GtkRC"
-msgstr ""
-
-msgid "Color scheme used in GVim"
-msgstr ""
-
-msgid "GVim"
-msgstr ""
-
-msgid "Haskell"
-msgstr "Haskell"
-
-msgid "HTML"
-msgstr "HTML"
-
-msgid "IDL"
-msgstr "IDL"
-
-msgid ".ini"
-msgstr ""
-
-msgid "Java"
-msgstr "Java"
-
-msgid "Color scheme used in Kate text editor"
-msgstr ""
-
-msgid "LaTeX"
-msgstr "LaTeX"
-
-msgid "libtool"
-msgstr ""
-
-msgid "Lua"
-msgstr "Lua"
-
-msgid "m4"
-msgstr ""
-
-msgid "Makefile"
-msgstr ""
-
-msgid "MSIL"
-msgstr "MSIL"
-
-msgid "Nemerle"
-msgstr ""
-
-msgid "Objective Caml"
-msgstr ""
-
-msgid "Octave"
-msgstr ""
-
-msgid "Pascal"
-msgstr "Pascal"
-
-msgid "Perl"
-msgstr "Perl"
-
-msgid "PHP"
-msgstr "PHP"
-
-msgid "pkg-config"
-msgstr ""
-
-msgid "gettext translation"
-msgstr "gettext prevod"
-
-msgid "Python"
-msgstr "Python"
-
-msgid "Ruby"
-msgstr "Ruby"
-
-msgid "Scheme"
-msgstr ""
-
-msgid "sh"
-msgstr ""
-
-msgid "RPM spec"
-msgstr ""
-
-msgid "SQL"
-msgstr "SQL"
-
-msgid "Tcl"
-msgstr ""
+msgid "Sources"
+msgstr "Izvori"
 
 msgid "Texinfo"
 msgstr "Informacije o tekstu"
 
-msgid "VB.NET"
-msgstr "VB.NET"
-
-msgid "Verilog"
-msgstr "Verilog"
-
-msgid "VHDL"
-msgstr ""
-
-msgid "XML"
-msgstr "XML"
-
-msgid "Yacc"
-msgstr ""
-
-
+msgid "gettext translation"
+msgstr "gettext prevod"
 

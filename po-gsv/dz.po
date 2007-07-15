@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview.gnome-2-14 dz\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-06-18 05:14-0500\n"
+"POT-Creation-Date: 2007-07-15 02:59-0500\n"
 "PO-Revision-Date: 2007-03-20 16:55+0530\n"
 "Last-Translator: sonam pelden <sonaa_peldn@yahoo.com>\n"
 "Language-Team: DZONGKHA <pgeyleg@dit.gov.bt>\n"
@@ -16,104 +16,37 @@ msgstr ""
 "Plural-Forms: nplurals=2;plural=(n!=1);\n"
 "X-Poedit-Language: Dzongkha\n"
 "X-Poedit-Country: BHUTAN\n"
-"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-SourceCharset: utf-8"
 
-msgid "Missing main language definition (id = \"%s\".)"
-msgstr ""
+msgid ".desktop"
+msgstr ".ཌེཀསི་ཊོཔ།"
 
-msgid "using \\C is not supported in language definitions"
-msgstr ""
-
-msgid ""
-"Cannot create a regex for all the transitions, the syntax highlighting "
-"process will be slower than usual.\n"
-"The error was: %s"
-msgstr ""
-
-msgid "context '%s' cannot contain a \\%%{...@start} command"
-msgstr ""
-
-msgid "duplicated context id '%s'"
-msgstr ""
-
-msgid ""
-"style override used with wildcard context reference in language '%s' in ref "
-"'%s'"
-msgstr ""
-
-msgid "invalid reference '%s'"
-msgstr ""
-
-msgid "Unknown id '%s' in regex '%s'"
-msgstr ""
-
-msgid "in regex '%s': backreferences are not supported"
-msgstr ""
-
-msgid "malformed regex '%s'"
-msgstr ""
-
-msgid "malformed regex options '%s'"
-msgstr ""
-
-msgid "Language specification directories"
-msgstr "སྐད་ཡིག་གསལ་བཤད་ཀྱི་ ཁ་བྱང་ཐོ་དེབ།"
-
-msgid ""
-"List of directories where the language specification files (.lang) are "
-"located"
-msgstr "སྐད་ཡིག་གསལ་བཤད་ཡིག་སྣོད་(.སྐད་ཡིག་) ཚུ་ཡོད་སའི་ ཁ་བྱང་ཐོ་དེབ་ཀྱི་ཐོ་ཡིག"
-
-msgid "Style scheme directories"
-msgstr ""
-
-msgid "Style scheme id"
-msgstr ""
-
-msgid "Style scheme name"
-msgstr ""
-
-msgid "Scripts"
-msgstr "ཡིག་ཚུགས།"
+msgid ".ini"
+msgstr ".ཨའི་ཨེན་ཨའི།"
 
 msgid "Ada"
 msgstr "ཨ་ཌ།"
 
-msgid "Sources"
-msgstr "འབྱུང་ཁུངས་ཚུ།"
-
-msgid "BibTeX"
-msgstr ""
-
-msgid "Others"
-msgstr "གཞན་ཚུ།"
-
 msgid "C"
 msgstr "སི།"
-
-msgid "ChangeLog"
-msgstr "བསྒྱུར་བཅོས་དྲན་དེབ།"
-
-msgid "C++"
-msgstr "སི་++།"
 
 msgid "C#"
 msgstr "སི་#།"
 
+msgid "C++"
+msgstr "སི་++།"
+
 msgid "CSS"
 msgstr "སི་ཨེསི་ཨེསི།"
 
-msgid "Block Comment"
-msgstr "སྡེབ་ཚན་བསམ་བཀོད།"
+msgid "ChangeLog"
+msgstr "བསྒྱུར་བཅོས་དྲན་དེབ།"
 
 msgid "D"
 msgstr "ཌི།"
 
-msgid "Nested Comment"
-msgstr "ནེསི་ཊེཌི་བསམ་བཀོད།"
-
-msgid ".desktop"
-msgstr ".ཌེཀསི་ཊོཔ།"
+msgid "DTD"
+msgstr "ཌི་ཊི་ཌི།"
 
 msgid "Diff"
 msgstr "ཌིཕ"
@@ -121,68 +54,44 @@ msgstr "ཌིཕ"
 msgid "DocBook"
 msgstr "ཌོཀ་ཀི་དེབ་"
 
-msgid "Markup"
-msgstr "རྟགས་བཀོད།"
-
-msgid "DTD"
-msgstr "ཌི་ཊི་ཌི།"
-
 msgid "Fortran 95"
 msgstr "ཕོར་ཊཱེན་ ༩༥།"
-
-msgid "GAP"
-msgstr ""
-
-msgid "Scientific"
-msgstr ""
-
-msgid "gtk-doc"
-msgstr ""
 
 msgid "GtkRC"
 msgstr "ཇི་ཊི་ཀེ་ཨར་སི།"
 
-msgid "Color scheme used in GVim"
-msgstr ""
-
-msgid "GVim"
-msgstr ""
+msgid "HTML"
+msgstr "ཨེཆ་ཊི་ཨེམ་ཨེལ།"
 
 msgid "Haskell"
 msgstr "ཧེསི་ཀེལ།"
 
-msgid "HTML"
-msgstr "ཨེཆ་ཊི་ཨེམ་ཨེལ།"
-
 msgid "IDL"
 msgstr "ཨའི་ཌི་ཨེལ།"
-
-msgid ".ini"
-msgstr ".ཨའི་ཨེན་ཨའི།"
 
 msgid "Java"
 msgstr "ཇ་བ།"
 
-msgid "Color scheme used in Kate text editor"
-msgstr ""
-
 msgid "LaTeX"
 msgstr "ལ་ཊེགསི།"
 
-msgid "libtool"
-msgstr ""
+msgid "Language specification directories"
+msgstr "སྐད་ཡིག་གསལ་བཤད་ཀྱི་ ཁ་བྱང་ཐོ་དེབ།"
+
+msgid "List of directories where the language specification files (.lang) are located"
+msgstr "སྐད་ཡིག་གསལ་བཤད་ཡིག་སྣོད་(.སྐད་ཡིག་) ཚུ་ཡོད་སའི་ ཁ་བྱང་ཐོ་དེབ་ཀྱི་ཐོ་ཡིག"
 
 msgid "Lua"
 msgstr "ལུ་འ།"
 
-msgid "m4"
-msgstr ""
+msgid "MSIL"
+msgstr "ཨེམ་ཨེསི་ཨའི་ཨེལ།"
 
 msgid "Makefile"
 msgstr "ཡིག་སྣོད་བཟོ།"
 
-msgid "MSIL"
-msgstr "ཨེམ་ཨེསི་ཨའི་ཨེལ།"
+msgid "Markup"
+msgstr "རྟགས་བཀོད།"
 
 msgid "Nemerle"
 msgstr "ནི་མར་ལི"
@@ -193,38 +102,38 @@ msgstr "དམིགས་ཡུལ་སི་ཨེ་ཨེམ་ཨེལ་
 msgid "Octave"
 msgstr "བརྒྱད་ལྡན།"
 
+msgid "Others"
+msgstr "གཞན་ཚུ།"
+
+msgid "PHP"
+msgstr "པི་ཨེཆ་པི།"
+
 msgid "Pascal"
 msgstr "པཱསི་ཀལ།"
 
 msgid "Perl"
 msgstr "པརཱལ།"
 
-msgid "PHP"
-msgstr "པི་ཨེཆ་པི།"
-
-msgid "pkg-config"
-msgstr ""
-
-msgid "gettext translation"
-msgstr "ཚིག་ཡིག་ལེན་ནིའི་ སྐད་བསྐྱུར།"
-
 msgid "Python"
 msgstr "སྦུལམོ་ཆེ།"
-
-msgid "Ruby"
-msgstr "ར་བི།"
-
-msgid "Scheme"
-msgstr "འཆར་ལས།"
-
-msgid "sh"
-msgstr "ཨེསི་ཨེཆ།"
 
 msgid "RPM spec"
 msgstr "ཨར་པི་ཨེམ་ཨེསི་པི་ཨི་སི་"
 
+msgid "Ruby"
+msgstr "ར་བི།"
+
 msgid "SQL"
 msgstr "ཨེསི་ཀིའུ་ཨེལ།"
+
+msgid "Scheme"
+msgstr "འཆར་ལས།"
+
+msgid "Scripts"
+msgstr "ཡིག་ཚུགས།"
+
+msgid "Sources"
+msgstr "འབྱུང་ཁུངས་ཚུ།"
 
 msgid "Tcl"
 msgstr "ཊི་སི་ཨེལ།"
@@ -235,18 +144,18 @@ msgstr "ཚིག་དོན་གྱི་བརྡ་དོན།"
 msgid "VB.NET"
 msgstr "ཝི་བི་.ནེཊི།"
 
-msgid "Verilog"
-msgstr "བེ་རི་ལོག"
-
 msgid "VHDL"
 msgstr "ཝི་ཨེཆ་ཌི་ཨེལ།"
+
+msgid "Verilog"
+msgstr "བེ་རི་ལོག"
 
 msgid "XML"
 msgstr "ཨེགསི་ཨེམ་ཨེལ།"
 
-msgid "Yacc"
-msgstr ""
+msgid "gettext translation"
+msgstr "ཚིག་ཡིག་ལེན་ནིའི་ སྐད་བསྐྱུར།"
 
-
-
+msgid "sh"
+msgstr "ཨེསི་ཨེཆ།"
 

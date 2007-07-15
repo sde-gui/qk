@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview.HEAD.ml\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-06-18 05:14-0500\n"
+"POT-Creation-Date: 2007-07-15 02:59-0500\n"
 "PO-Revision-Date: 2006-09-04 14:57+0530\n"
 "Last-Translator: Ani Peter <apeter@redhat.com>\n"
 "Language-Team: Malayalam\n"
@@ -17,191 +17,25 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.9.1\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"\n"
-
-msgid "Missing main language definition (id = \"%s\".)"
-msgstr ""
-
-msgid "using \\C is not supported in language definitions"
-msgstr ""
-
-msgid ""
-"Cannot create a regex for all the transitions, the syntax highlighting "
-"process will be slower than usual.\n"
-"The error was: %s"
-msgstr ""
-
-msgid "context '%s' cannot contain a \\%%{...@start} command"
-msgstr ""
-
-msgid "duplicated context id '%s'"
-msgstr ""
-
-msgid ""
-"style override used with wildcard context reference in language '%s' in ref "
-"'%s'"
-msgstr ""
-
-msgid "invalid reference '%s'"
-msgstr ""
-
-msgid "Unknown id '%s' in regex '%s'"
-msgstr ""
-
-msgid "in regex '%s': backreferences are not supported"
-msgstr ""
-
-msgid "malformed regex '%s'"
-msgstr ""
-
-msgid "malformed regex options '%s'"
-msgstr ""
-
-msgid "Language specification directories"
-msgstr ""
-
-msgid ""
-"List of directories where the language specification files (.lang) are "
-"located"
-msgstr ""
-
-msgid "Style scheme directories"
-msgstr ""
-
-msgid "List of directories where the style scheme files are located"
-msgstr ""
-
-msgid "Style scheme id"
-msgstr ""
-
-msgid "Style scheme name"
-msgstr ""
-
-msgid "Scripts"
-msgstr ""
-
-msgid "Ada"
-msgstr ""
-
-msgid "Sources"
-msgstr ""
-
-msgid "BibTeX"
-msgstr ""
-
-msgid "Others"
-msgstr "മറ്റുള്ളവ"
+""
 
 msgid "C"
 msgstr "സി"
 
-msgid "ChangeLog"
-msgstr ""
-
 msgid "C++"
 msgstr "സി++"
-
-msgid "C#"
-msgstr "C#"
-
-msgid "CSS"
-msgstr "CSS"
-
-msgid "Block Comment"
-msgstr ""
-
-msgid "D"
-msgstr "D"
-
-msgid "Nested Comment"
-msgstr ""
-
-msgid ".desktop"
-msgstr ".desktop"
-
-msgid "Diff"
-msgstr ""
-
-msgid "DocBook"
-msgstr ""
-
-msgid "Markup"
-msgstr "കരുതല്"
-
-msgid "DTD"
-msgstr "DTD"
 
 msgid "Fortran 95"
 msgstr "ഫോര്‍ട്രാന്‍ 95"
 
-msgid "GAP"
-msgstr ""
-
-msgid "Scientific"
-msgstr ""
-
-msgid "gtk-doc"
-msgstr ""
-
-msgid "GtkRC"
-msgstr "GtkRC"
-
-msgid "Color scheme used in GVim"
-msgstr ""
-
-msgid "GVim"
-msgstr ""
-
-msgid "Haskell"
-msgstr ""
-
-msgid "HTML"
-msgstr "HTML"
-
-msgid "IDL"
-msgstr "IDL"
-
-msgid ".ini"
-msgstr ".ini"
-
 msgid "Java"
 msgstr "ജാവാ"
 
-msgid "Javascript"
-msgstr ""
+msgid "Markup"
+msgstr "കരുതല്"
 
-msgid "Color scheme used in Kate text editor"
-msgstr ""
-
-msgid "Kate"
-msgstr ""
-
-msgid "LaTeX"
-msgstr "LaTeX"
-
-msgid "libtool"
-msgstr ""
-
-msgid "Lua"
-msgstr ""
-
-msgid "m4"
-msgstr ""
-
-msgid "Makefile"
-msgstr ""
-
-msgid "MSIL"
-msgstr "MSIL"
-
-msgid "Nemerle"
-msgstr "Nemerle"
-
-msgid "Objective Caml"
-msgstr ""
-
-msgid "Octave"
-msgstr ""
+msgid "Others"
+msgstr "മറ്റുള്ളവ"
 
 msgid "Pascal"
 msgstr "പാസ്കല്‍"
@@ -209,54 +43,6 @@ msgstr "പാസ്കല്‍"
 msgid "Perl"
 msgstr "പേള്‍"
 
-msgid "PHP"
-msgstr "PHP"
-
-msgid "pkg-config"
-msgstr ""
-
-msgid "gettext translation"
-msgstr ""
-
 msgid "Python"
 msgstr "പൈതണ്‍"
-
-msgid "Ruby"
-msgstr ""
-
-msgid "Scheme"
-msgstr ""
-
-msgid "sh"
-msgstr "sh"
-
-msgid "RPM spec"
-msgstr ""
-
-msgid "SQL"
-msgstr "SQL"
-
-msgid "Tcl"
-msgstr "Tcl"
-
-msgid "test2"
-msgstr ""
-
-msgid "Texinfo"
-msgstr ""
-
-msgid "VB.NET"
-msgstr "VB.NET"
-
-msgid "Verilog"
-msgstr ""
-
-msgid "VHDL"
-msgstr "VHDL"
-
-msgid "XML"
-msgstr "XML"
-
-msgid "Yacc"
-msgstr ""
 

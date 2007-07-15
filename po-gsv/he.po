@@ -7,245 +7,36 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview.HEAD.he\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-06-18 05:14-0500\n"
+"POT-Creation-Date: 2007-07-15 02:59-0500\n"
 "PO-Revision-Date: 2003-08-09 14:24+0300\n"
 "Last-Translator: Gil 'Dolfin' Osher <dolfin@rpg.org.il>\n"
 "Language-Team: Hebrew <he@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.0.1\n"
-
-msgid "Missing main language definition (id = \"%s\".)"
-msgstr ""
-
-msgid "using \\C is not supported in language definitions"
-msgstr ""
-
-msgid ""
-"Cannot create a regex for all the transitions, the syntax highlighting "
-"process will be slower than usual.\n"
-"The error was: %s"
-msgstr ""
-
-msgid "context '%s' cannot contain a \\%%{...@start} command"
-msgstr ""
-
-msgid "duplicated context id '%s'"
-msgstr ""
-
-msgid ""
-"style override used with wildcard context reference in language '%s' in ref "
-"'%s'"
-msgstr ""
-
-msgid "invalid reference '%s'"
-msgstr ""
-
-msgid "Unknown id '%s' in regex '%s'"
-msgstr ""
-
-msgid "in regex '%s': backreferences are not supported"
-msgstr ""
-
-msgid "malformed regex '%s'"
-msgstr ""
-
-msgid "malformed regex options '%s'"
-msgstr ""
-
-msgid "Language specification directories"
-msgstr "ספריות מפרט שפה"
-
-msgid ""
-"List of directories where the language specification files (.lang) are "
-"located"
-msgstr "רשימת ספריות בהם ממוקמים קבצי מפריט השפה (.lang)"
-
-msgid "Style scheme directories"
-msgstr ""
-
-msgid "Style scheme id"
-msgstr ""
-
-msgid "Style scheme name"
-msgstr ""
-
-msgid "Scripts"
-msgstr "תסריטים"
-
-msgid "Ada"
-msgstr "Ada"
-
-msgid "Sources"
-msgstr "מקורות"
-
-msgid "BibTeX"
-msgstr ""
-
-msgid "Others"
-msgstr "אחרים"
-
-msgid "C"
-msgstr "C"
-
-msgid "ChangeLog"
-msgstr ""
-
-msgid "C++"
-msgstr "C++"
-
-msgid "C#"
-msgstr ""
-
-msgid "CSS"
-msgstr ""
-
-msgid "Block Comment"
-msgstr "הערת בלוק"
-
-msgid "D"
-msgstr ""
-
-msgid ".desktop"
-msgstr ".desktop"
-
-msgid "Diff"
-msgstr "Diff"
-
-msgid "DocBook"
-msgstr ""
-
-msgid "Markup"
-msgstr "Markup"
-
-msgid "DTD"
-msgstr "DTD"
-
-msgid "Fortran 95"
-msgstr ""
-
-msgid "GAP"
-msgstr ""
-
-msgid "Scientific"
-msgstr ""
-
-msgid "gtk-doc"
-msgstr ""
-
-msgid "GtkRC"
-msgstr ""
-
-msgid "Color scheme used in GVim"
-msgstr ""
-
-msgid "GVim"
-msgstr ""
-
-msgid "Haskell"
-msgstr ""
-
-msgid "HTML"
-msgstr "HTML"
-
-msgid "IDL"
-msgstr "IDL"
-
-msgid ".ini"
-msgstr ""
+"X-Generator: KBabel 1.0.1"
 
 msgid "Java"
 msgstr "ג'אווה"
 
-msgid "Javascript"
-msgstr ""
+msgid "Language specification directories"
+msgstr "ספריות מפרט שפה"
 
-msgid "Color scheme used in Kate text editor"
-msgstr ""
+msgid "List of directories where the language specification files (.lang) are located"
+msgstr "רשימת ספריות בהם ממוקמים קבצי מפריט השפה (.lang)"
 
-msgid "Kate"
-msgstr ""
-
-msgid "LaTeX"
-msgstr ""
-
-msgid "libtool"
-msgstr ""
-
-msgid "Lua"
-msgstr ""
-
-msgid "m4"
-msgstr ""
-
-msgid "Makefile"
-msgstr ""
-
-msgid "MSIL"
-msgstr ""
-
-msgid "Nemerle"
-msgstr ""
-
-msgid "Objective Caml"
-msgstr ""
-
-msgid "Octave"
-msgstr ""
-
-msgid "Pascal"
-msgstr ""
-
-msgid "Perl"
-msgstr "Perl"
-
-msgid "PHP"
-msgstr ""
-
-msgid "pkg-config"
-msgstr ""
-
-msgid "gettext translation"
-msgstr "תרגום gettext"
+msgid "Others"
+msgstr "אחרים"
 
 msgid "Python"
 msgstr "פייטון"
 
-msgid "Ruby"
-msgstr ""
+msgid "Scripts"
+msgstr "תסריטים"
 
-msgid "Scheme"
-msgstr ""
+msgid "Sources"
+msgstr "מקורות"
 
-msgid "sh"
-msgstr ""
-
-msgid "RPM spec"
-msgstr ""
-
-msgid "SQL"
-msgstr ""
-
-msgid "Tcl"
-msgstr ""
-
-msgid "Texinfo"
-msgstr ""
-
-msgid "VB.NET"
-msgstr ""
-
-msgid "Verilog"
-msgstr ""
-
-msgid "VHDL"
-msgstr ""
-
-msgid "XML"
-msgstr "XML"
-
-msgid "Yacc"
-msgstr ""
-
+msgid "gettext translation"
+msgstr "תרגום gettext"
 

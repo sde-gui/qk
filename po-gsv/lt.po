@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lt\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-06-18 05:14-0500\n"
+"POT-Creation-Date: 2007-07-15 02:59-0500\n"
 "PO-Revision-Date: 2007-03-09 22:25+0200\n"
 "Last-Translator: Gintautas Miliauskas <gintas@akl.lt>\n"
 "Language-Team: Lithuanian <gnome-lt@lists.akl.lt>\n"
@@ -18,237 +18,38 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
-"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%"
-"100<10 || n%100>=20) ? 1 : 2);\n"
-
-msgid "Missing main language definition (id = \"%s\".)"
-msgstr ""
-
-msgid "using \\C is not supported in language definitions"
-msgstr ""
-
-msgid ""
-"Cannot create a regex for all the transitions, the syntax highlighting "
-"process will be slower than usual.\n"
-"The error was: %s"
-msgstr ""
-
-msgid "context '%s' cannot contain a \\%%{...@start} command"
-msgstr ""
-
-msgid "duplicated context id '%s'"
-msgstr ""
-
-msgid ""
-"style override used with wildcard context reference in language '%s' in ref "
-"'%s'"
-msgstr ""
-
-msgid "invalid reference '%s'"
-msgstr ""
-
-msgid "Unknown id '%s' in regex '%s'"
-msgstr ""
-
-msgid "in regex '%s': backreferences are not supported"
-msgstr ""
-
-msgid "malformed regex '%s'"
-msgstr ""
-
-msgid "malformed regex options '%s'"
-msgstr ""
-
-msgid "Language specification directories"
-msgstr "Kalbų specifikacijų aplankai"
-
-msgid ""
-"List of directories where the language specification files (.lang) are "
-"located"
-msgstr "Aplankų, kuriuose yra kalbų specifikacijų failo (.lang), vieta"
-
-msgid "Style scheme directories"
-msgstr ""
-
-msgid "Style scheme id"
-msgstr ""
-
-msgid "Style scheme name"
-msgstr ""
-
-msgid "Scripts"
-msgstr "Scenarijai"
-
-msgid "Ada"
-msgstr "Ada"
-
-msgid "Sources"
-msgstr "Pradiniai tekstai"
-
-msgid "BibTeX"
-msgstr ""
-
-msgid "Others"
-msgstr "Kiti"
-
-msgid "C"
-msgstr "C"
-
-msgid "ChangeLog"
-msgstr "ChangeLog"
-
-msgid "C++"
-msgstr "C++"
-
-msgid "C#"
-msgstr "C#"
-
-msgid "CSS"
-msgstr "CSS"
-
-msgid "Block Comment"
-msgstr "Blokinis komentaras"
-
-msgid "D"
-msgstr "D"
-
-msgid "Nested Comment"
-msgstr "Komentaras komentare"
-
-msgid ".desktop"
-msgstr ".desktop"
+"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2);"
 
 msgid "Diff"
 msgstr "Pasikeitimai"
 
-msgid "DocBook"
-msgstr "DocBook"
+msgid "Language specification directories"
+msgstr "Kalbų specifikacijų aplankai"
+
+msgid "List of directories where the language specification files (.lang) are located"
+msgstr "Aplankų, kuriuose yra kalbų specifikacijų failo (.lang), vieta"
 
 msgid "Markup"
 msgstr "Žymėjimas"
 
-msgid "DTD"
-msgstr "DTD"
-
-msgid "Fortran 95"
-msgstr "Fortran 95"
-
-msgid "GAP"
-msgstr ""
-
-msgid "Scientific"
-msgstr ""
-
-msgid "gtk-doc"
-msgstr ""
-
-msgid "GtkRC"
-msgstr "GtkRC"
-
-msgid "Color scheme used in GVim"
-msgstr ""
-
-msgid "GVim"
-msgstr ""
-
-msgid "Haskell"
-msgstr "Haskell"
-
-msgid "HTML"
-msgstr "HTML"
-
-msgid "IDL"
-msgstr "IDL"
-
-msgid ".ini"
-msgstr ".ini"
-
-msgid "Java"
-msgstr "Java"
-
-msgid "Color scheme used in Kate text editor"
-msgstr ""
-
-msgid "LaTeX"
-msgstr "LaTeX"
-
-msgid "libtool"
-msgstr ""
-
-msgid "Lua"
-msgstr "Lua"
-
-msgid "m4"
-msgstr ""
-
-msgid "Makefile"
-msgstr "Makefile"
-
-msgid "MSIL"
-msgstr "MSIL"
-
-msgid "Nemerle"
-msgstr "Nemerle"
-
-msgid "Objective Caml"
-msgstr "Objective Caml"
-
 msgid "Octave"
 msgstr "Oktava"
 
-msgid "Pascal"
-msgstr "Pascal"
-
-msgid "Perl"
-msgstr "Perl"
-
-msgid "PHP"
-msgstr "PHP"
-
-msgid "pkg-config"
-msgstr ""
-
-msgid "gettext translation"
-msgstr "gettext vertimas"
-
-msgid "Python"
-msgstr "Python"
-
-msgid "Ruby"
-msgstr "Ruby"
-
-msgid "Scheme"
-msgstr "Schema"
-
-msgid "sh"
-msgstr "sh"
+msgid "Others"
+msgstr "Kiti"
 
 msgid "RPM spec"
 msgstr "RPM specifikacija"
 
-msgid "SQL"
-msgstr "SQL"
+msgid "Scheme"
+msgstr "Schema"
 
-msgid "Tcl"
-msgstr "Tcl"
+msgid "Scripts"
+msgstr "Scenarijai"
 
-msgid "Texinfo"
-msgstr "Texinfo"
+msgid "Sources"
+msgstr "Pradiniai tekstai"
 
-msgid "VB.NET"
-msgstr "VB.NET"
-
-msgid "Verilog"
-msgstr "Verilog"
-
-msgid "VHDL"
-msgstr "VHDL"
-
-msgid "XML"
-msgstr "XML"
-
-msgid "Yacc"
-msgstr ""
-
-
+msgid "gettext translation"
+msgstr "gettext vertimas"
 

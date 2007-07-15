@@ -8,249 +8,35 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview 1.8.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-06-18 05:14-0500\n"
+"POT-Creation-Date: 2007-07-15 02:59-0500\n"
 "PO-Revision-Date: 2007-02-22 05:01+0800\n"
 "Last-Translator: Woodman Tuen <wmtuen@gmail.com>\n"
 "Language-Team: Chinese (Taiwan) <community@linuxhall.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-
-msgid "Missing main language definition (id = \"%s\".)"
-msgstr ""
-
-msgid "using \\C is not supported in language definitions"
-msgstr ""
-
-msgid ""
-"Cannot create a regex for all the transitions, the syntax highlighting "
-"process will be slower than usual.\n"
-"The error was: %s"
-msgstr ""
-
-msgid "context '%s' cannot contain a \\%%{...@start} command"
-msgstr ""
-
-msgid "duplicated context id '%s'"
-msgstr ""
-
-msgid ""
-"style override used with wildcard context reference in language '%s' in ref "
-"'%s'"
-msgstr ""
-
-msgid "invalid reference '%s'"
-msgstr ""
-
-msgid "Unknown id '%s' in regex '%s'"
-msgstr ""
-
-msgid "in regex '%s': backreferences are not supported"
-msgstr ""
-
-msgid "malformed regex '%s'"
-msgstr ""
-
-msgid "malformed regex options '%s'"
-msgstr ""
-
-msgid "Language specification directories"
-msgstr "存放程式語言規格的目錄"
-
-msgid ""
-"List of directories where the language specification files (.lang) are "
-"located"
-msgstr "一系列的目錄，而這些目錄裡可以找到程式語言規格檔案 (.lang)"
-
-msgid "Style scheme directories"
-msgstr ""
-
-msgid "Style scheme id"
-msgstr ""
-
-msgid "Style scheme name"
-msgstr ""
-
-msgid "Scripts"
-msgstr "Scripts"
-
-msgid "Ada"
-msgstr "Ada"
-
-msgid "Sources"
-msgstr "原始碼"
-
-msgid "BibTeX"
-msgstr ""
-
-msgid "Others"
-msgstr "其它"
-
-msgid "C"
-msgstr "C"
+"Content-Transfer-Encoding: 8bit"
 
 msgid "ChangeLog"
 msgstr "修改紀錄"
 
-msgid "C++"
-msgstr "C++"
-
-msgid "C#"
-msgstr "C#"
-
-msgid "CSS"
-msgstr "CSS"
-
-msgid "Block Comment"
-msgstr "段落注釋"
-
-msgid "D"
-msgstr "D"
-
-msgid "Nested Comment"
-msgstr "巢狀註解"
-
-msgid ".desktop"
-msgstr ".desktop"
-
 msgid "Diff"
 msgstr "差異檔"
 
-msgid "DocBook"
-msgstr "DocBook"
+msgid "Language specification directories"
+msgstr "存放程式語言規格的目錄"
+
+msgid "List of directories where the language specification files (.lang) are located"
+msgstr "一系列的目錄，而這些目錄裡可以找到程式語言規格檔案 (.lang)"
 
 msgid "Markup"
 msgstr "標記語言"
 
-msgid "DTD"
-msgstr "DTD"
+msgid "Others"
+msgstr "其它"
 
-msgid "Fortran 95"
-msgstr "Fortran 95"
-
-msgid "GAP"
-msgstr ""
-
-msgid "Scientific"
-msgstr ""
-
-msgid "gtk-doc"
-msgstr ""
-
-msgid "GtkRC"
-msgstr "GtkRC"
-
-msgid "Color scheme used in GVim"
-msgstr ""
-
-msgid "GVim"
-msgstr ""
-
-msgid "Haskell"
-msgstr "Haskell"
-
-msgid "HTML"
-msgstr "HTML"
-
-msgid "IDL"
-msgstr "IDL"
-
-msgid ".ini"
-msgstr ".ini"
-
-msgid "Java"
-msgstr "Java"
-
-msgid "Color scheme used in Kate text editor"
-msgstr ""
-
-msgid "LaTeX"
-msgstr "LaTeX"
-
-msgid "libtool"
-msgstr ""
-
-msgid "Lua"
-msgstr "Lua"
-
-msgid "m4"
-msgstr ""
-
-msgid "Makefile"
-msgstr "Makefile"
-
-msgid "MSIL"
-msgstr "MSIL"
-
-msgid "Nemerle"
-msgstr "Nemerle"
-
-msgid "Objective Caml"
-msgstr "Objective Caml"
-
-msgid "Octave"
-msgstr "Octave"
-
-msgid "Pascal"
-msgstr "Pascal"
-
-msgid "Perl"
-msgstr "Perl"
-
-msgid "PHP"
-msgstr "PHP"
-
-msgid "pkg-config"
-msgstr ""
+msgid "Sources"
+msgstr "原始碼"
 
 msgid "gettext translation"
 msgstr "gettext 翻譯檔"
 
-msgid "Python"
-msgstr "Python"
-
-msgid "Ruby"
-msgstr "Ruby"
-
-msgid "Scheme"
-msgstr "Scheme"
-
-msgid "sh"
-msgstr "sh"
-
-msgid "RPM spec"
-msgstr "RPM spec"
-
-msgid "SQL"
-msgstr "SQL"
-
-msgid "Tcl"
-msgstr "Tcl"
-
-msgid "Texinfo"
-msgstr "Texinfo"
-
-msgid "VB.NET"
-msgstr "VB.NET"
-
-msgid "Verilog"
-msgstr "Verilog"
-
-msgid "VHDL"
-msgstr "VHDL"
-
-msgid "XML"
-msgstr "XML"
-
-msgid "Yacc"
-msgstr ""
-
-
-# (Abel) == Preprocessor Keyword
-# (Abel) Fortran 的 intrinsic 應該是不會譯的吧？
-# (Abel) == Preprocessor Keyword
-# (Abel) 根本就是 reserved words?
-# (Abel) 如果我沒理解錯誤，Reserved Class 中的 keyword 都是和 data type 
-# 有關？有懂 R 的朋友可以指正嗎？
-# (Abel) 整數以外，還包括小數、指數
-# (Abel) 大陸譯「內聯」，台灣沒有譯

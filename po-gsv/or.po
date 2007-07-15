@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: or\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-06-18 05:14-0500\n"
+"POT-Creation-Date: 2007-07-15 02:59-0500\n"
 "PO-Revision-Date: 2006-09-03 16:38+0530\n"
 "Last-Translator: Subhransu Behera <sbehera@redhat.com>\n"
 "Language-Team: Oriya <oriya-group@lists.sarovar.org>\n"
@@ -17,206 +17,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.9.1\n"
 "Plural-Forms: Plural-Forms: nplurals=2; plural=(n!=1);\n"
-"\n"
-
-msgid "Missing main language definition (id = \"%s\".)"
-msgstr ""
-
-msgid "using \\C is not supported in language definitions"
-msgstr ""
-
-msgid ""
-"Cannot create a regex for all the transitions, the syntax highlighting "
-"process will be slower than usual.\n"
-"The error was: %s"
-msgstr ""
-
-msgid "context '%s' cannot contain a \\%%{...@start} command"
-msgstr ""
-
-msgid "duplicated context id '%s'"
-msgstr ""
-
-msgid ""
-"style override used with wildcard context reference in language '%s' in ref "
-"'%s'"
-msgstr ""
-
-msgid "invalid reference '%s'"
-msgstr ""
-
-msgid "Unknown id '%s' in regex '%s'"
-msgstr ""
-
-msgid "in regex '%s': backreferences are not supported"
-msgstr ""
-
-msgid "malformed regex '%s'"
-msgstr ""
-
-msgid "malformed regex options '%s'"
-msgstr ""
-
-msgid "Language specification directories"
-msgstr ""
-
-msgid ""
-"List of directories where the language specification files (.lang) are "
-"located"
-msgstr ""
-
-msgid "Style scheme directories"
-msgstr ""
-
-msgid "List of directories where the style scheme files are located"
-msgstr ""
-
-msgid "Style scheme id"
-msgstr ""
-
-msgid "Style scheme name"
-msgstr ""
-
-msgid "Scripts"
-msgstr ""
+""
 
 msgid "Ada"
 msgstr "ଏ.ଡି.ଏ."
 
-msgid "Sources"
-msgstr "ଉତ୍ସ"
-
-msgid "BibTeX"
-msgstr ""
-
-msgid "Others"
-msgstr "ଅନ୍ଯାନ୍ଯ"
-
-msgid "C"
-msgstr "C"
-
-msgid "ChangeLog"
-msgstr ""
-
-msgid "C++"
-msgstr ""
-
-msgid "C#"
-msgstr ""
-
-msgid "CSS"
-msgstr ""
-
-msgid "Block Comment"
-msgstr ""
-
-msgid "D"
-msgstr "D"
-
-msgid "Nested Comment"
-msgstr ""
-
-msgid ".desktop"
-msgstr ""
-
-msgid "Diff"
-msgstr ""
-
-msgid "DocBook"
-msgstr ""
+msgid "Java"
+msgstr "ଜାଭା"
 
 msgid "Markup"
 msgstr "ଚିହ୍ନିତ ପାଠ୍ଯ"
 
-msgid "DTD"
-msgstr ""
-
-msgid "Fortran 95"
-msgstr ""
-
-msgid "GAP"
-msgstr ""
-
-msgid "Scientific"
-msgstr ""
-
-msgid "gtk-doc"
-msgstr ""
-
-msgid "GtkRC"
-msgstr ""
-
-msgid "Color scheme used in GVim"
-msgstr ""
-
-msgid "GVim"
-msgstr ""
-
-msgid "Haskell"
-msgstr ""
-
-msgid "HTML"
-msgstr ""
-
-msgid "IDL"
-msgstr ""
-
-msgid ".ini"
-msgstr ""
-
-msgid "Java"
-msgstr "ଜାଭା"
-
-msgid "Javascript"
-msgstr ""
-
-msgid "Color scheme used in Kate text editor"
-msgstr ""
-
-msgid "LaTeX"
-msgstr ""
-
-msgid "libtool"
-msgstr ""
-
-msgid "Lua"
-msgstr ""
-
-msgid "m4"
-msgstr ""
-
-msgid "Makefile"
-msgstr ""
-
-msgid "MSIL"
-msgstr ""
-
-msgid "Nemerle"
-msgstr ""
-
-msgid "Objective Caml"
-msgstr ""
-
-msgid "Octave"
-msgstr ""
-
-msgid "Pascal"
-msgstr ""
-
-msgid "Perl"
-msgstr ""
-
-msgid "PHP"
-msgstr ""
-
-msgid "pkg-config"
-msgstr ""
-
-msgid "gettext translation"
-msgstr ""
-
-msgid "Python"
-msgstr ""
+msgid "Others"
+msgstr "ଅନ୍ଯାନ୍ଯ"
 
 msgid "Ruby"
 msgstr "ରୁବି"
@@ -224,33 +37,6 @@ msgstr "ରୁବି"
 msgid "Scheme"
 msgstr "ଯୋଜନା"
 
-msgid "sh"
-msgstr ""
-
-msgid "RPM spec"
-msgstr ""
-
-msgid "SQL"
-msgstr ""
-
-msgid "Tcl"
-msgstr ""
-
-msgid "Texinfo"
-msgstr ""
-
-msgid "VB.NET"
-msgstr ""
-
-msgid "Verilog"
-msgstr ""
-
-msgid "VHDL"
-msgstr ""
-
-msgid "XML"
-msgstr ""
-
-msgid "Yacc"
-msgstr ""
+msgid "Sources"
+msgstr "ଉତ୍ସ"
 
