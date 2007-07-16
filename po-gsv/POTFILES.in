@@ -9,7 +9,6 @@ moo/mooedit/language-specs/awk.lang
 moo/mooedit/language-specs/boo.lang
 moo/mooedit/language-specs/changelog.lang
 moo/mooedit/language-specs/chdr.lang
-moo/mooedit/language-specs/cil.lang
 moo/mooedit/language-specs/c.lang
 moo/mooedit/language-specs/cpp.lang
 moo/mooedit/language-specs/csharp.lang
@@ -39,6 +38,7 @@ moo/mooedit/language-specs/lua.lang
 moo/mooedit/language-specs/m4.lang
 moo/mooedit/language-specs/makefile.lang
 moo/mooedit/language-specs/ms.lang
+moo/mooedit/language-specs/msil.lang
 moo/mooedit/language-specs/nemerle.lang
 moo/mooedit/language-specs/objc.lang
 moo/mooedit/language-specs/ocaml.lang
