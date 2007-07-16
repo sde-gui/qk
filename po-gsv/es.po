@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview.HEAD.es\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-15 02:59-0500\n"
-"PO-Revision-Date: 2007-07-06 15:49+0200\n"
+"POT-Creation-Date: 2007-07-16 15:36-0500\n"
+"PO-Revision-Date: 2007-07-15 14:25+0200\n"
 "Last-Translator: Jorge González <jorgegonz@svn.gnome.org>\n"
 "Language-Team: Spanish <traductores@es.gnome.org>\n"
 "MIME-Version: 1.0\n"
@@ -21,6 +21,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
 "Plural-Forms:  nplurals=2; plural=(n != 1);"
+
+msgid "C/C++/ObjC Header"
+msgstr "Cabecera C/C++/ObjC"
 
 msgid ""
 "Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
@@ -34,6 +37,9 @@ msgstr "Esquema de colores a usar en GVim"
 
 msgid "Color scheme used in the Kate text editor"
 msgstr "Esquema de colores usado en el editor de textos Kate"
+
+msgid "Color scheme using Tango color palette"
+msgstr "Esquema de colores usando la paleta de colores de Tango"
 
 msgid "Defaults"
 msgstr "Predeterminados"
@@ -73,6 +79,9 @@ msgstr "Fuentes"
 
 msgid "Style scheme directories"
 msgstr "Directorios de estilos de esquemas"
+
+msgid "Style scheme filename"
+msgstr "Nombre del archivo de estilo del esquema"
 
 msgid "Style scheme id"
 msgstr "ID del estilo del esquema"
