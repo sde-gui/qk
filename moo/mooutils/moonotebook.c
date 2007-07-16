@@ -1789,13 +1789,15 @@ moo_notebook_switch_page (MooNotebook *nb,
     if (old_focus == FOCUS_CHILD)
         gtk_widget_child_focus (page->child, GTK_DIR_TAB_FORWARD);
 
+    labels_invalidate (nb);
     gtk_widget_queue_resize (GTK_WIDGET (nb));
     g_object_notify (G_OBJECT (nb), "page");
 }
 
 
-void        moo_notebook_set_current_page   (MooNotebook    *notebook,
-                                             gint            page_num)
+void
+moo_notebook_set_current_page (MooNotebook *notebook,
+                               gint         page_num)
 {
     int num_pages;
 
@@ -1816,7 +1818,8 @@ void        moo_notebook_set_current_page   (MooNotebook    *notebook,
 }
 
 
-static GSList  *get_visible_pages           (MooNotebook    *nb)
+static GSList *
+get_visible_pages (MooNotebook *nb)
 {
     GSList *list = NULL, *l;
     for (l = nb->priv->pages; l != NULL; l = l->next)
@@ -1826,9 +1829,10 @@ static GSList  *get_visible_pages           (MooNotebook    *nb)
 }
 
 
-void        moo_notebook_set_action_widget  (MooNotebook    *notebook,
-                                             GtkWidget      *widget,
-                                             gboolean        right)
+void
+moo_notebook_set_action_widget (MooNotebook *notebook,
+                                GtkWidget   *widget,
+                                gboolean     right)
 {
     GtkWidget **widget_ptr;
 
@@ -1861,8 +1865,9 @@ void        moo_notebook_set_action_widget  (MooNotebook    *notebook,
 }
 
 
-GtkWidget  *moo_notebook_get_action_widget  (MooNotebook    *notebook,
-                                             gboolean        right)
+GtkWidget *
+moo_notebook_get_action_widget (MooNotebook *notebook,
+                                gboolean     right)
 {
     g_return_val_if_fail (MOO_IS_NOTEBOOK (notebook), NULL);
     if (right)
@@ -1872,7 +1877,8 @@ GtkWidget  *moo_notebook_get_action_widget  (MooNotebook    *notebook,
 }
 
 
-static void     moo_notebook_check_action_widgets (MooNotebook *nb)
+static void
+moo_notebook_check_action_widgets (MooNotebook *nb)
 {
     if (!nb->priv->action_widgets[LEFT] ||
          !GTK_WIDGET_VISIBLE (nb->priv->action_widgets[LEFT]))
@@ -1884,7 +1890,8 @@ static void     moo_notebook_check_action_widgets (MooNotebook *nb)
 }
 
 
-static void     moo_notebook_check_tabs     (MooNotebook    *nb)
+static void
+moo_notebook_check_tabs (MooNotebook *nb)
 {
     if (!nb->priv->show_tabs)
         nb->priv->tabs_visible = FALSE;
@@ -1911,8 +1918,9 @@ static void     moo_notebook_check_tabs     (MooNotebook    *nb)
 }
 
 
-GtkWidget  *moo_notebook_get_tab_label      (MooNotebook    *notebook,
-                                             GtkWidget      *child)
+GtkWidget *
+moo_notebook_get_tab_label (MooNotebook *notebook,
+                            GtkWidget   *child)
 {
     Page *page;
 
@@ -1926,9 +1934,10 @@ GtkWidget  *moo_notebook_get_tab_label      (MooNotebook    *notebook,
 }
 
 
-void        moo_notebook_set_tab_label      (MooNotebook    *notebook,
-                                             GtkWidget      *child,
-                                             GtkWidget      *tab_label)
+void
+moo_notebook_set_tab_label (MooNotebook *notebook,
+                            GtkWidget   *child,
+                            GtkWidget   *tab_label)
 {
     Page *page;
 
@@ -1960,8 +1969,9 @@ void        moo_notebook_set_tab_label      (MooNotebook    *notebook,
 /* Labels
  */
 
-static void     labels_size_allocate        (MooNotebook    *nb,
-                                             GtkAllocation  *allocation)
+static void
+labels_size_allocate (MooNotebook   *nb,
+                      GtkAllocation *allocation)
 {
     GtkAllocation child_alloc;
     GtkRequisition child_req;
@@ -2132,9 +2142,10 @@ static void     labels_size_allocate        (MooNotebook    *nb,
 }
 
 
-static void     moo_notebook_draw_label     (MooNotebook    *nb,
-                                             Page           *page,
-                                             GdkEventExpose *event)
+static void
+moo_notebook_draw_label (MooNotebook    *nb,
+                         Page           *page,
+                         GdkEventExpose *event)
 {
     GtkWidget *widget = GTK_WIDGET (nb);
     GdkWindow *window = nb->priv->tab_window;
@@ -2187,8 +2198,9 @@ static void     moo_notebook_draw_label     (MooNotebook    *nb,
     }
 }
 
-static void     moo_notebook_draw_labels    (MooNotebook    *nb,
-                                             GdkEventExpose *event)
+static void
+moo_notebook_draw_labels (MooNotebook    *nb,
+                          GdkEventExpose *event)
 {
     if (!nb->priv->current_page)
         return;
@@ -2205,8 +2217,9 @@ static void     moo_notebook_draw_labels    (MooNotebook    *nb,
 }
 
 
-static void moo_notebook_draw_dragged_label (MooNotebook    *nb,
-                                             GdkEventExpose *event)
+static void
+moo_notebook_draw_dragged_label (MooNotebook    *nb,
+                                 GdkEventExpose *event)
 {
     GtkWidget *widget = GTK_WIDGET (nb);
     int width, height;
@@ -2306,7 +2319,8 @@ static void moo_notebook_draw_dragged_label (MooNotebook    *nb,
 }
 
 
-static void     moo_notebook_check_arrows   (MooNotebook    *nb)
+static void
+moo_notebook_check_arrows (MooNotebook *nb)
 {
     gboolean sensitive[2];
     GSList *visible;
@@ -2344,8 +2358,9 @@ static void     moo_notebook_check_arrows   (MooNotebook    *nb)
 }
 
 
-static void     left_arrow_clicked          (GtkWidget      *button,
-                                             MooNotebook    *nb)
+static void
+left_arrow_clicked (GtkWidget   *button,
+                    MooNotebook *nb)
 {
     g_return_if_fail (button == nb->priv->left_arrow);
 
@@ -2362,8 +2377,9 @@ static void     left_arrow_clicked          (GtkWidget      *button,
 }
 
 
-static void     right_arrow_clicked         (GtkWidget      *button,
-                                             MooNotebook    *nb)
+static void
+right_arrow_clicked (GtkWidget   *button,
+                     MooNotebook *nb)
 {
     g_return_if_fail (button == nb->priv->right_arrow);
 
@@ -2382,8 +2398,9 @@ static void     right_arrow_clicked         (GtkWidget      *button,
 
 #define SCROLL_PAD 6
 
-static void     labels_scroll               (MooNotebook    *nb,
-                                             GtkDirectionType where)
+static void
+labels_scroll (MooNotebook      *nb,
+               GtkDirectionType  where)
 {
     GSList *visible;
     Page *page;
@@ -2426,9 +2443,10 @@ static void     labels_scroll               (MooNotebook    *nb,
 }
 
 
-static void     labels_scroll_to_offset     (MooNotebook    *nb,
-                                             int             offset,
-                                             gboolean        realloc)
+static void
+labels_scroll_to_offset (MooNotebook *nb,
+                         int          offset,
+                         gboolean     realloc)
 {
     int delta;
 
@@ -2439,10 +2457,12 @@ static void     labels_scroll_to_offset     (MooNotebook    *nb,
 
     if (realloc)
         gtk_widget_queue_resize (GTK_WIDGET (nb));
+
+    moo_notebook_check_arrows (nb);
 }
 
 
-static Page*
+static Page *
 find_label_at_x (MooNotebook    *nb,
                  int             x,
                  gboolean        widget_only)
@@ -2494,9 +2514,10 @@ find_label_at_xy (MooNotebook    *nb,
 }
 
 
-static void     labels_move_label_onscreen  (MooNotebook    *nb,
-                                             Page           *page,
-                                             gboolean        realloc)
+static void
+labels_move_label_onscreen (MooNotebook *nb,
+                            Page        *page,
+                            gboolean     realloc)
 {
     int offset;
 
@@ -2525,8 +2546,9 @@ static void     labels_move_label_onscreen  (MooNotebook    *nb,
 }
 
 
-static void     moo_notebook_set_homogeneous(MooNotebook    *nb,
-                                             gboolean        homogeneous)
+static void
+moo_notebook_set_homogeneous (MooNotebook *nb,
+                              gboolean     homogeneous)
 {
     g_return_if_fail (MOO_IS_NOTEBOOK (nb));
     if (nb->priv->labels_homogeneous != homogeneous)
@@ -2981,8 +3003,9 @@ moo_notebook_button_press (GtkWidget      *widget,
 }
 
 
-static gboolean moo_notebook_button_release (GtkWidget      *widget,
-                                             G_GNUC_UNUSED GdkEventButton *event)
+static gboolean
+moo_notebook_button_release (GtkWidget *widget,
+                             G_GNUC_UNUSED GdkEventButton *event)
 {
     MooNotebook *nb = MOO_NOTEBOOK (widget);
 
@@ -3057,8 +3080,9 @@ moo_notebook_key_press (GtkWidget   *widget,
 }
 
 
-static gboolean moo_notebook_motion         (GtkWidget      *widget,
-                                             GdkEventMotion *event)
+static gboolean
+moo_notebook_motion (GtkWidget      *widget,
+                     GdkEventMotion *event)
 {
     MooNotebook *nb = MOO_NOTEBOOK (widget);
 
@@ -3087,8 +3111,9 @@ static gboolean moo_notebook_motion         (GtkWidget      *widget,
 }
 
 
-void        moo_notebook_enable_reordering          (MooNotebook    *notebook,
-                                                     gboolean        enable)
+void
+moo_notebook_enable_reordering (MooNotebook *notebook,
+                                gboolean     enable)
 {
     g_return_if_fail (MOO_IS_NOTEBOOK (notebook));
     notebook->priv->enable_reordering = enable;
@@ -3100,11 +3125,12 @@ void        moo_notebook_enable_reordering          (MooNotebook    *notebook,
 /* Popup menu
  */
 
-static void     popup_position_func         (G_GNUC_UNUSED GtkMenu *menu,
-                                             gint           *x,
-                                             gint           *y,
-                                             gboolean       *push_in,
-                                             gpointer        user_data)
+static void
+popup_position_func (G_GNUC_UNUSED GtkMenu *menu,
+                     gint           *x,
+                     gint           *y,
+                     gboolean       *push_in,
+                     gpointer        user_data)
 {
     struct {
         MooNotebook *nb;
@@ -3137,9 +3163,10 @@ static void     popup_position_func         (G_GNUC_UNUSED GtkMenu *menu,
 }
 
 
-static gboolean moo_notebook_do_popup       (MooNotebook    *nb,
-                                             Page           *page,
-                                             GdkEventButton *event)
+static gboolean
+moo_notebook_do_popup (MooNotebook    *nb,
+                       Page           *page,
+                       GdkEventButton *event)
 {
     GtkWidget *menu;
     gboolean dont = FALSE;
@@ -3177,8 +3204,9 @@ static gboolean moo_notebook_do_popup       (MooNotebook    *nb,
 }
 
 
-static gboolean moo_notebook_maybe_popup    (MooNotebook    *nb,
-                                             GdkEventButton *event)
+static gboolean
+moo_notebook_maybe_popup (MooNotebook    *nb,
+                          GdkEventButton *event)
 {
     Page *page;
     int event_x, event_y;
@@ -3204,8 +3232,9 @@ static gboolean moo_notebook_maybe_popup    (MooNotebook    *nb,
 }
 
 
-void        moo_notebook_enable_popup       (MooNotebook    *notebook,
-                                             gboolean        enable)
+void
+moo_notebook_enable_popup (MooNotebook *notebook,
+                           gboolean     enable)
 {
     g_return_if_fail (MOO_IS_NOTEBOOK (notebook));
     notebook->priv->enable_popup = enable;
@@ -3213,9 +3242,10 @@ void        moo_notebook_enable_popup       (MooNotebook    *notebook,
 }
 
 
-void    moo_notebook_set_popup_creation_func(MooNotebook    *notebook,
-                                             PopupFunc       func,
-                                             gpointer        user_data)
+void
+moo_notebook_set_popup_creation_func (MooNotebook *notebook,
+                                      PopupFunc    func,
+                                      gpointer     user_data)
 {
     g_return_if_fail (MOO_IS_NOTEBOOK (notebook));
 
@@ -3230,9 +3260,10 @@ void    moo_notebook_set_popup_creation_func(MooNotebook    *notebook,
 }
 
 
-static GtkWidget *popup_func                (G_GNUC_UNUSED MooNotebook *notebook,
-                                             G_GNUC_UNUSED GtkWidget *child,
-                                             G_GNUC_UNUSED gpointer user_data)
+static GtkWidget *
+popup_func (G_GNUC_UNUSED MooNotebook *notebook,
+            G_GNUC_UNUSED GtkWidget *child,
+            G_GNUC_UNUSED gpointer user_data)
 {
     return gtk_menu_new ();
 }
@@ -3242,9 +3273,10 @@ static GtkWidget *popup_func                (G_GNUC_UNUSED MooNotebook *notebook
 /* Focus and keyboard navigation
  */
 
-static gboolean focus_to_action_widget      (MooNotebook    *nb,
-                                             int             n,
-                                             GtkDirectionType direction)
+static gboolean
+focus_to_action_widget (MooNotebook     *nb,
+                        int              n,
+                        GtkDirectionType direction)
 {
     GtkWidget *widget = nb->priv->action_widgets[n];
 
@@ -3254,7 +3286,8 @@ static gboolean focus_to_action_widget      (MooNotebook    *nb,
     return gtk_widget_child_focus (widget, direction);
 }
 
-static void     labels_invalidate           (MooNotebook    *nb)
+static void
+labels_invalidate (MooNotebook *nb)
 {
     GdkRectangle rect;
     GtkWidget *widget = GTK_WIDGET(nb);
@@ -3276,9 +3309,10 @@ static void     labels_invalidate           (MooNotebook    *nb)
     gdk_window_invalidate_rect (widget->window, &rect, FALSE);
 }
 
-static gboolean focus_to_next_label         (MooNotebook    *nb,
-                                             GtkDirectionType direction,
-                                             gboolean        forward)
+static gboolean
+focus_to_next_label (MooNotebook      *nb,
+                     GtkDirectionType  direction,
+                     gboolean          forward)
 {
     Page *page, *next;
     GSList *visible;
@@ -3331,9 +3365,10 @@ static gboolean focus_to_next_label         (MooNotebook    *nb,
     return TRUE;
 }
 
-static gboolean focus_to_labels             (MooNotebook    *nb,
-                                             GtkDirectionType direction,
-                                             gboolean        forward)
+static gboolean
+focus_to_labels (MooNotebook      *nb,
+                 GtkDirectionType  direction,
+                 gboolean          forward)
 {
     Page *page;
 
@@ -3373,24 +3408,27 @@ static gboolean focus_to_labels             (MooNotebook    *nb,
     return TRUE;
 }
 
-static gboolean focus_to_arrows             (MooNotebook    *nb,
-                                             GtkDirectionType direction)
+static gboolean
+focus_to_arrows (MooNotebook     *nb,
+                 GtkDirectionType direction)
 {
     if (!nb->priv->tabs_visible || !nb->priv->arrows_visible)
         return FALSE;
     return gtk_widget_child_focus (nb->priv->arrows, direction);
 }
 
-static gboolean focus_to_child              (MooNotebook    *nb,
-                                             GtkDirectionType direction)
+static gboolean
+focus_to_child (MooNotebook     *nb,
+                GtkDirectionType direction)
 {
     if (!nb->priv->current_page)
         return FALSE;
     return gtk_widget_child_focus (nb->priv->current_page->child, direction);
 }
 
-static gboolean moo_notebook_focus          (GtkWidget      *widget,
-                                             GtkDirectionType direction)
+static gboolean
+moo_notebook_focus (GtkWidget       *widget,
+                    GtkDirectionType direction)
 {
     MooNotebook *nb = MOO_NOTEBOOK (widget);
     Page *page;
