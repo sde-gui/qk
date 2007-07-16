@@ -58,7 +58,7 @@ langs1 =			\
 	d.lang			\
 	docbook.lang		\
 	lua.lang		\
-	msil.lang		\
+	cil.lang		\
 	nemerle.lang		\
 	ocaml.lang		\
 	R.lang			\

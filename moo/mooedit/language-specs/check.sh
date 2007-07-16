@@ -31,7 +31,7 @@ for l in *.lang; do
     boo.lang) ;;
     d.lang) ;;
     docbook.lang) ;;
-    msil.lang) ;;
+    cil.lang) ;;
     nemerle.lang) ;;
     R.lang) ;;
     spec.lang) ;;

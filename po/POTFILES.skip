@@ -13,6 +13,7 @@ moo/mooscript/mooscript-yacc.c
 moo/mooedit/plugins/completion/completion.glade
 moo/mooedit/plugins/completion/completion-plugin.c
 
+moo/mooedit/language-specs/cil.lang
 moo/mooedit/language-specs/R.lang
 moo/mooedit/language-specs/ada.lang
 moo/mooedit/language-specs/c.lang

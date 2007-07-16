@@ -5,13 +5,7 @@
 # gap.lang gtkrc.lang html.lang ini.lang latex.lang m4.lang
 # makefile.lang ms.lang perl.lang po.lang python.lang sh.lang
 # texinfo.lang xml.lang yacc.lang libtool.lang pkgconfig.lang
-
-# Langs not covered:
-# ada.lang boo.lang csharp.lang css.lang def.lang d.lang gtk-doc.lang
-# fortran.lang haskell.lang idl.lang java.lang javascript.lang lua.lang
-# msil.lang nemerle.lang octave.lang pascal.lang php.lang python-console.lang
-# R.lang ruby.lang scheme.lang sql.lang tcl.lang vbnet.lang verilog.lang
-# vhdl.lang dpatch.lang
+# objc.lang chdr.lang
 
 dir="testdir"
 mkdir -p $dir/
@@ -100,6 +94,7 @@ bar:
 EOFEOF
 
 cat > $dir/file.ms <<EOFEOF
+# -*- mooscript -*-
 a = 1;
 for i in [1, 2, 3] do
   a *= i;
@@ -191,6 +186,7 @@ Encoding=UTF-8
 _Name=medit
 _Comment=Text editor
 Exec=medit %F
+# blah blah blah
 Terminal=false
 Type=Application
 StartupNotify=true
@@ -236,7 +232,7 @@ id=APlugin
 _name=A Plugin
 _description=A plugin
 author=Some Guy
-# this is a plugin version, can be anything
+; this is a plugin version, can be anything
 version=3.1415926
 EOFEOF
 
@@ -510,4 +506,42 @@ Requires: gtk+-2.0 libxml-2.0
 Version:
 Cflags: -I${prefix}/include/moo
 Libs: -L${libdir} -lmoo -L/usr/lib/python2.4 -lpython2.4  -lpthread -ldl  -lutil
+EOFEOF
+
+cat > $dir/file.m <<EOFEOF
+#import <stdio.h>
+#import <Object.h>
+@interface Lalala : Object
+- (BOOL) sayHello;
+@end
+
+@implementation Lalala : Object
+- (BOOL) sayHello
+{
+  printf ("Hello there!\n");
+  return YES;
+}
+@end
+
+int main (void)
+{
+  Lalala *obj = [[Lalala alloc] init];
+  [obj sayHello];
+  [obj free];
+  return 0;
+}
+EOFEOF
+
+cat > $dir/file.h <<EOFEOF
+/* A C header damn it */
+#include <foo.h>
+#import <Object.h>
+
+@interface Lalala : Object
+- (void) sayHello;
+@end
+
+class Boo {
+  void hello ();
+};
 EOFEOF

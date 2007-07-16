@@ -21,7 +21,7 @@
 
 -->
 <!-- FIXME: find the correct mimetype -->
-<language _name="MSIL" version="1.0" _section="Others" mimetypes="text/x-msil">
+<language _name="CIL" version="1.0" _section="Others" mimetypes="text/x-msil">
 
 	<escape-char>\</escape-char>
 
