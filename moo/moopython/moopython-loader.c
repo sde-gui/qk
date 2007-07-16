@@ -20,7 +20,6 @@
 
 #include "moopython/moopython-loader.h"
 #include "mooutils/mooutils-misc.h"
-#include "mooutils/mooutils-debug.h"
 
 #define LIBDIR "lib"
 

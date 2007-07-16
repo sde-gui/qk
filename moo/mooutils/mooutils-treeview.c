@@ -14,7 +14,6 @@
 #include "mooutils/mooutils-treeview.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/mooutils-debug.h"
 #include <string.h>
 #include <gobject/gvaluecollector.h>
 

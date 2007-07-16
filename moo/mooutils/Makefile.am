@@ -111,7 +111,6 @@ mooutils_sources =			\
 	mootype-macros.h		\
 	moouixml.c			\
 	mooundo.c			\
-	mooutils-debug.h		\
 	mooutils-fs.c			\
 	mooutils-gobject-private.h	\
 	mooutils-gobject.c		\
