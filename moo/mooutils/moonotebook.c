@@ -23,7 +23,7 @@
 #include <gtk/gtk.h>
 #include <string.h>
 
-#if defined(MOO_BROKEN_GTK_THEME) && 0
+#if defined(MOO_BROKEN_GTK_THEME)
 #define DETAIL_NOTEBOOK NULL
 #define DETAIL_TAB      NULL
 #else

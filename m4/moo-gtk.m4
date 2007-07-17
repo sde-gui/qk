@@ -43,7 +43,7 @@ fi
 # _MOO_CHECK_BROKEN_GTK_THEME
 #
 AC_DEFUN([_MOO_CHECK_BROKEN_GTK_THEME],[
-AC_ARG_WITH([broken-gtk-theme], AC_HELP_STRING([--with-broken-gtk-theme], [Work around bug in gtk theme]), [
+AC_ARG_WITH([broken-gtk-theme], AC_HELP_STRING([--with-broken-gtk-theme], [Work around bug in gtk theme (Suse 9 has one)]), [
   if test x$with_broken_gtk_theme = "xyes"; then
     MOO_BROKEN_GTK_THEME="yes"
   fi
@@ -65,7 +65,7 @@ MOO_CHECK_VERSION(GTK, gtk+-2.0)
 MOO_CHECK_VERSION(GLIB, glib-2.0)
 MOO_CHECK_VERSION(GTHREAD, gthread-2.0)
 MOO_CHECK_VERSION(GDK, gdk-2.0)
-dnl _MOO_CHECK_BROKEN_GTK_THEME
+_MOO_CHECK_BROKEN_GTK_THEME
 
 gdk_target=`$PKG_CONFIG --variable=target gdk-2.0`
 
