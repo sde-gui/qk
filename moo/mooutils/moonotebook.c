@@ -2458,6 +2458,7 @@ labels_scroll_to_offset (MooNotebook *nb,
     if (realloc)
         gtk_widget_queue_resize (GTK_WIDGET (nb));
 
+    labels_invalidate (nb);
     moo_notebook_check_arrows (nb);
 }
 
