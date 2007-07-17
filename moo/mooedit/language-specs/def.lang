@@ -40,7 +40,7 @@
         <style id="shebang"                 _name="Shebang"/>
         <style id="doc-comment"             _name="Documentation Comment" map-to="def:comment"/>
         <style id="doc-comment-element"     _name="Documentation Comment Element"/>
-        <!-- This one is for '#include <foo.h>' and "#pragma blah" and ''. -->
+        <!-- This one is for '#include <foo.h>' and "#pragma blah", or 'use foobar', etc.. -->
         <style id="preprocessor"            _name="Preprocessor directive"/>
         <!-- For things like TRUE and NULL in C. -->
         <style id="special-value"           _name="Special value" map-to="def:preprocessor"/>

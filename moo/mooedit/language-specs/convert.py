@@ -2,6 +2,7 @@
 
 import xml.dom.minidom as dom
 import cgi
+import sys
 
 default_styles = {
     'Comment' : 'def:comment',
@@ -20,6 +21,15 @@ default_styles = {
     'Others 2' : None,
     'Others 3' : None,
 }
+
+def get_default_style(style):
+    map_to = default_styles[style]
+    if map_to is None:
+        print >> sys.stderr, "Warning: '%s' style is used, it is replaced with 'foobar'. Fix it after converting" % (style,)
+        map_to = 'foobar'
+    elif map_to == 'def:preprocessor':
+        print >> sys.stderr, "Warning: '%s' style is used, it is highly unlikely this use is correct, check after converting" % (style,)
+    return map_to
 
 def escape_escape_char(ch):
     if ch == '\\':
@@ -105,7 +115,7 @@ class LangFile(object):
         string = indent + "<styles>\n"
         styles = {}
         for ctx in self.contexts:
-            map_to = default_styles[ctx.style_name]
+            map_to = get_default_style(ctx.style_name)
             styles[ctx.style] = [ctx.style_name, map_to]
         for s in styles:
             id = s

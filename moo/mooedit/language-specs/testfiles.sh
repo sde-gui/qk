@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Running this file will create "testdir" directory with bunch
+# of files inside. Open them all to see if something broke.
+# Kind of smoke test.
+
 # Langs covered here:
 # changelog.lang c.lang cpp.lang desktop.lang diff.lang dtd.lang
 # gap.lang gtkrc.lang html.lang ini.lang latex.lang m4.lang
@@ -26,6 +30,44 @@ int main (void)
     printf ("Hi there!\n");
     return 0;
 }
+EOFEOF
+
+cat > $dir/file.m <<EOFEOF
+#import <stdio.h>
+#import <Object.h>
+@interface Lalala : Object
+- (BOOL) sayHello;
+@end
+
+@implementation Lalala : Object
+- (BOOL) sayHello
+{
+  printf ("Hello there!\n");
+  return YES;
+}
+@end
+
+int main (void)
+{
+  Lalala *obj = [[Lalala alloc] init];
+  [obj sayHello];
+  [obj free];
+  return 0;
+}
+EOFEOF
+
+cat > $dir/file.h <<EOFEOF
+/* A C header damn it */
+#include <foo.h>
+#import <Object.h>
+
+@interface Lalala : Object
+- (void) sayHello;
+@end
+
+class Boo {
+  void hello ();
+};
 EOFEOF
 
 cat > $dir/ChangeLog <<EOFEOF
@@ -506,42 +548,4 @@ Requires: gtk+-2.0 libxml-2.0
 Version:
 Cflags: -I${prefix}/include/moo
 Libs: -L${libdir} -lmoo -L/usr/lib/python2.4 -lpython2.4  -lpthread -ldl  -lutil
-EOFEOF
-
-cat > $dir/file.m <<EOFEOF
-#import <stdio.h>
-#import <Object.h>
-@interface Lalala : Object
-- (BOOL) sayHello;
-@end
-
-@implementation Lalala : Object
-- (BOOL) sayHello
-{
-  printf ("Hello there!\n");
-  return YES;
-}
-@end
-
-int main (void)
-{
-  Lalala *obj = [[Lalala alloc] init];
-  [obj sayHello];
-  [obj free];
-  return 0;
-}
-EOFEOF
-
-cat > $dir/file.h <<EOFEOF
-/* A C header damn it */
-#include <foo.h>
-#import <Object.h>
-
-@interface Lalala : Object
-- (void) sayHello;
-@end
-
-class Boo {
-  void hello ();
-};
 EOFEOF
