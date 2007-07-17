@@ -729,25 +729,33 @@ moo_lang_mgr_list_schemes (MooLangMgr *mgr)
 static void
 read_schemes (MooLangMgr *mgr)
 {
-    const GSList *list;
+    const char *const *ids;
 
     if (mgr->got_schemes)
         return;
 
     mgr->got_schemes = TRUE;
 
-    list = gtk_source_style_manager_list_schemes (mgr->style_mgr);
+    ids = gtk_source_style_manager_get_scheme_ids (mgr->style_mgr);
 
-    while (list)
+    while (ids && *ids)
     {
-        MooTextStyleScheme *scheme = list->data;
+        MooTextStyleScheme *scheme;
 
-        if (!mgr->active_scheme || !strcmp (moo_text_style_scheme_get_id (scheme), SCHEME_DEFAULT))
-            mgr->active_scheme = scheme;
+        scheme = MOO_TEXT_STYLE_SCHEME (gtk_source_style_manager_get_scheme (mgr->style_mgr, *ids));
 
-        g_hash_table_insert (mgr->schemes, g_strdup (moo_text_style_scheme_get_id (scheme)), g_object_ref (scheme));
+        if (!scheme)
+        {
+            g_critical ("%s: oops", G_STRLOC);
+        }
+        else
+        {
+            if (!mgr->active_scheme || !strcmp (*ids, SCHEME_DEFAULT))
+                mgr->active_scheme = scheme;
+            g_hash_table_insert (mgr->schemes, g_strdup (*ids), g_object_ref (scheme));
+        }
 
-        list = list->next;
+        ids++;
     }
 }
 

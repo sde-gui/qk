@@ -20,14 +20,10 @@
 #define STYLE_HAS_FOREGROUND(s) ((s) && ((s)->mask & GTK_SOURCE_STYLE_USE_FOREGROUND))
 #define STYLE_HAS_BACKGROUND(s) ((s) && ((s)->mask & GTK_SOURCE_STYLE_USE_BACKGROUND))
 
-#define STYLE_TEXT		"text"
-#define STYLE_SELECTED		"text-selected"
 #define STYLE_BRACKET_MATCH	"bracket-match"
 #define STYLE_BRACKET_MISMATCH	"bracket-mismatch"
-#define STYLE_CURSOR		"cursor"
-#define STYLE_SECONDARY_CURSOR	"secondary-cursor"
-#define STYLE_CURRENT_LINE	"current-line"
-#define STYLE_LINE_NUMBERS	"line-numbers"
+#define STYLE_CURRENT_LINE      "current-line"
+#define STYLE_RIGHT_MARGIN      "right-margin"
 
 GType
 moo_text_style_scheme_get_type (void)
@@ -125,10 +121,10 @@ _moo_text_style_scheme_apply (MooTextStyleScheme *scheme,
     {
         const char *color;
 
-        color = get_color (GTK_SOURCE_STYLE_SCHEME (scheme), "current-line");
+        color = get_color (GTK_SOURCE_STYLE_SCHEME (scheme), STYLE_CURRENT_LINE);
         moo_text_view_set_current_line_color (MOO_TEXT_VIEW (widget), color);
 
-        color = get_color (GTK_SOURCE_STYLE_SCHEME (scheme), "right-margin");
+        color = get_color (GTK_SOURCE_STYLE_SCHEME (scheme), STYLE_RIGHT_MARGIN);
         moo_text_view_set_right_margin_color (MOO_TEXT_VIEW (widget), color);
     }
 }
