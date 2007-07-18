@@ -872,6 +872,39 @@ moo_print_operation_paginate (MooPrintOperation *op)
 
 
 static void
+set_tabs (MooPrintOperation *op,
+          PangoLayout       *layout)
+{
+    PangoTabArray *tabs;
+    int tab_width;
+    char *string = NULL;
+
+    if (MOO_IS_TEXT_VIEW (op->priv->doc))
+    {
+        guint n_spaces;
+
+        g_object_get (op->priv->doc, "tab-width", &n_spaces, NULL);
+
+        if (n_spaces != 8)
+            string = g_strnfill (n_spaces, ' ');
+    }
+
+    if (!string)
+        return;
+
+    pango_layout_set_text (layout, string, -1);
+    pango_layout_get_size (layout, &tab_width, NULL);
+
+    tabs = pango_tab_array_new (2, FALSE);
+    pango_tab_array_set_tab (tabs, 0, PANGO_TAB_LEFT, 0);
+    pango_tab_array_set_tab (tabs, 1, PANGO_TAB_LEFT, tab_width);
+    pango_layout_set_tabs (layout, tabs);
+
+    pango_tab_array_free (tabs);
+    g_free (string);
+}
+
+static void
 moo_print_operation_begin_print (GtkPrintOperation *operation,
                                  GtkPrintContext   *context)
 {
@@ -952,6 +985,8 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
         pango_layout_set_font_description (op->priv->layout, font);
         pango_font_description_free (font);
     }
+
+    set_tabs (op, op->priv->layout);
 
     moo_print_operation_paginate (op);
 
