@@ -766,6 +766,7 @@ moo_print_operation_paginate (MooPrintOperation *op)
     double page_height;
     gboolean use_styles;
     int line_no;
+    int offset;
 
     _moo_message ("moo_print_operation_paginate");
     _moo_message ("page height: %f", op->priv->page.height);
@@ -773,13 +774,14 @@ moo_print_operation_paginate (MooPrintOperation *op)
     if (op->priv->pages)
         g_array_free (op->priv->pages, TRUE);
 
-    op->priv->pages = g_array_new (FALSE, FALSE, sizeof (GtkTextIter));
+    op->priv->pages = g_array_new (FALSE, FALSE, sizeof (int));
     gtk_text_buffer_get_iter_at_line (op->priv->buffer, &iter,
                                       op->priv->first_line);
     gtk_text_buffer_get_iter_at_line (op->priv->buffer, &print_end,
                                       op->priv->last_line);
     gtk_text_iter_forward_line (&print_end);
-    g_array_append_val (op->priv->pages, iter);
+    offset = gtk_text_iter_get_offset (&iter);
+    g_array_append_val (op->priv->pages, offset);
     page_height = 0;
     line_no = op->priv->first_line;
 
@@ -851,7 +853,8 @@ moo_print_operation_paginate (MooPrintOperation *op)
                 pango_layout_iter_free (layout_iter);
             }
 
-            g_array_append_val (op->priv->pages, iter);
+            offset = gtk_text_iter_get_offset (&iter);
+            g_array_append_val (op->priv->pages, offset);
             page_height = line_height;
 
             if (!part)
@@ -1424,6 +1427,7 @@ moo_print_operation_draw_page (GtkPrintOperation *operation,
                                int                page)
 {
     cairo_t *cr;
+    int offset;
     GtkTextIter start, end;
     MooPrintOperation *op = MOO_PRINT_OPERATION (operation);
     GTimer *timer;
@@ -1437,14 +1441,20 @@ moo_print_operation_draw_page (GtkPrintOperation *operation,
 
     cr = gtk_print_context_get_cairo_context (context);
 
-    start = g_array_index (op->priv->pages, GtkTextIter, page);
+    offset = g_array_index (op->priv->pages, int, page);
+    gtk_text_buffer_get_iter_at_offset (op->priv->buffer, &start, offset);
 
     if (page + 1 < (int) op->priv->pages->len)
-        end = g_array_index (op->priv->pages, GtkTextIter, page + 1);
+    {
+        offset = g_array_index (op->priv->pages, int, page + 1);
+        gtk_text_buffer_get_iter_at_offset (op->priv->buffer, &end, offset);
+    }
     else
+    {
         gtk_text_buffer_get_end_iter (op->priv->buffer, &end);
+    }
 
-#if defined(__WIN32__) && 0
+#if 0 && defined(__WIN32__)
     if (page == 0)
     {
         HDC dc = cairo_win32_surface_get_dc (cairo_get_target (cr));
@@ -1458,7 +1468,7 @@ moo_print_operation_draw_page (GtkPrintOperation *operation,
     }
 #endif
 
-#if defined(MOO_DEBUG) && !defined(__WIN32__)
+#if 0 && defined(MOO_DEBUG) && !defined(__WIN32__)
     cairo_save (cr);
     cairo_set_line_width (cr, 1.);
     cairo_set_source_rgb (cr, 1., 0., 0.);
