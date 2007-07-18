@@ -20,19 +20,6 @@
  Boston, MA 02111-1307, USA.
 
 -->
-<!--
-	Proposed language specification for CSS (Cascading Style Sheet) files.
-
-	Reference used:
- 		http://www.w3.org/TR/CSS2/
-
- 	Tested with:
- 		http://www.simplebits.com/css/simple.css
-
-	Submitted by
-
-        Converted to new format with convert.py
--->
 <language id="css" _name="CSS" version="2.0" _section="Others">
   <metadata>
     <property name="mimetypes">text/css</property>
@@ -57,22 +44,6 @@
   </styles>
 
   <definitions>
-
-    <context id="comment" style-ref="comment">
-      <start>/\*</start>
-      <end>\*/</end>
-      <include>
-        <context style-ref="error" extend-parent="false">
-          <match>/\*</match>
-        </context>
-        <context ref="def:in-comment"/>
-      </include>
-    </context>
-
-    <context id="close-comment-outside-comment" style-ref="error">
-      <match>\*/(?!\*)</match>
-    </context>
-
     <context id="unicode-character-reference" style-ref="others-2">
       <match>\\([a-fA-F0-9]{1,5}[ \t]|[a-fA-F0-9]{6})</match>
     </context>
@@ -133,6 +104,8 @@
     </context>
 
     <context id="property-names" style-ref="keyword">
+      <prefix>(?&lt;![.#@\w\d-])</prefix>
+      <suffix>(?=\s*:)</suffix>
       <keyword>azimuth</keyword>
       <keyword>background-attachment</keyword>
       <keyword>background-color</keyword>
@@ -257,6 +230,8 @@
     </context>
 
     <context id="known-property-values" style-ref="data-type">
+      <prefix>(?&lt;![.#@\w\d-])</prefix>
+      <suffix>(?![.#@\w\d-])</suffix>
       <keyword>above</keyword>
       <keyword>absolute</keyword>
       <keyword>always</keyword>
@@ -395,7 +370,7 @@
       <keyword>right-side</keyword>
       <keyword>right</keyword>
       <keyword>rightwards</keyword>
-      <keyword>rlt</keyword>
+      <keyword>rtl</keyword>
       <keyword>run-in</keyword>
       <keyword>sans-serif</keyword>
       <keyword>scroll</keyword>
@@ -483,10 +458,10 @@
 
     <context id="css">
       <include>
-        <context ref="def:string"/>
-        <context ref="def:single-quoted-string"/>
-        <context ref="comment"/>
-        <context ref="close-comment-outside-comment"/>
+        <context ref="def:string" style-ref="string"/>
+        <context ref="def:single-quoted-string" style-ref="string"/>
+        <context ref="c:comment-multiline" style-ref="comment"/>
+        <context ref="c:close-comment-outside-comment" style-ref="error"/>
         <context ref="unicode-character-reference"/>
         <context ref="selector-pseudo-elements"/>
         <context ref="selector-pseudo-classes"/>
