@@ -2378,6 +2378,7 @@
   (parameters
     '("GtkWidget*" "parent" (null-ok) (default "NULL"))
     '("MooFileDialogType" "type")
+    '("const-char*" "start_name" (null-ok) (default "NULL"))
     '("const-char*" "title" (null-ok) (default "NULL"))
     '("const-char*" "prefs_key")
     '("const-char*" "alternate_prefs_key" (null-ok) (default "NULL"))

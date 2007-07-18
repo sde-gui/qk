@@ -704,16 +704,18 @@ override moo_file_dialog kwargs
 static PyObject *
 _wrap_moo_file_dialog (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = { "type", "parent", "title", "start_dir", NULL };
+    static char *kwlist[] = { "type", "parent", "start_name", "title", "start_dir", NULL };
     PyObject *py_type = NULL;
     int type;
-    char *title = NULL, *start_dir = NULL;
-    const gchar *ret;
+    const char *title = NULL;
+    const char *start_dir = NULL;
+    const char *start_name = NULL;
+    const char *ret;
     GtkWidget *parent = NULL;
     PyGObject *py_parent = NULL;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|Ozz:file_dialog", kwlist,
-                                     &py_type, &py_parent, &title, &start_dir))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|Ozzz:file_dialog", kwlist,
+                                     &py_type, &py_parent, &start_name, &title, &start_dir))
         return NULL;
 
     if (pyg_enum_get_value (MOO_TYPE_FILE_DIALOG_TYPE, py_type, &type))
@@ -733,7 +735,7 @@ _wrap_moo_file_dialog (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *k
         return NULL;
     }
 
-    ret = moo_file_dialog (parent, type, title, start_dir);
+    ret = moo_file_dialog (parent, type, start_name, title, start_dir);
 
     if (ret)
         return PyString_FromString(ret);

@@ -1672,20 +1672,39 @@ action_print_preview (MooEditWindow *window)
 static void
 action_print_pdf (MooEditWindow *window)
 {
+    char *start_name;
+    const char *doc_name, *dot;
     const char *filename;
     gpointer doc = moo_edit_window_get_active_doc (window);
+
+    doc_name = doc ? moo_edit_get_display_basename (doc) : "output";
+    dot = strrchr (doc_name, '.');
+
+    if (dot && dot != doc_name)
+    {
+        start_name = g_new (char, (dot - doc_name) + 5);
+        memcpy (start_name, doc_name, dot - doc_name);
+        memcpy (start_name + (dot - doc_name), ".pdf", 5);
+    }
+    else
+    {
+        start_name = g_strdup_printf ("%s.pdf", doc_name);
+    }
 
     doc = moo_edit_window_get_active_doc (window);
     g_return_if_fail (doc != NULL);
 
     filename = moo_file_dialogp (GTK_WIDGET (window),
                                  MOO_FILE_DIALOG_SAVE,
+                                 start_name,
                                  "Export as PDF",
                                  moo_edit_setting (MOO_EDIT_PREFS_PDF_LAST_DIR),
                                  NULL);
 
     if (filename)
         _moo_edit_export_pdf (doc, filename);
+
+    g_free (start_name);
 }
 #endif
 

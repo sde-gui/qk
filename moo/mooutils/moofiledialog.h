@@ -81,10 +81,12 @@ const char     *moo_file_dialog_get_encoding    (MooFileDialog  *dialog);
 
 const char     *moo_file_dialog                 (GtkWidget      *parent,
                                                  MooFileDialogType type,
+                                                 const char     *basename_utf8,
                                                  const char     *title,
                                                  const char     *start_dir);
 const char     *moo_file_dialogp                (GtkWidget      *parent,
                                                  MooFileDialogType type,
+                                                 const char     *basename_utf8,
                                                  const char     *title,
                                                  const char     *prefs_key,
                                                  const char     *alternate_prefs_key);

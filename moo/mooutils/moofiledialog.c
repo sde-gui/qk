@@ -351,13 +351,14 @@ GtkWidget *file_chooser_dialog_new (const char *title,
 const char *
 moo_file_dialog (GtkWidget  *parent,
                  MooFileDialogType type,
+                 const char *start_name,
                  const char *title,
                  const char *start_dir)
 {
     static char *filename;
     MooFileDialog *dialog;
 
-    dialog = moo_file_dialog_new (type, parent, FALSE, title, start_dir, NULL);
+    dialog = moo_file_dialog_new (type, parent, FALSE, title, start_dir, start_name);
     g_return_val_if_fail (dialog != NULL, NULL);
 
     moo_file_dialog_run (dialog);
@@ -670,6 +671,7 @@ moo_file_dialog_get_encoding (MooFileDialog *dialog)
 const char *
 moo_file_dialogp (GtkWidget          *parent,
                   MooFileDialogType   type,
+                  const char         *start_name,
                   const char         *title,
                   const char         *prefs_key,
                   const char         *alternate_prefs_key)
@@ -692,7 +694,7 @@ moo_file_dialogp (GtkWidget          *parent,
         start = moo_prefs_get_string (alternate_prefs_key);
     }
 
-    filename = moo_file_dialog (parent, type, title, start);
+    filename = moo_file_dialog (parent, type, start_name, title, start);
 
     if (filename && prefs_key)
     {
