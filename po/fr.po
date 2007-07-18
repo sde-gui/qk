@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-15 04:47-0500\n"
+"POT-Creation-Date: 2007-07-18 04:50-0500\n"
 "PO-Revision-Date: 2007-06-16 21:04-0600\n"
 "Last-Translator: Collilieux <mccnews@free.fr>\n"
 "MIME-Version: 1.0\n"
@@ -376,6 +376,7 @@ msgid "lines"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooprintpreview.glade.h:1
+#: ../moo/mooedit/mooeditwindow.c:803 ../moo/mooedit/mooeditwindow.c:804
 msgid "Print..."
 msgstr "Imprimer..."
 
@@ -893,16 +894,19 @@ msgstr "Décommenter"
 msgid "No Documents"
 msgstr "Pas de document"
 
-#: ../moo/mooedit/mooeditwindow.c:785 ../moo/mooedit/mooeditwindow.c:786
-#: ../moo/mooedit/mooeditwindow.c:787
+#: ../moo/mooedit/mooeditwindow.c:785
 msgid "Page Setup"
 msgstr "Gestion de page"
 
-#: ../moo/mooedit/mooeditwindow.c:812 ../moo/mooedit/mooeditwindow.c:814
+#: ../moo/mooedit/mooeditwindow.c:786 ../moo/mooedit/mooeditwindow.c:787
+msgid "Page Setup..."
+msgstr "Gestion de page..."
+
+#: ../moo/mooedit/mooeditwindow.c:812
 msgid "Export as PDF"
 msgstr "Exporter en PDF"
 
-#: ../moo/mooedit/mooeditwindow.c:813
+#: ../moo/mooedit/mooeditwindow.c:813 ../moo/mooedit/mooeditwindow.c:814
 msgid "Export as PDF..."
 msgstr "Exporter en PDF..."
 

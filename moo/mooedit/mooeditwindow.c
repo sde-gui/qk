@@ -783,8 +783,8 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
 #ifdef ENABLE_PRINTING
     moo_window_class_new_action (window_class, "PageSetup", NULL,
                                  "display-name", _("Page Setup"),
-                                 "label", _("Page Setup"),
-                                 "tooltip", _("Page Setup"),
+                                 "label", _("Page Setup..."),
+                                 "tooltip", _("Page Setup..."),
                                  "accel", "<ctrl><shift>P",
                                  "closure-callback", action_page_setup,
                                  NULL);
@@ -800,8 +800,8 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
 
     moo_window_class_new_action (window_class, "Print", NULL,
                                  "display-name", GTK_STOCK_PRINT,
-                                 "label", GTK_STOCK_PRINT,
-                                 "tooltip", GTK_STOCK_PRINT,
+                                 "label", _("Print..."),
+                                 "tooltip", _("Print..."),
                                  "accel", "<ctrl>P",
                                  "stock-id", GTK_STOCK_PRINT,
                                  "closure-callback", action_print,
@@ -811,7 +811,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
     moo_window_class_new_action (window_class, "PrintPdf", NULL,
                                  "display-name", _("Export as PDF"),
                                  "label", _("Export as PDF..."),
-                                 "tooltip", _("Export as PDF"),
+                                 "tooltip", _("Export as PDF..."),
                                  "stock-id", GTK_STOCK_PRINT,
                                  "closure-callback", action_print_pdf,
                                  "condition::sensitive", "has-open-document",
