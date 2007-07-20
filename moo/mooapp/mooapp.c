@@ -78,6 +78,7 @@ struct _MooAppPrivate {
     gboolean    running;
     gboolean    in_try_quit;
 
+    int         use_session;
     EggSMClient *sm_client;
     char       *session_file;
     MooMarkupDoc *session;
@@ -187,6 +188,7 @@ enum {
     PROP_VERSION,
     PROP_DESCRIPTION,
     PROP_RUN_INPUT,
+    PROP_USE_SESSION,
     PROP_USE_EDITOR,
     PROP_QUIT_ON_EDITOR_CLOSE,
     PROP_DEFAULT_UI,
@@ -304,6 +306,14 @@ moo_app_class_init (MooAppClass *klass)
                                              "run-input",
                                              "run-input",
                                              TRUE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_USE_SESSION,
+                                     g_param_spec_int ("use-session",
+                                             "use-session",
+                                             "use-session",
+                                             -1, 1, -1,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
     g_object_class_install_property (gobject_class,
@@ -435,8 +445,9 @@ moo_app_instance_init (MooApp *app)
     moo_app_instance = app;
 
     app->priv = g_new0 (MooAppPrivate, 1);
-    app->priv->info = moo_app_info_new ();
+    app->priv->use_session = -1;
 
+    app->priv->info = moo_app_info_new ();
     app->priv->info->version = g_strdup (APP_VERSION);
     app->priv->info->website = g_strdup ("http://ggap.sourceforge.net/");
     app->priv->info->website_label = g_strdup ("http://ggap.sourceforge.net");
@@ -573,6 +584,10 @@ moo_app_set_property (GObject        *object,
             app->priv->run_input = g_value_get_boolean (value);
             break;
 
+        case PROP_USE_SESSION:
+            app->priv->use_session = g_value_get_int (value);
+            break;
+
         case PROP_INSTANCE_NAME:
             g_free (app->priv->instance_name);
             app->priv->instance_name = g_value_dup_string (value);
@@ -641,6 +656,9 @@ moo_app_get_property (GObject        *object,
 
         case PROP_RUN_INPUT:
             g_value_set_boolean (value, app->priv->run_input);
+            break;
+        case PROP_USE_SESSION:
+            g_value_set_int (value, app->priv->use_session);
             break;
         case PROP_INSTANCE_NAME:
             g_value_set_string (value, app->priv->instance_name);
@@ -892,8 +910,13 @@ moo_app_init_real (MooApp *app)
 #ifdef MOO_BUILD_EDIT
     if (app->priv->use_editor)
         moo_app_init_editor (app);
+
+    if (app->priv->use_session == -1)
+        app->priv->use_session = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SAVE_SESSION));
 #endif
 
+    if (app->priv->use_session)
+        app->priv->run_input = TRUE;
     start_input (app);
 
     return TRUE;
@@ -1550,6 +1573,9 @@ moo_app_load_session (MooApp *app)
     char *session_file;
 
     g_return_if_fail (MOO_IS_APP (app));
+
+    if (!app->priv->use_session)
+        return;
 
     if (!app->priv->session_file)
     {

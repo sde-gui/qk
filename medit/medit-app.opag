@@ -47,7 +47,7 @@ int _medit_parse_options (const char *const program_name,
 #line 122 "medit-app.c"
 %%
 n  new-app      "Run new instance of application"
-s  use-session  "Load and save session"
+s  use-session  "[=yes|no] Load and save session"                               optarg
    pid          "=PID Use existing instance with process id PID"                reqarg
    app-name     "=NAME Set instance name to NAME if it's not already running"   reqarg
 m  mode         "=[simple|project] Use specified mode"                          reqarg
@@ -197,10 +197,10 @@ main (int argc, char *argv[])
     int retval;
     gboolean new_instance = FALSE;
     gboolean run_input = TRUE;
+    int use_session = -1;
     AppMode mode = MODE_SIMPLE;
     guint32 stamp;
     guint32 line = 0;
-    gboolean use_session = FALSE;
     const char *name = NULL;
 
     init_mem_stuff ();
@@ -247,12 +247,20 @@ main (int argc, char *argv[])
     if (_medit_opt_new_app || mode == MODE_PROJECT)
         new_instance = TRUE;
 
-    run_input = !_medit_opt_new_app || _medit_opt_app_name || _medit_opt_use_session || _medit_opt_project;
-    use_session = !_medit_opt_new_app || _medit_opt_use_session || _medit_opt_app_name;
+    if (_medit_opt_use_session)
+    {
+        if (!_medit_arg_use_session || !strcmp (_medit_arg_use_session, "yes"))
+            use_session = 1;
+        else
+            use_session = 0;
+    }
+
+    run_input = !_medit_opt_new_app || _medit_opt_app_name || use_session == 1 || _medit_opt_project;
 
     app = g_object_new (MOO_TYPE_APP,
                         "argv", argv,
                         "run-input", run_input,
+                        "use-session", use_session,
                         "short-name", "medit",
                         "full-name", "medit",
                         "description", _("medit is a text editor"),
@@ -311,7 +319,7 @@ main (int argc, char *argv[])
 
     if (mode == MODE_PROJECT)
         project_mode ();
-    else if (use_session)
+    else
         moo_app_load_session (app);
 
     editor = moo_app_get_editor (app);

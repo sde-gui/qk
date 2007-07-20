@@ -74,7 +74,7 @@ int _medit_parse_options (const char *const program_name,
   -n, --new-app                  Run new instance of application\n"
 
 #define STR_HELP_USE_SESSION "\
-  -s, --use-session              Load and save session\n"
+  -s, --use-session[=yes|no]     Load and save session\n"
 
 #define STR_HELP_PID "\
       --pid=PID                  Use existing instance with process id PID\n"
@@ -112,7 +112,7 @@ int _medit_parse_options (const char *const program_name,
 
 #define STR_HELP "\
   -n, --new-app                  Run new instance of application\n\
-  -s, --use-session              Load and save session\n\
+  -s, --use-session[=yes|no]     Load and save session\n\
       --pid=PID                  Use existing instance with process id PID\n\
       --app-name=NAME            Set instance name to NAME if it's not already\n\
                                    running\n\
@@ -165,6 +165,9 @@ char _medit_opt_version;
 /* Set to 1 if option --help (-h) has been specified.  */
 char _medit_opt_help;
 
+/* Argument to option --use-session (-s), or a null pointer if no argument.  */
+const char *_medit_arg_use_session;
+
 /* Argument to option --pid.  */
 const char *_medit_arg_pid;
 
@@ -194,7 +197,6 @@ const char *_medit_arg_exec_file;
 int _medit_parse_options (const char *const program_name, const int argc, char **const argv)
 {
   static const char *const optstr__new_app = "new-app";
-  static const char *const optstr__use_session = "use-session";
   static const char *const optstr__pid = "pid";
   static const char *const optstr__app_name = "app-name";
   static const char *const optstr__mode = "mode";
@@ -219,6 +221,7 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   _medit_opt_exec_file = 0;
   _medit_opt_version = 0;
   _medit_opt_help = 0;
+  _medit_arg_use_session = 0;
   _medit_arg_pid = 0;
   _medit_arg_app_name = 0;
   _medit_arg_mode = 0;
@@ -412,13 +415,9 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
         }
         goto error_unknown_long_opt;
        case 'u':
-        if (strncmp (option + 1, optstr__use_session + 1, option_len - 1) == 0)
+        if (strncmp (option + 1, "se-session", option_len - 1) == 0)
         {
-          if (argument != 0)
-          {
-            option = optstr__use_session;
-            goto error_unexpec_arg_long;
-          }
+          _medit_arg_use_session = argument;
           _medit_opt_use_session = 1;
           break;
         }
@@ -491,6 +490,13 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
           _medit_opt_project = 1;
           break;
          case 's':
+          if (option [1] != '\0')
+          {
+            _medit_arg_use_session = option + 1;
+            option = "\0";
+          }
+          else
+            _medit_arg_use_session = 0;
           _medit_opt_use_session = 1;
           break;
          default:
@@ -641,10 +647,10 @@ main (int argc, char *argv[])
     int retval;
     gboolean new_instance = FALSE;
     gboolean run_input = TRUE;
+    int use_session = -1;
     AppMode mode = MODE_SIMPLE;
     guint32 stamp;
     guint32 line = 0;
-    gboolean use_session = FALSE;
     const char *name = NULL;
 
     init_mem_stuff ();
@@ -691,12 +697,20 @@ main (int argc, char *argv[])
     if (_medit_opt_new_app || mode == MODE_PROJECT)
         new_instance = TRUE;
 
-    run_input = !_medit_opt_new_app || _medit_opt_app_name || _medit_opt_use_session || _medit_opt_project;
-    use_session = !_medit_opt_new_app || _medit_opt_use_session || _medit_opt_app_name;
+    if (_medit_opt_use_session)
+    {
+        if (!_medit_arg_use_session || !strcmp (_medit_arg_use_session, "yes"))
+            use_session = 1;
+        else
+            use_session = 0;
+    }
+
+    run_input = !_medit_opt_new_app || _medit_opt_app_name || use_session == 1 || _medit_opt_project;
 
     app = g_object_new (MOO_TYPE_APP,
                         "argv", argv,
                         "run-input", run_input,
+                        "use-session", use_session,
                         "short-name", "medit",
                         "full-name", "medit",
                         "description", _("medit is a text editor"),
@@ -755,7 +769,7 @@ main (int argc, char *argv[])
 
     if (mode == MODE_PROJECT)
         project_mode ();
-    else if (use_session)
+    else
         moo_app_load_session (app);
 
     editor = moo_app_get_editor (app);

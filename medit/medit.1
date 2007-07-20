@@ -35,8 +35,10 @@ Show version of the program.
 Run new instance of \fBmedit\fP. By default \fBmedit\fP opens \fBfiles\fP
 in an existing instance of application.
 .TP
-.B \-s, \-\-use\-session
+.B \-s, \-\-use\-session[=yes|no]
 Load and save session. By default \fBmedit\fP does it when \-n is not used.
+If this option is not given on command line then medit uses the corresponding
+preferences setting.
 .TP
 .B \-\-pid PID
 Use existing instance with process id \fBPID\fP.

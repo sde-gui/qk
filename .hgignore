@@ -30,3 +30,4 @@ Makefile(\.in)?$
 ^moo/moopython/pygtk/goocanvas/.cvsignore
 ^patches/
 ^po(-gsv)?/(dist|pot)$
+^ppc-configure$
