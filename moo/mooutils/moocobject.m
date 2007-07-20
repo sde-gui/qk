@@ -11,7 +11,13 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#include <config.h>
 #import "moocobject.h"
+
+#ifdef MOO_OS_DARWIN
+#define class_get_class_name(klass) (klass->name)
+#define sel_get_name sel_getName
+#endif
 
 #define OBJECT_HAS_TOGGLE_REF_FLAG 1
 #define OBJECT_HAS_TOGGLE_REF() ((g_datalist_get_flags (&moo_c_object_qdata) & OBJECT_HAS_TOGGLE_REF_FLAG) != 0)
@@ -44,6 +50,7 @@ toggle_refs_notify (MooCObject *object,
     return self;
 }
 
+#ifndef MOO_OS_DARWIN
 - (retval_t) forward :(SEL)aSel :(arglist_t)argFrame
 {
     MOO_UNUSED_VAR (argFrame);
@@ -51,6 +58,15 @@ toggle_refs_notify (MooCObject *object,
                 sel_get_name (aSel), [self name], (gpointer) self);
     return NULL;
 }
+#else
+- forward: (SEL)aSel :(marg_list)args
+{
+    MOO_UNUSED_VAR (args);
+    g_critical ("no method `%s' found in <%s at %p>",
+                sel_get_name (aSel), [self name], (gpointer) self);
+    return nil;
+}
+#endif
 
 - init
 {

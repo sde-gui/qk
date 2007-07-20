@@ -2,6 +2,9 @@
 <medit-project version="1.0" type="C" name="moo">
  <active>debug</active>
  <configurations>
+  <darwin>
+   <build_dir>build/darwin</build_dir>
+  </darwin>
   <debug>
    <build_dir>build/debug</build_dir>
    <configure>
