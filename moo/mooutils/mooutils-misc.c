@@ -481,6 +481,9 @@ _moo_get_top_window (GSList *windows)
 
     g_return_val_if_fail (windows != NULL, NULL);
 
+    if (!windows->next)
+        return windows->data;
+
     for (l = windows; l != NULL; l = l->next)
     {
         g_return_val_if_fail (GTK_IS_WINDOW (l->data), NULL);
