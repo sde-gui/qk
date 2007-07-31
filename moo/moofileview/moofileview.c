@@ -3090,6 +3090,7 @@ file_view_delete_selected (MooFileView *fileview)
                     gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
                                                               "%s", error->message);
                     g_error_free (error);
+                    error = NULL;
                 }
 
                 gtk_dialog_add_buttons (GTK_DIALOG (dialog),
