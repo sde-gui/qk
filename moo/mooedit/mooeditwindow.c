@@ -1697,7 +1697,7 @@ action_print_pdf (MooEditWindow *window)
     filename = moo_file_dialogp (GTK_WIDGET (window),
                                  MOO_FILE_DIALOG_SAVE,
                                  start_name,
-                                 "Export as PDF",
+                                 _("Export as PDF"),
                                  moo_edit_setting (MOO_EDIT_PREFS_PDF_LAST_DIR),
                                  NULL);
 

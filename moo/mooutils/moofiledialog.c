@@ -60,12 +60,34 @@ enum {
 
 static guint signals[LAST_SIGNAL];
 
+static char *
+get_string_maybe_stock (const char *string)
+{
+    GtkStockItem item;
+    char *underscore;
+    char *copy;
+
+    if (!gtk_stock_lookup (string, &item))
+        return g_strdup (string);
+
+    if (!(underscore = strchr (item.label, '_')))
+        return g_strdup (item.label);
+
+    copy = g_strdup (item.label);
+    memmove (copy + (underscore - item.label),
+             copy + (underscore - item.label) + 1,
+             strlen (copy + (underscore - item.label) + 1) + 1);
+
+    return copy;
+}
+
 static void
 moo_file_dialog_set_property (GObject        *object,
                               guint           prop_id,
                               const GValue   *value,
                               GParamSpec     *pspec)
 {
+    char *tmp;
     MooFileDialog *dialog = MOO_FILE_DIALOG (object);
 
     switch (prop_id)
@@ -76,20 +98,23 @@ moo_file_dialog_set_property (GObject        *object,
             break;
 
         case PROP_TITLE:
-            g_free (dialog->priv->title);
-            dialog->priv->title = g_value_dup_string (value);
+            tmp = dialog->priv->title;
+            dialog->priv->title = get_string_maybe_stock (g_value_get_string (value));
+            g_free (tmp);
             g_object_notify (object, "title");
             break;
 
         case PROP_DIR:
-            g_free (dialog->priv->dir);
+            tmp = dialog->priv->dir;
             dialog->priv->dir = g_value_dup_string (value);
+            g_free (tmp);
             g_object_notify (object, "dir");
             break;
 
         case PROP_NAME:
-            g_free (dialog->priv->name);
+            tmp = dialog->priv->name;
             dialog->priv->name = g_value_dup_string (value);
+            g_free (tmp);
             g_object_notify (object, "name");
             break;
 
