@@ -115,7 +115,8 @@
                     </child>
                     <child>
                       <widget class="GtkCheckButton" id="checkbutton7">
-                        <property name="label">Highlight mismatching brackets</property>
+                        <property name="label" translatable="yes">Highlight mismatching brackets</property>
+                        <property name="visible">True</property>
                         <property name="use_underline">True</property>
                         <property name="draw_indicator">True</property>
                         <property name="moo_prefs_key">highlight_mismatching_brackets</property>
