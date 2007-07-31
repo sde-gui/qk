@@ -33,6 +33,7 @@
   <optimized>
    <build_dir>build/optimized</build_dir>
    <configure>
+    <args>--enable-all-warnings</args>
     <vars>
      <var name="CFLAGS">-O2 -g</var>
      <var name="OBJCFLAGS">-O2 -g</var>
