@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-18 04:50-0500\n"
+"POT-Creation-Date: 2007-07-31 03:54-0500\n"
 "PO-Revision-Date: 2007-07-06 00:51+0100\n"
 "Last-Translator: Christian Dywan <christian@twotoasts.de>\n"
 "MIME-Version: 1.0\n"
@@ -22,12 +22,12 @@ msgstr "Texteditor"
 msgid "medit"
 msgstr "medit"
 
-#: ../../../medit/medit-app.opag:258
+#: ../../../medit/medit-app.opag:266
 msgid "medit is a text editor"
 msgstr "medit ist ein Texteditor"
 
 #. menu item label
-#: ../moo/mooapp/mooapp.c:1263
+#: ../moo/mooapp/mooapp.c:1286
 msgid "System Info"
 msgstr "Systeminfo"
 
@@ -101,28 +101,36 @@ msgstr ""
 "ausprobiert werden. 'LOCALE' bedeutet Kodierung der aktuellen Lokalisierung."
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:2
+msgid "Enable session support"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:3
 msgid "Encoding for new files:"
 msgstr "Kodierung für neue Dateien:"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:3
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:4
 msgid "Encodings to autodetect:"
 msgstr "Automatisch erkannte Kodierungen:"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:4
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:5
 msgid "Loading"
 msgstr "Laden"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:5
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:6
 msgid "Make backups"
 msgstr "Sicherungen anfertigen:"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:6
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
 msgid "Remove trailing spaces"
 msgstr "Entferne abschließende Leerzeichen"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
 msgid "Saving"
 msgstr "Speichern"
+
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:9
+msgid "Sessions"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:1
 msgid "Backspace key indents"
@@ -145,7 +153,7 @@ msgid "Keyboard"
 msgstr "Tastatur"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
 msgid "Misc"
 msgstr "Sonstiges"
 
@@ -222,31 +230,35 @@ msgid "Highlight matching brackets"
 msgstr "Zusammen gehörende Klammern hervorheben"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:11
+msgid "Highlight mismatching brackets"
+msgstr "Falsch platzierte Klammern hervorheben"
+
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
 msgid "Highlighting"
 msgstr "Hervorhebung:"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
 msgid "Show line numbers"
 msgstr "Zeilennummern anzeigen"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:15
 msgid "Show tabs"
 msgstr "Tabulatoren anzeigen"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:15
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:16
 msgid "Show trailing spaces"
 msgstr "Abschließende Leerzeichen anzeigen"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:16
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:17
 msgid "Text wrapping"
 msgstr "Textumbruch"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:17
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:18
 msgid "Use default theme font"
 msgstr "Voreingestellte Themenschriftart verwenden"
 
 #. Part of the phrase "Draw right margin at column [XX]"
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:19
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:20
 msgid "at column"
 msgstr ""
 
@@ -561,36 +573,27 @@ msgstr "Neues Dokument"
 msgid "MooScript"
 msgstr "MooSkript"
 
-#. Save dialog title
-#: ../moo/mooedit/mooeditdialogs.c:94
-#: ../moo/mooedit/plugins/moofileselector.c:1034
-#: ../moo/mooedit/plugins/moofileselector.c:1059
-#: ../moo/mooedit/plugins/moofileselector.glade.h:2
-#: ../moo/moofileview/glade/moofileview-drop.glade.h:1
-msgid "Save As"
-msgstr "Speichern unter"
-
-#: ../moo/mooedit/mooeditdialogs.c:150
+#: ../moo/mooedit/mooeditdialogs.c:148
 #, c-format
 msgid "Save changes to document \"%s\" before closing?"
 msgstr "Änderungen an \"%s\" vor dem Schließen speichern?"
 
-#: ../moo/mooedit/mooeditdialogs.c:151
+#: ../moo/mooedit/mooeditdialogs.c:149
 msgid "Save changes to the document before closing?"
 msgstr "Änderungen am Dokument vor dem Schließen speichern?"
 
-#: ../moo/mooedit/mooeditdialogs.c:156
+#: ../moo/mooedit/mooeditdialogs.c:154
 msgid "If you don't save, changes will be discarded"
 msgstr "Wenn Sie nicht speichern werden die Änderungen verworfen"
 
 #. Translators: this is a button label (it's "Do Not Save" in some toolkits), try to keep it short
-#: ../moo/mooedit/mooeditdialogs.c:160
+#: ../moo/mooedit/mooeditdialogs.c:158
 msgid "Close _without Saving"
 msgstr "Schließen _ohne zu speichern"
 
 #. Translators: number of documents here is always greater than one, so
 #. ignore singular form (which is simply copy of the plural here)
-#: ../moo/mooedit/mooeditdialogs.c:389
+#: ../moo/mooedit/mooeditdialogs.c:387
 #, c-format
 msgid ""
 "There are %u documents with unsaved changes. Save changes before closing?"
@@ -603,7 +606,7 @@ msgstr[1] ""
 "speichern?"
 
 #. Could not save file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:445
+#: ../moo/mooedit/mooeditdialogs.c:443
 #, c-format
 msgid ""
 "Could not save file\n"
@@ -612,12 +615,12 @@ msgstr ""
 "Datei konnte nicht gespeichert werden\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:447
+#: ../moo/mooedit/mooeditdialogs.c:445
 msgid "Could not save file"
 msgstr "Datei konnte nicht gespeichert werden"
 
 #. Error saving file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:473
+#: ../moo/mooedit/mooeditdialogs.c:471
 #, c-format
 msgid ""
 "Error saving file\n"
@@ -626,11 +629,11 @@ msgstr ""
 "Fehler beim Speichern der Datei\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:475
+#: ../moo/mooedit/mooeditdialogs.c:473
 msgid "Error saving file"
 msgstr "Fehler beim Speichern der Datei"
 
-#: ../moo/mooedit/mooeditdialogs.c:477
+#: ../moo/mooedit/mooeditdialogs.c:475
 #, c-format
 msgid ""
 "Could not convert file to requested character encoding %s. File was saved in "
@@ -640,7 +643,7 @@ msgstr ""
 "wurde in UTF-8 kodiert gespeichert."
 
 #. Could not open file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:507
+#: ../moo/mooedit/mooeditdialogs.c:505
 #, c-format
 msgid ""
 "Could not open file\n"
@@ -649,11 +652,11 @@ msgstr ""
 "Datei konnte nicht geöffnet werden\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:509
+#: ../moo/mooedit/mooeditdialogs.c:507
 msgid "Could not open file"
 msgstr "Datei konnte nicht geöffnet werden"
 
-#: ../moo/mooedit/mooeditdialogs.c:515
+#: ../moo/mooedit/mooeditdialogs.c:513
 #, c-format
 msgid ""
 "Could not open file using character encoding %s. The file may be binary or "
@@ -662,7 +665,7 @@ msgstr ""
 "Datei konnte nicht mit Zeichenkodierung %s geöffnet werden. Die Datei ist "
 "evtl. binär oder die Kodierung wurde falsch angegeben."
 
-#: ../moo/mooedit/mooeditdialogs.c:519
+#: ../moo/mooedit/mooeditdialogs.c:517
 msgid ""
 "Could not detect file character encoding. Please make sure the file is not "
 "binary and try to select encoding in the Open dialog."
@@ -672,7 +675,7 @@ msgstr ""
 "Dialog zu wählen."
 
 #. Could not reload file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:554
+#: ../moo/mooedit/mooeditdialogs.c:552
 #, c-format
 msgid ""
 "Could not reload file\n"
@@ -681,25 +684,25 @@ msgstr ""
 "Datei konnte nicht neu geladen werden\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:614
+#: ../moo/mooedit/mooeditdialogs.c:612
 #, c-format
 msgid "Discard changes in file '%s'?"
 msgstr "Änderunge an Datei '%s' verwerfen?"
 
-#: ../moo/mooedit/mooeditdialogs.c:616
+#: ../moo/mooedit/mooeditdialogs.c:614
 msgid "If you reload the document, changes will be discarded"
 msgstr "Wenn Sie das Dokument neu laden werden alle Änderungen zurückgesetzt"
 
-#: ../moo/mooedit/mooeditdialogs.c:617 ../moo/mooedit/mooeditwindow.c:399
+#: ../moo/mooedit/mooeditdialogs.c:615 ../moo/mooedit/mooeditwindow.c:399
 msgid "_Reload"
 msgstr "Neu _laden"
 
-#: ../moo/mooedit/mooeditdialogs.c:638
+#: ../moo/mooedit/mooeditdialogs.c:636
 #, c-format
 msgid "Overwrite modified file '%s'?"
 msgstr "Veränderte Datei '%s' überschreiben?"
 
-#: ../moo/mooedit/mooeditdialogs.c:639
+#: ../moo/mooedit/mooeditdialogs.c:637
 #, c-format
 msgid ""
 "File '%s' was modified on disk by another process. If you save it, changes "
@@ -708,11 +711,11 @@ msgstr ""
 "Der Inhalt der Datei '%s' auf dem Datenträger wurde von einem anderen "
 "Prozess geändert. Beim Speichern gehen alle Änderungen verloren."
 
-#: ../moo/mooedit/mooeditdialogs.c:641
+#: ../moo/mooedit/mooeditdialogs.c:639
 msgid "Over_write"
 msgstr "Ü_berschreiben"
 
-#: ../moo/mooedit/mooeditdialogs.c:662
+#: ../moo/mooedit/mooeditdialogs.c:660
 msgid ""
 "Beginning of document reached.\n"
 "Continue from the end?"
@@ -720,7 +723,7 @@ msgstr ""
 "Anfang des Dokuments erreicht.\n"
 "Vom Ende an weitermachen?"
 
-#: ../moo/mooedit/mooeditdialogs.c:665
+#: ../moo/mooedit/mooeditdialogs.c:663
 msgid ""
 "End of document reached.\n"
 "Continue from the beginning?"
@@ -906,7 +909,7 @@ msgstr "Seite einrichten"
 msgid "Page Setup..."
 msgstr "Seite einrichten..."
 
-#: ../moo/mooedit/mooeditwindow.c:812
+#: ../moo/mooedit/mooeditwindow.c:812 ../moo/mooedit/mooeditwindow.c:1700
 msgid "Export as PDF"
 msgstr "Als PDF exportieren"
 
@@ -962,7 +965,7 @@ msgstr "%s [geändert]"
 msgid "Bookmarks"
 msgstr "Lesezeichen"
 
-#: ../moo/mooedit/mooeditwindow.c:3133
+#: ../moo/mooedit/mooeditwindow.c:3152
 msgid "_Language"
 msgstr "_Sprache"
 
@@ -1170,6 +1173,13 @@ msgstr "Dateiauswahl"
 #, c-format
 msgid "Could not save file as '%s'"
 msgstr "Datei konnte nicht unter '%s' gespeichert werden"
+
+#: ../moo/mooedit/plugins/moofileselector.c:1034
+#: ../moo/mooedit/plugins/moofileselector.c:1059
+#: ../moo/mooedit/plugins/moofileselector.glade.h:2
+#: ../moo/moofileview/glade/moofileview-drop.glade.h:1
+msgid "Save As"
+msgstr "Speichern unter"
 
 #: ../moo/mooedit/plugins/moofileselector.c:1079
 msgid "Save Copy As"
@@ -1729,9 +1739,6 @@ msgstr ""
 
 #~ msgid "Tab key:"
 #~ msgstr "Tabulatortaste:"
-
-#~ msgid "Highlight mismatching brackets"
-#~ msgstr "Falsch platzierte Klammern hervorheben"
 
 #~ msgid "Current locale (%s)"
 #~ msgstr "Aktuelle Lokalisierung (%s)"

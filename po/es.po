@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-31 03:00-0500\n"
+"POT-Creation-Date: 2007-07-31 03:54-0500\n"
 "PO-Revision-Date: 2007-07-29 11:03-0600\n"
 "Last-Translator: Arnau Sanchez <arnau@ehas.org>\n"
 "MIME-Version: 1.0\n"
@@ -153,7 +153,7 @@ msgid "Keyboard"
 msgstr "Teclado"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
 msgid "Misc"
 msgstr "Miscelánea"
 
@@ -230,31 +230,35 @@ msgid "Highlight matching brackets"
 msgstr "Resaltar pareja de llaves"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:11
+msgid "Highlight mismatching brackets"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
 msgid "Highlighting"
 msgstr "Resaltado"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
 msgid "Show line numbers"
 msgstr "Mostrar números de línea"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:15
 msgid "Show tabs"
 msgstr "Mostrar tabulaciones"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:15
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:16
 msgid "Show trailing spaces"
 msgstr "Mostrar espacios de fin de línea"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:16
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:17
 msgid "Text wrapping"
 msgstr "Ajuste de texto"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:17
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:18
 msgid "Use default theme font"
 msgstr "Usar la tipografía por defecto del tema"
 
 #. Part of the phrase "Draw right margin at column [XX]"
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:19
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:20
 msgid "at column"
 msgstr "en la columna"
 
@@ -569,36 +573,27 @@ msgstr "Nuevo documento"
 msgid "MooScript"
 msgstr "Mooscript"
 
-#. Save dialog title
-#: ../moo/mooedit/mooeditdialogs.c:94
-#: ../moo/mooedit/plugins/moofileselector.c:1034
-#: ../moo/mooedit/plugins/moofileselector.c:1059
-#: ../moo/mooedit/plugins/moofileselector.glade.h:2
-#: ../moo/moofileview/glade/moofileview-drop.glade.h:1
-msgid "Save As"
-msgstr "Guardar como"
-
-#: ../moo/mooedit/mooeditdialogs.c:150
+#: ../moo/mooedit/mooeditdialogs.c:148
 #, c-format
 msgid "Save changes to document \"%s\" before closing?"
 msgstr "¿Guardar los cambios del documento \"%s\" antes de cerrar?"
 
-#: ../moo/mooedit/mooeditdialogs.c:151
+#: ../moo/mooedit/mooeditdialogs.c:149
 msgid "Save changes to the document before closing?"
 msgstr "¿Guardar los cambios en el documento antes de cerrar?"
 
-#: ../moo/mooedit/mooeditdialogs.c:156
+#: ../moo/mooedit/mooeditdialogs.c:154
 msgid "If you don't save, changes will be discarded"
 msgstr "Si no guarda sus datos, los cambios se perderán"
 
 #. Translators: this is a button label (it's "Do Not Save" in some toolkits), try to keep it short
-#: ../moo/mooedit/mooeditdialogs.c:160
+#: ../moo/mooedit/mooeditdialogs.c:158
 msgid "Close _without Saving"
 msgstr "Cerrar _sin guardar"
 
 #. Translators: number of documents here is always greater than one, so
 #. ignore singular form (which is simply copy of the plural here)
-#: ../moo/mooedit/mooeditdialogs.c:389
+#: ../moo/mooedit/mooeditdialogs.c:387
 #, c-format
 msgid ""
 "There are %u documents with unsaved changes. Save changes before closing?"
@@ -612,7 +607,7 @@ msgstr[1] ""
 "cerrar?"
 
 #. Could not save file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:445
+#: ../moo/mooedit/mooeditdialogs.c:443
 #, c-format
 msgid ""
 "Could not save file\n"
@@ -621,12 +616,12 @@ msgstr ""
 "No se pudo guardar el archivo\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:447
+#: ../moo/mooedit/mooeditdialogs.c:445
 msgid "Could not save file"
 msgstr "No se pudo guardar el archivo"
 
 #. Error saving file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:473
+#: ../moo/mooedit/mooeditdialogs.c:471
 #, c-format
 msgid ""
 "Error saving file\n"
@@ -635,11 +630,11 @@ msgstr ""
 "Error guardando el archivo\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:475
+#: ../moo/mooedit/mooeditdialogs.c:473
 msgid "Error saving file"
 msgstr "Error guardando el archivo"
 
-#: ../moo/mooedit/mooeditdialogs.c:477
+#: ../moo/mooedit/mooeditdialogs.c:475
 #, c-format
 msgid ""
 "Could not convert file to requested character encoding %s. File was saved in "
@@ -649,7 +644,7 @@ msgstr ""
 "El fichero ha sido guardado en codificación UTF-8"
 
 #. Could not open file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:507
+#: ../moo/mooedit/mooeditdialogs.c:505
 #, c-format
 msgid ""
 "Could not open file\n"
@@ -658,11 +653,11 @@ msgstr ""
 "No se pudo abrir el archivo\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:509
+#: ../moo/mooedit/mooeditdialogs.c:507
 msgid "Could not open file"
 msgstr "No se pudo abrir el archivo"
 
-#: ../moo/mooedit/mooeditdialogs.c:515
+#: ../moo/mooedit/mooeditdialogs.c:513
 #, c-format
 msgid ""
 "Could not open file using character encoding %s. The file may be binary or "
@@ -671,7 +666,7 @@ msgstr ""
 "No se pudo abrir el archivo usando la codificación de caracteres %s.  El "
 "archivo puede ser binario o la codificación especificada ser incorrecto."
 
-#: ../moo/mooedit/mooeditdialogs.c:519
+#: ../moo/mooedit/mooeditdialogs.c:517
 msgid ""
 "Could not detect file character encoding. Please make sure the file is not "
 "binary and try to select encoding in the Open dialog."
@@ -680,7 +675,7 @@ msgstr ""
 "el archivo no es binario y selecciona una codificación en el diálog Abrir."
 
 #. Could not reload file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:554
+#: ../moo/mooedit/mooeditdialogs.c:552
 #, c-format
 msgid ""
 "Could not reload file\n"
@@ -689,25 +684,25 @@ msgstr ""
 "No se pudo recargar el archivo\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:614
+#: ../moo/mooedit/mooeditdialogs.c:612
 #, c-format
 msgid "Discard changes in file '%s'?"
 msgstr "¿Quiere desechar las modificaciones del archivo '%s'?"
 
-#: ../moo/mooedit/mooeditdialogs.c:616
+#: ../moo/mooedit/mooeditdialogs.c:614
 msgid "If you reload the document, changes will be discarded"
 msgstr "Si recarga el documento, los cambios se perderán para siempre"
 
-#: ../moo/mooedit/mooeditdialogs.c:617 ../moo/mooedit/mooeditwindow.c:399
+#: ../moo/mooedit/mooeditdialogs.c:615 ../moo/mooedit/mooeditwindow.c:399
 msgid "_Reload"
 msgstr "_Recargar"
 
-#: ../moo/mooedit/mooeditdialogs.c:638
+#: ../moo/mooedit/mooeditdialogs.c:636
 #, c-format
 msgid "Overwrite modified file '%s'?"
 msgstr "¿Quiere reemplazar el archivo modificado '%s'?"
 
-#: ../moo/mooedit/mooeditdialogs.c:639
+#: ../moo/mooedit/mooeditdialogs.c:637
 #, c-format
 msgid ""
 "File '%s' was modified on disk by another process. If you save it, changes "
@@ -716,11 +711,11 @@ msgstr ""
 "El archivo '%s' fue modificado por otro proceso. Si lo sava, los cambios en "
 "disco se perderán."
 
-#: ../moo/mooedit/mooeditdialogs.c:641
+#: ../moo/mooedit/mooeditdialogs.c:639
 msgid "Over_write"
 msgstr "_Reemplazar"
 
-#: ../moo/mooedit/mooeditdialogs.c:662
+#: ../moo/mooedit/mooeditdialogs.c:660
 msgid ""
 "Beginning of document reached.\n"
 "Continue from the end?"
@@ -728,7 +723,7 @@ msgstr ""
 "Se alcanzó el principio del documento.\n"
 "¿Se continúa desde el final?"
 
-#: ../moo/mooedit/mooeditdialogs.c:665
+#: ../moo/mooedit/mooeditdialogs.c:663
 msgid ""
 "End of document reached.\n"
 "Continue from the beginning?"
@@ -915,7 +910,7 @@ msgstr "Configuración de página"
 msgid "Page Setup..."
 msgstr "Configuración de página..."
 
-#: ../moo/mooedit/mooeditwindow.c:812
+#: ../moo/mooedit/mooeditwindow.c:812 ../moo/mooedit/mooeditwindow.c:1700
 msgid "Export as PDF"
 msgstr "Exportar en PDF"
 
@@ -1181,6 +1176,13 @@ msgstr "Selector de archivos"
 #, c-format
 msgid "Could not save file as '%s'"
 msgstr "No se pudo guardar el archivo como '%s'"
+
+#: ../moo/mooedit/plugins/moofileselector.c:1034
+#: ../moo/mooedit/plugins/moofileselector.c:1059
+#: ../moo/mooedit/plugins/moofileselector.glade.h:2
+#: ../moo/moofileview/glade/moofileview-drop.glade.h:1
+msgid "Save As"
+msgstr "Guardar como"
 
 #: ../moo/mooedit/plugins/moofileselector.c:1079
 msgid "Save Copy As"

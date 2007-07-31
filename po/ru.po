@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-18 04:50-0500\n"
+"POT-Creation-Date: 2007-07-31 03:54-0500\n"
 "PO-Revision-Date: 2007-07-11 10:00+0500\n"
 "Last-Translator: Andrey Fedoseev <andrey.fedoseev@gmail.com>\n"
 "Language-Team: Russian <ru@li.org>\n"
@@ -25,12 +25,12 @@ msgstr "Текстовый редактор"
 msgid "medit"
 msgstr "medit"
 
-#: ../../../medit/medit-app.opag:258
+#: ../../../medit/medit-app.opag:266
 msgid "medit is a text editor"
 msgstr "Текстовый редактор"
 
 #. menu item label
-#: ../moo/mooapp/mooapp.c:1263
+#: ../moo/mooapp/mooapp.c:1286
 msgid "System Info"
 msgstr "Информация о системе"
 
@@ -105,28 +105,36 @@ msgstr ""
 "означает использовать кодировку текущей локали."
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:2
+msgid "Enable session support"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:3
 msgid "Encoding for new files:"
 msgstr "Кодировка новых файлов:"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:3
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:4
 msgid "Encodings to autodetect:"
 msgstr "Автоопределение кодировок:"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:4
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:5
 msgid "Loading"
 msgstr "Открытие"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:5
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:6
 msgid "Make backups"
 msgstr "Создавать резервные копии"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:6
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
 msgid "Remove trailing spaces"
 msgstr "Удалять пробелы в конце строки"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
 msgid "Saving"
 msgstr "Сохранение"
+
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:9
+msgid "Sessions"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:1
 msgid "Backspace key indents"
@@ -149,7 +157,7 @@ msgid "Keyboard"
 msgstr "Клавиатура"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
 msgid "Misc"
 msgstr "Прочее"
 
@@ -226,31 +234,35 @@ msgid "Highlight matching brackets"
 msgstr "Подсвечивать совпадающие скобки"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:11
+msgid "Highlight mismatching brackets"
+msgstr "Подсвечивать несовпадающие скобки"
+
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
 msgid "Highlighting"
 msgstr "Подсветка"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
 msgid "Show line numbers"
 msgstr "Отображать номера строк"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:15
 msgid "Show tabs"
 msgstr "Отображать знаки табуляции"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:15
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:16
 msgid "Show trailing spaces"
 msgstr "Отображать пробелы в конце строки"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:16
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:17
 msgid "Text wrapping"
 msgstr "Перенос текста"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:17
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:18
 msgid "Use default theme font"
 msgstr "Использовать шрифт из системной темы"
 
 #. Part of the phrase "Draw right margin at column [XX]"
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:19
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:20
 msgid "at column"
 msgstr ""
 
@@ -565,36 +577,27 @@ msgstr "Новый документ"
 msgid "MooScript"
 msgstr "MooScript"
 
-#. Save dialog title
-#: ../moo/mooedit/mooeditdialogs.c:94
-#: ../moo/mooedit/plugins/moofileselector.c:1034
-#: ../moo/mooedit/plugins/moofileselector.c:1059
-#: ../moo/mooedit/plugins/moofileselector.glade.h:2
-#: ../moo/moofileview/glade/moofileview-drop.glade.h:1
-msgid "Save As"
-msgstr "Сохранить как"
-
-#: ../moo/mooedit/mooeditdialogs.c:150
+#: ../moo/mooedit/mooeditdialogs.c:148
 #, c-format
 msgid "Save changes to document \"%s\" before closing?"
 msgstr "Сохранить изменения в документе \"%s\" перед закрытием?"
 
-#: ../moo/mooedit/mooeditdialogs.c:151
+#: ../moo/mooedit/mooeditdialogs.c:149
 msgid "Save changes to the document before closing?"
 msgstr "Сохранить изменения в документе перед закрытием?"
 
-#: ../moo/mooedit/mooeditdialogs.c:156
+#: ../moo/mooedit/mooeditdialogs.c:154
 msgid "If you don't save, changes will be discarded"
 msgstr "Если вы не сохраните документ, изменения будут потеряны"
 
 #. Translators: this is a button label (it's "Do Not Save" in some toolkits), try to keep it short
-#: ../moo/mooedit/mooeditdialogs.c:160
+#: ../moo/mooedit/mooeditdialogs.c:158
 msgid "Close _without Saving"
 msgstr "Закрыть _без сохранения"
 
 #. Translators: number of documents here is always greater than one, so
 #. ignore singular form (which is simply copy of the plural here)
-#: ../moo/mooedit/mooeditdialogs.c:389
+#: ../moo/mooedit/mooeditdialogs.c:387
 #, c-format
 msgid ""
 "There are %u documents with unsaved changes. Save changes before closing?"
@@ -611,7 +614,7 @@ msgstr[2] ""
 "закрытием?"
 
 #. Could not save file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:445
+#: ../moo/mooedit/mooeditdialogs.c:443
 #, c-format
 msgid ""
 "Could not save file\n"
@@ -620,12 +623,12 @@ msgstr ""
 "Не удаётся сохранить файл\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:447
+#: ../moo/mooedit/mooeditdialogs.c:445
 msgid "Could not save file"
 msgstr "Не удаётся сохранить файл"
 
 #. Error saving file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:473
+#: ../moo/mooedit/mooeditdialogs.c:471
 #, c-format
 msgid ""
 "Error saving file\n"
@@ -634,11 +637,11 @@ msgstr ""
 "Ошибка при сохранении файла\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:475
+#: ../moo/mooedit/mooeditdialogs.c:473
 msgid "Error saving file"
 msgstr "Ошибка при сохранении файла"
 
-#: ../moo/mooedit/mooeditdialogs.c:477
+#: ../moo/mooedit/mooeditdialogs.c:475
 #, c-format
 msgid ""
 "Could not convert file to requested character encoding %s. File was saved in "
@@ -648,7 +651,7 @@ msgstr ""
 "кодировке UTF-8."
 
 #. Could not open file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:507
+#: ../moo/mooedit/mooeditdialogs.c:505
 #, c-format
 msgid ""
 "Could not open file\n"
@@ -657,11 +660,11 @@ msgstr ""
 "Не удаётся открыть файл\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:509
+#: ../moo/mooedit/mooeditdialogs.c:507
 msgid "Could not open file"
 msgstr "Не удаётся открыть файл"
 
-#: ../moo/mooedit/mooeditdialogs.c:515
+#: ../moo/mooedit/mooeditdialogs.c:513
 #, c-format
 msgid ""
 "Could not open file using character encoding %s. The file may be binary or "
@@ -670,7 +673,7 @@ msgstr ""
 "Не удаётся открыть файл используя кодировку %s. Возможно это бинарный файл "
 "или кодировка была указана неверно."
 
-#: ../moo/mooedit/mooeditdialogs.c:519
+#: ../moo/mooedit/mooeditdialogs.c:517
 msgid ""
 "Could not detect file character encoding. Please make sure the file is not "
 "binary and try to select encoding in the Open dialog."
@@ -679,7 +682,7 @@ msgstr ""
 "попробуйте выбрать кодирку в диалоге открытия файла."
 
 #. Could not reload file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:554
+#: ../moo/mooedit/mooeditdialogs.c:552
 #, c-format
 msgid ""
 "Could not reload file\n"
@@ -688,25 +691,25 @@ msgstr ""
 "Не удаётся перезагрузить файл\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:614
+#: ../moo/mooedit/mooeditdialogs.c:612
 #, c-format
 msgid "Discard changes in file '%s'?"
 msgstr "Отменить изменения в файле '%s'?"
 
-#: ../moo/mooedit/mooeditdialogs.c:616
+#: ../moo/mooedit/mooeditdialogs.c:614
 msgid "If you reload the document, changes will be discarded"
 msgstr "Если вы перезгрузите документ, изменения будут утеряны"
 
-#: ../moo/mooedit/mooeditdialogs.c:617 ../moo/mooedit/mooeditwindow.c:399
+#: ../moo/mooedit/mooeditdialogs.c:615 ../moo/mooedit/mooeditwindow.c:399
 msgid "_Reload"
 msgstr "О_бновить"
 
-#: ../moo/mooedit/mooeditdialogs.c:638
+#: ../moo/mooedit/mooeditdialogs.c:636
 #, c-format
 msgid "Overwrite modified file '%s'?"
 msgstr "Перезаписать измененный файл '%s'?"
 
-#: ../moo/mooedit/mooeditdialogs.c:639
+#: ../moo/mooedit/mooeditdialogs.c:637
 #, c-format
 msgid ""
 "File '%s' was modified on disk by another process. If you save it, changes "
@@ -715,11 +718,11 @@ msgstr ""
 "Файл '%s' был изменён другой программой. Если вы сохраните его, эти "
 "изменениябудут потеряны."
 
-#: ../moo/mooedit/mooeditdialogs.c:641
+#: ../moo/mooedit/mooeditdialogs.c:639
 msgid "Over_write"
 msgstr "Пере_записать"
 
-#: ../moo/mooedit/mooeditdialogs.c:662
+#: ../moo/mooedit/mooeditdialogs.c:660
 msgid ""
 "Beginning of document reached.\n"
 "Continue from the end?"
@@ -727,7 +730,7 @@ msgstr ""
 "Достигнуто начало документа.\n"
 "Продолжить с конца?"
 
-#: ../moo/mooedit/mooeditdialogs.c:665
+#: ../moo/mooedit/mooeditdialogs.c:663
 msgid ""
 "End of document reached.\n"
 "Continue from the beginning?"
@@ -913,7 +916,7 @@ msgstr "Параметры страницы"
 msgid "Page Setup..."
 msgstr "Параметры страницы..."
 
-#: ../moo/mooedit/mooeditwindow.c:812
+#: ../moo/mooedit/mooeditwindow.c:812 ../moo/mooedit/mooeditwindow.c:1700
 msgid "Export as PDF"
 msgstr "Экспорт в PDF"
 
@@ -969,7 +972,7 @@ msgstr "%s [изменён]"
 msgid "Bookmarks"
 msgstr "Закладки"
 
-#: ../moo/mooedit/mooeditwindow.c:3133
+#: ../moo/mooedit/mooeditwindow.c:3152
 msgid "_Language"
 msgstr "_Язык"
 
@@ -1180,6 +1183,13 @@ msgstr "Выбор файлов"
 #, c-format
 msgid "Could not save file as '%s'"
 msgstr "Не удалось сохранить файл как '%s'"
+
+#: ../moo/mooedit/plugins/moofileselector.c:1034
+#: ../moo/mooedit/plugins/moofileselector.c:1059
+#: ../moo/mooedit/plugins/moofileselector.glade.h:2
+#: ../moo/moofileview/glade/moofileview-drop.glade.h:1
+msgid "Save As"
+msgstr "Сохранить как"
 
 #: ../moo/mooedit/plugins/moofileselector.c:1079
 msgid "Save Copy As"
@@ -1706,9 +1716,6 @@ msgstr "Прикрепить"
 #: ../moo/mooutils/moopane.c:639
 msgid "Keep on top"
 msgstr "Удерживать наверху"
-
-#~ msgid "Highlight mismatching brackets"
-#~ msgstr "Подсвечивать несовпадающие скобки"
 
 #~ msgid "Indentation"
 #~ msgstr "Отступы"
