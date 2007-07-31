@@ -1405,6 +1405,25 @@ moo_get_data_subdirs (const char    *subdir,
     return dirs;
 }
 
+char *
+moo_get_data_file (const char *name)
+{
+    guint n_files, i;
+    char **files;
+    char *filename = NULL;
+
+    g_return_val_if_fail (name != NULL, NULL);
+
+    files = moo_get_data_files (name, MOO_DATA_SHARE, &n_files);
+
+    for (i = 0; !filename && i < n_files; ++i)
+        if (g_file_test (files[i], G_FILE_TEST_EXISTS))
+            filename = g_strdup (files[i]);
+
+    g_strfreev (files);
+    return filename;
+}
+
 
 static char *
 get_user_data_file (const char *basename,

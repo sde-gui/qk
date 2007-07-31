@@ -249,7 +249,7 @@ moo_edit_init (MooEdit *edit)
 
     edit->priv->actions = moo_action_collection_new ("MooEdit", "MooEdit");
 
-    indent = moo_indenter_new (edit, NULL);
+    indent = moo_indenter_new (edit);
     moo_text_view_set_indenter (MOO_TEXT_VIEW (edit), indent);
     g_object_unref (indent);
 }
@@ -946,6 +946,13 @@ moo_edit_set_lang (MooEdit *edit,
         _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor),
                                      edit->config, _moo_lang_id (lang));
         _moo_edit_update_config_from_global (edit);
+
+        {
+            MooIndenter *indenter = moo_text_view_get_indenter (MOO_TEXT_VIEW (edit));
+            if (indenter)
+                g_object_set (indenter, "id", lang ? _moo_lang_id (lang) : NULL, NULL);
+        }
+
         g_object_notify (G_OBJECT (edit), "has-comments");
     }
 }

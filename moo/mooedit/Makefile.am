@@ -1,8 +1,8 @@
 # XXX it needs plugins to be built first but plugins want mooedit-enums.h
 SUBDIRS = gtksourceview plugins language-specs
 
-mooedit_toolsdir = $(MOO_DATA_DIR)
-mooedit_tools_DATA = context.cfg menu.cfg filters.xml
+mooedit_datadir = $(MOO_DATA_DIR)
+mooedit_data_DATA = context.cfg menu.cfg filters.xml indent.xml
 
 moocommand-exe.lo: moocommand-exe-unix.lo
 moocommand-exe-private.lo: moocommand-exe-unix.lo
@@ -13,7 +13,9 @@ objc_sources =				\
 	mooedit-script.h		\
 	mooedit-script.m		\
 	moocommand-script.h		\
-	moocommand-script.m
+	moocommand-script.m		\
+	mooindenter-regex.h		\
+	mooindenter-regex.m
 
 unix_sources =				\
 	moocommand-exe-unix.c
@@ -209,7 +211,7 @@ CLEANFILES += mooedit-ui.h medit-ui.h
 
 EXTRA_DIST +=				\
 	$(completion_sources)		\
-	$(mooedit_tools_DATA)		\
+	$(mooedit_data_DATA)		\
 	medit-ui.xml			\
 	mooedit-ui.xml
 

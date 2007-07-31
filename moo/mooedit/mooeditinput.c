@@ -1420,7 +1420,7 @@ handle_backspace (MooTextView        *view,
     if (gtk_text_iter_starts_line (&end))
         return FALSE;
 
-    tab_width = view->priv->indenter->tab_width;
+    tab_width = moo_indenter_get_tab_width (view->priv->indenter);
     offset = moo_iter_get_blank_offset (&end, tab_width);
 
     if (offset < 0)

@@ -574,7 +574,6 @@
   (return-type "MooIndenter*")
   (parameters
     '("MooEdit*" "doc")
-    '("const-char*" "name")
   )
 )
 
