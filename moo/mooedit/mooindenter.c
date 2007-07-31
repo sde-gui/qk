@@ -377,7 +377,7 @@ _moo_indenter_regex_unref (G_GNUC_UNUSED MooIndenterRegex *regex)
 
 gboolean
 _moo_indenter_regex_newline (G_GNUC_UNUSED MooIndenterRegex *regex,
-                             G_GNUC_UNUSED GtkTextBuffer    *buffer,
+                             G_GNUC_UNUSED MooIndenter      *indenter,
                              G_GNUC_UNUSED GtkTextIter      *where)
 {
     g_return_val_if_reached (FALSE);
