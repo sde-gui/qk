@@ -156,7 +156,7 @@ commit (GString **buffer)
         g_string_truncate (*buffer, 0);
     }
 
-    if (0)
+    if (1)
         g_print ("%s: commit %c\n%s\n-----\n", G_STRLOC, ptr[0], ptr + 1);
 
     _moo_app_exec_cmd (moo_app_get_instance (), ptr[0], ptr + 1, len - 1);
@@ -242,7 +242,7 @@ try_send (const char *pipe_dir_name,
 
     g_return_val_if_fail (name && name[0], FALSE);
 
-    filename = g_strdup_printf ("%s/" INPUT_PREFIX "%s", pipe_dir_name, name);
+    filename = get_pipe_path (pipe_dir_name, name);
     _moo_message ("try_send: sending data to `%s'", filename);
 
     if (!g_file_test (filename, G_FILE_TEST_EXISTS))
@@ -282,6 +282,10 @@ _moo_app_input_send_msg (const char *appname,
         success = try_send (pipe_dir_name, name, data, len);
         goto out;
     }
+
+    success = try_send (pipe_dir_name, MOO_APP_INPUT_NAME_DEFAULT, data, len);
+    if (success)
+        goto out;
 
     pipe_dir = g_dir_open (pipe_dir_name, 0, NULL);
 
@@ -435,38 +439,47 @@ read_input (G_GNUC_UNUSED GIOChannel *source,
             Connection *conn)
 {
     char c;
-    int n = 0;
+    int n;
     gboolean do_commit = FALSE;
-    gboolean error = (condition & (G_IO_ERR | G_IO_HUP));
+
+    if (condition & (G_IO_ERR | G_IO_HUP))
+    {
+        _moo_message ("%s: %s", G_STRLOC,
+                      (condition & G_IO_ERR) ? "G_IO_ERR" : "G_IO_HUP");
+        goto remove;
+    }
 
     errno = 0;
 
-    while (!error && !do_commit && (n = read (conn->fd, &c, 1)) > 0)
+    while ((n = read (conn->fd, &c, 1)) > 0)
     {
         if (c == 0)
+        {
             do_commit = TRUE;
-        else
-            g_string_append_c (conn->buffer, c);
+            break;
+        }
+
+        g_string_append_c (conn->buffer, c);
     }
 
-    if (error || n < 0)
+    if (n <= 0)
     {
         if (n < 0)
             _moo_message ("%s: %s", G_STRLOC, g_strerror (errno));
-        else if (condition & G_IO_ERR)
-            _moo_message ("%s: G_IO_ERR", G_STRLOC);
         else
-            _moo_message ("%s: G_IO_HUP", G_STRLOC);
-
-        conn->ch->connections = g_slist_remove (conn->ch->connections, conn);
-        connection_free (conn);
-        return FALSE;
+            _moo_message ("%s: EOF", G_STRLOC);
+        goto remove;
     }
 
     if (do_commit)
         commit (&conn->buffer);
 
     return TRUE;
+
+remove:
+    conn->ch->connections = g_slist_remove (conn->ch->connections, conn);
+    connection_free (conn);
+    return FALSE;
 }
 
 static gboolean
@@ -509,12 +522,62 @@ accept_connection (G_GNUC_UNUSED GIOChannel *source,
 }
 
 static gboolean
+try_connect (const char *filename,
+             int        *fdp)
+{
+    int fd;
+    struct sockaddr_un addr;
+
+    g_return_val_if_fail (filename != NULL, FALSE);
+
+    if (strlen (filename) + 1 > UNIX_PATH_MAX)
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        return FALSE;
+    }
+
+    addr.sun_family = AF_UNIX;
+    strncpy (addr.sun_path, filename, strlen (filename) + 1);
+    fd = socket (PF_UNIX, SOCK_STREAM, 0);
+
+    if (fd == -1)
+    {
+        g_warning ("%s in socket for %s: %s", G_STRLOC, filename, g_strerror (errno));
+        return FALSE;
+    }
+
+    errno = 0;
+
+    if (connect (fd, (struct sockaddr *) &addr, sizeof addr) == -1)
+    {
+        unlink (filename);
+        close (fd);
+    	return FALSE;
+    }
+
+    if (fdp)
+        *fdp = fd;
+    else
+        close (fd);
+
+    return TRUE;
+}
+
+static gboolean
 input_channel_start (InputChannel *ch,
                      gboolean      may_fail)
 {
     struct sockaddr_un addr;
 
     mkdir (ch->pipe_dir, S_IRWXU);
+
+    if (try_connect (ch->path, NULL))
+    {
+        if (!may_fail)
+            g_warning ("%s: '%s' is already in use",
+                       G_STRLOC, ch->path);
+        return FALSE;
+    }
 
     if (strlen (ch->path) + 1 > UNIX_PATH_MAX)
     {
@@ -534,12 +597,16 @@ input_channel_start (InputChannel *ch,
     }
 
     if (bind (ch->fd, (struct sockaddr*) &addr, sizeof addr) == -1)
-        _moo_message ("%s in bind for %s: %s", G_STRLOC, ch->path, g_strerror (errno));
+    {
+        g_warning ("%s in bind for %s: %s", G_STRLOC, ch->path, g_strerror (errno));
+        close (ch->fd);
+        ch->fd = -1;
+        return FALSE;
+    }
 
     if (listen (ch->fd, 5) == -1)
     {
-        if (!may_fail)
-            g_warning ("%s in listen for %s: %s", G_STRLOC, ch->path, g_strerror (errno));
+        g_warning ("%s in listen for %s: %s", G_STRLOC, ch->path, g_strerror (errno));
         close (ch->fd);
     	ch->fd = -1;
     	return FALSE;
@@ -604,44 +671,20 @@ do_send (const char *filename,
          const char *data,
          gssize      data_len)
 {
-    struct sockaddr_un addr;
     int fd;
-    char zero = 0;
     gboolean result = TRUE;
 
     g_return_val_if_fail (filename != NULL, FALSE);
     g_return_val_if_fail (data != NULL || data_len == 0, FALSE);
 
-    if (strlen (filename) + 1 > UNIX_PATH_MAX)
-    {
-        g_critical ("%s: oops", G_STRLOC);
+    if (!try_connect (filename, &fd))
         return FALSE;
-    }
-
-    addr.sun_family = AF_UNIX;
-    strncpy (addr.sun_path, filename, strlen (filename) + 1);
-    fd = socket (PF_UNIX, SOCK_STREAM, 0);
-
-    if (fd == -1)
-    {
-        g_warning ("%s in socket for %s: %s", G_STRLOC, filename, g_strerror (errno));
-        return FALSE;
-    }
-
-    if (connect (fd, (struct sockaddr *) &addr, sizeof addr) == -1)
-    {
-        g_warning ("%s in connect for %s: %s", G_STRLOC, filename, g_strerror (errno));
-        close (fd);
-    	return FALSE;
-    }
 
     if (data_len < 0)
-        data_len = strlen (data);
+        data_len = strlen (data) + 1;
 
     if (data_len)
         result = do_write (fd, data, data_len);
-    if (result)
-        result = do_write (fd, &zero, 1);
 
     close (fd);
     return result;
