@@ -25,6 +25,9 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef G_OS_WIN32
+#include <io.h>
+#endif
 
 #include <string.h>
 #include <fcntl.h>
@@ -38,11 +41,19 @@
 
 #define DEFAULT_SECTION _("Others")
 
+/* Properties */
+enum {
+	PROP_0,
+	PROP_ID,
+	PROP_NAME,
+	PROP_SECTION,
+	PROP_HIDDEN
+};
+
 G_DEFINE_TYPE (GtkSourceLanguage, gtk_source_language, G_TYPE_OBJECT)
 
 static GtkSourceLanguage *process_language_node 		(xmlTextReaderPtr 		 reader,
 								 const gchar 			*filename);
-
 
 GtkSourceLanguage *
 _gtk_source_language_new_from_file (const gchar              *filename,
@@ -114,6 +125,42 @@ _gtk_source_language_new_from_file (const gchar              *filename,
 }
 
 static void
+gtk_source_language_get_property (GObject    *object,
+				  guint       prop_id,
+				  GValue     *value,
+				  GParamSpec *pspec)
+{
+	GtkSourceLanguage *language;
+
+	g_return_if_fail (GTK_IS_SOURCE_LANGUAGE (object));
+
+	language = GTK_SOURCE_LANGUAGE (object);
+
+	switch (prop_id)
+	{
+		case PROP_ID:
+			g_value_set_string (value, language->priv->id);
+			break;
+
+		case PROP_NAME:
+			g_value_set_string (value, language->priv->name);
+			break;
+
+		case PROP_SECTION:
+			g_value_set_string (value, language->priv->name);
+			break;
+
+		case PROP_HIDDEN:
+			g_value_set_boolean (value, language->priv->hidden);
+			break;
+
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+			break;
+	}
+}
+
+static void
 gtk_source_language_dispose (GObject *object)
 {
 	GtkSourceLanguage *lang;
@@ -127,7 +174,7 @@ gtk_source_language_dispose (GObject *object)
 		lang->priv->language_manager = NULL;
 	}
 
-	G_OBJECT_CLASS (gtk_source_language_parent_class)->finalize (object);
+	G_OBJECT_CLASS (gtk_source_language_parent_class)->dispose (object);
 }
 
 static void
@@ -146,6 +193,7 @@ gtk_source_language_finalize (GObject *object)
 	g_free (lang->priv->section);
 	g_free (lang->priv->id);
 	g_hash_table_destroy (lang->priv->properties);
+
 	g_hash_table_destroy (lang->priv->styles);
 
 	G_OBJECT_CLASS (gtk_source_language_parent_class)->finalize (object);
@@ -156,8 +204,41 @@ gtk_source_language_class_init (GtkSourceLanguageClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-	object_class->dispose	= gtk_source_language_dispose;
-	object_class->finalize	= gtk_source_language_finalize;
+	object_class->get_property = gtk_source_language_get_property;
+	object_class->dispose = gtk_source_language_dispose;
+	object_class->finalize = gtk_source_language_finalize;
+
+	g_object_class_install_property (object_class,
+					 PROP_ID,
+					 g_param_spec_string ("id",
+						 	      _("Language id"),
+							      _("Language id"),
+							      NULL,
+							      G_PARAM_READABLE));
+
+	g_object_class_install_property (object_class,
+					 PROP_ID,
+					 g_param_spec_string ("name",
+						 	      _("Language name"),
+							      _("Language name"),
+							      NULL,
+							      G_PARAM_READABLE));
+
+	g_object_class_install_property (object_class,
+					 PROP_ID,
+					 g_param_spec_string ("section",
+						 	      _("Language section"),
+							      _("Language section"),
+							      NULL,
+							      G_PARAM_READABLE));
+
+	g_object_class_install_property (object_class,
+					 PROP_HIDDEN,
+					 g_param_spec_boolean ("hidden",
+							       _("Hidden"),
+							       _("Whether the language should be hidden from the user"),
+							       FALSE,
+							       G_PARAM_READABLE));
 
 	g_type_class_add_private (object_class, sizeof(GtkSourceLanguagePrivate));
 }
@@ -167,7 +248,10 @@ gtk_source_language_init (GtkSourceLanguage *lang)
 {
 	lang->priv = G_TYPE_INSTANCE_GET_PRIVATE (lang, GTK_TYPE_SOURCE_LANGUAGE,
 						  GtkSourceLanguagePrivate);
-	lang->priv->styles = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+	lang->priv->styles = g_hash_table_new_full (g_str_hash,
+						    g_str_equal,
+						    g_free,
+						    (GDestroyNotify)_gtk_source_style_info_free);
 	lang->priv->properties = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 }
 
@@ -434,6 +518,22 @@ gtk_source_language_get_section	(GtkSourceLanguage *language)
 }
 
 /**
+ * gtk_source_language_get_hidden:
+ * @language: a #GtkSourceLanguage
+ *
+ * Returns whether the language should be hidden from the user.
+ *
+ * Returns: TRUE if the language should be hidden, FALSE otherwise.
+ */
+gboolean
+gtk_source_language_get_hidden (GtkSourceLanguage *language)
+{
+	g_return_val_if_fail (GTK_IS_SOURCE_LANGUAGE (language), FALSE);
+
+	return language->priv->hidden;
+}
+
+/**
  * gtk_source_language_get_metadata:
  * @language: a #GtkSourceLanguage.
  * @name: metadata property name.
@@ -528,22 +628,34 @@ _gtk_source_language_get_language_manager (GtkSourceLanguage *language)
 void
 _gtk_source_language_define_language_styles (GtkSourceLanguage *lang)
 {
-#define ADD_ALIAS(style,mapto)								\
-	g_hash_table_insert (lang->priv->styles, g_strdup (style), g_strdup (mapto))
+	static const gchar *alias[][2] = {
+		{"Base-N Integer", "def:base-n-integer"},
+		{"Character", "def:character"},
+		{"Comment", "def:comment"},
+		{"Function", "def:function"},
+		{"Decimal", "def:decimal"},
+		{"Floating Point", "def:floating-point"},
+		{"Keyword", "def:keyword"},
+		{"Preprocessor", "def:preprocessor"},
+		{"String", "def:string"},
+		{"Specials", "def:specials"},
+		{"Data Type", "def:type"},
+		{NULL, NULL}};
 
-	ADD_ALIAS ("Base-N Integer", "def:base-n-integer");
-	ADD_ALIAS ("Character", "def:character");
-	ADD_ALIAS ("Comment", "def:comment");
-	ADD_ALIAS ("Function", "def:function");
-	ADD_ALIAS ("Decimal", "def:decimal");
-	ADD_ALIAS ("Floating Point", "def:floating-point");
-	ADD_ALIAS ("Keyword", "def:keyword");
-	ADD_ALIAS ("Preprocessor", "def:preprocessor");
-	ADD_ALIAS ("String", "def:string");
-	ADD_ALIAS ("Specials", "def:specials");
-	ADD_ALIAS ("Data Type", "def:data-type");
+	gint i = 0;
 
-#undef ADD_ALIAS
+	while (alias[i][0] != NULL)
+	{
+		GtkSourceStyleInfo *info;
+
+		info = _gtk_source_style_info_new (alias[i][0], alias[i][1]);
+
+		g_hash_table_insert (lang->priv->styles,
+				     g_strdup (alias[i][0]),
+				     info);
+
+		++i;
+	}
 }
 
 GtkSourceEngine *
@@ -595,3 +707,168 @@ _gtk_source_language_create_engine (GtkSourceLanguage *language)
 
 	return ce ? GTK_SOURCE_ENGINE (ce) : NULL;
 }
+
+typedef struct _AddStyleIdData AddStyleIdData;
+
+struct _AddStyleIdData
+{
+	gchar             *language_id;
+	GPtrArray         *ids_array;
+};
+
+static void
+add_style_id (gchar *id, G_GNUC_UNUSED gpointer value, AddStyleIdData *data)
+{
+	if (g_str_has_prefix (id, data->language_id))
+		g_ptr_array_add (data->ids_array, g_strdup (id));
+}
+
+static gchar **
+get_style_ids (GtkSourceLanguage *language)
+{
+	GPtrArray *ids_array;
+	AddStyleIdData data;
+
+	g_return_val_if_fail (language->priv->styles != NULL, NULL);
+
+	ids_array = g_ptr_array_new ();
+
+	data.language_id = g_strdup_printf ("%s:", language->priv->id);
+	data.ids_array = ids_array;
+
+	g_hash_table_foreach (language->priv->styles,
+			      (GHFunc) add_style_id,
+			      &data);
+
+	g_free (data.language_id);
+
+	if (ids_array->len == 0)
+	{
+		/* No style defined in this language */
+		g_ptr_array_free (ids_array, TRUE);
+
+		return NULL;
+	}
+	else
+	{
+		/* Terminate the array with NULL */
+		g_ptr_array_add (ids_array, NULL);
+
+		return (gchar **)g_ptr_array_free (ids_array, FALSE);
+	}
+}
+
+static gboolean
+force_styles (GtkSourceLanguage *language)
+{
+	GtkSourceEngine *ce;
+
+	/* To be sure to have the list of styles we need to create a
+	 * GtkSourceContextEngine.
+	 * In the future we can improve this avoiding to create a context
+	 * engine.
+	 */
+	if (language->priv->ctx_data == NULL)
+	{
+		ce = _gtk_source_language_create_engine (language);
+		if (ce == NULL)
+			return FALSE;
+		g_object_unref (ce);
+	}
+
+	return TRUE;
+}
+
+/**
+ * gtk_source_language_get_style_ids:
+ *
+ * @language: a #GtkSourceLanguage
+ *
+ * Returns the ids of the styles defined by this @langage.
+ *
+ * Returns: a  %NULL terminated array containing
+ * ids of the styles defined by this @langage or %NULL if no style is
+ * defined.  The returned array must be freed with g_strfreev().
+*/
+gchar **
+gtk_source_language_get_style_ids (GtkSourceLanguage *language)
+{
+	g_return_val_if_fail (GTK_IS_SOURCE_LANGUAGE (language), NULL);
+	g_return_val_if_fail (language->priv->id != NULL, NULL);
+
+	if (!force_styles (language))
+		return NULL;
+
+	return get_style_ids (language);
+}
+
+static GtkSourceStyleInfo *
+get_style_info (GtkSourceLanguage *language, const char *style_id)
+{
+	GtkSourceStyleInfo *info;
+
+	if (!force_styles (language))
+		return NULL;
+
+	g_return_val_if_fail (language->priv->styles != NULL, NULL);
+
+	info = g_hash_table_lookup (language->priv->styles, style_id);
+
+	return info;
+}
+
+/**
+ * gtk_source_language_get_style_name:
+ *
+ * @language: a #GtkSourceLanguage
+ * @style_id: a style ID
+ *
+ * Returns the name of the style with ID @style_id defined by this @language.
+ *
+ * Returns: the name of the style with ID @style_id defined by this @language or
+ * %NULL if the style has no name or there is no style with ID @style_id defined
+ * by this @language. The returned string is owned by the @language and must
+ * not be modified.
+ */
+const char *
+gtk_source_language_get_style_name (GtkSourceLanguage *language,
+				    const char        *style_id)
+{
+	GtkSourceStyleInfo *info;
+
+	g_return_val_if_fail (GTK_IS_SOURCE_LANGUAGE (language), NULL);
+	g_return_val_if_fail (language->priv->id != NULL, NULL);
+	g_return_val_if_fail (style_id != NULL, NULL);
+
+	info = get_style_info (language, style_id);
+	if (info == NULL)
+		return NULL;
+
+	return info->name;
+}
+
+/* Utility functions for GtkSourceStyleInfo */
+
+GtkSourceStyleInfo *
+_gtk_source_style_info_new (const gchar *name, const gchar *map_to)
+{
+	GtkSourceStyleInfo *info = g_new0 (GtkSourceStyleInfo, 1);
+
+	info->name = g_strdup (name);
+	info->map_to = g_strdup (map_to);
+
+	return info;
+}
+
+void
+_gtk_source_style_info_free (GtkSourceStyleInfo *info)
+{
+	if (info == NULL)
+		return;
+
+	g_free (info->name);
+	g_free (info->map_to);
+
+	g_free (info);
+}
+
