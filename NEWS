@@ -1,3 +1,20 @@
+2007-07-31  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    * === Released 0.8.9 ===
+
+    Russian translation by Andrey Fedoseev.
+    Spanish translation by Arnau Sanchez.
+
+    Added a setting to disable sessions (Joris_M).
+    Added a setting to draw right margin in text, as in gedit.
+    Unbroke loading old lang files.
+    Fixed some bugs in notebook tabs drawing.
+    Re-added --with-broken-gtk-theme configure option for Suse.
+    Do not ignore displayed tab width when printing.
+    Worked around crash with Export as PDF and gtk-2.10.
+
+    New and improved syntax highlighting:
+        c, css, pkgconfig.
+
 2007-07-10  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.8.8 ===
 
