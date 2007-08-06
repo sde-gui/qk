@@ -38,8 +38,8 @@ typedef struct {
 static FilterSettingsStore *settings_store;
 
 
-static const char *filter_settings_store_get_setting    (FilterSettingsStore *store,
-                                                         const char          *filename);
+static char *filter_settings_store_get_setting (FilterSettingsStore *store,
+                                                const char          *filename);
 
 
 static void
@@ -169,7 +169,7 @@ _moo_edit_filter_settings_reload (void)
 }
 
 
-static const char *
+static char *
 _moo_edit_filter_settings_get_for_file_utf8 (const char *filename)
 {
     g_return_val_if_fail (settings_store != NULL, NULL);
@@ -181,11 +181,11 @@ _moo_edit_filter_settings_get_for_file_utf8 (const char *filename)
 }
 
 
-const char *
+char *
 _moo_edit_filter_settings_get_for_file (const char *filename)
 {
     char *filename_utf8;
-    const char *result;
+    char *result;
 
     g_return_val_if_fail (filename != NULL, NULL);
 
@@ -216,7 +216,7 @@ filter_setting_match (FilterSetting *setting,
 }
 
 
-static const char *
+static char *
 filter_settings_store_get_setting (FilterSettingsStore *store,
                                    const char          *filename)
 {

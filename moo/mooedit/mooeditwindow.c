@@ -2550,6 +2550,8 @@ create_tab_label (MooEditWindow *window,
                       G_CALLBACK (tab_icon_button_press),
                       window);
 
+    g_object_unref (group);
+
     return hbox;
 }
 

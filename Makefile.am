@@ -62,3 +62,6 @@ DISTCLEANFILES =		\
 	po-subdirs-stamp
 
 distuninstallcheck_listfiles = find . -type f -print | grep -v share/mime/ | grep -v share/icons/hicolor
+
+snapshot:
+	$(MAKE) dist && mv $(PACKAGE)-$(VERSION).tar.bz2 $(PACKAGE)-`date +%F-%H-%M`.tar.bz2

@@ -708,6 +708,15 @@ moo_font_selection_show_available_fonts (MooFontSelection *fontsel)
         }
     }
 
+  if (!match_family && fontsel->monospace)
+    {
+      g_free (families);
+      fontsel->monospace = FALSE;
+      moo_font_selection_show_available_fonts (fontsel);
+      fontsel->monospace = TRUE;
+      return;
+    }
+
   fontsel->family = match_family;
   if (match_family)
     {

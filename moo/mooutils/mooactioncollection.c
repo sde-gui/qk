@@ -61,6 +61,7 @@ moo_action_collection_dispose (GObject *object)
         g_slist_free (coll->priv->groups_list);
         g_free (coll->priv->name);
         g_free (coll->priv);
+        coll->priv = NULL;
     }
 
     G_OBJECT_CLASS (moo_action_collection_parent_class)->dispose (object);

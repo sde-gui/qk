@@ -342,6 +342,7 @@ mgr_remove (MooMenuMgr         *mgr,
 
     g_slist_free (items_to_free);
     g_slist_free (menus_to_free);
+    g_slist_free (menus);
 
     ensure_active_item (mgr);
 

@@ -1050,7 +1050,7 @@ moo_edit_filename_changed (MooEdit    *edit,
     gboolean lang_changed = FALSE;
     MooLang *lang = NULL, *old_lang = NULL;
     const char *lang_id = NULL;
-    const char *filter_config = NULL;
+    char *filter_config = NULL;
 
     old_lang = moo_text_view_get_lang (MOO_TEXT_VIEW (edit));
 
@@ -1091,6 +1091,8 @@ moo_edit_filename_changed (MooEdit    *edit,
     }
 
     _moo_edit_thaw_config_notify (edit);
+
+    g_free (filter_config);
 }
 
 

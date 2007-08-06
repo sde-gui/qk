@@ -998,6 +998,7 @@ destroy_layout (MooIconView *view)
         g_free (column);
     }
 
+    g_slist_free (view->priv->layout->columns);
     g_free (view->priv->layout);
     view->priv->layout = NULL;
 }
@@ -1259,6 +1260,7 @@ static gboolean moo_icon_view_update_layout     (MooIconView    *view)
         g_free (column);
     }
 
+    g_slist_free (layout->columns);
     layout->columns = NULL;
     layout->num_rows = 0;
 

@@ -229,6 +229,8 @@ moo_indenter_finalize (GObject *object)
     if (indent->priv->re)
         _moo_indenter_regex_unref (indent->priv->re);
 
+    g_free (indent->priv->id);
+
     G_OBJECT_CLASS(moo_indenter_parent_class)->finalize (object);
 }
 

@@ -91,8 +91,8 @@ moo_closure_invoke (MooClosure *closure)
         closure->call (closure);
         closure->in_call = FALSE;
 
-        if (!closure->valid)
-            moo_closure_invalidate (closure);
+        if (!closure->valid && closure->destroy)
+            closure->destroy (closure);
 
         moo_closure_unref (closure);
     }
@@ -105,8 +105,12 @@ moo_closure_invalidate (MooClosure *closure)
     if (closure && closure->valid)
     {
         closure->valid = FALSE;
+
         if (!closure->in_call && closure->destroy)
+        {
             closure->destroy (closure);
+            closure->destroy = (MooClosureDestroy) 0xdeadbeef;
+        }
     }
 }
 

@@ -2710,6 +2710,7 @@ regex_resolve (Regex       *regex,
 		new_regex = regex_new ("$never-match^", 0, NULL);
 	}
 
+	g_free (expanded_regex);
 	g_regex_unref (start_ref);
 	return new_regex;
 }

@@ -1561,6 +1561,8 @@ moo_app_write_session (MooApp *app)
         g_free (file);
         g_error_free (error);
     }
+
+    g_free (string);
 }
 
 void

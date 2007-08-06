@@ -225,7 +225,10 @@ moo_edit_class_install_action (MooEditClass      *klass,
             GtkAction *action = create_action (action_id, info, l->data);
 
             if (action)
+            {
                 moo_edit_add_action (l->data, action);
+                g_object_unref (action);
+            }
         }
     }
 }
@@ -542,7 +545,10 @@ add_action (const char *id,
     GtkAction *action = create_action (id, info, edit);
 
     if (action)
+    {
         moo_edit_add_action (edit, action);
+        g_object_unref (action);
+    }
 }
 
 void
