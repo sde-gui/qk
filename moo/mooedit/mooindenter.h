@@ -36,7 +36,6 @@ struct _MooIndenter
 
     gpointer doc; /* MooEdit* */
     gboolean use_tabs;
-    gboolean strip;
     guint tab_width;
     guint indent;
 };

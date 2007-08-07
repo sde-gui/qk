@@ -56,14 +56,12 @@ enum {
     PROP_0,
     PROP_TAB_WIDTH,
     PROP_USE_TABS,
-    PROP_STRIP,
     PROP_INDENT,
     PROP_DOC
 };
 
 enum {
     SETTING_USE_TABS,
-    SETTING_STRIP,
     SETTING_INDENT_WIDTH,
     LAST_SETTING
 };
@@ -92,11 +90,6 @@ moo_indenter_class_init (MooIndenterClass *klass)
                               TRUE, G_PARAM_READWRITE));
     moo_edit_config_install_alias ("indent-use-tabs", "use-tabs");
 
-    settings[SETTING_STRIP] = moo_edit_config_install_setting (
-        g_param_spec_boolean ("indent-strip", "indent-strip", "indent-strip",
-                              TRUE, G_PARAM_READWRITE));
-    moo_edit_config_install_alias ("indent-strip", "edit-strip");
-
     settings[SETTING_INDENT_WIDTH] = moo_edit_config_install_setting (
         g_param_spec_uint ("indent-width", "indent-width", "indent-width",
                            1, G_MAXUINT, 8, G_PARAM_READWRITE));
@@ -114,11 +107,6 @@ moo_indenter_class_init (MooIndenterClass *klass)
     g_object_class_install_property (gobject_class, PROP_USE_TABS,
         g_param_spec_boolean ("use-tabs", "use-tabs", "use-tabs",
                               TRUE,
-                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
-
-    g_object_class_install_property (gobject_class, PROP_STRIP,
-        g_param_spec_boolean ("strip", "strip", "strip",
-                              FALSE,
                               G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     g_object_class_install_property (gobject_class, PROP_INDENT,
@@ -197,6 +185,7 @@ moo_indenter_finalize (GObject *object)
         g_signal_handlers_disconnect_by_func (indent->doc,
                                               (gpointer) config_notify,
                                               indent);
+    indent->doc = NULL;
 
     G_OBJECT_CLASS(moo_indenter_parent_class)->finalize (object);
 }
@@ -224,11 +213,6 @@ static void  moo_indenter_set_property  (GObject        *object,
         case PROP_USE_TABS:
             indenter->use_tabs = g_value_get_boolean (value);
             g_object_notify (object, "use-tabs");
-            break;
-
-        case PROP_STRIP:
-            indenter->strip = g_value_get_boolean (value);
-            g_object_notify (object, "strip");
             break;
 
         case PROP_INDENT:
@@ -262,10 +246,6 @@ static void  moo_indenter_get_property  (GObject        *object,
 
         case PROP_USE_TABS:
             g_value_set_boolean (value, indenter->use_tabs);
-            break;
-
-        case PROP_STRIP:
-            g_value_set_boolean (value, indenter->strip);
             break;
 
         case PROP_INDENT:
@@ -417,40 +397,19 @@ character_default (MooIndenter    *indenter,
     GtkTextBuffer *buffer = gtk_text_iter_get_buffer (where);
     guint offset;
     GtkTextIter iter;
-    gboolean ws_line;
 
     if (inserted_char != '\n')
         return;
 
     iter = *where;
     gtk_text_iter_backward_line (&iter);
-    ws_line = !compute_line_offset (&iter, indenter->tab_width, &offset);
-
-    if (!offset)
-        return;
+    compute_line_offset (&iter, indenter->tab_width, &offset);
 
     if (offset)
     {
         indent_string = moo_indenter_make_space (indenter, offset, 0);
         gtk_text_buffer_insert (buffer, where, indent_string, -1);
         g_free (indent_string);
-    }
-
-    if (ws_line && indenter->strip)
-    {
-        GtkTextMark *saved_location;
-        GtkTextIter iter2;
-
-        saved_location = gtk_text_buffer_create_mark (buffer, NULL, where, FALSE);
-
-        iter = *where;
-        gtk_text_iter_backward_line (&iter);
-        iter2 = iter;
-        gtk_text_iter_forward_to_line_end (&iter2);
-        gtk_text_buffer_delete (buffer, &iter, &iter2);
-
-        gtk_text_buffer_get_iter_at_mark (buffer, where, saved_location);
-        gtk_text_buffer_delete_mark (buffer, saved_location);
     }
 }
 
@@ -738,11 +697,6 @@ config_changed_default (MooIndenter    *indenter,
     {
         guint width = moo_edit_config_get_uint (doc->config, "indent-width");
         g_object_set (indenter, "indent", width, NULL);
-    }
-    else if (var_id == settings[SETTING_STRIP])
-    {
-        gboolean strip = moo_edit_config_get_bool (doc->config, "indent-strip");
-        g_object_set (indenter, "strip", strip, NULL);
     }
     else if (!strcmp (pspec->name, "tab-width"))
     {
