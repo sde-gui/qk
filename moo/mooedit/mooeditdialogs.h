@@ -31,7 +31,8 @@ MooEditFileInfo *_moo_edit_save_as_dialog           (MooEdit        *edit,
                                                      MooFilterMgr   *mgr,
                                                      const char     *display_basename);
 GSList          *_moo_edit_open_dialog              (GtkWidget      *widget,
-                                                     MooFilterMgr   *mgr);
+                                                     MooFilterMgr   *mgr,
+                                                     MooEdit        *current_doc);
 
 MooEditDialogResponse _moo_edit_save_changes_dialog (MooEdit        *edit);
 MooEditDialogResponse _moo_edit_save_multiple_changes_dialog (GSList *docs,

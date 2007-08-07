@@ -1,5 +1,4 @@
-# XXX it needs plugins to be built first but plugins want mooedit-enums.h
-SUBDIRS = gtksourceview plugins language-specs
+SUBDIRS = gtksourceview plugins language-specs .
 
 mooedit_toolsdir = $(MOO_DATA_DIR)
 mooedit_tools_DATA = context.cfg menu.cfg filters.xml

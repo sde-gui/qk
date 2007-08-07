@@ -39,18 +39,38 @@ open_dialog_created (G_GNUC_UNUSED MooFileDialog *fd,
 
 GSList *
 _moo_edit_open_dialog (GtkWidget      *widget,
-                       MooFilterMgr   *mgr)
+                       MooFilterMgr   *mgr,
+                       MooEdit        *current_doc)
 {
     MooFileDialog *dialog;
-    const char *start, *encoding;
+    const char *start_dir = NULL;
+    const char *encoding;
     char *new_start;
-    GSList *filenames, *infos = NULL, *l;
+    char *freeme = NULL;
+    GSList *filenames = NULL;
+    GSList *infos = NULL;
+    GSList *l;
 
     moo_prefs_create_key (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), MOO_PREFS_STATE, G_TYPE_STRING, NULL);
-    start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR));
+
+    if (current_doc && moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN_FOLLOWS_DOC)))
+    {
+        char *filename = moo_edit_get_filename (current_doc);
+
+        if (filename)
+        {
+            freeme = g_path_get_dirname (filename);
+            start_dir = freeme;
+            g_free (filename);
+        }
+    }
+
+    if (!start_dir)
+        start_dir = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR));
 
     dialog = moo_file_dialog_new (MOO_FILE_DIALOG_OPEN, widget,
-                                  TRUE, GTK_STOCK_OPEN, start, NULL);
+                                  TRUE, GTK_STOCK_OPEN, start_dir,
+                                  NULL);
     g_object_set (dialog, "enable-encodings", TRUE, NULL);
     g_signal_connect (dialog, "dialog-created", G_CALLBACK (open_dialog_created), NULL);
 
@@ -58,10 +78,7 @@ _moo_edit_open_dialog (GtkWidget      *widget,
         moo_file_dialog_set_filter_mgr (dialog, mgr, "MooEdit");
 
     if (!moo_file_dialog_run (dialog))
-    {
-        g_object_unref (dialog);
-        return NULL;
-    }
+        goto out;
 
     encoding = moo_file_dialog_get_encoding (dialog);
 
@@ -79,8 +96,11 @@ _moo_edit_open_dialog (GtkWidget      *widget,
     moo_prefs_set_filename (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), new_start);
     g_free (new_start);
 
+out:
+    g_free (freeme);
     g_object_unref (dialog);
     g_slist_foreach (filenames, (GFunc) g_free, NULL);
+    g_slist_free (filenames);
     return infos;
 }
 

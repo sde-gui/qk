@@ -1271,7 +1271,9 @@ moo_editor_open (MooEditor      *editor,
 
     if (!files)
     {
-        files = _moo_edit_open_dialog (parent, editor->priv->filter_mgr);
+        MooEdit *active = window ? moo_edit_window_get_active_doc (window) : NULL;
+
+        files = _moo_edit_open_dialog (parent, editor->priv->filter_mgr, active);
 
         if (!files)
             return FALSE;
