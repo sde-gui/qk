@@ -5,8 +5,8 @@
     Fixed an issue with indentation when pressing Enter key
     on an empty line.
     Fixed tooltips on toolbar, once again, now for gtk-2.10.
-    Added a setting for what directory should shown in the Open
-    dialog.
+    Added a setting for what directory should be shown in the
+    Open dialog.
 
 2007-07-31  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.8.9 ===
