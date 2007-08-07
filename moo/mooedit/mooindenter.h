@@ -28,13 +28,17 @@ G_BEGIN_DECLS
 
 
 typedef struct _MooIndenter         MooIndenter;
-typedef struct _MooIndenterPrivate  MooIndenterPrivate;
 typedef struct _MooIndenterClass    MooIndenterClass;
 
 struct _MooIndenter
 {
     GObject parent;
-    MooIndenterPrivate *priv;
+
+    gpointer doc; /* MooEdit* */
+    gboolean use_tabs;
+    gboolean strip;
+    guint tab_width;
+    guint indent;
 };
 
 struct _MooIndenterClass
@@ -52,9 +56,8 @@ struct _MooIndenterClass
 
 GType        moo_indenter_get_type              (void) G_GNUC_CONST;
 
-MooIndenter *moo_indenter_new                   (gpointer        doc);
-
-guint        moo_indenter_get_tab_width         (MooIndenter    *indenter);
+MooIndenter *moo_indenter_new                   (gpointer        doc,
+                                                 const char     *name);
 
 char        *moo_indenter_make_space            (MooIndenter    *indenter,
                                                  guint           len,
@@ -87,12 +90,6 @@ guint        moo_text_iter_get_prev_stop        (const GtkTextIter *start,
                                                  guint              tab_width,
                                                  guint              offset,
                                                  gboolean           same_line);
-
-gboolean     _moo_indenter_compute_line_offset  (MooIndenter        *indenter,
-                                                 GtkTextIter        *dest,
-                                                 guint              *offsetp);
-guint        _moo_indenter_compute_next_offset  (MooIndenter        *indenter,
-                                                 guint               offset);
 
 
 G_END_DECLS
