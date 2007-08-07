@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<indent-settings version="1">
-  <lang id="python">
-    <shift pattern=":\s*$"/>
-  </lang>
-</indent-settings>
