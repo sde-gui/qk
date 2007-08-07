@@ -22,6 +22,16 @@ static void _moo_action_set_closure (MooAction  *action,
                                      MooClosure *closure);
 
 
+void
+_moo_action_ring_the_bells_it_has_tooltip (GtkAction *action)
+{
+    char *tooltip;
+    g_object_get (action, "tooltip", &tooltip, NULL);
+    g_object_set (action, "tooltip", tooltip, NULL);
+    g_free (tooltip);
+}
+
+
 gpointer
 _moo_action_get_window (gpointer action)
 {

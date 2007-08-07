@@ -2118,7 +2118,7 @@ create_tool_item (MooUIXML       *xml,
             index = -1;
 
         gtk_toolbar_insert (toolbar, GTK_TOOL_ITEM (tool_item), index);
-        g_object_notify (G_OBJECT (action), "tooltip");
+        _moo_action_ring_the_bells_it_has_tooltip (action);
 
         if (node->children)
         {
@@ -2144,8 +2144,6 @@ create_tool_item (MooUIXML       *xml,
         tool_item = moo_menu_tool_button_new ();
         gtk_widget_show (tool_item);
 
-        if (item->tooltip)
-            _moo_widget_set_tooltip (tool_item, item->tooltip);
         if (item->icon_stock_id)
             gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (tool_item),
                                           item->icon_stock_id);
@@ -2157,6 +2155,9 @@ create_tool_item (MooUIXML       *xml,
                                        item->label);
 
         gtk_toolbar_insert (toolbar, GTK_TOOL_ITEM (tool_item), index);
+
+        if (item->tooltip)
+            _moo_widget_set_tooltip (tool_item, item->tooltip);
 
         menu = gtk_menu_new ();
         /* XXX empty menu */
