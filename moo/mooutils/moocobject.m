@@ -13,6 +13,268 @@
 
 #include <config.h>
 #import "moocobject.h"
+#import "mooobjc.h"
+#import <objc/objc-api.h>
+
+
+static GSList *autorelease_pools;
+
+
+#ifndef MOO_OBJC_USE_FOUNDATION
+
+@interface MooAutoreleasePool : MooCObject
+{
+@private
+    MooAutoreleasePool *parent;
+    MooAutoreleasePool *child;
+    GSList *objects;
+}
+
++ (void) addObject: (id)anObj;
+
+- (void) addObject: (id)anObj;
+- (void) emptyPool;
+@end
+
+#else
+
+typedef NSAutoreleasePool MooAutoreleasePool;
+
+#endif
+
+
+static void
+moo_objc_send_msg (MooObjCObject *m_obj,
+                   const char    *name)
+{
+    SEL aSelector;
+    id<MooCObject> obj = (id) m_obj;
+
+    g_return_if_fail (obj != NULL);
+    g_return_if_fail (name != NULL);
+
+    aSelector = sel_get_any_uid (name);
+    g_return_if_fail (aSelector != NULL);
+    g_return_if_fail ([obj respondsToSelector:aSelector]);
+
+    [obj performSelector:aSelector];
+}
+
+static MooObjCObject *
+moo_objc_retain (MooObjCObject *m_obj)
+{
+    id<MooCObject> obj = (id) m_obj;
+    g_return_val_if_fail (obj != NULL, NULL);
+    return (MooObjCObject*)[obj retain];
+}
+
+static MooObjCObject *
+moo_objc_autorelease (MooObjCObject *m_obj)
+{
+    id<MooCObject> obj = (id) m_obj;
+    g_return_val_if_fail (obj != NULL, NULL);
+    return (MooObjCObject*)[obj autorelease];
+}
+
+static void
+moo_objc_release (MooObjCObject *m_obj)
+{
+    id<MooCObject> obj = (id) m_obj;
+    g_return_if_fail (obj != NULL);
+    [obj release];
+}
+
+static char *
+moo_objc_get_info (void)
+{
+    return g_strdup ("Objective-C");
+}
+
+void
+moo_init_objc_api (void)
+{
+    static MooObjCAPI api = {
+        moo_objc_retain,
+        moo_objc_autorelease,
+        moo_objc_release,
+        moo_objc_get_info,
+        moo_objc_send_msg,
+        moo_objc_push_autorelease_pool,
+        moo_objc_pop_autorelease_pool
+    };
+
+    static gboolean been_here = FALSE;
+
+    if (!been_here)
+    {
+        been_here = TRUE;
+        moo_objc_init (MOO_OBJC_API_VERSION, &api);
+    }
+}
+
+
+void
+moo_objc_push_autorelease_pool (void)
+{
+    MooAutoreleasePool *pool = [[MooAutoreleasePool alloc] init];
+    g_return_if_fail (pool != nil);
+    autorelease_pools = g_slist_prepend (autorelease_pools, pool);
+}
+
+void
+moo_objc_pop_autorelease_pool (void)
+{
+    MooAutoreleasePool *pool;
+
+    g_return_if_fail (autorelease_pools != NULL);
+
+    pool = autorelease_pools->data;
+    autorelease_pools = g_slist_delete_link (autorelease_pools, autorelease_pools);
+    [pool release];
+}
+
+
+#ifndef MOO_OBJC_USE_FOUNDATION
+
+@implementation MooCObject
+
++ initialize
+{
+    moo_init_objc_api ();
+    return self;
+}
+
+- init
+{
+    [super init];
+    retainCount = 1;
+    return self;
+}
+
+- (Class) class
+{
+    return [super class];
+}
+
+- (Class) superclass
+{
+    return [super superClass];
+}
+
+- (BOOL) isKindOfClass: (Class)aClass
+{
+    return [super isKindOf:aClass];
+}
+
+- (id) performSelector: (SEL)aSelector
+{
+    return [super perform:aSelector];
+}
+
+- (BOOL) respondsToSelector: (SEL)aSelector
+{
+    return [super respondsTo:aSelector];
+}
+
+- (id) retain
+{
+    retainCount += 1;
+    return self;
+}
+
+- (void) release
+{
+    if (!--retainCount)
+        [self dealloc];
+}
+
+- (id) autorelease
+{
+    [MooAutoreleasePool addObject:self];
+    return self;
+}
+
+- (guint) retainCount
+{
+    return retainCount;
+}
+
+- (void) dealloc
+{
+    [self free];
+}
+
+@end
+
+
+@implementation MooAutoreleasePool
+
+static MooAutoreleasePool *currentPool;
+
++ (void) addObject: (id)anObj
+{
+    g_return_if_fail (currentPool != nil);
+    [currentPool addObject: anObj];
+}
+
+- (void) addObject: (id)anObj
+{
+    objects = g_slist_prepend (objects, anObj);
+}
+
+- (void) emptyPool
+{
+    GSList *list, *l;
+
+    list = objects;
+    objects = NULL;
+
+    for (l = list; l != NULL; l = l->next)
+    {
+        id<MooCObject> obj = l->data;
+        [obj release];
+    }
+
+    g_slist_free (list);
+}
+
+- (id) autorelease
+{
+    g_return_val_if_reached (self);
+}
+
+- init
+{
+    [super init];
+
+    if (currentPool)
+    {
+        currentPool->child = self;
+        parent = currentPool;
+    }
+
+    currentPool = self;
+
+    return self;
+}
+
+- (void) dealloc
+{
+    currentPool = parent;
+
+    if (currentPool)
+        currentPool->child = nil;
+
+    [self emptyPool];
+
+    [super dealloc];
+}
+
+@end
+
+#endif // !MOO_OBJC_USE_FOUNDATION
+
+#if 0
 
 #ifdef MOO_OS_DARWIN
 #define class_get_class_name(klass) (klass->name)
@@ -366,6 +628,8 @@ moo_cobject_check_type (id obj, Class klass)
 {
     return obj != nil && [obj isKindOf :klass];
 }
+
+#endif
 
 
 /* -*- objc -*- */

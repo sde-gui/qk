@@ -27,6 +27,10 @@ MOO_AC_PROGS
 
 ACLOCAL="$ACLOCAL $ACLOCAL_FLAGS"
 
+if test "x$MOO_USE_PIPE_INPUT" = xyes; then
+  AC_DEFINE([MOO_USE_PIPE_INPUT], [1], [use pipes for input])
+fi
+
 MOO_SRC_PREFIX="moo"
 AC_SUBST(MOO_SRC_PREFIX)
 MOO_COMPONENTS([app,edit,term],[])

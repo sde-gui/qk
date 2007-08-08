@@ -99,18 +99,19 @@ mooutils_sources =			\
 	moomenumgr.c			\
 	moomenutoolbutton.c		\
 	moonotebook.c			\
+	mooobjc.h			\
 	moopane.c			\
 	moopaned.c			\
 	mooprefs.c			\
 	mooprefsdialog.c		\
 	mooprefsdialogpage.c		\
-	moopython.c			\
 	moospawn.h			\
 	moospawn.c			\
 	moostock.c			\
 	mootype-macros.h		\
 	moouixml.c			\
 	mooundo.c			\
+	mooutils-fli.c			\
 	mooutils-fs.c			\
 	mooutils-gobject-private.h	\
 	mooutils-gobject.c		\
@@ -123,6 +124,9 @@ mooutils_sources =			\
 	stock-select-all-16.h		\
 	stock-select-all-24.h		\
 	stock-terminal-24.h
+
+mooobjc.lo: mooutils-fli.lo
+moopython.lo: mooutils-fli.lo
 
 objc_sources =				\
 	moocobject.h			\
@@ -221,7 +225,7 @@ AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
 	-DMOO_LOCALE_DIR=\"$(datadir)/locale\"
-AM_OBJCFLAGS = $(AM_CFLAGS)
+AM_OBJCFLAGS = $(AM_CFLAGS) $(MOO_OBJCFLAGS)
 
 if MOO_INSTALL_HEADERS
 mooutils_includedir = $(moo_includedir)/mooutils

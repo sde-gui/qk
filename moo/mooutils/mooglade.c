@@ -928,6 +928,7 @@ pack_children (MooGladeXML    *xml,
         else if (child->widget->props->mask & PROP_RESPONSE_ID)
         {
             Child *parent = child->parent_node->parent_node;
+
             if (!parent || !parent->internal_child ||
                  strcmp (parent->internal_child, "action_area"))
             {

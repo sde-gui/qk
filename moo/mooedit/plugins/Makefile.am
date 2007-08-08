@@ -10,7 +10,7 @@ AM_CFLAGS =			\
 	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
-AM_OBJCFLAGS = $(AM_CFLAGS)
+AM_OBJCFLAGS = $(AM_CFLAGS) $(MOO_OBJCFLAGS)
 
 ###########################################################################
 # fileselector

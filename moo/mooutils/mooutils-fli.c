@@ -1,5 +1,5 @@
 /*
- *   moopython.c
+ *   mooutils-fli.c
  *
  *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -12,7 +12,12 @@
  */
 
 #include "mooutils/moopython.h"
+#include "mooutils/mooobjc.h"
 
+
+/**
+ * Python
+ */
 
 typedef struct {
     gpointer data;
@@ -91,4 +96,21 @@ moo_Py_DECREF (MooPyObject *obj)
 
     if (obj)
         moo_py_api->decref (obj);
+}
+
+
+/**
+ * Objective-C
+ */
+
+MooObjCAPI *moo_objc_api = NULL;
+
+gboolean
+moo_objc_init (guint       version,
+               MooObjCAPI *api)
+{
+    g_return_val_if_fail (version == MOO_OBJC_API_VERSION, FALSE);
+    g_return_val_if_fail (!moo_objc_api || !api, FALSE);
+    moo_objc_api = api;
+    return TRUE;
 }

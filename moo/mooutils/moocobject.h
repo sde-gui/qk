@@ -11,106 +11,66 @@
  *   See COPYING file that comes with this distribution.
  */
 
-/* Objective-C objects with GObject goodies: qdata and toggle refs */
-
 #ifndef MOO_COBJECT_H
 #define MOO_COBJECT_H
 
 #include <glib-object.h>
-
-#ifdef __OBJC__
-
-#import <objc/objc-api.h>
+#ifdef MOO_OBJC_USE_FOUNDATION
+#import <Foundation/Foundation.h>
+#else
 #import <objc/Object.h>
+#endif
+
+G_BEGIN_DECLS
 
 #define MOO_UNUSED_VAR(var) ((void)var)
 
-#ifdef CSTR
-#ifdef __GNUC__
-#warning "CSTR defined"
-#endif
-#endif
-#undef CSTR
-typedef const char *CSTR;
+#ifndef MOO_OBJC_USE_FOUNDATION
 
-@class MooCObject;
+/* stripped down NSObject protocol, to make it possible to substitute
+ * MooCObject with NSObject when it's available */
+@protocol MooCObject
+- (Class) class;
+- (Class) superclass;
+- (BOOL) isKindOfClass: (Class)aClass;
+- (id) performSelector: (SEL)aSelector;
+- (BOOL) respondsToSelector: (SEL)aSelector;
 
-typedef void (*MooToggleNotify) (gpointer    data,
-			         MooCObject *object,
-			         BOOL        is_last_ref);
-
-@interface MooCObject : Object {
-@private
-    unsigned moo_c_object_ref_count;
-    GData *moo_c_object_qdata;
-}
-
-- (void) setQData :(GQuark)key
-                  :(gpointer)data;
-- (void) setQData :(GQuark)key
-                  :(gpointer)data
-       withDestroy:(GDestroyNotify)destroy;
-- (gpointer) getQData :(GQuark)key;
-- (void) setData :(CSTR)key
-                 :(gpointer)data;
-- (void) setData :(CSTR)key
-                 :(gpointer)data
-      withDestroy:(GDestroyNotify)destroy;
-- (gpointer) getData :(CSTR)key;
-
-- (void) addToggleRef :(MooToggleNotify)notify
-                      :(gpointer)data;
-- (void) removeToggleRef :(MooToggleNotify)notify
-                         :(gpointer)data;
-
-- retain;
+- (id) retain;
 - (void) release;
-- autorelease;
+- (id) autorelease;
 - (guint) retainCount;
 - (void) dealloc;
 @end
 
-
-@interface MooAutoreleasePool : MooCObject
+@interface MooCObject : Object <MooCObject>
 {
 @private
-    MooAutoreleasePool *parent;
-    MooAutoreleasePool *child;
-    GPtrArray *objects;
+    guint retainCount;
 }
-
-+ (void) addObject: (id)anObj;
-+ (id) currentPool;
-
-- (void) addObject: (id)anObj;
-- (void) emptyPool;
 @end
 
+#else // MOO_OBJC_USE_FOUNDATION
 
-GType       moo_cboxed_type_new     (Class      klass,
-                                     gboolean   copy);
+#define MooCObject NSObject
 
-#define MOO_DEFINE_CBOXED_TYPE(copy)                    \
-+ (GType) get_boxed_type                                \
-{                                                       \
-    static GType type;                                  \
-    if (G_UNLIKELY (!type))                             \
-        type = moo_cboxed_type_new ([self class], copy);\
-    return type;                                        \
-}
+#endif // MOO_OBJC_USE_FOUNDATION
 
-id moo_cobject_check_type_cast (id obj, Class klass);
-BOOL moo_cobject_check_type (id obj, Class klass);
 
-#ifndef G_DISABLE_CAST_CHECKS
-#define MOO_COBJECT_CHECK_TYPE_CAST(obj,ClassName) ((ClassName*) moo_cobject_check_type_cast (obj, [ClassName class]))
-#define MOO_COBJECT_CHECK_TYPE(obj,ClassName) (moo_cobject_check_type (obj, [ClassName class]))
-#else /* G_DISABLE_CAST_CHECKS */
-#define MOO_COBJECT_CHECK_TYPE_CAST(obj,ClassName) ((ClassName*)obj)
-#define MOO_COBJECT_CHECK_TYPE(obj,ClassName) (obj != nil)
-#endif /* G_DISABLE_CAST_CHECKS */
+void    moo_init_objc_api               (void);
 
-#endif /* __OBJC__ */
+void    moo_objc_push_autorelease_pool  (void);
+void    moo_objc_pop_autorelease_pool   (void);
+
+
+#ifdef CSTR
+#warning "CSTR defined"
+#endif
+#undef CSTR
+typedef const char *CSTR;
+
+
+G_END_DECLS
 
 #endif /* MOO_COBJECT_H */
 /* -*- objc -*- */
