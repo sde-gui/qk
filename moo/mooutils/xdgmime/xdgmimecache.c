@@ -478,7 +478,8 @@ cache_glob_node_lookup_suffix (XdgMimeCache *cache,
 		  if (match_char != 0)
 		    break;
 
-		  mime_types[n++] = cache->buffer + mimetype_offset;
+		  if (cache->buffer[mimetype_offset])
+		    mime_types[n++] = cache->buffer + mimetype_offset;
 		  i++;
 		}
 
