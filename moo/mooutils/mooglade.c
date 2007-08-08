@@ -929,12 +929,10 @@ pack_children (MooGladeXML    *xml,
         {
             Child *parent = child->parent_node->parent_node;
 
-            if (!parent || !parent->internal_child ||
-                 strcmp (parent->internal_child, "action_area"))
-            {
-                g_warning ("%s: oops", G_STRLOC);
-            }
-            else
+            /* glade saves response_id with all buttons now, so do not complain
+             * if response_id found not in a dialog button */
+            if (parent && parent->internal_child &&
+                !strcmp (parent->internal_child, "action_area"))
             {
                 GtkWidget *dialog = moo_glade_xml_get_widget (xml, parent->internal_parent_id);
 
