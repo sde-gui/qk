@@ -740,7 +740,7 @@ create_mime_icon (GtkWidget    *widget,
 #endif
 
     if (!pixbuf)
-        create_special_icon (widget, MOO_ICON_FILE, size);
+        pixbuf = create_special_icon (widget, MOO_ICON_FILE, size);
 
     return pixbuf;
 }
