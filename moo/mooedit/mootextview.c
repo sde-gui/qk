@@ -691,6 +691,9 @@ moo_text_view_init (MooTextView *view)
     name = g_strdup_printf ("moo-text-view-%p", (gpointer) view);
     gtk_widget_set_name (GTK_WIDGET (view), name);
     g_free (name);
+
+    gtk_text_view_set_left_margin (GTK_TEXT_VIEW (view), 2);
+    gtk_text_view_set_right_margin (GTK_TEXT_VIEW (view), 2);
 }
 
 
@@ -2142,9 +2145,9 @@ moo_text_view_draw_current_line (GtkTextView    *text_view,
     GdkRectangle visible_rect;
     GdkRectangle redraw_rect;
     GtkTextIter cur;
-    gint y;
-    gint height;
-    gint win_y;
+    int y, height;
+    int win_y;
+    int margin;
 
     gtk_text_buffer_get_iter_at_mark (text_view->buffer,
                                       &cur,
@@ -2171,10 +2174,15 @@ moo_text_view_draw_current_line (GtkTextView    *text_view,
     redraw_rect.width = visible_rect.width;
     redraw_rect.height = visible_rect.height;
 
+    if (text_view->hadjustment)
+    	margin = gtk_text_view_get_left_margin (text_view) - (int) text_view->hadjustment->value;
+    else
+    	margin = gtk_text_view_get_left_margin (text_view);
+
     gdk_draw_rectangle (event->window,
                         MOO_TEXT_VIEW(text_view)->priv->gcs[MOO_TEXT_VIEW_COLOR_CURRENT_LINE],
                         TRUE,
-                        redraw_rect.x + MAX (0, gtk_text_view_get_left_margin (text_view) - 1),
+                        redraw_rect.x + MAX (0, margin - 1),
                         win_y,
                         redraw_rect.width,
                         height);
