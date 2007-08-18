@@ -157,7 +157,7 @@ commit (GString **buffer)
         g_string_truncate (*buffer, 0);
     }
 
-    if (1)
+    if (0)
         g_print ("%s: commit %c\n%s\n-----\n", G_STRLOC, ptr[0], ptr + 1);
 
     _moo_app_exec_cmd (moo_app_get_instance (), ptr[0], ptr + 1, len - 1);

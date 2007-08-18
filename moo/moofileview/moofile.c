@@ -81,7 +81,7 @@ _moo_file_find_mime_type (MooFile    *file,
     if (!file->mime_type || !file->mime_type[0])
     {
         /* this should not happen */
-        if (0)
+        if (1)
             _moo_message ("%s: oops, %s", G_STRLOC, file->display_name);
         file->mime_type = MIME_TYPE_UNKNOWN;
     }
