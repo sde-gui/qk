@@ -631,30 +631,30 @@ def ConsoleType(t=gtk.TextView):
 ReadLine = ReadLineType()
 Console = ConsoleType()
 
-def _create_widget():
+def _create_widget(start_script):
     try:
         import moo
         console_type = ConsoleType(moo.edit.TextView)
         console = console_type(banner="Hello there!",
                                use_rlcompleter=False,
-                               start_script="from gtk import *\n")
+                               start_script=start_script)
         console.set_property("highlight-current-line", False)
         editor = moo.edit.create_editor_instance()
         console.set_lang_by_id("python-console")
     except ImportError:
         console = Console(banner="Hello there!",
                           use_rlcompleter=False,
-                          start_script="from gtk import *\n")
+                          start_script=start_script)
     console.modify_font(pango.FontDescription("Monospace"))
     return console
 
-def _make_window():
+def _make_window(start_script="from gtk import *\n"):
     window = gtk.Window()
     window.set_title("pyconsole.py")
     swin = gtk.ScrolledWindow()
     swin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
     window.add(swin)
-    console = _create_widget()
+    console = _create_widget(start_script)
     swin.add(console)
     window.set_default_size(500, 400)
     window.show_all()
@@ -666,4 +666,7 @@ def _make_window():
     return console
 
 if __name__ == '__main__':
-    _make_window()
+    import sys
+    import os
+    sys.path.insert(0, os.getcwd())
+    _make_window(sys.argv[1:] and '\n'.join(sys.argv[1:]) + '\n' or None)
