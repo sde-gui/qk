@@ -129,7 +129,7 @@ gboolean     _moo_term_line_wrapped_chk__   (MooTermLine    *line);
 
 #define _moo_term_line_set_wrapped(line__)  (line__)->wrapped = TRUE
 
-#ifdef MOO_DEBUG
+#ifdef MOO_DEBUG_ENABLED
 #define _moo_term_line_get_cell(line__,index__) (_moo_term_line_get_cell_chk__(line__, index__))
 #define _moo_term_line_get_char(line__,index__) (_moo_term_line_get_char_chk__(line__, index__))
 #define _moo_term_line_get_tags(line__,index__) (_moo_term_line_get_tags_chk__(line__, index__))

@@ -17,6 +17,7 @@
 #include "mooedit/mooplugin-loader.h"
 #include "mooedit/mooplugin.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-debug.h"
 #include <string.h>
 #include <stdlib.h>
 #include <gmodule.h>

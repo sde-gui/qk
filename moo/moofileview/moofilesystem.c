@@ -27,7 +27,7 @@
 #include <io.h>
 #endif
 
-#if 0 && MOO_DEBUG
+#if 0 && MOO_DEBUG_ENABLED
 #define DEBUG_MESSAGE g_message
 #else
 static void DEBUG_MESSAGE (G_GNUC_UNUSED const char *format, ...)

@@ -16,7 +16,7 @@
 #include "mooutils/moomarshals.h"
 
 
-#ifdef MOO_DEBUG
+#ifdef MOO_DEBUG_ENABLED
 #define WANT_CHECKS 1
 #else
 #define WANT_CHECKS 0

@@ -21,6 +21,7 @@
 #include "mooterm/pty.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-debug.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>

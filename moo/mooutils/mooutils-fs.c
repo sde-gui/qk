@@ -16,7 +16,7 @@
 #endif
 
 #include "mooutils/mooutils-fs.h"
-#include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-debug.h"
 #include "mooutils/moocompat.h"
 
 #include <string.h>

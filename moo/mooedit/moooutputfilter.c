@@ -14,7 +14,7 @@
 #include "mooedit/moooutputfilter.h"
 #include "mooedit/mooeditor.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-debug.h"
 #include <string.h>
 
 

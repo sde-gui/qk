@@ -17,6 +17,7 @@
 
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/mooutils-debug.h"
 #include "mooutils/moologwindow-glade.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
@@ -1599,40 +1600,6 @@ moo_data_dir_type_get_type (void)
 }
 
 
-static gboolean
-_moo_debug_enabled (void)
-{
-#ifndef MOO_DEBUG
-    static gboolean enabled;
-    static gboolean been_here;
-
-    if (!been_here)
-    {
-        been_here = TRUE;
-        enabled = g_getenv ("MOO_DEBUG") != NULL;
-    }
-
-    return enabled;
-#else
-    return TRUE;
-#endif
-}
-
-
-void
-_moo_message (const char *format,
-              ...)
-{
-    if (_moo_debug_enabled ())
-    {
-        va_list args;
-        va_start (args, format);
-        g_logv (G_LOG_DOMAIN "-debug", G_LOG_LEVEL_MESSAGE, format, args);
-        va_end (args);
-    }
-}
-
-
 void
 _moo_widget_set_tooltip (GtkWidget  *widget,
                          const char *tip)
@@ -2056,4 +2023,50 @@ _moo_intern_string (const char *string)
         return original;
     }
 #endif
+}
+
+
+gboolean
+moo_debug_enabled (const char *domain,
+                   gboolean    def_enabled)
+{
+    const char *val;
+
+    val = g_getenv ("MOO_DEBUG");
+
+    if (!val || !val[0])
+        return def_enabled;
+    if (!strcmp (val, "none"))
+        return FALSE;
+    if (!strcmp (val, "all"))
+        return TRUE;
+
+    return strstr (val, domain) != NULL;
+}
+
+
+#undef _moo_message
+void
+_moo_message (const char *format,
+              ...)
+{
+    static int enabled = -1;
+
+    if (enabled == -1)
+    {
+        enabled = moo_debug_enabled ("misc",
+#ifdef MOO_DEBUG_ENABLED
+                                     TRUE);
+#else
+                                     FALSE);
+#endif
+    }
+
+    if (enabled)
+    {
+        va_list args;
+        va_start (args, format);
+        g_logv (G_LOG_DOMAIN "-debug", G_LOG_LEVEL_MESSAGE, format, args);
+        va_end (args);
+    }
 }

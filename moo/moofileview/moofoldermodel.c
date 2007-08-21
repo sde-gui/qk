@@ -416,12 +416,12 @@ G_STMT_START {                          \
     ITER_SET_DIR(ip, is_dir);           \
 } G_STMT_END
 
-#ifdef MOO_DEBUG
+#ifdef MOO_DEBUG_ENABLED
 #if 0
 #define DEFINE_CHECK_ITER
 static void CHECK_ITER (MooFolderModel *model, GtkTreeIter *iter);
 #endif
-#endif /* MOO_DEBUG */
+#endif /* MOO_DEBUG_ENABLED */
 
 #ifndef DEFINE_CHECK_ITER
 #define CHECK_ITER(model,iter)
@@ -611,7 +611,7 @@ model_remove_moo_file (MooFile        *file,
 }
 
 
-#ifdef MOO_DEBUG
+#ifdef MOO_DEBUG_ENABLED
 #if 1
 #define CHECK_ORDER(order,n)                \
 G_STMT_START {                              \
@@ -626,7 +626,7 @@ G_STMT_START {                              \
     g_free (check);                         \
 } G_STMT_END
 #endif
-#endif /* MOO_DEBUG */
+#endif /* MOO_DEBUG_ENABLED */
 #ifndef CHECK_ORDER
 #define CHECK_ORDER(order,n)
 #endif

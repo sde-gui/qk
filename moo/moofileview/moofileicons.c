@@ -18,13 +18,15 @@
 #include "moofileview/moofileicons.h"
 #include "moofileview/symlink.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-debug.h"
 #include "mooutils/moostock.h"
 #include "mooutils/xdgmime/xdgmime.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
-#define DEBUG_MESSAGES 0
 #define MOO_ICON_EMBLEM_LEN 2
+
+MOO_DEBUG_INIT(icons, FALSE)
 
 typedef struct {
     GdkPixbuf **special_icons[MOO_ICON_INVALID];
@@ -409,8 +411,7 @@ get_named_icon (GtkIconTheme *icon_theme,
     if (pixbuf && (gdk_pixbuf_get_width (pixbuf) < 5 ||
                    gdk_pixbuf_get_height (pixbuf) < 5))
     {
-        if (DEBUG_MESSAGES)
-            _moo_message ("%s: got zero size icon '%s'", G_STRLOC, icon_name);
+        moo_dmsg ("%s: got zero size icon '%s'", G_STRLOC, icon_name);
         g_object_unref (pixbuf);
         pixbuf = NULL;
     }
@@ -446,8 +447,8 @@ create_named_icon (GtkIconTheme   *icon_theme,
     {
         pixbuf = get_named_icon (icon_theme, name, pixel_size);
 
-        if (!pixbuf && DEBUG_MESSAGES)
-            _moo_message ("could not load '%s' icon", name);
+        if (!pixbuf)
+            moo_dmsg ("could not load '%s' icon", name);
     }
 
     va_end (args);
@@ -455,8 +456,8 @@ create_named_icon (GtkIconTheme   *icon_theme,
     if (!pixbuf && fallback_stock)
     {
         pixbuf = gtk_widget_render_icon (widget, fallback_stock, size, NULL);
-        if (!pixbuf && DEBUG_MESSAGES)
-            _moo_message ("could not load stock '%s' icon", fallback_stock);
+        if (!pixbuf)
+            moo_dmsg ("could not load stock '%s' icon", fallback_stock);
     }
 
     if (!pixbuf)
@@ -596,8 +597,8 @@ create_mime_icon_type (GtkIconTheme *icon_theme,
         icon_name = g_string_new ("gnome-mime-");
         g_string_append_len (icon_name, mime_type, separator - mime_type);
         pixbuf = get_named_icon (icon_theme, icon_name->str, pixel_size);
-        if (DEBUG_MESSAGES && pixbuf)
-            _moo_message ("got icon '%s' for mime type '%s'", icon_name->str, mime_type);
+        if (pixbuf)
+            moo_dmsg ("got icon '%s' for mime type '%s'", icon_name->str, mime_type);
         g_string_free (icon_name, TRUE);
     }
 
@@ -616,8 +617,8 @@ create_mime_icon_type (GtkIconTheme *icon_theme,
         /* foo */
         icon_name = g_string_new_len (mime_type, separator - mime_type);
         pixbuf = get_named_icon (icon_theme, icon_name->str, pixel_size);
-        if (DEBUG_MESSAGES && pixbuf)
-            _moo_message ("got icon '%s' for mime type '%s'", icon_name->str, mime_type);
+        if (pixbuf)
+            moo_dmsg ("got icon '%s' for mime type '%s'", icon_name->str, mime_type);
         g_string_free (icon_name, TRUE);
     }
 
@@ -649,8 +650,8 @@ create_mime_icon_exact (GtkIconTheme *icon_theme,
         g_string_append_c (icon_name, '-');
         g_string_append (icon_name, separator + 1);
         pixbuf = get_named_icon (icon_theme, icon_name->str, pixel_size);
-        if (DEBUG_MESSAGES && pixbuf)
-            _moo_message ("got icon '%s' for mime type '%s'", icon_name->str, mime_type);
+        if (pixbuf)
+            moo_dmsg ("got icon '%s' for mime type '%s'", icon_name->str, mime_type);
         g_string_free (icon_name, TRUE);
     }
 
@@ -662,8 +663,8 @@ create_mime_icon_exact (GtkIconTheme *icon_theme,
         g_string_append_c (icon_name, '-');
         g_string_append (icon_name, separator + 1);
         pixbuf = get_named_icon (icon_theme, icon_name->str, pixel_size);
-        if (DEBUG_MESSAGES && pixbuf)
-            _moo_message ("got icon '%s' for mime type '%s'", icon_name->str, mime_type);
+        if (pixbuf)
+            moo_dmsg ("got icon '%s' for mime type '%s'", icon_name->str, mime_type);
         g_string_free (icon_name, TRUE);
     }
 
@@ -688,21 +689,20 @@ create_mime_icon (GtkWidget    *widget,
     {
         pixbuf = get_named_icon (icon_theme, "unknown", pixel_size);
 
-        if (DEBUG_MESSAGES && pixbuf)
-            _moo_message ("got 'unknown' icon for '%s'", mime_type);
+        if (pixbuf)
+            moo_dmsg ("got 'unknown' icon for '%s'", mime_type);
 
         if (!pixbuf)
         {
             pixbuf = create_special_icon (widget, MOO_ICON_FILE, size);
 
-            if (DEBUG_MESSAGES && pixbuf)
-                _moo_message ("got FILE icon for '%s'", mime_type);
+            if (pixbuf)
+                moo_dmsg ("got FILE icon for '%s'", mime_type);
         }
 
         if (!pixbuf)
         {
-            if (DEBUG_MESSAGES)
-                _moo_message ("getting fallback icon for mime type '%s'", mime_type);
+            moo_dmsg ("getting fallback icon for mime type '%s'", mime_type);
             pixbuf = create_fallback_icon (widget, size);
         }
 
@@ -723,8 +723,8 @@ create_mime_icon (GtkWidget    *widget,
             for (p = parent_types; *p && !pixbuf; ++p)
             {
                 pixbuf = create_mime_icon (widget, *p, size);
-                if (DEBUG_MESSAGES && pixbuf)
-                    _moo_message ("used mime type '%s' icon for '%s'", *p, mime_type);
+                if (pixbuf)
+                    moo_dmsg ("used mime type '%s' icon for '%s'", *p, mime_type);
             }
 
             g_free (parent_types);

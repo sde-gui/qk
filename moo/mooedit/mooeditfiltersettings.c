@@ -16,9 +16,11 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-debug.h"
 #include <glib/gregex.h>
 #include <string.h>
 
+MOO_DEBUG_INIT(filters, FALSE)
 
 #define ELEMENT_FILTER_SETTINGS MOO_EDIT_PREFS_PREFIX "/filter-settings"
 #define ELEMENT_SETTING         "setting"
@@ -205,10 +207,9 @@ filter_setting_match (FilterSetting *setting,
 {
     if (g_regex_match (setting->regex, filename, 0, NULL))
     {
-        if (0)
-            _moo_message ("file '%s' matched pattern '%s': config '%s'",
-                          filename, g_regex_get_pattern (setting->regex),
-                          setting->config);
+        moo_dmsg ("file '%s' matched pattern '%s': config '%s'",
+                  filename, g_regex_get_pattern (setting->regex),
+                  setting->config);
         return setting->config;
     }
 

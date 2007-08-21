@@ -51,10 +51,10 @@ G_BEGIN_DECLS
 
 #define SCROLL_GRANULARITY          3
 
-#ifdef MOO_DEBUG
+#ifdef MOO_DEBUG_ENABLED
 #define DEFAULT_MONOSPACE_FONT "Courier New 11"
 #else
-#define DEFAULT_MONOSPACE_FONT "Monospace 10"
+#define DEFAULT_MONOSPACE_FONT "Monospace"
 #endif
 
 

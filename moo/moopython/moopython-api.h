@@ -520,7 +520,7 @@ moo_python_api_init (void)
 
     api.py_none = (gpointer) Py_None;
 
-#ifndef MOO_DEBUG
+#ifndef MOO_DEBUG_ENABLED
     api.py_true = (MooPyObject*) Py_True;
     api.py_false = (MooPyObject*) Py_False;
 #else

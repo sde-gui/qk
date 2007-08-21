@@ -21,6 +21,7 @@
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-debug.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 

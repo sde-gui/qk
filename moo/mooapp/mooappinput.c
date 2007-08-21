@@ -50,7 +50,9 @@
 #include "mooapp/mooapp-private.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-thread.h"
+#include "mooutils/mooutils-debug.h"
 
+MOO_DEBUG_INIT(input, TRUE)
 
 #define MAX_BUFFER_SIZE 4096
 
@@ -138,7 +140,7 @@ commit (GString **buffer)
 
     if (!(*buffer)->len)
     {
-        _moo_message ("%s: got empty command", G_STRLOC);
+        moo_dmsg ("%s: got empty command", G_STRLOC);
         return;
     }
 
@@ -244,11 +246,11 @@ try_send (const char *pipe_dir_name,
     g_return_val_if_fail (name && name[0], FALSE);
 
     filename = get_pipe_path (pipe_dir_name, name);
-    _moo_message ("try_send: sending data to `%s'", filename);
+    moo_dmsg ("try_send: sending data to `%s'", filename);
 
     if (!g_file_test (filename, G_FILE_TEST_EXISTS))
     {
-        _moo_message ("try_send: file %s doesn't exist", filename);
+        moo_dmsg ("try_send: file %s doesn't exist", filename);
         goto out;
     }
 
@@ -273,7 +275,7 @@ _moo_app_input_send_msg (const char *appname,
     g_return_val_if_fail (appname != NULL, FALSE);
     g_return_val_if_fail (data != NULL, FALSE);
 
-    _moo_message ("_moo_app_input_send_msg: sending data to %s", name ? name : "NONE");
+    moo_dmsg ("_moo_app_input_send_msg: sending data to %s", name ? name : "NONE");
 
     pipe_dir_name = get_pipe_dir (appname);
     g_return_val_if_fail (pipe_dir_name != NULL, FALSE);
@@ -445,8 +447,8 @@ read_input (G_GNUC_UNUSED GIOChannel *source,
 
     if (condition & (G_IO_ERR | G_IO_HUP))
     {
-        _moo_message ("%s: %s", G_STRLOC,
-                      (condition & G_IO_ERR) ? "G_IO_ERR" : "G_IO_HUP");
+        moo_dmsg ("%s: %s", G_STRLOC,
+                  (condition & G_IO_ERR) ? "G_IO_ERR" : "G_IO_HUP");
         goto remove;
     }
 
@@ -466,9 +468,9 @@ read_input (G_GNUC_UNUSED GIOChannel *source,
     if (n <= 0)
     {
         if (n < 0)
-            _moo_message ("%s: %s", G_STRLOC, g_strerror (errno));
+            moo_dmsg ("%s: %s", G_STRLOC, g_strerror (errno));
         else
-            _moo_message ("%s: EOF", G_STRLOC);
+            moo_dmsg ("%s: EOF", G_STRLOC);
         goto remove;
     }
 
@@ -880,9 +882,8 @@ input_channel_start (InputChannel *ch,
         return FALSE;
     }
 
-    if (0)
-        _moo_message ("%s: opened input pipe %s with fd %d",
-                      G_STRLOC, ch->path, ch->fd);
+    moo_dmsg ("%s: opened input pipe %s with fd %d",
+              G_STRLOC, ch->path, ch->fd);
 
     if (!input_channel_start_io (ch->fd, (GIOFunc) read_input, ch,
                                  &ch->io, &ch->io_watch))
@@ -945,11 +946,11 @@ do_send (const char *filename,
     gboolean result = FALSE;
     int fd;
 
-    _moo_message ("do_send: sending data to `%s'", filename);
+    moo_dmsg ("do_send: sending data to `%s'", filename);
 
     if (!g_file_test (filename, G_FILE_TEST_EXISTS))
     {
-        _moo_message ("do_send: file `%s' doesn't exist", filename);
+        moo_dmsg ("do_send: file `%s' doesn't exist", filename);
         return FALSE;
     }
 
@@ -957,7 +958,7 @@ do_send (const char *filename,
 
     if (fd == -1)
     {
-        _moo_message ("do_send: could not open `%s': %s", filename, g_strerror (errno));
+        moo_dmsg ("do_send: could not open `%s': %s", filename, g_strerror (errno));
         return FALSE;
     }
 
@@ -965,7 +966,7 @@ do_send (const char *filename,
     close (fd);
 
     if (result)
-        _moo_message ("do_send: successfully sent stuff to `%s'", filename);
+        moo_dmsg ("do_send: successfully sent stuff to `%s'", filename);
 
     return result;
 }

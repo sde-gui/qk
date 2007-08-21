@@ -94,9 +94,9 @@ endif
 if MOO_ENABLE_TESTS
 export_flags = -export-symbols-regex ".*"
 else
-if MOO_DEBUG # && !MOO_ENABLE_TESTS
+if MOO_DEBUG_ENABLED # && !MOO_ENABLE_TESTS
 export_flags = -export-symbols-regex ".*"
-else # !MOO_DEBUG && !MOO_ENABLE_TESTS
+else # !MOO_DEBUG_ENABLED && !MOO_ENABLE_TESTS
 export_flags = -export-symbols-regex "^(moo_).*"
 endif
 endif

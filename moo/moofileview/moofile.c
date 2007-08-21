@@ -25,6 +25,7 @@
 #include "moofileview/moofileicons.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-debug.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/xdgmime/xdgmime.h"
@@ -81,8 +82,7 @@ _moo_file_find_mime_type (MooFile    *file,
     if (!file->mime_type || !file->mime_type[0])
     {
         /* this should not happen */
-        if (1)
-            _moo_message ("%s: oops, %s", G_STRLOC, file->display_name);
+        _moo_message ("%s: oops, %s", G_STRLOC, file->display_name);
         file->mime_type = MIME_TYPE_UNKNOWN;
     }
 

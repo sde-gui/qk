@@ -129,7 +129,7 @@ set_modified (MooMarkupNode *node,
 {
     if (node->doc)
     {
-#ifdef MOO_DEBUG
+#ifdef MOO_DEBUG_ENABLED
         if (modified && !node->doc->modified && node->doc->track_modified)
         {
             g_message ("markup doc %s modified",

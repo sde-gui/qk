@@ -50,7 +50,7 @@ typedef enum
     CHECK_ITER(iter__)
 
 
-#ifdef MOO_DEBUG
+#ifdef MOO_DEBUG_ENABLED
 static void CHECK_ITER (const MooTermIter *iter)
 {
     g_assert (iter->term != NULL);

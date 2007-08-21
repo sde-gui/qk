@@ -23,6 +23,7 @@
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-debug.h"
 #include <string.h>
 #include <gmodule.h>
 #include <gobject/gvaluecollector.h>

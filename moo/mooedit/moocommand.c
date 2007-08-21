@@ -23,9 +23,8 @@
 #include "mooedit/mooeditwindow.h"
 #include "mooedit/moooutputfilterregex.h"
 #include "mooedit/mooedit-enums.h"
-#include "mooutils/mooutils-misc.h"
-#include <gtk/gtkwindow.h>
-#include <gtk/gtktextview.h>
+#include "mooutils/mooutils-debug.h"
+#include <gtk/gtk.h>
 #include <string.h>
 
 

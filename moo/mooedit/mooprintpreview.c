@@ -21,7 +21,10 @@
 #include "mooedit/mooprintpreview-glade.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-debug.h"
 #include <cairo-pdf.h>
+
+MOO_DEBUG_INIT(printing, TRUE)
 
 #ifdef __WIN32__
 #define WIN32_LEAN_AND_MEAN
@@ -367,9 +370,9 @@ moo_print_preview_set_zoom (MooPrintPreview *preview,
     gtk_widget_queue_draw (preview->priv->darea);
 
     if (zoom_to_fit)
-        _moo_message ("zoom_to_fit");
+        moo_dmsg ("zoom_to_fit");
     else
-        _moo_message ("zoom: %s", zoom_factor_names[zoom]);
+        moo_dmsg ("zoom: %s", zoom_factor_names[zoom]);
 }
 
 static void
@@ -393,9 +396,9 @@ moo_print_preview_zoom_in (MooPrintPreview *preview,
     g_return_if_fail (change == -1 || change == 1);
 
     if (change < 0)
-        _moo_message ("zoom out");
+        moo_dmsg ("zoom out");
     else
-        _moo_message ("zoom in");
+        moo_dmsg ("zoom in");
 }
 
 

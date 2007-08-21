@@ -19,6 +19,7 @@
 #include "mooedit/mooeditaction-factory.h"
 #include "mooedit/mookeyfile.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-debug.h"
 #include "mooutils/mooaccel.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooaction-private.h"

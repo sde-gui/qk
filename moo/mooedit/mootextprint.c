@@ -23,6 +23,7 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-debug.h"
 #include <sys/types.h>
 #include <time.h>
 #include <errno.h>
@@ -32,6 +33,8 @@
 #include <windows.h>
 #include <cairo-win32.h>
 #endif
+
+MOO_DEBUG_INIT(printing, TRUE)
 
 #define SEPARATOR_POINTS 1.
 
@@ -343,7 +346,7 @@ moo_print_operation_finalize (GObject *object)
     g_free (op->priv->tm);
     g_free (op->priv);
 
-    _moo_message ("moo_print_operation_finalize");
+    moo_dmsg ("moo_print_operation_finalize");
 
     G_OBJECT_CLASS(_moo_print_operation_parent_class)->finalize (object);
 }
@@ -454,7 +457,7 @@ _moo_print_operation_init (MooPrintOperation *op)
 {
     op->priv = g_new0 (MooPrintOperationPrivate, 1);
 
-    _moo_message ("_moo_print_operation_init");
+    moo_dmsg ("_moo_print_operation_init");
 
     gtk_print_operation_set_print_settings (GTK_PRINT_OPERATION (op),
                                             global_print_settings);
@@ -536,7 +539,7 @@ _moo_edit_page_setup (GtkWidget *parent)
 
     g_return_if_fail (!parent || GTK_IS_WIDGET (parent));
 
-    _moo_message ("_moo_edit_page_setup");
+    moo_dmsg ("_moo_edit_page_setup");
 
     if (parent)
         parent = gtk_widget_get_toplevel (parent);
@@ -694,10 +697,10 @@ moo_print_operation_calc_page_size (MooPrintOperation    *op,
     page->text_x = page->x;
     page->text_width = page->width;
 
-    _moo_message ("page size: %f, %f - %f in, %f in",
-                  page->width, page->height,
-                  page->width / gtk_print_context_get_dpi_x (context),
-                  page->height / gtk_print_context_get_dpi_y (context));
+    moo_dmsg ("page size: %f, %f - %f in, %f in",
+              page->width, page->height,
+              page->width / gtk_print_context_get_dpi_x (context),
+              page->height / gtk_print_context_get_dpi_y (context));
 
     header_footer_get_size (settings->header, op, context,
                             default_font, MOO_PRINT_HEADER);
@@ -726,10 +729,10 @@ moo_print_operation_calc_page_size (MooPrintOperation    *op,
         page->height = gtk_print_context_get_height (context);
     }
 
-    _moo_message ("printable area size: %f, %f - %f in, %f in",
-                  page->width, page->height,
-                  page->width / gtk_print_context_get_dpi_x (context),
-                  page->height / gtk_print_context_get_dpi_y (context));
+    moo_dmsg ("printable area size: %f, %f - %f in, %f in",
+              page->width, page->height,
+              page->width / gtk_print_context_get_dpi_x (context),
+              page->height / gtk_print_context_get_dpi_y (context));
 
     if (GET_OPTION (op, MOO_PRINT_LINE_NUMBERS))
         create_ln_layout (op, context, default_font);
@@ -768,8 +771,8 @@ moo_print_operation_paginate (MooPrintOperation *op)
     int line_no;
     int offset;
 
-    _moo_message ("moo_print_operation_paginate");
-    _moo_message ("page height: %f", op->priv->page.height);
+    moo_dmsg ("moo_print_operation_paginate");
+    moo_dmsg ("page height: %f", op->priv->page.height);
 
     if (op->priv->pages)
         g_array_free (op->priv->pages, TRUE);
@@ -870,7 +873,7 @@ moo_print_operation_paginate (MooPrintOperation *op)
 
     gtk_print_operation_set_n_pages (GTK_PRINT_OPERATION (op), op->priv->pages->len);
 
-    _moo_message ("moo_print_operation_paginate done");
+    moo_dmsg ("moo_print_operation_paginate done");
 }
 
 
@@ -923,7 +926,7 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
     g_return_if_fail (op->priv->first_line < gtk_text_buffer_get_line_count (op->priv->buffer));
     g_return_if_fail (op->priv->last_line < gtk_text_buffer_get_line_count (op->priv->buffer));
 
-    _moo_message ("moo_print_operation_begin_print");
+    moo_dmsg ("moo_print_operation_begin_print");
 
     moo_print_operation_load_prefs (op);
     settings = op->priv->settings;
@@ -993,8 +996,8 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
 
     moo_print_operation_paginate (op);
 
-    _moo_message ("begin_print: %d pages in %f s", op->priv->pages->len,
-                  g_timer_elapsed (timer, NULL));
+    moo_dmsg ("begin_print: %d pages in %f s", op->priv->pages->len,
+              g_timer_elapsed (timer, NULL));
     g_timer_destroy (timer);
 
     if (!op->priv->tm)
@@ -1021,7 +1024,7 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
     if (op->priv->preview)
         _moo_print_preview_start (op->priv->preview);
 
-    _moo_message ("moo_print_operation_begin_print done");
+    moo_dmsg ("moo_print_operation_begin_print done");
 }
 
 
@@ -1187,7 +1190,7 @@ fill_layout (MooPrintOperation *op,
     segm_start = *start;
     start_index = gtk_text_iter_get_line_index (start);
 #if 0
-    _moo_message ("line %d, start at %d\n", gtk_text_iter_get_line (start), start_index);
+    moo_dmsg ("line %d, start at %d\n", gtk_text_iter_get_line (start), start_index);
 #endif
 
     while (gtk_text_iter_compare (&segm_start, end) < 0)
@@ -1358,7 +1361,7 @@ print_page (MooPrintOperation *op,
     double offset;
     int line_no;
 
-    _moo_message ("print_page %d", page);
+    moo_dmsg ("print_page %d", page);
 
     cairo_set_source_rgb (cr, 0., 0., 0.);
 
@@ -1417,7 +1420,7 @@ print_page (MooPrintOperation *op,
         line_no += 1;
     }
 
-    _moo_message ("print_page done");
+    moo_dmsg ("print_page done");
 }
 
 
@@ -1468,7 +1471,7 @@ moo_print_operation_draw_page (GtkPrintOperation *operation,
     }
 #endif
 
-#if 0 && defined(MOO_DEBUG) && !defined(__WIN32__)
+#if 0 && defined(MOO_DEBUG_ENABLED) && !defined(__WIN32__)
     cairo_save (cr);
     cairo_set_line_width (cr, 1.);
     cairo_set_source_rgb (cr, 1., 0., 0.);
@@ -1495,7 +1498,7 @@ moo_print_operation_draw_page (GtkPrintOperation *operation,
         pango_cairo_update_layout (cr, op->priv->settings->footer->layout);
     print_page (op, &start, &end, page, cr);
 
-    _moo_message ("page %d: %f s", page, g_timer_elapsed (timer, NULL));
+    moo_dmsg ("page %d: %f s", page, g_timer_elapsed (timer, NULL));
     g_timer_destroy (timer);
 }
 
@@ -1508,7 +1511,7 @@ moo_print_operation_end_print (GtkPrintOperation  *operation,
 
     g_return_if_fail (op->priv->buffer != NULL);
 
-    _moo_message ("moo_print_operation_end_print");
+    moo_dmsg ("moo_print_operation_end_print");
 
     if (MOO_IS_EDIT (op->priv->doc))
         _moo_edit_set_state (MOO_EDIT (op->priv->doc),
@@ -1987,13 +1990,13 @@ moo_print_operation_preview (GtkPrintOperation        *op,
 {
     GtkWidget *dialog;
 
-    _moo_message ("moo_print_operation_preview");
+    moo_dmsg ("moo_print_operation_preview");
 
     dialog = _moo_print_preview_new (MOO_PRINT_OPERATION (op), preview, context);
     gtk_widget_show (dialog);
     g_signal_connect_swapped (dialog, "response", G_CALLBACK (preview_response), op);
 
-    _moo_message ("moo_print_operation_preview done");
+    moo_dmsg ("moo_print_operation_preview done");
 
     return TRUE;
 }

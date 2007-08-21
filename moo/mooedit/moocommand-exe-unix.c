@@ -22,6 +22,7 @@
 #include "mooutils/mooglade.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-debug.h"
 #include "mooutils/moospawn.h"
 #include "mooutils/mootype-macros.h"
 #include <gtk/gtk.h>

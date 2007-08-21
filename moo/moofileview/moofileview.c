@@ -34,6 +34,7 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-debug.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moofiltermgr.h"
 #include "mooutils/moouixml.h"
