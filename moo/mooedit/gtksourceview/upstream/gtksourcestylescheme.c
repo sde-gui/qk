@@ -36,10 +36,9 @@
 #define STYLE_CURRENT_LINE		"current-line"
 #define STYLE_LINE_NUMBERS		"line-numbers"
 
-#define STYLE_SCHEME_VERSION	"1.0"
+#define STYLE_SCHEME_VERSION		"1.0"
 
-static const gchar *get_color_by_name  (GtkSourceStyleScheme *scheme,
-					const gchar          *name);
+#define DEFAULT_STYLE_SCHEME		"classic"
 
 
 enum {
@@ -309,94 +308,6 @@ _gtk_source_style_scheme_new (const gchar *id,
 	return scheme;
 }
 
-static GtkSourceStyle *
-fix_style_colors (GtkSourceStyleScheme *scheme,
-		  GtkSourceStyle       *real_style)
-{
-	GtkSourceStyle *style;
-
-	style = gtk_source_style_copy (real_style);
-
-	if (style->mask & GTK_SOURCE_STYLE_USE_BACKGROUND)
-	{
-		const gchar *color = get_color_by_name (scheme, style->background);
-
-		if (color == NULL)
-			/* warning is spit out in get_color_by_name,
-			 * here we make sure style doesn't have NULL color */
-			style->mask &= ~GTK_SOURCE_STYLE_USE_BACKGROUND;
-		else
-			style->background = g_intern_string (color);
-	}
-
-	if (style->mask & GTK_SOURCE_STYLE_USE_FOREGROUND)
-	{
-		const gchar *color = get_color_by_name (scheme, style->foreground);
-
-		if (color == NULL)
-			style->mask &= ~GTK_SOURCE_STYLE_USE_FOREGROUND;
-		else
-			style->foreground = g_intern_string (color);
-	}
-
-	return style;
-}
-
-/**
- * gtk_source_style_scheme_get_style:
- * @scheme: a #GtkSourceStyleScheme.
- * @style_id: id of the style to retrieve.
- *
- * Returns: style which corresponds to @style_id in the @scheme,
- * or %NULL when no style with this name found. It is owned by @scheme
- * and may not be unref'ed.
- *
- * Since: 2.0
- */
-/*
- * It's a little weird because we have named colors: styles loaded from
- * scheme file can have "#red" or "blue", and we want to give out styles
- * which have nice colors suitable for gdk_color_parse(), so that GtkSourceStyle
- * foreground and background properties are the same as GtkTextTag's.
- * So, defined_styles hash has named colors; styles returned with get_style()
- * have real colors.
- */
-GtkSourceStyle *
-gtk_source_style_scheme_get_style (GtkSourceStyleScheme *scheme,
-				   const gchar          *style_id)
-{
-	GtkSourceStyle *style = NULL;
-	GtkSourceStyle *real_style;
-
-	g_return_val_if_fail (GTK_IS_SOURCE_STYLE_SCHEME (scheme), NULL);
-	g_return_val_if_fail (style_id != NULL, NULL);
-
-	if (g_hash_table_lookup_extended (scheme->priv->style_cache, style_id,
-					  NULL, (gpointer) &style))
-		return style;
-
-	real_style = g_hash_table_lookup (scheme->priv->defined_styles, style_id);
-
-	if (real_style == NULL)
-	{
-		if (scheme->priv->parent != NULL)
-			style = gtk_source_style_scheme_get_style (scheme->priv->parent,
-								   style_id);
-		if (style != NULL)
-			g_object_ref (style);
-	}
-	else
-	{
-		style = fix_style_colors (scheme, real_style);
-	}
-
-	g_hash_table_insert (scheme->priv->style_cache,
-			     g_strdup (style_id),
-			     style);
-
-	return style;
-}
-
 /**
  * get_color_by_name:
  * @scheme: a #GtkSourceStyleScheme.
@@ -440,6 +351,100 @@ get_color_by_name (GtkSourceStyleScheme *scheme,
 	}
 
 	return color;
+}
+
+static GtkSourceStyle *
+fix_style_colors (GtkSourceStyleScheme *scheme,
+		  GtkSourceStyle       *real_style)
+{
+	GtkSourceStyle *style;
+	guint i;
+	struct {
+		guint mask;
+		guint offset;
+	} attributes[] = {
+		{ GTK_SOURCE_STYLE_USE_BACKGROUND, G_STRUCT_OFFSET (GtkSourceStyle, background) },
+		{ GTK_SOURCE_STYLE_USE_FOREGROUND, G_STRUCT_OFFSET (GtkSourceStyle, foreground) },
+		{ GTK_SOURCE_STYLE_USE_LINE_BACKGROUND, G_STRUCT_OFFSET (GtkSourceStyle, line_background) }
+	};
+
+	style = gtk_source_style_copy (real_style);
+
+	for (i = 0; i < G_N_ELEMENTS (attributes); i++)
+	{
+		if (style->mask & attributes[i].mask)
+		{
+			const gchar **attr = G_STRUCT_MEMBER_P (style, attributes[i].offset);
+			const gchar *color = get_color_by_name (scheme, *attr);
+
+			if (color == NULL)
+				/* warning is spit out in get_color_by_name,
+				 * here we make sure style doesn't have NULL color */
+				style->mask &= ~attributes[i].mask;
+			else
+				*attr = g_intern_string (color);
+		}
+	}
+
+	return style;
+}
+
+/**
+ * gtk_source_style_scheme_get_style:
+ * @scheme: a #GtkSourceStyleScheme.
+ * @style_id: id of the style to retrieve.
+ *
+ * Returns: style which corresponds to @style_id in the @scheme,
+ * or %NULL when no style with this name found. It is owned by @scheme
+ * and may not be unref'ed.
+ *
+ * Since: 2.0
+ */
+/*
+ * It's a little weird because we have named colors: styles loaded from
+ * scheme file can have "#red" or "blue", and we want to give out styles
+ * which have nice colors suitable for gdk_color_parse(), so that GtkSourceStyle
+ * foreground and background properties are the same as GtkTextTag's.
+ * Yet we do need to preserve what we got from file in style schemes,
+ * since there may be child schemes which may redefine colors or something,
+ * so we can't translate colors when loading scheme.
+ * So, defined_styles hash has named colors; styles returned with get_style()
+ * have real colors.
+ */
+GtkSourceStyle *
+gtk_source_style_scheme_get_style (GtkSourceStyleScheme *scheme,
+				   const gchar          *style_id)
+{
+	GtkSourceStyle *style = NULL;
+	GtkSourceStyle *real_style;
+
+	g_return_val_if_fail (GTK_IS_SOURCE_STYLE_SCHEME (scheme), NULL);
+	g_return_val_if_fail (style_id != NULL, NULL);
+
+	if (g_hash_table_lookup_extended (scheme->priv->style_cache, style_id,
+					  NULL, (gpointer) &style))
+		return style;
+
+	real_style = g_hash_table_lookup (scheme->priv->defined_styles, style_id);
+
+	if (real_style == NULL)
+	{
+		if (scheme->priv->parent != NULL)
+			style = gtk_source_style_scheme_get_style (scheme->priv->parent,
+								   style_id);
+		if (style != NULL)
+			g_object_ref (style);
+	}
+	else
+	{
+		style = fix_style_colors (scheme, real_style);
+	}
+
+	g_hash_table_insert (scheme->priv->style_cache,
+			     g_strdup (style_id),
+			     style);
+
+	return style;
 }
 
 #if 0
@@ -619,6 +624,10 @@ set_cursor_colors (GtkWidget      *widget,
 	if (strcmp (widget_name, gtk_widget_get_name (widget)) != 0)
 		gtk_widget_set_name (widget, widget_name);
 
+	g_object_set_data (G_OBJECT (widget),
+			   "gtk-source-view-cursor-color",
+			   GINT_TO_POINTER (TRUE));
+
 	g_free (rc_string);
 	g_free (widget_name);
 #else
@@ -630,9 +639,10 @@ static void
 unset_cursor_colors (GtkWidget *widget)
 {
 #if !GTK_CHECK_VERSION(2,11,3)
-	set_cursor_colors (widget,
-			   &widget->style->text[GTK_STATE_NORMAL],
-			   &widget->style->text_aa[GTK_STATE_NORMAL]);
+	if (g_object_get_data (G_OBJECT (widget), "gtk-source-view-cursor-color"))
+		set_cursor_colors (widget,
+				   &widget->style->text[GTK_STATE_NORMAL],
+				   &widget->style->text_aa[GTK_STATE_NORMAL]);
 #else
 	gtk_widget_modify_cursor (widget, NULL, NULL);
 #endif
@@ -754,7 +764,7 @@ parse_style (GtkSourceStyleScheme *scheme,
 {
 	GtkSourceStyle *use_style = NULL;
 	GtkSourceStyle *result = NULL;
-	xmlChar *fg = NULL, *bg = NULL;
+	xmlChar *fg = NULL, *bg = NULL, *line_bg = NULL;
 	gchar *style_name = NULL;
 	guint mask = 0;
 	gboolean bold = FALSE;
@@ -802,6 +812,7 @@ parse_style (GtkSourceStyleScheme *scheme,
 
 	fg = xmlGetProp (node, BAD_CAST "foreground");
 	bg = xmlGetProp (node, BAD_CAST "background");
+	line_bg = xmlGetProp (node, BAD_CAST "line-background");
 	get_bool (node, "italic", &mask, GTK_SOURCE_STYLE_USE_ITALIC, &italic);
 	get_bool (node, "bold", &mask, GTK_SOURCE_STYLE_USE_BOLD, &bold);
 	get_bool (node, "underline", &mask, GTK_SOURCE_STYLE_USE_UNDERLINE, &underline);
@@ -809,7 +820,7 @@ parse_style (GtkSourceStyleScheme *scheme,
 
 	if (use_style)
 	{
-		if (fg != NULL || bg != NULL || mask != 0)
+		if (fg != NULL || bg != NULL || line_bg != NULL || mask != 0)
 		{
 			g_set_error (error, ERROR_QUARK, 0,
 				     "in style '%s': style attributes used along with use-style",
@@ -844,6 +855,12 @@ parse_style (GtkSourceStyleScheme *scheme,
 		{
 			result->background = g_intern_string ((char*) bg);
 			result->mask |= GTK_SOURCE_STYLE_USE_BACKGROUND;
+		}
+
+		if (line_bg != NULL)
+		{
+			result->line_background = g_intern_string ((char*) line_bg);
+			result->mask |= GTK_SOURCE_STYLE_USE_LINE_BACKGROUND;
 		}
 	}
 
@@ -1129,5 +1146,6 @@ _gtk_source_style_scheme_get_default (void)
 
 	manager = gtk_source_style_manager_get_default ();
 
-	return gtk_source_style_manager_get_scheme (manager, "gvim");
+	return gtk_source_style_manager_get_scheme (manager,
+						    DEFAULT_STYLE_SCHEME);
 }

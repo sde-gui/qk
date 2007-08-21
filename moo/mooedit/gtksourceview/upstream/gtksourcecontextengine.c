@@ -396,7 +396,8 @@ struct _GtkSourceContextEnginePrivate
 
 	/* All tags indexed by style name: values are GSList's of tags, ref()'ed. */
 	GHashTable		*tags;
-	/* Number of all syntax tags created by the engine */
+	/* Number of all syntax tags created by the engine, needed to set correct
+	 * tag priorities */
 	guint			 n_tags;
 
 	/* Whether or not to actually highlight the buffer. */
