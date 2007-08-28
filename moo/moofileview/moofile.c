@@ -188,20 +188,24 @@ _moo_file_stat (MooFile    *file,
     {
         if (errno == ENOENT)
         {
-            gchar *display_name = g_filename_display_name (fullname);
-            _moo_message ("%s: file '%s' does not exist",
-                          G_STRLOC, display_name);
-            g_free (display_name);
+            MOO_DEBUG({
+                gchar *display_name = g_filename_display_name (fullname);
+                _moo_message ("%s: file '%s' does not exist",
+                              G_STRLOC, display_name);
+                g_free (display_name);
+            });
             file->info = 0;
         }
         else
         {
-            int save_errno = errno;
-            gchar *display_name = g_filename_display_name (fullname);
-            _moo_message ("%s: error getting information for '%s': %s",
-                          G_STRLOC, display_name,
-                          g_strerror (save_errno));
-            g_free (display_name);
+            MOO_DEBUG({
+                int save_errno = errno;
+                gchar *display_name = g_filename_display_name (fullname);
+                _moo_message ("%s: error getting information for '%s': %s",
+                              G_STRLOC, display_name,
+                              g_strerror (save_errno));
+                g_free (display_name);
+            });
             file->info = MOO_FILE_INFO_IS_LOCKED | MOO_FILE_INFO_EXISTS;
             file->flags = 0;
         }
@@ -221,20 +225,24 @@ _moo_file_stat (MooFile    *file,
             {
                 if (errno == ENOENT)
                 {
-                    gchar *display_name = g_filename_display_name (fullname);
-                    _moo_message ("%s: file '%s' is a broken link",
-                                  G_STRLOC, display_name);
-                    g_free (display_name);
+                    MOO_DEBUG({
+                        gchar *display_name = g_filename_display_name (fullname);
+                        _moo_message ("%s: file '%s' is a broken link",
+                                      G_STRLOC, display_name);
+                        g_free (display_name);
+                    });
                     file->info = MOO_FILE_INFO_IS_LINK;
                 }
                 else
                 {
-                    int save_errno = errno;
-                    gchar *display_name = g_filename_display_name (fullname);
-                    _moo_message ("%s: error getting information for '%s': %s",
-                                  G_STRLOC, display_name,
-                                  g_strerror (save_errno));
-                    g_free (display_name);
+                    MOO_DEBUG({
+                        int save_errno = errno;
+                        gchar *display_name = g_filename_display_name (fullname);
+                        _moo_message ("%s: error getting information for '%s': %s",
+                                      G_STRLOC, display_name,
+                                      g_strerror (save_errno));
+                        g_free (display_name);
+                    });
                     file->info = MOO_FILE_INFO_IS_LOCKED | MOO_FILE_INFO_EXISTS;
                     file->flags = 0;
                 }
@@ -244,12 +252,14 @@ _moo_file_stat (MooFile    *file,
 
             if (len == -1)
             {
-                int save_errno = errno;
-                gchar *display_name = g_filename_display_name (fullname);
-                _moo_message ("%s: error getting link target for '%s': %s",
-                              G_STRLOC, display_name,
-                              g_strerror (save_errno));
-                g_free (display_name);
+                MOO_DEBUG({
+                    int save_errno = errno;
+                    gchar *display_name = g_filename_display_name (fullname);
+                    _moo_message ("%s: error getting link target for '%s': %s",
+                                  G_STRLOC, display_name,
+                                  g_strerror (save_errno));
+                    g_free (display_name);
+                });
             }
             else
             {
