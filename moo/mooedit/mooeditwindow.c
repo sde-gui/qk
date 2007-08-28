@@ -1465,7 +1465,7 @@ create_bookmark_item (MooEditWindow   *window,
 
         if (action)
         {
-            g_object_set (action, "label", label, NULL);
+            g_object_set (action, "label", label, "use-underline", FALSE, NULL);
             item = gtk_action_create_menu_item (action);
         }
         else
