@@ -1128,7 +1128,13 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
     if (view->priv->qs.in_search)
         return FALSE;
 
-    if (!mods)
+    if (keyval == GDK_KP_Enter || keyval == GDK_Return)
+    {
+        gtk_text_buffer_begin_user_action (buffer);
+        handled = handle_enter (view, event);
+        gtk_text_buffer_end_user_action (buffer);
+    }
+    else if (!mods)
     {
         switch (keyval)
         {
@@ -1139,12 +1145,6 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
             case GDK_BackSpace:
                 gtk_text_buffer_begin_user_action (buffer);
                 handled = handle_backspace (view, event);
-                gtk_text_buffer_end_user_action (buffer);
-                break;
-            case GDK_KP_Enter:
-            case GDK_Return:
-                gtk_text_buffer_begin_user_action (buffer);
-                handled = handle_enter (view, event);
                 gtk_text_buffer_end_user_action (buffer);
                 break;
         }
@@ -1459,9 +1459,10 @@ handle_enter (MooTextView        *view,
     GtkTextBuffer *buffer;
     GtkTextIter start, end;
     gboolean has_selection;
+    gboolean indent;
 
-    if (!view->priv->indenter || !view->priv->enter_indents)
-        return FALSE;
+    indent = view->priv->indenter && view->priv->enter_indents &&
+             !(event->state & GDK_MODIFIER_MASK);
 
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
     has_selection = gtk_text_buffer_get_selection_bounds (buffer, &start, &end);
@@ -1470,9 +1471,12 @@ handle_enter (MooTextView        *view,
 
     if (has_selection)
         gtk_text_buffer_delete (buffer, &start, &end);
+
     /* XXX insert "\r\n" on windows? */
     gtk_text_buffer_insert (buffer, &start, "\n", 1);
-    moo_indenter_character (view->priv->indenter, '\n', &start);
+
+    if (indent)
+        moo_indenter_character (view->priv->indenter, '\n', &start);
 
     gtk_text_buffer_end_user_action (buffer);
 
