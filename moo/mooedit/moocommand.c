@@ -17,7 +17,7 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/moocommand-private.h"
-#include "mooedit/moocommand-script.h"
+#include "mooedit/moocommand-lua.h"
 #include "mooedit/moocommand-exe.h"
 #include "mooedit/moocommand-builtin.h"
 #include "mooedit/mooeditwindow.h"
@@ -1142,8 +1142,8 @@ _moo_command_init (void)
     if (!been_here)
     {
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_BUILTIN));
-#ifdef MOO_USE_OBJC
-        g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_SCRIPT));
+#ifdef MOO_BUILD_LUA
+        g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_LUA));
 #endif
 #ifndef __WIN32__
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_EXE));

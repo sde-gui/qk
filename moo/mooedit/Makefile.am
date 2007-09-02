@@ -8,11 +8,11 @@ moocommand-exe-private.lo: moocommand-exe-unix.lo
 moolangmgr-private.lo: moolangmgr.lo
 mootextview-private.lo: mootextview.lo
 
-objc_sources =				\
-	mooedit-script.h		\
-	mooedit-script.m		\
-	moocommand-script.h		\
-	moocommand-script.m
+lua_sources =				\
+	moocommand-lua.c		\
+	moocommand-lua.h		\
+	mooedit-lua.c			\
+	mooedit-lua.h
 
 unix_sources =				\
 	moocommand-exe-unix.c
@@ -224,10 +224,10 @@ else
 EXTRA_DIST += $(unix_sources)
 endif
 
-if MOO_USE_OBJC
-mooedit_sources += $(objc_sources)
+if MOO_BUILD_LUA
+mooedit_sources += $(lua_sources)
 else
-EXTRA_DIST += $(objc_sources)
+EXTRA_DIST += $(lua_sources)
 endif
 
 noinst_LTLIBRARIES = libmooedit.la
