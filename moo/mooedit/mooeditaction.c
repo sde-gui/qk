@@ -15,6 +15,7 @@
 #include "mooedit/mooeditaction.h"
 #include "mooedit/mooeditaction-factory.h"
 #include "mooedit/mooedit-private.h"
+#include "mooedit/mooeditfiltersettings.h"
 #include <glib/gregex.h>
 #include <string.h>
 
@@ -28,7 +29,7 @@ typedef enum {
 
 struct _MooEditActionPrivate {
     MooEdit *doc;
-    GSList *langs;
+    MooEditFilter *file_filter;
     GRegex *filters[N_FILTERS];
 };
 
@@ -48,7 +49,7 @@ G_DEFINE_TYPE (MooEditAction, moo_edit_action, MOO_TYPE_ACTION)
 enum {
     PROP_0,
     PROP_DOC,
-    PROP_LANGS,
+    PROP_FILE_FILTER,
     PROP_FILTER_SENSITIVE,
     PROP_FILTER_VISIBLE
 };
@@ -72,8 +73,7 @@ moo_edit_action_finalize (GObject *object)
         if (action->priv->filters[i])
             unuse_filter_regex (action->priv->filters[i]);
 
-    g_slist_foreach (action->priv->langs, (GFunc) g_free, NULL);
-    g_slist_free (action->priv->langs);
+    _moo_edit_filter_free (action->priv->file_filter);
 
     G_OBJECT_CLASS(moo_edit_action_parent_class)->finalize (object);
 }
@@ -118,20 +118,12 @@ moo_edit_action_get_property (GObject        *object,
 
 
 static void
-string_slist_free (GSList *list)
+moo_edit_action_set_file_filter (MooEditAction *action,
+                                 const char    *string)
 {
-    g_slist_foreach (list, (GFunc) g_free, NULL);
-    g_slist_free (list);
-}
-
-
-static void
-moo_edit_action_set_langs (MooEditAction *action,
-                           const char    *string)
-{
-    string_slist_free (action->priv->langs);
-    action->priv->langs = _moo_edit_parse_langs (string);
-    g_object_notify (G_OBJECT (action), "langs");
+    _moo_edit_filter_free (action->priv->file_filter);
+    action->priv->file_filter = _moo_edit_filter_new (string);
+    g_object_notify (G_OBJECT (action), "file-filter");
 }
 
 
@@ -173,8 +165,8 @@ moo_edit_action_set_property (GObject        *object,
             g_object_notify (object, "doc");
             break;
 
-        case PROP_LANGS:
-            moo_edit_action_set_langs (action, g_value_get_string (value));
+        case PROP_FILE_FILTER:
+            moo_edit_action_set_file_filter (action, g_value_get_string (value));
             break;
 
         case PROP_FILTER_SENSITIVE:
@@ -234,25 +226,18 @@ get_current_line (MooEdit *doc)
 static gboolean
 moo_edit_action_check_visible_real (MooEditAction *action)
 {
-    MooLang *lang;
     gboolean visible = TRUE;
     GRegex *filter = action->priv->filters[FILTER_VISIBLE];
 
     if (!action->priv->doc)
         return gtk_action_get_visible (GTK_ACTION (action));
 
-    if (!action->priv->langs && !filter)
+    if (!action->priv->file_filter && !filter)
         return gtk_action_get_visible (GTK_ACTION (action));
 
-    if (visible && action->priv->langs)
-    {
-        lang = moo_text_view_get_lang (MOO_TEXT_VIEW (action->priv->doc));
-
-        if (!g_slist_find_custom (action->priv->langs,
-                                  _moo_lang_id (lang),
-                                  (GCompareFunc) strcmp))
+    if (visible && action->priv->file_filter)
+        if (!_moo_edit_filter_match (action->priv->file_filter, action->priv->doc))
             visible = FALSE;
-    }
 
     if (visible && filter)
     {
@@ -315,10 +300,10 @@ moo_edit_action_class_init (MooEditActionClass *klass)
                                              G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
-                                     PROP_LANGS,
-                                     g_param_spec_string ("langs",
-                                             "langs",
-                                             "langs",
+                                     PROP_FILE_FILTER,
+                                     g_param_spec_string ("file-filter",
+                                             "file-filter",
+                                             "file-filter",
                                              NULL,
                                              G_PARAM_WRITABLE));
 

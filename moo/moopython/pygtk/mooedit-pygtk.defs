@@ -543,13 +543,13 @@
 )
 
 
-(define-function window_set_action_langs
-  (c-name "moo_edit_window_set_action_langs")
+(define-function window_set_action_filter
+  (c-name "moo_edit_window_set_action_filter")
   (return-type "none")
   (parameters
     '("const-char*" "action_id")
     '("MooActionCheckType" "type")
-    '("const-char*" "langs")
+    '("const-char*" "filter")
   )
 )
 

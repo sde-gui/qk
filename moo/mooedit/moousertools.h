@@ -48,7 +48,7 @@ typedef struct {
     char                *name;
     char                *accel;
     char                *menu;
-    char                *langs;
+    char                *filter;
     char                *options;
     MooUserToolPosition  position;
     MooUserToolOSType    os_type;

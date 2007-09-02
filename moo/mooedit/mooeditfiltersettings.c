@@ -14,11 +14,16 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooedit/mooeditprefs.h"
+#include "mooedit/mooeditaction.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
 #include <glib/gregex.h>
 #include <string.h>
+#ifndef __WIN32__
+#include <fnmatch.h>
+#endif
+
 
 MOO_DEBUG_INIT(filters, FALSE)
 
@@ -27,6 +32,20 @@ MOO_DEBUG_INIT(filters, FALSE)
 #define PROP_FILTER             "filter"
 #define PROP_CONFIG             "config"
 
+typedef enum {
+    MOO_EDIT_FILTER_LANGS,
+    MOO_EDIT_FILTER_GLOBS,
+    MOO_EDIT_FILTER_REGEX
+} MooEditFilterType;
+
+struct _MooEditFilter {
+    MooEditFilterType type;
+    union {
+        GSList *langs;
+        GSList *globs;
+        GRegex *regex;
+    } u;
+};
 
 typedef struct {
     GRegex *regex;
@@ -42,6 +61,211 @@ static FilterSettingsStore *settings_store;
 
 static char *filter_settings_store_get_setting (FilterSettingsStore *store,
                                                 const char          *filename);
+
+
+MooEditFilter *
+_moo_edit_filter_new (const char *string)
+{
+    g_return_val_if_fail (string && string[0], NULL);
+
+    if (!strncmp (string, "langs:", strlen ("langs:")))
+        return _moo_edit_filter_new_langs (string + strlen ("langs:"));
+    if (!strncmp (string, "globs:", strlen ("globs:")))
+        return _moo_edit_filter_new_globs (string + strlen ("globs:"));
+    if (!strncmp (string, "regex:", strlen ("regex:")))
+        return _moo_edit_filter_new_regex (string + strlen ("regex:"));
+
+    return _moo_edit_filter_new_globs (string);
+}
+
+MooEditFilter *
+_moo_edit_filter_new_langs (const char *string)
+{
+    MooEditFilter *filt;
+
+    g_return_val_if_fail (string != NULL, NULL);
+
+    filt = g_new0 (MooEditFilter, 1);
+    filt->type = MOO_EDIT_FILTER_LANGS;
+    filt->u.langs = _moo_edit_parse_langs (string);
+
+    return filt;
+}
+
+MooEditFilter *
+_moo_edit_filter_new_regex (const char *string)
+{
+    MooEditFilter *filt;
+    GRegex *regex;
+    GError *error = NULL;
+
+    g_return_val_if_fail (string != NULL, NULL);
+
+    regex = g_regex_new (string, G_REGEX_OPTIMIZE, 0, &error);
+
+    if (!regex)
+    {
+        g_warning ("%s: invalid regex '%s': %s", G_STRFUNC,
+                   string, error->message);
+        g_error_free (NULL);
+        return NULL;
+    }
+
+    filt = g_new0 (MooEditFilter, 1);
+    filt->type = MOO_EDIT_FILTER_REGEX;
+    filt->u.regex = regex;
+
+    return filt;
+}
+
+static GSList *
+parse_globs (const char *string)
+{
+    char **pieces, **p;
+    GSList *list = NULL;
+
+    if (!string)
+        return NULL;
+
+    pieces = g_strsplit_set (string, " \t\r\n;,", 0);
+
+    if (!pieces)
+        return NULL;
+
+    for (p = pieces; *p != NULL; ++p)
+    {
+        g_strstrip (*p);
+
+        if (**p)
+            list = g_slist_prepend (list, g_strdup (*p));
+    }
+
+    g_strfreev (pieces);
+    return g_slist_reverse (list);
+}
+
+MooEditFilter *
+_moo_edit_filter_new_globs (const char *string)
+{
+    MooEditFilter *filt;
+
+    g_return_val_if_fail (string != NULL, NULL);
+
+    filt = g_new0 (MooEditFilter, 1);
+    filt->type = MOO_EDIT_FILTER_GLOBS;
+    filt->u.globs = parse_globs (string);
+
+    return filt;
+}
+
+void
+_moo_edit_filter_free (MooEditFilter *filter)
+{
+    if (filter)
+    {
+        switch (filter->type)
+        {
+            case MOO_EDIT_FILTER_GLOBS:
+            case MOO_EDIT_FILTER_LANGS:
+                g_slist_foreach (filter->u.langs, (GFunc) g_free, NULL);
+                g_slist_free (filter->u.langs);
+                break;
+            case MOO_EDIT_FILTER_REGEX:
+                g_regex_unref (filter->u.regex);
+                break;
+        }
+
+        g_free (filter);
+    }
+}
+
+
+static gboolean
+moo_edit_filter_check_globs (GSList  *globs,
+                             MooEdit *doc)
+{
+    char *name = NULL;
+
+    name = moo_edit_get_filename (doc);
+
+    if (name)
+    {
+        char *tmp = name;
+        name = g_path_get_basename (tmp);
+        g_free (tmp);
+    }
+
+    while (globs)
+    {
+        if (name)
+        {
+            if (fnmatch (globs->data, name, 0) == 0)
+            {
+                g_free (name);
+                return TRUE;
+            }
+        }
+        else
+        {
+            if (!strcmp (globs->data, "*"))
+                return TRUE;
+        }
+
+        globs = globs->next;
+    }
+
+    g_free (name);
+    return FALSE;
+}
+
+static gboolean
+moo_edit_filter_check_langs (GSList  *langs,
+                             MooEdit *doc)
+{
+    MooLang *lang;
+    const char *id;
+
+    lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
+    id = _moo_lang_id (lang);
+
+    while (langs)
+    {
+        if (!strcmp (langs->data, id))
+            return TRUE;
+        langs = langs->next;
+    }
+
+    return FALSE;
+}
+
+static gboolean
+moo_edit_filter_check_regex (GRegex  *regex,
+                             MooEdit *doc)
+{
+    const char *name = moo_edit_get_display_name (doc);
+    g_return_val_if_fail (name != NULL, FALSE);
+    return g_regex_match (regex, name, 0, NULL);
+}
+
+gboolean
+_moo_edit_filter_match (MooEditFilter *filter,
+                        MooEdit       *doc)
+{
+    g_return_val_if_fail (filter != NULL, FALSE);
+    g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
+
+    switch (filter->type)
+    {
+        case MOO_EDIT_FILTER_GLOBS:
+            return moo_edit_filter_check_globs (filter->u.globs, doc);
+        case MOO_EDIT_FILTER_LANGS:
+            return moo_edit_filter_check_langs (filter->u.langs, doc);
+        case MOO_EDIT_FILTER_REGEX:
+            return moo_edit_filter_check_regex (filter->u.regex, doc);
+    }
+
+    g_return_val_if_reached (FALSE);
+}
 
 
 static void

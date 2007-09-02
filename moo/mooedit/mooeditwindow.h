@@ -73,9 +73,9 @@ void         moo_edit_window_set_action_check       (const char     *action_id,
                                                      MooActionCheckFunc func,
                                                      gpointer        data,
                                                      GDestroyNotify  notify);
-void         moo_edit_window_set_action_langs       (const char     *action_id,
+void         moo_edit_window_set_action_filter      (const char     *action_id,
                                                      MooActionCheckType type,
-                                                     const char     *langs);
+                                                     const char     *filter);
 
 MooEdit     *moo_edit_window_get_active_doc         (MooEditWindow  *window);
 void         moo_edit_window_set_active_doc         (MooEditWindow  *window,

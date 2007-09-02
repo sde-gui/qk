@@ -19,6 +19,7 @@
 #include "mooedit/statusbar-glade.h"
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditor-private.h"
+#include "mooedit/mooeditfiltersettings.h"
 #include "mooedit/moolang.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/mooeditprefs.h"
@@ -129,7 +130,7 @@ static void     moo_edit_window_get_property    (GObject            *object,
                                                  GParamSpec         *pspec);
 
 
-static gboolean moo_edit_window_close           (MooEditWindow      *window);
+static gboolean moo_edit_window_close           (MooWindow          *window);
 
 static void     setup_notebook                  (MooEditWindow      *window);
 static void     update_window_title             (MooEditWindow      *window);
@@ -304,7 +305,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
     gobject_class->set_property = moo_edit_window_set_property;
     gobject_class->get_property = moo_edit_window_get_property;
     gtkobject_class->destroy = moo_edit_window_destroy;
-    window_class->close = (gboolean (*) (MooWindow*)) moo_edit_window_close;
+    window_class->close = moo_edit_window_close;
 
     moo_edit_tab_atom = gdk_atom_intern ("MOO_EDIT_TAB", FALSE);
     text_uri_atom = gdk_atom_intern ("text/uri-list", FALSE);
@@ -1185,9 +1186,10 @@ moo_edit_window_close_all (MooEditWindow *window)
 
 
 static gboolean
-moo_edit_window_close (MooEditWindow *window)
+moo_edit_window_close (MooWindow *window)
 {
-    moo_editor_close_window (window->priv->editor, window, TRUE);
+    MooEditWindow *edit_window = MOO_EDIT_WINDOW (window);
+    moo_editor_close_window (edit_window->priv->editor, edit_window, TRUE);
     return TRUE;
 }
 
@@ -3394,32 +3396,6 @@ moo_edit_window_remove_action_check (const char        *action_id,
 }
 
 
-static gboolean
-check_action_langs (G_GNUC_UNUSED GtkAction *action,
-                    G_GNUC_UNUSED MooEditWindow *window,
-                    MooEdit       *doc,
-                    gpointer       langs_list)
-{
-    gboolean value = FALSE;
-
-    if (doc)
-    {
-        MooLang *lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
-        value = NULL != g_slist_find_custom (langs_list, _moo_lang_id (lang),
-                                             (GCompareFunc) strcmp);
-    }
-
-    return value;
-}
-
-static void
-string_list_free (gpointer list)
-{
-    g_slist_foreach (list, (GFunc) g_free, NULL);
-    g_slist_free (list);
-}
-
-
 GSList *
 _moo_edit_parse_langs (const char *string)
 {
@@ -3446,23 +3422,39 @@ _moo_edit_parse_langs (const char *string)
     return g_slist_reverse (list);
 }
 
-void
-moo_edit_window_set_action_langs (const char        *action_id,
-                                  MooActionCheckType type,
-                                  const char        *langs)
+
+static gboolean
+check_action_filter (G_GNUC_UNUSED GtkAction *action,
+                     G_GNUC_UNUSED MooEditWindow *window,
+                     MooEdit *doc,
+                     gpointer filter)
 {
-    GSList *langs_list;
+    gboolean value = FALSE;
+
+    if (doc)
+        value = _moo_edit_filter_match (filter, doc);
+
+    return value;
+}
+
+void
+moo_edit_window_set_action_filter (const char        *action_id,
+                                   MooActionCheckType type,
+                                   const char        *filter_string)
+{
+    MooEditFilter *filter = NULL;
 
     g_return_if_fail (action_id != NULL);
     g_return_if_fail (type < N_ACTION_CHECKS);
 
-    langs_list = _moo_edit_parse_langs (langs);
+    if (filter_string)
+        filter = _moo_edit_filter_new (filter_string);
 
-    if (langs_list)
+    if (filter)
         moo_edit_window_set_action_check (action_id, type,
-                                          check_action_langs,
-                                          langs_list,
-                                          string_list_free);
+                                          check_action_filter,
+                                          filter,
+                                          (GDestroyNotify) _moo_edit_filter_free);
     else
         moo_edit_window_remove_action_check (action_id, type);
 }

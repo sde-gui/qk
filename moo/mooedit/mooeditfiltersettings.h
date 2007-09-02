@@ -18,17 +18,27 @@
 #ifndef MOO_EDIT_FILTER_SETTINGS_H
 #define MOO_EDIT_FILTER_SETTINGS_H
 
-#include <glib.h>
+#include <mooedit/mooedit.h>
 
 G_BEGIN_DECLS
 
 
-void        _moo_edit_filter_settings_load              (void);
+typedef struct _MooEditFilter MooEditFilter;
 
-GSList     *_moo_edit_filter_settings_get_strings       (void);
-void        _moo_edit_filter_settings_set_strings       (GSList     *strings);
+MooEditFilter  *_moo_edit_filter_new                    (const char     *string);
+MooEditFilter  *_moo_edit_filter_new_langs              (const char     *string);
+MooEditFilter  *_moo_edit_filter_new_regex              (const char     *string);
+MooEditFilter  *_moo_edit_filter_new_globs              (const char     *string);
+void            _moo_edit_filter_free                   (MooEditFilter  *filter);
+gboolean        _moo_edit_filter_match                  (MooEditFilter  *filter,
+                                                         MooEdit        *doc);
 
-char       *_moo_edit_filter_settings_get_for_file      (const char *filename);
+void            _moo_edit_filter_settings_load          (void);
+
+GSList         *_moo_edit_filter_settings_get_strings   (void);
+void            _moo_edit_filter_settings_set_strings   (GSList     *strings);
+
+char           *_moo_edit_filter_settings_get_for_file  (const char *filename);
 
 
 G_END_DECLS

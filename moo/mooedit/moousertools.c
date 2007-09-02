@@ -17,7 +17,6 @@
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooeditaction.h"
 #include "mooedit/mooeditaction-factory.h"
-#include "mooedit/mookeyfile.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooaccel.h"
@@ -33,6 +32,7 @@
 #define KEY_ACCEL       "accel"
 #define KEY_MENU        "menu"
 #define KEY_LANGS       "langs"
+#define KEY_FILTER      "filter"
 #define KEY_POSITION    "position"
 #define KEY_COMMAND     "command"
 #define KEY_NAME        "name"
@@ -333,8 +333,8 @@ load_tool (MooUserToolInfo *info)
                                               check_sensitive_func,
                                               NULL, NULL);
 
-            if (info->langs)
-                moo_edit_window_set_action_langs (info->id, MOO_ACTION_CHECK_ACTIVE, info->langs);
+            if (info->filter)
+                moo_edit_window_set_action_filter (info->id, MOO_ACTION_CHECK_ACTIVE, info->filter);
 
             break;
 
@@ -346,7 +346,7 @@ load_tool (MooUserToolInfo *info)
                                        "label", info->name,
                                        "accel", info->accel,
                                        "command", cmd,
-                                       "langs", info->langs,
+                                       "file-filter", info->filter,
                                        NULL);
             break;
     }
@@ -448,6 +448,7 @@ parse_item (MooKeyFileItem  *item,
     char *os;
     char *position = NULL;
     MooUserToolInfo *info;
+    char *langs;
 
     if (strcmp (moo_key_file_item_name (item), ITEM_TOOL))
     {
@@ -486,7 +487,6 @@ parse_item (MooKeyFileItem  *item,
 
     info->accel = moo_key_file_item_steal (item, KEY_ACCEL);
     info->menu = moo_key_file_item_steal (item, KEY_MENU);
-    info->langs = moo_key_file_item_steal (item, KEY_LANGS);
     position = moo_key_file_item_steal (item, KEY_POSITION);
 
     if (position)
@@ -500,6 +500,16 @@ parse_item (MooKeyFileItem  *item,
                        position, info->name, file);
 
         g_free (position);
+    }
+
+    if ((langs = moo_key_file_item_steal (item, KEY_LANGS)))
+    {
+        info->filter = g_strdup_printf ("langs: %s", langs);
+        g_free (langs);
+    }
+    else
+    {
+        info->filter = moo_key_file_item_steal (item, KEY_FILTER);
     }
 
     info->cmd_data = _moo_command_parse_item (item, info->name, file,
@@ -666,45 +676,22 @@ static void
 generate_id (MooUserToolInfo *info,
              GHashTable      *ids)
 {
-    char *base, *name;
+    guint i;
 
     g_return_if_fail (info->id == NULL);
 
-    if (info->name)
-        name = get_name (info->name);
-    else
-        name = NULL;
-
-    base = g_strdup_printf ("MooUserTool_%s", name ? name : "");
-    g_strcanon (base, G_CSET_A_2_Z G_CSET_a_2_z G_CSET_DIGITS "_", '_');
-
-    if (!g_hash_table_lookup (ids, base))
+    for (i = 0; ; ++i)
     {
-        info->id = base;
-        base = NULL;
-    }
-    else
-    {
-        guint i = 0;
+        char *id = g_strdup_printf ("MooUserTool%u", i);
 
-        while (TRUE)
+        if (!g_hash_table_lookup (ids, id))
         {
-            char *tmp = g_strdup_printf ("%s_%u", base, i);
-
-            if (!g_hash_table_lookup (ids, tmp))
-            {
-                info->id = tmp;
-                break;
-            }
-
-            g_free (tmp);
-
-            i += 1;
+            info->id = id;
+            break;
         }
-    }
 
-    g_free (name);
-    g_free (base);
+        g_free (id);
+    }
 }
 
 static void
@@ -776,7 +763,7 @@ info_equal (MooUserToolInfo *info1,
            _moo_str_equal (info1->name, info2->name) &&
            _moo_str_equal (info1->accel, info2->accel) &&
            _moo_str_equal (info1->menu, info2->menu) &&
-           _moo_str_equal (info1->langs, info2->langs) &&
+           _moo_str_equal (info1->filter, info2->filter) &&
            _moo_str_equal (info1->options, info2->options) &&
            _moo_command_factory_data_equal (info1->cmd_factory, info1->cmd_data, info2->cmd_data);
 }
@@ -874,8 +861,8 @@ _moo_edit_save_user_tools (MooUserToolType  type,
                 moo_key_file_item_set (item, KEY_ACCEL, info->accel);
             if (info->menu && info->menu[0])
                 moo_key_file_item_set (item, KEY_MENU, info->menu);
-            if (info->langs && info->langs[0])
-                moo_key_file_item_set (item, KEY_LANGS, info->langs);
+            if (info->filter && info->filter[0])
+                moo_key_file_item_set (item, KEY_FILTER, info->filter);
             if (!info->enabled)
                 moo_key_file_item_set_bool (item, KEY_ENABLED, info->enabled);
             if (info->position != MOO_USER_TOOL_POS_END)
@@ -938,7 +925,7 @@ _moo_user_tool_info_unref (MooUserToolInfo *info)
     g_free (info->name);
     g_free (info->accel);
     g_free (info->menu);
-    g_free (info->langs);
+    g_free (info->filter);
     g_free (info->options);
     g_free (info->file);
 

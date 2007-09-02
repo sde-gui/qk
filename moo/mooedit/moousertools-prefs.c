@@ -101,7 +101,7 @@ new_row (MooPrefsDialogPage *page,
     GtkTreeViewColumn *column;
 
     info = _moo_user_tool_info_new ();
-    info->cmd_factory = moo_command_factory_lookup ("moo-script");
+    info->cmd_factory = moo_command_factory_lookup ("lua");
     info->cmd_data = info->cmd_factory ? moo_command_data_new (info->cmd_factory->n_keys) : NULL;
     info->name = g_strdup (_("New Command"));
     info->options = g_strdup ("need-doc");
@@ -161,7 +161,7 @@ update_widgets (MooPrefsDialogPage *page,
         _moo_command_display_set (helper, info->cmd_factory, info->cmd_data);
 
         gtk_toggle_button_set_active (GET_WID ("enabled"), info->enabled);
-        set_text (page, "langs", info->langs);
+        set_text (page, "filter", info->filter);
         set_text (page, "options", info->options);
 
         _moo_user_tool_info_unref (info);
@@ -169,7 +169,7 @@ update_widgets (MooPrefsDialogPage *page,
     else
     {
         gtk_toggle_button_set_active (GET_WID ("enabled"), FALSE);
-        set_text (page, "langs", NULL);
+        set_text (page, "filter", NULL);
         set_text (page, "options", NULL);
         _moo_command_display_set (helper, NULL, NULL);
     }
@@ -228,7 +228,7 @@ update_model (MooPrefsDialogPage *page,
         changed = TRUE;
     }
 
-    changed = get_text (page, "langs", &info->langs) || changed;
+    changed = get_text (page, "filter", &info->filter) || changed;
     changed = get_text (page, "options", &info->options) || changed;
 
     if (changed)
@@ -406,7 +406,7 @@ main_page_apply (MooPrefsDialogPage *main_page)
 
 
 GtkWidget *
-_moo_user_tools_prefs_page_new (void)
+moo_user_tools_prefs_page_new (void)
 {
     MooPrefsDialogPage *page;
     MooPrefsDialogPage *page_menu, *page_context;
