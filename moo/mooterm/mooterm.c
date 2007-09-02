@@ -922,7 +922,7 @@ _moo_term_update_size (MooTerm *term,
     width = CLAMP (width, MIN_TERMINAL_WIDTH, MAX_TERMINAL_WIDTH);
     height = height < MIN_TERMINAL_HEIGHT ? MIN_TERMINAL_HEIGHT : height;
 
-    _moo_term_pt_set_size (term->priv->pt, width, height);
+    moo_term_pt_set_size (term->priv->pt, width, height);
     moo_term_buffer_set_screen_size (term->priv->primary_buffer,
                                      width, height);
     moo_term_buffer_set_screen_size (term->priv->alternate_buffer,

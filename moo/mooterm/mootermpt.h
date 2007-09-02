@@ -52,7 +52,7 @@ void            _moo_term_pt_set_io_size_func   (MooTermPt      *pt,
 
 void             moo_term_pt_set_priority       (MooTermPt      *pt,
                                                  int             priority);
-void            _moo_term_pt_set_size           (MooTermPt      *pt,
+void             moo_term_pt_set_size           (MooTermPt      *pt,
                                                  guint           width,
                                                  guint           height);
 void             moo_term_pt_set_echo_input     (MooTermPt      *pt,

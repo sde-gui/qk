@@ -146,11 +146,13 @@ _moo_term_pt_process_data (MooTermPt  *pt,
 
 
 void
-_moo_term_pt_set_size (MooTermPt      *pt,
-                       guint           width,
-                       guint           height)
+moo_term_pt_set_size (MooTermPt *pt,
+                      guint      width,
+                      guint      height)
 {
     g_return_if_fail (MOO_IS_TERM_PT (pt));
+    g_return_if_fail (width > 0);
+    g_return_if_fail (height > 0);
     MOO_TERM_PT_GET_CLASS(pt)->set_size (pt, width, height);
 }
 
