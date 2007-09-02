@@ -52,6 +52,7 @@ mooutils_include_headers =		\
 	moouixml.h			\
 	mooundo.h			\
 	mooutils-fs.h			\
+	mooutils-debug.h		\
 	mooutils-gobject.h		\
 	mooutils-misc.h			\
 	moowindow.h

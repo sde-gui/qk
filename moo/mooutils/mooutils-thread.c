@@ -14,6 +14,7 @@
 #include "config.h"
 #include "mooutils/mooutils-thread.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-debug.h"
 
 #include <stdio.h>
 #include <errno.h>

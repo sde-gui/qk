@@ -115,12 +115,14 @@ static void moo_prefs_dialog_init (MooPrefsDialog *dialog)
     gtk_window_set_destroy_with_parent (GTK_WINDOW (dialog), TRUE);
 
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
+                            GTK_STOCK_HELP, GTK_RESPONSE_HELP,
                             GTK_STOCK_APPLY, GTK_RESPONSE_APPLY,
                             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                             GTK_STOCK_OK, GTK_RESPONSE_OK,
                             NULL);
 #if GTK_MINOR_VERSION >= 6
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
+                                             GTK_RESPONSE_HELP,
                                              GTK_RESPONSE_OK,
                                              GTK_RESPONSE_CANCEL,
                                              GTK_RESPONSE_APPLY,
@@ -354,11 +356,15 @@ moo_prefs_dialog_run (MooPrefsDialog *dialog,
 
 
 static void
-moo_prefs_dialog_response (GtkDialog      *dialog,
-                           int             response)
+moo_prefs_dialog_response (GtkDialog *dialog,
+                           int        response)
 {
     switch (response)
     {
+        case GTK_RESPONSE_HELP:
+            g_print ("Help!\n");
+            break;
+
         case GTK_RESPONSE_APPLY:
             g_signal_emit_by_name (dialog, "apply");
             break;

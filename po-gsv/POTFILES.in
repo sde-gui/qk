@@ -3,6 +3,7 @@ moo/mooedit/gtksourceview/upstream/gtksourcelanguage-parser-2.c
 moo/mooedit/gtksourceview/upstream/gtksourcelanguagemanager.c
 moo/mooedit/gtksourceview/upstream/gtksourcestylemanager.c
 moo/mooedit/gtksourceview/upstream/gtksourcestylescheme.c
+moo/mooedit/gtksourceview/upstream/gtksourcelanguage.c
 
 moo/mooedit/language-specs/ada.lang
 moo/mooedit/language-specs/awk.lang

@@ -1097,7 +1097,7 @@ _moo_get_pid_string (void)
 #ifdef __WIN32__
         moo_pid_string = g_strdup_printf ("%ld", GetCurrentProcessId ());
 #else
-        moo_pid_string = g_strdup_printf ("%d", getpid ());
+        moo_pid_string = g_strdup_printf ("%ld", (long) getpid ());
 #endif
     }
 
@@ -1823,25 +1823,23 @@ _moo_strv_reverse (char **str_array)
 }
 
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) && !defined(MOO_DEBUG_ENABLED)
 static guint saved_win32_error_mode;
 #endif
 
 void
 moo_disable_win32_error_message (void)
 {
-#if defined(__WIN32__)
-    if (!_moo_debug_enabled ())
-        saved_win32_error_mode = SetErrorMode (SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
+#if defined(__WIN32__) && !defined(MOO_DEBUG_ENABLED)
+    saved_win32_error_mode = SetErrorMode (SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
 #endif
 }
 
 void
 moo_enable_win32_error_message (void)
 {
-#if defined(__WIN32__)
-    if (!_moo_debug_enabled ())
-        SetErrorMode (saved_win32_error_mode);
+#if defined(__WIN32__) && !defined(MOO_DEBUG_ENABLED)
+    SetErrorMode (saved_win32_error_mode);
 #endif
 }
 
