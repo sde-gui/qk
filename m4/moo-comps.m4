@@ -37,10 +37,23 @@ AC_DEFUN([MOO_COMPONENTS],[
     $build_mooterm && build_mooutils=true
   fi
 
-  build_mooscript=$build_mooedit
+  build_lua=$build_mooedit
   MOO_BUILD_COMPS=
 
-  m4_foreach([comp], [utils, script, edit, term, app],[
+  AM_CONDITIONAL(MOO_BUILD_LUA, [$build_lua])
+  MOO_BUILD_LUA=false
+  if $build_lua; then
+    AC_DEFINE(MOO_BUILD_LUA, [1], [build lua])
+    MOO_BUILD_LUA=true
+    MOO_BUILD_COMPS="lua $MOO_BUILD_COMPS"
+    MOO_LUA_ENABLED_DEFINE=["#define MOO_LUA_ENABLED 1"]
+    MOO_LUA
+  else
+    MOO_LUA_ENABLED_DEFINE=["#undef MOO_LUA_ENABLED"]
+  fi
+  AC_SUBST(MOO_LUA_ENABLED_DEFINE)
+
+  m4_foreach([comp], [utils, edit, term, app],[
     AM_CONDITIONAL(MOO_BUILD_[]m4_toupper(comp), $build_moo[]comp)
     MOO_BUILD_[]m4_toupper(comp)=false
     if $build_moo[]comp; then
@@ -54,22 +67,8 @@ AC_DEFUN([MOO_COMPONENTS],[
     AC_SUBST(MOO_[]m4_toupper(comp)_ENABLED_DEFINE)
   ])
 
-  MOO_BUILD_SCRIPT=$MOO_BUILD_EDIT
-
   if test "x$MOO_OS_BSD" = "xyes" -a "x$MOO_OS_DARWIN" != "xyes"; then
     $build_mooterm && MOO_LIBS="-lutil $MOO_LIBS"
-  fi
-
-  AC_ARG_ENABLE(canvas,
-    AC_HELP_STRING(--enable-canvas, [build foocanvas (default = NO)]),
-    [:],[enable_canvas=${MOO_BUILD_CANVAS:-no}])
-  if test "x$MOO_OS_CYGWIN" = "xyes"; then
-    enable_canvas=no
-    MOO_BUILD_CANVAS=no
-  fi
-  AM_CONDITIONAL(MOO_BUILD_CANVAS, test "x$enable_canvas" = xyes)
-  if test "x$enable_canvas" = xyes; then
-    AC_DEFINE(MOO_BUILD_CANVAS, [1], [build foocanvas])
   fi
 
   AC_ARG_ENABLE(project,

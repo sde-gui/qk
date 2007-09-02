@@ -31,6 +31,10 @@ endif
 
 subdirs =
 libs =
+if MOO_BUILD_LUA
+subdirs += moolua
+libs += moolua/libmoolua.la
+endif
 if MOO_BUILD_UTILS
 subdirs += mooutils
 libs += mooutils/libmooutils.la
@@ -42,12 +46,6 @@ endif
 if MOO_BUILD_TERM
 subdirs += mooterm
 libs += mooterm/libmooterm.la
-endif
-if MOO_BUILD_SCRIPT
-if MOO_USE_OBJC
-subdirs += mooscript
-libs += mooscript/libmooscript.la
-endif
 endif
 if MOO_BUILD_EDIT
 subdirs += mooedit
@@ -63,7 +61,7 @@ subdirs += moopython
 endif
 
 SUBDIRS = $(subdirs) .
-DIST_SUBDIRS = mooutils mooterm mooedit mooapp moopython mooscript moofileview
+DIST_SUBDIRS = moolua mooutils mooterm mooedit mooapp moopython moofileview
 
 lib_LTLIBRARIES =
 noinst_LTLIBRARIES =

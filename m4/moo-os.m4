@@ -3,7 +3,7 @@
 #
 AC_DEFUN([MOO_AC_CHECK_OS],[
 AC_REQUIRE([AC_CANONICAL_HOST])
-m4_foreach([name], [CYGWIN, MINGW, DARWIN, UNIX, BSD, LINUX], [MOO_OS_[]name=""; ])
+m4_foreach([name], [CYGWIN, MINGW, DARWIN, FREEBSD, UNIX, BSD, LINUX], [MOO_OS_[]name=""; ])
 
 case $host in
 *-*-mingw32*)
@@ -19,7 +19,7 @@ case $host in
   MOO_OS_NAME="Darwin"
   ;;
 *-*-freebsd*)
-  MOO_OS_BSD="yes"
+  MOO_OS_FREEBSD="yes"
   MOO_OS_NAME="FreeBSD"
   ;;
 *-*-linux*)
@@ -33,10 +33,11 @@ case $host in
 esac
 
 if test x$MOO_OS_DARWIN = xyes; then MOO_OS_BSD=yes; fi
+if test x$MOO_OS_FREEBSD = xyes; then MOO_OS_BSD=yes; fi
 if test x$MOO_OS_BSD = xyes; then MOO_OS_UNIX=yes; fi
 if test x$MOO_OS_LINUX = xyes; then MOO_OS_UNIX=yes; fi
 
-m4_foreach([name], [CYGWIN, MINGW, DARWIN, UNIX, BSD, LINUX], [dnl
+m4_foreach([name], [CYGWIN, MINGW, DARWIN, UNIX, FREEBSD, BSD, LINUX], [dnl
 if test x$MOO_OS_[]name = xyes; then
   AC_DEFINE(MOO_OS_[]name, 1, [name])
 fi

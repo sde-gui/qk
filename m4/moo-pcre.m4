@@ -97,7 +97,7 @@ fi
 
 AM_CONDITIONAL(MOO_BUILD_PCRE, test x$MOO_BUILD_PCRE = xyes)
 if test x$MOO_BUILD_PCRE = xyes; then
-    AC_DEFINE(MOO_BUILD_PCRE, , [MOO_BUILD_PCRE - build pcre library])
+    AC_DEFINE(MOO_BUILD_PCRE, [1], [MOO_BUILD_PCRE - build pcre library])
 fi
 
 ]) # end of MOO_AC_PCRE
