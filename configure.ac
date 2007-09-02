@@ -2,7 +2,7 @@
 #   moo/configure.ac
 #
 
-AC_INIT([medit],[0.8.10],[muntyan@tamu.edu],[medit])
+AC_INIT([medit],[0.9.0],[muntyan@tamu.edu],[medit])
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AC_CANONICAL_HOST
 
@@ -47,9 +47,9 @@ config.py
 moo/moo.pc
 moo/moo-config.h
 moo/Makefile
+moo/moolua/Makefile
 moo/mooutils/Makefile
 moo/mooutils/newgtk/Makefile
-moo/mooscript/Makefile
 moo/moofileview/Makefile
 moo/mooterm/Makefile
 moo/mooedit/Makefile
