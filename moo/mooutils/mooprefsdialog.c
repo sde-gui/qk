@@ -112,6 +112,8 @@ static void moo_prefs_dialog_init (MooPrefsDialog *dialog)
 {
     GtkWidget *hbox, *scrolledwindow, *notebook;
 
+    _moo_window_set_remember_size (GTK_WINDOW (dialog), "Dialogs/Preferences", FALSE);
+
     gtk_window_set_destroy_with_parent (GTK_WINDOW (dialog), TRUE);
 
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
