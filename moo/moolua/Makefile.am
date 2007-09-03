@@ -1,9 +1,13 @@
 noinst_LTLIBRARIES = libmoolua.la
 
 libmoolua_la_LDFLAGS =
-AM_CPPFLAGS = $(MOO_LUA_CFLAGS)
+AM_CPPFLAGS =			\
+	-DLUA_USE_APICHECK	\
+	$(MOO_LUA_CFLAGS)
 
 libmoolua_la_SOURCES =	\
+	ext/lfs.h	\
+	ext/lfs.c	\
 	moolua.h	\
 	lapi.c		\
 	lcode.c		\
@@ -57,3 +61,7 @@ libmoolua_la_SOURCES =	\
 	lundump.h	\
 	lvm.h		\
 	lzio.h
+
+EXTRA_DIST =		\
+	COPYRIGHT	\
+	ext/README.lfs

@@ -12,7 +12,7 @@
 
 #include "lualib.h"
 #include "lauxlib.h"
-
+#include "ext/lfs.h"
 
 static const luaL_Reg lualibs[] = {
   {"", luaopen_base},
@@ -23,6 +23,7 @@ static const luaL_Reg lualibs[] = {
   {LUA_STRLIBNAME, luaopen_string},
   {LUA_MATHLIBNAME, luaopen_math},
   {LUA_DBLIBNAME, luaopen_debug},
+  {"lfs", luaopen_lfs},
   {NULL, NULL}
 };
 

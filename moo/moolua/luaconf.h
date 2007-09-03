@@ -374,7 +374,7 @@
 ** a bit, but may be quite useful when debugging C code that interfaces
 ** with Lua. A useful redefinition is to use assert.h.
 */
-#if defined(LUA_USE_APICHECK) || 1
+#if defined(LUA_USE_APICHECK)
 #include <assert.h>
 #define luai_apicheck(L,o)	{ (void)L; assert(o); }
 #else
