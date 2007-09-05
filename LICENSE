@@ -25,6 +25,14 @@ do have copyright notice inside; WTFL will work fine for the rest.
 Third-party stuff, for debian/copyright. Everything below
 is under LGPL unless noted otherwise.
 
+moo/moolua/*:
+    Lua, LuaFileSystem, and LuaExtension. Distributed under MIT
+    license, see moo/moolua/COPYRIGHT, moo/moolua/lua-ex/COPYRIGHT,
+    moo/moolua/ext/README.lfs.
+    Copyright (C) 1994-2007 Lua.org, PUC-Rio.
+    Copyright 2006-2007 Mark Edgar <medgar@student.gc.maricopa.edu>
+    Copyright 2003-2007 PUC-Rio
+
 moo/mooutils/moofontsel.h:
 moo/mooutils/moofontsel.c:
     GTK font selector modified to show monospace fonts
