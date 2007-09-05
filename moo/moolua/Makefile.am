@@ -1,4 +1,7 @@
+SUBDIRS = lua-ex
+
 noinst_LTLIBRARIES = libmoolua.la
+libmoolua_la_LIBADD = lua-ex/liblua-ex.la
 
 libmoolua_la_LDFLAGS =
 AM_CPPFLAGS =			\

@@ -10,17 +10,17 @@ AC_DEFUN_ONCE([MOO_AC_FUNCS],[
     # for xdgmime
     AC_CHECK_HEADERS(fnmatch.h netinet/in.h)
 
-    #for GMappedFile
+    # for GMappedFile
     AC_CHECK_HEADERS(unistd.h)
     AC_CHECK_FUNCS(mmap)
 
-    #for moofileutils.c
+    # for moofileutils.c
     AC_CHECK_FUNCS(unlink)
 
-    #for mooappabout.h
+    # for mooappabout.h
     AC_CHECK_HEADERS(sys/utsname.h)
 
-    #for mooapp.c
+    # for mooapp.c
     AC_CHECK_HEADERS(signal.h)
 
     ################################################################################

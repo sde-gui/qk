@@ -31,3 +31,4 @@ Makefile(\.in)?$
 ^patches/
 ^po(-gsv)?/(dist|pot)$
 ^ppc-configure$
+/CVS/
