@@ -54,6 +54,9 @@
 #define LANG_ACTION_ID "LanguageMenu"
 #define STOP_ACTION_ID "StopJob"
 
+#define DEFAULT_TITLE_FORMAT        "%a - %f%s"
+#define DEFAULT_TITLE_FORMAT_NO_DOC "%a"
+
 typedef struct {
     MooActionCheckFunc func;
     gpointer data;
@@ -83,11 +86,12 @@ struct _MooEditWindowPrivate {
     GtkWidget *info;
 
     MooNotebook *notebook;
-    char *prefix;
-    gboolean use_full_name;
     GHashTable *panes;
     GHashTable *panes_to_save; /* char* */
     guint save_params_idle;
+
+    char *title_format;
+    char *title_format_no_doc;
 
     MooUIXML *xml;
     guint doc_list_merge_id;
@@ -134,6 +138,7 @@ static gboolean moo_edit_window_close           (MooWindow          *window);
 
 static void     setup_notebook                  (MooEditWindow      *window);
 static void     update_window_title             (MooEditWindow      *window);
+static void     set_title_format_from_prefs     (MooEditWindow      *window);
 
 static void     proxy_boolean_property          (MooEditWindow      *window,
                                                  GParamSpec         *prop,
@@ -261,7 +266,6 @@ enum {
     PROP_0,
     PROP_EDITOR,
     PROP_ACTIVE_DOC,
-    PROP_USE_FULL_NAME_IN_TITLE,
 
     /* aux properties */
     PROP_CAN_RELOAD,
@@ -326,14 +330,6 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                              "active-doc",
                                              "active-doc",
                                              MOO_TYPE_EDIT,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_USE_FULL_NAME_IN_TITLE,
-                                     g_param_spec_boolean ("use-full-name-in-title",
-                                             "use-full-name-in-title",
-                                             "use-full-name-in-title",
-                                             TRUE,
                                              G_PARAM_READWRITE));
 
     signals[NEW_DOC] =
@@ -829,7 +825,6 @@ static void
 moo_edit_window_init (MooEditWindow *window)
 {
     window->priv = G_TYPE_INSTANCE_GET_PRIVATE (window, MOO_TYPE_EDIT_WINDOW, MooEditWindowPrivate);
-    window->priv->prefix = g_strdup ("medit");
     window->priv->panes = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
     window->priv->panes_to_save = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
                                                         (GDestroyNotify) pane_params_free);
@@ -838,7 +833,7 @@ moo_edit_window_init (MooEditWindow *window)
                   "toolbar-ui-name", "Editor/Toolbar",
                   NULL);
 
-    window->priv->use_full_name = TRUE;
+    set_title_format_from_prefs (window);
 
     windows = g_slist_prepend (windows, window);
 }
@@ -914,7 +909,8 @@ moo_edit_window_finalize (GObject *object)
         g_source_remove (window->priv->save_params_idle);
     }
 
-    g_free (window->priv->prefix);
+    g_free (window->priv->title_format);
+    g_free (window->priv->title_format_no_doc);
 
     G_OBJECT_CLASS (moo_edit_window_parent_class)->finalize (object);
 }
@@ -936,15 +932,6 @@ moo_edit_window_set_property (GObject        *object,
 
         case PROP_ACTIVE_DOC:
             moo_edit_window_set_active_doc (window, g_value_get_object (value));
-            break;
-
-        case PROP_USE_FULL_NAME_IN_TITLE:
-            if (window->priv->use_full_name != g_value_get_boolean (value))
-            {
-                window->priv->use_full_name = g_value_get_boolean (value);
-                update_window_title (window);
-                g_object_notify (object, "use-full-name-in-title");
-            }
             break;
 
         default:
@@ -969,10 +956,6 @@ static void     moo_edit_window_get_property(GObject        *object,
 
         case PROP_ACTIVE_DOC:
             g_value_set_object (value, moo_edit_window_get_active_doc (window));
-            break;
-
-        case PROP_USE_FULL_NAME_IN_TITLE:
-            g_value_set_boolean (value, window->priv->use_full_name != 0);
             break;
 
         case PROP_CAN_RELOAD:
@@ -1013,20 +996,6 @@ static void     moo_edit_window_get_property(GObject        *object,
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
     }
-}
-
-
-void
-moo_edit_window_set_title_prefix (MooEditWindow *window,
-                                  const char    *prefix)
-{
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-
-    g_free (window->priv->prefix);
-    window->priv->prefix = g_strdup (prefix);
-
-    if (GTK_WIDGET_REALIZED (GTK_WIDGET (window)))
-        update_window_title (window);
 }
 
 
@@ -1078,41 +1047,14 @@ moo_edit_window_constructor (GType                  type,
 }
 
 
-/* XXX */
-static void
-update_window_title (MooEditWindow *window)
+static char *
+get_doc_status_string (MooEdit *doc)
 {
-    MooEdit *edit;
-    const char *name;
     MooEditStatus status;
-    GString *title;
     gboolean modified;
     const char *doc_title_format;
 
-    edit = ACTIVE_DOC (window);
-
-    if (!edit)
-    {
-        gtk_window_set_title (GTK_WINDOW (window),
-                              window->priv->prefix ? window->priv->prefix : "");
-        return;
-    }
-
-    if (window->priv->use_full_name)
-        name = moo_edit_get_display_name (edit);
-    else
-        name = moo_edit_get_display_basename (edit);
-
-    if (!name)
-        name = "<\?\?\?\?\?>";
-
-    status = moo_edit_get_status (edit);
-
-    title = g_string_new ("");
-
-    if (window->priv->prefix)
-        g_string_append_printf (title, "%s - ", window->priv->prefix);
-
+    status = moo_edit_get_status (doc);
     modified = (status & MOO_EDIT_MODIFIED) && !(status & MOO_EDIT_CLEAN);
 
     if (!modified)
@@ -1145,11 +1087,154 @@ update_window_title (MooEditWindow *window)
             doc_title_format = _("%s [modified]");
     }
 
-    g_string_append_printf (title, doc_title_format, name);
+    return g_strdup_printf (doc_title_format, "");
+}
 
-    gtk_window_set_title (GTK_WINDOW (window), title->str);
+static char *
+parse_title_format (const char    *format,
+                    MooEditWindow *window,
+                    MooEdit       *doc)
+{
+    GString *str;
 
-    g_string_free (title, TRUE);
+    str = g_string_new (NULL);
+
+    while (*format)
+    {
+        if (*format == '%')
+        {
+            format++;
+
+            if (!*format)
+            {
+                g_critical ("%s: trailing percent sign", G_STRFUNC);
+                break;
+            }
+
+            switch (*format)
+            {
+                case 'a':
+                    g_string_append (str, moo_editor_get_app_name (window->priv->editor));
+                    break;
+                case 'b':
+                    if (!doc)
+                        g_critical ("%s: %%b used without document", G_STRFUNC);
+                    else
+                        g_string_append (str, moo_edit_get_display_basename (doc));
+                    break;
+                case 'f':
+                    if (!doc)
+                        g_critical ("%s: %%f used without document", G_STRFUNC);
+                    else
+                        g_string_append (str, moo_edit_get_display_name (doc));
+                    break;
+                case 'u':
+                    if (!doc)
+                        g_critical ("%s: %%u used without document", G_STRFUNC);
+                    else
+                    {
+                        char *tmp = moo_edit_get_uri (doc);
+                        if (tmp)
+                            g_string_append (str, tmp);
+                        else
+                            g_string_append (str, moo_edit_get_display_name (doc));
+                        g_free (tmp);
+                    }
+                    break;
+                case 's':
+                    if (!doc)
+                        g_critical ("%s: %%s used without document", G_STRFUNC);
+                    else
+                    {
+                        char *tmp = get_doc_status_string (doc);
+                        if (tmp)
+                            g_string_append (str, tmp);
+                        g_free (tmp);
+                    }
+                    break;
+                case '%':
+                    g_string_append_c (str, '%');
+                    break;
+                default:
+                    g_critical ("%s: unknown format '%%%c'", G_STRFUNC, *format);
+                    break;
+            }
+        }
+        else
+        {
+            g_string_append_c (str, *format);
+        }
+
+        format++;
+    }
+
+    return g_string_free (str, FALSE);
+}
+
+static void
+update_window_title (MooEditWindow *window)
+{
+    MooEdit *doc;
+    char *title;
+
+    doc = ACTIVE_DOC (window);
+
+    if (doc)
+        title = parse_title_format (window->priv->title_format, window, doc);
+    else
+        title = parse_title_format (window->priv->title_format_no_doc, window, NULL);
+
+    gtk_window_set_title (GTK_WINDOW (window), title);
+
+    g_free (title);
+}
+
+static const char *
+check_format (const char *format)
+{
+    if (!format || !format[0])
+        return DEFAULT_TITLE_FORMAT;
+    if (!g_utf8_validate (format, -1, NULL))
+    {
+        g_critical ("%s: window title format is not valid UTF8", G_STRLOC);
+        return DEFAULT_TITLE_FORMAT;
+    }
+    return format;
+}
+
+static void
+set_title_format (MooEditWindow *window,
+                  const char    *format,
+                  const char    *format_no_doc)
+{
+    format = check_format (format);
+    format_no_doc = check_format (format_no_doc);
+
+    g_free (window->priv->title_format);
+    g_free (window->priv->title_format_no_doc);
+
+    window->priv->title_format = g_strdup (format);
+    window->priv->title_format_no_doc = g_strdup (format_no_doc);
+
+    if (GTK_WIDGET_REALIZED (window))
+        update_window_title (window);
+}
+
+static void
+set_title_format_from_prefs (MooEditWindow *window)
+{
+    const char *format, *format_no_doc;
+    format = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_TITLE_FORMAT));
+    format_no_doc = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_TITLE_FORMAT_NO_DOC));
+    set_title_format (window, format, format_no_doc);
+}
+
+void
+_moo_edit_window_update_title (void)
+{
+    GSList *l;
+    for (l = windows; l != NULL; l = l->next)
+        set_title_format_from_prefs (l->data);
 }
 
 

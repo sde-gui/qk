@@ -27,6 +27,9 @@ GtkWidget  *moo_edit_colors_prefs_page_new  (MooEditor      *editor);
 /* defined in mooeditprefs.c */
 const char *moo_edit_setting                (const char     *setting_name);
 
+#define MOO_EDIT_PREFS_TITLE_FORMAT             "window_title"
+#define MOO_EDIT_PREFS_TITLE_FORMAT_NO_DOC      "window_title_no_doc"
+
 #define MOO_EDIT_PREFS_DEFAULT_LANG             "default_lang"
 #define MOO_EDIT_PREFS_SAVE_SESSION             "save_session"
 

@@ -688,15 +688,24 @@ void
 moo_editor_set_app_name (MooEditor      *editor,
                          const char     *name)
 {
-    GSList *l;
+    char *tmp;
 
     g_return_if_fail (MOO_IS_EDITOR (editor));
 
-    g_free (editor->priv->app_name);
+    tmp = editor->priv->app_name;
     editor->priv->app_name = g_strdup (name);
+    g_free (tmp);
+}
 
-    for (l = editor->priv->windows; l != NULL; l = l->next)
-        moo_edit_window_set_title_prefix (MOO_EDIT_WINDOW (l->data), name);
+const char *
+moo_editor_get_app_name (MooEditor *editor)
+{
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+
+    if (!editor->priv->app_name)
+        return g_get_prgname ();
+    else
+        return editor->priv->app_name;
 }
 
 
@@ -1001,7 +1010,6 @@ create_window (MooEditor *editor)
                                           "ui-xml",
                                           moo_editor_get_ui_xml (editor),
                                           NULL);
-    moo_edit_window_set_title_prefix (window, editor->priv->app_name);
     window_list_add (editor, window);
     _moo_window_attach_plugins (window);
     gtk_widget_show (GTK_WIDGET (window));
@@ -2468,6 +2476,8 @@ moo_editor_apply_prefs (MooEditor *editor)
     gboolean autosave, backups;
     int autosave_interval;
     const char *color_scheme, *default_lang;
+
+    _moo_edit_window_update_title ();
 
     default_lang = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG));
 

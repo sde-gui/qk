@@ -31,6 +31,7 @@ void             _moo_edit_window_remove_doc    (MooEditWindow  *window,
                                                  gboolean        destroy);
 int              _moo_edit_window_get_doc_no    (MooEditWindow  *window,
                                                  MooEdit        *doc);
+void             _moo_edit_window_update_title  (void);
 
 void             _moo_editor_set_focused_doc    (MooEditor      *editor,
                                                  MooEdit        *doc);

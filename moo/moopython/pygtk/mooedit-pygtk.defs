@@ -461,15 +461,6 @@
   (return-type "gboolean")
 )
 
-(define-method set_title_prefix
-  (of-object "MooEditWindow")
-  (c-name "moo_edit_window_set_title_prefix")
-  (return-type "none")
-  (parameters
-    '("const-char*" "prefix" (null-ok))
-  )
-)
-
 (define-method add_pane
   (of-object "MooEditWindow")
   (c-name "moo_edit_window_add_pane")
