@@ -1462,7 +1462,7 @@ handle_enter (MooTextView        *view,
     gboolean indent;
 
     indent = view->priv->indenter && view->priv->enter_indents &&
-             !(event->state & GDK_MODIFIER_MASK);
+             !(event->state & GDK_SHIFT_MASK);
 
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
     has_selection = gtk_text_buffer_get_selection_bounds (buffer, &start, &end);
