@@ -199,11 +199,6 @@ get_data (lua_State *L)
     MooEditLuaData *data = get_data (L);    \
     g_return_val_if_fail (data != NULL, 0);
 
-static void
-return_error (lua_State  *L,
-              const char *format,
-              ...) G_GNUC_PRINTF (2,3);
-
 #define MAX_ARGS 16
 
 static void
@@ -224,7 +219,7 @@ parse_args_format (lua_State  *L,
         if (i > MAX_ARGS)
         {
             g_critical ("%s: too many arguments", G_STRFUNC);
-            return_error (L, "in %s: internal error", func_name);
+            luaL_error (L, "in %s: internal error", func_name);
         }
 
         switch (*format)
@@ -246,14 +241,14 @@ parse_args_format (lua_State  *L,
                 if (in_opt_args)
                 {
                     g_critical ("%s: duplicated | symbol", G_STRFUNC);
-                    return_error (L, "in %s: internal error", func_name);
+                    luaL_error (L, "in %s: internal error", func_name);
                 }
                 in_opt_args = TRUE;
                 break;
 
             default:
                 g_critical ("%s: unknown argument symbol %c", G_STRFUNC, *format);
-                return_error (L, "in %s: internal error", func_name);
+                luaL_error (L, "in %s: internal error", func_name);
                 break;
         }
 
@@ -278,11 +273,11 @@ parse_args (lua_State  *L,
     parse_args_format (L, func_name, format, arg_format, &n_args, &n_opt_args);
 
     if (lua_gettop (L) < n_args)
-        return_error (L, "in %s: not enough arguments (%d required, %d given)",
-                      func_name, n_args, lua_gettop (L));
+        luaL_error (L, "in %s: not enough arguments (%d required, %d given)",
+                    func_name, n_args, lua_gettop (L));
     if (lua_gettop (L) > n_args + n_opt_args)
-        return_error (L, "in %s: too many arguments (max %d accepted, %d given)",
-                      func_name, n_args + n_opt_args, lua_gettop (L));
+        luaL_error (L, "in %s: too many arguments (max %d accepted, %d given)",
+                    func_name, n_args + n_opt_args, lua_gettop (L));
 
     va_start (args, format);
     i = 0;
@@ -301,9 +296,7 @@ parse_args (lua_State  *L,
                 if (!lua_isstring (L, i+1) && !lua_isnil (L, i+1))
                 {
                     va_end (args);
-                    return_error (L, "%s: %d-th argument must be a string or nil, not %s",
-                                  func_name, i+1,
-                                  lua_typename (L, lua_type (L, i+1)));
+                    luaL_typerror (L, i+1, "string or nil");
                 }
 
                 s_dest = va_arg (args, char**);
@@ -317,9 +310,7 @@ parse_args (lua_State  *L,
                 if (!lua_isstring (L, i+1))
                 {
                     va_end (args);
-                    return_error (L, "%s: %d-th argument must be a string, not %s",
-                                  func_name, i+1,
-                                  lua_typename (L, lua_type (L, i+1)));
+                    luaL_typerror (L, i+1, "string");
                 }
 
                 s_dest = va_arg (args, char**);
@@ -330,9 +321,7 @@ parse_args (lua_State  *L,
                 if (!lua_isstring (L, i+1) && !lua_isnumber (L, i+1))
                 {
                     va_end (args);
-                    return_error (L, "%s: %d-th argument must be a string or number, not %s",
-                                  func_name, i+1,
-                                  lua_typename (L, lua_type (L, i+1)));
+                    luaL_typerror (L, i+1, "string or number");
                 }
 
                 s_dest = va_arg (args, char**);
@@ -345,9 +334,7 @@ parse_args (lua_State  *L,
                 if (!lua_isnumber (L, i+1))
                 {
                     va_end (args);
-                    return_error (L, "%s: %d-th argument must be a number, not %s",
-                                  func_name, i+1,
-                                  lua_typename (L, lua_type (L, i+1)));
+                    luaL_typerror (L, i+1, "number");
                 }
 
                 num = lua_tonumber (L, i+1);
@@ -358,9 +345,7 @@ parse_args (lua_State  *L,
                         *i_dest = num;
                         break;
                     case 'u':
-                        if (num < 0)
-                            return_error (L, "%s: %d-th argument must be non-negative",
-                                          func_name, i+1);
+                        luaL_argcheck (L, num >= 0, i+1, "must be non-negative");
                         u_dest = va_arg (args, guint*);
                         *u_dest = num;
                         break;
@@ -372,26 +357,6 @@ parse_args (lua_State  *L,
                 break;
         }
     }
-}
-
-static void
-return_error (lua_State  *L,
-              const char *format,
-              ...)
-{
-    va_list args;
-    char *msg = NULL;
-
-    va_start (args, format);
-    g_vasprintf (&msg, format, args);
-    va_end (args);
-
-    if (!msg)
-        g_critical ("%s: oops", G_STRFUNC);
-
-    lua_pushstring (L, msg ? msg : "ERROR");
-    g_free (msg);
-    lua_error (L);
 }
 
 
@@ -431,8 +396,7 @@ cfunc_backspace (lua_State *L)
     CHECK_DOC (L, doc);
     parse_args (L, "Backspace", "|i", &n);
 
-    if (n < 0)
-        return_error (L, "in Backspace: argument must be positive");
+    luaL_argcheck (L, n >= 0, 1, "must be positive");
 
     if (!n)
         return 0;
@@ -467,8 +431,7 @@ cfunc_delete (lua_State *L)
     CHECK_DOC (L, doc);
     parse_args (L, "Delete", "|i", &n);
 
-    if (n < 0)
-        return_error (L, "in Delete: argument must be positive");
+    luaL_argcheck (L, n >= 0, 1, "must be positive");
 
     if (!n)
         return 0;
@@ -521,8 +484,7 @@ cfunc_new_line (lua_State *L)
     CHECK_DOC (L, doc);
     parse_args (L, "NewLine", "|i", n);
 
-    if (n < 0)
-        return_error (L, "in NewLine: argument must be positive");
+    luaL_argcheck (L, n >= 0, 1, "must be positive");
 
     if (!n)
         return 0;
@@ -715,7 +677,7 @@ cfunc_insert_placeholder (lua_State *L)
     parse_args (L, "InsertPlaceholder", "|S", &text);
 
     if (!MOO_IS_TEXT_VIEW (doc))
-        return_error (L, "in InsertPlaceholder: document does not support placeholders");
+        luaL_error (L, "in InsertPlaceholder: the document does not support placeholders");
 
     buffer = gtk_text_view_get_buffer (doc);
 
