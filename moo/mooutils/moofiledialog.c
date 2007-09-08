@@ -11,6 +11,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#include "config.h"
 #include <gtk/gtk.h>
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooprefs.h"
@@ -368,12 +369,14 @@ GtkWidget *file_chooser_dialog_new (const char *title,
                                              start_dir);
 
 
+#ifdef MOO_ENABLE_HELP
     if (help_id)
     {
         moo_help_set_id (dialog, help_id);
         moo_help_connect_keys (dialog);
         gtk_dialog_add_button (GTK_DIALOG (dialog), GTK_STOCK_HELP, GTK_RESPONSE_HELP);
     }
+#endif
 
     return dialog;
 }

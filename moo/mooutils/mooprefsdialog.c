@@ -125,14 +125,18 @@ moo_prefs_dialog_init (MooPrefsDialog *dialog)
     gtk_window_set_destroy_with_parent (GTK_WINDOW (dialog), TRUE);
 
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
+#ifdef MOO_ENABLE_HELP
                             GTK_STOCK_HELP, GTK_RESPONSE_HELP,
+#endif
                             GTK_STOCK_APPLY, GTK_RESPONSE_APPLY,
                             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                             GTK_STOCK_OK, GTK_RESPONSE_OK,
                             NULL);
 #if GTK_MINOR_VERSION >= 6
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
+#ifdef MOO_ENABLE_HELP
                                              GTK_RESPONSE_HELP,
+#endif
                                              GTK_RESPONSE_OK,
                                              GTK_RESPONSE_CANCEL,
                                              GTK_RESPONSE_APPLY,
