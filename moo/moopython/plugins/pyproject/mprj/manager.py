@@ -123,9 +123,9 @@ class Manager(object):
 
     def attach_win(self, window):
         if self.project:
-            window.set_title_prefix(self.project.name)
+            self.__set_title_prefix(self.project.name)
         else:
-            window.set_title_prefix("medit")
+            self.__set_title_prefix(None)
         self.window = window
         self.window.connect('close', self.close_window)
         action = self.window.get_action("CloseProject")
@@ -148,9 +148,13 @@ class Manager(object):
                 except Exception, e:
                     print_error(e)
 
+    def __set_title_prefix(self, prefix):
+        editor = moo.edit.editor_instance()
+        editor.set_app_name(prefix or "medit")
+
     def detach_win(self, window):
         self.close_project(True)
-        window.set_title_prefix("medit")
+        self.__set_title_prefix(None)
         self.window = None
 
     def open_project_cb(self, window):
@@ -204,7 +208,7 @@ class Manager(object):
 
         self.project = project_type(window, config, file)
         self.project.load()
-        window.set_title_prefix(self.project.name)
+        self.__set_title_prefix(self.project.name)
         self.recent_list.add_filename(filename)
         moo.utils.prefs_set_string("Plugins/Project/last", filename)
 
@@ -234,7 +238,7 @@ class Manager(object):
                 close.set_property("sensitive", False)
             if close:
                 options.set_property("visible", False)
-            self.window.set_title_prefix("medit")
+            self.__set_title_prefix(None)
 
         return True
 
