@@ -228,7 +228,7 @@ AM_CFLAGS =					\
 	$(MOO_CFLAGS)				\
 	$(MOO_DEBUG_CFLAGS)			\
 	-DMOO_LOCALE_DIR=\"$(datadir)/locale\"	\
-	-DMOO_HELP_DIR=\"$(helpdir)\"
+	-DMOO_HELP_DIR=\"$(htmldir)/help\"
 AM_OBJCFLAGS = $(AM_CFLAGS) $(MOO_OBJCFLAGS)
 
 if MOO_INSTALL_HEADERS

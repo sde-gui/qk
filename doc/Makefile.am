@@ -23,15 +23,12 @@ manual.html: manual.docbook manual.xsl
 # Standard automake stuff
 #
 install: install-data
-install-data: install-help install-manual
-install-help: build-help
-	$(mkdir_p) $(DESTDIR)$(helpdir)
-	$(INSTALL_DATA) help/* $(DESTDIR)$(helpdir)/
-install-manual: manual.html
-	$(mkdir_p) $(DESTDIR)$(helpdir)
-	$(INSTALL_DATA) manual.html $(DESTDIR)$(helpdir)/
+install-data: build-help manual.html
+	$(mkdir_p) $(DESTDIR)$(htmldir)/help
+	$(INSTALL_DATA) manual.html $(DESTDIR)$(htmldir)/
+	$(INSTALL_DATA) help/* $(DESTDIR)$(htmldir)/help/
 uninstall:
-	rm -fr $(DESTDIR)$(helpdir)/
+	rm -fr $(DESTDIR)$(htmldir)/help $(htmldir)/manual.html
 
 clean: mostlyclean
 mostlyclean:

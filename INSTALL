@@ -52,11 +52,6 @@ configure has the following medit-specific options:
     By default help files are built and installed if xsltproc can process DocBook
     sources, i.e. if both xsltproc and docbook are installed and functional.
 
-  --with-helpdir=path     install html help to path
-    Use if you need to override the default ($htmldir). You *must* use
-    this option if you are going to move the files into another location
-    after installation, otherwise medit will not find the them.
-
   --without-mooapp
   --without-mooedit
     These two options are useful only when building standalone libmoo library,

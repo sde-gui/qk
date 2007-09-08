@@ -57,14 +57,4 @@ AC_DEFUN([MOO_DOCS],[
   if test "x$enable_help" = xyes; then
     AC_DEFINE(MOO_ENABLE_HELP, [1], [enable help functionality])
   fi
-
-  AC_ARG_WITH([helpdir],
-    AC_HELP_STRING([--with-helpdir=path], [Location for html help files]),
-    [if test "$with_helpdir" = yes -o "$with_helpdir" = no; then
-       AC_MSG_ERROR("--with-helpdir value must be a path")
-     fi
-     helpdir="$with_helpdir"
-    ],[helpdir="$htmldir"])
-
-  AC_SUBST(helpdir)
 ])
