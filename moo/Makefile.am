@@ -15,7 +15,8 @@ CLEANFILES += moo-config.h
 scriptsdir = ${MOO_DATA_DIR}/scripts
 scripts_SCRIPTS =		\
 	xdg-utils/xdg-open	\
-	xdg-utils/xdg-email
+	xdg-utils/xdg-email	\
+	moo-open-html-help
 
 EXTRA_DIST =			\
 	$(rc_in_files)		\

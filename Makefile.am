@@ -4,6 +4,7 @@ m4files =			\
 	m4/moo-comps.m4		\
 	m4/moo-debug.m4		\
 	m4/moo-dirs.m4		\
+	m4/moo-docs.m4		\
 	m4/moo-fam.m4		\
 	m4/moo-flags.m4		\
 	m4/moo-funcs.m4		\
@@ -39,7 +40,7 @@ EXTRA_DIST =			\
 @MOO_PO_SUBDIRS_RULE2@
 BUILT_SOURCES = po-subdirs-stamp po-subdirs-stamp-2
 
-DIST_SUBDIRS = moo medit tests po po-gsv
+DIST_SUBDIRS = moo medit tests po po-gsv doc
 
 if MOO_BUILD_MEDIT
 SUBDIRS = . moo medit po po-gsv
@@ -49,6 +50,10 @@ endif
 
 if MOO_ENABLE_TESTS
 SUBDIRS += tests
+endif
+
+if MOO_ENABLE_HELP
+SUBDIRS += doc
 endif
 
 ACLOCAL_AMFLAGS = -I m4
@@ -62,6 +67,7 @@ DISTCLEANFILES =		\
 	po-subdirs-stamp-2	\
 	po-subdirs-stamp
 
+DISTCHECK_CONFIGURE_FLAGS="--enable-docs"
 distuninstallcheck_listfiles = find . -type f -print | grep -v share/mime/ | grep -v share/icons/hicolor
 
 snapshot:

@@ -34,6 +34,7 @@ mooutils_include_headers =		\
 	moofiledialog.h			\
 	moofiltermgr.h			\
 	mooglade.h			\
+	moohelp.h			\
 	moohistorycombo.h		\
 	moohistorylist.h		\
 	mooi18n.h			\
@@ -92,6 +93,7 @@ mooutils_sources =			\
 	moofontsel.c			\
 	moofontsel.h			\
 	mooglade.c			\
+	moohelp.c			\
 	moohistorycombo.c		\
 	moohistorylist.c		\
 	mooi18n.c			\
@@ -220,12 +222,13 @@ libmooutils_la_SOURCES = $(mooutils_sources)
 nodist_libmooutils_la_SOURCES =	$(nodist_mooutils_sources)
 libmooutils_la_LIBADD = $(libs)
 
-AM_CFLAGS =			\
-	-I$(top_builddir)	\
-	-I..			\
-	$(MOO_CFLAGS)		\
-	$(MOO_DEBUG_CFLAGS)	\
-	-DMOO_LOCALE_DIR=\"$(datadir)/locale\"
+AM_CFLAGS =					\
+	-I$(top_builddir)			\
+	-I..					\
+	$(MOO_CFLAGS)				\
+	$(MOO_DEBUG_CFLAGS)			\
+	-DMOO_LOCALE_DIR=\"$(datadir)/locale\"	\
+	-DMOO_HELP_DIR=\"$(helpdir)\"
 AM_OBJCFLAGS = $(AM_CFLAGS) $(MOO_OBJCFLAGS)
 
 if MOO_INSTALL_HEADERS

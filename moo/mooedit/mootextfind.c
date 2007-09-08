@@ -23,6 +23,7 @@
 #include "mooutils/mooentry.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/moohelp.h"
 #include <gtk/gtk.h>
 #include <glib/gregex.h>
 #include <glib/gprintf.h>
@@ -191,6 +192,9 @@ moo_find_constructor (GType           type,
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (find), GTK_RESPONSE_OK,
                                              GTK_STOCK_CANCEL, -1);
     gtk_dialog_set_default_response (GTK_DIALOG (find), GTK_RESPONSE_OK);
+
+    moo_help_set_id (GTK_WIDGET (find), find->replace ? "dialog-replace" : "dialog-find");
+    moo_help_connect_keys (GTK_WIDGET (find));
 
     return object;
 }

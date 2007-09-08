@@ -25,6 +25,8 @@ gboolean    moo_open_email                  (const char *address,
                                              const char *subject,
                                              const char *body);
 gboolean    moo_open_file                   (const char *path);
+char       *_moo_find_script                (const char *name,
+                                             gboolean    search_path);
 
 void        moo_window_present              (GtkWindow  *window,
                                              guint32     stamp);

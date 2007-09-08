@@ -28,6 +28,7 @@
 #include "mooutils/moohistorycombo.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/moohelp.h"
 #include <gtk/gtkdialog.h>
 #include <gtk/gtkscrolledwindow.h>
 #include <gtk/gtktogglebutton.h>
@@ -350,6 +351,9 @@ create_grep_dialog (MooEditWindow  *window,
                                        GTK_RESPONSE_OK, FALSE);
     moo_window_set_parent (stuff->grep_dialog, GTK_WIDGET (window));
 
+    moo_help_set_id (stuff->grep_dialog, "dialog-find-in-files");
+    moo_help_connect_keys (stuff->grep_dialog);
+
     g_signal_connect (stuff->grep_dialog, "delete-event",
                       G_CALLBACK (gtk_widget_hide_on_delete), NULL);
 
@@ -387,6 +391,9 @@ create_find_dialog (MooEditWindow  *window,
     gtk_dialog_set_response_sensitive (GTK_DIALOG (stuff->find_dialog),
                                        GTK_RESPONSE_OK, FALSE);
     moo_window_set_parent (stuff->find_dialog, GTK_WIDGET (window));
+
+    moo_help_set_id (stuff->find_dialog, "dialog-find-file");
+    moo_help_connect_keys (stuff->find_dialog);
 
     g_signal_connect (stuff->find_dialog, "delete-event",
                       G_CALLBACK (gtk_widget_hide_on_delete), NULL);

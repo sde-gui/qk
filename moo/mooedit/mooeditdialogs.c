@@ -73,6 +73,7 @@ _moo_edit_open_dialog (GtkWidget      *widget,
                                   NULL);
     g_object_set (dialog, "enable-encodings", TRUE, NULL);
     g_signal_connect (dialog, "dialog-created", G_CALLBACK (open_dialog_created), NULL);
+    moo_file_dialog_set_help_id (dialog, "dialog-open");
 
     if (mgr)
         moo_file_dialog_set_filter_mgr (dialog, mgr, "MooEdit");
@@ -125,6 +126,7 @@ _moo_edit_save_as_dialog (MooEdit        *edit,
                                   FALSE, GTK_STOCK_SAVE_AS, start, display_basename);
     g_object_set (dialog, "enable-encodings", TRUE, NULL);
     moo_file_dialog_set_encoding (dialog, moo_edit_get_encoding (edit));
+    moo_file_dialog_set_help_id (dialog, "dialog-save");
 
     if (mgr)
         moo_file_dialog_set_filter_mgr (dialog, mgr, "MooEdit");

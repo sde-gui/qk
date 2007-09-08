@@ -19,6 +19,7 @@
 #include "mooutils/mooprefsdialogpage.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-treeview.h"
+#include "mooutils/moohelp.h"
 #include <string.h>
 
 #define GET_WID(name) (moo_glade_xml_get_widget (page->xml, (name)))
@@ -420,6 +421,7 @@ moo_user_tools_prefs_page_new (void)
                                                "page", NULL);
     g_signal_connect (page, "init", G_CALLBACK (main_page_init), NULL);
     g_signal_connect (page, "apply", G_CALLBACK (main_page_apply), NULL);
+    moo_help_set_id (GTK_WIDGET (page), "app-prefs-user-tools");
 
     page_menu = moo_glade_xml_get_widget (xml, "page_menu");
     moo_prefs_dialog_page_fill_from_xml (page_menu, NULL, mooedittools_glade_xml,

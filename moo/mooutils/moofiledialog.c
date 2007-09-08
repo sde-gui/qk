@@ -17,6 +17,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooencodings.h"
+#include "mooutils/moohelp.h"
 #include <string.h>
 
 
@@ -30,6 +31,8 @@ struct _MooFileDialogPrivate {
     MooFilterMgr *filter_mgr;
     char *filter_mgr_id;
     gboolean enable_encodings;
+
+    char *help_id;
 
     GSList *filenames;
     char *filename;
@@ -227,6 +230,7 @@ moo_file_dialog_finalize (GObject *object)
     g_free (dialog->priv->filter_mgr_id);
     g_free (dialog->priv->filename);
     g_free (dialog->priv->encoding);
+    g_free (dialog->priv->help_id);
 
     string_slist_free (dialog->priv->filenames);
 
@@ -345,7 +349,8 @@ inline static
 GtkWidget *file_chooser_dialog_new (const char *title,
                                     GtkFileChooserAction action,
                                     const char *okbtn,
-                                    const char *start_dir)
+                                    const char *start_dir,
+                                    const char *help_id)
 {
     GtkWidget *dialog =
             gtk_file_chooser_dialog_new (title, NULL, action,
@@ -361,6 +366,15 @@ GtkWidget *file_chooser_dialog_new (const char *title,
     if (start_dir)
         gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER(dialog),
                                              start_dir);
+
+
+    if (help_id)
+    {
+        moo_help_set_id (dialog, help_id);
+        moo_help_connect_keys (dialog);
+        gtk_dialog_add_button (GTK_DIALOG (dialog), GTK_STOCK_HELP, GTK_RESPONSE_HELP);
+    }
+
     return dialog;
 }
 
@@ -416,7 +430,8 @@ moo_file_dialog_create_widget (MooFileDialog *dialog)
             widget = file_chooser_dialog_new (dialog->priv->title,
                                               chooser_action,
                                               GTK_STOCK_OPEN,
-                                              dialog->priv->dir);
+                                              dialog->priv->dir,
+                                              dialog->priv->help_id);
             file_chooser_set_select_multiple (widget, dialog->priv->multiple);
             break;
 
@@ -426,7 +441,8 @@ moo_file_dialog_create_widget (MooFileDialog *dialog)
             widget = file_chooser_dialog_new (dialog->priv->title,
                                               chooser_action,
                                               GTK_STOCK_SAVE,
-                                              dialog->priv->dir);
+                                              dialog->priv->dir,
+                                              dialog->priv->help_id);
 
             if (dialog->priv->name)
                 file_chooser_set_name (widget, dialog->priv->name);
@@ -573,6 +589,7 @@ moo_file_dialog_run (MooFileDialog *dialog)
     char *filename;
     GtkWidget *filechooser;
     gboolean result = FALSE;
+    int response;
 
     g_return_val_if_fail (MOO_IS_FILE_DIALOG (dialog), FALSE);
 
@@ -586,20 +603,29 @@ moo_file_dialog_run (MooFileDialog *dialog)
         case MOO_FILE_DIALOG_OPEN:
         case MOO_FILE_DIALOG_OPEN_ANY:
         case MOO_FILE_DIALOG_OPEN_DIR:
-            if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_OK)
+            while ((response = gtk_dialog_run (GTK_DIALOG (filechooser))) == GTK_RESPONSE_HELP)
+                moo_help_open (filechooser);
+            if (response == GTK_RESPONSE_OK)
             {
                 set_filename (dialog, file_chooser_get_filename (filechooser));
                 if (dialog->priv->multiple)
                     set_filenames (dialog, file_chooser_get_filenames (filechooser));
                 result = TRUE;
             }
-
             goto out;
 
         case MOO_FILE_DIALOG_SAVE:
             while (TRUE)
             {
-                if (GTK_RESPONSE_OK == gtk_dialog_run (GTK_DIALOG (filechooser)))
+                response = gtk_dialog_run (GTK_DIALOG (filechooser));
+
+                if (response == GTK_RESPONSE_HELP)
+                {
+                    moo_help_open (filechooser);
+                    continue;
+                }
+
+                if (response == GTK_RESPONSE_OK)
                 {
                     char *msg;
 
@@ -780,4 +806,14 @@ moo_file_dialog_set_filter_mgr (MooFileDialog  *dialog,
     g_return_if_fail (MOO_IS_FILE_DIALOG (dialog));
     g_return_if_fail (!mgr || MOO_IS_FILTER_MGR (mgr));
     g_object_set (dialog, "filter-mgr", mgr, "filter-mgr-id", id, NULL);
+}
+
+
+void
+moo_file_dialog_set_help_id (MooFileDialog *dialog,
+                             const char    *id)
+{
+    g_return_if_fail (MOO_IS_FILE_DIALOG (dialog));
+    g_free (dialog->priv->help_id);
+    dialog->priv->help_id = g_strdup (id);
 }

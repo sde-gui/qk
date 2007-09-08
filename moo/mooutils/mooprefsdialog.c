@@ -14,6 +14,7 @@
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moodialogs.h"
+#include "mooutils/moohelp.h"
 
 
 enum {
@@ -46,6 +47,8 @@ static void pages_list_selection_changed    (MooPrefsDialog *dialog,
 
 static void init_page                       (MooPrefsDialogPage *page);
 
+static gboolean moo_prefs_dialog_help       (GtkWidget      *widget);
+
 
 enum {
     PROP_0,
@@ -66,7 +69,8 @@ static guint prefs_dialog_signals[LAST_SIGNAL] = {0};
 G_DEFINE_TYPE (MooPrefsDialog, moo_prefs_dialog, GTK_TYPE_DIALOG)
 
 
-static void moo_prefs_dialog_class_init (MooPrefsDialogClass *klass)
+static void
+moo_prefs_dialog_class_init (MooPrefsDialogClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkObjectClass *gtkobject_class = GTK_OBJECT_CLASS (klass);
@@ -108,9 +112,13 @@ static void moo_prefs_dialog_class_init (MooPrefsDialogClass *klass)
 }
 
 
-static void moo_prefs_dialog_init (MooPrefsDialog *dialog)
+static void
+moo_prefs_dialog_init (MooPrefsDialog *dialog)
 {
     GtkWidget *hbox, *scrolledwindow, *notebook;
+
+    moo_help_set_func (GTK_WIDGET (dialog), moo_prefs_dialog_help);
+    moo_help_connect_keys (GTK_WIDGET (dialog));
 
     _moo_window_set_remember_size (GTK_WINDOW (dialog), "Dialogs/Preferences", FALSE);
 
@@ -311,10 +319,11 @@ moo_prefs_dialog_set_property (GObject      *object,
 }
 
 
-static void moo_prefs_dialog_get_property   (GObject      *object,
-                                             guint         prop_id,
-                                             GValue       *value,
-                                             GParamSpec   *pspec)
+static void
+moo_prefs_dialog_get_property (GObject    *object,
+                               guint       prop_id,
+                               GValue     *value,
+                               GParamSpec *pspec)
 {
     MooPrefsDialog *dialog = MOO_PREFS_DIALOG (object);
     g_return_if_fail (dialog != NULL);
@@ -364,7 +373,7 @@ moo_prefs_dialog_response (GtkDialog *dialog,
     switch (response)
     {
         case GTK_RESPONSE_HELP:
-            g_print ("Help!\n");
+            moo_help_open (GTK_WIDGET (dialog));
             break;
 
         case GTK_RESPONSE_APPLY:
@@ -521,4 +530,21 @@ moo_prefs_dialog_remove_page (MooPrefsDialog     *dialog,
 
     gtk_notebook_remove_page (dialog->notebook,
                               gtk_notebook_page_num (dialog->notebook, page));
+}
+
+
+static gboolean
+moo_prefs_dialog_help (GtkWidget *widget)
+{
+    int index;
+    GtkWidget *current_page = NULL;
+    MooPrefsDialog *dialog = MOO_PREFS_DIALOG (widget);
+
+    if ((index = gtk_notebook_get_current_page (dialog->notebook)) >= 0)
+        current_page = gtk_notebook_get_nth_page (dialog->notebook, index);
+
+    if (!current_page || !moo_help_open (current_page))
+        moo_help_open_id ("app-prefs-dialog", widget);
+
+    return TRUE;
 }

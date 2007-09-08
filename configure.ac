@@ -36,6 +36,7 @@ AC_SUBST(MOO_SRC_PREFIX)
 MOO_COMPONENTS([app,edit,term],[])
 MOO_AC_SET_DIRS
 MOO_AC_FLAGS(moo)
+MOO_DOCS
 
 
 ################################################################################
@@ -44,6 +45,7 @@ MOO_AC_FLAGS(moo)
 AC_CONFIG_FILES([
 Makefile
 config.py
+doc/Makefile
 moo/moo.pc
 moo/moo-config.h
 moo/Makefile
@@ -83,16 +85,23 @@ if test "x$MOO_WARN_OBJC" != "x"; then
   AC_MSG_WARN([$MOO_WARN_OBJC])
 fi
 
+if test "x$MOO_USE_PYTHON" = "xyes" -o "x$MOO_USE_PYTHON" = "xtrue"; then
+  use_python=yes
+else
+  use_python=no
+fi
+
 if test x$MOO_OS_CYGWIN != "xyes"; then
   echo
   echo "    OS ...................................... $MOO_OS_NAME"
-  echo "    use python .............................. $MOO_USE_PYTHON"
+  echo "    use python .............................. $use_python"
   echo "    use xml ................................. $MOO_USE_XML"
   echo "    build pcre library ...................... $MOO_BUILD_PCRE"
   echo "    use FAM ................................. $MOO_USE_FAM"
   echo
   echo "    prefix .................................. $prefix"
   echo "    editor lang files go to ................. $MOO_TEXT_LANG_FILES_DIR"
+  echo "    build html help ......................... $enable_help"
   echo
   echo "    components: $MOO_BUILD_COMPS"
   echo

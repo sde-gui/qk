@@ -17,6 +17,7 @@
 #include "mooutils/mooutils-treeview.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/moostock.h"
+#include "mooutils/moohelp.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -72,6 +73,7 @@ _moo_file_selector_prefs_page (MooPlugin *plugin)
 
     g_signal_connect_swapped (page, "apply", G_CALLBACK (prefs_page_apply), xml);
     g_signal_connect_swapped (page, "init", G_CALLBACK (prefs_page_init), xml);
+    moo_help_set_id (GTK_WIDGET (page), "app-prefs-file-selector");
 
     treeview = moo_glade_xml_get_widget (xml, "treeview");
 

@@ -59,12 +59,16 @@ open_uri (const char *uri,
 
 #else /* ! __WIN32__ */
 
-static char *
-find_xdg_script (const char *name)
+char *
+_moo_find_script (const char *name,
+                  gboolean    search_path)
 {
-    char *path;
+    char *path = NULL;
 
-    path = g_find_program_in_path (name);
+    g_return_val_if_fail (name != NULL, NULL);
+
+    if (search_path)
+        path = g_find_program_in_path (name);
 
     if (!path)
     {
@@ -110,8 +114,8 @@ get_xdg_script (int type)
 
     if (!path[0])
     {
-        path[SCRIPT_XDG_OPEN] = find_xdg_script ("xdg-open");
-        path[SCRIPT_XDG_EMAIL] = find_xdg_script ("xdg-email");
+        path[SCRIPT_XDG_OPEN] = _moo_find_script ("xdg-open", TRUE);
+        path[SCRIPT_XDG_EMAIL] = _moo_find_script ("xdg-email", TRUE);
     }
 
     return path[type];

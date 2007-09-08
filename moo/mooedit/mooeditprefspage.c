@@ -29,6 +29,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/moohelp.h"
 #include <string.h>
 
 
@@ -37,6 +38,7 @@ typedef struct PrefsPage PrefsPage;
 
 static void     moo_edit_prefs_page_init    (MooPrefsDialogPage *page);
 static void     moo_edit_prefs_page_apply   (MooPrefsDialogPage *page);
+static gboolean moo_edit_prefs_page_help    (GtkWidget          *widget);
 
 static void     prefs_page_apply_lang_prefs (PrefsPage          *page);
 static void     apply_filter_settings       (PrefsPage          *page);
@@ -194,6 +196,7 @@ moo_edit_prefs_page_new (MooEditor *editor)
     _moo_edit_init_config ();
 
     prefs_page = moo_prefs_dialog_page_new ("Editor", GTK_STOCK_EDIT);
+    moo_help_set_func (prefs_page, moo_edit_prefs_page_help);
 
     data = g_new0 (PrefsPageData, 1);
     data->pages = g_new0 (PrefsPage*, G_N_ELEMENTS (prefs_pages));
@@ -325,6 +328,8 @@ page_langs_init (PrefsPage *page)
 {
     GtkComboBox *lang_combo;
     MooTreeHelper *helper;
+
+    moo_help_set_id (GTK_WIDGET (page->page), "app-prefs-langs-and-filters");
 
     lang_combo = moo_glade_xml_get_widget (page->page->xml, "lang_combo");
     lang_combo_init (lang_combo, page);
@@ -1222,4 +1227,28 @@ save_encoding_combo_apply (MooGladeXML *xml)
 
     enc = _moo_encodings_combo_get_enc (combo, MOO_ENCODING_COMBO_SAVE);
     moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_ENCODING_SAVE), enc);
+}
+
+
+/**************************************************************************/
+/* Help
+ */
+
+static gboolean
+moo_edit_prefs_page_help (GtkWidget *widget)
+{
+    PrefsPageData *data;
+    int index;
+    GtkWidget *current_page = NULL;
+
+    data = g_object_get_data (G_OBJECT (widget), "prefs-page-data");
+    g_return_val_if_fail (data != NULL, FALSE);
+
+    if ((index = gtk_notebook_get_current_page (data->notebook)) >= 0)
+        current_page = gtk_notebook_get_nth_page (data->notebook, index);
+
+    if (!current_page || !moo_help_open (current_page))
+        moo_help_open_id ("app-prefs-editor", widget);
+
+    return TRUE;
 }

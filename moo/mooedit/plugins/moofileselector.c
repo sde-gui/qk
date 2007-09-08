@@ -30,6 +30,7 @@
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/moohelp.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
@@ -190,6 +191,9 @@ _moo_file_selector_init (MooFileSelector *filesel)
     filesel->targets = gtk_target_list_new (targets, G_N_ELEMENTS (targets));
     _moo_file_view_add_target (MOO_FILE_VIEW (filesel), moo_edit_tab_atom,
                                GTK_TARGET_SAME_APP, TARGET_MOO_EDIT_TAB);
+
+    moo_help_set_id (GTK_WIDGET (filesel), "file-selector");
+    moo_help_connect_keys (GTK_WIDGET (filesel));
 }
 
 

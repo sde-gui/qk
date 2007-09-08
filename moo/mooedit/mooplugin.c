@@ -24,6 +24,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
+#include "mooutils/moohelp.h"
 #include <string.h>
 #include <gmodule.h>
 #include <gobject/gvaluecollector.h>
@@ -1485,6 +1486,8 @@ moo_plugin_attach_prefs (GtkWidget *dialog)
                                                NULL, moopluginprefs_glade_xml,
                                                "page", MOO_PLUGIN_PREFS_ROOT);
     g_return_if_fail (page != NULL);
+
+    moo_help_set_id (GTK_WIDGET (page), "app-prefs-plugins");
 
     xml = page->xml;
 

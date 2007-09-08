@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+                    "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd" [
+  <!ENTITY appversion "0.9.0">
+  <!ENTITY manrevision "0.1">
+  <!ENTITY date "Septermber 2007">
+  <!ENTITY app "medit">
+]>
+
+<article>
+
+<articleinfo>
+<title>medit manual</title>
+</articleinfo>
+
+<sect1>
+<title>Hello, world</title>
+<para>This is my first DocBook file.</para>
+
+<sect2 id="app-prefs-langs-and-filters">
+<title>app-prefs-langs-and-filters</title>
+blah blah blah
+</sect2>
+
+<sect2 id="app-prefs-editor">
+<title>app-prefs-editor</title>
+blah blah blah
+</sect2>
+
+<sect2 id="contents">
+<title>contents</title>
+blah blah blah
+</sect2>
+
+<sect2 id="app-prefs-plugins">
+<title>app-prefs-plugins</title>
+blah blah blah
+</sect2>
+
+<sect2 id="dialog-replace">
+<title>dialog-replace</title>
+blah blah blah
+</sect2>
+
+<sect2 id="dialog-find">
+<title>dialog-find</title>
+blah blah blah
+</sect2>
+
+<sect2 id="app-prefs-user-tools">
+<title>app-prefs-user-tools</title>
+blah blah blah
+</sect2>
+
+<sect2 id="dialog-find-in-files">
+<title>dialog-find-in-files</title>
+blah blah blah
+</sect2>
+
+<sect2 id="dialog-find-file">
+<title>dialog-find-file</title>
+blah blah blah
+</sect2>
+
+<sect2 id="dialog-open">
+<title>dialog-open</title>
+blah blah blah
+</sect2>
+
+<sect2 id="dialog-save">
+<title>dialog-save</title>
+blah blah blah
+</sect2>
+
+<sect2 id="file-selector">
+<title>file-selector</title>
+blah blah blah
+</sect2>
+
+<sect2 id="app-prefs-file-selector">
+<title>app-prefs-file-selector</title>
+blah blah blah
+</sect2>
+
+</sect1>
+
+<para role="generated-date">This document was generated
+<?dbtimestamp format="Y-m-d H:M:S"?>.</para>
+
+</article>

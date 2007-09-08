@@ -28,6 +28,7 @@
 
 #include "moostock.h"
 #include "mooutils-misc.h"
+#include "moohelp.h"
 #include "mooutils-gobject.h"
 #include "mooi18n.h"
 
@@ -1115,6 +1116,10 @@ create_pane_window (MooPane *pane)
 
     pane->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     window = GTK_WINDOW (pane->window);
+
+#ifdef MOO_COMPILATION
+    moo_help_connect_keys (pane->window);
+#endif
 
     set_pane_window_icon_and_title (pane);
 

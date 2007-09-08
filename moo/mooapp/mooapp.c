@@ -36,6 +36,7 @@
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/xdgmime/xdgmime.h"
+#include "mooutils/moohelp.h"
 #include <glib/gmappedfile.h>
 #include <string.h>
 #include <stdio.h>
@@ -107,6 +108,8 @@ static void     moo_app_info_free       (MooAppInfo         *info);
 
 static void     install_common_actions  (void);
 static void     install_editor_actions  (void);
+
+static void     moo_app_help            (GtkWidget          *window);
 
 static void     moo_app_set_property    (GObject            *object,
                                          guint               prop_id,
@@ -1282,6 +1285,13 @@ install_common_actions (void)
                                  "closure-callback", moo_app_about_dialog,
                                  NULL);
 
+    moo_window_class_new_action (klass, "Help", NULL,
+                                 "label", GTK_STOCK_HELP,
+                                 "accel", "F1",
+                                 "stock-id", GTK_STOCK_HELP,
+                                 "closure-callback", moo_app_help,
+                                 NULL);
+
     moo_window_class_new_action (klass, "SystemInfo", NULL,
                                  /* menu item label */
                                  "label", _("System Info"),
@@ -1820,6 +1830,14 @@ moo_app_tempnam (MooApp *app)
 
     g_warning ("%s: could not generate temp file name", G_STRLOC);
     return NULL;
+}
+
+
+static void
+moo_app_help (GtkWidget *window)
+{
+    GtkWidget *focus = gtk_window_get_focus (GTK_WINDOW (window));
+    moo_help_open_any (focus ? focus : window);
 }
 
 

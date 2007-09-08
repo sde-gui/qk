@@ -132,6 +132,7 @@
     <!-- menu item label -->
     <item name="Help" stock-label="gtk-help">
       <separator/>
+      <item action="Help"/>
       <item action="SystemInfo"/>
       <item action="About"/>
       <separator/>
