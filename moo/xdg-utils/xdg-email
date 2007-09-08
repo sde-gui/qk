@@ -43,7 +43,7 @@ e-mail composer
 Synopsis
 
 xdg-email [--utf8] [--cc address] [--bcc address] [--subject text] [--body text
-] [--attach file] { mailto-uri | address(es) }
+] [--attach file] [ mailto-uri | address(es) ]
 
 xdg-email { --help | --manual | --version }
 
@@ -151,7 +151,7 @@ e-mail composer
 Synopsis
 
 xdg-email [--utf8] [--cc address] [--bcc address] [--subject text] [--body text
-] [--attach file] { mailto-uri | address(es) }
+] [--attach file] [ mailto-uri | address(es) ]
 
 xdg-email { --help | --manual | --version }
 
@@ -478,8 +478,6 @@ result=$(echo "$1" | $utf8 | awk '
 ')
 }
 
-[ x"$1" != x"" ] || exit_failure_syntax
-
 options=
 mailto=
 utf8="iconv -t utf8"
@@ -576,7 +574,8 @@ while [ $# -gt 0 ] ; do
 done
 
 if [ -z "${mailto}" ] ; then
-    exit_failure_syntax "email address or mailto URI argument missing"
+    # TO address is optional
+    mailto="mailto:?"    
 fi
 
 case $mailto in
