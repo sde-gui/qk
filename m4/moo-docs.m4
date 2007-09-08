@@ -64,7 +64,7 @@ AC_DEFUN([MOO_DOCS],[
        AC_MSG_ERROR("--with-helpdir value must be a path")
      fi
      helpdir="$with_helpdir"
-    ],[helpdir="${MOO_DATA_DIR}/help"])
+    ],[helpdir="$htmldir"])
 
   AC_SUBST(helpdir)
 ])
