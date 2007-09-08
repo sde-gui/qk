@@ -52,26 +52,28 @@ configure has the following medit-specific options:
     By default help files are built and installed if xsltproc can process DocBook
     sources, i.e. if both xsltproc and docbook are installed and functional.
 
+  --with-helpdir=path     install html help to path
+    Use if you need to override the default ($datadir/moo/help). You *must* use
+    this option if you are going to move the files into a location like /usr/share/doc/
+    after installation, otherwise medit will not find the them.
+
   --without-mooapp
   --without-mooedit
     These two options are useful only when building standalone libmoo library,
     and may not be used with medit.
 
-Defaults for all the options are chosen in such a way that you do not need to
-use them. Only in case of problem they may be needed.
-
 
 Debugging
 *********
 
-For better bug report information and backtraces, configure medit
+For better bug report information and stack traces, configure medit
 as follows:
 
 ./configure --enable-debug CFLAGS=-g ...
 
 --enable-debug makes medit spit out lot of debugging information
 to console, which can be useful to trace bugs. CFLAGS=-g is mandatory
-for getting a usable backtrace in case of a crash.
+for getting a usable stack trace in case of a crash.
 
 
 libmoo installation
