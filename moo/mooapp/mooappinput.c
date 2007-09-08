@@ -445,13 +445,6 @@ read_input (G_GNUC_UNUSED GIOChannel *source,
     int n;
     gboolean do_commit = FALSE;
 
-    if (condition & (G_IO_ERR | G_IO_HUP))
-    {
-        moo_dmsg ("%s: %s", G_STRLOC,
-                  (condition & G_IO_ERR) ? "G_IO_ERR" : "G_IO_HUP");
-        goto remove;
-    }
-
     errno = 0;
 
     while ((n = read (conn->fd, &c, 1)) > 0)
@@ -473,9 +466,20 @@ read_input (G_GNUC_UNUSED GIOChannel *source,
             moo_dmsg ("%s: EOF", G_STRLOC);
         goto remove;
     }
+    else
+    {
+        moo_dmsg ("%s: got bytes: '%s'", G_STRLOC, conn->buffer->str);
+    }
 
     if (do_commit)
         commit (&conn->buffer);
+
+    if (condition & (G_IO_ERR | G_IO_HUP))
+    {
+        moo_dmsg ("%s: %s", G_STRLOC,
+                  (condition & G_IO_ERR) ? "G_IO_ERR" : "G_IO_HUP");
+        goto remove;
+    }
 
     return TRUE;
 
