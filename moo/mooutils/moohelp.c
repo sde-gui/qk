@@ -2,6 +2,7 @@
 #include "moohelp.h"
 #include "mooutils-misc.h"
 #include "moodialogs.h"
+#include <gdk/gdkkeysyms.h>
 
 typedef struct {
     MooHelpFunc func;
@@ -110,9 +111,14 @@ moo_help_open_any (GtkWidget *widget)
 
 
 static gboolean
-moo_help_key_press (GtkWidget *widget)
+moo_help_key_press (GtkWidget   *widget,
+                    GdkEventKey *event)
 {
-    return moo_help_open (widget);
+    if (!(event->state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_META_MASK)) &&
+        event->keyval == GDK_F1)
+            return moo_help_open (widget);
+    else
+        return FALSE;
 }
 
 void
