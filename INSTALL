@@ -48,6 +48,10 @@ configure has the following medit-specific options:
     If libxml2 is not available or --without-xml is used, syntax highlighting
     will be disabled.
 
+  --disable-help          do not build html help files
+    By default help files are built and installed if xsltproc can process DocBook
+    sources, i.e. if both xsltproc and docbook are installed and functional.
+
   --without-mooapp
   --without-mooedit
     These two options are useful only when building standalone libmoo library,
