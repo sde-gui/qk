@@ -81,10 +81,6 @@ AC_OUTPUT
 ################################################################################
 #  Configuration info
 #
-if test "x$MOO_WARN_OBJC" != "x"; then
-  AC_MSG_WARN([$MOO_WARN_OBJC])
-fi
-
 if test "x$MOO_USE_PYTHON" = "xyes" -o "x$MOO_USE_PYTHON" = "xtrue"; then
   use_python=yes
 else

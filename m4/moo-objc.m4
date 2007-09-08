@@ -6,12 +6,10 @@ AC_DEFUN_ONCE([MOO_AC_OBJC],[
 
   if test "x$MOO_USE_OBJC" != "xno"; then
     _MOO_OBJC_CHECK([
-      MOO_WARN_OBJC=
       MOO_USE_OBJC=yes
       AC_DEFINE(MOO_USE_OBJC, 1, [Use Objective-C.])
       AC_MSG_NOTICE([Objective-C flags: $MOO_OBJCFLAGS $MOO_OBJC_LIBS])
     ],[
-      MOO_WARN_OBJC="Objective-C support is disabled, editor user tools will be disabled"
       MOO_USE_OBJC=no
       MOO_OBJCFLAGS=
       MOO_OBJC_LIBS=
