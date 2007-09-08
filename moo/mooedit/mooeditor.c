@@ -685,8 +685,8 @@ file_info_list_free (GSList *list)
 
 
 void
-moo_editor_set_app_name (MooEditor      *editor,
-                         const char     *name)
+moo_editor_set_app_name (MooEditor  *editor,
+                         const char *name)
 {
     char *tmp;
 
@@ -694,6 +694,9 @@ moo_editor_set_app_name (MooEditor      *editor,
 
     tmp = editor->priv->app_name;
     editor->priv->app_name = g_strdup (name);
+
+    _moo_edit_window_update_title ();
+
     g_free (tmp);
 }
 
