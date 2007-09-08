@@ -1994,7 +1994,6 @@ static void
 moo_text_view_unrealize (GtkWidget *widget)
 {
     MooTextView *view = MOO_TEXT_VIEW (widget);
-    GtkClipboard *clipboard;
 
     g_slist_foreach (view->priv->line_marks, (GFunc) _moo_line_mark_unrealize, NULL);
     g_object_set_data (G_OBJECT (widget), "moo-line-mark-icons", NULL);
@@ -2031,10 +2030,6 @@ moo_text_view_unrealize (GtkWidget *widget)
         g_source_remove (view->priv->dnd.scroll_timeout);
         view->priv->dnd.scroll_timeout = 0;
     }
-
-    clipboard = gtk_widget_get_clipboard (widget, GDK_SELECTION_CLIPBOARD);
-    if (gtk_clipboard_get_owner (clipboard) == G_OBJECT (view))
-        gtk_clipboard_store (clipboard);
 
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->unrealize (widget);
 }
