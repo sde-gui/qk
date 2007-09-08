@@ -205,7 +205,8 @@ warn_no_help_file (const char *basename,
 }
 
 static void
-open_html_file (const char *path)
+open_html_file (const char *path,
+                GtkWidget  *parent)
 {
     static gboolean been_here;
     static char *script;
@@ -236,8 +237,13 @@ open_html_file (const char *path)
     argv[1] = path;
     argv[2] = NULL;
 
-    g_spawn_async (NULL, (char**) argv, NULL, (GSpawnFlags) 0, NULL, NULL,
-                   NULL, &err);
+    if (parent && gtk_widget_has_screen (parent))
+        gdk_spawn_on_screen (gtk_widget_get_screen (parent),
+                             NULL, (char**) argv, NULL, 0, NULL, NULL,
+                             NULL, &err);
+    else
+        g_spawn_async (NULL, (char**) argv, NULL, 0, NULL, NULL,
+                       NULL, &err);
 
     if (err)
     {
@@ -271,7 +277,7 @@ open_file_by_id (const char *id,
     if (!g_file_test (filename, G_FILE_TEST_IS_REGULAR))
         warn_no_help_file (basename, parent);
     else
-        open_html_file (filename);
+        open_html_file (filename, parent);
 
     g_free (filename);
     g_free (basename);
