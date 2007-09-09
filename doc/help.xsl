@@ -76,7 +76,7 @@
 
 <!--<xsl:param name="footer.rule" select="0"/>-->
 <!--<xsl:param name="header.rule" select="0"/>-->
-<xsl:param name="html.stylesheet" select="'chunks.css'"/>
+<xsl:param name="html.stylesheet" select="'help.css'"/>
 <xsl:param name="para.propagates.style" select="'yes'"/>
 
 </xsl:stylesheet>
