@@ -16,18 +16,27 @@ mkdir -p $dir/
 
 cat > $dir/file.cc <<EOFEOF
 #include <iostream>
-int main ()
-{
-    std::cout << "Hi there!" << std::endl;
-    return 0;
-}
+
+class A : B {
+public:
+    A();
+private:
+    foobar() const;
+};
 EOFEOF
 
 cat > $dir/file.c <<EOFEOF
+// Comment
+
 #include <stdio.h>
+
 int main (void)
 {
-    printf ("Hi there!\n");
+    int a = 0x89;
+    int b = 089;
+    int c = 89.;
+    int d = 'a';
+    printf ("Hello %s!\n", "world");
     return 0;
 }
 EOFEOF
@@ -71,6 +80,8 @@ class Boo {
 EOFEOF
 
 cat > $dir/ChangeLog <<EOFEOF
+= Release =
+
 2006-12-10  Kristian Rietveld  <kris@gtk.org>
 
 	* gtk/gtkcellrenderertext.c (gtk_cell_renderer_text_focus_out_event):
@@ -90,21 +101,19 @@ EOFEOF
 
 cat > $dir/file.html <<EOFEOF
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html401/loose.dtd">
+<!-- Comment -->
 <html>
   <head>
     <title>Hi there!</title>
     <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
-    <style type="text/css"><!--
+    <style type="text/css">
       a.summary-letter {text-decoration: none}
       pre.display {font-family: serif}
       pre.format {font-family: serif}
-      pre.menu-comment {font-family: serif}
-      pre.menu-preformatted {font-family: serif}
-      pre.smalldisplay {font-family: serif; font-size: smaller}
-      ul.toc {list-style: none}
-    --></style>
+    </style>
   </head>
-  <body lang="en" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
+  <body lang="en" bgcolor="#FFFFFF" text="#000000" link="#0000FF"
+        vlink="#800080" alink="#FF0000">
     Hi there!
   </body>
 </html>
@@ -120,6 +129,7 @@ EOFEOF
 cat > $dir/file.m4 <<EOFEOF
 dnl an m4 file
 AC_DEFINE([foo],[echo "Hi there!"])
+AC_CHECK_FUNC([foo],[yes=yes],[yes=no])
 foo()
 EOFEOF
 
@@ -135,22 +145,15 @@ bar:
 	echo "Hello world!"
 EOFEOF
 
-cat > $dir/file.ms <<EOFEOF
-# -*- mooscript -*-
-a = 1;
-for i in [1, 2, 3] do
-  a *= i;
-  a += 18;
-od;
-EOFEOF
-
 cat > $dir/file.py <<EOFEOF
 import sys
+from sys import *
 class Hello(object):
     def __init__(self):
         object.__init__(self)
     def hello(self):
         print >> sys.stderr, "Hi there!"
+    None, True, False
 Hello().hello()
 EOFEOF
 
@@ -530,22 +533,126 @@ relink_command="(cd /home/muntyan/projects/gtk/build/moo/moo; /bin/sh ../libtool
 EOFEOF
 
 cat > $dir/file.pc <<EOFEOF
-prefix=/usr/local/gtk
+# A comment
+prefix=/usr
 exec_prefix=${prefix}
-includedir=${prefix}/include
-datarootdir=${prefix}/share
-datadir=${datarootdir}
 libdir=${exec_prefix}/lib
+includedir=${prefix}/include
 
-langfilesdir=${datarootdir}/moo/language-specs
-pluginsdir=${exec_prefix}/lib/moo/plugins
-moolibdir=${exec_prefix}/lib/moo
-moodatadir=${datarootdir}/moo
+Name: cairo
+Description: Multi-platform 2D graphics library
+Version: 1.4.10
 
-Name: moo
-Description: A text editor and terminal emulator library
-Requires: gtk+-2.0 libxml-2.0
-Version:
-Cflags: -I${prefix}/include/moo
-Libs: -L${libdir} -lmoo -L/usr/lib/python2.4 -lpython2.4  -lpthread -ldl  -lutil
+Requires.private: freetype2 >= 8.0.2 fontconfig libpng12 xrender >= 0.6 x11
+Libs: -L${libdir} -lcairo
+Libs.private: -lz -lm
+Cflags: -I${includedir}/cairo
+EOFEOF
+
+cat > $dir/file.spec <<EOFEOF
+#
+# gtksourceview.spec
+#
+
+%define api_version	1.0
+%define lib_major 0
+%define lib_name	%mklibname %{name}- %{api_version} %{lib_major}
+
+Summary:	Source code viewing library
+Name:		gtksourceview
+Version: 	1.7.2
+Release:	%mkrel 1
+License:	GPL
+Group:		Editors
+URL:		http://people.ecsc.co.uk/~matt/downloads/rpms/gtksourceview/
+Source0:	ftp://ftp.gnome.org/pub/GNOME/sources/%{name}/%{name}-%{version}.tar.bz2
+BuildRoot:	%{_tmppath}/%{name}-%{version}
+BuildRequires:	libgtk+2-devel >= 2.3.0
+BuildRequires:  libgnome-vfs2-devel >= 2.2.0
+BuildRequires:  libgnomeprintui-devel >= 2.7.0
+BuildRequires:  perl-XML-Parser
+Conflicts:	gtksourceview-sharp <= 0.5-3mdk
+
+%description
+GtkSourceview is a library that adds syntax highlighting,
+line numbers, and other programming-editor features.
+GtkSourceView specializes these features for a code editor.
+
+%package -n %{lib_name}
+Summary:	Source code viewing library
+Group:		Editors
+Requires:	%{name} >= %{version}-%{release}
+Provides:	lib%{name} = %{version}-%{release}
+Provides:	libgtksourceview0 = %{version}-%{release}
+Obsoletes:	libgtksourceview0
+Provides:   libgtksourceview1.0 = %{version}-%{release}
+Obsoletes:  libgtksourceview1.0
+
+%description -n %{lib_name}
+GtkSourceview is a library that adds syntax highlighting,
+line numbers, and other programming-editor features.
+GtkSourceView specializes these features for a code editor.
+
+%package -n %{lib_name}-devel
+Summary:        Libraries and include files for GtkSourceView
+Group:          Development/GNOME and GTK+
+Requires:       %{lib_name} = %{version}
+Provides:	%{name}-devel = %{version}-%{release}
+Provides:	lib%{name}-devel = %{version}-%{release}
+Provides:	lib%{name}-%{api_version}-devel = %{version}-%{release}
+Provides:	libgtksourceview0-devel = %{version}-%{release}
+Obsoletes:	libgtksourceview0-devel
+Provides:   libgtksourceview1.0-devel = %{version}-%{release}
+Obsoletes:   libgtksourceview1.0-devel
+
+%description -n %{lib_name}-devel
+GtkSourceView development files
+
+
+%prep
+%setup -q
+
+%build
+
+%configure2_5x
+
+%make
+
+%install
+rm -rf %{buildroot}
+
+%makeinstall_std
+
+%{find_lang} %{name}-%{api_version}
+
+%post -n %{lib_name} -p /sbin/ldconfig
+
+%postun -n %{lib_name} -p /sbin/ldconfig
+
+%clean
+rm -rf %{buildroot}
+
+%files -f %{name}-%{api_version}.lang
+%defattr(-,root,root)
+%doc AUTHORS ChangeLog NEWS README TODO
+%{_datadir}/gtksourceview-%{api_version}
+
+%files -n %{lib_name}
+%defattr(-,root,root)
+%{_libdir}/*.so.*
+
+%files -n %{lib_name}-devel
+%defattr(-,root,root)
+%doc %{_datadir}/gtk-doc/html/gtksourceview
+%{_libdir}/*.so
+%attr(644,root,root) %{_libdir}/*.la
+%{_includedir}/*
+%{_libdir}/pkgconfig/*
+
+%changelog
+* Tue Aug 08 2006 GÃ¶tz Waschk <waschk@mandriva.org> 1.7.2-1mdv2007.0
+- New release 1.7.2
+
+* Tue Jul 25 2006 GÃ¶tz Waschk <waschk@mandriva.org> 1.7.1-1mdk
+- New release 1.7.1
 EOFEOF

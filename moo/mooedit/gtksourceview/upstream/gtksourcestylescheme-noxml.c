@@ -19,7 +19,7 @@
  */
 
 #include "gtksourceview-i18n.h"
-#include "gtksourcestylemanager.h"
+#include "gtksourcestyleschememanager.h"
 #include "gtksourceview.h"
 #include "gtksourcelanguage-private.h"
 #include "gtksourcestyle-private.h"
@@ -138,7 +138,7 @@ gtk_source_style_scheme_class_init (GtkSourceStyleSchemeClass *klass)
 	 * GtkSourceStyleScheme:id:
 	 *
 	 * Style scheme id, a unique string used to identify the style scheme
-	 * in #GtkSourceStyleManager.
+	 * in #GtkSourceStyleSchemeManager.
 	 *
 	 * Since: 2.0
 	 */
@@ -622,9 +622,9 @@ _gtk_source_style_scheme_set_parent (GtkSourceStyleScheme *scheme,
 GtkSourceStyleScheme *
 _gtk_source_style_scheme_get_default (void)
 {
-	GtkSourceStyleManager *manager;
+	GtkSourceStyleSchemeManager *manager;
 
-	manager = gtk_source_style_manager_get_default ();
+	manager = gtk_source_style_scheme_manager_get_default ();
 
-	return gtk_source_style_manager_get_scheme (manager, "gvim");
+	return gtk_source_style_scheme_manager_get_scheme (manager, "kate");
 }

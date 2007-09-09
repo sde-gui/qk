@@ -136,7 +136,7 @@ static guint signals[LAST_SIGNAL];
 
 enum {
     PROP_0,
-    PROP_HIGHLIGHT, /* mimic GtkSourceBuffer */
+    PROP_HIGHLIGHT_SYNTAX, /* mimic GtkSourceBuffer */
     PROP_HIGHLIGHT_MATCHING_BRACKETS,
     PROP_HIGHLIGHT_MISMATCHING_BRACKETS,
     PROP_BRACKET_MATCH_STYLE,
@@ -175,10 +175,10 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
     g_type_class_add_private (klass, sizeof (MooTextBufferPrivate));
 
     g_object_class_install_property (gobject_class,
-                                     PROP_HIGHLIGHT,
-                                     g_param_spec_boolean ("highlight",
-                                             "highlight",
-                                             "highlight",
+                                     PROP_HIGHLIGHT_SYNTAX,
+                                     g_param_spec_boolean ("highlight-syntax",
+                                             "highlight-syntax",
+                                             "highlight-syntax",
                                              TRUE,
                                              G_PARAM_READWRITE));
 
@@ -808,8 +808,8 @@ moo_text_buffer_get_lang (MooTextBuffer  *buffer)
 
 
 void
-moo_text_buffer_set_highlight (MooTextBuffer      *buffer,
-                               gboolean            highlight)
+moo_text_buffer_set_highlight (MooTextBuffer *buffer,
+                               gboolean       highlight)
 {
     g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
 
@@ -819,7 +819,7 @@ moo_text_buffer_set_highlight (MooTextBuffer      *buffer,
         return;
 
     buffer->priv->do_highlight = highlight;
-    g_object_notify (G_OBJECT (buffer), "highlight");
+    g_object_notify (G_OBJECT (buffer), "highlight-syntax");
 }
 
 
@@ -841,7 +841,7 @@ moo_text_buffer_set_property (GObject        *object,
 
     switch (prop_id)
     {
-        case PROP_HIGHLIGHT:
+        case PROP_HIGHLIGHT_SYNTAX:
             moo_text_buffer_set_highlight (buffer, g_value_get_boolean (value));
             break;
 
@@ -884,7 +884,7 @@ moo_text_buffer_get_property (GObject        *object,
 
     switch (prop_id)
     {
-        case PROP_HIGHLIGHT:
+        case PROP_HIGHLIGHT_SYNTAX:
             g_value_set_boolean (value, buffer->priv->do_highlight);
             break;
 

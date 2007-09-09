@@ -1,47 +1,147 @@
-# translation of gtksourceview.HEAD.ta.po to Tamil
-# translation of ta.po to Tamil
+# translation of gtksourceview.HEAD.po to TAMIL
 # Tamil translation of Tamil Gnome SourceView 2.4.
-# Copyright (C) 2003, 2004, 2006 Free Software Foundation, Inc.
+# Copyright (C) 2003, 2004, 2006, 2007 Free Software Foundation, Inc.
+#
+#
 # Dinesh Nadarajah <n_dinesh@yahoo.com>, 2003.
 # Jayaradha N <jaya@pune.redhat.com>, 2004.
 # Felix <ifelix@redhat.com>, 2006.
-#
-#
+# Dr.T.Vasudevan <agnihot3@gmail.com>, 2007.
 msgid ""
 msgstr ""
-"Project-Id-Version: gtksourceview.HEAD.ta\n"
+"Project-Id-Version: gtksourceview.HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-15 02:59-0500\n"
-"PO-Revision-Date: 2006-09-01 15:53+0530\n"
-"Last-Translator: Felix <ifelix@redhat.com>\n"
-"Language-Team: Tamil <ta@li.org>\n"
+"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"PO-Revision-Date: 2007-08-28 16:25+0530\n"
+"Last-Translator: Dr.T.Vasudevan <agnihot3@gmail.com>\n"
+"Language-Team: TAMIL <ubuntu-l10n-tam@lists.ubuntu.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "17:19-0500\n"
-"X-Generator: KBabel 1.9.1\n"
+"X-Generator: KBabel 1.11.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "\n"
 "\n"
 ""
 
+msgid "Boo"
+msgstr "பூ"
+
+msgid "C/C++/ObjC Header"
+msgstr "C/C++/ObjC தலைப்பு"
+
+msgid ""
+"Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
+"The error was: %s"
+msgstr ""
+"அனைத்து மாற்றங்களுக்கும் வழமையான எண்ணுருக்கோவையை  உருவாக்க முடியாது, இலக்கண சுட்டல் வழக்கத்தை விட மெதுவாக நடக்கும். \n"
+"பிழை: %s"
+
 msgid "ChangeLog"
 msgstr "பதிவு மாற்று"
+
+msgid "Classic"
+msgstr "பழைய"
+
+msgid "Classic color scheme"
+msgstr "பழைய நிற திட்டம்"
+
+msgid "Color scheme used in the Kate text editor"
+msgstr "கேட் உரை திருத்தியில் பயன்பட்ட வண்ணம்"
+
+msgid "Color scheme using Tango color palette"
+msgstr "டாங்கோ வண்ணத்தட்டை பயன்படுத்தி வண்ண திட்டம்"
+
+msgid "DPatch"
+msgstr "டிபாட்ச்(DPatch)"
+
+msgid "Dark color scheme using the Tango color palette"
+msgstr "டாங்கோ வண்ணத்தட்டை பயன்படுத்தி அடர்ந்த வண்ண திட்டம்"
+
+msgid "Defaults"
+msgstr "முன்னிருப்புகள்"
+
+msgid "Docbook"
+msgstr "ஆவண புத்தகம்"
+
+msgid "Erlang"
+msgstr "எர்லாங்"
 
 msgid "Fortran 95"
 msgstr "ஃபோட்ரான் 95"
 
+msgid "GAP"
+msgstr "ஜிஏபி(GAP)"
+
+msgid "GtkRC"
+msgstr "ஜிடிகேஆர்சி(GtkRC_"
+
+msgid "HTML"
+msgstr "ஹெச்டிஎம்எல்(HTML)"
+
+msgid "Haddock"
+msgstr "ஹடாக்"
+
+msgid "Hidden"
+msgstr "மறைந்துள்ள"
+
+msgid "IDL"
+msgstr "ஐடிஎல்(IDL)"
+
 msgid "Java"
 msgstr "ஜாவா"
+
+msgid "Javascript"
+msgstr "ஜாவா ஸ்கிரிப்ட்"
+
+msgid "Kate"
+msgstr "கேட்"
+
+msgid "Language id"
+msgstr "மொழி அடையாளம்"
+
+msgid "Language name"
+msgstr "மொழி பெயர்"
+
+msgid "Language section"
+msgstr "மொழி பகுதி"
 
 msgid "Language specification directories"
 msgstr "மொழி குறிப்புள்ள அடைவுகள்"
 
+msgid "List of directories and files where the style schemes are located"
+msgstr "பாணி திட்டங்கள் கொண்ட கோப்புகள் அடைவுகளின் பட்டியல்"
+
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "மொழி பற்றிய குறிப்புகளை கொண்ட அடைவுகளின் பட்டியல் (.lang)"
 
+msgid "List of the ids of the available style schemes"
+msgstr "சிறப்பியல்பு திட்டங்களின் அடையாள பட்டியல்"
+
+msgid "Literate Haskell"
+msgstr "லிடரேட் ஹாஸ்கெல் "
+
 msgid "Makefile"
 msgstr "கோப்பு உருவாக்கு"
+
+msgid "Missing main language definition (id = \"%s\".)"
+msgstr "முக்கிய மொழி வரையறை காணப்படவில்லை (அடையாளம் = \"%s\".)"
+
+msgid "OCL"
+msgstr "ஓசிஎல்"
+
+msgid "Objective Caml"
+msgstr "தன்னின் வேறான"
+
+msgid "Objective-C"
+msgstr "இலக்கு-C"
+
+msgid "Oblivion"
+msgstr "மறதி"
+
+msgid "Octave"
+msgstr "எட்டன் தொகுதி( Octave)"
 
 msgid "Others"
 msgstr "மற்றவை"
@@ -52,11 +152,20 @@ msgstr "பாஸ்கல்"
 msgid "Python"
 msgstr "பைத்தான்"
 
+msgid "RPM spec"
+msgstr "RPM வரன்முறை "
+
 msgid "Ruby"
 msgstr "ரூபி"
 
 msgid "Scheme"
 msgstr "திட்டம்"
+
+msgid "Scheme ids"
+msgstr "திட்ட அடையாளம்"
+
+msgid "Scientific"
+msgstr "அறிவியல்"
 
 msgid "Scripts"
 msgstr "சிறுநிரல்கள்"
@@ -64,9 +173,63 @@ msgstr "சிறுநிரல்கள்"
 msgid "Sources"
 msgstr "மூலங்கள்"
 
+msgid "Style scheme description"
+msgstr "சிறப்பியல்பு பாணி விவரணம்"
+
+msgid "Style scheme filename"
+msgstr "சிறப்பியல்பு திட்ட கோப்புப் பெயர்"
+
+msgid "Style scheme id"
+msgstr "சிறப்பியல்பு பாணி அடையாளம்"
+
+msgid "Style scheme name"
+msgstr "சிறப்பியல்பு பாணி பெயர்"
+
+msgid "Style scheme search path"
+msgstr "சிறப்பியல்பு பாணி தேடல் தடம்"
+
+msgid "Tango"
+msgstr "டாங்கோ"
+
 msgid "Texinfo"
 msgstr "உரைதகவல்"
 
+msgid "Unknown id '%s' in regex '%s'"
+msgstr " தெரியாத அடையாளம் '%s' வழக்கமான எண்ணுருக்கோவை '%s இல்"
+
+msgid "Whether the language should be hidden from the user"
+msgstr "பயனரிடமிருந்து மொழி மறைக்கப்பட வேண்டுமா"
+
+msgid "context '%s' cannot contain a \\%%{...@start} command"
+msgstr "சூழல் '%s' ஒரு \\%%{...@start} கட்டளையை அடக்கி இருக்க கூடாது"
+
+msgid "duplicated context id '%s'"
+msgstr "இரட்டையான சூழல் அடையாளம் '%s"
+
 msgid "gettext translation"
 msgstr "gettext மொழிபெயர்பு"
+
+msgid "gtk-doc"
+msgstr "ஜிடிகே-டாக் (gtk-doc)"
+
+msgid "in regex '%s': backreferences are not supported"
+msgstr "வழக்கமான எண்ணுருக்கோவை '%s': பின் தொடர்புகள் அனுமதிக்கப்படவில்லை"
+
+msgid "invalid reference '%s'"
+msgstr "செல்லுபடியாகாத சான்றாதாரம் '%s'"
+
+msgid "libtool"
+msgstr "லிப்டூல்(libtool)"
+
+msgid "pkg-config"
+msgstr "பிகேஜி கான்பிக்(pkg-config)"
+
+msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
+msgstr "'%s மொழியில் உள்ளே '%s தொடர்பாக குறிப்பில் சூழல் உறவுடன் பாங்கு இணக்கமறுப்பு பயன்பட்டது "
+
+msgid "unknown context '%s'"
+msgstr "தெரியாத சூழல் '%s'"
+
+msgid "using \\C is not supported in language definitions"
+msgstr "\\C ஐ மொழியை வரையறையில் பயன்படுத்துதல் ஆதரிக்கப்படவில்லை"
 

@@ -95,7 +95,7 @@ moo/mooedit/gtksourceview/gtksourcecontextengine-mangled.c
 moo/mooedit/gtksourceview/gtksourcelanguage-parser-2-mangled.c
 moo/mooedit/gtksourceview/gtksourcelanguagemanager-mangled.c
 moo/mooedit/gtksourceview/gtksourcestyle-mangled.c
-moo/mooedit/gtksourceview/gtksourcestylemanager-mangled.c
+moo/mooedit/gtksourceview/gtksourcestyleschememanager-mangled.c
 moo/mooedit/gtksourceview/gtksourcestylescheme-mangled.c
 moo/mooedit/gtksourceview/gtksourcestylescheme-noxml-mangled.c
 moo/mooedit/gtksourceview/gtksourcelanguage-mangled.c

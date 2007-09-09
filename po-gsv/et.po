@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-15 02:59-0500\n"
-"PO-Revision-Date: 2007-02-28 07:47+0200\n"
+"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"PO-Revision-Date: 2007-09-05 17:33+0300\n"
 "Last-Translator: Ivar Smolin <okul@linux.ee>\n"
 "Language-Team: Estonian <gnome-et@linux.ee>\n"
 "MIME-Version: 1.0\n"
@@ -22,11 +22,47 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);"
 
+msgid "C/C++/ObjC Header"
+msgstr "C/C++/ObjC päis"
+
 msgid "ChangeLog"
 msgstr "MuutusteLogi"
 
+msgid "Classic"
+msgstr "Klassikaline"
+
+msgid "Classic color scheme"
+msgstr "Klassikaline värviskeem"
+
+msgid "Color scheme used in the Kate text editor"
+msgstr "Kate'i tekstiredaktori poolt kasutatav värviskeem"
+
+msgid "Color scheme using Tango color palette"
+msgstr "Tango värvipaletti kasutav värviskeem"
+
+msgid "Dark color scheme using the Tango color palette"
+msgstr "Tango värvipaletti kasutav tume värviskeem"
+
+msgid "Defaults"
+msgstr "Vaikeväärtused"
+
+msgid "Hidden"
+msgstr "Peidetud"
+
+msgid "Javascript"
+msgstr "Javaskript"
+
 msgid "LaTeX"
 msgstr "LaTex"
+
+msgid "Language id"
+msgstr "Keele ID"
+
+msgid "Language ids"
+msgstr "Keele ID-d"
+
+msgid "Language name"
+msgstr "Keele nimi"
 
 msgid "Language specification directories"
 msgstr "Keelekirjelduste kataloogid"
@@ -34,8 +70,17 @@ msgstr "Keelekirjelduste kataloogid"
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "Kataloogide loend, kus keelekirjelduste failid (.lang) asuvad"
 
+msgid "List of the ids of the available languages"
+msgstr "Saadaolevate keelte ID-de nimekiri"
+
+msgid "Oblivion"
+msgstr "Unustus"
+
 msgid "Others"
 msgstr "Muud"
+
+msgid "Scientific"
+msgstr "Teaduslik"
 
 msgid "Scripts"
 msgstr "Skriptid"
@@ -43,6 +88,18 @@ msgstr "Skriptid"
 msgid "Sources"
 msgstr "Lähtekoodid"
 
+msgid "Unknown id '%s' in regex '%s'"
+msgstr "Tundmatu id '%s' regulaaravaldises '%s'"
+
+msgid "Whether the language should be hidden from the user"
+msgstr "Kas keel peab kasutaja eest olema peidetud või mitte"
+
 msgid "gettext translation"
 msgstr "gettext tõlge"
+
+msgid "unknown context '%s'"
+msgstr "tundmatu kontekst '%s'"
+
+msgid "using \\C is not supported in language definitions"
+msgstr "\\C kasutamine keelekirjeldustes pole toetatud"
 

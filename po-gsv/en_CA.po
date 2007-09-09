@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-15 02:59-0500\n"
+"POT-Creation-Date: 2007-09-09 12:00-0500\n"
 "PO-Revision-Date: 2005-08-08 20:39-0500\n"
 "Last-Translator: Adam Weinberger <adamw@gnome.org>\n"
 "Language-Team: Canadian English <adamw@gnome.org>\n"
@@ -16,9 +16,49 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit"
 
-msgid "Style scheme directories"
-msgstr "located"
+msgid ""
+"Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
+"The error was: %s"
+msgstr ""
+"Cannot create a regex for all the transitions.  The syntax highlighting process will be slower than usual.\n"
+"The error was: %s"
+
+msgid "Classic color scheme"
+msgstr "Classic colour scheme"
+
+msgid "Color scheme used in the Kate text editor"
+msgstr "Colour scheme used in the Kate text editor"
+
+msgid "Color scheme using Tango color palette"
+msgstr "Colour scheme using Tango colour palette"
+
+msgid "Dark color scheme using the Tango color palette"
+msgstr "Dark colour scheme using the Tango colour palette"
+
+msgid "Language id"
+msgstr "Language ID"
+
+msgid "List of the ids of the available style schemes"
+msgstr "List of the IDs of the available style schemes"
+
+msgid "Missing main language definition (id = \"%s\".)"
+msgstr "Missing main language definition (ID = \"%s\".)"
+
+msgid "Scheme ids"
+msgstr "Scheme IDs"
+
+msgid "Style scheme id"
+msgstr "Style scheme ID"
 
 msgid "Tcl"
 msgstr "TCL"
+
+msgid "Unknown id '%s' in regex '%s'"
+msgstr "Unknown ID '%s' in regex '%s'"
+
+msgid "awk"
+msgstr "AWK"
+
+msgid "duplicated context id '%s'"
+msgstr "duplicated context ID '%s'"
 

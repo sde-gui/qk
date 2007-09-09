@@ -35,17 +35,18 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
     <style id="include-statement" _name="Include Statement"  map-to="def:preprocessor"/>
     <style id="string"            _name="String"             map-to="def:string"/>
     <style id="keyword"           _name="Keyword"            map-to="def:keyword"/>
-    <style id="builtin-function"  _name="Function"           map-to="def:function"/>
+    <style id="builtin"           _name="Builtin Function"   map-to="def:builtin"/>
     <style id="here-doc"          _name="Heredoc"            map-to="def:string" />
     <style id="here-doc-bound"    _name="Heredoc Bound"      map-to="def:string"/>
     <style id="system-command"    _name="System Command"     map-to="def:string"/>
     <style id="operator"          _name="Operator"           map-to="def:keyword"/>
-    <style id="variable"          _name="Variable"           map-to="def:data-type"/>
-    <style id="file-descriptor"   _name="File Descriptor"    map-to="perl:variable"/>
+    <style id="variable"          _name="Variable"           map-to="def:type"/>
+    <style id="file-descriptor"   _name="File Descriptor"    map-to="def:special-constant"/>
     <style id="control"           _name="Control"            map-to="def:preprocessor"/>
     <style id="regex"             _name="Regular Expression" map-to="def:string"/>
     <style id="error"             _name="Error"              map-to="def:error"/>
-    <style id="pod-escape"        _name="POD Escape"         map-to="def:escape"/>
+    <style id="pod"               _name="POD"                map-to="def:comment"/>
+    <style id="pod-escape"        _name="POD Escape"         map-to="def:special-char"/>
     <style id="pod-keyword"       _name="POD keyword"        map-to="def:keyword"/>
     <style id="pod-heading"       _name="POD heading"        map-to="def:doc-comment-element"/>
   </styles>
@@ -80,7 +81,7 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
         <context ref="keyword"/>
         <context ref="control"/>
         <context ref="file-descriptor"/>
-        <context ref="builtin-function"/>
+        <context ref="builtin"/>
       </include>
     </context>
 
@@ -296,7 +297,7 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
           <!-- '' doesn't usually have var expansion. -->
           <start>'</start><end>'</end>
           <include>
-            <context style-ref="def:escape">
+            <context style-ref="def:special-char">
               <match>\\\\|\\'</match>
             </context>
           </include>
@@ -412,7 +413,7 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
         <context style-ref="string">
           <start>'</start><end>'</end>
           <include>
-            <context style-ref="def:escape">
+            <context style-ref="def:special-char">
               <match>\\\\|\\'</match>
             </context>
           </include>
@@ -519,7 +520,7 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
           <start>(^|[^$@%&amp;])(split|while|if)\s+(/)</start>
           <end>/[cgimosx]*</end>
           <include>
-            <context sub-pattern="2" where="start" style-ref="builtin-function"/>
+            <context sub-pattern="2" where="start" style-ref="builtin"/>
             <context sub-pattern="3" where="start" style-ref="regex"/>
             <context sub-pattern="0" where="end" style-ref="regex"/>
             <context ref="in-pattern"/>
@@ -692,7 +693,7 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
       <keyword>__PACKAGE__</keyword>
     </context>
 
-    <context id="builtin-function" style-ref="builtin-function">
+    <context id="builtin" style-ref="builtin">
       <!-- see `man perlfunc` -->
       <keyword>abs</keyword>
       <keyword>accept</keyword>
@@ -980,7 +981,7 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
       </include>
     </context>
 
-    <context id="pod" style-ref="comment">
+    <context id="pod" style-ref="pod">
       <start>^(?=(=[a-z]))</start>
       <end>^=(cut)$</end>
       <include>

@@ -1,21 +1,22 @@
 # Swedish messages for gtksourceview.
-# Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2003-2007 Free Software Foundation, Inc.
 # Daniel Nylander <po@danielnylander.se>, 2006, 2007.
 # Christian Rose <menthos@menthos.com>, 2003, 2004, 2005.
-#
-# $Id: sv.po,v 1.23 2006/08/16 06:08:08 dnylande Exp $
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-15 02:59-0500\n"
-"PO-Revision-Date: 2007-05-28 08:12+0100\n"
+"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"PO-Revision-Date: 2007-08-28 17:12+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit"
+
+msgid "C/C++/ObjC Header"
+msgstr "C/C++/ObjC-huvud"
 
 msgid ""
 "Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
@@ -27,14 +28,53 @@ msgstr ""
 msgid "ChangeLog"
 msgstr "Ändringslogg"
 
+msgid "Classic"
+msgstr "Klassisk"
+
+msgid "Classic color scheme"
+msgstr "Klassiskt färgschema"
+
+msgid "Color scheme used in the Kate text editor"
+msgstr "Färgschema använt i textredigeraren Kate"
+
+msgid "Color scheme using Tango color palette"
+msgstr "Färgschema som använder Tango-färgpalett"
+
+msgid "Dark color scheme using the Tango color palette"
+msgstr "Mörkt färgschema som använder Tango-färgpaletten"
+
 msgid "Defaults"
 msgstr "Standardvärden"
+
+msgid "Hidden"
+msgstr "Dold"
+
+msgid "Language id"
+msgstr "Språk-id"
+
+msgid "Language ids"
+msgstr "Språk-id:n"
+
+msgid "Language name"
+msgstr "Språknamn"
+
+msgid "Language section"
+msgstr "Språksektion"
 
 msgid "Language specification directories"
 msgstr "Kataloger för språkspecifikationer"
 
+msgid "List of directories and files where the style schemes are located"
+msgstr "Lista över kataloger och filer där stilscheman finns"
+
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "Lista med kataloger där språkspecifikationsfiler (.lang) finns"
+
+msgid "List of the ids of the available languages"
+msgstr "Lista över id:n för tillgängliga språk"
+
+msgid "List of the ids of the available style schemes"
+msgstr "Lista över id:n för tillgängliga stilscheman"
 
 msgid "Makefile"
 msgstr "Makefil"
@@ -51,6 +91,9 @@ msgstr "Objektiv Caml"
 msgid "Others"
 msgstr "Andra"
 
+msgid "Scheme ids"
+msgstr "Schema-id:n"
+
 msgid "Scientific"
 msgstr "Vetenskaplig"
 
@@ -60,8 +103,11 @@ msgstr "Skript"
 msgid "Sources"
 msgstr "Källkoder"
 
-msgid "Style scheme directories"
-msgstr "Stilschemakataloger"
+msgid "Style scheme description"
+msgstr "Stilschemabeskrivning"
+
+msgid "Style scheme filename"
+msgstr "Stilschemafilnamn"
 
 msgid "Style scheme id"
 msgstr "Stilschema-id"
@@ -69,8 +115,14 @@ msgstr "Stilschema-id"
 msgid "Style scheme name"
 msgstr "Stilschemanamn"
 
+msgid "Style scheme search path"
+msgstr "Sökväg för stilscheman"
+
 msgid "Unknown id '%s' in regex '%s'"
 msgstr "Okänt id \"%s\" i regex \"%s\""
+
+msgid "Whether the language should be hidden from the user"
+msgstr "Huruvida språket ska döljas för användaren"
 
 msgid "context '%s' cannot contain a \\%%{...@start} command"
 msgstr "kontexten \"%s\" får inte innehålla kommandot \\%%{...@start}"
@@ -89,6 +141,9 @@ msgstr "ogiltig referens \"%s\""
 
 msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
 msgstr "åsidosättning av stil används i kontextreferens med jokertecken för språket \"%s\" i referensen \"%s\""
+
+msgid "unknown context '%s'"
+msgstr "okänd kontext \"%s\""
 
 msgid "using \\C is not supported in language definitions"
 msgstr "användning av \\C stöds inte i språkdefinitioner"

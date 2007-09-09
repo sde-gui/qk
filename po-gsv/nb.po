@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview 1.2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-15 02:59-0500\n"
-"PO-Revision-Date: 2007-01-24 12:10+0100\n"
+"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"PO-Revision-Date: 2007-08-28 14:38+0200\n"
 "Last-Translator: Kjartan Maraas <kmaraas@gnome.org>\n"
 "Language-Team: Norwegian bokmal <i18n-nb@lister.ping.uio.no>\n"
 "MIME-Version: 1.0\n"
@@ -17,14 +17,47 @@ msgstr ""
 msgid "ChangeLog"
 msgstr "Endringslogg"
 
+msgid "Classic"
+msgstr "Klassisk"
+
+msgid "Classic color scheme"
+msgstr "Klassisk fargeschema"
+
+msgid "Color scheme used in the Kate text editor"
+msgstr "Fargeschema som brukes i tekstredigeringsprogrammet Kate"
+
+msgid "Color scheme using Tango color palette"
+msgstr "Fargeschema som bruker Tango-fargepaletten"
+
+msgid "Defaults"
+msgstr "Forvalg"
+
+msgid "Hidden"
+msgstr "Skjult"
+
 msgid "LaTeX"
 msgstr "LaTex"
+
+msgid "Language id"
+msgstr "Språk-ID"
+
+msgid "Language ids"
+msgstr "Språk-IDer"
+
+msgid "Language name"
+msgstr "Språknavn"
+
+msgid "Language section"
+msgstr "Språkseksjon"
 
 msgid "Language specification directories"
 msgstr "Kataloger for språkspesifikasjoner"
 
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "Liste over kataloger der språkspesifikasjonsfiler (.lang) finnes"
+
+msgid "List of the ids of the available languages"
+msgstr "Liste med IDer for tilgjengelige språk"
 
 msgid "Makefile"
 msgstr "Makefil"
@@ -38,11 +71,26 @@ msgstr "Andre"
 msgid "RPM spec"
 msgstr "RPM-spec"
 
+msgid "Scheme ids"
+msgstr "Schema-ID"
+
+msgid "Scientific"
+msgstr "Vitenskapelig"
+
 msgid "Scripts"
 msgstr "Skript"
 
 msgid "Sources"
 msgstr "Kildekode"
+
+msgid "Style scheme search path"
+msgstr "Søkesti for stilschema"
+
+msgid "Unknown id '%s' in regex '%s'"
+msgstr "Ukjent ID «%s» i vanlig uttrykk «%s»"
+
+msgid "Whether the language should be hidden from the user"
+msgstr "Im språke skal skjules fra brukeren"
 
 msgid "gettext translation"
 msgstr "gettext-oversettelse"

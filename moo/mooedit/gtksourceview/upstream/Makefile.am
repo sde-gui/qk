@@ -7,7 +7,7 @@ upstream_sources =			\
 	gtksourcelanguage-parser-2.c	\
 	gtksourcelanguagemanager.c	\
 	gtksourcestyle.c		\
-	gtksourcestylemanager.c		\
+	gtksourcestyleschememanager.c	\
 	gtksourcestylescheme.c		\
 	gtktextregion.c			\
 	gtksourcecontextengine.h	\
@@ -18,7 +18,7 @@ upstream_sources =			\
 	gtksourcelanguagemanager.h	\
 	gtksourcestyle.h		\
 	gtksourcestyle-private.h	\
-	gtksourcestylemanager.h		\
+	gtksourcestyleschememanager.h	\
 	gtksourcestylescheme.h		\
 	gtktextregion.h			\
 	gtksourceview-utils.h		\

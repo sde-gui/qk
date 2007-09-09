@@ -28,15 +28,7 @@ fi
 langs=""
 for l in *.lang; do
   case $l in
-    boo.lang) ;;
-    d.lang) ;;
-    docbook.lang) ;;
     msil.lang) ;;
-    nemerle.lang) ;;
-    R.lang) ;;
-    spec.lang) ;;
-    vbnet.lang) ;;
-    vhdl.lang) ;;
     *)
       langs="$langs $l"
       ;;

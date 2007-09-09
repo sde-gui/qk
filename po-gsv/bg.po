@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gtksourceview\n"
+"Project-Id-Version: gtksourceview trunk\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-15 02:59-0500\n"
-"PO-Revision-Date: 2007-02-17 11:32+0200\n"
+"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"PO-Revision-Date: 2007-08-17 06:54+0300\n"
 "Last-Translator: Alexander Shopov <ash@contact.bg>\n"
 "Language-Team: Bulgarian <dict@fsa-bg.org>\n"
 "MIME-Version: 1.0\n"
@@ -17,20 +17,72 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;"
 
+msgid "C/C++/ObjC Header"
+msgstr "Заглавен файл на C/C++/ObjC"
+
+msgid ""
+"Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
+"The error was: %s"
+msgstr ""
+"Не могат да се композират регулярни изрази за всички преходи. Оцветяването на синтаксиса ще бъде по-бавно от обикновено.\n"
+"Грешката е: %s"
+
 msgid "ChangeLog"
 msgstr "Дневник на промените"
+
+msgid "Classic"
+msgstr "Класическа"
+
+msgid "Classic color scheme"
+msgstr "Класическа цветова схема"
+
+msgid "Color scheme used in the Kate text editor"
+msgstr "Цветова схема използвана в текстовия редактор Kate"
+
+msgid "Color scheme using Tango color palette"
+msgstr "Цветова схема базирана на Tango"
+
+msgid "Defaults"
+msgstr "Стандартни стойности"
 
 msgid "Diff"
 msgstr "Разлики"
 
+msgid "Docbook"
+msgstr "DocBook"
+
+msgid "Hidden"
+msgstr "Скрит"
+
+msgid "Javascript"
+msgstr "JavaScript"
+
+msgid "Language id"
+msgstr "Идентификатор на език"
+
+msgid "Language name"
+msgstr "Име на език"
+
+msgid "Language section"
+msgstr "Раздел за език"
+
 msgid "Language specification directories"
 msgstr "Папка с езиковите спецификации"
+
+msgid "List of directories and files where the style schemes are located"
+msgstr "Списък с папки и файлове, в които се намират стиловите схеми"
 
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "Списък с папки, където се пазят файловете за езикови спецификации (.lang)."
 
+msgid "List of the ids of the available style schemes"
+msgstr "Списък с идентификатори на наличните стилови схеми"
+
 msgid "Markup"
 msgstr "Маркиране"
+
+msgid "Missing main language definition (id = \"%s\".)"
+msgstr "Основната дефиниция на език липсва (id = \"%s\")."
 
 msgid "Others"
 msgstr "Други"
@@ -38,12 +90,57 @@ msgstr "Други"
 msgid "RPM spec"
 msgstr "Спецификация за RPM"
 
+msgid "Scheme ids"
+msgstr "Идентификатори на схеми"
+
+msgid "Scientific"
+msgstr "Научно"
+
 msgid "Scripts"
 msgstr "Скриптове"
 
 msgid "Sources"
 msgstr "Изходен код"
 
+msgid "Style scheme filename"
+msgstr "Име файла на стилова схема"
+
+msgid "Style scheme id"
+msgstr "Идентификатор на стилова схема"
+
+msgid "Style scheme name"
+msgstr "Име на стилова схема"
+
+msgid "Style scheme search path"
+msgstr "Път за търсене на стиловите схеми"
+
+msgid "Unknown id '%s' in regex '%s'"
+msgstr "Непознат идентификатор „%s“ в контекста „%s“"
+
+msgid "Whether the language should be hidden from the user"
+msgstr "Дали езикът да е скрит от потребителя"
+
+msgid "context '%s' cannot contain a \\%%{...@start} command"
+msgstr "контекстът „%s“ не може да съдържа команда „\\%%{...@start}“"
+
+msgid "duplicated context id '%s'"
+msgstr "идентификаторът на контекст „%s“ се повтаря"
+
 msgid "gettext translation"
 msgstr "Превод на gettext"
+
+msgid "in regex '%s': backreferences are not supported"
+msgstr "в регулярния израз „%s“: не се поддържат указатели към вече намерени групи знаци"
+
+msgid "invalid reference '%s'"
+msgstr "неправилен указател „%s“"
+
+msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
+msgstr "налагане на стил, което е използвано с указател с маска към контексти в езика „%s“, указател „%s“ "
+
+msgid "unknown context '%s'"
+msgstr "непознат контекст „%s“"
+
+msgid "using \\C is not supported in language definitions"
+msgstr "използването на „\\C“ в дефинициите на езици не се поддържа"
 

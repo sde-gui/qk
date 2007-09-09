@@ -75,8 +75,8 @@ moo_lang_mgr_init (MooLangMgr *mgr)
 
     dirs = moo_get_data_subdirs (LANGUAGE_DIR, MOO_DATA_SHARE, &n_dirs);
     g_object_set (mgr, "search-path", dirs, NULL);
-    mgr->style_mgr = gtk_source_style_manager_new ();
-    gtk_source_style_manager_set_search_path (mgr->style_mgr, dirs);
+    mgr->style_mgr = gtk_source_style_scheme_manager_new ();
+    gtk_source_style_scheme_manager_set_search_path (mgr->style_mgr, dirs);
 
     load_config (mgr);
 
@@ -530,7 +530,7 @@ get_lang_for_mime_type (MooLangMgr *mgr,
 static void
 read_langs (MooLangMgr *mgr)
 {
-    GSList *langs = NULL;
+    const char * const *ids = NULL;
 
     if (mgr->got_langs)
         return;
@@ -540,26 +540,29 @@ read_langs (MooLangMgr *mgr)
     mgr->got_langs = TRUE;
 
 #ifdef MOO_USE_XML
-    langs = gtk_source_language_manager_list_languages (GTK_SOURCE_LANGUAGE_MANAGER (mgr));
+    ids = gtk_source_language_manager_get_language_ids (GTK_SOURCE_LANGUAGE_MANAGER (mgr));
 #endif
 
     get_lang_info (mgr, MOO_LANG_NONE, TRUE);
 
-    while (langs)
+    while (ids && *ids)
     {
         LangInfo *info;
-        MooLang *lang = langs->data;
-        const char *id = _moo_lang_id (lang);
+        const char *id;
+        GtkSourceLanguage *lang;
+
+        id = *ids;
+        lang = gtk_source_language_manager_get_language (GTK_SOURCE_LANGUAGE_MANAGER (mgr), id);
 
         info = get_lang_info (mgr, id, TRUE);
         info->lang = g_object_ref (lang);
 
         if (!info->globs_modified)
-            info->globs = _moo_lang_get_globs (lang);
+            info->globs = _moo_lang_get_globs (info->lang);
         if (!info->mime_types_modified)
-            info->mime_types = _moo_lang_get_mime_types (lang);
+            info->mime_types = _moo_lang_get_mime_types (info->lang);
 
-        langs = g_slist_delete_link (langs, langs);
+        ids++;
     }
 
     g_signal_emit_by_name (mgr, "loaded");
@@ -736,13 +739,13 @@ read_schemes (MooLangMgr *mgr)
 
     mgr->got_schemes = TRUE;
 
-    ids = gtk_source_style_manager_get_scheme_ids (mgr->style_mgr);
+    ids = gtk_source_style_scheme_manager_get_scheme_ids (mgr->style_mgr);
 
     while (ids && *ids)
     {
         MooTextStyleScheme *scheme;
 
-        scheme = MOO_TEXT_STYLE_SCHEME (gtk_source_style_manager_get_scheme (mgr->style_mgr, *ids));
+        scheme = MOO_TEXT_STYLE_SCHEME (gtk_source_style_scheme_manager_get_scheme (mgr->style_mgr, *ids));
 
         if (!scheme)
         {
@@ -764,22 +767,30 @@ GSList *
 moo_lang_mgr_get_sections (MooLangMgr *mgr)
 {
     GSList *sections = NULL;
-    GSList *list = NULL;
+    const char * const *ids = NULL;
 
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
 
     read_langs (mgr);
 
 #ifdef MOO_USE_XML
-    list = gtk_source_language_manager_list_languages (GTK_SOURCE_LANGUAGE_MANAGER (mgr));
+    ids = gtk_source_language_manager_get_language_ids (GTK_SOURCE_LANGUAGE_MANAGER (mgr));
 #endif
 
-    while (list)
+    while (ids && *ids)
     {
-        const char *section = _moo_lang_get_section (list->data);
+        GtkSourceLanguage *lang;
+        const char *section;
+        const char *id;
+
+        id = *ids;
+        lang = gtk_source_language_manager_get_language (GTK_SOURCE_LANGUAGE_MANAGER (mgr), id);
+        section = _moo_lang_get_section (MOO_LANG (lang));
+
         if (section && !g_slist_find_custom (sections, section, (GCompareFunc) strcmp))
             sections = g_slist_prepend (sections, g_strdup (section));
-        list = g_slist_delete_link (list, list);
+
+        ids++;
     }
 
     return sections;
@@ -790,18 +801,26 @@ GSList *
 moo_lang_mgr_get_available_langs (MooLangMgr *mgr)
 {
     GSList *list = NULL;
+    const char *const *ids = NULL;
 
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
 
     read_langs (mgr);
 
 #ifdef MOO_USE_XML
-    list = gtk_source_language_manager_list_languages (GTK_SOURCE_LANGUAGE_MANAGER (mgr));
+    ids = gtk_source_language_manager_get_language_ids (GTK_SOURCE_LANGUAGE_MANAGER (mgr));
 #endif
 
-    g_slist_foreach (list, (GFunc) g_object_ref, NULL);
+    while (ids && *ids)
+    {
+        GtkSourceLanguage *lang;
+        lang = gtk_source_language_manager_get_language (GTK_SOURCE_LANGUAGE_MANAGER (mgr), *ids);
+        if (lang)
+            list = g_slist_prepend (list, g_object_ref (lang));
+        ids++;
+    }
 
-    return list;
+    return g_slist_reverse (list);
 }
 
 

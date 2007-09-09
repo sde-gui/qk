@@ -138,9 +138,6 @@ void         moo_text_view_set_right_margin_color   (MooTextView        *view,
                                                      const char         *color);
 void         moo_text_view_set_right_margin_offset  (MooTextView        *view,
                                                      guint               offset);
-void         moo_text_view_set_cursor_colors        (MooTextView        *view,
-                                                     const GdkColor     *prrimary,
-                                                     const GdkColor     *secondary);
 void         moo_text_view_set_style_scheme         (MooTextView        *view,
                                                      MooTextStyleScheme *scheme);
 

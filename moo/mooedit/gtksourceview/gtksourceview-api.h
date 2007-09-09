@@ -4,29 +4,30 @@
 
 #include "mooedit/gtksourceview/gtksourcelanguage-private-mangled.h"
 #include "mooedit/gtksourceview/gtksourcelanguagemanager-mangled.h"
-#include "mooedit/gtksourceview/gtksourcestylemanager-mangled.h"
+#include "mooedit/gtksourceview/gtksourcestyleschememanager-mangled.h"
 #include "mooedit/gtksourceview/gtksourceiter-mangled.h"
 #include "mooedit/gtksourceview/gtksourcestyle-private-mangled.h"
 
-#define GtkSourceLanguage		MooGtkSourceLanguage
-#define GtkSourceLanguageClass		MooGtkSourceLanguageClass
-#define GtkSourceEngine			MooGtkSourceEngine
-#define GtkSourceLanguageManager	MooGtkSourceLanguageManager
-#define GtkSourceLanguageManagerClass	MooGtkSourceLanguageManagerClass
-#define GtkSourceStyle			MooGtkSourceStyle
-#define GtkSourceStyleScheme		MooGtkSourceStyleScheme
-#define GtkSourceStyleManager		MooGtkSourceStyleManager
-#define GtkSourceStyleManagerClass	MooGtkSourceStyleManagerClass
-#define GtkSourceSearchFlags		MooGtkSourceSearchFlags
+#define GtkSourceLanguage			MooGtkSourceLanguage
+#define GtkSourceLanguageClass			MooGtkSourceLanguageClass
+#define GtkSourceEngine				MooGtkSourceEngine
+#define GtkSourceLanguageManager		MooGtkSourceLanguageManager
+#define GtkSourceLanguageManagerClass		MooGtkSourceLanguageManagerClass
+#define GtkSourceStyle				MooGtkSourceStyle
+#define GtkSourceStyleScheme			MooGtkSourceStyleScheme
+#define GtkSourceStyleSchemeManager		MooGtkSourceStyleSchemeManager
+#define GtkSourceStyleSchemeManagerClass	MooGtkSourceStyleSchemeManagerClass
+#define GtkSourceSearchFlags			MooGtkSourceSearchFlags
 
 #define _gtk_source_language_create_engine			_moo_gtk_source_language_create_engine
 #define _gtk_source_language_get_language_manager		_moo_gtk_source_language_get_language_manager
 #define gtk_source_language_get_metadata			_moo_gtk_source_language_get_metadata
-#define gtk_source_style_manager_new				_moo_gtk_source_style_manager_new
-#define gtk_source_style_manager_set_search_path		_moo_gtk_source_style_manager_set_search_path
-#define gtk_source_style_manager_get_scheme_ids			_moo_gtk_source_style_manager_get_scheme_ids
-#define gtk_source_style_manager_get_scheme			_moo_gtk_source_style_manager_get_scheme
-#define gtk_source_language_manager_list_languages		_moo_gtk_source_language_manager_list_languages
+#define gtk_source_style_scheme_manager_new			_moo_gtk_source_style_scheme_manager_new
+#define gtk_source_style_scheme_manager_set_search_path		_moo_gtk_source_style_scheme_manager_set_search_path
+#define gtk_source_style_scheme_manager_get_scheme_ids		_moo_gtk_source_style_scheme_manager_get_scheme_ids
+#define gtk_source_style_scheme_manager_get_scheme		_moo_gtk_source_style_scheme_manager_get_scheme
+#define gtk_source_language_manager_get_language_ids		_moo_gtk_source_language_manager_get_language_ids
+#define gtk_source_language_manager_get_language		_moo_gtk_source_language_manager_get_language
 #define _gtk_source_engine_attach_buffer			_moo_gtk_source_engine_attach_buffer
 #define _gtk_source_engine_text_inserted			_moo_gtk_source_engine_text_inserted
 #define _gtk_source_engine_text_deleted				_moo_gtk_source_engine_text_deleted

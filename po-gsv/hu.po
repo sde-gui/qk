@@ -1,3 +1,4 @@
+# translation of gtksourceview.HEAD.hu.po to Hungarian
 # Hungarian translation of gtksourceview.
 # Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gtksourceview package.
@@ -9,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview.HEAD.hu\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-15 02:59-0500\n"
-"PO-Revision-Date: 2007-02-24 12:25+0100\n"
+"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"PO-Revision-Date: 2007-08-26 14:38+0200\n"
 "Last-Translator: Gabor Kelemen <kelemeng@gnome.hu>\n"
 "Language-Team: Hungarian <gnome@gnome.hu>\n"
 "MIME-Version: 1.0\n"
@@ -19,17 +20,75 @@ msgstr ""
 "X-Generator: KBabel 1.11.4\n"
 "Plural-Forms:  nplurals=2; plural=(n != 1);"
 
+msgid "C/C++/ObjC Header"
+msgstr "C/C++/ObjC fejléc"
+
+msgid ""
+"Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
+"The error was: %s"
+msgstr ""
+"Nem hozható létre reguláris kifejezés minden átmenethez, a szintaxiskiemelési folyamat lassabb lesz a megszokottnál.\n"
+"A hiba: %s"
+
+msgid "Classic"
+msgstr "Klasszikus"
+
+msgid "Classic color scheme"
+msgstr "Klasszikus színséma"
+
+msgid "Color scheme used in the Kate text editor"
+msgstr "A Kate szövegszerkesztőben használt színséma"
+
+msgid "Color scheme using Tango color palette"
+msgstr "A Tango színpalettában használt színséma"
+
+msgid "Defaults"
+msgstr "Alapértékek"
+
+msgid "Hidden"
+msgstr "Rejtett"
+
+msgid "Language id"
+msgstr "Nyelvazonosító"
+
+msgid "Language name"
+msgstr "Nyelvnév"
+
+msgid "Language section"
+msgstr "Nyelvszakasz"
+
 msgid "Language specification directories"
-msgstr "Nyelvspecifikus könyvtárak"
+msgstr "Nyelvmeghatározási könyvtárak"
+
+msgid "List of directories and files where the style schemes are located"
+msgstr "A stílussémákat tartalmazó könyvtárak és fájlok listája"
 
 msgid "List of directories where the language specification files (.lang) are located"
-msgstr "Könyvtárak listája, ahol a nyelvspecifikus fájlok (.lang) találhatóak"
+msgstr "A nyelvspecifikációs fájlokat (.lang) tartalmazó könyvtárak listája"
+
+msgid "List of the ids of the available style schemes"
+msgstr "Az elérhető stílussémák azonosítóinak listája"
+
+msgid "Literate Haskell"
+msgstr "Irodalmi Haskell"
 
 msgid "Markup"
 msgstr "Leírónyelv"
 
+msgid "Missing main language definition (id = \"%s\".)"
+msgstr "Az elsődleges nyelvmeghatározás hiányzik (azonosító: \"%s\".)"
+
+msgid "Objective-C"
+msgstr "Objective C"
+
 msgid "Others"
 msgstr "Egyéb"
+
+msgid "Scheme ids"
+msgstr "Sémaazonosítók"
+
+msgid "Scientific"
+msgstr "Tudományos"
 
 msgid "Scripts"
 msgstr "Parancsfájlok"
@@ -37,6 +96,48 @@ msgstr "Parancsfájlok"
 msgid "Sources"
 msgstr "Forráskód"
 
+msgid "Style scheme description"
+msgstr "Stílusséma leírása"
+
+msgid "Style scheme filename"
+msgstr "Stílusséma fájlneve"
+
+msgid "Style scheme id"
+msgstr "Stílusséma azonosítója"
+
+msgid "Style scheme name"
+msgstr "Stílusséma neve"
+
+msgid "Style scheme search path"
+msgstr "Stílusséma keresési útvonala"
+
+msgid "Unknown id '%s' in regex '%s'"
+msgstr "Ismeretlen azonosító (%s) a(z) \"%s\" reguláris kifejezésben"
+
+msgid "Whether the language should be hidden from the user"
+msgstr "A nyelv elrejtésre kerüljön-e a felhasználó elől"
+
+msgid "context '%s' cannot contain a \\%%{...@start} command"
+msgstr "A(z) \"%s\" kontextus nem  tartalmazhat \\%%{...@start} parancsot"
+
+msgid "duplicated context id '%s'"
+msgstr "többszörös kontextusazonosító: \"%s\""
+
 msgid "gettext translation"
 msgstr "gettext fordítás"
+
+msgid "in regex '%s': backreferences are not supported"
+msgstr "\"%s\" regulásris kifejezés: a visszahivatkozások nem támogatottak"
+
+msgid "invalid reference '%s'"
+msgstr "érvénytelen hivatkozás: %s"
+
+msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
+msgstr "a helyettesítő karakteres kontextushivatkozáshoz stílus-felülbírálás került felhasználásra a(z) \"%s\" nyelv \"%s\" hivatkozásában."
+
+msgid "unknown context '%s'"
+msgstr "ismeretlen kontextus: \"%s\""
+
+msgid "using \\C is not supported in language definitions"
+msgstr "A \\C használata nem támogatott a nyelvmeghatározásokban"
 

@@ -7,13 +7,22 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-15 02:59-0500\n"
-"PO-Revision-Date: 2007-06-16 17:27+0800\n"
+"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"PO-Revision-Date: 2007-07-26 19:53+0800\n"
 "Last-Translator: Funda Wang <fundawang@linux.net.cn>\n"
 "Language-Team: zh_CN <i18n-translation@lists.linux.net.cn>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit"
+
+msgid "C/C++/ObjC Header"
+msgstr "C/C++/ObjC 头"
+
+msgid "Color scheme used in the Kate text editor"
+msgstr "使用 Kate 调色板中的配色方案"
+
+msgid "Color scheme using Tango color palette"
+msgstr "使用 Tango 调色板中的配色方案"
 
 msgid "Defaults"
 msgstr "默认值"
@@ -23,6 +32,9 @@ msgstr "语言规范目录"
 
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "列出语言规范文件(.lang)所在的目录"
+
+msgid "Literate Haskell"
+msgstr "字面 Haskell"
 
 msgid "Markup"
 msgstr "标记语言"
@@ -36,11 +48,17 @@ msgstr "其它"
 msgid "Scheme"
 msgstr "大纲"
 
+msgid "Scientific"
+msgstr "科学"
+
 msgid "Scripts"
 msgstr "脚本"
 
 msgid "Sources"
 msgstr "源代码"
+
+msgid "Style scheme filename"
+msgstr "样式大纲文件名"
 
 msgid "gettext translation"
 msgstr "gettext 翻译"

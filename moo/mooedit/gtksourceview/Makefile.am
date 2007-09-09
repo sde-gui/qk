@@ -22,7 +22,7 @@ upstream_sources =				\
 	upstream/gtksourcelanguage-parser-2.c	\
 	upstream/gtksourcelanguagemanager.c	\
 	upstream/gtksourcestyle.c		\
-	upstream/gtksourcestylemanager.c	\
+	upstream/gtksourcestyleschememanager.c	\
 	upstream/gtksourcestylescheme.c		\
 	upstream/gtksourcestylescheme-noxml.c	\
 	upstream/gtktextregion.c		\
@@ -34,7 +34,7 @@ upstream_sources =				\
 	upstream/gtksourcelanguagemanager.h	\
 	upstream/gtksourcestyle-private.h	\
 	upstream/gtksourcestyle.h		\
-	upstream/gtksourcestylemanager.h	\
+	upstream/gtksourcestyleschememanager.h	\
 	upstream/gtksourcestylescheme.h		\
 	upstream/gtktextregion.h		\
 	upstream/gtksourceview-utils.h		\
@@ -46,7 +46,7 @@ gtksourceview_sources =				\
 	gtksourceiter-mangled.c			\
 	gtksourcelanguagemanager-mangled.c	\
 	gtksourcestyle-mangled.c		\
-	gtksourcestylemanager-mangled.c		\
+	gtksourcestyleschememanager-mangled.c	\
 	gtktextregion-mangled.c			\
 	gtksourceview-utils-mangled.c		\
 	gtksourcecontextengine-mangled.h	\
@@ -55,7 +55,7 @@ gtksourceview_sources =				\
 	gtksourcelanguagemanager-mangled.h	\
 	gtksourcestyle-private-mangled.h	\
 	gtksourcestyle-mangled.h		\
-	gtksourcestylemanager-mangled.h		\
+	gtksourcestyleschememanager-mangled.h	\
 	gtksourcestylescheme-mangled.h		\
 	gtktextregion-mangled.h			\
 	gtksourceview-utils-mangled.h

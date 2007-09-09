@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview 1.90.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-16 15:36-0500\n"
-"PO-Revision-Date: 2007-06-30 18:24+0930\n"
+"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"PO-Revision-Date: 2007-09-03 20:45+0930\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: LocFactoryEditor 1.6.4a6"
+"X-Generator: LocFactoryEditor 1.7b1"
 
 msgid "C/C++/ObjC Header"
 msgstr "Phần đầu C/C++/ObjC"
@@ -30,14 +30,23 @@ msgstr ""
 msgid "ChangeLog"
 msgstr "Bản ghi đổi"
 
-msgid "Color scheme used in GVim"
-msgstr "Lược đồ màu dùng trong GVim"
+msgid "Classic"
+msgstr "Cổ điển"
+
+msgid "Classic color scheme"
+msgstr "Lược đồ màu cổ điển"
 
 msgid "Color scheme used in the Kate text editor"
 msgstr "Lược đồ màu dùng trong trình soạn thảo văn bản Kate"
 
+msgid "Color scheme using Tango color palette"
+msgstr "Lược đồ màu dùng bảng chọn màu Tango"
+
 msgid "DPatch"
 msgstr "Đắp vá D"
+
+msgid "Dark color scheme using the Tango color palette"
+msgstr "Lược đồ màu tối dùng bảng chọn màu Tango"
 
 msgid "Defaults"
 msgstr "Mặc định"
@@ -45,17 +54,41 @@ msgstr "Mặc định"
 msgid "Diff"
 msgstr "Khác biệt"
 
+msgid "Hidden"
+msgstr "Ẩn"
+
 msgid "Javascript"
 msgstr "JavaScript"
+
+msgid "Language id"
+msgstr "Mã ngôn ngữ"
+
+msgid "Language ids"
+msgstr "Các nã ngôn ngữ"
+
+msgid "Language name"
+msgstr "Tên ngôn ngữ"
+
+msgid "Language section"
+msgstr "Phần ngôn ngữ"
 
 msgid "Language specification directories"
 msgstr "Thư mục đặc tả ngôn ngữ"
 
-msgid "List of directories where the language specification files (.lang) are located"
-msgstr "Danh sách thư mục chứa tập tin đặc tả ngôn ngữ (.lang)"
+msgid "List of directories and files where the style schemes are located"
+msgstr "Danh sách các thư mục và tập tin chứa lược đồ kiểu dáng"
 
-msgid "List of directories where the style scheme files are located"
-msgstr "Danh sách các thư mục chứa tập tin lược đồ kiểu dáng"
+msgid "List of directories where the language specification files (.lang) are located"
+msgstr "Danh sách các thư mục chứa tập tin đặc tả ngôn ngữ (.lang)"
+
+msgid "List of the ids of the available languages"
+msgstr "Danh sách các mã ngôn ngữ sẵn sàng"
+
+msgid "List of the ids of the available style schemes"
+msgstr "Danh sách các ID lược đồ kiểu dáng sẵn sàng"
+
+msgid "Literate Haskell"
+msgstr "Haskell đọc được"
 
 msgid "Markup"
 msgstr "Mã định dạng"
@@ -75,26 +108,38 @@ msgstr "Đặc tả RPM"
 msgid "Scheme"
 msgstr "Lược đồ"
 
+msgid "Scheme ids"
+msgstr "ID lược đồ"
+
 msgid "Scientific"
 msgstr "Khoa học"
 
 msgid "Scripts"
-msgstr "Tập lệnh"
+msgstr "Văn lệnh"
 
 msgid "Sources"
 msgstr "Nguồn"
 
-msgid "Style scheme directories"
-msgstr "Thư mục lược đồ kiểu dáng"
+msgid "Style scheme description"
+msgstr "Mô tả lược đồ kiểu dáng"
+
+msgid "Style scheme filename"
+msgstr "Tên tập tin lược đồ kiểu dáng"
 
 msgid "Style scheme id"
-msgstr "id lược đồ kiểu dáng"
+msgstr "ID lược đồ kiểu dáng"
 
 msgid "Style scheme name"
 msgstr "Tên lược đồ kiểu dáng"
 
+msgid "Style scheme search path"
+msgstr "Đường dẫn tìm lược đồ kiểu dáng"
+
 msgid "Unknown id '%s' in regex '%s'"
 msgstr "id không rõ « %s » trong biểu thức chính quy « %s »"
+
+msgid "Whether the language should be hidden from the user"
+msgstr "Có nên ẩn ngôn ngữ khỏi người dùng hay không"
 
 msgid "context '%s' cannot contain a \\%%{...@start} command"
 msgstr "ngữ cảnh « %s » không thể chứa lệnh kiểu \\%%{...@start}"
@@ -114,8 +159,11 @@ msgstr "trong biểu thức chính quy « %s »: không hỗ trợ tham chiếu 
 msgid "invalid reference '%s'"
 msgstr "tham chiếu không hợp lệ « %s »"
 
+msgid "pkg-config"
+msgstr "cấu hình gói"
+
 msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
-msgstr "sự ghi đè kiểu dáng được dùng với tham chiếu ngữ cảnh đại diện trong ngôn ngữ « %s » trong tham chiếu « %s »"
+msgstr "quyền kiểu dáng cao hơn được dùng với tham chiếu ngữ cảnh ký tự đại diện bằng ngôn ngữ « %s » trong tham chiếu « %s »"
 
 msgid "unknown context '%s'"
 msgstr "ngữ cảnh không rõ « %s »"

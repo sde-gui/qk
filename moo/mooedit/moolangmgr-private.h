@@ -34,7 +34,7 @@ typedef struct _MooLangMgrClass MooLangMgrClass;
 struct _MooLangMgr {
     GtkSourceLanguageManager base;
 
-    GtkSourceStyleManager *style_mgr;
+    GtkSourceStyleSchemeManager *style_mgr;
 
     GHashTable *langs;
     GHashTable *config;

@@ -19,7 +19,7 @@
  */
 
 #include "gtksourceview-i18n.h"
-#include "gtksourcestylemanager.h"
+#include "gtksourcestyleschememanager.h"
 #include "gtksourceview.h"
 #include "gtksourcelanguage-private.h"
 #include "gtksourcestyle-private.h"
@@ -35,6 +35,7 @@
 #define STYLE_SECONDARY_CURSOR		"secondary-cursor"
 #define STYLE_CURRENT_LINE		"current-line"
 #define STYLE_LINE_NUMBERS		"line-numbers"
+#define STYLE_RIGHT_MARGIN		"right-margin"
 
 #define STYLE_SCHEME_VERSION		"1.0"
 
@@ -45,6 +46,7 @@ enum {
 	PROP_0,
 	PROP_ID,
 	PROP_NAME,
+	PROP_DESCRIPTION,
 	PROP_FILENAME
 };
 
@@ -52,7 +54,7 @@ struct _GtkSourceStyleSchemePrivate
 {
 	gchar *id;
 	gchar *name;
-	gchar *author;
+	GPtrArray *authors;
 	gchar *description;
 	gchar *filename;
 	GtkSourceStyleScheme *parent;
@@ -73,7 +75,13 @@ gtk_source_style_scheme_finalize (GObject *object)
 	g_hash_table_destroy (scheme->priv->style_cache);
 	g_hash_table_destroy (scheme->priv->defined_styles);
 	g_free (scheme->priv->filename);
-	g_free (scheme->priv->author);
+
+	if (scheme->priv->authors != NULL)
+	{
+		g_ptr_array_foreach (scheme->priv->authors, (GFunc)g_free, NULL);
+		g_ptr_array_free (scheme->priv->authors, TRUE);
+	}
+
 	g_free (scheme->priv->description);
 	g_free (scheme->priv->id);
 	g_free (scheme->priv->name);
@@ -102,13 +110,6 @@ gtk_source_style_scheme_set_property (GObject 	   *object,
 			g_free (tmp);
 			break;
 
-		case PROP_NAME:
-			tmp = scheme->priv->name;
-			scheme->priv->name = g_value_dup_string (value);
-			g_free (tmp);
-			g_object_notify (object, "name");
-			break;
-
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 			break;
@@ -131,6 +132,10 @@ gtk_source_style_scheme_get_property (GObject 	 *object,
 
 		case PROP_NAME:
 			g_value_set_string (value, scheme->priv->name);
+			break;
+
+		case PROP_DESCRIPTION:
+			g_value_set_string (value, scheme->priv->description);
 			break;
 
 		case PROP_FILENAME:
@@ -156,9 +161,7 @@ gtk_source_style_scheme_class_init (GtkSourceStyleSchemeClass *klass)
 	 * GtkSourceStyleScheme:id:
 	 *
 	 * Style scheme id, a unique string used to identify the style scheme
-	 * in #GtkSourceStyleManager.
-	 *
-	 * Since: 2.0
+	 * in #GtkSourceStyleSchemeManager.
 	 */
 	g_object_class_install_property (object_class,
 					 PROP_ID,
@@ -172,8 +175,6 @@ gtk_source_style_scheme_class_init (GtkSourceStyleSchemeClass *klass)
 	 * GtkSourceStyleScheme:name:
 	 *
 	 * Style scheme name, a translatable string to present to user.
-	 *
-	 * Since: 2.0
 	 */
 	g_object_class_install_property (object_class,
 					 PROP_NAME,
@@ -181,14 +182,25 @@ gtk_source_style_scheme_class_init (GtkSourceStyleSchemeClass *klass)
 						 	      _("Style scheme name"),
 							      _("Style scheme name"),
 							      NULL,
-							      G_PARAM_READWRITE));
+							      G_PARAM_READABLE));
+
+	/**
+	 * GtkSourceStyleScheme:name:
+	 *
+	 * Style scheme name, a translatable string to present to user.
+	 */
+	g_object_class_install_property (object_class,
+					 PROP_NAME,
+					 g_param_spec_string ("description",
+						 	      _("Style scheme description"),
+							      _("Style scheme description"),
+							      NULL,
+							      G_PARAM_READABLE));
 
 	/**
 	 * GtkSourceStyleScheme:filename:
 	 *
 	 * Style scheme filename or NULL.
-	 *
-	 * Since: 2.0
 	 */
 	g_object_class_install_property (object_class,
 					 PROP_FILENAME,
@@ -266,6 +278,27 @@ gtk_source_style_scheme_get_description (GtkSourceStyleScheme *scheme)
 {
 	g_return_val_if_fail (GTK_IS_SOURCE_STYLE_SCHEME (scheme), NULL);
 	return scheme->priv->description;
+}
+
+/**
+ * gtk_source_style_scheme_get_authors:
+ * @scheme: a #GtkSourceStyleScheme.
+ *
+ * Returns: a %NULL-terminated array containing the @scheme authors or
+ * %NULL if no author is specified by the style
+ * scheme.
+ *
+ * Since: 2.0
+ */
+G_CONST_RETURN gchar* G_CONST_RETURN *
+gtk_source_style_scheme_get_authors (GtkSourceStyleScheme *scheme)
+{
+	g_return_val_if_fail (GTK_IS_SOURCE_STYLE_SCHEME (scheme), NULL);
+
+	if (scheme->priv->authors == NULL)
+		return NULL;
+
+	return (G_CONST_RETURN gchar* G_CONST_RETURN *)scheme->priv->authors->pdata;
 }
 
 /**
@@ -472,20 +505,18 @@ gtk_source_style_scheme_set_style (GtkSourceStyleScheme *scheme,
 }
 #endif
 
-/**
- * gtk_source_style_scheme_get_matching_brackets_style:
- * @scheme: a #GtkSourceStyleScheme.
- *
- * Returns: style which corresponds to "bracket-match" name, to use
- * in an editor. It is owned by @scheme and may not be unref'ed.
- *
- * Since: 2.0
- */
 GtkSourceStyle *
-gtk_source_style_scheme_get_matching_brackets_style (GtkSourceStyleScheme *scheme)
+_gtk_source_style_scheme_get_matching_brackets_style (GtkSourceStyleScheme *scheme)
 {
 	g_return_val_if_fail (GTK_IS_SOURCE_STYLE_SCHEME (scheme), NULL);
 	return gtk_source_style_scheme_get_style (scheme, STYLE_BRACKET_MATCH);
+}
+
+GtkSourceStyle *
+_gtk_source_style_scheme_get_right_margin_style (GtkSourceStyleScheme *scheme)
+{
+	g_return_val_if_fail (GTK_IS_SOURCE_STYLE_SCHEME (scheme), NULL);
+	return gtk_source_style_scheme_get_style (scheme, STYLE_RIGHT_MARGIN);
 }
 
 static gboolean
@@ -525,19 +556,12 @@ get_color (GtkSourceStyle *style,
 	return FALSE;
 }
 
-/**
- * gtk_source_style_scheme_get_current_line_color:
- * @scheme: a #GtkSourceStyleScheme.
- * @color: a #GdkColor structure to fill.
- *
- * Returns: %TRUE if @scheme has style for current line set, or %FALSE
- * otherwise.
- *
- * Since: 2.0
+/*
+ * Returns TRUE if the style for current-line set in the scheme
  */
 gboolean
-gtk_source_style_scheme_get_current_line_color (GtkSourceStyleScheme *scheme,
-						GdkColor             *color)
+_gtk_source_style_scheme_get_current_line_color (GtkSourceStyleScheme *scheme,
+						 GdkColor             *color)
 {
 	GtkSourceStyle *style;
 
@@ -625,7 +649,7 @@ set_cursor_colors (GtkWidget      *widget,
 		gtk_widget_set_name (widget, widget_name);
 
 	g_object_set_data (G_OBJECT (widget),
-			   "gtk-source-view-cursor-color",
+			   "gtk-source-view-cursor-color-set",
 			   GINT_TO_POINTER (TRUE));
 
 	g_free (rc_string);
@@ -639,7 +663,7 @@ static void
 unset_cursor_colors (GtkWidget *widget)
 {
 #if !GTK_CHECK_VERSION(2,11,3)
-	if (g_object_get_data (G_OBJECT (widget), "gtk-source-view-cursor-color"))
+	if (g_object_get_data (G_OBJECT (widget), "gtk-source-view-cursor-color-set") != NULL)
 		set_cursor_colors (widget,
 				   &widget->style->text[GTK_STATE_NORMAL],
 				   &widget->style->text_aa[GTK_STATE_NORMAL]);
@@ -929,7 +953,11 @@ parse_style_scheme_child (GtkSourceStyleScheme *scheme,
 	else if (strcmp ((char*) node->name, "author") == 0)
 	{
 		xmlChar *tmp = xmlNodeGetContent (node);
-		scheme->priv->author = g_strdup ((char*) tmp);
+		if (scheme->priv->authors == NULL)
+			scheme->priv->authors = g_ptr_array_new ();
+
+		g_ptr_array_add (scheme->priv->authors, g_strdup ((char*) tmp));
+
 		xmlFree (tmp);
 	}
 	else if (strcmp ((char*) node->name, "description") == 0)
@@ -1013,6 +1041,10 @@ parse_style_scheme_element (GtkSourceStyleScheme *scheme,
 		if (node->type == XML_ELEMENT_NODE)
 			if (!parse_style_scheme_child (scheme, node, error))
 				return;
+
+	/* NULL-terminate the array of authors */
+	if (scheme->priv->authors != NULL)
+		g_ptr_array_add (scheme->priv->authors, NULL);
 }
 
 /**
@@ -1142,10 +1174,10 @@ _gtk_source_style_scheme_set_parent (GtkSourceStyleScheme *scheme,
 GtkSourceStyleScheme *
 _gtk_source_style_scheme_get_default (void)
 {
-	GtkSourceStyleManager *manager;
+	GtkSourceStyleSchemeManager *manager;
 
-	manager = gtk_source_style_manager_get_default ();
+	manager = gtk_source_style_scheme_manager_get_default ();
 
-	return gtk_source_style_manager_get_scheme (manager,
-						    DEFAULT_STYLE_SCHEME);
+	return gtk_source_style_scheme_manager_get_scheme (manager,
+							   DEFAULT_STYLE_SCHEME);
 }

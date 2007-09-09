@@ -1,19 +1,14 @@
-# translation of gtksourceview.HEAD.es.po to Español
-# Spanish translation for GtkSourceView
-# Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
-# This file is distributed under the same license as the gtksourceview package.
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
 #
-# Lucas 'Basurero' Vieites <basurero@jazzfree.com>, 2003.
-# Francisco Javier F. Serrador <serrador@cvs.gnome.org>, 2003-2005, 2006.
-# Claudio Saavedra <csaavedra@alumnos.utalca.cl>, 2007.
 # Jorge González <jorgegonz@svn.gnome.org>, 2007.
-# Jorge Gonzalez <jorgegonz@svn.gnome.org>, 2007.
 msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview.HEAD.es\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-16 15:36-0500\n"
-"PO-Revision-Date: 2007-07-15 14:25+0200\n"
+"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"PO-Revision-Date: 2007-08-28 15:02+0200\n"
 "Last-Translator: Jorge González <jorgegonz@svn.gnome.org>\n"
 "Language-Team: Spanish <traductores@es.gnome.org>\n"
 "MIME-Version: 1.0\n"
@@ -32,8 +27,11 @@ msgstr ""
 "No se puede crear una expresión regular para todas las transiciones, el proceso de resaltado de sintaxis será más lento de lo habitual.\n"
 "El error fue: %s"
 
-msgid "Color scheme used in GVim"
-msgstr "Esquema de colores a usar en GVim"
+msgid "Classic"
+msgstr "Clásico"
+
+msgid "Classic color scheme"
+msgstr "Esquema de color clásico"
 
 msgid "Color scheme used in the Kate text editor"
 msgstr "Esquema de colores usado en el editor de textos Kate"
@@ -41,20 +39,47 @@ msgstr "Esquema de colores usado en el editor de textos Kate"
 msgid "Color scheme using Tango color palette"
 msgstr "Esquema de colores usando la paleta de colores de Tango"
 
+msgid "Dark color scheme using the Tango color palette"
+msgstr "Esquema de colores oscuro usando la paleta de colores de Tango"
+
 msgid "Defaults"
 msgstr "Predeterminados"
+
+msgid "Hidden"
+msgstr "Oculto"
 
 msgid "Javascript"
 msgstr "JavaScript"
 
+msgid "Language id"
+msgstr "ID del lenguaje"
+
+msgid "Language ids"
+msgstr "ID del lenguaje"
+
+msgid "Language name"
+msgstr "Nombre del lenguaje"
+
+msgid "Language section"
+msgstr "Sección del lenguaje"
+
 msgid "Language specification directories"
-msgstr "Directorios de especificaciones de idiomas"
+msgstr "Directorios de especificaciones de lenguajes"
+
+msgid "List of directories and files where the style schemes are located"
+msgstr "Lista de directorios y archivos en los que se hallan los archivos de estilos"
 
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "Lista de directorios en los que se hallan los archivo de especificación de lenguajes (.lang)."
 
-msgid "List of directories where the style scheme files are located"
-msgstr "Lista de directorios en los que se hallan los archivos de estilos de esquemas"
+msgid "List of the ids of the available languages"
+msgstr "Lista de los identificadores de los lenguajes disponibles"
+
+msgid "List of the ids of the available style schemes"
+msgstr "Lista de los identificadores de los estilos disponibles"
+
+msgid "Literate Haskell"
+msgstr "Haskell literario"
 
 msgid "Markup"
 msgstr "Marcado"
@@ -71,26 +96,35 @@ msgstr "Especificación de RPM"
 msgid "Scheme"
 msgstr "Esquema"
 
+msgid "Scheme ids"
+msgstr "Identificadores de esquema"
+
 msgid "Scientific"
 msgstr "Científico"
 
 msgid "Sources"
 msgstr "Fuentes"
 
-msgid "Style scheme directories"
-msgstr "Directorios de estilos de esquemas"
+msgid "Style scheme description"
+msgstr "Descripción del estilo"
 
 msgid "Style scheme filename"
-msgstr "Nombre del archivo de estilo del esquema"
+msgstr "Nombre del archivo de estilo"
 
 msgid "Style scheme id"
-msgstr "ID del estilo del esquema"
+msgstr "ID del estilo"
 
 msgid "Style scheme name"
-msgstr "Nombre del estilo del esquema"
+msgstr "Nombre del estilo"
+
+msgid "Style scheme search path"
+msgstr "Ruta de búsqueda del estilo"
 
 msgid "Unknown id '%s' in regex '%s'"
 msgstr "Id «%s» desconocido en la expresión regular «%s»"
+
+msgid "Whether the language should be hidden from the user"
+msgstr "Indica si se debería ocultar el lenguaje al usuario"
 
 msgid "context '%s' cannot contain a \\%%{...@start} command"
 msgstr "el contexto «%s» no puede contener un comando \\%%{...@start} command"

@@ -5,17 +5,21 @@ languagespecsdir = ${MOO_TEXT_LANG_FILES_DIR}
 langs2 =			\
 	ada.lang		\
 	awk.lang		\
+	boo.lang		\
 	changelog.lang		\
-	c.lang			\
 	chdr.lang		\
+	c.lang			\
 	cpp.lang		\
 	csharp.lang		\
 	css.lang		\
 	def.lang		\
 	desktop.lang		\
 	diff.lang		\
+	d.lang			\
+	docbook.lang		\
 	dpatch.lang		\
 	dtd.lang		\
+	erlang.lang		\
 	fortran.lang		\
 	gap.lang		\
 	gtk-doc.lang		\
@@ -30,10 +34,12 @@ langs2 =			\
 	javascript.lang		\
 	latex.lang		\
 	libtool.lang		\
+	lua.lang		\
 	m4.lang			\
 	makefile.lang		\
-	ms.lang			\
+	nemerle.lang		\
 	objc.lang		\
+	ocaml.lang		\
 	ocl.lang		\
 	octave.lang		\
 	pascal.lang		\
@@ -43,33 +49,28 @@ langs2 =			\
 	po.lang			\
 	python-console.lang	\
 	python.lang		\
+	R.lang			\
+	rpmspec.lang		\
 	ruby.lang		\
 	scheme.lang		\
 	sh.lang			\
 	sql.lang		\
 	tcl.lang		\
 	texinfo.lang		\
+	vala.lang		\
+	vbnet.lang		\
+	verilog.lang		\
+	vhdl.lang		\
 	xml.lang		\
 	yacc.lang
 
 langs1 =			\
-	boo.lang		\
-	check.sh		\
-	d.lang			\
-	docbook.lang		\
-	lua.lang		\
-	msil.lang		\
-	nemerle.lang		\
-	ocaml.lang		\
-	R.lang			\
-	spec.lang		\
-	vbnet.lang		\
-	verilog.lang		\
-	vhdl.lang
+	msil.lang
 
 styles =			\
 	kate.xml		\
-	gvim.xml		\
+	classic.xml		\
+	oblivion.xml		\
 	tango.xml
 
 languagespecs_DATA =		\
