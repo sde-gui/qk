@@ -5,62 +5,21 @@
   <!ENTITY manrevision "0.1">
   <!ENTITY date "Septermber 2007">
   <!ENTITY app "medit">
+<!--  <!ENTITY chap SYSTEM "chap.docbook">-->
 ]>
 
 <article>
 
 <articleinfo>
-<title>medit manual</title>
+<title>&app; manual</title>
 </articleinfo>
 
-<sect1>
-<title>Hello, world</title>
-<para>This is my first DocBook file.</para>
+<sect1 id="sect-getting-started">
+<title>Getting Started</title>
+</sect1>
 
-<sect2 id="app-prefs-langs-and-filters">
-<title>app-prefs-langs-and-filters</title>
-blah blah blah
-</sect2>
-
-<sect2 id="app-prefs-editor">
-<title>app-prefs-editor</title>
-blah blah blah
-</sect2>
-
-<sect2 id="contents">
-<title>contents</title>
-blah blah blah
-</sect2>
-
-<sect2 id="app-prefs-plugins">
-<title>app-prefs-plugins</title>
-blah blah blah
-</sect2>
-
-<sect2 id="dialog-replace">
-<title>dialog-replace</title>
-blah blah blah
-</sect2>
-
-<sect2 id="dialog-find">
-<title>dialog-find</title>
-blah blah blah
-</sect2>
-
-<sect2 id="app-prefs-user-tools">
-<title>app-prefs-user-tools</title>
-blah blah blah
-</sect2>
-
-<sect2 id="dialog-find-in-files">
-<title>dialog-find-in-files</title>
-blah blah blah
-</sect2>
-
-<sect2 id="dialog-find-file">
-<title>dialog-find-file</title>
-blah blah blah
-</sect2>
+<sect1 id="sect-opening-and-saving">
+<title>Opening and Saving Files</title>
 
 <sect2 id="dialog-open">
 <title>dialog-open</title>
@@ -79,6 +38,61 @@ blah blah blah
 
 <sect2 id="app-prefs-file-selector">
 <title>app-prefs-file-selector</title>
+blah blah blah
+</sect2>
+
+</sect1>
+
+<sect1 id="sect-editing-text">
+<title>Editing text</title>
+
+<sect2 id="dialog-replace">
+<title>dialog-replace</title>
+blah blah blah
+</sect2>
+
+<sect2 id="dialog-find">
+<title>dialog-find</title>
+blah blah blah
+</sect2>
+
+<sect2 id="dialog-find-in-files">
+<title>dialog-find-in-files</title>
+blah blah blah
+</sect2>
+
+<sect2 id="dialog-find-file">
+<title>dialog-find-file</title>
+blah blah blah
+</sect2>
+
+</sect1>
+
+<sect1 id="app-prefs-dialog">
+<title>Preferences</title>
+
+<sect2 id="app-prefs-langs-and-filters">
+<title>app-prefs-langs-and-filters</title>
+blah blah blah
+</sect2>
+
+</sect1>
+
+<sect1 id="sect-plugins">
+<title>Plugins</title>
+
+<sect2 id="app-prefs-plugins">
+<title>app-prefs-plugins</title>
+blah blah blah
+</sect2>
+
+</sect1>
+
+<sect1 id="sect-user-defined-tools">
+<title>User-defined Tools</title>
+
+<sect2 id="app-prefs-user-tools">
+<title>app-prefs-user-tools</title>
 blah blah blah
 </sect2>
 
