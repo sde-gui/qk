@@ -668,14 +668,7 @@ shortcut_custom_toggled (MooAccelPrefsPage *page)
     }
     else
     {
-        const char *accel = get_action_accel (page->current_action);
-        g_hash_table_insert (page->changed,
-                             page->current_action,
-                             shortcut_new (CUSTOM, accel));
-
-        block_accel_set (page);
-        _moo_accel_button_set_accel (page->shortcut, accel);
-        unblock_accel_set (page);
+        gtk_button_clicked (GTK_BUTTON (page->shortcut));
     }
 }
 
