@@ -238,8 +238,34 @@ typedef struct {
     int mods;
     guint key;
     GtkLabel *label;
+    GtkDialog *dialog;
+    guint commit_timeout;
 } Stuff;
 
+
+static gboolean
+commit_timeout (Stuff *s)
+{
+    s->commit_timeout = 0;
+    gtk_dialog_response (s->dialog, GTK_RESPONSE_OK);
+    return FALSE;
+}
+
+static void
+add_commit_timeout (Stuff *s)
+{
+    if (s->commit_timeout)
+        g_source_remove (s->commit_timeout);
+    s->commit_timeout = g_timeout_add (500, (GSourceFunc) commit_timeout, s);
+}
+
+static void
+remove_commit_timeout (Stuff *s)
+{
+    if (s->commit_timeout)
+        g_source_remove (s->commit_timeout);
+    s->commit_timeout = 0;
+}
 
 static gboolean
 key_event (GtkWidget    *widget,
@@ -269,6 +295,11 @@ key_event (GtkWidget    *widget,
         g_free (label);
         s->key = keyval;
         s->mods = mods;
+        add_commit_timeout (s);
+    }
+    else
+    {
+        remove_commit_timeout (s);
     }
 
     return TRUE;
@@ -281,7 +312,8 @@ moo_accel_button_clicked (GtkButton *gtkbutton)
     MooAccelButton *button = MOO_ACCEL_BUTTON (gtkbutton);
     MooGladeXML *xml;
     GtkWidget *dialog, *ok_button, *cancel_button, *eventbox, *label;
-    Stuff s = {0, 0, NULL};
+    GtkWidget *parent;
+    Stuff s = {0, 0, NULL, NULL, 0};
     int response;
 
     xml = moo_glade_xml_new_from_buf (mooaccelbutton_glade_xml, -1,
@@ -290,6 +322,11 @@ moo_accel_button_clicked (GtkButton *gtkbutton)
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");
 
+    parent = gtk_widget_get_toplevel (GTK_WIDGET (gtkbutton));
+    gtk_window_set_transient_for (GTK_WINDOW (dialog),
+                                  GTK_IS_WINDOW (parent) ? GTK_WINDOW (parent) : NULL);
+    gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
                                              GTK_RESPONSE_OK,
                                              GTK_RESPONSE_CANCEL,
@@ -297,8 +334,6 @@ moo_accel_button_clicked (GtkButton *gtkbutton)
 
     if (button->title)
         gtk_window_set_title (GTK_WINDOW (dialog), button->title);
-
-    moo_position_window_at_pointer (dialog, GTK_WIDGET (button));
 
     ok_button = moo_glade_xml_get_widget (xml, "ok");
     cancel_button = moo_glade_xml_get_widget (xml, "cancel");
@@ -309,10 +344,12 @@ moo_accel_button_clicked (GtkButton *gtkbutton)
     gtk_button_set_use_underline (GTK_BUTTON (cancel_button), FALSE);
 
     s.label = GTK_LABEL (label);
+    s.dialog = GTK_DIALOG (dialog);
 
     g_signal_connect (eventbox, "key-press-event", G_CALLBACK (key_event), &s);
 
     response = gtk_dialog_run (GTK_DIALOG (dialog));
+    remove_commit_timeout (&s);
 
     gtk_widget_destroy (dialog);
     g_object_unref (xml);
