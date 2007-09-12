@@ -5,8 +5,8 @@ noinst_LTLIBRARIES = liblua-ex-posix.la liblua-ex-win32.la liblua-ex.la
 # object files renamed
 liblua_ex_la_SOURCES = lua-ex.h
 liblua_ex_la_LIBADD = liblua-ex-posix.la liblua-ex-win32.la
-liblua_ex_posix_la_SOURCES =
-liblua_ex_win32_la_SOURCES =
+liblua_ex_posix_la_SOURCES = dummy.c
+liblua_ex_win32_la_SOURCES = dummy.c
 
 win32_sources =			\
 	w32api/dirent.c		\
