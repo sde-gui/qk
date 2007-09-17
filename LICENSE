@@ -70,7 +70,6 @@ moo/mooedit/language-specs/*:
         moo/mooedit/language-specs/nemerle.lang
         moo/mooedit/language-specs/pascal.lang
         moo/mooedit/language-specs/php.lang
-        moo/mooedit/language-specs/python.lang
         moo/mooedit/language-specs/R.lang
         moo/mooedit/language-specs/ruby.lang
 
