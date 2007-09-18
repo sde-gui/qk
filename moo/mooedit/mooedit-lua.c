@@ -482,7 +482,7 @@ cfunc_new_line (lua_State *L)
     const char *insert;
 
     CHECK_DOC (L, doc);
-    parse_args (L, "NewLine", "|i", n);
+    parse_args (L, "NewLine", "|i", &n);
 
     luaL_argcheck (L, n >= 0, 1, "must be positive");
 
