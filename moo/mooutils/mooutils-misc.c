@@ -1826,6 +1826,60 @@ _moo_strv_reverse (char **str_array)
     return str_array;
 }
 
+char **
+_moo_ascii_strnsplit (const char *string,
+                      gssize      len,
+                      guint       max_tokens)
+{
+    GPtrArray *array = NULL;
+    const char *end;
+
+    g_return_val_if_fail (string != NULL, NULL);
+
+    if (len < 0)
+        len = strlen (string);
+    if (max_tokens < 2)
+        max_tokens = G_MAXUINT;
+
+    end = string + len;
+
+    while (string != end)
+    {
+        const char *p;
+
+        while (string != end && g_ascii_isspace (*string))
+            string++;
+
+        if (string == end)
+            break;
+
+        for (p = string; p != end && !g_ascii_isspace (*p); ++p) ;
+
+        if (!array)
+            array = g_ptr_array_new ();
+
+        g_ptr_array_add (array, g_strndup (string, p - string));
+
+        if (array->len + 1 == max_tokens)
+        {
+            g_ptr_array_add (array, g_strndup (p, end - p));
+            break;
+        }
+
+        string = p;
+    }
+
+    if (array)
+    {
+        g_ptr_array_add (array, NULL);
+        return (char**) g_ptr_array_free (array, FALSE);
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
 
 #if defined(__WIN32__) && !defined(MOO_DEBUG_ENABLED)
 static guint saved_win32_error_mode;

@@ -107,6 +107,9 @@ char      **moo_strnsplit_lines             (const char     *string,
                                              gssize          len,
                                              guint          *n_tokens);
 char      **_moo_splitlines                 (const char     *string);
+char      **_moo_ascii_strnsplit            (const char     *string,
+                                             gssize          len,
+                                             guint           n_tokens);
 char      **_moo_strv_reverse               (char          **str_array);
 
 static inline gboolean
