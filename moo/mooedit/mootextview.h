@@ -108,9 +108,6 @@ gboolean     moo_text_view_undo                     (MooTextView        *view);
 void         moo_text_view_begin_not_undoable_action(MooTextView        *view);
 void         moo_text_view_end_not_undoable_action  (MooTextView        *view);
 
-void         moo_text_view_goto_line                (MooTextView        *view,
-                                                     int                 line);
-
 void         moo_text_view_set_font_from_string     (MooTextView        *view,
                                                      const char         *font);
 
