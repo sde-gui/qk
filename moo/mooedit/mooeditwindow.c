@@ -2586,10 +2586,13 @@ icon_size_allocate (GtkWidget     *image,
 
     old_allocation = g_object_get_data (G_OBJECT (image), "moo-icon-allocation");
 
-    if (!old_allocation || memcmp (old_allocation, allocation, sizeof *allocation) != 0)
+    if (!old_allocation ||
+        old_allocation->x != allocation->x ||
+        old_allocation->y != allocation->y ||
+        old_allocation->width != allocation->width ||
+        old_allocation->height != allocation->height)
     {
-        GtkAllocation *copy = g_new (GtkAllocation, 1);
-        memcpy (copy, allocation, sizeof *copy);
+        GtkAllocation *copy = g_memdup (allocation, sizeof *allocation);
         g_object_set_data_full (G_OBJECT (image), "moo-icon-allocation", copy, g_free);
         update_evbox_shape (image, evbox);
     }
@@ -3532,7 +3535,7 @@ moo_edit_window_set_action_filter (const char        *action_id,
     g_return_if_fail (action_id != NULL);
     g_return_if_fail (type < N_ACTION_CHECKS);
 
-    if (filter_string)
+    if (filter_string && filter_string[0])
         filter = _moo_edit_filter_new (filter_string);
 
     if (filter)
