@@ -36,13 +36,14 @@ static const MooPluginInfo plugin_name__##_plugin_info =                    \
 
 
 #define MOO_PLUGIN_DEFINE_FULL(Name__,name__,                               \
-                               init__,deinit__,                             \
                                attach_win__,detach_win__,                   \
                                attach_doc__,detach_doc__,                   \
                                prefs_page_func__,                           \
                                WIN_PLUGIN_TYPE__,DOC_PLUGIN_TYPE__)         \
                                                                             \
 static gpointer name__##_plugin_parent_class;                               \
+static gboolean name__##_plugin_init (Name__##Plugin *plugin);              \
+static void name__##_plugin_deinit (Name__##Plugin *plugin);                \
                                                                             \
 typedef struct {                                                            \
     MooPluginClass parent_class;                                            \
@@ -53,8 +54,8 @@ name__##_plugin_class_init (MooPluginClass *klass)                          \
 {                                                                           \
     name__##_plugin_parent_class = g_type_class_peek_parent (klass);        \
                                                                             \
-    klass->init = (MooPluginInitFunc) init__;                               \
-    klass->deinit = (MooPluginDeinitFunc) deinit__;                         \
+    klass->init = (MooPluginInitFunc) name__##_plugin_init;                 \
+    klass->deinit = (MooPluginDeinitFunc) name__##_plugin_deinit;           \
     klass->attach_win = (MooPluginAttachWinFunc) attach_win__;              \
     klass->detach_win = (MooPluginDetachWinFunc) detach_win__;              \
     klass->attach_doc = (MooPluginAttachDocFunc) attach_doc__;              \
@@ -99,59 +100,63 @@ name__##_plugin_get_type (void)                                             \
 }
 
 
-#define MOO_WIN_PLUGIN_DEFINE(Name__,name__,create__,destroy__)             \
-                                                                            \
-typedef struct {                                                            \
-    MooWinPluginClass parent_class;                                         \
-} Name__##WindowPluginClass;                                                \
-                                                                            \
-static GType name__##_window_plugin_get_type (void) G_GNUC_CONST;           \
-                                                                            \
-static gpointer name__##_window_plugin_parent_class = NULL;                 \
-                                                                            \
-static void                                                                 \
-name__##_window_plugin_class_init (MooWinPluginClass *klass)                \
-{                                                                           \
-    name__##_window_plugin_parent_class = g_type_class_peek_parent (klass); \
-    klass->create = (MooWinPluginCreateFunc) create__;                      \
-    klass->destroy = (MooWinPluginDestroyFunc) destroy__;                   \
-}                                                                           \
-                                                                            \
-static GType                                                                \
-name__##_window_plugin_get_type (void)                                      \
-{                                                                           \
-    static GType type__ = 0;                                                \
-                                                                            \
-    if (G_UNLIKELY (type__ == 0))                                           \
-    {                                                                       \
-        static const GTypeInfo info__ = {                                   \
-            sizeof (Name__##WindowPluginClass),                             \
-            (GBaseInitFunc) NULL,                                           \
-            (GBaseFinalizeFunc) NULL,                                       \
-            (GClassInitFunc) name__##_window_plugin_class_init,             \
-            (GClassFinalizeFunc) NULL,                                      \
-            NULL,   /* class_data */                                        \
-            sizeof (Name__##WindowPlugin),                                  \
-            0,      /* n_preallocs */                                       \
-            NULL,                                                           \
-            NULL    /* value_table */                                       \
-        };                                                                  \
-                                                                            \
-        type__ = g_type_register_static (MOO_TYPE_WIN_PLUGIN,               \
-                                         #Name__ "WindowPlugin",&info__, 0);\
-    }                                                                       \
-                                                                            \
-    return type__;                                                          \
+#define MOO_WIN_PLUGIN_DEFINE(Name__,name__)                                    \
+                                                                                \
+typedef struct {                                                                \
+    MooWinPluginClass parent_class;                                             \
+} Name__##WindowPluginClass;                                                    \
+                                                                                \
+static GType name__##_window_plugin_get_type (void) G_GNUC_CONST;               \
+static gboolean name__##_window_plugin_create (Name__##WindowPlugin *plugin);   \
+static void name__##_window_plugin_destroy (Name__##WindowPlugin *plugin);      \
+                                                                                \
+static gpointer name__##_window_plugin_parent_class = NULL;                     \
+                                                                                \
+static void                                                                     \
+name__##_window_plugin_class_init (MooWinPluginClass *klass)                    \
+{                                                                               \
+    name__##_window_plugin_parent_class = g_type_class_peek_parent (klass);     \
+    klass->create = (MooWinPluginCreateFunc) name__##_window_plugin_create;     \
+    klass->destroy = (MooWinPluginDestroyFunc) name__##_window_plugin_destroy;  \
+}                                                                               \
+                                                                                \
+static GType                                                                    \
+name__##_window_plugin_get_type (void)                                          \
+{                                                                               \
+    static GType type__ = 0;                                                    \
+                                                                                \
+    if (G_UNLIKELY (type__ == 0))                                               \
+    {                                                                           \
+        static const GTypeInfo info__ = {                                       \
+            sizeof (Name__##WindowPluginClass),                                 \
+            (GBaseInitFunc) NULL,                                               \
+            (GBaseFinalizeFunc) NULL,                                           \
+            (GClassInitFunc) name__##_window_plugin_class_init,                 \
+            (GClassFinalizeFunc) NULL,                                          \
+            NULL,   /* class_data */                                            \
+            sizeof (Name__##WindowPlugin),                                      \
+            0,      /* n_preallocs */                                           \
+            NULL,                                                               \
+            NULL    /* value_table */                                           \
+        };                                                                      \
+                                                                                \
+        type__ = g_type_register_static (MOO_TYPE_WIN_PLUGIN,                   \
+                                         #Name__ "WindowPlugin",&info__, 0);    \
+    }                                                                           \
+                                                                                \
+    return type__;                                                              \
 }
 
 
-#define MOO_DOC_PLUGIN_DEFINE(Name__,name__,create__,destroy__)             \
+#define MOO_DOC_PLUGIN_DEFINE(Name__,name__)                                \
                                                                             \
 typedef struct {                                                            \
     MooDocPluginClass parent_class;                                         \
 } Name__##DocPluginClass;                                                   \
                                                                             \
 static GType name__##_doc_plugin_get_type (void) G_GNUC_CONST;              \
+static gboolean name__##_doc_plugin_create (Name__##DocPlugin *plugin);     \
+static void name__##_doc_plugin_destroy (Name__##DocPlugin *plugin);        \
                                                                             \
 static gpointer name__##_doc_plugin_parent_class = NULL;                    \
                                                                             \
@@ -159,8 +164,8 @@ static void                                                                 \
 name__##_doc_plugin_class_init (MooDocPluginClass *klass)                   \
 {                                                                           \
     name__##_doc_plugin_parent_class = g_type_class_peek_parent (klass);    \
-    klass->create = (MooDocPluginCreateFunc) create__;                      \
-    klass->destroy = (MooDocPluginDestroyFunc) destroy__;                   \
+    klass->create = (MooDocPluginCreateFunc) name__##_doc_plugin_create;    \
+    klass->destroy = (MooDocPluginDestroyFunc) name__##_doc_plugin_destroy; \
 }                                                                           \
                                                                             \
 static GType                                                                \
