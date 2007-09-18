@@ -144,7 +144,8 @@ find_help_dir (void)
 {
     static gboolean been_here = FALSE;
     static char *help_dir;
-    char **dirs, **p;
+    const char *const *dirs;
+    const char *const *p;
 
     if (been_here)
         return help_dir;
@@ -158,18 +159,21 @@ find_help_dir (void)
     }
 #endif
 
-    dirs = moo_get_data_subdirs ("help", MOO_DATA_SHARE, NULL);
-    _moo_strv_reverse (dirs);
+    dirs = g_get_system_data_dirs ();
 
     for (p = dirs; p && *p; ++p)
-        if (try_help_dir (*p))
+    {
+        char *d = g_build_filename (*p, "doc", MOO_PACKAGE_NAME, "help", NULL);
+
+        if (try_help_dir (d))
         {
-            help_dir = g_strdup (*p);
-            g_strfreev (dirs);
+            help_dir = d;
             return help_dir;
         }
 
-    g_strfreev (dirs);
+        g_free (d);
+    }
+
     return NULL;
 }
 
@@ -204,6 +208,7 @@ warn_no_help_file (const char *basename,
     g_free (dir_utf8);
 }
 
+#ifndef __WIN32__
 static void
 open_html_file (const char *path,
                 GtkWidget  *parent)
@@ -252,6 +257,14 @@ open_html_file (const char *path,
         g_error_free (err);
     }
 }
+#else /* __WIN32__ */
+static void
+open_html_file (const char *path,
+                G_GNUC_UNUSED GtkWidget *parent)
+{
+    moo_open_file (path);
+}
+#endif /* __WIN32__ */
 
 static void
 open_file_by_id (const char *id,
