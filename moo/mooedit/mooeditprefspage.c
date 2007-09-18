@@ -1247,8 +1247,5 @@ moo_edit_prefs_page_help (GtkWidget *widget)
     if ((index = gtk_notebook_get_current_page (data->notebook)) >= 0)
         current_page = gtk_notebook_get_nth_page (data->notebook, index);
 
-    if (!current_page || !moo_help_open (current_page))
-        moo_help_open_id ("app-prefs-editor", widget);
-
-    return TRUE;
+    return current_page && moo_help_open (current_page);
 }
