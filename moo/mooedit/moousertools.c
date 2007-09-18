@@ -332,9 +332,7 @@ load_tool (MooUserToolInfo *info)
             moo_edit_window_set_action_check (info->id, MOO_ACTION_CHECK_SENSITIVE,
                                               check_sensitive_func,
                                               NULL, NULL);
-
-            if (info->filter)
-                moo_edit_window_set_action_filter (info->id, MOO_ACTION_CHECK_ACTIVE, info->filter);
+            moo_edit_window_set_action_filter (info->id, MOO_ACTION_CHECK_ACTIVE, info->filter);
 
             break;
 
