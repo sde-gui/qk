@@ -909,6 +909,7 @@ static void
 moo_plugin_init_builtin (void)
 {
 #ifndef __WIN32__
+    _moo_ctags_plugin_init ();
     _moo_find_plugin_init ();
 #endif
     _moo_file_selector_plugin_init ();

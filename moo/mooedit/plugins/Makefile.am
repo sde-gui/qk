@@ -1,3 +1,10 @@
+DIST_SUBDIRS = ctags
+SUBDIRS =
+
+if !MOO_OS_MINGW
+SUBDIRS += ctags
+endif
+
 noinst_LTLIBRARIES =
 EXTRA_DIST =
 BUILT_SOURCES =
@@ -43,6 +50,10 @@ CLEANFILES +=				\
 #
 noinst_LTLIBRARIES += libmooeditplugins.la
 libmooeditplugins_la_LIBADD = libfileselector.la
+
+if !MOO_OS_MINGW
+libmooeditplugins_la_LIBADD += ctags/libctags.la
+endif
 
 libmooeditplugins_la_SOURCES =	\
 	mooeditplugins.h

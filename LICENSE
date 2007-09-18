@@ -33,6 +33,10 @@ moo/moolua/*:
     Copyright 2006-2007 Mark Edgar <medgar@student.gc.maricopa.edu>
     Copyright 2003-2007 PUC-Rio
 
+moo/mooedit/plugins/ctags/readtags.[hc]
+    Exuberant Ctags code, public domain
+    Copyright (c) 1996-2003, Darren Hiebert
+
 moo/mooutils/moofontsel.h:
 moo/mooutils/moofontsel.c:
     GTK font selector modified to show monospace fonts

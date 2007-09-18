@@ -218,10 +218,11 @@ ensure_output (WindowStuff *stuff)
 }
 
 
-static void
+static gboolean
 find_window_plugin_create (WindowStuff *stuff)
 {
     stuff->window = MOO_WIN_PLUGIN (stuff)->window;
+    return TRUE;
 }
 
 
@@ -939,11 +940,8 @@ MOO_PLUGIN_DEFINE_INFO (find,
                         N_("Find"), N_("Finds everything"),
                         "Yevgen Muntyan <muntyan@tamu.edu>",
                         MOO_VERSION, NULL)
-MOO_WIN_PLUGIN_DEFINE (Find, find,
-                       find_window_plugin_create,
-                       find_window_plugin_destroy)
+MOO_WIN_PLUGIN_DEFINE (Find, find)
 MOO_PLUGIN_DEFINE_FULL (Find, find,
-                        find_plugin_init, find_plugin_deinit,
                         NULL, NULL, NULL, NULL, NULL,
                         find_window_plugin_get_type (), 0)
 

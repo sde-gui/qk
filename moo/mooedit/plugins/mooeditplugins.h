@@ -21,6 +21,7 @@ G_BEGIN_DECLS
 
 #ifndef __WIN32__
 gboolean _moo_find_plugin_init              (void);
+gboolean _moo_ctags_plugin_init             (void);
 #endif
 
 gboolean _moo_active_strings_plugin_init    (void);

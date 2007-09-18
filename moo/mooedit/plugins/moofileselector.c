@@ -72,7 +72,7 @@ static GtkTargetEntry targets[] = {
     { (char*) "text/uri-list", 0, TARGET_URI_LIST }
 };
 
-#define OPEN_PANE_TIMEOUT 300
+#define OPEN_PANE_TIMEOUT 200
 
 G_DEFINE_TYPE (MooFileSelector, _moo_file_selector, MOO_TYPE_FILE_VIEW)
 
@@ -1483,7 +1483,6 @@ MOO_PLUGIN_DEFINE_INFO (file_selector,
                         "Yevgen Muntyan <muntyan@tamu.edu>",
                         MOO_VERSION, NULL)
 MOO_PLUGIN_DEFINE_FULL (FileSelector, file_selector,
-                        file_selector_plugin_init, file_selector_plugin_deinit,
                         file_selector_plugin_attach, file_selector_plugin_detach,
                         NULL, NULL,
                         _moo_file_selector_prefs_page,
