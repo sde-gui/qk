@@ -11,6 +11,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#include "config.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moodialogs.h"
