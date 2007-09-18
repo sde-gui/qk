@@ -120,18 +120,18 @@ def copy_files():
 
             if pida:
                 do_cmd("mkdir -p %s/lib/site-packages" % (moo_windir,))
-                do_cmd("cp %s/usr/local/win/gtk/lib/moo.pyd %s/lib/site-packages/moo.pyd" % (installdir, moo_windir))
+                do_cmd("cp %s/usr/local/win/gtk/lib/moo/plugins/lib/moo.pyd %s/lib/site-packages/moo.pyd" % (installdir, moo_windir))
             else:
-                do_cmd("mkdir -p %s/lib/moo/plugins/pymoo" % (moo_windir,))
-                do_cmd("cp %s/usr/local/win/gtk/lib/pymoo.dll %s/lib/moo/plugins/pymoo/pymoo.dll" % (installdir, moo_windir))
-                do_cmd("cp %s/usr/local/win/gtk/lib/moo.pyd %s/lib/moo/plugins/pymoo/moo.pyd" % (installdir, moo_windir))
+                do_cmd("mkdir -p %s/lib/moo/plugins" % (moo_windir,))
+                do_cmd("cp %s/usr/local/win/gtk/lib/moo/plugins/pymoo.dll %s/lib/moo/plugins/" % (installdir, moo_windir))
+                do_cmd("cp %s/usr/local/win/gtk/lib/moo/plugins/lib/moo.pyd %s/lib/moo/plugins/" % (installdir, moo_windir))
 
     if do_strip:
         if not bin_only and not no_python:
             if pida:
                 do_cmd("%s %s/lib/site-packages/*.pyd" % (strip, moo_windir))
             else:
-                do_cmd("%s %s/lib/moo/plugins/*/*.dll" % (strip, moo_windir))
+                do_cmd("%s %s/lib/moo/plugins/*.dll" % (strip, moo_windir))
                 do_cmd("%s %s/lib/moo/plugins/*/*.pyd" % (strip, moo_windir))
         do_cmd("%s %s/bin/medit.exe %s/bin/libmoo.dll" % (strip, moo_windir, moo_windir))
 

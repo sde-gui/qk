@@ -153,9 +153,18 @@ nodist_pymoo_la_SOURCES = pymoo.res
 nodist_moo_la_SOURCES = moo.res
 
 moo_la_ldflags += -shrext ".pyd"
-lib_LTLIBRARIES += pymoo.la moo.la
 plugindir = $(MOO_LIB_DIR)/plugins
+pluginlibdir = $(plugindir)/lib
+plugin_LTLIBRARIES = pymoo.la
+pluginlib_LTLIBRARIES = moo.la
+
 plugin_DATA = moopython/pymoo.ini
+
+install-data-hook:
+	rm -f $(DESTDIR)$(plugindir)/pymoo.la
+	rm -f $(DESTDIR)$(plugindir)/pymoo.dll.a
+	rm -f $(DESTDIR)$(pluginlibdir)/moo.la
+	rm -f $(DESTDIR)$(pluginlibdir)/moo.dll.a
 
 pymoo_la_SOURCES = moo.h
 pymoo_la_LDFLAGS = $(pymoo_la_ldflags) $(PYTHON_LDFLAGS) $(PYTHON_EXTRA_LDFLAGS) -Wl,pymoo.res
