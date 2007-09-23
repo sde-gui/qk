@@ -28,7 +28,6 @@ mooapp_sources =			\
 	moolinklabel.c
 
 EXTRA_DIST =				\
-	gpl				\
 	glade/mooappabout.glade
 
 @MOO_GLADE_SUBDIR_RULE@

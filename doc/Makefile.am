@@ -11,7 +11,8 @@ EXTRA_DIST =			\
 	$(docbook_files)	\
 	manual.xsl		\
 	help.xsl		\
-	help.css
+	help.css		\
+	txt2xml
 
 all: build-help manual.html
 
@@ -23,7 +24,8 @@ LGPL.xml: $(top_srcdir)/COPYING
 	$(srcdir)/txt2xml $(top_srcdir)/COPYING > LGPL.xml.tmp && \
 	mv LGPL.xml.tmp LGPL.xml
 
-stamp-help: $(docbook_files) help.xsl LGPL.xml
+stamp-help: $(docbook_files) help.xsl
+	$(MAKE) $(AM_MAKEFLAGS) LGPL.xml && \
 	rm -f help/*.html && \
 	$(mkdir_p) help && \
 	xsltproc --xinclude --path "." --stringparam base.dir $(builddir)/help/ $(srcdir)/help.xsl $(srcdir)/medit.docbook && \
@@ -31,7 +33,8 @@ stamp-help: $(docbook_files) help.xsl LGPL.xml
 help/help.css: stamp-help help.css
 	cp $(srcdir)/help.css help/
 
-manual.html: $(docbook_files) manual.xsl LGPL.xml
+manual.html: $(docbook_files) manual.xsl
+	$(MAKE) $(AM_MAKEFLAGS) LGPL.xml && \
 	xsltproc --xinclude --path "." --output manual.html $(srcdir)/manual.xsl $(srcdir)/medit.docbook
 
 #############################################################################
@@ -40,10 +43,27 @@ manual.html: $(docbook_files) manual.xsl LGPL.xml
 install: install-data
 install-data: build-help manual.html
 	$(mkdir_p) $(DESTDIR)$(htmldir)/help
-	$(INSTALL_DATA) manual.html $(DESTDIR)$(htmldir)/
-	$(INSTALL_DATA) help/* $(DESTDIR)$(htmldir)/help/
+	if test -f stamp-help; then \
+	  $(INSTALL_DATA) manual.html $(DESTDIR)$(htmldir)/ && \
+	  $(INSTALL_DATA) help/* $(DESTDIR)$(htmldir)/help/ ; \
+	else \
+	  $(INSTALL_DATA) $(srcdir)/manual.html $(DESTDIR)$(htmldir)/ && \
+	  $(INSTALL_DATA) $(srcdir)/help/* $(DESTDIR)$(htmldir)/help/ ; \
+	fi
 uninstall:
 	rm -fr $(DESTDIR)$(htmldir)/help $(htmldir)/manual.html
+
+if MOO_BUILD_DOCS
+dist-hook:
+	$(MAKE) $(AM_MAKEFLAGS) all || exit 1
+	if test -f stamp-help; then \
+	  cp -p stamp-help manual.html $(distdir)/ && \
+	  cp -pR help/ $(distdir)/ ; \
+	else \
+	  cp -p $(srcdir)/stamp-help $(srcdir)/manual.html $(distdir)/ && \
+	  cp -pR $(srcdir)/help/ $(distdir)/ ; \
+	fi
+endif
 
 clean: mostlyclean
 mostlyclean:

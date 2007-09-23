@@ -21,6 +21,7 @@
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/moodialogs.h"
+#include "mooutils/moohelp.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
@@ -30,7 +31,6 @@
 #endif
 
 static gpointer about_dialog;
-static gpointer license_dialog;
 static gpointer credits_dialog;
 static gpointer system_info_dialog;
 
@@ -136,36 +136,9 @@ show_credits (void)
 
 
 static void
-show_license (void)
+license_clicked (void)
 {
-    MooGladeXML *xml;
-    GtkTextView *textview;
-
-    const char *gpl =
-#include "mooapp/gpl"
-    ;
-
-    if (license_dialog)
-    {
-        if (about_dialog)
-            moo_window_set_parent (license_dialog, about_dialog);
-        gtk_window_present (GTK_WINDOW (license_dialog));
-        return;
-    }
-
-    xml = moo_glade_xml_new_from_buf (mooappabout_glade_xml, -1, "license", GETTEXT_PACKAGE, NULL);
-
-    license_dialog = moo_glade_xml_get_widget (xml, "license");
-    g_return_if_fail (license_dialog != NULL);
-    g_object_add_weak_pointer (G_OBJECT (license_dialog), &license_dialog);
-    g_signal_connect (license_dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
-
-    textview = moo_glade_xml_get_widget (xml, "textview");
-    gtk_text_buffer_set_text (gtk_text_view_get_buffer (textview), gpl, -1);
-
-    if (about_dialog)
-        moo_window_set_parent (license_dialog, about_dialog);
-    gtk_window_present (GTK_WINDOW (license_dialog));
+    moo_help_open_id ("app-license", NULL);
 }
 
 
@@ -248,7 +221,7 @@ create_about_dialog (void)
     button = moo_glade_xml_get_widget (xml, "credits_button");
     g_signal_connect (button, "clicked", G_CALLBACK (show_credits), NULL);
     button = moo_glade_xml_get_widget (xml, "license_button");
-    g_signal_connect (button, "clicked", G_CALLBACK (show_license), NULL);
+    g_signal_connect (button, "clicked", G_CALLBACK (license_clicked), NULL);
     button = moo_glade_xml_get_widget (xml, "close_button");
     g_signal_connect_swapped (button, "clicked", G_CALLBACK (gtk_widget_hide), dialog);
 
