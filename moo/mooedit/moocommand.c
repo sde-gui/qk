@@ -19,7 +19,6 @@
 #include "mooedit/moocommand-private.h"
 #include "mooedit/moocommand-lua.h"
 #include "mooedit/moocommand-exe.h"
-#include "mooedit/moocommand-builtin.h"
 #include "mooedit/mooeditwindow.h"
 #include "mooedit/moooutputfilterregex.h"
 #include "mooedit/mooedit-enums.h"
@@ -1141,7 +1140,6 @@ _moo_command_init (void)
 
     if (!been_here)
     {
-        g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_BUILTIN));
 #ifdef MOO_BUILD_LUA
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_LUA));
 #endif
