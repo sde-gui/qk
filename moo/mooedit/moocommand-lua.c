@@ -297,7 +297,7 @@ _moo_command_lua_class_init (MooCommandLuaClass *klass)
     g_type_class_add_private (klass, sizeof (MooCommandLuaPrivate));
 
     factory = g_object_new (_moo_command_factory_lua_get_type (), NULL);
-    moo_command_factory_register ("lua", _("Lua"), factory, NULL);
+    moo_command_factory_register ("lua", _("Lua script"), factory, NULL);
     g_object_unref (factory);
 }
 
