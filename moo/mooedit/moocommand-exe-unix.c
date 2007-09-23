@@ -262,8 +262,9 @@ run_in_pane (MooCommandExe     *cmd,
 
 
 static void
-insert_text (MooTextView *view,
-             const char  *text)
+insert_text (MooTextView        *view,
+             const char         *text,
+             gboolean            replace_doc)
 {
     GtkTextBuffer *buffer;
     GtkTextIter start, end;
@@ -272,9 +273,12 @@ insert_text (MooTextView *view,
 
     gtk_text_buffer_begin_user_action (buffer);
 
-    if (gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
-        gtk_text_buffer_delete (buffer, &start, &end);
+    if (replace_doc)
+        gtk_text_buffer_get_bounds (buffer, &start, &end);
+    else
+        gtk_text_buffer_get_selection_bounds (buffer, &start, &end);
 
+    gtk_text_buffer_delete (buffer, &start, &end);
     gtk_text_buffer_insert (buffer, &start, text, -1);
 
     gtk_text_buffer_end_user_action (buffer);
@@ -485,7 +489,8 @@ moo_command_exe_run (MooCommand        *cmd_base,
         g_return_if_fail (MOO_IS_EDIT (doc));
     }
 
-    insert_text (MOO_TEXT_VIEW (doc), output);
+    insert_text (MOO_TEXT_VIEW (doc), output,
+                 cmd->priv->input == MOO_COMMAND_EXE_INPUT_DOC);
 
 out:
     g_free (working_dir);
