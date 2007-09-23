@@ -1,7 +1,7 @@
 DIST_SUBDIRS = ctags
 SUBDIRS =
 
-if !MOO_OS_MINGW
+if MOO_BUILD_CTAGS
 SUBDIRS += ctags
 endif
 
@@ -51,7 +51,7 @@ CLEANFILES +=				\
 noinst_LTLIBRARIES += libmooeditplugins.la
 libmooeditplugins_la_LIBADD = libfileselector.la
 
-if !MOO_OS_MINGW
+if MOO_BUILD_CTAGS
 libmooeditplugins_la_LIBADD += ctags/libctags.la
 endif
 

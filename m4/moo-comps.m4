@@ -71,6 +71,15 @@ AC_DEFUN([MOO_COMPONENTS],[
     $build_mooterm && MOO_LIBS="-lutil $MOO_LIBS"
   fi
 
+  if test "x$MOO_BUILD_CTAGS" != xno -a "x$MOO_OS_CYGWIN" != "xyes" -a \
+          "x$MOO_OS_MINGW" != "xyes"; then
+    MOO_BUILD_CTAGS=yes
+    AC_DEFINE(MOO_BUILD_CTAGS, [1], [build ctags plugin])
+  else
+    MOO_BUILD_CTAGS=no
+  fi
+  AM_CONDITIONAL(MOO_BUILD_CTAGS, test "x$MOO_BUILD_CTAGS" = xyes)
+
   AC_ARG_ENABLE(project,
     AC_HELP_STRING(--enable-project, [enable project plugin (default = NO)]),
     [:],[enable_project=no])
