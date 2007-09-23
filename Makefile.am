@@ -30,6 +30,7 @@ EXTRA_DIST =			\
 	cygwin-configure	\
 	makewin			\
 	COPYING.GPL		\
+	COPYING			\
 	LICENSE			\
 	THANKS			\
 	intltool-extract.in	\
@@ -53,7 +54,9 @@ SUBDIRS += tests
 endif
 
 if MOO_ENABLE_HELP
+if MOO_BUILD_DOCS
 SUBDIRS += doc
+endif
 endif
 
 ACLOCAL_AMFLAGS = -I m4

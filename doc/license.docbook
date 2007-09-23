@@ -1,0 +1,20 @@
+<appendix id="license">
+<title>License</title>
+<para>
+&app; as a whole is distributed under the terms of GNU General Public License,
+version 2, but most of its code is released under the GNU Lesser General Public
+License. Full text of these licenses and list of licenses and acknowledgements for
+third-party software incorporated in &app; can be found in this section.
+</para>
+
+<sect1 id="gpl">
+<title>GNU General Public License</title>
+<programlisting><xi:include href="../COPYING.GPL" parse="text" encoding="UTF-8"
+                    xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting>
+</sect1>
+
+<sect1 id="lgpl">
+<title>GNU Lesser General Public License</title>
+<xi:include href="LGPL.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+</sect1>
+</appendix>

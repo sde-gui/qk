@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+                    "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd" [
+  <!ENTITY appversion "0.9.0">
+  <!ENTITY manrevision "0.1">
+  <!ENTITY date "Septermber 2007">
+  <!ENTITY app "medit">
+  <!ENTITY editor-sections SYSTEM "editor-sections.xml">
+  <!ENTITY license SYSTEM "license.docbook">
+]>
+
+<article>
+
+<articleinfo>
+<title>&app; manual</title>
+</articleinfo>
+
+<section id="sect-getting-started">
+<title>Getting Started</title>
+</section>
+
+&editor-sections;
+&license;
+
+<para role="generated-date">This document was generated
+<?dbtimestamp format="Y-m-d H:M:S"?>.</para>
+
+</article>

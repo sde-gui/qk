@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section id="sect-opening-and-saving">
+<title>Opening and Saving Files</title>
+
+<section id="dialog-open">
+<title>dialog-open</title>
+blah blah blah
+</section>
+
+<section id="dialog-save">
+<title>dialog-save</title>
+blah blah blah
+</section>
+
+<section id="file-selector">
+<title>file-selector</title>
+blah blah blah
+</section>
+
+<section id="app-prefs-file-selector">
+<title>app-prefs-file-selector</title>
+blah blah blah
+</section>
+
+</section>

@@ -23,7 +23,7 @@ AC_DEFUN([_MOO_AC_CHECK_XSLT_DOCBOOK],[
 </sect1>
 </article>
 EOFEOF
-    if ($XSLTPROC http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl conftest.docbook 2>/dev/null >/dev/null); then
+    if ($XSLTPROC --nonet http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl conftest.docbook 2>/dev/null >/dev/null); then
       AC_MSG_RESULT([yes])
       rm -f conftest.docbook
       $1
@@ -42,18 +42,27 @@ AC_DEFUN([MOO_DOCS],[
     AC_HELP_STRING(--disable-help, [Disable building html help files (default = auto).]),
     [:],[enable_help=auto])
 
-  if test "x$enable_help" = xauto -o "x$enable_help" = xyes; then
-    _MOO_AC_CHECK_XSLT_DOCBOOK([_moo_xslt_working=yes],[_moo_xslt_working=no])
-    if test $_moo_xslt_working = yes; then
-      enable_help=yes
-    elif test "x$enable_help" = xauto; then
-      enable_help=no
-    else
-      AC_MSG_ERROR([xsltproc will not work])
+  if test "x$MOO_ENABLE_HELP" != xyes; then
+    if test "x$enable_help" = xauto -o "x$enable_help" = xyes; then
+      _MOO_AC_CHECK_XSLT_DOCBOOK([_moo_xslt_working=yes],[_moo_xslt_working=no])
+      if test $_moo_xslt_working = yes; then
+        enable_help=yes
+      elif test "x$enable_help" = xauto; then
+        enable_help=no
+      else
+        AC_MSG_ERROR([xsltproc will not work])
+      fi
     fi
   fi
 
+  if test "x$enable_help" != xyes; then
+    MOO_BUILD_DOCS=no
+  elif test "x$MOO_BUILD_DOCS" = x; then
+    MOO_BUILD_DOCS=yes
+  fi
+
   AM_CONDITIONAL(MOO_ENABLE_HELP, test "x$enable_help" = xyes)
+  AM_CONDITIONAL(MOO_BUILD_DOCS, test "x$MOO_BUILD_DOCS" = xyes)
   if test "x$enable_help" = xyes; then
     AC_DEFINE(MOO_ENABLE_HELP, [1], [enable help functionality])
   fi
