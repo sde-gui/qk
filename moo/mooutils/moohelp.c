@@ -296,7 +296,6 @@ open_file_by_id (const char *id,
     g_free (basename);
 }
 
-#ifdef MOO_ENABLE_HELP
 void
 moo_help_open_id (const char *id,
                   GtkWidget  *parent)
@@ -305,10 +304,3 @@ moo_help_open_id (const char *id,
     g_return_if_fail (!parent || GTK_IS_WIDGET (parent));
     open_file_by_id (id, parent);
 }
-#else
-void
-moo_help_open_id (G_GNUC_UNUSED const char *id,
-                  G_GNUC_UNUSED GtkWidget *parent)
-{
-}
-#endif
