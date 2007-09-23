@@ -4040,8 +4040,6 @@ notebook_drag_data_recv (GtkWidget          *widget,
 
     if (g_object_get_data (G_OBJECT (widget), "moo-edit-window-drop"))
     {
-        char **uris;
-
         g_object_set_data (G_OBJECT (widget), "moo-edit-window-drop", NULL);
 
         if (data->target == moo_edit_tab_atom)
@@ -4059,9 +4057,14 @@ notebook_drag_data_recv (GtkWidget          *widget,
 
             goto out;
         }
-        else if ((uris = gtk_selection_data_get_uris (data)))
+        else if (data->target == text_uri_atom)
         {
+            char **uris;
             char **u;
+
+            /* XXX this is wrong but works. gtk_selection_data_get_uris()
+             * does not work on windows */
+            uris = g_uri_list_extract_uris ((char*) data->data);
 
             if (!uris)
                 goto out;
