@@ -1,5 +1,5 @@
 /*
- *   moocommand-exe-unix.c
+ *   moocommand-unx.c
  *
  *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -13,7 +13,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "mooedit/moocommand-exe-private.h"
+#include "mooedit/moocommand-unx.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooedittools-glade.h"
 #include "mooedit/moocmdview.h"
@@ -32,10 +32,27 @@
 #endif
 
 
-#define MOO_COMMAND_EXE_MAX_INPUT       (MOO_COMMAND_EXE_INPUT_DOC + 1)
-#define MOO_COMMAND_EXE_MAX_OUTPUT      (MOO_COMMAND_EXE_OUTPUT_NEW_DOC + 1)
-#define MOO_COMMAND_EXE_INPUT_DEFAULT   MOO_COMMAND_EXE_INPUT_NONE
-#define MOO_COMMAND_EXE_OUTPUT_DEFAULT  MOO_COMMAND_EXE_OUTPUT_NONE
+#define MOO_COMMAND_UNX_MAX_INPUT       (MOO_COMMAND_UNX_INPUT_DOC + 1)
+#define MOO_COMMAND_UNX_MAX_OUTPUT      (MOO_COMMAND_UNX_OUTPUT_NEW_DOC + 1)
+#define MOO_COMMAND_UNX_INPUT_DEFAULT   MOO_COMMAND_UNX_INPUT_NONE
+#define MOO_COMMAND_UNX_OUTPUT_DEFAULT  MOO_COMMAND_UNX_OUTPUT_NONE
+
+typedef enum
+{
+    MOO_COMMAND_UNX_INPUT_NONE,
+    MOO_COMMAND_UNX_INPUT_LINES,
+    MOO_COMMAND_UNX_INPUT_SELECTION,
+    MOO_COMMAND_UNX_INPUT_DOC
+} MooCommandUnxInput;
+
+typedef enum
+{
+    MOO_COMMAND_UNX_OUTPUT_NONE,
+    MOO_COMMAND_UNX_OUTPUT_NONE_ASYNC,
+    MOO_COMMAND_UNX_OUTPUT_PANE,
+    MOO_COMMAND_UNX_OUTPUT_INSERT,
+    MOO_COMMAND_UNX_OUTPUT_NEW_DOC
+} MooCommandUnxOutput;
 
 enum {
     COLUMN_NAME,
@@ -53,39 +70,39 @@ static const char *data_keys[] = {
     "input", "output", "filter", NULL
 };
 
-struct _MooCommandExePrivate {
+struct _MooCommandUnxPrivate {
     char *cmd_line;
-    MooCommandExeInput input;
-    MooCommandExeOutput output;
+    MooCommandUnxInput input;
+    MooCommandUnxOutput output;
     char *filter;
 };
 
 
-G_DEFINE_TYPE (MooCommandExe, _moo_command_exe, MOO_TYPE_COMMAND)
+G_DEFINE_TYPE (MooCommandUnx, _moo_command_unx, MOO_TYPE_COMMAND)
 
-typedef MooCommandFactory MooCommandFactoryExe;
-typedef MooCommandFactoryClass MooCommandFactoryExeClass;
-MOO_DEFINE_TYPE_STATIC (MooCommandFactoryExe, _moo_command_factory_exe, MOO_TYPE_COMMAND_FACTORY)
+typedef MooCommandFactory MooCommandFactoryUnx;
+typedef MooCommandFactoryClass MooCommandFactoryUnxClass;
+MOO_DEFINE_TYPE_STATIC (MooCommandFactoryUnx, _moo_command_factory_unx, MOO_TYPE_COMMAND_FACTORY)
 
 
 static void
-_moo_command_exe_init (MooCommandExe *cmd)
+_moo_command_unx_init (MooCommandUnx *cmd)
 {
     cmd->priv = G_TYPE_INSTANCE_GET_PRIVATE (cmd,
-                                             MOO_TYPE_COMMAND_EXE,
-                                             MooCommandExePrivate);
+                                             MOO_TYPE_COMMAND_UNX,
+                                             MooCommandUnxPrivate);
 }
 
 
 static void
-moo_command_exe_finalize (GObject *object)
+moo_command_unx_finalize (GObject *object)
 {
-    MooCommandExe *cmd = MOO_COMMAND_EXE (object);
+    MooCommandUnx *cmd = MOO_COMMAND_UNX (object);
 
     g_free (cmd->priv->filter);
     g_free (cmd->priv->cmd_line);
 
-    G_OBJECT_CLASS (_moo_command_exe_parent_class)->finalize (object);
+    G_OBJECT_CLASS (_moo_command_unx_parent_class)->finalize (object);
 }
 
 
@@ -109,22 +126,22 @@ get_lines (GtkTextView *doc)
 }
 
 static char *
-get_input (MooCommandExe     *cmd,
+get_input (MooCommandUnx     *cmd,
            MooCommandContext *ctx)
 {
     GtkTextView *doc = moo_command_context_get_doc (ctx);
 
-    g_return_val_if_fail (cmd->priv->input == MOO_COMMAND_EXE_INPUT_NONE || doc != NULL, NULL);
+    g_return_val_if_fail (cmd->priv->input == MOO_COMMAND_UNX_INPUT_NONE || doc != NULL, NULL);
 
     switch (cmd->priv->input)
     {
-        case MOO_COMMAND_EXE_INPUT_NONE:
+        case MOO_COMMAND_UNX_INPUT_NONE:
             return NULL;
-        case MOO_COMMAND_EXE_INPUT_LINES:
+        case MOO_COMMAND_UNX_INPUT_LINES:
             return get_lines (doc);
-        case MOO_COMMAND_EXE_INPUT_SELECTION:
+        case MOO_COMMAND_UNX_INPUT_SELECTION:
             return moo_text_view_get_selection (doc);
-        case MOO_COMMAND_EXE_INPUT_DOC:
+        case MOO_COMMAND_UNX_INPUT_DOC:
             return moo_text_view_get_text (doc);
     }
 
@@ -164,7 +181,7 @@ save_temp (const char *data,
 }
 
 static char *
-make_cmd (MooCommandExe     *cmd,
+make_cmd (MooCommandUnx     *cmd,
           MooCommandContext *ctx)
 {
     char *input;
@@ -205,7 +222,7 @@ make_cmd (MooCommandExe     *cmd,
 
 
 static void
-run_in_pane (MooCommandExe     *cmd,
+run_in_pane (MooCommandUnx     *cmd,
              MooCommandContext *ctx,
              const char        *working_dir,
              char             **envp)
@@ -218,7 +235,7 @@ run_in_pane (MooCommandExe     *cmd,
     doc = moo_command_context_get_doc (ctx);
     window = moo_command_context_get_window (ctx);
 
-    g_return_if_fail (cmd->priv->input == MOO_COMMAND_EXE_INPUT_NONE || doc != NULL);
+    g_return_if_fail (cmd->priv->input == MOO_COMMAND_UNX_INPUT_NONE || doc != NULL);
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
 
     output = moo_edit_window_get_output (window);
@@ -369,7 +386,7 @@ create_environment (MooCommandContext *ctx,
 
 
 static gboolean
-run_command (MooCommandExe     *cmd,
+run_command (MooCommandUnx     *cmd,
              MooCommandContext *ctx,
              const char        *working_dir,
              char             **envp,
@@ -406,7 +423,7 @@ run_command (MooCommandExe     *cmd,
 
 
 static gboolean
-run_command_async (MooCommandExe     *cmd,
+run_command_async (MooCommandUnx     *cmd,
                    MooCommandContext *ctx,
                    const char        *working_dir,
                    char             **envp)
@@ -444,30 +461,30 @@ run_command_async (MooCommandExe     *cmd,
 
 
 static void
-moo_command_exe_run (MooCommand        *cmd_base,
+moo_command_unx_run (MooCommand        *cmd_base,
                      MooCommandContext *ctx)
 {
     MooEdit *doc;
-    MooCommandExe *cmd = MOO_COMMAND_EXE (cmd_base);
+    MooCommandUnx *cmd = MOO_COMMAND_UNX (cmd_base);
     char **envp;
     char *output = NULL;
     char *working_dir;
 
     create_environment (ctx, &working_dir, &envp);
 
-    if (cmd->priv->output == MOO_COMMAND_EXE_OUTPUT_PANE)
+    if (cmd->priv->output == MOO_COMMAND_UNX_OUTPUT_PANE)
     {
         run_in_pane (cmd, ctx, working_dir, envp);
         goto out;
     }
 
-    if (cmd->priv->output == MOO_COMMAND_EXE_OUTPUT_NONE)
+    if (cmd->priv->output == MOO_COMMAND_UNX_OUTPUT_NONE)
     {
         run_command (cmd, ctx, working_dir, envp, NULL);
         goto out;
     }
 
-    if (cmd->priv->output == MOO_COMMAND_EXE_OUTPUT_NONE_ASYNC)
+    if (cmd->priv->output == MOO_COMMAND_UNX_OUTPUT_NONE_ASYNC)
     {
         run_command_async (cmd, ctx, working_dir, envp);
         goto out;
@@ -476,7 +493,7 @@ moo_command_exe_run (MooCommand        *cmd_base,
     if (!run_command (cmd, ctx, working_dir, envp, &output))
         goto out;
 
-    if (cmd->priv->output == MOO_COMMAND_EXE_OUTPUT_INSERT)
+    if (cmd->priv->output == MOO_COMMAND_UNX_OUTPUT_INSERT)
     {
         doc = moo_command_context_get_doc (ctx);
         g_return_if_fail (MOO_IS_EDIT (doc));
@@ -489,7 +506,7 @@ moo_command_exe_run (MooCommand        *cmd_base,
     }
 
     insert_text (MOO_TEXT_VIEW (doc), output,
-                 cmd->priv->input == MOO_COMMAND_EXE_INPUT_DOC);
+                 cmd->priv->input == MOO_COMMAND_UNX_INPUT_DOC);
 
 out:
     g_free (working_dir);
@@ -499,83 +516,83 @@ out:
 
 
 static gboolean
-moo_command_exe_check_sensitive (MooCommand *cmd_base,
+moo_command_unx_check_sensitive (MooCommand *cmd_base,
                                  gpointer    doc,
                                  gpointer    window)
 {
-    MooCommandExe *cmd = MOO_COMMAND_EXE (cmd_base);
+    MooCommandUnx *cmd = MOO_COMMAND_UNX (cmd_base);
     MooCommandOptions options;
 
     options = cmd_base->options;
 
     switch (cmd->priv->input)
     {
-        case MOO_COMMAND_EXE_INPUT_NONE:
+        case MOO_COMMAND_UNX_INPUT_NONE:
             break;
-        case MOO_COMMAND_EXE_INPUT_LINES:
-        case MOO_COMMAND_EXE_INPUT_SELECTION:
-        case MOO_COMMAND_EXE_INPUT_DOC:
+        case MOO_COMMAND_UNX_INPUT_LINES:
+        case MOO_COMMAND_UNX_INPUT_SELECTION:
+        case MOO_COMMAND_UNX_INPUT_DOC:
             options |= MOO_COMMAND_NEED_DOC;
             break;
     }
 
     switch (cmd->priv->output)
     {
-        case MOO_COMMAND_EXE_OUTPUT_NONE:
-        case MOO_COMMAND_EXE_OUTPUT_NONE_ASYNC:
-        case MOO_COMMAND_EXE_OUTPUT_NEW_DOC:
+        case MOO_COMMAND_UNX_OUTPUT_NONE:
+        case MOO_COMMAND_UNX_OUTPUT_NONE_ASYNC:
+        case MOO_COMMAND_UNX_OUTPUT_NEW_DOC:
             break;
-        case MOO_COMMAND_EXE_OUTPUT_PANE:
+        case MOO_COMMAND_UNX_OUTPUT_PANE:
             options |= MOO_COMMAND_NEED_WINDOW;
             break;
-        case MOO_COMMAND_EXE_OUTPUT_INSERT:
+        case MOO_COMMAND_UNX_OUTPUT_INSERT:
             options |= MOO_COMMAND_NEED_DOC;
             break;
     }
 
     moo_command_set_options (cmd_base, options);
 
-    return MOO_COMMAND_CLASS (_moo_command_exe_parent_class)->check_sensitive (cmd_base, doc, window);
+    return MOO_COMMAND_CLASS (_moo_command_unx_parent_class)->check_sensitive (cmd_base, doc, window);
 }
 
 
 static void
-_moo_command_exe_class_init (MooCommandExeClass *klass)
+_moo_command_unx_class_init (MooCommandUnxClass *klass)
 {
     MooCommandFactory *factory;
 
-    G_OBJECT_CLASS(klass)->finalize = moo_command_exe_finalize;
-    MOO_COMMAND_CLASS(klass)->run = moo_command_exe_run;
-    MOO_COMMAND_CLASS(klass)->check_sensitive = moo_command_exe_check_sensitive;
+    G_OBJECT_CLASS(klass)->finalize = moo_command_unx_finalize;
+    MOO_COMMAND_CLASS(klass)->run = moo_command_unx_run;
+    MOO_COMMAND_CLASS(klass)->check_sensitive = moo_command_unx_check_sensitive;
 
-    g_type_class_add_private (klass, sizeof (MooCommandExePrivate));
+    g_type_class_add_private (klass, sizeof (MooCommandUnxPrivate));
 
-    factory = g_object_new (_moo_command_factory_exe_get_type (), NULL);
+    factory = g_object_new (_moo_command_factory_unx_get_type (), NULL);
     moo_command_factory_register ("exe", _("Shell command"), factory, (char**) data_keys);
     g_object_unref (factory);
 }
 
 
 static void
-_moo_command_factory_exe_init (G_GNUC_UNUSED MooCommandFactoryExe *factory)
+_moo_command_factory_unx_init (G_GNUC_UNUSED MooCommandFactoryUnx *factory)
 {
 }
 
 
 static MooCommand *
-_moo_command_exe_new (const char         *cmd_line,
+_moo_command_unx_new (const char         *cmd_line,
                       MooCommandOptions   options,
-                      MooCommandExeInput  input,
-                      MooCommandExeOutput output,
+                      MooCommandUnxInput  input,
+                      MooCommandUnxOutput output,
                       const char         *filter)
 {
-    MooCommandExe *cmd;
+    MooCommandUnx *cmd;
 
     g_return_val_if_fail (cmd_line && cmd_line[0], NULL);
-    g_return_val_if_fail (input < MOO_COMMAND_EXE_MAX_INPUT, NULL);
-    g_return_val_if_fail (output < MOO_COMMAND_EXE_MAX_OUTPUT, NULL);
+    g_return_val_if_fail (input < MOO_COMMAND_UNX_MAX_INPUT, NULL);
+    g_return_val_if_fail (output < MOO_COMMAND_UNX_MAX_OUTPUT, NULL);
 
-    cmd = g_object_new (MOO_TYPE_COMMAND_EXE, "options", options, NULL);
+    cmd = g_object_new (MOO_TYPE_COMMAND_UNX, "options", options, NULL);
 
     cmd->priv->cmd_line = g_strdup (cmd_line);
     cmd->priv->input = input;
@@ -590,19 +607,19 @@ static gboolean
 parse_input (const char *string,
              int        *input)
 {
-    *input = MOO_COMMAND_EXE_INPUT_DEFAULT;
+    *input = MOO_COMMAND_UNX_INPUT_DEFAULT;
 
     if (!string || !string[0])
         return TRUE;
 
     if (!strcmp (string, "none"))
-        *input = MOO_COMMAND_EXE_INPUT_NONE;
+        *input = MOO_COMMAND_UNX_INPUT_NONE;
     else if (!strcmp (string, "lines"))
-        *input = MOO_COMMAND_EXE_INPUT_LINES;
+        *input = MOO_COMMAND_UNX_INPUT_LINES;
     else if (!strcmp (string, "selection"))
-        *input = MOO_COMMAND_EXE_INPUT_SELECTION;
+        *input = MOO_COMMAND_UNX_INPUT_SELECTION;
     else if (!strcmp (string, "doc"))
-        *input = MOO_COMMAND_EXE_INPUT_DOC;
+        *input = MOO_COMMAND_UNX_INPUT_DOC;
     else
     {
         g_warning ("unknown input type %s", string);
@@ -616,23 +633,23 @@ static gboolean
 parse_output (const char *string,
               int        *output)
 {
-    *output = MOO_COMMAND_EXE_OUTPUT_DEFAULT;
+    *output = MOO_COMMAND_UNX_OUTPUT_DEFAULT;
 
     if (!string || !string[0])
         return TRUE;
 
     if (!strcmp (string, "none"))
-        *output = MOO_COMMAND_EXE_OUTPUT_NONE;
+        *output = MOO_COMMAND_UNX_OUTPUT_NONE;
     else if (!strcmp (string, "async"))
-        *output = MOO_COMMAND_EXE_OUTPUT_NONE_ASYNC;
+        *output = MOO_COMMAND_UNX_OUTPUT_NONE_ASYNC;
     else if (!strcmp (string, "pane"))
-        *output = MOO_COMMAND_EXE_OUTPUT_PANE;
+        *output = MOO_COMMAND_UNX_OUTPUT_PANE;
     else if (!strcmp (string, "insert"))
-        *output = MOO_COMMAND_EXE_OUTPUT_INSERT;
+        *output = MOO_COMMAND_UNX_OUTPUT_INSERT;
     else if (!strcmp (string, "new-doc") ||
              !strcmp (string, "new_doc") ||
              !strcmp (string, "new"))
-        *output = MOO_COMMAND_EXE_OUTPUT_NEW_DOC;
+        *output = MOO_COMMAND_UNX_OUTPUT_NEW_DOC;
     else
     {
         g_warning ("unknown output type %s", string);
@@ -643,7 +660,7 @@ parse_output (const char *string,
 }
 
 static MooCommand *
-exe_factory_create_command (G_GNUC_UNUSED MooCommandFactory *factory,
+unx_factory_create_command (G_GNUC_UNUSED MooCommandFactory *factory,
                             MooCommandData *data,
                             const char     *options)
 {
@@ -659,7 +676,7 @@ exe_factory_create_command (G_GNUC_UNUSED MooCommandFactory *factory,
     if (!parse_output (moo_command_data_get (data, KEY_OUTPUT), &output))
         return NULL;
 
-    cmd = _moo_command_exe_new (cmd_line,
+    cmd = _moo_command_unx_new (cmd_line,
                                 moo_command_options_parse (options),
                                 input, output,
                                 moo_command_data_get (data, KEY_FILTER));
@@ -785,7 +802,7 @@ set_filter_combo (GtkComboBox *combo,
 }
 
 static GtkWidget *
-exe_factory_create_widget (G_GNUC_UNUSED MooCommandFactory *factory)
+unx_factory_create_widget (G_GNUC_UNUSED MooCommandFactory *factory)
 {
     GtkWidget *page;
     MooGladeXML *xml;
@@ -798,8 +815,8 @@ exe_factory_create_widget (G_GNUC_UNUSED MooCommandFactory *factory)
 
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "textview", MOO_TYPE_TEXT_VIEW);
-    moo_glade_xml_parse_memory (xml, mooedittools_glade_xml, -1, "exe_page", NULL);
-    page = moo_glade_xml_get_widget (xml, "exe_page");
+    moo_glade_xml_parse_memory (xml, mooedittools_glade_xml, -1, "unx_page", NULL);
+    page = moo_glade_xml_get_widget (xml, "unx_page");
     g_return_val_if_fail (page != NULL, NULL);
 
     textview = moo_glade_xml_get_widget (xml, "textview");
@@ -816,7 +833,7 @@ exe_factory_create_widget (G_GNUC_UNUSED MooCommandFactory *factory)
 
 
 static void
-exe_factory_load_data (G_GNUC_UNUSED MooCommandFactory *factory,
+unx_factory_load_data (G_GNUC_UNUSED MooCommandFactory *factory,
                        GtkWidget      *page,
                        MooCommandData *data)
 {
@@ -849,7 +866,7 @@ exe_factory_load_data (G_GNUC_UNUSED MooCommandFactory *factory,
 
 
 static gboolean
-exe_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
+unx_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
                        GtkWidget      *page,
                        MooCommandData *data)
 {
@@ -877,7 +894,7 @@ exe_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
 
     index = gtk_combo_box_get_active (moo_glade_xml_get_widget (xml, "input"));
     parse_input (moo_command_data_get (data, KEY_INPUT), &old_index);
-    g_assert (0 <= index && index < MOO_COMMAND_EXE_MAX_INPUT);
+    g_assert (0 <= index && index < MOO_COMMAND_UNX_MAX_INPUT);
     if (index != old_index)
     {
         moo_command_data_set (data, KEY_INPUT, input_strings[index]);
@@ -886,14 +903,14 @@ exe_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
 
     index = gtk_combo_box_get_active (moo_glade_xml_get_widget (xml, "output"));
     parse_output (moo_command_data_get (data, KEY_OUTPUT), &old_index);
-    g_assert (0 <= index && index < MOO_COMMAND_EXE_MAX_OUTPUT);
+    g_assert (0 <= index && index < MOO_COMMAND_UNX_MAX_OUTPUT);
     if (index != old_index)
     {
         moo_command_data_set (data, KEY_OUTPUT, output_strings[index]);
         changed = TRUE;
     }
 
-    if (index == MOO_COMMAND_EXE_OUTPUT_PANE)
+    if (index == MOO_COMMAND_UNX_OUTPUT_PANE)
     {
         const char *old_filter;
         char *new_filter = NULL;
@@ -927,7 +944,7 @@ exe_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
 
 
 static gboolean
-exe_factory_data_equal (G_GNUC_UNUSED MooCommandFactory *factory,
+unx_factory_data_equal (G_GNUC_UNUSED MooCommandFactory *factory,
                         MooCommandData *data1,
                         MooCommandData *data2)
 {
@@ -946,11 +963,11 @@ exe_factory_data_equal (G_GNUC_UNUSED MooCommandFactory *factory,
 
 
 static void
-_moo_command_factory_exe_class_init (MooCommandFactoryExeClass *klass)
+_moo_command_factory_unx_class_init (MooCommandFactoryUnxClass *klass)
 {
-    klass->create_command = exe_factory_create_command;
-    klass->create_widget = exe_factory_create_widget;
-    klass->load_data = exe_factory_load_data;
-    klass->save_data = exe_factory_save_data;
-    klass->data_equal = exe_factory_data_equal;
+    klass->create_command = unx_factory_create_command;
+    klass->create_widget = unx_factory_create_widget;
+    klass->load_data = unx_factory_load_data;
+    klass->save_data = unx_factory_save_data;
+    klass->data_equal = unx_factory_data_equal;
 }

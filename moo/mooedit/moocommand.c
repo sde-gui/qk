@@ -17,11 +17,13 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/moocommand-private.h"
 #include "mooedit/moocommand-lua.h"
-#include "mooedit/moocommand-exe.h"
 #include "mooedit/mooeditwindow.h"
 #include "mooedit/moooutputfilterregex.h"
 #include "mooedit/mooedit-enums.h"
 #include "mooutils/mooutils-debug.h"
+#ifdef MOO_OS_UNIX
+#include "mooedit/moocommand-unx.h"
+#endif
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -1142,10 +1144,10 @@ _moo_command_init (void)
 #ifdef MOO_BUILD_LUA
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_LUA));
 #endif
-#ifndef __WIN32__
-        g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_EXE));
-#endif
+#ifdef MOO_OS_UNIX
+        g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_UNX));
         _moo_command_filter_regex_load ();
+#endif
         been_here = TRUE;
     }
 }

@@ -3,8 +3,6 @@ SUBDIRS = gtksourceview plugins language-specs .
 mooedit_toolsdir = $(MOO_DATA_DIR)
 mooedit_tools_DATA = context.cfg menu.cfg filters.xml
 
-moocommand-exe.lo: moocommand-exe-unix.lo
-moocommand-exe-private.lo: moocommand-exe-unix.lo
 moolangmgr-private.lo: moolangmgr.lo
 mootextview-private.lo: mootextview.lo
 
@@ -15,7 +13,7 @@ lua_sources =				\
 	mooedit-lua.h
 
 unix_sources =				\
-	moocommand-exe-unix.c
+	moocommand-unx.c
 
 mooedit_include_headers =		\
 	moocmdview.h			\
@@ -55,8 +53,7 @@ mooedit_sources =			\
 	moocommand.c			\
 	moocommanddisplay.c		\
 	moocommanddisplay.h		\
-	moocommand-exe.h		\
-	moocommand-exe-private.h	\
+	moocommand-unx.h		\
 	moocommand.h			\
 	moocommand-private.h		\
 	mooeditaction.c			\
