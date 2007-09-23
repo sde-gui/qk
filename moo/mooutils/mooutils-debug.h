@@ -33,10 +33,10 @@ _moo_debug_enabled (void)                                   \
     return enabled;                                         \
 }                                                           \
                                                             \
-inline static void                                          \
+static void                                                 \
 moo_dmsg (const char *format, ...) G_GNUC_PRINTF (1, 2);    \
                                                             \
-inline static void                                          \
+static void                                                 \
 moo_dmsg (const char *format, ...)                          \
 {                                                           \
     va_list args;                                           \
