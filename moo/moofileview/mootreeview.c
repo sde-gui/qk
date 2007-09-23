@@ -705,7 +705,12 @@ _moo_tree_view_widget_to_abs_coords (gpointer        view,
                                      int            *absy)
 {
     if (GTK_IS_TREE_VIEW (view))
+        /* Nice! */
+#if !GTK_CHECK_VERSION(2,12,0)
         gtk_tree_view_widget_to_tree_coords (view, wx, wy, absx, absy);
+#else
+        gtk_tree_view_convert_widget_to_bin_window_coords (view, wx, wy, absx, absy);
+#endif
     else if (MOO_IS_ICON_VIEW (view))
         _moo_icon_view_widget_to_abs_coords (view, wx, wy, absx, absy);
     else
