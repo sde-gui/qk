@@ -16,3 +16,6 @@ Terminal
 0. FIX IT!
 1. Think about profiles, can they help?
 2. Terminal settings.
+
+
+Tools: command line option to create a document with given text, read from stdin maybe?
