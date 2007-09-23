@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.0.3 on Tue Aug  7 00:09:57 2007 by muntyan@munt10
+<!--Generated with glade3 3.3.3 on Sat Sep 22 20:16:07 2007 
 	Version: 3.0.0
 	Date: Fri Dec  8 17:47:39 2006
 	User: muntyan
@@ -28,18 +28,6 @@
                     <property name="n_rows">1</property>
                     <property name="n_columns">2</property>
                     <child>
-                      <widget class="GtkEntry" id="entry1">
-                        <property name="visible">True</property>
-                        <property name="moo_prefs_key">encodings</property>
-                        <property name="tooltip" translatable="yes">Comma-separated list of encodings to try when opening a file. 'LOCALE' means current locale encoding.</property>
-                      </widget>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="right_attach">2</property>
-                        <property name="y_options"></property>
-                      </packing>
-                    </child>
-                    <child>
                       <widget class="GtkLabel" id="label12">
                         <property name="visible">True</property>
                         <property name="xalign">1</property>
@@ -49,6 +37,18 @@
                         <property name="x_options">GTK_FILL</property>
                         <property name="y_options"></property>
                         <property name="x_padding">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkEntry" id="entry1">
+                        <property name="visible">True</property>
+                        <property name="moo_prefs_key">encodings</property>
+                        <property name="tooltip" translatable="yes">Comma-separated list of encodings to try when opening a file. 'LOCALE' means current locale encoding.</property>
+                      </widget>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="right_attach">2</property>
+                        <property name="y_options"></property>
                       </packing>
                     </child>
                   </widget>
@@ -87,18 +87,32 @@
                     <property name="n_rows">3</property>
                     <property name="n_columns">2</property>
                     <child>
-                      <widget class="GtkComboBoxEntry" id="encoding_save">
+                      <widget class="GtkCheckButton" id="checkbutton21">
                         <property name="visible">True</property>
-                        <child internal-child="entry">
-                          <widget class="GtkEntry" id="comboboxentry-entry2">
-                            <property name="visible">True</property>
-                          </widget>
-                        </child>
+                        <property name="moo_prefs_key">strip</property>
+                        <property name="label" translatable="yes">Remove trailing spaces</property>
+                        <property name="use_underline">True</property>
+                        <property name="response_id">0</property>
+                        <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
-                        <property name="left_attach">1</property>
                         <property name="right_attach">2</property>
-                        <property name="y_options"></property>
+                        <property name="top_attach">1</property>
+                        <property name="bottom_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkCheckButton" id="checkbutton11">
+                        <property name="moo_prefs_key">make_backups</property>
+                        <property name="label" translatable="yes">Make backups</property>
+                        <property name="use_underline">True</property>
+                        <property name="response_id">0</property>
+                        <property name="draw_indicator">True</property>
+                      </widget>
+                      <packing>
+                        <property name="right_attach">2</property>
+                        <property name="top_attach">2</property>
+                        <property name="bottom_attach">3</property>
                       </packing>
                     </child>
                     <child>
@@ -114,30 +128,18 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkCheckButton" id="checkbutton11">
-                        <property name="label" translatable="yes">Make backups</property>
-                        <property name="use_underline">True</property>
-                        <property name="draw_indicator">True</property>
-                        <property name="moo_prefs_key">make_backups</property>
-                      </widget>
-                      <packing>
-                        <property name="right_attach">2</property>
-                        <property name="top_attach">2</property>
-                        <property name="bottom_attach">3</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkCheckButton" id="checkbutton21">
+                      <widget class="GtkComboBoxEntry" id="encoding_save">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Remove trailing spaces</property>
-                        <property name="use_underline">True</property>
-                        <property name="draw_indicator">True</property>
-                        <property name="moo_prefs_key">strip</property>
+                        <child internal-child="entry">
+                          <widget class="GtkEntry" id="comboboxentry-entry2">
+                            <property name="visible">True</property>
+                          </widget>
+                        </child>
                       </widget>
                       <packing>
+                        <property name="left_attach">1</property>
                         <property name="right_attach">2</property>
-                        <property name="top_attach">1</property>
-                        <property name="bottom_attach">2</property>
+                        <property name="y_options"></property>
                       </packing>
                     </child>
                   </widget>
@@ -174,9 +176,10 @@
                 <child>
                   <widget class="GtkCheckButton" id="checkbutton1">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes">Enable session support</property>
-                    <property name="draw_indicator">True</property>
                     <property name="moo_prefs_key">save_session</property>
+                    <property name="label" translatable="yes">Enable session support</property>
+                    <property name="response_id">0</property>
+                    <property name="draw_indicator">True</property>
                   </widget>
                 </child>
               </widget>
@@ -219,10 +222,11 @@
                     <child>
                       <widget class="GtkCheckButton" id="checkbutton3">
                         <property name="visible">True</property>
+                        <property name="moo_prefs_key">open_dialog_follows_doc</property>
                         <property name="label" translatable="yes">Open dialog shows current document directory</property>
                         <property name="use_underline">True</property>
+                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
-                        <property name="moo_prefs_key">open_dialog_follows_doc</property>
                       </widget>
                       <packing>
                         <property name="top_attach">1</property>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.0.3 on Wed Jul 11 22:00:21 2007 by muntyan@munt10
+<!--Generated with glade3 3.3.3 on Sat Sep 22 20:16:09 2007 
 	Version: 3.0.0
 	Date: Fri Dec  8 17:47:39 2006
 	User: muntyan
@@ -28,11 +28,12 @@
                     <child>
                       <widget class="GtkCheckButton" id="smarthome">
                         <property name="visible">True</property>
+                        <property name="moo_prefs_key">smart_home_end</property>
                         <property name="label" translatable="yes">Smart Home and End</property>
                         <property name="use_underline">True</property>
                         <property name="focus_on_click">False</property>
+                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
-                        <property name="moo_prefs_key">smart_home_end</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -59,9 +60,10 @@
                             <child>
                               <widget class="GtkRadioButton" id="tab_inserts_tab">
                                 <property name="visible">True</property>
-                                <property name="draw_indicator">True</property>
                                 <property name="moo_prefs_key">tab_key_action</property>
                                 <property name="moo_prefs_value">do-nothing</property>
+                                <property name="response_id">0</property>
+                                <property name="draw_indicator">True</property>
                                 <child>
                                   <widget class="GtkLabel" id="label156">
                                     <property name="visible">True</property>
@@ -73,10 +75,11 @@
                             <child>
                               <widget class="GtkRadioButton" id="tab_indents">
                                 <property name="visible">True</property>
-                                <property name="draw_indicator">True</property>
-                                <property name="group">tab_inserts_tab</property>
                                 <property name="moo_prefs_key">tab_key_action</property>
                                 <property name="moo_prefs_value">indent</property>
+                                <property name="response_id">0</property>
+                                <property name="draw_indicator">True</property>
+                                <property name="group">tab_inserts_tab</property>
                                 <child>
                                   <widget class="GtkLabel" id="label2">
                                     <property name="visible">True</property>
@@ -91,10 +94,11 @@
                             <child>
                               <widget class="GtkRadioButton" id="tab_placeholder">
                                 <property name="visible">True</property>
-                                <property name="draw_indicator">True</property>
-                                <property name="group">tab_inserts_tab</property>
                                 <property name="moo_prefs_key">tab_key_action</property>
                                 <property name="moo_prefs_value">find-placeholder</property>
+                                <property name="response_id">0</property>
+                                <property name="draw_indicator">True</property>
+                                <property name="group">tab_inserts_tab</property>
                                 <child>
                                   <widget class="GtkLabel" id="label3">
                                     <property name="visible">True</property>
@@ -116,8 +120,9 @@
                     <child>
                       <widget class="GtkCheckButton" id="enable_auto_indent">
                         <property name="visible">True</property>
-                        <property name="draw_indicator">True</property>
                         <property name="moo_prefs_key">auto_indent</property>
+                        <property name="response_id">0</property>
+                        <property name="draw_indicator">True</property>
                         <child>
                           <widget class="GtkLabel" id="label4">
                             <property name="visible">True</property>
@@ -134,11 +139,12 @@
                     <child>
                       <widget class="GtkCheckButton" id="usespaces">
                         <property name="visible">True</property>
+                        <property name="moo_prefs_key">spaces_instead_of_tabs</property>
                         <property name="label" translatable="yes">Use spaces to indent</property>
                         <property name="use_underline">True</property>
                         <property name="focus_on_click">False</property>
+                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
-                        <property name="moo_prefs_key">spaces_instead_of_tabs</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -168,10 +174,10 @@
                             <child>
                               <widget class="GtkSpinButton" id="tabswidth_spin">
                                 <property name="visible">True</property>
+                                <property name="moo_prefs_key">indent_width</property>
                                 <property name="adjustment">4 1 100 1 10 10</property>
                                 <property name="climb_rate">1</property>
                                 <property name="numeric">True</property>
-                                <property name="moo_prefs_key">indent_width</property>
                               </widget>
                               <packing>
                                 <property name="expand">False</property>
@@ -188,8 +194,9 @@
                     <child>
                       <widget class="GtkCheckButton" id="backspace_indents">
                         <property name="visible">True</property>
-                        <property name="draw_indicator">True</property>
                         <property name="moo_prefs_key">backspace_indents</property>
+                        <property name="response_id">0</property>
+                        <property name="draw_indicator">True</property>
                         <child>
                           <widget class="GtkLabel" id="label5">
                             <property name="visible">True</property>

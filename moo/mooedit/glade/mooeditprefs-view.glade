@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.0.3 on Sun Jul 15 04:47:21 2007 by muntyan@munt10
+<!--Generated with glade3 3.3.3 on Sat Sep 22 20:16:12 2007 
 	Version: 3.0.0
 	Date: Fri Dec  8 17:47:39 2006
 	User: muntyan
@@ -28,10 +28,11 @@
                     <child>
                       <widget class="GtkCheckButton" id="enable_wrapping">
                         <property name="visible">True</property>
+                        <property name="moo_prefs_key">wrapping_enable</property>
                         <property name="label" translatable="yes">Enable text wrapping</property>
                         <property name="use_underline">True</property>
+                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
-                        <property name="moo_prefs_key">wrapping_enable</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -41,11 +42,12 @@
                     <child>
                       <widget class="GtkCheckButton" id="dont_split_words">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Do not split words</property>
-                        <property name="use_underline">True</property>
-                        <property name="draw_indicator">True</property>
                         <property name="moo_prefs_key">wrapping_dont_split_words</property>
                         <property name="moo_sensitive">enable_wrapping</property>
+                        <property name="label" translatable="yes">Do not split words</property>
+                        <property name="use_underline">True</property>
+                        <property name="response_id">0</property>
+                        <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -89,10 +91,11 @@
                     <child>
                       <widget class="GtkCheckButton" id="checkbutton5">
                         <property name="visible">True</property>
+                        <property name="moo_prefs_key">enable_highlighting</property>
                         <property name="label" translatable="yes">Enable syntax highlighting</property>
                         <property name="use_underline">True</property>
+                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
-                        <property name="moo_prefs_key">enable_highlighting</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -102,10 +105,11 @@
                     <child>
                       <widget class="GtkCheckButton" id="checkbutton6">
                         <property name="visible">True</property>
+                        <property name="moo_prefs_key">highlight_matching_brackets</property>
                         <property name="label" translatable="yes">Highlight matching brackets</property>
                         <property name="use_underline">True</property>
+                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
-                        <property name="moo_prefs_key">highlight_matching_brackets</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -115,11 +119,12 @@
                     </child>
                     <child>
                       <widget class="GtkCheckButton" id="checkbutton7">
-                        <property name="label" translatable="yes">Highlight mismatching brackets</property>
                         <property name="visible">True</property>
-                        <property name="use_underline">True</property>
-                        <property name="draw_indicator">True</property>
                         <property name="moo_prefs_key">highlight_mismatching_brackets</property>
+                        <property name="label" translatable="yes">Highlight mismatching brackets</property>
+                        <property name="use_underline">True</property>
+                        <property name="response_id">0</property>
+                        <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -130,10 +135,11 @@
                     <child>
                       <widget class="GtkCheckButton" id="checkbutton9">
                         <property name="visible">True</property>
+                        <property name="moo_prefs_key">highlight_current_line</property>
                         <property name="label" translatable="yes">Highlight current line</property>
                         <property name="use_underline">True</property>
+                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
-                        <property name="moo_prefs_key">highlight_current_line</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -178,10 +184,11 @@
                     <child>
                       <widget class="GtkCheckButton" id="show_line_numbers">
                         <property name="visible">True</property>
+                        <property name="moo_prefs_key">show_line_numbers</property>
                         <property name="label" translatable="yes">Show line numbers</property>
                         <property name="use_underline">True</property>
+                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
-                        <property name="moo_prefs_key">show_line_numbers</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -191,10 +198,11 @@
                     <child>
                       <widget class="GtkCheckButton" id="checkbutton3">
                         <property name="visible">True</property>
+                        <property name="moo_prefs_key">show_tabs</property>
                         <property name="label" translatable="yes">Show tabs</property>
                         <property name="use_underline">True</property>
+                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
-                        <property name="moo_prefs_key">show_tabs</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -205,10 +213,11 @@
                     <child>
                       <widget class="GtkCheckButton" id="checkbutton4">
                         <property name="visible">True</property>
+                        <property name="moo_prefs_key">show_trailing_spaces</property>
                         <property name="label" translatable="yes">Show trailing spaces</property>
                         <property name="use_underline">True</property>
+                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
-                        <property name="moo_prefs_key">show_trailing_spaces</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -222,9 +231,10 @@
                         <child>
                           <widget class="GtkCheckButton" id="draw_rigth_margin">
                             <property name="visible">True</property>
-                            <property name="label" translatable="yes" comments="Part of the phrase &quot;Draw right margin at column [XX]&quot;">Draw right margin</property>
-                            <property name="draw_indicator">True</property>
                             <property name="moo_prefs_key">draw_right_margin</property>
+                            <property name="label" translatable="yes" comments="Part of the phrase &quot;Draw right margin at column [XX]&quot;">Draw right margin</property>
+                            <property name="response_id">0</property>
+                            <property name="draw_indicator">True</property>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
@@ -234,8 +244,8 @@
                         <child>
                           <widget class="GtkHBox" id="hbox2">
                             <property name="visible">True</property>
-                            <property name="spacing">2</property>
                             <property name="moo_sensitive">draw_rigth_margin</property>
+                            <property name="spacing">2</property>
                             <child>
                               <widget class="GtkLabel" id="label1">
                                 <property name="visible">True</property>
@@ -250,9 +260,9 @@
                               <widget class="GtkSpinButton" id="spinbutton1">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
+                                <property name="moo_prefs_key">right_margin_offset</property>
                                 <property name="adjustment">80 1 1000 1 5 5</property>
                                 <property name="numeric">True</property>
-                                <property name="moo_prefs_key">right_margin_offset</property>
                               </widget>
                               <packing>
                                 <property name="expand">False</property>
@@ -307,10 +317,11 @@
                     <child>
                       <widget class="GtkCheckButton" id="use_default_font">
                         <property name="visible">True</property>
+                        <property name="moo_prefs_key">use_default_font</property>
                         <property name="label" translatable="yes">Use default theme font</property>
                         <property name="use_underline">True</property>
+                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
-                        <property name="moo_prefs_key">use_default_font</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -323,28 +334,12 @@
                         <property name="n_rows">2</property>
                         <property name="n_columns">2</property>
                         <child>
-                          <widget class="GtkFontButton" id="fontbutton">
+                          <widget class="GtkLabel" id="label99">
                             <property name="visible">True</property>
-                            <property name="use_font">True</property>
-                            <property name="use_size">True</property>
-                            <property name="moo_prefs_key">font</property>
                             <property name="moo_sensitive">!use_default_font</property>
+                            <property name="label" translatable="yes">Font:</property>
                           </widget>
                           <packing>
-                            <property name="left_attach">1</property>
-                            <property name="right_attach">2</property>
-                            <property name="y_options"></property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkLabel" id="label100">
-                            <property name="visible">True</property>
-                            <property name="xalign">0</property>
-                            <property name="label" translatable="yes">Color scheme:</property>
-                          </widget>
-                          <packing>
-                            <property name="top_attach">1</property>
-                            <property name="bottom_attach">2</property>
                             <property name="x_options"></property>
                             <property name="y_options"></property>
                           </packing>
@@ -363,13 +358,30 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkLabel" id="label99">
+                          <widget class="GtkLabel" id="label100">
                             <property name="visible">True</property>
-                            <property name="label" translatable="yes">Font:</property>
-                            <property name="moo_sensitive">!use_default_font</property>
+                            <property name="xalign">0</property>
+                            <property name="label" translatable="yes">Color scheme:</property>
                           </widget>
                           <packing>
+                            <property name="top_attach">1</property>
+                            <property name="bottom_attach">2</property>
                             <property name="x_options"></property>
+                            <property name="y_options"></property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkFontButton" id="fontbutton">
+                            <property name="visible">True</property>
+                            <property name="moo_prefs_key">font</property>
+                            <property name="moo_sensitive">!use_default_font</property>
+                            <property name="response_id">0</property>
+                            <property name="use_font">True</property>
+                            <property name="use_size">True</property>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">1</property>
+                            <property name="right_attach">2</property>
                             <property name="y_options"></property>
                           </packing>
                         </child>

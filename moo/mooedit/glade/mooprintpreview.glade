@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!-- Generated with glade3
+<!--Generated with glade3 3.3.3 on Sat Sep 22 20:16:22 2007 
 	Version: 3.0.0
 	Date: Fri Dec  8 17:41:15 2006
 	User: muntyan
@@ -28,6 +28,9 @@
                     <property name="is_important">True</property>
                     <property name="stock_id">gtk-go-back</property>
                   </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolButton" id="next">
@@ -35,43 +38,70 @@
                     <property name="is_important">True</property>
                     <property name="stock_id">gtk-go-forward</property>
                   </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
                 </child>
                 <child>
                   <widget class="GtkSeparatorToolItem" id="separatortoolitem1">
                     <property name="visible">True</property>
                   </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">False</property>
+                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="entry_item">
                     <property name="visible">True</property>
                     <property name="is_important">True</property>
                   </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">False</property>
+                  </packing>
                 </child>
                 <child>
                   <widget class="GtkSeparatorToolItem" id="separatortoolitem2">
                   </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">False</property>
+                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolButton" id="zoom_100">
                     <property name="visible">True</property>
                     <property name="stock_id">gtk-zoom-100</property>
                   </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolButton" id="zoom_to_fit">
                     <property name="visible">True</property>
                     <property name="stock_id">gtk-zoom-fit</property>
                   </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolButton" id="zoom_out">
                     <property name="stock_id">gtk-zoom-out</property>
                   </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolButton" id="zoom_in">
                     <property name="stock_id">gtk-zoom-in</property>
                   </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
                 </child>
               </widget>
               <packing>
@@ -82,6 +112,7 @@
             <child>
               <widget class="GtkScrolledWindow" id="swin">
                 <property name="visible">True</property>
+                <property name="can_focus">False</property>
                 <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                 <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                 <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
@@ -129,8 +160,8 @@
                 <child>
                   <widget class="GtkAlignment" id="alignment1">
                     <property name="visible">True</property>
-                    <property name="xscale">0.000000</property>
-                    <property name="yscale">0.000000</property>
+                    <property name="xscale">0</property>
+                    <property name="yscale">0</property>
                     <child>
                       <widget class="GtkHBox" id="hbox1">
                         <property name="visible">True</property>
