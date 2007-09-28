@@ -47,10 +47,10 @@ AC_DEFUN([MOO_COMPONENTS],[
     MOO_BUILD_LUA=true
     MOO_BUILD_COMPS="lua $MOO_BUILD_COMPS"
     MOO_LUA_ENABLED_DEFINE=["#define MOO_LUA_ENABLED 1"]
-    MOO_LUA
   else
     MOO_LUA_ENABLED_DEFINE=["#undef MOO_LUA_ENABLED"]
   fi
+  MOO_LUA
   AC_SUBST(MOO_LUA_ENABLED_DEFINE)
 
   m4_foreach([comp], [utils, edit, term, app],[
