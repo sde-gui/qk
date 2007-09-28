@@ -46,24 +46,26 @@ AC_DEFUN([MOO_DOCS],[
     if test "x$enable_help" = xauto -o "x$enable_help" = xyes; then
       _MOO_AC_CHECK_XSLT_DOCBOOK([_moo_xslt_working=yes],[_moo_xslt_working=no])
       if test $_moo_xslt_working = yes; then
-        enable_help=yes
+        MOO_ENABLE_HELP=yes
       elif test "x$enable_help" = xauto; then
-        enable_help=no
+        MOO_ENABLE_HELP=no
       else
         AC_MSG_ERROR([xsltproc will not work])
       fi
+    else
+      MOO_ENABLE_HELP=no
     fi
   fi
 
-  if test "x$enable_help" != xyes; then
+  if test "x$MOO_ENABLE_HELP" != xyes; then
     MOO_BUILD_DOCS=no
   elif test "x$MOO_BUILD_DOCS" = x; then
     MOO_BUILD_DOCS=yes
   fi
 
-  AM_CONDITIONAL(MOO_ENABLE_HELP, test "x$enable_help" = xyes)
+  AM_CONDITIONAL(MOO_ENABLE_HELP, test "x$MOO_ENABLE_HELP" = xyes)
   AM_CONDITIONAL(MOO_BUILD_DOCS, test "x$MOO_BUILD_DOCS" = xyes)
-  if test "x$enable_help" = xyes; then
+  if test "x$MOO_ENABLE_HELP" = xyes; then
     AC_DEFINE(MOO_ENABLE_HELP, [1], [enable help functionality])
   fi
 ])
