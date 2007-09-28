@@ -3271,7 +3271,7 @@ do_popup (MooFileView    *fileview,
                                      MOO_UI_MENU, "MooFileView/Menu",
                                      fileview->priv->actions,
                                      NULL);
-    gtk_menu_attach_to_widget (GTK_MENU (menu), GTK_WIDGET (fileview), NULL);
+    MOO_OBJECT_REF_SINK (menu);
 
     _moo_file_view_tools_check (fileview);
     g_signal_emit (fileview, signals[POPULATE_POPUP], 0, files, menu);
@@ -3288,6 +3288,7 @@ do_popup (MooFileView    *fileview,
                         &position_data, 0,
                         gtk_get_current_event_time ());
 
+    g_object_unref (menu);
     g_list_foreach (files, (GFunc) _moo_file_unref, NULL);
     g_list_free (files);
 }
@@ -5739,7 +5740,8 @@ moo_file_view_drop_uris (MooFileView    *fileview,
         char *dir_copy = g_strdup (destdir);
 
         menu = gtk_menu_new ();
-        gtk_menu_attach_to_widget (GTK_MENU (menu), GTK_WIDGET (fileview), NULL);
+        MOO_OBJECT_REF_SINK (menu);
+
         g_object_set_data_full (G_OBJECT (menu), "moo-file-view-drop-files",
                                 filenames, (GDestroyNotify) free_string_list);
         g_object_set_data_full (G_OBJECT (menu), "moo-file-view-drop-dir",
@@ -5771,7 +5773,9 @@ moo_file_view_drop_uris (MooFileView    *fileview,
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
         _moo_file_view_drag_finish (fileview, context, TRUE, FALSE, time);
+
         gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 0, 0);
+        g_object_unref (menu);
 
         return;
     }

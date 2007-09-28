@@ -199,7 +199,7 @@ moo_link_label_button_press (GtkWidget      *widget,
         return FALSE;
 
     menu = gtk_menu_new ();
-    gtk_menu_attach_to_widget (GTK_MENU (menu), widget, NULL);
+    MOO_OBJECT_REF_SINK (menu);
 
     item = gtk_image_menu_item_new_with_label ("Copy Link");
     image = gtk_image_new_from_stock (GTK_STOCK_COPY, GTK_ICON_SIZE_MENU);
@@ -217,6 +217,7 @@ moo_link_label_button_press (GtkWidget      *widget,
 
     gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL,
                     event->button, event->time);
+    g_object_unref (menu);
 
     return TRUE;
 }

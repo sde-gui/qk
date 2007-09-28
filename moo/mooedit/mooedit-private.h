@@ -162,7 +162,6 @@ struct _MooEditPrivate {
     /***********************************************************************/
     /* Actions
      */
-    GtkMenu *menu;
     MooActionCollection *actions;
 };
 

@@ -105,15 +105,8 @@ void        moo_notebook_reorder_child      (MooNotebook    *notebook,
                                              gint            position);
 
 
-typedef GtkWidget* (*MooNotebookPopupCreationFunc)  (MooNotebook    *notebook,
-                                                     GtkWidget      *child,
-                                                     gpointer        user_data);
-
 void        moo_notebook_enable_popup               (MooNotebook    *notebook,
                                                      gboolean        enable);
-void        moo_notebook_set_popup_creation_func    (MooNotebook    *notebook,
-                                                     MooNotebookPopupCreationFunc func,
-                                                     gpointer        user_data);
 
 void        moo_notebook_enable_reordering          (MooNotebook    *notebook,
                                                      gboolean        enable);

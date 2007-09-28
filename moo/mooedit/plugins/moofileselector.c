@@ -1254,7 +1254,7 @@ create_drop_doc_menu (MooFileSelector *filesel,
     GSList *items = NULL;
 
     menu = gtk_menu_new ();
-    gtk_menu_attach_to_widget (GTK_MENU (menu), GTK_WIDGET (filesel), NULL);
+
     g_signal_connect (menu, "key-press-event", G_CALLBACK (menu_key_event), NULL);
     g_signal_connect (menu, "key-release-event", G_CALLBACK (menu_key_event), NULL);
 
@@ -1340,8 +1340,10 @@ moo_file_selector_drop_doc (MooFileSelector *filesel,
     if (action == DROP_DOC_ASK)
     {
         GtkWidget *menu = create_drop_doc_menu (filesel, doc, destdir);
+        MOO_OBJECT_REF_SINK (menu);
         _moo_file_view_drag_finish (MOO_FILE_VIEW (filesel), context, TRUE, FALSE, time);
         gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 0, 0);
+        g_object_unref (menu);
         return;
     }
 

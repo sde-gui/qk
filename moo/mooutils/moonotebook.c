@@ -75,8 +75,6 @@ struct _MooNotebookPrivate {
     GSList      *pages;
 
     gboolean     enable_popup;
-    PopupFunc    popup_func;
-    gpointer     popup_user_data;
 
     gboolean     enable_reordering;
     gboolean     button_pressed;
@@ -286,9 +284,6 @@ static void     labels_invalidate           (MooNotebook    *nb);
 
 static gboolean moo_notebook_maybe_popup    (MooNotebook    *notebook,
                                              GdkEventButton *event);
-static GtkWidget *popup_func                (MooNotebook    *notebook,
-                                             GtkWidget      *child,
-                                             gpointer        user_data);
 
 /* MOO_TYPE_NOTEBOOK */
 G_DEFINE_TYPE (MooNotebook, moo_notebook, GTK_TYPE_NOTEBOOK)
@@ -464,8 +459,6 @@ static void moo_notebook_init      (MooNotebook *notebook)
     notebook->priv = g_new0 (MooNotebookPrivate, 1);
 
     notebook->priv->enable_popup = FALSE;
-    notebook->priv->popup_func = popup_func;
-    notebook->priv->popup_user_data = NULL;
 
     notebook->priv->enable_reordering = TRUE;
     notebook->priv->button_pressed = FALSE;
@@ -3176,19 +3169,16 @@ moo_notebook_do_popup (MooNotebook    *nb,
         GdkEventButton *event;
     } data;
 
-    g_return_val_if_fail (nb->priv->popup_func != NULL, FALSE);
     g_return_val_if_fail (page != NULL, FALSE);
 
-    menu = nb->priv->popup_func (nb, page->child, nb->priv->popup_user_data);
-    g_return_val_if_fail (GTK_IS_MENU (menu), FALSE);
-
-    gtk_menu_attach_to_widget (GTK_MENU (menu), GTK_WIDGET (nb), NULL);
+    menu = gtk_menu_new ();
+    MOO_OBJECT_REF_SINK (menu);
 
     g_signal_emit (nb, signals[POPULATE_POPUP], 0, page->child, menu, &dont);
 
     if (dont)
     {
-        gtk_menu_detach (GTK_MENU (menu));
+        g_object_unref (menu);
         return FALSE;
     }
 
@@ -3200,6 +3190,7 @@ moo_notebook_do_popup (MooNotebook    *nb,
                     popup_position_func, &data,
                     event ? event->button : 0,
                     event ? event->time : gtk_get_current_event_time ());
+    g_object_unref (menu);
     return TRUE;
 }
 
@@ -3239,33 +3230,6 @@ moo_notebook_enable_popup (MooNotebook *notebook,
     g_return_if_fail (MOO_IS_NOTEBOOK (notebook));
     notebook->priv->enable_popup = enable;
     g_object_notify (G_OBJECT (notebook), "enable-popup");
-}
-
-
-void
-moo_notebook_set_popup_creation_func (MooNotebook *notebook,
-                                      PopupFunc    func,
-                                      gpointer     user_data)
-{
-    g_return_if_fail (MOO_IS_NOTEBOOK (notebook));
-
-    if (!func)
-    {
-        moo_notebook_set_popup_creation_func (notebook, popup_func, NULL);
-        return;
-    }
-
-    notebook->priv->popup_func = func;
-    notebook->priv->popup_user_data = user_data;
-}
-
-
-static GtkWidget *
-popup_func (G_GNUC_UNUSED MooNotebook *notebook,
-            G_GNUC_UNUSED GtkWidget *child,
-            G_GNUC_UNUSED gpointer user_data)
-{
-    return gtk_menu_new ();
 }
 
 

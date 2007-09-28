@@ -1859,7 +1859,7 @@ _moo_term_do_popup_menu (MooTerm        *term,
     g_return_if_fail (MOO_IS_TERM (term));
 
     menu = gtk_menu_new ();
-    gtk_menu_attach_to_widget (GTK_MENU (menu), GTK_WIDGET (term), NULL);
+    MOO_OBJECT_REF_SINK (menu);
 
     item = gtk_image_menu_item_new_from_stock (GTK_STOCK_COPY, NULL);
     gtk_widget_set_sensitive (item, moo_term_get_selection_bounds (term, NULL, NULL));
@@ -1884,6 +1884,8 @@ _moo_term_do_popup_menu (MooTerm        *term,
         gtk_menu_popup (GTK_MENU (menu), NULL, NULL,
                         (GtkMenuPositionFunc) menu_position_func,
                         term, 0, gtk_get_current_event_time ());
+
+    g_object_unref (menu);
 }
 
 
