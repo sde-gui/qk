@@ -18,6 +18,7 @@
 #include "mooedit/mooeditfileops.h"
 #include "mooedit/mooeditsavemult-glade.h"
 #include "mooutils/moodialogs.h"
+#include "mooutils/moocompat.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
@@ -175,8 +176,7 @@ _moo_edit_save_changes_dialog (MooEdit *edit)
         _("If you don't save, changes will be discarded"));
 
     gtk_dialog_add_buttons (dialog,
-        /* Translators: this is a button label (it's "Do Not Save" in some toolkits), try to keep it short */
-        _("Close _without Saving"), GTK_RESPONSE_NO,
+        GTK_STOCK_DISCARD, GTK_RESPONSE_NO,
         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
         GTK_STOCK_SAVE, GTK_RESPONSE_YES,
         NULL);

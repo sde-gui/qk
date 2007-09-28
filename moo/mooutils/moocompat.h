@@ -72,6 +72,15 @@ GType gtk_unit_get_type (void) G_GNUC_CONST;
 #endif /* !GTK_CHECK_VERSION(2,10,0) */
 
 
+#if !GTK_CHECK_VERSION(2,12,0)
+
+#ifndef GTK_STOCK_DISCARD
+#define GTK_STOCK_DISCARD  "gtk-discard"
+#endif
+
+#endif /* !GTK_CHECK_VERSION(2,10,0) */
+
+
 G_END_DECLS
 
 #endif /* MOOUTILS_COMPAT_H */

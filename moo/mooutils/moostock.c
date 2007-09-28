@@ -29,6 +29,12 @@
 
 
 static GtkStockItem stock_items[] = {
+#if !GTK_CHECK_VERSION(2,10,0)
+    {(char*) GTK_STOCK_SELECT_ALL, (char*) "Select _All", 0, 0, NULL},
+#endif
+#if !GTK_CHECK_VERSION(2,12,0)
+    {(char*) GTK_STOCK_DISCARD, (char*) "_Discard", 0, 0, NULL},
+#endif
     {(char*) MOO_STOCK_SAVE_NONE, (char*) N_("Save _None"), 0, 0, (char*) GETTEXT_PACKAGE},
     {(char*) MOO_STOCK_SAVE_SELECTED, (char*) N_("Save _Selected"), 0, 0, (char*) GETTEXT_PACKAGE},
     {(char*) MOO_STOCK_FILE_COPY, (char*) "_Copy", 0, 0, (char*) "gtk20"},
@@ -39,12 +45,6 @@ static GtkStockItem stock_items[] = {
     {(char*) MOO_STOCK_NEW_FOLDER, (char*) N_("_New Folder"), 0, 0, (char*) GETTEXT_PACKAGE},
     {(char*) MOO_STOCK_NEW_WINDOW, (char*) N_("New _Window"), 0, 0, (char*) GETTEXT_PACKAGE}
 };
-
-#if !GTK_CHECK_VERSION(2,10,0)
-static GtkStockItem stock_items_2_10[] = {
-    {(char*) GTK_STOCK_SELECT_ALL, (char*) N_("Select _All"), 0, 0, (char*) GETTEXT_PACKAGE}
-};
-#endif
 
 
 static void
@@ -243,7 +243,6 @@ _moo_stock_init (void)
 #if !GTK_CHECK_VERSION(2,10,0)
     add_icon2 (factory, GTK_STOCK_SELECT_ALL, "edit-select-all",
                24, STOCK_SELECT_ALL_24, 16, STOCK_SELECT_ALL_16);
-    gtk_stock_add_static (stock_items_2_10, G_N_ELEMENTS (stock_items_2_10));
 #endif
 
     gtk_stock_add_static (stock_items, G_N_ELEMENTS (stock_items));
@@ -253,7 +252,7 @@ _moo_stock_init (void)
     register_stock_icon_alias (factory, GTK_STOCK_NEW, MOO_STOCK_NEW_WINDOW, "window_new");
     add_icon_name (factory, MOO_STOCK_NEW_WINDOW, "window-new");
 
-    register_stock_icon_alias (factory, GTK_STOCK_NO, MOO_STOCK_SAVE_NONE, "no");
+//     register_stock_icon_alias (factory, GTK_STOCK_NO, MOO_STOCK_SAVE_NONE, "no");
     register_stock_icon_alias (factory, GTK_STOCK_SAVE, MOO_STOCK_SAVE_SELECTED, "filesave");
 
     register_stock_icon_alias (factory, GTK_STOCK_COPY, MOO_STOCK_FILE_COPY, "editcopy");
