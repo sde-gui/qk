@@ -44,13 +44,17 @@ BUILT_SOURCES = po-subdirs-stamp po-subdirs-stamp-2
 DIST_SUBDIRS = moo medit tests po po-gsv doc
 
 if MOO_BUILD_MEDIT
-SUBDIRS = . moo medit po po-gsv
+SUBDIRS = . moo medit
 else
-SUBDIRS = . moo po po-gsv
+SUBDIRS = . moo
 endif
 
 if MOO_ENABLE_TESTS
 SUBDIRS += tests
+endif
+
+if MOO_ENABLE_NLS
+SUBDIRS += po po-gsv
 endif
 
 if MOO_ENABLE_HELP
