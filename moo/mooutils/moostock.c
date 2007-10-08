@@ -30,10 +30,10 @@
 
 static GtkStockItem stock_items[] = {
 #if !GTK_CHECK_VERSION(2,10,0)
-    {(char*) GTK_STOCK_SELECT_ALL, (char*) "Select _All", 0, 0, NULL},
+    {(char*) GTK_STOCK_SELECT_ALL, (char*) "Select _All", 0, 0, (char*) "gtk20"},
 #endif
 #if !GTK_CHECK_VERSION(2,12,0)
-    {(char*) GTK_STOCK_DISCARD, (char*) "_Discard", 0, 0, NULL},
+    {(char*) GTK_STOCK_DISCARD, (char*) "_Discard", 0, 0, (char*) "gtk20"},
 #endif
     {(char*) MOO_STOCK_SAVE_NONE, (char*) N_("Save _None"), 0, 0, (char*) GETTEXT_PACKAGE},
     {(char*) MOO_STOCK_SAVE_SELECTED, (char*) N_("Save _Selected"), 0, 0, (char*) GETTEXT_PACKAGE},
