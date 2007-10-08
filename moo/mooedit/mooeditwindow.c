@@ -2400,7 +2400,6 @@ tab_icon_start_drag (GtkWidget      *evbox,
                      MooEditWindow  *window)
 {
     GtkTargetList *targets;
-    GdkDragContext *context;
     MooEdit *edit;
 
     edit = g_object_get_data (G_OBJECT (evbox), "moo-edit");
@@ -2421,9 +2420,9 @@ tab_icon_start_drag (GtkWidget      *evbox,
                          GTK_TARGET_SAME_APP,
                          TARGET_MOO_EDIT_TAB);
 
-    context = gtk_drag_begin (evbox, targets,
-                              GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK,
-                              1, (GdkEvent*) event);
+    gtk_drag_begin (evbox, targets,
+                    GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK,
+                    1, (GdkEvent*) event);
 
     gtk_target_list_unref (targets);
 }

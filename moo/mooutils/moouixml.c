@@ -1908,7 +1908,6 @@ check_separators (Node           *parent,
     GSList *children, *l;
     Node *separator = NULL;
     gboolean first = TRUE;
-    gboolean has_children = FALSE;
     GtkWidget *widget;
 
     if (!toplevel_get_widget (toplevel, parent))
@@ -1927,8 +1926,6 @@ check_separators (Node           *parent,
 
                 if (!widget || !GTK_WIDGET_VISIBLE (widget))
                     continue;
-
-                has_children = TRUE;
 
                 if (!first)
                 {

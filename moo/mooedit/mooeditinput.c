@@ -807,9 +807,7 @@ _moo_text_view_motion_event (GtkWidget          *widget,
     if (view->priv->dnd.type == MOO_TEXT_VIEW_DRAG_SELECT_LINES)
     {
         GdkRectangle rect;
-        GdkWindow *window;
 
-        window = gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_LEFT);
         gtk_text_view_get_visible_rect (text_view, &rect);
 
         select_lines (view, y);
@@ -860,7 +858,6 @@ _moo_text_view_motion_event (GtkWidget          *widget,
     else
     {
         /* this piece is from gtktextview.c */
-        int x, y;
         GtkTextIter start;
         gdk_window_get_pointer (gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_TEXT),
                                 &x, &y, NULL);
@@ -885,7 +882,6 @@ text_view_start_selection_dnd (GtkTextView       *text_view,
                                G_GNUC_UNUSED const GtkTextIter *iter,
                                GdkEventMotion    *event)
 {
-    GdkDragContext *context;
     GtkTargetList *target_list;
 
 #if !GTK_CHECK_VERSION(2,10,0)
@@ -904,9 +900,9 @@ text_view_start_selection_dnd (GtkTextView       *text_view,
     text_view->drag_start_y = -1;
     text_view->pending_place_cursor_button = 0;
 
-    context = gtk_drag_begin (GTK_WIDGET (text_view), target_list,
-                              (GdkDragAction) (GDK_ACTION_COPY | GDK_ACTION_MOVE),
-                              1, (GdkEvent*)event);
+    gtk_drag_begin (GTK_WIDGET (text_view), target_list,
+                    GDK_ACTION_COPY | GDK_ACTION_MOVE,
+                    1, (GdkEvent*) event);
 
     gtk_target_list_unref (target_list);
 }

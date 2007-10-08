@@ -995,7 +995,7 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
 
     moo_print_operation_paginate (op);
 
-    moo_dmsg ("begin_print: %d pages in %f s", op->priv->pages->len,
+    moo_dmsg ("begin_print: %u pages in %f s", op->priv->pages->len,
               g_timer_elapsed (timer, NULL));
     g_timer_destroy (timer);
 
@@ -1644,7 +1644,7 @@ static void
 do_print_operation (GtkTextView            *view,
                     GtkWidget              *parent,
                     GtkPrintOperationAction action,
-                    const char             *filename)
+                    const char             *exp_filename)
 {
     MooPrintOperation *op;
     GtkPrintOperationResult res;
@@ -1652,11 +1652,11 @@ do_print_operation (GtkTextView            *view,
     GtkWidget *error_dialog;
 
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
-    g_return_if_fail (!filename || action == GTK_PRINT_OPERATION_ACTION_EXPORT);
+    g_return_if_fail (!exp_filename || action == GTK_PRINT_OPERATION_ACTION_EXPORT);
 
     op = g_object_new (MOO_TYPE_PRINT_OPERATION,
                        "doc", view,
-                       "export-filename", filename,
+                       "export-filename", exp_filename,
                        NULL);
 
     if (!parent)

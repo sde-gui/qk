@@ -31,7 +31,7 @@ enum {
     PROP_0
 };
 
-static guint signals[LAST_SIGNAL];
+static G_GNUC_UNUSED guint signals[LAST_SIGNAL];
 
 
 static void

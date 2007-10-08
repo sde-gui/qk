@@ -3285,13 +3285,11 @@ draw_marks_background (MooTextView    *view,
                        GdkEventExpose *event)
 {
     GtkTextView *text_view;
-    GtkTextBuffer *buffer;
     int line, last_line, window_width;
     GdkRectangle area;
     GtkTextIter iter;
 
     text_view = GTK_TEXT_VIEW (view);
-    buffer = gtk_text_view_get_buffer (text_view);
 
     area = event->area;
     gtk_text_view_window_to_buffer_coords (text_view,

@@ -300,7 +300,7 @@ moo_print_preview_set_page (MooPrintPreview *preview,
     gtk_widget_set_sensitive (moo_glade_xml_get_widget (preview->priv->xml, "prev"),
                               n > 0);
 
-    text = g_strdup_printf ("%d", n + 1);
+    text = g_strdup_printf ("%u", n + 1);
     gtk_entry_set_text (preview->priv->entry, text);
     g_free (text);
 }
@@ -612,7 +612,7 @@ _moo_print_preview_start (MooPrintPreview *preview)
     preview->priv->zoom_to_fit = TRUE;
     moo_print_preview_set_zoom (preview, FALSE, ZOOM_100);
 
-    text = g_strdup_printf ("of %d", preview->priv->n_pages);
+    text = g_strdup_printf ("of %u", preview->priv->n_pages);
     gtk_label_set_text (moo_glade_xml_get_widget (xml, "label"), text);
     g_free (text);
 

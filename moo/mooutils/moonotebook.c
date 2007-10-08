@@ -2658,7 +2658,7 @@ drag_scroll (MooNotebook *nb)
     }
 
 out:
-    return TRUE;
+    return retval;
 }
 
 

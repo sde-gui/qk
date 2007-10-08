@@ -62,7 +62,7 @@ enum {
 };
 
 
-static guint prefs_dialog_signals[LAST_SIGNAL] = {0};
+static G_GNUC_UNUSED guint prefs_dialog_signals[LAST_SIGNAL] = {0};
 
 
 /* MOO_TYPE_PREFS_DIALOG */

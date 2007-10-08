@@ -412,7 +412,7 @@ moo_file_watch_create_monitor (MooFileWatch   *watch,
     {
         g_set_error (error, MOO_FILE_WATCH_ERROR,
                      MOO_FILE_WATCH_ERROR_CLOSED,
-                     "MooFileWatch %d closed",
+                     "MooFileWatch %u closed",
                      watch->id);
         return 0;
     }

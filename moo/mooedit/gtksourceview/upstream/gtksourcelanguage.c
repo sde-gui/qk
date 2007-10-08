@@ -274,11 +274,10 @@ static void
 process_properties (xmlTextReaderPtr   reader,
 		    GtkSourceLanguage *language)
 {
-	gint ret;
 	xmlNodePtr child;
 	xmlNodePtr node = NULL;
 
-	while (node == NULL && (ret = xmlTextReaderRead (reader)) == 1)
+	while (node == NULL && xmlTextReaderRead (reader) == 1)
 	{
 		xmlChar *name;
 

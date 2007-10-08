@@ -1562,21 +1562,19 @@ action_new (ActionType     type,
 {
     EditAction *action;
     gsize size = 0;
-    MooUndoActionClass *klass = NULL;
     GtkTextBuffer *text_buffer = GTK_TEXT_BUFFER (buffer);
 
     switch (type)
     {
         case ACTION_INSERT:
             size = sizeof (InsertAction);
-            klass = &InsertActionClass;
             break;
         case ACTION_DELETE:
             size = sizeof (DeleteAction);
-            klass = &DeleteActionClass;
             break;
     }
 
+    g_assert (size != 0);
     action = g_malloc0 (size);
     action->interactive = (!buffer->priv->non_interactive && text_buffer->user_action_count) ? TRUE : FALSE;
 

@@ -17,7 +17,6 @@
 #define MOO_FILE_VIEW_COMPILATION
 #include "moofileview/moofilesystem.h"
 #include "moofileview/moofolder-private.h"
-#include "moofileview/symlink.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moomarshals.h"

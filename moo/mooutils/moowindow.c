@@ -144,7 +144,7 @@ enum {
 };
 
 
-static guint signals[LAST_SIGNAL] = {0};
+static G_GNUC_UNUSED guint signals[LAST_SIGNAL] = {0};
 
 
 /* MOO_TYPE_WINDOW */

@@ -417,7 +417,7 @@ load_c_module (const char *module_file,
                G_GNUC_UNUSED gpointer data)
 {
     gpointer init_func_ptr;
-    MooModuleInitFunc init_func = init_func_ptr;
+    MooModuleInitFunc init_func;
     GModule *module;
 
     module = module_open (module_file);

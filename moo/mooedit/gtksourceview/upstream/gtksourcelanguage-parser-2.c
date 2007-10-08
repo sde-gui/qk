@@ -1528,7 +1528,6 @@ file_parse (gchar                     *filename,
 {
 	ParserState *parser_state;
 	xmlTextReader *reader = NULL;
-	int ret;
 	int fd = -1;
 	GError *tmp_error = NULL;
 	GtkSourceLanguageManager *lm;
@@ -1586,7 +1585,7 @@ file_parse (gchar                     *filename,
 						parser_state);
 
 	while (parser_state->error == NULL &&
-	       (ret = xmlTextReaderRead (parser_state->reader)) == 1)
+	       xmlTextReaderRead (parser_state->reader) == 1)
 	{
 		int type;
 

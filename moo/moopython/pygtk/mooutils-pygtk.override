@@ -848,7 +848,7 @@ signal_func (MooGladeXML *xml,
         PyErr_Print ();
     }
 
-    return FALSE;
+    return ret;
 }
 
 static PyObject *

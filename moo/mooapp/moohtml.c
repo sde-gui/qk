@@ -1798,7 +1798,7 @@ static ProcessElm
 get_proc_elm_func (xmlNode *node)
 {
     if (IS_ELEMENT (node))
-        return g_hash_table_lookup (proc_elm_funcs__, node->name);
+        return (ProcessElm) g_hash_table_lookup (proc_elm_funcs__, node->name);
     else
         return NULL;
 }

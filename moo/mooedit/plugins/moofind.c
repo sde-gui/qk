@@ -411,12 +411,10 @@ static void
 init_dir_entry (MooHistoryCombo *hist_combo,
                 MooEdit         *doc)
 {
-    MooHistoryList *list;
     GtkWidget *entry;
 
     g_return_if_fail (hist_combo != NULL);
 
-    list = moo_history_combo_get_list (hist_combo);
     entry = MOO_COMBO (hist_combo)->entry;
 
     if (!gtk_entry_get_text(GTK_ENTRY (entry))[0])
