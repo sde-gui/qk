@@ -1,5 +1,12 @@
 AC_DEFUN_ONCE([MOO_AC_OBJC],[
-  MOO_USE_OBJC=auto
+  MOO_COMPILER
+
+  if $MOO_ICC; then
+    MOO_USE_OBJC=no
+  else
+    MOO_USE_OBJC=auto
+  fi
+
   AC_ARG_WITH([objc], AC_HELP_STRING([--without-objc], [do not use Objective-C]), [
     MOO_USE_OBJC=$with_objc
   ])

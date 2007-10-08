@@ -12,6 +12,18 @@ AC_DEFUN([_MOO_AC_CHECK_COMPILER_OPTIONS],[
   AC_LANG_RESTORE
 ])
 
+AC_DEFUN([MOO_COMPILER],[
+# icc pretends to be gcc or configure thinks it's gcc, but icc doesn't
+# error on unknown options, so just don't try gcc options with icc
+MOO_ICC=false
+MOO_GCC=false
+if test "$CC" = "icc"; then
+  MOO_ICC=true
+elif test "x$GCC" = "xyes"; then
+  MOO_GCC=true
+fi
+])
+
 ##############################################################################
 # MOO_AC_DEBUG()
 #
@@ -51,21 +63,13 @@ AC_HELP_STRING([--enable-all-warnings],[enable lot of compiler warnings (default
 ])
 AM_CONDITIONAL(MOO_ALL_WARNINGS, test x$_moo_all_warnings = "xyes")
 
-# icc pretends to be gcc or configure thinks it's gcc, but icc doesn't
-# error on unknown options, so just don't try gcc options with icc
-_MOO_ICC=false
-_MOO_GCC=false
-if test "$CC" = "icc"; then
-  _MOO_ICC=true
-elif test "x$GCC" = "xyes"; then
-  _MOO_GCC=true
-fi
+MOO_COMPILER
 
 MOO_DEBUG_CFLAGS=
 if test "x$_moo_all_warnings" = "xyes"; then
-  if $_MOO_ICC; then
+  if $MOO_ICC; then
     _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS, [-Wall -Wcheck -w2 -wd981 -wd188 -wd869 -wd556 -wd810])
-  elif $_MOO_GCC; then
+  elif $MOO_GCC; then
     _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS,
 [-W -Wall -Wpointer-arith -Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
 -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations dnl
@@ -73,7 +77,7 @@ if test "x$_moo_all_warnings" = "xyes"; then
 -Wdisabled-optimization -Wendif-labels -Wstrict-prototypes])
   fi
 else
-  if $_MOO_GCC; then
+  if $MOO_GCC; then
     _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS, [-Wall -W])
   fi
 fi
@@ -81,14 +85,14 @@ fi
 m4_foreach([wname],[missing-field-initializers, unused, sign-compare, write-strings],[dnl
 m4_define([_moo_WNAME],[MOO_W_NO_[]m4_bpatsubst(m4_toupper(wname),-,_)])
 _moo_WNAME=
-if $_MOO_GCC; then
+if $MOO_GCC; then
   _MOO_AC_CHECK_COMPILER_OPTIONS(_moo_WNAME,[-Wno-wname])
 fi
 AC_SUBST(_moo_WNAME)
 m4_undefine([_moo_WNAME])
 ])
 
-if $_MOO_GCC; then
+if $MOO_GCC; then
   if test "x$_moo_all_warnings" = "xyes"; then
     _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS,[-fstrict-aliasing])
   else

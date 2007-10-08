@@ -45,7 +45,7 @@
    <configure>
     <args>--enable-debug=full --enable-all-warnings --enable-project --prefix=/usr/local/test</args>
     <vars>
-     <var name="CC">tcc</var>
+     <var name="CC">icc</var>
      <var name="CFLAGS">-g</var>
      <var name="OBJCFLAGS">-g</var>
     </vars>
