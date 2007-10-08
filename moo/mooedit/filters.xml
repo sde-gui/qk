@@ -31,7 +31,7 @@
   <match what="stderr" pattern="(?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+):.*" style="output-error"/>
   <match what="stderr" pattern="(?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+).\d+-\d+:.*" style="output-error"/>
 
-  <match what="stderr" pattern="(?P&lt;file&gt;[^:]+)\((?P&lt;line&gt;\d+)\):(\d+:)?\s*(warning|remark).*" style="output-error"/>
+  <match what="stderr" pattern="(?P&lt;file&gt;[^:]+)\((?P&lt;line&gt;\d+)\):(\d+:)?\s*(error|warning|remark).*" style="output-error"/>
 
   <match what="stderr" pattern="\s+File &quot;(?P&lt;file&gt;[^&quot;]+)&quot;, line (?P&lt;line&gt;\d+).*" style="output-error"/>
 
