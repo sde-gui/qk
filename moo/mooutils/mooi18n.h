@@ -15,12 +15,10 @@
 
 #include <config.h>
 #include <glib/gstrfuncs.h>
-#include <libintl.h>
-
-G_BEGIN_DECLS
-
 
 #ifdef ENABLE_NLS
+
+#include <libintl.h>
 
 #define _(String) moo_gettext (String)
 #define Q_(String) g_strip_context ((String), moo_gettext (String))
@@ -54,10 +52,11 @@ G_BEGIN_DECLS
 #endif /* !ENABLE_NLS */
 
 
+G_BEGIN_DECLS
+
 const char *moo_gettext (const char *string);
 const char *_moo_gsv_gettext (const char *string);
 char *_moo_gsv_dgettext (const char *domain, const char *string);
-
 
 G_END_DECLS
 
