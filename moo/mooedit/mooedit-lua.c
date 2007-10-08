@@ -13,8 +13,10 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-lua.h"
 #include "mooedit/mooedit-private.h"
+#include "mooutils/moohistorycombo.h"
 #include <string.h>
 #include <glib/gprintf.h>
+#include <gtk/gtk.h>
 
 #define VAR_WINDOW       "window"
 #define VAR_DOC          "doc"
@@ -33,7 +35,7 @@ typedef struct {
 static gpointer data_key;
 
 static void add_text_api    (lua_State *L);
-static void add_editor_api  (lua_State *L);
+static void add_medit_api   (lua_State *L);
 
 static void
 unset_data (lua_State *L)
@@ -64,7 +66,7 @@ _moo_edit_lua_add_api (lua_State *L)
 {
     g_return_if_fail (L != NULL);
     add_text_api (L);
-    add_editor_api (L);
+    add_medit_api (L);
 }
 
 
@@ -747,22 +749,20 @@ add_text_api (lua_State *L)
 
 
 /******************************************************************/
-/* editor API
+/* medit module
  */
 
 static int
 cfunc_open (lua_State *L)
 {
-    gpointer doc;
     MooEdit *new_doc;
     MooEditor *editor;
     MooEditWindow *window;
     const char *filename;
     GET_DATA ();
 
-    parse_args (L, "Open", "s", &filename);
+    parse_args (L, "medit.open", "s", &filename);
 
-    doc = data->doc;
     editor = MOO_IS_EDIT (data->doc) ? MOO_EDIT(data->doc)->priv->editor : moo_editor_instance ();
     g_return_val_if_fail (MOO_IS_EDITOR (editor), 0);
 
@@ -772,8 +772,69 @@ cfunc_open (lua_State *L)
     L_RETURN_BOOL (new_doc != NULL);
 }
 
-static void
-add_editor_api (lua_State *L)
+static int
+zfunc_history_entry (lua_State *L)
 {
-    lua_register (L, "Open", cfunc_open);
+    int response;
+    const char *dialog_text = NULL, *entry_text = NULL, *user_id = NULL;
+    GtkWidget *dialog, *entry;
+
+    GET_DATA ();
+    parse_args (L, "medit.entry", "|zzz", &entry_text, &user_id, &dialog_text);
+
+    dialog = gtk_dialog_new_with_buttons (NULL,
+                                          data->window ? GTK_WINDOW (data->window) : NULL,
+                                          GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR,
+                                          GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                          GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                          NULL);
+    gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
+
+    if (dialog_text)
+    {
+        GtkWidget *label;
+        label = gtk_label_new (dialog_text);
+        gtk_widget_show (label);
+        gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), label, FALSE, FALSE, 0);
+    }
+
+    entry = moo_history_combo_new (user_id);
+    moo_combo_set_use_button (MOO_COMBO (entry), FALSE);
+    gtk_widget_show (entry);
+    moo_combo_entry_set_text (MOO_COMBO (entry), entry_text ? entry_text : "");
+    moo_combo_entry_set_activates_default (MOO_COMBO (entry), TRUE);
+    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), entry, FALSE, FALSE, 0);
+
+    response = gtk_dialog_run (GTK_DIALOG (dialog));
+
+    if (response == GTK_RESPONSE_OK)
+    {
+        const char *text = moo_combo_entry_get_text (MOO_COMBO (entry));
+
+        if (text[0])
+            moo_history_combo_commit (MOO_HISTORY_COMBO (entry));
+
+        lua_pushstring (L, text);
+    }
+    else
+    {
+        lua_pushnil (L);
+    }
+
+    gtk_widget_destroy (dialog);
+
+    return 1;
+}
+
+
+static void
+add_medit_api (lua_State *L)
+{
+    static const struct luaL_reg meditlib[] = {
+        {"open", cfunc_open},
+        {"entry", zfunc_history_entry},
+        {NULL, NULL}
+    };
+
+    luaL_openlib (L, "medit", meditlib, 0);
 }
