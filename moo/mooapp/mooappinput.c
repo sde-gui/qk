@@ -536,14 +536,14 @@ try_connect (const char *filename,
 
     g_return_val_if_fail (filename != NULL, FALSE);
 
-    if (strlen (filename) + 1 > UNIX_PATH_MAX)
+    if (strlen (filename) + 1 > sizeof addr.sun_path)
     {
         g_critical ("%s: oops", G_STRLOC);
         return FALSE;
     }
 
     addr.sun_family = AF_UNIX;
-    strncpy (addr.sun_path, filename, strlen (filename) + 1);
+    strcpy (addr.sun_path, filename);
     fd = socket (PF_UNIX, SOCK_STREAM, 0);
 
     if (fd == -1)
@@ -585,14 +585,14 @@ input_channel_start (InputChannel *ch,
         return FALSE;
     }
 
-    if (strlen (ch->path) + 1 > UNIX_PATH_MAX)
+    if (strlen (ch->path) + 1 > sizeof addr.sun_path)
     {
         g_critical ("%s: oops", G_STRLOC);
         return FALSE;
     }
 
     addr.sun_family = AF_UNIX;
-    strncpy (addr.sun_path, ch->path, strlen (ch->path) + 1);
+    strcpy (addr.sun_path, ch->path);
 
     errno = 0;
 
