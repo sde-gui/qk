@@ -60,6 +60,13 @@
 
 #define SESSION_VERSION "1.0"
 
+#ifndef __WIN32__
+#define TMPL_RC_FILE    "%src"
+#else
+#define TMPL_RC_FILE    "%s.ini"
+#endif
+#define TMPL_STATE_FILE "%s.state"
+
 static MooApp *moo_app_instance = NULL;
 static MooAppInput *moo_app_input = NULL;
 
@@ -1914,8 +1921,8 @@ move_rc_files (MooApp *app)
         char *new_file;
         char *old_file;
 
-        new_file = g_strdup_printf ("%s/%src", g_get_user_config_dir (), g_get_prgname ());
-        old_file = g_strdup_printf ("%s/.%src", g_get_home_dir (), g_get_prgname ());
+        new_file = g_strdup_printf ("%s/" TMPL_RC_FILE, g_get_user_config_dir (), g_get_prgname ());
+        old_file = g_strdup_printf ("%s/." TMPL_RC_FILE, g_get_home_dir (), g_get_prgname ());
 
         if (!g_file_test (new_file, G_FILE_TEST_EXISTS) &&
             g_file_test (old_file, G_FILE_TEST_EXISTS) &&
@@ -1942,17 +1949,17 @@ move_rc_files (MooApp *app)
 
     {
         const char *new_file;
-        char *old_file = g_strdup_printf ("%s/.%s.state", g_get_home_dir (), g_get_prgname ());
+        char *old_file = g_strdup_printf ("%s/." TMPL_STATE_FILE, g_get_home_dir (), g_get_prgname ());
 
         if (app->priv->instance_name)
             app->priv->rc_files[MOO_PREFS_STATE] =
-                g_strdup_printf ("%s/%s.state.%s",
+                g_strdup_printf ("%s/" TMPL_STATE_FILE ".%s",
                                  cache_dir,
                                  g_get_prgname (),
                                  app->priv->instance_name);
         else
             app->priv->rc_files[MOO_PREFS_STATE] =
-                g_strdup_printf ("%s/%s.state",
+                g_strdup_printf ("%s/" TMPL_STATE_FILE,
                                  cache_dir,
                                  g_get_prgname ());
 
@@ -1974,25 +1981,57 @@ move_rc_files (MooApp *app)
 #endif
 
 
+static char **
+get_rc_files (void)
+{
+    char *prefix;
+    char *var;
+    const char *value;
+    char **files = NULL;
+
+    prefix = g_ascii_strup (g_get_prgname (), -1);
+    var = g_strdup_printf ("%s_RC_FILES", prefix);
+    value = g_getenv (var);
+
+    if (value && value[0])
+    {
+        files = g_strsplit (value, G_SEARCHPATH_SEPARATOR_S, 0);
+    }
+    else
+    {
+        char *tmpl = g_strdup_printf (TMPL_RC_FILE, g_get_prgname ());
+        files = moo_get_data_files (tmpl, MOO_DATA_SHARE, NULL);
+        g_free (tmpl);
+    }
+
+    g_free (var);
+    g_free (prefix);
+    return files;
+}
+
 static void
 moo_app_load_prefs (MooApp *app)
 {
     GError *error = NULL;
+    char **sys_files;
 
 #ifndef __WIN32__
     move_rc_files (app);
 #else
     app->priv->rc_files[MOO_PREFS_RC] =
-        g_strdup_printf ("%s/%s.ini", g_get_user_config_dir (), g_get_prgname ());
+        g_strdup_printf ("%s/" TMPL_RC_FILE, g_get_user_config_dir (), g_get_prgname ());
     app->priv->rc_files[MOO_PREFS_STATE] =
-        g_strdup_printf ("%s/%s.state", g_get_user_config_dir (), g_get_prgname ());
+        g_strdup_printf ("%s/" TMPL_STATE_FILE, g_get_user_config_dir (), g_get_prgname ());
 #endif
 
-    if (!moo_prefs_load (app->priv->rc_files[MOO_PREFS_RC],
+    sys_files = get_rc_files ();
+
+    if (!moo_prefs_load (sys_files,
+                         app->priv->rc_files[MOO_PREFS_RC],
                          app->priv->rc_files[MOO_PREFS_STATE],
                          &error))
     {
-        g_warning ("%s: could not read config file", G_STRLOC);
+        g_warning ("%s: could not read config files", G_STRLOC);
 
         if (error)
         {
@@ -2000,6 +2039,8 @@ moo_app_load_prefs (MooApp *app)
             g_error_free (error);
         }
     }
+
+    g_strfreev (sys_files);
 }
 
 
@@ -2012,7 +2053,7 @@ moo_app_save_prefs (MooApp *app)
                          app->priv->rc_files[MOO_PREFS_STATE],
                          &error))
     {
-        g_warning ("%s: could not save config file", G_STRLOC);
+        g_warning ("%s: could not save config files", G_STRLOC);
 
         if (error)
         {

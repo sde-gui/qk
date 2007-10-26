@@ -1923,8 +1923,9 @@
   (c-name "moo_prefs_load")
   (return-type "gboolean")
   (parameters
-    '("const-char*" "file_rc")
-    '("const-char*" "file_state")
+    '("strv" "sys_files" (null-ok) (default "NULL"))
+    '("const-char*" "file_rc" (null-ok) (default "NULL"))
+    '("const-char*" "file_state" (null-ok) (default "NULL"))
     '("GError**" "error")
   )
 )

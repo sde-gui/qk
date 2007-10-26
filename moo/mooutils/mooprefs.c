@@ -25,6 +25,8 @@
 #define PREFS_ROOT "Prefs"
 /* #define DEBUG_READWRITE 1 */
 
+#define MOO_PREFS_SYS -1
+
 #define MOO_TYPE_PREFS              (_moo_prefs_get_type ())
 #define MOO_PREFS(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_PREFS, MooPrefs))
 #define MOO_PREFS_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_PREFS, MooPrefsClass))
@@ -59,6 +61,7 @@ typedef struct {
     GValue value;
     GValue default_value;
     guint  prefs_type : 1;
+    guint  overridden : 1;
 } PrefsItem;
 
 
@@ -70,7 +73,7 @@ static void          prefs_new_key      (MooPrefs       *prefs,
 static void          prefs_new_key_from_string (MooPrefs *prefs,
                                          const char     *key,
                                          const char     *value,
-                                         MooPrefsType    prefs_type);
+                                         int             prefs_type);
 static void          prefs_delete_key   (MooPrefs       *prefs,
                                          const char     *key);
 static GType         prefs_get_key_type (MooPrefs       *prefs,
@@ -109,7 +112,7 @@ static gboolean      item_set_default   (PrefsItem      *item,
 static void          moo_prefs_finalize (GObject        *object);
 static void          moo_prefs_new_key_from_string (const char *key,
                                          const char     *value,
-                                         MooPrefsType    prefs_type);
+                                         int             prefs_type);
 
 static void          moo_prefs_set_modified (gboolean    modified);
 
@@ -352,7 +355,7 @@ moo_prefs_delete_key (const char     *key)
 static void
 moo_prefs_new_key_from_string (const char     *key,
                                const char     *value,
-                               MooPrefsType    prefs_type)
+                               int             prefs_type)
 {
     g_return_if_fail (key != NULL);
     g_return_if_fail (value != NULL);
@@ -441,10 +444,11 @@ prefs_new_key (MooPrefs       *prefs,
     {
         changed = item_set_type (item, type);
 
-        if (item_set_default (item, default_value))
+        if (!item->overridden && item_set_default (item, default_value))
             changed = TRUE;
 
-        if (item->prefs_type == MOO_PREFS_RC &&
+        if (!item->overridden &&
+            item->prefs_type == MOO_PREFS_RC &&
             item->prefs_type != prefs_type)
                 moo_prefs_set_modified (TRUE);
 
@@ -460,7 +464,7 @@ static void
 prefs_new_key_from_string (MooPrefs     *prefs,
                            const char   *key,
                            const char   *value,
-                           MooPrefsType  prefs_type)
+                           int           prefs_type)
 {
     PrefsItem *item;
     GValue val, default_val;
@@ -476,16 +480,30 @@ prefs_new_key_from_string (MooPrefs     *prefs,
     default_val.g_type = 0;
     g_value_init (&default_val, G_TYPE_STRING);
 
+    if (prefs_type == MOO_PREFS_SYS)
+        g_value_set_static_string (&default_val, value);
+
     if (!item)
     {
-        prefs_new_key (prefs, key, G_TYPE_STRING, &default_val, prefs_type);
+        prefs_new_key (prefs, key, G_TYPE_STRING, &default_val,
+                       prefs_type == MOO_PREFS_SYS ? MOO_PREFS_RC : prefs_type);
         item = prefs_get_item (prefs, key);
         item_set (item, &val);
+
+        if (prefs_type == MOO_PREFS_SYS)
+            item->overridden = TRUE;
     }
     else
     {
         _moo_value_convert (&val, &item->value);
-        item->prefs_type = prefs_type;
+
+        if (prefs_type == MOO_PREFS_SYS)
+        {
+            _moo_value_convert (&default_val, &item->default_value);
+            item->overridden = TRUE;
+        }
+        else
+            item->prefs_type = prefs_type;
     }
 
     g_value_unset (&val);
@@ -998,7 +1016,7 @@ moo_prefs_notify_disconnect (guint id)
 
 static void
 process_element (MooMarkupElement *elm,
-                 MooPrefsType      prefs_type)
+                 int               prefs_type)
 {
     MooMarkupNode *child;
     gboolean dir = FALSE;
@@ -1020,7 +1038,8 @@ process_element (MooMarkupElement *elm,
 
         path = moo_markup_element_get_path (elm);
 
-        if (strlen (path) < strlen (PREFS_ROOT) + 2)
+        if (strncmp (path, PREFS_ROOT "/", strlen (PREFS_ROOT "/")) != 0 ||
+            strlen (path) < strlen (PREFS_ROOT) + 2)
         {
             g_free (path);
             g_return_if_reached ();
@@ -1047,7 +1066,7 @@ process_element (MooMarkupElement *elm,
 
 static gboolean
 load_file (const char  *file,
-           MooPrefsType prefs_type,
+           int          prefs_type,
            GError     **error)
 {
     MooMarkupDoc *xml;
@@ -1065,6 +1084,11 @@ load_file (const char  *file,
         case MOO_PREFS_STATE:
             target = &prefs->xml_state;
             break;
+        case MOO_PREFS_SYS:
+            target = NULL;
+            break;
+        default:
+            g_assert_not_reached ();
     }
 
     if (!g_file_test (file, G_FILE_TEST_EXISTS))
@@ -1075,13 +1099,16 @@ load_file (const char  *file,
     if (!xml)
         return FALSE;
 
-    if (*target)
+    if (target)
     {
-        g_warning ("%s: implement me", G_STRLOC);
-        moo_markup_doc_unref (*target);
-    }
+        if (*target)
+        {
+            g_warning ("%s: implement me", G_STRLOC);
+            moo_markup_doc_unref (*target);
+        }
 
-    *target = xml;
+        *target = moo_markup_doc_ref (xml);
+    }
 
     if (prefs_type != MOO_PREFS_STATE)
     {
@@ -1091,27 +1118,33 @@ load_file (const char  *file,
 
     root = moo_markup_get_root_element (xml, PREFS_ROOT);
 
-    if (!root)
-        return TRUE;
+    if (root)
+        process_element (MOO_MARKUP_ELEMENT (root), prefs_type);
 
-    process_element (MOO_MARKUP_ELEMENT (root), prefs_type);
-
+    moo_markup_doc_unref (xml);
     return TRUE;
 }
 
 
 gboolean
-moo_prefs_load (const char     *file_rc,
+moo_prefs_load (char          **sys_files,
+                const char     *file_rc,
                 const char     *file_state,
                 GError        **error)
 {
-    g_return_val_if_fail (file_rc != NULL, FALSE);
-    g_return_val_if_fail (file_state != NULL, FALSE);
-
     moo_prefs_set_modified (FALSE);
 
-    return load_file (file_rc, MOO_PREFS_RC, error) &&
-           load_file (file_state, MOO_PREFS_STATE, error);
+    for (; sys_files && *sys_files; ++sys_files)
+        if (!load_file (*sys_files, MOO_PREFS_SYS, error))
+            return FALSE;
+
+    if (file_rc && !load_file (file_rc, MOO_PREFS_RC, error))
+        return FALSE;
+
+    if (file_state && !load_file (file_state, MOO_PREFS_STATE, error))
+        return FALSE;
+
+    return TRUE;
 }
 
 

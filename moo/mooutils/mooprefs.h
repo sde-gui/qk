@@ -47,7 +47,8 @@ typedef enum {
 GType           moo_prefs_type_get_type (void) G_GNUC_CONST;
 GType           moo_prefs_match_type_get_type (void) G_GNUC_CONST;
 
-gboolean        moo_prefs_load          (const char     *file_rc,
+gboolean        moo_prefs_load          (char          **sys_files,
+                                         const char     *file_rc,
                                          const char     *file_state,
                                          GError        **error);
 gboolean        moo_prefs_save          (const char     *file_rc,
