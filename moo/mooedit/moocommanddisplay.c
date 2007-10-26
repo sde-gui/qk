@@ -77,10 +77,13 @@ combo_changed (MooCommandDisplay *display)
     if (index == display->active)
         return;
 
-    widget = gtk_notebook_get_nth_page (display->notebook, display->active);
-    if (_moo_command_factory_save_data (display->data[display->active].factory, widget,
-                                        display->data[display->active].data))
-        display->data[display->active].changed = TRUE;
+    if (display->active >= 0)
+    {
+        widget = gtk_notebook_get_nth_page (display->notebook, display->active);
+        if (_moo_command_factory_save_data (display->data[display->active].factory, widget,
+                                            display->data[display->active].data))
+            display->data[display->active].changed = TRUE;
+    }
 
     display->active = index;
     factory = display->data[index].factory;
