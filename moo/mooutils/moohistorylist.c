@@ -686,7 +686,8 @@ moo_history_list_new (const char *user_id)
 
     list = g_object_new (MOO_TYPE_HISTORY_LIST,
                          "user-id", user_id, NULL);
-    add_named_list (user_id, list);
+    if (user_id)
+        add_named_list (user_id, list);
 
     return list;
 }
