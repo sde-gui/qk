@@ -43,6 +43,7 @@ struct _MooHistoryListPrivate {
     gboolean allow_empty;
 };
 
+static GHashTable *named_lists;
 
 static void     moo_history_list_class_init     (MooHistoryListClass *klass);
 static void     moo_history_list_init           (MooHistoryList     *list);
@@ -662,11 +663,54 @@ moo_history_list_set_max_entries (MooHistoryList *list,
 }
 
 
-MooHistoryList*
+static void
+add_named_list (const char     *user_id,
+                MooHistoryList *list)
+{
+    if (!named_lists)
+        named_lists = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                             g_free, g_object_unref);
+    g_hash_table_insert (named_lists, g_strdup (user_id), g_object_ref (list));
+}
+
+MooHistoryList *
 moo_history_list_new (const char *user_id)
 {
-    return g_object_new (MOO_TYPE_HISTORY_LIST,
+    MooHistoryList *list;
+
+    if (user_id && named_lists)
+    {
+        list = g_hash_table_lookup (named_lists, user_id);
+        g_return_val_if_fail (list == NULL, NULL);
+    }
+
+    list = g_object_new (MOO_TYPE_HISTORY_LIST,
                          "user-id", user_id, NULL);
+    add_named_list (user_id, list);
+
+    return list;
+}
+
+MooHistoryList *
+moo_history_list_get (const char *user_id)
+{
+    MooHistoryList *list;
+
+    g_return_val_if_fail (user_id != NULL, NULL);
+
+    if (!named_lists)
+        named_lists = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                             g_free, g_object_unref);
+
+    list = g_hash_table_lookup (named_lists, user_id);
+
+    if (!list)
+    {
+        list = moo_history_list_new (user_id);
+        g_object_unref (list);
+    }
+
+    return list;
 }
 
 

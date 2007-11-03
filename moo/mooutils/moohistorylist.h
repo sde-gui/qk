@@ -68,6 +68,7 @@ GType            moo_history_list_get_type          (void) G_GNUC_CONST;
 GType            moo_history_item_get_type          (void) G_GNUC_CONST;
 
 MooHistoryList  *moo_history_list_new               (const char     *user_id);
+MooHistoryList  *moo_history_list_get               (const char     *user_id);
 
 GtkTreeModel    *moo_history_list_get_model         (MooHistoryList *list);
 
