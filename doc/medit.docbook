@@ -15,9 +15,15 @@
 <title>&app; manual</title>
 </articleinfo>
 
-<section id="sect-getting-started">
+<!--<section id="xxx-getting-started">
 <title>Getting Started</title>
+
+<section id="xxx-medit-command-line">
+<title>Starting &app; from Command Line</title>
+<para></para>
 </section>
+
+</section>-->
 
 &editor-sections;
 &license;

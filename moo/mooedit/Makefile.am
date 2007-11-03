@@ -5,6 +5,7 @@ mooedit_tools_DATA = context.cfg menu.cfg filters.xml
 
 moolangmgr-private.lo: moolangmgr.lo
 mootextview-private.lo: mootextview.lo
+mooedit-private.lo: mooedit.lo
 
 lua_sources =				\
 	moocommand-lua.c		\

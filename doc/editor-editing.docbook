@@ -2,13 +2,13 @@
 <section id="sect-editing-text">
 <title>Editing text</title>
 
-<section id="dialog-replace">
-<title>dialog-replace</title>
+<section id="dialog-find">
+<title>dialog-find</title>
 blah blah blah
 </section>
 
-<section id="dialog-find">
-<title>dialog-find</title>
+<section id="dialog-replace">
+<title>dialog-replace</title>
 blah blah blah
 </section>
 

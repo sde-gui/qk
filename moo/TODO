@@ -9,6 +9,8 @@ Editor
 2. File saving: permissions, backups, symlinks.
 3. moo_editor_save_tmp(), moo_editor_save_fake() ?
 
+Disable languages
+
 
 Terminal
 ========
