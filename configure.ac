@@ -61,6 +61,7 @@ moo/mooedit/gtksourceview/Makefile
 moo/mooedit/gtksourceview/upstream/Makefile
 moo/mooedit/plugins/Makefile
 moo/mooedit/plugins/ctags/Makefile
+moo/mooedit/plugins/project/Makefile
 moo/mooapp/Makefile
 moo/mooapp/smclient/Makefile
 moo/moopython/Makefile

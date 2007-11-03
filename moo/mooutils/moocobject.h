@@ -62,6 +62,12 @@ void    moo_objc_push_autorelease_pool  (void);
 void    moo_objc_pop_autorelease_pool   (void);
 
 
+gulong  moo_objc_signal_connect         (gpointer    instance,
+                                         const char *signal,
+                                         MooCObject *target,
+                                         SEL         sel);
+
+
 #ifdef CSTR
 #warning "CSTR defined"
 #endif

@@ -14,8 +14,14 @@ AC_DEFUN_ONCE([MOO_AC_OBJC],[
   if test "x$MOO_USE_OBJC" != "xno"; then
     _MOO_OBJC_CHECK([
       MOO_USE_OBJC=yes
+      MOO_OBJC_LIBS="$MOO_FFI_LIBS $MOO_OBJC_LIBS"
       AC_DEFINE(MOO_USE_OBJC, 1, [Use Objective-C.])
       AC_MSG_NOTICE([Objective-C flags: $MOO_OBJCFLAGS $MOO_OBJC_LIBS])
+
+      AC_LANG_SAVE
+      AC_LANG_OBJC
+      AC_CHECK_SIZEOF(BOOL,,[#include <objc/objc.h>])
+      AC_LANG_RESTORE
     ],[
       MOO_USE_OBJC=no
       MOO_OBJCFLAGS=
@@ -86,7 +92,7 @@ AC_DEFUN([_MOO_OBJC_CHECK_RUNTIME],[
 
   AC_LANG_SAVE
   AC_LANG([Objective C])
-  save_LIBS=$LIBS
+  save_LIBS="$LIBS"
   LIBS="-lobjc $LIBS"
 
   AC_LINK_IFELSE([AC_LANG_PROGRAM(
@@ -117,15 +123,42 @@ AC_DEFUN([_MOO_OBJC_CHECK_RUNTIME],[
   AC_LANG_RESTORE
 ])
 
+AC_DEFUN([_MOO_CHECK_FFI],[
+  AC_MSG_CHECKING(FFI library)
+
+  MOO_FFI_LIBS="-lffi"
+  save_LIBS="$LIBS"
+  LIBS="$LIBS $MOO_FFI_LIBS"
+
+  AC_LINK_IFELSE([AC_LANG_PROGRAM(
+  [#include <ffi.h>],
+  [ffi_call (0, 0, 0, 0);])],
+  [
+    AC_MSG_RESULT(yes)
+    $1
+  ],[
+    AC_MSG_RESULT(no)
+    $2
+  ])
+
+  LIBS="$save_LIBS"
+])
+
 AC_DEFUN([_MOO_OBJC_CHECK],[
   MOO_OBJC_LIBS=
   MOO_OBJCFLAGS=
 
-  _MOO_OBJC_CHECK_RUNTIME([
-    MOO_OBJC_USE_FOUNDATION=no
-    dnl _MOO_OBJC_CHECK_FOUNDATION
-    $1
+  _MOO_CHECK_FFI([
+    _MOO_OBJC_CHECK_RUNTIME([
+      MOO_OBJC_USE_FOUNDATION=no
+      dnl _MOO_OBJC_CHECK_FOUNDATION
+      $1
+    ],[
+      :
+      $2
+    ])
   ],[
+    :
     $2
   ])
 ])

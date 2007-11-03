@@ -132,8 +132,11 @@ mooobjc.lo: mooutils-fli.lo
 moopython.lo: mooutils-fli.lo
 
 objc_sources =				\
+	moocobject-private.h		\
 	moocobject.h			\
-	moocobject.m
+	moocobject.m			\
+	mooobjcmarshal.h		\
+	mooobjcmarshal.m
 
 if MOO_USE_OBJC
 mooutils_sources += $(objc_sources)

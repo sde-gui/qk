@@ -1,8 +1,11 @@
-DIST_SUBDIRS = ctags
+DIST_SUBDIRS = ctags project
 SUBDIRS =
 
 if MOO_BUILD_CTAGS
 SUBDIRS += ctags
+endif
+if MOO_USE_OBJC
+SUBDIRS += project
 endif
 
 noinst_LTLIBRARIES =
@@ -53,6 +56,9 @@ libmooeditplugins_la_LIBADD = libfileselector.la
 
 if MOO_BUILD_CTAGS
 libmooeditplugins_la_LIBADD += ctags/libctags.la
+endif
+if MOO_USE_OBJC
+libmooeditplugins_la_LIBADD += project/libproject.la
 endif
 
 libmooeditplugins_la_SOURCES =	\

@@ -26,6 +26,7 @@ gboolean _moo_ctags_plugin_init             (void);
 gboolean _moo_active_strings_plugin_init    (void);
 gboolean _moo_completion_plugin_init        (void);
 gboolean _moo_file_selector_plugin_init     (void);
+gboolean _moo_project_plugin_init           (void);
 
 
 G_END_DECLS
