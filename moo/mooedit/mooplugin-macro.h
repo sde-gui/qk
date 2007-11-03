@@ -55,11 +55,11 @@ name__##_plugin_class_init (MooPluginClass *klass)                          \
                                                                             \
     klass->init = (MooPluginInitFunc) name__##_plugin_init;                 \
     klass->deinit = (MooPluginDeinitFunc) name__##_plugin_deinit;           \
-    klass->attach_win = (MooPluginAttachWinFunc) attach_win__;              \
-    klass->detach_win = (MooPluginDetachWinFunc) detach_win__;              \
-    klass->attach_doc = (MooPluginAttachDocFunc) attach_doc__;              \
-    klass->detach_doc = (MooPluginDetachDocFunc) detach_doc__;              \
-    klass->create_prefs_page = (MooPluginPrefsPageFunc) prefs_page_func__;  \
+    klass->attach_win = attach_win__;                                       \
+    klass->detach_win = detach_win__;                                       \
+    klass->attach_doc = attach_doc__;                                       \
+    klass->detach_doc = detach_doc__;                                       \
+    klass->create_prefs_page = prefs_page_func__;                           \
 }                                                                           \
                                                                             \
 static void                                                                 \

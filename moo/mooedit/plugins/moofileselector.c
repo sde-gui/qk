@@ -57,6 +57,7 @@ typedef struct {
 } FileSelectorPlugin;
 
 #define Plugin FileSelectorPlugin
+#define FILE_SELECTOR_PLUGIN(mpl) ((FileSelectorPlugin*)mpl)
 
 
 enum {
@@ -1436,11 +1437,12 @@ file_selector_plugin_deinit (Plugin *plugin)
 
 
 static void
-file_selector_plugin_attach (Plugin        *plugin,
+file_selector_plugin_attach (MooPlugin     *mplugin,
                              MooEditWindow *window)
 {
     MooEditor *editor;
     GtkWidget *filesel;
+    Plugin *plugin = FILE_SELECTOR_PLUGIN (mplugin);
 
     editor = moo_edit_window_get_editor (window);
 
@@ -1459,11 +1461,14 @@ file_selector_plugin_attach (Plugin        *plugin,
 
 
 static void
-file_selector_plugin_detach (Plugin        *plugin,
+file_selector_plugin_detach (MooPlugin     *mplugin,
                              MooEditWindow *window)
 {
+    Plugin *plugin = FILE_SELECTOR_PLUGIN (mplugin);
     GtkWidget *filesel = moo_edit_window_get_pane (window, MOO_FILE_SELECTOR_PLUGIN_ID);
+
     g_return_if_fail (filesel != NULL);
+
     plugin->instances = g_slist_remove (plugin->instances, filesel);
     moo_edit_window_remove_pane (window, MOO_FILE_SELECTOR_PLUGIN_ID);
 }
