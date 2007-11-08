@@ -24,7 +24,7 @@ moo/mooedit/glade/statusbar.glade
 moo/mooedit/medit-ui.xml
 moo/mooedit/mooedit-ui.xml
 moo/mooedit/mooeditor.c
-moo/mooedit/moocommand-exe-unix.c
+moo/mooedit/moocommand-unx.c
 moo/mooedit/moocommand-lua.c
 moo/mooedit/mooeditdialogs.c
 moo/mooedit/mooeditwindow.c

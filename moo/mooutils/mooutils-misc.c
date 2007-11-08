@@ -1042,6 +1042,23 @@ _moo_get_modifiers (GtkWidget *widget)
 /* GtkAccelLabel helpers
  */
 
+static void
+accel_label_set_string (GtkWidget  *accel_label,
+                        const char *label)
+{
+    g_return_if_fail (GTK_IS_ACCEL_LABEL (accel_label));
+    g_free (GTK_ACCEL_LABEL(accel_label)->accel_string);
+    GTK_ACCEL_LABEL(accel_label)->accel_string = g_strdup (label);
+    gtk_widget_queue_resize (accel_label);
+}
+
+static void
+accel_label_screen_changed (GtkWidget  *accel_label)
+{
+    const char *label = g_object_get_data (G_OBJECT (accel_label), "moo-accel-label-accel");
+    accel_label_set_string (accel_label, label);
+}
+
 void
 _moo_menu_item_set_accel_label (GtkWidget  *menu_item,
                                 const char *label)
@@ -1056,10 +1073,11 @@ _moo_menu_item_set_accel_label (GtkWidget  *menu_item,
     accel_label = gtk_bin_get_child (GTK_BIN (menu_item));
     g_return_if_fail (GTK_IS_ACCEL_LABEL (accel_label));
 
-    g_free (GTK_ACCEL_LABEL(accel_label)->accel_string);
-    GTK_ACCEL_LABEL(accel_label)->accel_string = g_strdup (label);
-
-    gtk_widget_queue_resize (accel_label);
+    g_signal_connect_after (accel_label, "screen-changed",
+                            G_CALLBACK (accel_label_screen_changed), NULL);
+    g_object_set_data_full (G_OBJECT (accel_label), "moo-accel-label-accel",
+                            g_strdup (label), g_free);
+    accel_label_set_string (accel_label, label);
 }
 
 
