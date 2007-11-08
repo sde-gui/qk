@@ -170,7 +170,8 @@ _moo_edit_filter_free (MooEditFilter *filter)
                 g_slist_free (filter->u.langs);
                 break;
             case MOO_EDIT_FILTER_REGEX:
-                g_regex_unref (filter->u.regex);
+                if (filter->u.regex)
+                    g_regex_unref (filter->u.regex);
                 break;
         }
 
@@ -273,7 +274,8 @@ filter_setting_free (FilterSetting *setting)
     if (setting)
     {
         g_free (setting->config);
-        g_regex_unref (setting->regex);
+        if (setting->regex)
+            g_regex_unref (setting->regex);
         g_free (setting);
     }
 }
@@ -284,14 +286,20 @@ filter_setting_new (const char *filter,
                     const char *config)
 {
     FilterSetting *setting;
+    GError *error = NULL;
+
+    g_return_val_if_fail (filter != NULL, NULL);
+    g_return_val_if_fail (config != NULL, NULL);
 
     setting = g_new0 (FilterSetting, 1);
 
-    setting->regex = g_regex_new (filter, G_REGEX_DOTALL | G_REGEX_OPTIMIZE, 0, NULL);
+    setting->regex = g_regex_new (filter, G_REGEX_DOTALL | G_REGEX_OPTIMIZE, 0, &error);
     setting->config = g_strdup (config);
 
-    if (!setting->regex || !setting->config)
+    if (!setting->regex)
     {
+        g_warning ("%s: %s", G_STRLOC, error->message);
+        g_error_free (error);
         filter_setting_free (setting);
         setting = NULL;
     }
