@@ -9,6 +9,15 @@
 #include <windows.h>
 #include "lua.h"
 
+#define spawn_param_init _moo_lua_ex_spawn_param_init
+#define spawn_param_filename _moo_lua_ex_spawn_param_filename
+#define spawn_param_args _moo_lua_ex_spawn_param_args
+#define spawn_param_env _moo_lua_ex_spawn_param_env
+#define spawn_param_redirect _moo_lua_ex_spawn_param_redirect
+#define spawn_param_execute _moo_lua_ex_spawn_param_execute
+#define process_wait _moo_lua_ex_process_wait
+#define process_tostring _moo_lua_ex_process_tostring
+
 #define PROCESS_HANDLE "process"
 struct process;
 struct spawn_params;

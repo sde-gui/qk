@@ -490,7 +490,7 @@ struct _stat_members {
 	_push_function push;
 };
 
-struct _stat_members members[] = {
+static struct _stat_members members[] = {
 	{ "mode",         push_st_mode },
 	{ "dev",          push_st_dev },
 	{ "ino",          push_st_ino },
