@@ -4,13 +4,14 @@
  * Copyright 2007 Mark Edgar < medgar at student gc maricopa edu >
  */
 #include <unistd.h>
-ENVIRON_DECL
 #include <sys/wait.h>
 #if MISSING_POSIX_SPAWN
 #include "posix_spawn.h"
 #else
 #include <spawn.h>
 #endif
+
+#include <mooutils/moo-environ.h>
 
 #include "lua.h"
 #include "lauxlib.h"

@@ -8,9 +8,10 @@
 #include <errno.h>
 
 #include <unistd.h>
-ENVIRON_DECL
 #include <limits.h>
 #include <sys/types.h>
+
+#include <mooutils/moo-environ.h>
 
 #include "posix_spawn.h"
 

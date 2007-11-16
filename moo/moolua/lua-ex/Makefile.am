@@ -45,6 +45,6 @@ liblua_ex_posix_la_SOURCES += $(posix_spawn_sources)
 endif !HAVE_POSIX_SPAWN
 endif !MOO_OS_MINGW
 
-common_cflags = -I$(srcdir)/..
+common_cflags = -I$(srcdir)/.. -I$(srcdir)/../..
 liblua_ex_posix_la_CPPFLAGS = $(posix_cflags) $(common_cflags)
 liblua_ex_win32_la_CPPFLAGS = $(win32_cflags) $(common_cflags)

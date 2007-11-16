@@ -10,11 +10,12 @@
 #include <string.h>
 
 #include <unistd.h>
-ENVIRON_DECL
 #include <dirent.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <limits.h>
+
+#include <mooutils/moo-environ.h>
 
 #include "lua.h"
 #include "lualib.h"

@@ -27,6 +27,7 @@
 #include "config.h"
 #endif
 #include "mooutils/moocompat.h"
+#include "mooutils/moo-environ.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -587,16 +588,6 @@ g_utf8_collate_key_for_filename (const gchar *str,
   return g_string_free (result, FALSE);
 }
 
-
-#ifdef HAVE__NSGETENVIRON
-#define environ (*_NSGetEnviron())
-#elif !defined(G_OS_WIN32)
-
-/* According to the Single Unix Specification, environ is not in
- * any system header, although unistd.h often declares it.
- */
-extern char **environ;
-#endif
 
 gchar **
 g_listenv (void)

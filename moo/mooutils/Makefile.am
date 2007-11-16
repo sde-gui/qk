@@ -86,6 +86,7 @@ mooutils_sources =			\
 	mooencodings.h			\
 	mooencodings-data.h		\
 	mooentry.c			\
+	moo-environ.h			\
 	moofiledialog.c			\
 	moofilewatch.c			\
 	moofilewatch.h			\
