@@ -914,33 +914,6 @@ popup_move_selection (MooCombo     *combo,
 }
 
 
-static void
-popup_select_iter (MooCombo     *combo,
-                   GtkTreeIter  *iter)
-{
-    char *text;
-
-    text = moo_combo_get_text_at_iter (combo, iter);
-    g_return_if_fail (text != NULL);
-
-    g_signal_handlers_block_by_func (combo->entry,
-                                     (gpointer) entry_changed, combo);
-    moo_entry_begin_undo_group (MOO_ENTRY (combo->entry));
-
-    moo_combo_popdown (combo);
-    gtk_entry_set_text (GTK_ENTRY (combo->entry), text);
-    gtk_editable_set_position (GTK_EDITABLE (combo->entry), -1);
-
-    moo_entry_end_undo_group (MOO_ENTRY (combo->entry));
-    g_signal_handlers_unblock_by_func (combo->entry,
-                                       (gpointer) entry_changed, combo);
-
-    moo_combo_set_active_iter (combo, iter);
-
-    g_free (text);
-}
-
-
 char*
 moo_combo_get_text_at_iter (MooCombo       *combo,
                             GtkTreeIter    *iter)
@@ -964,7 +937,7 @@ popup_return_key (MooCombo *combo)
     GtkTreeSelection *selection = gtk_tree_view_get_selection (treeview);
 
     if (gtk_tree_selection_get_selected (selection, NULL, &iter))
-        popup_select_iter (combo, &iter);
+        moo_combo_set_active_iter (combo, &iter);
     else
         moo_combo_popdown (combo);
 
@@ -1033,8 +1006,7 @@ list_button_press (MooCombo       *combo,
              !combo->priv->row_separator_func (combo->priv->model, &iter,
                                                combo->priv->row_separator_data))
         {
-            popup_select_iter (combo, &iter);
-            moo_combo_popdown (combo);
+            moo_combo_set_active_iter (combo, &iter);
             gtk_tree_path_free (path);
             return TRUE;
         }
@@ -1350,6 +1322,7 @@ moo_combo_set_active_iter (MooCombo       *combo,
                            GtkTreeIter    *iter)
 {
     GtkTreePath *path;
+    char *text;
 
     g_return_if_fail (MOO_IS_COMBO (combo));
     g_return_if_fail (combo->priv->model != NULL && iter != NULL);
@@ -1367,9 +1340,39 @@ moo_combo_set_active_iter (MooCombo       *combo,
         g_return_if_reached ();
     }
 
+    text = moo_combo_get_text_at_iter (combo, iter);
+    g_return_if_fail (text != NULL);
+
+    g_signal_handlers_block_by_func (combo->entry,
+                                     (gpointer) entry_changed, combo);
+    moo_entry_begin_undo_group (MOO_ENTRY (combo->entry));
+
+    moo_combo_popdown (combo);
+    gtk_entry_set_text (GTK_ENTRY (combo->entry), text);
+    gtk_editable_set_position (GTK_EDITABLE (combo->entry), -1);
+
+    moo_entry_end_undo_group (MOO_ENTRY (combo->entry));
+    g_signal_handlers_unblock_by_func (combo->entry,
+                                       (gpointer) entry_changed, combo);
+
     moo_combo_changed (combo);
 
     gtk_tree_path_free (path);
+    g_free (text);
+}
+
+void
+moo_combo_set_active (MooCombo *combo,
+                      int       row)
+{
+    GtkTreeIter iter;
+
+    g_return_if_fail (MOO_IS_COMBO (combo));
+    g_return_if_fail (row >= 0);
+    g_return_if_fail (combo->priv->model != NULL);
+
+    if (gtk_tree_model_iter_nth_child (combo->priv->model, &iter, NULL, row))
+        moo_combo_set_active_iter (combo, &iter);
 }
 
 

@@ -76,6 +76,8 @@ void            moo_combo_set_active_iter   (MooCombo       *combo,
                                              GtkTreeIter    *iter);
 gboolean        moo_combo_get_active_iter   (MooCombo       *combo,
                                              GtkTreeIter    *iter);
+void            moo_combo_set_active        (MooCombo       *combo,
+                                             int             row);
 
 GtkTreeModel   *moo_combo_get_model         (MooCombo       *combo);
 void            moo_combo_set_model         (MooCombo       *combo,
