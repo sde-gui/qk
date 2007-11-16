@@ -5,6 +5,11 @@
 # modified to allow actions if-found/if-not-found
 #
 AC_DEFUN([_MOO_AC_PYTHON_DEVEL],[
+  python_found=no
+
+  if test "$cross_compiling" = yes; then
+    test -z "$PYTHON_INCLUDES" || python_found=yes
+  else
     # Check for distutils first
     AC_MSG_CHECKING([for the distutils Python package])
     $PYTHON -c "import distutils" 2>/dev/null
@@ -17,81 +22,82 @@ AC_DEFUN([_MOO_AC_PYTHON_DEVEL],[
     	AC_MSG_WARN([cannot import Python module "distutils".
 Please check your Python installation.])
     fi
+  fi
 
-    # Check for Python include path
-    # if PYTHON_INCLUDES is set, do not do anything
-    if test $python_found = yes; then
-	AC_MSG_CHECKING([for Python include path])
+  # Check for Python include path
+  # if PYTHON_INCLUDES is set, do not do anything
+  if test $python_found = yes; then
+      AC_MSG_CHECKING([for Python include path])
 
-        if test -z "$PYTHON_INCLUDES"; then
-            python_path=`$PYTHON -c "import distutils.sysconfig; \
-                                     print distutils.sysconfig.get_python_inc();"`
-            if test -n "${python_path}"; then
-                python_path="-I$python_path"
-            fi
-            PYTHON_INCLUDES=$python_path
-        fi
+      if test -z "$PYTHON_INCLUDES"; then
+          python_path=`$PYTHON -c "import distutils.sysconfig; \
+                                   print distutils.sysconfig.get_python_inc();"`
+          if test -n "${python_path}"; then
+              python_path="-I$python_path"
+          fi
+          PYTHON_INCLUDES=$python_path
+      fi
 
-        AC_MSG_RESULT([$PYTHON_INCLUDES])
-	AC_SUBST([PYTHON_INCLUDES])
-    fi
+      AC_MSG_RESULT([$PYTHON_INCLUDES])
+      AC_SUBST([PYTHON_INCLUDES])
+  fi
 
-    # Check for Python linker flags
-    # if PYTHON_LIBS is set, do not do anything
-    if test $python_found = yes; then
-	AC_MSG_CHECKING([Python linker flags])
+  # Check for Python linker flags
+  # if PYTHON_LIBS is set, do not do anything
+  if test $python_found = yes; then
+      AC_MSG_CHECKING([Python linker flags])
 
-        if test "x$PYTHON_LIBS" = "x"; then
-            # (makes two attempts to ensure we've got a version number
-            # from the interpreter)
-            py_version=`$PYTHON -c "from distutils.sysconfig import *; \
-                        from string import join; \
-                        print join(get_config_vars('VERSION'))"`
-            if test "x$py_version" = "x[None]"; then
-                if test "x$PYTHON_VERSION" != "x"; then
-                    py_version=$PYTHON_VERSION
-                else
-                    py_version=`$PYTHON -c "import sys; \
-                                print sys.version[[:3]]"`
-                fi
-            fi
+      if test "x$PYTHON_LIBS" = "x"; then
+          # (makes two attempts to ensure we've got a version number
+          # from the interpreter)
+          py_version=`$PYTHON -c "from distutils.sysconfig import *; \
+                      from string import join; \
+                      print join(get_config_vars('VERSION'))"`
+          if test "x$py_version" = "x[None]"; then
+              if test "x$PYTHON_VERSION" != "x"; then
+                  py_version=$PYTHON_VERSION
+              else
+                  py_version=`$PYTHON -c "import sys; \
+                              print sys.version[[:3]]"`
+              fi
+          fi
 
-            PYTHON_LIBS=`$PYTHON -c "from distutils.sysconfig import *; \
-                                     from string import join; \
-                                     print '-L' + get_python_lib(0,1), \
-                                     '-lpython';"`$py_version
-        fi
+          PYTHON_LIBS=`$PYTHON -c "from distutils.sysconfig import *; \
+                                   from string import join; \
+                                   print '-L' + get_python_lib(0,1), \
+                                   '-lpython';"`$py_version
+      fi
 
-        AC_MSG_RESULT([$PYTHON_LIBS])
-	AC_SUBST([PYTHON_LIBS])
-    fi
+      AC_MSG_RESULT([$PYTHON_LIBS])
+      AC_SUBST([PYTHON_LIBS])
+  fi
 
-    # Check for Python extra linker flags
-    # if PYTHON_EXTRA_LIBS is set, do not do anything
-    if test $python_found = yes; then
+  # Check for Python extra linker flags
+  # if PYTHON_EXTRA_LIBS is set, do not do anything
+  if test $python_found = yes; then
 
-        if test "x$PYTHON_EXTRA_LIBS" = "x"; then
-            PYTHON_EXTRA_LIBS=`$PYTHON -c "import distutils.sysconfig; \
-                                           conf = distutils.sysconfig.get_config_var; \
-                                           print conf('LOCALMODLIBS'), conf('LIBS')"`
-            PYTHON_EXTRA_LDFLAGS=`$PYTHON -c "import distutils.sysconfig; \
-                                              conf = distutils.sysconfig.get_config_var; \
-                                              print conf('LDFLAGS')"`
-        fi
+      if test "x$PYTHON_EXTRA_LIBS" = "x"; then
+          PYTHON_EXTRA_LIBS=`$PYTHON -c "import distutils.sysconfig; \
+                                         conf = distutils.sysconfig.get_config_var; \
+                                         print conf('LOCALMODLIBS'), conf('LIBS')"`
+          PYTHON_EXTRA_LDFLAGS=`$PYTHON -c "import distutils.sysconfig; \
+                                            conf = distutils.sysconfig.get_config_var; \
+                                            print conf('LDFLAGS')"`
+      fi
 
-	AC_MSG_CHECKING([Python extra libs])
-        AC_MSG_RESULT([$PYTHON_EXTRA_LIBS])
-	AC_MSG_CHECKING([Python extra linker flags])
-        AC_MSG_RESULT([$PYTHON_EXTRA_LDFLAGS])
-	AC_SUBST([PYTHON_EXTRA_LIBS])
-	AC_SUBST([PYTHON_EXTRA_LDFLAGS])
-    fi
+      AC_MSG_CHECKING([Python extra libs])
+      AC_MSG_RESULT([$PYTHON_EXTRA_LIBS])
+      AC_MSG_CHECKING([Python extra linker flags])
+      AC_MSG_RESULT([$PYTHON_EXTRA_LDFLAGS])
+      AC_SUBST([PYTHON_EXTRA_LIBS])
+      AC_SUBST([PYTHON_EXTRA_LDFLAGS])
+  fi
 
-    if test $python_found = yes; then
-        m4_if([$1],[],[:],[$1])
-    else
-        m4_if([$2],[],[:],[$2])
-    fi
+  if test $python_found = yes; then
+      m4_if([$1],[],[:],[$1])
+  else
+      m4_if([$2],[],[:],[$2])
+  fi
 ])
 
 

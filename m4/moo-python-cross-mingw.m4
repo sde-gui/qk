@@ -4,6 +4,8 @@ dnl
 AC_DEFUN([MOO_AM_PYTHON_DEVEL_CROSS_MINGW],[
   AC_REQUIRE([LT_AC_PROG_SED]) dnl to get $SED set
 
+  AM_PATH_PYTHON
+
   if test "x$PYTHON_HOME" = x; then
     AC_MSG_ERROR([PYTHON_HOME environment variable must be set dnl
 		  when cross-compiling with mingw])
