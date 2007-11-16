@@ -26,7 +26,7 @@
 #define UNICODE
 #include <windows.h>
 
-#define EGG_TYPE_SM_CLIENT_WIN32            (_egg_sm_client_win32_get_type ())
+#define EGG_TYPE_SM_CLIENT_WIN32            (egg_sm_client_win32_get_type ())
 #define EGG_SM_CLIENT_WIN32(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), EGG_TYPE_SM_CLIENT_WIN32, EggSMClientWin32))
 #define EGG_SM_CLIENT_WIN32_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), EGG_TYPE_SM_CLIENT_WIN32, EggSMClientWin32Class))
 #define EGG_IS_SM_CLIENT_WIN32(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), EGG_TYPE_SM_CLIENT_WIN32))
@@ -58,15 +58,15 @@ static gboolean sm_client_win32_end_session (EggSMClient         *client,
 
 static gpointer sm_client_thread (gpointer data);
 
-G_DEFINE_TYPE (EggSMClientWin32, _egg_sm_client_win32, EGG_TYPE_SM_CLIENT)
+G_DEFINE_TYPE (EggSMClientWin32, egg_sm_client_win32, EGG_TYPE_SM_CLIENT)
 
 static void
-_egg_sm_client_win32_init (EggSMClientWin32 *win32)
+egg_sm_client_win32_init (EggSMClientWin32 *win32)
 {
 }
 
 static void
-_egg_sm_client_win32_class_init (EggSMClientWin32Class *klass)
+egg_sm_client_win32_class_init (EggSMClientWin32Class *klass)
 {
   EggSMClientClass *sm_client_class = EGG_SM_CLIENT_CLASS (klass);
 
@@ -76,7 +76,7 @@ _egg_sm_client_win32_class_init (EggSMClientWin32Class *klass)
 }
 
 EggSMClient *
-_egg_sm_client_win32_new (void)
+egg_sm_client_win32_new (void)
 {
   return g_object_new (EGG_TYPE_SM_CLIENT_WIN32, NULL);
 }
@@ -143,7 +143,7 @@ static gboolean
 emit_quit_requested (gpointer smclient)
 {
   gdk_threads_enter ();
-  _egg_sm_client_quit_requested (smclient);
+  egg_sm_client_quit_requested (smclient);
   gdk_threads_leave ();
 
   return FALSE;
@@ -155,7 +155,7 @@ emit_quit (gpointer smclient)
   EggSMClientWin32 *win32 = smclient;
 
   gdk_threads_enter ();
-  _egg_sm_client_quit (smclient);
+  egg_sm_client_quit (smclient);
   gdk_threads_leave ();
 
   g_async_queue_push (win32->msg_queue, GINT_TO_POINTER (1));
@@ -168,7 +168,7 @@ emit_quit_cancelled (gpointer smclient)
   EggSMClientWin32 *win32 = smclient;
 
   gdk_threads_enter ();
-  _egg_sm_client_quit_cancelled (smclient);
+  egg_sm_client_quit_cancelled (smclient);
   gdk_threads_leave ();
 
   g_async_queue_push (win32->msg_queue, GINT_TO_POINTER (1));

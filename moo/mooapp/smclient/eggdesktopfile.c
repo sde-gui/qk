@@ -27,6 +27,8 @@
 
 #include "eggdesktopfile.h"
 
+#include <mooutils/moo-environ.h>
+
 #include <string.h>
 #include <unistd.h>
 
@@ -932,19 +934,19 @@ set_startup_notification_timeout (GdkDisplay *display,
 }
 #endif /* HAVE_GDK_X11_DISPLAY_BROADCAST_STARTUP_MESSAGE */
 
-extern char **environ;
-
 static GPtrArray *
 array_putenv (GPtrArray *env, char *variable)
 {
-  guint i, keylen;
+  int i, keylen;
 
   if (!env)
     {
+      char **environ_ptr = environ;
+
       env = g_ptr_array_new ();
 
-      for (i = 0; environ[i]; i++)
-	g_ptr_array_add (env, g_strdup (environ[i]));
+      for (i = 0; environ_ptr[i]; i++)
+	g_ptr_array_add (env, g_strdup (environ_ptr[i]));
     }
 
   keylen = strcspn (variable, "=");

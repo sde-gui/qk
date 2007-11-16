@@ -296,20 +296,20 @@ egg_sm_client_get (void)
 	  !sm_client_disable)
 	{
 #if defined (GDK_WINDOWING_WIN32)
-	  global_client = _egg_sm_client_win32_new ();
-#elif defined (GDK_WINDOWING_QUARTZ) && 0
-	  global_client = _egg_sm_client_osx_new ();
+	  global_client = egg_sm_client_win32_new ();
+#elif defined (GDK_WINDOWING_QUARTZ)
+	  global_client = egg_sm_client_dummy_new ();
 #else
 	  /* If both D-Bus and XSMP are compiled in, try D-Bus first
 	   * and fall back to XSMP if D-Bus session management isn't
 	   * available.
 	   */
 # ifdef EGG_SM_CLIENT_BACKEND_DBUS
-	  global_client = _egg_sm_client_dbus_new ();
+	  global_client = egg_sm_client_dbus_new ();
 # endif
 # ifdef EGG_SM_CLIENT_BACKEND_XSMP
 	  if (!global_client)
-	    global_client = _egg_sm_client_xsmp_new ();
+	    global_client = egg_sm_client_xsmp_new ();
 # endif
 #endif
 	}
@@ -483,7 +483,7 @@ egg_sm_client_end_session (EggSMClientEndStyle  style,
 /* Signal-emitting callbacks from platform-specific code */
 
 GKeyFile *
-_egg_sm_client_save_state (EggSMClient *client)
+egg_sm_client_save_state (EggSMClient *client)
 {
   GKeyFile *state_file;
   char *group;
@@ -510,7 +510,7 @@ _egg_sm_client_save_state (EggSMClient *client)
 }
 
 void
-_egg_sm_client_quit_requested (EggSMClient *client)
+egg_sm_client_quit_requested (EggSMClient *client)
 {
   g_return_if_fail (client == global_client);
 
@@ -527,7 +527,7 @@ _egg_sm_client_quit_requested (EggSMClient *client)
 }
 
 void
-_egg_sm_client_quit_cancelled (EggSMClient *client)
+egg_sm_client_quit_cancelled (EggSMClient *client)
 {
   g_return_if_fail (client == global_client);
 
@@ -537,7 +537,7 @@ _egg_sm_client_quit_cancelled (EggSMClient *client)
 }
 
 void
-_egg_sm_client_quit (EggSMClient *client)
+egg_sm_client_quit (EggSMClient *client)
 {
   g_return_if_fail (client == global_client);
 

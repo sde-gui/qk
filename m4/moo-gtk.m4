@@ -71,10 +71,14 @@ gdk_target=`$PKG_CONFIG --variable=target gdk-2.0`
 
 GDK_X11=false
 GDK_WIN32=false
+GDK_QUARTZ=false
 
 case $gdk_target in
 x11)
   GDK_X11=true
+  ;;
+quartz)
+  GDK_QUARTZ=true
   ;;
 win32)
   GDK_WIN32=true
@@ -83,4 +87,5 @@ esac
 
 AM_CONDITIONAL(GDK_X11, $GDK_X11)
 AM_CONDITIONAL(GDK_WIN32, $GDK_WIN32)
+AM_CONDITIONAL(GDK_QUARTZ, $GDK_QUARTZ)
 ])

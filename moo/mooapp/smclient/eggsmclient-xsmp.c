@@ -38,7 +38,7 @@
 
 #include <gdk/gdk.h>
 
-#define EGG_TYPE_SM_CLIENT_XSMP            (_egg_sm_client_xsmp_get_type ())
+#define EGG_TYPE_SM_CLIENT_XSMP            (egg_sm_client_xsmp_get_type ())
 #define EGG_SM_CLIENT_XSMP(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), EGG_TYPE_SM_CLIENT_XSMP, EggSMClientXSMP))
 #define EGG_SM_CLIENT_XSMP_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), EGG_TYPE_SM_CLIENT_XSMP, EggSMClientXSMPClass))
 #define EGG_IS_SM_CLIENT_XSMP(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), EGG_TYPE_SM_CLIENT_XSMP))
@@ -170,10 +170,10 @@ static void     smc_error_handler    (SmcConn       smc_conn,
 				      int           severity,
 				      SmPointer     values);
 
-G_DEFINE_TYPE (EggSMClientXSMP, _egg_sm_client_xsmp, EGG_TYPE_SM_CLIENT)
+G_DEFINE_TYPE (EggSMClientXSMP, egg_sm_client_xsmp, EGG_TYPE_SM_CLIENT)
 
 static void
-_egg_sm_client_xsmp_init (EggSMClientXSMP *xsmp)
+egg_sm_client_xsmp_init (EggSMClientXSMP *xsmp)
 {
   xsmp->state = XSMP_STATE_CONNECTION_CLOSED;
   xsmp->connection = NULL;
@@ -181,7 +181,7 @@ _egg_sm_client_xsmp_init (EggSMClientXSMP *xsmp)
 }
 
 static void
-_egg_sm_client_xsmp_class_init (EggSMClientXSMPClass *klass)
+egg_sm_client_xsmp_class_init (EggSMClientXSMPClass *klass)
 {
   EggSMClientClass *sm_client_class = EGG_SM_CLIENT_CLASS (klass);
 
@@ -192,7 +192,7 @@ _egg_sm_client_xsmp_class_init (EggSMClientXSMPClass *klass)
 }
 
 EggSMClient *
-_egg_sm_client_xsmp_new (void)
+egg_sm_client_xsmp_new (void)
 {
   if (!g_getenv ("SESSION_MANAGER"))
     return NULL;
@@ -547,14 +547,14 @@ idle_do_pending_events (gpointer data)
   if (xsmp->waiting_to_emit_quit)
     {
       xsmp->waiting_to_emit_quit = FALSE;
-      _egg_sm_client_quit (client);
+      egg_sm_client_quit (client);
       goto out;
     }
 
   if (xsmp->waiting_to_emit_quit_cancelled)
     {
       xsmp->waiting_to_emit_quit_cancelled = FALSE;
-      _egg_sm_client_quit_cancelled (client);
+      egg_sm_client_quit_cancelled (client);
       xsmp->state = XSMP_STATE_IDLE;
     }
 
@@ -804,7 +804,7 @@ save_state (EggSMClientXSMP *xsmp)
    */
   xsmp->state = XSMP_STATE_SAVE_YOURSELF;
 
-  state_file = _egg_sm_client_save_state ((EggSMClient *)xsmp);
+  state_file = egg_sm_client_save_state ((EggSMClient *)xsmp);
   if (!state_file)
     {
       restart = generate_command (xsmp->restart_command, xsmp->client_id, NULL);
@@ -938,7 +938,7 @@ xsmp_interact (SmcConn   smc_conn,
     }
 
   xsmp->state = XSMP_STATE_INTERACT;
-  _egg_sm_client_quit_requested (client);
+  egg_sm_client_quit_requested (client);
 }
 
 static void
@@ -952,7 +952,7 @@ xsmp_die (SmcConn   smc_conn,
 	   EGG_SM_CLIENT_XSMP_STATE (xsmp));
 
   sm_client_xsmp_disconnect (xsmp);
-  _egg_sm_client_quit (client);
+  egg_sm_client_quit (client);
 }
 
 static void
@@ -988,7 +988,7 @@ xsmp_shutdown_cancelled (SmcConn   smc_conn,
        * cancel the shutdown.
        */
       xsmp->state = XSMP_STATE_IDLE;
-      _egg_sm_client_quit_cancelled (client);
+      egg_sm_client_quit_cancelled (client);
     }
   else if (xsmp->state == XSMP_STATE_SHUTDOWN_CANCELLED)
     {

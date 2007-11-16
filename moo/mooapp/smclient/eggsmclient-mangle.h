@@ -23,5 +23,9 @@
 #define egg_sm_client_dbus_new _moo_egg_sm_client_dbus_new
 #define egg_sm_client_win32_new _moo_egg_sm_client_win32_new
 #define egg_sm_client_osx_new _moo_egg_sm_client_osx_new
+#define egg_sm_client_dummy_new _moo_egg_sm_client_dummy_new
+#define egg_sm_client_get_mode _moo_egg_sm_client_get_mode
+#define egg_sm_client_get_state_file _moo_egg_sm_client_get_state_file
+#define egg_sm_client_set_mode _moo_egg_sm_client_set_mode
 
 #endif /* EGG_SM_CLIENT_MANGLE_H */

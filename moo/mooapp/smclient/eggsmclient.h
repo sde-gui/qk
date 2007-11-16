@@ -21,6 +21,7 @@
 #define __EGG_SM_CLIENT_H__
 
 #include <glib-object.h>
+#include "eggsmclient-mangle.h"
 
 G_BEGIN_DECLS
 
