@@ -3,8 +3,9 @@
 headers
 #include <Python.h>
 #define NO_IMPORT_PYGOBJECT
-#include "pygobject.h"
-#include "pygtk/pygtk.h"
+#define NO_IMPORT_PYGTK
+#include <pygobject.h>
+#include <pygtk/pygtk.h>
 #include <moo.h>
 #include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
