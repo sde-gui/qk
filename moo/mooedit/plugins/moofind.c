@@ -38,6 +38,9 @@
 
 #define FIND_PLUGIN_ID "Find"
 
+#define GREP_SKIP_LIST_ID "FindPlugin/grep/skip"
+#define FIND_SKIP_LIST_ID "FindPlugin/find/skip"
+
 enum {
     CMD_GREP = 1,
     CMD_FIND
@@ -327,18 +330,28 @@ map_combo (MooGladeXML *xml,
 
 
 static void
+init_skip_list (void)
+{
+    MooHistoryList *list = moo_history_list_get (GREP_SKIP_LIST_ID);
+    g_return_if_fail (list != NULL);
+    if (moo_history_list_is_empty (list))
+        moo_history_list_add (list, ".svn/;CVS/");
+}
+
+static void
 create_grep_dialog (MooEditWindow  *window,
                     WindowStuff    *stuff)
 {
     GtkWidget *pattern_entry;
     GtkWidget *skip_combo;
-    MooHistoryList *skip_list;
+
+    init_skip_list ();
 
     stuff->grep_xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     map_combo (stuff->grep_xml, "pattern_combo", "FindPlugin/grep/pattern");
     map_combo (stuff->grep_xml, "glob_combo", "FindPlugin/grep/glob");
     map_combo (stuff->grep_xml, "dir_combo", "FindPlugin/grep/dir");
-    map_combo (stuff->grep_xml, "skip_combo", "FindPlugin/grep/skip");
+    map_combo (stuff->grep_xml, "skip_combo", GREP_SKIP_LIST_ID);
     moo_glade_xml_parse_memory (stuff->grep_xml, moofind_glade_xml, -1, "grep_dialog", NULL);
 
     stuff->grep_dialog = moo_glade_xml_get_widget (stuff->grep_xml, "grep_dialog");
@@ -365,8 +378,7 @@ create_grep_dialog (MooEditWindow  *window,
     setup_file_combo (moo_glade_xml_get_widget (stuff->grep_xml, "dir_combo"));
 
     skip_combo = moo_glade_xml_get_widget (stuff->grep_xml, "skip_combo");
-    skip_list = moo_history_combo_get_list (MOO_HISTORY_COMBO (skip_combo));
-    moo_history_list_add_full (skip_list, ".svn/;CVS/", _("CVS and SVN dirs"));
+    moo_combo_set_active (MOO_COMBO (skip_combo), 0);
 }
 
 
@@ -379,7 +391,7 @@ create_find_dialog (MooEditWindow  *window,
     stuff->find_xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     map_combo (stuff->find_xml, "pattern_combo", "FindPlugin/find/pattern");
     map_combo (stuff->find_xml, "dir_combo", "FindPlugin/find/dir");
-    map_combo (stuff->find_xml, "skip_combo", "FindPlugin/find/skip");
+    map_combo (stuff->find_xml, "skip_combo", FIND_SKIP_LIST_ID);
     moo_glade_xml_parse_memory (stuff->find_xml, moofind_glade_xml, -1, "find_dialog", NULL);
 
     stuff->find_dialog = moo_glade_xml_get_widget (stuff->find_xml, "find_dialog");
@@ -417,7 +429,10 @@ init_dir_entry (MooHistoryCombo *hist_combo,
 
     entry = MOO_COMBO (hist_combo)->entry;
 
-    if (!gtk_entry_get_text(GTK_ENTRY (entry))[0])
+    if (!gtk_entry_get_text (GTK_ENTRY (entry))[0])
+        moo_combo_set_active (MOO_COMBO (hist_combo), 0);
+
+    if (!gtk_entry_get_text (GTK_ENTRY (entry))[0])
     {
         MooFileEntryCompletion *completion;
         char *filename;
