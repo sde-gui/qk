@@ -223,6 +223,8 @@ static void     moo_notebook_set_focus_child(GtkContainer  *container,
 
 static void     moo_notebook_switch_page    (MooNotebook     *nb,
                                              guint            page_num);
+static gboolean moo_notebook_change_current_page (GtkNotebook *notebook,
+                                             int             offset);
 
 static void     notebook_create_arrows      (MooNotebook    *nb);
 static void     left_arrow_clicked          (GtkWidget      *button,
@@ -315,6 +317,7 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
     GtkObjectClass *gtkobject_class = GTK_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
+    GtkNotebookClass *notebook_class = GTK_NOTEBOOK_CLASS (klass);
 
     moo_notebook_parent_class = g_type_class_peek_parent (klass);
     moo_notebook_grand_parent_class = g_type_class_peek_parent (moo_notebook_parent_class);
@@ -361,6 +364,9 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
     container_class->set_focus_child = moo_notebook_set_focus_child;
     container_class->remove = moo_notebook_remove;
     container_class->add = moo_notebook_add;
+
+    /* Ctrl-PgUp/PgDown bindings */
+    notebook_class->change_current_page = moo_notebook_change_current_page;
 
     klass->switch_page = moo_notebook_switch_page;
 
@@ -1427,16 +1433,18 @@ void        moo_notebook_set_show_tabs      (MooNotebook    *notebook,
 /* Children
  */
 
-static int      page_index                  (MooNotebook    *nb,
-                                             Page           *page)
+static int
+page_index (MooNotebook *nb,
+            Page        *page)
 {
     g_return_val_if_fail (page != NULL, -1);
     return g_slist_index (nb->priv->pages, page);
 }
 
 
-static int      page_visible_index          (MooNotebook    *nb,
-                                             Page           *page)
+static int
+page_visible_index (MooNotebook *nb,
+                    Page        *page)
 {
     int i = 0;
 
@@ -1453,7 +1461,8 @@ static int      page_visible_index          (MooNotebook    *nb,
 }
 
 
-static int      get_n_visible_pages         (MooNotebook    *nb)
+static int
+get_n_visible_pages (MooNotebook *nb)
 {
     int n = 0;
 
@@ -1465,8 +1474,9 @@ static int      get_n_visible_pages         (MooNotebook    *nb)
 }
 
 
-static Page    *get_nth_visible_page        (MooNotebook    *nb,
-                                             int             n)
+static Page *
+get_nth_visible_page (MooNotebook *nb,
+                      int          n)
 {
     int i = 0;
 
@@ -1482,10 +1492,11 @@ static Page    *get_nth_visible_page        (MooNotebook    *nb,
 
 
 /* XXX focus */
-gint        moo_notebook_insert_page        (MooNotebook    *nb,
-                                             GtkWidget      *child,
-                                             GtkWidget      *label,
-                                             gint            position)
+gint
+moo_notebook_insert_page (MooNotebook *nb,
+                          GtkWidget   *child,
+                          GtkWidget   *label,
+                          gint         position)
 {
     Page *page;
 
@@ -1523,7 +1534,7 @@ gint        moo_notebook_insert_page        (MooNotebook    *nb,
 
     if (GTK_WIDGET_VISIBLE (child) && nb->priv->tabs_visible)
     {
-        /* XXX do soemthing about tabs */
+        /* XXX do something about tabs */
         GTK_WIDGET_SET_FLAGS (nb, GTK_CAN_FOCUS);
         gtk_widget_show (label);
     }
@@ -1541,9 +1552,10 @@ gint        moo_notebook_insert_page        (MooNotebook    *nb,
 }
 
 
-void        moo_notebook_reorder_child      (MooNotebook    *notebook,
-                                             GtkWidget      *child,
-                                             gint            position)
+void
+moo_notebook_reorder_child (MooNotebook *notebook,
+                            GtkWidget   *child,
+                            gint         position)
 {
     Page *page;
     int n_pages;
@@ -1568,8 +1580,9 @@ void        moo_notebook_reorder_child      (MooNotebook    *notebook,
 }
 
 
-static Page    *find_child                  (MooNotebook    *nb,
-                                             GtkWidget      *child)
+static Page *
+find_child (MooNotebook *nb,
+            GtkWidget   *child)
 {
     GSList *l;
 
@@ -1584,8 +1597,9 @@ static Page    *find_child                  (MooNotebook    *nb,
 }
 
 
-static Page    *find_grand_child            (MooNotebook    *nb,
-                                             GtkWidget      *child)
+static Page *
+find_grand_child (MooNotebook *nb,
+                  GtkWidget   *child)
 {
     GSList *l;
 
@@ -1602,8 +1616,9 @@ static Page    *find_grand_child            (MooNotebook    *nb,
 }
 
 
-static Page    *find_label                  (MooNotebook    *nb,
-                                             GtkWidget      *label)
+static Page *
+find_label (MooNotebook *nb,
+            GtkWidget   *label)
 {
     GSList *l;
 
@@ -1618,8 +1633,9 @@ static Page    *find_label                  (MooNotebook    *nb,
 }
 
 
-static Page    *get_nth_page                (MooNotebook    *nb,
-                                             int             n)
+static Page *
+get_nth_page (MooNotebook *nb,
+              int          n)
 {
     if (n < 0)
         return NULL;
@@ -1628,8 +1644,9 @@ static Page    *get_nth_page                (MooNotebook    *nb,
 }
 
 
-static int      find_next_visible_page      (MooNotebook    *nb,
-                                             int             n)
+static int
+find_next_visible_page (MooNotebook *nb,
+                        int          n)
 {
     int num_pages = moo_notebook_get_n_pages (nb);
 
@@ -1662,8 +1679,9 @@ static int      find_next_visible_page      (MooNotebook    *nb,
 }
 
 
-static void     delete_page                 (MooNotebook    *nb,
-                                             Page           *page)
+static void
+delete_page (MooNotebook *nb,
+             Page        *page)
 {
     int n = page_index (nb, page);
     g_return_if_fail (n >= 0);
@@ -1691,8 +1709,9 @@ static void     delete_page                 (MooNotebook    *nb,
 }
 
 
-void        moo_notebook_remove_page        (MooNotebook    *notebook,
-                                             gint            page_num)
+void
+moo_notebook_remove_page (MooNotebook *notebook,
+                          gint         page_num)
 {
     Page *page;
     g_return_if_fail (MOO_IS_NOTEBOOK (notebook));
@@ -1702,15 +1721,17 @@ void        moo_notebook_remove_page        (MooNotebook    *notebook,
 }
 
 
-gint        moo_notebook_get_n_pages        (MooNotebook    *notebook)
+gint
+moo_notebook_get_n_pages (MooNotebook *notebook)
 {
     g_return_val_if_fail (MOO_IS_NOTEBOOK (notebook), 0);
     return g_slist_length (notebook->priv->pages);
 }
 
 
-gint        moo_notebook_page_num           (MooNotebook    *notebook,
-                                             GtkWidget      *child)
+gint
+moo_notebook_page_num (MooNotebook *notebook,
+                       GtkWidget   *child)
 {
     Page *page;
 
@@ -1726,9 +1747,11 @@ gint        moo_notebook_page_num           (MooNotebook    *notebook,
 }
 
 
-gint        moo_notebook_get_current_page   (MooNotebook    *notebook)
+gint
+moo_notebook_get_current_page (MooNotebook *notebook)
 {
     g_return_val_if_fail (MOO_IS_NOTEBOOK (notebook), -1);
+
     if (notebook->priv->current_page)
         return page_index (notebook, notebook->priv->current_page);
     else
@@ -1736,8 +1759,9 @@ gint        moo_notebook_get_current_page   (MooNotebook    *notebook)
 }
 
 
-GtkWidget*  moo_notebook_get_nth_page       (MooNotebook    *notebook,
-                                             gint            page_num)
+GtkWidget *
+moo_notebook_get_nth_page (MooNotebook *notebook,
+                           gint         page_num)
 {
     Page *page;
 
@@ -1751,6 +1775,49 @@ GtkWidget*  moo_notebook_get_nth_page       (MooNotebook    *notebook,
         return NULL;
 }
 
+
+static gboolean
+moo_notebook_change_current_page (GtkNotebook *notebook,
+				  int          offset)
+{
+    MooNotebook *nb = MOO_NOTEBOOK (notebook);
+    int new_page, n_pages;
+
+    g_return_val_if_fail (offset == 1 || offset == -1, FALSE);
+
+    if (!nb->priv->current_page)
+        return FALSE;
+
+    new_page = moo_notebook_get_current_page (nb);
+    n_pages = moo_notebook_get_n_pages (nb);
+    g_return_val_if_fail (new_page >= 0 && n_pages > 0, FALSE);
+
+    if (offset > 0)
+    {
+        for (new_page += 1; new_page < n_pages; new_page++)
+            if (GTK_WIDGET_VISIBLE (moo_notebook_get_nth_page (nb, new_page)))
+                break;
+        if (new_page == n_pages)
+            for (new_page = 0; new_page < n_pages; new_page++)
+                if (GTK_WIDGET_VISIBLE (moo_notebook_get_nth_page (nb, new_page)))
+                    break;
+        g_return_val_if_fail (new_page < n_pages, FALSE);
+    }
+    else
+    {
+        for (new_page -= 1; new_page >= 0; new_page--)
+            if (GTK_WIDGET_VISIBLE (moo_notebook_get_nth_page (nb, new_page)))
+                break;
+        if (new_page < 0)
+            for (new_page = n_pages - 1; new_page >= 0; new_page--)
+                if (GTK_WIDGET_VISIBLE (moo_notebook_get_nth_page (nb, new_page)))
+                    break;
+        g_return_val_if_fail (new_page >= 0, FALSE);
+    }
+
+    moo_notebook_set_current_page (nb, new_page);
+    return TRUE;
+}
 
 static void
 moo_notebook_switch_page (MooNotebook *nb,
