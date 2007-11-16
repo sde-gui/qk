@@ -70,10 +70,12 @@ static void     moo_text_view_realize       (GtkWidget          *widget);
 static void     moo_text_view_unrealize     (GtkWidget          *widget);
 static gboolean moo_text_view_expose        (GtkWidget          *widget,
                                              GdkEventExpose     *event);
+#if !GTK_CHECK_VERSION(2,12,0)
 static gboolean moo_text_view_focus_in      (GtkWidget          *widget,
                                              GdkEventFocus      *event);
 static gboolean moo_text_view_focus_out     (GtkWidget          *widget,
                                              GdkEventFocus      *event);
+#endif
 static void     moo_text_view_style_set     (GtkWidget          *widget,
                                              GtkStyle           *previous_style);
 static void     moo_text_view_size_request  (GtkWidget          *widget,
@@ -132,10 +134,12 @@ static void     highlight_updated           (GtkTextView        *view,
                                              const GtkTextIter  *start,
                                              const GtkTextIter  *end);
 
+#if !GTK_CHECK_VERSION(2,12,0)
 static void     overwrite_changed           (MooTextView        *view);
 static void     check_cursor_blink          (MooTextView        *view);
 static void     moo_text_view_draw_cursor   (GtkTextView        *view,
                                              GdkEventExpose     *event);
+#endif
 static void     set_draw_tabs               (MooTextView        *view,
                                              gboolean            draw);
 static void     set_draw_trailing_spaces    (MooTextView        *view,
@@ -268,8 +272,10 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     widget_class->realize = moo_text_view_realize;
     widget_class->unrealize = moo_text_view_unrealize;
     widget_class->expose_event = moo_text_view_expose;
+#if !GTK_CHECK_VERSION(2,12,0)
     widget_class->focus_in_event = moo_text_view_focus_in;
     widget_class->focus_out_event = moo_text_view_focus_out;
+#endif
     widget_class->style_set = moo_text_view_style_set;
     widget_class->size_request = moo_text_view_size_request;
     widget_class->size_allocate = moo_text_view_size_allocate;
@@ -277,7 +283,9 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     container_class->remove = moo_text_view_remove;
 
     text_view_class->move_cursor = _moo_text_view_move_cursor;
+#if !GTK_CHECK_VERSION(2,12,0)
     text_view_class->page_horizontally = _moo_text_view_page_horizontally;
+#endif
     text_view_class->delete_from_cursor = _moo_text_view_delete_from_cursor;
     text_view_class->copy_clipboard = moo_text_view_copy_clipboard;
     text_view_class->cut_clipboard = moo_text_view_cut_clipboard;
@@ -665,7 +673,9 @@ moo_text_view_init (MooTextView *view)
 
     view->priv->last_search_stamp = -1;
 
+#if !GTK_CHECK_VERSION(2,12,0)
     view->priv->saved_cursor_visible = TRUE;
+#endif
     view->priv->tab_key_action = MOO_TEXT_TAB_KEY_INDENT;
     view->priv->backspace_indents = FALSE;
     view->priv->enter_indents = TRUE;
@@ -753,7 +763,9 @@ moo_text_view_constructor (GType                  type,
     view->priv->dnd_mark = gtk_text_buffer_create_mark (get_buffer (view), NULL, &iter, FALSE);
     gtk_text_mark_set_visible (view->priv->dnd_mark, FALSE);
 
+#if !GTK_CHECK_VERSION(2,12,0)
     g_signal_connect (view, "notify::overwrite", G_CALLBACK (overwrite_changed), NULL);
+#endif
 
     target_list = gtk_target_list_new (text_view_target_table, G_N_ELEMENTS (text_view_target_table));
     gtk_target_list_add_text_targets (target_list, 0);
@@ -2011,12 +2023,14 @@ moo_text_view_unrealize (GtkWidget *widget)
         add_selection_clipboard (view);
     }
 
+#if !GTK_CHECK_VERSION(2,12,0)
     if (view->priv->blink_timeout)
     {
         g_warning ("%s: oops", G_STRLOC);
         g_source_remove (view->priv->blink_timeout);
         view->priv->blink_timeout = 0;
     }
+#endif
 
     if (view->priv->dnd.scroll_timeout)
     {
@@ -2127,6 +2141,25 @@ moo_text_view_draw_right_margin (GtkTextView    *text_view,
 }
 
 static void
+moo_text_view_get_line_yrange (GtkTextView       *text_view,
+                               const GtkTextIter *iter,
+                               int               *y,
+                               int               *height)
+{
+    if (gtk_text_view_get_wrap_mode (text_view) == GTK_WRAP_NONE)
+    {
+        gtk_text_view_get_line_yrange (text_view, iter, y, height);
+    }
+    else
+    {
+        GdkRectangle rect;
+        gtk_text_view_get_iter_location (text_view, iter, &rect);
+        *y = rect.y;
+        *height = rect.height;
+    }
+}
+
+static void
 moo_text_view_draw_current_line (GtkTextView    *text_view,
                                  GdkEventExpose *event)
 {
@@ -2141,7 +2174,7 @@ moo_text_view_draw_current_line (GtkTextView    *text_view,
                                       &cur,
                                       gtk_text_buffer_get_insert (text_view->buffer));
 
-    gtk_text_view_get_line_yrange (text_view, &cur, &y, &height);
+    moo_text_view_get_line_yrange (text_view, &cur, &y, &height);
 
     gtk_text_view_get_visible_rect (text_view, &visible_rect);
 
@@ -2379,8 +2412,10 @@ moo_text_view_expose (GtkWidget      *widget,
                 moo_text_view_draw_boxes (text_view, event, &start, &end);
         }
 
+#if !GTK_CHECK_VERSION(2,12,0)
         if (view->priv->cursor_visible)
             moo_text_view_draw_cursor (text_view, event);
+#endif
     }
 
     view->priv->in_expose = FALSE;
@@ -2643,6 +2678,7 @@ moo_text_view_populate_popup (GtkTextView    *text_view,
 }
 
 
+#if !GTK_CHECK_VERSION(2,12,0)
 static void
 overwrite_changed (MooTextView *view)
 {
@@ -2861,6 +2897,12 @@ _moo_text_view_pend_cursor_blink (MooTextView *view)
         view->priv->blink_timeout = _moo_timeout_add (time, (GSourceFunc) blink_cb, view);
     }
 }
+#else /* GTK_CHECK_VERSION(2,12,0) */
+void
+_moo_text_view_pend_cursor_blink (G_GNUC_UNUSED MooTextView *view)
+{
+}
+#endif
 
 
 static void

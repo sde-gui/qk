@@ -32,9 +32,11 @@ void        _moo_text_view_move_cursor          (GtkTextView        *text_view,
                                                  GtkMovementStep     step,
                                                  gint                count,
                                                  gboolean            extend_selection);
+#if !GTK_CHECK_VERSION(2,12,0)
 void        _moo_text_view_page_horizontally    (GtkTextView        *text_view,
                                                  int                 count,
                                                  gboolean            extend_selection);
+#endif
 void        _moo_text_view_delete_from_cursor   (GtkTextView        *text_view,
                                                  GtkDeleteType       type,
                                                  gint                count);
@@ -91,11 +93,13 @@ struct _MooTextViewPrivate {
     /* Clipboard */
     gboolean manage_clipboard;
 
+#if !GTK_CHECK_VERSION(2,12,0)
     /* Overwrite mode cursor */
     gboolean overwrite_mode;
     gboolean saved_cursor_visible;
     gboolean cursor_visible;
     guint blink_timeout;
+#endif
 
     /***********************************************************************/
     /* Drawing

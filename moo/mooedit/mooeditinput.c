@@ -19,7 +19,7 @@
 #include <gdk/gdkkeysyms.h>
 
 
-inline static GtkWidgetClass*
+static GtkWidgetClass *
 parent_class (void)
 {
     static gpointer textview_class = NULL;
@@ -31,7 +31,7 @@ parent_class (void)
 }
 
 
-inline static gboolean
+static gboolean
 is_word_char (const GtkTextIter *iter)
 {
     gunichar c = gtk_text_iter_get_char (iter);
@@ -43,7 +43,7 @@ is_word_char (const GtkTextIter *iter)
  * to use Pango or equivalent to get word breaking right, the algorithm
  * is fairly complex.)"
  */
-inline static gboolean
+static gboolean
 is_space (const GtkTextIter *iter)
 {
     gunichar c = gtk_text_iter_get_char (iter);
@@ -51,7 +51,7 @@ is_space (const GtkTextIter *iter)
     return g_unichar_isspace (c);
 }
 
-inline static gboolean
+static gboolean
 is_word_start (const GtkTextIter *iter)
 {
     GtkTextIter i;
@@ -106,7 +106,7 @@ text_iter_forward_word_start (GtkTextIter *iter)
     return moved && !gtk_text_iter_is_end (iter);
 }
 
-inline static gboolean
+static gboolean
 text_iter_forward_word_start_n (GtkTextIter *iter, guint count)
 {
     if (!count) return FALSE;
@@ -122,7 +122,7 @@ text_iter_forward_word_start_n (GtkTextIter *iter, guint count)
 }
 
 
-inline static gboolean
+static gboolean
 text_iter_backward_word_start (GtkTextIter *iter)
 {
     gboolean moved = FALSE;
@@ -141,7 +141,7 @@ text_iter_backward_word_start (GtkTextIter *iter)
     return moved;
 }
 
-inline static gboolean
+static gboolean
 text_iter_backward_word_start_n (GtkTextIter *iter, guint count)
 {
     gboolean moved = FALSE;
@@ -154,7 +154,7 @@ text_iter_backward_word_start_n (GtkTextIter *iter, guint count)
 
 
 /* TODO: may I do this? */
-inline static void
+static void
 text_view_reset_im_context (GtkTextView *text_view)
 {
   if (text_view->need_im_reset)
@@ -264,6 +264,24 @@ moo_text_view_home_end (MooTextView *view,
 }
 
 
+static void
+_moo_text_view_move_cursor_call_parent (GtkTextView        *text_view,
+                                        GtkMovementStep     step,
+                                        gint                count,
+                                        gboolean            extend_selection)
+{
+#if !GTK_CHECK_VERSION(2,12,0)
+    MooTextView *view = MOO_TEXT_VIEW (text_view);
+    if (view->priv->overwrite_mode)
+        gtk_text_view_set_cursor_visible (text_view, TRUE);
+#endif
+    GTK_TEXT_VIEW_CLASS (parent_class())->move_cursor (text_view, step, count, extend_selection);
+#if !GTK_CHECK_VERSION(2,12,0)
+    if (view->priv->overwrite_mode)
+        gtk_text_view_set_cursor_visible (text_view, FALSE);
+#endif
+}
+
 void
 _moo_text_view_move_cursor (GtkTextView        *text_view,
                             GtkMovementStep     step,
@@ -273,11 +291,10 @@ _moo_text_view_move_cursor (GtkTextView        *text_view,
     GtkTextBuffer *buffer;
     GtkTextMark *insert;
     GtkTextIter iter;
-    MooTextView *view = MOO_TEXT_VIEW (text_view);
 
-    if (!text_view->cursor_visible && !view->priv->overwrite_mode)
+    if (!text_view->cursor_visible)
     {
-        GTK_TEXT_VIEW_CLASS (parent_class())->move_cursor (text_view, step, count, extend_selection);
+        _moo_text_view_move_cursor_call_parent (text_view, step, count, extend_selection);
         return;
     }
 
@@ -285,30 +302,27 @@ _moo_text_view_move_cursor (GtkTextView        *text_view,
     insert = gtk_text_buffer_get_insert (buffer);
     gtk_text_buffer_get_iter_at_mark (buffer, &iter, insert);
 
-    switch (step)
+    if (step == GTK_MOVEMENT_WORDS)
     {
-        case GTK_MOVEMENT_WORDS:
-            moo_text_view_move_cursor_words (MOO_TEXT_VIEW (text_view), &iter, count);
-            break;
-
-        case GTK_MOVEMENT_DISPLAY_LINE_ENDS:
-            moo_text_view_home_end (MOO_TEXT_VIEW (text_view), &iter, count);
-            break;
-
-        default:
-            if (view->priv->overwrite_mode)
-                gtk_text_view_set_cursor_visible (text_view, TRUE);
-            GTK_TEXT_VIEW_CLASS (parent_class())->move_cursor (text_view, step, count, extend_selection);
-            if (view->priv->overwrite_mode)
-                gtk_text_view_set_cursor_visible (text_view, FALSE);
-            return;
+        moo_text_view_move_cursor_words (MOO_TEXT_VIEW (text_view), &iter, count);
+    }
+    else if (step == GTK_MOVEMENT_DISPLAY_LINE_ENDS &&
+             gtk_text_view_get_wrap_mode (text_view) == GTK_WRAP_NONE)
+    {
+        moo_text_view_home_end (MOO_TEXT_VIEW (text_view), &iter, count);
+    }
+    else
+    {
+        _moo_text_view_move_cursor_call_parent (text_view, step, count, extend_selection);
+        return;
     }
 
     move_cursor_to (text_view, &iter, extend_selection);
-    _moo_text_view_pend_cursor_blink (view);
+    _moo_text_view_pend_cursor_blink (MOO_TEXT_VIEW (text_view));
 }
 
 
+#if !GTK_CHECK_VERSION(2,12,0)
 void
 _moo_text_view_page_horizontally (GtkTextView *text_view,
                                   int          count,
@@ -322,6 +336,7 @@ _moo_text_view_page_horizontally (GtkTextView *text_view,
         gtk_text_view_set_cursor_visible (text_view, FALSE);
     _moo_text_view_pend_cursor_blink (view);
 }
+#endif
 
 
 void
@@ -373,7 +388,7 @@ _moo_text_view_delete_from_cursor (GtkTextView        *text_view,
 /* Mouse
  */
 
-inline static gboolean
+static gboolean
 extend_selection (MooTextView          *view,
                   MooTextSelectionType  type,
                   GtkTextIter          *insert,
@@ -382,7 +397,7 @@ extend_selection (MooTextView          *view,
     return MOO_TEXT_VIEW_GET_CLASS(view)->extend_selection (view, type, insert, selection_bound);
 }
 
-inline static void
+static void
 clear_drag_stuff (MooTextView *view)
 {
     view->priv->dnd.moved = FALSE;
@@ -396,7 +411,7 @@ clear_drag_stuff (MooTextView *view)
     GTK_SOURCE_BUFFER (gtk_text_view_get_buffer (GTK_TEXT_VIEW (view)))
 
 /* from gtktextview.c */
-inline static void
+static void
 text_view_unobscure_mouse_cursor (GtkTextView *text_view)
 {
     if (text_view->mouse_cursor_obscured)
@@ -908,7 +923,7 @@ text_view_start_selection_dnd (GtkTextView       *text_view,
 }
 
 
-inline static int
+static int
 char_class (const GtkTextIter *iter)
 {
     if (gtk_text_iter_ends_line (iter)) return -1;
@@ -1455,6 +1470,9 @@ handle_enter (MooTextView        *view,
     GtkTextIter start, end;
     gboolean has_selection;
     gboolean indent;
+
+    if (!gtk_text_view_get_editable (GTK_TEXT_VIEW (view)))
+        return FALSE;
 
     indent = view->priv->indenter && view->priv->enter_indents &&
              !(event->state & GDK_SHIFT_MASK);
