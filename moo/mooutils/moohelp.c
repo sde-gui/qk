@@ -114,7 +114,11 @@ static gboolean
 moo_help_key_press (GtkWidget   *widget,
                     GdkEventKey *event)
 {
-    if (!(event->state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_META_MASK)) &&
+    if (!(event->state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK
+#if GTK_CHECK_VERSION(2,10,0)
+     | GDK_META_MASK
+#endif
+     )) &&
         event->keyval == GDK_F1)
             return moo_help_open (widget);
     else
