@@ -181,9 +181,8 @@ set_history_list_id (MooHistoryCombo *combo,
 {
     if (id)
     {
-        MooHistoryList *list = moo_history_list_new (id);
+        MooHistoryList *list = moo_history_list_get (id);
         moo_history_combo_set_list (combo, list);
-        g_object_unref (list);
     }
 }
 
@@ -481,9 +480,8 @@ moo_history_combo_new (const char *user_id)
 
     if (user_id)
     {
-        MooHistoryList *list = moo_history_list_new (user_id);
+        MooHistoryList *list = moo_history_list_get (user_id);
         moo_history_combo_set_list (combo, list);
-        g_object_unref (list);
     }
 
     return GTK_WIDGET (combo);

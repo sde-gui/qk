@@ -170,7 +170,8 @@ project_plugin_init (ProjectPlugin *plugin)
                                  "closure-callback", close_project_cb,
                                  NULL);
 
-    plugin->recent_list = moo_history_list_new (MP_RECENT_LIST_ID);
+    plugin->recent_list = moo_history_list_get (MP_RECENT_LIST_ID);
+    g_object_ref (plugin->recent_list);
     g_signal_connect (plugin->recent_list, "activate-item",
                       G_CALLBACK (recent_item_activated), plugin);
     moo_window_class_new_action_custom (klass, "OpenRecentProject", NULL,

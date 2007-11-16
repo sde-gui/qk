@@ -298,7 +298,8 @@ moo_editor_init (MooEditor *editor)
 
     editor->priv->filter_mgr = moo_filter_mgr_new ();
 
-    editor->priv->history = moo_history_list_new ("Editor");
+    editor->priv->history = moo_history_list_get ("Editor");
+    g_object_ref (editor->priv->history);
     moo_history_list_set_display_func (editor->priv->history,
                                        moo_history_list_display_basename,
                                        NULL);

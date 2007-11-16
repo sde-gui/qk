@@ -83,9 +83,9 @@ init_find_history (void)
     {
         been_here = TRUE;
 
-        search_history = moo_history_list_new ("MooFind");
+        search_history = moo_history_list_get ("MooFind");
         moo_history_list_set_max_entries (search_history, 20);
-        replace_history = moo_history_list_new ("MooReplace");
+        replace_history = moo_history_list_get ("MooReplace");
         moo_history_list_set_max_entries (replace_history, 20);
         last_search = moo_history_list_get_last_item (search_history);
 
