@@ -1,6 +1,7 @@
 #include "config.h"
 #include "moohelp.h"
 #include "mooutils-misc.h"
+#include "mooi18n.h"
 #include "moodialogs.h"
 #include <gdk/gdkkeysyms.h>
 
@@ -189,9 +190,9 @@ warn_no_help (GtkWidget *parent)
     if (!been_here)
     {
         been_here = TRUE;
-        moo_error_dialog (parent, "Help files not found",
-                          "Could not find help files, most likely "
-                          "it means broken installation");
+        moo_error_dialog (parent, _("Help files not found"),
+                          _("Could not find help files, most likely "
+                            "it means broken installation"));
     }
 }
 
@@ -203,10 +204,10 @@ warn_no_help_file (const char *basename,
     char *msg;
 
     dir_utf8 = g_filename_display_name (find_help_dir ());
-    msg = g_strdup_printf ("File '%s' is missing in the directory '%s'",
+    msg = g_strdup_printf (_("File '%s' is missing in the directory '%s'"),
                            basename, dir_utf8);
 
-    moo_error_dialog (parent, "Could not find help file", msg);
+    moo_error_dialog (parent, _("Could not find help file"), msg);
 
     g_free (msg);
     g_free (dir_utf8);
@@ -285,16 +286,18 @@ open_file_by_id (const char *id,
         return;
     }
 
-    if (!strcmp (id, "contents"))
-        id = "index";
+    if (!strcmp (id, MOO_HELP_ID_CONTENTS))
+        id = MOO_HELP_ID_INDEX;
 
     basename = g_strdup_printf ("%s.html", id);
     filename = g_build_filename (dir, basename, NULL);
 
-    if (!g_file_test (filename, G_FILE_TEST_IS_REGULAR))
-        warn_no_help_file (basename, parent);
-    else
+    if (g_file_test (filename, G_FILE_TEST_IS_REGULAR))
         open_html_file (filename, parent);
+    else if (strcmp (id, MOO_HELP_ID_INDEX) != 0)
+        open_file_by_id (MOO_HELP_ID_INDEX, parent);
+    else
+        warn_no_help_file (basename, parent);
 
     g_free (filename);
     g_free (basename);

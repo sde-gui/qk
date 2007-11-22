@@ -9,6 +9,7 @@ docbook_files =				\
 
 EXTRA_DIST =			\
 	$(docbook_files)	\
+	help-sections.h		\
 	manual.xsl		\
 	help.xsl		\
 	help.css		\

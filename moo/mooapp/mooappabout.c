@@ -21,6 +21,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moohelp.h"
+#include "help-sections.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
@@ -137,7 +138,7 @@ show_credits (void)
 static void
 license_clicked (void)
 {
-    moo_help_open_id ("app-license", NULL);
+    moo_help_open_id (HELP_SECTION_LICENSE, NULL);
 }
 
 

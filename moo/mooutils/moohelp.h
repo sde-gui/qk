@@ -4,6 +4,7 @@
 #include <gtk/gtkdialog.h>
 
 #define MOO_HELP_ID_CONTENTS "contents"
+#define MOO_HELP_ID_INDEX    "index"
 
 typedef gboolean (*MooHelpFunc) (GtkWidget *widget,
                                  gpointer   data);

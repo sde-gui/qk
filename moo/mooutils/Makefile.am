@@ -229,6 +229,7 @@ libmooutils_la_LIBADD = $(libs)
 AM_CFLAGS =					\
 	-I$(top_builddir)			\
 	-I..					\
+	-I$(top_srcdir)/doc			\
 	$(MOO_CFLAGS)				\
 	$(MOO_DEBUG_CFLAGS)			\
 	-DMOO_LOCALE_DIR=\"$(datadir)/locale\"	\

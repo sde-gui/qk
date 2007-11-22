@@ -15,6 +15,7 @@
 #include "mooutils/moomarshals.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moohelp.h"
+#include "help-sections.h"
 
 
 enum {
@@ -548,7 +549,7 @@ moo_prefs_dialog_help (GtkWidget *widget)
         current_page = gtk_notebook_get_nth_page (dialog->notebook, index);
 
     if (!current_page || !moo_help_open (current_page))
-        moo_help_open_id ("app-prefs-dialog", widget);
+        moo_help_open_id (HELP_SECTION_PREFS_DIALOG, widget);
 
     return TRUE;
 }

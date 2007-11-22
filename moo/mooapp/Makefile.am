@@ -40,5 +40,6 @@ libmooapp_la_LIBADD = smclient/libsmclient.la
 AM_CFLAGS =			\
 	-I..			\
 	-I$(top_builddir)	\
+	-I$(top_srcdir)/doc	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)

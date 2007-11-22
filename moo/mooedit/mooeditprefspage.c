@@ -29,6 +29,7 @@
 #include "mooutils/mooencodings.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/moohelp.h"
+#include "help-sections.h"
 #include <string.h>
 
 
@@ -328,7 +329,7 @@ page_langs_init (PrefsPage *page)
     GtkComboBox *lang_combo;
     MooTreeHelper *helper;
 
-    moo_help_set_id (GTK_WIDGET (page->page), "app-prefs-langs-and-filters");
+    moo_help_set_id (GTK_WIDGET (page->page), HELP_SECTION_PREFS_LANGS_AND_FILTERS);
 
     lang_combo = moo_glade_xml_get_widget (page->page->xml, "lang_combo");
     lang_combo_init (lang_combo, page);

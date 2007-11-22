@@ -31,5 +31,5 @@ Makefile(\.in)?$
 ^patches/
 ^po(-gsv)?/(dist|pot)$
 ^po-gsv/po-(stripped|orig)
-^ppc-configure$
+^ppc-configure
 /CVS/
