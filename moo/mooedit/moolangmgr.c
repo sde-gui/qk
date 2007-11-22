@@ -387,6 +387,16 @@ moo_lang_mgr_get_lang_for_file (MooLangMgr *mgr,
     if (file_blacklisted (mgr, filename))
         return NULL;
 
+    lang = get_lang_by_extension (mgr, filename);
+
+    if (lang)
+        return lang;
+
+    lang = lang_mgr_get_lang_for_bak_filename (mgr, filename);
+
+    if (lang)
+        return lang;
+
 #ifdef MOO_USE_XDGMIME
     /* XXX: xdgmime wants utf8-encoded filename here. is it a problem? */
     /* It's a big problem! */
@@ -402,16 +412,6 @@ moo_lang_mgr_get_lang_for_file (MooLangMgr *mgr,
 #warning "Implement moo_lang_mgr_get_lang_for_file()"
 #endif
 #endif /* MOO_USE_XDGMIME */
-
-    lang = get_lang_by_extension (mgr, filename);
-
-    if (lang)
-        return lang;
-
-    lang = lang_mgr_get_lang_for_bak_filename (mgr, filename);
-
-    if (lang)
-        return lang;
 
     return NULL;
 }
