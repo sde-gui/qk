@@ -1139,9 +1139,13 @@ _moo_editor_move_doc (MooEditor     *editor,
 
     g_return_if_fail (MOO_IS_EDITOR (editor));
     g_return_if_fail (MOO_IS_EDIT (doc) && doc->priv->editor == editor);
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (dest) && moo_edit_window_get_editor (dest) == editor);
+    g_return_if_fail (!dest || (MOO_IS_EDIT_WINDOW (dest) && moo_edit_window_get_editor (dest) == editor));
 
     old = window_list_find_doc (editor, doc);
+
+    if (!dest)
+        dest = moo_editor_new_window (editor);
+
     new = window_list_find (editor, dest);
     g_return_if_fail (old != NULL && new != NULL);
 
@@ -1153,11 +1157,8 @@ _moo_editor_move_doc (MooEditor     *editor,
     {
         _moo_edit_window_remove_doc (old->window, doc, FALSE);
 
-        if (!moo_edit_window_get_active_doc (old->window) &&
-            !editor->priv->allow_empty_window)
-        {
-            moo_editor_new_doc (editor, old->window);
-        }
+        if (!moo_edit_window_get_active_doc (old->window))
+            moo_editor_close_window (editor, old->window, FALSE);
     }
 
     old_doc = moo_edit_window_get_active_doc (dest);
@@ -2481,6 +2482,7 @@ moo_editor_apply_prefs (MooEditor *editor)
     const char *color_scheme, *default_lang;
 
     _moo_edit_window_update_title ();
+    _moo_edit_window_set_use_tabs ();
 
     default_lang = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG));
 

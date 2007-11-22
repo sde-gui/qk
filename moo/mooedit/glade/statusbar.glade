@@ -44,6 +44,16 @@
                           </packing>
                         </child>
                         <child>
+                          <widget class="GtkLabel" id="chars">
+                            <property name="visible">True</property>
+                            <property name="events"></property>
+                            <property name="label" translatable="yes">Chars: 10000</property>
+                          </widget>
+                          <packing>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
                           <widget class="GtkLabel" id="insert">
                             <property name="visible">True</property>
                             <property name="label">INS</property>
@@ -51,7 +61,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
-                            <property name="position">1</property>
+                            <property name="position">2</property>
                           </packing>
                         </child>
                       </widget>

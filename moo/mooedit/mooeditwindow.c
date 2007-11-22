@@ -79,14 +79,16 @@ struct _MooEditWindowPrivate {
     MooEditor *editor;
 
     GtkStatusbar *statusbar;
+    guint statusbar_idle;
     guint last_msg_id;
     GtkLabel *cursor_label;
+    GtkLabel *chars_label;
     GtkLabel *insert_label;
     GtkWidget *info;
 
     MooNotebook *notebook;
     GHashTable *panes;
-    GHashTable *panes_to_save; /* char* */
+    GHashTable *panes_to_save; /* char* -> PaneParams* */
     guint save_params_idle;
 
     char *title_format;
@@ -98,6 +100,9 @@ struct _MooEditWindowPrivate {
 
     GSList *stop_clients;
     GSList *jobs; /* Job* */
+
+    GList *history;
+    guint history_blocked : 1;
 };
 
 enum {
@@ -824,6 +829,8 @@ static void
 moo_edit_window_init (MooEditWindow *window)
 {
     window->priv = G_TYPE_INSTANCE_GET_PRIVATE (window, MOO_TYPE_EDIT_WINDOW, MooEditWindowPrivate);
+    window->priv->history = NULL;
+    window->priv->history_blocked = FALSE;
     window->priv->panes = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
     window->priv->panes_to_save = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
                                                         (GDestroyNotify) pane_params_free);
@@ -862,6 +869,12 @@ moo_edit_window_destroy (GtkObject *object)
     {
         g_source_remove (window->priv->doc_list_update_idle);
         window->priv->doc_list_update_idle = 0;
+    }
+
+    if (window->priv->statusbar_idle)
+    {
+        g_source_remove (window->priv->statusbar_idle);
+        window->priv->statusbar_idle = 0;
     }
 
     if (window->priv->xml)
@@ -1851,8 +1864,9 @@ line_numbers_toggled (MooEditWindow *window,
 /* Notebook popup menu
  */
 
-static void     close_activated         (GtkWidget          *item,
-                                         MooEditWindow      *window)
+static void
+close_activated (GtkWidget     *item,
+                 MooEditWindow *window)
 {
     MooEdit *edit = g_object_get_data (G_OBJECT (item), "moo-edit");
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
@@ -1861,8 +1875,9 @@ static void     close_activated         (GtkWidget          *item,
 }
 
 
-static void     close_others_activated  (GtkWidget          *item,
-                                         MooEditWindow      *window)
+static void
+close_others_activated (GtkWidget     *item,
+                        MooEditWindow *window)
 {
     GSList *list;
     MooEdit *edit = g_object_get_data (G_OBJECT (item), "moo-edit");
@@ -1877,6 +1892,19 @@ static void     close_others_activated  (GtkWidget          *item,
         moo_editor_close_docs (window->priv->editor, list, TRUE);
 
     g_slist_free (list);
+}
+
+
+static void
+detach_activated (GtkWidget     *item,
+                  MooEditWindow *window)
+{
+    MooEdit *doc = g_object_get_data (G_OBJECT (item), "moo-edit");
+
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (MOO_IS_EDIT (doc));
+
+    _moo_editor_move_doc (window->priv->editor, doc, NULL, TRUE);
 }
 
 
@@ -1931,6 +1959,21 @@ notebook_populate_popup (MooNotebook        *notebook,
                           window);
     }
 
+    if (moo_edit_window_num_docs (window) > 1)
+    {
+        gtk_menu_shell_append (GTK_MENU_SHELL (menu),
+                               g_object_new (GTK_TYPE_SEPARATOR_MENU_ITEM,
+                                             "visible", TRUE, NULL));
+
+        item = gtk_menu_item_new_with_label ("Detach");
+        gtk_widget_show (item);
+        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+        g_object_set_data (G_OBJECT (item), "moo-edit", edit);
+        g_signal_connect (item, "activate",
+                          G_CALLBACK (detach_activated),
+                          window);
+    }
+
     return FALSE;
 }
 
@@ -1959,9 +2002,29 @@ notebook_button_press (MooNotebook    *notebook,
 
 
 static void
+set_use_tabs (MooEditWindow *window)
+{
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_object_set (window->priv->notebook, "show-tabs",
+                  moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_USE_TABS)), NULL);
+}
+
+void
+_moo_edit_window_set_use_tabs (void)
+{
+    GSList *l;
+
+    for (l = windows; l != NULL; l = l->next)
+        set_use_tabs (l->data);
+}
+
+
+static void
 setup_notebook (MooEditWindow *window)
 {
     GtkWidget *button, *icon, *frame;
+
+    set_use_tabs (window);
 
     g_signal_connect_after (window->priv->notebook, "moo-switch-page",
                             G_CALLBACK (notebook_switch_page), window);
@@ -2327,6 +2390,9 @@ _moo_edit_window_remove_doc (MooEditWindow  *window,
         g_object_set_data (G_OBJECT (doc), "moo-doc-list-action", NULL);
     }
 
+    window->priv->history = g_list_remove (window->priv->history, doc);
+    window->priv->history_blocked = TRUE;
+
     moo_edit_window_update_doc_list (window);
 
     /* removing scrolled window from the notebook will destroy the scrolled window,
@@ -2334,6 +2400,10 @@ _moo_edit_window_remove_doc (MooEditWindow  *window,
     if (!destroy)
         gtk_container_remove (GTK_CONTAINER (GTK_WIDGET(doc)->parent), GTK_WIDGET (doc));
     moo_notebook_remove_page (window->priv->notebook, page);
+
+    window->priv->history_blocked = FALSE;
+    if (window->priv->history)
+        moo_edit_window_set_active_doc (window, window->priv->history->data);
 
     edit_changed (window, NULL);
 
@@ -3090,21 +3160,38 @@ clear_statusbar (MooEditWindow *window)
 static void
 set_statusbar_numbers (MooEditWindow *window,
                        int            line,
-                       int            column)
+                       int            column,
+                       int            chars)
 {
-    char *text = g_strdup_printf ("Line: %d Col: %d", line, column);
+    char *text, *text2;
+
+    if (line > 0 && column > 0)
+        /* Label in the statusbar - line and column numbers */
+        text = g_strdup_printf (_("Line: %d Col: %d"), line, column);
+    else
+        /* Disabled label in the statusbar when no document is open */
+        text = g_strdup (_("Line: Col: "));
+
+    if (chars >= 0)
+        /* Label in the statusbar - number of characters in the document */
+        text2 = g_strdup_printf (_("Chars: %d"), chars);
+    else
+        /* Disabled label in the statusbar when no document is open */
+        text2 = g_strdup (_("Chars: "));
+
     gtk_label_set_text (window->priv->cursor_label, text);
+    gtk_label_set_text (window->priv->chars_label, text2);
     clear_statusbar (window);
+
+    g_free (text2);
     g_free (text);
 }
 
-
-/* XXX */
 static void
-update_statusbar (MooEditWindow *window)
+do_update_statusbar (MooEditWindow *window)
 {
     MooEdit *edit;
-    int line, column;
+    int line, column, chars;
     GtkTextIter iter;
     GtkTextBuffer *buffer;
     gboolean ovr;
@@ -3114,7 +3201,7 @@ update_statusbar (MooEditWindow *window)
     if (!edit)
     {
         gtk_widget_set_sensitive (window->priv->info, FALSE);
-        clear_statusbar (window);
+        set_statusbar_numbers (window, 0, 0, -1);
         return;
     }
 
@@ -3125,26 +3212,41 @@ update_statusbar (MooEditWindow *window)
                                       gtk_text_buffer_get_insert (buffer));
     line = gtk_text_iter_get_line (&iter) + 1;
     column = moo_text_iter_get_visual_line_offset (&iter, 8) + 1;
+    chars = gtk_text_buffer_get_char_count (buffer);
 
-    set_statusbar_numbers (window, line, column);
+    set_statusbar_numbers (window, line, column, chars);
 
     ovr = gtk_text_view_get_overwrite (GTK_TEXT_VIEW (edit));
-    gtk_label_set_text (window->priv->insert_label, ovr ? "OVR" : "INS");
+    /* Label in the editor window statusbar - Overwrite or Insert mode */
+    gtk_label_set_text (window->priv->insert_label, ovr ? _("OVR") : _("INS"));
+}
+
+static gboolean
+update_statusbar_idle (MooEditWindow *window)
+{
+    window->priv->statusbar_idle = 0;
+    do_update_statusbar (window);
+    return FALSE;
+}
+
+static void
+update_statusbar (MooEditWindow *window)
+{
+    if (!window->priv->statusbar_idle)
+        window->priv->statusbar_idle =
+            g_idle_add_full (G_PRIORITY_HIGH,
+                             (GSourceFunc) update_statusbar_idle,
+                             window, NULL);
 }
 
 
-/* XXX */
 static void
-edit_cursor_moved (MooEditWindow      *window,
-                   GtkTextIter        *iter,
-                   MooEdit            *edit)
+edit_cursor_moved (MooEditWindow *window,
+                   G_GNUC_UNUSED GtkTextIter *iter,
+                   MooEdit *edit)
 {
     if (edit == ACTIVE_DOC (window))
-    {
-        int line = gtk_text_iter_get_line (iter) + 1;
-        int column = moo_text_iter_get_visual_line_offset (iter, 8) + 1;
-        set_statusbar_numbers (window, line, column);
-    }
+        update_statusbar (window);
 }
 
 
@@ -3165,6 +3267,7 @@ create_statusbar (MooEditWindow *window)
     window->priv->statusbar = moo_glade_xml_get_widget (xml, "statusbar");
 
     window->priv->cursor_label = moo_glade_xml_get_widget (xml, "cursor");
+    window->priv->chars_label = moo_glade_xml_get_widget (xml, "chars");
     window->priv->insert_label = moo_glade_xml_get_widget (xml, "insert");
     window->priv->info = moo_glade_xml_get_widget (xml, "info");
 
@@ -3960,11 +4063,29 @@ out:
 static void
 moo_edit_window_update_doc_list (MooEditWindow *window)
 {
+    MooEdit *doc;
+
     if (!window->priv->doc_list_update_idle)
         window->priv->doc_list_update_idle =
                 _moo_idle_add_full (G_PRIORITY_HIGH,
                                     (GSourceFunc) do_update_doc_list,
                                     window, NULL);
+
+    if (!window->priv->history_blocked &&
+        (doc = moo_edit_window_get_active_doc (window)))
+    {
+        GList *link = g_list_find (window->priv->history, doc);
+
+        if (link && link != window->priv->history)
+        {
+            window->priv->history = g_list_delete_link (window->priv->history, link);
+            window->priv->history = g_list_prepend (window->priv->history, doc);
+        }
+        else if (!link)
+        {
+            window->priv->history = g_list_prepend (window->priv->history, doc);
+        }
+    }
 }
 
 
@@ -4020,7 +4141,6 @@ notebook_drag_drop (GtkWidget          *widget,
     }
 
     return TRUE;
-
 }
 
 
