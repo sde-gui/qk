@@ -723,7 +723,7 @@ assign_missing_ids (GSList *list)
 
 static void
 add_deleted (const char *id,
-             GSList     *link,
+             G_GNUC_UNUSED GSList *link,
              GSList    **list)
 {
     MooUserToolInfo *info;

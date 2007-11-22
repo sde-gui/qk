@@ -407,9 +407,6 @@ clear_drag_stuff (MooTextView *view)
     view->priv->dnd.button = GDK_BUTTON_RELEASE;
 }
 
-#define get_buf(view) \
-    GTK_SOURCE_BUFFER (gtk_text_view_get_buffer (GTK_TEXT_VIEW (view)))
-
 /* from gtktextview.c */
 static void
 text_view_unobscure_mouse_cursor (GtkTextView *text_view)
