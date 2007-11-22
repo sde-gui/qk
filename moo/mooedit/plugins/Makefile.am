@@ -1,11 +1,8 @@
-DIST_SUBDIRS = ctags project
+DIST_SUBDIRS = ctags
 SUBDIRS =
 
 if MOO_BUILD_CTAGS
 SUBDIRS += ctags
-endif
-if MOO_USE_OBJC
-SUBDIRS += project
 endif
 
 noinst_LTLIBRARIES =
@@ -18,6 +15,7 @@ CLEANFILES =
 AM_CFLAGS =			\
 	-I../..			\
 	-I$(top_builddir)	\
+	-I$(top_srcdir)/doc	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
 AM_OBJCFLAGS = $(AM_CFLAGS) $(MOO_OBJCFLAGS)
@@ -56,9 +54,6 @@ libmooeditplugins_la_LIBADD = libfileselector.la
 
 if MOO_BUILD_CTAGS
 libmooeditplugins_la_LIBADD += ctags/libctags.la
-endif
-if MOO_USE_OBJC
-libmooeditplugins_la_LIBADD += project/libproject.la
 endif
 
 libmooeditplugins_la_SOURCES =	\
