@@ -707,12 +707,20 @@ G_STMT_START {              \
     b = MAX (b, 0);         \
 } G_STMT_END
 
-static void     moo_notebook_size_request   (GtkWidget      *widget,
-                                             GtkRequisition *requisition)
+static int
+get_border_width (MooNotebook *nb)
+{
+    return nb->priv->tabs_visible ?
+            gtk_container_get_border_width (GTK_CONTAINER (nb)) : 0;
+}
+
+static void
+moo_notebook_size_request (GtkWidget      *widget,
+                           GtkRequisition *requisition)
 {
     GtkRequisition child_req;
     MooNotebook *nb = MOO_NOTEBOOK (widget);
-    int border_width = gtk_container_get_border_width (GTK_CONTAINER (nb));
+    int border_width = get_border_width (nb);
     int xthickness = widget->style->xthickness;
     int ythickness = widget->style->ythickness;
 
@@ -796,23 +804,25 @@ static int      labels_get_height_request     (MooNotebook    *nb)
 }
 
 
-static int      get_tab_window_width        (MooNotebook    *nb)
+static int
+get_tab_window_width (MooNotebook *nb)
 {
     GtkWidget *widget = GTK_WIDGET (nb);
     return widget->allocation.width - nb->priv->action_widgets_size[LEFT] -
             nb->priv->arrows_size - nb->priv->action_widgets_size[RIGHT] -
-            2 * gtk_container_get_border_width (GTK_CONTAINER (nb));
+            2 * get_border_width (nb);
 }
 
 
-static void     moo_notebook_size_allocate  (GtkWidget      *widget,
-                                             GtkAllocation  *allocation)
+static void
+moo_notebook_size_allocate (GtkWidget     *widget,
+                            GtkAllocation *allocation)
 {
     GtkAllocation child_allocation, tabs_allocation;
     MooNotebook *nb = MOO_NOTEBOOK (widget);
-    int border_width = gtk_container_get_border_width (GTK_CONTAINER (nb));
     int xthickness = widget->style->xthickness;
     int ythickness = widget->style->ythickness;
+    int border_width = get_border_width (nb);
 
     NOTEBOOK_CHECK_INVARIANTS (nb);
 
@@ -998,13 +1008,11 @@ moo_notebook_parent_set (GtkWidget *widget,
 static void
 moo_notebook_realize (GtkWidget *widget)
 {
+    MooNotebook *nb = MOO_NOTEBOOK (widget);
     static GdkWindowAttr attributes;
     gint attributes_mask;
-    MooNotebook *nb;
     GSList *l;
-    int border_width = gtk_container_get_border_width (GTK_CONTAINER (widget));
-
-    nb = MOO_NOTEBOOK (widget);
+    int border_width = get_border_width (nb);
 
     GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
 
@@ -1184,12 +1192,13 @@ static void     moo_notebook_forall         (GtkContainer   *container,
 }
 
 
-static void     moo_notebook_draw_child_border  (MooNotebook    *nb,
-                                                 GdkEventExpose *event)
+static void
+moo_notebook_draw_child_border (MooNotebook    *nb,
+                                GdkEventExpose *event)
 {
     GtkWidget *widget = GTK_WIDGET (nb);
     Page *page = nb->priv->current_page;
-    int border_width = gtk_container_get_border_width (GTK_CONTAINER (nb));
+    int border_width = get_border_width (nb);
     gboolean draw_gap = TRUE;
     int gap_x, gap_width;
 
@@ -1264,15 +1273,16 @@ static void     moo_notebook_draw_child_border  (MooNotebook    *nb,
 }
 
 
-static gboolean moo_notebook_expose         (GtkWidget      *widget,
-                                             GdkEventExpose *event)
+static gboolean
+moo_notebook_expose (GtkWidget      *widget,
+                     GdkEventExpose *event)
 {
     MooNotebook *nb = MOO_NOTEBOOK (widget);
 
     if (event->window == nb->priv->tab_window)
         moo_notebook_draw_labels (nb, event);
 
-    if (event->window == widget->window)
+    if (event->window == widget->window && nb->priv->tabs_visible)
         moo_notebook_draw_child_border (nb, event);
 
     /* do not let GtkNotebook try to draw */
@@ -3322,7 +3332,7 @@ labels_invalidate (MooNotebook *nb)
 {
     GdkRectangle rect;
     GtkWidget *widget = GTK_WIDGET(nb);
-    int border_width = gtk_container_get_border_width (GTK_CONTAINER (nb));
+    int border_width = get_border_width (nb);
 
     if (!GTK_WIDGET_MAPPED (nb))
         return;
