@@ -19,7 +19,7 @@ moo/mooedit/glade/mootextfind.glade
 moo/mooedit/glade/mootextgotoline.glade
 moo/mooedit/glade/quicksearch.glade
 moo/mooedit/medit-ui.xml
-moo/mooedit/moocommand-exe-unix.c
+moo/mooedit/moocommand-unx.c
 moo/mooedit/moocommand-lua.c
 moo/mooedit/mooeditaction-factory.c
 moo/mooedit/mooeditdialogs.c
