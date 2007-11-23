@@ -63,11 +63,12 @@ enum {
     KEY_INPUT,
     KEY_OUTPUT,
     KEY_FILTER,
+    KEY_EXE,
     N_KEYS
 };
 
 static const char *data_keys[] = {
-    "input", "output", "filter", NULL
+    "input", "output", "filter", "exe", NULL
 };
 
 struct _MooCommandUnxPrivate {
@@ -568,7 +569,7 @@ _moo_command_unx_class_init (MooCommandUnxClass *klass)
     g_type_class_add_private (klass, sizeof (MooCommandUnxPrivate));
 
     factory = g_object_new (_moo_command_factory_unx_get_type (), NULL);
-    moo_command_factory_register ("exe", _("Shell command"), factory, (char**) data_keys);
+    moo_command_factory_register ("exe", _("Shell command"), factory, (char**) data_keys, ".sh");
     g_object_unref (factory);
 }
 

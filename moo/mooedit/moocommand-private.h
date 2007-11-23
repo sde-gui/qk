@@ -33,6 +33,9 @@ void            _moo_command_format_item            (MooKeyFileItem     *item,
                                                      MooCommandData     *data,
                                                      MooCommandFactory  *factory,
                                                      char               *options);
+MooCommandData *_moo_command_parse_file             (const char         *filename,
+                                                     MooCommandFactory **factory,
+                                                     char             ***params);
 
 GtkWidget      *_moo_command_factory_create_widget  (MooCommandFactory  *factory);
 void            _moo_command_factory_load_data      (MooCommandFactory  *factory,

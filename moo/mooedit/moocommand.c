@@ -25,7 +25,9 @@
 #include "mooedit/moocommand-unx.h"
 #endif
 #include <gtk/gtk.h>
+#include <glib/gstdio.h>
 #include <string.h>
+#include <stdio.h>
 
 
 #define KEY_TYPE    "type"
@@ -106,7 +108,8 @@ void
 moo_command_factory_register (const char        *name,
                               const char        *display_name,
                               MooCommandFactory *factory,
-                              char             **keys)
+                              char             **keys,
+                              const char        *extension)
 {
     MooCommandFactoryClass *klass;
 
@@ -140,6 +143,7 @@ moo_command_factory_register (const char        *name,
     factory->display_name = g_strdup (display_name);
     factory->keys = g_strdupv (keys);
     factory->n_keys = keys ? g_strv_length (keys) : 0;
+    factory->extension = g_strdup (extension);
 
     g_hash_table_insert (registered_factories, g_strdup (name), g_object_ref (factory));
 }
@@ -879,6 +883,204 @@ find_key (MooCommandFactory *factory,
 
     return -1;
 }
+
+
+static void
+get_one_option (MooCommandFactory *factory,
+                MooCommandData    *cmd_data,
+                const char        *key,
+                const char        *value,
+                GPtrArray        **options)
+{
+    int index;
+
+    index = find_key (factory, key);
+
+    if (index >= 0)
+    {
+        moo_command_data_set (cmd_data, index, value);
+    }
+    else
+    {
+        if (!*options)
+            *options = g_ptr_array_new ();
+        g_ptr_array_add (*options, g_strdup (key));
+        g_ptr_array_add (*options, g_strdup (value));
+    }
+}
+
+static void
+get_options_from_contents (MooCommandFactory *factory,
+                           MooCommandData    *cmd_data,
+                           const char        *contents,
+                           GPtrArray        **options,
+                           const char        *filename)
+{
+    guint i;
+    guint line_ends;
+    const char *start = NULL;
+    const char *end = NULL;
+    char **p, **comps;
+    char *opt_string;
+
+    for (i = 0, line_ends = 0; i < 2048 && contents[i]; i++)
+    {
+        if (contents[i] == '\n' || contents[i] == '\r')
+        {
+            if (line_ends)
+                break;
+            if (contents[i] == '\r' && contents[i+1] == '\n')
+                i += 1;
+            line_ends += 1;
+        }
+        else if (contents[i] == '!' && contents[i+1] == '!')
+        {
+            if (!start)
+            {
+                start = contents + i + 2;
+                i += 1;
+            }
+            else
+            {
+                end = contents + i;
+                break;
+            }
+        }
+    }
+
+    if (!start || !end)
+        return;
+
+    opt_string = g_strndup (start, end - start);
+    comps = g_strsplit (opt_string, ";", 0);
+
+    for (p = comps; p && *p; ++p)
+    {
+        char *eq = strchr (*p, '=');
+
+        if (!eq)
+        {
+            g_warning ("%s: invalid option '%s' in file %s", G_STRFUNC, *p, filename);
+        }
+        else
+        {
+            char *key = *p;
+            char *value = eq + 1;
+            *eq = 0;
+            g_strstrip (key);
+            g_strstrip (value);
+            get_one_option (factory, cmd_data, key, value, options);
+        }
+    }
+
+    g_strfreev (comps);
+    g_free (opt_string);
+}
+
+static void
+get_options_from_file (MooCommandFactory *factory,
+                       MooCommandData    *cmd_data,
+                       const char        *filename,
+                       GPtrArray        **options)
+{
+    FILE *file;
+    char buf[2048];
+
+    if (!(file = g_fopen (filename, "r")))
+    {
+        g_warning ("%s: could not open file %s", G_STRFUNC, filename);
+        return;
+    }
+
+    buf[0] = 0;
+    buf[sizeof buf - 1] = '\1';
+
+    if (fgets (buf, sizeof buf, file) && buf[sizeof buf - 1] != 0)
+    {
+        int len = strlen (buf);
+        fgets (buf + len, sizeof buf - len, file);
+    }
+
+    get_options_from_contents (factory, cmd_data, buf, options, filename);
+
+    fclose (file);
+}
+
+MooCommandData *
+_moo_command_parse_file (const char         *filename,
+                         MooCommandFactory **factory_p,
+                         char             ***params)
+{
+    GSList *factories;
+    MooCommandFactory *factory = NULL;
+    MooCommandData *cmd_data = NULL;
+    GPtrArray *array = NULL;
+
+    g_return_val_if_fail (filename != NULL, NULL);
+    g_return_val_if_fail (factory_p != NULL, NULL);
+    g_return_val_if_fail (params != NULL, NULL);
+
+    *factory_p = NULL;
+    *params = NULL;
+
+    factories  = moo_command_list_factories ();
+    while (factories)
+    {
+        factory = factories->data;
+
+        if (factory->extension && g_str_has_suffix (filename, factory->extension))
+            break;
+
+        factory = NULL;
+        factories = g_slist_delete_link (factories, factories);
+    }
+    g_slist_free (factories);
+
+    if (factory)
+    {
+        char *contents;
+        GError *error = NULL;
+
+        if (!g_file_get_contents (filename, &contents, NULL, &error))
+        {
+            g_warning ("could not read file %s: %s", filename, error->message);
+            g_error_free (error);
+            return NULL;
+        }
+
+        cmd_data = moo_command_data_new (factory->n_keys);
+        moo_command_data_take_code (cmd_data, contents);
+        get_options_from_contents (factory, cmd_data, contents, &array, filename);
+    }
+
+#ifndef __WIN32__
+    if (!factory)
+    {
+        if (g_file_test (filename, G_FILE_TEST_IS_EXECUTABLE))
+            factory = moo_command_factory_lookup ("exe");
+
+        if (factory)
+        {
+            cmd_data = moo_command_data_new (factory->n_keys);
+            moo_command_data_set_code (cmd_data, filename);
+            get_options_from_file (factory, cmd_data, filename, &array);
+        }
+    }
+#endif
+
+    if (!factory)
+        g_warning ("%s: unknown file type: %s", G_STRFUNC, filename);
+
+    if (array)
+    {
+        g_ptr_array_add (array, NULL);
+        *params = (char**) g_ptr_array_free (array, FALSE);
+    }
+
+    *factory_p = factory;
+    return cmd_data;
+}
+
 
 static void
 item_foreach_func (const char *key,

@@ -80,4 +80,4 @@ class PyCmdFactory(moo.edit.CommandFactory):
 
 gobject.type_register(PyCmd)
 gobject.type_register(PyCmdFactory)
-moo.edit.command_factory_register("python", _("Python script"), PyCmdFactory(), None)
+moo.edit.command_factory_register("python", _("Python script"), PyCmdFactory(), None, ".py")

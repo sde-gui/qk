@@ -74,7 +74,7 @@ populate_store (GtkListStore   *store,
     GtkTreeIter iter;
     GSList *list;
 
-    list = _moo_edit_parse_user_tools (type);
+    list = _moo_edit_parse_user_tools (type, FALSE);
 
     while (list)
     {

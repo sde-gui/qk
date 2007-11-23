@@ -72,7 +72,8 @@ typedef void (*MooToolFileParseFunc)    (MooUserToolInfo        *info,
                                          gpointer                data);
 
 /* caller must free the list and unref() the contents */
-GSList *_moo_edit_parse_user_tools      (MooUserToolType         type);
+GSList *_moo_edit_parse_user_tools      (MooUserToolType         type,
+                                         gboolean                all);
 void    _moo_edit_save_user_tools       (MooUserToolType         type,
                                          GSList                 *user_info);
 

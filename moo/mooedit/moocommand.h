@@ -91,6 +91,7 @@ struct _MooCommandFactory {
     char *display_name;
     char **keys;
     guint n_keys;
+    char *extension;
 };
 
 struct _MooCommandFactoryClass {
@@ -138,7 +139,8 @@ MooCommandOptions   moo_command_options_parse       (const char         *string)
 void                moo_command_factory_register    (const char         *name,
                                                      const char         *display_name,
                                                      MooCommandFactory  *factory,
-                                                     char              **data_keys);
+                                                     char              **data_keys,
+                                                     const char         *extension);
 MooCommandFactory  *moo_command_factory_lookup      (const char         *name);
 /* returns list of MooCommandFactory instances, list should be freed */
 GSList             *moo_command_list_factories      (void);
