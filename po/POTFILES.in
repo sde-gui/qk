@@ -67,3 +67,4 @@ moo/mooutils/moofontsel.c
 moo/mooutils/moostock.c
 moo/mooutils/moowindow.c
 moo/mooutils/moopane.c
+moo/mooutils/moohelp.c

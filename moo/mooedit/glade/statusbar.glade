@@ -47,7 +47,7 @@
                           <widget class="GtkLabel" id="chars">
                             <property name="visible">True</property>
                             <property name="events"></property>
-                            <property name="label" translatable="yes">Chars: 10000</property>
+                            <property name="label">Chars: 10000</property>
                           </widget>
                           <packing>
                             <property name="position">1</property>
