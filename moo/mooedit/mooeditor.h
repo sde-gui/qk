@@ -155,6 +155,23 @@ void            _moo_editor_save_session    (MooEditor      *editor,
                                              MooMarkupNode  *xml);
 
 
+enum {
+    MOO_EDIT_OPEN_NEW_WINDOW    = 1u << 0,
+    MOO_EDIT_OPEN_NEW_TAB       = 1u << 1
+};
+
+char           *_moo_edit_filename_to_uri   (const char     *filename,
+                                             guint           line,
+                                             guint           options);
+char           *_moo_edit_uri_to_filename   (const char     *uri,
+                                             guint          *line,
+                                             guint          *options);
+void            _moo_editor_open_file       (MooEditor      *editor,
+                                             const char     *filename,
+                                             guint           line,
+                                             guint           options);
+
+
 G_END_DECLS
 
 #endif /* MOO_EDITOR_H */

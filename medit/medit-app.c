@@ -82,6 +82,12 @@ int _medit_parse_options (const char *const program_name,
       --app-name=NAME            Set instance name to NAME if it's not already\n\
                                    running\n"
 
+#define STR_HELP_NEW_WINDOW "\
+  -w, --new-window               Open file in a new window\n"
+
+#define STR_HELP_NEW_TAB "\
+  -t, --new-tab                  Open file in a new tab\n"
+
 #define STR_HELP_MODE "\
   -m, --mode=[simple|project]    Use specified mode\n"
 
@@ -115,6 +121,8 @@ int _medit_parse_options (const char *const program_name,
       --pid=PID                  Use existing instance with process id PID\n\
       --app-name=NAME            Set instance name to NAME if it's not already\n\
                                    running\n\
+  -w, --new-window               Open file in a new window\n\
+  -t, --new-tab                  Open file in a new tab\n\
   -m, --mode=[simple|project]    Use specified mode\n\
   -p, --project=PROJECT          Open project file PROJECT\n\
   -l, --line=LINE                Open file and position cursor on line LINE\n\
@@ -136,6 +144,12 @@ char _medit_opt_pid;
 
 /* Set to 1 if option --app-name has been specified.  */
 char _medit_opt_app_name;
+
+/* Set to 1 if option --new-window (-w) has been specified.  */
+char _medit_opt_new_window;
+
+/* Set to 1 if option --new-tab (-t) has been specified.  */
+char _medit_opt_new_tab;
 
 /* Set to 1 if option --mode (-m) has been specified.  */
 char _medit_opt_mode;
@@ -198,6 +212,8 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   static const char *const optstr__new_app = "new-app";
   static const char *const optstr__pid = "pid";
   static const char *const optstr__app_name = "app-name";
+  static const char *const optstr__new_window = "new-window";
+  static const char *const optstr__new_tab = "new-tab";
   static const char *const optstr__mode = "mode";
   static const char *const optstr__project = "project";
   static const char *const optstr__line = "line";
@@ -211,6 +227,8 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   _medit_opt_use_session = 0;
   _medit_opt_pid = 0;
   _medit_opt_app_name = 0;
+  _medit_opt_new_window = 0;
+  _medit_opt_new_tab = 0;
   _medit_opt_mode = 0;
   _medit_opt_project = 0;
   _medit_opt_line = 0;
@@ -370,12 +388,38 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
        case 'n':
         if (strncmp (option + 1, optstr__new_app + 1, option_len - 1) == 0)
         {
+          if (option_len <= 4)
+            goto error_long_opt_ambiguous;
           if (argument != 0)
           {
             option = optstr__new_app;
             goto error_unexpec_arg_long;
           }
           _medit_opt_new_app = 1;
+          break;
+        }
+        if (strncmp (option + 1, optstr__new_tab + 1, option_len - 1) == 0)
+        {
+          if (option_len <= 4)
+            goto error_long_opt_ambiguous;
+          if (argument != 0)
+          {
+            option = optstr__new_tab;
+            goto error_unexpec_arg_long;
+          }
+          _medit_opt_new_tab = 1;
+          break;
+        }
+        if (strncmp (option + 1, optstr__new_window + 1, option_len - 1) == 0)
+        {
+          if (option_len <= 4)
+            goto error_long_opt_ambiguous;
+          if (argument != 0)
+          {
+            option = optstr__new_window;
+            goto error_unexpec_arg_long;
+          }
+          _medit_opt_new_window = 1;
           break;
         }
         goto error_unknown_long_opt;
@@ -498,6 +542,12 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
             _medit_arg_use_session = 0;
           _medit_opt_use_session = 1;
           break;
+         case 't':
+          _medit_opt_new_tab = 1;
+          break;
+         case 'w':
+          _medit_opt_new_window = 1;
+          break;
          default:
           fprintf (stderr, STR_ERR_UNKNOWN_SHORT_OPT, program_name, *option);
           return -1;
@@ -509,7 +559,7 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   }
   return i;
 }
-#line 64 "../../../medit/medit-app.opag"
+#line 65 "../../../medit/medit-app.opag"
 
 #undef STR_HELP
 #define STR_HELP        \
@@ -651,6 +701,7 @@ main (int argc, char *argv[])
     guint32 stamp;
     guint32 line = 0;
     const char *name = NULL;
+    guint options = 0;
 
     init_mem_stuff ();
 
@@ -723,6 +774,10 @@ main (int argc, char *argv[])
 
     if (_medit_arg_line)
         line = strtol (_medit_arg_line, NULL, 10);
+    if (_medit_opt_new_window)
+        options |= MOO_EDIT_OPEN_NEW_WINDOW;
+    if (_medit_opt_new_tab)
+        options |= MOO_EDIT_OPEN_NEW_TAB;
 
     if (_medit_opt_pid)
         name = _medit_arg_pid;
@@ -747,7 +802,7 @@ main (int argc, char *argv[])
 
     if (name)
     {
-        if (moo_app_send_files (app, files, line, stamp, name))
+        if (moo_app_send_files (app, files, line, stamp, name, options))
             exit (0);
 
         if (!_medit_opt_app_name)
@@ -757,7 +812,7 @@ main (int argc, char *argv[])
         }
     }
 
-    if ((!new_instance && !_medit_opt_app_name && moo_app_send_files (app, files, line, stamp, NULL)) ||
+    if ((!new_instance && !_medit_opt_app_name && moo_app_send_files (app, files, line, stamp, NULL, options)) ||
          !moo_app_init (app))
     {
         gdk_notify_startup_complete ();
@@ -776,7 +831,7 @@ main (int argc, char *argv[])
         moo_editor_new_window (editor);
 
     if (files && *files)
-        moo_app_open_files (app, files, line, stamp);
+        moo_app_open_files (app, files, line, stamp, options);
 
     g_strfreev (files);
 

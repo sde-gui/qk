@@ -114,11 +114,13 @@ gboolean         moo_app_send_files             (MooApp     *app,
                                                  char      **files,
                                                  guint32     line,
                                                  guint32     stamp,
-                                                 const char *pid);
+                                                 const char *pid,
+                                                 guint       options);
 void             moo_app_open_files             (MooApp     *app,
                                                  char      **files,
                                                  guint32     line,
-                                                 guint32     stamp);
+                                                 guint32     stamp,
+                                                 guint       options);
 
 void             moo_app_reload_python_plugins  (void);
 

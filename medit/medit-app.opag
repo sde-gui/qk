@@ -49,6 +49,8 @@ n  new-app      "Run new instance of application"
 s  use-session  "[=yes|no] Load and save session"                               optarg
    pid          "=PID Use existing instance with process id PID"                reqarg
    app-name     "=NAME Set instance name to NAME if it's not already running"   reqarg
+w  new-window   "Open file in a new window"
+t  new-tab      "Open file in a new tab"
 m  mode         "=[simple|project] Use specified mode"                          reqarg
 p  project      "=PROJECT Open project file PROJECT"                            reqarg
 l  line         "=LINE Open file and position cursor on line LINE"              reqarg
@@ -59,7 +61,7 @@ l  line         "=LINE Open file and position cursor on line LINE"              
    version      "Display version information and exit"                          return
 h  help         "Display this help text and exit"                               return
 %%
-#line 64 "../../../medit/medit-app.opag"
+#line 65 "../../../medit/medit-app.opag"
 
 #undef STR_HELP
 #define STR_HELP        \
@@ -201,6 +203,7 @@ main (int argc, char *argv[])
     guint32 stamp;
     guint32 line = 0;
     const char *name = NULL;
+    guint options = 0;
 
     init_mem_stuff ();
 
@@ -273,6 +276,10 @@ main (int argc, char *argv[])
 
     if (_medit_arg_line)
         line = strtol (_medit_arg_line, NULL, 10);
+    if (_medit_opt_new_window)
+        options |= MOO_EDIT_OPEN_NEW_WINDOW;
+    if (_medit_opt_new_tab)
+        options |= MOO_EDIT_OPEN_NEW_TAB;
 
     if (_medit_opt_pid)
         name = _medit_arg_pid;
@@ -297,7 +304,7 @@ main (int argc, char *argv[])
 
     if (name)
     {
-        if (moo_app_send_files (app, files, line, stamp, name))
+        if (moo_app_send_files (app, files, line, stamp, name, options))
             exit (0);
 
         if (!_medit_opt_app_name)
@@ -307,7 +314,7 @@ main (int argc, char *argv[])
         }
     }
 
-    if ((!new_instance && !_medit_opt_app_name && moo_app_send_files (app, files, line, stamp, NULL)) ||
+    if ((!new_instance && !_medit_opt_app_name && moo_app_send_files (app, files, line, stamp, NULL, options)) ||
          !moo_app_init (app))
     {
         gdk_notify_startup_complete ();
@@ -326,7 +333,7 @@ main (int argc, char *argv[])
         moo_editor_new_window (editor);
 
     if (files && *files)
-        moo_app_open_files (app, files, line, stamp);
+        moo_app_open_files (app, files, line, stamp, options);
 
     g_strfreev (files);
 

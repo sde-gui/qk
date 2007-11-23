@@ -966,10 +966,12 @@ moo_app_send_files (MooApp     *app,
                     char      **files,
                     guint32     line,
                     guint32     stamp,
-                    const char *pid)
+                    const char *pid,
+                    guint       options)
 {
     gboolean result;
     GString *msg;
+    char **p;
 
     g_return_val_if_fail (MOO_IS_APP (app), FALSE);
 
@@ -979,14 +981,14 @@ moo_app_send_files (MooApp     *app,
 
     msg = g_string_new (NULL);
 
-    g_string_append_printf (msg, "%s%08x%08x", CMD_OPEN_URIS, stamp, line);
+    g_string_append_printf (msg, "%s%08x%08x", CMD_OPEN_URIS, stamp, 0u);
 
-    while (files && *files)
+    for (p = files; p && *p; ++p)
     {
         char *freeme = NULL, *uri;
         const char *basename, *filename;
 
-        basename = *files++;
+        basename = *p;
 
         if (g_path_is_absolute (basename))
         {
@@ -1000,7 +1002,10 @@ moo_app_send_files (MooApp     *app,
             g_free (dir);
         }
 
-        uri = g_filename_to_uri (filename, NULL, NULL);
+        if (p != files)
+            line = 0;
+
+        uri = _moo_edit_filename_to_uri (filename, line, options);
 
         if (uri)
         {
@@ -1452,7 +1457,8 @@ _moo_app_exec_cmd (MooApp     *app,
 static void
 moo_app_new_file (MooApp       *app,
                   const char   *filename,
-                  guint32       line)
+                  guint32       line,
+                  guint         options)
 {
 #ifdef MOO_BUILD_EDIT
     MooEditor *editor = moo_app_get_editor (app);
@@ -1490,10 +1496,7 @@ moo_app_new_file (MooApp       *app,
                 *colon = 0;
             }
 
-            if (line > 0)
-                moo_editor_open_file_line (editor, norm_name, line - 1, NULL);
-            else
-                moo_editor_new_file (editor, NULL, NULL, norm_name, NULL);
+            _moo_editor_open_file (editor, norm_name, line, options);
         }
 
         g_free (norm_name);
@@ -1680,24 +1683,28 @@ moo_app_open_uris (MooApp     *app,
     {
         char **p;
 
-        for (p = uris; p && *p; ++p)
+        for (p = uris; p && *p && **p; ++p)
         {
-            char *filename = g_filename_from_uri (*p, NULL, NULL);
+            guint line_here = 0;
+            guint options = 0;
+            char *filename;
+
+            filename = _moo_edit_uri_to_filename (*p, &line_here, &options);
+
+            if (p != uris)
+                line = 0;
+            if (line_here)
+                line = line_here;
 
             if (filename)
-            {
-                if (p == uris && line > 0)
-                    moo_app_new_file (app, filename, line);
-                else
-                    moo_app_new_file (app, filename, 0);
-            }
+                moo_app_new_file (app, filename, line, options);
 
             g_free (filename);
         }
     }
     else
     {
-        moo_app_new_file (app, NULL, 0);
+        moo_app_new_file (app, NULL, 0, 0);
     }
 
     moo_editor_present (app->priv->editor, stamp);
@@ -1711,7 +1718,8 @@ void
 moo_app_open_files (MooApp     *app,
                     char      **files,
                     guint32     line,
-                    guint32     stamp)
+                    guint32     stamp,
+                    guint       options)
 {
 #ifdef MOO_BUILD_EDIT
     char **p;
@@ -1722,9 +1730,9 @@ moo_app_open_files (MooApp     *app,
     for (p = files; p && *p; ++p)
     {
         if (p == files && line > 0)
-            moo_app_new_file (app, *p, line);
+            moo_app_new_file (app, *p, line, options);
         else
-            moo_app_new_file (app, *p, 0);
+            moo_app_new_file (app, *p, 0, options);
     }
 
     moo_editor_present (app->priv->editor, stamp);
@@ -1766,7 +1774,7 @@ moo_app_exec_cmd_real (MooApp             *app,
             break;
 
         case MOO_APP_CMD_OPEN_FILE:
-            moo_app_new_file (app, data, 0);
+            moo_app_new_file (app, data, 0, 0);
             break;
         case MOO_APP_CMD_OPEN_URIS:
             moo_app_open_uris (app, data);

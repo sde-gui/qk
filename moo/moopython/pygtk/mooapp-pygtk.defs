@@ -147,6 +147,7 @@
     '("int" "line" (default "-1"))
     '("guint32" "stamp" (default "0"))
     '("const-char*" "pid" (null-ok) (default "NULL"))
+    '("guint" "options" (default "0"))
   )
 )
 
