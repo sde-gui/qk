@@ -64,6 +64,7 @@ static gboolean moo_edit_load_local         (MooEdit        *edit,
                                              const char     *encoding,
                                              GError        **error);
 static gboolean moo_edit_reload_local       (MooEdit        *edit,
+                                             const char     *encoding,
                                              GError        **error);
 static gboolean moo_edit_save_local         (MooEdit        *edit,
                                              const char     *filename,
@@ -128,15 +129,16 @@ _moo_edit_load_file (MooEdit        *edit,
 
 
 gboolean
-_moo_edit_reload_file (MooEdit  *edit,
-                       GError  **error)
+_moo_edit_reload_file (MooEdit    *edit,
+                       const char *encoding,
+                       GError    **error)
 {
     GError *error_here = NULL;
     gboolean result;
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
 
-    result = moo_edit_reload_local (edit, &error_here);
+    result = moo_edit_reload_local (edit, encoding, &error_here);
 
     if (error_here)
         g_propagate_error (error, error_here);
@@ -685,8 +687,9 @@ error_out:
 
 /* XXX */
 static gboolean
-moo_edit_reload_local (MooEdit  *edit,
-                       GError  **error)
+moo_edit_reload_local (MooEdit    *edit,
+                       const char *encoding,
+                       GError    **error)
 {
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
@@ -705,7 +708,8 @@ moo_edit_reload_local (MooEdit  *edit,
     g_object_set (edit, "enable-highlight", FALSE, NULL);
 
     result = _moo_edit_load_file (edit, edit->priv->filename,
-                                  edit->priv->encoding, error);
+                                  encoding ? encoding : edit->priv->encoding,
+                                  error);
 
     g_object_set (edit, "enable-highlight", enable_highlight, NULL);
     gtk_text_buffer_end_user_action (buffer);

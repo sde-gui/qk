@@ -46,6 +46,7 @@ void             _moo_editor_move_doc           (MooEditor      *editor,
 gpointer         _moo_editor_get_file_watch     (MooEditor      *editor);
 void             _moo_editor_reload             (MooEditor      *editor,
                                                  MooEdit        *doc,
+                                                 const char     *encoding,
                                                  GError        **error);
 gboolean         _moo_editor_save               (MooEditor      *editor,
                                                  MooEdit        *doc,

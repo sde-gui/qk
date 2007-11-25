@@ -2191,6 +2191,7 @@ moo_editor_open_uri (MooEditor      *editor,
 void
 _moo_editor_reload (MooEditor      *editor,
                     MooEdit        *doc,
+                    const char     *encoding,
                     GError        **error)
 {
     WindowInfo *info;
@@ -2219,7 +2220,7 @@ _moo_editor_reload (MooEditor      *editor,
     cursor_line = gtk_text_iter_get_line (&iter);
     cursor_offset = moo_text_iter_get_visual_line_offset (&iter, 8);
 
-    if (!_moo_edit_reload_file (doc, &error_here))
+    if (!_moo_edit_reload_file (doc, encoding, &error_here))
     {
         if (!editor->priv->silent)
             _moo_edit_reload_error_dialog (doc, error_here);

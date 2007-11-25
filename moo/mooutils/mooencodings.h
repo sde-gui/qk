@@ -13,7 +13,7 @@
 #ifndef MOO_ENCODINGS_H
 #define MOO_ENCODINGS_H
 
-#include <gtk/gtkcombobox.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
@@ -26,14 +26,14 @@ typedef enum {
     MOO_ENCODING_COMBO_SAVE
 } MooEncodingComboType;
 
-void         _moo_encodings_combo_init      (GtkComboBox           *combo,
-                                             MooEncodingComboType   type,
-					     gboolean		    use_separators);
-void         _moo_encodings_combo_set_enc   (GtkComboBox           *combo,
-                                             const char            *enc,
-                                             MooEncodingComboType   type);
-const char  *_moo_encodings_combo_get_enc   (GtkComboBox           *combo,
-                                             MooEncodingComboType   type);
+void         _moo_encodings_combo_init      (GtkComboBox            *combo,
+                                             MooEncodingComboType    type,
+					     gboolean		     use_separators);
+void         _moo_encodings_combo_set_enc   (GtkComboBox            *combo,
+                                             const char             *enc,
+                                             MooEncodingComboType    type);
+const char  *_moo_encodings_combo_get_enc   (GtkComboBox            *combo,
+                                             MooEncodingComboType    type);
 
 void         _moo_encodings_attach_combo    (GtkWidget              *dialog,
                                              GtkWidget              *box,
@@ -41,6 +41,13 @@ void         _moo_encodings_attach_combo    (GtkWidget              *dialog,
                                              const char             *encoding);
 const char  *_moo_encodings_combo_get       (GtkWidget              *dialog,
                                              gboolean                save_mode);
+
+typedef void (*MooEncodingsMenuFunc)        (const char             *encoding,
+                                             gpointer                data);
+GtkAction   *_moo_encodings_menu_action_new (const char             *id,
+                                             const char             *label,
+                                             MooEncodingsMenuFunc    func,
+                                             gpointer                data);
 
 const char  *_moo_encoding_locale           (void);
 gboolean     _moo_encodings_equal           (const char *enc1,

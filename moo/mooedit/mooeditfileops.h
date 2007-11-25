@@ -38,6 +38,7 @@ gboolean         _moo_edit_load_file        (MooEdit        *edit,
                                              const char     *encoding,
                                              GError        **error);
 gboolean         _moo_edit_reload_file      (MooEdit        *edit,
+                                             const char     *encoding,
                                              GError        **error);
 gboolean         _moo_edit_save_file        (MooEdit        *edit,
                                              const char     *file,

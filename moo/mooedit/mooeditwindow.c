@@ -36,6 +36,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooaction-private.h"
 #include "mooutils/moofiledialog.h"
+#include "mooutils/mooencodings.h"
 #include <string.h>
 #include <gtk/gtk.h>
 #include <math.h>
@@ -224,6 +225,7 @@ static gboolean notebook_drag_motion            (GtkWidget          *widget,
 static void action_new_doc                      (MooEditWindow      *window);
 static void action_open                         (MooEditWindow      *window);
 static void action_reload                       (MooEditWindow      *window);
+static GtkAction *create_reopen_with_encoding_action (MooEditWindow *window);
 static void action_save                         (MooEditWindow      *window);
 static void action_save_as                      (MooEditWindow      *window);
 static void action_close_tab                    (MooEditWindow      *window);
@@ -404,6 +406,10 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "closure-callback", action_reload,
                                  "condition::sensitive", "can-reload",
                                  NULL);
+
+    moo_window_class_new_action_custom (window_class, "ReopenWithEncoding", NULL,
+                                        (MooWindowActionFunc) create_reopen_with_encoding_action,
+                                        NULL, NULL);
 
     moo_window_class_new_action (window_class, "Save", NULL,
                                  "display-name", GTK_STOCK_SAVE,
@@ -1314,7 +1320,36 @@ action_reload (MooEditWindow *window)
 {
     MooEdit *edit = moo_edit_window_get_active_doc (window);
     g_return_if_fail (edit != NULL);
-    _moo_editor_reload (window->priv->editor, edit, NULL);
+    _moo_editor_reload (window->priv->editor, edit, NULL, NULL);
+}
+
+
+static void
+encoding_item_activated (const char *encoding,
+                         gpointer    data)
+{
+    MooEditWindow *window = data;
+    MooEdit *doc;
+
+    doc = moo_edit_window_get_active_doc (window);
+    g_return_if_fail (doc != NULL);
+
+    _moo_editor_reload (window->priv->editor, doc, encoding, NULL);
+}
+
+static GtkAction *
+create_reopen_with_encoding_action (MooEditWindow *window)
+{
+    GtkAction *action;
+
+    action = _moo_encodings_menu_action_new ("ReopenWithEncoding",
+                                             _("Reopen Using Encoding"),
+                                             encoding_item_activated,
+                                             window);
+    moo_bind_bool_property (action, "sensitive",
+                            window, "can-reload", FALSE);
+
+    return action;
 }
 
 
@@ -3181,7 +3216,6 @@ set_statusbar_numbers (MooEditWindow *window,
 
     gtk_label_set_text (window->priv->cursor_label, text);
     gtk_label_set_text (window->priv->chars_label, text2);
-    clear_statusbar (window);
 
     g_free (text2);
     g_free (text);
@@ -3237,6 +3271,7 @@ update_statusbar (MooEditWindow *window)
             g_idle_add_full (G_PRIORITY_HIGH,
                              (GSourceFunc) update_statusbar_idle,
                              window, NULL);
+    clear_statusbar (window);
 }
 
 
