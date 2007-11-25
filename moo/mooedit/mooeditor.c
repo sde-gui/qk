@@ -2223,10 +2223,16 @@ _moo_editor_reload (MooEditor      *editor,
     if (!_moo_edit_reload_file (doc, encoding, &error_here))
     {
         if (!editor->priv->silent)
+        {
             _moo_edit_reload_error_dialog (doc, error_here);
+            g_error_free (error_here);
+        }
         else
+        {
             g_propagate_error (error, error_here);
+        }
 
+        moo_text_view_undo (MOO_TEXT_VIEW (doc));
         g_object_set_data (G_OBJECT (doc), "moo-scroll-to", NULL);
         return;
     }
