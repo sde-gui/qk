@@ -1,5 +1,0 @@
-<xi:include href="editor-open-save.docbook" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-<xi:include href="editor-editing.docbook" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-<xi:include href="editor-prefs.docbook" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-<xi:include href="editor-tools.docbook" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-<xi:include href="editor-plugins.docbook" xmlns:xi="http://www.w3.org/2001/XInclude"/>

@@ -63,12 +63,11 @@ enum {
     KEY_INPUT,
     KEY_OUTPUT,
     KEY_FILTER,
-    KEY_EXE,
     N_KEYS
 };
 
-static const char *data_keys[] = {
-    "input", "output", "filter", "exe", NULL
+static const char *data_keys[N_KEYS+1] = {
+    "input", "output", "filter", NULL
 };
 
 struct _MooCommandUnxPrivate {
@@ -730,7 +729,7 @@ init_filter_combo (GtkComboBox *combo)
     store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
 
     gtk_list_store_append (store, &iter);
-    /* Translators: "None" means no filter for a shell command, do not translate the part before | */
+    /* Translators: "None" means no output filter for a shell command, do not translate the part before | */
     gtk_list_store_set (store, &iter, COLUMN_NAME, Q_("Filter|None"), -1);
 
     ids = moo_command_filter_list ();

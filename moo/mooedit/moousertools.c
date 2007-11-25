@@ -494,7 +494,8 @@ parse_params (MooUserToolInfo  *info,
             g_free (info->filter);
             info->filter = g_strdup_printf ("langs: %s", value);
         }
-        else if (!strcmp (key, KEY_FILTER))
+        else if (!strcmp (key, KEY_FILTER) ||
+                 !strcmp (key, "file-filter"))
         {
             g_free (info->filter);
             info->filter = g_strdup (value);
@@ -553,7 +554,7 @@ cmp_filenames (const void *p1,
     return strcmp (*sp1, *sp2);
 }
 
-#define NAME_PREFIX_LEN 3
+#define NAME_PREFIX_LEN 2
 static void
 load_directory (const char       *path,
                 MooUserToolType   type,

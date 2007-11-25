@@ -1,0 +1,61 @@
+<!-- ========== prefs-file ========== -->
+<section id="prefs-file">
+<title>Preferences files</title>
+<para>
+&app; preferences are stored in <filename>$HOME/.config/&app;rc</filename> file.
+It is an XML file which may be edited to set preferences which have not found
+their place in the <interface>Preferences</interface> dialog.
+</para>
+<note>
+&app; reads the preferences file on startup and writes it whenever <guibutton>OK</guibutton>
+or <guibutton>Apply</guibutton> button is clicked in the <interface>Preferences</interface>
+dialog. Therefore, if you modify the preferences file, your changes may be overwritten,
+and they not take the effect until you restart &app;.
+</note>
+<para>
+The following "hidden" settings are available.
+</para>
+<variablelist>
+<varlistentry><term><userinput>Editor/window_title</userinput>:</term>
+<listitem>
+Format of the window title. It is a string which may contain format sequences:
+percent sign followed by a character:
+<itemizedlist>
+<listitem>
+<userinput>%a</userinput>: application name;
+</listitem>
+<listitem>
+<userinput>%b</userinput>: current document basename;
+</listitem>
+<listitem>
+<userinput>%f</userinput>: full path of the current document;
+</listitem>
+<listitem>
+<userinput>%u</userinput>: URI of the current document;
+</listitem>
+<listitem>
+<userinput>%s</userinput>: the status of the current document, e.g. "<literal> [modified]</literal>".
+It is prefixed with space, so that "<literal>%b%s</literal>" will produce a nice string;
+</listitem>
+<listitem>
+<userinput>%%</userinput>: the percent character.
+</listitem>
+</itemizedlist>
+Default value is "<literal>%a - %f%s</literal>" which produces something like
+"<literal>&app; - /home/user/file [modified]</literal>".
+</listitem>
+</varlistentry>
+<varlistentry><term><userinput>Editor/window_title_no_doc</userinput>:</term>
+<listitem>
+Same as <userinput>Editor/window_title</userinput>, used when no document is open. Default value
+is "<literal>%a</literal>".
+</listitem>
+</varlistentry>
+<varlistentry><term><userinput>Editor/tab_width</userinput>:</term>
+<listitem>
+Visual width of the Tab character, 8 by default.
+</listitem>
+</varlistentry>
+</variablelist>
+</section>
+<!-- ========== prefs-file ========== -->

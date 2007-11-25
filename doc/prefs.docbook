@@ -1,0 +1,136 @@
+<!-- ========== prefs-langs-and-filters ========== -->
+<section id="prefs-langs-and-filters">
+<title>Selecting options and languages</title>
+<para>
+<guilabel>Languages and files</guilabel> tab in the <guilabel>Editor</guilabel>
+section of the <interface>Preferences</interface> dialog allows customizing
+how syntax highlighting language and a number of editing options are chosen
+depending on the document filename, as well as setting editing options for
+all documents which use given language and choosing file patterns and mime types
+for which given language should be used.
+</para>
+
+<!-- ========== Language-specific options ========== -->
+<section id="prefs-lang-options">
+<title>Language-specific options</title>
+    <para>
+    Here you can set editing options on per-language basis, as well as define
+    for which file patterns and mime types given language should be used.
+    </para>
+    <variablelist>
+    <varlistentry><term><userinput>Language</userinput> combo box:</term>
+    <listitem>
+    Choose the language you want to customize. Settings for <literal>None</literal>
+    will apply to documents for which no syntax highlighting language was chosen.
+    </listitem>
+    </varlistentry>
+    <varlistentry><term><userinput>Mime types</userinput>:</term>
+    <listitem>
+    The given language will be used for files with these mime types, unless the language
+    is chosen based on the filename or overridden in the <interface>File filters</interface>
+    section.
+    </listitem>
+    </varlistentry>
+    <varlistentry><term><userinput>Extensions</userinput>:</term>
+    <listitem>
+    The given language will be used for files whose filenames match these patterns, unless
+    overridden in the <interface>File filters</interface> section.
+    </listitem>
+    </varlistentry>
+    <varlistentry><term><userinput>Options</userinput>:</term>
+    <listitem>
+    Default editing options to use in documents which use the given language. These options
+    can be overridden using <interface>File filters</interface> section, and options set
+    in the file text have a higher priority as well. See the
+    <link linkend="editing-options" endterm="editing-options.title"/> section for the format
+    of this entry content.
+    </listitem>
+    </varlistentry>
+    </variablelist>
+</section>
+
+<!-- ========== File filters ========== -->
+<section id="prefs-file-filters">
+<title>File filters</title>
+    <para>
+    <interface>File filters</interface> section allows to customize editing options,
+    as well as syntax highlighting language, on per-document basis using regular expressions
+    which are matched against the document filename. Full file paths are used, so one can
+    have per-directory settings.<footnote><para>Use dollar if you need to match ends
+    of filenames, e.g. "<literal>\.doc$</literal>" will work as "<literal>*.doc</literal>"
+    pattern.</para></footnote>
+    </para>
+    <para>
+    The filters are applied in the order they appear in the list, one by one. All filters
+    are applied to every file, so several filters may affect options in the same file. In this
+    way one can set some options for a set of files or a directory, then set or modify some
+    additional options for certain files in that set, etc.
+    </para>
+    <para>
+    To add a filter, use <guilabel>New</guilabel> button. Click the filter in the list to
+    select it, then click the <guilabel>Filter</guilabel> or <guilabel>Options</guilabel>
+    part of it to edit. Use <guilabel>Delete</guilabel> button to delete a filter,
+    and <guilabel>Up</guilabel>/<guilabel>Down</guilabel> buttons to change the order in
+    which they are applied.
+    </para>
+    <para>
+    <guilabel>Filter</guilabel> field contains a regular expression matched agains the
+    document filename. If it is found in the filename, then the options from the
+    <guilabel>Options</guilabel> field are applied to the document.
+    </para>
+    <para>
+    <guilabel>Options</guilabel> field contains the options, in format described in the
+    <link linkend="editing-options" endterm="editing-options.title"/> section.
+    </para>
+</section>
+
+<!-- ========== Tools preferences ========== -->
+<section id="editing-options">
+<title id="editing-options.title">Editing options</title>
+    <para>
+    &app; has some editing options which can be set in the file text, or in the
+    <interface>Preferences</interface> dialog for sets of files or for given syntax highlighting
+    language.
+    </para>
+    <para>
+    To set the options in the document text, place the following on the first, second or the last
+    line of the document:
+    <programlisting>-%- <emphasis>options</emphasis> -%-</programlisting>
+    where <emphasis>options</emphasis> is the option string
+    <programlisting><emphasis>key</emphasis>: <emphasis>value</emphasis>; <emphasis>key</emphasis>: <emphasis>value</emphasis>; ...</programlisting>
+    (the latter is the format used also in the <interface>Preferences</interface> dialog).
+    </para>
+    <para>
+    Values can be strings, integer numbers, or boolean values. Boolean values may be specified
+    using <userinput>yes</userinput>/<userinput>no</userinput>,
+    <userinput>true</userinput>/<userinput>false</userinput>, <userinput>1</userinput>/<userinput>0</userinput>.
+    The following options are available:
+    <itemizedlist>
+    <listitem><para>
+    <userinput>lang</userinput>: syntax highlighting language to use in this document.
+    </para></listitem>
+    <listitem><para>
+    <userinput>strip</userinput>: a boolean value, whether trailing whitespace should be removed
+    from the document on saving.
+    </para></listitem>
+    <listitem><para>
+    <userinput>tab-width</userinput>: displayed width of the Tab character.<footnote><para>This is not an indentation
+    offset, this is the visual width of a Tab character.</para></footnote>
+    </para></listitem>
+    <listitem><para>
+    <userinput>use-tabs</userinput>: whether the Tab character should be used for indentation.
+    </para></listitem>
+    <listitem><para>
+    <userinput>indent-width</userinput>: an integer specifying indentation offset used when the
+    Tab key is pressed to indent text.
+    </para></listitem>
+    </itemizedlist>
+    </para>
+    <para>
+    &app; tries to understand modelines of Vim, Emacs, and Kate text editors, so chances are it will correctly
+    pick up the conventional settings from source files.
+    </para>
+</section>
+
+</section>
+<!-- ========== User-defined tools ========== -->

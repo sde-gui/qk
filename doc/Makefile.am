@@ -1,11 +1,9 @@
 docbook_files =				\
 	medit.docbook			\
 	license.docbook			\
-	editor-editing.docbook		\
-	editor-open-save.docbook	\
-	editor-plugins.docbook		\
-	editor-prefs.docbook		\
-	editor-tools.docbook
+	prefs.docbook			\
+	prefs-file.docbook		\
+	user-tools.docbook
 
 EXTRA_DIST =			\
 	$(docbook_files)	\
@@ -37,6 +35,11 @@ help/help.css: stamp-help help.css
 manual.html: $(docbook_files) manual.xsl
 	$(MAKE) $(AM_MAKEFLAGS) LGPL.xml && \
 	xsltproc --xinclude --path "." --output manual.html $(srcdir)/manual.xsl $(srcdir)/medit.docbook
+
+medit.lo: build-help
+prefs.lo: build-help
+prefs-file.lo: build-help
+license.lo: build-help
 
 #############################################################################
 # Standard automake stuff

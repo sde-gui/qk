@@ -1,0 +1,381 @@
+<!-- ========== User-defined tools ========== -->
+<section id="sect-user-tools">
+<title>User-defined Tools</title>
+<para>
+&app; allows extending its functionality with user-defined
+<emphasis>tools</emphasis>. It can be a Lua or Python (provided
+&app; has been built with Python support) script
+which is executed inside &app;, or a shell script which can
+use the text of the open document as its input and/or output.
+</para><para>
+There is a number of predefined tools which you can use as
+an example or to modify to suit your needs.
+</para>
+
+<!-- ========== Tools preferences ========== -->
+<section id="prefs-user-tools">
+<title>Managing tools</title>
+    <para>
+    To create a new tool or to modify existing ones, open
+    <interface>Preferences</interface> dialog and select
+    <guilabel>Tools</guilabel> in the list on the left.
+    </para><para>
+    Select the tool in the list or click the <guilabel>New</guilabel>
+    button to create a new one. To modify the order in which the tools
+    appear in the <guimenu>Tools</guimenu> menu (or in the document
+    context menu), use the <guilabel>Up</guilabel> and <guilabel>Down</guilabel>
+    button. To rename a tool, click its name in the list to select it
+    and then click again to edit the name. Use the <guilabel>Delete</guilabel>
+    button to delete a tool.
+    </para><para>
+    The following controls are available to modify the tools behavior:
+    </para>
+    <variablelist>
+    <varlistentry><term><userinput>Files</userinput></term>
+    <listitem>
+    <para>
+    Specifies for which files the tool is going to be available.
+    The entry content can be the following:
+    </para>
+    <itemizedlist>
+    <listitem>
+    <para>
+    a comma-separated list of file patterns, e.g. "<literal>*.c,*.h</literal>";
+    </para>
+    </listitem>
+    <listitem>
+    <para>
+    a comma-separated list of languages prefixed with "<literal>langs:</literal>", e.g.
+    "<literal>langs: c, c++, objc</literal>";
+    </para>
+    </listitem>
+    <listitem>
+    <para>
+    a regular expression matching document filename prefixed with "<literal>regex:</literal>", e.g.
+    the above pattern list may be written as "<literal>regex:\.[ch]$</literal>".
+    </para>
+    </listitem>
+    </itemizedlist>
+    <para>
+    Empty entry means the tool will be available for all documents.
+    </para>
+    </listitem>
+    </varlistentry>
+    <varlistentry><term><userinput>Options</userinput></term>
+    <listitem>
+    <para>
+    Specifies under which conditions the tool should be enabled. It is a comma-separated
+    list of the following:
+    </para>
+    <itemizedlist>
+    <listitem><para>
+    <userinput>need-doc</userinput>: the tool needs an open document;
+    </para></listitem>
+    <listitem><para>
+    <userinput>need-file</userinput>: the tool will not work in new unsaved documents.
+    </para></listitem>
+    <listitem><para>
+    <userinput>need-save</userinput>: the document will be saved before the command is executed.
+    </para></listitem>
+    <listitem><para>
+    <userinput>need-save-all</userinput>: all open documents will be saved before the command is executed.
+    </para></listitem>
+    </itemizedlist>
+    </listitem>
+    </varlistentry>
+    <varlistentry><term><userinput>Command type</userinput></term>
+    <listitem>
+    <para>
+    The type of the tool: a Python script, a Lua script, or a shell script.
+    </para>
+    </listitem>
+    </varlistentry>
+    <varlistentry><term><userinput>Code text field</userinput></term>
+    <listitem>
+    <para>
+    Here you enter the actual script text.
+    </para>
+    </listitem>
+    </varlistentry>
+    </variablelist>
+
+    <para>
+    Shell script tools also have the following controls available:
+    </para>
+    <variablelist>
+    <varlistentry><term><userinput>Input</userinput></term>
+    <listitem>
+    <para>
+    Specifies what text from the document should be passed to the command via its
+    standard input:
+    </para><para>
+    <userinput>None</userinput>: no input text.
+    </para><para>
+    <userinput>Selected lines</userinput>: the lines containing selection or the line containing the cursor
+    in case when no text is selected.
+    </para><para>
+    <userinput>Selection</userinput>: exact selected text. This will be different from "Selected lines"
+    if selection does not span whole lines of the document, for instance if it is
+    a single word.
+    </para><para>
+    <userinput>Whole document</userinput>: whole document contents.
+    </para>
+    </listitem>
+    </varlistentry>
+    <varlistentry><term><userinput>Output</userinput></term>
+    <listitem>
+    <para>
+    Specifies how the standard output of the command should be redirected.
+    </para><para>
+    <userinput>None</userinput>: the command output will be suppressed.
+    </para><para>
+    <userinput>None, asynchronous</userinput>: the command output will be suppressed, and the command
+    will be executed in background. For instance, you should use this if you need
+    to launch some external program like a web browser.
+    </para><para>
+    <userinput>Output pane</userinput>: the command output will be displayed in an output pane. This is
+    useful for running programs like compilers, where you want to see the output.
+    </para><para>
+    <userinput>Insert into the document</userinput>: output will be inserted into the current document at
+    the cursor position. It will replace the text used as an input, if any.
+    </para><para>
+    <userinput>New document</userinput>: new document will be created and the command output will be inserted
+    into it.
+    </para>
+    </listitem>
+    </varlistentry>
+    <varlistentry><term><userinput>Filter</userinput></term>
+    <listitem>
+    <para>
+    If the output pane is used, then it can be passed through a <emphasis>filter</emphasis>:
+    the filter can match filenames and line numbers, so when you click the text in the
+    output pane it will open the corresponding file. This is used for compilers and similar
+    commands, which output locations of errors in processed files.
+    </para>
+    </listitem>
+    </varlistentry>
+    </variablelist>
+</section>
+
+<!-- ========== Tools files ========== -->
+<section id="user-tools-files">
+<title>Storing tools in files</title>
+    <para>
+    It is possible to create tools without using the <interface>Preferences</interface> dialog,
+    they can be stored in files in <filename>tools</filename> subfolder of the &app; data
+    folders (or <filename>tools-context</filename> for tools which appear in the document context
+    menu). In particular, on Unix systems you can place files into <filename>$HOME/.local/share/medit/tools/</filename>
+    folder.
+    </para><para>
+    Names of the files in the <filename>tools</filename> folder are used as their menu item
+    labels, after stripping first two characters, so you can use two-character prefix to affect
+    the order of the menu items, e.g. you can have <filename>00Do Something</filename>,
+    <filename>01Another tool</filename> files to have them in that order in the menu. The files
+    may be of three types: files with extension "<filename>.py</filename>", they will be used
+    as Python scripts; files with extension "<filename>.lua</filename>", they will be used
+    as Lua scripts; and executable files, they will be executed in the same way as shell commands.
+    </para><para>
+    To set parameters for a tool, place them on the first or the second line of the file in
+    the following format:
+    <programlisting>!! <emphasis>key=value; key=value; ...</emphasis> !!</programlisting>
+    <emphasis>key</emphasis> may be one of the following:
+    </para>
+    <itemizedlist>
+    <listitem><para>
+    <userinput>position</userinput>: it can be <userinput>start</userinput> or <userinput>end</userinput>,
+    and defines whether the menu item will be located at the start or at the end of the menu.
+    </para></listitem>
+    <listitem><para>
+    <userinput>id</userinput>: the tool identificator.
+    </para></listitem>
+    <listitem><para>
+    <userinput>name</userinput>: the tool name, i.e. the label used in the menu item. It will override
+    the file name.
+    </para></listitem>
+    <listitem><para>
+    <userinput>os</userinput>: <userinput>windows</userinput> or <userinput>unix</userinput>. If specified,
+    then the tool will not be used when &app; is running on a different operating system.
+    </para></listitem>
+    <listitem><para>
+    <userinput>accel</userinput>: default keyboard accelerator used to invoke this tool.
+    </para></listitem>
+    <listitem><para>
+    <userinput>menu</userinput>: the menu to place this tool into. By default the tools are
+    located in the Tools menu, but they can be as well put into any other menu.
+    </para></listitem>
+    <listitem><para>
+    <userinput>langs</userinput>: comma-separated list of languages for which this tool will
+    be enabled.
+    </para></listitem>
+    <listitem><para>
+    <userinput>filter</userinput>, <userinput>file-filter</userinput>: defines for which files this tool
+    will be enabled. The value has the same format as in the <interface>Preferences</interface> dialog.
+    </para></listitem>
+    <listitem><para>
+    <userinput>options</userinput>: same as the <guilabel>Options</guilabel> entry content
+    in the <interface>Preferences</interface> dialog.
+    </para></listitem>
+    </itemizedlist>
+    <para>
+    In addition to these, you can set input and output options for executable files:
+    </para>
+    <itemizedlist>
+    <listitem><para>
+    <userinput>input</userinput>: can be <userinput>none</userinput>, <userinput>lines</userinput>,
+    <userinput>selection</userinput>, or <userinput>doc</userinput>.
+    </para></listitem>
+    <listitem><para>
+    <userinput>output</userinput>: can be <userinput>none</userinput>, <userinput>async</userinput>,
+    <userinput>pane</userinput>, <userinput>insert</userinput>, or <userinput>new-doc</userinput>.
+    </para></listitem>
+    <listitem><para>
+    <userinput>filter</userinput>: the output filter name.
+    </para></listitem>
+    </itemizedlist>
+</section>
+
+<!-- ========== Python scripts ========== -->
+<section id="user-tools-python">
+<title>Python scripts</title>
+    <para>
+    If &app; is built with Python support, then Python scripts have full access to the program
+    internals via builtin <symbol>moo</symbol> module. &app; classes extend classes from <symbol>pygtk</symbol>,
+    in particular the <symbol>moo.edit.Edit</symbol> class representing documents extends the
+    <symbol>gtk.TextView</symbol> class, and all editing operations can be implemented using
+    <symbol>pygtk</symbol> API.
+    </para><para>
+    Python scripts have the following variables predefined:
+    </para>
+    <itemizedlist>
+    <listitem><para>
+    <symbol>doc</symbol>: the current document object.
+    </para></listitem>
+    <listitem><para>
+    <symbol>window</symbol>: the current editor window.
+    </para></listitem>
+    <listitem><para>
+    <symbol>buffer</symbol>: the text buffer (a <symbol>moo.edit.TextBuffer</symbol> instance) of
+    the current document.
+    </para></listitem>
+    <listitem><para>
+    <symbol>editor</symbol>: the <symbol>moo.edit.Editor</symbol> object representing the text
+    editor. Use its methods to open/close files, switch between documents and windows, etc.
+    </para></listitem>
+    <listitem><para>
+    <symbol>moo</symbol>: the <symbol>moo</symbol> module, already imported so you can omit
+    <literal>import moo</literal> statement in scripts.
+    </para></listitem>
+    </itemizedlist>
+</section>
+
+<!-- ========== Lua scripts ========== -->
+<section id="user-tools-lua">
+<title>Lua scripts</title>
+    <para>
+    Lua scripts can use the standard Lua library, <symbol>lfs</symbol> and <symbol>lua-ex</symbol>
+    libraries, and <symbol>medit</symbol> package which provides some text editor API. Lua scripts
+    have the following variables and functions available.
+    </para>
+
+    <para>
+    <literal>doc</literal>: a table with the following fields:
+    <itemizedlist>
+    <listitem>
+    <literal>file</literal>: the document file path.
+    </listitem>
+    <listitem>
+    <literal>name</literal>: the document file basename.
+    </listitem>
+    <listitem>
+    <literal>dir</literal>: the document file directory.
+    </listitem>
+    <listitem>
+    <literal>ext</literal>: the document filename extension including the period.
+    </listitem>
+    <listitem>
+    <literal>base</literal>: the document filename without the extension: the basename is always
+    <literal>base..ext</literal>.
+    </listitem>
+    </itemizedlist>
+    </para>
+
+    <para>
+    <literal>Cut()</literal>, <literal>Copy()</literal>, <literal>Paste()</literal>: clipboard operations.
+    </para>
+
+    <para>
+    <literal>Backspace()</literal>, <literal>Delete()</literal>: corresponding key actions.
+    </para>
+
+    <para>
+    <literal>Up()</literal>, <literal>Down()</literal>, <literal>Left()</literal>, <literal>Right()</literal>:
+    move cursor as the arrow keys do.
+    </para>
+
+    <para>
+    <literal>Selection()</literal>: returns selected text as a string. Returns <literal>nil</literal>
+    when no text is selected.
+    </para>
+
+    <para>
+    <literal>Select(n)</literal>: selects <literal>n</literal> characters to the right
+    if <literal>n</literal> is positive, and <literal>-n</literal> characters to the left
+    if it is negative.
+    </para>
+
+    <para>
+    <literal>Insert(...)</literal>: inserts text at cursor. Namely, it converts each argument to a string
+    and inserts the result into the document.
+    </para>
+
+    <para>
+    <literal>NewLine()</literal>: inserts new line character.
+    </para>
+</section>
+
+<!-- ========== Shell scripts ========== -->
+<section id="user-tools-shell">
+<title>Shell scripts</title>
+    <para>
+    In addition to the document text passed via standard input,
+    shell scripts have a number of environment variables set. <literal>$APP_PID</literal>
+    variable is set to the current process process id, so that opening a file in the
+    same instance of &app; is as simple as <command>&app; filename</command> (on the other
+    hand, you will have to use command line options if you need to run a new &app; instance).
+    The following environment variables are set when scripts are executed:
+    </para>
+
+    <itemizedlist>
+    <listitem>
+    <literal>DOC</literal>: the document basename.
+    </listitem>
+    <listitem>
+    <literal>DOC_DIR</literal>: the document file directory. The full file path is
+    <literal>$DOC_DIR/$DOC</literal>.
+    </listitem>
+    <listitem>
+    <literal>DOC_BASE</literal>: the basename without extension.
+    </listitem>
+    <listitem>
+    <literal>DOC_EXT</literal>: the document filename extension including the period. The basename
+    is always <literal>$DOC_BASE$DOC_EXT</literal>.
+    </listitem>
+    <listitem>
+    <literal>LINE</literal>: the number of the line containing cursor.
+    </listitem>
+    <listitem>
+    <literal>DATA_DIR</literal>: the user data directory. For example the tools are stored
+    in <filename>$DATA_DIR/menu.cfg</filename> file and in files in the <filename>$DATA_DIR/tools/</filename>
+    directory.
+    </listitem>
+    </itemizedlist>
+
+    <para>
+    Additionally, all processes ran from inside &app; will have <filename>DATADIR/scripts</filename>
+    directories in <literal>$PATH</literal>, so you may place some &app;-specific programs
+    or scripts into <filename>USERDATADIR/scripts/</filename> to be used from shell script tools.
+    </para>
+</section>
+
+</section>
+<!-- ========== User-defined tools ========== -->
