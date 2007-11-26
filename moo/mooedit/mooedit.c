@@ -454,8 +454,8 @@ _moo_edit_set_status (MooEdit        *edit,
 
 
 MooEditFileInfo*
-moo_edit_file_info_new (const char         *filename,
-                        const char         *encoding)
+moo_edit_file_info_new (const char *filename,
+                        const char *encoding)
 {
     MooEditFileInfo *info = g_new0 (MooEditFileInfo, 1);
     info->filename = g_strdup (filename);
@@ -465,7 +465,7 @@ moo_edit_file_info_new (const char         *filename,
 
 
 MooEditFileInfo*
-moo_edit_file_info_copy (const MooEditFileInfo  *info)
+moo_edit_file_info_copy (const MooEditFileInfo *info)
 {
     MooEditFileInfo *copy;
     g_return_val_if_fail (info != NULL, NULL);
@@ -476,7 +476,7 @@ moo_edit_file_info_copy (const MooEditFileInfo  *info)
 }
 
 void
-moo_edit_file_info_free (MooEditFileInfo    *info)
+moo_edit_file_info_free (MooEditFileInfo *info)
 {
     if (info)
     {
@@ -653,6 +653,16 @@ moo_edit_get_encoding (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
     return edit->priv->encoding;
+}
+
+void
+_moo_edit_set_encoding (MooEdit    *edit,
+                        const char *encoding)
+{
+    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (encoding != NULL);
+    g_free (edit->priv->encoding);
+    edit->priv->encoding = g_strdup (encoding);
 }
 
 

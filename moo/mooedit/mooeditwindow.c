@@ -1959,6 +1959,49 @@ notebook_switch_page (G_GNUC_UNUSED MooNotebook *notebook,
 }
 
 
+static void
+doc_encoding_menu_item_activated (const char *encoding,
+                                  gpointer    data)
+{
+    _moo_edit_set_encoding (data, encoding);
+}
+
+static GtkWidget *
+create_doc_encoding_menu_item (MooEdit *doc)
+{
+    GtkWidget *item, *menu, *enc_item;
+    const char *enc, *display_enc;
+    char *freeme = NULL;
+
+    enc = moo_edit_get_encoding (doc);
+
+    if (!enc)
+    {
+        freeme = _moo_edit_get_default_encoding ();
+        enc = freeme;
+    }
+
+    display_enc = _moo_encoding_get_display_name (enc);
+
+    /* Translators: do not translate the part before | */
+    item = gtk_menu_item_new_with_label (Q_("Item in the notebook popup menu|Encoding"));
+    gtk_widget_show (item);
+    menu = _moo_encodings_menu_new (doc_encoding_menu_item_activated, doc,
+                                    enc, FALSE);
+    gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), menu);
+
+    gtk_menu_shell_prepend (GTK_MENU_SHELL (menu),
+                            g_object_new (GTK_TYPE_SEPARATOR_MENU_ITEM,
+                                          "visible", TRUE, NULL));
+
+    enc_item = gtk_radio_menu_item_new_with_label (NULL, display_enc);
+    gtk_widget_show (enc_item);
+    gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), enc_item);
+
+    g_free (freeme);
+    return item;
+}
+
 static gboolean
 notebook_populate_popup (MooNotebook        *notebook,
                          GtkWidget          *child,
@@ -2008,6 +2051,12 @@ notebook_populate_popup (MooNotebook        *notebook,
                           G_CALLBACK (detach_activated),
                           window);
     }
+
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu),
+                           g_object_new (GTK_TYPE_SEPARATOR_MENU_ITEM,
+                                         "visible", TRUE, NULL));
+    item = create_doc_encoding_menu_item (edit);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
     return FALSE;
 }

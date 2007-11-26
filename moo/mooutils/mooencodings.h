@@ -48,10 +48,15 @@ GtkAction   *_moo_encodings_menu_action_new (const char             *id,
                                              const char             *label,
                                              MooEncodingsMenuFunc    func,
                                              gpointer                data);
+GtkWidget   *_moo_encodings_menu_new        (MooEncodingsMenuFunc    func,
+                                             gpointer                data,
+                                             const char             *exclude,
+                                             gboolean                sync);
 
 const char  *_moo_encoding_locale           (void);
-gboolean     _moo_encodings_equal           (const char *enc1,
-                                             const char *enc2);
+gboolean     _moo_encodings_equal           (const char             *enc1,
+                                             const char             *enc2);
+const char  *_moo_encoding_get_display_name (const char             *enc);
 
 
 G_END_DECLS

@@ -1192,6 +1192,13 @@ add_untitled (MooEdit *edit)
 }
 
 
+char *
+_moo_edit_get_default_encoding (void)
+{
+    return g_strdup (moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_ENCODING_SAVE)));
+}
+
+
 void
 _moo_edit_set_filename (MooEdit    *edit,
                         const char *file,
@@ -1236,8 +1243,9 @@ _moo_edit_set_filename (MooEdit    *edit,
     }
 
     if (!encoding)
-        encoding = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_ENCODING_SAVE));
-    edit->priv->encoding = g_strdup (encoding);
+        edit->priv->encoding = _moo_edit_get_default_encoding ();
+    else
+        edit->priv->encoding = g_strdup (encoding);
 
     g_signal_emit_by_name (edit, "filename-changed", edit->priv->filename, NULL);
     moo_edit_status_changed (edit);
