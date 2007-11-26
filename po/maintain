@@ -14,4 +14,4 @@ case `basename $0` in
         ;;
 esac
 
-exec intltool-update $args $*
+exec intltool-update $args "$@"

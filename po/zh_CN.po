@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-11-26 00:23-0600\n"
+"POT-Creation-Date: 2007-11-26 01:07-0600\n"
 "PO-Revision-Date: 2007-06-16 21:04-0600\n"
 "Last-Translator: Chaosye <chao-7410@163.com>\n"
 "MIME-Version: 1.0\n"
@@ -33,16 +33,17 @@ msgid "System Info"
 msgstr "系统信息"
 
 #. Translators: this goes into About box, under Translated by tab,
-#. do not ignore it, markup isn't always used
-#: ../moo/mooapp/mooappabout.c:53
+#. do not ignore it, markup isn't always used. It should be something
+#. like "Some Guy <someguy@domain.net>", with lines separated by \n
+#: ../moo/mooapp/mooappabout.c:54
 msgid "translator-credits"
 msgstr "Chaosye <chao-7410@163.com>"
 
 #. Translators: this goes into About box, under Translated by tab,
 #. this must be valid html markup, e.g.
-#. "Some Guy <a href=\"mailto://someguy@domain.net\">&lt;someguy@domain.net&gt;</a>"
+#. "Some Guy <a href=\"mailto:someguy@domain.net\">&lt;someguy@domain.net&gt;</a>"
 #. Lines must be separated by <br>, like "First guy<br>Second Guy"
-#: ../moo/mooapp/mooappabout.c:58
+#: ../moo/mooapp/mooappabout.c:59
 msgid "translator-credits-markup"
 msgstr ""
 "Chaosye <a href=\"mailto:chao-7410@163.com\">&lt;chao-7410@163.com&gt;</a>"
