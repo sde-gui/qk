@@ -1031,7 +1031,7 @@ msgstr "Nuevo comando"
 #. these are common source files encodings.
 #: ../moo/mooedit/mooeditfileops.c:244
 msgid "encodings_list"
-msgstr "UTF-8,LOCALE,ISO_8859-15,ISO_8859-1"
+msgstr ""
 
 #: ../moo/mooedit/mooeditfileops.c:1224
 #: ../moo/mooedit/plugins/moofileselector.c:538

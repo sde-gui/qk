@@ -96,7 +96,7 @@ msgstr "许可(_L)"
 msgid ""
 "Comma-separated list of encodings to try when opening a file. 'LOCALE' means "
 "current locale encoding."
-msgstr "打开文件时尝试使用的编码列表,\"LOCAL\"为本地默认编码"
+msgstr "打开文件时尝试使用的编码列表,\"LOCALE\"为本地默认编码"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:2
 msgid "Dialogs"
@@ -1444,7 +1444,7 @@ msgstr "无"
 #. 5 - "Unicode"
 #: ../moo/mooutils/mooencodings.c:172
 msgid "012345"
-msgstr "012345"
+msgstr ""
 
 #: ../moo/mooutils/mooencodings.c:687
 msgid "Auto Detected"

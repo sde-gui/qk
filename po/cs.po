@@ -1029,7 +1029,7 @@ msgstr "Nový příkaz"
 #. these are common source files encodings.
 #: ../moo/mooedit/mooeditfileops.c:244
 msgid "encodings_list"
-msgstr "encodings_list"
+msgstr ""
 
 #: ../moo/mooedit/mooeditfileops.c:1224
 #: ../moo/mooedit/plugins/moofileselector.c:538
