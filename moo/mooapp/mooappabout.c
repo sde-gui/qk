@@ -49,11 +49,12 @@ set_translator_credits (MooGladeXML *xml)
     GtkTextView *view;
 
     /* Translators: this goes into About box, under Translated by tab,
-       do not ignore it, markup isn't always used */
+       do not ignore it, markup isn't always used. It should be something
+       like "Some Guy <someguy@domain.net>", with lines separated by \n */
     credits = _("translator-credits");
     /* Translators: this goes into About box, under Translated by tab,
        this must be valid html markup, e.g.
-       "Some Guy <a href=\"mailto://someguy@domain.net\">&lt;someguy@domain.net&gt;</a>"
+       "Some Guy <a href=\"mailto:someguy@domain.net\">&lt;someguy@domain.net&gt;</a>"
        Lines must be separated by <br>, like "First guy<br>Second Guy" */
     credits_markup = _("translator-credits-markup");
 
