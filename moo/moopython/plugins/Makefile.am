@@ -29,8 +29,11 @@ moopython_plugins_DATA =	\
 	$(ini_files)		\
 	$(plugins)
 
+plugins_lib_DATA =		\
+	lib/pyconsole.py	\
+	lib/insert_date_and_time.py
+
 nobase_plugins_lib_DATA =	\
-	pyconsole.py		\
 	medit/__init__.py	\
 	medit/runpython.py
 
