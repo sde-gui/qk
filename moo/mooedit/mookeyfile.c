@@ -128,18 +128,7 @@ static gboolean
 line_is_empty_or_comment (const char *line,
                           gsize       line_len)
 {
-    gsize i;
-
-    for (i = 0; i < line_len; ++i)
-    {
-        if (line[i] == '#')
-            return TRUE;
-
-        if (!CHAR_IS_SPACE (line[i]))
-            return FALSE;
-    }
-
-    return TRUE;
+    return line_len == 0 || line[0] == '#';
 }
 
 static guint
@@ -168,6 +157,8 @@ line_is_blank (const char *line,
                guint      *indent)
 {
     guint i;
+
+    *indent = line_len;
 
     for (i = 0; i < line_len; ++i)
     {
@@ -282,12 +273,7 @@ parse_content (Parser         *parser,
         line = parser->ptr;
         get_line (line, parser->len, &line_len, &next_line);
 
-        if (line_is_blank (line, line_len, &indent_here))
-        {
-            g_string_append (content, "\n");
-            parser_next_line (parser, next_line);
-            continue;
-        }
+        line_is_blank (line, line_len, &indent_here);
 
         if (!indent_here)
             break;

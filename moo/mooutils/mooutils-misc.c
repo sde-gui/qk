@@ -1816,10 +1816,9 @@ _moo_splitlines (const char *string)
         }
     }
 
-    if (p > line)
-        g_ptr_array_add (array, g_strndup (line, p - line));
-
+    g_ptr_array_add (array, g_strndup (line, p - line));
     g_ptr_array_add (array, NULL);
+
     return (char**) g_ptr_array_free (array, FALSE);
 }
 

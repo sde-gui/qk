@@ -6,7 +6,10 @@ from moo.utils import _
 class PyCmd(moo.edit.Command):
     def __init__(self, code, options):
         moo.edit.Command.__init__(self)
-        self.code = code
+        if code and code[-1] != '\n' and code[-1] != '\r':
+            self.code = code + '\n'
+        else:
+            self.code = code
         self.set_options(options)
 
     def __set_variable(self, name, value, dic):
