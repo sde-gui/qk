@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GtkSourceView HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"POT-Creation-Date: 2007-11-26 00:40-0600\n"
 "PO-Revision-Date: 2007-09-06 09:05+0200\n"
 "Last-Translator: Hendrik Richter <hendrikr@gnome.org>\n"
 "Language-Team: German <gnome-de@gnome.org>\n"
@@ -148,9 +148,6 @@ msgstr "gettext-Übersetzung"
 
 msgid "in regex '%s': backreferences are not supported"
 msgstr "in regulärem Ausdruck »%s«: Rückreferenzen werden nicht unterstützt"
-
-msgid "invalid reference '%s'"
-msgstr "Ungültige Referenz »%s«"
 
 msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
 msgstr "Stilüberschreibung durch Platzhalter-Kontext-Referenz in Sprache »%s« in Referenz »%s«"

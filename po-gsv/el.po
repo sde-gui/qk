@@ -13,21 +13,62 @@ msgid ""
 msgstr ""
 "Project-Id-Version: el\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-09-09 12:00-0500\n"
-"PO-Revision-Date: 2006-09-02 12:25+0300\n"
+"POT-Creation-Date: 2007-11-26 00:40-0600\n"
+"PO-Revision-Date: 2007-09-06 13:43+0300\n"
 "Last-Translator: Kostas Papadimas <pkst@gnome.org>\n"
 "Language-Team: Greek <team@gnome.gr>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
-"X-Generator: KBabel 1.11.2"
+"Plural-Forms:  nplurals=2; plural=(n != 1);"
+
+msgid "C/C++/ObjC Header"
+msgstr "Κεφαλίδα C/C++/ObjC"
+
+msgid "Classic"
+msgstr "Κλασσικό"
+
+msgid "Classic color scheme"
+msgstr "Σχήμα κλασσικού χρώματος"
+
+msgid "Color scheme used in the Kate text editor"
+msgstr "Σχήμα χρώματος που χρησιμοποιείται στον επεξεργαστή κειμένου Kate"
+
+msgid "Color scheme using Tango color palette"
+msgstr "Σχήμα χρώματος με χρήση παλέτας χρώματος Tango"
+
+msgid "Dark color scheme using the Tango color palette"
+msgstr "Σκοτεινό σχήμα χρώματος με χρήση παλέτας χρώματος Tango"
+
+msgid "Defaults"
+msgstr "Προεπιλογές"
+
+msgid "Hidden"
+msgstr "Κρυφή"
+
+msgid "Language id"
+msgstr "id γλώσσας"
+
+msgid "Language ids"
+msgstr "ids γλώσσας"
+
+msgid "Language name"
+msgstr "Όνομα γλώσσας"
+
+msgid "Language section"
+msgstr "Ενότητα γλώσσας"
 
 msgid "Language specification directories"
 msgstr "Κατάλογοι ορισμάτων γλώσσας"
 
+msgid "List of directories and files where the style schemes are located"
+msgstr "Λίστα από καταλόγους όπου βρίσκονται τα στυλ σχημάτων"
+
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "Λίστα από καταλόγους όπου βρίσκονται τα αρχεία ορισμάτων γλώσσας (.lang)"
+
+msgid "Missing main language definition (id = \"%s\".)"
+msgstr "Λείπει ο ορισμός κύριας γλώσσας (id = \"%s\".)"
 
 msgid "Octave"
 msgstr "Οκτάβα"
@@ -38,12 +79,33 @@ msgstr "Άλλα"
 msgid "Scheme"
 msgstr "Σχήμα"
 
+msgid "Scheme ids"
+msgstr "ids σχήματος"
+
+msgid "Scientific"
+msgstr "Επιστημονική"
+
 msgid "Scripts"
 msgstr "Δέσμες ενεργειών"
 
 msgid "Sources"
 msgstr "Πηγές"
 
+msgid "Style scheme description"
+msgstr "Περιγραφή στυλ σχήματος"
+
+msgid "Unknown id '%s' in regex '%s'"
+msgstr "Άγνωστο id '%s' σε regex '%s'"
+
+msgid "Whether the language should be hidden from the user"
+msgstr "Αν η γλώσσα θα είναι κρυφή από τον χρήστη"
+
 msgid "gettext translation"
 msgstr "μετάφραση gettext"
+
+msgid "unknown context '%s'"
+msgstr "άγνωστο περιεχόμενο '%s'"
+
+msgid "using \\C is not supported in language definitions"
+msgstr "η χρήση \\C δεν υποστηρίζεται στους ορισμούς γλώσσας"
 

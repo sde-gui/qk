@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview.HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"POT-Creation-Date: 2007-11-26 00:40-0600\n"
 "PO-Revision-Date: 2007-09-04 10:48+0200\n"
 "Last-Translator: Arangel Angov <arangel@linux.net.mk>\n"
 "Language-Team: Macedonian <ossm-members@hedona.on.net.mk>\n"
@@ -156,9 +156,6 @@ msgstr "gettext превод"
 
 msgid "in regex '%s': backreferences are not supported"
 msgstr "во regex „%s“: повратните референци не се поддржани"
-
-msgid "invalid reference '%s'"
-msgstr "невалидна референца „%s“"
 
 msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
 msgstr "промената на стилот кој се употребува во контекст на референца со џокери за јазикот „%s“ за референцата „%s“"

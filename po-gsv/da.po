@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"POT-Creation-Date: 2007-11-26 00:40-0600\n"
 "PO-Revision-Date: 2007-09-09 01:20+0200\n"
 "Last-Translator: Ask Hjorth Larsen <asklarsen@gmail.com>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
@@ -147,9 +147,6 @@ msgstr "gettext-oversættelse"
 
 msgid "in regex '%s': backreferences are not supported"
 msgstr "i det regulære udtryk \"%s\": bagudreferencer understøttes ikke"
-
-msgid "invalid reference '%s'"
-msgstr "ugyldig reference \"%s\""
 
 msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
 msgstr "stiltilsidesættelse benyttet i forbindelse med wildcard-kontekstreference i sproget \"%s\" i ref \"%s\""

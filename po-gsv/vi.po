@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview 1.90.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"POT-Creation-Date: 2007-11-26 00:40-0600\n"
 "PO-Revision-Date: 2007-09-03 20:45+0930\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
@@ -155,9 +155,6 @@ msgstr "tài liệu GTK"
 
 msgid "in regex '%s': backreferences are not supported"
 msgstr "trong biểu thức chính quy « %s »: không hỗ trợ tham chiếu ngược"
-
-msgid "invalid reference '%s'"
-msgstr "tham chiếu không hợp lệ « %s »"
 
 msgid "pkg-config"
 msgstr "cấu hình gói"

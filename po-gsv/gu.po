@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview.HEAD.gu\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"POT-Creation-Date: 2007-11-26 00:40-0600\n"
 "PO-Revision-Date: 2007-08-29 14:06+0530\n"
 "Last-Translator: Ankit Patel <ankit@redhat.com>\n"
 "Language-Team: Gujarati <fedora-trans-gu@redhat.com>\n"
@@ -189,9 +189,6 @@ msgstr "gettext રુપાંતર"
 
 msgid "in regex '%s': backreferences are not supported"
 msgstr "regex '%s' માં: પાશ્વસંદર્ભો આધારભૂત નથી"
-
-msgid "invalid reference '%s'"
-msgstr "અયોગ્ય સંદર્ભ '%s'"
 
 msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
 msgstr "ભાષા '%s' માં '%s' ના સંદર્ભે વાઈલ્ડકાર્ડ સંદર્ભ સાથે વપરાઈ રહેલ શૈલી ઓવરરાઈડ કરો"

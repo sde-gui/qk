@@ -1,5 +1,6 @@
-# translation of gtksourceview.HEAD.pl.po to Polish
+# translation of gtksourceview to Polish
 # Artur Flinta <aflinta@at.kernel.pl>, 2006.
+# Andrzej Polatyński <andrzej@datatel.net.pl>, 2007.
 # Copyright (C) 2001-2005, 2006 Free Software Foundation, Inc.
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Aktualną wersję tego pliku możesz odnaleźć w repozytorium cvs.gnomepl.org
@@ -12,33 +13,94 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview.HEAD.pl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-09-09 12:00-0500\n"
-"PO-Revision-Date: 2007-02-27 01:24+0100\n"
-"Last-Translator: wadim dziedzic <nikdo@aviary.pl>\n"
-"Language-Team: Polish <translators@gnomepl.org>\n"
+"POT-Creation-Date: 2007-11-26 00:40-0600\n"
+"PO-Revision-Date: 2007-09-10 21:32+0200\n"
+"Last-Translator: Andrzej Polatyński <andrzej@datatel.net.pl>\n"
+"Language-Team: Polish <gnome-l10n@lists.aviary.pl>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.2\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);"
 
+msgid "C/C++/ObjC Header"
+msgstr "Nagłówek C/C++/ObjC"
+
+msgid ""
+"Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
+"The error was: %s"
+msgstr ""
+"Nie można utworzyć wyrażenia regularnego dla wszystkich przejść, przez co proces wyróżniania elementów składni będzie spowolniony.\n"
+"Wystąpił błąd: %s"
+
 msgid "ChangeLog"
 msgstr "Dziennik zmian"
+
+msgid "Classic"
+msgstr "Klasyczny"
+
+msgid "Classic color scheme"
+msgstr "Klasyczny schemat kolorów"
+
+msgid "Color scheme used in the Kate text editor"
+msgstr "Schemat kolorów używany w edytorze tekstowym Kate"
+
+msgid "Color scheme using Tango color palette"
+msgstr "Schemat kolorów używający palety Tango"
+
+msgid "Dark color scheme using the Tango color palette"
+msgstr "Schemat używający ciemnych kolorów z palety Tango"
+
+msgid "Defaults"
+msgstr "Domyślne"
 
 msgid "Diff"
 msgstr "Różnica"
 
+msgid "Hidden"
+msgstr "Ukryty"
+
+msgid "Language id"
+msgstr "Identyfikator języka"
+
+msgid "Language ids"
+msgstr "Identyfikatory języków"
+
+msgid "Language name"
+msgstr "Nazwa języka"
+
+msgid "Language section"
+msgstr "Sekcja języka"
+
 msgid "Language specification directories"
 msgstr "Katalogi specyfikacji języka"
+
+msgid "List of directories and files where the style schemes are located"
+msgstr "Lista katalogów i plików, w których przechowywane są schematy stylów"
 
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "Lista katalogów, w których przechowywane są pliki specyfikacji języka (.lang)"
 
+msgid "List of the ids of the available languages"
+msgstr "Lista identyfikatorów dostępnych języków"
+
+msgid "List of the ids of the available style schemes"
+msgstr "Lista identyfikatorów dostępnych schematów stylów"
+
 msgid "Markup"
 msgstr "Znacznik"
 
+msgid "Missing main language definition (id = \"%s\".)"
+msgstr "Brakująca definicja języka (id = \"%s\".)"
+
 msgid "Others"
 msgstr "Inne"
+
+msgid "Scheme ids"
+msgstr "Identyfikatory schematów"
+
+msgid "Scientific"
+msgstr "Naukowe"
 
 msgid "Scripts"
 msgstr "Skrypty"
@@ -46,6 +108,45 @@ msgstr "Skrypty"
 msgid "Sources"
 msgstr "Źródła"
 
+msgid "Style scheme description"
+msgstr "Opis schematu stylu"
+
+msgid "Style scheme filename"
+msgstr "Nazwa pliku schematu stylu"
+
+msgid "Style scheme id"
+msgstr "Identyfikator schematu stylu"
+
+msgid "Style scheme name"
+msgstr "Nazwa schematu stylu"
+
+msgid "Style scheme search path"
+msgstr "Ścieżka poszukiwania schematów stylów"
+
+msgid "Unknown id '%s' in regex '%s'"
+msgstr "Nieznany identyfikator \"%s\" w wyrażeniu regularnym \"%s\""
+
+msgid "Whether the language should be hidden from the user"
+msgstr "Określa czy język powinien być ukrywany"
+
+msgid "context '%s' cannot contain a \\%%{...@start} command"
+msgstr "kontekst \"%s\" nie może zawierać polecenia \\%%{...@start}"
+
+msgid "duplicated context id '%s'"
+msgstr "powtórzony identyfikator kontekstu \"%s\""
+
 msgid "gettext translation"
 msgstr "tłumaczenie gettext"
+
+msgid "in regex '%s': backreferences are not supported"
+msgstr "w wyrażeniu regularnym \"%s\": referencje wsteczne nie są obsługiwane"
+
+msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
+msgstr "użyto unieważnienia stylu za pomocą ogólnej referencji kontekstu w języku \"%s\" w referencji \"%s\""
+
+msgid "unknown context '%s'"
+msgstr "nieznany kontekst \"%s\""
+
+msgid "using \\C is not supported in language definitions"
+msgstr "używanie \\C nie jest obsługiwane w definicjach języka"
 

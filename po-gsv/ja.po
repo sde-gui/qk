@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview trunk\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"POT-Creation-Date: 2007-11-26 00:40-0600\n"
 "PO-Revision-Date: 2007-09-01 00:04+0900\n"
 "Last-Translator: Takeshi AIHANA <takeshi.aihana@gmail.com>\n"
 "Language-Team: Japanese <gnome-translation@gnome.gr.jp>\n"
@@ -133,9 +133,6 @@ msgstr "gettext の翻訳"
 
 msgid "in regex '%s': backreferences are not supported"
 msgstr "正規表現 '%s': 後方参照はサポートしていません"
-
-msgid "invalid reference '%s'"
-msgstr "不正なリファレンス '%s'"
 
 msgid "unknown context '%s'"
 msgstr "不明なコンテキスト '%s'"

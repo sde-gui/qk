@@ -8,13 +8,14 @@
 # Abdulaziz Al-Arfaj <alarfaj0@yahoo.com>, 2004.
 # Djihed Afifi <djihed@gmail.com>, 2006.
 # Khaled Hosny <khaledhosny@eglug.org>, 2007.
+# Abderrahim Kitouni <a.kitouni@gmail.com>, 2007.
 msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview.HEAD.ar\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-09-09 12:00-0500\n"
-"PO-Revision-Date: 2007-02-16 11:53-0000\n"
-"Last-Translator: Djihed Afifi <djihed@gmail.com>\n"
+"POT-Creation-Date: 2007-11-26 00:40-0600\n"
+"PO-Revision-Date: 2007-10-22 13:42-0000\n"
+"Last-Translator: Abderrahim Kitouni <a.kitouni@gmail.com>\n"
 "Language-Team: Arabic <doc@arabeyes.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -22,8 +23,30 @@ msgstr ""
 "X-Generator: KBabel 1.11.4\n"
 "Plural-Forms: Plural-Forms: nplurals=4; plural=n==1 ? 0 : n==2 ? 1 : n>=3 && n<=10 ? 2 : 3"
 
+msgid "C/C++/ObjC Header"
+msgstr "ترويسة C/C++/ObjC"
+
+msgid ""
+"Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
+"The error was: %s"
+msgstr ""
+"لا يمكن انشاء عبارة منتظمة من أجل كل الحالات الانتقالية، سيكون ابراز الصياغة أبطأ من المعتاد.\n"
+"الخطأ هو: %s"
+
 msgid "ChangeLog"
 msgstr "التغيرات:"
+
+msgid "Classic"
+msgstr "تقليدي"
+
+msgid "Classic color scheme"
+msgstr "مخطط ألوان تقليدي"
+
+msgid "Color scheme used in the Kate text editor"
+msgstr "تنسيق الألوان المستعمل في محرر النصوص Kate"
+
+msgid "Defaults"
+msgstr "الإفتراضيّات"
 
 msgid "Diff"
 msgstr "الاختلافات"
@@ -31,14 +54,35 @@ msgstr "الاختلافات"
 msgid "Haskell"
 msgstr "هاسكيل"
 
+msgid "Hidden"
+msgstr "مخفي"
+
+msgid "Language id"
+msgstr "معرف اللغة"
+
+msgid "Language name"
+msgstr "اسم اللغة"
+
+msgid "Language section"
+msgstr "قسم اللغة"
+
 msgid "Language specification directories"
 msgstr "دلائل خصائص اللغة"
+
+msgid "List of directories and files where the style schemes are located"
+msgstr "قائمة الدلائل والملفات أين توجد مخططات الطرز"
 
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "قائمة الدلائل الحاوية لملفات خصائص اللغة (.lang)"
 
+msgid "List of the ids of the available style schemes"
+msgstr "قائمة معرفات مخططات الطرز المتوفرة"
+
 msgid "Markup"
 msgstr "تعليم"
+
+msgid "Missing main language definition (id = \"%s\".)"
+msgstr "تعريف اللغة الرئيسية غائب (id = \"%s\".)"
 
 msgid "Nemerle"
 msgstr "رقم"
@@ -55,15 +99,54 @@ msgstr "روبي"
 msgid "Scheme"
 msgstr "مخطط"
 
+msgid "Scheme ids"
+msgstr "معرفات المخطط"
+
+msgid "Scientific"
+msgstr "علميّ"
+
 msgid "Scripts"
 msgstr "نصوص تشفيرية"
 
 msgid "Sources"
 msgstr "المصادر"
 
+msgid "Style scheme description"
+msgstr "وصف مخطط الطرز"
+
+msgid "Style scheme filename"
+msgstr "اسم ملف مخطط الطرز"
+
+msgid "Style scheme id"
+msgstr "معرف مخطط الطرز"
+
+msgid "Style scheme name"
+msgstr "اسم مخطط الطرز"
+
+msgid "Style scheme search path"
+msgstr "مسار البحث عن مخططات الطرز"
+
+msgid "Tango"
+msgstr "تانجو"
+
 msgid "Texinfo"
 msgstr "تكس إنفو"
 
+msgid "Unknown id '%s' in regex '%s'"
+msgstr "معرف مجهول '%s' في العبارة المنتظمة '%s'"
+
+msgid "context '%s' cannot contain a \\%%{...@start} command"
+msgstr "لا يمكن للسياق '%s' أن يحوي أمر \\%%{...@start}"
+
+msgid "duplicated context id '%s'"
+msgstr "معرف السياق '%s' مكرر"
+
 msgid "gettext translation"
 msgstr "ترجمة gettext"
+
+msgid "unknown context '%s'"
+msgstr "سياق مجهول '%s'"
+
+msgid "using \\C is not supported in language definitions"
+msgstr "استعمال \\C في تعريف اللغات غير مدعوم"
 

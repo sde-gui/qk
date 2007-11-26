@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview 1.7.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"POT-Creation-Date: 2007-11-26 00:40-0600\n"
 "PO-Revision-Date: 2007-08-29 17:26+0200\n"
 "Last-Translator: Claude Paroz <claude@2xlibre.net>\n"
 "Language-Team: GNOME French Team <gnomefr@traduc.org>\n"
@@ -137,9 +137,6 @@ msgstr "Traduction via gettext"
 
 msgid "in regex '%s': backreferences are not supported"
 msgstr "dans l'expr. régulière « %s » : les références arrières ne sont pas prises en charge"
-
-msgid "invalid reference '%s'"
-msgstr "référence « %s » non valide"
 
 msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
 msgstr "surcharge de style utilisée avec référence de contexte à caractères génériques dans le langage « %s » dans la référence « %s »"

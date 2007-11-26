@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview.HEAD.hu\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-09-09 12:00-0500\n"
-"PO-Revision-Date: 2007-08-26 14:38+0200\n"
+"POT-Creation-Date: 2007-11-26 00:40-0600\n"
+"PO-Revision-Date: 2007-09-13 21:57+0200\n"
 "Last-Translator: Gabor Kelemen <kelemeng@gnome.hu>\n"
 "Language-Team: Hungarian <gnome@gnome.hu>\n"
 "MIME-Version: 1.0\n"
@@ -40,7 +40,10 @@ msgid "Color scheme used in the Kate text editor"
 msgstr "A Kate szövegszerkesztőben használt színséma"
 
 msgid "Color scheme using Tango color palette"
-msgstr "A Tango színpalettában használt színséma"
+msgstr "A Tango színpalettát használó színséma"
+
+msgid "Dark color scheme using the Tango color palette"
+msgstr "A Tango színpalettát használó sötét színséma"
 
 msgid "Defaults"
 msgstr "Alapértékek"
@@ -50,6 +53,9 @@ msgstr "Rejtett"
 
 msgid "Language id"
 msgstr "Nyelvazonosító"
+
+msgid "Language ids"
+msgstr "Nyelvazonosítók"
 
 msgid "Language name"
 msgstr "Nyelvnév"
@@ -65,6 +71,9 @@ msgstr "A stílussémákat tartalmazó könyvtárak és fájlok listája"
 
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "A nyelvspecifikációs fájlokat (.lang) tartalmazó könyvtárak listája"
+
+msgid "List of the ids of the available languages"
+msgstr "Az elérhető nyelvek azonosítóinak listája"
 
 msgid "List of the ids of the available style schemes"
 msgstr "Az elérhető stílussémák azonosítóinak listája"
@@ -128,9 +137,6 @@ msgstr "gettext fordítás"
 
 msgid "in regex '%s': backreferences are not supported"
 msgstr "\"%s\" regulásris kifejezés: a visszahivatkozások nem támogatottak"
-
-msgid "invalid reference '%s'"
-msgstr "érvénytelen hivatkozás: %s"
 
 msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
 msgstr "a helyettesítő karakteres kontextushivatkozáshoz stílus-felülbírálás került felhasználásra a(z) \"%s\" nyelv \"%s\" hivatkozásában."

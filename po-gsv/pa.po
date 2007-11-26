@@ -7,32 +7,73 @@
 # Amanpreet Singh Alam <aalam@redhat.com>, 2004, 2006.
 # Amanpreet Singh Alam <amanpreetalam@yahoo.com>, 2005.
 # A S Alam <aalam@users.sf.net>, 2007.
+# A S Alam <apbrar@gmail.com>, 2007.
 msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview.HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-09-09 12:00-0500\n"
-"PO-Revision-Date: 2007-03-06 08:05+0530\n"
-"Last-Translator: A S Alam <aalam@users.sf.net>\n"
-"Language-Team: Punjabi <punjabi-l10n@lists.sf.net>\n"
+"POT-Creation-Date: 2007-11-26 00:40-0600\n"
+"PO-Revision-Date: 2007-11-20 07:34+0530\n"
+"Last-Translator: A S Alam <apbrar@gmail.com>\n"
+"Language-Team: Punjabi <punjabi-l10n@users.sf.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"\n"
 ""
+
+msgid "C/C++/ObjC Header"
+msgstr "C/C++/ObjC ਹੈੱਡਰ"
+
+msgid "Classic"
+msgstr "ਕਲਾਸਿਕ"
+
+msgid "Classic color scheme"
+msgstr "ਕਲਾਸਿਕ ਰੰਗ ਸਕੀਮ"
+
+msgid "Defaults"
+msgstr "ਡਿਫਾਲਟ"
 
 msgid "Diff"
 msgstr "ਅੰਤਰ"
 
+msgid "Docbook"
+msgstr "DocBook"
+
 msgid "Java"
 msgstr "ਜਾਵਾ"
+
+msgid "Javascript"
+msgstr "ਜਾਵਾਸਕਰਿਪਟ"
+
+msgid "Kate"
+msgstr "ਕੇਟ"
+
+msgid "Language id"
+msgstr "ਭਾਸ਼ਾ id"
+
+msgid "Language ids"
+msgstr "ਭਾਸ਼ਾ id"
+
+msgid "Language name"
+msgstr "ਭਾਸ਼ਾ ਨਾਂ"
+
+msgid "Language section"
+msgstr "ਭਾਸ਼ਾ ਸ਼ੈਕਸ਼ਨ"
 
 msgid "Language specification directories"
 msgstr "ਭਾਸ਼ਾ ਸਥਾਪਨ ਡਾਇਰੈਕਟਰੀਆਂ"
 
+msgid "List of directories and files where the style schemes are located"
+msgstr "ਡਾਇਰੈਕਟਰੀਆਂ ਅਤੇ ਫਾਇਲਾਂ ਦੀ ਲਿਸਟ, ਜਿਥੇ ਕਿ ਸਟਾਇਲ ਸਕੀਮਾਂ ਮੌਜੂਦ ਹਨ"
+
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "ਡਾਇਰੈਕਟਰੀ ਦੀ ਸੂਚੀ ਜਿਥੇ ਕਿ ਭਾਸ਼ਾ ਨਿਰਧਾਰਨ ਫਾਇਲ(.lang) ਸਥਿਤ ਹਨ"
+
+msgid "Markup"
+msgstr "ਮਾਰਕਅੱਪ"
 
 msgid "Objective Caml"
 msgstr "ਆਬਜੈਕਟਿਵ Caml"
@@ -55,11 +96,35 @@ msgstr "ਪਾਈਥਨ"
 msgid "Scheme"
 msgstr "ਸਕੀਮ"
 
+msgid "Scheme ids"
+msgstr "ਸਕੀਮ id"
+
+msgid "Scientific"
+msgstr "ਵਿਗਿਆਨਕ"
+
 msgid "Scripts"
 msgstr "ਸਕ੍ਰਿਪਟ"
 
 msgid "Sources"
 msgstr "ਸਰੋਤ"
+
+msgid "Style scheme description"
+msgstr "ਸਟਾਇਲ ਸਕੀਮ ਵੇਰਵਾ"
+
+msgid "Style scheme filename"
+msgstr "ਸਟਾਇਲ ਸਕੀਮ ਫਾਇਲ-ਨਾਂ"
+
+msgid "Style scheme id"
+msgstr "ਸਟਾਇਲ ਸਕੀਮ id"
+
+msgid "Style scheme name"
+msgstr "ਸਟਾਇਲ ਸਕੀਮ ਨਾਂ"
+
+msgid "Style scheme search path"
+msgstr "ਸਟਾਇਲ ਸਕੀਮ ਖੋਜ ਪਾਥ"
+
+msgid "Tango"
+msgstr "ਟਾਂਗੋ"
 
 msgid "Verilog"
 msgstr "ਵੇਰੀਲਾਗ"

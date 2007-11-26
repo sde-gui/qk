@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"POT-Creation-Date: 2007-11-26 00:40-0600\n"
 "PO-Revision-Date: 2007-02-13 08:23+0300\n"
 "Last-Translator: Ilkka Tuohela <hile@iki.fi>\n"
 "Language-Team: Finnish <gnome-fi-laatu@lists.sourceforge.net>\n"
@@ -133,9 +133,6 @@ msgstr "Gettext-käännös"
 
 msgid "in regex '%s': backreferences are not supported"
 msgstr "lausekkeessa \"%s\": takaisinviittauksia ei tueta"
-
-msgid "invalid reference '%s'"
-msgstr "virheellinen viite \"%s\""
 
 msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
 msgstr "tyylin ohitusta käytettiin jokerimerkillisessä kontekstiviitteessä kielellä \"%s\" viitteessä \"%s\""

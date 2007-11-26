@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eu\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"POT-Creation-Date: 2007-11-26 00:40-0600\n"
 "PO-Revision-Date: 2007-08-05 13:31+0200\n"
 "Last-Translator: Iñaki Larrañaga Murgoitio <dooteo@zundan.com>\n"
 "Language-Team: Basque <eu@li.org>\n"
@@ -131,9 +131,6 @@ msgstr "gettext itzulpena"
 
 msgid "in regex '%s': backreferences are not supported"
 msgstr "'%s' adi. erregularrean: atzerako erreferentziak ez daude onartuta"
-
-msgid "invalid reference '%s'"
-msgstr "baliogabeko '%s' erreferentzia"
 
 msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
 msgstr "erabilitako estilo gainjartzea testuinguruko erreferentziako komondinarekin '%s' hizkuntzako '%s' erreferentzian"

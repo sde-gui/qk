@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 2.20\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-09-09 12:00-0500\n"
+"POT-Creation-Date: 2007-11-26 00:40-0600\n"
 "PO-Revision-Date: 2007-09-08 01:55+0000\n"
 "Last-Translator: Duarte Loreto <happyguy_pt@hotmail.com>\n"
 "Language-Team: Portuguese <gnome_pt@yahoogroups.com>\n"
@@ -138,9 +138,6 @@ msgstr "Tradução gettext"
 
 msgid "in regex '%s': backreferences are not supported"
 msgstr "na expressão regular '%s': não são suportadas referências retroactivas"
-
-msgid "invalid reference '%s'"
-msgstr "referência '%s' inválida"
 
 msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
 msgstr "sobreposição de estilo utilizada com wildcard de referência de contexto na linguagem '%s' na referência '%s'"

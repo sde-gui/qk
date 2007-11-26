@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview trunk\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-09-09 12:00-0500\n"
-"PO-Revision-Date: 2007-08-17 06:54+0300\n"
+"POT-Creation-Date: 2007-11-26 00:40-0600\n"
+"PO-Revision-Date: 2007-09-16 17:23+0300\n"
 "Last-Translator: Alexander Shopov <ash@contact.bg>\n"
 "Language-Team: Bulgarian <dict@fsa-bg.org>\n"
 "MIME-Version: 1.0\n"
@@ -42,6 +42,9 @@ msgstr "Цветова схема използвана в текстовия р�
 msgid "Color scheme using Tango color palette"
 msgstr "Цветова схема базирана на Tango"
 
+msgid "Dark color scheme using the Tango color palette"
+msgstr "Тъмна цветова схема базирана на Tango"
+
 msgid "Defaults"
 msgstr "Стандартни стойности"
 
@@ -60,6 +63,9 @@ msgstr "JavaScript"
 msgid "Language id"
 msgstr "Идентификатор на език"
 
+msgid "Language ids"
+msgstr "Идентификатори на език"
+
 msgid "Language name"
 msgstr "Име на език"
 
@@ -74,6 +80,9 @@ msgstr "Списък с папки и файлове, в които се нам�
 
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "Списък с папки, където се пазят файловете за езикови спецификации (.lang)."
+
+msgid "List of the ids of the available languages"
+msgstr "Списък с идентификатори на наличните езици"
 
 msgid "List of the ids of the available style schemes"
 msgstr "Списък с идентификатори на наличните стилови схеми"
@@ -101,6 +110,9 @@ msgstr "Скриптове"
 
 msgid "Sources"
 msgstr "Изходен код"
+
+msgid "Style scheme description"
+msgstr "Описание на стилова схема"
 
 msgid "Style scheme filename"
 msgstr "Име файла на стилова схема"
@@ -132,8 +144,8 @@ msgstr "Превод на gettext"
 msgid "in regex '%s': backreferences are not supported"
 msgstr "в регулярния израз „%s“: не се поддържат указатели към вече намерени групи знаци"
 
-msgid "invalid reference '%s'"
-msgstr "неправилен указател „%s“"
+msgid "invalid context reference '%s'"
+msgstr "неправилен указател към контекст „%s“"
 
 msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
 msgstr "налагане на стил, което е използвано с указател с маска към контексти в езика „%s“, указател „%s“ "
