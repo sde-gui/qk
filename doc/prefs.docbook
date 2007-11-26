@@ -1,13 +1,13 @@
 <!-- ========== prefs-langs-and-filters ========== -->
 <section id="prefs-langs-and-filters">
-<title>Selecting options and languages</title>
+<title>Selecting editing options and languages</title>
 <para>
 <guilabel>Languages and files</guilabel> tab in the <guilabel>Editor</guilabel>
 section of the <interface>Preferences</interface> dialog allows customizing
-how syntax highlighting language and a number of editing options are chosen
+how syntax highlighting language and editing options are chosen
 depending on the document filename, as well as setting editing options for
 all documents which use given language and choosing file patterns and mime types
-for which given language should be used.
+for which the given language should be used.
 </para>
 
 <!-- ========== Language-specific options ========== -->

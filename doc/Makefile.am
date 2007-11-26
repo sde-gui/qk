@@ -40,6 +40,7 @@ medit.lo: build-help
 prefs.lo: build-help
 prefs-file.lo: build-help
 license.lo: build-help
+user-tools.lo: build-help
 
 #############################################################################
 # Standard automake stuff

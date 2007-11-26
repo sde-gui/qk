@@ -244,6 +244,10 @@ an example or to modify to suit your needs.
     <symbol>gtk.TextView</symbol> class, and all editing operations can be implemented using
     <symbol>pygtk</symbol> API.
     </para><para>
+    Python scripts executed from inside &app; have <filename>LIBDIR/plugins/lib</filename>
+    and <filename>USERDATADIR/plugins/lib</filename> directories added to <symbol>sys.path</symbol>,
+    you can place there &app;-specific modules to be used from python tools.
+    </para><para>
     Python scripts have the following variables predefined:
     </para>
     <itemizedlist>
