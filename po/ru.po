@@ -38,7 +38,7 @@ msgstr "Информация о системе"
 #. do not ignore it, markup isn't always used
 #: ../moo/mooapp/mooappabout.c:53
 msgid "translator-credits"
-msgstr "Евгений Мунтян <muntyan@tamu.edu>"
+msgstr "Андрей Федосеев <andrey.fedoseev@gmail.com>"
 
 #. Translators: this goes into About box, under Translated by tab,
 #. this must be valid html markup, e.g.
@@ -47,8 +47,7 @@ msgstr "Евгений Мунтян <muntyan@tamu.edu>"
 #: ../moo/mooapp/mooappabout.c:58
 msgid "translator-credits-markup"
 msgstr ""
-"Евгений Мунтян <a href=\"mailto:muntyan@tamu.edu\">&lt;muntyan@tamu.edu&gt;</"
-"a><br>Андрей Федосеев <a href=\"mailto:andrey.fedoseev@gmail.com\">&lt;"
+"Андрей Федосеев <a href=\"mailto:andrey.fedoseev@gmail.com\">&lt;"
 "andrey.fedoseev@gmail.com&gt;</a>"
 
 #. Credits button label in About dialog
