@@ -107,7 +107,7 @@ moo_help_open_any (GtkWidget *widget)
         widget = widget->parent;
     }
 
-    return moo_help_open_id (MOO_HELP_ID_CONTENTS, widget);
+    moo_help_open_id (MOO_HELP_ID_CONTENTS, widget);
 }
 
 

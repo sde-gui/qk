@@ -3001,35 +3001,11 @@ moo_paned_set_handle_cursor_type (MooPaned     *paned,
                                   GdkCursorType cursor_type,
                                   gboolean      set)
 {
-//     GSList *l;
-    GdkCursor *cursor = NULL;
-
-//     for (l = paned->priv->panes; l != NULL; l = l->next)
-//     {
-//         MooPane *pane = l->data;
-//
-//         if (pane->handle && pane->handle->window)
-//         {
-// #if 0
-//             if (set && !cursor)
-//             {
-//                 cursor = gdk_cursor_new (cursor_type);
-//                 g_return_if_fail (cursor != NULL);
-//             }
-//
-//             gdk_window_set_cursor (pane->handle->window, cursor);
-// #endif
-//         }
-//     }
-
     if (set)
     {
         paned->priv->handle_cursor_type = cursor_type;
         g_object_notify (G_OBJECT (paned), "handle-cursor-type");
     }
-
-    if (cursor)
-        gdk_cursor_unref (cursor);
 }
 
 

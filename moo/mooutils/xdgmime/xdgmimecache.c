@@ -348,8 +348,7 @@ cache_alias_lookup (const char *alias)
 
 static int
 cache_glob_lookup_literal (const char *file_name,
-			   const char *mime_types[],
-			   int         n_mime_types)
+			   const char *mime_types[])
 {
   const char *ptr;
   int i, min, max, mid, cmp;
@@ -579,7 +578,7 @@ cache_glob_lookup_file_name (const char *file_name,
   assert (file_name != NULL);
 
   /* First, check the literals */
-  n = cache_glob_lookup_literal (file_name, mime_types, n_mime_types);
+  n = cache_glob_lookup_literal (file_name, mime_types);
   if (n > 0)
     return n;
 

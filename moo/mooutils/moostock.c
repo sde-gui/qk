@@ -252,7 +252,6 @@ _moo_stock_init (void)
     register_stock_icon_alias (factory, GTK_STOCK_NEW, MOO_STOCK_NEW_WINDOW, "window_new");
     add_icon_name (factory, MOO_STOCK_NEW_WINDOW, "window-new");
 
-//     register_stock_icon_alias (factory, GTK_STOCK_NO, MOO_STOCK_SAVE_NONE, "no");
     register_stock_icon_alias (factory, GTK_STOCK_SAVE, MOO_STOCK_SAVE_SELECTED, "filesave");
 
     register_stock_icon_alias (factory, GTK_STOCK_COPY, MOO_STOCK_FILE_COPY, "editcopy");

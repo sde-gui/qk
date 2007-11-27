@@ -2541,7 +2541,7 @@ _moo_edit_filename_to_uri (const char *filename,
         return NULL;
     }
 
-    if (!line == 0 && !options)
+    if (!line && !options)
         return uri;
 
     string = g_string_new (uri);
@@ -2561,7 +2561,6 @@ _moo_edit_filename_to_uri (const char *filename,
     }
 
     g_free (uri);
-    g_print ("%s\n", string->str);
     return g_string_free (string, FALSE);
 }
 

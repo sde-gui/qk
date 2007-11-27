@@ -739,17 +739,6 @@ create_label_widget (MooPanePosition position,
 
     *icon_widget = gtk_image_new ();
 
-//     else if (label->icon_stock_id)
-//         icon = gtk_image_new_from_stock (label->icon_stock_id,
-//                                          GTK_ICON_SIZE_MENU);
-//     else if (label->icon_pixbuf)
-//         icon = gtk_image_new_from_pixbuf (label->icon_pixbuf);
-
-//     if (icon)
-//         gtk_widget_show (icon);
-//     if (text)
-//         gtk_widget_show (text);
-
     switch (position)
     {
         case MOO_PANE_POS_LEFT:
@@ -811,8 +800,6 @@ create_widgets (MooPane         *pane,
     pane->button = gtk_toggle_button_new ();
     gtk_widget_show (pane->button);
     gtk_button_set_focus_on_click (GTK_BUTTON (pane->button), FALSE);
-//     g_signal_connect (pane->button, "button-press-event",
-//                       G_CALLBACK (pane_button_click), paned);
 
     label = create_label_widget (position,
                                  &pane->label_widget,

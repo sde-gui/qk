@@ -43,15 +43,17 @@ set_variable (const char   *name,
               const GValue *value,
               gpointer      data)
 {
-//     lua_State *L = data;
-//     MSContext *ctx = data;
-//     MSValue *ms_value;
-//
-//     ms_value = ms_value_from_gvalue (value);
-//     g_return_if_fail (ms_value != NULL);
-//
-//     [ctx assignVariable:name :ms_value];
-//     ms_value_unref (ms_value);
+#if 0
+    lua_State *L = data;
+    MSContext *ctx = data;
+    MSValue *ms_value;
+
+    ms_value = ms_value_from_gvalue (value);
+    g_return_if_fail (ms_value != NULL);
+
+    [ctx assignVariable:name :ms_value];
+    ms_value_unref (ms_value);
+#endif
 }
 
 static lua_State *
@@ -105,7 +107,7 @@ copy_globals (lua_State *L)
     }
 
     lua_setfenv (L, func_idx);
-    lua_pop (L, 1); // pop the globals table
+    lua_pop (L, 1); /* pop the globals table */
 }
 
 static void

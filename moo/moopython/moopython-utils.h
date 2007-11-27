@@ -45,25 +45,13 @@ char        *_moo_py_err_string             (void);
 void         _moo_py_init_print_funcs       (void);
 
 
-#define return_Obj(obj) G_STMT_START {  \
-    gpointer obj_cast__ = obj;          \
-    Py_INCREF ((PyObject*) obj_cast__); \
-    return obj_cast__;                  \
-} G_STMT_END
-
+#define return_Obj(obj) return Py_INCREF (obj), obj
 #define return_Self     return_Obj (self)
 #define return_None     return_Obj (Py_None)
 /* avoid strict aliasing warnings */
 #define return_True     return PyBool_FromLong (TRUE)
 #define return_False    return PyBool_FromLong (FALSE)
-
-#define return_Bool(v)  \
-G_STMT_START {          \
-    if (v)              \
-        return_True;    \
-    else                \
-        return_False;   \
-} G_STMT_END
+#define return_Bool(v)  return PyBool_FromLong ((v) && TRUE)
 
 #define return_Int(v)   return PyInt_FromLong (v)
 

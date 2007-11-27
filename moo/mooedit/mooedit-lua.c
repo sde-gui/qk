@@ -146,7 +146,7 @@ set_global_vars (lua_State   *L,
         g_free (filename);
     }
 
-    lua_pop (L, 2); // pop the doc table and globals table
+    lua_pop (L, 2); /* pop the doc table and globals table */
 }
 
 

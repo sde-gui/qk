@@ -410,39 +410,6 @@ moo_edit_prefs_page_init (MooPrefsDialogPage *page)
 
     current_page = gtk_notebook_get_current_page (data->notebook);
     init_page (data, current_page);
-
-//     MooEditor *editor;
-//     MooLangMgr *mgr;
-//     MooTextStyleScheme *scheme;
-//     GtkComboBox *scheme_combo, *default_lang_combo, *lang_combo;
-//     MooTreeHelper *helper;
-//     const char *lang;
-//
-//     editor = page_get_editor (page);
-//     mgr = moo_editor_get_lang_mgr (editor);
-//     scheme = moo_lang_mgr_get_active_scheme (mgr);
-//     g_return_if_fail (scheme != NULL);
-//
-//     scheme_combo = moo_glade_xml_get_widget (page->xml, "color_scheme_combo");
-//     scheme_combo_init (scheme_combo, editor);
-//     default_lang_combo = moo_glade_xml_get_widget (page->xml, "default_lang_combo");
-//     default_lang_combo_init (default_lang_combo, page);
-//     lang_combo = moo_glade_xml_get_widget (page->xml, "lang_combo");
-//     lang_combo_init (lang_combo, page);
-//
-//     filter_treeview_init (page->xml);
-//
-//     save_encoding_combo_init (page->xml);
-//
-//     scheme_combo = moo_glade_xml_get_widget (page->xml, "color_scheme_combo");
-//     scheme_combo_set_scheme (scheme_combo, scheme);
-//
-//     default_lang_combo = moo_glade_xml_get_widget (page->xml, "default_lang_combo");
-//     lang = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG));
-//     default_lang_combo_set_lang (default_lang_combo, lang);
-//
-//     helper = g_object_get_data (G_OBJECT (page), "moo-tree-helper");
-//     _moo_tree_helper_update_widgets (helper);
 }
 
 
@@ -538,25 +505,6 @@ moo_edit_prefs_page_apply (MooPrefsDialogPage *page)
     }
 
     moo_editor_apply_prefs (data->editor);
-
-//     editor = page_get_editor (page);
-//     g_return_if_fail (editor != NULL);
-//
-//     scheme = page_get_scheme (page);
-//     g_return_if_fail (scheme != NULL);
-//     moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_COLOR_SCHEME),
-//                           moo_text_style_scheme_get_id (scheme));
-//     g_object_unref (scheme);
-//
-//     lang = page_get_default_lang (page);
-//     moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG), lang);
-//     g_free (lang);
-//
-//     save_encoding_combo_apply (page->xml);
-//
-//     prefs_page_apply_lang_prefs (page);
-//     apply_filter_settings (page);
-//     moo_editor_apply_prefs (editor);
 }
 
 
