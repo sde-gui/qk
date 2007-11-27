@@ -39,5 +39,6 @@ nobase_plugins_lib_DATA =	\
 
 EXTRA_DIST =			\
     $(nobase_plugins_lib_DATA)	\
+    $(plugins_lib_DATA)		\
     $(plugins)			\
     $(ini_in_in_files)
