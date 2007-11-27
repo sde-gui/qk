@@ -76,11 +76,6 @@ class PyCmdFactory(moo.edit.CommandFactory):
         else:
             return False
 
-    def do_data_equal(self, data1, data2):
-        c1 = data1.get_code() or None
-        c2 = data2.get_code() or None
-        return c1 == c2
-
 gobject.type_register(PyCmd)
 gobject.type_register(PyCmdFactory)
 moo.edit.command_factory_register("python", _("Python script"), PyCmdFactory(), None, ".py")

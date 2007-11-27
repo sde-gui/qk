@@ -258,17 +258,6 @@ lua_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
 }
 
 
-static gboolean
-lua_factory_data_equal (G_GNUC_UNUSED MooCommandFactory *factory,
-                        MooCommandData *data1,
-                        MooCommandData *data2)
-{
-    const char *val1 = moo_command_data_get_code (data1);
-    const char *val2 = moo_command_data_get_code (data2);
-    return _moo_str_equal (val1, val2);
-}
-
-
 static void
 _moo_command_factory_lua_init (G_GNUC_UNUSED MooCommandFactory *factory)
 {
@@ -281,7 +270,6 @@ _moo_command_factory_lua_class_init (MooCommandFactoryClass *klass)
     klass->create_widget = lua_factory_create_widget;
     klass->load_data = lua_factory_load_data;
     klass->save_data = lua_factory_save_data;
-    klass->data_equal = lua_factory_data_equal;
 }
 
 

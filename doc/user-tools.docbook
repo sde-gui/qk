@@ -208,7 +208,7 @@ an example or to modify to suit your needs.
     be enabled.
     </para></listitem>
     <listitem><para>
-    <userinput>filter</userinput>, <userinput>file-filter</userinput>: defines for which files this tool
+    <userinput>file-filter</userinput>: defines for which files this tool
     will be enabled. The value has the same format as in the <interface>Preferences</interface> dialog.
     </para></listitem>
     <listitem><para>

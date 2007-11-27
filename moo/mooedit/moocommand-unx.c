@@ -943,25 +943,6 @@ unx_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
 }
 
 
-static gboolean
-unx_factory_data_equal (G_GNUC_UNUSED MooCommandFactory *factory,
-                        MooCommandData *data1,
-                        MooCommandData *data2)
-{
-    guint i;
-
-    for (i = 0; i < N_KEYS; ++i)
-    {
-        const char *val1 = moo_command_data_get (data1, i);
-        const char *val2 = moo_command_data_get (data2, i);
-        if (!_moo_str_equal (val1, val2))
-            return FALSE;
-    }
-
-    return TRUE;
-}
-
-
 static void
 _moo_command_factory_unx_class_init (MooCommandFactoryUnxClass *klass)
 {
@@ -969,5 +950,4 @@ _moo_command_factory_unx_class_init (MooCommandFactoryUnxClass *klass)
     klass->create_widget = unx_factory_create_widget;
     klass->load_data = unx_factory_load_data;
     klass->save_data = unx_factory_save_data;
-    klass->data_equal = unx_factory_data_equal;
 }

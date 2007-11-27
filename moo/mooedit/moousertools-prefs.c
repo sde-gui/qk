@@ -234,7 +234,7 @@ update_model (MooPrefsDialogPage *page,
 
     if (changed)
     {
-        g_print ("page changed\n");
+        info->builtin = FALSE;
         set_changed (page, TRUE);
     }
 
@@ -352,8 +352,6 @@ command_page_apply (MooPrefsDialogPage *page)
 
     if (!get_changed (page))
         return;
-
-    g_print ("apply\n");
 
     model = gtk_tree_view_get_model (GET_WID ("treeview"));
 

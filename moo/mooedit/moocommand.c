@@ -21,6 +21,7 @@
 #include "mooedit/moooutputfilterregex.h"
 #include "mooedit/mooedit-enums.h"
 #include "mooutils/mooutils-debug.h"
+#include "mooutils/mooutils-misc.h"
 #ifdef MOO_OS_UNIX
 #include "mooedit/moocommand-unx.h"
 #endif
@@ -219,6 +220,27 @@ dummy_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
     return FALSE;
 }
 
+static gboolean
+default_data_equal (MooCommandFactory *factory,
+                    MooCommandData    *data1,
+                    MooCommandData    *data2)
+{
+    guint i;
+    const char *val1, *val2;
+
+    for (i = 0; i < factory->n_keys; ++i)
+    {
+        val1 = moo_command_data_get (data1, i);
+        val2 = moo_command_data_get (data2, i);
+        if (!_moo_str_equal (val1, val2))
+            return FALSE;
+    }
+
+    val1 = moo_command_data_get_code (data1);
+    val2 = moo_command_data_get_code (data2);
+    return _moo_str_equal (val1, val2);
+}
+
 static void
 moo_command_factory_class_init (MooCommandFactoryClass *klass)
 {
@@ -226,6 +248,7 @@ moo_command_factory_class_init (MooCommandFactoryClass *klass)
     klass->create_widget = dummy_create_widget;
     klass->load_data = dummy_load_data;
     klass->save_data = dummy_save_data;
+    klass->data_equal = default_data_equal;
 }
 
 
