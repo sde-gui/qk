@@ -4168,6 +4168,9 @@ moo_edit_window_update_doc_list (MooEditWindow *window)
         else if (!link)
         {
             window->priv->history = g_list_prepend (window->priv->history, doc);
+            if (g_list_length (window->priv->history) > 2)
+                window->priv->history = g_list_delete_link (window->priv->history,
+                                                            g_list_last (window->priv->history));
         }
     }
 }
