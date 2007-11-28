@@ -107,6 +107,17 @@ get_color (GtkSourceStyleScheme *scheme,
         return NULL;
 }
 
+const char *
+_moo_text_style_get_bg_color (const MooTextStyle *style)
+{
+    g_return_val_if_fail (style != NULL, NULL);
+
+    if (((GtkSourceStyle*)style)->mask & GTK_SOURCE_STYLE_USE_BACKGROUND)
+        return ((GtkSourceStyle*)style)->background;
+    else
+        return NULL;
+}
+
 void
 _moo_text_style_scheme_apply (MooTextStyleScheme *scheme,
                               GtkWidget          *widget)

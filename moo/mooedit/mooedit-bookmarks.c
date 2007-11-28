@@ -21,7 +21,8 @@
 G_DEFINE_TYPE (MooEditBookmark, moo_edit_bookmark, MOO_TYPE_LINE_MARK)
 
 
-static void     disconnect_bookmark         (MooEditBookmark *bk);
+static void        disconnect_bookmark (MooEditBookmark *bk);
+static const char *get_bookmark_color  (MooEdit         *doc);
 
 
 static void
@@ -42,10 +43,7 @@ moo_edit_bookmark_class_init (MooEditBookmarkClass *klass)
 static void
 moo_edit_bookmark_init (MooEditBookmark *bk)
 {
-    g_object_set (bk,
-                  "visible", TRUE,
-                  "background", "#E5E5FF",
-                  NULL);
+    g_object_set (bk, "visible", TRUE, NULL);
 }
 
 
@@ -268,7 +266,7 @@ moo_edit_add_bookmark (MooEdit *edit,
 
     g_object_set (edit, "show-line-marks", TRUE, NULL);
 
-    bk = g_object_new (MOO_TYPE_EDIT_BOOKMARK, NULL);
+    bk = g_object_new (MOO_TYPE_EDIT_BOOKMARK, "background", get_bookmark_color (edit), NULL);
     moo_text_buffer_add_line_mark (get_moo_buffer (edit), MOO_LINE_MARK (bk), line);
     g_object_set_data (G_OBJECT (bk), "moo-edit-bookmark", GINT_TO_POINTER (TRUE));
 
@@ -478,4 +476,35 @@ _moo_edit_bookmark_get_text (MooEditBookmark *bk)
 #undef MAXBOOKMARKCHARS
 
     return line;
+}
+
+
+static const char *
+get_bookmark_color (MooEdit *doc)
+{
+    MooTextStyle *style;
+    MooTextStyleScheme *scheme;
+
+    scheme = moo_text_view_get_style_scheme (MOO_TEXT_VIEW (doc));
+    if (!scheme)
+        return NULL;
+
+    style = _moo_text_style_scheme_lookup_style (scheme, "bookmark");
+    return style ? _moo_text_style_get_bg_color (style) : NULL;
+}
+
+void
+_moo_edit_update_bookmarks_style (MooEdit *edit)
+{
+    const GSList *bookmarks;
+    const char *color;
+
+    color = get_bookmark_color (edit);
+
+    bookmarks = moo_edit_list_bookmarks (edit);
+    while (bookmarks)
+    {
+        moo_line_mark_set_background (bookmarks->data, color);
+        bookmarks = bookmarks->next;
+    }
 }

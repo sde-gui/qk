@@ -86,6 +86,9 @@ struct _MooTextViewClass
                                      MooTextSelectionType type,
                                      GtkTextIter    *start,
                                      GtkTextIter    *end);
+
+    void (*apply_style_scheme)      (MooTextView    *view,
+                                     MooTextStyleScheme *scheme);
 };
 
 
@@ -134,6 +137,7 @@ void         moo_text_view_set_right_margin_color   (MooTextView        *view,
                                                      const char         *color);
 void         moo_text_view_set_right_margin_offset  (MooTextView        *view,
                                                      guint               offset);
+MooTextStyleScheme *moo_text_view_get_style_scheme  (MooTextView        *view);
 void         moo_text_view_set_style_scheme         (MooTextView        *view,
                                                      MooTextStyleScheme *scheme);
 

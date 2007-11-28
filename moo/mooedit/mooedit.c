@@ -80,6 +80,9 @@ static GtkTextBuffer *get_buffer                (MooEdit        *edit);
 static void     modified_changed_cb             (GtkTextBuffer  *buffer,
                                                  MooEdit        *edit);
 
+static void     moo_edit_apply_style_scheme     (MooTextView        *view,
+                                                 MooTextStyleScheme *scheme);
+
 
 enum {
     DOC_STATUS_CHANGED,
@@ -126,6 +129,7 @@ moo_edit_class_init (MooEditClass *klass)
     widget_class->focus_out_event = moo_edit_focus_out;
 
     textview_class->line_mark_clicked = _moo_edit_line_mark_clicked;
+    textview_class->apply_style_scheme = moo_edit_apply_style_scheme;
 
     klass->filename_changed = moo_edit_filename_changed;
     klass->config_notify = moo_edit_config_notify;
@@ -569,6 +573,15 @@ moo_edit_get_property (GObject        *object,
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
     }
+}
+
+
+static void
+moo_edit_apply_style_scheme (MooTextView        *view,
+                             MooTextStyleScheme *scheme)
+{
+    MOO_TEXT_VIEW_CLASS (moo_edit_parent_class)->apply_style_scheme (view, scheme);
+    _moo_edit_update_bookmarks_style (MOO_EDIT (view));
 }
 
 

@@ -48,6 +48,8 @@ MooTextStyle       *_moo_text_style_scheme_lookup_style (MooTextStyleScheme *sch
 void                _moo_text_style_apply_to_tag        (const MooTextStyle *style,
                                                          GtkTextTag         *tag);
 
+const char         *_moo_text_style_get_bg_color        (const MooTextStyle *style);
+
 
 G_END_DECLS
 

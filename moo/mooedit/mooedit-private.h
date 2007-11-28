@@ -51,6 +51,7 @@ void        _moo_edit_line_mark_deleted     (MooEdit        *edit,
                                              MooLineMark    *mark);
 gboolean    _moo_edit_line_mark_clicked     (MooTextView    *view,
                                              int             line);
+void        _moo_edit_update_bookmarks_style(MooEdit        *edit);
 
 
 /***********************************************************************/

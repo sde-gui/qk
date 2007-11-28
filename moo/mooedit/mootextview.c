@@ -92,6 +92,9 @@ static void     moo_text_view_paste_clipboard (GtkTextView      *text_view);
 static void     moo_text_view_populate_popup(GtkTextView        *text_view,
                                              GtkMenu            *menu);
 
+static void     moo_text_view_apply_style_scheme (MooTextView   *view,
+                                             MooTextStyleScheme *scheme);
+
 static void     invalidate_gcs              (MooTextView        *view);
 static void     update_gcs                  (MooTextView        *view);
 static void     update_tab_width            (MooTextView        *view);
@@ -302,6 +305,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     klass->undo = moo_text_view_undo;
     klass->redo = moo_text_view_redo;
     klass->char_inserted = moo_text_view_char_inserted;
+    klass->apply_style_scheme = moo_text_view_apply_style_scheme;
 
     g_type_class_add_private (klass, sizeof (MooTextViewPrivate));
 
@@ -2590,6 +2594,14 @@ moo_text_view_get_lang (MooTextView *view)
 }
 
 
+static void
+moo_text_view_apply_style_scheme (MooTextView        *view,
+                                  MooTextStyleScheme *scheme)
+{
+    _moo_text_style_scheme_apply (scheme, GTK_WIDGET (view));
+    _moo_text_buffer_set_style_scheme (get_moo_buffer (view), scheme);
+}
+
 void
 moo_text_view_set_style_scheme (MooTextView        *view,
                                 MooTextStyleScheme *scheme)
@@ -2604,8 +2616,15 @@ moo_text_view_set_style_scheme (MooTextView        *view,
         g_object_unref (view->priv->style_scheme);
 
     view->priv->style_scheme = g_object_ref (scheme);
-    _moo_text_style_scheme_apply (scheme, GTK_WIDGET (view));
-    _moo_text_buffer_set_style_scheme (get_moo_buffer (view), scheme);
+
+    MOO_TEXT_VIEW_GET_CLASS (view)->apply_style_scheme (view, scheme);
+}
+
+MooTextStyleScheme *
+moo_text_view_get_style_scheme (MooTextView *view)
+{
+    g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), NULL);
+    return view->priv->style_scheme;
 }
 
 
