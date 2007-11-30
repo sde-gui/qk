@@ -38,7 +38,7 @@ rm -f $1
 cat > $1 << ENDSRIPT
 #!/bin/sh
 
-export PKG_CONFIG_LIBDIR="$GTK_PREFIX/lib/pkgconfig":"$PYTHON_PREFIX/Lib/pkgconfig"
+export PKG_CONFIG_LIBDIR="$GTK_PREFIX/lib/pkgconfig":"$WIN32_PYTHON_PREFIX/Lib/pkgconfig"
 export PKG_CONFIG_PATH=\$PKG_CONFIG_LIBDIR
 
 # pkg-config doesn't like --define-variable with these
@@ -66,11 +66,11 @@ MINGW_TOOL_PREFIX=${MINGW_TOOL_PREFIX:-/usr/bin/i586-mingw32msvc-}
 export GTK_PREFIX=${GTK_PREFIX:-/usr/local/win/gtk}
 
 if [ "x$1" = "x--with-python=2.4" -o "x$2" = "x--with-python=2.4" ]; then
-  export PYTHON_PREFIX=${PYTHON_PREFIX:-/usr/local/win/Python24}
+  export WIN32_PYTHON_PREFIX=${WIN32_PYTHON_PREFIX:-/usr/local/win/Python24}
 else
-  export PYTHON_PREFIX=${PYTHON_PREFIX:-/usr/local/win/Python25}
+  export WIN32_PYTHON_PREFIX=${WIN32_PYTHON_PREFIX:-/usr/local/win/Python25}
 fi
-export PYTHON_HOME=$PYTHON_PREFIX
+export WIN32_PYTHON_HOME=$WIN32_PYTHON_PREFIX
 export PYTHON=${PYTHON:-python}
 
 # Find configure script to run
@@ -144,12 +144,12 @@ libs_flags="--enable-shared --disable-static"
 echo sh $CONFIGURE --prefix=$GTK_PREFIX --build=`$CONFIG_GUESS` --host=$TARGET --target=$TARGET \
 --enable-all-warnings --enable-maintainer-mode $libs_flags \
 PKG_CONFIG="$PKG_CONFIG" GTK_PREFIX="$GTK_PREFIX" \
-PYTHON_PREFIX="$PYTHON_PREFIX" PYTHON_HOME="$PYTHON_HOME" \
+WIN32_PYTHON_PREFIX="$WIN32_PYTHON_PREFIX" WIN32_PYTHON_HOME="$WIN32_PYTHON_HOME" \
 AR="$AR" RANLIB="$RANLIB" STRIP="$STRIP" AS="$AS" DLLTOOL="$DLLTOOL" \
 OBJDUMP="$OBJDUMP" NM="$NM" WINDRES="$WINDRES" $@
 exec sh $CONFIGURE --prefix=$GTK_PREFIX --build=`$CONFIG_GUESS` --host=$TARGET --target=$TARGET \
 --enable-all-warnings --enable-maintainer-mode $libs_flags \
 PKG_CONFIG="$PKG_CONFIG" GTK_PREFIX="$GTK_PREFIX" \
-PYTHON_PREFIX="$PYTHON_PREFIX" PYTHON_HOME="$PYTHON_HOME" \
+WIN32_PYTHON_PREFIX="$WIN32_PYTHON_PREFIX" WIN32_PYTHON_HOME="$WIN32_PYTHON_HOME" \
 AR="$AR" RANLIB="$RANLIB" STRIP="$STRIP" AS="$AS" DLLTOOL="$DLLTOOL" \
 OBJDUMP="$OBJDUMP" NM="$NM" WINDRES="$WINDRES" $@

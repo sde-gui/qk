@@ -6,24 +6,24 @@ AC_DEFUN([MOO_AM_PYTHON_DEVEL_CROSS_MINGW],[
 
   AM_PATH_PYTHON
 
-  if test "x$PYTHON_HOME" = x; then
-    AC_MSG_ERROR([PYTHON_HOME environment variable must be set dnl
+  if test "x$WIN32_PYTHON_HOME" = x; then
+    AC_MSG_ERROR([WIN32_PYTHON_HOME environment variable must be set dnl
 		  when cross-compiling with mingw])
   fi
 
   AC_MSG_CHECKING(host system python version)
-  if test "x$PYTHON_VERSION" = x; then
+  if test "x$WIN32_PYTHON_VERSION" = x; then
     # guess python version, very clever heuristics here
     for _ac_python_minor in 3 4 5 6 7 8 9; do
-      if test -f "$PYTHON_HOME/libs/libpython2$_ac_python_minor.a" -o \
-      	-f "$PYTHON_HOME/libs/python2$_ac_python_minor.lib" ;
+      if test -f "$WIN32_PYTHON_HOME/libs/libpython2$_ac_python_minor.a" -o \
+      	-f "$WIN32_PYTHON_HOME/libs/python2$_ac_python_minor.lib" ;
       then
         _ac_pyversion="2.$_ac_python_minor"
         break
       fi
     done
   else
-    _ac_pyversion=$PYTHON_VERSION
+    _ac_pyversion=$WIN32_PYTHON_VERSION
   fi
   if test "x$_ac_pyversion" = x; then
     AC_MSG_ERROR([Could not determine Python version])
@@ -32,27 +32,27 @@ AC_DEFUN([MOO_AM_PYTHON_DEVEL_CROSS_MINGW],[
   _ac_pyversion_no_dot=`echo $_ac_pyversion | $SED 's/^2\.*\([[3-9]]\).*/2\1/'`
 
   AC_MSG_CHECKING(installation directory for python modules)
-  if test "x$PYTHON_PKG_DIR" != x; then
-    _ac_pythondir=$PYTHON_PKG_DIR
+  if test "x$WIN32_PYTHON_PKG_DIR" != x; then
+    _ac_pythondir="$WIN32_PYTHON_PKG_DIR"
   else
-    _ac_pythondir="$PYTHON_HOME/Lib/site-packages"
+    _ac_pythondir="$WIN32_PYTHON_HOME/Lib/site-packages"
   fi
   AC_MSG_RESULT([$_ac_pythondir])
 
-  if test "x$PYTHON_INCLUDES" != x; then
-    _ac_pyincludes=$PYTHON_INCLUDES
+  if test "x$WIN32_PYTHON_INCLUDES" != x; then
+    _ac_pyincludes="$WIN32_PYTHON_INCLUDES"
   else
-    _ac_pyincludes="-I$PYTHON_HOME/include"
+    _ac_pyincludes="-I$WIN32_PYTHON_HOME/include"
   fi
 
-  if test "x$PYTHON_LIBS" != x; then
-    _ac_pylibs=$PYTHON_LIBS
+  if test "x$WIN32_PYTHON_LIBS" != x; then
+    _ac_pylibs="$WIN32_PYTHON_LIBS"
   else
-    _ac_pylibs="-L$PYTHON_HOME/libs -lpython$_ac_pyversion_no_dot"
+    _ac_pylibs="-L$WIN32_PYTHON_HOME/libs -lpython$_ac_pyversion_no_dot"
   fi
 
-  if test "x$PYTHON_LDFLAGS" != x; then
-    _ac_pyldflags=$PYTHON_LDFLAGS
+  if test "x$WIN32_PYTHON_LDFLAGS" != x; then
+    _ac_pyldflags="$WIN32_PYTHON_LDFLAGS"
   else
     _ac_pyldflags=
   fi
