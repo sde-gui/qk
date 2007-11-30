@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-11-29 19:56-0600\n"
+"POT-Creation-Date: 2007-11-29 19:58-0600\n"
 "PO-Revision-Date: 2007-07-06 00:51+0100\n"
 "Last-Translator: Christian Dywan <christian@twotoasts.de>\n"
 "MIME-Version: 1.0\n"
@@ -103,11 +103,11 @@ msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:2
 msgid "Dialogs"
-msgstr ""
+msgstr "Dialoge"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:3
 msgid "Enable session support"
-msgstr ""
+msgstr "Aktiviere Sitzungsunterstützung"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:4
 msgid "Encoding for new files:"
@@ -127,7 +127,7 @@ msgstr "Sicherungen anfertigen:"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
 msgid "Open dialog shows current document directory"
-msgstr ""
+msgstr "Zeige aktuellen Ordner im Öffnendialog "
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:9
 msgid "Remove trailing spaces"
@@ -139,7 +139,7 @@ msgstr "Speichern"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
 msgid "Sessions"
-msgstr ""
+msgstr "Sitzungen"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:1
 msgid "Backspace key indents"
@@ -212,7 +212,7 @@ msgstr "Wörter nicht trennen"
 #. Part of the phrase "Draw right margin at column [XX]"
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:4
 msgid "Draw right margin"
-msgstr ""
+msgstr "Zeichne rechten Rand"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:5
 msgid "Enable syntax highlighting"
@@ -269,7 +269,7 @@ msgstr "Voreingestellte Themenschriftart verwenden"
 #. Part of the phrase "Draw right margin at column [XX]"
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:20
 msgid "at column"
-msgstr ""
+msgstr "in Spalte"
 
 #: ../moo/mooedit/glade/mooeditsavemult.glade.h:1
 msgid "Select the documents you want to save:"
@@ -580,7 +580,7 @@ msgstr "Neues Dokument"
 
 #: ../moo/mooedit/moocommand-lua.c:289
 msgid "Lua script"
-msgstr ""
+msgstr "Luaskript"
 
 #: ../moo/mooedit/mooeditdialogs.c:170
 #, c-format
@@ -962,7 +962,7 @@ msgstr "%s [geändert]"
 
 #: ../moo/mooedit/mooeditwindow.c:1347
 msgid "Reopen Using Encoding"
-msgstr ""
+msgstr "Mit Kodierung neu öffnen"
 
 #: ../moo/mooedit/mooeditwindow.c:1397
 msgid "_Encoding"
@@ -977,21 +977,21 @@ msgstr "Lesezeichen"
 #: ../moo/mooedit/mooeditwindow.c:3279
 #, c-format
 msgid "Line: %s Col: %s"
-msgstr ""
+msgstr "Zeile: %s Spalte: %s"
 
 #: ../moo/mooedit/mooeditwindow.c:3280
 #, c-format
 msgid "Chars: %s"
-msgstr ""
+msgstr "Zeichen: %s"
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
 #: ../moo/mooedit/mooeditwindow.c:3320
 msgid "OVR"
-msgstr ""
+msgstr "ÜBER"
 
 #: ../moo/mooedit/mooeditwindow.c:3320
 msgid "INS"
-msgstr ""
+msgstr "EINF"
 
 #: ../moo/mooedit/mooeditwindow.c:3445
 msgid "_Language"
@@ -1382,11 +1382,11 @@ msgstr "Python"
 
 #: ../moo/moopython/plugins/python.ini.desktop.in.in.h:2
 msgid "Python support"
-msgstr "Python-Unterstützung"
+msgstr "Pythonunterstützung"
 
 #: ../moo/moopython/plugins/python.py:33 ../moo/moopython/plugins/python.py:34
 msgid "Python Console"
-msgstr "Python-Konsole"
+msgstr "Pythonkonsole"
 
 #: ../moo/moopython/plugins/python.py:41 ../moo/moopython/plugins/python.py:42
 msgid "Run File"
@@ -1395,20 +1395,20 @@ msgstr "Datei ausführen"
 #: ../moo/moopython/plugins/terminal.ini.desktop.in.in.h:1
 #: ../moo/moopython/plugins/terminal.py:48
 msgid "Terminal"
-msgstr "Terminal"
+msgstr "Konsole"
 
 #: ../moo/moopython/plugins/terminal.ini.desktop.in.in.h:2
 msgid "Terminal plugin"
-msgstr "Terminalplugin"
+msgstr "Konsolenplugin"
 
 #: ../moo/moopython/plugins/terminal.py:21
 #: ../moo/moopython/plugins/terminal.py:22
 msgid "Show Terminal"
-msgstr "Terminal anzeigen"
+msgstr "Konsole anzeigen"
 
 #: ../moo/moopython/plugins/medit/runpython.py:28
 msgid "Python Output"
-msgstr "Python-Ausgabe"
+msgstr "Pythonausgabe"
 
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:1
 msgid "Configure Shortcuts"
@@ -1456,7 +1456,7 @@ msgstr "Automatisch erkennen"
 #. Translators: do not translate the part before |
 #: ../moo/mooutils/mooencodings.c:715
 msgid "Encodings combo submenu|Other"
-msgstr ""
+msgstr "Andere"
 
 #: ../moo/mooutils/mooencodings.c:814
 msgid "Charact_er encoding:"
@@ -1704,47 +1704,61 @@ msgstr "Symbole _und Text"
 
 #: ../moo/mooutils/moowindow.c:774
 msgid "Toolbar _Style"
-msgstr ""
+msgstr "Werkzeugleistenstil"
 
 #: ../moo/mooutils/moopane.c:606
 msgid "Remove pane"
-msgstr ""
+msgstr "Leiste entfernen"
 
 #: ../moo/mooutils/moopane.c:614
 msgid "Hide pane"
-msgstr ""
+msgstr "Leiste verstecken"
 
 #: ../moo/mooutils/moopane.c:618
 msgid "Sticky"
-msgstr ""
+msgstr "Klebrig"
 
 #: ../moo/mooutils/moopane.c:622
 msgid "Detach pane"
-msgstr ""
+msgstr "Leiste lösen"
 
 #: ../moo/mooutils/moopane.c:635
 msgid "Attach"
-msgstr ""
+msgstr "Anheften"
 
 #: ../moo/mooutils/moopane.c:639
 msgid "Keep on top"
-msgstr ""
+msgstr "Immer zuoberst"
 
 #: ../moo/mooutils/moohelp.c:193
 msgid "Help files not found"
-msgstr ""
+msgstr "Hilfedateien nicht gefunden"
 
 #: ../moo/mooutils/moohelp.c:205
 #, c-format
 msgid "File '%s' is missing in the directory '%s'"
-msgstr ""
+msgstr "Die Datei '%s' fehlt im Ordner '%s'"
 
 #: ../moo/mooutils/moohelp.c:208
 msgid "Could not find help file"
-msgstr ""
+msgstr "Die Hilfedatei konnte nicht gefunden werden"
 
 #~ msgid "_Settings"
 #~ msgstr "_Einstellungen"
+
+#~ msgid "Item in the notebook popup menu|Encoding"
+#~ msgstr "Kodierung"
+
+#~ msgid "Line: Col: "
+#~ msgstr "Zeile: Spalte: "
+
+#~ msgid "Chars: "
+#~ msgstr "Zeichen: "
+
+#~ msgid "Could not find help files, most likely it means broken installation"
+#~ msgstr ""
+#~ "Die Hilfedateien konnten nicht gefunden werden. Höchst wahrscheinlich ist "
+#~ "die Installation fehlerhaft."
 
 #~ msgid "MooScript"
 #~ msgstr "MooSkript"
