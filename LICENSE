@@ -1,7 +1,7 @@
-medit is distributed under GPL licence, its text you can
-find in COPYING.GPL file. Nevertheless, everything but
-several lang files (see the list below) is under LGPL, see
-COPYING file.
+medit is distributed under GPL version 2 licence, its text
+you can find in COPYING.GPL file. Nevertheless, everything but
+several lang files (see the list below) is under LGPL version
+2.1 or "version 2.1 or later", see COPYING file for its text.
 
 Portions of code are written not by me, those are clearly
 marked as such (copyright headers in files copied from other
