@@ -31,6 +31,7 @@
 #include "mooutils/moomarshals.h"
 #include "mooutils/moomenuaction.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moodialogs.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
@@ -1350,7 +1351,9 @@ action_open_recent_dialog (MooEditWindow *window)
                                             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                             GTK_STOCK_OK, GTK_RESPONSE_OK,
                                             NULL);
+    gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_CENTER_ON_PARENT);
     gtk_window_set_destroy_with_parent (GTK_WINDOW (dialog), TRUE);
+    _moo_window_set_remember_size (GTK_WINDOW (dialog), "Editor/dialogs/recent-chooser-dialog", FALSE);
 
     gtk_recent_chooser_set_show_not_found (GTK_RECENT_CHOOSER (dialog), FALSE);
     gtk_recent_chooser_set_show_tips (GTK_RECENT_CHOOSER (dialog), TRUE);
