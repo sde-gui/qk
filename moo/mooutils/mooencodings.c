@@ -1129,6 +1129,7 @@ moo_encodings_menu_action_init (MooEncodingsMenuAction *action)
     action->cur_item = NULL;
     action->cur_separator = NULL;
     action->menu_data = NULL;
+    g_object_set (action, "no-accel", TRUE, NULL);
 }
 
 static void
