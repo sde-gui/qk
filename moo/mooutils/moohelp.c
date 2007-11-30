@@ -190,9 +190,7 @@ warn_no_help (GtkWidget *parent)
     if (!been_here)
     {
         been_here = TRUE;
-        moo_error_dialog (parent, _("Help files not found"),
-                          _("Could not find help files, most likely "
-                            "it means broken installation"));
+        moo_error_dialog (parent, _("Help files not found"), NULL);
     }
 }
 
