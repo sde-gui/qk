@@ -55,6 +55,9 @@
       <separator/>
       <placeholder name="UserMenu"/>
       <separator/>
+      <item action="ConfigureShortcuts"/>
+      <separator/>
+      <item action="Preferences"/>
     </item>
 
     <!-- menu item label -->
@@ -81,20 +84,26 @@
     <!-- menu item label -->
     <item name="View" _label="_View">
       <separator/>
-      <item action="PreviousTab"/>
-      <item action="NextTab"/>
+      <item action="ShowToolbar"/>
+      <item action="ToolbarStyle"/>
+      <separator/>
+      <item action="WrapText"/>
+      <item action="LineNumbers"/>
+      <separator/>
+      <item action="FocusDoc"/>
+      <separator/>
+      <placeholder name="UserMenu"/>
+      <separator/>
+    </item>
+
+    <!-- menu item label -->
+    <item name="Document" _label="_Document">
       <separator/>
       <item action="LanguageMenu"/>
-      <separator/>
-      <item action="DocumentSubmenu">
-        <item action="WrapText"/>
-        <item action="LineNumbers"/>
-      </item>
+      <item action="EncodingMenu"/>
       <separator/>
       <item action="ToggleBookmark"/>
       <item action="BookmarksMenu"/>
-      <separator/>
-      <item action="FocusDoc"/>
       <separator/>
       <placeholder name="UserMenu"/>
       <separator/>
@@ -111,19 +120,10 @@
     </item>
 
     <!-- menu item label -->
-    <item name="Settings" _label="_Settings">
-      <separator/>
-      <item action="ShowToolbar"/>
-      <item action="ToolbarStyle"/>
-      <separator/>
-      <item action="ConfigureShortcuts"/>
-      <separator/>
-      <item action="Preferences"/>
-      <separator/>
-    </item>
-
-    <!-- menu item label -->
     <item name="Window" _label="_Window">
+      <separator/>
+      <item action="PreviousTab"/>
+      <item action="NextTab"/>
       <separator/>
       <item action="NoDocuments"/>
       <placeholder name="DocList"/>
