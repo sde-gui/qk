@@ -416,7 +416,6 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  /* label of the More... menu item in the Open Recent menu,
                                   * do not translate the part before | */
                                  "label", Q_("Open Recent|_More..."),
-                                 "accel", "<shift><ctrl>O",
                                  "closure-callback", action_open_recent_dialog,
                                  NULL);
 #endif
