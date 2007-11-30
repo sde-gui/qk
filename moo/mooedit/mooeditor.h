@@ -123,7 +123,6 @@ void             moo_editor_set_app_name    (MooEditor      *editor,
                                              const char     *name);
 const char      *moo_editor_get_app_name    (MooEditor      *editor);
 
-MooHistoryList  *moo_editor_get_history     (MooEditor      *editor);
 MooFilterMgr    *moo_editor_get_filter_mgr  (MooEditor      *editor);
 
 MooUIXML        *moo_editor_get_ui_xml      (MooEditor      *editor);
