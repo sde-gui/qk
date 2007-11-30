@@ -55,7 +55,7 @@
   <args>--app-name foobar</args>
   <exe>medit/medit</exe>
   <vars>
-   <var name="LANGUAGE">ru</var>
+   <var name="LANGUAGEE">ru</var>
    <var name="MOO_DEBUG">misc,input</var>
   </vars>
  </run>

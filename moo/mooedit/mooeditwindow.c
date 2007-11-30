@@ -49,7 +49,6 @@
 #define ENABLE_BOOKMARKS
 
 #define ACTIVE_DOC moo_edit_window_get_active_doc
-#define ACTIVE_PAGE(window) (moo_notebook_get_current_page (window->priv->notebook))
 
 #define LANG_ACTION_ID "LanguageMenu"
 #define STOP_ACTION_ID "StopJob"
@@ -153,6 +152,9 @@ static void     edit_changed                    (MooEditWindow      *window,
 static void     edit_filename_changed           (MooEditWindow      *window,
                                                  const char         *filename,
                                                  MooEdit            *doc);
+static void     edit_encoding_changed           (MooEditWindow      *window,
+                                                 GParamSpec         *pspec,
+                                                 MooEdit            *doc);
 static void     edit_lang_changed               (MooEditWindow      *window,
                                                  guint               var_id,
                                                  GParamSpec         *pspec,
@@ -226,6 +228,7 @@ static void action_new_doc                      (MooEditWindow      *window);
 static void action_open                         (MooEditWindow      *window);
 static void action_reload                       (MooEditWindow      *window);
 static GtkAction *create_reopen_with_encoding_action (MooEditWindow *window);
+static GtkAction *create_doc_encoding_action    (MooEditWindow *window);
 static void action_save                         (MooEditWindow      *window);
 static void action_save_as                      (MooEditWindow      *window);
 static void action_close_tab                    (MooEditWindow      *window);
@@ -409,6 +412,10 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
 
     moo_window_class_new_action_custom (window_class, "ReopenWithEncoding", NULL,
                                         (MooWindowActionFunc) create_reopen_with_encoding_action,
+                                        NULL, NULL);
+
+    moo_window_class_new_action_custom (window_class, "EncodingMenu", NULL,
+                                        (MooWindowActionFunc) create_doc_encoding_action,
                                         NULL, NULL);
 
     moo_window_class_new_action (window_class, "Save", NULL,
@@ -614,12 +621,6 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "accel", "<ctrl>G",
                                  "closure-signal", "goto-line-interactive",
                                  "closure-proxy-func", moo_edit_window_get_active_doc,
-                                 "condition::sensitive", "has-open-document",
-                                 NULL);
-
-    moo_window_class_new_action (window_class, "DocumentSubmenu", NULL,
-                                 "label", _("_Document"),
-                                 "no-accel", TRUE,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
@@ -973,7 +974,7 @@ static void     moo_edit_window_get_property(GObject        *object,
             break;
 
         case PROP_ACTIVE_DOC:
-            g_value_set_object (value, moo_edit_window_get_active_doc (window));
+            g_value_set_object (value, ACTIVE_DOC (window));
             break;
 
         case PROP_CAN_RELOAD:
@@ -1318,20 +1319,20 @@ action_open (MooEditWindow *window)
 static void
 action_reload (MooEditWindow *window)
 {
-    MooEdit *edit = moo_edit_window_get_active_doc (window);
+    MooEdit *edit = ACTIVE_DOC (window);
     g_return_if_fail (edit != NULL);
     _moo_editor_reload (window->priv->editor, edit, NULL, NULL);
 }
 
 
 static void
-encoding_item_activated (const char *encoding,
-                         gpointer    data)
+reopen_encoding_item_activated (const char *encoding,
+                                gpointer    data)
 {
     MooEditWindow *window = data;
     MooEdit *doc;
 
-    doc = moo_edit_window_get_active_doc (window);
+    doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
 
     _moo_editor_reload (window->priv->editor, doc, encoding, NULL);
@@ -1344,7 +1345,7 @@ create_reopen_with_encoding_action (MooEditWindow *window)
 
     action = _moo_encodings_menu_action_new ("ReopenWithEncoding",
                                              _("Reopen Using Encoding"),
-                                             encoding_item_activated,
+                                             reopen_encoding_item_activated,
                                              window);
     moo_bind_bool_property (action, "sensitive",
                             window, "can-reload", FALSE);
@@ -1354,9 +1355,59 @@ create_reopen_with_encoding_action (MooEditWindow *window)
 
 
 static void
+update_doc_encoding_item (MooEditWindow *window)
+{
+    MooEdit *doc;
+    GtkAction *action;
+    const char *enc;
+
+    if (!(doc = ACTIVE_DOC (window)))
+        return;
+
+    action = moo_window_get_action (MOO_WINDOW (window), "EncodingMenu");
+    g_return_if_fail (action != NULL);
+
+    enc = moo_edit_get_encoding (doc);
+
+    if (!enc)
+        enc = _moo_edit_get_default_encoding ();
+
+    _moo_encodings_menu_action_set_current (action, enc);
+}
+
+static void
+doc_encoding_item_activated (const char *encoding,
+                             gpointer    data)
+{
+    MooEditWindow *window = data;
+    MooEdit *doc;
+
+    doc = ACTIVE_DOC (window);
+    g_return_if_fail (doc != NULL);
+
+    _moo_edit_set_encoding (doc, encoding);
+}
+
+static GtkAction *
+create_doc_encoding_action (MooEditWindow *window)
+{
+    GtkAction *action;
+
+    action = _moo_encodings_menu_action_new ("EncodingMenu",
+                                             _("_Encoding"),
+                                             doc_encoding_item_activated,
+                                             window);
+    moo_bind_bool_property (action, "sensitive",
+                            window, "has-open-document", FALSE);
+
+    return action;
+}
+
+
+static void
 action_save (MooEditWindow *window)
 {
-    MooEdit *edit = moo_edit_window_get_active_doc (window);
+    MooEdit *edit = ACTIVE_DOC (window);
     g_return_if_fail (edit != NULL);
     _moo_editor_save (window->priv->editor, edit, NULL);
 }
@@ -1365,7 +1416,7 @@ action_save (MooEditWindow *window)
 static void
 action_save_as (MooEditWindow *window)
 {
-    MooEdit *edit = moo_edit_window_get_active_doc (window);
+    MooEdit *edit = ACTIVE_DOC (window);
     g_return_if_fail (edit != NULL);
     _moo_editor_save_as (window->priv->editor, edit, NULL, NULL, NULL);
 }
@@ -1374,7 +1425,7 @@ action_save_as (MooEditWindow *window)
 static void
 action_close_tab (MooEditWindow *window)
 {
-    MooEdit *edit = moo_edit_window_get_active_doc (window);
+    MooEdit *edit = ACTIVE_DOC (window);
     g_return_if_fail (edit != NULL);
     moo_editor_close_doc (window->priv->editor, edit, TRUE);
 }
@@ -1401,7 +1452,7 @@ switch_to_tab (MooEditWindow *window,
 
     moo_notebook_set_current_page (window->priv->notebook, n);
 
-    if ((doc = moo_edit_window_get_active_doc (window)))
+    if ((doc = ACTIVE_DOC (window)))
         gtk_widget_grab_focus (GTK_WIDGET (doc));
 }
 
@@ -1447,7 +1498,7 @@ moo_edit_window_find_now (MooEditWindow *window,
 {
     MooEdit *doc;
 
-    doc = moo_edit_window_get_active_doc (window);
+    doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
 
     g_signal_emit_by_name (doc, "find-word-at-cursor", forward);
@@ -1478,7 +1529,7 @@ action_abort_jobs (MooEditWindow *window)
 static void
 action_toggle_bookmark (MooEditWindow *window)
 {
-    MooEdit *doc = moo_edit_window_get_active_doc (window);
+    MooEdit *doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
     moo_edit_toggle_bookmark (doc, moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc)));
 }
@@ -1489,7 +1540,7 @@ action_next_bookmark (MooEditWindow *window)
 {
     int cursor;
     GSList *bookmarks;
-    MooEdit *doc = moo_edit_window_get_active_doc (window);
+    MooEdit *doc = ACTIVE_DOC (window);
 
     g_return_if_fail (doc != NULL);
 
@@ -1509,7 +1560,7 @@ action_prev_bookmark (MooEditWindow *window)
 {
     int cursor;
     GSList *bookmarks = NULL;
-    MooEdit *doc = moo_edit_window_get_active_doc (window);
+    MooEdit *doc = ACTIVE_DOC (window);
 
     g_return_if_fail (doc != NULL);
 
@@ -1539,7 +1590,7 @@ goto_bookmark_activated (GtkAction *action,
     window = _moo_action_get_window (action);
     g_return_if_fail (window != NULL);
 
-    doc = moo_edit_window_get_active_doc (window);
+    doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
 
     if ((bk = moo_edit_get_bookmark (doc, n)))
@@ -1633,7 +1684,7 @@ populate_bookmarks (MooEditWindow *window,
     GtkWidget *item;
     const GSList *bookmarks;
 
-    doc = moo_edit_window_get_active_doc (window);
+    doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
 
     bookmarks = moo_edit_list_bookmarks (doc);
@@ -1761,7 +1812,7 @@ create_bookmarks_menu_action (MooWindow *window,
 static void
 action_next_ph (MooEditWindow *window)
 {
-    MooEdit *doc = moo_edit_window_get_active_doc (window);
+    MooEdit *doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
     moo_text_view_next_placeholder (MOO_TEXT_VIEW (doc));
 }
@@ -1770,7 +1821,7 @@ action_next_ph (MooEditWindow *window)
 static void
 action_prev_ph (MooEditWindow *window)
 {
-    MooEdit *doc = moo_edit_window_get_active_doc (window);
+    MooEdit *doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
     moo_text_view_prev_placeholder (MOO_TEXT_VIEW (doc));
 }
@@ -1788,7 +1839,7 @@ action_page_setup (MooEditWindow *window)
 static void
 action_print (MooEditWindow *window)
 {
-    gpointer doc = moo_edit_window_get_active_doc (window);
+    gpointer doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
     _moo_edit_print (doc, GTK_WIDGET (window));
 }
@@ -1797,7 +1848,7 @@ action_print (MooEditWindow *window)
 static void
 action_print_preview (MooEditWindow *window)
 {
-    gpointer doc = moo_edit_window_get_active_doc (window);
+    gpointer doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
     _moo_edit_print_preview (doc, GTK_WIDGET (window));
 }
@@ -1809,7 +1860,7 @@ action_print_pdf (MooEditWindow *window)
     char *start_name;
     const char *doc_name, *dot;
     const char *filename;
-    gpointer doc = moo_edit_window_get_active_doc (window);
+    gpointer doc = ACTIVE_DOC (window);
 
     doc_name = doc ? moo_edit_get_display_basename (doc) : "output";
     dot = strrchr (doc_name, '.');
@@ -1825,7 +1876,7 @@ action_print_pdf (MooEditWindow *window)
         start_name = g_strdup_printf ("%s.pdf", doc_name);
     }
 
-    doc = moo_edit_window_get_active_doc (window);
+    doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
 
     filename = moo_file_dialogp (GTK_WIDGET (window),
@@ -1850,7 +1901,7 @@ wrap_text_toggled (MooEditWindow *window,
     MooEdit *doc;
     GtkWrapMode mode;
 
-    doc = moo_edit_window_get_active_doc (window);
+    doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
 
     g_object_get (doc, "wrap-mode", &mode, NULL);
@@ -1881,7 +1932,7 @@ line_numbers_toggled (MooEditWindow *window,
     MooEdit *doc;
     gboolean show;
 
-    doc = moo_edit_window_get_active_doc (window);
+    doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
 
     g_object_get (doc, "show-line-numbers", &show, NULL);
@@ -1959,49 +2010,6 @@ notebook_switch_page (G_GNUC_UNUSED MooNotebook *notebook,
 }
 
 
-static void
-doc_encoding_menu_item_activated (const char *encoding,
-                                  gpointer    data)
-{
-    _moo_edit_set_encoding (data, encoding);
-}
-
-static GtkWidget *
-create_doc_encoding_menu_item (MooEdit *doc)
-{
-    GtkWidget *item, *menu, *enc_item;
-    const char *enc, *display_enc;
-    char *freeme = NULL;
-
-    enc = moo_edit_get_encoding (doc);
-
-    if (!enc)
-    {
-        freeme = _moo_edit_get_default_encoding ();
-        enc = freeme;
-    }
-
-    display_enc = _moo_encoding_get_display_name (enc);
-
-    /* Translators: do not translate the part before | */
-    item = gtk_menu_item_new_with_label (Q_("Item in the notebook popup menu|Encoding"));
-    gtk_widget_show (item);
-    menu = _moo_encodings_menu_new (doc_encoding_menu_item_activated, doc,
-                                    enc, FALSE);
-    gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), menu);
-
-    gtk_menu_shell_prepend (GTK_MENU_SHELL (menu),
-                            g_object_new (GTK_TYPE_SEPARATOR_MENU_ITEM,
-                                          "visible", TRUE, NULL));
-
-    enc_item = gtk_radio_menu_item_new_with_label (NULL, display_enc);
-    gtk_widget_show (enc_item);
-    gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), enc_item);
-
-    g_free (freeme);
-    return item;
-}
-
 static gboolean
 notebook_populate_popup (MooNotebook        *notebook,
                          GtkWidget          *child,
@@ -2051,12 +2059,6 @@ notebook_populate_popup (MooNotebook        *notebook,
                           G_CALLBACK (detach_activated),
                           window);
     }
-
-    gtk_menu_shell_append (GTK_MENU_SHELL (menu),
-                           g_object_new (GTK_TYPE_SEPARATOR_MENU_ITEM,
-                                         "visible", TRUE, NULL));
-    item = create_doc_encoding_menu_item (edit);
-    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
     return FALSE;
 }
@@ -2166,12 +2168,21 @@ edit_changed (MooEditWindow *window,
         update_statusbar (window);
         update_lang_menu (window);
         update_doc_view_actions (window);
+        update_doc_encoding_item (window);
     }
 
     if (doc)
         update_tab_label (window, doc);
 }
 
+static void
+edit_encoding_changed (MooEditWindow *window,
+                       G_GNUC_UNUSED GParamSpec *pspec,
+                       MooEdit       *doc)
+{
+    if (doc == ACTIVE_DOC (window))
+        update_doc_encoding_item (window);
+}
 
 static void
 edit_overwrite_changed (MooEditWindow *window,
@@ -2226,7 +2237,7 @@ update_doc_view_actions (MooEditWindow *window)
 {
     MooEdit *doc;
 
-    doc = moo_edit_window_get_active_doc (window);
+    doc = ACTIVE_DOC (window);
 
     if (!doc)
         return;
@@ -2397,10 +2408,14 @@ _moo_edit_window_insert_doc (MooEditWindow  *window,
     gtk_container_add (GTK_CONTAINER (scrolledwindow), GTK_WIDGET (edit));
     gtk_widget_show_all (scrolledwindow);
 
+    if (position < 0)
+        position = moo_notebook_get_current_page (window->priv->notebook) + 1;
     moo_notebook_insert_page (window->priv->notebook, scrolledwindow, label, position);
 
     g_signal_connect_swapped (edit, "doc_status_changed",
                               G_CALLBACK (edit_changed), window);
+    g_signal_connect_swapped (edit, "notify::encoding",
+                              G_CALLBACK (edit_encoding_changed), window);
     g_signal_connect_swapped (edit, "notify::overwrite",
                               G_CALLBACK (edit_overwrite_changed), window);
     g_signal_connect_swapped (edit, "notify::wrap-mode",
@@ -3247,21 +3262,22 @@ set_statusbar_numbers (MooEditWindow *window,
                        int            column,
                        int            chars)
 {
+    char line_buf[10] = {0};
+    char column_buf[10] = {0};
+    char chars_buf[10] = {0};
     char *text, *text2;
 
     if (line > 0 && column > 0)
-        /* Label in the statusbar - line and column numbers */
-        text = g_strdup_printf (_("Line: %d Col: %d"), line, column);
-    else
-        /* Disabled label in the statusbar when no document is open */
-        text = g_strdup (_("Line: Col: "));
+    {
+        g_snprintf (line_buf, sizeof line_buf, "%d", line);
+        g_snprintf (column_buf, sizeof column_buf, "%d", column);
+    }
 
     if (chars >= 0)
-        /* Label in the statusbar - number of characters in the document */
-        text2 = g_strdup_printf (_("Chars: %d"), chars);
-    else
-        /* Disabled label in the statusbar when no document is open */
-        text2 = g_strdup (_("Chars: "));
+        g_snprintf (chars_buf, sizeof chars_buf, "%d", chars);
+
+    text = g_strdup_printf (_("Line: %s Col: %s"), line_buf, column_buf);
+    text2 = g_strdup_printf (_("Chars: %s"), chars_buf);
 
     gtk_label_set_text (window->priv->cursor_label, text);
     gtk_label_set_text (window->priv->chars_label, text2);
@@ -4156,7 +4172,7 @@ moo_edit_window_update_doc_list (MooEditWindow *window)
                                     window, NULL);
 
     if (!window->priv->history_blocked &&
-        (doc = moo_edit_window_get_active_doc (window)))
+        (doc = ACTIVE_DOC (window)))
     {
         GList *link = g_list_find (window->priv->history, doc);
 

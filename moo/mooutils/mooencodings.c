@@ -74,7 +74,6 @@ static void     enc_mgr_load        (EncodingsManager   *enc_mgr);
 static void     enc_mgr_add_used    (EncodingsManager   *enc_mgr,
                                      Encoding           *enc);
 static void     sync_recent_menu    (MenuData           *menu,
-                                     const char         *exclude,
                                      gboolean            need_separator);
 
 
@@ -512,7 +511,7 @@ update_menu_idle (EncodingsManager *mgr)
     for (l = mgr->menus; l != NULL; l = l->next)
     {
         MenuData *menu = l->data;
-        sync_recent_menu (menu, NULL, FALSE);
+        sync_recent_menu (menu, FALSE);
     }
 
     enc_mgr_save (mgr);
@@ -989,14 +988,14 @@ create_menu_item (Encoding *enc,
 }
 
 static void
-sync_recent_menu (MenuData   *menu,
-                  const char *exclude,
-                  gboolean    need_separator)
+sync_recent_menu (MenuData *menu,
+                  gboolean  first_time)
 {
     EncodingsManager *mgr = get_enc_mgr ();
     GList *children, *l;
     GSList *recent_items;
     gboolean have_separator = FALSE;
+    int pos = first_time ? 0 : 2;
 
     children = gtk_container_get_children (GTK_CONTAINER (menu->menu));
     for (l = children; l != NULL; l = l->next)
@@ -1009,31 +1008,54 @@ sync_recent_menu (MenuData   *menu,
     while (recent_items)
     {
         Encoding *enc = recent_items->data;
+        GtkWidget *item;
 
-        if (!exclude || strcmp (enc->name, exclude) != 0)
+        if (first_time && !have_separator)
         {
-            GtkWidget *item;
-
-            if (need_separator && !have_separator)
-            {
-                item = gtk_separator_menu_item_new ();
-                gtk_menu_shell_prepend (GTK_MENU_SHELL (menu->menu), item);
-                have_separator = TRUE;
-            }
-
-            item = create_menu_item (enc, menu, TRUE);
-            gtk_menu_shell_prepend (GTK_MENU_SHELL (menu->menu), item);
+            item = gtk_separator_menu_item_new ();
+            gtk_menu_shell_insert (GTK_MENU_SHELL (menu->menu), item, pos);
+            have_separator = TRUE;
         }
+
+        item = create_menu_item (enc, menu, TRUE);
+        gtk_menu_shell_insert (GTK_MENU_SHELL (menu->menu), item, pos);
 
         recent_items = g_slist_delete_link (recent_items, recent_items);
     }
 }
 
-GtkWidget *
+static void
+exclude_item (MenuData *menu_data,
+              Encoding *exclude_enc)
+{
+    GList *children, *l;
+
+    children = gtk_container_get_children (GTK_CONTAINER (menu_data->menu));
+
+    for (l = children; l != NULL; l = l->next)
+    {
+        GtkWidget *item = l->data;
+
+        if (g_object_get_data (G_OBJECT (item), "moo-recent-encoding"))
+        {
+            gboolean visible = TRUE;
+
+            if (exclude_enc)
+            {
+                Encoding *enc = g_object_get_data (G_OBJECT (item), "moo-encoding");
+                visible = exclude_enc != enc;
+            }
+
+            g_object_set (item, "visible", visible, NULL);
+        }
+    }
+
+    g_list_free (children);
+}
+
+static MenuData *
 _moo_encodings_menu_new (MooEncodingsMenuFunc   func,
-                         gpointer               data,
-                         const char            *exclude,
-                         gboolean               sync)
+                         gpointer               data)
 {
     MenuData *menu_data = NULL;
     GtkWidget *widget;
@@ -1051,16 +1073,8 @@ _moo_encodings_menu_new (MooEncodingsMenuFunc   func,
     widget = gtk_menu_new ();
     menu_data->menu = widget;
 
-    if (sync)
-    {
-        mgr->menus = g_slist_prepend (mgr->menus, menu_data);
-        g_signal_connect (widget, "destroy", G_CALLBACK (menu_destroyed), menu_data);
-    }
-    else
-    {
-        g_object_set_data_full (G_OBJECT (widget), "moo-menu-data", menu_data,
-                                (GDestroyNotify) menu_data_free);
-    }
+    mgr->menus = g_slist_prepend (mgr->menus, menu_data);
+    g_signal_connect (widget, "destroy", G_CALLBACK (menu_destroyed), menu_data);
 
     for (cgr = 0; cgr < mgr->n_groups; ++cgr)
     {
@@ -1081,16 +1095,21 @@ _moo_encodings_menu_new (MooEncodingsMenuFunc   func,
         }
     }
 
-    sync_recent_menu (menu_data, exclude, TRUE);
+    sync_recent_menu (menu_data, TRUE);
 
     gtk_widget_show_all (widget);
-    return widget;
+    return menu_data;
 }
 
 typedef struct {
     MooAction base;
     MooEncodingsMenuFunc func;
     gpointer func_data;
+    Encoding *cur_enc;
+    GtkWidget *cur_item;
+    GtkWidget *cur_separator;
+    MenuData *menu_data;
+    guint update_idle;
 } MooEncodingsMenuAction;
 typedef MooActionClass MooEncodingsMenuActionClass;
 MOO_DEFINE_TYPE_STATIC (MooEncodingsMenuAction, moo_encodings_menu_action, MOO_TYPE_ACTION)
@@ -1106,6 +1125,10 @@ moo_encodings_menu_action_init (MooEncodingsMenuAction *action)
 {
     action->func = NULL;
     action->func_data = NULL;
+    action->cur_enc = NULL;
+    action->cur_item = NULL;
+    action->cur_separator = NULL;
+    action->menu_data = NULL;
 }
 
 static void
@@ -1113,7 +1136,9 @@ action_item_activated (const char *encoding,
                        gpointer    data)
 {
     MooEncodingsMenuAction *action = data;
+
     g_return_if_fail (action->func != NULL);
+
     action->func (encoding, action->func_data);
 }
 
@@ -1121,11 +1146,23 @@ static GtkWidget *
 moo_encodings_menu_action_create_menu_item (GtkAction *gtkaction)
 {
     MooEncodingsMenuAction *action = MOO_ENCODINGS_MENU_ACTION (gtkaction);
-    GtkWidget *menu_item, *menu;
+    GtkWidget *menu_item;
 
     menu_item = GTK_ACTION_CLASS (moo_encodings_menu_action_parent_class)->create_menu_item (gtkaction);
-    menu = _moo_encodings_menu_new (action_item_activated, action, NULL, TRUE);
-    gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), menu);
+    action->menu_data = _moo_encodings_menu_new (action_item_activated, action);
+    gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), action->menu_data->menu);
+
+    action->cur_separator = gtk_separator_menu_item_new ();
+    gtk_menu_shell_prepend (GTK_MENU_SHELL (action->menu_data->menu), action->cur_separator);
+    action->cur_item = gtk_radio_menu_item_new_with_label (NULL, "");
+    gtk_menu_shell_prepend (GTK_MENU_SHELL (action->menu_data->menu), action->cur_item);
+
+    if (action->cur_enc)
+    {
+        Encoding *enc = action->cur_enc;
+        action->cur_enc = NULL;
+        _moo_encodings_menu_action_set_current (gtkaction, enc->name);
+    }
 
     return menu_item;
 }
@@ -1154,4 +1191,55 @@ _moo_encodings_menu_action_new (const char            *id,
     action->func_data = data;
 
     return GTK_ACTION (action);
+}
+
+static gboolean
+update_recent_list_visibility (MooEncodingsMenuAction *action)
+{
+    action->update_idle = 0;
+
+    if (action->cur_enc)
+    {
+        GtkWidget *child;
+
+        gtk_widget_show (action->cur_item);
+        gtk_widget_show (action->cur_separator);
+
+        child = GTK_BIN (action->cur_item)->child;
+        gtk_label_set_text (GTK_LABEL (child), action->cur_enc->display_name);
+
+        exclude_item (action->menu_data, action->cur_enc);
+    }
+    else
+    {
+        gtk_widget_hide (action->cur_item);
+        gtk_widget_hide (action->cur_separator);
+    }
+
+    return FALSE;
+}
+
+void
+_moo_encodings_menu_action_set_current (GtkAction  *gtkaction,
+                                        const char *enc_name)
+{
+    MooEncodingsMenuAction *action;
+    Encoding *enc;
+    EncodingsManager *mgr;
+
+    g_return_if_fail (MOO_IS_ENCODINGS_MENU_ACTION (gtkaction));
+
+    action = MOO_ENCODINGS_MENU_ACTION (gtkaction);
+
+    mgr = get_enc_mgr ();
+    enc = enc_name ? get_encoding (mgr, enc_name) : NULL;
+
+    if (enc != action->cur_enc)
+    {
+        action->cur_enc = enc;
+        if (action->cur_item && !action->update_idle)
+            action->update_idle = g_idle_add_full (G_PRIORITY_DEFAULT_IDLE + 1,
+                                                   (GSourceFunc) update_recent_list_visibility,
+                                                   action, NULL);
+    }
 }

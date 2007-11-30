@@ -85,7 +85,7 @@ void         _moo_edit_set_filename             (MooEdit        *edit,
                                                  const char     *encoding);
 void         _moo_edit_set_encoding             (MooEdit        *edit,
                                                  const char     *encoding);
-char        *_moo_edit_get_default_encoding     (void);
+const char  *_moo_edit_get_default_encoding     (void);
 
 void         _moo_edit_stop_file_watch          (MooEdit        *edit);
 

@@ -1192,10 +1192,10 @@ add_untitled (MooEdit *edit)
 }
 
 
-char *
+const char *
 _moo_edit_get_default_encoding (void)
 {
-    return g_strdup (moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_ENCODING_SAVE)));
+    return moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_ENCODING_SAVE));
 }
 
 
@@ -1204,12 +1204,11 @@ _moo_edit_set_filename (MooEdit    *edit,
                         const char *file,
                         const char *encoding)
 {
-    char *tmp1, *tmp3, *tmp4, *tmp5;
+    char *tmp1, *tmp3, *tmp4;
 
     tmp1 = edit->priv->filename;
     tmp3 = edit->priv->display_filename;
     tmp4 = edit->priv->display_basename;
-    tmp5 = edit->priv->encoding;
 
     if (!UNTITLED_NO)
         UNTITLED_NO = g_hash_table_new (g_direct_hash, g_direct_equal);
@@ -1243,9 +1242,9 @@ _moo_edit_set_filename (MooEdit    *edit,
     }
 
     if (!encoding)
-        edit->priv->encoding = _moo_edit_get_default_encoding ();
+        _moo_edit_set_encoding (edit, _moo_edit_get_default_encoding ());
     else
-        edit->priv->encoding = g_strdup (encoding);
+        _moo_edit_set_encoding (edit, encoding);
 
     g_signal_emit_by_name (edit, "filename-changed", edit->priv->filename, NULL);
     moo_edit_status_changed (edit);
@@ -1253,7 +1252,6 @@ _moo_edit_set_filename (MooEdit    *edit,
     g_free (tmp1);
     g_free (tmp3);
     g_free (tmp4);
-    g_free (tmp5);
 }
 
 

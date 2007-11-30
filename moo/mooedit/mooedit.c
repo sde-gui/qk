@@ -102,7 +102,8 @@ enum {
     PROP_0,
     PROP_EDITOR,
     PROP_ENABLE_BOOKMARKS,
-    PROP_HAS_COMMENTS
+    PROP_HAS_COMMENTS,
+    PROP_ENCODING
 };
 
 /* MOO_TYPE_EDIT */
@@ -159,6 +160,14 @@ moo_edit_class_init (MooEditClass *klass)
                                              "has-comments",
                                              FALSE,
                                              G_PARAM_READABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_ENCODING,
+                                     g_param_spec_string ("encoding",
+                                             "encoding",
+                                             "encoding",
+                                             NULL,
+                                             G_PARAM_READWRITE));
 
     signals[CONFIG_NOTIFY] =
             g_signal_new ("config-notify",
@@ -540,6 +549,10 @@ moo_edit_set_property (GObject        *object,
             moo_edit_set_enable_bookmarks (edit, g_value_get_boolean (value));
             break;
 
+        case PROP_ENCODING:
+            _moo_edit_set_encoding (edit, g_value_get_string (value));
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -567,6 +580,10 @@ moo_edit_get_property (GObject        *object,
 
         case PROP_HAS_COMMENTS:
             g_value_set_boolean (value, _moo_edit_has_comments (edit, NULL, NULL));
+            break;
+
+        case PROP_ENCODING:
+            g_value_set_string (value, edit->priv->encoding);
             break;
 
         default:
@@ -674,8 +691,14 @@ _moo_edit_set_encoding (MooEdit    *edit,
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
     g_return_if_fail (encoding != NULL);
-    g_free (edit->priv->encoding);
-    edit->priv->encoding = g_strdup (encoding);
+
+    if (!_moo_str_equal (encoding, edit->priv->encoding))
+    {
+        char *tmp = edit->priv->encoding;
+        edit->priv->encoding = g_strdup (encoding);
+        g_free (tmp);
+        g_object_notify (G_OBJECT (edit), "encoding");
+    }
 }
 
 
