@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-11-29 19:58-0600\n"
+"POT-Creation-Date: 2007-11-29 20:01-0600\n"
 "PO-Revision-Date: 2007-07-06 00:51+0100\n"
 "Last-Translator: Christian Dywan <christian@twotoasts.de>\n"
 "MIME-Version: 1.0\n"
@@ -966,7 +966,7 @@ msgstr "Mit Kodierung neu öffnen"
 
 #: ../moo/mooedit/mooeditwindow.c:1397
 msgid "_Encoding"
-msgstr ""
+msgstr "_Kodierung"
 
 #: ../moo/mooedit/mooeditwindow.c:1799 ../moo/moofileview/moofileview.c:1216
 #: ../moo/moofileview/moofileview.c:1217
@@ -1014,7 +1014,7 @@ msgstr "Neuer Befehl"
 #. these are common source files encodings.
 #: ../moo/mooedit/mooeditfileops.c:244
 msgid "encodings_list"
-msgstr ""
+msgstr "encodings_list"
 
 #: ../moo/mooedit/mooeditfileops.c:1223
 #: ../moo/mooedit/plugins/moofileselector.c:538
@@ -1447,7 +1447,7 @@ msgstr "Keine"
 #. 5 - "Unicode"
 #: ../moo/mooutils/mooencodings.c:171
 msgid "012345"
-msgstr ""
+msgstr "012345"
 
 #: ../moo/mooutils/mooencodings.c:686
 msgid "Auto Detected"
