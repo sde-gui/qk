@@ -1,3 +1,31 @@
+2007-11-29  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    * === Released 0.9.0 ===
+
+    Replaced MooScript with Lua.
+    Improved user-defined tools, made it possible to store
+    tools in separate files instead of creating and editing
+    them via Preferences dialog.
+    Added online help.
+    Rearranged menu items, removed Settings menu.
+    Added a setting for window title format.
+    Made Preferences dialog remember its size to make
+    editing scripts more comfortable.
+    Fixed the bug with storing clipboard contents on exit.
+    Fixed files drag'n'drop on windows.
+    Improved syntax highlighting.
+    medit now reads meditrc files in data directories, so it's
+    possible to have pre-set options different from defaults.
+    Fixed Find in Files and Find File menu items broken on
+    some systems.
+    Fixed highlighting current line and behavior of Home/End
+    keys when line wrapping is enabled.
+    Fixed entries for language extensions and mime types in the
+    Preferences dialog.
+    Added a command-line option to open documents in a new window.
+
+    Czech translation by Vlastimil Ott.
+    Updated German translation by Christian Dywan.
+
 2007-08-07  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.8.10 ===
 
