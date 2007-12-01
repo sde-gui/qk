@@ -84,12 +84,12 @@ struct _MooPrintOperationPrivate {
     gpointer tm; /* struct tm * */
 
     /* aux stuff */
-    GArray *pages;          /* GtkTextIter's pointing to pages start */
+    GArray *pages;          /* offsets */
     PangoLayout *layout;
     double ln_height;
     PangoLayout *ln_layout;
 
-    Page page;                 /* text area */
+    Page page;              /* text area */
 };
 
 
