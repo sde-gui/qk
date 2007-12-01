@@ -25,45 +25,45 @@
 #include "mooutils/moohelp.h"
 #include "help-sections.h"
 #include <gtk/gtk.h>
-#include <glib/gregex.h>
 #include <glib/gprintf.h>
 
 
 #define REGEX_FREE(re) G_STMT_START {   \
     if (re)                             \
-        g_regex_unref (re);             \
+        _moo_regex_unref (re);          \
     (re) = NULL;                        \
 } G_STMT_END
 
 static char *last_search;
-static GRegex *last_regex;
+static MooRegex *last_regex;
 static MooFindFlags last_search_flags;
 static MooHistoryList *search_history;
 static MooHistoryList *replace_history;
+static gboolean last_replace_empty;
 
 
-static void     init_find_history       (void);
+static void         init_find_history       (void);
 
-static GObject *moo_find_constructor    (GType           type,
-                                         guint           n_props,
-                                         GObjectConstructParam *props);
-static void     moo_find_set_property   (GObject        *object,
-                                         guint           prop_id,
-                                         const GValue   *value,
-                                         GParamSpec     *pspec);
-static void     moo_find_get_property   (GObject        *object,
-                                         guint           prop_id,
-                                         GValue         *value,
-                                         GParamSpec     *pspec);
-static void     moo_find_finalize       (GObject        *object);
+static GObject     *moo_find_constructor    (GType           type,
+                                             guint           n_props,
+                                             GObjectConstructParam *props);
+static void         moo_find_set_property   (GObject        *object,
+                                             guint           prop_id,
+                                             const GValue   *value,
+                                             GParamSpec     *pspec);
+static void         moo_find_get_property   (GObject        *object,
+                                             guint           prop_id,
+                                             GValue         *value,
+                                             GParamSpec     *pspec);
+static void      moo_find_finalize          (GObject        *object);
 
-static void     moo_find_set_flags      (MooFind        *find,
-                                         MooFindFlags    flags);
-static MooFindFlags moo_find_get_flags  (MooFind        *find);
+static void      moo_find_set_flags         (MooFind        *find,
+                                             MooFindFlags    flags);
+static MooFindFlags moo_find_get_flags      (MooFind        *find);
 /* returned string/regex must be freed/unrefed */
-static char    *moo_find_get_text       (MooFind        *find);
-static GRegex  *moo_find_get_regex      (MooFind        *find);
-static char    *moo_find_get_replacement (MooFind       *find);
+static char     *moo_find_get_text          (MooFind        *find);
+static MooRegex *moo_find_get_regex         (MooFind        *find);
+static char     *moo_find_get_replacement   (MooFind        *find);
 
 
 G_DEFINE_TYPE(MooFind, moo_find, GTK_TYPE_DIALOG)
@@ -396,12 +396,16 @@ moo_find_setup (MooFind        *find,
 
     if (find->replace)
     {
-        char *replace_with = moo_history_list_get_last_item (replace_history);
+        const char *replace_with = "";
+        char *freeme = NULL;
+
+        if (!last_replace_empty)
+            replace_with = freeme = moo_history_list_get_last_item (replace_history);
 
         if (replace_with)
             gtk_entry_set_text (GTK_ENTRY (replace_entry->entry), replace_with);
 
-        g_free (replace_with);
+        g_free (freeme);
     }
 
     has_selection = gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end);
@@ -488,14 +492,14 @@ moo_find_run (MooFind        *find,
 
         if (flags & MOO_FIND_REGEX)
         {
-            GRegex *regex;
+            MooRegex *regex;
             GRegexCompileFlags re_flags = 0;
             GError *error = NULL;
 
             if (flags & MOO_FIND_CASELESS)
                 re_flags |= G_REGEX_CASELESS;
 
-            regex = g_regex_new (search_for, re_flags | G_REGEX_OPTIMIZE, 0, &error);
+            regex = _moo_regex_compile (search_for, re_flags | G_REGEX_OPTIMIZE, 0, &error);
 
             if (!regex)
             {
@@ -525,12 +529,16 @@ moo_find_run (MooFind        *find,
         g_free (last_search);
         last_search = g_strdup (search_for);
         REGEX_FREE (last_regex);
-        last_regex = find->regex ? g_regex_ref (find->regex) : NULL;
+        last_regex = find->regex ? _moo_regex_ref (find->regex) : NULL;
 
         moo_history_list_add (search_history, search_for);
 
-        if (find->replace && replace_with[0])
-            moo_history_list_add (replace_history, replace_with);
+        if (find->replace)
+        {
+            if (replace_with[0])
+                moo_history_list_add (replace_history, replace_with);
+            last_replace_empty = !replace_with[0];
+        }
 
         return TRUE;
     }
@@ -605,11 +613,11 @@ moo_find_get_text (MooFind *find)
 }
 
 
-static GRegex *
+static MooRegex *
 moo_find_get_regex (MooFind *find)
 {
     g_return_val_if_fail (MOO_IS_FIND (find), NULL);
-    return find->regex ? g_regex_ref (find->regex) : NULL;
+    return find->regex ? _moo_regex_ref (find->regex) : NULL;
 }
 
 
@@ -627,7 +635,7 @@ static gboolean
 do_find (const GtkTextIter *start,
          const GtkTextIter *end,
          MooFindFlags       flags,
-         GRegex            *regex,
+         MooRegex          *regex,
          const char        *text,
          GtkTextIter       *match_start,
          GtkTextIter       *match_end)
@@ -635,11 +643,13 @@ do_find (const GtkTextIter *start,
     if (regex)
     {
         if (flags & MOO_FIND_BACKWARDS)
-            return _moo_text_search_regex_backward (start, end, regex, match_start,
-                                                    match_end, NULL, NULL, NULL, NULL);
+            return _moo_text_search_regex_backward (start, end, regex,
+                                                    match_start, match_end,
+                                                    NULL, NULL, NULL, NULL);
         else
-            return _moo_text_search_regex_forward (start, end, regex, match_start,
-                                                   match_end, NULL, NULL, NULL, NULL);
+            return _moo_text_search_regex_forward (start, end, regex,
+                                                   match_start, match_end,
+                                                   NULL, NULL, NULL, NULL);
     }
     else
     {
@@ -737,7 +747,7 @@ moo_text_view_run_find (GtkTextView    *view,
     GtkWidget *find;
     MooFindFlags flags;
     char *text;
-    GRegex *regex;
+    MooRegex *regex;
     GtkTextIter start, end;
     GtkTextIter match_start, match_end;
     GtkTextBuffer *buffer;
@@ -1060,7 +1070,7 @@ do_replace_silent (GtkTextIter       *start,
                    GtkTextIter       *end,
                    MooFindFlags       flags,
                    const char        *text,
-                   GRegex            *regex,
+                   MooRegex          *regex,
                    const char        *replacement)
 {
     MooTextSearchFlags search_flags = 0;
@@ -1102,7 +1112,7 @@ replaced_n_message (guint          n,
 static void
 run_replace_silent (GtkTextView   *view,
                     const char    *text,
-                    GRegex        *regex,
+                    MooRegex      *regex,
                     const char    *replacement,
                     MooFindFlags   flags,
                     MooFindMsgFunc msg_func,
@@ -1132,7 +1142,7 @@ run_replace_silent (GtkTextView   *view,
 
 static MooTextReplaceResponse
 replace_func (G_GNUC_UNUSED const char *text,
-              G_GNUC_UNUSED GRegex *regex,
+              G_GNUC_UNUSED MooRegex *regex,
               G_GNUC_UNUSED const char *replacement,
               const GtkTextIter  *to_replace_start,
               const GtkTextIter  *to_replace_end,
@@ -1179,7 +1189,7 @@ do_replace_interactive (GtkTextView       *view,
                         GtkTextIter       *end,
                         MooFindFlags       flags,
                         const char        *text,
-                        GRegex            *regex,
+                        MooRegex          *regex,
                         const char        *replacement,
                         int               *replaced)
 {
@@ -1218,7 +1228,7 @@ do_replace_interactive (GtkTextView       *view,
 static void
 run_replace_interactive (GtkTextView   *view,
                          const char    *text,
-                         GRegex        *regex,
+                         MooRegex      *regex,
                          const char    *replacement,
                          MooFindFlags   flags,
                          MooFindMsgFunc msg_func,
@@ -1258,7 +1268,7 @@ moo_text_view_run_replace (GtkTextView    *view,
     GtkWidget *find;
     MooFindFlags flags;
     char *text, *replacement;
-    GRegex *regex;
+    MooRegex *regex;
 
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
 

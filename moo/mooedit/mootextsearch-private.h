@@ -19,18 +19,39 @@
 G_BEGIN_DECLS
 
 
+typedef struct MooRegex {
+    GRegex *re;
+    int n_lines;
+    int ref_count_;
+} MooRegex;
+
+typedef enum /*< enum >*/
+{
+    MOO_TEXT_REPLACE_STOP = 0,
+    MOO_TEXT_REPLACE_SKIP = 1,
+    MOO_TEXT_REPLACE_DO_REPLACE = 2,
+    MOO_TEXT_REPLACE_ALL = 3
+} MooTextReplaceResponse;
+
 /* replacement is evaluated in case of regex */
 typedef MooTextReplaceResponse (*MooTextReplaceFunc) (const char         *text,
-                                                      GRegex             *regex,
+                                                      MooRegex           *regex,
                                                       const char         *replacement,
                                                       const GtkTextIter  *to_replace_start,
                                                       const GtkTextIter  *to_replace_end,
                                                       gpointer            user_data);
 
+MooRegex   *_moo_regex_new          (GRegex             *regex);
+MooRegex   *_moo_regex_compile      (const char         *pattern,
+                                     GRegexCompileFlags  compile_options,
+                                     GRegexMatchFlags    match_options,
+                                     GError            **error);
+MooRegex   *_moo_regex_ref          (MooRegex           *regex);
+void        _moo_regex_unref        (MooRegex           *regex);
 
 gboolean _moo_text_search_regex_forward     (const GtkTextIter      *start,
                                              const GtkTextIter      *end,
-                                             GRegex                 *regex,
+                                             MooRegex               *regex,
                                              GtkTextIter            *match_start,
                                              GtkTextIter            *match_end,
                                              char                  **string,
@@ -39,7 +60,7 @@ gboolean _moo_text_search_regex_forward     (const GtkTextIter      *start,
                                              GMatchInfo            **match_info);
 gboolean _moo_text_search_regex_backward    (const GtkTextIter      *start,
                                              const GtkTextIter      *end,
-                                             GRegex                 *regex,
+                                             MooRegex               *regex,
                                              GtkTextIter            *match_start,
                                              GtkTextIter            *match_end,
                                              char                  **string,
@@ -49,14 +70,14 @@ gboolean _moo_text_search_regex_backward    (const GtkTextIter      *start,
 
 int      _moo_text_replace_regex_all        (GtkTextIter            *start,
                                              GtkTextIter            *end,
-                                             GRegex                 *regex,
+                                             MooRegex               *regex,
                                              const char             *replacement,
                                              gboolean                replacement_literal);
 
 int      _moo_text_replace_regex_all_interactive
                                             (GtkTextIter            *start,
                                              GtkTextIter            *end,
-                                             GRegex                 *regex,
+                                             MooRegex               *regex,
                                              const char             *replacement,
                                              gboolean                replacement_literal,
                                              MooTextReplaceFunc      func,

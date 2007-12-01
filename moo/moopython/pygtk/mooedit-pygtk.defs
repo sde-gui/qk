@@ -157,12 +157,6 @@
   (gtype-id "MOO_TYPE_TEXT_SEARCH_FLAGS")
 )
 
-(define-enum TextReplaceResponse
-  (in-module "Moo")
-  (c-name "MooTextReplaceResponse")
-  (gtype-id "MOO_TYPE_TEXT_REPLACE_RESPONSE")
-)
-
 (define-enum TextSelectionType
   (in-module "Moo")
   (c-name "MooTextSelectionType")

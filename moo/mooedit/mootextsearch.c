@@ -12,14 +12,106 @@
 
 #include "mooedit/mootextsearch-private.h"
 #include "mooedit/gtksourceview/gtksourceview-api.h"
+#include "mooutils/mooutils-misc.h"
 #include <glib/gregex.h>
 #include <string.h>
+
+
+/* XXX lame */
+static int
+get_n_lines (GRegex *regex)
+{
+    const char *pattern;
+    gboolean found = FALSE;
+    guint bs = 0;
+
+    pattern = g_regex_get_pattern (regex);
+
+    while (*pattern && !found)
+    {
+        switch (*pattern++)
+        {
+            case '\\':
+                bs ^= 1;
+                break;
+            case 'n':
+            case 'r':
+            case 'R':
+                if (bs)
+                    found = TRUE;
+                else
+                    bs = 0;
+                break;
+            default:
+                bs = 0;
+                break;
+        }
+    }
+
+    return found ? 3 : 1;
+}
+
+MooRegex *
+_moo_regex_new (GRegex *re)
+{
+    MooRegex *regex;
+
+    g_return_val_if_fail (re != NULL, NULL);
+
+    regex = _moo_new (MooRegex);
+    regex->re = g_regex_ref (re);
+    regex->ref_count_ = 1;
+
+    regex->n_lines = get_n_lines (re);
+
+    return regex;
+}
+
+MooRegex *
+_moo_regex_compile (const char         *pattern,
+                    GRegexCompileFlags  compile_options,
+                    GRegexMatchFlags    match_options,
+                    GError            **error)
+{
+    GRegex *re;
+    MooRegex *regex = NULL;
+
+    g_return_val_if_fail (pattern != NULL, NULL);
+
+    if ((re = g_regex_new (pattern, compile_options, match_options, error)))
+    {
+        regex = _moo_regex_new (re);
+        g_regex_unref (re);
+    }
+
+    return regex;
+}
+
+MooRegex *
+_moo_regex_ref (MooRegex *regex)
+{
+    g_return_val_if_fail (regex != NULL, NULL);
+    regex->ref_count_++;
+    return regex;
+}
+
+void
+_moo_regex_unref (MooRegex *regex)
+{
+    g_return_if_fail (regex != NULL);
+
+    if (!--regex->ref_count_)
+    {
+        g_regex_unref (regex->re);
+        _moo_free (MooRegex, regex);
+    }
+}
 
 
 gboolean
 _moo_text_search_regex_forward (const GtkTextIter      *search_start,
                                 const GtkTextIter      *search_end,
-                                GRegex                 *regex,
+                                MooRegex               *regex,
                                 GtkTextIter            *match_start,
                                 GtkTextIter            *match_end,
                                 char                  **string,
@@ -44,6 +136,7 @@ _moo_text_search_regex_forward (const GtkTextIter      *search_start,
         gtk_text_iter_set_line_offset (&start, 0);
 
     end = *search_start;
+    gtk_text_iter_forward_lines (&end, regex->n_lines - 1);
     if (!gtk_text_iter_ends_line (&end))
         gtk_text_iter_forward_to_line_end (&end);
 
@@ -54,7 +147,7 @@ _moo_text_search_regex_forward (const GtkTextIter      *search_start,
         text = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
         text_start = g_utf8_offset_to_pointer (text, start_offset);
 
-        if (g_regex_match_full (regex, text, -1, text_start - text, 0, &match_info, NULL))
+        if (g_regex_match_full (regex->re, text, -1, text_start - text, 0, &match_info, NULL))
         {
             int start_pos, end_pos;
 
@@ -103,7 +196,7 @@ _moo_text_search_regex_forward (const GtkTextIter      *search_start,
             break;
 
         end = start;
-
+        gtk_text_iter_forward_lines (&end, regex->n_lines - 1);
         if (!gtk_text_iter_ends_line (&end))
             gtk_text_iter_forward_to_line_end (&end);
     }
@@ -127,7 +220,6 @@ find_last_match (GRegex            *regex,
     len = strlen (text);
     start = 0;
 
-    /* XXX a leak!!! */
     while (g_regex_match_full (regex, text, len, start, flags, &match_info, NULL))
     {
         g_match_info_fetch_pos (match_info, 0, start_pos, end_pos);
@@ -153,7 +245,7 @@ find_last_match (GRegex            *regex,
 gboolean
 _moo_text_search_regex_backward (const GtkTextIter      *search_start,
                                  const GtkTextIter      *search_end,
-                                 GRegex                 *regex,
+                                 MooRegex               *regex,
                                  GtkTextIter            *match_start,
                                  GtkTextIter            *match_end,
                                  char                  **string,
@@ -173,7 +265,7 @@ _moo_text_search_regex_backward (const GtkTextIter      *search_start,
     buffer = gtk_text_iter_get_buffer (search_start);
     slice_start = *search_start;
     slice_end = slice_start;
-    gtk_text_iter_backward_line (&slice_start);
+    gtk_text_iter_backward_lines (&slice_start, regex->n_lines);
     flags = 0;
 
     if (!gtk_text_iter_ends_line (&slice_end))
@@ -185,7 +277,7 @@ _moo_text_search_regex_backward (const GtkTextIter      *search_start,
 
         text = gtk_text_buffer_get_slice (buffer, &slice_start, &slice_end, TRUE);
 
-        if (find_last_match (regex, text, flags, &start_pos, &end_pos, match_info))
+        if (find_last_match (regex->re, text, flags, &start_pos, &end_pos, match_info))
         {
             *match_start = slice_start;
             gtk_text_iter_forward_chars (match_start, g_utf8_pointer_to_offset (text, text + start_pos));
@@ -228,19 +320,19 @@ _moo_text_search_regex_backward (const GtkTextIter      *search_start,
         if (search_end && gtk_text_iter_compare (&slice_end, search_end) < 0)
             break;
 
-        gtk_text_iter_backward_line (&slice_start);
+        gtk_text_iter_backward_lines (&slice_start, regex->n_lines);
     }
 
     return FALSE;
 }
 
 
-static GRegex *
-get_regex (const char          *pattern,
-           MooTextSearchFlags   flags,
-           GError             **error)
+static MooRegex *
+get_regex (const char            *pattern,
+           MooTextSearchFlags     flags,
+           GError               **error)
 {
-    static GRegex *saved_regex;
+    static MooRegex *saved_regex;
     static char *saved_pattern;
     static MooTextSearchFlags saved_flags;
 
@@ -249,7 +341,7 @@ get_regex (const char          *pattern,
         GRegexCompileFlags re_flags = 0;
 
         if (saved_regex)
-            g_regex_unref (saved_regex);
+            _moo_regex_unref (saved_regex);
         g_free (saved_pattern);
 
         saved_pattern = g_strdup (pattern);
@@ -258,9 +350,9 @@ get_regex (const char          *pattern,
         if (flags & MOO_TEXT_SEARCH_CASELESS)
             re_flags |= G_REGEX_CASELESS;
 
-        saved_regex = g_regex_new (saved_pattern,
-                                   re_flags | G_REGEX_OPTIMIZE,
-                                   0, error);
+        saved_regex = _moo_regex_compile (saved_pattern,
+                                          re_flags | G_REGEX_OPTIMIZE,
+                                          0, error);
 
         if (!saved_regex)
         {
@@ -313,7 +405,7 @@ moo_text_search_forward (const GtkTextIter      *start,
                          GtkTextIter            *match_end,
                          const GtkTextIter      *end)
 {
-    GRegex *regex;
+    MooRegex *regex;
     GError *error = NULL;
 
     g_return_val_if_fail (start != NULL, FALSE);
@@ -382,7 +474,7 @@ moo_text_search_backward (const GtkTextIter      *start,
                           GtkTextIter            *match_end,
                           const GtkTextIter      *end)
 {
-    GRegex *regex;
+    MooRegex *regex;
     GError *error = NULL;
 
     g_return_val_if_fail (start != NULL, FALSE);
@@ -434,7 +526,7 @@ moo_text_search_backward (const GtkTextIter      *start,
 static int
 moo_text_replace_regex_all_real (GtkTextIter            *start,
                                  GtkTextIter            *end,
-                                 GRegex                 *regex,
+                                 MooRegex               *regex,
                                  const char             *replacement,
                                  gboolean                replacement_literal,
                                  MooTextReplaceFunc      func,
@@ -516,7 +608,8 @@ moo_text_replace_regex_all_real (GtkTextIter            *start,
         int match_len;
         GMatchInfo *match_info = NULL;
 
-        if (!_moo_text_search_regex_forward (start, end, regex, &match_start, &match_end,
+        if (!_moo_text_search_regex_forward (start, end, regex,
+                                             &match_start, &match_end,
                                              &string, NULL, &match_len, &match_info))
             goto out;
 
@@ -633,7 +726,7 @@ out:
 int
 _moo_text_replace_regex_all (GtkTextIter            *start,
                              GtkTextIter            *end,
-                             GRegex                 *regex,
+                             MooRegex               *regex,
                              const char             *replacement,
                              gboolean                replacement_literal)
 {
@@ -649,7 +742,7 @@ _moo_text_replace_regex_all (GtkTextIter            *start,
 int
 _moo_text_replace_regex_all_interactive (GtkTextIter            *start,
                                          GtkTextIter            *end,
-                                         GRegex                 *regex,
+                                         MooRegex               *regex,
                                          const char             *replacement,
                                          gboolean                replacement_literal,
                                          MooTextReplaceFunc      func,
@@ -685,7 +778,7 @@ moo_text_replace_all (GtkTextIter            *start,
     if (flags & MOO_TEXT_SEARCH_REGEX)
     {
         GError *error = NULL;
-        GRegex *regex = get_regex (text, flags, &error);
+        MooRegex *regex = get_regex (text, flags, &error);
 
         if (error)
         {
@@ -763,7 +856,7 @@ _moo_text_replace_all_interactive (GtkTextIter            *start,
     if (flags & MOO_TEXT_SEARCH_REGEX)
     {
         GError *error = NULL;
-        GRegex *regex = get_regex (text, flags, &error);
+        MooRegex *regex = get_regex (text, flags, &error);
 
         if (error)
         {

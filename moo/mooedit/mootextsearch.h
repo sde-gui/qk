@@ -26,14 +26,6 @@ typedef enum /*< flags >*/
     MOO_TEXT_SEARCH_REPL_LITERAL    = 1 << 3
 } MooTextSearchFlags;
 
-typedef enum /*< enum >*/
-{
-    MOO_TEXT_REPLACE_STOP = 0,
-    MOO_TEXT_REPLACE_SKIP = 1,
-    MOO_TEXT_REPLACE_DO_REPLACE = 2,
-    MOO_TEXT_REPLACE_ALL = 3
-} MooTextReplaceResponse;
-
 gboolean moo_text_search_forward            (const GtkTextIter      *start,
                                              const char             *str,
                                              MooTextSearchFlags      flags,

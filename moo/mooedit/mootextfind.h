@@ -49,7 +49,7 @@ struct _MooFind
 {
     GtkDialog base;
     MooGladeXML *xml;
-    GRegex *regex;
+    struct MooRegex *regex;
     guint replace : 1;
 };
 
