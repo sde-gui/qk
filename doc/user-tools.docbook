@@ -335,6 +335,73 @@ an example or to modify to suit your needs.
     <para>
     <literal>NewLine()</literal>: inserts new line character.
     </para>
+
+    <para>
+    The following functions are provided for more advanced text manipulation. Position in the
+    document is denoted by the character offset from the beginning of the document, starting
+    from 1, so the first character is at position 1. Functions which take or return ranges use pairs of
+    offsets, a pair <literal>start</literal>, <literal>end</literal> denotes range of text from
+    <literal>start</literal> to <literal>end</literal>, <emphasis>not</emphasis> including the
+    chracter at offset <literal>end</literal>. For instance, the single-character range consisting
+    of the first character in the document corresponds to the pair 1, 2. Non-positive offset
+    denotes the end of the document.
+    </para>
+
+    <para>
+    <literal>InsertText(pos, ...)</literal>: inserts text at the position <literal>pos</literal>.
+    </para>
+
+    <para>
+    <literal>DeleteText(start, end)</literal>: deletes text in the range <literal>[start..end)</literal>.
+    </para>
+
+    <para>
+    <literal>GetInsert()</literal>: returns position of the cursor in the document.
+    </para>
+
+    <para>
+    <literal>GetSelectionBounds()</literal>: returns positions of the selection start and end.
+    If no text is selected, returns pair <literal>pos, pos</literal> where <literal>pos</literal>
+    is the cursor position.
+    </para>
+
+    <para>
+    <literal>GetLine([pos])</literal>: returns line number of the character at the position
+    <literal>pos</literal>. If <literal>pos</literal> is not specified, it defaults to the
+    cursor position.
+    </para>
+
+    <para>
+    <literal>LineStart([pos])</literal>: returns the position of the beginning of the line
+    which contains character at <literal>pos</literal>.
+    If <literal>pos</literal> is not specified, it defaults to the cursor position.
+    </para>
+
+    <para>
+    <literal>LineEnd([pos])</literal>: returns the position of the end of the line
+    which contains character at <literal>pos</literal>.
+    If <literal>pos</literal> is not specified, it defaults to the cursor position.
+    </para>
+
+    <para>
+    <literal>ForwardLine([pos, [n]])</literal>: returns the position of the beginning
+    of the next line (or <literal>n</literal>-th line if <literal>n</literal>
+    is specified). <literal>pos</literal> defaults to the cursor position if not
+    specified.
+    </para>
+
+    <para>
+    <literal>BackwardLine([pos, [n]])</literal>: returns the position of the beginning
+    of the previous line (or <literal>n</literal>-th line backwards if <literal>n</literal>
+    is specified). <literal>pos</literal> defaults to the cursor position if not
+    specified.
+    </para>
+
+    <para>
+    <literal>GetText(start, end)</literal>: returns the text in the <literal>[start..end)</literal>.
+    If <literal>start == end</literal>, it returns an empty string, not <literal>nil</literal>.
+    </para>
+
 </section>
 
 <!-- ========== Shell scripts ========== -->
