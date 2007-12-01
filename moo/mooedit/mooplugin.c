@@ -1080,7 +1080,7 @@ _moo_doc_detach_plugins (MooEditWindow *window,
 {
     GSList *l;
 
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT (doc));
 
     plugin_store_init ();
