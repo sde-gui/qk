@@ -38,8 +38,6 @@
 #define LABEL_ALPHA 128
 
 typedef struct {
-    /* XXX do something about text */
-    char *text;
     GtkWidget *widget;
     int width;
     int height;
@@ -528,7 +526,8 @@ static void     notebook_create_arrows          (MooNotebook    *nb)
 }
 
 
-static void     moo_notebook_destroy        (GtkObject      *object)
+static void
+moo_notebook_destroy (GtkObject *object)
 {
     GSList *l;
     MooNotebook *nb = MOO_NOTEBOOK (object);
@@ -548,7 +547,6 @@ static void     moo_notebook_destroy        (GtkObject      *object)
         gtk_widget_destroy (page->label->widget);
         g_object_unref (page->label->widget);
 
-        g_free (page->label->text);
         g_free (page->label);
         g_free (page);
     }
@@ -1165,10 +1163,11 @@ moo_notebook_unmap (GtkWidget *widget)
 }
 
 
-static void     moo_notebook_forall         (GtkContainer   *container,
-                                             gboolean        include_internals,
-                                             GtkCallback     callback,
-                                             gpointer        callback_data)
+static void
+moo_notebook_forall (GtkContainer *container,
+                     gboolean      include_internals,
+                     GtkCallback   callback,
+                     gpointer      callback_data)
 {
     MooNotebook *nb = MOO_NOTEBOOK (container);
     GSList *l;
@@ -1317,16 +1316,18 @@ moo_notebook_focus_out (GtkWidget      *widget,
 }
 
 
-static void     moo_notebook_add            (GtkContainer   *container,
-                                             GtkWidget      *widget)
+static void
+moo_notebook_add (GtkContainer *container,
+                  GtkWidget    *widget)
 {
     moo_notebook_insert_page (MOO_NOTEBOOK (container), widget, NULL, -1);
 }
 
 
 /* XXX focus */
-static void     moo_notebook_remove         (GtkContainer   *container,
-                                             GtkWidget      *widget)
+static void
+moo_notebook_remove (GtkContainer *container,
+                     GtkWidget    *widget)
 {
     MooNotebook *nb = MOO_NOTEBOOK (container);
     Page *page;
@@ -1360,12 +1361,14 @@ static void     moo_notebook_remove         (GtkContainer   *container,
     }
     else if ((page = find_label (nb, widget)))
     {
+        char *text;
+
         gtk_widget_unparent (widget);
         g_object_unref (widget);
 
-        g_free (page->label->text);
-        page->label->text = g_strdup_printf ("Page %d", page_index (nb, page));
-        widget = gtk_label_new (page->label->text);
+        text = g_strdup_printf ("Page %d", page_index (nb, page));
+        widget = gtk_label_new (text);
+        g_free (text);
 
         MOO_OBJECT_REF_SINK (widget);
 
@@ -1383,9 +1386,10 @@ static void     moo_notebook_remove         (GtkContainer   *container,
 }
 
 
-static void     child_visible_notify        (GtkWidget      *child,
-                                             G_GNUC_UNUSED GParamSpec *arg,
-                                             MooNotebook    *nb)
+static void
+child_visible_notify (GtkWidget      *child,
+                      G_GNUC_UNUSED GParamSpec *arg,
+                      MooNotebook    *nb)
 {
     Page *page;
 
@@ -1423,8 +1427,9 @@ static void     child_visible_notify        (GtkWidget      *child,
 }
 
 
-void        moo_notebook_set_show_tabs      (MooNotebook    *notebook,
-                                             gboolean        show_tabs)
+void
+moo_notebook_set_show_tabs (MooNotebook *notebook,
+                            gboolean     show_tabs)
 {
     g_return_if_fail (MOO_IS_NOTEBOOK (notebook));
 
@@ -1527,8 +1532,9 @@ moo_notebook_insert_page (MooNotebook *nb,
 
     if (!label)
     {
-        page->label->text = g_strdup_printf ("Page %d", position);
-        label = gtk_label_new (page->label->text);
+        char *text = g_strdup_printf ("Page %d", position);
+        label = gtk_label_new (text);
+        g_free (text);
     }
 
     page->label->widget = label;
@@ -1704,7 +1710,6 @@ delete_page (MooNotebook *nb,
                              (GWeakNotify) g_nullify_pointer,
                              &page->focus_child);
 
-    g_free (page->label->text);
     g_free (page->label);
     g_free (page);
 
@@ -2020,9 +2025,6 @@ moo_notebook_set_tab_label (MooNotebook *notebook,
 
     gtk_widget_unparent (page->label->widget);
     g_object_unref (page->label->widget);
-
-    g_free (page->label->text);
-    page->label->text = NULL;
 
     page->label->widget = tab_label;
     MOO_OBJECT_REF_SINK (tab_label);
