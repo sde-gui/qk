@@ -372,6 +372,11 @@ an example or to modify to suit your needs.
     </para>
 
     <para>
+    <literal>GetPosAtLine(n)</literal>: returns position at the beginning of the
+    <literal>n</literal>-th line.
+    </para>
+
+    <para>
     <literal>LineStart([pos])</literal>: returns the position of the beginning of the line
     which contains character at <literal>pos</literal>.
     If <literal>pos</literal> is not specified, it defaults to the cursor position.

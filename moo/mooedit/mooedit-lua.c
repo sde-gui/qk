@@ -808,6 +808,25 @@ cfunc_get_line (lua_State *L)
 }
 
 static int
+cfunc_get_pos_at_line (lua_State *L)
+{
+    GtkTextView *doc;
+    GtkTextBuffer *buffer;
+    GtkTextIter iter;
+    int line;
+
+    CHECK_DOC (L, doc);
+    parse_args (L, "GetPosAtLine", "i", &line);
+    luaL_argcheck (L, line > 0, 1, "must be positive");
+
+    buffer = gtk_text_view_get_buffer (doc);
+    gtk_text_buffer_get_iter_at_line (buffer, &iter, line - 1);
+
+    lua_pushnumber (L, gtk_text_iter_get_offset (&iter) + 1);
+    return 1;
+}
+
+static int
 cfunc_line_start (lua_State *L)
 {
     GtkTextView *doc;
@@ -1016,6 +1035,7 @@ add_text_api (lua_State *L)
     lua_register (L, "DeleteText", cfunc_delete_text);
     lua_register (L, "GetInsert", cfunc_get_insert);
     lua_register (L, "GetLine", cfunc_get_line);
+    lua_register (L, "GetPosAtLine", cfunc_get_pos_at_line);
     lua_register (L, "GetSelectionBounds", cfunc_get_selection_bounds);
     lua_register (L, "GetText", cfunc_get_text);
     lua_register (L, "LineStart", cfunc_line_start);
