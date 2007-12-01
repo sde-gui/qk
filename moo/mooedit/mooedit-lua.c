@@ -449,38 +449,17 @@ delete_from_cursor (GtkTextView *doc,
     scroll_to_cursor (doc);
 }
 
-static void
-delete_range (GtkTextView *doc,
-              int          start_offset,
-              int          end_offset)
-{
-    GtkTextIter start, end;
-    GtkTextBuffer *buffer;
-    buffer = gtk_text_view_get_buffer (doc);
-    gtk_text_buffer_get_iter_at_offset (buffer, &start, start_offset);
-    gtk_text_buffer_get_iter_at_offset (buffer, &end, end_offset);
-    gtk_text_buffer_delete (buffer, &start, &end);
-}
-
 static int
 cfunc_delete (lua_State *L)
 {
-    int arg1 = G_MAXINT, arg2 = G_MAXINT;
+    int n = 1;
     GtkTextView *doc;
 
     CHECK_DOC (L, doc);
-    parse_args (L, "Delete", "|ii", &arg1, &arg2);
+    parse_args (L, "Delete", "|i", &n);
 
-    if (arg2 == G_MAXINT)
-    {
-        luaL_argcheck (L, arg1 >= 0, 1, "must be positive");
-        delete_from_cursor (doc, arg1);
-    }
-    else
-    {
-        luaL_argcheck (L, arg1 > 0, 1, "must be positive");
-        delete_range (doc, arg1, arg2);
-    }
+    luaL_argcheck (L, n > 0, 1, "must be positive");
+    delete_from_cursor (doc, n);
 
     return 0;
 }
@@ -696,7 +675,7 @@ cfunc_insert (lua_State *L)
 }
 
 static int
-cfunc_insert_at (lua_State *L)
+cfunc_insert_text (lua_State *L)
 {
     int i, n_args;
     int offset;
@@ -712,7 +691,7 @@ cfunc_insert_at (lua_State *L)
 
     offset = lua_tonumber (L, 1);
     buffer = gtk_text_view_get_buffer (doc);
-    gtk_text_buffer_get_iter_at_offset (buffer, &iter, offset);
+    gtk_text_buffer_get_iter_at_offset (buffer, &iter, offset - 1);
 
     for (i = 2; i <= n_args; ++i)
     {
@@ -783,7 +762,7 @@ cfunc_get_insert (lua_State *L)
     gtk_text_buffer_get_iter_at_mark (buffer, &iter,
                                       gtk_text_buffer_get_insert (buffer));
 
-    lua_pushnumber (L, gtk_text_iter_get_offset (&iter));
+    lua_pushnumber (L, gtk_text_iter_get_offset (&iter) + 1);
     return 1;
 }
 
@@ -800,8 +779,8 @@ cfunc_get_selection_bounds (lua_State *L)
     buffer = gtk_text_view_get_buffer (doc);
     gtk_text_buffer_get_selection_bounds (buffer, &start, &end);
 
-    lua_pushnumber (L, gtk_text_iter_get_offset (&start));
-    lua_pushnumber (L, gtk_text_iter_get_offset (&end));
+    lua_pushnumber (L, gtk_text_iter_get_offset (&start) + 1);
+    lua_pushnumber (L, gtk_text_iter_get_offset (&end) + 1);
     return 2;
 }
 
@@ -822,9 +801,9 @@ cfunc_get_line (lua_State *L)
         gtk_text_buffer_get_iter_at_mark (buffer, &iter,
                                           gtk_text_buffer_get_insert (buffer));
     else
-        gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos);
+        gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos - 1);
 
-    lua_pushnumber (L, gtk_text_iter_get_line (&iter));
+    lua_pushnumber (L, gtk_text_iter_get_line (&iter) + 1);
     return 1;
 }
 
@@ -845,11 +824,11 @@ cfunc_line_start (lua_State *L)
         gtk_text_buffer_get_iter_at_mark (buffer, &iter,
                                           gtk_text_buffer_get_insert (buffer));
     else
-        gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos);
+        gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos - 1);
 
     gtk_text_iter_set_line_offset (&iter, 0);
 
-    lua_pushnumber (L, gtk_text_iter_get_offset (&iter));
+    lua_pushnumber (L, gtk_text_iter_get_offset (&iter) + 1);
     return 1;
 }
 
@@ -870,12 +849,12 @@ cfunc_line_end (lua_State *L)
         gtk_text_buffer_get_iter_at_mark (buffer, &iter,
                                           gtk_text_buffer_get_insert (buffer));
     else
-        gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos);
+        gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos - 1);
 
     if (!gtk_text_iter_ends_line (&iter))
         gtk_text_iter_forward_to_line_end (&iter);
 
-    lua_pushnumber (L, gtk_text_iter_get_offset (&iter));
+    lua_pushnumber (L, gtk_text_iter_get_offset (&iter) + 1);
     return 1;
 }
 
@@ -890,6 +869,7 @@ cfunc_forward_line (lua_State *L)
 
     CHECK_DOC (L, doc);
     parse_args (L, "ForwardLine", "|ii", &pos, &n_lines);
+    luaL_argcheck (L, n_lines > 0, 2, "must be positive");
 
     buffer = gtk_text_view_get_buffer (doc);
 
@@ -897,12 +877,12 @@ cfunc_forward_line (lua_State *L)
         gtk_text_buffer_get_iter_at_mark (buffer, &iter,
                                           gtk_text_buffer_get_insert (buffer));
     else
-        gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos);
+        gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos - 1);
 
     if (gtk_text_iter_forward_line (&iter))
     {
         gtk_text_iter_forward_lines (&iter, n_lines - 1);
-        lua_pushnumber (L, gtk_text_iter_get_offset (&iter));
+        lua_pushnumber (L, gtk_text_iter_get_offset (&iter) + 1);
     }
     else
     {
@@ -923,6 +903,7 @@ cfunc_backward_line (lua_State *L)
 
     CHECK_DOC (L, doc);
     parse_args (L, "BackwardLine", "|ii", &pos, &n_lines);
+    luaL_argcheck (L, n_lines > 0, 2, "must be positive");
 
     buffer = gtk_text_view_get_buffer (doc);
 
@@ -930,12 +911,12 @@ cfunc_backward_line (lua_State *L)
         gtk_text_buffer_get_iter_at_mark (buffer, &iter,
                                           gtk_text_buffer_get_insert (buffer));
     else
-        gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos);
+        gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos - 1);
 
     if (gtk_text_iter_get_line (&iter) != 0)
     {
         gtk_text_iter_backward_lines (&iter, n_lines);
-        lua_pushnumber (L, gtk_text_iter_get_offset (&iter));
+        lua_pushnumber (L, gtk_text_iter_get_offset (&iter) + 1);
     }
     else
     {
@@ -958,8 +939,8 @@ cfunc_get_text (lua_State *L)
     parse_args (L, "GetText", "ii", &start_offset, &end_offset);
 
     buffer = gtk_text_view_get_buffer (doc);
-    gtk_text_buffer_get_iter_at_offset (buffer, &start, start_offset);
-    gtk_text_buffer_get_iter_at_offset (buffer, &end, end_offset);
+    gtk_text_buffer_get_iter_at_offset (buffer, &start, start_offset - 1);
+    gtk_text_buffer_get_iter_at_offset (buffer, &end, end_offset - 1);
     gtk_text_iter_order (&start, &end);
 
     text = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
@@ -967,6 +948,33 @@ cfunc_get_text (lua_State *L)
     g_free (text);
 
     return 1;
+}
+
+static void
+delete_range (GtkTextView *doc,
+              int          start_offset,
+              int          end_offset)
+{
+    GtkTextIter start, end;
+    GtkTextBuffer *buffer;
+    buffer = gtk_text_view_get_buffer (doc);
+    gtk_text_buffer_get_iter_at_offset (buffer, &start, start_offset - 1);
+    gtk_text_buffer_get_iter_at_offset (buffer, &end, end_offset - 1);
+    gtk_text_buffer_delete (buffer, &start, &end);
+}
+
+static int
+cfunc_delete_text (lua_State *L)
+{
+    int start, end;
+    GtkTextView *doc;
+
+    CHECK_DOC (L, doc);
+    parse_args (L, "DeleteText", "ii", &start, &end);
+
+    delete_range (doc, start, end);
+
+    return 0;
 }
 
 
@@ -1004,7 +1012,8 @@ add_text_api (lua_State *L)
     lua_register (L, "Insert", cfunc_insert);
     lua_register (L, "InsertPlaceholder", cfunc_insert_placeholder);
     lua_register (L, "NewLine", cfunc_new_line);
-    lua_register (L, "InsertAt", cfunc_insert_at);
+    lua_register (L, "InsertText", cfunc_insert_text);
+    lua_register (L, "DeleteText", cfunc_delete_text);
     lua_register (L, "GetInsert", cfunc_get_insert);
     lua_register (L, "GetLine", cfunc_get_line);
     lua_register (L, "GetSelectionBounds", cfunc_get_selection_bounds);

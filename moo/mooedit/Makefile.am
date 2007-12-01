@@ -17,7 +17,8 @@ lua_sources =				\
 	mooedit-lua.h
 
 unix_sources =				\
-	moocommand-unx.c
+	moocommand-unx.c		\
+	moocommand-unx.h
 
 mooedit_include_headers =		\
 	moocmdview.h			\
@@ -57,7 +58,7 @@ mooedit_sources =			\
 	moocommand.c			\
 	moocommanddisplay.c		\
 	moocommanddisplay.h		\
-	moocommand-unx.h		\
+	moocommand-exe.h		\
 	moocommand.h			\
 	moocommand-private.h		\
 	mooeditaction.c			\
