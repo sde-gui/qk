@@ -4106,6 +4106,8 @@ moo_edit_window_get_output (MooEditWindow *window)
         scrolled_window = gtk_scrolled_window_new (NULL, NULL);
         gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
                                         GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
+        gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolled_window),
+                                             GTK_SHADOW_ETCHED_IN);
 
         cmd_view = moo_cmd_view_new ();
         moo_text_view_set_font_from_string (MOO_TEXT_VIEW (cmd_view), "Monospace");

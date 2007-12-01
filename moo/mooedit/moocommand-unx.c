@@ -14,6 +14,7 @@
 #include "config.h"
 #endif
 #include "mooedit/moocommand-unx.h"
+#include "mooedit/moocommand-exe.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooedittools-glade.h"
 #include "mooedit/moocmdview.h"
@@ -181,18 +182,16 @@ save_temp (const char *data,
 }
 
 static char *
-make_cmd (MooCommandUnx     *cmd,
-          MooCommandContext *ctx)
+make_cmd (const char *base_cmd_line,
+          const char *input)
 {
-    char *input;
     char *cmd_line = NULL;
     gsize input_len;
 
-    input = get_input (cmd, ctx);
     input_len = input ? strlen (input) : 0;
 
-    if (!input)
-        return g_strdup (cmd->priv->cmd_line);
+    if (!input || !input_len)
+        return g_strdup (base_cmd_line);
 
     if (input_len < 2048)
     {
@@ -201,7 +200,7 @@ make_cmd (MooCommandUnx     *cmd,
         quoted = g_shell_quote (input);
         g_return_val_if_fail (quoted != NULL, NULL);
 
-        cmd_line = g_strdup_printf ("echo -n %s | ( %s )", quoted, cmd->priv->cmd_line);
+        cmd_line = g_strdup_printf ("echo -n %s | ( %s )", quoted, base_cmd_line);
         g_free (quoted);
     }
     else
@@ -211,10 +210,23 @@ make_cmd (MooCommandUnx     *cmd,
         if (tmp_file)
         {
             cmd_line = g_strdup_printf ("( %s ) < '%s' ; rm '%s'",
-                                        cmd->priv->cmd_line, tmp_file, tmp_file);
+                                        base_cmd_line, tmp_file, tmp_file);
             g_free (tmp_file);
         }
     }
+
+    return cmd_line;
+}
+
+static char *
+make_cmd_line (MooCommandUnx     *cmd,
+               MooCommandContext *ctx)
+{
+    char *input;
+    char *cmd_line;
+
+    input = get_input (cmd, ctx);
+    cmd_line = make_cmd (cmd->priv->cmd_line, input);
 
     g_free (input);
     return cmd_line;
@@ -222,21 +234,18 @@ make_cmd (MooCommandUnx     *cmd,
 
 
 static void
-run_in_pane (MooCommandUnx     *cmd,
-             MooCommandContext *ctx,
+run_in_pane (MooEditWindow     *window,
+             GtkTextView       *doc,
+             const char        *filter_id,
+             const char        *cmd_line,
+             const char        *display_cmd_line,
              const char        *working_dir,
              char             **envp)
 {
-    GtkTextView *doc;
-    MooEditWindow *window;
-    char *cmd_line;
     GtkWidget *output;
 
-    doc = moo_command_context_get_doc (ctx);
-    window = moo_command_context_get_window (ctx);
-
-    g_return_if_fail (cmd->priv->input == MOO_COMMAND_UNX_INPUT_NONE || doc != NULL);
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (cmd_line != NULL);
 
     output = moo_edit_window_get_output (window);
     g_return_if_fail (output != NULL);
@@ -246,15 +255,12 @@ run_in_pane (MooCommandUnx     *cmd,
     {
         MooOutputFilter *filter = NULL;
 
-        cmd_line = make_cmd (cmd, ctx);
-        g_return_if_fail (cmd_line != NULL);
-
         moo_line_view_clear (MOO_LINE_VIEW (output));
         moo_edit_window_present_output (window);
         gtk_widget_grab_focus (output);
 
-        if (cmd->priv->filter)
-            filter = moo_command_filter_create (cmd->priv->filter);
+        if (filter_id)
+            filter = moo_command_filter_create (filter_id);
 
         if (filter)
         {
@@ -266,14 +272,69 @@ run_in_pane (MooCommandUnx     *cmd,
         moo_cmd_view_set_filter (MOO_CMD_VIEW (output), filter);
 
         moo_cmd_view_run_command_full (MOO_CMD_VIEW (output),
-                                       cmd_line, cmd->priv->cmd_line,
+                                       cmd_line, display_cmd_line,
                                        working_dir, envp, "Command");
 
         if (filter)
             g_object_unref (filter);
-
-        g_free (cmd_line);
     }
+}
+
+static char *
+get_working_dir_for_doc (MooEditWindow *window,
+                         MooEdit       *doc)
+{
+    const char *filename = NULL;
+
+    if (!doc && window)
+        doc = moo_edit_window_get_active_doc (window);
+
+    if (doc)
+        filename = moo_edit_get_filename (doc);
+
+    return filename ? g_path_get_dirname (filename) : NULL;
+}
+
+void
+_moo_edit_run_in_pane (const char     *cmd_line,
+                       const char     *working_dir,
+                       char          **envp,
+                       MooEditWindow  *window,
+                       MooEdit        *doc)
+{
+    char *freeme = NULL;
+
+    if (!working_dir || !working_dir[0])
+        working_dir = freeme = get_working_dir_for_doc (window, doc);
+
+    run_in_pane (window, NULL, NULL, cmd_line, NULL, working_dir, envp);
+
+    g_free (freeme);
+}
+
+static void
+run_command_in_pane (MooCommandUnx     *cmd,
+                     MooCommandContext *ctx,
+                     const char        *working_dir,
+                     char             **envp)
+{
+    GtkTextView *doc;
+    MooEditWindow *window;
+    char *cmd_line;
+
+    doc = moo_command_context_get_doc (ctx);
+    window = moo_command_context_get_window (ctx);
+
+    g_return_if_fail (cmd->priv->input == MOO_COMMAND_UNX_INPUT_NONE || doc != NULL);
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+
+    cmd_line = make_cmd_line (cmd, ctx);
+    g_return_if_fail (cmd_line != NULL);
+
+    run_in_pane (window, doc, cmd->priv->filter, cmd_line,
+                 cmd->priv->cmd_line, working_dir, envp);
+
+    g_free (cmd_line);
 }
 
 
@@ -386,28 +447,30 @@ create_environment (MooCommandContext *ctx,
 
 
 static gboolean
-run_command (MooCommandUnx     *cmd,
-             MooCommandContext *ctx,
-             const char        *working_dir,
-             char             **envp,
-             char             **output)
+run_sync (const char  *base_cmd_line,
+          const char  *working_dir,
+          char       **envp,
+          const char  *input,
+          int         *exit_status,
+          char       **output,
+          char       **output_err)
 {
     GError *error = NULL;
     gboolean result;
     const char *argv[4] = {"/bin/sh", "-c", NULL, NULL};
-    char *cmd_line;
     char **real_env;
+    char *cmd_line;
 
-    cmd_line = make_cmd (cmd, ctx);
+    g_return_val_if_fail (base_cmd_line != NULL, FALSE);
 
-    if (!cmd_line)
-        return FALSE;
+    cmd_line = make_cmd (base_cmd_line, input);
 
     argv[2] = cmd_line;
     real_env = _moo_env_add (envp);
 
     result = g_spawn_sync (working_dir, (char**) argv, real_env, 0,
-                           NULL, NULL, output, NULL, NULL, &error);
+                           NULL, NULL, output, output_err, exit_status,
+                           &error);
 
     g_strfreev (real_env);
 
@@ -421,20 +484,57 @@ run_command (MooCommandUnx     *cmd,
     return result;
 }
 
+void
+_moo_edit_run_sync (const char    *cmd_line,
+                    const char    *working_dir,
+                    char         **envp,
+                    MooEditWindow *window,
+                    MooEdit       *doc,
+                    const char    *input,
+                    int           *exit_status,
+                    char         **output,
+                    char         **output_err)
+{
+    char *freeme = NULL;
+
+    if (!working_dir || !working_dir[0])
+        working_dir = freeme = get_working_dir_for_doc (window, doc);
+
+    run_sync (cmd_line, working_dir, envp, input, exit_status, output, output_err);
+
+    g_free (freeme);
+}
 
 static gboolean
-run_command_async (MooCommandUnx     *cmd,
-                   MooCommandContext *ctx,
-                   const char        *working_dir,
-                   char             **envp)
+run_command (MooCommandUnx     *cmd,
+             MooCommandContext *ctx,
+             const char        *working_dir,
+             char             **envp,
+             char             **output)
+{
+    gboolean result;
+    char *input;
+
+    input = get_input (cmd, ctx);
+    result = run_sync (cmd->priv->cmd_line, working_dir, envp,
+                       input, NULL, output, NULL);
+
+    g_free (input);
+    return result;
+}
+
+
+static gboolean
+run_async (const char     *cmd_line,
+           const char     *working_dir,
+           char          **envp,
+           MooEditWindow  *window)
 {
     GError *error = NULL;
     gboolean result;
     const char *argv[4] = {"/bin/sh", "-c", NULL, NULL};
-    char *cmd_line;
     char **real_env;
-
-    cmd_line = make_cmd (cmd, ctx);
+    GdkScreen *screen = NULL;
 
     if (!cmd_line)
         return FALSE;
@@ -444,8 +544,15 @@ run_command_async (MooCommandUnx     *cmd,
 
     _moo_message ("Launching:\n%s\n", cmd_line);
 
-    result = g_spawn_async (working_dir, (char**) argv, real_env,
-                            0, NULL, NULL, NULL, &error);
+    if (window && gtk_widget_has_screen (GTK_WIDGET (window)))
+        screen = gtk_widget_get_screen (GTK_WIDGET (window));
+
+    if (screen)
+        result = gdk_spawn_on_screen (screen, working_dir, (char**) argv, real_env,
+                                      0, NULL, NULL, NULL, &error);
+    else
+        result = g_spawn_async (working_dir, (char**) argv, real_env,
+                                0, NULL, NULL, NULL, &error);
 
     g_strfreev (real_env);
 
@@ -454,6 +561,44 @@ run_command_async (MooCommandUnx     *cmd,
         g_message ("could not run command: %s", error->message);
         g_error_free (error);
     }
+
+    return result;
+}
+
+void
+_moo_edit_run_async (const char     *cmd_line,
+                     const char     *working_dir,
+                     char          **envp,
+                     MooEditWindow  *window,
+                     MooEdit        *doc)
+{
+    char *freeme = NULL;
+
+    if (!working_dir || !working_dir[0])
+        working_dir = freeme = get_working_dir_for_doc (window, doc);
+
+    run_async (cmd_line, working_dir, envp, window);
+
+    g_free (freeme);
+}
+
+static gboolean
+run_command_async (MooCommandUnx     *cmd,
+                   MooCommandContext *ctx,
+                   const char        *working_dir,
+                   char             **envp)
+{
+    gboolean result;
+    char *cmd_line;
+    MooEditWindow *window;
+
+    cmd_line = make_cmd_line (cmd, ctx);
+
+    if (!cmd_line)
+        return FALSE;
+
+    window = moo_command_context_get_window (ctx);
+    result = run_async (cmd_line, working_dir, envp, window);
 
     g_free (cmd_line);
     return result;
@@ -474,7 +619,7 @@ moo_command_unx_run (MooCommand        *cmd_base,
 
     if (cmd->priv->output == MOO_COMMAND_UNX_OUTPUT_PANE)
     {
-        run_in_pane (cmd, ctx, working_dir, envp);
+        run_command_in_pane (cmd, ctx, working_dir, envp);
         goto out;
     }
 

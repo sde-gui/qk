@@ -13,6 +13,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-lua.h"
 #include "mooedit/mooedit-private.h"
+#include "mooedit/moocommand-exe.h"
 #include "mooutils/moohistorycombo.h"
 #include <string.h>
 #include <glib/gprintf.h>
@@ -421,21 +422,15 @@ cfunc_backspace (lua_State *L)
 }
 
 
-static int
-cfunc_delete (lua_State *L)
+static void
+delete_from_cursor (GtkTextView *doc,
+                    int          n)
 {
-    int n = 1;
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
-    GtkTextView *doc;
-
-    CHECK_DOC (L, doc);
-    parse_args (L, "Delete", "|i", &n);
-
-    luaL_argcheck (L, n >= 0, 1, "must be positive");
 
     if (!n)
-        return 0;
+        return;
 
     buffer = gtk_text_view_get_buffer (doc);
 
@@ -452,6 +447,41 @@ cfunc_delete (lua_State *L)
     }
 
     scroll_to_cursor (doc);
+}
+
+static void
+delete_range (GtkTextView *doc,
+              int          start_offset,
+              int          end_offset)
+{
+    GtkTextIter start, end;
+    GtkTextBuffer *buffer;
+    buffer = gtk_text_view_get_buffer (doc);
+    gtk_text_buffer_get_iter_at_offset (buffer, &start, start_offset);
+    gtk_text_buffer_get_iter_at_offset (buffer, &end, end_offset);
+    gtk_text_buffer_delete (buffer, &start, &end);
+}
+
+static int
+cfunc_delete (lua_State *L)
+{
+    int arg1 = G_MAXINT, arg2 = G_MAXINT;
+    GtkTextView *doc;
+
+    CHECK_DOC (L, doc);
+    parse_args (L, "Delete", "|ii", &arg1, &arg2);
+
+    if (arg2 == G_MAXINT)
+    {
+        luaL_argcheck (L, arg1 >= 0, 1, "must be positive");
+        delete_from_cursor (doc, arg1);
+    }
+    else
+    {
+        luaL_argcheck (L, arg1 > 0, 1, "must be positive");
+        delete_range (doc, arg1, arg2);
+    }
+
     return 0;
 }
 
@@ -665,6 +695,34 @@ cfunc_insert (lua_State *L)
     return 0;
 }
 
+static int
+cfunc_insert_at (lua_State *L)
+{
+    int i, n_args;
+    int offset;
+    GtkTextIter iter;
+    GtkTextBuffer *buffer;
+    GtkTextView *doc;
+
+    CHECK_DOC (L, doc);
+
+    n_args = lua_gettop (L);
+    if (n_args < 2)
+        return 0;
+
+    offset = lua_tonumber (L, 1);
+    buffer = gtk_text_view_get_buffer (doc);
+    gtk_text_buffer_get_iter_at_offset (buffer, &iter, offset);
+
+    for (i = 2; i <= n_args; ++i)
+    {
+        const char *s = lua_tostring (L, i);
+        gtk_text_buffer_insert (buffer, &iter, s, -1);
+    }
+
+    return 0;
+}
+
 
 static int
 cfunc_insert_placeholder (lua_State *L)
@@ -711,6 +769,207 @@ cfunc_selection (lua_State *L)
 }
 
 
+static int
+cfunc_get_insert (lua_State *L)
+{
+    GtkTextView *doc;
+    GtkTextBuffer *buffer;
+    GtkTextIter iter;
+
+    CHECK_DOC (L, doc);
+    parse_args (L, "GetInsert", "");
+
+    buffer = gtk_text_view_get_buffer (doc);
+    gtk_text_buffer_get_iter_at_mark (buffer, &iter,
+                                      gtk_text_buffer_get_insert (buffer));
+
+    lua_pushnumber (L, gtk_text_iter_get_offset (&iter));
+    return 1;
+}
+
+static int
+cfunc_get_selection_bounds (lua_State *L)
+{
+    GtkTextView *doc;
+    GtkTextBuffer *buffer;
+    GtkTextIter start, end;
+
+    CHECK_DOC (L, doc);
+    parse_args (L, "GetSelectionBounds", "");
+
+    buffer = gtk_text_view_get_buffer (doc);
+    gtk_text_buffer_get_selection_bounds (buffer, &start, &end);
+
+    lua_pushnumber (L, gtk_text_iter_get_offset (&start));
+    lua_pushnumber (L, gtk_text_iter_get_offset (&end));
+    return 2;
+}
+
+static int
+cfunc_get_line (lua_State *L)
+{
+    GtkTextView *doc;
+    GtkTextBuffer *buffer;
+    GtkTextIter iter;
+    int pos = G_MAXINT;
+
+    CHECK_DOC (L, doc);
+    parse_args (L, "GetLine", "|i", &pos);
+
+    buffer = gtk_text_view_get_buffer (doc);
+
+    if (pos == G_MAXINT)
+        gtk_text_buffer_get_iter_at_mark (buffer, &iter,
+                                          gtk_text_buffer_get_insert (buffer));
+    else
+        gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos);
+
+    lua_pushnumber (L, gtk_text_iter_get_line (&iter));
+    return 1;
+}
+
+static int
+cfunc_line_start (lua_State *L)
+{
+    GtkTextView *doc;
+    GtkTextBuffer *buffer;
+    GtkTextIter iter;
+    int pos = G_MAXINT;
+
+    CHECK_DOC (L, doc);
+    parse_args (L, "LineStart", "|i", &pos);
+
+    buffer = gtk_text_view_get_buffer (doc);
+
+    if (pos == G_MAXINT)
+        gtk_text_buffer_get_iter_at_mark (buffer, &iter,
+                                          gtk_text_buffer_get_insert (buffer));
+    else
+        gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos);
+
+    gtk_text_iter_set_line_offset (&iter, 0);
+
+    lua_pushnumber (L, gtk_text_iter_get_offset (&iter));
+    return 1;
+}
+
+static int
+cfunc_line_end (lua_State *L)
+{
+    GtkTextView *doc;
+    GtkTextBuffer *buffer;
+    GtkTextIter iter;
+    int pos = G_MAXINT;
+
+    CHECK_DOC (L, doc);
+    parse_args (L, "LineEnd", "|i", &pos);
+
+    buffer = gtk_text_view_get_buffer (doc);
+
+    if (pos == G_MAXINT)
+        gtk_text_buffer_get_iter_at_mark (buffer, &iter,
+                                          gtk_text_buffer_get_insert (buffer));
+    else
+        gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos);
+
+    if (!gtk_text_iter_ends_line (&iter))
+        gtk_text_iter_forward_to_line_end (&iter);
+
+    lua_pushnumber (L, gtk_text_iter_get_offset (&iter));
+    return 1;
+}
+
+static int
+cfunc_forward_line (lua_State *L)
+{
+    GtkTextView *doc;
+    GtkTextBuffer *buffer;
+    GtkTextIter iter;
+    int pos = G_MAXINT;
+    int n_lines = 1;
+
+    CHECK_DOC (L, doc);
+    parse_args (L, "ForwardLine", "|ii", &pos, &n_lines);
+
+    buffer = gtk_text_view_get_buffer (doc);
+
+    if (pos == G_MAXINT)
+        gtk_text_buffer_get_iter_at_mark (buffer, &iter,
+                                          gtk_text_buffer_get_insert (buffer));
+    else
+        gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos);
+
+    if (gtk_text_iter_forward_line (&iter))
+    {
+        gtk_text_iter_forward_lines (&iter, n_lines - 1);
+        lua_pushnumber (L, gtk_text_iter_get_offset (&iter));
+    }
+    else
+    {
+        lua_pushnil (L);
+    }
+
+    return 1;
+}
+
+static int
+cfunc_backward_line (lua_State *L)
+{
+    GtkTextView *doc;
+    GtkTextBuffer *buffer;
+    GtkTextIter iter;
+    int pos = G_MAXINT;
+    int n_lines = 1;
+
+    CHECK_DOC (L, doc);
+    parse_args (L, "BackwardLine", "|ii", &pos, &n_lines);
+
+    buffer = gtk_text_view_get_buffer (doc);
+
+    if (pos == G_MAXINT)
+        gtk_text_buffer_get_iter_at_mark (buffer, &iter,
+                                          gtk_text_buffer_get_insert (buffer));
+    else
+        gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos);
+
+    if (gtk_text_iter_get_line (&iter) != 0)
+    {
+        gtk_text_iter_backward_lines (&iter, n_lines);
+        lua_pushnumber (L, gtk_text_iter_get_offset (&iter));
+    }
+    else
+    {
+        lua_pushnil (L);
+    }
+
+    return 1;
+}
+
+static int
+cfunc_get_text (lua_State *L)
+{
+    GtkTextView *doc;
+    GtkTextBuffer *buffer;
+    GtkTextIter start, end;
+    int start_offset, end_offset;
+    char *text;
+
+    CHECK_DOC (L, doc);
+    parse_args (L, "GetText", "ii", &start_offset, &end_offset);
+
+    buffer = gtk_text_view_get_buffer (doc);
+    gtk_text_buffer_get_iter_at_offset (buffer, &start, start_offset);
+    gtk_text_buffer_get_iter_at_offset (buffer, &end, end_offset);
+    gtk_text_iter_order (&start, &end);
+
+    text = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
+    lua_pushstring (L, text);
+    g_free (text);
+
+    return 1;
+}
+
+
 #define DEFINE_SIGNAL_FUNC(name,sig,Name)   \
 static int                                  \
 name (lua_State *L)                         \
@@ -745,6 +1004,15 @@ add_text_api (lua_State *L)
     lua_register (L, "Insert", cfunc_insert);
     lua_register (L, "InsertPlaceholder", cfunc_insert_placeholder);
     lua_register (L, "NewLine", cfunc_new_line);
+    lua_register (L, "InsertAt", cfunc_insert_at);
+    lua_register (L, "GetInsert", cfunc_get_insert);
+    lua_register (L, "GetLine", cfunc_get_line);
+    lua_register (L, "GetSelectionBounds", cfunc_get_selection_bounds);
+    lua_register (L, "GetText", cfunc_get_text);
+    lua_register (L, "LineStart", cfunc_line_start);
+    lua_register (L, "LineEnd", cfunc_line_end);
+    lua_register (L, "ForwardLine", cfunc_forward_line);
+    lua_register (L, "BackwardLine", cfunc_backward_line);
 }
 
 
@@ -761,7 +1029,7 @@ cfunc_open (lua_State *L)
     const char *filename;
     GET_DATA ();
 
-    parse_args (L, "medit.open", "s", &filename);
+    parse_args (L, "_medit.open", "s", &filename);
 
     editor = MOO_IS_EDIT (data->doc) ? MOO_EDIT(data->doc)->priv->editor : moo_editor_instance ();
     g_return_val_if_fail (MOO_IS_EDITOR (editor), 0);
@@ -772,6 +1040,7 @@ cfunc_open (lua_State *L)
     L_RETURN_BOOL (new_doc != NULL);
 }
 
+#if 0
 static int
 zfunc_history_entry (lua_State *L)
 {
@@ -825,16 +1094,71 @@ zfunc_history_entry (lua_State *L)
 
     return 1;
 }
+#endif
 
+static int
+cfunc_run_in_pane (lua_State *L)
+{
+    const char *cmd_line;
+    const char *working_dir;
+    GET_DATA ();
+
+    parse_args (L, "_medit.run_in_pane", "sz", &cmd_line, &working_dir);
+
+    _moo_edit_run_in_pane (cmd_line, working_dir, NULL,
+                           MOO_EDIT_WINDOW (data->window),
+                           MOO_IS_EDIT (data->doc) ? MOO_EDIT (data->doc) : NULL);
+
+    return 0;
+}
+
+static int
+cfunc_run_async (lua_State *L)
+{
+    const char *cmd_line, *working_dir;
+    GET_DATA ();
+
+    parse_args (L, "_medit.run_async", "sz", &cmd_line, &working_dir);
+
+    _moo_edit_run_async (cmd_line, working_dir, NULL,
+                         MOO_EDIT_WINDOW (data->window),
+                         MOO_IS_EDIT (data->doc) ? MOO_EDIT (data->doc) : NULL);
+
+    return 0;
+}
+
+static int
+cfunc_run_sync (lua_State *L)
+{
+    const char *cmd_line, *working_dir;
+    const char *input;
+    char *out = NULL, *err = NULL;
+    GET_DATA ();
+
+    parse_args (L, "_medit.run_sync", "szz", &cmd_line, &working_dir, &input);
+
+    _moo_edit_run_sync (cmd_line, working_dir, NULL,
+                        MOO_EDIT_WINDOW (data->window),
+                        MOO_IS_EDIT (data->doc) ? MOO_EDIT (data->doc) : NULL,
+                        input, NULL, &out, &err);
+
+    lua_pushstring (L, out ? out : "");
+    lua_pushstring (L, err ? err : "");
+    g_free (err);
+    g_free (out);
+    return 2;
+}
 
 static void
 add_medit_api (lua_State *L)
 {
     static const struct luaL_reg meditlib[] = {
         {"open", cfunc_open},
-        {"entry", zfunc_history_entry},
+        {"run_in_pane", cfunc_run_in_pane},
+        {"run_async", cfunc_run_async},
+        {"run_sync", cfunc_run_sync},
         {NULL, NULL}
     };
 
-    luaL_openlib (L, "medit", meditlib, 0);
+    luaL_openlib (L, "_medit", meditlib, 0);
 }

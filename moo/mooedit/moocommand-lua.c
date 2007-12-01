@@ -56,58 +56,57 @@ set_variable (const char   *name,
 #endif
 }
 
-static lua_State *
-setup_lua (void)
+static void
+add_path (lua_State *L)
 {
-    static lua_State *L;
+    char **dirs, **p;
+    GString *new_path;
+    const char *path;
 
-    if (!L)
+    lua_getglobal (L, "package"); /* push package */
+    if (!lua_istable (L, -1))
     {
-        L = lua_open ();
-        luaL_openlibs (L);
-        _moo_edit_lua_add_api (L);
+        lua_pop (L, 1);
+        g_critical ("%s: package variable missing or not a table", G_STRFUNC);
+        return;
     }
 
-    return L;
+    lua_getfield (L, -1, "path"); /* push package.path */
+    if (!lua_isstring (L, -1))
+    {
+        lua_pop (L, 2);
+        g_critical ("%s: package.path is missing or not a string", G_STRFUNC);
+        return;
+    }
+
+    path = lua_tostring (L, -1);
+    new_path = g_string_new ("./?.lua;");
+
+    dirs = moo_get_data_subdirs ("lua", MOO_DATA_SHARE, NULL);
+    for (p = dirs; p && *p; ++p)
+        g_string_append_printf (new_path, "%s/?.lua;", *p);
+
+    g_string_append (new_path, path);
+
+    lua_pushstring (L, new_path->str);
+    lua_setfield (L, -3, "path"); /* pops the string */
+    lua_pop (L, 2); /* pop package.path and package */
+
+    g_strfreev (dirs);
+    g_string_free (new_path, TRUE);
 }
 
-static void
-copy_globals (lua_State *L)
+static lua_State *
+create_lua (void)
 {
-    int func_idx, src_idx, tgt_idx;
+    lua_State *L;
 
-    func_idx = lua_gettop (L);
+    L = lua_open ();
+    luaL_openlibs (L);
+    _moo_edit_lua_add_api (L);
+    add_path (L);
 
-    lua_getfenv (L, -1);
-    if (lua_isnil (L, -1))
-    {
-        g_critical ("%s: should not happen?", G_STRFUNC);
-        lua_pop (L, 1);
-        lua_getglobal (L, "_G");
-        if (lua_isnil (L, -1))
-        {
-            lua_pop (L, 1);
-            g_critical ("%s: oops", G_STRFUNC);
-            return;
-        }
-    }
-
-    src_idx = lua_gettop (L);
-
-    lua_newtable (L);
-    tgt_idx = lua_gettop (L);
-
-    lua_pushnil (L);
-    while (lua_next (L, src_idx) != 0)
-    {
-        lua_pushvalue (L, -2);
-        lua_pushvalue (L, -2);
-        lua_settable (L, tgt_idx);
-        lua_pop (L, 1);
-    }
-
-    lua_setfenv (L, func_idx);
-    lua_pop (L, 1); /* pop the globals table */
+    return L;
 }
 
 static void
@@ -120,7 +119,7 @@ moo_command_lua_run (MooCommand        *cmd_base,
 
     g_return_if_fail (cmd->priv->code != NULL);
 
-    L = setup_lua ();
+    L = create_lua ();
     g_return_if_fail (L != NULL);
 
     moo_command_context_foreach (ctx, set_variable, L);
@@ -128,12 +127,11 @@ moo_command_lua_run (MooCommand        *cmd_base,
     if (luaL_loadstring (L, cmd->priv->code) != 0)
     {
         const char *msg = lua_tostring (L, -1);
-        g_critical ("%s: %s", G_STRFUNC, msg ? msg : "ERROR");
+        g_critical ("%s: %s", G_STRLOC, msg ? msg : "ERROR");
         lua_pop (L, 1);
         return;
     }
 
-    copy_globals (L);
     _moo_edit_lua_set_doc (L, moo_command_context_get_doc (ctx));
 
     if (moo_command_context_get_doc (ctx))
@@ -145,14 +143,14 @@ moo_command_lua_run (MooCommand        *cmd_base,
     if (lua_pcall (L, 0, 0, 0) != 0)
     {
         const char *msg = lua_tostring (L, -1);
-        g_critical ("%s: %s", G_STRFUNC, msg ? msg : "ERROR");
+        g_critical ("%s: %s", G_STRLOC, msg ? msg : "ERROR");
         lua_pop (L, 1);
     }
 
     if (buffer)
         gtk_text_buffer_end_user_action (buffer);
 
-    _moo_edit_lua_cleanup (L);
+    lua_close (L);
 }
 
 

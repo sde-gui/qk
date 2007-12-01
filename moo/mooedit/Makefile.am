@@ -2,6 +2,8 @@ SUBDIRS = gtksourceview plugins language-specs .
 
 mooedit_toolsdir = $(MOO_DATA_DIR)
 mooedit_tools_DATA = context.cfg menu.cfg filters.xml
+mooedit_luadir = $(MOO_DATA_DIR)/lua
+mooedit_lua_DATA = medit.lua
 
 moolangmgr-private.lo: moolangmgr.lo
 mootextview-private.lo: mootextview.lo
@@ -206,6 +208,7 @@ CLEANFILES += mooedit-ui.h medit-ui.h
 EXTRA_DIST +=				\
 	$(completion_sources)		\
 	$(mooedit_tools_DATA)		\
+	$(mooedit_lua_DATA)		\
 	medit-ui.xml			\
 	mooedit-ui.xml
 
