@@ -143,7 +143,7 @@ msgstr "Sitzungen"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:1
 msgid "Backspace key unindents"
-msgstr ""
+msgstr "Mit Rücktaste Einrückung entfernen"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:2
 msgid "Default language:"
@@ -172,7 +172,7 @@ msgstr "Intelligente Pos1- und Ende-Tasten"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
 msgid "Tab key indents"
-msgstr ""
+msgstr "Mit Tabtaste einrücken"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:9
 msgid "Use spaces to indent"
@@ -743,13 +743,13 @@ msgstr "Öffnen..."
 #. * as shown in the Configure Shortcuts dialog
 #: ../moo/mooedit/mooeditwindow.c:416
 msgid "Open Recent Files Dialog"
-msgstr ""
+msgstr "Dialog Zuletzt verwendete Dateien"
 
 #. label of the More... menu item in the Open Recent menu,
 #. * do not translate the part before |
 #: ../moo/mooedit/mooeditwindow.c:419
 msgid "Open Recent|_More..."
-msgstr ""
+msgstr "_Mehr..."
 
 #: ../moo/mooedit/mooeditwindow.c:425 ../moo/moofileview/moofileview.c:1274
 #: ../moo/moofileview/moofileview.c:1275
