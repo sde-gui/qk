@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-11-29 19:56-0600\n"
+"POT-Creation-Date: 2007-11-29 19:58-0600\n"
 "PO-Revision-Date: 2007-07-29 11:03-0600\n"
 "Last-Translator: Arnau Sanchez <arnau@ehas.org>\n"
 "MIME-Version: 1.0\n"
@@ -103,11 +103,11 @@ msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:2
 msgid "Dialogs"
-msgstr ""
+msgstr "Diálogos"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:3
 msgid "Enable session support"
-msgstr ""
+msgstr "Activa soporte de sesión"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:4
 msgid "Encoding for new files:"
@@ -127,7 +127,7 @@ msgstr "Hacer copia de seguridad"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
 msgid "Open dialog shows current document directory"
-msgstr ""
+msgstr "Diálogo de abrir muestra directorio del actual del documento"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:9
 msgid "Remove trailing spaces"
@@ -139,7 +139,7 @@ msgstr "Guardando"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
 msgid "Sessions"
-msgstr ""
+msgstr "Sesiones"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:1
 msgid "Backspace key indents"
@@ -240,7 +240,7 @@ msgstr "Resaltar pareja de llaves"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:11
 msgid "Highlight mismatching brackets"
-msgstr ""
+msgstr "Resalta llaves desparejadas"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
 msgid "Highlighting"
@@ -580,7 +580,7 @@ msgstr "Nuevo documento"
 
 #: ../moo/mooedit/moocommand-lua.c:289
 msgid "Lua script"
-msgstr ""
+msgstr "Script Lua"
 
 #: ../moo/mooedit/mooeditdialogs.c:170
 #, c-format
@@ -963,11 +963,11 @@ msgstr "%s [modificado]"
 
 #: ../moo/mooedit/mooeditwindow.c:1347
 msgid "Reopen Using Encoding"
-msgstr ""
+msgstr "Reabre usando codificación"
 
 #: ../moo/mooedit/mooeditwindow.c:1397
 msgid "_Encoding"
-msgstr ""
+msgstr "Codificación"
 
 #: ../moo/mooedit/mooeditwindow.c:1799 ../moo/moofileview/moofileview.c:1216
 #: ../moo/moofileview/moofileview.c:1217
@@ -978,21 +978,21 @@ msgstr "Marcas"
 #: ../moo/mooedit/mooeditwindow.c:3279
 #, c-format
 msgid "Line: %s Col: %s"
-msgstr ""
+msgstr "Línea: %s Col: %s"
 
 #: ../moo/mooedit/mooeditwindow.c:3280
 #, c-format
 msgid "Chars: %s"
-msgstr ""
+msgstr "Caracteres: %s"
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
 #: ../moo/mooedit/mooeditwindow.c:3320
 msgid "OVR"
-msgstr ""
+msgstr "SOB"
 
 #: ../moo/mooedit/mooeditwindow.c:3320
 msgid "INS"
-msgstr ""
+msgstr "INS"
 
 #: ../moo/mooedit/mooeditwindow.c:3445
 msgid "_Language"
@@ -1015,7 +1015,7 @@ msgstr "Nuevo comando"
 #. these are common source files encodings.
 #: ../moo/mooedit/mooeditfileops.c:244
 msgid "encodings_list"
-msgstr ""
+msgstr "encodings_list"
 
 #: ../moo/mooedit/mooeditfileops.c:1223
 #: ../moo/mooedit/plugins/moofileselector.c:538
@@ -1738,19 +1738,33 @@ msgstr "Siempre arriba"
 
 #: ../moo/mooutils/moohelp.c:193
 msgid "Help files not found"
-msgstr ""
+msgstr "No se encontraron archivos de ayuda"
 
 #: ../moo/mooutils/moohelp.c:205
 #, c-format
 msgid "File '%s' is missing in the directory '%s'"
-msgstr ""
+msgstr "Fatal el archivo '%s' en el directorio '%s'"
 
 #: ../moo/mooutils/moohelp.c:208
 msgid "Could not find help file"
-msgstr ""
+msgstr "No se encontró fichero de ayuda"
 
 #~ msgid "_Settings"
 #~ msgstr "_Opciones"
+
+#~ msgid "Item in the notebook popup menu|Encoding"
+#~ msgstr "Codificación"
+
+#~ msgid "Line: Col: "
+#~ msgstr "Línea: Col: "
+
+#~ msgid "Chars: "
+#~ msgstr "Caracteres: "
+
+#~ msgid "Could not find help files, most likely it means broken installation"
+#~ msgstr ""
+#~ "No se encontraron archivos de ayuda, lo que probablemente significa una "
+#~ "instalación rota"
 
 #~ msgid "MooScript"
 #~ msgstr "Mooscript"
