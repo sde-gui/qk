@@ -413,7 +413,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
     moo_window_class_new_action (window_class, "OpenRecentDialog", NULL,
                                  /* name of the More... menu item from the Open Recent menu,
                                   * as shown in the Configure Shortcuts dialog */
-                                 "display-name", _("Open Recent Files Chooser"),
+                                 "display-name", _("Open Recent Files Dialog"),
                                  /* label of the More... menu item in the Open Recent menu,
                                   * do not translate the part before | */
                                  "label", Q_("Open Recent|_More..."),
