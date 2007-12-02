@@ -1364,14 +1364,6 @@ moo_text_view_unindent (MooTextView *view)
 }
 
 
-static void
-move_focus (GtkWidget       *widget,
-            GtkDirectionType direction)
-{
-    GtkWidget *toplevel = gtk_widget_get_toplevel (widget);
-    g_signal_emit_by_name (toplevel, "move-focus", direction);
-}
-
 static gboolean
 handle_tab (MooTextView *view,
             GdkEventKey *event)
