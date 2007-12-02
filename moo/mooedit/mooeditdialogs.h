@@ -15,15 +15,9 @@
 
 #include "mooedit/mooedit.h"
 #include "mooutils/moofiltermgr.h"
+#include "mooutils/moodialogs.h"
 
 G_BEGIN_DECLS
-
-
-typedef enum {
-    MOO_EDIT_RESPONSE_CANCEL,
-    MOO_EDIT_RESPONSE_SAVE,
-    MOO_EDIT_RESPONSE_DONT_SAVE
-} MooEditDialogResponse;
 
 
 MooEditFileInfo *_moo_edit_save_as_dialog           (MooEdit        *edit,
@@ -33,8 +27,10 @@ GSList          *_moo_edit_open_dialog              (GtkWidget      *widget,
                                                      MooFilterMgr   *mgr,
                                                      MooEdit        *current_doc);
 
-MooEditDialogResponse _moo_edit_save_changes_dialog (MooEdit        *edit);
-MooEditDialogResponse _moo_edit_save_multiple_changes_dialog (GSList *docs,
+MooSaveChangesDialogResponse
+                 _moo_edit_save_changes_dialog      (MooEdit        *edit);
+MooSaveChangesDialogResponse
+                 _moo_edit_save_multiple_changes_dialog (GSList     *docs,
                                                      GSList        **to_save);
 
 gboolean         _moo_edit_reload_modified_dialog   (MooEdit        *edit);

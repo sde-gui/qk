@@ -14,6 +14,7 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooi18n.h"
 
 
 static GtkWidget *
@@ -320,6 +321,63 @@ moo_overwrite_file_dialog (GtkWidget  *parent,
     gtk_widget_destroy (dialog);
 
     return response == GTK_RESPONSE_YES;
+}
+
+
+MooSaveChangesDialogResponse
+moo_save_changes_dialog (const char *display_name,
+                         GtkWidget  *parent)
+{
+    GtkDialog *dialog = NULL;
+    int response;
+
+    if (parent)
+        parent = gtk_widget_get_toplevel (parent);
+
+    dialog = GTK_DIALOG (gtk_message_dialog_new (
+        parent ? GTK_WINDOW (parent) : NULL,
+        GTK_DIALOG_MODAL,
+        GTK_MESSAGE_WARNING,
+        GTK_BUTTONS_NONE,
+        display_name ?
+            _("Save changes to document \"%s\" before closing?") :
+            _("Save changes to the document before closing?"),
+        display_name));
+
+    gtk_message_dialog_format_secondary_text (
+        GTK_MESSAGE_DIALOG (dialog),
+        _("If you don't save, changes will be discarded"));
+
+    gtk_dialog_add_buttons (dialog,
+        GTK_STOCK_DISCARD, GTK_RESPONSE_NO,
+        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+        GTK_STOCK_SAVE, GTK_RESPONSE_YES,
+        NULL);
+
+    gtk_dialog_set_alternative_button_order (dialog,
+        GTK_RESPONSE_YES, GTK_RESPONSE_NO, GTK_RESPONSE_CANCEL, -1);
+
+    gtk_dialog_set_default_response (dialog, GTK_RESPONSE_YES);
+
+    if (parent)
+        moo_window_set_parent (GTK_WIDGET (dialog), parent);
+
+    response = gtk_dialog_run (dialog);
+    if (response == GTK_RESPONSE_DELETE_EVENT)
+        response = GTK_RESPONSE_CANCEL;
+    gtk_widget_destroy (GTK_WIDGET (dialog));
+
+    switch (response)
+    {
+        case GTK_RESPONSE_NO:
+            return MOO_SAVE_CHANGES_RESPONSE_DONT_SAVE;
+        case GTK_RESPONSE_CANCEL:
+            return MOO_SAVE_CHANGES_RESPONSE_CANCEL;
+        case GTK_RESPONSE_YES:
+            return MOO_SAVE_CHANGES_RESPONSE_SAVE;
+    }
+
+    g_return_val_if_reached (MOO_SAVE_CHANGES_RESPONSE_CANCEL);
 }
 
 

@@ -151,58 +151,12 @@ _moo_edit_save_as_dialog (MooEdit        *edit,
 }
 
 
-MooEditDialogResponse
+MooSaveChangesDialogResponse
 _moo_edit_save_changes_dialog (MooEdit *edit)
 {
-    GtkDialog *dialog = NULL;
-    int response;
-    const char *name;
-
-    g_return_val_if_fail (MOO_IS_EDIT (edit), MOO_EDIT_RESPONSE_CANCEL);
-    name = moo_edit_get_display_basename (edit);
-
-    dialog = GTK_DIALOG (gtk_message_dialog_new (
-        GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
-        GTK_DIALOG_MODAL,
-        GTK_MESSAGE_WARNING,
-        GTK_BUTTONS_NONE,
-        name ?
-            _("Save changes to document \"%s\" before closing?") :
-            _("Save changes to the document before closing?"),
-        name));
-
-    gtk_message_dialog_format_secondary_text (
-        GTK_MESSAGE_DIALOG (dialog),
-        _("If you don't save, changes will be discarded"));
-
-    gtk_dialog_add_buttons (dialog,
-        GTK_STOCK_DISCARD, GTK_RESPONSE_NO,
-        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-        GTK_STOCK_SAVE, GTK_RESPONSE_YES,
-        NULL);
-
-    gtk_dialog_set_alternative_button_order (dialog,
-        GTK_RESPONSE_YES, GTK_RESPONSE_NO, GTK_RESPONSE_CANCEL, -1);
-
-    gtk_dialog_set_default_response (dialog, GTK_RESPONSE_YES);
-
-    moo_window_set_parent (GTK_WIDGET (dialog), GTK_WIDGET (edit));
-    response = gtk_dialog_run (dialog);
-    if (response == GTK_RESPONSE_DELETE_EVENT)
-        response = GTK_RESPONSE_CANCEL;
-    gtk_widget_destroy (GTK_WIDGET (dialog));
-
-    switch (response)
-    {
-        case GTK_RESPONSE_NO:
-            return MOO_EDIT_RESPONSE_DONT_SAVE;
-        case GTK_RESPONSE_CANCEL:
-            return MOO_EDIT_RESPONSE_CANCEL;
-        case GTK_RESPONSE_YES:
-            return MOO_EDIT_RESPONSE_SAVE;
-    }
-
-    g_return_val_if_reached (MOO_EDIT_RESPONSE_CANCEL);
+    g_return_val_if_fail (MOO_IS_EDIT (edit), MOO_SAVE_CHANGES_RESPONSE_CANCEL);
+    return moo_save_changes_dialog (moo_edit_get_display_basename (edit),
+                                    GTK_WIDGET (edit));
 }
 
 
@@ -364,7 +318,7 @@ files_treeview_get_to_save (GtkWidget *treeview)
 }
 
 
-MooEditDialogResponse
+MooSaveChangesDialogResponse
 _moo_edit_save_multiple_changes_dialog (GSList  *docs,
                                         GSList **to_save)
 {
@@ -372,15 +326,15 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
     GtkWidget *dialog, *label, *treeview;
     char *msg, *question;
     int response;
-    MooEditDialogResponse retval;
+    MooSaveChangesDialogResponse retval;
     MooGladeXML *xml;
 
-    g_return_val_if_fail (docs != NULL, MOO_EDIT_RESPONSE_CANCEL);
-    g_return_val_if_fail (docs->next != NULL, MOO_EDIT_RESPONSE_CANCEL);
-    g_return_val_if_fail (to_save != NULL, MOO_EDIT_RESPONSE_CANCEL);
+    g_return_val_if_fail (docs != NULL, MOO_SAVE_CHANGES_RESPONSE_CANCEL);
+    g_return_val_if_fail (docs->next != NULL, MOO_SAVE_CHANGES_RESPONSE_CANCEL);
+    g_return_val_if_fail (to_save != NULL, MOO_SAVE_CHANGES_RESPONSE_CANCEL);
 
     for (l = docs; l != NULL; l = l->next)
-        g_return_val_if_fail (MOO_IS_EDIT (l->data), MOO_EDIT_RESPONSE_CANCEL);
+        g_return_val_if_fail (MOO_IS_EDIT (l->data), MOO_SAVE_CHANGES_RESPONSE_CANCEL);
 
     xml = moo_glade_xml_new_from_buf (mooeditsavemult_glade_xml, -1,
                                       "dialog", GETTEXT_PACKAGE, NULL);
@@ -423,14 +377,14 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
     switch (response)
     {
         case GTK_RESPONSE_NO:
-            retval = MOO_EDIT_RESPONSE_DONT_SAVE;
+            retval = MOO_SAVE_CHANGES_RESPONSE_DONT_SAVE;
             break;
         case GTK_RESPONSE_YES:
             *to_save = files_treeview_get_to_save (treeview);
-            retval = MOO_EDIT_RESPONSE_SAVE;
+            retval = MOO_SAVE_CHANGES_RESPONSE_SAVE;
             break;
         default:
-            retval = MOO_EDIT_RESPONSE_CANCEL;
+            retval = MOO_SAVE_CHANGES_RESPONSE_CANCEL;
     }
 
     g_free (question);

@@ -1441,7 +1441,7 @@ close_window_handler (MooEditor     *editor,
                       gboolean       ask_confirm)
 {
     WindowInfo *info;
-    MooEditDialogResponse response;
+    MooSaveChangesDialogResponse response;
     GSList *modified;
     gboolean do_close = FALSE;
     MooEdit *busy = NULL;
@@ -1475,12 +1475,12 @@ close_window_handler (MooEditor     *editor,
 
         switch (response)
         {
-            case MOO_EDIT_RESPONSE_SAVE:
+            case MOO_SAVE_CHANGES_RESPONSE_SAVE:
                 if (_moo_editor_save (editor, modified->data, NULL))
                     do_close = TRUE;
                 break;
 
-            case MOO_EDIT_RESPONSE_CANCEL:
+            case MOO_SAVE_CHANGES_RESPONSE_CANCEL:
                 break;
 
             default:
@@ -1497,7 +1497,7 @@ close_window_handler (MooEditor     *editor,
 
         switch (response)
         {
-            case MOO_EDIT_RESPONSE_SAVE:
+            case MOO_SAVE_CHANGES_RESPONSE_SAVE:
                 for (l = to_save; l != NULL; l = l->next)
                     if (!_moo_editor_save (editor, l->data, NULL))
                     {
@@ -1511,7 +1511,7 @@ close_window_handler (MooEditor     *editor,
                 g_slist_free (to_save);
                 break;
 
-            case MOO_EDIT_RESPONSE_CANCEL:
+            case MOO_SAVE_CHANGES_RESPONSE_CANCEL:
                 break;
 
             default:
@@ -1664,7 +1664,7 @@ close_docs_real (MooEditor      *editor,
                  GSList         *docs,
                  gboolean        ask_confirm)
 {
-    MooEditDialogResponse response;
+    MooSaveChangesDialogResponse response;
     GSList *modified, *l;
     gboolean do_close = FALSE;
 
@@ -1686,12 +1686,12 @@ close_docs_real (MooEditor      *editor,
 
         switch (response)
         {
-            case MOO_EDIT_RESPONSE_SAVE:
+            case MOO_SAVE_CHANGES_RESPONSE_SAVE:
                 if (_moo_editor_save (editor, modified->data, NULL))
                     do_close = TRUE;
                 break;
 
-            case MOO_EDIT_RESPONSE_CANCEL:
+            case MOO_SAVE_CHANGES_RESPONSE_CANCEL:
                 break;
 
             default:
@@ -1708,7 +1708,7 @@ close_docs_real (MooEditor      *editor,
 
         switch (response)
         {
-            case MOO_EDIT_RESPONSE_SAVE:
+            case MOO_SAVE_CHANGES_RESPONSE_SAVE:
                 for (l = to_save; l != NULL; l = l->next)
                     if (!_moo_editor_save (editor, l->data, NULL))
                 {
@@ -1722,7 +1722,7 @@ close_docs_real (MooEditor      *editor,
                 g_slist_free (to_save);
                 break;
 
-            case MOO_EDIT_RESPONSE_CANCEL:
+            case MOO_SAVE_CHANGES_RESPONSE_CANCEL:
                 break;
 
             default:

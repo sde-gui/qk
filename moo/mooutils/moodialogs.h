@@ -19,6 +19,13 @@
 G_BEGIN_DECLS
 
 
+typedef enum {
+    MOO_SAVE_CHANGES_RESPONSE_CANCEL,
+    MOO_SAVE_CHANGES_RESPONSE_SAVE,
+    MOO_SAVE_CHANGES_RESPONSE_DONT_SAVE
+} MooSaveChangesDialogResponse;
+
+
 const char *moo_font_dialog                 (GtkWidget  *parent,
                                              const char *title,
                                              const char *start_font,
@@ -27,6 +34,9 @@ const char *moo_font_dialog                 (GtkWidget  *parent,
 gboolean    moo_overwrite_file_dialog       (GtkWidget  *parent,
                                              const char *display_name,
                                              const char *display_dirname);
+MooSaveChangesDialogResponse
+            moo_save_changes_dialog         (const char *display_name,
+                                             GtkWidget  *parent);
 
 void        moo_position_window_at_pointer  (GtkWidget  *window,
                                              GtkWidget  *parent);
