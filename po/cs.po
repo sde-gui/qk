@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-11-29 19:56-0600\n"
+"POT-Creation-Date: 2007-12-02 12:11-0600\n"
 "PO-Revision-Date: 2007-11-10 22:45+0100\n"
 "Last-Translator: Vlastimil Ott <vlastimil@e-ott.info>\n"
 "Language-Team:  <cs@li.org>\n"
@@ -145,8 +145,8 @@ msgid "Sessions"
 msgstr "Sezení"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:1
-msgid "Backspace key indents"
-msgstr "Klávesa Backspace odsazuje"
+msgid "Backspace key unindents"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:2
 msgid "Default language:"
@@ -174,6 +174,10 @@ msgid "Smart Home and End"
 msgstr "Chytré Home a End"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
+msgid "Tab key indents"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:9
 msgid "Use spaces to indent"
 msgstr "Odsazovat mezerami"
 
@@ -402,7 +406,7 @@ msgid "lines"
 msgstr "řádky"
 
 #: ../moo/mooedit/glade/mooprintpreview.glade.h:1
-#: ../moo/mooedit/mooeditwindow.c:811 ../moo/mooedit/mooeditwindow.c:812
+#: ../moo/mooedit/mooeditwindow.c:832 ../moo/mooedit/mooeditwindow.c:833
 msgid "Print..."
 msgstr "Tisk..."
 
@@ -420,7 +424,7 @@ msgid "Find"
 msgstr "Najít"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:4
-#: ../moo/mooedit/mooeditwindow.c:568
+#: ../moo/mooedit/mooeditwindow.c:589
 msgid "Find _Next"
 msgstr "Najít další"
 
@@ -481,7 +485,7 @@ msgid "_Replace"
 msgstr "_Nahradit"
 
 #: ../moo/mooedit/glade/mootextgotoline.glade.h:1
-#: ../moo/mooedit/mooeditwindow.c:618
+#: ../moo/mooedit/mooeditwindow.c:639
 msgid "Go to Line"
 msgstr "Přejít na řádek"
 
@@ -526,81 +530,68 @@ msgstr "_Zobrazit"
 msgid "_Window"
 msgstr "_Okna"
 
-#: ../moo/mooedit/mooeditor.c:633
+#: ../moo/mooedit/mooeditor.c:642
 msgid "Open new editor window"
 msgstr "Otevřít nové okno editoru"
 
-#: ../moo/mooedit/mooeditor.c:975
+#: ../moo/mooedit/mooeditor.c:1002 ../moo/mooedit/mooeditwindow.c:1429
 msgid "Open Recent"
 msgstr "Otevřít nedávný"
 
-#: ../moo/mooedit/moocommand-unx.c:571
+#: ../moo/mooedit/moocommand-unx.c:716
 msgid "Shell command"
 msgstr "Příkaz shellu"
 
 #. Translators: "None" means no output filter for a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-unx.c:733
+#: ../moo/mooedit/moocommand-unx.c:878
 msgid "Filter|None"
 msgstr "Filter|Žádný"
 
 #. Translators: these are kinds of input for a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-unx.c:812
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Input|None"
 msgstr "Input|Žádný"
 
-#: ../moo/mooedit/moocommand-unx.c:812
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Input|Selected lines"
 msgstr "Input|Vybrané řádky"
 
-#: ../moo/mooedit/moocommand-unx.c:812
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Input|Selection"
 msgstr "Input|Výběr"
 
-#: ../moo/mooedit/moocommand-unx.c:812
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Input|Whole document"
 msgstr "Input|Celý dokument"
 
 #. Translators: these are actions for output of a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-unx.c:814
+#: ../moo/mooedit/moocommand-unx.c:959
 msgid "Output|None"
 msgstr "Output|Žádný"
 
-#: ../moo/mooedit/moocommand-unx.c:814
+#: ../moo/mooedit/moocommand-unx.c:959
 msgid "Output|None, asynchronous"
 msgstr "Output|Žádný, asynchronní"
 
-#: ../moo/mooedit/moocommand-unx.c:814
+#: ../moo/mooedit/moocommand-unx.c:959
 msgid "Output|Output pane"
 msgstr "Output|Výstupní panel"
 
-#: ../moo/mooedit/moocommand-unx.c:814
+#: ../moo/mooedit/moocommand-unx.c:959
 msgid "Output|Insert into the document"
 msgstr "Output|Vložit do dokumentu"
 
-#: ../moo/mooedit/moocommand-unx.c:814
+#: ../moo/mooedit/moocommand-unx.c:959
 msgid "Output|New document"
 msgstr "Output|Nový dokument"
 
-#: ../moo/mooedit/moocommand-lua.c:289
+#: ../moo/mooedit/moocommand-lua.c:287
 msgid "Lua script"
 msgstr "Skript Lua"
 
-#: ../moo/mooedit/mooeditdialogs.c:170
-#, c-format
-msgid "Save changes to document \"%s\" before closing?"
-msgstr "Uložit změny v dokumentu \"%s\" před jeho uzavřením?"
-
-#: ../moo/mooedit/mooeditdialogs.c:171
-msgid "Save changes to the document before closing?"
-msgstr "Uložit změny v dokumentu před jeho uzavřením?"
-
-#: ../moo/mooedit/mooeditdialogs.c:176
-msgid "If you don't save, changes will be discarded"
-msgstr "Pokud jej neuložíte, změny budou ztraceny"
-
 #. Translators: number of documents here is always greater than one, so
 #. ignore singular form (which is simply copy of the plural here)
-#: ../moo/mooedit/mooeditdialogs.c:408
+#: ../moo/mooedit/mooeditdialogs.c:362
 #, c-format
 msgid ""
 "There are %u documents with unsaved changes. Save changes before closing?"
@@ -610,7 +601,7 @@ msgstr[0] "%u neuložené dokumenty. Uložit změny před jejich uzavřením?"
 msgstr[1] "%u neuložených dokumentů. Uložit změny před jejich uzavřením?"
 
 #. Could not save file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:464
+#: ../moo/mooedit/mooeditdialogs.c:418
 #, c-format
 msgid ""
 "Could not save file\n"
@@ -619,12 +610,12 @@ msgstr ""
 "Soubor nelze uložit\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:466
+#: ../moo/mooedit/mooeditdialogs.c:420
 msgid "Could not save file"
 msgstr "Soubor nelze uložit"
 
 #. Error saving file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:492
+#: ../moo/mooedit/mooeditdialogs.c:446
 #, c-format
 msgid ""
 "Error saving file\n"
@@ -633,11 +624,11 @@ msgstr ""
 "Chyba při ukládání souboru\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:494
+#: ../moo/mooedit/mooeditdialogs.c:448
 msgid "Error saving file"
 msgstr "Chyba při ukládání souboru"
 
-#: ../moo/mooedit/mooeditdialogs.c:496
+#: ../moo/mooedit/mooeditdialogs.c:450
 #, c-format
 msgid ""
 "Could not convert file to requested character encoding %s. File was saved in "
@@ -647,7 +638,7 @@ msgstr ""
 "kódování UTF-8."
 
 #. Could not open file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:526
+#: ../moo/mooedit/mooeditdialogs.c:480
 #, c-format
 msgid ""
 "Could not open file\n"
@@ -656,11 +647,11 @@ msgstr ""
 "Nelze otevřít soubor\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:528
+#: ../moo/mooedit/mooeditdialogs.c:482
 msgid "Could not open file"
 msgstr "Soubor nelze otevřít"
 
-#: ../moo/mooedit/mooeditdialogs.c:534
+#: ../moo/mooedit/mooeditdialogs.c:488
 #, c-format
 msgid ""
 "Could not open file using character encoding %s. The file may be binary or "
@@ -669,7 +660,7 @@ msgstr ""
 "Soubor nelze otevřít v kódování %s. Je možná binární nebo je nesprávně "
 "zadané kódování."
 
-#: ../moo/mooedit/mooeditdialogs.c:538
+#: ../moo/mooedit/mooeditdialogs.c:492
 #, c-format
 msgid ""
 "Could not detect file character encoding. Please make sure the file is not "
@@ -679,7 +670,7 @@ msgstr ""
 "zkuste vybrat kódování v dialogu Otevřít."
 
 #. Could not reload file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:573
+#: ../moo/mooedit/mooeditdialogs.c:527
 #, c-format
 msgid ""
 "Could not reload file\n"
@@ -688,25 +679,25 @@ msgstr ""
 "Nelze znovu načíst soubor\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:633
+#: ../moo/mooedit/mooeditdialogs.c:587
 #, c-format
 msgid "Discard changes in file '%s'?"
 msgstr "Zahodit změny v souboru '%s'?"
 
-#: ../moo/mooedit/mooeditdialogs.c:635
+#: ../moo/mooedit/mooeditdialogs.c:589
 msgid "If you reload the document, changes will be discarded"
 msgstr "Pokud dokument znovu načtete, přijdete o všechny změny"
 
-#: ../moo/mooedit/mooeditdialogs.c:636 ../moo/mooedit/mooeditwindow.c:405
+#: ../moo/mooedit/mooeditdialogs.c:590 ../moo/mooedit/mooeditwindow.c:426
 msgid "_Reload"
 msgstr "Z_novu načíst"
 
-#: ../moo/mooedit/mooeditdialogs.c:657
+#: ../moo/mooedit/mooeditdialogs.c:611
 #, c-format
 msgid "Overwrite modified file '%s'?"
 msgstr "Přepsat změněný soubor '%s'?"
 
-#: ../moo/mooedit/mooeditdialogs.c:658
+#: ../moo/mooedit/mooeditdialogs.c:612
 #, c-format
 msgid ""
 "File '%s' was modified on disk by another process. If you save it, changes "
@@ -715,11 +706,11 @@ msgstr ""
 "Soubor '%s' byl na disku změněn jiným programem. Pokud jej uložíte, změny na "
 "disku se přepíší."
 
-#: ../moo/mooedit/mooeditdialogs.c:660
+#: ../moo/mooedit/mooeditdialogs.c:614
 msgid "Over_write"
 msgstr "Přep_sat"
 
-#: ../moo/mooedit/mooeditdialogs.c:681
+#: ../moo/mooedit/mooeditdialogs.c:635
 msgid ""
 "Beginning of document reached.\n"
 "Continue from the end?"
@@ -727,7 +718,7 @@ msgstr ""
 "Dosaženo začátku dokumentu.\n"
 "Pokračovat od jeho konce?"
 
-#: ../moo/mooedit/mooeditdialogs.c:684
+#: ../moo/mooedit/mooeditdialogs.c:638
 msgid ""
 "End of document reached.\n"
 "Continue from the beginning?"
@@ -735,264 +726,276 @@ msgstr ""
 "Dosaženo konce dokumentu.\n"
 "Pokračovat od jeho začátku?"
 
-#: ../moo/mooedit/mooeditwindow.c:388
+#: ../moo/mooedit/mooeditwindow.c:393
 msgid "Create new document"
 msgstr "Vytvořit nový dokument"
 
-#: ../moo/mooedit/mooeditwindow.c:396
+#: ../moo/mooedit/mooeditwindow.c:401
 msgid "_Open..."
 msgstr "_Otevřít"
 
-#: ../moo/mooedit/mooeditwindow.c:397
+#: ../moo/mooedit/mooeditwindow.c:402
 msgid "Open..."
 msgstr "Otevřít..."
 
-#: ../moo/mooedit/mooeditwindow.c:404 ../moo/moofileview/moofileview.c:1274
+#. name of the More... menu item from the Open Recent menu,
+#. * as shown in the Configure Shortcuts dialog
+#: ../moo/mooedit/mooeditwindow.c:416
+msgid "Open Recent Files Dialog"
+msgstr ""
+
+#. label of the More... menu item in the Open Recent menu,
+#. * do not translate the part before |
+#: ../moo/mooedit/mooeditwindow.c:419
+msgid "Open Recent|_More..."
+msgstr ""
+
+#: ../moo/mooedit/mooeditwindow.c:425 ../moo/moofileview/moofileview.c:1274
 #: ../moo/moofileview/moofileview.c:1275
 msgid "Reload"
 msgstr "Znovu načíst"
 
-#: ../moo/mooedit/mooeditwindow.c:406
+#: ../moo/mooedit/mooeditwindow.c:427
 msgid "Reload document"
 msgstr "Znovu načíst dokument"
 
-#: ../moo/mooedit/mooeditwindow.c:433
+#: ../moo/mooedit/mooeditwindow.c:454
 msgid "Save _As..."
 msgstr "Uložit j_ako..."
 
-#: ../moo/mooedit/mooeditwindow.c:434
+#: ../moo/mooedit/mooeditwindow.c:455
 msgid "Save as..."
 msgstr "Uložit jako..."
 
-#: ../moo/mooedit/mooeditwindow.c:444
+#: ../moo/mooedit/mooeditwindow.c:465
 msgid "Close document"
 msgstr "Zavřít dokument"
 
-#: ../moo/mooedit/mooeditwindow.c:452
+#: ../moo/mooedit/mooeditwindow.c:473
 msgid "Close All"
 msgstr "Zavřít vše"
 
-#: ../moo/mooedit/mooeditwindow.c:453
+#: ../moo/mooedit/mooeditwindow.c:474
 msgid "Close _All"
 msgstr "Zavřít _vše"
 
-#: ../moo/mooedit/mooeditwindow.c:454
+#: ../moo/mooedit/mooeditwindow.c:475
 msgid "Close all documents"
 msgstr "Zavřít všechny dokumenty"
 
-#: ../moo/mooedit/mooeditwindow.c:536
+#: ../moo/mooedit/mooeditwindow.c:557
 msgid "Previous Tab"
 msgstr "Předchozí karta"
 
-#: ../moo/mooedit/mooeditwindow.c:537
+#: ../moo/mooedit/mooeditwindow.c:558
 msgid "_Previous Tab"
 msgstr "_Předchozí karta"
 
-#: ../moo/mooedit/mooeditwindow.c:538
+#: ../moo/mooedit/mooeditwindow.c:559
 msgid "Previous tab"
 msgstr "Předchozí karta"
 
-#: ../moo/mooedit/mooeditwindow.c:546
+#: ../moo/mooedit/mooeditwindow.c:567
 msgid "Next Tab"
 msgstr "Další karta"
 
-#: ../moo/mooedit/mooeditwindow.c:547
+#: ../moo/mooedit/mooeditwindow.c:568
 msgid "_Next Tab"
 msgstr "_Další karta"
 
-#: ../moo/mooedit/mooeditwindow.c:548
+#: ../moo/mooedit/mooeditwindow.c:569
 msgid "Next tab"
 msgstr "Další karta"
 
-#: ../moo/mooedit/mooeditwindow.c:567
+#: ../moo/mooedit/mooeditwindow.c:588
 msgid "Find Next"
 msgstr "Najít další"
 
-#: ../moo/mooedit/mooeditwindow.c:569
+#: ../moo/mooedit/mooeditwindow.c:590
 msgid "Find next"
 msgstr "Najít další"
 
-#: ../moo/mooedit/mooeditwindow.c:578
+#: ../moo/mooedit/mooeditwindow.c:599
 msgid "Find Previous"
 msgstr "Najít předchozí"
 
-#: ../moo/mooedit/mooeditwindow.c:579
+#: ../moo/mooedit/mooeditwindow.c:600
 msgid "Find _Previous"
 msgstr "Najít _předchozí"
 
-#: ../moo/mooedit/mooeditwindow.c:580
+#: ../moo/mooedit/mooeditwindow.c:601
 msgid "Find previous"
 msgstr "Najít předchozí"
 
-#: ../moo/mooedit/mooeditwindow.c:600
+#: ../moo/mooedit/mooeditwindow.c:621
 msgid "Find Current Word"
 msgstr "Najít aktuální slovo"
 
-#: ../moo/mooedit/mooeditwindow.c:601
+#: ../moo/mooedit/mooeditwindow.c:622
 msgid "Find Current _Word"
 msgstr "Najít aktuální s_lovo"
 
-#: ../moo/mooedit/mooeditwindow.c:609
+#: ../moo/mooedit/mooeditwindow.c:630
 msgid "Find Current Word Backwards"
 msgstr "Najít aktuální slovo zpětně"
 
-#: ../moo/mooedit/mooeditwindow.c:610
+#: ../moo/mooedit/mooeditwindow.c:631
 msgid "Find Current Word _Backwards"
 msgstr "Najít aktuální slovo z_pětně"
 
-#: ../moo/mooedit/mooeditwindow.c:619
+#: ../moo/mooedit/mooeditwindow.c:640
 msgid "_Go to Line..."
 msgstr "Přejít na řáde_k..."
 
-#: ../moo/mooedit/mooeditwindow.c:620
+#: ../moo/mooedit/mooeditwindow.c:641
 msgid "Go to line..."
 msgstr "Přejít na řádek..."
 
-#: ../moo/mooedit/mooeditwindow.c:629
+#: ../moo/mooedit/mooeditwindow.c:650
 msgid "Toggle Text Wrapping"
 msgstr "Přepnout zalamování textu"
 
-#: ../moo/mooedit/mooeditwindow.c:630
+#: ../moo/mooedit/mooeditwindow.c:651
 msgid "_Wrap Text"
 msgstr "_Zalamovat text"
 
-#: ../moo/mooedit/mooeditwindow.c:637
+#: ../moo/mooedit/mooeditwindow.c:658
 msgid "Toggle Line Numbers Display"
 msgstr "Přepnout zobrazení čísel řádků"
 
-#: ../moo/mooedit/mooeditwindow.c:638
+#: ../moo/mooedit/mooeditwindow.c:659
 msgid "_Show Line Numbers"
 msgstr "Zobrazit čís_la řádků"
 
-#: ../moo/mooedit/mooeditwindow.c:644
+#: ../moo/mooedit/mooeditwindow.c:665
 msgid "Focus Document"
 msgstr "Zaměřit dokument"
 
-#: ../moo/mooedit/mooeditwindow.c:645
+#: ../moo/mooedit/mooeditwindow.c:666
 msgid "_Focus Document"
 msgstr "Zaměři_t dokument"
 
-#: ../moo/mooedit/mooeditwindow.c:696 ../moo/mooedit/mooeditwindow.c:697
+#: ../moo/mooedit/mooeditwindow.c:717 ../moo/mooedit/mooeditwindow.c:718
 msgid "Toggle Bookmark"
 msgstr "Přepnout záložku"
 
-#: ../moo/mooedit/mooeditwindow.c:705 ../moo/mooedit/mooeditwindow.c:706
+#: ../moo/mooedit/mooeditwindow.c:726 ../moo/mooedit/mooeditwindow.c:727
 msgid "Next Bookmark"
 msgstr "Další záložka"
 
-#: ../moo/mooedit/mooeditwindow.c:714 ../moo/mooedit/mooeditwindow.c:715
+#: ../moo/mooedit/mooeditwindow.c:735 ../moo/mooedit/mooeditwindow.c:736
 msgid "Previous Bookmark"
 msgstr "Předchozí záložka"
 
 #. action
-#: ../moo/mooedit/mooeditwindow.c:745 ../moo/mooedit/mooeditwindow.c:746
-#: ../moo/mooedit/mooeditwindow.c:747
+#: ../moo/mooedit/mooeditwindow.c:766 ../moo/mooedit/mooeditwindow.c:767
+#: ../moo/mooedit/mooeditwindow.c:768
 msgid "Comment"
 msgstr "Zakomentovat"
 
 #. action
-#: ../moo/mooedit/mooeditwindow.c:755 ../moo/mooedit/mooeditwindow.c:756
-#: ../moo/mooedit/mooeditwindow.c:757
+#: ../moo/mooedit/mooeditwindow.c:776 ../moo/mooedit/mooeditwindow.c:777
+#: ../moo/mooedit/mooeditwindow.c:778
 msgid "Uncomment"
 msgstr "Odkomentovat"
 
 #. Insensitive menu item which appears in Window menu with no documents open
-#: ../moo/mooedit/mooeditwindow.c:785
+#: ../moo/mooedit/mooeditwindow.c:806
 msgid "No Documents"
 msgstr "Žádné dokumenty"
 
-#: ../moo/mooedit/mooeditwindow.c:793
+#: ../moo/mooedit/mooeditwindow.c:814
 msgid "Page Setup"
 msgstr "Nastavení strany"
 
-#: ../moo/mooedit/mooeditwindow.c:794 ../moo/mooedit/mooeditwindow.c:795
+#: ../moo/mooedit/mooeditwindow.c:815 ../moo/mooedit/mooeditwindow.c:816
 msgid "Page Setup..."
 msgstr "_Nastavení strany..."
 
-#: ../moo/mooedit/mooeditwindow.c:820 ../moo/mooedit/mooeditwindow.c:1885
+#: ../moo/mooedit/mooeditwindow.c:841 ../moo/mooedit/mooeditwindow.c:2022
 msgid "Export as PDF"
 msgstr "Exportovat do PDF"
 
-#: ../moo/mooedit/mooeditwindow.c:821 ../moo/mooedit/mooeditwindow.c:822
+#: ../moo/mooedit/mooeditwindow.c:842 ../moo/mooedit/mooeditwindow.c:843
 msgid "Export as PDF..."
 msgstr "Exportovat do PDF..."
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [new file]"
-#: ../moo/mooedit/mooeditwindow.c:1083
+#: ../moo/mooedit/mooeditwindow.c:1104
 #, c-format
 msgid "%s [new file]"
 msgstr "%s [nový soubor]"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified on disk]"
-#: ../moo/mooedit/mooeditwindow.c:1086
+#: ../moo/mooedit/mooeditwindow.c:1107
 #, c-format
 msgid "%s [modified on disk]"
 msgstr "%s [změněn na disku]"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [deleted]"
-#: ../moo/mooedit/mooeditwindow.c:1089
+#: ../moo/mooedit/mooeditwindow.c:1110
 #, c-format
 msgid "%s [deleted]"
 msgstr "%s [smazán]"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [new file] [modified]"
-#: ../moo/mooedit/mooeditwindow.c:1097
+#: ../moo/mooedit/mooeditwindow.c:1118
 #, c-format
 msgid "%s [new file] [modified]"
 msgstr "%s [nový soubor][změněn]"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified on disk] [modified]"
-#: ../moo/mooedit/mooeditwindow.c:1100
+#: ../moo/mooedit/mooeditwindow.c:1121
 #, c-format
 msgid "%s [modified on disk] [modified]"
 msgstr "%s [změněn na disku][změněn]"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [deleted] [modified]"
-#: ../moo/mooedit/mooeditwindow.c:1103
+#: ../moo/mooedit/mooeditwindow.c:1124
 #, c-format
 msgid "%s [deleted] [modified]"
 msgstr "%s [smazán][změněn]"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified]"
-#: ../moo/mooedit/mooeditwindow.c:1106
+#: ../moo/mooedit/mooeditwindow.c:1127
 #, c-format
 msgid "%s [modified]"
 msgstr "%s [změněn]"
 
-#: ../moo/mooedit/mooeditwindow.c:1347
+#: ../moo/mooedit/mooeditwindow.c:1484
 msgid "Reopen Using Encoding"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1397
+#: ../moo/mooedit/mooeditwindow.c:1534
 msgid "_Encoding"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1799 ../moo/moofileview/moofileview.c:1216
+#: ../moo/mooedit/mooeditwindow.c:1936 ../moo/moofileview/moofileview.c:1216
 #: ../moo/moofileview/moofileview.c:1217
 #: ../moo/moofileview/moofileview-ui.xml.h:1
 msgid "Bookmarks"
 msgstr "Záložky"
 
-#: ../moo/mooedit/mooeditwindow.c:3279
+#: ../moo/mooedit/mooeditwindow.c:3416
 #, c-format
 msgid "Line: %s Col: %s"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3280
+#: ../moo/mooedit/mooeditwindow.c:3417
 #, c-format
 msgid "Chars: %s"
 msgstr ""
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
-#: ../moo/mooedit/mooeditwindow.c:3320
+#: ../moo/mooedit/mooeditwindow.c:3457
 msgid "OVR"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3320
+#: ../moo/mooedit/mooeditwindow.c:3457
 msgid "INS"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3445
+#: ../moo/mooedit/mooeditwindow.c:3582
 msgid "_Language"
 msgstr "_Jazyk"
 
@@ -1025,36 +1028,36 @@ msgstr "Nepojmenovaný"
 msgid "Untitled %d"
 msgstr "Nepojmenovaný %d"
 
-#: ../moo/mooedit/mootextfind.c:483
+#: ../moo/mooedit/mootextfind.c:487
 msgid "No search term entered"
 msgstr "Nebyl zadán výraz k hledání"
 
-#: ../moo/mooedit/mootextfind.c:784 ../moo/mooedit/mootextfind.c:890
-#: ../moo/mooedit/mootextfind.c:1045
+#: ../moo/mooedit/mootextfind.c:794 ../moo/mooedit/mootextfind.c:900
+#: ../moo/mooedit/mootextfind.c:1055
 msgid "Search hit top, continuing at bottom"
 msgstr "Dosaženo začátku, hledá se od konce"
 
-#: ../moo/mooedit/mootextfind.c:786 ../moo/mooedit/mootextfind.c:888
-#: ../moo/mooedit/mootextfind.c:968
+#: ../moo/mooedit/mootextfind.c:796 ../moo/mooedit/mootextfind.c:898
+#: ../moo/mooedit/mootextfind.c:978
 msgid "Search hit bottom, continuing at top"
 msgstr "Dosaženo konce, hledá se od začátku"
 
-#: ../moo/mooedit/mootextfind.c:795 ../moo/mooedit/mootextfind.c:900
-#: ../moo/mooedit/mootextfind.c:976 ../moo/mooedit/mootextfind.c:1053
+#: ../moo/mooedit/mootextfind.c:805 ../moo/mooedit/mootextfind.c:910
+#: ../moo/mooedit/mootextfind.c:986 ../moo/mooedit/mootextfind.c:1063
 #, c-format
 msgid "Pattern not found: %s"
 msgstr "Vzorek nenalezen: %s"
 
-#: ../moo/mooedit/mootextfind.c:882
+#: ../moo/mooedit/mootextfind.c:892
 #, c-format
 msgid "Found single instance of pattern '%s'"
 msgstr "Nalezen jeden výskyt vzorku '%s'"
 
-#: ../moo/mooedit/mootextfind.c:1088
+#: ../moo/mooedit/mootextfind.c:1098
 msgid "No replacement made"
 msgstr "Nic nebylo nahrazeno"
 
-#: ../moo/mooedit/mootextfind.c:1094
+#: ../moo/mooedit/mootextfind.c:1104
 #, c-format
 msgid "%u replacement made"
 msgid_plural "%u replacements made"
@@ -1741,6 +1744,19 @@ msgstr ""
 #: ../moo/mooutils/moohelp.c:208
 msgid "Could not find help file"
 msgstr ""
+
+#: ../moo/mooutils/moodialogs.c:343
+#, c-format
+msgid "Save changes to document \"%s\" before closing?"
+msgstr "Uložit změny v dokumentu \"%s\" před jeho uzavřením?"
+
+#: ../moo/mooutils/moodialogs.c:344
+msgid "Save changes to the document before closing?"
+msgstr "Uložit změny v dokumentu před jeho uzavřením?"
+
+#: ../moo/mooutils/moodialogs.c:349
+msgid "If you don't save, changes will be discarded"
+msgstr "Pokud jej neuložíte, změny budou ztraceny"
 
 #~ msgid "_Settings"
 #~ msgstr "Na_stavení"

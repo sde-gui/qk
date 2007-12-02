@@ -115,5 +115,6 @@ moo/moofileview/glade/moofileview-drop.glade
 moo/mooutils/glade/mooaccelprefs.glade
 moo/mooutils/moocompat.c
 moo/mooutils/moohelp.c
+moo/mooutils/moodialogs.c
 moo/mooutils/newgtk/glib-2.14/glib/gregex.c
 moo/mooutils/newgtk/glib-2.8/glib/gmappedfile.c
