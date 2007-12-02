@@ -4,7 +4,7 @@ module("medit")
 
 -- open file in the editor
 function open(filename)
-  return _medit.open(filename, nil)
+  return _medit.open(filename)
 end
 
 
