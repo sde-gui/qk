@@ -37,6 +37,7 @@ AC_DEFUN([MOO_AC_I18N],[
     MOO_INTLTOOL_INI_RULE='%.ini: %.ini.desktop.in $(top_srcdir)/moo/mooutils/moo-intltool-merge ; $(top_srcdir)/moo/mooutils/moo-intltool-merge $< [$]@'
     MOO_PO_SUBDIRS_RULE='po-subdirs-stamp: ; echo dummy > po-subdirs-stamp'
     MOO_PO_SUBDIRS_RULE2='po-subdirs-stamp-2: ; echo dummy > po-subdirs-stamp-2'
+    AC_CONFIG_COMMANDS([po/Makefile],[sed -e "/POTFILES =/r po/POTFILES" po/Makefile.in > po/Makefile])
   fi
 
   AC_SUBST(MOO_INTLTOOL_XML_RULE)
