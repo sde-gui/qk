@@ -86,10 +86,9 @@ _moo_edit_init_prefs (void)
     NEW_KEY_BOOL (MOO_EDIT_PREFS_SPACES_NO_TABS, FALSE);
     NEW_KEY_INT (MOO_EDIT_PREFS_INDENT_WIDTH, 8);
     NEW_KEY_INT (MOO_EDIT_PREFS_TAB_WIDTH, 8);
-    NEW_KEY_ENUM (MOO_EDIT_PREFS_TAB_KEY_ACTION,
-                  MOO_TYPE_TEXT_TAB_KEY_ACTION, MOO_TEXT_TAB_KEY_INDENT);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_AUTO_INDENT, TRUE);
-    NEW_KEY_BOOL (MOO_EDIT_PREFS_BACKSPACE_INDENTS, FALSE);
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_TAB_INDENTS, TRUE);
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_BACKSPACE_INDENTS, TRUE);
 
     NEW_KEY_BOOL (MOO_EDIT_PREFS_SAVE_SESSION, TRUE);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_AUTO_SAVE, FALSE);
@@ -195,8 +194,8 @@ _moo_edit_apply_prefs (MooEdit *edit)
                   "draw-tabs", get_bool (MOO_EDIT_PREFS_SHOW_TABS),
                   "draw-trailing-spaces", get_bool (MOO_EDIT_PREFS_SHOW_TRAILING_SPACES),
                   "quick-search-flags", get_flags (MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS),
-                  "tab-key-action", get_enum (MOO_EDIT_PREFS_TAB_KEY_ACTION),
                   "auto-indent", get_bool (MOO_EDIT_PREFS_AUTO_INDENT),
+                  "tab-indents", get_bool (MOO_EDIT_PREFS_TAB_INDENTS),
                   "backspace-indents", get_bool (MOO_EDIT_PREFS_BACKSPACE_INDENTS),
                   NULL);
 

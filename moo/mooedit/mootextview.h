@@ -41,13 +41,6 @@ typedef enum
     MOO_TEXT_SELECT_LINES
 } MooTextSelectionType;
 
-typedef enum
-{
-    MOO_TEXT_TAB_KEY_DO_NOTHING,
-    MOO_TEXT_TAB_KEY_INDENT,
-    MOO_TEXT_TAB_KEY_FIND_PLACEHOLDER
-} MooTextTabKeyAction;
-
 struct _MooTextView
 {
     GtkTextView  parent;
@@ -84,8 +77,8 @@ struct _MooTextViewClass
        returns whether selection is not empty */
     gboolean (* extend_selection)   (MooTextView    *view,
                                      MooTextSelectionType type,
-                                     GtkTextIter    *start,
-                                     GtkTextIter    *end);
+                                     GtkTextIter    *insert,
+                                     GtkTextIter    *selection_bound);
 
     void (*apply_style_scheme)      (MooTextView    *view,
                                      MooTextStyleScheme *scheme);

@@ -1376,29 +1376,17 @@ static gboolean
 handle_tab (MooTextView *view,
             GdkEventKey *event)
 {
-    switch (view->priv->tab_key_action)
+    if (view->priv->tab_indents)
     {
-        case MOO_TEXT_TAB_KEY_DO_NOTHING:
-            move_focus (GTK_WIDGET (view),
-                        event->state & GDK_SHIFT_MASK ?
-                                GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
-            return TRUE;
-
-        case MOO_TEXT_TAB_KEY_FIND_PLACEHOLDER:
-            if (event->state & GDK_SHIFT_MASK)
-                moo_text_view_prev_placeholder (view);
-            else
-                moo_text_view_next_placeholder (view);
-            return TRUE;
-
-        case MOO_TEXT_TAB_KEY_INDENT:
-            if (event->state & GDK_SHIFT_MASK)
-                return tab_unindent (view);
-            else
-                return tab_indent (view);
+        if (event->state & GDK_SHIFT_MASK)
+            return tab_unindent (view);
+        else
+            return tab_indent (view);
     }
-
-    g_return_val_if_reached (FALSE);
+    else
+    {
+        return FALSE;
+    }
 }
 
 

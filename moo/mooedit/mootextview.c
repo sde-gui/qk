@@ -174,9 +174,6 @@ static void     fold_toggled                (MooTextView        *view,
 static void     set_enable_folding          (MooTextView        *view,
                                              gboolean            show);
 
-static void     set_tab_key_action          (MooTextView        *view,
-                                             MooTextTabKeyAction action);
-
 static gboolean has_boxes                   (MooTextView        *view);
 static void     update_box_tag              (MooTextView        *view);
 static gboolean has_box_at_iter             (MooTextView        *view,
@@ -216,6 +213,7 @@ enum {
     PROP_INDENTER,
     PROP_AUTO_INDENT,
     PROP_BACKSPACE_INDENTS,
+    PROP_TAB_INDENTS,
 
     PROP_RIGHT_MARGIN_OFFSET,
     PROP_DRAW_RIGHT_MARGIN,
@@ -238,8 +236,7 @@ enum {
     PROP_SHOW_LINE_MARKS,
     PROP_ENABLE_FOLDING,
     PROP_ENABLE_QUICK_SEARCH,
-    PROP_QUICK_SEARCH_FLAGS,
-    PROP_TAB_KEY_ACTION
+    PROP_QUICK_SEARCH_FLAGS
 };
 
 
@@ -503,15 +500,6 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     g_object_class_install_property (gobject_class,
-                                     PROP_TAB_KEY_ACTION,
-                                     g_param_spec_enum ("tab-key-action",
-                                             "tab-key-action",
-                                             "tab-key-action",
-                                             MOO_TYPE_TEXT_TAB_KEY_ACTION,
-                                             MOO_TEXT_TAB_KEY_INDENT,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
-
-    g_object_class_install_property (gobject_class,
                                      PROP_AUTO_INDENT,
                                      g_param_spec_boolean ("auto-indent",
                                              "auto-indent", "auto-indent",
@@ -521,6 +509,12 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                      PROP_BACKSPACE_INDENTS,
                                      g_param_spec_boolean ("backspace-indents",
                                              "backspace-indents", "backspace-indents",
+                                             FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_TAB_INDENTS,
+                                     g_param_spec_boolean ("tab-indents",
+                                             "tab-indents", "tab-indents",
                                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     gtk_widget_class_install_style_property (widget_class,
@@ -680,7 +674,7 @@ moo_text_view_init (MooTextView *view)
 #if !GTK_CHECK_VERSION(2,12,0)
     view->priv->saved_cursor_visible = TRUE;
 #endif
-    view->priv->tab_key_action = MOO_TEXT_TAB_KEY_INDENT;
+    view->priv->tab_indents = FALSE;
     view->priv->backspace_indents = FALSE;
     view->priv->enter_indents = TRUE;
     view->priv->ctrl_up_down_scrolls = TRUE;
@@ -1116,13 +1110,14 @@ moo_text_view_set_property (GObject        *object,
             g_object_notify (object, "quick-search-flags");
             break;
 
-        case PROP_TAB_KEY_ACTION:
-            set_tab_key_action (view, g_value_get_enum (value));
-            break;
-
         case PROP_AUTO_INDENT:
             view->priv->enter_indents = g_value_get_boolean (value);
             g_object_notify (object, "auto-indent");
+            break;
+
+        case PROP_TAB_INDENTS:
+            view->priv->tab_indents = g_value_get_boolean (value);
+            g_object_notify (object, "tab-indents");
             break;
 
         case PROP_BACKSPACE_INDENTS:
@@ -1221,11 +1216,11 @@ moo_text_view_get_property (GObject        *object,
         case PROP_QUICK_SEARCH_FLAGS:
             g_value_set_flags (value, view->priv->qs.flags);
             break;
-        case PROP_TAB_KEY_ACTION:
-            g_value_set_enum (value, view->priv->tab_key_action);
-            break;
         case PROP_AUTO_INDENT:
             g_value_set_boolean (value, view->priv->enter_indents != 0);
+            break;
+        case PROP_TAB_INDENTS:
+            g_value_set_boolean (value, view->priv->tab_indents);
             break;
         case PROP_BACKSPACE_INDENTS:
             g_value_set_boolean (value, view->priv->backspace_indents != 0);
@@ -2922,20 +2917,6 @@ _moo_text_view_pend_cursor_blink (G_GNUC_UNUSED MooTextView *view)
 {
 }
 #endif
-
-
-static void
-set_tab_key_action (MooTextView        *view,
-                    MooTextTabKeyAction action)
-{
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-
-    if (view->priv->tab_key_action != action)
-    {
-        view->priv->tab_key_action = action;
-        g_object_notify (G_OBJECT (view), "tab-key-action");
-    }
-}
 
 
 int

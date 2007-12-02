@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.3.3 on Sat Sep 22 20:16:09 2007 
+<!--Generated with glade3 3.3.3 on Sun Dec  2 12:06:25 2007 
 	Version: 3.0.0
 	Date: Fri Dec  8 17:47:39 2006
 	User: muntyan
@@ -41,83 +41,6 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="label1">
-                        <property name="xalign">0</property>
-                        <property name="label" comments="Tab key: Moves input focus, Indents Text, ...">Tab key:</property>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkAlignment" id="alignment1">
-                        <property name="left_padding">6</property>
-                        <child>
-                          <widget class="GtkVBox" id="vbox1">
-                            <property name="visible">True</property>
-                            <child>
-                              <widget class="GtkRadioButton" id="tab_inserts_tab">
-                                <property name="visible">True</property>
-                                <property name="moo_prefs_key">tab_key_action</property>
-                                <property name="moo_prefs_value">do-nothing</property>
-                                <property name="response_id">0</property>
-                                <property name="draw_indicator">True</property>
-                                <child>
-                                  <widget class="GtkLabel" id="label156">
-                                    <property name="visible">True</property>
-                                    <property name="label">Moves input focus</property>
-                                  </widget>
-                                </child>
-                              </widget>
-                            </child>
-                            <child>
-                              <widget class="GtkRadioButton" id="tab_indents">
-                                <property name="visible">True</property>
-                                <property name="moo_prefs_key">tab_key_action</property>
-                                <property name="moo_prefs_value">indent</property>
-                                <property name="response_id">0</property>
-                                <property name="draw_indicator">True</property>
-                                <property name="group">tab_inserts_tab</property>
-                                <child>
-                                  <widget class="GtkLabel" id="label2">
-                                    <property name="visible">True</property>
-                                    <property name="label">Indents text</property>
-                                  </widget>
-                                </child>
-                              </widget>
-                              <packing>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkRadioButton" id="tab_placeholder">
-                                <property name="visible">True</property>
-                                <property name="moo_prefs_key">tab_key_action</property>
-                                <property name="moo_prefs_value">find-placeholder</property>
-                                <property name="response_id">0</property>
-                                <property name="draw_indicator">True</property>
-                                <property name="group">tab_inserts_tab</property>
-                                <child>
-                                  <widget class="GtkLabel" id="label3">
-                                    <property name="visible">True</property>
-                                    <property name="label">Moves cursor to next placeholder</property>
-                                  </widget>
-                                </child>
-                              </widget>
-                              <packing>
-                                <property name="position">2</property>
-                              </packing>
-                            </child>
-                          </widget>
-                        </child>
-                      </widget>
-                      <packing>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                    <child>
                       <widget class="GtkCheckButton" id="enable_auto_indent">
                         <property name="visible">True</property>
                         <property name="moo_prefs_key">auto_indent</property>
@@ -133,7 +56,7 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">3</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
@@ -149,7 +72,7 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">4</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                     <child>
@@ -188,7 +111,24 @@
                         </child>
                       </widget>
                       <packing>
-                        <property name="position">5</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkCheckButton" id="tab_indents">
+                        <property name="visible">True</property>
+                        <property name="moo_prefs_key">tab_indents</property>
+                        <property name="response_id">0</property>
+                        <property name="draw_indicator">True</property>
+                        <child>
+                          <widget class="GtkLabel" id="label8">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">Tab key indents</property>
+                          </widget>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="position">4</property>
                       </packing>
                     </child>
                     <child>
@@ -200,12 +140,12 @@
                         <child>
                           <widget class="GtkLabel" id="label5">
                             <property name="visible">True</property>
-                            <property name="label" translatable="yes">Backspace key indents</property>
+                            <property name="label" translatable="yes">Backspace key unindents</property>
                           </widget>
                         </child>
                       </widget>
                       <packing>
-                        <property name="position">6</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                   </widget>
