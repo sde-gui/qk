@@ -52,6 +52,10 @@ configure has the following medit-specific options:
     By default help files are built and installed if xsltproc can process DocBook
     sources, i.e. if both xsltproc and docbook are installed and functional.
 
+  --disable-nls           do not use localization
+    Use this option if you get build errors in po or po-gsv directories, or
+    if configure says you do not have intltool.
+
   --without-mooapp
   --without-mooedit
     These two options are useful only when building standalone libmoo library,
