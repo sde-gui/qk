@@ -43,7 +43,7 @@ medit-app.c: medit-app.opag
 
 EXTRA_DIST += medit.desktop.in
 
-@INTLTOOL_DESKTOP_RULE@
+@MOO_INTLTOOL_DESKTOP_RULE@
 DESKTOP_IN_FILES = medit.desktop.in
 DESKTOP_FILES =$(DESKTOP_IN_FILES:.desktop.in=.desktop)
 desktopdir = $(datadir)/applications
