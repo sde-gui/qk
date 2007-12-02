@@ -83,7 +83,7 @@ languagespecs_DATA =		\
 packagesdir = $(mimedir)/packages
 packages_DATA = moo.xml
 update_mime = update-mime-database $(DESTDIR)${mimedir}
-@INTLTOOL_XML_RULE@
+@MOO_INTLTOOL_XML_RULE@
 
 if !MOO_OS_MINGW
 install-data-hook:

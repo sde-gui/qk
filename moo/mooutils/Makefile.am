@@ -153,6 +153,7 @@ endif
 
 EXTRA_DIST =				\
 	moomarshals.list		\
+	moo-intltool-merge		\
 	py2h.sh				\
 	xml2h.sh			\
 	$(thread_sources)		\

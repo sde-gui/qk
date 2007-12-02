@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <medit-project version="1.0" type="C" name="moo">
- <active>debug</active>
+ <active>test</active>
  <configurations>
   <darwin>
    <build_dir>build/darwin</build_dir>
@@ -43,9 +43,9 @@
   <test>
    <build_dir>build/test</build_dir>
    <configure>
-    <args>--enable-debug=full --enable-all-warnings --enable-project --prefix=/usr/local/test</args>
+    <args>--enable-debug=full --enable-all-warnings --prefix=/usr/local/test --disable-nls</args>
     <vars>
-     <var name="CFLAGS">-g -std=c89 -pedantic -W -Wall</var>
+     <var name="CFLAGS">-g</var>
      <var name="OBJCFLAGS">-g</var>
     </vars>
    </configure>

@@ -6,19 +6,15 @@
 #ifdef ENABLE_NLS
 
 #undef _
-
 #define _(string) _moo_gsv_gettext (string)
-#define GD_(domain,string) _moo_gsv_dgettext (domain, string)
 
 #undef Q_
 #undef N_
 #undef D_
 #undef QD_
 
-#else
-
-#define GD_(domain,string) (string)
-
 #endif /* ENABLE_NLS */
+
+#define GD_(domain,string) _moo_gsv_dgettext (domain, string)
 
 #endif /* GTK_SOURCE_VIEW_I18N_H */
