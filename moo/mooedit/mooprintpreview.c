@@ -93,6 +93,10 @@ _moo_print_preview_init (MooPrintPreview *preview)
     moo_glade_xml_fill_widget (preview->priv->xml, GTK_WIDGET (preview),
                                mooprintpreview_glade_xml, -1,
                                "dialog", NULL);
+    gtk_dialog_set_alternative_button_order (GTK_DIALOG (preview),
+                                             GTK_RESPONSE_APPLY,
+                                             GTK_RESPONSE_CLOSE,
+                                             -1);
 
     preview->priv->context = NULL;
     preview->priv->gtk_preview = NULL;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <medit-project version="1.0" type="C" name="moo">
- <active>test</active>
+ <active>debug</active>
  <configurations>
   <darwin>
    <build_dir>build/darwin</build_dir>

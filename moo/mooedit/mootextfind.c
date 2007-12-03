@@ -190,7 +190,7 @@ moo_find_constructor (GType           type,
                             stock_id, GTK_RESPONSE_OK,
                             NULL);
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (find), GTK_RESPONSE_OK,
-                                             GTK_STOCK_CANCEL, -1);
+                                             GTK_RESPONSE_CANCEL, -1);
     gtk_dialog_set_default_response (GTK_DIALOG (find), GTK_RESPONSE_OK);
 
     moo_help_set_id (GTK_WIDGET (find), find->replace ?

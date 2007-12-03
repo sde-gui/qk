@@ -64,6 +64,7 @@ def get_format(parent=None):
     window = gtk.Dialog("Select Format", parent, 0,
                         (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
                          gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+    window.set_alternative_button_order([gtk.RESPONSE_ACCEPT, gtk.RESPONSE_REJECT])
     window.set_size_request(250, 300)
     swindow = gtk.ScrolledWindow()
     treeview = gtk.TreeView()

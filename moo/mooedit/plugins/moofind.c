@@ -364,6 +364,10 @@ create_grep_dialog (MooEditWindow  *window,
     gtk_dialog_set_response_sensitive (GTK_DIALOG (stuff->grep_dialog),
                                        GTK_RESPONSE_OK, FALSE);
     moo_window_set_parent (stuff->grep_dialog, GTK_WIDGET (window));
+    gtk_dialog_set_alternative_button_order (GTK_DIALOG (stuff->grep_dialog),
+                                             GTK_RESPONSE_OK,
+                                             GTK_RESPONSE_CANCEL,
+                                             -1);
 
     moo_help_set_id (stuff->grep_dialog, HELP_SECTION_DIALOG_FIND_IN_FILES);
     moo_help_connect_keys (stuff->grep_dialog);
@@ -403,6 +407,10 @@ create_find_dialog (MooEditWindow  *window,
                                      GTK_RESPONSE_OK);
     gtk_dialog_set_response_sensitive (GTK_DIALOG (stuff->find_dialog),
                                        GTK_RESPONSE_OK, FALSE);
+    gtk_dialog_set_alternative_button_order (GTK_DIALOG (stuff->find_dialog),
+                                             GTK_RESPONSE_OK,
+                                             GTK_RESPONSE_CANCEL,
+                                             -1);
     moo_window_set_parent (stuff->find_dialog, GTK_WIDGET (window));
 
     moo_help_set_id (stuff->find_dialog, HELP_SECTION_DIALOG_FIND_FILE);
