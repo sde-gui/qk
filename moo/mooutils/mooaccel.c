@@ -35,6 +35,10 @@ static gboolean      parse_accel            (const char         *accel,
                                              guint              *key,
                                              GdkModifierType    *mods);
 
+static void          moo_modify_accel_real  (const char         *accel_path,
+                                             const char         *new_accel,
+                                             gboolean            set_gtk);
+
 static char         *_moo_accel_normalize   (const char         *accel);
 
 
@@ -76,7 +80,7 @@ accel_map_changed (G_GNUC_UNUSED GtkAccelMap *map,
     else
         new_accel = NULL;
 
-    _moo_modify_accel (accel_path, new_accel);
+    moo_modify_accel_real (accel_path, new_accel, FALSE);
 
     g_free (new_accel);
 }
@@ -153,7 +157,8 @@ prefs_get_accel (const char *accel_path)
 
 static void
 set_accel (const char *accel_path,
-           const char *accel)
+           const char *accel,
+           gboolean    set_gtk)
 {
     guint accel_key = 0;
     GdkModifierType accel_mods = 0;
@@ -193,17 +198,20 @@ set_accel (const char *accel_path,
                              g_strdup (""));
     }
 
-    g_signal_handlers_block_by_func (gtk_accel_map_get (),
-                                     (gpointer) accel_map_changed,
-                                     NULL);
+    if (set_gtk)
+    {
+        g_signal_handlers_block_by_func (gtk_accel_map_get (),
+                                         (gpointer) accel_map_changed,
+                                         NULL);
 
-    if (!gtk_accel_map_change_entry (accel_path, accel_key, accel_mods, TRUE))
-        g_warning ("could not set accel '%s' for accel_path '%s'",
-                   accel, accel_path);
+        if (!gtk_accel_map_change_entry (accel_path, accel_key, accel_mods, TRUE))
+            g_warning ("could not set accel '%s' for accel_path '%s'",
+                       accel, accel_path);
 
-    g_signal_handlers_unblock_by_func (gtk_accel_map_get (),
-                                       (gpointer) accel_map_changed,
-                                       NULL);
+        g_signal_handlers_unblock_by_func (gtk_accel_map_get (),
+                                           (gpointer) accel_map_changed,
+                                           NULL);
+    }
 }
 
 
@@ -289,15 +297,16 @@ _moo_accel_register (const char *accel_path,
     }
 
     prefs_new_accel (accel_path, default_accel);
-    set_accel (accel_path, prefs_get_accel (accel_path));
+    set_accel (accel_path, prefs_get_accel (accel_path), TRUE);
 
     g_free (freeme);
 }
 
 
-void
-_moo_modify_accel (const char *accel_path,
-                   const char *new_accel)
+static void
+moo_modify_accel_real (const char *accel_path,
+                       const char *new_accel,
+                       gboolean    set_gtk)
 {
     char *freeme = NULL;
 
@@ -314,10 +323,17 @@ _moo_modify_accel (const char *accel_path,
         g_return_if_fail (new_accel != NULL);
     }
 
-    set_accel (accel_path, new_accel);
+    set_accel (accel_path, new_accel, set_gtk);
     prefs_set_accel (accel_path, new_accel);
 
     g_free (freeme);
+}
+
+void
+_moo_modify_accel (const char *accel_path,
+                   const char *new_accel)
+{
+    moo_modify_accel_real (accel_path, new_accel, FALSE);
 }
 
 
