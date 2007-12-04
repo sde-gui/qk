@@ -1773,7 +1773,7 @@ moo_strnsplit_lines (const char *string,
 
 
 char **
-_moo_splitlines (const char *string)
+moo_splitlines (const char *string)
 {
     GPtrArray *array;
     const char *line, *p;

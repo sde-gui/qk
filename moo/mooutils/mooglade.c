@@ -1902,7 +1902,7 @@ parse_property (GParamSpec     *param_spec,
     }
     else if (param_spec->value_type == G_TYPE_STRV)
     {
-        char **strv = _moo_splitlines (value);
+        char **strv = moo_splitlines (value);
         g_value_take_boxed (&param->value, strv);
     }
     else

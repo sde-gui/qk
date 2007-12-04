@@ -834,7 +834,7 @@ format_content (const char *content,
                 const char *indent)
 {
     char **p;
-    char **lines = _moo_splitlines (content);
+    char **lines = moo_splitlines (content);
 
     for (p = lines; p && *p; ++p)
         g_string_append_printf (string, "%s%s\n", indent, *p);

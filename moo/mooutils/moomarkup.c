@@ -1204,9 +1204,13 @@ format_pretty_element (MooMarkupElement *elm,
     g_string_append_len (str, fill, indent);
     g_string_append_printf (str, "<%s", elm->name);
     for (i = 0; i < elm->n_attrs; ++i)
+    {
+        char *attr = g_markup_escape_text (elm->attr_vals[i], -1);
         g_string_append_printf (str, " %s=\"%s\"",
                                 elm->attr_names[i],
-                                elm->attr_vals[i]);
+                                attr);
+        g_free (attr);
+    }
 
     if (empty)
     {

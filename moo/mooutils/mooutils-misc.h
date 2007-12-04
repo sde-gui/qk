@@ -58,7 +58,7 @@ GType       moo_data_dir_type_get_type      (void) G_GNUC_CONST;
 
 /* ~/.appname */
 gboolean    moo_make_user_data_dir          (const char     *path);
-void        _moo_set_user_data_dir          (const char     *path);
+void       _moo_set_user_data_dir           (const char     *path);
 char       *moo_get_user_data_dir           (void);
 char       *moo_get_user_data_file          (const char     *basename);
 gboolean    moo_save_user_data_file         (const char     *basename,
@@ -85,31 +85,31 @@ const char *moo_get_locale_dir              (void);
 const char *const *_moo_get_shared_data_dirs (void);
 
 
-void        _moo_selection_data_set_pointer (GtkSelectionData *data,
+void       _moo_selection_data_set_pointer  (GtkSelectionData *data,
                                              GdkAtom         type,
                                              gpointer        ptr);
-gpointer    _moo_selection_data_get_pointer (GtkSelectionData *data,
+gpointer   _moo_selection_data_get_pointer  (GtkSelectionData *data,
                                              GdkAtom         type);
 
 GdkModifierType _moo_get_modifiers          (GtkWidget      *widget);
 
-void        _moo_menu_item_set_accel_label  (GtkWidget      *menu_item,
+void       _moo_menu_item_set_accel_label   (GtkWidget      *menu_item,
                                              const char     *label);
-void        _moo_menu_item_set_label        (GtkWidget      *menu_item,
+void       _moo_menu_item_set_label         (GtkWidget      *menu_item,
                                              const char     *label,
                                              gboolean        mnemonic);
 
-void        _moo_widget_set_tooltip         (GtkWidget      *widget,
+void       _moo_widget_set_tooltip          (GtkWidget      *widget,
                                              const char     *tip);
 
 char      **moo_strnsplit_lines             (const char     *string,
                                              gssize          len,
                                              guint          *n_tokens);
-char      **_moo_splitlines                 (const char     *string);
-char      **_moo_ascii_strnsplit            (const char     *string,
+char      **moo_splitlines                  (const char     *string);
+char     **_moo_ascii_strnsplit             (const char     *string,
                                              gssize          len,
                                              guint           n_tokens);
-char      **_moo_strv_reverse               (char          **str_array);
+char     **_moo_strv_reverse                (char          **str_array);
 
 static inline gboolean
 _moo_str_equal_inline (const char *s1,
