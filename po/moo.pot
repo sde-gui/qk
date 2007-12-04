@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-12-02 12:11-0600\n"
+"POT-Creation-Date: 2007-12-03 22:34-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -415,7 +415,7 @@ msgid "Don't prompt on replace"
 msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:3
-#: ../moo/mooedit/plugins/moofind.c:953
+#: ../moo/mooedit/plugins/moofind.c:961
 msgid "Find"
 msgstr ""
 
@@ -752,7 +752,7 @@ msgid "Close All"
 msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:474
-msgid "Close _All"
+msgid "Close A_ll"
 msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:475
@@ -884,7 +884,11 @@ msgstr ""
 msgid "Page Setup"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:815 ../moo/mooedit/mooeditwindow.c:816
+#: ../moo/mooedit/mooeditwindow.c:815
+msgid "Page S_etup..."
+msgstr ""
+
+#: ../moo/mooedit/mooeditwindow.c:816
 msgid "Page Setup..."
 msgstr ""
 
@@ -892,7 +896,11 @@ msgstr ""
 msgid "Export as PDF"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:842 ../moo/mooedit/mooeditwindow.c:843
+#: ../moo/mooedit/mooeditwindow.c:842
+msgid "E_xport as PDF..."
+msgstr ""
+
+#: ../moo/mooedit/mooeditwindow.c:843
 msgid "Export as PDF..."
 msgstr ""
 
@@ -1079,7 +1087,7 @@ msgid "Find in files"
 msgstr ""
 
 #: ../moo/mooedit/plugins/moofind.c:252 ../moo/mooedit/plugins/moofind.c:253
-#: ../moo/mooedit/plugins/moofind.c:856
+#: ../moo/mooedit/plugins/moofind.c:864
 msgid "Find File"
 msgstr ""
 
@@ -1087,25 +1095,25 @@ msgstr ""
 msgid "Find file"
 msgstr ""
 
-#: ../moo/mooedit/plugins/moofind.c:829
+#: ../moo/mooedit/plugins/moofind.c:837
 msgid "Find in Files"
 msgstr ""
 
-#: ../moo/mooedit/plugins/moofind.c:909
+#: ../moo/mooedit/plugins/moofind.c:917
 #, c-format
 msgid "*** %u match found ***"
 msgid_plural "*** %u matches found ***"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../moo/mooedit/plugins/moofind.c:915
+#: ../moo/mooedit/plugins/moofind.c:923
 #, c-format
 msgid "*** %u file found ***"
 msgid_plural "*** %u files found ***"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../moo/mooedit/plugins/moofind.c:953
+#: ../moo/mooedit/plugins/moofind.c:961
 msgid "Finds everything"
 msgstr ""
 

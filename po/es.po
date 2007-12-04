@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-12-02 12:11-0600\n"
+"POT-Creation-Date: 2007-12-03 22:34-0600\n"
 "PO-Revision-Date: 2007-07-29 11:03-0600\n"
 "Last-Translator: Arnau Sanchez <arnau@ehas.org>\n"
 "MIME-Version: 1.0\n"
@@ -416,7 +416,7 @@ msgid "Don't prompt on replace"
 msgstr "Sin confirmación al reemplazar"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:3
-#: ../moo/mooedit/plugins/moofind.c:953
+#: ../moo/mooedit/plugins/moofind.c:961
 msgid "Find"
 msgstr "Buscar"
 
@@ -777,8 +777,8 @@ msgid "Close All"
 msgstr "Cerrar todos"
 
 #: ../moo/mooedit/mooeditwindow.c:474
-msgid "Close _All"
-msgstr "Cerrar _todos"
+msgid "Close A_ll"
+msgstr "Cerrar todos"
 
 #: ../moo/mooedit/mooeditwindow.c:475
 msgid "Close all documents"
@@ -910,7 +910,11 @@ msgstr "Sin documentos"
 msgid "Page Setup"
 msgstr "Configuración de página"
 
-#: ../moo/mooedit/mooeditwindow.c:815 ../moo/mooedit/mooeditwindow.c:816
+#: ../moo/mooedit/mooeditwindow.c:815
+msgid "Page S_etup..."
+msgstr "Configuración de página..."
+
+#: ../moo/mooedit/mooeditwindow.c:816
 msgid "Page Setup..."
 msgstr "Configuración de página..."
 
@@ -918,7 +922,11 @@ msgstr "Configuración de página..."
 msgid "Export as PDF"
 msgstr "Exportar en PDF"
 
-#: ../moo/mooedit/mooeditwindow.c:842 ../moo/mooedit/mooeditwindow.c:843
+#: ../moo/mooedit/mooeditwindow.c:842
+msgid "E_xport as PDF..."
+msgstr "Exportar en PDF..."
+
+#: ../moo/mooedit/mooeditwindow.c:843
 msgid "Export as PDF..."
 msgstr "Exportar en PDF..."
 
@@ -1107,7 +1115,7 @@ msgid "Find in files"
 msgstr "Buscar en archivos"
 
 #: ../moo/mooedit/plugins/moofind.c:252 ../moo/mooedit/plugins/moofind.c:253
-#: ../moo/mooedit/plugins/moofind.c:856
+#: ../moo/mooedit/plugins/moofind.c:864
 msgid "Find File"
 msgstr "Buscar archivo"
 
@@ -1115,25 +1123,25 @@ msgstr "Buscar archivo"
 msgid "Find file"
 msgstr "Buscar fichero"
 
-#: ../moo/mooedit/plugins/moofind.c:829
+#: ../moo/mooedit/plugins/moofind.c:837
 msgid "Find in Files"
 msgstr "Buscar en ficheros"
 
-#: ../moo/mooedit/plugins/moofind.c:909
+#: ../moo/mooedit/plugins/moofind.c:917
 #, c-format
 msgid "*** %u match found ***"
 msgid_plural "*** %u matches found ***"
 msgstr[0] "*** %u concordancia ***"
 msgstr[1] "*** %u concordancias ***"
 
-#: ../moo/mooedit/plugins/moofind.c:915
+#: ../moo/mooedit/plugins/moofind.c:923
 #, c-format
 msgid "*** %u file found ***"
 msgid_plural "*** %u files found ***"
 msgstr[0] "*** %u archivo encontrado***"
 msgstr[1] "*** %u archivos encontrados ***"
 
-#: ../moo/mooedit/plugins/moofind.c:953
+#: ../moo/mooedit/plugins/moofind.c:961
 msgid "Finds everything"
 msgstr "Encuentra todo"
 
@@ -1764,6 +1772,9 @@ msgstr "¿Guardar los cambios en el documento antes de cerrar?"
 #: ../moo/mooutils/moodialogs.c:349
 msgid "If you don't save, changes will be discarded"
 msgstr "Si no guarda sus datos, los cambios se perderán"
+
+#~ msgid "Close _All"
+#~ msgstr "Cerrar _todos"
 
 #~ msgid "_Settings"
 #~ msgstr "_Opciones"

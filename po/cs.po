@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-12-02 12:11-0600\n"
+"POT-Creation-Date: 2007-12-03 22:34-0600\n"
 "PO-Revision-Date: 2007-11-10 22:45+0100\n"
 "Last-Translator: Vlastimil Ott <vlastimil@e-ott.info>\n"
 "Language-Team:  <cs@li.org>\n"
@@ -419,7 +419,7 @@ msgid "Don't prompt on replace"
 msgstr "Neptat se na nahrazení"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:3
-#: ../moo/mooedit/plugins/moofind.c:953
+#: ../moo/mooedit/plugins/moofind.c:961
 msgid "Find"
 msgstr "Najít"
 
@@ -776,8 +776,8 @@ msgid "Close All"
 msgstr "Zavřít vše"
 
 #: ../moo/mooedit/mooeditwindow.c:474
-msgid "Close _All"
-msgstr "Zavřít _vše"
+msgid "Close A_ll"
+msgstr "Zavřít vše"
 
 #: ../moo/mooedit/mooeditwindow.c:475
 msgid "Close all documents"
@@ -908,7 +908,11 @@ msgstr "Žádné dokumenty"
 msgid "Page Setup"
 msgstr "Nastavení strany"
 
-#: ../moo/mooedit/mooeditwindow.c:815 ../moo/mooedit/mooeditwindow.c:816
+#: ../moo/mooedit/mooeditwindow.c:815
+msgid "Page S_etup..."
+msgstr "Nastavení strany..."
+
+#: ../moo/mooedit/mooeditwindow.c:816
 msgid "Page Setup..."
 msgstr "_Nastavení strany..."
 
@@ -916,7 +920,11 @@ msgstr "_Nastavení strany..."
 msgid "Export as PDF"
 msgstr "Exportovat do PDF"
 
-#: ../moo/mooedit/mooeditwindow.c:842 ../moo/mooedit/mooeditwindow.c:843
+#: ../moo/mooedit/mooeditwindow.c:842
+msgid "E_xport as PDF..."
+msgstr "Exportovat do PDF..."
+
+#: ../moo/mooedit/mooeditwindow.c:843
 msgid "Export as PDF..."
 msgstr "Exportovat do PDF..."
 
@@ -1103,7 +1111,7 @@ msgid "Find in files"
 msgstr "Najít v souborech"
 
 #: ../moo/mooedit/plugins/moofind.c:252 ../moo/mooedit/plugins/moofind.c:253
-#: ../moo/mooedit/plugins/moofind.c:856
+#: ../moo/mooedit/plugins/moofind.c:864
 msgid "Find File"
 msgstr "Najít soubor"
 
@@ -1111,25 +1119,25 @@ msgstr "Najít soubor"
 msgid "Find file"
 msgstr "Najít soubor"
 
-#: ../moo/mooedit/plugins/moofind.c:829
+#: ../moo/mooedit/plugins/moofind.c:837
 msgid "Find in Files"
 msgstr "Najít v souborech"
 
-#: ../moo/mooedit/plugins/moofind.c:909
+#: ../moo/mooedit/plugins/moofind.c:917
 #, c-format
 msgid "*** %u match found ***"
 msgid_plural "*** %u matches found ***"
 msgstr[0] "*** Nalezeny %u shody ***"
 msgstr[1] "*** Nalezeno %u shod ***"
 
-#: ../moo/mooedit/plugins/moofind.c:915
+#: ../moo/mooedit/plugins/moofind.c:923
 #, c-format
 msgid "*** %u file found ***"
 msgid_plural "*** %u files found ***"
 msgstr[0] "*** Nalezeny %u soubory ***"
 msgstr[1] "*** Nalezeno %u souborů ***"
 
-#: ../moo/mooedit/plugins/moofind.c:953
+#: ../moo/mooedit/plugins/moofind.c:961
 msgid "Finds everything"
 msgstr "Najde vše"
 
@@ -1757,6 +1765,9 @@ msgstr "Uložit změny v dokumentu před jeho uzavřením?"
 #: ../moo/mooutils/moodialogs.c:349
 msgid "If you don't save, changes will be discarded"
 msgstr "Pokud jej neuložíte, změny budou ztraceny"
+
+#~ msgid "Close _All"
+#~ msgstr "Zavřít _vše"
 
 #~ msgid "_Settings"
 #~ msgstr "Na_stavení"

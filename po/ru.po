@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-12-02 12:11-0600\n"
+"POT-Creation-Date: 2007-12-03 22:34-0600\n"
 "PO-Revision-Date: 2007-07-11 10:00+0500\n"
 "Last-Translator: Andrey Fedoseev <andrey.fedoseev@gmail.com>\n"
 "Language-Team: Russian <ru@li.org>\n"
@@ -419,7 +419,7 @@ msgid "Don't prompt on replace"
 msgstr "Не спрашивать при замене"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:3
-#: ../moo/mooedit/plugins/moofind.c:953
+#: ../moo/mooedit/plugins/moofind.c:961
 msgid "Find"
 msgstr "Найти"
 
@@ -783,8 +783,8 @@ msgid "Close All"
 msgstr "Закрыть Все"
 
 #: ../moo/mooedit/mooeditwindow.c:474
-msgid "Close _All"
-msgstr "Закрыть _Все"
+msgid "Close A_ll"
+msgstr "Закрыть Все"
 
 #: ../moo/mooedit/mooeditwindow.c:475
 msgid "Close all documents"
@@ -915,7 +915,11 @@ msgstr "Нет документов"
 msgid "Page Setup"
 msgstr "Параметры страницы"
 
-#: ../moo/mooedit/mooeditwindow.c:815 ../moo/mooedit/mooeditwindow.c:816
+#: ../moo/mooedit/mooeditwindow.c:815
+msgid "Page S_etup..."
+msgstr "Параметры страницы..."
+
+#: ../moo/mooedit/mooeditwindow.c:816
 msgid "Page Setup..."
 msgstr "Параметры страницы..."
 
@@ -923,7 +927,11 @@ msgstr "Параметры страницы..."
 msgid "Export as PDF"
 msgstr "Экспорт в PDF"
 
-#: ../moo/mooedit/mooeditwindow.c:842 ../moo/mooedit/mooeditwindow.c:843
+#: ../moo/mooedit/mooeditwindow.c:842
+msgid "E_xport as PDF..."
+msgstr "Экспорт в PDF..."
+
+#: ../moo/mooedit/mooeditwindow.c:843
 msgid "Export as PDF..."
 msgstr "Экспорт в PDF..."
 
@@ -1111,7 +1119,7 @@ msgid "Find in files"
 msgstr "Поиск в файлах"
 
 #: ../moo/mooedit/plugins/moofind.c:252 ../moo/mooedit/plugins/moofind.c:253
-#: ../moo/mooedit/plugins/moofind.c:856
+#: ../moo/mooedit/plugins/moofind.c:864
 msgid "Find File"
 msgstr "Найти файл"
 
@@ -1119,11 +1127,11 @@ msgstr "Найти файл"
 msgid "Find file"
 msgstr "Найти файл"
 
-#: ../moo/mooedit/plugins/moofind.c:829
+#: ../moo/mooedit/plugins/moofind.c:837
 msgid "Find in Files"
 msgstr "Поиск в файлах"
 
-#: ../moo/mooedit/plugins/moofind.c:909
+#: ../moo/mooedit/plugins/moofind.c:917
 #, c-format
 msgid "*** %u match found ***"
 msgid_plural "*** %u matches found ***"
@@ -1131,7 +1139,7 @@ msgstr[0] "Найдено %u совпадение"
 msgstr[1] "Найдены %u совпадения"
 msgstr[2] "Найдены %u совпадений"
 
-#: ../moo/mooedit/plugins/moofind.c:915
+#: ../moo/mooedit/plugins/moofind.c:923
 #, c-format
 msgid "*** %u file found ***"
 msgid_plural "*** %u files found ***"
@@ -1139,7 +1147,7 @@ msgstr[0] "Найден %u файл"
 msgstr[1] "Найдены %u файла"
 msgstr[2] "Найдены %u файлов"
 
-#: ../moo/mooedit/plugins/moofind.c:953
+#: ../moo/mooedit/plugins/moofind.c:961
 msgid "Finds everything"
 msgstr "Найдётся всё!"
 
@@ -1764,6 +1772,9 @@ msgstr "Сохранить изменения в документе перед �
 #: ../moo/mooutils/moodialogs.c:349
 msgid "If you don't save, changes will be discarded"
 msgstr "Если вы не сохраните документ, изменения будут потеряны"
+
+#~ msgid "Close _All"
+#~ msgstr "Закрыть _Все"
 
 #~ msgid "_Settings"
 #~ msgstr "_Настройки"
