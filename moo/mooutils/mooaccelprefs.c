@@ -732,7 +732,6 @@ _moo_accel_prefs_dialog_new (MooActionCollection *collection)
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
                                              GTK_RESPONSE_OK,
                                              GTK_RESPONSE_CANCEL,
-                                             GTK_RESPONSE_REJECT,
                                              -1);
 #endif /* GTK_MINOR_VERSION >= 6 */
 

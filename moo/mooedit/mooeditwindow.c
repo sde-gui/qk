@@ -1351,6 +1351,10 @@ action_open_recent_dialog (MooEditWindow *window)
                                             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                             GTK_STOCK_OK, GTK_RESPONSE_OK,
                                             NULL);
+    gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
+					     GTK_RESPONSE_OK, 
+					     GTK_RESPONSE_CANCEL,
+					     -1);
     gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_CENTER_ON_PARENT);
     gtk_window_set_destroy_with_parent (GTK_WINDOW (dialog), TRUE);
     _moo_window_set_remember_size (GTK_WINDOW (dialog), "Editor/dialogs/recent-chooser-dialog", FALSE);
