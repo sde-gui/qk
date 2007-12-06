@@ -30,7 +30,7 @@ G_BEGIN_DECLS
 typedef struct _MooCompletionSimple         MooCompletionSimple;
 typedef struct _MooCompletionSimplePrivate  MooCompletionSimplePrivate;
 typedef struct _MooCompletionSimpleClass    MooCompletionSimpleClass;
-typedef struct _MooCompletionGroup    MooCompletionGroup;
+typedef struct _MooCompletionGroup          MooCompletionGroup;
 
 struct _MooCompletionSimple
 {
@@ -48,6 +48,8 @@ GType           moo_completion_simple_get_type          (void) G_GNUC_CONST;
 
 /* steals data */
 void            moo_completion_group_add_data           (MooCompletionGroup     *group,
+                                                         GList                  *data);
+void            moo_completion_group_remove_data        (MooCompletionGroup     *group,
                                                          GList                  *data);
 
 void            moo_completion_group_set_pattern        (MooCompletionGroup     *group,

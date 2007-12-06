@@ -53,6 +53,11 @@ struct _MooTextCompletionClass
                              GtkTreeModel       *model,
                              GtkTextIter        *cursor,
                              const char         *text);
+
+    void  (*replace_text)   (MooTextCompletion  *cmpl,
+                             GtkTextIter        *start,
+                             GtkTextIter        *end,
+                             const char         *text);
 };
 
 typedef char *(*MooTextCompletionTextFunc) (GtkTreeModel *model,
@@ -89,7 +94,16 @@ void            moo_text_completion_set_text_func   (MooTextCompletion  *cmpl,
                                                      gpointer            data,
                                                      GDestroyNotify      notify);
 
+char           *moo_text_completion_get_text        (MooTextCompletion  *cmpl,
+                                                     GtkTreeModel       *model,
+                                                     GtkTreeIter        *iter);
+
 MooTextPopup   *moo_text_completion_get_popup       (MooTextCompletion  *cmpl);
+
+void           _moo_text_completion_replace_text    (MooTextCompletion  *cmpl,
+                                                     GtkTextIter        *start,
+                                                     GtkTextIter        *end,
+                                                     const char         *text);
 
 
 G_END_DECLS

@@ -48,11 +48,12 @@ static void     moo_text_completion_populate            (MooTextCompletion  *cmp
                                                          const char         *text);
 static void     moo_text_completion_complete            (MooTextCompletion  *cmpl,
                                                          GtkTreeIter        *iter);
-static char    *moo_text_completion_get_text            (MooTextCompletion  *cmpl,
-                                                         GtkTreeModel       *model,
-                                                         GtkTreeIter        *iter);
 static void     moo_text_completion_update              (MooTextCompletion  *cmpl);
 static void     moo_text_completion_update_real         (MooTextCompletion  *cmpl);
+static void     moo_text_completion_replace_text_real   (MooTextCompletion  *cmpl,
+                                                         GtkTextIter        *start,
+                                                         GtkTextIter        *end,
+                                                         const char         *text);
 
 static gboolean moo_text_completion_empty               (MooTextCompletion  *cmpl);
 static gboolean moo_text_completion_unique              (MooTextCompletion  *cmpl,
@@ -93,6 +94,7 @@ moo_text_completion_class_init (MooTextCompletionClass *klass)
     klass->try_complete = moo_text_completion_try_complete_real;
     klass->update = moo_text_completion_update_real;
     klass->complete = moo_text_completion_complete_real;
+    klass->replace_text = moo_text_completion_replace_text_real;
 
     signals[FINISH] = g_signal_new ("finish",
                                     G_TYPE_FROM_CLASS (klass),
@@ -243,12 +245,7 @@ moo_text_completion_try_complete_real (MooTextCompletion *cmpl,
         prefix = find_common_prefix (cmpl, text);
 
         if (prefix && strcmp (text, prefix) != 0)
-        {
-            gtk_text_buffer_begin_user_action (cmpl->priv->buffer);
-            gtk_text_buffer_delete (cmpl->priv->buffer, &start, &end);
-            gtk_text_buffer_insert (cmpl->priv->buffer, &start, prefix, -1);
-            gtk_text_buffer_end_user_action (cmpl->priv->buffer);
-        }
+            _moo_text_completion_replace_text (cmpl, &start, &end, prefix);
     }
 
     moo_text_completion_show (cmpl);
@@ -266,13 +263,42 @@ finish:
     return;
 }
 
+void
+_moo_text_completion_replace_text (MooTextCompletion *cmpl,
+                                   GtkTextIter       *start,
+                                   GtkTextIter       *end,
+                                   const char        *text)
+{
+    g_return_if_fail (MOO_IS_TEXT_COMPLETION (cmpl));
+    g_return_if_fail (start != NULL && end != NULL);
+
+    gtk_text_buffer_begin_user_action (cmpl->priv->buffer);
+    MOO_TEXT_COMPLETION_GET_CLASS (cmpl)->replace_text (cmpl, start, end, text);
+    gtk_text_buffer_end_user_action (cmpl->priv->buffer);
+}
+
+static void
+moo_text_completion_replace_text_real (MooTextCompletion *cmpl,
+                                       GtkTextIter       *start,
+                                       GtkTextIter       *end,
+                                       const char        *text)
+{
+    if (!gtk_text_iter_equal (start, end))
+        gtk_text_buffer_delete (cmpl->priv->buffer, start, end);
+    if (text && text[0])
+        gtk_text_buffer_insert (cmpl->priv->buffer, start, text, -1);
+}
 
 static void
 moo_text_completion_complete (MooTextCompletion *cmpl,
                               GtkTreeIter       *iter)
 {
     g_return_if_fail (MOO_TEXT_COMPLETION_GET_CLASS(cmpl)->complete != NULL);
+
+    gtk_text_buffer_begin_user_action (cmpl->priv->buffer);
     MOO_TEXT_COMPLETION_GET_CLASS(cmpl)->complete (cmpl, cmpl->priv->model, iter);
+    gtk_text_buffer_end_user_action (cmpl->priv->buffer);
+
     moo_text_completion_finish (cmpl);
 }
 
@@ -292,31 +318,28 @@ moo_text_completion_complete_real (MooTextCompletion *cmpl,
     old_text = gtk_text_buffer_get_slice (cmpl->priv->buffer,
                                           &start, &end, TRUE);
 
-    gtk_text_buffer_begin_user_action (cmpl->priv->buffer);
-
-    if (strcmp (text, old_text))
+    if (strcmp (text, old_text) != 0)
     {
-        gtk_text_buffer_delete (cmpl->priv->buffer, &start, &end);
-        gtk_text_buffer_insert (cmpl->priv->buffer, &start, text, -1);
+        _moo_text_completion_replace_text (cmpl, &start, &end, text);
         set_cursor = TRUE;
     }
 
     if (set_cursor)
         gtk_text_buffer_place_cursor (cmpl->priv->buffer, &start);
 
-    gtk_text_buffer_end_user_action (cmpl->priv->buffer);
-
-    moo_text_completion_hide (cmpl);
-
     g_free (old_text);
+    g_free (text);
 }
 
 
-static char *
+char *
 moo_text_completion_get_text (MooTextCompletion *cmpl,
                               GtkTreeModel      *model,
                               GtkTreeIter       *iter)
 {
+    g_return_val_if_fail (MOO_IS_TEXT_COMPLETION (cmpl), NULL);
+    g_return_val_if_fail (model == cmpl->priv->model, NULL);
+    g_return_val_if_fail (iter != NULL, NULL);
     g_return_val_if_fail (cmpl->priv->text_func != NULL, NULL);
     return cmpl->priv->text_func (model, iter, cmpl->priv->text_func_data);
 }

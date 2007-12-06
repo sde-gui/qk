@@ -54,6 +54,7 @@ completion_sources =			\
 mooedit_sources =			\
 	$(mooedit_include_headers)	\
 	$(moocommand_stuff)		\
+	$(completion_sources)		\
 	moocmdview.c			\
 	moocommand.c			\
 	moocommanddisplay.c		\
@@ -207,7 +208,6 @@ BUILT_SOURCES += mooedit-ui.h medit-ui.h
 CLEANFILES += mooedit-ui.h medit-ui.h
 
 EXTRA_DIST +=				\
-	$(completion_sources)		\
 	$(mooedit_tools_DATA)		\
 	$(mooedit_lua_DATA)		\
 	medit-ui.xml			\

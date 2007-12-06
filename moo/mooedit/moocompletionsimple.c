@@ -12,10 +12,8 @@
 
 #include "mooedit/moocompletionsimple.h"
 #include "mooedit/mootextpopup.h"
-#include "mooedit/mooedit-script.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/eggregex.h"
-#include "mooscript/mooscript-parser.h"
+#include <glib/gregex.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
@@ -50,14 +48,14 @@ struct _MooCompletionSimplePrivate {
 struct _MooCompletionGroup {
     char *name;
 
-    EggRegex *regex;
+    GRegex *regex;
     guint *parens;
     guint n_parens;
 
     GCompletion *cmpl;
     GList *data;
     char *suffix;
-    MSNode *script;
+    gpointer script;
 
     MooCompletionFreeFunc free_func;
 };
@@ -230,36 +228,34 @@ list_sort_func (GtkTreeModel        *model,
 
 
 static void
-moo_completion_simple_exec_script (MooCompletionSimple *cmpl,
-                                   MooCompletionGroup  *group,
-                                   GtkTextIter         *start,
-                                   GtkTextIter         *end,
-                                   const char          *completion)
+moo_completion_simple_exec_script (G_GNUC_UNUSED MooCompletionSimple *cmpl,
+                                   G_GNUC_UNUSED MooCompletionGroup  *group,
+                                   G_GNUC_UNUSED GtkTextIter         *start,
+                                   G_GNUC_UNUSED GtkTextIter         *end,
+                                   G_GNUC_UNUSED const char          *completion)
 {
-    MSContext *ctx;
-    char *match;
-    MSValue *result;
-    GtkTextView *doc;
-
-    doc = moo_text_completion_get_doc (MOO_TEXT_COMPLETION (cmpl));
-    ctx = moo_edit_script_context_new (doc, NULL);
-    match = gtk_text_iter_get_slice (start, end);
-
-    ms_context_assign_string (ctx, MOO_COMPLETION_VAR_MATCH, match);
-    ms_context_assign_string (ctx, MOO_COMPLETION_VAR_COMPLETION, completion);
-
-    gtk_text_buffer_delete (get_buffer (cmpl), start, end);
-    gtk_text_buffer_place_cursor (get_buffer (cmpl), start);
-    result = ms_top_node_eval (group->script, ctx);
-
-    if (result)
-        ms_value_unref (result);
-    else
-        g_warning ("%s: %s", G_STRLOC,
-                   ms_context_get_error_msg (ctx));
-
-    g_free (match);
-    g_object_unref (ctx);
+//     char *match;
+//     GtkTextView *doc;
+//
+//     doc = moo_text_completion_get_doc (MOO_TEXT_COMPLETION (cmpl));
+//     ctx = moo_edit_script_context_new (doc, NULL);
+//     match = gtk_text_iter_get_slice (start, end);
+//
+//     ms_context_assign_string (ctx, MOO_COMPLETION_VAR_MATCH, match);
+//     ms_context_assign_string (ctx, MOO_COMPLETION_VAR_COMPLETION, completion);
+//
+//     gtk_text_buffer_delete (get_buffer (cmpl), start, end);
+//     gtk_text_buffer_place_cursor (get_buffer (cmpl), start);
+//     result = ms_top_node_eval (group->script, ctx);
+//
+//     if (result)
+//         ms_value_unref (result);
+//     else
+//         g_warning ("%s: %s", G_STRLOC,
+//                    ms_context_get_error_msg (ctx));
+//
+//     g_free (match);
+//     g_object_unref (ctx);
 }
 
 
@@ -286,18 +282,16 @@ moo_completion_simple_complete (MooTextCompletion *text_cmpl,
     moo_text_completion_get_region (MOO_TEXT_COMPLETION (cmpl), &start, &end);
     old_text = gtk_text_iter_get_slice (&start, &end);
 
-    gtk_text_buffer_begin_user_action (get_buffer (cmpl));
-
     if (group->script)
     {
         moo_completion_simple_exec_script (cmpl, group, &start, &end, text);
     }
     else
     {
-        if (strcmp (text, old_text))
+        if (strcmp (text, old_text) != 0)
         {
-            gtk_text_buffer_delete (get_buffer (cmpl), &start, &end);
-            gtk_text_buffer_insert (get_buffer (cmpl), &start, text, -1);
+            _moo_text_completion_replace_text (MOO_TEXT_COMPLETION (cmpl),
+                                               &start, &end, text);
             set_cursor = TRUE;
         }
 
@@ -324,7 +318,7 @@ moo_completion_simple_complete (MooTextCompletion *text_cmpl,
 
             if (do_insert)
             {
-                gtk_text_buffer_insert (get_buffer (cmpl), &start, group->suffix, -1);
+                _moo_text_completion_replace_text (text_cmpl, &start, &start, group->suffix);
                 set_cursor = TRUE;
             }
         }
@@ -332,10 +326,6 @@ moo_completion_simple_complete (MooTextCompletion *text_cmpl,
 
     if (set_cursor)
         gtk_text_buffer_place_cursor (get_buffer (cmpl), &start);
-
-    gtk_text_buffer_end_user_action (get_buffer (cmpl));
-
-    moo_text_completion_hide (MOO_TEXT_COMPLETION (cmpl));
 
     g_free (old_text);
 }
@@ -534,6 +524,19 @@ moo_completion_group_add_data (MooCompletionGroup *group,
 }
 
 
+void
+moo_completion_group_remove_data (MooCompletionGroup *group,
+                                  GList              *data)
+{
+    g_return_if_fail (group != NULL);
+
+    if (!data)
+        return;
+
+    g_completion_remove_items (group->cmpl, data);
+}
+
+
 static gboolean
 moo_completion_group_find (MooCompletionGroup *group,
                            const char         *line,
@@ -554,8 +557,8 @@ moo_completion_group_find (MooCompletionGroup *group,
         {
             int start_pos = -1, end_pos = -1;
 
-            g_regex_fetch_pos (match_info, group->parens[i],
-                               &start_pos, &end_pos);
+            g_match_info_fetch_pos (match_info, group->parens[i],
+                                    &start_pos, &end_pos);
 
             if (start_pos >= 0 && end_pos >= 0)
             {
@@ -599,7 +602,7 @@ moo_completion_group_set_pattern (MooCompletionGroup *group,
                                   const guint        *parens,
                                   guint               n_parens)
 {
-    EggRegex *regex;
+    GRegex *regex;
     GError *error = NULL;
     char *real_pattern;
 
@@ -617,7 +620,8 @@ moo_completion_group_set_pattern (MooCompletionGroup *group,
         goto err;
     }
 
-    g_regex_free (group->regex);
+    if (group->regex)
+        g_regex_unref (group->regex);
     group->regex = regex;
 
     g_free (group->parens);
@@ -639,8 +643,9 @@ moo_completion_group_set_pattern (MooCompletionGroup *group,
 err:
     if (error)
         g_error_free (error);
+    if (regex)
+        g_regex_unref (regex);
     g_free (real_pattern);
-    g_regex_free (regex);
 }
 
 
@@ -659,19 +664,19 @@ moo_completion_group_set_suffix (MooCompletionGroup *group,
 
 
 void
-moo_completion_group_set_script (MooCompletionGroup *group,
-                                 const char         *script)
+moo_completion_group_set_script (G_GNUC_UNUSED MooCompletionGroup *group,
+                                 G_GNUC_UNUSED const char         *script)
 {
-    g_return_if_fail (group != NULL);
-
-    if (group->script)
-    {
-        ms_node_unref (group->script);
-        group->script = NULL;
-    }
-
-    if (script)
-        group->script = ms_script_parse (script);
+//     g_return_if_fail (group != NULL);
+//
+//     if (group->script)
+//     {
+//         ms_node_unref (group->script);
+//         group->script = NULL;
+//     }
+//
+//     if (script)
+//         group->script = ms_script_parse (script);
 }
 
 
@@ -680,14 +685,15 @@ moo_completion_group_free (MooCompletionGroup *group)
 {
     g_return_if_fail (group != NULL);
 
-    g_regex_free (group->regex);
+    if (group->regex)
+        g_regex_unref (group->regex);
     g_free (group->parens);
     g_completion_free (group->cmpl);
     g_free (group->suffix);
     g_free (group->name);
 
-    if (group->script)
-        ms_node_unref (group->script);
+//     if (group->script)
+//         ms_node_unref (group->script);
 
     if (group->free_func)
         g_list_foreach (group->data, (GFunc) group->free_func, NULL);
