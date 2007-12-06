@@ -81,6 +81,9 @@ char      **moo_get_data_subdirs            (const char     *subdir,
                                              guint          *n_dirs);
 #define moo_get_data_files moo_get_data_subdirs
 
+char       *moo_tempnam                     (void);
+void        moo_cleanup                     (void);
+
 const char *moo_get_locale_dir              (void);
 const char *const *_moo_get_shared_data_dirs (void);
 

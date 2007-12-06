@@ -44,7 +44,12 @@
 
 
 G_LOCK_DEFINE_STATIC (moo_user_data_dir);
+G_LOCK_DEFINE_STATIC (moo_temp_dir);
 static char *moo_user_data_dir;
+static char *moo_temp_dir;
+
+static void     moo_install_atexit      (void);
+static void     moo_remove_tempdir      (void);
 
 
 #ifdef __WIN32__
@@ -908,16 +913,10 @@ log_func_file (const char       *log_domain,
     }
 #endif /* __WIN32__ */
 
-#ifdef __WIN32__
-#define LT "\r\n"
-#else
-#define LT "\n"
-#endif
     if (log_domain)
-        string = g_strdup_printf ("%s: %s" LT, log_domain, message);
+        string = g_strdup_printf ("%s: %s\n", log_domain, message);
     else
-        string = g_strdup_printf ("%s" LT, message);
-#undef LT
+        string = g_strdup_printf ("%s\n", message);
 
     print_func_file (string);
     g_free (string);
@@ -1142,6 +1141,123 @@ moo_get_prgname (void)
     }
 
     return name;
+}
+
+
+char *
+moo_tempnam (void)
+{
+    int i;
+    char *filename = NULL;
+    static int counter;
+    G_LOCK_DEFINE_STATIC (counter);
+
+    G_LOCK (moo_temp_dir);
+
+    if (!moo_temp_dir)
+    {
+        char *dirname = NULL;
+        const char *short_name;
+
+        short_name = moo_get_prgname ();
+
+        for (i = 0; i < 1000; ++i)
+        {
+            char *basename;
+
+            basename = g_strdup_printf ("%s-%08x", short_name, g_random_int ());
+            dirname = g_build_filename (g_get_tmp_dir (), basename, NULL);
+            g_free (basename);
+
+            if (_moo_mkdir (dirname))
+            {
+                g_free (dirname);
+                dirname = NULL;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        moo_temp_dir = dirname;
+        moo_install_atexit ();
+    }
+
+    G_UNLOCK (moo_temp_dir);
+
+    g_return_val_if_fail (moo_temp_dir != NULL, NULL);
+
+    G_LOCK (counter);
+
+    for (i = counter + 1; i < counter + 1000 && !filename; ++i)
+    {
+        char *basename;
+
+        basename = g_strdup_printf ("tmpfile-%03d", i);
+        filename = g_build_filename (moo_temp_dir, basename, NULL);
+
+        if (g_file_test (filename, G_FILE_TEST_EXISTS))
+        {
+            g_free (filename);
+            filename = NULL;
+        }
+
+        g_free (basename);
+    }
+
+    counter = i;
+
+    G_UNLOCK (counter);
+
+    if (!filename)
+        g_warning ("%s: could not generate temp file name", G_STRLOC);
+
+    return filename;
+}
+
+static void
+moo_remove_tempdir (void)
+{
+    if (moo_temp_dir)
+    {
+        GError *error = NULL;
+        _moo_remove_dir (moo_temp_dir, TRUE, &error);
+
+        if (error)
+        {
+            _moo_message ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
+
+        g_free (moo_temp_dir);
+        moo_temp_dir = NULL;
+    }
+}
+
+static void
+moo_atexit_handler (void)
+{
+    moo_remove_tempdir ();
+}
+
+static void
+moo_install_atexit (void)
+{
+    static gboolean installed;
+
+    if (!installed)
+    {
+        atexit (moo_atexit_handler);
+        installed = TRUE;
+    }
+}
+
+
+void
+moo_cleanup (void)
+{
+    moo_remove_tempdir ();
 }
 
 

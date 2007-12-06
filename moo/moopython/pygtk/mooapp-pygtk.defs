@@ -115,18 +115,6 @@
   )
 )
 
-(define-method tempnam
-  (of-object "MooApp")
-  (c-name "moo_app_tempnam")
-  (return-type "char*")
-)
-
-(define-method create_user_data_dir
-  (of-object "MooApp")
-  (c-name "moo_app_create_user_data_dir")
-  (return-type "char*")
-)
-
 (define-method send_msg
   (of-object "MooApp")
   (c-name "moo_app_send_msg")
