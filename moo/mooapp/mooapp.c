@@ -67,11 +67,13 @@
 #endif
 #define TMPL_STATE_FILE "%s.state"
 
-static MooApp *moo_app_instance = NULL;
-static MooAppInput *moo_app_input = NULL;
+static struct {
+    MooApp *instance;
+    MooAppInput *input;
+    gboolean atexit_installed;
+} moo_app_data;
 
 static volatile int signal_received;
-
 
 struct _MooAppPrivate {
     char      **argv;
@@ -96,8 +98,6 @@ struct _MooAppPrivate {
     guint       quit_handler_id;
     gboolean    use_editor;
     gboolean    quit_on_editor_close;
-
-    char       *tmpdir;
 };
 
 
@@ -156,6 +156,9 @@ static void     moo_app_set_version     (MooApp             *app,
 
 static void     moo_app_save_session    (MooApp             *app);
 static void     moo_app_write_session   (MooApp             *app);
+
+static void     moo_app_install_cleanup (void);
+static void     moo_app_cleanup         (void);
 
 static void     start_input             (MooApp             *app);
 
@@ -448,11 +451,11 @@ moo_app_class_init (MooAppClass *klass)
 static void
 moo_app_instance_init (MooApp *app)
 {
-    g_return_if_fail (moo_app_instance == NULL);
+    g_return_if_fail (moo_app_data.instance == NULL);
 
     _moo_stock_init ();
 
-    moo_app_instance = app;
+    moo_app_data.instance = app;
 
     app->priv = g_new0 (MooAppPrivate, 1);
     app->priv->use_session = -1;
@@ -491,7 +494,7 @@ moo_app_constructor (GType           type,
     GObject *object;
     MooApp *app;
 
-    if (moo_app_instance != NULL)
+    if (moo_app_data.instance != NULL)
     {
         g_critical ("attempt to create second instance of application class");
         g_critical ("going to crash now");
@@ -509,6 +512,7 @@ moo_app_constructor (GType           type,
 #if defined(HAVE_SIGNAL) && defined(SIGINT)
     setup_signals (sigint_handler);
 #endif
+    moo_app_install_cleanup ();
 
     install_common_actions ();
     install_editor_actions ();
@@ -524,7 +528,7 @@ moo_app_finalize (GObject *object)
 
     moo_app_quit_real (app);
 
-    moo_app_instance = NULL;
+    moo_app_data.instance = NULL;
 
     g_free (app->priv->rc_files[0]);
     g_free (app->priv->rc_files[1]);
@@ -691,7 +695,7 @@ moo_app_get_property (GObject        *object,
 MooApp*
 moo_app_get_instance (void)
 {
-    return moo_app_instance;
+    return moo_app_data.instance;
 }
 
 
@@ -711,32 +715,6 @@ moo_app_set_exit_code (MooApp      *app,
 {
     g_return_if_fail (MOO_IS_APP (app));
     app->priv->exit_code = code;
-}
-
-
-char *
-moo_app_create_user_data_dir (MooApp *app)
-{
-    char *dir;
-    GError *error = NULL;
-
-    g_return_val_if_fail (MOO_IS_APP (app), NULL);
-
-    dir = moo_get_user_data_dir ();
-    g_return_val_if_fail (dir != NULL, NULL);
-
-    if (g_file_test (dir, G_FILE_TEST_IS_DIR))
-        return dir;
-
-    if (!_moo_create_dir (dir, &error))
-    {
-        g_warning ("%s: %s", G_STRLOC, error->message);
-        g_error_free (error);
-        g_free (dir);
-        dir = NULL;
-    }
-
-    return dir;
 }
 
 
@@ -937,15 +915,16 @@ static void
 start_input (MooApp *app)
 {
     if (app->priv->run_input)
-        moo_app_input = _moo_app_input_new (app->priv->info->short_name,
-                                            app->priv->instance_name,
-                                            TRUE);
+        moo_app_data.input =
+            _moo_app_input_new (app->priv->info->short_name,
+                                app->priv->instance_name,
+                                TRUE);
 }
 
 const char *
 moo_app_get_input_pipe_name (void)
 {
-    return moo_app_input ? _moo_app_input_get_path (moo_app_input) : NULL;
+    return moo_app_data.input ? _moo_app_input_get_path (moo_app_data.input) : NULL;
 }
 
 
@@ -1041,9 +1020,10 @@ check_signal (void)
 {
     if (signal_received)
     {
-        printf ("%s\n", g_strsignal (signal_received));
-        MOO_APP_GET_CLASS(moo_app_instance)->quit (moo_app_instance);
-        exit (0);
+        g_print ("%s\n", g_strsignal (signal_received));
+        if (moo_app_data.instance)
+            MOO_APP_GET_CLASS(moo_app_data.instance)->quit (moo_app_data.instance);
+        exit (EXIT_FAILURE);
     }
 
     return TRUE;
@@ -1133,6 +1113,33 @@ moo_app_try_quit_real (MooApp *app)
 
 
 static void
+moo_app_install_cleanup (void)
+{
+    if (!moo_app_data.atexit_installed)
+    {
+        moo_app_data.atexit_installed = TRUE;
+        atexit (moo_app_cleanup);
+    }
+}
+
+static void
+moo_app_cleanup (void)
+{
+    if (moo_app_data.input)
+    {
+        _moo_app_input_free (moo_app_data.input);
+        moo_app_data.input = NULL;
+    }
+
+#ifdef MOO_USE_XDGMIME
+    xdg_mime_shutdown ();
+#endif
+
+    moo_cleanup ();
+}
+
+
+static void
 moo_app_quit_real (MooApp *app)
 {
     guint i;
@@ -1144,12 +1151,6 @@ moo_app_quit_real (MooApp *app)
 
     g_object_unref (app->priv->sm_client);
     app->priv->sm_client = NULL;
-
-    if (moo_app_input)
-    {
-        _moo_app_input_free (moo_app_input);
-        moo_app_input = NULL;
-    }
 
 #ifdef MOO_BUILD_EDIT
     moo_editor_close_all (app->priv->editor, FALSE, FALSE);
@@ -1173,24 +1174,7 @@ moo_app_quit_real (MooApp *app)
         i++;
     }
 
-    if (app->priv->tmpdir)
-    {
-        GError *error = NULL;
-        _moo_remove_dir (app->priv->tmpdir, TRUE, &error);
-
-        if (error)
-        {
-            g_warning ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
-
-        g_free (app->priv->tmpdir);
-        app->priv->tmpdir = NULL;
-    }
-
-#ifdef MOO_USE_XDGMIME
-    xdg_mime_shutdown ();
-#endif
+    moo_app_cleanup ();
 }
 
 
@@ -1793,59 +1777,6 @@ moo_app_exec_cmd_real (MooApp             *app,
         default:
             g_warning ("%s: got unknown command %c", G_STRLOC, cmd);
     }
-}
-
-
-char*
-moo_app_tempnam (MooApp *app)
-{
-    int i;
-    char *basename;
-    char *filename;
-
-    g_return_val_if_fail (MOO_IS_APP (app), NULL);
-
-    if (!app->priv->tmpdir)
-    {
-        char *dirname = NULL;
-
-        for (i = 0; i < 1000; ++i)
-        {
-            basename = g_strdup_printf ("%s-%08x",
-                                        app->priv->info->short_name,
-                                        g_random_int ());
-            dirname = g_build_filename (g_get_tmp_dir (), basename, NULL);
-            g_free (basename);
-
-            if (_moo_mkdir (dirname))
-            {
-                g_free (dirname);
-                dirname = NULL;
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        g_return_val_if_fail (dirname != NULL, NULL);
-        app->priv->tmpdir = dirname;
-    }
-
-    for (i = 0; i < 1000; ++i)
-    {
-        basename = g_strdup_printf ("%08x.tmp", g_random_int ());
-        filename = g_build_filename (app->priv->tmpdir, basename, NULL);
-        g_free (basename);
-
-        if (g_file_test (filename, G_FILE_TEST_EXISTS))
-            g_free (filename);
-        else
-            return filename;
-    }
-
-    g_warning ("%s: could not generate temp file name", G_STRLOC);
-    return NULL;
 }
 
 

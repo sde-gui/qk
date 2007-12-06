@@ -90,8 +90,6 @@ void             moo_app_set_exit_code          (MooApp     *app,
 
 const MooAppInfo*moo_app_get_info               (MooApp     *app);
 
-char            *moo_app_create_user_data_dir   (MooApp     *app);
-
 MooEditor       *moo_app_get_editor             (MooApp     *app);
 
 void             moo_app_prefs_dialog           (GtkWidget  *parent);
@@ -103,8 +101,6 @@ char            *moo_app_get_system_info        (MooApp     *app);
 MooUIXML        *moo_app_get_ui_xml             (MooApp     *app);
 void             moo_app_set_ui_xml             (MooApp     *app,
                                                  MooUIXML   *xml);
-
-char            *moo_app_tempnam                (MooApp     *app);
 
 gboolean         moo_app_send_msg               (MooApp     *app,
                                                  const char *pid,
