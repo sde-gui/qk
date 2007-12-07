@@ -587,8 +587,12 @@ load_directory (const char       *path,
 
     for (i = 0; i < names->len; ++i)
     {
-        char *filename = g_build_filename (path, names->pdata[i], NULL);
+        char *filename;
+
+        filename = g_build_filename (path, names->pdata[i], NULL);
         load_file (filename, ((char*)names->pdata[i]) + NAME_PREFIX_LEN, type, list, ids);
+
+        g_free (filename);
         g_free (names->pdata[i]);
     }
 

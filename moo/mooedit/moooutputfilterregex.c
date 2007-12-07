@@ -214,7 +214,7 @@ parse_file_line (MooOutputFilterRegex *filter,
                  const char           *character)
 {
     MooFileLineData *data;
-    char *freeme;
+    char *freeme = NULL;
 
     file = file && *file ? file : NULL;
     line = line && *line ? line : NULL;
@@ -238,6 +238,7 @@ parse_file_line (MooOutputFilterRegex *filter,
     data->line = _moo_convert_string_to_int (line, 0) - 1;
     data->character = _moo_convert_string_to_int (character, 0) - 1;
 
+    g_free (freeme);
     return data;
 }
 

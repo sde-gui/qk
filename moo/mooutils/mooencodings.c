@@ -339,6 +339,9 @@ enc_mgr_save (EncodingsManager *enc_mgr)
 
     moo_markup_set_content (moo_markup_get_element (root, ELM_LAST_OPEN), enc_mgr->last_open);
     moo_markup_set_content (moo_markup_get_element (root, ELM_LAST_SAVE), enc_mgr->last_save);
+
+    if (string)
+        g_string_free (string, TRUE);
 }
 
 static const char *
