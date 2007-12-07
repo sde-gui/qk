@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2007-12-03 22:34-0600\n"
-"PO-Revision-Date: 2007-06-16 21:04-0600\n"
+"PO-Revision-Date: 2007-12-06 04:32+0800\n"
 "Last-Translator: Chaosye <chao-7410@163.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -25,7 +25,7 @@ msgstr "medit"
 
 #: ../../../medit/medit-app.opag:268
 msgid "medit is a text editor"
-msgstr ""
+msgstr "medit文本编辑器"
 
 #. menu item label
 #: ../moo/mooapp/mooapp.c:1310
@@ -61,7 +61,7 @@ msgstr "关于"
 #. Translators: do not translate the part before |
 #: ../moo/mooapp/glade/mooappabout.glade.h:6
 msgid "Dialog title|Credits"
-msgstr ""
+msgstr "感谢"
 
 #. Translators: do not translate the part before |
 #: ../moo/mooapp/glade/mooappabout.glade.h:8
@@ -81,12 +81,12 @@ msgstr "感谢"
 #. Tab label in Credits dialog
 #: ../moo/mooapp/glade/mooappabout.glade.h:14
 msgid "Translated by"
-msgstr ""
+msgstr "译者"
 
 #. Tab label in Credits dialog
 #: ../moo/mooapp/glade/mooappabout.glade.h:16
 msgid "Written by"
-msgstr ""
+msgstr "作者"
 
 #. License button label in About dialog
 #: ../moo/mooapp/glade/mooappabout.glade.h:18
@@ -101,23 +101,23 @@ msgstr "打开文件时尝试使用的编码列表,\"LOCALE\"为本地默认编�
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:2
 msgid "Dialogs"
-msgstr ""
+msgstr "对话"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:3
 msgid "Enable session support"
-msgstr ""
+msgstr "启用会话支持"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:4
 msgid "Encoding for new files:"
-msgstr ""
+msgstr "新建文档时使用的编码"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:5
 msgid "Encodings to autodetect:"
-msgstr ""
+msgstr "用于自动检测的编码:"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:6
 msgid "Loading"
-msgstr ""
+msgstr "加载中"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
 msgid "Make backups"
@@ -125,11 +125,11 @@ msgstr "创建备份"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
 msgid "Open dialog shows current document directory"
-msgstr ""
+msgstr "在打开对话框中显示当前文档目录"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:9
 msgid "Remove trailing spaces"
-msgstr "删除后面的空格"
+msgstr "删除行末空格"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:10
 msgid "Saving"
@@ -137,7 +137,7 @@ msgstr "保存"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
 msgid "Sessions"
-msgstr ""
+msgstr "会话"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:1
 msgid "Backspace key unindents"
@@ -145,7 +145,7 @@ msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:2
 msgid "Default language:"
-msgstr "默认语言:"
+msgstr "默认代码:"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:3
 msgid "Enable auto indentation"
@@ -153,7 +153,7 @@ msgstr "启用自动缩进"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:4
 msgid "Indent width, spaces:"
-msgstr "缩进宽度的空格数:"
+msgstr "缩进空格数:"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:5
 msgid "Keyboard"
@@ -166,7 +166,7 @@ msgstr "其它"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:7
 msgid "Smart Home and End"
-msgstr "启用智能Home键和End键"
+msgstr "智能Home键和End键"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
 msgid "Tab key indents"
@@ -174,7 +174,7 @@ msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:9
 msgid "Use spaces to indent"
-msgstr "缩进时使用空格"
+msgstr "使用空格缩进"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:1
 #: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:3
@@ -183,15 +183,15 @@ msgstr "扩展:"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:2
 msgid "File filters"
-msgstr "文档过滤"
+msgstr "文件类型"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:3
 msgid "Language-specific options"
-msgstr "特定语言选项"
+msgstr "代码特定选项"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:4
 msgid "Language:"
-msgstr "语言:"
+msgstr "代码:"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:5
 #: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:5
@@ -214,11 +214,11 @@ msgstr "不拆分单词"
 #. Part of the phrase "Draw right margin at column [XX]"
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:4
 msgid "Draw right margin"
-msgstr ""
+msgstr "绘制右边界"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:5
 msgid "Enable syntax highlighting"
-msgstr "启用语法高亮"
+msgstr "启用语法显亮"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:6
 msgid "Enable text wrapping"
@@ -258,7 +258,7 @@ msgstr "显示制表符"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:16
 msgid "Show trailing spaces"
-msgstr "显示后面的空格"
+msgstr "显示行末空格"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:17
 msgid "Text wrapping"
@@ -271,7 +271,7 @@ msgstr "使用主题默认字体"
 #. Part of the phrase "Draw right margin at column [XX]"
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:20
 msgid "at column"
-msgstr ""
+msgstr "在列"
 
 #: ../moo/mooedit/glade/mooeditsavemult.glade.h:1
 msgid "Select the documents you want to save:"
@@ -323,7 +323,7 @@ msgstr "输出:"
 
 #: ../moo/mooedit/glade/mooedittools.glade.h:13
 msgid "Tools menu"
-msgstr "工具栏"
+msgstr "工具菜单"
 
 #: ../moo/mooedit/glade/moopluginprefs.glade.h:1
 msgid "<b>Author:</b>"
@@ -388,12 +388,12 @@ msgstr "使用自定义字体:"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:14
 msgid "Wrap long lines"
-msgstr "长行换行"
+msgstr "换行"
 
 #. Part of the phrase "Print line numbers" "every" "1" "lines"
 #: ../moo/mooedit/glade/mooprint.glade.h:16
 msgid "every"
-msgstr "所有"
+msgstr "全部"
 
 #. Part of the phrase "Print line numbers" "every" "1" "lines"
 #: ../moo/mooedit/glade/mooprint.glade.h:18
@@ -441,7 +441,7 @@ msgstr "选项"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:9
 msgid "Regular expression"
-msgstr "常规表达式"
+msgstr "正则表达式"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:10
 msgid "Replace With"
@@ -457,7 +457,7 @@ msgstr "是否替换?"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:13
 msgid "Replacement text:"
-msgstr "字符替换"
+msgstr "要替换的文字:"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:14
 msgid "Selected text"
@@ -494,7 +494,7 @@ msgstr "区分大小写(_C)"
 
 #: ../moo/mooedit/glade/quicksearch.glade.h:2
 msgid "_Regular expression"
-msgstr "常规表达式"
+msgstr "正则表达式(_R)"
 
 #. menu item label
 #: ../moo/mooedit/medit-ui.xml.h:2
@@ -549,7 +549,7 @@ msgstr "无"
 
 #: ../moo/mooedit/moocommand-unx.c:957
 msgid "Input|Selected lines"
-msgstr "分隔线"
+msgstr ""
 
 #: ../moo/mooedit/moocommand-unx.c:957
 msgid "Input|Selection"
@@ -582,7 +582,7 @@ msgstr "新建文档"
 
 #: ../moo/mooedit/moocommand-lua.c:287
 msgid "Lua script"
-msgstr ""
+msgstr "Lua 脚本"
 
 #. Translators: number of documents here is always greater than one, so
 #. ignore singular form (which is simply copy of the plural here)
@@ -628,7 +628,7 @@ msgstr "保存时发生错误"
 msgid ""
 "Could not convert file to requested character encoding %s. File was saved in "
 "UTF-8 encoding."
-msgstr "无法把文档转换为所选的编码 %s.文档将被保存为UTF-8"
+msgstr "无法把文档的编码转换为 %s.文档将被保存为UTF-8"
 
 #. Could not open file foo.txt
 #: ../moo/mooedit/mooeditdialogs.c:480
@@ -649,14 +649,15 @@ msgstr "无法打开文档"
 msgid ""
 "Could not open file using character encoding %s. The file may be binary or "
 "encoding may be specified incorrectly."
-msgstr "无法用 %s 编码打开文档.文档可能是非文本文档或者所选编码不对."
+msgstr "无法以编码 %s 打开文档.文档可能是非文本文档或者所选编码不正确."
 
 #: ../moo/mooedit/mooeditdialogs.c:492
 #, c-format
 msgid ""
 "Could not detect file character encoding. Please make sure the file is not "
 "binary and try to select encoding in the Open dialog."
-msgstr "无法确定文档编码, 请确保文档为文本文档并且尝试在打开对话框中指定编码."
+msgstr ""
+"无法确定文档编码, 请确保文档为文本文档并且尝试在打开对话框中指定文字编码."
 
 #. Could not reload file foo.txt
 #: ../moo/mooedit/mooeditdialogs.c:527
@@ -684,7 +685,7 @@ msgstr "重新加载(_R)"
 #: ../moo/mooedit/mooeditdialogs.c:611
 #, c-format
 msgid "Overwrite modified file '%s'?"
-msgstr "覆盖已修改文档'%s' ?"
+msgstr "覆盖被修改文档'%s' ?"
 
 #: ../moo/mooedit/mooeditdialogs.c:612
 #, c-format
@@ -764,7 +765,7 @@ msgstr "全部关闭"
 
 #: ../moo/mooedit/mooeditwindow.c:474
 msgid "Close A_ll"
-msgstr "全部关闭(_L)"
+msgstr "全部关闭(_l)"
 
 #: ../moo/mooedit/mooeditwindow.c:475
 msgid "Close all documents"
@@ -856,11 +857,11 @@ msgstr "显示行号"
 
 #: ../moo/mooedit/mooeditwindow.c:665
 msgid "Focus Document"
-msgstr "聚焦到文档"
+msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:666
 msgid "_Focus Document"
-msgstr "聚焦到文档(_F)"
+msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:717 ../moo/mooedit/mooeditwindow.c:718
 msgid "Toggle Bookmark"
@@ -959,11 +960,11 @@ msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:1484
 msgid "Reopen Using Encoding"
-msgstr ""
+msgstr "用特定的编码重新打开"
 
 #: ../moo/mooedit/mooeditwindow.c:1534
 msgid "_Encoding"
-msgstr ""
+msgstr "编码(_E)"
 
 #: ../moo/mooedit/mooeditwindow.c:1936 ../moo/moofileview/moofileview.c:1216
 #: ../moo/moofileview/moofileview.c:1217
@@ -974,12 +975,12 @@ msgstr "书签"
 #: ../moo/mooedit/mooeditwindow.c:3416
 #, c-format
 msgid "Line: %s Col: %s"
-msgstr ""
+msgstr "行: %s 列: %s"
 
 #: ../moo/mooedit/mooeditwindow.c:3417
 #, c-format
 msgid "Chars: %s"
-msgstr ""
+msgstr "字符: %s"
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
 #: ../moo/mooedit/mooeditwindow.c:3457
@@ -1011,7 +1012,7 @@ msgstr "创建命令"
 #. these are common source files encodings.
 #: ../moo/mooedit/mooeditfileops.c:244
 msgid "encodings_list"
-msgstr ""
+msgstr "encodings_list"
 
 #: ../moo/mooedit/mooeditfileops.c:1223
 #: ../moo/mooedit/plugins/moofileselector.c:538
@@ -1025,32 +1026,32 @@ msgstr "未命名 %d"
 
 #: ../moo/mooedit/mootextfind.c:487
 msgid "No search term entered"
-msgstr "没有输入查找项目"
+msgstr "没有输入要查找项目"
 
 #: ../moo/mooedit/mootextfind.c:794 ../moo/mooedit/mootextfind.c:900
 #: ../moo/mooedit/mootextfind.c:1055
 msgid "Search hit top, continuing at bottom"
-msgstr "查找到达顶端时,从底端继续"
+msgstr "当查找到达文件顶端时,从底端继续"
 
 #: ../moo/mooedit/mootextfind.c:796 ../moo/mooedit/mootextfind.c:898
 #: ../moo/mooedit/mootextfind.c:978
 msgid "Search hit bottom, continuing at top"
-msgstr "查找到达底端时,从顶端继续"
+msgstr "当查找到达文件底端时,从顶端继续"
 
 #: ../moo/mooedit/mootextfind.c:805 ../moo/mooedit/mootextfind.c:910
 #: ../moo/mooedit/mootextfind.c:986 ../moo/mooedit/mootextfind.c:1063
 #, c-format
 msgid "Pattern not found: %s"
-msgstr "没有找到模式 %s"
+msgstr "没有找到匹配 %s"
 
 #: ../moo/mooedit/mootextfind.c:892
 #, c-format
 msgid "Found single instance of pattern '%s'"
-msgstr "找到一个模式实例 '%s'"
+msgstr "找到一个匹配 '%s'"
 
 #: ../moo/mooedit/mootextfind.c:1098
 msgid "No replacement made"
-msgstr "没有发生替换"
+msgstr "没有替换"
 
 #: ../moo/mooedit/mootextfind.c:1104
 #, c-format
@@ -1309,7 +1310,7 @@ msgstr "添加分隔线"
 
 #: ../moo/moofileview/glade/moobookmark-editor.glade.h:2
 msgid "Add bookmark"
-msgstr "添加到书签"
+msgstr "添加书签"
 
 #: ../moo/moofileview/glade/moobookmark-editor.glade.h:3
 msgid "Add separator"
@@ -1317,7 +1318,7 @@ msgstr "添加分隔线"
 
 #: ../moo/moofileview/glade/moobookmark-editor.glade.h:5
 msgid "Delete selected items"
-msgstr "删除己选中项目"
+msgstr "删除选中项目"
 
 #: ../moo/moofileview/glade/moobookmark-editor.glade.h:6
 #: ../moo/moofileview/moofileview.c:1233 ../moo/moofileview/moofileview.c:1234
@@ -1358,11 +1359,11 @@ msgstr "排列时区分大小写"
 
 #: ../moo/moofileview/moofileview.c:1225 ../moo/moofileview/moofileview.c:1226
 msgid "Add Bookmark"
-msgstr "添加到书签"
+msgstr "添加书签"
 
 #: ../moo/moofileview/moofileview-ui.xml.h:2
 msgid "Open _With"
-msgstr "打开(_W)"
+msgstr "用...打开(_W)"
 
 #: ../moo/moopython/plugins/pycmd.py:81
 msgid "Python script"
@@ -1404,7 +1405,7 @@ msgstr "python输出"
 
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:1
 msgid "Configure Shortcuts"
-msgstr "快捷键设置"
+msgstr "设置快捷键"
 
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:2
 msgid "Default key:"
@@ -1448,11 +1449,11 @@ msgstr "自动检测"
 #. Translators: do not translate the part before |
 #: ../moo/mooutils/mooencodings.c:715
 msgid "Encodings combo submenu|Other"
-msgstr ""
+msgstr "其它"
 
 #: ../moo/mooutils/mooencodings.c:814
 msgid "Charact_er encoding:"
-msgstr "字符编码(_C):"
+msgstr "编码(_C):"
 
 #: ../moo/mooutils/mooencodings-data.h:12
 msgid "West European"
@@ -1672,7 +1673,7 @@ msgstr "新建窗口(_W)"
 
 #: ../moo/mooutils/moowindow.c:174
 msgid "Configure _Shortcuts..."
-msgstr "快捷键设置(_S)"
+msgstr "设置快捷键(_S)"
 
 #: ../moo/mooutils/moowindow.c:182 ../moo/mooutils/moowindow.c:183
 msgid "Show Toolbar"
@@ -1696,44 +1697,44 @@ msgstr "显示图标和标题(_A)"
 
 #: ../moo/mooutils/moowindow.c:774
 msgid "Toolbar _Style"
-msgstr ""
+msgstr "工具栏样式(_S)"
 
 #: ../moo/mooutils/moopane.c:606
 msgid "Remove pane"
-msgstr ""
+msgstr "删除面板"
 
 #: ../moo/mooutils/moopane.c:614
 msgid "Hide pane"
-msgstr ""
+msgstr "隐藏面板"
 
 #: ../moo/mooutils/moopane.c:618
 msgid "Sticky"
-msgstr ""
+msgstr "粘附"
 
 #: ../moo/mooutils/moopane.c:622
 msgid "Detach pane"
-msgstr ""
+msgstr "分离面板"
 
 #: ../moo/mooutils/moopane.c:635
 msgid "Attach"
-msgstr ""
+msgstr "依附在主窗口"
 
 #: ../moo/mooutils/moopane.c:639
 msgid "Keep on top"
-msgstr ""
+msgstr "总在最上"
 
 #: ../moo/mooutils/moohelp.c:193
 msgid "Help files not found"
-msgstr ""
+msgstr "无法找到帮助文件"
 
 #: ../moo/mooutils/moohelp.c:205
 #, c-format
 msgid "File '%s' is missing in the directory '%s'"
-msgstr ""
+msgstr "文件 '%s' 不在目录 '%s'中 "
 
 #: ../moo/mooutils/moohelp.c:208
 msgid "Could not find help file"
-msgstr ""
+msgstr "无法找到帮助文件"
 
 #: ../moo/mooutils/moodialogs.c:343
 #, c-format
@@ -1793,9 +1794,6 @@ msgstr "如果你不保存,修改将会被丢弃"
 #~ msgid "Moves input focus"
 #~ msgstr "移动输入位置"
 
-#~ msgid "Tab key:"
-#~ msgstr "Tab键:"
-
 #~ msgid "Current locale (%s)"
 #~ msgstr "当前设置(%s)"
 
@@ -1836,13 +1834,13 @@ msgstr "如果你不保存,修改将会被丢弃"
 #~ msgstr "PCRE编译时没有加入对UTF8编码的支持"
 
 #~ msgid "Error while compiling regular expression %s at char %d: %s"
-#~ msgstr "编译常规表达式 %s 时发生错误: %s"
+#~ msgstr "编译正则表达式 %s 时发生错误: %s"
 
 #~ msgid "Error while optimizing regular expression %s: %s"
-#~ msgstr "优化常规表达式 %s 时发生错误: %s"
+#~ msgstr "优化正则表达式 %s 时发生错误: %s"
 
 #~ msgid "Error while matching regular expression %s: %s"
-#~ msgstr "匹配常规表达式 %s 时发生错误: %s"
+#~ msgstr "匹配正则表达式 %s 时发生错误: %s"
 
 #~ msgid "Error while parsing replacement text \"%s\" at char %lu: %s"
 #~ msgstr "当粘贴文本\"%s\"到字符 %lu时发生错误: %s"
