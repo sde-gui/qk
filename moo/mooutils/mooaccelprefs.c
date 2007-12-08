@@ -728,12 +728,10 @@ _moo_accel_prefs_dialog_new (MooActionCollection *collection)
 
     g_object_unref (xml);
 
-#if GTK_MINOR_VERSION >= 6
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
                                              GTK_RESPONSE_OK,
                                              GTK_RESPONSE_CANCEL,
                                              -1);
-#endif /* GTK_MINOR_VERSION >= 6 */
 
     g_signal_connect_swapped (dialog, "response",
                               G_CALLBACK (dialog_response), page);
