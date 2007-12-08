@@ -1476,7 +1476,7 @@ _moo_term_set_mode (MooTerm    *term,
             break;
 
         default:
-            g_warning ("%s: unknown mode %d", G_STRLOC, mode);
+            _moo_message ("%s: unknown mode %d", G_STRLOC, mode);
     }
 }
 
