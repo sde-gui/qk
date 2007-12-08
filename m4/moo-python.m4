@@ -64,7 +64,7 @@ Please check your Python installation.])
 
           PYTHON_LIBS=`$PYTHON -c "from distutils.sysconfig import *; \
                                    from string import join; \
-                                   print '-L' + get_python_lib(0,1), \
+                                   print '-L' + PREFIX + '/lib', \
                                    '-lpython';"`$py_version
       fi
 
