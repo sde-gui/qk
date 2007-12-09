@@ -636,6 +636,7 @@ static void
 set_default_config (MooLangMgr *mgr)
 {
     _moo_lang_mgr_set_config (mgr, "makefile", "use-tabs: true");
+    _moo_lang_mgr_set_config (mgr, "diff", "strip: false");
 }
 
 static void
