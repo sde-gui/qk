@@ -85,7 +85,7 @@
   (return-type "MooCommand*")
   (parameters
     '("MooCommandData*" "data")
-    '("const-char*" "options")
+    '("const-char*" "options" (null-ok))
   )
 )
 
