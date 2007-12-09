@@ -213,7 +213,7 @@ class CConfig(SimpleConfig):
     def __get_cmd_dict(self):
         return {
             'make' : self.__get_make(),
-            'configure_args' : self.get_active_conf().configure.args,
+            'configure_args' : self.get_active_conf().configure.args or '',
             'configure_vars' : self.expand_env(self.get_active_conf().configure.vars),
         }
 
