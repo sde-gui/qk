@@ -74,15 +74,16 @@ if test "x$_moo_all_warnings" = "xyes"; then
 [-W -Wall -Wpointer-arith -Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
 -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations dnl
 -Wmissing-noreturn -Wmissing-format-attribute -Wnested-externs dnl
--Wdisabled-optimization -Wendif-labels -Wstrict-prototypes])
+-Wdisabled-optimization -Wendif-labels -Wstrict-prototypes dnl
+-Wno-missing-field-initializers])
   fi
 else
   if $MOO_GCC; then
-    _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS, [-Wall -W])
+    _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS, [-Wall -W -Wno-missing-field-initializers])
   fi
 fi
 
-m4_foreach([wname],[missing-field-initializers, unused, sign-compare, write-strings],[dnl
+m4_foreach([wname],[unused, sign-compare, write-strings],[dnl
 m4_define([_moo_WNAME],[MOO_W_NO_[]m4_bpatsubst(m4_toupper(wname),-,_)])
 _moo_WNAME=
 if $MOO_GCC; then

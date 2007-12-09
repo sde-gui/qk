@@ -1,5 +1,5 @@
 \.(deps|libs|svn)/
-\.(l?[oa]|orig|pyc|out|exe|bak)$
+\.(l?[oa]|rej|orig|pyc|out|exe|bak)$
 \~$
 ^(\..*\.session|.*\.kdevelop\.pcs|.*\.kdevses)$
 Makefile(\.in)?$
