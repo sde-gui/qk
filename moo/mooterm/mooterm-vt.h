@@ -247,8 +247,8 @@ enum {
             break;                                  \
                                                     \
         default:                                    \
-            g_warning ("%s: unknown mode %d",       \
-                       G_STRLOC, code);             \
+            _moo_message ("%s: unknown mode %d",    \
+                          G_STRLOC, code);          \
     }
 
 #define GET_ANSI_MODE(code, mode)                   \
@@ -286,8 +286,8 @@ enum {
             break;                                  \
                                                     \
         default:                                    \
-            g_warning ("%s: unknown mode %d",       \
-                       G_STRLOC, code);             \
+            _moo_message ("%s: unknown mode %d",    \
+                          G_STRLOC, code);          \
     }
 
 

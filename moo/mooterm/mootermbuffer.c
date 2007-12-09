@@ -17,6 +17,7 @@
 #include "mooterm/mootermline-private.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-debug.h"
 #include <string.h>
 
 
@@ -1662,7 +1663,7 @@ void    moo_term_buffer_set_mode                (MooTermBuffer  *buf,
             break;
 
         default:
-            g_warning ("%s: unknown mode %u", G_STRLOC, mode);
+            _moo_message ("%s: unknown mode %u", G_STRLOC, mode);
     }
 }
 
