@@ -729,7 +729,7 @@ moo_app_python_run_file (MooApp      *app,
     g_return_val_if_fail (filename != NULL, FALSE);
     g_return_val_if_fail (moo_python_running (), FALSE);
 
-    file = _moo_fopen (filename, "r");
+    file = _moo_fopen (filename, "rb");
     g_return_val_if_fail (file != NULL, FALSE);
 
     res = moo_python_run_file (file, filename, NULL, NULL);

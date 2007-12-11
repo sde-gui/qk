@@ -120,7 +120,7 @@ _xdg_mime_alias_read_from_file (XdgAliasList *list,
   char line[255];
   int alloc;
 
-  file = fopen (file_name, "r");
+  file = fopen (file_name, "rb");
 
   if (file == NULL)
     return;

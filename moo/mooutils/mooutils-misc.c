@@ -877,12 +877,12 @@ print_func_file (const char *string)
 
     if (!moo_log_file_written)
     {
-        file = fopen (moo_log_file, "w+");
+        file = fopen (moo_log_file, "wb+");
         moo_log_file_written = TRUE;
     }
     else
     {
-        file = fopen (moo_log_file, "a+");
+        file = fopen (moo_log_file, "ab+");
     }
 
     if (file)

@@ -281,7 +281,7 @@ cmpl_data_read_python_file (CmplData *data)
     if (!moo_python_running ())
         return;
 
-    file = _moo_fopen (data->path, "r");
+    file = _moo_fopen (data->path, "rb");
     g_return_if_fail (file != NULL);
 
     dict = moo_python_create_script_dict ("__completion_module__");

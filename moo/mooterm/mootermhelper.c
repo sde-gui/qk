@@ -56,11 +56,11 @@ writelog (const char *format, ...)
 
     if (been_here)
     {
-        logfile = fopen (LOGFILE, "a+");
+        logfile = fopen (LOGFILE, "ab+");
     }
     else
     {
-        logfile = fopen (LOGFILE, "w+");
+        logfile = fopen (LOGFILE, "wb+");
         been_here = 1;
     }
 

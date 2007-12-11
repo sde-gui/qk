@@ -1009,7 +1009,7 @@ get_options_from_file (MooCommandFactory *factory,
     FILE *file;
     char buf[2048];
 
-    if (!(file = g_fopen (filename, "r")))
+    if (!(file = g_fopen (filename, "rb")))
     {
         g_warning ("%s: could not open file %s", G_STRFUNC, filename);
         return;

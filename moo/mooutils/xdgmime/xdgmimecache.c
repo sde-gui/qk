@@ -713,7 +713,7 @@ _xdg_mime_cache_get_mime_type_for_file (const char  *file_name,
   if (data == NULL)
     return XDG_MIME_TYPE_UNKNOWN;
         
-  file = fopen (file_name, "r");
+  file = fopen (file_name, "rb");
   if (file == NULL)
     {
       free (data);
