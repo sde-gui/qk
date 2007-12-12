@@ -1,6 +1,6 @@
 #! /bin/sh
 
-if [ ! -z "`which gsed >/dev/null`" ]; then
+if [ ! -z "`which gsed 2>/dev/null`" ]; then
   sed=gsed
   ext_opt=-r
 else
