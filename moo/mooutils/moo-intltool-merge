@@ -1,7 +1,8 @@
 #! /bin/sh
 
-if [ ! -z "`which gsed 2>/dev/null`" ]; then
-  sed=gsed
+gsed=`gsed 2>/dev/null`
+if [ -x "$gsed" ]; then
+  sed=$gsed
   ext_opt=-r
 else
   sed=sed
