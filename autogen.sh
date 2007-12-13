@@ -21,7 +21,16 @@ ACLOCAL=${ACLOCAL:-aclocal-1.10}
 ACLOCAL_FLAGS="$aclocal_extra $ACLOCAL_FLAGS"
 AUTOMAKE=${AUTOMAKE:-automake-1.10}
 
-LIBTOOLIZE=${LIBTOOLIZE:-libtoolize}
+if test -z "$LIBTOOLIZE"; then
+  case "`uname`" in
+    Darwin)
+      LIBTOOLIZE=glibtoolize
+      ;;
+    *)
+      LIBTOOLIZE=libtoolize
+      ;;
+  esac
+fi
 
 AUTOHEADER=${AUTOHEADER:-autoheader}
 AUTOCONF=${AUTOCONF:-autoconf}
