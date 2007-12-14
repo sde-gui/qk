@@ -1715,10 +1715,13 @@ delete_page (MooNotebook *nb,
 
     nb->priv->pages = g_slist_remove (nb->priv->pages, page);
 
-    n = find_next_visible_page (nb, n);
+    if (!nb->priv->current_page)
+    {
+        n = find_next_visible_page (nb, n);
 
-    if (n >= 0)
-        moo_notebook_set_current_page (nb, n);
+        if (n >= 0)
+            moo_notebook_set_current_page (nb, n);
+    }
 
     moo_notebook_check_tabs (nb);
 }
