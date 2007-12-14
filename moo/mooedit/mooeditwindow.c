@@ -4194,6 +4194,12 @@ compare_doc_list_actions (gpointer a1,
     result = strcmp (moo_edit_get_display_basename (d1),
                      moo_edit_get_display_basename (d2));
 
+    if (!result)
+    {
+        MooEditWindow *window = moo_edit_get_window (d1);
+        result = get_page_num (window, d1) - get_page_num (window, d2);
+    }
+
     return result;
 }
 
