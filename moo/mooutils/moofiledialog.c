@@ -108,16 +108,12 @@ moo_file_dialog_set_property (GObject        *object,
             break;
 
         case PROP_DIR:
-            tmp = dialog->priv->dir;
-            dialog->priv->dir = g_value_dup_string (value);
-            g_free (tmp);
+            MOO_ASSIGN_STRING (dialog->priv->dir, g_value_get_string (value));
             g_object_notify (object, "dir");
             break;
 
         case PROP_NAME:
-            tmp = dialog->priv->name;
-            dialog->priv->name = g_value_dup_string (value);
-            g_free (tmp);
+            MOO_ASSIGN_STRING (dialog->priv->name, g_value_get_string (value));
             g_object_notify (object, "name");
             break;
 
@@ -518,9 +514,7 @@ static void
 set_encoding (MooFileDialog *dialog,
               const char    *encoding)
 {
-    char *tmp = dialog->priv->encoding;
-    dialog->priv->encoding = g_strdup (encoding);
-    g_free (tmp);
+    MOO_ASSIGN_STRING (dialog->priv->encoding, encoding);
 }
 
 void

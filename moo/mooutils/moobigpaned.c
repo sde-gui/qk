@@ -18,7 +18,7 @@
 #include "moomarshals.h"
 
 #ifdef MOO_COMPILATION
-#include "mooutils-gobject.h"
+#include "mooutils-misc.h"
 #else
 #if GLIB_CHECK_VERSION(2,10,0)
 #define MOO_OBJECT_REF_SINK(obj) g_object_ref_sink (obj)

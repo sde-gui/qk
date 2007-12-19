@@ -1580,17 +1580,9 @@ moo_print_operation_set_filename (MooPrintOperation *op,
                                   const char        *filename,
                                   const char        *basename)
 {
-    char *tmp;
-
     g_return_if_fail (MOO_IS_PRINT_OPERATION (op));
-
-    tmp = op->priv->filename;
-    op->priv->filename = g_strdup (filename);
-    g_free (tmp);
-
-    tmp = op->priv->basename;
-    op->priv->basename = g_strdup (basename);
-    g_free (tmp);
+    MOO_ASSIGN_STRING (op->priv->filename, filename);
+    MOO_ASSIGN_STRING (op->priv->basename, basename);
 }
 
 

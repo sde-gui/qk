@@ -15,6 +15,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooprefsdialogpage.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/moofontsel.h"
 #include "mooutils/mooi18n.h"

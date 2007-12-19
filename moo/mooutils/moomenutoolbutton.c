@@ -11,7 +11,7 @@
  */
 
 #include "mooutils/moomenutoolbutton.h"
-#include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-misc.h"
 #include <gtk/gtk.h>
 
 

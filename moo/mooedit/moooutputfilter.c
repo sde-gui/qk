@@ -14,6 +14,7 @@
 #include "mooedit/mooeditor.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-debug.h"
+#include "mooutils/mooutils-misc.h"
 #include <string.h>
 
 
@@ -220,14 +221,8 @@ void
 moo_output_filter_cmd_start (MooOutputFilter *filter,
                              const char      *active_dir)
 {
-    char *tmp;
-
     g_return_if_fail (MOO_IS_OUTPUT_FILTER (filter));
-
-    tmp = filter->priv->active_dir;
-    filter->priv->active_dir = g_strdup (active_dir);
-    g_free (tmp);
-
+    MOO_ASSIGN_STRING (filter->priv->active_dir, active_dir);
     g_signal_emit (filter, signals[CMD_START], 0);
 }
 
@@ -314,13 +309,8 @@ void
 moo_output_filter_set_active_file (MooOutputFilter *filter,
                                    const char      *filename)
 {
-    char *tmp;
-
     g_return_if_fail (MOO_IS_OUTPUT_FILTER (filter));
-
-    tmp = filter->priv->active_file;
-    filter->priv->active_file = g_strdup (filename);
-    g_free (tmp);
+    MOO_ASSIGN_STRING (filter->priv->active_file, filename);
 }
 
 

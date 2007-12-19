@@ -22,7 +22,6 @@
 #include "mooutils/mooprefs.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooactionfactory.h"
-#include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moostock.h"
 #include <string.h>

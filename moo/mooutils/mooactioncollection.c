@@ -12,6 +12,7 @@
 
 #include "mooutils/mooactiongroup.h"
 #include "mooutils/mooactionbase.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/moowindow.h"
 #include <string.h>
 
@@ -74,14 +75,11 @@ moo_action_collection_set_property (GObject      *object,
                                     GParamSpec   *pspec)
 {
     MooActionCollection *coll = MOO_ACTION_COLLECTION (object);
-    char *tmp;
 
     switch (property_id)
     {
         case PROP_NAME:
-            tmp = coll->priv->name;
-            coll->priv->name = g_strdup (g_value_get_string (value));
-            g_free (tmp);
+            MOO_ASSIGN_STRING (coll->priv->name, g_value_get_string (value));
             break;
         case PROP_DISPLAY_NAME:
             moo_action_collection_set_display_name (coll, g_value_get_string (value));

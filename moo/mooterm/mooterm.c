@@ -18,7 +18,6 @@
 #include "mooterm/mootermbuffer-private.h"
 #include "mooterm/mooterm-text.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
 #include <string.h>

@@ -698,16 +698,9 @@ void
 moo_editor_set_app_name (MooEditor  *editor,
                          const char *name)
 {
-    char *tmp;
-
     g_return_if_fail (MOO_IS_EDITOR (editor));
-
-    tmp = editor->priv->app_name;
-    editor->priv->app_name = g_strdup (name);
-
+    MOO_ASSIGN_STRING (editor->priv->app_name, name);
     _moo_edit_window_update_title ();
-
-    g_free (tmp);
 }
 
 const char *

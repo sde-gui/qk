@@ -124,6 +124,17 @@ _moo_str_equal_inline (const char *s1,
 #define _moo_str_equal(s1, s2) (_moo_str_equal_inline ((s1), (s2)))
 
 
+static inline void
+moo_assign_string (char       **where,
+                   const char  *value)
+{
+    char *tmp = *where;
+    *where = g_strdup (value);
+    g_free (tmp);
+}
+
+#define MOO_ASSIGN_STRING(where, value) moo_assign_string (&(where), (value))
+
 const char *_moo_get_pid_string             (void);
 
 const char *_moo_intern_string              (const char     *string);
@@ -167,6 +178,12 @@ gboolean    _moo_regex_escape               (const char *string,
 #define _moo_new(type)      g_new (type, 1)
 #define _moo_new0(type)     g_new0 (type, 1)
 #define _moo_free(type,mem) g_free (mem)
+#endif
+
+#if GLIB_CHECK_VERSION(2,10,0)
+#define MOO_OBJECT_REF_SINK(obj) g_object_ref_sink (obj)
+#else
+#define MOO_OBJECT_REF_SINK(obj) gtk_object_sink (g_object_ref (obj))
 #endif
 
 

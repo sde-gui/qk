@@ -22,7 +22,6 @@
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooedit/mooeditor-private.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
@@ -694,9 +693,7 @@ _moo_edit_set_encoding (MooEdit    *edit,
 
     if (!_moo_str_equal (encoding, edit->priv->encoding))
     {
-        char *tmp = edit->priv->encoding;
-        edit->priv->encoding = g_strdup (encoding);
-        g_free (tmp);
+        MOO_ASSIGN_STRING (edit->priv->encoding, encoding);
         g_object_notify (G_OBJECT (edit), "encoding");
     }
 }

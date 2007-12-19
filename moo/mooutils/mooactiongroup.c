@@ -11,6 +11,7 @@
  */
 
 #include "mooutils/mooactiongroup.h"
+#include "mooutils/mooutils-misc.h"
 
 
 G_DEFINE_TYPE (MooActionGroup, _moo_action_group, GTK_TYPE_ACTION_GROUP)
@@ -39,13 +40,8 @@ void
 _moo_action_group_set_display_name (MooActionGroup *group,
                                     const char     *display_name)
 {
-    char *tmp;
-
     g_return_if_fail (MOO_IS_ACTION_GROUP (group));
-
-    tmp = group->display_name;
-    group->display_name = g_strdup (display_name);
-    g_free (tmp);
+    MOO_ASSIGN_STRING (group->display_name, display_name);
 }
 
 

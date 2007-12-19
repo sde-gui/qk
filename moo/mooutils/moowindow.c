@@ -499,25 +499,20 @@ moo_window_set_property (GObject      *object,
                          const GValue *value,
                          GParamSpec   *pspec)
 {
-    char *tmp;
     const char *name = NULL;
     MooWindow *window = MOO_WINDOW (object);
 
     switch (prop_id)
     {
         case PROP_TOOLBAR_UI_NAME:
-            tmp = window->priv->toolbar_ui_name;
             name = g_value_get_string (value);
-            window->priv->toolbar_ui_name = name ? g_strdup (name) : g_strdup ("");
-            g_free (tmp);
+            MOO_ASSIGN_STRING (window->priv->toolbar_ui_name, name ? name : "");
             g_object_notify (object, "toolbar-ui-name");
             break;
 
         case PROP_MENUBAR_UI_NAME:
-            tmp = window->priv->menubar_ui_name;
             name = g_value_get_string (value);
-            window->priv->menubar_ui_name = name ? g_strdup (name) : g_strdup ("");
-            g_free (tmp);
+            MOO_ASSIGN_STRING (window->priv->menubar_ui_name, name ? name : "");
             g_object_notify (object, "menubar-ui-name");
             break;
 

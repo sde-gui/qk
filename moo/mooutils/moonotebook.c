@@ -16,7 +16,6 @@
 
 #include "mooutils/moomarshals.h"
 #include "mooutils/moonotebook.h"
-#include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>

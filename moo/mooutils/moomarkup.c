@@ -319,13 +319,8 @@ static void
 moo_markup_doc_set_name (MooMarkupDoc *doc,
                          const char   *name)
 {
-    char *tmp;
-
     g_return_if_fail (MOO_MARKUP_IS_DOC (doc));
-
-    tmp = doc->name;
-    doc->name = g_strdup (name ? name : "");
-    g_free (tmp);
+    MOO_ASSIGN_STRING (doc->name, name ? name : "");
 }
 
 

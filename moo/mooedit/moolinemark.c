@@ -14,6 +14,7 @@
 #include "mooedit/mootext-private.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/mooutils-misc.h"
 
 
 struct _MooLineMarkPrivate {
@@ -367,16 +368,12 @@ void
 moo_line_mark_set_markup (MooLineMark    *mark,
                           const char     *markup)
 {
-    char *tmp;
-
     g_return_if_fail (MOO_IS_LINE_MARK (mark));
 
     if (!markup || !markup[0])
         markup = NULL;
 
-    tmp = mark->priv->markup;
-    mark->priv->markup = g_strdup (markup);
-    g_free (tmp);
+    MOO_ASSIGN_STRING (mark->priv->markup, markup);
 }
 
 

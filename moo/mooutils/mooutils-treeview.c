@@ -11,6 +11,7 @@
  */
 
 #include "mooutils/mooutils-treeview.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/moomarshals.h"
 #include <string.h>

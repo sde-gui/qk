@@ -1294,14 +1294,9 @@ moo_command_data_set (MooCommandData *data,
                       guint           index,
                       const char     *value)
 {
-    char *tmp;
-
     g_return_if_fail (data != NULL);
     g_return_if_fail (index < data->len);
-
-    tmp = data->data[index];
-    data->data[index] = g_strdup (value);
-    g_free (tmp);
+    MOO_ASSIGN_STRING (data->data[index], value);
 }
 
 
@@ -1319,13 +1314,8 @@ static void
 moo_command_data_take_code (MooCommandData *data,
                             char           *code)
 {
-    char *tmp;
-
     g_return_if_fail (data != NULL);
-
-    tmp = data->code;
-    data->code = code;
-    g_free (tmp);
+    MOO_ASSIGN_STRING (data->code, code);
 }
 
 

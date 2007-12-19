@@ -13,7 +13,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/moocommanddisplay.h"
 #include "mooedit/moocommand-private.h"
-#include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-misc.h"
 #include <string.h>
 
 

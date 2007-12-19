@@ -27,13 +27,6 @@
 G_BEGIN_DECLS
 
 
-#if GLIB_CHECK_VERSION(2,10,0)
-#define MOO_OBJECT_REF_SINK(obj) g_object_ref_sink (obj)
-#else
-#define MOO_OBJECT_REF_SINK(obj) gtk_object_sink (g_object_ref (obj))
-#endif
-
-
 /*****************************************************************************/
 /* GType type
  */

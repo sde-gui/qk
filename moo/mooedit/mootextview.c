@@ -21,7 +21,6 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootextbox.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooundo.h"
 #include "mooutils/mooentry.h"
@@ -1612,14 +1611,10 @@ moo_text_view_set_color (MooTextView      *view,
                          const char       *color,
                          const char       *propname)
 {
-    char *tmp;
-
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
     g_return_if_fail (color_num < MOO_TEXT_VIEW_N_COLORS);
 
-    tmp = view->priv->colors[color_num];
-    view->priv->colors[color_num] = g_strdup (color);
-    g_free (tmp);
+    MOO_ASSIGN_STRING (view->priv->colors[color_num], color);
 
     invalidate_gcs (view);
 

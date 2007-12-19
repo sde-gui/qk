@@ -12,7 +12,6 @@
 
 #include "mooutils/moofiltermgr.h"
 #include "mooutils/mooprefs.h"
-#include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include <string.h>
 #include <gtk/gtk.h>
