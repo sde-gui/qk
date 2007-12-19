@@ -238,14 +238,14 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
                                              G_PARAM_READWRITE));
 
     signals[HIGHLIGHT_UPDATED] =
-            _moo_signal_new_cb ("highlight_updated",
-                                G_OBJECT_CLASS_TYPE (klass),
-                                G_SIGNAL_RUN_LAST,
-                                NULL, NULL, NULL,
-                                _moo_marshal_VOID__BOXED_BOXED,
-                                G_TYPE_NONE, 2,
-                                GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE,
-                                GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
+            g_signal_new ("highlight_updated",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          0, NULL, NULL,
+                          _moo_marshal_VOID__BOXED_BOXED,
+                          G_TYPE_NONE, 2,
+                          GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE,
+                          GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
 
     signals[CURSOR_MOVED] =
             g_signal_new ("cursor-moved",

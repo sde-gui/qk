@@ -619,13 +619,13 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                           G_TYPE_UINT);
 
     signals[CURSOR_MOVED] =
-            _moo_signal_new_cb ("cursor-moved",
-                                G_OBJECT_CLASS_TYPE (klass),
-                                G_SIGNAL_RUN_LAST,
-                                NULL, NULL, NULL,
-                                _moo_marshal_VOID__BOXED,
-                                G_TYPE_NONE, 1,
-                                GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
+            g_signal_new ("cursor-moved",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          0, NULL, NULL,
+                          _moo_marshal_VOID__BOXED,
+                          G_TYPE_NONE, 1,
+                          GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
 
     signals[LINE_MARK_CLICKED] =
             g_signal_new ("line-mark-clicked",

@@ -81,33 +81,30 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
     gobject_class->finalize = moo_term_buffer_finalize;
 
     signals[CHANGED] =
-            _moo_signal_new_cb ("changed",
-                                G_OBJECT_CLASS_TYPE (gobject_class),
-                                G_SIGNAL_RUN_LAST,
-                                NULL,
-                                NULL, NULL,
-                                _moo_marshal_VOID__VOID,
-                                G_TYPE_NONE, 0);
+            g_signal_new ("changed",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          0, NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     signals[CURSOR_MOVED] =
-            _moo_signal_new_cb ("cursor-moved",
-                                G_OBJECT_CLASS_TYPE (gobject_class),
-                                G_SIGNAL_RUN_LAST,
-                                NULL,
-                                NULL, NULL,
-                                _moo_marshal_VOID__VOID,
-                                G_TYPE_NONE, 0);
+            g_signal_new ("cursor-moved",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          0, NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     signals[FEED_CHILD] =
-            _moo_signal_new_cb ("feed-child",
-                                G_OBJECT_CLASS_TYPE (gobject_class),
-                                G_SIGNAL_RUN_LAST,
-                                NULL,
-                                NULL, NULL,
-                                _moo_marshal_VOID__STRING_INT,
-                                G_TYPE_NONE, 2,
-                                G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
-                                G_TYPE_INT);
+            g_signal_new ("feed-child",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          0, NULL, NULL,
+                          _moo_marshal_VOID__STRING_INT,
+                          G_TYPE_NONE, 2,
+                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
+                          G_TYPE_INT);
 
     signals[FULL_RESET] =
             g_signal_new ("full-reset",
@@ -119,41 +116,37 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
                           G_TYPE_NONE, 0);
 
     signals[TABS_CHANGED] =
-            _moo_signal_new_cb ("tabs-changed",
-                                G_OBJECT_CLASS_TYPE (gobject_class),
-                                G_SIGNAL_RUN_LAST,
-                                NULL,
-                                NULL, NULL,
-                                _moo_marshal_VOID__VOID,
-                                G_TYPE_NONE, 0);
+            g_signal_new ("tabs-changed",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          0, NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     signals[SCREEN_SIZE_CHANGED] =
-            _moo_signal_new_cb ("screen-size-changed",
-                                G_OBJECT_CLASS_TYPE (gobject_class),
-                                G_SIGNAL_RUN_LAST,
-                                NULL,
-                                NULL, NULL,
-                                _moo_marshal_VOID__VOID,
-                                G_TYPE_NONE, 0);
+            g_signal_new ("screen-size-changed",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          0, NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     signals[NEW_LINE] =
-            _moo_signal_new_cb ("new-line",
-                                G_OBJECT_CLASS_TYPE (gobject_class),
-                                G_SIGNAL_RUN_LAST,
-                                NULL,
-                                NULL, NULL,
-                                _moo_marshal_VOID__VOID,
-                                G_TYPE_NONE, 0);
+            g_signal_new ("new-line",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          0, NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     signals[SCROLLED] =
-            _moo_signal_new_cb ("scrolled",
-                                G_OBJECT_CLASS_TYPE (gobject_class),
-                                G_SIGNAL_RUN_LAST,
-                                NULL,
-                                NULL, NULL,
-                                _moo_marshal_VOID__UINT,
-                                G_TYPE_NONE, 1,
-                                G_TYPE_UINT);
+            g_signal_new ("scrolled",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          0, NULL, NULL,
+                          _moo_marshal_VOID__UINT,
+                          G_TYPE_NONE, 1,
+                          G_TYPE_UINT);
 
     g_object_class_install_property (gobject_class,
                                      PROP_SCREEN_WIDTH,

@@ -110,12 +110,12 @@ moo_lang_mgr_class_init (MooLangMgrClass *klass)
 {
     G_OBJECT_CLASS(klass)->dispose = moo_lang_mgr_dispose;
 
-    _moo_signal_new_cb ("loaded",
-                        G_OBJECT_CLASS_TYPE (klass),
-                        G_SIGNAL_RUN_LAST,
-                        NULL, NULL, NULL,
-                        _moo_marshal_VOID__VOID,
-                        G_TYPE_NONE, 0);
+    g_signal_new ("loaded",
+                  G_OBJECT_CLASS_TYPE (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL,
+                  _moo_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
 }
 
 

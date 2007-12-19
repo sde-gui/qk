@@ -70,14 +70,13 @@ _moo_ctags_view_class_init (MooCtagsViewClass *klass)
     treeview_class->cursor_changed = moo_ctags_view_cursor_changed;
     treeview_class->row_activated = moo_ctags_view_row_activated;
 
-    _moo_signal_new_cb ("activate-entry",
-                        G_OBJECT_CLASS_TYPE (klass),
-                        G_SIGNAL_RUN_LAST,
-                        NULL,
-                        NULL, NULL,
-                        _moo_marshal_VOID__BOXED,
-                        G_TYPE_NONE, 1,
-                        MOO_TYPE_CTAGS_ENTRY);
+    g_signal_new ("activate-entry",
+                  G_OBJECT_CLASS_TYPE (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL,
+                  _moo_marshal_VOID__BOXED,
+                  G_TYPE_NONE, 1,
+                  MOO_TYPE_CTAGS_ENTRY);
 
     g_type_class_add_private (klass, sizeof (MooCtagsViewPrivate));
 }
