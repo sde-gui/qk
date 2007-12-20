@@ -20,6 +20,7 @@ langs2 =			\
 	dpatch.lang		\
 	dtd.lang		\
 	erlang.lang		\
+	forth.lang		\
 	fortran.lang		\
 	gap.lang		\
 	gtk-doc.lang		\
