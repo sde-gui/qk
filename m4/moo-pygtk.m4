@@ -3,7 +3,7 @@
 # checks pygtk stuff
 #
 AC_DEFUN([_MOO_AC_CHECK_PYGTK_REAL],[
-  PKG_CHECK_MODULES(PYGTK,pygtk-2.0 >= 2.6.0 pycairo,[
+  PKG_CHECK_MODULES(PYGTK,pygtk-2.0 >= 2.6.0,[
     AC_MSG_CHECKING([whether pygtk can be used])
     save_CPPFLAGS="$CPPFLAGS"
     CPPFLAGS="$CPPFLAGS $PYGTK_CFLAGS $PYTHON_INCLUDES"
@@ -16,7 +16,6 @@ AC_DEFUN([_MOO_AC_CHECK_PYGTK_REAL],[
 
     AC_LINK_IFELSE([AC_LANG_SOURCE([[
     #include <pygobject.h>
-    #include <pycairo.h>
     int main ()
     {
         PyObject *object = pygobject_new (NULL);
