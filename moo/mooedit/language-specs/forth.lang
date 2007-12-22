@@ -23,7 +23,7 @@
 <language id="forth" _name="Forth" version="2.0" _section="Sources">
   <metadata>
     <property name="mimetypes">text/x-forth</property>
-    <property name="globs">*.frt</property>
+    <property name="globs">*.frt;*.fs</property>
     <property name="line-comment-start">\</property>
     <property name="block-comment-start">(*</property>
     <property name="block-comment-end">*)</property>
