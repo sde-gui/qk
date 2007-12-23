@@ -1,6 +1,6 @@
 #! /bin/sh
 
-gsed=`gsed 2>/dev/null`
+gsed=`which gsed 2>/dev/null`
 if [ -x "$gsed" ]; then
   sed=$gsed
   ext_opt=-r
