@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.3.3 on Sat Sep 22 20:16:11 2007 
+<!--Generated with glade3 3.3.3 on Sat Sep 22 20:16:11 2007
 	Version: 3.0.0
 	Date: Fri Dec  8 17:47:39 2006
 	User: muntyan
@@ -30,7 +30,7 @@
                     <child>
                       <widget class="GtkEntry" id="config">
                         <property name="visible">True</property>
-                        <property name="tooltip">strip: bool; use-tabs: bool; indent-width: integer; tab-width: integer</property>
+                        <property name="tooltip">strip: bool; add-newline:bool; use-tabs: bool; indent-width: integer; tab-width: integer</property>
                         <property name="activates_default">True</property>
                       </widget>
                       <packing>

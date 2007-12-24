@@ -45,6 +45,7 @@ const char *moo_edit_setting                (const char     *setting_name);
 #define MOO_EDIT_PREFS_AUTO_SAVE_INTERVAL       "auto_save_interval"
 #define MOO_EDIT_PREFS_MAKE_BACKUPS             "make_backups"
 #define MOO_EDIT_PREFS_STRIP                    "strip"
+#define MOO_EDIT_PREFS_ADD_NEWLINE              "add_newline"
 
 #define MOO_EDIT_PREFS_COLOR_SCHEME             "color_scheme"
 

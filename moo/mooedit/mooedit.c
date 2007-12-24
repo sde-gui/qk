@@ -1529,6 +1529,22 @@ moo_edit_uncomment (MooEdit *edit)
 }
 
 
+void
+_moo_edit_ensure_newline (MooEdit *edit)
+{
+    GtkTextBuffer *buffer;
+    GtkTextIter iter;
+
+    g_return_if_fail (MOO_IS_EDIT (edit));
+
+    buffer = get_buffer (edit);
+    gtk_text_buffer_get_end_iter (buffer, &iter);
+
+    if (!gtk_text_iter_starts_line (&iter) || gtk_text_iter_is_start (&iter))
+        gtk_text_buffer_insert (buffer, &iter, "\n", -1);
+}
+
+
 /*****************************************************************************/
 /* popup menu
  */

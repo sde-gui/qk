@@ -61,6 +61,7 @@ enum {
     MOO_EDIT_SETTING_LANG,
     MOO_EDIT_SETTING_INDENT,
     MOO_EDIT_SETTING_STRIP,
+    MOO_EDIT_SETTING_ADD_NEWLINE,
     MOO_EDIT_SETTING_WRAP_MODE,
     MOO_EDIT_SETTING_SHOW_LINE_NUMBERS,
     MOO_EDIT_SETTING_TAB_WIDTH,
@@ -86,6 +87,7 @@ void         _moo_edit_set_filename             (MooEdit        *edit,
 void         _moo_edit_set_encoding             (MooEdit        *edit,
                                                  const char     *encoding);
 const char  *_moo_edit_get_default_encoding     (void);
+void         _moo_edit_ensure_newline           (MooEdit        *edit);
 
 void         _moo_edit_stop_file_watch          (MooEdit        *edit);
 

@@ -2285,11 +2285,15 @@ do_save (MooEditor    *editor,
 {
     gboolean result;
     gboolean strip;
+    gboolean add_newline;
 
     strip = moo_edit_config_get_bool (doc->config, "strip");
+    add_newline = moo_edit_config_get_bool (doc->config, "add-newline");
 
     if (strip)
         moo_text_view_strip_whitespace (MOO_TEXT_VIEW (doc));
+    if (add_newline)
+        _moo_edit_ensure_newline (doc);
 
     g_signal_emit_by_name (doc, "save-before");
     result = _moo_edit_save_file (doc, filename, encoding,

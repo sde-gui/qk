@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.3.3 on Sun Dec  2 12:06:25 2007 
+<!--Generated with glade3 3.3.3 on Mon Dec 24 10:19:44 2007 
 	Version: 3.0.0
 	Date: Fri Dec  8 17:47:39 2006
 	User: muntyan
@@ -63,7 +63,7 @@
                       <widget class="GtkCheckButton" id="usespaces">
                         <property name="visible">True</property>
                         <property name="moo_prefs_key">spaces_instead_of_tabs</property>
-                        <property name="label" translatable="yes">Use spaces to indent</property>
+                        <property name="label" translatable="yes">Use only spaces for indentation</property>
                         <property name="use_underline">True</property>
                         <property name="focus_on_click">False</property>
                         <property name="response_id">0</property>
@@ -76,42 +76,70 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkAlignment" id="alignment2">
+                      <widget class="GtkHBox" id="hbox1">
                         <property name="visible">True</property>
-                        <property name="left_padding">6</property>
+                        <property name="spacing">3</property>
                         <child>
-                          <widget class="GtkHBox" id="hbox1">
+                          <widget class="GtkLabel" id="label32">
                             <property name="visible">True</property>
-                            <property name="spacing">3</property>
-                            <child>
-                              <widget class="GtkLabel" id="label32">
-                                <property name="visible">True</property>
-                                <property name="label" translatable="yes">Indent width, spaces:</property>
-                                <property name="mnemonic_widget">tabswidth_spin</property>
-                              </widget>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">False</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkSpinButton" id="tabswidth_spin">
-                                <property name="visible">True</property>
-                                <property name="moo_prefs_key">indent_width</property>
-                                <property name="adjustment">4 1 100 1 10 10</property>
-                                <property name="climb_rate">1</property>
-                                <property name="numeric">True</property>
-                              </widget>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
+                            <property name="label" translatable="yes">Indent width, spaces:</property>
+                            <property name="mnemonic_widget">tabswidth_spin</property>
                           </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkSpinButton" id="tabswidth_spin">
+                            <property name="visible">True</property>
+                            <property name="moo_prefs_key">indent_width</property>
+                            <property name="adjustment">4 1 100 1 10 10</property>
+                            <property name="climb_rate">1</property>
+                            <property name="numeric">True</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="position">1</property>
+                          </packing>
                         </child>
                       </widget>
                       <packing>
+                        <property name="expand">False</property>
                         <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkHBox" id="hbox2">
+                        <property name="visible">True</property>
+                        <property name="spacing">3</property>
+                        <child>
+                          <widget class="GtkLabel" id="label1">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">Visual tab width:</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkSpinButton" id="spinbutton1">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="moo_prefs_key">tab_width</property>
+                            <property name="adjustment">8 0 100 1 10 10</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">4</property>
                       </packing>
                     </child>
                     <child>
@@ -128,7 +156,7 @@
                         </child>
                       </widget>
                       <packing>
-                        <property name="position">4</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                     <child>
@@ -145,7 +173,7 @@
                         </child>
                       </widget>
                       <packing>
-                        <property name="position">5</property>
+                        <property name="position">6</property>
                       </packing>
                     </child>
                   </widget>

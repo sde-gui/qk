@@ -114,6 +114,10 @@ for which the given language should be used.
     from the document on saving.
     </para></listitem>
     <listitem><para>
+    <userinput>add-newline</userinput>: a boolean value, whether the editor should ensure that saved files
+    have a trailing new line character.
+    </para></listitem>
+    <listitem><para>
     <userinput>tab-width</userinput>: displayed width of the Tab character.<footnote><para>This is not an indentation
     offset, this is the visual width of a Tab character.</para></footnote>
     </para></listitem>

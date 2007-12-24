@@ -51,6 +51,10 @@ _moo_edit_init_config (void)
         moo_edit_config_install_setting (g_param_spec_boolean ("strip", "strip", "strip",
                                                                FALSE,
                                                                G_PARAM_READWRITE));
+    _moo_edit_settings[MOO_EDIT_SETTING_ADD_NEWLINE] =
+        moo_edit_config_install_setting (g_param_spec_boolean ("add-newline", "add-newline", "add-newline",
+                                                               FALSE,
+                                                               G_PARAM_READWRITE));
     _moo_edit_settings[MOO_EDIT_SETTING_WRAP_MODE] =
         moo_edit_config_install_setting (g_param_spec_enum ("wrap-mode", "wrap-mode", "wrap-mode",
                                                             GTK_TYPE_WRAP_MODE, GTK_WRAP_NONE,
@@ -95,6 +99,7 @@ _moo_edit_init_prefs (void)
     NEW_KEY_INT (MOO_EDIT_PREFS_AUTO_SAVE_INTERVAL, 5);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_MAKE_BACKUPS, FALSE);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_STRIP, FALSE);
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_ADD_NEWLINE, FALSE);
 
     NEW_KEY_BOOL (MOO_EDIT_PREFS_USE_TABS, TRUE);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_OPEN_NEW_WINDOW, FALSE);
@@ -140,7 +145,7 @@ _moo_edit_init_prefs (void)
 void
 _moo_edit_update_global_config (void)
 {
-    gboolean use_tabs, strip, show_line_numbers;
+    gboolean use_tabs, strip, show_line_numbers, add_newline;
     int indent_width, tab_width;
     GtkWrapMode wrap_mode;
 
@@ -148,6 +153,7 @@ _moo_edit_update_global_config (void)
     indent_width = get_int (MOO_EDIT_PREFS_INDENT_WIDTH);
     tab_width = get_int (MOO_EDIT_PREFS_TAB_WIDTH);
     strip = get_bool (MOO_EDIT_PREFS_STRIP);
+    add_newline = get_bool (MOO_EDIT_PREFS_ADD_NEWLINE);
     show_line_numbers = get_bool (MOO_EDIT_PREFS_SHOW_LINE_NUMBERS);
 
     if (get_bool (MOO_EDIT_PREFS_WRAP_ENABLE))
@@ -167,6 +173,7 @@ _moo_edit_update_global_config (void)
                                 "indent-width", indent_width,
                                 "tab-width", tab_width,
                                 "strip", strip,
+                                "add-newline", add_newline,
                                 "show-line-numbers", show_line_numbers,
                                 "wrap-mode", wrap_mode,
                                 NULL);
