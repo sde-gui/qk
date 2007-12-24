@@ -261,10 +261,23 @@ page_view_init_xml (MooGladeXML *xml)
 
 
 static void
+tab_width_changed (GtkSpinButton *tab_width,
+                   GtkSpinButton *indent_width)
+{
+    gtk_spin_button_set_value (indent_width,
+                               gtk_spin_button_get_value_as_int (tab_width));
+}
+
+static void
 page_general_init (PrefsPage *page)
 {
+    GtkWidget *tab_width, *indent_width;
     GtkComboBox *default_lang_combo;
     const char *lang;
+
+    tab_width = moo_glade_xml_get_widget (page->page->xml, "tab_width");
+    indent_width = moo_glade_xml_get_widget (page->page->xml, "indent_width");
+    g_signal_connect (tab_width, "value-changed", G_CALLBACK (tab_width_changed), indent_width);
 
     default_lang_combo = moo_glade_xml_get_widget (page->page->xml, "default_lang_combo");
     default_lang_combo_init (default_lang_combo, page);

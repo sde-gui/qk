@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.3.3 on Mon Dec 24 10:19:44 2007 
+<!--Generated with glade3 3.3.3 on Mon Dec 24 11:29:29 2007 
 	Version: 3.0.0
 	Date: Fri Dec  8 17:47:39 2006
 	User: muntyan
@@ -83,7 +83,7 @@
                           <widget class="GtkLabel" id="label32">
                             <property name="visible">True</property>
                             <property name="label" translatable="yes">Indent width, spaces:</property>
-                            <property name="mnemonic_widget">tabswidth_spin</property>
+                            <property name="mnemonic_widget">indent_width</property>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
@@ -91,7 +91,7 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkSpinButton" id="tabswidth_spin">
+                          <widget class="GtkSpinButton" id="indent_width">
                             <property name="visible">True</property>
                             <property name="moo_prefs_key">indent_width</property>
                             <property name="adjustment">4 1 100 1 10 10</property>
@@ -117,6 +117,7 @@
                           <widget class="GtkLabel" id="label1">
                             <property name="visible">True</property>
                             <property name="label" translatable="yes">Visual tab width:</property>
+                            <property name="mnemonic_widget">tab_width</property>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
@@ -124,11 +125,13 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkSpinButton" id="spinbutton1">
+                          <widget class="GtkSpinButton" id="tab_width">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="moo_prefs_key">tab_width</property>
-                            <property name="adjustment">8 0 100 1 10 10</property>
+                            <property name="adjustment">8 1 100 1 10 10</property>
+                            <property name="numeric">True</property>
+                            <property name="update_policy">GTK_UPDATE_IF_VALID</property>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
