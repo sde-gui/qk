@@ -1723,6 +1723,7 @@ delete_page (MooNotebook *nb,
     }
 
     moo_notebook_check_tabs (nb);
+    labels_invalidate (nb);
 }
 
 
