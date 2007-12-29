@@ -188,7 +188,6 @@ moo_window_class_init (MooWindowClass *klass)
                                  "action-type::", MOO_TYPE_TOGGLE_ACTION,
                                  "display-name", _("Show Menubar"),
                                  "label", _("Show Menubar"),
-                                 "no-accel", TRUE,
                                  "condition::active", "menubar-visible",
                                  NULL);
 
