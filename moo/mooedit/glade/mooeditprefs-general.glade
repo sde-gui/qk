@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.3.3 on Mon Dec 24 11:29:29 2007 
+<!--Generated with glade3 3.3.3 on Mon Dec 24 13:13:25 2007 
 	Version: 3.0.0
 	Date: Fri Dec  8 17:47:39 2006
 	User: muntyan
@@ -63,7 +63,7 @@
                       <widget class="GtkCheckButton" id="usespaces">
                         <property name="visible">True</property>
                         <property name="moo_prefs_key">spaces_instead_of_tabs</property>
-                        <property name="label" translatable="yes">Use only spaces for indentation</property>
+                        <property name="label" translatable="yes">Do not use tabs for indentation</property>
                         <property name="use_underline">True</property>
                         <property name="focus_on_click">False</property>
                         <property name="response_id">0</property>
