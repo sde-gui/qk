@@ -19,15 +19,21 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moomarkup.h"
+#include "mooutils/mooi18n.h"
 #include <glib/gregex.h>
 #include <string.h>
 
+#define FILTERS_VERSION     "1.0"
+
 #define FILTERS_FILE        "filters.xml"
+#define ELEMENT_ROOT        "medit-filters"
 #define ELEMENT_FILTER      "filter"
 #define ELEMENT_MATCH       "match"
 #define ELEMENT_ACTION      "action"
+#define PROP_VERSION        "version"
 #define PROP_FILTER_ID      "id"
 #define PROP_FILTER_NAME    "name"
+#define PROP_FILTER__NAME   "_name"
 #define PROP_OUTPUT_TYPE    "what"
 #define PROP_SPAN           "span"
 #define PROP_PATTERN        "pattern"
@@ -927,12 +933,14 @@ parse_filter_node (MooMarkupNode *elm,
 {
     const char *id;
     const char *name;
+    const char *_name;
     FilterInfo *info;
     GSList *patterns = NULL;
     MooMarkupNode *child;
 
     id = moo_markup_get_prop (elm, PROP_FILTER_ID);
     name = moo_markup_get_prop (elm, PROP_FILTER_NAME);
+    _name = moo_markup_get_prop (elm, PROP_FILTER__NAME);
 
     if (!id || !id[0])
     {
@@ -940,7 +948,11 @@ parse_filter_node (MooMarkupNode *elm,
         return NULL;
     }
 
-    if (!name || !name[0])
+    if (_name && _name[0])
+    {
+        name = Q_(_name);
+    }
+    else if (!name || !name[0])
     {
         g_warning ("in file %s: filter name missing", file);
         return NULL;
@@ -983,7 +995,7 @@ static void
 parse_filter_file (const char *file)
 {
     MooMarkupDoc *doc;
-    MooMarkupNode *node;
+    MooMarkupNode *root, *node;
     GError *error = NULL;
 
     if (!g_file_test (file, G_FILE_TEST_EXISTS))
@@ -998,7 +1010,26 @@ parse_filter_file (const char *file)
         return;
     }
 
-    for (node = doc->children; node != NULL; node = node->next)
+    root = moo_markup_get_root_element (doc, ELEMENT_ROOT);
+
+    if (root)
+    {
+        const char *version = moo_markup_get_prop (root, PROP_VERSION);
+
+        if (!version || strcmp (version, FILTERS_VERSION) != 0)
+        {
+            g_warning ("in file %s: invalid version '%s'",
+                       file, version ? version : "(null)");
+            moo_markup_doc_unref (doc);
+            return;
+        }
+    }
+    else
+    {
+        root = MOO_MARKUP_NODE (doc);
+    }
+
+    for (node = root->children; node != NULL; node = node->next)
     {
         FilterInfo *info;
 

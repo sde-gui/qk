@@ -259,8 +259,10 @@ run_in_pane (MooEditWindow     *window,
         moo_edit_window_present_output (window);
         gtk_widget_grab_focus (output);
 
-        if (filter_id)
-            filter = moo_command_filter_create (filter_id);
+        if (!filter_id)
+            filter_id = "default";
+
+        filter = moo_command_filter_create (filter_id);
 
         if (filter)
         {
@@ -873,10 +875,6 @@ init_filter_combo (GtkComboBox *combo)
 
     store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
 
-    gtk_list_store_append (store, &iter);
-    /* Translators: "None" means no output filter for a shell command, do not translate the part before | */
-    gtk_list_store_set (store, &iter, COLUMN_NAME, Q_("Filter|None"), -1);
-
     ids = moo_command_filter_list ();
 
     while (ids)
@@ -897,7 +895,7 @@ init_filter_combo (GtkComboBox *combo)
         gtk_list_store_append (store, &iter);
         gtk_list_store_set (store, &iter,
                             COLUMN_ID, id,
-                            COLUMN_NAME, _(name),
+                            COLUMN_NAME, name,
                             -1);
 
         g_free (id);
@@ -923,7 +921,7 @@ set_filter_combo (GtkComboBox *combo,
         return;
     }
 
-    if (gtk_tree_model_iter_nth_child (model, &iter, NULL, 1))
+    if (gtk_tree_model_get_iter_first (model, &iter))
     {
         do {
             char *id_here;

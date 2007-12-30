@@ -68,6 +68,7 @@ struct _MooCommandData {
 };
 
 typedef struct {
+    char *id;
     char *name;
     MooCommandFilterFactory factory_func;
     gpointer data;
@@ -1410,6 +1411,7 @@ moo_command_filter_register (const char             *id,
     }
 
     info = g_new0 (FilterInfo, 1);
+    info->id = g_strdup (id);
     info->name = g_strdup (name);
     info->factory_func = factory_func;
     info->data = data;
@@ -1440,6 +1442,7 @@ moo_command_filter_unregister (const char *id)
         info->data_notify (info->data);
 
     g_free (info->name);
+    g_free (info->id);
     g_free (info);
 }
 
@@ -1458,22 +1461,48 @@ moo_command_filter_lookup (const char *id)
 
 
 static void
-prepend_filter_id (const char *id,
-                   G_GNUC_UNUSED gpointer info,
-                   GSList    **list)
+prepend_filter_info (G_GNUC_UNUSED const char *id,
+                     FilterInfo *info,
+                     GSList    **list)
 {
-    *list = g_slist_prepend (*list, g_strdup (id));
+    *list = g_slist_prepend (*list, info);
+}
+
+static int
+compare_filter_names (FilterInfo *fi1,
+                      FilterInfo *fi2)
+{
+    if (strcmp (fi1->id, "default") == 0)
+        return -1;
+    else if (strcmp (fi2->id, "default") == 0)
+        return 1;
+    else if (strcmp (fi1->id, "none") == 0)
+        return -1;
+    else if (strcmp (fi2->id, "none") == 0)
+        return 1;
+    else
+        return g_utf8_collate (fi1->name, fi2->name);
 }
 
 GSList *
 moo_command_filter_list (void)
 {
     GSList *list = NULL;
+    GSList *ids = NULL;
 
     if (registered_filters)
-        g_hash_table_foreach (registered_filters, (GHFunc) prepend_filter_id, &list);
+        g_hash_table_foreach (registered_filters, (GHFunc) prepend_filter_info, &list);
 
-    return list;
+    list = g_slist_sort (list, (GCompareFunc) compare_filter_names);
+
+    while (list)
+    {
+        FilterInfo *fi = list->data;
+        ids = g_slist_prepend (ids, g_strdup (fi->id));
+        list = g_slist_delete_link (list, list);
+    }
+
+    return g_slist_reverse (ids);
 }
 
 
