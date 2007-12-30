@@ -21,6 +21,7 @@ moo/mooedit/glade/mootextgotoline.glade
 moo/mooedit/glade/quicksearch.glade
 moo/mooedit/glade/statusbar.glade
 
+moo/mooedit/filters.xml
 moo/mooedit/medit-ui.xml
 moo/mooedit/mooedit-ui.xml
 moo/mooedit/mooeditor.c

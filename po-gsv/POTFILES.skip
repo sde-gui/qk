@@ -18,6 +18,7 @@ moo/mooedit/glade/mooprintpreview.glade
 moo/mooedit/glade/mootextfind.glade
 moo/mooedit/glade/mootextgotoline.glade
 moo/mooedit/glade/quicksearch.glade
+moo/mooedit/filters.xml
 moo/mooedit/medit-ui.xml
 moo/mooedit/moocommand-unx.c
 moo/mooedit/moocommand-lua.c

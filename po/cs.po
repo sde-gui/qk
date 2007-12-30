@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-12-03 22:34-0600\n"
+"POT-Creation-Date: 2007-12-30 14:42-0600\n"
 "PO-Revision-Date: 2007-11-10 22:45+0100\n"
 "Last-Translator: Vlastimil Ott <vlastimil@e-ott.info>\n"
 "Language-Team:  <cs@li.org>\n"
@@ -30,7 +30,7 @@ msgid "medit is a text editor"
 msgstr "medit je textový editor"
 
 #. menu item label
-#: ../moo/mooapp/mooapp.c:1310
+#: ../moo/mooapp/mooapp.c:1294
 msgid "System Info"
 msgstr "Systémové informace"
 
@@ -59,22 +59,22 @@ msgstr "C_redits"
 #. Translators: do not translate the part before |
 #: ../moo/mooapp/glade/mooappabout.glade.h:4
 msgid "Dialog title|About"
-msgstr "Dialog title|O programu"
+msgstr "O programu"
 
 #. Translators: do not translate the part before |
 #: ../moo/mooapp/glade/mooappabout.glade.h:6
 msgid "Dialog title|Credits"
-msgstr "Dialog title|Zásluhy"
+msgstr "Zásluhy"
 
 #. Translators: do not translate the part before |
 #: ../moo/mooapp/glade/mooappabout.glade.h:8
 msgid "Dialog title|License"
-msgstr "Dialog title|Licence"
+msgstr "Licence"
 
 #. System Info dialog title, do not translate the part before the |
 #: ../moo/mooapp/glade/mooappabout.glade.h:10
 msgid "Dialog title|System Info"
-msgstr "Dialog title|Systémové informace"
+msgstr "Systémové informace"
 
 #. Tab label in Credits dialog
 #: ../moo/mooapp/glade/mooappabout.glade.h:12
@@ -121,26 +121,30 @@ msgid "Encodings to autodetect:"
 msgstr "Detekovat kódování:"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:6
+msgid "Ensure trailing newline"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
 msgid "Loading"
 msgstr "Načítání"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
 msgid "Make backups"
 msgstr "Vytvářet zálohy"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:9
 msgid "Open dialog shows current document directory"
 msgstr "Dialog pro otevření zobrazuje adresář otevřeného dokumentu"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:9
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:10
 msgid "Remove trailing spaces"
 msgstr "Odstranit mezery na koncích řádků"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:10
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
 msgid "Saving"
 msgstr "Ukládání"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:12
 msgid "Sessions"
 msgstr "Sezení"
 
@@ -153,33 +157,37 @@ msgid "Default language:"
 msgstr "Přednastavený jazyk:"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:3
+msgid "Do not use tabs for indentation"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:4
 msgid "Enable auto indentation"
 msgstr "Povolit automatické odsazování"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:4
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:5
 msgid "Indent width, spaces:"
 msgstr "Šířka odsazení v mezerách:"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:5
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
 msgid "Keyboard"
 msgstr "Klávesnice"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:7
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
 msgid "Misc"
 msgstr "Různé"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:7
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
 msgid "Smart Home and End"
 msgstr "Chytré Home a End"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:9
 msgid "Tab key indents"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:9
-msgid "Use spaces to indent"
-msgstr "Odsazovat mezerami"
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:10
+msgid "Visual tab width:"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:1
 #: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:3
@@ -501,6 +509,36 @@ msgstr "Rozlišovat veli_kost znaků"
 msgid "_Regular expression"
 msgstr "_Regulární výraz"
 
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:2
+msgid "Filter|Bison"
+msgstr ""
+
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:4
+msgid "Filter|Default"
+msgstr ""
+
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:6
+msgid "Filter|LaTeX"
+msgstr ""
+
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:8
+msgid "Filter|Make"
+msgstr ""
+
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:10
+msgid "Filter|None"
+msgstr "Žádný"
+
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:12
+msgid "Filter|Python"
+msgstr ""
+
 #. menu item label
 #: ../moo/mooedit/medit-ui.xml.h:2
 msgid "_Document"
@@ -534,56 +572,51 @@ msgstr "_Okna"
 msgid "Open new editor window"
 msgstr "Otevřít nové okno editoru"
 
-#: ../moo/mooedit/mooeditor.c:1002 ../moo/mooedit/mooeditwindow.c:1429
+#: ../moo/mooedit/mooeditor.c:995 ../moo/mooedit/mooeditwindow.c:1433
 msgid "Open Recent"
 msgstr "Otevřít nedávný"
 
-#: ../moo/mooedit/moocommand-unx.c:716
+#: ../moo/mooedit/moocommand-unx.c:718
 msgid "Shell command"
 msgstr "Příkaz shellu"
 
-#. Translators: "None" means no output filter for a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-unx.c:878
-msgid "Filter|None"
-msgstr "Filter|Žádný"
-
 #. Translators: these are kinds of input for a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-unx.c:957
+#: ../moo/mooedit/moocommand-unx.c:955
 msgid "Input|None"
-msgstr "Input|Žádný"
+msgstr "Žádný"
 
-#: ../moo/mooedit/moocommand-unx.c:957
+#: ../moo/mooedit/moocommand-unx.c:955
 msgid "Input|Selected lines"
-msgstr "Input|Vybrané řádky"
+msgstr "Vybrané řádky"
 
-#: ../moo/mooedit/moocommand-unx.c:957
+#: ../moo/mooedit/moocommand-unx.c:955
 msgid "Input|Selection"
-msgstr "Input|Výběr"
+msgstr "Výběr"
 
-#: ../moo/mooedit/moocommand-unx.c:957
+#: ../moo/mooedit/moocommand-unx.c:955
 msgid "Input|Whole document"
-msgstr "Input|Celý dokument"
+msgstr "Celý dokument"
 
 #. Translators: these are actions for output of a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-unx.c:959
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Output|None"
-msgstr "Output|Žádný"
+msgstr "Žádný"
 
-#: ../moo/mooedit/moocommand-unx.c:959
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Output|None, asynchronous"
-msgstr "Output|Žádný, asynchronní"
+msgstr "Žádný, asynchronní"
 
-#: ../moo/mooedit/moocommand-unx.c:959
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Output|Output pane"
-msgstr "Output|Výstupní panel"
+msgstr "Výstupní panel"
 
-#: ../moo/mooedit/moocommand-unx.c:959
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Output|Insert into the document"
-msgstr "Output|Vložit do dokumentu"
+msgstr "Vložit do dokumentu"
 
-#: ../moo/mooedit/moocommand-unx.c:959
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Output|New document"
-msgstr "Output|Nový dokument"
+msgstr "Nový dokument"
 
 #: ../moo/mooedit/moocommand-lua.c:287
 msgid "Lua script"
@@ -916,7 +949,7 @@ msgstr "Nastavení strany..."
 msgid "Page Setup..."
 msgstr "_Nastavení strany..."
 
-#: ../moo/mooedit/mooeditwindow.c:841 ../moo/mooedit/mooeditwindow.c:2022
+#: ../moo/mooedit/mooeditwindow.c:841 ../moo/mooedit/mooeditwindow.c:2026
 msgid "Export as PDF"
 msgstr "Exportovat do PDF"
 
@@ -970,40 +1003,40 @@ msgstr "%s [smazán][změněn]"
 msgid "%s [modified]"
 msgstr "%s [změněn]"
 
-#: ../moo/mooedit/mooeditwindow.c:1484
+#: ../moo/mooedit/mooeditwindow.c:1488
 msgid "Reopen Using Encoding"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1534
+#: ../moo/mooedit/mooeditwindow.c:1538
 msgid "_Encoding"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1936 ../moo/moofileview/moofileview.c:1216
+#: ../moo/mooedit/mooeditwindow.c:1940 ../moo/moofileview/moofileview.c:1216
 #: ../moo/moofileview/moofileview.c:1217
 #: ../moo/moofileview/moofileview-ui.xml.h:1
 msgid "Bookmarks"
 msgstr "Záložky"
 
-#: ../moo/mooedit/mooeditwindow.c:3416
+#: ../moo/mooedit/mooeditwindow.c:3420
 #, c-format
 msgid "Line: %s Col: %s"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3417
+#: ../moo/mooedit/mooeditwindow.c:3421
 #, c-format
 msgid "Chars: %s"
 msgstr ""
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
-#: ../moo/mooedit/mooeditwindow.c:3457
+#: ../moo/mooedit/mooeditwindow.c:3461
 msgid "OVR"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3457
+#: ../moo/mooedit/mooeditwindow.c:3461
 msgid "INS"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3582
+#: ../moo/mooedit/mooeditwindow.c:3586
 msgid "_Language"
 msgstr "_Jazyk"
 
@@ -1036,36 +1069,36 @@ msgstr "Nepojmenovaný"
 msgid "Untitled %d"
 msgstr "Nepojmenovaný %d"
 
-#: ../moo/mooedit/mootextfind.c:487
+#: ../moo/mooedit/mootextfind.c:489
 msgid "No search term entered"
 msgstr "Nebyl zadán výraz k hledání"
 
-#: ../moo/mooedit/mootextfind.c:794 ../moo/mooedit/mootextfind.c:900
-#: ../moo/mooedit/mootextfind.c:1055
+#: ../moo/mooedit/mootextfind.c:796 ../moo/mooedit/mootextfind.c:902
+#: ../moo/mooedit/mootextfind.c:1057
 msgid "Search hit top, continuing at bottom"
 msgstr "Dosaženo začátku, hledá se od konce"
 
-#: ../moo/mooedit/mootextfind.c:796 ../moo/mooedit/mootextfind.c:898
-#: ../moo/mooedit/mootextfind.c:978
+#: ../moo/mooedit/mootextfind.c:798 ../moo/mooedit/mootextfind.c:900
+#: ../moo/mooedit/mootextfind.c:980
 msgid "Search hit bottom, continuing at top"
 msgstr "Dosaženo konce, hledá se od začátku"
 
-#: ../moo/mooedit/mootextfind.c:805 ../moo/mooedit/mootextfind.c:910
-#: ../moo/mooedit/mootextfind.c:986 ../moo/mooedit/mootextfind.c:1063
+#: ../moo/mooedit/mootextfind.c:807 ../moo/mooedit/mootextfind.c:912
+#: ../moo/mooedit/mootextfind.c:988 ../moo/mooedit/mootextfind.c:1065
 #, c-format
 msgid "Pattern not found: %s"
 msgstr "Vzorek nenalezen: %s"
 
-#: ../moo/mooedit/mootextfind.c:892
+#: ../moo/mooedit/mootextfind.c:894
 #, c-format
 msgid "Found single instance of pattern '%s'"
 msgstr "Nalezen jeden výskyt vzorku '%s'"
 
-#: ../moo/mooedit/mootextfind.c:1098
+#: ../moo/mooedit/mootextfind.c:1100
 msgid "No replacement made"
 msgstr "Nic nebylo nahrazeno"
 
-#: ../moo/mooedit/mootextfind.c:1104
+#: ../moo/mooedit/mootextfind.c:1106
 #, c-format
 msgid "%u replacement made"
 msgid_plural "%u replacements made"
@@ -1435,17 +1468,17 @@ msgstr "Klávesová zkratka pro vybranou akci"
 #. Translators: do not translate the part before |
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:5
 msgid "Shortcut|Custom"
-msgstr "Shortcut|Uživatelské"
+msgstr "Uživatelské"
 
 #. Translators: do not translate the part before |
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:7
 msgid "Shortcut|Default"
-msgstr "Shortcut|Default"
+msgstr "Default"
 
 #. Translators: do not translate the part before |
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:9
 msgid "Shortcut|None"
-msgstr "Shortcut|Žádné"
+msgstr "Žádné"
 
 #. Translators: 012345 denotes order in which character encoding
 #. groups should appear, e.g. 543210 means inverse order.
@@ -1459,16 +1492,16 @@ msgstr "Shortcut|Žádné"
 msgid "012345"
 msgstr "510234"
 
-#: ../moo/mooutils/mooencodings.c:686
+#: ../moo/mooutils/mooencodings.c:689
 msgid "Auto Detected"
 msgstr "Autodetekce"
 
 #. Translators: do not translate the part before |
-#: ../moo/mooutils/mooencodings.c:715
+#: ../moo/mooutils/mooencodings.c:718
 msgid "Encodings combo submenu|Other"
-msgstr "Encodings combo submenu|Další"
+msgstr "Další"
 
-#: ../moo/mooutils/mooencodings.c:814
+#: ../moo/mooutils/mooencodings.c:817
 msgid "Charact_er encoding:"
 msgstr "_Kódování:"
 
@@ -1700,43 +1733,43 @@ msgstr "Zobrazit nástrojovou lištu"
 msgid "Show Menubar"
 msgstr "Zobrazit nabídku"
 
-#: ../moo/mooutils/moowindow.c:763
+#: ../moo/mooutils/moowindow.c:757
 msgid "_Icons Only"
 msgstr "Jen _ikony"
 
-#: ../moo/mooutils/moowindow.c:764
+#: ../moo/mooutils/moowindow.c:758
 msgid "_Labels Only"
 msgstr "Jen _popisky"
 
-#: ../moo/mooutils/moowindow.c:765
+#: ../moo/mooutils/moowindow.c:759
 msgid "Icons _and Labels"
 msgstr "Ikony _a popisky"
 
-#: ../moo/mooutils/moowindow.c:774
+#: ../moo/mooutils/moowindow.c:768
 msgid "Toolbar _Style"
 msgstr "Styl nástrojové lišty"
 
-#: ../moo/mooutils/moopane.c:606
+#: ../moo/mooutils/moopane.c:583
 msgid "Remove pane"
 msgstr "Odstranit panel"
 
-#: ../moo/mooutils/moopane.c:614
+#: ../moo/mooutils/moopane.c:591
 msgid "Hide pane"
 msgstr "Skrýt panel"
 
-#: ../moo/mooutils/moopane.c:618
+#: ../moo/mooutils/moopane.c:595
 msgid "Sticky"
 msgstr "Přišpendlit"
 
-#: ../moo/mooutils/moopane.c:622
+#: ../moo/mooutils/moopane.c:599
 msgid "Detach pane"
 msgstr "Odpojit panel"
 
-#: ../moo/mooutils/moopane.c:635
+#: ../moo/mooutils/moopane.c:612
 msgid "Attach"
 msgstr "Ukotvit"
 
-#: ../moo/mooutils/moopane.c:639
+#: ../moo/mooutils/moopane.c:616
 msgid "Keep on top"
 msgstr "Stále navrchu"
 
@@ -1765,6 +1798,9 @@ msgstr "Uložit změny v dokumentu před jeho uzavřením?"
 #: ../moo/mooutils/moodialogs.c:349
 msgid "If you don't save, changes will be discarded"
 msgstr "Pokud jej neuložíte, změny budou ztraceny"
+
+#~ msgid "Use spaces to indent"
+#~ msgstr "Odsazovat mezerami"
 
 #~ msgid "Close _All"
 #~ msgstr "Zavřít _vše"

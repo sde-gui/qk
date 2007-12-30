@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-12-03 22:34-0600\n"
+"POT-Creation-Date: 2007-12-30 14:42-0600\n"
 "PO-Revision-Date: 2007-07-11 10:00+0500\n"
 "Last-Translator: Andrey Fedoseev <andrey.fedoseev@gmail.com>\n"
 "Language-Team: Russian <ru@li.org>\n"
@@ -30,7 +30,7 @@ msgid "medit is a text editor"
 msgstr "Текстовый редактор"
 
 #. menu item label
-#: ../moo/mooapp/mooapp.c:1310
+#: ../moo/mooapp/mooapp.c:1294
 msgid "System Info"
 msgstr "Информация о системе"
 
@@ -121,26 +121,30 @@ msgid "Encodings to autodetect:"
 msgstr "Автоопределение кодировок:"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:6
+msgid "Ensure trailing newline"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
 msgid "Loading"
 msgstr "Открытие"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
 msgid "Make backups"
 msgstr "Создавать резервные копии"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:9
 msgid "Open dialog shows current document directory"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:9
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:10
 msgid "Remove trailing spaces"
 msgstr "Удалять пробелы в конце строки"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:10
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
 msgid "Saving"
 msgstr "Сохранение"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:12
 msgid "Sessions"
 msgstr ""
 
@@ -153,33 +157,37 @@ msgid "Default language:"
 msgstr "Язык по умолчанию:"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:3
+msgid "Do not use tabs for indentation"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:4
 msgid "Enable auto indentation"
 msgstr "Включить автоматические отступы"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:4
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:5
 msgid "Indent width, spaces:"
 msgstr "Ширина отступа, в пробелах:"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:5
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
 msgid "Keyboard"
 msgstr "Клавиатура"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:7
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
 msgid "Misc"
 msgstr "Прочее"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:7
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
 msgid "Smart Home and End"
 msgstr "\"Умные\" клавиши Home и End"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:9
 msgid "Tab key indents"
 msgstr "Клавиша Tab создаёт отступ"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:9
-msgid "Use spaces to indent"
-msgstr "Использовать пробелы для отступов"
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:10
+msgid "Visual tab width:"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:1
 #: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:3
@@ -324,7 +332,7 @@ msgstr "Новый"
 
 #: ../moo/mooedit/glade/mooedittools.glade.h:12
 msgid "Output:"
-msgstr "Вывод"
+msgstr "Вывод:"
 
 #: ../moo/mooedit/glade/mooedittools.glade.h:13
 msgid "Tools menu"
@@ -501,6 +509,36 @@ msgstr "С учетом _регистра"
 msgid "_Regular expression"
 msgstr "Регулярное _выражение"
 
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:2
+msgid "Filter|Bison"
+msgstr ""
+
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:4
+msgid "Filter|Default"
+msgstr ""
+
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:6
+msgid "Filter|LaTeX"
+msgstr ""
+
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:8
+msgid "Filter|Make"
+msgstr ""
+
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:10
+msgid "Filter|None"
+msgstr "Ничего"
+
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:12
+msgid "Filter|Python"
+msgstr ""
+
 #. menu item label
 #: ../moo/mooedit/medit-ui.xml.h:2
 msgid "_Document"
@@ -534,54 +572,49 @@ msgstr "_Окно"
 msgid "Open new editor window"
 msgstr "Открыть новое окно"
 
-#: ../moo/mooedit/mooeditor.c:1002 ../moo/mooedit/mooeditwindow.c:1429
+#: ../moo/mooedit/mooeditor.c:995 ../moo/mooedit/mooeditwindow.c:1433
 msgid "Open Recent"
 msgstr "Последние файлы"
 
-#: ../moo/mooedit/moocommand-unx.c:716
+#: ../moo/mooedit/moocommand-unx.c:718
 msgid "Shell command"
 msgstr "Команда оболочки"
 
-#. Translators: "None" means no output filter for a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-unx.c:878
-msgid "Filter|None"
-msgstr "Ничего"
-
 #. Translators: these are kinds of input for a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-unx.c:957
+#: ../moo/mooedit/moocommand-unx.c:955
 msgid "Input|None"
 msgstr "Ничего"
 
-#: ../moo/mooedit/moocommand-unx.c:957
+#: ../moo/mooedit/moocommand-unx.c:955
 msgid "Input|Selected lines"
 msgstr "Выделенные строки"
 
-#: ../moo/mooedit/moocommand-unx.c:957
+#: ../moo/mooedit/moocommand-unx.c:955
 msgid "Input|Selection"
 msgstr "Выделенный текст"
 
-#: ../moo/mooedit/moocommand-unx.c:957
+#: ../moo/mooedit/moocommand-unx.c:955
 msgid "Input|Whole document"
 msgstr "Целый документ"
 
 #. Translators: these are actions for output of a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-unx.c:959
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Output|None"
 msgstr "Ничего"
 
-#: ../moo/mooedit/moocommand-unx.c:959
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Output|None, asynchronous"
 msgstr "Ничего, асинхронно"
 
-#: ../moo/mooedit/moocommand-unx.c:959
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Output|Output pane"
 msgstr "Панель вывода"
 
-#: ../moo/mooedit/moocommand-unx.c:959
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Output|Insert into the document"
 msgstr "Вставить в документ"
 
-#: ../moo/mooedit/moocommand-unx.c:959
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Output|New document"
 msgstr "Новый документ"
 
@@ -923,7 +956,7 @@ msgstr "Параметры страницы..."
 msgid "Page Setup..."
 msgstr "Параметры страницы..."
 
-#: ../moo/mooedit/mooeditwindow.c:841 ../moo/mooedit/mooeditwindow.c:2022
+#: ../moo/mooedit/mooeditwindow.c:841 ../moo/mooedit/mooeditwindow.c:2026
 msgid "Export as PDF"
 msgstr "Экспорт в PDF"
 
@@ -977,40 +1010,40 @@ msgstr "%s [удалён] [изменён]"
 msgid "%s [modified]"
 msgstr "%s [изменён]"
 
-#: ../moo/mooedit/mooeditwindow.c:1484
+#: ../moo/mooedit/mooeditwindow.c:1488
 msgid "Reopen Using Encoding"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1534
+#: ../moo/mooedit/mooeditwindow.c:1538
 msgid "_Encoding"
 msgstr "Кодировка"
 
-#: ../moo/mooedit/mooeditwindow.c:1936 ../moo/moofileview/moofileview.c:1216
+#: ../moo/mooedit/mooeditwindow.c:1940 ../moo/moofileview/moofileview.c:1216
 #: ../moo/moofileview/moofileview.c:1217
 #: ../moo/moofileview/moofileview-ui.xml.h:1
 msgid "Bookmarks"
 msgstr "Закладки"
 
-#: ../moo/mooedit/mooeditwindow.c:3416
+#: ../moo/mooedit/mooeditwindow.c:3420
 #, c-format
 msgid "Line: %s Col: %s"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3417
+#: ../moo/mooedit/mooeditwindow.c:3421
 #, c-format
 msgid "Chars: %s"
 msgstr ""
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
-#: ../moo/mooedit/mooeditwindow.c:3457
+#: ../moo/mooedit/mooeditwindow.c:3461
 msgid "OVR"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3457
+#: ../moo/mooedit/mooeditwindow.c:3461
 msgid "INS"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3582
+#: ../moo/mooedit/mooeditwindow.c:3586
 msgid "_Language"
 msgstr "_Язык"
 
@@ -1043,36 +1076,36 @@ msgstr "Без имени"
 msgid "Untitled %d"
 msgstr "Без имени %d"
 
-#: ../moo/mooedit/mootextfind.c:487
+#: ../moo/mooedit/mootextfind.c:489
 msgid "No search term entered"
 msgstr "Не указан текст для поиска"
 
-#: ../moo/mooedit/mootextfind.c:794 ../moo/mooedit/mootextfind.c:900
-#: ../moo/mooedit/mootextfind.c:1055
+#: ../moo/mooedit/mootextfind.c:796 ../moo/mooedit/mootextfind.c:902
+#: ../moo/mooedit/mootextfind.c:1057
 msgid "Search hit top, continuing at bottom"
 msgstr ""
 
-#: ../moo/mooedit/mootextfind.c:796 ../moo/mooedit/mootextfind.c:898
-#: ../moo/mooedit/mootextfind.c:978
+#: ../moo/mooedit/mootextfind.c:798 ../moo/mooedit/mootextfind.c:900
+#: ../moo/mooedit/mootextfind.c:980
 msgid "Search hit bottom, continuing at top"
 msgstr ""
 
-#: ../moo/mooedit/mootextfind.c:805 ../moo/mooedit/mootextfind.c:910
-#: ../moo/mooedit/mootextfind.c:986 ../moo/mooedit/mootextfind.c:1063
+#: ../moo/mooedit/mootextfind.c:807 ../moo/mooedit/mootextfind.c:912
+#: ../moo/mooedit/mootextfind.c:988 ../moo/mooedit/mootextfind.c:1065
 #, c-format
 msgid "Pattern not found: %s"
 msgstr "Шаблон не найден: %s"
 
-#: ../moo/mooedit/mootextfind.c:892
+#: ../moo/mooedit/mootextfind.c:894
 #, c-format
 msgid "Found single instance of pattern '%s'"
 msgstr "Шаблон '%s' найден один раз"
 
-#: ../moo/mooedit/mootextfind.c:1098
+#: ../moo/mooedit/mootextfind.c:1100
 msgid "No replacement made"
 msgstr "Замена не произведена"
 
-#: ../moo/mooedit/mootextfind.c:1104
+#: ../moo/mooedit/mootextfind.c:1106
 #, c-format
 msgid "%u replacement made"
 msgid_plural "%u replacements made"
@@ -1466,16 +1499,16 @@ msgstr "Нет"
 msgid "012345"
 msgstr "510234"
 
-#: ../moo/mooutils/mooencodings.c:686
+#: ../moo/mooutils/mooencodings.c:689
 msgid "Auto Detected"
 msgstr "Автоопределение"
 
 #. Translators: do not translate the part before |
-#: ../moo/mooutils/mooencodings.c:715
+#: ../moo/mooutils/mooencodings.c:718
 msgid "Encodings combo submenu|Other"
 msgstr "Другая"
 
-#: ../moo/mooutils/mooencodings.c:814
+#: ../moo/mooutils/mooencodings.c:817
 msgid "Charact_er encoding:"
 msgstr "_Кодировка символов"
 
@@ -1707,43 +1740,43 @@ msgstr "Показывать панель инструментов"
 msgid "Show Menubar"
 msgstr "Показывать меню"
 
-#: ../moo/mooutils/moowindow.c:763
+#: ../moo/mooutils/moowindow.c:757
 msgid "_Icons Only"
 msgstr "Tолько пиктограммы"
 
-#: ../moo/mooutils/moowindow.c:764
+#: ../moo/mooutils/moowindow.c:758
 msgid "_Labels Only"
 msgstr "Tолько текст"
 
-#: ../moo/mooutils/moowindow.c:765
+#: ../moo/mooutils/moowindow.c:759
 msgid "Icons _and Labels"
 msgstr "Текст и пиктограммы"
 
-#: ../moo/mooutils/moowindow.c:774
+#: ../moo/mooutils/moowindow.c:768
 msgid "Toolbar _Style"
 msgstr ""
 
-#: ../moo/mooutils/moopane.c:606
+#: ../moo/mooutils/moopane.c:583
 msgid "Remove pane"
 msgstr "Удалить панель"
 
-#: ../moo/mooutils/moopane.c:614
+#: ../moo/mooutils/moopane.c:591
 msgid "Hide pane"
 msgstr "Скрыть панель"
 
-#: ../moo/mooutils/moopane.c:618
+#: ../moo/mooutils/moopane.c:595
 msgid "Sticky"
 msgstr "Зафиксировать"
 
-#: ../moo/mooutils/moopane.c:622
+#: ../moo/mooutils/moopane.c:599
 msgid "Detach pane"
 msgstr "Отделить панель"
 
-#: ../moo/mooutils/moopane.c:635
+#: ../moo/mooutils/moopane.c:612
 msgid "Attach"
 msgstr "Прикрепить"
 
-#: ../moo/mooutils/moopane.c:639
+#: ../moo/mooutils/moopane.c:616
 msgid "Keep on top"
 msgstr "Удерживать наверху"
 
@@ -1772,6 +1805,9 @@ msgstr "Сохранить изменения в документе перед �
 #: ../moo/mooutils/moodialogs.c:349
 msgid "If you don't save, changes will be discarded"
 msgstr "Если вы не сохраните документ, изменения будут потеряны"
+
+#~ msgid "Use spaces to indent"
+#~ msgstr "Использовать пробелы для отступов"
 
 #~ msgid "Close _All"
 #~ msgstr "Закрыть _Все"

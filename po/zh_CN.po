@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-12-03 22:34-0600\n"
+"POT-Creation-Date: 2007-12-30 14:42-0600\n"
 "PO-Revision-Date: 2007-12-06 04:32+0800\n"
 "Last-Translator: Chaosye <chao-7410@163.com>\n"
 "MIME-Version: 1.0\n"
@@ -28,7 +28,7 @@ msgid "medit is a text editor"
 msgstr "medit文本编辑器"
 
 #. menu item label
-#: ../moo/mooapp/mooapp.c:1310
+#: ../moo/mooapp/mooapp.c:1294
 msgid "System Info"
 msgstr "系统信息"
 
@@ -116,26 +116,30 @@ msgid "Encodings to autodetect:"
 msgstr "用于自动检测的编码:"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:6
+msgid "Ensure trailing newline"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
 msgid "Loading"
 msgstr "加载中"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
 msgid "Make backups"
 msgstr "创建备份"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:9
 msgid "Open dialog shows current document directory"
 msgstr "在打开对话框中显示当前文档目录"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:9
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:10
 msgid "Remove trailing spaces"
 msgstr "删除行末空格"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:10
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
 msgid "Saving"
 msgstr "保存"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
+#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:12
 msgid "Sessions"
 msgstr "会话"
 
@@ -148,33 +152,37 @@ msgid "Default language:"
 msgstr "默认代码:"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:3
+msgid "Do not use tabs for indentation"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:4
 msgid "Enable auto indentation"
 msgstr "启用自动缩进"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:4
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:5
 msgid "Indent width, spaces:"
 msgstr "缩进空格数:"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:5
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
 msgid "Keyboard"
 msgstr "键盘"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:7
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
 msgid "Misc"
 msgstr "其它"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:7
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
 msgid "Smart Home and End"
 msgstr "智能Home键和End键"
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:9
 msgid "Tab key indents"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:9
-msgid "Use spaces to indent"
-msgstr "使用空格缩进"
+#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:10
+msgid "Visual tab width:"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:1
 #: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:3
@@ -496,6 +504,36 @@ msgstr "区分大小写(_C)"
 msgid "_Regular expression"
 msgstr "正则表达式(_R)"
 
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:2
+msgid "Filter|Bison"
+msgstr ""
+
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:4
+msgid "Filter|Default"
+msgstr ""
+
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:6
+msgid "Filter|LaTeX"
+msgstr ""
+
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:8
+msgid "Filter|Make"
+msgstr ""
+
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:10
+msgid "Filter|None"
+msgstr "无"
+
+#. Output filter for shell commands
+#: ../moo/mooedit/filters.xml.h:12
+msgid "Filter|Python"
+msgstr ""
+
 #. menu item label
 #: ../moo/mooedit/medit-ui.xml.h:2
 msgid "_Document"
@@ -529,54 +567,49 @@ msgstr "窗口(_W)"
 msgid "Open new editor window"
 msgstr "新建编辑窗口"
 
-#: ../moo/mooedit/mooeditor.c:1002 ../moo/mooedit/mooeditwindow.c:1429
+#: ../moo/mooedit/mooeditor.c:995 ../moo/mooedit/mooeditwindow.c:1433
 msgid "Open Recent"
 msgstr "打开最近用过的文档(_R)"
 
-#: ../moo/mooedit/moocommand-unx.c:716
+#: ../moo/mooedit/moocommand-unx.c:718
 msgid "Shell command"
 msgstr "Shell命令"
 
-#. Translators: "None" means no output filter for a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-unx.c:878
-msgid "Filter|None"
-msgstr "无"
-
 #. Translators: these are kinds of input for a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-unx.c:957
+#: ../moo/mooedit/moocommand-unx.c:955
 msgid "Input|None"
 msgstr "无"
 
-#: ../moo/mooedit/moocommand-unx.c:957
+#: ../moo/mooedit/moocommand-unx.c:955
 msgid "Input|Selected lines"
 msgstr ""
 
-#: ../moo/mooedit/moocommand-unx.c:957
+#: ../moo/mooedit/moocommand-unx.c:955
 msgid "Input|Selection"
 msgstr "选项"
 
-#: ../moo/mooedit/moocommand-unx.c:957
+#: ../moo/mooedit/moocommand-unx.c:955
 msgid "Input|Whole document"
 msgstr "全部"
 
 #. Translators: these are actions for output of a shell command, do not translate the part before |
-#: ../moo/mooedit/moocommand-unx.c:959
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Output|None"
 msgstr "无"
 
-#: ../moo/mooedit/moocommand-unx.c:959
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Output|None, asynchronous"
 msgstr "无, 异步"
 
-#: ../moo/mooedit/moocommand-unx.c:959
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Output|Output pane"
 msgstr "输出网格"
 
-#: ../moo/mooedit/moocommand-unx.c:959
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Output|Insert into the document"
 msgstr "输入到文档"
 
-#: ../moo/mooedit/moocommand-unx.c:959
+#: ../moo/mooedit/moocommand-unx.c:957
 msgid "Output|New document"
 msgstr "新建文档"
 
@@ -904,7 +937,7 @@ msgstr "页面设置(_E)"
 msgid "Page Setup..."
 msgstr "页面设置"
 
-#: ../moo/mooedit/mooeditwindow.c:841 ../moo/mooedit/mooeditwindow.c:2022
+#: ../moo/mooedit/mooeditwindow.c:841 ../moo/mooedit/mooeditwindow.c:2026
 msgid "Export as PDF"
 msgstr "导出为PDF文档"
 
@@ -958,40 +991,40 @@ msgstr ""
 msgid "%s [modified]"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1484
+#: ../moo/mooedit/mooeditwindow.c:1488
 msgid "Reopen Using Encoding"
 msgstr "用特定的编码重新打开"
 
-#: ../moo/mooedit/mooeditwindow.c:1534
+#: ../moo/mooedit/mooeditwindow.c:1538
 msgid "_Encoding"
 msgstr "编码(_E)"
 
-#: ../moo/mooedit/mooeditwindow.c:1936 ../moo/moofileview/moofileview.c:1216
+#: ../moo/mooedit/mooeditwindow.c:1940 ../moo/moofileview/moofileview.c:1216
 #: ../moo/moofileview/moofileview.c:1217
 #: ../moo/moofileview/moofileview-ui.xml.h:1
 msgid "Bookmarks"
 msgstr "书签"
 
-#: ../moo/mooedit/mooeditwindow.c:3416
+#: ../moo/mooedit/mooeditwindow.c:3420
 #, c-format
 msgid "Line: %s Col: %s"
 msgstr "行: %s 列: %s"
 
-#: ../moo/mooedit/mooeditwindow.c:3417
+#: ../moo/mooedit/mooeditwindow.c:3421
 #, c-format
 msgid "Chars: %s"
 msgstr "字符: %s"
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
-#: ../moo/mooedit/mooeditwindow.c:3457
+#: ../moo/mooedit/mooeditwindow.c:3461
 msgid "OVR"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3457
+#: ../moo/mooedit/mooeditwindow.c:3461
 msgid "INS"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3582
+#: ../moo/mooedit/mooeditwindow.c:3586
 msgid "_Language"
 msgstr "语言(_L)"
 
@@ -1024,36 +1057,36 @@ msgstr "未命名"
 msgid "Untitled %d"
 msgstr "未命名 %d"
 
-#: ../moo/mooedit/mootextfind.c:487
+#: ../moo/mooedit/mootextfind.c:489
 msgid "No search term entered"
 msgstr "没有输入要查找项目"
 
-#: ../moo/mooedit/mootextfind.c:794 ../moo/mooedit/mootextfind.c:900
-#: ../moo/mooedit/mootextfind.c:1055
+#: ../moo/mooedit/mootextfind.c:796 ../moo/mooedit/mootextfind.c:902
+#: ../moo/mooedit/mootextfind.c:1057
 msgid "Search hit top, continuing at bottom"
 msgstr "当查找到达文件顶端时,从底端继续"
 
-#: ../moo/mooedit/mootextfind.c:796 ../moo/mooedit/mootextfind.c:898
-#: ../moo/mooedit/mootextfind.c:978
+#: ../moo/mooedit/mootextfind.c:798 ../moo/mooedit/mootextfind.c:900
+#: ../moo/mooedit/mootextfind.c:980
 msgid "Search hit bottom, continuing at top"
 msgstr "当查找到达文件底端时,从顶端继续"
 
-#: ../moo/mooedit/mootextfind.c:805 ../moo/mooedit/mootextfind.c:910
-#: ../moo/mooedit/mootextfind.c:986 ../moo/mooedit/mootextfind.c:1063
+#: ../moo/mooedit/mootextfind.c:807 ../moo/mooedit/mootextfind.c:912
+#: ../moo/mooedit/mootextfind.c:988 ../moo/mooedit/mootextfind.c:1065
 #, c-format
 msgid "Pattern not found: %s"
 msgstr "没有找到匹配 %s"
 
-#: ../moo/mooedit/mootextfind.c:892
+#: ../moo/mooedit/mootextfind.c:894
 #, c-format
 msgid "Found single instance of pattern '%s'"
 msgstr "找到一个匹配 '%s'"
 
-#: ../moo/mooedit/mootextfind.c:1098
+#: ../moo/mooedit/mootextfind.c:1100
 msgid "No replacement made"
 msgstr "没有替换"
 
-#: ../moo/mooedit/mootextfind.c:1104
+#: ../moo/mooedit/mootextfind.c:1106
 #, c-format
 msgid "%u replacement made"
 msgid_plural "%u replacements made"
@@ -1442,16 +1475,16 @@ msgstr "无"
 msgid "012345"
 msgstr ""
 
-#: ../moo/mooutils/mooencodings.c:686
+#: ../moo/mooutils/mooencodings.c:689
 msgid "Auto Detected"
 msgstr "自动检测"
 
 #. Translators: do not translate the part before |
-#: ../moo/mooutils/mooencodings.c:715
+#: ../moo/mooutils/mooencodings.c:718
 msgid "Encodings combo submenu|Other"
 msgstr "其它"
 
-#: ../moo/mooutils/mooencodings.c:814
+#: ../moo/mooutils/mooencodings.c:817
 msgid "Charact_er encoding:"
 msgstr "编码(_C):"
 
@@ -1683,43 +1716,43 @@ msgstr "显示工具栏"
 msgid "Show Menubar"
 msgstr "显示菜单栏"
 
-#: ../moo/mooutils/moowindow.c:763
+#: ../moo/mooutils/moowindow.c:757
 msgid "_Icons Only"
 msgstr "只显示图标(_I)"
 
-#: ../moo/mooutils/moowindow.c:764
+#: ../moo/mooutils/moowindow.c:758
 msgid "_Labels Only"
 msgstr "只显示标题(_L)"
 
-#: ../moo/mooutils/moowindow.c:765
+#: ../moo/mooutils/moowindow.c:759
 msgid "Icons _and Labels"
 msgstr "显示图标和标题(_A)"
 
-#: ../moo/mooutils/moowindow.c:774
+#: ../moo/mooutils/moowindow.c:768
 msgid "Toolbar _Style"
 msgstr "工具栏样式(_S)"
 
-#: ../moo/mooutils/moopane.c:606
+#: ../moo/mooutils/moopane.c:583
 msgid "Remove pane"
 msgstr "删除面板"
 
-#: ../moo/mooutils/moopane.c:614
+#: ../moo/mooutils/moopane.c:591
 msgid "Hide pane"
 msgstr "隐藏面板"
 
-#: ../moo/mooutils/moopane.c:618
+#: ../moo/mooutils/moopane.c:595
 msgid "Sticky"
 msgstr "粘附"
 
-#: ../moo/mooutils/moopane.c:622
+#: ../moo/mooutils/moopane.c:599
 msgid "Detach pane"
 msgstr "分离面板"
 
-#: ../moo/mooutils/moopane.c:635
+#: ../moo/mooutils/moopane.c:612
 msgid "Attach"
 msgstr "依附在主窗口"
 
-#: ../moo/mooutils/moopane.c:639
+#: ../moo/mooutils/moopane.c:616
 msgid "Keep on top"
 msgstr "总在最上"
 
@@ -1748,6 +1781,9 @@ msgstr "关闭前保存对文档的修改吗?"
 #: ../moo/mooutils/moodialogs.c:349
 msgid "If you don't save, changes will be discarded"
 msgstr "如果你不保存,修改将会被丢弃"
+
+#~ msgid "Use spaces to indent"
+#~ msgstr "使用空格缩进"
 
 #~ msgid "Close _All"
 #~ msgstr "全部关闭(_A)"
