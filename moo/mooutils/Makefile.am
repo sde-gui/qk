@@ -123,6 +123,7 @@ mooutils_sources =			\
 	mooutils-treeview.h		\
 	mooutils-treeview.c		\
 	moowindow.c			\
+	stock-medit.h			\
 	stock-file-24.h			\
 	stock-file-selector-24.h	\
 	stock-select-all-16.h		\
@@ -200,7 +201,6 @@ CLEANFILES += $(glade_sources)
 EXTRA_DIST += $(glade_files)
 
 mooutils_pixmaps =			\
-	$(srcdir)/pixmaps/medit.png	\
 	$(srcdir)/pixmaps/hide.png	\
 	$(srcdir)/pixmaps/close.png	\
 	$(srcdir)/pixmaps/detach.png	\
@@ -208,18 +208,21 @@ mooutils_pixmaps =			\
 	$(srcdir)/pixmaps/keepontop.png	\
 	$(srcdir)/pixmaps/sticky.png
 
-CLEANFILES += stock-moo.h
-BUILT_SOURCES += stock-moo.h
-nodist_mooutils_sources += stock-moo.h
+CLEANFILES += stock-moo.h stock-medit.h
+BUILT_SOURCES += stock-moo.h stock-medit.h
+nodist_mooutils_sources += stock-moo.h stock-medit.h
 stock-moo.h: $(mooutils_pixmaps)
 	gdk-pixbuf-csource --static --build-list			\
-		MEDIT_ICON $(srcdir)/pixmaps/medit.png			\
 		MOO_HIDE_ICON $(srcdir)/pixmaps/hide.png		\
 		MOO_CLOSE_ICON $(srcdir)/pixmaps/close.png		\
 		MOO_STICKY_ICON $(srcdir)/pixmaps/sticky.png		\
 		MOO_DETACH_ICON $(srcdir)/pixmaps/detach.png		\
 		MOO_ATTACH_ICON $(srcdir)/pixmaps/attach.png		\
 		MOO_KEEP_ON_TOP_ICON $(srcdir)/pixmaps/keepontop.png	\
+			> $@.tmp && mv $@.tmp $@
+stock-medit.h: pixmaps/medit.png
+	gdk-pixbuf-csource --static --build-list			\
+		MEDIT_ICON $(srcdir)/pixmaps/medit.png			\
 			> $@.tmp && mv $@.tmp $@
 
 noinst_LTLIBRARIES = libmooutils.la

@@ -72,11 +72,6 @@ _moo_utils_mod_init (void)
     add_constant (mod, "STOCK_TERMINAL", MOO_STOCK_TERMINAL);
     add_constant (mod, "STOCK_KEYBOARD", MOO_STOCK_KEYBOARD);
     add_constant (mod, "STOCK_RESTART", MOO_STOCK_RESTART);
-    add_constant (mod, "STOCK_CLOSE", MOO_STOCK_CLOSE);
-    add_constant (mod, "STOCK_STICKY", MOO_STOCK_STICKY);
-    add_constant (mod, "STOCK_DETACH", MOO_STOCK_DETACH);
-    add_constant (mod, "STOCK_ATTACH", MOO_STOCK_ATTACH);
-    add_constant (mod, "STOCK_KEEP_ON_TOP", MOO_STOCK_KEEP_ON_TOP);
     add_constant (mod, "STOCK_DOC_DELETED", MOO_STOCK_DOC_DELETED);
     add_constant (mod, "STOCK_DOC_MODIFIED_ON_DISK", MOO_STOCK_DOC_MODIFIED_ON_DISK);
     add_constant (mod, "STOCK_DOC_DELETED", MOO_STOCK_DOC_DELETED);

@@ -2269,7 +2269,7 @@ setup_notebook (MooEditWindow *window)
                               G_CALLBACK (action_close_tab), window);
     moo_bind_bool_property (button, "sensitive", window, "has-open-document", FALSE);
 
-    icon = gtk_image_new_from_stock (MOO_STOCK_CLOSE, MOO_ICON_SIZE_REAL_SMALL);
+    icon = _moo_create_small_icon (MOO_SMALL_ICON_CLOSE);
 
     gtk_container_add (GTK_CONTAINER (button), icon);
     gtk_container_add (GTK_CONTAINER (frame), button);

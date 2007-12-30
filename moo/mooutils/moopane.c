@@ -16,6 +16,7 @@
 
 #include "moomarshals.h"
 #include "moopaned.h"
+#include "stock-moo.h"
 
 #include <string.h>
 #include <gdk/gdkkeysyms.h>
@@ -25,7 +26,6 @@
 
 #ifdef MOO_COMPILATION
 
-#include "moostock.h"
 #include "mooutils-misc.h"
 #include "moohelp.h"
 #include "mooutils-gobject.h"
@@ -34,15 +34,6 @@
 #else
 
 #define _(s) s
-
-#include "stock-moo.h"
-
-#define MOO_STOCK_HIDE ((const char*)MOO_HIDE_ICON)
-#define MOO_STOCK_STICKY ((const char*)MOO_STICKY_ICON)
-#define MOO_STOCK_CLOSE ((const char*)MOO_CLOSE_ICON)
-#define MOO_STOCK_DETACH ((const char*)MOO_DETACH_ICON)
-#define MOO_STOCK_ATTACH ((const char*)MOO_ATTACH_ICON)
-#define MOO_STOCK_KEEP_ON_TOP ((const char*)MOO_KEEP_ON_TOP_ICON)
 
 static void
 _moo_widget_set_tooltip (GtkWidget  *widget,
@@ -390,10 +381,6 @@ moo_pane_init (MooPane *pane)
     pane->window = NULL;
     pane->keep_on_top_button = NULL;
     pane->window_child_holder = NULL;
-
-#ifdef MOO_COMPILATION
-    _moo_stock_init ();
-#endif
 }
 
 static void
@@ -543,15 +530,15 @@ update_sticky_button (MooPane *pane)
 
 
 static GtkWidget *
-create_button (MooPane    *pane,
-               GtkWidget  *toolbar,
-               const char *tip,
-               gboolean    toggle,
-               int         padding,
-               const char *data)
+create_button (MooPane      *pane,
+               GtkWidget    *toolbar,
+               const char   *tip,
+               gboolean      toggle,
+               int           padding,
+               MooSmallIcon  icon)
 {
     GtkWidget *button;
-    GtkWidget *icon;
+    GtkWidget *icon_widget;
 
     if (toggle)
         button = gtk_toggle_button_new ();
@@ -563,18 +550,8 @@ create_button (MooPane    *pane,
     gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
     _moo_widget_set_tooltip (button, tip);
 
-#ifdef MOO_COMPILATION
-    icon = gtk_image_new_from_stock (data, MOO_ICON_SIZE_REAL_SMALL);
-#else
-    {
-        GdkPixbuf *pixbuf;
-        pixbuf = gdk_pixbuf_new_from_inline (-1, (const guchar*)data, FALSE, NULL);
-        icon = gtk_image_new_from_pixbuf (pixbuf);
-        g_object_unref (pixbuf);
-    }
-#endif
-
-    gtk_container_add (GTK_CONTAINER (button), icon);
+    icon_widget = _moo_create_small_icon (icon);
+    gtk_container_add (GTK_CONTAINER (button), icon_widget);
     gtk_box_pack_end (GTK_BOX (toolbar), button, FALSE, FALSE, padding);
 
     gtk_widget_show_all (button);
@@ -604,7 +581,7 @@ create_frame_widget (MooPane        *pane,
 
         pane->close_button = create_button (pane, toolbar,
                                             _("Remove pane"), FALSE, 3,
-                                            MOO_STOCK_CLOSE);
+                                            MOO_SMALL_ICON_CLOSE);
         g_object_set_data (G_OBJECT (pane->close_button), "moo-pane", pane);
         g_signal_connect_swapped (pane->close_button, "clicked",
                                   G_CALLBACK (close_button_clicked),
@@ -612,15 +589,15 @@ create_frame_widget (MooPane        *pane,
 
         hide_button = create_button (pane, toolbar,
                                      _("Hide pane"), FALSE, 0,
-                                     MOO_STOCK_HIDE);
+                                     MOO_SMALL_ICON_HIDE);
 
         pane->sticky_button = create_button (pane, toolbar,
                                              _("Sticky"), TRUE, 0,
-                                             MOO_STOCK_STICKY);
+                                             MOO_SMALL_ICON_STICKY);
 
         pane->detach_button = create_button (pane, toolbar,
                                              _("Detach pane"), FALSE, 0,
-                                             MOO_STOCK_DETACH);
+                                             MOO_SMALL_ICON_DETACH);
 
         g_signal_connect_swapped (hide_button, "clicked",
                                   G_CALLBACK (hide_button_clicked), pane);
@@ -633,11 +610,11 @@ create_frame_widget (MooPane        *pane,
 
         attach_button = create_button (pane, toolbar,
                                        _("Attach"), FALSE, 0,
-                                       MOO_STOCK_ATTACH);
+                                       MOO_SMALL_ICON_ATTACH);
 
         pane->keep_on_top_button = create_button (pane, toolbar,
                                                   _("Keep on top"), TRUE, 0,
-                                                  MOO_STOCK_KEEP_ON_TOP);
+                                                  MOO_SMALL_ICON_KEEP_ON_TOP);
 
         g_object_set_data (G_OBJECT (attach_button), "moo-pane", pane);
         g_signal_connect_swapped (attach_button, "clicked",
@@ -1288,4 +1265,168 @@ moo_pane_get_index (MooPane *pane)
         return moo_paned_get_pane_num (pane->parent, pane->child);
     else
         return -1;
+}
+
+
+typedef struct {
+    GtkWidget base;
+    GdkPixbuf **pixbufs;
+    const guchar *data;
+} MooIconWidget;
+
+typedef struct {
+    GtkWidgetClass base_class;
+} MooIconWidgetClass;
+
+GType _moo_icon_widget_get_type (void) G_GNUC_CONST;
+
+G_DEFINE_TYPE (MooIconWidget, _moo_icon_widget, GTK_TYPE_WIDGET)
+
+static void
+_moo_icon_widget_init (MooIconWidget *icon)
+{
+    GTK_WIDGET_SET_FLAGS (icon, GTK_NO_WINDOW);
+    icon->pixbufs = NULL;
+    icon->data = NULL;
+}
+
+static void
+free_pixbufs (MooIconWidget *icon)
+{
+    if (icon->pixbufs)
+    {
+        int i;
+        for (i = 0; i < 5 /* magic */; ++i)
+            g_object_unref (icon->pixbufs[i]);
+        g_free (icon->pixbufs);
+        icon->pixbufs = NULL;
+    }
+}
+
+static void
+moo_icon_widget_style_set (GtkWidget *widget,
+                           GtkStyle  *old_style)
+{
+    GTK_WIDGET_CLASS (_moo_icon_widget_parent_class)->style_set (widget, old_style);
+    free_pixbufs ((MooIconWidget*) widget);
+}
+
+static GdkPixbuf *
+get_pixbuf (MooIconWidget *icon)
+{
+    if (!icon->pixbufs)
+    {
+        int state;
+        GtkWidget *widget = GTK_WIDGET (icon);
+
+        g_return_val_if_fail (icon->data != NULL, NULL);
+
+        icon->pixbufs = g_new0 (GdkPixbuf*, 5 /* magic */);
+
+        for (state = 0; state < 5 /* magic */; ++state)
+        {
+            GdkPixbuf *pixbuf;
+            guchar *pixels, *p;
+            int width, height, rowstride, n_channels;
+            GdkColor *color;
+            int x, y;
+
+            pixbuf = gdk_pixbuf_new_from_inline (-1, icon->data, TRUE, NULL);
+            g_return_val_if_fail (pixbuf != NULL, NULL);
+
+            icon->pixbufs[state] = pixbuf;
+
+            pixels = gdk_pixbuf_get_pixels (pixbuf);
+            width = gdk_pixbuf_get_width (pixbuf);
+            height = gdk_pixbuf_get_height (pixbuf);
+            n_channels = gdk_pixbuf_get_n_channels (pixbuf);
+            g_assert (n_channels == 4);
+            rowstride = gdk_pixbuf_get_rowstride (pixbuf);
+
+            color = &widget->style->fg[state];
+
+            for (x = 0; x < width; ++x)
+            {
+                for (y = 0; y < height; ++y)
+                {
+                    p = pixels + y * rowstride + x * n_channels;
+
+                    if (p[3] != 0)
+                    {
+                        p[0] = color->red >> 8;
+                        p[1] = color->green >> 8;
+                        p[2] = color->blue >> 8;
+                    }
+                }
+            }
+        }
+    }
+
+    return icon->pixbufs[GTK_WIDGET_STATE (icon)];
+}
+
+static gboolean
+moo_icon_widget_expose_event (GtkWidget      *widget,
+                              GdkEventExpose *event)
+{
+    GdkPixbuf *pixbuf;
+
+    pixbuf = get_pixbuf ((MooIconWidget*) widget);
+    g_return_val_if_fail (pixbuf != NULL, FALSE);
+
+    gdk_draw_pixbuf (event->window,
+                     widget->style->black_gc,
+                     pixbuf,
+                     0, 0,
+                     widget->allocation.x, widget->allocation.y,
+                     gdk_pixbuf_get_width (pixbuf),
+                     gdk_pixbuf_get_height (pixbuf),
+                     GDK_RGB_DITHER_NORMAL, 0, 0);
+
+    return FALSE;
+}
+
+static void
+_moo_icon_widget_class_init (MooIconWidgetClass *klass)
+{
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+    widget_class->style_set = moo_icon_widget_style_set;
+    widget_class->expose_event = moo_icon_widget_expose_event;
+}
+
+GtkWidget *
+_moo_create_small_icon (MooSmallIcon icon)
+{
+    MooIconWidget *icon_widget;
+    const guchar *data = NULL;
+
+    switch (icon)
+    {
+        case MOO_SMALL_ICON_HIDE:
+            data = MOO_HIDE_ICON;
+            break;
+        case MOO_SMALL_ICON_STICKY:
+            data = MOO_STICKY_ICON;
+            break;
+        case MOO_SMALL_ICON_CLOSE:
+            data = MOO_CLOSE_ICON;
+            break;
+        case MOO_SMALL_ICON_DETACH:
+            data = MOO_DETACH_ICON;
+            break;
+        case MOO_SMALL_ICON_ATTACH:
+            data = MOO_ATTACH_ICON;
+            break;
+        case MOO_SMALL_ICON_KEEP_ON_TOP:
+            data = MOO_KEEP_ON_TOP_ICON;
+            break;
+    }
+
+    g_return_val_if_fail (data != NULL, NULL);
+
+    icon_widget = g_object_new (_moo_icon_widget_get_type (), NULL);
+    icon_widget->data = data;
+    gtk_widget_set_size_request (GTK_WIDGET (icon_widget), 7, 7 /* magic */);
+
+    return GTK_WIDGET (icon_widget);
 }

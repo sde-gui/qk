@@ -121,6 +121,17 @@ void            _moo_pane_set_parent        (MooPane        *pane,
 void            _moo_pane_unparent          (MooPane        *pane);
 void            _moo_pane_try_remove        (MooPane        *pane);
 
+typedef enum {
+    MOO_SMALL_ICON_HIDE,
+    MOO_SMALL_ICON_STICKY,
+    MOO_SMALL_ICON_CLOSE,
+    MOO_SMALL_ICON_DETACH,
+    MOO_SMALL_ICON_ATTACH,
+    MOO_SMALL_ICON_KEEP_ON_TOP
+} MooSmallIcon;
+
+GtkWidget      *_moo_create_small_icon      (MooSmallIcon    icon);
+
 
 G_END_DECLS
 

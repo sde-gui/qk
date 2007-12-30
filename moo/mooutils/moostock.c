@@ -15,7 +15,7 @@
 #include "mooutils/stock-terminal-24.h"
 #include "mooutils/stock-file-selector-24.h"
 #include "mooutils/stock-file-24.h"
-#include "mooutils/stock-moo.h"
+#include "mooutils/stock-medit.h"
 #include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
 #include <string.h>
@@ -158,18 +158,6 @@ static void add_icon2   (GtkIconFactory *factory,
 #endif /* !GTK_CHECK_VERSION(2,10,0) */
 
 
-GtkIconSize
-_moo_get_icon_size_real_small (void)
-{
-    static GtkIconSize size = 0;
-
-    if (!size)
-        size = gtk_icon_size_register ("moo-real-small", 4, 4);
-
-    return size;
-}
-
-
 static void
 register_stock_icon_alias (GtkIconFactory *factory,
                            const char     *stock_id,
@@ -233,12 +221,6 @@ _moo_stock_init (void)
     add_icon (factory, MOO_STOCK_TERMINAL, "terminal", 24, MOO_GNOME_TERMINAL_ICON);
 
     add_icon (factory, MOO_STOCK_MEDIT, "medit", 24, MEDIT_ICON);
-    add_icon (factory, MOO_STOCK_HIDE, NULL, REAL_SMALL, MOO_HIDE_ICON);
-    add_icon (factory, MOO_STOCK_CLOSE, NULL, REAL_SMALL, MOO_CLOSE_ICON);
-    add_icon (factory, MOO_STOCK_STICKY, NULL, REAL_SMALL, MOO_STICKY_ICON);
-    add_icon (factory, MOO_STOCK_DETACH, NULL, REAL_SMALL, MOO_DETACH_ICON);
-    add_icon (factory, MOO_STOCK_ATTACH, NULL, REAL_SMALL, MOO_ATTACH_ICON);
-    add_icon (factory, MOO_STOCK_KEEP_ON_TOP, NULL, REAL_SMALL, MOO_KEEP_ON_TOP_ICON);
 
 #if !GTK_CHECK_VERSION(2,10,0)
     add_icon2 (factory, GTK_STOCK_SELECT_ALL, "edit-select-all",

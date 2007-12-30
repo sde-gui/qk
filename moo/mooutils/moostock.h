@@ -24,12 +24,6 @@ G_BEGIN_DECLS
 #define MOO_STOCK_KEYBOARD              GTK_STOCK_SELECT_FONT
 #define MOO_STOCK_MENU                  GTK_STOCK_INDEX
 #define MOO_STOCK_RESTART               GTK_STOCK_REFRESH
-#define MOO_STOCK_HIDE                  "moo-hide"
-#define MOO_STOCK_CLOSE                 "moo-close"
-#define MOO_STOCK_STICKY                "moo-sticky"
-#define MOO_STOCK_DETACH                "moo-detach"
-#define MOO_STOCK_ATTACH                "moo-attach"
-#define MOO_STOCK_KEEP_ON_TOP           "moo-keep-on-top"
 
 #define MOO_STOCK_DOC_DELETED           GTK_STOCK_DIALOG_ERROR
 #define MOO_STOCK_DOC_MODIFIED_ON_DISK  GTK_STOCK_DIALOG_WARNING
@@ -45,8 +39,6 @@ G_BEGIN_DECLS
 
 #define MOO_STOCK_SAVE_NONE             "moo-save-none"
 #define MOO_STOCK_SAVE_SELECTED         "moo-save-selected"
-
-#define MOO_ICON_SIZE_REAL_SMALL        (_moo_get_icon_size_real_small ())
 
 #define MOO_STOCK_NEW_PROJECT           "moo-new-project"
 #define MOO_STOCK_OPEN_PROJECT          "moo-open-project"
@@ -71,7 +63,6 @@ G_BEGIN_DECLS
 
 
 void        _moo_stock_init                 (void);
-GtkIconSize _moo_get_icon_size_real_small   (void) G_GNUC_CONST;
 
 
 G_END_DECLS
