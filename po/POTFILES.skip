@@ -24,6 +24,7 @@ moo/mooedit/language-specs/css.lang
 moo/mooedit/language-specs/def.lang
 moo/mooedit/language-specs/desktop.lang
 moo/mooedit/language-specs/diff.lang
+moo/mooedit/language-specs/forth.lang
 moo/mooedit/language-specs/fortran.lang
 moo/mooedit/language-specs/gap.lang
 moo/mooedit/language-specs/gtkrc.lang

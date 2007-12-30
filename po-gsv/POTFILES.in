@@ -22,6 +22,7 @@ moo/mooedit/language-specs/docbook.lang
 moo/mooedit/language-specs/dpatch.lang
 moo/mooedit/language-specs/dtd.lang
 moo/mooedit/language-specs/erlang.lang
+moo/mooedit/language-specs/forth.lang
 moo/mooedit/language-specs/fortran.lang
 moo/mooedit/language-specs/gap.lang
 moo/mooedit/language-specs/gtk-doc.lang
