@@ -31,11 +31,11 @@
         NULL    /* value_table */                                                           \
     };                                                                                      \
                                                                                             \
-    type_id =                                                                               \
+    g_define_type_id =                                                                      \
         g_type_register_static (TYPE_PARENT, #TypeName, &type_info, flags);
 #else
 #define _MOO_REGISTER_TYPE(TypeName,type_name,TYPE_PARENT,flags)                            \
-    type_id =                                                                               \
+    g_define_type_id =                                                                      \
         g_type_register_static_simple (TYPE_PARENT,                                         \
                                        g_intern_static_string (#TypeName),                  \
                                        sizeof (TypeName##Class),                            \
@@ -46,7 +46,7 @@
 #endif
 
 
-#define MOO_DEFINE_TYPE_STATIC(TypeName,type_name,TYPE_PARENT)                              \
+#define MOO_DEFINE_TYPE_STATIC_WITH_CODE(TypeName,type_name,TYPE_PARENT,code)               \
                                                                                             \
 static GType    type_name##_get_type (void) G_GNUC_CONST;                                   \
 static void     type_name##_init              (TypeName        *self);                      \
@@ -62,15 +62,19 @@ static void     type_name##_class_intern_init (gpointer klass)                  
 static GType                                                                                \
 type_name##_get_type (void)                                                                 \
 {                                                                                           \
-    static GType type_id = 0;                                                               \
+    static GType g_define_type_id;                                                          \
                                                                                             \
-    if (G_UNLIKELY (!type_id))                                                              \
+    if (G_UNLIKELY (!g_define_type_id))                                                     \
     {                                                                                       \
         _MOO_REGISTER_TYPE(TypeName,type_name,TYPE_PARENT,0)                                \
+        code                                                                                \
     }                                                                                       \
                                                                                             \
-    return type_id;                                                                         \
+    return g_define_type_id;                                                                \
 } /* closes type_name##_get_type() */
+
+#define MOO_DEFINE_TYPE_STATIC(TypeName,type_name,TYPE_PARENT)                              \
+    MOO_DEFINE_TYPE_STATIC_WITH_CODE (TypeName, type_name, TYPE_PARENT, {})
 
 
 #endif /* MOO_TYPE_MACROS_H */
