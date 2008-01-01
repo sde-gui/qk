@@ -1268,10 +1268,19 @@ moo_pane_get_index (MooPane *pane)
 }
 
 
+typedef enum {
+    ICON_PIXBUFS,
+    ICON_ARROW_UP,
+    ICON_ARROW_DOWN,
+    ICON_ARROW_LEFT,
+    ICON_ARROW_RIGHT
+} IconType;
+
 typedef struct {
     GtkWidget base;
     GdkPixbuf **pixbufs;
     const guchar *data;
+    IconType type;
 } MooIconWidget;
 
 typedef struct {
@@ -1288,6 +1297,7 @@ _moo_icon_widget_init (MooIconWidget *icon)
     GTK_WIDGET_SET_FLAGS (icon, GTK_NO_WINDOW);
     icon->pixbufs = NULL;
     icon->data = NULL;
+    icon->type = ICON_PIXBUFS;
 }
 
 static void
@@ -1365,23 +1375,90 @@ get_pixbuf (MooIconWidget *icon)
     return icon->pixbufs[GTK_WIDGET_STATE (icon)];
 }
 
-static gboolean
-moo_icon_widget_expose_event (GtkWidget      *widget,
-                              GdkEventExpose *event)
+static void
+draw_pixbuf (GtkWidget      *widget,
+             GdkEventExpose *event)
 {
     GdkPixbuf *pixbuf;
+    int pixbuf_width, pixbuf_height;
+    int x, y;
 
     pixbuf = get_pixbuf ((MooIconWidget*) widget);
-    g_return_val_if_fail (pixbuf != NULL, FALSE);
+    g_return_if_fail (pixbuf != NULL);
+
+    pixbuf_width = gdk_pixbuf_get_width (pixbuf);
+    pixbuf_height = gdk_pixbuf_get_height (pixbuf);
+
+    x = widget->allocation.x + (widget->allocation.width - pixbuf_width) / 2;
+    y = widget->allocation.y + (widget->allocation.height - pixbuf_height) / 2;
 
     gdk_draw_pixbuf (event->window,
                      widget->style->black_gc,
                      pixbuf,
-                     0, 0,
-                     widget->allocation.x, widget->allocation.y,
-                     gdk_pixbuf_get_width (pixbuf),
-                     gdk_pixbuf_get_height (pixbuf),
+                     0, 0, x, y, pixbuf_width, pixbuf_height,
                      GDK_RGB_DITHER_NORMAL, 0, 0);
+}
+
+static void
+draw_arrow (GtkWidget      *widget,
+            GdkEventExpose *event)
+{
+    GtkArrowType arrow_type;
+    int x, y, width, height;
+
+    switch (((MooIconWidget*)widget)->type)
+    {
+        case ICON_ARROW_UP:
+            arrow_type = GTK_ARROW_UP;
+            break;
+        case ICON_ARROW_DOWN:
+            arrow_type = GTK_ARROW_DOWN;
+            break;
+        case ICON_ARROW_LEFT:
+            arrow_type = GTK_ARROW_LEFT;
+            break;
+        case ICON_ARROW_RIGHT:
+            arrow_type = GTK_ARROW_RIGHT;
+            break;
+        default:
+            g_return_if_reached ();
+    }
+
+    width = 3 * widget->allocation.width / 4;
+    height = 3 * widget->allocation.height / 4;
+    x = widget->allocation.x + width / 6;
+    y = widget->allocation.y + height / 6;
+
+    gtk_paint_arrow (widget->style,
+                     event->window,
+                     GTK_WIDGET_STATE (widget),
+                     GTK_SHADOW_IN,
+                     &event->area,
+                     widget,
+                     NULL,
+                     arrow_type,
+                     TRUE,
+                     x, y, width, height);
+}
+
+static gboolean
+moo_icon_widget_expose_event (GtkWidget      *widget,
+                              GdkEventExpose *event)
+{
+    MooIconWidget *icon = (MooIconWidget*) widget;
+
+    switch (icon->type)
+    {
+        case ICON_PIXBUFS:
+            draw_pixbuf (widget, event);
+            break;
+        case ICON_ARROW_UP:
+        case ICON_ARROW_DOWN:
+        case ICON_ARROW_LEFT:
+        case ICON_ARROW_RIGHT:
+            draw_arrow (widget, event);
+            break;
+    }
 
     return FALSE;
 }
@@ -1427,6 +1504,36 @@ _moo_create_small_icon (MooSmallIcon icon)
     icon_widget = g_object_new (_moo_icon_widget_get_type (), NULL);
     icon_widget->data = data;
     gtk_widget_set_size_request (GTK_WIDGET (icon_widget), 7, 7 /* magic */);
+
+    return GTK_WIDGET (icon_widget);
+}
+
+GtkWidget *
+_moo_create_arrow_icon (GtkArrowType arrow_type)
+{
+    MooIconWidget *icon_widget;
+    IconType icon_type;
+
+    switch (arrow_type)
+    {
+        case GTK_ARROW_UP:
+            icon_type = ICON_ARROW_UP;
+            break;
+        case GTK_ARROW_DOWN:
+            icon_type = ICON_ARROW_DOWN;
+            break;
+        case GTK_ARROW_LEFT:
+            icon_type = ICON_ARROW_LEFT;
+            break;
+        case GTK_ARROW_RIGHT:
+            icon_type = ICON_ARROW_RIGHT;
+            break;
+        default:
+            g_return_val_if_reached (NULL);
+    }
+
+    icon_widget = g_object_new (_moo_icon_widget_get_type (), NULL);
+    icon_widget->type = icon_type;
 
     return GTK_WIDGET (icon_widget);
 }
