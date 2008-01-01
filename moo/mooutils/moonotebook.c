@@ -17,6 +17,7 @@
 #include "mooutils/moomarshals.h"
 #include "mooutils/moonotebook.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moopane.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <string.h>
@@ -454,7 +455,8 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
 }
 
 
-static void moo_notebook_init      (MooNotebook *notebook)
+static void
+moo_notebook_init (MooNotebook *notebook)
 {
     GTK_WIDGET_SET_FLAGS (notebook, GTK_CAN_FOCUS);
     GTK_WIDGET_SET_FLAGS (notebook, GTK_NO_WINDOW);
@@ -487,7 +489,8 @@ static void moo_notebook_init      (MooNotebook *notebook)
 }
 
 
-static void     notebook_create_arrows          (MooNotebook    *nb)
+static void
+notebook_create_arrows (MooNotebook *nb)
 {
     GtkWidget *box, *button, *arrow;
 
@@ -496,20 +499,20 @@ static void     notebook_create_arrows          (MooNotebook    *nb)
     button = gtk_button_new ();
     gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
     nb->priv->left_arrow = button;
-    arrow = gtk_arrow_new (GTK_ARROW_LEFT, GTK_SHADOW_IN);
+    arrow = _moo_create_arrow_icon (GTK_ARROW_LEFT);
     gtk_container_add (GTK_CONTAINER (button), arrow);
     gtk_widget_show (button);
     gtk_widget_show (arrow);
-    gtk_box_pack_start (GTK_BOX (box), button, FALSE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (box), button, TRUE, TRUE, 0);
 
     button = gtk_button_new ();
     gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
     nb->priv->right_arrow = button;
-    arrow = gtk_arrow_new (GTK_ARROW_RIGHT, GTK_SHADOW_IN);
+    arrow = _moo_create_arrow_icon (GTK_ARROW_RIGHT);
     gtk_container_add (GTK_CONTAINER (button), arrow);
     gtk_widget_show (button);
     gtk_widget_show (arrow);
-    gtk_box_pack_start (GTK_BOX (box), button, FALSE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (box), button, TRUE, TRUE, 0);
 
     nb->priv->arrows = box;
     MOO_OBJECT_REF_SINK (box);
@@ -558,10 +561,11 @@ moo_notebook_destroy (GtkObject *object)
 }
 
 
-static void     moo_notebook_set_property   (GObject        *object,
-                                             guint           prop_id,
-                                             const GValue   *value,
-                                             GParamSpec     *pspec)
+static void
+moo_notebook_set_property (GObject        *object,
+                           guint           prop_id,
+                           const GValue   *value,
+                           GParamSpec     *pspec)
 {
     MooNotebook *nb = MOO_NOTEBOOK (object);
 
@@ -618,10 +622,11 @@ static void     moo_notebook_set_property   (GObject        *object,
 }
 
 
-static void     moo_notebook_get_property   (GObject        *object,
-                                             guint           prop_id,
-                                             GValue         *value,
-                                             GParamSpec     *pspec)
+static void
+moo_notebook_get_property (GObject    *object,
+                           guint       prop_id,
+                           GValue     *value,
+                           GParamSpec *pspec)
 {
     MooNotebook *nb = MOO_NOTEBOOK (object);
 
@@ -676,8 +681,9 @@ moo_notebook_new (void)
 }
 
 
-static void     labels_size_request         (MooNotebook    *nb,
-                                             GtkRequisition *requisition)
+static void
+labels_size_request (MooNotebook    *nb,
+                     GtkRequisition *requisition)
 {
     GtkRequisition child_req;
 
@@ -765,8 +771,8 @@ moo_notebook_size_request (GtkWidget      *widget,
         {
             gtk_widget_size_request (nb->priv->arrows, &action_req);
             MAKE_POSITIVE (action_req.width, action_req.height);
-            child_req.width += action_req.width;
             child_req.height = MAX (child_req.height, action_req.height);
+            child_req.width += MAX (action_req.width, 2*child_req.height);
         }
 
         if (child_req.width > 0)
@@ -777,7 +783,8 @@ moo_notebook_size_request (GtkWidget      *widget,
 }
 
 
-static int      labels_get_height_request     (MooNotebook    *nb)
+static int
+labels_get_height_request (MooNotebook *nb)
 {
     int height = 0;
     GtkRequisition child_req;
@@ -857,6 +864,7 @@ moo_notebook_size_allocate (GtkWidget     *widget,
                                               &arrows_req);
             MAKE_POSITIVE (arrows_req.width, arrows_req.height);
             height = MAX (arrows_req.height, height);
+            arrows_req.width = MAX (arrows_req.width, 2*height);
         }
 
         nb->priv->tabs_height = CLAMP (height, 0, allocation->height - 2*border_width);
