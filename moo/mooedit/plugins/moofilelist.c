@@ -622,7 +622,12 @@ file_list_update_doc (FileList *list,
 
         if (!file_list_find_doc (list, doc, &iter))
         {
-            g_critical ("%s: oops", G_STRLOC);
+            g_signal_handlers_disconnect_by_func (doc,
+                                                  (gpointer) doc_filename_changed,
+                                                  list);
+            list->docs = g_slist_remove (list->docs, doc);
+            g_object_unref (doc);
+            file_list_update_doc (list, doc);
             return;
         }
 
@@ -753,6 +758,80 @@ file_list_remove_doc (FileList *list,
     g_object_unref (doc);
 }
 
+
+static int
+compare_items (int       *p1,
+               int       *p2,
+               GPtrArray *items)
+{
+    Item *item1, *item2;
+    char *s1, *s2;
+    int retval;
+
+    item1 = items->pdata[*p1];
+    item2 = items->pdata[*p2];
+
+    if (!item1)
+        return !item2 ? 0 : -1;
+    if (!item2)
+        return 1;
+
+    s1 = g_utf8_collate_key_for_filename (FILE_ITEM (item1)->display_basename, -1);
+    s2 = g_utf8_collate_key_for_filename (FILE_ITEM (item2)->display_basename, -1);
+
+    retval = strcmp (s1, s2);
+
+    g_free (s2);
+    g_free (s1);
+    return retval;
+}
+
+static void
+file_list_sort (FileList *list)
+{
+    GPtrArray *items;
+    GArray *indices;
+    GtkTreeIter iter;
+    int i;
+
+    if (!gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (list),
+                                        &iter, NULL,
+                                        list->n_user_items))
+        return;
+
+    items = g_ptr_array_new ();
+
+    indices = g_array_new (FALSE, FALSE, sizeof (int));
+    for (i = 0; i < list->n_user_items; ++i)
+        g_array_append_val (indices, i);
+
+    do
+    {
+        int index = indices->len - list->n_user_items;
+        Item *item = get_item_at_iter (list, &iter);
+        g_array_append_val (indices, index);
+        g_ptr_array_add (items, item);
+    }
+    while (gtk_tree_model_iter_next (GTK_TREE_MODEL (list), &iter));
+
+    g_qsort_with_data ((int*)indices->data + list->n_user_items,
+                       indices->len - list->n_user_items,
+                       sizeof (int),
+                       (GCompareDataFunc) compare_items,
+                       items);
+
+    for (i = list->n_user_items; i < (int) indices->len; ++i)
+    {
+        int real_index = g_array_index (indices, int, i) + list->n_user_items;
+        g_array_index (indices, int, i) = real_index;
+    }
+
+    gtk_tree_store_reorder (GTK_TREE_STORE (list), NULL, (int*) indices->data);
+
+    g_array_free (indices, TRUE);
+    g_ptr_array_free (items, TRUE);
+}
+
 static void
 file_list_update_docs (FileList *list,
                        GSList   *docs)
@@ -769,7 +848,17 @@ file_list_update_docs (FileList *list,
     for (l = old_docs; l != NULL; l = l->next)
         file_list_remove_doc (list, l->data);
 
+    file_list_sort (list);
+
     g_slist_free (old_docs);
+}
+
+static void
+file_list_self_update (FileList *list)
+{
+    GSList *docs = g_slist_copy (list->docs);
+    file_list_update_docs (list, docs);
+    g_slist_free (docs);
 }
 
 
@@ -1047,6 +1136,9 @@ file_list_remove_item (FileList    *list,
 
     if (ITEM_IS_FILE (item) && FILE_ITEM (item)->doc)
         file_list_append_row (list, item);
+
+    /* XXX */
+    file_list_self_update (list);
 
     item_unref (item);
 }
