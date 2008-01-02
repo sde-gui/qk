@@ -57,7 +57,8 @@ libmooeditplugins_la_LIBADD += ctags/libctags.la
 endif
 
 libmooeditplugins_la_SOURCES =	\
-	mooeditplugins.h
+	mooeditplugins.h	\
+	moofilelist.c
 
 EXTRA_DIST +=			\
 	moofind.glade		\
