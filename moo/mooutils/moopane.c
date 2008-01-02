@@ -586,6 +586,8 @@ create_frame_widget (MooPane        *pane,
         g_signal_connect_swapped (pane->close_button, "clicked",
                                   G_CALLBACK (close_button_clicked),
                                   pane);
+        if (!pane->removable)
+            gtk_widget_hide (pane->close_button);
 
         hide_button = create_button (pane, toolbar,
                                      _("Hide pane"), FALSE, 0,
