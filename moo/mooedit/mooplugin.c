@@ -908,14 +908,14 @@ moo_plugin_get_dirs (void)
 static void
 moo_plugin_init_builtin (void)
 {
+    _moo_file_selector_plugin_init ();
+    _moo_file_list_plugin_init ();
 #ifndef __WIN32__
 #ifdef MOO_BUILD_CTAGS
     _moo_ctags_plugin_init ();
 #endif
     _moo_find_plugin_init ();
 #endif
-    _moo_file_selector_plugin_init ();
-    _moo_file_list_plugin_init ();
 #if 0
     _moo_completion_plugin_init ();
     _moo_active_strings_plugin_init ();
