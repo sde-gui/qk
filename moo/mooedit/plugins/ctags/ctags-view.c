@@ -2,6 +2,7 @@
  *   ctags-view.c
  *
  *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2008      by Christian Dywan <christian@twotoasts.de>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -97,10 +98,12 @@ data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
                         -1);
 
     if (label)
+    {
         g_object_set (cell, "markup", label, NULL);
+    }
     else if (entry)
     {
-        gchar* markup;
+        char *markup;
         /*if (entry->signature)
             markup = g_strdup_printf ("%s %s", entry->name, entry->signature);
         else
@@ -109,7 +112,9 @@ data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
         g_free (markup);
     }
     else
+    {
         g_object_set (cell, "markup", NULL, NULL);
+    }
 
     g_free (label);
     _moo_ctags_entry_unref (entry);
@@ -125,11 +130,13 @@ _moo_ctags_view_init (MooCtagsView *view)
                                               MooCtagsViewPrivate);
 
     gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (view), FALSE);
-    g_object_set (view, "show-expanders", FALSE,
+
 #if GTK_CHECK_VERSION(2, 12, 0)
-    "level-indentation", 6,
+    g_object_set (view,
+                  "show-expanders", FALSE,
+                  "level-indentation", 6,
+                  NULL);
 #endif
-    NULL);
 
     cell = gtk_cell_renderer_text_new ();
     column = gtk_tree_view_column_new_with_attributes (NULL, cell, NULL);

@@ -2,6 +2,7 @@
  *   ctags-doc.h
  *
  *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2008      by Christian Dywan <christian@twotoasts.de>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
