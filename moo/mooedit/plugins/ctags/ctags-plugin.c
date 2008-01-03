@@ -49,7 +49,10 @@ window_plugin_update (CtagsWindowPlugin *plugin)
     doc = moo_edit_window_get_active_doc (window);
 
     if (!doc)
+    {
+        gtk_tree_view_set_model (GTK_TREE_VIEW (plugin->view), NULL);
         return FALSE;
+    }
 
     dp = moo_doc_plugin_lookup (CTAGS_PLUGIN_ID, doc);
     g_return_val_if_fail (MOO_IS_CTAGS_DOC_PLUGIN (dp), FALSE);
