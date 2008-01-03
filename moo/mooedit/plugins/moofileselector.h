@@ -37,9 +37,6 @@ struct _MooFileSelector
     MooFileView parent;
 
     MooEditWindow *window;
-    GtkWidget *button;
-    guint open_pane_timeout;
-    gboolean button_highlight;
 
     GtkTargetList *targets;
     gboolean waiting_for_tab;

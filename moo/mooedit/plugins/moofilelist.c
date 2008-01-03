@@ -2096,8 +2096,13 @@ queue_update (WindowPlugin *plugin)
 static gboolean
 file_list_window_plugin_create (WindowPlugin *plugin)
 {
+    MooPane *pane;
     MooPaneLabel *label;
     GtkWidget *scrolled_window;
+    MooEditWindow *window;
+
+    window = MOO_WIN_PLUGIN (plugin)->window;
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
 
     plugin->filename = moo_get_user_data_file (CONFIG_FILE);
 
@@ -2113,16 +2118,20 @@ file_list_window_plugin_create (WindowPlugin *plugin)
     label = moo_pane_label_new (GTK_STOCK_DIRECTORY,
                                 NULL, _("File List"),
                                 _("File List"));
-    moo_edit_window_add_pane (MOO_WIN_PLUGIN (plugin)->window,
+    moo_edit_window_add_pane (window,
                               FILE_LIST_PLUGIN_ID,
                               scrolled_window, label,
                               MOO_PANE_POS_RIGHT);
     moo_pane_label_free (label);
 
+    pane = moo_big_paned_find_pane (window->paned,
+                                    GTK_WIDGET (scrolled_window), NULL);
+    moo_pane_set_drag_dest (pane);
+
     plugin->first_time_show = TRUE;
-    g_signal_connect_swapped (MOO_WIN_PLUGIN (plugin)->window, "new-doc",
+    g_signal_connect_swapped (window, "new-doc",
                               G_CALLBACK (queue_update), plugin);
-    g_signal_connect_swapped (MOO_WIN_PLUGIN (plugin)->window, "close-doc",
+    g_signal_connect_swapped (window, "close-doc",
                               G_CALLBACK (queue_update), plugin);
     queue_update (plugin);
 
