@@ -2,6 +2,7 @@
  *   ctags-doc.c
  *
  *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2008      by Christian Dywan <christian@twotoasts.de>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -123,6 +124,7 @@ _moo_ctags_doc_plugin_get_store (MooCtagsDocPlugin *plugin)
 static void
 get_iter_for_class (GtkTreeStore *store,
                     GtkTreeIter  *class_iter,
+                    const char   *type,
                     const char   *name,
                     GHashTable   *classes)
 {
@@ -133,7 +135,7 @@ get_iter_for_class (GtkTreeStore *store,
         GtkTreeIter iter;
         char *label;
 
-        label = g_strdup_printf ("class %s", name);
+        label = g_strdup_printf ("<b>%s</b> %s", type, name);
 
         gtk_tree_store_append (store, &iter, NULL);
         gtk_tree_store_set (store, &iter, MOO_CTAGS_VIEW_COLUMN_LABEL, label, -1);
@@ -152,16 +154,43 @@ process_list_simple (GSList       *entries,
                      GtkTreeStore *store)
 {
     GHashTable *classes;
-    GtkTreeIter funcs_iter;
-    gboolean funcs_added = FALSE;
-
-    gtk_tree_store_append (store, &funcs_iter, NULL);
-    gtk_tree_store_set (store, &funcs_iter,
-                        MOO_CTAGS_VIEW_COLUMN_LABEL, "Functions",
-                        -1);
-
     classes = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
                                      (GDestroyNotify) gtk_tree_iter_free);
+
+    GtkTreeIter funcs_iter;
+    gboolean funcs_added = FALSE;
+    gtk_tree_store_append (store, &funcs_iter, NULL);
+    gtk_tree_store_set (store, &funcs_iter,
+                        MOO_CTAGS_VIEW_COLUMN_LABEL, "<b>Functions</b>",
+                        -1);
+
+    GtkTreeIter macros_iter;
+    gboolean macros_added = FALSE;
+    gtk_tree_store_append (store, &macros_iter, NULL);
+    gtk_tree_store_set (store, &macros_iter,
+                        MOO_CTAGS_VIEW_COLUMN_LABEL, "<b>Macros</b>",
+                        -1);
+
+    GtkTreeIter types_iter;
+    gboolean types_added = FALSE;
+    gtk_tree_store_append (store, &types_iter, NULL);
+    gtk_tree_store_set (store, &types_iter,
+                        MOO_CTAGS_VIEW_COLUMN_LABEL, "<b>Types</b>",
+                        -1);
+
+    GtkTreeIter vars_iter;
+    gboolean vars_added = FALSE;
+    gtk_tree_store_append (store, &vars_iter, NULL);
+    gtk_tree_store_set (store, &vars_iter,
+                        MOO_CTAGS_VIEW_COLUMN_LABEL, "<b>Variables</b>",
+                        -1);
+
+    GtkTreeIter other_iter;
+    gboolean other_added = FALSE;
+    gtk_tree_store_append (store, &other_iter, NULL);
+    gtk_tree_store_set (store, &other_iter,
+                        MOO_CTAGS_VIEW_COLUMN_LABEL, "<b>Other</b>",
+                        -1);
 
     while (entries)
     {
@@ -170,24 +199,36 @@ process_list_simple (GSList       *entries,
         entry = entries->data;
         entries = entries->next;
 
-        if (entry->klass || !strcmp (entry->kind, "c"))
+        if (entry->klass || !strcmp (entry->kind, "c") ||
+            !strcmp (entry->kind, "s") || !strcmp (entry->kind, "m") ||
+            !strcmp (entry->kind, "g") || !strcmp (entry->kind, "e"))
         {
             GtkTreeIter iter;
             GtkTreeIter parent_iter;
 
+            gchar* type = NULL;
+            if (!strcmp (entry->kind, "c"))
+                type = g_strdup ("class");
+            else if (!strcmp (entry->kind, "g") || !strcmp (entry->kind, "e"))
+                type = g_strdup ("enum");
+            else if (!strcmp (entry->kind, "s") || !strcmp (entry->kind, "m"))
+                type = g_strdup ("struct");
+            else
+                type = g_strdup (entry->kind);
+
             get_iter_for_class (store, &parent_iter,
+                                type,
                                 entry->klass ? entry->klass : entry->name,
                                 classes);
+            g_free (type);
 
-            if (entry->klass)
+            if (entry->klass || !strcmp (entry->kind, "m") || !strcmp (entry->kind, "e"))
             {
                 gtk_tree_store_append (store, &iter, &parent_iter);
                 gtk_tree_store_set (store, &iter, MOO_CTAGS_VIEW_COLUMN_ENTRY, entry, -1);
             }
             else
-            {
                 gtk_tree_store_set (store, &parent_iter, MOO_CTAGS_VIEW_COLUMN_ENTRY, entry, -1);
-            }
         }
         else if (!strcmp (entry->kind, "f"))
         {
@@ -196,10 +237,46 @@ process_list_simple (GSList       *entries,
             gtk_tree_store_set (store, &iter, MOO_CTAGS_VIEW_COLUMN_ENTRY, entry, -1);
             funcs_added = TRUE;
         }
+        else if (!strcmp (entry->kind, "d"))
+        {
+            GtkTreeIter iter;
+            gtk_tree_store_append (store, &iter, &macros_iter);
+            gtk_tree_store_set (store, &iter, MOO_CTAGS_VIEW_COLUMN_ENTRY, entry, -1);
+            macros_added = TRUE;
+        }
+        else if (!strcmp (entry->kind, "v"))
+        {
+            GtkTreeIter iter;
+            gtk_tree_store_append (store, &iter, &vars_iter);
+            gtk_tree_store_set (store, &iter, MOO_CTAGS_VIEW_COLUMN_ENTRY, entry, -1);
+            vars_added = TRUE;
+        }
+        else if (!strcmp (entry->kind, "t") || !strcmp (entry->kind, "g"))
+        {
+            GtkTreeIter iter;
+            gtk_tree_store_append (store, &iter, &types_iter);
+            gtk_tree_store_set (store, &iter, MOO_CTAGS_VIEW_COLUMN_ENTRY, entry, -1);
+            types_added = TRUE;
+        }
+        else
+        {
+            GtkTreeIter iter;
+            gtk_tree_store_append (store, &iter, &other_iter);
+            gtk_tree_store_set (store, &iter, MOO_CTAGS_VIEW_COLUMN_ENTRY, entry, -1);
+            other_added = TRUE;
+        }
     }
 
     if (!funcs_added)
         gtk_tree_store_remove (store, &funcs_iter);
+    if (!macros_added)
+        gtk_tree_store_remove (store, &macros_iter);
+    if (!vars_added)
+        gtk_tree_store_remove (store, &vars_iter);
+    if (!types_added)
+        gtk_tree_store_remove (store, &types_iter);
+    if (!other_added)
+        gtk_tree_store_remove (store, &other_iter);
 
     g_hash_table_destroy (classes);
 }
@@ -226,9 +303,9 @@ _moo_ctags_language_find_for_name (const char *lang_name)
     if (!langs_hash)
     {
         static MooCtagsLanguage langs[] = {
-            { "c", "--fields=afksS --c-kinds=cf --language-force=c -I G_BEGIN_DECLS,G_END_DECLS", process_list_c },
-            { "c++", "--fields=afksS --c-kinds=cf --language-force=c++ -I G_BEGIN_DECLS,G_END_DECLS", process_list_c },
-            { "python", "--fields=afksS --c-kinds=cf --language-force=python", process_list_python },
+            { "c", "--language-force=c -I G_BEGIN_DECLS,G_END_DECLS", process_list_c },
+            { "c++", " --language-force=c++ -I G_BEGIN_DECLS,G_END_DECLS", process_list_c },
+            { "python", "--language-force=python", process_list_python },
         };
 
         langs_hash = g_hash_table_new (g_str_hash, g_str_equal);
@@ -247,8 +324,13 @@ process_entries (MooCtagsDocPlugin *plugin,
                  GSList            *list,
                  MooCtagsLanguage  *lang)
 {
-    g_return_if_fail (lang != NULL || lang->process_list != NULL);
-    lang->process_list (list, plugin->priv->store);
+    if (lang)
+    {
+        g_return_if_fail (lang->process_list != NULL);
+        lang->process_list (list, plugin->priv->store);
+    }
+    else
+        process_list_simple (list, plugin->priv->store);
 }
 
 static gboolean
@@ -271,6 +353,8 @@ moo_ctags_doc_plugin_update (MooCtagsDocPlugin *plugin)
 
     if (filename && ctags_lang && (list = moo_ctags_parse_file (filename, ctags_lang->opts)))
         process_entries (plugin, list, ctags_lang);
+    else if(filename && (list = moo_ctags_parse_file (filename, NULL)))
+        process_entries (plugin, list, NULL);
 
     g_slist_foreach (list, (GFunc) _moo_ctags_entry_unref, NULL);
     g_slist_free (list);
@@ -309,6 +393,7 @@ _moo_ctags_entry_unref (MooCtagsEntry *entry)
     {
         g_free (entry->name);
         g_free (entry->klass);
+        g_free (entry->signature);
         _moo_free (MooCtagsEntry, entry);
     }
 }
@@ -329,12 +414,17 @@ moo_ctags_entry_new (const tagEntry *te)
     entry->line = (int) te->address.lineNumber - 1;
     entry->kind = _moo_intern_string (te->kind);
     entry->klass = NULL;
+    entry->signature = NULL;
     entry->file_scope = te->fileScope != 0;
 
     for (i = 0; i < te->fields.count; ++i)
     {
-        if (!strcmp (te->fields.list[i].key, "class"))
+        if (!strcmp (te->fields.list[i].key, "class") ||
+            !strcmp (te->fields.list[i].key, "struct") ||
+            !strcmp (te->fields.list[i].key, "enum"))
             entry->klass = g_strdup (te->fields.list[i].value);
+        if (!strcmp (te->fields.list[i].key, "signature"))
+            entry->signature = g_strdup (te->fields.list[i].value);
     }
 
     return entry;
@@ -362,6 +452,8 @@ _moo_ctags_read_tags (const char *filename)
         return NULL;
     }
 
+    tagsSetSortType (file, TAG_UNSORTED);
+
     while (tagsNext (file, &tentry) == TagSuccess)
     {
         MooCtagsEntry *e = moo_ctags_entry_new (&tentry);
@@ -373,90 +465,6 @@ _moo_ctags_read_tags (const char *filename)
 
     return g_slist_reverse (list);
 }
-
-
-#if 0
-static MooCtagsEntry *
-parse_line (const char *line,
-            const char *end)
-{
-    MooCtagsEntry *entry;
-    char **tokens;
-
-    tokens = _moo_ascii_strnsplit (line, end - line, 4);
-
-    if (!tokens || g_strv_length (tokens) != 4)
-    {
-        g_strfreev (tokens);
-        return NULL;
-    }
-
-    entry = _moo_new (MooCtagsEntry);
-    entry->ref_count = 1;
-
-    entry->name = g_strdup (tokens[0]);
-    entry->line = strtol (tokens[2], NULL, 10);
-    entry->kind = _moo_intern_string (tokens[1]);
-
-    g_strfreev (tokens);
-    return entry;
-}
-
-static GSList *
-_moo_ctags_parse_output (char *output)
-{
-    GSList *list = NULL;
-    char *endl;
-
-    while ((endl = strchr (output, '\n')))
-    {
-        MooCtagsEntry *entry;
-        if ((entry = parse_line (output, endl)))
-            list = g_slist_prepend (list, entry);
-        output = endl + 1;
-    }
-
-    return g_slist_reverse (list);
-}
-
-GSList *
-_moo_ctags_parse_file (const char *filename,
-                       G_GNUC_UNUSED const char *type)
-{
-    GError *error = NULL;
-    const char *argv[4];
-    int exit_status;
-    GSList *list = NULL;
-    char *output;
-
-    g_return_val_if_fail (filename != NULL, NULL);
-
-    argv[0] = "ctags";
-    argv[1] = "-x";
-    argv[2] = filename;
-    argv[3] = NULL;
-
-    if (!g_spawn_sync (NULL, (char**) argv, NULL, G_SPAWN_SEARCH_PATH,
-                       NULL, NULL, &output, NULL, &exit_status, &error))
-    {
-        g_warning ("%s: could not run ctags command: %s", G_STRFUNC, error->message);
-        g_error_free (error);
-        goto out;
-    }
-
-    if (exit_status != 0)
-    {
-        g_warning ("%s: ctags command returned an error", G_STRFUNC);
-        goto out;
-    }
-
-    list = _moo_ctags_parse_output (output);
-
-out:
-    g_free (output);
-    return list;
-}
-#endif
 
 
 static char *
@@ -496,7 +504,14 @@ moo_ctags_parse_file (const char *filename,
     if (!(tags_file = get_tmp_file ()))
         return NULL;
 
-    cmd_line = g_string_new ("ctags ");
+    // -u unsorted
+    // --fields
+    //     a access of class members
+    //     f file-restricted scoping
+    //     k kind of tag as a single letter
+    //     s scope of definition
+    //     S signature or prototype
+    cmd_line = g_string_new ("ctags -u --fields=afksS ");
 
     if (opts && opts[0])
     {

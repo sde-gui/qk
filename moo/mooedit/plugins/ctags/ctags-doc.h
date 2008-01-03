@@ -47,6 +47,7 @@ struct _MooCtagsEntry
     const char *kind;
     int line;
     char *klass;
+    char *signature;
     guint file_scope : 1;
 };
 

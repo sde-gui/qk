@@ -188,9 +188,9 @@ ctags_plugin_deinit (CtagsPlugin *plugin)
 }
 
 
-MOO_PLUGIN_DEFINE_INFO (ctags, "Ctags", "Shows functions in open document\n"
-                        "(does not quite work yet)",
-                        "Yevgen Muntyan <muntyan@tamu.edu>",
+MOO_PLUGIN_DEFINE_INFO (ctags, "Ctags", "Shows functions in the open document",
+                        "Yevgen Muntyan <muntyan@tamu.edu>\n"
+                        "Christian Dywan <christian@twotoasts.de>",
                         MOO_VERSION, NULL)
 MOO_WIN_PLUGIN_DEFINE (Ctags, ctags)
 MOO_PLUGIN_DEFINE_FULL (Ctags, ctags,
