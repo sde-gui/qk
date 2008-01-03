@@ -1938,14 +1938,9 @@ treeview_button_press (GtkTreeView    *treeview,
     selection = gtk_tree_view_get_selection (treeview);
 
     if (!path)
-    {
         gtk_tree_selection_unselect_all (selection);
-    }
     else if (!gtk_tree_selection_path_is_selected (selection, path))
-    {
-        gtk_tree_selection_unselect_all (selection);
-        gtk_tree_selection_select_path (selection, path);
-    }
+        gtk_tree_view_set_cursor (treeview, path, plugin->column, FALSE);
 
     selected = gtk_tree_selection_get_selected_rows (selection, NULL);
     popup_menu (plugin, selected, event->button, event->time);
