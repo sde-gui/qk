@@ -1492,12 +1492,18 @@ _moo_get_shared_data_dirs (void)
         sys_dirs = g_get_system_data_dirs ();
 
 #ifndef __WIN32__
-        dirs = g_slist_prepend (NULL, g_strdup (g_get_user_data_dir ()));
+        dirs = g_slist_prepend (NULL, _moo_normalize_dir_path (g_get_user_data_dir ()));
 #endif
 
         for (i = 0; sys_dirs[i] && sys_dirs[i][0]; ++i)
-            if (!g_slist_find_custom (dirs, sys_dirs[i], (GCompareFunc) strcmp))
-                dirs = g_slist_prepend (dirs, g_strdup (sys_dirs[i]));
+        {
+            char *norm = _moo_normalize_dir_path (sys_dirs[i]);
+
+            if (norm && !g_slist_find_custom (dirs, norm, (GCompareFunc) strcmp))
+                dirs = g_slist_prepend (dirs, norm);
+            else
+                g_free (norm);
+        }
 
         dirs = g_slist_reverse (dirs);
         n_dirs = g_slist_length (dirs);

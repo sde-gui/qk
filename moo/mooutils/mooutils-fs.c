@@ -582,7 +582,7 @@ normalize_path_string (const char *path)
 #ifndef __WIN32__
 static char *
 normalize_full_path (const char *path,
-                     const char *is_folder)
+                     gboolean    is_folder)
 {
     guint len;
     char *normpath, *tmp;
@@ -712,8 +712,9 @@ normalize_full_path (const char *fullpath,
 }
 #endif
 
-char *
-_moo_normalize_file_path (const char *filename)
+static char *
+normalize_path (const char *filename,
+                gboolean    is_folder)
 {
     char *freeme = NULL;
     char *norm_filename;
@@ -728,10 +729,22 @@ _moo_normalize_file_path (const char *filename)
         filename = freeme;
     }
 
-    norm_filename = normalize_full_path (filename, FALSE);
+    norm_filename = normalize_full_path (filename, is_folder);
 
     g_free (freeme);
     return norm_filename;
+}
+
+char *
+_moo_normalize_file_path (const char *filename)
+{
+    return normalize_path (filename, FALSE);
+}
+
+char *
+_moo_normalize_dir_path (const char *filename)
+{
+    return normalize_path (filename, TRUE);
 }
 
 
