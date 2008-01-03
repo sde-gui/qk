@@ -95,6 +95,9 @@ gboolean         _moo_tree_helper_set               (MooTreeHelper      *helper,
 void             _moo_tree_view_select_first        (GtkTreeView        *tree_view);
 void             _moo_combo_box_select_first        (GtkComboBox        *combo);
 
+void             _moo_tree_view_setup_expander      (GtkTreeView        *tree_view,
+                                                     GtkTreeViewColumn  *column);
+
 
 G_END_DECLS
 

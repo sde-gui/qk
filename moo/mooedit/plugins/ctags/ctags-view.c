@@ -15,6 +15,7 @@
 #include "ctags-doc.h"
 #include <mooutils/moomarshals.h>
 #include <mooutils/mooutils-gobject.h>
+#include <mooutils/mooutils-treeview.h>
 #include <gtk/gtk.h>
 
 G_DEFINE_TYPE (MooCtagsView, _moo_ctags_view, GTK_TYPE_TREE_VIEW)
@@ -50,26 +51,11 @@ moo_ctags_view_cursor_changed (GtkTreeView *treeview)
 }
 
 static void
-moo_ctags_view_row_activated (GtkTreeView       *treeview,
-                              GtkTreePath       *path,
-                              GtkTreeViewColumn *column)
-{
-    if (GTK_TREE_VIEW_CLASS(_moo_ctags_view_parent_class)->row_activated)
-        GTK_TREE_VIEW_CLASS(_moo_ctags_view_parent_class)->row_activated (treeview, path, column);
-
-    if (gtk_tree_view_row_expanded (treeview, path))
-        gtk_tree_view_collapse_row (treeview, path);
-    else
-        gtk_tree_view_expand_row (treeview, path, FALSE);
-}
-
-static void
 _moo_ctags_view_class_init (MooCtagsViewClass *klass)
 {
     GtkTreeViewClass *treeview_class = GTK_TREE_VIEW_CLASS (klass);
 
     treeview_class->cursor_changed = moo_ctags_view_cursor_changed;
-    treeview_class->row_activated = moo_ctags_view_row_activated;
 
     g_signal_new ("activate-entry",
                   G_OBJECT_CLASS_TYPE (klass),
@@ -97,11 +83,7 @@ data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
                         MOO_CTAGS_VIEW_COLUMN_LABEL, &label,
                         -1);
 
-    if (label)
-    {
-        g_object_set (cell, "markup", label, NULL);
-    }
-    else if (entry)
+    if (entry)
     {
         char *markup;
         /*if (entry->signature)
@@ -113,7 +95,7 @@ data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
     }
     else
     {
-        g_object_set (cell, "markup", NULL, NULL);
+        g_object_set (cell, "markup", label, NULL);
     }
 
     g_free (label);
@@ -131,19 +113,15 @@ _moo_ctags_view_init (MooCtagsView *view)
 
     gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (view), FALSE);
 
-#if GTK_CHECK_VERSION(2, 12, 0)
-    g_object_set (view,
-                  "show-expanders", FALSE,
-                  "level-indentation", 6,
-                  NULL);
-#endif
+    column = gtk_tree_view_column_new ();
+    gtk_tree_view_append_column (GTK_TREE_VIEW (view), column);
+    _moo_tree_view_setup_expander (GTK_TREE_VIEW (view), column);
 
     cell = gtk_cell_renderer_text_new ();
-    column = gtk_tree_view_column_new_with_attributes (NULL, cell, NULL);
+    gtk_tree_view_column_pack_start (column, cell, TRUE);
     gtk_tree_view_column_set_cell_data_func (column, cell,
                                              (GtkTreeCellDataFunc) data_func,
                                              NULL, NULL);
-    gtk_tree_view_append_column (GTK_TREE_VIEW (view), column);
 }
 
 

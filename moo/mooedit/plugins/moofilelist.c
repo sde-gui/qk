@@ -16,6 +16,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-treeview.h"
 #include "mooutils/mooutils-fs.h"
 #include <gtk/gtk.h>
 
@@ -1955,10 +1956,8 @@ treeview_button_press (GtkTreeView    *treeview,
 }
 
 static void
-treeview_row_activated (GtkTreeView  *treeview,
-                        GtkTreePath  *path,
-                        G_GNUC_UNUSED GtkTreeViewColumn *column,
-                        WindowPlugin *plugin)
+treeview_row_activated (WindowPlugin *plugin,
+                        GtkTreePath  *path)
 {
     GtkTreeIter iter;
     Item *item;
@@ -1976,18 +1975,13 @@ treeview_row_activated (GtkTreeView  *treeview,
             gtk_widget_grab_focus (GTK_WIDGET (FILE_ITEM (item)->doc));
         }
         else
+        {
             moo_editor_open_uri (moo_editor_instance (),
                                  MOO_WIN_PLUGIN (plugin)->window,
                                  NULL,
                                  FILE_ITEM (item)->uri,
                                  NULL);
-    }
-    else
-    {
-        if (gtk_tree_view_row_expanded (treeview, path))
-            gtk_tree_view_collapse_row (treeview, path);
-        else
-            gtk_tree_view_expand_row (treeview, path, FALSE);
+        }
     }
 }
 
@@ -2007,10 +2001,6 @@ create_treeview (WindowPlugin *plugin)
                                           (GtkTreeViewRowSeparatorFunc) row_separator_func,
                                           NULL, NULL);
 #if GTK_CHECK_VERSION (2,12,0)
-    g_object_set (plugin->treeview,
-                  "show-expanders", FALSE,
-                  "level-indentation", 12,
-                  NULL);
     gtk_tree_view_set_tooltip_column (GTK_TREE_VIEW (plugin->treeview),
                                       COLUMN_TOOLTIP);
 #endif
@@ -2020,8 +2010,8 @@ create_treeview (WindowPlugin *plugin)
 
     g_signal_connect (plugin->treeview, "button-press-event",
                       G_CALLBACK (treeview_button_press), plugin);
-    g_signal_connect (plugin->treeview, "row-activated",
-                      G_CALLBACK (treeview_row_activated), plugin);
+    g_signal_connect_swapped (plugin->treeview, "row-activated",
+                              G_CALLBACK (treeview_row_activated), plugin);
 
     gtk_tree_view_enable_model_drag_dest (GTK_TREE_VIEW (plugin->treeview),
                                           targets, G_N_ELEMENTS (targets),
@@ -2035,6 +2025,9 @@ create_treeview (WindowPlugin *plugin)
 
     plugin->column = gtk_tree_view_column_new ();
     gtk_tree_view_append_column (GTK_TREE_VIEW (plugin->treeview), plugin->column);
+
+    _moo_tree_view_setup_expander (GTK_TREE_VIEW (plugin->treeview),
+                                   plugin->column);
 
     cell = gtk_cell_renderer_pixbuf_new ();
     gtk_tree_view_column_pack_start (plugin->column, cell, FALSE);
@@ -2079,6 +2072,7 @@ do_update (WindowPlugin *plugin)
     {
         plugin->first_time_show = FALSE;
         gtk_tree_view_expand_all (GTK_TREE_VIEW (plugin->treeview));
+        _moo_tree_view_select_first (GTK_TREE_VIEW (plugin->treeview));
     }
 
     return FALSE;

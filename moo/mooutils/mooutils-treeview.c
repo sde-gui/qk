@@ -13,7 +13,9 @@
 #include "mooutils/mooutils-treeview.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mootype-macros.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/pixmaps-pm.h"
 #include <string.h>
 #include <gobject/gvaluecollector.h>
 
@@ -885,4 +887,300 @@ _moo_tree_helper_set (MooTreeHelper *helper,
       va_end (args);
 
       return ret;
+}
+
+
+typedef struct {
+    GtkTreeViewColumn *column;
+    GtkCellRenderer *cell;
+} ExpanderData;
+
+#define MOO_TYPE_EXPANDER_CELL              (moo_expander_cell_get_type ())
+#define MOO_EXPANDER_CELL(obj)              (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOO_TYPE_EXPANDER_CELL, MooExpanderCell))
+#define MOO_EXPANDER_CELL_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_EXPANDER_CELL, MooExpanderCellClass))
+#define MOO_IS_EXPANDER_CELL(obj)	    (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOO_TYPE_EXPANDER_CELL))
+#define MOO_IS_EXPANDER_CELL_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EXPANDER_CELL))
+#define MOO_EXPANDER_CELL_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EXPANDER_CELL, MooExpanderCellClass))
+
+#define LEVEL_INDENTATION 12
+#define EXPANDER_SIZE 8
+#define CELL_XPAD(cell) MAX ((cell)->xpad, 1)
+#define CELL_YPAD(cell) MAX ((cell)->ypad, 1)
+
+typedef struct {
+    GtkCellRenderer base;
+    guint expanded : 1;
+} MooExpanderCell;
+
+typedef struct {
+    GtkCellRendererClass base_class;
+} MooExpanderCellClass;
+
+MOO_DEFINE_TYPE_STATIC (MooExpanderCell, moo_expander_cell, GTK_TYPE_CELL_RENDERER)
+
+static void
+moo_expander_cell_init (MooExpanderCell *cell)
+{
+    cell->expanded = FALSE;
+}
+
+static void
+moo_expander_cell_get_size (GtkCellRenderer      *cell,
+                            GtkWidget            *widget,
+                            GdkRectangle         *cell_area,
+                            int                  *x_offset,
+                            int                  *y_offset,
+                            int                  *width_p,
+                            int                  *height_p)
+{
+    int width, height;
+
+    width  = CELL_XPAD (cell) * 2 + EXPANDER_SIZE;
+    height = CELL_YPAD (cell) * 2 + EXPANDER_SIZE;
+
+    if (cell_area)
+    {
+        if (x_offset)
+        {
+            float xalign = (gtk_widget_get_direction (widget) == GTK_TEXT_DIR_RTL) ?
+                                (1.0 - cell->xalign) : cell->xalign;
+            *x_offset = xalign * (cell_area->width - width);
+            *x_offset = MAX (*x_offset, 0);
+        }
+
+        if (y_offset)
+        {
+            *y_offset = cell->yalign * (cell_area->height - height);
+            *y_offset = MAX (*y_offset, 0);
+        }
+    }
+    else
+    {
+        if (x_offset)
+            *x_offset = 0;
+        if (y_offset)
+            *y_offset = 0;
+    }
+
+    if (width_p)
+        *width_p = width;
+
+    if (height_p)
+        *height_p = height;
+}
+
+static void
+moo_expander_cell_render (GtkCellRenderer      *cell,
+                          GdkDrawable          *window,
+                          GtkWidget            *widget,
+                          G_GNUC_UNUSED GdkRectangle *background_area,
+                          GdkRectangle         *cell_area,
+                          GdkRectangle         *expose_area,
+                          GtkCellRendererState  flags)
+{
+    MooExpanderCell *exp_cell = MOO_EXPANDER_CELL (cell);
+    GdkRectangle pix_rect;
+    GdkRectangle draw_rect;
+    GtkStateType state;
+
+    moo_expander_cell_get_size (cell, widget, cell_area,
+                                &pix_rect.x,
+                                &pix_rect.y,
+                                &pix_rect.width,
+                                &pix_rect.height);
+
+    pix_rect.x += cell_area->x + CELL_XPAD (cell);
+    pix_rect.y += cell_area->y + CELL_YPAD (cell);
+    pix_rect.width  -= CELL_XPAD (cell) * 2;
+    pix_rect.height -= CELL_YPAD (cell) * 2;
+
+    if (!gdk_rectangle_intersect (cell_area, &pix_rect, &draw_rect) ||
+        !gdk_rectangle_intersect (expose_area, &draw_rect, &draw_rect))
+            return;
+
+    state = GTK_WIDGET_STATE (widget);
+
+    if (!cell->sensitive)
+    {
+        state = GTK_STATE_INSENSITIVE;
+    }
+    else if (flags & GTK_CELL_RENDERER_SELECTED)
+    {
+        if (GTK_WIDGET_HAS_FOCUS (widget))
+            state = GTK_STATE_SELECTED;
+        else
+            state = GTK_STATE_ACTIVE;
+    }
+    else if (flags & GTK_CELL_RENDERER_PRELIT)
+    {
+        state = GTK_STATE_PRELIGHT;
+    }
+
+    gdk_draw_rectangle (window, widget->style->text_gc[state], FALSE,
+                        pix_rect.x, pix_rect.y,
+                        pix_rect.width, pix_rect.height);
+    gdk_draw_line (window, widget->style->text_gc[state],
+                   pix_rect.x + 2, pix_rect.y + pix_rect.height / 2,
+                   pix_rect.x + pix_rect.width - 2, pix_rect.y + pix_rect.height / 2);
+    if (!exp_cell->expanded)
+        gdk_draw_line (window, widget->style->text_gc[state],
+                       pix_rect.x + pix_rect.width / 2, pix_rect.y + 2,
+                       pix_rect.x + pix_rect.width / 2, pix_rect.y + pix_rect.height - 2);
+}
+
+static void
+moo_expander_cell_class_init (MooExpanderCellClass *klass)
+{
+    GtkCellRendererClass *cell_class = GTK_CELL_RENDERER_CLASS (klass);
+
+    cell_class->get_size = moo_expander_cell_get_size;
+    cell_class->render = moo_expander_cell_render;
+}
+
+static void
+moo_expander_cell_set_expanded (MooExpanderCell *cell,
+                                gboolean         expanded)
+{
+    g_return_if_fail (MOO_IS_EXPANDER_CELL (cell));
+    cell->expanded = expanded != 0;
+}
+
+static void
+expander_cell_data_func (GtkTreeViewColumn *column,
+                         GtkCellRenderer   *cell,
+                         GtkTreeModel      *model,
+                         GtkTreeIter       *iter)
+{
+    gboolean has_children;
+    GtkWidget *tree_view;
+    gboolean expanded;
+    GtkTreePath *path;
+
+    has_children = gtk_tree_model_iter_has_child (model, iter);
+    g_object_set (cell, "visible", has_children, NULL);
+
+    if (!has_children)
+        return;
+
+    tree_view = gtk_tree_view_column_get_tree_view (column);
+    path = gtk_tree_model_get_path (model, iter);
+    expanded = gtk_tree_view_row_expanded (GTK_TREE_VIEW (tree_view), path);
+    moo_expander_cell_set_expanded (MOO_EXPANDER_CELL (cell), expanded);
+    gtk_tree_path_free (path);
+}
+
+static void
+expander_data_free (ExpanderData *data)
+{
+    if (data)
+    {
+        if (data->column)
+            g_object_unref (data->column);
+        if (data->cell)
+            g_object_unref (data->cell);
+        _moo_free (ExpanderData, data);
+    }
+}
+
+static gboolean
+tree_view_button_press (GtkTreeView    *treeview,
+                        GdkEventButton *event,
+                        ExpanderData   *data)
+{
+    GtkTreePath *path = NULL;
+    GtkTreeViewColumn *column;
+    int cell_x, cell_y;
+    int start_pos, width;
+    GtkTreeIter iter;
+    GtkTreeModel *model;
+
+    if (event->button != 1 || event->type != GDK_BUTTON_PRESS)
+        goto out;
+
+    if (!gtk_tree_view_get_path_at_pos (treeview,
+                                        event->x, event->y,
+                                        &path, &column,
+                                        &cell_x, &cell_y))
+        goto out;
+
+    if (column != data->column)
+        goto out;
+
+    model = gtk_tree_view_get_model (treeview);
+    if (!gtk_tree_model_get_iter (model, &iter, path) ||
+        !gtk_tree_model_iter_has_child (model, &iter))
+            goto out;
+
+    gtk_tree_view_column_cell_set_cell_data (column, model, &iter, FALSE, FALSE);
+    gtk_tree_view_column_cell_get_position (column, data->cell, &start_pos, &width);
+    start_pos += (gtk_tree_path_get_depth (path) - 1) * LEVEL_INDENTATION + CELL_XPAD (data->cell);
+    width += 2 * CELL_XPAD (data->cell);
+
+    if (cell_x < start_pos || cell_x >= start_pos + width)
+        goto out;
+
+    if (gtk_tree_view_row_expanded (treeview, path))
+        gtk_tree_view_collapse_row (treeview, path);
+    else
+        gtk_tree_view_expand_row (treeview, path, FALSE);
+
+    gtk_tree_path_free (path);
+    return TRUE;
+
+out:
+    if (path)
+        gtk_tree_path_free (path);
+    return FALSE;
+}
+
+static void
+tree_view_row_activated (GtkTreeView *treeview,
+                         GtkTreePath *path)
+{
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+
+    model = gtk_tree_view_get_model (treeview);
+
+    if (!gtk_tree_model_get_iter (model, &iter, path) ||
+        !gtk_tree_model_iter_has_child (model, &iter))
+            return;
+
+    g_signal_stop_emission_by_name (treeview, "row-activated");
+
+    if (gtk_tree_view_row_expanded (treeview, path))
+        gtk_tree_view_collapse_row (treeview, path);
+    else
+        gtk_tree_view_expand_row (treeview, path, FALSE);
+}
+
+void
+_moo_tree_view_setup_expander (GtkTreeView       *tree_view,
+                               GtkTreeViewColumn *column)
+{
+    GtkCellRenderer *cell;
+    ExpanderData *data;
+
+    g_return_if_fail (GTK_IS_TREE_VIEW (tree_view));
+    g_return_if_fail (GTK_IS_TREE_VIEW_COLUMN (column));
+
+    g_object_set (tree_view,
+                  "show-expanders", FALSE,
+                  "level-indentation", LEVEL_INDENTATION,
+                  NULL);
+
+    cell = g_object_new (MOO_TYPE_EXPANDER_CELL, NULL);
+    gtk_tree_view_column_pack_start (column, cell, FALSE);
+    gtk_tree_view_column_set_cell_data_func (column, cell,
+                                             (GtkTreeCellDataFunc) expander_cell_data_func,
+                                             NULL, NULL);
+
+    data = _moo_new0 (ExpanderData);
+    data->column = g_object_ref (column);
+    data->cell = g_object_ref (cell);
+    g_object_set_data_full (G_OBJECT (tree_view), "moo-tree-view-expander-data",
+                            data, (GDestroyNotify) expander_data_free);
+
+    g_signal_connect (tree_view, "button-press-event", G_CALLBACK (tree_view_button_press), data);
+    g_signal_connect (tree_view, "row-activated", G_CALLBACK (tree_view_row_activated), NULL);
 }
