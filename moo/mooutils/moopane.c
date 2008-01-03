@@ -23,6 +23,7 @@
 #include <gtk/gtk.h>
 
 #define SPACING_IN_BUTTON 4
+#define OPEN_PANE_TIMEOUT 200
 
 #ifdef MOO_COMPILATION
 
@@ -113,6 +114,11 @@ struct _MooPane {
     GtkWidget    *window_child_holder;
 
     MooPaneParams *params;
+
+    guint         open_timeout;
+    guint         button_highlight : 1;
+    guint         drag_dest_enabled : 1;
+
     guint         detachable : 1;
     guint         removable : 1;
 
@@ -417,6 +423,12 @@ moo_pane_destroy (GtkObject *object)
     {
         gtk_widget_destroy (pane->window);
         pane->window = NULL;
+    }
+
+    if (pane->open_timeout)
+    {
+        g_source_remove (pane->open_timeout);
+        pane->open_timeout = 0;
     }
 
     GTK_OBJECT_CLASS (moo_pane_parent_class)->destroy (object);
@@ -762,6 +774,131 @@ paned_sticky_pane_notify (MooPane *pane)
 
 
 static void
+button_drag_leave (GtkWidget      *button,
+                   G_GNUC_UNUSED GdkDragContext *context,
+                   G_GNUC_UNUSED guint time,
+                   MooPane        *pane)
+{
+    if (pane->open_timeout)
+        g_source_remove (pane->open_timeout);
+    pane->open_timeout = 0;
+    if (pane->button_highlight)
+        gtk_drag_unhighlight (button);
+    pane->button_highlight = FALSE;
+}
+
+static gboolean
+drag_open_pane (MooPane *pane)
+{
+    moo_pane_open (pane);
+
+    if (pane->button_highlight)
+        gtk_drag_unhighlight (pane->button);
+    pane->button_highlight = FALSE;
+
+    pane->open_timeout = 0;
+    return FALSE;
+}
+
+static gboolean
+button_drag_motion (GtkWidget      *button,
+                    GdkDragContext *context,
+                    G_GNUC_UNUSED int x,
+                    G_GNUC_UNUSED int y,
+                    guint           time,
+                    MooPane        *pane)
+{
+    g_return_val_if_fail (MOO_IS_PANE (pane), FALSE);
+
+    if (moo_paned_is_open (pane->parent) &&
+        moo_paned_get_open_pane (pane->parent) == pane)
+    {
+        goto out;
+    }
+
+    if (pane->params->detached)
+        goto out;
+
+    if (!pane->button_highlight)
+    {
+        gtk_drag_highlight (button);
+        pane->button_highlight = TRUE;
+    }
+
+    if (!pane->open_timeout)
+        pane->open_timeout = g_timeout_add (OPEN_PANE_TIMEOUT,
+                                            (GSourceFunc) drag_open_pane,
+                                            pane);
+
+    gdk_drag_status (context, 0, time);
+
+    return TRUE;
+
+out:
+    if (pane->button_highlight)
+        gtk_drag_unhighlight (button);
+    pane->button_highlight = FALSE;
+    if (pane->open_timeout)
+        g_source_remove (pane->open_timeout);
+    pane->open_timeout = 0;
+
+    gdk_drag_status (context, 0, time);
+
+    return TRUE;
+}
+
+static void
+setup_button_dnd (MooPane *pane)
+{
+    gtk_drag_dest_set (pane->button, 0, NULL, 0, GDK_ACTION_COPY | GDK_ACTION_MOVE);
+    g_signal_connect (pane->button, "drag-motion",
+                      G_CALLBACK (button_drag_motion), pane);
+    g_signal_connect (pane->button, "drag-leave",
+                      G_CALLBACK (button_drag_leave), pane);
+}
+
+void
+moo_pane_set_drag_dest (MooPane *pane)
+{
+    g_return_if_fail (MOO_IS_PANE (pane));
+
+    moo_pane_unset_drag_dest (pane);
+
+    pane->drag_dest_enabled = TRUE;
+
+    if (pane->button)
+        setup_button_dnd (pane);
+}
+
+void
+moo_pane_unset_drag_dest (MooPane *pane)
+{
+    g_return_if_fail (MOO_IS_PANE (pane));
+
+    if (pane->drag_dest_enabled && pane->button)
+    {
+        gtk_drag_dest_unset (pane->button);
+        g_signal_handlers_disconnect_by_func (pane->button,
+                                              (gpointer) button_drag_motion,
+                                              pane);
+        g_signal_handlers_disconnect_by_func (pane->button,
+                                              (gpointer) button_drag_leave,
+                                              pane);
+    }
+
+    if (pane->open_timeout)
+        g_source_remove (pane->open_timeout);
+    pane->open_timeout = 0;
+
+    if (pane->button_highlight)
+    {
+        gtk_drag_unhighlight (pane->button);
+        pane->button_highlight = FALSE;
+    }
+}
+
+
+static void
 create_widgets (MooPane         *pane,
                 MooPanePosition  position,
                 GdkWindow       *pane_window)
@@ -786,6 +923,9 @@ create_widgets (MooPane         *pane,
     gtk_container_add (GTK_CONTAINER (pane->button), label);
     gtk_widget_show (label);
     update_label_widgets (pane);
+
+    if (pane->drag_dest_enabled)
+        setup_button_dnd (pane);
 
     g_object_set_data (G_OBJECT (pane->button), "moo-pane", pane);
     g_object_set_data (G_OBJECT (pane->child), "moo-pane", pane);

@@ -76,6 +76,9 @@ void            moo_pane_present            (MooPane        *pane);
 void            moo_pane_attach             (MooPane        *pane);
 void            moo_pane_detach             (MooPane        *pane);
 
+void            moo_pane_set_drag_dest      (MooPane        *pane);
+void            moo_pane_unset_drag_dest    (MooPane        *pane);
+
 MooPaneParams  *moo_pane_params_new         (GdkRectangle   *window_position,
                                              gboolean        detached,
                                              gboolean        maximized,
@@ -89,7 +92,6 @@ MooPaneLabel   *moo_pane_label_new          (const char     *icon_stock_id,
                                              const char     *window_title);
 MooPaneLabel   *moo_pane_label_copy         (MooPaneLabel   *label);
 void            moo_pane_label_free         (MooPaneLabel   *label);
-
 
 MooPane        *_moo_pane_new               (GtkWidget      *child,
                                              MooPaneLabel   *label);
