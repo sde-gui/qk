@@ -58,7 +58,8 @@ struct _MooPanedClass
     void (*handle_drag_motion)  (MooPaned       *paned,
                                  GtkWidget      *pane_widget);
     void (*handle_drag_end)     (MooPaned       *paned,
-                                 GtkWidget      *pane_widget);
+                                 GtkWidget      *pane_widget,
+                                 gboolean        drop);
 
     void (*pane_params_changed) (MooPaned       *paned,
                                  guint           index_);
@@ -113,6 +114,18 @@ void            _moo_paned_attach_pane      (MooPaned       *paned,
 void            _moo_paned_insert_pane      (MooPaned       *paned,
                                              MooPane        *pane,
                                              int             position);
+void            _moo_paned_reorder_child    (MooPaned       *paned,
+                                             MooPane        *pane,
+                                             int             position);
+void            _moo_paned_get_button_position (MooPaned    *paned,
+                                             int             index,
+                                             GdkRectangle   *rect,
+                                             GdkWindow      *reference);
+int             _moo_paned_get_button       (MooPaned       *paned,
+                                             int             x,
+                                             int             y,
+                                             GdkWindow      *reference);
+int             _moo_paned_get_open_pane_index (MooPaned    *paned);
 
 
 G_END_DECLS

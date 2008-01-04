@@ -27,6 +27,24 @@
 #endif
 #endif
 
+struct MooBigPanedPrivate {
+    MooPanePosition order[4]; /* inner is paned[order[3]]*/
+    GtkWidget   *inner;
+    GtkWidget   *outer;
+
+    int          drop_pos;
+    int          drop_button_index;
+    GdkRectangle drop_rect;
+    GdkRectangle drop_button_rect;
+    GdkWindow   *drop_outline;
+    struct {
+        int        bbox_size;
+        GdkRegion *bbox_region;
+        GdkRegion *def_region;
+    } *dz;
+    GdkRegion    *drop_region;
+    guint         drop_region_is_buttons : 1;
+};
 
 static void     moo_big_paned_finalize      (GObject        *object);
 static void     moo_big_paned_set_property  (GObject        *object,
@@ -56,6 +74,7 @@ static void     handle_drag_motion          (MooPaned       *child,
                                              MooBigPaned    *paned);
 static void     handle_drag_end             (MooPaned       *child,
                                              GtkWidget      *pane_widget,
+                                             gboolean        drop,
                                              MooBigPaned    *paned);
 
 
@@ -77,9 +96,12 @@ enum {
 
 static guint signals[NUM_SIGNALS];
 
-static void moo_big_paned_class_init (MooBigPanedClass *klass)
+static void
+moo_big_paned_class_init (MooBigPanedClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+
+    g_type_class_add_private (klass, sizeof (MooBigPanedPrivate));
 
     gobject_class->finalize = moo_big_paned_finalize;
     gobject_class->set_property = moo_big_paned_set_property;
@@ -129,14 +151,18 @@ static void moo_big_paned_class_init (MooBigPanedClass *klass)
 }
 
 
-#define NTH_CHILD(paned,n) paned->paned[paned->order[n]]
+#define NTH_CHILD(paned,n) paned->paned[paned->priv->order[n]]
 
 static void
 moo_big_paned_init (MooBigPaned *paned)
 {
     int i;
 
-    paned->drop_pos = -1;
+    paned->priv = G_TYPE_INSTANCE_GET_PRIVATE (paned,
+                                               MOO_TYPE_BIG_PANED,
+                                               MooBigPanedPrivate);
+
+    paned->priv->drop_pos = -1;
 
     /* XXX destroy */
     for (i = 0; i < 4; ++i)
@@ -165,13 +191,13 @@ moo_big_paned_init (MooBigPaned *paned)
                           paned);
     }
 
-    paned->order[0] = MOO_PANE_POS_LEFT;
-    paned->order[1] = MOO_PANE_POS_RIGHT;
-    paned->order[2] = MOO_PANE_POS_TOP;
-    paned->order[3] = MOO_PANE_POS_BOTTOM;
+    paned->priv->order[0] = MOO_PANE_POS_LEFT;
+    paned->priv->order[1] = MOO_PANE_POS_RIGHT;
+    paned->priv->order[2] = MOO_PANE_POS_TOP;
+    paned->priv->order[3] = MOO_PANE_POS_BOTTOM;
 
-    paned->inner = NTH_CHILD (paned, 3);
-    paned->outer = NTH_CHILD (paned, 0);
+    paned->priv->inner = NTH_CHILD (paned, 3);
+    paned->priv->outer = NTH_CHILD (paned, 0);
 
     gtk_container_add (GTK_CONTAINER (paned), NTH_CHILD (paned, 0));
 
@@ -187,7 +213,7 @@ check_children_order (MooBigPaned *paned)
 {
     int i;
 
-    if (GTK_BIN(paned)->child != NTH_CHILD (paned, 0))
+    if (GTK_BIN (paned)->child != NTH_CHILD (paned, 0))
         return FALSE;
 
     for (i = 0; i < 3; ++i)
@@ -199,8 +225,8 @@ check_children_order (MooBigPaned *paned)
 
 
 void
-moo_big_paned_set_pane_order (MooBigPaned    *paned,
-                              int            *order)
+moo_big_paned_set_pane_order (MooBigPaned *paned,
+                              int         *order)
 {
     MooPanePosition new_order[4] = {8, 8, 8, 8};
     int i;
@@ -220,7 +246,7 @@ moo_big_paned_set_pane_order (MooBigPaned    *paned,
 
     for (i = 0; i < 4; ++i)
     {
-        if (new_order[i] != paned->order[i])
+        if (new_order[i] != paned->priv->order[i])
             break;
     }
 
@@ -239,19 +265,19 @@ moo_big_paned_set_pane_order (MooBigPaned    *paned,
         gtk_container_remove (GTK_CONTAINER (NTH_CHILD (paned, 3)), child);
 
     for (i = 0; i < 4; ++i)
-        paned->order[i] = new_order[i];
+        paned->priv->order[i] = new_order[i];
 
     gtk_container_add (GTK_CONTAINER (paned), NTH_CHILD (paned, 0));
 
     for (i = 0; i < 3; ++i)
         gtk_container_add (GTK_CONTAINER (NTH_CHILD (paned, i)), NTH_CHILD (paned, i+1));
 
-    paned->inner = NTH_CHILD (paned, 3);
-    paned->outer = NTH_CHILD (paned, 0);
+    paned->priv->inner = NTH_CHILD (paned, 3);
+    paned->priv->outer = NTH_CHILD (paned, 0);
 
     if (child)
     {
-        gtk_container_add (GTK_CONTAINER (paned->inner), child);
+        gtk_container_add (GTK_CONTAINER (paned->priv->inner), child);
         g_object_unref (child);
     }
 
@@ -269,11 +295,11 @@ moo_big_paned_finalize (GObject *object)
     for (i = 0; i < 4; ++i)
         g_object_unref (paned->paned[i]);
 
-    if (paned->drop_outline)
+    if (paned->priv->drop_outline)
     {
         g_critical ("%s: oops", G_STRLOC);
-        gdk_window_set_user_data (paned->drop_outline, NULL);
-        gdk_window_destroy (paned->drop_outline);
+        gdk_window_set_user_data (paned->priv->drop_outline, NULL);
+        gdk_window_destroy (paned->priv->drop_outline);
     }
 
     G_OBJECT_CLASS (moo_big_paned_parent_class)->finalize (object);
@@ -317,25 +343,29 @@ moo_big_paned_insert_pane (MooBigPaned        *paned,
 }
 
 
-void        moo_big_paned_add_child         (MooBigPaned        *paned,
-                                             GtkWidget          *child)
+void
+moo_big_paned_add_child (MooBigPaned *paned,
+                         GtkWidget   *child)
 {
     g_return_if_fail (MOO_IS_BIG_PANED (paned));
-    gtk_container_add (GTK_CONTAINER (paned->inner), child);
+    gtk_container_add (GTK_CONTAINER (paned->priv->inner), child);
 }
 
 
-void        moo_big_paned_remove_child      (MooBigPaned        *paned)
+void
+moo_big_paned_remove_child (MooBigPaned *paned)
 {
     g_return_if_fail (MOO_IS_BIG_PANED (paned));
-    gtk_container_remove (GTK_CONTAINER (paned->inner), GTK_BIN(paned->inner)->child);
+    gtk_container_remove (GTK_CONTAINER (paned->priv->inner),
+                          GTK_BIN (paned->priv->inner)->child);
 }
 
 
-GtkWidget  *moo_big_paned_get_child         (MooBigPaned        *paned)
+GtkWidget *
+moo_big_paned_get_child (MooBigPaned *paned)
 {
     g_return_val_if_fail (MOO_IS_BIG_PANED (paned), NULL);
-    return GTK_BIN(paned->inner)->child;
+    return GTK_BIN(paned->priv->inner)->child;
 }
 
 
@@ -490,7 +520,7 @@ static void     moo_big_paned_get_property  (GObject        *object,
     switch (prop_id)
     {
         case PROP_PANE_ORDER:
-            g_value_set_pointer (value, paned->order);
+            g_value_set_pointer (value, paned->priv->order);
             break;
 
         case PROP_HANDLE_CURSOR_TYPE:
@@ -521,15 +551,163 @@ moo_big_paned_get_pane (MooBigPaned    *paned,
  */
 
 static void         create_drop_outline     (MooBigPaned    *paned);
-static int          get_drop_position       (MooBigPaned    *paned,
-                                             MooPaned       *child,
-                                             int             x,
-                                             int             y);
 static void         get_drop_area           (MooBigPaned    *paned,
                                              MooPaned       *active_child,
                                              MooPanePosition position,
-                                             GdkRectangle   *rect);
-static void         invalidate_drop_outline (MooBigPaned    *paned);
+                                             int             index,
+                                             GdkRectangle   *rect,
+                                             GdkRectangle   *button_rect);
+// static void         invalidate_drop_outline (MooBigPaned    *paned);
+
+
+static GdkRegion *
+region_6 (int x0, int y0,
+          int x1, int y1,
+          int x2, int y2,
+          int x3, int y3,
+          int x4, int y4,
+          int x5, int y5)
+{
+    GdkPoint points[6];
+    points[0].x = x0; points[0].y = y0;
+    points[1].x = x1; points[1].y = y1;
+    points[2].x = x2; points[2].y = y2;
+    points[3].x = x3; points[3].y = y3;
+    points[4].x = x4; points[4].y = y4;
+    points[5].x = x5; points[5].y = y5;
+    return gdk_region_polygon (points, 6, GDK_WINDING_RULE);
+}
+
+static GdkRegion *
+region_4 (int x0, int y0,
+          int x1, int y1,
+          int x2, int y2,
+          int x3, int y3)
+{
+    GdkPoint points[4];
+    points[0].x = x0; points[0].y = y0;
+    points[1].x = x1; points[1].y = y1;
+    points[2].x = x2; points[2].y = y2;
+    points[3].x = x3; points[3].y = y3;
+    return gdk_region_polygon (points, 4, GDK_WINDING_RULE);
+}
+
+
+#define LEFT(rect) ((rect).x)
+#define RIGHT(rect) ((rect).x + (rect).width - 1)
+#define TOP(rect) ((rect).y)
+#define BOTTOM(rect) ((rect).y + (rect).height - 1)
+
+static void
+get_drop_zones (MooBigPaned *paned)
+{
+    int pos;
+    GdkRectangle parent;
+    GdkRectangle child_rect;
+    GdkRectangle button_rect;
+    GdkRectangle drop_rect;
+    int bbox_size[4];
+
+    g_return_if_fail (paned->priv->dz == NULL);
+
+    paned->priv->dz = g_malloc0 (4 * sizeof *paned->priv->dz);
+
+    for (pos = 0; pos < 4; ++pos)
+    {
+        bbox_size[pos] = moo_paned_get_button_box_size (MOO_PANED (paned->paned[pos]));
+        if (bbox_size[pos] <= 0)
+            bbox_size[pos] = 30;
+        paned->priv->dz[pos].bbox_size = bbox_size[pos];
+    }
+
+    parent = paned->priv->outer->allocation;
+//     g_print ("parent: %d, %d, %d, %d\n", parent.x, parent.y, parent.width, parent.height);
+
+    child_rect = parent;
+    child_rect.x += bbox_size[MOO_PANE_POS_LEFT];
+    child_rect.width -= bbox_size[MOO_PANE_POS_LEFT] +
+                        bbox_size[MOO_PANE_POS_RIGHT];
+    child_rect.y += bbox_size[MOO_PANE_POS_TOP];
+    child_rect.height -= bbox_size[MOO_PANE_POS_TOP] +
+                         bbox_size[MOO_PANE_POS_BOTTOM];
+//     g_print ("child_rect: %d, %d, %d, %d\n", child_rect.x, child_rect.y, child_rect.width, child_rect.height);
+
+    button_rect = parent;
+    button_rect.x += 2*bbox_size[MOO_PANE_POS_LEFT];
+    button_rect.width -= 2*bbox_size[MOO_PANE_POS_LEFT] +
+                         2*bbox_size[MOO_PANE_POS_RIGHT];
+    button_rect.y += 2*bbox_size[MOO_PANE_POS_TOP];
+    button_rect.height -= 2*bbox_size[MOO_PANE_POS_TOP] +
+                          2*bbox_size[MOO_PANE_POS_BOTTOM];
+//     g_print ("button_rect: %d, %d, %d, %d\n", button_rect.x, button_rect.y, button_rect.width, button_rect.height);
+
+    drop_rect = button_rect;
+    drop_rect.x += button_rect.width / 3;
+    drop_rect.y += button_rect.height / 3;
+    drop_rect.width -= 2 * button_rect.width / 3;
+    drop_rect.height -= 2 * button_rect.height / 3;
+//     g_print ("drop_rect: %d, %d, %d, %d\n", drop_rect.x, drop_rect.y, drop_rect.width, drop_rect.height);
+
+    paned->priv->dz[MOO_PANE_POS_TOP].bbox_region =
+        region_6 (LEFT (child_rect), TOP (parent),
+                  RIGHT (child_rect), TOP (parent),
+                  RIGHT (child_rect), TOP (child_rect),
+                  RIGHT (button_rect), TOP (button_rect),
+                  LEFT (button_rect), TOP (button_rect),
+                  LEFT (child_rect), TOP (child_rect));
+    paned->priv->dz[MOO_PANE_POS_TOP].def_region =
+        region_4 (LEFT (button_rect), TOP (button_rect),
+                  RIGHT (button_rect), TOP (button_rect),
+                  RIGHT (drop_rect), TOP (drop_rect),
+                  LEFT (drop_rect), TOP (drop_rect));
+
+    paned->priv->dz[MOO_PANE_POS_LEFT].bbox_region =
+        region_6 (LEFT (parent), TOP (child_rect),
+                  LEFT (child_rect), TOP (child_rect),
+                  LEFT (button_rect), TOP (button_rect),
+                  LEFT (button_rect), BOTTOM (button_rect),
+                  LEFT (child_rect), BOTTOM (child_rect),
+                  LEFT (parent), BOTTOM (child_rect));
+    paned->priv->dz[MOO_PANE_POS_LEFT].def_region =
+        region_4 (LEFT (button_rect), TOP (button_rect),
+                  LEFT (drop_rect), TOP (drop_rect),
+                  LEFT (drop_rect), BOTTOM (drop_rect),
+                  LEFT (button_rect), BOTTOM (button_rect));
+
+    paned->priv->dz[MOO_PANE_POS_BOTTOM].bbox_region =
+        region_6 (LEFT (child_rect), BOTTOM (parent),
+                  LEFT (child_rect), BOTTOM (child_rect),
+                  LEFT (button_rect), BOTTOM (button_rect),
+                  RIGHT (button_rect), BOTTOM (button_rect),
+                  RIGHT (child_rect), BOTTOM (child_rect),
+                  RIGHT (child_rect), BOTTOM (parent));
+    paned->priv->dz[MOO_PANE_POS_BOTTOM].def_region =
+        region_4 (LEFT (button_rect), BOTTOM (button_rect),
+                  LEFT (drop_rect), BOTTOM (drop_rect),
+                  RIGHT (drop_rect), BOTTOM (drop_rect),
+                  RIGHT (button_rect), BOTTOM (button_rect));
+
+    paned->priv->dz[MOO_PANE_POS_RIGHT].bbox_region =
+        region_6 (RIGHT (parent), TOP (child_rect),
+                  RIGHT (child_rect), TOP (child_rect),
+                  RIGHT (button_rect), TOP (button_rect),
+                  RIGHT (button_rect), BOTTOM (button_rect),
+                  RIGHT (child_rect), BOTTOM (child_rect),
+                  RIGHT (parent), BOTTOM (child_rect));
+    paned->priv->dz[MOO_PANE_POS_RIGHT].def_region =
+        region_4 (RIGHT (button_rect), TOP (button_rect),
+                  RIGHT (drop_rect), TOP (drop_rect),
+                  RIGHT (drop_rect), BOTTOM (drop_rect),
+                  RIGHT (button_rect), BOTTOM (button_rect));
+
+    paned->priv->drop_region = NULL;
+    paned->priv->drop_region_is_buttons = FALSE;
+}
+
+#undef LEFT
+#undef RIGHT
+#undef TOP
+#undef BOTTOM
 
 
 static void
@@ -537,97 +715,238 @@ handle_drag_start (G_GNUC_UNUSED MooPaned *child,
                    G_GNUC_UNUSED GtkWidget *pane_widget,
                    MooBigPaned *paned)
 {
-    g_return_if_fail (GTK_WIDGET_REALIZED (paned->outer));
+    g_return_if_fail (GTK_WIDGET_REALIZED (paned->priv->outer));
 
-    g_signal_connect (paned->outer, "expose-event",
+    g_signal_connect (paned->priv->outer, "expose-event",
                       G_CALLBACK (moo_big_paned_expose), paned);
 
-    paned->drop_pos = -1;
+    paned->priv->drop_pos = -1;
+    get_drop_zones (paned);
 }
 
+
+static gboolean
+get_new_button_index (MooBigPaned *paned,
+                      MooPaned    *active_child,
+                      int          x,
+                      int          y)
+{
+    int new_button;
+    MooPaned *child;
+
+    g_assert (paned->priv->drop_pos >= 0);
+    child = MOO_PANED (paned->paned[paned->priv->drop_pos]);
+
+    new_button = _moo_paned_get_button (child, x, y,
+                                        paned->priv->outer->window);
+
+    if (child == active_child)
+    {
+        int n_buttons = moo_paned_n_panes (child);
+        if (new_button >= n_buttons || new_button < 0)
+            new_button = n_buttons - 1;
+    }
+
+    if (new_button != paned->priv->drop_button_index)
+    {
+        paned->priv->drop_button_index = new_button;
+        return TRUE;
+    }
+    else
+    {
+        return FALSE;
+    }
+}
+
+static void
+get_default_button_index (MooBigPaned *paned,
+                          MooPaned    *active_child)
+{
+    MooPaned *child;
+
+    g_assert (paned->priv->drop_pos >= 0);
+    child = MOO_PANED (paned->paned[paned->priv->drop_pos]);
+
+    if (child == active_child)
+        paned->priv->drop_button_index =
+            _moo_paned_get_open_pane_index (child);
+    else
+        paned->priv->drop_button_index = -1;
+}
+
+static gboolean
+get_new_drop_position (MooBigPaned *paned,
+                       MooPaned    *active_child,
+                       int          x,
+                       int          y)
+{
+    int pos;
+    gboolean changed = FALSE;
+
+    if (paned->priv->drop_region)
+    {
+        g_assert (paned->priv->drop_pos >= 0);
+
+        if (gdk_region_point_in (paned->priv->drop_region, x, y))
+        {
+            if (!paned->priv->drop_region_is_buttons)
+                return FALSE;
+            else
+                return get_new_button_index (paned, active_child, x, y);
+        }
+
+        paned->priv->drop_pos = -1;
+        paned->priv->drop_region = NULL;
+        changed = TRUE;
+    }
+
+    for (pos = 0; pos < 4; ++pos)
+    {
+        if (gdk_region_point_in (paned->priv->dz[pos].def_region, x, y))
+        {
+            paned->priv->drop_pos = pos;
+            paned->priv->drop_region = paned->priv->dz[pos].def_region;
+            paned->priv->drop_region_is_buttons = FALSE;
+            get_default_button_index (paned, active_child);
+            return TRUE;
+        }
+
+        if (gdk_region_point_in (paned->priv->dz[pos].bbox_region, x, y))
+        {
+            paned->priv->drop_pos = pos;
+            paned->priv->drop_region = paned->priv->dz[pos].bbox_region;
+            paned->priv->drop_region_is_buttons = TRUE;
+            get_new_button_index (paned, active_child, x, y);
+            return TRUE;
+        }
+    }
+
+    return changed;
+}
 
 static void
 handle_drag_motion (MooPaned       *child,
                     G_GNUC_UNUSED GtkWidget *pane_widget,
                     MooBigPaned    *paned)
 {
-    int pos, x, y;
+    int x, y;
 
-    g_return_if_fail (GTK_WIDGET_REALIZED (paned->outer));
+    g_return_if_fail (GTK_WIDGET_REALIZED (paned->priv->outer));
 
-    gdk_window_get_pointer (paned->outer->window, &x, &y, NULL);
-    pos = get_drop_position (paned, child, x, y);
+    gdk_window_get_pointer (paned->priv->outer->window, &x, &y, NULL);
 
-    if (pos == paned->drop_pos)
+    if (!get_new_drop_position (paned, child, x, y))
         return;
 
-    if (paned->drop_pos >= 0)
+    if (paned->priv->drop_outline)
     {
-        g_assert (paned->drop_outline != NULL);
-        gdk_window_set_user_data (paned->drop_outline, NULL);
-        gdk_window_destroy (paned->drop_outline);
-        paned->drop_outline = NULL;
-        invalidate_drop_outline (paned);
+        gdk_window_set_user_data (paned->priv->drop_outline, NULL);
+        gdk_window_destroy (paned->priv->drop_outline);
+        paned->priv->drop_outline = NULL;
     }
 
-    paned->drop_pos = pos;
-
-    if (pos >= 0)
+    if (paned->priv->drop_pos >= 0)
     {
-        get_drop_area (paned, child, pos, &paned->drop_rect);
-        g_assert (paned->drop_outline == NULL);
+        get_drop_area (paned, child, paned->priv->drop_pos,
+                       paned->priv->drop_button_index,
+                       &paned->priv->drop_rect,
+                       &paned->priv->drop_button_rect);
         create_drop_outline (paned);
     }
 }
 
 
 static void
-handle_drag_end (MooPaned    *child,
-                 GtkWidget   *pane_widget,
-                 MooBigPaned *paned)
+cleanup_drag (MooBigPaned *paned)
 {
-    int pos, x, y;
-    MooPanePosition old_pos;
-    MooPane *pane;
+    int pos;
 
-    g_return_if_fail (GTK_WIDGET_REALIZED (paned->outer));
-
-    gdk_window_get_pointer (paned->outer->window, &x, &y, NULL);
-
-    pos = get_drop_position (paned, child, x, y);
-
-    if (paned->drop_pos >= 0)
+    if (paned->priv->drop_outline)
     {
-        g_assert (paned->drop_outline != NULL);
-        gdk_window_set_user_data (paned->drop_outline, NULL);
-        gdk_window_destroy (paned->drop_outline);
-        paned->drop_outline = NULL;
-        invalidate_drop_outline (paned);
+        gdk_window_set_user_data (paned->priv->drop_outline, NULL);
+        gdk_window_destroy (paned->priv->drop_outline);
+        paned->priv->drop_outline = NULL;
     }
 
-    paned->drop_pos = -1;
+    paned->priv->drop_pos = -1;
+    paned->priv->drop_region = NULL;
 
-    g_signal_handlers_disconnect_by_func (paned->outer,
+    g_signal_handlers_disconnect_by_func (paned->priv->outer,
                                           (gpointer) moo_big_paned_expose,
                                           paned);
 
-    if (pos < 0)
+    for (pos = 0; pos < 4; ++pos)
+    {
+        gdk_region_destroy (paned->priv->dz[pos].bbox_region);
+        gdk_region_destroy (paned->priv->dz[pos].def_region);
+    }
+
+    g_free (paned->priv->dz);
+    paned->priv->dz = NULL;
+}
+
+static void
+handle_drag_end (MooPaned    *child,
+                 GtkWidget   *pane_widget,
+                 gboolean     drop,
+                 MooBigPaned *paned)
+{
+    int x, y;
+    MooPanePosition new_pos, old_pos;
+    int new_index, old_index;
+
+    g_return_if_fail (GTK_WIDGET_REALIZED (paned->priv->outer));
+
+    if (!drop)
+    {
+        cleanup_drag (paned);
         return;
+    }
+
+    gdk_window_get_pointer (paned->priv->outer->window, &x, &y, NULL);
+    get_new_drop_position (paned, child, x, y);
+
+    if (paned->priv->drop_pos < 0)
+    {
+        cleanup_drag (paned);
+        return;
+    }
+
+    new_pos = paned->priv->drop_pos;
+    new_index = paned->priv->drop_button_index;
+    cleanup_drag (paned);
+
+//     {
+//         const char *pos_names[] = {"left", "right", "top", "bottom"};
+//         g_print ("moving to %s, %d\n", pos_names[new_pos], new_index);
+//     }
 
     g_object_get (child, "pane-position", &old_pos, NULL);
+    old_index = _moo_paned_get_open_pane_index (child);
 
-    if ((int) old_pos == pos)
+    if (old_pos == new_pos && new_index == old_index)
         return;
 
-    pane = moo_paned_get_pane (child, pane_widget);
-    g_object_ref (pane);
+    if (old_pos == new_pos)
+    {
+        MooPane *pane;
+        pane = moo_paned_get_pane (child, pane_widget);
+        _moo_paned_reorder_child (child, pane, new_index);
+    }
+    else
+    {
+        MooPane *pane;
 
-    moo_paned_remove_pane (child, pane_widget);
-    _moo_paned_insert_pane (MOO_PANED (paned->paned[pos]), pane, -1);
-    moo_pane_open (pane);
-    _moo_pane_params_changed (pane);
+        pane = moo_paned_get_pane (child, pane_widget);
+        g_object_ref (pane);
 
-    g_object_unref (pane);
+        moo_paned_remove_pane (child, pane_widget);
+        _moo_paned_insert_pane (MOO_PANED (paned->paned[new_pos]), pane, new_index);
+        moo_pane_open (pane);
+        _moo_pane_params_changed (pane);
+
+        g_object_unref (pane);
+    }
 }
 
 
@@ -635,13 +954,15 @@ static void
 get_drop_area (MooBigPaned    *paned,
                MooPaned       *active_child,
                MooPanePosition position,
-               GdkRectangle   *rect)
+               int             index,
+               GdkRectangle   *rect,
+               GdkRectangle   *button_rect)
 {
     int width, height, size = 0;
     MooPanePosition active_position;
 
-    width = paned->outer->allocation.width;
-    height = paned->outer->allocation.height;
+    width = paned->priv->outer->allocation.width;
+    height = paned->priv->outer->allocation.height;
 
     g_object_get (active_child, "pane-position", &active_position, NULL);
     g_return_if_fail (active_position < 4);
@@ -670,13 +991,13 @@ get_drop_area (MooBigPaned    *paned,
     {
         case MOO_PANE_POS_LEFT:
         case MOO_PANE_POS_RIGHT:
-            rect->y = paned->outer->allocation.y;
+            rect->y = paned->priv->outer->allocation.y;
             rect->width = size;
             rect->height = height;
             break;
         case MOO_PANE_POS_TOP:
         case MOO_PANE_POS_BOTTOM:
-            rect->x = paned->outer->allocation.x;
+            rect->x = paned->priv->outer->allocation.x;
             rect->width = width;
             rect->height = size;
             break;
@@ -685,18 +1006,22 @@ get_drop_area (MooBigPaned    *paned,
     switch (position)
     {
         case MOO_PANE_POS_LEFT:
-            rect->x = paned->outer->allocation.x;
+            rect->x = paned->priv->outer->allocation.x;
             break;
         case MOO_PANE_POS_RIGHT:
-            rect->x = paned->outer->allocation.x + width - size;
+            rect->x = paned->priv->outer->allocation.x + width - size;
             break;
         case MOO_PANE_POS_TOP:
-            rect->y = paned->outer->allocation.y;
+            rect->y = paned->priv->outer->allocation.y;
             break;
         case MOO_PANE_POS_BOTTOM:
-            rect->y = paned->outer->allocation.y + height - size;
+            rect->y = paned->priv->outer->allocation.y + height - size;
             break;
     }
+
+    _moo_paned_get_button_position (MOO_PANED (paned->paned[position]),
+                                    index, button_rect,
+                                    paned->priv->outer->window);
 }
 
 
@@ -704,85 +1029,88 @@ get_drop_area (MooBigPaned    *paned,
                                  y < (rect)->height + (rect)->y &&  \
                                  x >= (rect)->x && y >= (rect)->y)
 
-static int
-get_drop_position (MooBigPaned *paned,
-                   MooPaned    *child,
-                   int          x,
-                   int          y)
-{
-    int width, height, i;
-    MooPanePosition position;
-    GdkRectangle rect;
+// static int
+// get_drop_position (MooBigPaned *paned,
+//                    MooPaned    *child,
+//                    int          x,
+//                    int          y,
+//                    int         *button_index)
+// {
+//     int width, height, i;
+//     MooPanePosition position;
+//     GdkRectangle rect, button_rect;
+//
+//     *button_index = -1;
+//
+//     width = paned->priv->outer->allocation.width;
+//     height = paned->priv->outer->allocation.height;
+//
+//     if (x < paned->priv->outer->allocation.x ||
+//         x >= paned->priv->outer->allocation.x + width ||
+//         y < paned->priv->outer->allocation.y ||
+//         y >= paned->priv->outer->allocation.y + height)
+//             return -1;
+//
+//     g_object_get (child, "pane-position", &position, NULL);
+//     g_return_val_if_fail (position < 4, -1);
+//
+//     get_drop_area (paned, child, position, -1, &rect, &button_rect);
+//
+//     if (RECT_POINT_IN (&rect, x, y))
+//         return position;
+//
+//     for (i = 0; i < 4; ++i)
+//     {
+//         if (paned->priv->order[i] == position)
+//             continue;
+//
+//         get_drop_area (paned, child, paned->priv->order[i], -1,
+//                        &rect, &button_rect);
+//
+//         if (RECT_POINT_IN (&rect, x, y))
+//             return paned->priv->order[i];
+//     }
+//
+//     return -1;
+// }
 
-    width = paned->outer->allocation.width;
-    height = paned->outer->allocation.height;
 
-    if (x < paned->outer->allocation.x ||
-        x >= paned->outer->allocation.x + width ||
-        y < paned->outer->allocation.y ||
-        y >= paned->outer->allocation.y + height)
-            return -1;
-
-    g_object_get (child, "pane-position", &position, NULL);
-    g_return_val_if_fail (position < 4, -1);
-
-    get_drop_area (paned, child, position, &rect);
-
-    if (RECT_POINT_IN (&rect, x, y))
-        return position;
-
-    for (i = 0; i < 4; ++i)
-    {
-        if (paned->order[i] == position)
-            continue;
-
-        get_drop_area (paned, child, paned->order[i], &rect);
-
-        if (RECT_POINT_IN (&rect, x, y))
-            return paned->order[i];
-    }
-
-    return -1;
-}
-
-
-static void
-invalidate_drop_outline (MooBigPaned *paned)
-{
-    GdkRectangle line;
-    GdkRegion *outline;
-
-    outline = gdk_region_new ();
-
-    line.x = paned->drop_rect.x;
-    line.y = paned->drop_rect.y;
-    line.width = 2;
-    line.height = paned->drop_rect.height;
-    gdk_region_union_with_rect (outline, &line);
-
-    line.x = paned->drop_rect.x;
-    line.y = paned->drop_rect.y + paned->drop_rect.height;
-    line.width = paned->drop_rect.width;
-    line.height = 2;
-    gdk_region_union_with_rect (outline, &line);
-
-    line.x = paned->drop_rect.x + paned->drop_rect.width;
-    line.y = paned->drop_rect.y;
-    line.width = 2;
-    line.height = paned->drop_rect.height;
-    gdk_region_union_with_rect (outline, &line);
-
-    line.x = paned->drop_rect.x;
-    line.y = paned->drop_rect.y;
-    line.width = paned->drop_rect.width;
-    line.height = 2;
-    gdk_region_union_with_rect (outline, &line);
-
-    gdk_window_invalidate_region (paned->outer->window, outline, TRUE);
-
-    gdk_region_destroy (outline);
-}
-
+// static void
+// invalidate_drop_outline (MooBigPaned *paned)
+// {
+//     GdkRectangle line;
+//     GdkRegion *outline;
+//
+//     outline = gdk_region_new ();
+//
+//     line.x = paned->priv->drop_rect.x;
+//     line.y = paned->priv->drop_rect.y;
+//     line.width = 2;
+//     line.height = paned->priv->drop_rect.height;
+//     gdk_region_union_with_rect (outline, &line);
+//
+//     line.x = paned->priv->drop_rect.x;
+//     line.y = paned->priv->drop_rect.y + paned->priv->drop_rect.height;
+//     line.width = paned->priv->drop_rect.width;
+//     line.height = 2;
+//     gdk_region_union_with_rect (outline, &line);
+//
+//     line.x = paned->priv->drop_rect.x + paned->priv->drop_rect.width;
+//     line.y = paned->priv->drop_rect.y;
+//     line.width = 2;
+//     line.height = paned->priv->drop_rect.height;
+//     gdk_region_union_with_rect (outline, &line);
+//
+//     line.x = paned->priv->drop_rect.x;
+//     line.y = paned->priv->drop_rect.y;
+//     line.width = paned->priv->drop_rect.width;
+//     line.height = 2;
+//     gdk_region_union_with_rect (outline, &line);
+//
+//     gdk_window_invalidate_region (paned->priv->outer->window, outline, TRUE);
+//
+//     gdk_region_destroy (outline);
+// }
 
 static gboolean
 moo_big_paned_expose (GtkWidget      *widget,
@@ -791,28 +1119,28 @@ moo_big_paned_expose (GtkWidget      *widget,
 {
     GTK_WIDGET_CLASS(G_OBJECT_GET_CLASS (widget))->expose_event (widget, event);
 
-    if (paned->drop_pos >= 0)
+    if (paned->priv->drop_pos >= 0)
     {
-        g_return_val_if_fail (paned->drop_outline != NULL, FALSE);
-        gdk_draw_rectangle (paned->drop_outline,
+        g_return_val_if_fail (paned->priv->drop_outline != NULL, FALSE);
+        gdk_draw_rectangle (paned->priv->drop_outline,
                             widget->style->fg_gc[GTK_STATE_NORMAL],
                             FALSE, 0, 0,
-                            paned->drop_rect.width - 1,
-                            paned->drop_rect.height - 1);
-        gdk_draw_rectangle (paned->drop_outline,
+                            paned->priv->drop_rect.width - 1,
+                            paned->priv->drop_rect.height - 1);
+        gdk_draw_rectangle (paned->priv->drop_outline,
                             widget->style->fg_gc[GTK_STATE_NORMAL],
                             FALSE, 1, 1,
-                            paned->drop_rect.width - 3,
-                            paned->drop_rect.height - 3);
+                            paned->priv->drop_rect.width - 3,
+                            paned->priv->drop_rect.height - 3);
     }
 
     return FALSE;
 }
 
-
 static GdkBitmap *
-create_rect_mask (int width,
-                  int height)
+create_rect_mask (int           width,
+                  int           height,
+                  GdkRectangle *rect)
 {
     GdkBitmap *bitmap;
     GdkGC *gc;
@@ -832,10 +1160,18 @@ create_rect_mask (int width,
     gdk_draw_rectangle (bitmap, gc, FALSE, 1, 1,
                         width - 3, height - 3);
 
+    gdk_draw_rectangle (bitmap, gc, FALSE,
+                        rect->x, rect->y,
+                        rect->width, rect->height);
+    gdk_draw_rectangle (bitmap, gc, FALSE,
+                        rect->x + 1, rect->y + 1,
+                        rect->width - 2, rect->height - 2);
+
+//     g_print ("%d, %d: %d, %d, %d, %d\n", width, height, rect->x, rect->y, rect->width, rect->height);
+
     g_object_unref (gc);
     return bitmap;
 }
-
 
 static void
 create_drop_outline (MooBigPaned *paned)
@@ -843,27 +1179,34 @@ create_drop_outline (MooBigPaned *paned)
     static GdkWindowAttr attributes;
     int attributes_mask;
     GdkBitmap *mask;
+    GdkRectangle button_rect;
 
-    g_return_if_fail (paned->drop_outline == NULL);
+    g_return_if_fail (paned->priv->drop_outline == NULL);
 
-    attributes.x = paned->drop_rect.x;
-    attributes.y = paned->drop_rect.y;
-    attributes.width = paned->drop_rect.width;
-    attributes.height = paned->drop_rect.height;
+    attributes.x = paned->priv->drop_rect.x;
+    attributes.y = paned->priv->drop_rect.y;
+    attributes.width = paned->priv->drop_rect.width;
+    attributes.height = paned->priv->drop_rect.height;
     attributes.window_type = GDK_WINDOW_CHILD;
 
-    attributes.visual = gtk_widget_get_visual (paned->outer);
-    attributes.colormap = gtk_widget_get_colormap (paned->outer);
+    attributes.visual = gtk_widget_get_visual (paned->priv->outer);
+    attributes.colormap = gtk_widget_get_colormap (paned->priv->outer);
     attributes.wclass = GDK_INPUT_OUTPUT;
 
     attributes_mask = GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL | GDK_WA_COLORMAP;
 
-    paned->drop_outline = gdk_window_new (paned->outer->window, &attributes, attributes_mask);
-    gdk_window_set_user_data (paned->drop_outline, paned);
+    paned->priv->drop_outline = gdk_window_new (paned->priv->outer->window,
+                                                &attributes, attributes_mask);
+    gdk_window_set_user_data (paned->priv->drop_outline, paned);
 
-    mask = create_rect_mask (paned->drop_rect.width, paned->drop_rect.height);
-    gdk_window_shape_combine_mask (paned->drop_outline, mask, 0, 0);
+    button_rect = paned->priv->drop_button_rect;
+    button_rect.x -= paned->priv->drop_rect.x;
+    button_rect.y -= paned->priv->drop_rect.y;
+    mask = create_rect_mask (paned->priv->drop_rect.width,
+                             paned->priv->drop_rect.height,
+                             &button_rect);
+    gdk_window_shape_combine_mask (paned->priv->drop_outline, mask, 0, 0);
     g_object_unref (mask);
 
-    gdk_window_show (paned->drop_outline);
+    gdk_window_show (paned->priv->drop_outline);
 }

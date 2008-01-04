@@ -27,30 +27,24 @@ G_BEGIN_DECLS
 #define MOO_BIG_PANED_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_BIG_PANED, MooBigPanedClass))
 
 
-typedef struct _MooBigPaned         MooBigPaned;
-typedef struct _MooBigPanedPrivate  MooBigPanedPrivate;
-typedef struct _MooBigPanedClass    MooBigPanedClass;
+typedef struct MooBigPaned        MooBigPaned;
+typedef struct MooBigPanedPrivate MooBigPanedPrivate;
+typedef struct MooBigPanedClass   MooBigPanedClass;
 
-struct _MooBigPaned
+struct MooBigPaned
 {
-    GtkFrame     parent;
-
-    GtkWidget   *paned[4];  /* indexed by PanePos */
-    MooPanePosition order[4]; /* inner is paned[order[3]]*/
-    GtkWidget   *inner;
-    GtkWidget   *outer;
-
-    int          drop_pos;
-    GdkRectangle drop_rect;
-    GdkWindow   *drop_outline;
+    GtkFrame base;
+    MooBigPanedPrivate *priv;
+    GtkWidget *paned[4]; /* indexed by PanePos */
 };
 
-struct _MooBigPanedClass
+struct MooBigPanedClass
 {
-    GtkFrameClass parent_class;
-    void (*set_pane_size)       (MooBigPaned    *paned,
-                                 MooPanePosition position,
-                                 int             size);
+    GtkFrameClass base_class;
+
+    void (*set_pane_size) (MooBigPaned    *paned,
+                           MooPanePosition position,
+                           int             size);
 };
 
 
