@@ -231,43 +231,49 @@ override moo_term_set_colors varargs
 static PyObject *
 _wrap_moo_term_set_colors (PyGObject *self, PyObject *args)
 {
+    GdkColor *pcolors = NULL;
     GdkColor colors[4 + 2 * MOO_TERM_NUM_COLORS];
-    guint i, n_colors;
+    guint i, n_colors = 0;
     PyObject *py_colors;
 
     if (!PyArg_ParseTuple (args, "O:MooTerm.set_colors", &py_colors))
         return NULL;
 
-    if (!PySequence_Check (py_colors))
-        return_TypeError ("colors must be a list or tuple");
+    if (py_colors != Py_None && !PySequence_Check (py_colors))
+        return_TypeError ("colors must be None or a list or tuple");
 
-    n_colors = PySequence_Size (py_colors);
-
-    if (n_colors != 2 + MOO_TERM_NUM_COLORS && n_colors != 4 + 2 * MOO_TERM_NUM_COLORS)
+    if (py_colors != Py_None)
     {
-        PyErr_Format (PyExc_ValueError, "number of colors must be %d or %d",
-                      2 + MOO_TERM_NUM_COLORS, 4 + 2 * MOO_TERM_NUM_COLORS);
-        return NULL;
-    }
+        n_colors = PySequence_Size (py_colors);
 
-    for (i = 0; i < n_colors; ++i)
-    {
-        PyObject *c;
-
-        c = PySequence_GetItem (py_colors, i);
-
-        if (!pyg_boxed_check (c, GDK_TYPE_COLOR))
+        if (n_colors != 2 + MOO_TERM_NUM_COLORS && n_colors != 4 + 2 * MOO_TERM_NUM_COLORS)
         {
-            Py_XDECREF (c);
-            PyErr_SetString (PyExc_ValueError, "colors must be a sequence of gdk.Color");
+            PyErr_Format (PyExc_ValueError, "number of colors must be %d or %d",
+                          2 + MOO_TERM_NUM_COLORS, 4 + 2 * MOO_TERM_NUM_COLORS);
             return NULL;
         }
 
-        colors[i] = *pyg_boxed_get (c, GdkColor);
-        Py_XDECREF (c);
+        for (i = 0; i < n_colors; ++i)
+        {
+            PyObject *c;
+
+            c = PySequence_GetItem (py_colors, i);
+
+            if (!pyg_boxed_check (c, GDK_TYPE_COLOR))
+            {
+                Py_XDECREF (c);
+                PyErr_SetString (PyExc_ValueError, "colors must be a sequence of gdk.Color");
+                return NULL;
+            }
+
+            colors[i] = *pyg_boxed_get (c, GdkColor);
+            Py_XDECREF (c);
+        }
+
+        pcolors = colors;
     }
 
-    moo_term_set_colors (MOO_TERM (self->obj), colors, n_colors);
+    moo_term_set_colors (MOO_TERM (self->obj), pcolors, n_colors);
     return_None;
 }
 %%

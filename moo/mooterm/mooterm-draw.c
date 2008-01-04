@@ -183,32 +183,43 @@ moo_term_set_colors (MooTerm  *term,
                      GdkColor *colors,
                      guint     n_colors)
 {
-    guint i;
-    GdkColor *bold_colors;
-    MooTermColorScheme *cs;
-
     g_return_if_fail (MOO_IS_TERM (term));
-    g_return_if_fail (colors != NULL);
-    g_return_if_fail (n_colors == 2 + MOO_TERM_NUM_COLORS ||
-                      n_colors == 4 + MOO_TERM_NUM_COLORS);
+    g_return_if_fail (!colors || n_colors == 2 + MOO_TERM_NUM_COLORS ||
+                                    n_colors == 4 + 2*MOO_TERM_NUM_COLORS);
+    g_return_if_fail (colors != NULL || n_colors == 0);
 
-    if (!term->priv->color_scheme)
-        term->priv->color_scheme = g_new0 (MooTermColorScheme, 1);
-    cs = term->priv->color_scheme;
-
-    if (n_colors == 2 + MOO_TERM_NUM_COLORS)
-        bold_colors = colors;
-    else
-        bold_colors = colors + 2 + MOO_TERM_NUM_COLORS;
-
-    cs->fg[COLOR_NORMAL] = colors[0];
-    cs->fg[COLOR_BOLD] = bold_colors[0];
-    cs->bg[COLOR_NORMAL] = colors[1];
-    cs->bg[COLOR_BOLD] = bold_colors[1];
-    for (i = 0; i < MOO_TERM_NUM_COLORS; ++i)
+    if (!colors)
     {
-        cs->colors[i] = colors[i + 2];
-        cs->colors[i + MOO_TERM_NUM_COLORS] = bold_colors[i + 2];
+        if (!term->priv->color_scheme)
+            return;
+
+        g_free (term->priv->color_scheme);
+        term->priv->color_scheme = NULL;
+    }
+    else
+    {
+        guint i;
+        GdkColor *bold_colors;
+        MooTermColorScheme *cs;
+
+        if (!term->priv->color_scheme)
+            term->priv->color_scheme = g_new0 (MooTermColorScheme, 1);
+        cs = term->priv->color_scheme;
+
+        if (n_colors == 2 + MOO_TERM_NUM_COLORS)
+            bold_colors = colors;
+        else
+            bold_colors = colors + 2 + MOO_TERM_NUM_COLORS;
+
+        cs->fg[COLOR_NORMAL] = colors[0];
+        cs->fg[COLOR_BOLD] = bold_colors[0];
+        cs->bg[COLOR_NORMAL] = colors[1];
+        cs->bg[COLOR_BOLD] = bold_colors[1];
+        for (i = 0; i < MOO_TERM_NUM_COLORS; ++i)
+        {
+            cs->colors[i] = colors[i + 2];
+            cs->colors[i + MOO_TERM_NUM_COLORS] = bold_colors[i + 2];
+        }
     }
 
     _moo_term_update_gcs (term);
@@ -762,7 +773,8 @@ term_draw_cells (MooTerm        *term,
     if (attr.mask & MOO_TERM_TEXT_BACKGROUND)
     {
         g_return_if_fail (attr.foreground < MOO_TERM_NUM_COLORS);
-        bg = term->priv->color[8 * bold + attr.background];
+        /* bg = term->priv->color[8 * bold + attr.background]; */
+        bg = term->priv->color[attr.background];
     }
     else
     {
