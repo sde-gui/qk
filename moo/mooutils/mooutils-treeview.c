@@ -15,7 +15,6 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mootype-macros.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/pixmaps-pm.h"
 #include <string.h>
 #include <gobject/gvaluecollector.h>
 
