@@ -1206,10 +1206,6 @@ drag_source_drag_data_get (GtkTreeDragSource *drag_source,
                            GtkTreePath       *path,
                            GtkSelectionData  *selection_data)
 {
-//     char *name = gdk_atom_name (selection_data->target);
-//     g_print ("%s: %s\n", G_STRFUNC, name);
-//     g_free (name);
-
     if (selection_data->target == atom_tree_model_row)
     {
         gtk_tree_set_row_drag_data (selection_data, GTK_TREE_MODEL (drag_source), path);

@@ -280,7 +280,7 @@ moo_term_init (MooTerm *term)
     term->priv->incoming = g_string_new_len (NULL, INPUT_CHUNK_SIZE);
     term->priv->parser = _moo_term_parser_new (term);
 
-    _moo_term_init_palette (term);
+    term->priv->color_scheme = NULL;
 
     term->priv->primary_buffer = moo_term_buffer_new (80, 24);
     term->priv->alternate_buffer = moo_term_buffer_new (80, 24);
@@ -304,7 +304,7 @@ moo_term_init (MooTerm *term)
     term->priv->settings.scroll_on_input = TRUE;
     term->priv->settings.backspace_binding = MOO_TERM_ERASE_AUTO;
     term->priv->settings.delete_binding = MOO_TERM_ERASE_AUTO;
-    term->priv->settings.bold_pango = TRUE;
+    term->priv->settings.bold_pango = FALSE;
     term->priv->settings.bold_offset = FALSE;
 
     term->priv->pointer_visible = TRUE;
@@ -380,7 +380,7 @@ moo_term_init (MooTerm *term)
 static void
 moo_term_finalize (GObject *object)
 {
-    guint i, j;
+    guint i;
     MooTerm *term = MOO_TERM (object);
 
     if (term->priv->process_timeout)
@@ -390,6 +390,7 @@ moo_term_finalize (GObject *object)
     if (term->priv->cursor_blink_timeout_id)
         g_source_remove (term->priv->cursor_blink_timeout_id);
 
+    g_free (term->priv->color_scheme);
     _moo_term_release_selection (term);
 
     OBJECT_UNREF (term->priv->pt);
@@ -413,14 +414,6 @@ moo_term_finalize (GObject *object)
     for (i = 0; i < POINTERS_NUM; ++i)
         if (term->priv->pointer[i])
             gdk_cursor_unref (term->priv->pointer[i]);
-
-    for (j = 0; j < COLOR_MAX; ++j)
-        OBJECT_UNREF (term->priv->color[j]);
-
-    for (i = 0; i < 1; ++i)
-        OBJECT_UNREF (term->priv->fg[i]);
-
-    OBJECT_UNREF (term->priv->bg);
 
     if (term->priv->pending_adjustment_changed)
         g_source_remove (term->priv->pending_adjustment_changed);
@@ -474,8 +467,9 @@ static void moo_term_get_property   (GObject        *object,
 }
 
 
-static void moo_term_size_allocate          (GtkWidget          *widget,
-                                             GtkAllocation      *allocation)
+static void
+moo_term_size_allocate (GtkWidget     *widget,
+                        GtkAllocation *allocation)
 {
     int old_width, old_height;
     MooTerm *term = MOO_TERM (widget);
@@ -555,7 +549,7 @@ moo_term_realize (GtkWidget *widget)
     widget->style = gtk_style_attach (widget->style, widget->window);
 
     _moo_term_init_font_stuff (term);
-    _moo_term_update_palette (term);
+    _moo_term_update_gcs (term);
     _moo_term_update_size (term, FALSE);
 
     term->priv->im = gtk_im_multicontext_new ();
@@ -593,6 +587,8 @@ moo_term_unrealize (GtkWidget *widget)
     term->priv->layout = NULL;
     _moo_term_font_free (term->priv->font);
     term->priv->font = NULL;
+
+    _moo_term_unrealize_gcs (term);
 
     GTK_WIDGET_CLASS(moo_term_parent_class)->unrealize (widget);
 }

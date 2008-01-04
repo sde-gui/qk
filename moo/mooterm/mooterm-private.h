@@ -67,7 +67,7 @@ typedef enum {
 enum {
     COLOR_NORMAL    = 0,
     COLOR_BOLD      = 1,
-    COLOR_MAX       = 16
+    N_COLORS        = 16
 };
 
 typedef enum {
@@ -91,6 +91,12 @@ struct _MooTermCommand {
     char    *working_dir;
     char   **envp;
 };
+
+typedef struct {
+    GdkColor fg[2];
+    GdkColor bg[2];
+    GdkColor colors[N_COLORS];
+} MooTermColorScheme;
 
 struct _MooTermPrivate {
     struct _MooTermPt       *pt;
@@ -146,12 +152,10 @@ struct _MooTermPrivate {
     guint           cursor_blink_time;
     guint           cursor_blink_timeout_id;
 
-    GdkGC          *color[COLOR_MAX];
+    MooTermColorScheme *color_scheme;
+    GdkGC          *color[N_COLORS];
     GdkGC          *fg[2];
-    GdkGC          *bg;
-    GdkColor        palette[COLOR_MAX];
-    GdkColor        fg_color[2];
-    GdkColor        bg_color;
+    GdkGC          *bg[2];
 
     GdkCursor      *pointer[POINTERS_NUM];
     gboolean        pointer_visible;
@@ -214,8 +218,8 @@ void        _moo_term_update_size           (MooTerm        *term,
                                              gboolean        force);
 
 void        _moo_term_init_font_stuff       (MooTerm        *term);
-void        _moo_term_init_palette          (MooTerm        *term);
-void        _moo_term_update_palette        (MooTerm        *term);
+void        _moo_term_update_gcs            (MooTerm        *term);
+void        _moo_term_unrealize_gcs         (MooTerm        *term);
 void        _moo_term_style_set             (GtkWidget      *widget,
                                              GtkStyle       *previous_style);
 

@@ -51,27 +51,11 @@
 void
 _moo_term_init_settings (void)
 {
-    GtkSettings *settings;
-    GtkStyle *style;
-
     NEW_KEY_STRING (MOO_TERM_PREFS_FONT, DEFAULT_MONOSPACE_FONT);
     NEW_KEY_BOOL (MOO_TERM_PREFS_CURSOR_BLINKS, FALSE);
     NEW_KEY_INT (MOO_TERM_PREFS_CURSOR_BLINK_TIME, DEFAULT_BLINK_TIME);
-
-    settings = gtk_settings_get_default ();
-    style = gtk_rc_get_style_by_paths (settings, "MooTerm", "MooTerm", MOO_TYPE_TERM);
-
-    if (!style)
-        style = gtk_style_new ();
-    else
-        g_object_ref (G_OBJECT (style));
-
-    g_return_if_fail (style != NULL);
-
-    NEW_KEY_COLOR (MOO_TERM_PREFS_FOREGROUND, &(style->text[GTK_STATE_NORMAL]));
-    NEW_KEY_COLOR (MOO_TERM_PREFS_BACKGROUND, &(style->base[GTK_STATE_NORMAL]));
-
-    g_object_unref (G_OBJECT (style));
+    NEW_KEY_COLOR (MOO_TERM_PREFS_FOREGROUND, NULL);
+    NEW_KEY_COLOR (MOO_TERM_PREFS_BACKGROUND, NULL);
 }
 
 
@@ -82,10 +66,10 @@ moo_term_apply_settings (MooTerm *term)
 
     moo_term_set_font_from_string (term, GET_STRING (MOO_TERM_PREFS_FONT));
 
-    gtk_widget_modify_text (GTK_WIDGET (term), GTK_STATE_NORMAL,
-                            GET_COLOR (MOO_TERM_PREFS_FOREGROUND));
-    gtk_widget_modify_base (GTK_WIDGET (term), GTK_STATE_NORMAL,
-                            GET_COLOR (MOO_TERM_PREFS_BACKGROUND));
+//     gtk_widget_modify_text (GTK_WIDGET (term), GTK_STATE_NORMAL,
+//                             GET_COLOR (MOO_TERM_PREFS_FOREGROUND));
+//     gtk_widget_modify_base (GTK_WIDGET (term), GTK_STATE_NORMAL,
+//                             GET_COLOR (MOO_TERM_PREFS_BACKGROUND));
 
     if (GET_BOOL (MOO_TERM_PREFS_CURSOR_BLINKS))
     {
