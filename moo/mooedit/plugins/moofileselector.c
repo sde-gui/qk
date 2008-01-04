@@ -1268,9 +1268,8 @@ file_selector_plugin_init (Plugin *plugin)
     g_return_val_if_fail (editor != NULL, FALSE);
 
     moo_window_class_new_action (klass, "ShowFileSelector", NULL,
-                                 "display-name", _("Show File Selector"),
-                                 "label", _("Show File Selector"),
-                                 "tooltip", _("Show file selector"),
+                                 "display-name", _("File Selector"),
+                                 "label", _("File Selector"),
                                  "stock-id", MOO_STOCK_FILE_SELECTOR,
                                  "closure-callback", show_file_selector,
                                  NULL);
@@ -1279,7 +1278,7 @@ file_selector_plugin_init (Plugin *plugin)
     {
         plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
         moo_ui_xml_add_item (xml, plugin->ui_merge_id,
-                             "Editor/Menubar/View",
+                             "Editor/Menubar/View/PanesMenu",
                              "ShowFileSelector",
                              "ShowFileSelector", -1);
     }

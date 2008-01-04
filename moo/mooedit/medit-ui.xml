@@ -91,6 +91,7 @@
       <item action="LineNumbers"/>
       <separator/>
       <item action="FocusDoc"/>
+      <item name="PanesMenu" _label="Pa_nes"/>
       <separator/>
       <placeholder name="UserMenu"/>
       <separator/>

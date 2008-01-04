@@ -2169,9 +2169,8 @@ file_list_plugin_init (FileListPlugin *plugin)
     g_return_val_if_fail (editor != NULL, FALSE);
 
     moo_window_class_new_action (klass, "ShowFileList", NULL,
-                                 "display-name", _("Show File List"),
-                                 "label", _("Show File List"),
-                                 "tooltip", _("Show File List"),
+                                 "display-name", _("File List"),
+                                 "label", _("File List"),
                                  "stock-id", GTK_STOCK_DIRECTORY,
                                  "closure-callback", show_file_list_cb,
                                  NULL);
@@ -2180,7 +2179,7 @@ file_list_plugin_init (FileListPlugin *plugin)
     {
         plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
         moo_ui_xml_add_item (xml, plugin->ui_merge_id,
-                             "Editor/Menubar/View",
+                             "Editor/Menubar/View/PanesMenu",
                              "ShowFileList", "ShowFileList", -1);
     }
 

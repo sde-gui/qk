@@ -157,10 +157,9 @@ ctags_plugin_init (CtagsPlugin *plugin)
     g_return_val_if_fail (klass != NULL, FALSE);
     g_return_val_if_fail (editor != NULL, FALSE);
 
-    moo_window_class_new_action (klass, "ShowFunctions", NULL,
-                                 "display-name", "Show Functions",
-                                 "label", "Show Functions",
-                                 "tooltip", "Show functions list",
+    moo_window_class_new_action (klass, "ShowFunctionList", NULL,
+                                 "display-name", _("Function List"),
+                                 "label", _("Function List"),
                                  "stock-id", GTK_STOCK_INDEX,
                                  "closure-callback", show_functions_pane,
                                  NULL);
@@ -169,8 +168,10 @@ ctags_plugin_init (CtagsPlugin *plugin)
     {
         plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
         moo_ui_xml_add_item (xml, plugin->ui_merge_id,
-                             "Editor/Menubar/View",
-                             "ShowFunctions", "ShowFunctions", -1);
+                             "Editor/Menubar/View/PanesMenu",
+                             "ShowFunctionList",
+                             "ShowFunctionList",
+                             -1);
     }
 
     g_type_class_unref (klass);

@@ -18,11 +18,11 @@ class Plugin(moo.edit.Plugin):
 
         self.set_win_plugin_type(WinPlugin)
         moo.utils.window_class_add_action(moo.edit.EditWindow, "ShowTerminal",
-                                          display_name=_("Show Terminal"),
-                                          label=_("Show Terminal"),
+                                          display_name=_("Terminal"),
+                                          label=_("Terminal"),
                                           stock_id=moo.utils.STOCK_TERMINAL,
                                           callback=self.show_terminal)
-        xml.add_item(self.ui_merge_id, "Editor/Menubar/View", action="ShowTerminal")
+        xml.add_item(self.ui_merge_id, "Editor/Menubar/View/PanesMenu", action="ShowTerminal")
 
         return True
 
