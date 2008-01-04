@@ -25,7 +25,6 @@
 
 typedef struct {
     MooPlugin parent;
-    guint ui_merge_id;
 } CtagsPlugin;
 
 typedef struct {
@@ -139,59 +138,15 @@ ctags_window_plugin_destroy (CtagsWindowPlugin *plugin)
 }
 
 
-static void
-show_functions_pane (MooEditWindow *window)
-{
-    GtkWidget *pane;
-    pane = moo_edit_window_get_pane (window, CTAGS_PLUGIN_ID);
-    moo_big_paned_present_pane (window->paned, pane);
-}
-
 static gboolean
-ctags_plugin_init (CtagsPlugin *plugin)
+ctags_plugin_init (G_GNUC_UNUSED CtagsPlugin *plugin)
 {
-    MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
-    MooEditor *editor = moo_editor_instance ();
-    MooUIXML *xml = moo_editor_get_ui_xml (editor);
-
-    g_return_val_if_fail (klass != NULL, FALSE);
-    g_return_val_if_fail (editor != NULL, FALSE);
-
-    moo_window_class_new_action (klass, "ShowFunctionList", NULL,
-                                 "display-name", _("Function List"),
-                                 "label", _("Function List"),
-                                 "stock-id", GTK_STOCK_INDEX,
-                                 "closure-callback", show_functions_pane,
-                                 NULL);
-
-    if (xml)
-    {
-        plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
-        moo_ui_xml_add_item (xml, plugin->ui_merge_id,
-                             "Editor/Menubar/View/PanesMenu",
-                             "ShowFunctionList",
-                             "ShowFunctionList",
-                             -1);
-    }
-
-    g_type_class_unref (klass);
     return TRUE;
 }
 
 static void
-ctags_plugin_deinit (CtagsPlugin *plugin)
+ctags_plugin_deinit (G_GNUC_UNUSED CtagsPlugin *plugin)
 {
-    MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
-    MooEditor *editor = moo_editor_instance ();
-    MooUIXML *xml = moo_editor_get_ui_xml (editor);
-
-    moo_window_class_remove_action (klass, "CtagsCtags");
-
-    if (plugin->ui_merge_id)
-        moo_ui_xml_remove_ui (xml, plugin->ui_merge_id);
-    plugin->ui_merge_id = 0;
-
-    g_type_class_unref (klass);
 }
 
 

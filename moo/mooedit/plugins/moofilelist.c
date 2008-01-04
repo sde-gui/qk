@@ -83,7 +83,6 @@ typedef struct {
 
 typedef struct {
     MooPlugin parent;
-    guint ui_merge_id;
 } FileListPlugin;
 
 typedef struct {
@@ -2195,58 +2194,15 @@ file_list_window_plugin_destroy (WindowPlugin *plugin)
                                           plugin);
 }
 
-static void
-show_file_list_cb (MooEditWindow *window)
-{
-    GtkWidget *pane;
-    pane = moo_edit_window_get_pane (window, FILE_LIST_PLUGIN_ID);
-    moo_big_paned_present_pane (window->paned, pane);
-}
-
 static gboolean
-file_list_plugin_init (FileListPlugin *plugin)
+file_list_plugin_init (G_GNUC_UNUSED FileListPlugin *plugin)
 {
-    MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
-    MooEditor *editor = moo_editor_instance ();
-    MooUIXML *xml = moo_editor_get_ui_xml (editor);
-
-    g_return_val_if_fail (klass != NULL, FALSE);
-    g_return_val_if_fail (editor != NULL, FALSE);
-
-    moo_window_class_new_action (klass, "ShowFileList", NULL,
-                                 "display-name", _("File List"),
-                                 "label", _("File List"),
-                                 "stock-id", GTK_STOCK_DIRECTORY,
-                                 "closure-callback", show_file_list_cb,
-                                 NULL);
-
-    if (xml)
-    {
-        plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
-        moo_ui_xml_add_item (xml, plugin->ui_merge_id,
-                             "Editor/Menubar/View/PanesMenu",
-                             "ShowFileList", "ShowFileList", -1);
-    }
-
-    g_type_class_unref (klass);
     return TRUE;
 }
 
-
 static void
-file_list_plugin_deinit (FileListPlugin *plugin)
+file_list_plugin_deinit (G_GNUC_UNUSED FileListPlugin *plugin)
 {
-    MooEditor *editor = moo_editor_instance ();
-    MooUIXML *xml = moo_editor_get_ui_xml (editor);
-    MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
-
-    moo_window_class_remove_action (klass, "ShowFileList");
-
-    if (plugin->ui_merge_id)
-        moo_ui_xml_remove_ui (xml, plugin->ui_merge_id);
-    plugin->ui_merge_id = 0;
-
-    g_type_class_unref (klass);
 }
 
 

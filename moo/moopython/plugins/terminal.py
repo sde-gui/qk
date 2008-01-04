@@ -14,23 +14,11 @@ class Plugin(moo.edit.Plugin):
         if xml is None:
             return False
 
-        self.ui_merge_id = xml.new_merge_id()
-
         self.set_win_plugin_type(WinPlugin)
-        moo.utils.window_class_add_action(moo.edit.EditWindow, "ShowTerminal",
-                                          display_name=_("Terminal"),
-                                          label=_("Terminal"),
-                                          stock_id=moo.utils.STOCK_TERMINAL,
-                                          callback=self.show_terminal)
-        xml.add_item(self.ui_merge_id, "Editor/Menubar/View/PanesMenu", action="ShowTerminal")
-
         return True
 
     def do_deinit(self):
-        editor = moo.edit.editor_instance()
-        xml = editor.get_ui_xml()
-        xml.remove_ui(self.ui_merge_id)
-        moo.utils.window_class_remove_action(moo.edit.EditWindow, "ShowTerminal")
+        pass
 
     def show_terminal(self, window):
         pane = window.get_pane(TERMINAL_PLUGIN_ID)

@@ -53,7 +53,6 @@
 typedef struct {
     MooPlugin parent;
     MooBookmarkMgr *bookmark_mgr;
-    guint ui_merge_id;
     GSList *instances;
 } FileSelectorPlugin;
 
@@ -1248,44 +1247,10 @@ moo_file_selector_drop_doc (MooFileSelector *filesel,
 /* Plugin
  */
 
-static void
-show_file_selector (MooEditWindow *window)
-{
-    GtkWidget *pane;
-    pane = moo_edit_window_get_pane (window, MOO_FILE_SELECTOR_PLUGIN_ID);
-    moo_big_paned_present_pane (window->paned, pane);
-}
-
-
 static gboolean
-file_selector_plugin_init (Plugin *plugin)
+file_selector_plugin_init (G_GNUC_UNUSED Plugin *plugin)
 {
-    MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
-    MooEditor *editor = moo_editor_instance ();
-    MooUIXML *xml = moo_editor_get_ui_xml (editor);
-
-    g_return_val_if_fail (klass != NULL, FALSE);
-    g_return_val_if_fail (editor != NULL, FALSE);
-
-    moo_window_class_new_action (klass, "ShowFileSelector", NULL,
-                                 "display-name", _("File Selector"),
-                                 "label", _("File Selector"),
-                                 "stock-id", MOO_STOCK_FILE_SELECTOR,
-                                 "closure-callback", show_file_selector,
-                                 NULL);
-
-    if (xml)
-    {
-        plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
-        moo_ui_xml_add_item (xml, plugin->ui_merge_id,
-                             "Editor/Menubar/View/PanesMenu",
-                             "ShowFileSelector",
-                             "ShowFileSelector", -1);
-    }
-
     moo_prefs_create_key (DIR_PREFS, MOO_PREFS_STATE, G_TYPE_STRING, NULL);
-
-    g_type_class_unref (klass);
     return TRUE;
 }
 
@@ -1293,22 +1258,9 @@ file_selector_plugin_init (Plugin *plugin)
 static void
 file_selector_plugin_deinit (Plugin *plugin)
 {
-    MooWindowClass *klass;
-    MooEditor *editor = moo_editor_instance ();
-    MooUIXML *xml = moo_editor_get_ui_xml (editor);
-
     if (plugin->bookmark_mgr)
         g_object_unref (plugin->bookmark_mgr);
     plugin->bookmark_mgr = NULL;
-
-    klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
-    moo_window_class_remove_action (klass, "ShowFileSelector");
-
-    if (plugin->ui_merge_id)
-        moo_ui_xml_remove_ui (xml, plugin->ui_merge_id);
-    plugin->ui_merge_id = 0;
-
-    g_type_class_unref (klass);
 }
 
 

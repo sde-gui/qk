@@ -3065,12 +3065,94 @@ create_paned (MooEditWindow *window)
 }
 
 
-gboolean
-moo_edit_window_add_pane (MooEditWindow  *window,
-                          const char     *user_id,
-                          GtkWidget      *widget,
-                          MooPaneLabel   *label,
-                          MooPanePosition position)
+static char *
+make_show_pane_action_id (const char *user_id)
+{
+    return g_strdup_printf ("MooEditWindow-ShowPane-%s", user_id);
+}
+
+static void
+show_pane_callback (MooEditWindow *window,
+                    const char    *user_id)
+{
+    GtkWidget *pane;
+    pane = moo_edit_window_get_pane (window, user_id);
+    moo_big_paned_present_pane (window->paned, pane);
+}
+
+static void
+add_pane_action (MooEditWindow *window,
+                 const char    *user_id,
+                 MooPaneLabel  *label)
+{
+    char *action_id;
+    MooWindowClass *klass;
+    GtkAction *action;
+    MooUIXML *xml;
+
+    action_id = make_show_pane_action_id (user_id);
+    klass = g_type_class_peek (MOO_TYPE_EDIT_WINDOW);
+
+    if (!moo_window_class_find_action (klass, action_id))
+    {
+        guint merge_id;
+
+        _moo_window_class_new_action_callback (klass, action_id, NULL,
+                                               G_CALLBACK (show_pane_callback),
+                                               _moo_marshal_VOID__STRING,
+                                               G_TYPE_NONE, 1,
+                                               G_TYPE_STRING, user_id,
+                                               "visible", FALSE,
+                                               "display-name", label->label,
+                                               "label", label->label,
+                                               /* XXX IconInfo */
+                                               "stock-id", label->icon_stock_id,
+                                               NULL);
+
+        xml = moo_editor_get_ui_xml (moo_editor_instance ());
+        merge_id = moo_ui_xml_new_merge_id (xml);
+        moo_ui_xml_add_item (xml, merge_id,
+                             "Editor/Menubar/View/PanesMenu",
+                             action_id, action_id, -1);
+    }
+
+    action = moo_window_get_action (MOO_WINDOW (window), action_id);
+    g_return_if_fail (action != NULL);
+    g_object_set (action, "visible", TRUE, NULL);
+
+    g_free (action_id);
+}
+
+static void
+remove_pane_action (MooEditWindow *window,
+                    const char    *user_id)
+{
+    char *action_id;
+    GtkAction *action;
+
+    action_id = make_show_pane_action_id (user_id);
+    action = moo_window_get_action (MOO_WINDOW (window), action_id);
+
+    if (action)
+        g_object_set (action, "visible", FALSE, NULL);
+
+#if 0
+    klass = g_type_class_peek (MOO_TYPE_EDIT_WINDOW);
+
+    if (moo_window_class_find_action (klass, action_id))
+        moo_window_class_remove_last_action (klass, action_id);
+#endif
+
+    g_free (action_id);
+}
+
+static gboolean
+moo_edit_window_add_pane_full (MooEditWindow  *window,
+                               const char     *user_id,
+                               GtkWidget      *widget,
+                               MooPaneLabel   *label,
+                               MooPanePosition position,
+                               gboolean        add_menu)
 {
     MooPane *pane;
     PaneParams *params;
@@ -3102,24 +3184,39 @@ moo_edit_window_add_pane (MooEditWindow  *window,
             moo_pane_set_params (pane, params->params);
 
         g_signal_connect (pane, "notify::params", G_CALLBACK (pane_params_changed), window);
+
+        if (add_menu)
+            add_pane_action (window, user_id, label);
     }
 
     pane_params_free (params);
     g_object_unref (widget);
-
     return pane != NULL;
+}
+
+gboolean
+moo_edit_window_add_pane (MooEditWindow  *window,
+                          const char     *user_id,
+                          GtkWidget      *widget,
+                          MooPaneLabel   *label,
+                          MooPanePosition position)
+{
+    return moo_edit_window_add_pane_full (window, user_id, widget,
+                                          label, position, TRUE);
 }
 
 
 gboolean
-moo_edit_window_remove_pane (MooEditWindow  *window,
-                             const char     *user_id)
+moo_edit_window_remove_pane (MooEditWindow *window,
+                             const char    *user_id)
 {
     MooPane *pane;
     GtkWidget *widget;
 
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
     g_return_val_if_fail (user_id != NULL, FALSE);
+
+    remove_pane_action (window, user_id);
 
     widget = g_hash_table_lookup (window->priv->panes, user_id);
 
