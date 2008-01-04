@@ -13,6 +13,7 @@
 
 #include "ctags-view.h"
 #include "ctags-doc.h"
+#include "mooedit/plugins/mooeditplugins.h"
 #include <mooutils/moomarshals.h>
 #include <mooutils/mooutils-gobject.h>
 #include <mooutils/mooutils-treeview.h>
@@ -85,13 +86,12 @@ data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
 
     if (entry)
     {
-        char *markup;
         /*if (entry->signature)
             markup = g_strdup_printf ("%s %s", entry->name, entry->signature);
         else
-            */markup = g_strdup (entry->name);
-        g_object_set (cell, "markup", markup, NULL);
-        g_free (markup);
+            markup = g_strdup (entry->name);
+        /*/
+        g_object_set (cell, "text", entry->name, NULL);
     }
     else
     {
@@ -100,6 +100,31 @@ data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
 
     g_free (label);
     _moo_ctags_entry_unref (entry);
+}
+
+static gboolean
+tree_view_search_equal_func (GtkTreeModel *model,
+                             G_GNUC_UNUSED int column,
+                             const char   *key,
+                             GtkTreeIter  *iter)
+{
+    MooCtagsEntry *entry = NULL;
+    const char *compare_with = NULL;
+    gboolean retval = TRUE;
+
+    gtk_tree_model_get (model, iter,
+                        MOO_CTAGS_VIEW_COLUMN_ENTRY, &entry,
+                        -1);
+
+    if (entry)
+        compare_with = entry->name;
+
+    if (compare_with)
+        retval = !_moo_str_semicase_compare (compare_with, key);
+
+    _moo_ctags_entry_unref (entry);
+
+    return retval;
 }
 
 static void
@@ -116,6 +141,10 @@ _moo_ctags_view_init (MooCtagsView *view)
     column = gtk_tree_view_column_new ();
     gtk_tree_view_append_column (GTK_TREE_VIEW (view), column);
     _moo_tree_view_setup_expander (GTK_TREE_VIEW (view), column);
+
+    gtk_tree_view_set_search_equal_func (GTK_TREE_VIEW (view),
+                                         (GtkTreeViewSearchEqualFunc) tree_view_search_equal_func,
+                                         NULL, NULL);
 
     cell = gtk_cell_renderer_text_new ();
     gtk_tree_view_column_pack_start (column, cell, TRUE);

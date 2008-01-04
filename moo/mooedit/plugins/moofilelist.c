@@ -1619,12 +1619,54 @@ drag_dest_row_drop_possible (G_GNUC_UNUSED GtkTreeDragDest  *drag_dest,
 }
 
 
+gboolean
+_moo_str_semicase_compare (const char *string,
+                           const char *key)
+{
+    gboolean has_upper;
+    const char *p;
+
+    g_return_val_if_fail (string != NULL, FALSE);
+    g_return_val_if_fail (key != NULL, FALSE);
+
+    for (p = key, has_upper = FALSE; *p && !has_upper; ++p)
+        has_upper = g_ascii_isupper (*p);
+
+    if (has_upper)
+        return strncmp (string, key, strlen (key)) == 0;
+    else
+        return g_ascii_strncasecmp (string, key, strlen (key)) == 0;
+}
+
+
 static gboolean
 row_separator_func (GtkTreeModel *model,
                     GtkTreeIter  *iter)
 {
     Item *item = get_item_at_iter (FILE_LIST (model), iter);
     return item == NULL;
+}
+
+static gboolean
+tree_view_search_equal_func (GtkTreeModel *model,
+                             G_GNUC_UNUSED int column,
+                             const char   *key,
+                             GtkTreeIter  *iter)
+{
+    const char *compare_with = NULL;
+    Item *item;
+
+    item = get_item_at_iter (FILE_LIST (model), iter);
+
+    if (ITEM_IS_FILE (item))
+        compare_with = FILE_ITEM (item)->display_basename;
+    else if (ITEM_IS_GROUP (item))
+        compare_with = GROUP_ITEM (item)->name;
+
+    if (compare_with)
+        return !_moo_str_semicase_compare (compare_with, key);
+    else
+        return TRUE;
 }
 
 static void
@@ -2000,6 +2042,9 @@ create_treeview (WindowPlugin *plugin)
     gtk_tree_view_set_row_separator_func (GTK_TREE_VIEW (plugin->treeview),
                                           (GtkTreeViewRowSeparatorFunc) row_separator_func,
                                           NULL, NULL);
+    gtk_tree_view_set_search_equal_func (GTK_TREE_VIEW (plugin->treeview),
+                                         (GtkTreeViewSearchEqualFunc) tree_view_search_equal_func,
+                                         NULL, NULL);
 #if GTK_CHECK_VERSION (2,12,0)
     gtk_tree_view_set_tooltip_column (GTK_TREE_VIEW (plugin->treeview),
                                       COLUMN_TOOLTIP);
