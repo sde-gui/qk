@@ -17,6 +17,7 @@
 #include "moobigpaned.h"
 #include "moomarshals.h"
 #include <errno.h>
+#include <string.h>
 
 #ifdef MOO_COMPILATION
 #include "mooutils-misc.h"
@@ -680,6 +681,7 @@ moo_big_paned_reorder_pane (MooBigPaned    *paned,
     MooPaned *child;
     MooPanePosition old_position;
     int old_index;
+    const char *id;
 
     g_return_if_fail (MOO_IS_BIG_PANED (paned));
     g_return_if_fail (GTK_IS_WIDGET (pane_widget));
@@ -720,8 +722,8 @@ moo_big_paned_reorder_pane (MooBigPaned    *paned,
         g_object_unref (pane);
     }
 
-    move_pane_config (paned, moo_pane_get_id (pane),
-                      old_position, new_position, new_index);
+    if ((id = moo_pane_get_id (pane)))
+        move_pane_config (paned, id, old_position, new_position, new_index);
 }
 
 
