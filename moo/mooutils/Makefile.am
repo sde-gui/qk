@@ -160,6 +160,7 @@ EXTRA_DIST =				\
 	$(thread_sources)		\
 	$(win32_sources)		\
 	$(objc_sources)			\
+	pixmaps/medit.png		\
 	pixmaps/medit.ico		\
 	pixmaps/hide.png		\
 	pixmaps/close.png		\

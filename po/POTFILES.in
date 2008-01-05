@@ -41,6 +41,7 @@ moo/mooedit/language-specs/moo.xml.in
 
 moo/mooedit/plugins/moofind.c
 moo/mooedit/plugins/moofind.glade
+moo/mooedit/plugins/moofilelist.c
 moo/mooedit/plugins/moofileselector.c
 moo/mooedit/plugins/moofileselector.glade
 moo/mooedit/plugins/moofileselector-prefs.c

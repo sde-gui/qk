@@ -30,6 +30,7 @@ moo/mooedit/mooeditwindow.c
 moo/mooedit/mootextfind.c
 moo/mooedit/moousertools-prefs.c
 moo/mooedit/moousertools.c
+moo/mooedit/plugins/moofilelist.c
 moo/mooedit/plugins/completion/completion-plugin.c
 moo/mooedit/plugins/completion/completion.glade
 moo/mooedit/plugins/fileselector/moofileselector-prefs.c
