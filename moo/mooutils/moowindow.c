@@ -363,8 +363,6 @@ moo_window_init (MooWindow *window)
     window->accel_group = gtk_accel_group_new ();
     gtk_window_add_accel_group (GTK_WINDOW (window),
                                 window->accel_group);
-
-    gtk_window_set_default_size (GTK_WINDOW (window), 800, 600);
 }
 
 
@@ -818,8 +816,8 @@ init_prefs (MooWindow *window)
                             get_toolbar_style_gtk (window));
 
     moo_prefs_create_key (setting (window, PREFS_MAXIMIZED), MOO_PREFS_STATE, G_TYPE_BOOLEAN, FALSE);
-    moo_prefs_create_key (setting (window, PREFS_WIDTH), MOO_PREFS_STATE, G_TYPE_INT, -1);
-    moo_prefs_create_key (setting (window, PREFS_HEIGHT), MOO_PREFS_STATE, G_TYPE_INT, -1);
+    moo_prefs_create_key (setting (window, PREFS_WIDTH), MOO_PREFS_STATE, G_TYPE_INT, 800);
+    moo_prefs_create_key (setting (window, PREFS_HEIGHT), MOO_PREFS_STATE, G_TYPE_INT, 600);
 }
 
 static GtkToolbarStyle
