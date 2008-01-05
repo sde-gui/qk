@@ -1306,7 +1306,8 @@ moo_prefs_save (const char  *file_rc,
 
     if (save_file (file_rc, MOO_PREFS_RC, error))
     {
-        _moo_markup_set_modified (prefs->xml_rc, FALSE);
+        if (prefs->xml_rc)
+            _moo_markup_set_modified (prefs->xml_rc, FALSE);
         moo_prefs_set_modified (FALSE);
     }
     else
