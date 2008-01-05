@@ -741,10 +741,11 @@ toolbar_style_toggled (MooWindow            *window,
 }
 
 
-#define N_STYLES 3
+#define N_STYLES 4
 #define ICONS_ONLY "icons-only"
 #define LABELS_ONLY "labels-only"
 #define ICONS_AND_LABELS "icons-and-labels"
+#define ICONS_AND_LABELS_HORIZ "icons-and-labels-horiz"
 
 static GtkAction*
 create_toolbar_style_action (MooWindow      *window,
@@ -758,13 +759,15 @@ create_toolbar_style_action (MooWindow      *window,
     const char *labels[N_STYLES] = {
         N_("_Icons Only"),
         N_("_Labels Only"),
-        N_("Icons _and Labels")
+        N_("Labels _Below Icons"),
+        N_("Labels Be_side Icons")
     };
 
     const char *ids[N_STYLES] = {
         ICONS_ONLY,
         LABELS_ONLY,
-        ICONS_AND_LABELS
+        ICONS_AND_LABELS,
+        ICONS_AND_LABELS_HORIZ
     };
 
     action = moo_menu_action_new (TOOLBAR_STYLE_ACTION_ID, _("Toolbar _Style"));
@@ -787,7 +790,8 @@ create_toolbar_style_action (MooWindow      *window,
 }
 
 
-static GtkToolbarStyle get_toolbar_style_gtk (MooWindow *window)
+static GtkToolbarStyle
+get_toolbar_style_gtk (MooWindow *window)
 {
     GtkSettings *settings = gtk_widget_get_settings (GTK_WIDGET (window));
     GtkToolbarStyle style = GTK_TOOLBAR_ICONS;
@@ -803,8 +807,8 @@ static GtkToolbarStyle get_toolbar_style_gtk (MooWindow *window)
     return style;
 }
 
-
-static void init_prefs (MooWindow *window)
+static void
+init_prefs (MooWindow *window)
 {
     moo_prefs_new_key_bool (setting (window, PREFS_REMEMBER_SIZE), TRUE);
     moo_prefs_new_key_bool (setting (window, PREFS_SHOW_TOOLBAR), TRUE);
@@ -818,13 +822,14 @@ static void init_prefs (MooWindow *window)
     moo_prefs_create_key (setting (window, PREFS_HEIGHT), MOO_PREFS_STATE, G_TYPE_INT, -1);
 }
 
-
-static GtkToolbarStyle get_toolbar_style (MooWindow *window)
+static GtkToolbarStyle
+get_toolbar_style (MooWindow *window)
 {
     GtkToolbarStyle s = moo_prefs_get_enum (setting (window, PREFS_TOOLBAR_STYLE));
     g_return_val_if_fail (s < N_STYLES, GTK_TOOLBAR_ICONS);
     return s;
 }
+
 #undef N_STYLES
 
 
