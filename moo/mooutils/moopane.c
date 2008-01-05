@@ -976,19 +976,25 @@ _moo_pane_set_parent (MooPane   *pane,
 {
     g_return_if_fail (MOO_IS_PANE (pane));
     g_return_if_fail (MOO_IS_PANED (parent));
-    g_return_if_fail (pane->parent == NULL);
-    g_return_if_fail (pane->child != NULL);
+    g_return_if_fail (pane->parent == NULL || pane->parent == parent);
+    g_return_if_fail (pane->child != NULL || pane->parent == parent);
 
-    pane->parent = parent;
+    if (pane->parent == parent)
+    {
+        gtk_widget_set_parent_window (pane->frame, pane_window);
+    }
+    else
+    {
+        pane->parent = parent;
+        create_widgets (pane, _moo_paned_get_position (parent), pane_window);
 
-    create_widgets (pane, _moo_paned_get_position (parent), pane_window);
-
-    g_signal_connect_swapped (parent, "notify::enable-detaching",
-                              G_CALLBACK (paned_enable_detaching_notify),
-                              pane);
-    g_signal_connect_swapped (parent, "notify::sticky-pane",
-                              G_CALLBACK (paned_sticky_pane_notify),
-                              pane);
+        g_signal_connect_swapped (parent, "notify::enable-detaching",
+                                  G_CALLBACK (paned_enable_detaching_notify),
+                                  pane);
+        g_signal_connect_swapped (parent, "notify::sticky-pane",
+                                  G_CALLBACK (paned_sticky_pane_notify),
+                                  pane);
+    }
 }
 
 

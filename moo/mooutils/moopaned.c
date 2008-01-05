@@ -193,6 +193,7 @@ G_DEFINE_TYPE (MooPaned, moo_paned, GTK_TYPE_BIN)
 
 enum {
     PANED_PROP_0,
+    PANED_PROP_ACTIVE_PANE,
     PANED_PROP_PANE_POSITION,
     PANED_PROP_CLOSE_PANE_ON_CHILD_FOCUS,
     PANED_PROP_STICKY_PANE,
@@ -252,82 +253,47 @@ moo_paned_class_init (MooPanedClass *klass)
 
     klass->set_pane_size = moo_paned_set_pane_size_real;
 
-    g_object_class_install_property (gobject_class,
-                                     PANED_PROP_PANE_POSITION,
-                                     g_param_spec_enum ("pane-position",
-                                             "pane-position",
-                                             "pane-position",
-                                             MOO_TYPE_PANE_POSITION,
-                                             MOO_PANE_POS_LEFT,
-                                             G_PARAM_READWRITE |
-                                                     G_PARAM_CONSTRUCT_ONLY));
+    g_object_class_install_property (gobject_class, PANED_PROP_ACTIVE_PANE,
+        g_param_spec_object ("active-pane", "active-pane", "active-pane",
+                             MOO_TYPE_PANE, G_PARAM_READWRITE));
 
-    g_object_class_install_property (gobject_class,
-                                     PANED_PROP_CLOSE_PANE_ON_CHILD_FOCUS,
-                                     g_param_spec_boolean ("close-pane-on-child-focus",
-                                             "close-pane-on-child-focus",
-                                             "close-pane-on-child-focus",
-                                             TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+    g_object_class_install_property (gobject_class, PANED_PROP_PANE_POSITION,
+        g_param_spec_enum ("pane-position", "pane-position", "pane-position",
+                           MOO_TYPE_PANE_POSITION, MOO_PANE_POS_LEFT,
+                           G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
-    g_object_class_install_property (gobject_class,
-                                     PANED_PROP_STICKY_PANE,
-                                     g_param_spec_boolean ("sticky-pane",
-                                             "sticky-pane",
-                                             "sticky-pane",
-                                             FALSE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+    g_object_class_install_property (gobject_class, PANED_PROP_CLOSE_PANE_ON_CHILD_FOCUS,
+        g_param_spec_boolean ("close-pane-on-child-focus", "close-pane-on-child-focus",
+                              "close-pane-on-child-focus",
+                              TRUE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
-    g_object_class_install_property (gobject_class,
-                                     PANED_PROP_ENABLE_HANDLE_DRAG,
-                                     g_param_spec_boolean ("enable-handle-drag",
-                                             "enable-handle-drag",
-                                             "enable-handle-drag",
-                                             FALSE,
-                                             G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PANED_PROP_STICKY_PANE,
+        g_param_spec_boolean ("sticky-pane", "sticky-pane", "sticky-pane",
+                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
-    g_object_class_install_property (gobject_class,
-                                     PANED_PROP_ENABLE_DETACHING,
-                                     g_param_spec_boolean ("enable-detaching",
-                                             "enable-detaching",
-                                             "enable-detaching",
-                                             FALSE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+    g_object_class_install_property (gobject_class, PANED_PROP_ENABLE_HANDLE_DRAG,
+        g_param_spec_boolean ("enable-handle-drag", "enable-handle-drag", "enable-handle-drag",
+                              FALSE, G_PARAM_READWRITE));
 
-    g_object_class_install_property (gobject_class,
-                                     PANED_PROP_HANDLE_CURSOR_TYPE,
-                                     g_param_spec_enum ("handle-cursor-type",
-                                             "handle-cursor-type",
-                                             "handle-cursor-type",
-                                             GDK_TYPE_CURSOR_TYPE,
-                                             GDK_HAND2,
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PANED_PROP_ENABLE_DETACHING,
+        g_param_spec_boolean ("enable-detaching", "enable-detaching", "enable-detaching",
+                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
-    g_object_class_install_property (gobject_class,
-                                     PANED_PROP_ENABLE_BORDER,
-                                     g_param_spec_boolean ("enable-border",
-                                             "enable-border",
-                                             "enable-border",
-                                             TRUE,
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PANED_PROP_HANDLE_CURSOR_TYPE,
+        g_param_spec_enum ("handle-cursor-type", "handle-cursor-type", "handle-cursor-type",
+                           GDK_TYPE_CURSOR_TYPE, GDK_HAND2, G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class, PANED_PROP_ENABLE_BORDER,
+        g_param_spec_boolean ("enable-border", "enable-border", "enable-border",
+                              TRUE, G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
 
     gtk_widget_class_install_style_property (widget_class,
-                                             g_param_spec_int ("handle-size",
-                                                     "handle-size",
-                                                     "handle-size",
-                                                     0,
-                                                     G_MAXINT,
-                                                     5,
-                                                     G_PARAM_READABLE));
+        g_param_spec_int ("handle-size", "handle-size", "handle-size",
+                          0, G_MAXINT, 5, G_PARAM_READABLE));
 
     gtk_widget_class_install_style_property (widget_class,
-                                             g_param_spec_int ("button-spacing",
-                                                     "button-spacing",
-                                                     "button-spacing",
-                                                     0,
-                                                     G_MAXINT,
-                                                     0,
-                                                     G_PARAM_READABLE));
+        g_param_spec_int ("button-spacing", "button-spacing", "button-spacing",
+                          0, G_MAXINT, 0, G_PARAM_READABLE));
 
     paned_signals[PANED_SET_PANE_SIZE] =
             g_signal_new ("set-pane-size",
@@ -471,6 +437,10 @@ moo_paned_set_property (GObject        *object,
 
     switch (prop_id)
     {
+        case PANED_PROP_ACTIVE_PANE:
+            moo_paned_open_pane (paned, g_value_get_object (value));
+            break;
+
         case PANED_PROP_PANE_POSITION:
             paned->priv->pane_position = g_value_get_enum (value);
             break;
@@ -528,6 +498,10 @@ moo_paned_get_property (GObject        *object,
 
     switch (prop_id)
     {
+        case PANED_PROP_ACTIVE_PANE:
+            g_value_set_object (value, paned->priv->current_pane);
+            break;
+
         case PANED_PROP_PANE_POSITION:
             g_value_set_enum (value, paned->priv->pane_position);
             break;
@@ -622,7 +596,7 @@ moo_paned_style_set (GtkWidget *widget,
 }
 
 static void
-moo_paned_realize (GtkWidget       *widget)
+moo_paned_realize (GtkWidget *widget)
 {
     static GdkWindowAttr attributes;
     gint attributes_mask;
@@ -817,6 +791,10 @@ realize_pane (MooPaned *paned)
                               GTK_STATE_NORMAL);
 
     realize_handle (paned);
+
+    if (paned->priv->current_pane)
+        _moo_pane_set_parent (paned->priv->current_pane, paned,
+                              paned->priv->pane_window);
 }
 
 
@@ -2237,7 +2215,7 @@ _moo_paned_insert_pane (MooPaned *paned,
     g_return_if_fail (MOO_IS_PANE (pane));
     g_return_if_fail (_moo_pane_get_parent (pane) == NULL);
 
-    g_object_ref (pane);
+    MOO_OBJECT_REF_SINK (pane);
     _moo_pane_set_parent (pane, paned, paned->priv->pane_window);
 
     if (position < 0 || position > (int) moo_paned_n_panes (paned))
@@ -2306,7 +2284,6 @@ moo_paned_insert_pane (MooPaned       *paned,
 
     pane = _moo_pane_new (pane_widget, pane_label);
     _moo_paned_insert_pane (paned, pane, position);
-    MOO_OBJECT_REF_SINK (pane);
 
     return pane;
 }
@@ -2882,6 +2859,7 @@ moo_paned_open_pane_real (MooPaned *paned,
         }
     }
 
+    g_object_notify (G_OBJECT (paned), "active-pane");
     gtk_widget_queue_resize (GTK_WIDGET (paned));
 }
 
@@ -2935,6 +2913,7 @@ moo_paned_hide_pane_real (MooPaned *paned)
     }
 
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), FALSE);
+    g_object_notify (G_OBJECT (paned), "active-pane");
 }
 
 

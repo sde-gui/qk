@@ -31,6 +31,8 @@
 typedef struct {
     GSList *order; /* ids */
     int size;
+    int sticky;
+    char *active;
 } MooPanedConfig;
 
 typedef struct {
@@ -76,6 +78,12 @@ static gboolean moo_big_paned_expose        (GtkWidget      *widget,
 
 static void     child_set_pane_size         (GtkWidget      *child,
                                              int             size,
+                                             MooBigPaned    *paned);
+static void     sticky_pane_notify          (GtkWidget      *child,
+                                             GParamSpec     *pspec,
+                                             MooBigPaned    *paned);
+static void     active_pane_notify          (GtkWidget      *child,
+                                             GParamSpec     *pspec,
                                              MooBigPaned    *paned);
 
 static gboolean check_children_order        (MooBigPaned    *paned);
@@ -204,6 +212,12 @@ moo_big_paned_init (MooBigPaned *paned)
         g_signal_connect_after (child, "set-pane-size",
                                 G_CALLBACK (child_set_pane_size),
                                 paned);
+        g_signal_connect (child, "notify::sticky-pane",
+                          G_CALLBACK (sticky_pane_notify),
+                          paned);
+        g_signal_connect (child, "notify::active-pane",
+                          G_CALLBACK (active_pane_notify),
+                          paned);
         g_signal_connect (child, "handle-drag-start",
                           G_CALLBACK (handle_drag_start),
                           paned);
@@ -358,6 +372,55 @@ child_set_pane_size (GtkWidget   *child,
 
     paned->priv->config->paned[pos].size = size;
     config_changed (paned);
+}
+
+static void
+sticky_pane_notify (GtkWidget   *child,
+                    G_GNUC_UNUSED GParamSpec *pspec,
+                    MooBigPaned *paned)
+{
+    MooPanePosition pos;
+    gboolean sticky;
+
+    g_object_get (child, "pane-position", &pos,
+                  "sticky-pane", &sticky, NULL);
+    g_return_if_fail (paned->paned[pos] == child);
+
+    if (paned->priv->config->paned[pos].sticky != sticky)
+    {
+        paned->priv->config->paned[pos].sticky = sticky;
+        config_changed (paned);
+    }
+}
+
+static void
+active_pane_notify (GtkWidget   *child,
+                    G_GNUC_UNUSED GParamSpec *pspec,
+                    MooBigPaned *paned)
+{
+    MooPanePosition pos;
+    MooPane *pane = NULL;
+    const char *id = NULL;
+    MooPanedConfig *pc;
+
+    g_object_get (child, "pane-position", &pos,
+                  "active-pane", &pane, NULL);
+    g_return_if_fail (paned->paned[pos] == child);
+
+    if (pane)
+        id = moo_pane_get_id (pane);
+
+    pc = &paned->priv->config->paned[pos];
+    if ((id && !pc->active) || (!id && pc->active) ||
+        (id && pc->active && strcmp (id, pc->active) != 0))
+    {
+        g_free (pc->active);
+        pc->active = g_strdup (id);
+        config_changed (paned);
+    }
+
+    if (pane)
+        g_object_unref (pane);
 }
 
 static void
@@ -536,7 +599,9 @@ moo_big_paned_set_config (MooBigPaned *paned,
         if (config->paned[pos].size > 0)
             moo_paned_set_pane_size (MOO_PANED (paned->paned[pos]),
                                      config->paned[pos].size);
-        /* XXX open, sticky */
+        if (config->paned[pos].sticky >= 0)
+            moo_paned_set_sticky_pane (MOO_PANED (paned->paned[pos]),
+                                       config->paned[pos].sticky);
     }
 }
 
@@ -595,6 +660,10 @@ moo_big_paned_insert_pane (MooBigPaned        *paned,
                           paned);
         if (!params)
             add_pane_config (paned, id, pane, position, index);
+
+        if (paned->priv->config->paned[position].active &&
+            !strcmp (paned->priv->config->paned[position].active, id))
+                moo_pane_open (pane);
     }
 
     return pane;
@@ -647,7 +716,6 @@ moo_big_paned_reorder_pane (MooBigPaned    *paned,
         moo_paned_remove_pane (child, pane_widget);
         _moo_paned_insert_pane (MOO_PANED (paned->paned[new_position]), pane, new_index);
         moo_pane_open (pane);
-        _moo_pane_params_changed (pane);
 
         g_object_unref (pane);
     }
@@ -1528,6 +1596,8 @@ config_new (void)
     {
         config->paned[pos].order = NULL;
         config->paned[pos].size = -1;
+        config->paned[pos].sticky = -1;
+        config->paned[pos].active = NULL;
     }
 
     config->panes = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
@@ -1547,6 +1617,7 @@ config_free (MooBigPanedConfig *config)
         {
             g_slist_foreach (config->paned[pos].order, (GFunc) g_free, NULL);
             g_slist_free (config->paned[pos].order);
+            g_free (config->paned[pos].active);
         }
 
         g_hash_table_destroy (config->panes);
@@ -1591,7 +1662,7 @@ parse_paned_config (const char     *string,
     char **tokens, **p;
 
     tokens = g_strsplit (string, ",", 0);
-    if (g_strv_length (tokens) < 1)
+    if (g_strv_length (tokens) < 3)
     {
         g_critical ("%s: invalid paned config string '%s'",
                     G_STRFUNC, string);
@@ -1605,12 +1676,24 @@ parse_paned_config (const char     *string,
         goto error;
     }
 
-    for (p = tokens + 1; *p; ++p)
-        config->order = g_slist_prepend (config->order, *p);
+    if (!parse_int (tokens[1], &config->sticky) ||
+        config->sticky < -1 || config->sticky > 1)
+    {
+        g_critical ("%s: invalid boolean '%s' in paned config string '%s'",
+                    G_STRFUNC, tokens[1], string);
+        goto error;
+    }
+
+    if (tokens[2][0])
+        config->active = g_strdup (tokens[2]);
+    else
+        config->active = NULL;
+
+    for (p = tokens + 3; *p; ++p)
+        config->order = g_slist_prepend (config->order, g_strdup (*p));
     config->order = g_slist_reverse (config->order);
 
-    g_free (tokens[0]);
-    g_free (tokens);
+    g_strfreev (tokens);
     return TRUE;
 
 error:
@@ -1624,7 +1707,8 @@ paned_config_serialize (MooPanedConfig *config,
 {
     GSList *l;
 
-    g_string_append_printf (string, "%d", config->size);
+    g_string_append_printf (string, "%d,%d,%s", config->size, config->sticky,
+                            config->active ? config->active : "");
 
     for (l = config->order; l != NULL; l = l->next)
     {
