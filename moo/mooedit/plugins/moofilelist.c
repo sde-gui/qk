@@ -178,12 +178,8 @@ file_list_finalize (GObject *object)
 {
     FileList *list = FILE_LIST (object);
 
-    if (list->docs)
-    {
-        g_critical ("%s: oops", G_STRLOC);
-        g_slist_foreach (list->docs, (GFunc) g_object_unref, NULL);
-        g_slist_free (list->docs);
-    }
+    g_slist_foreach (list->docs, (GFunc) g_object_unref, NULL);
+    g_slist_free (list->docs);
 
     G_OBJECT_CLASS (file_list_parent_class)->finalize (object);
 }
