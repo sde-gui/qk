@@ -3008,11 +3008,9 @@ save_paned_config (MooEditWindow *window)
     g_return_val_if_fail (config != NULL, FALSE);
 
     old_config = moo_prefs_get_string (MOO_EDIT_PREFS_PREFIX "/window/paned");
+
     if (!old_config || strcmp (old_config, config) != 0)
-    {
-        g_print ("old: %s\nnew: %s\n", old_config, config);
         moo_prefs_set_string (MOO_EDIT_PREFS_PREFIX "/window/paned", config);
-    }
 
     g_free (config);
     return FALSE;

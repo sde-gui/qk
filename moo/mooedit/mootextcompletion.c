@@ -491,7 +491,7 @@ find_common_prefix (MooTextCompletion *cmpl,
     GtkTreeIter iter;
     guint text_len;
     char *prefix = NULL;
-    guint prefix_len;
+    guint prefix_len = 0;
 
     g_return_val_if_fail (text != NULL, NULL);
 

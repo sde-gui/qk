@@ -18,6 +18,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-treeview.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/moocompat.h"
 #include <gtk/gtk.h>
 
 #define FILE_LIST_PLUGIN_ID "MooFileList"
@@ -591,11 +592,11 @@ file_list_insert_row (FileList    *list,
         first_user_item = list->n_user_items == 1;
     }
 
-    gtk_tree_store_insert_with_values (GTK_TREE_STORE (list),
-                                       iter, parent_iter, index,
-                                       COLUMN_ITEM, item,
-                                       COLUMN_TOOLTIP, item_get_tooltip (item),
-                                       -1);
+    gtk_tree_store_insert (GTK_TREE_STORE (list), iter, parent_iter, index);
+    gtk_tree_store_set (GTK_TREE_STORE (list), iter,
+                        COLUMN_ITEM, item,
+                        COLUMN_TOOLTIP, item_get_tooltip (item),
+                        -1);
 
     if (first_user_item)
     {

@@ -18,6 +18,7 @@
 #include "moomarshals.h"
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
 
 #ifdef MOO_COMPILATION
 #include "mooutils-misc.h"
@@ -1631,11 +1632,11 @@ static gboolean
 parse_int (const char *string,
            int        *valuep)
 {
-    gint64 value;
+    long value;
     char *endptr;
 
     errno = 0;
-    value = g_ascii_strtoll (string, &endptr, 10);
+    value = strtol (string, &endptr, 10);
 
     if (errno || endptr == string || *endptr != 0 ||
         value < G_MININT || value > G_MAXINT)

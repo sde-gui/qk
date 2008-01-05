@@ -682,6 +682,17 @@ g_listenv (void)
 #endif /* !GLIB_CHECK_VERSION(2,8,0) */
 
 
+#if !GLIB_CHECK_VERSION(2,10,0)
+
+GdkAtom
+gdk_atom_intern_static_string (const char *atom_name)
+{
+    return gdk_atom_intern (atom_name, FALSE);
+}
+
+#endif /* !GLIB_CHECK_VERSION(2,10,0) */
+
+
 #if !GTK_CHECK_VERSION(2,10,0)
 
 GType

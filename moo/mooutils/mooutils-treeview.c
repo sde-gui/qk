@@ -1045,13 +1045,13 @@ moo_expander_cell_set_expanded (MooExpanderCell *cell,
 }
 
 static void
-expander_cell_data_func (GtkTreeViewColumn *column,
+expander_cell_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
                          GtkCellRenderer   *cell,
                          GtkTreeModel      *model,
-                         GtkTreeIter       *iter)
+                         GtkTreeIter       *iter,
+                         GtkTreeView       *tree_view)
 {
     gboolean has_children;
-    GtkWidget *tree_view;
     gboolean expanded;
     GtkTreePath *path;
 
@@ -1061,9 +1061,8 @@ expander_cell_data_func (GtkTreeViewColumn *column,
     if (!has_children)
         return;
 
-    tree_view = gtk_tree_view_column_get_tree_view (column);
     path = gtk_tree_model_get_path (model, iter);
-    expanded = gtk_tree_view_row_expanded (GTK_TREE_VIEW (tree_view), path);
+    expanded = gtk_tree_view_row_expanded (tree_view, path);
     moo_expander_cell_set_expanded (MOO_EXPANDER_CELL (cell), expanded);
     gtk_tree_path_free (path);
 }
@@ -1163,6 +1162,9 @@ _moo_tree_view_setup_expander (GtkTreeView       *tree_view,
     g_return_if_fail (GTK_IS_TREE_VIEW (tree_view));
     g_return_if_fail (GTK_IS_TREE_VIEW_COLUMN (column));
 
+    if (gtk_check_version (2, 12, 0) != NULL)
+        return;
+
     g_object_set (tree_view,
                   "show-expanders", FALSE,
                   "level-indentation", LEVEL_INDENTATION,
@@ -1172,7 +1174,7 @@ _moo_tree_view_setup_expander (GtkTreeView       *tree_view,
     gtk_tree_view_column_pack_start (column, cell, FALSE);
     gtk_tree_view_column_set_cell_data_func (column, cell,
                                              (GtkTreeCellDataFunc) expander_cell_data_func,
-                                             NULL, NULL);
+                                             tree_view, NULL);
 
     data = _moo_new0 (ExpanderData);
     data->column = g_object_ref (column);

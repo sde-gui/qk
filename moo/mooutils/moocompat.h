@@ -46,11 +46,17 @@ gboolean    g_file_set_contents             (const char *filename,
 
 
 #if !GLIB_CHECK_VERSION(2,10,0)
+
 G_END_DECLS
 #include "mooutils/mooutils-misc.h"
-#define g_intern_string _moo_intern_string
 G_BEGIN_DECLS
-#endif /* !GLIB_CHECK_VERSION(2,8,0) */
+
+#define g_intern_string _moo_intern_string
+#define gdk_atom_intern_static_string _moo_gdk_atom_intern_static_string
+
+GdkAtom     gdk_atom_intern_static_string   (const char *atom_name);
+
+#endif /* !GLIB_CHECK_VERSION(2,10,0) */
 
 
 #if !GTK_CHECK_VERSION(2,10,0)
