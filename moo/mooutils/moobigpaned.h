@@ -41,10 +41,6 @@ struct MooBigPaned
 struct MooBigPanedClass
 {
     GtkFrameClass base_class;
-
-    void (*set_pane_size) (MooBigPaned    *paned,
-                           MooPanePosition position,
-                           int             size);
 };
 
 
@@ -54,6 +50,9 @@ GtkWidget      *moo_big_paned_new               (void);
 
 void            moo_big_paned_set_pane_order    (MooBigPaned    *paned,
                                                  int            *order);
+void            moo_big_paned_set_config        (MooBigPaned    *paned,
+                                                 const char     *config_string);
+char           *moo_big_paned_get_config        (MooBigPaned    *paned);
 
 MooPane        *moo_big_paned_find_pane         (MooBigPaned    *paned,
                                                  GtkWidget      *pane_widget,
@@ -66,15 +65,22 @@ GtkWidget      *moo_big_paned_get_child         (MooBigPaned    *paned);
 
 MooPane        *moo_big_paned_insert_pane       (MooBigPaned    *paned,
                                                  GtkWidget      *pane_widget,
+                                                 const char     *pane_id,
                                                  MooPaneLabel   *pane_label,
                                                  MooPanePosition position,
                                                  int             index_);
 gboolean        moo_big_paned_remove_pane       (MooBigPaned    *paned,
                                                  GtkWidget      *pane_widget);
+MooPane        *moo_big_paned_lookup_pane       (MooBigPaned    *paned,
+                                                 const char     *pane_id);
 
 GtkWidget      *moo_big_paned_get_pane          (MooBigPaned    *paned,
                                                  MooPanePosition position,
                                                  int             index_);
+void            moo_big_paned_reorder_pane      (MooBigPaned    *paned,
+                                                 GtkWidget      *pane_widget,
+                                                 MooPanePosition new_position,
+                                                 int             new_index);
 
 MooPaned       *moo_big_paned_get_paned         (MooBigPaned    *paned,
                                                  MooPanePosition position);

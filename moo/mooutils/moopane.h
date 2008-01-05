@@ -53,6 +53,8 @@ GType           moo_pane_get_type           (void) G_GNUC_CONST;
 GType           moo_pane_label_get_type     (void) G_GNUC_CONST;
 GType           moo_pane_params_get_type    (void) G_GNUC_CONST;
 
+const char     *moo_pane_get_id             (MooPane        *pane);
+
 void            moo_pane_set_label          (MooPane        *pane,
                                              MooPaneLabel   *label);
 /* result must be freed with moo_pane_label_free() */
@@ -95,6 +97,8 @@ void            moo_pane_label_free         (MooPaneLabel   *label);
 
 MooPane        *_moo_pane_new               (GtkWidget      *child,
                                              MooPaneLabel   *label);
+void            _moo_pane_set_id            (MooPane        *pane,
+                                             const char     *id);
 
 gpointer        _moo_pane_get_parent        (MooPane        *pane);
 GtkWidget      *_moo_pane_get_frame         (MooPane        *pane);

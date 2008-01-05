@@ -92,6 +92,7 @@ _moo_window_set_icon_from_stock (GtkWindow  *window,
 struct _MooPane {
     GtkObject base;
 
+    char         *id;
     MooPaned     *parent;
     GtkWidget    *child;
 
@@ -134,6 +135,7 @@ G_DEFINE_TYPE (MooPane, moo_pane, GTK_TYPE_OBJECT)
 
 enum {
     PROP_0,
+    PROP_ID,
     PROP_LABEL,
     PROP_PARAMS,
     PROP_DETACHABLE,
@@ -345,6 +347,9 @@ moo_pane_get_property (GObject    *object,
 
     switch (prop_id)
     {
+        case PROP_ID:
+            g_value_set_string (value, pane->id);
+            break;
         case PROP_LABEL:
             g_value_set_boxed (value, pane->label);
             break;
@@ -370,6 +375,7 @@ moo_pane_init (MooPane *pane)
     pane->removable = TRUE;
     pane->params = moo_pane_params_new (NULL, FALSE, FALSE, FALSE);
 
+    pane->id = NULL;
     pane->label = NULL;
     pane->child = NULL;
 
@@ -394,6 +400,7 @@ moo_pane_finalize (GObject *object)
 {
     MooPane *pane = MOO_PANE (object);
 
+    g_free (pane->id);
     moo_pane_label_free (pane->label);
     moo_pane_params_free (pane->params);
 
@@ -401,7 +408,7 @@ moo_pane_finalize (GObject *object)
 }
 
 static void
-moo_pane_destroy (GtkObject *object)
+moo_pane_dispose (GObject *object)
 {
     MooPane *pane = MOO_PANE (object);
 
@@ -431,51 +438,38 @@ moo_pane_destroy (GtkObject *object)
         pane->open_timeout = 0;
     }
 
-    GTK_OBJECT_CLASS (moo_pane_parent_class)->destroy (object);
+    G_OBJECT_CLASS (moo_pane_parent_class)->dispose (object);
 }
 
 static void
 moo_pane_class_init (MooPaneClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-    GtkObjectClass *gtkobject_class = GTK_OBJECT_CLASS (klass);
 
     gobject_class->set_property = moo_pane_set_property;
     gobject_class->get_property = moo_pane_get_property;
     gobject_class->finalize = moo_pane_finalize;
-    gtkobject_class->destroy = moo_pane_destroy;
+    gobject_class->dispose = moo_pane_dispose;
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_LABEL,
-                                     g_param_spec_boxed ("label",
-                                                         "label",
-                                                         "label",
-                                                         MOO_TYPE_PANE_LABEL,
-                                                         G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_ID,
+        g_param_spec_string ("id", "id", "id",
+                             NULL, G_PARAM_READABLE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_PARAMS,
-                                     g_param_spec_boxed ("params",
-                                                         "params",
-                                                         "params",
-                                                         MOO_TYPE_PANE_PARAMS,
-                                                         G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_LABEL,
+        g_param_spec_boxed ("label", "label", "label",
+                            MOO_TYPE_PANE_LABEL, G_PARAM_READWRITE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_DETACHABLE,
-                                     g_param_spec_boolean ("detachable",
-                                                           "detachable",
-                                                           "detachable",
-                                                           TRUE,
-                                                           G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_PARAMS,
+        g_param_spec_boxed ("params", "params", "params",
+                            MOO_TYPE_PANE_PARAMS, G_PARAM_READWRITE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_REMOVABLE,
-                                     g_param_spec_boolean ("removable",
-                                                           "removable",
-                                                           "removable",
-                                                           TRUE,
-                                                           G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_DETACHABLE,
+        g_param_spec_boolean ("detachable", "detachable", "detachable",
+                              TRUE, G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class, PROP_REMOVABLE,
+        g_param_spec_boolean ("removable", "removable", "removable",
+                              TRUE, G_PARAM_READWRITE));
 
     signals[REMOVE] =
             g_signal_new ("remove",
@@ -953,6 +947,26 @@ _moo_pane_new (GtkWidget    *child,
         moo_pane_set_label (pane, label);
 
     return pane;
+}
+
+const char *
+moo_pane_get_id (MooPane *pane)
+{
+    g_return_val_if_fail (MOO_IS_PANE (pane), NULL);
+    return pane->id;
+}
+
+void
+_moo_pane_set_id (MooPane    *pane,
+                  const char *id)
+{
+    char *tmp;
+
+    g_return_if_fail (MOO_IS_PANE (pane));
+
+    tmp = pane->id;
+    pane->id = g_strdup (id);
+    g_free (tmp);
 }
 
 void

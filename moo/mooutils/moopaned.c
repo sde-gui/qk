@@ -3364,14 +3364,7 @@ moo_pane_params_new (GdkRectangle *window_position,
 MooPaneParams*
 moo_pane_params_copy (MooPaneParams *params)
 {
-    MooPaneParams *copy;
-
-    g_return_val_if_fail (params != NULL, NULL);
-
-    copy = g_new (MooPaneParams, 1);
-    memcpy (copy, params, sizeof (MooPaneParams));
-
-    return copy;
+    return g_memdup (params, sizeof *params);
 }
 
 

@@ -71,11 +71,6 @@ typedef struct {
 static GHashTable *action_checks; /* char* -> ActionCheck* */
 static GSList *windows;
 
-typedef struct {
-    MooPaneParams *params;
-    int position;
-} PaneParams;
-
 struct _MooEditWindowPrivate {
     MooEditor *editor;
 
@@ -88,8 +83,6 @@ struct _MooEditWindowPrivate {
     GtkWidget *info;
 
     MooNotebook *notebook;
-    GHashTable *panes;
-    GHashTable *panes_to_save; /* char* -> PaneParams* */
     guint save_params_idle;
 
     char *title_format;
@@ -189,16 +182,6 @@ static int      get_page_num                    (MooEditWindow      *window,
 static GtkAction *create_lang_action            (MooEditWindow      *window);
 
 static void     create_paned                    (MooEditWindow      *window);
-static PaneParams *load_pane_params             (const char         *pane_id);
-static gboolean save_pane_params                (const char         *pane_id,
-                                                 PaneParams         *params);
-static void     pane_params_changed             (MooPane            *pane,
-                                                 GParamSpec         *pspec,
-                                                 MooEditWindow      *window);
-static void     pane_size_changed               (MooEditWindow      *window,
-                                                 MooPanePosition     position);
-static PaneParams *pane_params_new              (void);
-static void     pane_params_free                (PaneParams         *params);
 
 static void     moo_edit_window_update_doc_list (MooEditWindow      *window);
 
@@ -859,9 +842,7 @@ moo_edit_window_init (MooEditWindow *window)
     window->priv = G_TYPE_INSTANCE_GET_PRIVATE (window, MOO_TYPE_EDIT_WINDOW, MooEditWindowPrivate);
     window->priv->history = NULL;
     window->priv->history_blocked = FALSE;
-    window->priv->panes = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
-    window->priv->panes_to_save = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
-                                                        (GDestroyNotify) pane_params_free);
+
     g_object_set (G_OBJECT (window),
                   "menubar-ui-name", "Editor/Menubar",
                   "toolbar-ui-name", "Editor/Toolbar",
@@ -937,11 +918,6 @@ static void
 moo_edit_window_finalize (GObject *object)
 {
     MooEditWindow *window = MOO_EDIT_WINDOW (object);
-    /* XXX */
-    g_hash_table_destroy (window->priv->panes);
-
-    if (window->priv->panes_to_save)
-        g_hash_table_destroy (window->priv->panes_to_save);
 
     if (window->priv->save_params_idle)
     {
@@ -3020,19 +2996,41 @@ update_tab_label (MooEditWindow *window,
 /* Panes
  */
 
-static const char *PANE_POSITIONS[4] = {
-    "left",
-    "right",
-    "top",
-    "bottom"
-};
+static gboolean
+save_paned_config (MooEditWindow *window)
+{
+    char *config;
+    const char *old_config;
 
+    window->priv->save_params_idle = 0;
+
+    config = moo_big_paned_get_config (window->paned);
+    g_return_val_if_fail (config != NULL, FALSE);
+
+    old_config = moo_prefs_get_string (MOO_EDIT_PREFS_PREFIX "/window/paned");
+    if (!old_config || strcmp (old_config, config) != 0)
+    {
+        g_print ("old: %s\nnew: %s\n", old_config, config);
+        moo_prefs_set_string (MOO_EDIT_PREFS_PREFIX "/window/paned", config);
+    }
+
+    g_free (config);
+    return FALSE;
+}
+
+static void
+paned_config_changed (MooEditWindow *window)
+{
+    if (!window->priv->save_params_idle)
+        window->priv->save_params_idle =
+            moo_idle_add ((GSourceFunc) save_paned_config, window);
+}
 
 static void
 create_paned (MooEditWindow *window)
 {
     MooBigPaned *paned;
-    guint i;
+    const char *config;
 
     paned = g_object_new (MOO_TYPE_BIG_PANED,
                           "handle-cursor-type", GDK_FLEUR,
@@ -3044,23 +3042,15 @@ create_paned (MooEditWindow *window)
 
     window->paned = paned;
 
-    for (i = 0; i < 4; ++i)
-    {
-        int size;
-        char *key = g_strdup_printf (MOO_EDIT_PREFS_PREFIX "/window/panes/%s",
-                                     PANE_POSITIONS[i]);
+    moo_prefs_create_key (MOO_EDIT_PREFS_PREFIX "/window/paned",
+                          MOO_PREFS_STATE, G_TYPE_STRING, NULL);
+    config = moo_prefs_get_string (MOO_EDIT_PREFS_PREFIX "/window/paned");
 
-        moo_prefs_create_key (key, MOO_PREFS_STATE, G_TYPE_INT, -1);
-        size = moo_prefs_get_int (key);
+    if (config)
+        moo_big_paned_set_config (paned, config);
 
-        if (size > 0)
-            moo_paned_set_pane_size (MOO_PANED (paned->paned[i]), size);
-
-        g_free (key);
-    }
-
-    g_signal_connect_swapped (paned, "set-pane-size",
-                              G_CALLBACK (pane_size_changed),
+    g_signal_connect_swapped (paned, "config-changed",
+                              G_CALLBACK (paned_config_changed),
                               window);
 }
 
@@ -3155,7 +3145,6 @@ moo_edit_window_add_pane_full (MooEditWindow  *window,
                                gboolean        add_menu)
 {
     MooPane *pane;
-    PaneParams *params;
 
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
     g_return_val_if_fail (user_id != NULL, FALSE);
@@ -3166,30 +3155,16 @@ moo_edit_window_add_pane_full (MooEditWindow  *window,
 
     MOO_OBJECT_REF_SINK (widget);
 
-    params = load_pane_params (user_id);
-    position = (params && params->position >= 0) ?
-            (MooPanePosition) params->position : position;
-
-    pane = moo_big_paned_insert_pane (window->paned, widget, label, position, -1);
+    pane = moo_big_paned_insert_pane (window->paned, widget, user_id, label, position, -1);
 
     if (pane != NULL)
     {
         moo_pane_set_removable (pane, FALSE);
-        g_hash_table_insert (window->priv->panes,
-                             g_strdup (user_id), widget);
-        g_object_set_data_full (G_OBJECT (widget), "moo-edit-window-pane-user-id",
-                                g_strdup (user_id), g_free);
-
-        if (params)
-            moo_pane_set_params (pane, params->params);
-
-        g_signal_connect (pane, "notify::params", G_CALLBACK (pane_params_changed), window);
 
         if (add_menu)
             add_pane_action (window, user_id, label);
     }
 
-    pane_params_free (params);
     g_object_unref (widget);
     return pane != NULL;
 }
@@ -3211,23 +3186,16 @@ moo_edit_window_remove_pane (MooEditWindow *window,
                              const char    *user_id)
 {
     MooPane *pane;
-    GtkWidget *widget;
 
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
     g_return_val_if_fail (user_id != NULL, FALSE);
 
     remove_pane_action (window, user_id);
 
-    widget = g_hash_table_lookup (window->priv->panes, user_id);
-
-    if (!widget)
+    if (!(pane = moo_big_paned_lookup_pane (window->paned, user_id)))
         return FALSE;
 
-    pane = moo_big_paned_find_pane (window->paned, widget, NULL);
-    g_signal_handlers_disconnect_by_func (pane, (gpointer) pane_params_changed, window);
-    g_hash_table_remove (window->priv->panes, user_id);
-    moo_big_paned_remove_pane (window->paned, widget);
-
+    moo_big_paned_remove_pane (window->paned, moo_pane_get_child (pane));
     return TRUE;
 }
 
@@ -3236,250 +3204,13 @@ GtkWidget*
 moo_edit_window_get_pane (MooEditWindow  *window,
                           const char     *user_id)
 {
+    MooPane *pane;
+
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
     g_return_val_if_fail (user_id != NULL, NULL);
-    return g_hash_table_lookup (window->priv->panes, user_id);
-}
 
-
-#define PANE_PREFS_ROOT                 MOO_EDIT_PREFS_PREFIX "/panes"
-#define ELEMENT_PANE                    "pane"
-#define PROP_PANE_ID                    "id"
-#define PROP_PANE_POSITION              "position"
-#define PROP_PANE_WINDOW_X              "x"
-#define PROP_PANE_WINDOW_Y              "y"
-#define PROP_PANE_WINDOW_WIDTH          "width"
-#define PROP_PANE_WINDOW_HEIGHT         "height"
-#define PROP_PANE_WINDOW_DETACHED       "detached"
-#define PROP_PANE_WINDOW_MAXIMIZED      "maximized"
-#define PROP_PANE_WINDOW_KEEP_ON_TOP    "keep-on-top"
-
-
-static MooMarkupNode*
-get_pane_element (const char *pane_id,
-                  gboolean    create)
-{
-    MooMarkupDoc *xml;
-    MooMarkupNode *root, *node;
-
-    xml = moo_prefs_get_markup (MOO_PREFS_STATE);
-
-    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), PANE_PREFS_ROOT);
-
-    if (!root)
-    {
-        if (create)
-        {
-            node = moo_markup_create_element (MOO_MARKUP_NODE (xml),
-                                              PANE_PREFS_ROOT "/" ELEMENT_PANE);
-            moo_markup_set_prop (node, PROP_PANE_ID, pane_id);
-            return node;
-        }
-        else
-        {
-            return NULL;
-        }
-    }
-
-    for (node = root->children; node != NULL; node = node->next)
-    {
-        const char *id;
-
-        if (!MOO_MARKUP_IS_ELEMENT (node))
-            continue;
-
-        if (strcmp (node->name, ELEMENT_PANE))
-        {
-            g_warning ("%s: invalid element '%s'", G_STRLOC, node->name);
-            continue;
-        }
-
-        id = moo_markup_get_prop (node, PROP_PANE_ID);
-
-        if (!id || !id[0])
-        {
-            g_warning ("%s: id missing", G_STRLOC);
-            continue;
-        }
-
-        if (strcmp (id, pane_id))
-            continue;
-
-        return node;
-    }
-
-    if (create)
-    {
-        node = moo_markup_create_element (MOO_MARKUP_NODE (xml),
-                                          PANE_PREFS_ROOT "/" ELEMENT_PANE);
-        moo_markup_set_prop (node, PROP_PANE_ID, pane_id);
-        return node;
-    }
-
-    return NULL;
-}
-
-
-static PaneParams *
-load_pane_params (const char *pane_id)
-{
-    MooMarkupNode *node;
-    PaneParams *params;
-    GdkRectangle rect;
-
-    node = get_pane_element (pane_id, FALSE);
-
-    if (!node)
-        return NULL;
-
-    rect.x = moo_markup_get_int_prop (node, PROP_PANE_WINDOW_X, 0);
-    rect.y = moo_markup_get_int_prop (node, PROP_PANE_WINDOW_Y, 0);
-    rect.width = moo_markup_get_int_prop (node, PROP_PANE_WINDOW_WIDTH, 0);
-    rect.height = moo_markup_get_int_prop (node, PROP_PANE_WINDOW_HEIGHT, 0);
-
-    params = pane_params_new ();
-    params->params = moo_pane_params_new (&rect, moo_markup_get_bool_prop (node, PROP_PANE_WINDOW_DETACHED, FALSE),
-                                          moo_markup_get_bool_prop (node, PROP_PANE_WINDOW_MAXIMIZED, FALSE),
-                                          moo_markup_get_bool_prop (node, PROP_PANE_WINDOW_KEEP_ON_TOP, FALSE));
-
-    params->position = moo_markup_get_int_prop (node, PROP_PANE_POSITION, -1);
-
-    return params;
-}
-
-
-static void
-set_if_not_zero (MooMarkupNode *node,
-                 const char    *attr,
-                 int            val)
-{
-    if (val)
-        moo_markup_set_int_prop (node, attr, val);
-    else
-        moo_markup_set_prop (node, attr, NULL);
-}
-
-
-static void
-set_if_not_false (MooMarkupNode *node,
-                  const char    *attr,
-                  gboolean       val)
-{
-    if (val)
-        moo_markup_set_bool_prop (node, attr, val);
-    else
-        moo_markup_set_prop (node, attr, NULL);
-}
-
-
-static gboolean
-save_pane_params (const char *pane_id,
-                  PaneParams *params)
-{
-    MooMarkupNode *node;
-
-    if (!params)
-    {
-        node = get_pane_element (pane_id, FALSE);
-        if (node)
-            moo_markup_delete_node (node);
-        return TRUE;
-    }
-
-    node = get_pane_element (pane_id, TRUE);
-    g_return_val_if_fail (node != NULL, TRUE);
-
-    set_if_not_zero (node, PROP_PANE_WINDOW_X, params->params->window_position.x);
-    set_if_not_zero (node, PROP_PANE_WINDOW_Y, params->params->window_position.y);
-    set_if_not_zero (node, PROP_PANE_WINDOW_WIDTH, params->params->window_position.width);
-    set_if_not_zero (node, PROP_PANE_WINDOW_HEIGHT, params->params->window_position.height);
-    set_if_not_false (node, PROP_PANE_WINDOW_DETACHED, params->params->detached);
-    set_if_not_false (node, PROP_PANE_WINDOW_MAXIMIZED, params->params->maximized);
-    set_if_not_false (node, PROP_PANE_WINDOW_KEEP_ON_TOP, params->params->keep_on_top);
-
-    if (params->position >= 0)
-        moo_markup_set_prop (node, PROP_PANE_POSITION,
-                             _moo_convert_int_to_string (params->position));
-    else
-        moo_markup_set_prop (node, PROP_PANE_POSITION, NULL);
-
-    return TRUE;
-}
-
-
-static gboolean
-do_save_panes (MooEditWindow *window)
-{
-    g_hash_table_foreach_remove (window->priv->panes_to_save,
-                                 (GHRFunc) save_pane_params, NULL);
-    window->priv->save_params_idle = 0;
-    return FALSE;
-}
-
-
-static PaneParams *
-pane_params_new (void)
-{
-    PaneParams *params = g_new0 (PaneParams, 1);
-    params->position = -1;
-    return params;
-}
-
-
-static void
-pane_params_free (PaneParams *params)
-{
-    if (params)
-    {
-        moo_pane_params_free (params->params);
-        g_free (params);
-    }
-}
-
-
-static void
-pane_params_changed (MooPane       *pane,
-                     G_GNUC_UNUSED GParamSpec *pspec,
-                     MooEditWindow *window)
-{
-    GtkWidget *widget;
-    const char *id;
-    PaneParams *params;
-
-    widget = moo_pane_get_child (pane);
-    g_return_if_fail (widget != NULL);
-    id = g_object_get_data (G_OBJECT (widget), "moo-edit-window-pane-user-id");
-
-    if (id)
-    {
-        params = pane_params_new ();
-        params->params = moo_pane_get_params (pane);
-        params->position = _moo_paned_get_position (_moo_pane_get_parent (pane));
-
-        g_hash_table_insert (window->priv->panes_to_save,
-                             g_strdup (id), params);
-
-        if (!window->priv->save_params_idle)
-            window->priv->save_params_idle =
-                    moo_idle_add ((GSourceFunc) do_save_panes, window);
-    }
-}
-
-
-static void
-pane_size_changed (MooEditWindow      *window,
-                   MooPanePosition     pos)
-{
-    GtkWidget *paned = window->paned->paned[pos];
-    char *key;
-
-    g_return_if_fail (MOO_IS_PANED (paned));
-    g_return_if_fail (pos < 4);
-
-    key = g_strdup_printf (MOO_EDIT_PREFS_PREFIX "/window/panes/%s",
-                           PANE_POSITIONS[pos]);
-    moo_prefs_set_int (key, moo_paned_get_pane_size (MOO_PANED (paned)));
-    g_free (key);
+    pane = moo_big_paned_lookup_pane (window->paned, user_id);
+    return pane ? moo_pane_get_child (pane) : NULL;
 }
 
 

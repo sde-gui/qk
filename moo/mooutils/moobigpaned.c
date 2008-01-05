@@ -16,6 +16,7 @@
 
 #include "moobigpaned.h"
 #include "moomarshals.h"
+#include <errno.h>
 
 #ifdef MOO_COMPILATION
 #include "mooutils-misc.h"
@@ -27,10 +28,23 @@
 #endif
 #endif
 
+typedef struct {
+    GSList *order; /* ids */
+    int size;
+} MooPanedConfig;
+
+typedef struct {
+    MooPanedConfig paned[4];
+    GHashTable *panes;
+} MooBigPanedConfig;
+
 struct MooBigPanedPrivate {
-    MooPanePosition order[4]; /* inner is paned[order[3]]*/
+    MooPanePosition order[4]; /* inner is paned[order[3]] */
     GtkWidget   *inner;
     GtkWidget   *outer;
+
+    MooBigPanedConfig *config;
+    GHashTable  *panes;
 
     int          drop_pos;
     int          drop_button_index;
@@ -77,6 +91,13 @@ static void     handle_drag_end             (MooPaned       *child,
                                              gboolean        drop,
                                              MooBigPaned    *paned);
 
+static void     config_changed              (MooBigPaned    *paned);
+
+static MooBigPanedConfig *config_new        (void);
+static void               config_free       (MooBigPanedConfig *config);
+static MooBigPanedConfig *config_parse      (const char        *string);
+static char              *config_serialize  (MooBigPanedConfig *config);
+
 
 /* MOO_TYPE_BIG_PANED */
 G_DEFINE_TYPE (MooBigPaned, moo_big_paned, GTK_TYPE_FRAME)
@@ -90,7 +111,7 @@ enum {
 };
 
 enum {
-    SET_PANE_SIZE,
+    CONFIG_CHANGED,
     NUM_SIGNALS
 };
 
@@ -139,15 +160,14 @@ moo_big_paned_class_init (MooBigPanedClass *klass)
                                              GDK_HAND2,
                                              G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
 
-    signals[SET_PANE_SIZE] =
-            g_signal_new ("set-pane-size",
+    signals[CONFIG_CHANGED] =
+            g_signal_new ("config-changed",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooBigPanedClass, set_pane_size),
+                          0,
                           NULL, NULL,
-                          _moo_marshal_VOID__INT,
-                          G_TYPE_NONE, 1,
-                          G_TYPE_INT);
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 }
 
 
@@ -161,6 +181,10 @@ moo_big_paned_init (MooBigPaned *paned)
     paned->priv = G_TYPE_INSTANCE_GET_PRIVATE (paned,
                                                MOO_TYPE_BIG_PANED,
                                                MooBigPanedPrivate);
+
+    paned->priv->panes = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                                g_free, g_object_unref);
+    paned->priv->config = config_new ();
 
     paned->priv->drop_pos = -1;
 
@@ -292,6 +316,9 @@ moo_big_paned_finalize (GObject *object)
     MooBigPaned *paned = MOO_BIG_PANED (object);
     int i;
 
+    g_hash_table_destroy (paned->priv->panes);
+    config_free (paned->priv->config);
+
     for (i = 0; i < 4; ++i)
         g_object_unref (paned->paned[i]);
 
@@ -314,32 +341,319 @@ moo_big_paned_new (void)
 
 
 static void
-child_set_pane_size (GtkWidget      *child,
-                     int             size,
-                     MooBigPaned    *paned)
+config_changed (MooBigPaned *paned)
+{
+    g_signal_emit (paned, signals[CONFIG_CHANGED], 0);
+}
+
+static void
+child_set_pane_size (GtkWidget   *child,
+                     int          size,
+                     MooBigPaned *paned)
 {
     MooPanePosition pos;
 
     g_object_get (child, "pane-position", &pos, NULL);
     g_return_if_fail (paned->paned[pos] == child);
 
-    g_signal_emit (paned, signals[SET_PANE_SIZE], 0, pos, size);
+    paned->priv->config->paned[pos].size = size;
+    config_changed (paned);
+}
+
+static void
+pane_params_changed (MooPane       *pane,
+                     G_GNUC_UNUSED GParamSpec *pspec,
+                     MooBigPaned   *paned)
+{
+    const char *id;
+    MooPaneParams *params;
+
+    id = moo_pane_get_id (pane);
+    g_return_if_fail (id != NULL);
+
+    params = moo_pane_get_params (pane);
+    g_hash_table_insert (paned->priv->config->panes, g_strdup (id), params);
+
+    config_changed (paned);
+}
+
+
+static MooPaneParams *
+get_pane_config (MooBigPaned     *paned,
+                 const char      *id,
+                 MooPanePosition *position,
+                 int             *index)
+{
+    MooPaneParams *params;
+    int pos;
+    gboolean found = FALSE;
+
+    g_return_val_if_fail (id != NULL, NULL);
+
+    if (!(params = g_hash_table_lookup (paned->priv->config->panes, id)))
+        return NULL;
+
+    for (pos = 0; pos < 4 && !found; ++pos)
+    {
+        GSList *link;
+        int index_here = 0;
+
+        for (link = paned->priv->config->paned[pos].order;
+             link != NULL && !found;
+             link = link->next)
+        {
+            if (strcmp (link->data, id) == 0)
+            {
+                *index = index_here;
+                *position = pos;
+                found = TRUE;
+            }
+            else if (g_hash_table_lookup (paned->priv->panes, link->data))
+            {
+                index_here += 1;
+            }
+        }
+    }
+
+    if (!found)
+    {
+        g_critical ("%s: oops", G_STRFUNC);
+        params = NULL;
+    }
+
+    return params;
+}
+
+static void
+add_pane_id_to_list (MooBigPaned    *paned,
+                     MooPanedConfig *pc,
+                     const char     *id,
+                     int             index)
+{
+    GSList *link;
+    int real_index;
+
+    g_return_if_fail (index >= 0);
+
+    for (link = pc->order, real_index = 0;
+         link != NULL;
+         link = link->next, ++real_index)
+    {
+        if (index == 0)
+            break;
+
+        if (g_hash_table_lookup (paned->priv->panes, link->data))
+            index -= 1;
+    }
+
+    pc->order = g_slist_insert (pc->order, g_strdup (id), real_index);
+}
+
+static void
+add_pane_config (MooBigPaned     *paned,
+                 const char      *id,
+                 MooPane         *pane,
+                 MooPanePosition  pos,
+                 int              index)
+{
+    MooPaneParams *params;
+
+    g_return_if_fail (index >= 0);
+    g_return_if_fail (!g_hash_table_lookup (paned->priv->config->panes, id));
+
+    params = moo_pane_get_params (pane);
+    g_hash_table_insert (paned->priv->config->panes, g_strdup (id), params);
+
+    add_pane_id_to_list (paned, &paned->priv->config->paned[pos], id, index);
+
+    config_changed (paned);
+}
+
+static void
+move_pane_config (MooBigPaned     *paned,
+                  const char      *id,
+                  MooPanePosition  old_pos,
+                  MooPanePosition  new_pos,
+                  int              new_index)
+{
+    GSList *old_link;
+    MooBigPanedConfig *config = paned->priv->config;
+    MooPanedConfig *old_pc, *new_pc;
+
+    g_return_if_fail (new_index >= 0);
+    g_return_if_fail (g_hash_table_lookup (config->panes, id) != NULL);
+
+    old_pc = &config->paned[old_pos];
+    new_pc = &config->paned[new_pos];
+    old_link = g_slist_find_custom (old_pc->order, id, (GCompareFunc) strcmp);
+    g_return_if_fail (old_link != NULL);
+
+    g_free (old_link->data);
+    old_pc->order = g_slist_delete_link (old_pc->order, old_link);
+    add_pane_id_to_list (paned, &paned->priv->config->paned[new_pos], id, new_index);
+
+    config_changed (paned);
+}
+
+
+void
+moo_big_paned_set_config (MooBigPaned *paned,
+                          const char  *string)
+{
+    MooBigPanedConfig *config;
+    int pos;
+
+    g_return_if_fail (MOO_IS_BIG_PANED (paned));
+
+    if (!string || !string[0])
+        return;
+
+    for (pos = 0; pos < 4; ++pos)
+    {
+        if (paned->priv->config->paned[pos].order != NULL)
+        {
+            g_critical ("%s: this function may be called only once "
+                        "and before any panes are added", G_STRFUNC);
+            return;
+        }
+    }
+
+    if (g_hash_table_size (paned->priv->config->panes) != 0)
+    {
+        g_critical ("%s: this function may be called only once "
+                    "and before any panes are added", G_STRFUNC);
+        return;
+    }
+
+    if (!(config = config_parse (string)))
+        return;
+
+    config_free (paned->priv->config);
+    paned->priv->config = config;
+
+    for (pos = 0; pos < 4; ++pos)
+    {
+        if (config->paned[pos].size > 0)
+            moo_paned_set_pane_size (MOO_PANED (paned->paned[pos]),
+                                     config->paned[pos].size);
+        /* XXX open, sticky */
+    }
+}
+
+char *
+moo_big_paned_get_config (MooBigPaned *paned)
+{
+    g_return_val_if_fail (MOO_IS_BIG_PANED (paned), NULL);
+    return config_serialize (paned->priv->config);
 }
 
 
 MooPane *
 moo_big_paned_insert_pane (MooBigPaned        *paned,
                            GtkWidget          *pane_widget,
+                           const char         *id,
                            MooPaneLabel       *pane_label,
                            MooPanePosition     position,
-                           int                 index_)
+                           int                 index)
 {
+    MooPane *pane;
+    MooPaneParams *params = NULL;
+
     g_return_val_if_fail (MOO_IS_BIG_PANED (paned), NULL);
     g_return_val_if_fail (GTK_IS_WIDGET (pane_widget), NULL);
     g_return_val_if_fail (position < 4, NULL);
 
-    return moo_paned_insert_pane (MOO_PANED (paned->paned[position]),
-                                  pane_widget, pane_label, index_);
+    if (id && moo_big_paned_lookup_pane (paned, id) != NULL)
+    {
+        g_critical ("%s: pane with id '%s' already exists",
+                    G_STRFUNC, id);
+        return NULL;
+    }
+
+    if (id)
+        params = get_pane_config (paned, id, &position, &index);
+
+    if (index < 0)
+        index = moo_paned_n_panes (MOO_PANED (paned->paned[position]));
+
+    pane = moo_paned_insert_pane (MOO_PANED (paned->paned[position]),
+                                  pane_widget, pane_label, index);
+
+    if (pane && id)
+    {
+        _moo_pane_set_id (pane, id);
+
+        if (params)
+            moo_pane_set_params (pane, params);
+
+        g_hash_table_insert (paned->priv->panes,
+                             g_strdup (id),
+                             g_object_ref (pane));
+
+        g_signal_connect (pane, "notify::params",
+                          G_CALLBACK (pane_params_changed),
+                          paned);
+        if (!params)
+            add_pane_config (paned, id, pane, position, index);
+    }
+
+    return pane;
+}
+
+
+void
+moo_big_paned_reorder_pane (MooBigPaned    *paned,
+                            GtkWidget      *pane_widget,
+                            MooPanePosition new_position,
+                            int             new_index)
+{
+    MooPane *pane;
+    MooPaned *child;
+    MooPanePosition old_position;
+    int old_index;
+
+    g_return_if_fail (MOO_IS_BIG_PANED (paned));
+    g_return_if_fail (GTK_IS_WIDGET (pane_widget));
+    g_return_if_fail (new_position < 4);
+
+    pane = moo_big_paned_find_pane (paned, pane_widget, &child);
+    g_return_if_fail (pane != NULL);
+
+    g_object_get (child, "pane-position", &old_position, NULL);
+    old_index = moo_paned_get_pane_num (child, pane_widget);
+    g_return_if_fail (old_index >= 0);
+
+    if (new_index < 0)
+    {
+        if (old_position == new_position)
+            new_index = (int) moo_paned_n_panes (child) - 1;
+        else
+            new_index = moo_paned_n_panes (MOO_PANED (paned->paned[new_position]));
+    }
+
+    if (old_position == new_position && old_index == new_index)
+        return;
+
+    pane = moo_paned_get_pane (child, pane_widget);
+
+    if (old_position == new_position)
+    {
+        _moo_paned_reorder_child (child, pane, new_index);
+    }
+    else
+    {
+        g_object_ref (pane);
+
+        moo_paned_remove_pane (child, pane_widget);
+        _moo_paned_insert_pane (MOO_PANED (paned->paned[new_position]), pane, new_index);
+        moo_pane_open (pane);
+        _moo_pane_params_changed (pane);
+
+        g_object_unref (pane);
+    }
+
+    move_pane_config (paned, moo_pane_get_id (pane),
+                      old_position, new_position, new_index);
 }
 
 
@@ -374,14 +688,31 @@ moo_big_paned_remove_pane (MooBigPaned *paned,
                            GtkWidget   *widget)
 {
     MooPaned *child;
+    MooPane *pane;
+    const char *id;
 
     g_return_val_if_fail (MOO_IS_BIG_PANED (paned), FALSE);
     g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
 
-    if (!moo_big_paned_find_pane (paned, widget, &child))
+    pane = moo_big_paned_find_pane (paned, widget, &child);
+
+    if (!pane)
         return FALSE;
 
+    if ((id = moo_pane_get_id (pane)))
+        g_hash_table_remove (paned->priv->panes, id);
+
     return moo_paned_remove_pane (child, widget);
+}
+
+
+MooPane *
+moo_big_paned_lookup_pane (MooBigPaned *paned,
+                           const char  *pane_id)
+{
+    g_return_val_if_fail (MOO_IS_BIG_PANED (paned), NULL);
+    g_return_val_if_fail (pane_id != NULL, NULL);
+    return g_hash_table_lookup (paned->priv->panes, pane_id);
 }
 
 
@@ -465,10 +796,11 @@ moo_big_paned_find_pane (MooBigPaned    *paned,
 }
 
 
-static void     moo_big_paned_set_property  (GObject        *object,
-                                             guint           prop_id,
-                                             const GValue   *value,
-                                             GParamSpec     *pspec)
+static void
+moo_big_paned_set_property (GObject      *object,
+                            guint         prop_id,
+                            const GValue *value,
+                            GParamSpec   *pspec)
 {
     MooBigPaned *paned = MOO_BIG_PANED (object);
     int i;
@@ -509,10 +841,11 @@ static void     moo_big_paned_set_property  (GObject        *object,
 }
 
 
-static void     moo_big_paned_get_property  (GObject        *object,
-                                             guint           prop_id,
-                                             GValue         *value,
-                                             GParamSpec     *pspec)
+static void
+moo_big_paned_get_property (GObject    *object,
+                            guint       prop_id,
+                            GValue     *value,
+                            GParamSpec *pspec)
 {
     MooBigPaned *paned = MOO_BIG_PANED (object);
     GdkCursorType cursor_type;
@@ -621,7 +954,6 @@ get_drop_zones (MooBigPaned *paned)
     }
 
     parent = paned->priv->outer->allocation;
-//     g_print ("parent: %d, %d, %d, %d\n", parent.x, parent.y, parent.width, parent.height);
 
     child_rect = parent;
     child_rect.x += bbox_size[MOO_PANE_POS_LEFT];
@@ -630,7 +962,6 @@ get_drop_zones (MooBigPaned *paned)
     child_rect.y += bbox_size[MOO_PANE_POS_TOP];
     child_rect.height -= bbox_size[MOO_PANE_POS_TOP] +
                          bbox_size[MOO_PANE_POS_BOTTOM];
-//     g_print ("child_rect: %d, %d, %d, %d\n", child_rect.x, child_rect.y, child_rect.width, child_rect.height);
 
     button_rect = parent;
     button_rect.x += 2*bbox_size[MOO_PANE_POS_LEFT];
@@ -639,14 +970,12 @@ get_drop_zones (MooBigPaned *paned)
     button_rect.y += 2*bbox_size[MOO_PANE_POS_TOP];
     button_rect.height -= 2*bbox_size[MOO_PANE_POS_TOP] +
                           2*bbox_size[MOO_PANE_POS_BOTTOM];
-//     g_print ("button_rect: %d, %d, %d, %d\n", button_rect.x, button_rect.y, button_rect.width, button_rect.height);
 
     drop_rect = button_rect;
     drop_rect.x += button_rect.width / 3;
     drop_rect.y += button_rect.height / 3;
     drop_rect.width -= 2 * button_rect.width / 3;
     drop_rect.height -= 2 * button_rect.height / 3;
-//     g_print ("drop_rect: %d, %d, %d, %d\n", drop_rect.x, drop_rect.y, drop_rect.width, drop_rect.height);
 
     paned->priv->dz[MOO_PANE_POS_TOP].bbox_region =
         region_6 (LEFT (child_rect), TOP (parent),
@@ -892,8 +1221,8 @@ handle_drag_end (MooPaned    *child,
                  MooBigPaned *paned)
 {
     int x, y;
-    MooPanePosition new_pos, old_pos;
-    int new_index, old_index;
+    MooPanePosition new_pos;
+    int new_index;
 
     g_return_if_fail (GTK_WIDGET_REALIZED (paned->priv->outer));
 
@@ -916,37 +1245,7 @@ handle_drag_end (MooPaned    *child,
     new_index = paned->priv->drop_button_index;
     cleanup_drag (paned);
 
-//     {
-//         const char *pos_names[] = {"left", "right", "top", "bottom"};
-//         g_print ("moving to %s, %d\n", pos_names[new_pos], new_index);
-//     }
-
-    g_object_get (child, "pane-position", &old_pos, NULL);
-    old_index = _moo_paned_get_open_pane_index (child);
-
-    if (old_pos == new_pos && new_index == old_index)
-        return;
-
-    if (old_pos == new_pos)
-    {
-        MooPane *pane;
-        pane = moo_paned_get_pane (child, pane_widget);
-        _moo_paned_reorder_child (child, pane, new_index);
-    }
-    else
-    {
-        MooPane *pane;
-
-        pane = moo_paned_get_pane (child, pane_widget);
-        g_object_ref (pane);
-
-        moo_paned_remove_pane (child, pane_widget);
-        _moo_paned_insert_pane (MOO_PANED (paned->paned[new_pos]), pane, new_index);
-        moo_pane_open (pane);
-        _moo_pane_params_changed (pane);
-
-        g_object_unref (pane);
-    }
+    moo_big_paned_reorder_pane (paned, pane_widget, new_pos, new_index);
 }
 
 
@@ -1167,8 +1466,6 @@ create_rect_mask (int           width,
                         rect->x + 1, rect->y + 1,
                         rect->width - 2, rect->height - 2);
 
-//     g_print ("%d, %d: %d, %d, %d, %d\n", width, height, rect->x, rect->y, rect->width, rect->height);
-
     g_object_unref (gc);
     return bitmap;
 }
@@ -1209,4 +1506,274 @@ create_drop_outline (MooBigPaned *paned)
     g_object_unref (mask);
 
     gdk_window_show (paned->priv->drop_outline);
+}
+
+
+/*************************************************************************/
+/* Config
+ */
+
+#define CONFIG_STRING_MAGIC "mbpconfig-1.0 "
+#define CONFIG_STRING_MAGIC_LEN strlen (CONFIG_STRING_MAGIC)
+
+static MooBigPanedConfig *
+config_new (void)
+{
+    MooBigPanedConfig *config;
+    int pos;
+
+    config = g_new0 (MooBigPanedConfig, 1);
+
+    for (pos = 0; pos < 4; pos++)
+    {
+        config->paned[pos].order = NULL;
+        config->paned[pos].size = -1;
+    }
+
+    config->panes = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+                                           (GDestroyNotify) moo_pane_params_free);
+
+    return config;
+}
+
+static void
+config_free (MooBigPanedConfig *config)
+{
+    if (config)
+    {
+        int pos;
+
+        for (pos = 0; pos < 4; pos++)
+        {
+            g_slist_foreach (config->paned[pos].order, (GFunc) g_free, NULL);
+            g_slist_free (config->paned[pos].order);
+        }
+
+        g_hash_table_destroy (config->panes);
+        g_free (config);
+    }
+}
+
+static gboolean
+parse_int (const char *string,
+           int        *valuep)
+{
+    gint64 value;
+    char *endptr;
+
+    errno = 0;
+    value = g_ascii_strtoll (string, &endptr, 10);
+
+    if (errno || endptr == string || *endptr != 0 ||
+        value < G_MININT || value > G_MAXINT)
+            return FALSE;
+
+    *valuep = value;
+    return TRUE;
+}
+
+static gboolean
+parse_bool (const char *string,
+            gboolean   *value)
+{
+    if (!string[0] || string[1] || (string[0] != '0' && string[0] != '1'))
+        return FALSE;
+
+    *value = string[0] == '1';
+    return TRUE;
+}
+
+
+static gboolean
+parse_paned_config (const char     *string,
+                    MooPanedConfig *config)
+{
+    char **tokens, **p;
+
+    tokens = g_strsplit (string, ",", 0);
+    if (g_strv_length (tokens) < 1)
+    {
+        g_critical ("%s: invalid paned config string '%s'",
+                    G_STRFUNC, string);
+        goto error;
+    }
+
+    if (!parse_int (tokens[0], &config->size) || config->size < -1 || config->size > 100000)
+    {
+        g_critical ("%s: invalid size '%s' in paned config string '%s'",
+                    G_STRFUNC, tokens[0], string);
+        goto error;
+    }
+
+    for (p = tokens + 1; *p; ++p)
+        config->order = g_slist_prepend (config->order, *p);
+    config->order = g_slist_reverse (config->order);
+
+    g_free (tokens[0]);
+    g_free (tokens);
+    return TRUE;
+
+error:
+    g_strfreev (tokens);
+    return FALSE;
+}
+
+static void
+paned_config_serialize (MooPanedConfig *config,
+                        GString        *string)
+{
+    GSList *l;
+
+    g_string_append_printf (string, "%d", config->size);
+
+    for (l = config->order; l != NULL; l = l->next)
+    {
+        char *id = l->data;
+        g_string_append_printf (string, ",%s", id);
+    }
+}
+
+
+static gboolean
+parse_pane_config (const char *string,
+                   GHashTable *hash)
+{
+    char **tokens = NULL;
+    const char *colon;
+    MooPaneParams params = {{-1, -1, -1, -1}, 0, 0, 0};
+    gboolean value[3];
+
+    if (!(colon = strchr (string, ':')) || colon == string)
+    {
+        g_critical ("%s: invalid pane config string '%s'",
+                    G_STRFUNC, string);
+        goto error;
+    }
+
+    tokens = g_strsplit (colon + 1, ",", 0);
+    if (g_strv_length (tokens) != 7)
+    {
+        g_critical ("%s: invalid pane config string '%s'",
+                    G_STRFUNC, string);
+        goto error;
+    }
+
+    if (!parse_int (tokens[0], &params.window_position.x) ||
+        !parse_int (tokens[1], &params.window_position.y) ||
+        !parse_int (tokens[2], &params.window_position.width) ||
+        !parse_int (tokens[3], &params.window_position.height) ||
+        params.window_position.width < -1 || params.window_position.width > 100000 ||
+        params.window_position.height < -1 || params.window_position.height > 100000)
+    {
+        g_critical ("%s: invalid window position in pane config string '%s'",
+                    G_STRFUNC, string);
+        goto error;
+    }
+
+    if (!parse_bool (tokens[4], &value[0]) ||
+        !parse_bool (tokens[5], &value[1]) ||
+        !parse_bool (tokens[6], &value[2]))
+    {
+        g_critical ("%s: invalid parameters in pane config string '%s'",
+                    G_STRFUNC, string);
+        goto error;
+    }
+
+    params.detached = value[0];
+    params.maximized = value[1];
+    params.keep_on_top = value[2];
+
+    g_hash_table_insert (hash,
+                         g_strndup (string, colon - string),
+                         moo_pane_params_copy (&params));
+
+    g_strfreev (tokens);
+    return TRUE;
+
+error:
+    g_strfreev (tokens);
+    return FALSE;
+}
+
+static void
+pane_config_serialize (const char    *id,
+                       MooPaneParams *params,
+                       GString       *string)
+{
+    g_string_append_printf (string, ";%s:%d,%d,%d,%d,%s,%s,%s",
+                            id,
+                            params->window_position.x,
+                            params->window_position.y,
+                            params->window_position.width,
+                            params->window_position.height,
+                            params->detached ? "1" : "0",
+                            params->maximized ? "1" : "0",
+                            params->keep_on_top ? "1" : "0");
+}
+
+
+static MooBigPanedConfig *
+config_parse (const char *string)
+{
+    MooBigPanedConfig *config = NULL;
+    char **tokens = NULL;
+    char **p;
+    int pos;
+
+    g_return_val_if_fail (string != NULL, NULL);
+
+    if (strncmp (string, CONFIG_STRING_MAGIC, CONFIG_STRING_MAGIC_LEN) != 0)
+    {
+        g_critical ("%s: invalid magic in config string '%s'", G_STRFUNC, string);
+        goto error;
+    }
+
+    string += CONFIG_STRING_MAGIC_LEN;
+    tokens = g_strsplit (string, ";", 0);
+    if (g_strv_length (tokens) < 4)
+    {
+        g_critical ("%s: invalid string '%s'", G_STRFUNC, string);
+        goto error;
+    }
+
+    config = config_new ();
+
+    for (pos = 0; pos < 4; ++pos)
+        if (!parse_paned_config (tokens[pos], &config->paned[pos]))
+            goto error;
+
+    for (p = tokens + 4; *p; ++p)
+        if (!parse_pane_config (*p, config->panes))
+            goto error;
+
+    g_strfreev (tokens);
+    return config;
+
+error:
+    g_strfreev (tokens);
+    config_free (config);
+    return NULL;
+}
+
+static char *
+config_serialize (MooBigPanedConfig *config)
+{
+    GString *string;
+    int pos;
+
+    g_return_val_if_fail (config != NULL, NULL);
+
+    string = g_string_new (CONFIG_STRING_MAGIC);
+
+    for (pos = 0; pos < 4; ++pos)
+    {
+        if (pos != 0)
+            g_string_append (string, ";");
+
+        paned_config_serialize (&config->paned[pos], string);
+    }
+
+    g_hash_table_foreach (config->panes, (GHFunc) pane_config_serialize, string);
+
+    return g_string_free (string, FALSE);
 }
