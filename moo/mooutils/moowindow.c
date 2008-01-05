@@ -363,6 +363,8 @@ moo_window_init (MooWindow *window)
     window->accel_group = gtk_accel_group_new ();
     gtk_window_add_accel_group (GTK_WINDOW (window),
                                 window->accel_group);
+
+    gtk_window_set_default_size (GTK_WINDOW (window), 800, 600);
 }
 
 

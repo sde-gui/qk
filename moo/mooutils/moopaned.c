@@ -373,7 +373,7 @@ moo_paned_init (MooPaned *paned)
     paned->priv->pane_widget_visible = FALSE;
     paned->priv->pane_widget_size = 0;
     paned->priv->sticky = FALSE;
-    paned->priv->position = -1;
+    paned->priv->position = 200;
     paned->priv->handle_prelit = FALSE;
     paned->priv->in_drag = FALSE;
     paned->priv->drag_start = -1;
