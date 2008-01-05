@@ -1162,8 +1162,9 @@ _moo_tree_view_setup_expander (GtkTreeView       *tree_view,
     g_return_if_fail (GTK_IS_TREE_VIEW (tree_view));
     g_return_if_fail (GTK_IS_TREE_VIEW_COLUMN (column));
 
-    if (gtk_check_version (2, 12, 0) != NULL)
-        return;
+#if !GTK_CHECK_VERSION(2,12,0)
+    return;
+#endif
 
     g_object_set (tree_view,
                   "show-expanders", FALSE,

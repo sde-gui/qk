@@ -594,10 +594,11 @@ create_input_methods_menu_item (GtkAction *action)
     gtk_im_multicontext_append_menuitems (GTK_IM_MULTICONTEXT (edit->im_context),
 					  GTK_MENU_SHELL (menu));
 
-    if (!gtk_check_version (2, 10, 0))
-        g_object_get (gtk_widget_get_settings (GTK_WIDGET (edit)),
-                      "gtk-show-input-method-menu", &visible,
-                      NULL);
+#if GTK_CHECK_VERSION(2, 10, 0)
+    g_object_get (gtk_widget_get_settings (GTK_WIDGET (edit)),
+                  "gtk-show-input-method-menu", &visible,
+                  NULL);
+#endif
     g_object_set (action, "visible", visible, NULL);
 
     return item;
@@ -619,10 +620,11 @@ create_special_chars_menu_item (GtkAction *action)
     gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), menu);
     append_special_char_menuitems (GTK_MENU_SHELL (menu), edit);
 
-    if (!gtk_check_version (2, 10, 0))
-        g_object_get (gtk_widget_get_settings (GTK_WIDGET (edit)),
-                      "gtk-show-unicode-menu", &visible,
-                      NULL);
+#if GTK_CHECK_VERSION(2, 10, 0)
+    g_object_get (gtk_widget_get_settings (GTK_WIDGET (edit)),
+                  "gtk-show-unicode-menu", &visible,
+                  NULL);
+#endif
     g_object_set (action, "visible", visible, NULL);
 
     return item;
