@@ -2212,7 +2212,7 @@ MOO_PLUGIN_DEFINE_FULL (FileList, file_list,
 gboolean
 _moo_file_list_plugin_init (void)
 {
-    MooPluginParams params = {FALSE, TRUE};
+    MooPluginParams params = {TRUE, TRUE};
     return moo_plugin_register (FILE_LIST_PLUGIN_ID,
                                 file_list_plugin_get_type (),
                                 &file_list_plugin_info,
