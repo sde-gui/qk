@@ -33,9 +33,9 @@ G_BEGIN_DECLS
 #define MOO_IS_EDIT_CONFIG_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_CONFIG))
 #define MOO_EDIT_CONFIG_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_CONFIG, MooEditConfigClass))
 
-typedef struct _MooEditConfig         MooEditConfig;
-typedef struct _MooEditConfigPrivate  MooEditConfigPrivate;
-typedef struct _MooEditConfigClass    MooEditConfigClass;
+typedef struct MooEditConfig         MooEditConfig;
+typedef struct MooEditConfigPrivate  MooEditConfigPrivate;
+typedef struct MooEditConfigClass    MooEditConfigClass;
 
 
 typedef enum
@@ -47,13 +47,13 @@ typedef enum
     MOO_EDIT_CONFIG_SOURCE_AUTO     = 40
 } MooEditConfigSource;
 
-struct _MooEditConfig
+struct MooEditConfig
 {
     GObject object;
     MooEditConfigPrivate *priv;
 };
 
-struct _MooEditConfigClass
+struct MooEditConfigClass
 {
     GObjectClass object_class;
 };

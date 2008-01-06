@@ -16,6 +16,7 @@
 #include "mooedit/moolang.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-debug.h"
 #include "mooutils/mooprefs.h"
 #include <gobject/gvaluecollector.h>
 #include <string.h>
@@ -25,27 +26,27 @@
 #define GVALUE(c_,i_) (&VALUE(c_,i_)->gval)
 
 
-typedef struct _Variable Variable;
-typedef struct _VarArray VarArray;
-typedef struct _Value    Value;
+typedef struct Variable Variable;
+typedef struct VarArray VarArray;
+typedef struct Value    Value;
 
 
-struct _MooEditConfigPrivate {
+struct MooEditConfigPrivate {
     Value *values;
     guint n_values;
     guint n_values_allocd__;
 };
 
-struct _Value {
+struct Value {
     GValue gval;
     guint source : 16;
 };
 
-struct _Variable {
+struct Variable {
     GParamSpec *pspec;
 };
 
-struct _VarArray {
+struct VarArray {
     Variable *data;
     guint len;
 };
@@ -770,59 +771,143 @@ moo_edit_config_parse_one (MooEditConfig  *config,
 }
 
 
+static gboolean
+char_is_space (const char *s)
+{
+    return *s && g_unichar_isspace (g_utf8_get_char (s));
+}
+
+static const char *
+skip_space (const char *string)
+{
+    while (*string && char_is_space (string))
+        string = g_utf8_next_char (string);
+    return string;
+}
+
+static const char *
+skip_separator (const char *string)
+{
+    gboolean seen_separator = FALSE;
+
+    while (*string)
+    {
+        if (!seen_separator && (*string == ',' || *string == ';'))
+        {
+            seen_separator = TRUE;
+            string += 1;
+        }
+
+        if (*string && char_is_space (string))
+            string = g_utf8_next_char (string);
+        else
+            break;
+    }
+
+    return string;
+}
+
 void
 moo_edit_config_parse (MooEditConfig  *config,
                        const char     *string,
                        MooEditConfigSource source)
 {
-    char **vars, **p;
-    char *copy;
+    const char *p = string;
 
     g_return_if_fail (MOO_IS_EDIT_CONFIG (config));
     g_return_if_fail (string != NULL);
+    g_return_if_fail (g_utf8_validate (string, -1, NULL));
 
-    copy = g_strdelimit (g_strstrip (g_strdup (string)), ",", ';');
-    vars = g_strsplit (copy, ";", 0);
-    g_free (copy);
-
-    if (!vars)
-        goto out;
-
-    for (p = vars; *p != NULL; p++)
+    while (*p)
     {
-        char *sep, *var, *value;
+        const char *colon;
+        const char *assign;
+        const char *name_start, *name_end;
+        const char *value_start, *value_end;
+        char *name, *value;
 
-        g_strstrip (*p);
-        sep = strchr (*p, ':');
+        p = skip_space (p);
+        if (!*p)
+            break;
 
-        if (!sep || sep == *p || !sep[1])
-            goto out;
+        colon = strchr (p, ':');
+        assign = strchr (p, '=');
 
-        var = g_strndup (*p, sep - *p);
-        g_strstrip (var);
-
-        if (!var[0])
+        if (!colon && !assign)
         {
-            g_free (var);
-            goto out;
+            g_warning ("%s: invalid config string '%s'",
+                       G_STRLOC, string);
+            return;
         }
 
-        value = sep + 1;
-        g_strstrip (value);
+        if (colon && assign && assign < colon)
+            colon = NULL;
 
-        if (!value)
+        name_start = p;
+        name_end = colon ? colon : assign;
+        while (name_end > name_start && char_is_space (g_utf8_prev_char (name_end)))
+            name_end = g_utf8_prev_char (name_end);
+
+        if (name_end == name_start)
         {
-            g_free (var);
-            goto out;
+            g_warning ("%s: invalid config string '%s'",
+                       G_STRLOC, string);
+            return;
         }
 
-        moo_edit_config_parse_one (config, var, value, source);
+        if (colon)
+        {
+            value_start = skip_space (colon + 1);
 
-        g_free (var);
+            if (!*value_start || *value_start == ';' || *value_start == ',')
+            {
+                g_warning ("%s: invalid config string '%s'",
+                           G_STRLOC, string);
+                return;
+            }
+
+            for (value_end = value_start + 1;
+                 *value_end && !char_is_space (value_end) &&
+                    *value_end != ';' && *value_end != ',';
+                 value_end = g_utf8_next_char (value_end)) ;
+
+            p = skip_separator (value_end);
+        }
+        else
+        {
+            gunichar separator;
+
+            value_start = skip_space (assign + 1);
+
+            if (!(separator = g_utf8_get_char (value_start)))
+            {
+                g_warning ("%s: invalid config string '%s'",
+                           G_STRLOC, string);
+                return;
+            }
+
+            value_start = g_utf8_next_char (value_start);
+            value_end = g_utf8_strchr (g_utf8_next_char (value_start), -1,
+                                       separator);
+            if (!value_end)
+            {
+                g_warning ("%s: unterminated value in '%s'",
+                           G_STRLOC, string);
+                return;
+            }
+
+            p = skip_separator (g_utf8_next_char (value_end));
+        }
+
+        name = g_strndup (name_start, name_end - name_start);
+        value = g_strndup (value_start, value_end - value_start);
+
+        _moo_message ("got '%s' = '%s' from '%s'\n", name, value, string);
+        moo_edit_config_parse_one (config, name, value, source);
+
+        g_free (value);
+        g_free (name);
     }
-
-out:
-    g_strfreev (vars);
 }
 
 
