@@ -1484,10 +1484,6 @@ get_property_text (MooMarkupNode *node,
     gboolean translatable = FALSE, strip_context = FALSE;
     const char *prop, *translatable_attr;
 
-#ifndef ENABLE_NLS
-    return moo_markup_get_content (node);
-#endif
-
     prop = moo_markup_get_content (node);
 
     if (!prop || !prop[0])
