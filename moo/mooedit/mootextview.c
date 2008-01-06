@@ -262,7 +262,6 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     gobject_class->constructor = moo_text_view_constructor;
     gobject_class->finalize = moo_text_view_finalize;
 
-
     widget_class->button_press_event = _moo_text_view_button_press_event;
     widget_class->button_release_event = _moo_text_view_button_release_event;
     widget_class->motion_notify_event = _moo_text_view_motion_event;
@@ -663,6 +662,9 @@ moo_text_view_init (MooTextView *view)
     view->priv->colors[MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN] = g_strdup (LIGHT_BLUE);
     view->priv->right_margin_offset = 80;
 
+    view->priv->word_chars = NULL;
+    view->priv->n_word_chars = 0;
+
     view->priv->dnd.button = GDK_BUTTON_RELEASE;
     view->priv->dnd.type = MOO_TEXT_VIEW_DRAG_NONE;
     view->priv->dnd.start_x = -1;
@@ -794,6 +796,7 @@ moo_text_view_finalize (GObject *object)
         g_object_unref (mark);
     }
 
+    g_free (view->priv->word_chars);
     g_slist_free (view->priv->line_marks);
 
     G_OBJECT_CLASS (moo_text_view_parent_class)->finalize (object);
@@ -1340,6 +1343,30 @@ moo_text_view_char_inserted (MooTextView    *view,
     }
 
     return FALSE;
+}
+
+
+void
+moo_text_view_set_word_chars (MooTextView *view,
+                              const char  *word_chars)
+{
+    guint i;
+
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    g_return_if_fail (!word_chars || g_utf8_validate (word_chars, -1, NULL));
+
+    g_free (view->priv->word_chars);
+    view->priv->word_chars = NULL;
+    view->priv->n_word_chars = 0;
+
+    if (!word_chars || !word_chars[0])
+        return;
+
+    view->priv->n_word_chars = g_utf8_strlen (word_chars, -1);
+    view->priv->word_chars = g_new0 (gunichar, view->priv->n_word_chars);
+
+    for (i = 0; *word_chars; i++, word_chars = g_utf8_next_char (word_chars))
+        view->priv->word_chars[i] = g_utf8_get_char (word_chars);
 }
 
 

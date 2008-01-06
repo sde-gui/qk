@@ -67,6 +67,9 @@ _moo_edit_init_config (void)
         moo_edit_config_install_setting (g_param_spec_uint ("tab-width", "tab-width", "tab-width",
                                                             1, G_MAXUINT, 8,
                                                             G_PARAM_READWRITE));
+    _moo_edit_settings[MOO_EDIT_SETTING_WORD_CHARS] =
+        moo_edit_config_install_setting (g_param_spec_string ("word-chars", "word-chars", "word-chars",
+                                                              NULL, G_PARAM_READWRITE));
 }
 
 

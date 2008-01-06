@@ -159,6 +159,9 @@ struct _MooTextViewPrivate {
     gunichar char_inserted;
     int char_inserted_offset;
 
+    gunichar *word_chars;
+    guint n_word_chars;
+
     /***********************************************************************/
     /* Selection and drag
      */

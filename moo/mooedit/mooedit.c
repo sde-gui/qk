@@ -1002,6 +1002,7 @@ moo_edit_apply_config (MooEdit *edit)
     GtkWrapMode wrap_mode;
     gboolean line_numbers;
     guint tab_width;
+    char *word_chars;
 
     moo_edit_apply_lang_config (edit);
 
@@ -1009,11 +1010,13 @@ moo_edit_apply_config (MooEdit *edit)
                          "wrap-mode", &wrap_mode,
                          "show-line-numbers", &line_numbers,
                          "tab-width", &tab_width,
+                         "word-chars", &word_chars,
                          NULL);
 
     gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (edit), wrap_mode);
     moo_text_view_set_show_line_numbers (MOO_TEXT_VIEW (edit), line_numbers);
     moo_text_view_set_tab_width (MOO_TEXT_VIEW (edit), tab_width);
+    moo_text_view_set_word_chars (MOO_TEXT_VIEW (edit), word_chars);
 }
 
 

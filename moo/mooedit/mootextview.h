@@ -148,6 +148,9 @@ void         moo_text_view_set_lang                 (MooTextView        *view,
 void         moo_text_view_set_lang_by_id           (MooTextView        *view,
                                                      const char         *id);
 
+void         moo_text_view_set_word_chars           (MooTextView        *view,
+                                                     const char         *word_chars);
+
 void         moo_text_view_strip_whitespace         (MooTextView        *view);
 
 void         moo_text_view_add_child_in_border      (MooTextView        *view,
