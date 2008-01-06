@@ -209,7 +209,7 @@ msgstr "Язык:"
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:5
 #: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:5
 msgid "Mime types:"
-msgstr "MIME-типы"
+msgstr "MIME-типы:"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:6
 #: ../moo/mooedit/glade/mooedittools.glade.h:11
