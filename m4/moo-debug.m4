@@ -75,11 +75,11 @@ if test "x$_moo_all_warnings" = "xyes"; then
 -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations dnl
 -Wmissing-noreturn -Wmissing-format-attribute -Wnested-externs dnl
 -Wdisabled-optimization -Wendif-labels -Wstrict-prototypes dnl
--Wno-missing-field-initializers])
+-Wno-missing-field-initializers -Wno-format-y2k])
   fi
 else
   if $MOO_GCC; then
-    _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS, [-Wall -W -Wno-missing-field-initializers])
+    _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS, [-Wall -W -Wno-format-y2k -Wno-missing-field-initializers])
   fi
 fi
 
