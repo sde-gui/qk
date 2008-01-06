@@ -892,6 +892,8 @@ moo_app_init_real (MooApp *app)
     gdk_set_program_class (app->priv->info->full_name);
     gtk_window_set_default_icon_name (app->priv->info->short_name);
 
+    _moo_set_app_instance_name (app->priv->instance_name);
+
     moo_app_load_prefs (app);
     moo_app_init_ui (app);
 

@@ -56,11 +56,14 @@ typedef enum {
 
 GType       moo_data_dir_type_get_type      (void) G_GNUC_CONST;
 
+void       _moo_set_app_instance_name       (const char     *name);
+void       _moo_set_user_data_dir           (const char     *path);
+
 /* ~/.appname */
 gboolean    moo_make_user_data_dir          (const char     *path);
-void       _moo_set_user_data_dir           (const char     *path);
 char       *moo_get_user_data_dir           (void);
 char       *moo_get_user_data_file          (const char     *basename);
+char       *moo_get_named_user_data_file    (const char     *basename);
 gboolean    moo_save_user_data_file         (const char     *basename,
                                              const char     *content,
                                              gssize          len,

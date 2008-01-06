@@ -2118,7 +2118,7 @@ file_list_window_plugin_create (WindowPlugin *plugin)
     window = MOO_WIN_PLUGIN (plugin)->window;
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
 
-    plugin->filename = moo_get_user_data_file (CONFIG_FILE);
+    plugin->filename = moo_get_named_user_data_file (CONFIG_FILE);
 
     create_treeview (plugin);
     create_model (plugin);

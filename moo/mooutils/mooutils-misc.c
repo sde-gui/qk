@@ -45,6 +45,7 @@
 
 G_LOCK_DEFINE_STATIC (moo_user_data_dir);
 G_LOCK_DEFINE_STATIC (moo_temp_dir);
+static char *moo_app_instance_name;
 static char *moo_user_data_dir;
 static char *moo_temp_dir;
 
@@ -1300,6 +1301,21 @@ _moo_set_user_data_dir (const char *path)
     G_UNLOCK (moo_user_data_dir);
 }
 
+void
+_moo_set_app_instance_name (const char *name)
+{
+    if (moo_app_instance_name)
+        g_critical ("%s: app instance name already set", G_STRFUNC);
+
+    if (name && strcmp (name, "main") == 0)
+        name = NULL;
+    if (name && !name[0])
+        name = NULL;
+
+    g_free (moo_app_instance_name);
+    moo_app_instance_name = g_strdup (name);
+}
+
 
 gboolean
 moo_make_user_data_dir (const char *path)
@@ -1568,6 +1584,26 @@ get_user_data_file (const char *basename,
     file = g_build_filename (dir, basename, NULL);
 
     g_free (dir);
+    return file;
+}
+
+char *
+moo_get_named_user_data_file (const char *basename)
+{
+    char *freeme = NULL;
+    char *file;
+
+    g_return_val_if_fail (basename && basename[0], NULL);
+
+    if (moo_app_instance_name)
+    {
+        freeme = g_strdup_printf ("%s-%s", moo_app_instance_name, basename);
+        basename = freeme;
+    }
+
+    file = moo_get_user_data_file (basename);
+
+    g_free (freeme);
     return file;
 }
 
