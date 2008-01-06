@@ -1993,30 +1993,13 @@ static void
 treeview_row_activated (WindowPlugin *plugin,
                         GtkTreePath  *path)
 {
-    GtkTreeIter iter;
     Item *item;
 
-    gtk_tree_model_get_iter (GTK_TREE_MODEL (plugin->list), &iter, path);
-    item = get_item_at_iter (plugin->list, &iter);
+    item = get_item_at_path (plugin->list, path);
     g_return_if_fail (item != NULL);
 
     if (ITEM_IS_FILE (item))
-    {
-        if (FILE_ITEM (item)->doc)
-        {
-            moo_editor_set_active_doc (moo_editor_instance (),
-                                       FILE_ITEM (item)->doc);
-            gtk_widget_grab_focus (GTK_WIDGET (FILE_ITEM (item)->doc));
-        }
-        else
-        {
-            moo_editor_open_uri (moo_editor_instance (),
-                                 MOO_WIN_PLUGIN (plugin)->window,
-                                 NULL,
-                                 FILE_ITEM (item)->uri,
-                                 NULL);
-        }
-    }
+        open_file (plugin, path);
 }
 
 static void
