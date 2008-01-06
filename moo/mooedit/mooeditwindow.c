@@ -182,6 +182,7 @@ static int      get_page_num                    (MooEditWindow      *window,
 static GtkAction *create_lang_action            (MooEditWindow      *window);
 
 static void     create_paned                    (MooEditWindow      *window);
+static gboolean save_paned_config               (MooEditWindow      *window);
 
 static void     moo_edit_window_update_doc_list (MooEditWindow      *window);
 
@@ -867,6 +868,13 @@ moo_edit_window_destroy (GtkObject *object)
 {
     MooEditWindow *window = MOO_EDIT_WINDOW (object);
 
+    if (window->priv->save_params_idle)
+    {
+        g_source_remove (window->priv->save_params_idle);
+        window->priv->save_params_idle = 0;
+        save_paned_config (window);
+    }
+
     if (window->priv->doc_list_merge_id)
     {
         moo_ui_xml_remove_ui (window->priv->xml,
@@ -918,12 +926,6 @@ static void
 moo_edit_window_finalize (GObject *object)
 {
     MooEditWindow *window = MOO_EDIT_WINDOW (object);
-
-    if (window->priv->save_params_idle)
-    {
-        g_warning ("%s: oops", G_STRLOC);
-        g_source_remove (window->priv->save_params_idle);
-    }
 
     g_free (window->priv->title_format);
     g_free (window->priv->title_format_no_doc);
