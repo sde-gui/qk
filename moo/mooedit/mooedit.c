@@ -1017,6 +1017,8 @@ moo_edit_apply_config (MooEdit *edit)
     moo_text_view_set_show_line_numbers (MOO_TEXT_VIEW (edit), line_numbers);
     moo_text_view_set_tab_width (MOO_TEXT_VIEW (edit), tab_width);
     moo_text_view_set_word_chars (MOO_TEXT_VIEW (edit), word_chars);
+
+    g_free (word_chars);
 }
 
 
