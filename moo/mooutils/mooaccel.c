@@ -333,7 +333,7 @@ void
 _moo_modify_accel (const char *accel_path,
                    const char *new_accel)
 {
-    moo_modify_accel_real (accel_path, new_accel, FALSE);
+    moo_modify_accel_real (accel_path, new_accel, TRUE);
 }
 
 
