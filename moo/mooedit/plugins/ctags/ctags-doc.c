@@ -1,7 +1,7 @@
 /*
  *   ctags-doc.c
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>
  *   Copyright (C) 2008      by Christian Dywan <christian@twotoasts.de>
  *
  *   This library is free software; you can redistribute it and/or

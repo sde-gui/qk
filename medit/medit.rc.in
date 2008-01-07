@@ -19,7 +19,7 @@ VS_VERSION_INFO VERSIONINFO
         VALUE "FileDescription", "medit text editor"
         VALUE "FileVersion", "@MOO_VERSION_UNQUOTED@.0"
         VALUE "InternalName", "medit-@MOO_VERSION_UNQUOTED@"
-        VALUE "LegalCopyright", "(C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>"
+        VALUE "LegalCopyright", "(C) 2004-2008 by Yevgen Muntyan <muntyan@math.tamu.edu>"
         VALUE "OriginalFilename", "medit.exe"
         VALUE "ProductName", "medit"
         VALUE "ProductVersion", @MOO_VERSION@
