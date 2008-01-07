@@ -21,6 +21,16 @@
 #include "mooutils/moocompat.h"
 #include <gtk/gtk.h>
 
+#undef DEBUG
+#if defined(MOO_DEBUG_ENABLED) && 1
+#define DEBUG
+#endif
+#ifdef DEBUG
+#define DEBUG_ASSERT(expr) g_assert (expr)
+#else
+#define DEBUG_ASSERT(expr) g_assert (expr)
+#endif
+
 #define FILE_LIST_PLUGIN_ID "MooFileList"
 #define WindowPlugin FileListWindowPlugin
 
@@ -43,6 +53,7 @@
 typedef struct Item Item;
 typedef struct Group Group;
 typedef struct File File;
+typedef struct FileListWindowPlugin FileListWindowPlugin;
 
 enum {
     COLUMN_ITEM,
@@ -61,7 +72,7 @@ struct Item {
 
 struct File {
     Item base;
-    char *uri; /* real uri or "Untitled" */
+    char *uri;
     char *display_basename;
     char *display_name;
     MooEdit *doc;
@@ -76,6 +87,7 @@ typedef struct {
     GtkTreeStore base;
     int n_user_items;
     GSList *docs;
+    FileListWindowPlugin *plugin;
 } FileList;
 
 typedef struct {
@@ -86,40 +98,34 @@ typedef struct {
     MooPlugin parent;
 } FileListPlugin;
 
-typedef struct {
+struct FileListWindowPlugin {
     MooWinPlugin parent;
     FileList *list;
     GtkWidget *treeview;
     GtkTreeViewColumn *column;
     GtkCellRenderer *text_cell;
-    guint update_idle;
     gboolean first_time_show;
+    guint update_idle;
     char *filename;
-} FileListWindowPlugin;
+};
 
 static GdkAtom atom_tree_model_row;
 static GdkAtom atom_uri_list;
+static GQuark file_list_row_quark;
 
-static GType         item_get_type          (void) G_GNUC_CONST;
-static Item         *file_new               (MooEdit    *doc,
-                                             const char *uri);
-static void          file_update            (File       *file);
-static void          file_set_doc           (File       *file,
-                                             MooEdit    *doc);
-static char         *file_get_uri           (File       *file);
-static Item         *item_ref               (Item       *item);
-static void          item_unref             (Item       *item);
-static const char   *item_get_tooltip       (Item       *item);
+static GType         item_get_type              (void) G_GNUC_CONST;
+static Item         *item_ref                   (Item           *item);
+static void          item_unref                 (Item           *item);
 
-static void          file_list_load_config  (FileList   *list,
-                                             const char *filename);
-static void          file_list_save_config  (FileList   *list,
-                                             const char *filename);
-static void          file_list_update_docs  (FileList   *list,
-                                             GSList     *docs);
-static void          file_list_update_doc   (FileList   *list,
-                                             MooEdit    *doc);
-static void          file_list_sort         (FileList   *list);
+static void          file_list_load_config      (FileList       *list,
+                                                 const char     *filename);
+static void          file_list_save_config      (FileList       *list,
+                                                 const char     *filename);
+static void          file_list_update           (FileList       *list,
+                                                 GSList         *docs);
+static void          file_list_shutdown         (FileList       *list);
+
+static void          window_plugin_queue_update (WindowPlugin   *plugin);
 
 static void file_list_drag_source_iface_init    (GtkTreeDragSourceIface *iface);
 static void file_list_drag_dest_iface_init      (GtkTreeDragDestIface   *iface);
@@ -180,8 +186,7 @@ file_list_finalize (GObject *object)
 {
     FileList *list = FILE_LIST (object);
 
-    g_slist_foreach (list->docs, (GFunc) g_object_unref, NULL);
-    g_slist_free (list->docs);
+    DEBUG_ASSERT (!list->docs);
 
     G_OBJECT_CLASS (file_list_parent_class)->finalize (object);
 }
@@ -190,6 +195,8 @@ static void
 file_list_class_init (FileListClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+    file_list_row_quark = g_quark_from_static_string ("moo-file-list-plugin-model-row");
 
     object_class->finalize = file_list_finalize;
 
@@ -257,33 +264,22 @@ uri_get_basename (const char *uri)
         return g_strdup (uri);
 }
 
-static const char *
-item_get_tooltip (Item *item)
-{
-    if (ITEM_IS_FILE (item))
-        return FILE_ITEM (item)->display_name;
-    else
-        return NULL;
-}
-
 static char *
 file_get_uri (File *file)
 {
-    if (file->doc)
-        return moo_edit_get_uri (file->doc);
+    if (file->uri)
+        return g_strdup (file->uri);
     else
-        return NULL;
+        return moo_edit_get_uri (file->doc);
 }
 
 static void
 file_update (File *file)
 {
-    if (file->doc)
+    if (!file->uri && file->doc)
     {
-        g_free (file->uri);
         g_free (file->display_name);
         g_free (file->display_basename);
-        file->uri = moo_edit_get_uri (file->doc);
         file->display_name = g_strdup (moo_edit_get_display_name (file->doc));
         file->display_basename = g_strdup (moo_edit_get_display_basename (file->doc));
     }
@@ -293,47 +289,86 @@ static void
 file_set_doc (File    *file,
               MooEdit *doc)
 {
+    if (doc)
+        g_object_ref (doc);
     if (file->doc)
         g_object_unref (file->doc);
 
-    file->doc = doc ? g_object_ref (doc) : NULL;
+    file->doc = doc;
     file_update (file);
 }
 
-static Item *
-file_new (MooEdit    *doc,
-          const char *uri)
+static File *
+file_new (void)
 {
     File *file = _moo_new0 (File);
 
     ITEM (file)->ref_count = 1;
     ITEM (file)->type = ITEM_FILE;
 
-    file->doc = doc ? g_object_ref (doc) : NULL;
+    file->uri = NULL;
+    file->doc = NULL;
+    file->display_name = NULL;
+    file->display_basename = NULL;
+
+    return file;
+}
+
+static Item *
+file_new_doc (MooEdit *doc)
+{
+    File *file;
+
+    g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+
+    file = file_new ();
+    file_set_doc (file, doc);
+
+    return ITEM (file);
+}
+
+static void
+file_set_uri (File       *file,
+              const char *uri)
+{
+    char *tmp;
+    char *filename;
+
+    g_return_if_fail (file != NULL);
+    g_return_if_fail (uri != NULL);
+
+    tmp = file->uri;
     file->uri = g_strdup (uri);
+    g_free (tmp);
 
-    if (doc)
+    g_free (file->display_name);
+    g_free (file->display_basename);
+
+    filename = g_filename_from_uri (uri, NULL, NULL);
+
+    if (filename)
     {
-        file->display_name = g_strdup (moo_edit_get_display_name (doc));
-        file->display_basename = g_strdup (moo_edit_get_display_basename (doc));
+        file->display_name = g_filename_display_name (filename);
+        file->display_basename = g_filename_display_basename (filename);
     }
-    else if (uri)
+    else
     {
-        char *filename;
-
-        filename = g_filename_from_uri (uri, NULL, NULL);
-
-        if (filename)
-        {
-            file->display_name = g_filename_display_name (filename);
-            file->display_basename = g_filename_display_basename (filename);
-        }
-        else
-        {
-            file->display_name = g_strdup (uri);
-            file->display_basename = uri_get_basename (uri);
-        }
+        file->display_name = g_strdup (uri);
+        file->display_basename = uri_get_basename (uri);
     }
+
+    g_free (filename);
+}
+
+static Item *
+file_new_uri (const char *uri)
+{
+    File *file;
+
+    g_return_val_if_fail (uri != NULL, NULL);
+
+    file = file_new ();
+    file_set_uri (file, uri);
 
     return ITEM (file);
 }
@@ -350,6 +385,15 @@ file_free (File *file)
         g_free (file->display_basename);
         _moo_free (File, file);
     }
+}
+
+static const char *
+item_get_tooltip (Item *item)
+{
+    if (ITEM_IS_FILE (item))
+        return FILE_ITEM (item)->display_name;
+    else
+        return NULL;
 }
 
 static Item *
@@ -391,18 +435,9 @@ item_get_type (void)
 }
 
 
-static char *
-get_doc_uri (MooEdit *doc)
-{
-    char *uri = moo_edit_get_uri (doc);
-    if (!uri)
-        uri = g_strdup (moo_edit_get_display_name (doc));
-    return uri;
-}
-
 static gboolean
-iter_is_auto (FileList    *list,
-              GtkTreeIter *iter)
+file_list_iter_is_auto (FileList    *list,
+                        GtkTreeIter *iter)
 {
     gboolean retval;
     GtkTreePath *path;
@@ -418,9 +453,9 @@ iter_is_auto (FileList    *list,
 
 
 static void
-check_separator (FileList *list)
+check_list (FileList *list)
 {
-#if 1
+#ifdef DEBUG
     GtkTreeIter iter;
     int index = 0;
 
@@ -450,44 +485,6 @@ check_separator (FileList *list)
 #endif
 }
 
-
-static gboolean
-iter_find_doc (FileList     *list,
-               MooEdit      *doc,
-               GtkTreeIter  *parent,
-               GtkTreeIter  *dest)
-{
-    GtkTreeIter iter;
-
-    if (parent)
-    {
-        Item *item = get_item_at_iter (list, parent);
-
-        if (ITEM_IS_FILE (item) && FILE_ITEM (item)->doc == doc)
-        {
-            *dest = *parent;
-            return TRUE;
-        }
-    }
-
-    if (gtk_tree_model_iter_children (GTK_TREE_MODEL (list), &iter, parent))
-        do
-        {
-            if (iter_find_doc (list, doc, &iter, dest))
-                return TRUE;
-        }
-        while (gtk_tree_model_iter_next (GTK_TREE_MODEL (list), &iter));
-
-    return FALSE;
-}
-
-static gboolean
-file_list_find_doc (FileList     *list,
-                    MooEdit      *doc,
-                    GtkTreeIter  *dest)
-{
-    return iter_find_doc (list, doc, NULL, dest);
-}
 
 static gboolean
 iter_find_uri (FileList     *list,
@@ -529,6 +526,7 @@ file_list_find_uri (FileList    *list,
     return iter_find_uri (list, uri, NULL, iter);
 }
 
+
 static void
 file_list_remove_row (FileList    *list,
                       GtkTreeIter *iter)
@@ -537,9 +535,9 @@ file_list_remove_row (FileList    *list,
     gboolean last_user_item = FALSE;
 
     if (!gtk_tree_model_iter_parent (GTK_TREE_MODEL (list), &parent, iter) &&
-        !iter_is_auto (list, iter))
+        !file_list_iter_is_auto (list, iter))
     {
-        g_assert (list->n_user_items > 0);
+        DEBUG_ASSERT (list->n_user_items > 0);
         list->n_user_items -= 1;
         last_user_item = list->n_user_items == 0;
     }
@@ -553,16 +551,16 @@ file_list_remove_row (FileList    *list,
         gtk_tree_store_remove (GTK_TREE_STORE (list), &sep);
     }
 
-    check_separator (list);
+    check_list (list);
 }
 
 static void
-file_list_append_row (FileList *list,
-                      Item     *item)
+file_list_append_row (FileList    *list,
+                      Item        *item,
+                      GtkTreeIter *iter)
 {
-    GtkTreeIter iter;
-    gtk_tree_store_append (GTK_TREE_STORE (list), &iter, NULL);
-    gtk_tree_store_set (GTK_TREE_STORE (list), &iter,
+    gtk_tree_store_append (GTK_TREE_STORE (list), iter, NULL);
+    gtk_tree_store_set (GTK_TREE_STORE (list), iter,
                         COLUMN_ITEM, item,
                         COLUMN_TOOLTIP, item_get_tooltip (item),
                         -1);
@@ -588,7 +586,7 @@ file_list_insert_row (FileList    *list,
 
     if (!parent_iter)
     {
-        g_assert (index <= list->n_user_items);
+        DEBUG_ASSERT (index <= list->n_user_items);
         list->n_user_items += 1;
         first_user_item = list->n_user_items == 1;
     }
@@ -606,130 +604,130 @@ file_list_insert_row (FileList    *list,
         gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (list), iter, parent_iter, index);
     }
 
-    check_separator (list);
+    check_list (list);
+}
+
+
+static void
+doc_filename_changed (FileList *list)
+{
+    if (list->plugin)
+        window_plugin_queue_update (list->plugin);
 }
 
 static void
-doc_filename_changed (MooEdit    *doc,
-                      G_GNUC_UNUSED const char *new_filename,
-                      FileList   *list)
+connect_doc (FileList *list,
+             MooEdit  *doc)
 {
-    file_list_update_doc (list, doc);
-    file_list_sort (list);
+    DEBUG_ASSERT (!g_slist_find (list->docs, doc));
+    list->docs = g_slist_prepend (list->docs, g_object_ref (doc));
+    g_signal_connect_swapped (doc, "filename-changed",
+                              G_CALLBACK (doc_filename_changed),
+                              list);
+}
+
+static void
+disconnect_doc (FileList *list,
+                MooEdit  *doc)
+{
+    DEBUG_ASSERT (g_slist_find (list->docs, doc));
+    list->docs = g_slist_remove (list->docs, doc);
+    g_signal_handlers_disconnect_by_func (doc,
+                                          (gpointer) doc_filename_changed,
+                                          list);
+    g_object_unref (doc);
+}
+
+static void
+file_list_add_doc (FileList *list,
+                   MooEdit  *doc,
+                   gboolean  new)
+{
+    char *uri;
+    GtkTreeIter iter;
+    Item *item;
+    GtkTreeRowReference *row;
+    GtkTreePath *path;
+
+    DEBUG_ASSERT (!new || g_object_get_qdata (G_OBJECT (doc), file_list_row_quark) == NULL);
+    DEBUG_ASSERT (new == !g_slist_find (list->docs, doc));
+
+    uri = moo_edit_get_uri (doc);
+
+    if (uri && file_list_find_uri (list, uri, &iter))
+    {
+        item = get_item_at_iter (list, &iter);
+        DEBUG_ASSERT (ITEM_IS_FILE (item) && !FILE_ITEM (item)->doc);
+        file_set_doc (FILE_ITEM (item), doc);
+    }
+    else
+    {
+        item = file_new_doc (doc);
+        file_list_append_row (list, item, &iter);
+        item_unref (item);
+    }
+
+    path = gtk_tree_model_get_path (GTK_TREE_MODEL (list), &iter);
+    row = gtk_tree_row_reference_new (GTK_TREE_MODEL (list), path);
+    g_object_set_qdata_full (G_OBJECT (doc), file_list_row_quark, row,
+                             (GDestroyNotify) gtk_tree_row_reference_free);
+
+    if (new)
+        connect_doc (list, doc);
+}
+
+static gboolean
+doc_get_list_iter (FileList    *list,
+                   MooEdit     *doc,
+                   GtkTreeIter *iter)
+{
+    GtkTreeRowReference *row;
+    GtkTreePath *path;
+
+    row = g_object_get_qdata (G_OBJECT (doc), file_list_row_quark);
+
+    if (!row || !gtk_tree_row_reference_valid (row))
+        return FALSE;
+
+    path = gtk_tree_row_reference_get_path (row);
+    gtk_tree_model_get_iter (GTK_TREE_MODEL (list), iter, path);
+    gtk_tree_path_free (path);
+    return TRUE;
 }
 
 static void
 file_list_update_doc (FileList *list,
                       MooEdit  *doc)
 {
+    GtkTreeIter iter;
     char *new_uri;
+    Item *item;
 
-    new_uri = get_doc_uri (doc);
-
-    if (g_slist_find (list->docs, doc))
+    if (!g_slist_find (list->docs, doc))
     {
-        GtkTreeIter iter;
-        Item *item;
-
-        if (!file_list_find_doc (list, doc, &iter))
-        {
-            g_signal_handlers_disconnect_by_func (doc,
-                                                  (gpointer) doc_filename_changed,
-                                                  list);
-            list->docs = g_slist_remove (list->docs, doc);
-            g_object_unref (doc);
-            file_list_update_doc (list, doc);
-            return;
-        }
-
-        item = get_item_at_iter (list, &iter);
-        g_return_if_fail (ITEM_IS_FILE (item));
-        g_return_if_fail (FILE_ITEM (item)->doc == doc);
-
-        if (!FILE_ITEM (item)->uri || strcmp (new_uri, FILE_ITEM (item)->uri) != 0)
-        {
-            if (iter_is_auto (list, &iter))
-            {
-                GtkTreeIter new_iter;
-
-                if (file_list_find_uri (list, new_uri, &new_iter))
-                {
-                    Item *new_item;
-
-                    new_item = get_item_at_iter (list, &new_iter);
-                    g_return_if_fail (ITEM_IS_FILE (new_item));
-
-                    if (FILE_ITEM (new_item)->doc)
-                    {
-                        MooEdit *old_doc = FILE_ITEM (new_item)->doc;
-
-                        g_signal_handlers_disconnect_by_func (old_doc,
-                                                              (gpointer) doc_filename_changed,
-                                                              list);
-                        list->docs = g_slist_remove (list->docs, old_doc);
-                        g_object_unref (old_doc);
-                    }
-
-                    file_set_doc (FILE_ITEM (new_item), doc);
-
-                    gtk_tree_store_set (GTK_TREE_STORE (list), &new_iter,
-                                        COLUMN_TOOLTIP, item_get_tooltip (new_item), -1);
-                    file_list_remove_row (list, &iter);
-                }
-                else
-                {
-                    file_update (FILE_ITEM (item));
-                    gtk_tree_store_set (GTK_TREE_STORE (list), &iter,
-                                        COLUMN_TOOLTIP, item_get_tooltip (item),
-                                        -1);
-                }
-            }
-            else
-            {
-                file_set_doc (FILE_ITEM (item), NULL);
-                gtk_tree_store_set (GTK_TREE_STORE (list), &iter,
-                                    COLUMN_TOOLTIP, item_get_tooltip (item), -1);
-
-                item = file_new (doc, new_uri);
-                file_list_append_row (list, item);
-                item_unref (item);
-            }
-        }
+        file_list_add_doc (list, doc, TRUE);
+        return;
     }
-    else
+
+    if (!doc_get_list_iter (list, doc, &iter))
     {
-        GtkTreeIter iter;
+        file_list_add_doc (list, doc, FALSE);
+        return;
+    }
 
-        if (file_list_find_uri (list, new_uri, &iter))
-        {
-            Item *item = get_item_at_iter (list, &iter);
-            g_return_if_fail (ITEM_IS_FILE (item));
+    DEBUG_ASSERT (!file_list_iter_is_auto (list, &iter));
 
-            if (FILE_ITEM (item)->doc)
-            {
-                MooEdit *old_doc = FILE_ITEM (item)->doc;
-                g_signal_handlers_disconnect_by_func (old_doc,
-                                                      (gpointer) doc_filename_changed,
-                                                      list);
-                list->docs = g_slist_remove (list->docs, old_doc);
-                g_object_unref (old_doc);
-            }
+    item = get_item_at_iter (list, &iter);
+    DEBUG_ASSERT (ITEM_IS_FILE (item) && FILE_ITEM (item)->doc == doc);
+    DEBUG_ASSERT (FILE_ITEM (item)->uri != NULL);
 
-            file_set_doc (FILE_ITEM (item), doc);
-            gtk_tree_store_set (GTK_TREE_STORE (list), &iter,
-                                COLUMN_TOOLTIP, item_get_tooltip (item), -1);
-        }
-        else
-        {
-            Item *item = file_new (doc, new_uri);
-            file_list_append_row (list, item);
-            item_unref (item);
-        }
+    new_uri = moo_edit_get_uri (doc);
 
-        g_signal_connect (doc, "filename-changed",
-                          G_CALLBACK (doc_filename_changed),
-                          list);
-        list->docs = g_slist_prepend (list->docs, g_object_ref (doc));
+    if (!new_uri || strcmp (new_uri, FILE_ITEM (item)->uri) != 0)
+    {
+        g_object_set_qdata (G_OBJECT (doc), file_list_row_quark, NULL);
+        file_set_doc (FILE_ITEM (item), NULL);
+        file_list_add_doc (list, doc, FALSE);
     }
 
     g_free (new_uri);
@@ -740,115 +738,49 @@ file_list_remove_doc (FileList *list,
                       MooEdit  *doc)
 {
     GtkTreeIter iter;
-    Item *item;
 
-    if (!file_list_find_doc (list, doc, &iter))
+    DEBUG_ASSERT (g_slist_find (list->docs, doc) != NULL);
+
+    if (doc_get_list_iter (list, doc, &iter))
     {
-        g_critical ("%s: oops", G_STRLOC);
-        return;
+        Item *item;
+
+        item = get_item_at_iter (list, &iter);
+        DEBUG_ASSERT (ITEM_IS_FILE (item) && FILE_ITEM (item)->doc == doc);
+        DEBUG_ASSERT (file_list_iter_is_auto (list, &iter) == !FILE_ITEM (item)->uri);
+
+        if (file_list_iter_is_auto (list, &iter))
+            file_list_remove_row (list, &iter);
+        else
+            file_set_doc (FILE_ITEM (item), NULL);
     }
 
-    item = get_item_at_iter (list, &iter);
-    g_return_if_fail (ITEM_IS_FILE (item));
-
-    if (iter_is_auto (list, &iter))
-    {
-        file_list_remove_row (list, &iter);
-    }
-    else
-    {
-        file_set_doc (FILE_ITEM (item), NULL);
-        gtk_tree_store_set (GTK_TREE_STORE (list), &iter,
-                            COLUMN_TOOLTIP, item_get_tooltip (item), -1);
-    }
-
-    g_signal_handlers_disconnect_by_func (doc,
-                                          (gpointer) doc_filename_changed,
-                                          list);
-    list->docs = g_slist_remove (list->docs, doc);
-    g_object_unref (doc);
-}
-
-
-static int
-compare_items (int       *p1,
-               int       *p2,
-               GPtrArray *items)
-{
-    Item *item1, *item2;
-    char *s1, *s2;
-    int retval;
-
-    item1 = items->pdata[*p1];
-    item2 = items->pdata[*p2];
-
-    if (!item1)
-        return !item2 ? 0 : -1;
-    if (!item2)
-        return 1;
-
-    s1 = g_utf8_collate_key_for_filename (FILE_ITEM (item1)->display_basename, -1);
-    s2 = g_utf8_collate_key_for_filename (FILE_ITEM (item2)->display_basename, -1);
-
-    retval = strcmp (s1, s2);
-
-    g_free (s2);
-    g_free (s1);
-    return retval;
+    g_object_set_qdata (G_OBJECT (doc), file_list_row_quark, NULL);
+    disconnect_doc (list, doc);
 }
 
 static void
-file_list_sort (FileList *list)
+remove_auto_items (FileList *list)
 {
-    GPtrArray *items;
-    GArray *indices;
     GtkTreeIter iter;
-    int i;
 
-    if (!gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (list),
-                                        &iter, NULL,
-                                        list->n_user_items))
-        return;
-
-    items = g_ptr_array_new ();
-
-    indices = g_array_new (FALSE, FALSE, sizeof (int));
-    for (i = 0; i < list->n_user_items; ++i)
-        g_array_append_val (indices, i);
-
-    do
-    {
-        int index = indices->len - list->n_user_items;
-        Item *item = get_item_at_iter (list, &iter);
-        g_array_append_val (indices, index);
-        g_ptr_array_add (items, item);
-    }
-    while (gtk_tree_model_iter_next (GTK_TREE_MODEL (list), &iter));
-
-    g_qsort_with_data ((int*)indices->data + list->n_user_items,
-                       indices->len - list->n_user_items,
-                       sizeof (int),
-                       (GCompareDataFunc) compare_items,
-                       items);
-
-    for (i = list->n_user_items; i < (int) indices->len; ++i)
-    {
-        int real_index = g_array_index (indices, int, i) + list->n_user_items;
-        g_array_index (indices, int, i) = real_index;
-    }
-
-    gtk_tree_store_reorder (GTK_TREE_STORE (list), NULL, (int*) indices->data);
-
-    g_array_free (indices, TRUE);
-    g_ptr_array_free (items, TRUE);
+    if (list->n_user_items)
+        while (gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (list), &iter,
+                                              NULL, list->n_user_items + 1))
+            gtk_tree_store_remove (GTK_TREE_STORE (list), &iter);
+    else
+        while (gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (list), &iter, NULL, 0))
+            gtk_tree_store_remove (GTK_TREE_STORE (list), &iter);
 }
 
 static void
-file_list_update_docs (FileList *list,
-                       GSList   *docs)
+file_list_update (FileList *list,
+                  GSList   *docs)
 {
     GSList *l;
     GSList *old_docs;
+
+    remove_auto_items (list);
 
     for (l = docs; l != NULL; l = l->next)
         file_list_update_doc (list, l->data);
@@ -859,17 +791,31 @@ file_list_update_docs (FileList *list,
     for (l = old_docs; l != NULL; l = l->next)
         file_list_remove_doc (list, l->data);
 
-    file_list_sort (list);
+    check_list (list);
 
     g_slist_free (old_docs);
 }
 
 static void
-file_list_self_update (FileList *list)
+file_list_shutdown (FileList *list)
 {
-    GSList *docs = g_slist_copy (list->docs);
-    file_list_update_docs (list, docs);
-    g_slist_free (docs);
+    while (list->docs)
+    {
+        GtkTreeIter iter;
+        MooEdit *doc;
+
+        doc = list->docs->data;
+
+        if (doc_get_list_iter (list, doc, &iter))
+        {
+            Item *item = get_item_at_iter (list, &iter);
+            DEBUG_ASSERT (ITEM_IS_FILE (item));
+            file_set_doc (FILE_ITEM (item), NULL);
+        }
+
+        g_object_set_qdata (G_OBJECT (doc), file_list_row_quark, NULL);
+        disconnect_doc (list, doc);
+    }
 }
 
 
@@ -914,7 +860,7 @@ parse_node (FileList      *list,
             return;
         }
 
-        item = file_new (NULL, uri);
+        item = file_new_uri (uri);
         file_list_insert_row (list, item, &iter, parent, -1);
         item_unref (item);
     }
@@ -1051,7 +997,7 @@ file_list_save_config (FileList   *list,
 
     do
     {
-        if (iter_is_auto (list, &iter))
+        if (file_list_iter_is_auto (list, &iter))
             break;
 
         format_item (list, &iter, buffer, 2);
@@ -1069,7 +1015,6 @@ file_list_save_config (FileList   *list,
 
     g_string_free (buffer, TRUE);
 }
-
 
 static GtkTreePath *
 file_list_add_group (FileList    *list,
@@ -1094,7 +1039,7 @@ file_list_add_group (FileList    *list,
             parent = gtk_tree_path_copy (path);
             index = 0;
         }
-        else if (!iter_is_auto (list, &iter))
+        else if (!file_list_iter_is_auto (list, &iter))
         {
             GtkTreeIter parent_iter;
 
@@ -1128,30 +1073,17 @@ file_list_add_group (FileList    *list,
 }
 
 static void
-file_list_remove_item (FileList    *list,
-                       GtkTreePath *path)
+file_list_try_remove_item (FileList    *list,
+                           GtkTreePath *path)
 {
     GtkTreeIter iter;
-    Item *item;
 
-    if (!gtk_tree_model_get_iter (GTK_TREE_MODEL (list), &iter, path))
-        return;
-
-    if (iter_is_auto (list, &iter))
-        return;
-
-    item = get_item_at_iter (list, &iter);
-    item_ref (item);
-
-    file_list_remove_row (list, &iter);
-
-    if (ITEM_IS_FILE (item) && FILE_ITEM (item)->doc)
-        file_list_append_row (list, item);
-
-    /* XXX */
-    file_list_self_update (list);
-
-    item_unref (item);
+    if (gtk_tree_model_get_iter (GTK_TREE_MODEL (list), &iter, path) &&
+        !file_list_iter_is_auto (list, &iter))
+    {
+        file_list_remove_row (list, &iter);
+        window_plugin_queue_update (list->plugin);
+    }
 }
 
 static void
@@ -1183,7 +1115,7 @@ file_list_remove_items (FileList *list,
 
         if (path)
         {
-            file_list_remove_item (list, path);
+            file_list_try_remove_item (list, path);
             gtk_tree_path_free (path);
         }
 
@@ -1191,7 +1123,6 @@ file_list_remove_items (FileList *list,
         rows = g_slist_delete_link (rows, rows);
     }
 }
-
 
 static gboolean
 drag_source_row_draggable (G_GNUC_UNUSED GtkTreeDragSource *drag_source,
@@ -1314,6 +1245,13 @@ move_row (FileList    *list,
         if (!uri)
             return FALSE;
 
+        if (!FILE_ITEM (item)->uri)
+            file_set_uri (FILE_ITEM (item), uri);
+
+        g_object_set_qdata (G_OBJECT (FILE_ITEM (item)->doc),
+                            file_list_row_quark, NULL);
+        file_set_doc (FILE_ITEM (item), NULL);
+
         g_free (uri);
     }
 
@@ -1338,7 +1276,7 @@ move_row (FileList    *list,
             gtk_tree_model_get_iter (GTK_TREE_MODEL (list), &iter, parent);
             piter = &iter;
         }
-        else if (iter_is_auto (list, &iter))
+        else if (file_list_iter_is_auto (list, &iter))
         {
             list->n_user_items += 1;
             first_user = list->n_user_items == 1;
@@ -1364,8 +1302,11 @@ move_row (FileList    *list,
     else
     {
         GtkTreeRowReference *row;
+
         row = gtk_tree_row_reference_new (GTK_TREE_MODEL (list), source);
+
         copy_row (list, source, parent, index);
+
         source = gtk_tree_row_reference_get_path (row);
         gtk_tree_model_get_iter (GTK_TREE_MODEL (list), &iter, source);
 
@@ -1378,7 +1319,7 @@ move_row (FileList    *list,
     if (source_parent)
         gtk_tree_path_free (source_parent);
 
-    check_separator (list);
+    check_list (list);
 
     return TRUE;
 }
@@ -1399,7 +1340,7 @@ add_row_from_uri (FileList    *list,
         piter = &iter;
     }
 
-    item = file_new (NULL, uri);
+    item = file_new_uri (uri);
     file_list_insert_row (list, item, &dummy, piter, index);
     item_unref (item);
 
@@ -1582,7 +1523,8 @@ drag_dest_drag_data_received (GtkTreeDragDest  *drag_dest,
         if (!gtk_tree_get_row_drag_data (selection_data, NULL, &path))
             return FALSE;
 
-        retval = drop_tree_model_row (FILE_LIST (drag_dest), dest, path);
+        if ((retval = drop_tree_model_row (FILE_LIST (drag_dest), dest, path)))
+            window_plugin_queue_update (FILE_LIST (drag_dest)->plugin);
 
         gtk_tree_path_free (path);
         return retval;
@@ -1595,7 +1537,8 @@ drag_dest_drag_data_received (GtkTreeDragDest  *drag_dest,
         if (!(uris = gtk_selection_data_get_uris (selection_data)))
             return FALSE;
 
-        retval = drop_uris (FILE_LIST (drag_dest), dest, uris);
+        if ((retval = drop_uris (FILE_LIST (drag_dest), dest, uris)))
+            window_plugin_queue_update (FILE_LIST (drag_dest)->plugin);
 
         g_strfreev (uris);
         return retval;
@@ -1817,6 +1760,7 @@ remove_activated (G_GNUC_UNUSED GtkWidget *menuitem,
     GList *selected;
     selected = get_selected_rows (plugin);
     file_list_remove_items (plugin->list, selected);
+    window_plugin_queue_update (plugin);
     path_list_free (selected);
 }
 
@@ -1901,7 +1845,7 @@ can_remove (FileList *list,
         GtkTreeIter iter;
         GtkTreePath *path = paths->data;
         gtk_tree_model_get_iter (GTK_TREE_MODEL (list), &iter, path);
-        if (!iter_is_auto (list, &iter))
+        if (!file_list_iter_is_auto (list, &iter))
             return TRUE;
         paths = paths->next;
     }
@@ -2072,11 +2016,32 @@ static void
 create_model (WindowPlugin *plugin)
 {
     plugin->list = g_object_new (file_list_get_type (), NULL);
+    plugin->list->plugin = plugin;
 
     file_list_load_config (plugin->list, plugin->filename);
 
     gtk_tree_view_set_model (GTK_TREE_VIEW (plugin->treeview),
                              GTK_TREE_MODEL (plugin->list));
+}
+
+static int
+compare_docs_by_name (MooEdit *doc1,
+                      MooEdit *doc2)
+{
+    const char *name1, *name2;
+    char *key1, *key2;
+    int retval;
+
+    name1 = moo_edit_get_display_basename (doc1);
+    name2 = moo_edit_get_display_basename (doc2);
+    key1 = g_utf8_collate_key_for_filename (name1, -1);
+    key2 = g_utf8_collate_key_for_filename (name2, -1);
+
+    retval = strcmp (key1, key2);
+
+    g_free (key2);
+    g_free (key1);
+    return retval;
 }
 
 static gboolean
@@ -2087,7 +2052,8 @@ do_update (WindowPlugin *plugin)
     plugin->update_idle = 0;
 
     docs = moo_edit_window_list_docs (MOO_WIN_PLUGIN (plugin)->window);
-    file_list_update_docs (plugin->list, docs);
+    docs = g_slist_sort (docs, (GCompareFunc) compare_docs_by_name);
+    file_list_update (plugin->list, docs);
     g_slist_free (docs);
 
     if (plugin->first_time_show)
@@ -2101,8 +2067,10 @@ do_update (WindowPlugin *plugin)
 }
 
 static void
-queue_update (WindowPlugin *plugin)
+window_plugin_queue_update (WindowPlugin *plugin)
 {
+    g_return_if_fail (plugin != NULL);
+
     if (!plugin->update_idle)
         plugin->update_idle = g_idle_add ((GSourceFunc) do_update,
                                           plugin);
@@ -2146,10 +2114,10 @@ file_list_window_plugin_create (WindowPlugin *plugin)
 
     plugin->first_time_show = TRUE;
     g_signal_connect_swapped (window, "new-doc",
-                              G_CALLBACK (queue_update), plugin);
+                              G_CALLBACK (window_plugin_queue_update), plugin);
     g_signal_connect_swapped (window, "close-doc",
-                              G_CALLBACK (queue_update), plugin);
-    queue_update (plugin);
+                              G_CALLBACK (window_plugin_queue_update), plugin);
+    window_plugin_queue_update (plugin);
 
     return TRUE;
 }
@@ -2158,18 +2126,17 @@ static void
 file_list_window_plugin_destroy (WindowPlugin *plugin)
 {
     file_list_save_config (plugin->list, plugin->filename);
-    g_free (plugin->filename);
+    file_list_shutdown (plugin->list);
+    g_object_unref (plugin->list);
 
     moo_edit_window_remove_pane (MOO_WIN_PLUGIN (plugin)->window,
                                  FILE_LIST_PLUGIN_ID);
 
-    g_object_unref (plugin->list);
-
-    if (plugin->update_idle)
-        g_source_remove (plugin->update_idle);
     g_signal_handlers_disconnect_by_func (MOO_WIN_PLUGIN (plugin)->window,
-                                          (gpointer) queue_update,
+                                          (gpointer) window_plugin_queue_update,
                                           plugin);
+
+    g_free (plugin->filename);
 }
 
 static gboolean
