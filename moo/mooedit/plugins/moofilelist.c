@@ -119,6 +119,7 @@ static void          file_list_update_docs  (FileList   *list,
                                              GSList     *docs);
 static void          file_list_update_doc   (FileList   *list,
                                              MooEdit    *doc);
+static void          file_list_sort         (FileList   *list);
 
 static void file_list_drag_source_iface_init    (GtkTreeDragSourceIface *iface);
 static void file_list_drag_dest_iface_init      (GtkTreeDragDestIface   *iface);
@@ -614,6 +615,7 @@ doc_filename_changed (MooEdit    *doc,
                       FileList   *list)
 {
     file_list_update_doc (list, doc);
+    file_list_sort (list);
 }
 
 static void
