@@ -872,7 +872,6 @@ moo_edit_window_destroy (GtkObject *object)
     {
         g_source_remove (window->priv->save_params_idle);
         window->priv->save_params_idle = 0;
-        save_paned_config (window);
     }
 
     if (window->priv->doc_list_merge_id)
