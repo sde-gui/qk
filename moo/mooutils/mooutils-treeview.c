@@ -892,6 +892,7 @@ _moo_tree_helper_set (MooTreeHelper *helper,
 typedef struct {
     GtkTreeViewColumn *column;
     GtkCellRenderer *cell;
+    GtkTreeModel *model;
 } ExpanderData;
 
 #define MOO_TYPE_EXPANDER_CELL              (moo_expander_cell_get_type ())
@@ -1068,6 +1069,42 @@ expander_cell_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
 }
 
 static void
+row_has_child_toggled (GtkTreeModel *tree_model,
+                       GtkTreePath  *path,
+                       GtkTreeIter  *iter)
+{
+    gtk_tree_model_row_changed (tree_model, path, iter);
+}
+
+static void
+expander_data_disconnect_model (ExpanderData *data)
+{
+    if (data->model)
+    {
+        g_signal_handlers_disconnect_by_func (data->model,
+                                              (gpointer) row_has_child_toggled,
+                                              NULL);
+        g_object_unref (data->model);
+        data->model = NULL;
+    }
+}
+
+static void
+tree_view_model_changed (GtkTreeView *treeview,
+                         G_GNUC_UNUSED GParamSpec *pspec,
+                         ExpanderData *data)
+{
+    expander_data_disconnect_model (data);
+
+    if ((data->model = gtk_tree_view_get_model (treeview)))
+    {
+        g_object_ref (data->model);
+        g_signal_connect (data->model, "row-has-child-toggled",
+                          G_CALLBACK (row_has_child_toggled), NULL);
+    }
+}
+
+static void
 expander_data_free (ExpanderData *data)
 {
     if (data)
@@ -1076,6 +1113,7 @@ expander_data_free (ExpanderData *data)
             g_object_unref (data->column);
         if (data->cell)
             g_object_unref (data->cell);
+        expander_data_disconnect_model (data);
         _moo_free (ExpanderData, data);
     }
 }
@@ -1185,4 +1223,6 @@ _moo_tree_view_setup_expander (GtkTreeView       *tree_view,
 
     g_signal_connect (tree_view, "button-press-event", G_CALLBACK (tree_view_button_press), data);
     g_signal_connect (tree_view, "row-activated", G_CALLBACK (tree_view_row_activated), NULL);
+    g_signal_connect (tree_view, "notify::model", G_CALLBACK (tree_view_model_changed), data);
+    tree_view_model_changed (tree_view, NULL, data);
 }
