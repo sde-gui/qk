@@ -22,14 +22,6 @@
 #include <gtk/gtkcellrenderer.h>
 #include <gtk/gtkdnd.h>
 
-#ifndef G_GNUC_NULL_TERMINATED
-#if __GNUC__ >= 4
-#define G_GNUC_NULL_TERMINATED __attribute__((__sentinel__))
-#else
-#define G_GNUC_NULL_TERMINATED
-#endif
-#endif
-
 G_BEGIN_DECLS
 
 
@@ -112,6 +104,7 @@ void        _moo_icon_view_selected_foreach     (MooIconView        *view,
 GList*      _moo_icon_view_get_selected_rows    (MooIconView        *view);
 gboolean    _moo_icon_view_path_is_selected     (MooIconView        *view,
                                                  GtkTreePath        *path);
+void        _moo_icon_view_select_all           (MooIconView        *view);
 void        _moo_icon_view_unselect_all         (MooIconView        *view);
 
 void        _moo_icon_view_scroll_to_cell       (MooIconView        *view,
