@@ -1082,6 +1082,17 @@ get_rect_from_points (GdkRectangle *rect,
     rect->height = MAX (y1, y2) - rect->y + 1;
 }
 
+static void
+get_drag_select_rect (MooIconView  *view,
+                      GdkRectangle *rect)
+{
+    get_rect_from_points (rect,
+                          view->priv->drag_select_x - view->priv->xoffset,
+                          view->priv->drag_select_y,
+                          view->priv->button_press_x - view->priv->xoffset,
+                          view->priv->button_press_y);
+}
+
 static GdkGC *
 get_sel_gc (MooIconView *view)
 {
@@ -1147,16 +1158,44 @@ moo_icon_view_expose (GtkWidget      *widget,
 
     if (view->priv->drag_select)
     {
+#if 1
+        cairo_t *cr;
         GdkRectangle rect;
-        get_rect_from_points (&rect,
-                              view->priv->drag_select_x,
-                              view->priv->drag_select_y,
-                              view->priv->button_press_x,
-                              view->priv->button_press_y);
+        GdkColor *color;
+        double dash_len = 1.;
+
+        cr = gdk_cairo_create (event->window);
+        get_drag_select_rect (view, &rect);
+
+        color = &widget->style->base[GTK_STATE_SELECTED];
+
+        cairo_set_source_rgba (cr,
+                               color->red / 65535.,
+                               color->green / 65535.,
+                               color->blue / 65535.,
+                               1 / 3.);
+        gdk_cairo_rectangle (cr, &rect);
+        cairo_fill (cr);
+
+        cairo_set_dash (cr, &dash_len, 1, .5);
+        cairo_set_line_width (cr, 1.);
+        gdk_cairo_set_source_color (cr, color);
+        cairo_rectangle (cr,
+                         rect.x + .5,
+                         rect.y + .5,
+                         rect.width - 1,
+                         rect.height - 1);
+        cairo_stroke (cr);
+
+        cairo_destroy (cr);
+#else
+        GdkRectangle rect;
+        get_drag_select_rect (view, &rect);
         gdk_draw_rectangle (event->window,
                             get_sel_gc (view),
                             FALSE, rect.x, rect.y,
                             rect.width - 1, rect.height - 1);
+#endif
     }
 
     return TRUE;
@@ -1852,7 +1891,7 @@ moo_icon_view_button_press (GtkWidget      *widget,
                 /* this is later checked in maybe_drag */
                 view->priv->button_pressed = event->button;
                 view->priv->button_press_mods = mods;
-                view->priv->button_press_x = event->x;
+                view->priv->button_press_x = event->x + view->priv->xoffset;
                 view->priv->button_press_y = event->y;
 
                 return TRUE;
@@ -1889,17 +1928,6 @@ moo_icon_view_motion_notify (GtkWidget      *widget,
     return moo_icon_view_maybe_drag (view, event);
 }
 
-
-static void
-get_drag_select_rect (MooIconView  *view,
-                      GdkRectangle *rect)
-{
-    get_rect_from_points (rect,
-                          view->priv->drag_select_x,
-                          view->priv->drag_select_y,
-                          view->priv->button_press_x,
-                          view->priv->button_press_y);
-}
 
 static void
 drag_select_finish (MooIconView *view)
@@ -2082,7 +2110,7 @@ moo_icon_view_drag_select (MooIconView    *view,
     get_drag_select_rect (view, &rect);
     gdk_region_union_with_rect (region, &rect);
 
-    view->priv->drag_select_x = event->x;
+    view->priv->drag_select_x = event->x + view->priv->xoffset;
     view->priv->drag_select_y = event->y;
     get_drag_select_rect (view, &rect);
     gdk_region_union_with_rect (region, &rect);
@@ -2135,7 +2163,7 @@ moo_icon_view_maybe_drag_select (MooIconView    *view,
             return FALSE;
 
         if (_moo_icon_view_get_path_at_pos (view,
-                                            view->priv->button_press_x,
+                                            view->priv->button_press_x - view->priv->xoffset,
                                             view->priv->button_press_y,
                                             NULL, NULL, NULL, NULL))
             return FALSE;
@@ -3576,7 +3604,7 @@ moo_icon_view_maybe_drag (MooIconView    *view,
         return FALSE;
 
     if (!gtk_drag_check_threshold (GTK_WIDGET (view),
-                                   view->priv->button_press_x,
+                                   view->priv->button_press_x - view->priv->xoffset,
                                    view->priv->button_press_y,
                                    event->x, event->y))
         return FALSE;
@@ -3584,9 +3612,9 @@ moo_icon_view_maybe_drag (MooIconView    *view,
     button = view->priv->button_pressed;
 
     if (!_moo_icon_view_get_path_at_pos (view,
-                                    view->priv->button_press_x,
-                                    view->priv->button_press_y,
-                                    NULL, NULL, NULL, NULL))
+                                         view->priv->button_press_x - view->priv->xoffset,
+                                         view->priv->button_press_y,
+                                         NULL, NULL, NULL, NULL))
         return FALSE;
 
     if (!(GDK_BUTTON1_MASK << (button - 1) & info->start_button_mask))
@@ -3750,29 +3778,39 @@ drag_scroll_timeout (MooIconView *view)
 
     gdk_window_get_pointer (widget->window, &x, &y, &mask);
 
-    if (x < 0 || x >= alc->width || y < 0 || y >= alc->height)
-        goto out;
-
-    if (x < widget->allocation.width * DRAG_SCROLL_MARGIN)
+    if (view->priv->drag_select)
     {
-        dist = x;
-        delta = -1;
-    }
-    else if (x > widget->allocation.width * (1 - DRAG_SCROLL_MARGIN))
-    {
-        dist = widget->allocation.width - 1 - x;
-        delta = 1;
+        if (x < 0)
+            delta = x;
+        else
+            delta = x - widget->allocation.width;
     }
     else
     {
-        goto out;
-    }
+        if (x < 0 || x >= alc->width || y < 0 || y >= alc->height)
+            goto out;
 
-    margin = widget->allocation.width * DRAG_SCROLL_MARGIN;
-    margin = MAX (margin, 2);
-    dist = CLAMP (dist, 1, margin - 1);
-    ratio = (margin - dist) / margin;
-    delta *= 15 * (1 + 3 * ratio);
+        if (x < widget->allocation.width * DRAG_SCROLL_MARGIN)
+        {
+            dist = x;
+            delta = -1;
+        }
+        else if (x > widget->allocation.width * (1 - DRAG_SCROLL_MARGIN))
+        {
+            dist = widget->allocation.width - 1 - x;
+            delta = 1;
+        }
+        else
+        {
+            goto out;
+        }
+
+        margin = widget->allocation.width * DRAG_SCROLL_MARGIN;
+        margin = MAX (margin, 2);
+        dist = CLAMP (dist, 1, margin - 1);
+        ratio = (margin - dist) / margin;
+        delta *= 15 * (1 + 3 * ratio);
+    }
 
     new_offset = clamp_offset (view, view->priv->xoffset + delta);
 
