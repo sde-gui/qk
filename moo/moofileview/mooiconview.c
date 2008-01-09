@@ -102,7 +102,7 @@ struct _MooIconViewPrivate {
     int              button_pressed;
     int              button_press_x;
     int              button_press_y;
-    GtkTreePath     *button_press_path;
+    GtkTreeRowReference *button_press_row;
     GdkModifierType  button_press_mods;
 
     guint            drag_scroll_timeout;
@@ -675,6 +675,10 @@ _moo_icon_view_set_model (MooIconView    *view,
         view->priv->model = NULL;
 
         selection_clear (view);
+
+        if (view->priv->button_press_row)
+            gtk_tree_row_reference_free (view->priv->button_press_row);
+        view->priv->button_press_row = NULL;
 
         gtk_tree_row_reference_free (view->priv->cursor);
         gtk_tree_row_reference_free (view->priv->drop_dest);
@@ -1816,7 +1820,9 @@ moo_icon_view_button_press (GtkWidget      *widget,
             case GDK_BUTTON_PRESS:
                 if (path && _moo_icon_view_path_is_selected (view, path))
                 {
-                    view->priv->button_press_path = path;
+                    view->priv->button_press_row =
+                        gtk_tree_row_reference_new (view->priv->model, path);
+                    gtk_tree_path_free (path);
                 }
                 else if (path)
                 {
@@ -1920,14 +1926,17 @@ moo_icon_view_button_release (GtkWidget      *widget,
                               G_GNUC_UNUSED GdkEventButton *event)
 {
     MooIconView *view = MOO_ICON_VIEW (widget);
+    GtkTreePath *path = NULL;
 
-    if (view->priv->button_press_path)
+    if (view->priv->button_press_row)
     {
-        GtkTreePath *path;
+        path = gtk_tree_row_reference_get_path (view->priv->button_press_row);
+        gtk_tree_row_reference_free (view->priv->button_press_row);
+        view->priv->button_press_row = NULL;
+    }
 
-        path = view->priv->button_press_path;
-        view->priv->button_press_path = NULL;
-
+    if (path)
+    {
         if (view->priv->button_press_mods & GDK_SHIFT_MASK)
         {
             GtkTreePath *cursor_path = ensure_cursor (view);
@@ -3583,8 +3592,11 @@ moo_icon_view_maybe_drag (MooIconView    *view,
     if (!(GDK_BUTTON1_MASK << (button - 1) & info->start_button_mask))
         return FALSE;
 
-    gtk_tree_path_free (view->priv->button_press_path);
-    view->priv->button_press_path = NULL;
+    if (view->priv->button_press_row)
+    {
+        gtk_tree_row_reference_free (view->priv->button_press_row);
+        view->priv->button_press_row = NULL;
+    }
 
     gtk_drag_begin (GTK_WIDGET (view),
                     info->source_targets,
