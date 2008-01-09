@@ -902,7 +902,6 @@ moo_edit_config_parse (MooEditConfig  *config,
         name = g_strndup (name_start, name_end - name_start);
         value = g_strndup (value_start, value_end - value_start);
 
-        _moo_message ("got '%s' = '%s' from '%s'\n", name, value, string);
         moo_edit_config_parse_one (config, name, value, source);
 
         g_free (value);
