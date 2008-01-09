@@ -20,6 +20,8 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/moocompat.h"
 #include <gtk/gtk.h>
+#include <stdlib.h>
+#include <string.h>
 
 #undef DEBUG
 #if defined(MOO_DEBUG_ENABLED) && 1
@@ -586,7 +588,7 @@ file_list_insert_row (FileList    *list,
 
     if (!parent_iter)
     {
-        DEBUG_ASSERT (index <= list->n_user_items);
+        index = MIN (index, list->n_user_items);
         list->n_user_items += 1;
         first_user_item = list->n_user_items == 1;
     }
@@ -1282,7 +1284,7 @@ move_row (FileList    *list,
             first_user = list->n_user_items == 1;
         }
 
-        if (index == gtk_tree_model_iter_n_children (GTK_TREE_MODEL (list), piter))
+        if (index >= gtk_tree_model_iter_n_children (GTK_TREE_MODEL (list), piter) || index < 0)
         {
             gtk_tree_model_get_iter (GTK_TREE_MODEL (list), &iter, source);
             gtk_tree_store_move_before (GTK_TREE_STORE (list), &iter, NULL);
@@ -1290,8 +1292,8 @@ move_row (FileList    *list,
         else
         {
             GtkTreeIter ch_iter;
-            gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (list), &ch_iter, piter, index);
-            gtk_tree_model_get_iter (GTK_TREE_MODEL (list), &iter, source);
+            g_assert (gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (list), &ch_iter, piter, index));
+            g_assert (gtk_tree_model_get_iter (GTK_TREE_MODEL (list), &iter, source));
             gtk_tree_store_move_before (GTK_TREE_STORE (list), &iter, &ch_iter);
         }
 
@@ -1504,25 +1506,10 @@ drop_uris (FileList     *list,
     {
         GtkTreeIter iter;
 
-        if (file_list_find_uri (list, *uris, &iter))
+        if (!file_list_find_uri (list, *uris, &iter) &&
+            add_row_from_uri (list, *uris, parent_path, index))
         {
-            GtkTreePath *source = gtk_tree_model_get_path (GTK_TREE_MODEL (list), &iter);
-
-            if (parent_path && path_is_descendant (parent_path, source))
-            {
-                gtk_tree_path_free (source);
-                continue;
-            }
-
-            if (move_row (list, source, parent_path, index))
-                index += 1;
-
-            gtk_tree_path_free (source);
-        }
-        else
-        {
-            if (add_row_from_uri (list, *uris, parent_path, index))
-                index += 1;
+            index += 1;
         }
     }
 
@@ -1561,6 +1548,15 @@ drop_tree_model_row (FileList    *list,
     return retval;
 }
 
+static int
+cmp_uris (const void *p1,
+          const void *p2)
+{
+    char *const *s1 = p1;
+    char *const *s2 = p2;
+    return strcmp (*s1, *s2);
+}
+
 static gboolean
 drag_dest_drag_data_received (GtkTreeDragDest  *drag_dest,
                               GtkTreePath      *dest,
@@ -1588,10 +1584,13 @@ drag_dest_drag_data_received (GtkTreeDragDest  *drag_dest,
         if (!(uris = gtk_selection_data_get_uris (selection_data)))
             return FALSE;
 
-        _moo_strv_reverse (uris);
+        if (uris[0])
+        {
+            qsort (uris, g_strv_length (uris), sizeof (char*), cmp_uris);
 
-        if ((retval = drop_uris (FILE_LIST (drag_dest), dest, uris)))
-            window_plugin_queue_update (FILE_LIST (drag_dest)->plugin);
+            if ((retval = drop_uris (FILE_LIST (drag_dest), dest, uris)))
+                window_plugin_queue_update (FILE_LIST (drag_dest)->plugin);
+        }
 
         g_strfreev (uris);
         return retval;
