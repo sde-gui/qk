@@ -27,6 +27,10 @@
 #endif
 
 
+typedef struct {
+    MooCmd *cmd;
+} ChildWatchData;
+
 struct _MooCmdPrivate {
     GSpawnFlags flags;
     MooCmdFlags cmd_flags;
@@ -37,7 +41,7 @@ struct _MooCmdPrivate {
     int err;
     GIOChannel *stdout_io;
     GIOChannel *stderr_io;
-    guint child_watch;
+    ChildWatchData *child_watch_data;
     guint stdout_watch;
     guint stderr_watch;
     GString *out_buffer;
@@ -218,19 +222,36 @@ _moo_cmd_new (const char *working_dir,
 
 
 static void
-command_exit (GPid    pid,
-              gint    status,
-              MooCmd *cmd)
+command_exit (GPid            pid,
+              gint            status,
+              ChildWatchData *data)
 {
-    g_return_if_fail (pid == cmd->priv->pid);
+    MooCmd *cmd;
 
-    cmd->priv->child_watch = 0;
-    cmd->priv->exit_status = status;
+    cmd = data->cmd;
+    data->cmd = NULL;
 
-    g_spawn_close_pid (cmd->priv->pid);
-    cmd->priv->pid = 0;
+    g_spawn_close_pid (pid);
 
-    moo_cmd_check_stop (cmd);
+    if (cmd)
+    {
+        g_return_if_fail (cmd->priv->child_watch_data == data);
+        cmd->priv->exit_status = status;
+        cmd->priv->child_watch_data = NULL;
+        moo_cmd_check_stop (cmd);
+    }
+}
+
+static void
+child_watch_removed (ChildWatchData *data)
+{
+    if (data->cmd)
+    {
+        g_critical ("%s: oops", G_STRFUNC);
+        data->cmd->priv->child_watch_data = NULL;
+    }
+
+    g_free (data);
 }
 
 
@@ -490,6 +511,7 @@ moo_cmd_run_command (MooCmd     *cmd,
     gboolean result;
     int *outp, *errp;
     char **new_env;
+    ChildWatchData *child_watch_data;
 
 #ifndef __WIN32__
     struct {
@@ -558,10 +580,14 @@ moo_cmd_run_command (MooCmd     *cmd,
     cmd->priv->flags = flags;
     cmd->priv->cmd_flags = cmd_flags;
 
-    cmd->priv->child_watch =
-            g_child_watch_add (cmd->priv->pid,
-                               (GChildWatchFunc) command_exit,
-                               cmd);
+    child_watch_data = g_new0 (ChildWatchData, 1);
+    child_watch_data->cmd = cmd;
+    g_child_watch_add_full (G_PRIORITY_DEFAULT,
+                            cmd->priv->pid,
+                            (GChildWatchFunc) command_exit,
+                            child_watch_data,
+                            (GDestroyNotify) child_watch_removed);
+    cmd->priv->child_watch_data = child_watch_data;
 
     if (outp)
     {
@@ -605,7 +631,7 @@ moo_cmd_check_stop (MooCmd *cmd)
     if (!cmd->priv->running)
         return;
 
-    if (!cmd->priv->child_watch && !cmd->priv->stdout_watch && !cmd->priv->stderr_watch)
+    if (!cmd->priv->child_watch_data && !cmd->priv->stdout_watch && !cmd->priv->stderr_watch)
     {
         g_object_ref (cmd);
         g_signal_emit (cmd, signals[CMD_EXIT], 0, cmd->priv->exit_status, &result);
@@ -623,8 +649,8 @@ moo_cmd_cleanup (MooCmd *cmd)
 
     cmd->priv->running = FALSE;
 
-    if (cmd->priv->child_watch)
-        g_source_remove (cmd->priv->child_watch);
+    if (cmd->priv->child_watch_data)
+        cmd->priv->child_watch_data->cmd = NULL;
     if (cmd->priv->stdout_watch)
         g_source_remove (cmd->priv->stdout_watch);
     if (cmd->priv->stderr_watch)
@@ -649,7 +675,7 @@ moo_cmd_cleanup (MooCmd *cmd)
     cmd->priv->pid = 0;
     cmd->priv->out = -1;
     cmd->priv->err = -1;
-    cmd->priv->child_watch = 0;
+    cmd->priv->child_watch_data = NULL;
     cmd->priv->stdout_watch = 0;
     cmd->priv->stderr_watch = 0;
     cmd->priv->stdout_io = NULL;
