@@ -697,7 +697,6 @@ parse_item (MooKeyFileItem  *item,
 
     if (!info->cmd_data)
     {
-        g_warning ("could not get command data for tool '%s' in file %s", info->name, file);
         _moo_user_tool_info_unref (info);
         return NULL;
     }
