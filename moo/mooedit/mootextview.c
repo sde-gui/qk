@@ -54,6 +54,7 @@ static GdkAtom moo_text_view_atom;
 static GObject *moo_text_view_constructor   (GType               type,
                                              guint               n_construct_properties,
                                              GObjectConstructParam *construct_param);
+static void     moo_text_view_dispose       (GObject            *object);
 static void     moo_text_view_finalize      (GObject            *object);
 
 static void     moo_text_view_set_property  (GObject            *object,
@@ -261,6 +262,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     gobject_class->get_property = moo_text_view_get_property;
     gobject_class->constructor = moo_text_view_constructor;
     gobject_class->finalize = moo_text_view_finalize;
+    gobject_class->dispose = moo_text_view_dispose;
 
     widget_class->button_press_event = _moo_text_view_button_press_event;
     widget_class->button_release_event = _moo_text_view_button_release_event;
@@ -776,17 +778,16 @@ moo_text_view_constructor (GType                  type,
 
 
 static void
-moo_text_view_finalize (GObject *object)
+moo_text_view_dispose (GObject *object)
 {
-    int i;
     GSList *l;
     MooTextView *view = MOO_TEXT_VIEW (object);
 
-    for (i = 0; i < MOO_TEXT_VIEW_N_COLORS; ++i)
-        g_free (view->priv->colors[i]);
-
     if (view->priv->indenter)
+    {
         g_object_unref (view->priv->indenter);
+        view->priv->indenter = NULL;
+    }
 
     for (l = view->priv->line_marks; l != NULL; l = l->next)
     {
@@ -796,8 +797,32 @@ moo_text_view_finalize (GObject *object)
         g_object_unref (mark);
     }
 
-    g_free (view->priv->word_chars);
     g_slist_free (view->priv->line_marks);
+    view->priv->line_marks = NULL;
+
+    if (view->priv->style_scheme)
+    {
+        g_object_unref (view->priv->style_scheme);
+        view->priv->style_scheme = NULL;
+    }
+
+    if (view->priv->move_cursor_idle)
+    {
+        g_source_remove (view->priv->move_cursor_idle);
+        view->priv->move_cursor_idle = 0;
+    }
+
+    G_OBJECT_CLASS (moo_text_view_parent_class)->dispose (object);
+}
+
+static void
+moo_text_view_finalize (GObject *object)
+{
+    int i;
+    MooTextView *view = MOO_TEXT_VIEW (object);
+
+    for (i = 0; i < MOO_TEXT_VIEW_N_COLORS; ++i)
+        g_free (view->priv->colors[i]);
 
     G_OBJECT_CLASS (moo_text_view_parent_class)->finalize (object);
 }
@@ -1440,7 +1465,7 @@ do_move_cursor (Scroll *scroll)
     GtkTextIter iter;
 
     g_return_val_if_fail (scroll != NULL, FALSE);
-    g_return_val_if_fail (MOO_IS_TEXT_VIEW (scroll->view), FALSE);
+    g_return_val_if_fail (GTK_IS_TEXT_VIEW (scroll->view), FALSE);
     g_return_val_if_fail (scroll->line >= 0, FALSE);
 
     buffer = gtk_text_view_get_buffer (scroll->view);
@@ -1497,6 +1522,17 @@ do_move_cursor (Scroll *scroll)
                                   gtk_text_buffer_get_insert (buffer),
                                   0.2, FALSE, 0, 0);
 
+    if (MOO_IS_TEXT_VIEW (scroll->view))
+    {
+        MooTextView *view = MOO_TEXT_VIEW (scroll->view);
+
+        if (view->priv->move_cursor_idle)
+        {
+            g_source_remove (view->priv->move_cursor_idle);
+            view->priv->move_cursor_idle = 0;
+        }
+    }
+
     return FALSE;
 }
 
@@ -1510,7 +1546,7 @@ moo_text_view_move_cursor (gpointer view,
 {
     Scroll scroll;
 
-    g_return_if_fail (GTK_IS_TEXT_VIEW (view));
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
     scroll.view = view;
     scroll.line = line;
@@ -1520,10 +1556,18 @@ moo_text_view_move_cursor (gpointer view,
     do_move_cursor (&scroll);
 
     if (in_idle)
-        _moo_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
-                            (GSourceFunc) do_move_cursor,
-                            g_memdup (&scroll, sizeof scroll),
-                            g_free);
+    {
+        MooTextView *mview;
+
+        g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+
+        mview = MOO_TEXT_VIEW (view);
+        mview->priv->move_cursor_idle =
+            _moo_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
+                                (GSourceFunc) do_move_cursor,
+                                g_memdup (&scroll, sizeof scroll),
+                                g_free);
+    }
 }
 
 

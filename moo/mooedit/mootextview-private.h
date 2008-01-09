@@ -89,6 +89,7 @@ struct _MooTextViewPrivate {
     GdkRectangle *update_rectangle;
     gboolean in_expose;
     guint update_idle;
+    guint move_cursor_idle;
 
     /* Clipboard */
     gboolean manage_clipboard;
