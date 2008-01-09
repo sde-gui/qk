@@ -1292,8 +1292,8 @@ move_row (FileList    *list,
         else
         {
             GtkTreeIter ch_iter;
-            g_assert (gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (list), &ch_iter, piter, index));
-            g_assert (gtk_tree_model_get_iter (GTK_TREE_MODEL (list), &iter, source));
+            gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (list), &ch_iter, piter, index);
+            gtk_tree_model_get_iter (GTK_TREE_MODEL (list), &iter, source);
             gtk_tree_store_move_before (GTK_TREE_STORE (list), &iter, &ch_iter);
         }
 
