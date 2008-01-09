@@ -1814,10 +1814,34 @@ moo_icon_view_button_press (GtkWidget      *widget,
         switch (event->type)
         {
             case GDK_BUTTON_PRESS:
-                if (path)
+                if (path && _moo_icon_view_path_is_selected (view, path))
+                {
                     view->priv->button_press_path = path;
+                }
+                else if (path)
+                {
+                    if (mods & GDK_SHIFT_MASK)
+                    {
+                        GtkTreePath *cursor_path = ensure_cursor (view);
+                        _moo_icon_view_unselect_all (view);
+                        moo_icon_view_select_range (view, path, cursor_path);
+                    }
+                    else if (mods & GDK_CONTROL_MASK)
+                    {
+                        moo_icon_view_select_path (view, path);
+                    }
+                    else
+                    {
+                        _moo_icon_view_unselect_all (view);
+                        _moo_icon_view_set_cursor (view, path, FALSE);
+                    }
+
+                    gtk_tree_path_free (path);
+                }
                 else if (!(mods & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)))
+                {
                     _moo_icon_view_unselect_all (view);
+                }
 
                 /* this is later checked in maybe_drag */
                 view->priv->button_pressed = event->button;
