@@ -119,6 +119,7 @@ tools_info_free (ToolsInfo *info)
 {
     if (info)
     {
+        g_slist_foreach (info->actions, (GFunc) g_object_unref, NULL);
         g_slist_free (info->actions);
         g_free (info);
     }
@@ -140,8 +141,9 @@ remove_old_tools (MooFileView    *fileview,
 
         while (info->actions)
         {
-            GtkAction *a = info->actions->data;
-            gtk_action_group_remove_action (group, a);
+            GtkAction *action = info->actions->data;
+            gtk_action_group_remove_action (group, action);
+            g_object_unref (action);
             info->actions = g_slist_delete_link (info->actions, info->actions);
         }
     }

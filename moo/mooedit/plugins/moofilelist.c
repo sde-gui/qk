@@ -186,10 +186,7 @@ file_list_init (FileList *list)
 static void
 file_list_finalize (GObject *object)
 {
-    FileList *list = FILE_LIST (object);
-
-    DEBUG_ASSERT (!list->docs);
-
+    DEBUG_ASSERT (!FILE_LIST (object)->docs);
     G_OBJECT_CLASS (file_list_parent_class)->finalize (object);
 }
 
@@ -676,6 +673,9 @@ file_list_add_doc (FileList *list,
 
     if (new)
         connect_doc (list, doc);
+
+    gtk_tree_path_free (path);
+    g_free (uri);
 }
 
 static gboolean

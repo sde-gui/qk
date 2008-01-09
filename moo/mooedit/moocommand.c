@@ -1170,8 +1170,9 @@ _moo_command_parse_item (MooKeyFileItem     *item,
 
     if (!factory)
     {
-        g_warning ("unknown command type %s in item %s in file %s",
-                   factory_name, name, filename);
+        if (strcmp (factory_name, "python") != 0)
+            g_warning ("unknown command type %s in item %s in file %s",
+                       factory_name, name, filename);
         goto error;
     }
 
@@ -1316,7 +1317,8 @@ moo_command_data_take_code (MooCommandData *data,
                             char           *code)
 {
     g_return_if_fail (data != NULL);
-    MOO_ASSIGN_STRING (data->code, code);
+    g_free (data->code);
+    data->code = code;
 }
 
 

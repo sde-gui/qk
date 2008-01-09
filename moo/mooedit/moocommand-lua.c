@@ -150,6 +150,7 @@ moo_command_lua_run (MooCommand        *cmd_base,
     if (buffer)
         gtk_text_buffer_end_user_action (buffer);
 
+    _moo_edit_lua_cleanup (L);
     lua_close (L);
 }
 

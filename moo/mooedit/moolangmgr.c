@@ -908,8 +908,14 @@ set_globs_or_mime_types (MooLangMgr *mgr,
                   _moo_lang_mgr_get_mime_types (mgr, id);
 
     if (string_list_equal (new, old))
-        goto out;
+    {
+        g_free (id);
+        string_list_free (old);
+        string_list_free (new);
+        return;
+    }
 
+    string_list_free (old);
     mgr->modified = TRUE;
 
     if (info->lang)
@@ -937,10 +943,6 @@ set_globs_or_mime_types (MooLangMgr *mgr,
         info->globs_modified = modified;
     else
         info->mime_types_modified = modified;
-
-out:
-    g_free (id);
-    string_list_free (old);
 }
 
 

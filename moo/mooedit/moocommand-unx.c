@@ -286,7 +286,8 @@ static char *
 get_working_dir_for_doc (MooEditWindow *window,
                          MooEdit       *doc)
 {
-    const char *filename = NULL;
+    char *filename = NULL;
+    char *dirname = NULL;
 
     if (!doc && window)
         doc = moo_edit_window_get_active_doc (window);
@@ -294,7 +295,11 @@ get_working_dir_for_doc (MooEditWindow *window,
     if (doc)
         filename = moo_edit_get_filename (doc);
 
-    return filename ? g_path_get_dirname (filename) : NULL;
+    if (filename)
+        dirname = g_path_get_dirname (filename);
+
+    g_free (filename);
+    return dirname;
 }
 
 void

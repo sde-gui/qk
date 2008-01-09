@@ -1483,6 +1483,13 @@ moo_icon_widget_style_set (GtkWidget *widget,
     free_pixbufs ((MooIconWidget*) widget);
 }
 
+static void
+moo_icon_widget_dispose (GObject *object)
+{
+    free_pixbufs ((MooIconWidget*) object);
+    G_OBJECT_CLASS (_moo_icon_widget_parent_class)->dispose (object);
+}
+
 static GdkPixbuf *
 get_pixbuf (MooIconWidget *icon)
 {
@@ -1628,7 +1635,11 @@ moo_icon_widget_expose_event (GtkWidget      *widget,
 static void
 _moo_icon_widget_class_init (MooIconWidgetClass *klass)
 {
+    GObjectClass *object_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+
+    object_class->dispose = moo_icon_widget_dispose;
+
     widget_class->style_set = moo_icon_widget_style_set;
     widget_class->expose_event = moo_icon_widget_expose_event;
 }

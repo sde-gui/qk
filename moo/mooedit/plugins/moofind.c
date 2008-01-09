@@ -569,6 +569,8 @@ do_grep (MooEditWindow  *window,
 
     execute_grep (pattern, glob, dir, skip,
                   case_sensitive, stuff);
+
+    g_free (dir);
 }
 
 
@@ -607,6 +609,8 @@ do_find (MooEditWindow  *window,
     moo_big_paned_present_pane (window->paned, pane);
 
     execute_find (pattern, dir, skip, stuff);
+
+    g_free (dir);
 }
 
 

@@ -185,6 +185,7 @@ _moo_text_search_regex_forward (const GtkTextIter      *search_start,
         }
 
         g_match_info_free (match_info);
+        g_free (text);
 
         start = end;
         start_offset = 0;
@@ -310,6 +311,8 @@ _moo_text_search_regex_backward (const GtkTextIter      *search_start,
 
             return TRUE;
         }
+
+        g_free (text);
 
         slice_end = slice_start;
         flags = 0;
