@@ -1325,14 +1325,64 @@ move_row (FileList    *list,
 }
 
 static gboolean
+uri_is_directory (const char *uri)
+{
+    char *filename;
+    gboolean retval = FALSE;
+
+    filename = g_filename_from_uri (uri, NULL, NULL);
+
+    if (filename)
+        retval = g_file_test (filename, G_FILE_TEST_IS_DIR);
+
+    g_free (filename);
+    return retval;
+}
+
+static void
+add_row_from_dir_uri (FileList    *list,
+                      const char  *uri,
+                      GtkTreeIter *iter,
+                      GtkTreeIter *parent,
+                      int          index)
+{
+    /* TODO read files */
+    Group *grp;
+    char *basename;
+
+    return;
+
+    basename = uri_get_basename (uri);
+    grp = group_new (basename);
+
+    file_list_insert_row (list, ITEM (grp), iter, parent, index);
+
+    item_unref (ITEM (grp));
+    g_free (basename);
+}
+
+static void
+add_row_from_file_uri (FileList    *list,
+                       const char  *uri,
+                       GtkTreeIter *iter,
+                       GtkTreeIter *parent,
+                       int          index)
+{
+    Item *item = file_new_uri (uri);
+    file_list_insert_row (list, item, iter, parent, index);
+    item_unref (item);
+}
+
+static gboolean
 add_row_from_uri (FileList    *list,
                   const char  *uri,
                   GtkTreePath *parent,
                   int          index)
 {
-    Item *item;
     GtkTreeIter iter, dummy;
     GtkTreeIter *piter = NULL;
+
+    g_return_val_if_fail (uri != NULL, FALSE);
 
     if (parent)
     {
@@ -1340,9 +1390,10 @@ add_row_from_uri (FileList    *list,
         piter = &iter;
     }
 
-    item = file_new_uri (uri);
-    file_list_insert_row (list, item, &dummy, piter, index);
-    item_unref (item);
+    if (uri_is_directory (uri))
+        add_row_from_dir_uri (list, uri, &dummy, piter, index);
+    else
+        add_row_from_file_uri (list, uri, &dummy, piter, index);
 
     return TRUE;
 }
