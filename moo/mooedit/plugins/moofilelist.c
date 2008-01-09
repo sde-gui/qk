@@ -1588,6 +1588,8 @@ drag_dest_drag_data_received (GtkTreeDragDest  *drag_dest,
         if (!(uris = gtk_selection_data_get_uris (selection_data)))
             return FALSE;
 
+        _moo_strv_reverse (uris);
+
         if ((retval = drop_uris (FILE_LIST (drag_dest), dest, uris)))
             window_plugin_queue_update (FILE_LIST (drag_dest)->plugin);
 
