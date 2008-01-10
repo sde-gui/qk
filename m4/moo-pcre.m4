@@ -6,9 +6,8 @@
 AC_DEFUN_ONCE([MOO_AC_PCRE],[
 AC_REQUIRE([MOO_PKG_CHECK_GTK_VERSIONS])
 
-if test "x$GLIB_2_14" = xyes; then
-  MOO_BUILD_PCRE="no"
-else
+MOO_BUILD_PCRE="yes"
+if test "x$GLIB_2_14" != xyes; then
   AC_ARG_WITH([system-pcre],
   AC_HELP_STRING([--with-system-pcre], [whether to use system copy of pcre library (default = YES)]),[
     if test x$with_system_pcre = "xyes"; then
@@ -21,7 +20,7 @@ else
   ])
 fi;
 
-if test x$MOO_BUILD_PCRE != xyes; then
+if test "x$GLIB_2_14" != xyes -a x$MOO_BUILD_PCRE != xyes; then
     have_pcre="no"
 
     PKG_CHECK_MODULES(PCRE, [libpcre >= 7.0], [
@@ -80,7 +79,9 @@ if test x$MOO_BUILD_PCRE != xyes; then
     fi
 fi
 
-if test x$MOO_BUILD_PCRE != xyes; then
+if test "x$GLIB_2_14" = xyes; then
+    MOO_BUILD_PCRE="no"
+elif test x$MOO_BUILD_PCRE != xyes; then
     if test x$have_pcre = xyes; then
         MOO_BUILD_PCRE="no"
         AC_MSG_NOTICE([using installed libpcre])
