@@ -43,24 +43,24 @@ BUILT_SOURCES = po-subdirs-stamp po-subdirs-stamp-2
 
 DIST_SUBDIRS = moo medit tests po po-gsv doc
 
-if MOO_BUILD_MEDIT
-SUBDIRS = . moo medit
-else
-SUBDIRS = . moo
-endif
-
-if MOO_ENABLE_TESTS
-SUBDIRS += tests
-endif
-
 if MOO_ENABLE_NLS
-SUBDIRS += po po-gsv
+po_subdirs = po po-gsv
 endif
 
 if MOO_ENABLE_HELP
 if MOO_BUILD_DOCS
-SUBDIRS += doc
+doc_subdirs = doc
 endif
+endif
+
+if MOO_BUILD_MEDIT
+SUBDIRS = . $(po_subdirs) $(doc_subdirs) moo medit
+else
+SUBDIRS = . $(po_subdirs) $(doc_subdirs) moo
+endif
+
+if MOO_ENABLE_TESTS
+SUBDIRS += tests
 endif
 
 ACLOCAL_AMFLAGS = -I m4
