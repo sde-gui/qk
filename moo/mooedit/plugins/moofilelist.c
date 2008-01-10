@@ -49,8 +49,11 @@
 #define VALUE_VERSION "1.0"
 #define ELM_GROUP "group"
 #define ELM_FILE "file"
+#define ELM_UI "ui"
 #define PROP_NAME "name"
 #define PROP_URI "uri"
+#define PROP_EXPANDED_ROWS "expanded-rows"
+#define PROP_SELECTED_ROW "selected-row"
 
 typedef struct Item Item;
 typedef struct Group Group;
@@ -100,15 +103,22 @@ typedef struct {
     MooPlugin parent;
 } FileListPlugin;
 
+typedef struct {
+    GSList *expanded_rows;
+    GtkTreePath *selected_row;
+} UIConfig;
+
 struct FileListWindowPlugin {
     MooWinPlugin parent;
     FileList *list;
-    GtkWidget *treeview;
+    GtkTreeView *treeview;
     GtkTreeViewColumn *column;
     GtkCellRenderer *text_cell;
     gboolean first_time_show;
     guint update_idle;
+    guint update_ui_idle;
     char *filename;
+    UIConfig *ui_config;
 };
 
 static GdkAtom atom_tree_model_row;
@@ -120,14 +130,17 @@ static Item         *item_ref                   (Item           *item);
 static void          item_unref                 (Item           *item);
 
 static void          file_list_load_config      (FileList       *list,
-                                                 const char     *filename);
+                                                 const char     *filename,
+                                                 UIConfig      **ui_config);
 static void          file_list_save_config      (FileList       *list,
-                                                 const char     *filename);
+                                                 const char     *filename,
+                                                 UIConfig       *ui_config);
 static void          file_list_update           (FileList       *list,
                                                  GSList         *docs);
 static void          file_list_shutdown         (FileList       *list);
 
 static void          window_plugin_queue_update (WindowPlugin   *plugin);
+static void          window_plugin_queue_update_ui (WindowPlugin *plugin);
 
 static void file_list_drag_source_iface_init    (GtkTreeDragSourceIface *iface);
 static void file_list_drag_dest_iface_init      (GtkTreeDragDestIface   *iface);
@@ -821,11 +834,34 @@ file_list_shutdown (FileList *list)
 }
 
 
+static UIConfig *
+ui_config_new (void)
+{
+    UIConfig *cfg = g_new0 (UIConfig, 1);
+    cfg->expanded_rows = NULL;
+    cfg->selected_row = NULL;
+    return cfg;
+}
+
+static void
+ui_config_free (UIConfig *cfg)
+{
+    if (cfg)
+    {
+        g_slist_foreach (cfg->expanded_rows, (GFunc) gtk_tree_path_free, NULL);
+        g_slist_free (cfg->expanded_rows);
+        gtk_tree_path_free (cfg->selected_row);
+        g_free (cfg);
+    }
+}
+
+
 static void
 parse_node (FileList      *list,
             MooMarkupNode *elm,
             GtkTreeIter   *parent,
-            const char    *filename)
+            const char    *filename,
+            UIConfig     **ui_config)
 {
     if (strcmp (elm->name, ELM_GROUP) == 0)
     {
@@ -847,7 +883,7 @@ parse_node (FileList      *list,
 
         for (child = elm->children; child != NULL; child = child->next)
             if (MOO_MARKUP_IS_ELEMENT (child))
-                parse_node (list, child, &iter, filename);
+                parse_node (list, child, &iter, filename, ui_config);
     }
     else if (strcmp (elm->name, ELM_FILE) == 0)
     {
@@ -866,6 +902,42 @@ parse_node (FileList      *list,
         file_list_insert_row (list, item, &iter, parent, -1);
         item_unref (item);
     }
+    else if (strcmp (elm->name, ELM_UI) == 0)
+    {
+        const char *expanded_rows;
+        const char *selected_row;
+        UIConfig *config;
+        char **rows = NULL, **p;
+
+        if (*ui_config)
+        {
+            g_critical ("%s: in file %s, duplicated element %s",
+                        G_STRLOC, filename, elm->name);
+            return;
+        }
+
+        *ui_config = config = ui_config_new ();
+
+        expanded_rows = moo_markup_get_prop (elm, PROP_EXPANDED_ROWS);
+        selected_row = moo_markup_get_prop (elm, PROP_SELECTED_ROW);
+
+        if (expanded_rows)
+            rows = g_strsplit (expanded_rows, ";", 0);
+
+        for (p = rows; p && *p; ++p)
+        {
+            GtkTreePath *path = gtk_tree_path_new_from_string (*p);
+            if (path)
+                config->expanded_rows = g_slist_prepend (config->expanded_rows, path);
+        }
+
+        config->expanded_rows = g_slist_reverse (config->expanded_rows);
+
+        if (selected_row)
+            config->selected_row = gtk_tree_path_new_from_string (selected_row);
+
+        g_strfreev (rows);
+    }
     else
     {
         g_critical ("%s: in file %s: unexpected element '%s'",
@@ -874,13 +946,16 @@ parse_node (FileList      *list,
 }
 
 static void
-file_list_load_config (FileList   *list,
-                       const char *filename)
+file_list_load_config (FileList    *list,
+                       const char  *filename,
+                       UIConfig   **ui_configp)
 {
     MooMarkupDoc *doc;
     GError *error = NULL;
     MooMarkupNode *root, *node;
     const char *version;
+
+    *ui_configp = NULL;
 
     if (!g_file_test (filename, G_FILE_TEST_EXISTS))
         return;
@@ -915,7 +990,7 @@ file_list_load_config (FileList   *list,
         if (!MOO_MARKUP_IS_ELEMENT (node))
             continue;
 
-        parse_node (list, node, NULL, filename);
+        parse_node (list, node, NULL, filename, ui_configp);
     }
 
 out:
@@ -982,7 +1057,8 @@ format_item (FileList    *list,
 
 static void
 file_list_save_config (FileList   *list,
-                       const char *filename)
+                       const char *filename,
+                       UIConfig   *ui_config)
 {
     GtkTreeIter iter;
     GString *buffer;
@@ -996,6 +1072,43 @@ file_list_save_config (FileList   *list,
 
     buffer = g_string_new ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
     g_string_append (buffer, "<" ELM_CONFIG " " PROP_VERSION "=\"" VALUE_VERSION "\">\n");
+
+    if (ui_config && (ui_config->expanded_rows || ui_config->selected_row))
+    {
+        g_string_append (buffer, "  <" ELM_UI);
+
+        if (ui_config->expanded_rows)
+        {
+            GSList *l;
+
+            g_string_append (buffer, " " PROP_EXPANDED_ROWS "=\"");
+
+            for (l = ui_config->expanded_rows; l != NULL; l = l->next)
+            {
+                GtkTreePath *path = l->data;
+                char *tmp = gtk_tree_path_to_string (path);
+                if (l != ui_config->expanded_rows)
+                    g_string_append (buffer, ";");
+                if (tmp)
+                    g_string_append (buffer, tmp);
+                g_free (tmp);
+            }
+
+            g_string_append (buffer, "\"");
+        }
+
+        if (ui_config->selected_row)
+        {
+            char *tmp = gtk_tree_path_to_string (ui_config->selected_row);
+
+            if (tmp)
+                g_string_append_printf (buffer, " " PROP_SELECTED_ROW "=\"%s\"", tmp);
+
+            g_free (tmp);
+        }
+
+        g_string_append (buffer, "/>\n");
+    }
 
     do
     {
@@ -1721,7 +1834,7 @@ start_edit (WindowPlugin *plugin,
             GtkTreePath  *path)
 {
     g_object_set (plugin->text_cell, "editable", TRUE, NULL);
-    gtk_tree_view_set_cursor_on_cell (GTK_TREE_VIEW (plugin->treeview),
+    gtk_tree_view_set_cursor_on_cell (plugin->treeview,
                                       path, plugin->column,
                                       plugin->text_cell,
                                       TRUE);
@@ -1731,7 +1844,7 @@ static GList *
 get_selected_rows (WindowPlugin *plugin)
 {
     GtkTreeSelection *selection;
-    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (plugin->treeview));
+    selection = gtk_tree_view_get_selection (plugin->treeview);
     return gtk_tree_selection_get_selected_rows (selection, NULL);
 }
 
@@ -1793,8 +1906,8 @@ add_group_activated (G_GNUC_UNUSED GtkWidget *menuitem,
         {
             GtkTreePath *parent_path = gtk_tree_model_get_path (GTK_TREE_MODEL (plugin->list),
                                                                 &parent);
-            if (!gtk_tree_view_row_expanded (GTK_TREE_VIEW (plugin->treeview), parent_path))
-                gtk_tree_view_expand_row (GTK_TREE_VIEW (plugin->treeview), parent_path, FALSE);
+            if (!gtk_tree_view_row_expanded (plugin->treeview, parent_path))
+                gtk_tree_view_expand_row (plugin->treeview, parent_path, FALSE);
             gtk_tree_path_free (parent_path);
         }
 
@@ -2010,42 +2123,44 @@ create_treeview (WindowPlugin *plugin)
         { (char*) "text/uri-list", 0, 0 }
     };
 
-    plugin->treeview = gtk_tree_view_new ();
-    gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (plugin->treeview), FALSE);
-    gtk_tree_view_set_row_separator_func (GTK_TREE_VIEW (plugin->treeview),
+    plugin->treeview = GTK_TREE_VIEW (gtk_tree_view_new ());
+    gtk_tree_view_set_headers_visible (plugin->treeview, FALSE);
+    gtk_tree_view_set_row_separator_func (plugin->treeview,
                                           (GtkTreeViewRowSeparatorFunc) row_separator_func,
                                           NULL, NULL);
-    gtk_tree_view_set_search_equal_func (GTK_TREE_VIEW (plugin->treeview),
+    gtk_tree_view_set_search_equal_func (plugin->treeview,
                                          (GtkTreeViewSearchEqualFunc) tree_view_search_equal_func,
                                          NULL, NULL);
 #if GTK_CHECK_VERSION (2,12,0)
-    gtk_tree_view_set_tooltip_column (GTK_TREE_VIEW (plugin->treeview),
-                                      COLUMN_TOOLTIP);
+    gtk_tree_view_set_tooltip_column (plugin->treeview, COLUMN_TOOLTIP);
 #endif
 
-    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (plugin->treeview));
+    selection = gtk_tree_view_get_selection (plugin->treeview);
     gtk_tree_selection_set_mode (selection, GTK_SELECTION_MULTIPLE);
 
     g_signal_connect (plugin->treeview, "button-press-event",
                       G_CALLBACK (treeview_button_press), plugin);
     g_signal_connect_swapped (plugin->treeview, "row-activated",
                               G_CALLBACK (treeview_row_activated), plugin);
+    g_signal_connect_swapped (plugin->treeview, "row-expanded",
+                              G_CALLBACK (window_plugin_queue_update_ui), plugin);
+    g_signal_connect_swapped (plugin->treeview, "row-collapsed",
+                              G_CALLBACK (window_plugin_queue_update_ui), plugin);
 
-    gtk_tree_view_enable_model_drag_dest (GTK_TREE_VIEW (plugin->treeview),
+    gtk_tree_view_enable_model_drag_dest (plugin->treeview,
                                           targets, G_N_ELEMENTS (targets),
                                           GDK_ACTION_COPY | GDK_ACTION_MOVE |
                                             GDK_ACTION_LINK | GDK_ACTION_PRIVATE);
-    gtk_tree_view_enable_model_drag_source (GTK_TREE_VIEW (plugin->treeview),
+    gtk_tree_view_enable_model_drag_source (plugin->treeview,
                                             GDK_BUTTON1_MASK,
                                             targets, G_N_ELEMENTS (targets),
                                             GDK_ACTION_COPY | GDK_ACTION_MOVE |
                                                 GDK_ACTION_LINK | GDK_ACTION_PRIVATE);
 
     plugin->column = gtk_tree_view_column_new ();
-    gtk_tree_view_append_column (GTK_TREE_VIEW (plugin->treeview), plugin->column);
+    gtk_tree_view_append_column (plugin->treeview, plugin->column);
 
-    _moo_tree_view_setup_expander (GTK_TREE_VIEW (plugin->treeview),
-                                   plugin->column);
+    _moo_tree_view_setup_expander (plugin->treeview, plugin->column);
 
     cell = gtk_cell_renderer_pixbuf_new ();
     gtk_tree_view_column_pack_start (plugin->column, cell, FALSE);
@@ -2070,10 +2185,9 @@ create_model (WindowPlugin *plugin)
     plugin->list = g_object_new (file_list_get_type (), NULL);
     plugin->list->plugin = plugin;
 
-    file_list_load_config (plugin->list, plugin->filename);
+    file_list_load_config (plugin->list, plugin->filename, &plugin->ui_config);
 
-    gtk_tree_view_set_model (GTK_TREE_VIEW (plugin->treeview),
-                             GTK_TREE_MODEL (plugin->list));
+    gtk_tree_view_set_model (plugin->treeview, GTK_TREE_MODEL (plugin->list));
 }
 
 static int
@@ -2108,13 +2222,6 @@ do_update (WindowPlugin *plugin)
     file_list_update (plugin->list, docs);
     g_slist_free (docs);
 
-    if (plugin->first_time_show)
-    {
-        plugin->first_time_show = FALSE;
-        gtk_tree_view_expand_all (GTK_TREE_VIEW (plugin->treeview));
-        _moo_tree_view_select_first (GTK_TREE_VIEW (plugin->treeview));
-    }
-
     return FALSE;
 }
 
@@ -2126,6 +2233,89 @@ window_plugin_queue_update (WindowPlugin *plugin)
     if (!plugin->update_idle)
         plugin->update_idle = g_idle_add ((GSourceFunc) do_update,
                                           plugin);
+
+    window_plugin_queue_update_ui (plugin);
+}
+
+
+static void
+load_ui_config (WindowPlugin *plugin)
+{
+    if (plugin->ui_config)
+    {
+        UIConfig *cfg = plugin->ui_config;
+
+        plugin->ui_config = NULL;
+
+        while (cfg->expanded_rows)
+        {
+            GtkTreePath *path = cfg->expanded_rows->data;
+            gtk_tree_view_expand_row (plugin->treeview, path, FALSE);
+            gtk_tree_path_free (path);
+            cfg->expanded_rows = g_slist_delete_link (cfg->expanded_rows,
+                                                      cfg->expanded_rows);
+        }
+
+        if (cfg->selected_row)
+            gtk_tree_view_set_cursor (plugin->treeview, cfg->selected_row, NULL, FALSE);
+        else
+            _moo_tree_view_select_first (plugin->treeview);
+
+        gtk_tree_path_free (cfg->selected_row);
+        g_free (cfg);
+    }
+    else
+    {
+        gtk_tree_view_expand_all (plugin->treeview);
+        _moo_tree_view_select_first (plugin->treeview);
+    }
+}
+
+static gboolean
+check_row_expanded (G_GNUC_UNUSED GtkTreeModel *model,
+                    GtkTreePath  *path,
+                    G_GNUC_UNUSED GtkTreeIter  *iter,
+                    WindowPlugin *plugin)
+{
+    if (gtk_tree_view_row_expanded (plugin->treeview, path))
+        plugin->ui_config->expanded_rows =
+            g_slist_prepend (plugin->ui_config->expanded_rows,
+                             gtk_tree_path_copy (path));
+    return FALSE;
+}
+
+static gboolean
+do_update_ui (WindowPlugin *plugin)
+{
+    plugin->update_ui_idle = 0;
+
+    if (plugin->first_time_show)
+    {
+        plugin->first_time_show = FALSE;
+        load_ui_config (plugin);
+    }
+    else
+    {
+        ui_config_free (plugin->ui_config);
+        plugin->ui_config = ui_config_new ();
+
+        gtk_tree_model_foreach (GTK_TREE_MODEL (plugin->list),
+                                (GtkTreeModelForeachFunc) check_row_expanded,
+                                plugin);
+        plugin->ui_config->expanded_rows =
+            g_slist_reverse (plugin->ui_config->expanded_rows);
+    }
+
+    return FALSE;
+}
+
+static void
+window_plugin_queue_update_ui (WindowPlugin *plugin)
+{
+    g_return_if_fail (plugin != NULL);
+    if (!plugin->update_ui_idle)
+        plugin->update_ui_idle = g_idle_add ((GSourceFunc) do_update_ui,
+                                             plugin);
 }
 
 
@@ -2148,7 +2338,7 @@ file_list_window_plugin_create (WindowPlugin *plugin)
     scrolled_window = gtk_scrolled_window_new (NULL, NULL);
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
                                     GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    gtk_container_add (GTK_CONTAINER (scrolled_window), plugin->treeview);
+    gtk_container_add (GTK_CONTAINER (scrolled_window), GTK_WIDGET (plugin->treeview));
     gtk_widget_show_all (scrolled_window);
 
     label = moo_pane_label_new (GTK_STOCK_DIRECTORY,
@@ -2177,7 +2367,12 @@ file_list_window_plugin_create (WindowPlugin *plugin)
 static void
 file_list_window_plugin_destroy (WindowPlugin *plugin)
 {
-    file_list_save_config (plugin->list, plugin->filename);
+    if (plugin->update_idle)
+        g_source_remove (plugin->update_idle);
+    if (plugin->update_ui_idle)
+        g_source_remove (plugin->update_ui_idle);
+
+    file_list_save_config (plugin->list, plugin->filename, plugin->ui_config);
     file_list_shutdown (plugin->list);
     g_object_unref (plugin->list);
 
@@ -2188,6 +2383,7 @@ file_list_window_plugin_destroy (WindowPlugin *plugin)
                                           (gpointer) window_plugin_queue_update,
                                           plugin);
 
+    ui_config_free (plugin->ui_config);
     g_free (plugin->filename);
 }
 
