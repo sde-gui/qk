@@ -87,7 +87,7 @@ def do_cmd(cmd, force=False):
 
 def copy_mime():
     do_cmd("mkdir -p %s/mime/packages" % (installdir,))
-    do_cmd("cp %s/usr/local/win/gtk/share/mime/packages/moo.xml %s/mime/packages" % (installdir, installdir))
+    do_cmd("cp %s/usr/local/win/gtk-dist/share/mime/packages/moo.xml %s/mime/packages" % (installdir, installdir))
     do_cmd("cp /usr/share/mime/packages/freedesktop.org.xml %s/mime/packages" % (installdir,))
     do_cmd("update-mime-database %s/mime" % (installdir,))
     do_cmd("mkdir -p %s/share/mime/" % (moo_windir,))
@@ -100,31 +100,34 @@ def copy_files():
             do_cmd("cp -r %s/* %s/" % (d, moo_windir))
 
     do_cmd("mkdir -p %s/bin" % (moo_windir,))
-    do_cmd("cp -r %s/usr/local/win/gtk/bin/libmoo.dll %s/bin/" % (installdir, moo_windir))
+    do_cmd("cp -r %s/usr/local/win/gtk-dist/bin/libmoo.dll %s/bin/" % (installdir, moo_windir))
 
     if not pida:
-        do_cmd("cp -r %s/usr/local/win/gtk/bin/medit.exe %s/bin/" % (installdir, moo_windir))
+        do_cmd("cp -r %s/usr/local/win/gtk-dist/bin/medit.exe %s/bin/" % (installdir, moo_windir))
 
     if not bin_only:
+        do_cmd("mkdir -p %s/share/doc" % (moo_windir,))
         do_cmd("mkdir -p %s/share/mime" % (moo_windir,))
         do_cmd("mkdir -p %s/lib/moo" % (moo_windir,))
 
-        do_cmd("cp -r %s/usr/local/win/gtk/share/moo %s/share/" % (installdir, moo_windir))
-        do_cmd("cp -r %s/usr/local/win/gtk/lib/locale %s/lib/" % (installdir, moo_windir))
+        do_cmd("cp -r %s/usr/local/win/gtk-dist/share/doc/medit %s/share/doc/" % (installdir, moo_windir))
+        do_cmd("cp -r %s/usr/local/win/gtk-dist/share/moo %s/share/" % (installdir, moo_windir))
+        do_cmd("rm -fr %s/share/moo/scripts" % (moo_windir,))
+        do_cmd("cp -r %s/usr/local/win/gtk-dist/share/locale %s/lib/" % (installdir, moo_windir))
         copy_mime()
 
         if not no_python:
-            do_cmd("cp -r %s/usr/local/win/gtk/lib/moo/plugins %s/lib/moo/" % (installdir, moo_windir))
-            if os.path.exists("%s/usr/local/win/gtk/lib/moo/projects" % (installdir,)):
-                do_cmd("cp -r %s/usr/local/win/gtk/lib/moo/projects %s/lib/moo/" % (installdir, moo_windir))
+            do_cmd("cp -r %s/usr/local/win/gtk-dist/lib/moo/plugins %s/lib/moo/" % (installdir, moo_windir))
+            if os.path.exists("%s/usr/local/win/gtk-dist/lib/moo/projects" % (installdir,)):
+                do_cmd("cp -r %s/usr/local/win/gtk-dist/lib/moo/projects %s/lib/moo/" % (installdir, moo_windir))
 
             if pida:
                 do_cmd("mkdir -p %s/lib/site-packages" % (moo_windir,))
-                do_cmd("cp %s/usr/local/win/gtk/lib/moo/plugins/lib/moo.pyd %s/lib/site-packages/moo.pyd" % (installdir, moo_windir))
+                do_cmd("cp %s/usr/local/win/gtk-dist/lib/moo/plugins/lib/moo.pyd %s/lib/site-packages/moo.pyd" % (installdir, moo_windir))
             else:
                 do_cmd("mkdir -p %s/lib/moo/plugins" % (moo_windir,))
-                do_cmd("cp %s/usr/local/win/gtk/lib/moo/plugins/pymoo.dll %s/lib/moo/plugins/" % (installdir, moo_windir))
-                do_cmd("cp %s/usr/local/win/gtk/lib/moo/plugins/lib/moo.pyd %s/lib/moo/plugins/" % (installdir, moo_windir))
+                do_cmd("cp %s/usr/local/win/gtk-dist/lib/moo/plugins/pymoo.dll %s/lib/moo/plugins/" % (installdir, moo_windir))
+                do_cmd("cp %s/usr/local/win/gtk-dist/lib/moo/plugins/lib/moo.pyd %s/lib/moo/plugins/" % (installdir, moo_windir))
 
     if do_strip:
         if not bin_only and not no_python:
