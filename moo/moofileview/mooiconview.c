@@ -21,13 +21,13 @@
 #include <math.h>
 
 
-typedef struct _Column      Column;
-typedef struct _Layout      Layout;
-typedef struct _CellInfo    CellInfo;
-typedef struct _Selection   Selection;
-typedef struct _DndInfo     DndInfo;
+typedef struct Column    Column;
+typedef struct Layout    Layout;
+typedef struct CellInfo  CellInfo;
+typedef struct Selection Selection;
+typedef struct DndInfo   DndInfo;
 
-struct _Column {
+struct Column {
     GtkTreePath *first;
     int          index;
     int          width;
@@ -36,7 +36,7 @@ struct _Column {
 };
 
 
-struct _Layout {
+struct Layout {
     int     num_rows;
 
     int     width;
@@ -51,7 +51,7 @@ struct _Layout {
 };
 
 
-struct _CellInfo {
+struct CellInfo {
     GtkCellRenderer *cell;
     GSList *attributes;
     MooIconCellDataFunc func;
@@ -61,7 +61,7 @@ struct _CellInfo {
 };
 
 
-struct _DndInfo {
+struct DndInfo {
     GtkTargetList *dest_targets;
     GdkDragAction dest_actions;
 
@@ -77,7 +77,7 @@ struct _DndInfo {
 };
 
 
-struct _MooIconViewPrivate {
+struct MooIconViewPrivate {
     GtkTreeModel    *model;
 
     CellInfo         pixbuf;
@@ -115,7 +115,7 @@ struct _MooIconViewPrivate {
 };
 
 
-static void     moo_icon_view_finalize      (GObject        *object);
+static void     moo_icon_view_dispose       (GObject        *object);
 static void     moo_icon_view_set_property  (GObject        *object,
                                              guint           prop_id,
                                              const GValue   *value,
@@ -169,6 +169,7 @@ static void     drag_scroll_check           (MooIconView    *view,
                                              int             x,
                                              int             y);
 static void     drag_scroll_stop            (MooIconView    *view);
+static void     drag_select_finish          (MooIconView    *view);
 
 static void     row_changed                 (GtkTreeModel   *model,
                                              GtkTreePath    *path,
@@ -247,6 +248,9 @@ static gboolean move_cursor                 (MooIconView    *view,
                                              gboolean        extend_selection);
 static GtkTreePath *ensure_cursor           (MooIconView    *view);
 
+static DndInfo *dnd_info_new                (void);
+static void     dnd_info_free               (DndInfo        *info);
+
 
 /* MOO_TYPE_ICON_VIEW */
 G_DEFINE_TYPE (MooIconView, _moo_icon_view, GTK_TYPE_WIDGET)
@@ -280,7 +284,9 @@ _moo_icon_view_class_init (MooIconViewClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
-    gobject_class->finalize = moo_icon_view_finalize;
+    g_type_class_add_private (klass, sizeof (MooIconViewPrivate));
+
+    gobject_class->dispose = moo_icon_view_dispose;
     gobject_class->set_property = moo_icon_view_set_property;
     gobject_class->get_property = moo_icon_view_get_property;
 
@@ -492,7 +498,7 @@ _moo_icon_view_init (MooIconView *view)
     GTK_WIDGET_UNSET_FLAGS (view, GTK_NO_WINDOW);
     GTK_WIDGET_SET_FLAGS (view, GTK_CAN_FOCUS);
 
-    view->priv = g_new0 (MooIconViewPrivate, 1);
+    view->priv = G_TYPE_INSTANCE_GET_PRIVATE (view, MOO_TYPE_ICON_VIEW, MooIconViewPrivate);
 
     view->priv->pixbuf.cell = gtk_cell_renderer_pixbuf_new ();
     MOO_OBJECT_REF_SINK (view->priv->pixbuf.cell);
@@ -521,45 +527,73 @@ _moo_icon_view_init (MooIconView *view)
     init_layout (view);
     init_selection (view);
 
-    view->priv->dnd_info = g_new0 (DndInfo, 1);
+    view->priv->dnd_info = dnd_info_new ();
 }
 
 
-static void moo_icon_view_finalize  (GObject      *object)
+static void
+moo_icon_view_dispose (GObject *object)
 {
     MooIconView *view = MOO_ICON_VIEW (object);
 
-    if (view->priv->model)
-        g_object_unref (view->priv->model);
+    _moo_icon_view_set_model (view, NULL);
+
     g_object_unref (view->priv->adjustment);
+    view->priv->adjustment = NULL;
+
     if (view->priv->update_idle)
+    {
         g_source_remove (view->priv->update_idle);
+        view->priv->update_idle = 0;
+    }
 
-    g_object_unref (view->priv->pixbuf.cell);
-    free_attributes (&view->priv->pixbuf);
-    if (view->priv->pixbuf.destroy)
-        view->priv->pixbuf.destroy (view->priv->pixbuf.func_data);
+    if (view->priv->pixbuf.cell)
+    {
+        g_object_unref (view->priv->pixbuf.cell);
+        free_attributes (&view->priv->pixbuf);
+        if (view->priv->pixbuf.destroy)
+            view->priv->pixbuf.destroy (view->priv->pixbuf.func_data);
+        view->priv->pixbuf.cell = NULL;
+    }
 
-    g_object_unref (view->priv->text.cell);
-    free_attributes (&view->priv->text);
-    if (view->priv->text.destroy)
-        view->priv->text.destroy (view->priv->text.func_data);
+    if (view->priv->text.cell)
+    {
+        g_object_unref (view->priv->text.cell);
+        free_attributes (&view->priv->text);
+        if (view->priv->text.destroy)
+            view->priv->text.destroy (view->priv->text.func_data);
+        view->priv->text.cell = NULL;
+    }
 
     destroy_layout (view);
     free_selection (view);
-    gtk_tree_row_reference_free (view->priv->cursor);
-    gtk_tree_row_reference_free (view->priv->scroll_to);
-    gtk_tree_row_reference_free (view->priv->drop_dest);
 
-    if (view->priv->dnd_info->source_targets)
-        gtk_target_list_unref (view->priv->dnd_info->source_targets);
-    if (view->priv->dnd_info->dest_targets)
-        gtk_target_list_unref (view->priv->dnd_info->dest_targets);
-    g_free (view->priv->dnd_info);
+    dnd_info_free (view->priv->dnd_info);
+    view->priv->dnd_info = NULL;
 
-    g_free (view->priv);
+    G_OBJECT_CLASS (_moo_icon_view_parent_class)->dispose (object);
+}
 
-    G_OBJECT_CLASS (_moo_icon_view_parent_class)->finalize (object);
+
+static DndInfo *
+dnd_info_new (void)
+{
+    return _moo_new0 (DndInfo);
+}
+
+static void
+dnd_info_free (DndInfo *info)
+{
+    if (info)
+    {
+        if (info->dest_targets)
+            gtk_target_list_unref (info->dest_targets);
+        if (info->source_targets)
+            gtk_target_list_unref (info->source_targets);
+        if (info->drag_motion_context)
+            g_object_unref (info->drag_motion_context);
+        _moo_free (DndInfo, info);
+    }
 }
 
 
@@ -1093,6 +1127,7 @@ get_drag_select_rect (MooIconView  *view,
                           view->priv->button_press_y);
 }
 
+#if !GTK_CHECK_VERSION(2,8,0)
 static GdkGC *
 get_sel_gc (MooIconView *view)
 {
@@ -1114,6 +1149,7 @@ get_sel_gc (MooIconView *view)
 
     return view->priv->sel_gc;
 }
+#endif
 
 static gboolean
 moo_icon_view_expose (GtkWidget      *widget,
@@ -1158,7 +1194,7 @@ moo_icon_view_expose (GtkWidget      *widget,
 
     if (view->priv->drag_select)
     {
-#if 1
+#if GTK_CHECK_VERSION(2,8,0)
         cairo_t *cr;
         GdkRectangle rect;
         GdkColor *color;
@@ -1838,6 +1874,20 @@ _moo_icon_view_set_adjustment (MooIconView    *view,
 }
 
 
+static void
+cleanup_after_button_press (MooIconView *view)
+{
+    if (view->priv->button_press_row)
+    {
+        gtk_tree_row_reference_free (view->priv->button_press_row);
+        view->priv->button_press_row = NULL;
+    }
+
+    view->priv->button_pressed = 0;
+    drag_select_finish (view);
+    drag_scroll_stop (view);
+}
+
 static gboolean
 moo_icon_view_button_press (GtkWidget      *widget,
                             GdkEventButton *event)
@@ -1897,6 +1947,7 @@ moo_icon_view_button_press (GtkWidget      *widget,
                 return TRUE;
 
             case GDK_2BUTTON_PRESS:
+                cleanup_after_button_press (view);
                 if (path)
                 {
                     activate_item_at_cursor (view);
@@ -1905,8 +1956,8 @@ moo_icon_view_button_press (GtkWidget      *widget,
                 return TRUE;
 
             default:
-                if (path)
-                    gtk_tree_path_free (path);
+                cleanup_after_button_press (view);
+                gtk_tree_path_free (path);
                 return FALSE;
         }
     }
@@ -1957,11 +2008,7 @@ moo_icon_view_button_release (GtkWidget      *widget,
     GtkTreePath *path = NULL;
 
     if (view->priv->button_press_row)
-    {
         path = gtk_tree_row_reference_get_path (view->priv->button_press_row);
-        gtk_tree_row_reference_free (view->priv->button_press_row);
-        view->priv->button_press_row = NULL;
-    }
 
     if (path)
     {
@@ -1987,9 +2034,7 @@ moo_icon_view_button_release (GtkWidget      *widget,
         gtk_tree_path_free (path);
     }
 
-    view->priv->button_pressed = 0;
-    drag_select_finish (view);
-    drag_scroll_stop (view);
+    cleanup_after_button_press (view);
 
     return FALSE;
 }
@@ -2887,7 +2932,7 @@ _moo_icon_view_abs_to_widget_coords (MooIconView        *view,
 /* Selection and cursor
  */
 
-struct _Selection {
+struct Selection {
     GtkSelectionMode mode;
     GSList *selected;   /* GtkTreeRowReference* */
 };
