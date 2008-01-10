@@ -423,7 +423,7 @@ init_tools_environment (void)
 
 
 void
-_moo_edit_load_user_tools (MooUserToolType type)
+_moo_edit_load_user_tools_type (MooUserToolType type)
 {
     GSList *list;
 
@@ -439,6 +439,13 @@ _moo_edit_load_user_tools (MooUserToolType type)
         _moo_user_tool_info_unref (list->data);
         list = g_slist_delete_link (list, list);
     }
+}
+
+void
+_moo_edit_load_user_tools (void)
+{
+    _moo_edit_load_user_tools_type (MOO_USER_TOOL_MENU);
+    _moo_edit_load_user_tools_type (MOO_USER_TOOL_CONTEXT);
 }
 
 

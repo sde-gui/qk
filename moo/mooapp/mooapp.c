@@ -827,9 +827,7 @@ moo_app_init_editor (MooApp *app)
                              app->priv->info->short_name);
 
     moo_plugin_read_dirs ();
-
-    _moo_edit_load_user_tools (MOO_USER_TOOL_MENU);
-    _moo_edit_load_user_tools (MOO_USER_TOOL_CONTEXT);
+    _moo_edit_load_user_tools ();
 }
 #endif /* MOO_BUILD_EDIT */
 
