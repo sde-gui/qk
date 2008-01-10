@@ -777,12 +777,13 @@ parse_globs (const char *string,
     command = g_string_new (NULL);
 
     for (p = pieces; p && *p; ++p)
-        g_string_append_printf (command, "%s-%s \"%s%s%s\"",
-                                p == pieces ? "" : " -o ",
-                                skip ? "wholename" : "name",
-                                skip ? "*" : "",
-                                *p,
-                                skip ? "*" : "");
+        if (**p)
+            g_string_append_printf (command, "%s-%s \"%s%s%s\"",
+                                    p == pieces ? "" : " -o ",
+                                    skip ? "wholename" : "name",
+                                    skip ? "*" : "",
+                                    *p,
+                                    skip ? "*" : "");
 
     g_strfreev (pieces);
     return g_string_free (command, FALSE);
