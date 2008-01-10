@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.3.3 on Mon Dec 24 13:13:25 2007 
+<!--Generated with glade3 3.3.3 on Wed Jan  9 22:25:45 2008 
 	Version: 3.0.0
 	Date: Fri Dec  8 17:47:39 2006
 	User: muntyan
@@ -111,7 +111,6 @@
                     </child>
                     <child>
                       <widget class="GtkHBox" id="hbox2">
-                        <property name="visible">True</property>
                         <property name="spacing">3</property>
                         <child>
                           <widget class="GtkLabel" id="label1">
