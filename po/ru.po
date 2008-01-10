@@ -1168,17 +1168,17 @@ msgstr "Поиск в файлах"
 #, c-format
 msgid "*** %u match found ***"
 msgid_plural "*** %u matches found ***"
-msgstr[0] "Найдено %u совпадение"
-msgstr[1] "Найдены %u совпадения"
-msgstr[2] "Найдены %u совпадений"
+msgstr[0] "*** Найдено %u совпадение ***"
+msgstr[1] "*** Найдены %u совпадения ***"
+msgstr[2] "*** Найдены %u совпадений ***"
 
 #: ../moo/mooedit/plugins/moofind.c:923
 #, c-format
 msgid "*** %u file found ***"
 msgid_plural "*** %u files found ***"
-msgstr[0] "Найден %u файл"
-msgstr[1] "Найдены %u файла"
-msgstr[2] "Найдены %u файлов"
+msgstr[0] "*** Найден %u файл ***"
+msgstr[1] "*** Найдены %u файла ***"
+msgstr[2] "*** Найдены %u файлов ***"
 
 #: ../moo/mooedit/plugins/moofind.c:961
 msgid "Finds everything"
