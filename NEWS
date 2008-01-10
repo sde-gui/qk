@@ -1,3 +1,37 @@
+2008-01-09  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    * === Released 0.9.1 ===
+
+    Added more editor functions for Lua scripts.
+    Made building with --disable-nls work again.
+    Fixed alternating button order in Find dialog; use it
+    in more dialogs (LoneFox).
+    Fixed a segfault in user tools preferences.
+    Small buttons in the notebook and window panes follow
+    gtk theme.
+    Notebook tabs no longer scroll on closing document.
+    Nicer arrow buttons in notebook.
+    configure doesn't fail to detect pygtk when pycairo-dev
+    is absent.
+    Added a setting to ensure trailing newline character
+    on save.
+    Emacs-like filename:line strings are now recognized by
+    default in shell tools output.
+    File list plugin.
+    Function list plugin (Christian Dywan).
+    File selector allows selecting by dragging the mouse
+    and DND for multiple items.
+    Window panes configurations is now saved and restored
+    properly; panes may be re-arranged by DND.
+    Added color schemes for the terminal.
+    Fixed the bug when the toolbar didn't pick up default gtk
+    style.
+    Fixed all memory leaks found by valgrind.
+
+    Updated French translation by Collilieux.
+    Updated Spanish translation by Arnau Sanchez.
+    Updated German translation by Christian Dywan.
+    Updated Chinese translation by Chaosye.
+
 2007-11-29  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.9.0 ===
 
