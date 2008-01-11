@@ -2266,7 +2266,6 @@ load_ui_config (WindowPlugin *plugin)
     }
     else
     {
-        gtk_tree_view_expand_all (plugin->treeview);
         _moo_tree_view_select_first (plugin->treeview);
     }
 }
