@@ -1692,7 +1692,7 @@ drag_dest_drag_data_received (GtkTreeDragDest  *drag_dest,
     else if (selection_data->target == atom_uri_list)
     {
         char **uris;
-        gboolean retval;
+        gboolean retval = FALSE;
 
         if (!(uris = gtk_selection_data_get_uris (selection_data)))
             return FALSE;
