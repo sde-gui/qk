@@ -355,12 +355,13 @@ moo_cmd_view_run_command_full (MooCmdView  *view,
                                     NULL, NULL,
                                     &error);
 
-    if (error)
+    if (!view->priv->cmd)
     {
-        moo_line_view_write_line (MOO_LINE_VIEW (view),
-                                  error->message, -1,
+        const char *message = error ? error->message : "Failed";
+        moo_line_view_write_line (MOO_LINE_VIEW (view), message, -1,
                                   view->priv->error_tag);
-        g_error_free (error);
+        if (error)
+            g_error_free (error);
         goto out;
     }
 
