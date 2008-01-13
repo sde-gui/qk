@@ -28,12 +28,15 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/moohelp.h"
+#include "mooutils/mooutils-fs.h"
 #include "help-sections.h"
 #include <gtk/gtkdialog.h>
 #include <gtk/gtkscrolledwindow.h>
 #include <gtk/gtktogglebutton.h>
 #include <string.h>
+#ifndef __WIN32__
 #include <sys/wait.h>
+#endif
 #include <errno.h>
 #include <signal.h>
 
@@ -248,6 +251,7 @@ find_plugin_init (FindPlugin *plugin)
                                  "closure-callback", find_in_files_cb,
                                  NULL);
 
+#ifndef __WIN32__
     moo_window_class_new_action (klass, "FindFile", NULL,
                                  "display-name", _("Find File"),
                                  "label", _("Find File"),
@@ -255,6 +259,7 @@ find_plugin_init (FindPlugin *plugin)
                                  "stock-id", MOO_STOCK_FIND_FILE,
                                  "closure-callback", find_file_cb,
                                  NULL);
+#endif
 
     if (xml)
     {
@@ -262,9 +267,11 @@ find_plugin_init (FindPlugin *plugin)
         moo_ui_xml_add_item (xml, plugin->ui_merge_id,
                              "Editor/Menubar/Search",
                              "FindInFiles", "FindInFiles", -1);
+#ifndef __WIN32__
         moo_ui_xml_add_item (xml, plugin->ui_merge_id,
                              "Editor/Menubar/Search",
                              "FindFile", "FindFile", -1);
+#endif
     }
 
     g_type_class_unref (klass);
@@ -280,7 +287,9 @@ find_plugin_deinit (FindPlugin *plugin)
     MooUIXML *xml = moo_editor_get_ui_xml (editor);
 
     moo_window_class_remove_action (klass, "FindInFiles");
+#ifndef __WIN32__
     moo_window_class_remove_action (klass, "FindFile");
+#endif
 
     if (plugin->ui_merge_id)
         moo_ui_xml_remove_ui (xml, plugin->ui_merge_id);
@@ -523,15 +532,39 @@ init_find_dialog (MooEditWindow *window,
 }
 
 
+static char *
+get_directory (MooGladeXML *xml)
+{
+    MooHistoryCombo *dir_combo;
+    GtkWidget *dir_entry;
+    const char *dir_utf8;
+    char *dir, *norm_dir;
+
+    dir_combo = moo_glade_xml_get_widget (xml, "dir_combo");
+    dir_entry = MOO_COMBO (dir_combo)->entry;
+
+    dir_utf8 = gtk_entry_get_text (GTK_ENTRY (dir_entry));
+
+    dir = g_filename_from_utf8 (dir_utf8, -1, NULL, NULL, NULL);
+    moo_history_list_add_filename (moo_history_combo_get_list (dir_combo), dir);
+
+    /* trailing slash is no-no on windows */
+    norm_dir = _moo_normalize_file_path (dir);
+
+    g_free (dir);
+    return norm_dir;
+}
+
+
 static void
 do_grep (MooEditWindow  *window,
          WindowStuff    *stuff)
 {
     GtkWidget *pane;
-    MooHistoryCombo *dir_combo, *pattern_combo, *skip_combo, *glob_combo;
-    GtkWidget *dir_entry, *pattern_entry, *glob_entry;
+    MooHistoryCombo *pattern_combo, *skip_combo, *glob_combo;
+    GtkWidget *pattern_entry, *glob_entry;
     GtkWidget *skip_entry, *case_sensitive_button;
-    const char *dir_utf8, *pattern, *glob, *skip;
+    const char *pattern, *glob, *skip;
     gboolean case_sensitive;
     char *dir;
 
@@ -539,12 +572,8 @@ do_grep (MooEditWindow  *window,
     pane = moo_edit_window_get_pane (window, FIND_PLUGIN_ID);
     g_return_if_fail (pane != NULL);
 
-    dir_combo = moo_glade_xml_get_widget (stuff->grep_xml, "dir_combo");
-    dir_entry = MOO_COMBO (dir_combo)->entry;
-    dir_utf8 = gtk_entry_get_text (GTK_ENTRY (dir_entry));
-    dir = g_filename_from_utf8 (dir_utf8, -1, NULL, NULL, NULL);
+    dir = get_directory (stuff->grep_xml);
     g_return_if_fail (dir != NULL);
-    moo_history_list_add_filename (moo_history_combo_get_list (dir_combo), dir);
 
     pattern_combo = moo_glade_xml_get_widget (stuff->grep_xml, "pattern_combo");
     moo_history_combo_commit (pattern_combo);
@@ -579,9 +608,9 @@ do_find (MooEditWindow  *window,
          WindowStuff    *stuff)
 {
     GtkWidget *pane;
-    MooHistoryCombo *dir_combo, *pattern_combo, *skip_combo;
-    GtkWidget *dir_entry, *pattern_entry, *skip_entry;
-    const char *dir_utf8, *pattern, *skip;
+    MooHistoryCombo *pattern_combo, *skip_combo;
+    GtkWidget *pattern_entry, *skip_entry;
+    const char *pattern, *skip;
     char *dir;
 
     ensure_output (stuff);
@@ -598,12 +627,8 @@ do_find (MooEditWindow  *window,
     skip_entry = MOO_COMBO (skip_combo)->entry;
     skip = gtk_entry_get_text (GTK_ENTRY (skip_entry));
 
-    dir_combo = moo_glade_xml_get_widget (stuff->find_xml, "dir_combo");
-    dir_entry = MOO_COMBO (dir_combo)->entry;
-    dir_utf8 = gtk_entry_get_text (GTK_ENTRY (dir_entry));
-    dir = g_filename_from_utf8 (dir_utf8, -1, NULL, NULL, NULL);
+    dir = get_directory (stuff->grep_xml);
     g_return_if_fail (dir != NULL);
-    moo_history_list_add_filename (moo_history_combo_get_list (dir_combo), dir);
 
     moo_line_view_clear (MOO_LINE_VIEW (stuff->output));
     moo_big_paned_present_pane (window->paned, pane);
@@ -653,7 +678,12 @@ process_grep_line (MooLineView *view,
         return FALSE;
 
     p = line;
-    if (!(colon = strchr (p, ':')) || !colon[1])
+    if (!(colon = strchr (p, ':')) ||
+#ifdef __WIN32__
+        /* Absolute filename 'C:\foobar\blah.txt:100:lalala' */
+        !(colon = strchr (colon + 1, ':')) ||
+#endif
+        !colon[1])
         goto parse_error;
 
     filename = g_strndup (p, colon - p);
@@ -814,6 +844,57 @@ append_globs (GString    *command,
 
 
 static void
+append_grep_globs (GString    *command,
+                   const char *string,
+                   gboolean    skip)
+{
+    char **globs, **p;
+
+    globs = g_strsplit (string, ";", 0);
+
+    for (p = globs; p && *p; ++p)
+    {
+        if (!**p)
+            continue;
+
+        if (!skip)
+        {
+            char *quoted;
+
+            if (!strcmp (*p, "*"))
+                continue;
+
+            quoted = g_shell_quote (*p);
+            g_string_append_printf (command, " --include=%s", quoted);
+            g_free (quoted);
+        }
+        else
+        {
+            guint len = strlen (*p);
+
+            if ((*p)[len-1] == '/')
+            {
+                char *quoted;
+                (*p)[len-1] = 0;
+                quoted = g_shell_quote (*p);
+                g_string_append_printf (command, " --exclude-dir=%s", quoted);
+                g_free (quoted);
+            }
+            else
+            {
+                char *quoted;
+                quoted = g_shell_quote (*p);
+                g_string_append_printf (command, " --exclude=%s", quoted);
+                g_string_append_printf (command, " --exclude-dir=%s", quoted);
+                g_free (quoted);
+            }
+        }
+    }
+
+    g_strfreev (globs);
+}
+
+static void
 execute_grep (const char     *pattern,
               const char     *glob,
               const char     *dir,
@@ -822,6 +903,7 @@ execute_grep (const char     *pattern,
               WindowStuff    *stuff)
 {
     GString *command = NULL;
+    char *quoted_pattern, *quoted_dir;
 
     g_return_if_fail (stuff->output != NULL);
     g_return_if_fail (pattern && pattern[0]);
@@ -831,15 +913,21 @@ execute_grep (const char     *pattern,
     stuff->current_file = NULL;
     stuff->match_count = 0;
 
-    command = g_string_new (NULL);
-    g_string_printf (command, "find '%s' -type f", dir);
-    append_globs (command, glob, skip_files);
-    g_string_append_printf (command, "-print -follow | sed -e \"s/ /\\\\\\ /g\" -e \"s/'/\\\\\\'/g\" "
-                                     "| xargs egrep -I -s -H -n %s-e '%s'",
-                            !case_sensitive ? "-i " : "", pattern);
+    command = g_string_new ("grep -E -r -I -s -H -n");
+    if (!case_sensitive)
+        g_string_append (command, " -i");
+    append_grep_globs (command, glob, FALSE);
+    append_grep_globs (command, skip_files, TRUE);
+
+    quoted_pattern = g_shell_quote (pattern);
+    quoted_dir = g_shell_quote (dir);
+    g_string_append_printf (command, " -e %s %s", quoted_pattern, quoted_dir);
 
     stuff->cmd = CMD_GREP;
     moo_cmd_view_run_command (stuff->output, command->str, NULL, _("Find in Files"));
+
+    g_free (quoted_dir);
+    g_free (quoted_pattern);
     g_string_free (command, TRUE);
 }
 
@@ -911,6 +999,7 @@ command_exit (MooLineView *view,
 
     stuff->cmd = 0;
 
+#ifndef __WIN32__
     if (WIFEXITED (status))
     {
         char *msg = NULL;
@@ -937,6 +1026,30 @@ command_exit (MooLineView *view,
         g_free (msg);
         return TRUE;
     }
+#else
+    if (status == 0 || status == 1)
+    {
+        char *msg = NULL;
+
+        if (cmd == CMD_GREP)
+            msg = g_strdup_printf (dngettext (GETTEXT_PACKAGE,
+                                              "*** %u match found ***",
+                                              "*** %u matches found ***",
+                                              stuff->match_count),
+                                   stuff->match_count);
+        else
+            msg = g_strdup_printf (dngettext (GETTEXT_PACKAGE,
+                                              "*** %u file found ***",
+                                              "*** %u files found ***",
+                                              stuff->match_count),
+                                   stuff->match_count);
+
+        moo_line_view_write_line (view, msg, -1,
+                                  stuff->message_tag);
+        g_free (msg);
+        return TRUE;
+    }
+#endif
 
     return FALSE;
 }

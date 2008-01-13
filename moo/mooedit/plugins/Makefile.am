@@ -58,7 +58,10 @@ endif
 
 libmooeditplugins_la_SOURCES =	\
 	mooeditplugins.h	\
-	moofilelist.c
+	moofilelist.c		\
+	moofind.c
+
+nodist_libmooeditplugins_la_SOURCES = moofind-glade.h
 
 EXTRA_DIST +=			\
 	moofind.glade		\
@@ -66,8 +69,3 @@ EXTRA_DIST +=			\
 
 BUILT_SOURCES += moofind-glade.h
 CLEANFILES += moofind-glade.h
-
-if MOO_OS_UNIX
-libmooeditplugins_la_SOURCES += moofind.c
-nodist_libmooeditplugins_la_SOURCES = moofind-glade.h
-endif
