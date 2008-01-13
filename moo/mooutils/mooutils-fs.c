@@ -585,30 +585,28 @@ normalize_full_path (const char *path,
                      gboolean    is_folder)
 {
     guint len;
-    char *normpath, *tmp;
+    char *normpath;
 
     g_return_val_if_fail (path != NULL, NULL);
 
-    tmp = normalize_path_string (path);
+    normpath = normalize_path_string (path);
+    g_return_val_if_fail (normpath != NULL, NULL);
 
-    if (!is_folder)
-        return tmp;
+    len = strlen (normpath);
+    g_return_val_if_fail (len > 0, normpath);
 
-    len = strlen (tmp);
-    g_return_val_if_fail (len > 0, tmp);
-
-    if (tmp[len-1] != G_DIR_SEPARATOR)
+    if (is_folder && normpath[len-1] != G_DIR_SEPARATOR)
     {
-        normpath = g_new (char, len + 2);
-        memcpy (normpath, tmp, len);
-        normpath[len] = G_DIR_SEPARATOR;
-        normpath[len+1] = 0;
-        g_free (tmp);
-    }
-    else
-    {
-        g_assert (1 || len == 1);
+        char *tmp = g_new (char, len + 2);
+        memcpy (tmp, normpath, len);
+        tmp[len] = G_DIR_SEPARATOR;
+        tmp[len+1] = 0;
+        g_free (normpath);
         normpath = tmp;
+    }
+    else if (!is_folder && normpath[len-1] == G_DIR_SEPARATOR)
+    {
+        normpath[len-1] = 0;
     }
 
     return normpath;
@@ -637,6 +635,7 @@ normalize_full_path (const char *fullpath,
 {
     char *drive, *path, *normpath;
     guint slashes;
+    guint len;
 
     g_return_val_if_fail (fullpath != NULL, NULL);
 
@@ -694,16 +693,17 @@ normalize_full_path (const char *fullpath,
         g_free (tmp);
     }
 
-    if (is_folder)
-    {
-        guint len = strlen (normpath);
+    len = strlen (normpath);
 
-        if (!len || normpath[len -1] != '\\')
-        {
-            char *tmp = normpath;
-            normpath = g_strdup_printf ("%s\\", normpath);
-            g_free (tmp);
-        }
+    if (is_folder && (!len || normpath[len-1] != '\\'))
+    {
+        char *tmp = normpath;
+        normpath = g_strdup_printf ("%s\\", normpath);
+        g_free (tmp);
+    }
+    else if (!is_folder && len && normpath[len-1] == '\\')
+    {
+        normpath[len-1] = 0;
     }
 
     g_free (drive);
