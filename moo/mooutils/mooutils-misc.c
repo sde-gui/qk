@@ -1637,7 +1637,10 @@ save_with_backup (const char *filename,
         goto out;
 
     if (g_file_test (filename, G_FILE_TEST_EXISTS))
+    {
+        _moo_unlink (bak_file);
         _moo_rename_file (filename, bak_file, &error_move);
+    }
 
     if (!_moo_rename_file (tmp_file, filename, error))
     {
