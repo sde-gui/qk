@@ -22,9 +22,7 @@
 #include "mooedit/mooedit-enums.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooutils-misc.h"
-#ifdef MOO_OS_UNIX
-#include "mooedit/moocommand-unx.h"
-#endif
+#include "mooedit/moocommand-exe.h"
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
 #include <string.h>
@@ -1362,10 +1360,8 @@ _moo_command_init (void)
 #ifdef MOO_BUILD_LUA
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_LUA));
 #endif
-#ifdef MOO_OS_UNIX
-        g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_UNX));
+        g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_EXE));
         _moo_command_filter_regex_load ();
-#endif
         been_here = TRUE;
     }
 }

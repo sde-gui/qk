@@ -1,7 +1,7 @@
 /*
- *   moocommand-unx.c
+ *   moocommand-exe.c
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -13,7 +13,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "mooedit/moocommand-unx.h"
 #include "mooedit/moocommand-exe.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooedittools-glade.h"
@@ -32,28 +31,61 @@
 #include <unistd.h>
 #endif
 
+#ifndef __WIN32__
+#define RUN_CMD_ARGV {"/bin/sh", "-c", NULL, NULL}
+#define RUN_CMD_FLAGS 0
+#else
+#define RUN_CMD_ARGV {"cmd.exe", "/C", NULL, NULL}
+#define RUN_CMD_FLAGS G_SPAWN_SEARCH_PATH
+#endif
 
-#define MOO_COMMAND_UNX_MAX_INPUT       (MOO_COMMAND_UNX_INPUT_DOC + 1)
-#define MOO_COMMAND_UNX_MAX_OUTPUT      (MOO_COMMAND_UNX_OUTPUT_NEW_DOC + 1)
-#define MOO_COMMAND_UNX_INPUT_DEFAULT   MOO_COMMAND_UNX_INPUT_NONE
-#define MOO_COMMAND_UNX_OUTPUT_DEFAULT  MOO_COMMAND_UNX_OUTPUT_NONE
+#define MOO_COMMAND_EXE_MAX_INPUT       (MOO_COMMAND_EXE_INPUT_DOC + 1)
+#define MOO_COMMAND_EXE_MAX_OUTPUT      (MOO_COMMAND_EXE_OUTPUT_NEW_DOC + 1)
+#define MOO_COMMAND_EXE_INPUT_DEFAULT   MOO_COMMAND_EXE_INPUT_NONE
+#define MOO_COMMAND_EXE_OUTPUT_DEFAULT  MOO_COMMAND_EXE_OUTPUT_NONE
 
 typedef enum
 {
-    MOO_COMMAND_UNX_INPUT_NONE,
-    MOO_COMMAND_UNX_INPUT_LINES,
-    MOO_COMMAND_UNX_INPUT_SELECTION,
-    MOO_COMMAND_UNX_INPUT_DOC
-} MooCommandUnxInput;
+    MOO_COMMAND_EXE_INPUT_NONE,
+    MOO_COMMAND_EXE_INPUT_LINES,
+    MOO_COMMAND_EXE_INPUT_SELECTION,
+    MOO_COMMAND_EXE_INPUT_DOC
+} MooCommandExeInput;
 
 typedef enum
 {
-    MOO_COMMAND_UNX_OUTPUT_NONE,
-    MOO_COMMAND_UNX_OUTPUT_NONE_ASYNC,
-    MOO_COMMAND_UNX_OUTPUT_PANE,
-    MOO_COMMAND_UNX_OUTPUT_INSERT,
-    MOO_COMMAND_UNX_OUTPUT_NEW_DOC
-} MooCommandUnxOutput;
+    MOO_COMMAND_EXE_OUTPUT_NONE,
+    MOO_COMMAND_EXE_OUTPUT_NONE_ASYNC,
+#ifdef __WIN32__
+    MOO_COMMAND_EXE_OUTPUT_CONSOLE,
+#endif
+    MOO_COMMAND_EXE_OUTPUT_PANE,
+    MOO_COMMAND_EXE_OUTPUT_INSERT,
+    MOO_COMMAND_EXE_OUTPUT_NEW_DOC
+} MooCommandExeOutput;
+
+static const char *output_strings[] = {
+    "none",
+    "async",
+#ifdef __WIN32__
+    "console",
+#endif
+    "pane",
+    "insert",
+    "new-doc"
+};
+
+/* Translators: these are actions for output of a shell command, do not translate the part before | */
+static const char *output_names[] = {
+    N_("Output|None"),
+    N_("Output|None, asynchronous"),
+#ifdef __WIN32__
+    N_("Output|Console"),
+#endif
+    N_("Output|Output pane"),
+    N_("Output|Insert into the document"),
+    N_("Output|New document")
+};
 
 enum {
     COLUMN_NAME,
@@ -71,39 +103,39 @@ static const char *data_keys[N_KEYS+1] = {
     "input", "output", "filter", NULL
 };
 
-struct _MooCommandUnxPrivate {
+struct _MooCommandExePrivate {
     char *cmd_line;
-    MooCommandUnxInput input;
-    MooCommandUnxOutput output;
+    MooCommandExeInput input;
+    MooCommandExeOutput output;
     char *filter;
 };
 
 
-G_DEFINE_TYPE (MooCommandUnx, _moo_command_unx, MOO_TYPE_COMMAND)
+G_DEFINE_TYPE (MooCommandExe, _moo_command_exe, MOO_TYPE_COMMAND)
 
-typedef MooCommandFactory MooCommandFactoryUnx;
-typedef MooCommandFactoryClass MooCommandFactoryUnxClass;
-MOO_DEFINE_TYPE_STATIC (MooCommandFactoryUnx, _moo_command_factory_unx, MOO_TYPE_COMMAND_FACTORY)
+typedef MooCommandFactory MooCommandFactoryExe;
+typedef MooCommandFactoryClass MooCommandFactoryExeClass;
+MOO_DEFINE_TYPE_STATIC (MooCommandFactoryExe, _moo_command_factory_exe, MOO_TYPE_COMMAND_FACTORY)
 
 
 static void
-_moo_command_unx_init (MooCommandUnx *cmd)
+_moo_command_exe_init (MooCommandExe *cmd)
 {
     cmd->priv = G_TYPE_INSTANCE_GET_PRIVATE (cmd,
-                                             MOO_TYPE_COMMAND_UNX,
-                                             MooCommandUnxPrivate);
+                                             MOO_TYPE_COMMAND_EXE,
+                                             MooCommandExePrivate);
 }
 
 
 static void
-moo_command_unx_finalize (GObject *object)
+moo_command_exe_finalize (GObject *object)
 {
-    MooCommandUnx *cmd = MOO_COMMAND_UNX (object);
+    MooCommandExe *cmd = MOO_COMMAND_EXE (object);
 
     g_free (cmd->priv->filter);
     g_free (cmd->priv->cmd_line);
 
-    G_OBJECT_CLASS (_moo_command_unx_parent_class)->finalize (object);
+    G_OBJECT_CLASS (_moo_command_exe_parent_class)->finalize (object);
 }
 
 
@@ -127,22 +159,22 @@ get_lines (GtkTextView *doc)
 }
 
 static char *
-get_input (MooCommandUnx     *cmd,
+get_input (MooCommandExe     *cmd,
            MooCommandContext *ctx)
 {
     GtkTextView *doc = moo_command_context_get_doc (ctx);
 
-    g_return_val_if_fail (cmd->priv->input == MOO_COMMAND_UNX_INPUT_NONE || doc != NULL, NULL);
+    g_return_val_if_fail (cmd->priv->input == MOO_COMMAND_EXE_INPUT_NONE || doc != NULL, NULL);
 
     switch (cmd->priv->input)
     {
-        case MOO_COMMAND_UNX_INPUT_NONE:
+        case MOO_COMMAND_EXE_INPUT_NONE:
             return NULL;
-        case MOO_COMMAND_UNX_INPUT_LINES:
+        case MOO_COMMAND_EXE_INPUT_LINES:
             return get_lines (doc);
-        case MOO_COMMAND_UNX_INPUT_SELECTION:
+        case MOO_COMMAND_EXE_INPUT_SELECTION:
             return moo_text_view_get_selection (doc);
-        case MOO_COMMAND_UNX_INPUT_DOC:
+        case MOO_COMMAND_EXE_INPUT_DOC:
             return moo_text_view_get_text (doc);
     }
 
@@ -219,7 +251,7 @@ make_cmd (const char *base_cmd_line,
 }
 
 static char *
-make_cmd_line (MooCommandUnx     *cmd,
+make_cmd_line (MooCommandExe     *cmd,
                MooCommandContext *ctx)
 {
     char *input;
@@ -320,7 +352,7 @@ _moo_edit_run_in_pane (const char     *cmd_line,
 }
 
 static void
-run_command_in_pane (MooCommandUnx     *cmd,
+run_command_in_pane (MooCommandExe     *cmd,
                      MooCommandContext *ctx,
                      const char        *working_dir,
                      char             **envp)
@@ -332,7 +364,7 @@ run_command_in_pane (MooCommandUnx     *cmd,
     doc = moo_command_context_get_doc (ctx);
     window = moo_command_context_get_window (ctx);
 
-    g_return_if_fail (cmd->priv->input == MOO_COMMAND_UNX_INPUT_NONE || doc != NULL);
+    g_return_if_fail (cmd->priv->input == MOO_COMMAND_EXE_INPUT_NONE || doc != NULL);
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
 
     cmd_line = make_cmd_line (cmd, ctx);
@@ -464,9 +496,14 @@ run_sync (const char  *base_cmd_line,
 {
     GError *error = NULL;
     gboolean result;
-    const char *argv[4] = {"/bin/sh", "-c", NULL, NULL};
+    GSpawnFlags flags = RUN_CMD_FLAGS;
+    const char *argv[4] = RUN_CMD_ARGV;
     char **real_env;
     char *cmd_line;
+
+#ifdef __WIN32__
+    flags |= G_SPAWN_WIN32_HIDDEN_CONSOLE;
+#endif
 
     g_return_val_if_fail (base_cmd_line != NULL, FALSE);
 
@@ -475,7 +512,7 @@ run_sync (const char  *base_cmd_line,
     argv[2] = cmd_line;
     real_env = _moo_env_add (envp);
 
-    result = g_spawn_sync (working_dir, (char**) argv, real_env, 0,
+    result = g_spawn_sync (working_dir, (char**) argv, real_env, flags,
                            NULL, NULL, output, output_err, exit_status,
                            &error);
 
@@ -483,7 +520,8 @@ run_sync (const char  *base_cmd_line,
 
     if (!result)
     {
-        g_message ("could not run command: %s", error->message);
+        g_message ("%s: could not run command: %s (command line was '%s')",
+                   G_STRFUNC, error->message, cmd_line);
         g_error_free (error);
     }
 
@@ -513,7 +551,7 @@ _moo_edit_run_sync (const char    *cmd_line,
 }
 
 static gboolean
-run_command (MooCommandUnx     *cmd,
+run_command (MooCommandExe     *cmd,
              MooCommandContext *ctx,
              const char        *working_dir,
              char             **envp,
@@ -535,16 +573,23 @@ static gboolean
 run_async (const char     *cmd_line,
            const char     *working_dir,
            char          **envp,
-           MooEditWindow  *window)
+           MooEditWindow  *window,
+           G_GNUC_UNUSED gboolean want_console)
 {
     GError *error = NULL;
     gboolean result;
-    const char *argv[4] = {"/bin/sh", "-c", NULL, NULL};
     char **real_env;
     GdkScreen *screen = NULL;
+    GSpawnFlags flags = RUN_CMD_FLAGS;
+    const char *argv[4] = RUN_CMD_ARGV;
 
     if (!cmd_line)
         return FALSE;
+
+#ifdef __WIN32__
+    if (!want_console)
+        flags |= G_SPAWN_WIN32_HIDDEN_CONSOLE;
+#endif
 
     argv[2] = cmd_line;
     real_env = _moo_env_add (envp);
@@ -556,16 +601,17 @@ run_async (const char     *cmd_line,
 
     if (screen)
         result = gdk_spawn_on_screen (screen, working_dir, (char**) argv, real_env,
-                                      0, NULL, NULL, NULL, &error);
+                                      flags, NULL, NULL, NULL, &error);
     else
         result = g_spawn_async (working_dir, (char**) argv, real_env,
-                                0, NULL, NULL, NULL, &error);
+                                flags, NULL, NULL, NULL, &error);
 
     g_strfreev (real_env);
 
     if (!result)
     {
-        g_message ("could not run command: %s", error->message);
+        g_message ("%s: could not run command: %s (command line was '%s')",
+                   G_STRFUNC, error->message, cmd_line);
         g_error_free (error);
     }
 
@@ -584,16 +630,17 @@ _moo_edit_run_async (const char     *cmd_line,
     if (!working_dir || !working_dir[0])
         working_dir = freeme = get_working_dir_for_doc (window, doc);
 
-    run_async (cmd_line, working_dir, envp, window);
+    run_async (cmd_line, working_dir, envp, window, FALSE);
 
     g_free (freeme);
 }
 
 static gboolean
-run_command_async (MooCommandUnx     *cmd,
+run_command_async (MooCommandExe     *cmd,
                    MooCommandContext *ctx,
                    const char        *working_dir,
-                   char             **envp)
+                   char             **envp,
+                   gboolean           want_console)
 {
     gboolean result;
     char *cmd_line;
@@ -605,7 +652,7 @@ run_command_async (MooCommandUnx     *cmd,
         return FALSE;
 
     window = moo_command_context_get_window (ctx);
-    result = run_async (cmd_line, working_dir, envp, window);
+    result = run_async (cmd_line, working_dir, envp, window, want_console);
 
     g_free (cmd_line);
     return result;
@@ -613,39 +660,41 @@ run_command_async (MooCommandUnx     *cmd,
 
 
 static void
-moo_command_unx_run (MooCommand        *cmd_base,
+moo_command_exe_run (MooCommand        *cmd_base,
                      MooCommandContext *ctx)
 {
     MooEdit *doc;
-    MooCommandUnx *cmd = MOO_COMMAND_UNX (cmd_base);
+    MooCommandExe *cmd = MOO_COMMAND_EXE (cmd_base);
     char **envp;
     char *output = NULL;
     char *working_dir;
 
     create_environment (ctx, &working_dir, &envp);
 
-    if (cmd->priv->output == MOO_COMMAND_UNX_OUTPUT_PANE)
+    switch (cmd->priv->output)
     {
-        run_command_in_pane (cmd, ctx, working_dir, envp);
-        goto out;
-    }
-
-    if (cmd->priv->output == MOO_COMMAND_UNX_OUTPUT_NONE)
-    {
-        run_command (cmd, ctx, working_dir, envp, NULL);
-        goto out;
-    }
-
-    if (cmd->priv->output == MOO_COMMAND_UNX_OUTPUT_NONE_ASYNC)
-    {
-        run_command_async (cmd, ctx, working_dir, envp);
-        goto out;
+        case MOO_COMMAND_EXE_OUTPUT_PANE:
+            run_command_in_pane (cmd, ctx, working_dir, envp);
+            goto out;
+        case MOO_COMMAND_EXE_OUTPUT_NONE:
+            run_command (cmd, ctx, working_dir, envp, NULL);
+            goto out;
+        case MOO_COMMAND_EXE_OUTPUT_NONE_ASYNC:
+            run_command_async (cmd, ctx, working_dir, envp, FALSE);
+            goto out;
+#ifdef __WIN32__
+        case MOO_COMMAND_EXE_OUTPUT_CONSOLE:
+            run_command_async (cmd, ctx, working_dir, envp, TRUE);
+            goto out;
+#endif
+        default:
+            break;
     }
 
     if (!run_command (cmd, ctx, working_dir, envp, &output))
         goto out;
 
-    if (cmd->priv->output == MOO_COMMAND_UNX_OUTPUT_INSERT)
+    if (cmd->priv->output == MOO_COMMAND_EXE_OUTPUT_INSERT)
     {
         doc = moo_command_context_get_doc (ctx);
         g_return_if_fail (MOO_IS_EDIT (doc));
@@ -658,7 +707,7 @@ moo_command_unx_run (MooCommand        *cmd_base,
     }
 
     insert_text (MOO_TEXT_VIEW (doc), output,
-                 cmd->priv->input == MOO_COMMAND_UNX_INPUT_DOC);
+                 cmd->priv->input == MOO_COMMAND_EXE_INPUT_DOC);
 
 out:
     g_free (working_dir);
@@ -668,83 +717,86 @@ out:
 
 
 static gboolean
-moo_command_unx_check_sensitive (MooCommand *cmd_base,
+moo_command_exe_check_sensitive (MooCommand *cmd_base,
                                  gpointer    doc,
                                  gpointer    window)
 {
-    MooCommandUnx *cmd = MOO_COMMAND_UNX (cmd_base);
+    MooCommandExe *cmd = MOO_COMMAND_EXE (cmd_base);
     MooCommandOptions options;
 
     options = cmd_base->options;
 
     switch (cmd->priv->input)
     {
-        case MOO_COMMAND_UNX_INPUT_NONE:
+        case MOO_COMMAND_EXE_INPUT_NONE:
             break;
-        case MOO_COMMAND_UNX_INPUT_LINES:
-        case MOO_COMMAND_UNX_INPUT_SELECTION:
-        case MOO_COMMAND_UNX_INPUT_DOC:
+        case MOO_COMMAND_EXE_INPUT_LINES:
+        case MOO_COMMAND_EXE_INPUT_SELECTION:
+        case MOO_COMMAND_EXE_INPUT_DOC:
             options |= MOO_COMMAND_NEED_DOC;
             break;
     }
 
     switch (cmd->priv->output)
     {
-        case MOO_COMMAND_UNX_OUTPUT_NONE:
-        case MOO_COMMAND_UNX_OUTPUT_NONE_ASYNC:
-        case MOO_COMMAND_UNX_OUTPUT_NEW_DOC:
+        case MOO_COMMAND_EXE_OUTPUT_NONE:
+        case MOO_COMMAND_EXE_OUTPUT_NONE_ASYNC:
+#ifdef __WIN32__
+        case MOO_COMMAND_EXE_OUTPUT_CONSOLE:
+#endif
+        case MOO_COMMAND_EXE_OUTPUT_NEW_DOC:
             break;
-        case MOO_COMMAND_UNX_OUTPUT_PANE:
+        case MOO_COMMAND_EXE_OUTPUT_PANE:
             options |= MOO_COMMAND_NEED_WINDOW;
             break;
-        case MOO_COMMAND_UNX_OUTPUT_INSERT:
+        case MOO_COMMAND_EXE_OUTPUT_INSERT:
             options |= MOO_COMMAND_NEED_DOC;
             break;
     }
 
     moo_command_set_options (cmd_base, options);
 
-    return MOO_COMMAND_CLASS (_moo_command_unx_parent_class)->check_sensitive (cmd_base, doc, window);
+    return MOO_COMMAND_CLASS (_moo_command_exe_parent_class)->check_sensitive (cmd_base, doc, window);
 }
 
 
 static void
-_moo_command_unx_class_init (MooCommandUnxClass *klass)
+_moo_command_exe_class_init (MooCommandExeClass *klass)
 {
     MooCommandFactory *factory;
 
-    G_OBJECT_CLASS(klass)->finalize = moo_command_unx_finalize;
-    MOO_COMMAND_CLASS(klass)->run = moo_command_unx_run;
-    MOO_COMMAND_CLASS(klass)->check_sensitive = moo_command_unx_check_sensitive;
+    G_OBJECT_CLASS(klass)->finalize = moo_command_exe_finalize;
+    MOO_COMMAND_CLASS(klass)->run = moo_command_exe_run;
+    MOO_COMMAND_CLASS(klass)->check_sensitive = moo_command_exe_check_sensitive;
 
-    g_type_class_add_private (klass, sizeof (MooCommandUnxPrivate));
+    g_type_class_add_private (klass, sizeof (MooCommandExePrivate));
 
-    factory = g_object_new (_moo_command_factory_unx_get_type (), NULL);
+    factory = g_object_new (_moo_command_factory_exe_get_type (), NULL);
     moo_command_factory_register ("exe", _("Shell command"), factory, (char**) data_keys, ".sh");
     g_object_unref (factory);
 }
 
 
 static void
-_moo_command_factory_unx_init (G_GNUC_UNUSED MooCommandFactoryUnx *factory)
+_moo_command_factory_exe_init (G_GNUC_UNUSED MooCommandFactoryExe *factory)
 {
 }
 
 
 static MooCommand *
-_moo_command_unx_new (const char         *cmd_line,
+_moo_command_exe_new (const char         *cmd_line,
                       MooCommandOptions   options,
-                      MooCommandUnxInput  input,
-                      MooCommandUnxOutput output,
+                      MooCommandExeInput  input,
+                      MooCommandExeOutput output,
                       const char         *filter)
 {
-    MooCommandUnx *cmd;
+    MooCommandExe *cmd;
 
     g_return_val_if_fail (cmd_line && cmd_line[0], NULL);
-    g_return_val_if_fail (input < MOO_COMMAND_UNX_MAX_INPUT, NULL);
-    g_return_val_if_fail (output < MOO_COMMAND_UNX_MAX_OUTPUT, NULL);
+    g_return_val_if_fail (input < MOO_COMMAND_EXE_MAX_INPUT, NULL);
+    g_return_val_if_fail (output < MOO_COMMAND_EXE_MAX_OUTPUT, NULL);
 
-    cmd = g_object_new (MOO_TYPE_COMMAND_UNX, "options", options, NULL);
+    cmd = g_object_new (MOO_TYPE_COMMAND_EXE, "options", options, NULL);
 
     cmd->priv->cmd_line = g_strdup (cmd_line);
     cmd->priv->input = input;
@@ -759,19 +811,19 @@ static gboolean
 parse_input (const char *string,
              int        *input)
 {
-    *input = MOO_COMMAND_UNX_INPUT_DEFAULT;
+    *input = MOO_COMMAND_EXE_INPUT_DEFAULT;
 
     if (!string || !string[0])
         return TRUE;
 
     if (!strcmp (string, "none"))
-        *input = MOO_COMMAND_UNX_INPUT_NONE;
+        *input = MOO_COMMAND_EXE_INPUT_NONE;
     else if (!strcmp (string, "lines"))
-        *input = MOO_COMMAND_UNX_INPUT_LINES;
+        *input = MOO_COMMAND_EXE_INPUT_LINES;
     else if (!strcmp (string, "selection"))
-        *input = MOO_COMMAND_UNX_INPUT_SELECTION;
+        *input = MOO_COMMAND_EXE_INPUT_SELECTION;
     else if (!strcmp (string, "doc"))
-        *input = MOO_COMMAND_UNX_INPUT_DOC;
+        *input = MOO_COMMAND_EXE_INPUT_DOC;
     else
     {
         g_warning ("unknown input type %s", string);
@@ -785,23 +837,27 @@ static gboolean
 parse_output (const char *string,
               int        *output)
 {
-    *output = MOO_COMMAND_UNX_OUTPUT_DEFAULT;
+    *output = MOO_COMMAND_EXE_OUTPUT_DEFAULT;
 
     if (!string || !string[0])
         return TRUE;
 
     if (!strcmp (string, "none"))
-        *output = MOO_COMMAND_UNX_OUTPUT_NONE;
+        *output = MOO_COMMAND_EXE_OUTPUT_NONE;
     else if (!strcmp (string, "async"))
-        *output = MOO_COMMAND_UNX_OUTPUT_NONE_ASYNC;
+        *output = MOO_COMMAND_EXE_OUTPUT_NONE_ASYNC;
+#ifdef __WIN32__
+    else if (!strcmp (string, "console"))
+        *output = MOO_COMMAND_EXE_OUTPUT_CONSOLE;
+#endif
     else if (!strcmp (string, "pane"))
-        *output = MOO_COMMAND_UNX_OUTPUT_PANE;
+        *output = MOO_COMMAND_EXE_OUTPUT_PANE;
     else if (!strcmp (string, "insert"))
-        *output = MOO_COMMAND_UNX_OUTPUT_INSERT;
+        *output = MOO_COMMAND_EXE_OUTPUT_INSERT;
     else if (!strcmp (string, "new-doc") ||
              !strcmp (string, "new_doc") ||
              !strcmp (string, "new"))
-        *output = MOO_COMMAND_UNX_OUTPUT_NEW_DOC;
+        *output = MOO_COMMAND_EXE_OUTPUT_NEW_DOC;
     else
     {
         g_warning ("unknown output type %s", string);
@@ -828,7 +884,7 @@ unx_factory_create_command (G_GNUC_UNUSED MooCommandFactory *factory,
     if (!parse_output (moo_command_data_get (data, KEY_OUTPUT), &output))
         return NULL;
 
-    cmd = _moo_command_unx_new (cmd_line,
+    cmd = _moo_command_exe_new (cmd_line,
                                 moo_command_options_parse (options),
                                 input, output,
                                 moo_command_data_get (data, KEY_FILTER));
@@ -957,9 +1013,7 @@ unx_factory_create_widget (G_GNUC_UNUSED MooCommandFactory *factory)
     MooTextView *textview;
 
     /* Translators: these are kinds of input for a shell command, do not translate the part before | */
-    static const char *input_names[4] = {N_("Input|None"), N_("Input|Selected lines"), N_("Input|Selection"), N_("Input|Whole document")};
-    /* Translators: these are actions for output of a shell command, do not translate the part before | */
-    static const char *output_names[5] = {N_("Output|None"), N_("Output|None, asynchronous"), N_("Output|Output pane"), N_("Output|Insert into the document"), N_("Output|New document")};
+    const char *input_names[] = {N_("Input|None"), N_("Input|Selected lines"), N_("Input|Selection"), N_("Input|Whole document")};
 
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "textview", MOO_TYPE_TEXT_VIEW);
@@ -1025,7 +1079,6 @@ unx_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
     gboolean changed = FALSE;
     int index, old_index;
     const char *input_strings[4] = {"none", "lines", "selection", "doc"};
-    const char *output_strings[5] = {"none", "async", "pane", "insert", "new-doc"};
 
     xml = g_object_get_data (G_OBJECT (page), "moo-glade-xml");
     textview = moo_glade_xml_get_widget (xml, "textview");
@@ -1042,7 +1095,7 @@ unx_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
 
     index = gtk_combo_box_get_active (moo_glade_xml_get_widget (xml, "input"));
     parse_input (moo_command_data_get (data, KEY_INPUT), &old_index);
-    g_assert (0 <= index && index < MOO_COMMAND_UNX_MAX_INPUT);
+    g_assert (0 <= index && index < MOO_COMMAND_EXE_MAX_INPUT);
     if (index != old_index)
     {
         moo_command_data_set (data, KEY_INPUT, input_strings[index]);
@@ -1051,14 +1104,14 @@ unx_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
 
     index = gtk_combo_box_get_active (moo_glade_xml_get_widget (xml, "output"));
     parse_output (moo_command_data_get (data, KEY_OUTPUT), &old_index);
-    g_assert (0 <= index && index < MOO_COMMAND_UNX_MAX_OUTPUT);
+    g_assert (0 <= index && index < MOO_COMMAND_EXE_MAX_OUTPUT);
     if (index != old_index)
     {
         moo_command_data_set (data, KEY_OUTPUT, output_strings[index]);
         changed = TRUE;
     }
 
-    if (index == MOO_COMMAND_UNX_OUTPUT_PANE)
+    if (index == MOO_COMMAND_EXE_OUTPUT_PANE)
     {
         const char *old_filter;
         char *new_filter = NULL;
@@ -1092,7 +1145,7 @@ unx_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
 
 
 static void
-_moo_command_factory_unx_class_init (MooCommandFactoryUnxClass *klass)
+_moo_command_factory_exe_class_init (MooCommandFactoryExeClass *klass)
 {
     klass->create_command = unx_factory_create_command;
     klass->create_widget = unx_factory_create_widget;

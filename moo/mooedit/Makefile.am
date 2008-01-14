@@ -16,13 +16,6 @@ lua_sources =				\
 	mooedit-lua.c			\
 	mooedit-lua.h
 
-unix_sources =				\
-	moocommand-unx.c		\
-	moocommand-unx.h
-
-win32_sources =				\
-	moocommand-win32.c
-
 mooedit_include_headers =		\
 	moocmdview.h			\
 	mooedit-bookmarks.h		\
@@ -62,6 +55,7 @@ mooedit_sources =			\
 	moocommand.c			\
 	moocommanddisplay.c		\
 	moocommanddisplay.h		\
+	moocommand-exe.c		\
 	moocommand-exe.h		\
 	moocommand.h			\
 	moocommand-private.h		\
@@ -220,18 +214,6 @@ if GTK_2_10
 mooedit_sources += $(mooedit_printing_sources)
 else
 EXTRA_DIST += $(mooedit_printing_sources)
-endif
-
-if MOO_OS_UNIX
-mooedit_sources += $(unix_sources)
-else
-EXTRA_DIST += $(unix_sources)
-endif
-
-if MOO_OS_MINGW
-mooedit_sources += $(win32_sources)
-else
-EXTRA_DIST += $(win32_sources)
 endif
 
 if MOO_BUILD_LUA
