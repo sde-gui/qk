@@ -1,125 +1,193 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="8.00"
 	Name="medit"
 	ProjectGUID="{7BD3D0DE-F0ED-40A7-B817-6BF4775FC991}"
 	RootNamespace="medit"
-	Keyword="Win32Proj">
+	Keyword="Win32Proj"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			OutputDirectory="c:\temp\muntyan\medit\$(ConfigurationName)"
+			IntermediateDirectory="c:\temp\muntyan\medit\$(ConfigurationName)\build"
 			ConfigurationType="1"
-			CharacterSet="2">
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+				CommandLine=""
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+				CommandLine=""
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/wd4054 /wd4152 /wd4311 /wd4312 /wd4244 /wd4100 /wd4125 /wd4996"
 				Optimization="0"
-				AdditionalIncludeDirectories=".;..\..\moo;..\..\moo\mooutils"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;__WIN32__;HAVE_CONFIG_H;__MOO__"
-				MinimalRebuild="TRUE"
+				AdditionalIncludeDirectories="..;..\..\moo;..\..\moo\mooedit;..\..\moo\mooutils\xdgmime\win32;..\..\moo\moolua;..\..\doc;..\..\moo\mooutils;mingw;$(OutDir)"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;__WIN32__;HAVE_CONFIG_H;__MOO__;G_LOG_DOMAIN=\&quot;Moo\&quot;;_CRT_SECURE_NO_WARNINGS"
+				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="5"
+				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
-				WarningLevel="4"
-				Detect64BitPortabilityProblems="FALSE"
+				WarningLevel="1"
+				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="4"
 				CompileAs="1"
-				DisableSpecificWarnings="4127"/>
+				DisableSpecificWarnings="4127"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gtk-win32-2.0.lib gdk-win32-2.0.lib atk-1.0.lib gdk_pixbuf-2.0.lib pangowin32-1.0.lib pangocairo-1.0.lib pango-1.0.lib cairo.lib gobject-2.0.lib gmodule-2.0.lib glib-2.0.lib intl.lib iconv.lib xml2.lib"
-				OutputFile="$(OutDir)/medit.exe"
-				Version="0.6.999"
+				AdditionalDependencies="glib-2.0.lib gobject-2.0.lib gthread-2.0.lib intl.lib gdk-win32-2.0.lib gtk-win32-2.0.lib"
+				OutputFile="c:\temp\muntyan\gtk\bin\medit.exe"
+				Version="0.9.3"
 				LinkIncremental="2"
-				GenerateDebugInformation="TRUE"
+				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/medit.pdb"
 				SubSystem="2"
-				TargetMachine="1"/>
+				TargetMachine="1"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="Release"
-			IntermediateDirectory="Release"
+			OutputDirectory="c:\temp\muntyan\medit\$(ConfigurationName)"
+			IntermediateDirectory="c:\temp\muntyan\medit\$(ConfigurationName)\build"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
-			WholeProgramOptimization="TRUE">
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+				CommandLine="python glade2h.py $(InputDir) $(OutDir)"
+				ExcludedFromBuild="true"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/wd4054 /wd4152 /wd4311 /wd4312 /wd4244 /wd4100 /wd4125 /wd4996"
 				Optimization="1"
-				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="2"
-				OptimizeForWindowsApplication="TRUE"
-				AdditionalIncludeDirectories=".;..\..\moo;..\..\moo\mooutils"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;__WIN32__;HAVE_CONFIG_H;__MOO__"
-				RuntimeLibrary="4"
+				AdditionalIncludeDirectories="..;..\..\moo;..\..\moo\mooedit;..\..\moo\mooutils\xdgmime\win32;..\..\moo\moolua;..\..\doc;..\..\moo\mooutils;mingw;$(OutDir)"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;__WIN32__;HAVE_CONFIG_H;__MOO__;G_LOG_DOMAIN=\&quot;Moo\&quot;;_CRT_SECURE_NO_WARNINGS"
+				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="4"
-				Detect64BitPortabilityProblems="FALSE"
+				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4127;4054;4100;4201;4098;4101;4152"/>
+				DisableSpecificWarnings="4127;4054;4100;4201;4098;4101;4152"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gtk-win32-2.0.lib gdk-win32-2.0.lib atk-1.0.lib gdk_pixbuf-2.0.lib pangowin32-1.0.lib pangocairo-1.0.lib pango-1.0.lib cairo.lib gobject-2.0.lib gmodule-2.0.lib glib-2.0.lib intl.lib iconv.lib xml2.lib"
-				OutputFile="$(OutDir)/medit.exe"
+				AdditionalDependencies="glib-2.0.lib gobject-2.0.lib gthread-2.0.lib intl.lib gdk-win32-2.0.lib gtk-win32-2.0.lib"
+				OutputFile="c:\temp\muntyan\gtk\bin\medit.exe"
 				Version="0.6.999"
 				LinkIncremental="1"
-				GenerateDebugInformation="TRUE"
+				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				OptimizeForWindows98="1"
-				TargetMachine="1"/>
+				TargetMachine="1"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -128,1414 +196,42 @@
 		<Filter
 			Name="Source"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			>
 			<File
-				RelativePath=".\config.h">
-			</File>
-			<File
-				RelativePath="..\..\tests\medit-app.c">
-			</File>
-			<File
-				RelativePath="..\..\tests\medit-ui.xml">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MEDIT_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)medit-ui.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-						Outputs="$(InputDir)medit-ui.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MEDIT_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)medit-ui.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-						Outputs="$(InputDir)medit-ui.h"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\Thanks">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py --txt THANKS $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)moo\mooapp\THANKS.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-						Outputs="$(InputDir)moo\mooapp\THANKS.h"/>
-				</FileConfiguration>
+				RelativePath="..\config.h"
+				>
 			</File>
 			<Filter
-				Name="moo"
-				Filter="">
-				<Filter
-					Name="mooapp"
-					Filter="">
-					<File
-						RelativePath="..\..\moo\mooapp\mooapp.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooapp\mooapp.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooapp\mooappabout-glade.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooapp\mooappabout.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooapp\glade\mooappabout.glade">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_APP_ABOUT_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\mooappabout-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\mooappabout-glade.h"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_APP_ABOUT_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\mooappabout-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\mooappabout-glade.h"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\moo\mooapp\mooappabout.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooapp\mooappinput.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooapp\mooappinput.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooapp\moohtml.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooapp\moohtml.h">
-					</File>
-				</Filter>
-				<Filter
-					Name="mooedit"
-					Filter="">
-					<File
-						RelativePath="..\..\moo\mooedit\gtksourceiter.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\gtksourceiter.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moocmdview.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moocmdview.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moocompletion.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moocompletion.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooedit-actions.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooedit-actions.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooedit-private.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooedit-script.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooedit-script.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooedit.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooedit.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditcolorsprefs-glade.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditconfig.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditconfig.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditdialogs.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditdialogs.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditfileops.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditfileops.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditinput.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditor.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditor.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditprefs-glade.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditprefs.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\glade\mooeditprefs.glade">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_EDIT_PREFS_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\mooeditprefs-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\mooeditprefs-glade.h"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_EDIT_PREFS_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\mooeditprefs-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\mooeditprefs-glade.h"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditprefs.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditprefspage.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\glade\mooeditsavemult.glade">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_EDIT_SAVE_MULTIPLE_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\mooeditsavemultiple-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\mooeditsavemultiple-glade.h"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_EDIT_SAVE_MULTIPLE_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\mooeditsavemultiple-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\mooeditsavemultiple-glade.h"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditsavemultiple-glade.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditwindow.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooeditwindow.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moofold.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moofold.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moohighlighter.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moohighlighter.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooindenter.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooindenter.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moolang-aux.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moolang-parser.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moolang-parser.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moolang-private.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moolang-rules.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moolang-rules.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moolang-strings.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moolang.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moolang.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moolangmgr.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moolangmgr.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moolinebuffer.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moolinebuffer.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moolinemark.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moolinemark.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moolineview.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moolineview.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooplugin-macro.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooplugin.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooplugin.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moopluginprefs-glade.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\glade\moopluginprefs.glade">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_PLUGIN_PREFS_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\moopluginprefs-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\moopluginprefs-glade.h"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_PLUGIN_PREFS_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\moopluginprefs-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\moopluginprefs-glade.h"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mooprint-glade.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\glade\mooprint.glade">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_PRINT_GLADE_XML $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\mooprint-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\mooprint-glade.h"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_PRINT_GLADE_XML $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\mooprint-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\mooprint-glade.h"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootext-private.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextbox.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextbox.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextbtree.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextbtree.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextbuffer.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextbuffer.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextfind-glade.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextfind.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\glade\mootextfind.glade">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_TEXT_FIND_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\mootextfind-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\mootextfind-glade.h"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_TEXT_FIND_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\mootextfind-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\mootextfind-glade.h"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextfind.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextgotoline-glade.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\glade\mootextgotoline.glade">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_TEXT_GOTO_LINE_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\mootextgotoline-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\mootextgotoline-glade.h"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_TEXT_GOTO_LINE_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\mootextgotoline-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\mootextgotoline-glade.h"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextiter.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextpopup.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextpopup.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextsearch.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextsearch.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextstyle.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextstyle.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextstylescheme.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextstylescheme.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextview-private.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextview.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\mootextview.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moousertools.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\moousertools.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\quicksearch-glade.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\glade\quicksearch.glade">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py QUICK_SEARCH_GLADE_XML $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\quicksearch-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\quicksearch-glade.h"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py QUICK_SEARCH_GLADE_XML $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\quicksearch-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\quicksearch-glade.h"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\statusbar-glade.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooedit\glade\statusbar.glade">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py STATUSBAR_GLADE_XML $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\statusbar-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\statusbar-glade.h"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py STATUSBAR_GLADE_XML $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\statusbar-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\statusbar-glade.h"/>
-						</FileConfiguration>
-					</File>
-					<Filter
-						Name="plugins"
-						Filter="">
-						<File
-							RelativePath="..\..\moo\mooedit\plugins\mooeditplugins.h">
-						</File>
-						<Filter
-							Name="activestrings"
-							Filter="">
-							<File
-								RelativePath="..\..\moo\mooedit\plugins\activestrings\as-plugin-glade.h">
-							</File>
-							<File
-								RelativePath="..\..\moo\mooedit\plugins\activestrings\as-plugin-prefs.c">
-							</File>
-							<File
-								RelativePath="..\..\moo\mooedit\plugins\activestrings\as-plugin-script.c">
-							</File>
-							<File
-								RelativePath="..\..\moo\mooedit\plugins\activestrings\as-plugin-script.h">
-							</File>
-							<File
-								RelativePath="..\..\moo\mooedit\plugins\activestrings\as-plugin.c">
-							</File>
-							<File
-								RelativePath="..\..\moo\mooedit\plugins\activestrings\as-plugin.glade">
-								<FileConfiguration
-									Name="Debug|Win32">
-									<Tool
-										Name="VCCustomBuildTool"
-										CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py AS_PLUGIN_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)as-plugin-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-										Outputs="$(InputDir)as-plugin-glade.h"/>
-								</FileConfiguration>
-								<FileConfiguration
-									Name="Release|Win32">
-									<Tool
-										Name="VCCustomBuildTool"
-										CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py AS_PLUGIN_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)as-plugin-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-										Outputs="$(InputDir)as-plugin-glade.h"/>
-								</FileConfiguration>
-							</File>
-							<File
-								RelativePath="..\..\moo\mooedit\plugins\activestrings\as-plugin.h">
-							</File>
-						</Filter>
-						<Filter
-							Name="completion"
-							Filter="">
-							<File
-								RelativePath="..\..\moo\mooedit\plugins\completion\completion-plugin.c">
-							</File>
-							<File
-								RelativePath="..\..\moo\mooedit\plugins\completion\completion.c">
-							</File>
-							<File
-								RelativePath="..\..\moo\mooedit\plugins\completion\completion.h">
-							</File>
-						</Filter>
-						<Filter
-							Name="fileselector"
-							Filter="">
-							<File
-								RelativePath="..\..\moo\mooedit\plugins\fileselector\moofileselector-glade.h">
-							</File>
-							<File
-								RelativePath="..\..\moo\mooedit\plugins\fileselector\moofileselector-prefs-glade.h">
-							</File>
-							<File
-								RelativePath="..\..\moo\mooedit\plugins\fileselector\moofileselector-prefs.c">
-							</File>
-							<File
-								RelativePath="..\..\moo\mooedit\plugins\fileselector\moofileselector-prefs.glade">
-								<FileConfiguration
-									Name="Debug|Win32">
-									<Tool
-										Name="VCCustomBuildTool"
-										CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_FILE_SELECTOR_PREFS_GLADE_XML $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)moofileselector-prefs-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-										Outputs="$(InputDir)moofileselector-prefs-glade.h"/>
-								</FileConfiguration>
-								<FileConfiguration
-									Name="Release|Win32">
-									<Tool
-										Name="VCCustomBuildTool"
-										CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_FILE_SELECTOR_PREFS_GLADE_XML $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)moofileselector-prefs-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-										Outputs="$(InputDir)moofileselector-prefs-glade.h"/>
-								</FileConfiguration>
-							</File>
-							<File
-								RelativePath="..\..\moo\mooedit\plugins\fileselector\moofileselector.c">
-							</File>
-							<File
-								RelativePath="..\..\moo\mooedit\plugins\fileselector\moofileselector.glade">
-								<FileConfiguration
-									Name="Debug|Win32">
-									<Tool
-										Name="VCCustomBuildTool"
-										CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_FILE_SELECTOR_GLADE_XML $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)moofileselector-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-										Outputs="$(InputDir)moofileselector-glade.h"/>
-								</FileConfiguration>
-								<FileConfiguration
-									Name="Release|Win32">
-									<Tool
-										Name="VCCustomBuildTool"
-										CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_FILE_SELECTOR_GLADE_XML $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)moofileselector-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-										Outputs="$(InputDir)moofileselector-glade.h"/>
-								</FileConfiguration>
-							</File>
-							<File
-								RelativePath="..\..\moo\mooedit\plugins\fileselector\moofileselector.h">
-							</File>
-						</Filter>
-					</Filter>
-				</Filter>
-				<Filter
-					Name="mooutils"
-					Filter="">
-					<File
-						RelativePath="..\..\moo\mooutils\eggregex.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\eggregex.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooaccel.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooaccel.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooaccelbutton.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooaccelbutton.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooaccelprefs-glade.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooaction.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooaction.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooactionfactory.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooactionfactory.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moobigpaned.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moobigpaned.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooclosure.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooclosure.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moocmd.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moocmd.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moocombo.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moocombo.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moocommand.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moocommand.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moocompat.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moocompat.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooconfig.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooconfig.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moodialogs.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moodialogs.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooentry.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooentry.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofiledialog.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofiledialog.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofilewatch.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofilewatch.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofiltermgr.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofiltermgr.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofontsel.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofontsel.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooglade.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooglade.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moohistoryentry.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moohistoryentry.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moohistorylist.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moohistorylist.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moolinklabel.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moolinklabel.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\glade\moologwindow.glade">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_LOG_WINDOW_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\moologwindow-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\moologwindow-glade.h"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_LOG_WINDOW_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\moologwindow-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\moologwindow-glade.h"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moomarkup.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moomarkup.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moomarshals.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moomarshals.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moomarshals.list">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="glib-genmarshal --prefix=_moo_marshal --header $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)$(InputName).h &gt;nul
-del $(InputDir)$(InputName).tmp
-
-glib-genmarshal --prefix=_moo_marshal --body $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)$(InputName).c &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)$(InputName).h;$(InputDir)$(InputName).c"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="glib-genmarshal --prefix=_moo_marshal --header $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)$(InputName).h &gt;nul
-del $(InputDir)$(InputName).tmp
-
-glib-genmarshal --prefix=_moo_marshal --body $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)$(InputName).c &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)$(InputName).h;$(InputDir)$(InputName).c"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moomenuaction.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moomenuaction.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moomenumgr.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moomenumgr.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moomenutoolbutton.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moomenutoolbutton.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moonotebook.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moonotebook.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moopaned.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moopaned.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooprefs.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooprefs.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooprefsdialog.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooprefsdialog.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooprefsdialogpage.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooprefsdialogpage.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moopython.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moopython.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moostock.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moostock.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moouixml.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moouixml.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooundo.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooundo.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooutils-fs.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooutils-fs.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooutils-gobject.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooutils-gobject.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooutils-misc.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooutils-misc.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooutils-treeview.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooutils-treeview.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moowindow.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moowindow.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\glade\shortcutdialog.glade">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_ACCEL_BUTTON_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\mooaccelbutton-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\mooaccelbutton-glade.h"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_ACCEL_BUTTON_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\mooaccelbutton-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\mooaccelbutton-glade.h"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\glade\shortcutsprefs.glade">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_SHORTCUTS_PREFS_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\mooaccelprefs-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\mooaccelprefs-glade.h"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_SHORTCUTS_PREFS_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\mooaccelprefs-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\mooaccelprefs-glade.h"/>
-						</FileConfiguration>
-					</File>
-					<Filter
-						Name="pcre"
-						Filter="">
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre.h">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_chartables.c">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_compile.c">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_config.c">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_exec.c">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_fullinfo.c">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_get.c">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_globals.c">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_info.c">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_internal.h">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_maketables.c">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_ord2utf8.c">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_refcount.c">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_study.c">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_tables.c">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_try_flipped.c">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_ucp_findchar.c">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_valid_utf8.c">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_version.c">
-						</File>
-						<File
-							RelativePath="..\..\moo\mooutils\pcre\pcre_xclass.c">
-						</File>
-					</Filter>
-				</Filter>
-				<Filter
-					Name="mooscript"
-					Filter="">
-					<File
-						RelativePath="..\..\moo\mooutils\mooscript\mooscript-builtin.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooscript\mooscript-context.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooscript\mooscript-context.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooscript\mooscript-func.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooscript\mooscript-func.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooscript\mooscript-node.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooscript\mooscript-node.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooscript\mooscript-parser-priv.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooscript\mooscript-parser.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooscript\mooscript-parser.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooscript\mooscript-value.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooscript\mooscript-value.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooscript\mooscript-yacc.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooscript\mooscript-yacc.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooscript\mooscript-zenity.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\mooscript\mooscript-zenity.h">
-					</File>
-				</Filter>
-				<Filter
-					Name="moofileview"
-					Filter="">
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\glade\bookmark_editor.glade">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_BOOKMARK_MGR_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\moobookmarkmgr-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\moobookmarkmgr-glade.h"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_BOOKMARK_MGR_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\moobookmarkmgr-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\moobookmarkmgr-glade.h"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\glade\drop.glade">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_FILE_VIEW_DROP_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\moofileviewdrop-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\moofileviewdrop-glade.h"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_FILE_VIEW_DROP_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\moofileviewdrop-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\moofileviewdrop-glade.h"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moobookmarkmgr-glade.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moobookmarkmgr.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moobookmarkmgr.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moobookmarkview.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moobookmarkview.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moocreatefolder-glade.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\glade\moocreatefolder.glade">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_CREATE_FOLDER_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\$(InputName)-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\$(InputName)-glade.h"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_CREATE_FOLDER_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\$(InputName)-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)..\$(InputName)-glade.h"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofile.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofile.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofileentry.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofileentry.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofileprops-glade.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\glade\moofileprops.glade">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_FILE_PROPS_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\$(InputName)-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								AdditionalDependencies=""
-								Outputs="$(InputDir)..\$(InputName)-glade.h"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_FILE_PROPS_GLADE_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)..\$(InputName)-glade.h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								AdditionalDependencies="$(InputDir)..\$(InputName).h"
-								Outputs="$(InputDir)..\$(InputName)-glade.h"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofilesystem.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofilesystem.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofileview-dialogs.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofileview-dialogs.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofileview-private.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofileview-tools.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofileview-tools.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofileview-ui.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofileview-ui.xml">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_FILE_VIEW_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)$(InputName).h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)$(InputName).h"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCustomBuildTool"
-								CommandLine="@echo on
-python ..\..\moo\mooutils\xml2h.py MOO_FILE_VIEW_UI $(InputPath) &gt;$(InputDir)$(InputName).tmp
-copy /y $(InputDir)$(InputName).tmp $(InputDir)$(InputName).h &gt;nul
-del $(InputDir)$(InputName).tmp
-"
-								Outputs="$(InputDir)$(InputName).h"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofileview.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofileview.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofileviewdrop-glade.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofoldermodel-private.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofoldermodel.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\moofoldermodel.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\mooiconview.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\mooiconview.h">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\mootreeview.c">
-					</File>
-					<File
-						RelativePath="..\..\moo\mooutils\moofileview\mootreeview.h">
-					</File>
-				</Filter>
+				Name="medit"
+				>
+				<File
+					RelativePath="..\..\medit\medit-app.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\medit\mem-debug.h"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			>
 			<File
-				RelativePath="..\..\moo\mooutils\pixmaps\medit.ico">
+				RelativePath="..\..\moo\mooutils\pixmaps\medit.ico"
+				>
 			</File>
 			<File
-				RelativePath=".\medit.rc">
+				RelativePath=".\medit.rc"
+				>
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\resource.h">
+			RelativePath=".\resource.h"
+			>
 		</File>
 	</Files>
 	<Globals>

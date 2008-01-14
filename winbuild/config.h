@@ -20,7 +20,7 @@
 /* #undef HAVE_CFMAKERAW */
 
 /* configargs.h is created */
-#define HAVE_CONFIGARGS_H 1
+/* #define HAVE_CONFIGARGS_H 1 */
 
 /* Define to 1 if you have the `dcgettext' function. */
 #define HAVE_DCGETTEXT 1
@@ -89,7 +89,7 @@
 #define HAVE_MEMORY_H 1
 
 /* Define to 1 if you have the `mmap' function. */
-/* #undef HAVE_MMAP */
+#define HAVE_MMAP 1
 
 /* Define to 1 if you have the <netinet/in.h> header file. */
 /* #undef HAVE_NETINET_IN_H */
@@ -167,7 +167,7 @@
 /* #undef HAVE_TERMIOS_H */
 
 /* Define to 1 if you have the <unistd.h> header file. */
-#define HAVE_UNISTD_H 1
+/* #undef HAVE_UNISTD_H */
 
 /* Define to 1 if you have the `unlink' function. */
 #define HAVE_UNLINK 1
@@ -227,7 +227,7 @@
 #define MOO_MAJOR_VERSION 0
 
 /* moo micro version */
-#define MOO_MICRO_VERSION 1
+#define MOO_MICRO_VERSION 3
 
 /* moo minor version */
 #define MOO_MINOR_VERSION 9
@@ -287,7 +287,7 @@
 #define MOO_USE_XML 1
 
 /* moo version */
-#define MOO_VERSION "0.9.1"
+#define MOO_VERSION "0.9.3"
 
 /* Name of package */
 #define PACKAGE "medit"
