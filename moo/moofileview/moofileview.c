@@ -183,6 +183,7 @@ static void         moo_file_view_set_filter_mgr    (MooFileView    *fileview,
 static void         moo_file_view_set_bookmark_mgr  (MooFileView    *fileview,
                                                      MooBookmarkMgr *mgr);
 
+static const char  *moo_file_view_get_home_dir  (MooFileView    *fileview);
 static void         moo_file_view_set_current_dir (MooFileView  *fileview,
                                                  MooFolder      *folder);
 static gboolean     moo_file_view_chdir_real    (MooFileView    *fileview,
@@ -522,12 +523,8 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                      g_param_spec_string ("home-directory",
                                              "home-directory",
                                              "home-directory",
-#ifndef __WIN32__
-                                             g_get_home_dir (),
-#else
-                                             "C:\\",
-#endif
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+                                             NULL,
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_FILTER_MGR,
@@ -1956,7 +1953,7 @@ moo_file_view_go_home (MooFileView *fileview)
     if (fileview->priv->entry_state)
         stop_path_entry (fileview, TRUE);
 
-    if (!moo_file_view_chdir (fileview, fileview->priv->home_dir, &error))
+    if (!moo_file_view_chdir (fileview, moo_file_view_get_home_dir (fileview), &error))
     {
         g_warning ("%s: could not go home", G_STRLOC);
 
@@ -2255,8 +2252,7 @@ moo_file_view_set_property (GObject        *object,
             break;
 
         case PROP_HOME_DIRECTORY:
-            g_free (fileview->priv->home_dir);
-            fileview->priv->home_dir = g_strdup (g_value_get_string (value));
+            MOO_ASSIGN_STRING (fileview->priv->home_dir, g_value_get_string (value));
             g_object_notify (object, "home-directory");
             break;
 
@@ -2320,7 +2316,7 @@ moo_file_view_get_property (GObject        *object,
             break;
 
         case PROP_HOME_DIRECTORY:
-            g_value_set_string (value, fileview->priv->home_dir);
+            g_value_set_string (value, moo_file_view_get_home_dir (fileview));
             break;
 
         case PROP_FILTER_MGR:
@@ -2377,6 +2373,29 @@ moo_file_view_get_property (GObject        *object,
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
     }
+}
+
+
+static const char *
+moo_file_view_get_home_dir (MooFileView *fileview)
+{
+    if (!fileview->priv->home_dir)
+    {
+        const char *dir = NULL;
+
+#ifdef __WIN32__
+        dir = g_get_user_special_dir (G_USER_DIRECTORY_DOCUMENTS);
+        if (!dir)
+            dir = g_get_user_special_dir (G_USER_DIRECTORY_DESKTOP);
+#endif
+
+        if (!dir)
+            dir = g_get_home_dir ();
+
+        fileview->priv->home_dir = g_strdup (dir);
+    }
+
+    return fileview->priv->home_dir;
 }
 
 
