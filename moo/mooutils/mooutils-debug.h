@@ -55,12 +55,27 @@ gboolean moo_debug_enabled  (const char *var,
 
 #define MOO_DEBUG(whatever) G_STMT_START {whatever;} G_STMT_END
 
-#else
+#elif defined(__GNUC__)
 
 #define MOO_DEBUG_INIT(domain, def_enabled)
 #define moo_dmsg(format, args...) G_STMT_START {} G_STMT_END
 #define _moo_message(format, args...) G_STMT_START {} G_STMT_END
 #define MOO_DEBUG(whatever) G_STMT_START {} G_STMT_END
+
+#else
+
+#define MOO_DEBUG_INIT(domain, def_enabled)
+#define MOO_DEBUG(whatever) G_STMT_START {} G_STMT_END
+
+static void moo_dmsg (const char *format, ...)
+{
+}
+
+static void _moo_message_dummy (const char *format, ...)
+{
+}
+
+#define _moo_message _moo_message_dummy
 
 #endif
 
