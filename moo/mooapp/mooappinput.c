@@ -1031,11 +1031,12 @@ listener_main (ListenerInfo *info)
 
     _moo_message_async ("%s: hi there", G_STRLOC);
 
-    input = CreateNamedPipe (info->pipe_name,
-                             PIPE_ACCESS_DUPLEX,
-                             PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
-                             PIPE_UNLIMITED_INSTANCES,
-                             0, 0, 200, NULL);
+	/* XXX unicode */
+    input = CreateNamedPipeA (info->pipe_name,
+                              PIPE_ACCESS_DUPLEX,
+                              PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
+                              PIPE_UNLIMITED_INSTANCES,
+                              0, 0, 200, NULL);
 
     if (input == INVALID_HANDLE_VALUE)
     {
@@ -1212,7 +1213,8 @@ _moo_app_input_send_msg (const char *appname,
         name = "main";
 
     pipe_name = get_pipe_name (appname, name);
-    pipe_handle = CreateFile (pipe_name, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+	/* XXX unicode */
+    pipe_handle = CreateFileA (pipe_name, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
     if (!pipe_handle)
     {

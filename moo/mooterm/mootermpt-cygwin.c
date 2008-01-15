@@ -17,7 +17,6 @@
 #include "mooterm/mooterm-private.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-misc.h"
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <io.h>
 #include <fcntl.h>
@@ -552,7 +551,7 @@ run_in_helper (const char *cmd,
     int helper_out[2] = {-1, -1};
 
     char *cmd_line = NULL;
-    STARTUPINFO sinfo;
+    STARTUPINFOA sinfo;
     PROCESS_INFORMATION pinfo;
 
     GString *helper_binary = NULL;
@@ -704,7 +703,8 @@ run_in_helper (const char *cmd,
 
     moo_disable_win32_error_message ();
 
-    if (! CreateProcess (helper_binary->str, cmd_line, NULL, NULL, TRUE,
+    /* XXX unicode */
+    if (!CreateProcessA (helper_binary->str, cmd_line, NULL, NULL, TRUE,
                          CREATE_NEW_CONSOLE | CREATE_NEW_PROCESS_GROUP,
                          NULL, HELPER_DIR, &sinfo, &pinfo))
     {
