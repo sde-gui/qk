@@ -17,10 +17,10 @@ moo/mooedit/glade/mooprint.glade
 moo/mooedit/glade/mooprintpreview.glade
 moo/mooedit/glade/mootextfind.glade
 moo/mooedit/glade/mootextgotoline.glade
-moo/mooedit/glade/quicksearch.glade
+moo/mooedit/glade/mooquicksearch.glade
 moo/mooedit/filters.xml
 moo/mooedit/medit-ui.xml
-moo/mooedit/moocommand-unx.c
+moo/mooedit/moocommand-exe.c
 moo/mooedit/moocommand-lua.c
 moo/mooedit/mooeditaction-factory.c
 moo/mooedit/mooeditdialogs.c
