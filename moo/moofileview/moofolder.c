@@ -1061,7 +1061,7 @@ moo_file_get_mtime_string (MooFile *file)
 
     g_return_val_if_fail (file->statbuf != NULL, NULL);
 
-    if (strftime (buf, 1024, "%x %X", localtime ((time_t*)&file->statbuf->st_mtime)))
+    if (strftime (buf, 1024, "%x %X", localtime (&file->statbuf->st_mtime)))
         return g_strdup (buf);
     else
         return NULL;
