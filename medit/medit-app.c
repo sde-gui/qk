@@ -848,7 +848,7 @@ main (int argc, char *argv[])
 
 #include <windows.h>
 
-int __stdcall
+int WINAPI
 WinMain (HINSTANCE hInstance,
          HINSTANCE hPrevInstance,
          char     *lpszCmdLine,
