@@ -196,7 +196,6 @@ G_END_DECLS
 #ifdef G_OS_WIN32
 #include <gtk/gtk.h>
 #include <string.h>
-#include <sys/time.h>
 
 G_BEGIN_DECLS
 

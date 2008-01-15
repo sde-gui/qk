@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
+#include <sys/time.h>
 #include <io.h>
 
 
@@ -227,28 +228,30 @@ _moo_win32_show_fatal_error (const char *domain,
 }
 
 
-// int
-// _moo_win32_gettimeofday (struct timeval *tp,
-//                          G_GNUC_UNUSED gpointer tzp)
-// {
-//     time_t sec;
-//
-//     if (tp == NULL || tzp != NULL)
-//     {
-//         errno = EINVAL;
-//         return -1;
-//     }
-//
-//     sec = time (NULL);
-//
-//     if (sec == (time_t) -1)
-//         return -1;
-//
-//     tp->tv_sec = sec;
-//     tp->tv_usec = 0;
-//
-//     return 0;
-// }
+#ifndef __MINGW32__
+int
+_moo_win32_gettimeofday (struct timeval *tp,
+                         G_GNUC_UNUSED gpointer tzp)
+{
+    time_t sec;
+
+    if (tp == NULL || tzp != NULL)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+
+    sec = time (NULL);
+
+    if (sec == (time_t) -1)
+        return -1;
+
+    tp->tv_sec = sec;
+    tp->tv_usec = 0;
+
+     return 0;
+}
+#endif /* __MINGW32__ */
 
 
 int
