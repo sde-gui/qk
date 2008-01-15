@@ -19,8 +19,8 @@
 #include "mooedit/mooedit-private.h"
 #include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditfiltersettings.h"
-#include "mooedit/mooedit-ui.h"
-#include "mooedit/medit-ui.h"
+#include "mooedit-ui.h"
+#include "medit-ui.h"
 #include "mooutils/moomenuaction.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-misc.h"
@@ -69,7 +69,7 @@ static WindowInfo   *window_list_find_file  (MooEditor      *editor,
 static void          set_single_window      (MooEditor      *editor,
                                              gboolean        single);
 
-#if !GTK_CHECK_VERSION(2,12,0)
+#if !GTK_CHECK_VERSION(2,12,0) || defined(__WIN32__)
 static GtkAction    *create_recent_action   (MooEditWindow  *window);
 static void          activate_history_item  (MooEditor      *editor,
                                              MooHistoryItem *item,
@@ -112,7 +112,7 @@ struct _MooEditorPrivate {
     MooUIXML        *doc_ui_xml;
     MooUIXML        *ui_xml;
     MooFilterMgr    *filter_mgr;
-#if !GTK_CHECK_VERSION(2,12,0)
+#if !GTK_CHECK_VERSION(2,12,0) || defined(__WIN32__)
     MooHistoryList  *history;
 #endif
     MooLangMgr      *lang_mgr;
@@ -274,7 +274,7 @@ moo_editor_class_init (MooEditorClass *klass)
                           MOO_TYPE_EDIT_WINDOW,
                           G_TYPE_BOOLEAN);
 
-#if !GTK_CHECK_VERSION(2,12,0)
+#if !GTK_CHECK_VERSION(2,12,0) || defined(__WIN32__)
     edit_window_class = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     moo_window_class_new_action_custom (edit_window_class, RECENT_ACTION_ID, NULL,
                                         (MooWindowActionFunc) create_recent_action,
@@ -295,7 +295,7 @@ moo_editor_init (MooEditor *editor)
 
     editor->priv->doc_ui_xml = moo_ui_xml_new ();
     moo_ui_xml_add_ui_from_string (editor->priv->doc_ui_xml,
-                                   MOO_EDIT_UI_XML, -1);
+                                   mooedit_ui_xml, -1);
 
     editor->priv->lang_mgr = moo_lang_mgr_new ();
     g_signal_connect_swapped (editor->priv->lang_mgr, "loaded",
@@ -304,7 +304,7 @@ moo_editor_init (MooEditor *editor)
 
     editor->priv->filter_mgr = moo_filter_mgr_new ();
 
-#if !GTK_CHECK_VERSION(2,12,0)
+#if !GTK_CHECK_VERSION(2,12,0) || defined(__WIN32__)
     editor->priv->history = moo_history_list_get ("Editor");
     g_object_ref (editor->priv->history);
     moo_history_list_set_display_func (editor->priv->history,
@@ -451,7 +451,7 @@ moo_editor_finalize (GObject *object)
         g_object_unref (editor->priv->ui_xml);
     if (editor->priv->filter_mgr)
         g_object_unref (editor->priv->filter_mgr);
-#if !GTK_CHECK_VERSION(2,12,0)
+#if !GTK_CHECK_VERSION(2,12,0) || defined(__WIN32__)
     if (editor->priv->history)
         g_object_unref (editor->priv->history);
 #endif
@@ -731,7 +731,7 @@ moo_editor_get_ui_xml (MooEditor *editor)
     if (!editor->priv->ui_xml)
     {
         editor->priv->ui_xml = moo_ui_xml_new ();
-        moo_ui_xml_add_ui_from_string (editor->priv->ui_xml, MEDIT_UI_XML, -1);
+        moo_ui_xml_add_ui_from_string (editor->priv->ui_xml, medit_ui_xml, -1);
     }
 
     return editor->priv->ui_xml;
@@ -957,7 +957,7 @@ window_list_find_file (MooEditor  *editor,
 }
 
 
-#if GTK_CHECK_VERSION(2,12,0)
+#if GTK_CHECK_VERSION(2,12,0) && !defined(__WIN32__)
 static void
 add_recent_file (G_GNUC_UNUSED MooEditor *editor,
                  const char *filename)
@@ -981,7 +981,7 @@ add_recent_file (MooEditor  *editor,
 #endif
 
 
-#if !GTK_CHECK_VERSION(2,12,0)
+#if !GTK_CHECK_VERSION(2,12,0) || defined(__WIN32__)
 
 static GtkAction*
 create_recent_action (MooEditWindow  *window)
@@ -1023,7 +1023,7 @@ activate_history_item (MooEditor      *editor,
         moo_history_list_remove (editor->priv->history, item->data);
 }
 
-#endif /* !GTK_CHECK_VERSION(2,12,0) */
+#endif /* !GTK_CHECK_VERSION(2,12,0) || defined(__WIN32__) */
 
 
 /*****************************************************************************/
