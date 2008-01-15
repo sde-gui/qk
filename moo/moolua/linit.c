@@ -13,7 +13,6 @@
 #include "lualib.h"
 #include "lauxlib.h"
 #include "ext/lfs.h"
-#include "lua-ex/lua-ex.h"
 
 static const luaL_Reg lualibs[] = {
   {"", luaopen_base},

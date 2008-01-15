@@ -24,12 +24,6 @@ third-party software incorporated in &app; can be found in this section.
                     xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting>
 </sect1>
 
-<sect1 id="license-lua-ex">
-<title>Lua-ex Library License</title>
-<programlisting><xi:include href="../moo/moolua/lua-ex/COPYRIGHT" parse="text" encoding="UTF-8"
-                    xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting>
-</sect1>
-
 <sect1 id="license-lua-lfs">
 <title>LuaFileSystem License</title>
 <programlisting>

@@ -50,7 +50,6 @@ moo/moo.pc
 moo/moo-config.h
 moo/Makefile
 moo/moolua/Makefile
-moo/moolua/lua-ex/Makefile
 moo/mooutils/Makefile
 moo/mooutils/newgtk/Makefile
 moo/moofileview/Makefile
