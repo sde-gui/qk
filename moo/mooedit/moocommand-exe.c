@@ -15,7 +15,7 @@
 #endif
 #include "mooedit/moocommand-exe.h"
 #include "mooedit/mooeditor.h"
-#include "mooedit/mooedittools-glade.h"
+#include "mooedittools-glade.h"
 #include "mooedit/moocmdview.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooglade.h"
