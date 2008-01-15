@@ -10,7 +10,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooapp/mooappabout-glade.h"
+#include "mooappabout-glade.h"
 #include "mooapp/mooappabout.h"
 #include "mooapp/mooapp.h"
 #include "mooapp/moohtml.h"

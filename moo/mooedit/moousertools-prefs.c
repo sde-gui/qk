@@ -12,7 +12,7 @@
 
 #include "mooedit/moousertools-prefs.h"
 #include "mooedit/moousertools.h"
-#include "mooedit/mooedittools-glade.h"
+#include "mooedittools-glade.h"
 #include "mooedit/moocommand.h"
 #include "mooedit/moocommanddisplay.h"
 #include "mooutils/mooprefsdialogpage.h"

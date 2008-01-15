@@ -17,7 +17,7 @@
 #include "mooedit/mootextfind.h"
 #include "mooedit/mootext-private.h"
 #include "mooedit/mooedit-enums.h"
-#include "mooedit/quicksearch-glade.h"
+#include "mooquicksearch-glade.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootextbox.h"
 #include "mooutils/moomarshals.h"
@@ -4321,7 +4321,7 @@ moo_text_view_start_quick_search (MooTextView *view)
 
         xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
         moo_glade_xml_map_class (xml, "GtkEntry", MOO_TYPE_ENTRY);
-        moo_glade_xml_parse_memory (xml, quicksearch_glade_xml, -1, "evbox", NULL);
+        moo_glade_xml_parse_memory (xml, mooquicksearch_glade_xml, -1, "evbox", NULL);
 
         view->priv->qs.evbox = moo_glade_xml_get_widget (xml, "evbox");
         g_return_if_fail (view->priv->qs.evbox != NULL);

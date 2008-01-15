@@ -11,8 +11,8 @@
  */
 
 #include "mooedit/mootextfind.h"
-#include "mooedit/mootextfind-glade.h"
-#include "mooedit/mootextgotoline-glade.h"
+#include "mootextfind-glade.h"
+#include "mootextgotoline-glade.h"
 #include "mooedit/mootextview.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mootextsearch-private.h"

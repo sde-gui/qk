@@ -26,7 +26,7 @@
 #include "moofileview/mooiconview.h"
 #include "moofileview/moofileview-aux.h"
 #include "moofileview/moofileview-private.h"
-#include "moofileview/moofileview-ui.h"
+#include "moofileview-ui.h"
 #include "moofileview/mootreeview.h"
 #include "moofileview/moobookmarkview.h"
 #include "moofileview/moofileview-tools.h"
@@ -1110,7 +1110,7 @@ init_actions (MooFileView *fileview)
     fileview->priv->actions = moo_action_collection_new ("File Selector", _("File Selector"));
     fileview->priv->ui_xml = moo_ui_xml_new ();
     moo_ui_xml_add_ui_from_string (fileview->priv->ui_xml,
-                                   MOO_FILE_VIEW_UI, -1);
+                                   moofileview_ui_xml, -1);
 
     group = moo_action_collection_get_group (fileview->priv->actions, NULL);
 

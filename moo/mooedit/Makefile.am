@@ -184,8 +184,8 @@ glade_files =				\
 	glade/mooprint.glade		\
 	glade/mootextfind.glade		\
 	glade/mootextgotoline.glade	\
-	glade/quicksearch.glade		\
-	glade/statusbar.glade		\
+	glade/mooquicksearch.glade	\
+	glade/moostatusbar.glade	\
 	glade/mooprintpreview.glade
 glade_sources = $(patsubst glade/%.glade,%-glade.h,$(glade_files))
 nodist_mooedit_sources += $(glade_sources)
@@ -195,10 +195,10 @@ EXTRA_DIST = $(glade_files)
 
 XML2H = $(srcdir)/../mooutils/xml2h.sh
 mooedit-ui.h: mooedit-ui.xml $(XML2H)
-	$(SHELL) $(XML2H) MOO_EDIT_UI_XML $(srcdir)/mooedit-ui.xml > $@.tmp && \
+	$(SHELL) $(XML2H) mooedit_ui_xml $(srcdir)/mooedit-ui.xml > $@.tmp && \
 	mv $@.tmp $@
 medit-ui.h: medit-ui.xml $(XML2H)
-	$(SHELL) $(XML2H) MEDIT_UI_XML $(srcdir)/medit-ui.xml > $@.tmp && \
+	$(SHELL) $(XML2H) medit_ui_xml $(srcdir)/medit-ui.xml > $@.tmp && \
 	mv $@.tmp $@
 nodist_mooedit_sources += mooedit-ui.h medit-ui.h
 BUILT_SOURCES += mooedit-ui.h medit-ui.h

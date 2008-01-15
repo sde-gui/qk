@@ -16,7 +16,7 @@
 
 #define MOO_FILE_VIEW_COMPILATION
 #include "moofileview/moobookmarkmgr.h"
-#include "moofileview/moobookmark-editor-glade.h"
+#include "moobookmark-editor-glade.h"
 #include "moofileview/moofileentry.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooprefs.h"

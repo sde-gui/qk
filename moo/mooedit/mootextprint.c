@@ -14,7 +14,7 @@
 #include "mooedit/mootextprint-private.h"
 #include "mooedit/mooedit.h"
 #include "mooedit/mooedit-private.h"
-#include "mooedit/mooprint-glade.h"
+#include "mooprint-glade.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootext-private.h"
 #include "mooedit/mooprintpreview.h"

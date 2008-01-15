@@ -11,7 +11,7 @@
  */
 
 #include "mooutils/mooaccelbutton.h"
-#include "mooutils/mooaccelbutton-glade.h"
+#include "mooaccelbutton-glade.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moodialogs.h"

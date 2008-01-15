@@ -12,7 +12,7 @@
 
 #include "mooutils/mooaccelprefs.h"
 #include "mooutils/mooaccel.h"
-#include "mooutils/mooaccelprefs-glade.h"
+#include "mooaccelprefs-glade.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/mooaccelbutton.h"
 #include "mooutils/mooglade.h"

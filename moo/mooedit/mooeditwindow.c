@@ -15,7 +15,7 @@
 #endif
 
 #define MOOEDIT_COMPILATION
-#include "mooedit/statusbar-glade.h"
+#include "moostatusbar-glade.h"
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditor-private.h"
 #include "mooedit/mooeditfiltersettings.h"
@@ -3324,7 +3324,7 @@ create_statusbar (MooEditWindow *window)
     MooGladeXML *xml;
     GtkWidget *hbox;
 
-    xml = moo_glade_xml_new_from_buf (statusbar_glade_xml, -1,
+    xml = moo_glade_xml_new_from_buf (moostatusbar_glade_xml, -1,
                                       "hbox", GETTEXT_PACKAGE, NULL);
     hbox = moo_glade_xml_get_widget (xml, "hbox");
     g_return_if_fail (hbox != NULL);

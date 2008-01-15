@@ -61,7 +61,7 @@ symlink.h: $(moofileview_pixmaps)
 
 XML2H = $(srcdir)/../mooutils/xml2h.sh
 moofileview-ui.h: $(srcdir)/moofileview-ui.xml $(XML2H)
-	$(SHELL) $(XML2H) MOO_FILE_VIEW_UI $(srcdir)/moofileview-ui.xml > $@.tmp && \
+	$(SHELL) $(XML2H) moofileview_ui_xml $(srcdir)/moofileview-ui.xml > $@.tmp && \
 	mv $@.tmp $@
 
 @MOO_GLADE_SUBDIR_RULE@

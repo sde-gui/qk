@@ -13,7 +13,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/moocommand-lua.h"
 #include "mooedit/mooedit-lua.h"
-#include "mooedit/mooedittools-glade.h"
+#include "mooedittools-glade.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mootext-private.h"
 #include "mooutils/mooi18n.h"
