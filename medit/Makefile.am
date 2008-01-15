@@ -31,7 +31,7 @@ endif
 XML2H = $(srcdir)/../moo/mooutils/xml2h.sh
 medit-credits.h: ../THANKS $(XML2H)
 	$(SHELL) $(XML2H) THANKS $(srcdir)/../THANKS > $@.tmp && \
-	mv $@.tmp $@
+	mv $@.tmp $(srcdir)/medit-credits.h
 
 medit-app.c: medit-app.opag
 	if test -z $(OPAG); then \
