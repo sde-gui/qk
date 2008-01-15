@@ -75,7 +75,7 @@ accel_map_changed (G_GNUC_UNUSED GtkAccelMap *map,
 {
     char *new_accel;
 
-    if (accel_key && accel_mods)
+    if (accel_key)
         new_accel = gtk_accelerator_name (accel_key, accel_mods);
     else
         new_accel = NULL;
@@ -177,7 +177,7 @@ set_accel (const char *accel_path,
     {
         gtk_accelerator_parse (accel, &accel_key, &accel_mods);
 
-        if (accel_key || accel_mods)
+        if (accel_key)
         {
             g_hash_table_insert (moo_accel_map,
                                  g_strdup (accel_path),
@@ -278,16 +278,12 @@ _moo_accel_register (const char *accel_path,
 
         gtk_accelerator_parse (default_accel, &accel_key, &accel_mods);
 
-        if (accel_key || accel_mods)
-        {
+        if (accel_key)
             g_hash_table_insert (moo_default_accel_map,
                                  g_strdup (accel_path),
                                  gtk_accelerator_name (accel_key, accel_mods));
-        }
         else
-        {
             g_warning ("could not parse accelerator '%s'", default_accel);
-        }
     }
     else
     {
