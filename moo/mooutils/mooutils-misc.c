@@ -17,7 +17,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-debug.h"
-#include "mooutils/moologwindow-glade.h"
+#include "moologwindow-glade.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
@@ -37,7 +37,6 @@
 #endif
 
 #ifdef __WIN32__
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <shellapi.h>
 #endif
@@ -444,7 +443,6 @@ _moo_window_is_hidden (GtkWindow  *window)
 
 #elif defined(__WIN32__)
 
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <gdk/gdkwin32.h>
 

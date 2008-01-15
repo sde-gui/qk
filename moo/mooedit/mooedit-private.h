@@ -24,6 +24,12 @@
 
 G_BEGIN_DECLS
 
+#if defined(__WIN32__) && !defined(__GNUC__)
+typedef unsigned short mode_t;
+#define S_IRUSR S_IREAD
+#define S_IWUSR S_IWRITE
+#endif
+
 
 #define PROGRESS_TIMEOUT    100
 #define PROGRESS_WIDTH      300
