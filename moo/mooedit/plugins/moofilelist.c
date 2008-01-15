@@ -1665,8 +1665,8 @@ static int
 cmp_uris (const void *p1,
           const void *p2)
 {
-    char *const *s1 = p1;
-    char *const *s2 = p2;
+    const char *const *s1 = p1;
+    const char *const *s2 = p2;
     return strcmp (*s1, *s2);
 }
 

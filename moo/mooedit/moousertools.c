@@ -555,8 +555,8 @@ static int
 cmp_filenames (const void *p1,
                const void *p2)
 {
-    char *const *sp1 = p1;
-    char *const *sp2 = p2;
+    const char *const *sp1 = p1;
+    const char *const *sp2 = p2;
     return strcmp (*sp1, *sp2);
 }
 

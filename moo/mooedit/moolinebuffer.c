@@ -206,7 +206,6 @@ _moo_line_buffer_remove_mark (LineBuffer     *line_buf,
                               MooLineMark    *mark)
 {
     Line *line;
-    G_GNUC_UNUSED int index;
 
     line = _moo_line_mark_get_line (mark);
 
@@ -238,12 +237,12 @@ node_get_marks (BTree  *tree,
                 int     node_offset)
 {
     GSList *total = NULL;
-    int i;
+    guint i;
 
     if (!node->n_marks)
         return NULL;
 
-    if (last_line < node_offset || first_line >= node_offset + node->count)
+    if (last_line < node_offset || first_line >= node_offset + (int) node->count)
         return NULL;
 
     if (node->is_bottom)
@@ -253,7 +252,7 @@ node_get_marks (BTree  *tree,
             Line *line;
             guint j;
 
-            if (i + node_offset > last_line)
+            if ((int) i + node_offset > last_line)
                 break;
 
             line = node->u.data[i];
@@ -328,7 +327,7 @@ line_get_index (BTData *line)
 
     while (node->parent)
     {
-        int i;
+        guint i;
 
         for (i = 0; i < node->parent->n_children; ++i)
         {

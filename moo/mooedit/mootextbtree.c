@@ -330,7 +330,7 @@ static void
 merge_nodes (BTNode *parent, guint first)
 {
     BTNode *node, *next;
-    int i;
+    guint i;
 
     g_assert (first + 1 < parent->n_children);
 

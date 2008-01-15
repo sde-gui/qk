@@ -39,7 +39,7 @@ struct MooEditConfigPrivate {
 
 struct Value {
     GValue gval;
-    guint source : 16;
+    MooEditConfigSource source;
 };
 
 struct Variable {
