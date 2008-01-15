@@ -160,6 +160,9 @@ EXTRA_DIST =				\
 	$(thread_sources)		\
 	$(win32_sources)		\
 	$(objc_sources)			\
+	moowin32/mingw/fnmatch.h	\
+	moowin32/mingw/netinet/in.h	\
+	moowin32/mingw/sys/mman.h	\
 	pixmaps/medit.png		\
 	pixmaps/medit.ico		\
 	pixmaps/hide.png		\

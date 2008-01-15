@@ -201,11 +201,8 @@ G_END_DECLS
 G_BEGIN_DECLS
 
 
-#define fnmatch _moo_win32_fnmatch
-#define gettimeofday _moo_win32_gettimeofday
-
-char       *moo_win32_get_app_dir           (void);
-char       *moo_win32_get_dll_dir           (const char     *dll);
+char        *moo_win32_get_app_dir          (void);
+char        *moo_win32_get_dll_dir          (const char     *dll);
 
 void        _moo_win32_add_data_dirs        (GPtrArray      *list,
                                              const char     *prefix);
@@ -215,25 +212,6 @@ const char *_moo_win32_get_locale_dir       (void);
 gboolean    _moo_win32_open_uri             (const char     *uri);
 void        _moo_win32_show_fatal_error     (const char     *domain,
                                              const char     *logmsg);
-
-int         _moo_win32_fnmatch              (const char     *pattern,
-                                             const char     *string,
-                                             int             flags);
-int         _moo_win32_gettimeofday         (struct timeval *tp,
-                                             gpointer        tzp);
-
-void       *_moo_win32_mmap                 (gpointer        start,
-                                             guint64         length,
-                                             int             prot,
-                                             int             flags,
-                                             int             fd,
-                                             guint64         offset);
-int         _moo_win32_munmap               (gpointer        start,
-                                             gsize           length);
-
-#define PROT_READ   1
-#define MAP_SHARED  1
-#define MAP_FAILED  ((gpointer) -1)
 
 
 G_END_DECLS

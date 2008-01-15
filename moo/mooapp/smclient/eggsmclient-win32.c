@@ -22,8 +22,6 @@
 #include "eggsmclient-private.h"
 #include <gdk/gdk.h>
 
-#define WIN32_LEAN_AND_MEAN
-#define UNICODE
 #include <windows.h>
 
 #define EGG_TYPE_SM_CLIENT_WIN32            (egg_sm_client_win32_get_type ())

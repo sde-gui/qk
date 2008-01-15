@@ -23,7 +23,6 @@
 #endif
 
 #ifdef __WIN32__
-#include "mooutils/mooutils-thread.h"
 #include <windows.h>
 #include <io.h>
 #include <fcntl.h>
@@ -43,6 +42,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moofilewatch.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/mooutils-thread.h"
 
 
 #if 1

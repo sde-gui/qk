@@ -27,10 +27,13 @@
 #include <glib/gstdio.h>
 
 #ifdef __WIN32__
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <io.h>
 #include <direct.h>
+#endif
+
+#ifndef S_IRWXU
+#define S_IRWXU 0
 #endif
 
 #ifdef HAVE_SYS_WAIT_H

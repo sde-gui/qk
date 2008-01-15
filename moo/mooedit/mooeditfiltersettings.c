@@ -19,9 +19,7 @@
 #include "mooutils/mooutils-debug.h"
 #include <glib/gregex.h>
 #include <string.h>
-#ifndef __WIN32__
 #include <fnmatch.h>
-#endif
 
 
 MOO_DEBUG_INIT(filters, FALSE)

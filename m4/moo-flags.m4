@@ -61,6 +61,12 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
     MOO_LIBS="$MOO_LIBS $GTKHTML_LIBS"
   fi
 
+  if test "x$MOO_OS_MINGW" = xyes; then
+    MOO_CFLAGS="$MOO_CFLAGS -DWIN32_LEAN_AND_MEAN -DUNICODE"
+    MOO_WIN32_CFLAGS="-I$moo_top_src_dir/$1/mooutils/moowin32/mingw"
+    AC_DEFINE(HAVE_MMAP, [1], [using fake mmap on windows])
+  fi
+
   ################################################################################
   #  MooEdit stuff
   #
@@ -69,6 +75,7 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
     MOO_LIBS="$MOO_LIBS $XML_LIBS"
   fi
 
+  AC_SUBST(MOO_WIN32_CFLAGS)
   AC_SUBST(MOO_CFLAGS)
   AC_SUBST(MOO_LIBS)
 

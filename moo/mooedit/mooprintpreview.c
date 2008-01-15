@@ -17,7 +17,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooprintpreview.h"
 #include "mooedit/mootextprint-private.h"
-#include "mooedit/mooprintpreview-glade.h"
+#include "mooprintpreview-glade.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
@@ -26,7 +26,6 @@
 MOO_DEBUG_INIT(printing, TRUE)
 
 #ifdef __WIN32__
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <cairo-win32.h>
 #endif

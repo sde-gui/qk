@@ -23,9 +23,7 @@
 #endif
 #ifdef __WIN32__
 #include <windows.h>
-#endif
-
-#ifdef __WIN32__
+#include <io.h>
 #ifndef pipe
 #define pipe(phandles)	_pipe (phandles, 4096, _O_BINARY)
 #endif

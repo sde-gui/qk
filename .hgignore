@@ -6,7 +6,7 @@ Makefile(\.in)?$
 ^(autom4te\.cache|build)/
 ^(compile|mkinstalldirs|config\..*|configargs\.h|configure|depcomp|install-sh|intltool-(extract|merge|update)|libtool|ltmain\.sh|missing|stamp-h1|aclocal\.m4)$
 ^intltool-(extract|merge|update)\.in$
-^medit/medit(-credits\.h|\.(desktop|iss))?$
+^medit/medit(\.(desktop|iss))?$
 ^po(-gsv)?/(\.intltool-merge-cache|POTFILES|stamp-it|missing|moo\.pot|notexist|Makefile\.in\.in)
 ^tests/pyapp\.py$
 ^moo/moo(-config\.h|\.pc)$

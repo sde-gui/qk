@@ -14,14 +14,15 @@
 #include "config.h"
 #endif
 
-#define WIN32_LEAN_AND_MEAN
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-fs.h"
+#include <fnmatch.h>
 #include <windows.h>
 #include <shellapi.h>
 #include <time.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
 #include <io.h>
 
 
@@ -35,16 +36,19 @@ DllMain (HINSTANCE            hinstDLL,
 	 DWORD                fdwReason,
 	 G_GNUC_UNUSED LPVOID lpvReserved)
 {
-    char *tem;
-    wchar_t wcbfr[1000];
+    char *name = NULL;
+    wchar_t buf[MAX_PATH+1];
 
     switch (fdwReason)
     {
         case DLL_PROCESS_ATTACH:
-            GetModuleFileNameW ((HMODULE) hinstDLL, wcbfr, G_N_ELEMENTS (wcbfr));
-            tem = g_utf16_to_utf8 (wcbfr, -1, NULL, NULL, NULL);
-            libmoo_dll_name = g_path_get_basename (tem);
-            g_free (tem);
+            if (GetModuleFileNameW ((HMODULE) hinstDLL, buf, G_N_ELEMENTS (buf)))
+                name = g_utf16_to_utf8 (buf, -1, NULL, NULL, NULL);
+            if (name)
+                libmoo_dll_name = g_path_get_basename (name);
+            if (!libmoo_dll_name)
+                libmoo_dll_name = g_strdup ("libmoo.dll");
+            g_free (name);
             break;
     }
 
@@ -140,38 +144,40 @@ moo_win32_get_app_dir (void)
 char *
 moo_win32_get_dll_dir (const char *dll)
 {
+	wchar_t *dll_utf16 = NULL;
     char *dir;
     char *dllname = NULL;
     HMODULE handle;
+    wchar_t buf[MAX_PATH+1];
 
-    handle = GetModuleHandle (dll);
+    if (dll)
+	{
+		GError *error = NULL;
+
+		dll_utf16 = g_utf8_to_utf16 (dll, -1, NULL, NULL, &error);
+
+		if (!dll_utf16)
+		{
+			g_critical ("could not convert name '%s' to UTF16: %s",
+						dll, error ? error->message : "");
+			g_error_free (error);
+			return g_strdup (".");
+		}
+	}
+
+    handle = GetModuleHandleW (dll_utf16);
     g_return_val_if_fail (handle != NULL, g_strdup ("."));
 
-    if (G_WIN32_HAVE_WIDECHAR_API ())
-    {
-        wchar_t buf[MAX_PATH+1];
-
-        if (GetModuleFileNameW (handle, buf, G_N_ELEMENTS (buf)) > 0)
-            dllname = g_utf16_to_utf8 (buf, -1, NULL, NULL, NULL);
-    }
-    else
-    {
-        gchar buf[MAX_PATH+1];
-
-        if (GetModuleFileNameA (handle, buf, G_N_ELEMENTS (buf)) > 0)
-            dllname = g_locale_to_utf8 (buf, -1, NULL, NULL, NULL);
-    }
+    if (GetModuleFileNameW (handle, buf, G_N_ELEMENTS (buf)) > 0)
+        dllname = g_utf16_to_utf8 (buf, -1, NULL, NULL, NULL);
 
     if (dllname)
-    {
         dir = g_path_get_dirname (dllname);
-        g_free (dllname);
-    }
     else
-    {
         dir = g_strdup (".");
-    }
 
+    g_free (dllname);
+	g_free (dll_utf16);
     return dir;
 }
 
@@ -183,7 +189,7 @@ _moo_win32_open_uri (const char *uri)
 
     g_return_val_if_fail (uri != NULL, FALSE);
 
-    h = ShellExecute (NULL, "open", uri, NULL, NULL, SW_SHOWNORMAL);
+    h = ShellExecuteA (NULL, "open", uri, NULL, NULL, SW_SHOWNORMAL);
 
     if ((int)h <= 32)
     {
@@ -214,35 +220,35 @@ _moo_win32_show_fatal_error (const char *domain,
                 PLEASE_REPORT, logmsg);
 #undef PLEASE_REPORT
 
-    MessageBox (NULL, msg, "Error",
-                MB_ICONERROR | MB_APPLMODAL | MB_SETFOREGROUND);
+    MessageBoxA (NULL, msg, "Error",
+                 MB_ICONERROR | MB_APPLMODAL | MB_SETFOREGROUND);
 
     g_free (msg);
 }
 
 
-int
-_moo_win32_gettimeofday (struct timeval *tp,
-                         G_GNUC_UNUSED gpointer tzp)
-{
-    time_t sec;
-
-    if (tp == NULL || tzp != NULL)
-    {
-        errno = EINVAL;
-        return -1;
-    }
-
-    sec = time (NULL);
-
-    if (sec == (time_t) -1)
-        return -1;
-
-    tp->tv_sec = sec;
-    tp->tv_usec = 0;
-
-    return 0;
-}
+// int
+// _moo_win32_gettimeofday (struct timeval *tp,
+//                          G_GNUC_UNUSED gpointer tzp)
+// {
+//     time_t sec;
+//
+//     if (tp == NULL || tzp != NULL)
+//     {
+//         errno = EINVAL;
+//         return -1;
+//     }
+//
+//     sec = time (NULL);
+//
+//     if (sec == (time_t) -1)
+//         return -1;
+//
+//     tp->tv_sec = sec;
+//     tp->tv_usec = 0;
+//
+//     return 0;
+// }
 
 
 int
