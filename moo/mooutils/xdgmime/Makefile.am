@@ -22,11 +22,6 @@ AM_CFLAGS =			\
 	$(MOO_W_NO_SIGN_COMPARE)\
 	$(MOO_W_NO_UNUSED)
 
-EXTRA_DIST =			\
-	win32/fnmatch.h		\
-	win32/netinet/in.h	\
-	win32/sys/mman.h
-
 if MOO_OS_MINGW
-AM_CFLAGS += -I$(srcdir)/win32 -DHAVE_MMAP
+AM_CFLAGS += -DHAVE_MMAP $(MOO_WIN32_CFLAGS)
 endif
