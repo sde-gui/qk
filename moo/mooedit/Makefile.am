@@ -236,6 +236,10 @@ AM_CFLAGS =			\
 	$(MOO_DEBUG_CFLAGS)
 AM_OBJCFLAGS = $(AM_CFLAGS) $(MOO_OBJCFLAGS)
 
+if MOO_OS_MINGW
+AM_CFLAGS += $(MOO_WIN32_CFLAGS)
+endif
+
 if MOO_INSTALL_HEADERS
 mooedit_includedir = $(moo_includedir)/mooedit
 mooedit_include_HEADERS = $(mooedit_include_headers)

@@ -16,13 +16,13 @@
 
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-fs.h"
-#include <fnmatch.h>
+#include "mooutils/moowin32/mingw/fnmatch.h"
+#include "mooutils/moowin32/mingw/sys/mman.h"
 #include <windows.h>
 #include <shellapi.h>
 #include <time.h>
 #include <errno.h>
 #include <sys/stat.h>
-#include <sys/mman.h>
 #include <sys/time.h>
 #include <io.h>
 
