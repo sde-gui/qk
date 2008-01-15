@@ -1005,13 +1005,14 @@ command_exit (MooLineView *view,
         char *msg = NULL;
         guint8 exit_code = WEXITSTATUS (status);
 
-        /* xargs exits with code 123 if it's command exited with status 1-125*/
-        if (cmd == CMD_GREP && (!exit_code || exit_code == 123))
+        /* grep exits with status of 0 if something found, 1 if nothing found */
+        if (cmd == CMD_GREP && (exit_code == 0 || exit_code == 1))
             msg = g_strdup_printf (dngettext (GETTEXT_PACKAGE,
                                               "*** %u match found ***",
                                               "*** %u matches found ***",
                                               stuff->match_count),
                                    stuff->match_count);
+        /* xargs exits with code 123 if it's command exited with status 1-125*/
         else if (cmd == CMD_FIND && !exit_code)
             msg = g_strdup_printf (dngettext (GETTEXT_PACKAGE,
                                               "*** %u file found ***",
