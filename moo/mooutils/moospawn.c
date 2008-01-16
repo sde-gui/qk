@@ -237,6 +237,7 @@ command_exit (GPid            pid,
         g_return_if_fail (cmd->priv->child_watch_data == data);
         cmd->priv->exit_status = status;
         cmd->priv->child_watch_data = NULL;
+        cmd->priv->pid = 0;
         moo_cmd_check_stop (cmd);
     }
 }
@@ -669,10 +670,9 @@ moo_cmd_cleanup (MooCmd *cmd)
 #ifndef __WIN32__
         kill (-cmd->priv->pid, SIGHUP);
 #else
-        TerminateProcess (cmd->priv->pid, 1);
+        TerminateProcess (cmd->priv->pid, -1);
 #endif
         g_spawn_close_pid (cmd->priv->pid);
-        cmd->priv->pid = 0;
     }
 
     cmd->priv->pid = 0;
@@ -694,6 +694,8 @@ moo_cmd_abort_real (MooCmd *cmd)
 
     g_return_val_if_fail (cmd->priv->pid != 0, TRUE);
 
+    /* TODO: on windows it gets exit status of 0 for some reason */
+
 #ifndef __WIN32__
     kill (-cmd->priv->pid, SIGHUP);
 #else
@@ -702,12 +704,18 @@ moo_cmd_abort_real (MooCmd *cmd)
 
     if (cmd->priv->stdout_watch)
     {
+        /* close it to avoid final read after watch is removed */
+        g_io_channel_close (cmd->priv->stdout_io);
+        cmd->priv->stdout_io = NULL;
         g_source_remove (cmd->priv->stdout_watch);
         cmd->priv->stdout_watch = 0;
     }
 
     if (cmd->priv->stderr_watch > 0)
     {
+        /* close it to avoid final read after watch is removed */
+        g_io_channel_close (cmd->priv->stderr_io);
+        cmd->priv->stderr_io = NULL;
         g_source_remove (cmd->priv->stderr_watch);
         cmd->priv->stderr_watch = 0;
     }

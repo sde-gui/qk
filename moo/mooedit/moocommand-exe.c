@@ -35,10 +35,8 @@
 #endif
 
 #ifndef __WIN32__
-#define RUN_CMD_ARGV {"/bin/sh", "-c", NULL, NULL}
 #define RUN_CMD_FLAGS 0
 #else
-#define RUN_CMD_ARGV {"cmd.exe", "/C", NULL, NULL}
 #define RUN_CMD_FLAGS G_SPAWN_SEARCH_PATH
 #endif
 
@@ -265,6 +263,25 @@ make_cmd_line (MooCommandExe     *cmd,
 
     g_free (input);
     return cmd_line;
+}
+
+static char **
+make_argv (const char  *cmd_line, 
+           GError     **error)
+{
+    char **argv = NULL;
+
+#ifndef __WIN32__
+    argv = g_new (char*, 4);
+    argv[0] = g_strdup ("/bin/sh");
+    argv[1] = g_strdup ("-c");
+    argv[2] = g_strdup (cmd_line);
+    argv[3] = NULL;
+#else
+    argv = _moo_win32_lame_parse_cmd_line (cmd_line, error);
+#endif
+
+    return argv;
 }
 
 
@@ -498,9 +515,9 @@ run_sync (const char  *base_cmd_line,
           char       **output_err)
 {
     GError *error = NULL;
-    gboolean result;
+    gboolean result = FALSE;
     GSpawnFlags flags = RUN_CMD_FLAGS;
-    const char *argv[4] = RUN_CMD_ARGV;
+    char **argv;
     char **real_env;
     char *cmd_line;
 
@@ -511,15 +528,16 @@ run_sync (const char  *base_cmd_line,
     g_return_val_if_fail (base_cmd_line != NULL, FALSE);
 
     cmd_line = make_cmd (base_cmd_line, input);
+    argv = make_argv (cmd_line, &error);
 
-    argv[2] = cmd_line;
-    real_env = _moo_env_add (envp);
-
-    result = g_spawn_sync (working_dir, (char**) argv, real_env, flags,
-                           NULL, NULL, output, output_err, exit_status,
-                           &error);
-
-    g_strfreev (real_env);
+    if (argv)
+    {
+        real_env = _moo_env_add (envp);
+        result = g_spawn_sync (working_dir, argv, real_env, flags,
+                               NULL, NULL, output, output_err, exit_status,
+                               &error);
+        g_strfreev (real_env);
+    }
 
     if (!result)
     {
@@ -528,6 +546,7 @@ run_sync (const char  *base_cmd_line,
         g_error_free (error);
     }
 
+    g_strfreev (argv);
     g_free (cmd_line);
     return result;
 }
@@ -580,11 +599,11 @@ run_async (const char     *cmd_line,
            G_GNUC_UNUSED gboolean want_console)
 {
     GError *error = NULL;
-    gboolean result;
+    gboolean result = FALSE;
     char **real_env;
     GdkScreen *screen = NULL;
     GSpawnFlags flags = RUN_CMD_FLAGS;
-    const char *argv[4] = RUN_CMD_ARGV;
+    char **argv;
 
     if (!cmd_line)
         return FALSE;
@@ -594,22 +613,25 @@ run_async (const char     *cmd_line,
         flags |= G_SPAWN_WIN32_HIDDEN_CONSOLE;
 #endif
 
-    argv[2] = cmd_line;
-    real_env = _moo_env_add (envp);
-
-    _moo_message ("Launching:\n%s\n", cmd_line);
-
     if (window && gtk_widget_has_screen (GTK_WIDGET (window)))
         screen = gtk_widget_get_screen (GTK_WIDGET (window));
 
-    if (screen)
-        result = gdk_spawn_on_screen (screen, working_dir, (char**) argv, real_env,
-                                      flags, NULL, NULL, NULL, &error);
-    else
-        result = g_spawn_async (working_dir, (char**) argv, real_env,
-                                flags, NULL, NULL, NULL, &error);
+    argv = make_argv (cmd_line, &error);
 
-    g_strfreev (real_env);
+    if (argv)
+    {
+        _moo_message ("Launching:\n%s\n", cmd_line);
+        real_env = _moo_env_add (envp);
+
+        if (screen)
+            result = gdk_spawn_on_screen (screen, working_dir, (char**) argv, real_env,
+                                          flags, NULL, NULL, NULL, &error);
+        else
+            result = g_spawn_async (working_dir, (char**) argv, real_env,
+                                    flags, NULL, NULL, NULL, &error);
+
+        g_strfreev (real_env);
+    }
 
     if (!result)
     {
@@ -618,6 +640,7 @@ run_async (const char     *cmd_line,
         g_error_free (error);
     }
 
+    g_strfreev (argv);
     return result;
 }
 

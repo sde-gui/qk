@@ -14,6 +14,7 @@
 #include "mooedit/mooeditwindow.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moospawn.h"
+#include "mooutils/mooutils-misc.h"
 
 #ifndef __WIN32__
 #include <sys/wait.h>
@@ -331,13 +332,12 @@ moo_cmd_view_run_command_full (MooCmdView  *view,
     g_free (display_cmd_line);
 
 #ifdef __WIN32__
-    g_shell_parse_argv (cmd, NULL, &argv, &error);
-
-    if (error)
+    if (!(argv = _moo_win32_lame_parse_cmd_line (cmd, &error)))
     {
         moo_line_view_write_line (MOO_LINE_VIEW (view),
-                                  error->message, -1,
-                                  view->priv->error_tag);
+                                  error ? error->message : 
+                                    "Could not parse command line", 
+                                  -1, view->priv->error_tag);
         g_error_free (error);
         goto out;
     }
