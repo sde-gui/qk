@@ -56,6 +56,13 @@ DllMain (HINSTANCE            hinstDLL,
     return TRUE;
 }
 
+#ifdef _MSC_VER
+/* This is stuff from newer Microsoft C runtime, but we want msvcrt.dll 
+ * which doesn't have these functions */
+long _ftol( double );
+long _ftol2( double dblSource ) { return _ftol( dblSource ); }
+long _ftol2_sse( double dblSource ) { return _ftol( dblSource ); }
+#endif
 
 const char *
 _moo_win32_get_locale_dir (void)
