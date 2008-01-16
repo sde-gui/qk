@@ -1,20 +1,31 @@
 LIBRARY	"libmoo"
 EXPORTS
-	moo_app_get_type
-	moo_app_send_msg
-	moo_app_send_files
-	moo_app_init
-	moo_app_load_session
-	moo_app_get_editor
-	moo_editor_get_active_window
+    moo_app_get_type
+    moo_app_send_msg
+    moo_app_send_files
+    moo_app_init
+    moo_app_load_session
+    moo_app_get_editor
+    moo_editor_get_active_window
     moo_editor_new_window
     moo_app_open_files
     moo_app_run
-	moo_filenames_from_locale
-	moo_gettext
-	moo_set_log_func_window
-	moo_set_log_func_file
-	moo_win32_get_app_dir
-	moo_plugin_set_enabled
-	moo_filename_from_locale
-	moo_plugin_lookup
+    moo_filenames_from_locale
+    moo_gettext
+    moo_set_log_func_window
+    moo_set_log_func_file
+    moo_win32_get_app_dir
+    moo_plugin_set_enabled
+    moo_filename_from_locale
+    moo_plugin_lookup
+    moo_plugin_get_dirs
+    moo_enable_win32_error_message
+    moo_disable_win32_error_message
+    moo_plugin_register
+    moo_plugin_get_type
+    moo_python_add_data
+    moo_plugin_loader_register
+    moo_plugin_loader_lookup
+    moo_py_api
+    moo_python_init
+    moo_reset_log_func

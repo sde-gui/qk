@@ -1,2 +1,4 @@
 _USE_32BIT_TIME_T
 functions in mooutils-win32.c
+MOO_DEBUG_ENABLED
+turn off security checks explicitly
