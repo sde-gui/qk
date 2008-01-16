@@ -22,6 +22,12 @@
 #include <config.h>
 #endif
 
+#include <glib/gstdio.h>
+#include "gtksourceview-i18n.h"
+#include "gtksourcelanguage-private.h"
+#include "gtksourcelanguage.h"
+#include "gtksourceview-marshal.h"
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -33,11 +39,6 @@
 #include <fcntl.h>
 
 #include <libxml/xmlreader.h>
-#include <glib/gstdio.h>
-#include "gtksourceview-i18n.h"
-#include "gtksourcelanguage-private.h"
-#include "gtksourcelanguage.h"
-#include "gtksourceview-marshal.h"
 
 #define DEFAULT_SECTION _("Others")
 
