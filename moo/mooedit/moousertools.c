@@ -560,7 +560,7 @@ cmp_filenames (const void *p1,
     return strcmp (*sp1, *sp2);
 }
 
-#define NAME_PREFIX_LEN 2
+#define NAME_PREFIX_LEN 3
 static void
 load_directory (const char       *path,
                 MooUserToolType   type,
