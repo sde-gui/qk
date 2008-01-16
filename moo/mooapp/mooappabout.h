@@ -66,12 +66,12 @@ get_uname (void)
 static char *
 get_windows_name (void)
 {
-    OSVERSIONINFOEXA ver;
+    OSVERSIONINFOEXW ver;
 
     memset (&ver, 0, sizeof (ver));
-    ver.dwOSVersionInfoSize = sizeof (OSVERSIONINFOA);
+    ver.dwOSVersionInfoSize = sizeof (OSVERSIONINFOW);
 
-    if (!GetVersionExA ((OSVERSIONINFOA*) &ver))
+    if (!GetVersionExW ((OSVERSIONINFOW*) &ver))
         return g_strdup ("Win32");
 
     switch (ver.dwMajorVersion)
@@ -109,9 +109,9 @@ get_windows_name (void)
 
         case 6:
             memset (&ver, 0, sizeof (ver));
-            ver.dwOSVersionInfoSize = sizeof (OSVERSIONINFOEXA);
+            ver.dwOSVersionInfoSize = sizeof (OSVERSIONINFOEXW);
 
-            if (!GetVersionExA ((OSVERSIONINFOA*) &ver))
+            if (!GetVersionExW ((OSVERSIONINFOW*) &ver))
                 return g_strdup ("Windows Vista");
 
             if (ver.wProductType == VER_NT_WORKSTATION)
