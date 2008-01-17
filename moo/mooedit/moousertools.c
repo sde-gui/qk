@@ -43,6 +43,8 @@
 #define KEY_BUILTIN     "builtin"
 #define KEY_OPTIONS     "options"
 
+#define NAME_PREFIX_LEN 3
+
 enum {
     PROP_0,
     PROP_COMMAND
@@ -521,7 +523,7 @@ parse_params (MooUserToolInfo  *info,
 
 static void
 load_file (const char      *filename,
-           const char      *name,
+           const char      *basename,
            MooUserToolType  type,
            GSList         **list,
            GHashTable      *ids)
@@ -530,16 +532,21 @@ load_file (const char      *filename,
     MooCommandData *cmd_data;
     MooCommandFactory *cmd_factory;
     char **params;
+    guint suffix_len = 0;
 
     cmd_data = _moo_command_parse_file (filename, &cmd_factory, &params);
     if (!cmd_data)
         return;
 
+    if (cmd_factory->extension && g_str_has_suffix (basename, cmd_factory->extension))
+        suffix_len = strlen (cmd_factory->extension);
+
     info = _moo_user_tool_info_new ();
     info->type = type;
     info->file = g_strdup (filename);
-    info->id = g_strdup (name);
-    info->name = g_strdup (name);
+    info->id = g_strndup (basename + NAME_PREFIX_LEN, 
+                          strlen (basename + NAME_PREFIX_LEN - suffix_len));
+    info->name = g_strdup (info->id);
     info->enabled = TRUE;
     info->os_type = MOO_USER_TOOL_THIS_OS;
     info->cmd_data = cmd_data;
@@ -560,7 +567,6 @@ cmp_filenames (const void *p1,
     return strcmp (*sp1, *sp2);
 }
 
-#define NAME_PREFIX_LEN 3
 static void
 load_directory (const char       *path,
                 MooUserToolType   type,
@@ -597,7 +603,7 @@ load_directory (const char       *path,
         char *filename;
 
         filename = g_build_filename (path, names->pdata[i], NULL);
-        load_file (filename, ((char*)names->pdata[i]) + NAME_PREFIX_LEN, type, list, ids);
+        load_file (filename, names->pdata[i], type, list, ids);
 
         g_free (filename);
         g_free (names->pdata[i]);
