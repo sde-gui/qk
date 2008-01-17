@@ -18,7 +18,7 @@
 
 #include "mooterm/mooterm-private.h"
 #include "mooterm/mooterm-prefs.h"
-#include "mooterm/mootermprefs-glade.h"
+#include "mootermprefs-glade.h"
 #include "mooterm/mooterm.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooprefsdialog.h"
