@@ -51,7 +51,7 @@
 				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="python ..\glade2h.py $(InputDir) $(IntDir)"
+				CommandLine="python ..\genfiles.py $(InputDir) $(IntDir)"
 				ExcludedFromBuild="FALSE"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
@@ -105,7 +105,7 @@
 				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="python ..\glade2h.py $(InputDir) $(IntDir)"
+				CommandLine="python ..\genfiles.py $(InputDir) $(IntDir)"
 				ExcludedFromBuild="FALSE"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
