@@ -10,7 +10,7 @@ files = subprocess.Popen(['hg', 'log', '-r', 'tip', '--template', '{files}'],
 status = 0
 
 for name in files:
-    if not os.path.exists(name):
+    if not os.path.exists(name) or name.startswith('winbuild/'):
         continue
     f = open(name, 'rb')
     if '\r' in f.read():

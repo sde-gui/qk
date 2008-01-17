@@ -14,14 +14,14 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="c:\temp\muntyan\gtk\bin"
-			IntermediateDirectory="c:\temp\muntyan\libmoo\$(ConfigurationName)"
+			IntermediateDirectory="c:\temp\muntyan\build\libmoo\$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\moo;..\..\..\moo\mooedit;..\..\..\moo\mooutils\moowin32\mingw;..\..\..\moo\mooutils\moowin32\ms;..\..\..\moo\moolua;..\..\..\doc;..\..;$(IntDir)"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBMOO_EXPORTS;__WIN32__;HAVE_CONFIG_H;G_LOG_DOMAIN=\&quot;Moo\&quot;;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;UNICODE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBMOO_EXPORTS;__WIN32__;HAVE_CONFIG_H;G_LOG_DOMAIN=\&quot;Moo\&quot;;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;UNICODE;_USE_32BIT_TIME_T;MOO_DEBUG_ENABLED"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="2"
@@ -52,7 +52,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				CommandLine="python ..\glade2h.py $(InputDir) $(IntDir)"
-				ExcludedFromBuild="TRUE"/>
+				ExcludedFromBuild="FALSE"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
@@ -71,13 +71,13 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="c:\temp\muntyan\gtk\bin"
-			IntermediateDirectory="c:\temp\muntyan\libmoo\$(ConfigurationName)"
+			IntermediateDirectory="c:\temp\muntyan\build\libmoo\$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="..\..\..\moo;..\..\..\moo\mooedit;..\..\..\moo\mooutils\moowin32\mingw;..\..\..\moo\mooutils\moowin32\ms;..\..\..\moo\moolua;..\..\..\doc;..\..;$(IntDir)"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBMOO_EXPORTS;__WIN32__;HAVE_CONFIG_H;G_LOG_DOMAIN=\&quot;Moo\&quot;;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;UNICODE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBMOO_EXPORTS;__WIN32__;HAVE_CONFIG_H;G_LOG_DOMAIN=\&quot;Moo\&quot;;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;UNICODE;_USE_32BIT_TIME_T"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -106,7 +106,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				CommandLine="python ..\glade2h.py $(InputDir) $(IntDir)"
-				ExcludedFromBuild="TRUE"/>
+				ExcludedFromBuild="FALSE"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
@@ -1234,6 +1234,106 @@
 						RelativePath="..\..\..\moo\mooutils\xdgmime\xdgmimeparent.h">
 					</File>
 				</Filter>
+			</Filter>
+			<Filter
+				Name="mooterm"
+				Filter="">
+				<File
+					RelativePath="..\..\..\moo\mooterm\mooterm-draw.c">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mooterm-input.c">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mooterm-keymap.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mooterm-prefs.c">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mooterm-prefs.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mooterm-private.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mooterm-selection.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mooterm-text.c">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mooterm-text.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mooterm-vt.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mooterm-vtctls.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mooterm.c">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mooterm.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermbuffer-graph.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermbuffer-private.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermbuffer.c">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermbuffer.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermhelper.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermline-private.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermline.c">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermline.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermparser-yacc.c">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermparser-yacc.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermparser.c">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermparser.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermpt-cygwin.c">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermpt-private.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermpt.c">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermpt.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermtag-private.h">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermtag.c">
+				</File>
+				<File
+					RelativePath="..\..\..\moo\mooterm\mootermtag.h">
+				</File>
 			</Filter>
 		</Filter>
 		<Filter

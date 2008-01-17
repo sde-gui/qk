@@ -33,3 +33,4 @@ Makefile(\.in)?$
 ^po-gsv/po-(stripped|orig)
 ^ppc-configure
 /CVS/
+^winbuild/.*\.(aps|ncb|suo)$
