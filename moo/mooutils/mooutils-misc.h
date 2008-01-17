@@ -212,6 +212,9 @@ gboolean    _moo_win32_open_uri             (const char     *uri);
 void        _moo_win32_show_fatal_error     (const char     *domain,
                                              const char     *logmsg);
 
+char      **_moo_win32_lame_parse_cmd_line  (const char     *cmd_line, 
+                                             GError        **error);
+
 
 G_END_DECLS
 

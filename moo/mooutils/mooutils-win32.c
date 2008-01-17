@@ -235,6 +235,32 @@ _moo_win32_show_fatal_error (const char *domain,
 }
 
 
+char **
+_moo_win32_lame_parse_cmd_line (const char  *cmd_line, 
+                                GError     **error)
+{
+    char **argv;
+    char *filename;
+
+    if (!g_shell_parse_argv (cmd_line, NULL, &argv, error))
+        return NULL;
+
+    if (!(filename = g_find_program_in_path (argv[0])))
+    {
+        guint len = g_strv_length (argv);
+        char **tmp = g_new (char*, len + 3);
+        tmp[0] = g_strdup ("cmd.exe");
+        tmp[1] = g_strdup ("/c");
+        memcpy (tmp + 2, argv, (len + 1) * sizeof (*tmp));
+        g_strfreev (argv);
+        argv = tmp;
+    }
+
+    g_free (filename);
+    return argv;
+}
+
+
 #ifndef __MINGW32__
 int
 _moo_win32_gettimeofday (struct timeval *tp,
