@@ -705,7 +705,7 @@ moo_cmd_abort_real (MooCmd *cmd)
     if (cmd->priv->stdout_watch)
     {
         /* close it to avoid final read after watch is removed */
-        g_io_channel_close (cmd->priv->stdout_io);
+        g_io_channel_shutdown (cmd->priv->stdout_io, FALSE, NULL);
         cmd->priv->stdout_io = NULL;
         g_source_remove (cmd->priv->stdout_watch);
         cmd->priv->stdout_watch = 0;
@@ -714,7 +714,7 @@ moo_cmd_abort_real (MooCmd *cmd)
     if (cmd->priv->stderr_watch > 0)
     {
         /* close it to avoid final read after watch is removed */
-        g_io_channel_close (cmd->priv->stderr_io);
+        g_io_channel_shutdown (cmd->priv->stderr_io, FALSE, NULL);
         cmd->priv->stderr_io = NULL;
         g_source_remove (cmd->priv->stderr_watch);
         cmd->priv->stderr_watch = 0;
