@@ -36,8 +36,10 @@
 
 #ifndef __WIN32__
 #define RUN_CMD_FLAGS 0
+#define SCRIPT_EXTENSION ".sh"
 #else
 #define RUN_CMD_FLAGS G_SPAWN_SEARCH_PATH
+#define SCRIPT_EXTENSION ".bat"
 #endif
 
 #define MOO_COMMAND_EXE_MAX_INPUT       (MOO_COMMAND_EXE_INPUT_DOC + 1)
@@ -798,7 +800,9 @@ _moo_command_exe_class_init (MooCommandExeClass *klass)
     g_type_class_add_private (klass, sizeof (MooCommandExePrivate));
 
     factory = g_object_new (_moo_command_factory_exe_get_type (), NULL);
-    moo_command_factory_register ("exe", _("Shell command"), factory, (char**) data_keys, ".sh");
+    moo_command_factory_register ("exe", _("Shell command"), 
+                                  factory, (char**) data_keys, 
+                                  SCRIPT_EXTENSION);
     g_object_unref (factory);
 }
 
