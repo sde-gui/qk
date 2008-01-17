@@ -12,7 +12,7 @@ Makefile(\.in)?$
 ^moo/moo(-config\.h|\.pc)$
 ^moo/.*-glade\.h$
 ^moo/mooedit/gtksourceview/.*-mangled\.[ch]$
-^moo/mooedit/(language-specs/moo\.xml|m(oo)?edit-ui\.h|(stamp-)?mooedit-enums\.[ch])$
+^moo/mooedit/(language-specs/moo\.xml|m(oo)?edit-ui\.h|stamp-mooedit-enums\.[ch])$
 ^moo/mooedit/language-specs/testdir
 ^moo/moofileview/(moofileview-ui\.h|symlink\.h)$
 ^moo/moopython/plugins/(pyproject/project-plugin|python|terminal)\.ini$

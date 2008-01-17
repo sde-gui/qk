@@ -21,6 +21,7 @@ mooedit_include_headers =		\
 	mooedit-bookmarks.h		\
 	mooedit.h			\
 	mooeditconfig.h			\
+	mooedit-enums.h
 	mooeditor.h			\
 	mooeditprefs.h			\
 	mooeditwindow.h			\
@@ -68,6 +69,7 @@ mooedit_sources =			\
 	mooeditconfig.c			\
 	mooeditdialogs.c		\
 	mooeditdialogs.h		\
+	mooedit-enums.c			\
 	mooeditfileops.c		\
 	mooeditfileops.h		\
 	mooeditfiltersettings.c		\
@@ -122,15 +124,7 @@ mooedit_printing_sources =		\
 	mootextprint-private.h		\
 	mootextprint.h
 
-nodist_mooedit_sources =		\
-	mooedit-enums.c			\
-	mooedit-enums.h
-nodist_mooedit_include_headers =	\
-	mooedit-enums.h
 BUILT_SOURCES =				\
-	mooedit-enums.c			\
-	mooedit-enums.h
-CLEANFILES =				\
 	mooedit-enums.c			\
 	mooedit-enums.h
 
@@ -143,7 +137,7 @@ mooedit_enums_headers =			\
 	mootextsearch.h			\
 	mootextview.h
 
-CLEANFILES += stamp-mooedit-enums.h stamp-mooedit-enums.c
+CLEANFILES = stamp-mooedit-enums.h stamp-mooedit-enums.c
 mooedit-enums.h: stamp-mooedit-enums.h
 	@true
 mooedit-enums.c: stamp-mooedit-enums.c
@@ -156,7 +150,7 @@ stamp-mooedit-enums.h: $(mooedit_enums_headers) Makefile
 			--vhead "GType @enum_name@_get_type (void) G_GNUC_CONST;\n#define MOO_TYPE_@ENUMSHORT@ (@enum_name@_get_type())\n\n" \
 			--ftail "\nG_END_DECLS\n\n#endif /* MOO_EDIT_ENUMS_H */" \
 		$(mooedit_enums_headers) ) > xgen-gtbh \
-	&& (cmp -s xgen-gtbh mooedit-enums.h || cp xgen-gtbh mooedit-enums.h ) \
+	&& (cmp -s xgen-gtbh $(srcdir)/mooedit-enums.h || cp xgen-gtbh $(srcdir)/mooedit-enums.h ) \
 	&& rm -f xgen-gtbh \
 	&& echo timestamp > $(@F)
 stamp-mooedit-enums.c: $(mooedit_enums_headers) Makefile
@@ -167,7 +161,7 @@ stamp-mooedit-enums.c: $(mooedit_enums_headers) Makefile
 			--vprod "            { @VALUENAME@, (char*) \"@VALUENAME@\", (char*) \"@valuenick@\" }," \
 			--vtail "            { 0, NULL, NULL }\n        };\n        etype = g_@type@_register_static (\"@EnumName@\", values);\n    }\n    return etype;\n}\n\n" \
 		$(mooedit_enums_headers) ) > xgen-gtbc \
-	&& (cmp -s xgen-gtbc mooedit-enums.c || cp xgen-gtbc mooedit-enums.c ) \
+	&& (cmp -s xgen-gtbc $(srcdir)/mooedit-enums.c || cp xgen-gtbc $(srcdir)/mooedit-enums.c ) \
 	&& rm -f xgen-gtbc \
 	&& echo timestamp > $(@F)
 
@@ -188,7 +182,7 @@ glade_files =				\
 	glade/moostatusbar.glade	\
 	glade/mooprintpreview.glade
 glade_sources = $(patsubst glade/%.glade,%-glade.h,$(glade_files))
-nodist_mooedit_sources += $(glade_sources)
+nodist_mooedit_sources = $(glade_sources)
 BUILT_SOURCES += $(glade_sources)
 CLEANFILES += $(glade_sources)
 EXTRA_DIST = $(glade_files)
