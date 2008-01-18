@@ -252,7 +252,7 @@ _moo_win32_lame_parse_cmd_line (const char  *cmd_line,
         tmp[0] = g_strdup ("cmd.exe");
         tmp[1] = g_strdup ("/c");
         memcpy (tmp + 2, argv, (len + 1) * sizeof (*tmp));
-        g_strfreev (argv);
+        g_free (argv);
         argv = tmp;
     }
 
@@ -261,7 +261,8 @@ _moo_win32_lame_parse_cmd_line (const char  *cmd_line,
 }
 
 
-#ifndef __MINGW32__
+#if !defined(__MINGW32__) || \
+    (__MINGW32_MAJOR_VERSION == 3 && __MINGW32_MINOR_VERSION <= 7)
 int
 _moo_win32_gettimeofday (struct timeval *tp,
                          G_GNUC_UNUSED gpointer tzp)

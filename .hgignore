@@ -18,7 +18,7 @@ Makefile(\.in)?$
 ^moo/moopython/plugins/(pyproject/project-plugin|python|terminal)\.ini$
 ^moo/moopython/pygtk/(moo(app|edit|term|utils)?-mod\.h|moo(app|edit|term|utils)-pygtk\.c)$
 ^moo/mooterm/termhelper_res\.rc$
-^moo/mooutils/(moomarshals\.[ch]|stock-moo\.h)$
+^moo/mooutils/(moomarshals\.[ch]|stock-(moo|medit)\.h)$
 ^moo/mooapp/smclient/(README|egg-session-end\.c|eggdesktopfile\.[ch]|eggsmclient-libgnomeui\.[ch]|eggsmclient-osx\.c|gedit\.diff|smclient\.patch)$
 ^moo/mooutils/xdgmime/.cvsignore$
 ^moo/mooutils/xdgmime/CVS
@@ -34,3 +34,5 @@ Makefile(\.in)?$
 ^ppc-configure
 /CVS/
 ^winbuild/.*\.(aps|ncb|suo)$
+^winbuild/mingwds$
+^winbuild/devcpp$
