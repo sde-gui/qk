@@ -40,9 +40,9 @@ def do_xml_file(name):
     print >> sys.stderr, "Created %s" % (output,)
 
 def do_marshals():
-    marshals_list = os.path.join(indir, '../../../moo/mooutils/moomarshals.list')
-    marshals_h = os.path.join(indir, '../../../moo/mooutils/moomarshals.h')
-    marshals_c = os.path.join(indir, '../../../moo/mooutils/moomarshals.c')
+    marshals_list = os.path.join(indir, 'mooutils/moomarshals.list')
+    marshals_h = os.path.join(indir, 'mooutils/moomarshals.h')
+    marshals_c = os.path.join(indir, 'mooutils/moomarshals.c')
 
     if check_mtime([marshals_h, marshals_c], [marshals_list]):
         return
@@ -71,20 +71,20 @@ def do_marshals():
 
 def do_stock():
     def generate(outname, inp_list):
-        input_files = ['../../../moo/' + p[1] for p in inp_list]
+        input_files = [os.path.join(indir, p[1]) for p in inp_list]
         if check_mtime([outname], input_files):
             return
         args = ['gdk-pixbuf-csource', '--static', '--build-list']
         for p in inp_list:
             args.append(p[0])
-            args.append('../../../moo/' + p[1])
+            args.append(os.path.join(indir, p[1]))
         tmp = outname + '.tmp'
         tmp_file = open(tmp, 'wb')
         tmp_file.write(subprocess.Popen(args, stdout=subprocess.PIPE).communicate()[0])
         tmp_file.close()
         shutil.move(tmp, outname)
         print >> sys.stderr, "Created %s" % (outname,)
-    generate('../../../moo/mooutils/stock-moo.h', [
+    generate(os.path.join(indir, 'mooutils/stock-moo.h'), [
 		['MOO_HIDE_ICON', 'mooutils/pixmaps/hide.png'],
 		['MOO_CLOSE_ICON', 'mooutils/pixmaps/close.png'],
 		['MOO_STICKY_ICON', 'mooutils/pixmaps/sticky.png'],
@@ -92,10 +92,10 @@ def do_stock():
 		['MOO_ATTACH_ICON', 'mooutils/pixmaps/attach.png'],
 		['MOO_KEEP_ON_TOP_ICON', 'mooutils/pixmaps/keepontop.png'],
              ])
-    generate('../../../moo/mooutils/stock-medit.h', [
+    generate(os.path.join(indir, 'mooutils/stock-medit.h'), [
 		['MEDIT_ICON', 'mooutils/pixmaps/medit.png'],
              ])
-    generate('../../../moo/moofileview/symlink.h', [
+    generate(os.path.join(indir, 'moofileview/symlink.h'), [
 		['SYMLINK_ARROW', 'moofileview/symlink.png'],
 		['SYMLINK_ARROW_SMALL', 'moofileview/symlink-small.png'],
              ])
@@ -112,11 +112,11 @@ def do_gtksourceview():
     ]
 
     def mangle(name):
-        in_name = os.path.join(indir, '../../../moo/mooedit/gtksourceview/upstream', name)
+        in_name = os.path.join(indir, 'mooedit/gtksourceview/upstream', name)
         if in_name.endswith('.h'):
-            out_name = os.path.join(indir, '../../../moo/mooedit/gtksourceview', name.replace('.h', '') + '-mangled.h')
+            out_name = os.path.join(indir, 'mooedit/gtksourceview', name.replace('.h', '') + '-mangled.h')
         else:
-            out_name = os.path.join(indir, '../../../moo/mooedit/gtksourceview', name.replace('.c', '') + '-mangled.c')
+            out_name = os.path.join(indir, 'mooedit/gtksourceview', name.replace('.c', '') + '-mangled.c')
         if check_mtime([out_name], [in_name]):
             return
         in_file = open(in_name, 'rb')
@@ -168,38 +168,38 @@ def check_mtime(newer, older):
     return True
 
 glade_files = [
-    '../../../moo/mooutils/glade/mooaccelbutton.glade',
-    '../../../moo/mooutils/glade/mooaccelprefs.glade',
-    '../../../moo/mooutils/glade/moologwindow.glade',
-    '../../../moo/mooapp/glade/mooappabout.glade',
-    '../../../moo/mooedit/glade/mooeditprefs-file.glade',
-    '../../../moo/mooedit/glade/mooeditprefs-general.glade',
-    '../../../moo/mooedit/glade/mooeditprefs-langs.glade',
-    '../../../moo/mooedit/glade/mooeditprefs-view.glade',
-    '../../../moo/mooedit/glade/mooeditprogress.glade',
-    '../../../moo/mooedit/glade/mooeditsavemult.glade',
-    '../../../moo/mooedit/glade/mooedittools.glade',
-    '../../../moo/mooedit/glade/moopluginprefs.glade',
-    '../../../moo/mooedit/glade/mooprint.glade',
-    '../../../moo/mooedit/glade/mooprintpreview.glade',
-    '../../../moo/mooedit/glade/mootextfind.glade',
-    '../../../moo/mooedit/glade/mootextgotoline.glade',
-    '../../../moo/mooedit/glade/mooquicksearch.glade',
-    '../../../moo/mooedit/glade/moostatusbar.glade',
-    '../../../moo/mooedit/plugins/moofileselector.glade',
-    '../../../moo/mooedit/plugins/moofileselector-prefs.glade',
-    '../../../moo/mooedit/plugins/moofind.glade',
-    '../../../moo/moofileview/glade/moobookmark-editor.glade',
-    '../../../moo/moofileview/glade/moocreatefolder.glade',
-    '../../../moo/moofileview/glade/moofileprops.glade',
-    '../../../moo/moofileview/glade/moofileview-drop.glade',
-    '../../../moo/mooterm/glade/mootermprefs.glade',
+    'mooutils/glade/mooaccelbutton.glade',
+    'mooutils/glade/mooaccelprefs.glade',
+    'mooutils/glade/moologwindow.glade',
+    'mooapp/glade/mooappabout.glade',
+    'mooedit/glade/mooeditprefs-file.glade',
+    'mooedit/glade/mooeditprefs-general.glade',
+    'mooedit/glade/mooeditprefs-langs.glade',
+    'mooedit/glade/mooeditprefs-view.glade',
+    'mooedit/glade/mooeditprogress.glade',
+    'mooedit/glade/mooeditsavemult.glade',
+    'mooedit/glade/mooedittools.glade',
+    'mooedit/glade/moopluginprefs.glade',
+    'mooedit/glade/mooprint.glade',
+    'mooedit/glade/mooprintpreview.glade',
+    'mooedit/glade/mootextfind.glade',
+    'mooedit/glade/mootextgotoline.glade',
+    'mooedit/glade/mooquicksearch.glade',
+    'mooedit/glade/moostatusbar.glade',
+    'mooedit/plugins/moofileselector.glade',
+    'mooedit/plugins/moofileselector-prefs.glade',
+    'mooedit/plugins/moofind.glade',
+    'moofileview/glade/moobookmark-editor.glade',
+    'moofileview/glade/moocreatefolder.glade',
+    'moofileview/glade/moofileprops.glade',
+    'moofileview/glade/moofileview-drop.glade',
+    'mooterm/glade/mootermprefs.glade',
 ]
 
 ui_files = [
-    '../../../moo/mooedit/medit-ui.xml',
-    '../../../moo/mooedit/mooedit-ui.xml',
-    '../../../moo/moofileview/moofileview-ui.xml',
+    'mooedit/medit-ui.xml',
+    'mooedit/mooedit-ui.xml',
+    'moofileview/moofileview-ui.xml',
 ]
 
 indir = sys.argv[1]

@@ -21,7 +21,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\moo;..\..\..\moo\mooedit;..\..\..\moo\mooutils\moowin32\mingw;..\..\..\moo\mooutils\moowin32\ms;..\..\..\moo\moolua;..\..\..\doc;..\..;$(IntDir)"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBMOO_EXPORTS;__WIN32__;HAVE_CONFIG_H;G_LOG_DOMAIN=\&quot;Moo\&quot;;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;UNICODE;_USE_32BIT_TIME_T;MOO_DEBUG_ENABLED"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBMOO_EXPORTS;__WIN32__;HAVE_CONFIG_H;G_LOG_DOMAIN=\&quot;Moo\&quot;;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;UNICODE;_USE_32BIT_TIME_T;MOO_DEBUG_ENABLED;XDG_PREFIX=_moo_xdg"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="2"
@@ -51,7 +51,7 @@
 				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="python ..\genfiles.py $(InputDir) $(IntDir)"
+				CommandLine="python ..\..\genfiles.py $(InputDir)..\..\..\moo $(IntDir)"
 				ExcludedFromBuild="FALSE"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
@@ -105,7 +105,7 @@
 				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="python ..\genfiles.py $(InputDir) $(IntDir)"
+				CommandLine="python ..\..\genfiles.py $(InputDir)..\..\..\moo $(IntDir)"
 				ExcludedFromBuild="FALSE"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
@@ -130,9 +130,6 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
-			<File
-				RelativePath=".\libmoo.def">
-			</File>
 			<Filter
 				Name="mooapp"
 				Filter="">
@@ -1345,6 +1342,9 @@
 			</File>
 			<File
 				RelativePath="..\..\moo-config.h">
+			</File>
+			<File
+				RelativePath="..\..\resource.h">
 			</File>
 		</Filter>
 		<Filter
