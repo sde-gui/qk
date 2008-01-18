@@ -999,6 +999,7 @@ normalize_path_win32 (G_GNUC_UNUSED MooFileSystem *fs,
 {
     char *drive, *path, *normpath;
     guint slashes;
+    gboolean drive_slashes = FALSE;
 
     g_return_val_if_fail (fullpath != NULL, NULL);
 
@@ -1020,6 +1021,7 @@ normalize_path_win32 (G_GNUC_UNUSED MooFileSystem *fs,
         drive = g_strndup (path, slashes);
         path = g_strdup (tmp + slashes);
         g_free (tmp);
+        drive_slashes = TRUE;
     }
 //     else if (path[0] == '\\')
 //     {
@@ -1046,7 +1048,7 @@ normalize_path_win32 (G_GNUC_UNUSED MooFileSystem *fs,
     {
         char *tmp = normpath;
 
-        if (normpath[0] == '\\')
+        if (normpath[0] == '\\' || drive_slashes)
             normpath = g_strdup_printf ("%s%s", drive, normpath);
         else
             normpath = g_strdup_printf ("%s\\%s", drive, normpath);

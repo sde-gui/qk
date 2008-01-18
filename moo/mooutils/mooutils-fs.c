@@ -639,6 +639,7 @@ normalize_full_path (const char *fullpath,
     char *drive, *path, *normpath;
     guint slashes;
     guint len;
+    gboolean drive_slashes = FALSE;
 
     g_return_val_if_fail (fullpath != NULL, NULL);
 
@@ -660,6 +661,7 @@ normalize_full_path (const char *fullpath,
         drive = g_strndup (path, slashes);
         path = g_strdup (tmp + slashes);
         g_free (tmp);
+        drive_slashes = TRUE;
     }
 #if 0
 //     else if (path[0] == '\\')
@@ -688,7 +690,7 @@ normalize_full_path (const char *fullpath,
     {
         char *tmp = normpath;
 
-        if (normpath[0] == '\\')
+        if (normpath[0] == '\\' || drive_slashes)
             normpath = g_strdup_printf ("%s%s", drive, normpath);
         else
             normpath = g_strdup_printf ("%s\\%s", drive, normpath);
