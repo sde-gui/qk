@@ -263,8 +263,10 @@ process_line (MooCmd      *cmd,
     gboolean dummy = FALSE;
     const char *real_line = line;
     char *freeme = NULL;
+    const char *end;
 
-    if (cmd->priv->cmd_flags & MOO_CMD_UTF8_OUTPUT)
+    if ((cmd->priv->cmd_flags & MOO_CMD_UTF8_OUTPUT) &&
+        !g_utf8_validate (line, -1, &end))
     {
         const char *charset;
 
@@ -272,29 +274,22 @@ process_line (MooCmd      *cmd,
 
         if (g_get_charset (&charset))
         {
-            const char *end;
+            g_warning ("%s: invalid unicode:\n%s", G_STRLOC, line);
 
-            if (!g_utf8_validate (line, -1, &end))
+            if (end > line)
             {
-                g_warning ("%s: invalid unicode:\n%s", G_STRLOC, line);
-
-                if (end > line)
-                {
-                    freeme = g_strndup (line, end - line);
-                    real_line = freeme;
-                }
-            }
-            else
-            {
-                real_line = line;
+                freeme = g_strndup (line, end - line);
+                real_line = freeme;
             }
         }
         else
         {
             GError *error = NULL;
+            guint bytes_written;
 
             freeme = g_convert_with_fallback (line, -1, "UTF-8", charset,
-                                              NULL, NULL, NULL, &error);
+                                              NULL, NULL, &bytes_written, 
+                                              &error);
 
             if (!freeme)
             {
@@ -672,7 +667,6 @@ moo_cmd_cleanup (MooCmd *cmd)
 #else
         TerminateProcess (cmd->priv->pid, -1);
 #endif
-        g_spawn_close_pid (cmd->priv->pid);
     }
 
     cmd->priv->pid = 0;
