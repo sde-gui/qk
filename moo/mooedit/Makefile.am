@@ -124,10 +124,6 @@ mooedit_printing_sources =		\
 	mootextprint-private.h		\
 	mootextprint.h
 
-BUILT_SOURCES =				\
-	mooedit-enums.c			\
-	mooedit-enums.h
-
 mooedit_enums_headers =			\
 	moocommand.h			\
 	mooeditconfig.h			\
@@ -137,12 +133,9 @@ mooedit_enums_headers =			\
 	mootextsearch.h			\
 	mootextview.h
 
-CLEANFILES = stamp-mooedit-enums.h stamp-mooedit-enums.c
-mooedit-enums.h: stamp-mooedit-enums.h
-	@true
-mooedit-enums.c: stamp-mooedit-enums.c
-	@true
-stamp-mooedit-enums.h: $(mooedit_enums_headers) Makefile
+BUILT_SOURCES = stamp-mooedit-enums-h stamp-mooedit-enums-c
+CLEANFILES = stamp-mooedit-enums-h stamp-mooedit-enums-c
+stamp-mooedit-enums-h: $(mooedit_enums_headers) Makefile
 	( cd $(srcdir) && glib-mkenums \
 			--fhead "#ifndef MOO_EDIT_ENUMS_H\n#define MOO_EDIT_ENUMS_H\n\n#include <glib-object.h>\n" \
 			--fhead "\nG_BEGIN_DECLS\n\n\n" \
@@ -153,7 +146,7 @@ stamp-mooedit-enums.h: $(mooedit_enums_headers) Makefile
 	&& (cmp -s xgen-gtbh $(srcdir)/mooedit-enums.h || cp xgen-gtbh $(srcdir)/mooedit-enums.h ) \
 	&& rm -f xgen-gtbh \
 	&& echo timestamp > $(@F)
-stamp-mooedit-enums.c: $(mooedit_enums_headers) Makefile
+stamp-mooedit-enums-c: $(mooedit_enums_headers) Makefile
 	( cd $(srcdir) && glib-mkenums \
 			--fhead "#include \"mooedit/mooedit-enums.h\"\n\n" \
 			--fprod "#include \"mooedit/@filename@\"\n\n" \
