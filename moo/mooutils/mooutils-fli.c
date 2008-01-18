@@ -23,7 +23,13 @@ typedef struct {
     GDestroyNotify destroy;
 } Data;
 
-MooPyAPI *moo_py_api = NULL;
+static MooPyAPI *moo_py_api_var = NULL;
+
+MooPyAPI *
+moo_py_api_ (void)
+{
+    return moo_py_api_var;
+}
 
 
 void
@@ -32,13 +38,13 @@ moo_python_add_data (gpointer       data,
 {
     Data *d;
 
-    g_return_if_fail (moo_py_api != NULL);
+    g_return_if_fail (moo_py_api_var != NULL);
     g_return_if_fail (destroy != NULL);
 
     d = g_new (Data, 1);
     d->data = data;
     d->destroy = destroy;
-    moo_py_api->_free_list = g_slist_prepend (moo_py_api->_free_list, d);
+    moo_py_api_var->_free_list = g_slist_prepend (moo_py_api_var->_free_list, d);
 }
 
 static void
@@ -59,18 +65,18 @@ moo_python_init (guint     version,
     if (version != MOO_PY_API_VERSION)
         return FALSE;
 
-    g_return_val_if_fail (!moo_py_api || !api, FALSE);
+    g_return_val_if_fail (!moo_py_api_var || !api, FALSE);
 
-    if (moo_py_api)
+    if (moo_py_api_var)
     {
-        g_slist_foreach (moo_py_api->_free_list, (GFunc) data_free, NULL);
-        g_slist_free (moo_py_api->_free_list);
+        g_slist_foreach (moo_py_api_var->_free_list, (GFunc) data_free, NULL);
+        g_slist_free (moo_py_api_var->_free_list);
     }
 
-    moo_py_api = api;
+    moo_py_api_var = api;
 
-    if (moo_py_api)
-        moo_py_api->_free_list = NULL;
+    if (moo_py_api_var)
+        moo_py_api_var->_free_list = NULL;
 
     return TRUE;
 }
@@ -82,7 +88,7 @@ moo_Py_INCREF (MooPyObject *obj)
     g_return_val_if_fail (moo_python_running (), obj);
 
     if (obj)
-        moo_py_api->incref (obj);
+        moo_py_api_var->incref (obj);
 
     return obj;
 }
@@ -94,7 +100,7 @@ moo_Py_DECREF (MooPyObject *obj)
     g_return_if_fail (moo_python_running ());
 
     if (obj)
-        moo_py_api->decref (obj);
+        moo_py_api_var->decref (obj);
 }
 
 
