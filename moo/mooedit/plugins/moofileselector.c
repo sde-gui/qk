@@ -331,6 +331,7 @@ goto_current_doc_dir (MooFileSelector *filesel)
 {
     MooEdit *doc;
     char *filename;
+    GError *error = NULL;
 
     doc = moo_edit_window_get_active_doc (filesel->window);
     filename = doc ? moo_edit_get_filename (doc) : NULL;
@@ -338,9 +339,15 @@ goto_current_doc_dir (MooFileSelector *filesel)
     if (filename)
     {
         char *dirname = g_path_get_dirname (filename);
-        moo_file_view_chdir (MOO_FILE_VIEW (filesel), dirname, NULL);
-        moo_file_selector_select_file (filesel, filename, dirname);
+        if (moo_file_view_chdir (MOO_FILE_VIEW (filesel), dirname, &error))
+            moo_file_selector_select_file (filesel, filename, dirname);
         g_free (dirname);
+    }
+
+    if (error)
+    {
+        g_warning ("%s: %s", G_STRFUNC, error ? error->message : "FAILED");
+        g_error_free (error);
     }
 
     g_free (filename);
