@@ -121,6 +121,7 @@ MOO_MODULE_INIT_FUNC_DECL
 {
     PyObject *moo_mod;
     char *dlldir = NULL;
+    char *libdir = NULL;
 
     if (g_getenv ("MOO_DEBUG_NO_PYTHON"))
         return FALSE;
@@ -138,18 +139,25 @@ MOO_MODULE_INIT_FUNC_DECL
     dlldir = moo_win32_get_dll_dir (MOO_PYTHON_MODULE_DLL_NAME);
 #endif
 
-    if (dlldir && !sys_path_add_dir (dlldir))
+    if (dlldir)
     {
+        libdir = g_build_filename (dlldir, "lib", NULL);
         g_free (dlldir);
         dlldir = NULL;
     }
 
+    if (libdir && !sys_path_add_dir (libdir))
+    {
+        g_free (libdir);
+        libdir = NULL;
+    }
+
     moo_mod = PyImport_ImportModule ("moo");
 
-    if (dlldir)
+    if (libdir)
     {
-        sys_path_remove_dir (dlldir);
-        g_free (dlldir);
+        sys_path_remove_dir (libdir);
+        g_free (libdir);
     }
 
     if (!moo_mod)
