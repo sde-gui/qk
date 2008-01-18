@@ -21,7 +21,7 @@ mooedit_include_headers =		\
 	mooedit-bookmarks.h		\
 	mooedit.h			\
 	mooeditconfig.h			\
-	mooedit-enums.h
+	mooedit-enums.h			\
 	mooeditor.h			\
 	mooeditprefs.h			\
 	mooeditwindow.h			\
