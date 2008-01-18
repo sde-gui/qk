@@ -77,6 +77,12 @@ const char    *_xdg_get_base_name (const char    *file_name);
 #include <errno.h>
 #include "mooutils/mooutils-misc.h"
 
+#ifdef __MINGW32__
+#if __MINGW32_MAJOR_VERSION == 3 && __MINGW32_MINOR_VERSION <= 7
+#include "mooutils/moowin32/ms/sys/time.h"
+#endif
+#endif
+
 /* make xdgmime use glib */
 #undef malloc
 #undef realloc
@@ -145,7 +151,7 @@ _xdg_mime_buffer_is_text (unsigned char *buffer,
 
   ch = g_utf8_get_char_validated (end, len - (end - (const char*) buffer));
 
-  return ch == -2;
+  return ch == (gunichar) -2;
 }
 
 #ifdef __WIN32__
