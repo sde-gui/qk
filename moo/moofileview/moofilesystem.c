@@ -16,8 +16,8 @@
 #include "moofilesystem.h"
 #include "moofolder-private.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/mooutils-mem.h"
 #include "mooutils/moomarshals.h"
-#include <string.h>
 #include <errno.h>
 #include <stdio.h>
 #ifndef __WIN32__
@@ -657,19 +657,14 @@ normalize_path (const char *path)
     }
     else
     {
-        char *tmp = g_strjoinv (G_DIR_SEPARATOR_S, (char**) comps->pdata);
+        normpath = g_strjoinv (G_DIR_SEPARATOR_S, (char**) comps->pdata);
 
         if (first_slash)
         {
-            guint len = strlen (tmp);
-            normpath = g_new (char, len + 2);
-            memcpy (normpath + 1, tmp, len + 1);
+            gsize len = strlen (normpath);
+            normpath = g_renew (char, normpath, len + 2);
+            memmove (normpath + 1, normpath, len + 1);
             normpath[0] = G_DIR_SEPARATOR;
-            g_free (tmp);
-        }
-        else
-        {
-            normpath = tmp;
         }
     }
 
@@ -795,7 +790,7 @@ make_path_unix (G_GNUC_UNUSED MooFileSystem *fs,
 }
 
 
-/* TODO: error checking, etc. */
+/* XXX make sure error is set TODO: error checking, etc. */
 static char *
 normalize_path_unix (G_GNUC_UNUSED MooFileSystem *fs,
                      const char     *path,
@@ -803,30 +798,23 @@ normalize_path_unix (G_GNUC_UNUSED MooFileSystem *fs,
                      G_GNUC_UNUSED GError **error)
 {
     guint len;
-    char *normpath, *tmp;
+    char *normpath;
 
     g_return_val_if_fail (path != NULL, NULL);
 
-    tmp = normalize_path (path);
+    normpath = normalize_path (path);
 
     if (!is_folder)
-        return tmp;
+        return normpath;
 
-    len = strlen (tmp);
-    g_return_val_if_fail (len > 0, tmp);
+    len = strlen (normpath);
+    g_return_val_if_fail (len > 0, normpath);
 
-    if (tmp[len-1] != G_DIR_SEPARATOR)
+    if (normpath[len-1] != G_DIR_SEPARATOR)
     {
-        normpath = g_new (char, len + 2);
-        memcpy (normpath, tmp, len);
+        normpath = g_renew (char, normpath, len + 2);
         normpath[len] = G_DIR_SEPARATOR;
         normpath[len+1] = 0;
-        g_free (tmp);
-    }
-    else
-    {
-        g_assert (1 || len == 1);
-        normpath = tmp;
     }
 
 #if 0

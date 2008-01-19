@@ -12,11 +12,7 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mootext-private.h"
-#include <string.h>
-
-
-#define PTRMOVE(dest_,src_,n_ptr_) g_memmove (dest_, src_, (n_ptr_) * sizeof(gpointer))
-#define PTRCPY(dest_,src_,n_ptr_)  memcpy (dest_, src_, (n_ptr_) * sizeof(gpointer))
+#include "mooutils/mooutils-mem.h"
 
 
 LineBuffer*
@@ -83,19 +79,12 @@ _moo_line_buffer_delete (LineBuffer *line_buf,
 
         if (n_old_marks)
         {
-            MooLineMark **tmp = g_new (MooLineMark*, n_old_marks + line->n_marks);
-
             if (moved_marks)
                 for (i = 0; i < n_old_marks; ++i)
                     *moved_marks = g_slist_prepend (*moved_marks, old_marks[i]);
 
-            if (line->n_marks)
-                PTRCPY (tmp, line->marks, line->n_marks);
-
-            PTRCPY (&tmp[line->n_marks], old_marks, n_old_marks);
-
-            g_free (line->marks);
-            line->marks = tmp;
+            MOO_ARRAY_GROW (MooLineMark*, line->marks, n_old_marks + line->n_marks);
+            MOO_ELMCPY (line->marks + line->n_marks, old_marks, n_old_marks);
 
             for (i = 0; i < n_old_marks; ++i)
                 _moo_line_mark_set_line (old_marks[i], line, move_to, line_buf->tree->stamp);
@@ -132,19 +121,7 @@ line_add_mark (LineBuffer  *line_buf,
                MooLineMark *mark,
                Line        *line)
 {
-    if (line->marks)
-    {
-        MooLineMark **tmp = g_new (MooLineMark*, line->n_marks + 1);
-        PTRCPY (tmp, line->marks, line->n_marks);
-        g_free (line->marks);
-        line->marks = tmp;
-    }
-    else
-    {
-        g_assert (!line->n_marks);
-        line->marks = g_new (MooLineMark*, 1);
-    }
-
+    MOO_ARRAY_GROW (MooLineMark*, line->marks, line->n_marks + 1);
     line->marks[line->n_marks] = mark;
     _moo_text_btree_update_n_marks (line_buf->tree, line, 1);
 }
@@ -189,7 +166,7 @@ line_remove_mark (LineBuffer  *line_buf,
     }
     else if (i < line->n_marks - 1)
     {
-        PTRMOVE (&line->marks[i], &line->marks[i+1], line->n_marks - i - 1);
+        MOO_ELMMOVE (line->marks + i, line->marks + i + 1, line->n_marks - i - 1);
         line->marks[line->n_marks - 1] = NULL;
     }
     else

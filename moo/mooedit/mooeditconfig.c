@@ -17,9 +17,9 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-debug.h"
+#include "mooutils/mooutils-mem.h"
 #include "mooutils/mooprefs.h"
 #include <gobject/gvaluecollector.h>
-#include <string.h>
 
 
 #define VALUE(c_,i_)  (&(c_)->priv->values[i_])
@@ -32,9 +32,7 @@ typedef struct Value    Value;
 
 
 struct MooEditConfigPrivate {
-    Value *values;
-    guint n_values;
-    guint n_values_allocd__;
+    MOO_IP_ARRAY_ELMS (Value, values);
 };
 
 struct Value {
@@ -103,8 +101,8 @@ moo_edit_config_init (MooEditConfig *config)
     guint i;
 
     config->priv = G_TYPE_INSTANCE_GET_PRIVATE (config, MOO_TYPE_EDIT_CONFIG, MooEditConfigPrivate);
-    config->priv->values = g_new0 (Value, vars->len);
-    config->priv->n_values = config->priv->n_values_allocd__ = vars->len;
+
+    MOO_IP_ARRAY_INIT (config->priv, values, vars->len);
 
     if (global)
     {
@@ -131,7 +129,7 @@ moo_edit_config_finalize (GObject *object)
     for (i = 1; i < config->priv->n_values; ++i)
         g_value_unset (GVALUE (config, i));
 
-    g_free (config->priv->values);
+    MOO_IP_ARRAY_DESTROY (config->priv, values);
 
     G_OBJECT_CLASS (moo_edit_config_parent_class)->finalize (object);
 }
@@ -230,26 +228,16 @@ update_prop_from_global (MooEditConfig *config,
 
     if (prop_id == config->priv->n_values)
     {
-        if (config->priv->n_values_allocd__ == prop_id)
-        {
-            Value *tmp;
-            config->priv->n_values_allocd__ = MAX (config->priv->n_values_allocd__ * 1.2,
-                                                   config->priv->n_values_allocd__ + 2);
-            tmp = g_new0 (Value, config->priv->n_values_allocd__);
-            memcpy (tmp, config->priv->values, config->priv->n_values * sizeof (Value));
-            g_free (config->priv->values);
-            config->priv->values = tmp;
-        }
-
-        config->priv->n_values += 1;
-        g_value_init (GVALUE (config, prop_id), G_VALUE_TYPE (GVALUE (global, prop_id)));
-        VALUE(config, prop_id)->source = VALUE(global, prop_id)->source;
+        MOO_IP_ARRAY_GROW (config->priv, values, 1);
+        g_value_init (GVALUE (config, prop_id),
+                      G_VALUE_TYPE (GVALUE (global, prop_id)));
+        VALUE (config, prop_id)->source = VALUE (global, prop_id)->source;
     }
 
-    if (VALUE(global, prop_id)->source <= VALUE(config, prop_id)->source)
+    if (VALUE (global, prop_id)->source <= VALUE (config, prop_id)->source)
     {
-        g_value_copy (GVALUE(global, prop_id), GVALUE(config, prop_id));
-        VALUE(config, prop_id)->source = VALUE(global, prop_id)->source;
+        g_value_copy (GVALUE (global, prop_id), GVALUE (config, prop_id));
+        VALUE (config, prop_id)->source = VALUE (global, prop_id)->source;
         object_notify (config, prop_id);
     }
 }
@@ -279,21 +267,11 @@ global_add_prop (GParamSpec *pspec,
 {
     g_assert (global->priv->n_values == prop_id);
 
-    if (global->priv->n_values_allocd__ == prop_id)
-    {
-        Value *tmp;
-        global->priv->n_values_allocd__ = MAX (global->priv->n_values_allocd__ * 1.2,
-                                               global->priv->n_values_allocd__ + 2);
-        tmp = g_new0 (Value, global->priv->n_values_allocd__);
-        memcpy (tmp, global->priv->values, global->priv->n_values * sizeof (Value));
-        g_free (global->priv->values);
-        global->priv->values = tmp;
-    }
+    MOO_IP_ARRAY_GROW (global->priv, values, 1);
 
-    global->priv->n_values += 1;
     g_value_init (GVALUE (global, prop_id), G_PARAM_SPEC_VALUE_TYPE (pspec));
     g_param_value_set_default (pspec, GVALUE (global, prop_id));
-    VALUE(global, prop_id)->source = MOO_EDIT_CONFIG_SOURCE_AUTO;
+    VALUE (global, prop_id)->source = MOO_EDIT_CONFIG_SOURCE_AUTO;
     /* XXX prefs */
 }
 

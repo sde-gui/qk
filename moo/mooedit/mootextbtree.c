@@ -12,7 +12,7 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mootext-private.h"
-#include <string.h>
+#include "mooutils/mooutils-mem.h"
 
 
 static BTNode  *bt_node_new         (BTNode     *parent,
@@ -201,18 +201,20 @@ node_get_index (BTNode *node, gpointer child)
 
 
 static void
-node_insert__ (BTNode *node, gpointer data, guint index_)
+node_insert__ (BTNode   *node,
+               gpointer  data,
+               guint     index)
 {
     g_assert (node != NULL);
     g_assert (node->n_children < BTREE_NODE_MAX_CAPACITY);
-    g_assert (index_ <= node->n_children);
+    g_assert (index <= node->n_children);
 
-    if (index_ < node->n_children)
-        memmove (node->u.children + index_ + 1,
-                 node->u.children + index_,
-                  (node->n_children - index_) * sizeof (BTData*));
+    if (index < node->n_children)
+        MOO_ELMMOVE (node->u.children + index + 1,
+                     node->u.children + index,
+                     node->n_children - index);
 
-    node->u.children[index_] = data;
+    node->u.children[index] = data;
     node->n_children++;
 }
 
@@ -228,9 +230,9 @@ node_remove__ (BTNode *node, gpointer data)
     index = node_get_index (node, data);
 
     if (index + 1 < node->n_children)
-        memmove (node->u.data + index,
-                 node->u.data + index + 1,
-                 (node->n_children - index - 1) * sizeof (BTData*));
+        MOO_ELMMOVE (node->u.data + index,
+                     node->u.data + index + 1,
+                     node->n_children - index - 1);
 
     node->n_children--;
 }
@@ -298,9 +300,9 @@ _moo_text_btree_insert (BTree   *tree,
         node_insert__ (node->parent, new_node, node_index + 1);
         g_assert (node_get_index (node->parent, new_node) == node_index + 1);
         g_assert (node_get_index (node->parent, node) == node_index);
-        memcpy (new_node->u.children,
-                node->u.children + BTREE_NODE_MIN_CAPACITY,
-                BTREE_NODE_MIN_CAPACITY * sizeof (BTNode*));
+        MOO_ELMCPY (new_node->u.children,
+                    node->u.children + BTREE_NODE_MIN_CAPACITY,
+                    BTREE_NODE_MIN_CAPACITY);
         node->n_children = BTREE_NODE_MIN_CAPACITY;
         for (i = 0; i < new_node->n_children; ++i)
             new_node->u.children[i]->parent = new_node;
@@ -330,7 +332,7 @@ static void
 merge_nodes (BTNode *parent, guint first)
 {
     BTNode *node, *next;
-    guint i;
+    int i;
 
     g_assert (first + 1 < parent->n_children);
 
@@ -338,9 +340,8 @@ merge_nodes (BTNode *parent, guint first)
     next = parent->u.children[first+1];
     g_assert (node->n_children + next->n_children < BTREE_NODE_MAX_CAPACITY);
 
-    memcpy (node->u.children + node->n_children,
-            next->u.children,
-            next->n_children * sizeof (BTNode*));
+    MOO_ELMCPY (node->u.children + node->n_children,
+                next->u.children, next->n_children);
 
     for (i = node->n_children; i < node->n_children + next->n_children; ++i)
         node->u.children[i]->parent = node;

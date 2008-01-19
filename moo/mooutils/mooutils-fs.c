@@ -563,10 +563,9 @@ normalize_path_string (const char *path)
         if (first_slash)
         {
             guint len = strlen (tmp);
-            normpath = g_new (char, len + 2);
-            memcpy (normpath + 1, tmp, len + 1);
+            normpath = g_renew (char, tmp, len + 2);
+            memmove (normpath + 1, normpath, len + 1);
             normpath[0] = G_DIR_SEPARATOR;
-            g_free (tmp);
         }
         else
         {
@@ -600,12 +599,9 @@ normalize_full_path (const char *path,
 
     if (is_folder && normpath[len-1] != G_DIR_SEPARATOR)
     {
-        char *tmp = g_new (char, len + 2);
-        memcpy (tmp, normpath, len);
-        tmp[len] = G_DIR_SEPARATOR;
-        tmp[len+1] = 0;
-        g_free (normpath);
-        normpath = tmp;
+        normpath = g_renew (char, normpath, len + 2);
+        normpath[len] = G_DIR_SEPARATOR;
+        normpath[len+1] = 0;
     }
     else if (!is_folder && normpath[len-1] == G_DIR_SEPARATOR)
     {

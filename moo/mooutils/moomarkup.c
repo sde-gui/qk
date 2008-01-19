@@ -438,21 +438,17 @@ moo_markup_text_node_add_text (MooMarkupText  *node,
                                const char     *text,
                                gssize          text_len)
 {
-    char *tmp;
-
     if (text_len < 0)
         text_len = strlen (text);
 
     if (text_len == 0)
         return;
 
-    tmp = g_new (char, node->size + text_len + 1);
-    memcpy (tmp, node->text, node->size);
-    memcpy (tmp + node->size, text, text_len);
-    g_free (node->text);
-    node->text = tmp;
+    node->text = g_renew (char, node->text, node->size + text_len + 1);
+    memcpy (node->text + node->size, text, text_len);
     node->size += text_len;
     node->text[node->size] = 0;
+
     set_modified (MOO_MARKUP_NODE (node), TRUE);
 }
 

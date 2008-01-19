@@ -36,10 +36,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
-#include <string.h>
 /* sys/stat.h macros */
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-mem.h"
 #include "mooutils/moofilewatch.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-thread.h"
@@ -885,7 +885,7 @@ watch_stat_start_monitor (MooFileWatch   *watch,
 #endif
 
     monitor->id = get_new_monitor_id ();
-    memcpy (&monitor->statbuf, &buf, sizeof (buf));
+    monitor->statbuf = buf;
 
     return TRUE;
 }
@@ -1150,10 +1150,12 @@ fam_thread_remove_path (FAMThread  *thr,
 
             if (i < thr->n_events - 1)
             {
-                memmove (&thr->watches[i], &thr->watches[i+1],
-                         (thr->n_events - i - 1) * sizeof(thr->watches[i]));
-                memmove (&thr->events[i], &thr->events[i+1],
-                         (thr->n_events - i - 1) * sizeof(thr->events[i]));
+                MOO_MEMMOVE (thr->watches + i,
+                             thr->watches + i + 1,
+                             thr->n_events - i - 1);
+                MOO_MEMMOVE (thr->events + i,
+                             thr->events + i + 1,
+                             thr->n_events - i - 1);
             }
 
             thr->n_events -= 1;

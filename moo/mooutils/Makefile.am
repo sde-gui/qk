@@ -119,6 +119,7 @@ mooutils_sources =			\
 	mooutils-fs.c			\
 	mooutils-gobject-private.h	\
 	mooutils-gobject.c		\
+	mooutils-mem.h			\
 	mooutils-misc.c			\
 	mooutils-treeview.h		\
 	mooutils-treeview.c		\

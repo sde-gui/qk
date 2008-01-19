@@ -232,19 +232,12 @@ moo_undo_stack_get_property (GObject        *object,
 guint
 moo_undo_action_register (MooUndoActionClass *klass)
 {
-    MooUndoActionClass *tmp;
-
     g_return_val_if_fail (klass != NULL, 0);
     g_return_val_if_fail (klass->undo != NULL && klass->redo != NULL, 0);
     g_return_val_if_fail (klass->merge != NULL && klass->destroy != NULL, 0);
 
-    tmp = g_new (MooUndoActionClass, last_type + 2);
-    if (last_type)
-        memcpy (tmp, types, sizeof(MooUndoActionClass) * (last_type + 1));
-    g_free (types);
-    types = tmp;
-
-    memcpy (&types[last_type+1], klass, sizeof(MooUndoActionClass));
+    types = g_renew (MooUndoActionClass, types, last_type + 2);
+    types[last_type+1] = *klass;
 
     return ++last_type;
 }

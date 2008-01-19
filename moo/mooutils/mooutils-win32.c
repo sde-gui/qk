@@ -57,7 +57,7 @@ DllMain (HINSTANCE            hinstDLL,
 }
 
 #ifdef _MSC_VER
-/* This is stuff from newer Microsoft C runtime, but we want msvcrt.dll 
+/* This is stuff from newer Microsoft C runtime, but we want msvcrt.dll
  * which doesn't have these functions */
 long _ftol( double );
 long _ftol2( double dblSource ) { return _ftol( dblSource ); }
@@ -236,7 +236,7 @@ _moo_win32_show_fatal_error (const char *domain,
 
 
 char **
-_moo_win32_lame_parse_cmd_line (const char  *cmd_line, 
+_moo_win32_lame_parse_cmd_line (const char  *cmd_line,
                                 GError     **error)
 {
     char **argv;
@@ -248,12 +248,10 @@ _moo_win32_lame_parse_cmd_line (const char  *cmd_line,
     if (!(filename = g_find_program_in_path (argv[0])))
     {
         guint len = g_strv_length (argv);
-        char **tmp = g_new (char*, len + 3);
-        tmp[0] = g_strdup ("cmd.exe");
-        tmp[1] = g_strdup ("/c");
-        memcpy (tmp + 2, argv, (len + 1) * sizeof (*tmp));
-        g_free (argv);
-        argv = tmp;
+        argv = g_renew (char*, argv, len + 3);
+        memmove (argv + 2, argv, (len + 1) * sizeof (*argv));
+        argv[0] = g_strdup ("cmd.exe");
+        argv[1] = g_strdup ("/c");
     }
 
     g_free (filename);

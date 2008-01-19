@@ -1007,8 +1007,8 @@ moo_html_attr_copy (const MooHtmlAttr *src)
     g_return_val_if_fail (src != NULL, NULL);
 
     attr = g_new (MooHtmlAttr, 1);
-    memcpy (attr, src, sizeof (MooHtmlAttr));
 
+    *attr = *src;
     attr->fg = g_strdup (src->fg);
     attr->bg = g_strdup (src->bg);
     attr->link = g_strdup (src->link);

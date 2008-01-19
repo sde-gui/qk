@@ -21,8 +21,6 @@ G_GNUC_UNUSED static MooTermTextAttr ZERO_ATTR = MOO_TERM_ZERO_ATTR;
 G_GNUC_UNUSED static MooTermCell EMPTY_CELL = {EMPTY_CHAR, MOO_TERM_ZERO_ATTR};
 
 #define CELLMOVE(dest__,src__,n__) memmove (dest__, src__, (n__) * sizeof (MooTermCell))
-#define CELLCPY(dest__,src__,n__)  memcpy (dest__, src__, (n__) * sizeof (MooTermCell))
-#define PTRCPY(dest__,src__,n__) memcpy (dest__, src__, (n__) * sizeof (gpointer))
 #define PTRSET(s__,c__,n__) memset (s__, c__, (n__) * sizeof (gpointer))
 
 
@@ -177,19 +175,9 @@ _moo_term_line_resize (MooTermLine    *line,
     {
         if (line->width_allocd__ < width)
         {
-            MooTermCell *tmp = g_new (MooTermCell, width);
-            CELLCPY (tmp, line->cells, line->width);
-            g_free (line->cells);
-            line->cells = tmp;
-
+            line->cells = g_renew (MooTermCell, line->cells, width);
             if (line->tags)
-            {
-                GSList **tmp2 = g_new (GSList*, width);
-                PTRCPY (tmp2, line->tags, line->width);
-                g_free (line->tags);
-                line->tags = tmp2;
-            }
-
+                line->tags = g_renew (GSList*, line->tags, width);
             line->width_allocd__ = width;
         }
 

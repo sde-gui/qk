@@ -231,22 +231,23 @@ static gboolean
 string_to_flags (const char *string,
                  int        *flags)
 {
-    GValue ival;
-
     if (!string || !string[0])
     {
         *flags = 0;
         return TRUE;
     }
+    else
+    {
+        GValue ival = {0};
 
-    ival.g_type = 0;
-    g_value_init (&ival, G_TYPE_INT);
+        g_value_init (&ival, G_TYPE_INT);
 
-    if (!_moo_value_convert_from_string (string, &ival))
-        return FALSE;
+        if (!_moo_value_convert_from_string (string, &ival))
+            return FALSE;
 
-    *flags = g_value_get_int (&ival);
-    return TRUE;
+        *flags = g_value_get_int (&ival);
+        return TRUE;
+    }
 }
 
 
@@ -639,8 +640,7 @@ _moo_value_type_supported (GType type)
 static gboolean
 _moo_value_convert_to_bool (const GValue *val)
 {
-    GValue result;
-    result.g_type = 0;
+    GValue result = {0};
     g_value_init (&result, G_TYPE_BOOLEAN);
     _moo_value_convert (val, &result);
     return g_value_get_boolean (&result);
@@ -650,8 +650,7 @@ _moo_value_convert_to_bool (const GValue *val)
 static int
 _moo_value_convert_to_int (const GValue *val)
 {
-    GValue result;
-    result.g_type = 0;
+    GValue result = {0};
     g_value_init (&result, G_TYPE_INT);
     _moo_value_convert (val, &result);
     return g_value_get_int (&result);
@@ -661,8 +660,7 @@ _moo_value_convert_to_int (const GValue *val)
 double
 _moo_value_convert_to_double (const GValue *val)
 {
-    GValue result;
-    result.g_type = 0;
+    GValue result = {0};
     g_value_init (&result, G_TYPE_DOUBLE);
     _moo_value_convert (val, &result);
     return g_value_get_double (&result);
@@ -674,8 +672,7 @@ int
 _moo_value_convert_to_flags (const GValue *val,
                              GType         flags_type)
 {
-    GValue result;
-    result.g_type = 0;
+    GValue result = {0};
     g_value_init (&result, flags_type);
     _moo_value_convert (val, &result);
     return g_value_get_flags (&result);
@@ -685,8 +682,7 @@ int
 _moo_value_convert_to_enum (const GValue *val,
                             GType         enum_type)
 {
-    GValue result;
-    result.g_type = 0;
+    GValue result = {0};
     g_value_init (&result, enum_type);
     _moo_value_convert (val, &result);
     return g_value_get_enum (&result);
@@ -731,13 +727,12 @@ gboolean
 _moo_value_convert_from_string (const char *string,
                                 GValue     *val)
 {
-    GValue str_val;
+    GValue str_val = {0};
     gboolean result;
 
     g_return_val_if_fail (G_IS_VALUE (val), FALSE);
     g_return_val_if_fail (string != NULL, FALSE);
 
-    str_val.g_type = 0;
     g_value_init (&str_val, G_TYPE_STRING);
     g_value_set_static_string (&str_val, string);
     result = _moo_value_convert (&str_val, val);
@@ -755,8 +750,7 @@ _moo_convert_string_to_int (const char *string,
 
     if (string)
     {
-        GValue str_val;
-        str_val.g_type = 0;
+        GValue str_val = {0};
         g_value_init (&str_val, G_TYPE_STRING);
         g_value_set_static_string (&str_val, string);
         int_val = _moo_value_convert_to_int (&str_val);
@@ -779,8 +773,7 @@ _moo_convert_string_to_bool (const char *string,
 
     if (string)
     {
-        GValue str_val;
-        str_val.g_type = 0;
+        GValue str_val = {0};
         g_value_init (&str_val, G_TYPE_STRING);
         g_value_set_static_string (&str_val, string);
         bool_val = _moo_value_convert_to_bool (&str_val);
@@ -798,9 +791,8 @@ _moo_convert_string_to_bool (const char *string,
 const char*
 _moo_convert_bool_to_string (gboolean value)
 {
-    GValue bool_val;
+    GValue bool_val = {0};
 
-    bool_val.g_type = 0;
     g_value_init (&bool_val, G_TYPE_BOOLEAN);
     g_value_set_boolean (&bool_val, value);
 
@@ -811,9 +803,8 @@ _moo_convert_bool_to_string (gboolean value)
 const char*
 _moo_convert_int_to_string (int value)
 {
-    GValue int_val;
+    GValue int_val = {0};
 
-    int_val.g_type = 0;
     g_value_init (&int_val, G_TYPE_INT);
     g_value_set_int (&int_val, value);
 
@@ -825,20 +816,19 @@ gboolean
 _moo_value_change_type (GValue *val,
                         GType   new_type)
 {
-    GValue tmp;
+    GValue tmp = {0};
     gboolean result;
 
     g_return_val_if_fail (G_IS_VALUE (val), FALSE);
     g_return_val_if_fail (_moo_value_type_supported (new_type), FALSE);
 
-    tmp.g_type = 0;
     g_value_init (&tmp, new_type);
     result = _moo_value_convert (val, &tmp);
 
     if (result)
     {
         g_value_unset (val);
-        memcpy (val, &tmp, sizeof (GValue));
+        *val = tmp;
     }
 
     return result;
@@ -1059,7 +1049,7 @@ _moo_param_array_collect_valist (GType       type,
     while (prop_name)
     {
         char *error = NULL;
-        GParameter param;
+        GParameter param = {0};
         GParamSpec *pspec;
 
         pspec = lookup_func ? lookup_func (klass, prop_name) :
@@ -1076,7 +1066,6 @@ _moo_param_array_collect_valist (GType       type,
         }
 
         param.name = g_strdup (prop_name);
-        param.value.g_type = 0;
         g_value_init (&param.value, G_PARAM_SPEC_VALUE_TYPE (pspec));
         G_VALUE_COLLECT (&param.value, var_args, 0, &error);
 
@@ -1368,16 +1357,12 @@ _moo_add_property_watch (gpointer            target,
 static void
 prop_watch_check (PropWatch *watch)
 {
-    GValue source_val, target_val, old_target_val;
+    GValue source_val = {0}, target_val = {0}, old_target_val = {0};
     GObject *source, *target;
 
     source = MOO_OBJECT_PTR_GET (watch->parent.source);
     target = MOO_OBJECT_PTR_GET (watch->parent.target);
     g_return_if_fail (source && target);
-
-    source_val.g_type = 0;
-    target_val.g_type = 0;
-    old_target_val.g_type = 0;
 
     g_value_init (&source_val, watch->source_pspec->value_type);
     g_value_init (&target_val, watch->target_pspec->value_type);
@@ -1843,13 +1828,12 @@ _moo_data_insert_ptr (MooData        *data,
                       GDestroyNotify  destroy)
 {
     MooPtr *ptr;
-    GValue gval;
+    GValue gval = {0};
 
     g_return_if_fail (data != NULL);
     g_return_if_fail (value != NULL);
 
     ptr = _moo_ptr_new (value, destroy);
-    gval.g_type = 0;
     g_value_init (&gval, MOO_TYPE_PTR);
     g_value_set_boxed (&gval, ptr);
 

@@ -22,9 +22,9 @@
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-mem.h"
 #include <gtk/gtk.h>
 #include <gobject/gvaluecollector.h>
-#include <string.h>
 
 
 #define PREFS_REMEMBER_SIZE  "window/remember_size"
@@ -966,7 +966,7 @@ action_activated (GtkAction   *action,
 
     instance_and_params = g_new (GValue, info->n_args + 1);
     if (info->n_args)
-        memcpy (&instance_and_params[1], info->args, info->n_args * sizeof (GValue));
+        MOO_ELMCPY (instance_and_params + 1, info->args, info->n_args);
 
     instance_and_params->g_type = 0;
     /* closure was created with closure_new_swap(), so first argument is NULL,
