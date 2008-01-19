@@ -16,13 +16,12 @@
 
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-debug.h"
+#include "mooutils/mooutils-mem.h"
 #include "mooutils/moocompat.h"
 
-#include <string.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <stdlib.h>
 #include <errno.h>
 #include <glib/gstdio.h>
 
@@ -497,6 +496,8 @@ _moo_chdir (const char *path)
 #endif
 
 
+#ifndef __WIN32__
+
 static char *
 normalize_path_string (const char *path)
 {
@@ -580,11 +581,8 @@ normalize_path_string (const char *path)
     return normpath;
 }
 
-
-#ifndef __WIN32__
 static char *
-normalize_full_path (const char *path,
-                     gboolean    is_folder)
+normalize_full_path_unix (const char *path)
 {
     guint len;
     char *normpath;
@@ -597,132 +595,144 @@ normalize_full_path (const char *path,
     len = strlen (normpath);
     g_return_val_if_fail (len > 0, normpath);
 
-    if (is_folder && normpath[len-1] != G_DIR_SEPARATOR)
-    {
-        normpath = g_renew (char, normpath, len + 2);
-        normpath[len] = G_DIR_SEPARATOR;
-        normpath[len+1] = 0;
-    }
-    else if (!is_folder && len > 1 && normpath[len-1] == G_DIR_SEPARATOR)
-    {
+    if (len > 1 && normpath[len-1] == G_DIR_SEPARATOR)
         normpath[len-1] = 0;
-    }
 
     return normpath;
 }
-#else
-static void
-splitdrive (const char *fullpath,
-            char      **drive,
-            char      **path)
+
+#endif /* !__WIN32__ */
+
+#if defined(__WIN32__) || defined(MOO_ENABLE_TESTS)
+
+static char *
+normalize_full_path_win32 (const char *fullpath)
 {
+    char *prefix;
+    char *path;
+    guint slashes;
+
+#ifndef __WIN32__
+    /* for tests */
+    if (!fullpath || !fullpath[0])
+        return g_strdup (fullpath);
+#endif
+
     if (fullpath[0] && fullpath[1] == ':')
     {
-        *drive = g_strndup (fullpath, 2);
-        *path = g_strdup (fullpath + 2);
+        prefix = g_strndup (fullpath, 3);
+        prefix[2] = '\\';
+
+        if (fullpath[2] == '\\')
+            path = g_strdup (fullpath + 3);
+        else
+            path = g_strdup (fullpath + 2);
     }
     else
     {
-        *drive = NULL;
-        *path = g_strdup (fullpath);
+        prefix = NULL;
+        path = g_strdup (fullpath);
     }
-}
 
-static char *
-normalize_full_path (const char *fullpath,
-                     gboolean    is_folder)
-{
-    char *drive, *path, *normpath;
-    guint slashes;
-    guint len;
-    gboolean drive_slashes = FALSE;
-
-    g_return_val_if_fail (fullpath != NULL, NULL);
-
-    splitdrive (fullpath, &drive, &path);
     g_strdelimit (path, "/", '\\');
 
     for (slashes = 0; path[slashes] == '\\'; ++slashes) ;
 
-    if (drive && path[0] != '\\')
-    {
-        char *tmp = path;
-        path = g_strdup_printf ("\\%s", path);
-        g_free (tmp);
-    }
+    if (!prefix && slashes)
+        prefix = g_strndup (path, slashes);
 
-    if (!drive)
-    {
-        char *tmp = path;
-        drive = g_strndup (path, slashes);
-        path = g_strdup (tmp + slashes);
-        g_free (tmp);
-        drive_slashes = TRUE;
-    }
-#if 0
-//     else if (path[0] == '\\')
-//     {
-//         char *tmp;
-//
-//         tmp = drive;
-//         drive = g_strdup_printf ("%s\\", drive);
-//         g_free (tmp);
-//
-//         tmp = path;
-//         path = g_strdup (path + slashes);
-//         g_free (tmp);
-//     }
-#endif
+    if (slashes)
+        memmove (path, path + slashes, strlen (path) + 1 - slashes);
 
-    normpath = normalize_path_string (path);
+    g_assert (prefix || *path);
+    g_assert (*path != '\\');
 
-    if (!normpath[0] && !drive)
+    if (*path)
     {
-        char *tmp = normpath;
-        normpath = g_strdup (".");
-        g_free (tmp);
-    }
-    else if (drive)
-    {
-        char *tmp = normpath;
+        char **comps;
+        guint n_comps, i;
 
-        if (normpath[0] == '\\' || drive_slashes)
-            normpath = g_strdup_printf ("%s%s", drive, normpath);
+        comps = g_strsplit (path, "\\", 0);
+        n_comps = g_strv_length (comps);
+
+        for (i = 0; i < n_comps; )
+        {
+            if (strcmp (comps[i], "") == 0 || strcmp (comps[i], ".") == 0 ||
+                (i == 0 && strcmp (comps[i], "..") == 0))
+            {
+                g_free (comps[i]);
+                MOO_ELMMOVE (comps + i, comps + i + 1, n_comps - i);
+                n_comps -= 1;
+            }
+            else if (strcmp (comps[i], "..") == 0)
+            {
+                g_free (comps[i-1]);
+                g_free (comps[i]);
+                MOO_ELMMOVE (comps + i - 1, comps + i + 1, n_comps - i);
+                n_comps -= 2;
+                i -= 1;
+            }
+            else
+            {
+                i += 1;
+            }
+        }
+
+        if (n_comps > 0)
+        {
+            char *tmp = g_strjoinv ("\\", comps);
+            g_free (path);
+            path = tmp;
+        }
         else
-            normpath = g_strdup_printf ("%s\\%s", drive, normpath);
+        {
+            path[0] = 0;
+        }
 
-        g_free (tmp);
+        g_strfreev (comps);
     }
 
-    len = strlen (normpath);
-
-    if (is_folder && (!len || normpath[len-1] != '\\'))
+    if (*path)
     {
-        char *tmp = normpath;
-        normpath = g_strdup_printf ("%s\\", normpath);
-        g_free (tmp);
+        if (prefix)
+        {
+            char *tmp = g_strconcat (prefix, path, NULL);
+            g_free (path);
+            path = tmp;
+        }
     }
-    else if (!is_folder && len && normpath[len-1] == '\\')
+    else if (prefix)
     {
-        normpath[len-1] = 0;
+        g_free (path);
+        path = prefix;
+        prefix = NULL;
+    }
+    else
+    {
+        g_free (path);
+        path = g_strdup (".");
     }
 
-    g_free (drive);
-    g_free (path);
-    return normpath;
+    g_free (prefix);
+    return path;
 }
+
 #endif
 
 static char *
-normalize_path (const char *filename,
-                gboolean    is_folder)
+normalize_path (const char *filename)
 {
     char *freeme = NULL;
     char *norm_filename;
 
-    g_return_val_if_fail (filename != NULL, NULL);
+    g_assert (filename && filename[0]);
 
-    if (!g_path_is_absolute (filename))
+    if (!g_path_is_absolute (filename)
+#ifdef __WIN32__
+        /* 'C:' is an absolute path even if glib doesn't like it */
+        && filename[1] != ':'
+#endif
+        )
     {
         char *working_dir = g_get_current_dir ();
         g_return_val_if_fail (working_dir != NULL, g_strdup (filename));
@@ -730,7 +740,11 @@ normalize_path (const char *filename,
         filename = freeme;
     }
 
-    norm_filename = normalize_full_path (filename, is_folder);
+#ifdef __WIN32__
+    norm_filename = normalize_full_path_win32 (filename);
+#else
+    norm_filename = normalize_full_path_unix (filename);
+#endif
 
     g_free (freeme);
     return norm_filename;
@@ -742,7 +756,7 @@ _moo_normalize_file_path (const char *filename)
     g_return_val_if_fail (filename != NULL, NULL);
     /* empty filename is an error, but we don't want to crash here */
     g_return_val_if_fail (filename[0] != 0, g_strdup (""));
-    return normalize_path (filename, FALSE);
+    return normalize_path (filename);
 }
 
 #if 0
@@ -760,11 +774,12 @@ _moo_normalize_dir_path (const char *filename)
 
 static void
 test_normalize_path_one (const char *path,
-                         const char *expected)
+                         const char *expected,
+                         char *(*func) (const char*))
 {
     char *result;
 
-    result = _moo_normalize_file_path (path);
+    result = func (path);
 
     if (!moo_test_str_equal (result, expected))
         moo_test_failed (__LINE__, __FILE__, "%s(%s): expected %s, got %s",
@@ -782,16 +797,18 @@ test_normalize_path_one (const char *path,
 }
 
 static GPtrArray *
-make_cases (void)
+make_cases (gboolean unix_paths)
 {
     guint i;
     char *current_dir;
     GPtrArray *paths = g_ptr_array_new ();
 
-    const char *files[] = {
+    const char *abs_files_common[] = {
         NULL, NULL,
         "", "",
-#ifndef __WIN32__
+    };
+
+    const char *abs_files_unix[] = {
         "/usr", "/usr",
         "/usr/", "/usr",
         "///usr////", "/usr",
@@ -803,7 +820,9 @@ make_cases (void)
         "/../../../", "/",
         "/../whatever/..", "/",
         "/../whatever/.././././", "/",
-#else
+    };
+
+    const char *abs_files_win32[] = {
         "C:", "C:\\",
         "C:\\", "C:\\",
         "C:\\foobar", "C:\\foobar",
@@ -816,10 +835,9 @@ make_cases (void)
         "\\\\.host\\dir\\root", "\\\\.host\\dir\\root",
         "\\\\.host\\dir\\root\\", "\\\\.host\\dir\\root",
         "\\\\.host\\dir\\root\\..\\..\\", "\\\\.host",
-#endif
     };
 
-    const char *files_current_dir[] = {
+    const char *rel_files_common[] = {
         ".", NULL,
         "././././/", NULL,
         "foobar", "foobar",
@@ -828,9 +846,14 @@ make_cases (void)
         "foobar/./..", NULL,
         "foobar/../", NULL,
         "foobar/./../", NULL,
-#ifndef __WIN32__
+    };
+
+    const char *rel_files_unix[] = {
         "foobar/com", "foobar/com",
-#else
+    };
+
+#ifdef __WIN32__
+    const char *rel_files_win32[] = {
         "foobar/com", "foobar\\com",
         ".\\.\\.\\.\\\\", NULL,
         "foobar\\", "foobar",
@@ -838,26 +861,68 @@ make_cases (void)
         "foobar\\.\\..", NULL,
         "foobar\\..\\", NULL,
         "foobar\\.\\..\\", NULL,
-#endif
     };
+#endif
 
-    for (i = 0; i < G_N_ELEMENTS (files); i += 2)
+    for (i = 0; i < G_N_ELEMENTS (abs_files_common); i += 2)
     {
-        g_ptr_array_add (paths, g_strdup (files[i]));
-        g_ptr_array_add (paths, g_strdup (files[i+1]));
+        g_ptr_array_add (paths, g_strdup (abs_files_common[i]));
+        g_ptr_array_add (paths, g_strdup (abs_files_common[i+1]));
     }
+
+    if (unix_paths)
+        for (i = 0; i < G_N_ELEMENTS (abs_files_unix); i += 2)
+        {
+            g_ptr_array_add (paths, g_strdup (abs_files_unix[i]));
+            g_ptr_array_add (paths, g_strdup (abs_files_unix[i+1]));
+        }
+    else
+        for (i = 0; i < G_N_ELEMENTS (abs_files_win32); i += 2)
+        {
+            g_ptr_array_add (paths, g_strdup (abs_files_win32[i]));
+            g_ptr_array_add (paths, g_strdup (abs_files_win32[i+1]));
+        }
 
     current_dir = g_get_current_dir ();
 
-    for (i = 0; i < G_N_ELEMENTS (files_current_dir); i += 2)
+#ifndef __WIN32__
+    if (unix_paths)
+#endif
+        for (i = 0; i < G_N_ELEMENTS (rel_files_common); i += 2)
+        {
+            g_ptr_array_add (paths, g_strdup (rel_files_common[i]));
+            if (rel_files_common[i+1])
+                g_ptr_array_add (paths, g_build_filename (current_dir, rel_files_common[i+1], NULL));
+            else
+                g_ptr_array_add (paths, g_strdup (current_dir));
+        }
+
+#ifndef __WIN32__
+    if (unix_paths)
+        for (i = 0; i < G_N_ELEMENTS (rel_files_unix); i += 2)
+        {
+            g_ptr_array_add (paths, g_strdup (rel_files_unix[i]));
+            if (rel_files_unix[i+1])
+                g_ptr_array_add (paths, g_build_filename (current_dir, rel_files_unix[i+1], NULL));
+            else
+                g_ptr_array_add (paths, g_strdup (current_dir));
+        }
+#endif
+
+#ifdef __WIN32__
+    for (i = 0; i < G_N_ELEMENTS (rel_files_win32); i += 2)
     {
-        g_ptr_array_add (paths, g_strdup (files_current_dir[i]));
-        if (files_current_dir[i+1])
-            g_ptr_array_add (paths, g_build_filename (current_dir, files_current_dir[i+1], NULL));
+        g_ptr_array_add (paths, g_strdup (rel_files_win32[i]));
+        if (rel_files_win32[i+1])
+            g_ptr_array_add (paths, g_build_filename (current_dir, rel_files_win32[i+1], NULL));
         else
             g_ptr_array_add (paths, g_strdup (current_dir));
     }
+#endif
 
+#ifndef __WIN32__
+    if (unix_paths)
+#endif
     {
         char *parent_dir = g_path_get_dirname (current_dir);
         g_ptr_array_add (paths, g_strdup (".."));
@@ -889,17 +954,43 @@ test_normalize_file_path (void)
     GPtrArray *paths;
     guint i;
 
-    paths = make_cases ();
+#ifndef __WIN32__
+    paths = make_cases (TRUE);
+#else
+    paths = make_cases (FALSE);
+#endif
 
     for (i = 0; i < paths->len; i += 2)
     {
-        test_normalize_path_one (paths->pdata[i], paths->pdata[i+1]);
+        test_normalize_path_one (paths->pdata[i], paths->pdata[i+1],
+                                 _moo_normalize_file_path);
         g_free (paths->pdata[i]);
         g_free (paths->pdata[i+1]);
     }
 
     g_ptr_array_free (paths, TRUE);
 }
+
+#ifndef __WIN32__
+static void
+test_normalize_file_path_win32 (void)
+{
+    GPtrArray *paths;
+    guint i;
+
+    paths = make_cases (FALSE);
+
+    for (i = 0; i < paths->len; i += 2)
+    {
+        test_normalize_path_one (paths->pdata[i], paths->pdata[i+1],
+                                 normalize_full_path_win32);
+        g_free (paths->pdata[i]);
+        g_free (paths->pdata[i+1]);
+    }
+
+    g_ptr_array_free (paths, TRUE);
+}
+#endif
 
 void
 moo_test_mooutils_fs (void)
@@ -912,6 +1003,10 @@ moo_test_mooutils_fs (void)
 
     if (!CU_add_test (suite, "test of _moo_normalize_file_path()", test_normalize_file_path))
         g_error ("CU_add_test() failed");
+#ifndef __WIN32__
+    if (!CU_add_test (suite, "test of normalize_full_path_win32()", test_normalize_file_path_win32))
+        g_error ("CU_add_test() failed");
+#endif
 }
 
 #endif /* MOO_ENABLE_TESTS */
