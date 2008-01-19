@@ -102,8 +102,12 @@ endif
 
 libmoo_la_LIBADD = $(libs) $(MOO_LIBS) $(MOO_OBJC_LIBS)
 libmoo_la_LDFLAGS = $(libmoo_res_ldflag) -no-undefined -avoid-version $(export_flags)
-libmoo_la_SOURCES = $(moo_include_headers)
+libmoo_la_SOURCES = $(moo_include_headers) moo-tests.h
 nodist_libmoo_la_SOURCES += $(nodist_moo_include_headers)
+
+if MOO_ENABLE_TESTS
+libmoo_la_LIBADD += -lcunit
+endif
 
 if MOO_PYTHON_BUILTIN
 if !MOO_BUILD_MOO_MODULE

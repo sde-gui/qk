@@ -5,7 +5,9 @@ AM_CFLAGS =			\
 	$(MOO_DEBUG_CFLAGS)
 AM_OBJCFLAGS = $(AM_CFLAGS)
 
-noinst_PROGRAMS =
+noinst_PROGRAMS = run-tests
+
+# noinst_PROGRAMS =
 test_programs =				\
 	markup testpaned miniglade	\
 	testobject testthreads
@@ -15,11 +17,6 @@ test_programs +=			\
 	testtext testfileview		\
 	testpanedfileview testfold	\
 	testkeyfile
-if MOO_OS_UNIX
-if MOO_USE_OBJC
-test_programs += ms
-endif
-endif
 endif
 if MOO_BUILD_TERM
 test_programs += mterm termbuffer
@@ -30,9 +27,9 @@ endif
 
 EXTRA_PROGRAMS = $(test_programs)
 
-if MOO_ENABLE_TESTS
-noinst_PROGRAMS += $(test_programs)
-endif
+# if MOO_ENABLE_TESTS
+# noinst_PROGRAMS += $(test_programs)
+# endif
 
 all-tests: $(EXTRA_PROGRAMS)
 
@@ -66,6 +63,9 @@ if MOO_OS_MINGW
 ldflags += -mwindows
 endif MOO_OS_MINGW
 
+run_tests_LDFLAGS = $(ldflags)
+run_tests_LDADD = $(ldadd) -lcunit
+
 
 testfold_LDFLAGS = $(ldflags)
 testfold_LDADD = $(ldadd)
@@ -84,10 +84,6 @@ testkeyfile_SOURCES = testkeyfile.c
 testthreads_LDFLAGS = $(ldflags)
 testthreads_LDADD = $(ldadd) $(GTHREAD_LIBS)
 testthreads_SOURCES = testthreads.c
-
-ms_LDFLAGS = $(ldflags)
-ms_LDADD = $(ldadd) -lreadline -lobjc
-ms_SOURCES = mscript.m
 
 testhtml_LDFLAGS = $(ldflags)
 testhtml_LDADD = $(ldadd)
