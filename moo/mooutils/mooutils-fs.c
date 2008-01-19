@@ -603,7 +603,7 @@ normalize_full_path (const char *path,
         normpath[len] = G_DIR_SEPARATOR;
         normpath[len+1] = 0;
     }
-    else if (!is_folder && normpath[len-1] == G_DIR_SEPARATOR)
+    else if (!is_folder && len > 1 && normpath[len-1] == G_DIR_SEPARATOR)
     {
         normpath[len-1] = 0;
     }
@@ -739,14 +739,182 @@ normalize_path (const char *filename,
 char *
 _moo_normalize_file_path (const char *filename)
 {
+    g_return_val_if_fail (filename != NULL, NULL);
+    /* empty filename is an error, but we don't want to crash here */
+    g_return_val_if_fail (filename[0] != 0, g_strdup (""));
     return normalize_path (filename, FALSE);
 }
 
+#if 0
 char *
 _moo_normalize_dir_path (const char *filename)
 {
     return normalize_path (filename, TRUE);
 }
+#endif
+
+
+#ifdef MOO_ENABLE_TESTS
+
+#include <moo-tests.h>
+
+static void
+test_normalize_path_one (const char *path,
+                         const char *expected)
+{
+    char *result;
+
+    result = _moo_normalize_file_path (path);
+
+    if (!moo_test_str_equal (result, expected))
+        moo_test_failed (__LINE__, __FILE__, "%s(%s): expected %s, got %s",
+                         "_moo_normalize_file_path",
+                         moo_test_str_format (path),
+                         moo_test_str_format (expected),
+                         moo_test_str_format (result));
+    else
+        moo_test_passed (__LINE__, __FILE__, "%s(%s) == %s",
+                         "_moo_normalize_file_path",
+                         moo_test_str_format (path),
+                         moo_test_str_format (expected));
+
+    g_free (result);
+}
+
+static GPtrArray *
+make_cases (void)
+{
+    guint i;
+    char *current_dir;
+    GPtrArray *paths = g_ptr_array_new ();
+
+    const char *files[] = {
+        NULL, NULL,
+        "", "",
+#ifndef __WIN32__
+        "/usr", "/usr",
+        "/usr/", "/usr",
+        "///usr////", "/usr",
+        "/", "/",
+        "//", "/",
+        "/usr/../bin/../usr", "/usr",
+        "/usr/bin/../bin/.", "/usr/bin",
+        "/..", "/",
+        "/../../../", "/",
+        "/../whatever/..", "/",
+        "/../whatever/.././././", "/",
+#else
+        "C:", "C:\\",
+        "C:\\", "C:\\",
+        "C:\\foobar", "C:\\foobar",
+        "C:\\foobar\\", "C:\\foobar",
+        "C:\\foobar\\\\\\", "C:\\foobar",
+        "C:/", "C:\\",
+        "C:/foobar", "C:\\foobar",
+        "C:/foobar//", "C:\\foobar",
+        "C:/foobar///", "C:\\foobar",
+        "\\\\.host\\dir\\root", "\\\\.host\\dir\\root",
+        "\\\\.host\\dir\\root\\", "\\\\.host\\dir\\root",
+        "\\\\.host\\dir\\root\\..\\..\\", "\\\\.host",
+#endif
+    };
+
+    const char *files_current_dir[] = {
+        ".", NULL,
+        "././././/", NULL,
+        "foobar", "foobar",
+        "foobar/", "foobar",
+        "foobar/..", NULL,
+        "foobar/./..", NULL,
+        "foobar/../", NULL,
+        "foobar/./../", NULL,
+#ifndef __WIN32__
+        "foobar/com", "foobar/com",
+#else
+        "foobar/com", "foobar\\com",
+        ".\\.\\.\\.\\\\", NULL,
+        "foobar\\", "foobar",
+        "foobar\\..", NULL,
+        "foobar\\.\\..", NULL,
+        "foobar\\..\\", NULL,
+        "foobar\\.\\..\\", NULL,
+#endif
+    };
+
+    for (i = 0; i < G_N_ELEMENTS (files); i += 2)
+    {
+        g_ptr_array_add (paths, g_strdup (files[i]));
+        g_ptr_array_add (paths, g_strdup (files[i+1]));
+    }
+
+    current_dir = g_get_current_dir ();
+
+    for (i = 0; i < G_N_ELEMENTS (files_current_dir); i += 2)
+    {
+        g_ptr_array_add (paths, g_strdup (files_current_dir[i]));
+        if (files_current_dir[i+1])
+            g_ptr_array_add (paths, g_build_filename (current_dir, files_current_dir[i+1], NULL));
+        else
+            g_ptr_array_add (paths, g_strdup (current_dir));
+    }
+
+    {
+        char *parent_dir = g_path_get_dirname (current_dir);
+        g_ptr_array_add (paths, g_strdup (".."));
+        g_ptr_array_add (paths, g_strdup (parent_dir));
+        g_ptr_array_add (paths, g_strdup ("../"));
+        g_ptr_array_add (paths, g_strdup (parent_dir));
+        g_ptr_array_add (paths, g_strdup ("../."));
+        g_ptr_array_add (paths, g_strdup (parent_dir));
+        g_ptr_array_add (paths, g_strdup (".././"));
+        g_ptr_array_add (paths, g_strdup (parent_dir));
+#ifdef __WIN32__
+        g_ptr_array_add (paths, g_strdup ("..\\"));
+        g_ptr_array_add (paths, g_strdup (parent_dir));
+        g_ptr_array_add (paths, g_strdup ("..\\."));
+        g_ptr_array_add (paths, g_strdup (parent_dir));
+        g_ptr_array_add (paths, g_strdup ("..\\.\\"));
+        g_ptr_array_add (paths, g_strdup (parent_dir));
+#endif
+        g_free (parent_dir);
+    }
+
+    g_free (current_dir);
+    return paths;
+}
+
+static void
+test_normalize_file_path (void)
+{
+    GPtrArray *paths;
+    guint i;
+
+    paths = make_cases ();
+
+    for (i = 0; i < paths->len; i += 2)
+    {
+        test_normalize_path_one (paths->pdata[i], paths->pdata[i+1]);
+        g_free (paths->pdata[i]);
+        g_free (paths->pdata[i+1]);
+    }
+
+    g_ptr_array_free (paths, TRUE);
+}
+
+void
+moo_test_mooutils_fs (void)
+{
+    CU_pSuite suite;
+
+//     if (!(suite = CU_add_suite ("mooutils/mooutils-fs.c", init_suite, clean_suite)))
+    if (!(suite = CU_add_suite ("mooutils/mooutils-fs.c", NULL, NULL)))
+        g_error ("CU_add_suite() failed");
+
+    if (!CU_add_test (suite, "test of _moo_normalize_file_path()", test_normalize_file_path))
+        g_error ("CU_add_test() failed");
+}
+
+#endif /* MOO_ENABLE_TESTS */
 
 
 /**********************************************************************/
