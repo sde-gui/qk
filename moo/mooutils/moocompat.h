@@ -24,7 +24,7 @@ G_BEGIN_DECLS
 
 #if !GLIB_CHECK_VERSION(2,8,0)
 #define g_mkdir_with_parents            _moo_g_mkdir_with_parents
-#define g_g_listenv                     _moo_g_listenv
+#define g_listenv                       _moo_g_listenv
 #define g_utf8_collate_key_for_filename _moo_g_utf8_collate_key_for_filename
 #define g_file_set_contents             _moo_g_file_set_contents
 
