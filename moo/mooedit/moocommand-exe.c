@@ -268,8 +268,8 @@ make_cmd_line (MooCommandExe     *cmd,
 }
 
 static char **
-make_argv (const char  *cmd_line, 
-           GError     **error)
+make_argv (const char  *cmd_line,
+           G_GNUC_UNUSED GError **error)
 {
     char **argv = NULL;
 
@@ -800,8 +800,8 @@ _moo_command_exe_class_init (MooCommandExeClass *klass)
     g_type_class_add_private (klass, sizeof (MooCommandExePrivate));
 
     factory = g_object_new (_moo_command_factory_exe_get_type (), NULL);
-    moo_command_factory_register ("exe", _("Shell command"), 
-                                  factory, (char**) data_keys, 
+    moo_command_factory_register ("exe", _("Shell command"),
+                                  factory, (char**) data_keys,
                                   SCRIPT_EXTENSION);
     g_object_unref (factory);
 }
