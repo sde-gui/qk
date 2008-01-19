@@ -31,6 +31,10 @@ main (int argc, char *argv[])
 
     moo_test_mooutils_fs ();
 
+#ifdef __WIN32__
+    moo_test_mooutils_win32 ();
+#endif
+
     CU_basic_set_mode (CU_BRM_VERBOSE);
     CU_basic_run_tests ();
     CU_cleanup_registry ();

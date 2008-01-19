@@ -775,21 +775,22 @@ _moo_normalize_dir_path (const char *filename)
 static void
 test_normalize_path_one (const char *path,
                          const char *expected,
-                         char *(*func) (const char*))
+                         char *(*func) (const char*),
+                         const char *func_name)
 {
     char *result;
 
     result = func (path);
 
     if (!moo_test_str_equal (result, expected))
-        moo_test_failed (__LINE__, __FILE__, "%s(%s): expected %s, got %s",
-                         "_moo_normalize_file_path",
+        moo_test_failed ("%s(%s): expected %s, got %s",
+                         func_name,
                          moo_test_str_format (path),
                          moo_test_str_format (expected),
                          moo_test_str_format (result));
     else
-        moo_test_passed (__LINE__, __FILE__, "%s(%s) == %s",
-                         "_moo_normalize_file_path",
+        moo_test_passed ("%s(%s) == %s",
+                         func_name,
                          moo_test_str_format (path),
                          moo_test_str_format (expected));
 
@@ -848,9 +849,11 @@ make_cases (gboolean unix_paths)
         "foobar/./../", NULL,
     };
 
+#ifndef __WIN32__
     const char *rel_files_unix[] = {
         "foobar/com", "foobar/com",
     };
+#endif
 
 #ifdef __WIN32__
     const char *rel_files_win32[] = {
@@ -963,7 +966,8 @@ test_normalize_file_path (void)
     for (i = 0; i < paths->len; i += 2)
     {
         test_normalize_path_one (paths->pdata[i], paths->pdata[i+1],
-                                 _moo_normalize_file_path);
+                                 _moo_normalize_file_path,
+                                 "_moo_normalize_file_path");
         g_free (paths->pdata[i]);
         g_free (paths->pdata[i+1]);
     }
@@ -983,7 +987,8 @@ test_normalize_file_path_win32 (void)
     for (i = 0; i < paths->len; i += 2)
     {
         test_normalize_path_one (paths->pdata[i], paths->pdata[i+1],
-                                 normalize_full_path_win32);
+                                 normalize_full_path_win32,
+                                 "normalize_full_path_win32");
         g_free (paths->pdata[i]);
         g_free (paths->pdata[i+1]);
     }

@@ -301,6 +301,87 @@ _moo_win32_fnmatch (const char *pattern,
 }
 
 
+#ifdef MOO_ENABLE_TESTS
+
+#include <moo-tests.h>
+
+static void
+test_parse_cmd_line_one (const char  *cmd_line,
+                         const char **expected)
+{
+    char **argv;
+    GError *error = NULL;
+
+    argv = _moo_win32_lame_parse_cmd_line (cmd_line, &error);
+
+    if (!moo_test_strv_equal (argv, (char**) expected))
+        moo_test_failed ("_moo_win32_lame_parse_cmd_line(%s): expected %s, got %s",
+                         moo_test_str_format (cmd_line),
+                         moo_test_strv_format ((char**) expected),
+                         moo_test_strv_format (argv));
+    else
+        moo_test_passed ("_moo_win32_lame_parse_cmd_line(%s) == %s",
+                         moo_test_str_format (cmd_line),
+                         moo_test_strv_format (argv));
+
+    if (cmd_line && !expected && !argv)
+    {
+        if (!error)
+            moo_test_failed ("_moo_win32_lame_parse_cmd_line(%s): error not set",
+                             moo_test_str_format (cmd_line));
+        else
+            moo_test_passed ("_moo_win32_lame_parse_cmd_line(%s): error set",
+                             moo_test_str_format (cmd_line));
+    }
+
+    if (error)
+        g_error_free (error);
+
+    g_strfreev (argv);
+}
+
+static void
+test_moo_win32_lame_parse_cmd_line (void)
+{
+    guint i;
+
+    struct {
+        const char *cmd_line;
+        const char *argv[20];
+    } cases[] = {
+        { "dir foobar", { "cmd.exe", "/c", "dir", "foobar" } },
+        { "dir \"c:\\program files\"", { "cmd.exe", "/c", "dir", "c:\\program files" } },
+        { "msiexec", { "msiexec" } },
+        { "msiexec.exe", { "msiexec.exe" } },
+    };
+
+    const char *fail_cases[] = {
+        "quote '", "quote \"", NULL, "", " "
+    };
+
+    for (i = 0; i < G_N_ELEMENTS (cases); ++i)
+        test_parse_cmd_line_one (cases[i].cmd_line, cases[i].argv);
+
+    for (i = 0; i < G_N_ELEMENTS (fail_cases); ++i)
+        test_parse_cmd_line_one (fail_cases[i], NULL);
+}
+
+void
+moo_test_mooutils_win32 (void)
+{
+    CU_pSuite suite;
+
+    if (!(suite = CU_add_suite ("mooutils/mooutils-win32.c", NULL, NULL)))
+        g_error ("CU_add_suite() failed");
+
+    if (!CU_add_test (suite, "test of _moo_win32_lame_parse_cmd_line()",
+                      test_moo_win32_lame_parse_cmd_line))
+        g_error ("CU_add_test() failed");
+}
+
+#endif
+
+
 /***************************************************************************
  * mmap for poor
  */
