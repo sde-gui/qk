@@ -1150,10 +1150,10 @@ fam_thread_remove_path (FAMThread  *thr,
 
             if (i < thr->n_events - 1)
             {
-                MOO_MEMMOVE (thr->watches + i,
+                MOO_ELMMOVE (thr->watches + i,
                              thr->watches + i + 1,
                              thr->n_events - i - 1);
-                MOO_MEMMOVE (thr->events + i,
+                MOO_ELMMOVE (thr->events + i,
                              thr->events + i + 1,
                              thr->n_events - i - 1);
             }
