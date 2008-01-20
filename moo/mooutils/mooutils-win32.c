@@ -152,26 +152,26 @@ moo_win32_get_app_dir (void)
 char *
 moo_win32_get_dll_dir (const char *dll)
 {
-	wchar_t *dll_utf16 = NULL;
+    wchar_t *dll_utf16 = NULL;
     char *dir;
     char *dllname = NULL;
     HMODULE handle;
     wchar_t buf[MAX_PATH+1];
 
     if (dll)
-	{
-		GError *error = NULL;
+    {
+    	GError *error = NULL;
 
-		dll_utf16 = g_utf8_to_utf16 (dll, -1, NULL, NULL, &error);
+    	dll_utf16 = g_utf8_to_utf16 (dll, -1, NULL, NULL, &error);
 
-		if (!dll_utf16)
-		{
-			g_critical ("could not convert name '%s' to UTF16: %s",
-						dll, error ? error->message : "");
-			g_error_free (error);
-			return g_strdup (".");
-		}
-	}
+    	if (!dll_utf16)
+    	{
+            g_critical ("could not convert name '%s' to UTF16: %s",
+                        dll, error ? error->message : "");
+            g_error_free (error);
+            return g_strdup (".");
+    	}
+    }
 
     handle = GetModuleHandleW (dll_utf16);
     g_return_val_if_fail (handle != NULL, g_strdup ("."));
@@ -185,7 +185,7 @@ moo_win32_get_dll_dir (const char *dll)
         dir = g_strdup (".");
 
     g_free (dllname);
-	g_free (dll_utf16);
+    g_free (dll_utf16);
     return dir;
 }
 
@@ -314,25 +314,14 @@ test_parse_cmd_line_one (const char  *cmd_line,
 
     argv = _moo_win32_lame_parse_cmd_line (cmd_line, &error);
 
-    if (!moo_test_strv_equal (argv, (char**) expected))
-        moo_test_failed ("_moo_win32_lame_parse_cmd_line(%s): expected %s, got %s",
-                         moo_test_str_format (cmd_line),
-                         moo_test_strv_format ((char**) expected),
-                         moo_test_strv_format (argv));
-    else
-        moo_test_passed ("_moo_win32_lame_parse_cmd_line(%s) == %s",
-                         moo_test_str_format (cmd_line),
-                         moo_test_strv_format (argv));
+    TEST_ASSERT_STRV_EQ_MSG (argv, (char**) expected,
+                             "_moo_win32_lame_parse_cmd_line(%s)",
+                             TEST_FMT_STR (cmd_line));
 
     if (cmd_line && !expected && !argv)
-    {
-        if (!error)
-            moo_test_failed ("_moo_win32_lame_parse_cmd_line(%s): error not set",
-                             moo_test_str_format (cmd_line));
-        else
-            moo_test_passed ("_moo_win32_lame_parse_cmd_line(%s): error set",
-                             moo_test_str_format (cmd_line));
-    }
+        TEST_ASSERT_MSG (error != NULL,
+                         "_moo_win32_lame_parse_cmd_line(%s): error not set",
+                         TEST_FMT_STR (cmd_line));
 
     if (error)
         g_error_free (error);
@@ -351,6 +340,7 @@ test_moo_win32_lame_parse_cmd_line (void)
     } cases[] = {
         { "dir foobar", { "cmd.exe", "/c", "dir", "foobar" } },
         { "dir \"c:\\program files\"", { "cmd.exe", "/c", "dir", "c:\\program files" } },
+        /* wine doesn't have cmd.exe even though it has msiexec.exe! */
         { "msiexec", { "msiexec" } },
         { "msiexec.exe", { "msiexec.exe" } },
     };
@@ -371,12 +361,9 @@ moo_test_mooutils_win32 (void)
 {
     CU_pSuite suite;
 
-    if (!(suite = CU_add_suite ("mooutils/mooutils-win32.c", NULL, NULL)))
-        g_error ("CU_add_suite() failed");
-
-    if (!CU_add_test (suite, "test of _moo_win32_lame_parse_cmd_line()",
-                      test_moo_win32_lame_parse_cmd_line))
-        g_error ("CU_add_test() failed");
+    suite = CU_add_suite ("mooutils/mooutils-win32.c", NULL, NULL);
+    CU_add_test (suite, "test of _moo_win32_lame_parse_cmd_line()",
+                 test_moo_win32_lame_parse_cmd_line);
 }
 
 #endif

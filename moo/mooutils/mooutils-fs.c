@@ -782,17 +782,8 @@ test_normalize_path_one (const char *path,
 
     result = func (path);
 
-    if (!moo_test_str_equal (result, expected))
-        moo_test_failed ("%s(%s): expected %s, got %s",
-                         func_name,
-                         moo_test_str_format (path),
-                         moo_test_str_format (expected),
-                         moo_test_str_format (result));
-    else
-        moo_test_passed ("%s(%s) == %s",
-                         func_name,
-                         moo_test_str_format (path),
-                         moo_test_str_format (expected));
+    TEST_ASSERT_STR_EQ_MSG (result, expected, "%s(%s)",
+                            func_name, TEST_FMT_STR (path));
 
     g_free (result);
 }
@@ -1002,15 +993,11 @@ moo_test_mooutils_fs (void)
 {
     CU_pSuite suite;
 
-//     if (!(suite = CU_add_suite ("mooutils/mooutils-fs.c", init_suite, clean_suite)))
-    if (!(suite = CU_add_suite ("mooutils/mooutils-fs.c", NULL, NULL)))
-        g_error ("CU_add_suite() failed");
+    suite = CU_add_suite ("mooutils/mooutils-fs.c", NULL, NULL);
 
-    if (!CU_add_test (suite, "test of _moo_normalize_file_path()", test_normalize_file_path))
-        g_error ("CU_add_test() failed");
+    CU_add_test (suite, "test of _moo_normalize_file_path()", test_normalize_file_path);
 #ifndef __WIN32__
-    if (!CU_add_test (suite, "test of normalize_full_path_win32()", test_normalize_file_path_win32))
-        g_error ("CU_add_test() failed");
+    CU_add_test (suite, "test of normalize_full_path_win32()", test_normalize_file_path_win32);
 #endif
 }
 
