@@ -156,6 +156,21 @@ prefs_get_accel (const char *accel_path)
 
 
 static void
+my_gtk_accelerator_parse (const char      *accel,
+                          guint           *key,
+                          GdkModifierType *mods)
+{
+    gtk_accelerator_parse (accel, key, mods);
+
+    if (*key == GDK_VoidSymbol)
+    {
+        *key = 0;
+        *mods = 0;
+    }
+}
+
+
+static void
 set_accel (const char *accel_path,
            const char *accel,
            gboolean    set_gtk)
@@ -175,7 +190,7 @@ set_accel (const char *accel_path,
 
     if (*accel)
     {
-        gtk_accelerator_parse (accel, &accel_key, &accel_mods);
+        my_gtk_accelerator_parse (accel, &accel_key, &accel_mods);
 
         if (accel_key)
         {
@@ -277,7 +292,7 @@ _moo_accel_register (const char *accel_path,
         guint accel_key = 0;
         GdkModifierType accel_mods = 0;
 
-        gtk_accelerator_parse (default_accel, &accel_key, &accel_mods);
+        my_gtk_accelerator_parse (default_accel, &accel_key, &accel_mods);
 
         if (accel_key)
             g_hash_table_insert (moo_default_accel_map,
@@ -343,7 +358,7 @@ _moo_get_accel_label (const char *accel)
     g_return_val_if_fail (accel != NULL, g_strdup (""));
 
     if (*accel)
-        gtk_accelerator_parse (accel, &key, &mods);
+        my_gtk_accelerator_parse (accel, &key, &mods);
 
     if (key)
         return gtk_accelerator_get_label (key, mods);
@@ -408,11 +423,21 @@ keyval_from_symbol (char sym)
 static guint
 parse_key (const char *string)
 {
-    char *stripped = g_strstrip (g_strdup (string));
-    guint key = gdk_keyval_from_name (stripped);
+    char *stripped;
+    guint key = 0;
 
-    if (!key)
-        key = keyval_from_symbol (stripped[0]);
+    stripped = g_strstrip (g_strdup (string));
+
+    if (stripped && stripped[0])
+    {
+        key = gdk_keyval_from_name (stripped);
+
+        if (key == GDK_VoidSymbol)
+            key = 0;
+
+        if (!key && !stripped[1])
+            key = keyval_from_symbol (stripped[0]);
+    }
 
     g_free (stripped);
     return key;
@@ -519,7 +544,7 @@ parse_accel (const char      *accel,
 
     if (accel[0] == '<')
     {
-        gtk_accelerator_parse (accel, &key, &mods);
+        my_gtk_accelerator_parse (accel, &key, &mods);
         goto out;
     }
 
@@ -564,15 +589,6 @@ _moo_accel_normalize (const char *accel)
 
 #include <moo-tests.h>
 #include <locale.h>
-
-void         _moo_accel_register            (const char *accel_path,
-                                             const char *default_accel);
-
-const char  *_moo_get_accel                 (const char *accel_path);
-const char  *_moo_get_default_accel         (const char *accel_path);
-
-void         _moo_modify_accel              (const char *accel_path,
-                                             const char *new_accel);
 
 static void
 test_moo_accel_register (void)
@@ -676,7 +692,7 @@ test_moo_accel_register (void)
                                 path, path, second_accel);
 
         if (*third_accel)
-            gtk_accelerator_parse (third_accel, &key, &mods);
+            my_gtk_accelerator_parse (third_accel, &key, &mods);
         gtk_accel_map_change_entry (path, key, mods, FALSE);
         TEST_ASSERT_STR_EQ_MSG (_moo_get_default_accel (path), accel,
                                 "_moo_get_default_accel(%s) after gtk_accel_map_change_entry(%s, %s)",
@@ -791,10 +807,7 @@ test_moo_get_accel_label (void)
 void
 moo_test_mooaccel (void)
 {
-    CU_pSuite suite;
-
-    suite = CU_add_suite ("mooutils/mooaccel.c", NULL, NULL);
-
+    CU_pSuite suite = CU_add_suite ("mooutils/mooaccel.c", NULL, NULL);
     CU_add_test (suite, "test of _moo_get_accel_label()", test_moo_get_accel_label);
     CU_add_test (suite, "test of _moo_accel_normalize()", test_moo_accel_normalize);
     CU_add_test (suite, "test of _moo_accel_register() and friends", test_moo_accel_register);
