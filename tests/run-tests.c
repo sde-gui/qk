@@ -29,6 +29,7 @@ main (int argc, char *argv[])
 //         return CU_get_error();
 //     }
 
+    moo_test_mooaccel ();
     moo_test_mooutils_fs ();
 
 #ifdef __WIN32__

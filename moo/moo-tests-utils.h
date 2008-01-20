@@ -80,7 +80,7 @@ G_STMT_START {                                                      \
 
 #define TEST_ASSERT_STR_NEQ(actual,expected)                        \
     TEST_ASSERT_CMP (const char *, actual, expected,                \
-                     TEST_STR_NEQ, =, TEST_FMT_STR)
+                     TEST_STR_NEQ, !=, TEST_FMT_STR)
 
 #define TEST_ASSERT_STR_EQ_MSG(actual,expected,format,...)          \
     TEST_ASSERT_CMP_MSG (const char *, actual, expected,            \
@@ -173,6 +173,16 @@ TEST_FMT_STRV (char **array)
 #define TEST_FMT_INT(a)     test_string_stack_add__ (g_strdup_printf ("%d", (int) a))
 #define TEST_FMT_UINT(a)    test_string_stack_add__ (g_strdup_printf ("%u", (guint) a))
 
+#define TEST_G_ASSERT(expr)                     \
+G_STMT_START {                                  \
+     if (G_UNLIKELY (!(expr)))                  \
+        g_assert_warning (G_LOG_DOMAIN,		\
+	                  __FILE__,    		\
+	                  __LINE__,	      	\
+	                  G_STRFUNC,            \
+	                  #expr);               \
+} G_STMT_END
+
 G_GNUC_UNUSED struct TestWarningsInfo {
     int count;
     int line;
@@ -186,12 +196,19 @@ test_log_handler (const gchar    *log_domain,
                   const gchar    *message,
                   gpointer        data)
 {
-    g_assert (data == test_warnings_info);
+    TEST_G_ASSERT (data == test_warnings_info);
 
-    test_warnings_info->count -= 1;
+    if (log_level & (G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL | G_LOG_LEVEL_WARNING))
+    {
+        test_warnings_info->count -= 1;
 
-    if (test_warnings_info->count < 0)
+        if (test_warnings_info->count < 0)
+            g_log_default_handler (log_domain, log_level, message, NULL);
+    }
+    else
+    {
         g_log_default_handler (log_domain, log_level, message, NULL);
+    }
 }
 
 static void
@@ -201,8 +218,8 @@ TEST_EXPECT_WARNINGV_ (int         howmany,
                        const char *fmt,
                        va_list     args)
 {
-    g_assert (test_warnings_info == NULL);
-    g_assert (howmany >= 0);
+    TEST_G_ASSERT (test_warnings_info == NULL);
+    TEST_G_ASSERT (howmany >= 0);
 
     test_warnings_info = g_new0 (struct TestWarningsInfo, 1);
     test_warnings_info->count = howmany;
@@ -237,7 +254,7 @@ TEST_EXPECT_WARNING_ (int         howmany,
 G_GNUC_UNUSED static void
 TEST_CHECK_WARNING (void)
 {
-    g_assert (test_warnings_info != NULL);
+    TEST_G_ASSERT (test_warnings_info != NULL);
 
     TEST_PASSED_OR_FAILED (test_warnings_info->count == 0,
                            test_warnings_info->line,

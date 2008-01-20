@@ -257,7 +257,8 @@ _moo_accel_register (const char *accel_path,
 {
     char *freeme = NULL;
 
-    g_return_if_fail (accel_path != NULL && default_accel != NULL);
+    g_return_if_fail (accel_path && accel_path[0]);
+    g_return_if_fail (default_accel != NULL);
 
     init_accel_map ();
 
@@ -266,8 +267,8 @@ _moo_accel_register (const char *accel_path,
 
     if (default_accel[0])
     {
-        freeme = _moo_accel_normalize (default_accel);
-        g_return_if_fail (freeme != NULL);
+        if (!(freeme = _moo_accel_normalize (default_accel)))
+            return;
         default_accel = freeme;
     }
 
@@ -336,22 +337,18 @@ _moo_modify_accel (const char *accel_path,
 char *
 _moo_get_accel_label (const char *accel)
 {
-    guint key;
-    GdkModifierType mods;
+    guint key = 0;
+    GdkModifierType mods = 0;
 
     g_return_val_if_fail (accel != NULL, g_strdup (""));
 
-    init_accel_map ();
-
     if (*accel)
-    {
         gtk_accelerator_parse (accel, &key, &mods);
+
+    if (key)
         return gtk_accelerator_get_label (key, mods);
-    }
     else
-    {
         return g_strdup ("");
-    }
 }
 
 
@@ -561,3 +558,246 @@ _moo_accel_normalize (const char *accel)
         return NULL;
     }
 }
+
+
+#ifdef MOO_ENABLE_TESTS
+
+#include <moo-tests.h>
+#include <locale.h>
+
+void         _moo_accel_register            (const char *accel_path,
+                                             const char *default_accel);
+
+const char  *_moo_get_accel                 (const char *accel_path);
+const char  *_moo_get_default_accel         (const char *accel_path);
+
+void         _moo_modify_accel              (const char *accel_path,
+                                             const char *new_accel);
+
+static void
+test_moo_accel_register (void)
+{
+    typedef struct {
+        const char *path;
+        const char *accel;
+        const char *second_accel;
+        const char *third_accel;
+    } PA;
+
+    guint i;
+
+    PA bad_cases[] = {
+        { NULL, "", NULL }, { "", "", NULL }, { "", NULL, NULL },
+    };
+
+    PA bad_accels[] = {
+        { "<Something>/Test1/a", NULL, "" },
+        { "<Something>/Test1/b", "<dd", "" },
+    };
+
+    PA cases[] = {
+        { "<Something>/Foobar/a", "", "", "a" },
+        { "<Something>/Foobar/b", "", "<Control>a", "" },
+        { "<Something>/Foobar/c", "<Control>b", "", "plus" },
+        { "<Something>/Foobar/d", "<Control>c", "F4", "F4" },
+        { "<Something>/Foobar/e", "F4", "a", "F4" },
+    };
+
+    for (i = 0; i < G_N_ELEMENTS (bad_cases); ++i)
+    {
+        TEST_EXPECT_WARNING (1, "_moo_accel_register(%s, %s)",
+                             TEST_FMT_STR (bad_cases[i].path),
+                             TEST_FMT_STR (bad_cases[i].accel));
+        _moo_accel_register (bad_cases[i].path, bad_cases[i].accel);
+        TEST_CHECK_WARNING ();
+    }
+
+    for (i = 0; i < G_N_ELEMENTS (bad_accels); ++i)
+    {
+        TEST_EXPECT_WARNING (1, "_moo_accel_register(%s, %s)",
+                             TEST_FMT_STR (bad_accels[i].path),
+                             TEST_FMT_STR (bad_accels[i].accel));
+        _moo_accel_register (bad_accels[i].path, bad_accels[i].accel);
+        TEST_CHECK_WARNING ();
+
+        TEST_EXPECT_WARNING (2, "_moo_get_default_accel(%s) after "
+                             "invalid _moo_accel_register(%s, %s)",
+                             TEST_FMT_STR (bad_accels[i].path),
+                             TEST_FMT_STR (bad_accels[i].path),
+                             TEST_FMT_STR (bad_accels[i].accel));
+        TEST_ASSERT_STR_EQ_MSG (_moo_get_default_accel (bad_accels[i].path), "",
+                                "_moo_get_default_accel(%s) after "
+                                "invalid _moo_accel_register(%s, %s)",
+                                TEST_FMT_STR (bad_accels[i].path),
+                                TEST_FMT_STR (bad_accels[i].path),
+                                TEST_FMT_STR (bad_accels[i].accel));
+        TEST_ASSERT_STR_EQ_MSG (_moo_get_accel (bad_accels[i].path), "",
+                                "_moo_get_accel(%s) after "
+                                "invalid _moo_accel_register(%s, %s)",
+                                TEST_FMT_STR (bad_accels[i].path),
+                                TEST_FMT_STR (bad_accels[i].path),
+                                TEST_FMT_STR (bad_accels[i].accel));
+        TEST_CHECK_WARNING ();
+    }
+
+    for (i = 0; i < G_N_ELEMENTS (cases); ++i)
+    {
+        const char *path = cases[i].path;
+        const char *accel = cases[i].accel;
+        const char *second_accel = cases[i].second_accel;
+        const char *third_accel = cases[i].third_accel;
+        guint key = 0;
+        GdkModifierType mods = 0;
+
+        TEST_EXPECT_WARNING (0, "_moo_accel_register and friends for path %s", path);
+
+        _moo_accel_register (path, accel);
+        TEST_ASSERT_STR_EQ_MSG (_moo_get_default_accel (path), accel,
+                                "_moo_get_default_accel(%s) after _moo_accel_register(%s, %s)",
+                                path, path, accel);
+        TEST_ASSERT_STR_EQ_MSG (_moo_get_accel (path), accel,
+                                "_moo_get_accel(%s) after _moo_accel_register(%s, %s)",
+                                path, path, accel);
+
+        _moo_accel_register (path, second_accel);
+        TEST_ASSERT_STR_EQ_MSG (_moo_get_default_accel (path), accel,
+                                "_moo_get_default_accel(%s) after second _moo_accel_register(%s, %s)",
+                                path, path, second_accel);
+        TEST_ASSERT_STR_EQ_MSG (_moo_get_accel (path), accel,
+                                "_moo_get_accel(%s) after second _moo_accel_register(%s, %s)",
+                                path, path, second_accel);
+
+        _moo_modify_accel (path, second_accel);
+        TEST_ASSERT_STR_EQ_MSG (_moo_get_default_accel (path), accel,
+                                "_moo_get_default_accel(%s) after _moo_modify_accel(%s, %s)",
+                                path, path, second_accel);
+        TEST_ASSERT_STR_EQ_MSG (_moo_get_accel (path), second_accel,
+                                "_moo_get_accel(%s) after _moo_modify_accel(%s, %s)",
+                                path, path, second_accel);
+
+        if (*third_accel)
+            gtk_accelerator_parse (third_accel, &key, &mods);
+        gtk_accel_map_change_entry (path, key, mods, FALSE);
+        TEST_ASSERT_STR_EQ_MSG (_moo_get_default_accel (path), accel,
+                                "_moo_get_default_accel(%s) after gtk_accel_map_change_entry(%s, %s)",
+                                path, path, third_accel);
+        TEST_ASSERT_STR_EQ_MSG (_moo_get_accel (path), third_accel,
+                                "_moo_get_accel(%s) after gtk_accel_map_change_entry(%s, %s)",
+                                path, path, third_accel);
+
+        TEST_CHECK_WARNING ();
+    }
+}
+
+static void
+test_moo_accel_normalize (void)
+{
+    guint i;
+
+    struct {
+        const char *input;
+        const char *result;
+    } cases[] = {
+        { NULL, NULL }, { "", NULL }, { "some nonsense", NULL }, { "foobar", NULL },
+        { "<<a>", NULL }, { "<Control>Moo", NULL }, { "<Control><Shift>", NULL },
+        { "a+", NULL }, { "a-", NULL }, { "a+b", NULL }, { "Ctrl+Shift", NULL },
+
+        { "Tab", "Tab" }, { "<shift>Tab", "<Shift>Tab" },
+        { "<Control>a", "<Control>a" }, { "<Ctl>b", "<Control>b" }, { "<Ctrl>c", "<Control>c" },
+        { "<ctl>d", "<Control>d" }, { "<control>e", "<Control>e" },
+        { "<ctl><shift>f", "<Shift><Control>f" }, { "<shift><ctrl>g", "<Shift><Control>g" },
+        { "F8", "F8" }, { "F12", "F12" }, { "z", "z" }, { "X", "x" }, { "<shift>S", "<Shift>s" },
+
+        { "shift+Tab", "<Shift>Tab" },
+        { "Control+a", "<Control>a" }, { "Ctl+b", "<Control>b" }, { "Ctrl+c", "<Control>c" },
+        { "ctl+d", "<Control>d" }, { "control+e", "<Control>e" },
+        { "ctl+shift+f", "<Shift><Control>f" }, { "shift+ctrl+G", "<Shift><Control>g" },
+        { "F8", "F8" }, { "F12", "F12" }, { "z", "z" }, { "X", "x" }, { "shift+S", "<Shift>s" },
+
+        { "shift-Tab", "<Shift>Tab" },
+        { "Control-a", "<Control>a" }, { "Ctl-b", "<Control>b" }, { "Ctrl-c", "<Control>c" },
+
+        { "shift-+", "<Shift>plus" }, { "shift+-", "<Shift>minus" },
+        { "shift-plus", "<Shift>plus" }, { "shift+plus", "<Shift>plus" },
+    };
+
+    setlocale (LC_ALL, "C");
+
+    for (i = 0; i < G_N_ELEMENTS (cases); ++i)
+    {
+        char *result;
+
+        TEST_EXPECT_WARNING (!cases[i].result &&
+                             (cases[i].input && cases[i].input[0]),
+                             "_moo_accel_normalize(%s)",
+                             TEST_FMT_STR (cases[i].input));
+
+        result = _moo_accel_normalize (cases[i].input);
+
+        TEST_CHECK_WARNING ();
+
+        TEST_ASSERT_STR_EQ_MSG (result, cases[i].result,
+                                "_moo_accel_normalize(%s)",
+                                TEST_FMT_STR (cases[i].input));
+
+        g_free (result);
+    }
+
+    setlocale (LC_ALL, "");
+}
+
+static void
+test_moo_get_accel_label (void)
+{
+    guint i;
+
+    struct {
+        const char *input;
+        const char *result;
+    } cases[] = {
+        { NULL, "" }, { "", "" }, { "some nonsense", "" }, { "foobar", "" },
+        { "<<a>", "" }, { "<Control>Moo", "" }, { "<Control><Shift>", "" },
+
+        { "Tab", "Tab" }, { "<shift>Tab", "Shift+Tab" },
+        { "<Control>a", "Ctrl+A" }, { "<Ctl>b", "Ctrl+B" }, { "<Ctrl>c", "Ctrl+C" },
+        { "<ctl>d", "Ctrl+D" }, { "<control>e", "Ctrl+E" },
+        { "<ctl><shift>f", "Shift+Ctrl+F" }, { "<shift><ctrl>g", "Shift+Ctrl+G" },
+        { "F8", "F8" }, { "F12", "F12" }, { "z", "Z" }, { "X", "X" }, { "<shift>S", "Shift+S" }
+    };
+
+    setlocale (LC_ALL, "C");
+
+    for (i = 0; i < G_N_ELEMENTS (cases); ++i)
+    {
+        char *result;
+
+        TEST_EXPECT_WARNING (!cases[i].input, "_moo_get_accel_label(%s)",
+                             TEST_FMT_STR (cases[i].input));
+
+        result = _moo_get_accel_label (cases[i].input);
+
+        TEST_CHECK_WARNING ();
+
+        TEST_ASSERT_STR_EQ_MSG (result, cases[i].result,
+                                "_moo_get_accel_label(%s)",
+                                TEST_FMT_STR (cases[i].input));
+
+        g_free (result);
+    }
+
+    setlocale (LC_ALL, "");
+}
+
+void
+moo_test_mooaccel (void)
+{
+    CU_pSuite suite;
+
+    suite = CU_add_suite ("mooutils/mooaccel.c", NULL, NULL);
+
+    CU_add_test (suite, "test of _moo_get_accel_label()", test_moo_get_accel_label);
+    CU_add_test (suite, "test of _moo_accel_normalize()", test_moo_accel_normalize);
+    CU_add_test (suite, "test of _moo_accel_register() and friends", test_moo_accel_register);
+}
+
+#endif
