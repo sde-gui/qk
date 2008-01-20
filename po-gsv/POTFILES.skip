@@ -92,7 +92,7 @@ moo/mooutils/newgtk/glib/gregex.c
 moo/mooutils/newgtk/gmappedfile.c
 moo/mooutils/newgtk/gtkcolorbutton.c
 moo/mooutils/newgtk/gtkfontbutton.c
-moo/mooedit/language-specs/moo.xml.in
+moo/mooedit/moo.xml.in
 moo/mooedit/gtksourceview/gtksourcecontextengine-mangled.c
 moo/mooedit/gtksourceview/gtksourcelanguage-parser-2-mangled.c
 moo/mooedit/gtksourceview/gtksourcelanguagemanager-mangled.c

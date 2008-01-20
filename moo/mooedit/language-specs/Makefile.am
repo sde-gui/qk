@@ -81,32 +81,6 @@ languagespecs_DATA =		\
 	$(langs1)		\
 	$(langs2)
 
-packagesdir = $(mimedir)/packages
-packages_DATA = moo.xml
-update_mime = update-mime-database $(DESTDIR)${mimedir}
-@MOO_INTLTOOL_XML_RULE@
-
-if !MOO_OS_MINGW
-install-data-hook:
-	if echo "Updating mime database... " && $(update_mime); then		\
-		echo "Done.";							\
-	else									\
-		echo "*** ";							\
-		echo "*** Mime database not updated. After install, run this:";	\
-		echo $(update_mime);						\
-		echo "*** ";							\
-	fi
-uninstall-hook:
-	echo "Updating mime database" && $(update_mime) && echo "Done."
-else MOO_OS_MINGW
-install-data-hook:
-	cp /usr/share/mime/packages/freedesktop.org.xml $(DESTDIR)${mimedir}/packages/ && \
-	$(update_mime)
-endif
-
 EXTRA_DIST =			\
 	$(languagespecs_DATA)	\
-	moo.xml.in		\
 	styles.rng
-CLEANFILES =			\
-	moo.xml

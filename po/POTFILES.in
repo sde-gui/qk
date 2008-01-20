@@ -36,7 +36,7 @@ moo/mooedit/mootextfind.c
 moo/mooedit/mooeditaction-factory.c
 moo/mooedit/mooeditprefspage.c
 
-moo/mooedit/language-specs/moo.xml.in
+moo/mooedit/moo.xml.in
 
 moo/mooedit/plugins/moofind.c
 moo/mooedit/plugins/moofind.glade

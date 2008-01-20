@@ -191,6 +191,31 @@ nodist_mooedit_sources += mooedit-ui.h medit-ui.h
 BUILT_SOURCES += mooedit-ui.h medit-ui.h
 CLEANFILES += mooedit-ui.h medit-ui.h
 
+packagesdir = $(mimedir)/packages
+packages_DATA = moo.xml
+update_mime = update-mime-database $(DESTDIR)${mimedir}
+@MOO_INTLTOOL_XML_RULE@
+EXTRA_DIST += moo.xml.in
+CLEANFILES += moo.xml
+
+if !MOO_OS_MINGW
+install-data-hook:
+	if echo "Updating mime database... " && $(update_mime); then		\
+		echo "Done.";							\
+	else									\
+		echo "*** ";							\
+		echo "*** Mime database not updated. After install, run this:";	\
+		echo $(update_mime);						\
+		echo "*** ";							\
+	fi
+uninstall-hook:
+	echo "Updating mime database" && $(update_mime) && echo "Done."
+else MOO_OS_MINGW
+install-data-hook:
+	cp /usr/share/mime/packages/freedesktop.org.xml $(DESTDIR)${mimedir}/packages/ && \
+	$(update_mime)
+endif
+
 EXTRA_DIST +=				\
 	$(mooedit_tools_DATA)		\
 	$(mooedit_lua_DATA)		\
