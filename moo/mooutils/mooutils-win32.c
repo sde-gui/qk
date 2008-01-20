@@ -301,7 +301,7 @@ _moo_win32_fnmatch (const char *pattern,
 }
 
 
-#ifdef MOO_ENABLE_TESTS
+#ifdef MOO_ENABLE_UNIT_TESTS
 
 #include <moo-tests.h>
 

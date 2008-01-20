@@ -585,7 +585,7 @@ _moo_accel_normalize (const char *accel)
 }
 
 
-#ifdef MOO_ENABLE_TESTS
+#ifdef MOO_ENABLE_UNIT_TESTS
 
 #include <moo-tests.h>
 #include <locale.h>

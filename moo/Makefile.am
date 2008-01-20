@@ -105,7 +105,7 @@ libmoo_la_LDFLAGS = $(libmoo_res_ldflag) -no-undefined -avoid-version $(export_f
 libmoo_la_SOURCES = $(moo_include_headers) moo-tests.h moo-tests-utils.h
 nodist_libmoo_la_SOURCES += $(nodist_moo_include_headers)
 
-if MOO_ENABLE_TESTS
+if MOO_ENABLE_UNIT_TESTS
 libmoo_la_LIBADD += -lcunit
 endif
 

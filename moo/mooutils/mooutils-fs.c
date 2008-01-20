@@ -603,7 +603,7 @@ normalize_full_path_unix (const char *path)
 
 #endif /* !__WIN32__ */
 
-#if defined(__WIN32__) || defined(MOO_ENABLE_TESTS)
+#if defined(__WIN32__) || defined(MOO_ENABLE_UNIT_TESTS)
 
 static char *
 normalize_full_path_win32 (const char *fullpath)
@@ -764,7 +764,7 @@ _moo_normalize_dir_path (const char *filename)
 #endif
 
 
-#ifdef MOO_ENABLE_TESTS
+#ifdef MOO_ENABLE_UNIT_TESTS
 
 #include <moo-tests.h>
 
@@ -1000,7 +1000,7 @@ moo_test_mooutils_fs (void)
 #endif
 }
 
-#endif /* MOO_ENABLE_TESTS */
+#endif /* MOO_ENABLE_UNIT_TESTS */
 
 
 /**********************************************************************/

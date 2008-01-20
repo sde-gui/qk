@@ -5,9 +5,10 @@ AM_CFLAGS =			\
 	$(MOO_DEBUG_CFLAGS)
 AM_OBJCFLAGS = $(AM_CFLAGS)
 
-noinst_PROGRAMS = run-tests
+noinst_PROGRAMS =
 
-# noinst_PROGRAMS =
+unit_test_programs = run-tests
+
 test_programs =				\
 	markup testpaned miniglade	\
 	testobject testthreads
@@ -25,11 +26,14 @@ if MOO_BUILD_APP
 test_programs += testhtml
 endif
 
-EXTRA_PROGRAMS = $(test_programs)
+EXTRA_PROGRAMS = $(test_programs) $(unit_test_programs)
 
-# if MOO_ENABLE_TESTS
-# noinst_PROGRAMS += $(test_programs)
-# endif
+if MOO_ENABLE_TESTS
+noinst_PROGRAMS += $(test_programs)
+endif
+if MOO_ENABLE_UNIT_TESTS
+noinst_PROGRAMS += $(unit_test_programs)
+endif
 
 all-tests: $(EXTRA_PROGRAMS)
 

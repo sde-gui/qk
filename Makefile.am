@@ -61,6 +61,10 @@ endif
 
 if MOO_ENABLE_TESTS
 SUBDIRS += tests
+else
+if MOO_ENABLE_UNIT_TESTS
+SUBDIRS += tests
+endif
 endif
 
 ACLOCAL_AMFLAGS = -I m4
