@@ -24,7 +24,8 @@ TEST_PASSED_OR_FAILEDV (gboolean    passed,
     else
         msg = passed ? "Passed" : "Failed";
 
-    CU_assertImplementation (passed, line, msg, file, "", FALSE);
+    CU_assertImplementation (passed, line, (char*) msg,
+                             (char*) file, (char*) "", FALSE);
 
     g_free (freeme);
 }
@@ -47,8 +48,8 @@ TEST_PASSED_OR_FAILED (gboolean    passed,
                            format, __VA_ARGS__)
 
 #define TEST_ASSERT(cond)                                           \
-    CU_assertImplementation (!!(cond), __LINE__, #cond, __FILE__,   \
-                             "", FALSE)
+    CU_assertImplementation (!!(cond), __LINE__, (char*) #cond,     \
+                             (char*) __FILE__, (char*) "", FALSE)
 
 #define TEST_ASSERT_CMP__(Type,actual,expected,cmp,fmt_arg,msg)     \
 G_STMT_START {                                                      \
@@ -182,6 +183,7 @@ G_STMT_START {                                  \
 	                  G_STRFUNC,            \
 	                  #expr);               \
 } G_STMT_END
+
 
 G_GNUC_UNUSED struct TestWarningsInfo {
     int count;
