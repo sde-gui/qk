@@ -173,6 +173,93 @@ TEST_FMT_STRV (char **array)
 #define TEST_FMT_INT(a)     test_string_stack_add__ (g_strdup_printf ("%d", (int) a))
 #define TEST_FMT_UINT(a)    test_string_stack_add__ (g_strdup_printf ("%u", (guint) a))
 
+G_GNUC_UNUSED struct TestWarningsInfo {
+    int count;
+    int line;
+    char *file;
+    char *msg;
+} *test_warnings_info;
+
+static void
+test_log_handler (const gchar    *log_domain,
+                  GLogLevelFlags  log_level,
+                  const gchar    *message,
+                  gpointer        data)
+{
+    g_assert (data == test_warnings_info);
+
+    test_warnings_info->count -= 1;
+
+    if (test_warnings_info->count < 0)
+        g_log_default_handler (log_domain, log_level, message, NULL);
+}
+
+static void
+TEST_EXPECT_WARNINGV_ (int         howmany,
+                       int         line,
+                       const char *file,
+                       const char *fmt,
+                       va_list     args)
+{
+    g_assert (test_warnings_info == NULL);
+    g_assert (howmany >= 0);
+
+    test_warnings_info = g_new0 (struct TestWarningsInfo, 1);
+    test_warnings_info->count = howmany;
+    test_warnings_info->line = line;
+    test_warnings_info->file = g_strdup (file);
+    test_warnings_info->msg = g_strdup_vprintf (fmt, args);
+
+    g_log_set_default_handler (test_log_handler, test_warnings_info);
+    g_log_set_handler (NULL, G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
+                       test_log_handler, test_warnings_info);
+    g_log_set_handler (G_LOG_DOMAIN, G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
+                       test_log_handler, test_warnings_info);
+}
+
+G_GNUC_UNUSED static void
+TEST_EXPECT_WARNING_ (int         howmany,
+                      int         line,
+                      const char *file,
+                      const char *fmt,
+                      ...)
+{
+    va_list args;
+    va_start (args, fmt);
+    TEST_EXPECT_WARNINGV_ (howmany, line, file, fmt, args);
+    va_end (args);
+}
+
+#define TEST_EXPECT_WARNING(howmany,fmt,...)            \
+    TEST_EXPECT_WARNING_ (howmany, __LINE__, __FILE__,  \
+                          fmt, __VA_ARGS__)
+
+G_GNUC_UNUSED static void
+TEST_CHECK_WARNING (void)
+{
+    g_assert (test_warnings_info != NULL);
+
+    TEST_PASSED_OR_FAILED (test_warnings_info->count == 0,
+                           test_warnings_info->line,
+                           test_warnings_info->file,
+                           "%s: %d %s warning(s)",
+                           test_warnings_info->msg ? test_warnings_info->msg : "",
+                           ABS (test_warnings_info->count),
+                           test_warnings_info->count < 0 ?
+                            "unexpected" : "missing");
+
+    g_free (test_warnings_info->msg);
+    g_free (test_warnings_info->file);
+    g_free (test_warnings_info);
+    test_warnings_info = NULL;
+
+    g_log_set_default_handler (g_log_default_handler, NULL);
+    g_log_set_handler (NULL, G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
+                       g_log_default_handler, test_warnings_info);
+    g_log_set_handler (G_LOG_DOMAIN, G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
+                       g_log_default_handler, test_warnings_info);
+}
+
 
 G_END_DECLS
 

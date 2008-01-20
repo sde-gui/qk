@@ -312,7 +312,13 @@ test_parse_cmd_line_one (const char  *cmd_line,
     char **argv;
     GError *error = NULL;
 
+    /* Anything but NULL must be treated properly, without warnings */
+    TEST_EXPECT_WARNING (!cmd_line, "_moo_win32_lame_parse_cmd_line(%s)",
+                         TEST_FMT_STR (cmd_line));
+
     argv = _moo_win32_lame_parse_cmd_line (cmd_line, &error);
+
+    TEST_CHECK_WARNING ();
 
     TEST_ASSERT_STRV_EQ_MSG (argv, (char**) expected,
                              "_moo_win32_lame_parse_cmd_line(%s)",

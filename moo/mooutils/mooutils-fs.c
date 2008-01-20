@@ -612,11 +612,7 @@ normalize_full_path_win32 (const char *fullpath)
     char *path;
     guint slashes;
 
-#ifndef __WIN32__
-    /* for tests */
-    if (!fullpath || !fullpath[0])
-        return g_strdup (fullpath);
-#endif
+    g_return_val_if_fail (fullpath && fullpath[0], g_strdup (fullpath));
 
     if (fullpath[0] && fullpath[1] == ':')
     {
@@ -780,7 +776,10 @@ test_normalize_path_one (const char *path,
 {
     char *result;
 
+    TEST_EXPECT_WARNING (!(expected && expected[0]),
+                         "%s(%s)", func_name, TEST_FMT_STR (path));
     result = func (path);
+    TEST_CHECK_WARNING ();
 
     TEST_ASSERT_STR_EQ_MSG (result, expected, "%s(%s)",
                             func_name, TEST_FMT_STR (path));
