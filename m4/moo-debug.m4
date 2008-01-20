@@ -94,8 +94,8 @@ m4_undefine([_moo_WNAME])
 ])
 
 if $MOO_GCC; then
-  if test "x$_moo_all_warnings" = "xyes"; then
-    _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS,[-fstrict-aliasing])
+  if test x$MOO_DEBUG_ENABLED = "xyes"; then
+    _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS,[-fstrict-aliasing -Wstrict-aliasing])
   else
     _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS,[-fno-strict-aliasing])
   fi
