@@ -211,10 +211,6 @@ static gboolean notebook_drag_motion            (GtkWidget          *widget,
 /* actions */
 static void action_new_doc                      (MooEditWindow      *window);
 static void action_open                         (MooEditWindow      *window);
-#if GTK_CHECK_VERSION(2,12,0)
-static void action_open_recent_dialog           (MooEditWindow      *window);
-static GtkAction *create_open_recent_action     (MooEditWindow      *window);
-#endif
 static void action_reload                       (MooEditWindow      *window);
 static GtkAction *create_reopen_with_encoding_action (MooEditWindow *window);
 static GtkAction *create_doc_encoding_action    (MooEditWindow      *window);
@@ -388,22 +384,6 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "accel", "<ctrl>O",
                                  "closure-callback", action_open,
                                  NULL);
-
-#if GTK_CHECK_VERSION(2,12,0)
-    moo_window_class_new_action_custom (window_class, "OpenRecent", NULL,
-                                        (MooWindowActionFunc) create_open_recent_action,
-                                        NULL, NULL);
-
-    moo_window_class_new_action (window_class, "OpenRecentDialog", NULL,
-                                 /* name of the More... menu item from the Open Recent menu,
-                                  * as shown in the Configure Shortcuts dialog */
-                                 "display-name", _("Open Recent Files Dialog"),
-                                 /* label of the More... menu item in the Open Recent menu,
-                                  * do not translate the part before | */
-                                 "label", Q_("Open Recent|_More..."),
-                                 "closure-callback", action_open_recent_dialog,
-                                 NULL);
-#endif
 
     moo_window_class_new_action (window_class, "Reload", NULL,
                                  "display-name", _("Reload"),
@@ -1294,126 +1274,6 @@ moo_edit_window_close (MooWindow *window)
     moo_editor_close_window (edit_window->priv->editor, edit_window, TRUE);
     return TRUE;
 }
-
-
-/****************************************************************************/
-/* Recent files
- */
-
-#if GTK_CHECK_VERSION(2,12,0)
-
-static void
-recent_item_activated (GtkRecentChooser *chooser,
-                       MooEditWindow    *window)
-{
-    char *uri;
-
-    uri = gtk_recent_chooser_get_current_uri (chooser);
-    g_return_if_fail (uri != NULL);
-
-    moo_editor_open_uri (window->priv->editor, window, NULL, uri, NULL);
-
-    g_free (uri);
-}
-
-static void
-action_open_recent_dialog (MooEditWindow *window)
-{
-    GtkWidget *dialog;
-    int response;
-    GtkRecentFilter *filter;
-
-    dialog = gtk_recent_chooser_dialog_new ("Choose File",
-                                            GTK_WINDOW (window),
-                                            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                            GTK_STOCK_OK, GTK_RESPONSE_OK,
-                                            NULL);
-    gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
-                                             GTK_RESPONSE_OK,
-                                             GTK_RESPONSE_CANCEL,
-                                             -1);
-    gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_CENTER_ON_PARENT);
-    gtk_window_set_destroy_with_parent (GTK_WINDOW (dialog), TRUE);
-    _moo_window_set_remember_size (GTK_WINDOW (dialog), "Editor/dialogs/recent-chooser-dialog", FALSE);
-
-    gtk_recent_chooser_set_show_not_found (GTK_RECENT_CHOOSER (dialog), FALSE);
-    gtk_recent_chooser_set_show_tips (GTK_RECENT_CHOOSER (dialog), TRUE);
-    gtk_recent_chooser_set_local_only (GTK_RECENT_CHOOSER (dialog), TRUE);
-    gtk_recent_chooser_set_limit (GTK_RECENT_CHOOSER (dialog), -1);
-    gtk_recent_chooser_set_sort_type (GTK_RECENT_CHOOSER (dialog), GTK_RECENT_SORT_MRU);
-
-    filter = gtk_recent_filter_new ();
-    gtk_recent_filter_add_pattern (filter, "*");
-    gtk_recent_filter_set_name (filter, "All Files");
-    gtk_recent_chooser_add_filter (GTK_RECENT_CHOOSER (dialog), filter);
-    filter = gtk_recent_filter_new ();
-    gtk_recent_filter_add_mime_type (filter, "text/*");
-    gtk_recent_filter_set_name (filter, "Text Files");
-    gtk_recent_chooser_add_filter (GTK_RECENT_CHOOSER (dialog), filter);
-    gtk_recent_chooser_set_filter (GTK_RECENT_CHOOSER (dialog), filter);
-
-    response = gtk_dialog_run (GTK_DIALOG (dialog));
-    gtk_widget_hide (dialog);
-
-    if (response == GTK_RESPONSE_OK)
-        recent_item_activated (GTK_RECENT_CHOOSER (dialog), window);
-
-    gtk_widget_destroy (dialog);
-}
-
-
-static GtkWidget *
-create_recent_menu (GtkAction *action)
-{
-    GtkWidget *menu, *item;
-    GtkRecentManager *manager;
-    GtkRecentFilter *filter;
-    GtkAction *action_more;
-    MooWindow *window;
-
-    window = _moo_action_get_window (action);
-    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
-
-    manager = gtk_recent_manager_get_default ();
-    menu = gtk_recent_chooser_menu_new_for_manager (manager);
-    g_signal_connect (menu, "item-activated",
-                      G_CALLBACK (recent_item_activated),
-                      window);
-
-    filter = gtk_recent_filter_new ();
-    gtk_recent_filter_add_mime_type (filter, "text/*");
-    gtk_recent_chooser_set_filter (GTK_RECENT_CHOOSER (menu), filter);
-    gtk_recent_chooser_set_local_only (GTK_RECENT_CHOOSER (menu), TRUE);
-    gtk_recent_chooser_set_show_not_found (GTK_RECENT_CHOOSER (menu), FALSE);
-    gtk_recent_chooser_set_show_tips (GTK_RECENT_CHOOSER (menu), TRUE);
-    gtk_recent_chooser_set_sort_type (GTK_RECENT_CHOOSER (menu), GTK_RECENT_SORT_MRU);
-
-    item = gtk_separator_menu_item_new ();
-    gtk_widget_show (item);
-    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-
-    action_more = moo_window_get_action (window, "OpenRecentDialog");
-    item = gtk_action_create_menu_item (action_more);
-    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-
-    item = gtk_menu_item_new ();
-    gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), menu);
-
-    return item;
-}
-
-static GtkAction*
-create_open_recent_action (G_GNUC_UNUSED MooEditWindow *window)
-{
-    GtkAction *action;
-
-    action = moo_menu_action_new ("OpenRecent", _("Open Recent"));
-    moo_menu_action_set_func (MOO_MENU_ACTION (action), create_recent_menu);
-
-    return action;
-}
-
-#endif /* GTK_CHECK_VERSION(2,12,0) */
 
 
 /****************************************************************************/
