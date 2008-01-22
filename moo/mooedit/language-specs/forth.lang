@@ -35,7 +35,7 @@
     <style id="preprocessor"  _name="Preprocessor"  map-to="def:preprocessor"/>
     <style id="keyword"       _name="Keyword"       map-to="def:statement"/>
     <style id="type"          _name="Data Type"     map-to="def:type"/>
-    <style id="number"        _name="All number"    map-to="def:decimal"/>
+    <style id="number"        _name="Number"        map-to="def:decimal"/>
     <style id="debugs"        _name="Debug Code"    map-to="def:comment"/>
     <style id="error"         _name="Error text"    map-to="def:error"/>
     <style id="compiler"      _name="Compiler opt"  map-to="def:identifier"/>
