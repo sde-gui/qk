@@ -61,7 +61,7 @@
         </context>
         <!-- skip backslash where it's not an escaping char -->
         <context>
-            <match>\\.</match>
+            <match>\\</match>
         </context>
         <context ref="def:line-continue"/>
       </include>
