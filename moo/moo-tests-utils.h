@@ -43,6 +43,10 @@ TEST_PASSED_OR_FAILED (gboolean    passed,
     va_end (args);
 }
 
+#define TEST_FAILED_MSG(format,...)                                 \
+    TEST_PASSED_OR_FAILED (FALSE, __LINE__, __FILE__,               \
+                           format, __VA_ARGS__)
+
 #define TEST_ASSERT_MSG(cond,format,...)                            \
     TEST_PASSED_OR_FAILED (!!(cond), __LINE__, __FILE__,            \
                            format, __VA_ARGS__)

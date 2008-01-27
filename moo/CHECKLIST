@@ -1,10 +1,2 @@
 mooedit/mootextbtree.c: CHECK_INTEGRITY
 mooutils/moofileview/moofoldermodel-private.h: DEFINE_CHECK_FILE_LIST_INTEGRITY
-mooterm/mootermline-private.h: #if 0...
-mooterm: remove dependency on yacc
-mooedit/moohighlighter.c:iter_get_syntax_tag(): #if 0 ...
-mooedit/moolang.h; mooedit/moolang-rules.c: Rule::debug_string
-mooedit/mooeditprefs.c: remove Courier New
-mooedit/moofold.c: check in moo_fold_tree_remove()
-mooutils/mooscript/mooscript-node.h:_ms_node_check
-mooutils/mooscript/mooscript-node.h:_ms_node_check_type

@@ -666,8 +666,9 @@ cfunc_insert (lua_State *L)
 
     for (i = 1; i <= lua_gettop (L); ++i)
     {
-        const char *s = lua_tostring (L, i);
-        gtk_text_buffer_insert (buffer, &start, s, -1);
+        size_t len;
+        const char *s = lua_check_utf8string (L, i, &len);
+        gtk_text_buffer_insert (buffer, &start, s, len);
     }
 
     scroll_to_cursor (doc);
@@ -695,8 +696,9 @@ cfunc_insert_text (lua_State *L)
 
     for (i = 2; i <= n_args; ++i)
     {
-        const char *s = lua_tostring (L, i);
-        gtk_text_buffer_insert (buffer, &iter, s, -1);
+        size_t len;
+        const char *s = lua_check_utf8string (L, i, &len);
+        gtk_text_buffer_insert (buffer, &iter, s, len);
     }
 
     return 0;
@@ -738,12 +740,16 @@ cfunc_selection (lua_State *L)
     CHECK_DOC (L, doc);
     parse_args (L, "Selection", "");
 
-    text = moo_text_view_get_selection (doc);
-    if (text && text[0])
-        lua_pushstring (L, text);
+    if ((text = moo_text_view_get_selection (doc)) && text[0])
+    {
+        lua_take_utf8string (L, text);
+    }
     else
+    {
         lua_pushnil (L);
-    g_free (text);
+        g_free (text);
+    }
+
     return 1;
 }
 
@@ -963,8 +969,7 @@ cfunc_get_text (lua_State *L)
     gtk_text_iter_order (&start, &end);
 
     text = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
-    lua_pushstring (L, text);
-    g_free (text);
+    lua_take_utf8string (L, text);
 
     return 1;
 }

@@ -3,6 +3,7 @@
 
 #include "lualib.h"
 #include "lauxlib.h"
+#include "ustring.h"
 
 #define L_RETURN_BOOL(val)      \
 G_STMT_START {                  \
