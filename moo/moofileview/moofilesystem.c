@@ -464,7 +464,7 @@ get_folder (MooFileSystem  *fs,
 #endif /* __WIN32__ */
 
     /* XXX check the caller */
-    if (!g_path_is_absolute (path))
+    if (!_moo_path_is_absolute (path))
     {
         g_set_error (error, MOO_FILE_ERROR,
                      MOO_FILE_ERROR_BAD_FILENAME,
@@ -541,7 +541,7 @@ create_folder (G_GNUC_UNUSED MooFileSystem *fs,
     g_return_val_if_fail (path != NULL, FALSE);
 
     /* XXX check the caller */
-    if (!g_path_is_absolute (path))
+    if (!_moo_path_is_absolute (path))
     {
         g_set_error (error, MOO_FILE_ERROR,
                      MOO_FILE_ERROR_BAD_FILENAME,
@@ -685,7 +685,7 @@ delete_file (G_GNUC_UNUSED MooFileSystem *fs,
     gboolean isdir;
 
     g_return_val_if_fail (path != NULL, FALSE);
-    g_return_val_if_fail (g_path_is_absolute (path), FALSE);
+    g_return_val_if_fail (_moo_path_is_absolute (path), FALSE);
 
     if (g_file_test (path, G_FILE_TEST_IS_SYMLINK))
         isdir = FALSE;
@@ -722,8 +722,8 @@ move_file_unix (G_GNUC_UNUSED MooFileSystem *fs,
                 GError        **error)
 {
     g_return_val_if_fail (old_path && new_path, FALSE);
-    g_return_val_if_fail (g_path_is_absolute (old_path), FALSE);
-    g_return_val_if_fail (g_path_is_absolute (new_path), FALSE);
+    g_return_val_if_fail (_moo_path_is_absolute (old_path), FALSE);
+    g_return_val_if_fail (_moo_path_is_absolute (new_path), FALSE);
 
     /* XXX */
     if (_moo_rename (old_path, new_path))
@@ -762,7 +762,7 @@ make_path_unix (G_GNUC_UNUSED MooFileSystem *fs,
     g_return_val_if_fail (display_name != NULL, NULL);
 
     /* XXX check the caller */
-    if (!g_path_is_absolute (base_path))
+    if (!_moo_path_is_absolute (base_path))
     {
         g_set_error (error, MOO_FILE_ERROR,
                      MOO_FILE_ERROR_BAD_FILENAME,
@@ -842,7 +842,7 @@ parse_path_unix (MooFileSystem  *fs,
     g_return_val_if_fail (path_utf8 && path_utf8[0], FALSE);
 
     /* XXX check the caller */
-    if (!g_path_is_absolute (path_utf8))
+    if (!_moo_path_is_absolute (path_utf8))
     {
         g_set_error (error, MOO_FILE_ERROR,
                      MOO_FILE_ERROR_BAD_FILENAME,
@@ -915,7 +915,7 @@ get_absolute_path_unix (G_GNUC_UNUSED MooFileSystem *fs,
             return g_strdup (home);
     }
 
-    if (g_path_is_absolute (short_name))
+    if (_moo_path_is_absolute (short_name))
         return g_strdup (short_name);
 
     if (current_dir)
@@ -1068,7 +1068,7 @@ make_path_win32 (G_GNUC_UNUSED MooFileSystem *fs,
                  const char     *display_name,
                  G_GNUC_UNUSED GError **error)
 {
-    g_return_val_if_fail (g_path_is_absolute (base_path), NULL);
+    g_return_val_if_fail (_moo_path_is_absolute (base_path), NULL);
     g_return_val_if_fail (display_name != NULL, NULL);
     return g_strdup_printf ("%s\\%s", base_path, display_name);
 }
@@ -1090,7 +1090,7 @@ parse_path_win32 (MooFileSystem  *fs,
     gsize len;
 
     g_return_val_if_fail (path_utf8 && path_utf8[0], FALSE);
-    g_return_val_if_fail (g_path_is_absolute (path_utf8), FALSE);
+    g_return_val_if_fail (_moo_path_is_absolute (path_utf8), FALSE);
 
     separator = strrchr (path_utf8, '\\');
     g_return_val_if_fail (separator != NULL, FALSE);
@@ -1139,7 +1139,7 @@ get_absolute_path_win32 (G_GNUC_UNUSED MooFileSystem *fs,
 {
     g_return_val_if_fail (short_name && short_name[0], NULL);
 
-    if (g_path_is_absolute (short_name))
+    if (_moo_path_is_absolute (short_name))
         return g_strdup (short_name);
 
     if (current_dir)

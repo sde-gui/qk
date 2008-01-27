@@ -67,6 +67,7 @@ char          **moo_filenames_from_locale   (char      **files);
 char           *moo_filename_from_locale    (const char *file);
 
 char           *_moo_normalize_file_path    (const char *filename);
+gboolean        _moo_path_is_absolute       (const char *path);
 
 /*
  * C library and WinAPI functions wrappers analogous to glib/gstdio.h

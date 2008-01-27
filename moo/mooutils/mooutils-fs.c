@@ -439,7 +439,7 @@ _moo_chdir (const char *path)
 //     working_dir = g_get_current_dir ();
 //     g_return_val_if_fail (working_dir != NULL, g_strdup (filename));
 //
-//     if (!g_path_is_absolute (filename))
+//     if (!_moo_path_is_absolute (filename))
 //     {
 //         freeme = g_build_filename (working_dir, filename, NULL);
 //         filename = freeme;
@@ -723,12 +723,7 @@ normalize_path (const char *filename)
 
     g_assert (filename && filename[0]);
 
-    if (!g_path_is_absolute (filename)
-#ifdef __WIN32__
-        /* 'C:' is an absolute path even if glib doesn't like it */
-        && filename[1] != ':'
-#endif
-        )
+    if (!_moo_path_is_absolute (filename))
     {
         char *working_dir = g_get_current_dir ();
         g_return_val_if_fail (working_dir != NULL, g_strdup (filename));
@@ -755,13 +750,20 @@ _moo_normalize_file_path (const char *filename)
     return normalize_path (filename);
 }
 
-#if 0
-char *
-_moo_normalize_dir_path (const char *filename)
+gboolean
+_moo_path_is_absolute (const char *path)
 {
-    return normalize_path (filename, TRUE);
-}
+    g_return_val_if_fail (path != NULL, FALSE);
+    return g_path_is_absolute (path)
+#ifdef __WIN32__
+        /* 'C:' is an absolute path even if glib doesn't like it */
+        /* This will match nonsense like 1:23:23 too, but that's not
+         * a valid path, and it's better to have "1:23:23" in the error
+         * message than "c:\some\silly\current\dir\1:23:23" */
+        || filename[1] == ':'
 #endif
+        ;
+}
 
 
 #ifdef MOO_ENABLE_UNIT_TESTS
@@ -802,6 +804,7 @@ make_cases (gboolean unix_paths)
     const char *abs_files_unix[] = {
         "/usr", "/usr",
         "/usr/", "/usr",
+        "/usr///", "/usr",
         "///usr////", "/usr",
         "/", "/",
         "//", "/",
@@ -816,6 +819,7 @@ make_cases (gboolean unix_paths)
     const char *abs_files_win32[] = {
         "C:", "C:\\",
         "C:\\", "C:\\",
+        "C:\\\\", "C:\\",
         "C:\\foobar", "C:\\foobar",
         "C:\\foobar\\", "C:\\foobar",
         "C:\\foobar\\\\\\", "C:\\foobar",
@@ -833,6 +837,7 @@ make_cases (gboolean unix_paths)
         "././././/", NULL,
         "foobar", "foobar",
         "foobar/", "foobar",
+        "foobar//", "foobar",
         "foobar/..", NULL,
         "foobar/./..", NULL,
         "foobar/../", NULL,
@@ -850,6 +855,7 @@ make_cases (gboolean unix_paths)
         "foobar/com", "foobar\\com",
         ".\\.\\.\\.\\\\", NULL,
         "foobar\\", "foobar",
+        "foobar\\\\", "foobar",
         "foobar\\..", NULL,
         "foobar\\.\\..", NULL,
         "foobar\\..\\", NULL,
@@ -926,12 +932,16 @@ make_cases (gboolean unix_paths)
         g_ptr_array_add (paths, g_strdup (parent_dir));
         g_ptr_array_add (paths, g_strdup (".././"));
         g_ptr_array_add (paths, g_strdup (parent_dir));
+        g_ptr_array_add (paths, g_strdup ("..//"));
+        g_ptr_array_add (paths, g_strdup (parent_dir));
 #ifdef __WIN32__
         g_ptr_array_add (paths, g_strdup ("..\\"));
         g_ptr_array_add (paths, g_strdup (parent_dir));
         g_ptr_array_add (paths, g_strdup ("..\\."));
         g_ptr_array_add (paths, g_strdup (parent_dir));
         g_ptr_array_add (paths, g_strdup ("..\\.\\"));
+        g_ptr_array_add (paths, g_strdup (parent_dir));
+        g_ptr_array_add (paths, g_strdup ("..\\\\"));
         g_ptr_array_add (paths, g_strdup (parent_dir));
 #endif
         g_free (parent_dir);

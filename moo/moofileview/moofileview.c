@@ -1066,7 +1066,7 @@ moo_file_view_chdir_real (MooFileView    *fileview,
         return TRUE;
     }
 
-    if (g_path_is_absolute (new_dir) || !fileview->priv->current_dir)
+    if (_moo_path_is_absolute (new_dir) || !fileview->priv->current_dir)
     {
         real_new_dir = g_strdup (new_dir);
     }
