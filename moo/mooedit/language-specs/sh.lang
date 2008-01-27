@@ -57,7 +57,7 @@
       <include>
         <!-- highlight escaped chars -->
         <context style-ref="def:special-char">
-            <match>\\[$"\\]</match>
+            <match>\\[$`"\\]</match>
         </context>
         <!-- skip backslash where it's not an escaping char -->
         <context>
