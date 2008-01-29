@@ -1,0 +1,138 @@
+#ifndef MOO_TESTS_LUA_H
+#define MOO_TESTS_LUA_H
+
+#include "moo-tests.h"
+
+G_BEGIN_DECLS
+
+
+static void
+moo_test_run_lua_script (lua_State  *L,
+                         const char *script,
+                         const char *filename)
+{
+    int ret;
+    int i;
+
+    if (lua_gettop (L) != 0)
+    {
+        TEST_FAILED_MSG ("before running script `%s': Lua state is corrupted",
+                         filename);
+        return;
+    }
+
+    if (luaL_loadstring (L, script) != 0)
+    {
+        const char *msg = lua_tostring (L, -1);
+        TEST_FAILED_MSG ("error loading script `%s': %s",
+                         filename, msg);
+        return;
+    }
+
+    if ((ret = lua_pcall (L, 0, 0, 0)) != 0)
+    {
+        const char *msg = lua_tostring (L, -1);
+
+        switch (ret)
+        {
+            case LUA_ERRRUN:
+                TEST_FAILED_MSG ("error running script `%s': %s",
+                                 filename, msg);
+                break;
+            case LUA_ERRMEM:
+                TEST_FAILED_MSG ("error running script `%s', memory exhausted",
+                                 filename);
+                break;
+            case LUA_ERRERR:
+                TEST_FAILED_MSG ("error running script `%s', "
+                                 "this should not have happened!",
+                                 filename);
+                break;
+        }
+
+        return;
+    }
+
+    luaL_loadstring (L, "return munit_report()");
+    if ((ret = lua_pcall (L, 0, LUA_MULTRET, 0)) != 0)
+        g_error ("%s: fix me!", G_STRFUNC);
+
+    for (i = 1; i+1 <= lua_gettop (L); i += 2)
+    {
+        if (!lua_isstring (L, i) || !lua_isboolean (L, i+1))
+        {
+            TEST_FAILED_MSG ("script `%s' returned wrong value (%d)",
+                             filename, lua_isstring (L, i) ? i+1 : i);
+        }
+        else
+        {
+            const char *msg = lua_tostring (L, i);
+            gboolean success = lua_toboolean (L, i+1);
+            TEST_PASSED_OR_FAILED (success, 0, filename, "%s", msg);
+        }
+    }
+
+    if (i != lua_gettop (L) + 1)
+        TEST_FAILED_MSG ("script `%s' returned wrong number of values (%d)",
+                         filename, lua_gettop (L));
+}
+
+static char *
+moo_test_load_file (const char *basename)
+{
+    char *fullname;
+    char *contents = NULL;
+    GError *error = NULL;
+
+    fullname = g_build_filename (SRCDIR, "test", basename, NULL);
+
+    if (!g_file_get_contents (fullname, &contents, NULL, &error))
+    {
+        TEST_FAILED_MSG ("could not open file `%s': %s",
+                         fullname, error->message);
+        g_error_free (error);
+    }
+
+    g_free (fullname);
+    return contents;
+}
+
+static void
+moo_test_run_lua_file (const char *basename,
+                       void (*setup_lua) (lua_State*),
+                       void (*cleanup_lua) (lua_State*))
+{
+    static char *contents;
+
+    if ((contents = moo_test_load_file (basename)))
+    {
+        lua_State *L;
+
+        L = lua_open ();
+        luaL_openlibs (L);
+
+#ifndef __WIN32__
+        {
+            const char *testdir = TOP_SRCDIR "/moo/moolua/test";
+            lua_addpath (L, (char**) &testdir, 1);
+        }
+#endif
+
+        if (setup_lua)
+            setup_lua (L);
+
+        moo_test_run_lua_script (L, contents, basename);
+
+        if (cleanup_lua)
+            cleanup_lua (L);
+
+        lua_close (L);
+    }
+
+    g_free (contents);
+}
+
+
+G_END_DECLS
+
+#endif /* MOO_TESTS_LUA_H */

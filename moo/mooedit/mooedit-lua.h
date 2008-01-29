@@ -25,6 +25,9 @@ void    _moo_edit_lua_set_doc   (lua_State      *L,
                                  GtkTextView    *doc);
 void    _moo_edit_lua_cleanup   (lua_State      *L);
 
+void    _moo_lua_push_object    (lua_State      *L,
+                                 GObject        *object);
+
 
 G_END_DECLS
 

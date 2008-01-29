@@ -1,11 +1,5 @@
 require("ustring")
-
-local _test_ret = {}
-local tassert = function(cond, msg, ...)
-  table.insert(_test_ret, string.format(msg, ...))
-  table.insert(_test_ret, not not cond)
-end
-
+require("munit")
 
 local strings = {
   { "", "", "", 0, 0 },
@@ -63,6 +57,3 @@ end
 for index, case in pairs(non_ascii_strings) do
   test_ustring_one(case, false)
 end
-
-
-return unpack(_test_ret)

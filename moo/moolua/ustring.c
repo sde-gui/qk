@@ -379,104 +379,58 @@ luaopen_ustring (lua_State *L)
 }
 
 
+void
+lua_addpath (lua_State  *L,
+             char      **dirs,
+             unsigned    n_dirs)
+{
+    guint i;
+    GString *new_path;
+    const char *path;
+
+    if (!n_dirs)
+        return;
+
+    lua_getglobal (L, "package"); /* push package */
+    if (!lua_istable (L, -1))
+    {
+        lua_pop (L, 1);
+        g_critical ("%s: package variable missing or not a table", G_STRFUNC);
+        return;
+    }
+
+    lua_getfield (L, -1, "path"); /* push package.path */
+    if (!lua_isstring (L, -1))
+    {
+        lua_pop (L, 2);
+        g_critical ("%s: package.path is missing or not a string", G_STRFUNC);
+        return;
+    }
+
+    path = lua_tostring (L, -1);
+    new_path = g_string_new (NULL);
+
+    for (i = 0; i < n_dirs; ++i)
+        g_string_append_printf (new_path, "%s/?.lua;", dirs[i]);
+
+    g_string_append (new_path, path);
+
+    lua_pushstring (L, new_path->str);
+    lua_setfield (L, -3, "path"); /* pops the string */
+    lua_pop (L, 2); /* pop package.path and package */
+
+    g_string_free (new_path, TRUE);
+}
+
+
 #ifdef MOO_ENABLE_UNIT_TESTS
 
-#include "moo-tests.h"
-
-static void
-run_script (const char *script,
-            const char *filename)
-{
-    lua_State *L;
-    int ret;
-    int i;
-
-    L = lua_open ();
-    luaL_openlibs (L);
-
-    if (luaL_loadstring (L, script) != 0)
-    {
-        const char *msg = lua_tostring (L, -1);
-        TEST_FAILED_MSG ("error loading script `%s': %s",
-                         filename, msg);
-        lua_close (L);
-        return;
-    }
-
-    if ((ret = lua_pcall (L, 0, LUA_MULTRET, 0)) != 0)
-    {
-        const char *msg = lua_tostring (L, -1);
-
-        switch (ret)
-        {
-            case LUA_ERRRUN:
-                TEST_FAILED_MSG ("error running script `%s': %s",
-                                 filename, msg);
-                break;
-            case LUA_ERRMEM:
-                TEST_FAILED_MSG ("error running script `%s', memory exhausted",
-                                 filename);
-                break;
-            case LUA_ERRERR:
-                TEST_FAILED_MSG ("error running script `%s', "
-                                 "this should not have happened!",
-                                 filename);
-                break;
-        }
-
-        lua_close (L);
-        return;
-    }
-
-    for (i = 1; i+1 <= lua_gettop (L); i += 2)
-    {
-        if (!lua_isstring (L, i) || !lua_isboolean (L, i+1))
-        {
-            TEST_FAILED_MSG ("script `%s' returned wrong value",
-                             filename);
-        }
-        else
-        {
-            const char *msg = lua_tostring (L, i);
-            gboolean success = lua_toboolean (L, i+1);
-            TEST_PASSED_OR_FAILED (success, 0, filename, "%s", msg);
-        }
-    }
-
-    if (i != lua_gettop (L) + 1)
-        TEST_FAILED_MSG ("script `%s' returned wrong number of values",
-                         filename);
-
-    lua_close (L);
-}
-
-static void
-run_file (const char *file)
-{
-    char *fullname;
-    char *contents;
-    GError *error = NULL;
-
-    fullname = g_build_filename (SRCDIR, "test", file, NULL);
-    if (!g_file_get_contents (fullname, &contents, NULL, &error))
-    {
-        TEST_FAILED_MSG ("could not open file `%s': %s",
-                         fullname, error->message);
-        g_error_free (error);
-        g_free (fullname);
-        return;
-    }
-
-    run_script (contents, fullname);
-
-    g_free (contents);
-    g_free (fullname);
-}
+#include "moo-tests-lua.h"
 
 static void
 test_ustring (void)
 {
-    run_file ("testustring.lua");
+    moo_test_run_lua_file ("testustring.lua", NULL, NULL);
 }
 
 void
@@ -484,7 +438,7 @@ moo_test_lua (void)
 {
     CU_pSuite suite;
 
-    suite = CU_add_suite ("moolua/ustring/ustring.c", NULL, NULL);
+    suite = CU_add_suite ("moolua/ustring.c", NULL, NULL);
 
     CU_add_test (suite, "test of ustring", test_ustring);
 }

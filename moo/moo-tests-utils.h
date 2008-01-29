@@ -47,6 +47,10 @@ TEST_PASSED_OR_FAILED (gboolean    passed,
     TEST_PASSED_OR_FAILED (FALSE, __LINE__, __FILE__,               \
                            format, __VA_ARGS__)
 
+#define TEST_FAILED(msg)                                            \
+    TEST_PASSED_OR_FAILED (FALSE, __LINE__, __FILE__,               \
+                           "%s", msg)
+
 #define TEST_ASSERT_MSG(cond,format,...)                            \
     TEST_PASSED_OR_FAILED (!!(cond), __LINE__, __FILE__,            \
                            format, __VA_ARGS__)
@@ -210,10 +214,6 @@ test_log_handler (const gchar    *log_domain,
 
         if (test_warnings_info->count < 0)
             g_log_default_handler (log_domain, log_level, message, NULL);
-    }
-    else
-    {
-        g_log_default_handler (log_domain, log_level, message, NULL);
     }
 }
 

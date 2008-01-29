@@ -13,6 +13,7 @@ mooedit-private.lo: mooedit.lo
 lua_sources =				\
 	moocommand-lua.c		\
 	moocommand-lua.h		\
+	mooedit-lua-api.c		\
 	mooedit-lua.c			\
 	mooedit-lua.h
 
@@ -257,3 +258,9 @@ mooedit_includedir = $(moo_includedir)/mooedit
 mooedit_include_HEADERS = $(mooedit_include_headers)
 nodist_mooedit_include_HEADERS = $(nodist_mooedit_include_headers)
 endif
+
+if MOO_ENABLE_UNIT_TESTS
+AM_CFLAGS += -DSRCDIR=\"$(shell cd $(srcdir) && pwd)\" -DTOP_SRCDIR=\"$(shell cd $(top_srcdir) && pwd)\"
+endif
+EXTRA_DIST +=			\
+	test/gobject.lua

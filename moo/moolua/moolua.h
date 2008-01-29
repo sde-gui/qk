@@ -11,4 +11,8 @@ G_STMT_START {                  \
     return 1;                   \
 } G_STMT_END
 
+void lua_addpath (lua_State   *L,
+                  char      **dirs,
+                  unsigned    n_dirs);
+
 #endif /* MOO_LUA_H */

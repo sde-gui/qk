@@ -19,6 +19,7 @@ main (int argc, char *argv[])
 #endif
 
     moo_test_lua ();
+    moo_test_mooedit_lua_api ();
 
     CU_basic_set_mode (CU_BRM_VERBOSE);
     CU_basic_run_tests ();

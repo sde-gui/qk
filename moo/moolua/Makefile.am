@@ -10,8 +10,10 @@ AM_CFLAGS =			\
 
 libustring_la_CFLAGS =		\
 	$(MOO_CFLAGS)		\
-	$(MOO_DEBUG_CFLAGS)	\
-	-DSRCDIR=\"$(shell cd $(srcdir) && pwd)\"
+	$(MOO_DEBUG_CFLAGS)
+if MOO_ENABLE_UNIT_TESTS
+libustring_la_CFLAGS += -DSRCDIR=\"$(shell cd $(srcdir) && pwd)\" -DTOP_SRCDIR=\"$(shell cd $(top_srcdir) && pwd)\"
+endif
 libustring_la_SOURCES =		\
 	ustring.h		\
 	ustring.c

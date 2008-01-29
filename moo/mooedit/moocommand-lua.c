@@ -59,41 +59,12 @@ set_variable (const char   *name,
 static void
 add_path (lua_State *L)
 {
-    char **dirs, **p;
-    GString *new_path;
-    const char *path;
-
-    lua_getglobal (L, "package"); /* push package */
-    if (!lua_istable (L, -1))
-    {
-        lua_pop (L, 1);
-        g_critical ("%s: package variable missing or not a table", G_STRFUNC);
-        return;
-    }
-
-    lua_getfield (L, -1, "path"); /* push package.path */
-    if (!lua_isstring (L, -1))
-    {
-        lua_pop (L, 2);
-        g_critical ("%s: package.path is missing or not a string", G_STRFUNC);
-        return;
-    }
-
-    path = lua_tostring (L, -1);
-    new_path = g_string_new ("./?.lua;");
+    char **dirs;
 
     dirs = moo_get_data_subdirs ("lua", MOO_DATA_SHARE, NULL);
-    for (p = dirs; p && *p; ++p)
-        g_string_append_printf (new_path, "%s/?.lua;", *p);
-
-    g_string_append (new_path, path);
-
-    lua_pushstring (L, new_path->str);
-    lua_setfield (L, -3, "path"); /* pops the string */
-    lua_pop (L, 2); /* pop package.path and package */
+    lua_addpath (L, dirs, g_strv_length (dirs));
 
     g_strfreev (dirs);
-    g_string_free (new_path, TRUE);
 }
 
 static lua_State *
