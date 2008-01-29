@@ -760,7 +760,7 @@ _moo_path_is_absolute (const char *path)
         /* This will match nonsense like 1:23:23 too, but that's not
          * a valid path, and it's better to have "1:23:23" in the error
          * message than "c:\some\silly\current\dir\1:23:23" */
-        || filename[1] == ':'
+        || path[1] == ':'
 #endif
         ;
 }
