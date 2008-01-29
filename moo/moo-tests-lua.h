@@ -57,18 +57,18 @@ moo_test_run_lua_script (lua_State  *L,
     if ((ret = lua_pcall (L, 0, LUA_MULTRET, 0)) != 0)
         g_error ("%s: fix me!", G_STRFUNC);
 
-    for (i = 1; i+1 <= lua_gettop (L); i += 2)
+    for (i = 1; i+2 <= lua_gettop (L); i += 3)
     {
-        if (!lua_isstring (L, i) || !lua_isboolean (L, i+1))
+        if (!lua_isstring (L, i) || !lua_isboolean (L, i+1) || !lua_isnumber (L, i+2))
         {
-            TEST_FAILED_MSG ("script `%s' returned wrong value (%d)",
-                             filename, lua_isstring (L, i) ? i+1 : i);
+            TEST_FAILED_MSG ("script `%s' returned wrong value!", filename);
         }
         else
         {
             const char *msg = lua_tostring (L, i);
             gboolean success = lua_toboolean (L, i+1);
-            TEST_PASSED_OR_FAILED (success, 0, filename, "%s", msg);
+            int line = lua_tointeger (L, i+2);
+            TEST_PASSED_OR_FAILED (success, line, filename, "%s", msg);
         }
     }
 

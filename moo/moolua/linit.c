@@ -13,7 +13,7 @@
 #include "lualib.h"
 #include "lauxlib.h"
 #include "ext/lfs.h"
-#include "ustring.h"
+#include "moolua.h"
 
 
 static const luaL_Reg lualibs[] = {
@@ -26,7 +26,7 @@ static const luaL_Reg lualibs[] = {
   {LUA_MATHLIBNAME, luaopen_math},
   {LUA_DBLIBNAME, luaopen_debug},
   {"lfs", luaopen_lfs},
-  {"ustring", luaopen_ustring},
+  {"unicode", luaopen_unicode},
   {NULL, NULL}
 };
 

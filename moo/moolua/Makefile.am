@@ -1,4 +1,4 @@
-noinst_LTLIBRARIES = libustring.la libmoolua.la
+noinst_LTLIBRARIES = liblua.la libmoolua.la
 
 # a hack, needed for 'make whatever.lo' work
 AM_CFLAGS =			\
@@ -6,27 +6,28 @@ AM_CFLAGS =			\
 	$(MOO_DEBUG_CFLAGS)	\
 	-DLUA_USE_APICHECK	\
 	$(MOO_LUA_CFLAGS)	\
-	-DSRCDIR=\"$(shell cd $(srcdir) && pwd)\"
+	-DSRCDIR=\"$(shell cd $(srcdir) && pwd)\" \
+	-DTOP_SRCDIR=\"$(shell cd $(top_srcdir) && pwd)\"
 
-libustring_la_CFLAGS =		\
+libmoolua_la_LIBADD = liblua.la
+libmoolua_la_CFLAGS =		\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
 if MOO_ENABLE_UNIT_TESTS
-libustring_la_CFLAGS += -DSRCDIR=\"$(shell cd $(srcdir) && pwd)\" -DTOP_SRCDIR=\"$(shell cd $(top_srcdir) && pwd)\"
+libmoolua_la_CFLAGS += -DSRCDIR=\"$(shell cd $(srcdir) && pwd)\" -DTOP_SRCDIR=\"$(shell cd $(top_srcdir) && pwd)\"
 endif
-libustring_la_SOURCES =		\
-	ustring.h		\
-	ustring.c
-
-libmoolua_la_LIBADD = libustring.la
-libmoolua_la_LDFLAGS =
-libmoolua_la_CFLAGS =		\
-	-DLUA_USE_APICHECK	\
-	$(MOO_LUA_CFLAGS)
 libmoolua_la_SOURCES =		\
 	ext/lfs.h		\
 	ext/lfs.c		\
 	moolua.h		\
+	moolua.c		\
+	slnunico.c
+
+liblua_la_LDFLAGS =
+liblua_la_CFLAGS =		\
+	-DLUA_USE_APICHECK	\
+	$(MOO_LUA_CFLAGS)
+liblua_la_SOURCES =		\
 	lapi.c			\
 	lcode.c			\
 	ldebug.c		\
@@ -83,4 +84,6 @@ libmoolua_la_SOURCES =		\
 EXTRA_DIST =			\
 	COPYRIGHT		\
 	ext/README.lfs		\
-	test/testustring.lua
+	test/testustring.lua	\
+	test/munit.lua		\
+	slnudata.c

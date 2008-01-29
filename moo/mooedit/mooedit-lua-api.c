@@ -278,7 +278,7 @@ cfunc_GObject__index (lua_State *L)
     object = GET_GOBJECT (L);
     luaL_checkany (L, 2);
 
-    for (type = G_OBJECT_TYPE (object); type != G_TYPE_OBJECT; type = g_type_parent (type))
+    for (type = G_OBJECT_TYPE (object); ; type = g_type_parent (type))
     {
         const luaL_Reg *meths;
 
@@ -299,6 +299,9 @@ cfunc_GObject__index (lua_State *L)
 
             lua_pop (L, 1);
         }
+
+        if (type == G_TYPE_OBJECT)
+            break;
     }
 
     return 0;
@@ -322,6 +325,9 @@ cfunc_##Typ##_##name (lua_State *L)             \
     return 0;                                   \
 }
 
+#define METH_LREG(Type,name) { #name, cfunc_##Type##_##name }
+#define METH(Type,name) static int cfunc_##Type##_##name (lua_State *L)
+
 /********************************************************************/
 /* GtkWidget
  */
@@ -341,8 +347,302 @@ static const luaL_Reg meths_GtkWidget[] = {
  */
 
 #define GET_TEXT_VIEW(L) GTK_TEXT_VIEW (get_gobject (L, 1, GTK_TYPE_TEXT_VIEW))
+#define GET_BUFFER(L) GtkTextBuffer *buffer = gtk_text_view_get_buffer (GET_TEXT_VIEW (L));
+
+static void
+push_offset (lua_State *L,
+             int        c_offset)
+{
+    lua_pushinteger (L, c_offset + 1);
+}
+
+static void
+push_iter_offset (lua_State         *L,
+                  const GtkTextIter *iter)
+{
+    push_offset (L, gtk_text_iter_get_offset (iter));
+}
+
+static int
+check_offset (lua_State *L,
+              int        arg)
+{
+    return luaL_checkinteger (L, arg) - 1;
+}
+
+static int
+check_opt_offset (lua_State *L,
+                  int        arg,
+                  int        dflt)
+{
+    return luaL_optinteger (L, arg, dflt + 1) - 1;
+}
+
+METH (GtkTextView, get_cursor)
+{
+    GET_BUFFER (L);
+    GtkTextIter iter;
+    gtk_text_buffer_get_iter_at_mark (buffer, &iter,
+                                      gtk_text_buffer_get_insert (buffer));
+    push_iter_offset (L, &iter);
+    return 1;
+}
+
+METH (GtkTextView, get_selection_bound)
+{
+    GET_BUFFER (L);
+    GtkTextIter iter;
+    gtk_text_buffer_get_iter_at_mark (buffer, &iter,
+                                      gtk_text_buffer_get_selection_bound (buffer));
+    push_iter_offset (L, &iter);
+    return 1;
+}
+
+METH (GtkTextView, get_selection)
+{
+    GET_BUFFER (L);
+    GtkTextIter start, end;
+    if (gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
+    {
+        push_iter_offset (L, &start);
+        push_iter_offset (L, &end);
+        return 2;
+    }
+    else
+    {
+        lua_pushnil (L);
+        return 1;
+    }
+}
+
+METH (GtkTextView, set_cursor)
+{
+    GET_BUFFER (L);
+    int pos = check_offset (L, 2);
+    GtkTextIter iter;
+    gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos);
+    gtk_text_buffer_place_cursor (buffer, &iter);
+    return 0;
+}
+
+METH (GtkTextView, select_range)
+{
+    GET_BUFFER (L);
+    int sb_pos = check_offset (L, 2);
+    int ins_pos = check_opt_offset (L, 3, -1);
+    GtkTextIter sb, ins;
+    gtk_text_buffer_get_iter_at_offset (buffer, &sb, sb_pos);
+    gtk_text_buffer_get_iter_at_offset (buffer, &ins, ins_pos);
+    gtk_text_buffer_select_range (buffer, &ins, &sb);
+    return 0;
+}
+
+METH (GtkTextView, unselect)
+{
+    GET_BUFFER (L);
+    GtkTextIter iter;
+    gtk_text_buffer_get_iter_at_mark (buffer, &iter,
+                                      gtk_text_buffer_get_insert (buffer));
+    gtk_text_buffer_place_cursor (buffer, &iter);
+    return 0;
+}
+
+METH (GtkTextView, scroll_to_cursor)
+{
+    GtkTextView *textview = GET_TEXT_VIEW (L);
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer (textview);
+    gtk_text_view_scroll_mark_onscreen (textview,
+                                        gtk_text_buffer_get_insert (buffer));
+    return 0;
+}
+
+METH (GtkTextView, delete_selection)
+{
+    GET_BUFFER (L);
+    gtk_text_buffer_delete_selection (buffer, FALSE, TRUE);
+    return 0;
+}
+
+METH (GtkTextView, delete_range)
+{
+    GET_BUFFER (L);
+    int start_pos = check_offset (L, 2);
+    int end_pos = check_opt_offset (L, 3, -1);
+    GtkTextIter start, end;
+    gtk_text_buffer_get_iter_at_offset (buffer, &start, start_pos);
+    gtk_text_buffer_get_iter_at_offset (buffer, &end, end_pos);
+    gtk_text_buffer_delete (buffer, &start, &end);
+    return 0;
+}
+
+METH (GtkTextView, get_text)
+{
+    GET_BUFFER (L);
+    int start_pos = check_opt_offset (L, 2, 0);
+    int end_pos = check_opt_offset (L, 3, -1);
+    char *text;
+    GtkTextIter start, end;
+    gtk_text_buffer_get_iter_at_offset (buffer, &start, start_pos);
+    gtk_text_buffer_get_iter_at_offset (buffer, &end, end_pos);
+    text = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
+    lua_take_utf8string (L, text);
+    return 1;
+}
+
+METH (GtkTextView, get_selected_text)
+{
+    GET_BUFFER (L);
+    GtkTextIter start, end;
+
+    if (gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
+    {
+        char *text = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
+        lua_take_utf8string (L, text);
+    }
+    else
+    {
+        lua_pushnil (L);
+    }
+
+    return 1;
+}
+
+METH (GtkTextView, replace_selection)
+{
+    GET_BUFFER (L);
+    const char *text = lua_check_utf8string (L, 2, NULL);
+    GtkTextIter start, end;
+    if (gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
+        gtk_text_buffer_delete (buffer, &start, &end);
+    gtk_text_buffer_insert (buffer, &start, text, -1);
+    return 0;
+}
+
+METH (GtkTextView, insert_text)
+{
+    GET_BUFFER (L);
+    const char *text;
+    GtkTextIter iter;
+    int pos;
+
+    text = lua_check_utf8string (L, 2, NULL);
+    pos = check_opt_offset (L, 3, G_MININT);
+    if (pos == G_MININT)
+        gtk_text_buffer_get_iter_at_mark (buffer, &iter, gtk_text_buffer_get_insert (buffer));
+    else
+        gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos);
+
+    gtk_text_buffer_insert (buffer, &iter, text, -1);
+    return 0;
+}
+
+METH (GtkTextView, set_text)
+{
+    GET_BUFFER (L);
+    size_t len;
+    const char *text = lua_check_utf8string (L, 2, &len);
+    gtk_text_buffer_set_text (buffer, text, len);
+    return 0;
+}
+
+METH (GtkTextView, get_char_count)
+{
+    GET_BUFFER (L);
+    lua_pushinteger (L, gtk_text_buffer_get_char_count (buffer));
+    return 1;
+}
+
+METH (GtkTextView, get_line_count)
+{
+    GET_BUFFER (L);
+    lua_pushinteger (L, gtk_text_buffer_get_line_count (buffer));
+    return 1;
+}
+
+METH (GtkTextView, get_pos_at_line)
+{
+    GET_BUFFER (L);
+    GtkTextIter iter = {0};
+    int line = check_offset (L, 2);
+    gtk_text_buffer_get_iter_at_line (buffer, &iter, line);
+    push_iter_offset (L, &iter);
+    if (!gtk_text_iter_ends_line (&iter))
+        gtk_text_iter_forward_to_line_end (&iter);
+    push_iter_offset (L, &iter);
+    gtk_text_iter_forward_line (&iter);
+    push_iter_offset (L, &iter);
+    return 3;
+}
+
+METH (GtkTextView, get_line_at_pos)
+{
+    GET_BUFFER (L);
+    GtkTextIter iter = {0};
+    int pos = check_offset (L, 2);
+    gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos);
+    push_offset (L, gtk_text_iter_get_line (&iter));
+    return 1;
+}
+
+METH (GtkTextView, get_line_at_cursor)
+{
+    GET_BUFFER (L);
+    GtkTextIter iter;
+    gtk_text_buffer_get_iter_at_mark (buffer, &iter,
+                                      gtk_text_buffer_get_insert (buffer));
+    push_offset (L, gtk_text_iter_get_line (&iter));
+    return 1;
+}
+
+METH (GtkTextView, get_line_text)
+{
+    GET_BUFFER (L);
+    GtkTextIter start, end;
+    char *text;
+    int line = check_opt_offset (L, 2, G_MININT);
+    if (line == G_MININT)
+    {
+        gtk_text_buffer_get_iter_at_mark (buffer, &start,
+                                          gtk_text_buffer_get_insert (buffer));
+        gtk_text_iter_set_line_offset (&start, 0);
+    }
+    else
+        gtk_text_buffer_get_iter_at_line (buffer, &start, line);
+    end = start;
+    if (!gtk_text_iter_ends_line (&end))
+        gtk_text_iter_forward_to_line_end (&end);
+    text = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
+    lua_pushstring (L, text);
+    g_free (text);
+    return 1;
+}
 
 static const luaL_Reg meths_GtkTextView[] = {
+    METH_LREG (GtkTextView, get_cursor),
+    METH_LREG (GtkTextView, get_selection_bound),
+    METH_LREG (GtkTextView, get_selection),
+    METH_LREG (GtkTextView, set_cursor),
+    METH_LREG (GtkTextView, select_range),
+    METH_LREG (GtkTextView, unselect),
+    METH_LREG (GtkTextView, scroll_to_cursor),
+
+    METH_LREG (GtkTextView, get_char_count),
+    METH_LREG (GtkTextView, get_line_count),
+    METH_LREG (GtkTextView, get_pos_at_line),
+    METH_LREG (GtkTextView, get_line_at_pos),
+    METH_LREG (GtkTextView, get_line_at_cursor),
+    METH_LREG (GtkTextView, get_line_text),
+
+    METH_LREG (GtkTextView, delete_selection),
+    METH_LREG (GtkTextView, delete_range),
+
+    METH_LREG (GtkTextView, get_text),
+    METH_LREG (GtkTextView, get_selected_text),
+
+    METH_LREG (GtkTextView, replace_selection),
+    METH_LREG (GtkTextView, insert_text),
+    METH_LREG (GtkTextView, set_text),
+
     { NULL, NULL }
 };
 
@@ -402,6 +702,7 @@ init_types (void)
 
     been_here = TRUE;
 
+    register_type (G_TYPE_OBJECT, meths_GObject);
     register_type (GTK_TYPE_WIDGET, meths_GtkWidget);
     register_type (GTK_TYPE_TEXT_VIEW, meths_GtkTextView);
     register_type (MOO_TYPE_TEXT_VIEW, meths_MooTextView);
@@ -424,12 +725,7 @@ _moo_lua_push_object (lua_State *L,
 #endif
 
     if (luaL_newmetatable (L, "medit.GObject"))
-    {
         luaL_register (L, NULL, meths_GObject);
-        lua_pushstring (L, "__index");
-        lua_pushvalue (L, -2);  /* pushes the metatable */
-        lua_settable (L, -3);  /* metatable.__index = metatable */
-    }
 
     lua_setmetatable (L, -2);
 }

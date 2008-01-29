@@ -783,6 +783,7 @@ union luai_Cast { double l_d; long l_l; };
 #define L_GNUC_NO_INSTRUMENT
 #endif  /* !__GNUC__ */
 
+#define SLNUNICODE_AS_STRING
+#define STRING_WITH_METAT
 
 #endif
-
