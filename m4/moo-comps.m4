@@ -73,7 +73,7 @@ AC_DEFUN([MOO_COMPONENTS],[
 
   AC_ARG_ENABLE(ctags-plugin,
     AC_HELP_STRING(--enable-ctags-plugin, [enable ctags plugin (default = YES)]),
-    [:],[enable_ctags_plugin=no])
+    [:],[enable_ctags_plugin=yes])
 
   if test "x$MOO_BUILD_CTAGS" != xno -a "x$MOO_OS_CYGWIN" != "xyes" -a \
           "x$MOO_OS_MINGW" != "xyes" -a "x$enable_ctags_plugin" = "xyes"; then
