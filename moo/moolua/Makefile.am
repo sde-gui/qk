@@ -4,29 +4,26 @@ noinst_LTLIBRARIES = liblua.la libmoolua.la
 AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
-	-DLUA_USE_APICHECK	\
 	$(MOO_LUA_CFLAGS)	\
-	-DSRCDIR=\"$(shell cd $(srcdir) && pwd)\" \
-	-DTOP_SRCDIR=\"$(shell cd $(top_srcdir) && pwd)\"
+	-DLUA_USE_APICHECK
 
 libmoolua_la_LIBADD = liblua.la
-libmoolua_la_CFLAGS =		\
-	$(MOO_CFLAGS)		\
-	$(MOO_DEBUG_CFLAGS)
 if MOO_ENABLE_UNIT_TESTS
-libmoolua_la_CFLAGS += -DSRCDIR=\"$(shell cd $(srcdir) && pwd)\" -DTOP_SRCDIR=\"$(shell cd $(top_srcdir) && pwd)\"
+AM_CFLAGS += -DSRCDIR=\"$(shell cd $(srcdir) && pwd)\" -DTOP_SRCDIR=\"$(shell cd $(top_srcdir) && pwd)\"
 endif
 libmoolua_la_SOURCES =		\
 	ext/lfs.h		\
 	ext/lfs.c		\
 	moolua.h		\
 	moolua.c		\
-	slnunico.c
+	utf8.c
+
+# noinst_PROGRAMS = lua
+# lua_SOURCES = lua.c
+# lua_LDADD = libmoolua.la $(MOO_LIBS) $(MOO_OBJC_LIBS) -lreadline
+# lua_CFLAGS = $(AM_CFLAGS) -DLUA_USE_READLINE
 
 liblua_la_LDFLAGS =
-liblua_la_CFLAGS =		\
-	-DLUA_USE_APICHECK	\
-	$(MOO_LUA_CFLAGS)
 liblua_la_SOURCES =		\
 	lapi.c			\
 	lcode.c			\
@@ -54,7 +51,6 @@ liblua_la_SOURCES =		\
 	lmathlib.c		\
 	loslib.c		\
 	ltablib.c		\
-	lstrlib.c		\
 	loadlib.c		\
 	linit.c			\
 	lapi.h			\
@@ -85,5 +81,5 @@ EXTRA_DIST =			\
 	COPYRIGHT		\
 	ext/README.lfs		\
 	test/testustring.lua	\
-	test/munit.lua		\
-	slnudata.c
+	test/testunicode.lua	\
+	test/munit.lua
