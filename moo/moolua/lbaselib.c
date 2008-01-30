@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <glib.h>
 
 #define lbaselib_c
 #define LUA_LIB
@@ -41,11 +42,11 @@ static int luaB_print (lua_State *L) {
     if (s == NULL)
       return luaL_error(L, LUA_QL("tostring") " must return a string to "
                            LUA_QL("print"));
-    if (i>1) fputs("\t", stdout);
-    fputs(s, stdout);
+    if (i>1) g_print("\t");
+    g_print("%s", s);
     lua_pop(L, 1);  /* pop result */
   }
-  fputs("\n", stdout);
+  g_print("\n");
   return 0;
 }
 
