@@ -68,7 +68,7 @@ moo_test_run_lua_script (lua_State  *L,
             const char *msg = lua_tostring (L, i);
             gboolean success = lua_toboolean (L, i+1);
             int line = lua_tointeger (L, i+2);
-            TEST_PASSED_OR_FAILED (success, line, filename, "%s", msg);
+            moo_test_assert_msg (success, filename, line, "%s", msg);
         }
     }
 

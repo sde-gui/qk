@@ -110,12 +110,12 @@ test_ustring (void)
 void
 moo_test_lua (void)
 {
-    CU_pSuite suite;
+    MooTestSuite *suite;
 
-    suite = CU_add_suite ("moolua/ustring.c", NULL, NULL);
+    suite = moo_test_suite_new ("moolua/ustring.c", NULL, NULL, NULL);
 
-    CU_add_test (suite, "test of unicode", test_unicode);
-    CU_add_test (suite, "test of unicode (2)", test_ustring);
+    moo_test_suite_add_test (suite, "test of unicode", (MooTestFunc) test_unicode, NULL);
+    moo_test_suite_add_test (suite, "test of unicode (2)", (MooTestFunc) test_ustring, NULL);
 }
 
 #endif /* MOO_ENABLE_UNIT_TESTS */

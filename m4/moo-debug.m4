@@ -54,11 +54,6 @@ AC_ARG_ENABLE(unit-tests,
   ],[
   MOO_ENABLE_UNIT_TESTS="no"
 ])
-if test x$MOO_ENABLE_UNIT_TESTS = "xyes"; then
-  AC_CHECK_LIB(cunit, CU_assertImplementation,[:],[
-    AC_MSG_ERROR("CUnit is required for unit tests")
-  ])
-fi
 AM_CONDITIONAL(MOO_ENABLE_UNIT_TESTS, test x$MOO_ENABLE_UNIT_TESTS = "xyes")
 
 AC_ARG_ENABLE(debug,

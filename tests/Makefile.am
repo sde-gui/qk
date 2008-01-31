@@ -1,3 +1,7 @@
+if MOO_ENABLE_UNIT_TESTS
+TESTS = run-tests
+endif
+
 AM_CFLAGS =			\
 	-I$(top_builddir)	\
 	-I../moo		\
@@ -68,7 +72,7 @@ ldflags += -mwindows
 endif MOO_OS_MINGW
 
 run_tests_LDFLAGS = $(ldflags)
-run_tests_LDADD = $(ldadd) -lcunit
+run_tests_LDADD = $(ldadd)
 
 
 testfold_LDFLAGS = $(ldflags)

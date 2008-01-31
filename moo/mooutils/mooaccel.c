@@ -807,10 +807,13 @@ test_moo_get_accel_label (void)
 void
 moo_test_mooaccel (void)
 {
-    CU_pSuite suite = CU_add_suite ("mooutils/mooaccel.c", NULL, NULL);
-    CU_add_test (suite, "test of _moo_get_accel_label()", test_moo_get_accel_label);
-    CU_add_test (suite, "test of _moo_accel_normalize()", test_moo_accel_normalize);
-    CU_add_test (suite, "test of _moo_accel_register() and friends", test_moo_accel_register);
+    MooTestSuite *suite = moo_test_suite_new ("mooutils/mooaccel.c", NULL, NULL, NULL);
+    moo_test_suite_add_test (suite, "test of _moo_get_accel_label()",
+                             (MooTestFunc) test_moo_get_accel_label, NULL);
+    moo_test_suite_add_test (suite, "test of _moo_accel_normalize()",
+                             (MooTestFunc) test_moo_accel_normalize, NULL);
+    moo_test_suite_add_test (suite, "test of _moo_accel_register() and friends",
+                             (MooTestFunc) test_moo_accel_register, NULL);
 }
 
 #endif

@@ -1,7 +1,7 @@
-#ifndef MOO_TESTS_UTILS_H
-#define MOO_TESTS_UTILS_H
+#ifndef MOO_TEST_MACROS_H
+#define MOO_TEST_MACROS_H
 
-#include <CUnit/CUnit.h>
+#include "moo-test-utils.h"
 #include <glib.h>
 #include <string.h>
 #include <stdarg.h>
@@ -9,55 +9,21 @@
 G_BEGIN_DECLS
 
 
-G_GNUC_UNUSED static void
-TEST_PASSED_OR_FAILEDV (gboolean    passed,
-                        int         line,
-                        const char *file,
-                        const char *format,
-                        va_list     args)
-{
-    const char *msg;
-    char *freeme = NULL;
-
-    if (format)
-        msg = freeme = g_strdup_vprintf (format, args);
-    else
-        msg = passed ? "Passed" : "Failed";
-
-    CU_assertImplementation (passed, line, (char*) msg,
-                             (char*) file, (char*) "", FALSE);
-
-    g_free (freeme);
-}
-
-G_GNUC_UNUSED static void
-TEST_PASSED_OR_FAILED (gboolean    passed,
-                       int         line,
-                       const char *file,
-                       const char *format,
-                       ...)
-{
-    va_list args;
-    va_start (args, format);
-    TEST_PASSED_OR_FAILEDV (passed, line, file, format, args);
-    va_end (args);
-}
-
 #define TEST_FAILED_MSG(format,...)                                 \
-    TEST_PASSED_OR_FAILED (FALSE, __LINE__, __FILE__,               \
-                           format, __VA_ARGS__)
+    moo_test_assert_msg (FALSE, __FILE__, __LINE__,                 \
+                         format, __VA_ARGS__)
 
 #define TEST_FAILED(msg)                                            \
-    TEST_PASSED_OR_FAILED (FALSE, __LINE__, __FILE__,               \
-                           "%s", msg)
+    moo_test_assert_msg (FALSE, __FILE__, __LINE__,                 \
+                         "%s", msg)
 
 #define TEST_ASSERT_MSG(cond,format,...)                            \
-    TEST_PASSED_OR_FAILED (!!(cond), __LINE__, __FILE__,            \
-                           format, __VA_ARGS__)
+    moo_test_assert_msg (!!(cond), __FILE__, __LINE__,              \
+                         format, __VA_ARGS__)
 
 #define TEST_ASSERT(cond)                                           \
-    CU_assertImplementation (!!(cond), __LINE__, (char*) #cond,     \
-                             (char*) __FILE__, (char*) "", FALSE)
+    moo_test_assert_impl (!!(cond), (char*) #cond,                  \
+                          __FILE__, __LINE__)
 
 #define TEST_ASSERT_CMP__(Type,actual,expected,cmp,fmt_arg,msg)     \
 G_STMT_START {                                                      \
@@ -262,14 +228,14 @@ TEST_CHECK_WARNING (void)
 {
     TEST_G_ASSERT (test_warnings_info != NULL);
 
-    TEST_PASSED_OR_FAILED (test_warnings_info->count == 0,
-                           test_warnings_info->line,
-                           test_warnings_info->file,
-                           "%s: %d %s warning(s)",
-                           test_warnings_info->msg ? test_warnings_info->msg : "",
-                           ABS (test_warnings_info->count),
-                           test_warnings_info->count < 0 ?
-                            "unexpected" : "missing");
+    moo_test_assert_msg (test_warnings_info->count == 0,
+                         test_warnings_info->file,
+                         test_warnings_info->line,
+                         "%s: %d %s warning(s)",
+                         test_warnings_info->msg ? test_warnings_info->msg : "",
+                         ABS (test_warnings_info->count),
+                         test_warnings_info->count < 0 ?
+                         "unexpected" : "missing");
 
     g_free (test_warnings_info->msg);
     g_free (test_warnings_info->file);
@@ -286,4 +252,4 @@ TEST_CHECK_WARNING (void)
 
 G_END_DECLS
 
-#endif /* MOO_TESTS_UTILS_H */
+#endif /* MOO_TEST_MACROS_H */

@@ -1,3 +1,8 @@
+AM_CFLAGS =			\
+	-I$(top_builddir)	\
+	$(MOO_CFLAGS)		\
+	$(MOO_DEBUG_CFLAGS)
+
 rc_in_files = libmoo.rc.in moo.rc.in pymoo.rc.in
 ini_in_files = moopython/pymoo.ini.in
 ini_files = $(ini_in_files:.ini.in=.ini)
@@ -8,6 +13,13 @@ moo_include_headers =		\
 	moo.h
 nodist_moo_include_headers =	\
 	moo-config.h
+
+test_sources =			\
+	moo-test-utils.c	\
+	moo-test-utils.h	\
+	moo-test-macros.h	\
+	moo-tests-lua.h		\
+	moo-tests.h
 
 BUILT_SOURCES = moo-config.h
 CLEANFILES += moo-config.h
@@ -21,7 +33,8 @@ scripts_SCRIPTS =		\
 EXTRA_DIST =			\
 	$(rc_in_files)		\
 	$(ini_in_files)		\
-	$(scripts_SCRIPTS)
+	$(scripts_SCRIPTS)	\
+	$(test_sources)
 
 if MOO_INSTALL_HEADERS
 moo_include_HEADERS = $(moo_include_headers)
@@ -102,11 +115,11 @@ endif
 
 libmoo_la_LIBADD = $(libs) $(MOO_LIBS) $(MOO_OBJC_LIBS)
 libmoo_la_LDFLAGS = $(libmoo_res_ldflag) -no-undefined -avoid-version $(export_flags)
-libmoo_la_SOURCES = $(moo_include_headers) moo-tests.h moo-tests-utils.h moo-tests-lua.h
+libmoo_la_SOURCES = $(moo_include_headers) $(test_sources)
 nodist_libmoo_la_SOURCES += $(nodist_moo_include_headers)
 
 if MOO_ENABLE_UNIT_TESTS
-libmoo_la_LIBADD += -lcunit
+libmoo_la_SOURCES += $(test_sources)
 endif
 
 if MOO_PYTHON_BUILTIN

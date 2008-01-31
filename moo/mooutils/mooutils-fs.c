@@ -1000,13 +1000,15 @@ test_normalize_file_path_win32 (void)
 void
 moo_test_mooutils_fs (void)
 {
-    CU_pSuite suite;
+    MooTestSuite *suite;
 
-    suite = CU_add_suite ("mooutils/mooutils-fs.c", NULL, NULL);
+    suite = moo_test_suite_new ("mooutils/mooutils-fs.c", NULL, NULL, NULL);
 
-    CU_add_test (suite, "test of _moo_normalize_file_path()", test_normalize_file_path);
+    moo_test_suite_add_test (suite, "test of _moo_normalize_file_path()",
+                             (MooTestFunc) test_normalize_file_path, NULL);
 #ifndef __WIN32__
-    CU_add_test (suite, "test of normalize_full_path_win32()", test_normalize_file_path_win32);
+    moo_test_suite_add_test (suite, "test of normalize_full_path_win32()",
+                             (MooTestFunc) test_normalize_file_path_win32, NULL);
 #endif
 }
 

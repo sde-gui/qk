@@ -78,7 +78,7 @@ DISTCLEANFILES =		\
 	po-subdirs-stamp-2	\
 	po-subdirs-stamp
 
-DISTCHECK_CONFIGURE_FLAGS="--enable-docs"
+DISTCHECK_CONFIGURE_FLAGS = --enable-docs --enable-unit-tests
 distuninstallcheck_listfiles = find . -type f -print | grep -v share/mime/ | grep -v share/icons/hicolor
 
 snapshot:

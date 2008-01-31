@@ -1,7 +1,7 @@
 #ifndef MOO_TESTS_H
 #define MOO_TESTS_H
 
-#include "moo-tests-utils.h"
+#include "moo-test-macros.h"
 
 G_BEGIN_DECLS
 

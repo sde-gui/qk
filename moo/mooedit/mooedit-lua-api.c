@@ -793,9 +793,14 @@ test_gobject (void)
 void
 moo_test_mooedit_lua_api (void)
 {
-    CU_pSuite suite = CU_add_suite ("mooedit/mooedit-lua-api.c", NULL, NULL);
-    CU_add_test (suite, "test of GObject", test_gobject);
-    CU_add_test (suite, "test of GtkTextView", test_gtk_text_view);
+    MooTestSuite *suite;
+
+    suite = moo_test_suite_new ("mooedit/mooedit-lua-api.c", NULL, NULL, NULL);
+
+    moo_test_suite_add_test (suite, "test of GObject",
+                             (MooTestFunc) test_gobject, NULL);
+    moo_test_suite_add_test (suite, "test of GtkTextView",
+                             (MooTestFunc) test_gtk_text_view, NULL);
 }
 
 #endif
