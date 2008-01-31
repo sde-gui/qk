@@ -617,6 +617,57 @@ METH (GtkTextView, get_line_text)
     return 1;
 }
 
+METH (GtkTextView, next_pos)
+{
+    GET_BUFFER (L);
+    GtkTextIter iter;
+    int pos = check_offset (L, 2);
+    gboolean ret;
+    gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos);
+    ret = gtk_text_iter_forward_cursor_position (&iter);
+    push_iter_offset (L, &iter);
+    lua_pushboolean (L, ret);
+    return 2;
+}
+
+METH (GtkTextView, prev_pos)
+{
+    GET_BUFFER (L);
+    GtkTextIter iter;
+    int pos = check_offset (L, 2);
+    gboolean ret;
+    gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos);
+    ret = gtk_text_iter_backward_cursor_position (&iter);
+    push_iter_offset (L, &iter);
+    lua_pushboolean (L, ret);
+    return 2;
+}
+
+METH (GtkTextView, get_end_pos)
+{
+    GET_BUFFER (L);
+    push_offset (L, gtk_text_buffer_get_char_count (buffer));
+    return 1;
+}
+
+METH (GtkTextView, is_end_pos)
+{
+    GET_BUFFER (L);
+    int pos = check_offset (L, 2);
+    lua_pushboolean (L, pos == gtk_text_buffer_get_char_count (buffer));
+    return 1;
+}
+
+METH (GtkTextView, is_cursor_pos)
+{
+    GET_BUFFER (L);
+    GtkTextIter iter;
+    int pos = check_offset (L, 2);
+    gtk_text_buffer_get_iter_at_offset (buffer, &iter, pos);
+    lua_pushboolean (L, gtk_text_iter_is_cursor_position (&iter));
+    return 1;
+}
+
 static const luaL_Reg meths_GtkTextView[] = {
     METH_LREG (GtkTextView, get_cursor),
     METH_LREG (GtkTextView, get_selection_bound),
@@ -625,6 +676,12 @@ static const luaL_Reg meths_GtkTextView[] = {
     METH_LREG (GtkTextView, select_range),
     METH_LREG (GtkTextView, unselect),
     METH_LREG (GtkTextView, scroll_to_cursor),
+
+    METH_LREG (GtkTextView, next_pos),
+    METH_LREG (GtkTextView, prev_pos),
+    METH_LREG (GtkTextView, is_cursor_pos),
+    METH_LREG (GtkTextView, is_end_pos),
+    METH_LREG (GtkTextView, get_end_pos),
 
     METH_LREG (GtkTextView, get_char_count),
     METH_LREG (GtkTextView, get_line_count),
@@ -790,6 +847,14 @@ test_gobject (void)
     TEST_ASSERT (object_count == 0);
 }
 
+static void
+test_moo_edit (void)
+{
+    TEST_ASSERT (object_count == 0);
+    moo_test_run_lua_file ("mooedit.lua", add_test_api, NULL);
+    TEST_ASSERT (object_count == 0);
+}
+
 void
 moo_test_mooedit_lua_api (void)
 {
@@ -801,6 +866,8 @@ moo_test_mooedit_lua_api (void)
                              (MooTestFunc) test_gobject, NULL);
     moo_test_suite_add_test (suite, "test of GtkTextView",
                              (MooTestFunc) test_gtk_text_view, NULL);
+    moo_test_suite_add_test (suite, "test of the editor",
+                             (MooTestFunc) test_moo_edit, NULL);
 }
 
 #endif

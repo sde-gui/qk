@@ -263,4 +263,6 @@ if MOO_ENABLE_UNIT_TESTS
 AM_CFLAGS += -DSRCDIR=\"$(shell cd $(srcdir) && pwd)\" -DTOP_SRCDIR=\"$(shell cd $(top_srcdir) && pwd)\"
 endif
 EXTRA_DIST +=			\
-	test/gobject.lua
+	test/gobject.lua	\
+	test/textview.lua	\
+	test/mooedit.lua
