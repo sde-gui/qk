@@ -96,7 +96,7 @@ static int utf8_sub (lua_State *L) {
     end = l;
   if (start <= end) {
     const char *ss = g_utf8_offset_to_pointer(s, start-1);
-    const char *se = g_utf8_offset_to_pointer(ss, end-start);
+    const char *se = g_utf8_offset_to_pointer(ss, end-start+1);
     lua_pushlstring(L, ss, se-ss);
   }
   else lua_pushliteral(L, "");
