@@ -1,7 +1,4 @@
--- slnunicode unit tests
-
-require("munit")
-
+-- -*- lua -*-
 --	there are four string-like ctype closures:
 --	unicode.ascii, latin1, utf8 and grapheme
 --
@@ -69,7 +66,10 @@ require("munit")
 --	Consequently, grapheme match positions are not always cluster positions.
 --
 
-local unicode = {utf8=utf8, ascii=string, string=string}
+require("munit")
+local unicode = require("unicode")
+local utf8 = unicode.utf8
+unicode.string = string -- for tests unicode[ctype]
 local sprintf = string.format
 local function printf (fmt, ...) return print(sprintf(fmt, ...)) end
 
@@ -83,11 +83,12 @@ local function checka (test, ok, ...)
 end
 
 
-local function testlen (str,bytes,codes)
+local function testlen (str,bytes,codes,chars)
 	codes = codes or bytes
+	chars = chars or codes
 	return check(sprintf("len '%s'", str),
-		sprintf("%d/%d", bytes, codes),
-sprintf("%d/%d", string.len(str), utf8.len(str)))
+		sprintf("%d/%d/%d", bytes, codes, chars),
+sprintf("%d/%d/%d", string.len(str), utf8.len(str), unicode.grapheme.len(str)))
 end
 
 -- 176 = 00B0;DEGREE SIGN -- UTF-8: C2,B0 = \194\176
@@ -95,6 +96,9 @@ end
 -- 214 = 00D6;LATIN CAPITAL LETTER O WITH DIAERESIS
 -- 776 = 0308;COMBINING DIAERESIS -- UTF-8: CC,88 = \204\136
 testlen("A\tB",3) -- plain Latin-1
+testlen("\176\196\214",3) -- plain Latin-1
+testlen("\196\176\214",3,2) -- C4,B0 is valid seq 0130 I WITH DOT ABOVE
+testlen("\192\178",2) -- C0,B2 is bad seq for 2
 testlen("°ÄÖ",6,3) -- simple Latin-1 chars in UTF-8
 testlen("\204\136A\204\136O\204\136",8,5,3) -- decomposed (with broken lead)
 
@@ -105,9 +109,11 @@ local function testsub (ctype,ok,str,start,e)
 end
 testsub("ascii","BCD","ABCDE",2,4)
 testsub("utf8","BCD","ABCDE",2,4)
+testsub("latin1","Ä","°ÄÖ",3,4)
 testsub("utf8","Ä","°ÄÖ",2,2)
 testsub("utf8","ÄÖ","°ÄÖ",2,-1)
 testsub("utf8","\204\136","A\204\136O\204\136",2,2) -- decomposed
+testsub("grapheme","O\204\136","A\204\136O\204\136",2,2) -- decomposed
 
 
 local function testbyte (ctype, ok, str, ...)
@@ -118,6 +124,7 @@ testbyte("string","194,176","Ä°Ö",3,4) -- the UTF-8 seq for °
 testbyte("ascii","194,176","Ä°Ö",3,4)
 testbyte("utf8","176,214","Ä°Ö",2,3) -- code points for °,Ö
 testbyte("utf8","65,776","\204\136A\204\136O\204\136",2,3) -- decomposed
+testbyte("grapheme","65,776","\204\136A\204\136O\204\136",2) -- decomposed
 
 
 local function testchar (ctype, ok, ...)
@@ -133,8 +140,10 @@ local function testcase (ctype,str,up,lo)
 	check(sprintf("%s.lower('%s')", ctype, str), lo, unicode[ctype].lower(str))
 	check(sprintf("%s.upper('%s')", ctype, str), up, unicode[ctype].upper(str))
 end
-testcase("utf8","Abäüo\204\136","ABÄÜO\204\136","abäüo\204\136")
-testcase("ascii","Abäüo\204\136","ABäüO\204\136","abäüo\204\136")
+-- upper/lower also fixes plain Latin
+testcase("utf8","Ab\196üo\204\136","ABÄÜO\204\136","abäüo\204\136")
+testcase("ascii","Ab\196üo\204\136","AB\196üO\204\136","ab\196üo\204\136")
+testcase("latin1","Ab\196","AB\196","ab\228")
 
 
 local function testrev (ctype,ok,str)
@@ -143,6 +152,7 @@ local function testrev (ctype,ok,str)
 end
 testrev("ascii","b\136\204oa\176\194ba","ab°ao\204\136b");
 testrev("utf8","b\204\136oa°ba","ab°ao\204\136b");
+testrev("grapheme","bo\204\136a°ba","ab°ao\204\136b");
 
 
 
@@ -155,10 +165,14 @@ testfind("ascii","3,4","e=mc2","%a%a")
 testfind("ascii","5,5","e=mc2","%d")
 testfind("ascii","","Ä","%a")
 testfind("ascii","1,2","Ä","%A*")
+testfind("latin1","1,1","Ä","%a")
 testfind("utf8","1,2","Ä","%a")
 testfind("utf8","1,1","o\204\136","%a*")
 testfind("utf8","2,3","o\204\136","%A")
 testfind("utf8","1,1","o\204\136",".")
+testfind("grapheme","1,3","o\204\136","%a*")
+testfind("grapheme","2,3","o\204\136","%A") -- didn't expect this?
+testfind("grapheme","1,3","o\204\136",".")
 testfind("utf8","4,5","ÜHÄPPY","[À-Ö]")
 testfind("utf8","4,5","ÜHÄPPY","[Ä-]")
 testfind("utf8","7,7","ÜHÄP-PY","[ä-]")
@@ -185,14 +199,7 @@ testgsub("utf8","HÜppÄ","HÄppÜ","([À-Ö])(%l*)(%u)","%3%2%1")
 
 
 fail = 0
-for i=1,1114111 do
-  if utf8.validate(i) then
-    if i ~= utf8.byte(utf8.char(i)) then
---       error(string.format("%s", i))
-      fail=fail+1
-    end
-  end
-end
+for i=0,65535 do if i ~= utf8.byte(utf8.char(i)) then fail=fail+1 end end
 check("code-decode failures", 0, fail)
 
 --[[ print the table

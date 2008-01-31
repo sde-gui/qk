@@ -16,7 +16,7 @@ libmoolua_la_SOURCES =		\
 	ext/lfs.c		\
 	moolua.h		\
 	moolua.c		\
-	utf8.c
+	slnunico.c
 
 # noinst_PROGRAMS = lua
 # lua_SOURCES = lua.c
@@ -82,4 +82,5 @@ EXTRA_DIST =			\
 	ext/README.lfs		\
 	test/testustring.lua	\
 	test/testunicode.lua	\
-	test/munit.lua
+	test/munit.lua		\
+	slnudata.c
