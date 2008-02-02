@@ -981,9 +981,9 @@ moo_segfault (void)
  */
 
 void
-_moo_selection_data_set_pointer (GtkSelectionData *data,
-                                 GdkAtom           type,
-                                 gpointer          ptr)
+moo_selection_data_set_pointer (GtkSelectionData *data,
+                                GdkAtom           type,
+                                gpointer          ptr)
 {
     g_return_if_fail (data != NULL);
     gtk_selection_data_set (data, type, 8, /* 8 bits per byte */
@@ -992,8 +992,8 @@ _moo_selection_data_set_pointer (GtkSelectionData *data,
 
 
 gpointer
-_moo_selection_data_get_pointer (GtkSelectionData *data,
-                                 GdkAtom           type)
+moo_selection_data_get_pointer (GtkSelectionData *data,
+                                GdkAtom           type)
 {
     GdkWindow *owner;
     gpointer result = NULL;
@@ -1168,7 +1168,7 @@ moo_tempnam (void)
             dirname = g_build_filename (g_get_tmp_dir (), basename, NULL);
             g_free (basename);
 
-            if (_moo_mkdir (dirname))
+            if (_moo_mkdir (dirname) != 0)
             {
                 g_free (dirname);
                 dirname = NULL;
@@ -2078,10 +2078,10 @@ moo_enable_win32_error_message (void)
 
 
 #if 0
-#undef _moo_str_equal
+#undef moo_str_equal
 gboolean
-_moo_str_equal (const char *s1,
-                const char *s2)
+moo_str_equal (const char *s1,
+               const char *s2)
 {
     return !strcmp (s1 ? s1 : "", s2 ? s2 : "");
 }
@@ -2121,10 +2121,10 @@ thread_source_func (gpointer data)
 }
 
 guint
-_moo_idle_add_full (gint           priority,
-                    GSourceFunc    function,
-                    gpointer       data,
-                    GDestroyNotify notify)
+moo_idle_add_full (gint           priority,
+                   GSourceFunc    function,
+                   gpointer       data,
+                   GDestroyNotify notify)
 {
     SourceData *sd;
 
@@ -2142,8 +2142,8 @@ guint
 moo_idle_add (GSourceFunc function,
               gpointer    data)
 {
-    return _moo_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
-                               function, data, NULL);
+    return moo_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
+                              function, data, NULL);
 }
 
 
@@ -2257,6 +2257,15 @@ _moo_intern_string (const char *string)
 }
 
 
+static char *debug_domains;
+
+void
+_moo_set_debug (const char *domains)
+{
+    g_free (debug_domains);
+    debug_domains = g_strdup (domains);
+}
+
 gboolean
 moo_debug_enabled (const char *domain,
                    gboolean    def_enabled)
@@ -2264,6 +2273,8 @@ moo_debug_enabled (const char *domain,
     const char *val;
 
     val = g_getenv ("MOO_DEBUG");
+    if (!val || !val[0])
+        val = debug_domains;
 
     if (!val || !val[0])
         return def_enabled;
