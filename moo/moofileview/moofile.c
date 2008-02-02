@@ -41,6 +41,8 @@
 #include <gtk/gtkiconfactory.h>
 #include <gtk/gtkstock.h>
 
+MOO_DEBUG_INIT(file, FALSE)
+
 #ifdef MOO_US_XDGMIME
 #define MIME_TYPE_UNKNOWN xdg_mime_type_unknown
 #else

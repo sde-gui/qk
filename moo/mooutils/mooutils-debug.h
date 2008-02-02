@@ -1,7 +1,7 @@
 /*
  *   mooutils-debug.h
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -32,8 +32,10 @@ _moo_debug_enabled (void)                                   \
     return enabled;                                         \
 }                                                           \
                                                             \
-static void                                                 \
+G_GNUC_UNUSED static void                                   \
 moo_dmsg (const char *format, ...) G_GNUC_PRINTF (1, 2);    \
+G_GNUC_UNUSED static void                                   \
+moo_dprint (const char *format, ...) G_GNUC_PRINTF (1, 2);  \
                                                             \
 static void                                                 \
 moo_dmsg (const char *format, ...)                          \
@@ -47,18 +49,61 @@ moo_dmsg (const char *format, ...)                          \
                 format, args);                              \
         va_end (args);                                      \
     }                                                       \
+}                                                           \
+                                                            \
+static void                                                 \
+moo_dprint (const char *format, ...)                        \
+{                                                           \
+    va_list args;                                           \
+    char fixed_buf[1024];                                   \
+    gsize req_size;                                         \
+    const char *string;                                     \
+    char *freeme = NULL;                                    \
+                                                            \
+    if (!_moo_debug_enabled ())                             \
+        return;                                             \
+                                                            \
+    va_start (args, format);                                \
+    req_size = g_printf_string_upper_bound (format, args);  \
+    va_end (args);                                          \
+                                                            \
+    if (req_size + 1 > sizeof fixed_buf)                    \
+    {                                                       \
+        va_start (args, format);                            \
+        string = freeme = g_strdup_printf (format, args);   \
+        va_end (args);                                      \
+    }                                                       \
+    else                                                    \
+    {                                                       \
+        va_start (args, format);                            \
+        g_snprintf (fixed_buf, sizeof fixed_buf,            \
+                    format, args);                          \
+        string = fixed_buf;                                 \
+        va_end (args);                                      \
+    }                                                       \
+                                                            \
+    g_return_if_fail (string != NULL);                      \
+    g_print ("%s", string);                                 \
+    g_free (freeme);                                        \
 }
+
+#define MOO_DEBUG(code)                                     \
+G_STMT_START {                                              \
+    if (_moo_debug_enabled ())                              \
+    {                                                       \
+        code ;                                              \
+    }                                                       \
+} G_STMT_END
 
 void     _moo_message       (const char *format, ...) G_GNUC_PRINTF (1, 2);
 gboolean moo_debug_enabled  (const char *var,
                              gboolean    def_enabled);
 
-#define MOO_DEBUG(whatever) G_STMT_START {whatever;} G_STMT_END
-
 #elif defined(__GNUC__)
 
 #define MOO_DEBUG_INIT(domain, def_enabled)
 #define moo_dmsg(format, args...) G_STMT_START {} G_STMT_END
+#define moo_dprint(format, args...) G_STMT_START {} G_STMT_END
 #define _moo_message(format, args...) G_STMT_START {} G_STMT_END
 #define MOO_DEBUG(whatever) G_STMT_START {} G_STMT_END
 
@@ -68,6 +113,10 @@ gboolean moo_debug_enabled  (const char *var,
 #define MOO_DEBUG(whatever) G_STMT_START {} G_STMT_END
 
 static void moo_dmsg (const char *format, ...)
+{
+}
+
+static void moo_dprint (const char *format, ...)
 {
 }
 
