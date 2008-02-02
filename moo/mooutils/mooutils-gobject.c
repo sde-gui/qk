@@ -12,7 +12,6 @@
 
 #include "mooutils/mooutils-gobject-private.h"
 #include "mooutils/mooclosure.h"
-#include "moo-tests.h"
 #include <gobject/gvaluecollector.h>
 #include <string.h>
 #include <errno.h>
@@ -925,6 +924,8 @@ _moo_value_change_type (GValue *val,
 
 
 #ifdef MOO_ENABLE_UNIT_TESTS
+
+#include "moo-tests.h"
 
 static double
 string_to_double (const char *string)
