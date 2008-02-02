@@ -55,36 +55,18 @@ static void                                                 \
 moo_dprint (const char *format, ...)                        \
 {                                                           \
     va_list args;                                           \
-    char fixed_buf[1024];                                   \
-    gsize req_size;                                         \
-    const char *string;                                     \
-    char *freeme = NULL;                                    \
+    char *string;                                           \
                                                             \
     if (!_moo_debug_enabled ())                             \
         return;                                             \
                                                             \
     va_start (args, format);                                \
-    req_size = g_printf_string_upper_bound (format, args);  \
+    string = g_strdup_vprintf (format, args);               \
     va_end (args);                                          \
-                                                            \
-    if (req_size + 1 > sizeof fixed_buf)                    \
-    {                                                       \
-        va_start (args, format);                            \
-        string = freeme = g_strdup_printf (format, args);   \
-        va_end (args);                                      \
-    }                                                       \
-    else                                                    \
-    {                                                       \
-        va_start (args, format);                            \
-        g_snprintf (fixed_buf, sizeof fixed_buf,            \
-                    format, args);                          \
-        string = fixed_buf;                                 \
-        va_end (args);                                      \
-    }                                                       \
                                                             \
     g_return_if_fail (string != NULL);                      \
     g_print ("%s", string);                                 \
-    g_free (freeme);                                        \
+    g_free (string);                                        \
 }
 
 #define MOO_DEBUG(code)                                     \
@@ -98,6 +80,7 @@ G_STMT_START {                                              \
 void     _moo_message       (const char *format, ...) G_GNUC_PRINTF (1, 2);
 gboolean moo_debug_enabled  (const char *var,
                              gboolean    def_enabled);
+void     _moo_set_debug     (const char *domains);
 
 #elif defined(__GNUC__)
 
