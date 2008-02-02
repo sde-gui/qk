@@ -12,6 +12,7 @@
 
 #include "mooutils/mooutils-gobject-private.h"
 #include "mooutils/mooclosure.h"
+#include "moo-tests.h"
 #include <gobject/gvaluecollector.h>
 #include <string.h>
 #include <errno.h>
@@ -228,26 +229,143 @@ flags_to_string (int flags)
 
 
 static gboolean
-string_to_flags (const char *string,
-                 int        *flags)
+string_to_int (const char *string,
+               int        *dest)
 {
+    char *end;
+    gint64 val;
+
+    errno = 0;
+    val = g_ascii_strtoll (string, &end, 10);
+
+    if (errno || !end || *end)
+        return FALSE;
+
+    if (val > G_MAXINT || val < G_MININT)
+        return FALSE;
+
+    *dest = val;
+    return TRUE;
+}
+
+static gboolean
+string_to_uint (const char *string,
+                guint      *dest)
+{
+    char *end;
+    guint64 val;
+
+    errno = 0;
+    val = g_ascii_strtoull (string, &end, 10);
+
+    if (errno || !end || *end)
+        return FALSE;
+
+    if (val > G_MAXUINT)
+        return FALSE;
+
+    *dest = val;
+    return TRUE;
+}
+
+static gboolean
+string_to_flags (const char *string,
+                 GType       flags_type,
+                 guint      *dest)
+{
+    gpointer klass;
+    GFlagsClass *flags_class;
+    guint ival = 0;
+    gboolean seen_something = FALSE;
+    gboolean error = FALSE;
+    const char *end;
+
     if (!string || !string[0])
     {
-        *flags = 0;
+        *dest = 0;
         return TRUE;
     }
-    else
+
+    if (string_to_uint (string, dest))
+        return TRUE;
+
+    klass = g_type_class_ref (flags_type);
+    g_return_val_if_fail (G_IS_FLAGS_CLASS (klass), FALSE);
+    flags_class = G_FLAGS_CLASS (klass);
+
+    while (*string && !error)
     {
-        GValue ival = {0};
+        GFlagsValue *flags_value;
+        char *single;
+        guint tmp;
 
-        g_value_init (&ival, G_TYPE_INT);
+        while (g_ascii_isspace (string[0]) || string[0] == '|')
+            string++;
+        if (!string[0])
+            break;
+        end = string;
+        while (end[0] && !g_ascii_isspace (end[0]) && end[0] != '|')
+            end++;
 
-        if (!_moo_value_convert_from_string (string, &ival))
-            return FALSE;
+        single = g_strndup (string, end - string);
 
-        *flags = g_value_get_int (&ival);
+        flags_value = g_flags_get_value_by_name (flags_class, single);
+        if (!flags_value)
+            flags_value = g_flags_get_value_by_nick (flags_class, single);
+
+        if (flags_value)
+            ival |= flags_value->value;
+        else if (string_to_uint (single, &tmp))
+            ival |= tmp;
+        else
+            error = TRUE;
+
+        string = end;
+        seen_something = TRUE;
+        g_free (single);
+    }
+
+    if (!seen_something)
+        error = TRUE;
+
+    if (!error)
+        *dest = ival;
+
+    g_type_class_unref (flags_class);
+    return !error;
+}
+
+static gboolean
+string_to_enum (const char *string,
+                GType       enum_type,
+                int        *dest)
+{
+    gpointer klass;
+    GEnumClass *enum_class;
+    GEnumValue *enum_value;
+
+    *dest = 0;
+
+    if (!string || !string[0] || string_to_int (string, dest))
+        return TRUE;
+
+    klass = g_type_class_ref (enum_type);
+    g_return_val_if_fail (G_IS_ENUM_CLASS (klass), FALSE);
+    enum_class = G_ENUM_CLASS (klass);
+
+    enum_value = g_enum_get_value_by_name (enum_class, string);
+    if (!enum_value)
+        enum_value = g_enum_get_value_by_nick (enum_class, string);
+
+    if (enum_value)
+    {
+        *dest = enum_value->value;
+        g_type_class_unref (enum_class);
         return TRUE;
     }
+
+    g_type_class_unref (enum_class);
+    return FALSE;
 }
 
 
@@ -343,11 +461,12 @@ _moo_value_convert (const GValue *src,
             {
                 char *string = g_strdup_printf ("%d", g_value_get_enum (src));
                 g_value_take_string (dest, string);
-                g_type_class_unref (klass);
-                g_return_val_if_reached (TRUE);
+            }
+            else
+            {
+                g_value_set_string (dest, enum_value->value_nick);
             }
 
-            g_value_set_static_string (dest, enum_value->value_nick);
             g_type_class_unref (klass);
             return TRUE;
         }
@@ -371,74 +490,55 @@ _moo_value_convert (const GValue *src,
         {
             if (!string || !string[0])
                 g_value_set_boolean (dest, FALSE);
+            else if (g_ascii_strcasecmp (string, "1") == 0 ||
+                     g_ascii_strcasecmp (string, "yes") == 0 ||
+                     g_ascii_strcasecmp (string, "true") == 0)
+                g_value_set_boolean (dest, TRUE);
+            else if (g_ascii_strcasecmp (string, "0") == 0 ||
+                     g_ascii_strcasecmp (string, "no") == 0 ||
+                     g_ascii_strcasecmp (string, "false") == 0)
+                g_value_set_boolean (dest, FALSE);
             else
-                g_value_set_boolean (dest,
-                                     ! g_ascii_strcasecmp (string, "1") ||
-                                             ! g_ascii_strcasecmp (string, "yes") ||
-                                             ! g_ascii_strcasecmp (string, "true"));
+                return FALSE;
             return TRUE;
         }
 
         if (dest_type == G_TYPE_DOUBLE)
         {
-            if (!string || !string[0])
-                g_value_set_double (dest, 0);
-            else
-                g_value_set_double (dest, g_ascii_strtod (string, NULL));
+            double val = 0.;
+            char *end;
+
+            if (string && string[0])
+            {
+                errno = 0;
+                val = g_ascii_strtod (string, &end);
+                if (errno || !end || *end)
+                    return FALSE;
+            }
+
+            g_value_set_double (dest, val);
             return TRUE;
         }
 
         if (dest_type == G_TYPE_INT)
         {
-            if (!string || !string[0])
-            {
-                g_value_set_int (dest, 0);
-            }
-            else
-            {
-                long v;
+            int val = 0;
 
-                errno = 0;
-                v = strtol (string, NULL, 10);
+            if (string && string[0] && !string_to_int (string, &val))
+                return FALSE;
 
-                if (errno)
-                    return FALSE;
-
-#if G_MAXLONG > G_MAXINT
-                if (v > G_MAXINT || v < G_MININT)
-                    return FALSE;
-#endif
-
-                g_value_set_int (dest, v);
-            }
-
+            g_value_set_int (dest, val);
             return TRUE;
         }
 
         if (dest_type == G_TYPE_UINT)
         {
-            if (!string || !string[0])
-            {
-                g_value_set_uint (dest, 0);
-            }
-            else
-            {
-                gulong v;
+            guint val = 0;
 
-                errno = 0;
-                v = strtoul (string, NULL, 10);
+            if (string && string[0] && !string_to_uint (string, &val))
+                return FALSE;
 
-                if (errno)
-                    return FALSE;
-
-#if G_MAXULONG > G_MAXUINT
-                if (v > G_MAXUINT)
-                    return FALSE;
-#endif
-
-                g_value_set_uint (dest, v);
-            }
-
+            g_value_set_uint (dest, val);
             return TRUE;
         }
 
@@ -461,51 +561,22 @@ _moo_value_convert (const GValue *src,
 
         if (G_TYPE_IS_ENUM (dest_type))
         {
-            gpointer klass;
-            GEnumClass *enum_class;
-            GEnumValue *enum_value;
             int ival;
 
-            if (!string || !string[0])
+            if (string_to_enum (string, dest_type, &ival))
             {
-                g_value_set_enum (dest, 0);
+                g_value_set_enum (dest, ival);
                 return TRUE;
             }
 
-            klass = g_type_class_ref (dest_type);
-            g_return_val_if_fail (G_IS_ENUM_CLASS (klass), FALSE);
-            enum_class = G_ENUM_CLASS (klass);
-
-            enum_value = g_enum_get_value_by_name (enum_class, string);
-            if (!enum_value)
-                enum_value = g_enum_get_value_by_nick (enum_class, string);
-
-            if (enum_value)
-            {
-                ival = enum_value->value;
-            }
-            else
-            {
-                ival = g_ascii_strtod (string, NULL);
-
-                if (ival < enum_class->minimum || ival > enum_class->maximum)
-                {
-                    g_value_set_enum (dest, ival);
-                    g_type_class_unref (klass);
-                    g_return_val_if_reached (TRUE);
-                }
-            }
-
-            g_value_set_enum (dest, ival);
-            g_type_class_unref (klass);
-            return TRUE;
+            return FALSE;
         }
 
         if (G_TYPE_IS_FLAGS (dest_type))
         {
-            int flags;
+            guint flags;
 
-            if (string_to_flags (string, &flags))
+            if (string_to_flags (string, dest_type, &flags))
             {
                 g_value_set_flags (dest, flags);
                 return TRUE;
@@ -564,7 +635,6 @@ _moo_value_equal (const GValue *a,
     GType type;
 
     g_return_val_if_fail (G_IS_VALUE (a) && G_IS_VALUE (b), a == b);
-    g_return_val_if_fail (G_VALUE_TYPE (a) == G_VALUE_TYPE (b), a == b);
     g_return_val_if_fail (G_VALUE_TYPE (a) == G_VALUE_TYPE (b), a == b);
 
     type = G_VALUE_TYPE (a);
@@ -638,22 +708,38 @@ _moo_value_type_supported (GType type)
 
 
 static gboolean
-_moo_value_convert_to_bool (const GValue *val)
+_moo_value_convert_to_bool (const GValue *val,
+                            gboolean     *dest)
 {
     GValue result = {0};
+
     g_value_init (&result, G_TYPE_BOOLEAN);
-    _moo_value_convert (val, &result);
-    return g_value_get_boolean (&result);
+
+    if (_moo_value_convert (val, &result))
+    {
+        *dest = g_value_get_boolean (&result);
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 
-static int
-_moo_value_convert_to_int (const GValue *val)
+static gboolean
+_moo_value_convert_to_int (const GValue *val,
+                           int          *dest)
 {
     GValue result = {0};
+
     g_value_init (&result, G_TYPE_INT);
-    _moo_value_convert (val, &result);
-    return g_value_get_int (&result);
+
+    if (_moo_value_convert (val, &result))
+    {
+        *dest = g_value_get_int (&result);
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 
@@ -662,7 +748,8 @@ _moo_value_convert_to_double (const GValue *val)
 {
     GValue result = {0};
     g_value_init (&result, G_TYPE_DOUBLE);
-    _moo_value_convert (val, &result);
+    if (!_moo_value_convert (val, &result))
+        g_warning ("%s: could not convert value to double", G_STRFUNC);
     return g_value_get_double (&result);
 }
 
@@ -746,19 +833,20 @@ int
 _moo_convert_string_to_int (const char *string,
                             int         default_val)
 {
-    int int_val;
+    int int_val = default_val;
 
-    if (string)
+    if (string && string[0])
     {
         GValue str_val = {0};
+
         g_value_init (&str_val, G_TYPE_STRING);
         g_value_set_static_string (&str_val, string);
-        int_val = _moo_value_convert_to_int (&str_val);
+
+        if (!_moo_value_convert_to_int (&str_val, &int_val))
+            g_warning ("%s: could not convert string '%s' to int",
+                       G_STRFUNC, string);
+
         g_value_unset (&str_val);
-    }
-    else
-    {
-        int_val = default_val;
     }
 
     return int_val;
@@ -769,19 +857,20 @@ gboolean
 _moo_convert_string_to_bool (const char *string,
                              gboolean    default_val)
 {
-    gboolean bool_val;
+    gboolean bool_val = default_val;
 
-    if (string)
+    if (string && string[0])
     {
         GValue str_val = {0};
+
         g_value_init (&str_val, G_TYPE_STRING);
         g_value_set_static_string (&str_val, string);
-        bool_val = _moo_value_convert_to_bool (&str_val);
+
+        if (!_moo_value_convert_to_bool (&str_val, &bool_val))
+            g_warning ("%s: could not convert string '%s' to boolean",
+                       G_STRFUNC, string);
+
         g_value_unset (&str_val);
-    }
-    else
-    {
-        bool_val = default_val;
     }
 
     return bool_val;
@@ -833,6 +922,227 @@ _moo_value_change_type (GValue *val,
 
     return result;
 }
+
+
+#ifdef MOO_ENABLE_UNIT_TESTS
+
+static double
+string_to_double (const char *string)
+{
+    double ret;
+    GValue gval = {0};
+    g_value_init (&gval, G_TYPE_STRING);
+    g_value_set_static_string (&gval, string);
+    ret = _moo_value_convert_to_double (&gval);
+    g_value_unset (&gval);
+    return ret;
+}
+
+static void
+test_one_enum (GType       enum_type,
+               const char *string,
+               int         value,
+               gboolean    bad)
+{
+    GValue eval = {0}, sval = {0};
+
+    g_value_init (&eval, enum_type);
+    g_value_set_enum (&eval, value);
+
+    g_value_init (&sval, G_TYPE_STRING);
+    g_value_set_static_string (&sval, string);
+
+    TEST_EXPECT_WARNING (0, "%s", "string to enum");
+
+    if (!bad != _moo_value_convert (&sval, &eval))
+    {
+        if (!bad)
+            TEST_FAILED_MSG ("could not convert string '%s' to enum '%s'",
+                             TEST_FMT_STR (string),
+                             g_type_name (enum_type));
+        else
+            TEST_FAILED_MSG ("erroneously converted string '%s' to enum '%s'",
+                             TEST_FMT_STR (string),
+                             g_type_name (enum_type));
+    }
+    else
+    {
+        TEST_ASSERT_MSG (g_value_get_enum (&eval) == value,
+                         "string_to_enum('%s'): expected %d, got %d",
+                         TEST_FMT_STR (string), value,
+                         g_value_get_enum (&eval));
+    }
+
+    g_value_set_enum (&eval, value);
+    if (!_moo_value_convert (&eval, &sval))
+        TEST_FAILED_MSG ("could not convert enum value %d of type '%s' to string",
+                         value, g_type_name (enum_type));
+    else if (!_moo_value_convert (&sval, &eval))
+        TEST_FAILED_MSG ("could not convert string '%s' to enum type '%s'",
+                         TEST_FMT_STR (g_value_get_string (&sval)),
+                         g_type_name (enum_type));
+    else
+        TEST_ASSERT_MSG (g_value_get_enum (&eval) == value,
+                         "string_to_enum(enum_to_string('%d')): got %d",
+                         value, g_value_get_enum (&eval));
+
+    TEST_CHECK_WARNING ();
+}
+
+static void
+test_one_flags (GType       flags_type,
+                const char *string,
+                guint       value,
+                gboolean    bad)
+{
+    GValue eval = {0}, sval = {0};
+
+    g_value_init (&eval, flags_type);
+    g_value_set_flags (&eval, value);
+    g_value_init (&sval, G_TYPE_STRING);
+    g_value_set_static_string (&sval, string);
+
+    TEST_EXPECT_WARNING (0, "%s", "string to flags");
+
+    if (!bad != _moo_value_convert (&sval, &eval))
+    {
+        if (!bad)
+            TEST_FAILED_MSG ("could not convert string '%s' to flags type '%s'",
+                             TEST_FMT_STR (string),
+                             g_type_name (flags_type));
+        else
+            TEST_FAILED_MSG ("erroneously converted string '%s' to flags type '%s'",
+                             TEST_FMT_STR (string),
+                             g_type_name (flags_type));
+    }
+    else
+    {
+        TEST_ASSERT_MSG (g_value_get_flags (&eval) == value,
+                         "string_to_flags('%s'): expected %u, got %u",
+                         TEST_FMT_STR (string), value,
+                         g_value_get_flags (&eval));
+    }
+
+    g_value_set_flags (&eval, value);
+    if (!_moo_value_convert (&eval, &sval))
+        TEST_FAILED_MSG ("could not convert flags value %u of type '%s' to string",
+                         value, g_type_name (flags_type));
+    else if (!_moo_value_convert (&sval, &eval))
+        TEST_FAILED_MSG ("could not convert string '%s' to flags type '%s'",
+                         TEST_FMT_STR (g_value_get_string (&sval)),
+                         g_type_name (flags_type));
+    else
+        TEST_ASSERT_MSG (g_value_get_flags (&eval) == value,
+                         "string_to_flags(flags_to_string('%u')): got %u",
+                         value, g_value_get_flags (&eval));
+
+    TEST_CHECK_WARNING ();
+}
+
+static void
+test_enums (void)
+{
+    test_one_enum (GTK_TYPE_WINDOW_TYPE, NULL, GTK_WINDOW_TOPLEVEL, FALSE);
+    test_one_enum (GTK_TYPE_WINDOW_TYPE, "", GTK_WINDOW_TOPLEVEL, FALSE);
+    test_one_enum (GTK_TYPE_WINDOW_TYPE, "0", GTK_WINDOW_TOPLEVEL, FALSE);
+    test_one_enum (GTK_TYPE_WINDOW_TYPE, "17", 17, FALSE);
+    test_one_enum (GTK_TYPE_WINDOW_TYPE, "-123", -123, FALSE);
+    test_one_enum (GTK_TYPE_WINDOW_TYPE, "GTK_WINDOW_TOPLEVEL", GTK_WINDOW_TOPLEVEL, FALSE);
+    test_one_enum (GTK_TYPE_WINDOW_TYPE, "toplevel", GTK_WINDOW_TOPLEVEL, FALSE);
+    test_one_enum (GTK_TYPE_WINDOW_TYPE, "foobar", GTK_WINDOW_TOPLEVEL, TRUE);
+}
+
+static void
+test_flags (void)
+{
+    test_one_flags (GTK_TYPE_ACCEL_FLAGS, NULL, 0, FALSE);
+    test_one_flags (GTK_TYPE_ACCEL_FLAGS, "", 0, FALSE);
+    test_one_flags (GTK_TYPE_ACCEL_FLAGS, "18", 18, FALSE);
+    test_one_flags (GTK_TYPE_ACCEL_FLAGS, "0", 0, FALSE);
+    test_one_flags (GTK_TYPE_ACCEL_FLAGS, "GTK_ACCEL_VISIBLE", GTK_ACCEL_VISIBLE, FALSE);
+    test_one_flags (GTK_TYPE_ACCEL_FLAGS, "visible", GTK_ACCEL_VISIBLE, FALSE);
+    test_one_flags (GTK_TYPE_ACCEL_FLAGS, "GTK_ACCEL_VISIBLE|GTK_ACCEL_LOCKED", GTK_ACCEL_VISIBLE|GTK_ACCEL_LOCKED, FALSE);
+    test_one_flags (GTK_TYPE_ACCEL_FLAGS, "GTK_ACCEL_VISIBLE |GTK_ACCEL_LOCKED", GTK_ACCEL_VISIBLE|GTK_ACCEL_LOCKED, FALSE);
+    test_one_flags (GTK_TYPE_ACCEL_FLAGS, "GTK_ACCEL_VISIBLE|", GTK_ACCEL_VISIBLE, FALSE);
+    test_one_flags (GTK_TYPE_ACCEL_FLAGS, "visible | GTK_ACCEL_LOCKED", GTK_ACCEL_VISIBLE|GTK_ACCEL_LOCKED, FALSE);
+    test_one_flags (GTK_TYPE_ACCEL_FLAGS, "blah | GTK_ACCEL_LOCKED", 0, TRUE);
+    test_one_flags (GTK_TYPE_ACCEL_FLAGS, "asd", 0, TRUE);
+    test_one_flags (GTK_TYPE_ACCEL_FLAGS, "-12", 0, TRUE);
+}
+
+static void
+test_misc (void)
+{
+    TEST_EXPECT_WARNING (0, "%s", "_moo_convert_string_to_bool");
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_bool (NULL, TRUE), TRUE);
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_bool (NULL, FALSE), FALSE);
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_bool ("", TRUE), TRUE);
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_bool ("", FALSE), FALSE);
+    TEST_CHECK_WARNING ();
+
+    TEST_EXPECT_WARNING (0, "%s", "_moo_convert_string_to_bool");
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_bool ("true", FALSE), TRUE);
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_bool ("yes", FALSE), TRUE);
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_bool ("1", FALSE), TRUE);
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_bool ("YES", FALSE), TRUE);
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_bool ("false", TRUE), FALSE);
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_bool ("no", TRUE), FALSE);
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_bool ("0", TRUE), FALSE);
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_bool ("NO", TRUE), FALSE);
+    TEST_CHECK_WARNING ();
+
+    TEST_EXPECT_WARNING (3, "%s", "_moo_convert_string_to_bool");
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_bool ("blah blah blah", TRUE), TRUE);
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_bool ("12.23", TRUE), TRUE);
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_bool ("12.23", FALSE), FALSE);
+    TEST_CHECK_WARNING ();
+
+    TEST_EXPECT_WARNING (0, "%s", "_moo_convert_string_to_int");
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_int (NULL, G_MAXINT), G_MAXINT);
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_int ("", G_MAXINT), G_MAXINT);
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_int ("1", G_MAXINT), 1);
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_int ("-12312414", G_MAXINT), -12312414);
+    TEST_CHECK_WARNING ();
+
+    TEST_EXPECT_WARNING (2, "%s", "_moo_convert_string_to_int");
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_int ("abcd", 65), 65);
+    TEST_ASSERT_INT_EQ(_moo_convert_string_to_int ("12.23", 65), 65);
+    TEST_CHECK_WARNING ();
+
+    TEST_EXPECT_WARNING (0, "%s", "string_to_double");
+    TEST_ASSERT_DBL_EQ(string_to_double (NULL), .0);
+    TEST_ASSERT_DBL_EQ(string_to_double (""), .0);
+    TEST_ASSERT_DBL_EQ(string_to_double (".0"), .0);
+    TEST_ASSERT_DBL_EQ(string_to_double ("0."), .0);
+    TEST_ASSERT_DBL_EQ(string_to_double ("0.0"), .0);
+    TEST_ASSERT_DBL_EQ(string_to_double ("12.21312"), 12.21312);
+    TEST_ASSERT_DBL_EQ(string_to_double ("12"), 12.);
+    TEST_ASSERT_DBL_EQ(string_to_double ("-123"), -123.);
+    TEST_CHECK_WARNING ();
+
+    TEST_EXPECT_WARNING (5, "%s", "string_to_double");
+    TEST_ASSERT_DBL_EQ (string_to_double ("blah"), 0.);
+    TEST_ASSERT_DBL_EQ (string_to_double (".2323eee"), 0.);
+    TEST_ASSERT_DBL_EQ (string_to_double ("23.2323.23"), 0.);
+    TEST_ASSERT_DBL_EQ (string_to_double ("true"), 0.);
+    TEST_ASSERT_DBL_EQ (string_to_double ("+-213"), 0.);
+    TEST_CHECK_WARNING ();
+
+    test_enums ();
+    test_flags ();
+}
+
+void
+moo_test_gobject (void)
+{
+    MooTestSuite *suite;
+
+    suite = moo_test_suite_new ("mooutils/mooutils-gobject.c", NULL, NULL, NULL);
+
+    moo_test_suite_add_test (suite, "test of converting values", (MooTestFunc) test_misc, NULL);
+}
+
+#endif
 
 
 /*****************************************************************************/

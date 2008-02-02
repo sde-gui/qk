@@ -67,6 +67,14 @@ G_STMT_START {                                                      \
                          TEST_STRV_EQ, TEST_FMT_STRV,               \
                          format, __VA_ARGS__)
 
+#define TEST_ASSERT_INT_EQ(actual,expected)                         \
+    TEST_ASSERT_CMP (int, actual, expected,                         \
+                     TEST_CMP_EQ, =, TEST_FMT_INT)
+
+#define TEST_ASSERT_DBL_EQ(actual,expected)                         \
+    TEST_ASSERT_CMP (double, actual, expected,                      \
+                     TEST_CMP_EQ, =, TEST_FMT_DBL)
+
 #define TEST_CMP_EQ(a,b)    ((a) == (b))
 #define TEST_CMP_NEQ(a,b)   ((a) != (b))
 #define TEST_CMP_LT(a,b)    ((a) < (b))
@@ -147,6 +155,7 @@ TEST_FMT_STRV (char **array)
 
 #define TEST_FMT_INT(a)     test_string_stack_add__ (g_strdup_printf ("%d", (int) a))
 #define TEST_FMT_UINT(a)    test_string_stack_add__ (g_strdup_printf ("%u", (guint) a))
+#define TEST_FMT_DBL(a)     test_string_stack_add__ (g_strdup_printf ("%f", (double) a))
 
 #define TEST_G_ASSERT(expr)                     \
 G_STMT_START {                                  \

@@ -6,6 +6,7 @@ main (int argc, char *argv[])
 {
     gtk_init (&argc, &argv);
 
+    moo_test_gobject ();
     moo_test_mooaccel ();
     moo_test_mooutils_fs ();
 
