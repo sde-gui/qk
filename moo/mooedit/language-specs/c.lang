@@ -70,7 +70,7 @@
             \\(                   # leading backslash
             [\\\"\'nrtfav\?e] |   # escaped character
             [0-7]{1,3} |          # one, two, or three octal digits
-            x[0-9A-Fa-f]{0,2}     # 'x' followed by zero, one, or two hex digits
+            x[0-9A-Fa-f]+         # 'x' followed by hex digits
             )
         </define-regex>
 
@@ -260,7 +260,7 @@
                     <keyword>__STDC__</keyword>
                 </context>
 
-                <!-- C99 booleans -->                
+                <!-- C99 booleans -->
                 <context id="boolean" style-ref="boolean">
                     <keyword>true</keyword>
                     <keyword>false</keyword>
