@@ -257,49 +257,51 @@ child_watch_removed (ChildWatchData *data)
 
 static void
 process_line (MooCmd      *cmd,
+              gboolean     err,
               const char  *line,
-              gboolean     err)
+              gssize       len)
 {
     gboolean dummy = FALSE;
-    const char *real_line = line;
-    char *freeme = NULL;
+    char *real_line = NULL;
     const char *end;
 
+    g_return_if_fail (line != NULL);
+
+    if (len < 0)
+        len = strlen (line);
+
     if ((cmd->priv->cmd_flags & MOO_CMD_UTF8_OUTPUT) &&
-        !g_utf8_validate (line, -1, &end))
+        !g_utf8_validate (line, len, &end))
     {
         const char *charset;
-
-        real_line = NULL;
 
         if (g_get_charset (&charset))
         {
             g_warning ("%s: invalid unicode:\n%s", G_STRLOC, line);
 
             if (end > line)
-            {
-                freeme = g_strndup (line, end - line);
-                real_line = freeme;
-            }
+                real_line = g_strndup (line, end - line);
         }
         else
         {
             GError *error = NULL;
             guint bytes_written;
 
-            freeme = g_convert_with_fallback (line, -1, "UTF-8", charset,
-                                              NULL, NULL, &bytes_written, 
-                                              &error);
+            real_line = g_convert_with_fallback (line, len, "UTF-8", charset,
+                                                 NULL, NULL, &bytes_written,
+                                                 &error);
 
-            if (!freeme)
+            if (!real_line)
             {
-                g_warning ("%s: could not convert text to UTF-8:\n%s",
-                           G_STRLOC, line);
+                g_warning ("%s: could not convert text to UTF-8:\n%*s",
+                           G_STRLOC, (int) len, line);
                 g_warning ("%s: %s", G_STRLOC, error->message);
             }
-
-            real_line = freeme;
         }
+    }
+    else
+    {
+        real_line = g_strndup (line, len);
     }
 
     if (real_line)
@@ -310,7 +312,7 @@ process_line (MooCmd      *cmd,
             g_signal_emit (cmd, signals[STDOUT_LINE], 0, real_line, &dummy);
     }
 
-    g_free (freeme);
+    g_free (real_line);
 }
 
 
@@ -347,7 +349,7 @@ command_out_or_err (MooCmd         *cmd,
 
     while (lines)
     {
-        process_line (cmd, lines->data, !out);
+        process_line (cmd, !out, lines->data, -1);
         g_free (lines->data);
         lines = g_slist_delete_link (lines, lines);
     }
@@ -398,18 +400,16 @@ try_channel_leftover (MooCmd      *cmd,
 
     if (text)
     {
-        char **lines, **p;
+        MooLineReader lr;
+        const char *line;
+        gsize line_len;
 
-        lines = moo_splitlines (text);
-
-        if (lines)
+        for (moo_line_reader_init (&lr, text, -1);
+             (line = moo_line_reader_get_line (&lr, &line_len, NULL)); )
         {
-            for (p = lines; *p != NULL; p++)
-                if (**p)
-                    process_line (cmd, *p, !out);
+            process_line (cmd, !out, line, line_len);
         }
 
-        g_strfreev (lines);
         g_free (text);
     }
 }

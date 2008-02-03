@@ -131,10 +131,45 @@ test_string_stack_add__ (char *string)
 G_GNUC_UNUSED static const char *
 TEST_FMT_STR (const char *s)
 {
-    if (s)
-        return test_string_stack_add__ (g_strdup_printf ("\"%s\"", s));
-    else
+    GString *buf;
+
+    if (!s)
         return "<null>";
+
+    buf = g_string_new ("\"");
+
+    while (*s)
+    {
+        switch (*s)
+        {
+            case '\r':
+                g_string_append (buf, "\\r");
+                break;
+            case '\n':
+                g_string_append (buf, "\\n");
+                break;
+            case '\t':
+                g_string_append (buf, "\\t");
+                break;
+            case '\\':
+                g_string_append (buf, "\\\\");
+                break;
+            case '"':
+                g_string_append (buf, "\\\"");
+                break;
+            default:
+                if (g_ascii_isprint (*s))
+                    g_string_append_c (buf, *s);
+                else
+                    g_string_append_printf (buf, "\\x%02x", (guchar)*s);
+                break;
+        }
+
+        s++;
+    }
+
+    g_string_append (buf, "\"");
+    return test_string_stack_add__ (g_string_free (buf, FALSE));
 }
 
 G_GNUC_UNUSED static const char *
@@ -145,15 +180,16 @@ TEST_FMT_STRV (char **array)
     if (!array)
         return "<null>";
 
-    s = g_string_new (NULL);
+    s = g_string_new ("{");
 
     while (*array)
     {
-        if (s->len)
-            g_string_append (s, " ");
+        if (s->len > 1)
+            g_string_append (s, ", ");
         g_string_append_printf (s, "\"%s\"", *array++);
     }
 
+    g_string_append (s, "}");
     return test_string_stack_add__ (g_string_free (s, FALSE));
 }
 

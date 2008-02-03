@@ -833,13 +833,17 @@ format_content (const char *content,
                 GString    *string,
                 const char *indent)
 {
-    char **p;
-    char **lines = moo_splitlines (content);
+    const char *line;
+    gsize line_len;
+    MooLineReader lr;
 
-    for (p = lines; p && *p; ++p)
-        g_string_append_printf (string, "%s%s\n", indent, *p);
-
-    g_strfreev (lines);
+    for (moo_line_reader_init (&lr, content, -1);
+         (line = moo_line_reader_get_line (&lr, &line_len, NULL)); )
+    {
+        g_string_append (string, indent);
+        g_string_append_len (string, line, line_len);
+        g_string_append (string, "\n");
+    }
 }
 
 char *
@@ -857,7 +861,19 @@ moo_key_file_format (MooKeyFile *key_file,
     string = g_string_new (NULL);
 
     if (comment)
-        g_string_append_printf (string, "# %s\n", comment);
+    {
+        MooLineReader lr;
+        const char *line;
+        gsize line_len;
+        for (moo_line_reader_init (&lr, comment, -1);
+             (line = moo_line_reader_get_line (&lr, &line_len, NULL)); )
+        {
+            g_string_append (string, "# ");
+            g_string_append_len (string, line, line_len);
+            g_string_append (string, "\n");
+        }
+        g_string_append (string, "\n");
+    }
 
     for (l = key_file->items->head; l != NULL; l = l->next)
     {
@@ -876,3 +892,103 @@ moo_key_file_format (MooKeyFile *key_file,
     g_free (fill);
     return g_string_free (string, FALSE);
 }
+
+
+#ifdef MOO_ENABLE_UNIT_TESTS
+
+#include "moo-tests.h"
+
+#define CMT_BODY1           \
+"A comment\n"               \
+"blah blah blah "
+
+#define CMT1                \
+"# A comment\n"             \
+"# blah blah blah \n"       \
+"\n"
+
+#define KFS1                \
+"[tool]\n"                  \
+"id=InsertDateAndTime\n"    \
+"builtin=true\n"            \
+"\n"                        \
+"[tool]\n"                  \
+"id=SortLines\n"            \
+"type=exe\n"                \
+"name=Sort Lines\n"         \
+"input=lines\n"             \
+"options=need-doc\n"        \
+"output=insert\n"           \
+"  sort | uniq\n"           \
+"\n"                        \
+"[tool]\n"                  \
+"  code code code\n"        \
+"  code code code   \n"     \
+"\n"                        \
+"[tool]\n"                  \
+"  code code code\n"        \
+"  \n"
+
+static void
+test_load_kfs1 (gboolean load_with_comment,
+                gboolean format_with_comment)
+{
+    MooKeyFile *key_file;
+    gboolean res;
+    GError *error = NULL;
+    const char *input = KFS1;
+    const char *output = KFS1;
+    const char *comment = NULL;
+    char *s;
+
+    if (load_with_comment)
+        input = CMT1 KFS1;
+
+    if (format_with_comment)
+    {
+        output = CMT1 KFS1;
+        comment = CMT_BODY1;
+    }
+
+    key_file = moo_key_file_new ();
+    res = parse_buffer (key_file, input, -1, "fake.cfg", &error);
+
+    if (!res)
+        TEST_FAILED_MSG ("failed to load key file content: %s",
+                         error ? error->message : "<null>");
+    else
+        TEST_ASSERT (TRUE);
+
+    s = moo_key_file_format (key_file, comment, 2);
+    TEST_ASSERT_STR_EQ (s, output);
+
+    g_free (s);
+    moo_key_file_unref (key_file);
+}
+
+static void
+test_load_kfs (void)
+{
+    test_load_kfs1 (FALSE, FALSE);
+    test_load_kfs1 (FALSE, TRUE);
+    test_load_kfs1 (TRUE, FALSE);
+    test_load_kfs1 (TRUE, TRUE);
+}
+
+static void
+test_key_file (void)
+{
+    test_load_kfs ();
+}
+
+void
+moo_test_key_file (void)
+{
+    MooTestSuite *suite;
+
+    suite = moo_test_suite_new ("mooedit/mookeyfile.c", NULL, NULL, NULL);
+
+    moo_test_suite_add_test (suite, "MooKeyFile", (MooTestFunc) test_key_file, NULL);
+}
+
+#endif

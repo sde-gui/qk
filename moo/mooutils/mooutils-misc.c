@@ -1,7 +1,7 @@
 /*
  *   mooutils-misc.c
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -1867,119 +1867,140 @@ _moo_regex_escape (const char *string,
 }
 
 
-
 char **
 moo_strnsplit_lines (const char *string,
                      gssize      len,
-                     guint      *n_tokens)
+                     guint      *n_lines)
 {
-    GPtrArray *array;
-    gssize i, line;
+    MooLineReader lr;
+    GPtrArray *array = NULL;
+    const char *line;
+    gsize line_len;
 
-    if (!string || !string[0])
+    for (moo_line_reader_init (&lr, string, len);
+         (line = moo_line_reader_get_line (&lr, &line_len, NULL)); )
     {
-        if (n_tokens)
-            *n_tokens = 0;
+        if (!array)
+            array = g_ptr_array_new ();
+        g_ptr_array_add (array, g_strndup (line, line_len));
+    }
+
+    if (array)
+    {
+        if (n_lines)
+            *n_lines = array->len;
+        g_ptr_array_add (array, NULL);
+        return (char**) g_ptr_array_free (array, FALSE);
+    }
+    else
+    {
+        if (n_lines)
+            *n_lines = 0;
         return NULL;
     }
-
-    if (len < 0)
-        len = strlen (string);
-
-    array = g_ptr_array_new ();
-    line = i = 0;
-
-    while (i < len)
-    {
-        switch (string[i])
-        {
-            case '\r':
-                g_ptr_array_add (array, g_strndup (string + line, i - line));
-                if (++i < len && string[i] == '\n')
-                    ++i;
-                line = i;
-                break;
-
-            case '\n':
-                g_ptr_array_add (array, g_strndup (string + line, i - line));
-                ++i;
-                line = i;
-                break;
-
-            case '\xe2': /* Unicode paragraph separator "\xe2\x80\xa9" */
-                if (i+2 < len && string[i+1] == '\x80' && string[i+2] == '\xa9')
-                {
-                    g_ptr_array_add (array, g_strndup (string + line, i - line));
-                    i += 3;
-                    line = i;
-                    break;
-                }
-                /* fallthrough */
-
-            default:
-                ++i;
-        }
-    }
-
-    g_ptr_array_add (array, g_strndup (string + line, i - line));
-
-    if (n_tokens)
-        *n_tokens = array->len;
-
-    g_ptr_array_add (array, NULL);
-    return (char**) g_ptr_array_free (array, FALSE);
 }
-
 
 char **
 moo_splitlines (const char *string)
 {
-    GPtrArray *array;
-    const char *line, *p;
+    GPtrArray *array = NULL;
+    MooLineReader lr;
+    const char *line;
+    gsize line_len;
 
-    if (!string || !string[0])
+    for (moo_line_reader_init (&lr, string, -1);
+         (line = moo_line_reader_get_line (&lr, &line_len, NULL)); )
+    {
+        if (!array)
+            array = g_ptr_array_new ();
+        g_ptr_array_add (array, g_strndup (line, line_len));
+    }
+
+    if (array)
+    {
+        g_ptr_array_add (array, NULL);
+        return (char**) g_ptr_array_free (array, FALSE);
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+void
+moo_line_reader_init (MooLineReader *lr,
+                      const char    *text,
+                      gssize         len)
+{
+    g_return_if_fail (lr != NULL);
+
+    if (len < 0)
+        len = text ? strlen (text) : 0;
+
+    lr->text = text && len ? text : NULL;
+    lr->len = lr->text ? len : 0;
+}
+
+const char *
+moo_line_reader_get_line (MooLineReader *lr,
+                          gsize         *line_len,
+                          gsize         *lt_len)
+{
+    const char *le, *end, *line;
+    gsize le_len;
+
+    g_return_val_if_fail (lr != NULL, NULL);
+
+    if (!lr->text)
         return NULL;
 
-    array = g_ptr_array_new ();
-
-    p = line = string;
-
-    while (*p)
+    for (le = lr->text, le_len = 0, end = lr->text + lr->len; le < end && le_len == 0; )
     {
-        switch (*p)
+        switch (*le)
         {
             case '\r':
-                g_ptr_array_add (array, g_strndup (line, p - line));
-                if (*++p == '\n')
-                    ++p;
-                line = p;
+                if (le + 1 < end && le[1] == '\n')
+                    le_len = 2;
+                else
+                    le_len = 1;
                 break;
-
             case '\n':
-                g_ptr_array_add (array, g_strndup (line, p - line));
-                line = ++p;
+                le_len = 1;
                 break;
-
             case '\xe2': /* Unicode paragraph separator "\xe2\x80\xa9" */
-                if (p[1] == '\x80' && p[2] == '\xa9')
+                if (le + 2 < end && le[1] == '\x80' && le[2] == '\xa9')
                 {
-                    g_ptr_array_add (array, g_strndup (line, p - line));
-                    p += 3;
-                    line = p;
+                    le_len = 3;
                     break;
                 }
                 /* fallthrough */
-
             default:
-                ++p;
+                le += 1;
+                break;
         }
     }
 
-    g_ptr_array_add (array, g_strndup (line, p - line));
-    g_ptr_array_add (array, NULL);
+    line = lr->text;
 
-    return (char**) g_ptr_array_free (array, FALSE);
+    if (le_len)
+    {
+        lr->text = le + le_len;
+        lr->len -= (le - line) + le_len;
+    }
+    else
+    {
+        lr->text = NULL;
+        lr->len = 0;
+    }
+
+    if (line_len)
+        *line_len = le - line;
+    if (lt_len)
+        *lt_len = le_len;
+
+    return line;
 }
+
 
 char **
 _moo_strv_reverse (char **str_array)
@@ -1999,60 +2020,6 @@ _moo_strv_reverse (char **str_array)
     }
 
     return str_array;
-}
-
-char **
-_moo_ascii_strnsplit (const char *string,
-                      gssize      len,
-                      guint       max_tokens)
-{
-    GPtrArray *array = NULL;
-    const char *end;
-
-    g_return_val_if_fail (string != NULL, NULL);
-
-    if (len < 0)
-        len = strlen (string);
-    if (max_tokens < 2)
-        max_tokens = G_MAXUINT;
-
-    end = string + len;
-
-    while (string != end)
-    {
-        const char *p;
-
-        while (string != end && g_ascii_isspace (*string))
-            string++;
-
-        if (string == end)
-            break;
-
-        for (p = string; p != end && !g_ascii_isspace (*p); ++p) ;
-
-        if (!array)
-            array = g_ptr_array_new ();
-
-        g_ptr_array_add (array, g_strndup (string, p - string));
-
-        if (array->len + 1 == max_tokens)
-        {
-            g_ptr_array_add (array, g_strndup (p, end - p));
-            break;
-        }
-
-        string = p;
-    }
-
-    if (array)
-    {
-        g_ptr_array_add (array, NULL);
-        return (char**) g_ptr_array_free (array, FALSE);
-    }
-    else
-    {
-        return NULL;
-    }
 }
 
 
@@ -2312,3 +2279,93 @@ _moo_message (const char *format,
         va_end (args);
     }
 }
+
+
+#ifdef MOO_ENABLE_UNIT_TESTS
+
+#include "moo-tests.h"
+
+static void
+test_strv_one (const char *string,
+               gssize      len,
+               char const *expected[])
+{
+    const char *s;
+    char *freeme = NULL;
+    char **res;
+    guint n_toks;
+
+    if (len < 0)
+        s = string;
+    else
+        s = freeme = g_strndup (string, len);
+
+    res = moo_splitlines (s);
+    TEST_ASSERT_STRV_EQ_MSG (res, (char**) expected,
+                             "moo_splitlines(%s)", TEST_FMT_STR (s));
+    g_strfreev (res);
+    g_free (freeme);
+    freeme = NULL;
+
+    res = moo_strnsplit_lines (string, len, &n_toks);
+    TEST_ASSERT_STRV_EQ_MSG (res, (char**) expected,
+                             "moo_strnsplit_lines(%s, %d)",
+                             TEST_FMT_STR (s), (int) len);
+    TEST_ASSERT_INT_EQ (n_toks, res ? g_strv_length (res) : 0);
+    g_strfreev (res);
+}
+
+static void
+test_moo_splitlines (void)
+{
+    guint i;
+
+    struct {
+        const char *s;
+        gssize len;
+        char const *toks[10];
+    } cases[] = {
+        { "abcd", -1, {"abcd", NULL} },
+        { "abcd\n", -1, {"abcd", "", NULL} },
+        { "abcd\r\n", -1, {"abcd", "", NULL} },
+        { "\rabcd\n", -1, {"", "abcd", "", NULL} },
+        { "\r\nabcd\n", -1, {"", "abcd", "", NULL} },
+        { "abcd\nabc", -1, {"abcd", "abc", NULL} },
+        { "abcd\n", 4, {"abcd", NULL} },
+        { "a\nb\rc\r\nd\xe2\x80\xa9""e", -1, {"a", "b", "c", "d", "e", NULL} },
+        { "a\xe2\x80\xa9""b", 1, {"a", NULL} },
+        { "a\xe2\x80\xa9""b", 3, {"a\xe2\x80", NULL} },
+        { "a\xe2\x80\xa9""b", 4, {"a", "", NULL} },
+        { "a\xe2\x80\xa9""b", 5, {"a", "b", NULL} }
+    };
+
+    struct {
+        const char *s;
+        gssize len;
+    } nulls[] = {
+        { NULL, -1 },
+        { "", -1 },
+        { "", 0 },
+        { "abcd", 0 }
+    };
+
+    for (i = 0; i < G_N_ELEMENTS (cases); ++i)
+        test_strv_one (cases[i].s, cases[i].len, cases[i].toks);
+
+    for (i = 0; i < G_N_ELEMENTS (nulls); ++i)
+        test_strv_one (nulls[i].s, nulls[i].len, NULL);
+}
+
+
+void
+moo_test_mooutils_misc (void)
+{
+    MooTestSuite *suite;
+
+    suite = moo_test_suite_new ("mooutils/mooutils-misc.c", NULL, NULL, NULL);
+
+    moo_test_suite_add_test (suite, "test of moo_splitlines()",
+                             (MooTestFunc) test_moo_splitlines, NULL);
+}
+
+#endif

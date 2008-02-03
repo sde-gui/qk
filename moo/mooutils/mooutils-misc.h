@@ -1,7 +1,7 @@
 /*
  *   mooutils-misc.h
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -108,24 +108,29 @@ void       _moo_menu_item_set_label         (GtkWidget      *menu_item,
 void       _moo_widget_set_tooltip          (GtkWidget      *widget,
                                              const char     *tip);
 
+typedef struct {
+    const char *text;
+    gsize len;
+} MooLineReader;
+void        moo_line_reader_init            (MooLineReader  *lr,
+                                             const char     *text,
+                                             gssize          len);
+const char *moo_line_reader_get_line        (MooLineReader  *lr,
+                                             gsize          *line_len,
+                                             gsize          *lt_len);
 char      **moo_strnsplit_lines             (const char     *string,
                                              gssize          len,
                                              guint          *n_tokens);
 char      **moo_splitlines                  (const char     *string);
-char     **_moo_ascii_strnsplit             (const char     *string,
-                                             gssize          len,
-                                             guint           n_tokens);
+
 char     **_moo_strv_reverse                (char          **str_array);
 
 static inline gboolean
-_moo_str_equal_inline (const char *s1,
-                       const char *s2)
+_moo_str_equal (const char *s1,
+                const char *s2)
 {
     return !strcmp (s1 ? s1 : "", s2 ? s2 : "");
 }
-
-#define _moo_str_equal(s1, s2) (_moo_str_equal_inline ((s1), (s2)))
-
 
 static inline void
 moo_assign_string (char       **where,

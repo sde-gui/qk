@@ -9,6 +9,7 @@ main (int argc, char *argv[])
     moo_test_gobject ();
     moo_test_mooaccel ();
     moo_test_mooutils_fs ();
+    moo_test_mooutils_misc ();
 
 #ifdef __WIN32__
     moo_test_mooutils_win32 ();
@@ -16,6 +17,8 @@ main (int argc, char *argv[])
 
     moo_test_lua ();
     moo_test_mooedit_lua_api ();
+
+    moo_test_key_file ();
 
     moo_test_run_tests ();
     moo_test_cleanup ();
