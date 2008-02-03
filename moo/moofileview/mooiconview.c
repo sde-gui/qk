@@ -578,7 +578,7 @@ moo_icon_view_dispose (GObject *object)
 static DndInfo *
 dnd_info_new (void)
 {
-    return _moo_new0 (DndInfo);
+    return moo_new0 (DndInfo);
 }
 
 static void
@@ -592,7 +592,7 @@ dnd_info_free (DndInfo *info)
             gtk_target_list_unref (info->source_targets);
         if (info->drag_motion_context)
             g_object_unref (info->drag_motion_context);
-        _moo_free (DndInfo, info);
+        moo_free (DndInfo, info);
     }
 }
 

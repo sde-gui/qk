@@ -1114,7 +1114,7 @@ expander_data_free (ExpanderData *data)
         if (data->cell)
             g_object_unref (data->cell);
         expander_data_disconnect_model (data);
-        _moo_free (ExpanderData, data);
+        moo_free (ExpanderData, data);
     }
 }
 
@@ -1215,7 +1215,7 @@ _moo_tree_view_setup_expander (GtkTreeView       *tree_view,
                                              (GtkTreeCellDataFunc) expander_cell_data_func,
                                              tree_view, NULL);
 
-    data = _moo_new0 (ExpanderData);
+    data = moo_new0 (ExpanderData);
     data->column = g_object_ref (column);
     data->cell = g_object_ref (cell);
     g_object_set_data_full (G_OBJECT (tree_view), "moo-tree-view-expander-data",

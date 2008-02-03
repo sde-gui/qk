@@ -58,7 +58,7 @@ _moo_regex_new (GRegex *re)
 
     g_return_val_if_fail (re != NULL, NULL);
 
-    regex = _moo_new (MooRegex);
+    regex = moo_new (MooRegex);
     regex->re = g_regex_ref (re);
     regex->ref_count_ = 1;
 
@@ -103,7 +103,7 @@ _moo_regex_unref (MooRegex *regex)
     if (!--regex->ref_count_)
     {
         g_regex_unref (regex->re);
-        _moo_free (MooRegex, regex);
+        moo_free (MooRegex, regex);
     }
 }
 

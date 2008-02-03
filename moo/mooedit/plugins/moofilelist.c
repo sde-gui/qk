@@ -246,7 +246,7 @@ get_item_at_path (FileList    *list,
 static Group *
 group_new (const char *name)
 {
-    Group *grp = _moo_new0 (Group);
+    Group *grp = moo_new0 (Group);
 
     ITEM (grp)->ref_count = 1;
     ITEM (grp)->type = ITEM_GROUP;
@@ -262,7 +262,7 @@ group_free (Group *grp)
     if (grp)
     {
         g_free (grp->name);
-        _moo_free (Group, grp);
+        moo_free (Group, grp);
     }
 }
 
@@ -313,7 +313,7 @@ file_set_doc (File    *file,
 static File *
 file_new (void)
 {
-    File *file = _moo_new0 (File);
+    File *file = moo_new0 (File);
 
     ITEM (file)->ref_count = 1;
     ITEM (file)->type = ITEM_FILE;
@@ -395,7 +395,7 @@ file_free (File *file)
         g_free (file->uri);
         g_free (file->display_name);
         g_free (file->display_basename);
-        _moo_free (File, file);
+        moo_free (File, file);
     }
 }
 

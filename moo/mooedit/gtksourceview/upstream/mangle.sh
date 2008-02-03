@@ -68,7 +68,7 @@ sed -e 's/#include \"gtksourcecontextengine.h\"/#include \"gtksourcecontextengin
     -e 's/_gtk_text_region/gtk_text_region/g'											  \
     -e 's/gtk_text_region/_moo_gtk_text_region/g'										  \
 																  \
-    -e 's/g_slice_new/_moo_new/g'												  \
-    -e 's/g_slice_free/_moo_free/g'												  \
+    -e 's/g_slice_new/moo_new/g'												  \
+    -e 's/g_slice_free/moo_free/g'												  \
 																  \
     $custom_cmd "$1" || exit $?

@@ -399,7 +399,7 @@ _moo_ctags_entry_unref (MooCtagsEntry *entry)
         g_free (entry->name);
         g_free (entry->klass);
         g_free (entry->signature);
-        _moo_free (MooCtagsEntry, entry);
+        moo_free (MooCtagsEntry, entry);
     }
 }
 
@@ -412,7 +412,7 @@ moo_ctags_entry_new (const tagEntry *te)
 
     g_return_val_if_fail (te != NULL, NULL);
 
-    entry = _moo_new (MooCtagsEntry);
+    entry = moo_new (MooCtagsEntry);
     entry->ref_count = 1;
 
     entry->name = g_strdup (te->name);

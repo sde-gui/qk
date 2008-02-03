@@ -118,7 +118,7 @@ _moo_file_new (const char *dirname,
         g_return_val_if_fail (display_name != NULL, NULL);
     }
 
-    file = _moo_new0 (MooFile);
+    file = moo_new0 (MooFile);
     file->ref_count = 1;
 
     file->name = g_strdup (basename);
@@ -158,8 +158,8 @@ _moo_file_unref (MooFile *file)
         g_free (file->case_display_name);
         g_free (file->collation_key);
         g_free (file->link_target);
-        _moo_free (struct stat, file->statbuf);
-        _moo_free (MooFile, file);
+        moo_free (struct stat, file->statbuf);
+        moo_free (MooFile, file);
     }
 }
 
@@ -183,7 +183,7 @@ _moo_file_stat (MooFile    *file,
     errno = 0;
 
     if (!file->statbuf)
-        file->statbuf = _moo_new (struct stat);
+        file->statbuf = moo_new (struct stat);
 
     if (g_lstat (fullname, file->statbuf) != 0)
     {
@@ -311,7 +311,7 @@ void
 _moo_file_free_statbuf (MooFile *file)
 {
     g_return_if_fail (file != NULL);
-    _moo_free (struct stat, file->statbuf);
+    moo_free (struct stat, file->statbuf);
     file->statbuf = NULL;
     file->flags &= ~MOO_FILE_HAS_STAT;
 }

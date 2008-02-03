@@ -87,7 +87,7 @@ _moo_app_input_new (const char *appname,
 
     g_return_val_if_fail (appname != NULL, NULL);
 
-    ch = _moo_new0 (MooAppInput);
+    ch = moo_new0 (MooAppInput);
 
     ch->pipes = NULL;
     ch->appname = g_strdup (appname);
@@ -117,7 +117,7 @@ _moo_app_input_free (MooAppInput *ch)
 
     g_free (ch->main_path);
     g_free (ch->appname);
-    _moo_free (MooAppInput, ch);
+    moo_free (MooAppInput, ch);
 }
 
 
@@ -397,7 +397,7 @@ connection_free (Connection *conn)
         close (conn->fd);
 
     g_string_free (conn->buffer, TRUE);
-    _moo_free (Connection, conn);
+    moo_free (Connection, conn);
 }
 
 static void
@@ -502,7 +502,7 @@ accept_connection (G_GNUC_UNUSED GIOChannel *source,
         return FALSE;
     }
 
-    conn = _moo_new0 (Connection);
+    conn = moo_new0 (Connection);
     conn->ch = ch;
     conn->buffer = g_string_new_len (NULL, MAX_BUFFER_SIZE);
 
@@ -511,7 +511,7 @@ accept_connection (G_GNUC_UNUSED GIOChannel *source,
     if (conn->fd == -1)
     {
         g_warning ("%s in accept: %s", G_STRLOC, g_strerror (errno));
-        _moo_free (Connection, conn);
+        moo_free (Connection, conn);
         return TRUE;
     }
 
@@ -519,7 +519,7 @@ accept_connection (G_GNUC_UNUSED GIOChannel *source,
                                  &conn->io, &conn->io_watch))
     {
         close (conn->fd);
-        _moo_free (Connection, conn);
+        moo_free (Connection, conn);
         return TRUE;
     }
 
@@ -637,7 +637,7 @@ input_channel_new (const char *appname,
     g_return_val_if_fail (appname != NULL, NULL);
     g_return_val_if_fail (name != NULL, NULL);
 
-    ch = _moo_new0 (InputChannel);
+    ch = moo_new0 (InputChannel);
 
     ch->name = g_strdup (name);
     ch->pipe_dir = get_pipe_dir (appname);
@@ -668,7 +668,7 @@ input_channel_free (InputChannel *ch)
         g_free (ch->pipe_dir);
     }
 
-    _moo_free (InputChannel, ch);
+    moo_free (InputChannel, ch);
 }
 
 
@@ -905,7 +905,7 @@ input_channel_new  (const char *appname,
     g_return_val_if_fail (appname != NULL, NULL);
     g_return_val_if_fail (name != NULL, NULL);
 
-    ch = _moo_new0 (InputChannel);
+    ch = moo_new0 (InputChannel);
 
     ch->name = g_strdup (name);
     ch->pipe_dir = get_pipe_dir (appname);
@@ -938,7 +938,7 @@ input_channel_free (InputChannel *ch)
         g_free (ch->pipe_dir);
     }
 
-    _moo_free (InputChannel, ch);
+    moo_free (InputChannel, ch);
 }
 
 static gboolean
@@ -1161,7 +1161,7 @@ input_channel_new (const char *appname,
 {
     InputChannel *ch;
 
-    ch = _moo_new0 (InputChannel);
+    ch = moo_new0 (InputChannel);
     ch->appname = g_strdup (appname);
     ch->name = g_strdup (name);
     ch->buffer = g_string_new_len (NULL, MAX_BUFFER_SIZE);
@@ -1185,7 +1185,7 @@ input_channel_free (InputChannel *ch)
     g_free (ch->pipe_name);
     g_free (ch->appname);
     g_free (ch->name);
-    _moo_free (InputChannel, ch);
+    moo_free (InputChannel, ch);
 }
 
 gboolean

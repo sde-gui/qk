@@ -179,13 +179,13 @@ gboolean    _moo_regex_escape               (const char *string,
 
 
 #if GLIB_CHECK_VERSION(2,10,0)
-#define _moo_new            g_slice_new
-#define _moo_new0           g_slice_new0
-#define _moo_free           g_slice_free
+#define moo_new            g_slice_new
+#define moo_new0           g_slice_new0
+#define moo_free           g_slice_free
 #else
-#define _moo_new(type)      g_new (type, 1)
-#define _moo_new0(type)     g_new0 (type, 1)
-#define _moo_free(type,mem) g_free (mem)
+#define moo_new(type)      g_new (type, 1)
+#define moo_new0(type)     g_new0 (type, 1)
+#define moo_free(type,mem) g_free (mem)
 #endif
 
 #if GLIB_CHECK_VERSION(2,10,0)
