@@ -1055,9 +1055,9 @@ moo_icon_view_invalidate_layout (MooIconView *view)
 {
     if (!view->priv->update_idle)
         view->priv->update_idle =
-                _moo_idle_add_full (G_PRIORITY_HIGH,
-                                    (GSourceFunc) moo_icon_view_update_layout,
-                                    view, NULL);
+                moo_idle_add_full (G_PRIORITY_HIGH,
+                                   (GSourceFunc) moo_icon_view_update_layout,
+                                   view, NULL);
 }
 
 

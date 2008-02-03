@@ -789,9 +789,9 @@ queue_adjustment_changed (MooTerm  *term,
     else if (!term->priv->pending_adjustment_changed)
     {
         term->priv->pending_adjustment_changed =
-                _moo_idle_add_full (ADJUSTMENT_PRIORITY,
-                                    (GSourceFunc) emit_adjustment_changed,
-                                    term, NULL);
+                moo_idle_add_full (ADJUSTMENT_PRIORITY,
+                                   (GSourceFunc) emit_adjustment_changed,
+                                   term, NULL);
     }
 }
 
@@ -810,9 +810,9 @@ queue_adjustment_value_changed (MooTerm  *term,
     else if (!term->priv->pending_adjustment_value_changed)
     {
         term->priv->pending_adjustment_value_changed =
-                _moo_idle_add_full(ADJUSTMENT_PRIORITY,
-                                   (GSourceFunc) emit_adjustment_value_changed,
-                                   term, NULL);
+                moo_idle_add_full(ADJUSTMENT_PRIORITY,
+                                  (GSourceFunc) emit_adjustment_value_changed,
+                                  term, NULL);
     }
 }
 

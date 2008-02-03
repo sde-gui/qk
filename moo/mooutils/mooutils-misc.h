@@ -91,10 +91,10 @@ const char *moo_get_locale_dir              (void);
 const char *const *_moo_get_shared_data_dirs (void);
 
 
-void       _moo_selection_data_set_pointer  (GtkSelectionData *data,
+void        moo_selection_data_set_pointer  (GtkSelectionData *data,
                                              GdkAtom         type,
                                              gpointer        ptr);
-gpointer   _moo_selection_data_get_pointer  (GtkSelectionData *data,
+gpointer    moo_selection_data_get_pointer  (GtkSelectionData *data,
                                              GdkAtom         type);
 
 GdkModifierType _moo_get_modifiers          (GtkWidget      *widget);
@@ -142,7 +142,7 @@ const char *_moo_get_pid_string             (void);
 
 const char *_moo_intern_string              (const char     *string);
 
-guint       _moo_idle_add_full              (gint            priority,
+guint        moo_idle_add_full              (gint            priority,
                                              GSourceFunc     function,
                                              gpointer        data,
                                              GDestroyNotify  notify);
@@ -212,7 +212,7 @@ gboolean    _moo_win32_open_uri             (const char     *uri);
 void        _moo_win32_show_fatal_error     (const char     *domain,
                                              const char     *logmsg);
 
-char      **_moo_win32_lame_parse_cmd_line  (const char     *cmd_line, 
+char      **_moo_win32_lame_parse_cmd_line  (const char     *cmd_line,
                                              GError        **error);
 
 

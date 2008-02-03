@@ -687,10 +687,9 @@ static void
 start_writer (MooTermPt *pt)
 {
     if (!pt->pending_write_id)
-        pt->pending_write_id =
-                _moo_idle_add_full (PT_WRITER_PRIORITY,
-                                    (GSourceFunc) write_cb,
-                                    pt, NULL);
+        pt->pending_write_id = moo_idle_add_full (PT_WRITER_PRIORITY,
+                                                  (GSourceFunc) write_cb,
+                                                  pt, NULL);
 }
 
 static void

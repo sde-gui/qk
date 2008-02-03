@@ -2655,9 +2655,9 @@ tab_icon_drag_data_get (GtkWidget      *evbox,
 
     if (info == TARGET_MOO_EDIT_TAB)
     {
-        _moo_selection_data_set_pointer (data,
-                                         gdk_atom_intern ("MOO_EDIT_TAB", FALSE),
-                                         edit);
+        moo_selection_data_set_pointer (data,
+                                        gdk_atom_intern ("MOO_EDIT_TAB", FALSE),
+                                        edit);
     }
     else if (info == TARGET_URI_LIST)
     {
@@ -4003,9 +4003,9 @@ moo_edit_window_update_doc_list (MooEditWindow *window)
 
     if (!window->priv->doc_list_update_idle)
         window->priv->doc_list_update_idle =
-                _moo_idle_add_full (G_PRIORITY_HIGH,
-                                    (GSourceFunc) do_update_doc_list,
-                                    window, NULL);
+                moo_idle_add_full (G_PRIORITY_HIGH,
+                                   (GSourceFunc) do_update_doc_list,
+                                   window, NULL);
 
     if (!window->priv->history_blocked &&
         (doc = ACTIVE_DOC (window)))
@@ -4102,7 +4102,7 @@ notebook_drag_data_recv (GtkWidget          *widget,
         if (data->target == moo_edit_tab_atom)
         {
             GtkWidget *toplevel;
-            MooEdit *doc = _moo_selection_data_get_pointer (data, moo_edit_tab_atom);
+            MooEdit *doc = moo_selection_data_get_pointer (data, moo_edit_tab_atom);
 
             if (!doc)
                 goto out;
@@ -4167,7 +4167,7 @@ notebook_drag_data_recv (GtkWidget          *widget,
         if (info == TARGET_MOO_EDIT_TAB)
         {
             GtkWidget *toplevel;
-            MooEdit *doc = _moo_selection_data_get_pointer (data, moo_edit_tab_atom);
+            MooEdit *doc = moo_selection_data_get_pointer (data, moo_edit_tab_atom);
 
             if (!doc)
             {

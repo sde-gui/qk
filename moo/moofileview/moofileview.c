@@ -2543,9 +2543,9 @@ get_clipboard_cb (G_GNUC_UNUSED GtkClipboard *clipboard,
     switch (info)
     {
         case CB_TARGET_CLIPBOARD:
-            _moo_selection_data_set_pointer (selection_data,
-                                             moo_file_view_clipboard,
-                                             fileview);
+            moo_selection_data_set_pointer (selection_data,
+                                            moo_file_view_clipboard,
+                                            fileview);
             break;
 
         case CB_TARGET_URI_LIST:
@@ -2637,7 +2637,7 @@ file_view_paste_clipboard (MooFileView *fileview)
         GList *filenames, *l;
         const char *destdir;
 
-        remote = _moo_selection_data_get_pointer (data, moo_file_view_clipboard);
+        remote = moo_selection_data_get_pointer (data, moo_file_view_clipboard);
         g_return_if_fail (remote != NULL);
 
         cb = remote->priv->clipboard;

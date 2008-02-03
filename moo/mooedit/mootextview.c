@@ -1563,10 +1563,10 @@ moo_text_view_move_cursor (gpointer view,
 
         mview = MOO_TEXT_VIEW (view);
         mview->priv->move_cursor_idle =
-            _moo_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
-                                (GSourceFunc) do_move_cursor,
-                                g_memdup (&scroll, sizeof scroll),
-                                g_free);
+            moo_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
+                               (GSourceFunc) do_move_cursor,
+                               g_memdup (&scroll, sizeof scroll),
+                               g_free);
     }
 }
 
@@ -1758,9 +1758,9 @@ clipboard_get_selection (G_GNUC_UNUSED GtkClipboard *clipboard,
 
     if (info == TARGET_MOO_TEXT_VIEW)
     {
-        _moo_selection_data_set_pointer (selection_data,
-                                         gdk_atom_intern ("MOO_TEXT_VIEW", FALSE),
-                                         data);
+        moo_selection_data_set_pointer (selection_data,
+                                        gdk_atom_intern ("MOO_TEXT_VIEW", FALSE),
+                                        data);
     }
     else if (gtk_text_buffer_get_selection_bounds (get_buffer (view), &start, &end))
     {
@@ -1844,9 +1844,9 @@ get_clipboard (G_GNUC_UNUSED GtkClipboard *clipboard,
 
     if (info == TARGET_MOO_TEXT_VIEW)
     {
-        _moo_selection_data_set_pointer (selection_data,
-                                         gdk_atom_intern ("MOO_TEXT_VIEW", FALSE),
-                                         view);
+        moo_selection_data_set_pointer (selection_data,
+                                        gdk_atom_intern ("MOO_TEXT_VIEW", FALSE),
+                                        view);
         return;
     }
 
@@ -1988,7 +1988,7 @@ moo_text_view_paste_clipboard (GtkTextView *text_view)
         GtkSelectionData *data;
 
         if ((data = gtk_clipboard_wait_for_contents (clipboard, moo_text_view_atom)) &&
-             (source = _moo_selection_data_get_pointer (data, moo_text_view_atom)))
+             (source = moo_selection_data_get_pointer (data, moo_text_view_atom)))
         {
             need_paste_text = FALSE;
             paste_moo_text_view_content (text_view, source);
@@ -2550,9 +2550,9 @@ highlight_updated (GtkTextView       *text_view,
 
         if (!view->priv->update_idle)
             view->priv->update_idle =
-                    _moo_idle_add_full (G_PRIORITY_HIGH_IDLE,
-                                        (GSourceFunc) invalidate_rectangle,
-                                        view, NULL);
+                    moo_idle_add_full (G_PRIORITY_HIGH_IDLE,
+                                       (GSourceFunc) invalidate_rectangle,
+                                       view, NULL);
     }
     else
     {
@@ -3182,9 +3182,9 @@ buffer_changed (MooTextView *view)
         !view->priv->update_n_lines_idle)
     {
         view->priv->update_n_lines_idle =
-            _moo_idle_add_full (G_PRIORITY_HIGH,
-                                (GSourceFunc) update_n_lines_idle,
-                                view, NULL);
+            moo_idle_add_full (G_PRIORITY_HIGH,
+                               (GSourceFunc) update_n_lines_idle,
+                               view, NULL);
     }
 }
 

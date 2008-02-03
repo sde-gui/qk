@@ -724,7 +724,7 @@ moo_file_selector_drop_data_received (MooFileView *fileview,
         goto error;
     }
 
-    doc = _moo_selection_data_get_pointer (data, moo_edit_tab_atom);
+    doc = moo_selection_data_get_pointer (data, moo_edit_tab_atom);
 
     if (!MOO_IS_EDIT (doc))
     {

@@ -1035,9 +1035,9 @@ moo_edit_queue_apply_config (MooEdit *edit)
 {
     if (!edit->priv->apply_config_idle)
         edit->priv->apply_config_idle =
-                _moo_idle_add_full (G_PRIORITY_HIGH,
-                                    (GSourceFunc) do_apply_config,
-                                    edit, NULL);
+                moo_idle_add_full (G_PRIORITY_HIGH,
+                                   (GSourceFunc) do_apply_config,
+                                   edit, NULL);
 }
 
 
