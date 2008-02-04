@@ -568,7 +568,7 @@
   (c-name "moo_filter_mgr_init_filter_combo")
   (return-type "none")
   (parameters
-    '("MooCombo*" "combo")
+    '("GtkComboBox*" "combo")
     '("const-char*" "user_id")
   )
 )

@@ -34,6 +34,7 @@ import gtk.gdk.Color as PyGdkColor_Type
 import gtk.gdk.Pixbuf as PyGdkPixbuf_Type
 import gtk.ActionGroup as PyGtkActionGroup_Type
 import gtk.Action as PyGtkAction_Type
+import gtk.ComboBox as PyGtkComboBox_Type
 import gtk.ToggleAction as PyGtkToggleAction_Type
 import gtk.RadioAction as PyGtkRadioAction_Type
 import gtk.AccelGroup as PyGtkAccelGroup_Type

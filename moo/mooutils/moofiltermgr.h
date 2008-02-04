@@ -1,7 +1,7 @@
 /*
  *   moofiltermgr.h
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -13,9 +13,7 @@
 #ifndef MOO_FILTER_MGR_H
 #define MOO_FILTER_MGR_H
 
-#include <gtk/gtkfilefilter.h>
-#include <gtk/gtkfilechooser.h>
-#include <mooutils/moocombo.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
@@ -50,7 +48,7 @@ GType            moo_filter_mgr_get_type            (void) G_GNUC_CONST;
 MooFilterMgr    *moo_filter_mgr_new                 (void);
 
 void             moo_filter_mgr_init_filter_combo   (MooFilterMgr   *mgr,
-                                                     MooCombo       *combo,
+                                                     GtkComboBox    *combo,
                                                      const char     *user_id);
 void             moo_filter_mgr_attach              (MooFilterMgr   *mgr,
                                                      GtkFileChooser *filechooser,

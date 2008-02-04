@@ -1,7 +1,7 @@
 /*
  *   moofiltermgr.c
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -13,6 +13,7 @@
 #include "mooutils/moofiltermgr.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooi18n.h"
 #include <string.h>
 #include <gtk/gtk.h>
 
@@ -160,24 +161,25 @@ moo_filter_mgr_new (void)
 
 
 void
-moo_filter_mgr_init_filter_combo (MooFilterMgr   *mgr,
-                                  MooCombo       *combo,
-                                  const char     *user_id)
+moo_filter_mgr_init_filter_combo (MooFilterMgr *mgr,
+                                  GtkComboBox  *combo,
+                                  const char   *user_id)
 {
     FilterStore *store;
 
     g_return_if_fail (MOO_IS_FILTER_MGR (mgr));
-    g_return_if_fail (MOO_IS_COMBO (combo));
+    g_return_if_fail (GTK_IS_COMBO_BOX_ENTRY (combo));
 
     mgr_load (mgr);
 
     store = mgr_get_store (mgr, user_id, TRUE);
     g_return_if_fail (store != NULL);
 
-    moo_combo_set_model (combo, GTK_TREE_MODEL (store->filters));
-    moo_combo_set_row_separator_func (combo, combo_row_separator_func, NULL);
+    gtk_combo_box_set_model (combo, GTK_TREE_MODEL (store->filters));
+    gtk_combo_box_set_row_separator_func (combo, combo_row_separator_func, NULL, NULL);
 
-    moo_combo_set_text_column (combo, COLUMN_DESCRIPTION);
+    if (GTK_IS_COMBO_BOX_ENTRY (combo))
+        gtk_combo_box_entry_set_text_column (GTK_COMBO_BOX_ENTRY (combo), COLUMN_DESCRIPTION);
 }
 
 
@@ -480,7 +482,7 @@ filter_entry_activated (GtkEntry       *entry,
 
 
 static void
-combo_changed (MooCombo       *combo,
+combo_changed (GtkComboBox    *combo,
                GtkFileChooser *dialog)
 {
     GtkTreeIter iter;
@@ -488,7 +490,7 @@ combo_changed (MooCombo       *combo,
     MooFilterMgr *mgr;
     FilterStore *store;
 
-    if (!moo_combo_get_active_iter (combo, &iter))
+    if (!gtk_combo_box_get_active_iter (combo, &iter))
         return;
 
     mgr = g_object_get_data (G_OBJECT (dialog), "moo-filter-mgr");
@@ -529,16 +531,16 @@ moo_filter_mgr_attach (MooFilterMgr   *mgr,
     gtk_widget_show (hbox);
     gtk_box_pack_end (GTK_BOX (parent), hbox, FALSE, FALSE, 0);
 
-    label = gtk_label_new_with_mnemonic ("_Filter:");
+    label = gtk_label_new_with_mnemonic (_("_Show:"));
     gtk_widget_show (label);
     gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
 
-    combo = moo_combo_new ();
-    moo_filter_mgr_init_filter_combo (mgr, MOO_COMBO (combo), user_id);
+    combo = gtk_combo_box_entry_new ();
+    moo_filter_mgr_init_filter_combo (mgr, GTK_COMBO_BOX (combo), user_id);
     gtk_widget_show (combo);
     gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 0);
 
-    entry = MOO_COMBO(combo)->entry;
+    entry = GTK_BIN (combo)->child;
     gtk_label_set_mnemonic_widget (GTK_LABEL (label), entry);
 
     g_signal_connect (entry, "activate",

@@ -1,7 +1,7 @@
 /*
  *   moofileview.c
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -125,7 +125,7 @@ struct _MooFileViewPrivate {
 
     MooFilterMgr    *filter_mgr;
     GtkToggleButton *filter_button;
-    MooCombo        *filter_combo;
+    GtkComboBox     *filter_combo;
     GtkEntry        *filter_entry;
     GtkFileFilter   *current_filter;
     gboolean         use_current_filter;
@@ -1536,23 +1536,24 @@ create_notebook (MooFileView *fileview)
 }
 
 
-static GtkWidget   *create_filter_combo (G_GNUC_UNUSED MooFileView *fileview)
+static GtkWidget *
+create_filter_combo (G_GNUC_UNUSED MooFileView *fileview)
 {
     GtkWidget *hbox, *button, *combo;
 
     hbox = gtk_hbox_new (FALSE, 0);
 
-    button = gtk_toggle_button_new_with_label ("Filter");
+    button = gtk_toggle_button_new_with_label (_("Filter"));
     gtk_widget_show (button);
     gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
-    combo = moo_combo_new ();
+    combo = gtk_combo_box_entry_new ();
     gtk_widget_show (combo);
     gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 0);
 
     fileview->priv->filter_button = GTK_TOGGLE_BUTTON (button);
-    fileview->priv->filter_combo = MOO_COMBO (combo);
-    fileview->priv->filter_entry = GTK_ENTRY (MOO_COMBO(combo)->entry);
+    fileview->priv->filter_combo = GTK_COMBO_BOX (combo);
+    fileview->priv->filter_entry = GTK_ENTRY (GTK_BIN (combo)->child);
 
     g_signal_connect_swapped (button, "toggled",
                               G_CALLBACK (filter_button_toggled),
@@ -1561,7 +1562,7 @@ static GtkWidget   *create_filter_combo (G_GNUC_UNUSED MooFileView *fileview)
                            G_CALLBACK (filter_combo_changed),
                            fileview, NULL,
                            G_CONNECT_AFTER | G_CONNECT_SWAPPED);
-    g_signal_connect_swapped (MOO_COMBO(combo)->entry, "activate",
+    g_signal_connect_swapped (GTK_BIN (combo)->child, "activate",
                               G_CALLBACK (filter_entry_activate),
                               fileview);
 
@@ -2839,9 +2840,9 @@ filter_combo_changed (MooFileView *fileview)
     GtkTreeIter iter;
     GtkFileFilter *filter;
     MooFilterMgr *mgr = fileview->priv->filter_mgr;
-    MooCombo *combo = fileview->priv->filter_combo;
+    GtkComboBox *combo = fileview->priv->filter_combo;
 
-    if (!moo_combo_get_active_iter (combo, &iter))
+    if (!gtk_combo_box_get_active_iter (combo, &iter))
         return;
 
     filter = moo_filter_mgr_get_filter (mgr, &iter, "MooFileView");
