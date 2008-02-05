@@ -1,10 +1,10 @@
-medit/medit.desktop.in
 medit/medit-app.c
+medit/medit.desktop.in
 
-moo/mooapp/mooapp.c
-moo/mooapp/mooappabout.c
-moo/mooapp/moohtml.c
 moo/mooapp/glade/mooappabout.glade
+moo/mooapp/mooappabout.c
+moo/mooapp/mooapp.c
+moo/mooapp/moohtml.c
 
 moo/mooedit/glade/mooeditprefs-file.glade
 moo/mooedit/glade/mooeditprefs-general.glade
@@ -16,57 +16,58 @@ moo/mooedit/glade/mooedittools.glade
 moo/mooedit/glade/moopluginprefs.glade
 moo/mooedit/glade/mooprint.glade
 moo/mooedit/glade/mooprintpreview.glade
+moo/mooedit/glade/mooquicksearch.glade
 moo/mooedit/glade/mootextfind.glade
 moo/mooedit/glade/mootextgotoline.glade
-moo/mooedit/glade/mooquicksearch.glade
 
 moo/mooedit/filters.xml
 moo/mooedit/medit-ui.xml
-moo/mooedit/mooedit-ui.xml
-moo/mooedit/mooeditor.c
 moo/mooedit/moocommand-exe.c
 moo/mooedit/moocommand-lua.c
+moo/mooedit/mooeditaction-factory.c
 moo/mooedit/mooeditdialogs.c
+moo/mooedit/mooeditfileops.c
+moo/mooedit/mooeditor.c
+moo/mooedit/mooeditprefspage.c
+moo/mooedit/mooedit-ui.xml
 moo/mooedit/mooeditwindow.c
+moo/mooedit/mootextfind.c
 moo/mooedit/mootextstylescheme.c
 moo/mooedit/moousertools.c
 moo/mooedit/moousertools-prefs.c
-moo/mooedit/mooeditfileops.c
-moo/mooedit/mootextfind.c
-moo/mooedit/mooeditaction-factory.c
-moo/mooedit/mooeditprefspage.c
 
 moo/mooedit/moo.xml.in
 
-moo/mooedit/plugins/moofind.c
-moo/mooedit/plugins/moofind.glade
 moo/mooedit/plugins/moofilelist.c
 moo/mooedit/plugins/moofileselector.c
 moo/mooedit/plugins/moofileselector.glade
 moo/mooedit/plugins/moofileselector-prefs.c
 moo/mooedit/plugins/moofileselector-prefs.glade
+moo/mooedit/plugins/moofind.c
+moo/mooedit/plugins/moofind.glade
 
 moo/moofileview/glade/moobookmark-editor.glade
-moo/moofileview/glade/moofileview-drop.glade
 moo/moofileview/glade/moocreatefolder.glade
 moo/moofileview/glade/moofileprops.glade
+moo/moofileview/glade/moofileview-drop.glade
 moo/moofileview/moofileview.c
 moo/moofileview/moofileview-ui.xml
 
+moo/moopython/plugins/medit/runpython.py
 moo/moopython/plugins/pycmd.py
 moo/moopython/plugins/python.ini.desktop.in.in
 moo/moopython/plugins/python.py
 moo/moopython/plugins/terminal.ini.desktop.in.in
 moo/moopython/plugins/terminal.py
-moo/moopython/plugins/medit/runpython.py
 
-moo/mooutils/glade/moologwindow.glade
 moo/mooutils/glade/mooaccelprefs.glade
+moo/mooutils/glade/moologwindow.glade
+moo/mooutils/moodialogs.c
 moo/mooutils/mooencodings.c
 moo/mooutils/mooencodings-data.h
+moo/mooutils/moofiltermgr.c
 moo/mooutils/moofontsel.c
+moo/mooutils/moohelp.c
+moo/mooutils/moopane.c
 moo/mooutils/moostock.c
 moo/mooutils/moowindow.c
-moo/mooutils/moopane.c
-moo/mooutils/moohelp.c
-moo/mooutils/moodialogs.c

@@ -18,10 +18,10 @@ libmoolua_la_SOURCES =		\
 	moolua.c		\
 	slnunico.c
 
-noinst_PROGRAMS = lua
-lua_SOURCES = lua.c
-lua_LDADD = libmoolua.la $(MOO_LIBS) $(MOO_OBJC_LIBS) -lreadline
-lua_CFLAGS = $(AM_CFLAGS) -DLUA_USE_READLINE
+# noinst_PROGRAMS = lua
+# lua_SOURCES = lua.c
+# lua_LDADD = libmoolua.la $(MOO_LIBS) $(MOO_OBJC_LIBS) -lreadline
+# lua_CFLAGS = $(AM_CFLAGS) -DLUA_USE_READLINE
 
 liblua_la_LDFLAGS =
 liblua_la_SOURCES =		\
