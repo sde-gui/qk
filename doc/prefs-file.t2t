@@ -1,0 +1,30 @@
+
+== Preferences files ==[prefs-file]
+
+APPNAME preferences are stored in ``$HOME/.config/APPNAMErc`` file.
+It is an XML file which may be edited to set preferences which have not found
+their place in the <interface>Preferences</interface> dialog.
+
+NOTE: APPNAME reads the preferences file on startup and writes it whenever //OK//
+or //Apply// button is clicked in the //Preferences// dialog. Therefore, if you
+modify the preferences file, your changes may be overwritten, and they not take
+the effect until you restart APPNAME.
+
+The following "hidden" settings are available.
+
+- ``Editor/window_title``: Format of the window title. It is a string which may
+contain format sequences: percent sign followed by a character:
+ - ``%a``: application name;
+ - ``%b``: current document basename;
+ - ``%f``: full path of the current document;
+ - ``%u``: URI of the current document;
+ - ``%s``: the status of the current document, e.g. "`` [modified]``". It is prefixed
+ with space, so that "``%b%s``" will produce a nice string;
+ - ``%%``: the percent character.
+
+Default value is "``%a - %f%s``" which produces something like "``APPNAME - /home/user/file [modified]``".
+
+- ``Editor/window_title_no_doc``: Same as ``Editor/window_title``, used when no document is open. Default value is "``%a``".
+- ``Editor/tab_width``: Visual width of the Tab character, 8 by default.
+
+

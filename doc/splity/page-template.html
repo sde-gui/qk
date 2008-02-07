@@ -1,0 +1,29 @@
+{
+%next = %top unless (%next);
+$opening =~ s!<title>.*</title>!'<title>'.main::strip_tags($title).'</title>'!eis;
+$opening;
+}
+
+<table width="100%"><tr valign="top">
+	<td width="33%" align="left">Previous: <a href="{$prev{'name'}}.html">{main::strip_tags($prev{'title'})}</a></td>
+	<td width="33%" align="center">Up: <a href="{$up{'name'}}.html">{main::strip_tags($up{'title'})}</a></td>
+	<td width="33%" align="right">Next: <a href="{$next{'name'}}.html">{main::strip_tags($next{'title'})}</a></td>
+</tr></table>
+<hr>
+
+<{$title_tag}>{$title}</{main::end_tag($title_tag)}>
+
+{$content}
+
+<ul>
+{main::sub_list(\@sub, 0, 0, 'li', 'ul')}
+</ul>
+
+<hr>
+<table width="100%"><tr valign="top">
+	<td width="33%" align="left">Previous: <a href="{$prev{'name'}}.html">{main::strip_tags($prev{'title'})}</a></td>
+	<td width="33%" align="center">Up: <a href="{$up{'name'}}.html">{main::strip_tags($up{'title'})}</a></td>
+	<td width="33%" align="right">Next: <a href="{$next{'name'}}.html">{main::strip_tags($next{'title'})}</a></td>
+</tr></table>
+
+{$closing}

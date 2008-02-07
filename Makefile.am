@@ -4,7 +4,6 @@ m4files =			\
 	m4/moo-comps.m4		\
 	m4/moo-debug.m4		\
 	m4/moo-dirs.m4		\
-	m4/moo-docs.m4		\
 	m4/moo-fam.m4		\
 	m4/moo-flags.m4		\
 	m4/moo-funcs.m4		\
@@ -47,16 +46,10 @@ if MOO_ENABLE_NLS
 po_subdirs = po po-gsv
 endif
 
-if MOO_ENABLE_HELP
-if MOO_BUILD_DOCS
-doc_subdirs = doc
-endif
-endif
-
 if MOO_BUILD_MEDIT
-SUBDIRS = . $(po_subdirs) $(doc_subdirs) moo medit
+SUBDIRS = . $(po_subdirs) doc moo medit
 else
-SUBDIRS = . $(po_subdirs) $(doc_subdirs) moo
+SUBDIRS = . $(po_subdirs) doc moo
 endif
 
 if MOO_ENABLE_TESTS
@@ -78,7 +71,7 @@ DISTCLEANFILES =		\
 	po-subdirs-stamp-2	\
 	po-subdirs-stamp
 
-DISTCHECK_CONFIGURE_FLAGS = --enable-docs --enable-unit-tests
+DISTCHECK_CONFIGURE_FLAGS = --enable-unit-tests
 distuninstallcheck_listfiles = find . -type f -print | grep -v share/mime/ | grep -v share/icons/hicolor
 
 snapshot:

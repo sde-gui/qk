@@ -1,0 +1,43 @@
+APPNAME APPVERSION Manual
+
+
+%! Target  : html
+%! Encoding: UTF-8
+%! Options : --css-sugar
+
+%% 'entities'
+%! Postproc: APPNAME    medit
+%! Postproc: APPVERSION 0.9.3
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% Sections stuff
+%%
+%% Convert '== Title ==[anchor]' to '== !!ANCHOR!!anchor!!Title!! ==[anchor]'
+%! Preproc : '^(=+)\s*(.*)\s+\1\[(.*)\]'  '\1 !!ANCHOR!!\3!!\2!! \1[\3]'
+%% Remove t2t-generated '<A NAME="anchor"></A>'
+%! Postproc: '<A NAME=".*"></A>'  ''
+%% Convert '<H1>!!ANCHOR!!anchor!!Title!!</H1>' to '<H1><a name="anchor">Title</a></H1><!-- @@anchor@@ -->'
+%! Postproc: '<(H\d)>!!ANCHOR!!(.*)!!(.*)!!</\1>'  '<\1><a name="\2">\3</a></\1><!-- @@\2@@ -->'
+%% Convert remaining '!!ANCHOR!!anchor!!Title!!' to 'Title'
+%! Postproc: '!!ANCHOR!!(.*)!!(.*)!!'  '\2'
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+APPNAME APPVERSION Manual
+
+%!include: prefs.t2t
+%!include: user-tools.t2t
+%!include: prefs-file.t2t
+%!include: license.t2t
+
+
+%% Fake help sections
+`<!-- @@dialog-replace@@ -->`
+`<!-- @@dialog-find@@ -->`
+`<!-- @@prefs-dialog@@ -->`
+`<!-- @@prefs-plugins@@ -->`
+`<!-- @@prefs-file-selector@@ -->`
+`<!-- @@dialog-find-in-files@@ -->`
+`<!-- @@dialog-find-file@@ -->`
+`<!-- @@file-selector@@ -->`

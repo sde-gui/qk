@@ -238,6 +238,7 @@ AM_CFLAGS =					\
 	-I$(top_builddir)			\
 	-I..					\
 	-I$(top_srcdir)/doc			\
+	-I$(top_builddir)/doc			\
 	$(MOO_CFLAGS)				\
 	$(MOO_DEBUG_CFLAGS)			\
 	-DMOO_LOCALE_DIR=\"$(datadir)/locale\"	\

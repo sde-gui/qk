@@ -139,7 +139,7 @@ show_credits (void)
 static void
 license_clicked (void)
 {
-    moo_help_open_id (HELP_SECTION_LICENSE, NULL);
+    moo_help_open_id (HELP_SECTION_APP_LICENSE, NULL);
 }
 
 

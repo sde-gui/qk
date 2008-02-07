@@ -1,0 +1,16 @@
+{$opening}
+
+<!--<div style="float:right;"><a href="{$source}">Print version</a>-->
+<!--<br><sup>(all sections in one long page)</sup></div>-->
+
+<{$title_tag}>{$title}</{main::end_tag($title_tag)}>
+
+{$content}
+
+<hr>
+<h2 style="margin:0;">Contents:</h2>
+<ul>
+{main::sub_list(\@sub, 0, 0, 'li', 'ul')}
+</ul>
+
+{$closing}

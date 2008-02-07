@@ -1280,14 +1280,12 @@ install_common_actions (void)
                                  "closure-callback", moo_app_about_dialog,
                                  NULL);
 
-#ifdef MOO_ENABLE_HELP
     moo_window_class_new_action (klass, "Help", NULL,
                                  "label", GTK_STOCK_HELP,
                                  "accel", "F1",
                                  "stock-id", GTK_STOCK_HELP,
                                  "closure-callback", moo_app_help,
                                  NULL);
-#endif
 
     moo_window_class_new_action (klass, "SystemInfo", NULL,
                                  /* menu item label */

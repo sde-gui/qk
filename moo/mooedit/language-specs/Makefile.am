@@ -56,6 +56,7 @@ langs2 =			\
 	scheme.lang		\
 	sh.lang			\
 	sql.lang		\
+	t2t.lang		\
 	tcl.lang		\
 	texinfo.lang		\
 	vala.lang		\

@@ -1,0 +1,44 @@
+#! /bin/sh
+
+# makedocs SRCDIR INPUT
+
+srcdir=`cd $1 && pwd`
+thisdir=`pwd`
+infile="$2"
+outfile="$thisdir"/`basename $infile .t2t`.html
+outdir="$thisdir/help"
+
+T2T=txt2tags
+SPLITY="$srcdir/splity/splity.pl"
+SPLITY_INDEX="$srcdir/splity/index-template.html"
+SPLITY_PAGE="$srcdir/splity/page-template.html"
+
+if test ! -f "$infile"; then
+  echo "Input file '$infile' does not exist"
+  exit 1
+fi
+
+if test ! -e "$outdir"; then
+  echo "Directory $outdir does not exist"
+  exit 1
+fi
+
+generate () {
+  $T2T --outfile=$2 $1 || exit 1
+  (cd "$outdir" && $SPLITY -index $SPLITY_INDEX -page $SPLITY_PAGE $2) || exit 1
+}
+
+write_sections () {
+  echo "#ifndef HELP_SECTIONS_H" > help-sections.h
+  echo "#define HELP_SECTIONS_H" >> help-sections.h
+  echo "" >> help-sections.h
+  for s in `grep '@@.*@@' $1 | sed 's/.*@@\(.*\)@@.*/\1/'`; do
+    echo "#define HELP_SECTION_`echo $s | tr '[a-z]' '[A-Z]' | tr -- - _` \"$s\"" >> help-sections.h
+  done
+  echo "" >> help-sections.h
+  echo "#endif /* HELP_SECTIONS_H */" >> help-sections.h
+}
+
+generate $infile $outfile || exit 1
+write_sections $outfile || exit 1
+rm $outfile || exit 1

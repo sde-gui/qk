@@ -41,5 +41,6 @@ AM_CFLAGS =			\
 	-I..			\
 	-I$(top_builddir)	\
 	-I$(top_srcdir)/doc	\
+	-I$(top_builddir)/doc	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)

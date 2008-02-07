@@ -36,7 +36,6 @@ AC_SUBST(MOO_SRC_PREFIX)
 MOO_COMPONENTS([app,edit,term],[])
 MOO_AC_SET_DIRS
 MOO_AC_FLAGS(moo)
-MOO_DOCS
 
 
 ################################################################################
