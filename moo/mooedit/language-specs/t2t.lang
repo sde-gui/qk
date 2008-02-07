@@ -51,7 +51,7 @@
     <context id="options">
       <include>
         <context id="option" style-ref="option">
-          <match>^(%!\s*(?:Target|Encoding|Options|Postproc|Preproc|include)(?:\(\S+\))?)\s*:.*</match>
+          <match>^(%!\s*(?:[Tt]arget|[Ee]ncoding|[Oo]ptions|[Pp](?:ost|re)proc|[Ii]nclude(?:conf)?|[Ss]tyle|[Gg]uicolors)(?:\(\S+\))?)\s*:.*</match>
           <include>
             <context id="option-name" sub-pattern="1" style-ref="option-name"/>
           </include>
