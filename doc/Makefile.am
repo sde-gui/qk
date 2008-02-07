@@ -3,7 +3,8 @@ t2t_sources =				\
 	medit.t2t			\
 	prefs-file.t2t			\
 	prefs.t2t			\
-	user-tools.t2t
+	user-tools.t2t			\
+	man-medit.t2t
 
 EXTRA_DIST =				\
 	$(t2t_sources)			\
@@ -14,10 +15,15 @@ EXTRA_DIST =				\
 	stamp-help			\
 	help-sections.h
 
-BUILT_SOURCES = stamp-help help-sections.h
+dist_man_MANS = medit.1
+
+BUILT_SOURCES = stamp-help help-sections.h medit.1
 
 help-sections.h: stamp-help
 build-docs: stamp-help
+
+medit.1: man-medit.t2t
+	txt2tags --target=man --outfile=medit.1 $(srcdir)/man-medit.t2t
 
 stamp-help: $(t2t_sources) makedocs
 	rm -fr help && \
@@ -30,6 +36,7 @@ prefs.lo: build-docs
 prefs-file.lo: build-docs
 license.lo: build-docs
 user-tools.lo: build-docs
+man-medit.lo: medit.1
 
 install-data-hook: build-docs
 	$(mkdir_p) $(DESTDIR)$(htmldir)/help

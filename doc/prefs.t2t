@@ -58,19 +58,19 @@ highlighting language.
 To set the options in the document text, place the following on the first,
 second or the last line of the document:
 ```
--%- options -%-
+-%- @em{options} -%-
 ```
 where //options// is the option string
 ```
-key: value; key: value; ...
+@em{key}: @em{value}; @em{key}: @em{value}; ...
 ```
 (the latter is the format used also in the //Preferences// dialog).
 
-Values can be strings, integer numbers, or boolean values.
+Values can be strings, integers, or booleans.
 
-Boolean values may be specified using ``yes``, ``no``, ``true``, ``false``, ``1``, ``0``.
+Booleans are ``yes``, ``no``, ``true``, ``false``, ``1``, ``0``.
 
-If a string value contains ``:`` character, then the following syntax may be used: ``key=/value/``.
+If a string value contains ``:`` character, then the following syntax may be used: ``@em{key}=/@em{value}/``.
 Any character may be used instead of slash (and it must not occur in the //value//).
 Example: ``word-chars=@-/:@``
 

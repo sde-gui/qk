@@ -1,9 +1,10 @@
 APPNAME APPVERSION Manual
 
 
-%! Target  : html
-%! Encoding: UTF-8
-%! Options : --css-sugar
+%! Target       : html
+%! Encoding     : UTF-8
+%! Options      : --css-sugar
+%! Options(html): --mask-email
 
 %% 'entities'
 %! Postproc: APPNAME    medit
@@ -17,12 +18,16 @@ APPNAME APPVERSION Manual
 %! Preproc : '^(=+)\s*(.*)\s+\1\[(.*)\]'  '\1 !!ANCHOR!!\3!!\2!! \1[\3]'
 %% Remove t2t-generated '<A NAME="anchor"></A>'
 %! Postproc: '<A NAME=".*"></A>'  ''
-%% Convert '<H1>!!ANCHOR!!anchor!!Title!!</H1>' to '<H1><a name="anchor">Title</a></H1><!-- @@anchor@@ -->'
+%% Convert '<H1>!!ANCHOR!!anchor!!Title!!</H1>' to '<H1><a name="anchor">Title</a></H1><!-- @@anchor@@ -->',
+%% @@anchor@@ is needed for makedocs to generate help-sections.h
 %! Postproc: '<(H\d)>!!ANCHOR!!(.*)!!(.*)!!</\1>'  '<\1><a name="\2">\3</a></\1><!-- @@\2@@ -->'
 %% Convert remaining '!!ANCHOR!!anchor!!Title!!' to 'Title'
 %! Postproc: '!!ANCHOR!!(.*)!!(.*)!!'  '\2'
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%! Postproc: '@em\{(.*?)\}' '<em>\1</em>'
+%! Postproc: '@comment\{(.*?)\}' '<!-- \1 -->'
 
 APPNAME APPVERSION Manual
 
@@ -33,11 +38,11 @@ APPNAME APPVERSION Manual
 
 
 %% Fake help sections
-`<!-- @@dialog-replace@@ -->`
-`<!-- @@dialog-find@@ -->`
-`<!-- @@prefs-dialog@@ -->`
-`<!-- @@prefs-plugins@@ -->`
-`<!-- @@prefs-file-selector@@ -->`
-`<!-- @@dialog-find-in-files@@ -->`
-`<!-- @@dialog-find-file@@ -->`
-`<!-- @@file-selector@@ -->`
+@comment{@@dialog-replace@@}
+@comment{@@dialog-find@@}
+@comment{@@prefs-dialog@@}
+@comment{@@prefs-plugins@@}
+@comment{@@prefs-file-selector@@}
+@comment{@@dialog-find-in-files@@}
+@comment{@@dialog-find-file@@}
+@comment{@@file-selector@@}

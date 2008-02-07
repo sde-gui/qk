@@ -8,8 +8,6 @@ EXTRA_DIST =		\
 	medit-app.opag	\
 	medit.rc.in
 
-dist_man_MANS = medit.1
-
 bin_PROGRAMS = medit
 
 medit_SOURCES = medit-credits.h medit-app.c mem-debug.h

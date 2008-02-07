@@ -41,4 +41,4 @@ write_sections () {
 
 generate $infile $outfile || exit 1
 write_sections $outfile || exit 1
-rm $outfile || exit 1
+# rm $outfile || exit 1

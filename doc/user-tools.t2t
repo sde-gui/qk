@@ -92,7 +92,7 @@ as shell commands.
 To set parameters for a tool, place them on the first or the second line of the file in
 the following format:
 ```
-!! key=value; key=value; ... !!
+!! @em{key}=@em{value}; @em{key}=@em{value}; ... !!
 ```
 
 //key// may be one of the following:
