@@ -1,3 +1,18 @@
+2008-02-10  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
+    * === Released 0.9.3 ===
+
+    Fixed double-click glitch in the file selector.
+    Made file list remember expanded and collapsed rows.
+    Implemented Find in Files on windows.
+    Fixed handling UNC paths on windows.
+    GtkRecent*, which caused freezing on load and save,
+    is no longer used.
+    Made ctags plugin enabled by default.
+    Fixed deleting folders on windows.
+
+    Updated German translation by Christian Dywan.
+
 2008-01-10  Yevgen Muntyan  <muntyan@math.tamu.edu>
 
     * === Released 0.9.2 ===
