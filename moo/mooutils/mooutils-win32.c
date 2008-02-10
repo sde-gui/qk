@@ -365,11 +365,12 @@ test_moo_win32_lame_parse_cmd_line (void)
 void
 moo_test_mooutils_win32 (void)
 {
-    CU_pSuite suite;
+    MooTestSuite *suite;
 
-    suite = CU_add_suite ("mooutils/mooutils-win32.c", NULL, NULL);
-    CU_add_test (suite, "test of _moo_win32_lame_parse_cmd_line()",
-                 test_moo_win32_lame_parse_cmd_line);
+    suite = moo_test_suite_new ("mooutils/mooutils-win32.c", NULL, NULL, NULL);
+    moo_test_suite_add_test (suite, "test of _moo_win32_lame_parse_cmd_line()",
+                             (MooTestFunc) test_moo_win32_lame_parse_cmd_line,
+                             NULL);
 }
 
 #endif

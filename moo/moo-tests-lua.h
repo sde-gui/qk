@@ -77,26 +77,6 @@ moo_test_run_lua_script (lua_State  *L,
                          filename, lua_gettop (L));
 }
 
-static char *
-moo_test_load_file (const char *basename)
-{
-    char *fullname;
-    char *contents = NULL;
-    GError *error = NULL;
-
-    fullname = g_build_filename (SRCDIR, "test", basename, NULL);
-
-    if (!g_file_get_contents (fullname, &contents, NULL, &error))
-    {
-        TEST_FAILED_MSG ("could not open file `%s': %s",
-                         fullname, error->message);
-        g_error_free (error);
-    }
-
-    g_free (fullname);
-    return contents;
-}
-
 static void
 moo_test_run_lua_file (const char *basename,
                        void (*setup_lua) (lua_State*),
@@ -104,19 +84,18 @@ moo_test_run_lua_file (const char *basename,
 {
     static char *contents;
 
-    if ((contents = moo_test_load_file (basename)))
+    if ((contents = moo_test_load_data_file (basename)))
     {
         lua_State *L;
 
         L = lua_open ();
         luaL_openlibs (L);
 
-#ifndef __WIN32__
         {
-            const char *testdir = TOP_SRCDIR "/moo/moolua/test";
+            char *testdir = g_build_filename (moo_test_get_data_dir (), "lua", NULL);
             lua_addpath (L, (char**) &testdir, 1);
+            g_free (testdir);
         }
-#endif
 
         if (setup_lua)
             setup_lua (L);

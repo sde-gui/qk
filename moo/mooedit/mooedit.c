@@ -1836,3 +1836,159 @@ _moo_edit_set_state (MooEdit        *edit,
         edit->priv->progress_text = g_strdup (text);
     }
 }
+
+
+#ifdef MOO_ENABLE_UNIT_TESTS
+
+#include <moo-tests.h>
+#include <mooutils/mooutils-fs.h>
+
+static struct {
+    char *working_dir;
+} test_data;
+
+#ifdef __WIN32__
+#define LE "\r\n"
+#else
+#define LE "\n"
+#endif
+
+#define TT1 "blah blah blah"
+#define TT2 "blah blah blah" LE "blah blah blah"
+#define TT3 LE LE LE LE
+#define TT4 "lala\nlala\n"
+#define TT5 "lala\r\nlala\r\n"
+#define TT6 "lala\rlala\r"
+
+static void
+check_contents (const char *filename,
+                const char *expected)
+{
+    char *contents;
+    GError *error = NULL;
+
+    if (!g_file_get_contents (filename, &contents, NULL, &error))
+    {
+        TEST_FAILED_MSG ("could not load file '%s': %s",
+                         filename, error->message);
+        g_error_free (error);
+        return;
+    }
+
+    TEST_ASSERT_STR_EQ (contents, expected);
+
+    g_free (contents);
+}
+
+static void
+test_basic (void)
+{
+    MooEditor *editor;
+    MooEdit *doc, *doc2;
+    GtkTextBuffer *buffer;
+    char *filename;
+
+    editor = moo_editor_instance ();
+    filename = g_build_filename (test_data.working_dir, "test.txt", NULL);
+    doc = moo_editor_new_file (editor, NULL, NULL, filename, NULL);
+    TEST_ASSERT (doc != NULL);
+    TEST_ASSERT (moo_edit_save (doc, NULL));
+    check_contents (filename, "");
+
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
+
+    gtk_text_buffer_set_text (buffer, TT1, -1);
+    TEST_ASSERT (moo_edit_save (doc, NULL));
+    check_contents (filename, TT1);
+
+    gtk_text_buffer_set_text (buffer, TT2, -1);
+    TEST_ASSERT (moo_edit_save (doc, NULL));
+    check_contents (filename, TT2);
+
+    gtk_text_buffer_set_text (buffer, TT2 LE, -1);
+    TEST_ASSERT (moo_edit_save (doc, NULL));
+    check_contents (filename, TT2 LE);
+
+    gtk_text_buffer_set_text (buffer, TT3, -1);
+    TEST_ASSERT (moo_edit_save (doc, NULL));
+    check_contents (filename, TT3);
+
+    doc2 = moo_editor_open_file (editor, NULL, NULL, filename, NULL);
+    TEST_ASSERT (doc2 == doc);
+
+    TEST_ASSERT (moo_edit_close (doc, TRUE));
+    TEST_ASSERT (moo_editor_get_doc (editor, filename) == NULL);
+
+    g_file_set_contents (filename, TT4, -1, NULL);
+    doc = moo_editor_open_file (editor, NULL, NULL, filename, NULL);
+    TEST_ASSERT (doc != NULL);
+    TEST_ASSERT (moo_edit_save (doc, NULL));
+    check_contents (filename, TT4);
+    TEST_ASSERT (moo_edit_close (doc, TRUE));
+
+    g_file_set_contents (filename, TT5, -1, NULL);
+    doc = moo_editor_open_file (editor, NULL, NULL, filename, NULL);
+    TEST_ASSERT (doc != NULL);
+    TEST_ASSERT (moo_edit_save (doc, NULL));
+    check_contents (filename, TT5);
+    TEST_ASSERT (moo_edit_close (doc, TRUE));
+
+    g_file_set_contents (filename, TT6, -1, NULL);
+    doc = moo_editor_open_file (editor, NULL, NULL, filename, NULL);
+    TEST_ASSERT (doc != NULL);
+    TEST_ASSERT (moo_edit_save (doc, NULL));
+    check_contents (filename, TT6);
+    TEST_ASSERT (moo_edit_close (doc, TRUE));
+
+    g_free (filename);
+}
+
+static gboolean
+test_suite_init (G_GNUC_UNUSED gpointer data)
+{
+    test_data.working_dir = g_build_filename (moo_test_get_working_dir (),
+                                              "editor-work", NULL);
+
+    if (_moo_mkdir_with_parents (test_data.working_dir) != 0)
+    {
+        g_critical ("could not create directory '%s'",
+                    test_data.working_dir);
+        g_free (test_data.working_dir);
+        test_data.working_dir = NULL;
+        return FALSE;
+    }
+
+    moo_editor_create_instance ();
+    return TRUE;
+}
+
+static void
+test_suite_cleanup (G_GNUC_UNUSED gpointer data)
+{
+    GError *error = NULL;
+
+    if (!_moo_remove_dir (test_data.working_dir, TRUE, &error))
+    {
+        g_critical ("could not remove directory '%s': %s",
+                    test_data.working_dir, error->message);
+        g_error_free (error);
+    }
+
+    g_free (test_data.working_dir);
+    test_data.working_dir = NULL;
+
+    moo_editor_close_all (moo_editor_instance (), FALSE, FALSE);
+    g_object_unref (moo_editor_instance ());
+}
+
+void
+moo_test_editor (void)
+{
+    MooTestSuite *suite = moo_test_suite_new ("Editor",
+                                              test_suite_init,
+                                              test_suite_cleanup,
+                                              NULL);
+    moo_test_suite_add_test (suite, "basic", (MooTestFunc) test_basic, NULL);
+}
+
+#endif

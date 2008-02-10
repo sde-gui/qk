@@ -29,6 +29,7 @@ lua_take_utf8string (lua_State *L,
     }
 
     lua_pushstring (L, s);
+    g_free (s);
 }
 
 const char *

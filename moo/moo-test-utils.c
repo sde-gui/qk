@@ -1,4 +1,5 @@
 #include "moo-test-macros.h"
+#include "mooutils/mooutils-fs.h"
 #include <stdio.h>
 
 typedef struct {
@@ -23,6 +24,7 @@ struct MooTestSuite {
 };
 
 typedef struct {
+    char *data_dir;
     GSList *test_suites;
     MooTestSuite *current_suite;
     MooTest *current_test;
@@ -193,9 +195,15 @@ run_suite (MooTestSuite *ts)
 }
 
 void
-moo_test_run_tests (void)
+moo_test_run_tests (const char *data_dir)
 {
     GSList *l;
+
+    g_return_if_fail (data_dir != NULL);
+    g_return_if_fail (g_file_test (data_dir, G_FILE_TEST_IS_DIR));
+
+    g_free (registry.data_dir);
+    registry.data_dir = g_strdup (data_dir);
 
     fprintf (stdout, "\n");
 
@@ -219,8 +227,21 @@ void
 moo_test_cleanup (void)
 {
     GSList *l;
+    GError *error = NULL;
+
     for (l = registry.test_suites; l != NULL; l = l->next)
         moo_test_suite_free (l->data);
+
+    g_free (registry.data_dir);
+    registry.data_dir = NULL;
+
+    if (g_file_test (moo_test_get_working_dir (), G_FILE_TEST_IS_DIR) &&
+        !_moo_remove_dir (moo_test_get_working_dir (), TRUE, &error))
+    {
+        g_critical ("could not remove directory '%s': %s",
+                    moo_test_get_working_dir (), error->message);
+        g_error_free (error);
+    }
 }
 
 gboolean
@@ -275,4 +296,39 @@ moo_test_assert_msg (gboolean    passed,
     va_start (args, format);
     moo_test_assert_msgv (passed, file, line, format, args);
     va_end (args);
+}
+
+
+const char *
+moo_test_get_data_dir (void)
+{
+    return registry.data_dir;
+}
+
+const char *
+moo_test_get_working_dir (void)
+{
+    return "test-working-dir";
+}
+
+char *
+moo_test_load_data_file (const char *basename)
+{
+    char *fullname;
+    char *contents = NULL;
+    GError *error = NULL;
+
+    g_return_val_if_fail (registry.data_dir != NULL, NULL);
+
+    fullname = g_build_filename (registry.data_dir, basename, NULL);
+
+    if (!g_file_get_contents (fullname, &contents, NULL, &error))
+    {
+        TEST_FAILED_MSG ("could not open file `%s': %s",
+                         fullname, error->message);
+        g_error_free (error);
+    }
+
+    g_free (fullname);
+    return contents;
 }

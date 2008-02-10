@@ -8,9 +8,6 @@ AM_CFLAGS =			\
 	-DLUA_USE_APICHECK
 
 libmoolua_la_LIBADD = liblua.la
-if MOO_ENABLE_UNIT_TESTS
-AM_CFLAGS += -DSRCDIR=\"$(shell cd $(srcdir) && pwd)\" -DTOP_SRCDIR=\"$(shell cd $(top_srcdir) && pwd)\"
-endif
 libmoolua_la_SOURCES =		\
 	ext/lfs.h		\
 	ext/lfs.c		\
@@ -80,7 +77,4 @@ liblua_la_SOURCES =		\
 EXTRA_DIST =			\
 	COPYRIGHT		\
 	ext/README.lfs		\
-	test/testustring.lua	\
-	test/testunicode.lua	\
-	test/munit.lua		\
 	slnudata.c

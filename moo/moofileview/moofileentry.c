@@ -578,6 +578,8 @@ completion_parse_text (MooFileEntryCompletion *cmpl,
         TAKE_STRING (cmpl->priv->dirname, dirname);
 
         completion_connect_folder (cmpl, folder);
+
+        g_object_unref (folder);
     }
     else if (refilter)
     {

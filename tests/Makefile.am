@@ -1,3 +1,11 @@
+EXTRA_DIST =			\
+	data/gobject.lua	\
+	data/textview.lua	\
+	data/mooedit.lua	\
+	data/testustring.lua	\
+	data/testunicode.lua	\
+	data/lua/munit.lua
+
 if MOO_ENABLE_UNIT_TESTS
 TESTS = run-tests
 endif
@@ -8,6 +16,10 @@ AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
 AM_OBJCFLAGS = $(AM_CFLAGS)
+
+if MOO_ENABLE_UNIT_TESTS
+AM_CFLAGS += -DSRCDIR=\"$(shell cd $(srcdir) && pwd)\" -DTOP_SRCDIR=\"$(shell cd $(top_srcdir) && pwd)\"
+endif
 
 noinst_PROGRAMS =
 
@@ -41,7 +53,7 @@ endif
 
 all-tests: $(EXTRA_PROGRAMS)
 
-EXTRA_DIST =		\
+EXTRA_DIST +=		\
 	pyapp.py.in
 
 BUILT_SOURCES = pyapp.py
@@ -67,9 +79,9 @@ endif
 ldflags = -export-dynamic $(PYTHON_EXTRA_LDFLAGS)
 ldadd = ../moo/libmoo.la
 
-if MOO_OS_MINGW
-ldflags += -mwindows
-endif MOO_OS_MINGW
+# if MOO_OS_MINGW
+# ldflags += -mwindows
+# endif MOO_OS_MINGW
 
 run_tests_LDFLAGS = $(ldflags)
 run_tests_LDADD = $(ldadd)

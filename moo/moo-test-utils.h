@@ -27,7 +27,7 @@ void             moo_test_suite_add_test    (MooTestSuite       *ts,
                                              MooTestFunc         test_func,
                                              gpointer            data);
 
-void             moo_test_run_tests         (void);
+void             moo_test_run_tests         (const char         *data_dir);
 void             moo_test_cleanup           (void);
 gboolean         moo_test_get_result        (void);
 
@@ -45,6 +45,10 @@ void             moo_test_assert_msg        (gboolean            passed,
                                              int                 line,
                                              const char         *format,
                                              ...);
+
+char            *moo_test_load_data_file    (const char         *basename);
+const char      *moo_test_get_data_dir      (void);
+const char      *moo_test_get_working_dir   (void);
 
 
 G_END_DECLS
