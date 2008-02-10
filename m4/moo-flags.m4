@@ -20,11 +20,18 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   MOO_AC_DEBUG
   MOO_AC_FAM
   MOO_AC_XML
-  MOO_AC_XDGMIME
   MOO_AC_PCRE
   MOO_AC_PYTHON
   dnl must be called after MOO_AC_PYTHON
   MOO_AC_LIB
+
+  MOO_ENABLE_GENERATED_FILES="yes"
+  AC_ARG_ENABLE(generated-files,
+    AC_HELP_STRING([--enable-generated-files],[run update-mime-database and gtk-update-icon-cache on install (default = YES)]),[
+    if test "x$enable_generated_files" = "xno"; then
+      MOO_ENABLE_GENERATED_FILES="no"
+    fi ])
+  AM_CONDITIONAL(MOO_ENABLE_GENERATED_FILES, test x$MOO_ENABLE_GENERATED_FILES = "xyes")
 
   AC_CHECK_LIB(Xrender, XRenderFindFormat,[
     AC_SUBST(RENDER_LIBS, "-lXrender -lXext")

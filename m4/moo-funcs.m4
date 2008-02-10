@@ -9,6 +9,7 @@ AC_DEFUN_ONCE([MOO_AC_FUNCS],[
 
     # for xdgmime
     AC_CHECK_HEADERS(fnmatch.h netinet/in.h)
+    AC_CHECK_FUNCS(getc_unlocked)
 
     # for GMappedFile
     AC_CHECK_HEADERS(unistd.h)

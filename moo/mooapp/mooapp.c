@@ -1131,9 +1131,7 @@ moo_app_cleanup (void)
         moo_app_data.input = NULL;
     }
 
-#ifdef MOO_USE_XDGMIME
     xdg_mime_shutdown ();
-#endif
 
     moo_cleanup ();
 }

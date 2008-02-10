@@ -199,6 +199,7 @@ update_mime = update-mime-database $(DESTDIR)${mimedir}
 EXTRA_DIST += moo.xml.in
 CLEANFILES += moo.xml
 
+if MOO_ENABLE_GENERATED_FILES
 if !MOO_OS_MINGW
 install-data-hook:
 	if echo "Updating mime database... " && $(update_mime); then		\
@@ -215,7 +216,8 @@ else MOO_OS_MINGW
 install-data-hook:
 	cp /usr/share/mime/packages/freedesktop.org.xml $(DESTDIR)${mimedir}/packages/ && \
 	$(update_mime)
-endif
+endif MOO_OS_MINGW
+endif MOO_ENABLE_GENERATED_FILES
 
 EXTRA_DIST +=				\
 	$(mooedit_tools_DATA)		\
@@ -259,11 +261,3 @@ mooedit_includedir = $(moo_includedir)/mooedit
 mooedit_include_HEADERS = $(mooedit_include_headers)
 nodist_mooedit_include_HEADERS = $(nodist_mooedit_include_headers)
 endif
-
-if MOO_ENABLE_UNIT_TESTS
-AM_CFLAGS += -DSRCDIR=\"$(shell cd $(srcdir) && pwd)\" -DTOP_SRCDIR=\"$(shell cd $(top_srcdir) && pwd)\"
-endif
-EXTRA_DIST +=			\
-	test/gobject.lua	\
-	test/textview.lua	\
-	test/mooedit.lua

@@ -18,7 +18,6 @@ m4files =			\
 	m4/moo-pygtk.m4		\
 	m4/moo-python.m4	\
 	m4/moo-version.m4	\
-	m4/moo-xdgmime.m4	\
 	m4/moo-xml.m4		\
 	m4/moo-python-cross-mingw.m4
 
@@ -71,8 +70,14 @@ DISTCLEANFILES =		\
 	po-subdirs-stamp-2	\
 	po-subdirs-stamp
 
-DISTCHECK_CONFIGURE_FLAGS = --enable-unit-tests
+# DISTCHECK_CONFIGURE_FLAGS = --enable-unit-tests
 distuninstallcheck_listfiles = find . -type f -print | grep -v share/mime/ | grep -v share/icons/hicolor
 
 snapshot:
 	$(MAKE) dist && mv $(PACKAGE)-$(VERSION).tar.bz2 $(PACKAGE)-`date +%F-%H-%M`.tar.bz2
+
+win-test-stuff:
+	$(MAKE) all && mkdir -p test-stuff/test-data && \
+	cp moo/.libs/libmoo.dll test-stuff/ && \
+	cp -r $(srcdir)/tests/data/* test-stuff/test-data/ && \
+	cp tests/.libs/run-tests.exe test-stuff/

@@ -397,7 +397,6 @@ moo_lang_mgr_get_lang_for_file (MooLangMgr *mgr,
     if (lang)
         return lang;
 
-#ifdef MOO_USE_XDGMIME
     /* XXX: xdgmime wants utf8-encoded filename here. is it a problem? */
     /* It's a big problem! */
     mime_type = xdg_mime_get_mime_type_for_file (filename, NULL);
@@ -407,11 +406,6 @@ moo_lang_mgr_get_lang_for_file (MooLangMgr *mgr,
 
     if (lang)
         return lang;
-#else
-#ifdef __GNUC__
-#warning "Implement moo_lang_mgr_get_lang_for_file()"
-#endif
-#endif /* MOO_USE_XDGMIME */
 
     return NULL;
 }
@@ -437,7 +431,6 @@ get_lang_for_filename (MooLangMgr *mgr,
     if (lang)
         return lang;
 
-#ifdef MOO_USE_XDGMIME
     /* XXX: xdgmime wants utf8-encoded filename here. is it a problem? */
     /* It's a big problem! */
 
@@ -448,11 +441,6 @@ get_lang_for_filename (MooLangMgr *mgr,
 
     if (lang)
         return lang;
-#else
-#ifdef __GNUC__
-#warning "Implement moo_lang_mgr_get_lang_for_filename()"
-#endif
-#endif /* MOO_USE_XDGMIME */
 
     lang = lang_mgr_get_lang_for_bak_filename (mgr, filename);
 
@@ -463,7 +451,6 @@ get_lang_for_filename (MooLangMgr *mgr,
 }
 
 
-#ifdef MOO_USE_XDGMIME
 static int
 check_mime_subclass (const char *base,
                      const char *mime)
@@ -515,17 +502,6 @@ get_lang_for_mime_type (MooLangMgr *mgr,
     g_slist_free (langs);
     return found ? lang : NULL;
 }
-#else /* MOO_USE_XDGMIME */
-static MooLang *
-get_lang_for_mime_type (MooLangMgr *mgr,
-                        const char *mime)
-{
-    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
-    g_return_val_if_fail (mime != NULL, NULL);
-    g_warning ("%s: implement me?", G_STRLOC);
-    return NULL;
-}
-#endif /* MOO_USE_XDGMIME */
 
 
 static void

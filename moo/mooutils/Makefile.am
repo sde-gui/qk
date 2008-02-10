@@ -6,10 +6,8 @@ if MOO_BUILD_PCRE
 subdirs += pcre
 libs += pcre/libpcre.la
 endif
-if MOO_USE_XDGMIME
 subdirs += xdgmime
 libs += xdgmime/libxdgmime.la
-endif
 if !GLIB_2_14
 subdirs += newgtk
 libs += newgtk/libnewgtk.la

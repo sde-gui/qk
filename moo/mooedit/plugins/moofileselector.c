@@ -39,9 +39,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 
-#ifdef MOO_USE_XDGMIME
 #include <mooutils/xdgmime/xdgmime.h>
-#endif
 
 #ifndef MOO_VERSION
 #define MOO_VERSION NULL
@@ -293,7 +291,6 @@ moo_file_selector_activate (MooFileView    *fileview,
         return;
     }
 
-#ifdef MOO_USE_XDGMIME
     {
         const char *mime_type = xdg_mime_get_mime_type_for_file (path, &statbuf);
 
@@ -316,7 +313,6 @@ moo_file_selector_activate (MooFileView    *fileview,
                    xdg_mime_mime_type_subclass (mime_type, "text/plain");
         is_exe = !strcmp (mime_type, "application/x-executable");
     }
-#endif
 
     if (is_text)
         moo_editor_open_file (moo_edit_window_get_editor (filesel->window),

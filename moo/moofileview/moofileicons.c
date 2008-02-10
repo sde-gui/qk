@@ -710,7 +710,6 @@ create_mime_icon (GtkWidget    *widget,
 
     pixbuf = create_mime_icon_exact (icon_theme, mime_type, pixel_size);
 
-#ifdef MOO_USE_XDGMIME
     if (!pixbuf)
     {
         char **parent_types = xdg_mime_list_mime_parents (mime_type);
@@ -736,7 +735,6 @@ create_mime_icon (GtkWidget    *widget,
 
         g_free (parent_types);
     }
-#endif
 
     if (!pixbuf)
         pixbuf = create_special_icon (widget, MOO_ICON_FILE, size);

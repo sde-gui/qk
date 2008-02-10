@@ -56,6 +56,7 @@ icontheme_DATA = ../moo/mooutils/pixmaps/medit.png
 
 update_icon_cache = gtk-update-icon-cache -f -t $(DESTDIR)$(hicolor)
 
+if MOO_ENABLE_GENERATED_FILES
 install-data-hook:
 	if echo "Updating icon cache" && $(update_icon_cache); then		\
 		echo "Done.";							\
@@ -65,3 +66,4 @@ install-data-hook:
 	fi
 uninstall-hook:
 	echo "Updating icon cache" && $(update_icon_cache) && echo "Done."
+endif
