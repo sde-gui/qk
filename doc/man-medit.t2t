@@ -77,7 +77,7 @@ e.g. /tmp/file.txt:200. Trailing colon is ignored
 = ENVIRONMENT VARIABLES =
 
 : MEDIT_PID
-if set, is used as --pid argument. When medit spawns a process (e.g. a DVI viewer) it sets
+if set, it is used as --pid argument. When medit spawns a process (e.g. a DVI viewer) it sets
 MEDIT_PID to its own process id, so the child process may in turn simply use 'medit filename'
 to open a file (e.g. for inverse DVI search).
 

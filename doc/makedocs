@@ -1,10 +1,10 @@
 #! /bin/sh
 
-# makedocs SRCDIR INPUT
+# makedocs INPUT
 
-srcdir=`cd $1 && pwd`
+srcdir=`cd \`dirname $1\` && pwd`
 thisdir=`pwd`
-infile="$2"
+infile="$1"
 outfile="$thisdir"/`basename $infile .t2t`.html
 outdir="$thisdir/help"
 
@@ -29,16 +29,18 @@ generate () {
 }
 
 write_sections () {
-  echo "#ifndef HELP_SECTIONS_H" > help-sections.h
-  echo "#define HELP_SECTIONS_H" >> help-sections.h
-  echo "" >> help-sections.h
+  echo "#ifndef HELP_SECTIONS_H" > $2
+  echo "#define HELP_SECTIONS_H" >> $2
+  echo "" >> $2
   for s in `grep '@@.*@@' $1 | sed 's/.*@@\(.*\)@@.*/\1/'`; do
-    echo "#define HELP_SECTION_`echo $s | tr '[a-z]' '[A-Z]' | tr -- - _` \"$s\"" >> help-sections.h
+    echo "#define HELP_SECTION_`echo $s | tr '[a-z]' '[A-Z]' | tr -- - _` \"$s\"" >> $2
   done
-  echo "" >> help-sections.h
-  echo "#endif /* HELP_SECTIONS_H */" >> help-sections.h
+  echo "" >> $2
+  echo "#endif /* HELP_SECTIONS_H */" >> $2
 }
 
 generate $infile $outfile || exit 1
-write_sections $outfile || exit 1
-# rm $outfile || exit 1
+write_sections $outfile help-sections.h.tmp || exit 1
+cmp -s help-sections.h.tmp help-sections.h || cp help-sections.h.tmp help-sections.h || exit 1
+rm -f help-sections.h.tmp
+rm $outfile || exit 1

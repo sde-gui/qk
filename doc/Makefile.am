@@ -17,7 +17,7 @@ EXTRA_DIST =				\
 
 dist_man_MANS = medit.1
 
-BUILT_SOURCES = stamp-help help-sections.h medit.1
+BUILT_SOURCES = stamp-help medit.1
 
 help-sections.h: stamp-help
 build-docs: stamp-help
@@ -28,7 +28,7 @@ medit.1: man-medit.t2t
 stamp-help: $(t2t_sources) makedocs
 	rm -fr help && \
 	$(mkdir_p) help && \
-	$(srcdir)/makedocs $(srcdir) $(srcdir)/medit.t2t && \
+	$(srcdir)/makedocs $(srcdir)/medit.t2t && \
 	echo stamp > stamp-help
 
 medit.lo: build-docs

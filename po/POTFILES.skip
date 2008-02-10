@@ -51,6 +51,7 @@ moo/mooedit/language-specs/ruby.lang
 moo/mooedit/language-specs/scheme.lang
 moo/mooedit/language-specs/sh.lang
 moo/mooedit/language-specs/sql.lang
+moo/mooedit/language-specs/t2t.lang
 moo/mooedit/language-specs/tcl.lang
 moo/mooedit/language-specs/texinfo.lang
 moo/mooedit/language-specs/vbnet.lang
