@@ -473,8 +473,7 @@ _moo_value_convert (const GValue *src,
         if (G_TYPE_IS_FLAGS (src_type))
         {
             char *string = flags_to_string (g_value_get_flags (src));
-            g_value_set_string (dest, string);
-            g_free (string);
+            g_value_take_string (dest, string);
             return TRUE;
         }
 
@@ -987,6 +986,8 @@ test_one_enum (GType       enum_type,
                          "string_to_enum(enum_to_string('%d')): got %d",
                          value, g_value_get_enum (&eval));
 
+    g_value_unset (&sval);
+
     TEST_CHECK_WARNING ();
 }
 
@@ -1036,6 +1037,8 @@ test_one_flags (GType       flags_type,
         TEST_ASSERT_MSG (g_value_get_flags (&eval) == value,
                          "string_to_flags(flags_to_string('%u')): got %u",
                          value, g_value_get_flags (&eval));
+
+    g_value_unset (&sval);
 
     TEST_CHECK_WARNING ();
 }

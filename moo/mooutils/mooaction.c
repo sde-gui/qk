@@ -171,7 +171,9 @@ enum {
 static void
 moo_action_init (MooAction *action)
 {
-    action->priv = g_new0 (MooActionPrivate, 1);
+    action->priv = G_TYPE_INSTANCE_GET_PRIVATE (action,
+                                                MOO_TYPE_ACTION,
+                                                MooActionPrivate);
     _moo_action_base_init_instance (action);
 }
 
@@ -181,16 +183,10 @@ moo_action_dispose (GObject *object)
 {
     MooAction *action = MOO_ACTION (object);
 
-    if (action->priv)
+    if (action->priv->closure)
     {
-        if (action->priv->closure)
-        {
-            moo_closure_unref (action->priv->closure);
-            action->priv->closure = NULL;
-        }
-
-        g_free (action->priv);
-        action->priv = NULL;
+        moo_closure_unref (action->priv->closure);
+        action->priv->closure = NULL;
     }
 
     G_OBJECT_CLASS (moo_action_parent_class)->dispose (object);
@@ -267,6 +263,8 @@ moo_action_class_init (MooActionClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
     GtkActionClass *action_class = GTK_ACTION_CLASS (klass);
+
+    g_type_class_add_private (klass, sizeof (MooActionPrivate));
 
     object_class->dispose = moo_action_dispose;
     object_class->constructor = moo_action_constructor;
@@ -387,7 +385,9 @@ enum {
 static void
 moo_toggle_action_init (MooToggleAction *action)
 {
-    action->priv = g_new0 (MooToggleActionPrivate, 1);
+    action->priv = G_TYPE_INSTANCE_GET_PRIVATE (action,
+                                                MOO_TYPE_TOGGLE_ACTION,
+                                                MooToggleActionPrivate);
     _moo_action_base_init_instance (action);
 }
 
@@ -503,6 +503,8 @@ moo_toggle_action_class_init (MooToggleActionClass *klass)
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
     GtkActionClass *action_class = GTK_ACTION_CLASS (klass);
     GtkToggleActionClass *toggle_action_class = GTK_TOGGLE_ACTION_CLASS (klass);
+
+    g_type_class_add_private (klass, sizeof (MooToggleActionPrivate));
 
     object_class->dispose = moo_toggle_action_dispose;
     object_class->constructor = moo_toggle_action_constructor;
