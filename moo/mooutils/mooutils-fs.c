@@ -45,9 +45,6 @@
 #define BROKEN_NAME "<" "????" ">"
 
 
-static int  _moo_rmdir  (const char *path);
-
-
 /* XXX fix this */
 gboolean
 _moo_save_file_utf8 (const char *name,
@@ -155,26 +152,23 @@ rm_r (const char *path,
     {
         char *file_path = g_build_filename (path, file, NULL);
 
-        errno = 0;
-
-        if (_moo_remove (file_path))
+        if (g_file_test (file_path, G_FILE_TEST_IS_DIR))
         {
-            int err = errno;
+            if (!rm_r (file_path, error))
+                success = FALSE;
+        }
+        else
+        {
+            errno = 0;
 
-            switch (err)
+            if (_moo_remove (file_path) != 0)
             {
-                case ENOTEMPTY:
-                case EEXIST:
-                    if (!rm_r (file_path, error))
-                        success = FALSE;
-                    break;
-
-                default:
-                    success = FALSE;
-                    g_set_error (error, MOO_FILE_ERROR,
-                                 _moo_file_error_from_errno (err),
-                                 "Could not remove '%s': %s", file_path,
-                                 g_strerror (err));
+                int err = errno;
+                success = FALSE;
+                g_set_error (error, MOO_FILE_ERROR,
+                             _moo_file_error_from_errno (err),
+                             "Could not remove '%s': %s", file_path,
+                             g_strerror (err));
             }
         }
 
@@ -214,7 +208,7 @@ _moo_remove_dir (const char *path,
     {
         errno = 0;
 
-        if (_moo_rmdir (path) != 0)
+        if (_moo_remove (path) != 0)
         {
             int err = errno;
             char *path_utf8 = g_filename_display_name (path);
@@ -729,6 +723,7 @@ normalize_path (const char *filename)
         g_return_val_if_fail (working_dir != NULL, g_strdup (filename));
         freeme = g_build_filename (working_dir, filename, NULL);
         filename = freeme;
+        g_free (working_dir);
     }
 
 #ifdef __WIN32__
@@ -1072,22 +1067,7 @@ G_STMT_START {                                                  \
 int
 _moo_unlink (const char *path)
 {
-#ifdef __WIN32__
-    CCALL_1 (unlink, _wunlink, path);
-#else
-    return unlink (path);
-#endif
-}
-
-
-static int
-_moo_rmdir (const char *path)
-{
-#ifdef __WIN32__
-    CCALL_1 (rmdir, _wrmdir, path);
-#else
-    return rmdir (path);
-#endif
+    return g_unlink (path);
 }
 
 
@@ -1105,43 +1085,7 @@ _moo_mkdir (const char *path)
 int
 _moo_remove (const char *path)
 {
-#ifdef __WIN32__
-    gboolean use_wide_char_api;
-    gpointer converted;
-    int retval;
-    int save_errno;
-
-    converted = convert_filename (path, &use_wide_char_api);
-
-    if (!converted)
-    {
-        errno = EINVAL;
-        return -1;
-    }
-
-    errno = 0;
-
-    if (use_wide_char_api)
-        retval = _wremove (converted);
-    else
-        retval = remove (converted);
-
-    if (retval && errno == ENOENT)
-    {
-        if (use_wide_char_api)
-            retval = _wrmdir (converted);
-        else
-            retval = rmdir (converted);
-    }
-
-    save_errno = errno;
-    g_free (converted);
-    errno = save_errno;
-
-    return retval;
-#else
-    return remove (path);
-#endif
+    return g_remove (path);
 }
 
 

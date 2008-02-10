@@ -23,7 +23,9 @@
 #ifndef __WIN32__
 #include <sys/wait.h>
 #else
+#include <windows.h>
 #include <io.h>
+#include <shellapi.h>
 #endif
 
 #if 0 && MOO_DEBUG_ENABLED
@@ -676,6 +678,48 @@ normalize_path (const char *path)
 }
 
 
+#if defined(__WIN32__) && 0
+
+#ifndef FOF_NORECURSION
+#define FOF_NORECURSION 0x1000
+#endif
+
+static gboolean
+delete_file_win32 (const char     *path,
+                   gboolean        recursive,
+                   GError        **error)
+{
+    gboolean success;
+    SHFILEOPSTRUCT op = {0};
+    gunichar2 *path_utf16;
+    long len;
+
+    if (!(path_utf16 = g_utf8_to_utf16 (path, -1, NULL, &len, error)))
+        return FALSE;
+
+    path_utf16 = g_renew (gunichar2, path_utf16, len + 2);
+    path_utf16[len + 1] = 0;
+
+    op.wFunc = FO_DELETE;
+    op.pFrom = path_utf16;
+    op.fFlags = FOF_ALLOWUNDO;
+    if (!recursive)
+        op.fFlags |= FOF_NORECURSION;
+
+    success = SHFileOperation (&op) == 0;
+
+    if (!success)
+        g_set_error (error, MOO_FILE_ERROR,
+                     MOO_FILE_ERROR_FAILED,
+                     "Could not delete '%s'",
+                     path);
+
+    g_free (path_utf16);
+    return success;
+}
+
+#endif
+
 static gboolean
 delete_file (G_GNUC_UNUSED MooFileSystem *fs,
              const char     *path,
@@ -686,6 +730,10 @@ delete_file (G_GNUC_UNUSED MooFileSystem *fs,
 
     g_return_val_if_fail (path != NULL, FALSE);
     g_return_val_if_fail (_moo_path_is_absolute (path), FALSE);
+
+#if defined(__WIN32__) && 0
+    return delete_file_win32 (path, recursive, error);
+#endif
 
     if (g_file_test (path, G_FILE_TEST_IS_SYMLINK))
         isdir = FALSE;
