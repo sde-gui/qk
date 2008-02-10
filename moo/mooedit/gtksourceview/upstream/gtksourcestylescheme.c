@@ -853,6 +853,7 @@ parse_style (GtkSourceStyleScheme *scheme,
 			g_free (style_name);
 			xmlFree (fg);
 			xmlFree (bg);
+			xmlFree (line_bg);
 			return FALSE;
 		}
 
@@ -893,6 +894,7 @@ parse_style (GtkSourceStyleScheme *scheme,
 
 	xmlFree (bg);
 	xmlFree (fg);
+	xmlFree (line_bg);
 
 	return TRUE;
 }
