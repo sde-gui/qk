@@ -486,7 +486,7 @@ insert_and_scroll (GtkTextView *view,
 static int
 cfunc_new_line (lua_State *L)
 {
-    int n;
+    int n = 1;
     GtkTextView *doc;
     char *freeme = NULL;
     const char *insert;
