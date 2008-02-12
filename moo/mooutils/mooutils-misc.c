@@ -1692,6 +1692,33 @@ out:
     return equal;
 }
 
+
+static gboolean
+save_config_file (const char     *dir,
+                  const char     *filename,
+                  const char     *content,
+                  gssize          len,
+                  GError        **error)
+{
+    g_return_val_if_fail (dir != NULL, FALSE);
+    g_return_val_if_fail (filename != NULL, FALSE);
+    g_return_val_if_fail (content != NULL, FALSE);
+
+    if (len < 0)
+        len = strlen (content);
+
+    if (!_moo_create_dir (dir, error))
+        return FALSE;
+
+    if (same_content (filename, content, len))
+        return TRUE;
+
+    if (!save_with_backup (filename, content, len, error))
+        return FALSE;
+
+    return TRUE;
+}
+
 static gboolean
 save_user_data_file (const char     *basename,
                      gboolean        cache,
@@ -1700,13 +1727,10 @@ save_user_data_file (const char     *basename,
                      GError        **error)
 {
     char *dir, *file;
-    gboolean result = FALSE;
+    gboolean result;
 
     g_return_val_if_fail (basename != NULL, FALSE);
     g_return_val_if_fail (content != NULL, FALSE);
-
-    if (len < 0)
-        len = strlen (content);
 
     if (cache)
     {
@@ -1719,23 +1743,8 @@ save_user_data_file (const char     *basename,
         file = moo_get_user_data_file (basename);
     }
 
-    g_return_val_if_fail (dir && file, FALSE);
+    result = save_config_file (dir, file, content, len, error);
 
-    if (!_moo_create_dir (dir, error))
-        goto out;
-
-    if (same_content (file, content, len))
-    {
-        result = TRUE;
-        goto out;
-    }
-
-    if (!save_with_backup (file, content, len, error))
-        goto out;
-
-    result = TRUE;
-
-out:
     g_free (dir);
     g_free (file);
     return result;
@@ -1757,6 +1766,26 @@ moo_save_user_cache_file (const char  *basename,
                           GError     **error)
 {
     return save_user_data_file (basename, TRUE, content, len, error);
+}
+
+gboolean
+moo_save_config_file (const char   *filename,
+                      const char   *content,
+                      gssize        len,
+                      GError      **error)
+{
+    char *dir;
+    gboolean result;
+
+    g_return_val_if_fail (filename != NULL, FALSE);
+    g_return_val_if_fail (content != NULL, FALSE);
+
+    dir = g_path_get_dirname (filename);
+
+    result = save_config_file (dir, filename, content, len, error);
+
+    g_free (dir);
+    return result;
 }
 
 

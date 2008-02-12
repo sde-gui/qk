@@ -73,6 +73,10 @@ gboolean    moo_save_user_cache_file        (const char     *basename,
                                              const char     *content,
                                              gssize          len,
                                              GError        **error);
+gboolean    moo_save_config_file            (const char     *filename,
+                                             const char     *content,
+                                             gssize          len,
+                                             GError        **error);
 
 /* user data comes first; MOO_DATA_DIR comes last */
 /* $MOO_APP_DIR:$MOO_DATA_DIRS:$prefix/share/appname or

@@ -1121,7 +1121,7 @@ file_list_save_config (FileList   *list,
 
     g_string_append (buffer, "</" ELM_CONFIG ">\n");
 
-    if (!g_file_set_contents (filename, buffer->str, buffer->len, &error))
+    if (!moo_save_config_file (filename, buffer->str, buffer->len, &error))
     {
         g_critical ("%s: could not save file %s: %s",
                     G_STRLOC, filename, error ? error->message : "");
