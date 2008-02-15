@@ -197,6 +197,17 @@ TEST_FMT_STRV (char **array)
 #define TEST_FMT_UINT(a)    test_string_stack_add__ (g_strdup_printf ("%u", (guint) a))
 #define TEST_FMT_DBL(a)     test_string_stack_add__ (g_strdup_printf ("%f", (double) a))
 
+#if GLIB_CHECK_VERSION(2,15,6)
+#define TEST_G_ASSERT(expr)                     \
+G_STMT_START {                                  \
+     if (G_UNLIKELY (!(expr)))                  \
+        g_assertion_message_expr (G_LOG_DOMAIN, \
+                                  __FILE__,     \
+                                  __LINE__,     \
+                                  G_STRFUNC,    \
+                                  #expr);       \
+} G_STMT_END
+#else
 #define TEST_G_ASSERT(expr)                     \
 G_STMT_START {                                  \
      if (G_UNLIKELY (!(expr)))                  \
@@ -206,7 +217,7 @@ G_STMT_START {                                  \
 	                  G_STRFUNC,            \
 	                  #expr);               \
 } G_STMT_END
-
+#endif
 
 G_GNUC_UNUSED struct TestWarningsInfo {
     int count;
