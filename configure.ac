@@ -96,7 +96,6 @@ if test x$MOO_OS_CYGWIN != "xyes"; then
   echo
   echo "    prefix .................................. $prefix"
   echo "    editor lang files go to ................. $MOO_TEXT_LANG_FILES_DIR"
-  echo "    build html help ......................... $enable_help"
   echo
   echo "    components: $MOO_BUILD_COMPS"
   echo
