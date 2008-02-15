@@ -31,14 +31,14 @@ The following controls are available to modify the tools behavior:
 | //Code text field//   | Here you enter the actual script text.
 
 
-//Files// entry content is a comma-separated list of the following:
+//Options// entry content is a comma-separated list of the following:
 | ``need-doc``          | the tool needs an open document |
 | ``need-file``         | the tool will not work in new unsaved documents.
 | ``need-save``         | the document will be saved before the command is executed.
 | ``need-save-all``     | all open documents will be saved before the command is executed.
 
 
-//Options// entry content can be the following:
+//Files// entry content can be the following:
 - a comma-separated list of file patterns, e.g. "``*.c,*.h``";
 - a comma-separated list of languages prefixed with "``langs:``", e.g. "``langs: c, c++, objc``";
 - a regular expression matching document filename prefixed with "``regex:``", e.g. the above
