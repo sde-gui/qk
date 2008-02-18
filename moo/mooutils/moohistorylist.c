@@ -164,6 +164,7 @@ moo_history_list_init (MooHistoryList *list)
     list->priv->use_separator = TRUE;
 
     list->priv->mgr = moo_menu_mgr_new ();
+    moo_menu_mgr_set_use_mnemonic (list->priv->mgr, FALSE);
     g_signal_connect_swapped (list->priv->mgr, "item-activated",
                               G_CALLBACK (menu_item_activated), list);
 
