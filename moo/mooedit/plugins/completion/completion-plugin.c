@@ -17,8 +17,8 @@
 #include "completion-glade.h"
 #include "mooedit/mooplugin-macro.h"
 #include "mooedit/plugins/mooeditplugins.h"
+#include "mooedit/marshals.h"
 #include "mooutils/mooi18n.h"
-#include "mooutils/moomarshals.h"
 #include "mooutils/mooprefsdialogpage.h"
 #include <string.h>
 

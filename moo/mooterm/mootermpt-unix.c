@@ -18,7 +18,7 @@
 #include "mooterm/mootermpt-private.h"
 #include "mooterm/mooterm-private.h"
 #include "mooterm/pty.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
 

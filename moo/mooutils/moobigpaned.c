@@ -15,7 +15,7 @@
 #endif
 
 #include "moobigpaned.h"
-#include "moomarshals.h"
+#include "marshals.h"
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>

@@ -11,7 +11,7 @@
  */
 
 #include "mooapp/moolinklabel.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-gobject.h"
 #include <gtk/gtk.h>

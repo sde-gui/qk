@@ -15,7 +15,7 @@
 #include "mooterm/mooterm-private.h"
 #include "mooterm/mootermhelper.h"
 #include "mooterm/mooterm-private.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooutils-misc.h"
 #include <windows.h>
 #include <io.h>

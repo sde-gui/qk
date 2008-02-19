@@ -12,7 +12,7 @@
 
 #include "config.h"
 #include "mooapp/moohtml.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooutils-misc.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>

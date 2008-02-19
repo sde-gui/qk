@@ -16,7 +16,7 @@
 #include "mooterm/mooterm-private.h"
 #include "mooterm/mootermline-private.h"
 #include "mooterm/mooterm-text.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 
 
 static void     moo_term_tag_finalize       (GObject        *object);

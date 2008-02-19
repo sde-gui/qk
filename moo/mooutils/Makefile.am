@@ -152,7 +152,6 @@ endif
 endif
 
 EXTRA_DIST =				\
-	moomarshals.list		\
 	moo-intltool-merge		\
 	py2h.sh				\
 	xml2h.sh			\
@@ -171,25 +170,9 @@ EXTRA_DIST =				\
 	pixmaps/attach.png		\
 	pixmaps/keepontop.png
 
-BUILT_SOURCES =				\
-	moomarshals.c			\
-	moomarshals.h
-nodist_mooutils_sources =		\
-	moomarshals.c			\
-	moomarshals.h
-CLEANFILES =				\
-	moomarshals.c			\
-	moomarshals.h
-
-moomarshals.c: moomarshals.list
-	echo '#include "moomarshals.h"' > $@.tmp &&	\
-	glib-genmarshal --prefix=_moo_marshal --body	\
-	       $(srcdir)/moomarshals.list >> $@.tmp &&	\
-	mv $@.tmp $@
-moomarshals.h: moomarshals.list
-	glib-genmarshal --prefix=_moo_marshal --header	\
-	       $(srcdir)/moomarshals.list > $@.tmp &&	\
-	mv $@.tmp $@
+nodist_mooutils_sources =
+BUILT_SOURCES =
+CLEANFILES =
 
 @MOO_GLADE_SUBDIR_RULE@
 glade_files =				\
@@ -226,6 +209,15 @@ stock-medit.h: pixmaps/medit.png
 	gdk-pixbuf-csource --static --build-list			\
 		MEDIT_ICON $(srcdir)/pixmaps/medit.png			\
 			> $@.tmp && mv $@.tmp $@
+
+BUILT_SOURCES += marshals.h
+nodist_mooutils_sources += marshals.h
+CLEANFILES += marshals.h
+EXTRA_DIST += marshals.list
+marshals.h: marshals.list
+	glib-genmarshal --prefix=_moo_marshal --header	\
+	       $(srcdir)/marshals.list > $@.tmp &&	\
+	mv $@.tmp $@
 
 noinst_LTLIBRARIES = libmooutils.la
 libmooutils_la_SOURCES = $(mooutils_sources)

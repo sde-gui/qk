@@ -11,7 +11,7 @@
  */
 
 #define MOOPREFS_COMPILATION
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooprefsdialogpage.h"

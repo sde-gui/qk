@@ -15,7 +15,7 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooutils-misc.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/moohelp.h"
 #include <string.h>

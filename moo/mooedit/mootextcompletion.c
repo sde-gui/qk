@@ -11,7 +11,7 @@
  */
 
 #include "mooedit/mootextcompletion.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>

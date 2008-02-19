@@ -14,7 +14,7 @@
 #include "config.h"
 #endif
 
-#include "moomarshals.h"
+#include "marshals.h"
 #include "moopaned.h"
 
 #include <string.h>

@@ -17,7 +17,7 @@
 #include "moofolder-private.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-mem.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include <errno.h>
 #include <stdio.h>
 #ifndef __WIN32__

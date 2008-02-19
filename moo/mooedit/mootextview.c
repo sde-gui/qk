@@ -20,7 +20,7 @@
 #include "mooquicksearch-glade.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootextbox.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooundo.h"
 #include "mooutils/mooentry.h"

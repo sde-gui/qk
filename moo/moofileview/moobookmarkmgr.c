@@ -20,7 +20,7 @@
 #include "moofileview/moofileentry.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooprefs.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moostock.h"

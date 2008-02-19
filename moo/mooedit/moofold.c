@@ -12,7 +12,7 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mootext-private.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 
 
 #ifdef MOO_DEBUG_ENABLED

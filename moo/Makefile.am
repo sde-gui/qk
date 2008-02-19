@@ -36,6 +36,8 @@ EXTRA_DIST =			\
 	$(scripts_SCRIPTS)	\
 	$(test_sources)
 
+marshals =
+
 if MOO_INSTALL_HEADERS
 moo_include_HEADERS = $(moo_include_headers)
 nodist_moo_include_HEADERS = $(nodist_moo_include_headers)
@@ -52,22 +54,27 @@ endif
 if MOO_BUILD_UTILS
 subdirs += mooutils
 libs += mooutils/libmooutils.la
+marshals += $(srcdir)/mooutils/marshals.list
 endif
 if GTK_2_6
 subdirs += moofileview
 libs += moofileview/libmoofileview.la
+marshals += $(srcdir)/moofileview/marshals.list
 endif
 if MOO_BUILD_TERM
 subdirs += mooterm
 libs += mooterm/libmooterm.la
+marshals += $(srcdir)/mooterm/marshals.list
 endif
 if MOO_BUILD_EDIT
 subdirs += mooedit
 libs += mooedit/libmooedit.la
+marshals += $(srcdir)/mooedit/marshals.list
 endif
 if MOO_BUILD_APP
 subdirs += mooapp
 libs += mooapp/libmooapp.la
+marshals += $(srcdir)/mooapp/marshals.list
 endif
 
 if MOO_USE_PYTHON
@@ -92,6 +99,16 @@ endif
 endif
 
 nodist_libmoo_la_SOURCES =
+
+BUILT_SOURCES += marshals.c marshals.list
+nodist_libmoo_la_SOURCES += marshals.c
+CLEANFILES += marshals.c marshals.list
+marshals.c: marshals.list
+	glib-genmarshal --prefix=_moo_marshal --header marshals.list > $@.tmp && \
+	glib-genmarshal --prefix=_moo_marshal --body marshals.list >> $@.tmp && \
+	mv $@.tmp $@
+marshals.list: $(marshals)
+	( cat $(marshals) | uniq ) > marshals.list.tmp && mv marshals.list.tmp marshals.list
 
 if MOO_OS_MINGW
 @MOO_WIN32_RC_RULE@

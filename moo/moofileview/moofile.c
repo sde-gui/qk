@@ -26,7 +26,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/moocompat.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/xdgmime/xdgmime.h"
 #include <glib/gstdio.h>
 #include <string.h>

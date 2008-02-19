@@ -20,7 +20,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooprefs.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/xdgmime/xdgmime.h"
 #include <string.h>
 

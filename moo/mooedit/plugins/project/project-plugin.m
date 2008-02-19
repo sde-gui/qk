@@ -14,9 +14,9 @@
 #include "mooedit/mooplugin-macro.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooedit/mooeditwindow.h"
+#include "mooedit/marshals.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moomenuaction.h"
-#include "mooutils/moomarshals.h"
 #include "manager.h"
 #include "project-plugin.h"
 #include <gtk/gtk.h>

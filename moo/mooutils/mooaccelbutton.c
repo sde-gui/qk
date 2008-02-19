@@ -13,7 +13,7 @@
 #include "mooutils/mooaccelbutton.h"
 #include "mooaccelbutton-glade.h"
 #include "mooutils/mooglade.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
 #include <gtk/gtkaccelgroup.h>

@@ -15,7 +15,7 @@
 #include "mooterm/mooterm-private.h"
 #include "mooterm/mootermbuffer-graph.h"
 #include "mooterm/mootermline-private.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-debug.h"
 #include <string.h>

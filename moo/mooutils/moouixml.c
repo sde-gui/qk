@@ -12,7 +12,7 @@
 
 #include "mooutils/mooaction-private.h"
 #include "mooutils/moouixml.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/moomenutoolbutton.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooi18n.h"

@@ -28,7 +28,7 @@
 #include "mooedit/mooedit-bookmarks.h"
 #include "mooutils/moonotebook.h"
 #include "mooutils/moostock.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/moomenuaction.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moodialogs.h"

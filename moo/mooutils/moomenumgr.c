@@ -11,7 +11,7 @@
  */
 
 #include "mooutils/moomenumgr.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooutils-misc.h"
 #include <gtk/gtk.h>
 #include <string.h>

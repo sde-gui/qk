@@ -11,7 +11,7 @@
  */
 
 #include "mooutils/moospawn.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moocompat.h"
 #include <string.h>

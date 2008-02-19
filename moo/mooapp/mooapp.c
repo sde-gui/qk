@@ -27,7 +27,7 @@
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moopython.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-fs.h"

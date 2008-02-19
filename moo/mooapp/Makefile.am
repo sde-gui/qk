@@ -44,3 +44,12 @@ AM_CFLAGS =			\
 	-I$(top_builddir)/doc	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
+
+BUILT_SOURCES += marshals.h
+nodist_libmooapp_la_SOURCES += marshals.h
+CLEANFILES += marshals.h
+EXTRA_DIST += marshals.list
+marshals.h: marshals.list
+	glib-genmarshal --prefix=_moo_marshal --header	\
+	       $(srcdir)/marshals.list > $@.tmp &&	\
+	mv $@.tmp $@

@@ -11,7 +11,7 @@
  */
 
 #include "mooutils/mooprefs.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/moomarkup.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-gobject.h"

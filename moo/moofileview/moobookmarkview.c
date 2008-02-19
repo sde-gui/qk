@@ -12,7 +12,7 @@
 
 #define MOO_FILE_VIEW_COMPILATION
 #include "moofileview/moobookmarkview.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include <gtk/gtk.h>
 #include <string.h>
 

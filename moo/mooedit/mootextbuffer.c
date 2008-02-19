@@ -15,7 +15,7 @@
 #include "mooedit/mootext-private.h"
 #include "mooedit/moolang-private.h"
 #include "mooedit/mootextstylescheme.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooundo.h"
 #include "mooutils/mooutils-gobject.h"
 #include <string.h>

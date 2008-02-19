@@ -13,7 +13,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mootext-private.h"
 #include "mooedit/mootextbuffer.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooutils-misc.h"
 
 

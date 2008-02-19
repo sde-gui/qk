@@ -12,7 +12,7 @@
 
 #include "mooedit/moocompletionsimple.h"
 #include "mooedit/mootextpopup.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include <glib/gregex.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>

@@ -12,7 +12,7 @@
 
 #include "mooedit/moooutputfilter.h"
 #include "mooedit/mooeditor.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooutils-misc.h"
 #include <string.h>

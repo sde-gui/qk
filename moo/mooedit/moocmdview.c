@@ -12,7 +12,7 @@
 
 #include "mooedit/moocmdview.h"
 #include "mooedit/mooeditwindow.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/moospawn.h"
 #include "mooutils/mooutils-misc.h"
 
@@ -335,8 +335,8 @@ moo_cmd_view_run_command_full (MooCmdView  *view,
     if (!(argv = _moo_win32_lame_parse_cmd_line (cmd, &error)))
     {
         moo_line_view_write_line (MOO_LINE_VIEW (view),
-                                  error ? error->message : 
-                                    "Could not parse command line", 
+                                  error ? error->message :
+                                    "Could not parse command line",
                                   -1, view->priv->error_tag);
         g_error_free (error);
         goto out;

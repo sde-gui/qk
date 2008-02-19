@@ -14,7 +14,7 @@
 #include "config.h"
 #endif
 
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/moonotebook.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moopane.h"

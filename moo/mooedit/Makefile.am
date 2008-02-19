@@ -261,3 +261,12 @@ mooedit_includedir = $(moo_includedir)/mooedit
 mooedit_include_HEADERS = $(mooedit_include_headers)
 nodist_mooedit_include_HEADERS = $(nodist_mooedit_include_headers)
 endif
+
+BUILT_SOURCES += marshals.h
+nodist_libmooedit_la_SOURCES += marshals.h
+CLEANFILES += marshals.h
+EXTRA_DIST += marshals.list
+marshals.h: marshals.list
+	glib-genmarshal --prefix=_moo_marshal --header	\
+	       $(srcdir)/marshals.list > $@.tmp &&	\
+	mv $@.tmp $@

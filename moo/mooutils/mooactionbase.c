@@ -13,7 +13,7 @@
 #include "mooutils/mooactionbase-private.h"
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooactiongroup.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include <gtk/gtk.h>
 #include <string.h>
 

@@ -10,7 +10,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/moocombo.h"
 #include "mooutils/mooentry.h"
 #include <gtk/gtk.h>

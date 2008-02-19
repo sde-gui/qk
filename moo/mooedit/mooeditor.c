@@ -22,7 +22,7 @@
 #include "mooedit-ui.h"
 #include "medit-ui.h"
 #include "mooutils/moomenuaction.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/moofilewatch.h"

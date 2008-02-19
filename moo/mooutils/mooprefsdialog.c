@@ -12,7 +12,7 @@
 
 #include "config.h"
 #include "mooutils/mooprefsdialog.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moohelp.h"
 #include "help-sections.h"

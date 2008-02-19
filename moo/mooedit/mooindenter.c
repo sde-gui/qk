@@ -12,7 +12,7 @@
 
 #include "mooedit/mooindenter.h"
 #include "mooedit/mooedit.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include <string.h>
 
 

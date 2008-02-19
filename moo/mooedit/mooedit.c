@@ -21,7 +21,7 @@
 #include "mooeditprogress-glade.h"
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooedit/mooeditor-private.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"

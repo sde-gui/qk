@@ -17,7 +17,7 @@
 #include "moofilesystem.h"
 #include "moofoldermodel.h"
 #include "moofileview-aux.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"

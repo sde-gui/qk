@@ -11,7 +11,7 @@
  */
 
 #include "mooedit/moolineview.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/moocompat.h"
 #include <gdk/gdkkeysyms.h>

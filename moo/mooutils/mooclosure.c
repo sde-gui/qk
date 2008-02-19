@@ -11,7 +11,7 @@
  */
 
 #include "mooutils/mooclosure.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 
 
 MooClosure*

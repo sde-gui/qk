@@ -12,7 +12,7 @@
 
 #define MOO_FILE_VIEW_COMPILATION
 #include "mooiconview.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include <gdk/gdkkeysyms.h>

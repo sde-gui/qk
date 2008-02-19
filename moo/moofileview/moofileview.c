@@ -41,7 +41,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/mooaction-private.h"
-#include "mooutils/moomarshals.h"
+#include "marshals.h"
 #include "mooutils/mooi18n.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
