@@ -1795,72 +1795,22 @@ parse_property (GParamSpec     *param_spec,
     }
     else if (G_TYPE_IS_ENUM (param_spec->value_type))
     {
-        GEnumClass *enum_class;
-        GEnumValue *val;
-
-        enum_class = g_type_class_ref (param_spec->value_type);
-
-        val = g_enum_get_value_by_name (enum_class, value);
-
-        if (!val)
-            val = g_enum_get_value_by_nick (enum_class, value);
-
-        g_type_class_unref (enum_class);
-
-        if (!val)
+        if (!_moo_value_convert_from_string (value, &param->value))
         {
             const char *typename = g_type_name (param_spec->value_type);
             g_warning ("%s: can not convert string '%s' to a value of type %s",
                        G_STRLOC, value, typename ? typename : "<unknown>");
             return FALSE;
         }
-
-        g_value_set_enum (&param->value, val->value);
     }
     else if (G_TYPE_IS_FLAGS (param_spec->value_type))
     {
-        if (!value[0])
+        if (!_moo_value_convert_from_string (value, &param->value))
         {
-            g_value_set_flags (&param->value, 0);
-        }
-        else
-        {
-            GFlagsClass *flags_class;
-            char **pieces;
-            guint i, len;
-            int result = 0;
-
-            pieces = g_strsplit (value, "|", 0);
-            len = g_strv_length (pieces);
-
-            flags_class = g_type_class_ref (param_spec->value_type);
-
-            for (i = 0; i < len; ++i)
-            {
-                GFlagsValue *val;
-
-                val = g_flags_get_value_by_name (flags_class, pieces[i]);
-
-                if (!val)
-                    val = g_flags_get_value_by_nick (flags_class, pieces[i]);
-
-                if (!val)
-                {
-                    const char *typename = g_type_name (param_spec->value_type);
-                    g_warning ("%s: can not convert string '%s' to a value of type %s",
-                               G_STRLOC, pieces[i], typename ? typename : "<unknown>");
-                    g_type_class_unref (flags_class);
-                    return FALSE;
-                }
-                else
-                {
-                    result |= val->value;
-                }
-            }
-
-            g_value_set_flags (&param->value, result);
-            g_type_class_unref (flags_class);
-            g_strfreev (pieces);
+            const char *typename = g_type_name (param_spec->value_type);
+            g_warning ("%s: can not convert string '%s' to a value of type %s",
+                       G_STRLOC, value, typename ? typename : "<unknown>");
+            return FALSE;
         }
     }
     else if (param_spec->value_type == GDK_TYPE_PIXBUF)
