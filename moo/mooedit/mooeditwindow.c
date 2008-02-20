@@ -4127,8 +4127,13 @@ notebook_drag_data_recv (GtkWidget          *widget,
                 goto out;
 
             for (u = uris; *u; ++u)
-                moo_editor_open_uri (window->priv->editor, window,
-                                     NULL, *u, NULL);
+            {
+                char *filename = g_filename_from_uri (*u, NULL, NULL);
+                if (!filename || !g_file_test (filename, G_FILE_TEST_IS_DIR))
+                    moo_editor_open_uri (window->priv->editor, window,
+                                         NULL, *u, NULL);
+                g_free (filename);
+            }
 
             g_strfreev (uris);
             gtk_drag_finish (context, TRUE, FALSE, time);
