@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-02-10 00:40-0600\n"
+"POT-Creation-Date: 2008-02-20 09:32-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -90,7 +90,7 @@ msgid "translator-credits-markup"
 msgstr ""
 
 #. menu item label
-#: ../moo/mooapp/mooapp.c:1290
+#: ../moo/mooapp/mooapp.c:1296
 msgid "System Info"
 msgstr ""
 
@@ -756,11 +756,19 @@ msgstr ""
 msgid "Untitled %d"
 msgstr ""
 
-#: ../moo/mooedit/mooeditor.c:632
+#: ../moo/mooedit/mooeditor.c:280
+msgid "Open Recent Files Dialog"
+msgstr ""
+
+#: ../moo/mooedit/mooeditor.c:281
+msgid "Open Recent|_More..."
+msgstr ""
+
+#: ../moo/mooedit/mooeditor.c:634
 msgid "Open new editor window"
 msgstr ""
 
-#: ../moo/mooedit/mooeditor.c:967
+#: ../moo/mooedit/mooeditor.c:1032
 msgid "Open Recent"
 msgstr ""
 

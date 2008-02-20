@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-02-10 00:40-0600\n"
+"POT-Creation-Date: 2008-02-20 09:32-0600\n"
 "PO-Revision-Date: 2007-11-27 21:52+0100\n"
 "Last-Translator: Collilieux <mccnews@free.fr>\n"
 "Language-Team: \n"
@@ -90,7 +90,7 @@ msgstr ""
 "Collilieux <a href=\"mailto:mccnews@free.fr\">&lt;mccnews@free.fr&gt;</a>"
 
 #. menu item label
-#: ../moo/mooapp/mooapp.c:1290
+#: ../moo/mooapp/mooapp.c:1296
 msgid "System Info"
 msgstr "Info système"
 
@@ -780,11 +780,19 @@ msgstr "Sans titre"
 msgid "Untitled %d"
 msgstr "Sans titre %d"
 
-#: ../moo/mooedit/mooeditor.c:632
+#: ../moo/mooedit/mooeditor.c:280
+msgid "Open Recent Files Dialog"
+msgstr ""
+
+#: ../moo/mooedit/mooeditor.c:281
+msgid "Open Recent|_More..."
+msgstr ""
+
+#: ../moo/mooedit/mooeditor.c:634
 msgid "Open new editor window"
 msgstr "Ouvrir dans une nouvelle fenêtre"
 
-#: ../moo/mooedit/mooeditor.c:967
+#: ../moo/mooedit/mooeditor.c:1032
 msgid "Open Recent"
 msgstr "Récemment ouvert(s)"
 

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-02-10 00:40-0600\n"
+"POT-Creation-Date: 2008-02-20 09:32-0600\n"
 "PO-Revision-Date: 2008-02-04 21:47+0100\n"
 "Last-Translator: Christian Dywan <christian@twotoasts.de>\n"
 "MIME-Version: 1.0\n"
@@ -89,7 +89,7 @@ msgstr ""
 "christian@twotoasts.de&gt;</a>"
 
 #. menu item label
-#: ../moo/mooapp/mooapp.c:1290
+#: ../moo/mooapp/mooapp.c:1296
 msgid "System Info"
 msgstr "Systeminfo"
 
@@ -781,11 +781,19 @@ msgstr "Unbenannt"
 msgid "Untitled %d"
 msgstr "Unbenannt %d"
 
-#: ../moo/mooedit/mooeditor.c:632
+#: ../moo/mooedit/mooeditor.c:280
+msgid "Open Recent Files Dialog"
+msgstr "Dialog Zuletzt verwendete Dateien"
+
+#: ../moo/mooedit/mooeditor.c:281
+msgid "Open Recent|_More..."
+msgstr "_Mehr..."
+
+#: ../moo/mooedit/mooeditor.c:634
 msgid "Open new editor window"
 msgstr "Neues Editorfenster öffnen"
 
-#: ../moo/mooedit/mooeditor.c:967
+#: ../moo/mooedit/mooeditor.c:1032
 msgid "Open Recent"
 msgstr "Zuletzt verwendete öffnen"
 
@@ -1803,12 +1811,6 @@ msgstr ""
 #: ../moo/mooutils/moowindow.c:771
 msgid "Toolbar _Style"
 msgstr "Werkzeugleistenstil"
-
-#~ msgid "Open Recent Files Dialog"
-#~ msgstr "Dialog Zuletzt verwendete Dateien"
-
-#~ msgid "Open Recent|_More..."
-#~ msgstr "_Mehr..."
 
 #~ msgid "Show File Selector"
 #~ msgstr "Dateiauswahl anzeigen"

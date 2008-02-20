@@ -37,6 +37,7 @@
 
 
 #define RECENT_ACTION_ID "OpenRecent"
+#define RECENT_DIALOG_ACTION_ID "OpenRecentDialog"
 
 static gpointer editor_instance = NULL;
 
@@ -73,6 +74,7 @@ static void          set_single_window      (MooEditor      *editor,
 
 static GtkAction    *create_open_recent_action (MooWindow   *window,
                                              gpointer        user_data);
+static void          action_recent_dialog   (MooEditWindow  *window);
 
 static MooEditWindow *create_window         (MooEditor      *editor);
 static void          moo_editor_add_doc     (MooEditor      *editor,
@@ -274,6 +276,13 @@ moo_editor_class_init (MooEditorClass *klass)
     moo_window_class_new_action_custom (edit_window_class, RECENT_ACTION_ID, NULL,
                                         create_open_recent_action,
                                         NULL, NULL);
+    moo_window_class_new_action (edit_window_class, RECENT_DIALOG_ACTION_ID, NULL,
+                                 "display-name", _("Open Recent Files Dialog"),
+                                 "label", Q_("Open Recent|_More..."),
+//                                  "stock-id", GTK_STOCK_NEW,
+//                                  "accel", "<ctrl>N",
+                                 "closure-callback", action_recent_dialog,
+                                 NULL);
     g_type_class_unref (edit_window_class);
 
     add_new_window_action ();
@@ -951,34 +960,41 @@ add_recent_file (MooEditor  *editor,
 }
 
 static void
-recent_item_activated (MdHistoryItem *item,
-                       gpointer       data)
+recent_item_activated (GSList   *items,
+                       gpointer  data)
 {
     MooEditWindow *window = data;
     MooEditor *editor = moo_editor_instance ();
-    const char *uri;
-    char *filename;
-    const char *encoding;
 
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDITOR (editor));
 
-    uri = md_history_item_get_uri (item);
-    filename = g_filename_from_uri (uri, NULL, NULL);
-    g_return_if_fail (filename != NULL);
+    while (items)
+    {
+        const char *encoding;
+        const char *uri;
+        char *filename;
+        MdHistoryItem *item = items->data;
 
-    encoding = _moo_edit_history_item_get_encoding (item);
-    if (!moo_editor_open_uri (editor, window, GTK_WIDGET (window), uri, encoding))
-        md_history_mgr_remove_uri (editor->priv->history, uri);
+        uri = md_history_item_get_uri (item);
+        filename = g_filename_from_uri (uri, NULL, NULL);
+        g_return_if_fail (filename != NULL);
 
-    g_free (filename);
+        encoding = _moo_edit_history_item_get_encoding (item);
+        if (!moo_editor_open_uri (editor, window, GTK_WIDGET (window), uri, encoding))
+            md_history_mgr_remove_uri (editor->priv->history, uri);
+
+        g_free (filename);
+
+        items = items->next;
+    }
 }
 
 static GtkWidget *
 create_recent_menu (GtkAction *action)
 {
     GtkWidget *menu, *item;
-//     GtkAction *action_more;
+    GtkAction *action_more;
     MooWindow *window;
     MooEditor *editor;
 
@@ -993,13 +1009,13 @@ create_recent_menu (GtkAction *action)
                             "sensitive", editor->priv->history,
                             "empty", TRUE);
 
-//     item = gtk_separator_menu_item_new ();
-//     gtk_widget_show (item);
-//     gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-//
-//     action_more = md_app_window_get_action (app_window, "OpenRecentDialog");
-//     item = gtk_action_create_menu_item (action_more);
-//     gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+    item = gtk_separator_menu_item_new ();
+    gtk_widget_show (item);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+    action_more = moo_window_get_action (window, RECENT_DIALOG_ACTION_ID);
+    item = gtk_action_create_menu_item (action_more);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
     item = gtk_menu_item_new ();
     gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), menu);
@@ -1017,6 +1033,27 @@ create_open_recent_action (G_GNUC_UNUSED MooWindow *window,
     moo_menu_action_set_func (MOO_MENU_ACTION (action), create_recent_menu);
 
     return action;
+}
+
+static void
+action_recent_dialog (MooEditWindow *window)
+{
+    GtkWidget *dialog;
+    MooEditor *editor;
+
+    editor = moo_editor_instance ();
+    g_return_if_fail (MOO_IS_EDITOR (editor));
+
+    dialog = md_history_mgr_create_dialog (editor->priv->history,
+                                           recent_item_activated,
+                                           window, NULL);
+    gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
+    _moo_window_set_remember_size (GTK_WINDOW (dialog),
+                                   moo_edit_setting (MOO_EDIT_PREFS_DIALOGS "/recent-files"),
+                                   FALSE);
+
+    gtk_dialog_run (GTK_DIALOG (dialog));
+    gtk_widget_destroy (dialog);
 }
 
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-02-10 00:40-0600\n"
+"POT-Creation-Date: 2008-02-20 09:32-0600\n"
 "PO-Revision-Date: 2007-12-06 04:32+0800\n"
 "Last-Translator: Chaosye <chao-7410@163.com>\n"
 "MIME-Version: 1.0\n"
@@ -89,7 +89,7 @@ msgstr ""
 "Chaosye <a href=\"mailto:chao-7410@163.com\">&lt;chao-7410@163.com&gt;</a>"
 
 #. menu item label
-#: ../moo/mooapp/mooapp.c:1290
+#: ../moo/mooapp/mooapp.c:1296
 msgid "System Info"
 msgstr "系统信息"
 
@@ -768,11 +768,19 @@ msgstr "未命名"
 msgid "Untitled %d"
 msgstr "未命名 %d"
 
-#: ../moo/mooedit/mooeditor.c:632
+#: ../moo/mooedit/mooeditor.c:280
+msgid "Open Recent Files Dialog"
+msgstr ""
+
+#: ../moo/mooedit/mooeditor.c:281
+msgid "Open Recent|_More..."
+msgstr ""
+
+#: ../moo/mooedit/mooeditor.c:634
 msgid "Open new editor window"
 msgstr "新建编辑窗口"
 
-#: ../moo/mooedit/mooeditor.c:967
+#: ../moo/mooedit/mooeditor.c:1032
 msgid "Open Recent"
 msgstr "打开最近用过的文档(_R)"
 

@@ -37,8 +37,8 @@ struct MdHistoryMgrClass {
     GObjectClass base_class;
 };
 
-typedef void (*MdHistoryCallback)               (MdHistoryItem  *item,
-                                                 gpointer        data);
+typedef void (*MdHistoryCallback)               (GSList   *items,
+                                                 gpointer  data);
 
 GType       md_history_mgr_get_type             (void) G_GNUC_CONST;
 
@@ -56,6 +56,10 @@ MdHistoryItem  *md_history_mgr_find_uri         (MdHistoryMgr   *mgr,
 guint       md_history_mgr_get_n_items          (MdHistoryMgr   *mgr);
 
 GtkWidget  *md_history_mgr_create_menu          (MdHistoryMgr   *mgr,
+                                                 MdHistoryCallback callback,
+                                                 gpointer        data,
+                                                 GDestroyNotify  notify);
+GtkWidget  *md_history_mgr_create_dialog        (MdHistoryMgr   *mgr,
                                                  MdHistoryCallback callback,
                                                  gpointer        data,
                                                  GDestroyNotify  notify);

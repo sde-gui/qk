@@ -15,7 +15,9 @@
 #include "mooutils/mooapp-ipc.h"
 #include "mooutils/moofilewatch.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/mooutils-treeview.h"
 #include "mooutils/moomarkup.h"
 #include "mooutils/mooprefs.h"
 #include "marshals.h"
@@ -32,7 +34,9 @@ struct MdHistoryMgrPrivate {
     char *ipc_id;
 
     guint save_idle;
-    GSList *menus;
+
+    guint update_widgets_idle;
+    GSList *widgets;
 
     GQueue *files;
     GHashTable *hash;
@@ -77,6 +81,7 @@ static void         md_history_mgr_save         (MdHistoryMgr   *mgr);
 
 static void         populate_menu               (MdHistoryMgr   *mgr,
                                                  GtkWidget      *menu);
+static void         schedule_update_widgets     (MdHistoryMgr   *mgr);
 
 static void         md_history_item_format      (MdHistoryItem  *item,
                                                  GString        *buffer);
@@ -131,12 +136,13 @@ md_history_mgr_class_init (MdHistoryMgrClass *klass)
                               TRUE, G_PARAM_READABLE));
 
     signals[CHANGED] =
-        g_signal_new ("changed",
-                      MD_TYPE_HISTORY_MGR,
-                      G_SIGNAL_RUN_LAST,
-                      0, NULL, NULL,
-                      _moo_marshal_VOID__VOID,
-                      G_TYPE_NONE, 0);
+        _moo_signal_new_cb ("changed",
+                            MD_TYPE_HISTORY_MGR,
+                            G_SIGNAL_RUN_LAST,
+                            G_CALLBACK (schedule_update_widgets),
+                            NULL, NULL,
+                            _moo_marshal_VOID__VOID,
+                            G_TYPE_NONE, 0);
 }
 
 static void
@@ -188,11 +194,17 @@ md_history_mgr_dispose (GObject *object)
             md_history_mgr_save (mgr);
         }
 
-        if (mgr->priv->menus)
+        if (mgr->priv->update_widgets_idle)
+        {
+            g_source_remove (mgr->priv->update_widgets_idle);
+            mgr->priv->update_widgets_idle = 0;
+        }
+
+        if (mgr->priv->widgets)
         {
             g_critical ("%s: oops", G_STRLOC);
-            while (mgr->priv->menus)
-                gtk_widget_destroy (mgr->priv->menus->data);
+            while (mgr->priv->widgets)
+                gtk_widget_destroy (mgr->priv->widgets->data);
         }
 
         if (mgr->priv->files)
@@ -648,14 +660,18 @@ void
 md_history_mgr_add_uri (MdHistoryMgr *mgr,
                         const char   *uri)
 {
+    MdHistoryItem *freeme = NULL;
     MdHistoryItem *item;
 
     g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
     g_return_if_fail (uri && uri[0]);
 
-    item = md_history_item_new (uri, NULL);
+    if (!(item = md_history_mgr_find_uri (mgr, uri)))
+        item = md_history_item_new (uri, NULL);
+
     md_history_mgr_add_file (mgr, item);
-    md_history_item_free (item);
+
+    md_history_item_free (freeme);
 }
 
 static void
@@ -665,7 +681,7 @@ md_history_mgr_add_file_real (MdHistoryMgr  *mgr,
 {
     const char *uri;
     GList *link;
-    gboolean changed = TRUE;
+    MdHistoryItem *new_item = NULL;
 
     g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
     g_return_if_fail (item != NULL);
@@ -673,40 +689,35 @@ md_history_mgr_add_file_real (MdHistoryMgr  *mgr,
     uri = md_history_item_get_uri (item);
     link = g_hash_table_lookup (mgr->priv->hash, uri);
 
-    if (link != NULL)
-    {
-        if (link != mgr->priv->files->head ||
-            !md_history_item_equal (item, link->data))
-        {
-            MdHistoryItem *tmp = link->data;
-
-            g_queue_unlink (mgr->priv->files, link);
-            g_queue_push_head_link (mgr->priv->files, link);
-
-            link->data = md_history_item_copy (item);
-            md_history_item_free (tmp);
-        }
-        else
-        {
-            changed = FALSE;
-        }
-    }
-    else
+    if (!link)
     {
         MdHistoryItem *copy = md_history_item_copy (item);
         g_queue_push_head (mgr->priv->files, copy);
+        new_item = copy;
         g_hash_table_insert (mgr->priv->hash, g_strdup (uri),
                              mgr->priv->files->head);
     }
+    else if (link != mgr->priv->files->head ||
+            !md_history_item_equal (item, link->data))
+    {
+        MdHistoryItem *tmp = link->data;
 
-    if (changed)
+        g_queue_unlink (mgr->priv->files, link);
+        g_queue_push_head_link (mgr->priv->files, link);
+
+        new_item = link->data = md_history_item_copy (item);
+
+        md_history_item_free (tmp);
+    }
+
+    if (new_item)
     {
         g_signal_emit (mgr, signals[CHANGED], 0);
 
         if (notify)
         {
             schedule_save (mgr);
-            ipc_notify_add_file (mgr, item);
+            ipc_notify_add_file (mgr, new_item);
         }
 
         if (mgr->priv->files->length == 1)
@@ -749,7 +760,7 @@ md_history_mgr_update_file_real (MdHistoryMgr  *mgr,
         if (notify)
         {
             schedule_save (mgr);
-            ipc_notify_update_file (mgr, file);
+            ipc_notify_update_file (mgr, link->data);
         }
     }
 }
@@ -914,11 +925,11 @@ callback_data_free (CallbackData *data)
 }
 
 static void
-menu_destroyed (GtkWidget    *menu,
+view_destroyed (GtkWidget    *widget,
                 MdHistoryMgr *mgr)
 {
-    g_object_set_data (G_OBJECT (menu), "md-history-mgr-callback-data", NULL);
-    mgr->priv->menus = g_slist_remove (mgr->priv->menus, menu);
+    g_object_set_data (G_OBJECT (widget), "md-history-mgr-callback-data", NULL);
+    mgr->priv->widgets = g_slist_remove (mgr->priv->widgets, widget);
 }
 
 static void
@@ -956,8 +967,7 @@ md_history_mgr_create_menu (MdHistoryMgr   *mgr,
 
     menu = gtk_menu_new ();
     gtk_widget_show (menu);
-    g_signal_connect (menu, "destroy", G_CALLBACK (menu_destroyed), mgr);
-    g_signal_connect (mgr, "changed", G_CALLBACK (update_menu), menu);
+    g_signal_connect (menu, "destroy", G_CALLBACK (view_destroyed), mgr);
 
     cb_data = moo_new0 (CallbackData);
     cb_data->callback = callback;
@@ -967,11 +977,10 @@ md_history_mgr_create_menu (MdHistoryMgr   *mgr,
                             cb_data, (GDestroyNotify) callback_data_free);
 
     populate_menu (mgr, menu);
-    mgr->priv->menus = g_slist_prepend (mgr->priv->menus, menu);
+    mgr->priv->widgets = g_slist_prepend (mgr->priv->widgets, menu);
 
     return menu;
 }
-
 
 static void
 menu_item_activated (GtkWidget *menu_item)
@@ -979,6 +988,7 @@ menu_item_activated (GtkWidget *menu_item)
     GtkWidget *parent = menu_item->parent;
     CallbackData *data;
     MdHistoryItem *item;
+    GSList *list;
 
     g_return_if_fail (parent != NULL);
 
@@ -986,7 +996,10 @@ menu_item_activated (GtkWidget *menu_item)
     item = g_object_get_data (G_OBJECT (menu_item), "md-history-menu-item-file");
     g_return_if_fail (data && item);
 
-    data->callback (item, data->data);
+    list = g_slist_prepend (NULL, md_history_item_copy (item));
+    data->callback (list, data->data);
+    md_history_item_free (list->data);
+    g_slist_free (list);
 }
 
 static void
@@ -1029,6 +1042,258 @@ populate_menu (MdHistoryMgr *mgr,
         g_free (display_basename);
         g_free (display_name);
     }
+}
+
+
+enum {
+    COLUMN_PIXBUF,
+    COLUMN_NAME,
+    COLUMN_TOOLTIP,
+    COLUMN_URI,
+    N_COLUMNS
+};
+
+static void
+open_selected (GtkTreeView *tree_view)
+{
+    CallbackData *data;
+    GtkTreeIter iter;
+    GtkTreeModel *model;
+    GtkTreeSelection *selection;
+    MdHistoryMgr *mgr;
+    GList *selected;
+    GSList *items;
+
+    mgr = g_object_get_data (G_OBJECT (tree_view), "md-history-mgr");
+    g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
+
+    data = g_object_get_data (G_OBJECT (tree_view), "md-history-mgr-callback-data");
+    g_return_if_fail (data != NULL);
+
+    selection = gtk_tree_view_get_selection (tree_view);
+    selected = gtk_tree_selection_get_selected_rows (selection, &model);
+
+    for (items = NULL; selected != NULL; )
+    {
+        char *uri = NULL;
+        MdHistoryItem *item;
+        GtkTreePath *path = selected->data;
+
+        gtk_tree_model_get_iter (model, &iter, path);
+        gtk_tree_model_get (model, &iter, COLUMN_URI, &uri, -1);
+        item = md_history_mgr_find_uri (mgr, uri);
+
+        if (item)
+            items = g_slist_prepend (items, md_history_item_copy (item));
+
+        g_free (uri);
+        gtk_tree_path_free (path);
+        selected = g_list_delete_link (selected, selected);
+    }
+
+    items = g_slist_reverse (items);
+
+    if (items)
+        data->callback (items, data->data);
+
+    g_slist_foreach (items, (GFunc) md_history_item_free, NULL);
+    g_slist_free (items);
+}
+
+static GtkWidget *
+create_tree_view (void)
+{
+    GtkWidget *tree_view;
+    GtkTreeViewColumn *column;
+    GtkCellRenderer *cell;
+    GtkListStore *store;
+
+    tree_view = gtk_tree_view_new ();
+    store = gtk_list_store_new (N_COLUMNS, GDK_TYPE_PIXBUF, G_TYPE_STRING,
+                                G_TYPE_STRING, G_TYPE_STRING);
+    gtk_tree_view_set_model (GTK_TREE_VIEW (tree_view), GTK_TREE_MODEL (store));
+    gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (tree_view), FALSE);
+#if GTK_CHECK_VERSION(2,12,0)
+    gtk_tree_view_set_tooltip_column (GTK_TREE_VIEW (tree_view),
+                                      COLUMN_TOOLTIP);
+#endif
+    gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (tree_view)),
+                                 GTK_SELECTION_MULTIPLE);
+
+    column = gtk_tree_view_column_new ();
+    gtk_tree_view_append_column (GTK_TREE_VIEW (tree_view), column);
+
+    cell = gtk_cell_renderer_pixbuf_new ();
+    gtk_tree_view_column_pack_start (column, cell, FALSE);
+    gtk_tree_view_column_set_attributes (column, cell, "pixbuf", COLUMN_PIXBUF, NULL);
+
+    cell = gtk_cell_renderer_text_new ();
+    gtk_tree_view_column_pack_start (column, cell, TRUE);
+    gtk_tree_view_column_set_attributes (column, cell, "text", COLUMN_NAME, NULL);
+
+    return tree_view;
+}
+
+static void
+populate_tree_view (MdHistoryMgr *mgr,
+                    GtkWidget    *tree_view)
+{
+    GtkListStore *store;
+    GtkTreeModel *model;
+    GList *l;
+
+    ensure_files (mgr);
+
+    model = gtk_tree_view_get_model (GTK_TREE_VIEW (tree_view));
+    store = GTK_LIST_STORE (model);
+
+    for (l = mgr->priv->files->head; l != NULL; l = l->next)
+    {
+        MdHistoryItem *item = l->data;
+        char *display_name, *display_basename;
+        GdkPixbuf *pixbuf;
+        GtkTreeIter iter;
+
+        display_basename = uri_get_basename (item->uri);
+        display_name = uri_get_display_name (item->uri);
+
+        /* XXX */
+        pixbuf = _moo_get_icon_for_path (display_name, tree_view, GTK_ICON_SIZE_MENU);
+
+        gtk_list_store_append (store, &iter);
+        gtk_list_store_set (store, &iter,
+                            COLUMN_PIXBUF, pixbuf,
+                            COLUMN_NAME, display_basename,
+                            COLUMN_TOOLTIP, display_name,
+                            COLUMN_URI, md_history_item_get_uri (item),
+                            -1);
+
+        g_free (display_basename);
+        g_free (display_name);
+    }
+}
+
+static void
+update_tree_view (MdHistoryMgr *mgr,
+                  GtkWidget    *tree_view)
+{
+    GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (tree_view));
+    gtk_list_store_clear (GTK_LIST_STORE (model));
+    populate_tree_view (mgr, tree_view);
+}
+
+static GtkWidget *
+md_history_mgr_create_tree_view (MdHistoryMgr   *mgr,
+                                 MdHistoryCallback callback,
+                                 gpointer        data,
+                                 GDestroyNotify  notify)
+{
+    GtkWidget *tree_view;
+    CallbackData *cb_data;
+
+    g_return_val_if_fail (MD_IS_HISTORY_MGR (mgr), NULL);
+    g_return_val_if_fail (callback != NULL, NULL);
+
+    tree_view = create_tree_view ();
+    gtk_widget_show (tree_view);
+    g_signal_connect (tree_view, "destroy", G_CALLBACK (view_destroyed), mgr);
+
+    cb_data = moo_new0 (CallbackData);
+    cb_data->callback = callback;
+    cb_data->data = data;
+    cb_data->notify = notify;
+    g_object_set_data_full (G_OBJECT (tree_view), "md-history-mgr-callback-data",
+                            cb_data, (GDestroyNotify) callback_data_free);
+    g_object_set_data (G_OBJECT (tree_view), "md-history-mgr", mgr);
+
+    populate_tree_view (mgr, tree_view);
+    if (mgr->priv->files->head)
+        _moo_tree_view_select_first (GTK_TREE_VIEW (tree_view));
+    mgr->priv->widgets = g_slist_prepend (mgr->priv->widgets, tree_view);
+
+    return tree_view;
+}
+
+static void
+dialog_response (GtkTreeView *tree_view,
+                 int          response)
+{
+    if (response == GTK_RESPONSE_OK)
+        open_selected (tree_view);
+}
+
+static void
+row_activated (GtkDialog *dialog)
+{
+    gtk_dialog_response (dialog, GTK_RESPONSE_OK);
+}
+
+GtkWidget *
+md_history_mgr_create_dialog (MdHistoryMgr   *mgr,
+                              MdHistoryCallback callback,
+                              gpointer        data,
+                              GDestroyNotify  notify)
+{
+    GtkWidget *dialog, *swin, *tree_view;
+
+    g_return_val_if_fail (MD_IS_HISTORY_MGR (mgr), NULL);
+    g_return_val_if_fail (callback != NULL, NULL);
+
+    dialog = gtk_dialog_new_with_buttons ("", NULL, GTK_DIALOG_DESTROY_WITH_PARENT,
+                                          GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                          GTK_STOCK_OPEN, GTK_RESPONSE_OK,
+                                          NULL);
+    gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
+                                             GTK_RESPONSE_OK,
+                                             GTK_RESPONSE_CANCEL,
+                                             -1);
+
+    swin = gtk_scrolled_window_new (NULL, NULL);
+    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (swin),
+                                    GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+    tree_view = md_history_mgr_create_tree_view (mgr, callback, data, notify);
+    gtk_container_add (GTK_CONTAINER (swin), tree_view);
+    gtk_widget_show_all (swin);
+
+    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), swin, TRUE, TRUE, 0);
+
+    g_signal_connect_swapped (tree_view, "row-activated",
+                              G_CALLBACK (row_activated), dialog);
+    g_signal_connect_swapped (dialog, "response",
+                              G_CALLBACK (dialog_response), tree_view);
+
+    return dialog;
+}
+
+
+static gboolean
+do_update_widgets (MdHistoryMgr *mgr)
+{
+    GSList *l;
+
+    mgr->priv->update_widgets_idle = 0;
+
+    for (l = mgr->priv->widgets; l != NULL; l = l->next)
+    {
+        GtkWidget *widget = l->data;
+
+        if (GTK_IS_MENU (widget))
+            update_menu (mgr, widget);
+        else if (GTK_IS_TREE_VIEW (widget))
+            update_tree_view (mgr, widget);
+        else
+            g_critical ("%s: oops", G_STRFUNC);
+    }
+
+    return FALSE;
+}
+
+static void
+schedule_update_widgets (MdHistoryMgr *mgr)
+{
+    if (!mgr->priv->update_widgets_idle && mgr->priv->widgets)
+        mgr->priv->update_widgets_idle =
+            g_idle_add ((GSourceFunc) do_update_widgets, mgr);
 }
 
 

@@ -264,7 +264,6 @@ _moo_get_icon (GtkWidget      *widget,
     MooIconCache *cache;
 
     g_return_val_if_fail (GTK_IS_WIDGET (widget), NULL);
-    g_return_val_if_fail (gtk_widget_has_screen (widget), NULL);
     g_return_val_if_fail (type < MOO_ICON_INVALID, NULL);
     g_return_val_if_fail (type != MOO_ICON_MIME || mime_type != NULL, NULL);
     g_return_val_if_fail (emblem < MOO_ICON_EMBLEM_LEN, NULL);
@@ -272,7 +271,11 @@ _moo_get_icon (GtkWidget      *widget,
     if (type != MOO_ICON_MIME)
         mime_type = NULL;
 
-    screen = gtk_widget_get_screen (widget);
+    if (gtk_widget_has_screen (widget))
+        screen = gtk_widget_get_screen (widget);
+    else
+        screen = gdk_screen_get_default ();
+
     cache = moo_icon_cache_get_for_screen (screen, size);
     g_return_val_if_fail (cache != NULL, NULL);
 
