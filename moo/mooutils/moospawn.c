@@ -293,7 +293,7 @@ process_line (MooCmd      *cmd,
 
             if (!real_line)
             {
-                g_warning ("%s: could not convert text to UTF-8:\n%*s",
+                g_warning ("%s: could not convert text to UTF-8:\n%.*s",
                            G_STRLOC, (int) len, line);
                 g_warning ("%s: %s", G_STRLOC, error->message);
             }
