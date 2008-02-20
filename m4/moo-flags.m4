@@ -101,8 +101,4 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   AC_SUBST(MOO_XML2H)
   AC_SUBST(MOO_GLADE_SUBDIR_RULE)
   AC_SUBST(MOO_GLADE_RULE)
-
-  if test "x$MOO_USE_PIPE_INPUT" = "xyes"; then
-    AC_DEFINE(MOO_USE_PIPE_INPUT, 1, [use fifo for input])
-  fi
 ])

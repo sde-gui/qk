@@ -16,7 +16,6 @@
 #include <mooedit/mooeditwindow.h>
 #include <mooedit/moolangmgr.h>
 #include <mooutils/moouixml.h>
-#include <mooutils/moohistorylist.h>
 #include <mooutils/moofiltermgr.h>
 
 G_BEGIN_DECLS

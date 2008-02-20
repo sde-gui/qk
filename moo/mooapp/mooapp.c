@@ -16,7 +16,6 @@
 
 #define MOO_APP_COMPILATION
 #define WANT_MOO_APP_CMD_CHARS
-#include "mooapp/mooappinput.h"
 #include "mooapp/mooapp-private.h"
 #include "mooapp/smclient/eggsmclient.h"
 #include "mooedit/mooeditprefs.h"
@@ -28,6 +27,7 @@
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moopython.h"
 #include "marshals.h"
+#include "mooutils/mooappinput.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-fs.h"
@@ -69,7 +69,6 @@
 
 static struct {
     MooApp *instance;
-    MooAppInput *input;
     gboolean atexit_installed;
 } moo_app_data;
 
@@ -912,19 +911,32 @@ moo_app_init_real (MooApp *app)
 
 
 static void
+input_callback (char        cmd,
+                const char *data,
+                guint       len,
+                gpointer    cb_data)
+{
+    MooApp *app = cb_data;
+
+    g_return_if_fail (MOO_IS_APP (app));
+    g_return_if_fail (data != NULL);
+
+    g_signal_emit (app, signals[EXEC_CMD], 0, cmd, data, len);
+}
+
+static void
 start_input (MooApp *app)
 {
     if (app->priv->run_input)
-        moo_app_data.input =
-            _moo_app_input_new (app->priv->info->short_name,
-                                app->priv->instance_name,
-                                TRUE);
+        _moo_app_input_start (app->priv->info->short_name,
+                              app->priv->instance_name,
+                              TRUE, input_callback, app);
 }
 
 const char *
 moo_app_get_input_pipe_name (void)
 {
-    return moo_app_data.input ? _moo_app_input_get_path (moo_app_data.input) : NULL;
+    return _moo_app_input_get_path ();
 }
 
 
@@ -996,7 +1008,7 @@ moo_app_send_files (MooApp     *app,
         g_free (uri);
     }
 
-    result = moo_app_send_msg (app, pid, msg->str, msg->len + 1);
+    result = moo_app_send_msg (app, pid, msg->str, msg->len);
 
     g_string_free (msg, TRUE);
     return result;
@@ -1125,14 +1137,8 @@ moo_app_install_cleanup (void)
 static void
 moo_app_cleanup (void)
 {
-    if (moo_app_data.input)
-    {
-        _moo_app_input_free (moo_app_data.input);
-        moo_app_data.input = NULL;
-    }
-
+    _moo_app_input_shutdown ();
     xdg_mime_shutdown ();
-
     moo_cleanup ();
 }
 
@@ -1419,18 +1425,6 @@ moo_app_info_get_type (void)
                                       (GBoxedCopyFunc) moo_app_info_copy,
                                       (GBoxedFreeFunc) moo_app_info_free);
     return type;
-}
-
-
-void
-_moo_app_exec_cmd (MooApp     *app,
-                   char        cmd,
-                   const char *data,
-                   guint       len)
-{
-    g_return_if_fail (MOO_IS_APP (app));
-    g_return_if_fail (data != NULL);
-    g_signal_emit (app, signals[EXEC_CMD], 0, cmd, data, len);
 }
 
 

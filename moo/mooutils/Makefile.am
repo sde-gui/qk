@@ -22,6 +22,7 @@ thread_sources =			\
 	mooutils-thread.h
 
 mooutils_include_headers =		\
+	mdhistorymgr.h			\
 	mooaction.h			\
 	mooactionbase.h			\
 	mooactioncollection.h		\
@@ -58,6 +59,11 @@ mooutils_include_headers =		\
 
 mooutils_sources =			\
 	$(mooutils_include_headers)	\
+	mdhistorymgr.c			\
+	mooappinput.h			\
+	mooappinput.c			\
+	mooapp-ipc.h			\
+	mooapp-ipc.c			\
 	mooaccel.h			\
 	mooaccel.c			\
 	mooaccelbutton.c		\

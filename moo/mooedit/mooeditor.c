@@ -23,7 +23,9 @@
 #include "medit-ui.h"
 #include "mooutils/moomenuaction.h"
 #include "marshals.h"
+#include "mooutils/mdhistorymgr.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooaction-private.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/moofilewatch.h"
 #include "mooutils/mooutils-fs.h"
@@ -69,10 +71,8 @@ static WindowInfo   *window_list_find_file  (MooEditor      *editor,
 static void          set_single_window      (MooEditor      *editor,
                                              gboolean        single);
 
-static GtkAction    *create_recent_action   (MooEditWindow  *window);
-static void          activate_history_item  (MooEditor      *editor,
-                                             MooHistoryItem *item,
-                                             MooEditWindow  *window);
+static GtkAction    *create_open_recent_action (MooWindow   *window,
+                                             gpointer        user_data);
 
 static MooEditWindow *create_window         (MooEditor      *editor);
 static void          moo_editor_add_doc     (MooEditor      *editor,
@@ -110,7 +110,7 @@ struct _MooEditorPrivate {
     MooUIXML        *doc_ui_xml;
     MooUIXML        *ui_xml;
     MooFilterMgr    *filter_mgr;
-    MooHistoryList  *history;
+    MdHistoryMgr    *history;
     MooLangMgr      *lang_mgr;
     MooFileWatch    *file_watch;
     gboolean         open_single;
@@ -272,7 +272,7 @@ moo_editor_class_init (MooEditorClass *klass)
 
     edit_window_class = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     moo_window_class_new_action_custom (edit_window_class, RECENT_ACTION_ID, NULL,
-                                        (MooWindowActionFunc) create_recent_action,
+                                        create_open_recent_action,
                                         NULL, NULL);
     g_type_class_unref (edit_window_class);
 
@@ -298,16 +298,9 @@ moo_editor_init (MooEditor *editor)
 
     editor->priv->filter_mgr = moo_filter_mgr_new ();
 
-    editor->priv->history = moo_history_list_get ("Editor");
-    g_object_ref (editor->priv->history);
-    moo_history_list_set_display_func (editor->priv->history,
-                                       moo_history_list_display_basename,
-                                       NULL);
-    moo_history_list_set_tip_func (editor->priv->history,
-                                   moo_history_list_display_filename,
-                                   NULL);
-    g_signal_connect_swapped (editor->priv->history, "activate-item",
-                              G_CALLBACK (activate_history_item), editor);
+    editor->priv->history = g_object_new (MD_TYPE_HISTORY_MGR,
+                                          "name", "Editor",
+                                          NULL);
 
     editor->priv->windows = NULL;
     editor->priv->windowless = window_info_new (NULL);
@@ -951,48 +944,79 @@ static void
 add_recent_file (MooEditor  *editor,
                  const char *filename)
 {
-    moo_history_list_add_filename (editor->priv->history, filename);
-}
-
-
-static GtkAction*
-create_recent_action (MooEditWindow  *window)
-{
-    MooEditor *editor = moo_edit_window_get_editor (window);
-    GtkAction *action;
-    G_GNUC_UNUSED MooMenuMgr *mgr;
-
-    g_return_val_if_fail (editor != NULL, NULL);
-
-    action = moo_menu_action_new (RECENT_ACTION_ID, _("Open Recent"));
-
-    mgr = moo_history_list_get_menu_mgr (editor->priv->history);
-    moo_menu_mgr_set_show_tooltips (mgr, TRUE);
-    moo_menu_action_set_mgr (MOO_MENU_ACTION (action), mgr);
-    moo_menu_action_set_menu_data (MOO_MENU_ACTION (action), window, TRUE);
-
-    moo_bind_bool_property (action, "sensitive",
-                            editor->priv->history, "empty", TRUE);
-
-    return action;
+    char *uri = g_filename_to_uri (filename, NULL, NULL);
+    if (uri)
+        md_history_mgr_add_uri (editor->priv->history, uri);
+    g_free (uri);
 }
 
 static void
-activate_history_item (MooEditor      *editor,
-                       MooHistoryItem *item,
-                       MooEditWindow  *window)
+recent_item_activated (MdHistoryItem *item,
+                       gpointer       data)
 {
-    WindowInfo *win_info;
+    MooEditWindow *window = data;
+    MooEditor *editor = moo_editor_instance ();
+    const char *uri;
+    char *filename;
+    const char *encoding;
 
-    g_return_if_fail (MOO_IS_EDITOR (editor));
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-    g_return_if_fail (item != NULL && item->data != NULL);
+    g_return_if_fail (MOO_IS_EDITOR (editor));
 
-    win_info = window_list_find (editor, window);
-    g_return_if_fail (win_info != NULL);
+    uri = md_history_item_get_uri (item);
+    filename = g_filename_from_uri (uri, NULL, NULL);
+    g_return_if_fail (filename != NULL);
 
-    if (!moo_editor_open_file (editor, window, GTK_WIDGET (window), item->data, NULL))
-        moo_history_list_remove (editor->priv->history, item->data);
+    encoding = _moo_edit_history_item_get_encoding (item);
+    if (!moo_editor_open_uri (editor, window, GTK_WIDGET (window), uri, encoding))
+        md_history_mgr_remove_uri (editor->priv->history, uri);
+
+    g_free (filename);
+}
+
+static GtkWidget *
+create_recent_menu (GtkAction *action)
+{
+    GtkWidget *menu, *item;
+//     GtkAction *action_more;
+    MooWindow *window;
+    MooEditor *editor;
+
+    window = _moo_action_get_window (action);
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
+
+    editor = moo_editor_instance ();
+    menu = md_history_mgr_create_menu (editor->priv->history,
+                                       recent_item_activated,
+                                       window, NULL);
+    moo_bind_bool_property (action,
+                            "sensitive", editor->priv->history,
+                            "empty", TRUE);
+
+//     item = gtk_separator_menu_item_new ();
+//     gtk_widget_show (item);
+//     gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+//
+//     action_more = md_app_window_get_action (app_window, "OpenRecentDialog");
+//     item = gtk_action_create_menu_item (action_more);
+//     gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+    item = gtk_menu_item_new ();
+    gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), menu);
+
+    return item;
+}
+
+static GtkAction *
+create_open_recent_action (G_GNUC_UNUSED MooWindow *window,
+                           G_GNUC_UNUSED gpointer   user_data)
+{
+    GtkAction *action;
+
+    action = moo_menu_action_new ("OpenRecent", _("Open Recent"));
+    moo_menu_action_set_func (MOO_MENU_ACTION (action), create_recent_menu);
+
+    return action;
 }
 
 
@@ -1233,6 +1257,19 @@ moo_editor_load_file (MooEditor       *editor,
     }
     else
     {
+        MdHistoryItem *hist_item;
+        char *uri;
+
+        uri = g_filename_to_uri (filename, NULL, NULL);
+        hist_item = md_history_mgr_find_uri (editor->priv->history, uri);
+        if (hist_item)
+        {
+            int line = _moo_edit_history_item_get_line (hist_item);
+            if (line >= 0)
+                moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), line, 0, FALSE, TRUE);
+        }
+        g_free (uri);
+
         if (!window)
             window = moo_editor_get_active_window (editor);
         if (!window)
@@ -1539,12 +1576,28 @@ do_close_window (MooEditor      *editor,
 
 
 static void
-do_close_doc (MooEditor      *editor,
-              MooEdit        *doc)
+do_close_doc (MooEditor *editor,
+              MooEdit   *doc)
 {
-    WindowInfo *info = window_list_find_doc (editor, doc);
+    WindowInfo *info;
+    char *uri;
+
+    info = window_list_find_doc (editor, doc);
     g_return_if_fail (info != NULL);
+
     window_info_remove (info, doc);
+
+    if ((uri = moo_edit_get_uri (doc)))
+    {
+        MdHistoryItem *item;
+        item = md_history_item_new (uri, NULL);
+        _moo_edit_history_item_set_line (item,
+                                         moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc)));
+        _moo_edit_history_item_set_encoding (item, moo_edit_get_encoding (doc));
+        md_history_mgr_update_file (editor->priv->history, item);
+        md_history_item_free (item);
+        g_free (uri);
+    }
 
     if (info->window)
         _moo_edit_window_remove_doc (info->window, doc, TRUE);
@@ -1815,12 +1868,6 @@ load_doc_session (MooEditor     *editor,
 
     moo_editor_load_file (editor, window, GTK_WIDGET (window), info, TRUE, FALSE, &doc);
 
-    if (doc)
-    {
-        int line = moo_markup_get_int_prop (elm, "line", 0);
-        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), line, 0, FALSE, TRUE);
-    }
-
     moo_edit_file_info_free (info);
     g_free (filename);
 
@@ -1846,7 +1893,6 @@ save_doc_session (MooEdit       *doc,
         g_return_val_if_fail (utf8_filename != NULL, NULL);
 
         node = moo_markup_create_text_element (elm, "document", utf8_filename);
-        moo_markup_set_int_prop (node, "line", moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc)));
 
         if (encoding && encoding[0])
             moo_markup_set_prop (node, "encoding", encoding);

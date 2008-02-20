@@ -10,14 +10,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #ifdef __WIN32__
 #define MOO_APP_INPUT_WIN32
-#elif defined(MOO_USE_PIPE_INPUT)
-#define MOO_APP_INPUT_PIPE
 #else
 #define MOO_APP_INPUT_SOCKET
 #endif
@@ -25,9 +21,6 @@
 #if defined(MOO_APP_INPUT_WIN32)
 # include <windows.h>
 # include <io.h>
-#elif defined(MOO_APP_INPUT_PIPE)
-# include <sys/poll.h>
-# include <signal.h>
 #else
 # include <sys/socket.h>
 # include <sys/un.h>
@@ -44,16 +37,17 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include "mooapp/mooappinput.h"
-#define MOO_APP_COMPILATION
-#include "mooapp/mooapp-private.h"
-#include "mooutils/mooutils-misc.h"
-#include "mooutils/mooutils-thread.h"
-#include "mooutils/mooutils-debug.h"
+#include "mooappinput.h"
+#include "mooapp-ipc.h"
+#include "mooutils-misc.h"
+#include "mooutils-thread.h"
+#include "mooutils-debug.h"
 
 MOO_DEBUG_INIT(input, TRUE)
 
 #define MAX_BUFFER_SIZE 4096
+#define IPC_MAGIC_CHAR 'I'
+#define MOO_APP_INPUT_NAME_DEFAULT "main"
 
 #ifdef MOO_APP_INPUT_SOCKET
 #define INPUT_PREFIX "in-"
@@ -61,34 +55,58 @@ MOO_DEBUG_INIT(input, TRUE)
 #define INPUT_PREFIX "input-"
 #endif
 
+typedef struct MooAppInput MooAppInput;
 typedef struct InputChannel InputChannel;
 
-struct _MooAppInput
+struct MooAppInput
 {
     GSList *pipes;
     char *appname;
     char *main_path;
+    MooAppInputCallback callback;
+    gpointer callback_data;
 };
+
+static MooAppInput *inp_instance;
 
 static InputChannel *input_channel_new      (const char     *appname,
                                              const char     *name,
                                              gboolean        may_fail);
 static void          input_channel_free     (InputChannel   *ch);
 static char         *input_channel_get_path (InputChannel   *ch);
+static const char   *input_channel_get_name (InputChannel   *ch);
 
 
-MooAppInput *
-_moo_app_input_new (const char *appname,
-                    const char *name,
-                    gboolean    bind_default)
+static void
+exec_callback (char        cmd,
+               const char *data,
+               guint       len)
+{
+    g_return_if_fail (inp_instance && inp_instance->callback);
+    if (cmd == IPC_MAGIC_CHAR)
+        _moo_ipc_dispatch (data, len);
+    else
+        inp_instance->callback (cmd, data, len, inp_instance->callback_data);
+}
+
+
+static MooAppInput *
+moo_app_input_new (const char *appname,
+                   const char *name,
+                   gboolean    bind_default,
+                   MooAppInputCallback callback,
+                   gpointer    callback_data)
 {
     MooAppInput *ch;
     InputChannel *ich;
 
     g_return_val_if_fail (appname != NULL, NULL);
+    g_return_val_if_fail (callback != NULL, NULL);
 
     ch = moo_new0 (MooAppInput);
 
+    ch->callback = callback;
+    ch->callback_data = callback_data;
     ch->pipes = NULL;
     ch->appname = g_strdup (appname);
 
@@ -108,7 +126,19 @@ _moo_app_input_new (const char *appname,
 }
 
 void
-_moo_app_input_free (MooAppInput *ch)
+_moo_app_input_start (const char     *appname,
+                      const char     *name,
+                      gboolean        bind_default,
+                      MooAppInputCallback callback,
+                      gpointer        callback_data)
+{
+    g_return_if_fail (inp_instance == NULL);
+    inp_instance = moo_app_input_new (appname, name, bind_default,
+                                      callback, callback_data);
+}
+
+static void
+moo_app_input_free (MooAppInput *ch)
 {
     g_return_if_fail (ch != NULL);
 
@@ -120,12 +150,28 @@ _moo_app_input_free (MooAppInput *ch)
     moo_free (MooAppInput, ch);
 }
 
+void
+_moo_app_input_shutdown (void)
+{
+    if (inp_instance)
+    {
+        MooAppInput *tmp = inp_instance;
+        inp_instance = NULL;
+        moo_app_input_free (tmp);
+    }
+}
+
 
 const char *
-_moo_app_input_get_path (MooAppInput *ch)
+_moo_app_input_get_path (void)
 {
-    g_return_val_if_fail (ch != NULL, NULL);
-    return ch->main_path;
+    return inp_instance ? inp_instance->main_path : NULL;
+}
+
+gboolean
+_moo_app_input_running (void)
+{
+    return inp_instance != NULL;
 }
 
 
@@ -161,7 +207,7 @@ commit (GString **buffer)
     if (0)
         g_print ("%s: commit %c\n%s\n-----\n", G_STRLOC, ptr[0], ptr + 1);
 
-    _moo_app_exec_cmd (moo_app_get_instance (), ptr[0], ptr + 1, len - 1);
+    exec_callback (ptr[0], ptr + 1, len - 1);
 
     if (freeme)
         g_string_free (freeme, TRUE);
@@ -230,12 +276,14 @@ input_channel_start_io (int           fd,
 
 
 static gboolean do_send (const char *filename,
+                         const char *iheader,
                          const char *data,
                          gssize      data_len);
 
 static gboolean
 try_send (const char *pipe_dir_name,
           const char *name,
+          const char *iheader,
           const char *data,
           gssize      data_len)
 {
@@ -253,7 +301,7 @@ try_send (const char *pipe_dir_name,
         goto out;
     }
 
-    result = do_send (filename, data, data_len);
+    result = do_send (filename, iheader, data, data_len);
 
 out:
     g_free (filename);
@@ -281,11 +329,11 @@ _moo_app_input_send_msg (const char *appname,
 
     if (name)
     {
-        success = try_send (pipe_dir_name, name, data, len);
+        success = try_send (pipe_dir_name, name, NULL, data, len);
         goto out;
     }
 
-    success = try_send (pipe_dir_name, MOO_APP_INPUT_NAME_DEFAULT, data, len);
+    success = try_send (pipe_dir_name, MOO_APP_INPUT_NAME_DEFAULT, NULL, data, len);
     if (success)
         goto out;
 
@@ -300,7 +348,7 @@ _moo_app_input_send_msg (const char *appname,
         {
             name = entry + strlen (INPUT_PREFIX);
 
-            if (try_send (pipe_dir_name, name, data, len))
+            if (try_send (pipe_dir_name, name, NULL, data, len))
             {
                 success = TRUE;
                 goto out;
@@ -313,6 +361,53 @@ out:
         g_dir_close (pipe_dir);
     g_free (pipe_dir_name);
     return success;
+}
+
+void
+_moo_app_input_broadcast (const char *header,
+                          const char *data,
+                          gssize      len)
+{
+    const char *entry;
+    GDir *pipe_dir = NULL;
+    char *pipe_dir_name;
+
+    g_return_if_fail (data != NULL);
+
+    moo_dmsg ("_moo_app_input_broadcast");
+
+    if (!inp_instance)
+        return;
+
+    pipe_dir_name = get_pipe_dir (inp_instance->appname);
+    g_return_if_fail (pipe_dir_name != NULL);
+
+    pipe_dir = g_dir_open (pipe_dir_name, 0, NULL);
+
+    while (pipe_dir && (entry = g_dir_read_name (pipe_dir)))
+    {
+        if (!strncmp (entry, INPUT_PREFIX, strlen (INPUT_PREFIX)))
+        {
+            GSList *l;
+            gboolean my_name = FALSE;
+            const char *name = entry + strlen (INPUT_PREFIX);
+
+            for (l = inp_instance->pipes; !my_name && l != NULL; l = l->next)
+            {
+                InputChannel *ch = l->data;
+                const char *ch_name = input_channel_get_name (ch);
+                if (ch_name && strcmp (ch_name, name) == 0)
+                    my_name = TRUE;
+            }
+
+            if (!my_name)
+                try_send (pipe_dir_name, name, header, data, len);
+        }
+    }
+
+    if (pipe_dir)
+        g_dir_close (pipe_dir);
+    g_free (pipe_dir_name);
 }
 
 static gboolean
@@ -379,6 +474,13 @@ input_channel_get_path (InputChannel *ch)
 {
     g_return_val_if_fail (ch != NULL, NULL);
     return g_strdup (ch->path);
+}
+
+static const char *
+input_channel_get_name (InputChannel *ch)
+{
+    g_return_val_if_fail (ch != NULL, NULL);
+    return ch->name;
 }
 
 static void
@@ -674,6 +776,7 @@ input_channel_free (InputChannel *ch)
 
 static gboolean
 do_send (const char *filename,
+         const char *iheader,
          const char *data,
          gssize      data_len)
 {
@@ -687,294 +790,29 @@ do_send (const char *filename,
         return FALSE;
 
     if (data_len < 0)
-        data_len = strlen (data) + 1;
+        data_len = strlen (data);
 
-    if (data_len)
+    if (iheader)
+    {
+        char c = IPC_MAGIC_CHAR;
+        result = do_write (fd, &c, 1) &&
+                 do_write (fd, iheader, strlen (iheader));
+    }
+
+    if (result && data_len)
         result = do_write (fd, data, data_len);
+
+    if (result)
+    {
+        char c = 0;
+        result = do_write (fd, &c, 1);
+    }
 
     close (fd);
     return result;
 }
 
 #endif /* MOO_APP_INPUT_SOCKET */
-
-
-#ifdef MOO_APP_INPUT_PIPE
-
-struct InputChannel
-{
-    char *name;
-    char *path;
-    char *pipe_dir;
-    gboolean owns_file;
-    int fd;
-    GString *buffer;
-    GIOChannel *io;
-    guint io_watch;
-    GSList *connections;
-};
-
-static char *
-input_channel_get_path (InputChannel *ch)
-{
-    g_return_val_if_fail (ch != NULL, NULL);
-    return g_strdup (ch->path);
-}
-
-static void
-input_channel_shutdown (InputChannel *ch)
-{
-    if (ch->io_watch)
-    {
-        g_source_remove (ch->io_watch);
-        ch->io_watch = 0;
-    }
-
-    if (ch->io)
-    {
-        g_io_channel_shutdown (ch->io, FALSE, NULL);
-        g_io_channel_unref (ch->io);
-        ch->io = NULL;
-    }
-
-    if (ch->fd != -1)
-    {
-        close (ch->fd);
-        ch->fd = -1;
-    }
-
-    if (ch->path)
-    {
-        unlink (ch->path);
-        g_free (ch->path);
-        ch->path = NULL;
-    }
-
-    if (ch->buffer)
-    {
-        g_string_free (ch->buffer, TRUE);
-        ch->buffer = NULL;
-    }
-}
-
-static gboolean
-read_input (GIOChannel   *source,
-            GIOCondition  condition,
-            InputChannel *ch)
-{
-    gboolean error_occured = FALSE;
-    GError *err = NULL;
-    gboolean again = TRUE;
-    gboolean got_zero = FALSE;
-
-    g_return_val_if_fail (source == ch->io, FALSE);
-
-    /* XXX */
-    if (condition & (G_IO_ERR | G_IO_HUP))
-        error_occured = TRUE;
-
-    while (again && !error_occured && !err)
-    {
-        char c;
-        int bytes_read;
-
-        struct pollfd fd;
-
-        fd.fd = ch->fd;
-        fd.events = POLLIN | POLLPRI;
-        fd.revents = 0;
-
-        switch (poll (&fd, 1, 0))
-        {
-            case -1:
-                if (errno != EINTR && errno != EAGAIN)
-                    error_occured = TRUE;
-                perror ("poll");
-                again = FALSE;
-                break;
-
-            case 0:
-                if (0)
-                    g_print ("%s: got nothing\n", G_STRLOC);
-                again = FALSE;
-                break;
-
-            case 1:
-                if (fd.revents & (POLLERR))
-                {
-                    if (errno != EINTR && errno != EAGAIN)
-                        error_occured = TRUE;
-                    perror ("poll");
-                }
-                else
-                {
-                    bytes_read = read (ch->fd, &c, 1);
-
-                    if (bytes_read == 1)
-                    {
-                        g_string_append_c (ch->buffer, c);
-
-                        if (!c)
-                        {
-                            got_zero = TRUE;
-                            again = FALSE;
-                        }
-                    }
-                    else if (bytes_read == -1)
-                    {
-                        perror ("read");
-
-                        if (errno != EINTR && errno != EAGAIN)
-                            error_occured = TRUE;
-
-                        again = FALSE;
-                    }
-                    else
-                    {
-                        again = FALSE;
-                    }
-                }
-                break;
-
-            default:
-                g_assert_not_reached ();
-        }
-    }
-
-    if (error_occured || err)
-    {
-        g_critical ("%s: %s", G_STRLOC, err ? err->message : "error");
-
-        if (err)
-            g_error_free (err);
-
-        input_channel_shutdown (ch);
-        return FALSE;
-    }
-
-    if (got_zero)
-        commit (&ch->buffer);
-
-    return TRUE;
-}
-
-static gboolean
-input_channel_start (InputChannel *ch,
-                     G_GNUC_UNUSED gboolean may_fail)
-{
-    mkdir (ch->pipe_dir, S_IRWXU);
-    unlink (ch->path);
-
-    if (mkfifo (ch->path, S_IRUSR | S_IWUSR) != 0)
-    {
-        int err = errno;
-        g_critical ("%s: error in mkfifo()", G_STRLOC);
-        g_critical ("%s: %s", G_STRLOC, g_strerror (err));
-        return FALSE;
-    }
-
-    /* XXX O_RDWR is not good (man 3p open), but it must be opened for
-     * writing by us, otherwise we get POLLHUP when a writer dies on the other end.
-     * So, open for writing separately. */
-    ch->fd = open (ch->path, O_RDWR | O_NONBLOCK);
-    if (ch->fd == -1)
-    {
-        int err = errno;
-        g_critical ("%s: error in open()", G_STRLOC);
-        g_critical ("%s: %s", G_STRLOC, g_strerror (err));
-        return FALSE;
-    }
-
-    moo_dmsg ("%s: opened input pipe %s with fd %d",
-              G_STRLOC, ch->path, ch->fd);
-
-    if (!input_channel_start_io (ch->fd, (GIOFunc) read_input, ch,
-                                 &ch->io, &ch->io_watch))
-        return FALSE;
-
-    return TRUE;
-}
-
-static InputChannel *
-input_channel_new  (const char *appname,
-                    const char *name,
-                    gboolean    may_fail)
-{
-    InputChannel *ch;
-
-    g_return_val_if_fail (appname != NULL, NULL);
-    g_return_val_if_fail (name != NULL, NULL);
-
-    ch = moo_new0 (InputChannel);
-
-    ch->name = g_strdup (name);
-    ch->pipe_dir = get_pipe_dir (appname);
-    ch->path = get_pipe_path (ch->pipe_dir, name);
-    ch->fd = -1;
-    ch->io = NULL;
-    ch->io_watch = 0;
-    ch->buffer = g_string_new_len (NULL, MAX_BUFFER_SIZE);
-
-    if (!input_channel_start (ch, may_fail))
-    {
-        input_channel_free (ch);
-        return NULL;
-    }
-
-    return ch;
-}
-
-static void
-input_channel_free (InputChannel *ch)
-{
-    input_channel_shutdown (ch);
-
-    g_free (ch->name);
-    g_free (ch->path);
-
-    if (ch->pipe_dir)
-    {
-        remove (ch->pipe_dir);
-        g_free (ch->pipe_dir);
-    }
-
-    moo_free (InputChannel, ch);
-}
-
-static gboolean
-do_send (const char *filename,
-         const char *data,
-         gssize      data_len)
-{
-    gboolean result = FALSE;
-    int fd;
-
-    moo_dmsg ("do_send: sending data to `%s'", filename);
-
-    if (!g_file_test (filename, G_FILE_TEST_EXISTS))
-    {
-        moo_dmsg ("do_send: file `%s' doesn't exist", filename);
-        return FALSE;
-    }
-
-    fd = open (filename, O_WRONLY | O_NONBLOCK);
-
-    if (fd == -1)
-    {
-        moo_dmsg ("do_send: could not open `%s': %s", filename, g_strerror (errno));
-        return FALSE;
-    }
-
-    result = do_write (fd, data, data_len);
-    close (fd);
-
-    if (result)
-        moo_dmsg ("do_send: successfully sent stuff to `%s'", filename);
-
-    return result;
-}
-
-#endif /* MOO_APP_INPUT_PIPE */
 
 
 /****************************************************************************/
@@ -1001,6 +839,13 @@ input_channel_get_path (InputChannel *ch)
 {
     g_return_val_if_fail (ch != NULL, NULL);
     return g_strdup (ch->pipe_name);
+}
+
+static const char *
+input_channel_get_name (InputChannel *ch)
+{
+    g_return_val_if_fail (ch != NULL, NULL);
+    return ch->name;
 }
 
 static ListenerInfo *
@@ -1188,6 +1033,29 @@ input_channel_free (InputChannel *ch)
     moo_free (InputChannel, ch);
 }
 
+static gboolean
+write_data (HANDLE      file,
+            const char *data,
+            gsize       len,
+            const char *pipe_name)
+{
+    DWORD bytes_written;
+
+    if (!WriteFile (file, data, len, &bytes_written, NULL))
+    {
+        char *err_msg = g_win32_error_message (GetLastError ());
+        g_warning ("could not write data to '%s': %s", pipe_name, err_msg);
+        g_free (err_msg);
+        return FALSE;
+    }
+
+    if (bytes_written < (DWORD) len)
+    {
+        g_warning ("written less data than requested to '%s'", pipe_name);
+        return FALSE;
+    }
+}
+
 gboolean
 _moo_app_input_send_msg (const char *appname,
                          const char *name,
@@ -1198,7 +1066,6 @@ _moo_app_input_send_msg (const char *appname,
     char *pipe_name;
     HANDLE pipe_handle;
     gboolean result = FALSE;
-    DWORD bytes_written;
 
     g_return_val_if_fail (appname != NULL, FALSE);
     g_return_val_if_fail (data != NULL, FALSE);
@@ -1223,20 +1090,13 @@ _moo_app_input_send_msg (const char *appname,
         goto out;
     }
 
-    if (!WriteFile (pipe_handle, data, len, &bytes_written, NULL))
-    {
-        err_msg = g_win32_error_message (GetLastError ());
-        g_warning ("could not write data to '%s': %s", pipe_name, err_msg);
-        goto out;
-    }
+    result = write_data (pipe_handle, data, len, pipe_name);
 
-    if (bytes_written < (DWORD) len)
+    if (result)
     {
-        g_warning ("written less data than requested to '%s'", pipe_name);
-        goto out;
+        char c = 0;
+        result = write_data (pipe_handle, &c, 1, pipe_name);
     }
-
-    result = TRUE;
 
 out:
     if (pipe_handle != INVALID_HANDLE_VALUE)

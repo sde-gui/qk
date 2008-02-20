@@ -56,7 +56,7 @@
   <exe>medit/medit</exe>
   <vars>
    <var name="LANGUAGE">ru</var>
-   <var name="MOO_DEBUG">misc,input</var>
+   <var name="MOO_DEBUG">misc,input,ipc</var>
   </vars>
  </run>
 </medit-project>
