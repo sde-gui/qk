@@ -192,6 +192,7 @@ moo_ipc_unregister_client (GObject    *object,
         return;
     }
 
+    g_free (l->data);
     g_object_weak_unref (object, (GWeakNotify) client_died, ids);
     ids = g_slist_delete_link (ids, l);
     if (ids)
