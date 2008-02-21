@@ -54,9 +54,9 @@
 
 G_BEGIN_DECLS
 
-const char *moo_gettext (const char *string);
-const char *_moo_gsv_gettext (const char *string);
-char *_moo_gsv_dgettext (const char *domain, const char *string);
+const char *moo_gettext (const char *string) G_GNUC_FORMAT (1);
+const char *_moo_gsv_gettext (const char *string) G_GNUC_FORMAT (1);
+char *_moo_gsv_dgettext (const char *domain, const char *string) G_GNUC_FORMAT (2);
 
 G_END_DECLS
 
