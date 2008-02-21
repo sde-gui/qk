@@ -1054,6 +1054,8 @@ write_data (HANDLE      file,
         g_warning ("written less data than requested to '%s'", pipe_name);
         return FALSE;
     }
+
+    return TRUE;
 }
 
 gboolean
@@ -1105,6 +1107,22 @@ out:
     g_free (pipe_name);
     g_free (err_msg);
     return result;
+}
+
+void
+_moo_app_input_broadcast (const char *header,
+                          const char *data,
+                          gssize      len)
+{
+#warning "Implement me"
+
+    g_return_if_fail (header != NULL);
+    g_return_if_fail (data != NULL);
+
+    if (len < 0)
+        len = strlen (data);
+
+    g_return_if_fail (len != 0);
 }
 
 #endif /* MOO_APP_INPUT_WIN32 */
