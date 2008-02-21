@@ -16,12 +16,14 @@
 
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/mooutils-file.h"
 #include "mooutils/mooutils-debug.h"
 #include "moologwindow-glade.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
 #include <glib/gmappedfile.h>
+#include <glib/gstdio.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -31,6 +33,7 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stdarg.h>
 
 #ifdef GDK_WINDOWING_X11
 #include <gdk/gdkx.h>
@@ -1619,104 +1622,26 @@ moo_get_user_cache_file (const char *basename)
 
 
 static gboolean
-save_with_backup (const char *filename,
-                  const char *data,
-                  gssize      len,
-                  GError    **error)
-{
-    char *tmp_file, *bak_file;
-    gboolean result = FALSE;
-    GError *error_move = NULL;
-
-    tmp_file = g_strdup_printf ("%s.tmp", filename);
-    bak_file = g_strdup_printf ("%s.bak", filename);
-
-    if (!_moo_save_file_utf8 (tmp_file, data, len, error))
-        goto out;
-
-    if (g_file_test (filename, G_FILE_TEST_EXISTS))
-    {
-        _moo_unlink (bak_file);
-        _moo_rename_file (filename, bak_file, &error_move);
-    }
-
-    if (!_moo_rename_file (tmp_file, filename, error))
-    {
-        if (error_move)
-        {
-            g_critical ("%s: %s", G_STRLOC, error_move->message);
-            g_error_free (error_move);
-        }
-    }
-    else
-    {
-        if (error_move)
-            g_propagate_error (error, error_move);
-        else
-            result = TRUE;
-    }
-
-out:
-    g_free (tmp_file);
-    g_free (bak_file);
-    return result;
-}
-
-static gboolean
-same_content (const char *filename,
-              const char *data,
-              gsize       len)
-{
-    GMappedFile *file;
-    char *content;
-    gsize i;
-    gboolean equal = FALSE;
-
-    file = g_mapped_file_new (filename, FALSE, NULL);
-
-    if (!file || g_mapped_file_get_length (file) != len)
-        goto out;
-
-    content = g_mapped_file_get_contents (file);
-
-    for (i = 0; i < len; ++i)
-        if (data[i] != content[i])
-            goto out;
-
-    equal = TRUE;
-
-out:
-    if (file)
-        g_mapped_file_free (file);
-
-    return equal;
-}
-
-
-static gboolean
 save_config_file (const char     *dir,
                   const char     *filename,
                   const char     *content,
                   gssize          len,
                   GError        **error)
 {
+    MooFileWriter *writer;
+    gboolean retval;
+
     g_return_val_if_fail (dir != NULL, FALSE);
     g_return_val_if_fail (filename != NULL, FALSE);
     g_return_val_if_fail (content != NULL, FALSE);
 
-    if (len < 0)
-        len = strlen (content);
-
-    if (!_moo_create_dir (dir, error))
+    if (!(writer = moo_text_writer_new (filename, TRUE, error)))
         return FALSE;
 
-    if (same_content (filename, content, len))
-        return TRUE;
+    moo_file_writer_write (writer, content, len);
+    retval = moo_file_writer_close (writer, error);
 
-    if (!save_with_backup (filename, content, len, error))
-        return FALSE;
-
-    return TRUE;
+    return retval;
 }
 
 static gboolean
@@ -2326,6 +2251,8 @@ test_strv_one (const char *string,
 
     if (len < 0)
         s = string;
+    else if (len == 0)
+        s = "";
     else
         s = freeme = g_strndup (string, len);
 

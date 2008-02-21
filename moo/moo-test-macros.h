@@ -141,7 +141,9 @@ TEST_FMT_STR (const char *s)
 
     while (*s)
     {
-        switch (*s)
+        char c = *s++;
+
+        switch (c)
         {
             case '\r':
                 g_string_append (buf, "\\r");
@@ -159,14 +161,12 @@ TEST_FMT_STR (const char *s)
                 g_string_append (buf, "\\\"");
                 break;
             default:
-                if (g_ascii_isprint (*s))
-                    g_string_append_c (buf, *s);
+                if (g_ascii_isprint (c))
+                    g_string_append_c (buf, c);
                 else
-                    g_string_append_printf (buf, "\\x%02x", (guchar)*s);
+                    g_string_append_printf (buf, "\\x%02x", (guchar)c);
                 break;
         }
-
-        s++;
     }
 
     g_string_append (buf, "\"");

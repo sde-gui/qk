@@ -9,6 +9,7 @@ G_BEGIN_DECLS
 void    moo_test_gobject            (void);
 void    moo_test_mooaccel           (void);
 void    moo_test_mooutils_fs        (void);
+void    moo_test_moo_file_writer    (void);
 void    moo_test_mooutils_misc      (void);
 void    moo_test_lua                (void);
 

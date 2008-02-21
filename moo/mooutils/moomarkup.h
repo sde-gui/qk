@@ -13,8 +13,7 @@
 #ifndef MOO_MARKUP_H
 #define MOO_MARKUP_H
 
-#include <glib/gerror.h>
-#include <glib-object.h>
+#include <mooutils/mooutils-file.h>
 
 G_BEGIN_DECLS
 
@@ -130,11 +129,8 @@ MooMarkupDoc       *moo_markup_parse_file           (const char         *filenam
 MooMarkupDoc       *moo_markup_parse_memory         (const char         *buffer,
                                                      int                 size,
                                                      GError            **error);
-gboolean            moo_markup_save_pretty          (MooMarkupDoc       *doc,
-                                                     const char         *filename,
-                                                     guint               indent,
-                                                     GError            **error);
-char               *moo_markup_format_pretty        (MooMarkupDoc       *doc,
+gboolean            moo_markup_write_pretty         (MooMarkupDoc       *doc,
+                                                     MooFileWriter      *writer,
                                                      guint               indent);
 char               *moo_markup_node_get_string      (MooMarkupNode      *node);
 

@@ -12,6 +12,7 @@ main (int argc, char *argv[])
     moo_test_gobject ();
     moo_test_mooaccel ();
     moo_test_mooutils_fs ();
+    moo_test_moo_file_writer ();
     moo_test_mooutils_misc ();
 
 #ifdef __WIN32__
@@ -35,7 +36,8 @@ main (int argc, char *argv[])
     moo_test_cleanup ();
 
 #ifdef __WIN32__
-    getchar ();
+    if (!g_getenv ("WINESERVER"))
+        getchar ();
 #endif
 
     return moo_test_get_result () ? 0 : 1;

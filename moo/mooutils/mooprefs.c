@@ -1258,6 +1258,7 @@ save_file (const char    *file,
     MooMarkupNode *node;
     gboolean empty;
     MooPrefs *prefs = instance ();
+    MooFileWriter *writer;
 
     if (!check_modified (prefs_type))
         return TRUE;
@@ -1290,7 +1291,13 @@ save_file (const char    *file,
         return TRUE;
     }
 
-    return moo_markup_save_pretty (xml, file, 2, error);
+    if ((writer = moo_text_writer_new (file, FALSE, error)))
+    {
+        moo_markup_write_pretty (xml, writer, 2);
+        return moo_file_writer_close (writer, error);
+    }
+
+    return FALSE;
 }
 
 

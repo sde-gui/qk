@@ -1154,28 +1154,22 @@ moo_markup_save (MooMarkupDoc       *doc,
 
 
 #define INDENT_CHAR ' '
-#ifdef __WIN32__
-#define LINE_SEPARATOR "\r\n"
-#elif defined(MOO_OS_DARWIN)
-#define LINE_SEPARATOR "\r"
-#else
-#define LINE_SEPARATOR "\n"
-#endif
 
-static void
-format_pretty_element (MooMarkupElement *elm,
-                       GString          *str,
-                       guint             indent,
-                       guint             indent_size)
+static gboolean
+write_pretty_element (MooMarkupElement *elm,
+                      MooFileWriter    *writer,
+                      guint             indent,
+                      guint             indent_size)
 {
     gboolean isdir = FALSE;
     gboolean empty = TRUE;
     MooMarkupNode *child;
+    gboolean result = TRUE;
     char *fill;
     guint i;
 
-    g_return_if_fail (MOO_MARKUP_IS_ELEMENT (elm));
-    g_return_if_fail (str != NULL);
+    g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (elm), FALSE);
+    g_return_val_if_fail (writer != NULL, FALSE);
 
     for (child = elm->children; child != NULL; child = child->next)
     {
@@ -1192,87 +1186,66 @@ format_pretty_element (MooMarkupElement *elm,
 
     fill = g_strnfill (indent, INDENT_CHAR);
 
-    g_string_append_len (str, fill, indent);
-    g_string_append_printf (str, "<%s", elm->name);
-    for (i = 0; i < elm->n_attrs; ++i)
+    moo_file_writer_write (writer, fill, indent);
+    moo_file_writer_printf (writer, "<%s", elm->name);
+
+    for (i = 0; result && i < elm->n_attrs; ++i)
     {
         char *attr = g_markup_escape_text (elm->attr_vals[i], -1);
-        g_string_append_printf (str, " %s=\"%s\"",
-                                elm->attr_names[i],
-                                attr);
+        result = moo_file_writer_printf (writer, " %s=\"%s\"",
+                                         elm->attr_names[i],
+                                         attr);
         g_free (attr);
     }
 
     if (empty)
     {
-        g_string_append (str, "/>" LINE_SEPARATOR);
+        moo_file_writer_write (writer, "/>\n", -1);
     }
     else if (isdir)
     {
-        g_string_append (str, ">" LINE_SEPARATOR);
+        moo_file_writer_write (writer, ">\n", -1);
 
-        for (child = elm->children; child != NULL; child = child->next)
+        for (child = elm->children; result && child != NULL; child = child->next)
             if (MOO_MARKUP_IS_ELEMENT (child))
-                format_pretty_element (MOO_MARKUP_ELEMENT (child), str,
-                                       indent + indent_size, indent_size);
+                result = write_pretty_element (MOO_MARKUP_ELEMENT (child), writer,
+                                               indent + indent_size, indent_size);
 
-        g_string_append_printf (str, "%s</%s>" LINE_SEPARATOR,
+        moo_file_writer_printf (writer, "%s</%s>\n",
                                 fill, elm->name);
     }
     else
     {
         char *escaped = g_markup_escape_text (elm->content, -1);
-        g_string_append_printf (str, ">%s</%s>" LINE_SEPARATOR,
+        moo_file_writer_printf (writer, ">%s</%s>\n",
                                 escaped, elm->name);
         g_free (escaped);
     }
 
     g_free (fill);
+    return result;
 }
 #undef INDENT_CHAR
-#undef LINE_SEPARATOR
 
 
 gboolean
-moo_markup_save_pretty (MooMarkupDoc       *doc,
-                        const char         *filename,
-                        guint               indent,
-                        GError            **error)
+moo_markup_write_pretty (MooMarkupDoc  *doc,
+                         MooFileWriter *writer,
+                         guint          indent)
 {
-    GString *str;
     MooMarkupNode *child;
-    gboolean result;
+    gboolean result = TRUE;
 
     g_return_val_if_fail (MOO_MARKUP_IS_DOC (doc), FALSE);
-    g_return_val_if_fail (filename != NULL, FALSE);
+    g_return_val_if_fail (writer != NULL, FALSE);
 
-    str = g_string_new ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+    result = moo_file_writer_write (writer, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n", -1);
 
-    for (child = doc->children; child != NULL; child = child->next)
+    for (child = doc->children; result && child != NULL; child = child->next)
         if (MOO_MARKUP_IS_ELEMENT (child))
-            format_pretty_element (MOO_MARKUP_ELEMENT (child), str, 0, indent);
+            result = write_pretty_element (MOO_MARKUP_ELEMENT (child), writer, 0, indent);
 
-    result = _moo_save_file_utf8 (filename, str->str, -1, error);
-    g_string_free (str, TRUE);
     return result;
-}
-
-char *
-moo_markup_format_pretty (MooMarkupDoc *doc,
-                          guint         indent)
-{
-    GString *str;
-    MooMarkupNode *child;
-
-    g_return_val_if_fail (MOO_MARKUP_IS_DOC (doc), FALSE);
-
-    str = g_string_new ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-
-    for (child = doc->children; child != NULL; child = child->next)
-        if (MOO_MARKUP_IS_ELEMENT (child))
-            format_pretty_element (MOO_MARKUP_ELEMENT (child), str, 0, indent);
-
-    return g_string_free (str, FALSE);
 }
 
 

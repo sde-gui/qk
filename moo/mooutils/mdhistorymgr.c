@@ -586,9 +586,8 @@ static void
 md_history_mgr_save (MdHistoryMgr *mgr)
 {
     const char *filename;
-    GString *buffer;
     GError *error = NULL;
-    GList *l;
+    MooFileWriter *writer;
 
     g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
 
@@ -603,26 +602,38 @@ md_history_mgr_save (MdHistoryMgr *mgr)
         return;
     }
 
-    buffer = g_string_new ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-    g_string_append (buffer, "<" ELM_ROOT " " PROP_VERSION "=\"" PROP_VERSION_VALUE "\">\n");
-
-    for (l = mgr->priv->files->head; l != NULL; l = l->next)
+    if ((writer = moo_text_writer_new (filename, FALSE, &error)))
     {
-        MdHistoryItem *item = l->data;
-        md_history_item_format (item, buffer);
+        GString *string;
+        GList *l;
+
+        moo_file_writer_write (writer, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n", -1);
+        moo_file_writer_write (writer, "<" ELM_ROOT " " PROP_VERSION "=\"" PROP_VERSION_VALUE "\">\n", -1);
+
+        string = g_string_new (NULL);
+
+        for (l = mgr->priv->files->head; l != NULL; l = l->next)
+        {
+            MdHistoryItem *item = l->data;
+            g_string_truncate (string, 0);
+            md_history_item_format (item, string);
+            if (!moo_file_writer_write (writer, string->str, -1))
+                break;
+        }
+
+        g_string_free (string, TRUE);
+
+        moo_file_writer_write (writer, "</" ELM_ROOT ">\n", -1);
+        moo_file_writer_close (writer, &error);
     }
 
-    g_string_append (buffer, "</" ELM_ROOT ">\n");
-
-    if (!g_file_set_contents (filename, buffer->str, buffer->len, &error))
+    if (error)
     {
         g_critical ("%s: could not save file '%s': %s",
                     G_STRLOC, filename,
                     error ? error->message : "");
         g_error_free (error);
     }
-
-    g_string_free (buffer, TRUE);
 }
 
 static char *

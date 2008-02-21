@@ -1533,32 +1533,35 @@ moo_app_save_session (MooApp *app)
 static void
 moo_app_write_session (MooApp *app)
 {
-    char *string;
+    char *filename;
     GError *error = NULL;
+    MooFileWriter *writer;
 
     if (!app->priv->session_file)
         return;
 
+    filename = moo_get_user_cache_file (app->priv->session_file);
+
     if (!app->priv->session)
     {
-        char *file = moo_get_user_cache_file (app->priv->session_file);
-        _moo_unlink (file);
-        g_free (file);
+        _moo_unlink (filename);
+        g_free (filename);
         return;
     }
 
-    string = moo_markup_format_pretty (app->priv->session, 1);
-    moo_save_user_cache_file (app->priv->session_file, string, -1, &error);
+    if ((writer = moo_text_writer_new (filename, FALSE, &error)))
+    {
+        moo_markup_write_pretty (app->priv->session, writer, 1);
+        moo_file_writer_close (writer, &error);
+    }
 
     if (error)
     {
-        char *file = moo_get_user_cache_file (app->priv->session_file);
-        g_critical ("could not save session file %s: %s", file, error->message);
-        g_free (file);
+        g_critical ("could not save session file %s: %s", filename, error->message);
         g_error_free (error);
     }
 
-    g_free (string);
+    g_free (filename);
 }
 
 void
