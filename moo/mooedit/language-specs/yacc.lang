@@ -48,17 +48,27 @@
 
     <context id="options" style-ref="keyword">
       <prefix>^%</prefix>
+      <keyword>debug</keyword>
+      <keyword>defines</keyword>
+      <keyword>destructor</keyword>
+      <keyword>dprec</keyword>
       <keyword>error-verbose</keyword>
       <keyword>expect</keyword>
+      <keyword>glr-parser</keyword>
+      <keyword>initial-action</keyword>
       <keyword>left</keyword>
       <keyword>lex-param</keyword>
       <keyword>locations</keyword>
+      <keyword>merge</keyword>
       <keyword>name-prefix</keyword>
       <keyword>no[_-]lines</keyword>
       <keyword>nonassoc</keyword>
+      <keyword>output</keyword>
       <keyword>parse-param</keyword>
+      <keyword>prec</keyword>
       <keyword>pure[_-]parser</keyword>
       <keyword>raw</keyword>
+      <keyword>require</keyword>
       <keyword>right</keyword>
       <keyword>start</keyword>
       <keyword>token[_-]table</keyword>
