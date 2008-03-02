@@ -55,6 +55,3 @@ dist-hook:
 	else \
 	  cp -pR $(srcdir)/help/ $(distdir)/ ; \
 	fi
-
-distclean-hook:
-	rm -fr help stamp-help
