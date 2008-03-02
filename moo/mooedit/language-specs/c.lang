@@ -144,7 +144,7 @@
                 </context>
 
                 <context id="string" style-ref="string" end-at-line-end="true">
-                    <start>"</start>
+                    <start>L?"</start>
                     <end>"</end>
                     <include>
                         <context ref="printf"/>
@@ -156,7 +156,7 @@
                 </context>
 
                 <context id="char" style-ref="char">
-                    <match>'(\%{escaped-character}|.)'</match>
+                    <match>L?'(\%{escaped-character}|.)'</match>
                 </context>
 
                 <!-- http://www.lysator.liu.se/c/ANSI-C-grammar-l.html -->
