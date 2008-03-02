@@ -30,9 +30,10 @@
   </metadata>
 
   <styles>
-    <style id="keyword" _name="keyword" map-to="def:keyword"/>
-    <style id="token-type" _name="token-type" map-to="def:type"/>
-    <style id="rule" _name="rule" map-to="def:identifier"/>
+    <!--FIXME make it better names, and make them translatable -->
+    <style id="keyword" name="keyword" map-to="def:keyword"/>
+    <style id="token-type" name="token-type" map-to="def:type"/>
+    <style id="rule" name="rule" map-to="def:identifier"/>
   </styles>
 
   <definitions>
