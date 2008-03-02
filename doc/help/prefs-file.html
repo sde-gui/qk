@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+<title>Preferences files</title>
+</HEAD>
+<BODY>
+
+<DIV CLASS="header" ID="header">
+
+
+<table width="100%"><tr valign="top">
+	<td width="33%" align="left">Previous: <a href="user-tools-shell.html">Shell scripts</a></td>
+	<td width="33%" align="center">Up: <a href="index.html">medit 0.9.3 Manual</a></td>
+	<td width="33%" align="right">Next: <a href="app-license.html">License</a></td>
+</tr></table>
+<hr>
+
+<H2>Preferences files</H2>
+
+<!-- @@prefs-file@@ -->
+<P>
+medit preferences are stored in <CODE>$HOME/.config/meditrc</CODE> file.
+It is an XML file which may be edited to set preferences which have not found
+their place in the &lt;interface&gt;Preferences&lt;/interface&gt; dialog.
+</P>
+<P>
+NOTE: medit reads the preferences file on startup and writes it whenever <I>OK</I>
+or <I>Apply</I> button is clicked in the <I>Preferences</I> dialog. Therefore, if you
+modify the preferences file, your changes may be overwritten, and they not take
+the effect until you restart medit.
+</P>
+<P>
+The following "hidden" settings are available.
+</P>
+<UL>
+<LI><CODE>Editor/window_title</CODE>: Format of the window title. It is a string which may
+contain format sequences: percent sign followed by a character:
+ <UL>
+ <LI><CODE>%a</CODE>: application name;
+ <LI><CODE>%b</CODE>: current document basename;
+ <LI><CODE>%f</CODE>: full path of the current document;
+ <LI><CODE>%u</CODE>: URI of the current document;
+ <LI><CODE>%s</CODE>: the status of the current document, e.g. "`` [modified]``". It is prefixed
+ with space, so that "<CODE>%b%s</CODE>" will produce a nice string;
+ <LI><CODE>%%</CODE>: the percent character.
+ <P></P>
+Default value is "<CODE>%a - %f%s</CODE>" which produces something like "<CODE>medit - /home/user/file [modified]</CODE>".
+ <P></P>
+ </UL>
+<LI><CODE>Editor/window_title_no_doc</CODE>: Same as <CODE>Editor/window_title</CODE>, used when no document is open. Default value is "<CODE>%a</CODE>".
+<LI><CODE>Editor/tab_width</CODE>: Visual width of the Tab character, 8 by default.
+</UL>
+
+
+
+
+<ul>
+
+</ul>
+
+<hr>
+<table width="100%"><tr valign="top">
+	<td width="33%" align="left">Previous: <a href="user-tools-shell.html">Shell scripts</a></td>
+	<td width="33%" align="center">Up: <a href="index.html">medit 0.9.3 Manual</a></td>
+	<td width="33%" align="right">Next: <a href="app-license.html">License</a></td>
+</tr></table>
+
+</BODY></HTML>
+

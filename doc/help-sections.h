@@ -1,0 +1,30 @@
+#ifndef HELP_SECTIONS_H
+#define HELP_SECTIONS_H
+
+#define HELP_SECTION_PREFS_LANGS_AND_FILTERS "prefs-langs-and-filters"
+#define HELP_SECTION_PREFS_LANG_OPTIONS "prefs-lang-options"
+#define HELP_SECTION_PREFS_FILE_FILTERS "prefs-file-filters"
+#define HELP_SECTION_EDITING_OPTIONS "editing-options"
+#define HELP_SECTION_SECT_USER_TOOLS "sect-user-tools"
+#define HELP_SECTION_PREFS_USER_TOOLS "prefs-user-tools"
+#define HELP_SECTION_USER_TOOLS_FILES "user-tools-files"
+#define HELP_SECTION_USER_TOOLS_PYTHON "user-tools-python"
+#define HELP_SECTION_USER_TOOLS_LUA "user-tools-lua"
+#define HELP_SECTION_USER_TOOLS_SHELL "user-tools-shell"
+#define HELP_SECTION_PREFS_FILE "prefs-file"
+#define HELP_SECTION_APP_LICENSE "app-license"
+#define HELP_SECTION_GPL "gpl"
+#define HELP_SECTION_LGPL "lgpl"
+#define HELP_SECTION_LICENSE_LUA "license-lua"
+#define HELP_SECTION_LICENSE_LUA_LFS "license-lua-lfs"
+#define HELP_SECTION_LICENSE_XDG_UTILS "license-xdg-utils"
+#define HELP_SECTION_DIALOG_REPLACE "dialog-replace"
+#define HELP_SECTION_DIALOG_FIND "dialog-find"
+#define HELP_SECTION_PREFS_DIALOG "prefs-dialog"
+#define HELP_SECTION_PREFS_PLUGINS "prefs-plugins"
+#define HELP_SECTION_PREFS_FILE_SELECTOR "prefs-file-selector"
+#define HELP_SECTION_DIALOG_FIND_IN_FILES "dialog-find-in-files"
+#define HELP_SECTION_DIALOG_FIND_FILE "dialog-find-file"
+#define HELP_SECTION_FILE_SELECTOR "file-selector"
+
+#endif /* HELP_SECTIONS_H */

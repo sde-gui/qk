@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+<title>Managing tools</title>
+</HEAD>
+<BODY>
+
+<DIV CLASS="header" ID="header">
+
+
+<table width="100%"><tr valign="top">
+	<td width="33%" align="left">Previous: <a href="sect-user-tools.html">User-defined Tools</a></td>
+	<td width="33%" align="center">Up: <a href="sect-user-tools.html">User-defined Tools</a></td>
+	<td width="33%" align="right">Next: <a href="user-tools-files.html">Storing tools in files</a></td>
+</tr></table>
+<hr>
+
+<H3>Managing tools</H3>
+
+<!-- @@prefs-user-tools@@ -->
+<P>
+To create a new tool or to modify existing ones, open
+<I>Preferences</I> dialog and select <I>Tools</I> in the list on the left.
+</P>
+<P>
+Select the tool in the list or click the <I>New</I>
+button to create a new one. To modify the order in which the tools
+appear in the <I>Tools</I> menu (or in the document
+context menu), use <I>Up</I> and <I>Down</I> buttons. To rename a tool,
+click its name in the list to select it and then click again to
+edit the name. Use the <I>Delete</I> button to delete a tool.
+</P>
+<P>
+The following controls are available to modify the tools behavior:
+</P>
+<TABLE BORDER="1">
+<TR>
+<TD><I>Files</I></TD>
+<TD>Specifies for which files the tool is going to be available.</TD>
+</TR>
+<TR>
+<TD><I>Options</I></TD>
+<TD>Specifies under which conditions the tool should be enabled.</TD>
+</TR>
+<TR>
+<TD><I>Command type</I></TD>
+<TD>The type of the tool: a Python script, a Lua script, or a shell script.</TD>
+</TR>
+<TR>
+<TD><I>Code text field</I></TD>
+<TD>Here you enter the actual script text.</TD>
+</TR>
+</TABLE>
+
+<P></P>
+<P>
+<I>Options</I> entry content is a comma-separated list of the following:
+</P>
+<TABLE BORDER="1">
+<TR>
+<TD><CODE>need-doc</CODE></TD>
+<TD>the tool needs an open document</TD>
+</TR>
+<TR>
+<TD><CODE>need-file</CODE></TD>
+<TD>the tool will not work in new unsaved documents.</TD>
+</TR>
+<TR>
+<TD><CODE>need-save</CODE></TD>
+<TD>the document will be saved before the command is executed.</TD>
+</TR>
+<TR>
+<TD><CODE>need-save-all</CODE></TD>
+<TD>all open documents will be saved before the command is executed.</TD>
+</TR>
+</TABLE>
+
+<P></P>
+<P>
+<I>Files</I> entry content can be the following:
+</P>
+<UL>
+<LI>a comma-separated list of file patterns, e.g. "<CODE>*.c,*.h</CODE>";
+<LI>a comma-separated list of languages prefixed with "<CODE>langs:</CODE>", e.g. "<CODE>langs: c, c++, objc</CODE>";
+<LI>a regular expression matching document filename prefixed with "<CODE>regex:</CODE>", e.g. the above
+pattern list may be written as "<CODE>regex:\.[ch]$</CODE>".
+</UL>
+
+<P>
+Empty entry means that the tool will be available for all documents.
+</P>
+<P>
+Shell script tools also have the following controls available:
+</P>
+<P>
+<I>Input</I> entry specifies what text from the document should be passed to the command via its standard input:
+</P>
+<TABLE BORDER="1">
+<TR>
+<TD><CODE>None</CODE></TD>
+<TD>no input text.</TD>
+</TR>
+<TR>
+<TD><CODE>Selected lines</CODE></TD>
+<TD>the lines containing selection or the line containing the cursor in case when no text is selected.</TD>
+</TR>
+<TR>
+<TD><CODE>Selection</CODE></TD>
+<TD>exact selected text. This will be different from "Selected lines" if selection does not span whole lines of the document, for instance if it is a single word.</TD>
+</TR>
+<TR>
+<TD><CODE>Whole document</CODE></TD>
+<TD>whole document contents.</TD>
+</TR>
+</TABLE>
+
+<P></P>
+<P>
+<I>Output</I> entry specifies how the standard output of the command should be redirected.
+</P>
+<TABLE BORDER="1">
+<TR>
+<TD><CODE>None</CODE></TD>
+<TD>the command output will be suppressed.</TD>
+</TR>
+<TR>
+<TD><CODE>None, asynchronous</CODE></TD>
+<TD>the command output will be suppressed, and the command will be executed in background. For instance, you should use this if you need to launch some external program like a web browser.</TD>
+</TR>
+<TR>
+<TD><CODE>Output pane</CODE></TD>
+<TD>the command output will be displayed in an output pane. This is useful for running programs like compilers, where you want to see the output.</TD>
+</TR>
+<TR>
+<TD><CODE>Insert into the document</CODE></TD>
+<TD>output will be inserted into the current document at the cursor position. It will replace the text used as an input, if any.</TD>
+</TR>
+<TR>
+<TD><CODE>New document</CODE></TD>
+<TD>new document will be created and the command output will be inserted into it.</TD>
+</TR>
+</TABLE>
+
+<P></P>
+<P>
+<I>Filter</I> combo. If the output pane is used, then it can be passed through a <I>filter</I>:
+the filter can match filenames and line numbers, so when you click the text in the
+output pane it will open the corresponding file. This is used for compilers and similar
+commands, which output locations of errors in processed files.
+</P>
+
+
+
+<ul>
+
+</ul>
+
+<hr>
+<table width="100%"><tr valign="top">
+	<td width="33%" align="left">Previous: <a href="sect-user-tools.html">User-defined Tools</a></td>
+	<td width="33%" align="center">Up: <a href="sect-user-tools.html">User-defined Tools</a></td>
+	<td width="33%" align="right">Next: <a href="user-tools-files.html">Storing tools in files</a></td>
+</tr></table>
+
+</BODY></HTML>
+
