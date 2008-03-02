@@ -52,9 +52,6 @@ G_END_DECLS
 G_BEGIN_DECLS
 
 #define g_intern_string _moo_intern_string
-#define gdk_atom_intern_static_string _moo_gdk_atom_intern_static_string
-
-GdkAtom     gdk_atom_intern_static_string   (const char *atom_name);
 
 #endif /* !GLIB_CHECK_VERSION(2,10,0) */
 
@@ -74,6 +71,9 @@ typedef enum {
 
 #define GTK_TYPE_UNIT (gtk_unit_get_type ())
 GType gtk_unit_get_type (void) G_GNUC_CONST;
+
+#define gdk_atom_intern_static_string _moo_gdk_atom_intern_static_string
+GdkAtom gdk_atom_intern_static_string (const char *atom_name);
 
 #endif /* !GTK_CHECK_VERSION(2,10,0) */
 
