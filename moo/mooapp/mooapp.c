@@ -1069,7 +1069,7 @@ sm_quit_requested (MooApp *app)
     g_return_if_fail (sm_client != NULL);
 
     g_object_ref (sm_client);
-    egg_sm_client_will_quit (sm_client, moo_app_try_quit (app));
+    egg_sm_client_will_quit (sm_client, moo_app_quit (app));
     g_object_unref (sm_client);
 }
 
