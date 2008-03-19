@@ -1522,6 +1522,24 @@ uri_get_basename (const char *uri)
 
     g_return_val_if_fail (uri != NULL, NULL);
 
+    if (g_str_has_prefix (uri, "file://"))
+    {
+        char *filename = g_filename_from_uri (uri, NULL, NULL);
+
+        if (filename)
+        {
+            char *display_name = g_filename_display_basename (filename);
+
+            if (display_name)
+            {
+                g_free (filename);
+                return display_name;
+            }
+
+            g_free (filename);
+        }
+    }
+
     /* XXX percent encoding */
     last_slash = strrchr (uri, '/');
     if (last_slash)
@@ -1535,7 +1553,7 @@ uri_get_display_name (const char *uri)
 {
     g_return_val_if_fail (uri != NULL, NULL);
 
-    if (strncmp (uri, "file://", 7) == 0)
+    if (g_str_has_prefix (uri, "file://"))
     {
         char *filename = g_filename_from_uri (uri, NULL, NULL);
 
