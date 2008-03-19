@@ -6,7 +6,7 @@ several lang files (see the list below) is under LGPL version
 Portions of code are written not by me, those are clearly
 marked as such (copyright headers in files copied from other
 projects, or comments in source). Below is the list of
-thrid-party files/code with their copyrights and licenses.
+third-party files/code with their copyrights and licenses.
 
 If you want to use my code and LGPL doesn't work for you
 because you have special clause in your license which is not
@@ -74,10 +74,6 @@ moo/mooedit/language-specs/*:
         moo/mooedit/language-specs/php.lang
         moo/mooedit/language-specs/R.lang
         moo/mooedit/language-specs/ruby.lang
-
-moo/mooedit/plugins/ctags/readtags.[ch]:
-    Public domain
-    Copyright (c) 1996-2003, Darren Hiebert
 
 moo/moopython/codegen/*: pygtk codegen
     (C) 2004 Gustavo Carneiro <gjc@gnome.org>
