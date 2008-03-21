@@ -14,7 +14,7 @@
 #define CLIENT_ID_LEN 4
 #define MAX_ID_LEN 9999
 
-MOO_DEBUG_INIT (ipc, TRUE)
+MOO_DEBUG_INIT (ipc, FALSE)
 
 static struct {
     GHashTable *clients; /* id -> GSList* of ClientInfo */

@@ -18,7 +18,6 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   MOO_AC_FUNCS
   MOO_PKG_CHECK_GTK_VERSIONS
   MOO_AC_DEBUG
-  MOO_AC_FAM
   MOO_AC_XML
   MOO_AC_PCRE
   MOO_AC_PYTHON
@@ -54,11 +53,6 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   fi
   if test "x$GLIB_2_8" != xyes; then
     MOO_CFLAGS="-I$moo_top_src_dir/$1/mooutils/newgtk/glib-2.8 $MOO_CFLAGS"
-  fi
-
-  if test x$MOO_USE_FAM = xyes; then
-    MOO_CFLAGS="$MOO_CFLAGS $MOO_FAM_CFLAGS"
-    MOO_LIBS="$MOO_LIBS $MOO_FAM_LIBS"
   fi
 
   MOO_CFLAGS="$MOO_CFLAGS -DMOO_DATA_DIR=\\\"${MOO_DATA_DIR}\\\" -DMOO_LIB_DIR=\\\"${MOO_LIB_DIR}\\\""

@@ -20,9 +20,6 @@ AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 
-AC_PROG_OBJC
-MOO_AC_OBJC
-
 MOO_AC_PROGS
 
 ACLOCAL="$ACLOCAL $ACLOCAL_FLAGS"
@@ -92,7 +89,6 @@ if test x$MOO_OS_CYGWIN != "xyes"; then
   echo "    use python .............................. $use_python"
   echo "    use xml ................................. $MOO_USE_XML"
   echo "    build pcre library ...................... $MOO_BUILD_PCRE"
-  echo "    use FAM ................................. $MOO_USE_FAM"
   echo
   echo "    prefix .................................. $prefix"
   echo "    editor lang files go to ................. $MOO_TEXT_LANG_FILES_DIR"

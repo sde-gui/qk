@@ -11,7 +11,6 @@
  */
 
 #include "mooutils/moopython.h"
-#include "mooutils/mooobjc.h"
 
 
 /**
@@ -101,21 +100,4 @@ moo_Py_DECREF (MooPyObject *obj)
 
     if (obj)
         moo_py_api_var->decref (obj);
-}
-
-
-/**
- * Objective-C
- */
-
-MooObjCAPI *moo_objc_api = NULL;
-
-gboolean
-moo_objc_init (guint       version,
-               MooObjCAPI *api)
-{
-    g_return_val_if_fail (version == MOO_OBJC_API_VERSION, FALSE);
-    g_return_val_if_fail (!moo_objc_api || !api, FALSE);
-    moo_objc_api = api;
-    return TRUE;
 }

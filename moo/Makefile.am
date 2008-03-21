@@ -130,7 +130,7 @@ export_flags = -export-symbols-regex "^(moo_).*"
 endif
 endif
 
-libmoo_la_LIBADD = $(libs) $(MOO_LIBS) $(MOO_OBJC_LIBS)
+libmoo_la_LIBADD = $(libs) $(MOO_LIBS)
 libmoo_la_LDFLAGS = $(libmoo_res_ldflag) -no-undefined -avoid-version $(export_flags)
 libmoo_la_SOURCES = $(moo_include_headers)
 nodist_libmoo_la_SOURCES += $(nodist_moo_include_headers)

@@ -4,14 +4,12 @@ m4files =			\
 	m4/moo-comps.m4		\
 	m4/moo-debug.m4		\
 	m4/moo-dirs.m4		\
-	m4/moo-fam.m4		\
 	m4/moo-flags.m4		\
 	m4/moo-funcs.m4		\
 	m4/moo-gtk.m4		\
 	m4/moo-i18n.m4		\
 	m4/moo-lib.m4		\
 	m4/moo-lua.m4		\
-	m4/moo-objc.m4		\
 	m4/moo-os.m4		\
 	m4/moo-pcre.m4		\
 	m4/moo-progs.m4		\

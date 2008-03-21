@@ -108,7 +108,6 @@ mooutils_sources =			\
 	moomenumgr.c			\
 	moomenutoolbutton.c		\
 	moonotebook.c			\
-	mooobjc.h			\
 	moopane.c			\
 	moopaned.c			\
 	mooprefs.c			\
@@ -136,19 +135,7 @@ mooutils_sources =			\
 	stock-select-all-24.h		\
 	stock-terminal-24.h
 
-mooobjc.lo: mooutils-fli.lo
 moopython.lo: mooutils-fli.lo
-
-objc_sources =				\
-	moocobject-private.h		\
-	moocobject.h			\
-	moocobject.m			\
-	mooobjcmarshal.h		\
-	mooobjcmarshal.m
-
-if MOO_USE_OBJC
-mooutils_sources += $(objc_sources)
-endif
 
 if MOO_OS_MINGW
 mooutils_sources += $(thread_sources) $(win32_sources)
@@ -164,7 +151,6 @@ EXTRA_DIST =				\
 	xml2h.sh			\
 	$(thread_sources)		\
 	$(win32_sources)		\
-	$(objc_sources)			\
 	moowin32/mingw/fnmatch.h	\
 	moowin32/mingw/netinet/in.h	\
 	moowin32/mingw/sys/mman.h	\
@@ -240,7 +226,6 @@ AM_CFLAGS =					\
 	$(MOO_DEBUG_CFLAGS)			\
 	-DMOO_LOCALE_DIR=\"$(datadir)/locale\"	\
 	-DMOO_HELP_DIR=\"$(htmldir)/help\"
-AM_OBJCFLAGS = $(AM_CFLAGS) $(MOO_OBJCFLAGS)
 
 if MOO_INSTALL_HEADERS
 mooutils_includedir = $(moo_includedir)/mooutils

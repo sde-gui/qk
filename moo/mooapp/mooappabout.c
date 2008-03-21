@@ -334,14 +334,6 @@ moo_app_get_system_info (MooApp *app)
     g_string_append_printf (text, "libxml2: %s\n", LIBXML_DOTTED_VERSION);
 #endif
 
-#ifdef MOO_USE_FAM
-#ifdef MOO_USE_GAMIN
-    g_string_append_printf (text, "FAM support: gamin\n");
-#else
-    g_string_append_printf (text, "FAM support: yes\n");
-#endif
-#endif
-
     g_string_append (text, "Data dirs: ");
     dirs = moo_get_data_dirs (MOO_DATA_SHARE, NULL);
     for (p = dirs; p && *p; ++p)
