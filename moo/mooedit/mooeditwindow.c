@@ -1049,7 +1049,6 @@ get_doc_status_string (MooEdit *doc)
 {
     MooEditStatus status;
     gboolean modified;
-    const char *doc_title_format;
 
     status = moo_edit_get_status (doc);
     modified = (status & MOO_EDIT_MODIFIED) && !(status & MOO_EDIT_CLEAN);
@@ -1058,33 +1057,31 @@ get_doc_status_string (MooEdit *doc)
     {
         if (status & MOO_EDIT_NEW)
             /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [new file]" */
-            doc_title_format = _("%s [new file]");
+            return g_strdup_printf (_("%s [new file]"), "");
         else if (status & MOO_EDIT_MODIFIED_ON_DISK)
             /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified on disk]" */
-            doc_title_format = _("%s [modified on disk]");
+            return g_strdup_printf (_("%s [modified on disk]"), "");
         else if (status & MOO_EDIT_DELETED)
             /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [deleted]" */
-            doc_title_format = _("%s [deleted]");
+            return g_strdup_printf (_("%s [deleted]"), "");
         else
-            doc_title_format = "%s";
+            return g_strdup_printf ("%s", "");
     }
     else
     {
         if (status & MOO_EDIT_NEW)
             /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [new file] [modified]" */
-            doc_title_format = _("%s [new file] [modified]");
+            return g_strdup_printf (_("%s [new file] [modified]"), "");
         else if (status & MOO_EDIT_MODIFIED_ON_DISK)
             /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified on disk] [modified]" */
-            doc_title_format = _("%s [modified on disk] [modified]");
+            return g_strdup_printf (_("%s [modified on disk] [modified]"), "");
         else if (status & MOO_EDIT_DELETED)
             /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [deleted] [modified]" */
-            doc_title_format = _("%s [deleted] [modified]");
+            return g_strdup_printf (_("%s [deleted] [modified]"), "");
         else
             /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified]" */
-            doc_title_format = _("%s [modified]");
+            return g_strdup_printf (_("%s [modified]"), "");
     }
-
-    return g_strdup_printf (doc_title_format, "");
 }
 
 static char *
