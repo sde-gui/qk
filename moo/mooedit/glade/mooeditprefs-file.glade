@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.3.3 on Mon Dec 24 10:14:57 2007 
+<!--Generated with glade3 3.3.3 on Mon Dec 24 10:14:57 2007
 	Version: 3.0.0
 	Date: Fri Dec  8 17:47:39 2006
 	User: muntyan
@@ -238,7 +238,7 @@
                       <widget class="GtkCheckButton" id="checkbutton3">
                         <property name="visible">True</property>
                         <property name="moo_prefs_key">open_dialog_follows_doc</property>
-                        <property name="label" translatable="yes">Open dialog shows current document directory</property>
+                        <property name="label" translatable="yes">Open and Save As dialogs show current document folder</property>
                         <property name="use_underline">True</property>
                         <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>

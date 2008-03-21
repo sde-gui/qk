@@ -113,6 +113,7 @@ _moo_edit_save_as_dialog (MooEdit        *edit,
 {
     const char *start = NULL;
     const char *filename = NULL;
+    char *freeme = NULL;
     const char *encoding;
     char *new_start;
     MooFileDialog *dialog;
@@ -120,7 +121,21 @@ _moo_edit_save_as_dialog (MooEdit        *edit,
 
     moo_prefs_create_key (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR),
                           MOO_PREFS_STATE, G_TYPE_STRING, NULL);
-    start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR));
+
+    if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN_FOLLOWS_DOC)))
+    {
+        char *this_filename = moo_edit_get_filename (edit);
+
+        if (this_filename)
+        {
+            freeme = g_path_get_dirname (this_filename);
+            start = freeme;
+            g_free (this_filename);
+        }
+    }
+
+    if (!start)
+        start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR));
 
     dialog = moo_file_dialog_new (MOO_FILE_DIALOG_SAVE, GTK_WIDGET (edit),
                                   FALSE, GTK_STOCK_SAVE_AS, start, display_basename);
@@ -134,6 +149,7 @@ _moo_edit_save_as_dialog (MooEdit        *edit,
     if (!moo_file_dialog_run (dialog))
     {
         g_object_unref (dialog);
+        g_free (freeme);
         return NULL;
     }
 
@@ -147,6 +163,7 @@ _moo_edit_save_as_dialog (MooEdit        *edit,
     g_free (new_start);
 
     g_object_unref (dialog);
+    g_free (freeme);
     return file_info;
 }
 
@@ -549,7 +566,7 @@ moo_edit_question_dialog (MooEdit    *edit,
     dialog = gtk_message_dialog_new (parent, GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_WARNING,
                                      GTK_BUTTONS_NONE,
-                                     text);
+                                     "%s", text);
     gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
                                               "%s", secondary);
 
@@ -640,7 +657,7 @@ _moo_text_search_from_start_dialog (GtkWidget *widget,
 
     dialog = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE,
-                                     msg);
+                                     "%s", msg);
     moo_window_set_parent (dialog, widget);
 
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
@@ -691,7 +708,7 @@ _moo_text_regex_error_dialog (GtkWidget  *parent,
     dialog = gtk_message_dialog_new (NULL,
                                      GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_ERROR, GTK_BUTTONS_NONE,
-                                     msg_text);
+                                     "%s", msg_text);
     moo_window_set_parent (dialog, parent);
     gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CLOSE,
                             GTK_RESPONSE_CANCEL, NULL);
