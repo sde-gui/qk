@@ -465,7 +465,7 @@ file_list_iter_is_auto (FileList    *list,
 
 
 static void
-check_list (FileList *list)
+check_list (G_GNUC_UNUSED FileList *list)
 {
 #ifdef DEBUG
     GtkTreeIter iter;
