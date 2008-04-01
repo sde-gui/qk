@@ -20,6 +20,8 @@
         <item action="ShowParentFolder"/>
         <item action="CaseSensitiveSort"/>
         <separator/>
+        <item action="Reload"/>
+        <separator/>
       </item>
       <separator/>
       <item action="Properties"/>

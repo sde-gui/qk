@@ -1266,7 +1266,6 @@ init_actions (MooFileView *fileview)
                                           "closure-callback", file_view_paste_clipboard,
                                           NULL);
 
-#if defined(__WIN32__) && 0
     moo_action_group_add_action (group, "Reload",
                                  "label", _("Reload"),
                                  "tooltip", _("Reload"),
@@ -1274,7 +1273,6 @@ init_actions (MooFileView *fileview)
                                  "closure-object", fileview,
                                  "closure-signal", "reload",
                                  NULL);
-#endif
 }
 
 
