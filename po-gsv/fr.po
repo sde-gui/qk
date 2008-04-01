@@ -7,16 +7,16 @@
 # Baptiste Mille-Mathias <bmm80@free.fr>, 2004.
 # Benoît Dejean <tazforever@dlfp.org>, 2005.
 # Jonathan Ernst <jonathan@ernstfamily.ch>, 2006-2007.
-# Robert-André Mauchin <zebob.m@gmail.com>, 2006.
-# Claude Paroz <claude@2xlibre.net>, 2007.
+# Robert-André Mauchin <zebob.m@pengzone.org>, 2006-2008.
+# Claude Paroz <claude@2xlibre.net>, 2007-2008.
 # Stéphane Raimbault <stephane.raimbault@gmail.com>, 2007.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview 1.7.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-11-26 00:40-0600\n"
-"PO-Revision-Date: 2007-08-29 17:26+0200\n"
+"POT-Creation-Date: 2008-04-01 10:57-0500\n"
+"PO-Revision-Date: 2008-02-21 14:32+0100\n"
 "Last-Translator: Claude Paroz <claude@2xlibre.net>\n"
 "Language-Team: GNOME French Team <gnomefr@traduc.org>\n"
 "MIME-Version: 1.0\n"
@@ -137,6 +137,9 @@ msgstr "Traduction via gettext"
 
 msgid "in regex '%s': backreferences are not supported"
 msgstr "dans l'expr. régulière « %s » : les références arrières ne sont pas prises en charge"
+
+msgid "invalid context reference '%s'"
+msgstr "référence de contexte « %s » non valide"
 
 msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
 msgstr "surcharge de style utilisée avec référence de contexte à caractères génériques dans le langage « %s » dans la référence « %s »"

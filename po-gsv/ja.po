@@ -1,15 +1,15 @@
 # gtksourceview ja.po.
-# Copyright (C) 2003-2007 Free Software Foundation, Inc.
+# Copyright (C) 2003-2008 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gtksourceview package.
-# Takeshi AIHANA <takeshi.aihana@gmail.com>, 2003-2007.
+# Takeshi AIHANA <takeshi.aihana@gmail.com>, 2003-2008.
 # Satoru SATOH <ss@gnome.gr.jp>, 2006.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview trunk\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-11-26 00:40-0600\n"
-"PO-Revision-Date: 2007-09-01 00:04+0900\n"
+"POT-Creation-Date: 2008-04-01 10:57-0500\n"
+"PO-Revision-Date: 2008-02-10 20:47+0900\n"
 "Last-Translator: Takeshi AIHANA <takeshi.aihana@gmail.com>\n"
 "Language-Team: Japanese <gnome-translation@gnome.gr.jp>\n"
 "MIME-Version: 1.0\n"
@@ -23,23 +23,23 @@ msgid ""
 "Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
 "The error was: %s"
 msgstr ""
-"全ての変更で正規表現オブジェクトを生成できないので、文法の強調表示が通常よりも遅くなります\n"
+"全ての変換に対して正規表現オブジェクトを生成できないので、構文の強調表示が通常よりも遅くなります:\n"
 "エラー: %s"
 
 msgid "Classic"
 msgstr "クラシック"
 
 msgid "Classic color scheme"
-msgstr "伝統的な色のスキーム"
+msgstr "古くから使われている伝統的な色のスキーム"
 
 msgid "Color scheme used in the Kate text editor"
 msgstr "Kate テキスト・エディタで使用している色のスキーム"
 
 msgid "Color scheme using Tango color palette"
-msgstr "Tango 系の配色で使用している色のスキーム"
+msgstr "Tango 系の配色を使った色のスキーム"
 
 msgid "Dark color scheme using the Tango color palette"
-msgstr "Tango 系の配色で使用している暗い色のスキーム"
+msgstr "Tango 系の配色を使った暗い色のスキーム"
 
 msgid "Defaults"
 msgstr "デフォルト値"
@@ -133,6 +133,9 @@ msgstr "gettext の翻訳"
 
 msgid "in regex '%s': backreferences are not supported"
 msgstr "正規表現 '%s': 後方参照はサポートしていません"
+
+msgid "invalid context reference '%s'"
+msgstr "不正なコンテキストのリファレンス '%s'"
 
 msgid "unknown context '%s'"
 msgstr "不明なコンテキスト '%s'"

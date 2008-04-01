@@ -1,14 +1,14 @@
 # Ukrainian translation to gtksourceview.
 # Copyright (C) Free Software Foundation, 2003
 # This file is distributed under the same license as the gtksourceview package.
-# Maxim Dziumanenko <dziumanenko@gmail.com>, 2003-2007.
+# Maxim Dziumanenko <dziumanenko@gmail.com>, 2003-2008
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-11-26 00:40-0600\n"
-"PO-Revision-Date: 2007-09-13 00:48+0300\n"
+"POT-Creation-Date: 2008-04-01 10:57-0500\n"
+"PO-Revision-Date: 2008-03-08 00:48+0300\n"
 "Last-Translator: Maxim Dziumanenko <dziumanenko@gmail.com>\n"
 "Language-Team: Ukrainian <uk@li.org>\n"
 "MIME-Version: 1.0\n"

@@ -7,47 +7,147 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-11-26 00:40-0600\n"
-"PO-Revision-Date: 2006-10-11 17:57+0200\n"
+"POT-Creation-Date: 2008-04-01 10:57-0500\n"
+"PO-Revision-Date: 2008-03-13 23:20+0100\n"
 "Last-Translator: Ignacio Casal Quinteiro <nacho.resa@gmail.com>\n"
 "Language-Team: Galician <trasno@ceu.fi.udc.es>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type:  text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit"
 
-msgid ".desktop"
-msgstr ".escritorio"
+msgid "C/C++/ObjC Header"
+msgstr "Cabeceira C/C++/ObjC"
+
+msgid ""
+"Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
+"The error was: %s"
+msgstr ""
+"Non se pode crear unha expresión regular para todas as transicións, o proceso de realzado de sintaxe será máis lento do habitual.\n"
+"O erro foi: %s"
 
 msgid "ChangeLog"
 msgstr "Rexistro de modificacións"
 
+msgid "Classic"
+msgstr "Clásico"
+
+msgid "Classic color scheme"
+msgstr "Esquema de cor clásico"
+
+msgid "Color scheme used in the Kate text editor"
+msgstr "Esquema de cor usado no editor de textos Kate"
+
+msgid "Color scheme using Tango color palette"
+msgstr "Esquema de cores usando a paleta de cores de Tango"
+
+msgid "Dark color scheme using the Tango color palette"
+msgstr "Esquema de cores escuro usando a paleta de cores de Tango"
+
+msgid "Defaults"
+msgstr "Predeterminados"
+
+msgid "Hidden"
+msgstr "Oculto"
+
+msgid "Language id"
+msgstr "ID da linguaxe"
+
+msgid "Language ids"
+msgstr "IDs da linguaxe"
+
+msgid "Language name"
+msgstr "Nome da linguaxe"
+
+msgid "Language section"
+msgstr "Sección da linguaxe"
+
 msgid "Language specification directories"
 msgstr "Directorios de especificación de linguaxes"
+
+msgid "List of directories and files where the style schemes are located"
+msgstr "Listaxe de directorios e ficheiros onde está localizados os esquemas de estilo"
 
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "Lista de directorios nos que se localizan os ficheiros de especificación de linguaxes (.lang)"
 
+msgid "List of the ids of the available languages"
+msgstr "Lista de ids das linguaxes dispoñibles"
+
+msgid "List of the ids of the available style schemes"
+msgstr "Lista dos indicadores dos esquemas de estilo dispoñibles"
+
+msgid "Literate Haskell"
+msgstr "Haskell literario"
+
 msgid "Markup"
 msgstr "Marcación"
 
-msgid "Octave"
-msgstr "Oitavo"
+msgid "Missing main language definition (id = \"%s\".)"
+msgstr "Falta a definición de linguaxe principal (id = \"%s\".)"
 
 msgid "Others"
 msgstr "Outros"
 
+msgid "RPM spec"
+msgstr "Especificación de RPM"
+
 msgid "Scheme"
 msgstr "Esquema"
+
+msgid "Scheme ids"
+msgstr "Identificadores de esquema"
+
+msgid "Scientific"
+msgstr "Científico"
 
 msgid "Sources"
 msgstr "Fontes"
 
+msgid "Style scheme description"
+msgstr "Descrición do esquema de estilo"
+
+msgid "Style scheme filename"
+msgstr "Nome de ficheiro do esquema de estilo"
+
+msgid "Style scheme id"
+msgstr "ID do esquema de estilo"
+
+msgid "Style scheme name"
+msgstr "Nome do esquema de estilo"
+
 msgid "Style scheme search path"
-msgstr "linguaxes (.lang)"
+msgstr "Camiño de busca do esquema de estilo"
 
 msgid "Texinfo"
 msgstr "Información do texto"
 
+msgid "Unknown id '%s' in regex '%s'"
+msgstr "ID '%s' descoñecido na expresión regular '%s'"
+
+msgid "Whether the language should be hidden from the user"
+msgstr "Indica se se debería ocultar a linguaxe ao usuario"
+
+msgid "context '%s' cannot contain a \\%%{...@start} command"
+msgstr "o contexto '%s' non pode conter un comando \\%%{...@start}"
+
+msgid "duplicated context id '%s'"
+msgstr "id de contexto duplicado '%s'"
+
 msgid "gettext translation"
 msgstr "tradución gettext"
+
+msgid "in regex '%s': backreferences are not supported"
+msgstr "na expresión regular '%s': as retroreferencias non se soportan"
+
+msgid "invalid context reference '%s'"
+msgstr "referencia de contexto inválida '%s'"
+
+msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
+msgstr "o salto de estilo usouse cun comodín de contexto de referencia na linguaxe '%s' na referencia '%s'"
+
+msgid "unknown context '%s'"
+msgstr "contexto descoñecido '%s'"
+
+msgid "using \\C is not supported in language definitions"
+msgstr "o uso de \\C non está soportado nas definicións da linguaxe"
 

@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: el\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-11-26 00:40-0600\n"
-"PO-Revision-Date: 2007-09-06 13:43+0300\n"
+"POT-Creation-Date: 2008-04-01 10:57-0500\n"
+"PO-Revision-Date: 2008-03-18 20:24+0200\n"
 "Last-Translator: Kostas Papadimas <pkst@gnome.org>\n"
 "Language-Team: Greek <team@gnome.gr>\n"
 "MIME-Version: 1.0\n"
@@ -24,6 +24,13 @@ msgstr ""
 
 msgid "C/C++/ObjC Header"
 msgstr "Κεφαλίδα C/C++/ObjC"
+
+msgid ""
+"Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
+"The error was: %s"
+msgstr ""
+"Αδυναμία δημιουργίας μιας regex για όλα τα transitions, η επισήμανση σύνταξης θα έχει αρκετή καθυστέρηση.\n"
+"Το σφάλμα ήταν: %s"
 
 msgid "Classic"
 msgstr "Κλασσικό"
@@ -67,6 +74,12 @@ msgstr "Λίστα από καταλόγους όπου βρίσκονται τ�
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "Λίστα από καταλόγους όπου βρίσκονται τα αρχεία ορισμάτων γλώσσας (.lang)"
 
+msgid "List of the ids of the available languages"
+msgstr "Μια λίστα από αναγνωριστικά των διαθέσιμων γλωσσών"
+
+msgid "List of the ids of the available style schemes"
+msgstr "Μια λίστα από αναγνωριστικά των διαθέσιμων στυλ σχήματος"
+
 msgid "Missing main language definition (id = \"%s\".)"
 msgstr "Λείπει ο ορισμός κύριας γλώσσας (id = \"%s\".)"
 
@@ -86,13 +99,25 @@ msgid "Scientific"
 msgstr "Επιστημονική"
 
 msgid "Scripts"
-msgstr "Δέσμες ενεργειών"
+msgstr "Σενάρια ενεργειών"
 
 msgid "Sources"
-msgstr "Πηγές"
+msgstr "Κώδικας"
 
 msgid "Style scheme description"
 msgstr "Περιγραφή στυλ σχήματος"
+
+msgid "Style scheme filename"
+msgstr "Όνομα αρχείου στυλ σχήματος"
+
+msgid "Style scheme id"
+msgstr "Αναγνωριστικό στυλ σχήματος"
+
+msgid "Style scheme name"
+msgstr "Όνομα στυλ σχήματος"
+
+msgid "Style scheme search path"
+msgstr "Διαδρομή αναζήτησης σχήματος"
 
 msgid "Unknown id '%s' in regex '%s'"
 msgstr "Άγνωστο id '%s' σε regex '%s'"
@@ -100,8 +125,20 @@ msgstr "Άγνωστο id '%s' σε regex '%s'"
 msgid "Whether the language should be hidden from the user"
 msgstr "Αν η γλώσσα θα είναι κρυφή από τον χρήστη"
 
+msgid "context '%s' cannot contain a \\%%{...@start} command"
+msgstr "context '%s' δεν μπορεί να περιέχει μια εντολή \\%%{...@start}"
+
+msgid "duplicated context id '%s'"
+msgstr "διπλότυπη context id '%s'"
+
 msgid "gettext translation"
 msgstr "μετάφραση gettext"
+
+msgid "in regex '%s': backreferences are not supported"
+msgstr "στην regex '%s': δεν υποστηρίζονται τα backreferences"
+
+msgid "invalid context reference '%s'"
+msgstr "μη έγκυρη αναφορά περιεχομένου  '%s'"
 
 msgid "unknown context '%s'"
 msgstr "άγνωστο περιεχόμενο '%s'"

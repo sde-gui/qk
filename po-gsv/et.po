@@ -2,19 +2,19 @@
 # Estonian translation of gtksourceview.
 #
 # Copyright (C) 2003, 2005, 2006 Free Software Foundation, Inc.
-# Copyright (C) 2007 The GNOME Project.
+# Copyright (C) 2007, 2008 The GNOME Project.
 # This file is distributed under the same license as the gtksourceview package.
 #
 # Tõivo Leedjärv <toivo@linux.ee>, 2003.
 # Priit Laes <amd@store20.com>, 2005.
-# Ivar Smolin <okul@linux.ee>, 2005-2007.
+# Ivar Smolin <okul@linux.ee>, 2005-2008.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-11-26 00:40-0600\n"
-"PO-Revision-Date: 2007-09-09 15:53+0300\n"
+"POT-Creation-Date: 2008-04-01 10:57-0500\n"
+"PO-Revision-Date: 2008-03-27 06:51+0200\n"
 "Last-Translator: Ivar Smolin <okul@linux.ee>\n"
 "Language-Team: Estonian <gnome-et@linux.ee>\n"
 "MIME-Version: 1.0\n"
@@ -24,6 +24,13 @@ msgstr ""
 
 msgid "C/C++/ObjC Header"
 msgstr "C/C++/ObjC päis"
+
+msgid ""
+"Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
+"The error was: %s"
+msgstr ""
+"Kõigi üleminekute kohta pole võimalik regulaaravaldist luua, seetõttu on süntaksti esiletõstmine tavalisest aeglasem.\n"
+"Vea kirjeldus: %s"
 
 msgid "ChangeLog"
 msgstr "MuutusteLogi"
@@ -67,17 +74,29 @@ msgstr "Keele nimi"
 msgid "Language specification directories"
 msgstr "Keelekirjelduste kataloogid"
 
+msgid "List of directories and files where the style schemes are located"
+msgstr "Laadiskeemi sisaldavate kataloogide ja failide nimekiri"
+
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "Kataloogide loend, kus keelekirjelduste failid (.lang) asuvad"
 
 msgid "List of the ids of the available languages"
 msgstr "Saadaolevate keelte ID-de nimekiri"
 
+msgid "List of the ids of the available style schemes"
+msgstr "Saadaolevate laadiskeemide ID-de nimekiri"
+
+msgid "Missing main language definition (id = \"%s\".)"
+msgstr "Puudub peamise keele definitsioon (id = \"%s\".)"
+
 msgid "Oblivion"
 msgstr "Unustus"
 
 msgid "Others"
 msgstr "Muud"
+
+msgid "Scheme ids"
+msgstr "Skeemi ID-d"
 
 msgid "Scientific"
 msgstr "Teaduslik"
@@ -88,14 +107,41 @@ msgstr "Skriptid"
 msgid "Sources"
 msgstr "Lähtekoodid"
 
+msgid "Style scheme description"
+msgstr "Laadi skeemi kirjeldus"
+
+msgid "Style scheme filename"
+msgstr "Laadi skeemi failinimi"
+
+msgid "Style scheme id"
+msgstr "Laadi skeemi ID"
+
+msgid "Style scheme name"
+msgstr "Laadi skeemi nimi"
+
+msgid "Style scheme search path"
+msgstr "Laadiskeemi otsingurada"
+
 msgid "Unknown id '%s' in regex '%s'"
 msgstr "Tundmatu id '%s' regulaaravaldises '%s'"
 
 msgid "Whether the language should be hidden from the user"
 msgstr "Kas keel peab kasutaja eest olema peidetud või mitte"
 
+msgid "context '%s' cannot contain a \\%%{...@start} command"
+msgstr "kontekst '%s' ei tohi sisaldada käsku \\%%{...@start}"
+
+msgid "duplicated context id '%s'"
+msgstr "dubleeritud konteksti id '%s'"
+
 msgid "gettext translation"
 msgstr "gettext tõlge"
+
+msgid "in regex '%s': backreferences are not supported"
+msgstr "regulaaravaldis '%s': tagasiviited pole toetatud"
+
+msgid "invalid context reference '%s'"
+msgstr "vigane kontekstiviide '%s'"
 
 msgid "unknown context '%s'"
 msgstr "tundmatu kontekst '%s'"

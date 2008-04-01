@@ -1,41 +1,118 @@
-# Slovenian translation of gtksourcereview.
 # Copyright (C) 2005-2006 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gtksourcereview package.
 #
 # Matjaž Horvat <m@owca.info>, 2006.
+# Matej Urbančič <mateju@svn.gnome.org>, 2007 - 2008
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gtksourcereview\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-11-26 00:40-0600\n"
-"PO-Revision-Date: 2006-09-13 01:27+0100\n"
-"Last-Translator: Matjaž Horvat <m@owca.info>\n"
+"POT-Creation-Date: 2008-04-01 10:57-0500\n"
+"PO-Revision-Date: 2008-02-17 19:43+0100\n"
+"Last-Translator: Matej Urbančič <mateju@svn.gnome.org>\n"
 "Language-Team: Slovenian <SL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 1 : n%100==2 ? 2 : n%100==3 || n%100==4 ? 3 : 0);\n"
 "X-Poedit-Language: Slovenian\n"
-"X-Poedit-Country: Slovenia"
+"X-Poedit-Country: SLOVENIA\n"
+"X-Poedit-SourceCharset: utf-8"
+
+msgid "C/C++/ObjC Header"
+msgstr "C/C++/ObjC glava"
+
+msgid ""
+"Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
+"The error was: %s"
+msgstr ""
+"Ni mogoče ustvariti logičnega izraza za vse prehode; označevanje skladnje bo počasnejše kot običajno.\n"
+"Javljena napaka: %s"
 
 msgid "ChangeLog"
 msgstr "Dnevnik sprememb"
 
+msgid "Classic"
+msgstr "Običajno"
+
+msgid "Classic color scheme"
+msgstr "Običajna barvna shema"
+
+msgid "Color scheme used in the Kate text editor"
+msgstr "Barvna shema uporabljena v Kate urejevalniku besedil"
+
+msgid "Color scheme using Tango color palette"
+msgstr "Barvna shema s tango barvno paleto"
+
+msgid "Dark color scheme using the Tango color palette"
+msgstr "Temna barvna shema s tango barvno paleto"
+
+msgid "Defaults"
+msgstr "Privzete vrednosti"
+
+msgid "Hidden"
+msgstr "Skrito"
+
+msgid "Javascript"
+msgstr "JavaScript"
+
+msgid "Language id"
+msgstr "ID jezika"
+
+msgid "Language ids"
+msgstr "ID jezikov"
+
+msgid "Language name"
+msgstr "Ime jezika"
+
+msgid "Language section"
+msgstr "Oddelek jezika"
+
 msgid "Language specification directories"
 msgstr "Mape z določili jezikov"
+
+msgid "List of directories and files where the style schemes are located"
+msgstr "Seznam map, v katerih se nahajajo datoteke slogov shem"
 
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "Seznam map, v katerih se nahajajo datoteke (.lang) z določili jezikov"
 
-msgid "Markup"
-msgstr "Zaznamovalec"
+msgid "List of the ids of the available languages"
+msgstr "Seznam ID vrednosti jezikov, ki so na voljo"
+
+msgid "List of the ids of the available style schemes"
+msgstr "Seznam ID vrednosti slogov shem, ki so na voljo"
+
+msgid "Literate Haskell"
+msgstr "Haskell območje"
+
+msgid "Missing main language definition (id = \"%s\".)"
+msgstr "Manjka določilo glavnega jezika (id = \"%s\".)"
+
+msgid "Objective Caml"
+msgstr "Objektni Caml"
+
+msgid "Objective-C"
+msgstr "Objektivni-C"
+
+msgid "Oblivion"
+msgstr "Pozaba"
 
 msgid "Others"
 msgstr "Drugo"
 
+msgid "RPM spec"
+msgstr "RPM določila"
+
 msgid "Scheme"
 msgstr "Shema"
+
+msgid "Scheme ids"
+msgstr "ID sheme"
+
+msgid "Scientific"
+msgstr "Znanstveni"
 
 msgid "Scripts"
 msgstr "Skripte"
@@ -43,6 +120,48 @@ msgstr "Skripte"
 msgid "Sources"
 msgstr "Viri"
 
+msgid "Style scheme description"
+msgstr "Opis sloga sheme"
+
+msgid "Style scheme filename"
+msgstr "Ime datoteke sloga sheme"
+
+msgid "Style scheme id"
+msgstr "ID sloga sheme"
+
+msgid "Style scheme name"
+msgstr "Ime sloga sheme"
+
+msgid "Style scheme search path"
+msgstr "Pot iskanja slogov shem"
+
+msgid "Unknown id '%s' in regex '%s'"
+msgstr "Naznan ID '%s' v logičnem izrazu '%s'"
+
+msgid "Whether the language should be hidden from the user"
+msgstr "Ali naj bo jezik skrit pred uporabnikom"
+
+msgid "context '%s' cannot contain a \\%%{...@start} command"
+msgstr "vsebina '%s' ne sme vsebovati \\%%{...@start} ukaza"
+
+msgid "duplicated context id '%s'"
+msgstr "podvojen ID vsebine '%s'"
+
 msgid "gettext translation"
 msgstr "prevod gettext"
+
+msgid "in regex '%s': backreferences are not supported"
+msgstr "logični izraz '%s': povratne naveze niso podprte"
+
+msgid "invalid context reference '%s'"
+msgstr "neveljavna vsebinska povezava '%s'"
+
+msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
+msgstr "prepis sloga uporabljen z posebnimi določilnimi znaki (wildcards) v jeziku '%s' v referenci '%s'"
+
+msgid "unknown context '%s'"
+msgstr "neznana vsebina '%s'"
+
+msgid "using \\C is not supported in language definitions"
+msgstr "uporaba \\C ni podprta v določilih jezika"
 

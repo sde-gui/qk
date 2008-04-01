@@ -3,20 +3,53 @@
 #
 # This file is distributed under the same license as the PACKAGE package.
 # Jan-Willem Harmanny <jwharmanny@hotmail.com>, 2003.
-# Tino Meinen <a.t.meinen@chello.nl>, 2003, 2004, 2005, 2006
+# Tino Meinen <a.t.meinen@chello.nl>, 2003, 2004, 2005, 2006, 2008.
 # Michiel Sikkes <michiels@gnome.org>, 2005.
 # Wouter Bolsterlee <uws+gnome@xs4all.nl>, 2006.
 msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-11-26 00:40-0600\n"
-"PO-Revision-Date: 2006-01-15 17:19+0100\n"
-"Last-Translator: Wouter Bolsterlee <uws+gnome@xs4all.nl>\n"
+"POT-Creation-Date: 2008-04-01 10:57-0500\n"
+"PO-Revision-Date: 2008-03-09 21:38+0100\n"
+"Last-Translator: Tino Meinen <a.t.meinen@chello.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit"
+
+msgid "Classic"
+msgstr "Klassiek"
+
+msgid "Classic color scheme"
+msgstr "Klassiek kleurenschema"
+
+msgid "Color scheme used in the Kate text editor"
+msgstr "Kleurenschema dat gebruikt wordt in de tekst-editor Kate"
+
+msgid "Color scheme using Tango color palette"
+msgstr "Kleurenschema met Tango-kleurenstaal"
+
+msgid "Dark color scheme using the Tango color palette"
+msgstr "Donker kleurenschema met Tango-kleurenstaal"
+
+msgid "Defaults"
+msgstr "Standaarden"
+
+msgid "Hidden"
+msgstr "Verborgen"
+
+msgid "Javascript"
+msgstr "JavaScript"
+
+msgid "Language id"
+msgstr "Taal-id"
+
+msgid "Language ids"
+msgstr "Taal-id's"
+
+msgid "Language section"
+msgstr "Taal-onderdeel"
 
 msgid "Language specification directories"
 msgstr "Taal specificatie mappen"
@@ -24,11 +57,23 @@ msgstr "Taal specificatie mappen"
 msgid "List of directories where the language specification files (.lang) are located"
 msgstr "Een lijst van mappen waarin de taal specificatiebestanden (.lang) zich bevinden"
 
+msgid "List of the ids of the available languages"
+msgstr "Lijst met de id's van de beschikbare talen"
+
 msgid "Markup"
 msgstr "Markering"
 
 msgid "Others"
 msgstr "Andere"
+
+msgid "RPM spec"
+msgstr "RPM-spec"
+
+msgid "Scheme ids"
+msgstr "Scheme-id's"
+
+msgid "Scientific"
+msgstr "Wetenschappelijk"
 
 msgid "Sources"
 msgstr "Bronnen"
@@ -36,6 +81,27 @@ msgstr "Bronnen"
 msgid "Style scheme search path"
 msgstr "bevinden"
 
+msgid "Unknown id '%s' in regex '%s'"
+msgstr "Onbekend id ‘%s’ in regex ‘%s’"
+
+msgid "Whether the language should be hidden from the user"
+msgstr "Of de taal verborgen wordt voor de gebruiker"
+
+msgid "context '%s' cannot contain a \\%%{...@start} command"
+msgstr "context ‘%s’ mag geen opdracht \\%%{...@start} bevatten"
+
+msgid "duplicated context id '%s'"
+msgstr "duplicaat context-id ‘%s’"
+
 msgid "gettext translation"
 msgstr "gettext-vertaling"
+
+msgid "invalid context reference '%s'"
+msgstr "ongeldige contextreferentie ‘%s’"
+
+msgid "unknown context '%s'"
+msgstr "onbekende context ‘%s’"
+
+msgid "using \\C is not supported in language definitions"
+msgstr "het gebruik van \\C is niet mogelijk in taaldefinities"
 

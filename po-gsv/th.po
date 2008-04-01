@@ -1,14 +1,14 @@
 # Thai translation of gtksourceview.
-# Copyright (C) 2004-2007 Free Software Foundation, Inc.
+# Copyright (C) 2004-2008 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gtksourceview package.
-# Theppitak Karoonboonyanan <thep@linux.thai.net>, 2004-2007.
-# 
+# Theppitak Karoonboonyanan <thep@linux.thai.net>, 2004-2008.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-11-26 00:40-0600\n"
-"PO-Revision-Date: 2007-09-02 21:06+0700\n"
+"POT-Creation-Date: 2008-04-01 10:57-0500\n"
+"PO-Revision-Date: 2008-02-11 08:19+0700\n"
 "Last-Translator: Theppitak Karoonboonyanan <thep@linux.thai.net>\n"
 "Language-Team: Thai <thai-l10n@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -42,6 +42,9 @@ msgstr "ชุดสีเข้มซึ่งใช้สีจากจาน
 
 msgid "Defaults"
 msgstr "ปริยาย"
+
+msgid "Eiffel"
+msgstr "ไอเฟล"
 
 msgid "Hidden"
 msgstr "ซ่อน"
@@ -132,6 +135,9 @@ msgstr "คำแปล gettext"
 
 msgid "in regex '%s': backreferences are not supported"
 msgstr "ใน regex '%s': ไม่รองรับการอ้างอิงกลับ"
+
+msgid "invalid context reference '%s'"
+msgstr "ตัวอ้างอิงบริบท '%s' ใช้การไม่ได้"
 
 msgid "style override used with wildcard context reference in language '%s' in ref '%s'"
 msgstr "มีการทับค่าสไตล์ในตัวอ้างอิงบริบทที่เป็น wildcard ในภาษา '%s' ที่ตัวอ้างอิง '%s'"
