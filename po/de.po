@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-02-20 09:32-0600\n"
+"POT-Creation-Date: 2008-04-01 10:48-0500\n"
 "PO-Revision-Date: 2008-02-04 21:47+0100\n"
 "Last-Translator: Christian Dywan <christian@twotoasts.de>\n"
 "MIME-Version: 1.0\n"
@@ -14,7 +14,97 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n>1;\n"
 
-#: ../../../medit/medit-app.opag:268
+#: ../medit/medit-app.c:61
+#, c-format
+msgid "Invalid value '%s' for option %s"
+msgstr ""
+
+#. command line option --new-app
+#: ../medit/medit-app.c:68
+msgid "Run new instance of application"
+msgstr ""
+
+#. command line option --use-session
+#: ../medit/medit-app.c:70
+msgid "Load and save session"
+msgstr ""
+
+#. command line option --pid=PID
+#: ../medit/medit-app.c:72
+msgid "Use existing instance with process id PID"
+msgstr ""
+
+#. command line option --pid=PID
+#: ../medit/medit-app.c:73
+msgid "PID"
+msgstr ""
+
+#. command line option --app-name=NAME
+#: ../medit/medit-app.c:75
+msgid "Set instance name to NAME if it's not already running"
+msgstr ""
+
+#. command line option --app-name=NAME
+#: ../medit/medit-app.c:76
+msgid "NAME"
+msgstr ""
+
+#. command line option --new-window
+#: ../medit/medit-app.c:78
+msgid "Open file(s) in a new window"
+msgstr ""
+
+#. command line option --new-tab
+#: ../medit/medit-app.c:80
+msgid "Open file(s) in a new tab"
+msgstr ""
+
+#. command line option --line=LINE
+#: ../medit/medit-app.c:86
+msgid "Open file and position cursor on line LINE"
+msgstr ""
+
+#. command line option --line=LINE
+#: ../medit/medit-app.c:87
+msgid "LINE"
+msgstr ""
+
+#. command line option --exec CODE
+#: ../medit/medit-app.c:95
+msgid "Execute python code in an existing instance"
+msgstr ""
+
+#. command line option --exec CODE
+#: ../medit/medit-app.c:96
+msgid "CODE"
+msgstr ""
+
+#. command line option --exec-file FILE
+#: ../medit/medit-app.c:98
+msgid "Execute python file in an existing instance"
+msgstr ""
+
+#. command line option --exec-file FILE
+#: ../medit/medit-app.c:99
+msgid "FILE"
+msgstr ""
+
+#. command line option --version
+#: ../medit/medit-app.c:101
+msgid "Show version information and exit"
+msgstr ""
+
+#. command line: medit [OPTION...] [FILES]
+#: ../medit/medit-app.c:103
+msgid "FILES"
+msgstr ""
+
+#: ../medit/medit-app.c:118 ../medit/medit-app.c:125
+#, c-format
+msgid "%s and %s options may not be used simultaneously\n"
+msgstr ""
+
+#: ../medit/medit-app.c:342
 msgid "medit is a text editor"
 msgstr "medit ist ein Texteditor"
 
@@ -89,7 +179,7 @@ msgstr ""
 "christian@twotoasts.de&gt;</a>"
 
 #. menu item label
-#: ../moo/mooapp/mooapp.c:1296
+#: ../moo/mooapp/mooapp.c:1273
 msgid "System Info"
 msgstr "Systeminfo"
 
@@ -130,8 +220,8 @@ msgid "Make backups"
 msgstr "Sicherungen anfertigen:"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:9
-msgid "Open dialog shows current document directory"
-msgstr "Aktuellen Ordner im Öffnendialog zeigen"
+msgid "Open and Save As dialogs show current document folder"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:10
 msgid "Remove trailing spaces"
@@ -621,7 +711,7 @@ msgstr "Luaskript"
 
 #. Translators: number of documents here is always greater than one, so
 #. ignore singular form (which is simply copy of the plural here)
-#: ../moo/mooedit/mooeditdialogs.c:362
+#: ../moo/mooedit/mooeditdialogs.c:379
 #, c-format
 msgid ""
 "There are %u documents with unsaved changes. Save changes before closing?"
@@ -634,7 +724,7 @@ msgstr[1] ""
 "speichern?"
 
 #. Could not save file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:418
+#: ../moo/mooedit/mooeditdialogs.c:435
 #, c-format
 msgid ""
 "Could not save file\n"
@@ -643,12 +733,12 @@ msgstr ""
 "Datei konnte nicht gespeichert werden\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:420
+#: ../moo/mooedit/mooeditdialogs.c:437
 msgid "Could not save file"
 msgstr "Datei konnte nicht gespeichert werden"
 
 #. Error saving file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:446
+#: ../moo/mooedit/mooeditdialogs.c:463
 #, c-format
 msgid ""
 "Error saving file\n"
@@ -657,11 +747,11 @@ msgstr ""
 "Fehler beim Speichern der Datei\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:448
+#: ../moo/mooedit/mooeditdialogs.c:465
 msgid "Error saving file"
 msgstr "Fehler beim Speichern der Datei"
 
-#: ../moo/mooedit/mooeditdialogs.c:450
+#: ../moo/mooedit/mooeditdialogs.c:467
 #, c-format
 msgid ""
 "Could not convert file to requested character encoding %s. File was saved in "
@@ -671,7 +761,7 @@ msgstr ""
 "wurde in UTF-8 kodiert gespeichert."
 
 #. Could not open file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:480
+#: ../moo/mooedit/mooeditdialogs.c:497
 #, c-format
 msgid ""
 "Could not open file\n"
@@ -680,11 +770,11 @@ msgstr ""
 "Datei konnte nicht geöffnet werden\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:482
+#: ../moo/mooedit/mooeditdialogs.c:499
 msgid "Could not open file"
 msgstr "Datei konnte nicht geöffnet werden"
 
-#: ../moo/mooedit/mooeditdialogs.c:488
+#: ../moo/mooedit/mooeditdialogs.c:505
 #, c-format
 msgid ""
 "Could not open file using character encoding %s. The file may be binary or "
@@ -693,7 +783,7 @@ msgstr ""
 "Datei konnte nicht mit Zeichenkodierung %s geöffnet werden. Die Datei ist "
 "evtl. binär oder die Kodierung wurde falsch angegeben."
 
-#: ../moo/mooedit/mooeditdialogs.c:492
+#: ../moo/mooedit/mooeditdialogs.c:509
 #, c-format
 msgid ""
 "Could not detect file character encoding. Please make sure the file is not "
@@ -704,7 +794,7 @@ msgstr ""
 "Dialog zu wählen."
 
 #. Could not reload file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:527
+#: ../moo/mooedit/mooeditdialogs.c:544
 #, c-format
 msgid ""
 "Could not reload file\n"
@@ -713,25 +803,25 @@ msgstr ""
 "Datei konnte nicht neu geladen werden\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:587
+#: ../moo/mooedit/mooeditdialogs.c:604
 #, c-format
 msgid "Discard changes in file '%s'?"
 msgstr "Änderunge an Datei '%s' verwerfen?"
 
-#: ../moo/mooedit/mooeditdialogs.c:589
+#: ../moo/mooedit/mooeditdialogs.c:606
 msgid "If you reload the document, changes will be discarded"
 msgstr "Wenn Sie das Dokument neu laden werden alle Änderungen zurückgesetzt"
 
-#: ../moo/mooedit/mooeditdialogs.c:590 ../moo/mooedit/mooeditwindow.c:390
+#: ../moo/mooedit/mooeditdialogs.c:607 ../moo/mooedit/mooeditwindow.c:390
 msgid "_Reload"
 msgstr "Neu _laden"
 
-#: ../moo/mooedit/mooeditdialogs.c:611
+#: ../moo/mooedit/mooeditdialogs.c:628
 #, c-format
 msgid "Overwrite modified file '%s'?"
 msgstr "Veränderte Datei '%s' überschreiben?"
 
-#: ../moo/mooedit/mooeditdialogs.c:612
+#: ../moo/mooedit/mooeditdialogs.c:629
 #, c-format
 msgid ""
 "File '%s' was modified on disk by another process. If you save it, changes "
@@ -740,11 +830,11 @@ msgstr ""
 "Der Inhalt der Datei '%s' auf dem Datenträger wurde von einem anderen "
 "Prozess geändert. Beim Speichern gehen alle Änderungen verloren."
 
-#: ../moo/mooedit/mooeditdialogs.c:614
+#: ../moo/mooedit/mooeditdialogs.c:631
 msgid "Over_write"
 msgstr "Ü_berschreiben"
 
-#: ../moo/mooedit/mooeditdialogs.c:635
+#: ../moo/mooedit/mooeditdialogs.c:652
 msgid ""
 "Beginning of document reached.\n"
 "Continue from the end?"
@@ -752,7 +842,7 @@ msgstr ""
 "Anfang des Dokuments erreicht.\n"
 "Vom Ende an weitermachen?"
 
-#: ../moo/mooedit/mooeditdialogs.c:638
+#: ../moo/mooedit/mooeditdialogs.c:655
 msgid ""
 "End of document reached.\n"
 "Continue from the beginning?"
@@ -827,8 +917,8 @@ msgstr "Ö_ffnen..."
 msgid "Open..."
 msgstr "Öffnen..."
 
-#: ../moo/mooedit/mooeditwindow.c:389 ../moo/moofileview/moofileview.c:1271
-#: ../moo/moofileview/moofileview.c:1272
+#: ../moo/mooedit/mooeditwindow.c:389 ../moo/moofileview/moofileview.c:1270
+#: ../moo/moofileview/moofileview.c:1271
 msgid "Reload"
 msgstr "Neu laden"
 
@@ -993,7 +1083,7 @@ msgstr "Seite einrichten..."
 msgid "Page Setup..."
 msgstr "Seite einrichten..."
 
-#: ../moo/mooedit/mooeditwindow.c:805 ../moo/mooedit/mooeditwindow.c:1863
+#: ../moo/mooedit/mooeditwindow.c:805 ../moo/mooedit/mooeditwindow.c:1860
 msgid "Export as PDF"
 msgstr "Als PDF exportieren"
 
@@ -1006,81 +1096,81 @@ msgid "Export as PDF..."
 msgstr "Als PDF exportieren..."
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [new file]"
-#: ../moo/mooedit/mooeditwindow.c:1061
+#: ../moo/mooedit/mooeditwindow.c:1060
 #, c-format
 msgid "%s [new file]"
 msgstr "%s [neue Datei]"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified on disk]"
-#: ../moo/mooedit/mooeditwindow.c:1064
+#: ../moo/mooedit/mooeditwindow.c:1063
 #, c-format
 msgid "%s [modified on disk]"
 msgstr "%s [auf Datenträger geändert"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [deleted]"
-#: ../moo/mooedit/mooeditwindow.c:1067
+#: ../moo/mooedit/mooeditwindow.c:1066
 #, c-format
 msgid "%s [deleted]"
 msgstr "%s [gelöscht]"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [new file] [modified]"
-#: ../moo/mooedit/mooeditwindow.c:1075
+#: ../moo/mooedit/mooeditwindow.c:1074
 #, c-format
 msgid "%s [new file] [modified]"
 msgstr "%s [neue Datei] [geändert]"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified on disk] [modified]"
-#: ../moo/mooedit/mooeditwindow.c:1078
+#: ../moo/mooedit/mooeditwindow.c:1077
 #, c-format
 msgid "%s [modified on disk] [modified]"
 msgstr "%s [auf Datenträger geändert] [geändert]"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [deleted] [modified]"
-#: ../moo/mooedit/mooeditwindow.c:1081
+#: ../moo/mooedit/mooeditwindow.c:1080
 #, c-format
 msgid "%s [deleted] [modified]"
 msgstr "%s [gelöscht] [geändert]"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified]"
-#: ../moo/mooedit/mooeditwindow.c:1084
+#: ../moo/mooedit/mooeditwindow.c:1083
 #, c-format
 msgid "%s [modified]"
 msgstr "%s [geändert]"
 
-#: ../moo/mooedit/mooeditwindow.c:1325
+#: ../moo/mooedit/mooeditwindow.c:1322
 msgid "Reopen Using Encoding"
 msgstr "Mit Kodierung neu öffnen"
 
-#: ../moo/mooedit/mooeditwindow.c:1375
+#: ../moo/mooedit/mooeditwindow.c:1372
 msgid "_Encoding"
 msgstr "_Kodierung"
 
-#: ../moo/mooedit/mooeditwindow.c:1777 ../moo/moofileview/moofileview.c:1213
+#: ../moo/mooedit/mooeditwindow.c:1774 ../moo/moofileview/moofileview.c:1213
 #: ../moo/moofileview/moofileview.c:1214
 #: ../moo/moofileview/moofileview-ui.xml.h:1
 msgid "Bookmarks"
 msgstr "Lesezeichen"
 
-#: ../moo/mooedit/mooeditwindow.c:3107
+#: ../moo/mooedit/mooeditwindow.c:3104
 #, c-format
 msgid "Line: %s Col: %s"
 msgstr "Zeile: %s Spalte: %s"
 
-#: ../moo/mooedit/mooeditwindow.c:3108
+#: ../moo/mooedit/mooeditwindow.c:3105
 #, c-format
 msgid "Chars: %s"
 msgstr "Zeichen: %s"
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
-#: ../moo/mooedit/mooeditwindow.c:3148
+#: ../moo/mooedit/mooeditwindow.c:3145
 msgid "OVR"
 msgstr "ÜBER"
 
-#: ../moo/mooedit/mooeditwindow.c:3148
+#: ../moo/mooedit/mooeditwindow.c:3145
 msgid "INS"
 msgstr "EINF"
 
-#: ../moo/mooedit/mooeditwindow.c:3273
+#: ../moo/mooedit/mooeditwindow.c:3270
 msgid "_Language"
 msgstr "_Sprache"
 
@@ -1417,7 +1507,7 @@ msgstr "Sortieren mit Groß-/ Kleinschreibung"
 msgid "Add Bookmark"
 msgstr "Lesezeichen hinzufügen"
 
-#: ../moo/moofileview/moofileview.c:1546
+#: ../moo/moofileview/moofileview.c:1544
 msgid "Filter"
 msgstr "Filter"
 

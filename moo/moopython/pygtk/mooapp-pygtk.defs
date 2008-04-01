@@ -7,23 +7,6 @@
   (gtype-id "MOO_TYPE_APP")
 )
 
-
-;; (define-boxed AppInfo
-;;   (in-module "Moo")
-;;   (c-name "MooAppInfo")
-;;   (gtype-id "MOO_TYPE_APP_INFO")
-;;   (fields
-;;     '("char*" "short_name")
-;;     '("char*" "full_name")
-;;     '("char*" "description")
-;;     '("char*" "version")
-;;     '("char*" "website")
-;;     '("char*" "website_label")
-;;     '("char*" "app_dir")
-;;     '("char*" "rc_file")
-;;   )
-;; )
-
 ;; From mooapp.h
 
 (define-function get_instance
@@ -115,8 +98,7 @@
   )
 )
 
-(define-method send_msg
-  (of-object "MooApp")
+(define-function send_msg
   (c-name "moo_app_send_msg")
   (return-type "gboolean")
   (parameters
@@ -126,8 +108,7 @@
   )
 )
 
-(define-method send_files
-  (of-object "MooApp")
+(define-function send_files
   (c-name "moo_app_send_files")
   (return-type "gboolean")
   (parameters

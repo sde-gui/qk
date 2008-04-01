@@ -23,16 +23,14 @@ typedef void (*MooAppInputCallback) (char        cmd,
                                      guint       len,
                                      gpointer    cb_data);
 
-void         _moo_app_input_start       (const char     *appname,
-                                         const char     *name,
+void         _moo_app_input_start       (const char     *name,
                                          gboolean        bind_default,
                                          MooAppInputCallback callback,
                                          gpointer        callback_data);
 void         _moo_app_input_shutdown    (void);
 gboolean     _moo_app_input_running     (void);
 
-gboolean     _moo_app_input_send_msg    (const char     *appname,
-                                         const char     *name,
+gboolean     _moo_app_input_send_msg    (const char     *name,
                                          const char     *data,
                                          gssize          len);
 void         _moo_app_input_broadcast   (const char     *header,

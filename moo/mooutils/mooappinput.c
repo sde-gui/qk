@@ -91,16 +91,16 @@ exec_callback (char        cmd,
 
 
 static MooAppInput *
-moo_app_input_new (const char *appname,
-                   const char *name,
+moo_app_input_new (const char *name,
                    gboolean    bind_default,
                    MooAppInputCallback callback,
                    gpointer    callback_data)
 {
     MooAppInput *ch;
     InputChannel *ich;
+    const char *appname = g_get_prgname ();
 
-    g_return_val_if_fail (appname != NULL, NULL);
+    g_return_val_if_fail (appname != NULL, FALSE);
     g_return_val_if_fail (callback != NULL, NULL);
 
     ch = moo_new0 (MooAppInput);
@@ -126,14 +126,13 @@ moo_app_input_new (const char *appname,
 }
 
 void
-_moo_app_input_start (const char     *appname,
-                      const char     *name,
+_moo_app_input_start (const char     *name,
                       gboolean        bind_default,
                       MooAppInputCallback callback,
                       gpointer        callback_data)
 {
     g_return_if_fail (inp_instance == NULL);
-    inp_instance = moo_app_input_new (appname, name, bind_default,
+    inp_instance = moo_app_input_new (name, bind_default,
                                       callback, callback_data);
 }
 
@@ -216,31 +215,98 @@ commit (GString **buffer)
 
 #ifndef MOO_APP_INPUT_WIN32
 
+static const char *
+get_display_name (void)
+{
+    static char *name;
+
+#ifdef GDK_WINDOWING_X11
+    static gboolean been_here;
+    if (!been_here)
+    {
+        GdkDisplay *display;
+        const char *display_name;
+
+        been_here = TRUE;
+
+        if ((display = gdk_display_get_default ()))
+        {
+            display_name = gdk_display_get_name (display);
+        }
+        else
+        {
+            display_name = gdk_get_display_arg_name ();
+            if (!display_name || !display_name[0])
+                display_name = g_getenv ("DISPLAY");
+        }
+
+        if (display_name && display_name[0])
+        {
+            char *colon, *dot;
+
+            if ((colon = strchr (display_name, ':')) &&
+                (dot = strrchr (display_name, '.')) &&
+                dot > colon)
+                    name = g_strndup (display_name, dot - display_name);
+            else
+                name = g_strdup (display_name);
+
+            if (name[0] == ':')
+            {
+                if (name[1])
+                {
+                    char *tmp = g_strdup (name + 1);
+                    g_free (name);
+                    name = tmp;
+                }
+                else
+                {
+                    g_free (name);
+                    name = NULL;
+                }
+            }
+
+            if (name)
+                g_strcanon (name,
+                            G_CSET_A_2_Z G_CSET_a_2_z G_CSET_DIGITS,
+                            '-');
+        }
+    }
+#endif
+
+    return name;
+}
+
+static const char *
+get_user_name (void)
+{
+    static char *user_name;
+
+    if (!user_name)
+        user_name = g_strcanon (g_strdup (g_get_user_name ()),
+                                G_CSET_A_2_Z G_CSET_a_2_z G_CSET_DIGITS,
+                                '-');
+
+    return user_name;
+}
+
 static char *
 get_pipe_dir (const char *appname)
 {
-    GdkDisplay *display;
-    char *display_name;
-    char *user_name;
+    const char *display_name;
+    const char *user_name;
     char *name;
 
     g_return_val_if_fail (appname != NULL, NULL);
 
-    display = gdk_display_get_default ();
-    g_return_val_if_fail (display != NULL, NULL);
+    display_name = get_display_name ();
+    user_name = get_user_name ();
 
-    display_name = g_strcanon (g_strdup (gdk_display_get_name (display)),
-                               G_CSET_A_2_Z G_CSET_a_2_z G_CSET_DIGITS,
-                               '-');
-    user_name = g_strcanon (g_strdup (g_get_user_name ()),
-                            G_CSET_A_2_Z G_CSET_a_2_z G_CSET_DIGITS,
-                            '-');
+    if (display_name)
+        name = g_strdup_printf ("%s/%s-%s-%s", g_get_tmp_dir (), appname, user_name, display_name);
+    else
+        name = g_strdup_printf ("%s/%s-%s", g_get_tmp_dir (), appname, user_name);
 
-    name = g_strdup_printf ("%s/%s-%s-%s", g_get_tmp_dir (), appname, user_name,
-                            display_name[0] == '-' ? &display_name[1] : display_name);
-
-    g_free (display_name);
-    g_free (user_name);
     return name;
 }
 
@@ -309,8 +375,7 @@ out:
 }
 
 gboolean
-_moo_app_input_send_msg (const char *appname,
-                         const char *name,
+_moo_app_input_send_msg (const char *name,
                          const char *data,
                          gssize      len)
 {
@@ -318,6 +383,7 @@ _moo_app_input_send_msg (const char *appname,
     GDir *pipe_dir = NULL;
     char *pipe_dir_name;
     gboolean success = FALSE;
+    const char *appname = g_get_prgname ();
 
     g_return_val_if_fail (appname != NULL, FALSE);
     g_return_val_if_fail (data != NULL, FALSE);

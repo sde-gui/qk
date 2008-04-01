@@ -18,7 +18,6 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_APP_INFO           (moo_app_info_get_type ())
 #define MOO_TYPE_APP                (moo_app_get_type ())
 #define MOO_APP(object)             (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_APP, MooApp))
 #define MOO_APP_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_APP, MooAppClass))
@@ -41,7 +40,7 @@ struct _MooAppInfo
     char *website;
     char *website_label;
     char *logo;
-    char *credits;
+    const char *credits;
 };
 
 struct _MooApp
@@ -75,7 +74,6 @@ struct _MooAppClass
 
 
 GType            moo_app_get_type               (void) G_GNUC_CONST;
-GType            moo_app_info_get_type          (void) G_GNUC_CONST;
 
 MooApp          *moo_app_get_instance           (void);
 
@@ -102,12 +100,10 @@ MooUIXML        *moo_app_get_ui_xml             (MooApp     *app);
 void             moo_app_set_ui_xml             (MooApp     *app,
                                                  MooUIXML   *xml);
 
-gboolean         moo_app_send_msg               (MooApp     *app,
-                                                 const char *pid,
+gboolean         moo_app_send_msg               (const char *pid,
                                                  const char *data,
                                                  int         len);
-gboolean         moo_app_send_files             (MooApp     *app,
-                                                 char      **files,
+gboolean         moo_app_send_files             (char      **files,
                                                  guint32     line,
                                                  guint32     stamp,
                                                  const char *pid,
