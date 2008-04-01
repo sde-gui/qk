@@ -49,11 +49,13 @@ open file in a new window
 : **-t**, **--new-tab**
 open file in a new tab
 
-: **--log**[=//FILE//]
-if //FILE// is given, write the debug output into //FILE//. Otherwise,
+: **--log-file** //FILE//
+write debug output into //FILE//. This option is only useful on Windows
+
+: **--log-window**
 show debug output in a log window. This option is only useful on Windows
 
-: **--debug**[=//DOMAINS//]
+: **--debug** //DOMAINS//
 enable debug output for //DOMAINS// (if **medit** was compiled with
 --enable-debug option)
 

@@ -36,7 +36,7 @@ static struct MeditOpts {
     const char *exec_file;
     char **files;
     gboolean show_version;
-    gboolean debug;
+    const char *debug;
 } medit_opts = { -1, -1 };
 
 static gboolean
@@ -89,7 +89,7 @@ static GOptionEntry medit_options[] = {
             "Show debug output", NULL },
     { "log-file", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_FILENAME, &medit_opts.log_file,
             "Write debug output to FILE", "FILE" },
-    { "debug", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.debug,
+    { "debug", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_STRING, &medit_opts.debug,
             "Run in debug mode", NULL },
     { "exec", 0, 0, G_OPTION_ARG_STRING, &medit_opts.exec_string,
             /* command line option --exec CODE */ N_("Execute python code in an existing instance"),
@@ -128,7 +128,7 @@ post_parse_func (void)
     }
 
     if (medit_opts.debug)
-        g_setenv ("MOO_DEBUG", "yes", FALSE);
+        g_setenv ("MOO_DEBUG", medit_opts.debug, FALSE);
 
     if (medit_opts.project)
         medit_opts.project_mode = TRUE;
