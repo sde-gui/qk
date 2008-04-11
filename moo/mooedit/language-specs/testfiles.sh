@@ -10,11 +10,18 @@
 # makefile.lang ms.lang perl.lang po.lang python.lang sh.lang
 # texinfo.lang xml.lang yacc.lang libtool.lang pkgconfig.lang
 # objc.lang chdr.lang testv1.lang t2t.lang fortran.lang forth.lang
+# octave.lang
 
 dir="testdir"
 mkdir -p $dir/
 
-cat > $dir/file.t2t <<EOFEOF
+cat > $dir/file.octave <<EOFEOF
+% gtk-source-lang: octave
+% -*- octave -*-
+No idea what syntax is
+EOFEOF
+
+cat > $dir/file.t2t <<\EOFEOF
 ! gtk-source-lang: t2t
 
 %!include ``something``
