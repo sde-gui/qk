@@ -232,10 +232,10 @@ string_to_int (const char *string,
                int        *dest)
 {
     char *end;
-    gint64 val;
+    long val;
 
     errno = 0;
-    val = g_ascii_strtoll (string, &end, 10);
+    val = strtol (string, &end, 10);
 
     if (errno || !end || *end)
         return FALSE;

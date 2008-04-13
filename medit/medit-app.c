@@ -66,8 +66,16 @@ parse_use_session (const char *option_name,
 static GOptionEntry medit_options[] = {
     { "new-app", 'n', 0, G_OPTION_ARG_NONE, &medit_opts.new_app,
             /* command line option --new-app */ N_("Run new instance of application"), NULL },
+
+#if !GLIB_CHECK_VERSION(2,8,0)
+#define G_OPTION_FLAG_OPTIONAL_ARG 0
+#endif
     { "use-session", 's', G_OPTION_FLAG_OPTIONAL_ARG, G_OPTION_ARG_CALLBACK, parse_use_session,
             /* command line option --use-session */ N_("Load and save session"), "yes|no" },
+#if !GLIB_CHECK_VERSION(2,8,0)
+#undef G_OPTION_FLAG_OPTIONAL_ARG
+#endif
+
     { "pid", 0, 0, G_OPTION_ARG_INT, &medit_opts.pid,
             /* command line option --pid=PID */ N_("Use existing instance with process id PID"),
             /* command line option --pid=PID */ N_("PID") },

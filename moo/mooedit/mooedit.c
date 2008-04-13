@@ -26,6 +26,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
 #include <string.h>
+#include <stdlib.h>
 
 
 #define KEY_ENCODING "encoding"
@@ -758,7 +759,7 @@ _moo_edit_history_item_get_line (MdHistoryItem *item)
     strval = md_history_item_get (item, KEY_LINE);
 
     if (strval && strval[0])
-        return g_ascii_strtoll (strval, NULL, 10) - 1;
+        return strtol (strval, NULL, 10) - 1;
     else
         return -1;
 }
@@ -1892,6 +1893,7 @@ _moo_edit_set_state (MooEdit        *edit,
 
 #include <moo-tests.h>
 #include <mooutils/mooutils-fs.h>
+#include <mooutils/moocompat.h>
 
 static struct {
     char *working_dir;
