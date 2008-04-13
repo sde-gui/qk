@@ -26,6 +26,8 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <glib/gstdio.h>
+/* for glib-2.6 */
+#include <glib/gmappedfile.h>
 
 #ifdef __WIN32__
 #include <windows.h>
