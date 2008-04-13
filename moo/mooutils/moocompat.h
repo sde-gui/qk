@@ -87,6 +87,20 @@ GdkAtom gdk_atom_intern_static_string (const char *atom_name);
 #endif /* !GTK_CHECK_VERSION(2,10,0) */
 
 
+#if !GLIB_CHECK_VERSION(2,14,0)
+
+G_END_DECLS
+#include <stdarg.h>
+G_BEGIN_DECLS
+
+#define g_string_append_vprintf _moo_g_string_append_vprintf
+void g_string_append_vprintf (GString    *string,
+                              const char *format,
+                              va_list     args);
+
+#endif /* !GLIB_CHECK_VERSION(2,14,0) */
+
+
 G_END_DECLS
 
 #endif /* MOOUTILS_COMPAT_H */

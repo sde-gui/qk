@@ -712,3 +712,27 @@ gtk_unit_get_type (void)
 }
 
 #endif /* !GTK_CHECK_VERSION(2,10,0) */
+
+
+#if !GLIB_CHECK_VERSION(2,14,0)
+
+void
+g_string_append_vprintf (GString    *string,
+                         const char *format,
+                         va_list     args)
+{
+    char *buf;
+    int len;
+
+    g_return_if_fail (string != NULL);
+    g_return_if_fail (format != NULL);
+
+    len = g_vasprintf (&buf, format, args);
+
+    if (len > 0)
+        g_string_append_len (string, buf, len);
+
+    g_free (buf);
+}
+
+#endif /* !GLIB_CHECK_VERSION(2,14,0) */
