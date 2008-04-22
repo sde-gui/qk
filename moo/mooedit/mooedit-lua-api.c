@@ -776,7 +776,8 @@ _moo_lua_push_object (lua_State *L,
     init_types ();
 
     object_ptr = lua_newuserdata (L, sizeof (gpointer));
-    *object_ptr = MOO_OBJECT_REF_SINK (object);
+    MOO_OBJECT_REF_SINK (object);
+    *object_ptr = object;
 #ifdef MOO_ENABLE_UNIT_TESTS
     object_count += 1;
 #endif
