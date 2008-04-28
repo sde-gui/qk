@@ -17,6 +17,7 @@
 #endif
 
 #define MOO_FILE_VIEW_COMPILATION
+#include "moofileview/moofileview-accels.h"
 #include "moofileview/moofileview-dialogs.h"
 #include "moofileview/moobookmarkmgr.h"
 #include "moofileview/moofilesystem.h"
@@ -806,37 +807,39 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                   "delete-to-cursor", 0);
 
     gtk_binding_entry_add_signal (binding_set,
-                                  GDK_Return, GDK_MOD1_MASK,
+                                  MOO_FILE_VIEW_BINDING_PROPERTIES,
                                   "properties-dialog", 0);
 
     gtk_binding_entry_add_signal (binding_set,
-                                  GDK_Delete, GDK_MOD1_MASK,
+                                  MOO_FILE_VIEW_BINDING_DELETE,
                                   "delete-selected", 0);
 
     gtk_binding_entry_add_signal (binding_set,
-                                  GDK_Up, GDK_MOD1_MASK,
+                                  MOO_FILE_VIEW_BINDING_GO_UP,
                                   "go-up", 0);
     gtk_binding_entry_add_signal (binding_set,
-                                  GDK_KP_Up, GDK_MOD1_MASK,
+                                  MOO_FILE_VIEW_BINDING_GO_UP_KP,
                                   "go-up", 0);
     gtk_binding_entry_add_signal (binding_set,
-                                  GDK_Left, GDK_MOD1_MASK,
+                                  MOO_FILE_VIEW_BINDING_GO_BACK,
                                   "go-back", 0);
     gtk_binding_entry_add_signal (binding_set,
-                                  GDK_KP_Left, GDK_MOD1_MASK,
+                                  MOO_FILE_VIEW_BINDING_GO_FORWARD,
+                                  "go-forward", 0);
+    gtk_binding_entry_add_signal (binding_set,
+                                  MOO_FILE_VIEW_BINDING_GO_HOME,
+                                  "go-home", 0);
+#ifdef MOO_FILE_VIEW_BINDING_GO_BACK_KP
+    gtk_binding_entry_add_signal (binding_set,
+                                  MOO_FILE_VIEW_BINDING_GO_BACK_KP,
                                   "go-back", 0);
     gtk_binding_entry_add_signal (binding_set,
-                                  GDK_Right, GDK_MOD1_MASK,
+                                  MOO_FILE_VIEW_BINDING_GO_FORWARD_KP,
                                   "go-forward", 0);
     gtk_binding_entry_add_signal (binding_set,
-                                  GDK_KP_Right, GDK_MOD1_MASK,
-                                  "go-forward", 0);
-    gtk_binding_entry_add_signal (binding_set,
-                                  GDK_Home, GDK_MOD1_MASK,
+                                  MOO_FILE_VIEW_BINDING_GO_HOME_KP,
                                   "go-home", 0);
-    gtk_binding_entry_add_signal (binding_set,
-                                  GDK_KP_Home, GDK_MOD1_MASK,
-                                  "go-home", 0);
+#endif
 
     gtk_binding_entry_add_signal (binding_set,
                                   GDK_f, GDK_MOD1_MASK | GDK_SHIFT_MASK,
@@ -852,19 +855,19 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                   "toggle-show-bookmarks", 0);
 
     gtk_binding_entry_add_signal (binding_set,
-                                  GDK_c, GDK_CONTROL_MASK,
+                                  GDK_c, MOO_ACCEL_CTRL_MASK,
                                   "copy-clipboard", 0);
     gtk_binding_entry_add_signal (binding_set,
                                   GDK_Insert, GDK_CONTROL_MASK,
                                   "copy-clipboard", 0);
     gtk_binding_entry_add_signal (binding_set,
-                                  GDK_x, GDK_CONTROL_MASK,
+                                  GDK_x, MOO_ACCEL_CTRL_MASK,
                                   "cut-clipboard", 0);
     gtk_binding_entry_add_signal (binding_set,
                                   GDK_Delete, GDK_SHIFT_MASK,
                                   "cut-clipboard", 0);
     gtk_binding_entry_add_signal (binding_set,
-                                  GDK_v, GDK_CONTROL_MASK,
+                                  GDK_v, MOO_ACCEL_CTRL_MASK,
                                   "paste-clipboard", 0);
     gtk_binding_entry_add_signal (binding_set,
                                   GDK_Insert, GDK_SHIFT_MASK,
@@ -1118,7 +1121,7 @@ init_actions (MooFileView *fileview)
                                  "label", GTK_STOCK_GO_UP,
                                  "tooltip", _("Go to parent folder"),
                                  "stock-id", GTK_STOCK_GO_UP,
-                                 "accel", "<alt>Up",
+                                 "accel", MOO_FILE_VIEW_ACCEL_GO_UP,
                                  "force-accel-label", TRUE,
                                  "closure-object", fileview,
                                  "closure-signal", "go-up",
@@ -1128,7 +1131,7 @@ init_actions (MooFileView *fileview)
                                           "label", GTK_STOCK_GO_BACK,
                                           "tooltip", GTK_STOCK_GO_BACK,
                                           "stock-id", GTK_STOCK_GO_BACK,
-                                          "accel", "<alt>Left",
+                                          "accel", MOO_FILE_VIEW_ACCEL_GO_BACK,
                                           "force-accel-label", TRUE,
                                           "closure-object", fileview,
                                           "closure-signal", "go-back",
@@ -1139,7 +1142,7 @@ init_actions (MooFileView *fileview)
                                           "label", GTK_STOCK_GO_FORWARD,
                                           "tooltip", GTK_STOCK_GO_FORWARD,
                                           "stock-id", GTK_STOCK_GO_FORWARD,
-                                          "accel", "<alt>Right",
+                                          "accel", MOO_FILE_VIEW_ACCEL_GO_FORWARD,
                                           "force-accel-label", TRUE,
                                           "closure-object", fileview,
                                           "closure-signal", "go-forward",
@@ -1150,7 +1153,7 @@ init_actions (MooFileView *fileview)
                                  "label", GTK_STOCK_HOME,
                                  "tooltip", GTK_STOCK_HOME,
                                  "stock-id", GTK_STOCK_HOME,
-                                 "accel", "<alt>Home",
+                                 "accel", MOO_FILE_VIEW_ACCEL_GO_HOME,
                                  "force-accel-label", TRUE,
                                  "closure-object", fileview,
                                  "closure-signal", "go-home",
@@ -1168,7 +1171,7 @@ init_actions (MooFileView *fileview)
                                           "label", _("Delete..."),
                                           "tooltip", _("Delete..."),
                                           "stock-id", GTK_STOCK_DELETE,
-                                          "accel", "<alt>Delete",
+                                          "accel", MOO_FILE_VIEW_ACCEL_DELETE,
                                           "force-accel-label", TRUE,
                                           "closure-object", fileview,
                                           "closure-callback", file_view_delete_selected,
@@ -1179,7 +1182,7 @@ init_actions (MooFileView *fileview)
                                           "action-type::", MOO_TYPE_TOGGLE_ACTION,
                                           "label", _("Show Hidden Files"),
                                           "tooltip", _("Show Hidden Files"),
-                                          "accel", "<alt><shift>H",
+                                          "accel", MOO_FILE_VIEW_ACCEL_SHOW_HIDDEN,
                                           "force-accel-label", TRUE,
                                           NULL);
     _moo_sync_toggle_action (action, fileview, "show-hidden-files", FALSE);
@@ -1202,7 +1205,7 @@ init_actions (MooFileView *fileview)
                                           "label", GTK_STOCK_PROPERTIES,
                                           "tooltip", GTK_STOCK_PROPERTIES,
                                           "stock-id", GTK_STOCK_PROPERTIES,
-                                          "accel", "<alt>Return",
+                                          "accel", MOO_FILE_VIEW_ACCEL_PROPERTIES,
                                           "force-accel-label", TRUE,
                                           "closure-object", fileview,
                                           "closure-callback", file_view_properties_dialog,
@@ -1238,7 +1241,7 @@ init_actions (MooFileView *fileview)
                                           "label", GTK_STOCK_CUT,
                                           "tooltip", GTK_STOCK_CUT,
                                           "stock-id", GTK_STOCK_CUT,
-                                          "accel", "<control>X",
+                                          "accel", MOO_FILE_VIEW_ACCEL_CUT,
                                           "force-accel-label", TRUE,
                                           "closure-object", fileview,
                                           "closure-callback", file_view_cut_clipboard,
@@ -1250,7 +1253,7 @@ init_actions (MooFileView *fileview)
                                           "tooltip", GTK_STOCK_COPY,
                                           "stock-id", GTK_STOCK_COPY,
                                           "force-accel-label", TRUE,
-                                          "accel", "<control>C",
+                                          "accel", MOO_FILE_VIEW_ACCEL_COPY,
                                           "closure-object", fileview,
                                           "closure-callback", file_view_copy_clipboard,
                                           NULL);
@@ -1260,7 +1263,7 @@ init_actions (MooFileView *fileview)
                                           "label", GTK_STOCK_PASTE,
                                           "tooltip", GTK_STOCK_PASTE,
                                           "stock-id", GTK_STOCK_PASTE,
-                                          "accel", "<control>V",
+                                          "accel", MOO_FILE_VIEW_ACCEL_PASTE,
                                           "force-accel-label", TRUE,
                                           "closure-object", fileview,
                                           "closure-callback", file_view_paste_clipboard,

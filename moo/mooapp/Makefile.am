@@ -20,6 +20,7 @@ mooapp_sources =			\
 	mooapp.c			\
 	mooapp.h			\
 	mooapp-private.h		\
+	mooapp-accels.h			\
 	moohtml.h			\
 	moohtml.c			\
 	moolinklabel.h			\

@@ -11,6 +11,7 @@
  */
 
 #include "marshals.h"
+#include "mooutils/mooaccel.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/mooundo.h"
 #include "mooutils/mooutils-gobject.h"
@@ -250,10 +251,10 @@ moo_entry_class_init (MooEntryClass *klass)
 
     binding_set = gtk_binding_set_by_class (klass);
     gtk_binding_entry_add_signal (binding_set, GDK_z,
-                                  GDK_CONTROL_MASK,
+                                  MOO_ACCEL_CTRL_MASK,
                                   "undo", 0);
     gtk_binding_entry_add_signal (binding_set, GDK_z,
-                                  GDK_CONTROL_MASK | GDK_SHIFT_MASK,
+                                  MOO_ACCEL_CTRL_MASK | GDK_SHIFT_MASK,
                                   "redo", 0);
     gtk_binding_entry_add_signal (binding_set, GDK_u,
                                   GDK_CONTROL_MASK,

@@ -18,6 +18,7 @@
 #define WANT_MOO_APP_CMD_CHARS
 #include "mooapp/mooapp-private.h"
 #include "mooapp/smclient/eggsmclient.h"
+#include "mooapp/mooapp-accels.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"
@@ -1263,7 +1264,7 @@ install_common_actions (void)
 
     moo_window_class_new_action (klass, "Help", NULL,
                                  "label", GTK_STOCK_HELP,
-                                 "accel", "F1",
+                                 "accel", MOO_APP_ACCEL_HELP,
                                  "stock-id", GTK_STOCK_HELP,
                                  "closure-callback", moo_app_help,
                                  NULL);
@@ -1280,7 +1281,7 @@ install_common_actions (void)
                                  "label", GTK_STOCK_QUIT,
                                  "tooltip", GTK_STOCK_QUIT,
                                  "stock-id", GTK_STOCK_QUIT,
-                                 "accel", "<ctrl>Q",
+                                 "accel", MOO_APP_ACCEL_QUIT,
                                  "closure-callback", moo_app_quit,
                                  "closure-proxy-func", moo_app_get_instance,
                                  NULL);

@@ -65,6 +65,7 @@ mooedit_sources =			\
 	mooeditaction-factory.c		\
 	mooeditaction-factory.h		\
 	mooeditaction.h			\
+	mooedit-accels.h		\
 	mooedit-bookmarks.c		\
 	mooedit.c			\
 	mooeditconfig.c			\
@@ -211,7 +212,7 @@ install-data-hook:
 		echo "*** ";							\
 	fi
 uninstall-hook:
-	echo "Updating mime database" && $(update_mime) && echo "Done."
+	if echo "Updating mime database" && $(update_mime); then echo "Done."; else echo "Failed."; fi
 else MOO_OS_MINGW
 install-data-hook:
 	cp /usr/share/mime/packages/freedesktop.org.xml $(DESTDIR)${mimedir}/packages/ && \

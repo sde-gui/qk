@@ -17,6 +17,7 @@ moofileview_sources =		\
 	moofilesystem.c		\
 	moofilesystem.h		\
 	moofileview.c		\
+	moofileview-accels.h	\
 	moofileview-aux.h	\
 	moofileview-dialogs.c	\
 	moofileview-dialogs.h	\

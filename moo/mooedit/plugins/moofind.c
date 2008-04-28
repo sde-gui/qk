@@ -22,6 +22,7 @@
 #include "mooedit/plugins/mooeditplugins.h"
 #include "moofileview/moofileentry.h"
 #include "mooedit/moocmdview.h"
+#include "mooedit/mooedit-accels.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/moohistorycombo.h"
@@ -246,7 +247,7 @@ find_plugin_init (FindPlugin *plugin)
                                  "display-name", _("Find In Files"),
                                  "label", _("Find In Files"),
                                  "tooltip", _("Find in files"),
-                                 "accel", "<ctrl><alt>f",
+                                 "accel", MOO_EDIT_ACCEL_FIND_IN_FILES,
                                  "stock-id", MOO_STOCK_FIND_IN_FILES,
                                  "closure-callback", find_in_files_cb,
                                  NULL);

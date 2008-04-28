@@ -13,6 +13,7 @@
 #define MOO_FILE_VIEW_COMPILATION
 #include "mooiconview.h"
 #include "marshals.h"
+#include "mooutils/mooaccel.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include <gdk/gdkkeysyms.h>
@@ -408,7 +409,7 @@ _moo_icon_view_class_init (MooIconViewClass *klass)
     gtk_binding_entry_add_signal (binding_set, GDK_Return, 0, "activate-item-at-cursor", 0);
     gtk_binding_entry_add_signal (binding_set, GDK_ISO_Enter, 0, "activate-item-at-cursor", 0);
     gtk_binding_entry_add_signal (binding_set, GDK_KP_Enter, 0, "activate-item-at-cursor", 0);
-    gtk_binding_entry_add_signal (binding_set, GDK_a, GDK_CONTROL_MASK, "select-all", 0);
+    gtk_binding_entry_add_signal (binding_set, GDK_a, MOO_ACCEL_CTRL_MASK, "select-all", 0);
 
     add_move_binding (binding_set, GDK_Up, 0,
                       GTK_MOVEMENT_DISPLAY_LINES, -1);
