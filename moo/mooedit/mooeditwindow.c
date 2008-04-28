@@ -2780,7 +2780,7 @@ update_tab_label (MooEditWindow *window,
     gtk_label_set_text (GTK_LABEL (label), label_text);
 
     pixbuf = _moo_edit_get_icon (doc, icon, GTK_ICON_SIZE_MENU);
-    set_tab_icon (icon, evbox, pixbuf);
+    set_tab_icon (icon, pixbuf);
 
     g_free (label_text);
 }
