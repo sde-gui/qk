@@ -373,7 +373,14 @@ main (int argc, char *argv[])
     }
 
     if (medit_opts.project_mode)
+#ifdef MOO_ENABLE_PROJECT
         project_mode (medit_opts.project);
+#else
+    {
+        fputs ("medit was built without project support\n", stderr);
+	exit (EXIT_FAILURE);
+    }
+#endif
     else
         moo_app_load_session (app);
 

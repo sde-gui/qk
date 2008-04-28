@@ -4,6 +4,10 @@ AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
 
+if MOO_ENABLE_PROJECT
+AM_CFLAGS += -DMOO_ENABLE_PROJECT
+endif
+
 EXTRA_DIST =		\
 	medit.rc.in
 
@@ -56,5 +60,5 @@ install-data-hook:
 		echo $(update_icon_cache);					\
 	fi
 uninstall-hook:
-	echo "Updating icon cache" && $(update_icon_cache) && echo "Done."
+	if echo "Updating icon cache" && $(update_icon_cache); then echo "Done."; else echo "Failed."; fi
 endif
