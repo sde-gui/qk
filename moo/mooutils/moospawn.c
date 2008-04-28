@@ -285,7 +285,7 @@ process_line (MooCmd      *cmd,
         else
         {
             GError *error = NULL;
-            guint bytes_written;
+            gsize bytes_written;
 
             real_line = g_convert_with_fallback (line, len, "UTF-8", charset,
                                                  NULL, NULL, &bytes_written,

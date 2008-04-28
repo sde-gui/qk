@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <medit-project version="1.0" type="C" name="moo">
- <active>debug</active>
+ <active>gtk-cvs</active>
  <configurations>
   <darwin>
    <build_dir>build/darwin</build_dir>
@@ -18,7 +18,7 @@
    <build_dir>/home/muntyan/projects/gtk-2.6/moo</build_dir>
   </gtk-2.6>
   <gtk-cvs>
-   <build_dir>/home/muntyan/projects/gtk/build/moo</build_dir>
+   <build_dir>/Users/muntyan/projects/gtk/moo</build_dir>
    <configure>
     <args>--enable-debug --enable-all-warnings --prefix=$PREFIX --with-fam --with-mooterm --enable-libmoo</args>
     <vars>
