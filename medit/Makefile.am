@@ -62,3 +62,12 @@ install-data-hook:
 uninstall-hook:
 	if echo "Updating icon cache" && $(update_icon_cache); then echo "Done."; else echo "Failed."; fi
 endif
+
+bundle:
+	ige-mac-bundler $(srcdir)/mac/medit.bundle
+EXTRA_DIST +=		    \
+	mac/medit.bundle    \
+	mac/Info.plist	    \
+	mac/gtkrc	    \
+	mac/medit.icns	    \
+	mac/environment.sh
