@@ -216,7 +216,7 @@ G_STMT_START {                                  \
     }                                           \
 } G_STMT_END
 
-G_GNUC_UNUSED struct TestWarningsInfo {
+G_GNUC_UNUSED static struct TestWarningsInfo {
     int count;
     int line;
     char *file;
