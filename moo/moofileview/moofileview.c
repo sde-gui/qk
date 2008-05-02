@@ -4042,7 +4042,7 @@ moo_file_view_key_press (MooFileView    *fileview,
 
     /* return immediately if event doesn't look like text typed in */
 
-    if (event->state & (GDK_CONTROL_MASK | GDK_MOD1_MASK))
+    if (event->state & (GDK_CONTROL_MASK | GDK_MOD1_MASK | GDK_META_MASK))
         return FALSE;
 
     switch (event->keyval)
