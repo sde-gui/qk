@@ -303,6 +303,7 @@ detectDE()
 {
     if [ x"$KDE_FULL_SESSION" = x"true" ]; then DE=kde;
     elif [ x"$GNOME_DESKTOP_SESSION_ID" != x"" ]; then DE=gnome;
+    elif [ x"$MACHTYPE" != x ]; then DE=mac;
     elif xprop -root _DT_SAVE_MODE | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
     fi
 }
@@ -339,6 +340,17 @@ open_kde()
 open_gnome()
 {
     gnome-open "$1"
+
+    if [ $? -eq 0 ]; then
+        exit_success
+    else
+        exit_failure_operation_failed
+    fi
+}
+
+open_mac()
+{
+    open "$1"
 
     if [ $? -eq 0 ]; then
         exit_success
@@ -420,6 +432,10 @@ case "$DE" in
 
     gnome)
     open_gnome "$url"
+    ;;
+
+    mac)
+    open_mac "$url"
     ;;
 
     xfce)
