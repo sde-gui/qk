@@ -32,6 +32,18 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
     fi ])
   AM_CONDITIONAL(MOO_ENABLE_GENERATED_FILES, test x$MOO_ENABLE_GENERATED_FILES = "xyes")
 
+  _moo_ac_have_carbon=no
+  AC_MSG_CHECKING([for Mac OS X Carbon support])
+  AC_TRY_CPP([
+#include <Carbon/Carbon.h>
+#include <CoreServices/CoreServices.h>
+  ],[
+    _moo_ac_have_carbon=yes
+    AC_DEFINE(HAVE_CARBON, 1, [Mac OS X Carbon])
+    LDFLAGS="$LDFLAGS -framework Carbon"
+  ])
+  AC_MSG_RESULT([$_moo_ac_have_carbon])
+
   AC_CHECK_LIB(Xrender, XRenderFindFormat,[
     AC_SUBST(RENDER_LIBS, "-lXrender -lXext")
     AC_DEFINE(HAVE_RENDER, 1, [Define if libXrender is available.])
