@@ -1956,13 +1956,15 @@ test_moo_file_writer (void)
     TEST_ASSERT (_moo_remove_dir (my_dir, TRUE, NULL));
 
 #ifndef __WIN32__
-    writer = moo_text_writer_new ("/root/file", TRUE, &error);
+    writer = moo_text_writer_new ("/usr/test-mooutils-fs", TRUE, &error);
 #else
     writer = moo_text_writer_new ("K:\\nowayyouhaveit\\file.ini", TRUE, &error);
 #endif
     TEST_ASSERT (writer == NULL);
     TEST_ASSERT (error != NULL);
-    g_error_free (error);
+
+    if (error)
+        g_error_free (error);
     error = NULL;
 
     g_free (bak_filename);
