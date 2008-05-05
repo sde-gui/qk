@@ -18,6 +18,12 @@
 
 #define MOO_ACCEL_PREFS_KEY "Shortcuts"
 
+#if GTK_CHECK_VERSION(2,10,0) && defined(GDK_WINDOWING_QUARTZ)
+#define COMMAND_MASK GDK_META_MASK
+#else
+#define COMMAND_MASK GDK_CONTROL_MASK
+#endif
+
 
 static void          accel_map_changed      (GtkAccelMap        *map,
                                              gchar              *accel_path,
@@ -32,6 +38,9 @@ static void          prefs_set_accel        (const char         *accel_path,
                                              const char         *accel);
 
 static gboolean      parse_accel            (const char         *accel,
+                                             guint              *key,
+                                             GdkModifierType    *mods);
+static void          my_gtk_accelerator_parse (const char       *accel,
                                              guint              *key,
                                              GdkModifierType    *mods);
 
@@ -152,21 +161,6 @@ prefs_get_accel (const char *accel_path)
 
     g_free (key);
     return accel;
-}
-
-
-static void
-my_gtk_accelerator_parse (const char      *accel,
-                          guint           *key,
-                          GdkModifierType *mods)
-{
-    gtk_accelerator_parse (accel, key, mods);
-
-    if (*key == GDK_VoidSymbol)
-    {
-        *key = 0;
-        *mods = 0;
-    }
 }
 
 
@@ -377,7 +371,6 @@ keyval_from_symbol (char sym)
 {
     switch (sym)
     {
-        case ' ': return GDK_space;
         case '!': return GDK_exclam;
         case '"': return GDK_quotedbl;
         case '#': return GDK_numbersign;
@@ -445,12 +438,12 @@ parse_key (const char *string)
 
 
 static GdkModifierType
-parse_mod (const char *string)
+parse_mod (const char *string, gssize len)
 {
     GdkModifierType mod = 0;
     char *stripped;
 
-    stripped = g_strstrip (g_ascii_strdown (string, -1));
+    stripped = g_strstrip (g_ascii_strdown (string, len));
 
     if (!strcmp (stripped, "alt"))
         mod = GDK_MOD1_MASK;
@@ -458,6 +451,13 @@ parse_mod (const char *string)
               !strcmp (stripped, "ctrl") ||
               !strcmp (stripped, "control"))
         mod = GDK_CONTROL_MASK;
+    else if (!strcmp (stripped, "cmd") ||
+             !strcmp (stripped, "command"))
+        mod = COMMAND_MASK;
+#if GTK_CHECK_VERSION(2,10,0)
+    else if (!strcmp (stripped, "meta"))
+        mod = GDK_META_MASK;
+#endif
     else if (!strncmp (stripped, "mod", 3) &&
               1 <= stripped[3] && stripped[3] <= 5 && !stripped[4])
     {
@@ -481,6 +481,34 @@ parse_mod (const char *string)
 }
 
 
+static void
+my_gtk_accelerator_parse (const char      *accel,
+                          guint           *key,
+                          GdkModifierType *mods)
+{
+    *key = 0;
+    *mods = 0;
+
+    while (*accel == '<')
+    {
+        GdkModifierType m;
+        const char *end = strchr (accel, '>');
+
+        if (!end || !(m = parse_mod (accel + 1, end - accel - 1)))
+            return;
+
+        *mods |= m;
+        accel = end + 1;
+    }
+
+    if (accel[0])
+        *key = gdk_keyval_from_name (accel);
+
+    if (*key == GDK_VoidSymbol)
+        *key = 0;
+}
+
+
 static gboolean
 accel_parse_sep (const char     *accel,
                  const char     *sep,
@@ -498,7 +526,7 @@ accel_parse_sep (const char     *accel,
 
     for (i = 0; i < n_pieces - 1; ++i)
     {
-        GdkModifierType m = parse_mod (pieces[i]);
+        GdkModifierType m = parse_mod (pieces[i], -1);
 
         if (!m)
             goto out;
@@ -735,6 +763,12 @@ test_moo_accel_normalize (void)
 
         { "shift-+", "<Shift>plus" }, { "shift+-", "<Shift>minus" },
         { "shift-plus", "<Shift>plus" }, { "shift+plus", "<Shift>plus" },
+
+#ifdef GDK_WINDOWING_QUARTZ
+        { "cmd-a", "<Meta>a" }, { "<Command>a", "<Meta>a" },
+#else
+        { "cmd-a", "<Control>a" }, { "<Command>a", "<Control>a" },
+#endif
     };
 
     setlocale (LC_ALL, "C");
@@ -774,11 +808,22 @@ test_moo_get_accel_label (void)
         { NULL, "" }, { "", "" }, { "some nonsense", "" }, { "foobar", "" },
         { "<<a>", "" }, { "<Control>Moo", "" }, { "<Control><Shift>", "" },
 
-        { "Tab", "Tab" }, { "<shift>Tab", "Shift+Tab" },
-        { "<Control>a", "Ctrl+A" }, { "<Ctl>b", "Ctrl+B" }, { "<Ctrl>c", "Ctrl+C" },
+        { "Tab", "Tab" },
+        { "F8", "F8" }, { "F12", "F12" }, { "z", "Z" }, { "X", "X" },
+
+#ifndef GDK_WINDOWING_QUARTZ
+        { "<shift>Tab", "Shift+Tab" }, { "<Control>a", "Ctrl+A" },
+        { "<Ctl>b", "Ctrl+B" }, { "<Ctrl>c", "Ctrl+C" },
         { "<ctl>d", "Ctrl+D" }, { "<control>e", "Ctrl+E" },
         { "<ctl><shift>f", "Shift+Ctrl+F" }, { "<shift><ctrl>g", "Shift+Ctrl+G" },
-        { "F8", "F8" }, { "F12", "F12" }, { "z", "Z" }, { "X", "X" }, { "<shift>S", "Shift+S" }
+        { "<shift>S", "Shift+S" }
+#else
+        { "<shift>Tab", "\xe2\x87\xa7""Tab" }, { "<meta>a", "\xe2\x8c\x98""A" },
+        { "<meta>b", "\xe2\x8c\x98""B" }, { "<cmd>c", "\xe2\x8c\x98""C" },
+        { "<command>d", "\xe2\x8c\x98""D" }, { "<Command>e", "\xe2\x8c\x98""E" },
+        { "<Cmd><shift>f", "\xe2\x87\xa7""\xe2\x8c\x98""F" }, { "<shift><Meta>g", "\xe2\x87\xa7""\xe2\x8c\x98""G" },
+        { "<shift>S", "\xe2\x87\xa7""S" }
+#endif
     };
 
     setlocale (LC_ALL, "C");
