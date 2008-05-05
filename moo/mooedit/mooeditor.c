@@ -17,6 +17,7 @@
 #include "mooedit/mooplugin.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooedit-private.h"
+#include "mooedit/mooedit-accels.h"
 #include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooedit-ui.h"
@@ -631,7 +632,7 @@ add_new_window_action (void)
                                      "label", MOO_STOCK_NEW_WINDOW,
                                      "tooltip", _("Open new editor window"),
                                      "stock-id", MOO_STOCK_NEW_WINDOW,
-                                     "accel", "<shift><ctrl>N",
+                                     "accel", MOO_EDIT_ACCEL_NEW_WINDOW,
                                      "closure-callback", moo_editor_new_window,
                                      "closure-proxy-func", moo_edit_window_get_editor,
                                      NULL);
