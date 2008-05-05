@@ -18,15 +18,9 @@
 #define MOO_FOLDER_MODEL_H
 
 #include <moofileview/moofile.h>
-#include <gtk/gtktreemodelfilter.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
-
-#ifndef __WIN32__
-#define MOO_FOLDER_MODEL_SORT_CASE_SENSITIVE_DEFAULT      FALSE
-#else /* __WIN32__ */
-#define MOO_FOLDER_MODEL_SORT_CASE_SENSITIVE_DEFAULT      FALSE
-#endif /* __WIN32__ */
 
 #define MOO_TYPE_FOLDER_MODEL            (_moo_folder_model_get_type ())
 #define MOO_FOLDER_MODEL(object)         (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FOLDER_MODEL, MooFolderModel))
@@ -58,10 +52,23 @@ typedef enum {
 #define MOO_FOLDER_MODEL_N_COLUMNS 1
 
 
+typedef enum {
+    MOO_FOLDER_MODEL_SORT_CASE_SENSITIVE = 1 << 0,
+    MOO_FOLDER_MODEL_SORT_FOLDERS_FIRST  = 1 << 1,
+#if defined(GDK_WINDOWING_QUARTZ) && 0
+    MOO_FOLDER_MODEL_SORT_FLAGS_DEFAULT  = 0
+#else
+    MOO_FOLDER_MODEL_SORT_FLAGS_DEFAULT  = MOO_FOLDER_MODEL_SORT_FOLDERS_FIRST
+#endif
+} MooFolderModelSortFlags;
+
+
 GType            _moo_folder_model_get_type      (void) G_GNUC_CONST;
 GtkTreeModel    *_moo_folder_model_new           (MooFolder      *folder);
 void             _moo_folder_model_set_folder    (MooFolderModel *model,
-                                                 MooFolder      *folder);
+                                                  MooFolder      *folder);
+void             _moo_folder_model_set_sort_flags(MooFolderModel *model,
+                                                  MooFolderModelSortFlags flags);
 
 gboolean         _moo_folder_model_get_iter_by_name
                                                 (MooFolderModel *model,

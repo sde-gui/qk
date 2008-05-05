@@ -50,13 +50,13 @@
 
 #ifndef __WIN32__
 #define TYPEAHEAD_CASE_SENSITIVE_DEFAULT    FALSE
-#define SORT_CASE_SENSITIVE_DEFAULT         MOO_FOLDER_MODEL_SORT_CASE_SENSITIVE_DEFAULT
 #define COMPLETION_CASE_SENSITIVE_DEFAULT   TRUE
 #else /* __WIN32__ */
 #define TYPEAHEAD_CASE_SENSITIVE_DEFAULT    FALSE
-#define SORT_CASE_SENSITIVE_DEFAULT         FALSE
 #define COMPLETION_CASE_SENSITIVE_DEFAULT   FALSE
 #endif /* __WIN32__ */
+
+#define SORT_FLAG_SET(flag) ((fileview->priv->sort_flags & (flag)) != 0)
 
 
 enum {
@@ -119,8 +119,6 @@ struct _MooFileViewPrivate {
 
     char            *home_dir;
 
-    gboolean         show_hidden_files;
-    gboolean         show_two_dots;
     History         *history;
     GString         *temp_visible;  /* temporary visible name, for interactive search */
 
@@ -135,9 +133,11 @@ struct _MooFileViewPrivate {
     int              entry_state;   /* it can be one of three: nothing, typeahead, or completion,
                                        depending on text entered into the entry */
     Typeahead       *typeahead;
-    gboolean         typeahead_case_sensitive;
-    gboolean         sort_case_sensitive;
-    gboolean         completion_case_sensitive;
+    guint            sort_flags : 2;
+    guint            typeahead_case_sensitive : 1;
+    guint            completion_case_sensitive : 1;
+    guint            show_hidden_files : 1;
+    guint            show_two_dots : 1;
 
     MooActionCollection *actions;
     MooUIXML        *ui_xml;
@@ -200,6 +200,8 @@ static void         _moo_file_view_set_show_parent              (MooFileView    
                                                                  gboolean        show);
 static void         _moo_file_view_set_sort_case_sensitive      (MooFileView    *fileview,
                                                                  gboolean        case_sensitive);
+static void         _moo_file_view_set_sort_folders_first       (MooFileView    *fileview,
+                                                                 gboolean        folders_first);
 static void         _moo_file_view_set_typeahead_case_sensitive (MooFileView    *fileview,
                                                                  gboolean        case_sensitive);
 
@@ -434,6 +436,7 @@ enum {
     PROP_FILTER_MGR,
     PROP_BOOKMARK_MGR,
     PROP_SORT_CASE_SENSITIVE,
+    PROP_SORT_FOLDERS_FIRST,
     PROP_TYPEAHEAD_CASE_SENSITIVE,
     PROP_COMPLETION_CASE_SENSITIVE,
     PROP_SHOW_HIDDEN_FILES,
@@ -551,13 +554,13 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                              TYPEAHEAD_CASE_SENSITIVE_DEFAULT,
                                              G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_SORT_CASE_SENSITIVE,
-                                     g_param_spec_boolean ("sort-case-sensitive",
-                                             "sort-case-sensitive",
-                                             "sort-case-sensitive",
-                                             SORT_CASE_SENSITIVE_DEFAULT,
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_SORT_CASE_SENSITIVE,
+        g_param_spec_boolean ("sort-case-sensitive", "sort-case-sensitive", "sort-case-sensitive",
+                              0, G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class, PROP_SORT_FOLDERS_FIRST,
+        g_param_spec_boolean ("sort-folders-first", "sort-folders-first", "sort-folders-first",
+                              0, G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_COMPLETION_CASE_SENSITIVE,
@@ -885,15 +888,12 @@ moo_file_view_init (MooFileView *fileview)
     fileview->priv->icon_size = GTK_ICON_SIZE_MENU;
 
     fileview->priv->typeahead_case_sensitive = TYPEAHEAD_CASE_SENSITIVE_DEFAULT;
-    fileview->priv->sort_case_sensitive = SORT_CASE_SENSITIVE_DEFAULT;
+    fileview->priv->sort_flags = MOO_FOLDER_MODEL_SORT_FLAGS_DEFAULT;
     fileview->priv->completion_case_sensitive = COMPLETION_CASE_SENSITIVE_DEFAULT;
 
     history_init (fileview);
 
-    fileview->priv->model = g_object_new (MOO_TYPE_FOLDER_MODEL,
-                                          "sort-case-sensitive",
-                                          fileview->priv->sort_case_sensitive,
-                                          NULL);
+    fileview->priv->model = g_object_new (MOO_TYPE_FOLDER_MODEL, NULL);
     g_signal_connect_swapped (fileview->priv->model, "row-inserted",
                               G_CALLBACK (file_added), fileview);
     fileview->priv->filter_model =
@@ -1200,6 +1200,13 @@ init_actions (MooFileView *fileview)
                                           "tooltip", _("Case Sensitive Sort"),
                                           NULL);
     _moo_sync_toggle_action (action, fileview, "sort-case-sensitive", FALSE);
+
+    action = moo_action_group_add_action (group, "SortFoldersFirst",
+                                          "action-type::", MOO_TYPE_TOGGLE_ACTION,
+                                          "label", _("Show Folders First"),
+                                          "tooltip", _("Show Folders First"),
+                                          NULL);
+    _moo_sync_toggle_action (action, fileview, "sort-folders-first", FALSE);
 
     action = moo_action_group_add_action (group, "Properties",
                                           "label", GTK_STOCK_PROPERTIES,
@@ -2270,6 +2277,10 @@ moo_file_view_set_property (GObject        *object,
             _moo_file_view_set_sort_case_sensitive (fileview, g_value_get_boolean (value));
             break;
 
+        case PROP_SORT_FOLDERS_FIRST:
+            _moo_file_view_set_sort_folders_first (fileview, g_value_get_boolean (value));
+            break;
+
         case PROP_TYPEAHEAD_CASE_SENSITIVE:
             _moo_file_view_set_typeahead_case_sensitive (fileview, g_value_get_boolean (value));
             break;
@@ -2330,7 +2341,11 @@ moo_file_view_get_property (GObject        *object,
             break;
 
         case PROP_SORT_CASE_SENSITIVE:
-            g_value_set_boolean (value, fileview->priv->sort_case_sensitive);
+            g_value_set_boolean (value, SORT_FLAG_SET (MOO_FOLDER_MODEL_SORT_CASE_SENSITIVE));
+            break;
+
+        case PROP_SORT_FOLDERS_FIRST:
+            g_value_set_boolean (value, SORT_FLAG_SET (MOO_FOLDER_MODEL_SORT_FOLDERS_FIRST));
             break;
 
         case PROP_TYPEAHEAD_CASE_SENSITIVE:
@@ -2725,13 +2740,35 @@ _moo_file_view_set_sort_case_sensitive (MooFileView    *fileview,
 {
     g_return_if_fail (MOO_IS_FILE_VIEW (fileview));
 
-    if (case_sensitive != fileview->priv->sort_case_sensitive)
+    if (case_sensitive != SORT_FLAG_SET (MOO_FOLDER_MODEL_SORT_CASE_SENSITIVE))
     {
-        fileview->priv->sort_case_sensitive = case_sensitive;
-        g_object_set (fileview->priv->model,
-                      "sort-case-sensitive",
-                      case_sensitive, NULL);
+        if (case_sensitive)
+            fileview->priv->sort_flags |= MOO_FOLDER_MODEL_SORT_CASE_SENSITIVE;
+        else
+            fileview->priv->sort_flags &= ~MOO_FOLDER_MODEL_SORT_CASE_SENSITIVE;
+
+        _moo_folder_model_set_sort_flags (MOO_FOLDER_MODEL (fileview->priv->model),
+                                          fileview->priv->sort_flags);
         g_object_notify (G_OBJECT (fileview), "sort-case-sensitive");
+    }
+}
+
+static void
+_moo_file_view_set_sort_folders_first (MooFileView *fileview,
+                                       gboolean     folders_first)
+{
+    g_return_if_fail (MOO_IS_FILE_VIEW (fileview));
+
+    if (folders_first != SORT_FLAG_SET (MOO_FOLDER_MODEL_SORT_FOLDERS_FIRST))
+    {
+        if (folders_first)
+            fileview->priv->sort_flags |= MOO_FOLDER_MODEL_SORT_FOLDERS_FIRST;
+        else
+            fileview->priv->sort_flags &= ~MOO_FOLDER_MODEL_SORT_FOLDERS_FIRST;
+
+        _moo_folder_model_set_sort_flags (MOO_FOLDER_MODEL (fileview->priv->model),
+                                          fileview->priv->sort_flags);
+        g_object_notify (G_OBJECT (fileview), "sort-folders-first");
     }
 }
 
@@ -4041,6 +4078,10 @@ moo_file_view_key_press (MooFileView    *fileview,
     }
 
     /* return immediately if event doesn't look like text typed in */
+
+#if !GTK_CHECK_VERSION(2,10,0)
+#define GDK_META_MASK 0
+#endif
 
     if (event->state & (GDK_CONTROL_MASK | GDK_MOD1_MASK | GDK_META_MASK))
         return FALSE;

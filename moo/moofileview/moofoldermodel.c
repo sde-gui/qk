@@ -20,9 +20,8 @@
 
 struct _MooFolderModelPrivate {
     MooFolder   *folder;
-    FileList    *dirs;
     FileList    *files;
-    gboolean     sort_case_sensitive;
+    MooFolderModelSortFlags sort_flags;
     MooFileCmp   cmp_func;
 };
 
@@ -83,8 +82,7 @@ _moo_folder_model_get_type (void)
 
 enum {
     PROP_0,
-    PROP_FOLDER,
-    PROP_SORT_CASE_SENSITIVE
+    PROP_FOLDER
 };
 
 
@@ -106,14 +104,6 @@ moo_folder_model_class_init (MooFolderModelClass *klass)
                                              "folder",
                                              MOO_TYPE_FOLDER,
                                              G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_SORT_CASE_SENSITIVE,
-                                     g_param_spec_boolean ("sort-case-sensitive",
-                                             "sort-case-sensitive",
-                                             "sort-case-sensitive",
-                                             MOO_FOLDER_MODEL_SORT_CASE_SENSITIVE_DEFAULT,
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
 }
 
 
@@ -128,9 +118,6 @@ static void         moo_folder_model_disconnect_folder (MooFolderModel *model);
 
 
 static MooFolder   *_moo_folder_model_get_folder    (MooFolderModel *model);
-static void         _moo_folder_model_set_sort_case_sensitive
-                                                    (MooFolderModel *model,
-                                                     gboolean        case_sensitive);
 
 static GtkTreeModelFlags moo_folder_model_get_flags (GtkTreeModel *tree_model);
 static gint         moo_folder_model_get_n_columns  (GtkTreeModel *tree_model);
@@ -196,10 +183,6 @@ moo_folder_model_set_property (GObject *object,
                                           g_value_get_object (value));
             break;
 
-        case PROP_SORT_CASE_SENSITIVE:
-            _moo_folder_model_set_sort_case_sensitive (model, g_value_get_boolean (value));
-            break;
-
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -219,10 +202,6 @@ moo_folder_model_get_property (GObject *object,
         case PROP_FOLDER:
             g_value_set_object (value,
                                 _moo_folder_model_get_folder (model));
-            break;
-
-        case PROP_SORT_CASE_SENSITIVE:
-            g_value_set_boolean (value, model->priv->sort_case_sensitive);
             break;
 
         default:
@@ -271,20 +250,32 @@ _moo_folder_model_set_folder (MooFolderModel *model,
 }
 
 
+static MooFileCmp
+get_cmp_func (MooFolderModelSortFlags flags)
+{
+    if (flags & MOO_FOLDER_MODEL_SORT_FOLDERS_FIRST)
+    {
+        if (flags & MOO_FOLDER_MODEL_SORT_CASE_SENSITIVE)
+            return moo_file_cmp;
+        else
+            return moo_file_case_cmp;
+    }
+    else
+    {
+        if (flags & MOO_FOLDER_MODEL_SORT_CASE_SENSITIVE)
+            return moo_file_cmp_fi;
+        else
+            return moo_file_case_cmp_fi;
+    }
+}
+
 static void
 moo_folder_model_init (MooFolderModel *model)
 {
     model->priv = g_new0 (MooFolderModelPrivate, 1);
-
-    model->priv->sort_case_sensitive = MOO_FOLDER_MODEL_SORT_CASE_SENSITIVE_DEFAULT;
-
-    if (model->priv->sort_case_sensitive)
-        model->priv->cmp_func = moo_file_cmp;
-    else
-        model->priv->cmp_func = moo_file_case_cmp;
-
+    model->priv->sort_flags = MOO_FOLDER_MODEL_SORT_FLAGS_DEFAULT;
+    model->priv->cmp_func = get_cmp_func (model->priv->sort_flags);
     model->priv->files = file_list_new (model->priv->cmp_func);
-    model->priv->dirs = file_list_new (model->priv->cmp_func);
 }
 
 
@@ -308,7 +299,6 @@ moo_folder_model_finalize (GObject *object)
         model->priv->folder = NULL;
     }
 
-    file_list_destroy (model->priv->dirs);
     file_list_destroy (model->priv->files);
 
     g_free (model->priv);
@@ -318,54 +308,24 @@ moo_folder_model_finalize (GObject *object)
 }
 
 
-static void
-_moo_folder_model_set_sort_case_sensitive (MooFolderModel *model,
-                                           gboolean        case_sensitive)
+void
+_moo_folder_model_set_sort_flags (MooFolderModel          *model,
+                                  MooFolderModelSortFlags  flags)
 {
     g_return_if_fail (MOO_IS_FOLDER_MODEL (model));
 
-    if (model->priv->sort_case_sensitive != case_sensitive)
+    if (model->priv->sort_flags != flags)
     {
-        int *new_order, *real_new_order;
-        guint i;
-        guint dir_num = model->priv->dirs->size;
-        guint total = model->priv->dirs->size + model->priv->files->size;
+        int *new_order;
         GtkTreePath *path = gtk_tree_path_new ();
 
-        model->priv->sort_case_sensitive = case_sensitive;
-
-        if (model->priv->sort_case_sensitive)
-            model->priv->cmp_func = moo_file_cmp;
-        else
-            model->priv->cmp_func = moo_file_case_cmp;
-
-        real_new_order = g_new (int, total);
-
-        for (i = 0; i < total; ++i)
-            real_new_order[i] = i;
-
-        file_list_set_cmp_func (model->priv->dirs, model->priv->cmp_func, &new_order);
-
-        if (dir_num)
-        {
-            for (i = 0; i < dir_num; ++i)
-                real_new_order[i] = new_order[i];
-            g_free (new_order);
-        }
-
+        model->priv->sort_flags = flags;
+        model->priv->cmp_func = get_cmp_func (model->priv->sort_flags);
         file_list_set_cmp_func (model->priv->files, model->priv->cmp_func, &new_order);
 
-        if (model->priv->files->size)
-        {
-            for (i = dir_num; i < total; ++i)
-                real_new_order[i] = new_order[i - dir_num] + dir_num;
-            g_free (new_order);
-        }
+        g_signal_emit_by_name (model, "rows-reordered", path, NULL, new_order);
 
-        g_signal_emit_by_name (model, "rows-reordered", path, NULL, real_new_order);
-        g_object_notify (G_OBJECT (model), "sort-case-sensitive");
-
-        g_free (real_new_order);
+        g_free (new_order);
         gtk_tree_path_free (path);
     }
 }
@@ -384,35 +344,22 @@ static void     model_remove_moo_file   (MooFile        *file,
 
 
 inline static gboolean
-model_is_dir (MooFolderModel *model,
-              MooFile        *file)
-{
-    return file_list_contains (model->priv->dirs, file);
-}
-
-
-inline static gboolean
 model_contains_file (MooFolderModel *model,
                      MooFile        *file)
 {
-    return file_list_contains (model->priv->dirs, file) ||
-            file_list_contains (model->priv->files, file);
+    return file_list_contains (model->priv->files, file);
 }
 
 
 #define ITER_MODEL(ip)      ((ip)->user_data)
 #define ITER_FILE(ip)       ((ip)->user_data2)
-#define ITER_DIR(ip)        ((ip)->user_data3)
 #define ITER_GET_MODEL(ip)  ((MooFolderModel*) ITER_MODEL (ip))
 #define ITER_GET_FILE(ip)   ((MooFile*) ITER_FILE (ip))
-#define ITER_GET_DIR(ip)    (GPOINTER_TO_INT (ITER_DIR (ip)))
-#define ITER_SET_DIR(ip,d)  ITER_DIR (ip) = GINT_TO_POINTER (d)
 
-#define ITER_INIT(ip,model,file,is_dir) \
+#define ITER_INIT(ip,model,file)        \
 G_STMT_START {                          \
     ITER_MODEL(ip) = model;             \
     ITER_FILE(ip) = file;               \
-    ITER_SET_DIR(ip, is_dir);           \
 } G_STMT_END
 
 #ifdef MOO_DEBUG_ENABLED
@@ -448,11 +395,6 @@ moo_folder_model_disconnect_folder (MooFolderModel *model)
                                               model);
 
         files = file_list_get_slist (model->priv->files);
-        moo_folder_model_remove_files (model, files);
-        g_slist_foreach (files, (GFunc) _moo_file_unref, NULL);
-        g_slist_free (files);
-
-        files = file_list_get_slist (model->priv->dirs);
         moo_folder_model_remove_files (model, files);
         g_slist_foreach (files, (GFunc) _moo_file_unref, NULL);
         g_slist_free (files);
@@ -499,26 +441,15 @@ model_add_moo_file (MooFile        *file,
     int index_;
     GtkTreePath *path;
     GtkTreeIter iter;
-    gboolean is_dir;
 
     g_assert (!model_contains_file (model, file));
     g_assert (file != NULL);
 
     _moo_file_ref (file);
 
-    if (MOO_FILE_IS_DIR (file))
-    {
-        is_dir = TRUE;
-        index_ = file_list_add (model->priv->dirs, file);
-    }
-    else
-    {
-        is_dir = FALSE;
-        index_ = file_list_add (model->priv->files, file);
-        index_ += model->priv->dirs->size;
-    }
+    index_ = file_list_add (model->priv->files, file);
 
-    ITER_INIT (&iter, model, file, is_dir);
+    ITER_INIT (&iter, model, file);
     CHECK_ITER (model, &iter);
 
     path = gtk_tree_path_new_from_indices (index_, -1);
@@ -534,44 +465,14 @@ model_change_moo_file (MooFile        *file,
     int index_;
     GtkTreePath *path;
     GtkTreeIter iter;
-    gboolean is_dir;
 
     g_assert (model_contains_file (model, file));
     g_assert (file != NULL);
 
-    if (model_is_dir (model, file))
-    {
-        if (!MOO_FILE_IS_DIR (file))
-        {
-            _moo_file_ref (file);
-            model_remove_moo_file (file, model);
-            model_add_moo_file (file, model);
-            _moo_file_unref (file);
-            return;
-        }
+    index_ = file_list_position (model->priv->files, file);
+    g_assert (index_ >= 0);
 
-        index_ = file_list_position (model->priv->dirs, file);
-        g_assert (index_ >= 0);
-        is_dir = TRUE;
-    }
-    else
-    {
-        if (MOO_FILE_IS_DIR (file))
-        {
-            _moo_file_ref (file);
-            model_remove_moo_file (file, model);
-            model_add_moo_file (file, model);
-            _moo_file_unref (file);
-            return;
-        }
-
-        index_ = file_list_position (model->priv->files, file);
-        g_assert (index_ >= 0);
-        index_ += model->priv->dirs->size;
-        is_dir = FALSE;
-    }
-
-    ITER_INIT (&iter, model, file, is_dir);
+    ITER_INIT (&iter, model, file);
     CHECK_ITER (model, &iter);
 
     path = gtk_tree_path_new_from_indices (index_, -1);
@@ -584,7 +485,7 @@ static void
 model_remove_moo_file (MooFile        *file,
                        MooFolderModel *model)
 {
-    int index_;
+    int index;
     GtkTreePath *path;
 
     g_assert (model_contains_file (model, file));
@@ -592,17 +493,9 @@ model_remove_moo_file (MooFile        *file,
 
     _moo_file_ref (file);
 
-    if (model_is_dir (model, file))
-    {
-        index_ = file_list_remove (model->priv->dirs, file);
-    }
-    else
-    {
-        index_ = file_list_remove (model->priv->files, file);
-        index_ += model->priv->dirs->size;
-    }
+    index = file_list_remove (model->priv->files, file);
 
-    path = gtk_tree_path_new_from_indices (index_, -1);
+    path = gtk_tree_path_new_from_indices (index, -1);
     gtk_tree_model_row_deleted (GTK_TREE_MODEL (model), path);
     gtk_tree_path_free (path);
 
@@ -667,9 +560,8 @@ moo_folder_model_get_iter_impl (GtkTreeModel *tree_model,
                                 GtkTreePath  *path)
 {
     MooFolderModel *model;
-    int index_;
+    int index;
     MooFile *file;
-    gboolean is_dir;
 
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (tree_model), FALSE);
     g_return_val_if_fail (iter != NULL && path != NULL, FALSE);
@@ -682,27 +574,17 @@ moo_folder_model_get_iter_impl (GtkTreeModel *tree_model,
         return FALSE;
     }
 
-    index_ = gtk_tree_path_get_indices(path)[0];
+    index = gtk_tree_path_get_indices(path)[0];
 
-    g_return_val_if_fail (index_ >= 0, FALSE);
+    g_return_val_if_fail (index >= 0, FALSE);
 
-    if (index_ >= model->priv->files->size + model->priv->dirs->size)
+    if (index >= model->priv->files->size)
         return FALSE;
 
-    if (index_ < model->priv->dirs->size)
-    {
-        is_dir = TRUE;
-        file = file_list_nth (model->priv->dirs, index_);
-    }
-    else
-    {
-        is_dir = FALSE;
-        index_ -= model->priv->dirs->size;
-        file = file_list_nth (model->priv->files, index_);
-    }
+    file = file_list_nth (model->priv->files, index);
 
     g_assert (file != NULL);
-    ITER_INIT (iter, model, file, is_dir);
+    ITER_INIT (iter, model, file);
     CHECK_ITER (model, iter);
 
     return TRUE;
@@ -714,7 +596,7 @@ moo_folder_model_get_path (GtkTreeModel *tree_model,
                            GtkTreeIter  *iter)
 {
     MooFolderModel *model;
-    int index_;
+    int index;
 
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (tree_model), NULL);
     g_return_val_if_fail (iter != NULL, NULL);
@@ -723,21 +605,10 @@ moo_folder_model_get_path (GtkTreeModel *tree_model,
     g_return_val_if_fail (ITER_MODEL (iter) == model, NULL);
     g_return_val_if_fail (ITER_FILE (iter) != NULL, NULL);
 
-    if (ITER_DIR (iter))
-    {
-        index_ = file_list_position (model->priv->dirs,
-                                     ITER_FILE (iter));
-        g_return_val_if_fail (index_ >= 0, NULL);
-    }
-    else
-    {
-        index_ = file_list_position (model->priv->files,
-                                     ITER_FILE (iter));
-        g_return_val_if_fail (index_ >= 0, NULL);
-        index_ += model->priv->dirs->size;
-    }
+    index = file_list_position (model->priv->files, ITER_FILE (iter));
+    g_return_val_if_fail (index >= 0, NULL);
 
-    return gtk_tree_path_new_from_indices (index_, -1);
+    return gtk_tree_path_new_from_indices (index, -1);
 }
 
 
@@ -772,41 +643,18 @@ moo_folder_model_iter_next (GtkTreeModel *tree_model,
     g_return_val_if_fail (ITER_MODEL (iter) == model, FALSE);
     g_return_val_if_fail (ITER_FILE (iter) != NULL, FALSE);
 
-    if (ITER_DIR (iter))
+    next = file_list_next (model->priv->files, ITER_FILE (iter));
+
+    if (next)
     {
-        if ((next = file_list_next (model->priv->dirs, ITER_FILE (iter))))
-        {
-            ITER_INIT (iter, model, next, TRUE);
-            CHECK_ITER (model, iter);
-            return TRUE;
-        }
-        else if ((next = file_list_first (model->priv->files)))
-        {
-            ITER_INIT (iter, model, next, FALSE);
-            CHECK_ITER (model, iter);
-            return TRUE;
-        }
-        else
-        {
-            ITER_INIT (iter, NULL, NULL, FALSE);
-            return FALSE;
-        }
+        ITER_INIT (iter, model, next);
+        CHECK_ITER (model, iter);
+        return TRUE;
     }
     else
     {
-        next = file_list_next (model->priv->files, ITER_FILE (iter));
-
-        if (next)
-        {
-            ITER_INIT (iter, model, next, FALSE);
-            CHECK_ITER (model, iter);
-            return TRUE;
-        }
-        else
-        {
-            ITER_INIT (iter, NULL, NULL, FALSE);
-            return FALSE;
-        }
+        ITER_INIT (iter, NULL, NULL);
+        return FALSE;
     }
 }
 
@@ -825,21 +673,15 @@ moo_folder_model_iter_children (GtkTreeModel *tree_model,
 
     if (!parent)
     {
-        if ((first = file_list_first (model->priv->dirs)))
+        if ((first = file_list_first (model->priv->files)))
         {
-            ITER_INIT (iter, model, first, TRUE);
-            CHECK_ITER (model, iter);
-            return TRUE;
-        }
-        else if ((first = file_list_first (model->priv->files)))
-        {
-            ITER_INIT (iter, model, first, FALSE);
+            ITER_INIT (iter, model, first);
             CHECK_ITER (model, iter);
             return TRUE;
         }
         else
         {
-            ITER_INIT (iter, NULL, NULL, FALSE);
+            ITER_INIT (iter, NULL, NULL);
             return FALSE;
         }
     }
@@ -847,7 +689,7 @@ moo_folder_model_iter_children (GtkTreeModel *tree_model,
     {
         g_return_val_if_fail (ITER_MODEL (parent) == model, FALSE);
         g_return_val_if_fail (ITER_FILE (parent) != NULL, FALSE);
-        ITER_INIT (iter, NULL, NULL, FALSE);
+        ITER_INIT (iter, NULL, NULL);
         return FALSE;
     }
 }
@@ -881,7 +723,7 @@ moo_folder_model_iter_n_children (GtkTreeModel *tree_model,
     }
 
     model = MOO_FOLDER_MODEL (tree_model);
-    return model->priv->dirs->size + model->priv->files->size;
+    return model->priv->files->size;
 }
 
 
@@ -920,7 +762,7 @@ moo_folder_model_iter_parent (GtkTreeModel *tree_model,
     g_return_val_if_fail (child != NULL, FALSE);
     g_return_val_if_fail (ITER_MODEL (child) == tree_model, FALSE);
     g_return_val_if_fail (ITER_FILE (child) != NULL, FALSE);
-    ITER_INIT (iter, NULL, NULL, FALSE);
+    ITER_INIT (iter, NULL, NULL);
     return FALSE;
 }
 
@@ -983,21 +825,15 @@ _moo_folder_model_get_iter_by_name (MooFolderModel *model,
     g_return_val_if_fail (name != NULL, FALSE);
     g_return_val_if_fail (iter != NULL, FALSE);
 
-    if ((file = file_list_find_name (model->priv->dirs, name)))
+    if ((file = file_list_find_name (model->priv->files, name)))
     {
-        ITER_INIT (iter, model, file, TRUE);
-        CHECK_ITER (model, iter);
-        return TRUE;
-    }
-    else if ((file = file_list_find_name (model->priv->files, name)))
-    {
-        ITER_INIT (iter, model, file, FALSE);
+        ITER_INIT (iter, model, file);
         CHECK_ITER (model, iter);
         return TRUE;
     }
     else
     {
-        ITER_INIT (iter, NULL, NULL, FALSE);
+        ITER_INIT (iter, NULL, NULL);
         return FALSE;
     }
 }
@@ -1014,21 +850,15 @@ _moo_folder_model_get_iter_by_display_name (MooFolderModel *model,
     g_return_val_if_fail (name != NULL, FALSE);
     g_return_val_if_fail (iter != NULL, FALSE);
 
-    if ((file = file_list_find_display_name (model->priv->dirs, name)))
+    if ((file = file_list_find_display_name (model->priv->files, name)))
     {
-        ITER_INIT (iter, model, file, TRUE);
-        CHECK_ITER (model, iter);
-        return TRUE;
-    }
-    else if ((file = file_list_find_display_name (model->priv->files, name)))
-    {
-        ITER_INIT (iter, model, file, FALSE);
+        ITER_INIT (iter, model, file);
         CHECK_ITER (model, iter);
         return TRUE;
     }
     else
     {
-        ITER_INIT (iter, NULL, NULL, FALSE);
+        ITER_INIT (iter, NULL, NULL);
         return FALSE;
     }
 }
@@ -1056,11 +886,6 @@ static void CHECK_ITER (MooFolderModel *model, GtkTreeIter *iter)
     g_assert (ITER_MODEL (iter) == model);
     g_assert (ITER_FILE (iter) != NULL);
     g_assert (model_contains_file (model, ITER_FILE (iter)));
-
-    if (ITER_DIR (iter))
-        g_assert (model_is_dir (model, ITER_FILE (iter)));
-    else
-        g_assert (!model_is_dir (model, ITER_FILE (iter)));
 
     path1 = gtk_tree_model_get_path (GTK_TREE_MODEL (model), iter);
     g_assert (path1 != NULL);
