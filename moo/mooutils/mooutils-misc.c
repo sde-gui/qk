@@ -537,7 +537,7 @@ GtkWindow*
 _moo_get_top_window (GSList *windows)
 {
     g_return_val_if_fail (windows != NULL, NULL);
-    g_critical ("%s: don't know how to do it", G_STRLOC);
+    g_message ("%s: don't know how to do it", G_STRFUNC);
     return GTK_WINDOW (windows->data);
 }
 
