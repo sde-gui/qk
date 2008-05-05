@@ -13,6 +13,10 @@ typedef struct {
     gpointer test_data;
 } MooTestEnv;
 
+typedef enum {
+    MOO_TEST_LIST_ONLY = 1 << 0
+} MooTestOptions;
+
 typedef struct MooTestSuite MooTestSuite;
 typedef gboolean (*MooTestSuiteInit)    (gpointer    data);
 typedef void     (*MooTestSuiteCleanup) (gpointer    data);
@@ -27,7 +31,9 @@ void             moo_test_suite_add_test    (MooTestSuite       *ts,
                                              MooTestFunc         test_func,
                                              gpointer            data);
 
-void             moo_test_run_tests         (const char         *data_dir);
+void             moo_test_run_tests         (const char         *single_test,
+                                             const char         *data_dir,
+                                             MooTestOptions      opts);
 void             moo_test_cleanup           (void);
 gboolean         moo_test_get_result        (void);
 

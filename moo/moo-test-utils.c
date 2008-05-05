@@ -127,11 +127,18 @@ moo_test_suite_free (MooTestSuite *ts)
 }
 
 static void
-run_test (MooTest      *test,
-          MooTestSuite *ts)
+run_test (MooTest        *test,
+          MooTestSuite   *ts,
+          MooTestOptions  opts)
 {
     MooTestEnv env;
     gboolean failed;
+
+    if (opts & MOO_TEST_LIST_ONLY)
+    {
+        fprintf (stdout, "  Test: %s\n", test->name);
+        return;
+    }
 
     env.suite_data = ts->data;
     env.test_data = test->data;
@@ -173,54 +180,110 @@ run_test (MooTest      *test,
 }
 
 static void
-run_suite (MooTestSuite *ts)
+run_suite (MooTestSuite   *ts,
+           MooTest        *single_test,
+           MooTestOptions  opts)
 {
     GSList *l;
+    gboolean run = !(opts & MOO_TEST_LIST_ONLY);
 
-    if (ts->init_func && !ts->init_func (ts->data))
+    if (run && ts->init_func && !ts->init_func (ts->data))
         return;
 
     registry.current_suite = ts;
 
     g_print ("Suite: %s\n", ts->name);
 
-    for (l = ts->tests; l != NULL; l = l->next)
-        run_test (l->data, ts);
+    if (single_test)
+        run_test (single_test, ts, opts);
+    else
+        for (l = ts->tests; l != NULL; l = l->next)
+            run_test (l->data, ts, opts);
 
-    if (ts->cleanup_func)
+    if (run && ts->cleanup_func)
         ts->cleanup_func (ts->data);
 
     registry.current_suite = NULL;
     registry.tr.suites += 1;
 }
 
-void
-moo_test_run_tests (const char *data_dir)
+static gboolean
+find_test (const char    *name,
+           MooTestSuite **ts_p,
+           MooTest      **test_p)
 {
     GSList *l;
 
+    for (l = registry.test_suites; l != NULL; l = l->next)
+    {
+        int idx;
+        MooTestSuite *ts = l->data;
+
+        if (!g_str_has_prefix (name, ts->name))
+            continue;
+
+        *ts_p = ts;
+
+        name += strlen (ts->name);
+
+        if (!name[0])
+            return TRUE;
+        else if (!name[1])
+            return FALSE;
+
+        idx = strtol (name + 1, NULL, 10);
+        *test_p = g_slist_nth_data (ts->tests, idx - 1);
+
+        return *test_p != NULL;
+    }
+
+    return FALSE;
+}
+
+void
+moo_test_run_tests (const char     *name,
+                    const char     *data_dir,
+                    MooTestOptions  opts)
+{
+    GSList *l;
+    MooTestSuite *single_ts = NULL;
+    MooTest *single_test = NULL;
+
     g_return_if_fail (data_dir != NULL);
     g_return_if_fail (g_file_test (data_dir, G_FILE_TEST_IS_DIR));
+
+    if (name && !find_test (name, &single_ts, &single_test))
+    {
+        g_printerr ("could not find test %s", name);
+        exit (EXIT_FAILURE);
+    }
 
     g_free (registry.data_dir);
     registry.data_dir = g_strdup (data_dir);
 
     fprintf (stdout, "\n");
 
-    for (l = registry.test_suites; l != NULL; l = l->next)
-        run_suite (l->data);
+    if (single_ts)
+        run_suite (single_ts, single_test, opts);
+    else
+        for (l = registry.test_suites; l != NULL; l = l->next)
+            run_suite (l->data, NULL, opts);
 
     fprintf (stdout, "\n");
-    fprintf (stdout, "Run Summary: Type      Total     Ran  Passed  Failed\n");
-    fprintf (stdout, "             suites    %5d     %3d     n/a     n/a\n",
-             registry.tr.suites, registry.tr.suites);
-    fprintf (stdout, "             tests     %5d     %3d  %6d  %6d\n",
-             registry.tr.tests, registry.tr.tests, registry.tr.tests_passed,
-             registry.tr.tests - registry.tr.tests_passed);
-    fprintf (stdout, "             asserts   %5d     %3d  %6d  %6d\n",
-             registry.tr.asserts, registry.tr.asserts, registry.tr.asserts_passed,
-             registry.tr.asserts - registry.tr.asserts_passed);
-    fprintf (stdout, "\n");
+
+    if (!(opts & MOO_TEST_LIST_ONLY))
+    {
+        fprintf (stdout, "Run Summary: Type      Total     Ran  Passed  Failed\n");
+        fprintf (stdout, "             suites    %5d     %3d     n/a     n/a\n",
+                 registry.tr.suites, registry.tr.suites);
+        fprintf (stdout, "             tests     %5d     %3d  %6d  %6d\n",
+                 registry.tr.tests, registry.tr.tests, registry.tr.tests_passed,
+                 registry.tr.tests - registry.tr.tests_passed);
+        fprintf (stdout, "             asserts   %5d     %3d  %6d  %6d\n",
+                 registry.tr.asserts, registry.tr.asserts, registry.tr.asserts_passed,
+                 registry.tr.asserts - registry.tr.asserts_passed);
+        fprintf (stdout, "\n");
+    }
 }
 
 void
