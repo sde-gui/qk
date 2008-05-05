@@ -240,7 +240,7 @@ add_file_size (G_GNUC_UNUSED const char *filename,
     *mem += STRING_SIZE (file->link_target);
     *mem += STRING_SIZE (file->display_name);
     *mem += STRING_SIZE (file->case_display_name);
-    *mem += STRING_SIZE (file->collation_key);
+    *mem += _moo_collation_key_size (file->collation_key);
 #undef STRING_SIZE
 }
 

@@ -38,6 +38,7 @@ typedef GTime MooFileTime;
 #endif
 
 typedef gint64 MooFileSize;
+typedef struct MooCollationKey MooCollationKey;
 
 struct _MooFile
 {
@@ -45,7 +46,7 @@ struct _MooFile
     char           *link_target;
     char           *display_name; /* normalized */
     char           *case_display_name;
-    char           *collation_key;
+    MooCollationKey *collation_key;
     MooFileInfo     info;
     MooFileFlags    flags;
     guint8          icon;
@@ -74,8 +75,12 @@ GdkPixbuf   *_moo_file_get_icon         (const MooFile  *file,
                                          GtkWidget      *widget,
                                          GtkIconSize     size);
 
-const char  *_moo_file_collation_key    (const MooFile  *file);
-const char  *_moo_file_case_display_name(const MooFile *file);
+gsize        _moo_collation_key_size    (MooCollationKey *key);
+int          _moo_collation_key_cmp     (const MooCollationKey *key1,
+                                         const MooCollationKey *key2);
+const MooCollationKey *_moo_file_collation_key (const MooFile *file);
+
+const char  *_moo_file_case_display_name(const MooFile  *file);
 
 #ifndef __WIN32__
 const char  *_moo_file_link_get_target  (const MooFile  *file);

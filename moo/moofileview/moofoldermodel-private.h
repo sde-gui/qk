@@ -336,20 +336,56 @@ static GList    *_list_find             (FileList       *flist,
 }
 
 
-static int      moo_file_case_cmp       (MooFile        *f1,
-                                         MooFile        *f2)
+static int
+moo_file_case_cmp (MooFile *f1,
+                   MooFile *f2)
+{
+    if (!strcmp (_moo_file_name (f1), ".."))
+        return strcmp (_moo_file_name (f2), "..") ? -1 : 0;
+    else if (!strcmp (_moo_file_name (f2), ".."))
+        return 1;
+    else if (MOO_FILE_IS_DIR (f1) && !MOO_FILE_IS_DIR (f2))
+        return -1;
+    else if (!MOO_FILE_IS_DIR (f1) && MOO_FILE_IS_DIR (f2))
+        return 1;
+    else
+        return _moo_collation_key_cmp (_moo_file_collation_key (f1),
+                                       _moo_file_collation_key (f2));
+}
+
+static int
+moo_file_cmp (MooFile *f1,
+              MooFile *f2)
+{
+    if (!strcmp (_moo_file_name (f1), ".."))
+        return strcmp (_moo_file_name (f2), "..") ? -1 : 0;
+    else if (!strcmp (_moo_file_name (f2), ".."))
+        return 1;
+    else if (MOO_FILE_IS_DIR (f1) && !MOO_FILE_IS_DIR (f2))
+        return -1;
+    else if (!MOO_FILE_IS_DIR (f1) && MOO_FILE_IS_DIR (f2))
+        return 1;
+    else
+        return strcmp (_moo_file_display_name (f1),
+                       _moo_file_display_name (f2));
+}
+
+static int
+moo_file_case_cmp_fi (MooFile *f1,
+                      MooFile *f2)
 {
     if (!strcmp (_moo_file_name (f1), ".."))
         return strcmp (_moo_file_name (f2), "..") ? -1 : 0;
     else if (!strcmp (_moo_file_name (f2), ".."))
         return 1;
     else
-        return strcmp (_moo_file_collation_key (f1),
-                       _moo_file_collation_key (f2));
+        return _moo_collation_key_cmp (_moo_file_collation_key (f1),
+                                       _moo_file_collation_key (f2));
 }
 
-static int      moo_file_cmp            (MooFile        *f1,
-                                         MooFile        *f2)
+static int
+moo_file_cmp_fi (MooFile *f1,
+                 MooFile *f2)
 {
     if (!strcmp (_moo_file_name (f1), ".."))
         return strcmp (_moo_file_name (f2), "..") ? -1 : 0;

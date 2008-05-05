@@ -37,6 +37,9 @@
 #endif
 #include <errno.h>
 #include <time.h>
+#if defined(HAVE_CARBON)
+#include <CoreServices/CoreServices.h>
+#endif
 #include <gtk/gtkicontheme.h>
 #include <gtk/gtkiconfactory.h>
 #include <gtk/gtkstock.h>
@@ -91,6 +94,166 @@ _moo_file_find_mime_type (MooFile    *file,
 }
 
 
+#if defined(HAVE_CARBON)
+
+struct MooCollationKey {
+    guint len;
+    UCCollationValue buf[1];
+};
+
+static MooCollationKey *
+create_collation_key (CollatorRef  collator,
+                      const gchar *str,
+                      gssize       len)
+{
+  MooCollationKey *key = NULL;
+  UniChar *str_utf16 = NULL;
+  ItemCount actual_len;
+  ItemCount try_len;
+  glong len_utf16;
+  OSStatus ret;
+  UCCollationValue buf[512];
+
+  if (!collator)
+    goto error;
+
+  str_utf16 = g_utf8_to_utf16 (str, len, NULL, &len_utf16, NULL);
+  try_len = len_utf16 * 5 + 2;
+
+  if (try_len <= sizeof buf)
+    {
+      ret = UCGetCollationKey (collator, str_utf16, len_utf16, 
+                               sizeof buf, &actual_len, buf);
+
+      if (ret == 0)
+        {
+          key = g_malloc (sizeof (MooCollationKey) + (actual_len - 1) * sizeof (UCCollationValue));
+          memcpy (key->buf, buf, actual_len * sizeof (UCCollationValue));
+        }
+      else if (ret == kCollateBufferTooSmall)
+        try_len *= 2;
+      else
+        goto error;
+    }
+
+  if (!key)
+    {
+      key = g_malloc (sizeof (MooCollationKey) + (try_len - 1) * sizeof (UCCollationValue));
+      ret = UCGetCollationKey (collator, str_utf16, len_utf16, 
+                               try_len, &actual_len, key->buf);
+
+      if (ret == kCollateBufferTooSmall)
+        {
+          try_len *= 2;
+          key = g_realloc (key, sizeof (MooCollationKey) + (actual_len - 1) * sizeof (UCCollationValue));
+          ret = UCGetCollationKey (collator, str_utf16, len_utf16,
+                                   try_len, &actual_len, key->buf);
+        }
+
+      if (ret != 0)
+        goto error;
+    }
+
+  key->len = actual_len;
+
+  g_free (str_utf16);
+  return key;
+
+error:
+  g_free (str_utf16);
+  g_free (key);
+  key = g_new (MooCollationKey, 1);
+  key->len = 0;
+  return key;
+}
+
+G_GNUC_UNUSED static MooCollationKey *
+moo_get_collation_key (const char *str,
+                       gssize      len)
+{
+  static CollatorRef collator;
+
+  if (G_UNLIKELY (!collator))
+    {
+      UCCreateCollator (NULL, 0, kUCCollateStandardOptions, &collator);
+
+      if (!collator)
+        g_warning ("%s: UCCreateCollator failed", G_STRLOC);
+    }
+
+  return create_collation_key (collator, str, len);
+}
+
+static MooCollationKey *
+moo_get_collation_key_for_filename (const char *str,
+                                    gssize      len)
+{
+  static CollatorRef collator;
+
+  if (G_UNLIKELY (!collator))
+    {
+      /* http://developer.apple.com/qa/qa2004/qa1159.html */
+      UCCreateCollator (NULL, 0,
+                        kUCCollateComposeInsensitiveMask
+                         | kUCCollateWidthInsensitiveMask
+                         | kUCCollateCaseInsensitiveMask
+                         | kUCCollateDigitsOverrideMask
+                         | kUCCollateDigitsAsNumberMask
+                         | kUCCollatePunctuationSignificantMask, 
+                        &collator);
+
+      if (!collator)
+        g_warning ("%s: UCCreateCollator failed", G_STRLOC);
+    }
+
+  return create_collation_key (collator, str, len);
+}
+
+int
+_moo_collation_key_cmp (const MooCollationKey *key1,
+                        const MooCollationKey *key2)
+{
+  SInt32 order = 0;
+
+  g_return_val_if_fail (key1 != NULL, 0);
+  g_return_val_if_fail (key2 != NULL, 0);
+
+  UCCompareCollationKeys (key1->buf, key1->len,
+                          key2->buf, key2->len,
+                          NULL, &order);
+  return order;
+}
+
+gsize
+_moo_collation_key_size (MooCollationKey *key)
+{
+    return key ?
+            sizeof (MooCollationKey) +
+                key->len * sizeof (UCCollationValue) -
+                sizeof (UCCollationValue) :
+            0;
+}
+
+#else
+
+#define moo_get_collation_key_for_filename(fn,len) ((MooCollationKey*)g_utf8_collate_key_for_filename(fn,len))
+
+int
+_moo_collation_key_cmp (const MooCollationKey *key1,
+                        const MooCollationKey *key2)
+{
+  return strcmp ((const char*) key1, (const char*) key2);
+}
+
+gsize
+_moo_collation_key_size (MooCollationKey *key)
+{
+    return key ? strlen ((char*) key) + 1 : 0;
+}
+
+#endif
+
+
 /********************************************************************/
 /* MooFile
  */
@@ -125,7 +288,7 @@ _moo_file_new (const char *dirname,
 
     file->display_name = g_utf8_normalize (display_name, -1, G_NORMALIZE_ALL);
     file->case_display_name = g_utf8_casefold (file->display_name, -1);
-    file->collation_key = g_utf8_collate_key_for_filename (file->display_name, -1);
+    file->collation_key = moo_get_collation_key_for_filename (file->display_name, -1);
 
     g_free (path);
     g_free (display_name);
@@ -333,7 +496,7 @@ _moo_file_display_name (const MooFile *file)
     return file->display_name;
 }
 
-const char *
+const MooCollationKey *
 _moo_file_collation_key (const MooFile *file)
 {
     g_return_val_if_fail (file != NULL, NULL);
