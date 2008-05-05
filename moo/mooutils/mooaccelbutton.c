@@ -208,7 +208,7 @@ _moo_accel_button_set_accel (MooAccelButton *button,
     {
         gtk_accelerator_parse (accel, &accel_key, &accel_mods);
 
-        if (!accel_key && !accel_mods)
+        if (!accel_key || accel_key == GDK_VoidSymbol)
             return FALSE;
     }
 
