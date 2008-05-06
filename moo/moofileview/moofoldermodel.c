@@ -316,7 +316,7 @@ _moo_folder_model_set_sort_flags (MooFolderModel          *model,
 
     if (model->priv->sort_flags != flags)
     {
-        int *new_order;
+        int *new_order = NULL;
         GtkTreePath *path = gtk_tree_path_new ();
 
         model->priv->sort_flags = flags;
