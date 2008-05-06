@@ -44,6 +44,12 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   ])
   AC_MSG_RESULT([$_moo_ac_have_carbon])
 
+  if "$GDK_QUARTZ"; then
+    PKG_CHECK_MODULES(IGE_MAC,ige-mac-integration)
+    GTK_CFLAGS="$IGE_MAC_CFLAGS"
+    GTK_LIBS="$IGE_MAC_LIBS"
+  fi
+
   AC_CHECK_LIB(Xrender, XRenderFindFormat,[
     AC_SUBST(RENDER_LIBS, "-lXrender -lXext")
     AC_DEFINE(HAVE_RENDER, 1, [Define if libXrender is available.])

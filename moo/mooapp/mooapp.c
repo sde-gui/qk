@@ -42,6 +42,10 @@
 #include <stdio.h>
 #include <errno.h>
 
+#ifdef GDK_WINDOWING_QUARTZ
+#include <ige-mac-dock.h>
+#endif
+
 #ifdef HAVE_SIGNAL_H
 #include <signal.h>
 #endif
@@ -98,6 +102,10 @@ struct _MooAppPrivate {
     guint       quit_handler_id;
     gboolean    use_editor;
     gboolean    quit_on_editor_close;
+
+#ifdef GDK_WINDOWING_QUARTZ
+    IgeMacDock *dock;
+#endif
 };
 
 
@@ -867,6 +875,47 @@ moo_app_init_ui (MooApp *app)
 }
 
 
+#ifdef GDK_WINDOWING_QUARTZ
+
+static void
+dock_open_documents (MooApp  *app,
+                     char   **files)
+{
+    moo_app_open_files (app, files, 0, 0, 0);
+}
+
+static void
+dock_clicked (G_GNUC_UNUSED MooApp *app)
+{
+    /* XXX */
+    g_print ("dock_clicked\n");
+}
+
+static void
+dock_quit_activate (MooApp *app)
+{
+    moo_app_quit (app);
+}
+
+static void
+moo_app_init_mac (MooApp *app)
+{
+    app->priv->dock = ige_mac_dock_get_default ();
+    g_signal_connect_swapped (app->priv->dock, "clicked",
+                              G_CALLBACK (dock_clicked), app);
+    g_signal_connect_swapped (app->priv->dock, "open-documents",
+                              G_CALLBACK (dock_open_documents), app);
+    g_signal_connect_swapped (app->priv->dock, "quit-activate",
+                              G_CALLBACK (dock_quit_activate), app);
+}
+
+#else /* !GDK_WINDOWING_QUARTZ */
+static void
+moo_app_init_mac (G_GNUC_UNUSED MooApp *app)
+{
+}
+#endif
+
 static gboolean
 moo_app_init_real (MooApp *app)
 {
@@ -877,6 +926,7 @@ moo_app_init_real (MooApp *app)
 
     moo_app_load_prefs (app);
     moo_app_init_ui (app);
+    moo_app_init_mac (app);
 
 #ifdef MOO_BUILD_EDIT
     if (app->priv->use_editor)
