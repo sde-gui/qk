@@ -78,6 +78,7 @@ void        _moo_file_entry_completion_set_entry        (MooFileEntryCompletion 
 /* converts path to utf8 and sets entry content */
 void        _moo_file_entry_completion_set_path         (MooFileEntryCompletion *completion,
                                                          const char             *path);
+char       *_moo_file_entry_completion_get_path         (MooFileEntryCompletion *completion);
 
 
 G_END_DECLS

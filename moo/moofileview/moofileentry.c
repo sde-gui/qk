@@ -1561,6 +1561,19 @@ _moo_file_entry_completion_set_path (MooFileEntryCompletion *cmpl,
     g_free (path_utf8);
 }
 
+char *
+_moo_file_entry_completion_get_path (MooFileEntryCompletion *cmpl)
+{
+    const char *text;
+
+    g_return_val_if_fail (MOO_IS_FILE_ENTRY_COMPLETION (cmpl), NULL);
+    g_return_val_if_fail (cmpl->priv->entry != NULL, NULL);
+
+    text = gtk_entry_get_text (GTK_ENTRY (cmpl->priv->entry));
+    return _moo_file_system_get_absolute_path (cmpl->priv->fs, text,
+                                               cmpl->priv->current_dir);
+}
+
 
 /*****************************************************************************/
 /* MooFileEntry

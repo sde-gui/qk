@@ -536,21 +536,25 @@ init_find_dialog (MooEditWindow *window,
 static char *
 get_directory (MooGladeXML *xml)
 {
-    MooHistoryCombo *dir_combo;
-    GtkWidget *dir_entry;
-    const char *dir_utf8;
-    char *dir, *norm_dir;
+    MooHistoryCombo *combo;
+    GtkWidget *entry;
+    char *dir;
+    char *norm_dir = NULL;
+    MooFileEntryCompletion *completion;
 
-    dir_combo = moo_glade_xml_get_widget (xml, "dir_combo");
-    dir_entry = MOO_COMBO (dir_combo)->entry;
+    combo = moo_glade_xml_get_widget (xml, "dir_combo");
+    entry = MOO_COMBO (combo)->entry;
 
-    dir_utf8 = gtk_entry_get_text (GTK_ENTRY (dir_entry));
+    completion = g_object_get_data (G_OBJECT (entry), "find-plugin-file-completion");
+    dir = _moo_file_entry_completion_get_path (completion);
 
-    dir = g_filename_from_utf8 (dir_utf8, -1, NULL, NULL, NULL);
-    moo_history_list_add_filename (moo_history_combo_get_list (dir_combo), dir);
-
-    /* trailing slash is no-no on windows */
-    norm_dir = _moo_normalize_file_path (dir);
+    if (dir)
+    {
+        moo_history_list_add (moo_history_combo_get_list (combo), 
+                              gtk_entry_get_text (GTK_ENTRY (entry)));
+        /* trailing slash is no-no on windows */
+        norm_dir = _moo_normalize_file_path (dir);
+    }
 
     g_free (dir);
     return norm_dir;
