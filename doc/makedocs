@@ -9,7 +9,7 @@ outfile="$thisdir"/`basename $infile .t2t`.html
 outdir="$thisdir/help"
 
 T2T=txt2tags
-SPLITY="perl $srcdir/splity/splity.pl"
+SPLITY="perl -I$srcdir $srcdir/splity/splity.pl"
 SPLITY_INDEX="$srcdir/splity/index-template.html"
 SPLITY_PAGE="$srcdir/splity/page-template.html"
 
