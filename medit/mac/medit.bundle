@@ -83,9 +83,8 @@
     /Users/muntyan/.gtkrc-2.0
   </data>
 
-  <data dest="${bundle}/Contents/Resources/environment.sh">
-    ${project}/environment.sh
-  </data>
+  <data dest="${bundle}/Contents/Resources/environment.sh">${project}/environment.sh</data>
+  <data dest="${bundle}/Contents/Resources/bin/medit">${project}/medit</data>
 
   <!-- Icon themes to copy. The "icons" property can be either of
        "auto", "all", or "none". All or none should be

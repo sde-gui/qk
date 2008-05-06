@@ -1,0 +1,3 @@
+#! /bin/sh
+
+exec "$BUNDLE_CONTENTS/MacOS/`basename $0`-bin" "$@"

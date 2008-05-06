@@ -3,3 +3,5 @@
 
 export PYTHONHOME="$bundle_res"
 export PATH="$bundle_bin:$PATH"
+
+export BUNDLE_CONTENTS="$bundle_contents"
