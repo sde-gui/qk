@@ -24,6 +24,7 @@
 #include "marshals.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooundo.h"
+#include "mooutils/mooeditops.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
@@ -52,6 +53,7 @@ static const GtkTargetEntry text_view_target_table[] = {
 
 static GdkAtom moo_text_view_atom;
 
+static void     undo_ops_iface_init         (MooUndoOpsIface    *iface);
 static GObject *moo_text_view_constructor   (GType               type,
                                              guint               n_construct_properties,
                                              GObjectConstructParam *construct_param);
@@ -109,6 +111,8 @@ static GtkTextMark *get_insert              (MooTextView        *view);
 static void     cursor_moved                (MooTextView        *view,
                                              GtkTextIter        *where);
 static void     proxy_prop_notify           (MooTextView        *view,
+                                             GParamSpec         *pspec);
+static void     proxy_notify_can_undo_redo  (MooTextView        *view,
                                              GParamSpec         *pspec);
 
 static void     find_word_at_cursor         (MooTextView        *view,
@@ -242,7 +246,8 @@ enum {
 
 
 /* MOO_TYPE_TEXT_VIEW */
-G_DEFINE_TYPE (MooTextView, moo_text_view, GTK_TYPE_TEXT_VIEW)
+G_DEFINE_TYPE_WITH_CODE (MooTextView, moo_text_view, GTK_TYPE_TEXT_VIEW,
+                         G_IMPLEMENT_INTERFACE (MOO_TYPE_UNDO_OPS, undo_ops_iface_init))
 
 
 static void moo_text_view_class_init (MooTextViewClass *klass)
@@ -740,9 +745,9 @@ moo_text_view_constructor (GType                  type,
 
     undo_stack = _moo_text_buffer_get_undo_stack (get_moo_buffer (view));
     g_signal_connect_swapped (undo_stack, "notify::can-undo",
-                              G_CALLBACK (proxy_prop_notify), view);
+                              G_CALLBACK (proxy_notify_can_undo_redo), view);
     g_signal_connect_swapped (undo_stack, "notify::can-redo",
-                              G_CALLBACK (proxy_prop_notify), view);
+                              G_CALLBACK (proxy_notify_can_undo_redo), view);
 
     g_signal_connect_data (get_buffer (view), "insert-text",
                            G_CALLBACK (insert_text_cb), view,
@@ -1408,6 +1413,54 @@ static void
 proxy_prop_notify (MooTextView *view,
                    GParamSpec  *pspec)
 {
+    g_object_notify (G_OBJECT (view), pspec->name);
+}
+
+
+static void
+undo_ops_undo (MooUndoOps *obj)
+{
+    gboolean retval;
+    g_signal_emit_by_name (obj, "undo", &retval);
+}
+
+static void
+undo_ops_redo (MooUndoOps *obj)
+{
+    gboolean retval;
+    g_signal_emit_by_name (obj, "redo", &retval);
+}
+
+static gboolean
+undo_ops_can_undo (MooUndoOps *obj)
+{
+    return moo_text_view_can_undo (MOO_TEXT_VIEW (obj));
+}
+
+static gboolean
+undo_ops_can_redo (MooUndoOps *obj)
+{
+    return moo_text_view_can_redo (MOO_TEXT_VIEW (obj));
+}
+
+static void
+undo_ops_iface_init (MooUndoOpsIface *iface)
+{
+    iface->undo = undo_ops_undo;
+    iface->redo = undo_ops_redo;
+    iface->can_undo = undo_ops_can_undo;
+    iface->can_redo = undo_ops_can_redo;
+}
+
+static void
+proxy_notify_can_undo_redo (MooTextView *view,
+                            GParamSpec  *pspec)
+{
+    if (strcmp (pspec->name, "can-undo") == 0)
+        moo_undo_ops_can_undo_changed (G_OBJECT (view));
+    else
+        moo_undo_ops_can_redo_changed (G_OBJECT (view));
+
     g_object_notify (G_OBJECT (view), pspec->name);
 }
 

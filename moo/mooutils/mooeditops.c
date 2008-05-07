@@ -337,13 +337,13 @@ static void
 moo_undo_ops_class_init (G_GNUC_UNUSED MooUndoOpsIface *iface)
 {
     g_signal_new ("moo-undo-ops-can-undo-changed",
-                  MOO_TYPE_EDIT_OPS,
+                  MOO_TYPE_UNDO_OPS,
                   G_SIGNAL_RUN_LAST,
                   0, NULL, NULL,
                   _moo_marshal_VOID__VOID,
                   G_TYPE_NONE, 0);
     g_signal_new ("moo-undo-ops-can-redo-changed",
-                  MOO_TYPE_EDIT_OPS,
+                  MOO_TYPE_UNDO_OPS,
                   G_SIGNAL_RUN_LAST,
                   0, NULL, NULL,
                   _moo_marshal_VOID__VOID,
@@ -358,7 +358,7 @@ moo_undo_ops_get_type (void)
     if (G_UNLIKELY (!type))
     {
         GTypeInfo type_info = {
-            sizeof (MooEditOpsIface), NULL, NULL,
+            sizeof (MooUndoOpsIface), NULL, NULL,
             (GClassInitFunc) moo_undo_ops_class_init,
             NULL
         };
@@ -376,13 +376,13 @@ moo_undo_ops_get_type (void)
 void
 moo_undo_ops_can_undo_changed (GObject *obj)
 {
-    g_signal_emit_by_name (obj, "moo-edit-ops-can-undo-changed");
+    g_signal_emit_by_name (obj, "moo-undo-ops-can-undo-changed");
 }
 
 void
 moo_undo_ops_can_redo_changed (GObject *obj)
 {
-    g_signal_emit_by_name (obj, "moo-edit-ops-can-redo-changed");
+    g_signal_emit_by_name (obj, "moo-undo-ops-can-redo-changed");
 }
 
 

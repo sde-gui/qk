@@ -15,6 +15,7 @@
 #include "mooutils/mooentry.h"
 #include "mooutils/mooundo.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooeditops.h"
 #include <gtk/gtkbindings.h>
 #include <gtk/gtkimagemenuitem.h>
 #include <gtk/gtkseparatormenuitem.h>
@@ -40,6 +41,7 @@ static guint DELETE_ACTION_TYPE;
 
 static void     moo_entry_class_init        (MooEntryClass      *klass);
 static void     moo_entry_editable_init     (GtkEditableClass   *klass);
+static void     moo_entry_undo_ops_init     (MooUndoOpsIface    *iface);
 
 static void     moo_entry_init              (MooEntry           *entry);
 static void     moo_entry_finalize          (GObject            *object);
@@ -112,15 +114,17 @@ moo_entry_get_type (void)
             NULL
         };
 
-        static const GInterfaceInfo editable_info =
-        {
-            (GInterfaceInitFunc) moo_entry_editable_init,
-            NULL,
-            NULL
+        static const GInterfaceInfo editable_info = {
+            (GInterfaceInitFunc) moo_entry_editable_init, NULL, NULL
+        };
+
+        static const GInterfaceInfo undo_ops_info = {
+            (GInterfaceInitFunc) moo_entry_undo_ops_init, NULL, NULL
         };
 
         type = g_type_register_static (GTK_TYPE_ENTRY, "MooEntry", &info, 0);
         g_type_add_interface_static (type, GTK_TYPE_EDITABLE, &editable_info);
+        g_type_add_interface_static (type, MOO_TYPE_UNDO_OPS, &undo_ops_info);
     }
 
     return type;
@@ -388,22 +392,28 @@ moo_entry_changed (GtkEditable *editable)
 
 
 void
-moo_entry_undo (MooEntry       *entry)
+moo_entry_undo (MooEntry *entry)
 {
     g_return_if_fail (MOO_IS_ENTRY (entry));
+
     if (entry->priv->enable_undo && moo_undo_stack_can_undo (entry->priv->undo_stack))
         moo_undo_stack_undo (entry->priv->undo_stack);
-}
 
+    moo_undo_ops_can_undo_changed (G_OBJECT (entry));
+    moo_undo_ops_can_redo_changed (G_OBJECT (entry));
+}
 
 void
-moo_entry_redo (MooEntry       *entry)
+moo_entry_redo (MooEntry *entry)
 {
     g_return_if_fail (MOO_IS_ENTRY (entry));
+
     if (entry->priv->enable_undo && moo_undo_stack_can_redo (entry->priv->undo_stack))
         moo_undo_stack_redo (entry->priv->undo_stack);
-}
 
+    moo_undo_ops_can_undo_changed (G_OBJECT (entry));
+    moo_undo_ops_can_redo_changed (G_OBJECT (entry));
+}
 
 void
 moo_entry_begin_undo_group (MooEntry *entry)
@@ -412,7 +422,6 @@ moo_entry_begin_undo_group (MooEntry *entry)
     moo_undo_stack_start_group (entry->priv->undo_stack);
 }
 
-
 void
 moo_entry_end_undo_group (MooEntry *entry)
 {
@@ -420,12 +429,36 @@ moo_entry_end_undo_group (MooEntry *entry)
     moo_undo_stack_end_group (entry->priv->undo_stack);
 }
 
-
 void
 moo_entry_clear_undo (MooEntry *entry)
 {
     g_return_if_fail (MOO_IS_ENTRY (entry));
     moo_undo_stack_clear (entry->priv->undo_stack);
+}
+
+static gboolean
+undo_ops_can_undo (MooUndoOps *obj)
+{
+    MooEntry *entry = MOO_ENTRY (obj);
+    return entry->priv->enable_undo &&
+            moo_undo_stack_can_undo (entry->priv->undo_stack);
+}
+
+static gboolean
+undo_ops_can_redo (MooUndoOps *obj)
+{
+    MooEntry *entry = MOO_ENTRY (obj);
+    return entry->priv->enable_undo &&
+            moo_undo_stack_can_redo (entry->priv->undo_stack);
+}
+
+static void
+moo_entry_undo_ops_init (MooUndoOpsIface *iface)
+{
+    iface->undo = (void(*)(MooUndoOps*)) moo_entry_undo;
+    iface->redo = (void(*)(MooUndoOps*)) moo_entry_redo;
+    iface->can_undo = undo_ops_can_undo;
+    iface->can_redo = undo_ops_can_redo;
 }
 
 
@@ -599,6 +632,7 @@ moo_entry_do_insert_text (GtkEditable        *editable,
                                  INSERT_ACTION_TYPE,
                                  insert_action_new (editable, text, length, position));
         parent_editable_iface->do_insert_text (editable, text, length, position);
+        moo_undo_ops_can_undo_changed (G_OBJECT (editable));
     }
 }
 
@@ -626,9 +660,10 @@ moo_entry_do_delete_text (GtkEditable        *editable,
     if (start_pos < end_pos)
     {
         moo_undo_stack_add_action (MOO_ENTRY(editable)->priv->undo_stack,
-                                 DELETE_ACTION_TYPE,
-                                 delete_action_new (editable, start_pos, end_pos));
+                                   DELETE_ACTION_TYPE,
+                                   delete_action_new (editable, start_pos, end_pos));
         parent_editable_iface->do_delete_text (editable, start_pos, end_pos);
+        moo_undo_ops_can_undo_changed (G_OBJECT (editable));
     }
 }
 
