@@ -1666,6 +1666,8 @@ file_list_selection_changed (MooFileView *fileview,
     if (fileview->priv->has_selection != has_selection)
     {
         fileview->priv->has_selection = has_selection;
+        moo_edit_ops_can_do_op_changed (G_OBJECT (fileview), MOO_EDIT_OP_CUT);
+        moo_edit_ops_can_do_op_changed (G_OBJECT (fileview), MOO_EDIT_OP_COPY);
         g_object_notify (G_OBJECT (fileview), "has-selection");
     }
 }
