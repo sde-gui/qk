@@ -17,6 +17,7 @@
 #include "mooterm/mooterm-selection.h"
 #include "mooterm/mootermline-private.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooeditops.h"
 
 
 typedef struct {
@@ -291,6 +292,13 @@ invalidate_segment (Segment *segm, guint num)
 
 
 static void
+notify_has_selection (MooTerm *term)
+{
+    g_object_notify (G_OBJECT (term), "has-selection");
+    moo_edit_ops_can_do_op_changed (G_OBJECT (term), MOO_EDIT_OP_COPY);
+}
+
+static void
 _moo_term_select_range (MooTerm            *term,
                         const MooTermIter  *start,
                         const MooTermIter  *end)
@@ -299,12 +307,14 @@ _moo_term_select_range (MooTerm            *term,
     Segment new_sel;
     Segment old_selection;
     gboolean inv = FALSE;
+    gboolean had_selection;
 
     CHECK_ITER (start);
     CHECK_ITER (end);
 
     old_selection = *GET_SELECTION (ITER_TERM (start));
     CHECK_SEGMENT (&old_selection);
+    had_selection = !segment_empty (&old_selection);
 
     new_sel.start = *start;
     new_sel.end = *end;
@@ -352,9 +362,19 @@ _moo_term_select_range (MooTerm            *term,
                                            diff));
 
     if (_moo_term_selection_empty (term))
+    {
         _moo_term_release_selection (term);
+
+        if (had_selection)
+            notify_has_selection (term);
+    }
     else
+    {
         _moo_term_grab_selection (term);
+
+        if (!had_selection)
+            notify_has_selection (term);
+    }
 }
 
 

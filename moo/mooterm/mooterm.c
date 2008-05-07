@@ -20,9 +20,11 @@
 #include "marshals.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
+#include "mooutils/mooeditops.h"
 #include <string.h>
 
 
+static void moo_term_edit_ops_init  (MooEditOpsIface *iface);
 static void moo_term_class_init     (MooTermClass   *klass);
 static void moo_term_init           (MooTerm        *term);
 static void moo_term_finalize       (GObject        *object);
@@ -110,12 +112,15 @@ enum {
 enum {
     PROP_0,
     PROP_CURSOR_BLINKS,
-    PROP_FONT_NAME
+    PROP_FONT_NAME,
+    PROP_HAS_SELECTION
 };
 
 
 /* MOO_TYPE_TERM */
-G_DEFINE_TYPE (MooTerm, moo_term, GTK_TYPE_WIDGET)
+G_DEFINE_TYPE_WITH_CODE (MooTerm, moo_term, GTK_TYPE_WIDGET,
+                         G_IMPLEMENT_INTERFACE (MOO_TYPE_EDIT_OPS,
+                                                moo_term_edit_ops_init))
 
 
 static guint signals[LAST_SIGNAL];
@@ -151,21 +156,17 @@ static void moo_term_class_init (MooTermClass *klass)
     klass->reset = moo_term_reset_real;
     klass->bell = moo_term_bell_real;
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_CURSOR_BLINKS,
-                                     g_param_spec_boolean ("cursor-blinks",
-                                             "cursor-blinks",
-                                             "cursor-blinks",
-                                             FALSE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+    g_object_class_install_property (gobject_class, PROP_CURSOR_BLINKS,
+        g_param_spec_boolean ("cursor-blinks", "cursor-blinks", "cursor-blinks",
+                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_FONT_NAME,
-                                     g_param_spec_string ("font-name",
-                                             "font-name",
-                                             "font-name",
-                                             DEFAULT_MONOSPACE_FONT,
-                                             G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
+    g_object_class_install_property (gobject_class, PROP_FONT_NAME,
+        g_param_spec_string ("font-name", "font-name", "font-name",
+                             DEFAULT_MONOSPACE_FONT, G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class, PROP_HAS_SELECTION,
+        g_param_spec_boolean ("has-selection", "has-selection", "has-selection",
+                              FALSE, G_PARAM_READABLE));
 
     signals[SET_SCROLL_ADJUSTMENTS] =
             g_signal_new ("set-scroll-adjustments",
@@ -455,9 +456,14 @@ static void moo_term_get_property   (GObject        *object,
 {
     MooTerm *term = MOO_TERM (object);
 
-    switch (prop_id) {
+    switch (prop_id)
+    {
         case PROP_CURSOR_BLINKS:
             g_value_set_boolean (value, term->priv->cursor_blinks);
+            break;
+
+        case PROP_HAS_SELECTION:
+            g_value_set_boolean (value, moo_term_get_selection_bounds (term, NULL, NULL));
             break;
 
         default:
@@ -1070,6 +1076,68 @@ moo_term_paste_clipboard (MooTerm        *term,
         moo_term_feed_child (term, text, -1);
         g_free (text);
     }
+}
+
+
+static void
+moo_term_do_edit_op (MooEditOps    *obj,
+                     MooEditOpType  type)
+{
+    MooTerm *term;
+
+    g_return_if_fail (MOO_IS_TERM (obj));
+    term = MOO_TERM (obj);
+
+    switch (type)
+    {
+        case MOO_EDIT_OP_COPY:
+            moo_term_copy_clipboard (term, GDK_SELECTION_CLIPBOARD);
+            break;
+        case MOO_EDIT_OP_PASTE:
+            moo_term_paste_clipboard (term, GDK_SELECTION_CLIPBOARD);
+            break;
+        case MOO_EDIT_OP_SELECT_ALL:
+            moo_term_select_all (term);
+            break;
+        default:
+            g_return_if_reached ();
+            break;
+    }
+}
+
+static gboolean
+moo_term_can_do_edit_op (MooEditOps    *obj,
+                         MooEditOpType  type)
+{
+    MooTerm *term;
+
+    g_return_val_if_fail (MOO_IS_TERM (obj), FALSE);
+    term = MOO_TERM (obj);
+
+    switch (type)
+    {
+        case MOO_EDIT_OP_COPY:
+            return moo_term_get_selection_bounds (term, NULL, NULL);
+
+        case MOO_EDIT_OP_PASTE:
+        case MOO_EDIT_OP_SELECT_ALL:
+            return TRUE;
+
+        case MOO_EDIT_OP_CUT:
+        case MOO_EDIT_OP_DELETE:
+            return FALSE;
+
+        default:
+            g_return_val_if_reached (FALSE);
+            break;
+    }
+}
+
+static void
+moo_term_edit_ops_init (MooEditOpsIface *iface)
+{
+    iface->do_op = moo_term_do_edit_op;
+    iface->can_do_op = moo_term_can_do_edit_op;
 }
 
 

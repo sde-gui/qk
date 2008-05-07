@@ -23,6 +23,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-mem.h"
+#include "mooutils/mooeditops.h"
 #include <gtk/gtk.h>
 #include <gobject/gvaluecollector.h>
 
@@ -55,6 +56,11 @@ struct _MooWindowPrivate {
     MooActionCollection *actions;
     char *name;
     char *id;
+
+    GtkWidget *eo_widget;
+    GtkWidget *default_eo_widget;
+    GtkWidget *uo_widget;
+    GtkWidget *default_uo_widget;
 
     guint global_accels : 1;
 };
@@ -125,6 +131,18 @@ static void         moo_window_set_toolbar_visible      (MooWindow      *window,
 static GtkAction   *create_toolbar_style_action         (MooWindow      *window,
                                                          gpointer        dummy);
 
+static void         moo_window_set_focus                (GtkWindow      *window,
+                                                         GtkWidget      *widget);
+static void         moo_window_disconnect_eo_widget     (MooWindow      *window);
+static void         moo_window_disconnect_uo_widget     (MooWindow      *window);
+static void         moo_window_action_cut               (MooWindow      *window);
+static void         moo_window_action_copy              (MooWindow      *window);
+static void         moo_window_action_paste             (MooWindow      *window);
+static void         moo_window_action_delete            (MooWindow      *window);
+static void         moo_window_action_select_all        (MooWindow      *window);
+static void         moo_window_action_undo              (MooWindow      *window);
+static void         moo_window_action_redo              (MooWindow      *window);
+
 
 enum {
     PROP_0,
@@ -135,7 +153,16 @@ enum {
     PROP_UI_XML,
     PROP_ACTIONS,
     PROP_TOOLBAR_VISIBLE,
-    PROP_MENUBAR_VISIBLE
+    PROP_MENUBAR_VISIBLE,
+
+    PROP_MEO_CAN_CUT,
+    PROP_MEO_CAN_COPY,
+    PROP_MEO_CAN_PASTE,
+    PROP_MEO_CAN_SELECT_ALL,
+    PROP_MEO_CAN_DELETE,
+
+    PROP_MUO_CAN_UNDO,
+    PROP_MUO_CAN_REDO
 };
 
 enum {
@@ -152,11 +179,16 @@ G_DEFINE_TYPE (MooWindow, moo_window, GTK_TYPE_WINDOW)
 static gpointer moo_window_grand_parent_class;
 
 
+#define INSTALL_PROP(prop_id,name)                                          \
+    g_object_class_install_property (gobject_class, prop_id,                \
+        g_param_spec_boolean (name, name, name, FALSE, G_PARAM_READABLE))
+
 static void
 moo_window_class_init (MooWindowClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+    GtkWindowClass *window_class = GTK_WINDOW_CLASS (klass);
 
     moo_window_grand_parent_class = g_type_class_peek_parent (moo_window_parent_class);
 
@@ -167,8 +199,11 @@ moo_window_class_init (MooWindowClass *klass)
 
     widget_class->delete_event = moo_window_delete_event;
     widget_class->key_press_event = moo_window_key_press_event;
+    window_class->set_focus = moo_window_set_focus;
 
     moo_window_class_set_id (klass, "MooWindow", "Window");
+
+    _moo_edit_ops_iface_install ();
 
     moo_window_class_new_action (klass, "ConfigureShortcuts", NULL,
                                  "label", _("Configure _Shortcuts..."),
@@ -194,6 +229,75 @@ moo_window_class_init (MooWindowClass *klass)
     moo_window_class_new_action_custom (klass, TOOLBAR_STYLE_ACTION_ID, NULL,
                                         create_toolbar_style_action,
                                         NULL, NULL);
+
+    moo_window_class_new_action (klass, "Cut", NULL,
+                                 "display-name", GTK_STOCK_CUT,
+                                 "label", GTK_STOCK_CUT,
+                                 "tooltip", GTK_STOCK_CUT,
+                                 "stock-id", GTK_STOCK_CUT,
+                                 "accel", MOO_ACCEL_CUT,
+                                 "closure-callback", moo_window_action_cut,
+                                 "condition::sensitive", "can-cut",
+                                 NULL);
+
+    moo_window_class_new_action (klass, "Copy", NULL,
+                                 "display-name", GTK_STOCK_COPY,
+                                 "label", GTK_STOCK_COPY,
+                                 "tooltip", GTK_STOCK_COPY,
+                                 "stock-id", GTK_STOCK_COPY,
+                                 "accel", MOO_ACCEL_COPY,
+                                 "closure-callback", moo_window_action_copy,
+                                 "condition::sensitive", "can-copy",
+                                 NULL);
+
+    moo_window_class_new_action (klass, "Paste", NULL,
+                                 "display-name", GTK_STOCK_PASTE,
+                                 "label", GTK_STOCK_PASTE,
+                                 "tooltip", GTK_STOCK_PASTE,
+                                 "stock-id", GTK_STOCK_PASTE,
+                                 "accel", MOO_ACCEL_PASTE,
+                                 "closure-callback", moo_window_action_paste,
+                                 "condition::sensitive", "can-paste",
+                                 NULL);
+
+    moo_window_class_new_action (klass, "Delete", NULL,
+                                 "display-name", GTK_STOCK_DELETE,
+                                 "label", GTK_STOCK_DELETE,
+                                 "tooltip", GTK_STOCK_DELETE,
+                                 "stock-id", GTK_STOCK_DELETE,
+                                 "closure-callback", moo_window_action_delete,
+                                 "condition::sensitive", "can-delete",
+                                 NULL);
+
+    moo_window_class_new_action (klass, "SelectAll", NULL,
+                                 "display-name", GTK_STOCK_SELECT_ALL,
+                                 "label", GTK_STOCK_SELECT_ALL,
+                                 "tooltip", GTK_STOCK_SELECT_ALL,
+                                 "stock-id", GTK_STOCK_SELECT_ALL,
+                                 "accel", MOO_ACCEL_SELECT_ALL,
+                                 "closure-callback", moo_window_action_select_all,
+                                 "condition::sensitive", "can-select-all",
+                                 NULL);
+
+    moo_window_class_new_action (klass, "Undo", NULL,
+                                 "display-name", GTK_STOCK_UNDO,
+                                 "label", GTK_STOCK_UNDO,
+                                 "tooltip", GTK_STOCK_UNDO,
+                                 "stock-id", GTK_STOCK_UNDO,
+                                 "accel", MOO_ACCEL_UNDO,
+                                 "closure-callback", moo_window_action_undo,
+                                 "condition::sensitive", "can-undo",
+                                 NULL);
+
+    moo_window_class_new_action (klass, "Redo", NULL,
+                                 "display-name", GTK_STOCK_REDO,
+                                 "label", GTK_STOCK_REDO,
+                                 "tooltip", GTK_STOCK_REDO,
+                                 "stock-id", GTK_STOCK_REDO,
+                                 "accel", MOO_ACCEL_REDO,
+                                 "closure-callback", moo_window_action_redo,
+                                 "condition::sensitive", "can-redo",
+                                 NULL);
 
     g_object_class_install_property (gobject_class,
                                      PROP_ACCEL_GROUP,
@@ -258,6 +362,15 @@ moo_window_class_init (MooWindowClass *klass)
                                              "menubar-visible",
                                              TRUE,
                                              G_PARAM_READWRITE));
+
+    INSTALL_PROP (PROP_MEO_CAN_COPY, "can-copy");
+    INSTALL_PROP (PROP_MEO_CAN_CUT, "can-cut");
+    INSTALL_PROP (PROP_MEO_CAN_PASTE, "can-paste");
+    INSTALL_PROP (PROP_MEO_CAN_DELETE, "can-delete");
+    INSTALL_PROP (PROP_MEO_CAN_SELECT_ALL, "can-select-all");
+
+    INSTALL_PROP (PROP_MUO_CAN_UNDO, "can-undo");
+    INSTALL_PROP (PROP_MUO_CAN_REDO, "can-redo");
 
     signals[CLOSE] =
             g_signal_new ("close",
@@ -375,6 +488,12 @@ moo_window_dispose (GObject *object)
 
     if (window->priv)
     {
+        window->priv->default_eo_widget = NULL;
+        moo_window_disconnect_eo_widget (window);
+
+        window->priv->default_uo_widget = NULL;
+        moo_window_disconnect_uo_widget (window);
+
         if (window->priv->ui_xml)
             g_object_unref (window->priv->ui_xml);
 
@@ -577,6 +696,36 @@ moo_window_get_property (GObject      *object,
 
         case PROP_MENUBAR_VISIBLE:
             g_value_set_boolean (value, window->priv->menubar_visible);
+            break;
+
+        case PROP_MEO_CAN_COPY:
+            g_value_set_boolean (value, window->priv->eo_widget &&
+                _moo_edit_ops_can_do_op (G_OBJECT (window->priv->eo_widget), MOO_EDIT_OP_COPY));
+            break;
+        case PROP_MEO_CAN_CUT:
+            g_value_set_boolean (value, window->priv->eo_widget &&
+                _moo_edit_ops_can_do_op (G_OBJECT (window->priv->eo_widget), MOO_EDIT_OP_CUT));
+            break;
+        case PROP_MEO_CAN_PASTE:
+            g_value_set_boolean (value, window->priv->eo_widget &&
+                _moo_edit_ops_can_do_op (G_OBJECT (window->priv->eo_widget), MOO_EDIT_OP_PASTE));
+            break;
+        case PROP_MEO_CAN_DELETE:
+            g_value_set_boolean (value, window->priv->eo_widget &&
+                _moo_edit_ops_can_do_op (G_OBJECT (window->priv->eo_widget), MOO_EDIT_OP_DELETE));
+            break;
+        case PROP_MEO_CAN_SELECT_ALL:
+            g_value_set_boolean (value, window->priv->eo_widget &&
+                _moo_edit_ops_can_do_op (G_OBJECT (window->priv->eo_widget), MOO_EDIT_OP_SELECT_ALL));
+            break;
+
+        case PROP_MUO_CAN_UNDO:
+            g_value_set_boolean (value, window->priv->uo_widget &&
+                _moo_undo_ops_can_undo (G_OBJECT (window->priv->uo_widget)));
+            break;
+        case PROP_MUO_CAN_REDO:
+            g_value_set_boolean (value, window->priv->uo_widget &&
+                _moo_undo_ops_can_redo (G_OBJECT (window->priv->uo_widget)));
             break;
 
         default:
@@ -1791,4 +1940,248 @@ _moo_window_class_new_action_callback (MooWindowClass *klass,
 
     g_object_unref (action_factory);
     g_strfreev (conditions);
+}
+
+
+/*************************************************************************/
+/* MooEditOps
+ */
+
+static void
+moo_window_action_cut (MooWindow *window)
+{
+    g_return_if_fail (window->priv->eo_widget != NULL);
+    _moo_edit_ops_do_op (G_OBJECT (window->priv->eo_widget),
+                         MOO_EDIT_OP_CUT);
+}
+
+static void
+moo_window_action_copy (MooWindow *window)
+{
+    g_return_if_fail (window->priv->eo_widget != NULL);
+    _moo_edit_ops_do_op (G_OBJECT (window->priv->eo_widget),
+                         MOO_EDIT_OP_COPY);
+}
+
+static void
+moo_window_action_paste (MooWindow *window)
+{
+    g_return_if_fail (window->priv->eo_widget != NULL);
+    _moo_edit_ops_do_op (G_OBJECT (window->priv->eo_widget),
+                         MOO_EDIT_OP_PASTE);
+}
+
+static void
+moo_window_action_delete (MooWindow *window)
+{
+    g_return_if_fail (window->priv->eo_widget != NULL);
+    _moo_edit_ops_do_op (G_OBJECT (window->priv->eo_widget),
+                         MOO_EDIT_OP_DELETE);
+}
+
+static void
+moo_window_action_select_all (MooWindow *window)
+{
+    g_return_if_fail (window->priv->eo_widget != NULL);
+    _moo_edit_ops_do_op (G_OBJECT (window->priv->eo_widget),
+                         MOO_EDIT_OP_SELECT_ALL);
+}
+
+static void
+moo_window_action_undo (MooWindow *window)
+{
+    g_return_if_fail (window->priv->uo_widget != NULL);
+    _moo_undo_ops_undo (G_OBJECT (window->priv->uo_widget));
+}
+
+static void
+moo_window_action_redo (MooWindow *window)
+{
+    g_return_if_fail (window->priv->uo_widget != NULL);
+    _moo_undo_ops_redo (G_OBJECT (window->priv->uo_widget));
+}
+
+
+static void
+emit_can_do_op_changed (MooWindow     *window,
+                        MooEditOpType  type)
+{
+    switch (type)
+    {
+        case MOO_EDIT_OP_CUT:
+            g_object_notify (G_OBJECT (window), "can-cut");
+            break;
+        case MOO_EDIT_OP_COPY:
+            g_object_notify (G_OBJECT (window), "can-copy");
+            break;
+        case MOO_EDIT_OP_PASTE:
+            g_object_notify (G_OBJECT (window), "can-paste");
+            break;
+        case MOO_EDIT_OP_DELETE:
+            g_object_notify (G_OBJECT (window), "can-delete");
+            break;
+        case MOO_EDIT_OP_SELECT_ALL:
+            g_object_notify (G_OBJECT (window), "can-select-all");
+            break;
+        default:
+            g_return_if_reached ();
+    }
+}
+
+static void
+moo_window_connect_eo_widget (MooWindow *window,
+                              GtkWidget *widget)
+{
+    g_return_if_fail (_moo_edit_ops_check (G_OBJECT (widget)));
+
+    window->priv->eo_widget = g_object_ref (widget);
+
+    _moo_edit_ops_connect (G_OBJECT (widget));
+    g_signal_connect_swapped (widget, "moo-edit-ops-can-do-op-changed",
+                              G_CALLBACK (emit_can_do_op_changed), window);
+}
+
+static void
+moo_window_disconnect_eo_widget (MooWindow *window)
+{
+    GtkWidget *widget;
+
+    widget = window->priv->eo_widget;
+    window->priv->eo_widget = NULL;
+
+    if (widget)
+    {
+        _moo_edit_ops_disconnect (G_OBJECT (widget));
+        g_signal_handlers_disconnect_by_func (widget,
+                                              (gpointer) emit_can_do_op_changed,
+                                              window);
+        g_object_unref (widget);
+    }
+}
+
+static GtkWidget *
+find_widget_for_edit_ops (MooWindow *window)
+{
+    GtkWidget *widget = gtk_window_get_focus (GTK_WINDOW (window));
+
+    while (widget)
+    {
+        if (_moo_edit_ops_check (G_OBJECT (widget)))
+            return widget;
+        widget = widget->parent;
+    }
+
+    return window->priv ? window->priv->default_eo_widget : NULL;
+}
+
+static void
+check_edit_ops_widget (MooWindow *window)
+{
+    GtkWidget *widget;
+
+    widget = find_widget_for_edit_ops (window);
+
+    if (window->priv && widget != window->priv->eo_widget)
+    {
+        int i;
+
+        moo_window_disconnect_eo_widget (window);
+
+        if (widget)
+            moo_window_connect_eo_widget (window, widget);
+
+        for (i = 0; i < MOO_N_EDIT_OPS; i++)
+            emit_can_do_op_changed (window, i);
+    }
+}
+
+
+static void
+emit_can_undo_changed (MooWindow *window)
+{
+    g_object_notify (G_OBJECT (window), "can-undo");
+}
+
+static void
+emit_can_redo_changed (MooWindow *window)
+{
+    g_object_notify (G_OBJECT (window), "can-redo");
+}
+
+static void
+moo_window_connect_uo_widget (MooWindow *window,
+                              GtkWidget *widget)
+{
+    g_return_if_fail (_moo_undo_ops_check (G_OBJECT (widget)));
+
+    window->priv->uo_widget = g_object_ref (widget);
+
+    g_signal_connect_swapped (widget, "moo-undo-ops-can-undo-changed",
+                              G_CALLBACK (emit_can_undo_changed), window);
+    g_signal_connect_swapped (widget, "moo-undo-ops-can-redo-changed",
+                              G_CALLBACK (emit_can_redo_changed), window);
+}
+
+static void
+moo_window_disconnect_uo_widget (MooWindow *window)
+{
+    GtkWidget *widget;
+
+    widget = window->priv->uo_widget;
+    window->priv->uo_widget = NULL;
+
+    if (widget)
+    {
+        g_signal_handlers_disconnect_by_func (widget,
+                                              (gpointer) emit_can_undo_changed,
+                                              window);
+        g_signal_handlers_disconnect_by_func (widget,
+                                              (gpointer) emit_can_redo_changed,
+                                              window);
+        g_object_unref (widget);
+    }
+}
+
+static GtkWidget *
+find_widget_for_undo_ops (MooWindow *window)
+{
+    GtkWidget *widget = gtk_window_get_focus (GTK_WINDOW (window));
+
+    while (widget)
+    {
+        if (_moo_undo_ops_check (G_OBJECT (widget)))
+            return widget;
+
+        widget = widget->parent;
+    }
+
+    return window->priv ? window->priv->default_uo_widget : NULL;
+}
+
+static void
+check_undo_ops_widget (MooWindow *window)
+{
+    GtkWidget *widget;
+
+    widget = find_widget_for_undo_ops (window);
+
+    if (window->priv && widget != window->priv->uo_widget)
+    {
+        moo_window_disconnect_uo_widget (window);
+
+        if (widget)
+            moo_window_connect_uo_widget (window, widget);
+
+        emit_can_undo_changed (window);
+        emit_can_redo_changed (window);
+    }
+}
+
+static void
+moo_window_set_focus (GtkWindow *window,
+                      GtkWidget *widget)
+{
+    GTK_WINDOW_CLASS (moo_window_parent_class)->set_focus (window, widget);
+    check_edit_ops_widget (MOO_WINDOW (window));
+    check_undo_ops_widget (MOO_WINDOW (window));
 }

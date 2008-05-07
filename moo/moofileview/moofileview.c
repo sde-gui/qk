@@ -42,6 +42,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/mooaction-private.h"
+#include "mooutils/mooeditops.h"
 #include "marshals.h"
 #include "mooutils/mooi18n.h"
 #include <gdk/gdkkeysyms.h>
@@ -425,9 +426,12 @@ static void     file_view_cut_clipboard     (MooFileView    *fileview);
 static void     file_view_copy_clipboard    (MooFileView    *fileview);
 static void     file_view_paste_clipboard   (MooFileView    *fileview);
 
+static void     edit_ops_iface_init         (MooEditOpsIface *iface);
 
 /* MOO_TYPE_FILE_VIEW */
-G_DEFINE_TYPE (MooFileView, moo_file_view, GTK_TYPE_VBOX)
+G_DEFINE_TYPE_WITH_CODE (MooFileView, moo_file_view, GTK_TYPE_VBOX,
+                         G_IMPLEMENT_INTERFACE (MOO_TYPE_EDIT_OPS,
+                                                edit_ops_iface_init))
 
 enum {
     PROP_0,
@@ -2419,6 +2423,62 @@ moo_file_view_get_home_dir (MooFileView *fileview)
 /*****************************************************************************/
 /* Clipboard
  */
+
+static void
+edit_ops_do_op (MooEditOps    *obj,
+                MooEditOpType  type)
+{
+    MooFileView *fileview = MOO_FILE_VIEW (obj);
+
+    switch (type)
+    {
+        case MOO_EDIT_OP_CUT:
+            g_signal_emit_by_name (fileview, "cut-clipboard");
+            break;
+        case MOO_EDIT_OP_COPY:
+            g_signal_emit_by_name (fileview, "copy-clipboard");
+            break;
+        case MOO_EDIT_OP_PASTE:
+            g_signal_emit_by_name (fileview, "paste-clipboard");
+            break;
+        case MOO_EDIT_OP_DELETE:
+            g_signal_emit_by_name (fileview, "delete-selected");
+            break;
+        case MOO_EDIT_OP_SELECT_ALL:
+            _moo_icon_view_select_all (fileview->priv->iconview);
+            break;
+    }
+}
+
+static gboolean
+edit_ops_can_do_op (MooEditOps    *obj,
+                    MooEditOpType  type)
+{
+    MooFileView *fileview = MOO_FILE_VIEW (obj);
+
+    switch (type)
+    {
+        case MOO_EDIT_OP_CUT:
+            return !_moo_tree_view_selection_is_empty (fileview->priv->view);
+        case MOO_EDIT_OP_COPY:
+            return !_moo_tree_view_selection_is_empty (fileview->priv->view);
+        case MOO_EDIT_OP_PASTE:
+            return TRUE;
+        case MOO_EDIT_OP_DELETE:
+            return !_moo_tree_view_selection_is_empty (fileview->priv->view);
+        case MOO_EDIT_OP_SELECT_ALL:
+            return TRUE;
+    }
+
+    g_return_val_if_reached (FALSE);
+}
+
+static void
+edit_ops_iface_init (MooEditOpsIface *iface)
+{
+    iface->do_op = edit_ops_do_op;
+    iface->can_do_op = edit_ops_can_do_op;
+}
 
 enum {
     CB_TARGET_CLIPBOARD = 1,

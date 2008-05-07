@@ -265,11 +265,7 @@ enum {
     /* aux properties */
     PROP_CAN_RELOAD,
     PROP_HAS_OPEN_DOCUMENT,
-    PROP_CAN_UNDO,
-    PROP_CAN_REDO,
-    PROP_HAS_SELECTION,
     PROP_HAS_COMMENTS,
-    PROP_HAS_TEXT,
     PROP_HAS_JOBS_RUNNING,
     PROP_HAS_STOP_CLIENTS
 };
@@ -358,11 +354,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
 
     INSTALL_PROP (PROP_CAN_RELOAD, "can-reload");
     INSTALL_PROP (PROP_HAS_OPEN_DOCUMENT, "has-open-document");
-    INSTALL_PROP (PROP_CAN_UNDO, "can-undo");
-    INSTALL_PROP (PROP_CAN_REDO, "can-redo");
-    INSTALL_PROP (PROP_HAS_SELECTION, "has-selection");
     INSTALL_PROP (PROP_HAS_COMMENTS, "has-comments");
-    INSTALL_PROP (PROP_HAS_TEXT, "has-text");
     INSTALL_PROP (PROP_HAS_JOBS_RUNNING, "has-jobs-running");
     INSTALL_PROP (PROP_HAS_STOP_CLIENTS, "has-stop-clients");
 
@@ -441,81 +433,6 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "accel", MOO_EDIT_ACCEL_CLOSE_ALL,
                                  "closure-callback", action_close_all,
                                  "condition::sensitive", "has-open-document",
-                                 NULL);
-
-    moo_window_class_new_action (window_class, "Undo", NULL,
-                                 "display-name", GTK_STOCK_UNDO,
-                                 "label", GTK_STOCK_UNDO,
-                                 "tooltip", GTK_STOCK_UNDO,
-                                 "stock-id", GTK_STOCK_UNDO,
-                                 "accel", MOO_EDIT_ACCEL_UNDO,
-                                 "closure-signal", "undo",
-                                 "closure-proxy-func", moo_edit_window_get_active_doc,
-                                 "condition::sensitive", "can-undo",
-                                 NULL);
-
-    moo_window_class_new_action (window_class, "Redo", NULL,
-                                 "display-name", GTK_STOCK_REDO,
-                                 "label", GTK_STOCK_REDO,
-                                 "tooltip", GTK_STOCK_REDO,
-                                 "stock-id", GTK_STOCK_REDO,
-                                 "accel", MOO_EDIT_ACCEL_REDO,
-                                 "closure-signal", "redo",
-                                 "closure-proxy-func", moo_edit_window_get_active_doc,
-                                 "condition::sensitive", "can-redo",
-                                 NULL);
-
-    moo_window_class_new_action (window_class, "Cut", NULL,
-                                 "display-name", GTK_STOCK_CUT,
-                                 "label", GTK_STOCK_CUT,
-                                 "tooltip", GTK_STOCK_CUT,
-                                 "stock-id", GTK_STOCK_CUT,
-                                 "accel", MOO_EDIT_ACCEL_CUT,
-                                 "closure-signal", "cut-clipboard",
-                                 "closure-proxy-func", moo_edit_window_get_active_doc,
-                                 "condition::sensitive", "has-selection",
-                                 NULL);
-
-    moo_window_class_new_action (window_class, "Copy", NULL,
-                                 "display-name", GTK_STOCK_COPY,
-                                 "label", GTK_STOCK_COPY,
-                                 "tooltip", GTK_STOCK_COPY,
-                                 "stock-id", GTK_STOCK_COPY,
-                                 "accel", MOO_EDIT_ACCEL_COPY,
-                                 "closure-signal", "copy-clipboard",
-                                 "closure-proxy-func", moo_edit_window_get_active_doc,
-                                 "condition::sensitive", "has-selection",
-                                 NULL);
-
-    moo_window_class_new_action (window_class, "Paste", NULL,
-                                 "display-name", GTK_STOCK_PASTE,
-                                 "label", GTK_STOCK_PASTE,
-                                 "tooltip", GTK_STOCK_PASTE,
-                                 "stock-id", GTK_STOCK_PASTE,
-                                 "accel", MOO_EDIT_ACCEL_PASTE,
-                                 "closure-signal", "paste-clipboard",
-                                 "closure-proxy-func", moo_edit_window_get_active_doc,
-                                 "condition::sensitive", "has-open-document",
-                                 NULL);
-
-    moo_window_class_new_action (window_class, "Delete", NULL,
-                                 "display-name", GTK_STOCK_DELETE,
-                                 "label", GTK_STOCK_DELETE,
-                                 "tooltip", GTK_STOCK_DELETE,
-                                 "stock-id", GTK_STOCK_DELETE,
-                                 "closure-signal", "delete-selection",
-                                 "closure-proxy-func", moo_edit_window_get_active_doc,
-                                 "condition::sensitive", "has-selection",
-                                 NULL);
-
-    moo_window_class_new_action (window_class, "SelectAll", NULL,
-                                 "display-name", GTK_STOCK_SELECT_ALL,
-                                 "label", GTK_STOCK_SELECT_ALL,
-                                 "tooltip", GTK_STOCK_SELECT_ALL,
-                                 "accel", MOO_EDIT_ACCEL_SELECT_ALL,
-                                 "closure-callback", moo_text_view_select_all,
-                                 "closure-proxy-func", moo_edit_window_get_active_doc,
-                                 "condition::sensitive", "has-text",
                                  NULL);
 
     moo_window_class_new_action (window_class, "PreviousTab", NULL,
@@ -963,25 +880,9 @@ static void     moo_edit_window_get_property(GObject        *object,
         case PROP_HAS_OPEN_DOCUMENT:
             g_value_set_boolean (value, ACTIVE_DOC (window) != NULL);
             break;
-        case PROP_CAN_UNDO:
-            doc = ACTIVE_DOC (window);
-            g_value_set_boolean (value, doc && moo_text_view_can_undo (MOO_TEXT_VIEW (doc)));
-            break;
-        case PROP_CAN_REDO:
-            doc = ACTIVE_DOC (window);
-            g_value_set_boolean (value, doc && moo_text_view_can_redo (MOO_TEXT_VIEW (doc)));
-            break;
-        case PROP_HAS_SELECTION:
-            doc = ACTIVE_DOC (window);
-            g_value_set_boolean (value, doc && moo_text_view_has_selection (MOO_TEXT_VIEW (doc)));
-            break;
         case PROP_HAS_COMMENTS:
             doc = ACTIVE_DOC (window);
             g_value_set_boolean (value, doc && _moo_edit_has_comments (doc, NULL, NULL));
-            break;
-        case PROP_HAS_TEXT:
-            doc = ACTIVE_DOC (window);
-            g_value_set_boolean (value, doc && moo_text_view_has_text (MOO_TEXT_VIEW (doc)));
             break;
         case PROP_HAS_JOBS_RUNNING:
             g_value_set_boolean (value, window->priv->jobs != NULL);
@@ -2133,11 +2034,7 @@ edit_changed (MooEditWindow *window,
         g_object_freeze_notify (G_OBJECT (window));
         g_object_notify (G_OBJECT (window), "can-reload");
         g_object_notify (G_OBJECT (window), "has-open-document");
-        g_object_notify (G_OBJECT (window), "can-undo");
-        g_object_notify (G_OBJECT (window), "can-redo");
-        g_object_notify (G_OBJECT (window), "has-selection");
         g_object_notify (G_OBJECT (window), "has-comments");
-        g_object_notify (G_OBJECT (window), "has-text");
         g_object_thaw_notify (G_OBJECT (window));
 
         update_window_title (window);
@@ -2400,15 +2297,7 @@ _moo_edit_window_insert_doc (MooEditWindow  *window,
                               G_CALLBACK (edit_show_line_numbers_changed), window);
     g_signal_connect_swapped (edit, "filename_changed",
                               G_CALLBACK (edit_filename_changed), window);
-    g_signal_connect_swapped (edit, "notify::can-undo",
-                              G_CALLBACK (proxy_boolean_property), window);
-    g_signal_connect_swapped (edit, "notify::can-redo",
-                              G_CALLBACK (proxy_boolean_property), window);
-    g_signal_connect_swapped (edit, "notify::has-selection",
-                              G_CALLBACK (proxy_boolean_property), window);
     g_signal_connect_swapped (edit, "notify::has-comments",
-                              G_CALLBACK (proxy_boolean_property), window);
-    g_signal_connect_swapped (edit, "notify::has-text",
                               G_CALLBACK (proxy_boolean_property), window);
     g_signal_connect_swapped (edit, "config-notify::lang",
                               G_CALLBACK (edit_lang_changed), window);
