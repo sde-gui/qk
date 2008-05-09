@@ -36,9 +36,14 @@ class SimpleProject(Project):
         self.filesel = None
         self.filesel_merge_id = 0
         self.__filesel_cb_id = 0
+        self.__filesel_destroy_cb_id = 0
 
     def __filesel_cb(self, filesel, *whatever):
         self.__file_selector_dir = filesel.get_property('current-directory')
+    def __filesel_destroy_cb(self, filesel):
+        self.filesel = None
+        self.__filesel_cb_id = None
+        self.__filesel_destroy_cb_id = None
     def __setup_file_selector(self):
         plugin = moo.edit.plugin_lookup('FileSelector')
         if plugin:
@@ -50,6 +55,7 @@ class SimpleProject(Project):
                         last_dir = self.topdir
                     self.filesel.chdir(last_dir)
                     self.__filesel_cb_id = self.filesel.connect('notify::current-directory', self.__filesel_cb)
+                    self.__filesel_destroy_cb_id = self.filesel.connect('destroy', self.__filesel_destroy_cb)
             except:
                 print_error()
 
@@ -59,7 +65,9 @@ class SimpleProject(Project):
     def deinit_ui(self):
         if self.__filesel_cb_id:
             self.filesel.disconnect(self.__filesel_cb_id)
+            self.filesel.disconnect(self.__filesel_destroy_cb_id)
             self.__filesel_cb_id = 0
+            self.__filesel_destroy_cb_id = 0
         if self.filesel and self.filesel_merge_id:
             xml = self.filesel.get_ui_xml()
             xml.remove_ui(self.filesel_merge_id)
