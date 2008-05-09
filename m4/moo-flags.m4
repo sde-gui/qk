@@ -48,6 +48,7 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
     PKG_CHECK_MODULES(IGE_MAC,ige-mac-integration)
     GTK_CFLAGS="$IGE_MAC_CFLAGS"
     GTK_LIBS="$IGE_MAC_LIBS"
+    LDFLAGS="$LDFLAGS -framework Cocoa"
   fi
 
   AC_CHECK_LIB(Xrender, XRenderFindFormat,[

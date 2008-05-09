@@ -219,6 +219,10 @@ libmooutils_la_SOURCES = $(mooutils_sources)
 nodist_libmooutils_la_SOURCES =	$(nodist_mooutils_sources)
 libmooutils_la_LIBADD = $(libs)
 
+if GDK_QUARTZ
+objc_flag = "-xobjective-c"
+endif
+
 AM_CFLAGS =					\
 	-I$(top_builddir)			\
 	-I..					\
@@ -227,7 +231,8 @@ AM_CFLAGS =					\
 	$(MOO_CFLAGS)				\
 	$(MOO_DEBUG_CFLAGS)			\
 	-DMOO_LOCALE_DIR=\"$(datadir)/locale\"	\
-	-DMOO_HELP_DIR=\"$(htmldir)/help\"
+	-DMOO_HELP_DIR=\"$(htmldir)/help\"	\
+	$(objc_flag)
 
 if MOO_INSTALL_HEADERS
 mooutils_includedir = $(moo_includedir)/mooutils

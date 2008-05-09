@@ -39,6 +39,10 @@
 #include <gdk/gdkx.h>
 #endif
 
+#if defined(GDK_WINDOWING_QUARTZ)
+#include <gdk/gdkquartz.h>
+#endif
+
 #ifdef __WIN32__
 #include <windows.h>
 #include <shellapi.h>
@@ -531,12 +535,18 @@ _moo_get_top_window (GSList *windows)
     return GTK_WINDOW (l->data);
 }
 
-#else /* neither X nor WIN32 ?? */
+#else /* neither X nor WIN32 */
 
-GtkWindow*
+/* XXX implement me */
+
+GtkWindow *
 _moo_get_top_window (GSList *windows)
 {
     g_return_val_if_fail (windows != NULL, NULL);
+
+    if (!windows->next)
+        return GTK_WINDOW (windows->data);
+
     g_message ("%s: don't know how to do it", G_STRFUNC);
     return GTK_WINDOW (windows->data);
 }
@@ -571,10 +581,13 @@ moo_window_present (GtkWindow *window,
 {
     g_return_if_fail (GTK_IS_WINDOW (window));
 
-#if !defined(GDK_WINDOWING_X11)
-    gtk_window_present (window);
-#else
+#if defined(GDK_WINDOWING_X11)
     present_window_x11 (window, stamp);
+#elif defined(GDK_WINDOWING_QUARTZ)
+    gtk_window_present (window);
+    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+#else
+    gtk_window_present (window);
 #endif
 }
 

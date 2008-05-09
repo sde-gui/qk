@@ -885,13 +885,6 @@ dock_open_documents (MooApp  *app,
 }
 
 static void
-dock_clicked (G_GNUC_UNUSED MooApp *app)
-{
-    /* XXX */
-    g_print ("dock_clicked\n");
-}
-
-static void
 dock_quit_activate (MooApp *app)
 {
     moo_app_quit (app);
@@ -901,8 +894,6 @@ static void
 moo_app_init_mac (MooApp *app)
 {
     app->priv->dock = ige_mac_dock_get_default ();
-    g_signal_connect_swapped (app->priv->dock, "clicked",
-                              G_CALLBACK (dock_clicked), app);
     g_signal_connect_swapped (app->priv->dock, "open-documents",
                               G_CALLBACK (dock_open_documents), app);
     g_signal_connect_swapped (app->priv->dock, "quit-activate",
