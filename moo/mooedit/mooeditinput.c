@@ -16,6 +16,7 @@
 #include "mooedit/mootextiter.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooaccel.h"
 #include <gdk/gdkkeysyms.h>
 
 
@@ -1169,9 +1170,8 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
     GtkTextBuffer *buffer;
     gboolean obscure = TRUE;
     gboolean handled = FALSE;
-    int keyval = event->keyval;
-    GdkModifierType mods =
-            event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK);
+    guint keyval;
+    GdkModifierType mods;
 
     view = MOO_TEXT_VIEW (widget);
     text_view = GTK_TEXT_VIEW (widget);
@@ -1180,6 +1180,8 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
     /* ignore key events from the search entry */
     if (view->priv->qs.in_search)
         return FALSE;
+
+    _moo_accel_translate_event (widget, event, &keyval, &mods);
 
     if (keyval == GDK_KP_Enter || keyval == GDK_Return)
     {

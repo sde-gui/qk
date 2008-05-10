@@ -11,6 +11,7 @@
  */
 
 #include "mooedit/mootextcompletion.h"
+#include "mooutils/mooaccel.h"
 #include "marshals.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
@@ -469,18 +470,14 @@ popup_key_press (MooTextCompletion *cmpl,
 {
     GtkTreeIter iter;
 
-    switch (event->keyval)
+    if (_moo_accel_check_event (GTK_WIDGET (cmpl->priv->popup), event, GDK_Tab, 0) &&
+        moo_text_completion_unique (cmpl, &iter))
     {
-        case GDK_Tab:
-            if (moo_text_completion_unique (cmpl, &iter))
-            {
-                moo_text_completion_complete (cmpl, &iter);
-                return TRUE;
-            }
-        /* fall through */
-        default:
-            return FALSE;
+        moo_text_completion_complete (cmpl, &iter);
+        return TRUE;
     }
+
+    return FALSE;
 }
 
 

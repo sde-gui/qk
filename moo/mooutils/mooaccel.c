@@ -389,6 +389,18 @@ _moo_accel_translate_event (GtkWidget       *widget,
         *mods = event->state & ~consumed & MOO_ACCEL_MODS_MASK;
 }
 
+gboolean
+_moo_accel_check_event (GtkWidget       *widget,
+                        GdkEventKey     *event,
+                        guint            keyval,
+                        GdkModifierType  mods)
+{
+    guint ev_keyval;
+    GdkModifierType ev_mods;
+    _moo_accel_translate_event (widget, event, &ev_keyval, &ev_mods);
+    return keyval == ev_keyval && mods == ev_mods;
+}
+
 
 /*****************************************************************************/
 /* Parsing accelerator strings

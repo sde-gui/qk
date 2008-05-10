@@ -3973,7 +3973,7 @@ entry_key_press (GtkEntry       *entry,
     GtkWidget *filewidget;
     const char *name;
 
-    if (event->state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK))
+    if (event->state & MOO_ACCEL_MODS_MASK)
         return FALSE;
 
     if (event->keyval != GDK_Tab)
@@ -4140,12 +4140,7 @@ moo_file_view_key_press (MooFileView    *fileview,
     }
 
     /* return immediately if event doesn't look like text typed in */
-
-#if !GTK_CHECK_VERSION(2,10,0)
-#define GDK_META_MASK 0
-#endif
-
-    if (event->state & (GDK_CONTROL_MASK | GDK_MOD1_MASK | GDK_META_MASK))
+    if (event->state & MOO_ACCEL_MODS_MASK & ~GDK_SHIFT_MASK)
         return FALSE;
 
     switch (event->keyval)

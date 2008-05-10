@@ -33,6 +33,10 @@ void         _moo_accel_translate_event     (GtkWidget       *widget,
                                              GdkEventKey     *event,
                                              guint           *keyval,
                                              GdkModifierType *mods);
+gboolean     _moo_accel_check_event         (GtkWidget       *widget,
+                                             GdkEventKey     *event,
+                                             guint            keyval,
+                                             GdkModifierType  mods);
 
 
 #if GTK_CHECK_VERSION(2,10,0)

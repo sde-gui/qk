@@ -3382,13 +3382,19 @@ moo_pane_params_get_type (void)
 }
 
 
+#if GTK_CHECK_VERSION(2,10,0)
+#define ACCEL_MODS_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK | GDK_META_MASK)
+#else
+#define ACCEL_MODS_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)
+#endif
+
 static gboolean
 moo_paned_key_press (GtkWidget   *widget,
                      GdkEventKey *event)
 {
     static int delta = 5;
     int add = 0;
-    guint mask = GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK;
+    guint mask = ACCEL_MODS_MASK;
     MooPaned *paned = MOO_PANED (widget);
 
     if (paned->priv->handle_in_drag &&
