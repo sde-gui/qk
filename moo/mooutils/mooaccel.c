@@ -361,6 +361,35 @@ _moo_get_accel_label (const char *accel)
 }
 
 
+void
+_moo_accel_translate_event (GtkWidget       *widget,
+                            GdkEventKey     *event,
+                            guint           *keyval,
+                            GdkModifierType *mods)
+{
+    GdkKeymap *keymap;
+    GdkModifierType consumed;
+
+    g_return_if_fail (event != NULL);
+
+    if (keyval)
+        *keyval = 0;
+    if (mods)
+        *mods = 0;
+
+    if (widget && GTK_WIDGET_REALIZED (widget))
+        keymap = gdk_keymap_get_for_display (gtk_widget_get_display (widget));
+    else
+        keymap = gdk_keymap_get_default ();
+
+    gdk_keymap_translate_keyboard_state (keymap, event->hardware_keycode,
+                                         event->state, event->group,
+                                         keyval, NULL, NULL, &consumed);
+    if (mods)
+        *mods = event->state & ~consumed & MOO_ACCEL_MODS_MASK;
+}
+
+
 /*****************************************************************************/
 /* Parsing accelerator strings
  */

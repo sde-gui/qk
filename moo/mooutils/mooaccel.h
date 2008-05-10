@@ -29,16 +29,33 @@ void         _moo_modify_accel              (const char *accel_path,
 
 char        *_moo_get_accel_label           (const char *accel);
 
+void         _moo_accel_translate_event     (GtkWidget       *widget,
+                                             GdkEventKey     *event,
+                                             guint           *keyval,
+                                             GdkModifierType *mods);
+
+
+#if GTK_CHECK_VERSION(2,10,0)
+#define MOO_ACCEL_MODS_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK | GDK_META_MASK)
+#else
+#define MOO_ACCEL_MODS_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)
+#endif
 
 #ifndef GDK_WINDOWING_QUARTZ
 
 #define MOO_ACCEL_CTRL "<Ctrl>"
 #define MOO_ACCEL_CTRL_MASK GDK_CONTROL_MASK
 
+#define MOO_ACCEL_HELP_KEY  GDK_F1
+#define MOO_ACCEL_HELP_MODS 0
+
 #else /* GDK_WINDOWING_QUARTZ */
 
 #define MOO_ACCEL_CTRL "<Meta>"
 #define MOO_ACCEL_CTRL_MASK GDK_META_MASK
+
+#define MOO_ACCEL_HELP_KEY  GDK_question
+#define MOO_ACCEL_HELP_MODS GDK_META_MASK
 
 #endif /* GDK_WINDOWING_QUARTZ */
 
