@@ -1,5 +1,6 @@
 #include "config.h"
 #include "moohelp.h"
+#include "mooaccel.h"
 #include "mooutils-misc.h"
 #include "mooi18n.h"
 #include "moodialogs.h"
@@ -115,13 +116,13 @@ static gboolean
 moo_help_key_press (GtkWidget   *widget,
                     GdkEventKey *event)
 {
-    if (!(event->state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK
-#if GTK_CHECK_VERSION(2,10,0)
-     | GDK_META_MASK
-#endif
-     )) &&
-        event->keyval == GDK_F1)
-            return moo_help_open (widget);
+    guint keyval;
+    GdkModifierType mods;
+
+    _moo_accel_translate_event (widget, event, &keyval, &mods);
+
+    if (keyval == MOO_ACCEL_HELP_KEY && mods == MOO_ACCEL_HELP_MODS)
+        return moo_help_open (widget);
     else
         return FALSE;
 }
