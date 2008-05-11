@@ -50,7 +50,6 @@ AC_DEFUN([MOO_COMPONENTS],[
   else
     MOO_LUA_ENABLED_DEFINE=["#undef MOO_LUA_ENABLED"]
   fi
-  MOO_LUA
   AC_SUBST(MOO_LUA_ENABLED_DEFINE)
 
   m4_foreach([comp], [utils, edit, term, app],[
