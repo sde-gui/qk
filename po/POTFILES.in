@@ -21,7 +21,7 @@ moo/mooedit/glade/mootextfind.glade
 moo/mooedit/glade/mootextgotoline.glade
 
 moo/mooedit/filters.xml
-moo/mooedit/medit-ui.xml
+moo/mooedit/medit.ui
 moo/mooedit/moocommand-exe.c
 moo/mooedit/moocommand-lua.c
 moo/mooedit/mooeditaction-factory.c
@@ -29,7 +29,7 @@ moo/mooedit/mooeditdialogs.c
 moo/mooedit/mooeditfileops.c
 moo/mooedit/mooeditor.c
 moo/mooedit/mooeditprefspage.c
-moo/mooedit/mooedit-ui.xml
+moo/mooedit/mooedit.ui
 moo/mooedit/mooeditwindow.c
 moo/mooedit/mootextfind.c
 moo/mooedit/mootextstylescheme.c
@@ -51,7 +51,7 @@ moo/moofileview/glade/moocreatefolder.glade
 moo/moofileview/glade/moofileprops.glade
 moo/moofileview/glade/moofileview-drop.glade
 moo/moofileview/moofileview.c
-moo/moofileview/moofileview-ui.xml
+moo/moofileview/moofileview.ui
 
 moo/moopython/plugins/medit/runpython.py
 moo/moopython/plugins/pycmd.py

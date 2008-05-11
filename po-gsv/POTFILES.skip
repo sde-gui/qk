@@ -33,7 +33,7 @@ moo/mooedit/gtksourceview/gtksourcestylescheme-mangled.c
 moo/mooedit/gtksourceview/gtksourcestylescheme-noxml-mangled.c
 moo/mooedit/gtksourceview/upstream/gtksourcestyle.c
 moo/mooedit/gtksourceview/upstream/gtksourcestylescheme-noxml.c
-moo/mooedit/medit-ui.xml
+moo/mooedit/medit.ui
 moo/mooedit/moocommand-exe.c
 moo/mooedit/moocommand-lua.c
 moo/mooedit/mooeditaction-factory.c
@@ -66,7 +66,7 @@ moo/moofileview/glade/moocreatefolder.glade
 moo/moofileview/glade/moofileprops.glade
 moo/moofileview/glade/moofileview-drop.glade
 moo/moofileview/moofileview.c
-moo/moofileview/moofileview-ui.xml
+moo/moofileview/moofileview.ui
 moo/moopython/plugins/medit/runpython.py
 moo/moopython/plugins/pycmd.py
 moo/moopython/plugins/pyproject/mprj/config/view.py
