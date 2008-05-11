@@ -230,8 +230,6 @@ AM_CFLAGS =					\
 	-I$(top_builddir)/doc			\
 	$(MOO_CFLAGS)				\
 	$(MOO_DEBUG_CFLAGS)			\
-	-DMOO_LOCALE_DIR=\"$(datadir)/locale\"	\
-	-DMOO_HELP_DIR=\"$(htmldir)/help\"	\
 	$(objc_flag)
 
 if MOO_INSTALL_HEADERS

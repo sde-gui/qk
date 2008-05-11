@@ -1,0 +1,1961 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F128064F0DD66BDF00D2CAC0 /* moofileview.ui in Sources */ = {isa = PBXBuildFile; fileRef = F15F7D750DD66B2800DAEB2C /* moofileview.ui */; };
+		F12806720DD66D7700D2CAC0 /* libmoo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F15F79330DD641FC00DAEB2C /* libmoo.a */; };
+		F128067D0DD66E6700D2CAC0 /* libgettextlib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F128067A0DD66E3D00D2CAC0 /* libgettextlib.dylib */; };
+		F128067F0DD66E8F00D2CAC0 /* libatk-1.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F15F7CD50DD6672900DAEB2C /* libatk-1.0.dylib */; };
+		F12806800DD66E8F00D2CAC0 /* libcairo.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F15F7CD60DD6672900DAEB2C /* libcairo.dylib */; };
+		F12806810DD66E8F00D2CAC0 /* libgdk_pixbuf-2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F15F7CD70DD6672900DAEB2C /* libgdk_pixbuf-2.0.dylib */; };
+		F12806820DD66E8F00D2CAC0 /* libgmodule-2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F15F7CD90DD6672900DAEB2C /* libgmodule-2.0.dylib */; };
+		F12806830DD66E8F00D2CAC0 /* libpango-1.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F15F7CDD0DD6672900DAEB2C /* libpango-1.0.dylib */; };
+		F12806840DD66E8F00D2CAC0 /* libpangocairo-1.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F15F7CDE0DD6672900DAEB2C /* libpangocairo-1.0.dylib */; };
+		F12806870DD66EB400D2CAC0 /* libintl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F15F7CEA0DD6675900DAEB2C /* libintl.dylib */; };
+		F128068A0DD66EDD00D2CAC0 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F12806890DD66EDD00D2CAC0 /* Cocoa.framework */; };
+		F12806A80DD66FA600D2CAC0 /* moo-test-utils.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806950DD66F4500D2CAC0 /* moo-test-utils.c */; };
+		F12807310DD6713B00D2CAC0 /* lua.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806FB0DD670DB00D2CAC0 /* lua.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807320DD6713B00D2CAC0 /* ldblib.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806D30DD670DB00D2CAC0 /* ldblib.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807330DD6713B00D2CAC0 /* lstate.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806ED0DD670DB00D2CAC0 /* lstate.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807340DD6713B00D2CAC0 /* liolib.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806DE0DD670DB00D2CAC0 /* liolib.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807350DD6713B00D2CAC0 /* lobject.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806E60DD670DB00D2CAC0 /* lobject.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807360DD6713B00D2CAC0 /* loadlib.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806E50DD670DB00D2CAC0 /* loadlib.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807370DD6713B00D2CAC0 /* ldump.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806D80DD670DB00D2CAC0 /* ldump.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807380DD6713B00D2CAC0 /* loslib.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806EA0DD670DB00D2CAC0 /* loslib.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807390DD6713B00D2CAC0 /* lopcodes.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806E80DD670DB00D2CAC0 /* lopcodes.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F128073A0DD6713B00D2CAC0 /* ltm.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806F50DD670DB00D2CAC0 /* ltm.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F128073B0DD6713B00D2CAC0 /* lzio.c in Sources */ = {isa = PBXBuildFile; fileRef = F12807040DD670DB00D2CAC0 /* lzio.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F128073C0DD6713B00D2CAC0 /* lbaselib.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806D00DD670DB00D2CAC0 /* lbaselib.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F128073D0DD6713B00D2CAC0 /* lmem.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806E30DD670DB00D2CAC0 /* lmem.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F128073E0DD6713B00D2CAC0 /* ltablib.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806F40DD670DB00D2CAC0 /* ltablib.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F128073F0DD6713B00D2CAC0 /* lfs.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806C90DD670DA00D2CAC0 /* lfs.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807410DD6713B00D2CAC0 /* lmathlib.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806E20DD670DB00D2CAC0 /* lmathlib.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807420DD6713B00D2CAC0 /* moolua.c in Sources */ = {isa = PBXBuildFile; fileRef = F12807080DD670DB00D2CAC0 /* moolua.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807430DD6713B00D2CAC0 /* lvm.c in Sources */ = {isa = PBXBuildFile; fileRef = F12807020DD670DB00D2CAC0 /* lvm.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807440DD6713B00D2CAC0 /* ldo.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806D60DD670DB00D2CAC0 /* ldo.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807450DD6713B00D2CAC0 /* lundump.c in Sources */ = {isa = PBXBuildFile; fileRef = F12807000DD670DB00D2CAC0 /* lundump.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807460DD6713B00D2CAC0 /* lfunc.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806D90DD670DB00D2CAC0 /* lfunc.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807470DD6713B00D2CAC0 /* ltable.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806F20DD670DB00D2CAC0 /* ltable.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807480DD6713B00D2CAC0 /* ldebug.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806D40DD670DB00D2CAC0 /* ldebug.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807490DD6713B00D2CAC0 /* lgc.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806DB0DD670DB00D2CAC0 /* lgc.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F128074A0DD6713B00D2CAC0 /* lstring.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806EF0DD670DB00D2CAC0 /* lstring.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F128074B0DD6713B00D2CAC0 /* lapi.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806CC0DD670DB00D2CAC0 /* lapi.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F128074C0DD6713B00D2CAC0 /* luac.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806FD0DD670DB00D2CAC0 /* luac.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F128074D0DD6713B00D2CAC0 /* slnunico.c in Sources */ = {isa = PBXBuildFile; fileRef = F128070C0DD670DB00D2CAC0 /* slnunico.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F128074E0DD6713B00D2CAC0 /* lstrlib.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806F10DD670DB00D2CAC0 /* lstrlib.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F128074F0DD6713B00D2CAC0 /* lparser.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806EB0DD670DB00D2CAC0 /* lparser.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807500DD6713B00D2CAC0 /* llex.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806DF0DD670DB00D2CAC0 /* llex.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807510DD6713B00D2CAC0 /* lcode.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806D10DD670DB00D2CAC0 /* lcode.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807520DD6713B00D2CAC0 /* lauxlib.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806CE0DD670DB00D2CAC0 /* lauxlib.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F12807530DD6713B00D2CAC0 /* linit.c in Sources */ = {isa = PBXBuildFile; fileRef = F12806DD0DD670DB00D2CAC0 /* linit.c */; settings = {COMPILER_FLAGS = "-DLUA_USE_APICHECK -DLUA_USE_MACOSX"; }; };
+		F128076B0DD6731900D2CAC0 /* libgio-2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F12807680DD6731900D2CAC0 /* libgio-2.0.dylib */; };
+		F128076C0DD6731900D2CAC0 /* libpixman-1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F12807690DD6731900D2CAC0 /* libpixman-1.dylib */; };
+		F128076D0DD6731900D2CAC0 /* libpng.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F128076A0DD6731900D2CAC0 /* libpng.dylib */; };
+		F12808AB0DD6735600D2CAC0 /* moocmdview.c in Sources */ = {isa = PBXBuildFile; fileRef = F12807FB0DD6735500D2CAC0 /* moocmdview.c */; };
+		F12808AC0DD6735600D2CAC0 /* moocommand-exe.c in Sources */ = {isa = PBXBuildFile; fileRef = F12807FD0DD6735500D2CAC0 /* moocommand-exe.c */; };
+		F12808AD0DD6735600D2CAC0 /* moocommand-lua.c in Sources */ = {isa = PBXBuildFile; fileRef = F12807FF0DD6735500D2CAC0 /* moocommand-lua.c */; };
+		F12808AE0DD6735600D2CAC0 /* moocommand.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808020DD6735500D2CAC0 /* moocommand.c */; };
+		F12808AF0DD6735600D2CAC0 /* moocommanddisplay.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808040DD6735500D2CAC0 /* moocommanddisplay.c */; };
+		F12808B00DD6735600D2CAC0 /* moocompletionsimple.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808060DD6735500D2CAC0 /* moocompletionsimple.c */; };
+		F12808B10DD6735600D2CAC0 /* mooedit-bookmarks.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808090DD6735500D2CAC0 /* mooedit-bookmarks.c */; };
+		F12808B20DD6735600D2CAC0 /* mooedit-enums.c in Sources */ = {isa = PBXBuildFile; fileRef = F128080B0DD6735500D2CAC0 /* mooedit-enums.c */; };
+		F12808B30DD6735600D2CAC0 /* mooedit-lua-api.c in Sources */ = {isa = PBXBuildFile; fileRef = F128080D0DD6735500D2CAC0 /* mooedit-lua-api.c */; };
+		F12808B40DD6735600D2CAC0 /* mooedit-lua.c in Sources */ = {isa = PBXBuildFile; fileRef = F128080E0DD6735500D2CAC0 /* mooedit-lua.c */; };
+		F12808B50DD6735600D2CAC0 /* mooedit.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808120DD6735500D2CAC0 /* mooedit.c */; };
+		F12808B60DD6735600D2CAC0 /* mooeditaction-factory.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808140DD6735500D2CAC0 /* mooeditaction-factory.c */; };
+		F12808B70DD6735600D2CAC0 /* mooeditaction.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808160DD6735500D2CAC0 /* mooeditaction.c */; };
+		F12808B80DD6735600D2CAC0 /* mooeditconfig.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808180DD6735500D2CAC0 /* mooeditconfig.c */; };
+		F12808B90DD6735600D2CAC0 /* mooeditdialogs.c in Sources */ = {isa = PBXBuildFile; fileRef = F128081A0DD6735500D2CAC0 /* mooeditdialogs.c */; };
+		F12808BA0DD6735600D2CAC0 /* mooeditfileops.c in Sources */ = {isa = PBXBuildFile; fileRef = F128081C0DD6735500D2CAC0 /* mooeditfileops.c */; };
+		F12808BB0DD6735600D2CAC0 /* mooeditfiltersettings.c in Sources */ = {isa = PBXBuildFile; fileRef = F128081E0DD6735500D2CAC0 /* mooeditfiltersettings.c */; };
+		F12808BC0DD6735600D2CAC0 /* mooeditinput.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808200DD6735500D2CAC0 /* mooeditinput.c */; };
+		F12808BD0DD6735600D2CAC0 /* mooeditor.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808220DD6735600D2CAC0 /* mooeditor.c */; };
+		F12808BE0DD6735600D2CAC0 /* mooeditprefs.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808240DD6735600D2CAC0 /* mooeditprefs.c */; };
+		F12808BF0DD6735600D2CAC0 /* mooeditprefspage.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808260DD6735600D2CAC0 /* mooeditprefspage.c */; };
+		F12808C00DD6735600D2CAC0 /* mooeditwindow.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808270DD6735600D2CAC0 /* mooeditwindow.c */; };
+		F12808C10DD6735600D2CAC0 /* moofold.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808290DD6735600D2CAC0 /* moofold.c */; };
+		F12808C20DD6735600D2CAC0 /* mooindenter.c in Sources */ = {isa = PBXBuildFile; fileRef = F128082B0DD6735600D2CAC0 /* mooindenter.c */; };
+		F12808C30DD6735600D2CAC0 /* mookeyfile.c in Sources */ = {isa = PBXBuildFile; fileRef = F128082D0DD6735600D2CAC0 /* mookeyfile.c */; };
+		F12808C40DD6735600D2CAC0 /* moolang.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808300DD6735600D2CAC0 /* moolang.c */; settings = {COMPILER_FLAGS = "-I$(MOO_BUILDDIR)/mooedit"; }; };
+		F12808C50DD6735600D2CAC0 /* moolangmgr.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808330DD6735600D2CAC0 /* moolangmgr.c */; settings = {COMPILER_FLAGS = "-I$(MOO_BUILDDIR)/mooedit"; }; };
+		F12808C60DD6735600D2CAC0 /* moolinebuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808350DD6735600D2CAC0 /* moolinebuffer.c */; };
+		F12808C70DD6735600D2CAC0 /* moolinemark.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808370DD6735600D2CAC0 /* moolinemark.c */; };
+		F12808C80DD6735600D2CAC0 /* moolineview.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808390DD6735600D2CAC0 /* moolineview.c */; };
+		F12808C90DD6735600D2CAC0 /* moooutputfilter.c in Sources */ = {isa = PBXBuildFile; fileRef = F128083B0DD6735600D2CAC0 /* moooutputfilter.c */; };
+		F12808CA0DD6735600D2CAC0 /* moooutputfilterregex.c in Sources */ = {isa = PBXBuildFile; fileRef = F128083D0DD6735600D2CAC0 /* moooutputfilterregex.c */; };
+		F12808CB0DD6735600D2CAC0 /* mooplugin-loader.c in Sources */ = {isa = PBXBuildFile; fileRef = F128083F0DD6735600D2CAC0 /* mooplugin-loader.c */; };
+		F12808CC0DD6735600D2CAC0 /* mooplugin.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808420DD6735600D2CAC0 /* mooplugin.c */; };
+		F12808CD0DD6735600D2CAC0 /* mooprintpreview.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808440DD6735600D2CAC0 /* mooprintpreview.c */; };
+		F12808CE0DD6735600D2CAC0 /* mootextbox.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808470DD6735600D2CAC0 /* mootextbox.c */; };
+		F12808CF0DD6735600D2CAC0 /* mootextbtree.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808490DD6735600D2CAC0 /* mootextbtree.c */; };
+		F12808D00DD6735600D2CAC0 /* mootextbuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = F128084B0DD6735600D2CAC0 /* mootextbuffer.c */; settings = {COMPILER_FLAGS = "-I$(MOO_BUILDDIR)/mooedit"; }; };
+		F12808D10DD6735600D2CAC0 /* mootextcompletion.c in Sources */ = {isa = PBXBuildFile; fileRef = F128084D0DD6735600D2CAC0 /* mootextcompletion.c */; };
+		F12808D20DD6735600D2CAC0 /* mootextfind.c in Sources */ = {isa = PBXBuildFile; fileRef = F128084F0DD6735600D2CAC0 /* mootextfind.c */; };
+		F12808D30DD6735600D2CAC0 /* mootextpopup.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808520DD6735600D2CAC0 /* mootextpopup.c */; };
+		F12808D40DD6735600D2CAC0 /* mootextprint.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808550DD6735600D2CAC0 /* mootextprint.c */; };
+		F12808D50DD6735600D2CAC0 /* mootextsearch.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808580DD6735600D2CAC0 /* mootextsearch.c */; settings = {COMPILER_FLAGS = "-I$(MOO_BUILDDIR)/mooedit"; }; };
+		F12808D60DD6735600D2CAC0 /* mootextstylescheme.c in Sources */ = {isa = PBXBuildFile; fileRef = F128085A0DD6735600D2CAC0 /* mootextstylescheme.c */; settings = {COMPILER_FLAGS = "-I$(MOO_BUILDDIR)/mooedit"; }; };
+		F12808D70DD6735600D2CAC0 /* mootextview.c in Sources */ = {isa = PBXBuildFile; fileRef = F128085D0DD6735600D2CAC0 /* mootextview.c */; };
+		F12808D80DD6735600D2CAC0 /* moousertools-prefs.c in Sources */ = {isa = PBXBuildFile; fileRef = F128085F0DD6735600D2CAC0 /* moousertools-prefs.c */; };
+		F12808D90DD6735600D2CAC0 /* moousertools.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808610DD6735600D2CAC0 /* moousertools.c */; };
+		F12808E30DD6735700D2CAC0 /* moofilelist.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808880DD6735600D2CAC0 /* moofilelist.c */; };
+		F12808E40DD6735700D2CAC0 /* moofileselector-prefs.c in Sources */ = {isa = PBXBuildFile; fileRef = F12808890DD6735600D2CAC0 /* moofileselector-prefs.c */; };
+		F12808E50DD6735700D2CAC0 /* moofileselector.c in Sources */ = {isa = PBXBuildFile; fileRef = F128088B0DD6735600D2CAC0 /* moofileselector.c */; };
+		F12808E60DD6735700D2CAC0 /* moofind.c in Sources */ = {isa = PBXBuildFile; fileRef = F128088E0DD6735600D2CAC0 /* moofind.c */; };
+		F12808ED0DD6740800D2CAC0 /* mooprint.glade in Sources */ = {isa = PBXBuildFile; fileRef = F128077C0DD6735500D2CAC0 /* mooprint.glade */; };
+		F12808EE0DD6740800D2CAC0 /* mooquicksearch.glade in Sources */ = {isa = PBXBuildFile; fileRef = F128077E0DD6735500D2CAC0 /* mooquicksearch.glade */; };
+		F12808EF0DD6740800D2CAC0 /* mooprintpreview.glade in Sources */ = {isa = PBXBuildFile; fileRef = F128077D0DD6735500D2CAC0 /* mooprintpreview.glade */; };
+		F12808F00DD6740800D2CAC0 /* mooedittools.glade in Sources */ = {isa = PBXBuildFile; fileRef = F128077A0DD6735500D2CAC0 /* mooedittools.glade */; };
+		F12808F10DD6740800D2CAC0 /* mootextgotoline.glade in Sources */ = {isa = PBXBuildFile; fileRef = F12807810DD6735500D2CAC0 /* mootextgotoline.glade */; };
+		F12808F20DD6740800D2CAC0 /* moostatusbar.glade in Sources */ = {isa = PBXBuildFile; fileRef = F128077F0DD6735500D2CAC0 /* moostatusbar.glade */; };
+		F12808F30DD6740800D2CAC0 /* mooeditsavemult.glade in Sources */ = {isa = PBXBuildFile; fileRef = F12807790DD6735500D2CAC0 /* mooeditsavemult.glade */; };
+		F12808F40DD6740800D2CAC0 /* mootextfind.glade in Sources */ = {isa = PBXBuildFile; fileRef = F12807800DD6735500D2CAC0 /* mootextfind.glade */; };
+		F12808F50DD6740800D2CAC0 /* mooeditprefs-langs.glade in Sources */ = {isa = PBXBuildFile; fileRef = F12807760DD6735500D2CAC0 /* mooeditprefs-langs.glade */; };
+		F12808F60DD6740800D2CAC0 /* mooeditprefs-general.glade in Sources */ = {isa = PBXBuildFile; fileRef = F12807750DD6735500D2CAC0 /* mooeditprefs-general.glade */; };
+		F12808F70DD6740800D2CAC0 /* mooeditprefs-file.glade in Sources */ = {isa = PBXBuildFile; fileRef = F12807740DD6735500D2CAC0 /* mooeditprefs-file.glade */; };
+		F12808F80DD6740800D2CAC0 /* mooeditprogress.glade in Sources */ = {isa = PBXBuildFile; fileRef = F12807780DD6735500D2CAC0 /* mooeditprogress.glade */; };
+		F12808F90DD6740800D2CAC0 /* mooeditprefs-view.glade in Sources */ = {isa = PBXBuildFile; fileRef = F12807770DD6735500D2CAC0 /* mooeditprefs-view.glade */; };
+		F12808FA0DD6740800D2CAC0 /* moopluginprefs.glade in Sources */ = {isa = PBXBuildFile; fileRef = F128077B0DD6735500D2CAC0 /* moopluginprefs.glade */; };
+		F12809790DD6796500D2CAC0 /* moofind.glade in Sources */ = {isa = PBXBuildFile; fileRef = F128088F0DD6735600D2CAC0 /* moofind.glade */; };
+		F128097A0DD6796500D2CAC0 /* moofileselector-prefs.glade in Sources */ = {isa = PBXBuildFile; fileRef = F128088A0DD6735600D2CAC0 /* moofileselector-prefs.glade */; };
+		F128097B0DD6796500D2CAC0 /* moofileselector.glade in Sources */ = {isa = PBXBuildFile; fileRef = F128088C0DD6735600D2CAC0 /* moofileselector.glade */; };
+		F128097C0DD6798100D2CAC0 /* medit.ui in Sources */ = {isa = PBXBuildFile; fileRef = F12807F70DD6735500D2CAC0 /* medit.ui */; };
+		F128097D0DD6798100D2CAC0 /* mooedit.ui in Sources */ = {isa = PBXBuildFile; fileRef = F12808110DD6735500D2CAC0 /* mooedit.ui */; };
+		F128099C0DD679C200D2CAC0 /* mooapp.c in Sources */ = {isa = PBXBuildFile; fileRef = F12809880DD679C200D2CAC0 /* mooapp.c */; };
+		F128099D0DD679C200D2CAC0 /* mooappabout.c in Sources */ = {isa = PBXBuildFile; fileRef = F128098A0DD679C200D2CAC0 /* mooappabout.c */; settings = {COMPILER_FLAGS = "-I."; }; };
+		F128099E0DD679C200D2CAC0 /* moohtml.c in Sources */ = {isa = PBXBuildFile; fileRef = F128098C0DD679C200D2CAC0 /* moohtml.c */; };
+		F128099F0DD679C200D2CAC0 /* moolinklabel.c in Sources */ = {isa = PBXBuildFile; fileRef = F128098E0DD679C200D2CAC0 /* moolinklabel.c */; };
+		F12809A10DD679C200D2CAC0 /* eggsmclient-dummy.c in Sources */ = {isa = PBXBuildFile; fileRef = F12809930DD679C200D2CAC0 /* eggsmclient-dummy.c */; };
+		F12809A40DD679C200D2CAC0 /* eggsmclient.c in Sources */ = {isa = PBXBuildFile; fileRef = F12809980DD679C200D2CAC0 /* eggsmclient.c */; settings = {COMPILER_FLAGS = "-Wno-unused"; }; };
+		F1280A0E0DD67C4D00D2CAC0 /* mooappabout.glade in Sources */ = {isa = PBXBuildFile; fileRef = F12809820DD679C200D2CAC0 /* mooappabout.glade */; };
+		F1280A320DD67D1500D2CAC0 /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F1280A310DD67D1500D2CAC0 /* libxml2.dylib */; };
+		F1280A360DD67D4000D2CAC0 /* libigemacintegration.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F1280A350DD67D4000D2CAC0 /* libigemacintegration.dylib */; };
+		F15F7A1A0DD6426200DAEB2C /* mdhistorymgr.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79480DD6426100DAEB2C /* mdhistorymgr.c */; };
+		F15F7A1D0DD6426200DAEB2C /* mooaccel.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F794C0DD6426100DAEB2C /* mooaccel.c */; };
+		F15F7A1F0DD6426200DAEB2C /* mooaccelbutton.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F794E0DD6426100DAEB2C /* mooaccelbutton.c */; };
+		F15F7A210DD6426200DAEB2C /* mooaccelprefs.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79500DD6426100DAEB2C /* mooaccelprefs.c */; };
+		F15F7A240DD6426200DAEB2C /* mooaction.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79530DD6426100DAEB2C /* mooaction.c */; };
+		F15F7A270DD6426200DAEB2C /* mooactionbase.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79560DD6426200DAEB2C /* mooactionbase.c */; };
+		F15F7A290DD6426200DAEB2C /* mooactioncollection.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79580DD6426200DAEB2C /* mooactioncollection.c */; };
+		F15F7A2B0DD6426200DAEB2C /* mooactionfactory.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F795A0DD6426200DAEB2C /* mooactionfactory.c */; };
+		F15F7A2D0DD6426200DAEB2C /* mooactiongroup.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F795C0DD6426200DAEB2C /* mooactiongroup.c */; };
+		F15F7A2F0DD6426200DAEB2C /* mooapp-ipc.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F795E0DD6426200DAEB2C /* mooapp-ipc.c */; };
+		F15F7A310DD6426200DAEB2C /* mooappinput.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79600DD6426200DAEB2C /* mooappinput.c */; };
+		F15F7A330DD6426200DAEB2C /* moobigpaned.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79620DD6426200DAEB2C /* moobigpaned.c */; };
+		F15F7A350DD6426200DAEB2C /* mooclosure.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79640DD6426200DAEB2C /* mooclosure.c */; };
+		F15F7A370DD6426200DAEB2C /* moocombo.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79660DD6426200DAEB2C /* moocombo.c */; };
+		F15F7A390DD6426200DAEB2C /* moocompat.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79680DD6426200DAEB2C /* moocompat.c */; };
+		F15F7A3B0DD6426200DAEB2C /* moodialogs.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F796A0DD6426200DAEB2C /* moodialogs.c */; };
+		F15F7A3D0DD6426200DAEB2C /* mooeditops.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F796C0DD6426200DAEB2C /* mooeditops.c */; };
+		F15F7A400DD6426200DAEB2C /* mooencodings.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F796F0DD6426200DAEB2C /* mooencodings.c */; };
+		F15F7A420DD6426200DAEB2C /* mooentry.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79710DD6426200DAEB2C /* mooentry.c */; };
+		F15F7A440DD6426200DAEB2C /* moofiledialog.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79730DD6426200DAEB2C /* moofiledialog.c */; };
+		F15F7A460DD6426200DAEB2C /* moofilewatch.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79750DD6426200DAEB2C /* moofilewatch.c */; };
+		F15F7A480DD6426200DAEB2C /* moofiltermgr.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79770DD6426200DAEB2C /* moofiltermgr.c */; };
+		F15F7A4A0DD6426200DAEB2C /* moofontsel.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79790DD6426200DAEB2C /* moofontsel.c */; };
+		F15F7A4C0DD6426200DAEB2C /* mooglade.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F797B0DD6426200DAEB2C /* mooglade.c */; };
+		F15F7A4E0DD6426200DAEB2C /* moohelp.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F797D0DD6426200DAEB2C /* moohelp.c */; };
+		F15F7A500DD6426200DAEB2C /* moohistorycombo.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F797F0DD6426200DAEB2C /* moohistorycombo.c */; };
+		F15F7A520DD6426200DAEB2C /* moohistorylist.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79810DD6426200DAEB2C /* moohistorylist.c */; };
+		F15F7A540DD6426200DAEB2C /* mooi18n.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79830DD6426200DAEB2C /* mooi18n.c */; };
+		F15F7A560DD6426200DAEB2C /* moomarkup.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79850DD6426200DAEB2C /* moomarkup.c */; };
+		F15F7A580DD6426200DAEB2C /* moomenuaction.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79870DD6426200DAEB2C /* moomenuaction.c */; };
+		F15F7A5A0DD6426200DAEB2C /* moomenumgr.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79890DD6426200DAEB2C /* moomenumgr.c */; };
+		F15F7A5C0DD6426200DAEB2C /* moomenutoolbutton.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F798B0DD6426200DAEB2C /* moomenutoolbutton.c */; };
+		F15F7A5E0DD6426200DAEB2C /* moonotebook.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F798D0DD6426200DAEB2C /* moonotebook.c */; };
+		F15F7A600DD6426200DAEB2C /* moopane.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F798F0DD6426200DAEB2C /* moopane.c */; };
+		F15F7A620DD6426200DAEB2C /* moopaned.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79910DD6426200DAEB2C /* moopaned.c */; };
+		F15F7A640DD6426200DAEB2C /* mooprefs.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79930DD6426200DAEB2C /* mooprefs.c */; };
+		F15F7A660DD6426200DAEB2C /* mooprefsdialog.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79950DD6426200DAEB2C /* mooprefsdialog.c */; };
+		F15F7A680DD6426200DAEB2C /* mooprefsdialogpage.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79970DD6426200DAEB2C /* mooprefsdialogpage.c */; };
+		F15F7A6B0DD6426200DAEB2C /* moospawn.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F799A0DD6426200DAEB2C /* moospawn.c */; };
+		F15F7A6D0DD6426200DAEB2C /* moostock.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F799C0DD6426200DAEB2C /* moostock.c */; };
+		F15F7A700DD6426200DAEB2C /* moouixml.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F799F0DD6426200DAEB2C /* moouixml.c */; };
+		F15F7A720DD6426200DAEB2C /* mooundo.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79A10DD6426200DAEB2C /* mooundo.c */; };
+		F15F7A760DD6426200DAEB2C /* mooutils-fli.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79A50DD6426200DAEB2C /* mooutils-fli.c */; };
+		F15F7A770DD6426200DAEB2C /* mooutils-fs.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79A60DD6426200DAEB2C /* mooutils-fs.c */; };
+		F15F7A7A0DD6426200DAEB2C /* mooutils-gobject.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79A90DD6426200DAEB2C /* mooutils-gobject.c */; };
+		F15F7A7D0DD6426200DAEB2C /* mooutils-misc.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79AC0DD6426200DAEB2C /* mooutils-misc.c */; };
+		F15F7A7F0DD6426200DAEB2C /* mooutils-thread.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79AE0DD6426200DAEB2C /* mooutils-thread.c */; };
+		F15F7A810DD6426200DAEB2C /* mooutils-treeview.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79B00DD6426200DAEB2C /* mooutils-treeview.c */; };
+		F15F7A890DD6426200DAEB2C /* moowindow.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F79BE0DD6426200DAEB2C /* moowindow.c */; };
+		F15F7AB30DD6426200DAEB2C /* xdgmime.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7A0B0DD6426200DAEB2C /* xdgmime.c */; settings = {COMPILER_FLAGS = "-Wno-sign-compare"; }; };
+		F15F7AB50DD6426200DAEB2C /* xdgmimealias.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7A0D0DD6426200DAEB2C /* xdgmimealias.c */; settings = {COMPILER_FLAGS = "-Wno-sign-compare"; }; };
+		F15F7AB70DD6426200DAEB2C /* xdgmimecache.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7A0F0DD6426200DAEB2C /* xdgmimecache.c */; settings = {COMPILER_FLAGS = "-Wno-sign-compare"; }; };
+		F15F7AB90DD6426200DAEB2C /* xdgmimeglob.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7A110DD6426200DAEB2C /* xdgmimeglob.c */; settings = {COMPILER_FLAGS = "-Wno-sign-compare"; }; };
+		F15F7ABD0DD6426200DAEB2C /* xdgmimemagic.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7A150DD6426200DAEB2C /* xdgmimemagic.c */; settings = {COMPILER_FLAGS = "-Wno-sign-compare"; }; };
+		F15F7ABF0DD6426200DAEB2C /* xdgmimeparent.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7A170DD6426200DAEB2C /* xdgmimeparent.c */; settings = {COMPILER_FLAGS = "-Wno-sign-compare"; }; };
+		F15F7B320DD6515800DAEB2C /* mooaccelbutton.glade in Sources */ = {isa = PBXBuildFile; fileRef = F15F79420DD6426100DAEB2C /* mooaccelbutton.glade */; };
+		F15F7B330DD6515800DAEB2C /* mooaccelprefs.glade in Sources */ = {isa = PBXBuildFile; fileRef = F15F79430DD6426100DAEB2C /* mooaccelprefs.glade */; };
+		F15F7B340DD6515800DAEB2C /* moologwindow.glade in Sources */ = {isa = PBXBuildFile; fileRef = F15F79440DD6426100DAEB2C /* moologwindow.glade */; };
+		F15F7C940DD664B600DAEB2C /* medit-app.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7C860DD664B600DAEB2C /* medit-app.c */; };
+		F15F7CCF0DD666A100DAEB2C /* libglib-2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F15F7CCE0DD666A100DAEB2C /* libglib-2.0.dylib */; };
+		F15F7CEF0DD6679300DAEB2C /* libgobject-2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F15F7CDA0DD6672900DAEB2C /* libgobject-2.0.dylib */; };
+		F15F7CF20DD667AB00DAEB2C /* libgthread-2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F15F7CDB0DD6672900DAEB2C /* libgthread-2.0.dylib */; };
+		F15F7CF30DD667AF00DAEB2C /* libgtk-quartz-2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F15F7CDC0DD6672900DAEB2C /* libgtk-quartz-2.0.dylib */; };
+		F15F7CF40DD667B600DAEB2C /* libgdk-quartz-2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F15F7CD80DD6672900DAEB2C /* libgdk-quartz-2.0.dylib */; };
+		F15F7D230DD6685B00DAEB2C /* moobookmarkmgr.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7CFF0DD6685B00DAEB2C /* moobookmarkmgr.c */; };
+		F15F7D250DD6685B00DAEB2C /* moobookmarkview.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7D010DD6685B00DAEB2C /* moobookmarkview.c */; };
+		F15F7D280DD6685B00DAEB2C /* moofile.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7D040DD6685B00DAEB2C /* moofile.c */; };
+		F15F7D2A0DD6685B00DAEB2C /* moofileentry.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7D060DD6685B00DAEB2C /* moofileentry.c */; };
+		F15F7D2C0DD6685B00DAEB2C /* moofileicons.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7D080DD6685B00DAEB2C /* moofileicons.c */; };
+		F15F7D2E0DD6685B00DAEB2C /* moofilesystem.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7D0A0DD6685B00DAEB2C /* moofilesystem.c */; };
+		F15F7D320DD6685B00DAEB2C /* moofileview-dialogs.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7D0E0DD6685B00DAEB2C /* moofileview-dialogs.c */; };
+		F15F7D360DD6685B00DAEB2C /* moofileview-tools.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7D120DD6685B00DAEB2C /* moofileview-tools.c */; };
+		F15F7D380DD6685B00DAEB2C /* moofileview.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7D150DD6685B00DAEB2C /* moofileview.c */; };
+		F15F7D3B0DD6685B00DAEB2C /* moofolder.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7D180DD6685B00DAEB2C /* moofolder.c */; };
+		F15F7D3E0DD6685B00DAEB2C /* moofoldermodel.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7D1B0DD6685B00DAEB2C /* moofoldermodel.c */; };
+		F15F7D400DD6685B00DAEB2C /* mooiconview.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7D1D0DD6685B00DAEB2C /* mooiconview.c */; };
+		F15F7D420DD6685B00DAEB2C /* mootreeview.c in Sources */ = {isa = PBXBuildFile; fileRef = F15F7D1F0DD6685B00DAEB2C /* mootreeview.c */; };
+		F15F7D440DD668AE00DAEB2C /* moobookmark-editor.glade in Sources */ = {isa = PBXBuildFile; fileRef = F15F7CF80DD6685B00DAEB2C /* moobookmark-editor.glade */; };
+		F15F7D450DD668AE00DAEB2C /* moocreatefolder.glade in Sources */ = {isa = PBXBuildFile; fileRef = F15F7CF90DD6685B00DAEB2C /* moocreatefolder.glade */; };
+		F15F7D460DD668AE00DAEB2C /* moofileprops.glade in Sources */ = {isa = PBXBuildFile; fileRef = F15F7CFA0DD6685B00DAEB2C /* moofileprops.glade */; };
+		F15F7D470DD668AE00DAEB2C /* moofileview-drop.glade in Sources */ = {isa = PBXBuildFile; fileRef = F15F7CFB0DD6685B00DAEB2C /* moofileview-drop.glade */; };
+		F1F0AE3C0DD6BFFC005EF77F /* gtksourcecontextengine-mangled.c in Sources */ = {isa = PBXBuildFile; fileRef = F1F0AE240DD6BFFC005EF77F /* gtksourcecontextengine-mangled.c */; settings = {COMPILER_FLAGS = "-I$(MOO_BUILDDIR)/mooedit"; }; };
+		F1F0AE3D0DD6BFFC005EF77F /* gtksourceengine-mangled.c in Sources */ = {isa = PBXBuildFile; fileRef = F1F0AE260DD6BFFC005EF77F /* gtksourceengine-mangled.c */; settings = {COMPILER_FLAGS = "-I$(MOO_BUILDDIR)/mooedit"; }; };
+		F1F0AE3E0DD6BFFC005EF77F /* gtksourceiter-mangled.c in Sources */ = {isa = PBXBuildFile; fileRef = F1F0AE280DD6BFFC005EF77F /* gtksourceiter-mangled.c */; settings = {COMPILER_FLAGS = "-I$(MOO_BUILDDIR)/mooedit"; }; };
+		F1F0AE3F0DD6BFFC005EF77F /* gtksourcelanguage-mangled.c in Sources */ = {isa = PBXBuildFile; fileRef = F1F0AE2A0DD6BFFC005EF77F /* gtksourcelanguage-mangled.c */; settings = {COMPILER_FLAGS = "-I$(MOO_BUILDDIR)/mooedit"; }; };
+		F1F0AE400DD6BFFC005EF77F /* gtksourcelanguage-parser-1-mangled.c in Sources */ = {isa = PBXBuildFile; fileRef = F1F0AE2C0DD6BFFC005EF77F /* gtksourcelanguage-parser-1-mangled.c */; settings = {COMPILER_FLAGS = "-I$(MOO_BUILDDIR)/mooedit"; }; };
+		F1F0AE410DD6BFFC005EF77F /* gtksourcelanguage-parser-2-mangled.c in Sources */ = {isa = PBXBuildFile; fileRef = F1F0AE2D0DD6BFFC005EF77F /* gtksourcelanguage-parser-2-mangled.c */; settings = {COMPILER_FLAGS = "-I$(MOO_BUILDDIR)/mooedit"; }; };
+		F1F0AE420DD6BFFC005EF77F /* gtksourcelanguagemanager-mangled.c in Sources */ = {isa = PBXBuildFile; fileRef = F1F0AE2F0DD6BFFC005EF77F /* gtksourcelanguagemanager-mangled.c */; settings = {COMPILER_FLAGS = "-I$(MOO_BUILDDIR)/mooedit"; }; };
+		F1F0AE430DD6BFFC005EF77F /* gtksourcestyle-mangled.c in Sources */ = {isa = PBXBuildFile; fileRef = F1F0AE310DD6BFFC005EF77F /* gtksourcestyle-mangled.c */; settings = {COMPILER_FLAGS = "-I$(MOO_BUILDDIR)/mooedit"; }; };
+		F1F0AE440DD6BFFC005EF77F /* gtksourcestylescheme-mangled.c in Sources */ = {isa = PBXBuildFile; fileRef = F1F0AE340DD6BFFC005EF77F /* gtksourcestylescheme-mangled.c */; settings = {COMPILER_FLAGS = "-I$(MOO_BUILDDIR)/mooedit"; }; };
+		F1F0AE450DD6BFFC005EF77F /* gtksourcestyleschememanager-mangled.c in Sources */ = {isa = PBXBuildFile; fileRef = F1F0AE360DD6BFFC005EF77F /* gtksourcestyleschememanager-mangled.c */; settings = {COMPILER_FLAGS = "-I$(MOO_BUILDDIR)/mooedit"; }; };
+		F1F0AE460DD6BFFC005EF77F /* gtksourceview-utils-mangled.c in Sources */ = {isa = PBXBuildFile; fileRef = F1F0AE380DD6BFFC005EF77F /* gtksourceview-utils-mangled.c */; settings = {COMPILER_FLAGS = "-I$(MOO_BUILDDIR)/mooedit"; }; };
+		F1F0AE470DD6BFFC005EF77F /* gtktextregion-mangled.c in Sources */ = {isa = PBXBuildFile; fileRef = F1F0AE3A0DD6BFFC005EF77F /* gtktextregion-mangled.c */; settings = {COMPILER_FLAGS = "-I$(MOO_BUILDDIR)/mooedit"; }; };
+		F1F0AE680DD6C2EE005EF77F /* marshals.c in Sources */ = {isa = PBXBuildFile; fileRef = F1F0AE660DD6C2EE005EF77F /* marshals.c */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		F128064D0DD66B9D00D2CAC0 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.ui";
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+				"$(MOO_BUILDDIR)/$(INPUT_FILE_BASE)-ui.h",
+			);
+			script = ". \"$SRCROOT\"/env.sh\n\"$MOO_SRCDIR\"/mooutils/xml2h.sh `echo \"$INPUT_FILE_BASE\" | sed -e \"s/-/_/\"`_ui_xml \"$INPUT_FILE_PATH\" > \"$MOO_BUILDDIR\"/\"$INPUT_FILE_BASE\"-ui.h.tmp && mv \"$MOO_BUILDDIR\"/\"$INPUT_FILE_BASE\"-ui.h.tmp \"$MOO_BUILDDIR\"/\"$INPUT_FILE_BASE\"-ui.h";
+		};
+		F15F7B2E0DD64F6E00DAEB2C /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.glade";
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+				"$(MOO_BUILDDIR)/$(INPUT_FILE_BASE)-glade.h",
+			);
+			script = ". \"$SRCROOT\"/env.sh\n\"$MOO_SRCDIR\"/mooutils/xml2h.sh `echo \"$INPUT_FILE_BASE\" | sed -e \"s/-/_/\"`_glade_xml \"$INPUT_FILE_PATH\" > \"$MOO_BUILDDIR\"/\"$INPUT_FILE_BASE\"-glade.h.tmp && mv \"$MOO_BUILDDIR\"/\"$INPUT_FILE_BASE\"-glade.h.tmp \"$MOO_BUILDDIR\"/\"$INPUT_FILE_BASE\"-glade.h";
+		};
+/* End PBXBuildRule section */
+
+/* Begin PBXContainerItemProxy section */
+		F15F79360DD6421300DAEB2C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F15F79320DD641FC00DAEB2C;
+			remoteInfo = libmoo;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		8DD76FB20486AB0100D96B5E /* medit */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = medit; sourceTree = BUILT_PRODUCTS_DIR; };
+		F128067A0DD66E3D00D2CAC0 /* libgettextlib.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgettextlib.dylib; path = /opt/gtk/lib/libgettextlib.dylib; sourceTree = "<absolute>"; };
+		F12806890DD66EDD00D2CAC0 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		F12806940DD66F4500D2CAC0 /* moo-test-macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "moo-test-macros.h"; path = "../moo/moo-test-macros.h"; sourceTree = SOURCE_ROOT; };
+		F12806950DD66F4500D2CAC0 /* moo-test-utils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "moo-test-utils.c"; path = "../moo/moo-test-utils.c"; sourceTree = SOURCE_ROOT; };
+		F12806960DD66F4500D2CAC0 /* moo-test-utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "moo-test-utils.h"; path = "../moo/moo-test-utils.h"; sourceTree = SOURCE_ROOT; };
+		F12806970DD66F4500D2CAC0 /* moo-tests-lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "moo-tests-lua.h"; path = "../moo/moo-tests-lua.h"; sourceTree = SOURCE_ROOT; };
+		F12806980DD66F4500D2CAC0 /* moo-tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "moo-tests.h"; path = "../moo/moo-tests.h"; sourceTree = SOURCE_ROOT; };
+		F12806990DD66F4500D2CAC0 /* moo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = moo.h; path = ../moo/moo.h; sourceTree = SOURCE_ROOT; };
+		F12806C90DD670DA00D2CAC0 /* lfs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lfs.c; sourceTree = "<group>"; };
+		F12806CA0DD670DA00D2CAC0 /* lfs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lfs.h; sourceTree = "<group>"; };
+		F12806CC0DD670DB00D2CAC0 /* lapi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lapi.c; sourceTree = "<group>"; };
+		F12806CD0DD670DB00D2CAC0 /* lapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lapi.h; sourceTree = "<group>"; };
+		F12806CE0DD670DB00D2CAC0 /* lauxlib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lauxlib.c; sourceTree = "<group>"; };
+		F12806CF0DD670DB00D2CAC0 /* lauxlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lauxlib.h; sourceTree = "<group>"; };
+		F12806D00DD670DB00D2CAC0 /* lbaselib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lbaselib.c; sourceTree = "<group>"; };
+		F12806D10DD670DB00D2CAC0 /* lcode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lcode.c; sourceTree = "<group>"; };
+		F12806D20DD670DB00D2CAC0 /* lcode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lcode.h; sourceTree = "<group>"; };
+		F12806D30DD670DB00D2CAC0 /* ldblib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ldblib.c; sourceTree = "<group>"; };
+		F12806D40DD670DB00D2CAC0 /* ldebug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ldebug.c; sourceTree = "<group>"; };
+		F12806D50DD670DB00D2CAC0 /* ldebug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ldebug.h; sourceTree = "<group>"; };
+		F12806D60DD670DB00D2CAC0 /* ldo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ldo.c; sourceTree = "<group>"; };
+		F12806D70DD670DB00D2CAC0 /* ldo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ldo.h; sourceTree = "<group>"; };
+		F12806D80DD670DB00D2CAC0 /* ldump.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ldump.c; sourceTree = "<group>"; };
+		F12806D90DD670DB00D2CAC0 /* lfunc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lfunc.c; sourceTree = "<group>"; };
+		F12806DA0DD670DB00D2CAC0 /* lfunc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lfunc.h; sourceTree = "<group>"; };
+		F12806DB0DD670DB00D2CAC0 /* lgc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lgc.c; sourceTree = "<group>"; };
+		F12806DC0DD670DB00D2CAC0 /* lgc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lgc.h; sourceTree = "<group>"; };
+		F12806DD0DD670DB00D2CAC0 /* linit.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = linit.c; sourceTree = "<group>"; };
+		F12806DE0DD670DB00D2CAC0 /* liolib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = liolib.c; sourceTree = "<group>"; };
+		F12806DF0DD670DB00D2CAC0 /* llex.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = llex.c; sourceTree = "<group>"; };
+		F12806E00DD670DB00D2CAC0 /* llex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llex.h; sourceTree = "<group>"; };
+		F12806E10DD670DB00D2CAC0 /* llimits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llimits.h; sourceTree = "<group>"; };
+		F12806E20DD670DB00D2CAC0 /* lmathlib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lmathlib.c; sourceTree = "<group>"; };
+		F12806E30DD670DB00D2CAC0 /* lmem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lmem.c; sourceTree = "<group>"; };
+		F12806E40DD670DB00D2CAC0 /* lmem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lmem.h; sourceTree = "<group>"; };
+		F12806E50DD670DB00D2CAC0 /* loadlib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = loadlib.c; sourceTree = "<group>"; };
+		F12806E60DD670DB00D2CAC0 /* lobject.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lobject.c; sourceTree = "<group>"; };
+		F12806E70DD670DB00D2CAC0 /* lobject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lobject.h; sourceTree = "<group>"; };
+		F12806E80DD670DB00D2CAC0 /* lopcodes.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lopcodes.c; sourceTree = "<group>"; };
+		F12806E90DD670DB00D2CAC0 /* lopcodes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lopcodes.h; sourceTree = "<group>"; };
+		F12806EA0DD670DB00D2CAC0 /* loslib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = loslib.c; sourceTree = "<group>"; };
+		F12806EB0DD670DB00D2CAC0 /* lparser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lparser.c; sourceTree = "<group>"; };
+		F12806EC0DD670DB00D2CAC0 /* lparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lparser.h; sourceTree = "<group>"; };
+		F12806ED0DD670DB00D2CAC0 /* lstate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lstate.c; sourceTree = "<group>"; };
+		F12806EE0DD670DB00D2CAC0 /* lstate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lstate.h; sourceTree = "<group>"; };
+		F12806EF0DD670DB00D2CAC0 /* lstring.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lstring.c; sourceTree = "<group>"; };
+		F12806F00DD670DB00D2CAC0 /* lstring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lstring.h; sourceTree = "<group>"; };
+		F12806F10DD670DB00D2CAC0 /* lstrlib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lstrlib.c; sourceTree = "<group>"; };
+		F12806F20DD670DB00D2CAC0 /* ltable.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ltable.c; sourceTree = "<group>"; };
+		F12806F30DD670DB00D2CAC0 /* ltable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ltable.h; sourceTree = "<group>"; };
+		F12806F40DD670DB00D2CAC0 /* ltablib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ltablib.c; sourceTree = "<group>"; };
+		F12806F50DD670DB00D2CAC0 /* ltm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ltm.c; sourceTree = "<group>"; };
+		F12806F60DD670DB00D2CAC0 /* ltm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ltm.h; sourceTree = "<group>"; };
+		F12806FB0DD670DB00D2CAC0 /* lua.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lua.c; sourceTree = "<group>"; };
+		F12806FC0DD670DB00D2CAC0 /* lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua.h; sourceTree = "<group>"; };
+		F12806FD0DD670DB00D2CAC0 /* luac.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = luac.c; sourceTree = "<group>"; };
+		F12806FE0DD670DB00D2CAC0 /* luaconf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = luaconf.h; sourceTree = "<group>"; };
+		F12806FF0DD670DB00D2CAC0 /* lualib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lualib.h; sourceTree = "<group>"; };
+		F12807000DD670DB00D2CAC0 /* lundump.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lundump.c; sourceTree = "<group>"; };
+		F12807010DD670DB00D2CAC0 /* lundump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lundump.h; sourceTree = "<group>"; };
+		F12807020DD670DB00D2CAC0 /* lvm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lvm.c; sourceTree = "<group>"; };
+		F12807030DD670DB00D2CAC0 /* lvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lvm.h; sourceTree = "<group>"; };
+		F12807040DD670DB00D2CAC0 /* lzio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lzio.c; sourceTree = "<group>"; };
+		F12807050DD670DB00D2CAC0 /* lzio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lzio.h; sourceTree = "<group>"; };
+		F12807080DD670DB00D2CAC0 /* moolua.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moolua.c; sourceTree = "<group>"; };
+		F12807090DD670DB00D2CAC0 /* moolua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moolua.h; sourceTree = "<group>"; };
+		F128070C0DD670DB00D2CAC0 /* slnunico.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = slnunico.c; sourceTree = "<group>"; };
+		F12807680DD6731900D2CAC0 /* libgio-2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libgio-2.0.dylib"; path = "/opt/gtk/lib/libgio-2.0.dylib"; sourceTree = "<absolute>"; };
+		F12807690DD6731900D2CAC0 /* libpixman-1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libpixman-1.dylib"; path = "/opt/gtk/lib/libpixman-1.dylib"; sourceTree = "<absolute>"; };
+		F128076A0DD6731900D2CAC0 /* libpng.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpng.dylib; path = /opt/gtk/lib/libpng.dylib; sourceTree = "<absolute>"; };
+		F12807740DD6735500D2CAC0 /* mooeditprefs-file.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "mooeditprefs-file.glade"; sourceTree = "<group>"; };
+		F12807750DD6735500D2CAC0 /* mooeditprefs-general.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "mooeditprefs-general.glade"; sourceTree = "<group>"; };
+		F12807760DD6735500D2CAC0 /* mooeditprefs-langs.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "mooeditprefs-langs.glade"; sourceTree = "<group>"; };
+		F12807770DD6735500D2CAC0 /* mooeditprefs-view.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "mooeditprefs-view.glade"; sourceTree = "<group>"; };
+		F12807780DD6735500D2CAC0 /* mooeditprogress.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = mooeditprogress.glade; sourceTree = "<group>"; };
+		F12807790DD6735500D2CAC0 /* mooeditsavemult.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = mooeditsavemult.glade; sourceTree = "<group>"; };
+		F128077A0DD6735500D2CAC0 /* mooedittools.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = mooedittools.glade; sourceTree = "<group>"; };
+		F128077B0DD6735500D2CAC0 /* moopluginprefs.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = moopluginprefs.glade; sourceTree = "<group>"; };
+		F128077C0DD6735500D2CAC0 /* mooprint.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = mooprint.glade; sourceTree = "<group>"; };
+		F128077D0DD6735500D2CAC0 /* mooprintpreview.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = mooprintpreview.glade; sourceTree = "<group>"; };
+		F128077E0DD6735500D2CAC0 /* mooquicksearch.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = mooquicksearch.glade; sourceTree = "<group>"; };
+		F128077F0DD6735500D2CAC0 /* moostatusbar.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = moostatusbar.glade; sourceTree = "<group>"; };
+		F12807800DD6735500D2CAC0 /* mootextfind.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = mootextfind.glade; sourceTree = "<group>"; };
+		F12807810DD6735500D2CAC0 /* mootextgotoline.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = mootextgotoline.glade; sourceTree = "<group>"; };
+		F12807830DD6735500D2CAC0 /* gtksourceview-api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "gtksourceview-api.h"; sourceTree = "<group>"; };
+		F12807840DD6735500D2CAC0 /* gtksourceview-i18n.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "gtksourceview-i18n.h"; sourceTree = "<group>"; };
+		F12807850DD6735500D2CAC0 /* gtksourceview-marshal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "gtksourceview-marshal.h"; sourceTree = "<group>"; };
+		F12807F70DD6735500D2CAC0 /* medit.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = medit.ui; sourceTree = "<group>"; };
+		F12807FB0DD6735500D2CAC0 /* moocmdview.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moocmdview.c; sourceTree = "<group>"; };
+		F12807FC0DD6735500D2CAC0 /* moocmdview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moocmdview.h; sourceTree = "<group>"; };
+		F12807FD0DD6735500D2CAC0 /* moocommand-exe.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "moocommand-exe.c"; sourceTree = "<group>"; };
+		F12807FE0DD6735500D2CAC0 /* moocommand-exe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "moocommand-exe.h"; sourceTree = "<group>"; };
+		F12807FF0DD6735500D2CAC0 /* moocommand-lua.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "moocommand-lua.c"; sourceTree = "<group>"; };
+		F12808000DD6735500D2CAC0 /* moocommand-lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "moocommand-lua.h"; sourceTree = "<group>"; };
+		F12808010DD6735500D2CAC0 /* moocommand-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "moocommand-private.h"; sourceTree = "<group>"; };
+		F12808020DD6735500D2CAC0 /* moocommand.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moocommand.c; sourceTree = "<group>"; };
+		F12808030DD6735500D2CAC0 /* moocommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moocommand.h; sourceTree = "<group>"; };
+		F12808040DD6735500D2CAC0 /* moocommanddisplay.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moocommanddisplay.c; sourceTree = "<group>"; };
+		F12808050DD6735500D2CAC0 /* moocommanddisplay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moocommanddisplay.h; sourceTree = "<group>"; };
+		F12808060DD6735500D2CAC0 /* moocompletionsimple.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moocompletionsimple.c; sourceTree = "<group>"; };
+		F12808070DD6735500D2CAC0 /* moocompletionsimple.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moocompletionsimple.h; sourceTree = "<group>"; };
+		F12808080DD6735500D2CAC0 /* mooedit-accels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooedit-accels.h"; sourceTree = "<group>"; };
+		F12808090DD6735500D2CAC0 /* mooedit-bookmarks.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mooedit-bookmarks.c"; sourceTree = "<group>"; };
+		F128080A0DD6735500D2CAC0 /* mooedit-bookmarks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooedit-bookmarks.h"; sourceTree = "<group>"; };
+		F128080B0DD6735500D2CAC0 /* mooedit-enums.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mooedit-enums.c"; sourceTree = "<group>"; };
+		F128080C0DD6735500D2CAC0 /* mooedit-enums.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooedit-enums.h"; sourceTree = "<group>"; };
+		F128080D0DD6735500D2CAC0 /* mooedit-lua-api.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mooedit-lua-api.c"; sourceTree = "<group>"; };
+		F128080E0DD6735500D2CAC0 /* mooedit-lua.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mooedit-lua.c"; sourceTree = "<group>"; };
+		F128080F0DD6735500D2CAC0 /* mooedit-lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooedit-lua.h"; sourceTree = "<group>"; };
+		F12808100DD6735500D2CAC0 /* mooedit-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooedit-private.h"; sourceTree = "<group>"; };
+		F12808110DD6735500D2CAC0 /* mooedit.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = mooedit.ui; sourceTree = "<group>"; };
+		F12808120DD6735500D2CAC0 /* mooedit.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooedit.c; sourceTree = "<group>"; };
+		F12808130DD6735500D2CAC0 /* mooedit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooedit.h; sourceTree = "<group>"; };
+		F12808140DD6735500D2CAC0 /* mooeditaction-factory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mooeditaction-factory.c"; sourceTree = "<group>"; };
+		F12808150DD6735500D2CAC0 /* mooeditaction-factory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooeditaction-factory.h"; sourceTree = "<group>"; };
+		F12808160DD6735500D2CAC0 /* mooeditaction.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooeditaction.c; sourceTree = "<group>"; };
+		F12808170DD6735500D2CAC0 /* mooeditaction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooeditaction.h; sourceTree = "<group>"; };
+		F12808180DD6735500D2CAC0 /* mooeditconfig.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooeditconfig.c; sourceTree = "<group>"; };
+		F12808190DD6735500D2CAC0 /* mooeditconfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooeditconfig.h; sourceTree = "<group>"; };
+		F128081A0DD6735500D2CAC0 /* mooeditdialogs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooeditdialogs.c; sourceTree = "<group>"; };
+		F128081B0DD6735500D2CAC0 /* mooeditdialogs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooeditdialogs.h; sourceTree = "<group>"; };
+		F128081C0DD6735500D2CAC0 /* mooeditfileops.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooeditfileops.c; sourceTree = "<group>"; };
+		F128081D0DD6735500D2CAC0 /* mooeditfileops.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooeditfileops.h; sourceTree = "<group>"; };
+		F128081E0DD6735500D2CAC0 /* mooeditfiltersettings.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooeditfiltersettings.c; sourceTree = "<group>"; };
+		F128081F0DD6735500D2CAC0 /* mooeditfiltersettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooeditfiltersettings.h; sourceTree = "<group>"; };
+		F12808200DD6735500D2CAC0 /* mooeditinput.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooeditinput.c; sourceTree = "<group>"; };
+		F12808210DD6735600D2CAC0 /* mooeditor-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooeditor-private.h"; sourceTree = "<group>"; };
+		F12808220DD6735600D2CAC0 /* mooeditor.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooeditor.c; sourceTree = "<group>"; };
+		F12808230DD6735600D2CAC0 /* mooeditor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooeditor.h; sourceTree = "<group>"; };
+		F12808240DD6735600D2CAC0 /* mooeditprefs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooeditprefs.c; sourceTree = "<group>"; };
+		F12808250DD6735600D2CAC0 /* mooeditprefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooeditprefs.h; sourceTree = "<group>"; };
+		F12808260DD6735600D2CAC0 /* mooeditprefspage.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooeditprefspage.c; sourceTree = "<group>"; };
+		F12808270DD6735600D2CAC0 /* mooeditwindow.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooeditwindow.c; sourceTree = "<group>"; };
+		F12808280DD6735600D2CAC0 /* mooeditwindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooeditwindow.h; sourceTree = "<group>"; };
+		F12808290DD6735600D2CAC0 /* moofold.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moofold.c; sourceTree = "<group>"; };
+		F128082A0DD6735600D2CAC0 /* moofold.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moofold.h; sourceTree = "<group>"; };
+		F128082B0DD6735600D2CAC0 /* mooindenter.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooindenter.c; sourceTree = "<group>"; };
+		F128082C0DD6735600D2CAC0 /* mooindenter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooindenter.h; sourceTree = "<group>"; };
+		F128082D0DD6735600D2CAC0 /* mookeyfile.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mookeyfile.c; sourceTree = "<group>"; };
+		F128082E0DD6735600D2CAC0 /* mookeyfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mookeyfile.h; sourceTree = "<group>"; };
+		F128082F0DD6735600D2CAC0 /* moolang-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "moolang-private.h"; sourceTree = "<group>"; };
+		F12808300DD6735600D2CAC0 /* moolang.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moolang.c; sourceTree = "<group>"; };
+		F12808310DD6735600D2CAC0 /* moolang.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moolang.h; sourceTree = "<group>"; };
+		F12808320DD6735600D2CAC0 /* moolangmgr-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "moolangmgr-private.h"; sourceTree = "<group>"; };
+		F12808330DD6735600D2CAC0 /* moolangmgr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moolangmgr.c; sourceTree = "<group>"; };
+		F12808340DD6735600D2CAC0 /* moolangmgr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moolangmgr.h; sourceTree = "<group>"; };
+		F12808350DD6735600D2CAC0 /* moolinebuffer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moolinebuffer.c; sourceTree = "<group>"; };
+		F12808360DD6735600D2CAC0 /* moolinebuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moolinebuffer.h; sourceTree = "<group>"; };
+		F12808370DD6735600D2CAC0 /* moolinemark.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moolinemark.c; sourceTree = "<group>"; };
+		F12808380DD6735600D2CAC0 /* moolinemark.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moolinemark.h; sourceTree = "<group>"; };
+		F12808390DD6735600D2CAC0 /* moolineview.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moolineview.c; sourceTree = "<group>"; };
+		F128083A0DD6735600D2CAC0 /* moolineview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moolineview.h; sourceTree = "<group>"; };
+		F128083B0DD6735600D2CAC0 /* moooutputfilter.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moooutputfilter.c; sourceTree = "<group>"; };
+		F128083C0DD6735600D2CAC0 /* moooutputfilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moooutputfilter.h; sourceTree = "<group>"; };
+		F128083D0DD6735600D2CAC0 /* moooutputfilterregex.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moooutputfilterregex.c; sourceTree = "<group>"; };
+		F128083E0DD6735600D2CAC0 /* moooutputfilterregex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moooutputfilterregex.h; sourceTree = "<group>"; };
+		F128083F0DD6735600D2CAC0 /* mooplugin-loader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mooplugin-loader.c"; sourceTree = "<group>"; };
+		F12808400DD6735600D2CAC0 /* mooplugin-loader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooplugin-loader.h"; sourceTree = "<group>"; };
+		F12808410DD6735600D2CAC0 /* mooplugin-macro.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooplugin-macro.h"; sourceTree = "<group>"; };
+		F12808420DD6735600D2CAC0 /* mooplugin.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooplugin.c; sourceTree = "<group>"; };
+		F12808430DD6735600D2CAC0 /* mooplugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooplugin.h; sourceTree = "<group>"; };
+		F12808440DD6735600D2CAC0 /* mooprintpreview.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooprintpreview.c; sourceTree = "<group>"; };
+		F12808450DD6735600D2CAC0 /* mooprintpreview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooprintpreview.h; sourceTree = "<group>"; };
+		F12808460DD6735600D2CAC0 /* mootext-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mootext-private.h"; sourceTree = "<group>"; };
+		F12808470DD6735600D2CAC0 /* mootextbox.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mootextbox.c; sourceTree = "<group>"; };
+		F12808480DD6735600D2CAC0 /* mootextbox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mootextbox.h; sourceTree = "<group>"; };
+		F12808490DD6735600D2CAC0 /* mootextbtree.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mootextbtree.c; sourceTree = "<group>"; };
+		F128084A0DD6735600D2CAC0 /* mootextbtree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mootextbtree.h; sourceTree = "<group>"; };
+		F128084B0DD6735600D2CAC0 /* mootextbuffer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mootextbuffer.c; sourceTree = "<group>"; };
+		F128084C0DD6735600D2CAC0 /* mootextbuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mootextbuffer.h; sourceTree = "<group>"; };
+		F128084D0DD6735600D2CAC0 /* mootextcompletion.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mootextcompletion.c; sourceTree = "<group>"; };
+		F128084E0DD6735600D2CAC0 /* mootextcompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mootextcompletion.h; sourceTree = "<group>"; };
+		F128084F0DD6735600D2CAC0 /* mootextfind.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mootextfind.c; sourceTree = "<group>"; };
+		F12808500DD6735600D2CAC0 /* mootextfind.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mootextfind.h; sourceTree = "<group>"; };
+		F12808510DD6735600D2CAC0 /* mootextiter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mootextiter.h; sourceTree = "<group>"; };
+		F12808520DD6735600D2CAC0 /* mootextpopup.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mootextpopup.c; sourceTree = "<group>"; };
+		F12808530DD6735600D2CAC0 /* mootextpopup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mootextpopup.h; sourceTree = "<group>"; };
+		F12808540DD6735600D2CAC0 /* mootextprint-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mootextprint-private.h"; sourceTree = "<group>"; };
+		F12808550DD6735600D2CAC0 /* mootextprint.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mootextprint.c; sourceTree = "<group>"; };
+		F12808560DD6735600D2CAC0 /* mootextprint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mootextprint.h; sourceTree = "<group>"; };
+		F12808570DD6735600D2CAC0 /* mootextsearch-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mootextsearch-private.h"; sourceTree = "<group>"; };
+		F12808580DD6735600D2CAC0 /* mootextsearch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mootextsearch.c; sourceTree = "<group>"; };
+		F12808590DD6735600D2CAC0 /* mootextsearch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mootextsearch.h; sourceTree = "<group>"; };
+		F128085A0DD6735600D2CAC0 /* mootextstylescheme.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mootextstylescheme.c; sourceTree = "<group>"; };
+		F128085B0DD6735600D2CAC0 /* mootextstylescheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mootextstylescheme.h; sourceTree = "<group>"; };
+		F128085C0DD6735600D2CAC0 /* mootextview-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mootextview-private.h"; sourceTree = "<group>"; };
+		F128085D0DD6735600D2CAC0 /* mootextview.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mootextview.c; sourceTree = "<group>"; };
+		F128085E0DD6735600D2CAC0 /* mootextview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mootextview.h; sourceTree = "<group>"; };
+		F128085F0DD6735600D2CAC0 /* moousertools-prefs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "moousertools-prefs.c"; sourceTree = "<group>"; };
+		F12808600DD6735600D2CAC0 /* moousertools-prefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "moousertools-prefs.h"; sourceTree = "<group>"; };
+		F12808610DD6735600D2CAC0 /* moousertools.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moousertools.c; sourceTree = "<group>"; };
+		F12808620DD6735600D2CAC0 /* moousertools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moousertools.h; sourceTree = "<group>"; };
+		F12808870DD6735600D2CAC0 /* mooeditplugins.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooeditplugins.h; sourceTree = "<group>"; };
+		F12808880DD6735600D2CAC0 /* moofilelist.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moofilelist.c; sourceTree = "<group>"; };
+		F12808890DD6735600D2CAC0 /* moofileselector-prefs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "moofileselector-prefs.c"; sourceTree = "<group>"; };
+		F128088A0DD6735600D2CAC0 /* moofileselector-prefs.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "moofileselector-prefs.glade"; sourceTree = "<group>"; };
+		F128088B0DD6735600D2CAC0 /* moofileselector.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moofileselector.c; sourceTree = "<group>"; };
+		F128088C0DD6735600D2CAC0 /* moofileselector.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = moofileselector.glade; sourceTree = "<group>"; };
+		F128088D0DD6735600D2CAC0 /* moofileselector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moofileselector.h; sourceTree = "<group>"; };
+		F128088E0DD6735600D2CAC0 /* moofind.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moofind.c; sourceTree = "<group>"; };
+		F128088F0DD6735600D2CAC0 /* moofind.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = moofind.glade; sourceTree = "<group>"; };
+		F12809820DD679C200D2CAC0 /* mooappabout.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = mooappabout.glade; sourceTree = "<group>"; };
+		F12809860DD679C200D2CAC0 /* mooapp-accels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooapp-accels.h"; sourceTree = "<group>"; };
+		F12809870DD679C200D2CAC0 /* mooapp-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooapp-private.h"; sourceTree = "<group>"; };
+		F12809880DD679C200D2CAC0 /* mooapp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooapp.c; sourceTree = "<group>"; };
+		F12809890DD679C200D2CAC0 /* mooapp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooapp.h; sourceTree = "<group>"; };
+		F128098A0DD679C200D2CAC0 /* mooappabout.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooappabout.c; sourceTree = "<group>"; };
+		F128098B0DD679C200D2CAC0 /* mooappabout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooappabout.h; sourceTree = "<group>"; };
+		F128098C0DD679C200D2CAC0 /* moohtml.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moohtml.c; sourceTree = "<group>"; };
+		F128098D0DD679C200D2CAC0 /* moohtml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moohtml.h; sourceTree = "<group>"; };
+		F128098E0DD679C200D2CAC0 /* moolinklabel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moolinklabel.c; sourceTree = "<group>"; };
+		F128098F0DD679C200D2CAC0 /* moolinklabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moolinklabel.h; sourceTree = "<group>"; };
+		F12809930DD679C200D2CAC0 /* eggsmclient-dummy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "eggsmclient-dummy.c"; sourceTree = "<group>"; };
+		F12809940DD679C200D2CAC0 /* eggsmclient-mangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "eggsmclient-mangle.h"; sourceTree = "<group>"; };
+		F12809950DD679C200D2CAC0 /* eggsmclient-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "eggsmclient-private.h"; sourceTree = "<group>"; };
+		F12809980DD679C200D2CAC0 /* eggsmclient.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = eggsmclient.c; sourceTree = "<group>"; };
+		F12809990DD679C200D2CAC0 /* eggsmclient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = eggsmclient.h; sourceTree = "<group>"; };
+		F1280A310DD67D1500D2CAC0 /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = /opt/gtk/lib/libxml2.dylib; sourceTree = "<absolute>"; };
+		F1280A350DD67D4000D2CAC0 /* libigemacintegration.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libigemacintegration.dylib; path = /opt/gtk/lib/libigemacintegration.dylib; sourceTree = "<absolute>"; };
+		F15F79330DD641FC00DAEB2C /* libmoo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libmoo.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		F15F793A0DD6423100DAEB2C /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
+		F15F79420DD6426100DAEB2C /* mooaccelbutton.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = mooaccelbutton.glade; sourceTree = "<group>"; };
+		F15F79430DD6426100DAEB2C /* mooaccelprefs.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = mooaccelprefs.glade; sourceTree = "<group>"; };
+		F15F79440DD6426100DAEB2C /* moologwindow.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = moologwindow.glade; sourceTree = "<group>"; };
+		F15F79470DD6426100DAEB2C /* marshals.list */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = marshals.list; sourceTree = "<group>"; };
+		F15F79480DD6426100DAEB2C /* mdhistorymgr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mdhistorymgr.c; sourceTree = "<group>"; };
+		F15F79490DD6426100DAEB2C /* mdhistorymgr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mdhistorymgr.h; sourceTree = "<group>"; };
+		F15F794A0DD6426100DAEB2C /* moo-environ.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "moo-environ.h"; sourceTree = "<group>"; };
+		F15F794C0DD6426100DAEB2C /* mooaccel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooaccel.c; sourceTree = "<group>"; };
+		F15F794D0DD6426100DAEB2C /* mooaccel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooaccel.h; sourceTree = "<group>"; };
+		F15F794E0DD6426100DAEB2C /* mooaccelbutton.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooaccelbutton.c; sourceTree = "<group>"; };
+		F15F794F0DD6426100DAEB2C /* mooaccelbutton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooaccelbutton.h; sourceTree = "<group>"; };
+		F15F79500DD6426100DAEB2C /* mooaccelprefs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooaccelprefs.c; sourceTree = "<group>"; };
+		F15F79510DD6426100DAEB2C /* mooaccelprefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooaccelprefs.h; sourceTree = "<group>"; };
+		F15F79520DD6426100DAEB2C /* mooaction-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooaction-private.h"; sourceTree = "<group>"; };
+		F15F79530DD6426100DAEB2C /* mooaction.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooaction.c; sourceTree = "<group>"; };
+		F15F79540DD6426200DAEB2C /* mooaction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooaction.h; sourceTree = "<group>"; };
+		F15F79550DD6426200DAEB2C /* mooactionbase-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooactionbase-private.h"; sourceTree = "<group>"; };
+		F15F79560DD6426200DAEB2C /* mooactionbase.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooactionbase.c; sourceTree = "<group>"; };
+		F15F79570DD6426200DAEB2C /* mooactionbase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooactionbase.h; sourceTree = "<group>"; };
+		F15F79580DD6426200DAEB2C /* mooactioncollection.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooactioncollection.c; sourceTree = "<group>"; };
+		F15F79590DD6426200DAEB2C /* mooactioncollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooactioncollection.h; sourceTree = "<group>"; };
+		F15F795A0DD6426200DAEB2C /* mooactionfactory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooactionfactory.c; sourceTree = "<group>"; };
+		F15F795B0DD6426200DAEB2C /* mooactionfactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooactionfactory.h; sourceTree = "<group>"; };
+		F15F795C0DD6426200DAEB2C /* mooactiongroup.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooactiongroup.c; sourceTree = "<group>"; };
+		F15F795D0DD6426200DAEB2C /* mooactiongroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooactiongroup.h; sourceTree = "<group>"; };
+		F15F795E0DD6426200DAEB2C /* mooapp-ipc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mooapp-ipc.c"; sourceTree = "<group>"; };
+		F15F795F0DD6426200DAEB2C /* mooapp-ipc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooapp-ipc.h"; sourceTree = "<group>"; };
+		F15F79600DD6426200DAEB2C /* mooappinput.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooappinput.c; sourceTree = "<group>"; };
+		F15F79610DD6426200DAEB2C /* mooappinput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooappinput.h; sourceTree = "<group>"; };
+		F15F79620DD6426200DAEB2C /* moobigpaned.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moobigpaned.c; sourceTree = "<group>"; };
+		F15F79630DD6426200DAEB2C /* moobigpaned.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moobigpaned.h; sourceTree = "<group>"; };
+		F15F79640DD6426200DAEB2C /* mooclosure.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooclosure.c; sourceTree = "<group>"; };
+		F15F79650DD6426200DAEB2C /* mooclosure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooclosure.h; sourceTree = "<group>"; };
+		F15F79660DD6426200DAEB2C /* moocombo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moocombo.c; sourceTree = "<group>"; };
+		F15F79670DD6426200DAEB2C /* moocombo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moocombo.h; sourceTree = "<group>"; };
+		F15F79680DD6426200DAEB2C /* moocompat.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moocompat.c; sourceTree = "<group>"; };
+		F15F79690DD6426200DAEB2C /* moocompat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moocompat.h; sourceTree = "<group>"; };
+		F15F796A0DD6426200DAEB2C /* moodialogs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moodialogs.c; sourceTree = "<group>"; };
+		F15F796B0DD6426200DAEB2C /* moodialogs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moodialogs.h; sourceTree = "<group>"; };
+		F15F796C0DD6426200DAEB2C /* mooeditops.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooeditops.c; sourceTree = "<group>"; };
+		F15F796D0DD6426200DAEB2C /* mooeditops.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooeditops.h; sourceTree = "<group>"; };
+		F15F796E0DD6426200DAEB2C /* mooencodings-data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooencodings-data.h"; sourceTree = "<group>"; };
+		F15F796F0DD6426200DAEB2C /* mooencodings.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooencodings.c; sourceTree = "<group>"; };
+		F15F79700DD6426200DAEB2C /* mooencodings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooencodings.h; sourceTree = "<group>"; };
+		F15F79710DD6426200DAEB2C /* mooentry.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooentry.c; sourceTree = "<group>"; };
+		F15F79720DD6426200DAEB2C /* mooentry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooentry.h; sourceTree = "<group>"; };
+		F15F79730DD6426200DAEB2C /* moofiledialog.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moofiledialog.c; sourceTree = "<group>"; };
+		F15F79740DD6426200DAEB2C /* moofiledialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moofiledialog.h; sourceTree = "<group>"; };
+		F15F79750DD6426200DAEB2C /* moofilewatch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moofilewatch.c; sourceTree = "<group>"; };
+		F15F79760DD6426200DAEB2C /* moofilewatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moofilewatch.h; sourceTree = "<group>"; };
+		F15F79770DD6426200DAEB2C /* moofiltermgr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moofiltermgr.c; sourceTree = "<group>"; };
+		F15F79780DD6426200DAEB2C /* moofiltermgr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moofiltermgr.h; sourceTree = "<group>"; };
+		F15F79790DD6426200DAEB2C /* moofontsel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moofontsel.c; sourceTree = "<group>"; };
+		F15F797A0DD6426200DAEB2C /* moofontsel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moofontsel.h; sourceTree = "<group>"; };
+		F15F797B0DD6426200DAEB2C /* mooglade.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooglade.c; sourceTree = "<group>"; };
+		F15F797C0DD6426200DAEB2C /* mooglade.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooglade.h; sourceTree = "<group>"; };
+		F15F797D0DD6426200DAEB2C /* moohelp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moohelp.c; sourceTree = "<group>"; };
+		F15F797E0DD6426200DAEB2C /* moohelp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moohelp.h; sourceTree = "<group>"; };
+		F15F797F0DD6426200DAEB2C /* moohistorycombo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moohistorycombo.c; sourceTree = "<group>"; };
+		F15F79800DD6426200DAEB2C /* moohistorycombo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moohistorycombo.h; sourceTree = "<group>"; };
+		F15F79810DD6426200DAEB2C /* moohistorylist.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moohistorylist.c; sourceTree = "<group>"; };
+		F15F79820DD6426200DAEB2C /* moohistorylist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moohistorylist.h; sourceTree = "<group>"; };
+		F15F79830DD6426200DAEB2C /* mooi18n.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooi18n.c; sourceTree = "<group>"; };
+		F15F79840DD6426200DAEB2C /* mooi18n.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooi18n.h; sourceTree = "<group>"; };
+		F15F79850DD6426200DAEB2C /* moomarkup.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moomarkup.c; sourceTree = "<group>"; };
+		F15F79860DD6426200DAEB2C /* moomarkup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moomarkup.h; sourceTree = "<group>"; };
+		F15F79870DD6426200DAEB2C /* moomenuaction.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moomenuaction.c; sourceTree = "<group>"; };
+		F15F79880DD6426200DAEB2C /* moomenuaction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moomenuaction.h; sourceTree = "<group>"; };
+		F15F79890DD6426200DAEB2C /* moomenumgr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moomenumgr.c; sourceTree = "<group>"; };
+		F15F798A0DD6426200DAEB2C /* moomenumgr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moomenumgr.h; sourceTree = "<group>"; };
+		F15F798B0DD6426200DAEB2C /* moomenutoolbutton.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moomenutoolbutton.c; sourceTree = "<group>"; };
+		F15F798C0DD6426200DAEB2C /* moomenutoolbutton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moomenutoolbutton.h; sourceTree = "<group>"; };
+		F15F798D0DD6426200DAEB2C /* moonotebook.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moonotebook.c; sourceTree = "<group>"; };
+		F15F798E0DD6426200DAEB2C /* moonotebook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moonotebook.h; sourceTree = "<group>"; };
+		F15F798F0DD6426200DAEB2C /* moopane.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moopane.c; sourceTree = "<group>"; };
+		F15F79900DD6426200DAEB2C /* moopane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moopane.h; sourceTree = "<group>"; };
+		F15F79910DD6426200DAEB2C /* moopaned.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moopaned.c; sourceTree = "<group>"; };
+		F15F79920DD6426200DAEB2C /* moopaned.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moopaned.h; sourceTree = "<group>"; };
+		F15F79930DD6426200DAEB2C /* mooprefs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooprefs.c; sourceTree = "<group>"; };
+		F15F79940DD6426200DAEB2C /* mooprefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooprefs.h; sourceTree = "<group>"; };
+		F15F79950DD6426200DAEB2C /* mooprefsdialog.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooprefsdialog.c; sourceTree = "<group>"; };
+		F15F79960DD6426200DAEB2C /* mooprefsdialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooprefsdialog.h; sourceTree = "<group>"; };
+		F15F79970DD6426200DAEB2C /* mooprefsdialogpage.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooprefsdialogpage.c; sourceTree = "<group>"; };
+		F15F79980DD6426200DAEB2C /* mooprefsdialogpage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooprefsdialogpage.h; sourceTree = "<group>"; };
+		F15F79990DD6426200DAEB2C /* moopython.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moopython.h; sourceTree = "<group>"; };
+		F15F799A0DD6426200DAEB2C /* moospawn.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moospawn.c; sourceTree = "<group>"; };
+		F15F799B0DD6426200DAEB2C /* moospawn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moospawn.h; sourceTree = "<group>"; };
+		F15F799C0DD6426200DAEB2C /* moostock.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moostock.c; sourceTree = "<group>"; };
+		F15F799D0DD6426200DAEB2C /* moostock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moostock.h; sourceTree = "<group>"; };
+		F15F799E0DD6426200DAEB2C /* mootype-macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mootype-macros.h"; sourceTree = "<group>"; };
+		F15F799F0DD6426200DAEB2C /* moouixml.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moouixml.c; sourceTree = "<group>"; };
+		F15F79A00DD6426200DAEB2C /* moouixml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moouixml.h; sourceTree = "<group>"; };
+		F15F79A10DD6426200DAEB2C /* mooundo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooundo.c; sourceTree = "<group>"; };
+		F15F79A20DD6426200DAEB2C /* mooundo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooundo.h; sourceTree = "<group>"; };
+		F15F79A30DD6426200DAEB2C /* mooutils-debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooutils-debug.h"; sourceTree = "<group>"; };
+		F15F79A40DD6426200DAEB2C /* mooutils-file.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooutils-file.h"; sourceTree = "<group>"; };
+		F15F79A50DD6426200DAEB2C /* mooutils-fli.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mooutils-fli.c"; sourceTree = "<group>"; };
+		F15F79A60DD6426200DAEB2C /* mooutils-fs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mooutils-fs.c"; sourceTree = "<group>"; };
+		F15F79A70DD6426200DAEB2C /* mooutils-fs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooutils-fs.h"; sourceTree = "<group>"; };
+		F15F79A80DD6426200DAEB2C /* mooutils-gobject-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooutils-gobject-private.h"; sourceTree = "<group>"; };
+		F15F79A90DD6426200DAEB2C /* mooutils-gobject.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mooutils-gobject.c"; sourceTree = "<group>"; };
+		F15F79AA0DD6426200DAEB2C /* mooutils-gobject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooutils-gobject.h"; sourceTree = "<group>"; };
+		F15F79AB0DD6426200DAEB2C /* mooutils-mem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooutils-mem.h"; sourceTree = "<group>"; };
+		F15F79AC0DD6426200DAEB2C /* mooutils-misc.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.objc; fileEncoding = 4; path = "mooutils-misc.c"; sourceTree = "<group>"; };
+		F15F79AD0DD6426200DAEB2C /* mooutils-misc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooutils-misc.h"; sourceTree = "<group>"; };
+		F15F79AE0DD6426200DAEB2C /* mooutils-thread.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mooutils-thread.c"; sourceTree = "<group>"; };
+		F15F79AF0DD6426200DAEB2C /* mooutils-thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooutils-thread.h"; sourceTree = "<group>"; };
+		F15F79B00DD6426200DAEB2C /* mooutils-treeview.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mooutils-treeview.c"; sourceTree = "<group>"; };
+		F15F79B10DD6426200DAEB2C /* mooutils-treeview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mooutils-treeview.h"; sourceTree = "<group>"; };
+		F15F79BE0DD6426200DAEB2C /* moowindow.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moowindow.c; sourceTree = "<group>"; };
+		F15F79C00DD6426200DAEB2C /* moowindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moowindow.h; sourceTree = "<group>"; };
+		F15F79F70DD6426200DAEB2C /* attach.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = attach.png; sourceTree = "<group>"; };
+		F15F79F80DD6426200DAEB2C /* close.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = close.png; sourceTree = "<group>"; };
+		F15F79F90DD6426200DAEB2C /* detach.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = detach.png; sourceTree = "<group>"; };
+		F15F79FA0DD6426200DAEB2C /* hide.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = hide.png; sourceTree = "<group>"; };
+		F15F79FB0DD6426200DAEB2C /* keepontop.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = keepontop.png; sourceTree = "<group>"; };
+		F15F79FC0DD6426200DAEB2C /* medit.ico */ = {isa = PBXFileReference; lastKnownFileType = image.ico; path = medit.ico; sourceTree = "<group>"; };
+		F15F79FD0DD6426200DAEB2C /* medit.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = medit.png; sourceTree = "<group>"; };
+		F15F79FE0DD6426200DAEB2C /* sticky.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = sticky.png; sourceTree = "<group>"; };
+		F15F79FF0DD6426200DAEB2C /* py2h.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = py2h.sh; sourceTree = "<group>"; };
+		F15F7A000DD6426200DAEB2C /* stock-file-24.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "stock-file-24.h"; sourceTree = "<group>"; };
+		F15F7A010DD6426200DAEB2C /* stock-file-selector-24.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "stock-file-selector-24.h"; sourceTree = "<group>"; };
+		F15F7A020DD6426200DAEB2C /* stock-select-all-16.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "stock-select-all-16.h"; sourceTree = "<group>"; };
+		F15F7A030DD6426200DAEB2C /* stock-select-all-24.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "stock-select-all-24.h"; sourceTree = "<group>"; };
+		F15F7A040DD6426200DAEB2C /* stock-terminal-24.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "stock-terminal-24.h"; sourceTree = "<group>"; };
+		F15F7A0B0DD6426200DAEB2C /* xdgmime.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xdgmime.c; sourceTree = "<group>"; };
+		F15F7A0C0DD6426200DAEB2C /* xdgmime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xdgmime.h; sourceTree = "<group>"; };
+		F15F7A0D0DD6426200DAEB2C /* xdgmimealias.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xdgmimealias.c; sourceTree = "<group>"; };
+		F15F7A0E0DD6426200DAEB2C /* xdgmimealias.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xdgmimealias.h; sourceTree = "<group>"; };
+		F15F7A0F0DD6426200DAEB2C /* xdgmimecache.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xdgmimecache.c; sourceTree = "<group>"; };
+		F15F7A100DD6426200DAEB2C /* xdgmimecache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xdgmimecache.h; sourceTree = "<group>"; };
+		F15F7A110DD6426200DAEB2C /* xdgmimeglob.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xdgmimeglob.c; sourceTree = "<group>"; };
+		F15F7A120DD6426200DAEB2C /* xdgmimeglob.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xdgmimeglob.h; sourceTree = "<group>"; };
+		F15F7A140DD6426200DAEB2C /* xdgmimeint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xdgmimeint.h; sourceTree = "<group>"; };
+		F15F7A150DD6426200DAEB2C /* xdgmimemagic.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xdgmimemagic.c; sourceTree = "<group>"; };
+		F15F7A160DD6426200DAEB2C /* xdgmimemagic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xdgmimemagic.h; sourceTree = "<group>"; };
+		F15F7A170DD6426200DAEB2C /* xdgmimeparent.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xdgmimeparent.c; sourceTree = "<group>"; };
+		F15F7A180DD6426200DAEB2C /* xdgmimeparent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xdgmimeparent.h; sourceTree = "<group>"; };
+		F15F7A190DD6426200DAEB2C /* xml2h.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = xml2h.sh; sourceTree = "<group>"; };
+		F15F7C860DD664B600DAEB2C /* medit-app.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "medit-app.c"; sourceTree = "<group>"; };
+		F15F7C870DD664B600DAEB2C /* medit-credits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "medit-credits.h"; sourceTree = "<group>"; };
+		F15F7C8B0DD664B600DAEB2C /* mem-debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mem-debug.h"; sourceTree = "<group>"; };
+		F15F7CCE0DD666A100DAEB2C /* libglib-2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libglib-2.0.dylib"; path = "/opt/gtk/lib/libglib-2.0.dylib"; sourceTree = "<absolute>"; };
+		F15F7CD50DD6672900DAEB2C /* libatk-1.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libatk-1.0.dylib"; path = "/opt/gtk/lib/libatk-1.0.dylib"; sourceTree = "<absolute>"; };
+		F15F7CD60DD6672900DAEB2C /* libcairo.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcairo.dylib; path = /opt/gtk/lib/libcairo.dylib; sourceTree = "<absolute>"; };
+		F15F7CD70DD6672900DAEB2C /* libgdk_pixbuf-2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libgdk_pixbuf-2.0.dylib"; path = "/opt/gtk/lib/libgdk_pixbuf-2.0.dylib"; sourceTree = "<absolute>"; };
+		F15F7CD80DD6672900DAEB2C /* libgdk-quartz-2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libgdk-quartz-2.0.dylib"; path = "/opt/gtk/lib/libgdk-quartz-2.0.dylib"; sourceTree = "<absolute>"; };
+		F15F7CD90DD6672900DAEB2C /* libgmodule-2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libgmodule-2.0.dylib"; path = "/opt/gtk/lib/libgmodule-2.0.dylib"; sourceTree = "<absolute>"; };
+		F15F7CDA0DD6672900DAEB2C /* libgobject-2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libgobject-2.0.dylib"; path = "/opt/gtk/lib/libgobject-2.0.dylib"; sourceTree = "<absolute>"; };
+		F15F7CDB0DD6672900DAEB2C /* libgthread-2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libgthread-2.0.dylib"; path = "/opt/gtk/lib/libgthread-2.0.dylib"; sourceTree = "<absolute>"; };
+		F15F7CDC0DD6672900DAEB2C /* libgtk-quartz-2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libgtk-quartz-2.0.dylib"; path = "/opt/gtk/lib/libgtk-quartz-2.0.dylib"; sourceTree = "<absolute>"; };
+		F15F7CDD0DD6672900DAEB2C /* libpango-1.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libpango-1.0.dylib"; path = "/opt/gtk/lib/libpango-1.0.dylib"; sourceTree = "<absolute>"; };
+		F15F7CDE0DD6672900DAEB2C /* libpangocairo-1.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libpangocairo-1.0.dylib"; path = "/opt/gtk/lib/libpangocairo-1.0.dylib"; sourceTree = "<absolute>"; };
+		F15F7CEA0DD6675900DAEB2C /* libintl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libintl.dylib; path = /opt/gtk/lib/libintl.dylib; sourceTree = "<absolute>"; };
+		F15F7CF80DD6685B00DAEB2C /* moobookmark-editor.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "moobookmark-editor.glade"; sourceTree = "<group>"; };
+		F15F7CF90DD6685B00DAEB2C /* moocreatefolder.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = moocreatefolder.glade; sourceTree = "<group>"; };
+		F15F7CFA0DD6685B00DAEB2C /* moofileprops.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = moofileprops.glade; sourceTree = "<group>"; };
+		F15F7CFB0DD6685B00DAEB2C /* moofileview-drop.glade */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "moofileview-drop.glade"; sourceTree = "<group>"; };
+		F15F7CFF0DD6685B00DAEB2C /* moobookmarkmgr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moobookmarkmgr.c; sourceTree = "<group>"; };
+		F15F7D000DD6685B00DAEB2C /* moobookmarkmgr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moobookmarkmgr.h; sourceTree = "<group>"; };
+		F15F7D010DD6685B00DAEB2C /* moobookmarkview.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moobookmarkview.c; sourceTree = "<group>"; };
+		F15F7D020DD6685B00DAEB2C /* moobookmarkview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moobookmarkview.h; sourceTree = "<group>"; };
+		F15F7D030DD6685B00DAEB2C /* moofile-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "moofile-private.h"; sourceTree = "<group>"; };
+		F15F7D040DD6685B00DAEB2C /* moofile.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moofile.c; sourceTree = "<group>"; };
+		F15F7D050DD6685B00DAEB2C /* moofile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moofile.h; sourceTree = "<group>"; };
+		F15F7D060DD6685B00DAEB2C /* moofileentry.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moofileentry.c; sourceTree = "<group>"; };
+		F15F7D070DD6685B00DAEB2C /* moofileentry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moofileentry.h; sourceTree = "<group>"; };
+		F15F7D080DD6685B00DAEB2C /* moofileicons.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moofileicons.c; sourceTree = "<group>"; };
+		F15F7D090DD6685B00DAEB2C /* moofileicons.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moofileicons.h; sourceTree = "<group>"; };
+		F15F7D0A0DD6685B00DAEB2C /* moofilesystem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moofilesystem.c; sourceTree = "<group>"; };
+		F15F7D0B0DD6685B00DAEB2C /* moofilesystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moofilesystem.h; sourceTree = "<group>"; };
+		F15F7D0C0DD6685B00DAEB2C /* moofileview-accels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "moofileview-accels.h"; sourceTree = "<group>"; };
+		F15F7D0D0DD6685B00DAEB2C /* moofileview-aux.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "moofileview-aux.h"; sourceTree = "<group>"; };
+		F15F7D0E0DD6685B00DAEB2C /* moofileview-dialogs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "moofileview-dialogs.c"; sourceTree = "<group>"; };
+		F15F7D0F0DD6685B00DAEB2C /* moofileview-dialogs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "moofileview-dialogs.h"; sourceTree = "<group>"; };
+		F15F7D100DD6685B00DAEB2C /* moofileview-impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "moofileview-impl.h"; sourceTree = "<group>"; };
+		F15F7D110DD6685B00DAEB2C /* moofileview-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "moofileview-private.h"; sourceTree = "<group>"; };
+		F15F7D120DD6685B00DAEB2C /* moofileview-tools.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "moofileview-tools.c"; sourceTree = "<group>"; };
+		F15F7D130DD6685B00DAEB2C /* moofileview-tools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "moofileview-tools.h"; sourceTree = "<group>"; };
+		F15F7D150DD6685B00DAEB2C /* moofileview.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moofileview.c; sourceTree = "<group>"; };
+		F15F7D160DD6685B00DAEB2C /* moofileview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moofileview.h; sourceTree = "<group>"; };
+		F15F7D170DD6685B00DAEB2C /* moofolder-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "moofolder-private.h"; sourceTree = "<group>"; };
+		F15F7D180DD6685B00DAEB2C /* moofolder.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moofolder.c; sourceTree = "<group>"; };
+		F15F7D190DD6685B00DAEB2C /* moofolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moofolder.h; sourceTree = "<group>"; };
+		F15F7D1A0DD6685B00DAEB2C /* moofoldermodel-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "moofoldermodel-private.h"; sourceTree = "<group>"; };
+		F15F7D1B0DD6685B00DAEB2C /* moofoldermodel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moofoldermodel.c; sourceTree = "<group>"; };
+		F15F7D1C0DD6685B00DAEB2C /* moofoldermodel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moofoldermodel.h; sourceTree = "<group>"; };
+		F15F7D1D0DD6685B00DAEB2C /* mooiconview.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mooiconview.c; sourceTree = "<group>"; };
+		F15F7D1E0DD6685B00DAEB2C /* mooiconview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mooiconview.h; sourceTree = "<group>"; };
+		F15F7D1F0DD6685B00DAEB2C /* mootreeview.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mootreeview.c; sourceTree = "<group>"; };
+		F15F7D200DD6685B00DAEB2C /* mootreeview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mootreeview.h; sourceTree = "<group>"; };
+		F15F7D210DD6685B00DAEB2C /* symlink-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "symlink-small.png"; sourceTree = "<group>"; };
+		F15F7D220DD6685B00DAEB2C /* symlink.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = symlink.png; sourceTree = "<group>"; };
+		F15F7D750DD66B2800DAEB2C /* moofileview.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = moofileview.ui; sourceTree = "<group>"; };
+		F1F0AD350DD6B11E005EF77F /* moo-config-dirs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "moo-config-dirs.h"; sourceTree = "<group>"; };
+		F1F0AE240DD6BFFC005EF77F /* gtksourcecontextengine-mangled.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "gtksourcecontextengine-mangled.c"; path = "moo/mooedit/gtksourceview/gtksourcecontextengine-mangled.c"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE250DD6BFFC005EF77F /* gtksourcecontextengine-mangled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "gtksourcecontextengine-mangled.h"; path = "moo/mooedit/gtksourceview/gtksourcecontextengine-mangled.h"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE260DD6BFFC005EF77F /* gtksourceengine-mangled.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "gtksourceengine-mangled.c"; path = "moo/mooedit/gtksourceview/gtksourceengine-mangled.c"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE270DD6BFFC005EF77F /* gtksourceengine-mangled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "gtksourceengine-mangled.h"; path = "moo/mooedit/gtksourceview/gtksourceengine-mangled.h"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE280DD6BFFC005EF77F /* gtksourceiter-mangled.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "gtksourceiter-mangled.c"; path = "moo/mooedit/gtksourceview/gtksourceiter-mangled.c"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE290DD6BFFC005EF77F /* gtksourceiter-mangled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "gtksourceiter-mangled.h"; path = "moo/mooedit/gtksourceview/gtksourceiter-mangled.h"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE2A0DD6BFFC005EF77F /* gtksourcelanguage-mangled.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "gtksourcelanguage-mangled.c"; path = "moo/mooedit/gtksourceview/gtksourcelanguage-mangled.c"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE2B0DD6BFFC005EF77F /* gtksourcelanguage-mangled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "gtksourcelanguage-mangled.h"; path = "moo/mooedit/gtksourceview/gtksourcelanguage-mangled.h"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE2C0DD6BFFC005EF77F /* gtksourcelanguage-parser-1-mangled.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "gtksourcelanguage-parser-1-mangled.c"; path = "moo/mooedit/gtksourceview/gtksourcelanguage-parser-1-mangled.c"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE2D0DD6BFFC005EF77F /* gtksourcelanguage-parser-2-mangled.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "gtksourcelanguage-parser-2-mangled.c"; path = "moo/mooedit/gtksourceview/gtksourcelanguage-parser-2-mangled.c"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE2E0DD6BFFC005EF77F /* gtksourcelanguage-private-mangled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "gtksourcelanguage-private-mangled.h"; path = "moo/mooedit/gtksourceview/gtksourcelanguage-private-mangled.h"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE2F0DD6BFFC005EF77F /* gtksourcelanguagemanager-mangled.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "gtksourcelanguagemanager-mangled.c"; path = "moo/mooedit/gtksourceview/gtksourcelanguagemanager-mangled.c"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE300DD6BFFC005EF77F /* gtksourcelanguagemanager-mangled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "gtksourcelanguagemanager-mangled.h"; path = "moo/mooedit/gtksourceview/gtksourcelanguagemanager-mangled.h"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE310DD6BFFC005EF77F /* gtksourcestyle-mangled.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "gtksourcestyle-mangled.c"; path = "moo/mooedit/gtksourceview/gtksourcestyle-mangled.c"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE320DD6BFFC005EF77F /* gtksourcestyle-mangled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "gtksourcestyle-mangled.h"; path = "moo/mooedit/gtksourceview/gtksourcestyle-mangled.h"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE330DD6BFFC005EF77F /* gtksourcestyle-private-mangled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "gtksourcestyle-private-mangled.h"; path = "moo/mooedit/gtksourceview/gtksourcestyle-private-mangled.h"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE340DD6BFFC005EF77F /* gtksourcestylescheme-mangled.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "gtksourcestylescheme-mangled.c"; path = "moo/mooedit/gtksourceview/gtksourcestylescheme-mangled.c"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE350DD6BFFC005EF77F /* gtksourcestylescheme-mangled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "gtksourcestylescheme-mangled.h"; path = "moo/mooedit/gtksourceview/gtksourcestylescheme-mangled.h"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE360DD6BFFC005EF77F /* gtksourcestyleschememanager-mangled.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "gtksourcestyleschememanager-mangled.c"; path = "moo/mooedit/gtksourceview/gtksourcestyleschememanager-mangled.c"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE370DD6BFFC005EF77F /* gtksourcestyleschememanager-mangled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "gtksourcestyleschememanager-mangled.h"; path = "moo/mooedit/gtksourceview/gtksourcestyleschememanager-mangled.h"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE380DD6BFFC005EF77F /* gtksourceview-utils-mangled.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "gtksourceview-utils-mangled.c"; path = "moo/mooedit/gtksourceview/gtksourceview-utils-mangled.c"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE390DD6BFFC005EF77F /* gtksourceview-utils-mangled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "gtksourceview-utils-mangled.h"; path = "moo/mooedit/gtksourceview/gtksourceview-utils-mangled.h"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE3A0DD6BFFC005EF77F /* gtktextregion-mangled.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "gtktextregion-mangled.c"; path = "moo/mooedit/gtksourceview/gtktextregion-mangled.c"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE3B0DD6BFFC005EF77F /* gtktextregion-mangled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "gtktextregion-mangled.h"; path = "moo/mooedit/gtksourceview/gtktextregion-mangled.h"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE660DD6C2EE005EF77F /* marshals.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = marshals.c; path = moo/marshals.c; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F0AE670DD6C2EE005EF77F /* marshals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = marshals.h; path = moo/marshals.h; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8DD76FAD0486AB0100D96B5E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F12806720DD66D7700D2CAC0 /* libmoo.a in Frameworks */,
+				F128067F0DD66E8F00D2CAC0 /* libatk-1.0.dylib in Frameworks */,
+				F12806800DD66E8F00D2CAC0 /* libcairo.dylib in Frameworks */,
+				F12806810DD66E8F00D2CAC0 /* libgdk_pixbuf-2.0.dylib in Frameworks */,
+				F15F7CF40DD667B600DAEB2C /* libgdk-quartz-2.0.dylib in Frameworks */,
+				F12806820DD66E8F00D2CAC0 /* libgmodule-2.0.dylib in Frameworks */,
+				F15F7CEF0DD6679300DAEB2C /* libgobject-2.0.dylib in Frameworks */,
+				F15F7CF20DD667AB00DAEB2C /* libgthread-2.0.dylib in Frameworks */,
+				F15F7CF30DD667AF00DAEB2C /* libgtk-quartz-2.0.dylib in Frameworks */,
+				F12806830DD66E8F00D2CAC0 /* libpango-1.0.dylib in Frameworks */,
+				F12806870DD66EB400D2CAC0 /* libintl.dylib in Frameworks */,
+				F12806840DD66E8F00D2CAC0 /* libpangocairo-1.0.dylib in Frameworks */,
+				F128067D0DD66E6700D2CAC0 /* libgettextlib.dylib in Frameworks */,
+				F15F7CCF0DD666A100DAEB2C /* libglib-2.0.dylib in Frameworks */,
+				F128068A0DD66EDD00D2CAC0 /* Cocoa.framework in Frameworks */,
+				F128076B0DD6731900D2CAC0 /* libgio-2.0.dylib in Frameworks */,
+				F128076C0DD6731900D2CAC0 /* libpixman-1.dylib in Frameworks */,
+				F128076D0DD6731900D2CAC0 /* libpng.dylib in Frameworks */,
+				F1280A320DD67D1500D2CAC0 /* libxml2.dylib in Frameworks */,
+				F1280A360DD67D4000D2CAC0 /* libigemacintegration.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F15F79310DD641FC00DAEB2C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		08FB7794FE84155DC02AAC07 /* medit */ = {
+			isa = PBXGroup;
+			children = (
+				F15F793A0DD6423100DAEB2C /* config.h */,
+				F1F0AD350DD6B11E005EF77F /* moo-config-dirs.h */,
+				F15F7C7C0DD664B600DAEB2C /* medit */,
+				08FB7795FE84155DC02AAC07 /* libmoo */,
+				1AB674ADFE9D54B511CA2CBB /* Products */,
+				F12807680DD6731900D2CAC0 /* libgio-2.0.dylib */,
+				F12807690DD6731900D2CAC0 /* libpixman-1.dylib */,
+				F128076A0DD6731900D2CAC0 /* libpng.dylib */,
+				F12806890DD66EDD00D2CAC0 /* Cocoa.framework */,
+				F128067A0DD66E3D00D2CAC0 /* libgettextlib.dylib */,
+				F15F7CEA0DD6675900DAEB2C /* libintl.dylib */,
+				F15F7CD50DD6672900DAEB2C /* libatk-1.0.dylib */,
+				F15F7CD60DD6672900DAEB2C /* libcairo.dylib */,
+				F1280A350DD67D4000D2CAC0 /* libigemacintegration.dylib */,
+				F15F7CD70DD6672900DAEB2C /* libgdk_pixbuf-2.0.dylib */,
+				F15F7CD80DD6672900DAEB2C /* libgdk-quartz-2.0.dylib */,
+				F15F7CD90DD6672900DAEB2C /* libgmodule-2.0.dylib */,
+				F15F7CDA0DD6672900DAEB2C /* libgobject-2.0.dylib */,
+				F1280A310DD67D1500D2CAC0 /* libxml2.dylib */,
+				F15F7CDB0DD6672900DAEB2C /* libgthread-2.0.dylib */,
+				F15F7CDC0DD6672900DAEB2C /* libgtk-quartz-2.0.dylib */,
+				F15F7CDD0DD6672900DAEB2C /* libpango-1.0.dylib */,
+				F15F7CDE0DD6672900DAEB2C /* libpangocairo-1.0.dylib */,
+				F15F7CCE0DD666A100DAEB2C /* libglib-2.0.dylib */,
+				C6A0FF2B0290797F04C91782 /* Documentation */,
+			);
+			name = medit;
+			sourceTree = "<group>";
+		};
+		08FB7795FE84155DC02AAC07 /* libmoo */ = {
+			isa = PBXGroup;
+			children = (
+				F1F0AE660DD6C2EE005EF77F /* marshals.c */,
+				F1F0AE670DD6C2EE005EF77F /* marshals.h */,
+				F12806940DD66F4500D2CAC0 /* moo-test-macros.h */,
+				F12806950DD66F4500D2CAC0 /* moo-test-utils.c */,
+				F12806960DD66F4500D2CAC0 /* moo-test-utils.h */,
+				F12806970DD66F4500D2CAC0 /* moo-tests-lua.h */,
+				F12806980DD66F4500D2CAC0 /* moo-tests.h */,
+				F12806990DD66F4500D2CAC0 /* moo.h */,
+				F15F793F0DD6424B00DAEB2C /* moo */,
+			);
+			name = libmoo;
+			sourceTree = "<group>";
+		};
+		1AB674ADFE9D54B511CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8DD76FB20486AB0100D96B5E /* medit */,
+				F15F79330DD641FC00DAEB2C /* libmoo.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C6A0FF2B0290797F04C91782 /* Documentation */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Documentation;
+			sourceTree = "<group>";
+		};
+		F12806C60DD670DA00D2CAC0 /* moolua */ = {
+			isa = PBXGroup;
+			children = (
+				F12806C80DD670DA00D2CAC0 /* ext */,
+				F12806CC0DD670DB00D2CAC0 /* lapi.c */,
+				F12806CD0DD670DB00D2CAC0 /* lapi.h */,
+				F12806CE0DD670DB00D2CAC0 /* lauxlib.c */,
+				F12806CF0DD670DB00D2CAC0 /* lauxlib.h */,
+				F12806D00DD670DB00D2CAC0 /* lbaselib.c */,
+				F12806D10DD670DB00D2CAC0 /* lcode.c */,
+				F12806D20DD670DB00D2CAC0 /* lcode.h */,
+				F12806D30DD670DB00D2CAC0 /* ldblib.c */,
+				F12806D40DD670DB00D2CAC0 /* ldebug.c */,
+				F12806D50DD670DB00D2CAC0 /* ldebug.h */,
+				F12806D60DD670DB00D2CAC0 /* ldo.c */,
+				F12806D70DD670DB00D2CAC0 /* ldo.h */,
+				F12806D80DD670DB00D2CAC0 /* ldump.c */,
+				F12806D90DD670DB00D2CAC0 /* lfunc.c */,
+				F12806DA0DD670DB00D2CAC0 /* lfunc.h */,
+				F12806DB0DD670DB00D2CAC0 /* lgc.c */,
+				F12806DC0DD670DB00D2CAC0 /* lgc.h */,
+				F12806DD0DD670DB00D2CAC0 /* linit.c */,
+				F12806DE0DD670DB00D2CAC0 /* liolib.c */,
+				F12806DF0DD670DB00D2CAC0 /* llex.c */,
+				F12806E00DD670DB00D2CAC0 /* llex.h */,
+				F12806E10DD670DB00D2CAC0 /* llimits.h */,
+				F12806E20DD670DB00D2CAC0 /* lmathlib.c */,
+				F12806E30DD670DB00D2CAC0 /* lmem.c */,
+				F12806E40DD670DB00D2CAC0 /* lmem.h */,
+				F12806E50DD670DB00D2CAC0 /* loadlib.c */,
+				F12806E60DD670DB00D2CAC0 /* lobject.c */,
+				F12806E70DD670DB00D2CAC0 /* lobject.h */,
+				F12806E80DD670DB00D2CAC0 /* lopcodes.c */,
+				F12806E90DD670DB00D2CAC0 /* lopcodes.h */,
+				F12806EA0DD670DB00D2CAC0 /* loslib.c */,
+				F12806EB0DD670DB00D2CAC0 /* lparser.c */,
+				F12806EC0DD670DB00D2CAC0 /* lparser.h */,
+				F12806ED0DD670DB00D2CAC0 /* lstate.c */,
+				F12806EE0DD670DB00D2CAC0 /* lstate.h */,
+				F12806EF0DD670DB00D2CAC0 /* lstring.c */,
+				F12806F00DD670DB00D2CAC0 /* lstring.h */,
+				F12806F10DD670DB00D2CAC0 /* lstrlib.c */,
+				F12806F20DD670DB00D2CAC0 /* ltable.c */,
+				F12806F30DD670DB00D2CAC0 /* ltable.h */,
+				F12806F40DD670DB00D2CAC0 /* ltablib.c */,
+				F12806F50DD670DB00D2CAC0 /* ltm.c */,
+				F12806F60DD670DB00D2CAC0 /* ltm.h */,
+				F12806FB0DD670DB00D2CAC0 /* lua.c */,
+				F12806FC0DD670DB00D2CAC0 /* lua.h */,
+				F12806FD0DD670DB00D2CAC0 /* luac.c */,
+				F12806FE0DD670DB00D2CAC0 /* luaconf.h */,
+				F12806FF0DD670DB00D2CAC0 /* lualib.h */,
+				F12807000DD670DB00D2CAC0 /* lundump.c */,
+				F12807010DD670DB00D2CAC0 /* lundump.h */,
+				F12807020DD670DB00D2CAC0 /* lvm.c */,
+				F12807030DD670DB00D2CAC0 /* lvm.h */,
+				F12807040DD670DB00D2CAC0 /* lzio.c */,
+				F12807050DD670DB00D2CAC0 /* lzio.h */,
+				F12807080DD670DB00D2CAC0 /* moolua.c */,
+				F12807090DD670DB00D2CAC0 /* moolua.h */,
+				F128070C0DD670DB00D2CAC0 /* slnunico.c */,
+			);
+			name = moolua;
+			path = ../moo/moolua;
+			sourceTree = SOURCE_ROOT;
+		};
+		F12806C80DD670DA00D2CAC0 /* ext */ = {
+			isa = PBXGroup;
+			children = (
+				F12806C90DD670DA00D2CAC0 /* lfs.c */,
+				F12806CA0DD670DA00D2CAC0 /* lfs.h */,
+			);
+			path = ext;
+			sourceTree = "<group>";
+		};
+		F12807700DD6735400D2CAC0 /* mooedit */ = {
+			isa = PBXGroup;
+			children = (
+				F12807730DD6735500D2CAC0 /* glade */,
+				F12807820DD6735500D2CAC0 /* gtksourceview */,
+				F12807F70DD6735500D2CAC0 /* medit.ui */,
+				F12807FB0DD6735500D2CAC0 /* moocmdview.c */,
+				F12807FC0DD6735500D2CAC0 /* moocmdview.h */,
+				F12807FD0DD6735500D2CAC0 /* moocommand-exe.c */,
+				F12807FE0DD6735500D2CAC0 /* moocommand-exe.h */,
+				F12807FF0DD6735500D2CAC0 /* moocommand-lua.c */,
+				F12808000DD6735500D2CAC0 /* moocommand-lua.h */,
+				F12808010DD6735500D2CAC0 /* moocommand-private.h */,
+				F12808020DD6735500D2CAC0 /* moocommand.c */,
+				F12808030DD6735500D2CAC0 /* moocommand.h */,
+				F12808040DD6735500D2CAC0 /* moocommanddisplay.c */,
+				F12808050DD6735500D2CAC0 /* moocommanddisplay.h */,
+				F12808060DD6735500D2CAC0 /* moocompletionsimple.c */,
+				F12808070DD6735500D2CAC0 /* moocompletionsimple.h */,
+				F12808080DD6735500D2CAC0 /* mooedit-accels.h */,
+				F12808090DD6735500D2CAC0 /* mooedit-bookmarks.c */,
+				F128080A0DD6735500D2CAC0 /* mooedit-bookmarks.h */,
+				F128080B0DD6735500D2CAC0 /* mooedit-enums.c */,
+				F128080C0DD6735500D2CAC0 /* mooedit-enums.h */,
+				F128080D0DD6735500D2CAC0 /* mooedit-lua-api.c */,
+				F128080E0DD6735500D2CAC0 /* mooedit-lua.c */,
+				F128080F0DD6735500D2CAC0 /* mooedit-lua.h */,
+				F12808100DD6735500D2CAC0 /* mooedit-private.h */,
+				F12808110DD6735500D2CAC0 /* mooedit.ui */,
+				F12808120DD6735500D2CAC0 /* mooedit.c */,
+				F12808130DD6735500D2CAC0 /* mooedit.h */,
+				F12808140DD6735500D2CAC0 /* mooeditaction-factory.c */,
+				F12808150DD6735500D2CAC0 /* mooeditaction-factory.h */,
+				F12808160DD6735500D2CAC0 /* mooeditaction.c */,
+				F12808170DD6735500D2CAC0 /* mooeditaction.h */,
+				F12808180DD6735500D2CAC0 /* mooeditconfig.c */,
+				F12808190DD6735500D2CAC0 /* mooeditconfig.h */,
+				F128081A0DD6735500D2CAC0 /* mooeditdialogs.c */,
+				F128081B0DD6735500D2CAC0 /* mooeditdialogs.h */,
+				F128081C0DD6735500D2CAC0 /* mooeditfileops.c */,
+				F128081D0DD6735500D2CAC0 /* mooeditfileops.h */,
+				F128081E0DD6735500D2CAC0 /* mooeditfiltersettings.c */,
+				F128081F0DD6735500D2CAC0 /* mooeditfiltersettings.h */,
+				F12808200DD6735500D2CAC0 /* mooeditinput.c */,
+				F12808210DD6735600D2CAC0 /* mooeditor-private.h */,
+				F12808220DD6735600D2CAC0 /* mooeditor.c */,
+				F12808230DD6735600D2CAC0 /* mooeditor.h */,
+				F12808240DD6735600D2CAC0 /* mooeditprefs.c */,
+				F12808250DD6735600D2CAC0 /* mooeditprefs.h */,
+				F12808260DD6735600D2CAC0 /* mooeditprefspage.c */,
+				F12808270DD6735600D2CAC0 /* mooeditwindow.c */,
+				F12808280DD6735600D2CAC0 /* mooeditwindow.h */,
+				F12808290DD6735600D2CAC0 /* moofold.c */,
+				F128082A0DD6735600D2CAC0 /* moofold.h */,
+				F128082B0DD6735600D2CAC0 /* mooindenter.c */,
+				F128082C0DD6735600D2CAC0 /* mooindenter.h */,
+				F128082D0DD6735600D2CAC0 /* mookeyfile.c */,
+				F128082E0DD6735600D2CAC0 /* mookeyfile.h */,
+				F128082F0DD6735600D2CAC0 /* moolang-private.h */,
+				F12808300DD6735600D2CAC0 /* moolang.c */,
+				F12808310DD6735600D2CAC0 /* moolang.h */,
+				F12808320DD6735600D2CAC0 /* moolangmgr-private.h */,
+				F12808330DD6735600D2CAC0 /* moolangmgr.c */,
+				F12808340DD6735600D2CAC0 /* moolangmgr.h */,
+				F12808350DD6735600D2CAC0 /* moolinebuffer.c */,
+				F12808360DD6735600D2CAC0 /* moolinebuffer.h */,
+				F12808370DD6735600D2CAC0 /* moolinemark.c */,
+				F12808380DD6735600D2CAC0 /* moolinemark.h */,
+				F12808390DD6735600D2CAC0 /* moolineview.c */,
+				F128083A0DD6735600D2CAC0 /* moolineview.h */,
+				F128083B0DD6735600D2CAC0 /* moooutputfilter.c */,
+				F128083C0DD6735600D2CAC0 /* moooutputfilter.h */,
+				F128083D0DD6735600D2CAC0 /* moooutputfilterregex.c */,
+				F128083E0DD6735600D2CAC0 /* moooutputfilterregex.h */,
+				F128083F0DD6735600D2CAC0 /* mooplugin-loader.c */,
+				F12808400DD6735600D2CAC0 /* mooplugin-loader.h */,
+				F12808410DD6735600D2CAC0 /* mooplugin-macro.h */,
+				F12808420DD6735600D2CAC0 /* mooplugin.c */,
+				F12808430DD6735600D2CAC0 /* mooplugin.h */,
+				F12808440DD6735600D2CAC0 /* mooprintpreview.c */,
+				F12808450DD6735600D2CAC0 /* mooprintpreview.h */,
+				F12808460DD6735600D2CAC0 /* mootext-private.h */,
+				F12808470DD6735600D2CAC0 /* mootextbox.c */,
+				F12808480DD6735600D2CAC0 /* mootextbox.h */,
+				F12808490DD6735600D2CAC0 /* mootextbtree.c */,
+				F128084A0DD6735600D2CAC0 /* mootextbtree.h */,
+				F128084B0DD6735600D2CAC0 /* mootextbuffer.c */,
+				F128084C0DD6735600D2CAC0 /* mootextbuffer.h */,
+				F128084D0DD6735600D2CAC0 /* mootextcompletion.c */,
+				F128084E0DD6735600D2CAC0 /* mootextcompletion.h */,
+				F128084F0DD6735600D2CAC0 /* mootextfind.c */,
+				F12808500DD6735600D2CAC0 /* mootextfind.h */,
+				F12808510DD6735600D2CAC0 /* mootextiter.h */,
+				F12808520DD6735600D2CAC0 /* mootextpopup.c */,
+				F12808530DD6735600D2CAC0 /* mootextpopup.h */,
+				F12808540DD6735600D2CAC0 /* mootextprint-private.h */,
+				F12808550DD6735600D2CAC0 /* mootextprint.c */,
+				F12808560DD6735600D2CAC0 /* mootextprint.h */,
+				F12808570DD6735600D2CAC0 /* mootextsearch-private.h */,
+				F12808580DD6735600D2CAC0 /* mootextsearch.c */,
+				F12808590DD6735600D2CAC0 /* mootextsearch.h */,
+				F128085A0DD6735600D2CAC0 /* mootextstylescheme.c */,
+				F128085B0DD6735600D2CAC0 /* mootextstylescheme.h */,
+				F128085C0DD6735600D2CAC0 /* mootextview-private.h */,
+				F128085D0DD6735600D2CAC0 /* mootextview.c */,
+				F128085E0DD6735600D2CAC0 /* mootextview.h */,
+				F128085F0DD6735600D2CAC0 /* moousertools-prefs.c */,
+				F12808600DD6735600D2CAC0 /* moousertools-prefs.h */,
+				F12808610DD6735600D2CAC0 /* moousertools.c */,
+				F12808620DD6735600D2CAC0 /* moousertools.h */,
+				F12808630DD6735600D2CAC0 /* plugins */,
+			);
+			name = mooedit;
+			path = ../moo/mooedit;
+			sourceTree = SOURCE_ROOT;
+		};
+		F12807730DD6735500D2CAC0 /* glade */ = {
+			isa = PBXGroup;
+			children = (
+				F12807740DD6735500D2CAC0 /* mooeditprefs-file.glade */,
+				F12807750DD6735500D2CAC0 /* mooeditprefs-general.glade */,
+				F12807760DD6735500D2CAC0 /* mooeditprefs-langs.glade */,
+				F12807770DD6735500D2CAC0 /* mooeditprefs-view.glade */,
+				F12807780DD6735500D2CAC0 /* mooeditprogress.glade */,
+				F12807790DD6735500D2CAC0 /* mooeditsavemult.glade */,
+				F128077A0DD6735500D2CAC0 /* mooedittools.glade */,
+				F128077B0DD6735500D2CAC0 /* moopluginprefs.glade */,
+				F128077C0DD6735500D2CAC0 /* mooprint.glade */,
+				F128077D0DD6735500D2CAC0 /* mooprintpreview.glade */,
+				F128077E0DD6735500D2CAC0 /* mooquicksearch.glade */,
+				F128077F0DD6735500D2CAC0 /* moostatusbar.glade */,
+				F12807800DD6735500D2CAC0 /* mootextfind.glade */,
+				F12807810DD6735500D2CAC0 /* mootextgotoline.glade */,
+			);
+			path = glade;
+			sourceTree = "<group>";
+		};
+		F12807820DD6735500D2CAC0 /* gtksourceview */ = {
+			isa = PBXGroup;
+			children = (
+				F1F0AE240DD6BFFC005EF77F /* gtksourcecontextengine-mangled.c */,
+				F1F0AE250DD6BFFC005EF77F /* gtksourcecontextengine-mangled.h */,
+				F1F0AE260DD6BFFC005EF77F /* gtksourceengine-mangled.c */,
+				F1F0AE270DD6BFFC005EF77F /* gtksourceengine-mangled.h */,
+				F1F0AE280DD6BFFC005EF77F /* gtksourceiter-mangled.c */,
+				F1F0AE290DD6BFFC005EF77F /* gtksourceiter-mangled.h */,
+				F1F0AE2A0DD6BFFC005EF77F /* gtksourcelanguage-mangled.c */,
+				F1F0AE2B0DD6BFFC005EF77F /* gtksourcelanguage-mangled.h */,
+				F1F0AE2C0DD6BFFC005EF77F /* gtksourcelanguage-parser-1-mangled.c */,
+				F1F0AE2D0DD6BFFC005EF77F /* gtksourcelanguage-parser-2-mangled.c */,
+				F1F0AE2E0DD6BFFC005EF77F /* gtksourcelanguage-private-mangled.h */,
+				F1F0AE2F0DD6BFFC005EF77F /* gtksourcelanguagemanager-mangled.c */,
+				F1F0AE300DD6BFFC005EF77F /* gtksourcelanguagemanager-mangled.h */,
+				F1F0AE310DD6BFFC005EF77F /* gtksourcestyle-mangled.c */,
+				F1F0AE320DD6BFFC005EF77F /* gtksourcestyle-mangled.h */,
+				F1F0AE330DD6BFFC005EF77F /* gtksourcestyle-private-mangled.h */,
+				F1F0AE340DD6BFFC005EF77F /* gtksourcestylescheme-mangled.c */,
+				F1F0AE350DD6BFFC005EF77F /* gtksourcestylescheme-mangled.h */,
+				F1F0AE360DD6BFFC005EF77F /* gtksourcestyleschememanager-mangled.c */,
+				F1F0AE370DD6BFFC005EF77F /* gtksourcestyleschememanager-mangled.h */,
+				F1F0AE380DD6BFFC005EF77F /* gtksourceview-utils-mangled.c */,
+				F1F0AE390DD6BFFC005EF77F /* gtksourceview-utils-mangled.h */,
+				F1F0AE3A0DD6BFFC005EF77F /* gtktextregion-mangled.c */,
+				F1F0AE3B0DD6BFFC005EF77F /* gtktextregion-mangled.h */,
+				F12807830DD6735500D2CAC0 /* gtksourceview-api.h */,
+				F12807840DD6735500D2CAC0 /* gtksourceview-i18n.h */,
+				F12807850DD6735500D2CAC0 /* gtksourceview-marshal.h */,
+			);
+			path = gtksourceview;
+			sourceTree = "<group>";
+		};
+		F12808630DD6735600D2CAC0 /* plugins */ = {
+			isa = PBXGroup;
+			children = (
+				F12808870DD6735600D2CAC0 /* mooeditplugins.h */,
+				F12808880DD6735600D2CAC0 /* moofilelist.c */,
+				F12808890DD6735600D2CAC0 /* moofileselector-prefs.c */,
+				F128088A0DD6735600D2CAC0 /* moofileselector-prefs.glade */,
+				F128088B0DD6735600D2CAC0 /* moofileselector.c */,
+				F128088C0DD6735600D2CAC0 /* moofileselector.glade */,
+				F128088D0DD6735600D2CAC0 /* moofileselector.h */,
+				F128088E0DD6735600D2CAC0 /* moofind.c */,
+				F128088F0DD6735600D2CAC0 /* moofind.glade */,
+			);
+			path = plugins;
+			sourceTree = "<group>";
+		};
+		F12809800DD679C200D2CAC0 /* mooapp */ = {
+			isa = PBXGroup;
+			children = (
+				F12809810DD679C200D2CAC0 /* glade */,
+				F12809900DD679C200D2CAC0 /* smclient */,
+				F12809860DD679C200D2CAC0 /* mooapp-accels.h */,
+				F12809870DD679C200D2CAC0 /* mooapp-private.h */,
+				F12809880DD679C200D2CAC0 /* mooapp.c */,
+				F12809890DD679C200D2CAC0 /* mooapp.h */,
+				F128098A0DD679C200D2CAC0 /* mooappabout.c */,
+				F128098B0DD679C200D2CAC0 /* mooappabout.h */,
+				F128098C0DD679C200D2CAC0 /* moohtml.c */,
+				F128098D0DD679C200D2CAC0 /* moohtml.h */,
+				F128098E0DD679C200D2CAC0 /* moolinklabel.c */,
+				F128098F0DD679C200D2CAC0 /* moolinklabel.h */,
+			);
+			name = mooapp;
+			path = ../moo/mooapp;
+			sourceTree = SOURCE_ROOT;
+		};
+		F12809810DD679C200D2CAC0 /* glade */ = {
+			isa = PBXGroup;
+			children = (
+				F12809820DD679C200D2CAC0 /* mooappabout.glade */,
+			);
+			path = glade;
+			sourceTree = "<group>";
+		};
+		F12809900DD679C200D2CAC0 /* smclient */ = {
+			isa = PBXGroup;
+			children = (
+				F12809930DD679C200D2CAC0 /* eggsmclient-dummy.c */,
+				F12809940DD679C200D2CAC0 /* eggsmclient-mangle.h */,
+				F12809950DD679C200D2CAC0 /* eggsmclient-private.h */,
+				F12809980DD679C200D2CAC0 /* eggsmclient.c */,
+				F12809990DD679C200D2CAC0 /* eggsmclient.h */,
+			);
+			path = smclient;
+			sourceTree = "<group>";
+		};
+		F15F793F0DD6424B00DAEB2C /* moo */ = {
+			isa = PBXGroup;
+			children = (
+				F12809800DD679C200D2CAC0 /* mooapp */,
+				F12807700DD6735400D2CAC0 /* mooedit */,
+				F12806C60DD670DA00D2CAC0 /* moolua */,
+				F15F7CF60DD6685B00DAEB2C /* moofileview */,
+				F15F79400DD6426100DAEB2C /* mooutils */,
+			);
+			name = moo;
+			sourceTree = "<group>";
+		};
+		F15F79400DD6426100DAEB2C /* mooutils */ = {
+			isa = PBXGroup;
+			children = (
+				F15F79410DD6426100DAEB2C /* glade */,
+				F15F79F60DD6426200DAEB2C /* pixmaps */,
+				F15F7A050DD6426200DAEB2C /* xdgmime */,
+				F15F79470DD6426100DAEB2C /* marshals.list */,
+				F15F79480DD6426100DAEB2C /* mdhistorymgr.c */,
+				F15F79490DD6426100DAEB2C /* mdhistorymgr.h */,
+				F15F794A0DD6426100DAEB2C /* moo-environ.h */,
+				F15F794C0DD6426100DAEB2C /* mooaccel.c */,
+				F15F794D0DD6426100DAEB2C /* mooaccel.h */,
+				F15F794E0DD6426100DAEB2C /* mooaccelbutton.c */,
+				F15F794F0DD6426100DAEB2C /* mooaccelbutton.h */,
+				F15F79500DD6426100DAEB2C /* mooaccelprefs.c */,
+				F15F79510DD6426100DAEB2C /* mooaccelprefs.h */,
+				F15F79520DD6426100DAEB2C /* mooaction-private.h */,
+				F15F79530DD6426100DAEB2C /* mooaction.c */,
+				F15F79540DD6426200DAEB2C /* mooaction.h */,
+				F15F79550DD6426200DAEB2C /* mooactionbase-private.h */,
+				F15F79560DD6426200DAEB2C /* mooactionbase.c */,
+				F15F79570DD6426200DAEB2C /* mooactionbase.h */,
+				F15F79580DD6426200DAEB2C /* mooactioncollection.c */,
+				F15F79590DD6426200DAEB2C /* mooactioncollection.h */,
+				F15F795A0DD6426200DAEB2C /* mooactionfactory.c */,
+				F15F795B0DD6426200DAEB2C /* mooactionfactory.h */,
+				F15F795C0DD6426200DAEB2C /* mooactiongroup.c */,
+				F15F795D0DD6426200DAEB2C /* mooactiongroup.h */,
+				F15F795E0DD6426200DAEB2C /* mooapp-ipc.c */,
+				F15F795F0DD6426200DAEB2C /* mooapp-ipc.h */,
+				F15F79600DD6426200DAEB2C /* mooappinput.c */,
+				F15F79610DD6426200DAEB2C /* mooappinput.h */,
+				F15F79620DD6426200DAEB2C /* moobigpaned.c */,
+				F15F79630DD6426200DAEB2C /* moobigpaned.h */,
+				F15F79640DD6426200DAEB2C /* mooclosure.c */,
+				F15F79650DD6426200DAEB2C /* mooclosure.h */,
+				F15F79660DD6426200DAEB2C /* moocombo.c */,
+				F15F79670DD6426200DAEB2C /* moocombo.h */,
+				F15F79680DD6426200DAEB2C /* moocompat.c */,
+				F15F79690DD6426200DAEB2C /* moocompat.h */,
+				F15F796A0DD6426200DAEB2C /* moodialogs.c */,
+				F15F796B0DD6426200DAEB2C /* moodialogs.h */,
+				F15F796C0DD6426200DAEB2C /* mooeditops.c */,
+				F15F796D0DD6426200DAEB2C /* mooeditops.h */,
+				F15F796E0DD6426200DAEB2C /* mooencodings-data.h */,
+				F15F796F0DD6426200DAEB2C /* mooencodings.c */,
+				F15F79700DD6426200DAEB2C /* mooencodings.h */,
+				F15F79710DD6426200DAEB2C /* mooentry.c */,
+				F15F79720DD6426200DAEB2C /* mooentry.h */,
+				F15F79730DD6426200DAEB2C /* moofiledialog.c */,
+				F15F79740DD6426200DAEB2C /* moofiledialog.h */,
+				F15F79750DD6426200DAEB2C /* moofilewatch.c */,
+				F15F79760DD6426200DAEB2C /* moofilewatch.h */,
+				F15F79770DD6426200DAEB2C /* moofiltermgr.c */,
+				F15F79780DD6426200DAEB2C /* moofiltermgr.h */,
+				F15F79790DD6426200DAEB2C /* moofontsel.c */,
+				F15F797A0DD6426200DAEB2C /* moofontsel.h */,
+				F15F797B0DD6426200DAEB2C /* mooglade.c */,
+				F15F797C0DD6426200DAEB2C /* mooglade.h */,
+				F15F797D0DD6426200DAEB2C /* moohelp.c */,
+				F15F797E0DD6426200DAEB2C /* moohelp.h */,
+				F15F797F0DD6426200DAEB2C /* moohistorycombo.c */,
+				F15F79800DD6426200DAEB2C /* moohistorycombo.h */,
+				F15F79810DD6426200DAEB2C /* moohistorylist.c */,
+				F15F79820DD6426200DAEB2C /* moohistorylist.h */,
+				F15F79830DD6426200DAEB2C /* mooi18n.c */,
+				F15F79840DD6426200DAEB2C /* mooi18n.h */,
+				F15F79850DD6426200DAEB2C /* moomarkup.c */,
+				F15F79860DD6426200DAEB2C /* moomarkup.h */,
+				F15F79870DD6426200DAEB2C /* moomenuaction.c */,
+				F15F79880DD6426200DAEB2C /* moomenuaction.h */,
+				F15F79890DD6426200DAEB2C /* moomenumgr.c */,
+				F15F798A0DD6426200DAEB2C /* moomenumgr.h */,
+				F15F798B0DD6426200DAEB2C /* moomenutoolbutton.c */,
+				F15F798C0DD6426200DAEB2C /* moomenutoolbutton.h */,
+				F15F798D0DD6426200DAEB2C /* moonotebook.c */,
+				F15F798E0DD6426200DAEB2C /* moonotebook.h */,
+				F15F798F0DD6426200DAEB2C /* moopane.c */,
+				F15F79900DD6426200DAEB2C /* moopane.h */,
+				F15F79910DD6426200DAEB2C /* moopaned.c */,
+				F15F79920DD6426200DAEB2C /* moopaned.h */,
+				F15F79930DD6426200DAEB2C /* mooprefs.c */,
+				F15F79940DD6426200DAEB2C /* mooprefs.h */,
+				F15F79950DD6426200DAEB2C /* mooprefsdialog.c */,
+				F15F79960DD6426200DAEB2C /* mooprefsdialog.h */,
+				F15F79970DD6426200DAEB2C /* mooprefsdialogpage.c */,
+				F15F79980DD6426200DAEB2C /* mooprefsdialogpage.h */,
+				F15F79990DD6426200DAEB2C /* moopython.h */,
+				F15F799A0DD6426200DAEB2C /* moospawn.c */,
+				F15F799B0DD6426200DAEB2C /* moospawn.h */,
+				F15F799C0DD6426200DAEB2C /* moostock.c */,
+				F15F799D0DD6426200DAEB2C /* moostock.h */,
+				F15F799E0DD6426200DAEB2C /* mootype-macros.h */,
+				F15F799F0DD6426200DAEB2C /* moouixml.c */,
+				F15F79A00DD6426200DAEB2C /* moouixml.h */,
+				F15F79A10DD6426200DAEB2C /* mooundo.c */,
+				F15F79A20DD6426200DAEB2C /* mooundo.h */,
+				F15F79A30DD6426200DAEB2C /* mooutils-debug.h */,
+				F15F79A40DD6426200DAEB2C /* mooutils-file.h */,
+				F15F79A50DD6426200DAEB2C /* mooutils-fli.c */,
+				F15F79A60DD6426200DAEB2C /* mooutils-fs.c */,
+				F15F79A70DD6426200DAEB2C /* mooutils-fs.h */,
+				F15F79A80DD6426200DAEB2C /* mooutils-gobject-private.h */,
+				F15F79A90DD6426200DAEB2C /* mooutils-gobject.c */,
+				F15F79AA0DD6426200DAEB2C /* mooutils-gobject.h */,
+				F15F79AB0DD6426200DAEB2C /* mooutils-mem.h */,
+				F15F79AC0DD6426200DAEB2C /* mooutils-misc.c */,
+				F15F79AD0DD6426200DAEB2C /* mooutils-misc.h */,
+				F15F79AE0DD6426200DAEB2C /* mooutils-thread.c */,
+				F15F79AF0DD6426200DAEB2C /* mooutils-thread.h */,
+				F15F79B00DD6426200DAEB2C /* mooutils-treeview.c */,
+				F15F79B10DD6426200DAEB2C /* mooutils-treeview.h */,
+				F15F79BE0DD6426200DAEB2C /* moowindow.c */,
+				F15F79C00DD6426200DAEB2C /* moowindow.h */,
+				F15F79FF0DD6426200DAEB2C /* py2h.sh */,
+				F15F7A000DD6426200DAEB2C /* stock-file-24.h */,
+				F15F7A010DD6426200DAEB2C /* stock-file-selector-24.h */,
+				F15F7A020DD6426200DAEB2C /* stock-select-all-16.h */,
+				F15F7A030DD6426200DAEB2C /* stock-select-all-24.h */,
+				F15F7A040DD6426200DAEB2C /* stock-terminal-24.h */,
+				F15F7A190DD6426200DAEB2C /* xml2h.sh */,
+			);
+			name = mooutils;
+			path = ../moo/mooutils;
+			sourceTree = SOURCE_ROOT;
+		};
+		F15F79410DD6426100DAEB2C /* glade */ = {
+			isa = PBXGroup;
+			children = (
+				F15F79420DD6426100DAEB2C /* mooaccelbutton.glade */,
+				F15F79430DD6426100DAEB2C /* mooaccelprefs.glade */,
+				F15F79440DD6426100DAEB2C /* moologwindow.glade */,
+			);
+			path = glade;
+			sourceTree = "<group>";
+		};
+		F15F79F60DD6426200DAEB2C /* pixmaps */ = {
+			isa = PBXGroup;
+			children = (
+				F15F79F70DD6426200DAEB2C /* attach.png */,
+				F15F79F80DD6426200DAEB2C /* close.png */,
+				F15F79F90DD6426200DAEB2C /* detach.png */,
+				F15F79FA0DD6426200DAEB2C /* hide.png */,
+				F15F79FB0DD6426200DAEB2C /* keepontop.png */,
+				F15F79FC0DD6426200DAEB2C /* medit.ico */,
+				F15F79FD0DD6426200DAEB2C /* medit.png */,
+				F15F79FE0DD6426200DAEB2C /* sticky.png */,
+			);
+			path = pixmaps;
+			sourceTree = "<group>";
+		};
+		F15F7A050DD6426200DAEB2C /* xdgmime */ = {
+			isa = PBXGroup;
+			children = (
+				F15F7A0B0DD6426200DAEB2C /* xdgmime.c */,
+				F15F7A0C0DD6426200DAEB2C /* xdgmime.h */,
+				F15F7A0D0DD6426200DAEB2C /* xdgmimealias.c */,
+				F15F7A0E0DD6426200DAEB2C /* xdgmimealias.h */,
+				F15F7A0F0DD6426200DAEB2C /* xdgmimecache.c */,
+				F15F7A100DD6426200DAEB2C /* xdgmimecache.h */,
+				F15F7A110DD6426200DAEB2C /* xdgmimeglob.c */,
+				F15F7A120DD6426200DAEB2C /* xdgmimeglob.h */,
+				F15F7A140DD6426200DAEB2C /* xdgmimeint.h */,
+				F15F7A150DD6426200DAEB2C /* xdgmimemagic.c */,
+				F15F7A160DD6426200DAEB2C /* xdgmimemagic.h */,
+				F15F7A170DD6426200DAEB2C /* xdgmimeparent.c */,
+				F15F7A180DD6426200DAEB2C /* xdgmimeparent.h */,
+			);
+			indentWidth = 2;
+			path = xdgmime;
+			sourceTree = "<group>";
+			usesTabs = 1;
+		};
+		F15F7C7C0DD664B600DAEB2C /* medit */ = {
+			isa = PBXGroup;
+			children = (
+				F15F7C860DD664B600DAEB2C /* medit-app.c */,
+				F15F7C870DD664B600DAEB2C /* medit-credits.h */,
+				F15F7C8B0DD664B600DAEB2C /* mem-debug.h */,
+			);
+			name = medit;
+			path = ../medit;
+			sourceTree = SOURCE_ROOT;
+		};
+		F15F7CF60DD6685B00DAEB2C /* moofileview */ = {
+			isa = PBXGroup;
+			children = (
+				F15F7CF70DD6685B00DAEB2C /* glade */,
+				F15F7D750DD66B2800DAEB2C /* moofileview.ui */,
+				F15F7CFF0DD6685B00DAEB2C /* moobookmarkmgr.c */,
+				F15F7D000DD6685B00DAEB2C /* moobookmarkmgr.h */,
+				F15F7D010DD6685B00DAEB2C /* moobookmarkview.c */,
+				F15F7D020DD6685B00DAEB2C /* moobookmarkview.h */,
+				F15F7D030DD6685B00DAEB2C /* moofile-private.h */,
+				F15F7D040DD6685B00DAEB2C /* moofile.c */,
+				F15F7D050DD6685B00DAEB2C /* moofile.h */,
+				F15F7D060DD6685B00DAEB2C /* moofileentry.c */,
+				F15F7D070DD6685B00DAEB2C /* moofileentry.h */,
+				F15F7D080DD6685B00DAEB2C /* moofileicons.c */,
+				F15F7D090DD6685B00DAEB2C /* moofileicons.h */,
+				F15F7D0A0DD6685B00DAEB2C /* moofilesystem.c */,
+				F15F7D0B0DD6685B00DAEB2C /* moofilesystem.h */,
+				F15F7D0C0DD6685B00DAEB2C /* moofileview-accels.h */,
+				F15F7D0D0DD6685B00DAEB2C /* moofileview-aux.h */,
+				F15F7D0E0DD6685B00DAEB2C /* moofileview-dialogs.c */,
+				F15F7D0F0DD6685B00DAEB2C /* moofileview-dialogs.h */,
+				F15F7D100DD6685B00DAEB2C /* moofileview-impl.h */,
+				F15F7D110DD6685B00DAEB2C /* moofileview-private.h */,
+				F15F7D120DD6685B00DAEB2C /* moofileview-tools.c */,
+				F15F7D130DD6685B00DAEB2C /* moofileview-tools.h */,
+				F15F7D150DD6685B00DAEB2C /* moofileview.c */,
+				F15F7D160DD6685B00DAEB2C /* moofileview.h */,
+				F15F7D170DD6685B00DAEB2C /* moofolder-private.h */,
+				F15F7D180DD6685B00DAEB2C /* moofolder.c */,
+				F15F7D190DD6685B00DAEB2C /* moofolder.h */,
+				F15F7D1A0DD6685B00DAEB2C /* moofoldermodel-private.h */,
+				F15F7D1B0DD6685B00DAEB2C /* moofoldermodel.c */,
+				F15F7D1C0DD6685B00DAEB2C /* moofoldermodel.h */,
+				F15F7D1D0DD6685B00DAEB2C /* mooiconview.c */,
+				F15F7D1E0DD6685B00DAEB2C /* mooiconview.h */,
+				F15F7D1F0DD6685B00DAEB2C /* mootreeview.c */,
+				F15F7D200DD6685B00DAEB2C /* mootreeview.h */,
+				F15F7D210DD6685B00DAEB2C /* symlink-small.png */,
+				F15F7D220DD6685B00DAEB2C /* symlink.png */,
+			);
+			name = moofileview;
+			path = ../moo/moofileview;
+			sourceTree = SOURCE_ROOT;
+		};
+		F15F7CF70DD6685B00DAEB2C /* glade */ = {
+			isa = PBXGroup;
+			children = (
+				F15F7CF80DD6685B00DAEB2C /* moobookmark-editor.glade */,
+				F15F7CF90DD6685B00DAEB2C /* moocreatefolder.glade */,
+				F15F7CFA0DD6685B00DAEB2C /* moofileprops.glade */,
+				F15F7CFB0DD6685B00DAEB2C /* moofileview-drop.glade */,
+			);
+			path = glade;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8DD76FA90486AB0100D96B5E /* medit */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB928508733DD80010E9CD /* Build configuration list for PBXNativeTarget "medit" */;
+			buildPhases = (
+				8DD76FAB0486AB0100D96B5E /* Sources */,
+				8DD76FAD0486AB0100D96B5E /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F15F79370DD6421300DAEB2C /* PBXTargetDependency */,
+			);
+			name = medit;
+			productInstallPath = "$(HOME)/bin";
+			productName = medit;
+			productReference = 8DD76FB20486AB0100D96B5E /* medit */;
+			productType = "com.apple.product-type.tool";
+		};
+		F15F79320DD641FC00DAEB2C /* libmoo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F15F793C0DD6423100DAEB2C /* Build configuration list for PBXNativeTarget "libmoo" */;
+			buildPhases = (
+				F15F7B000DD6488B00DAEB2C /* gen-marshals */,
+				F15F7B540DD652D200DAEB2C /* gen-pixmaps */,
+				F15F7B960DD656B000DAEB2C /* gen-help-sections */,
+				F12809060DD676E700D2CAC0 /* mangle-gtksourceview */,
+				F15F79300DD641FC00DAEB2C /* Sources */,
+				F15F79310DD641FC00DAEB2C /* Frameworks */,
+			);
+			buildRules = (
+				F128064D0DD66B9D00D2CAC0 /* PBXBuildRule */,
+				F15F7B2E0DD64F6E00DAEB2C /* PBXBuildRule */,
+			);
+			dependencies = (
+			);
+			name = libmoo;
+			productName = libmoo;
+			productReference = F15F79330DD641FC00DAEB2C /* libmoo.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "medit" */;
+			hasScannedForEncodings = 1;
+			mainGroup = 08FB7794FE84155DC02AAC07 /* medit */;
+			projectDirPath = "";
+			targets = (
+				8DD76FA90486AB0100D96B5E /* medit */,
+				F15F79320DD641FC00DAEB2C /* libmoo */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		F12809060DD676E700D2CAC0 /* mangle-gtksourceview */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(MOO_SRCDIR)/mooedit/gtksourceview/upstream/gtksourcecontextengine.c",
+			);
+			name = "mangle-gtksourceview";
+			outputPaths = (
+				"$(MOO_BUILDDIR)/mooedit/gtksourceview/gtksourcecontextengine-mangled.c",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = ". \"$SRCROOT\"/env.sh\n\nupstream_sources=\"\\\n    gtksourcecontextengine.c       \\\n    gtksourceengine.c              \\\n    gtksourceiter.c                \\\n    gtksourcelanguage.c            \\\n    gtksourcelanguage-parser-1.c   \\\n    gtksourcelanguage-parser-2.c   \\\n    gtksourcelanguagemanager.c     \\\n    gtksourcestyle.c               \\\n    gtksourcestyleschememanager.c  \\\n    gtksourcestylescheme.c         \\\n    gtktextregion.c                \\\n    gtksourceview-utils.c\"\n\nupstream_headers=\"\\\n    gtksourcecontextengine.h       \\\n    gtksourceengine.h              \\\n    gtksourceiter.h                \\\n    gtksourcelanguage.h            \\\n    gtksourcelanguage-private.h    \\\n    gtksourcelanguagemanager.h     \\\n    gtksourcestyle-private.h       \\\n    gtksourcestyle.h               \\\n    gtksourcestyleschememanager.h  \\\n    gtksourcestylescheme.h         \\\n    gtktextregion.h                \\\n    gtksourceview-utils.h\"\n\nmkdir -p \"$MOO_BUILDDIR\"/mooedit/gtksourceview || exit 1\n\nfor inp in $upstream_sources; do\n  base=`basename $inp .c`\n  \"$MOO_SRCDIR\"/mooedit/gtksourceview/upstream/mangle.sh \\\n    \"$MOO_SRCDIR\"/mooedit/gtksourceview/upstream/$inp > \"$MOO_BUILDDIR\"/$base-mangled.c.tmp || exit 1\n  mv \"$MOO_BUILDDIR\"/$base-mangled.c.tmp \"$MOO_BUILDDIR\"/mooedit/gtksourceview/$base-mangled.c || exit 1\ndone\n\nfor inp in $upstream_headers; do\n  base=`basename $inp .h`\n  \"$MOO_SRCDIR\"/mooedit/gtksourceview/upstream/mangle.sh \\\n    \"$MOO_SRCDIR\"/mooedit/gtksourceview/upstream/$inp > \"$MOO_BUILDDIR\"/$base-mangled.h.tmp || exit 1\n  mv \"$MOO_BUILDDIR\"/$base-mangled.h.tmp \"$MOO_BUILDDIR\"/mooedit/gtksourceview/$base-mangled.h || exit 1\ndone\n";
+		};
+		F15F7B000DD6488B00DAEB2C /* gen-marshals */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(MOO_SRCDIR)/mooutils/marshals.list",
+				"$(MOO_SRCDIR)/mooedit/marshals.list",
+				"$(MOO_SRCDIR)/moofileview/marshals.list",
+				"$(MOO_SRCDIR)/mooapp/marshals.list",
+			);
+			name = "gen-marshals";
+			outputPaths = (
+				"$(MOO_BUILDDIR)/marshals.c",
+				"$(MOO_BUILDDIR)/marshals.h",
+				"$(MOO_BUILDDIR)/mooedit/marshals.h",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = ". \"$SRCROOT\"/env.sh\n\ngen_marshals_list() {\n  ( cat \"$MOO_SRCDIR\"/mooutils/marshals.list \\\n        \"$MOO_SRCDIR\"/moofileview/marshals.list \\\n        \"$MOO_SRCDIR\"/mooedit/marshals.list \\\n        \"$MOO_SRCDIR\"/mooapp/marshals.list \\\n      | uniq ) > \"$MOO_BUILDDIR\"/marshals.list || exit 1\n}\n\nmkdir -p \"$MOO_BUILDDIR\"/mooedit || exit 1\ngen_marshals_list\nglib-genmarshal --prefix=_moo_marshal --header \"$MOO_BUILDDIR\"/marshals.list > \"$MOO_BUILDDIR\"/marshals.h.tmp || exit 1\n\necho '#include \"marshals.h\"' > \"$MOO_BUILDDIR\"/marshals.c.tmp || exit 1\nglib-genmarshal --prefix=_moo_marshal --body \"$MOO_BUILDDIR\"/marshals.list >> \"$MOO_BUILDDIR\"/marshals.c.tmp || exit 1\n\nmv \"$MOO_BUILDDIR\"/marshals.h.tmp \"$MOO_BUILDDIR\"/marshals.h || exit 1\nmv \"$MOO_BUILDDIR\"/marshals.c.tmp \"$MOO_BUILDDIR\"/marshals.c || exit 1\ncp \"$MOO_BUILDDIR\"/marshals.h \"$MOO_BUILDDIR\"/mooedit/marshals.h\nrm -f \"$MOO_BUILDDIR\"/marshals.list\n";
+		};
+		F15F7B540DD652D200DAEB2C /* gen-pixmaps */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(MOO_SRCDIR)/mooutils/pixmaps/hide.png",
+				"$(MOO_SRCDIR)/mooutils/pixmaps/close.png",
+				"$(MOO_SRCDIR)/mooutils/pixmaps/detach.png",
+				"$(MOO_SRCDIR)/mooutils/pixmaps/sticky.png",
+				"$(MOO_SRCDIR)/mooutils/pixmaps/keepontop.png",
+				"$(MOO_SRCDIR)/mooutils/pixmaps/attach.png",
+				"$(MOO_SRCDIR)/mooutils/pixmaps/medit.png",
+				"$(MOO_SRCDIR)/moofileview/symlink.png",
+				"$(MOO_SRCDIR)/moofileview/symlink-small.png",
+			);
+			name = "gen-pixmaps";
+			outputPaths = (
+				"$(MOO_BUILDDIR)/mooutils/stock-moo.h",
+				"$(MOO_BUILDDIR)/mooutils/stock-medit.h",
+				"$(MOO_BUILDDIR)/moofileview/symlink.h",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = ". \"$SRCROOT\"/env.sh\n\nmkdir -p \"$MOO_BUILDDIR\"/mooutils || exit 1\nmkdir -p \"$MOO_BUILDDIR\"/moofileview || exit 1\n\ngdk-pixbuf-csource --static --build-list \\\n  MOO_HIDE_ICON \"$MOO_SRCDIR\"/mooutils/pixmaps/hide.png\t\\\n  MOO_CLOSE_ICON \"$MOO_SRCDIR\"/mooutils/pixmaps/close.png \\\n  MOO_STICKY_ICON \"$MOO_SRCDIR\"/mooutils/pixmaps/sticky.png \\\n  MOO_DETACH_ICON \"$MOO_SRCDIR\"/mooutils/pixmaps/detach.png \\\n  MOO_ATTACH_ICON \"$MOO_SRCDIR\"/mooutils/pixmaps/attach.png \\\n  MOO_KEEP_ON_TOP_ICON \"$MOO_SRCDIR\"/mooutils/pixmaps/keepontop.png \\\n    > \"$MOO_BUILDDIR\"/stock-moo.h.tmp || exit 1\nmv \"$MOO_BUILDDIR\"/stock-moo.h.tmp \"$MOO_BUILDDIR\"/mooutils/stock-moo.h || exit 1\n\ngdk-pixbuf-csource --static --build-list \\\n  MEDIT_ICON \"$MOO_SRCDIR\"/mooutils/pixmaps/medit.png\t\\\n    > \"$MOO_BUILDDIR\"/stock-medit.h.tmp || exit 1\nmv \"$MOO_BUILDDIR\"/stock-medit.h.tmp \"$MOO_BUILDDIR\"/mooutils/stock-medit.h || exit 1\n\ngdk-pixbuf-csource --static --build-list \\\n  SYMLINK_ARROW \"$MOO_SRCDIR\"/moofileview/symlink.png \\\n  SYMLINK_ARROW_SMALL \"$MOO_SRCDIR\"/moofileview/symlink-small.png \\\n    > \"$MOO_BUILDDIR\"/symlink.h.tmp || exit 1\nmv \"$MOO_BUILDDIR\"/symlink.h.tmp \"$MOO_BUILDDIR\"/moofileview/symlink.h || exit 1\n";
+		};
+		F15F7B960DD656B000DAEB2C /* gen-help-sections */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(MOO_SRCDIR)/../doc/medit.t2t",
+			);
+			name = "gen-help-sections";
+			outputPaths = (
+				"$(MOO_SRCDIR)/../doc/help-sections.h",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = ". \"$SRCROOT\"/env.sh\n\ncd \"$MOO_SRCDIR\"/../doc && \\\n  rm -fr help && \\\n  mkdir -p help && \\\n  \"$MOO_SRCDIR\"/../doc/makedocs \"$MOO_SRCDIR\"/../doc/medit.t2t || exit 1\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8DD76FAB0486AB0100D96B5E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F15F7C940DD664B600DAEB2C /* medit-app.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F15F79300DD641FC00DAEB2C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F15F7B320DD6515800DAEB2C /* mooaccelbutton.glade in Sources */,
+				F15F7B330DD6515800DAEB2C /* mooaccelprefs.glade in Sources */,
+				F15F7B340DD6515800DAEB2C /* moologwindow.glade in Sources */,
+				F15F7D460DD668AE00DAEB2C /* moofileprops.glade in Sources */,
+				F15F7D470DD668AE00DAEB2C /* moofileview-drop.glade in Sources */,
+				F15F7D440DD668AE00DAEB2C /* moobookmark-editor.glade in Sources */,
+				F15F7D450DD668AE00DAEB2C /* moocreatefolder.glade in Sources */,
+				F128064F0DD66BDF00D2CAC0 /* moofileview.ui in Sources */,
+				F12809790DD6796500D2CAC0 /* moofind.glade in Sources */,
+				F12808F10DD6740800D2CAC0 /* mootextgotoline.glade in Sources */,
+				F12808F00DD6740800D2CAC0 /* mooedittools.glade in Sources */,
+				F12808FA0DD6740800D2CAC0 /* moopluginprefs.glade in Sources */,
+				F12808F60DD6740800D2CAC0 /* mooeditprefs-general.glade in Sources */,
+				F12808F80DD6740800D2CAC0 /* mooeditprogress.glade in Sources */,
+				F128097A0DD6796500D2CAC0 /* moofileselector-prefs.glade in Sources */,
+				F128097B0DD6796500D2CAC0 /* moofileselector.glade in Sources */,
+				F12808EE0DD6740800D2CAC0 /* mooquicksearch.glade in Sources */,
+				F12808F20DD6740800D2CAC0 /* moostatusbar.glade in Sources */,
+				F12808F30DD6740800D2CAC0 /* mooeditsavemult.glade in Sources */,
+				F12808ED0DD6740800D2CAC0 /* mooprint.glade in Sources */,
+				F12808F40DD6740800D2CAC0 /* mootextfind.glade in Sources */,
+				F12808F70DD6740800D2CAC0 /* mooeditprefs-file.glade in Sources */,
+				F12808F90DD6740800D2CAC0 /* mooeditprefs-view.glade in Sources */,
+				F12808EF0DD6740800D2CAC0 /* mooprintpreview.glade in Sources */,
+				F12808F50DD6740800D2CAC0 /* mooeditprefs-langs.glade in Sources */,
+				F1280A0E0DD67C4D00D2CAC0 /* mooappabout.glade in Sources */,
+				F128097C0DD6798100D2CAC0 /* medit.ui in Sources */,
+				F128097D0DD6798100D2CAC0 /* mooedit.ui in Sources */,
+				F12807310DD6713B00D2CAC0 /* lua.c in Sources */,
+				F12807320DD6713B00D2CAC0 /* ldblib.c in Sources */,
+				F12807330DD6713B00D2CAC0 /* lstate.c in Sources */,
+				F12807340DD6713B00D2CAC0 /* liolib.c in Sources */,
+				F12807350DD6713B00D2CAC0 /* lobject.c in Sources */,
+				F12807360DD6713B00D2CAC0 /* loadlib.c in Sources */,
+				F12807370DD6713B00D2CAC0 /* ldump.c in Sources */,
+				F12807380DD6713B00D2CAC0 /* loslib.c in Sources */,
+				F12807390DD6713B00D2CAC0 /* lopcodes.c in Sources */,
+				F128073A0DD6713B00D2CAC0 /* ltm.c in Sources */,
+				F128073B0DD6713B00D2CAC0 /* lzio.c in Sources */,
+				F128073C0DD6713B00D2CAC0 /* lbaselib.c in Sources */,
+				F128073D0DD6713B00D2CAC0 /* lmem.c in Sources */,
+				F128073E0DD6713B00D2CAC0 /* ltablib.c in Sources */,
+				F128073F0DD6713B00D2CAC0 /* lfs.c in Sources */,
+				F12807410DD6713B00D2CAC0 /* lmathlib.c in Sources */,
+				F12807420DD6713B00D2CAC0 /* moolua.c in Sources */,
+				F12807430DD6713B00D2CAC0 /* lvm.c in Sources */,
+				F12807440DD6713B00D2CAC0 /* ldo.c in Sources */,
+				F12807450DD6713B00D2CAC0 /* lundump.c in Sources */,
+				F12807460DD6713B00D2CAC0 /* lfunc.c in Sources */,
+				F12807470DD6713B00D2CAC0 /* ltable.c in Sources */,
+				F12807480DD6713B00D2CAC0 /* ldebug.c in Sources */,
+				F12807490DD6713B00D2CAC0 /* lgc.c in Sources */,
+				F128074A0DD6713B00D2CAC0 /* lstring.c in Sources */,
+				F128074B0DD6713B00D2CAC0 /* lapi.c in Sources */,
+				F128074C0DD6713B00D2CAC0 /* luac.c in Sources */,
+				F128074D0DD6713B00D2CAC0 /* slnunico.c in Sources */,
+				F128074E0DD6713B00D2CAC0 /* lstrlib.c in Sources */,
+				F128074F0DD6713B00D2CAC0 /* lparser.c in Sources */,
+				F12807500DD6713B00D2CAC0 /* llex.c in Sources */,
+				F12807510DD6713B00D2CAC0 /* lcode.c in Sources */,
+				F12807520DD6713B00D2CAC0 /* lauxlib.c in Sources */,
+				F12807530DD6713B00D2CAC0 /* linit.c in Sources */,
+				F12806A80DD66FA600D2CAC0 /* moo-test-utils.c in Sources */,
+				F15F7D320DD6685B00DAEB2C /* moofileview-dialogs.c in Sources */,
+				F15F7D400DD6685B00DAEB2C /* mooiconview.c in Sources */,
+				F15F7D380DD6685B00DAEB2C /* moofileview.c in Sources */,
+				F15F7D3E0DD6685B00DAEB2C /* moofoldermodel.c in Sources */,
+				F15F7D280DD6685B00DAEB2C /* moofile.c in Sources */,
+				F15F7D2A0DD6685B00DAEB2C /* moofileentry.c in Sources */,
+				F15F7D420DD6685B00DAEB2C /* mootreeview.c in Sources */,
+				F15F7D3B0DD6685B00DAEB2C /* moofolder.c in Sources */,
+				F15F7D2E0DD6685B00DAEB2C /* moofilesystem.c in Sources */,
+				F15F7D230DD6685B00DAEB2C /* moobookmarkmgr.c in Sources */,
+				F15F7D2C0DD6685B00DAEB2C /* moofileicons.c in Sources */,
+				F15F7D360DD6685B00DAEB2C /* moofileview-tools.c in Sources */,
+				F15F7D250DD6685B00DAEB2C /* moobookmarkview.c in Sources */,
+				F15F7A1A0DD6426200DAEB2C /* mdhistorymgr.c in Sources */,
+				F15F7A1D0DD6426200DAEB2C /* mooaccel.c in Sources */,
+				F15F7A1F0DD6426200DAEB2C /* mooaccelbutton.c in Sources */,
+				F15F7A210DD6426200DAEB2C /* mooaccelprefs.c in Sources */,
+				F15F7A240DD6426200DAEB2C /* mooaction.c in Sources */,
+				F15F7A270DD6426200DAEB2C /* mooactionbase.c in Sources */,
+				F15F7A290DD6426200DAEB2C /* mooactioncollection.c in Sources */,
+				F15F7A2B0DD6426200DAEB2C /* mooactionfactory.c in Sources */,
+				F15F7A2D0DD6426200DAEB2C /* mooactiongroup.c in Sources */,
+				F15F7A2F0DD6426200DAEB2C /* mooapp-ipc.c in Sources */,
+				F15F7A310DD6426200DAEB2C /* mooappinput.c in Sources */,
+				F15F7A330DD6426200DAEB2C /* moobigpaned.c in Sources */,
+				F15F7A350DD6426200DAEB2C /* mooclosure.c in Sources */,
+				F15F7A370DD6426200DAEB2C /* moocombo.c in Sources */,
+				F15F7A390DD6426200DAEB2C /* moocompat.c in Sources */,
+				F15F7A3B0DD6426200DAEB2C /* moodialogs.c in Sources */,
+				F15F7A3D0DD6426200DAEB2C /* mooeditops.c in Sources */,
+				F15F7A400DD6426200DAEB2C /* mooencodings.c in Sources */,
+				F15F7A420DD6426200DAEB2C /* mooentry.c in Sources */,
+				F15F7A440DD6426200DAEB2C /* moofiledialog.c in Sources */,
+				F15F7A460DD6426200DAEB2C /* moofilewatch.c in Sources */,
+				F15F7A480DD6426200DAEB2C /* moofiltermgr.c in Sources */,
+				F15F7A4A0DD6426200DAEB2C /* moofontsel.c in Sources */,
+				F15F7A4C0DD6426200DAEB2C /* mooglade.c in Sources */,
+				F15F7A4E0DD6426200DAEB2C /* moohelp.c in Sources */,
+				F15F7A500DD6426200DAEB2C /* moohistorycombo.c in Sources */,
+				F15F7A520DD6426200DAEB2C /* moohistorylist.c in Sources */,
+				F15F7A540DD6426200DAEB2C /* mooi18n.c in Sources */,
+				F15F7A560DD6426200DAEB2C /* moomarkup.c in Sources */,
+				F15F7A580DD6426200DAEB2C /* moomenuaction.c in Sources */,
+				F15F7A5A0DD6426200DAEB2C /* moomenumgr.c in Sources */,
+				F15F7A5C0DD6426200DAEB2C /* moomenutoolbutton.c in Sources */,
+				F15F7A5E0DD6426200DAEB2C /* moonotebook.c in Sources */,
+				F15F7A600DD6426200DAEB2C /* moopane.c in Sources */,
+				F15F7A620DD6426200DAEB2C /* moopaned.c in Sources */,
+				F15F7A640DD6426200DAEB2C /* mooprefs.c in Sources */,
+				F15F7A660DD6426200DAEB2C /* mooprefsdialog.c in Sources */,
+				F15F7A680DD6426200DAEB2C /* mooprefsdialogpage.c in Sources */,
+				F15F7A6B0DD6426200DAEB2C /* moospawn.c in Sources */,
+				F15F7A6D0DD6426200DAEB2C /* moostock.c in Sources */,
+				F15F7A700DD6426200DAEB2C /* moouixml.c in Sources */,
+				F15F7A720DD6426200DAEB2C /* mooundo.c in Sources */,
+				F15F7A760DD6426200DAEB2C /* mooutils-fli.c in Sources */,
+				F15F7A770DD6426200DAEB2C /* mooutils-fs.c in Sources */,
+				F15F7A7A0DD6426200DAEB2C /* mooutils-gobject.c in Sources */,
+				F15F7A7D0DD6426200DAEB2C /* mooutils-misc.c in Sources */,
+				F15F7A7F0DD6426200DAEB2C /* mooutils-thread.c in Sources */,
+				F15F7A810DD6426200DAEB2C /* mooutils-treeview.c in Sources */,
+				F15F7A890DD6426200DAEB2C /* moowindow.c in Sources */,
+				F15F7AB30DD6426200DAEB2C /* xdgmime.c in Sources */,
+				F15F7AB50DD6426200DAEB2C /* xdgmimealias.c in Sources */,
+				F15F7AB70DD6426200DAEB2C /* xdgmimecache.c in Sources */,
+				F15F7AB90DD6426200DAEB2C /* xdgmimeglob.c in Sources */,
+				F15F7ABD0DD6426200DAEB2C /* xdgmimemagic.c in Sources */,
+				F15F7ABF0DD6426200DAEB2C /* xdgmimeparent.c in Sources */,
+				F12808AB0DD6735600D2CAC0 /* moocmdview.c in Sources */,
+				F12808AC0DD6735600D2CAC0 /* moocommand-exe.c in Sources */,
+				F12808AD0DD6735600D2CAC0 /* moocommand-lua.c in Sources */,
+				F12808AE0DD6735600D2CAC0 /* moocommand.c in Sources */,
+				F12808AF0DD6735600D2CAC0 /* moocommanddisplay.c in Sources */,
+				F12808B00DD6735600D2CAC0 /* moocompletionsimple.c in Sources */,
+				F12808B10DD6735600D2CAC0 /* mooedit-bookmarks.c in Sources */,
+				F12808B20DD6735600D2CAC0 /* mooedit-enums.c in Sources */,
+				F12808B30DD6735600D2CAC0 /* mooedit-lua-api.c in Sources */,
+				F12808B40DD6735600D2CAC0 /* mooedit-lua.c in Sources */,
+				F12808B50DD6735600D2CAC0 /* mooedit.c in Sources */,
+				F12808B60DD6735600D2CAC0 /* mooeditaction-factory.c in Sources */,
+				F12808B70DD6735600D2CAC0 /* mooeditaction.c in Sources */,
+				F12808B80DD6735600D2CAC0 /* mooeditconfig.c in Sources */,
+				F12808B90DD6735600D2CAC0 /* mooeditdialogs.c in Sources */,
+				F12808BA0DD6735600D2CAC0 /* mooeditfileops.c in Sources */,
+				F12808BB0DD6735600D2CAC0 /* mooeditfiltersettings.c in Sources */,
+				F12808BC0DD6735600D2CAC0 /* mooeditinput.c in Sources */,
+				F12808BD0DD6735600D2CAC0 /* mooeditor.c in Sources */,
+				F12808BE0DD6735600D2CAC0 /* mooeditprefs.c in Sources */,
+				F12808BF0DD6735600D2CAC0 /* mooeditprefspage.c in Sources */,
+				F12808C00DD6735600D2CAC0 /* mooeditwindow.c in Sources */,
+				F12808C10DD6735600D2CAC0 /* moofold.c in Sources */,
+				F12808C20DD6735600D2CAC0 /* mooindenter.c in Sources */,
+				F12808C30DD6735600D2CAC0 /* mookeyfile.c in Sources */,
+				F12808C40DD6735600D2CAC0 /* moolang.c in Sources */,
+				F12808C50DD6735600D2CAC0 /* moolangmgr.c in Sources */,
+				F12808C60DD6735600D2CAC0 /* moolinebuffer.c in Sources */,
+				F12808C70DD6735600D2CAC0 /* moolinemark.c in Sources */,
+				F12808C80DD6735600D2CAC0 /* moolineview.c in Sources */,
+				F12808C90DD6735600D2CAC0 /* moooutputfilter.c in Sources */,
+				F12808CA0DD6735600D2CAC0 /* moooutputfilterregex.c in Sources */,
+				F12808CB0DD6735600D2CAC0 /* mooplugin-loader.c in Sources */,
+				F12808CC0DD6735600D2CAC0 /* mooplugin.c in Sources */,
+				F12808CD0DD6735600D2CAC0 /* mooprintpreview.c in Sources */,
+				F12808CE0DD6735600D2CAC0 /* mootextbox.c in Sources */,
+				F12808CF0DD6735600D2CAC0 /* mootextbtree.c in Sources */,
+				F12808D00DD6735600D2CAC0 /* mootextbuffer.c in Sources */,
+				F12808D10DD6735600D2CAC0 /* mootextcompletion.c in Sources */,
+				F12808D20DD6735600D2CAC0 /* mootextfind.c in Sources */,
+				F12808D30DD6735600D2CAC0 /* mootextpopup.c in Sources */,
+				F12808D40DD6735600D2CAC0 /* mootextprint.c in Sources */,
+				F12808D50DD6735600D2CAC0 /* mootextsearch.c in Sources */,
+				F12808D60DD6735600D2CAC0 /* mootextstylescheme.c in Sources */,
+				F12808D70DD6735600D2CAC0 /* mootextview.c in Sources */,
+				F12808D80DD6735600D2CAC0 /* moousertools-prefs.c in Sources */,
+				F12808D90DD6735600D2CAC0 /* moousertools.c in Sources */,
+				F12808E30DD6735700D2CAC0 /* moofilelist.c in Sources */,
+				F12808E40DD6735700D2CAC0 /* moofileselector-prefs.c in Sources */,
+				F12808E50DD6735700D2CAC0 /* moofileselector.c in Sources */,
+				F12808E60DD6735700D2CAC0 /* moofind.c in Sources */,
+				F128099C0DD679C200D2CAC0 /* mooapp.c in Sources */,
+				F128099D0DD679C200D2CAC0 /* mooappabout.c in Sources */,
+				F128099E0DD679C200D2CAC0 /* moohtml.c in Sources */,
+				F128099F0DD679C200D2CAC0 /* moolinklabel.c in Sources */,
+				F12809A10DD679C200D2CAC0 /* eggsmclient-dummy.c in Sources */,
+				F12809A40DD679C200D2CAC0 /* eggsmclient.c in Sources */,
+				F1F0AE3C0DD6BFFC005EF77F /* gtksourcecontextengine-mangled.c in Sources */,
+				F1F0AE3D0DD6BFFC005EF77F /* gtksourceengine-mangled.c in Sources */,
+				F1F0AE3E0DD6BFFC005EF77F /* gtksourceiter-mangled.c in Sources */,
+				F1F0AE3F0DD6BFFC005EF77F /* gtksourcelanguage-mangled.c in Sources */,
+				F1F0AE400DD6BFFC005EF77F /* gtksourcelanguage-parser-1-mangled.c in Sources */,
+				F1F0AE410DD6BFFC005EF77F /* gtksourcelanguage-parser-2-mangled.c in Sources */,
+				F1F0AE420DD6BFFC005EF77F /* gtksourcelanguagemanager-mangled.c in Sources */,
+				F1F0AE430DD6BFFC005EF77F /* gtksourcestyle-mangled.c in Sources */,
+				F1F0AE440DD6BFFC005EF77F /* gtksourcestylescheme-mangled.c in Sources */,
+				F1F0AE450DD6BFFC005EF77F /* gtksourcestyleschememanager-mangled.c in Sources */,
+				F1F0AE460DD6BFFC005EF77F /* gtksourceview-utils-mangled.c in Sources */,
+				F1F0AE470DD6BFFC005EF77F /* gtktextregion-mangled.c in Sources */,
+				F1F0AE680DD6C2EE005EF77F /* marshals.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F15F79370DD6421300DAEB2C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F15F79320DD641FC00DAEB2C /* libmoo */;
+			targetProxy = F15F79360DD6421300DAEB2C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB928608733DD80010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = "$(HOME)/bin";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/gtk/lib,
+				);
+				PRODUCT_NAME = medit;
+				USER_HEADER_SEARCH_PATHS = "../moo .";
+				ZERO_LINK = NO;
+			};
+			name = Debug;
+		};
+		1DEB928708733DD80010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = "$(HOME)/bin";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/gtk/lib,
+				);
+				PRODUCT_NAME = medit;
+				USER_HEADER_SEARCH_PATHS = "../moo .";
+			};
+			name = Release;
+		};
+		1DEB928A08733DD80010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
+				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = YES;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = YES;
+				GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS = YES;
+				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES;
+				GCC_WARN_MISSING_PARENTHESES = YES;
+				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = YES;
+				GCC_WARN_SIGN_COMPARE = YES;
+				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_LABEL = YES;
+				GCC_WARN_UNUSED_PARAMETER = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					/opt/gtk/include/igemacintegration,
+					"/opt/gtk/include/gtk-2.0",
+					"/opt/gtk/include/glib-2.0",
+					"/opt/gtk/include/atk-1.0",
+					"/opt/gtk/include/pango-1.0",
+					/opt/gtk/include/libxml2,
+					/opt/gtk/include/cairo,
+					"/opt/gtk/lib/glib-2.0/include",
+					"/opt/gtk/lib/gtk-2.0/include",
+					/opt/gtk/include,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/gtk/lib,
+				);
+				PREBINDING = NO;
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+			};
+			name = Debug;
+		};
+		1DEB928B08733DD80010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
+				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = YES;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = YES;
+				GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS = YES;
+				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES;
+				GCC_WARN_MISSING_PARENTHESES = YES;
+				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = YES;
+				GCC_WARN_SIGN_COMPARE = YES;
+				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNKNOWN_PRAGMAS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_LABEL = YES;
+				GCC_WARN_UNUSED_PARAMETER = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					/opt/gtk/include/igemacintegration,
+					"/opt/gtk/include/gtk-2.0",
+					"/opt/gtk/include/glib-2.0",
+					"/opt/gtk/include/atk-1.0",
+					"/opt/gtk/include/pango-1.0",
+					/opt/gtk/include/libxml2,
+					/opt/gtk/include/cairo,
+					"/opt/gtk/lib/glib-2.0/include",
+					"/opt/gtk/lib/gtk-2.0/include",
+					/opt/gtk/include,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/gtk/lib,
+				);
+				PREBINDING = NO;
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+			};
+			name = Release;
+		};
+		F15F793D0DD6423100DAEB2C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMMON_DEFINES = "G_LOG_DOMAIN=\\\"Moo\\\" HAVE_CONFIG_H=1 XDG_PREFIX=_moo_edit_xdg";
+				COPY_PHASE_STRIP = NO;
+				EXECUTABLE_PREFIX = "";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(COMMON_DEFINES)",
+					"G_DISABLE_DEPRECATED=1",
+					"GTK_DISABLE_DEPRECATED=1",
+					"GDK_DISABLE_DEPRECATED=1",
+					"ENABLE_DEBUG=1",
+					"ENABLE_PROFILE=1",
+					"G_ENABLE_DEBUG=1",
+					"G_ENABLE_PROFILE=1",
+					"MOO_DEBUG_ENABLED=1",
+					"MOO_ENABLE_UNIT_TESTS=1",
+				);
+				INSTALL_PATH = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/gtk/lib,
+				);
+				MOO_BUILDDIR = "$(CONFIGURATION_BUILD_DIR)/moo";
+				MOO_SRCDIR = ../moo;
+				PREBINDING = NO;
+				PRODUCT_NAME = libmoo;
+				USER_HEADER_SEARCH_PATHS = "../moo ../doc $(MOO_BUILDDIR)";
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		F15F793E0DD6423100DAEB2C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMMON_DEFINES = "G_LOG_DOMAIN=\\\"Moo\\\" HAVE_CONFIG_H=1 XDG_PREFIX=_moo_edit_xdg";
+				COPY_PHASE_STRIP = YES;
+				EXECUTABLE_PREFIX = "";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(COMMON_DEFINES)",
+					"NDEBUG=1",
+					"G_DISABLE_CAST_CHECKS=1",
+					"G_DISABLE_ASSERT=1",
+				);
+				INSTALL_PATH = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/gtk/lib,
+				);
+				MOO_BUILDDIR = "$(CONFIGURATION_BUILD_DIR)/moo";
+				MOO_SRCDIR = ../moo;
+				PREBINDING = NO;
+				PRODUCT_NAME = libmoo;
+				USER_HEADER_SEARCH_PATHS = "../moo ../doc $(MOO_BUILDDIR)";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB928508733DD80010E9CD /* Build configuration list for PBXNativeTarget "medit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB928608733DD80010E9CD /* Debug */,
+				1DEB928708733DD80010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "medit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB928A08733DD80010E9CD /* Debug */,
+				1DEB928B08733DD80010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F15F793C0DD6423100DAEB2C /* Build configuration list for PBXNativeTarget "libmoo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F15F793D0DD6423100DAEB2C /* Debug */,
+				F15F793E0DD6423100DAEB2C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}

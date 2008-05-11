@@ -74,8 +74,6 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
     MOO_CFLAGS="-I$moo_top_src_dir/$1/mooutils/newgtk/glib-2.8 $MOO_CFLAGS"
   fi
 
-  MOO_CFLAGS="$MOO_CFLAGS -DMOO_DATA_DIR=\\\"${MOO_DATA_DIR}\\\" -DMOO_LIB_DIR=\\\"${MOO_LIB_DIR}\\\""
-
   if test x$MOO_USE_GTKHTML = xyes; then
     MOO_CFLAGS="$MOO_CFLAGS $GTKHTML_CFLAGS"
     MOO_LIBS="$MOO_LIBS $GTKHTML_LIBS"

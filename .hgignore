@@ -1,6 +1,6 @@
 \.(deps|libs|svn)/
 \.(l?[oa]|rej|orig|pyc|out|exe|bak)$
-\~$
+(\~|\.DS_Store)$
 ^(\..*\.session|.*\.kdevelop\.pcs|.*\.kdevses)$
 Makefile(\.in)?$
 ^(autom4te\.cache|build)/
@@ -36,3 +36,6 @@ Makefile(\.in)?$
 ^winbuild/.*\.(aps|ncb|suo)$
 ^winbuild/mingwds$
 ^winbuild/devcpp$
+^xcode/build$
+^xcode/medit.xcodeproj/.*\.mode1$
+^xcode/medit.xcodeproj/.*\.pbxuser$

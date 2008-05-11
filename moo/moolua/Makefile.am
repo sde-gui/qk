@@ -1,6 +1,13 @@
 noinst_LTLIBRARIES = liblua.la libmoolua.la
 
-# a hack, needed for 'make whatever.lo' work
+if MOO_OS_DARWIN
+MOO_LUA_CFLAGS="-DLUA_USE_MACOSX"
+else
+if !MOO_OS_MINGW
+MOO_LUA_CFLAGS="-DLUA_USE_POSIX -DLUA_USE_DLOPEN"
+endif
+endif
+
 AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\

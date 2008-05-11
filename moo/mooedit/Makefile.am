@@ -183,11 +183,11 @@ CLEANFILES += $(glade_sources)
 EXTRA_DIST = $(glade_files)
 
 XML2H = $(srcdir)/../mooutils/xml2h.sh
-mooedit-ui.h: mooedit-ui.xml $(XML2H)
-	$(SHELL) $(XML2H) mooedit_ui_xml $(srcdir)/mooedit-ui.xml > $@.tmp && \
+mooedit-ui.h: mooedit.ui $(XML2H)
+	$(SHELL) $(XML2H) mooedit_ui_xml $(srcdir)/mooedit.ui > $@.tmp && \
 	mv $@.tmp $@
-medit-ui.h: medit-ui.xml $(XML2H)
-	$(SHELL) $(XML2H) medit_ui_xml $(srcdir)/medit-ui.xml > $@.tmp && \
+medit-ui.h: medit.ui $(XML2H)
+	$(SHELL) $(XML2H) medit_ui_xml $(srcdir)/medit.ui > $@.tmp && \
 	mv $@.tmp $@
 nodist_mooedit_sources += mooedit-ui.h medit-ui.h
 BUILT_SOURCES += mooedit-ui.h medit-ui.h
@@ -223,8 +223,8 @@ endif MOO_ENABLE_GENERATED_FILES
 EXTRA_DIST +=				\
 	$(mooedit_tools_DATA)		\
 	$(mooedit_lua_DATA)		\
-	medit-ui.xml			\
-	mooedit-ui.xml
+	medit.ui			\
+	mooedit.ui
 
 if GTK_2_10
 mooedit_sources += $(mooedit_printing_sources)

@@ -14,7 +14,7 @@ typedef EggSMClientClass EggSMClientDummyClass;
 G_DEFINE_TYPE (EggSMClientDummy, egg_sm_client_dummy, EGG_TYPE_SM_CLIENT)
 
 static void
-egg_sm_client_dummy_init (EggSMClientDummy *osxclient)
+egg_sm_client_dummy_init (G_GNUC_UNUSED EggSMClientDummy *client)
 {
 }
 

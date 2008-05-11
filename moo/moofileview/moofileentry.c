@@ -28,7 +28,6 @@
 #define MOD_MASK() (gtk_accelerator_get_default_mod_mask ())
 
 #define COMPLETION_POPUP_LEN 15
-#define COLUMN_FILE MOO_FOLDER_MODEL_COLUMN_FILE
 
 #ifndef __WIN32__
 #define CASE_SENSITIVE_DEFAULT   TRUE

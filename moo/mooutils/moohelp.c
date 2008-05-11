@@ -1,4 +1,5 @@
 #include "config.h"
+#include "moo-config-dirs.h"
 #include "moohelp.h"
 #include "mooaccel.h"
 #include "mooutils-misc.h"

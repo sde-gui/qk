@@ -20,7 +20,7 @@
   <gtk-cvs>
    <build_dir>/Users/muntyan/projects/gtk/moo</build_dir>
    <configure>
-    <args>--enable-debug --enable-all-warnings --prefix=$PREFIX --with-fam --with-mooterm --enable-libmoo</args>
+    <args>--enable-debug --enable-all-warnings --prefix=$PREFIX --enable-unit-tests --enable-project</args>
     <vars>
      <var name="CFLAGS">-g</var>
     </vars>

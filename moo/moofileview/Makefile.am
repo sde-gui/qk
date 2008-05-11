@@ -61,8 +61,8 @@ symlink.h: $(moofileview_pixmaps)
 		SYMLINK_ARROW_SMALL $(srcdir)/symlink-small.png > $@.tmp && mv $@.tmp $@
 
 XML2H = $(srcdir)/../mooutils/xml2h.sh
-moofileview-ui.h: $(srcdir)/moofileview-ui.xml $(XML2H)
-	$(SHELL) $(XML2H) moofileview_ui_xml $(srcdir)/moofileview-ui.xml > $@.tmp && \
+moofileview-ui.h: $(srcdir)/moofileview.ui $(XML2H)
+	$(SHELL) $(XML2H) moofileview_ui_xml $(srcdir)/moofileview.ui > $@.tmp && \
 	mv $@.tmp $@
 
 @MOO_GLADE_SUBDIR_RULE@
@@ -78,7 +78,7 @@ CLEANFILES += $(glade_sources)
 EXTRA_DIST = $(glade_files)
 
 EXTRA_DIST +=				\
-	moofileview-ui.xml		\
+	moofileview.ui			\
 	$(moofileview_pixmaps)
 
 noinst_LTLIBRARIES = libmoofileview.la

@@ -26,4 +26,10 @@ AC_DEFUN_ONCE([MOO_AC_SET_DIRS],[
 
   moo_includedir=${includedir}/$MOO_PACKAGE_NAME
   AC_SUBST(moo_includedir)
+
+  MOO_LOCALE_DIR="${datadir}/locale"
+  AC_SUBST(MOO_LOCALE_DIR)
+
+  MOO_HELP_DIR="${htmldir}/help"
+  AC_SUBST(MOO_HELP_DIR)
 ])

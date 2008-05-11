@@ -10,8 +10,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_APP_INPUT__
-#define __MOO_APP_INPUT__
+#ifndef MOO_APP_INPUT_H
+#define MOO_APP_INPUT_H
 
 #include <glib.h>
 
@@ -41,4 +41,4 @@ const char  *_moo_app_input_get_path    (void);
 
 G_END_DECLS
 
-#endif /* __MOO_APP_INPUT__ */
+#endif /* MOO_APP_INPUT_H */
