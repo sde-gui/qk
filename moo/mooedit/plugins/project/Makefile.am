@@ -23,7 +23,6 @@ libproject_la_SOURCES =			\
 	project.h			\
 	project.m
 
-@MOO_GLADE_RULE@
 # nodist_libfileselector_la_SOURCES =	\
 # 	moofileselector-glade.h		\
 # 	moofileselector-prefs-glade.h

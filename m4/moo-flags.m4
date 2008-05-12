@@ -98,18 +98,4 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   AC_SUBST(MOO_LIBS)
 
   _MOO_AC_CONFIGARGS_H
-
-  MOO_INI_IN_IN_RULE='%.ini.desktop.in: %.ini.desktop.in.in $(top_builddir)/config.status ; cd $(top_builddir) && $(SHELL) ./config.status --file=$(subdir)/[$]@'
-  MOO_INI_IN_RULE='%.ini: %.ini.in $(top_builddir)/config.status ; cd $(top_builddir) && $(SHELL) ./config.status --file=$(subdir)/[$]@'
-  MOO_WIN32_RC_RULE='%.res: %.rc.in $(top_builddir)/config.status ; cd $(top_builddir) && $(SHELL) ./config.status --file=$(subdir)/[$]*.rc && cd $(subdir) && $(WINDRES) -i [$]*.rc --input-format=rc -o [$]@ -O coff && rm [$]*.rc'
-  AC_SUBST(MOO_INI_IN_IN_RULE)
-  AC_SUBST(MOO_INI_IN_RULE)
-  AC_SUBST(MOO_WIN32_RC_RULE)
-
-  MOO_XML2H='$(top_srcdir)/moo/mooutils/xml2h.sh'
-  MOO_GLADE_SUBDIR_RULE='%-glade.h: glade/%.glade $(MOO_XML2H) ; $(SHELL) $(top_srcdir)/moo/mooutils/xml2h.sh `basename "[$]*" | sed -e "s/-/_/"`_glade_xml [$]< > [$]@.tmp && mv [$]@.tmp [$]@'
-  MOO_GLADE_RULE='%-glade.h: %.glade $(MOO_XML2H) ; $(SHELL) $(top_srcdir)/moo/mooutils/xml2h.sh `basename "[$]*" | sed -e "s/-/_/"`_glade_xml [$]< > [$]@.tmp && mv [$]@.tmp [$]@'
-  AC_SUBST(MOO_XML2H)
-  AC_SUBST(MOO_GLADE_SUBDIR_RULE)
-  AC_SUBST(MOO_GLADE_RULE)
 ])

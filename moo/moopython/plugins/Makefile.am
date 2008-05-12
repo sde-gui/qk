@@ -8,17 +8,13 @@ endif
 moopython_pluginsdir = ${MOO_PLUGINS_DIR}
 plugins_libdir = ${MOO_PLUGINS_DIR}/lib
 
-ini_in_in_files =			\
+EXTRA_DIST =
+CLEANFILES =
+ini_desktop_in_in_files =		\
 	terminal.ini.desktop.in.in	\
 	python.ini.desktop.in.in	\
 	pycmd.ini.desktop.in.in
-
-ini_in_files = $(ini_in_in_files:.ini.desktop.in.in=.ini.desktop.in)
-ini_files = $(ini_in_files:.ini.desktop.in=.ini)
-
-@MOO_INI_IN_IN_RULE@
-@MOO_INTLTOOL_INI_RULE@
-CLEANFILES = $(ini_files) $(ini_in_files)
+include ../../../mk/ini-desktop.mk
 
 plugins =			\
 	terminal.py		\
@@ -26,7 +22,7 @@ plugins =			\
 	pycmd.py
 
 moopython_plugins_DATA =	\
-	$(ini_files)		\
+	$(ini_desktop_files)	\
 	$(plugins)
 
 plugins_lib_DATA =		\
@@ -37,8 +33,7 @@ nobase_plugins_lib_DATA =	\
 	medit/__init__.py	\
 	medit/runpython.py
 
-EXTRA_DIST =			\
+EXTRA_DIST +=			\
     $(nobase_plugins_lib_DATA)	\
     $(plugins_lib_DATA)		\
-    $(plugins)			\
-    $(ini_in_in_files)
+    $(plugins)

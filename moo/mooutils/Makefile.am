@@ -165,20 +165,14 @@ EXTRA_DIST =				\
 	pixmaps/attach.png		\
 	pixmaps/keepontop.png
 
-nodist_mooutils_sources =
 BUILT_SOURCES =
 CLEANFILES =
 
-@MOO_GLADE_SUBDIR_RULE@
 glade_files =				\
 	glade/mooaccelbutton.glade	\
 	glade/mooaccelprefs.glade	\
 	glade/moologwindow.glade
-glade_sources = $(patsubst glade/%.glade,%-glade.h,$(glade_files))
-nodist_mooutils_sources += $(glade_sources)
-BUILT_SOURCES += $(glade_sources)
-CLEANFILES += $(glade_sources)
-EXTRA_DIST += $(glade_files)
+include ../../mk/glade.mk
 
 mooutils_pixmaps =			\
 	$(srcdir)/pixmaps/hide.png	\
@@ -190,7 +184,6 @@ mooutils_pixmaps =			\
 
 CLEANFILES += stock-moo.h stock-medit.h
 BUILT_SOURCES += stock-moo.h stock-medit.h
-nodist_mooutils_sources += stock-moo.h stock-medit.h
 stock-moo.h: $(mooutils_pixmaps)
 	gdk-pixbuf-csource --static --build-list			\
 		MOO_HIDE_ICON $(srcdir)/pixmaps/hide.png		\
@@ -205,18 +198,10 @@ stock-medit.h: pixmaps/medit.png
 		MEDIT_ICON $(srcdir)/pixmaps/medit.png			\
 			> $@.tmp && mv $@.tmp $@
 
-BUILT_SOURCES += marshals.h
-nodist_mooutils_sources += marshals.h
-CLEANFILES += marshals.h
-EXTRA_DIST += marshals.list
-marshals.h: marshals.list
-	glib-genmarshal --prefix=_moo_marshal --header	\
-	       $(srcdir)/marshals.list > $@.tmp &&	\
-	mv $@.tmp $@
+include ../../mk/marshals.mk
 
 noinst_LTLIBRARIES = libmooutils.la
 libmooutils_la_SOURCES = $(mooutils_sources)
-nodist_libmooutils_la_SOURCES =	$(nodist_mooutils_sources)
 libmooutils_la_LIBADD = $(libs)
 
 if GDK_QUARTZ

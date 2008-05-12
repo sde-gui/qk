@@ -59,13 +59,11 @@ mootermparser_yacc: mootermparser-yacc.y
 	touch mootermparser_yacc
 	bison -o $(srcdir)/mootermparser-yacc.c -d $(srcdir)/mootermparser-yacc.y
 
-@MOO_GLADE_SUBDIR_RULE@
+BUILT_SOURCES =
+CLEANFILES =
+
 glade_files = glade/mootermprefs.glade
-glade_sources = $(patsubst glade/%.glade,%-glade.h,$(glade_files))
-nodist_mooterm_sources = $(glade_sources)
-BUILT_SOURCES = $(glade_sources)
-CLEANFILES = $(glade_sources)
-EXTRA_DIST += $(glade_files)
+include ../../mk/glade.mk
 
 noinst_LTLIBRARIES =
 
@@ -116,11 +114,4 @@ mootermhelper_res.res: mootermhelper_res.rc
 CLEANFILES += mootermhelper_res.res
 endif
 
-BUILT_SOURCES += marshals.h
-nodist_libmooterm_la_SOURCES += marshals.h
-CLEANFILES += marshals.h
-EXTRA_DIST += marshals.list
-marshals.h: marshals.list
-	glib-genmarshal --prefix=_moo_marshal --header	\
-	       $(srcdir)/marshals.list > $@.tmp &&	\
-	mv $@.tmp $@
+include ../../mk/marshals.mk

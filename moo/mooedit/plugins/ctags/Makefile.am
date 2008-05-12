@@ -21,7 +21,6 @@ libctags_la_SOURCES =			\
 	ctags-view.c			\
 	ctags-view.h
 
-@MOO_GLADE_RULE@
 # nodist_libfileselector_la_SOURCES =	\
 # 	moofileselector-glade.h		\
 # 	moofileselector-prefs-glade.h

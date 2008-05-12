@@ -160,7 +160,8 @@ stamp-mooedit-enums-c: $(mooedit_enums_headers) Makefile
 	&& rm -f xgen-gtbc \
 	&& echo timestamp > $(@F)
 
-@MOO_GLADE_SUBDIR_RULE@
+EXTRA_DIST =
+
 glade_files =				\
 	glade/mooeditprefs-general.glade\
 	glade/mooeditprefs-view.glade	\
@@ -176,55 +177,17 @@ glade_files =				\
 	glade/mooquicksearch.glade	\
 	glade/moostatusbar.glade	\
 	glade/mooprintpreview.glade
-glade_sources = $(patsubst glade/%.glade,%-glade.h,$(glade_files))
-nodist_mooedit_sources = $(glade_sources)
-BUILT_SOURCES += $(glade_sources)
-CLEANFILES += $(glade_sources)
-EXTRA_DIST = $(glade_files)
+include ../../mk/glade.mk
 
-XML2H = $(srcdir)/../mooutils/xml2h.sh
-mooedit-ui.h: mooedit.ui $(XML2H)
-	$(SHELL) $(XML2H) mooedit_ui_xml $(srcdir)/mooedit.ui > $@.tmp && \
-	mv $@.tmp $@
-medit-ui.h: medit.ui $(XML2H)
-	$(SHELL) $(XML2H) medit_ui_xml $(srcdir)/medit.ui > $@.tmp && \
-	mv $@.tmp $@
-nodist_mooedit_sources += mooedit-ui.h medit-ui.h
-BUILT_SOURCES += mooedit-ui.h medit-ui.h
-CLEANFILES += mooedit-ui.h medit-ui.h
+ui_files = medit.ui mooedit.ui
+include ../../mk/ui.mk
 
-packagesdir = $(mimedir)/packages
-packages_DATA = moo.xml
-update_mime = update-mime-database $(DESTDIR)${mimedir}
-@MOO_INTLTOOL_XML_RULE@
-EXTRA_DIST += moo.xml.in
-CLEANFILES += moo.xml
-
-if MOO_ENABLE_GENERATED_FILES
-if !MOO_OS_MINGW
-install-data-hook:
-	if echo "Updating mime database... " && $(update_mime); then		\
-		echo "Done.";							\
-	else									\
-		echo "*** ";							\
-		echo "*** Mime database not updated. After install, run this:";	\
-		echo $(update_mime);						\
-		echo "*** ";							\
-	fi
-uninstall-hook:
-	if echo "Updating mime database" && $(update_mime); then echo "Done."; else echo "Failed."; fi
-else MOO_OS_MINGW
-install-data-hook:
-	cp /usr/share/mime/packages/freedesktop.org.xml $(DESTDIR)${mimedir}/packages/ && \
-	$(update_mime)
-endif MOO_OS_MINGW
-endif MOO_ENABLE_GENERATED_FILES
+mime_in_files = moo.xml.in
+include ../../mk/mime.mk
 
 EXTRA_DIST +=				\
 	$(mooedit_tools_DATA)		\
-	$(mooedit_lua_DATA)		\
-	medit.ui			\
-	mooedit.ui
+	$(mooedit_lua_DATA)
 
 if GTK_2_10
 mooedit_sources += $(mooedit_printing_sources)
@@ -240,7 +203,6 @@ endif
 
 noinst_LTLIBRARIES = libmooedit.la
 libmooedit_la_SOURCES = $(mooedit_sources)
-nodist_libmooedit_la_SOURCES = $(nodist_mooedit_sources)
 
 libmooedit_la_LIBADD = plugins/libmooeditplugins.la gtksourceview/libgtksourceview.la
 
@@ -263,11 +225,4 @@ mooedit_include_HEADERS = $(mooedit_include_headers)
 nodist_mooedit_include_HEADERS = $(nodist_mooedit_include_headers)
 endif
 
-BUILT_SOURCES += marshals.h
-nodist_libmooedit_la_SOURCES += marshals.h
-CLEANFILES += marshals.h
-EXTRA_DIST += marshals.list
-marshals.h: marshals.list
-	glib-genmarshal --prefix=_moo_marshal --header	\
-	       $(srcdir)/marshals.list > $@.tmp &&	\
-	mv $@.tmp $@
+include ../../mk/marshals.mk

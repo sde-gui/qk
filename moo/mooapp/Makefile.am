@@ -1,10 +1,5 @@
 SUBDIRS = smclient
 
-BUILT_SOURCES =			\
-	mooappabout-glade.h
-CLEANFILES =			\
-	mooappabout-glade.h
-
 mooapp_include_headers =	\
 	mooapp.h
 
@@ -26,15 +21,16 @@ mooapp_sources =			\
 	moolinklabel.h			\
 	moolinklabel.c
 
-EXTRA_DIST =				\
-	glade/mooappabout.glade
-
-@MOO_GLADE_SUBDIR_RULE@
-
 noinst_LTLIBRARIES = libmooapp.la
 libmooapp_la_SOURCES = $(mooapp_sources)
-nodist_libmooapp_la_SOURCES = mooappabout-glade.h
 libmooapp_la_LIBADD = smclient/libsmclient.la
+
+BUILT_SOURCES =
+CLEANFILES =
+EXTRA_DIST =
+
+glade_files = glade/mooappabout.glade
+include ../../mk/glade.mk
 
 AM_CFLAGS =			\
 	-I..			\
@@ -44,11 +40,4 @@ AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
 
-BUILT_SOURCES += marshals.h
-nodist_libmooapp_la_SOURCES += marshals.h
-CLEANFILES += marshals.h
-EXTRA_DIST += marshals.list
-marshals.h: marshals.list
-	glib-genmarshal --prefix=_moo_marshal --header	\
-	       $(srcdir)/marshals.list > $@.tmp &&	\
-	mv $@.tmp $@
+include ../../mk/marshals.mk

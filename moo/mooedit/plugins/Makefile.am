@@ -10,8 +10,6 @@ EXTRA_DIST =
 BUILT_SOURCES =
 CLEANFILES =
 
-@MOO_GLADE_RULE@
-
 AM_CFLAGS =			\
 	-I../..			\
 	-I$(top_builddir)	\
@@ -26,7 +24,7 @@ AM_OBJCFLAGS = $(AM_CFLAGS)
 #
 noinst_LTLIBRARIES += libfileselector.la
 
-EXTRA_DIST +=				\
+glade_files =				\
 	moofileselector.glade		\
 	moofileselector-prefs.glade
 
@@ -34,17 +32,6 @@ libfileselector_la_SOURCES =		\
 	moofileselector-prefs.c		\
 	moofileselector.c		\
 	moofileselector.h
-
-nodist_libfileselector_la_SOURCES =	\
-	moofileselector-glade.h		\
-	moofileselector-prefs-glade.h
-
-BUILT_SOURCES +=			\
-	moofileselector-glade.h		\
-	moofileselector-prefs-glade.h
-CLEANFILES +=				\
-	moofileselector-glade.h		\
-	moofileselector-prefs-glade.h
 
 
 ###########################################################################
@@ -62,11 +49,9 @@ libmooeditplugins_la_SOURCES =	\
 	moofilelist.c		\
 	moofind.c
 
-nodist_libmooeditplugins_la_SOURCES = moofind-glade.h
+glade_files += moofind.glade
 
 EXTRA_DIST +=			\
-	moofind.glade		\
 	moofind.c
 
-BUILT_SOURCES += moofind-glade.h
-CLEANFILES += moofind-glade.h
+include ../../../mk/glade.mk

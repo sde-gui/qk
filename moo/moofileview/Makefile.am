@@ -41,49 +41,33 @@ moofileview_includedir = $(moo_includedir)/moofileview
 moofileview_include_HEADERS = $(moofileview_headers)
 endif
 
+
 moofileview_pixmaps =		\
 	symlink.png		\
 	symlink-small.png
-
-nodist_moofileview_sources =	\
-	moofileview-ui.h	\
-	symlink.h
-BUILT_SOURCES =			\
-	moofileview-ui.h	\
-	symlink.h
-CLEANFILES =			\
-	moofileview-ui.h	\
-	symlink.h
+BUILT_SOURCES = symlink.h
+CLEANFILES = symlink.h
+EXTRA_DIST = $(moofileview_pixmaps)
 
 symlink.h: $(moofileview_pixmaps)
 	gdk-pixbuf-csource --static --build-list	\
 		SYMLINK_ARROW $(srcdir)/symlink.png	\
 		SYMLINK_ARROW_SMALL $(srcdir)/symlink-small.png > $@.tmp && mv $@.tmp $@
 
-XML2H = $(srcdir)/../mooutils/xml2h.sh
-moofileview-ui.h: $(srcdir)/moofileview.ui $(XML2H)
-	$(SHELL) $(XML2H) moofileview_ui_xml $(srcdir)/moofileview.ui > $@.tmp && \
-	mv $@.tmp $@
 
-@MOO_GLADE_SUBDIR_RULE@
 glade_files =				\
 	glade/moofileview-drop.glade	\
 	glade/moofileprops.glade	\
 	glade/moocreatefolder.glade	\
 	glade/moobookmark-editor.glade
-glade_sources = $(patsubst glade/%.glade,%-glade.h,$(glade_files))
-nodist_moofileview_sources += $(glade_sources)
-BUILT_SOURCES += $(glade_sources)
-CLEANFILES += $(glade_sources)
-EXTRA_DIST = $(glade_files)
+include ../../mk/glade.mk
 
-EXTRA_DIST +=				\
-	moofileview.ui			\
-	$(moofileview_pixmaps)
+ui_files = moofileview.ui
+include ../../mk/ui.mk
+
 
 noinst_LTLIBRARIES = libmoofileview.la
 libmoofileview_la_SOURCES = $(moofileview_sources)
-nodist_libmoofileview_la_SOURCES = $(nodist_moofileview_sources)
 
 AM_CFLAGS =			\
 	-I..			\
@@ -91,11 +75,5 @@ AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
 
-BUILT_SOURCES += marshals.h
-nodist_libmoofileview_la_SOURCES += marshals.h
-CLEANFILES += marshals.h
-EXTRA_DIST += marshals.list
-marshals.h: marshals.list
-	glib-genmarshal --prefix=_moo_marshal --header	\
-	       $(srcdir)/marshals.list > $@.tmp &&	\
-	mv $@.tmp $@
+
+include ../../mk/marshals.mk

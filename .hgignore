@@ -10,11 +10,10 @@ Makefile(\.in)?$
 ^po(-gsv)?/(\.intltool-merge-cache|POTFILES|stamp-it|missing|moo\.pot|notexist|Makefile\.in\.in)
 ^tests/pyapp\.py$
 ^moo/moo(-config\.h|\.pc)$
-^moo/.*-glade\.h$
 ^moo/mooedit/gtksourceview/.*-mangled\.[ch]$
-^moo/mooedit/(language-specs/moo\.xml|m(oo)?edit-ui\.h|stamp-mooedit-enums\.[ch])$
+^moo/mooedit/(language-specs/moo\.xml|stamp-mooedit-enums\.[ch])$
 ^moo/mooedit/language-specs/testdir
-^moo/moofileview/(moofileview-ui\.h|symlink\.h)$
+^moo/moofileview/(symlink\.h)$
 ^moo/moopython/plugins/(pyproject/project-plugin|python|terminal)\.ini$
 ^moo/moopython/pygtk/(moo(app|edit|term|utils)?-mod\.h|moo(app|edit|term|utils)-pygtk\.c)$
 ^moo/mooterm/termhelper_res\.rc$

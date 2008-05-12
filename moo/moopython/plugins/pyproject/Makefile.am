@@ -1,13 +1,11 @@
-ini_in_in_files = project-plugin.ini.desktop.in.in
-@MOO_INI_IN_IN_RULE@
-@MOO_INTLTOOL_INI_RULE@
-ini_in_files = $(ini_in_in_files:.ini.desktop.in.in=.ini.desktop.in)
-ini_files = $(ini_in_files:.ini.desktop.in=.ini)
-CLEANFILES = $(ini_files) $(ini_in_files)
+EXTRA_DIST =
+CLEANFILES =
+
+ini_desktop_in_in_files = project-plugin.ini.desktop.in.in
+include ../../../../mk/ini-desktop.mk
 
 inidir = ${MOO_PLUGINS_DIR}
-ini_DATA =				\
-	$(ini_files)
+ini_DATA = $(ini_desktop_files)
 
 plugindir = $(inidir)/project
 nobase_plugin_DATA =			\
@@ -46,7 +44,6 @@ nobase_projects_DATA =			\
 	projects/pyproj/optdialog.py	\
 	projects/pyproj/options.glade
 
-EXTRA_DIST =				\
+EXTRA_DIST +=				\
     $(nobase_plugin_DATA)		\
-    $(ini_in_in_files)			\
     $(nobase_projects_DATA)

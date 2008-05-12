@@ -8,9 +8,6 @@ if MOO_ENABLE_PROJECT
 AM_CFLAGS += -DMOO_ENABLE_PROJECT
 endif
 
-EXTRA_DIST =		\
-	medit.rc.in
-
 bin_PROGRAMS = medit
 
 medit_SOURCES = medit-credits.h medit-app.c mem-debug.h
@@ -21,13 +18,15 @@ medit_LDFLAGS = -export-dynamic $(PYTHON_EXTRA_LDFLAGS) $(medit_res_ldflag)
 medit_LDADD = ../moo/libmoo.la
 
 if MOO_OS_MINGW
+rc_in_files = medit.rc.in
 medit_LDFLAGS += -mwindows
-CLEANFILES = medit.res
-@MOO_WIN32_RC_RULE@
 medit_res_ldflag = -Wl,medit.res
-BUILT_SOURCES += medit.res
 nodist_medit_SOURCES += medit.res
 endif
+
+EXTRA_DIST =
+CLEANFILES =
+include ../mk/rc.mk
 
 XML2H = $(srcdir)/../moo/mooutils/xml2h.sh
 medit-credits.h: ../THANKS $(XML2H)

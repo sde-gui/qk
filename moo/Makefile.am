@@ -3,10 +3,10 @@ AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
 
-rc_in_files = libmoo.rc.in moo.rc.in pymoo.rc.in
 ini_in_files = moopython/pymoo.ini.in
 ini_files = $(ini_in_files:.ini.in=.ini)
-@MOO_INI_IN_RULE@
+%.ini: %.ini.in $(top_builddir)/config.status
+	cd $(top_builddir) && $(SHELL) ./config.status --file=$(subdir)/$@
 CLEANFILES = $(ini_files)
 
 moo-config-dirs.h: moo-config-dirs.h.stamp
@@ -124,12 +124,12 @@ marshals.c: marshals.list
 marshals.list: $(marshals)
 	( cat $(marshals) | uniq ) > marshals.list.tmp && mv marshals.list.tmp marshals.list
 
+rc_in_files = libmoo.rc.in moo.rc.in pymoo.rc.in
+include ../mk/rc.mk
+
 if MOO_OS_MINGW
-@MOO_WIN32_RC_RULE@
 CLEANFILES += libmoo.res
 libmoo_res_ldflag = -Wl,libmoo.res
-BUILT_SOURCES += libmoo.res
-CLEANFILES += libmoo.res
 nodist_libmoo_la_SOURCES += libmoo.res
 libs += -lwsock32
 endif
@@ -195,8 +195,6 @@ endif MOO_BUILD_PYTHON_PLUGIN
 #
 else !MOO_OS_UNIX
 
-CLEANFILES += pymoo.res moo.res
-BUILT_SOURCES += pymoo.res moo.res
 nodist_pymoo_la_SOURCES = pymoo.res
 nodist_moo_la_SOURCES = moo.res
 

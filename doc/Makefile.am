@@ -51,7 +51,7 @@ uninstall-hook:
 
 dist-hook:
 	if test -f stamp-help; then \
-	  cp -pR help/ $(distdir)/ ; \
+	  cp -pR help $(distdir)/ ; \
 	else \
-	  cp -pR $(srcdir)/help/ $(distdir)/ ; \
+	  cp -pR $(srcdir)/help $(distdir)/ ; \
 	fi
