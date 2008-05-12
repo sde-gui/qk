@@ -121,7 +121,12 @@ moo_edit_action_set_file_filter (MooEditAction *action,
                                  const char    *string)
 {
     _moo_edit_filter_free (action->priv->file_filter);
-    action->priv->file_filter = _moo_edit_filter_new (string);
+
+    if (string && string[0])
+        action->priv->file_filter = _moo_edit_filter_new (string);
+    else
+        action->priv->file_filter = NULL;
+
     g_object_notify (G_OBJECT (action), "file-filter");
 }
 
