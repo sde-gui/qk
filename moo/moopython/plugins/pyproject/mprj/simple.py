@@ -51,6 +51,8 @@ class SimpleProject(Project):
                 self.filesel = plugin.call_method('get-widget', self.window)
                 if self.filesel:
                     last_dir = self.__file_selector_dir
+                    if last_dir and not os.path.isdir(last_dir):
+                        last_dir = None
                     if not last_dir:
                         last_dir = self.topdir
                     self.filesel.chdir(last_dir)
