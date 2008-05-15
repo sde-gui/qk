@@ -1125,8 +1125,7 @@ write_data (HANDLE      file,
 }
 
 gboolean
-_moo_app_input_send_msg (const char *appname,
-                         const char *name,
+_moo_app_input_send_msg (const char *name,
                          const char *data,
                          gssize      len)
 {
@@ -1134,6 +1133,7 @@ _moo_app_input_send_msg (const char *appname,
     char *pipe_name;
     HANDLE pipe_handle;
     gboolean result = FALSE;
+    const char *appname = g_get_prgname ();
 
     g_return_val_if_fail (appname != NULL, FALSE);
     g_return_val_if_fail (data != NULL, FALSE);
