@@ -259,8 +259,7 @@ _moo_win32_lame_parse_cmd_line (const char  *cmd_line,
 }
 
 
-#if !defined(__MINGW32__) || \
-    (__MINGW32_MAJOR_VERSION == 3 && __MINGW32_MINOR_VERSION <= 7)
+#ifndef HAVE_GETTIMEOFDAY
 int
 _moo_win32_gettimeofday (struct timeval *tp,
                          G_GNUC_UNUSED gpointer tzp)
@@ -283,7 +282,7 @@ _moo_win32_gettimeofday (struct timeval *tp,
 
      return 0;
 }
-#endif /* __MINGW32__ */
+#endif /* !HAVE_GETTIMEOFDAY */
 
 
 int

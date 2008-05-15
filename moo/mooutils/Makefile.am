@@ -215,6 +215,7 @@ AM_CFLAGS =					\
 	-I$(top_builddir)/doc			\
 	$(MOO_CFLAGS)				\
 	$(MOO_DEBUG_CFLAGS)			\
+	$(MOO_WIN32_CFLAGS)			\
 	$(objc_flag)
 
 if MOO_INSTALL_HEADERS
