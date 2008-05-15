@@ -28,7 +28,11 @@ uninstall-hook:
 	if echo "Updating mime database" && $(update_mime); then echo "Done."; else echo "Failed."; fi
 else MOO_OS_MINGW
 install-data-hook:
-	cp /usr/share/mime/packages/freedesktop.org.xml $(DESTDIR)${mimedir}/packages/ && \
+	if [ -e /usr/share/mime/packages/freedesktop.org.xml ]; then \
+	  cp /usr/share/mime/packages/freedesktop.org.xml $(DESTDIR)${mimedir}/packages/ ; \
+	elif [ -e /opt/gtk/share/mime/packages/freedesktop.org.xml ]; then \
+	  cp /opt/gtk/share/mime/packages/freedesktop.org.xml $(DESTDIR)${mimedir}/packages/ ; \
+	fi; \
 	$(update_mime)
 endif MOO_OS_MINGW
 endif MOO_ENABLE_GENERATED_FILES
