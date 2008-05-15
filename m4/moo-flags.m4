@@ -23,6 +23,7 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   MOO_AC_PYTHON
   dnl must be called after MOO_AC_PYTHON
   MOO_AC_LIB
+  MOO_AC_TOOLS([$1])
 
   MOO_ENABLE_GENERATED_FILES="yes"
   AC_ARG_ENABLE(generated-files,
@@ -83,6 +84,11 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
     MOO_CFLAGS="$MOO_CFLAGS -DWIN32_LEAN_AND_MEAN -DUNICODE"
     MOO_WIN32_CFLAGS="-I$moo_top_src_dir/$1/mooutils/moowin32/mingw"
     AC_DEFINE(HAVE_MMAP, [1], [using fake mmap on windows])
+
+    # gettimeofday is present in recent mingw
+    AC_CHECK_FUNC(gettimeofday,[:],[
+      MOO_WIN32_CFLAGS="$MOO_WIN32_CFLAGS -I$moo_top_src_dir/$1/mooutils/moowin32/ms"
+    ])
   fi
 
   ################################################################################

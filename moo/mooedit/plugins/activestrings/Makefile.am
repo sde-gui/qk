@@ -17,7 +17,6 @@ astrings_sources =		\
 BUILT_SOURCES =			\
 	as-plugin-glade.h
 
-XML2H = $(srcdir)/../../../mooutils/xml2h.sh
 as-plugin-glade.h: as-plugin.glade $(XML2H)
 	$(SHELL) $(XML2H) AS_PLUGIN_GLADE_UI $(srcdir)/as-plugin.glade > $@.tmp && \
 	mv $@.tmp $@
