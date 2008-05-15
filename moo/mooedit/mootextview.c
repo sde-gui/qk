@@ -789,6 +789,12 @@ moo_text_view_dispose (GObject *object)
     GSList *l;
     MooTextView *view = MOO_TEXT_VIEW (object);
 
+    if (view->priv->clipboard)
+    {
+        view->priv->clipboard->view = NULL;
+        view->priv->clipboard = NULL;
+    }
+
     if (view->priv->indenter)
     {
         g_object_unref (view->priv->indenter);
@@ -1617,7 +1623,8 @@ moo_text_view_move_cursor (gpointer view,
 
         mview = MOO_TEXT_VIEW (view);
         mview->priv->move_cursor_idle =
-            moo_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
+            moo_idle_add_full (G_PRIORITY_HIGH_IDLE + 9, /* between gtktextview's first validate priority and
+                                                          * GTK_PRIORITY_RESIZE */
                                (GSourceFunc) do_move_cursor,
                                g_memdup (&scroll, sizeof scroll),
                                g_free);
@@ -1891,33 +1898,30 @@ static void
 get_clipboard (G_GNUC_UNUSED GtkClipboard *clipboard,
                GtkSelectionData *selection_data,
                guint info,
-               gpointer view)
+               gpointer data)
 {
-    char **contents;
-    char *text;
+    MooTextViewClipboard *contents = data;
 
     if (info == TARGET_MOO_TEXT_VIEW)
-    {
         moo_selection_data_set_pointer (selection_data,
                                         gdk_atom_intern ("MOO_TEXT_VIEW", FALSE),
-                                        view);
-        return;
-    }
-
-    contents = g_object_get_data (view, "moo-text-view-clipboard");
-    g_return_if_fail (contents != NULL);
-
-    text = g_strjoinv ("", contents);
-    gtk_selection_data_set_text (selection_data, text, -1);
-    g_free (text);
+                                        contents->view);
+    else
+        gtk_selection_data_set_text (selection_data, contents->text, -1);
 }
 
 
 static void
 clear_clipboard (G_GNUC_UNUSED GtkClipboard *clipboard,
-                 gpointer view)
+                 gpointer data)
 {
-    g_object_set_data (view, "moo-text-view-clipboard", NULL);
+    MooTextViewClipboard *contents = data;
+
+    if (contents->view && contents->view->priv->clipboard == contents)
+        contents->view->priv->clipboard = NULL;
+
+    g_free (contents->text);
+    moo_free (MooTextViewClipboard, contents);
 }
 
 
@@ -1927,27 +1931,29 @@ moo_text_view_cut_or_copy (GtkTextView *text_view,
 {
     GtkTextBuffer *buffer;
     GtkTextIter start, end;
-    char *text;
-    char **pieces;
     GtkClipboard *clipboard;
+    MooTextViewClipboard *contents;
+    MooTextView *view = MOO_TEXT_VIEW (text_view);
 
     buffer = gtk_text_view_get_buffer (text_view);
 
     if (!gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
         return;
 
-    text = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
-    pieces = g_strsplit (text, MOO_TEXT_UNKNOWN_CHAR_S, 0);
-    g_object_set_data_full (G_OBJECT (text_view), "moo-text-view-clipboard",
-                            pieces, (GDestroyNotify) g_strfreev);
-    g_free (text);
-
     clipboard = gtk_widget_get_clipboard (GTK_WIDGET (text_view),
                                           GDK_SELECTION_CLIPBOARD);
 
-    if (!gtk_clipboard_set_with_owner (clipboard, targets, G_N_ELEMENTS (targets),
-                                       get_clipboard, clear_clipboard,
-                                       G_OBJECT (text_view)))
+    contents = moo_new0 (MooTextViewClipboard);
+    contents->text = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
+    contents->view = view;
+
+    if (view->priv->clipboard)
+        view->priv->clipboard->view = NULL;
+    view->priv->clipboard = contents;
+
+    if (!gtk_clipboard_set_with_data (clipboard, targets, G_N_ELEMENTS (targets),
+                                      get_clipboard, clear_clipboard,
+                                      contents))
         return;
 
     gtk_clipboard_set_can_store (clipboard, targets + 1,
@@ -1984,23 +1990,37 @@ paste_moo_text_view_content (GtkTextView *target,
 {
     GtkTextBuffer *buffer;
     GtkTextIter start, end;
-    char **contents, **p;
+    MooTextViewClipboard *contents;
 
     g_return_if_fail (MOO_IS_TEXT_VIEW (source));
 
     buffer = gtk_text_view_get_buffer (target);
 
-    contents = g_object_get_data (G_OBJECT (source), "moo-text-view-clipboard");
+    contents = source->priv->clipboard;
     g_return_if_fail (contents != NULL);
 
     if (gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
         gtk_text_buffer_delete (buffer, &start, &end);
 
-    for (p = contents; *p; ++p)
+    if (strstr (contents->text, MOO_TEXT_UNKNOWN_CHAR_S))
     {
-        if (p != contents)
-            moo_text_view_insert_placeholder (MOO_TEXT_VIEW (target), &end, NULL);
-        gtk_text_buffer_insert (buffer, &end, *p, -1);
+        char **pieces, **p;
+
+        pieces = g_strsplit (contents->text, MOO_TEXT_UNKNOWN_CHAR_S, 0);
+
+        for (p = pieces; *p; ++p)
+        {
+            if (p != pieces)
+                moo_text_view_insert_placeholder (MOO_TEXT_VIEW (target), &end, NULL);
+
+            gtk_text_buffer_insert (buffer, &end, *p, -1);
+        }
+
+        g_strfreev (pieces);
+    }
+    else
+    {
+        gtk_text_buffer_insert (buffer, &end, contents->text, -1);
     }
 }
 

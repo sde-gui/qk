@@ -67,7 +67,7 @@
  * But, e.g. if we have a big file, and scroll down, we do want the engine
  * to analyze quickly. Perhaps we want to reinstall first_update in case
  * of expose events or something. */
-#define INCREMENTAL_UPDATE_PRIORITY	G_PRIORITY_LOW
+#define INCREMENTAL_UPDATE_PRIORITY	GTK_TEXT_VIEW_PRIORITY_VALIDATE
 /* Maximal amount of time allowed to spent in one cycle of background idle. */
 #define INCREMENTAL_UPDATE_TIME_SLICE	30
 

@@ -83,6 +83,11 @@ typedef enum {
     MOO_TEXT_VIEW_N_COLORS
 } MooTextViewColor;
 
+typedef struct {
+    MooTextView *view;
+    char *text;
+} MooTextViewClipboard;
+
 struct _MooTextViewPrivate {
     gboolean constructed;
 
@@ -93,6 +98,7 @@ struct _MooTextViewPrivate {
 
     /* Clipboard */
     gboolean manage_clipboard;
+    MooTextViewClipboard *clipboard;
 
 #if !GTK_CHECK_VERSION(2,12,0)
     /* Overwrite mode cursor */
