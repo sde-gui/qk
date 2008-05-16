@@ -367,7 +367,7 @@ child_set_pane_size (GtkWidget   *child,
                      int          size,
                      MooBigPaned *paned)
 {
-    int pos;
+    MooPanePosition pos;
 
     g_object_get (child, "pane-position", &pos, NULL);
     g_return_if_fail (paned->paned[pos] == child);
@@ -381,7 +381,7 @@ sticky_pane_notify (GtkWidget   *child,
                     G_GNUC_UNUSED GParamSpec *pspec,
                     MooBigPaned *paned)
 {
-    int pos;
+    MooPanePosition pos;
     gboolean sticky;
 
     g_object_get (child, "pane-position", &pos,
@@ -400,7 +400,7 @@ active_pane_notify (GtkWidget   *child,
                     G_GNUC_UNUSED GParamSpec *pspec,
                     MooBigPaned *paned)
 {
-    int pos;
+    MooPanePosition pos;
     MooPane *pane = NULL;
     const char *id = NULL;
     MooPanedConfig *pc;
@@ -680,7 +680,7 @@ moo_big_paned_reorder_pane (MooBigPaned    *paned,
 {
     MooPane *pane;
     MooPaned *child;
-    int old_position;
+    MooPanePosition old_position;
     int old_index;
     const char *id;
 
@@ -919,7 +919,7 @@ moo_big_paned_get_property (GObject    *object,
                             GParamSpec *pspec)
 {
     MooBigPaned *paned = MOO_BIG_PANED (object);
-    int cursor_type;
+    GdkCursorType cursor_type;
 
     switch (prop_id)
     {
@@ -1329,7 +1329,7 @@ get_drop_area (MooBigPaned    *paned,
                GdkRectangle   *button_rect)
 {
     int width, height, size = 0;
-    int active_position;
+    MooPanePosition active_position;
 
     width = paned->priv->outer->allocation.width;
     height = paned->priv->outer->allocation.height;

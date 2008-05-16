@@ -1776,7 +1776,7 @@ wrap_text_toggled (MooEditWindow *window,
                    gboolean       active)
 {
     MooEdit *doc;
-    int mode;
+    GtkWrapMode mode;
 
     doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
@@ -2073,7 +2073,7 @@ edit_wrap_mode_changed (MooEditWindow *window,
                         MooEdit       *doc)
 {
     gpointer action;
-    int mode;
+    GtkWrapMode mode;
 
     if (doc != ACTIVE_DOC (window))
         return;

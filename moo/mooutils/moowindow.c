@@ -941,7 +941,7 @@ static GtkToolbarStyle
 get_toolbar_style_gtk (MooWindow *window)
 {
     GtkSettings *settings = gtk_widget_get_settings (GTK_WIDGET (window));
-    int style = GTK_TOOLBAR_ICONS;
+    GtkToolbarStyle style = GTK_TOOLBAR_ICONS;
     gpointer toolbar_class;
 
     g_return_val_if_fail (settings != NULL, style);
@@ -950,7 +950,7 @@ get_toolbar_style_gtk (MooWindow *window)
     g_object_get (settings, "gtk-toolbar-style", &style, NULL);
     g_type_class_unref (toolbar_class);
 
-    g_return_val_if_fail (0 <= style && style < N_STYLES, 0);
+    g_return_val_if_fail (style < N_STYLES, 0);
     return style;
 }
 
