@@ -1050,7 +1050,7 @@ moo_edit_apply_lang_config (MooEdit *edit)
 static void
 moo_edit_apply_config (MooEdit *edit)
 {
-    GtkWrapMode wrap_mode;
+    int wrap_mode;
     gboolean line_numbers;
     guint tab_width;
     char *word_chars;

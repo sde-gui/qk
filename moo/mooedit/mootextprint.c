@@ -1093,7 +1093,7 @@ get_iter_attrs (MooPrintOperation *op,
 
         if (style_set)
         {
-            PangoStyle style_value;
+            int style_value;
             if (style) pango_attribute_destroy (style);
             g_object_get (tag, "style", &style_value, NULL);
             style = pango_attr_style_new (style_value);
@@ -1101,7 +1101,7 @@ get_iter_attrs (MooPrintOperation *op,
 
         if (ul_set)
         {
-            PangoUnderline underline;
+            int underline;
             if (ul) pango_attribute_destroy (ul);
             g_object_get (tag, "underline", &underline, NULL);
             ul = pango_attr_underline_new (underline);
@@ -1109,7 +1109,7 @@ get_iter_attrs (MooPrintOperation *op,
 
         if (weight_set)
         {
-            PangoWeight weight_value;
+            int weight_value;
             if (weight) pango_attribute_destroy (weight);
             g_object_get (tag, "weight", &weight_value, NULL);
             weight = pango_attr_weight_new (weight_value);
