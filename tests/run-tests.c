@@ -1,5 +1,5 @@
-#include <moo.h>
 #include <moo-tests.h>
+#include <gtk/gtk.h>
 
 static void
 add_tests (void)

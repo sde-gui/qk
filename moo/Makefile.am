@@ -30,9 +30,6 @@ test_sources =			\
 	moo-tests-lua.h		\
 	moo-tests.h
 
-BUILT_SOURCES += moo-config.h
-CLEANFILES += moo-config.h
-
 scriptsdir = ${MOO_DATA_DIR}/scripts
 scripts_SCRIPTS =		\
 	xdg-utils/xdg-open	\
@@ -135,7 +132,6 @@ endif
 libmoo_la_LIBADD = $(libs) $(MOO_LIBS)
 libmoo_la_LDFLAGS = $(libmoo_res_ldflag) -no-undefined -avoid-version $(export_flags)
 libmoo_la_SOURCES = moo.h
-nodist_libmoo_la_SOURCES += moo-config.h
 
 if MOO_ENABLE_UNIT_TESTS
 libmoo_la_SOURCES += $(test_sources)
