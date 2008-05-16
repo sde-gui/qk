@@ -131,7 +131,7 @@ endif
 
 libmoo_la_LIBADD = $(libs) $(MOO_LIBS)
 libmoo_la_LDFLAGS = $(libmoo_res_ldflag) -no-undefined -avoid-version $(export_flags)
-libmoo_la_SOURCES = moo.h
+libmoo_la_SOURCES =
 
 if MOO_ENABLE_UNIT_TESTS
 libmoo_la_SOURCES += $(test_sources)
@@ -160,7 +160,7 @@ if MOO_OS_UNIX
 
 if MOO_BUILD_MOO_MODULE
 pyexec_LTLIBRARIES = moo.la
-moo_la_SOURCES = moo.h
+moo_la_SOURCES =
 moo_la_LDFLAGS = $(moo_la_ldflags) $(PYTHON_LDFLAGS)
 moo_la_LIBADD = moopython/libmoomod.la libmoo.la $(MOO_LIBS) $(PYTHON_LIBS)
 endif MOO_BUILD_MOO_MODULE
@@ -169,7 +169,7 @@ if MOO_BUILD_PYTHON_PLUGIN
 plugindir = $(MOO_LIB_DIR)/plugins
 plugin_LTLIBRARIES = pymoo.la
 plugin_DATA = moopython/pymoo.ini
-pymoo_la_SOURCES = moo.h
+pymoo_la_SOURCES =
 pymoo_la_LDFLAGS = $(pymoo_la_ldflags) $(PYTHON_LDFLAGS) $(PYTHON_EXTRA_LDFLAGS)
 pymoo_la_LIBADD = moopython/libpymoo.la libmoo.la $(MOO_LIBS) $(PYTHON_LIBS) $(PYTHON_EXTRA_LIBS)
 endif MOO_BUILD_PYTHON_PLUGIN
@@ -196,10 +196,10 @@ install-data-hook:
 	rm -f $(DESTDIR)$(pluginlibdir)/moo.la
 	rm -f $(DESTDIR)$(pluginlibdir)/moo.dll.a
 
-pymoo_la_SOURCES = moo.h
+pymoo_la_SOURCES =
 pymoo_la_LDFLAGS = $(pymoo_la_ldflags) $(PYTHON_LDFLAGS) $(PYTHON_EXTRA_LDFLAGS) -Wl,pymoo.res
 pymoo_la_LIBADD = moopython/libpymoo.la libmoo.la $(MOO_LIBS) $(PYTHON_LIBS) $(PYTHON_EXTRA_LIBS)
-moo_la_SOURCES = moo.h
+moo_la_SOURCES =
 moo_la_LDFLAGS = $(moo_la_ldflags) $(PYTHON_LDFLAGS) -Wl,moo.res
 moo_la_LIBADD = moopython/libmoomod.la libmoo.la $(MOO_LIBS) $(PYTHON_LIBS)
 
