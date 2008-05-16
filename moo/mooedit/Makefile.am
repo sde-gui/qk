@@ -17,30 +17,6 @@ lua_sources =				\
 	mooedit-lua.c			\
 	mooedit-lua.h
 
-mooedit_include_headers =		\
-	moocmdview.h			\
-	mooedit-bookmarks.h		\
-	mooedit.h			\
-	mooeditconfig.h			\
-	mooedit-enums.h			\
-	mooeditor.h			\
-	mooeditprefs.h			\
-	mooeditwindow.h			\
-	mooindenter.h			\
-	moolang.h			\
-	moolangmgr.h			\
-	moolinemark.h			\
-	moolineview.h			\
-	moooutputfilter.h		\
-	mooplugin-loader.h		\
-	mooplugin-macro.h		\
-	mooplugin.h			\
-	mootextbuffer.h			\
-	mootextiter.h			\
-	mootextsearch.h			\
-	mootextstylescheme.h		\
-	mootextview.h
-
 completion_sources =			\
 	moocompletionsimple.c		\
 	moocompletionsimple.h		\
@@ -50,74 +26,95 @@ completion_sources =			\
 	mootextpopup.h
 
 mooedit_sources =			\
-	$(mooedit_include_headers)	\
 	$(moocommand_stuff)		\
 	$(completion_sources)		\
 	moocmdview.c			\
-	moocommand.c			\
-	moocommanddisplay.c		\
-	moocommanddisplay.h		\
+	moocmdview.h			\
 	moocommand-exe.c		\
 	moocommand-exe.h		\
-	moocommand.h			\
 	moocommand-private.h		\
-	mooeditaction.c			\
-	mooeditaction-factory.c		\
-	mooeditaction-factory.h		\
-	mooeditaction.h			\
+	moocommand.c			\
+	moocommand.h			\
+	moocommanddisplay.c		\
+	moocommanddisplay.h		\
 	mooedit-accels.h		\
 	mooedit-bookmarks.c		\
+	mooedit-bookmarks.h		\
+	mooedit-enums.c			\
+	mooedit-enums.h			\
+	mooedit-private.h		\
 	mooedit.c			\
+	mooedit.h			\
+	mooeditaction-factory.c		\
+	mooeditaction-factory.h		\
+	mooeditaction.c			\
+	mooeditaction.h			\
 	mooeditconfig.c			\
+	mooeditconfig.h			\
 	mooeditdialogs.c		\
 	mooeditdialogs.h		\
-	mooedit-enums.c			\
 	mooeditfileops.c		\
 	mooeditfileops.h		\
 	mooeditfiltersettings.c		\
 	mooeditfiltersettings.h		\
 	mooeditinput.c			\
-	mooeditor.c			\
 	mooeditor-private.h		\
+	mooeditor.c			\
+	mooeditor.h			\
 	mooeditprefs.c			\
+	mooeditprefs.h			\
 	mooeditprefspage.c		\
-	mooedit-private.h		\
 	mooeditwindow.c			\
+	mooeditwindow.h			\
 	moofold.c			\
 	moofold.h			\
 	mooindenter.c			\
+	mooindenter.h			\
 	mookeyfile.c			\
 	mookeyfile.h			\
-	moolang.c			\
-	moolangmgr.c			\
-	moolangmgr-private.h		\
 	moolang-private.h		\
+	moolang.c			\
+	moolang.h			\
+	moolangmgr-private.h		\
+	moolangmgr.c			\
+	moolangmgr.h			\
 	moolinebuffer.c			\
 	moolinebuffer.h			\
 	moolinemark.c			\
+	moolinemark.h			\
 	moolineview.c			\
+	moolineview.h			\
 	moooutputfilter.c		\
+	moooutputfilter.h		\
 	moooutputfilterregex.c		\
 	moooutputfilterregex.h		\
-	mooplugin.c			\
 	mooplugin-loader.c		\
+	mooplugin-loader.h		\
+	mooplugin-macro.h		\
+	mooplugin.c			\
+	mooplugin.h			\
 	mootext-private.h		\
 	mootextbox.c			\
 	mootextbox.h			\
 	mootextbtree.c			\
 	mootextbtree.h			\
 	mootextbuffer.c			\
+	mootextbuffer.h			\
 	mootextfind.c			\
 	mootextfind.h			\
-	mootextsearch.c			\
+	mootextiter.h			\
 	mootextsearch-private.h		\
+	mootextsearch.c			\
+	mootextsearch.h			\
 	mootextstylescheme.c		\
-	mootextview.c			\
+	mootextstylescheme.h		\
 	mootextview-private.h		\
-	moousertools.c			\
-	moousertools.h			\
+	mootextview.c			\
+	mootextview.h			\
 	moousertools-prefs.c		\
-	moousertools-prefs.h
+	moousertools-prefs.h		\
+	moousertools.c			\
+	moousertools.h
 
 mooedit_printing_sources =		\
 	mooprintpreview.h		\
@@ -217,12 +214,6 @@ AM_OBJCFLAGS = $(AM_CFLAGS)
 
 if MOO_OS_MINGW
 AM_CFLAGS += $(MOO_WIN32_CFLAGS)
-endif
-
-if MOO_INSTALL_HEADERS
-mooedit_includedir = $(moo_includedir)/mooedit
-mooedit_include_HEADERS = $(mooedit_include_headers)
-nodist_mooedit_include_HEADERS = $(nodist_mooedit_include_headers)
 endif
 
 include ../../mk/marshals.mk

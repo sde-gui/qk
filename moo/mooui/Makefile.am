@@ -1,15 +1,6 @@
 SUBDIRS = smclient
 
-mooapp_include_headers =	\
-	mooapp.h
-
-if MOO_INSTALL_HEADERS
-mooui_includedir = $(moo_includedir)/mooui
-mooui_include_HEADERS = $(mooui_include_headers)
-endif
-
 mooui_sources =				\
-	$(mooui_include_headers)	\
 	mooappabout.c			\
 	mooappabout.h			\
 	mooapp.c			\

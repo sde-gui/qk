@@ -24,9 +24,6 @@ AC_DEFUN_ONCE([MOO_AC_SET_DIRS],[
   MOO_TEXT_LANG_FILES_DIR="${MOO_DATA_DIR}/language-specs"
   AC_SUBST(MOO_TEXT_LANG_FILES_DIR)
 
-  moo_includedir=${includedir}/$MOO_PACKAGE_NAME
-  AC_SUBST(moo_includedir)
-
   MOO_LOCALE_DIR="${datadir}/locale"
   AC_SUBST(MOO_LOCALE_DIR)
 

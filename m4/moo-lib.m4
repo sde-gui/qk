@@ -22,14 +22,11 @@ AC_DEFUN_ONCE([MOO_AC_LIB],[
     MOO_PYTHON_BUILTIN=false
   fi
 
-  MOO_INSTALL_HEADERS=false
-
   if test "x$MOO_BUILD_MEDIT" != "xfalse"; then
     MOO_BUILD_MEDIT=true
   fi
 
   _MOO_OPTION([libmoo],[--enable-libmoo],[build and install libmoo library (default = NO)],[MOO_INSTALL_LIB])
-  _MOO_OPTION([libmoo-headers],[--enable-libmoo-headers], [install libmoo library headers (default = NO)],[MOO_INSTALL_HEADERS])
   _MOO_OPTION([moo-module],[--enable-moo-module], [build and install python extension module (default = NO)],[MOO_BUILD_MOO_MODULE])
   _MOO_OPTION([medit],[--disable-medit], [do not build medit (default = NO)],[MOO_BUILD_MEDIT])
 
@@ -52,7 +49,6 @@ AC_DEFUN_ONCE([MOO_AC_LIB],[
   fi
 
   AM_CONDITIONAL(MOO_INSTALL_LIB, $MOO_INSTALL_LIB)
-  AM_CONDITIONAL(MOO_INSTALL_HEADERS, $MOO_INSTALL_HEADERS)
   AM_CONDITIONAL(MOO_BUILD_PYTHON_PLUGIN, $MOO_BUILD_PYTHON_PLUGIN)
   AM_CONDITIONAL(MOO_BUILD_MOO_MODULE, $MOO_BUILD_MOO_MODULE)
   AM_CONDITIONAL(MOO_BUILD_MEDIT, $MOO_BUILD_MEDIT)

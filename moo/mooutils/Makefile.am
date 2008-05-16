@@ -21,118 +21,115 @@ thread_sources =			\
 	mooutils-thread.c		\
 	mooutils-thread.h
 
-mooutils_include_headers =		\
-	mdhistorymgr.h			\
-	mooaction.h			\
-	mooactionbase.h			\
-	mooactioncollection.h		\
-	moobigpaned.h			\
-	mooclosure.h			\
-	moocombo.h			\
-	mooeditops.h			\
-	mooentry.h			\
-	moofiledialog.h			\
-	moofiltermgr.h			\
-	mooglade.h			\
-	moohelp.h			\
-	moohistorycombo.h		\
-	moohistorylist.h		\
-	mooi18n.h			\
-	moomarkup.h			\
-	moomenuaction.h			\
-	moomenumgr.h			\
-	moomenutoolbutton.h		\
-	moonotebook.h			\
-	moopane.h			\
-	moopaned.h			\
-	mooprefs.h			\
-	mooprefsdialog.h		\
-	mooprefsdialogpage.h		\
-	moopython.h			\
-	moostock.h			\
-	moouixml.h			\
-	mooundo.h			\
-	mooutils-fs.h			\
-	mooutils-debug.h		\
-	mooutils-file.h			\
-	mooutils-gobject.h		\
-	mooutils-misc.h			\
-	moowindow.h
-
 mooutils_sources =			\
-	$(mooutils_include_headers)	\
 	mdhistorymgr.c			\
-	mooappinput.h			\
-	mooappinput.c			\
-	mooapp-ipc.h			\
-	mooapp-ipc.c			\
-	mooaccel.h			\
+	mdhistorymgr.h			\
+	moo-environ.h			\
 	mooaccel.c			\
+	mooaccel.h			\
 	mooaccelbutton.c		\
 	mooaccelbutton.h		\
-	mooaccelprefs.h			\
 	mooaccelprefs.c			\
-	mooaction.c			\
+	mooaccelprefs.h			\
 	mooaction-private.h		\
-	mooactionbase.c			\
+	mooaction.c			\
+	mooaction.h			\
 	mooactionbase-private.h		\
+	mooactionbase.c			\
+	mooactionbase.h			\
 	mooactioncollection.c		\
-	mooactionfactory.h		\
+	mooactioncollection.h		\
 	mooactionfactory.c		\
-	mooactiongroup.h		\
+	mooactionfactory.h		\
 	mooactiongroup.c		\
+	mooactiongroup.h		\
+	mooapp-ipc.c			\
+	mooapp-ipc.h			\
+	mooappinput.c			\
+	mooappinput.h			\
 	moobigpaned.c			\
+	moobigpaned.h			\
 	mooclosure.c			\
+	mooclosure.h			\
 	moocombo.c			\
+	moocombo.h			\
 	moocompat.c			\
 	moocompat.h			\
 	moodialogs.c			\
 	moodialogs.h			\
 	mooeditops.c			\
+	mooeditops.h			\
+	mooencodings-data.h		\
 	mooencodings.c			\
 	mooencodings.h			\
-	mooencodings-data.h		\
 	mooentry.c			\
-	moo-environ.h			\
+	mooentry.h			\
 	moofiledialog.c			\
+	moofiledialog.h			\
 	moofilewatch.c			\
 	moofilewatch.h			\
 	moofiltermgr.c			\
+	moofiltermgr.h			\
 	moofontsel.c			\
 	moofontsel.h			\
 	mooglade.c			\
+	mooglade.h			\
 	moohelp.c			\
+	moohelp.h			\
 	moohistorycombo.c		\
+	moohistorycombo.h		\
 	moohistorylist.c		\
+	moohistorylist.h		\
 	mooi18n.c			\
+	mooi18n.h			\
 	moomarkup.c			\
+	moomarkup.h			\
 	moomenuaction.c			\
+	moomenuaction.h			\
 	moomenumgr.c			\
+	moomenumgr.h			\
 	moomenutoolbutton.c		\
+	moomenutoolbutton.h		\
 	moonotebook.c			\
+	moonotebook.h			\
 	moopane.c			\
+	moopane.h			\
 	moopaned.c			\
+	moopaned.h			\
 	mooprefs.c			\
+	mooprefs.h			\
 	mooprefsdialog.c		\
+	mooprefsdialog.h		\
 	mooprefsdialogpage.c		\
-	moospawn.h			\
+	mooprefsdialogpage.h		\
+	moopython.h			\
 	moospawn.c			\
+	moospawn.h			\
 	moostock.c			\
+	moostock.h			\
 	mootype-macros.h		\
 	moouixml.c			\
+	moouixml.h			\
 	mooundo.c			\
+	mooundo.h			\
+	mooutils-debug.h		\
+	mooutils-file.h			\
 	mooutils-fli.c			\
 	mooutils-fs.c			\
+	mooutils-fs.h			\
 	mooutils-gobject-private.h	\
 	mooutils-gobject.c		\
+	mooutils-gobject.h		\
 	mooutils-mem.h			\
 	mooutils-misc.c			\
-	mooutils-treeview.h		\
+	mooutils-misc.h			\
 	mooutils-treeview.c		\
+	mooutils-treeview.h		\
 	moowindow.c			\
-	stock-medit.h			\
+	moowindow.h			\
 	stock-file-24.h			\
 	stock-file-selector-24.h	\
+	stock-medit.h			\
 	stock-select-all-16.h		\
 	stock-select-all-24.h		\
 	stock-terminal-24.h
@@ -217,8 +214,3 @@ AM_CFLAGS =					\
 	$(MOO_DEBUG_CFLAGS)			\
 	$(MOO_WIN32_CFLAGS)			\
 	$(objc_flag)
-
-if MOO_INSTALL_HEADERS
-mooutils_includedir = $(moo_includedir)/mooutils
-mooutils_include_HEADERS = $(mooutils_include_headers)
-endif

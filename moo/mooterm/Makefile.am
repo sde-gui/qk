@@ -1,37 +1,34 @@
-mooterm_include_headers =	       \
-	mooterm.h                      \
-	mooterm-prefs.h                \
-	mooterm-text.h                 \
-	mootermline.h                  \
+mooterm_sources =			\
+	mooterm-draw.c			\
+	mooterm-input.c			\
+	mooterm-keymap.h		\
+	mooterm-prefs.c			\
+	mooterm-prefs.h			\
+	mooterm-private.h		\
+	mooterm-selection.h		\
+	mooterm-text.c			\
+	mooterm-text.h			\
+	mooterm-vt.h			\
+	mooterm-vtctls.h		\
+	mooterm.c			\
+	mooterm.h			\
+	mootermbuffer-graph.h		\
+	mootermbuffer-private.h		\
+	mootermbuffer.c			\
+	mootermbuffer.h			\
+	mootermline-private.h		\
+	mootermline.c			\
+	mootermline.h			\
+	mootermparser-yacc.c		\
+	mootermparser-yacc.h		\
+	mootermparser.c			\
+	mootermparser.h			\
+	mootermpt-private.h		\
+	mootermpt.c			\
+	mootermpt.h			\
+	mootermtag-private.h		\
+	mootermtag.c			\
 	mootermtag.h
-
-mooterm_sources =                      \
-	$(mooterm_include_headers)     \
-	mooterm.c                      \
-	mooterm-input.c                \
-	mooterm-keymap.h               \
-	mooterm-prefs.c                \
-	mooterm-private.h              \
-	mooterm-selection.h            \
-	mooterm-text.c                 \
-	mooterm-vt.h                   \
-	mooterm-vtctls.h               \
-	mooterm-draw.c                 \
-	mootermbuffer.c                \
-	mootermbuffer.h                \
-	mootermbuffer-graph.h          \
-	mootermbuffer-private.h        \
-	mootermline.c                  \
-	mootermline-private.h          \
-	mootermparser.c                \
-	mootermparser.h                \
-	mootermparser-yacc.c           \
-	mootermparser-yacc.h           \
-	mootermpt.c                    \
-	mootermpt.h                    \
-	mootermpt-private.h            \
-	mootermtag-private.h           \
-	mootermtag.c
 
 mooterm_unix_sources =			\
 	mootermpt-unix.c		\
@@ -80,11 +77,6 @@ EXTRA_DIST += $(mooterm_win32_sources)
 else
 libmooterm_la_SOURCES += $(mooterm_win32_sources)
 EXTRA_DIST += $(mooterm_unix_sources)
-endif
-
-if MOO_INSTALL_HEADERS
-mooterm_includedir = $(moo_includedir)/mooterm
-mooterm_include_HEADERS = $(mooterm_include_headers)
 endif
 
 AM_CFLAGS =			\

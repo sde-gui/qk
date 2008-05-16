@@ -38,8 +38,6 @@ AC_CONFIG_FILES([
 Makefile
 config.py
 doc/Makefile
-moo/moo.pc
-moo/moo-config.h
 moo/Makefile
 moo/moolua/Makefile
 moo/mooutils/Makefile

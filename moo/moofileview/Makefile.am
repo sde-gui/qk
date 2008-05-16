@@ -1,6 +1,3 @@
-moofileview_headers =	        \
-	moofileview.h
-
 moofileview_sources =		\
 	$(moofileview_headers)  \
 	moobookmarkmgr.c	\
@@ -17,6 +14,7 @@ moofileview_sources =		\
 	moofilesystem.c		\
 	moofilesystem.h		\
 	moofileview.c		\
+	moofileview.h		\
 	moofileview-accels.h	\
 	moofileview-aux.h	\
 	moofileview-dialogs.c	\
@@ -35,11 +33,6 @@ moofileview_sources =		\
 	mooiconview.h		\
 	mootreeview.c		\
 	mootreeview.h
-
-if MOO_INSTALL_HEADERS
-moofileview_includedir = $(moo_includedir)/moofileview
-moofileview_include_HEADERS = $(moofileview_headers)
-endif
 
 
 moofileview_pixmaps =		\

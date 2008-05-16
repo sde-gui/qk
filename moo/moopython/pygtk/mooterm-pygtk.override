@@ -6,7 +6,12 @@ headers
 #define NO_IMPORT_PYGTK
 #include <pygobject.h>
 #include <pygtk/pygtk.h>
-#include <moo.h>
+#include "mooterm/mooterm.h"
+#include "mooterm/mooterm-text.h"
+#include "mooterm/mootermline.h"
+#include "mooterm/mootermtag.h"
+#include "mooterm/mootermbuffer.h"
+#include "mooterm/mooterm-prefs.h"
 #include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
 

@@ -11,8 +11,11 @@
  */
 
 #include "medit-credits.h"
-#include <moo.h>
-#include <mooutils/mooi18n.h>
+#include "mooui/mooapp.h"
+#include "mooedit/mooplugin.h"
+#include "mooutils/mooi18n.h"
+#include "mooutils/mooutils-fs.h"
+#include "mooutils/mooutils-misc.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>

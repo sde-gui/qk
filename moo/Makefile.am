@@ -23,11 +23,6 @@ moo-config-dirs.h.stamp: Makefile
 BUILT_SOURCES = moo-config-dirs.h.stamp
 CLEANFILES += moo-config-dirs.h.stamp moo-config-dirs.h
 
-moo_include_headers =		\
-	moo.h
-nodist_moo_include_headers =	\
-	moo-config.h
-
 test_sources =			\
 	moo-test-utils.c	\
 	moo-test-utils.h	\
@@ -51,13 +46,6 @@ EXTRA_DIST =			\
 	$(test_sources)
 
 marshals =
-
-if MOO_INSTALL_HEADERS
-moo_include_HEADERS = $(moo_include_headers)
-nodist_moo_include_HEADERS = $(nodist_moo_include_headers)
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = moo.pc
-endif
 
 subdirs =
 libs =
@@ -146,8 +134,8 @@ endif
 
 libmoo_la_LIBADD = $(libs) $(MOO_LIBS)
 libmoo_la_LDFLAGS = $(libmoo_res_ldflag) -no-undefined -avoid-version $(export_flags)
-libmoo_la_SOURCES = $(moo_include_headers)
-nodist_libmoo_la_SOURCES += $(nodist_moo_include_headers)
+libmoo_la_SOURCES = moo.h
+nodist_libmoo_la_SOURCES += moo-config.h
 
 if MOO_ENABLE_UNIT_TESTS
 libmoo_la_SOURCES += $(test_sources)
