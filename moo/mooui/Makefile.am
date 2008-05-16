@@ -4,12 +4,12 @@ mooapp_include_headers =	\
 	mooapp.h
 
 if MOO_INSTALL_HEADERS
-mooapp_includedir = $(moo_includedir)/mooapp
-mooapp_include_HEADERS = $(mooapp_include_headers)
+mooui_includedir = $(moo_includedir)/mooui
+mooui_include_HEADERS = $(mooui_include_headers)
 endif
 
-mooapp_sources =			\
-	$(mooapp_include_headers)	\
+mooui_sources =				\
+	$(mooui_include_headers)	\
 	mooappabout.c			\
 	mooappabout.h			\
 	mooapp.c			\
@@ -21,9 +21,9 @@ mooapp_sources =			\
 	moolinklabel.h			\
 	moolinklabel.c
 
-noinst_LTLIBRARIES = libmooapp.la
-libmooapp_la_SOURCES = $(mooapp_sources)
-libmooapp_la_LIBADD = smclient/libsmclient.la
+noinst_LTLIBRARIES = libmooui.la
+libmooui_la_SOURCES = $(mooui_sources)
+libmooui_la_LIBADD = smclient/libsmclient.la
 
 BUILT_SOURCES =
 CLEANFILES =

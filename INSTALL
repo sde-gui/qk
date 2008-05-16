@@ -74,7 +74,6 @@ a standalone libmoo library or python extension module:
 
   --disable-medit         do not build and install medit
   --enable-libmoo         actually build and install libmoo.so
-  --enable-libmoo-headers install libmoo headers
   --enable-moo-module     build and install moo python module
     The python module is installed whenever libmoo is built, but it
     can be also built as a big standalone module which doesn't require

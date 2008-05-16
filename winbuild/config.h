@@ -196,8 +196,8 @@
 /* broken gtk theme */
 /* #undef MOO_BROKEN_GTK_THEME */
 
-/* build mooapp */
-#define MOO_BUILD_APP 1
+/* build mooui */
+#define MOO_BUILD_UI 1
 
 /* build ctags plugin */
 /* #undef MOO_BUILD_CTAGS */

@@ -16,9 +16,9 @@
 
 #define MOO_APP_COMPILATION
 #define WANT_MOO_APP_CMD_CHARS
-#include "mooapp/mooapp-private.h"
-#include "mooapp/smclient/eggsmclient.h"
-#include "mooapp/mooapp-accels.h"
+#include "mooapp-private.h"
+#include "smclient/eggsmclient.h"
+#include "mooapp-accels.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"

@@ -1,7 +1,7 @@
 /*
  *   moolinklabel.c
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -10,7 +10,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooapp/moolinklabel.h"
+#include "moolinklabel.h"
 #include "marshals.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-gobject.h"

@@ -26,7 +26,7 @@ ACLOCAL="$ACLOCAL $ACLOCAL_FLAGS"
 
 MOO_SRC_PREFIX="moo"
 AC_SUBST(MOO_SRC_PREFIX)
-MOO_COMPONENTS([app,edit,term],[])
+MOO_COMPONENTS([ui,edit,term],[])
 MOO_AC_SET_DIRS
 MOO_AC_FLAGS(moo)
 
@@ -52,8 +52,8 @@ moo/mooedit/gtksourceview/Makefile
 moo/mooedit/gtksourceview/upstream/Makefile
 moo/mooedit/plugins/Makefile
 moo/mooedit/plugins/ctags/Makefile
-moo/mooapp/Makefile
-moo/mooapp/smclient/Makefile
+moo/mooui/Makefile
+moo/mooui/smclient/Makefile
 moo/moopython/Makefile
 moo/moopython/plugins/Makefile
 moo/moopython/plugins/pyproject/Makefile

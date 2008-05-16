@@ -1,7 +1,7 @@
 /*
  *   mooapp/mooappabout.c
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -11,10 +11,10 @@
  */
 
 #include "mooappabout-glade.h"
-#include "mooapp/mooappabout.h"
-#include "mooapp/mooapp.h"
-#include "mooapp/moohtml.h"
-#include "mooapp/moolinklabel.h"
+#include "mooappabout.h"
+#include "mooapp.h"
+#include "moohtml.h"
+#include "moolinklabel.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooglade.h"

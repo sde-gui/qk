@@ -10,7 +10,7 @@ endif
 
 bin_PROGRAMS = medit
 
-medit_SOURCES = medit-credits.h medit-app.c mem-debug.h
+medit_SOURCES = medit-credits.h main.c mem-debug.h
 BUILT_SOURCES = medit-credits.h medit.iss
 nodist_medit_SOURCES =
 

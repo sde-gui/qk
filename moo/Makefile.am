@@ -70,6 +70,11 @@ subdirs += mooutils
 libs += mooutils/libmooutils.la
 marshals += $(srcdir)/mooutils/marshals.list
 endif
+if MOO_BUILD_UI
+subdirs += mooui
+libs += mooui/libmooui.la
+marshals += $(srcdir)/mooui/marshals.list
+endif
 if GTK_2_6
 subdirs += moofileview
 libs += moofileview/libmoofileview.la
@@ -85,18 +90,13 @@ subdirs += mooedit
 libs += mooedit/libmooedit.la
 marshals += $(srcdir)/mooedit/marshals.list
 endif
-if MOO_BUILD_APP
-subdirs += mooapp
-libs += mooapp/libmooapp.la
-marshals += $(srcdir)/mooapp/marshals.list
-endif
 
 if MOO_USE_PYTHON
 subdirs += moopython
 endif
 
 SUBDIRS = $(subdirs) .
-DIST_SUBDIRS = moolua mooutils mooterm mooedit mooapp moopython moofileview
+DIST_SUBDIRS = moolua mooutils mooterm mooedit mooui moopython moofileview
 
 lib_LTLIBRARIES =
 noinst_LTLIBRARIES =

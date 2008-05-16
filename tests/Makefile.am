@@ -38,7 +38,7 @@ endif
 if MOO_BUILD_TERM
 test_programs += mterm termbuffer
 endif
-if MOO_BUILD_APP
+if MOO_BUILD_UI
 test_programs += testhtml
 endif
 
@@ -60,7 +60,7 @@ BUILT_SOURCES = pyapp.py
 
 if MOO_BUILD_TERM
 if !MOO_OS_CYGWIN
-if !MOO_BUILD_APP
+if !MOO_BUILD_UI
 noinst_PROGRAMS += mterm #termbuffer
 endif
 endif

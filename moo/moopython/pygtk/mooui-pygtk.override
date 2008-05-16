@@ -7,12 +7,12 @@ headers
 #include <pygobject.h>
 #include <pygtk/pygtk.h>
 #include <moo.h>
-#include "mooapp/moohtml.h"
+#include "mooui/moohtml.h"
 #include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
 
 %%
-modulename moo.app
+modulename moo.ui
 %%
 import gtk.Window as PyGtkWindow_Type
 import gtk.Widget as PyGtkWidget_Type

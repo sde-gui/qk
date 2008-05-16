@@ -19,6 +19,7 @@ Makefile(\.in)?$
 ^moo/mooterm/termhelper_res\.rc$
 ^moo/mooutils/(moomarshals\.[ch]|stock-(moo|medit)\.h)$
 ^moo/mooapp/smclient/(README|egg-session-end\.c|eggdesktopfile\.[ch]|eggsmclient-libgnomeui\.[ch]|eggsmclient-osx\.c|gedit\.diff|smclient\.patch)$
+mooapp-old/
 ^moo/mooutils/xdgmime/.cvsignore$
 ^moo/mooutils/xdgmime/CVS
 ^moo/mooapp/smclient/ChangeLog$

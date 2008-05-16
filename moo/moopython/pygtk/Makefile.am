@@ -1,14 +1,14 @@
 moopygtk_sources =		\
 	moo-pygtk.c		\
 	moo-pygtk.h		\
-	mooapp-mod.h		\
+	mooui-mod.h		\
 	mooedit-mod.h		\
 	mooterm-mod.h		\
 	mooutils-mod.h		\
 	moo-mod.h
 
 BUILT_SOURCES =			\
-	mooapp-mod.h		\
+	mooui-mod.h		\
 	mooedit-mod.h		\
 	mooterm-mod.h		\
 	mooutils-mod.h		\
@@ -47,10 +47,10 @@ CLEANFILES += moofileview.o
 EXTRA_DIST =				\
 	moo-mod.py			\
 	moo-pygtk.c			\
-	mooapp-mod.py			\
-	mooapp-pygtk.defs		\
-	mooapp-pygtk.override		\
-	mooapp-mod.c			\
+	mooui-mod.py			\
+	mooui-pygtk.defs		\
+	mooui-pygtk.override		\
+	mooui-mod.c			\
 	$(mooedit_defs_files)		\
 	mooedit-mod.py			\
 	mooedit-pygtk.defs		\
@@ -74,6 +74,13 @@ BUILT_SOURCES += mooutils-pygtk.c
 CLEANFILES += mooutils-pygtk.c
 endif MOO_BUILD_UTILS
 
+if MOO_BUILD_UI
+moopygtk_sources += mooui-mod.c
+nodist_moopygtk_sources += mooui-pygtk.c
+BUILT_SOURCES += mooui-pygtk.c
+CLEANFILES += mooui-pygtk.c
+endif MOO_BUILD_UI
+
 if MOO_BUILD_TERM
 moopygtk_sources += mooterm-mod.c
 nodist_moopygtk_sources += mooterm-pygtk.c
@@ -87,13 +94,6 @@ nodist_moopygtk_sources += mooedit-pygtk.c
 BUILT_SOURCES += mooedit-pygtk.c
 CLEANFILES += mooedit-pygtk.c
 endif MOO_BUILD_EDIT
-
-if MOO_BUILD_APP
-moopygtk_sources += mooapp-mod.c
-nodist_moopygtk_sources += mooapp-pygtk.c
-BUILT_SOURCES += mooapp-pygtk.c
-CLEANFILES += mooapp-pygtk.c
-endif MOO_BUILD_APP
 
 if MOO_OS_MINGW
 codegen_platform = --platform win32
@@ -115,6 +115,17 @@ mooutils-pygtk.c: mooutils-pygtk.defs mooutils-pygtk.override $(mooutils_overrid
 		--override $(srcdir)/mooutils-pygtk.override \
 		--outfilename mooutils-pygtk.c \
 		$(srcdir)/mooutils-pygtk.defs > $@.tmp && \
+		mv $@.tmp $@
+
+mooui-pygtk.c: mooui-pygtk.defs mooui-pygtk.override $(codegen_files)
+	$(codegen) --prefix _moo_ui \
+		--load-types $(srcdir)/../codegen/argtypes_m.py \
+		--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
+		--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
+		--register $(srcdir)/mooutils-pygtk.defs \
+		--override $(srcdir)/mooui-pygtk.override \
+		--outfilename mooui-pygtk.c \
+		$(srcdir)/mooui-pygtk.defs > $@.tmp && \
 		mv $@.tmp $@
 
 mooterm-pygtk.c: mooterm-pygtk.defs mooterm-pygtk.override $(codegen_files)
@@ -139,19 +150,6 @@ mooedit-pygtk.c: mooedit-pygtk.defs mooedit-pygtk.override $(mooedit_defs_files)
 		$(srcdir)/mooedit-pygtk.defs > $@.tmp && \
 		mv $@.tmp $@
 
-mooapp-pygtk.c: mooapp-pygtk.defs mooapp-pygtk.override $(codegen_files)
-	$(codegen) --prefix _moo_app \
-		--load-types $(srcdir)/../codegen/argtypes_m.py \
-		--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
-		--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
-		--register $(srcdir)/mooedit-pygtk.defs \
-		--register $(srcdir)/mooterm-pygtk.defs \
-		--register $(srcdir)/mooutils-pygtk.defs \
-		--override $(srcdir)/mooapp-pygtk.override \
-		--outfilename mooapp-pygtk.c \
-		$(srcdir)/mooapp-pygtk.defs > $@.tmp && \
-		mv $@.tmp $@
-
 PY2H = $(srcdir)/../../mooutils/py2h.sh
 moo-mod.h: $(srcdir)/moo-mod.py $(PY2H)
 	$(SHELL) $(PY2H) MOO_PY $(srcdir)/moo-mod.py > $@.tmp && \
@@ -159,8 +157,8 @@ moo-mod.h: $(srcdir)/moo-mod.py $(PY2H)
 mooedit-mod.h: $(srcdir)/mooedit-mod.py $(PY2H)
 	$(SHELL) $(PY2H) MOO_EDIT_PY $(srcdir)/mooedit-mod.py > $@.tmp && \
 	mv $@.tmp $@
-mooapp-mod.h: mooapp-mod.py $(PY2H)
-	$(SHELL) $(PY2H) MOO_APP_PY $(srcdir)/mooapp-mod.py > $@.tmp && \
+mooui-mod.h: mooui-mod.py $(PY2H)
+	$(SHELL) $(PY2H) MOO_UI_PY $(srcdir)/mooui-mod.py > $@.tmp && \
 	mv $@.tmp $@
 mooutils-mod.h: mooutils-mod.py $(PY2H)
 	$(SHELL) $(PY2H) MOO_UTILS_PY $(srcdir)/mooutils-mod.py > $@.tmp && \

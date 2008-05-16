@@ -47,12 +47,6 @@
 ;;   (return-type "const-MooAppInfo*")
 ;; )
 
-(define-method get_editor
-  (of-object "MooApp")
-  (c-name "moo_app_get_editor")
-  (return-type "MooEditor*")
-)
-
 (define-function prefs_dialog
   (c-name "moo_app_prefs_dialog")
   (return-type "none")

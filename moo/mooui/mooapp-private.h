@@ -1,7 +1,7 @@
 /*
  *   mooapp/mooapp-private.h
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,7 @@
 #ifndef MOO_APP_PRIVATE_H
 #define MOO_APP_PRIVATE_H
 
-#include <mooapp/mooapp.h>
+#include "mooapp.h"
 
 G_BEGIN_DECLS
 

@@ -84,7 +84,7 @@
 
 #include <moofileview/moofileview.h>
 
-#include <mooapp/mooapp.h>
+#include <mooui/mooapp.h>
 
 
 #endif /* __MOO_H__ */
