@@ -55,7 +55,7 @@ glade_files =				\
 	glade/moobookmark-editor.glade
 include ../../mk/glade.mk
 
-ui_files = moofileview.ui
+ui_files = moofileview.xml
 include ../../mk/ui.mk
 
 

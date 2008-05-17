@@ -1,9 +1,9 @@
 
 /* Generated data (by glib-mkenums) */
 
-#include "mooedit/mooedit-enums.h"
+#include "mooedit-enums.h"
 
-#include "mooedit/moocommand.h"
+#include "moocommand.h"
 
 GType
 moo_command_options_get_type (void)
@@ -24,7 +24,7 @@ moo_command_options_get_type (void)
     return etype;
 }
 
-#include "mooedit/mooeditconfig.h"
+#include "mooeditconfig.h"
 
 GType
 moo_edit_config_source_get_type (void)
@@ -45,7 +45,7 @@ moo_edit_config_source_get_type (void)
     return etype;
 }
 
-#include "mooedit/mooeditwindow.h"
+#include "mooeditwindow.h"
 
 GType
 moo_action_check_type_get_type (void)
@@ -64,7 +64,7 @@ moo_action_check_type_get_type (void)
     return etype;
 }
 
-#include "mooedit/mooedit.h"
+#include "mooedit.h"
 
 GType
 moo_edit_status_get_type (void)
@@ -104,7 +104,7 @@ moo_edit_state_get_type (void)
     return etype;
 }
 
-#include "mooedit/mootextfind.h"
+#include "mootextfind.h"
 
 GType
 moo_find_flags_get_type (void)
@@ -128,7 +128,7 @@ moo_find_flags_get_type (void)
     return etype;
 }
 
-#include "mooedit/mootextsearch.h"
+#include "mootextsearch.h"
 
 GType
 moo_text_search_flags_get_type (void)
@@ -148,7 +148,7 @@ moo_text_search_flags_get_type (void)
     return etype;
 }
 
-#include "mooedit/mootextview.h"
+#include "mootextview.h"
 
 GType
 moo_text_selection_type_get_type (void)

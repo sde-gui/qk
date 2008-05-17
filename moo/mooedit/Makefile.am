@@ -123,7 +123,11 @@ mooedit_printing_sources =		\
 	mootextprint-private.h		\
 	mootextprint.h
 
-mooedit_enums_headers =			\
+EXTRA_DIST =
+BUILT_SOURCES =
+CLEANFILES =
+
+enum_headers =				\
 	moocommand.h			\
 	mooeditconfig.h			\
 	mooeditwindow.h			\
@@ -131,33 +135,8 @@ mooedit_enums_headers =			\
 	mootextfind.h			\
 	mootextsearch.h			\
 	mootextview.h
-
-BUILT_SOURCES = stamp-mooedit-enums-h stamp-mooedit-enums-c
-CLEANFILES = stamp-mooedit-enums-h stamp-mooedit-enums-c
-stamp-mooedit-enums-h: $(mooedit_enums_headers) Makefile
-	( cd $(srcdir) && glib-mkenums \
-			--fhead "#ifndef MOO_EDIT_ENUMS_H\n#define MOO_EDIT_ENUMS_H\n\n#include <glib-object.h>\n" \
-			--fhead "\nG_BEGIN_DECLS\n\n\n" \
-			--fprod "/* enumerations from \"mooedit/@filename@\" */\n" \
-			--vhead "GType @enum_name@_get_type (void) G_GNUC_CONST;\n#define MOO_TYPE_@ENUMSHORT@ (@enum_name@_get_type())\n\n" \
-			--ftail "\nG_END_DECLS\n\n#endif /* MOO_EDIT_ENUMS_H */" \
-		$(mooedit_enums_headers) ) > xgen-gtbh \
-	&& (cmp -s xgen-gtbh $(srcdir)/mooedit-enums.h || cp xgen-gtbh $(srcdir)/mooedit-enums.h ) \
-	&& rm -f xgen-gtbh \
-	&& echo timestamp > $(@F)
-stamp-mooedit-enums-c: $(mooedit_enums_headers) Makefile
-	( cd $(srcdir) && glib-mkenums \
-			--fhead "#include \"mooedit/mooedit-enums.h\"\n\n" \
-			--fprod "#include \"mooedit/@filename@\"\n\n" \
-			--vhead "GType\n@enum_name@_get_type (void)\n{\n    static GType etype;\n    if (G_UNLIKELY (!etype))\n    {\n        static const G@Type@Value values[] = {" \
-			--vprod "            { @VALUENAME@, (char*) \"@VALUENAME@\", (char*) \"@valuenick@\" }," \
-			--vtail "            { 0, NULL, NULL }\n        };\n        etype = g_@type@_register_static (\"@EnumName@\", values);\n    }\n    return etype;\n}\n\n" \
-		$(mooedit_enums_headers) ) > xgen-gtbc \
-	&& (cmp -s xgen-gtbc $(srcdir)/mooedit-enums.c || cp xgen-gtbc $(srcdir)/mooedit-enums.c ) \
-	&& rm -f xgen-gtbc \
-	&& echo timestamp > $(@F)
-
-EXTRA_DIST =
+enum_file = mooedit-enums
+include ../../mk/enums.mk
 
 glade_files =				\
 	glade/mooeditprefs-general.glade\
@@ -176,7 +155,7 @@ glade_files =				\
 	glade/mooprintpreview.glade
 include ../../mk/glade.mk
 
-ui_files = medit.ui mooedit.ui
+ui_files = medit.xml mooedit.xml
 include ../../mk/ui.mk
 
 mime_in_files = moo.xml.in
