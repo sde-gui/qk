@@ -1195,6 +1195,7 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
         {
             case GDK_Tab:
             case GDK_KP_Tab:
+            case GDK_ISO_Left_Tab:
                 handled = handle_tab (view, event);
                 break;
             case GDK_BackSpace:
