@@ -678,7 +678,10 @@ md_history_mgr_add_uri (MdHistoryMgr *mgr,
     g_return_if_fail (uri && uri[0]);
 
     if (!(item = md_history_mgr_find_uri (mgr, uri)))
-        item = md_history_item_new (uri, NULL);
+    {
+        freeme = md_history_item_new (uri, NULL);
+        item = freeme;
+    }
 
     md_history_mgr_add_file (mgr, item);
 
