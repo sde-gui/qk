@@ -3,6 +3,7 @@
 (\~|\.DS_Store)$
 ^(\..*\.session|.*\.kdevelop\.pcs|.*\.kdevses)$
 Makefile(\.in)?$
+^m4/(libtool|lt.*)\.m4$
 ^(autom4te\.cache|build)/
 ^(compile|mkinstalldirs|config\..*|configargs\.h|configure|depcomp|install-sh|intltool-(extract|merge|update)|libtool|ltmain\.sh|missing|stamp-h1|aclocal\.m4)$
 ^intltool-(extract|merge|update)\.in$
