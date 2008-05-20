@@ -870,6 +870,8 @@ printerr_func_window (const char *string)
 void
 moo_set_log_func_window (gboolean show_now)
 {
+    gtk_init (NULL, NULL);
+
     if (show_now)
         gtk_widget_show (GTK_WIDGET (moo_log_window()->window));
 
