@@ -50,7 +50,9 @@ struct _MooWindowClass
     GtkWindowClass      parent_class;
 
     /* signals */
-    gboolean (*close)   (MooWindow *window);
+    gboolean (*close)       (MooWindow *window);
+
+    void     (*apply_prefs) (MooWindow *window);
 };
 
 typedef GtkAction *(*MooWindowActionFunc) (MooWindow *window,
@@ -60,6 +62,7 @@ typedef GtkAction *(*MooWindowActionFunc) (MooWindow *window,
 GType       moo_window_get_type             (void) G_GNUC_CONST;
 
 gboolean    moo_window_close                (MooWindow          *window);
+void        moo_window_apply_prefs          (MooWindow          *window);
 
 
 /*****************************************************************************/

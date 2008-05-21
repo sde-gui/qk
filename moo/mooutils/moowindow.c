@@ -167,6 +167,7 @@ enum {
 
 enum {
     CLOSE,
+    APPLY_PREFS,
     LAST_SIGNAL
 };
 
@@ -380,6 +381,15 @@ moo_window_class_init (MooWindowClass *klass)
                       g_signal_accumulator_true_handled, NULL,
                       _moo_marshal_BOOL__VOID,
                       G_TYPE_BOOLEAN, 0);
+
+    signals[APPLY_PREFS] =
+            g_signal_new ("apply-prefs",
+                      G_OBJECT_CLASS_TYPE (klass),
+                      G_SIGNAL_RUN_LAST,
+                      G_STRUCT_OFFSET (MooWindowClass, apply_prefs),
+                      NULL, NULL,
+                      _moo_marshal_VOID__VOID,
+                      G_TYPE_NONE, 0);
 }
 
 
@@ -608,6 +618,14 @@ moo_window_close (MooWindow *window)
     {
         return FALSE;
     }
+}
+
+
+void
+moo_window_apply_prefs (MooWindow *window)
+{
+    g_return_if_fail (MOO_IS_WINDOW (window));
+    g_signal_emit (window, signals[APPLY_PREFS], 0);
 }
 
 
