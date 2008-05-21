@@ -28,33 +28,6 @@ enum {
 
 
 static void
-base_init (void)
-{
-    static gboolean done = FALSE;
-
-    if (!done)
-    {
-        done = TRUE;
-
-        g_signal_new ("connect-proxy",
-                      MOO_TYPE_ACTION_BASE,
-                      G_SIGNAL_RUN_LAST,
-                      G_STRUCT_OFFSET (MooActionBaseClass, connect_proxy),
-                      NULL, NULL,
-                      _moo_marshal_VOID__OBJECT,
-                      G_TYPE_NONE, 1, GTK_TYPE_WIDGET);
-
-        g_signal_new ("disconnect-proxy",
-                      MOO_TYPE_ACTION_BASE,
-                      G_SIGNAL_RUN_LAST,
-                      G_STRUCT_OFFSET (MooActionBaseClass, disconnect_proxy),
-                      NULL, NULL,
-                      _moo_marshal_VOID__OBJECT,
-                      G_TYPE_NONE, 1, GTK_TYPE_WIDGET);
-    }
-}
-
-static void
 class_init (gpointer g_iface)
 {
     g_object_interface_install_property (g_iface,
@@ -97,6 +70,22 @@ class_init (gpointer g_iface)
                                          g_param_spec_boolean ("use-underline", "use-underline", "use-underline",
                                                                TRUE,
                                                                G_PARAM_READWRITE));
+
+    g_signal_new ("connect-proxy",
+                  MOO_TYPE_ACTION_BASE,
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MooActionBaseClass, connect_proxy),
+                  NULL, NULL,
+                  _moo_marshal_VOID__OBJECT,
+                  G_TYPE_NONE, 1, GTK_TYPE_WIDGET);
+
+    g_signal_new ("disconnect-proxy",
+                  MOO_TYPE_ACTION_BASE,
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MooActionBaseClass, disconnect_proxy),
+                  NULL, NULL,
+                  _moo_marshal_VOID__OBJECT,
+                  G_TYPE_NONE, 1, GTK_TYPE_WIDGET);
 }
 
 
@@ -162,7 +151,7 @@ moo_action_base_get_type (void)
     {
         static const GTypeInfo info = {
             sizeof (MooActionBaseClass), /* class_size */
-            (GBaseInitFunc) base_init,
+            NULL, /* base_init */
             NULL, /* base_finalize */
             (GClassInitFunc) class_init,
             NULL, /* class_finalize */
