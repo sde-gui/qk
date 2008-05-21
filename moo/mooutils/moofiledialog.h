@@ -1,7 +1,7 @@
 /*
  *   moofiledialog.h
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -28,11 +28,10 @@ G_BEGIN_DECLS
 #define MOO_IS_FILE_DIALOG_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FILE_DIALOG))
 #define MOO_FILE_DIALOG_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FILE_DIALOG, MooFileDialogClass))
 
-typedef struct _MooFileDialog        MooFileDialog;
-typedef struct _MooFileDialogPrivate MooFileDialogPrivate;
-typedef struct _MooFileDialogClass   MooFileDialogClass;
+typedef struct MooFileDialog        MooFileDialog;
+typedef struct MooFileDialogPrivate MooFileDialogPrivate;
+typedef struct MooFileDialogClass   MooFileDialogClass;
 
-/* do not change, hardcoded in ggap package */
 typedef enum {
     MOO_FILE_DIALOG_OPEN,
     MOO_FILE_DIALOG_OPEN_ANY,
@@ -42,13 +41,13 @@ typedef enum {
     /*  MOO_DIALOG_DIR_NEW,*/
 } MooFileDialogType;
 
-struct _MooFileDialog
+struct MooFileDialog
 {
     GObject parent;
     MooFileDialogPrivate *priv;
 };
 
-struct _MooFileDialogClass
+struct MooFileDialogClass
 {
     GObjectClass parent_class;
 
@@ -56,42 +55,61 @@ struct _MooFileDialogClass
                             GtkWidget     *widget);
 };
 
+typedef char *(*MooFileDialogCheckNameFunc) (MooFileDialog *dialog,
+                                             const char    *uri,
+                                             gpointer       data);
 
-GType           moo_file_dialog_get_type        (void) G_GNUC_CONST;
-GType           moo_file_dialog_type_get_type   (void) G_GNUC_CONST;
+GType           moo_file_dialog_get_type                (void) G_GNUC_CONST;
+GType           moo_file_dialog_type_get_type           (void) G_GNUC_CONST;
 
-MooFileDialog  *moo_file_dialog_new             (MooFileDialogType type,
-                                                 GtkWidget      *parent,
-                                                 gboolean        multiple,
-                                                 const char     *title,
-                                                 const char     *start_dir,
-                                                 const char     *start_name);
-void            moo_file_dialog_set_filter_mgr  (MooFileDialog  *dialog,
-                                                 MooFilterMgr   *mgr,
-                                                 const char     *id);
+MooFileDialog  *moo_file_dialog_new                     (MooFileDialogType type,
+                                                         GtkWidget      *parent,
+                                                         gboolean        multiple,
+                                                         const char     *title,
+                                                         const char     *start_dir,
+                                                         const char     *start_name);
+void            moo_file_dialog_set_filter_mgr          (MooFileDialog  *dialog,
+                                                         MooFilterMgr   *mgr,
+                                                         const char     *id);
 
-gboolean        moo_file_dialog_run             (MooFileDialog  *dialog);
-const char     *moo_file_dialog_get_filename    (MooFileDialog  *dialog);
-GSList         *moo_file_dialog_get_filenames   (MooFileDialog  *dialog);
+gboolean        moo_file_dialog_run                     (MooFileDialog  *dialog);
+const char     *moo_file_dialog_get_filename            (MooFileDialog  *dialog);
+char          **moo_file_dialog_get_filenames           (MooFileDialog  *dialog);
+const char     *moo_file_dialog_get_uri                 (MooFileDialog  *dialog);
+char          **moo_file_dialog_get_uris                (MooFileDialog  *dialog);
 
-void            moo_file_dialog_set_encoding    (MooFileDialog  *dialog,
-                                                 const char     *encoding);
-const char     *moo_file_dialog_get_encoding    (MooFileDialog  *dialog);
+void            moo_file_dialog_set_current_folder_uri  (MooFileDialog  *dialog,
+                                                         const char     *uri);
+const char     *moo_file_dialog_get_current_folder_uri  (MooFileDialog  *dialog);
 
-void            moo_file_dialog_set_help_id     (MooFileDialog  *dialog,
-                                                 const char     *id);
+void            moo_file_dialog_set_remember_size       (MooFileDialog  *dialog,
+                                                         const char     *prefs_key);
 
-const char     *moo_file_dialog                 (GtkWidget      *parent,
-                                                 MooFileDialogType type,
-                                                 const char     *basename_utf8,
-                                                 const char     *title,
-                                                 const char     *start_dir);
-const char     *moo_file_dialogp                (GtkWidget      *parent,
-                                                 MooFileDialogType type,
-                                                 const char     *basename_utf8,
-                                                 const char     *title,
-                                                 const char     *prefs_key,
-                                                 const char     *alternate_prefs_key);
+void            moo_file_dialog_set_check_name_func     (MooFileDialog  *dialog,
+                                                         MooFileDialogCheckNameFunc func,
+                                                         gpointer        data,
+                                                         GDestroyNotify  notify);
+void            moo_file_dialog_set_extra_widget        (MooFileDialog  *dialog,
+                                                         GtkWidget      *widget);
+
+void            moo_file_dialog_set_encoding            (MooFileDialog  *dialog,
+                                                         const char     *encoding);
+const char     *moo_file_dialog_get_encoding            (MooFileDialog  *dialog);
+
+void            moo_file_dialog_set_help_id             (MooFileDialog  *dialog,
+                                                         const char     *id);
+
+const char     *moo_file_dialog                         (GtkWidget      *parent,
+                                                         MooFileDialogType type,
+                                                         const char     *basename_utf8,
+                                                         const char     *title,
+                                                         const char     *start_dir);
+const char     *moo_file_dialogp                        (GtkWidget      *parent,
+                                                         MooFileDialogType type,
+                                                         const char     *basename_utf8,
+                                                         const char     *title,
+                                                         const char     *prefs_key,
+                                                         const char     *alternate_prefs_key);
 
 
 G_END_DECLS

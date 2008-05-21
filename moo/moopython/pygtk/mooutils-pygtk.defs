@@ -2364,7 +2364,19 @@
 (define-method get_filenames
   (of-object "MooFileDialog")
   (c-name "moo_file_dialog_get_filenames")
-  (return-type "GSList*")
+  (return-type "strv")
+)
+
+(define-method get_uri
+  (of-object "MooFileDialog")
+  (c-name "moo_file_dialog_get_uri")
+  (return-type "const-char*")
+)
+
+(define-method get_uris
+  (of-object "MooFileDialog")
+  (c-name "moo_file_dialog_get_uris")
+  (return-type "strv")
 )
 
 (define-function file_dialog

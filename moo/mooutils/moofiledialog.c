@@ -1,7 +1,7 @@
 /*
  *   moofiledialog.c
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -15,16 +15,16 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooutils-misc.h"
-#include "marshals.h"
+#include "mooutils/marshals.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/moohelp.h"
 #include <string.h>
 
 
-struct _MooFileDialogPrivate {
+struct MooFileDialogPrivate {
     gboolean multiple;
     char *title;
-    char *dir;
+    char *current_dir;
     char *name;
     MooFileDialogType type;
     GtkWidget *parent;
@@ -32,11 +32,17 @@ struct _MooFileDialogPrivate {
     char *filter_mgr_id;
     gboolean enable_encodings;
 
+    char *size_prefs_key;
     char *help_id;
 
-    GSList *filenames;
-    char *filename;
+    GSList *uris;
+    char *uri;
     char *encoding;
+
+    GtkWidget *extra_widget;
+    MooFileDialogCheckNameFunc check_name_func;
+    gpointer check_name_func_data;
+    GDestroyNotify check_name_func_data_notify;
 };
 
 
@@ -47,7 +53,7 @@ enum {
     PROP_0,
     PROP_MULTIPLE,
     PROP_TITLE,
-    PROP_DIR,
+    PROP_CURRENT_FOLDER_URI,
     PROP_NAME,
     PROP_TYPE,
     PROP_PARENT,
@@ -107,9 +113,9 @@ moo_file_dialog_set_property (GObject        *object,
             g_object_notify (object, "title");
             break;
 
-        case PROP_DIR:
-            MOO_ASSIGN_STRING (dialog->priv->dir, g_value_get_string (value));
-            g_object_notify (object, "dir");
+        case PROP_CURRENT_FOLDER_URI:
+            MOO_ASSIGN_STRING (dialog->priv->current_dir, g_value_get_string (value));
+            g_object_notify (object, "current-folder-uri");
             break;
 
         case PROP_NAME:
@@ -172,8 +178,8 @@ moo_file_dialog_get_property (GObject        *object,
             g_value_set_string (value, dialog->priv->title);
             break;
 
-        case PROP_DIR:
-            g_value_set_string (value, dialog->priv->dir);
+        case PROP_CURRENT_FOLDER_URI:
+            g_value_set_string (value, dialog->priv->current_dir);
             break;
 
         case PROP_NAME:
@@ -220,18 +226,24 @@ moo_file_dialog_finalize (GObject *object)
 {
     MooFileDialog *dialog = MOO_FILE_DIALOG (object);
 
-    g_free (dialog->priv->dir);
+    g_free (dialog->priv->current_dir);
     g_free (dialog->priv->title);
     g_free (dialog->priv->name);
     g_free (dialog->priv->filter_mgr_id);
-    g_free (dialog->priv->filename);
+    g_free (dialog->priv->uri);
     g_free (dialog->priv->encoding);
     g_free (dialog->priv->help_id);
-
-    string_slist_free (dialog->priv->filenames);
+    g_free (dialog->priv->size_prefs_key);
+    string_slist_free (dialog->priv->uris);
 
     if (dialog->priv->filter_mgr)
         g_object_unref (dialog->priv->filter_mgr);
+
+    if (dialog->priv->check_name_func_data_notify)
+        dialog->priv->check_name_func_data_notify (dialog->priv->check_name_func_data);
+
+    if (dialog->priv->extra_widget)
+        g_object_unref (dialog->priv->extra_widget);
 
     g_free (dialog->priv);
 
@@ -256,78 +268,41 @@ moo_file_dialog_class_init (MooFileDialogClass *klass)
     gobject_class->set_property = moo_file_dialog_set_property;
     gobject_class->get_property = moo_file_dialog_get_property;
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_MULTIPLE,
-                                     g_param_spec_boolean ("multiple",
-                                             "multiple",
-                                             "multiple",
-                                             FALSE,
-                                             G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_MULTIPLE,
+        g_param_spec_boolean ("multiple", "multiple", "multiple",
+                              FALSE, G_PARAM_READWRITE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_ENABLE_ENCODINGS,
-                                     g_param_spec_boolean ("enable-encodings",
-                                             "enable-encodings",
-                                             "enable-encodings",
-                                             FALSE,
-                                             G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_ENABLE_ENCODINGS,
+        g_param_spec_boolean ("enable-encodings", "enable-encodings", "enable-encodings",
+                              FALSE, G_PARAM_READWRITE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_TITLE,
-                                     g_param_spec_string ("title",
-                                             "title",
-                                             "title",
-                                             NULL,
-                                             G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_TITLE,
+        g_param_spec_string ("title", "title", "title",
+                             NULL, G_PARAM_READWRITE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_DIR,
-                                     g_param_spec_string ("dir",
-                                             "dir",
-                                             "dir",
-                                             NULL,
-                                             G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_CURRENT_FOLDER_URI,
+        g_param_spec_string ("current-folder-uri", "current-folder-uri",
+                             "current-folder-uri", NULL, G_PARAM_READWRITE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_NAME,
-                                     g_param_spec_string ("name",
-                                             "name",
-                                             "name",
-                                             NULL,
-                                             G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_NAME,
+        g_param_spec_string ("name", "name", "name", NULL, G_PARAM_READWRITE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_PARENT,
-                                     g_param_spec_object ("parent",
-                                             "parent",
-                                             "parent",
-                                             GTK_TYPE_WIDGET,
-                                             G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_PARENT,
+        g_param_spec_object ("parent", "parent", "parent",
+                             GTK_TYPE_WIDGET, G_PARAM_READWRITE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_TYPE,
-                                     g_param_spec_enum ("type",
-                                             "type",
-                                             "type",
-                                             MOO_TYPE_FILE_DIALOG_TYPE,
-                                             MOO_FILE_DIALOG_OPEN,
-                                             G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_TYPE,
+        g_param_spec_enum ("type", "type", "type",
+                           MOO_TYPE_FILE_DIALOG_TYPE, MOO_FILE_DIALOG_OPEN,
+                           G_PARAM_READWRITE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_FILTER_MGR,
-                                     g_param_spec_object ("filter-mgr",
-                                             "filter-mgr",
-                                             "filter-mgr",
-                                             MOO_TYPE_FILTER_MGR,
-                                             G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_FILTER_MGR,
+        g_param_spec_object ("filter-mgr", "filter-mgr", "filter-mgr",
+                             MOO_TYPE_FILTER_MGR, G_PARAM_READWRITE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_FILTER_MGR_ID,
-                                     g_param_spec_string ("filter-mgr-id",
-                                             "filter-mgr-id",
-                                             "filter-mgr-id",
-                                             NULL,
-                                             G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_FILTER_MGR_ID,
+        g_param_spec_string ("filter-mgr-id", "filter-mgr-id", "filter-mgr-id",
+                             NULL, G_PARAM_READWRITE));
 
     signals[DIALOG_CREATED] =
         g_signal_new ("dialog-created",
@@ -345,7 +320,7 @@ inline static
 GtkWidget *file_chooser_dialog_new (const char *title,
                                     GtkFileChooserAction action,
                                     const char *okbtn,
-                                    const char *start_dir,
+                                    const char *start_dir_uri,
                                     const char *help_id)
 {
     GtkWidget *dialog =
@@ -359,9 +334,9 @@ GtkWidget *file_chooser_dialog_new (const char *title,
                                              GTK_RESPONSE_CANCEL,
                                              -1);
 
-    if (start_dir)
-        gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER(dialog),
-                                             start_dir);
+    if (start_dir_uri)
+        gtk_file_chooser_set_current_folder_uri (GTK_FILE_CHOOSER(dialog),
+                                                 start_dir_uri);
 
 
     if (help_id)
@@ -376,10 +351,6 @@ GtkWidget *file_chooser_dialog_new (const char *title,
 
 #define file_chooser_set_select_multiple(dialog,multiple) \
     gtk_file_chooser_set_select_multiple (GTK_FILE_CHOOSER (dialog), multiple)
-#define file_chooser_get_filename(dialog) \
-    (gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog)))
-#define file_chooser_get_filenames(dialog)  \
-    (gtk_file_chooser_get_filenames (GTK_FILE_CHOOSER (dialog)))
 #define file_chooser_set_name(dialog, name) \
     gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), name)
 
@@ -426,7 +397,7 @@ moo_file_dialog_create_widget (MooFileDialog *dialog)
             widget = file_chooser_dialog_new (dialog->priv->title,
                                               chooser_action,
                                               GTK_STOCK_OPEN,
-                                              dialog->priv->dir,
+                                              dialog->priv->current_dir,
                                               dialog->priv->help_id);
             file_chooser_set_select_multiple (widget, dialog->priv->multiple);
             break;
@@ -437,7 +408,7 @@ moo_file_dialog_create_widget (MooFileDialog *dialog)
             widget = file_chooser_dialog_new (dialog->priv->title,
                                               chooser_action,
                                               GTK_STOCK_SAVE,
-                                              dialog->priv->dir,
+                                              dialog->priv->current_dir,
                                               dialog->priv->help_id);
 
             if (dialog->priv->name)
@@ -468,6 +439,12 @@ moo_file_dialog_create_widget (MooFileDialog *dialog)
                                      dialog->priv->type == MOO_FILE_DIALOG_SAVE,
                                      dialog->priv->encoding);
 
+    if (dialog->priv->extra_widget)
+        gtk_box_pack_start (GTK_BOX (extra_box), dialog->priv->extra_widget,
+                            FALSE, FALSE, 0);
+
+    if (dialog->priv->size_prefs_key)
+        _moo_window_set_remember_size (GTK_WINDOW (widget), dialog->priv->size_prefs_key, FALSE);
     if (dialog->priv->parent)
         moo_window_set_parent (widget, dialog->priv->parent);
 
@@ -477,34 +454,59 @@ moo_file_dialog_create_widget (MooFileDialog *dialog)
 }
 
 
-static GSList *
-string_slist_copy (GSList *list)
+static char **
+string_slist_to_strv (GSList *list)
 {
-    GSList *copy = NULL;
-    GSList *l;
+    guint len, i;
+    char **uris;
 
-    for (l = list; l != NULL; l = l->next)
-        copy = g_slist_prepend (copy, g_strdup (l->data));
+    if (!list)
+        return NULL;
 
-    return g_slist_reverse (copy);
+    len = g_slist_length (list);
+    uris = g_new (char*, len + 1);
+
+    for (i = 0; i < len; i++, list = list->next)
+        uris[i] = g_strdup (list->data);
+
+    uris[i] = NULL;
+    return uris;
+}
+
+static char **
+uri_list_to_filenames (GSList *list)
+{
+    guint len, i;
+    char **filenames;
+
+    if (!list)
+        return NULL;
+
+    len = g_slist_length (list);
+    filenames = g_new (char*, len + 1);
+
+    for (i = 0; i < len; i++, list = list->next)
+        filenames[i] = g_filename_from_uri (list->data, NULL, NULL); /* XXX check */
+
+    filenames[i] = NULL;
+    return filenames;
 }
 
 
 static void
-set_filename (MooFileDialog *dialog,
-              char          *filename)
+set_uri (MooFileDialog *dialog,
+         char          *uri)
 {
-    g_free (dialog->priv->filename);
-    dialog->priv->filename = filename;
+    g_free (dialog->priv->uri);
+    dialog->priv->uri = uri;
 }
 
-
 static void
-set_filenames (MooFileDialog *dialog,
-               GSList        *filenames)
+set_uris (MooFileDialog *dialog,
+          GSList        *uris)
 {
-    string_slist_free (dialog->priv->filenames);
-    dialog->priv->filenames = filenames;
+    string_slist_free (dialog->priv->uris);
+    dialog->priv->uris = uris;
 }
 
 
@@ -525,8 +527,8 @@ moo_file_dialog_set_encoding (MooFileDialog *dialog,
 
 
 static gboolean
-filename_is_valid (G_GNUC_UNUSED const char *filename,
-                   G_GNUC_UNUSED char      **msg)
+uri_is_valid (G_GNUC_UNUSED const char *uri,
+              G_GNUC_UNUSED char      **msg)
 {
 #ifndef __WIN32__
     return TRUE;
@@ -540,8 +542,12 @@ filename_is_valid (G_GNUC_UNUSED const char *filename,
         { "lpt1", 4 }, { "lpt2", 4 }, { "lpt3", 4 }
     };
     guint i;
+    char *filename;
     const char *basename;
     gboolean invalid = FALSE;
+
+    if (!(filename = g_filename_from_uri (uri, NULL, NULL)))
+        return TRUE;
 
     basename = strrchr (filename, '\\');
 
@@ -569,26 +575,43 @@ filename_is_valid (G_GNUC_UNUSED const char *filename,
         *msg = g_strdup_printf ("Filename '%s' is a reserved device name.\n"
                                 "Please choose another name", base);
         g_free (base);
-        return FALSE;
     }
 
-    return TRUE;
+    g_free (filename);
+    return !invalid;
 #endif
 }
 
 
+static char *
+get_uri_for_saving (MooFileDialog *dialog,
+                    GtkWidget     *filechooser)
+{
+    char *uri;
+    char *real;
+
+    if (!(uri = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (filechooser))) ||
+        !dialog->priv->check_name_func)
+            return uri;
+
+    real = dialog->priv->check_name_func (dialog, uri,
+                                          dialog->priv->check_name_func_data);
+
+    g_free (uri);
+    return real;
+}
+
 gboolean
 moo_file_dialog_run (MooFileDialog *dialog)
 {
-    char *filename;
     GtkWidget *filechooser;
     gboolean result = FALSE;
     int response;
 
     g_return_val_if_fail (MOO_IS_FILE_DIALOG (dialog), FALSE);
 
-    set_filename (dialog, NULL);
-    set_filenames (dialog, NULL);
+    set_uri (dialog, NULL);
+    set_uris (dialog, NULL);
 
     filechooser = moo_file_dialog_create_widget (dialog);
 
@@ -601,9 +624,11 @@ moo_file_dialog_run (MooFileDialog *dialog)
                 moo_help_open (filechooser);
             if (response == GTK_RESPONSE_OK)
             {
-                set_filename (dialog, file_chooser_get_filename (filechooser));
+                set_uri (dialog, gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (filechooser)));
+
                 if (dialog->priv->multiple)
-                    set_filenames (dialog, file_chooser_get_filenames (filechooser));
+                    set_uris (dialog, gtk_file_chooser_get_uris (GTK_FILE_CHOOSER (filechooser)));
+
                 result = TRUE;
             }
             goto out;
@@ -611,6 +636,10 @@ moo_file_dialog_run (MooFileDialog *dialog)
         case MOO_FILE_DIALOG_SAVE:
             while (TRUE)
             {
+                char *msg;
+                char *filename;
+                char *uri;
+
                 response = gtk_dialog_run (GTK_DIALOG (filechooser));
 
                 if (response == GTK_RESPONSE_HELP)
@@ -619,28 +648,34 @@ moo_file_dialog_run (MooFileDialog *dialog)
                     continue;
                 }
 
-                if (response == GTK_RESPONSE_OK)
+                if (response != GTK_RESPONSE_OK)
+                    goto out;
+
+                uri = get_uri_for_saving (dialog, filechooser);
+
+                if (!uri_is_valid (uri, &msg))
                 {
-                    char *msg;
+                    moo_error_dialog (filechooser, msg, NULL);
+                    g_free (uri);
+                    g_free (msg);
+                    continue;
+                }
 
-                    filename = file_chooser_get_filename (filechooser);
-
-                    if (!filename_is_valid (filename, &msg))
-                    {
-                        moo_error_dialog (filechooser, msg, NULL);
-                        g_free (filename);
-                        g_free (msg);
-                    }
-                    else if (g_file_test (filename, G_FILE_TEST_EXISTS) &&
-                             ! g_file_test (filename, G_FILE_TEST_IS_REGULAR))
+                if ((filename = g_filename_from_uri (uri, NULL, NULL)))
+                {
+                    if (g_file_test (filename, G_FILE_TEST_EXISTS) &&
+                        !g_file_test (filename, G_FILE_TEST_IS_REGULAR))
                     {
                         moo_error_dialog (filechooser,
                                           "Choosen file is not a regular file",
                                           NULL);
                         g_free (filename);
+                        g_free (uri);
+                        continue;
                     }
-                    else if (g_file_test (filename, G_FILE_TEST_EXISTS) &&
-                             g_file_test (filename, G_FILE_TEST_IS_REGULAR))
+
+                    if (g_file_test (filename, G_FILE_TEST_EXISTS) &&
+                        g_file_test (filename, G_FILE_TEST_IS_REGULAR))
                     {
                         char *basename = g_path_get_basename (filename);
                         char *dirname = g_path_get_dirname (filename);
@@ -655,24 +690,19 @@ moo_file_dialog_run (MooFileDialog *dialog)
                         g_free (display_name);
                         g_free (display_dirname);
 
-                        if (overwrite)
+                        if (!overwrite)
                         {
-                            set_filename (dialog, filename);
-                            result = TRUE;
-                            goto out;
+                            g_free (filename);
+                            g_free (uri);
+                            continue;
                         }
                     }
-                    else
-                    {
-                        set_filename (dialog, filename);
-                        result = TRUE;
-                        goto out;
-                    }
                 }
-                else
-                {
-                    goto out;
-                }
+
+                set_uri (dialog, uri);
+                g_free (filename);
+                result = TRUE;
+                goto out;
             }
 
         default:
@@ -684,8 +714,46 @@ out:
         set_encoding (dialog, _moo_encodings_combo_get (filechooser,
                                     dialog->priv->type == MOO_FILE_DIALOG_SAVE));
 
+    if (result)
+    {
+        g_free (dialog->priv->current_dir);
+        dialog->priv->current_dir =
+            gtk_file_chooser_get_current_folder_uri (GTK_FILE_CHOOSER (filechooser));
+    }
+
     gtk_widget_destroy (filechooser);
     return result;
+}
+
+
+void
+moo_file_dialog_set_check_name_func (MooFileDialog  *dialog,
+                                     MooFileDialogCheckNameFunc func,
+                                     gpointer        data,
+                                     GDestroyNotify  notify)
+{
+    g_return_if_fail (MOO_IS_FILE_DIALOG (dialog));
+
+    if (dialog->priv->check_name_func_data_notify)
+        dialog->priv->check_name_func_data_notify (dialog->priv->check_name_func_data);
+
+    dialog->priv->check_name_func = func;
+    dialog->priv->check_name_func_data = data;
+    dialog->priv->check_name_func_data_notify = notify;
+}
+
+void
+moo_file_dialog_set_extra_widget (MooFileDialog *dialog,
+                                  GtkWidget     *widget)
+{
+    g_return_if_fail (MOO_IS_FILE_DIALOG (dialog));
+    g_return_if_fail (!widget || GTK_IS_WIDGET (widget));
+
+    if (widget)
+        MOO_OBJECT_REF_SINK (widget);
+    if (dialog->priv->extra_widget)
+        g_object_unref (dialog->priv->extra_widget);
+    dialog->priv->extra_widget = widget;
 }
 
 
@@ -693,15 +761,28 @@ const char *
 moo_file_dialog_get_filename (MooFileDialog *dialog)
 {
     g_return_val_if_fail (MOO_IS_FILE_DIALOG (dialog), NULL);
-    return dialog->priv->filename;
+    return dialog->priv->uri ?
+        g_filename_from_uri (dialog->priv->uri, NULL, NULL) : NULL;
 }
 
+const char *
+moo_file_dialog_get_uri (MooFileDialog *dialog)
+{
+    g_return_val_if_fail (MOO_IS_FILE_DIALOG (dialog), NULL);
+    return dialog->priv->uri;
+}
 
-GSList *
+char **
 moo_file_dialog_get_filenames (MooFileDialog *dialog)
 {
     g_return_val_if_fail (MOO_IS_FILE_DIALOG (dialog), NULL);
-    return string_slist_copy (dialog->priv->filenames);
+    return uri_list_to_filenames (dialog->priv->uris);
+}
+
+char **
+moo_file_dialog_get_uris (MooFileDialog *dialog)
+{
+    return string_slist_to_strv (dialog->priv->uris);
 }
 
 
@@ -781,14 +862,23 @@ moo_file_dialog_new (MooFileDialogType type,
                      const char     *start_dir,
                      const char     *start_name)
 {
-    return g_object_new (MOO_TYPE_FILE_DIALOG,
-                         "parent", parent,
-                         "type", type,
-                         "multiple", multiple,
-                         "title", title,
-                         "dir", start_dir,
-                         "name", start_name,
-                         NULL);
+    char *start_dir_uri = NULL;
+    MooFileDialog *dialog;
+
+    if (start_dir)
+        start_dir_uri = g_filename_to_uri (start_dir, NULL, NULL);
+
+    dialog = g_object_new (MOO_TYPE_FILE_DIALOG,
+                           "parent", parent,
+                           "type", type,
+                           "multiple", multiple,
+                           "title", title,
+                           "current-folder-uri", start_dir_uri,
+                           "name", start_name,
+                           NULL);
+
+    g_free (start_dir_uri);
+    return dialog;
 }
 
 
@@ -808,6 +898,31 @@ moo_file_dialog_set_help_id (MooFileDialog *dialog,
                              const char    *id)
 {
     g_return_if_fail (MOO_IS_FILE_DIALOG (dialog));
-    g_free (dialog->priv->help_id);
-    dialog->priv->help_id = g_strdup (id);
+    MOO_ASSIGN_STRING (dialog->priv->help_id, id);
+}
+
+
+void
+moo_file_dialog_set_remember_size (MooFileDialog *dialog,
+                                   const char    *prefs_key)
+{
+    g_return_if_fail (MOO_IS_FILE_DIALOG (dialog));
+    g_return_if_fail (prefs_key != NULL);
+    MOO_ASSIGN_STRING (dialog->priv->size_prefs_key, prefs_key);
+}
+
+
+void
+moo_file_dialog_set_current_folder_uri (MooFileDialog *dialog,
+                                        const char    *uri)
+{
+    g_return_if_fail (MOO_IS_FILE_DIALOG (dialog));
+    MOO_ASSIGN_STRING (dialog->priv->current_dir, uri);
+}
+
+const char *
+moo_file_dialog_get_current_folder_uri (MooFileDialog *dialog)
+{
+    g_return_val_if_fail (MOO_IS_FILE_DIALOG (dialog), NULL);
+    return dialog->priv->current_dir;
 }

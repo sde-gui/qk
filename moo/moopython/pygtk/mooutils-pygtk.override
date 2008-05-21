@@ -555,33 +555,6 @@ _wrap_moo_prefs_new_key (G_GNUC_UNUSED PyObject *self, PyObject *args)
     return_None;
 }
 %%
-override moo_file_dialog_get_filenames noargs
-static PyObject *
-_wrap_moo_file_dialog_get_filenames (PyGObject *self)
-{
-    GSList *filenames;
-    guint n_files, i;
-    PyObject *ret;
-
-    filenames = moo_file_dialog_get_filenames (MOO_FILE_DIALOG (self->obj));
-
-    if (!filenames)
-        return_None;
-
-    n_files = g_slist_length (filenames);
-    ret = PyTuple_New (n_files);
-    g_return_val_if_fail (ret != NULL, NULL);
-
-    for (i = 0; i < n_files; ++i)
-    {
-        PyTuple_SET_ITEM (ret, i, PyString_FromString (filenames->data));
-        g_free (filenames->data);
-        filenames = g_slist_delete_link (filenames, filenames);
-    }
-
-    return ret;
-}
-%%
 override moo_get_data_dirs varargs
 static PyObject *
 _wrap_moo_get_data_dirs (G_GNUC_UNUSED PyObject *self, PyObject *args)

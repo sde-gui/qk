@@ -47,9 +47,8 @@ _moo_edit_open_dialog (GtkWidget      *widget,
     const char *encoding;
     char *new_start;
     char *freeme = NULL;
-    GSList *filenames = NULL;
+    char **filenames = NULL, **p;
     GSList *infos = NULL;
-    GSList *l;
 
     moo_prefs_create_key (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), MOO_PREFS_STATE, G_TYPE_STRING, NULL);
 
@@ -89,19 +88,18 @@ _moo_edit_open_dialog (GtkWidget      *widget,
     filenames = moo_file_dialog_get_filenames (dialog);
     g_return_val_if_fail (filenames != NULL, NULL);
 
-    for (l = filenames; l != NULL; l = l->next)
-        infos = g_slist_prepend (infos, moo_edit_file_info_new (l->data, encoding));
+    for (p = filenames; *p != NULL; ++p)
+        infos = g_slist_prepend (infos, moo_edit_file_info_new (*p, encoding));
     infos = g_slist_reverse (infos);
 
-    new_start = g_path_get_dirname (filenames->data);
+    new_start = g_path_get_dirname (filenames[0]);
     moo_prefs_set_filename (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), new_start);
     g_free (new_start);
 
 out:
     g_free (freeme);
     g_object_unref (dialog);
-    g_slist_foreach (filenames, (GFunc) g_free, NULL);
-    g_slist_free (filenames);
+    g_strfreev (filenames);
     return infos;
 }
 
