@@ -24,6 +24,10 @@
 #endif
 #endif
 
+#ifndef O_BINARY
+#define O_BINARY 0x0
+#endif
+
 G_BEGIN_DECLS
 
 
@@ -65,6 +69,8 @@ gboolean        _moo_rename_file            (const char *path,
 
 char          **moo_filenames_from_locale   (char      **files);
 char           *moo_filename_from_locale    (const char *file);
+char          *_moo_filename_to_uri         (const char *file,
+                                             GError    **error);
 
 char           *_moo_normalize_file_path    (const char *filename);
 gboolean        _moo_path_is_absolute       (const char *path);

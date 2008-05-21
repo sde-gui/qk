@@ -413,6 +413,28 @@ moo_filename_from_locale (const char *file)
 #endif
 }
 
+char *
+_moo_filename_to_uri (const char *file,
+                      GError    **error)
+{
+    char *uri;
+    char *freeme = NULL;
+
+    g_return_val_if_fail (file != NULL, NULL);
+
+    if (!_moo_path_is_absolute (file))
+    {
+        char *cd = g_get_current_dir ();
+        file = freeme = g_build_filename (cd, file, NULL);
+        g_free (cd);
+    }
+
+    uri = g_filename_to_uri (file, NULL, error);
+
+    g_free (freeme);
+    return uri;
+}
+
 
 #if 0
 static int

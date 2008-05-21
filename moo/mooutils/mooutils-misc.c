@@ -198,7 +198,7 @@ moo_open_file (const char *path)
 
     g_return_val_if_fail (path != NULL, FALSE);
 
-    uri = g_filename_to_uri (path, NULL, NULL);
+    uri = _moo_filename_to_uri (path, NULL);
     g_return_val_if_fail (uri != NULL, FALSE);
 
     ret = open_uri (uri, FALSE);
