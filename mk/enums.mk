@@ -1,5 +1,6 @@
 # -*- makefile -*-
 
+# $(enum_prefix), optional, prefix FOO in FOO_TYPE_SOMETHING
 # $(enum_file) must be the name of generated file
 # $(enum_headers) must be the list of headers to parse for enums
 
@@ -7,6 +8,8 @@ enum_hfile = $(enum_file).h
 enum_cfile = $(enum_file).c
 stamp_enum_hfile = stamp-$(enum_hfile)
 stamp_enum_cfile = stamp-$(enum_cfile)
+
+use_enum_prefix = $(if $(enum_prefix),$(enum_prefix),MOO)
 
 BUILT_SOURCES += $(stamp_enum_hfile) $(stamp_enum_cfile)
 CLEANFILES += $(stamp_enum_hfile) $(stamp_enum_cfile)
@@ -16,7 +19,7 @@ $(stamp_enum_hfile): $(enum_headers) Makefile
           glib-mkenums --fhead "#ifndef $$HGUARD\n#define $$HGUARD\n\n#include <glib-object.h>\n" \
                        --fhead "\nG_BEGIN_DECLS\n\n\n" \
                        --fprod "/* enumerations from @filename@ */\n" \
-                       --vhead "GType @enum_name@_get_type (void) G_GNUC_CONST;\n#define MOO_TYPE_@ENUMSHORT@ (@enum_name@_get_type())\n\n" \
+                       --vhead "GType @enum_name@_get_type (void) G_GNUC_CONST;\n#define $(use_enum_prefix)_TYPE_@ENUMSHORT@ (@enum_name@_get_type())\n\n" \
                        --ftail "\nG_END_DECLS\n\n#endif /* $$HGUARD */" \
 		$(enum_headers) ) > $(enum_hfile).tmp \
 	&& (cmp -s $(enum_hfile).tmp $(srcdir)/$(enum_hfile) || cp $(enum_hfile).tmp $(srcdir)/$(enum_hfile) ) \
