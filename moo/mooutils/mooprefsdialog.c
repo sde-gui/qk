@@ -11,10 +11,11 @@
  */
 
 #include "config.h"
-#include "mooutils/mooprefsdialog.h"
 #include "marshals.h"
+#include "mooutils/mooprefsdialog.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moohelp.h"
+#include "mooutils/mooutils-treeview.h"
 #include "help-sections.h"
 
 
@@ -346,7 +347,7 @@ moo_prefs_dialog_get_property (GObject    *object,
  */
 
 GtkWidget*
-moo_prefs_dialog_new (const char         *title)
+moo_prefs_dialog_new (const char *title)
 {
     return GTK_WIDGET (g_object_new (MOO_TYPE_PREFS_DIALOG,
                                      "title", title, NULL));
@@ -360,6 +361,7 @@ moo_prefs_dialog_run (MooPrefsDialog *dialog,
     g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
 
     moo_window_set_parent (GTK_WIDGET (dialog), parent);
+    _moo_tree_view_select_first (dialog->pages_list);
 
     dialog->running = TRUE;
     g_signal_emit_by_name (dialog, "init");
