@@ -67,6 +67,10 @@ G_STMT_START {                                                      \
                          TEST_STR_EQ, TEST_FMT_STR,                 \
                          format, __VA_ARGS__)
 
+#define TEST_ASSERT_STRV_EQ(actual,expected)                        \
+    TEST_ASSERT_CMP (char**, actual, expected,                      \
+                     TEST_STRV_EQ, =, TEST_FMT_STRV)
+
 #define TEST_ASSERT_STRV_EQ_MSG(actual,expected,format,...)         \
     TEST_ASSERT_CMP_MSG (char**, actual, expected,                  \
                          TEST_STRV_EQ, TEST_FMT_STRV,               \

@@ -95,6 +95,7 @@ lua_addpath (lua_State  *L,
 #ifdef MOO_ENABLE_UNIT_TESTS
 
 #include "moo-tests-lua.h"
+#include "moolua/moolua-tests.h"
 
 static void
 test_unicode (void)

@@ -12,8 +12,7 @@ test_sources =			\
 	moo-test-utils.c	\
 	moo-test-utils.h	\
 	moo-test-macros.h	\
-	moo-tests-lua.h		\
-	moo-tests.h
+	moo-tests-lua.h
 
 scriptsdir = ${MOO_DATA_DIR}/scripts
 scripts_SCRIPTS =		\

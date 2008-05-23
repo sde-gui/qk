@@ -1,3 +1,10 @@
+new-app
+  system info command line option
+
+run file, generic for any language
+ctrl-pageup
+
+
 1. Make python plugin use temporary file if the document isn't saved.
 2. Buffering in MooCmd.
 3. Queue commands in MooCmdView.

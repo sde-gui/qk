@@ -1,4 +1,6 @@
-#include <moo-tests.h>
+#include <mooedit/mooedit-tests.h>
+#include <moolua/moolua-tests.h>
+#include <mooutils/mooutils-tests.h>
 #include <gtk/gtk.h>
 
 static void

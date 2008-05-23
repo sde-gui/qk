@@ -896,7 +896,7 @@ moo_key_file_format (MooKeyFile *key_file,
 
 #ifdef MOO_ENABLE_UNIT_TESTS
 
-#include "moo-tests.h"
+#include <mooedit/mooedit-tests.h>
 
 #define CMT_BODY1           \
 "A comment\n"               \

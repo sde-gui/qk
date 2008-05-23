@@ -791,6 +791,7 @@ _moo_lua_push_object (lua_State *L,
 #ifdef MOO_ENABLE_UNIT_TESTS
 
 #include "moo-tests-lua.h"
+#include <mooedit/mooedit-tests.h>
 
 static int
 cfunc_present_widget (lua_State *L)

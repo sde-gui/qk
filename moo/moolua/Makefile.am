@@ -20,6 +20,7 @@ libmoolua_la_SOURCES =		\
 	ext/lfs.c		\
 	moolua.h		\
 	moolua.c		\
+	moolua-tests.h		\
 	slnunico.c
 
 # noinst_PROGRAMS = lua

@@ -123,6 +123,7 @@ mooutils_sources =			\
 	mooutils-mem.h			\
 	mooutils-misc.c			\
 	mooutils-misc.h			\
+	mooutils-tests.h		\
 	mooutils-treeview.c		\
 	mooutils-treeview.h		\
 	moowindow.c			\

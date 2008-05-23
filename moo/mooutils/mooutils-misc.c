@@ -2250,7 +2250,7 @@ _moo_message (const char *format,
 
 #ifdef MOO_ENABLE_UNIT_TESTS
 
-#include "moo-tests.h"
+#include <mooutils/mooutils-tests.h>
 
 static void
 test_strv_one (const char *string,

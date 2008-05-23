@@ -789,7 +789,7 @@ _moo_path_is_absolute (const char *path)
 
 #ifdef MOO_ENABLE_UNIT_TESTS
 
-#include <moo-tests.h>
+#include <mooutils/mooutils-tests.h>
 
 static void
 test_normalize_path_one (const char *path,
@@ -1881,7 +1881,7 @@ moo_string_writer_get_string (MooFileWriter *fwriter,
 
 #ifdef MOO_ENABLE_UNIT_TESTS
 
-#include <moo-tests.h>
+#include <mooutils/mooutils-tests.h>
 
 static gboolean
 check_file_contents (const char *filename,

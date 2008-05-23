@@ -43,6 +43,7 @@ mooedit_sources =			\
 	mooedit-enums.c			\
 	mooedit-enums.h			\
 	mooedit-private.h		\
+	mooedit-tests.h			\
 	mooedit.c			\
 	mooedit.h			\
 	mooeditaction-factory.c		\

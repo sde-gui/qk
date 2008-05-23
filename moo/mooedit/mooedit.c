@@ -1891,7 +1891,7 @@ _moo_edit_set_state (MooEdit        *edit,
 
 #ifdef MOO_ENABLE_UNIT_TESTS
 
-#include <moo-tests.h>
+#include <mooedit/mooedit-tests.h>
 #include <mooutils/mooutils-fs.h>
 #include <mooutils/moocompat.h>
 
