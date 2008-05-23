@@ -1,6 +1,5 @@
 medit/main.c
 medit/medit.desktop.in
-medit/meditapp.c
 moo/mooedit/filters.xml
 moo/mooedit/glade/mooeditprefs-file.glade
 moo/mooedit/glade/mooeditprefs-general.glade
