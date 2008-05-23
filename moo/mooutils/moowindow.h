@@ -64,6 +64,8 @@ GType       moo_window_get_type             (void) G_GNUC_CONST;
 gboolean    moo_window_close                (MooWindow          *window);
 void        moo_window_apply_prefs          (MooWindow          *window);
 
+void        moo_window_set_edit_ops_widget  (MooWindow          *window,
+                                             GtkWidget          *widget);
 
 /*****************************************************************************/
 /* Actions

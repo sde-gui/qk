@@ -1965,6 +1965,28 @@ _moo_window_class_new_action_callback (MooWindowClass *klass,
 /* MooEditOps
  */
 
+void
+moo_window_set_edit_ops_widget (MooWindow *window,
+                                GtkWidget *widget)
+{
+    g_return_if_fail (MOO_IS_WINDOW (window));
+    g_return_if_fail (!widget || GTK_IS_WIDGET (widget));
+
+    if (widget == window->priv->default_eo_widget)
+        return;
+
+    if (widget)
+    {
+        GtkWidget *toplevel = gtk_widget_get_toplevel (widget);
+        g_return_if_fail (toplevel == GTK_WIDGET (window));
+        g_return_if_fail (_moo_edit_ops_check (widget));
+    }
+
+    /* XXX remove it when it's removed from the window or destroyed */
+    window->priv->default_eo_widget = widget;
+}
+
+
 static void
 moo_window_action_cut (MooWindow *window)
 {
