@@ -10,7 +10,7 @@ AC_DEFUN_ONCE([MOO_AM_MIME_MK],[
 
 AC_DEFUN_ONCE([MOO_AM_RC_MK],[
   AC_REQUIRE([MOO_AC_CHECK_OS])
-  if test $MOO_OS_MINGW = "yes"; then
+  if test x$MOO_OS_MINGW = "xyes"; then
     AC_ARG_VAR([WINDRES], [windres])
     AC_CHECK_TOOL(WINDRES, windres, :)
   fi
