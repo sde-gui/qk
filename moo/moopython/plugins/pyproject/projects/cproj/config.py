@@ -165,7 +165,7 @@ class CConfig(SimpleConfig):
         string = ''
         if vars:
             for v in vars:
-                 string += "%s='%s' " % (v, vars[v])
+                 string += '%s="%s" ' % (v, vars[v])
         return string
 
     def __get_make(self, suffix=None):
