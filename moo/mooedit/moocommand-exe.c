@@ -30,7 +30,7 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#ifdef HAVE_IO_H
+#ifdef __WIN32__
 #include <io.h>
 #endif
 

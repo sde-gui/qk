@@ -183,10 +183,6 @@ libmooedit_la_SOURCES = $(mooedit_sources)
 libmooedit_la_LIBADD = plugins/libmooeditplugins.la gtksourceview/libgtksourceview.la
 
 AM_CFLAGS =			\
-	-I..			\
-	-I$(top_builddir)	\
-	-I$(top_srcdir)/doc	\
-	-I$(top_builddir)/doc	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
 AM_OBJCFLAGS = $(AM_CFLAGS)

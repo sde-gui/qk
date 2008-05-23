@@ -54,8 +54,8 @@ $ACLOCAL $ACLOCAL_FLAGS || exit $?
 echo $AUTOHEADER
 $AUTOHEADER || exit $?
 
-echo $AUTOMAKE --add-missing --foreign --copy
-$AUTOMAKE --add-missing --foreign --copy || exit $?
+echo $AUTOMAKE --add-missing --copy
+$AUTOMAKE --add-missing --copy || exit $?
 
 echo $AUTOCONF
 $AUTOCONF || exit $?

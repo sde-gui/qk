@@ -32,7 +32,6 @@ libnewgtk_la_SOURCES +=	glib-2.8/glib/gmappedfile.c
 endif
 
 AM_CFLAGS =				\
-	-I$(top_builddir)		\
 	$(pcre_cflags)			\
 	$(MOO_CFLAGS)			\
 	$(MOO_DEBUG_CFLAGS)		\

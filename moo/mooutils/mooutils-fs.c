@@ -1218,12 +1218,8 @@ _moo_rename (const char *old_name,
 /* Glob matching
  */
 
-#if 0 && defined(HAVE_FNMATCH_H)
-#include <fnmatch.h>
-#else
 #define MOO_GLOB_REGEX
 #include <glib/gregex.h>
-#endif
 
 typedef struct _MooGlob {
 #ifdef MOO_GLOB_REGEX

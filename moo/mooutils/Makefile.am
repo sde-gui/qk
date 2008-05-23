@@ -206,10 +206,6 @@ objc_flag = "-xobjective-c"
 endif
 
 AM_CFLAGS =					\
-	-I$(top_builddir)			\
-	-I..					\
-	-I$(top_srcdir)/doc			\
-	-I$(top_builddir)/doc			\
 	$(MOO_CFLAGS)				\
 	$(MOO_DEBUG_CFLAGS)			\
 	$(MOO_WIN32_CFLAGS)			\

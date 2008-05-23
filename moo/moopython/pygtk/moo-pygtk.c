@@ -1,7 +1,7 @@
 /*
  *   moo-pygtk.c
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -16,7 +16,7 @@
 #include "config.h"
 #endif
 
-#include "moopython/pygtk/moo-mod.h"
+#include "moo-mod.h"
 #include "moopython/pygtk/moo-pygtk.h"
 #include "moopython/moopython-utils.h"
 #include <pygobject.h>  /* _PyGObjectAPI lives here */

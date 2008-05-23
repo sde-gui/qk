@@ -34,19 +34,17 @@ moofileview_sources =		\
 	mootreeview.c		\
 	mootreeview.h
 
-
 moofileview_pixmaps =		\
 	symlink.png		\
 	symlink-small.png
-BUILT_SOURCES = symlink.h
-CLEANFILES = symlink.h
+BUILT_SOURCES = moofileicons-symlink.h
+CLEANFILES = moofileicons-symlink.h
 EXTRA_DIST = $(moofileview_pixmaps)
 
-symlink.h: $(moofileview_pixmaps)
+moofileicons-symlink.h: $(moofileview_pixmaps)
 	gdk-pixbuf-csource --static --build-list	\
 		SYMLINK_ARROW $(srcdir)/symlink.png	\
 		SYMLINK_ARROW_SMALL $(srcdir)/symlink-small.png > $@.tmp && mv $@.tmp $@
-
 
 glade_files =				\
 	glade/moofileview-drop.glade	\
@@ -63,10 +61,7 @@ noinst_LTLIBRARIES = libmoofileview.la
 libmoofileview_la_SOURCES = $(moofileview_sources)
 
 AM_CFLAGS =			\
-	-I..			\
-	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
-
 
 include ../../mk/marshals.mk

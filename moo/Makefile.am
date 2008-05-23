@@ -1,5 +1,4 @@
 AM_CFLAGS =			\
-	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
 
@@ -8,20 +7,6 @@ ini_files = $(ini_in_files:.ini.in=.ini)
 %.ini: %.ini.in $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status --file=$(subdir)/$@
 CLEANFILES = $(ini_files)
-
-moo-config-dirs.h: moo-config-dirs.h.stamp
-moo-config-dirs.h.stamp: Makefile
-	{ echo '#define MOO_DATA_DIR "$(MOO_DATA_DIR)"'; \
-	  echo '#define MOO_LIB_DIR "$(MOO_LIB_DIR)"'; \
-	  echo '#define MOO_LOCALE_DIR "$(MOO_LOCALE_DIR)"'; \
-	  echo '#define MOO_HELP_DIR "$(MOO_HELP_DIR)"'; \
-	} | sed '/""/d' > moo-config-dirs.h.tmp || exit 1
-	cmp -s moo-config-dirs.h moo-config-dirs.h.tmp || \
-	    mv moo-config-dirs.h.tmp moo-config-dirs.h || exit 1
-	rm -f moo-config-dirs.h.tmp
-	echo stamp > moo-config-dirs.h.stamp
-BUILT_SOURCES = moo-config-dirs.h.stamp
-CLEANFILES += moo-config-dirs.h.stamp moo-config-dirs.h
 
 test_sources =			\
 	moo-test-utils.c	\
@@ -99,7 +84,7 @@ endif
 
 nodist_libmoo_la_SOURCES =
 
-BUILT_SOURCES += marshals.c marshals.list
+BUILT_SOURCES = marshals.c marshals.list
 nodist_libmoo_la_SOURCES += marshals.c
 CLEANFILES += marshals.c marshals.list
 marshals.c: marshals.list

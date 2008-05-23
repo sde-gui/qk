@@ -1,6 +1,4 @@
 AM_CFLAGS =					\
-	-I$(top_builddir)			\
-	$(MOO_DEBUG_CFLAGS)			\
 	$(MOO_CFLAGS)				\
 	$(MOO_DEBUG_CFLAGS)			\
 	$(MOO_W_NO_UNUSED)

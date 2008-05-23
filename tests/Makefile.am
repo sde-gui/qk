@@ -11,8 +11,6 @@ TESTS = run-tests
 endif
 
 AM_CFLAGS =			\
-	-I$(top_builddir)	\
-	-I../moo		\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
 AM_OBJCFLAGS = $(AM_CFLAGS)

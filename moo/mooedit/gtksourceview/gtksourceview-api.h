@@ -1,12 +1,12 @@
-#ifndef __GTK_SOURCE_VIEW_API_H__
-#define __GTK_SOURCE_VIEW_API_H__
+#ifndef GTK_SOURCE_VIEW_API_H
+#define GTK_SOURCE_VIEW_API_H
 
 
-#include "mooedit/gtksourceview/gtksourcelanguage-private-mangled.h"
-#include "mooedit/gtksourceview/gtksourcelanguagemanager-mangled.h"
-#include "mooedit/gtksourceview/gtksourcestyleschememanager-mangled.h"
-#include "mooedit/gtksourceview/gtksourceiter-mangled.h"
-#include "mooedit/gtksourceview/gtksourcestyle-private-mangled.h"
+#include "gtksourceview/gtksourcelanguage-private-mangled.h"
+#include "gtksourceview/gtksourcelanguagemanager-mangled.h"
+#include "gtksourceview/gtksourcestyleschememanager-mangled.h"
+#include "gtksourceview/gtksourceiter-mangled.h"
+#include "gtksourceview/gtksourcestyle-private-mangled.h"
 
 #define GtkSourceLanguage			MooGtkSourceLanguage
 #define GtkSourceLanguageClass			MooGtkSourceLanguageClass
@@ -49,4 +49,4 @@
 #define _gtk_source_style_apply					_moo_gtk_source_style_apply
 
 
-#endif /* __GTK_SOURCE_VIEW_API_H__ */
+#endif /* GTK_SOURCE_VIEW_API_H */

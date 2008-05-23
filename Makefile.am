@@ -1,4 +1,4 @@
-AUTOMAKE_OPTIONS = dist-bzip2 no-dist-gzip foreign nostdinc
+AUTOMAKE_OPTIONS = dist-bzip2 no-dist-gzip
 
 EXTRA_DIST =			\
 	autogen.sh		\
@@ -36,6 +36,20 @@ if MOO_ENABLE_UNIT_TESTS
 SUBDIRS += tests
 endif
 endif
+
+moo-config-dirs.h: moo-config-dirs.h.stamp
+moo-config-dirs.h.stamp: Makefile
+	{ echo '#define MOO_DATA_DIR "$(MOO_DATA_DIR)"'; \
+	  echo '#define MOO_LIB_DIR "$(MOO_LIB_DIR)"'; \
+	  echo '#define MOO_LOCALE_DIR "$(MOO_LOCALE_DIR)"'; \
+	  echo '#define MOO_HELP_DIR "$(MOO_HELP_DIR)"'; \
+	} | sed '/""/d' > moo-config-dirs.h.tmp || exit 1
+	cmp -s moo-config-dirs.h moo-config-dirs.h.tmp || \
+	    mv moo-config-dirs.h.tmp moo-config-dirs.h || exit 1
+	rm -f moo-config-dirs.h.tmp
+	echo stamp > moo-config-dirs.h.stamp
+BUILT_SOURCES += moo-config-dirs.h.stamp
+CLEANFILES = moo-config-dirs.h.stamp moo-config-dirs.h
 
 ACLOCAL_AMFLAGS = -I m4
 

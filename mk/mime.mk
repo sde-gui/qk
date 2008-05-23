@@ -1,6 +1,7 @@
 # -*- makefile -*-
 
 # $(mime_in_files) should be a list of .xml.in files
+# call MOO_AM_MIME_MK autoconf macro
 
 mimepackagesdir = $(mimedir)/packages
 mime_files = $(patsubst %.xml.in,%.xml,$(mime_in_files))

@@ -3,6 +3,8 @@
 # $(rc_in_files) should be a list of input *.rc.in files
 # $(rc_files) is defined to be a list of generated *.res files
 
+# call MOO_AM_RC_MK autoconf macro
+
 if MOO_OS_MINGW
 
 %.res: %.rc.in $(top_builddir)/config.status

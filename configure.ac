@@ -3,13 +3,14 @@
 #
 
 AC_INIT([medit],[0.9.4],[muntyan@tamu.edu],[medit])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([foreign std-options])
 AC_CANONICAL_HOST
 
 AC_CONFIG_HEADERS(config.h)
 MOO_DEFINE_VERSIONS(moo, AC_PACKAGE_VERSION)
 MOO_DEFINE_MODULE_VERSIONS(1,0)
 
+MOO_AC_SRCDIR(moo)
 MOO_AC_I18N(moo)
 MOO_AC_PO_GSV
 
@@ -20,15 +21,12 @@ AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 
-MOO_AC_PROGS
-
 ACLOCAL="$ACLOCAL $ACLOCAL_FLAGS"
 
-MOO_SRC_PREFIX="moo"
-AC_SUBST(MOO_SRC_PREFIX)
 MOO_COMPONENTS([ui,edit,term],[])
 MOO_AC_SET_DIRS
-MOO_AC_FLAGS(moo)
+MOO_AC_PRIV_FLAGS
+MOO_AM_MK
 
 
 ################################################################################

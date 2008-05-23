@@ -80,8 +80,6 @@ EXTRA_DIST += $(mooterm_unix_sources)
 endif
 
 AM_CFLAGS =			\
-	-I$(top_builddir)	\
-	-I..			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
 
@@ -90,12 +88,11 @@ noinst_PROGRAMS = termhelper
 termhelper_SOURCES = $(termhelper_sources)
 nodist_termhelper_SOURCES = mootermhelper_res.res
 CLEANFILES += mootermhelper_res.res
-termhelper_CFLAGS =                         \
-    -I$(top_builddir)                       \
-    -I$(top_srcdir)                         \
-    -I$(top_srcdir)/$(MOO_SRC_PREFIX)       \
-    -I$(top_builddir)/$(MOO_SRC_PREFIX)     \
-    $(MOO_DEBUG_CFLAGS)                     \
+termhelper_CFLAGS =	\
+    -I$(top_builddir)	\
+    -I$(srcdir)/..	\
+    -I..		\
+    $(MOO_DEBUG_CFLAGS)	\
     $(CFLAGS)
 mootermhelper_res.res: mootermhelper_res.rc
 	$(WINDRES) -i mootermhelper_res.rc --input-format=rc -o mootermhelper_res.res -O coff

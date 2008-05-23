@@ -1,7 +1,5 @@
 AM_CFLAGS =			\
 	-I../..			\
-	-I$(top_builddir)	\
-	-I$(top_builddir)/moo	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
 AM_OBJCFLAGS = $(AM_CFLAGS)

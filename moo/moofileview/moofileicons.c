@@ -15,7 +15,7 @@
 #endif
 
 #include "moofileview/moofileicons.h"
-#include "moofileview/symlink.h"
+#include "moofileicons-symlink.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/moostock.h"

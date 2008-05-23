@@ -1,7 +1,7 @@
 /*
  *   mooterm-mod.c
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -15,7 +15,7 @@
 #include <pygobject.h>
 #include <glib.h>
 #include "moopython/pygtk/moo-pygtk.h"
-#include "moopython/pygtk/mooterm-mod.h"
+#include "mooterm-mod.h"
 #include "moopython/moopython-utils.h"
 
 

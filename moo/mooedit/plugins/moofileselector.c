@@ -20,7 +20,7 @@
 #include "moofileview/moofileview-tools.h"
 #include "mooeditplugins.h"
 #include "moofileselector-glade.h"
-#include "mooedit/marshals.h"
+#include "marshals.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"

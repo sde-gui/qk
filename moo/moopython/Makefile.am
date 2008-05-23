@@ -59,8 +59,6 @@ noinst_LTLIBRARIES += libmoomod.la libpymoo.la
 endif !MOO_OS_UNIX
 
 AM_CFLAGS =			\
-	-I..			\
-	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
 	$(PYTHON_INCLUDES)	\

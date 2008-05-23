@@ -1,6 +1,4 @@
 AM_CFLAGS =			\
-	-I$(top_builddir)	\
-	-I../moo		\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
 
@@ -28,8 +26,8 @@ EXTRA_DIST =
 CLEANFILES =
 include ../mk/rc.mk
 
-medit-credits.h: ../THANKS $(XML2H)
-	$(SHELL) $(XML2H) THANKS $(srcdir)/../THANKS > $@.tmp && \
+medit-credits.h: ../THANKS $(MOO_XML2H)
+	$(SHELL) $(MOO_XML2H) THANKS $(srcdir)/../THANKS > $@.tmp && \
 	mv $@.tmp $(srcdir)/medit-credits.h
 
 EXTRA_DIST += medit.desktop.in

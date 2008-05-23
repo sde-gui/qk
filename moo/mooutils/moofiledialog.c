@@ -11,13 +11,13 @@
  */
 
 #include "config.h"
-#include <gtk/gtk.h>
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooutils-misc.h"
-#include "mooutils/marshals.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/moohelp.h"
+#include "marshals.h"
+#include <gtk/gtk.h>
 #include <string.h>
 
 

@@ -175,8 +175,6 @@ nodist_libmoopygtk_la_SOURCES = $(nodist_moopygtk_sources)
 libmoopygtk_la_LIBADD =
 
 common_cflags =			\
-	-I../..			\
-	-I$(top_builddir)	\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)	\
 	$(MOO_W_NO_WRITE_STRINGS)\
