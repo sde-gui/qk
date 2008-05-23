@@ -15,9 +15,6 @@ AC_DEFUN_ONCE([MOO_AC_SET_DIRS],[
   MOO_LIB_DIR="${libdir}/$MOO_PACKAGE_NAME"
   AC_SUBST(MOO_LIB_DIR)
 
-  mimedir="${datadir}/mime"
-  AC_SUBST(mimedir)
-
   MOO_PLUGINS_DIR="${MOO_LIB_DIR}/plugins"
   AC_SUBST(MOO_PLUGINS_DIR)
 
