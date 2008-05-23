@@ -3,7 +3,7 @@
 #
 
 AC_INIT([medit],[0.9.4],[muntyan@tamu.edu],[medit])
-AM_INIT_AUTOMAKE([foreign std-options])
+AM_INIT_AUTOMAKE([foreign])
 AC_CANONICAL_HOST
 
 AC_CONFIG_HEADERS(config.h)
