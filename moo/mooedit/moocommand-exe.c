@@ -143,7 +143,8 @@ moo_command_exe_finalize (GObject *object)
 
 
 static char *
-get_lines (GtkTextView *doc)
+get_lines (GtkTextView *doc,
+           gboolean     select_them)
 {
     GtkTextBuffer *buffer;
     GtkTextIter start, end;
@@ -156,14 +157,16 @@ get_lines (GtkTextView *doc)
     if (!gtk_text_iter_starts_line (&end) || gtk_text_iter_equal (&start, &end))
         gtk_text_iter_forward_line (&end);
 
-    gtk_text_buffer_select_range (buffer, &end, &start);
+    if (select_them)
+        gtk_text_buffer_select_range (buffer, &end, &start);
 
     return gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
 }
 
 static char *
 get_input (MooCommandExe     *cmd,
-           MooCommandContext *ctx)
+           MooCommandContext *ctx,
+           gboolean           select_it)
 {
     GtkTextView *doc = moo_command_context_get_doc (ctx);
 
@@ -174,7 +177,7 @@ get_input (MooCommandExe     *cmd,
         case MOO_COMMAND_EXE_INPUT_NONE:
             return NULL;
         case MOO_COMMAND_EXE_INPUT_LINES:
-            return get_lines (doc);
+            return get_lines (doc, select_it);
         case MOO_COMMAND_EXE_INPUT_SELECTION:
             return moo_text_view_get_selection (doc);
         case MOO_COMMAND_EXE_INPUT_DOC:
@@ -255,12 +258,13 @@ make_cmd (const char *base_cmd_line,
 
 static char *
 make_cmd_line (MooCommandExe     *cmd,
-               MooCommandContext *ctx)
+               MooCommandContext *ctx,
+               gboolean           select_input)
 {
     char *input;
     char *cmd_line;
 
-    input = get_input (cmd, ctx);
+    input = get_input (cmd, ctx, select_input);
     cmd_line = make_cmd (cmd->priv->cmd_line, input);
 
     g_free (input);
@@ -389,7 +393,7 @@ run_command_in_pane (MooCommandExe     *cmd,
     g_return_if_fail (cmd->priv->input == MOO_COMMAND_EXE_INPUT_NONE || doc != NULL);
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
 
-    cmd_line = make_cmd_line (cmd, ctx);
+    cmd_line = make_cmd_line (cmd, ctx, FALSE);
     g_return_if_fail (cmd_line != NULL);
 
     run_in_pane (window, doc, cmd->priv->filter, cmd_line,
@@ -579,12 +583,13 @@ run_command (MooCommandExe     *cmd,
              MooCommandContext *ctx,
              const char        *working_dir,
              char             **envp,
-             char             **output)
+             char             **output,
+             gboolean           select_input)
 {
     gboolean result;
     char *input;
 
-    input = get_input (cmd, ctx);
+    input = get_input (cmd, ctx, select_input);
     result = run_sync (cmd->priv->cmd_line, working_dir, envp,
                        input, NULL, output, NULL);
 
@@ -674,7 +679,7 @@ run_command_async (MooCommandExe     *cmd,
     char *cmd_line;
     MooEditWindow *window;
 
-    cmd_line = make_cmd_line (cmd, ctx);
+    cmd_line = make_cmd_line (cmd, ctx, FALSE);
 
     if (!cmd_line)
         return FALSE;
@@ -705,7 +710,7 @@ moo_command_exe_run (MooCommand        *cmd_base,
             run_command_in_pane (cmd, ctx, working_dir, envp);
             goto out;
         case MOO_COMMAND_EXE_OUTPUT_NONE:
-            run_command (cmd, ctx, working_dir, envp, NULL);
+            run_command (cmd, ctx, working_dir, envp, NULL, FALSE);
             goto out;
         case MOO_COMMAND_EXE_OUTPUT_NONE_ASYNC:
             run_command_async (cmd, ctx, working_dir, envp, FALSE);
@@ -719,7 +724,8 @@ moo_command_exe_run (MooCommand        *cmd_base,
             break;
     }
 
-    if (!run_command (cmd, ctx, working_dir, envp, &output))
+    if (!run_command (cmd, ctx, working_dir, envp, &output,
+                      cmd->priv->output == MOO_COMMAND_EXE_OUTPUT_INSERT))
         goto out;
 
     if (cmd->priv->output == MOO_COMMAND_EXE_OUTPUT_INSERT)
