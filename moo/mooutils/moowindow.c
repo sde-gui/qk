@@ -1979,7 +1979,7 @@ moo_window_set_edit_ops_widget (MooWindow *window,
     {
         GtkWidget *toplevel = gtk_widget_get_toplevel (widget);
         g_return_if_fail (toplevel == GTK_WIDGET (window));
-        g_return_if_fail (_moo_edit_ops_check (widget));
+        g_return_if_fail (_moo_edit_ops_check (G_OBJECT (widget)));
     }
 
     /* XXX remove it when it's removed from the window or destroyed */
