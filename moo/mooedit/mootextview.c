@@ -889,7 +889,7 @@ moo_text_view_message (MooTextView *view,
     toplevel = gtk_widget_get_toplevel (GTK_WIDGET (view));
 
     if (MOO_IS_EDIT_WINDOW (toplevel))
-        moo_edit_window_message (MOO_EDIT_WINDOW (toplevel), message);
+        moo_window_message (MOO_WINDOW (toplevel), message);
 }
 
 
@@ -4247,7 +4247,7 @@ quick_search_message (MooTextView *view,
     window = gtk_widget_get_toplevel (GTK_WIDGET (view));
 
     if (MOO_IS_EDIT_WINDOW (window))
-        moo_edit_window_message (MOO_EDIT_WINDOW (window), msg);
+        moo_window_message (MOO_WINDOW (window), msg);
 }
 
 

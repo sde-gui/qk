@@ -34,6 +34,7 @@
 #define PREFS_MAXIMIZED      "window/maximized"
 #define PREFS_SHOW_TOOLBAR   "window/show_toolbar"
 #define PREFS_SHOW_MENUBAR   "window/show_menubar"
+#define PREFS_SHOW_STATUSBAR "window/show_statusbar"
 #define PREFS_TOOLBAR_STYLE  "window/toolbar_style"
 
 #define TOOLBAR_STYLE_ACTION_ID "ToolbarStyle"
@@ -51,6 +52,8 @@ struct _MooWindowPrivate {
     char *menubar_ui_name;
     GtkWidget *menubar_holder;
     gboolean menubar_visible;
+
+    gboolean statusbar_visible;
 
     MooUIXML *ui_xml;
     MooActionCollection *actions;
@@ -127,6 +130,8 @@ static void         moo_window_set_menubar_visible      (MooWindow      *window,
                                                          gboolean        visible);
 static void         moo_window_set_toolbar_visible      (MooWindow      *window,
                                                          gboolean        visible);
+static void         moo_window_set_statusbar_visible    (MooWindow      *window,
+                                                         gboolean        visible);
 
 static GtkAction   *create_toolbar_style_action         (MooWindow      *window,
                                                          gpointer        dummy);
@@ -154,6 +159,7 @@ enum {
     PROP_ACTIONS,
     PROP_TOOLBAR_VISIBLE,
     PROP_MENUBAR_VISIBLE,
+    PROP_STATUSBAR_VISIBLE,
 
     PROP_MEO_CAN_CUT,
     PROP_MEO_CAN_COPY,
@@ -225,6 +231,13 @@ moo_window_class_init (MooWindowClass *klass)
                                  "display-name", _("Show Menubar"),
                                  "label", _("Show Menubar"),
                                  "condition::active", "menubar-visible",
+                                 NULL);
+
+    moo_window_class_new_action (klass, "ShowStatusbar", NULL,
+                                 "action-type::", MOO_TYPE_TOGGLE_ACTION,
+                                 "display-name", _("Show Statusbar"),
+                                 "label", _("Show Statusbar"),
+                                 "condition::active", "statusbar-visible",
                                  NULL);
 
     moo_window_class_new_action_custom (klass, TOOLBAR_STYLE_ACTION_ID, NULL,
@@ -300,69 +313,40 @@ moo_window_class_init (MooWindowClass *klass)
                                  "condition::sensitive", "can-redo",
                                  NULL);
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_ACCEL_GROUP,
-                                     g_param_spec_object ("accel-group",
-                                             "accel-group",
-                                             "accel-group",
-                                             GTK_TYPE_ACCEL_GROUP,
-                                             G_PARAM_READABLE));
+    g_object_class_install_property (gobject_class, PROP_ACCEL_GROUP,
+        g_param_spec_object ("accel-group", "accel-group", "accel-group",
+                             GTK_TYPE_ACCEL_GROUP, G_PARAM_READABLE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_MENUBAR_UI_NAME,
-                                     g_param_spec_string ("menubar-ui-name",
-                                             "menubar-ui-name",
-                                             "menubar-ui-name",
-                                             NULL,
-                                             G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_MENUBAR_UI_NAME,
+        g_param_spec_string ("menubar-ui-name", "menubar-ui-name", "menubar-ui-name",
+                             NULL, G_PARAM_READWRITE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_TOOLBAR_UI_NAME,
-                                     g_param_spec_string ("toolbar-ui-name",
-                                             "toolbar-ui-name",
-                                             "toolbar-ui-name",
-                                             NULL,
-                                             G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_TOOLBAR_UI_NAME,
+        g_param_spec_string ("toolbar-ui-name", "toolbar-ui-name", "toolbar-ui-name",
+                             NULL, G_PARAM_READWRITE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_ID,
-                                     g_param_spec_string ("id",
-                                             "id",
-                                             "id",
-                                             NULL,
-                                             G_PARAM_READABLE));
+    g_object_class_install_property (gobject_class, PROP_ID,
+        g_param_spec_string ("id", "id", "id", NULL, G_PARAM_READABLE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_ACTIONS,
-                                     g_param_spec_object ("actions",
-                                             "actions",
-                                             "actions",
-                                             MOO_TYPE_ACTION_COLLECTION,
-                                             G_PARAM_READABLE));
+    g_object_class_install_property (gobject_class, PROP_ACTIONS,
+        g_param_spec_object ("actions", "actions", "actions",
+                             MOO_TYPE_ACTION_COLLECTION, G_PARAM_READABLE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_UI_XML,
-                                     g_param_spec_object ("ui-xml",
-                                             "ui-xml",
-                                             "ui-xml",
-                                             MOO_TYPE_UI_XML,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+    g_object_class_install_property (gobject_class, PROP_UI_XML,
+        g_param_spec_object ("ui-xml", "ui-xml", "ui-xml",
+                             MOO_TYPE_UI_XML, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_TOOLBAR_VISIBLE,
-                                     g_param_spec_boolean ("toolbar-visible",
-                                             "toolbar-visible",
-                                             "toolbar-visible",
-                                             TRUE,
-                                             G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_TOOLBAR_VISIBLE,
+        g_param_spec_boolean ("toolbar-visible", "toolbar-visible", "toolbar-visible",
+                              TRUE, G_PARAM_READWRITE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_MENUBAR_VISIBLE,
-                                     g_param_spec_boolean ("menubar-visible",
-                                             "menubar-visible",
-                                             "menubar-visible",
-                                             TRUE,
-                                             G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_MENUBAR_VISIBLE,
+        g_param_spec_boolean ("menubar-visible", "menubar-visible", "menubar-visible",
+                              TRUE, G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class, PROP_STATUSBAR_VISIBLE,
+        g_param_spec_boolean ("statusbar-visible", "statusbar-visible", "statusbar-visible",
+                              TRUE, G_PARAM_READWRITE));
 
     INSTALL_PROP (PROP_MEO_CAN_COPY, "can-copy");
     INSTALL_PROP (PROP_MEO_CAN_CUT, "can-cut");
@@ -429,6 +413,8 @@ moo_window_constructor (GType                  type,
     gtk_widget_show (window->priv->toolbar_holder);
     gtk_box_pack_start (GTK_BOX (vbox), window->priv->toolbar_holder, FALSE, FALSE, 0);
 
+    gtk_box_pack_end (GTK_BOX (vbox), window->status_area, FALSE, FALSE, 0);
+
     window->menubar = NULL;
     window->toolbar = NULL;
 
@@ -465,6 +451,11 @@ moo_window_constructor (GType                  type,
     action = moo_window_get_action (window, "ShowMenubar");
     _moo_sync_toggle_action (action, window, "menubar-visible", FALSE);
 
+    moo_window_set_statusbar_visible (window,
+        moo_prefs_get_bool (setting (window, PREFS_SHOW_STATUSBAR)));
+    action = moo_window_get_action (window, "ShowStatusbar");
+    _moo_sync_toggle_action (action, window, "statusbar-visible", FALSE);
+
     moo_window_update_ui (window);
 
     g_type_class_unref (klass);
@@ -473,15 +464,53 @@ moo_window_constructor (GType                  type,
 
 
 static void
+parse_shadow_style (void)
+{
+    static gboolean been_here;
+
+    if (!been_here)
+    {
+        gtk_rc_parse_string (
+            "style \"no-shadow\" {\n"
+            "    GtkStatusbar::shadow-type = GTK_SHADOW_NONE\n"
+            "}\n"
+            "widget \"no-shadow\" style \"no-shadow\"\n"
+        );
+        been_here = TRUE;
+    }
+}
+
+static void
 moo_window_init (MooWindow *window)
 {
+    GtkWidget *rg;
+
     window->priv = g_new0 (MooWindowPrivate, 1);
 
     window->vbox = gtk_vbox_new (FALSE, 0);
     gtk_widget_show (window->vbox);
 
+    parse_shadow_style ();
+
+    window->status_area = gtk_hbox_new (FALSE, 0);
+    window->statusbar = g_object_new (GTK_TYPE_STATUSBAR,
+                                      "has-resize-grip", FALSE,
+                                      NULL);
+    gtk_widget_set_name (GTK_WIDGET (window->statusbar), "no-shadow");
+    gtk_box_pack_start (GTK_BOX (window->status_area),
+                        GTK_WIDGET (window->statusbar),
+                        TRUE, TRUE, 0);
+    rg = g_object_new (GTK_TYPE_STATUSBAR,
+                       "has-resize-grip", TRUE, NULL);
+    gtk_widget_set_name (rg, "no-shadow");
+    gtk_box_pack_end (GTK_BOX (window->status_area),
+                      rg, FALSE, FALSE, 0);
+    gtk_widget_set_size_request (rg, 24, -1);
+    gtk_widget_show_all (window->status_area);
+
     window->priv->toolbar_visible = TRUE;
     window->priv->menubar_visible = TRUE;
+    window->priv->statusbar_visible = TRUE;
 
     window->accel_group = gtk_accel_group_new ();
     gtk_window_add_accel_group (GTK_WINDOW (window),
@@ -629,6 +658,19 @@ moo_window_apply_prefs (MooWindow *window)
 }
 
 
+void
+moo_window_message (MooWindow  *window,
+                    const char *text)
+{
+    g_return_if_fail (MOO_IS_WINDOW (window));
+
+    gtk_statusbar_pop (window->statusbar, 0);
+
+    if (text && text[0])
+        gtk_statusbar_push (window->statusbar, 0, text);
+}
+
+
 static void
 moo_window_set_property (GObject      *object,
                          guint         prop_id,
@@ -662,6 +704,10 @@ moo_window_set_property (GObject      *object,
 
         case PROP_MENUBAR_VISIBLE:
             moo_window_set_menubar_visible (window, g_value_get_boolean (value));
+            break;
+
+        case PROP_STATUSBAR_VISIBLE:
+            moo_window_set_statusbar_visible (window, g_value_get_boolean (value));
             break;
 
         default:
@@ -714,6 +760,10 @@ moo_window_get_property (GObject      *object,
 
         case PROP_MENUBAR_VISIBLE:
             g_value_set_boolean (value, window->priv->menubar_visible);
+            break;
+
+        case PROP_STATUSBAR_VISIBLE:
+            g_value_set_boolean (value, window->priv->statusbar_visible);
             break;
 
         case PROP_MEO_CAN_COPY:
@@ -868,30 +918,50 @@ moo_window_shortcuts_prefs_dialog (MooWindow *window)
 
 
 static void
-moo_window_set_toolbar_visible (MooWindow  *window,
-                                gboolean    visible)
+set_ui_elm_visible (MooWindow  *window,
+                    gboolean   *flag,
+                    const char *prop,
+                    const char *prefs_key,
+                    GtkWidget  *widget,
+                    gboolean    visible)
 {
-    if (!visible != !window->priv->toolbar_visible)
+    if (!visible != !*flag)
     {
-        window->priv->toolbar_visible = visible != 0;
-        g_object_set (window->priv->toolbar_holder, "visible", visible, NULL);
-        moo_prefs_set_bool (setting (window, PREFS_SHOW_TOOLBAR), visible);
-        g_object_notify (G_OBJECT (window), "toolbar-visible");
+        *flag = visible != 0;
+        g_object_set (widget, "visible", visible, NULL);
+        moo_prefs_set_bool (setting (window, prefs_key), visible);
+        g_object_notify (G_OBJECT (window), prop);
     }
 }
 
+static void
+moo_window_set_toolbar_visible (MooWindow  *window,
+                                gboolean    visible)
+{
+    set_ui_elm_visible (window, &window->priv->toolbar_visible,
+                        "toolbar-visible", PREFS_SHOW_TOOLBAR,
+                        window->priv->toolbar_holder,
+                        visible);
+}
 
 static void
 moo_window_set_menubar_visible (MooWindow  *window,
                                 gboolean    visible)
 {
-    if (!visible != !window->priv->menubar_visible)
-    {
-        window->priv->menubar_visible = visible != 0;
-        g_object_set (window->priv->menubar_holder, "visible", visible, NULL);
-        moo_prefs_set_bool (setting (window, PREFS_SHOW_MENUBAR), visible);
-        g_object_notify (G_OBJECT (window), "menubar-visible");
-    }
+    set_ui_elm_visible (window, &window->priv->menubar_visible,
+                        "menubar-visible", PREFS_SHOW_MENUBAR,
+                        window->priv->menubar_holder,
+                        visible);
+}
+
+static void
+moo_window_set_statusbar_visible (MooWindow *window,
+                                  gboolean   visible)
+{
+    set_ui_elm_visible (window, &window->priv->statusbar_visible,
+                        "statusbar-visible", PREFS_SHOW_STATUSBAR,
+                        window->status_area,
+                        visible);
 }
 
 
@@ -978,6 +1048,7 @@ init_prefs (MooWindow *window)
     moo_prefs_new_key_bool (setting (window, PREFS_REMEMBER_SIZE), TRUE);
     moo_prefs_new_key_bool (setting (window, PREFS_SHOW_TOOLBAR), TRUE);
     moo_prefs_new_key_bool (setting (window, PREFS_SHOW_MENUBAR), TRUE);
+    moo_prefs_new_key_bool (setting (window, PREFS_SHOW_STATUSBAR), TRUE);
     moo_prefs_new_key_enum (setting (window, PREFS_TOOLBAR_STYLE),
                             GTK_TYPE_TOOLBAR_STYLE,
                             get_toolbar_style_gtk (window));

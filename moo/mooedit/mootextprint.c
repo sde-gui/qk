@@ -1557,12 +1557,12 @@ update_progress (GtkPrintOperation *operation,
     }
 
     if (window)
-        moo_edit_window_message (window, NULL);
+        moo_window_message (MOO_WINDOW (window), NULL);
 
     if (moo_edit_get_state (doc) == MOO_EDIT_STATE_PRINTING)
         _moo_edit_set_progress_text (doc, text);
     else if (window)
-        moo_edit_window_message (window, text);
+        moo_window_message (MOO_WINDOW (window), text);
 
     g_free (text);
 }

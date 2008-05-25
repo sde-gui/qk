@@ -16,7 +16,6 @@
 #include <mooedit/mooedit.h>
 #include <mooutils/moowindow.h>
 #include <mooutils/moobigpaned.h>
-#include <gtk/gtkstatusbar.h>
 
 G_BEGIN_DECLS
 
@@ -113,9 +112,6 @@ void         moo_edit_window_abort_jobs             (MooEditWindow  *window);
 void         moo_edit_window_present_output         (MooEditWindow  *window);
 GtkWidget   *moo_edit_window_get_output             (MooEditWindow  *window);
 GtkWidget   *moo_edit_window_get_output_pane        (MooEditWindow  *window);
-
-void         moo_edit_window_message                (MooEditWindow  *window,
-                                                     const char     *message);
 
 
 G_END_DECLS

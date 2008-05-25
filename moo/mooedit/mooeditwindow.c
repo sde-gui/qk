@@ -75,7 +75,6 @@ static GSList *windows;
 struct _MooEditWindowPrivate {
     MooEditor *editor;
 
-    GtkStatusbar *statusbar;
     guint statusbar_idle;
     guint last_msg_id;
     GtkLabel *cursor_label;
@@ -2066,6 +2065,15 @@ edit_overwrite_changed (MooEditWindow *window,
         update_statusbar (window);
 }
 
+static void
+edit_cursor_moved (MooEditWindow *window,
+                   G_GNUC_UNUSED GtkTextIter *iter,
+                   MooEdit *doc)
+{
+    if (doc == ACTIVE_DOC (window))
+        update_statusbar (window);
+}
+
 
 static void
 edit_wrap_mode_changed (MooEditWindow *window,
@@ -2900,13 +2908,6 @@ moo_edit_window_get_pane (MooEditWindow  *window,
  */
 
 static void
-clear_statusbar (MooEditWindow *window)
-{
-    gtk_statusbar_pop (window->priv->statusbar, 0);
-}
-
-
-static void
 set_statusbar_numbers (MooEditWindow *window,
                        int            line,
                        int            column,
@@ -2939,15 +2940,15 @@ set_statusbar_numbers (MooEditWindow *window,
 static void
 do_update_statusbar (MooEditWindow *window)
 {
-    MooEdit *edit;
+    MooEdit *doc;
     int line, column, chars;
     GtkTextIter iter;
     GtkTextBuffer *buffer;
     gboolean ovr;
 
-    edit = ACTIVE_DOC (window);
+    doc = ACTIVE_DOC (window);
 
-    if (!edit)
+    if (!doc)
     {
         gtk_widget_set_sensitive (window->priv->info, FALSE);
         set_statusbar_numbers (window, 0, 0, -1);
@@ -2956,7 +2957,8 @@ do_update_statusbar (MooEditWindow *window)
 
     gtk_widget_set_sensitive (window->priv->info, TRUE);
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
+
     gtk_text_buffer_get_iter_at_mark (buffer, &iter,
                                       gtk_text_buffer_get_insert (buffer));
     line = gtk_text_iter_get_line (&iter) + 1;
@@ -2965,7 +2967,7 @@ do_update_statusbar (MooEditWindow *window)
 
     set_statusbar_numbers (window, line, column, chars);
 
-    ovr = gtk_text_view_get_overwrite (GTK_TEXT_VIEW (edit));
+    ovr = gtk_text_view_get_overwrite (GTK_TEXT_VIEW (doc));
     /* Label in the editor window statusbar - Overwrite or Insert mode */
     gtk_label_set_text (window->priv->insert_label, ovr ? _("OVR") : _("INS"));
 }
@@ -2986,35 +2988,26 @@ update_statusbar (MooEditWindow *window)
             g_idle_add_full (G_PRIORITY_HIGH,
                              (GSourceFunc) update_statusbar_idle,
                              window, NULL);
-    clear_statusbar (window);
+    moo_window_message (MOO_WINDOW (window), NULL);
 }
-
-
-static void
-edit_cursor_moved (MooEditWindow *window,
-                   G_GNUC_UNUSED GtkTextIter *iter,
-                   MooEdit *edit)
-{
-    if (edit == ACTIVE_DOC (window))
-        update_statusbar (window);
-}
-
 
 static void
 create_statusbar (MooEditWindow *window)
 {
     MooGladeXML *xml;
-    GtkWidget *hbox;
+    GtkWidget *frame;
 
     xml = moo_glade_xml_new_from_buf (moostatusbar_glade_xml, -1,
-                                      "hbox", GETTEXT_PACKAGE, NULL);
-    hbox = moo_glade_xml_get_widget (xml, "hbox");
-    g_return_if_fail (hbox != NULL);
+                                      "frame", GETTEXT_PACKAGE, NULL);
+    frame = moo_glade_xml_get_widget (xml, "frame");
+    g_return_if_fail (frame != NULL);
 
-    gtk_box_pack_start (GTK_BOX (MOO_WINDOW (window)->vbox),
-                        hbox, FALSE, FALSE, 0);
-
-    window->priv->statusbar = moo_glade_xml_get_widget (xml, "statusbar");
+    gtk_container_add_with_properties (GTK_CONTAINER (MOO_WINDOW (window)->status_area),
+                                       frame,
+                                       "pack-type", GTK_PACK_END,
+                                       "expand", FALSE,
+                                       "fill", FALSE,
+                                       NULL);
 
     window->priv->cursor_label = moo_glade_xml_get_widget (xml, "cursor");
     window->priv->chars_label = moo_glade_xml_get_widget (xml, "chars");
@@ -3022,19 +3015,6 @@ create_statusbar (MooEditWindow *window)
     window->priv->info = moo_glade_xml_get_widget (xml, "info");
 
     g_object_unref (xml);
-}
-
-
-void
-moo_edit_window_message (MooEditWindow  *window,
-                         const char     *message)
-{
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-
-    gtk_statusbar_pop (window->priv->statusbar, 0);
-
-    if (message)
-        gtk_statusbar_push (window->priv->statusbar, 0, message);
 }
 
 

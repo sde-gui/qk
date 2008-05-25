@@ -16,7 +16,7 @@
 #include <mooutils/mooutils-gobject.h>
 #include <mooutils/moouixml.h>
 #include <mooutils/mooactioncollection.h>
-#include <gtk/gtkwindow.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
@@ -43,6 +43,8 @@ struct _MooWindow
     GtkWidget           *menubar;
     GtkWidget           *toolbar;
     GtkWidget           *vbox;
+    GtkWidget           *status_area;
+    GtkStatusbar        *statusbar;
 };
 
 struct _MooWindowClass
@@ -61,11 +63,13 @@ typedef GtkAction *(*MooWindowActionFunc) (MooWindow *window,
 
 GType       moo_window_get_type             (void) G_GNUC_CONST;
 
-gboolean    moo_window_close                (MooWindow          *window);
-void        moo_window_apply_prefs          (MooWindow          *window);
+gboolean    moo_window_close                (MooWindow  *window);
+void        moo_window_apply_prefs          (MooWindow  *window);
+void        moo_window_message              (MooWindow  *window,
+                                             const char *text);
 
-void        moo_window_set_edit_ops_widget  (MooWindow          *window,
-                                             GtkWidget          *widget);
+void        moo_window_set_edit_ops_widget  (MooWindow  *window,
+                                             GtkWidget  *widget);
 
 /*****************************************************************************/
 /* Actions
