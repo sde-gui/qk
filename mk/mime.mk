@@ -15,11 +15,7 @@ EXTRA_DIST += $(mime_in_files)
 CLEANFILES += $(mime_files)
 
 if MOO_ENABLE_GENERATED_FILES
-install_data_hook_dummy_var =
-
 if !MOO_OS_MINGW
-
-uninstall_hook_dummy_var =
 
 install-data-hook:
 	if echo "Updating mime database... " && $(update_mime); then		\

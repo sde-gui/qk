@@ -13,8 +13,6 @@ icontheme_DATA = $(theme_files)
 update_icon_cache = gtk-update-icon-cache -f -t $(DESTDIR)$(datadir)/icons/hicolor
 
 if MOO_ENABLE_GENERATED_FILES
-install_data_hook_dummy_var =
-uninstall_hook_dummy_var =
 install-data-hook:
 	if echo "Updating icon cache" && $(update_icon_cache); then		\
 		echo "Done.";							\
