@@ -15,7 +15,12 @@ EXTRA_DIST += $(mime_in_files)
 CLEANFILES += $(mime_files)
 
 if MOO_ENABLE_GENERATED_FILES
+install_data_hook_dummy_var =
+
 if !MOO_OS_MINGW
+
+uninstall_hook_dummy_var =
+
 install-data-hook:
 	if echo "Updating mime database... " && $(update_mime); then		\
 		echo "Done.";							\
@@ -27,7 +32,9 @@ install-data-hook:
 	fi
 uninstall-hook:
 	if echo "Updating mime database" && $(update_mime); then echo "Done."; else echo "Failed."; fi
+
 else MOO_OS_MINGW
+
 install-data-hook:
 	if [ -e /usr/share/mime/packages/freedesktop.org.xml ]; then \
 	  cp /usr/share/mime/packages/freedesktop.org.xml $(DESTDIR)${mimedir}/packages/ ; \
@@ -35,5 +42,6 @@ install-data-hook:
 	  cp /opt/gtk/share/mime/packages/freedesktop.org.xml $(DESTDIR)${mimedir}/packages/ ; \
 	fi; \
 	$(update_mime)
+
 endif MOO_OS_MINGW
 endif MOO_ENABLE_GENERATED_FILES
