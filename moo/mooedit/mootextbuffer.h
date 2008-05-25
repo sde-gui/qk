@@ -81,6 +81,8 @@ void        moo_text_buffer_freeze                      (MooTextBuffer      *buf
 void        moo_text_buffer_thaw                        (MooTextBuffer      *buffer);
 void        moo_text_buffer_begin_non_interactive_action(MooTextBuffer      *buffer);
 void        moo_text_buffer_end_non_interactive_action  (MooTextBuffer      *buffer);
+void        moo_text_buffer_begin_not_undoable_action   (MooTextBuffer      *buffer);
+void        moo_text_buffer_end_not_undoable_action     (MooTextBuffer      *buffer);
 
 gboolean    moo_text_buffer_has_text                    (MooTextBuffer      *buffer);
 gboolean    moo_text_buffer_has_selection               (MooTextBuffer      *buffer);

@@ -438,6 +438,21 @@ _moo_text_buffer_get_undo_stack (MooTextBuffer *buffer)
 }
 
 
+void
+moo_text_buffer_begin_not_undoable_action (MooTextBuffer *buffer)
+{
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+    moo_undo_stack_freeze (buffer->priv->undo_stack);
+}
+
+void
+moo_text_buffer_end_not_undoable_action (MooTextBuffer *buffer)
+{
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+    moo_undo_stack_thaw (buffer->priv->undo_stack);
+}
+
+
 static void
 moo_text_buffer_begin_user_action (GtkTextBuffer *text_buffer)
 {
