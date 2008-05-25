@@ -88,6 +88,8 @@ struct _MooTextViewClass
 GType        moo_text_view_get_type                 (void) G_GNUC_CONST;
 
 GtkWidget   *moo_text_view_new                      (void);
+void         moo_text_view_set_buffer_type          (MooTextView        *view,
+                                                     GType               type);
 
 void         moo_text_view_select_all               (MooTextView        *view);
 

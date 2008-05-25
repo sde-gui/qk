@@ -666,6 +666,10 @@ moo_text_view_init (MooTextView *view)
 {
     view->priv = G_TYPE_INSTANCE_GET_PRIVATE (view, MOO_TYPE_TEXT_VIEW, MooTextViewPrivate);
 
+    view->priv->constructed = FALSE;
+    view->priv->buffer_type = MOO_TYPE_TEXT_BUFFER;
+    view->priv->buffer = NULL;
+
     view->priv->colors[MOO_TEXT_VIEW_COLOR_CURRENT_LINE] = g_strdup (LIGHT_BLUE);
     view->priv->colors[MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN] = g_strdup (LIGHT_BLUE);
     view->priv->right_margin_offset = 80;
@@ -707,6 +711,17 @@ moo_text_view_init (MooTextView *view)
 }
 
 
+void
+moo_text_view_set_buffer_type (MooTextView *view,
+                               GType        type)
+{
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    g_return_if_fail (g_type_is_a (type, MOO_TYPE_TEXT_BUFFER));
+
+    if (!g_type_is_a (view->priv->buffer_type, type))
+        view->priv->buffer_type = type;
+}
+
 static GObject*
 moo_text_view_constructor (GType                  type,
                            guint                  n_construct_properties,
@@ -722,6 +737,13 @@ moo_text_view_constructor (GType                  type,
         type, n_construct_properties, construct_param);
 
     view = MOO_TEXT_VIEW (object);
+
+    if (!view->priv->buffer)
+    {
+        view->priv->buffer = g_object_new (view->priv->buffer_type, NULL);
+        gtk_text_view_set_buffer (GTK_TEXT_VIEW (view), view->priv->buffer);
+        g_object_unref (view->priv->buffer);
+    }
 
     view->priv->constructed = TRUE;
 
@@ -1047,21 +1069,27 @@ moo_text_view_set_property (GObject        *object,
         case PROP_BUFFER:
             buffer = g_value_get_object (value);
 
-            if (buffer && !MOO_IS_TEXT_BUFFER (buffer))
+            if (!buffer)
             {
-                g_warning ("%s: ignoring buffer not of type MooTextBuffer", G_STRLOC);
-                buffer = moo_text_buffer_new (NULL);
+                buffer = g_object_new (view->priv->buffer_type, NULL);
             }
-            else if (!buffer)
+            else if (!g_type_is_a (G_OBJECT_TYPE (buffer), view->priv->buffer_type))
             {
-                buffer = moo_text_buffer_new (NULL);
+                g_critical ("%s: buffer '%s' is not of type '%s', ignoring it",
+                            G_STRLOC, g_type_name (G_OBJECT_TYPE (buffer)),
+                            g_type_name (view->priv->buffer_type));
+                buffer = g_object_new (view->priv->buffer_type, NULL);
             }
             else
             {
                 g_object_ref (buffer);
             }
 
+            if (view->priv->buffer)
+                g_critical ("%s: buffer already set", G_STRFUNC);
+
             gtk_text_view_set_buffer (GTK_TEXT_VIEW (view), buffer);
+            view->priv->buffer = buffer;
 
             g_object_unref (buffer);
             break;

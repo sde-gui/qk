@@ -90,6 +90,8 @@ typedef struct {
 
 struct _MooTextViewPrivate {
     gboolean constructed;
+    GType buffer_type;
+    GtkTextBuffer *buffer;
 
     GdkRectangle *update_rectangle;
     gboolean in_expose;
