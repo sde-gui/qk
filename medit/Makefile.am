@@ -39,25 +39,9 @@ desktopdir = $(datadir)/applications
 desktop_DATA = $(DESKTOP_FILES)
 DISTCLEANFILES = $(DESKTOP_FILES)
 
-appicondir = $(datadir)/pixmaps
-appicon_DATA = ../moo/mooutils/pixmaps/medit.png
-hicolor = $(datadir)/icons/hicolor
-iconthemedir = $(hicolor)/48x48/apps
-icontheme_DATA = ../moo/mooutils/pixmaps/medit.png
-
-update_icon_cache = gtk-update-icon-cache -f -t $(DESTDIR)$(hicolor)
-
-if MOO_ENABLE_GENERATED_FILES
-install-data-hook:
-	if echo "Updating icon cache" && $(update_icon_cache); then		\
-		echo "Done.";							\
-	else									\
-		echo "*** GTK icon cache not updated. After install, run this:";\
-		echo $(update_icon_cache);					\
-	fi
-uninstall-hook:
-	if echo "Updating icon cache" && $(update_icon_cache); then echo "Done."; else echo "Failed."; fi
-endif
+pixmaps_files = ../moo/mooutils/pixmaps/medit.png
+theme_files = ../moo/mooutils/pixmaps/medit.png
+include ../mk/icon.mk
 
 bundle:
 	ige-mac-bundler $(srcdir)/mac/medit.bundle
