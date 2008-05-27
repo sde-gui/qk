@@ -11,7 +11,16 @@ EXTRA_DIST =			\
 	THANKS			\
 	intltool-extract.in	\
 	intltool-merge.in	\
-	intltool-update.in
+	intltool-update.in	\
+	mk/enums.mk		\
+	mk/glade.mk		\
+	mk/icon.mk		\
+	mk/ini-desktop.mk	\
+	mk/marshals.mk		\
+	mk/mime.mk		\
+	mk/rc.mk		\
+	mk/ui.mk		\
+	mk/yacc.mk
 
 @MOO_PO_SUBDIRS_RULE@
 @MOO_PO_SUBDIRS_RULE2@
