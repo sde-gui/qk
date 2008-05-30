@@ -1184,15 +1184,11 @@ moo_tempnam (void)
             dirname = g_build_filename (g_get_tmp_dir (), basename, NULL);
             g_free (basename);
 
-            if (_moo_mkdir (dirname) != 0)
-            {
-                g_free (dirname);
-                dirname = NULL;
-            }
-            else
-            {
+            if (_moo_mkdir (dirname) == 0)
                 break;
-            }
+
+            g_free (dirname);
+            dirname = NULL;
         }
 
         moo_temp_dir = dirname;
@@ -1205,20 +1201,19 @@ moo_tempnam (void)
 
     G_LOCK (counter);
 
-    for (i = counter + 1; i < counter + 1000 && !filename; ++i)
+    for (i = counter + 1; i < counter + 1000; ++i)
     {
         char *basename;
 
         basename = g_strdup_printf ("tmpfile-%03d", i);
         filename = g_build_filename (moo_temp_dir, basename, NULL);
-
-        if (g_file_test (filename, G_FILE_TEST_EXISTS))
-        {
-            g_free (filename);
-            filename = NULL;
-        }
-
         g_free (basename);
+
+        if (!g_file_test (filename, G_FILE_TEST_EXISTS))
+            break;
+
+        g_free (filename);
+        filename = NULL;
     }
 
     counter = i;
@@ -2205,6 +2200,7 @@ moo_debug_enabled (const char *domain,
                    gboolean    def_enabled)
 {
     const char *val;
+    char **domains, **p;
 
     val = g_getenv ("MOO_DEBUG");
     if (!val || !val[0])
@@ -2217,7 +2213,18 @@ moo_debug_enabled (const char *domain,
     if (!strcmp (val, "all"))
         return TRUE;
 
-    return strstr (val, domain) != NULL;
+    domains = g_strsplit_set (val, ",;", 0);
+    for (p = domains; p && *p; ++p)
+    {
+        if (strcmp (domain, *p) == 0)
+        {
+            g_strfreev (domains);
+            return TRUE;
+        }
+    }
+
+    g_strfreev (domains);
+    return FALSE;
 }
 
 
