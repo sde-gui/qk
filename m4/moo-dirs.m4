@@ -2,11 +2,12 @@
 # MOO_AC_SET_DIRS
 #
 AC_DEFUN_ONCE([MOO_AC_SET_DIRS],[
+  AC_ARG_VAR([MOO_PACKAGE_NAME], [data files go into $datadir/$MOO_PACKAGE_NAME, etc.])
+
   if test "x$MOO_PACKAGE_NAME" = x; then
     MOO_PACKAGE_NAME=moo
   fi
 
-  AC_SUBST(MOO_PACKAGE_NAME)
   AC_DEFINE_UNQUOTED([MOO_PACKAGE_NAME], "$MOO_PACKAGE_NAME", [package name])
 
   MOO_DATA_DIR="${datadir}/$MOO_PACKAGE_NAME"

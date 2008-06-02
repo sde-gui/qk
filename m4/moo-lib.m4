@@ -22,6 +22,7 @@ AC_DEFUN_ONCE([MOO_AC_LIB],[
     MOO_PYTHON_BUILTIN=false
   fi
 
+  AC_ARG_VAR([MOO_BUILD_MEDIT], [build medit])
   if test "x$MOO_BUILD_MEDIT" != "xfalse"; then
     MOO_BUILD_MEDIT=true
   fi
