@@ -53,6 +53,8 @@ void        md_history_mgr_remove_uri           (MdHistoryMgr   *mgr,
 MdHistoryItem  *md_history_mgr_find_uri         (MdHistoryMgr   *mgr,
                                                  const char     *uri);
 
+void        md_history_mgr_shutdown             (MdHistoryMgr   *mgr);
+
 guint       md_history_mgr_get_n_items          (MdHistoryMgr   *mgr);
 
 GtkWidget  *md_history_mgr_create_menu          (MdHistoryMgr   *mgr,

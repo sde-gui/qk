@@ -181,31 +181,7 @@ md_history_mgr_dispose (GObject *object)
 
     if (mgr->priv)
     {
-        if (mgr->priv->ipc_id)
-        {
-            moo_ipc_unregister_client (G_OBJECT (mgr), mgr->priv->ipc_id);
-            g_free (mgr->priv->ipc_id);
-        }
-
-        if (mgr->priv->save_idle)
-        {
-            g_source_remove (mgr->priv->save_idle);
-            mgr->priv->save_idle = 0;
-            md_history_mgr_save (mgr);
-        }
-
-        if (mgr->priv->update_widgets_idle)
-        {
-            g_source_remove (mgr->priv->update_widgets_idle);
-            mgr->priv->update_widgets_idle = 0;
-        }
-
-        if (mgr->priv->widgets)
-        {
-            g_critical ("%s: oops", G_STRLOC);
-            while (mgr->priv->widgets)
-                gtk_widget_destroy (mgr->priv->widgets->data);
-        }
+        md_history_mgr_shutdown (mgr);
 
         if (mgr->priv->files)
         {
@@ -222,6 +198,38 @@ md_history_mgr_dispose (GObject *object)
     }
 
     G_OBJECT_CLASS (md_history_mgr_parent_class)->dispose (object);
+}
+
+void
+md_history_mgr_shutdown (MdHistoryMgr *mgr)
+{
+    g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
+
+    if (!mgr->priv)
+        return;
+
+    if (mgr->priv->ipc_id)
+    {
+        moo_ipc_unregister_client (G_OBJECT (mgr), mgr->priv->ipc_id);
+        g_free (mgr->priv->ipc_id);
+        mgr->priv->ipc_id = NULL;
+    }
+
+    if (mgr->priv->save_idle)
+    {
+        g_source_remove (mgr->priv->save_idle);
+        mgr->priv->save_idle = 0;
+        md_history_mgr_save (mgr);
+    }
+
+    if (mgr->priv->update_widgets_idle)
+    {
+        g_source_remove (mgr->priv->update_widgets_idle);
+        mgr->priv->update_widgets_idle = 0;
+    }
+
+    while (mgr->priv->widgets)
+        gtk_widget_destroy (mgr->priv->widgets->data);
 }
 
 static void
@@ -635,6 +643,7 @@ md_history_mgr_save (MdHistoryMgr *mgr)
         g_error_free (error);
     }
 }
+
 
 static char *
 format_for_update (MdHistoryItem *item,
