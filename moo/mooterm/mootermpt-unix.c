@@ -10,10 +10,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
-
 #define MOOTERM_COMPILATION
 #include "mooterm/mootermpt-private.h"
 #include "mooterm/mooterm-private.h"
@@ -53,11 +50,15 @@
 #define MOO_IS_TERM_PT_UNIX_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  MOO_TYPE_TERM_PT_UNIX))
 #define MOO_TERM_PT_UNIX_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  MOO_TYPE_TERM_PT_UNIX, MooTermPtUnixClass))
 
-typedef struct _MooTermPtUnix           MooTermPtUnix;
-typedef struct _MooTermPtUnixClass      MooTermPtUnixClass;
+typedef struct MooTermPtUnix      MooTermPtUnix;
+typedef struct MooTermPtUnixClass MooTermPtUnixClass;
 
+typedef struct {
+    MooTermPtUnix *pt;
+    guint source_id;
+} ChildWatch;
 
-struct _MooTermPtUnix {
+struct MooTermPtUnix {
     MooTermPt   parent;
 
     GPid        child_pid;
@@ -68,11 +69,11 @@ struct _MooTermPtUnix {
     GIOChannel *io;
     guint       io_watch_id;
 #ifdef WATCH_CHILD
-    guint       child_watch_id;
+    ChildWatch *child_watch;
 #endif
 };
 
-struct _MooTermPtUnixClass {
+struct MooTermPtUnixClass {
     MooTermPtClass  parent_class;
 };
 
@@ -145,8 +146,9 @@ _moo_term_pt_unix_init (MooTermPtUnix *pt)
     pt->non_block = FALSE;
     pt->io = NULL;
     pt->io_watch_id = 0;
+
 #ifdef WATCH_CHILD
-    pt->child_watch_id = 0;
+    pt->child_watch = NULL;
 #endif
 }
 
@@ -235,17 +237,26 @@ setup_master_fd (MooTermPtUnix *pt,
 }
 
 #ifdef WATCH_CHILD
+
 static void
-child_died (GPid pid,
+child_died (G_GNUC_UNUSED GPid pid,
             G_GNUC_UNUSED int status,
-            MooTermPtUnix *pt)
+            ChildWatch *watch)
 {
-    g_return_if_fail (pid == pt->child_pid);
     _moo_message ("%s: child exited", G_STRLOC);
-    gdk_threads_enter ();
-    kill_child (MOO_TERM_PT (pt));
-    gdk_threads_leave ();
+
+    if (watch->pt)
+    {
+        gdk_threads_enter ();
+
+        g_assert (watch->pt->child_watch == watch);
+        watch->pt->child_watch = NULL;
+        kill_child (MOO_TERM_PT (watch->pt));
+
+        gdk_threads_leave ();
+    }
 }
+
 #endif
 
 static gboolean
@@ -339,10 +350,12 @@ fork_argv (MooTermPt      *pt_gen,
     pt_gen->alive = TRUE;
 
 #ifdef WATCH_CHILD
-    pt->child_watch_id = g_child_watch_add_full (pt_gen->priority,
-                                                 pt->child_pid,
-                                                 (GChildWatchFunc) child_died,
-                                                 pt, NULL);
+    pt->child_watch = g_new (ChildWatch, 1);
+    pt->child_watch->pt = pt;
+    pt->child_watch->source_id =
+        g_child_watch_add_full (pt_gen->priority, pt->child_pid,
+                                (GChildWatchFunc) child_died,
+                                pt->child_watch, g_free);
 #endif
 
     setup_master_fd (pt, master);
@@ -383,10 +396,10 @@ kill_child (MooTermPt *pt_gen)
     MooTermPtUnix *pt = MOO_TERM_PT_UNIX (pt_gen);
 
 #ifdef WATCH_CHILD
-    if (pt->child_watch_id)
+    if (pt->child_watch)
     {
-        g_source_remove (pt->child_watch_id);
-        pt->child_watch_id = 0;
+        pt->child_watch->pt = NULL;
+        pt->child_watch = NULL;
     }
 #endif
 
