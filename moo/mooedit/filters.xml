@@ -50,6 +50,8 @@
 
     <match what="stderr" pattern="\s+File &quot;(?P&lt;file&gt;[^&quot;]+)&quot;, line (?P&lt;line&gt;\d+).*" style="output-error"/>
 
+    <match what="stderr" pattern="^(?P&lt;file&gt;[^:]+):(?P&lt;line&gt;\d+)?" style="output-error"/>
+
     <match what="stdout" pattern="^g?make\[\d+\]: Entering directory `(?P&lt;dir&gt;.*)'">
       <action type="push" name="directory" substring="dir"/>
     </match>
