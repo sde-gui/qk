@@ -232,7 +232,7 @@ moo_python_api_dict_del_item (MooPyObject *dict,
 }
 
 
-static void
+static void G_GNUC_PRINTF(2,3)
 moo_python_api_set_error (int         type,
                           const char *format,
                           ...)

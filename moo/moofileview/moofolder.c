@@ -47,7 +47,7 @@ G_STMT_START {              \
 #if 0
 #define PRINT_TIMES g_print
 #else
-static void PRINT_TIMES (G_GNUC_UNUSED const char *format, ...)
+static void G_GNUC_PRINTF(1,2) PRINT_TIMES (G_GNUC_UNUSED const char *format, ...)
 {
 }
 #endif

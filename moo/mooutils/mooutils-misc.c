@@ -2229,7 +2229,7 @@ moo_debug_enabled (const char *domain,
 
 
 #undef _moo_message
-void
+void G_GNUC_PRINTF(1,2)
 _moo_message (const char *format,
               ...)
 {

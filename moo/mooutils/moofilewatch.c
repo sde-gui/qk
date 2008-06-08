@@ -40,7 +40,7 @@
 
 
 #if 1
-static void DEBUG_PRINT (G_GNUC_UNUSED const char *format, ...)
+static void  G_GNUC_PRINTF(1,2) DEBUG_PRINT (G_GNUC_UNUSED const char *format, ...)
 {
 }
 #elif defined(__WIN32__)

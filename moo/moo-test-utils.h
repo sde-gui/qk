@@ -50,7 +50,7 @@ void             moo_test_assert_msg        (gboolean            passed,
                                              const char         *file,
                                              int                 line,
                                              const char         *format,
-                                             ...);
+                                             ...) G_GNUC_PRINTF(4,5);
 
 char            *moo_test_load_data_file    (const char         *basename);
 const char      *moo_test_get_data_dir      (void);

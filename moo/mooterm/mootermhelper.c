@@ -48,7 +48,7 @@
 #if WRITE_LOG
 #if WRITE_LOGFILE
 static void
-writelog (const char *format, ...)
+writelog (const char *format, ...) G_GNUC_PRINTF(1,2)
 {
     FILE *logfile;
     static int been_here;
@@ -78,7 +78,7 @@ writelog (const char *format, ...)
 }
 #else /* ! WRITE_LOGFILE */
 static void
-writelog (const char *format, ...)
+writelog (const char *format, ...) G_GNUC_PRINTF(1,2)
 {
     va_list args;
     va_start (args, format);
@@ -88,7 +88,7 @@ writelog (const char *format, ...)
 #endif /* ! WRITE_LOGFILE */
 #else /* ! WRITE_LOG */
 static void
-writelog (G_GNUC_UNUSED const char *format, ...)
+writelog (G_GNUC_UNUSED const char *format, ...) G_GNUC_PRINTF(1,2)
 {
 }
 #endif /* WRITE_LOG */

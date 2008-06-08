@@ -35,9 +35,9 @@ void        _moo_event_queue_push       (guint                  event_id,
                                          GDestroyNotify         data_destroy);
 
 void        _moo_print_async            (const char            *format,
-                                         ...);
+                                         ...) G_GNUC_PRINTF(1,2);
 void        _moo_message_async          (const char            *format,
-                                         ...);
+                                         ...) G_GNUC_PRINTF(1,2);
 
 
 G_END_DECLS

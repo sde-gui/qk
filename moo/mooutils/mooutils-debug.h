@@ -95,15 +95,15 @@ void     _moo_set_debug     (const char *domains);
 #define MOO_DEBUG_INIT(domain, def_enabled)
 #define MOO_DEBUG(whatever) G_STMT_START {} G_STMT_END
 
-static void moo_dmsg (const char *format, ...)
+static void moo_dmsg (const char *format, ...) G_GNUC_PRINTF(1,2)
 {
 }
 
-static void moo_dprint (const char *format, ...)
+static void moo_dprint (const char *format, ...) G_GNUC_PRINTF(1,2)
 {
 }
 
-static void _moo_message_dummy (const char *format, ...)
+static void _moo_message_dummy (const char *format, ...) G_GNUC_PRINTF(1,2)
 {
 }
 

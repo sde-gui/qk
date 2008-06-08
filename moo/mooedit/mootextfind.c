@@ -442,7 +442,7 @@ print_messagev (MooFindMsgFunc func,
     g_free (msg);
 }
 
-static void
+static void G_GNUC_PRINTF(3,4)
 print_message (MooFindMsgFunc func,
                gpointer       data,
                const char    *format,

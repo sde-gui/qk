@@ -87,7 +87,7 @@ struct MooPyAPI {
 
     void         (*set_error)               (int             type,
                                              const char     *format,
-                                             ...);
+                                             ...) G_GNUC_PRINTF(2,3);
     void         (*py_err_print)            (void);
     MooPyObject* (*py_object_call_method)   (MooPyObject    *object,
                                              const char     *method,
