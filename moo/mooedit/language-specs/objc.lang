@@ -80,6 +80,7 @@
       <include>
         <context id="objc-keywords" style-ref="keyword">
           <keyword>self</keyword>
+          <keyword>super</keyword>
         </context>
 
         <context id="objc-types" style-ref="type">
