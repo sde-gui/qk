@@ -1,14 +1,4 @@
 ##############################################################################
-# _MOO_SPLIT_VERSION(NAME,version)
-#
-AC_DEFUN([_MOO_SPLIT_VERSION],[AC_REQUIRE([LT_AC_PROG_SED])
-$1[]_VERSION="$2"
-$1[]_MAJOR_VERSION=`echo "$2" | $SED 's/\([[^.]][[^.]]*\).*/\1/'`
-$1[]_MINOR_VERSION=`echo "$2" | $SED 's/[[^.]][[^.]]*.\([[^.]][[^.]]*\).*/\1/'`
-$1[]_MICRO_VERSION=`echo "$2" | $SED 's/[[^.]][[^.]]*.[[^.]][[^.]]*.\(.*\)/\1/'`
-])
-
-##############################################################################
 # _MOO_SPLIT_VERSION_PKG(PKG_NAME,pkg-name)
 #
 AC_DEFUN([_MOO_SPLIT_VERSION_PKG],[
