@@ -228,8 +228,8 @@ _sample_file = """
     <medit-project name="moo" type="C" version="2.0">
       <commands>
         <compile>
-          <cmd>foolala</cmd>
-          <working_dir>foolala</working_dir>
+          <cmd>$(make) $(base).o</cmd>
+          <working_dir>$(builddir)</working_dir>
         </compile>
       </commands>
       <make>
