@@ -84,7 +84,10 @@ entry_activated (CtagsWindowPlugin *plugin,
     doc = moo_edit_window_get_active_doc (window);
 
     if (doc && entry->line >= 0)
+    {
+        gtk_widget_grab_focus (GTK_WIDGET (doc));
         moo_text_view_move_cursor (doc, entry->line, -1, FALSE, FALSE);
+    }
 }
 
 static gboolean
