@@ -109,7 +109,7 @@ else
 if MOO_DEBUG_ENABLED # && !MOO_ENABLE_TESTS
 export_flags = -export-symbols-regex ".*"
 else # !MOO_DEBUG_ENABLED && !MOO_ENABLE_TESTS
-export_flags = -export-symbols-regex "^(moo_).*"
+export_flags = -export-symbols-regex "^(moo_|_moo_|md_).*"
 endif
 endif
 
