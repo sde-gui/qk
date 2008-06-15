@@ -261,7 +261,6 @@ finish:
     g_free (text);
     g_free (prefix);
     g_free (line);
-    return;
 }
 
 void
@@ -470,7 +469,7 @@ popup_key_press (MooTextCompletion *cmpl,
 {
     GtkTreeIter iter;
 
-    if (_moo_accel_check_event (GTK_WIDGET (cmpl->priv->doc), event, GDK_Tab, 0) &&
+    if (moo_accel_check_event (GTK_WIDGET (cmpl->priv->doc), event, GDK_Tab, 0) &&
         moo_text_completion_unique (cmpl, &iter))
     {
         moo_text_completion_complete (cmpl, &iter);

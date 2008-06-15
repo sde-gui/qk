@@ -362,10 +362,10 @@ _moo_get_accel_label (const char *accel)
 
 
 void
-_moo_accel_translate_event (GtkWidget       *widget,
-                            GdkEventKey     *event,
-                            guint           *keyval,
-                            GdkModifierType *mods)
+moo_accel_translate_event (GtkWidget       *widget,
+                           GdkEventKey     *event,
+                           guint           *keyval,
+                           GdkModifierType *mods)
 {
     GdkKeymap *keymap;
     GdkModifierType consumed;
@@ -390,14 +390,14 @@ _moo_accel_translate_event (GtkWidget       *widget,
 }
 
 gboolean
-_moo_accel_check_event (GtkWidget       *widget,
-                        GdkEventKey     *event,
-                        guint            keyval,
-                        GdkModifierType  mods)
+moo_accel_check_event (GtkWidget       *widget,
+                       GdkEventKey     *event,
+                       guint            keyval,
+                       GdkModifierType  mods)
 {
     guint ev_keyval;
     GdkModifierType ev_mods;
-    _moo_accel_translate_event (widget, event, &ev_keyval, &ev_mods);
+    moo_accel_translate_event (widget, event, &ev_keyval, &ev_mods);
     return keyval == ev_keyval && mods == ev_mods;
 }
 

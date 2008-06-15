@@ -1181,7 +1181,7 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
     if (view->priv->qs.in_search)
         return FALSE;
 
-    _moo_accel_translate_event (widget, event, &keyval, &mods);
+    moo_accel_translate_event (widget, event, &keyval, &mods);
 
     if (keyval == GDK_KP_Enter || keyval == GDK_Return)
     {

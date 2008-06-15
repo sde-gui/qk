@@ -29,11 +29,11 @@ void         _moo_modify_accel              (const char *accel_path,
 
 char        *_moo_get_accel_label           (const char *accel);
 
-void         _moo_accel_translate_event     (GtkWidget       *widget,
+void          moo_accel_translate_event     (GtkWidget       *widget,
                                              GdkEventKey     *event,
                                              guint           *keyval,
                                              GdkModifierType *mods);
-gboolean     _moo_accel_check_event         (GtkWidget       *widget,
+gboolean      moo_accel_check_event         (GtkWidget       *widget,
                                              GdkEventKey     *event,
                                              guint            keyval,
                                              GdkModifierType  mods);

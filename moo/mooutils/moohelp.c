@@ -117,12 +117,9 @@ static gboolean
 moo_help_key_press (GtkWidget   *widget,
                     GdkEventKey *event)
 {
-    guint keyval;
-    GdkModifierType mods;
-
-    _moo_accel_translate_event (widget, event, &keyval, &mods);
-
-    if (keyval == MOO_ACCEL_HELP_KEY && mods == MOO_ACCEL_HELP_MODS)
+    if (moo_accel_check_event (widget, event,
+                               MOO_ACCEL_HELP_KEY,
+                               MOO_ACCEL_HELP_MODS))
         return moo_help_open (widget);
     else
         return FALSE;
