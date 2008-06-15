@@ -20,28 +20,21 @@ echo "Generating configuration files..."
 ACLOCAL=${ACLOCAL:-aclocal-1.10}
 ACLOCAL_FLAGS="$aclocal_extra $ACLOCAL_FLAGS"
 AUTOMAKE=${AUTOMAKE:-automake-1.10}
-
-if test -z "$LIBTOOLIZE"; then
-  case "`uname`" in
-    Darwin)
-      LIBTOOLIZE=glibtoolize
-      ;;
-    *)
-      LIBTOOLIZE=libtoolize
-      ;;
-  esac
-fi
-
 AUTOHEADER=${AUTOHEADER:-autoheader}
 AUTOCONF=${AUTOCONF:-autoconf}
+LIBTOOLIZE=${LIBTOOLIZE:-libtoolize}
 
-echo $LIBTOOLIZE --automake --copy --force
-$LIBTOOLIZE --automake --copy --force || exit $?
+if grep AC_PROG_LIBTOOL configure.ac; then
+  echo $LIBTOOLIZE --automake --copy --force
+  $LIBTOOLIZE --automake --copy --force || exit $?
+fi
 
-echo glib-gettextize --force --copy
-glib-gettextize --force --copy || exit $?
-echo intltoolize --automake --force --copy
-intltoolize --automake --force --copy || exit $?
+if [ -d po ]; then
+  echo glib-gettextize --force --copy
+  glib-gettextize --force --copy || exit $?
+  echo intltoolize --automake --force --copy
+  intltoolize --automake --force --copy || exit $?
+fi
 
 if [ -d po-gsv ] ; then
   echo sed 's/@GETTEXT_PACKAGE@/@GETTEXT_PACKAGE@-gsv/' po/Makefile.in.in '>' po-gsv/Makefile.in.in
