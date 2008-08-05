@@ -10,9 +10,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#define MOO_APP_COMPILATION
 #include "mooappabout-glade.h"
 #include "mooappabout.h"
-#include "mooapp.h"
+#include "mooapp-private.h"
 #include "moohtml.h"
 #include "moolinklabel.h"
 #include "mooutils/moostock.h"
@@ -88,7 +89,7 @@ show_credits (void)
     GtkTextBuffer *buffer;
     const MooAppInfo *info;
 
-    info = moo_app_get_info (moo_app_get_instance());
+    info = _moo_app_get_info (moo_app_instance ());
     g_return_if_fail (info && info->credits);
 
     if (credits_dialog)
@@ -162,7 +163,7 @@ about_dialog_key_press (GtkWidget   *dialog,
 
 
 static GtkWidget *
-create_about_dialog (void)
+create_about_dialog (MooApp *app)
 {
     MooGladeXML *xml;
     GtkWidget *dialog, *logo, *button;
@@ -171,7 +172,7 @@ create_about_dialog (void)
     GtkLabel *label;
     MooLinkLabel *url;
 
-    info = moo_app_get_info (moo_app_get_instance());
+    info = _moo_app_get_info (app);
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "url", MOO_TYPE_LINK_LABEL);
     moo_glade_xml_parse_memory (xml, mooappabout_glade_xml, -1, "dialog", NULL);
@@ -233,10 +234,11 @@ create_about_dialog (void)
 
 
 void
-moo_app_about_dialog (GtkWidget *parent)
+_moo_app_about_dialog (MooApp    *app,
+                       GtkWidget *parent)
 {
     if (!about_dialog)
-        about_dialog = create_about_dialog ();
+        about_dialog = create_about_dialog (app);
 
     if (parent)
         parent = gtk_widget_get_toplevel (parent);
@@ -269,14 +271,14 @@ create_system_info_dialog (void)
 
     textview = moo_glade_xml_get_widget (xml, "textview");
     buffer = gtk_text_view_get_buffer (textview);
-    text = moo_app_get_system_info (moo_app_get_instance ());
+    text = _moo_app_get_system_info (moo_app_instance ());
     gtk_text_buffer_set_text (buffer, text, -1);
     g_free (text);
 }
 
 
 char *
-moo_app_get_system_info (MooApp *app)
+_moo_app_get_system_info (MooApp *app)
 {
     GString *text;
     char *string;
@@ -287,7 +289,7 @@ moo_app_get_system_info (MooApp *app)
 
     text = g_string_new (NULL);
 
-    app_info = moo_app_get_info (app);
+    app_info = _moo_app_get_info (app);
     g_return_val_if_fail (app_info != NULL, NULL);
     g_string_append_printf (text, "%s-%s\n", app_info->full_name, app_info->version);
 
@@ -334,6 +336,14 @@ moo_app_get_system_info (MooApp *app)
     g_string_append_printf (text, "libxml2: %s\n", LIBXML_DOTTED_VERSION);
 #endif
 
+#ifdef MOO_USE_FAM
+#ifdef MOO_USE_GAMIN
+    g_string_append_printf (text, "FAM support: gamin\n");
+#else
+    g_string_append_printf (text, "FAM support: yes\n");
+#endif
+#endif
+
     g_string_append (text, "Data dirs: ");
     dirs = moo_get_data_dirs (MOO_DATA_SHARE, NULL);
     for (p = dirs; p && *p; ++p)
@@ -361,7 +371,7 @@ moo_app_get_system_info (MooApp *app)
 
 
 void
-moo_app_system_info_dialog (GtkWidget *parent)
+_moo_app_system_info_dialog (GtkWidget *parent)
 {
     create_system_info_dialog ();
 

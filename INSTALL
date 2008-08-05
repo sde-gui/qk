@@ -16,6 +16,13 @@ configure has the following medit-specific options:
                           Use this if you experience crashes on startup
                           and you are using Suse 9.
 
+  --with-fam              whether to use FAM (or gamin) for file monitoring
+                          (default = NO)
+    FAM seems to work well, but gamin seems to be much less stable. This option
+    is not recommended if FAM is provided by gamin on your system.
+    Note that file monitoring will work even without FAM, so it's unlikely you
+    want to use this option.
+
   --with-python           whether to compile python support (default = YES)
     This option tells whether pygtk bindings should be built. If medit is built
     without python, then python plugins (builtin terminal and project support in

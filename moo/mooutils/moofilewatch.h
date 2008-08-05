@@ -10,7 +10,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
-/* Files and directory monitor using stat().
+/* Files and directory monitor. Uses FAM if present, or stat() otherwise.
    On win32 does FindFirstChangeNotification and ReadDirectoryChangesW. */
 
 #ifndef MOO_FILE_WATCH_H
