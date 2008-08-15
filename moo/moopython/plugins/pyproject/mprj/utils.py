@@ -11,8 +11,13 @@ def _expand(command, dic):
     else:
         working_dir = command[0]
         cmd = command[1]
-    return [re.sub(r'\$\(([a-zA-Z_]\w*)\)', r'%(\1)s', working_dir) % dic,
-            re.sub(r'\$\(([a-zA-Z_]\w*)\)', r'%(\1)s', cmd) % dic]
+    while 1:
+        new_working_dir = re.sub(r'\$\(([a-zA-Z_]\w*)\)', r'%(\1)s', working_dir) % dic
+        new_cmd = re.sub(r'\$\(([a-zA-Z_]\w*)\)', r'%(\1)s', cmd) % dic
+        if new_working_dir == working_dir and new_cmd == cmd:
+            return [new_working_dir, new_cmd]
+        working_dir = new_working_dir
+        cmd = new_cmd
 
 def expand_command(command, vars, filename, top_srcdir, top_builddir=None):
     dic = get_file_paths(filename, top_srcdir, top_builddir)
