@@ -9,6 +9,7 @@ langs2 =			\
 	changelog.lang		\
 	chdr.lang		\
 	c.lang			\
+	cmake.lang		\
 	cpp.lang		\
 	csharp.lang		\
 	css.lang		\
