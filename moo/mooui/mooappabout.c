@@ -10,10 +10,9 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#define MOO_APP_COMPILATION
 #include "mooappabout-glade.h"
 #include "mooappabout.h"
-#include "mooapp-private.h"
+#include "mooapp.h"
 #include "moohtml.h"
 #include "moolinklabel.h"
 #include "mooutils/moostock.h"
@@ -89,7 +88,7 @@ show_credits (void)
     GtkTextBuffer *buffer;
     const MooAppInfo *info;
 
-    info = _moo_app_get_info (moo_app_instance ());
+    info = moo_app_get_info (moo_app_get_instance());
     g_return_if_fail (info && info->credits);
 
     if (credits_dialog)
@@ -163,7 +162,7 @@ about_dialog_key_press (GtkWidget   *dialog,
 
 
 static GtkWidget *
-create_about_dialog (MooApp *app)
+create_about_dialog (void)
 {
     MooGladeXML *xml;
     GtkWidget *dialog, *logo, *button;
@@ -172,7 +171,7 @@ create_about_dialog (MooApp *app)
     GtkLabel *label;
     MooLinkLabel *url;
 
-    info = _moo_app_get_info (app);
+    info = moo_app_get_info (moo_app_get_instance());
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "url", MOO_TYPE_LINK_LABEL);
     moo_glade_xml_parse_memory (xml, mooappabout_glade_xml, -1, "dialog", NULL);
@@ -234,11 +233,10 @@ create_about_dialog (MooApp *app)
 
 
 void
-_moo_app_about_dialog (MooApp    *app,
-                       GtkWidget *parent)
+moo_app_about_dialog (GtkWidget *parent)
 {
     if (!about_dialog)
-        about_dialog = create_about_dialog (app);
+        about_dialog = create_about_dialog ();
 
     if (parent)
         parent = gtk_widget_get_toplevel (parent);
@@ -271,14 +269,14 @@ create_system_info_dialog (void)
 
     textview = moo_glade_xml_get_widget (xml, "textview");
     buffer = gtk_text_view_get_buffer (textview);
-    text = _moo_app_get_system_info (moo_app_instance ());
+    text = moo_app_get_system_info (moo_app_get_instance ());
     gtk_text_buffer_set_text (buffer, text, -1);
     g_free (text);
 }
 
 
 char *
-_moo_app_get_system_info (MooApp *app)
+moo_app_get_system_info (MooApp *app)
 {
     GString *text;
     char *string;
@@ -289,7 +287,7 @@ _moo_app_get_system_info (MooApp *app)
 
     text = g_string_new (NULL);
 
-    app_info = _moo_app_get_info (app);
+    app_info = moo_app_get_info (app);
     g_return_val_if_fail (app_info != NULL, NULL);
     g_string_append_printf (text, "%s-%s\n", app_info->full_name, app_info->version);
 
@@ -371,7 +369,7 @@ _moo_app_get_system_info (MooApp *app)
 
 
 void
-_moo_app_system_info_dialog (GtkWidget *parent)
+moo_app_system_info_dialog (GtkWidget *parent)
 {
     create_system_info_dialog ();
 
