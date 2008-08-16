@@ -60,7 +60,6 @@ PKG_CONFIG_PROGRAM=${PKG_CONFIG_PROGRAM:-`which pkg-config`}
 
 # Where gtk libraries are installed
 export GTK_PREFIX=${GTK_PREFIX:-/usr/local/win/gtk}
-export QT_PREFIX=${QT_PREFIX:-/usr/local/win/Qt/4.4.0}
 
 # Prefix of mingw tools. prefix + tool should make up full path
 # to the tool, e.g. prefix is '/usr/bin/i586-mingw32msvc-' on Debian

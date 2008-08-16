@@ -37,25 +37,22 @@ moofileview_sources =		\
 moofileview_pixmaps =		\
 	symlink.png		\
 	symlink-small.png
-BUILT_SOURCES = moofileicons-symlink.h
-CLEANFILES = moofileicons-symlink.h
-EXTRA_DIST = $(moofileview_pixmaps)
+BUILT_SOURCES += moofileicons-symlink.h
+CLEANFILES += moofileicons-symlink.h
+EXTRA_DIST += $(moofileview_pixmaps)
 
 moofileicons-symlink.h: $(moofileview_pixmaps)
 	gdk-pixbuf-csource --static --build-list	\
 		SYMLINK_ARROW $(srcdir)/symlink.png	\
 		SYMLINK_ARROW_SMALL $(srcdir)/symlink-small.png > $@.tmp && mv $@.tmp $@
 
-glade_files =				\
+GLADE_FILES =				\
 	glade/moofileview-drop.glade	\
 	glade/moofileprops.glade	\
 	glade/moocreatefolder.glade	\
 	glade/moobookmark-editor.glade
-include ../../mk/glade.mk
 
-ui_files = moofileview.xml
-include ../../mk/ui.mk
-
+MOO_UI_FILES = moofileview.xml
 
 noinst_LTLIBRARIES = libmoofileview.la
 libmoofileview_la_SOURCES = $(moofileview_sources)

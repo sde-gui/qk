@@ -9,7 +9,6 @@ AC_DEFUN_ONCE([MOO_AC_PO_GSV],[
 
 AC_DEFUN_ONCE([MOO_AC_I18N],[
   AC_REQUIRE([MOO_AC_CHECK_OS])
-  AC_REQUIRE([MOO_AC_SRCDIR])
 
   m4_if([$1],[],[
     YOU_FORGOT_TO_CALL_MOO_AC_I18N_WITH_RIGHT_PARAMETERS()
@@ -33,7 +32,7 @@ AC_DEFUN_ONCE([MOO_AC_I18N],[
   AC_SUBST(GETTEXT_PACKAGE)
   AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Name of the gettext package.])
 
-  MOO_INTLTOOL_MERGE='$(moo_srcdir)/mooutils/moo-intltool-merge'
+  MOO_INTLTOOL_MERGE='$(top_srcdir)/moo/mooutils/moo-intltool-merge'
 
   m4_if([$2],[no],[
     MOO_INTLTOOL_XML_RULE='%.xml: %.xml.in $(MOO_INTLTOOL_MERGE) ; $(MOO_INTLTOOL_MERGE) $< [$]@'

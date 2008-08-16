@@ -1,3 +1,5 @@
+MODULE = libmooterm_la
+
 mooterm_sources =			\
 	mooterm-draw.c			\
 	mooterm-input.c			\
@@ -19,8 +21,6 @@ mooterm_sources =			\
 	mootermline-private.h		\
 	mootermline.c			\
 	mootermline.h			\
-	mootermparser-yacc.c		\
-	mootermparser-yacc.h		\
 	mootermparser.c			\
 	mootermparser.h			\
 	mootermpt-private.h		\
@@ -46,21 +46,13 @@ termhelper_sources =			\
 	pty.c				\
 	pty.h
 
-EXTRA_DIST =				\
-	mootermparser-yacc.y		\
+EXTRA_DIST +=				\
 	$(termhelper_sources)		\
 	mootermhelper_res.rc.in
 
-# not using rule for auto-regenerating mootermparser-yacc.[ch]
-mootermparser_yacc: mootermparser-yacc.y
-	touch mootermparser_yacc
-	bison -o $(srcdir)/mootermparser-yacc.c -d $(srcdir)/mootermparser-yacc.y
+YACC_FILES = mootermparser.y
 
-BUILT_SOURCES =
-CLEANFILES =
-
-glade_files = glade/mootermprefs.glade
-include ../../mk/glade.mk
+GLADE_FILES = glade/mootermprefs.glade
 
 noinst_LTLIBRARIES =
 

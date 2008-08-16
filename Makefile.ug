@@ -1,9 +1,8 @@
 AUTOMAKE_OPTIONS = dist-bzip2 no-dist-gzip
 
-EXTRA_DIST =			\
+EXTRA_DIST +=			\
 	autogen.sh		\
 	mingw-configure		\
-	cygwin-configure	\
 	makewin			\
 	COPYING.GPL		\
 	COPYING			\
@@ -12,19 +11,12 @@ EXTRA_DIST =			\
 	intltool-extract.in	\
 	intltool-merge.in	\
 	intltool-update.in	\
-	mk/enums.mk		\
-	mk/glade.mk		\
-	mk/icon.mk		\
 	mk/ini-desktop.mk	\
-	mk/marshals.mk		\
-	mk/mime.mk		\
-	mk/rc.mk		\
-	mk/ui.mk		\
-	mk/yacc.mk
+	mk/marshals.mk
 
 @MOO_PO_SUBDIRS_RULE@
 @MOO_PO_SUBDIRS_RULE2@
-BUILT_SOURCES = po-subdirs-stamp po-subdirs-stamp-2
+BUILT_SOURCES += po-subdirs-stamp po-subdirs-stamp-2
 
 DIST_SUBDIRS = moo medit tests po po-gsv doc
 
@@ -58,11 +50,11 @@ moo-config-dirs.h.stamp: Makefile
 	rm -f moo-config-dirs.h.tmp
 	echo stamp > moo-config-dirs.h.stamp
 BUILT_SOURCES += moo-config-dirs.h.stamp
-CLEANFILES = moo-config-dirs.h.stamp moo-config-dirs.h
+CLEANFILES += moo-config-dirs.h.stamp moo-config-dirs.h
 
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I m4 -I ugly/m4
 
-DISTCLEANFILES =		\
+DISTCLEANFILES +=		\
 	configargs.h		\
 	intltool-extract	\
 	intltool-merge		\

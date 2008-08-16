@@ -1,0 +1,60 @@
+AM_CFLAGS =			\
+	$(MOO_CFLAGS)		\
+	$(MOO_DEBUG_CFLAGS)
+
+if MOO_ENABLE_PROJECT
+AM_CFLAGS += -DMOO_ENABLE_PROJECT
+endif
+
+MODULE = medit
+bin_PROGRAMS = medit
+
+medit_SOURCES = medit-credits.h main.c mem-debug.h
+BUILT_SOURCES += medit-credits.h medit.iss
+nodist_medit_SOURCES =
+
+medit_LDFLAGS += -export-dynamic $(PYTHON_EXTRA_LDFLAGS) $(medit_res_ldflag)
+medit_LDADD = ../moo/libmoo.la
+
+medit_RC_IN_FILE = medit.rc.in
+
+medit-credits.h: ../THANKS $(top_srcdir)/ugly/xml2h.sh
+	$(SHELL) $(top_srcdir)/ugly/xml2h.sh THANKS $(srcdir)/../THANKS > $@.tmp && \
+	mv $@.tmp $(srcdir)/medit-credits.h
+
+EXTRA_DIST += medit.desktop.in
+
+@MOO_INTLTOOL_DESKTOP_RULE@
+DESKTOP_IN_FILES = medit.desktop.in
+DESKTOP_FILES =$(DESKTOP_IN_FILES:.desktop.in=.desktop)
+desktopdir = $(datadir)/applications
+desktop_DATA = $(DESKTOP_FILES)
+DISTCLEANFILES += $(DESKTOP_FILES)
+
+pixmapsdir = $(datadir)/pixmaps
+pixmaps_DATA = ../moo/mooutils/pixmaps/medit.png
+iconthemedir = $(datadir)/icons/hicolor/48x48/apps
+icontheme_DATA = ../moo/mooutils/pixmaps/medit.png
+
+update_icon_cache = gtk-update-icon-cache -f -t $(DESTDIR)$(datadir)/icons/hicolor
+
+if MOO_ENABLE_GENERATED_FILES
+install-data-hook:
+	if echo "Updating icon cache" && $(update_icon_cache); then		\
+		echo "Done.";							\
+	else									\
+		echo "*** GTK icon cache not updated. After install, run this:";\
+		echo $(update_icon_cache);					\
+	fi
+uninstall-hook:
+	if echo "Updating icon cache" && $(update_icon_cache); then echo "Done."; else echo "Failed."; fi
+endif
+
+bundle:
+	ige-mac-bundler $(srcdir)/mac/medit.bundle
+EXTRA_DIST +=		    \
+	mac/medit.bundle    \
+	mac/Info.plist	    \
+	mac/gtkrc	    \
+	mac/medit.icns	    \
+	mac/environment.sh

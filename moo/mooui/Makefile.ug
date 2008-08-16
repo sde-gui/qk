@@ -16,12 +16,7 @@ noinst_LTLIBRARIES = libmooui.la
 libmooui_la_SOURCES = $(mooui_sources)
 libmooui_la_LIBADD = smclient/libsmclient.la
 
-BUILT_SOURCES =
-CLEANFILES =
-EXTRA_DIST =
-
-glade_files = glade/mooappabout.glade
-include ../../mk/glade.mk
+GLADE_FILES = glade/mooappabout.glade
 
 AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\

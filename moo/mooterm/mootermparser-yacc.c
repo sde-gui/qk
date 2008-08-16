@@ -1,7 +1,9 @@
-/* A Bison parser, made by GNU Bison 2.1.  */
+/* A Bison parser, made by GNU Bison 2.3.  */
 
-/* Skeleton parser for Yacc-like parsing with Bison,
-   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+/* Skeleton implementation for Bison's Yacc-like parsers in C
+
+   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,13 +20,21 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.  */
 
-/* As a special exception, when this file is copied by Bison into a
-   Bison output file, you may use that output file without restriction.
-   This special exception was added by the Free Software Foundation
-   in version 1.24 of Bison.  */
+/* As a special exception, you may create a larger work that contains
+   part or all of the Bison parser skeleton and distribute that work
+   under terms of your choice, so long as that work isn't itself a
+   parser generator using the skeleton or a modified version thereof
+   as a parser skeleton.  Alternatively, if you modify or redistribute
+   the parser skeleton itself, you may (at your option) remove this
+   special exception, which will cause the skeleton and the resulting
+   Bison output files to be licensed under the GNU General Public
+   License without this special exception.
 
-/* Written by Richard Stallman by simplifying the original so called
-   ``semantic'' parser.  */
+   This special exception was added by the Free Software Foundation in
+   version 2.2 of Bison.  */
+
+/* C LALR(1) parser skeleton written by Richard Stallman, by
+   simplifying the original so-called "semantic" parser.  */
 
 /* All symbols defined below should begin with yy or YY, to avoid
    infringing on user name space.  This should be done even for local
@@ -37,7 +47,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "2.1"
+#define YYBISON_VERSION "2.3"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -63,7 +73,7 @@
 
 
 /* Copy the first part of user declarations.  */
-#line 1 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 1 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
 
 #define MOOTERM_COMPILATION
 #include "mooterm/mootermparser.h"
@@ -118,7 +128,7 @@ G_STMT_START {                                          \
 # define YYTOKEN_TABLE 0
 #endif
 
-#if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
+#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef int YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
@@ -130,22 +140,55 @@ typedef int YYSTYPE;
 /* Copy the second part of user declarations.  */
 
 
-/* Line 219 of yacc.c.  */
-#line 135 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.c"
+/* Line 216 of yacc.c.  */
+#line 145 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.c"
 
-#if ! defined (YYSIZE_T) && defined (__SIZE_TYPE__)
-# define YYSIZE_T __SIZE_TYPE__
+#ifdef short
+# undef short
 #endif
-#if ! defined (YYSIZE_T) && defined (size_t)
-# define YYSIZE_T size_t
+
+#ifdef YYTYPE_UINT8
+typedef YYTYPE_UINT8 yytype_uint8;
+#else
+typedef unsigned char yytype_uint8;
 #endif
-#if ! defined (YYSIZE_T) && (defined (__STDC__) || defined (__cplusplus))
-# include <stddef.h> /* INFRINGES ON USER NAME SPACE */
-# define YYSIZE_T size_t
+
+#ifdef YYTYPE_INT8
+typedef YYTYPE_INT8 yytype_int8;
+#elif (defined __STDC__ || defined __C99__FUNC__ \
+     || defined __cplusplus || defined _MSC_VER)
+typedef signed char yytype_int8;
+#else
+typedef short int yytype_int8;
 #endif
-#if ! defined (YYSIZE_T)
-# define YYSIZE_T unsigned int
+
+#ifdef YYTYPE_UINT16
+typedef YYTYPE_UINT16 yytype_uint16;
+#else
+typedef unsigned short int yytype_uint16;
 #endif
+
+#ifdef YYTYPE_INT16
+typedef YYTYPE_INT16 yytype_int16;
+#else
+typedef short int yytype_int16;
+#endif
+
+#ifndef YYSIZE_T
+# ifdef __SIZE_TYPE__
+#  define YYSIZE_T __SIZE_TYPE__
+# elif defined size_t
+#  define YYSIZE_T size_t
+# elif ! defined YYSIZE_T && (defined __STDC__ || defined __C99__FUNC__ \
+     || defined __cplusplus || defined _MSC_VER)
+#  include <stddef.h> /* INFRINGES ON USER NAME SPACE */
+#  define YYSIZE_T size_t
+# else
+#  define YYSIZE_T unsigned int
+# endif
+#endif
+
+#define YYSIZE_MAXIMUM ((YYSIZE_T) -1)
 
 #ifndef YY_
 # if YYENABLE_NLS
@@ -159,7 +202,32 @@ typedef int YYSTYPE;
 # endif
 #endif
 
-#if ! defined (yyoverflow) || YYERROR_VERBOSE
+/* Suppress unused-variable warnings by "using" E.  */
+#if ! defined lint || defined __GNUC__
+# define YYUSE(e) ((void) (e))
+#else
+# define YYUSE(e) /* empty */
+#endif
+
+/* Identity function, used to suppress warnings about constant conditions.  */
+#ifndef lint
+# define YYID(n) (n)
+#else
+#if (defined __STDC__ || defined __C99__FUNC__ \
+     || defined __cplusplus || defined _MSC_VER)
+static int
+YYID (int i)
+#else
+static int
+YYID (i)
+    int i;
+#endif
+{
+  return i;
+}
+#endif
+
+#if ! defined yyoverflow || YYERROR_VERBOSE
 
 /* The parser invokes alloca or malloc; define the necessary symbols.  */
 
@@ -167,64 +235,76 @@ typedef int YYSTYPE;
 #  if YYSTACK_USE_ALLOCA
 #   ifdef __GNUC__
 #    define YYSTACK_ALLOC __builtin_alloca
+#   elif defined __BUILTIN_VA_ARG_INCR
+#    include <alloca.h> /* INFRINGES ON USER NAME SPACE */
+#   elif defined _AIX
+#    define YYSTACK_ALLOC __alloca
+#   elif defined _MSC_VER
+#    include <malloc.h> /* INFRINGES ON USER NAME SPACE */
+#    define alloca _alloca
 #   else
 #    define YYSTACK_ALLOC alloca
-#    if defined (__STDC__) || defined (__cplusplus)
+#    if ! defined _ALLOCA_H && ! defined _STDLIB_H && (defined __STDC__ || defined __C99__FUNC__ \
+     || defined __cplusplus || defined _MSC_VER)
 #     include <stdlib.h> /* INFRINGES ON USER NAME SPACE */
-#     define YYINCLUDED_STDLIB_H
+#     ifndef _STDLIB_H
+#      define _STDLIB_H 1
+#     endif
 #    endif
 #   endif
 #  endif
 # endif
 
 # ifdef YYSTACK_ALLOC
-   /* Pacify GCC's `empty if-body' warning. */
-#  define YYSTACK_FREE(Ptr) do { /* empty */; } while (0)
+   /* Pacify GCC's `empty if-body' warning.  */
+#  define YYSTACK_FREE(Ptr) do { /* empty */; } while (YYID (0))
 #  ifndef YYSTACK_ALLOC_MAXIMUM
     /* The OS might guarantee only one guard page at the bottom of the stack,
        and a page size can be as small as 4096 bytes.  So we cannot safely
        invoke alloca (N) if N exceeds 4096.  Use a slightly smaller number
        to allow for a few compiler-allocated temporary stack slots.  */
-#   define YYSTACK_ALLOC_MAXIMUM 4032 /* reasonable circa 2005 */
+#   define YYSTACK_ALLOC_MAXIMUM 4032 /* reasonable circa 2006 */
 #  endif
 # else
 #  define YYSTACK_ALLOC YYMALLOC
 #  define YYSTACK_FREE YYFREE
 #  ifndef YYSTACK_ALLOC_MAXIMUM
-#   define YYSTACK_ALLOC_MAXIMUM ((YYSIZE_T) -1)
+#   define YYSTACK_ALLOC_MAXIMUM YYSIZE_MAXIMUM
 #  endif
-#  ifdef __cplusplus
-extern "C" {
+#  if (defined __cplusplus && ! defined _STDLIB_H \
+       && ! ((defined YYMALLOC || defined malloc) \
+	     && (defined YYFREE || defined free)))
+#   include <stdlib.h> /* INFRINGES ON USER NAME SPACE */
+#   ifndef _STDLIB_H
+#    define _STDLIB_H 1
+#   endif
 #  endif
 #  ifndef YYMALLOC
 #   define YYMALLOC malloc
-#   if (! defined (malloc) && ! defined (YYINCLUDED_STDLIB_H) \
-	&& (defined (__STDC__) || defined (__cplusplus)))
+#   if ! defined malloc && ! defined _STDLIB_H && (defined __STDC__ || defined __C99__FUNC__ \
+     || defined __cplusplus || defined _MSC_VER)
 void *malloc (YYSIZE_T); /* INFRINGES ON USER NAME SPACE */
 #   endif
 #  endif
 #  ifndef YYFREE
 #   define YYFREE free
-#   if (! defined (free) && ! defined (YYINCLUDED_STDLIB_H) \
-	&& (defined (__STDC__) || defined (__cplusplus)))
+#   if ! defined free && ! defined _STDLIB_H && (defined __STDC__ || defined __C99__FUNC__ \
+     || defined __cplusplus || defined _MSC_VER)
 void free (void *); /* INFRINGES ON USER NAME SPACE */
 #   endif
 #  endif
-#  ifdef __cplusplus
-}
-#  endif
 # endif
-#endif /* ! defined (yyoverflow) || YYERROR_VERBOSE */
+#endif /* ! defined yyoverflow || YYERROR_VERBOSE */
 
 
-#if (! defined (yyoverflow) \
-     && (! defined (__cplusplus) \
-	 || (defined (YYSTYPE_IS_TRIVIAL) && YYSTYPE_IS_TRIVIAL)))
+#if (! defined yyoverflow \
+     && (! defined __cplusplus \
+	 || (defined YYSTYPE_IS_TRIVIAL && YYSTYPE_IS_TRIVIAL)))
 
 /* A type that is properly aligned for any stack member.  */
 union yyalloc
 {
-  short int yyss;
+  yytype_int16 yyss;
   YYSTYPE yyvs;
   };
 
@@ -234,13 +314,13 @@ union yyalloc
 /* The size of an array large to enough to hold all stacks, each with
    N elements.  */
 # define YYSTACK_BYTES(N) \
-     ((N) * (sizeof (short int) + sizeof (YYSTYPE))			\
+     ((N) * (sizeof (yytype_int16) + sizeof (YYSTYPE)) \
       + YYSTACK_GAP_MAXIMUM)
 
 /* Copy COUNT objects from FROM to TO.  The source and destination do
    not overlap.  */
 # ifndef YYCOPY
-#  if defined (__GNUC__) && 1 < __GNUC__
+#  if defined __GNUC__ && 1 < __GNUC__
 #   define YYCOPY(To, From, Count) \
       __builtin_memcpy (To, From, (Count) * sizeof (*(From)))
 #  else
@@ -251,7 +331,7 @@ union yyalloc
 	  for (yyi = 0; yyi < (Count); yyi++)	\
 	    (To)[yyi] = (From)[yyi];		\
 	}					\
-      while (0)
+      while (YYID (0))
 #  endif
 # endif
 
@@ -269,28 +349,22 @@ union yyalloc
 	yynewbytes = yystacksize * sizeof (*Stack) + YYSTACK_GAP_MAXIMUM; \
 	yyptr += yynewbytes / sizeof (*yyptr);				\
       }									\
-    while (0)
+    while (YYID (0))
 
 #endif
 
-#if defined (__STDC__) || defined (__cplusplus)
-   typedef signed char yysigned_char;
-#else
-   typedef short int yysigned_char;
-#endif
-
-/* YYFINAL -- State number of the termination state. */
+/* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  189
 /* YYLAST -- Last index in YYTABLE.  */
 #define YYLAST   428
 
-/* YYNTOKENS -- Number of terminals. */
+/* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  85
-/* YYNNTS -- Number of nonterminals. */
+/* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  109
-/* YYNRULES -- Number of rules. */
+/* YYNRULES -- Number of rules.  */
 #define YYNRULES  280
-/* YYNRULES -- Number of states. */
+/* YYNRULES -- Number of states.  */
 #define YYNSTATES  316
 
 /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
@@ -301,7 +375,7 @@ union yyalloc
   ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
 
 /* YYTRANSLATE[YYLEX] -- Bison symbol number corresponding to YYLEX.  */
-static const unsigned char yytranslate[] =
+static const yytype_uint8 yytranslate[] =
 {
        0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -334,7 +408,7 @@ static const unsigned char yytranslate[] =
 #if YYDEBUG
 /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
    YYRHS.  */
-static const unsigned short int yyprhs[] =
+static const yytype_uint16 yyprhs[] =
 {
        0,     0,     3,     5,     7,     9,    11,    13,    15,    17,
       19,    21,    23,    25,    27,    29,    31,    33,    35,    37,
@@ -367,8 +441,8 @@ static const unsigned short int yyprhs[] =
      841
 };
 
-/* YYRHS -- A `-1'-separated list of the rules' RHS. */
-static const short int yyrhs[] =
+/* YYRHS -- A `-1'-separated list of the rules' RHS.  */
+static const yytype_int16 yyrhs[] =
 {
       86,     0,    -1,    87,    -1,   118,    -1,   187,    -1,    88,
       -1,    89,    -1,    90,    -1,    91,    -1,    92,    -1,    93,
@@ -458,7 +532,7 @@ static const short int yyrhs[] =
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
-static const unsigned short int yyrline[] =
+static const yytype_uint16 yyrline[] =
 {
        0,    44,    44,    45,    46,    54,    55,    56,    57,    58,
       59,    60,    61,    62,    63,    64,    65,    66,    67,    68,
@@ -494,7 +568,7 @@ static const unsigned short int yyrline[] =
 
 #if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
 /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
-   First, the terminals, then, starting at YYNTOKENS, nonterminals. */
+   First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
   "$end", "error", "$undefined", "'\\033'", "'E'", "'8'", "'7'", "'H'",
@@ -527,7 +601,7 @@ static const char *const yytname[] =
 # ifdef YYPRINT
 /* YYTOKNUM[YYLEX-NUM] -- Internal token number corresponding to
    token YYLEX-NUM.  */
-static const unsigned short int yytoknum[] =
+static const yytype_uint16 yytoknum[] =
 {
        0,   256,   257,    27,    69,    56,    55,    72,    54,    57,
       68,    77,    78,    79,    90,    99,    60,    61,    62,   126,
@@ -542,7 +616,7 @@ static const unsigned short int yytoknum[] =
 # endif
 
 /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
-static const unsigned char yyr1[] =
+static const yytype_uint8 yyr1[] =
 {
        0,    85,    86,    86,    86,    87,    87,    87,    87,    87,
       87,    87,    87,    87,    87,    87,    87,    87,    87,    87,
@@ -576,7 +650,7 @@ static const unsigned char yyr1[] =
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
-static const unsigned char yyr2[] =
+static const yytype_uint8 yyr2[] =
 {
        0,     2,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
@@ -612,7 +686,7 @@ static const unsigned char yyr2[] =
 /* YYDEFACT[STATE-NAME] -- Default rule to reduce with in state
    STATE-NUM when YYTABLE doesn't specify something else to do.  Zero
    means the default is an error.  */
-static const unsigned short int yydefact[] =
+static const yytype_uint16 yydefact[] =
 {
        0,     0,     0,     0,     0,     2,     5,     6,     7,     8,
        9,    10,    11,    12,    13,    14,    15,    16,    17,    18,
@@ -648,8 +722,8 @@ static const unsigned short int yydefact[] =
        0,   262,   259,   260,   258,   257
 };
 
-/* YYDEFGOTO[NTERM-NUM]. */
-static const short int yydefgoto[] =
+/* YYDEFGOTO[NTERM-NUM].  */
+static const yytype_int16 yydefgoto[] =
 {
       -1,     4,     5,     6,     7,     8,     9,    10,    11,    12,
       13,    14,    15,    16,    17,    18,    19,    20,    21,    22,
@@ -667,7 +741,7 @@ static const short int yydefgoto[] =
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
 #define YYPACT_NINF -185
-static const short int yypact[] =
+static const yytype_int16 yypact[] =
 {
       27,   394,    46,   -64,    12,  -185,  -185,  -185,  -185,  -185,
     -185,  -185,  -185,  -185,  -185,  -185,  -185,  -185,  -185,  -185,
@@ -704,7 +778,7 @@ static const short int yypact[] =
 };
 
 /* YYPGOTO[NTERM-NUM].  */
-static const short int yypgoto[] =
+static const yytype_int16 yypgoto[] =
 {
     -185,  -185,  -185,  -185,  -185,  -185,  -185,  -185,  -185,  -185,
     -185,  -185,  -185,  -185,  -185,  -185,  -185,  -185,  -185,  -185,
@@ -724,7 +798,7 @@ static const short int yypgoto[] =
    number is the opposite.  If zero, do what YYDEFACT says.
    If YYTABLE_NINF, syntax error.  */
 #define YYTABLE_NINF -1
-static const unsigned short int yytable[] =
+static const yytype_uint16 yytable[] =
 {
      204,   206,   257,   271,   313,   195,   196,   133,   134,   188,
      136,   137,   189,   222,   292,   223,   290,   220,   291,   305,
@@ -771,7 +845,7 @@ static const unsigned short int yytable[] =
        0,     0,   126,     0,     0,   127,   128,   129,   130
 };
 
-static const short int yycheck[] =
+static const yytype_int16 yycheck[] =
 {
      142,   143,   184,   187,    23,    29,    30,     5,     6,    73,
        8,     9,     0,    19,    23,    21,    19,    62,    21,    33,
@@ -820,7 +894,7 @@ static const short int yycheck[] =
 
 /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
    symbol of state STATE-NUM.  */
-static const unsigned char yystos[] =
+static const yytype_uint8 yystos[] =
 {
        0,     3,    40,    82,    86,    87,    88,    89,    90,    91,
       92,    93,    94,    95,    96,    97,    98,    99,   100,   101,
@@ -881,7 +955,7 @@ do								\
       yychar = (Token);						\
       yylval = (Value);						\
       yytoken = YYTRANSLATE (yychar);				\
-      YYPOPSTACK;						\
+      YYPOPSTACK (1);						\
       goto yybackup;						\
     }								\
   else								\
@@ -889,7 +963,7 @@ do								\
       yyerror (parser, YY_("syntax error: cannot back up")); \
       YYERROR;							\
     }								\
-while (0)
+while (YYID (0))
 
 
 #define YYTERROR	1
@@ -904,7 +978,7 @@ while (0)
 #ifndef YYLLOC_DEFAULT
 # define YYLLOC_DEFAULT(Current, Rhs, N)				\
     do									\
-      if (N)								\
+      if (YYID (N))                                                    \
 	{								\
 	  (Current).first_line   = YYRHSLOC (Rhs, 1).first_line;	\
 	  (Current).first_column = YYRHSLOC (Rhs, 1).first_column;	\
@@ -918,7 +992,7 @@ while (0)
 	  (Current).first_column = (Current).last_column =		\
 	    YYRHSLOC (Rhs, 0).last_column;				\
 	}								\
-    while (0)
+    while (YYID (0))
 #endif
 
 
@@ -930,8 +1004,8 @@ while (0)
 # if YYLTYPE_IS_TRIVIAL
 #  define YY_LOCATION_PRINT(File, Loc)			\
      fprintf (File, "%d.%d-%d.%d",			\
-              (Loc).first_line, (Loc).first_column,	\
-              (Loc).last_line,  (Loc).last_column)
+	      (Loc).first_line, (Loc).first_column,	\
+	      (Loc).last_line,  (Loc).last_column)
 # else
 #  define YY_LOCATION_PRINT(File, Loc) ((void) 0)
 # endif
@@ -958,36 +1032,99 @@ while (0)
 do {						\
   if (yydebug)					\
     YYFPRINTF Args;				\
-} while (0)
+} while (YYID (0))
 
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)		\
-do {								\
-  if (yydebug)							\
-    {								\
-      YYFPRINTF (stderr, "%s ", Title);				\
-      yysymprint (stderr,					\
-                  Type, Value);	\
-      YYFPRINTF (stderr, "\n");					\
-    }								\
-} while (0)
+# define YY_SYMBOL_PRINT(Title, Type, Value, Location)			  \
+do {									  \
+  if (yydebug)								  \
+    {									  \
+      YYFPRINTF (stderr, "%s ", Title);					  \
+      yy_symbol_print (stderr,						  \
+		  Type, Value, parser); \
+      YYFPRINTF (stderr, "\n");						  \
+    }									  \
+} while (YYID (0))
+
+
+/*--------------------------------.
+| Print this symbol on YYOUTPUT.  |
+`--------------------------------*/
+
+/*ARGSUSED*/
+#if (defined __STDC__ || defined __C99__FUNC__ \
+     || defined __cplusplus || defined _MSC_VER)
+static void
+yy_symbol_value_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep, MooTermParser *parser)
+#else
+static void
+yy_symbol_value_print (yyoutput, yytype, yyvaluep, parser)
+    FILE *yyoutput;
+    int yytype;
+    YYSTYPE const * const yyvaluep;
+    MooTermParser *parser;
+#endif
+{
+  if (!yyvaluep)
+    return;
+  YYUSE (parser);
+# ifdef YYPRINT
+  if (yytype < YYNTOKENS)
+    YYPRINT (yyoutput, yytoknum[yytype], *yyvaluep);
+# else
+  YYUSE (yyoutput);
+# endif
+  switch (yytype)
+    {
+      default:
+	break;
+    }
+}
+
+
+/*--------------------------------.
+| Print this symbol on YYOUTPUT.  |
+`--------------------------------*/
+
+#if (defined __STDC__ || defined __C99__FUNC__ \
+     || defined __cplusplus || defined _MSC_VER)
+static void
+yy_symbol_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep, MooTermParser *parser)
+#else
+static void
+yy_symbol_print (yyoutput, yytype, yyvaluep, parser)
+    FILE *yyoutput;
+    int yytype;
+    YYSTYPE const * const yyvaluep;
+    MooTermParser *parser;
+#endif
+{
+  if (yytype < YYNTOKENS)
+    YYFPRINTF (yyoutput, "token %s (", yytname[yytype]);
+  else
+    YYFPRINTF (yyoutput, "nterm %s (", yytname[yytype]);
+
+  yy_symbol_value_print (yyoutput, yytype, yyvaluep, parser);
+  YYFPRINTF (yyoutput, ")");
+}
 
 /*------------------------------------------------------------------.
 | yy_stack_print -- Print the state stack from its BOTTOM up to its |
 | TOP (included).                                                   |
 `------------------------------------------------------------------*/
 
-#if defined (__STDC__) || defined (__cplusplus)
+#if (defined __STDC__ || defined __C99__FUNC__ \
+     || defined __cplusplus || defined _MSC_VER)
 static void
-yy_stack_print (short int *bottom, short int *top)
+yy_stack_print (yytype_int16 *bottom, yytype_int16 *top)
 #else
 static void
 yy_stack_print (bottom, top)
-    short int *bottom;
-    short int *top;
+    yytype_int16 *bottom;
+    yytype_int16 *top;
 #endif
 {
   YYFPRINTF (stderr, "Stack now");
-  for (/* Nothing. */; bottom <= top; ++bottom)
+  for (; bottom <= top; ++bottom)
     YYFPRINTF (stderr, " %d", *bottom);
   YYFPRINTF (stderr, "\n");
 }
@@ -996,37 +1133,46 @@ yy_stack_print (bottom, top)
 do {								\
   if (yydebug)							\
     yy_stack_print ((Bottom), (Top));				\
-} while (0)
+} while (YYID (0))
 
 
 /*------------------------------------------------.
 | Report that the YYRULE is going to be reduced.  |
 `------------------------------------------------*/
 
-#if defined (__STDC__) || defined (__cplusplus)
+#if (defined __STDC__ || defined __C99__FUNC__ \
+     || defined __cplusplus || defined _MSC_VER)
 static void
-yy_reduce_print (int yyrule)
+yy_reduce_print (YYSTYPE *yyvsp, int yyrule, MooTermParser *parser)
 #else
 static void
-yy_reduce_print (yyrule)
+yy_reduce_print (yyvsp, yyrule, parser)
+    YYSTYPE *yyvsp;
     int yyrule;
+    MooTermParser *parser;
 #endif
 {
+  int yynrhs = yyr2[yyrule];
   int yyi;
   unsigned long int yylno = yyrline[yyrule];
-  YYFPRINTF (stderr, "Reducing stack by rule %d (line %lu), ",
-             yyrule - 1, yylno);
-  /* Print the symbols being reduced, and their result.  */
-  for (yyi = yyprhs[yyrule]; 0 <= yyrhs[yyi]; yyi++)
-    YYFPRINTF (stderr, "%s ", yytname[yyrhs[yyi]]);
-  YYFPRINTF (stderr, "-> %s\n", yytname[yyr1[yyrule]]);
+  YYFPRINTF (stderr, "Reducing stack by rule %d (line %lu):\n",
+	     yyrule - 1, yylno);
+  /* The symbols being reduced.  */
+  for (yyi = 0; yyi < yynrhs; yyi++)
+    {
+      fprintf (stderr, "   $%d = ", yyi + 1);
+      yy_symbol_print (stderr, yyrhs[yyprhs[yyrule] + yyi],
+		       &(yyvsp[(yyi + 1) - (yynrhs)])
+		       		       , parser);
+      fprintf (stderr, "\n");
+    }
 }
 
 # define YY_REDUCE_PRINT(Rule)		\
 do {					\
   if (yydebug)				\
-    yy_reduce_print (Rule);		\
-} while (0)
+    yy_reduce_print (yyvsp, Rule, parser); \
+} while (YYID (0))
 
 /* Nonzero means print parse trace.  It is left uninitialized so that
    multiple parsers can coexist.  */
@@ -1060,42 +1206,44 @@ int yydebug;
 #if YYERROR_VERBOSE
 
 # ifndef yystrlen
-#  if defined (__GLIBC__) && defined (_STRING_H)
+#  if defined __GLIBC__ && defined _STRING_H
 #   define yystrlen strlen
 #  else
 /* Return the length of YYSTR.  */
+#if (defined __STDC__ || defined __C99__FUNC__ \
+     || defined __cplusplus || defined _MSC_VER)
 static YYSIZE_T
-#   if defined (__STDC__) || defined (__cplusplus)
 yystrlen (const char *yystr)
-#   else
+#else
+static YYSIZE_T
 yystrlen (yystr)
-     const char *yystr;
-#   endif
+    const char *yystr;
+#endif
 {
-  const char *yys = yystr;
-
-  while (*yys++ != '\0')
+  YYSIZE_T yylen;
+  for (yylen = 0; yystr[yylen]; yylen++)
     continue;
-
-  return yys - yystr - 1;
+  return yylen;
 }
 #  endif
 # endif
 
 # ifndef yystpcpy
-#  if defined (__GLIBC__) && defined (_STRING_H) && defined (_GNU_SOURCE)
+#  if defined __GLIBC__ && defined _STRING_H && defined _GNU_SOURCE
 #   define yystpcpy stpcpy
 #  else
 /* Copy YYSRC to YYDEST, returning the address of the terminating '\0' in
    YYDEST.  */
+#if (defined __STDC__ || defined __C99__FUNC__ \
+     || defined __cplusplus || defined _MSC_VER)
 static char *
-#   if defined (__STDC__) || defined (__cplusplus)
 yystpcpy (char *yydest, const char *yysrc)
-#   else
+#else
+static char *
 yystpcpy (yydest, yysrc)
-     char *yydest;
-     const char *yysrc;
-#   endif
+    char *yydest;
+    const char *yysrc;
+#endif
 {
   char *yyd = yydest;
   const char *yys = yysrc;
@@ -1121,7 +1269,7 @@ yytnamerr (char *yyres, const char *yystr)
 {
   if (*yystr == '"')
     {
-      size_t yyn = 0;
+      YYSIZE_T yyn = 0;
       char const *yyp = yystr;
 
       for (;;)
@@ -1156,65 +1304,136 @@ yytnamerr (char *yyres, const char *yystr)
 }
 # endif
 
-#endif /* YYERROR_VERBOSE */
+/* Copy into YYRESULT an error message about the unexpected token
+   YYCHAR while in state YYSTATE.  Return the number of bytes copied,
+   including the terminating null byte.  If YYRESULT is null, do not
+   copy anything; just return the number of bytes that would be
+   copied.  As a special case, return 0 if an ordinary "syntax error"
+   message will do.  Return YYSIZE_MAXIMUM if overflow occurs during
+   size calculation.  */
+static YYSIZE_T
+yysyntax_error (char *yyresult, int yystate, int yychar)
+{
+  int yyn = yypact[yystate];
 
+  if (! (YYPACT_NINF < yyn && yyn <= YYLAST))
+    return 0;
+  else
+    {
+      int yytype = YYTRANSLATE (yychar);
+      YYSIZE_T yysize0 = yytnamerr (0, yytname[yytype]);
+      YYSIZE_T yysize = yysize0;
+      YYSIZE_T yysize1;
+      int yysize_overflow = 0;
+      enum { YYERROR_VERBOSE_ARGS_MAXIMUM = 5 };
+      char const *yyarg[YYERROR_VERBOSE_ARGS_MAXIMUM];
+      int yyx;
+
+# if 0
+      /* This is so xgettext sees the translatable formats that are
+	 constructed on the fly.  */
+      YY_("syntax error, unexpected %s");
+      YY_("syntax error, unexpected %s, expecting %s");
+      YY_("syntax error, unexpected %s, expecting %s or %s");
+      YY_("syntax error, unexpected %s, expecting %s or %s or %s");
+      YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s");
+# endif
+      char *yyfmt;
+      char const *yyf;
+      static char const yyunexpected[] = "syntax error, unexpected %s";
+      static char const yyexpecting[] = ", expecting %s";
+      static char const yyor[] = " or %s";
+      char yyformat[sizeof yyunexpected
+		    + sizeof yyexpecting - 1
+		    + ((YYERROR_VERBOSE_ARGS_MAXIMUM - 2)
+		       * (sizeof yyor - 1))];
+      char const *yyprefix = yyexpecting;
+
+      /* Start YYX at -YYN if negative to avoid negative indexes in
+	 YYCHECK.  */
+      int yyxbegin = yyn < 0 ? -yyn : 0;
+
+      /* Stay within bounds of both yycheck and yytname.  */
+      int yychecklim = YYLAST - yyn + 1;
+      int yyxend = yychecklim < YYNTOKENS ? yychecklim : YYNTOKENS;
+      int yycount = 1;
+
+      yyarg[0] = yytname[yytype];
+      yyfmt = yystpcpy (yyformat, yyunexpected);
+
+      for (yyx = yyxbegin; yyx < yyxend; ++yyx)
+	if (yycheck[yyx + yyn] == yyx && yyx != YYTERROR)
+	  {
+	    if (yycount == YYERROR_VERBOSE_ARGS_MAXIMUM)
+	      {
+		yycount = 1;
+		yysize = yysize0;
+		yyformat[sizeof yyunexpected - 1] = '\0';
+		break;
+	      }
+	    yyarg[yycount++] = yytname[yyx];
+	    yysize1 = yysize + yytnamerr (0, yytname[yyx]);
+	    yysize_overflow |= (yysize1 < yysize);
+	    yysize = yysize1;
+	    yyfmt = yystpcpy (yyfmt, yyprefix);
+	    yyprefix = yyor;
+	  }
+
+      yyf = YY_(yyformat);
+      yysize1 = yysize + yystrlen (yyf);
+      yysize_overflow |= (yysize1 < yysize);
+      yysize = yysize1;
+
+      if (yysize_overflow)
+	return YYSIZE_MAXIMUM;
+
+      if (yyresult)
+	{
+	  /* Avoid sprintf, as that infringes on the user's name space.
+	     Don't have undefined behavior even if the translation
+	     produced a string with the wrong number of "%s"s.  */
+	  char *yyp = yyresult;
+	  int yyi = 0;
+	  while ((*yyp = *yyf) != '\0')
+	    {
+	      if (*yyp == '%' && yyf[1] == 's' && yyi < yycount)
+		{
+		  yyp += yytnamerr (yyp, yyarg[yyi++]);
+		  yyf += 2;
+		}
+	      else
+		{
+		  yyp++;
+		  yyf++;
+		}
+	    }
+	}
+      return yysize;
+    }
+}
+#endif /* YYERROR_VERBOSE */
 
 
-#if YYDEBUG
-/*--------------------------------.
-| Print this symbol on YYOUTPUT.  |
-`--------------------------------*/
-
-#if defined (__STDC__) || defined (__cplusplus)
-static void
-yysymprint (FILE *yyoutput, int yytype, YYSTYPE *yyvaluep)
-#else
-static void
-yysymprint (yyoutput, yytype, yyvaluep)
-    FILE *yyoutput;
-    int yytype;
-    YYSTYPE *yyvaluep;
-#endif
-{
-  /* Pacify ``unused variable'' warnings.  */
-  (void) yyvaluep;
-
-  if (yytype < YYNTOKENS)
-    YYFPRINTF (yyoutput, "token %s (", yytname[yytype]);
-  else
-    YYFPRINTF (yyoutput, "nterm %s (", yytname[yytype]);
-
-
-# ifdef YYPRINT
-  if (yytype < YYNTOKENS)
-    YYPRINT (yyoutput, yytoknum[yytype], *yyvaluep);
-# endif
-  switch (yytype)
-    {
-      default:
-        break;
-    }
-  YYFPRINTF (yyoutput, ")");
-}
-
-#endif /* ! YYDEBUG */
 /*-----------------------------------------------.
 | Release the memory associated to this symbol.  |
 `-----------------------------------------------*/
 
-#if defined (__STDC__) || defined (__cplusplus)
+/*ARGSUSED*/
+#if (defined __STDC__ || defined __C99__FUNC__ \
+     || defined __cplusplus || defined _MSC_VER)
 static void
-yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep)
+yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, MooTermParser *parser)
 #else
 static void
-yydestruct (yymsg, yytype, yyvaluep)
+yydestruct (yymsg, yytype, yyvaluep, parser)
     const char *yymsg;
     int yytype;
     YYSTYPE *yyvaluep;
+    MooTermParser *parser;
 #endif
 {
-  /* Pacify ``unused variable'' warnings.  */
-  (void) yyvaluep;
+  YYUSE (yyvaluep);
+  YYUSE (parser);
 
   if (!yymsg)
     yymsg = "Deleting";
@@ -1224,7 +1443,7 @@ yydestruct (yymsg, yytype, yyvaluep)
     {
 
       default:
-        break;
+	break;
     }
 }
 
@@ -1232,13 +1451,13 @@ yydestruct (yymsg, yytype, yyvaluep)
 /* Prevent warnings from -Wmissing-prototypes.  */
 
 #ifdef YYPARSE_PARAM
-# if defined (__STDC__) || defined (__cplusplus)
+#if defined __STDC__ || defined __cplusplus
 int yyparse (void *YYPARSE_PARAM);
-# else
+#else
 int yyparse ();
-# endif
+#endif
 #else /* ! YYPARSE_PARAM */
-#if defined (__STDC__) || defined (__cplusplus)
+#if defined __STDC__ || defined __cplusplus
 int yyparse (MooTermParser *parser);
 #else
 int yyparse ();
@@ -1263,14 +1482,18 @@ int yynerrs;
 `----------*/
 
 #ifdef YYPARSE_PARAM
-# if defined (__STDC__) || defined (__cplusplus)
-int yyparse (void *YYPARSE_PARAM)
-# else
-int yyparse (YYPARSE_PARAM)
-  void *YYPARSE_PARAM;
-# endif
+#if (defined __STDC__ || defined __C99__FUNC__ \
+     || defined __cplusplus || defined _MSC_VER)
+int
+yyparse (void *YYPARSE_PARAM)
+#else
+int
+yyparse (YYPARSE_PARAM)
+    void *YYPARSE_PARAM;
+#endif
 #else /* ! YYPARSE_PARAM */
-#if defined (__STDC__) || defined (__cplusplus)
+#if (defined __STDC__ || defined __C99__FUNC__ \
+     || defined __cplusplus || defined _MSC_VER)
 int
 yyparse (MooTermParser *parser)
 #else
@@ -1288,6 +1511,12 @@ yyparse (parser)
   int yyerrstatus;
   /* Look-ahead token as an internal (translated) token number.  */
   int yytoken = 0;
+#if YYERROR_VERBOSE
+  /* Buffer for error messages, and its allocated size.  */
+  char yymsgbuf[128];
+  char *yymsg = yymsgbuf;
+  YYSIZE_T yymsg_alloc = sizeof yymsgbuf;
+#endif
 
   /* Three stacks and their tools:
      `yyss': related to states,
@@ -1298,9 +1527,9 @@ yyparse (parser)
      to reallocate them elsewhere.  */
 
   /* The state stack.  */
-  short int yyssa[YYINITDEPTH];
-  short int *yyss = yyssa;
-  short int *yyssp;
+  yytype_int16 yyssa[YYINITDEPTH];
+  yytype_int16 *yyss = yyssa;
+  yytype_int16 *yyssp;
 
   /* The semantic value stack.  */
   YYSTYPE yyvsa[YYINITDEPTH];
@@ -1309,7 +1538,7 @@ yyparse (parser)
 
 
 
-#define YYPOPSTACK   (yyvsp--, yyssp--)
+#define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N))
 
   YYSIZE_T yystacksize = YYINITDEPTH;
 
@@ -1318,9 +1547,9 @@ yyparse (parser)
   YYSTYPE yyval;
 
 
-  /* When reducing, the number of symbols on the RHS of the reduced
-     rule.  */
-  int yylen;
+  /* The number of symbols on the RHS of the reduced rule.
+     Keep to zero when no symbol should be popped.  */
+  int yylen = 0;
 
   YYDPRINTF ((stderr, "Starting parse\n"));
 
@@ -1344,8 +1573,7 @@ yyparse (parser)
 `------------------------------------------------------------*/
  yynewstate:
   /* In all cases, when you get here, the value and location stacks
-     have just been pushed. so pushing a state here evens the stacks.
-     */
+     have just been pushed.  So pushing a state here evens the stacks.  */
   yyssp++;
 
  yysetstate:
@@ -1358,11 +1586,11 @@ yyparse (parser)
 
 #ifdef yyoverflow
       {
-	/* Give user a chance to reallocate the stack. Use copies of
+	/* Give user a chance to reallocate the stack.  Use copies of
 	   these so that the &'s don't force the real ones into
 	   memory.  */
 	YYSTYPE *yyvs1 = yyvs;
-	short int *yyss1 = yyss;
+	yytype_int16 *yyss1 = yyss;
 
 
 	/* Each stack pointer address is followed by the size of the
@@ -1390,7 +1618,7 @@ yyparse (parser)
 	yystacksize = YYMAXDEPTH;
 
       {
-	short int *yyss1 = yyss;
+	yytype_int16 *yyss1 = yyss;
 	union yyalloc *yyptr =
 	  (union yyalloc *) YYSTACK_ALLOC (YYSTACK_BYTES (yystacksize));
 	if (! yyptr)
@@ -1425,12 +1653,10 @@ yyparse (parser)
 `-----------*/
 yybackup:
 
-/* Do appropriate processing given the current state.  */
-/* Read a look-ahead token if we need one and don't already have one.  */
-/* yyresume: */
+  /* Do appropriate processing given the current state.  Read a
+     look-ahead token if we need one and don't already have one.  */
 
   /* First try to decide what to do without reference to look-ahead token.  */
-
   yyn = yypact[yystate];
   if (yyn == YYPACT_NINF)
     goto yydefault;
@@ -1472,22 +1698,21 @@ yybackup:
   if (yyn == YYFINAL)
     YYACCEPT;
 
-  /* Shift the look-ahead token.  */
-  YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
-
-  /* Discard the token being shifted unless it is eof.  */
-  if (yychar != YYEOF)
-    yychar = YYEMPTY;
-
-  *++yyvsp = yylval;
-
-
   /* Count tokens shifted since error; after three, turn off error
      status.  */
   if (yyerrstatus)
     yyerrstatus--;
 
+  /* Shift the look-ahead token.  */
+  YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
+
+  /* Discard the shifted token unless it is eof.  */
+  if (yychar != YYEOF)
+    yychar = YYEMPTY;
+
   yystate = yyn;
+  *++yyvsp = yylval;
+
   goto yynewstate;
 
 
@@ -1523,396 +1748,396 @@ yyreduce:
   switch (yyn)
     {
         case 33:
-#line 85 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 85 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NEL;             ;}
     break;
 
   case 34:
-#line 86 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 86 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECRC;           ;}
     break;
 
   case 35:
-#line 87 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 87 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECSC;           ;}
     break;
 
   case 36:
-#line 88 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 88 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_HTS;             ;}
     break;
 
   case 37:
-#line 89 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 89 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 38:
-#line 90 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 90 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 39:
-#line 91 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 91 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_IND;             ;}
     break;
 
   case 40:
-#line 92 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 92 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_RI;              ;}
     break;
 
   case 41:
-#line 93 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 93 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 42:
-#line 94 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 94 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 43:
-#line 95 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 95 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 44:
-#line 96 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 96 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_RIS;             ;}
     break;
 
   case 45:
-#line 97 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 97 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 46:
-#line 98 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 98 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECKPAM;         ;}
     break;
 
   case 47:
-#line 99 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 99 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECKPNM;         ;}
     break;
 
   case 48:
-#line 100 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 100 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 49:
-#line 101 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 101 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 50:
-#line 102 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 102 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 51:
-#line 103 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 103 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 52:
-#line 104 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 104 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 53:
-#line 105 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 105 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 54:
-#line 106 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 106 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 55:
-#line 107 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 107 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 56:
-#line 108 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 108 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 57:
-#line 109 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 109 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECALN;          ;}
     break;
 
   case 58:
-#line 110 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 110 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_IGNORED;         ;}
     break;
 
   case 59:
-#line 111 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 111 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_IGNORED;         ;}
     break;
 
   case 60:
-#line 113 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 113 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_SCS (GET_NUM(0), GET_NUM(1));    ;}
     break;
 
   case 61:
-#line 114 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 114 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (0);                     ;}
     break;
 
   case 62:
-#line 115 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 115 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (1);                     ;}
     break;
 
   case 63:
-#line 116 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 116 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (2);                     ;}
     break;
 
   case 64:
-#line 117 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 117 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (3);                     ;}
     break;
 
   case 65:
-#line 118 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 118 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (0);                     ;}
     break;
 
   case 66:
-#line 119 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 119 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (1);                     ;}
     break;
 
   case 67:
-#line 120 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 120 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (2);                     ;}
     break;
 
   case 68:
-#line 121 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 121 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (3);                     ;}
     break;
 
   case 69:
-#line 122 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 122 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (4);                     ;}
     break;
 
   case 138:
-#line 200 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 200 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;     ;}
     break;
 
   case 139:
-#line 203 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_CUU (DEFLT_1((yyvsp[-1])));   ;}
+#line 203 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_CUU (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 140:
-#line 204 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 204 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CUU (1);             ;}
     break;
 
   case 141:
-#line 205 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_CUD (DEFLT_1((yyvsp[-1])));   ;}
+#line 205 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_CUD (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 142:
-#line 206 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 206 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CUD (1);             ;}
     break;
 
   case 143:
-#line 207 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_CUF (DEFLT_1((yyvsp[-1])));   ;}
+#line 207 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_CUF (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 144:
-#line 208 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 208 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CUF (1);             ;}
     break;
 
   case 145:
-#line 209 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_CUB (DEFLT_1((yyvsp[-1])));   ;}
+#line 209 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_CUB (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 146:
-#line 210 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 210 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CUB (1);             ;}
     break;
 
   case 147:
-#line 211 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_CBT (DEFLT_1((yyvsp[-1])));   ;}
+#line 211 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_CBT (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 148:
-#line 212 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 212 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CBT (1);             ;}
     break;
 
   case 149:
-#line 213 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_CHA (DEFLT_1((yyvsp[-1])));   ;}
+#line 213 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_CHA (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 150:
-#line 214 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 214 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CHA (1);             ;}
     break;
 
   case 151:
-#line 215 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_CHT (DEFLT_1((yyvsp[-1])));   ;}
+#line 215 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_CHT (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 152:
-#line 216 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 216 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CHT (1);             ;}
     break;
 
   case 153:
-#line 217 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_CNL (DEFLT_1((yyvsp[-1])));   ;}
+#line 217 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_CNL (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 154:
-#line 218 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 218 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CNL (1);             ;}
     break;
 
   case 155:
-#line 219 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_CPL (DEFLT_1((yyvsp[-1])));   ;}
+#line 219 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_CPL (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 156:
-#line 220 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 220 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CPL (1);             ;}
     break;
 
   case 157:
-#line 221 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_HPA (DEFLT_1((yyvsp[-1])));   ;}
+#line 221 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_HPA (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 158:
-#line 222 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 222 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_HPA (1);             ;}
     break;
 
   case 159:
-#line 223 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_HPR (DEFLT_1((yyvsp[-1])));   ;}
+#line 223 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_HPR (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 160:
-#line 224 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 224 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_HPR (1);             ;}
     break;
 
   case 161:
-#line 225 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_VPA (DEFLT_1((yyvsp[-1])));   ;}
+#line 225 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_VPA (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 162:
-#line 226 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 226 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_VPA (1);             ;}
     break;
 
   case 163:
-#line 227 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_VPR (DEFLT_1((yyvsp[-1])));   ;}
+#line 227 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_VPR (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 164:
-#line 228 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 228 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_VPR (1);             ;}
     break;
 
   case 165:
-#line 230 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 230 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   CHECK_NUMS_LEN (2);
                                                 VT_CUP (DEFLT_1(GET_NUM(0)),
                                                         DEFLT_1(GET_NUM(1)));   ;}
     break;
 
   case 166:
-#line 233 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 233 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CUP (1, 1);   ;}
     break;
 
   case 167:
-#line 234 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 234 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   CHECK_NUMS_LEN (2);
                                                 VT_CUP (DEFLT_1(GET_NUM(0)),
                                                         DEFLT_1(GET_NUM(1)));   ;}
     break;
 
   case 168:
-#line 237 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 237 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CUP (1, 1);   ;}
     break;
 
   case 169:
-#line 239 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 239 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 170:
-#line 240 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 240 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 171:
-#line 242 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 242 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 172:
-#line 243 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_TBC ((yyvsp[-1]));        ;}
+#line 243 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_TBC ((yyvsp[(2) - (3)]));        ;}
     break;
 
   case 173:
-#line 244 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 244 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_TBC (0);         ;}
     break;
 
   case 174:
-#line 246 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 246 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 175:
-#line 247 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 247 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 176:
-#line 249 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 249 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 177:
-#line 250 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 250 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 178:
-#line 252 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 252 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   CHECK_NUMS_LEN (2);
                                                 VT_DECSTBM (DEFLT_1(GET_NUM(0)),
                                                         GET_NUM(1) ? GET_NUM(1) :
@@ -1920,272 +2145,272 @@ yyreduce:
     break;
 
   case 179:
-#line 256 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 256 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECSTBM (1, TERMINAL_HEIGHT);    ;}
     break;
 
   case 180:
-#line 258 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 258 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 181:
-#line 259 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 259 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 182:
-#line 261 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 261 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 183:
-#line 262 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 262 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 184:
-#line 263 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 263 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 185:
-#line 264 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 264 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 186:
-#line 266 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 266 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 187:
-#line 267 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 267 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 188:
-#line 268 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 268 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 189:
-#line 269 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 269 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 190:
-#line 270 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 270 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 191:
-#line 271 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 271 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 192:
-#line 273 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 273 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 193:
-#line 275 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 275 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 194:
-#line 276 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 276 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 195:
-#line 278 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 278 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 196:
-#line 281 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 281 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;     ;}
     break;
 
   case 197:
-#line 282 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 282 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;     ;}
     break;
 
   case 198:
-#line 283 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 283 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;     ;}
     break;
 
   case 199:
-#line 284 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 284 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;     ;}
     break;
 
   case 200:
-#line 285 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_DCH (DEFLT_1((yyvsp[-1])));   ;}
+#line 285 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_DCH (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 201:
-#line 286 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 286 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DCH (1);             ;}
     break;
 
   case 202:
-#line 287 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_DL (DEFLT_1((yyvsp[-1])));    ;}
+#line 287 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_DL (DEFLT_1((yyvsp[(2) - (3)])));    ;}
     break;
 
   case 203:
-#line 288 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 288 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DL (1);              ;}
     break;
 
   case 204:
-#line 289 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_ECH (DEFLT_1((yyvsp[-1])));   ;}
+#line 289 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_ECH (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 205:
-#line 290 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 290 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_ECH (1);             ;}
     break;
 
   case 206:
-#line 291 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_ED ((yyvsp[-1]));             ;}
+#line 291 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_ED ((yyvsp[(2) - (3)]));             ;}
     break;
 
   case 207:
-#line 292 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 292 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_ED (0);              ;}
     break;
 
   case 208:
-#line 293 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_EL ((yyvsp[-1]));             ;}
+#line 293 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_EL ((yyvsp[(2) - (3)]));             ;}
     break;
 
   case 209:
-#line 294 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 294 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_EL (0);              ;}
     break;
 
   case 210:
-#line 295 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_ICH (DEFLT_1((yyvsp[-1])));   ;}
+#line 295 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_ICH (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 211:
-#line 296 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 296 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_ICH (1);             ;}
     break;
 
   case 212:
-#line 297 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   VT_IL (DEFLT_1((yyvsp[-1])));    ;}
+#line 297 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   VT_IL (DEFLT_1((yyvsp[(2) - (3)])));    ;}
     break;
 
   case 213:
-#line 298 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 298 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_IL (1);              ;}
     break;
 
   case 214:
-#line 300 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 300 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 215:
-#line 301 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 301 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 216:
-#line 302 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 302 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 217:
-#line 303 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 303 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 218:
-#line 304 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 304 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 219:
-#line 306 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 306 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 220:
-#line 307 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 307 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 221:
-#line 308 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 308 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 222:
-#line 309 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 309 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 223:
-#line 310 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 310 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 224:
-#line 311 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 311 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 225:
-#line 312 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 312 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 226:
-#line 313 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 313 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 227:
-#line 314 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 314 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 228:
-#line 315 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 315 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 229:
-#line 317 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 317 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 230:
-#line 318 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 318 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 231:
-#line 319 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 319 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 232:
-#line 321 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 321 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   if (NUMS_LEN == 2)
                                                 {
                                                     VT_DSR (GET_NUM (0), GET_NUM (1), TRUE);
@@ -2198,7 +2423,7 @@ yyreduce:
     break;
 
   case 233:
-#line 330 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 330 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   if (NUMS_LEN == 2)
                                                 {
                                                     VT_DSR (GET_NUM (0), GET_NUM (1), FALSE);
@@ -2211,241 +2436,239 @@ yyreduce:
     break;
 
   case 234:
-#line 340 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 340 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DA1;             ;}
     break;
 
   case 235:
-#line 341 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 341 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DA1;             ;}
     break;
 
   case 236:
-#line 342 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 342 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DA2;             ;}
     break;
 
   case 237:
-#line 343 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 343 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DA2;             ;}
     break;
 
   case 238:
-#line 344 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 344 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DA3;             ;}
     break;
 
   case 239:
-#line 345 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 345 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DA3;             ;}
     break;
 
   case 240:
-#line 347 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 347 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_IGNORED;         ;}
     break;
 
   case 241:
-#line 349 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 349 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECSTR;          ;}
     break;
 
   case 242:
-#line 352 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 352 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_SGR;             ;}
     break;
 
   case 243:
-#line 353 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 353 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_SGR;             ;}
     break;
 
   case 244:
-#line 354 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 354 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECSET;          ;}
     break;
 
   case 245:
-#line 355 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 355 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECSET;          ;}
     break;
 
   case 246:
-#line 356 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 356 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECRST;          ;}
     break;
 
   case 247:
-#line 357 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 357 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECRST;          ;}
     break;
 
   case 248:
-#line 358 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 358 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_SM;              ;}
     break;
 
   case 249:
-#line 359 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 359 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_SM;              ;}
     break;
 
   case 250:
-#line 360 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 360 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_RM;              ;}
     break;
 
   case 251:
-#line 361 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 361 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_RM;              ;}
     break;
 
   case 252:
-#line 362 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 362 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECSAVE;         ;}
     break;
 
   case 253:
-#line 363 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 363 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECSAVE;         ;}
     break;
 
   case 254:
-#line 364 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 364 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECRESTORE;      ;}
     break;
 
   case 255:
-#line 365 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 365 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECRESTORE;      ;}
     break;
 
   case 257:
-#line 375 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 375 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECRQSS (GET_NUM (0));  ;}
     break;
 
   case 258:
-#line 377 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 377 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (CODE_DECSASD);  ;}
     break;
 
   case 259:
-#line 378 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 378 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (CODE_DECSCL);   ;}
     break;
 
   case 260:
-#line 379 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 379 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (CODE_DECSCPP);  ;}
     break;
 
   case 261:
-#line 380 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 380 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (CODE_DECSLPP);  ;}
     break;
 
   case 262:
-#line 381 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 381 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (CODE_DECSNLS);  ;}
     break;
 
   case 263:
-#line 382 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 382 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (CODE_DECSTBM);  ;}
     break;
 
   case 264:
-#line 390 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   (yyval) = (yyvsp[0]);   ;}
+#line 390 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   (yyval) = (yyvsp[(1) - (1)]);   ;}
     break;
 
   case 265:
-#line 391 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   (yyval) = (yyvsp[-1]) * 10 + (yyvsp[0]);  ;}
+#line 391 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   (yyval) = (yyvsp[(1) - (2)]) * 10 + (yyvsp[(2) - (2)]);  ;}
     break;
 
   case 266:
-#line 394 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 394 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 0;    ;}
     break;
 
   case 267:
-#line 395 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 395 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 1;    ;}
     break;
 
   case 268:
-#line 396 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 396 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 2;    ;}
     break;
 
   case 269:
-#line 397 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 397 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 3;    ;}
     break;
 
   case 270:
-#line 398 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 398 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 4;    ;}
     break;
 
   case 271:
-#line 399 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 399 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 5;    ;}
     break;
 
   case 272:
-#line 400 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 400 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 6;    ;}
     break;
 
   case 273:
-#line 401 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 401 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 7;    ;}
     break;
 
   case 274:
-#line 402 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 402 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 8;    ;}
     break;
 
   case 275:
-#line 403 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 403 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 9;    ;}
     break;
 
   case 277:
-#line 407 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
+#line 407 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (-1);                    ;}
     break;
 
   case 278:
-#line 410 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   ADD_NUMBER ((yyvsp[0]));                    ;}
+#line 410 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   ADD_NUMBER ((yyvsp[(1) - (1)]));                    ;}
     break;
 
   case 279:
-#line 411 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   ADD_NUMBER (-1); ADD_NUMBER ((yyvsp[0]));   ;}
+#line 411 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   ADD_NUMBER (-1); ADD_NUMBER ((yyvsp[(2) - (2)]));   ;}
     break;
 
   case 280:
-#line 412 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.y"
-    {   ADD_NUMBER ((yyvsp[0]));                    ;}
+#line 412 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+    {   ADD_NUMBER ((yyvsp[(3) - (3)]));                    ;}
     break;
 
 
+/* Line 1267 of yacc.c.  */
+#line 2666 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.c"
       default: break;
     }
+  YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
 
-/* Line 1126 of yacc.c.  */
-#line 2444 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.c"
-
-  yyvsp -= yylen;
-  yyssp -= yylen;
-
-
+  YYPOPSTACK (yylen);
+  yylen = 0;
   YY_STACK_PRINT (yyss, yyssp);
 
   *++yyvsp = yyval;
@@ -2474,110 +2697,41 @@ yyerrlab:
   if (!yyerrstatus)
     {
       ++yynerrs;
-#if YYERROR_VERBOSE
-      yyn = yypact[yystate];
-
-      if (YYPACT_NINF < yyn && yyn < YYLAST)
-	{
-	  int yytype = YYTRANSLATE (yychar);
-	  YYSIZE_T yysize0 = yytnamerr (0, yytname[yytype]);
-	  YYSIZE_T yysize = yysize0;
-	  YYSIZE_T yysize1;
-	  int yysize_overflow = 0;
-	  char *yymsg = 0;
-#	  define YYERROR_VERBOSE_ARGS_MAXIMUM 5
-	  char const *yyarg[YYERROR_VERBOSE_ARGS_MAXIMUM];
-	  int yyx;
-
-#if 0
-	  /* This is so xgettext sees the translatable formats that are
-	     constructed on the fly.  */
-	  YY_("syntax error, unexpected %s");
-	  YY_("syntax error, unexpected %s, expecting %s");
-	  YY_("syntax error, unexpected %s, expecting %s or %s");
-	  YY_("syntax error, unexpected %s, expecting %s or %s or %s");
-	  YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s");
-#endif
-	  char *yyfmt;
-	  char const *yyf;
-	  static char const yyunexpected[] = "syntax error, unexpected %s";
-	  static char const yyexpecting[] = ", expecting %s";
-	  static char const yyor[] = " or %s";
-	  char yyformat[sizeof yyunexpected
-			+ sizeof yyexpecting - 1
-			+ ((YYERROR_VERBOSE_ARGS_MAXIMUM - 2)
-			   * (sizeof yyor - 1))];
-	  char const *yyprefix = yyexpecting;
-
-	  /* Start YYX at -YYN if negative to avoid negative indexes in
-	     YYCHECK.  */
-	  int yyxbegin = yyn < 0 ? -yyn : 0;
-
-	  /* Stay within bounds of both yycheck and yytname.  */
-	  int yychecklim = YYLAST - yyn;
-	  int yyxend = yychecklim < YYNTOKENS ? yychecklim : YYNTOKENS;
-	  int yycount = 1;
-
-	  yyarg[0] = yytname[yytype];
-	  yyfmt = yystpcpy (yyformat, yyunexpected);
-
-	  for (yyx = yyxbegin; yyx < yyxend; ++yyx)
-	    if (yycheck[yyx + yyn] == yyx && yyx != YYTERROR)
-	      {
-		if (yycount == YYERROR_VERBOSE_ARGS_MAXIMUM)
-		  {
-		    yycount = 1;
-		    yysize = yysize0;
-		    yyformat[sizeof yyunexpected - 1] = '\0';
-		    break;
-		  }
-		yyarg[yycount++] = yytname[yyx];
-		yysize1 = yysize + yytnamerr (0, yytname[yyx]);
-		yysize_overflow |= yysize1 < yysize;
-		yysize = yysize1;
-		yyfmt = yystpcpy (yyfmt, yyprefix);
-		yyprefix = yyor;
-	      }
-
-	  yyf = YY_(yyformat);
-	  yysize1 = yysize + yystrlen (yyf);
-	  yysize_overflow |= yysize1 < yysize;
-	  yysize = yysize1;
-
-	  if (!yysize_overflow && yysize <= YYSTACK_ALLOC_MAXIMUM)
-	    yymsg = (char *) YYSTACK_ALLOC (yysize);
-	  if (yymsg)
-	    {
-	      /* Avoid sprintf, as that infringes on the user's name space.
-		 Don't have undefined behavior even if the translation
-		 produced a string with the wrong number of "%s"s.  */
-	      char *yyp = yymsg;
-	      int yyi = 0;
-	      while ((*yyp = *yyf))
-		{
-		  if (*yyp == '%' && yyf[1] == 's' && yyi < yycount)
-		    {
-		      yyp += yytnamerr (yyp, yyarg[yyi++]);
-		      yyf += 2;
-		    }
-		  else
-		    {
-		      yyp++;
-		      yyf++;
-		    }
-		}
-	      yyerror (parser, yymsg);
+#if ! YYERROR_VERBOSE
+      yyerror (parser, YY_("syntax error"));
+#else
+      {
+	YYSIZE_T yysize = yysyntax_error (0, yystate, yychar);
+	if (yymsg_alloc < yysize && yymsg_alloc < YYSTACK_ALLOC_MAXIMUM)
+	  {
+	    YYSIZE_T yyalloc = 2 * yysize;
+	    if (! (yysize <= yyalloc && yyalloc <= YYSTACK_ALLOC_MAXIMUM))
+	      yyalloc = YYSTACK_ALLOC_MAXIMUM;
+	    if (yymsg != yymsgbuf)
 	      YYSTACK_FREE (yymsg);
-	    }
-	  else
-	    {
-	      yyerror (parser, YY_("syntax error"));
+	    yymsg = (char *) YYSTACK_ALLOC (yyalloc);
+	    if (yymsg)
+	      yymsg_alloc = yyalloc;
+	    else
+	      {
+		yymsg = yymsgbuf;
+		yymsg_alloc = sizeof yymsgbuf;
+	      }
+	  }
+
+	if (0 < yysize && yysize <= yymsg_alloc)
+	  {
+	    (void) yysyntax_error (yymsg, yystate, yychar);
+	    yyerror (parser, yymsg);
+	  }
+	else
+	  {
+	    yyerror (parser, YY_("syntax error"));
+	    if (yysize != 0)
 	      goto yyexhaustedlab;
-	    }
-	}
-      else
-#endif /* YYERROR_VERBOSE */
-	yyerror (parser, YY_("syntax error"));
+	  }
+      }
+#endif
     }
 
 
@@ -2588,14 +2742,15 @@ yyerrlab:
 	 error, discard it.  */
 
       if (yychar <= YYEOF)
-        {
+	{
 	  /* Return failure if at end of input.  */
 	  if (yychar == YYEOF)
 	    YYABORT;
-        }
+	}
       else
 	{
-	  yydestruct ("Error: discarding", yytoken, &yylval);
+	  yydestruct ("Error: discarding",
+		      yytoken, &yylval, parser);
 	  yychar = YYEMPTY;
 	}
     }
@@ -2613,11 +2768,14 @@ yyerrorlab:
   /* Pacify compilers like GCC when the user code never invokes
      YYERROR and the label yyerrorlab therefore never appears in user
      code.  */
-  if (0)
+  if (/*CONSTCOND*/ 0)
      goto yyerrorlab;
 
-yyvsp -= yylen;
-  yyssp -= yylen;
+  /* Do not reclaim the symbols of the rule which action triggered
+     this YYERROR.  */
+  YYPOPSTACK (yylen);
+  yylen = 0;
+  YY_STACK_PRINT (yyss, yyssp);
   yystate = *yyssp;
   goto yyerrlab1;
 
@@ -2647,8 +2805,9 @@ yyerrlab1:
 	YYABORT;
 
 
-      yydestruct ("Error: popping", yystos[yystate], yyvsp);
-      YYPOPSTACK;
+      yydestruct ("Error: popping",
+		  yystos[yystate], yyvsp, parser);
+      YYPOPSTACK (1);
       yystate = *yyssp;
       YY_STACK_PRINT (yyss, yyssp);
     }
@@ -2659,7 +2818,7 @@ yyerrlab1:
   *++yyvsp = yylval;
 
 
-  /* Shift the error token. */
+  /* Shift the error token.  */
   YY_SYMBOL_PRINT ("Shifting", yystos[yyn], yyvsp, yylsp);
 
   yystate = yyn;
@@ -2693,18 +2852,27 @@ yyexhaustedlab:
 yyreturn:
   if (yychar != YYEOF && yychar != YYEMPTY)
      yydestruct ("Cleanup: discarding lookahead",
-		 yytoken, &yylval);
+		 yytoken, &yylval, parser);
+  /* Do not reclaim the symbols of the rule which action triggered
+     this YYABORT or YYACCEPT.  */
+  YYPOPSTACK (yylen);
+  YY_STACK_PRINT (yyss, yyssp);
   while (yyssp != yyss)
     {
       yydestruct ("Cleanup: popping",
-		  yystos[*yyssp], yyvsp);
-      YYPOPSTACK;
+		  yystos[*yyssp], yyvsp, parser);
+      YYPOPSTACK (1);
     }
 #ifndef yyoverflow
   if (yyss != yyssa)
     YYSTACK_FREE (yyss);
 #endif
-  return yyresult;
+#if YYERROR_VERBOSE
+  if (yymsg != yymsgbuf)
+    YYSTACK_FREE (yymsg);
+#endif
+  /* Make sure YYID is used.  */
+  return YYID (yyresult);
 }
 
 

@@ -7,16 +7,6 @@ cmp -s configargs.h configargs.h.tmp || mv configargs.h.tmp configargs.h
 AC_DEFINE(HAVE_CONFIGARGS_H, 1, [configargs.h is created])
 ])
 
-AC_DEFUN_ONCE([MOO_AC_SRCDIR],[
-  m4_if([$1],[],[CALL_MOO_AC_SRC_DIR_WITH_RIGHT_PARAMETER])
-
-  moo_srcdir=`cd "$srcdir/$1" && pwd`
-  AC_SUBST(moo_srcdir)
-
-  MOO_XML2H="$moo_srcdir/mooutils/xml2h.sh"
-  AC_SUBST(MOO_XML2H)
-])
-
 AC_DEFUN_ONCE([MOO_AC_PRIV_FLAGS],[
   MOO_AC_FLAGS
 
@@ -66,7 +56,6 @@ AC_DEFUN_ONCE([MOO_AC_PRIV_FLAGS],[
 AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   AC_REQUIRE([MOO_AC_CHECK_OS])
   AC_REQUIRE([MOO_AC_SET_DIRS])
-  AC_REQUIRE([MOO_AC_SRCDIR])
 
   MOO_PKG_CHECK_GTK_VERSIONS
 
@@ -96,6 +85,8 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
     GTK_LIBS="$IGE_MAC_LIBS"
     LDFLAGS="$LDFLAGS -framework Cocoa"
   fi
+
+  moo_srcdir=`cd "$srcdir/moo" && pwd`
 
   MOO_CFLAGS="$MOO_CFLAGS $GTK_CFLAGS -I$moo_srcdir"
 

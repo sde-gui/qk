@@ -1,0 +1,289 @@
+#! /bin/sh
+
+# DEBUG=yes
+# DEBUG=verbose
+
+print_debug() {
+  if [ -z "$current_func" ]; then
+    echo "$@" > /dev/stderr
+  else
+    echo "$current_func: $@" > /dev/stderr
+  fi
+}
+
+debug_v() {
+  if [ "$DEBUG" = "verbose" ]; then
+    print_debug "$@"
+  fi
+}
+
+debug() {
+  if [ "$DEBUG" = "yes" -o "$DEBUG" = "verbose" ]; then
+    print_debug "$@"
+  fi
+}
+
+find_input() {
+  current_func=find_input
+  debug_v "dir: $1"
+  if [ -f $1/Makefile.ug ]; then
+    echo $1/Makefile.ug
+    for sd in `ls "$1"`; do
+      if [ -d "$1/$sd" ]; then
+        debug_v "going into: $1/$sd"
+        find_input "$1/$sd"
+      fi
+    done
+  fi
+}
+
+preprocess() {
+  # preprocess input output
+  sed -e :a -e '/\\$/N; s/\\\n//; ta' "$1" | sed 's/#.*//' > $2
+}
+
+extract_var() {
+  # extract_var Makefile NAME
+  value=`grep '\b'$2'\b' $1`
+  if [ -n "$value" ]; then
+    value=`echo "$value" | sed 's/'$2'[ ]*=//'`
+  fi
+  value=`echo $value | tr -d " "`
+  echo "$value"
+}
+
+extract_meta_var() {
+  current_func=extract_meta_var
+  # extract_meta_var Makefile NAME
+  value=`grep -E '^#[ \t]*\b'$2'\b' $1`
+  if [ -n "$value" ]; then
+    value=`echo "$value" | sed 's/^#[ ]*'$2'[ ]*=//'`
+  fi
+  value=`echo $value | tr -d " "`
+  echo "$value"
+}
+
+write_mk() {
+  # write_mk mk_mod MODULE
+  echo ""
+  echo "# begin $1"
+  echo ""
+  cat ugly/$1 | sed 's/@MODULE@/'$2'/g'
+  echo ""
+  echo 'UGLY_DEPS += $(top_srcdir)/ugly/'$1
+  echo 'EXTRA_DIST += $(top_srcdir)/ugly/'$1
+  echo ""
+  echo "# end $1"
+  echo ""
+}
+
+write_ugly_pre_mk() {
+  cat << \_EOFEOF
+#
+# begin ugly stuff
+#
+
+EXTRA_DIST =
+BUILT_SOURCES =
+CLEANFILES =
+DISTCLEANFILES =
+UGLY_DEPS =
+
+UGLY_ALL_TARGETS =
+UGLY_CLEAN_TARGETS =
+
+_EOFEOF
+}
+
+write_ugly_post_mk() {
+  cat << \_EOFEOF
+
+UGLY = $(top_srcdir)/ugly/ugly
+
+$(srcdir)/Makefile.am: $(srcdir)/Makefile.ug $(UGLY) $(UGLY_DEPS)
+	@echo 'cd $(srcdir) && $(UGLY) $(top_srcdir) $(subdir)'; \
+	cd $(srcdir) && $(UGLY) $(top_srcdir) $(subdir) && exit 0; \
+	exit 1;
+
+EXTRA_DIST +=	\
+    Makefile.ug
+_EOFEOF
+}
+
+do_makefile() {
+  current_func=do_makefile
+
+  infile="$1"
+  subdir=`dirname $infile | sed 's,^\./,,'`
+  outbase=`basename $infile .ug`
+  out=$subdir/$outbase.am
+
+  if [ "$subdir" = . ]; then
+    rel_topdir=.
+    mk_prefix="mk"
+  else
+    rel_topdir=`echo $subdir | sed 's,[^/]*,..,g'`
+    mk_prefix="$rel_topdir/mk"
+  fi
+
+  preprocess $infile $out.pp#
+
+  modname=`extract_var $out.pp# MODULE | sed 's/\./_/g'`
+  debug "processing $infile, output: $out, subdir: $subdir, topdir: $rel_topdir, module: $modname"
+
+  write_ugly_pre_mk > $out.tmp
+
+  if [ "$subdir" = . ]; then
+  cat >> $out.tmp << _EOFEOF
+EXTRA_DIST += ugly/ugly
+_EOFEOF
+  fi
+
+  want_mk=
+  all_modnames=
+
+  for file_mk in `cd ugly && ls *.mk 2>/dev/null`; do
+    if [ ! -f ugly/$file_mk ]; then
+      continue
+    fi
+
+    trigger=`extract_meta_var ugly/$file_mk UGLY_MK_TRIGGER`
+    if [ -n "$trigger" ]; then
+      if grep -E "$trigger" $out.pp# > /dev/null 2>&1; then
+        debug $out matches $trigger from $file_mk
+        want_mk="$want_mk $file_mk"
+        continue
+      fi
+    fi
+
+    trigger=`extract_meta_var ugly/$file_mk UGLY_MODULE_TRIGGER`
+    if [ -n "$trigger" ]; then
+      if grep -E "$trigger" $out.pp# > /dev/null 2>&1; then
+        lines=`grep -E "$trigger" $out.pp# 2>/dev/null`
+        for l in $lines; do
+          w=`echo $l | grep -E "$trigger" | tr -d " "`
+          if [ -n "$w" ]; then
+            m=`echo $w | sed 's/\(\w*\)_'$trigger'.*/\1/'`
+            if [ "$m" != "$w" ]; then
+              debug found module $m
+              all_modnames="$all_modnames $m"
+              eval "${m}_written=false"
+              eval "${m}_want_mk=\"\$${m}_want_mk $file_mk\""
+  #             if [ -n "$m" -a "$m" != "$w" ]; then
+  #               debug "$w in $out matches $trigger from $file_mk"
+  #               write_mk $file_mk $m >> $out.tmp
+  #             fi
+            fi
+          fi
+        done
+      fi
+    fi
+  done
+
+  for mod in $all_modnames; do
+    eval "mod_written=\$${mod}_written"
+    if $mod_written; then
+      continue
+    fi
+
+    debug "writing code for module $mod"
+    eval "${mod}_written=true"
+
+    eval "mod_want_mk=\$${mod}_want_mk"
+    debug "writing variables from $mod_want_mk for module '$mod'"
+
+    mod_vars=
+    for file_mk in $mod_want_mk; do
+      mod_vars="$mod_vars `extract_meta_var ugly/$file_mk UGLY_MODULE_VARS`"
+    done
+    debug "extra vars: $mod_vars"
+    for var in $mod_vars; do
+      eval "mod_var_${var}_written=false"
+    done
+    for var in $mod_vars; do
+      eval "mod_var_written=\$mod_var_${var}_written"
+      if $mod_var_written; then
+        continue
+      fi
+      debug_v writing "${mod}_$var"
+      eval "mod_var_${var}_written=true"
+      echo "${mod}_$var =" >> $out.tmp
+    done
+  done
+
+  cat >> $out.tmp << _EOFEOF
+
+#
+# end ugly stuff
+#
+
+_EOFEOF
+
+  cat $infile >> $out.tmp || exit $?
+
+  cat >> $out.tmp << _EOFEOF
+
+#
+# begin ugly stuff
+#
+
+_EOFEOF
+
+  for file_mk in $want_mk; do
+    write_mk $file_mk $modname >> $out.tmp
+  done
+
+  for mod in $all_modnames; do
+    eval "${mod}_written=false"
+  done
+  for mod in $all_modnames; do
+    eval "mod_written=\$${mod}_written"
+    if $mod_written; then
+      continue
+    fi
+
+    debug "writing $file_mk code for module $mod"
+    eval "${mod}_written=true"
+
+    eval "mod_want_mk=\$${mod}_want_mk"
+    debug "doing $mod_want_mk for module '$mod'"
+
+    for file_mk in $mod_want_mk; do
+      write_mk $file_mk $mod >> $out.tmp
+    done
+  done
+
+#   if $need_all_target; then
+#     cat >> $out.tmp << \_EOFEOF
+#
+# all-local: $(UGLY_ALL_TARGETS)
+# clean-local: $(UGLY_CLEAN_TARGETS)
+#
+# _EOFEOF
+#   fi
+
+  write_ugly_post_mk >> $out.tmp
+
+  cat >> $out.tmp << _EOFEOF
+
+#
+# end ugly stuff
+#
+_EOFEOF
+
+  rm -f $out.pp#
+  mv $out.tmp $out || exit $?
+}
+
+if [ -z "$1" ]; then
+  top_srcdir=.
+  input=`find_input .`
+else
+  top_srcdir="$1"
+  input="$2/Makefile.ug"
+fi
+
+cd $top_srcdir
+for f in $input; do
+  do_makefile "$f"
+done

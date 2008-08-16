@@ -145,10 +145,9 @@ mooutils_sources += $(thread_sources)
 endif
 endif
 
-EXTRA_DIST =				\
+EXTRA_DIST +=				\
 	moo-intltool-merge		\
 	py2h.sh				\
-	xml2h.sh			\
 	$(thread_sources)		\
 	$(win32_sources)		\
 	moowin32/mingw/fnmatch.h	\
@@ -163,14 +162,10 @@ EXTRA_DIST =				\
 	pixmaps/attach.png		\
 	pixmaps/keepontop.png
 
-BUILT_SOURCES =
-CLEANFILES =
-
-glade_files =				\
+GLADE_FILES =				\
 	glade/mooaccelbutton.glade	\
 	glade/mooaccelprefs.glade	\
 	glade/moologwindow.glade
-include ../../mk/glade.mk
 
 mooutils_pixmaps =			\
 	$(srcdir)/pixmaps/hide.png	\

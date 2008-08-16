@@ -8,11 +8,12 @@ test -z "$rel_srcdir" && rel_srcdir=.
 srcdir=`cd $rel_srcdir && pwd`
 echo "srcdir="$srcdir
 
-if test -d $rel_srcdir/m4 ; then
-  aclocal_extra="-I m4"
-elif test -d $rel_srcdir/moo/m4 ; then
-  aclocal_extra="-I moo/m4"
-fi
+aclocal_extra=
+for d in m4 moo/m4 ugly/m4; do
+  if [ -d $rel_srcdir/$d ]; then
+    aclocal_extra="$aclocal_extra -I $d"
+  fi
+done
 
 cd $srcdir
 echo "Generating configuration files..."
@@ -23,6 +24,12 @@ AUTOMAKE=${AUTOMAKE:-automake-1.10}
 AUTOHEADER=${AUTOHEADER:-autoheader}
 AUTOCONF=${AUTOCONF:-autoconf}
 LIBTOOLIZE=${LIBTOOLIZE:-libtoolize}
+UGLY=${UGLY:-./ugly/ugly}
+
+if [ -f Makefile.ug ]; then
+  echo $UGLY
+  $UGLY || exit $?
+fi
 
 if grep AC_PROG_LIBTOOL configure.ac; then
   echo $LIBTOOLIZE --automake --copy --force

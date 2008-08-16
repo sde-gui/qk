@@ -32,6 +32,7 @@ moo/mooedit/language-specs/c.lang
 moo/mooedit/language-specs/changelog.lang
 moo/mooedit/language-specs/chdr.lang
 moo/mooedit/language-specs/classic.xml
+moo/mooedit/language-specs/cmake.lang
 moo/mooedit/language-specs/cpp.lang
 moo/mooedit/language-specs/csharp.lang
 moo/mooedit/language-specs/css.lang

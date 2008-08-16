@@ -1,6 +1,5 @@
 moo/mooedit/filters.xml
 moo/mooedit/medit.xml
-moo/mooedit/moo.xml.in
 moo/mooedit/moocommand-exe.c
 moo/mooedit/moocommand-lua.c
 moo/mooedit/mooeditaction-factory.c

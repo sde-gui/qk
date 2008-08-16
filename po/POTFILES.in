@@ -15,7 +15,6 @@ moo/mooedit/glade/mooquicksearch.glade
 moo/mooedit/glade/mootextfind.glade
 moo/mooedit/glade/mootextgotoline.glade
 moo/mooedit/medit.xml
-moo/mooedit/moo.xml.in
 moo/mooedit/moocommand-exe.c
 moo/mooedit/moocommand-lua.c
 moo/mooedit/mooeditaction-factory.c

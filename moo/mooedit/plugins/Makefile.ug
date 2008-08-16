@@ -6,9 +6,6 @@ SUBDIRS += ctags
 endif
 
 noinst_LTLIBRARIES =
-EXTRA_DIST =
-BUILT_SOURCES =
-CLEANFILES =
 
 AM_CFLAGS =			\
 	-I..			\
@@ -21,7 +18,7 @@ AM_OBJCFLAGS = $(AM_CFLAGS)
 #
 noinst_LTLIBRARIES += libfileselector.la
 
-glade_files =				\
+GLADE_FILES =				\
 	moofileselector.glade		\
 	moofileselector-prefs.glade
 
@@ -46,9 +43,7 @@ libmooeditplugins_la_SOURCES =	\
 	moofilelist.c		\
 	moofind.c
 
-glade_files += moofind.glade
+GLADE_FILES += moofind.glade
 
 EXTRA_DIST +=			\
 	moofind.c
-
-include ../../../mk/glade.mk

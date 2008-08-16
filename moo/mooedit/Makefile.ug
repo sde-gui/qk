@@ -124,11 +124,9 @@ mooedit_printing_sources =		\
 	mootextprint-private.h		\
 	mootextprint.h
 
-EXTRA_DIST =
-BUILT_SOURCES =
-CLEANFILES =
-
-enum_headers =				\
+ENUM_MODULE = mooedit
+ENUM_PREFIX = MOO
+ENUM_HDRS =				\
 	moocommand.h			\
 	mooeditconfig.h			\
 	mooeditwindow.h			\
@@ -136,10 +134,8 @@ enum_headers =				\
 	mootextfind.h			\
 	mootextsearch.h			\
 	mootextview.h
-enum_file = mooedit-enums
-include ../../mk/enums.mk
 
-glade_files =				\
+GLADE_FILES =				\
 	glade/mooeditprefs-general.glade\
 	glade/mooeditprefs-view.glade	\
 	glade/mooeditprefs-file.glade	\
@@ -154,13 +150,8 @@ glade_files =				\
 	glade/mooquicksearch.glade	\
 	glade/moostatusbar.glade	\
 	glade/mooprintpreview.glade
-include ../../mk/glade.mk
 
-ui_files = medit.xml mooedit.xml
-include ../../mk/ui.mk
-
-mime_in_files = moo.xml.in
-include ../../mk/mime.mk
+MOO_UI_FILES = medit.xml mooedit.xml
 
 EXTRA_DIST +=				\
 	$(mooedit_tools_DATA)		\
@@ -193,3 +184,13 @@ AM_CFLAGS += $(MOO_WIN32_CFLAGS)
 endif
 
 include ../../mk/marshals.mk
+
+if MOO_OS_MINGW
+install-data-hook:
+	if [ -e /usr/share/mime/packages/freedesktop.org.xml ]; then \
+	  cp /usr/share/mime/packages/freedesktop.org.xml $(DESTDIR)${mimedir}/packages/ ; \
+	elif [ -e /opt/gtk/share/mime/packages/freedesktop.org.xml ]; then \
+	  cp /opt/gtk/share/mime/packages/freedesktop.org.xml $(DESTDIR)${mimedir}/packages/ ; \
+	fi; \
+	update-mime-database $(DESTDIR)${mimedir}
+endif
