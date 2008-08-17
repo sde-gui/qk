@@ -1,4 +1,4 @@
-# -*- makefile -*-
+# -%- lang: makefile; indent-width: 8; use-tabs: true -%-
 # UGLY_MK_TRIGGER = YACC_FILES|YACC_PP_FILES
 
 # $(YACC_FILES) should be a list of .y files

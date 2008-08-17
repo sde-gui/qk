@@ -1,4 +1,4 @@
-# -*- makefile -*-
+# -%- lang: makefile; indent-width: 8; use-tabs: true -%-
 # UGLY_MK_TRIGGER = QT_QRC_FILES
 
 ##################################################################################

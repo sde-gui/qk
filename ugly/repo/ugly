@@ -83,31 +83,8 @@ write_ugly_pre_mk() {
 # begin ugly stuff
 #
 
-EXTRA_DIST =
-BUILT_SOURCES =
-CLEANFILES =
-DISTCLEANFILES =
-UGLY_DEPS =
-
-UGLY_ALL_TARGETS =
-UGLY_CLEAN_TARGETS =
-
 _EOFEOF
-}
-
-write_ugly_post_mk() {
-  cat << \_EOFEOF
-
-UGLY = $(top_srcdir)/ugly/ugly
-
-$(srcdir)/Makefile.am: $(srcdir)/Makefile.ug $(UGLY) $(UGLY_DEPS)
-	@echo 'cd $(srcdir) && $(UGLY) $(top_srcdir) $(subdir)'; \
-	cd $(srcdir) && $(UGLY) $(top_srcdir) $(subdir) && exit 0; \
-	exit 1;
-
-EXTRA_DIST +=	\
-    Makefile.ug
-_EOFEOF
+  cat ugly/repo/ugly-pre.mk
 }
 
 do_makefile() {
@@ -132,12 +109,6 @@ do_makefile() {
   debug "processing $infile, output: $out, subdir: $subdir, topdir: $rel_topdir, module: $modname"
 
   write_ugly_pre_mk > $out.tmp
-
-  if [ "$subdir" = . ]; then
-  cat >> $out.tmp << _EOFEOF
-EXTRA_DIST += ugly/ugly
-_EOFEOF
-  fi
 
   want_mk=
   all_modnames=
@@ -262,7 +233,13 @@ _EOFEOF
 # _EOFEOF
 #   fi
 
-  write_ugly_post_mk >> $out.tmp
+  cat ugly/repo/bdist.mk >> $out.tmp
+  cat ugly/repo/ugly-post.mk >> $out.tmp
+
+  if [ "$subdir" = . ]; then
+    cat ugly/repo/bdist-top.mk >> $out.tmp
+    cat ugly/repo/ugly-top.mk >> $out.tmp
+  fi
 
   cat >> $out.tmp << _EOFEOF
 

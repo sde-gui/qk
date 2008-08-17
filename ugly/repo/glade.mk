@@ -1,4 +1,4 @@
-# -*- makefile -*-
+# -%- lang: makefile; indent-width: 8; use-tabs: true -%-
 # UGLY_MK_TRIGGER = GLADE_FILES
 
 ugly_xml2h = $(top_srcdir)/ugly/xml2h.sh

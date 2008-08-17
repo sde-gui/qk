@@ -1,4 +1,4 @@
-# -*- makefile -*-
+# -%- lang: makefile; indent-width: 8; use-tabs: true -%-
 # UGLY_MODULE_TRIGGER = RC_IN_FILE
 # UGLY_MODULE_VARS = LDFLAGS
 
