@@ -6,17 +6,10 @@ mooedit_tools_DATA = context.cfg menu.cfg filters.xml
 mooedit_luadir = $(MOO_DATA_DIR)/lua
 mooedit_lua_DATA = medit.lua
 
-moolangmgr-private.lo: moolangmgr.lo
-mootextview-private.lo: mootextview.lo
-mootextsearch-private.lo: mootextsearch.lo
-mooedit-private.lo: mooedit.lo
-
-lua_sources =				\
-	moocommand-lua.c		\
-	moocommand-lua.h		\
-	mooedit-lua-api.c		\
-	mooedit-lua.c			\
-	mooedit-lua.h
+noinst_LTLIBRARIES = libmooedit.la
+libmooedit_la_LIBADD =			\
+	plugins/libmooeditplugins.la	\
+	libgtksourceview.la
 
 completion_sources =			\
 	moocompletionsimple.c		\
@@ -26,9 +19,14 @@ completion_sources =			\
 	mootextpopup.c			\
 	mootextpopup.h
 
-mooedit_sources =			\
+libmooedit_la_SOURCES =			\
 	$(moocommand_stuff)		\
 	$(completion_sources)		\
+	moocommand-lua.c		\
+	moocommand-lua.h		\
+	mooedit-lua-api.c		\
+	mooedit-lua.c			\
+	mooedit-lua.h			\
 	moocmdview.c			\
 	moocmdview.h			\
 	moocommand-exe.c		\
@@ -118,12 +116,16 @@ mooedit_sources =			\
 	moousertools.c			\
 	moousertools.h
 
-mooedit_printing_sources =		\
+dist_printing_sources =			\
 	mooprintpreview.h		\
 	mooprintpreview.c		\
 	mootextprint.c			\
 	mootextprint-private.h		\
 	mootextprint.h
+EXTRA_DIST += $(dist_printing_sources)
+if GTK_2_10
+libmooedit_la_SOURCES += $(dist_printing_sources)
+endif
 
 ENUM_MODULE = mooedit
 ENUM_PREFIX = MOO
@@ -158,43 +160,11 @@ EXTRA_DIST +=				\
 	$(mooedit_tools_DATA)		\
 	$(mooedit_lua_DATA)
 
-if GTK_2_10
-mooedit_sources += $(mooedit_printing_sources)
-else
-EXTRA_DIST += $(mooedit_printing_sources)
-endif
-
-if MOO_BUILD_LUA
-mooedit_sources += $(lua_sources)
-else
-EXTRA_DIST += $(lua_sources)
-endif
-
-noinst_LTLIBRARIES = libmooedit.la
-libmooedit_la_SOURCES = $(mooedit_sources)
-
-libmooedit_la_LIBADD = plugins/libmooeditplugins.la libgtksourceview.la
-
-AM_CFLAGS =			\
-	$(MOO_CFLAGS)		\
-	$(MOO_DEBUG_CFLAGS)
-AM_OBJCFLAGS = $(AM_CFLAGS)
-
-if MOO_OS_MINGW
-AM_CFLAGS += $(MOO_WIN32_CFLAGS)
-endif
-
-include ../../mk/marshals.mk
-
-if MOO_OS_MINGW
-install-data-hook:
-	if [ -e /usr/share/mime/packages/freedesktop.org.xml ]; then \
-	  cp /usr/share/mime/packages/freedesktop.org.xml $(DESTDIR)${mimedir}/packages/ ; \
-	elif [ -e /opt/gtk/share/mime/packages/freedesktop.org.xml ]; then \
-	  cp /opt/gtk/share/mime/packages/freedesktop.org.xml $(DESTDIR)${mimedir}/packages/ ; \
-	fi; \
-	update-mime-database $(DESTDIR)${mimedir}
-endif
+AM_CFLAGS =				\
+	$(MOO_CFLAGS)			\
+	$(MOO_WIN32_CFLAGS)
 
 include gtksourceview/Makefile.incl
 include langs/Makefile.incl
+
+%-private.lo: %.lo ; @true

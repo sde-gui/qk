@@ -8,9 +8,7 @@ endif
 
 AM_CFLAGS =			\
 	-I..			\
-	$(MOO_CFLAGS)		\
-	$(MOO_DEBUG_CFLAGS)
-AM_OBJCFLAGS = $(AM_CFLAGS)
+	$(MOO_CFLAGS)
 
 ###########################################################################
 # ctags

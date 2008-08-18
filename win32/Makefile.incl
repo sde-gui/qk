@@ -1,0 +1,10 @@
+if MOO_OS_MINGW
+install-data-hook:
+	mkdir -p $(DESTDIR)${mimedir}/packages
+	if [ -e /usr/share/mime/packages/freedesktop.org.xml ]; then \
+	  cp /usr/share/mime/packages/freedesktop.org.xml $(DESTDIR)${mimedir}/packages/ ; \
+	elif [ -e /opt/gtk/share/mime/packages/freedesktop.org.xml ]; then \
+	  cp /opt/gtk/share/mime/packages/freedesktop.org.xml $(DESTDIR)${mimedir}/packages/ ; \
+	fi;
+	update-mime-database $(DESTDIR)${mimedir}
+endif

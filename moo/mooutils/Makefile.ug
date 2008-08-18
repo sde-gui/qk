@@ -193,8 +193,6 @@ stock-medit.h: pixmaps/medit.png
 		MEDIT_ICON $(srcdir)/pixmaps/medit.png			\
 			> $@.tmp && mv $@.tmp $@
 
-include ../../mk/marshals.mk
-
 noinst_LTLIBRARIES += libmooutils.la
 libmooutils_la_SOURCES = $(mooutils_sources)
 libmooutils_la_LIBADD = $(libs)
@@ -205,6 +203,5 @@ endif
 
 AM_CFLAGS =					\
 	$(MOO_CFLAGS)				\
-	$(MOO_DEBUG_CFLAGS)			\
 	$(MOO_WIN32_CFLAGS)			\
 	$(objc_flag)

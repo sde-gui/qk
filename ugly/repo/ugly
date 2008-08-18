@@ -103,12 +103,15 @@ do_makefile() {
     mk_prefix="$rel_topdir/mk"
   fi
 
-  preprocess $infile $out.pp#
+  out_tmp=`dirname $out`/.`basename $out`.tmp
+  out_pp=`dirname $out`/.`basename $out`.pp#
 
-  modname=`extract_var $out.pp# MODULE | sed 's/\./_/g'`
+  preprocess $infile $out_pp
+
+  modname=`extract_var $out_pp MODULE | sed 's/\./_/g'`
   debug "processing $infile, output: $out, subdir: $subdir, topdir: $rel_topdir, module: $modname"
 
-  write_ugly_pre_mk > $out.tmp
+  write_ugly_pre_mk > $out_tmp
 
   want_mk=
   all_modnames=
@@ -120,7 +123,7 @@ do_makefile() {
 
     trigger=`extract_meta_var ugly/$file_mk UGLY_MK_TRIGGER`
     if [ -n "$trigger" ]; then
-      if grep -E "$trigger" $out.pp# > /dev/null 2>&1; then
+      if grep -E "$trigger" $out_pp > /dev/null 2>&1; then
         debug $out matches $trigger from $file_mk
         want_mk="$want_mk $file_mk"
         continue
@@ -129,8 +132,8 @@ do_makefile() {
 
     trigger=`extract_meta_var ugly/$file_mk UGLY_MODULE_TRIGGER`
     if [ -n "$trigger" ]; then
-      if grep -E "$trigger" $out.pp# > /dev/null 2>&1; then
-        lines=`grep -E "$trigger" $out.pp# 2>/dev/null`
+      if grep -E "$trigger" $out_pp > /dev/null 2>&1; then
+        lines=`grep -E "$trigger" $out_pp 2>/dev/null`
         for l in $lines; do
           w=`echo $l | grep -E "$trigger" | tr -d " "`
           if [ -n "$w" ]; then
@@ -142,7 +145,7 @@ do_makefile() {
               eval "${m}_want_mk=\"\$${m}_want_mk $file_mk\""
   #             if [ -n "$m" -a "$m" != "$w" ]; then
   #               debug "$w in $out matches $trigger from $file_mk"
-  #               write_mk $file_mk $m >> $out.tmp
+  #               write_mk $file_mk $m >> $out_tmp
   #             fi
             fi
           fi
@@ -178,11 +181,11 @@ do_makefile() {
       fi
       debug_v writing "${mod}_$var"
       eval "mod_var_${var}_written=true"
-      echo "${mod}_$var =" >> $out.tmp
+      echo "${mod}_$var =" >> $out_tmp
     done
   done
 
-  cat >> $out.tmp << _EOFEOF
+  cat >> $out_tmp << _EOFEOF
 
 #
 # end ugly stuff
@@ -190,9 +193,9 @@ do_makefile() {
 
 _EOFEOF
 
-  cat $infile >> $out.tmp || exit $?
+  cat $infile >> $out_tmp || exit $?
 
-  cat >> $out.tmp << _EOFEOF
+  cat >> $out_tmp << _EOFEOF
 
 #
 # begin ugly stuff
@@ -201,7 +204,7 @@ _EOFEOF
 _EOFEOF
 
   for file_mk in $want_mk; do
-    write_mk $file_mk $modname >> $out.tmp
+    write_mk $file_mk $modname >> $out_tmp
   done
 
   for mod in $all_modnames; do
@@ -220,12 +223,12 @@ _EOFEOF
     debug "doing $mod_want_mk for module '$mod'"
 
     for file_mk in $mod_want_mk; do
-      write_mk $file_mk $mod >> $out.tmp
+      write_mk $file_mk $mod >> $out_tmp
     done
   done
 
 #   if $need_all_target; then
-#     cat >> $out.tmp << \_EOFEOF
+#     cat >> $out_tmp << \_EOFEOF
 #
 # all-local: $(UGLY_ALL_TARGETS)
 # clean-local: $(UGLY_CLEAN_TARGETS)
@@ -233,23 +236,23 @@ _EOFEOF
 # _EOFEOF
 #   fi
 
-  cat ugly/repo/bdist.mk >> $out.tmp
-  cat ugly/repo/ugly-post.mk >> $out.tmp
+  cat ugly/repo/bdist.mk >> $out_tmp
+  cat ugly/repo/ugly-post.mk >> $out_tmp
 
   if [ "$subdir" = . ]; then
-    cat ugly/repo/bdist-top.mk >> $out.tmp
-    cat ugly/repo/ugly-top.mk >> $out.tmp
+    cat ugly/repo/bdist-top.mk >> $out_tmp
+    cat ugly/repo/ugly-top.mk >> $out_tmp
   fi
 
-  cat >> $out.tmp << _EOFEOF
+  cat >> $out_tmp << _EOFEOF
 
 #
 # end ugly stuff
 #
 _EOFEOF
 
-  rm -f $out.pp#
-  mv $out.tmp $out || exit $?
+  rm -f $out_pp
+  mv $out_tmp $out || exit $?
 }
 
 if [ -z "$1" ]; then

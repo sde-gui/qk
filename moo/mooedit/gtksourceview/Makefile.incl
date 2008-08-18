@@ -2,8 +2,7 @@ noinst_LTLIBRARIES += libgtksourceview.la
 
 libgtksourceview_la_CFLAGS =		\
 	-I$(srcdir)/gtksourceview	\
-	$(MOO_CFLAGS)			\
-	$(MOO_DEBUG_CFLAGS)
+	$(MOO_CFLAGS)
 
 upstream_sources =						\
 	gtksourceview/upstream/gtksourcecontextengine.c		\

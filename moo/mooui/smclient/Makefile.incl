@@ -3,7 +3,6 @@ noinst_LTLIBRARIES +=				\
 
 libsmclient_la_CFLAGS =				\
 	$(MOO_CFLAGS)				\
-	$(MOO_DEBUG_CFLAGS)			\
 	$(MOO_W_NO_UNUSED)
 
 libsmclient_la_SOURCES =			\

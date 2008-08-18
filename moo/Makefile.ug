@@ -1,6 +1,5 @@
 AM_CFLAGS =			\
-	$(MOO_CFLAGS)		\
-	$(MOO_DEBUG_CFLAGS)
+	$(MOO_CFLAGS)
 
 ini_in_files = moopython/pymoo.ini.in
 ini_files = $(ini_in_files:.ini.in=.ini)
@@ -29,6 +28,7 @@ marshals =
 
 subdirs =
 libs =
+sub_marshals_h =
 if MOO_BUILD_LUA
 subdirs += moolua
 libs += moolua/libmoolua.la
@@ -37,26 +37,31 @@ if MOO_BUILD_UTILS
 subdirs += mooutils
 libs += mooutils/libmooutils.la
 marshals += $(srcdir)/mooutils/marshals.list
+sub_marshals_h += mooutils/marshals.h
 endif
 if MOO_BUILD_UI
 subdirs += mooui
 libs += mooui/libmooui.la
 marshals += $(srcdir)/mooui/marshals.list
+sub_marshals_h += mooui/marshals.h
 endif
 if GTK_2_6
 subdirs += moofileview
 libs += moofileview/libmoofileview.la
 marshals += $(srcdir)/moofileview/marshals.list
+sub_marshals_h += moofileview/marshals.h
 endif
 if MOO_BUILD_TERM
 subdirs += mooterm
 libs += mooterm/libmooterm.la
 marshals += $(srcdir)/mooterm/marshals.list
+sub_marshals_h += mooterm/marshals.h
 endif
 if MOO_BUILD_EDIT
 subdirs += mooedit
 libs += mooedit/libmooedit.la
 marshals += $(srcdir)/mooedit/marshals.list
+sub_marshals_h += mooedit/marshals.h
 endif
 
 if MOO_USE_PYTHON
@@ -81,16 +86,6 @@ endif
 endif
 
 nodist_libmoo_la_SOURCES =
-
-BUILT_SOURCES += marshals.c marshals.list
-nodist_libmoo_la_SOURCES += marshals.c
-CLEANFILES += marshals.c marshals.list
-marshals.c: marshals.list
-	glib-genmarshal --prefix=_moo_marshal --header marshals.list > $@.tmp && \
-	glib-genmarshal --prefix=_moo_marshal --body marshals.list >> $@.tmp && \
-	mv $@.tmp $@
-marshals.list: $(marshals)
-	( cat $(marshals) | uniq ) > marshals.list.tmp && mv marshals.list.tmp marshals.list
 
 libmoo_la_RC_IN_FILE = libmoo.rc.in
 moo_la_RC_IN_FILE = moo.rc.in
@@ -124,6 +119,24 @@ libmoo_la_LIBADD += $(PYTHON_LIBS) $(PYTHON_EXTRA_LIBS) moopython/libmoopython.l
 libmoo_la_LDFLAGS += $(PYTHON_LDFLAGS) $(PYTHON_EXTRA_LDFLAGS)
 endif !MOO_BUILD_MOO_MODULE
 endif
+
+
+BUILT_SOURCES += marshals.c marshals.list
+nodist_libmoo_la_SOURCES += marshals.c
+CLEANFILES += marshals.c marshals.list
+marshals.c: marshals.list
+	glib-genmarshal --prefix=_moo_marshal --header marshals.list > $@.tmp && \
+	glib-genmarshal --prefix=_moo_marshal --body marshals.list >> $@.tmp && \
+	mv $@.tmp $@
+marshals.list: $(marshals)
+	( cat $(marshals) | uniq ) > marshals.list.tmp && mv marshals.list.tmp marshals.list
+
+BUILT_SOURCES += $(sub_marshals_h)
+CLEANFILES += $(sub_marshals_h)
+EXTRA_DIST += mooutils/marshals.list mooui/marshals.list moofileview/marshals.list mooterm/marshals.list mooedit/marshals.list
+%/marshals.h: $(srcdir)/%/marshals.list
+	glib-genmarshal --prefix=_moo_marshal --header $(srcdir)/$*/marshals.list > $@.tmp && \
+	mv $@.tmp $@
 
 
 ############################################################################

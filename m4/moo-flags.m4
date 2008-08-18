@@ -50,6 +50,8 @@ AC_DEFUN_ONCE([MOO_AC_PRIV_FLAGS],[
     MOO_LIBS="$MOO_LIBS $MOO_FAM_LIBS"
   fi
 
+  MOO_CFLAGS="$MOO_CFLAGS $MOO_DEBUG_CFLAGS"
+
   AC_SUBST(MOO_LIBS)
 ])
 
@@ -100,6 +102,7 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
     fi
   done
 
+  MOO_WIN32_CFLAGS=
   if test "x$MOO_OS_MINGW" = xyes; then
     MOO_CFLAGS="$MOO_CFLAGS -DWIN32_LEAN_AND_MEAN -DUNICODE"
     MOO_WIN32_CFLAGS="-I$moo_srcdir/mooutils/moowin32/mingw"

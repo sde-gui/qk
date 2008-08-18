@@ -94,5 +94,3 @@ mootermhelper_res.res: mootermhelper_res.rc
 	touch mootermhelper_res.res
 CLEANFILES += mootermhelper_res.res
 endif
-
-include ../../mk/marshals.mk

@@ -58,7 +58,4 @@ noinst_LTLIBRARIES = libmoofileview.la
 libmoofileview_la_SOURCES = $(moofileview_sources)
 
 AM_CFLAGS =			\
-	$(MOO_CFLAGS)		\
-	$(MOO_DEBUG_CFLAGS)
-
-include ../../mk/marshals.mk
+	$(MOO_CFLAGS)
