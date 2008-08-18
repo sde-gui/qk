@@ -46,12 +46,7 @@
 
 MOO_DEBUG_INIT(file, FALSE)
 
-#ifdef MOO_US_XDGMIME
 #define MIME_TYPE_UNKNOWN xdg_mime_type_unknown
-#else
-static const char *mime_type_unknown = "application/octet-stream";
-#define MIME_TYPE_UNKNOWN mime_type_unknown
-#endif
 
 #define NORMAL_PRIORITY         G_PRIORITY_DEFAULT_IDLE
 #define NORMAL_TIMEOUT          0.04
@@ -122,7 +117,7 @@ create_collation_key (CollatorRef  collator,
 
   if (try_len <= sizeof buf)
     {
-      ret = UCGetCollationKey (collator, str_utf16, len_utf16, 
+      ret = UCGetCollationKey (collator, str_utf16, len_utf16,
                                sizeof buf, &actual_len, buf);
 
       if (ret == 0)
@@ -139,7 +134,7 @@ create_collation_key (CollatorRef  collator,
   if (!key)
     {
       key = g_malloc (sizeof (MooCollationKey) + (try_len - 1) * sizeof (UCCollationValue));
-      ret = UCGetCollationKey (collator, str_utf16, len_utf16, 
+      ret = UCGetCollationKey (collator, str_utf16, len_utf16,
                                try_len, &actual_len, key->buf);
 
       if (ret == kCollateBufferTooSmall)
@@ -199,7 +194,7 @@ moo_get_collation_key_for_filename (const char *str,
                          | kUCCollateCaseInsensitiveMask
                          | kUCCollateDigitsOverrideMask
                          | kUCCollateDigitsAsNumberMask
-                         | kUCCollatePunctuationSignificantMask, 
+                         | kUCCollatePunctuationSignificantMask,
                         &collator);
 
       if (!collator)
