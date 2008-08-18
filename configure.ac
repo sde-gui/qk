@@ -43,7 +43,6 @@ moo/moofileview/Makefile
 moo/mooterm/Makefile
 moo/mooedit/Makefile
 moo/mooedit/plugins/Makefile
-moo/mooedit/plugins/ctags/Makefile
 moo/mooui/Makefile
 moo/moopython/Makefile
 moo/moopython/plugins/Makefile

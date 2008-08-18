@@ -1,17 +1,28 @@
-DIST_SUBDIRS = ctags
-SUBDIRS =
+noinst_LTLIBRARIES = libmooeditplugins.la
+libmooeditplugins_la_LIBADD = libfileselector.la
 
 if MOO_BUILD_CTAGS
-SUBDIRS += ctags
+noinst_LTLIBRARIES += libctags.la
+libmooeditplugins_la_LIBADD += libctags.la
 endif
-
-noinst_LTLIBRARIES =
 
 AM_CFLAGS =			\
 	-I..			\
 	$(MOO_CFLAGS)		\
 	$(MOO_DEBUG_CFLAGS)
 AM_OBJCFLAGS = $(AM_CFLAGS)
+
+###########################################################################
+# ctags
+#
+libctags_la_SOURCES =		\
+	ctags/readtags.c	\
+	ctags/readtags.h	\
+	ctags/ctags-plugin.c	\
+	ctags/ctags-doc.c	\
+	ctags/ctags-doc.h	\
+	ctags/ctags-view.c	\
+	ctags/ctags-view.h
 
 ###########################################################################
 # fileselector
@@ -31,12 +42,6 @@ libfileselector_la_SOURCES =		\
 ###########################################################################
 # libmooeditplugins
 #
-noinst_LTLIBRARIES += libmooeditplugins.la
-libmooeditplugins_la_LIBADD = libfileselector.la
-
-if MOO_BUILD_CTAGS
-libmooeditplugins_la_LIBADD += ctags/libctags.la
-endif
 
 libmooeditplugins_la_SOURCES =	\
 	mooeditplugins.h	\
