@@ -73,6 +73,7 @@ moo_edit_status_get_type (void)
     if (G_UNLIKELY (!etype))
     {
         static const GFlagsValue values[] = {
+            { MOO_EDIT_STATUS_NORMAL, (char*) "MOO_EDIT_STATUS_NORMAL", (char*) "status-normal" },
             { MOO_EDIT_MODIFIED_ON_DISK, (char*) "MOO_EDIT_MODIFIED_ON_DISK", (char*) "modified-on-disk" },
             { MOO_EDIT_DELETED, (char*) "MOO_EDIT_DELETED", (char*) "deleted" },
             { MOO_EDIT_CHANGED_ON_DISK, (char*) "MOO_EDIT_CHANGED_ON_DISK", (char*) "changed-on-disk" },

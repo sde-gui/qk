@@ -31,6 +31,7 @@ G_BEGIN_DECLS
 
 typedef enum /*< flags >*/
 {
+    MOO_EDIT_STATUS_NORMAL      = 0,
     MOO_EDIT_MODIFIED_ON_DISK   = 1 << 0,
     MOO_EDIT_DELETED            = 1 << 1,
     MOO_EDIT_CHANGED_ON_DISK    = MOO_EDIT_MODIFIED_ON_DISK | MOO_EDIT_DELETED,
