@@ -8,6 +8,8 @@ mooxdgmime_sources =	\
 	xdgmimeglob.h	\
 	xdgmime.h	\
 	xdgmimeint.h	\
+	xdgmimeicon.c	\
+	xdgmimeicon.h	\
 	xdgmimemagic.c	\
 	xdgmimemagic.h	\
 	xdgmimeparent.c	\

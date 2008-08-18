@@ -51,6 +51,8 @@ typedef unsigned int   xdg_uint32_t;
 #define _xdg_ucs4_to_lower   XDG_RESERVED_ENTRY(ucs4_to_lower)
 #define _xdg_utf8_validate   XDG_RESERVED_ENTRY(utf8_validate)
 #define _xdg_get_base_name   XDG_RESERVED_ENTRY(get_base_name)
+#define _xdg_convert_to_ucs4 XDG_RESERVED_ENTRY(convert_to_ucs4)
+#define _xdg_reverse_ucs4    XDG_RESERVED_ENTRY(reverse_ucs4)
 #endif
 
 #define SWAP_BE16_TO_LE16(val) (xdg_uint16_t)(((xdg_uint16_t)(val) << 8)|((xdg_uint16_t)(val) >> 8))
@@ -68,6 +70,8 @@ extern const char *const _xdg_utf8_skip;
 xdg_unichar_t  _xdg_utf8_to_ucs4  (const char    *source);
 xdg_unichar_t  _xdg_ucs4_to_lower (xdg_unichar_t  source);
 int            _xdg_utf8_validate (const char    *source);
+xdg_unichar_t *_xdg_convert_to_ucs4 (const char *source, int *len);
+void           _xdg_reverse_ucs4 (xdg_unichar_t *source, int len);
 const char    *_xdg_get_base_name (const char    *file_name);
 
 
@@ -95,7 +99,6 @@ const char    *_xdg_get_base_name (const char    *file_name);
 #define strdup g_strdup
 #define calloc(nmemb,size) g_malloc0 ((nmemb)*(size))
 
-
 #undef _xdg_utf8_skip
 #undef _xdg_utf8_to_ucs4
 #undef _xdg_ucs4_to_lower
@@ -103,25 +106,13 @@ const char    *_xdg_get_base_name (const char    *file_name);
 #undef _xdg_get_base_name
 #undef _xdg_utf8_next_char
 #undef _xdg_utf8_char_size
-#undef SWAP_BE16_TO_LE16
-#undef SWAP_BE32_TO_LE32
+#undef _xdg_convert_to_ucs4
+#undef _xdg_reverse_ucs4
 
 #define _xdg_utf8_to_ucs4	g_utf8_get_char
 #define _xdg_ucs4_to_lower	g_unichar_tolower
 #define _xdg_utf8_validate(s)	(g_utf8_validate(s, -1, NULL))
 #define _xdg_utf8_next_char(p)	g_utf8_next_char(p)
-#define SWAP_BE16_TO_LE16(val)	GUINT16_SWAP_LE_BE(val)
-#define SWAP_BE32_TO_LE32(val)	GUINT32_SWAP_LE_BE(val)
-
-inline static const char *
-xdg_mime_intern_mime_type (const char *mime_type)
-{
-  if (!mime_type || mime_type == XDG_MIME_TYPE_UNKNOWN ||
-      !strcmp (mime_type, XDG_MIME_TYPE_UNKNOWN))
-    return XDG_MIME_TYPE_UNKNOWN;
-  else
-    return _moo_intern_string (mime_type);
-}
 
 inline static const char *
 _xdg_get_base_name (const char *file_name)
@@ -154,6 +145,42 @@ _xdg_mime_buffer_is_text (unsigned char *buffer,
   return ch == (gunichar) -2;
 }
 
+inline static xdg_unichar_t *
+_xdg_convert_to_ucs4 (const char *source, int *len)
+{
+  xdg_unichar_t *out;
+  int i;
+  const char *p;
+
+  out = malloc (sizeof (xdg_unichar_t) * (strlen (source) + 1));
+
+  p = source;
+  i = 0;
+  while (*p) 
+    {
+      out[i++] = _xdg_utf8_to_ucs4 (p);
+      p = _xdg_utf8_next_char (p); 
+    }
+  out[i] = 0;
+  *len = i;
+ 
+  return out;
+}
+
+inline static void
+_xdg_reverse_ucs4 (xdg_unichar_t *source, int len)
+{
+  xdg_unichar_t c;
+  int i;
+
+  for (i = 0; i < len - i - 1; i++) 
+    {
+      c = source[i]; 
+      source[i] = source[len - i - 1];
+      source[len - i - 1] = c;
+    }
+}
+
 #ifdef __WIN32__
 #include <glib/gstdio.h>
 
@@ -181,5 +208,6 @@ _xdg_mime_fstat (int          fd,
 #endif
 
 /* end muntyan's stuff */
+
 
 #endif /* __XDG_MIME_INT_H__ */

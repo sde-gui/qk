@@ -25,6 +25,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "xdgmimeparent.h"
 #include "xdgmimeint.h"
 #include <stdlib.h>
@@ -126,7 +130,7 @@ _xdg_mime_parent_read_from_file (XdgParentList *list,
   int i, alloc;
   XdgMimeParents *entry;
 
-  file = fopen (file_name, "rb");
+  file = fopen (file_name, "r");
 
   if (file == NULL)
     return;

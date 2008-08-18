@@ -25,11 +25,16 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "xdgmime.h"
 #include "xdgmimeint.h"
 #include "xdgmimeglob.h"
 #include "xdgmimemagic.h"
 #include "xdgmimealias.h"
+#include "xdgmimeicon.h"
 #include "xdgmimeparent.h"
 #include "xdgmimecache.h"
 #include <stdio.h>
@@ -52,6 +57,8 @@ static XdgAliasList *alias_list = NULL;
 static XdgParentList *parent_list = NULL;
 static XdgDirTimeList *dir_time_list = NULL;
 static XdgCallbackList *callback_list = NULL;
+static XdgIconList *icon_list = NULL;
+static XdgIconList *generic_icon_list = NULL;
 
 XdgMimeCache **_xdg_mime_caches = NULL;
 static int n_caches = 0;
@@ -72,7 +79,6 @@ struct XdgDirTimeList
   char *directory_name;
   int checked;
   XdgDirTimeList *next;
-  XdgMimeCache *cache;
 };
 
 struct XdgCallbackList
@@ -85,22 +91,41 @@ struct XdgCallbackList
   XdgMimeDestroy   destroy;
 };
 
+static const char *
+xdg_mime_intern_mime_type (const char *mime_type)
+{
+  if (!mime_type || mime_type == XDG_MIME_TYPE_UNKNOWN ||
+      !strcmp (mime_type, XDG_MIME_TYPE_UNKNOWN))
+    return XDG_MIME_TYPE_UNKNOWN;
+  else
+    return _moo_intern_string (mime_type);
+}
+
 /* Function called by xdg_run_command_on_dirs.  If it returns TRUE, further
  * directories aren't looked at */
 typedef int (*XdgDirectoryFunc) (const char *directory,
 				 void       *user_data);
 
-static XdgDirTimeList *
-xdg_dir_time_list_new (void)
+static void
+xdg_dir_time_list_add (char   *file_name, 
+		       time_t  mtime)
 {
-  XdgDirTimeList *retval;
+  XdgDirTimeList *list;
 
-  retval = calloc (1, sizeof (XdgDirTimeList));
-  retval->checked = XDG_CHECKED_UNCHECKED;
-
-  return retval;
+  for (list = dir_time_list; list; list = list->next) 
+    {
+      if (strcmp (list->directory_name, file_name) == 0) 
+        return;
+    }
+  
+  list = calloc (1, sizeof (XdgDirTimeList));
+  list->checked = XDG_CHECKED_UNCHECKED;
+  list->directory_name = file_name;
+  list->mtime = mtime;
+  list->next = dir_time_list;
+  dir_time_list = list;
 }
-
+ 
 static void
 xdg_dir_time_list_free (XdgDirTimeList *list)
 {
@@ -120,7 +145,6 @@ xdg_mime_init_from_directory (const char *directory)
 {
   char *file_name;
   struct stat st;
-  XdgDirTimeList *list;
 
   assert (directory != NULL);
 
@@ -132,12 +156,7 @@ xdg_mime_init_from_directory (const char *directory)
 
       if (cache != NULL)
 	{
-	  list = xdg_dir_time_list_new ();
-	  list->directory_name = file_name;
-	  list->mtime = st.st_mtime;
-	  list->next = dir_time_list;
-	  list->cache = cache;
-	  dir_time_list = list;
+	  xdg_dir_time_list_add (file_name, st.st_mtime);
 
 	  _xdg_mime_caches = realloc (_xdg_mime_caches, sizeof (XdgMimeCache *) * (n_caches + 2));
 	  _xdg_mime_caches[n_caches] = cache;
@@ -149,21 +168,27 @@ xdg_mime_init_from_directory (const char *directory)
     }
   free (file_name);
 
-  file_name = malloc (strlen (directory) + strlen ("/mime/globs") + 1);
-  strcpy (file_name, directory); strcat (file_name, "/mime/globs");
+  file_name = malloc (strlen (directory) + strlen ("/mime/globs2") + 1);
+  strcpy (file_name, directory); strcat (file_name, "/mime/globs2");
   if (XDG_MIME_STAT (file_name, &st) == 0)
     {
       _xdg_mime_glob_read_from_file (global_hash, file_name);
-
-      list = xdg_dir_time_list_new ();
-      list->directory_name = file_name;
-      list->mtime = st.st_mtime;
-      list->next = dir_time_list;
-      dir_time_list = list;
+      xdg_dir_time_list_add (file_name, st.st_mtime);
     }
   else
     {
       free (file_name);
+      file_name = malloc (strlen (directory) + strlen ("/mime/globs") + 1);
+      strcpy (file_name, directory); strcat (file_name, "/mime/globs");
+      if (XDG_MIME_STAT (file_name, &st) == 0)
+        {
+          _xdg_mime_glob_read_from_file (global_hash, file_name);
+          xdg_dir_time_list_add (file_name, st.st_mtime);
+        }
+      else
+        {
+          free (file_name);
+        }
     }
 
   file_name = malloc (strlen (directory) + strlen ("/mime/magic") + 1);
@@ -171,12 +196,7 @@ xdg_mime_init_from_directory (const char *directory)
   if (XDG_MIME_STAT (file_name, &st) == 0)
     {
       _xdg_mime_magic_read_from_file (global_magic, file_name);
-
-      list = xdg_dir_time_list_new ();
-      list->directory_name = file_name;
-      list->mtime = st.st_mtime;
-      list->next = dir_time_list;
-      dir_time_list = list;
+      xdg_dir_time_list_add (file_name, st.st_mtime);
     }
   else
     {
@@ -191,6 +211,16 @@ xdg_mime_init_from_directory (const char *directory)
   file_name = malloc (strlen (directory) + strlen ("/mime/subclasses") + 1);
   strcpy (file_name, directory); strcat (file_name, "/mime/subclasses");
   _xdg_mime_parent_read_from_file (parent_list, file_name);
+  free (file_name);
+
+  file_name = malloc (strlen (directory) + strlen ("/mime/icons") + 1);
+  strcpy (file_name, directory); strcat (file_name, "/mime/icons");
+  _xdg_mime_icon_read_from_file (icon_list, file_name);
+  free (file_name);
+
+  file_name = malloc (strlen (directory) + strlen ("/mime/generic-icons") + 1);
+  strcpy (file_name, directory); strcat (file_name, "/mime/generic-icons");
+  _xdg_mime_icon_read_from_file (generic_icon_list, file_name);
   free (file_name);
 
   return FALSE; /* Keep processing */
@@ -211,18 +241,6 @@ xdg_run_command_on_dirs (XdgDirectoryFunc  func,
       break;
 }
 
-static XdgMimeCache *
-xdg_lookup_cache_for_file (const char *file_path)
-{
-  XdgDirTimeList *list;
-
-  for (list = dir_time_list; list; list = list->next)
-      if (! strcmp (list->directory_name, file_path))
-	 return list->cache;
-
-  return NULL;
-}
-
 /* Checks file_path to make sure it has the same mtime as last time it was
  * checked.  If it has a different mtime, or if the file doesn't exist, it
  * returns FALSE.
@@ -230,7 +248,8 @@ xdg_lookup_cache_for_file (const char *file_path)
  * FIXME: This doesn't protect against permission changes.
  */
 static int
-xdg_check_file (const char *file_path)
+xdg_check_file (const char *file_path,
+                int        *exists)
 {
   struct stat st;
 
@@ -239,14 +258,16 @@ xdg_check_file (const char *file_path)
     {
       XdgDirTimeList *list;
 
+      if (exists)
+        *exists = TRUE;
+
       for (list = dir_time_list; list; list = list->next)
 	{
-	  if (! strcmp (list->directory_name, file_path) &&
-	      st.st_mtime == list->mtime)
+	  if (! strcmp (list->directory_name, file_path))
 	    {
-	      if (list->checked == XDG_CHECKED_UNCHECKED)
+	      if (st.st_mtime == list->mtime)
 		list->checked = XDG_CHECKED_VALID;
-	      else if (list->checked == XDG_CHECKED_VALID)
+	      else 
 		list->checked = XDG_CHECKED_INVALID;
 
 	      return (list->checked != XDG_CHECKED_VALID);
@@ -255,6 +276,9 @@ xdg_check_file (const char *file_path)
       return TRUE;
     }
 
+  if (exists)
+    *exists = FALSE;
+
   return FALSE;
 }
 
@@ -262,7 +286,7 @@ static int
 xdg_check_dir (const char *directory,
 	       int        *invalid_dir_list)
 {
-  int invalid, has_cache;
+  int invalid, exists;
   char *file_name;
 
   assert (directory != NULL);
@@ -270,25 +294,22 @@ xdg_check_dir (const char *directory,
   /* Check the mime.cache file */
   file_name = malloc (strlen (directory) + strlen ("/mime/mime.cache") + 1);
   strcpy (file_name, directory); strcat (file_name, "/mime/mime.cache");
-  invalid = xdg_check_file (file_name);
-  has_cache = xdg_lookup_cache_for_file (file_name) != NULL;
+  invalid = xdg_check_file (file_name, &exists);
   free (file_name);
-
-  if (has_cache)
+  if (invalid)
     {
-      if (invalid)
-	{
-	  *invalid_dir_list = TRUE;
-	  return TRUE;
-	}
-
+      *invalid_dir_list = TRUE;
+      return TRUE;
+    }
+  else if (exists)
+    {
       return FALSE;
     }
 
   /* Check the globs file */
   file_name = malloc (strlen (directory) + strlen ("/mime/globs") + 1);
   strcpy (file_name, directory); strcat (file_name, "/mime/globs");
-  invalid = xdg_check_file (file_name);
+  invalid = xdg_check_file (file_name, NULL);
   free (file_name);
   if (invalid)
     {
@@ -299,7 +320,7 @@ xdg_check_dir (const char *directory,
   /* Check the magic file */
   file_name = malloc (strlen (directory) + strlen ("/mime/magic") + 1);
   strcpy (file_name, directory); strcat (file_name, "/mime/magic");
-  invalid = xdg_check_file (file_name);
+  invalid = xdg_check_file (file_name, NULL);
   free (file_name);
   if (invalid)
     {
@@ -375,6 +396,8 @@ xdg_mime_init (void)
       global_magic = _xdg_mime_magic_new ();
       alias_list = _xdg_mime_alias_list_new ();
       parent_list = _xdg_mime_parent_list_new ();
+      icon_list = _xdg_mime_icon_list_new ();
+      generic_icon_list = _xdg_mime_icon_list_new ();
 
       xdg_run_command_on_dirs ((XdgDirectoryFunc) xdg_mime_init_from_directory,
 			       NULL);
@@ -385,16 +408,17 @@ xdg_mime_init (void)
 
 const char *
 xdg_mime_get_mime_type_for_data (const void *data,
-				 size_t      len)
+				 size_t      len,
+				 int        *result_prio)
 {
   const char *mime_type;
 
   xdg_mime_init ();
 
   if (_xdg_mime_caches)
-    return xdg_mime_intern_mime_type (_xdg_mime_cache_get_mime_type_for_data (data, len));
+    return xdg_mime_intern_mime_type (_xdg_mime_cache_get_mime_type_for_data (data, len, result_prio));
 
-  mime_type = _xdg_mime_magic_lookup_data (global_magic, data, len, NULL, 0);
+  mime_type = _xdg_mime_magic_lookup_data (global_magic, data, len, result_prio, NULL, 0);
 
   if (mime_type)
     return xdg_mime_intern_mime_type (mime_type);
@@ -407,8 +431,10 @@ xdg_mime_get_mime_type_for_file (const char  *file_name,
                                  struct stat *statbuf)
 {
   const char *mime_type;
-  /* Used to detect whether multiple MIME types match file_name */
-  const char *mime_types[2];
+  /* currently, only a few globs occur twice, and none
+   * more often, so 5 seems plenty.
+   */
+  const char *mime_types[5];
   FILE *file;
   unsigned char *data;
   int max_extent;
@@ -428,7 +454,7 @@ xdg_mime_get_mime_type_for_file (const char  *file_name,
     return xdg_mime_intern_mime_type (_xdg_mime_cache_get_mime_type_for_file (file_name, statbuf));
 
   base_name = _xdg_get_base_name (file_name);
-  n = _xdg_glob_hash_lookup_file_name (global_hash, base_name, mime_types, 2);
+  n = _xdg_glob_hash_lookup_file_name (global_hash, base_name, mime_types, 5);
 
   if (n == 1)
     return xdg_mime_intern_mime_type (mime_types[0]);
@@ -467,7 +493,7 @@ xdg_mime_get_mime_type_for_file (const char  *file_name,
       return XDG_MIME_TYPE_UNKNOWN;
     }
 
-  mime_type = _xdg_mime_magic_lookup_data (global_magic, data, bytes_read,
+  mime_type = _xdg_mime_magic_lookup_data (global_magic, data, bytes_read, NULL,
 					   mime_types, n);
 
   if ((!mime_type || mime_type == XDG_MIME_TYPE_UNKNOWN) &&
@@ -486,17 +512,30 @@ xdg_mime_get_mime_type_for_file (const char  *file_name,
 const char *
 xdg_mime_get_mime_type_from_file_name (const char *file_name)
 {
-  const char *mime_types[2];
+  const char *mime_type;
 
   xdg_mime_init ();
 
   if (_xdg_mime_caches)
     return xdg_mime_intern_mime_type (_xdg_mime_cache_get_mime_type_from_file_name (file_name));
 
-  if (_xdg_glob_hash_lookup_file_name (global_hash, file_name, mime_types, 2) == 1)
-    return xdg_mime_intern_mime_type (mime_types[0]);
+  if (_xdg_glob_hash_lookup_file_name (global_hash, file_name, &mime_type, 1))
+    return xdg_mime_intern_mime_type (mime_type);
   else
     return XDG_MIME_TYPE_UNKNOWN;
+}
+
+int
+xdg_mime_get_mime_types_from_file_name (const char *file_name,
+					const char  *mime_types[],
+					int          n_mime_types)
+{
+  xdg_mime_init ();
+  
+  if (_xdg_mime_caches)
+    return _xdg_mime_cache_get_mime_types_from_file_name (file_name, mime_types, n_mime_types);
+  
+  return _xdg_glob_hash_lookup_file_name (global_hash, file_name, mime_types, n_mime_types);
 }
 
 int
@@ -561,10 +600,11 @@ xdg_mime_shutdown (void)
       _xdg_mime_parent_list_free (parent_list);
       parent_list = NULL;
     }
-
+  
   if (_xdg_mime_caches)
     {
       int i;
+
       for (i = 0; i < n_caches; i++)
         _xdg_mime_cache_unref (_xdg_mime_caches[i]);
       free (_xdg_mime_caches);
@@ -589,18 +629,18 @@ xdg_mime_get_max_buffer_extents (void)
   return _xdg_mime_magic_get_buffer_extents (global_magic);
 }
 
-static const char *
+const char *
 _xdg_mime_unalias_mime_type (const char *mime_type)
 {
   const char *lookup;
 
   if (_xdg_mime_caches)
-    return _xdg_mime_cache_unalias_mime_type (mime_type);
+    return xdg_mime_intern_mime_type (_xdg_mime_cache_unalias_mime_type (mime_type));
 
   if ((lookup = _xdg_mime_alias_list_lookup (alias_list, mime_type)) != NULL)
-    return lookup;
+    return xdg_mime_intern_mime_type (lookup);
 
-  return mime_type;
+  return xdg_mime_intern_mime_type (mime_type);
 }
 
 const char *
@@ -636,12 +676,10 @@ xdg_mime_mime_type_equal (const char *mime_a,
 }
 
 int
-_xdg_mime_media_type_equal (const char *mime_a,
-			    const char *mime_b)
+xdg_mime_media_type_equal (const char *mime_a,
+			   const char *mime_b)
 {
   char *sep;
-
-  xdg_mime_init ();
 
   sep = strchr (mime_a, '/');
   
@@ -651,16 +689,7 @@ _xdg_mime_media_type_equal (const char *mime_a,
   return 0;
 }
 
-int
-xdg_mime_media_type_equal (const char *mime_a,
-			   const char *mime_b)
-{
-  xdg_mime_init ();
-
-  return _xdg_mime_media_type_equal (mime_a, mime_b);
-}
-
-#if 0
+#if 1
 static int
 xdg_mime_is_super_type (const char *mime)
 {
@@ -693,10 +722,10 @@ _xdg_mime_mime_type_subclass (const char *mime,
   if (strcmp (umime, ubase) == 0)
     return 1;
 
-#if 0  
+#if 1  
   /* Handle supertypes */
   if (xdg_mime_is_super_type (ubase) &&
-      _xdg_mime_media_type_equal (umime, ubase))
+      xdg_mime_media_type_equal (umime, ubase))
     return 1;
 #endif
 
@@ -766,12 +795,18 @@ xdg_mime_get_mime_parents (const char *mime)
 void 
 xdg_mime_dump (void)
 {
+  xdg_mime_init();
+
   printf ("*** ALIASES ***\n\n");
   _xdg_mime_alias_list_dump (alias_list);
   printf ("\n*** PARENTS ***\n\n");
   _xdg_mime_parent_list_dump (parent_list);
   printf ("\n*** CACHE ***\n\n");
   _xdg_glob_hash_dump (global_hash);
+  printf ("\n*** GLOBS ***\n\n");
+  _xdg_glob_hash_dump (global_hash);
+  printf ("\n*** GLOBS REVERSE TREE ***\n\n");
+  _xdg_mime_cache_glob_dump ();
 }
 
 
@@ -824,4 +859,33 @@ xdg_mime_remove_callback (int callback_id)
 	  return;
 	}
     }
+}
+
+const char *
+xdg_mime_get_icon (const char *mime)
+{
+  const char *icon;
+
+  xdg_mime_init ();
+  
+  if (_xdg_mime_caches)
+    return xdg_mime_intern_mime_type (_xdg_mime_cache_get_icon (mime));
+
+  icon = _xdg_mime_icon_list_lookup (icon_list, mime);
+
+  if (!icon)
+    icon = xdg_mime_get_generic_icon (mime);
+
+  return xdg_mime_intern_mime_type (icon);
+}
+
+const char *
+xdg_mime_get_generic_icon (const char *mime)
+{
+  xdg_mime_init ();
+  
+  if (_xdg_mime_caches)
+    return xdg_mime_intern_mime_type (_xdg_mime_cache_get_generic_icon (mime));
+
+  return xdg_mime_intern_mime_type (_xdg_mime_icon_list_lookup (generic_icon_list, mime));
 }

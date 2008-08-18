@@ -25,6 +25,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "xdgmimealias.h"
 #include "xdgmimeint.h"
 #include <stdlib.h>
@@ -120,7 +124,7 @@ _xdg_mime_alias_read_from_file (XdgAliasList *list,
   char line[255];
   int alloc;
 
-  file = fopen (file_name, "rb");
+  file = fopen (file_name, "r");
 
   if (file == NULL)
     return;

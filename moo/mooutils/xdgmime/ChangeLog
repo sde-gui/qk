@@ -1,3 +1,322 @@
+2008-06-09  Bastien Nocera  <hadess@hadess.net>
+
+	* src/xdgmimecache.c (cache_glob_node_lookup_suffix):
+	Patch by Matthias Clasen <mclasen@redhat.com> to implement
+	the compact suffix tree
+
+2008-06-05  Bastien Nocera  <hadess@hadess.net>
+
+	* src/xdgmimecache.c (cache_glob_node_lookup_suffix):
+	Patch by Matthias Clasen <mclasen@redhat.com> to fix reading
+	the suffix lookup (wrong offsets when reading the mime-type
+	offset and weight)
+
+2008-06-03  Bastien Nocera  <hadess@hadess.net>
+
+	* src/xdgmime.c (xdg_mime_dump):
+	* src/xdgmimecache.c (cache_glob_node_lookup_suffix),
+	(dump_glob_node), (_xdg_mime_cache_glob_dump):
+	* src/xdgmimecache.h: dumping code for the suffix reverse tree
+	from Matthias Clasen <mclasen@redhat.com>, and hooked up in
+	xdg_mime_dump, init the cache in xdg_mime_dump() in case
+	it's the only xdgmime function called
+
+2008-06-03  Bastien Nocera  <hadess@hadess.net>
+
+	* src/xdgmimecache.c: Patch from Matthias Clasen
+	<mclasen@redhat.com>: Bump the cache version to 1.1
+
+2008-06-03  Bastien Nocera  <hadess@hadess.net>
+
+	* src/Makefile:
+	* src/test-mime.c (test_one_icon), (test_icons), (main):
+	* src/xdgmime.c (xdg_mime_init_from_directory), (xdg_mime_init),
+	(xdg_mime_get_icon), (xdg_mime_get_generic_icon):
+	* src/xdgmime.h:
+	* src/xdgmimecache.c (cache_lookup_icon),
+	(_xdg_mime_cache_get_generic_icon), (_xdg_mime_cache_get_icon):
+	* src/xdgmimecache.h:
+	* src/xdgmimeicon.c:
+	* src/xdgmimeicon.h: Patch from Matthias Clasen
+	<mclasen@redhat.com>: Add icon and generic-icon support
+
+2008-06-03  Bastien Nocera  <hadess@hadess.net>
+
+	* src/xdgmimecache.c (cache_glob_lookup_file_name):
+	* src/xdgmimeglob.c (_xdg_glob_hash_insert_text),
+	(_xdg_glob_hash_lookup_file_name):
+	* src/xdgmimeint.c (_xdg_convert_to_ucs4), (_xdg_reverse_ucs4):
+	* src/xdgmimeint.h: Patch from Matthias Clasen
+	<mclasen@redhat.com>: Cleanups
+
+2008-06-03  Bastien Nocera  <hadess@hadess.net>
+
+	* src/xdgmimecache.c (cache_glob_node_lookup_suffix),
+	(cache_glob_lookup_suffix), (to_ucs4),
+	(cache_glob_lookup_file_name):
+	* src/xdgmimeglob.c (_xdg_glob_hash_insert_ucs4), (to_ucs4),
+	(ucs4_reverse), (_xdg_glob_hash_insert_text),
+	(_xdg_glob_hash_node_lookup_file_name),
+	(_xdg_glob_hash_lookup_file_name): Patch from Matthias Clasen
+	<mclasen@redhat.com>: Use reverted suffix trees
+
+2008-06-03  Bastien Nocera  <hadess@hadess.net>
+
+	* src/test-mime.c (test_subclassing), (test_one_match),
+	(test_matches), (main): Patch from Matthias Clasen
+	<mclasen@redhat.com>: Add some glob tests
+
+2008-06-03  Bastien Nocera  <hadess@hadess.net>
+
+	* src/xdgmime.c (xdg_mime_dump): Patch from Matthias Clasen
+	<mclasen@redhat.com>: Include globs in the dump
+
+2008-06-03  Bastien Nocera  <hadess@hadess.net>
+
+	* src/xdgmime.c (xdg_mime_init_from_directory):
+	* src/xdgmimecache.c (cache_glob_lookup_literal),
+	(cache_glob_lookup_fnmatch), (cache_glob_node_lookup_suffix),
+	(cache_glob_lookup_suffix), (find_stopchars),
+	(compare_mime_weight), (cache_glob_lookup_file_name),
+	(_xdg_mime_cache_get_mime_type_for_file):
+	* src/xdgmimeglob.c (_xdg_glob_list_append),
+	(_xdg_glob_hash_node_dump), (_xdg_glob_hash_insert_text),
+	(_xdg_glob_hash_node_lookup_file_name), (compare_mime_weight),
+	(_xdg_glob_hash_lookup_file_name), (_xdg_glob_determine_type),
+	(_xdg_glob_hash_append_glob), (_xdg_glob_hash_dump),
+	(_xdg_mime_glob_read_from_file):
+	* src/xdgmimeglob.h: Patch from Matthias Clasen
+	<mclasen@redhat.com>: Implement glob weights
+
+2008-06-03  Bastien Nocera  <hadess@hadess.net>
+
+	* src/xdgmimeglob.c (_xdg_glob_hash_insert_text),
+	(_xdg_glob_hash_node_lookup_file_name), (_xdg_glob_determine_type),
+	(_xdg_mime_glob_read_from_file): Patch from Matthias Clasen
+	<mclasen@redhat.com>: remove dead code and some trivial cleanups
+
+2008-06-02  Bastien Nocera  <hadess@hadess.net>
+
+	* src/Makefile: Remove test-mime-data on clean
+	* src/test-mime-data.c (test_by_data): Fix for API changes below
+
+	* src/xdgmime.c (xdg_dir_time_list_add),
+	(xdg_mime_init_from_directory), (xdg_check_file), (xdg_check_dir),
+	(xdg_mime_get_mime_type_for_data),
+	(xdg_mime_get_mime_type_for_file),
+	(xdg_mime_get_mime_type_from_file_name),
+	(xdg_mime_get_mime_types_from_file_name), (xdg_mime_shutdown),
+	(xdg_mime_get_max_buffer_extents), (_xdg_mime_unalias_mime_type),
+	(xdg_mime_media_type_equal), (_xdg_mime_mime_type_subclass),
+	(xdg_mime_list_mime_parents):
+	* src/xdgmime.h:
+	* src/xdgmimealias.h:
+	* src/xdgmimecache.c (cache_magic_lookup_data),
+	(cache_alias_lookup), (cache_glob_lookup_literal),
+	(cache_glob_lookup_fnmatch), (cache_glob_node_lookup_suffix),
+	(cache_glob_lookup_suffix), (find_stopchars),
+	(_xdg_mime_cache_get_max_buffer_extents),
+	(cache_get_mime_type_for_data),
+	(_xdg_mime_cache_get_mime_type_for_data),
+	(_xdg_mime_cache_get_mime_type_for_file),
+	(_xdg_mime_cache_get_mime_type_from_file_name),
+	(_xdg_mime_cache_get_mime_types_from_file_name),
+	(_xdg_mime_cache_mime_type_subclass),
+	(_xdg_mime_cache_list_mime_parents):
+	* src/xdgmimecache.h:
+	* src/xdgmimeglob.c (_xdg_glob_hash_node_lookup_file_name):
+	* src/xdgmimeglob.h:
+	* src/xdgmimemagic.c (_xdg_mime_magic_parse_magic_line),
+	(_xdg_mime_magic_lookup_data):
+	* src/xdgmimemagic.h:
+	* src/xdgmimeparent.h:
+
+	Merge from downstream changes in GIO/GTK+:
+	- Rename _xdg_mime_caches to _caches and make sure it's not exported
+	- Rework the timestamp checking code
+	to protect against duplicate directories in XDG_DATA_DIRS.
+	- Fix a thinko that leads to constantly reloading
+	the mime data if a mime.cache is present.
+	- Support more than 2 duplicate globs
+	- Add xdg_mime_get_mime_types_from_file_name()
+	- xdg_mime_media_type_equal() doesn't require an _init after all
+	- Handle super-types in _xdg_mime_mime_type_subclass()
+	- Make cache_get_mime_type_for_data() and
+	_xdg_mime_magic_lookup_data() return the priority of the
+	matching mime-type
+	- Fix _xdg_mime_cache_list_mime_parents returning duplicate parents in
+	some cases
+
+2008-06-02  Bastien Nocera  <hadess@hadess.net>
+
+	* src/xdgmime.c (xdg_mime_init_from_directory), (xdg_mime_dump):
+	* src/xdgmimecache.c (cache_glob_lookup_literal),
+	(cache_glob_lookup_fnmatch), (cache_glob_node_lookup_suffix),
+	(cache_glob_lookup_suffix), (find_stopchars),
+	(cache_glob_lookup_file_name),
+	(_xdg_mime_cache_get_mime_type_for_file):
+	* src/xdgmimeglob.c (_xdg_glob_list_append),
+	(_xdg_glob_list_prepend), (_xdg_glob_hash_node_dump),
+	(_xdg_glob_hash_insert_text),
+	(_xdg_glob_hash_node_lookup_file_name),
+	(_xdg_glob_hash_lookup_file_name), (_xdg_glob_determine_type),
+	(_xdg_glob_hash_append_glob), (_xdg_glob_hash_dump),
+	(_xdg_mime_glob_read_from_file):
+	* src/xdgmimeglob.h: Revert previous patches, we need to rebase first
+
+2008-06-02  Bastien Nocera  <hadess@hadess.net>
+
+	* src/test-mime.c (test_subclassing), (test_one_match),
+	(test_matches), (main): Patch from Matthias Clasen
+	<mclasen@redhat.com> to add some globs tests to the
+	test program
+
+2008-06-02  Bastien Nocera  <hadess@hadess.net>
+
+	* src/xdgmime.c (xdg_mime_dump): Patch from Matthias Clasen
+	<mclasen@redhat.com> to include globs output in the dump
+
+2008-06-02  Bastien Nocera  <hadess@hadess.net>
+
+	* src/xdgmime.c (xdg_mime_init_from_directory):
+	* src/xdgmimecache.c (cache_glob_lookup_literal),
+	(cache_glob_lookup_fnmatch), (cache_glob_node_lookup_suffix),
+	(cache_glob_lookup_suffix), (find_stopchars),
+	(compare_mime_weight), (cache_glob_lookup_file_name),
+	(_xdg_mime_cache_get_mime_type_for_file):
+	* src/xdgmimeglob.c (_xdg_glob_list_append),
+	(_xdg_glob_hash_node_dump), (_xdg_glob_hash_insert_text),
+	(_xdg_glob_hash_node_lookup_file_name), (compare_mime_weight),
+	(_xdg_glob_hash_lookup_file_name), (_xdg_glob_determine_type),
+	(_xdg_glob_hash_append_glob), (_xdg_glob_hash_dump),
+	(_xdg_mime_glob_read_from_file):
+	* src/xdgmimeglob.h: Patch from Matthias Clasen <mclasen@redhat.com>
+	to implement glob weights
+
+2008-06-02  Bastien Nocera  <hadess@hadess.net>
+
+	* src/xdgmimeglob.c (_xdg_glob_hash_insert_text),
+	(_xdg_glob_hash_node_lookup_file_name), (_xdg_glob_determine_type),
+	(_xdg_mime_glob_read_from_file): Patch from Matthias Clasen
+	<mclasen@redhat.com> to remove dead code and do some trivial changes
+
+2008-04-18  Bastien Nocera  <hadess@hadess.net>
+
+	* src/xdgmimecache.c (cache_magic_lookup_data),
+	(_xdg_mime_cache_mime_type_subclass): Fix possible crasher when
+	XDG_DATA_DIRS contains the same directory twice, patch by Joe Shaw
+	<joeshaw@novell.com> (#12512)
+
+	Make _xdg_mime_cache_mime_type_subclass use the internal version of
+	xdg_mime_media_type_equal(), spotted by Federico Mena-Quintero
+	<federico@ximian.com>
+
+2008-04-10  Bastien Nocera  <hadess@hadess.net>
+
+	* src/test-mime-data.c (main): Only error out when
+	the number of errors is different from the number of expected errors,
+	or when there's unexpected success
+
+2007-08-28  Bastien Nocera  <hadess@hadess.net>
+
+	* src/.cvsignore:
+	* src/Makefile:
+	* src/test-mime-data.c: Add test-mime-data test program from
+	Matthias Clasen <mclasen@redhat.com> (Closes: #5210)
+
+2007-06-04  Christian Neumair  <cneumair@gnome.org>
+
+	* src/xdgmime*.[ch]: Rename _caches to _xdg_mime_caches. Also
+	namespace all reserved symbols that are declared in headers using
+	XDG_RESERVED_ENTRY(), #7074 and #11124. Thanks to Yevgen Muntyan
+	<muntyan@tamu.edu> and Joe Marcus Clarke <marcus@freebsd.org>.
+
+2007-06-02  Christian Neumair  <cneumair@gnome.org>
+
+	* src/xdgmime.[ch]: Move xdg_mime_type_unknown to .rodata.
+	* src/xdgmime.h: Add XDG_ENTRY() entry for xdg_mime_dump.
+	GTK+ resync.
+
+	* src/xdgmime.c: (_xdg_mime_alias_list_lookup): Initialize mime_type
+	to NULL instead of 0, GNOME #341812. Thanks to Kjartan Maraas
+	<kmaraas@gnome.org>.
+
+	* src/xdgmime.[ch]: (xdg_mime_media_type_equal),
+	(_xdg_mime_media_type_equal): Add private version of
+	xdg_mime_media_type_equal that doesn't call xdg_mime_init(), use it in
+	_xdg_mime_mime_type_subclass.
+
+2007-06-02  Christian Neumair  <cneumair@gnome.org>
+
+	* src/xdgmimemagic.c: Fallback to getc() if getc_unlocked() is not
+	available, GNOME #381499. Thanks to Paul <ephraim_owns@hotmail.com>.
+
+2007-06-01  Christian Neumair  <cneumair@gnome.org>
+
+	* src/xdgmime.c: (xdg_mime_get_mime_type_for_file): Only request two
+	MIME types from cache.
+
+	* src/xdgmime.c: (xdg_mime_dump): Dump cache.
+
+	* src/xdgmimecache.c: Warn if building without MMAP support.
+
+2007-06-01  Christian Neumair  <cneumair@gnome.org>
+
+	* src/xdgmime.c: (xdg_lookup_cache_for_file), (xdg_check_dir):
+	Fix constant re-creation of memory MIME cache, #7495.
+
+2007-06-01  Christian Neumair  <cneumair@gnome.org>
+
+	* src/xdgmimeglob.c: (_xdg_glob_hash_node_lookup_file_name): Don't
+	return NULL MIME types, #5241.
+
+2007-06-01  Christian Neumair  <cneumair@gnome.org>
+
+	* src/xdgmime.c: (xdg_mime_shutdown): Fix cache variable name from last
+	commit.
+
+	* src/xdgmime.c: (xdg_mime_unalias_mime_type), (xdg_mime_mime_type_equal):
+	* src/xdgmime.h:
+	* src/xdgmimemagic.c: (_xdg_mime_magic_lookup_data):
+	Define and use private versions of functions that may lead to an
+	xdg_mime_init() call and thus to an invalid cache, and a crash - #6824.
+	Thanks to Joe Shaw <joeshaw@novell.com>.
+
+2007-06-01  Christian Neumair  <cneumair@gnome.org>
+
+	* src/xdgmime.c: (xdg_mime_shutdown): Free caches, #7496.
+	Thanks to Yevgen Muntyan <muntyan@tamu.edu>.
+
+2007-06-01  Christian Neumair  <cneumair@gnome.org>
+
+	* src/xdgmimecache.c: (cache_glob_node_lookup_suffix): Don't return
+	MIME types if cache suffix lookup returns empty string, #9544.
+	Thanks to Yevgen Muntyan <muntyan@tamu.edu>.
+
+2007-06-01  Christian Neumair  <cneumair@gnome.org>
+
+	* src/xdgmimemagic.c: (_xdg_mime_magic_lookup_data): Fix issue where
+	MIME type was not detected when two MIME types with parent
+	relationship match and have equal priority, and child
+	was found before parent in cache, #9242.
+	Thanks to Tom Parker <freedesktop@tevp.net>.
+
+2007-06-01  Christian Neumair  <cneumair@gnome.org>
+
+	* src/xdgmimecache.c: (_xdg_mime_cache_list_mime_parents): Fix
+	several problems with this function, #9560. Thanks to Yevgen Muntyan.
+
+2007-06-01  Christian Neumair  <cneumair@gnome.org>
+
+	* src/xdgmimemagic.c: Don't declare errno, fixes build on Dragonfly
+	BSD, GNOME #336382.
+
+2006-07-13  Christian Neumair  <chris@gnome-de.org>
+
+	* src/xdgmimemagic.c: (_xdg_mime_magic_parse_magic_line):
+	Only declare 'i' #if LITTLE_ENDIAN. Partially fixes GNOME #340277.
+	Thanks to James Andrewartha.
+
 2006-03-02  Christian Neumair  <chris@gnome-de.org>
 
 	* src/xdgmimeglob.c: (_xdg_glob_hash_insert_text),
