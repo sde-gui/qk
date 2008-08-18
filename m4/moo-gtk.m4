@@ -10,20 +10,20 @@ AC_MSG_RESULT($[]$1[]_MAJOR_VERSION.$[]$1[]_MINOR_VERSION.$[]$1[]_MICRO_VERSION)
 
 
 ##############################################################################
-# MOO_CHECK_VERSION(PKG_NAME,pkg-name)
+# MOO_CHECK_VERSION(PKG_NAME,pkg-name,versions)
 #
 AC_DEFUN([MOO_CHECK_VERSION],[
 if test x$MOO_OS_CYGWIN != xyes; then
   PKG_CHECK_MODULES($1,$2)
   _MOO_SPLIT_VERSION_PKG($1,$2)
-  m4_foreach([num],[2,4,6,8,10,12,14],
+  m4_foreach([num],[$3],
   [AM_CONDITIONAL($1[]_2_[]num, test $[]$1[]_MINOR_VERSION -ge num)
    if test $[]$1[]_MINOR_VERSION -ge num; then
      $1[]_2_[]num=yes
    fi
   ])
 else
-  m4_foreach([num],[2,4,6,8,10,12,14],
+  m4_foreach([num],[$3],
   [AM_CONDITIONAL($1[]_2_[]num, false)])
 fi
 ])
@@ -51,10 +51,9 @@ fi
 #
 AC_DEFUN_ONCE([MOO_PKG_CHECK_GTK_VERSIONS],[
 AC_REQUIRE([MOO_AC_CHECK_OS])
-MOO_CHECK_VERSION(GTK, gtk+-2.0)
-MOO_CHECK_VERSION(GLIB, glib-2.0)
-MOO_CHECK_VERSION(GTHREAD, gthread-2.0)
-MOO_CHECK_VERSION(GDK, gdk-2.0)
+MOO_CHECK_VERSION(GTK, gtk+-2.0, [6, 10])
+MOO_CHECK_VERSION(GLIB, glib-2.0, [8, 12, 14, 16]) # DO NOT EVER EVER REMOVE VERSIONS HERE!
+PKG_CHECK_MODULES(GTHREAD, gthread-2.0)
 _MOO_CHECK_BROKEN_GTK_THEME
 
 gdk_target=`$PKG_CONFIG --variable=target gdk-2.0`

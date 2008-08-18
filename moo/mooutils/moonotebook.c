@@ -221,8 +221,6 @@ static void     moo_notebook_set_focus_child(GtkContainer  *container,
 
 static void     moo_notebook_switch_page    (MooNotebook     *nb,
                                              guint            page_num);
-static gboolean moo_notebook_change_current_page (GtkNotebook *notebook,
-                                             int             offset);
 
 static void     notebook_create_arrows      (MooNotebook    *nb);
 static void     left_arrow_clicked          (GtkWidget      *button,
@@ -315,7 +313,6 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
     GtkObjectClass *gtkobject_class = GTK_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
-    GtkNotebookClass *notebook_class = GTK_NOTEBOOK_CLASS (klass);
 
     moo_notebook_parent_class = g_type_class_peek_parent (klass);
     moo_notebook_grand_parent_class = g_type_class_peek_parent (moo_notebook_parent_class);
@@ -362,9 +359,6 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
     container_class->set_focus_child = moo_notebook_set_focus_child;
     container_class->remove = moo_notebook_remove;
     container_class->add = moo_notebook_add;
-
-    /* Ctrl-PgUp/PgDown bindings */
-    notebook_class->change_current_page = moo_notebook_change_current_page;
 
     klass->switch_page = moo_notebook_switch_page;
 
@@ -1801,49 +1795,6 @@ moo_notebook_get_nth_page (MooNotebook *notebook,
         return NULL;
 }
 
-
-static gboolean
-moo_notebook_change_current_page (GtkNotebook *notebook,
-				  int          offset)
-{
-    MooNotebook *nb = MOO_NOTEBOOK (notebook);
-    int new_page, n_pages;
-
-    g_return_val_if_fail (offset == 1 || offset == -1, FALSE);
-
-    if (!nb->priv->current_page)
-        return FALSE;
-
-    new_page = moo_notebook_get_current_page (nb);
-    n_pages = moo_notebook_get_n_pages (nb);
-    g_return_val_if_fail (new_page >= 0 && n_pages > 0, FALSE);
-
-    if (offset > 0)
-    {
-        for (new_page += 1; new_page < n_pages; new_page++)
-            if (GTK_WIDGET_VISIBLE (moo_notebook_get_nth_page (nb, new_page)))
-                break;
-        if (new_page == n_pages)
-            for (new_page = 0; new_page < n_pages; new_page++)
-                if (GTK_WIDGET_VISIBLE (moo_notebook_get_nth_page (nb, new_page)))
-                    break;
-        g_return_val_if_fail (new_page < n_pages, FALSE);
-    }
-    else
-    {
-        for (new_page -= 1; new_page >= 0; new_page--)
-            if (GTK_WIDGET_VISIBLE (moo_notebook_get_nth_page (nb, new_page)))
-                break;
-        if (new_page < 0)
-            for (new_page = n_pages - 1; new_page >= 0; new_page--)
-                if (GTK_WIDGET_VISIBLE (moo_notebook_get_nth_page (nb, new_page)))
-                    break;
-        g_return_val_if_fail (new_page >= 0, FALSE);
-    }
-
-    moo_notebook_set_current_page (nb, new_page);
-    return TRUE;
-}
 
 static void
 moo_notebook_switch_page (MooNotebook *nb,

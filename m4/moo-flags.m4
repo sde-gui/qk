@@ -32,7 +32,10 @@ AC_DEFUN_ONCE([MOO_AC_PRIV_FLAGS],[
 
   MOO_CFLAGS="$MOO_CFLAGS $MOO_PCRE_CFLAGS -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\""
 
-  PKG_CHECK_MODULES(GIO,[gio-2.0],[:],[:])
+  if test "x$GLIB_2_16" = xyes; then
+    PKG_CHECK_MODULES(GIO,[gio-2.0],[:],[:])
+  fi
+
   MOO_LIBS="$MOO_LIBS $GTK_LIBS $GTHREAD_LIBS $GIO_LIBS $MOO_PCRE_LIBS -lm"
 
   if test "x$build_mooedit" != "xno"; then
@@ -90,15 +93,12 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
 
   MOO_CFLAGS="$MOO_CFLAGS $GTK_CFLAGS -I$moo_srcdir"
 
-  if test "x$GLIB_2_14" != xyes; then
-    MOO_CFLAGS="-I$moo_srcdir/mooutils/newgtk/glib-2.14 $MOO_CFLAGS"
-  fi
-  if test "x$GLIB_2_12" != xyes; then
-    MOO_CFLAGS="-I$moo_srcdir/mooutils/newgtk/glib-2.12 $MOO_CFLAGS"
-  fi
-  if test "x$GLIB_2_8" != xyes; then
-    MOO_CFLAGS="-I$moo_srcdir/mooutils/newgtk/glib-2.8 $MOO_CFLAGS"
-  fi
+  for gv in 8 12 14 16; do
+    eval "var=\$GLIB_2_$gv"
+    if test "x$var" != xyes; then
+      MOO_CFLAGS="-I$moo_srcdir/mooutils/newgtk/glib-2.$gv $MOO_CFLAGS"
+    fi
+  done
 
   if test "x$MOO_OS_MINGW" = xyes; then
     MOO_CFLAGS="$MOO_CFLAGS -DWIN32_LEAN_AND_MEAN -DUNICODE"
