@@ -199,9 +199,15 @@ libmooutils_la_LIBADD = $(libs)
 
 if GDK_QUARTZ
 objc_flag = "-xobjective-c"
+objcxx_flag = "-xobjective-c++"
 endif
 
 AM_CFLAGS =					\
 	$(MOO_CFLAGS)				\
 	$(MOO_WIN32_CFLAGS)			\
 	$(objc_flag)
+
+AM_CXXFLAGS =					\
+	$(MOO_CXXFLAGS)				\
+	$(MOO_WIN32_CFLAGS)			\
+	$(objcxx_flag)

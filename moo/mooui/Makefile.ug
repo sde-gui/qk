@@ -16,7 +16,7 @@ libmooui_la_LIBADD = libsmclient.la
 
 GLADE_FILES = glade/mooappabout.glade
 
-AM_CFLAGS =			\
-	$(MOO_CFLAGS)
+AM_CFLAGS = $(MOO_CFLAGS)
+AM_CXXFLAGS = $(MOO_CXXFLAGS)
 
 include smclient/Makefile.incl

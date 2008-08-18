@@ -57,5 +57,5 @@ MOO_UI_FILES = moofileview.xml
 noinst_LTLIBRARIES = libmoofileview.la
 libmoofileview_la_SOURCES = $(moofileview_sources)
 
-AM_CFLAGS =			\
-	$(MOO_CFLAGS)
+AM_CFLAGS = $(MOO_CFLAGS)
+AM_CXXFLAGS = $(MOO_CXXFLAGS)

@@ -174,13 +174,16 @@ libmoopygtk_la_SOURCES = $(moopygtk_sources)
 nodist_libmoopygtk_la_SOURCES = $(nodist_moopygtk_sources)
 libmoopygtk_la_LIBADD =
 
-common_cflags =			\
-	$(MOO_CFLAGS)		\
-	$(MOO_DEBUG_CFLAGS)	\
-	$(MOO_W_NO_WRITE_STRINGS)\
-	$(MOO_W_NO_UNUSED)
-
 AM_CFLAGS =			\
-	$(common_cflags)	\
+	$(MOO_CFLAGS)		\
+	$(MOO_W_NO_WRITE_STRINGS)\
+	$(MOO_W_NO_UNUSED)	\
+	$(PYTHON_INCLUDES)	\
+	$(PYGTK_CFLAGS)
+
+AM_CXXFLAGS =			\
+	$(MOO_CXXFLAGS)		\
+	$(MOO_W_NO_WRITE_STRINGS)\
+	$(MOO_W_NO_UNUSED)	\
 	$(PYTHON_INCLUDES)	\
 	$(PYGTK_CFLAGS)

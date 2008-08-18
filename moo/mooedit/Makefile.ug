@@ -151,9 +151,8 @@ EXTRA_DIST +=				\
 	$(mooedit_tools_DATA)		\
 	$(mooedit_lua_DATA)
 
-AM_CFLAGS =				\
-	$(MOO_CFLAGS)			\
-	$(MOO_WIN32_CFLAGS)
+AM_CFLAGS = $(MOO_CFLAGS) $(MOO_WIN32_CFLAGS)
+AM_CXXFLAGS = $(MOO_CXXFLAGS) $(MOO_WIN32_CFLAGS)
 
 include gtksourceview/Makefile.incl
 include langs/Makefile.incl

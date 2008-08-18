@@ -6,9 +6,8 @@ noinst_LTLIBRARIES += libctags.la
 libmooeditplugins_la_LIBADD += libctags.la
 endif
 
-AM_CFLAGS =			\
-	-I..			\
-	$(MOO_CFLAGS)
+AM_CFLAGS = -I.. $(MOO_CFLAGS)
+AM_CXXFLAGS = -I.. $(MOO_CXXFLAGS)
 
 
 ###########################################################################

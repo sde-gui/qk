@@ -71,9 +71,8 @@ libmooterm_la_SOURCES += $(mooterm_win32_sources)
 EXTRA_DIST += $(mooterm_unix_sources)
 endif
 
-AM_CFLAGS =			\
-	$(MOO_CFLAGS)		\
-	$(MOO_DEBUG_CFLAGS)
+AM_CFLAGS = $(MOO_CFLAGS)
+AM_CXXFLAGS = $(MOO_CXXFLAGS)
 
 if MOO_OS_CYGWIN
 noinst_PROGRAMS = termhelper

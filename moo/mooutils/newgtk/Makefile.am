@@ -34,7 +34,6 @@ endif
 AM_CFLAGS =				\
 	$(pcre_cflags)			\
 	$(MOO_CFLAGS)			\
-	$(MOO_DEBUG_CFLAGS)		\
 	$(MOO_W_NO_UNUSED)		\
 	$(MOO_W_NO_WRITE_STRINGS)	\
 	$(MOO_W_NO_SIGN_COMPARE)

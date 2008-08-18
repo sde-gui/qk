@@ -1,5 +1,5 @@
-AM_CFLAGS =			\
-	$(MOO_CFLAGS)
+AM_CFLAGS = $(MOO_CFLAGS)
+AM_CXXFLAGS = $(MOO_CXXFLAGS)
 
 ini_in_files = moopython/pymoo.ini.in
 ini_files = $(ini_in_files:.ini.in=.ini)

@@ -60,13 +60,19 @@ endif !MOO_OS_UNIX
 
 AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
-	$(MOO_DEBUG_CFLAGS)	\
+	$(PYTHON_INCLUDES)	\
+	$(PYGTK_CFLAGS)		\
+	$(MOO_W_NO_WRITE_STRINGS)
+
+AM_CXXFLAGS =			\
+	$(MOO_CXXFLAGS)		\
 	$(PYTHON_INCLUDES)	\
 	$(PYGTK_CFLAGS)		\
 	$(MOO_W_NO_WRITE_STRINGS)
 
 if MOO_OS_MINGW
 AM_CFLAGS += -DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
+AM_CXXFLAGS += -DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
 endif
 
 libmoomod_la_SOURCES = $(libmoomod_la_sources)
