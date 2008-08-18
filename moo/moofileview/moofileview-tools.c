@@ -22,6 +22,7 @@
 #include "mooutils/mooaction.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mootype-macros.h"
+#include "mooutils/mooi18n.h"
 #include "mooutils/xdgmime/xdgmime.h"
 #include <string.h>
 
@@ -232,17 +233,17 @@ _moo_file_view_tools_load (MooFileView *fileview)
     doc = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_if_fail (doc != NULL);
 
-    root = moo_markup_get_element (MOO_MARKUP_NODE (doc), "MooFileView/Tools");
-
-    if (!root)
-        return;
+    info = g_new0 (ToolsInfo, 1);
+    info->merge_id = moo_ui_xml_new_merge_id (xml);
+    g_object_set_data_full (G_OBJECT (fileview), "moo-file-view-tools-info", info,
+                            (GDestroyNotify) tools_info_free);
 
     ph = moo_ui_xml_find_placeholder (xml, "OpenWith");
     g_return_if_fail (ph != NULL);
 
-    info = g_new0 (ToolsInfo, 1);
+    root = moo_markup_get_element (MOO_MARKUP_NODE (doc), "MooFileView/Tools");
 
-    for (child = root->children; child != NULL; child = child->next)
+    for (child = root ? root->children : NULL; child != NULL; child = child->next)
     {
         GtkAction *action;
         const char *label, *extensions, *mimetypes;
@@ -282,16 +283,13 @@ _moo_file_view_tools_load (MooFileView *fileview)
         info->actions = g_slist_prepend (info->actions, action);
     }
 
-    if (!info->actions)
     {
-        g_free (info);
-        return;
+        GtkAction *action;
+        action = tool_action_new (fileview, Q_("Open with|Default Application"), "*", NULL, "xdg-open %f");
+        info->actions = g_slist_prepend (info->actions, action);
     }
 
     info->actions = g_slist_reverse (info->actions);
-    info->merge_id = moo_ui_xml_new_merge_id (xml);
-    g_object_set_data_full (G_OBJECT (fileview), "moo-file-view-tools-info", info,
-                            (GDestroyNotify) tools_info_free);
 
     for (l = info->actions; l != NULL; l = l->next)
     {
