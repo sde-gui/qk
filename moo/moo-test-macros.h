@@ -261,9 +261,9 @@ TEST_EXPECT_WARNINGV_ (int         howmany,
     test_warnings_info->msg = g_strdup_vprintf (fmt, args);
 
     g_log_set_default_handler (test_log_handler, test_warnings_info);
-    g_log_set_handler (NULL, G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
+    g_log_set_handler (NULL, (GLogLevelFlags) (G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION),
                        test_log_handler, test_warnings_info);
-    g_log_set_handler (G_LOG_DOMAIN, G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
+    g_log_set_handler (G_LOG_DOMAIN, (GLogLevelFlags) (G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION),
                        test_log_handler, test_warnings_info);
 }
 
@@ -304,9 +304,9 @@ TEST_CHECK_WARNING (void)
     test_warnings_info = NULL;
 
     g_log_set_default_handler (g_log_default_handler, NULL);
-    g_log_set_handler (NULL, G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
+    g_log_set_handler (NULL, (GLogLevelFlags) (G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION),
                        g_log_default_handler, test_warnings_info);
-    g_log_set_handler (G_LOG_DOMAIN, G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
+    g_log_set_handler (G_LOG_DOMAIN, (GLogLevelFlags) (G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION),
                        g_log_default_handler, test_warnings_info);
 }
 
