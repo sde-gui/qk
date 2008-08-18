@@ -9,9 +9,18 @@ endif
 MODULE = medit
 bin_PROGRAMS = medit
 
-medit_SOURCES = medit-credits.h main.c mem-debug.h
-BUILT_SOURCES += medit-credits.h medit.iss
+EXTRA_DIST += main.c
+medit_SOURCES = medit-credits.h $(real_main_c) mem-debug.h
+BUILT_SOURCES += medit-credits.h $(real_main_c) medit.iss
 nodist_medit_SOURCES =
+
+real_main_c = main.c
+# real_main_c = cpp-main.cpp
+# main.lo: cpp-main.lo ; @true
+# cpp-main.cpp: main.c
+# 	echo "#line 1 \"$(srcdir)/main.c\"" > cpp-main.cpp.tmp && \
+# 	cat $(srcdir)/main.c >> cpp-main.cpp.tmp && \
+# 	mv cpp-main.cpp.tmp cpp-main.cpp
 
 medit_LDFLAGS += -export-dynamic $(PYTHON_EXTRA_LDFLAGS) $(medit_res_ldflag)
 medit_LDADD = ../moo/libmoo.la

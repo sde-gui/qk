@@ -1,7 +1,7 @@
 /*
  *   medit-app.c
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -73,7 +73,7 @@ static GOptionEntry medit_options[] = {
 #if !GLIB_CHECK_VERSION(2,8,0)
 #define G_OPTION_FLAG_OPTIONAL_ARG 0
 #endif
-    { "use-session", 's', G_OPTION_FLAG_OPTIONAL_ARG, G_OPTION_ARG_CALLBACK, parse_use_session,
+    { "use-session", 's', G_OPTION_FLAG_OPTIONAL_ARG, G_OPTION_ARG_CALLBACK, (void*) parse_use_session,
             /* command line option --use-session */ N_("Load and save session"), "yes|no" },
 #if !GLIB_CHECK_VERSION(2,8,0)
 #undef G_OPTION_FLAG_OPTIONAL_ARG
@@ -112,7 +112,7 @@ static GOptionEntry medit_options[] = {
             /* command line option --version */ N_("Show version information and exit"), NULL },
     { G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &medit_opts.files,
             NULL, /* command line: medit [OPTION...] [FILES] */ N_("FILES") },
-    { NULL, 0, 0, 0, NULL, NULL, NULL }
+    { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
 };
 
 static gboolean
@@ -241,7 +241,7 @@ project_mode (const char *file)
 {
     MooPlugin *plugin;
 
-    plugin = moo_plugin_lookup ("ProjectManager");
+    plugin = (MooPlugin*) moo_plugin_lookup ("ProjectManager");
 
     if (!plugin)
     {
@@ -344,21 +344,21 @@ main (int argc, char *argv[])
     gdk_threads_init ();
     gdk_threads_enter ();
 
-    app = g_object_new (MOO_TYPE_APP,
-                        "argv", argv,
-                        "run-input", run_input,
-                        "use-session", medit_opts.use_session,
-                        "short-name", "medit",
-                        "full-name", "medit",
-                        "description", _("medit is a text editor"),
-                        "website", "http://mooedit.sourceforge.net/",
-                        "website-label", "http://mooedit.sourceforge.net/",
-                        "quit-on-editor-close", TRUE,
-                        "logo", "medit",
-                        /* static string, not copied! */
-                        "credits", THANKS,
-                        "instance-name", medit_opts.app_name,
-                        NULL);
+    app = MOO_APP (g_object_new (MOO_TYPE_APP,
+                                 "argv", argv,
+                                 "run-input", run_input,
+                                 "use-session", medit_opts.use_session,
+                                 "short-name", "medit",
+                                 "full-name", "medit",
+                                 "description", _("medit is a text editor"),
+                                 "website", "http://mooedit.sourceforge.net/",
+                                 "website-label", "http://mooedit.sourceforge.net/",
+                                 "quit-on-editor-close", TRUE,
+                                 "logo", "medit",
+                                 /* static string, not copied! */
+                                 "credits", THANKS,
+                                 "instance-name", medit_opts.app_name,
+                                 NULL));
 
     if (!moo_app_init (app))
     {
