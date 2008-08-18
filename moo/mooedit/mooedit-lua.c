@@ -12,7 +12,7 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-lua.h"
-#include "mooedit/mooedit-private.h"
+#include "mooedit/mooeditor.h"
 #include "mooedit/moocommand-exe.h"
 #include "mooutils/moohistorycombo.h"
 #include <string.h>
@@ -1065,7 +1065,7 @@ cfunc_open (lua_State *L)
 
     parse_args (L, "_medit.open", "s", &filename);
 
-    editor = MOO_IS_EDIT (data->doc) ? MOO_EDIT(data->doc)->priv->editor : moo_editor_instance ();
+    editor = MOO_IS_EDIT (data->doc) ? moo_edit_get_editor (data->doc) : moo_editor_instance ();
     g_return_val_if_fail (MOO_IS_EDITOR (editor), 0);
 
     window = MOO_IS_EDIT_WINDOW (data->window) ? MOO_EDIT_WINDOW (data->window) : NULL;
