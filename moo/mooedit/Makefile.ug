@@ -1,4 +1,5 @@
-SUBDIRS = gtksourceview plugins language-specs .
+DIST_SUBDIRS = plugins
+SUBDIRS = plugins .
 
 mooedit_toolsdir = $(MOO_DATA_DIR)
 mooedit_tools_DATA = context.cfg menu.cfg filters.xml
@@ -172,7 +173,7 @@ endif
 noinst_LTLIBRARIES = libmooedit.la
 libmooedit_la_SOURCES = $(mooedit_sources)
 
-libmooedit_la_LIBADD = plugins/libmooeditplugins.la gtksourceview/libgtksourceview.la
+libmooedit_la_LIBADD = plugins/libmooeditplugins.la libgtksourceview.la
 
 AM_CFLAGS =			\
 	$(MOO_CFLAGS)		\
@@ -194,3 +195,6 @@ install-data-hook:
 	fi; \
 	update-mime-database $(DESTDIR)${mimedir}
 endif
+
+include gtksourceview/Makefile.incl
+include langs/Makefile.incl

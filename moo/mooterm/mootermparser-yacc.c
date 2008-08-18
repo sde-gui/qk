@@ -73,7 +73,7 @@
 
 
 /* Copy the first part of user declarations.  */
-#line 1 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 1 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
 
 #define MOOTERM_COMPILATION
 #include "mooterm/mootermparser.h"
@@ -141,7 +141,7 @@ typedef int YYSTYPE;
 
 
 /* Line 216 of yacc.c.  */
-#line 145 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.c"
+#line 145 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.c"
 
 #ifdef short
 # undef short
@@ -1748,396 +1748,396 @@ yyreduce:
   switch (yyn)
     {
         case 33:
-#line 85 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 85 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NEL;             ;}
     break;
 
   case 34:
-#line 86 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 86 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECRC;           ;}
     break;
 
   case 35:
-#line 87 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 87 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECSC;           ;}
     break;
 
   case 36:
-#line 88 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 88 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_HTS;             ;}
     break;
 
   case 37:
-#line 89 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 89 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 38:
-#line 90 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 90 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 39:
-#line 91 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 91 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_IND;             ;}
     break;
 
   case 40:
-#line 92 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 92 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_RI;              ;}
     break;
 
   case 41:
-#line 93 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 93 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 42:
-#line 94 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 94 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 43:
-#line 95 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 95 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 44:
-#line 96 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 96 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_RIS;             ;}
     break;
 
   case 45:
-#line 97 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 97 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 46:
-#line 98 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 98 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECKPAM;         ;}
     break;
 
   case 47:
-#line 99 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 99 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECKPNM;         ;}
     break;
 
   case 48:
-#line 100 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 100 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 49:
-#line 101 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 101 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 50:
-#line 102 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 102 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 51:
-#line 103 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 103 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 52:
-#line 104 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 104 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 53:
-#line 105 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 105 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 54:
-#line 106 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 106 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 55:
-#line 107 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 107 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 56:
-#line 108 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 108 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 57:
-#line 109 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 109 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECALN;          ;}
     break;
 
   case 58:
-#line 110 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 110 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_IGNORED;         ;}
     break;
 
   case 59:
-#line 111 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 111 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_IGNORED;         ;}
     break;
 
   case 60:
-#line 113 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 113 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_SCS (GET_NUM(0), GET_NUM(1));    ;}
     break;
 
   case 61:
-#line 114 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 114 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (0);                     ;}
     break;
 
   case 62:
-#line 115 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 115 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (1);                     ;}
     break;
 
   case 63:
-#line 116 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 116 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (2);                     ;}
     break;
 
   case 64:
-#line 117 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 117 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (3);                     ;}
     break;
 
   case 65:
-#line 118 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 118 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (0);                     ;}
     break;
 
   case 66:
-#line 119 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 119 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (1);                     ;}
     break;
 
   case 67:
-#line 120 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 120 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (2);                     ;}
     break;
 
   case 68:
-#line 121 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 121 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (3);                     ;}
     break;
 
   case 69:
-#line 122 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 122 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (4);                     ;}
     break;
 
   case 138:
-#line 200 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 200 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;     ;}
     break;
 
   case 139:
-#line 203 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 203 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CUU (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 140:
-#line 204 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 204 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CUU (1);             ;}
     break;
 
   case 141:
-#line 205 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 205 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CUD (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 142:
-#line 206 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 206 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CUD (1);             ;}
     break;
 
   case 143:
-#line 207 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 207 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CUF (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 144:
-#line 208 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 208 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CUF (1);             ;}
     break;
 
   case 145:
-#line 209 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 209 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CUB (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 146:
-#line 210 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 210 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CUB (1);             ;}
     break;
 
   case 147:
-#line 211 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 211 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CBT (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 148:
-#line 212 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 212 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CBT (1);             ;}
     break;
 
   case 149:
-#line 213 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 213 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CHA (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 150:
-#line 214 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 214 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CHA (1);             ;}
     break;
 
   case 151:
-#line 215 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 215 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CHT (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 152:
-#line 216 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 216 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CHT (1);             ;}
     break;
 
   case 153:
-#line 217 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 217 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CNL (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 154:
-#line 218 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 218 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CNL (1);             ;}
     break;
 
   case 155:
-#line 219 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 219 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CPL (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 156:
-#line 220 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 220 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CPL (1);             ;}
     break;
 
   case 157:
-#line 221 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 221 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_HPA (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 158:
-#line 222 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 222 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_HPA (1);             ;}
     break;
 
   case 159:
-#line 223 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 223 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_HPR (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 160:
-#line 224 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 224 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_HPR (1);             ;}
     break;
 
   case 161:
-#line 225 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 225 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_VPA (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 162:
-#line 226 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 226 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_VPA (1);             ;}
     break;
 
   case 163:
-#line 227 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 227 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_VPR (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 164:
-#line 228 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 228 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_VPR (1);             ;}
     break;
 
   case 165:
-#line 230 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 230 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   CHECK_NUMS_LEN (2);
                                                 VT_CUP (DEFLT_1(GET_NUM(0)),
                                                         DEFLT_1(GET_NUM(1)));   ;}
     break;
 
   case 166:
-#line 233 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 233 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CUP (1, 1);   ;}
     break;
 
   case 167:
-#line 234 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 234 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   CHECK_NUMS_LEN (2);
                                                 VT_CUP (DEFLT_1(GET_NUM(0)),
                                                         DEFLT_1(GET_NUM(1)));   ;}
     break;
 
   case 168:
-#line 237 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 237 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_CUP (1, 1);   ;}
     break;
 
   case 169:
-#line 239 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 239 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 170:
-#line 240 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 240 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 171:
-#line 242 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 242 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 172:
-#line 243 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 243 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_TBC ((yyvsp[(2) - (3)]));        ;}
     break;
 
   case 173:
-#line 244 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 244 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_TBC (0);         ;}
     break;
 
   case 174:
-#line 246 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 246 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 175:
-#line 247 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 247 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 176:
-#line 249 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 249 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 177:
-#line 250 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 250 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 178:
-#line 252 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 252 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   CHECK_NUMS_LEN (2);
                                                 VT_DECSTBM (DEFLT_1(GET_NUM(0)),
                                                         GET_NUM(1) ? GET_NUM(1) :
@@ -2145,272 +2145,272 @@ yyreduce:
     break;
 
   case 179:
-#line 256 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 256 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECSTBM (1, TERMINAL_HEIGHT);    ;}
     break;
 
   case 180:
-#line 258 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 258 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 181:
-#line 259 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 259 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 182:
-#line 261 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 261 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 183:
-#line 262 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 262 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 184:
-#line 263 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 263 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 185:
-#line 264 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 264 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 186:
-#line 266 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 266 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 187:
-#line 267 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 267 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 188:
-#line 268 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 268 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 189:
-#line 269 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 269 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 190:
-#line 270 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 270 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 191:
-#line 271 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 271 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 192:
-#line 273 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 273 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 193:
-#line 275 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 275 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 194:
-#line 276 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 276 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 195:
-#line 278 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 278 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED; ;}
     break;
 
   case 196:
-#line 281 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 281 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;     ;}
     break;
 
   case 197:
-#line 282 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 282 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;     ;}
     break;
 
   case 198:
-#line 283 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 283 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;     ;}
     break;
 
   case 199:
-#line 284 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 284 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;     ;}
     break;
 
   case 200:
-#line 285 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 285 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DCH (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 201:
-#line 286 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 286 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DCH (1);             ;}
     break;
 
   case 202:
-#line 287 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 287 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DL (DEFLT_1((yyvsp[(2) - (3)])));    ;}
     break;
 
   case 203:
-#line 288 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 288 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DL (1);              ;}
     break;
 
   case 204:
-#line 289 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 289 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_ECH (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 205:
-#line 290 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 290 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_ECH (1);             ;}
     break;
 
   case 206:
-#line 291 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 291 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_ED ((yyvsp[(2) - (3)]));             ;}
     break;
 
   case 207:
-#line 292 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 292 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_ED (0);              ;}
     break;
 
   case 208:
-#line 293 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 293 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_EL ((yyvsp[(2) - (3)]));             ;}
     break;
 
   case 209:
-#line 294 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 294 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_EL (0);              ;}
     break;
 
   case 210:
-#line 295 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 295 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_ICH (DEFLT_1((yyvsp[(2) - (3)])));   ;}
     break;
 
   case 211:
-#line 296 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 296 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_ICH (1);             ;}
     break;
 
   case 212:
-#line 297 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 297 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_IL (DEFLT_1((yyvsp[(2) - (3)])));    ;}
     break;
 
   case 213:
-#line 298 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 298 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_IL (1);              ;}
     break;
 
   case 214:
-#line 300 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 300 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 215:
-#line 301 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 301 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 216:
-#line 302 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 302 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 217:
-#line 303 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 303 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 218:
-#line 304 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 304 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 219:
-#line 306 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 306 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 220:
-#line 307 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 307 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 221:
-#line 308 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 308 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 222:
-#line 309 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 309 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 223:
-#line 310 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 310 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 224:
-#line 311 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 311 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 225:
-#line 312 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 312 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 226:
-#line 313 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 313 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 227:
-#line 314 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 314 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 228:
-#line 315 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 315 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 229:
-#line 317 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 317 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 230:
-#line 318 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 318 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 231:
-#line 319 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 319 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_NOT_IMPLEMENTED;   ;}
     break;
 
   case 232:
-#line 321 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 321 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   if (NUMS_LEN == 2)
                                                 {
                                                     VT_DSR (GET_NUM (0), GET_NUM (1), TRUE);
@@ -2423,7 +2423,7 @@ yyreduce:
     break;
 
   case 233:
-#line 330 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 330 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   if (NUMS_LEN == 2)
                                                 {
                                                     VT_DSR (GET_NUM (0), GET_NUM (1), FALSE);
@@ -2436,233 +2436,233 @@ yyreduce:
     break;
 
   case 234:
-#line 340 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 340 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DA1;             ;}
     break;
 
   case 235:
-#line 341 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 341 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DA1;             ;}
     break;
 
   case 236:
-#line 342 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 342 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DA2;             ;}
     break;
 
   case 237:
-#line 343 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 343 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DA2;             ;}
     break;
 
   case 238:
-#line 344 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 344 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DA3;             ;}
     break;
 
   case 239:
-#line 345 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 345 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DA3;             ;}
     break;
 
   case 240:
-#line 347 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 347 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_IGNORED;         ;}
     break;
 
   case 241:
-#line 349 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 349 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECSTR;          ;}
     break;
 
   case 242:
-#line 352 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 352 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_SGR;             ;}
     break;
 
   case 243:
-#line 353 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 353 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_SGR;             ;}
     break;
 
   case 244:
-#line 354 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 354 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECSET;          ;}
     break;
 
   case 245:
-#line 355 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 355 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECSET;          ;}
     break;
 
   case 246:
-#line 356 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 356 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECRST;          ;}
     break;
 
   case 247:
-#line 357 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 357 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECRST;          ;}
     break;
 
   case 248:
-#line 358 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 358 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_SM;              ;}
     break;
 
   case 249:
-#line 359 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 359 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_SM;              ;}
     break;
 
   case 250:
-#line 360 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 360 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_RM;              ;}
     break;
 
   case 251:
-#line 361 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 361 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_RM;              ;}
     break;
 
   case 252:
-#line 362 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 362 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECSAVE;         ;}
     break;
 
   case 253:
-#line 363 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 363 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECSAVE;         ;}
     break;
 
   case 254:
-#line 364 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 364 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECRESTORE;      ;}
     break;
 
   case 255:
-#line 365 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 365 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECRESTORE;      ;}
     break;
 
   case 257:
-#line 375 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 375 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   VT_DECRQSS (GET_NUM (0));  ;}
     break;
 
   case 258:
-#line 377 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 377 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (CODE_DECSASD);  ;}
     break;
 
   case 259:
-#line 378 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 378 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (CODE_DECSCL);   ;}
     break;
 
   case 260:
-#line 379 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 379 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (CODE_DECSCPP);  ;}
     break;
 
   case 261:
-#line 380 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 380 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (CODE_DECSLPP);  ;}
     break;
 
   case 262:
-#line 381 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 381 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (CODE_DECSNLS);  ;}
     break;
 
   case 263:
-#line 382 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 382 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (CODE_DECSTBM);  ;}
     break;
 
   case 264:
-#line 390 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 390 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = (yyvsp[(1) - (1)]);   ;}
     break;
 
   case 265:
-#line 391 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 391 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = (yyvsp[(1) - (2)]) * 10 + (yyvsp[(2) - (2)]);  ;}
     break;
 
   case 266:
-#line 394 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 394 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 0;    ;}
     break;
 
   case 267:
-#line 395 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 395 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 1;    ;}
     break;
 
   case 268:
-#line 396 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 396 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 2;    ;}
     break;
 
   case 269:
-#line 397 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 397 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 3;    ;}
     break;
 
   case 270:
-#line 398 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 398 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 4;    ;}
     break;
 
   case 271:
-#line 399 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 399 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 5;    ;}
     break;
 
   case 272:
-#line 400 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 400 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 6;    ;}
     break;
 
   case 273:
-#line 401 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 401 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 7;    ;}
     break;
 
   case 274:
-#line 402 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 402 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 8;    ;}
     break;
 
   case 275:
-#line 403 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 403 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   (yyval) = 9;    ;}
     break;
 
   case 277:
-#line 407 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 407 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (-1);                    ;}
     break;
 
   case 278:
-#line 410 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 410 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER ((yyvsp[(1) - (1)]));                    ;}
     break;
 
   case 279:
-#line 411 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 411 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER (-1); ADD_NUMBER ((yyvsp[(2) - (2)]));   ;}
     break;
 
   case 280:
-#line 412 "/home/muntyan/projects/moo/moo/mooterm/mootermparser.y"
+#line 412 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser.y"
     {   ADD_NUMBER ((yyvsp[(3) - (3)]));                    ;}
     break;
 
 
 /* Line 1267 of yacc.c.  */
-#line 2666 "/home/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.c"
+#line 2666 "/Users/muntyan/projects/moo/moo/mooterm/mootermparser-yacc.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);

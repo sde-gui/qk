@@ -1,0 +1,121 @@
+noinst_LTLIBRARIES += libgtksourceview.la
+
+libgtksourceview_la_CFLAGS =		\
+	-I$(srcdir)/gtksourceview	\
+	$(MOO_CFLAGS)			\
+	$(MOO_DEBUG_CFLAGS)
+
+upstream_sources =						\
+	gtksourceview/upstream/gtksourcecontextengine.c		\
+	gtksourceview/upstream/gtksourcecontextengine.h		\
+	gtksourceview/upstream/gtksourceengine.c		\
+	gtksourceview/upstream/gtksourceengine.h		\
+	gtksourceview/upstream/gtksourceiter.c			\
+	gtksourceview/upstream/gtksourceiter.h			\
+	gtksourceview/upstream/gtksourcelanguage-noxml.c	\
+	gtksourceview/upstream/gtksourcelanguage-parser-1.c	\
+	gtksourceview/upstream/gtksourcelanguage-parser-2.c	\
+	gtksourceview/upstream/gtksourcelanguage-private.h	\
+	gtksourceview/upstream/gtksourcelanguage.c		\
+	gtksourceview/upstream/gtksourcelanguage.h		\
+	gtksourceview/upstream/gtksourcelanguagemanager.c	\
+	gtksourceview/upstream/gtksourcelanguagemanager.h	\
+	gtksourceview/upstream/gtksourcestyle-private.h		\
+	gtksourceview/upstream/gtksourcestyle.c			\
+	gtksourceview/upstream/gtksourcestyle.h			\
+	gtksourceview/upstream/gtksourcestylescheme-noxml.c	\
+	gtksourceview/upstream/gtksourcestylescheme.c		\
+	gtksourceview/upstream/gtksourcestylescheme.h		\
+	gtksourceview/upstream/gtksourcestyleschememanager.c	\
+	gtksourceview/upstream/gtksourcestyleschememanager.h	\
+	gtksourceview/upstream/gtksourceview-utils.c		\
+	gtksourceview/upstream/gtksourceview-utils.h		\
+	gtksourceview/upstream/gtktextregion.c			\
+	gtksourceview/upstream/gtktextregion.h
+
+gtksourceview_sources =						\
+	gtksourceview/gtksourcecontextengine-mangled.c		\
+	gtksourceview/gtksourcecontextengine-mangled.h		\
+	gtksourceview/gtksourceengine-mangled.c			\
+	gtksourceview/gtksourceengine-mangled.h			\
+	gtksourceview/gtksourceiter-mangled.c			\
+	gtksourceview/gtksourceiter-mangled.h			\
+	gtksourceview/gtksourcelanguagemanager-mangled.c	\
+	gtksourceview/gtksourcelanguagemanager-mangled.h	\
+	gtksourceview/gtksourcestyle-mangled.c			\
+	gtksourceview/gtksourcestyle-mangled.h			\
+	gtksourceview/gtksourcestyle-private-mangled.h		\
+	gtksourceview/gtksourcestylescheme-mangled.h		\
+	gtksourceview/gtksourcestyleschememanager-mangled.c	\
+	gtksourceview/gtksourcestyleschememanager-mangled.h	\
+	gtksourceview/gtksourceview-utils-mangled.c		\
+	gtksourceview/gtksourceview-utils-mangled.h		\
+	gtksourceview/gtktextregion-mangled.c			\
+	gtksourceview/gtktextregion-mangled.h
+
+xml_sources =							\
+	gtksourceview/gtksourcelanguage-mangled.c		\
+	gtksourceview/gtksourcelanguage-mangled.h		\
+	gtksourceview/gtksourcelanguage-parser-1-mangled.c	\
+	gtksourceview/gtksourcelanguage-parser-2-mangled.c	\
+	gtksourceview/gtksourcelanguage-private-mangled.h	\
+	gtksourceview/gtksourcestylescheme-mangled.c
+
+no_xml_sources =						\
+	gtksourceview/gtksourcelanguage-noxml-mangled.c		\
+	gtksourceview/gtksourcestylescheme-noxml-mangled.c
+
+BUILT_SOURCES += $(xml_sources) $(no_xml_sources) $(gtksourceview_sources)
+CLEANFILES += $(xml_sources) $(no_xml_sources) $(gtksourceview_sources)
+
+libgtksourceview_la_SOURCES =					\
+	gtksourceview/gtksourceview-i18n.h			\
+	gtksourceview/gtksourceview-marshal.h			\
+	gtksourceview/gtksourceview-api.h
+nodist_libgtksourceview_la_SOURCES =				\
+	$(gtksourceview_sources)
+
+if MOO_USE_XML
+nodist_libgtksourceview_la_SOURCES += $(xml_sources)
+EXTRA_DIST += $(no_xml_sources)
+else
+nodist_libgtksourceview_la_SOURCES += $(no_xml_sources)
+EXTRA_DIST += $(xml_sources)
+endif
+
+EXTRA_DIST +=							\
+	gtksourceview/upstream/gtksourcecontextengine.c		\
+	gtksourceview/upstream/gtksourceengine.c		\
+	gtksourceview/upstream/gtksourceiter.c			\
+	gtksourceview/upstream/gtksourcelanguage.c		\
+	gtksourceview/upstream/gtksourcelanguage-parser-1.c	\
+	gtksourceview/upstream/gtksourcelanguage-parser-2.c	\
+	gtksourceview/upstream/gtksourcelanguagemanager.c	\
+	gtksourceview/upstream/gtksourcestyle.c			\
+	gtksourceview/upstream/gtksourcestyleschememanager.c	\
+	gtksourceview/upstream/gtksourcestylescheme.c		\
+	gtksourceview/upstream/gtktextregion.c			\
+	gtksourceview/upstream/gtksourcecontextengine.h		\
+	gtksourceview/upstream/gtksourceengine.h		\
+	gtksourceview/upstream/gtksourceiter.h			\
+	gtksourceview/upstream/gtksourcelanguage.h		\
+	gtksourceview/upstream/gtksourcelanguage-private.h	\
+	gtksourceview/upstream/gtksourcelanguagemanager.h	\
+	gtksourceview/upstream/gtksourcestyle.h			\
+	gtksourceview/upstream/gtksourcestyle-private.h		\
+	gtksourceview/upstream/gtksourcestyleschememanager.h	\
+	gtksourceview/upstream/gtksourcestylescheme.h		\
+	gtksourceview/upstream/gtktextregion.h			\
+	gtksourceview/upstream/gtksourceview-utils.h		\
+	gtksourceview/upstream/gtksourceview-utils.c		\
+	gtksourceview/upstream/gtksourcelanguage-noxml.c	\
+	gtksourceview/upstream/gtksourcestylescheme-noxml.c	\
+	gtksourceview/upstream/mangle.sh
+
+gtksourceview/%-mangled.c: gtksourceview/upstream/%.c gtksourceview/upstream/mangle.sh
+	@mkdir -p gtksourceview
+	$(SHELL) $(srcdir)/gtksourceview/upstream/mangle.sh $(srcdir)/gtksourceview/upstream/$*.c > $@.tmp && mv $@.tmp $@
+
+gtksourceview/%-mangled.h: gtksourceview/upstream/%.h gtksourceview/upstream/mangle.sh
+	@mkdir -p gtksourceview
+	$(SHELL) $(srcdir)/gtksourceview/upstream/mangle.sh $(srcdir)/gtksourceview/upstream/$*.h > $@.tmp && mv $@.tmp $@

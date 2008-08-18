@@ -1,13 +1,15 @@
-DIST_SUBDIRS = pcre xdgmime newgtk
+DIST_SUBDIRS = pcre newgtk
 
+noinst_LTLIBRARIES =
 subdirs =
-libs =
+libs = libxdgmime.la
+include xdgmime/Makefile.incl
+
 if MOO_BUILD_PCRE
 subdirs += pcre
 libs += pcre/libpcre.la
 endif
-subdirs += xdgmime
-libs += xdgmime/libxdgmime.la
+
 if !GLIB_2_14
 subdirs += newgtk
 libs += newgtk/libnewgtk.la
@@ -193,7 +195,7 @@ stock-medit.h: pixmaps/medit.png
 
 include ../../mk/marshals.mk
 
-noinst_LTLIBRARIES = libmooutils.la
+noinst_LTLIBRARIES += libmooutils.la
 libmooutils_la_SOURCES = $(mooutils_sources)
 libmooutils_la_LIBADD = $(libs)
 

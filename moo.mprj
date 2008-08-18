@@ -8,15 +8,9 @@
   <debug>
    <build_dir>build/debug</build_dir>
    <configure>
-    <args>--enable-debug --enable-all-warnings --enable-project --enable-unit-tests</args>
+    <args>--enable-debug --enable-all-warnings --enable-project --enable-unit-tests --prefix=${PREFIX:-/usr/local}</args>
    </configure>
   </debug>
-  <gtk-2.10>
-   <build_dir>/home/muntyan/projects/gtk-2.10/moo</build_dir>
-   <configure>
-    <args>--enable-debug --enable-all-warnings --prefix=$PREFIX --enable-unit-tests --enable-project</args>
-   </configure>
-  </gtk-2.10>
   <gtk-2.6>
    <build_dir>/home/muntyan/projects/gtk-2.6/moo</build_dir>
    <configure>

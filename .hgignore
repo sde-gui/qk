@@ -8,11 +8,13 @@ autom4te.cache/
 *.bak
 *.pyc
 *~
+.DS_Store
 Makefile.in
 
 .moo.mprj.session
 a.out
 aclocal.m4
+compile
 config.guess
 config.h.in
 config.sub
@@ -28,10 +30,12 @@ mkinstalldirs
 po-gsv/Makefile.in.in
 po-gsv/dist
 po-gsv/missing
+po-gsv/notexist
 po-gsv/pot
 po/Makefile.in.in
 po/dist
 po/missing
+po/notexist
 po/pot
 
 syntax: regexp
@@ -45,3 +49,4 @@ syntax: regexp
 ^moo/mooterm/Makefile\.am
 ^moo/mooui/Makefile\.am
 ^moo/mooutils/Makefile\.am
+^moo/mooutils/stock-(moo|medit)\.h

@@ -1,0 +1,28 @@
+noinst_LTLIBRARIES += libxdgmime.la
+
+libxdgmime_la_SOURCES =		\
+	xdgmime/xdgmimealias.c	\
+	xdgmime/xdgmimealias.h	\
+	xdgmime/xdgmime.c	\
+	xdgmime/xdgmimecache.c	\
+	xdgmime/xdgmimecache.h	\
+	xdgmime/xdgmimeglob.c	\
+	xdgmime/xdgmimeglob.h	\
+	xdgmime/xdgmime.h	\
+	xdgmime/xdgmimeint.h	\
+	xdgmime/xdgmimeicon.c	\
+	xdgmime/xdgmimeicon.h	\
+	xdgmime/xdgmimemagic.c	\
+	xdgmime/xdgmimemagic.h	\
+	xdgmime/xdgmimeparent.c	\
+	xdgmime/xdgmimeparent.h
+
+libxdgmime_la_CFLAGS =		\
+	$(MOO_CFLAGS)		\
+	$(MOO_DEBUG_CFLAGS)	\
+	$(MOO_W_NO_SIGN_COMPARE)\
+	$(MOO_W_NO_UNUSED)
+
+if MOO_OS_MINGW
+libxdgmime_la_CFLAGS += -DHAVE_MMAP $(MOO_WIN32_CFLAGS)
+endif
