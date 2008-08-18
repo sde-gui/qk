@@ -23,8 +23,6 @@ gboolean    _moo_ctags_plugin_init          (void);
 #endif
 
 gboolean    _moo_find_plugin_init           (void);
-gboolean    _moo_active_strings_plugin_init (void);
-gboolean    _moo_completion_plugin_init     (void);
 gboolean    _moo_file_selector_plugin_init  (void);
 gboolean    _moo_project_plugin_init        (void);
 gboolean    _moo_file_list_plugin_init      (void);

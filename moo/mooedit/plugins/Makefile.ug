@@ -10,6 +10,7 @@ AM_CFLAGS =			\
 	-I..			\
 	$(MOO_CFLAGS)
 
+
 ###########################################################################
 # ctags
 #
@@ -21,6 +22,7 @@ libctags_la_SOURCES =		\
 	ctags/ctags-doc.h	\
 	ctags/ctags-view.c	\
 	ctags/ctags-view.h
+
 
 ###########################################################################
 # fileselector

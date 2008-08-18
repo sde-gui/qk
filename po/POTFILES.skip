@@ -92,8 +92,6 @@ moo/mooedit/langs/verilog.lang
 moo/mooedit/langs/vhdl.lang
 moo/mooedit/langs/xml.lang
 moo/mooedit/langs/yacc.lang
-moo/mooedit/plugins/completion/completion-plugin.c
-moo/mooedit/plugins/completion/completion.glade
 moo/moopython/plugins/pyproject/mprj/config/view.py
 moo/moopython/plugins/pyproject/mprj/manager.py
 moo/moopython/plugins/pyproject/mprj/optdialog.py

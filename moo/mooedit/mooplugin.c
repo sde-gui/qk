@@ -916,10 +916,6 @@ moo_plugin_init_builtin (void)
     _moo_ctags_plugin_init ();
 #endif
 #endif
-#if 0
-    _moo_completion_plugin_init ();
-    _moo_active_strings_plugin_init ();
-#endif
 }
 
 

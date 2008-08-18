@@ -41,8 +41,6 @@ moo/mooedit/glade/mooprintpreview.glade
 moo/mooedit/glade/mooquicksearch.glade
 moo/mooedit/glade/mootextfind.glade
 moo/mooedit/glade/mootextgotoline.glade
-moo/mooedit/plugins/completion/completion.glade
-moo/mooedit/plugins/completion/completion-plugin.c
 moo/mooedit/plugins/moofilelist.c
 moo/mooedit/plugins/moofileselector.c
 moo/mooedit/plugins/moofileselector.glade

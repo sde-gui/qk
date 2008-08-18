@@ -11,17 +11,8 @@ libmooedit_la_LIBADD =			\
 	plugins/libmooeditplugins.la	\
 	libgtksourceview.la
 
-completion_sources =			\
-	moocompletionsimple.c		\
-	moocompletionsimple.h		\
-	mootextcompletion.c		\
-	mootextcompletion.h		\
-	mootextpopup.c			\
-	mootextpopup.h
-
 libmooedit_la_SOURCES =			\
 	$(moocommand_stuff)		\
-	$(completion_sources)		\
 	moocommand-lua.c		\
 	moocommand-lua.h		\
 	mooedit-lua-api.c		\
