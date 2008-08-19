@@ -3076,7 +3076,8 @@ create_lang_action (MooEditWindow      *window)
     menu_mgr = moo_menu_action_get_mgr (MOO_MENU_ACTION (action));
 
     moo_menu_mgr_append (menu_mgr, NULL,
-                         MOO_LANG_NONE, "None", NULL,
+                         /* Menu item in the Language menu */
+                         MOO_LANG_NONE, _("Language|None"), NULL,
                          MOO_MENU_ITEM_RADIO, NULL, NULL);
 
     for (l = sections; l != NULL; l = l->next)
