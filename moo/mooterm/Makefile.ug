@@ -83,7 +83,6 @@ termhelper_CFLAGS =	\
     -I$(top_builddir)	\
     -I$(srcdir)/..	\
     -I..		\
-    $(MOO_DEBUG_CFLAGS)	\
     $(CFLAGS)
 mootermhelper_res.res: mootermhelper_res.rc
 	$(WINDRES) -i mootermhelper_res.rc --input-format=rc -o mootermhelper_res.res -O coff
