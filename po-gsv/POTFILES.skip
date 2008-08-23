@@ -1,3 +1,5 @@
+build/
+
 moo/mooedit/filters.xml
 moo/mooedit/medit.xml
 moo/mooedit/moocommand-exe.c

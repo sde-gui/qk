@@ -1,3 +1,5 @@
+build/
+
 moo/mooutils/moocompat.c
 
 moo/mooedit/gtksourceview/gtksourcecontextengine-mangled.c
