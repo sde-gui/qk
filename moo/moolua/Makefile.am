@@ -1,4 +1,4 @@
-noinst_LTLIBRARIES = liblua.la libmoolua.la
+noinst_LTLIBRARIES = libmoolua.la
 
 if MOO_OS_DARWIN
 MOO_LUA_CFLAGS="-DLUA_USE_MACOSX"
@@ -8,28 +8,22 @@ MOO_LUA_CFLAGS="-DLUA_USE_POSIX -DLUA_USE_DLOPEN"
 endif
 endif
 
-AM_CFLAGS =			\
-	$(MOO_CFLAGS)		\
-	$(MOO_DEBUG_CFLAGS)	\
-	$(MOO_LUA_CFLAGS)	\
+AM_CFLAGS =				\
+	$(MOO_CFLAGS)			\
+	$(MOO_DEBUG_CFLAGS)		\
+	$(MOO_LUA_CFLAGS)		\
+	$(MOO_W_NO_MISSING_NORETURN)	\
 	-DLUA_USE_APICHECK
 
-libmoolua_la_LIBADD = liblua.la
 libmoolua_la_SOURCES =		\
 	ext/lfs.h		\
 	ext/lfs.c		\
 	moolua.h		\
 	moolua.c		\
 	moolua-tests.h		\
-	slnunico.c
+	luaall.c
 
-# noinst_PROGRAMS = lua
-# lua_SOURCES = lua.c
-# lua_LDADD = libmoolua.la $(MOO_LIBS) -lreadline
-# lua_CFLAGS = $(AM_CFLAGS) -DLUA_USE_READLINE
-
-liblua_la_LDFLAGS =
-liblua_la_SOURCES =		\
+EXTRA_DIST =			\
 	lapi.c			\
 	lcode.c			\
 	ldebug.c		\
@@ -82,7 +76,8 @@ liblua_la_SOURCES =		\
 	lvm.h			\
 	lzio.h
 
-EXTRA_DIST =			\
+EXTRA_DIST +=			\
 	COPYRIGHT		\
 	ext/README.lfs		\
-	slnudata.c
+	slnudata.c		\
+	slnunico.c

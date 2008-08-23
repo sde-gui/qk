@@ -33,6 +33,7 @@ typedef struct {
 #else
 #define IF(c,s)		if (c) error(S,s)
 
+L_GNUC_NORETURN
 static void error(LoadState* S, const char* why)
 {
  luaO_pushfstring(S->L,"%s: %s in precompiled chunk",S->name,why);
