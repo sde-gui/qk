@@ -35,7 +35,7 @@ endif
 if MOO_BUILD_TERM
 test_programs += mterm termbuffer
 endif
-if MOO_BUILD_UI
+if MOO_BUILD_APP
 test_programs += testhtml
 endif
 
@@ -57,7 +57,7 @@ BUILT_SOURCES = pyapp.py
 
 if MOO_BUILD_TERM
 if !MOO_OS_CYGWIN
-if !MOO_BUILD_UI
+if !MOO_BUILD_APP
 noinst_PROGRAMS += mterm #termbuffer
 endif
 endif
@@ -74,7 +74,8 @@ endif
 endif
 
 ldflags = -export-dynamic $(PYTHON_EXTRA_LDFLAGS)
-ldadd = ../moo/libmoo.la
+include ../moo/moo-comps.mk
+ldadd = $(moo_sublibs) $(MOO_LIBS)
 
 # if MOO_OS_MINGW
 # ldflags += -mwindows

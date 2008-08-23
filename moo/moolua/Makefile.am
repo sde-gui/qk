@@ -79,4 +79,5 @@ EXTRA_DIST +=			\
 	COPYRIGHT		\
 	ext/README.lfs		\
 	slnudata.c		\
-	slnunico.c
+	slnunico.c		\
+	moo-tests-lua.h

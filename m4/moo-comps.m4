@@ -4,7 +4,7 @@
 AC_DEFUN([MOO_COMPONENTS],[
   AC_REQUIRE([MOO_AC_CHECK_OS])
 
-  m4_foreach([comp], [utils, edit, term, ui],
+  m4_foreach([comp], [utils, edit, term, app],
              [build_moo[]comp=true])
   m4_foreach([comp], $2,
              [build_moo[]comp=false])
@@ -23,12 +23,12 @@ AC_DEFUN([MOO_COMPONENTS],[
   if test "x$MOO_OS_CYGWIN" = "xyes"; then
     build_mooutils=false
     build_mooedit=false
-    build_mooui=false
+    build_mooapp=false
     build_mooterm=true
   fi
 
-  if $build_mooedit; then build_mooui=true; fi
-  if $build_mooui; then build_mooutils=true; fi
+  if $build_mooapp; then build_mooedit=true; fi
+  if $build_mooedit; then build_mooutils=true; fi
   if test "x$MOO_OS_CYGWIN" != "xyes"; then
     $build_mooterm && build_mooutils=true
   fi
@@ -48,7 +48,7 @@ AC_DEFUN([MOO_COMPONENTS],[
   fi
   AC_SUBST(MOO_LUA_ENABLED_DEFINE)
 
-  m4_foreach([comp], [utils, edit, term, ui],[
+  m4_foreach([comp], [utils, edit, term, app],[
     AM_CONDITIONAL(MOO_BUILD_[]m4_toupper(comp), $build_moo[]comp)
     MOO_BUILD_[]m4_toupper(comp)=false
     if $build_moo[]comp; then

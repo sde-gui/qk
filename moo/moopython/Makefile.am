@@ -81,7 +81,8 @@ libmoomod_la_LIBADD = pygtk/libmoopygtk.la $(libmoomod_la_libadd)
 libpymoo_la_SOURCES = $(libpymoo_la_sources)
 
 libmoopython_la_SOURCES = $(libmoopython_la_sources)
-libmoopython_la_LIBADD = $(libmoopython_la_libadd)
+libmoopython_la_LIBADD = $(libmoopython_la_libadd) $(PYTHON_LIBS) $(PYTHON_EXTRA_LIBS)
+libmoopython_la_LDFLAGS = $(PYTHON_LDFLAGS) $(PYTHON_EXTRA_LDFLAGS)
 
 EXTRA_DIST =				\
 	moo-mod.c			\

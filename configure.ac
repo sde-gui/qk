@@ -26,7 +26,7 @@ AC_PROG_INSTALL
 
 ACLOCAL="$ACLOCAL $ACLOCAL_FLAGS"
 
-MOO_COMPONENTS([ui,edit,term],[])
+MOO_COMPONENTS([app,edit,term],[])
 MOO_AC_SET_DIRS
 MOO_AC_PRIV_FLAGS
 MOO_AM_MK
@@ -47,7 +47,7 @@ moo/moofileview/Makefile
 moo/mooterm/Makefile
 moo/mooedit/Makefile
 moo/mooedit/plugins/Makefile
-moo/mooui/Makefile
+moo/mooapp/Makefile
 moo/moopython/Makefile
 moo/moopython/plugins/Makefile
 moo/moopython/plugins/pyproject/Makefile

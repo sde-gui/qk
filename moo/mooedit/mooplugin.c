@@ -18,7 +18,6 @@
 #include "mooedit/mooplugin-loader.h"
 #include "moopluginprefs-glade.h"
 #include "mooedit/plugins/mooeditplugins.h"
-#include "moopython/moopython-builtin.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"
@@ -938,11 +937,6 @@ moo_plugin_read_dirs (void)
     plugin_store->dirs = _moo_strv_reverse (dirs);
 
     moo_plugin_init_builtin ();
-
-#ifdef MOO_PYTHON_BUILTIN
-    /* XXX move it elsewhere */
-    _moo_python_builtin_init ();
-#endif
 
     for (d = plugin_store->dirs; d && *d; ++d)
         moo_plugin_read_dir (*d);

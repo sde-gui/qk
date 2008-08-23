@@ -21,6 +21,8 @@
 #ifndef READTAGS_H
 #define READTAGS_H
 
+#include "readtags-mangle.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

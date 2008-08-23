@@ -15,35 +15,35 @@
 #include <pygobject.h>
 #include <glib.h>
 #include "moopython/pygtk/moo-pygtk.h"
-#include "mooui-mod.h"
+#include "mooapp-mod.h"
 
 
-static char *moo_ui_module_doc = "_moo_ui module.";
+static char *moo_app_module_doc = "_moo_app module.";
 
 
 gboolean
-_moo_ui_mod_init (void)
+_moo_app_mod_init (void)
 {
     PyObject *mod;
 
-    mod = Py_InitModule3 ("_moo_ui", (PyMethodDef*) _moo_ui_functions, moo_ui_module_doc);
-    PyImport_AddModule ("moo.ui");
+    mod = Py_InitModule3 ("_moo_app", (PyMethodDef*) _moo_app_functions, moo_app_module_doc);
+    PyImport_AddModule ("moo.app");
 
     if (!mod)
         return FALSE;
 
-    _moo_ui_register_classes (PyModule_GetDict (mod));
+    _moo_app_register_classes (PyModule_GetDict (mod));
 
     if (!PyErr_Occurred ())
     {
         PyObject *fake_mod, *code;
 
-        code = Py_CompileString (MOO_UI_PY, "moo/ui.py", Py_file_input);
+        code = Py_CompileString (MOO_APP_PY, "moo/app.py", Py_file_input);
 
         if (!code)
             return FALSE;
 
-        fake_mod = PyImport_ExecCodeModule ("moo.ui", code);
+        fake_mod = PyImport_ExecCodeModule ("moo.app", code);
         Py_DECREF (code);
 
         if (!fake_mod)

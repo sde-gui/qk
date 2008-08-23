@@ -24,12 +24,12 @@ gboolean    _moo_pygtk_init             (void);
 gboolean    _moo_utils_mod_init         (void);
 gboolean    _moo_edit_mod_init          (void);
 gboolean    _moo_term_mod_init          (void);
-gboolean    _moo_ui_mod_init            (void);
+gboolean    _moo_app_mod_init           (void);
 
 extern const PyMethodDef _moo_utils_functions[];
 extern const PyMethodDef _moo_term_functions[];
 extern const PyMethodDef _moo_edit_functions[];
-extern const PyMethodDef _moo_ui_functions[];
+extern const PyMethodDef _moo_app_functions[];
 
 void        _moo_utils_register_classes (PyObject       *dict);
 void        _moo_utils_add_constants    (PyObject       *module,
@@ -40,8 +40,8 @@ void        _moo_edit_add_constants     (PyObject       *module,
 void        _moo_term_register_classes  (PyObject       *dict);
 void        _moo_term_add_constants     (PyObject       *module,
                                          const char     *strip_prefix);
-void        _moo_ui_register_classes    (PyObject       *dict);
-void        _moo_ui_add_constants       (PyObject       *module,
+void        _moo_app_register_classes   (PyObject       *dict);
+void        _moo_app_add_constants      (PyObject       *module,
                                          const char     *strip_prefix);
 
 

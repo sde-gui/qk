@@ -23,7 +23,9 @@ real_main_c = main.c
 # 	mv cpp-main.cpp.tmp cpp-main.cpp
 
 medit_LDFLAGS += -export-dynamic $(PYTHON_EXTRA_LDFLAGS) $(medit_res_ldflag)
-medit_LDADD = ../moo/libmoo.la
+
+include ../moo/moo-comps.mk
+medit_LDADD = $(moo_sublibs) $(MOO_LIBS)
 
 medit_RC_IN_FILE = medit.rc.in
 

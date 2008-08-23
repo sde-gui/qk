@@ -1,10 +1,5 @@
 noinst_LTLIBRARIES = libmooeditplugins.la
-libmooeditplugins_la_LIBADD = libfileselector.la
-
-if MOO_BUILD_CTAGS
-noinst_LTLIBRARIES += libctags.la
-libmooeditplugins_la_LIBADD += libctags.la
-endif
+libmooeditplugins_la_SOURCES =
 
 AM_CFLAGS = -I.. $(MOO_CFLAGS)
 AM_CXXFLAGS = -I.. $(MOO_CXXFLAGS)
@@ -13,36 +8,40 @@ AM_CXXFLAGS = -I.. $(MOO_CXXFLAGS)
 ###########################################################################
 # ctags
 #
-libctags_la_SOURCES =		\
+ctags_sources =			\
 	ctags/readtags.c	\
 	ctags/readtags.h	\
+	ctags/readtags-mangle.h	\
 	ctags/ctags-plugin.c	\
 	ctags/ctags-doc.c	\
 	ctags/ctags-doc.h	\
 	ctags/ctags-view.c	\
 	ctags/ctags-view.h
 
+if MOO_BUILD_CTAGS
+libmooeditplugins_la_SOURCES += $(ctags_sources)
+else
+EXTRA_DIST += $(ctags_sources)
+endif
 
 ###########################################################################
 # fileselector
 #
-noinst_LTLIBRARIES += libfileselector.la
 
 GLADE_FILES =				\
 	moofileselector.glade		\
 	moofileselector-prefs.glade
 
-libfileselector_la_SOURCES =		\
+libmooeditplugins_la_SOURCES +=		\
 	moofileselector-prefs.c		\
 	moofileselector.c		\
 	moofileselector.h
-
 
 ###########################################################################
 # libmooeditplugins
 #
 
-libmooeditplugins_la_SOURCES =	\
+libmooeditplugins_la_SOURCES +=	\
 	mooeditplugins.h	\
 	moofilelist.c		\
 	moofind.c

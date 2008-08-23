@@ -6,13 +6,13 @@ headers
 #define NO_IMPORT_PYGTK
 #include <pygobject.h>
 #include <pygtk/pygtk.h>
-#include "mooui/mooapp.h"
-#include "mooui/moohtml.h"
+#include "mooapp/mooapp.h"
+#include "mooapp/moohtml.h"
 #include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
 
 %%
-modulename moo.ui
+modulename moo.app
 %%
 import gtk.Window as PyGtkWindow_Type
 import gtk.Widget as PyGtkWidget_Type

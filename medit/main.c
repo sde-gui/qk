@@ -10,18 +10,44 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#include <config.h>
 #include "medit-credits.h"
-#include "mooui/mooapp.h"
+#include "mooapp/mooapp.h"
 #include "mooedit/mooplugin.h"
+#include "moopython/moopython-builtin.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mootype-macros.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
 #include "mem-debug.h"
+
+typedef MooApp MeditApp;
+typedef MooAppClass MeditAppClass;
+MOO_DEFINE_TYPE_STATIC (MeditApp, medit_app, MOO_TYPE_APP)
+
+static void
+medit_app_init_plugins (G_GNUC_UNUSED MooApp *app)
+{
+#ifdef MOO_PYTHON_BUILTIN
+    _moo_python_builtin_init ();
+#endif
+}
+
+static void
+medit_app_class_init (MooAppClass *klass)
+{
+    klass->init_plugins = medit_app_init_plugins;
+}
+
+static void
+medit_app_init (G_GNUC_UNUSED MooApp *app)
+{
+}
 
 static struct MeditOpts {
     int use_session;
@@ -344,7 +370,7 @@ main (int argc, char *argv[])
     gdk_threads_init ();
     gdk_threads_enter ();
 
-    app = MOO_APP (g_object_new (MOO_TYPE_APP,
+    app = MOO_APP (g_object_new (medit_app_get_type (),
                                  "argv", argv,
                                  "run-input", run_input,
                                  "use-session", medit_opts.use_session,

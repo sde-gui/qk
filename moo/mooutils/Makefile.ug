@@ -16,6 +16,11 @@ libs += newgtk/libnewgtk.la
 endif
 SUBDIRS = $(subdirs) .
 
+test_sources =				\
+	moo-test-utils.c		\
+	moo-test-utils.h		\
+	moo-test-macros.h
+
 win32_sources =				\
 	mooutils-win32.c
 
@@ -146,12 +151,16 @@ if MOO_ENABLE_TESTS
 mooutils_sources += $(thread_sources)
 endif
 endif
+if MOO_ENABLE_UNIT_TESTS
+mooutils_sources += $(test_sources)
+endif
 
 EXTRA_DIST +=				\
 	moo-intltool-merge		\
 	py2h.sh				\
 	$(thread_sources)		\
 	$(win32_sources)		\
+	$(test_sources)			\
 	moowin32/mingw/fnmatch.h	\
 	moowin32/mingw/netinet/in.h	\
 	moowin32/mingw/sys/mman.h	\
@@ -195,6 +204,7 @@ stock-medit.h: pixmaps/medit.png
 
 noinst_LTLIBRARIES += libmooutils.la
 libmooutils_la_SOURCES = $(mooutils_sources)
+nodist_libmooutils_la_SOURCES = marshals.c
 libmooutils_la_LIBADD = $(libs)
 
 if GDK_QUARTZ

@@ -1,4 +1,4 @@
-mooui_sources =				\
+mooapp_sources =			\
 	mooappabout.c			\
 	mooappabout.h			\
 	mooapp.c			\
@@ -10,9 +10,9 @@ mooui_sources =				\
 	moolinklabel.h			\
 	moolinklabel.c
 
-noinst_LTLIBRARIES = libmooui.la
-libmooui_la_SOURCES = $(mooui_sources)
-libmooui_la_LIBADD = libsmclient.la
+noinst_LTLIBRARIES = libmooapp.la
+libmooapp_la_SOURCES = $(mooapp_sources)
+libmooapp_la_LIBADD = libsmclient.la
 
 GLADE_FILES = glade/mooappabout.glade
 

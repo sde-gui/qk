@@ -70,6 +70,8 @@ struct _MooAppClass
                                  MooMarkupNode  *xml);
     void        (*save_session) (MooApp         *app,
                                  MooMarkupNode  *xml);
+
+    void        (*init_plugins) (MooApp         *app);
 };
 
 

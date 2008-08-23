@@ -803,6 +803,14 @@ close_editor_window (MooApp *app)
 }
 
 static void
+init_plugins (MooApp *app)
+{
+    MOO_APP_GET_CLASS (app)->init_plugins (app);
+    moo_plugin_read_dirs ();
+    _moo_edit_load_user_tools ();
+}
+
+static void
 moo_app_init_editor (MooApp *app)
 {
     app->priv->editor = moo_editor_create_instance ();
@@ -817,8 +825,7 @@ moo_app_init_editor (MooApp *app)
     moo_editor_set_app_name (app->priv->editor,
                              app->priv->info.short_name);
 
-    moo_plugin_read_dirs ();
-    _moo_edit_load_user_tools ();
+    init_plugins (app);
 }
 #endif /* MOO_BUILD_EDIT */
 
