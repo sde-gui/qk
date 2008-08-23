@@ -1241,6 +1241,7 @@ moo_editor_load_file (MooEditor       *editor,
                       MooEditFileInfo *info,
                       gboolean         silent,
                       gboolean         add_history,
+                      int              line,
                       MooEdit        **docp)
 {
     GError *error = NULL;
@@ -1296,15 +1297,17 @@ moo_editor_load_file (MooEditor       *editor,
         MdHistoryItem *hist_item;
         char *uri;
 
-        uri = g_filename_to_uri (filename, NULL, NULL);
-        hist_item = md_history_mgr_find_uri (editor->priv->history, uri);
-        if (hist_item)
+        if (line < 0)
         {
-            int line = _moo_edit_history_item_get_line (hist_item);
-            if (line >= 0)
-                moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), line, 0, FALSE, TRUE);
+            uri = g_filename_to_uri (filename, NULL, NULL);
+            hist_item = md_history_mgr_find_uri (editor->priv->history, uri);
+            if (hist_item)
+                line = _moo_edit_history_item_get_line (hist_item);
+            g_free (uri);
         }
-        g_free (uri);
+
+        if (line >= 0)
+            moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), line, 0, FALSE, TRUE);
 
         if (!window)
             window = moo_editor_get_active_window (editor);
@@ -1372,7 +1375,7 @@ moo_editor_open (MooEditor      *editor,
         if (!window)
             window = moo_editor_get_active_window (editor);
 
-        if (moo_editor_load_file (editor, window, parent, info, editor->priv->silent, TRUE, &doc))
+        if (moo_editor_load_file (editor, window, parent, info, editor->priv->silent, TRUE, -1, &doc))
             parent = GTK_WIDGET (doc);
 
         if (doc)
@@ -1902,7 +1905,7 @@ load_doc_session (MooEditor     *editor,
     encoding = moo_markup_get_prop (elm, "encoding");
     info = moo_edit_file_info_new (filename, encoding);
 
-    moo_editor_load_file (editor, window, GTK_WIDGET (window), info, TRUE, FALSE, &doc);
+    moo_editor_load_file (editor, window, GTK_WIDGET (window), info, TRUE, FALSE, -1, &doc);
 
     moo_edit_file_info_free (info);
     g_free (filename);
@@ -2153,6 +2156,7 @@ moo_editor_open_file_line (MooEditor      *editor,
 {
     MooEdit *doc = NULL;
     char *freeme = NULL;
+    MooEditFileInfo *info = NULL;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     g_return_val_if_fail (filename != NULL, NULL);
@@ -2174,8 +2178,9 @@ moo_editor_open_file_line (MooEditor      *editor,
     if (!g_file_test (filename, G_FILE_TEST_EXISTS))
         goto out;
 
-    doc = moo_editor_open_file (editor, window, NULL, filename, NULL);
-    g_return_val_if_fail (doc != NULL, NULL);
+    info = moo_edit_file_info_new (filename, NULL);
+    moo_editor_load_file (editor, window, NULL, info,
+                          editor->priv->silent, TRUE, line, &doc);
 
     /* XXX */
     moo_editor_set_active_doc (editor, doc);
@@ -2184,6 +2189,7 @@ moo_editor_open_file_line (MooEditor      *editor,
     gtk_widget_grab_focus (GTK_WIDGET (doc));
 
 out:
+    moo_edit_file_info_free (info);
     g_free (freeme);
     return doc;
 }
