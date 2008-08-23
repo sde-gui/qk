@@ -1,16 +1,17 @@
 DIST_SUBDIRS = pcre newgtk
 
-noinst_LTLIBRARIES =
 subdirs =
 libs =
 
 if MOO_BUILD_PCRE
 subdirs += pcre
+# FIXME static libs
 libs += pcre/libpcre.la
 endif
 
-if !GLIB_2_14
+if !GLIB_2_8
 subdirs += newgtk
+# FIXME static libs
 libs += newgtk/libnewgtk.la
 endif
 SUBDIRS = $(subdirs) .
@@ -201,24 +202,28 @@ stock-medit.h: pixmaps/medit.png
 		MEDIT_ICON $(srcdir)/pixmaps/medit.png			\
 			> $@.tmp && mv $@.tmp $@
 
-noinst_LTLIBRARIES += libmooutils.la
-libmooutils_la_SOURCES = $(mooutils_sources)
-nodist_libmooutils_la_SOURCES = marshals.c
-libmooutils_la_LIBADD = $(libs)
+libmooutils_SOURCES_ = $(mooutils_sources)
+nodist_libmooutils_SOURCES_ = marshals.c
+libmooutils_LIBADD_ = $(libs)
 
 if GDK_QUARTZ
 objc_flag = "-xobjective-c"
 objcxx_flag = "-xobjective-c++"
 endif
 
-AM_CFLAGS =					\
+AM_CFLAGS_ =					\
 	$(MOO_CFLAGS)				\
 	$(MOO_WIN32_CFLAGS)			\
 	$(objc_flag)
 
-AM_CXXFLAGS =					\
+AM_CXXFLAGS_ =					\
 	$(MOO_CXXFLAGS)				\
 	$(MOO_WIN32_CFLAGS)			\
 	$(objcxx_flag)
 
 include xdgmime/Makefile.incl
+
+MODULE = libmooutils
+UGLY_LIBS =
+
+%.lo: %.o ; @true

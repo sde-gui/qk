@@ -54,8 +54,10 @@ GLADE_FILES =				\
 
 MOO_UI_FILES = moofileview.xml
 
-noinst_LTLIBRARIES = libmoofileview.la
-libmoofileview_la_SOURCES = $(moofileview_sources)
+libmoofileview_SOURCES_ = $(moofileview_sources)
 
-AM_CFLAGS = $(MOO_CFLAGS)
-AM_CXXFLAGS = $(MOO_CXXFLAGS)
+AM_CFLAGS_ = $(MOO_CFLAGS)
+AM_CXXFLAGS_ = $(MOO_CXXFLAGS)
+
+MODULE = libmoofileview
+UGLY_LIBS =

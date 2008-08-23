@@ -11,7 +11,6 @@
  */
 
 #include <config.h>
-#include "medit-credits.h"
 #include "mooapp/mooapp.h"
 #include "mooedit/mooplugin.h"
 #include "moopython/moopython-builtin.h"

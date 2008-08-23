@@ -28,6 +28,8 @@ AC_DEFUN_ONCE([MOO_AC_PRIV_FLAGS],[
     ],[
       :
     ],[-lXext])
+
+    MOO_LIBS="$MOO_LIBS $X_LIBS $X_EXTRA_LIBS -lSM -lICE"
   fi
 
   MOO_CFLAGS="$MOO_CFLAGS $MOO_PCRE_CFLAGS -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\""

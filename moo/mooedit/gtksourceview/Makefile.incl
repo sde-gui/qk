@@ -1,3 +1,6 @@
+libmooedit_SOURCES_ += $(gtksourceview_sources)
+nodist_libmooedit_SOURCES_ += $(built_gtksourceview_sources)
+
 upstream_sources =						\
 	gtksourceview/upstream/gtksourcecontextengine.c		\
 	gtksourceview/upstream/gtksourcecontextengine.h		\
@@ -65,16 +68,14 @@ gtksourceview_sources =						\
 	gtksourceview/gtksourceview-i18n.h			\
 	gtksourceview/gtksourceview-marshal.h			\
 	gtksourceview/gtksourceview-api.h
-nodist_gtksourceview_sources =					\
-	$(built_gtksourceview_sources)
 
 if MOO_USE_XML
-nodist_gtksourceview_sources += $(xml_sources)
-EXTRA_DIST += $(no_xml_sources)
+built_gtksourceview_sources += $(xml_sources)
 else
-nodist_gtksourceview_sources += $(no_xml_sources)
-EXTRA_DIST += $(xml_sources)
+built_gtksourceview_sources += $(no_xml_sources)
 endif
+
+AM_CFLAGS_ += -I$(srcdir)/gtksourceview
 
 EXTRA_DIST +=							\
 	gtksourceview/upstream/gtksourcecontextengine.c		\

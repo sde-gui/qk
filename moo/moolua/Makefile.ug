@@ -1,4 +1,5 @@
-noinst_LTLIBRARIES = libmoolua.la
+MODULE = libmoolua
+UGLY_LIBS =
 
 if MOO_OS_DARWIN
 MOO_LUA_CFLAGS="-DLUA_USE_MACOSX"
@@ -8,13 +9,13 @@ MOO_LUA_CFLAGS="-DLUA_USE_POSIX -DLUA_USE_DLOPEN"
 endif
 endif
 
-AM_CFLAGS =				\
+AM_CFLAGS_ =				\
 	$(MOO_CFLAGS)			\
 	$(MOO_LUA_CFLAGS)		\
 	$(MOO_W_NO_MISSING_NORETURN)	\
 	-DLUA_USE_APICHECK
 
-libmoolua_la_SOURCES =		\
+libmoolua_SOURCES_ =		\
 	ext/lfs.h		\
 	ext/lfs.c		\
 	moolua.h		\
@@ -22,7 +23,7 @@ libmoolua_la_SOURCES =		\
 	moolua-tests.h		\
 	luaall.c
 
-EXTRA_DIST =			\
+EXTRA_DIST +=			\
 	lapi.c			\
 	lcode.c			\
 	ldebug.c		\

@@ -1,3 +1,4 @@
+libmooedit_SOURCES_ += $(mooeditplugins_sources)
 mooeditplugins_sources =
 
 ###########################################################################

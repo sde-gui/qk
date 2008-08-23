@@ -19,18 +19,16 @@ UGLY_DEPS =					\
 	$(top_srcdir)/ugly/repo/ugly-post.mk	\
 	$(top_srcdir)/ugly/repo/bdist.mk
 
-UGLY_ALL_TARGETS =
-UGLY_CLEAN_TARGETS =
-
 BUILT_SOURCES += ugly-pre-build-stamp
-CLEANFILES += ugly-pre-build-stamp
 UGLY_PRE_BUILD_TARGETS =
+UGLY_CLEAN_TARGETS =
 ugly-pre-build-stamp: $(UGLY_PRE_BUILD_TARGETS)
-	echo stamp > ugly-pre-build-stamp
+	@echo stamp > ugly-pre-build-stamp
+clean-local: $(UGLY_CLEAN_TARGETS)
 
 UGLY_SUBDIRS =
 UGLY_PRE_BUILD_TARGETS += ugly-subdirs-stamp
-CLEANFILES += ugly-pre-build-stamp
+UGLY_CLEAN_TARGETS += delete-ugly-subdir-makefile
 ugly-subdirs-stamp: $(UGLY_SUBDIRS) Makefile $(top_srcdir)/ugly/repo/ugly-subdir-Makefile
 	@if test -n "$(UGLY_SUBDIRS)"; then \
 	  for d in $(UGLY_SUBDIRS); do \
@@ -38,6 +36,14 @@ ugly-subdirs-stamp: $(UGLY_SUBDIRS) Makefile $(top_srcdir)/ugly/repo/ugly-subdir
 	    cp $(top_srcdir)/ugly/repo/ugly-subdir-Makefile $$d/Makefile || exit 1; \
 	  done; \
 	fi
-	echo stamp > ugly-subdirs-stamp
+	@echo stamp > ugly-subdirs-stamp
+delete-ugly-subdir-makefile:
+	@if test -n "$(UGLY_SUBDIRS)"; then \
+	  for d in $(UGLY_SUBDIRS); do \
+	    rm -f $$d/Makefile || exit 1; \
+	  done; \
+	fi
+
+CLEANFILES += ugly-pre-build-stamp ugly-subdirs-stamp
 
 # end ugly-pre.mk

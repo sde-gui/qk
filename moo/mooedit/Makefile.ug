@@ -3,11 +3,7 @@ mooedit_tools_DATA = context.cfg menu.cfg filters.xml
 mooedit_luadir = $(MOO_DATA_DIR)/lua
 mooedit_lua_DATA = medit.lua
 
-noinst_LTLIBRARIES = libmooedit.la
-
-libmooedit_la_SOURCES =			\
-	$(gtksourceview_sources)	\
-	$(mooeditplugins_sources)	\
+libmooedit_SOURCES_ =			\
 	moocmdview.c			\
 	moocmdview.h			\
 	moocommand.c			\
@@ -102,8 +98,7 @@ libmooedit_la_SOURCES =			\
 	moousertools-prefs.c		\
 	moousertools-prefs.h
 
-nodist_libmooedit_la_SOURCES =		\
-	$(nodist_gtksourceview_sources)
+nodist_libmooedit_SOURCES_ =
 
 dist_printing_sources =			\
 	mooprintpreview.h		\
@@ -113,7 +108,7 @@ dist_printing_sources =			\
 	mootextprint.h
 EXTRA_DIST += $(dist_printing_sources)
 if GTK_2_10
-libmooedit_la_SOURCES += $(dist_printing_sources)
+libmooedit_SOURCES_ += $(dist_printing_sources)
 endif
 
 ENUM_MODULE = mooedit
@@ -149,11 +144,14 @@ EXTRA_DIST +=				\
 	$(mooedit_tools_DATA)		\
 	$(mooedit_lua_DATA)
 
-AM_CFLAGS = $(MOO_CFLAGS) -I$(srcdir)/gtksourceview $(MOO_WIN32_CFLAGS)
-AM_CXXFLAGS = $(MOO_CXXFLAGS) $(MOO_WIN32_CFLAGS)
+AM_CFLAGS_ = $(MOO_CFLAGS) $(MOO_WIN32_CFLAGS)
+AM_CXXFLAGS_ = $(MOO_CXXFLAGS) $(MOO_WIN32_CFLAGS)
 
 include gtksourceview/Makefile.incl
 include langs/Makefile.incl
 include plugins/Makefile.incl
 
 %-private.lo: %.lo ; @true
+
+MODULE = libmooedit
+UGLY_LIBS =

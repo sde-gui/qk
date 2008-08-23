@@ -1,23 +1,22 @@
-libmooapp_la_SOURCES +=				\
+libmooapp_SOURCES_ +=				\
 	smclient/eggsmclient.c			\
 	smclient/eggsmclient.h			\
 	smclient/eggsmclient-mangle.h		\
 	smclient/eggsmclient-private.h
 
 if GDK_X11
-AM_CFLAGS += $(X_CFLAGS) -DEGG_SM_CLIENT_BACKEND_XSMP
-libmooapp_la_LIBADD += $(X_LIBS) $(X_EXTRA_LIBS) -lSM -lICE
-libmooapp_la_SOURCES +=				\
+AM_CFLAGS_ += $(X_CFLAGS) -DEGG_SM_CLIENT_BACKEND_XSMP
+libmooapp_SOURCES_ +=				\
 	smclient/eggsmclient-xsmp.c		\
 	smclient/eggdesktopfile.h		\
 	smclient/eggdesktopfile.c
 endif GDK_X11
 if GDK_WIN32
-libmooapp_la_SOURCES +=				\
+libmooapp_SOURCES_ +=				\
 	smclient/eggsmclient-win32.c
 endif GDK_WIN32
 if GDK_QUARTZ
-libmooapp_la_SOURCES +=				\
+libmooapp_SOURCES_ +=				\
 	smclient/eggsmclient-dummy.c
 endif GDK_QUARTZ
 

@@ -227,15 +227,6 @@ _EOFEOF
     done
   done
 
-#   if $need_all_target; then
-#     cat >> $out_tmp << \_EOFEOF
-#
-# all-local: $(UGLY_ALL_TARGETS)
-# clean-local: $(UGLY_CLEAN_TARGETS)
-#
-# _EOFEOF
-#   fi
-
   cat ugly/repo/bdist.mk >> $out_tmp
   cat ugly/repo/ugly-post.mk >> $out_tmp
 
