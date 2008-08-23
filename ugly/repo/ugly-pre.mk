@@ -22,4 +22,22 @@ UGLY_DEPS =					\
 UGLY_ALL_TARGETS =
 UGLY_CLEAN_TARGETS =
 
+BUILT_SOURCES += ugly-pre-build-stamp
+CLEANFILES += ugly-pre-build-stamp
+UGLY_PRE_BUILD_TARGETS =
+ugly-pre-build-stamp: $(UGLY_PRE_BUILD_TARGETS)
+	echo stamp > ugly-pre-build-stamp
+
+UGLY_SUBDIRS =
+UGLY_PRE_BUILD_TARGETS += ugly-subdirs-stamp
+CLEANFILES += ugly-pre-build-stamp
+ugly-subdirs-stamp: $(UGLY_SUBDIRS) Makefile $(top_srcdir)/ugly/repo/ugly-subdir-Makefile
+	@if test -n "$(UGLY_SUBDIRS)"; then \
+	  for d in $(UGLY_SUBDIRS); do \
+	    mkdir -p $$d || exit 1; \
+	    cp $(top_srcdir)/ugly/repo/ugly-subdir-Makefile $$d/Makefile || exit 1; \
+	  done; \
+	fi
+	echo stamp > ugly-subdirs-stamp
+
 # end ugly-pre.mk

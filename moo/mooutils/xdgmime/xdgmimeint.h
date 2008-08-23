@@ -81,6 +81,10 @@ const char    *_xdg_get_base_name (const char    *file_name);
 #include <errno.h>
 #include "mooutils/mooutils-misc.h"
 
+#ifdef G_OS_WIN32
+#define HAVE_MMAP 1
+#endif
+
 #ifdef __MINGW32__
 #if __MINGW32_MAJOR_VERSION == 3 && __MINGW32_MINOR_VERSION <= 7
 #include "mooutils/moowin32/ms/sys/time.h"

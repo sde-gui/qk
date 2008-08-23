@@ -1,60 +1,55 @@
-DIST_SUBDIRS = plugins
-SUBDIRS = plugins .
-
 mooedit_toolsdir = $(MOO_DATA_DIR)
 mooedit_tools_DATA = context.cfg menu.cfg filters.xml
 mooedit_luadir = $(MOO_DATA_DIR)/lua
 mooedit_lua_DATA = medit.lua
 
 noinst_LTLIBRARIES = libmooedit.la
-libmooedit_la_LIBADD =			\
-	plugins/libmooeditplugins.la	\
-	libgtksourceview.la
 
 libmooedit_la_SOURCES =			\
-	$(moocommand_stuff)		\
-	moocommand-lua.c		\
-	moocommand-lua.h		\
-	mooedit-lua-api.c		\
-	mooedit-lua.c			\
-	mooedit-lua.h			\
+	$(gtksourceview_sources)	\
+	$(mooeditplugins_sources)	\
 	moocmdview.c			\
 	moocmdview.h			\
-	moocommand-exe.c		\
-	moocommand-exe.h		\
-	moocommand-private.h		\
 	moocommand.c			\
-	moocommand.h			\
 	moocommanddisplay.c		\
 	moocommanddisplay.h		\
+	moocommand-exe.c		\
+	moocommand-exe.h		\
+	moocommand.h			\
+	moocommand-lua.c		\
+	moocommand-lua.h		\
+	moocommand-private.h		\
 	mooedit-accels.h		\
-	mooedit-bookmarks.c		\
-	mooedit-bookmarks.h		\
-	mooedit-enums.c			\
-	mooedit-enums.h			\
-	mooedit-private.h		\
-	mooedit-tests.h			\
-	mooedit.c			\
-	mooedit.h			\
+	mooeditaction.c			\
 	mooeditaction-factory.c		\
 	mooeditaction-factory.h		\
-	mooeditaction.c			\
 	mooeditaction.h			\
+	mooedit-bookmarks.c		\
+	mooedit-bookmarks.h		\
+	mooedit.c			\
 	mooeditconfig.c			\
 	mooeditconfig.h			\
 	mooeditdialogs.c		\
 	mooeditdialogs.h		\
+	mooedit-enums.c			\
+	mooedit-enums.h			\
 	mooeditfileops.c		\
 	mooeditfileops.h		\
 	mooeditfiltersettings.c		\
 	mooeditfiltersettings.h		\
+	mooedit.h			\
 	mooeditinput.c			\
-	mooeditor-private.h		\
+	mooedit-lua-api.c		\
+	mooedit-lua.c			\
+	mooedit-lua.h			\
 	mooeditor.c			\
 	mooeditor.h			\
+	mooeditor-private.h		\
 	mooeditprefs.c			\
 	mooeditprefs.h			\
 	mooeditprefspage.c		\
+	mooedit-private.h		\
+	mooedit-tests.h			\
 	mooeditwindow.c			\
 	mooeditwindow.h			\
 	moofold.c			\
@@ -63,12 +58,12 @@ libmooedit_la_SOURCES =			\
 	mooindenter.h			\
 	mookeyfile.c			\
 	mookeyfile.h			\
-	moolang-private.h		\
 	moolang.c			\
 	moolang.h			\
-	moolangmgr-private.h		\
 	moolangmgr.c			\
 	moolangmgr.h			\
+	moolangmgr-private.h		\
+	moolang-private.h		\
 	moolinebuffer.c			\
 	moolinebuffer.h			\
 	moolinemark.c			\
@@ -79,12 +74,11 @@ libmooedit_la_SOURCES =			\
 	moooutputfilter.h		\
 	moooutputfilterregex.c		\
 	moooutputfilterregex.h		\
+	mooplugin.c			\
+	mooplugin.h			\
 	mooplugin-loader.c		\
 	mooplugin-loader.h		\
 	mooplugin-macro.h		\
-	mooplugin.c			\
-	mooplugin.h			\
-	mootext-private.h		\
 	mootextbox.c			\
 	mootextbox.h			\
 	mootextbtree.c			\
@@ -94,18 +88,22 @@ libmooedit_la_SOURCES =			\
 	mootextfind.c			\
 	mootextfind.h			\
 	mootextiter.h			\
-	mootextsearch-private.h		\
+	mootext-private.h		\
 	mootextsearch.c			\
 	mootextsearch.h			\
+	mootextsearch-private.h		\
 	mootextstylescheme.c		\
 	mootextstylescheme.h		\
-	mootextview-private.h		\
 	mootextview.c			\
 	mootextview.h			\
-	moousertools-prefs.c		\
-	moousertools-prefs.h		\
+	mootextview-private.h		\
 	moousertools.c			\
-	moousertools.h
+	moousertools.h			\
+	moousertools-prefs.c		\
+	moousertools-prefs.h
+
+nodist_libmooedit_la_SOURCES =		\
+	$(nodist_gtksourceview_sources)
 
 dist_printing_sources =			\
 	mooprintpreview.h		\
@@ -151,10 +149,11 @@ EXTRA_DIST +=				\
 	$(mooedit_tools_DATA)		\
 	$(mooedit_lua_DATA)
 
-AM_CFLAGS = $(MOO_CFLAGS) $(MOO_WIN32_CFLAGS)
+AM_CFLAGS = $(MOO_CFLAGS) -I$(srcdir)/gtksourceview $(MOO_WIN32_CFLAGS)
 AM_CXXFLAGS = $(MOO_CXXFLAGS) $(MOO_WIN32_CFLAGS)
 
 include gtksourceview/Makefile.incl
 include langs/Makefile.incl
+include plugins/Makefile.incl
 
 %-private.lo: %.lo ; @true

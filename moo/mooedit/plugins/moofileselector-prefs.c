@@ -11,7 +11,7 @@
  */
 
 #include "moofileselector.h"
-#include "moofileselector-prefs-glade.h"
+#include "plugins/moofileselector-prefs-glade.h"
 #include "mooutils/mooprefsdialogpage.h"
 #include "mooutils/mooutils-treeview.h"
 #include "mooutils/mooi18n.h"

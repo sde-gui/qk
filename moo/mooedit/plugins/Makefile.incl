@@ -1,0 +1,48 @@
+mooeditplugins_sources =
+
+###########################################################################
+# ctags
+#
+ctags_sources =					\
+	plugins/ctags/readtags.c		\
+	plugins/ctags/readtags.h		\
+	plugins/ctags/readtags-mangle.h		\
+	plugins/ctags/ctags-plugin.c		\
+	plugins/ctags/ctags-doc.c		\
+	plugins/ctags/ctags-doc.h		\
+	plugins/ctags/ctags-view.c		\
+	plugins/ctags/ctags-view.h
+
+if MOO_BUILD_CTAGS
+mooeditplugins_sources += $(ctags_sources)
+else
+EXTRA_DIST += $(ctags_sources)
+endif
+
+###########################################################################
+# fileselector
+#
+
+GLADE_FILES +=					\
+	plugins/moofileselector.glade		\
+	plugins/moofileselector-prefs.glade
+
+mooeditplugins_sources +=			\
+	plugins/moofileselector-prefs.c		\
+	plugins/moofileselector.c		\
+	plugins/moofileselector.h
+
+###########################################################################
+# libmooeditplugins
+#
+
+mooeditplugins_sources +=			\
+	plugins/mooeditplugins.h		\
+	plugins/moofilelist.c			\
+	plugins/moofind.c
+
+GLADE_FILES +=					\
+	plugins/moofind.glade
+
+EXTRA_DIST +=					\
+	plugins/moofind.c

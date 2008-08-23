@@ -1,9 +1,3 @@
-noinst_LTLIBRARIES += libgtksourceview.la
-
-libgtksourceview_la_CFLAGS =		\
-	-I$(srcdir)/gtksourceview	\
-	$(MOO_CFLAGS)
-
 upstream_sources =						\
 	gtksourceview/upstream/gtksourcecontextengine.c		\
 	gtksourceview/upstream/gtksourcecontextengine.h		\
@@ -32,7 +26,7 @@ upstream_sources =						\
 	gtksourceview/upstream/gtktextregion.c			\
 	gtksourceview/upstream/gtktextregion.h
 
-gtksourceview_sources =						\
+built_gtksourceview_sources =					\
 	gtksourceview/gtksourcecontextengine-mangled.c		\
 	gtksourceview/gtksourcecontextengine-mangled.h		\
 	gtksourceview/gtksourceengine-mangled.c			\
@@ -64,21 +58,21 @@ no_xml_sources =						\
 	gtksourceview/gtksourcelanguage-noxml-mangled.c		\
 	gtksourceview/gtksourcestylescheme-noxml-mangled.c
 
-BUILT_SOURCES += $(xml_sources) $(no_xml_sources) $(gtksourceview_sources)
-CLEANFILES += $(xml_sources) $(no_xml_sources) $(gtksourceview_sources)
+BUILT_SOURCES += $(xml_sources) $(no_xml_sources) $(built_gtksourceview_sources)
+CLEANFILES += $(xml_sources) $(no_xml_sources) $(built_gtksourceview_sources)
 
-libgtksourceview_la_SOURCES =					\
+gtksourceview_sources =						\
 	gtksourceview/gtksourceview-i18n.h			\
 	gtksourceview/gtksourceview-marshal.h			\
 	gtksourceview/gtksourceview-api.h
-nodist_libgtksourceview_la_SOURCES =				\
-	$(gtksourceview_sources)
+nodist_gtksourceview_sources =					\
+	$(built_gtksourceview_sources)
 
 if MOO_USE_XML
-nodist_libgtksourceview_la_SOURCES += $(xml_sources)
+nodist_gtksourceview_sources += $(xml_sources)
 EXTRA_DIST += $(no_xml_sources)
 else
-nodist_libgtksourceview_la_SOURCES += $(no_xml_sources)
+nodist_gtksourceview_sources += $(no_xml_sources)
 EXTRA_DIST += $(xml_sources)
 endif
 

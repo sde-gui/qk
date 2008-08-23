@@ -18,7 +18,7 @@
 #endif
 
 #include "mooedit/mooplugin-macro.h"
-#include "moofind-glade.h"
+#include "plugins/moofind-glade.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "moofileview/moofileentry.h"
 #include "mooedit/moocmdview.h"
@@ -550,7 +550,7 @@ get_directory (MooGladeXML *xml)
 
     if (dir)
     {
-        moo_history_list_add (moo_history_combo_get_list (combo), 
+        moo_history_list_add (moo_history_combo_get_list (combo),
                               gtk_entry_get_text (GTK_ENTRY (entry)));
         /* trailing slash is no-no on windows */
         norm_dir = _moo_normalize_file_path (dir);

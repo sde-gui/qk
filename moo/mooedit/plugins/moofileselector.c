@@ -19,7 +19,7 @@
 #include "moofileview/moobookmarkmgr.h"
 #include "moofileview/moofileview-tools.h"
 #include "mooeditplugins.h"
-#include "moofileselector-glade.h"
+#include "plugins/moofileselector-glade.h"
 #include "marshals.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-fs.h"

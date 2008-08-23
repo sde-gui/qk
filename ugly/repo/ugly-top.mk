@@ -7,7 +7,8 @@ EXTRA_DIST +=			\
 	ugly/repo/ugly-pre.mk	\
 	ugly/repo/ugly-post.mk	\
 	ugly/repo/bdist.mk	\
-	ugly/repo/bdist-top.mk
+	ugly/repo/bdist-top.mk	\
+	ugly/repo/ugly-subdir-Makefile
 
 UGLY_DEPS +=			\
 	ugly/repo/bdist-top.mk	\

@@ -2,8 +2,7 @@ DIST_SUBDIRS = pcre newgtk
 
 noinst_LTLIBRARIES =
 subdirs =
-libs = libxdgmime.la
-include xdgmime/Makefile.incl
+libs =
 
 if MOO_BUILD_PCRE
 subdirs += pcre
@@ -221,3 +220,5 @@ AM_CXXFLAGS =					\
 	$(MOO_CXXFLAGS)				\
 	$(MOO_WIN32_CFLAGS)			\
 	$(objcxx_flag)
+
+include xdgmime/Makefile.incl
