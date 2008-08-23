@@ -371,18 +371,8 @@ main (int argc, char *argv[])
     gdk_threads_enter ();
 
     app = MOO_APP (g_object_new (medit_app_get_type (),
-                                 "argv", argv,
                                  "run-input", run_input,
                                  "use-session", medit_opts.use_session,
-                                 "short-name", "medit",
-                                 "full-name", "medit",
-                                 "description", _("medit is a text editor"),
-                                 "website", "http://mooedit.sourceforge.net/",
-                                 "website-label", "http://mooedit.sourceforge.net/",
-                                 "quit-on-editor-close", TRUE,
-                                 "logo", "medit",
-                                 /* static string, not copied! */
-                                 "credits", THANKS,
                                  "instance-name", medit_opts.app_name,
                                  NULL));
 

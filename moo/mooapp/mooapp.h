@@ -27,21 +27,8 @@ G_BEGIN_DECLS
 
 
 typedef struct _MooApp              MooApp;
-typedef struct _MooAppInfo          MooAppInfo;
 typedef struct _MooAppPrivate       MooAppPrivate;
 typedef struct _MooAppClass         MooAppClass;
-
-struct _MooAppInfo
-{
-    char *short_name;
-    char *full_name;
-    char *description;
-    char *version;
-    char *website;
-    char *website_label;
-    char *logo;
-    const char *credits;
-};
 
 struct _MooApp
 {
@@ -84,11 +71,6 @@ int              moo_app_run                    (MooApp     *app);
 gboolean         moo_app_quit                   (MooApp     *app);
 
 void             moo_app_load_session           (MooApp     *app);
-
-void             moo_app_set_exit_code          (MooApp     *app,
-                                                 int         code);
-
-const MooAppInfo*moo_app_get_info               (MooApp     *app);
 
 MooEditor       *moo_app_get_editor             (MooApp     *app);
 

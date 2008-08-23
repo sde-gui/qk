@@ -32,21 +32,6 @@
   (return-type "gboolean")
 )
 
-(define-method set_exit_code
-  (of-object "MooApp")
-  (c-name "moo_app_set_exit_code")
-  (return-type "none")
-  (parameters
-    '("int" "code")
-  )
-)
-
-;; (define-method get_info
-;;   (of-object "MooApp")
-;;   (c-name "moo_app_get_info")
-;;   (return-type "const-MooAppInfo*")
-;; )
-
 (define-function prefs_dialog
   (c-name "moo_app_prefs_dialog")
   (return-type "none")

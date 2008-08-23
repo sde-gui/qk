@@ -47,5 +47,6 @@ syntax: regexp
 ^moo/mooedit/plugins/Makefile\.am
 ^moo/moofileview/Makefile\.am
 ^moo/mooapp/Makefile\.am
+^moo/mooapp/mooapp-credits\.h
 ^moo/mooutils/Makefile\.am
 ^moo/mooutils/stock-(moo|medit)\.h

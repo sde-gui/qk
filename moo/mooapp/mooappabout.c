@@ -13,6 +13,8 @@
 #include "mooappabout-glade.h"
 #include "mooappabout.h"
 #include "mooapp.h"
+#include "mooapp-credits.h"
+#include "mooapp-info.h"
 #include "moohtml.h"
 #include "moolinklabel.h"
 #include "mooutils/moostock.h"
@@ -86,10 +88,6 @@ show_credits (void)
     GtkTextView *written_by;
     GtkTextView *thanks;
     GtkTextBuffer *buffer;
-    const MooAppInfo *info;
-
-    info = moo_app_get_info (moo_app_get_instance());
-    g_return_if_fail (info && info->credits);
 
     if (credits_dialog)
     {
@@ -128,7 +126,7 @@ show_credits (void)
 
     thanks = moo_glade_xml_get_widget (xml, "thanks");
     buffer = gtk_text_view_get_buffer (thanks);
-    gtk_text_buffer_insert_at_cursor (buffer, info->credits, -1);
+    gtk_text_buffer_insert_at_cursor (buffer, MOO_APP_CREDITS, -1);
 
     if (about_dialog)
         moo_window_set_parent (credits_dialog, about_dialog);
@@ -166,12 +164,11 @@ create_about_dialog (void)
 {
     MooGladeXML *xml;
     GtkWidget *dialog, *logo, *button;
-    const MooAppInfo *info;
     char *markup;
     GtkLabel *label;
     MooLinkLabel *url;
+    GtkStockItem dummy;
 
-    info = moo_app_get_info (moo_app_get_instance());
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     moo_glade_xml_map_id (xml, "url", MOO_TYPE_LINK_LABEL);
     moo_glade_xml_parse_memory (xml, mooappabout_glade_xml, -1, "dialog", NULL);
@@ -185,12 +182,12 @@ create_about_dialog (void)
 
     label = moo_glade_xml_get_widget (xml, "name");
     markup = g_strdup_printf ("<span size=\"xx-large\"><b>%s-%s</b></span>",
-                              info->full_name, info->version);
+                              MOO_APP_FULL_NAME, MOO_APP_VERSION);
     gtk_label_set_markup (label, markup);
     g_free (markup);
 
     label = moo_glade_xml_get_widget (xml, "description");
-    gtk_label_set_text (label, info->description);
+    gtk_label_set_text (label, MOO_APP_DESCRIPTION);
 
     label = moo_glade_xml_get_widget (xml, "copyright");
     markup = g_strdup_printf ("<small>%s</small>", copyright);
@@ -198,26 +195,17 @@ create_about_dialog (void)
     g_free (markup);
 
     url = moo_glade_xml_get_widget (xml, "url");
-    _moo_link_label_set_url (url, info->website);
-    _moo_link_label_set_text (url, info->website_label);
+    _moo_link_label_set_url (url, MOO_APP_WEBSITE);
+    _moo_link_label_set_text (url, MOO_APP_WEBSITE_LABEL);
 
     logo = moo_glade_xml_get_widget (xml, "logo");
 
-    if (info->logo)
-    {
-        GtkStockItem dummy;
-
-        if (gtk_stock_lookup (info->logo, &dummy))
-            gtk_image_set_from_stock (GTK_IMAGE (logo), info->logo,
-                                      GTK_ICON_SIZE_DIALOG);
-        else
-            gtk_image_set_from_icon_name (GTK_IMAGE (logo), info->logo,
-                                          GTK_ICON_SIZE_DIALOG);
-    }
+    if (gtk_stock_lookup (MOO_APP_LOGO, &dummy))
+        gtk_image_set_from_stock (GTK_IMAGE (logo), MOO_APP_LOGO,
+                                  GTK_ICON_SIZE_DIALOG);
     else
-    {
-        gtk_widget_hide (logo);
-    }
+        gtk_image_set_from_icon_name (GTK_IMAGE (logo), MOO_APP_LOGO,
+                                      GTK_ICON_SIZE_DIALOG);
 
     button = moo_glade_xml_get_widget (xml, "credits_button");
     g_signal_connect (button, "clicked", G_CALLBACK (show_credits), NULL);
@@ -281,15 +269,12 @@ moo_app_get_system_info (MooApp *app)
     GString *text;
     char *string;
     char **dirs, **p;
-    const MooAppInfo *app_info;
 
     g_return_val_if_fail (MOO_IS_APP (app), NULL);
 
     text = g_string_new (NULL);
 
-    app_info = moo_app_get_info (app);
-    g_return_val_if_fail (app_info != NULL, NULL);
-    g_string_append_printf (text, "%s-%s\n", app_info->full_name, app_info->version);
+    g_string_append_printf (text, "%s-%s\n", MOO_APP_FULL_NAME, MOO_APP_VERSION);
 
 #ifdef __WIN32__
     string = get_windows_name ();

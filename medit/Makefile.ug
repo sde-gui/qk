@@ -10,8 +10,8 @@ MODULE = medit
 bin_PROGRAMS = medit
 
 EXTRA_DIST += main.c
-medit_SOURCES = medit-credits.h $(real_main_c) mem-debug.h
-BUILT_SOURCES += medit-credits.h $(real_main_c) medit.iss
+medit_SOURCES = $(real_main_c) mem-debug.h
+BUILT_SOURCES += $(real_main_c) medit.iss
 nodist_medit_SOURCES =
 
 real_main_c = main.c
@@ -28,10 +28,6 @@ include ../moo/moo-comps.mk
 medit_LDADD = $(moo_sublibs) $(MOO_LIBS)
 
 medit_RC_IN_FILE = medit.rc.in
-
-medit-credits.h: ../THANKS $(top_srcdir)/ugly/xml2h.sh
-	$(SHELL) $(top_srcdir)/ugly/xml2h.sh THANKS $(srcdir)/../THANKS > $@.tmp && \
-	mv $@.tmp $(srcdir)/medit-credits.h
 
 EXTRA_DIST += medit.desktop.in
 

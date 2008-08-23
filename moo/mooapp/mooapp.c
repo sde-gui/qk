@@ -19,6 +19,7 @@
 #include "mooapp-private.h"
 #include "smclient/eggsmclient.h"
 #include "mooapp-accels.h"
+#include "mooapp-info.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"
@@ -80,10 +81,7 @@ static struct {
 static volatile int signal_received;
 
 struct _MooAppPrivate {
-    char      **argv;
-    int         exit_code;
     MooEditor  *editor;
-    MooAppInfo  info;
     char       *rc_files[2];
 
     gboolean    run_input;
@@ -100,8 +98,6 @@ struct _MooAppPrivate {
     MooUIXML   *ui_xml;
     const char *default_ui;
     guint       quit_handler_id;
-    gboolean    use_editor;
-    gboolean    quit_on_editor_close;
 
 #ifdef GDK_WINDOWING_QUARTZ
     IgeMacDock *dock;
@@ -130,9 +126,6 @@ static void     moo_app_get_property    (GObject            *object,
                                          GValue             *value,
                                          GParamSpec         *pspec);
 
-static void     moo_app_set_argv        (MooApp             *app,
-                                         char              **argv);
-
 static gboolean moo_app_init_real       (MooApp             *app);
 static int      moo_app_run_real        (MooApp             *app);
 static void     moo_app_quit_real       (MooApp             *app);
@@ -149,14 +142,6 @@ static GtkWidget *moo_app_create_prefs_dialog (MooApp       *app);
 
 static void     moo_app_load_prefs      (MooApp             *app);
 static void     moo_app_save_prefs      (MooApp             *app);
-
-static void     moo_app_set_name        (MooApp             *app,
-                                         const char         *short_name,
-                                         const char         *full_name);
-static void     moo_app_set_description (MooApp             *app,
-                                         const char         *description);
-static void     moo_app_set_version     (MooApp             *app,
-                                         const char         *version);
 
 static void     moo_app_save_session    (MooApp             *app);
 static void     moo_app_write_session   (MooApp             *app);
@@ -199,20 +184,9 @@ moo_app_get_type (void)
 
 enum {
     PROP_0,
-    PROP_ARGV,
-    PROP_SHORT_NAME,
-    PROP_FULL_NAME,
-    PROP_VERSION,
-    PROP_DESCRIPTION,
     PROP_RUN_INPUT,
     PROP_USE_SESSION,
-    PROP_USE_EDITOR,
-    PROP_QUIT_ON_EDITOR_CLOSE,
     PROP_DEFAULT_UI,
-    PROP_LOGO,
-    PROP_WEBSITE,
-    PROP_WEBSITE_LABEL,
-    PROP_CREDITS,
     PROP_INSTANCE_NAME
 };
 
@@ -254,70 +228,6 @@ moo_app_class_init (MooAppClass *klass)
     klass->save_session = moo_app_save_session_real;
 
     g_object_class_install_property (gobject_class,
-                                     PROP_ARGV,
-                                     g_param_spec_boxed ("argv",
-                                             "argv",
-                                             "Null-terminated array of application arguments",
-                                             G_TYPE_STRV,
-                                             G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_SHORT_NAME,
-                                     g_param_spec_string ("short-name",
-                                             "short-name",
-                                             "short-name",
-                                             "ggap",
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_FULL_NAME,
-                                     g_param_spec_string ("full-name",
-                                             "full-name",
-                                             "full-name",
-                                             NULL,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_VERSION,
-                                     g_param_spec_string ("version",
-                                             "version",
-                                             "version",
-                                             NULL,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_WEBSITE,
-                                     g_param_spec_string ("website",
-                                             "website",
-                                             "website",
-                                             NULL,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_WEBSITE_LABEL,
-                                     g_param_spec_string ("website-label",
-                                             "website-label",
-                                             "website-label",
-                                             NULL,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_DESCRIPTION,
-                                     g_param_spec_string ("description",
-                                             "description",
-                                             "description",
-                                             NULL,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_LOGO,
-                                     g_param_spec_string ("logo",
-                                             "logo",
-                                             "logo",
-                                             NULL,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
                                      PROP_RUN_INPUT,
                                      g_param_spec_boolean ("run-input",
                                              "run-input",
@@ -341,28 +251,8 @@ moo_app_class_init (MooAppClass *klass)
                                              NULL,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_USE_EDITOR,
-                                     g_param_spec_boolean ("use-editor",
-                                             "use-editor",
-                                             "use-editor",
-                                             TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_QUIT_ON_EDITOR_CLOSE,
-                                     g_param_spec_boolean ("quit-on-editor-close",
-                                             "quit-on-editor-close",
-                                             "quit-on-editor-close",
-                                             FALSE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
-
     g_object_class_install_property (gobject_class, PROP_DEFAULT_UI,
         g_param_spec_pointer ("default-ui", "default-ui", "default-ui",
-                              G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
-
-    g_object_class_install_property (gobject_class, PROP_CREDITS,
-        g_param_spec_pointer ("credits", "credits", "credits",
                               G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 
     signals[INIT] =
@@ -455,10 +345,6 @@ moo_app_instance_init (MooApp *app)
 
     app->priv = g_new0 (MooAppPrivate, 1);
     app->priv->use_session = -1;
-
-    app->priv->info.version = g_strdup (APP_VERSION);
-    app->priv->info.website = g_strdup ("http://ggap.sourceforge.net/");
-    app->priv->info.website_label = g_strdup ("http://ggap.sourceforge.net");
 }
 
 
@@ -499,10 +385,7 @@ moo_app_constructor (GType           type,
     object = moo_app_parent_class->constructor (type, n_params, params);
     app = MOO_APP (object);
 
-    g_set_prgname (app->priv->info.short_name);
-
-    if (!app->priv->info.full_name)
-        app->priv->info.full_name = g_strdup (app->priv->info.short_name);
+    g_set_prgname (MOO_APP_SHORT_NAME);
 
 #if defined(HAVE_SIGNAL) && defined(SIGINT)
     setup_signals (sigint_handler);
@@ -532,8 +415,6 @@ moo_app_finalize (GObject *object)
     if (app->priv->session)
         moo_markup_doc_unref (app->priv->session);
 
-    if (app->priv->argv)
-        g_strfreev (app->priv->argv);
     if (app->priv->editor)
         g_object_unref (app->priv->editor);
     if (app->priv->ui_xml)
@@ -556,37 +437,6 @@ moo_app_set_property (GObject        *object,
 
     switch (prop_id)
     {
-        case PROP_ARGV:
-            moo_app_set_argv (app, (char**) g_value_get_boxed (value));
-            break;
-
-        case PROP_SHORT_NAME:
-            moo_app_set_name (app, g_value_get_string (value), NULL);
-            break;
-
-        case PROP_FULL_NAME:
-            moo_app_set_name (app, NULL, g_value_get_string (value));
-            break;
-
-        case PROP_VERSION:
-            moo_app_set_version (app, g_value_get_string (value));
-            break;
-
-        case PROP_WEBSITE:
-            g_free (app->priv->info.website);
-            app->priv->info.website = g_strdup (g_value_get_string (value));
-            g_object_notify (G_OBJECT (app), "website");
-            break;
-        case PROP_WEBSITE_LABEL:
-            g_free (app->priv->info.website_label);
-            app->priv->info.website_label = g_strdup (g_value_get_string (value));
-            g_object_notify (G_OBJECT (app), "website_label");
-            break;
-
-        case PROP_DESCRIPTION:
-            moo_app_set_description (app, g_value_get_string (value));
-            break;
-
         case PROP_RUN_INPUT:
             app->priv->run_input = g_value_get_boolean (value);
             break;
@@ -600,26 +450,8 @@ moo_app_set_property (GObject        *object,
             app->priv->instance_name = g_value_dup_string (value);
             break;
 
-        case PROP_USE_EDITOR:
-            app->priv->use_editor = g_value_get_boolean (value);
-            break;
-
-        case PROP_QUIT_ON_EDITOR_CLOSE:
-            app->priv->quit_on_editor_close = g_value_get_boolean (value);
-            break;
-
         case PROP_DEFAULT_UI:
             app->priv->default_ui = g_value_get_pointer (value);
-            break;
-
-        case PROP_LOGO:
-            g_free (app->priv->info.logo);
-            app->priv->info.logo = g_strdup (g_value_get_string (value));
-            g_object_notify (G_OBJECT (app), "logo");
-            break;
-
-        case PROP_CREDITS:
-            app->priv->info.credits = g_value_get_pointer (value);
             break;
 
         default:
@@ -637,28 +469,6 @@ moo_app_get_property (GObject        *object,
 
     switch (prop_id)
     {
-        case PROP_SHORT_NAME:
-            g_value_set_string (value, app->priv->info.short_name);
-            break;
-        case PROP_FULL_NAME:
-            g_value_set_string (value, app->priv->info.full_name);
-            break;
-
-        case PROP_VERSION:
-            g_value_set_string (value, app->priv->info.version);
-            break;
-
-        case PROP_DESCRIPTION:
-            g_value_set_string (value, app->priv->info.description);
-            break;
-
-        case PROP_WEBSITE:
-            g_value_set_string (value, app->priv->info.website);
-            break;
-        case PROP_WEBSITE_LABEL:
-            g_value_set_string (value, app->priv->info.website_label);
-            break;
-
         case PROP_RUN_INPUT:
             g_value_set_boolean (value, app->priv->run_input);
             break;
@@ -667,14 +477,6 @@ moo_app_get_property (GObject        *object,
             break;
         case PROP_INSTANCE_NAME:
             g_value_set_string (value, app->priv->instance_name);
-            break;
-
-        case PROP_USE_EDITOR:
-            g_value_set_boolean (value, app->priv->use_editor);
-            break;
-
-        case PROP_QUIT_ON_EDITOR_CLOSE:
-            g_value_set_boolean (value, app->priv->quit_on_editor_close);
             break;
 
         default:
@@ -687,25 +489,6 @@ MooApp*
 moo_app_get_instance (void)
 {
     return moo_app_data.instance;
-}
-
-
-static void
-moo_app_set_argv (MooApp         *app,
-                  char          **argv)
-{
-    g_strfreev (app->priv->argv);
-    app->priv->argv = g_strdupv (argv);
-    g_object_notify (G_OBJECT (app), "argv");
-}
-
-
-void
-moo_app_set_exit_code (MooApp      *app,
-                       int          code)
-{
-    g_return_if_fail (MOO_IS_APP (app));
-    app->priv->exit_code = code;
 }
 
 
@@ -771,14 +554,6 @@ moo_app_get_editor (MooApp *app)
 }
 
 
-const MooAppInfo *
-moo_app_get_info (MooApp     *app)
-{
-    g_return_val_if_fail (MOO_IS_APP (app), NULL);
-    return &app->priv->info;
-}
-
-
 #ifdef MOO_BUILD_EDIT
 static gboolean
 close_editor_window (MooApp *app)
@@ -786,8 +561,7 @@ close_editor_window (MooApp *app)
     GSList *windows;
     gboolean ret = FALSE;
 
-    if (!app->priv->running || app->priv->in_try_quit ||
-        !app->priv->quit_on_editor_close)
+    if (!app->priv->running || app->priv->in_try_quit)
         return FALSE;
 
     windows = moo_editor_list_windows (app->priv->editor);
@@ -823,7 +597,7 @@ moo_app_init_editor (MooApp *app)
     moo_editor_set_ui_xml (app->priv->editor,
                            moo_app_get_ui_xml (app));
     moo_editor_set_app_name (app->priv->editor,
-                             app->priv->info.short_name);
+                             MOO_APP_SHORT_NAME);
 
     init_plugins (app);
 }
@@ -917,8 +691,8 @@ moo_app_init_mac (G_GNUC_UNUSED MooApp *app)
 static gboolean
 moo_app_init_real (MooApp *app)
 {
-    gdk_set_program_class (app->priv->info.full_name);
-    gtk_window_set_default_icon_name (app->priv->info.short_name);
+    gdk_set_program_class (MOO_APP_FULL_NAME);
+    gtk_window_set_default_icon_name (MOO_APP_SHORT_NAME);
 
     _moo_set_app_instance_name (app->priv->instance_name);
 
@@ -927,8 +701,7 @@ moo_app_init_real (MooApp *app)
     moo_app_init_mac (app);
 
 #ifdef MOO_BUILD_EDIT
-    if (app->priv->use_editor)
-        moo_app_init_editor (app);
+    moo_app_init_editor (app);
 
     if (app->priv->use_session == -1)
         app->priv->use_session = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SAVE_SESSION));
@@ -1129,7 +902,7 @@ moo_app_run_real (MooApp *app)
 
     gtk_main ();
 
-    return app->priv->exit_code;
+    return 0;
 }
 
 
@@ -1245,46 +1018,6 @@ moo_app_quit (MooApp *app)
     {
         return FALSE;
     }
-}
-
-
-static void
-moo_app_set_name (MooApp     *app,
-                  const char *short_name,
-                  const char *full_name)
-{
-    if (short_name)
-    {
-        g_free (app->priv->info.short_name);
-        app->priv->info.short_name = g_strdup (short_name);
-        g_object_notify (G_OBJECT (app), "short_name");
-    }
-
-    if (full_name)
-    {
-        g_free (app->priv->info.full_name);
-        app->priv->info.full_name = g_strdup (full_name);
-        g_object_notify (G_OBJECT (app), "full_name");
-    }
-}
-
-
-static void
-moo_app_set_description (MooApp     *app,
-                         const char *description)
-{
-    g_free (app->priv->info.description);
-    app->priv->info.description = g_strdup (description);
-    g_object_notify (G_OBJECT (app), "description");
-}
-
-static void
-moo_app_set_version (MooApp     *app,
-                     const char *version)
-{
-    g_free (app->priv->info.version);
-    app->priv->info.version = g_strdup (version);
-    g_object_notify (G_OBJECT (app), "version");
 }
 
 
@@ -1773,11 +1506,10 @@ static GtkWidget *
 moo_app_create_prefs_dialog (MooApp *app)
 {
     char *title;
-    const MooAppInfo *info;
     MooPrefsDialog *dialog;
 
-    info = moo_app_get_info (app);
-    title = g_strdup_printf ("%s Preferences", info->full_name);
+    /* Prefs dialog title, like "medit Preferences" */
+    title = g_strdup_printf (_("%s Preferences"), MOO_APP_FULL_NAME);
     dialog = MOO_PREFS_DIALOG (moo_prefs_dialog_new (title));
     g_free (title);
 

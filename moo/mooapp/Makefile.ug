@@ -3,8 +3,10 @@ mooapp_sources =			\
 	mooappabout.h			\
 	mooapp.c			\
 	mooapp.h			\
-	mooapp-private.h		\
 	mooapp-accels.h			\
+	mooapp-credits.h		\
+	mooapp-info.h			\
+	mooapp-private.h		\
 	moohtml.h			\
 	moohtml.c			\
 	moolinklabel.h			\
@@ -14,9 +16,15 @@ noinst_LTLIBRARIES = libmooapp.la
 libmooapp_la_SOURCES = $(mooapp_sources)
 libmooapp_la_LIBADD = libsmclient.la
 
+BUILT_SOURCES += mooapp-credits.h
+
 GLADE_FILES = glade/mooappabout.glade
 
 AM_CFLAGS = $(MOO_CFLAGS)
 AM_CXXFLAGS = $(MOO_CXXFLAGS)
 
 include smclient/Makefile.incl
+
+mooapp-credits.h: ../../THANKS $(top_srcdir)/ugly/xml2h.sh
+	$(SHELL) $(top_srcdir)/ugly/xml2h.sh MOO_APP_CREDITS $(srcdir)/../../THANKS > $@.tmp && \
+	mv $@.tmp $(srcdir)/mooapp-credits.h
