@@ -155,6 +155,8 @@ pluginlib_LTLIBRARIES = moo.la
 plugin_DATA = moopython/pymoo.ini
 
 install-data-hook:
+	rm -f $(DESTDIR)$(libdir)/libmoo.la
+	rm -f $(DESTDIR)$(libdir)/libmoo.dll.a
 	rm -f $(DESTDIR)$(plugindir)/pymoo.la
 	rm -f $(DESTDIR)$(plugindir)/pymoo.dll.a
 	rm -f $(DESTDIR)$(pluginlibdir)/moo.la
