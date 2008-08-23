@@ -32,7 +32,7 @@
     };                                                                                      \
                                                                                             \
     g_define_type_id =                                                                      \
-        g_type_register_static (TYPE_PARENT, #TypeName, &type_info, flags);
+        g_type_register_static (TYPE_PARENT, #TypeName, &type_info, (GTypeFlags) flags);
 #else
 #define _MOO_REGISTER_TYPE(TypeName,type_name,TYPE_PARENT,flags)                            \
     g_define_type_id =                                                                      \
@@ -42,7 +42,7 @@
                                        (GClassInitFunc) type_name##_class_intern_init,      \
                                        sizeof (TypeName),                                   \
                                        (GInstanceInitFunc) type_name##_init,                \
-                                       flags);
+                                       (GTypeFlags) flags);
 #endif
 
 
