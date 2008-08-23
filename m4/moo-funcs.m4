@@ -16,18 +16,11 @@ AC_DEFUN_ONCE([MOO_AC_FUNCS],[
 
   # for mooapp.c
   AC_CHECK_HEADERS(signal.h)
+  AC_CHECK_FUNCS([signal])
 
   # for mdfileops.c
   AC_CHECK_FUNCS([link fchown fchmod])
 
-  ################################################################################
-  #  Terminal stuff
-  AC_CHECK_HEADERS([poll.h sys/wait.h])
-  AC_CHECK_HEADERS([sys/termios.h sys/un.h stropts.h termios.h])
-  AC_CHECK_HEADERS([libutil.h util.h])
-  AC_CHECK_FUNCS([signal posix_openpt])
-  AC_CHECK_FUNCS([getpt grantpt unlockpt ptsname ptsname_r])
-  AC_TYPE_PID_T
-  AC_HEADER_TIOCGWINSZ
-  ################################################################################
+  # for mooutils-fs.c
+  AC_CHECK_HEADERS(sys/wait.h)
 ])
