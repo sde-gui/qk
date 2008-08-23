@@ -225,5 +225,3 @@ include xdgmime/Makefile.incl
 
 MODULE = libmooutils
 UGLY_LIBS =
-
-%.lo: %.o ; @true
