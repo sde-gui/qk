@@ -1,32 +1,23 @@
-noinst_LTLIBRARIES +=				\
-	libsmclient.la
-
-libsmclient_la_CFLAGS =				\
-	$(MOO_CFLAGS)				\
-	$(MOO_W_NO_UNUSED)
-
-libsmclient_la_SOURCES =			\
+libmooapp_la_SOURCES +=				\
 	smclient/eggsmclient.c			\
 	smclient/eggsmclient.h			\
 	smclient/eggsmclient-mangle.h		\
 	smclient/eggsmclient-private.h
 
-libsmclient_la_LIBADD =
-
 if GDK_X11
-libsmclient_la_CFLAGS += $(X_CFLAGS) -DEGG_SM_CLIENT_BACKEND_XSMP
-libsmclient_la_LIBADD += $(X_LIBS) $(X_EXTRA_LIBS) -lSM -lICE
-libsmclient_la_SOURCES +=			\
+AM_CFLAGS += $(X_CFLAGS) -DEGG_SM_CLIENT_BACKEND_XSMP
+libmooapp_la_LIBADD += $(X_LIBS) $(X_EXTRA_LIBS) -lSM -lICE
+libmooapp_la_SOURCES +=				\
 	smclient/eggsmclient-xsmp.c		\
 	smclient/eggdesktopfile.h		\
 	smclient/eggdesktopfile.c
 endif GDK_X11
 if GDK_WIN32
-libsmclient_la_SOURCES +=			\
+libmooapp_la_SOURCES +=				\
 	smclient/eggsmclient-win32.c
 endif GDK_WIN32
 if GDK_QUARTZ
-libsmclient_la_SOURCES +=			\
+libmooapp_la_SOURCES +=				\
 	smclient/eggsmclient-dummy.c
 endif GDK_QUARTZ
 

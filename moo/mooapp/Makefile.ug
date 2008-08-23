@@ -14,7 +14,7 @@ mooapp_sources =			\
 
 noinst_LTLIBRARIES = libmooapp.la
 libmooapp_la_SOURCES = $(mooapp_sources)
-libmooapp_la_LIBADD = libsmclient.la
+libmooapp_la_LIBADD =
 
 BUILT_SOURCES += mooapp-credits.h
 

@@ -28,6 +28,11 @@
 #ifndef __XDG_MIME_INT_H__
 #define __XDG_MIME_INT_H__
 
+#if __GNUC__ == 4 && __GNUC_MINOR__ >= 2
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
+
 #include "xdgmime.h"
 
 
