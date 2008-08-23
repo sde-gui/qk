@@ -44,7 +44,6 @@ moo/moolua/Makefile
 moo/mooutils/Makefile
 moo/mooutils/newgtk/Makefile
 moo/moofileview/Makefile
-moo/mooterm/Makefile
 moo/mooedit/Makefile
 moo/mooedit/plugins/Makefile
 moo/mooapp/Makefile
@@ -53,7 +52,6 @@ moo/moopython/plugins/Makefile
 moo/moopython/plugins/pyproject/Makefile
 moo/moopython/pygtk/Makefile
 moo/mooutils/pcre/Makefile
-moo/mooterm/mootermhelper_res.rc
 tests/pyapp.py
 tests/Makefile
 medit/Makefile

@@ -32,12 +32,6 @@ libs += mooutils/libmooutils.la
 marshals += $(srcdir)/mooutils/marshals.list
 sub_marshals_h += mooutils/marshals.h
 endif
-if MOO_BUILD_TERM
-subdirs += mooterm
-libs += mooterm/libmooterm.la
-marshals += $(srcdir)/mooterm/marshals.list
-sub_marshals_h += mooterm/marshals.h
-endif
 if MOO_BUILD_EDIT
 if GTK_2_6
 subdirs += moofileview
@@ -62,7 +56,7 @@ subdirs += moopython
 endif
 
 SUBDIRS = $(subdirs) .
-DIST_SUBDIRS = moolua mooutils mooterm mooedit mooapp moopython moofileview
+DIST_SUBDIRS = moolua mooutils mooedit mooapp moopython moofileview
 
 lib_LTLIBRARIES =
 noinst_LTLIBRARIES =
@@ -112,7 +106,7 @@ marshals.list: $(marshals)
 
 BUILT_SOURCES += $(sub_marshals_h)
 CLEANFILES += $(sub_marshals_h)
-EXTRA_DIST += mooutils/marshals.list mooapp/marshals.list moofileview/marshals.list mooterm/marshals.list mooedit/marshals.list
+EXTRA_DIST += mooutils/marshals.list mooapp/marshals.list moofileview/marshals.list mooedit/marshals.list
 %/marshals.h: $(srcdir)/%/marshals.list
 	glib-genmarshal --prefix=_moo_marshal --header $(srcdir)/$*/marshals.list > $@.tmp && \
 	mv $@.tmp $@

@@ -27,12 +27,13 @@ class Plugin(moo.edit.Plugin):
 
 class WinPlugin(moo.edit.WinPlugin):
     def start(self, *whatever):
-        if not self.terminal.child_alive():
-            self.terminal.soft_reset()
-            self.terminal.start_default_shell()
+#         if not self.terminal.child_alive():
+            self.terminal.reset(True, True)
+            # XXX
+            self.terminal.fork_command("/bin/sh", ["/bin/sh"])
 
     def color_scheme_item_activated(self, item, color_scheme):
-        self.terminal.set_colors(color_scheme.colors)
+        color_scheme.set_on_terminal(self.terminal)
         if color_scheme.colors:
             moo.utils.prefs_set_string('Plugins/Terminal/color_scheme', color_scheme.name)
         else:
@@ -53,23 +54,27 @@ class WinPlugin(moo.edit.WinPlugin):
         label = moo.utils.PaneLabel(icon_name=moo.utils.STOCK_TERMINAL,
                                     label_text=_("Terminal"))
 
-        self.terminal = moo.term.Term()
-        self.terminal.connect("child-died", self.start)
-        self.terminal.connect("populate-popup", self.terminal_populate_popup)
+        self.terminal = vte.Terminal()
+        self.terminal.set_scrollback_lines(1000000)
+        self.terminal.connect("child-exited", self.start)
+#         self.terminal.connect("populate-popup", self.terminal_populate_popup)
         self.start()
 
         cs_name = moo.utils.prefs_get_string('Plugins/Terminal/color_scheme')
         cs = find_color_scheme(cs_name)
         if cs:
-            self.terminal.set_colors(cs.colors)
+            cs.set_on_terminal(self.terminal)
 
-        swin = gtk.ScrolledWindow()
-        swin.set_shadow_type(gtk.SHADOW_ETCHED_IN)
-        swin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        swin.add(self.terminal)
-        swin.show_all()
+        hbox = gtk.HBox()
+        hbox.pack_start(self.terminal)
+        scrollbar = gtk.VScrollbar(self.terminal.get_adjustment())
+        hbox.pack_start(scrollbar, False, False, 0)
+        hbox.show_all()
 
-        self.window.add_pane(TERMINAL_PLUGIN_ID, swin, label, moo.utils.PANE_POS_BOTTOM)
+        self.terminal.set_size(self.terminal.get_column_count(), 10)
+        self.terminal.set_size_request(10, 10)
+
+        self.window.add_pane(TERMINAL_PLUGIN_ID, hbox, label, moo.utils.PANE_POS_BOTTOM)
 
         return True
 
@@ -85,6 +90,10 @@ class ColorScheme(object):
             self.colors = None
         else:
             self.colors = [gtk.gdk.color_parse(c) for c in colors]
+
+    def set_on_terminal(self, term):
+        if self.colors is not None:
+            term.set_colors(self.colors[0], self.colors[1], self.colors[2:10])
 
 color_schemes = [ColorScheme(cs[0], cs[1]) for cs in [
     # Color schemes shamelessly stolen from Konsole, the best terminal emulator out there
@@ -128,7 +137,7 @@ __plugin__ = None
 
 if os.name == 'posix':
     try:
-        import moo.term
+        import vte
         gobject.type_register(Plugin)
         gobject.type_register(WinPlugin)
         __plugin__ = Plugin

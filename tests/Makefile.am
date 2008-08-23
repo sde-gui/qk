@@ -32,9 +32,6 @@ test_programs +=			\
 	testpanedfileview testfold	\
 	testkeyfile
 endif
-if MOO_BUILD_TERM
-test_programs += mterm termbuffer
-endif
 if MOO_BUILD_APP
 test_programs += testhtml
 endif
@@ -55,20 +52,10 @@ EXTRA_DIST +=		\
 
 BUILT_SOURCES = pyapp.py
 
-if MOO_BUILD_TERM
-if !MOO_OS_CYGWIN
-if !MOO_BUILD_APP
-noinst_PROGRAMS += mterm #termbuffer
-endif
-endif
-endif
-
 if MOO_BUILD_UTILS
 if !MOO_BUILD_EDIT
-if !MOO_BUILD_TERM
 if !MOO_OS_CYGWIN
 noinst_PROGRAMS += testfileview
-endif
 endif
 endif
 endif
@@ -106,15 +93,6 @@ testthreads_SOURCES = testthreads.c
 testhtml_LDFLAGS = $(ldflags)
 testhtml_LDADD = $(ldadd)
 testhtml_SOURCES = testhtml.c
-
-
-mterm_LDFLAGS = $(ldflags)
-mterm_LDADD = $(ldadd)
-mterm_SOURCES = mterm.c
-
-termbuffer_LDFLAGS = $(ldflags)
-termbuffer_LDADD = $(ldadd)
-termbuffer_SOURCES = termbuffer.c
 
 
 ##############################################################################

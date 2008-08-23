@@ -4,7 +4,7 @@
 AC_DEFUN([MOO_COMPONENTS],[
   AC_REQUIRE([MOO_AC_CHECK_OS])
 
-  m4_foreach([comp], [utils, edit, term, app],
+  m4_foreach([comp], [utils, edit, app],
              [build_moo[]comp=true])
   m4_foreach([comp], $2,
              [build_moo[]comp=false])
@@ -24,14 +24,10 @@ AC_DEFUN([MOO_COMPONENTS],[
     build_mooutils=false
     build_mooedit=false
     build_mooapp=false
-    build_mooterm=true
   fi
 
   if $build_mooapp; then build_mooedit=true; fi
   if $build_mooedit; then build_mooutils=true; fi
-  if test "x$MOO_OS_CYGWIN" != "xyes"; then
-    $build_mooterm && build_mooutils=true
-  fi
 
   build_lua=$build_mooedit
   MOO_BUILD_COMPS=
@@ -48,7 +44,7 @@ AC_DEFUN([MOO_COMPONENTS],[
   fi
   AC_SUBST(MOO_LUA_ENABLED_DEFINE)
 
-  m4_foreach([comp], [utils, edit, term, app],[
+  m4_foreach([comp], [utils, edit, app],[
     AM_CONDITIONAL(MOO_BUILD_[]m4_toupper(comp), $build_moo[]comp)
     MOO_BUILD_[]m4_toupper(comp)=false
     if $build_moo[]comp; then
@@ -61,10 +57,6 @@ AC_DEFUN([MOO_COMPONENTS],[
     fi
     AC_SUBST(MOO_[]m4_toupper(comp)_ENABLED_DEFINE)
   ])
-
-  if test "x$MOO_OS_BSD" = "xyes" -a "x$MOO_OS_DARWIN" != "xyes"; then
-    $build_mooterm && MOO_LIBS="-lutil $MOO_LIBS"
-  fi
 
   AC_ARG_ENABLE(ctags-plugin,
     AC_HELP_STRING(--enable-ctags-plugin, [enable ctags plugin (default = YES)]),

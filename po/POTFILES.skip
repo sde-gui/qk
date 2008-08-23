@@ -1,6 +1,4 @@
 moo/mooutils/moocompat.c
-moo/mooterm/glade/mootermprefs.glade
-moo/mooterm/mootermparser-yacc.c
 
 moo/mooedit/gtksourceview/gtksourcecontextengine-mangled.c
 moo/mooedit/gtksourceview/gtksourcelanguage-mangled.c

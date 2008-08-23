@@ -106,12 +106,6 @@ _moo_pygtk_init (void)
     submod = PyImport_ImportModule ("moo.utils");
     PyModule_AddObject (_moo_module, "utils", submod);
 #endif
-#ifdef MOO_BUILD_TERM
-    if (!_moo_term_mod_init ())
-        return FALSE;
-    submod = PyImport_ImportModule ("moo.term");
-    PyModule_AddObject (_moo_module, "term", submod);
-#endif
 #ifdef MOO_BUILD_EDIT
     if (!_moo_edit_mod_init ())
         return FALSE;

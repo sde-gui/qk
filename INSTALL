@@ -41,11 +41,6 @@ configure has the following medit-specific options:
     or if installed version of the library doesn't have unicode support (this is
     the case with default FreeBSD port), included copy will be built.
 
-  --without-mooterm       whether to disable builtin terminal (default = NO)
-    Use this option if you do not want builtin terminal for some reason.
-    NOTE: you can simply turn the plugin off if all you want is not to have
-    the terminal in editor windows.
-
   --with-xml              whether to use libxml2 (default = YES)
     If libxml2 is not available or --without-xml is used, syntax highlighting
     will be disabled.

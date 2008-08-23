@@ -40,15 +40,6 @@ moo/mooutils/moofontsel.c:
     GTK font selector modified to show monospace fonts
     (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald
 
-moo/mooterm/pty.h:
-moo/mooterm/pty.c:
-    VTE terminal code modified to work under BSD.
-    (C) 2001,2002 Red Hat, Inc.
-
-mooterm/mooterm-input.c, moo_term_key_press():
-    VTE terminal code.
-    (C) 2001-2004 Red Hat, Inc.
-
 moo/mooutils/mooencodings-data.h:
     (C) 2002 Red Hat, Inc.
     (C) 2000-2002 Free Software Foundation, Inc.

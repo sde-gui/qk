@@ -15,10 +15,6 @@ moo_sublibs += $(top_builddir)/moo/mooedit/libmooedit.la
 moo_sublibs += $(top_builddir)/moo/moofileview/libmoofileview.la
 endif
 
-if MOO_BUILD_TERM
-moo_sublibs += $(top_builddir)/moo/mooterm/libmooterm.la
-endif
-
 if MOO_BUILD_LUA
 moo_sublibs += $(top_builddir)/moo/moolua/libmoolua.la
 endif

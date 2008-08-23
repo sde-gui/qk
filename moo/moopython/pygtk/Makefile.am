@@ -3,14 +3,12 @@ moopygtk_sources =		\
 	moo-pygtk.h		\
 	mooapp-mod.h		\
 	mooedit-mod.h		\
-	mooterm-mod.h		\
 	mooutils-mod.h		\
 	moo-mod.h
 
 BUILT_SOURCES =			\
 	mooapp-mod.h		\
 	mooedit-mod.h		\
-	mooterm-mod.h		\
 	mooutils-mod.h		\
 	moo-mod.h
 
@@ -56,10 +54,6 @@ EXTRA_DIST =				\
 	mooedit-pygtk.defs		\
 	mooedit-pygtk.override		\
 	mooedit-mod.c			\
-	mooterm-mod.py			\
-	mooterm-pygtk.defs		\
-	mooterm-pygtk.override		\
-	mooterm-mod.c			\
 	mooutils-mod.py			\
 	mooutils-pygtk.defs		\
 	mooutils-pygtk.override		\
@@ -73,13 +67,6 @@ nodist_moopygtk_sources += mooutils-pygtk.c
 BUILT_SOURCES += mooutils-pygtk.c
 CLEANFILES += mooutils-pygtk.c
 endif MOO_BUILD_UTILS
-
-if MOO_BUILD_TERM
-moopygtk_sources += mooterm-mod.c
-nodist_moopygtk_sources += mooterm-pygtk.c
-BUILT_SOURCES += mooterm-pygtk.c
-CLEANFILES += mooterm-pygtk.c
-endif MOO_BUILD_TERM
 
 if MOO_BUILD_EDIT
 moopygtk_sources += mooedit-mod.c
@@ -128,17 +115,6 @@ mooapp-pygtk.c: mooapp-pygtk.defs mooapp-pygtk.override $(codegen_files)
 		$(srcdir)/mooapp-pygtk.defs > $@.tmp && \
 		mv $@.tmp $@
 
-mooterm-pygtk.c: mooterm-pygtk.defs mooterm-pygtk.override $(codegen_files)
-	$(codegen) --prefix _moo_term \
-		--load-types $(srcdir)/../codegen/argtypes_m.py \
-		--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
-		--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
-		--register $(srcdir)/mooutils-pygtk.defs \
-		--override $(srcdir)/mooterm-pygtk.override \
-		--outfilename mooterm-pygtk.c \
-		$(srcdir)/mooterm-pygtk.defs > $@.tmp && \
-		mv $@.tmp $@
-
 mooedit-pygtk.c: mooedit-pygtk.defs mooedit-pygtk.override $(mooedit_defs_files) $(codegen_files)
 	$(codegen) --prefix _moo_edit \
 		--load-types $(srcdir)/../codegen/argtypes_m.py \
@@ -162,9 +138,6 @@ mooapp-mod.h: mooapp-mod.py $(PY2H)
 	mv $@.tmp $@
 mooutils-mod.h: mooutils-mod.py $(PY2H)
 	$(SHELL) $(PY2H) MOO_UTILS_PY $(srcdir)/mooutils-mod.py > $@.tmp && \
-	mv $@.tmp $@
-mooterm-mod.h: mooterm-mod.py $(PY2H)
-	$(SHELL) $(PY2H) MOO_TERM_PY $(srcdir)/mooterm-mod.py > $@.tmp && \
 	mv $@.tmp $@
 
 
