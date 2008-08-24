@@ -15,7 +15,7 @@
 #endif
 #include "mooedit/moocommand-exe.h"
 #include "mooedit/mooeditor.h"
-#include "mooedittools-glade.h"
+#include "mooedittools-exe-glade.h"
 #include "mooedit/moocmdview.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooglade.h"
@@ -1051,9 +1051,8 @@ unx_factory_create_widget (G_GNUC_UNUSED MooCommandFactory *factory)
     /* Translators: these are kinds of input for a shell command, do not translate the part before | */
     const char *input_names[] = {N_("Input|None"), N_("Input|Selected lines"), N_("Input|Selection"), N_("Input|Whole document")};
 
-    xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    moo_glade_xml_map_id (xml, "textview", MOO_TYPE_TEXT_VIEW);
-    moo_glade_xml_parse_memory (xml, mooedittools_glade_xml, -1, "unx_page", NULL);
+    xml = moo_glade_xml_new_from_buf (mooedittools_exe_glade_xml, -1,
+                                      "unx_page", GETTEXT_PACKAGE, NULL);
     page = moo_glade_xml_get_widget (xml, "unx_page");
     g_return_val_if_fail (page != NULL, NULL);
 

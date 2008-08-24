@@ -1,12 +1,6 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.3.3 on Sat Sep 22 20:16:12 2007 
-	Version: 3.0.0
-	Date: Fri Dec  8 17:47:39 2006
-	User: muntyan
-	Host: munt10
--->
+<?xml version="1.0"?>
 <glade-interface>
+  <requires-version lib="gtk+" version="2.12"/>
   <widget class="GtkWindow" id="window2">
     <child>
       <widget class="GtkVBox" id="page">
@@ -334,12 +328,29 @@
                         <property name="n_rows">2</property>
                         <property name="n_columns">2</property>
                         <child>
-                          <widget class="GtkLabel" id="label99">
+                          <widget class="GtkFontButton" id="fontbutton:MooFontButton">
                             <property name="visible">True</property>
+                            <property name="moo_prefs_key">font</property>
                             <property name="moo_sensitive">!use_default_font</property>
-                            <property name="label" translatable="yes">Font:</property>
+                            <property name="response_id">0</property>
+                            <property name="use_font">True</property>
+                            <property name="use_size">True</property>
                           </widget>
                           <packing>
+                            <property name="left_attach">1</property>
+                            <property name="right_attach">2</property>
+                            <property name="y_options"></property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkLabel" id="label100">
+                            <property name="visible">True</property>
+                            <property name="xalign">0</property>
+                            <property name="label" translatable="yes">Color scheme:</property>
+                          </widget>
+                          <packing>
+                            <property name="top_attach">1</property>
+                            <property name="bottom_attach">2</property>
                             <property name="x_options"></property>
                             <property name="y_options"></property>
                           </packing>
@@ -358,30 +369,13 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkLabel" id="label100">
+                          <widget class="GtkLabel" id="label99">
                             <property name="visible">True</property>
-                            <property name="xalign">0</property>
-                            <property name="label" translatable="yes">Color scheme:</property>
-                          </widget>
-                          <packing>
-                            <property name="top_attach">1</property>
-                            <property name="bottom_attach">2</property>
-                            <property name="x_options"></property>
-                            <property name="y_options"></property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkFontButton" id="fontbutton">
-                            <property name="visible">True</property>
-                            <property name="moo_prefs_key">font</property>
                             <property name="moo_sensitive">!use_default_font</property>
-                            <property name="response_id">0</property>
-                            <property name="use_font">True</property>
-                            <property name="use_size">True</property>
+                            <property name="label" translatable="yes">Font:</property>
                           </widget>
                           <packing>
-                            <property name="left_attach">1</property>
-                            <property name="right_attach">2</property>
+                            <property name="x_options"></property>
                             <property name="y_options"></property>
                           </packing>
                         </child>

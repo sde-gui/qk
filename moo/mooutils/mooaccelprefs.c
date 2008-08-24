@@ -186,7 +186,6 @@ _moo_accel_prefs_page_init (MooAccelPrefsPage *page)
                                           (GDestroyNotify) gtk_tree_row_reference_free);
 
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    moo_glade_xml_map_class (xml, "GtkButton", MOO_TYPE_ACCEL_BUTTON);
     moo_glade_xml_fill_widget (xml, GTK_WIDGET (page),
                                mooaccelprefs_glade_xml, -1,
                                "page", NULL);

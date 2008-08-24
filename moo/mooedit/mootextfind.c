@@ -125,11 +125,8 @@ moo_find_init (MooFind *find)
     GtkWidget *vbox;
     MooCombo *search, *replace;
 
-    find->xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    moo_glade_xml_map_id (find->xml, "search_entry", MOO_TYPE_HISTORY_COMBO);
-    moo_glade_xml_map_id (find->xml, "replace_entry", MOO_TYPE_HISTORY_COMBO);
-
-    if (!moo_glade_xml_parse_memory (find->xml, mootextfind_glade_xml, -1, "vbox", NULL))
+    if (!(find->xml = moo_glade_xml_new_from_buf (mootextfind_glade_xml, -1, "vbox",
+                                                  GETTEXT_PACKAGE, NULL)))
     {
         g_object_unref (find->xml);
         find->xml = NULL;

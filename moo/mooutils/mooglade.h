@@ -62,6 +62,7 @@ GType        moo_glade_xml_get_type         (void) G_GNUC_CONST;
 
 MooGladeXML *moo_glade_xml_new_empty        (const char     *domain);
 
+void         moo_glade_xml_register_type    (GType           type);
 void         moo_glade_xml_map_class        (MooGladeXML    *xml,
                                              const char     *class_name,
                                              GType           use_type);

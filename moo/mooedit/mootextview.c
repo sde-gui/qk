@@ -4421,9 +4421,8 @@ moo_text_view_start_quick_search (MooTextView *view)
     {
         MooGladeXML *xml;
 
-        xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-        moo_glade_xml_map_class (xml, "GtkEntry", MOO_TYPE_ENTRY);
-        moo_glade_xml_parse_memory (xml, mooquicksearch_glade_xml, -1, "evbox", NULL);
+        xml = moo_glade_xml_new_from_buf (mooquicksearch_glade_xml, -1, "evbox",
+                                          GETTEXT_PACKAGE, NULL);
 
         view->priv->qs.evbox = moo_glade_xml_get_widget (xml, "evbox");
         g_return_if_fail (view->priv->qs.evbox != NULL);

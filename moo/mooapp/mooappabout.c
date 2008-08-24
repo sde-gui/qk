@@ -97,10 +97,9 @@ show_credits (void)
         return;
     }
 
-    xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    moo_glade_xml_map_id (xml, "written_by", MOO_TYPE_HTML);
-    moo_glade_xml_map_id (xml, "translated_by", MOO_TYPE_HTML);
-    moo_glade_xml_parse_memory (xml, mooappabout_glade_xml, -1, "credits", NULL);
+    moo_glade_xml_register_type (MOO_TYPE_HTML);
+    xml = moo_glade_xml_new_from_buf (mooappabout_glade_xml, -1, "credits",
+                                      GETTEXT_PACKAGE, NULL);
 
     credits_dialog = moo_glade_xml_get_widget (xml, "credits");
     g_return_if_fail (credits_dialog != NULL);
@@ -169,9 +168,9 @@ create_about_dialog (void)
     MooLinkLabel *url;
     GtkStockItem dummy;
 
-    xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    moo_glade_xml_map_id (xml, "url", MOO_TYPE_LINK_LABEL);
-    moo_glade_xml_parse_memory (xml, mooappabout_glade_xml, -1, "dialog", NULL);
+    moo_glade_xml_register_type (MOO_TYPE_LINK_LABEL);
+    xml = moo_glade_xml_new_from_buf (mooappabout_glade_xml, -1, "dialog",
+                                      GETTEXT_PACKAGE, NULL);
     g_return_val_if_fail (xml != NULL, NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");

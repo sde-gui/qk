@@ -19,6 +19,7 @@
 
 #include "mooedit/mooplugin-macro.h"
 #include "plugins/moofind-glade.h"
+#include "plugins/moogrep-glade.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "moofileview/moofileentry.h"
 #include "mooedit/moocmdview.h"
@@ -331,16 +332,6 @@ setup_file_combo (MooHistoryCombo *hist_combo)
 
 
 static void
-map_combo (MooGladeXML *xml,
-           const char  *widget_id,
-           const char  *history_list_id)
-{
-    moo_glade_xml_map_id (xml, widget_id, MOO_TYPE_HISTORY_COMBO);
-    moo_glade_xml_set_property (xml, widget_id, "history-list-id", history_list_id);
-}
-
-
-static void
 init_skip_list (void)
 {
     MooHistoryList *list = moo_history_list_get (GREP_SKIP_LIST_ID);
@@ -359,11 +350,11 @@ create_grep_dialog (MooEditWindow  *window,
     init_skip_list ();
 
     stuff->grep_xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    map_combo (stuff->grep_xml, "pattern_combo", "FindPlugin/grep/pattern");
-    map_combo (stuff->grep_xml, "glob_combo", "FindPlugin/grep/glob");
-    map_combo (stuff->grep_xml, "dir_combo", "FindPlugin/grep/dir");
-    map_combo (stuff->grep_xml, "skip_combo", GREP_SKIP_LIST_ID);
-    moo_glade_xml_parse_memory (stuff->grep_xml, moofind_glade_xml, -1, "grep_dialog", NULL);
+    moo_glade_xml_set_property (stuff->grep_xml, "pattern_combo", "history-list-id", "FindPlugin/grep/pattern");
+    moo_glade_xml_set_property (stuff->grep_xml, "glob_combo", "history-list-id", "FindPlugin/grep/glob");
+    moo_glade_xml_set_property (stuff->grep_xml, "dir_combo", "history-list-id", "FindPlugin/grep/dir");
+    moo_glade_xml_set_property (stuff->grep_xml, "skip_combo", "history-list-id", GREP_SKIP_LIST_ID);
+    moo_glade_xml_parse_memory (stuff->grep_xml, moogrep_glade_xml, -1, "grep_dialog", NULL);
 
     stuff->grep_dialog = moo_glade_xml_get_widget (stuff->grep_xml, "grep_dialog");
     g_return_if_fail (stuff->grep_dialog != NULL);
@@ -404,9 +395,9 @@ create_find_dialog (MooEditWindow  *window,
     GtkWidget *pattern_entry;
 
     stuff->find_xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    map_combo (stuff->find_xml, "pattern_combo", "FindPlugin/find/pattern");
-    map_combo (stuff->find_xml, "dir_combo", "FindPlugin/find/dir");
-    map_combo (stuff->find_xml, "skip_combo", FIND_SKIP_LIST_ID);
+    moo_glade_xml_set_property (stuff->find_xml, "pattern_combo", "history-list-id", "FindPlugin/find/pattern");
+    moo_glade_xml_set_property (stuff->find_xml, "dir_combo", "history-list-id", "FindPlugin/find/dir");
+    moo_glade_xml_set_property (stuff->find_xml, "skip_combo", "history-list-id", FIND_SKIP_LIST_ID);
     moo_glade_xml_parse_memory (stuff->find_xml, moofind_glade_xml, -1, "find_dialog", NULL);
 
     stuff->find_dialog = moo_glade_xml_get_widget (stuff->find_xml, "find_dialog");

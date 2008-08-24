@@ -59,23 +59,21 @@ GtkWidget *
 _moo_file_selector_prefs_page (MooPlugin *plugin)
 {
     MooPrefsDialogPage *page;
-    MooGladeXML *xml;
     GtkWidget *treeview;
     GtkTreeViewColumn *column;
     GtkCellRenderer *cell;
     GtkListStore *store;
     MooTreeHelper *helper;
 
-    xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
     page = moo_prefs_dialog_page_new_from_xml (_("File Selector"), MOO_STOCK_FILE_SELECTOR,
-                                               xml, moofileselector_prefs_glade_xml,
+                                               NULL, moofileselector_prefs_glade_xml,
                                                "page", NULL);
 
-    g_signal_connect_swapped (page, "apply", G_CALLBACK (prefs_page_apply), xml);
-    g_signal_connect_swapped (page, "init", G_CALLBACK (prefs_page_init), xml);
+    g_signal_connect_swapped (page, "apply", G_CALLBACK (prefs_page_apply), page->xml);
+    g_signal_connect_swapped (page, "init", G_CALLBACK (prefs_page_init), page->xml);
     moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_FILE_SELECTOR);
 
-    treeview = moo_glade_xml_get_widget (xml, "treeview");
+    treeview = moo_glade_xml_get_widget (page->xml, "treeview");
 
     column = gtk_tree_view_column_new ();
     gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), column);
@@ -90,22 +88,23 @@ _moo_file_selector_prefs_page (MooPlugin *plugin)
     g_object_unref (store);
 
     helper = _moo_tree_helper_new (treeview,
-                                   moo_glade_xml_get_widget (xml, "new"),
-                                   moo_glade_xml_get_widget (xml, "delete"),
-                                   moo_glade_xml_get_widget (xml, "up"),
-                                   moo_glade_xml_get_widget (xml, "down"));
+                                   moo_glade_xml_get_widget (page->xml, "new"),
+                                   moo_glade_xml_get_widget (page->xml, "delete"),
+                                   moo_glade_xml_get_widget (page->xml, "up"),
+                                   moo_glade_xml_get_widget (page->xml, "down"));
 
     g_signal_connect (helper, "new-row", G_CALLBACK (helper_new_row), NULL);
     g_signal_connect (helper, "delete-row", G_CALLBACK (helper_delete_row), NULL);
     g_signal_connect (helper, "move-row", G_CALLBACK (helper_move_row), NULL);
     g_signal_connect_swapped (helper, "update-widgets",
-                              G_CALLBACK (helper_update_widgets), xml);
+                              G_CALLBACK (helper_update_widgets),
+                              page->xml);
     g_signal_connect (helper, "update-model",
-                      G_CALLBACK (helper_update_model), xml);
-    g_object_set_data_full (G_OBJECT (xml), "moo-tree-helper", helper, g_object_unref);
+                      G_CALLBACK (helper_update_model),
+                      page->xml);
+    g_object_set_data_full (G_OBJECT (page->xml), "moo-tree-helper", helper, g_object_unref);
 
-    g_object_set_data (G_OBJECT (xml), "moo-file-selector-plugin", plugin);
-    g_object_unref (xml);
+    g_object_set_data (G_OBJECT (page->xml), "moo-file-selector-plugin", plugin);
     return GTK_WIDGET (page);
 }
 

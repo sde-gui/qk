@@ -13,7 +13,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/moocommand-lua.h"
 #include "mooedit/mooedit-lua.h"
-#include "mooedittools-glade.h"
+#include "mooedittools-lua-glade.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mootext-private.h"
 #include "mooutils/mooi18n.h"
@@ -167,9 +167,8 @@ lua_factory_create_widget (G_GNUC_UNUSED MooCommandFactory *factory)
     MooGladeXML *xml;
     MooTextView *textview;
 
-    xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    moo_glade_xml_map_id (xml, "textview", MOO_TYPE_TEXT_VIEW);
-    moo_glade_xml_parse_memory (xml, mooedittools_glade_xml, -1, "lua_page", NULL);
+    xml = moo_glade_xml_new_from_buf (mooedittools_lua_glade_xml, -1,
+                                      "lua_page", GETTEXT_PACKAGE, NULL);
     page = moo_glade_xml_get_widget (xml, "lua_page");
     g_return_val_if_fail (page != NULL, NULL);
 

@@ -1,7 +1,6 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--*- mode: xml -*-->
+<?xml version="1.0"?>
 <glade-interface>
+  <requires-version lib="gtk+" version="2.12"/>
   <widget class="GtkWindow" id="window1">
     <property name="visible">True</property>
     <property name="title">window1</property>
@@ -36,7 +35,7 @@
                       <widget class="GtkHBox" id="hbox">
                         <property name="visible">True</property>
                         <child>
-                          <widget class="GtkEntry" id="entry">
+                          <widget class="GtkEntry" id="entry:MooEntry">
                             <property name="visible">True</property>
                           </widget>
                         </child>

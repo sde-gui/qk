@@ -129,14 +129,17 @@ GLADE_FILES =				\
 	glade/mooeditprefs-langs.glade	\
 	glade/mooeditprogress.glade	\
 	glade/mooeditsavemult.glade	\
-	glade/mooedittools.glade	\
 	glade/moopluginprefs.glade	\
 	glade/mooprint.glade		\
 	glade/mootextfind.glade		\
 	glade/mootextgotoline.glade	\
 	glade/mooquicksearch.glade	\
 	glade/moostatusbar.glade	\
-	glade/mooprintpreview.glade
+	glade/mooprintpreview.glade	\
+	glade/mooedittools-main.glade	\
+	glade/mooedittools-command.glade\
+	glade/mooedittools-exe.glade	\
+	glade/mooedittools-lua.glade
 
 MOO_UI_FILES = medit.xml mooedit.xml
 
@@ -155,3 +158,5 @@ include plugins/Makefile.incl
 
 MODULE = libmooedit
 UGLY_LIBS =
+
+UGLY_SUBDIRS += plugins

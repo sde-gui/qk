@@ -19,7 +19,8 @@
 #include "moofileview/moobookmarkmgr.h"
 #include "moofileview/moofileview-tools.h"
 #include "mooeditplugins.h"
-#include "plugins/moofileselector-glade.h"
+#include "plugins/moofileselector-save-as-glade.h"
+#include "plugins/moofileselector-new-file-glade.h"
 #include "marshals.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-fs.h"
@@ -386,10 +387,8 @@ create_new_file_dialog (GtkWidget    *parent,
     display_dirname = g_filename_display_basename (dirname);
     g_return_val_if_fail (display_dirname != NULL, NULL);
 
-    *xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    moo_glade_xml_map_class (*xml, "GtkEntry", MOO_TYPE_ENTRY);
-    moo_glade_xml_parse_memory (*xml, moofileselector_glade_xml, -1,
-                                "new_file_dialog", NULL);
+    *xml = moo_glade_xml_new_from_buf (moofileselector_new_file_glade_xml, -1,
+                                       "new_file_dialog", GETTEXT_PACKAGE, NULL);
 
     dialog = moo_glade_xml_get_widget (*xml, "new_file_dialog");
     g_return_val_if_fail (dialog != NULL, NULL);
@@ -753,10 +752,8 @@ create_save_as_dialog (GtkWidget   *parent,
     GtkWidget *dialog, *button;
     GtkEntry *entry;
 
-    *xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    moo_glade_xml_map_class (*xml, "GtkEntry", MOO_TYPE_ENTRY);
-    moo_glade_xml_parse_memory (*xml, moofileselector_glade_xml, -1,
-                                "save_untitled_dialog", NULL);
+    *xml = moo_glade_xml_new_from_buf (moofileselector_save_as_glade_xml, -1,
+                                       "save_untitled_dialog", GETTEXT_PACKAGE, NULL);
 
     dialog = moo_glade_xml_get_widget (*xml, "save_untitled_dialog");
     g_return_val_if_fail (dialog != NULL, NULL);

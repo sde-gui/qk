@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <glade-interface>
   <requires-version lib="gtk+" version="2.12"/>
-  <widget class="GtkDialog" id="dialog">
-    <property name="title" translatable="yes">Create Folder</property>
-    <property name="destroy_with_parent">True</property>
+  <widget class="GtkDialog" id="save_untitled_dialog">
+    <property name="title" translatable="yes">Save As</property>
+    <property name="window_position">GTK_WIN_POS_MOUSE</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
     <property name="has_separator">False</property>
     <child internal-child="vbox">
@@ -21,9 +21,10 @@
                 <property name="visible">True</property>
                 <property name="spacing">6</property>
                 <child>
-                  <widget class="GtkLabel" id="label">
+                  <widget class="GtkLabel" id="label1">
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
+                    <property name="label" translatable="yes">Save as</property>
                   </widget>
                   <packing>
                     <property name="expand">False</property>
@@ -33,6 +34,7 @@
                 <child>
                   <widget class="GtkEntry" id="entry:MooEntry">
                     <property name="visible">True</property>
+                    <property name="can_focus">True</property>
                     <property name="activates_default">True</property>
                   </widget>
                   <packing>
@@ -62,7 +64,7 @@
               </widget>
             </child>
             <child>
-              <widget class="GtkButton" id="okbutton1">
+              <widget class="GtkButton" id="ok_button">
                 <property name="visible">True</property>
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>

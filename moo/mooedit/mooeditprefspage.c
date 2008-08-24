@@ -71,7 +71,6 @@ static GtkTreeModel *page_get_lang_model    (PrefsPage          *page);
 static MooTextStyleScheme *page_get_scheme  (PrefsPage          *page);
 static char    *page_get_default_lang       (PrefsPage          *page);
 
-static void     page_view_init_xml          (MooGladeXML        *xml);
 static void     page_general_init           (PrefsPage          *page);
 static void     page_general_apply          (PrefsPage          *page);
 static void     page_view_init              (PrefsPage          *page);
@@ -85,7 +84,6 @@ static void     page_langs_apply            (PrefsPage          *page);
 typedef struct {
     const char *label;
     const char *ui;
-    void (*init_xml) (MooGladeXML *xml);
     void (*init) (PrefsPage *page);
     void (*apply) (PrefsPage *page);
 } PrefsPageInfo;
@@ -185,10 +183,10 @@ moo_edit_prefs_page_new (MooEditor *editor)
     guint i;
 
     const PrefsPageInfo prefs_pages[] = {
-        { N_("General"), mooeditprefs_general_glade_xml, NULL, page_general_init, page_general_apply },
-        { N_("View"), mooeditprefs_view_glade_xml, page_view_init_xml, page_view_init, page_view_apply },
-        { N_("Loading and saving"), mooeditprefs_file_glade_xml, NULL, page_file_init, page_file_apply },
-        { N_("Languages and files"), mooeditprefs_langs_glade_xml, NULL, page_langs_init, page_langs_apply }
+        { N_("General"), mooeditprefs_general_glade_xml, page_general_init, page_general_apply },
+        { N_("View"), mooeditprefs_view_glade_xml, page_view_init, page_view_apply },
+        { N_("Loading and saving"), mooeditprefs_file_glade_xml, page_file_init, page_file_apply },
+        { N_("Languages and files"), mooeditprefs_langs_glade_xml, page_langs_init, page_langs_apply }
     };
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
@@ -214,7 +212,6 @@ moo_edit_prefs_page_new (MooEditor *editor)
     {
         PrefsPage *page;
         const PrefsPageInfo *info;
-        MooGladeXML *xml;
 
         info = &prefs_pages[i];
         page = g_new0 (PrefsPage, 1);
@@ -223,15 +220,10 @@ moo_edit_prefs_page_new (MooEditor *editor)
         page->master = MOO_PREFS_DIALOG_PAGE (prefs_page);
         data->pages[data->n_pages] = page;
 
-        xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-        if (info->init_xml)
-            info->init_xml (xml);
-        page->page = moo_prefs_dialog_page_new_from_xml (NULL, NULL,
-                                                         xml,
-                                                         info->ui,
-                                                         "page",
-                                                         MOO_EDIT_PREFS_PREFIX);
-        g_object_unref (xml);
+        page->page =
+            moo_prefs_dialog_page_new_from_xml (NULL, NULL, NULL,
+                                                info->ui, "page",
+                                                MOO_EDIT_PREFS_PREFIX);
 
         gtk_notebook_append_page (data->notebook,
                                   GTK_WIDGET (page->page),
@@ -249,14 +241,6 @@ moo_edit_prefs_page_new (MooEditor *editor)
     g_signal_connect (prefs_page, "destroy", G_CALLBACK (moo_edit_prefs_page_destroy), NULL);
 
     return prefs_page;
-}
-
-
-static void
-page_view_init_xml (MooGladeXML *xml)
-{
-    moo_glade_xml_map_id (xml, "fontbutton", MOO_TYPE_FONT_BUTTON);
-    moo_glade_xml_set_property (xml, "fontbutton", "monospace", "True");
 }
 
 
@@ -301,6 +285,9 @@ page_view_init (PrefsPage *page)
 {
     MooTextStyleScheme *scheme;
     GtkComboBox *scheme_combo;
+
+    g_object_set (moo_glade_xml_get_widget (page->page->xml, "fontbutton"),
+                  "monospace", TRUE, NULL);
 
     scheme = moo_lang_mgr_get_active_scheme (page->lang_mgr);
     g_return_if_fail (scheme != NULL);

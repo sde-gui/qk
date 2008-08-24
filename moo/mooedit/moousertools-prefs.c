@@ -12,7 +12,8 @@
 
 #include "mooedit/moousertools-prefs.h"
 #include "mooedit/moousertools.h"
-#include "mooedittools-glade.h"
+#include "mooedittools-command-glade.h"
+#include "mooedittools-main-glade.h"
 #include "mooedit/moocommand.h"
 #include "mooedit/moocommanddisplay.h"
 #include "mooutils/mooprefsdialogpage.h"
@@ -409,26 +410,24 @@ moo_user_tools_prefs_page_new (void)
 {
     MooPrefsDialogPage *page;
     MooPrefsDialogPage *page_menu, *page_context;
-    MooGladeXML *xml;
 
-    xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    moo_glade_xml_map_id (xml, "page_menu", MOO_TYPE_PREFS_DIALOG_PAGE);
-    moo_glade_xml_map_id (xml, "page_context", MOO_TYPE_PREFS_DIALOG_PAGE);
     page = moo_prefs_dialog_page_new_from_xml (_("Tools"), GTK_STOCK_EXECUTE,
-                                               xml, mooedittools_glade_xml,
+                                               NULL, mooedittools_main_glade_xml,
                                                "page", NULL);
+
     g_signal_connect (page, "init", G_CALLBACK (main_page_init), NULL);
     g_signal_connect (page, "apply", G_CALLBACK (main_page_apply), NULL);
     moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_USER_TOOLS);
 
-    page_menu = moo_glade_xml_get_widget (xml, "page_menu");
-    moo_prefs_dialog_page_fill_from_xml (page_menu, NULL, mooedittools_glade_xml,
+    page_menu = moo_glade_xml_get_widget (page->xml, "page_menu");
+    moo_prefs_dialog_page_fill_from_xml (page_menu, NULL,
+                                         mooedittools_command_glade_xml,
                                          "page_command", NULL);
 
-    page_context = moo_glade_xml_get_widget (xml, "page_context");
-    moo_prefs_dialog_page_fill_from_xml (page_context, NULL, mooedittools_glade_xml,
+    page_context = moo_glade_xml_get_widget (page->xml, "page_context");
+    moo_prefs_dialog_page_fill_from_xml (page_context, NULL,
+                                         mooedittools_command_glade_xml,
                                          "page_command", NULL);
 
-    g_object_unref (xml);
     return GTK_WIDGET (page);
 }

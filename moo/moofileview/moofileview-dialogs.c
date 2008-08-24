@@ -51,10 +51,8 @@ _moo_file_props_dialog_class_init (MooFilePropsDialogClass *klass)
 static void
 _moo_file_props_dialog_init (MooFilePropsDialog *dialog)
 {
-    dialog->xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    moo_glade_xml_map_class (dialog->xml, "GtkEntry", MOO_TYPE_ENTRY);
-
-    if (!moo_glade_xml_parse_memory (dialog->xml, moofileprops_glade_xml, -1, "notebook", NULL))
+    if (!(dialog->xml = moo_glade_xml_new_from_buf (moofileprops_glade_xml, -1, "notebook",
+                                                    GETTEXT_PACKAGE, NULL)))
     {
         g_object_unref (dialog->xml);
         dialog->xml = NULL;
@@ -326,9 +324,8 @@ _moo_file_view_create_folder_dialog (GtkWidget  *parent,
 
     g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
 
-    xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    moo_glade_xml_map_class (xml, "GtkEntry", MOO_TYPE_ENTRY);
-    moo_glade_xml_parse_memory (xml, moocreatefolder_glade_xml, -1, NULL, NULL);
+    xml = moo_glade_xml_new_from_buf (moocreatefolder_glade_xml, -1, NULL,
+                                      GETTEXT_PACKAGE, NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");
     g_return_val_if_fail (dialog != NULL, NULL);
@@ -420,8 +417,8 @@ find_available_clip_name (const char *dirname)
 
 
 char *
-_moo_file_view_save_drop_dialog (GtkWidget          *parent,
-                                 const char         *dirname)
+_moo_file_view_save_drop_dialog (GtkWidget  *parent,
+                                 const char *dirname)
 {
     MooGladeXML *xml;
     GtkWidget *dialog, *button;
@@ -430,9 +427,8 @@ _moo_file_view_save_drop_dialog (GtkWidget          *parent,
 
     g_return_val_if_fail (dirname != NULL, NULL);
 
-    xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    moo_glade_xml_map_class (xml, "GtkEntry", MOO_TYPE_ENTRY);
-    moo_glade_xml_parse_memory (xml, moofileview_drop_glade_xml, -1, NULL, NULL);
+    xml = moo_glade_xml_new_from_buf (moofileview_drop_glade_xml, -1, NULL,
+                                      GETTEXT_PACKAGE, NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "save_drop_dialog");
     g_return_val_if_fail (dialog != NULL, NULL);

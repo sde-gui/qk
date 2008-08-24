@@ -25,6 +25,10 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/mooprefs.h"
+#include "mooutils/moofontsel.h"
+#include "mooutils/moohistorycombo.h"
+#include "mooutils/mooentry.h"
+#include "mooutils/mooaccelbutton.h"
 #include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
 #include <string.h>
@@ -1097,6 +1101,7 @@ widget_new (MooGladeXML    *xml,
     Widget *widget;
     WidgetProps *props;
     const char *id, *class_name;
+    char *freeme = NULL;
     GType type;
     gboolean ignore_errors = FALSE;
 
@@ -1114,15 +1119,45 @@ widget_new (MooGladeXML    *xml,
 
         if (!type)
         {
-            class_name = moo_markup_get_prop (node, "class");
-            g_return_val_if_fail (id != NULL && class_name != NULL, NULL);
+            const char *colon = strchr (id, ':');
 
-            type = GPOINTER_TO_SIZE (g_hash_table_lookup (xml->priv->class_to_type, class_name));
-
-            if (!type)
+            if (colon != NULL)
             {
-                ignore_errors = FALSE;
+                const char *old_id;
+
+                old_id = id;
+                freeme = g_strndup (id, colon - id);
+                id = freeme;
+                class_name = colon + 1;
+
+                g_message ("'%s' => '%s'", id, class_name);
                 type = get_type_by_name (class_name);
+
+                if (!type)
+                {
+                    ignore_errors = FALSE;
+                    type = get_type_by_name (class_name);
+                }
+
+                if (!type)
+                {
+                    g_free (freeme);
+                    freeme = NULL;
+                    id = old_id;
+                }
+            }
+            else
+            {
+                class_name = moo_markup_get_prop (node, "class");
+                g_return_val_if_fail (id != NULL && class_name != NULL, NULL);
+
+                type = GPOINTER_TO_SIZE (g_hash_table_lookup (xml->priv->class_to_type, class_name));
+
+                if (!type)
+                {
+                    ignore_errors = FALSE;
+                    type = get_type_by_name (class_name);
+                }
             }
         }
 
@@ -1144,10 +1179,13 @@ widget_new (MooGladeXML    *xml,
 
     widget = g_new0 (Widget, 1);
     widget->parent_node = parent;
-    widget->id = g_strdup (id);
     widget->type = type;
     widget->props = props;
     widget->children = NULL;
+
+    widget->id = g_strdup (id);
+    id = NULL;
+    g_free (freeme);
 
     collect_signals (node, widget);
 
@@ -1169,6 +1207,7 @@ widget_new (MooGladeXML    *xml,
     FOREACH_ELM_END;
 
     widget->children = g_slist_reverse (widget->children);
+
     return widget;
 }
 
@@ -2234,7 +2273,8 @@ moo_glade_xml_parse_markup (MooGladeXML  *xml,
                 break;
             }
         }
-        else if (!strcmp (elm->name, "requires"))
+        else if (strcmp (elm->name, "requires") == 0 ||
+                 strcmp (elm->name, "requires-version") == 0)
         {
             g_message ("%s: ignoring '%s'", G_STRLOC, elm->name);
         }
@@ -2426,9 +2466,28 @@ gpointer
 moo_glade_xml_get_widget (MooGladeXML    *xml,
                           const char     *id)
 {
+    gpointer widget;
+    const char *colon;
+
     g_return_val_if_fail (xml != NULL, NULL);
     g_return_val_if_fail (id != NULL, NULL);
-    return g_hash_table_lookup (xml->priv->widgets, id);
+
+    widget = g_hash_table_lookup (xml->priv->widgets, id);
+
+    if (!widget && (colon = strchr (id, ':')))
+    {
+        char *real_id = g_strndup (id, colon - id);
+        widget = g_hash_table_lookup (xml->priv->widgets, real_id);
+        g_free (real_id);
+    }
+
+    return widget;
+}
+
+
+void
+moo_glade_xml_register_type (G_GNUC_UNUSED GType type)
+{
 }
 
 
@@ -2560,6 +2619,15 @@ get_type_by_name (const char *name)
 
     if (type)
         return type;
+
+    REGISTER_TYPE ("MooFontButton", MOO_TYPE_FONT_BUTTON);
+    REGISTER_TYPE ("MooFontSelection", MOO_TYPE_FONT_SELECTION);
+    REGISTER_TYPE ("MooFontSelectionDialog", MOO_TYPE_FONT_SELECTION_DIALOG);
+    REGISTER_TYPE ("MooCombo", MOO_TYPE_COMBO);
+    REGISTER_TYPE ("MooHistoryCombo", MOO_TYPE_HISTORY_COMBO);
+    REGISTER_TYPE ("MooEntry", MOO_TYPE_ENTRY);
+    REGISTER_TYPE ("MooPrefsDialogPage", MOO_TYPE_PREFS_DIALOG_PAGE);
+    REGISTER_TYPE ("MooAccelButton", MOO_TYPE_ACCEL_BUTTON);
 
     REGISTER_TYPE ("GtkAboutDialog", GTK_TYPE_ABOUT_DIALOG);
     REGISTER_TYPE ("GtkCellRendererCombo", GTK_TYPE_CELL_RENDERER_COMBO);

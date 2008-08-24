@@ -25,7 +25,8 @@ endif
 #
 
 GLADE_FILES +=					\
-	plugins/moofileselector.glade		\
+	plugins/moofileselector-new-file.glade	\
+	plugins/moofileselector-save-as.glade	\
 	plugins/moofileselector-prefs.glade
 
 mooeditplugins_sources +=			\
@@ -43,7 +44,8 @@ mooeditplugins_sources +=			\
 	plugins/moofind.c
 
 GLADE_FILES +=					\
-	plugins/moofind.glade
+	plugins/moofind.glade			\
+	plugins/moogrep.glade
 
 EXTRA_DIST +=					\
 	plugins/moofind.c
