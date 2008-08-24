@@ -26,3 +26,5 @@ EXTRA_DIST +=					\
 	smclient/eggsmclient-xsmp.c		\
 	smclient/eggsmclient-dummy.c		\
 	smclient/eggsmclient-win32.c
+
+UGLY_SUBDIRS += smclient

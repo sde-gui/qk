@@ -161,5 +161,3 @@ include plugins/Makefile.incl
 
 MODULE = libmooedit
 UGLY_LIBS =
-
-UGLY_SUBDIRS += plugins

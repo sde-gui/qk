@@ -29,7 +29,7 @@ clean-local: $(UGLY_CLEAN_TARGETS)
 UGLY_SUBDIRS =
 UGLY_PRE_BUILD_TARGETS += ugly-subdirs-stamp
 UGLY_CLEAN_TARGETS += delete-ugly-subdir-makefile
-ugly-subdirs-stamp: $(UGLY_SUBDIRS) Makefile $(top_srcdir)/ugly/repo/ugly-subdir-Makefile
+ugly-subdirs-stamp: Makefile $(top_srcdir)/ugly/repo/ugly-subdir-Makefile
 	@if test -n "$(UGLY_SUBDIRS)"; then \
 	  for d in $(UGLY_SUBDIRS); do \
 	    mkdir -p $$d || exit 1; \

@@ -82,3 +82,5 @@ EXTRA_DIST +=			\
 	slnudata.c		\
 	slnunico.c		\
 	moo-tests-lua.h
+
+UGLY_SUBDIRS += ext
