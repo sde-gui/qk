@@ -11,11 +11,10 @@
  */
 
 #include "mooutils/mooaccelbutton.h"
-#include "mooaccelbutton-glade.h"
-#include "mooutils/mooglade.h"
 #include "marshals.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
+#include "mooaccelbutton-gxml.h"
 #include <gtk/gtkaccelgroup.h>
 #include <gtk/gtkdialog.h>
 #include <gtk/gtklabel.h>
@@ -309,17 +308,14 @@ static void
 moo_accel_button_clicked (GtkButton *gtkbutton)
 {
     MooAccelButton *button = MOO_ACCEL_BUTTON (gtkbutton);
-    MooGladeXML *xml;
-    GtkWidget *dialog, *ok_button, *cancel_button, *eventbox, *label;
+    AccelDialogXml *xml;
+    GtkWidget *dialog;
     GtkWidget *parent;
     Stuff s = {0, 0, NULL, NULL, 0};
     int response;
 
-    xml = moo_glade_xml_new_from_buf (mooaccelbutton_glade_xml, -1,
-                                      "dialog", GETTEXT_PACKAGE, NULL);
-    g_return_if_fail (xml != NULL);
-
-    dialog = moo_glade_xml_get_widget (xml, "dialog");
+    xml = accel_dialog_xml_new ();
+    dialog = GTK_WIDGET (xml->AccelDialog);
 
     parent = gtk_widget_get_toplevel (GTK_WIDGET (gtkbutton));
     gtk_window_set_transient_for (GTK_WINDOW (dialog),
@@ -334,24 +330,18 @@ moo_accel_button_clicked (GtkButton *gtkbutton)
     if (button->title)
         gtk_window_set_title (GTK_WINDOW (dialog), button->title);
 
-    ok_button = moo_glade_xml_get_widget (xml, "ok");
-    cancel_button = moo_glade_xml_get_widget (xml, "cancel");
-    eventbox = moo_glade_xml_get_widget (xml, "eventbox");
-    label = moo_glade_xml_get_widget (xml, "label");
+    gtk_button_set_use_underline (GTK_BUTTON (xml->ok), FALSE);
+    gtk_button_set_use_underline (GTK_BUTTON (xml->cancel), FALSE);
 
-    gtk_button_set_use_underline (GTK_BUTTON (ok_button), FALSE);
-    gtk_button_set_use_underline (GTK_BUTTON (cancel_button), FALSE);
-
-    s.label = GTK_LABEL (label);
+    s.label = xml->label;
     s.dialog = GTK_DIALOG (dialog);
 
-    g_signal_connect (eventbox, "key-press-event", G_CALLBACK (key_event), &s);
+    g_signal_connect (xml->eventbox, "key-press-event", G_CALLBACK (key_event), &s);
 
     response = gtk_dialog_run (GTK_DIALOG (dialog));
     remove_commit_timeout (&s);
 
     gtk_widget_destroy (dialog);
-    g_object_unref (xml);
 
     if (response == GTK_RESPONSE_OK)
     {

@@ -18,19 +18,18 @@
 #endif
 
 #include "mooedit/mooplugin-macro.h"
-#include "plugins/moofind-glade.h"
-#include "plugins/moogrep-glade.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "moofileview/moofileentry.h"
 #include "mooedit/moocmdview.h"
 #include "mooedit/mooedit-accels.h"
 #include "mooutils/moostock.h"
-#include "mooutils/mooglade.h"
 #include "mooutils/moohistorycombo.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/moohelp.h"
 #include "mooutils/mooutils-fs.h"
+#include "plugins/moofind-gxml.h"
+#include "plugins/moogrep-gxml.h"
 #include "help-sections.h"
 #include <gtk/gtkdialog.h>
 #include <gtk/gtkscrolledwindow.h>
@@ -62,10 +61,10 @@ typedef struct {
 
     char *current_file;
     GtkWidget *grep_dialog;
-    MooGladeXML *grep_xml;
+    GrepXml *grep_xml;
 
     GtkWidget *find_dialog;
-    MooGladeXML *find_xml;
+    FindXml *find_xml;
 
     MooEditWindow *window;
     MooCmdView *output;
@@ -345,18 +344,17 @@ create_grep_dialog (MooEditWindow  *window,
                     WindowStuff    *stuff)
 {
     GtkWidget *pattern_entry;
-    GtkWidget *skip_combo;
 
     init_skip_list ();
 
-    stuff->grep_xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    moo_glade_xml_set_property (stuff->grep_xml, "pattern_combo", "history-list-id", "FindPlugin/grep/pattern");
-    moo_glade_xml_set_property (stuff->grep_xml, "glob_combo", "history-list-id", "FindPlugin/grep/glob");
-    moo_glade_xml_set_property (stuff->grep_xml, "dir_combo", "history-list-id", "FindPlugin/grep/dir");
-    moo_glade_xml_set_property (stuff->grep_xml, "skip_combo", "history-list-id", GREP_SKIP_LIST_ID);
-    moo_glade_xml_parse_memory (stuff->grep_xml, moogrep_glade_xml, -1, "grep_dialog", NULL);
+    stuff->grep_xml = grep_xml_new_empty ();
+    moo_glade_xml_set_property (stuff->grep_xml->xml, "pattern_combo", "history-list-id", "FindPlugin/grep/pattern");
+    moo_glade_xml_set_property (stuff->grep_xml->xml, "glob_combo", "history-list-id", "FindPlugin/grep/glob");
+    moo_glade_xml_set_property (stuff->grep_xml->xml, "dir_combo", "history-list-id", "FindPlugin/grep/dir");
+    moo_glade_xml_set_property (stuff->grep_xml->xml, "skip_combo", "history-list-id", GREP_SKIP_LIST_ID);
+    grep_xml_build (stuff->grep_xml);
 
-    stuff->grep_dialog = moo_glade_xml_get_widget (stuff->grep_xml, "grep_dialog");
+    stuff->grep_dialog = GTK_WIDGET (stuff->grep_xml->Grep);
     g_return_if_fail (stuff->grep_dialog != NULL);
 
     gtk_window_set_default_size (GTK_WINDOW (stuff->grep_dialog), 400, -1);
@@ -376,15 +374,13 @@ create_grep_dialog (MooEditWindow  *window,
     g_signal_connect (stuff->grep_dialog, "delete-event",
                       G_CALLBACK (gtk_widget_hide_on_delete), NULL);
 
-    pattern_entry = moo_glade_xml_get_widget (stuff->grep_xml, "pattern_combo");
-    pattern_entry = MOO_COMBO(pattern_entry)->entry;
+    pattern_entry = MOO_COMBO(stuff->grep_xml->pattern_combo)->entry;
     g_signal_connect (pattern_entry, "changed",
                       G_CALLBACK (pattern_entry_changed), stuff->grep_dialog);
 
-    setup_file_combo (moo_glade_xml_get_widget (stuff->grep_xml, "dir_combo"));
+    setup_file_combo (stuff->grep_xml->dir_combo);
 
-    skip_combo = moo_glade_xml_get_widget (stuff->grep_xml, "skip_combo");
-    moo_combo_set_active (MOO_COMBO (skip_combo), 0);
+    moo_combo_set_active (MOO_COMBO (stuff->grep_xml->skip_combo), 0);
 }
 
 
@@ -394,13 +390,13 @@ create_find_dialog (MooEditWindow  *window,
 {
     GtkWidget *pattern_entry;
 
-    stuff->find_xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    moo_glade_xml_set_property (stuff->find_xml, "pattern_combo", "history-list-id", "FindPlugin/find/pattern");
-    moo_glade_xml_set_property (stuff->find_xml, "dir_combo", "history-list-id", "FindPlugin/find/dir");
-    moo_glade_xml_set_property (stuff->find_xml, "skip_combo", "history-list-id", FIND_SKIP_LIST_ID);
-    moo_glade_xml_parse_memory (stuff->find_xml, moofind_glade_xml, -1, "find_dialog", NULL);
+    stuff->find_xml = find_xml_new_empty ();
+    moo_glade_xml_set_property (stuff->find_xml->xml, "pattern_combo", "history-list-id", "FindPlugin/find/pattern");
+    moo_glade_xml_set_property (stuff->find_xml->xml, "dir_combo", "history-list-id", "FindPlugin/find/dir");
+    moo_glade_xml_set_property (stuff->find_xml->xml, "skip_combo", "history-list-id", FIND_SKIP_LIST_ID);
+    find_xml_build (stuff->find_xml);
 
-    stuff->find_dialog = moo_glade_xml_get_widget (stuff->find_xml, "find_dialog");
+    stuff->find_dialog = GTK_WIDGET (stuff->find_xml->Find);
     g_return_if_fail (stuff->find_dialog != NULL);
 
     gtk_window_set_default_size (GTK_WINDOW (stuff->find_dialog), 400, -1);
@@ -420,12 +416,11 @@ create_find_dialog (MooEditWindow  *window,
     g_signal_connect (stuff->find_dialog, "delete-event",
                       G_CALLBACK (gtk_widget_hide_on_delete), NULL);
 
-    pattern_entry = moo_glade_xml_get_widget (stuff->find_xml, "pattern_combo");
-    pattern_entry = MOO_COMBO(pattern_entry)->entry;
+    pattern_entry = MOO_COMBO(stuff->find_xml->pattern_combo)->entry;
     g_signal_connect (pattern_entry, "changed",
                       G_CALLBACK (pattern_entry_changed), stuff->find_dialog);
 
-    setup_file_combo (moo_glade_xml_get_widget (stuff->find_xml, "dir_combo"));
+    setup_file_combo (stuff->find_xml->dir_combo);
 }
 
 
@@ -487,8 +482,8 @@ init_grep_dialog (MooEditWindow *window,
     MooEdit *doc;
     GtkWidget *pattern_entry, *glob_entry;
 
-    pattern_entry = MOO_COMBO(moo_glade_xml_get_widget (stuff->grep_xml, "pattern_combo"))->entry;
-    glob_entry = MOO_COMBO(moo_glade_xml_get_widget (stuff->grep_xml, "glob_combo"))->entry;
+    pattern_entry = MOO_COMBO(stuff->grep_xml->pattern_combo)->entry;
+    glob_entry = MOO_COMBO(stuff->grep_xml->glob_combo)->entry;
 
     doc = moo_edit_window_get_active_doc (window);
 
@@ -500,7 +495,7 @@ init_grep_dialog (MooEditWindow *window,
         g_free (sel);
     }
 
-    init_dir_entry (moo_glade_xml_get_widget (stuff->grep_xml, "dir_combo"), doc);
+    init_dir_entry (stuff->grep_xml->dir_combo, doc);
 
     if (!gtk_entry_get_text(GTK_ENTRY (glob_entry))[0])
         gtk_entry_set_text (GTK_ENTRY (glob_entry), "*");
@@ -515,9 +510,9 @@ init_find_dialog (MooEditWindow *window,
 {
     GtkWidget *pattern_entry;
 
-    pattern_entry = MOO_COMBO(moo_glade_xml_get_widget (stuff->find_xml, "pattern_combo"))->entry;
+    pattern_entry = MOO_COMBO(stuff->find_xml->pattern_combo)->entry;
 
-    init_dir_entry (moo_glade_xml_get_widget (stuff->find_xml, "dir_combo"),
+    init_dir_entry (stuff->find_xml->dir_combo,
                     moo_edit_window_get_active_doc (window));
 
     gtk_widget_grab_focus (pattern_entry);
@@ -525,7 +520,7 @@ init_find_dialog (MooEditWindow *window,
 
 
 static char *
-get_directory (MooGladeXML *xml)
+get_directory (GrepXml *xml)
 {
     MooHistoryCombo *combo;
     GtkWidget *entry;
@@ -533,7 +528,7 @@ get_directory (MooGladeXML *xml)
     char *norm_dir = NULL;
     MooFileEntryCompletion *completion;
 
-    combo = moo_glade_xml_get_widget (xml, "dir_combo");
+    combo = xml->dir_combo;
     entry = MOO_COMBO (combo)->entry;
 
     completion = g_object_get_data (G_OBJECT (entry), "find-plugin-file-completion");
@@ -559,7 +554,7 @@ do_grep (MooEditWindow  *window,
     GtkWidget *pane;
     MooHistoryCombo *pattern_combo, *skip_combo, *glob_combo;
     GtkWidget *pattern_entry, *glob_entry;
-    GtkWidget *skip_entry, *case_sensitive_button;
+    GtkWidget *skip_entry;
     const char *pattern, *glob, *skip;
     gboolean case_sensitive;
     char *dir;
@@ -571,23 +566,23 @@ do_grep (MooEditWindow  *window,
     dir = get_directory (stuff->grep_xml);
     g_return_if_fail (dir != NULL);
 
-    pattern_combo = moo_glade_xml_get_widget (stuff->grep_xml, "pattern_combo");
+    pattern_combo = stuff->grep_xml->pattern_combo;
     moo_history_combo_commit (pattern_combo);
     pattern_entry = MOO_COMBO (pattern_combo)->entry;
     pattern = gtk_entry_get_text (GTK_ENTRY (pattern_entry));
 
-    glob_combo = moo_glade_xml_get_widget (stuff->grep_xml, "glob_combo");
+    glob_combo = stuff->grep_xml->glob_combo;
     moo_history_combo_commit (glob_combo);
     glob_entry = MOO_COMBO (glob_combo)->entry;
     glob = gtk_entry_get_text (GTK_ENTRY (glob_entry));
 
-    skip_combo = moo_glade_xml_get_widget (stuff->grep_xml, "skip_combo");
+    skip_combo = stuff->grep_xml->skip_combo;
     skip_entry = MOO_COMBO (skip_combo)->entry;
     moo_history_combo_commit (skip_combo);
     skip = gtk_entry_get_text (GTK_ENTRY (skip_entry));
 
-    case_sensitive_button = moo_glade_xml_get_widget (stuff->grep_xml, "case_sensitive_button");
-    case_sensitive = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (case_sensitive_button));
+    case_sensitive = gtk_toggle_button_get_active (
+        GTK_TOGGLE_BUTTON (stuff->grep_xml->case_sensitive_button));
 
     moo_line_view_clear (MOO_LINE_VIEW (stuff->output));
     moo_big_paned_present_pane (window->paned, pane);
@@ -613,12 +608,12 @@ do_find (MooEditWindow  *window,
     pane = moo_edit_window_get_pane (window, FIND_PLUGIN_ID);
     g_return_if_fail (pane != NULL);
 
-    pattern_combo = moo_glade_xml_get_widget (stuff->find_xml, "pattern_combo");
+    pattern_combo = stuff->find_xml->pattern_combo;
     moo_history_combo_commit (pattern_combo);
     pattern_entry = MOO_COMBO (pattern_combo)->entry;
     pattern = gtk_entry_get_text (GTK_ENTRY (pattern_entry));
 
-    skip_combo = moo_glade_xml_get_widget (stuff->find_xml, "skip_combo");
+    skip_combo = stuff->find_xml->skip_combo;
     moo_history_combo_commit (skip_combo);
     skip_entry = MOO_COMBO (skip_combo)->entry;
     skip = gtk_entry_get_text (GTK_ENTRY (skip_entry));
@@ -976,10 +971,6 @@ find_window_plugin_destroy (WindowStuff *stuff)
         gtk_widget_destroy (stuff->grep_dialog);
     if (stuff->find_dialog)
         gtk_widget_destroy (stuff->find_dialog);
-    if (stuff->grep_xml)
-        g_object_unref (stuff->grep_xml);
-    if (stuff->find_xml)
-        g_object_unref (stuff->find_xml);
     g_free (stuff->current_file);
 }
 

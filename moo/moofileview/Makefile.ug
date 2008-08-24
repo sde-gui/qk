@@ -46,7 +46,7 @@ moofileicons-symlink.h: $(moofileview_pixmaps)
 		SYMLINK_ARROW $(srcdir)/symlink.png	\
 		SYMLINK_ARROW_SMALL $(srcdir)/symlink-small.png > $@.tmp && mv $@.tmp $@
 
-GLADE_FILES =				\
+GLADE2_FILES =				\
 	glade/moofileview-drop.glade	\
 	glade/moofileprops.glade	\
 	glade/moocreatefolder.glade	\

@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <glade-interface>
-  <requires-version lib="gtk+" version="2.12"/>
   <widget class="GtkWindow" id="window1">
     <property name="visible">True</property>
     <property name="title">window1</property>
@@ -22,7 +21,7 @@
           </widget>
         </child>
         <child>
-          <widget class="GtkEventBox" id="evbox">
+          <widget class="GtkEventBox" id="QsBox">
             <property name="visible">True</property>
             <child>
               <widget class="GtkFrame" id="frame1">

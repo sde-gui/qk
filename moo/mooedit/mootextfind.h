@@ -16,7 +16,6 @@
 #include <gtk/gtktextview.h>
 #include <gtk/gtkdialog.h>
 #include "mooutils/moohistorylist.h"
-#include "mooutils/mooglade.h"
 #include <glib/gregex.h>
 
 G_BEGIN_DECLS
@@ -48,7 +47,7 @@ typedef enum /*< flags >*/
 struct _MooFind
 {
     GtkDialog base;
-    MooGladeXML *xml;
+    struct MooFindBoxXml *xml;
     struct MooRegex *regex;
     guint replace : 1;
 };

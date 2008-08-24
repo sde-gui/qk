@@ -14,15 +14,14 @@
 #include "mooedit/mootextprint-private.h"
 #include "mooedit/mooedit.h"
 #include "mooedit/mooedit-private.h"
-#include "mooprint-glade.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootext-private.h"
 #include "mooedit/mooprintpreview.h"
-#include "mooutils/mooglade.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
+#include "mooprint-gxml.h"
 #include <sys/types.h>
 #include <time.h>
 #include <errno.h>
@@ -1763,29 +1762,23 @@ _moo_print_operation_get_n_pages (MooPrintOperation *op)
 
 #define SET_TEXT(wid,setting)                                           \
 G_STMT_START {                                                          \
-    GtkEntry *entry__ = moo_glade_xml_get_widget (xml, wid);            \
     const char *s__ = moo_prefs_get_string (setting);                   \
-    gtk_entry_set_text (entry__, s__ ? s__ : "");                       \
+    gtk_entry_set_text (xml->wid, s__ ? s__ : "");                      \
 } G_STMT_END
 
 #define GET_TEXT(wid,setting)                                           \
 G_STMT_START {                                                          \
-    GtkEntry *entry__ = moo_glade_xml_get_widget (xml, wid);            \
-    const char *s__ = gtk_entry_get_text (entry__);                     \
+    const char *s__ = gtk_entry_get_text (xml->wid);                    \
     moo_prefs_set_string (setting, s__ && s__[0] ? s__ : NULL);         \
 } G_STMT_END
 
 #define SET_BOOL(wid,setting)                                           \
-G_STMT_START {                                                          \
-    gtk_toggle_button_set_active (moo_glade_xml_get_widget (xml, wid),  \
-                                  moo_prefs_get_bool (setting));        \
-} G_STMT_END
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (xml->wid),         \
+                                  moo_prefs_get_bool (setting))
 
 #define GET_BOOL(wid,setting)                                           \
-G_STMT_START {                                                          \
-    gpointer btn__ = moo_glade_xml_get_widget (xml, wid);               \
-    moo_prefs_set_bool (setting, gtk_toggle_button_get_active (btn__)); \
-} G_STMT_END
+    moo_prefs_set_bool (setting,                                        \
+        gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (xml->wid)))
 
 
 static void
@@ -1813,64 +1806,67 @@ moo_print_init_prefs (void)
 
 
 static void
-set_options (MooGladeXML *xml)
+set_options (PrintWidgetXml *xml)
 {
     const char *s;
 
+    g_return_if_fail (xml != NULL);
     moo_print_init_prefs ();
 
-    SET_BOOL ("print_header", PREFS_PRINT_HEADER);
-    SET_BOOL ("header_separator", PREFS_PRINT_HEADER_SEPARATOR);
+    SET_BOOL (print_header, PREFS_PRINT_HEADER);
+    SET_BOOL (header_separator, PREFS_PRINT_HEADER_SEPARATOR);
 
-    SET_TEXT ("header_left", PREFS_HEADER_LEFT);
-    SET_TEXT ("header_center", PREFS_HEADER_CENTER);
-    SET_TEXT ("header_right", PREFS_HEADER_RIGHT);
+    SET_TEXT (header_left, PREFS_HEADER_LEFT);
+    SET_TEXT (header_center, PREFS_HEADER_CENTER);
+    SET_TEXT (header_right, PREFS_HEADER_RIGHT);
 
-    SET_BOOL ("print_footer", PREFS_PRINT_FOOTER);
-    SET_BOOL ("footer_separator", PREFS_PRINT_FOOTER_SEPARATOR);
+    SET_BOOL (print_footer, PREFS_PRINT_FOOTER);
+    SET_BOOL (footer_separator, PREFS_PRINT_FOOTER_SEPARATOR);
 
-    SET_TEXT ("footer_left", PREFS_FOOTER_LEFT);
-    SET_TEXT ("footer_center", PREFS_FOOTER_CENTER);
-    SET_TEXT ("footer_right", PREFS_FOOTER_RIGHT);
+    SET_TEXT (footer_left, PREFS_FOOTER_LEFT);
+    SET_TEXT (footer_center, PREFS_FOOTER_CENTER);
+    SET_TEXT (footer_right, PREFS_FOOTER_RIGHT);
 
-    SET_BOOL ("use_styles", PREFS_USE_STYLES);
-    SET_BOOL ("use_custom_font", PREFS_USE_CUSTOM_FONT);
-    SET_BOOL ("wrap", PREFS_WRAP);
-    SET_BOOL ("ellipsize", PREFS_ELLIPSIZE);
-    SET_BOOL ("line_numbers", PREFS_LINE_NUMBERS);
+    SET_BOOL (use_styles, PREFS_USE_STYLES);
+    SET_BOOL (use_custom_font, PREFS_USE_CUSTOM_FONT);
+    SET_BOOL (wrap, PREFS_WRAP);
+    SET_BOOL (ellipsize, PREFS_ELLIPSIZE);
+    SET_BOOL (line_numbers, PREFS_LINE_NUMBERS);
 
-    gtk_spin_button_set_value (moo_glade_xml_get_widget (xml, "line_numbers_step"),
+    gtk_spin_button_set_value (xml->line_numbers_step,
                                moo_prefs_get_int (PREFS_LINE_NUMBERS_STEP));
 
     if ((s = moo_prefs_get_string (PREFS_FONT)))
-        gtk_font_button_set_font_name (moo_glade_xml_get_widget (xml, "font"), s);
+        gtk_font_button_set_font_name (xml->font, s);
 }
 
 
 static void
-get_options (MooGladeXML *xml)
+get_options (PrintWidgetXml *xml)
 {
-    GET_BOOL ("print_header", PREFS_PRINT_HEADER);
-    GET_BOOL ("header_separator", PREFS_PRINT_HEADER_SEPARATOR);
-    GET_TEXT ("header_left", PREFS_HEADER_LEFT);
-    GET_TEXT ("header_center", PREFS_HEADER_CENTER);
-    GET_TEXT ("header_right", PREFS_HEADER_RIGHT);
+    g_return_if_fail (xml != NULL);
 
-    GET_BOOL ("print_footer", PREFS_PRINT_FOOTER);
-    GET_BOOL ("footer_separator", PREFS_PRINT_FOOTER_SEPARATOR);
-    GET_TEXT ("footer_left", PREFS_FOOTER_LEFT);
-    GET_TEXT ("footer_center", PREFS_FOOTER_CENTER);
-    GET_TEXT ("footer_right", PREFS_FOOTER_RIGHT);
+    GET_BOOL (print_header, PREFS_PRINT_HEADER);
+    GET_BOOL (header_separator, PREFS_PRINT_HEADER_SEPARATOR);
+    GET_TEXT (header_left, PREFS_HEADER_LEFT);
+    GET_TEXT (header_center, PREFS_HEADER_CENTER);
+    GET_TEXT (header_right, PREFS_HEADER_RIGHT);
 
-    GET_BOOL ("use_styles", PREFS_USE_STYLES);
-    GET_BOOL ("use_custom_font", PREFS_USE_CUSTOM_FONT);
-    GET_BOOL ("wrap", PREFS_WRAP);
-    GET_BOOL ("ellipsize", PREFS_ELLIPSIZE);
-    GET_BOOL ("line_numbers", PREFS_LINE_NUMBERS);
+    GET_BOOL (print_footer, PREFS_PRINT_FOOTER);
+    GET_BOOL (footer_separator, PREFS_PRINT_FOOTER_SEPARATOR);
+    GET_TEXT (footer_left, PREFS_FOOTER_LEFT);
+    GET_TEXT (footer_center, PREFS_FOOTER_CENTER);
+    GET_TEXT (footer_right, PREFS_FOOTER_RIGHT);
 
-    if (gtk_toggle_button_get_active (moo_glade_xml_get_widget (xml, "line_numbers")))
+    GET_BOOL (use_styles, PREFS_USE_STYLES);
+    GET_BOOL (use_custom_font, PREFS_USE_CUSTOM_FONT);
+    GET_BOOL (wrap, PREFS_WRAP);
+    GET_BOOL (ellipsize, PREFS_ELLIPSIZE);
+    GET_BOOL (line_numbers, PREFS_LINE_NUMBERS);
+
+    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (xml->line_numbers)))
     {
-        GtkSpinButton *btn = moo_glade_xml_get_widget (xml, "line_numbers_step");
+        GtkSpinButton *btn = xml->line_numbers_step;
         int step = gtk_spin_button_get_value_as_int (btn);
         if (step < 1)
         {
@@ -1880,9 +1876,8 @@ get_options (MooGladeXML *xml)
         moo_prefs_set_int (PREFS_LINE_NUMBERS_STEP, step);
     }
 
-    if (gtk_toggle_button_get_active (moo_glade_xml_get_widget (xml, "use_custom_font")))
-        moo_prefs_set_string (PREFS_FONT,
-                              gtk_font_button_get_font_name (moo_glade_xml_get_widget (xml, "font")));
+    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (xml->use_custom_font)))
+        moo_prefs_set_string (PREFS_FONT, gtk_font_button_get_font_name (xml->font));
 }
 
 
@@ -1891,7 +1886,7 @@ void
 _moo_edit_print_options_dialog (GtkWidget *parent)
 {
     GtkWidget *dialog;
-    MooGladeXML *xml;
+    PrintWidgetXml *xml;
 
     xml = moo_glade_xml_new_from_buf (MOO_PRINT_GLADE_XML, -1, NULL, GETTEXT_PACKAGE, NULL);
     g_return_if_fail (xml != NULL);
@@ -1915,27 +1910,18 @@ _moo_edit_print_options_dialog (GtkWidget *parent)
 static GtkWidget *
 moo_print_operation_create_custom_widget (G_GNUC_UNUSED GtkPrintOperation *operation)
 {
-    GtkWidget *page, *font_button, *line_numbers_hbox;
-    MooGladeXML *xml;
+    PrintWidgetXml *xml;
+    GtkWidget *font, *line_numbers_hbox;
 
-    xml = moo_glade_xml_new_from_buf (mooprint_glade_xml, -1, "page", GETTEXT_PACKAGE, NULL);
-    g_return_val_if_fail (xml != NULL, NULL);
+    xml = print_widget_xml_new ();
 
-    font_button = moo_glade_xml_get_widget (xml, "font");
-    moo_bind_sensitive (moo_glade_xml_get_widget (xml, "use_custom_font"),
-                        &font_button, 1, FALSE);
+    font = GTK_WIDGET (xml->font);
+    moo_bind_sensitive (GTK_WIDGET (xml->use_custom_font), &font, 1, FALSE);
+    line_numbers_hbox = GTK_WIDGET (xml->line_numbers_hbox);
+    moo_bind_sensitive (GTK_WIDGET (xml->line_numbers), &line_numbers_hbox, 1, FALSE);
 
-    line_numbers_hbox = moo_glade_xml_get_widget (xml, "line_numbers_hbox");
-    moo_bind_sensitive (moo_glade_xml_get_widget (xml, "line_numbers"),
-                        &line_numbers_hbox, 1, FALSE);
-
-    page = moo_glade_xml_get_widget (xml, "page");
-    g_return_val_if_fail (page != NULL, NULL);
-
-    g_object_set_data_full (G_OBJECT (page), "moo-glade-xml",
-                            xml, g_object_unref);
     set_options (xml);
-    return page;
+    return GTK_WIDGET (xml->PrintWidget);
 }
 
 
@@ -1943,12 +1929,7 @@ static void
 moo_print_operation_custom_widget_apply (G_GNUC_UNUSED GtkPrintOperation *print,
                                          GtkWidget *widget)
 {
-    MooGladeXML *xml;
-
-    xml = g_object_get_data (G_OBJECT (widget), "moo-glade-xml");
-    g_return_if_fail (xml != NULL);
-
-    get_options (xml);
+    get_options (print_widget_xml_get (widget));
 }
 
 

@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <glade-interface>
-  <requires-version lib="gtk+" version="2.12"/>
-  <widget class="GtkDialog" id="grep_dialog">
+  <widget class="GtkDialog" id="Grep">
     <property name="title">Find in Files</property>
     <property name="modal">True</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>

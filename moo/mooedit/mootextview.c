@@ -18,7 +18,6 @@
 #include "mooedit/mootextfind.h"
 #include "mooedit/mootext-private.h"
 #include "mooedit/mooedit-enums.h"
-#include "mooquicksearch-glade.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootextbox.h"
 #include "marshals.h"
@@ -27,6 +26,7 @@
 #include "mooutils/mooeditops.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/mooi18n.h"
+#include "mooquicksearch-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gregex.h>
 #include <gdk/gdkkeysyms.h>
@@ -4419,17 +4419,16 @@ moo_text_view_start_quick_search (MooTextView *view)
 
     if (!view->priv->qs.entry)
     {
-        MooGladeXML *xml;
+        QsBoxXml *xml;
 
-        xml = moo_glade_xml_new_from_buf (mooquicksearch_glade_xml, -1, "evbox",
-                                          GETTEXT_PACKAGE, NULL);
+        xml = qs_box_xml_new ();
 
-        view->priv->qs.evbox = moo_glade_xml_get_widget (xml, "evbox");
+        view->priv->qs.evbox = GTK_WIDGET (xml->QsBox);
         g_return_if_fail (view->priv->qs.evbox != NULL);
 
-        view->priv->qs.entry = moo_glade_xml_get_widget (xml, "entry");
-        view->priv->qs.case_sensitive = moo_glade_xml_get_widget (xml, "case_sensitive");
-        view->priv->qs.regex = moo_glade_xml_get_widget (xml, "regex");
+        view->priv->qs.entry = GTK_WIDGET (xml->entry);
+        view->priv->qs.case_sensitive = GTK_TOGGLE_BUTTON (xml->case_sensitive);
+        view->priv->qs.regex = GTK_TOGGLE_BUTTON (xml->regex);
 
         g_signal_connect_swapped (view->priv->qs.entry, "changed",
                                   G_CALLBACK (search_entry_changed), view);
@@ -4446,8 +4445,6 @@ moo_text_view_start_quick_search (MooTextView *view)
 
         moo_text_view_add_child_in_border (view, view->priv->qs.evbox,
                                            GTK_TEXT_WINDOW_BOTTOM);
-
-        g_object_unref (xml);
     }
 
     buffer = get_buffer (view);

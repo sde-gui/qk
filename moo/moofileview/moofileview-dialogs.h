@@ -18,7 +18,6 @@
 #define MOO_FILE_VIEW_DIALOGS_H
 
 #include "moofileview/moofile.h"
-#include "mooutils/mooglade.h"
 #include <gtk/gtkdialog.h>
 
 G_BEGIN_DECLS
@@ -38,7 +37,7 @@ typedef struct _MooFilePropsDialogClass   MooFilePropsDialogClass;
 struct _MooFilePropsDialog
 {
     GtkDialog base;
-    MooGladeXML *xml;
+    struct MooFilePropsXml *xml;
     GtkWidget *notebook;
     GtkWidget *icon;
     GtkWidget *entry;

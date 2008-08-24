@@ -19,17 +19,16 @@
 #include "moofileview/moobookmarkmgr.h"
 #include "moofileview/moofileview-tools.h"
 #include "mooeditplugins.h"
-#include "plugins/moofileselector-save-as-glade.h"
-#include "plugins/moofileselector-new-file-glade.h"
 #include "marshals.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
-#include "mooutils/mooglade.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/mooi18n.h"
+#include "plugins/moofileselector-save-as-gxml.h"
+#include "plugins/moofileselector-new-file-gxml.h"
 #include "mooutils/moohelp.h"
 #include "help-sections.h"
 #include <gmodule.h>
@@ -374,40 +373,32 @@ moo_file_selector_populate_popup (MooFileView *fileview,
 
 
 static GtkWidget *
-create_new_file_dialog (GtkWidget    *parent,
-                        const char   *dirname,
-                        const char   *start_text,
-                        MooGladeXML **xml)
+create_new_file_dialog (GtkWidget         *parent,
+                        const char        *dirname,
+                        const char        *start_text,
+                        NewFileDialogXml **xml)
 {
-    GtkWidget *dialog, *button;
-    GtkEntry *entry;
-    GtkLabel *label;
+    GtkWidget *dialog;
     char *display_dirname, *label_text;
 
     display_dirname = g_filename_display_basename (dirname);
     g_return_val_if_fail (display_dirname != NULL, NULL);
 
-    *xml = moo_glade_xml_new_from_buf (moofileselector_new_file_glade_xml, -1,
-                                       "new_file_dialog", GETTEXT_PACKAGE, NULL);
-
-    dialog = moo_glade_xml_get_widget (*xml, "new_file_dialog");
-    g_return_val_if_fail (dialog != NULL, NULL);
+    *xml = new_file_dialog_xml_new ();
+    dialog = GTK_WIDGET ((*xml)->NewFileDialog);
 
     moo_window_set_parent (dialog, parent);
 
-    entry = moo_glade_xml_get_widget (*xml, "entry");
-    gtk_entry_set_text (entry, start_text);
-    moo_entry_clear_undo (MOO_ENTRY (entry));
+    gtk_entry_set_text (GTK_ENTRY ((*xml)->entry), start_text);
+    moo_entry_clear_undo ((*xml)->entry);
 
-    label = moo_glade_xml_get_widget (*xml, "label");
     label_text = g_strdup_printf (_("Create file in folder '%s':"), display_dirname);
-    gtk_label_set_text (label, label_text);
+    gtk_label_set_text ((*xml)->label, label_text);
 
     gtk_widget_show_all (dialog);
-    gtk_widget_grab_focus (GTK_WIDGET (entry));
+    gtk_widget_grab_focus (GTK_WIDGET ((*xml)->entry));
 
-    button = moo_glade_xml_get_widget (*xml, "ok_button");
-    moo_bind_bool_property (button, "sensitive", entry, "empty", TRUE);
+    moo_bind_bool_property ((*xml)->ok_button, "sensitive", (*xml)->entry, "empty", TRUE);
 
     g_free (label_text);
     g_free (display_dirname);
@@ -419,7 +410,7 @@ new_file_dialog (GtkWidget   *parent,
                  const char  *dirname,
                  const char  *start_name)
 {
-    MooGladeXML *xml = NULL;
+    NewFileDialogXml *xml = NULL;
     GtkWidget *dialog = NULL;
     GtkEntry *entry = NULL;
     char *fullname = NULL;
@@ -436,7 +427,7 @@ new_file_dialog (GtkWidget   *parent,
         {
             dialog = create_new_file_dialog (parent, dirname, start_name, &xml);
             g_return_val_if_fail (dialog != NULL, NULL);
-            entry = moo_glade_xml_get_widget (xml, "entry");
+            entry = GTK_ENTRY (xml->entry);
         }
 
         if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
@@ -481,8 +472,6 @@ new_file_dialog (GtkWidget   *parent,
     }
 
 out:
-    if (xml)
-        g_object_unref (xml);
     if (dialog)
         gtk_widget_destroy (dialog);
     return fullname;
@@ -744,34 +733,26 @@ parent:
 
 
 static GtkWidget *
-create_save_as_dialog (GtkWidget   *parent,
-                       const char  *start_text,
-                       const char  *title,
-                       MooGladeXML **xml)
+create_save_as_dialog (GtkWidget        *parent,
+                       const char       *start_text,
+                       const char       *title,
+                       SaveAsDialogXml **xml)
 {
-    GtkWidget *dialog, *button;
-    GtkEntry *entry;
+    GtkWidget *dialog;
 
-    *xml = moo_glade_xml_new_from_buf (moofileselector_save_as_glade_xml, -1,
-                                       "save_untitled_dialog", GETTEXT_PACKAGE, NULL);
-
-    dialog = moo_glade_xml_get_widget (*xml, "save_untitled_dialog");
-    g_return_val_if_fail (dialog != NULL, NULL);
+    *xml = save_as_dialog_xml_new ();
+    dialog = GTK_WIDGET ((*xml)->SaveAsDialog);
 
     gtk_window_set_title (GTK_WINDOW (dialog), title);
-
     moo_window_set_parent (dialog, parent);
 
-    entry = moo_glade_xml_get_widget (*xml, "entry");
-
-    gtk_entry_set_text (entry, start_text);
-    moo_entry_clear_undo (MOO_ENTRY (entry));
+    gtk_entry_set_text (GTK_ENTRY ((*xml)->entry), start_text);
+    moo_entry_clear_undo (MOO_ENTRY ((*xml)->entry));
 
     gtk_widget_show_all (dialog);
-    gtk_widget_grab_focus (GTK_WIDGET (entry));
+    gtk_widget_grab_focus (GTK_WIDGET ((*xml)->entry));
 
-    button = moo_glade_xml_get_widget (*xml, "ok_button");
-    moo_bind_bool_property (button, "sensitive", entry, "empty", TRUE);
+    moo_bind_bool_property ((*xml)->ok_button, "sensitive", (*xml)->entry, "empty", TRUE);
 
     return dialog;
 }
@@ -783,7 +764,7 @@ save_as_dialog (GtkWidget   *parent,
                 gboolean     ask_name,
                 const char  *title)
 {
-    MooGladeXML *xml = NULL;
+    SaveAsDialogXml *xml = NULL;
     GtkWidget *dialog = NULL;
     GtkEntry *entry = NULL;
     char *fullname = NULL;
@@ -805,7 +786,7 @@ save_as_dialog (GtkWidget   *parent,
             if (!dialog)
             {
                 dialog = create_save_as_dialog (parent, start_name, title, &xml);
-                entry = moo_glade_xml_get_widget (xml, "entry");
+                entry = GTK_ENTRY (xml->entry);
             }
 
             if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
@@ -856,8 +837,6 @@ save_as_dialog (GtkWidget   *parent,
     }
 
 out:
-    if (xml)
-        g_object_unref (xml);
     if (dialog)
         gtk_widget_destroy (dialog);
     return fullname;

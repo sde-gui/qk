@@ -13,13 +13,12 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/moocommand-lua.h"
 #include "mooedit/mooedit-lua.h"
-#include "mooedittools-lua-glade.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mootext-private.h"
 #include "mooutils/mooi18n.h"
-#include "mooutils/mooglade.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
+#include "mooedittools-lua-gxml.h"
 #include "moolua/moolua.h"
 #include <string.h>
 
@@ -163,21 +162,14 @@ lua_factory_create_command (G_GNUC_UNUSED MooCommandFactory *factory,
 static GtkWidget *
 lua_factory_create_widget (G_GNUC_UNUSED MooCommandFactory *factory)
 {
-    GtkWidget *page;
-    MooGladeXML *xml;
-    MooTextView *textview;
+    LuaPageXml *xml;
 
-    xml = moo_glade_xml_new_from_buf (mooedittools_lua_glade_xml, -1,
-                                      "lua_page", GETTEXT_PACKAGE, NULL);
-    page = moo_glade_xml_get_widget (xml, "lua_page");
-    g_return_val_if_fail (page != NULL, NULL);
+    xml = lua_page_xml_new ();
 
-    textview = moo_glade_xml_get_widget (xml, "textview");
-    moo_text_view_set_font_from_string (textview, "Monospace");
-    moo_text_view_set_lang_by_id (textview, "lua");
+    moo_text_view_set_font_from_string (xml->textview, "Monospace");
+    moo_text_view_set_lang_by_id (xml->textview, "lua");
 
-    g_object_set_data_full (G_OBJECT (page), "moo-glade-xml", xml, g_object_unref);
-    return page;
+    return GTK_WIDGET (xml->LuaPage);
 }
 
 
@@ -186,14 +178,14 @@ lua_factory_load_data (G_GNUC_UNUSED MooCommandFactory *factory,
                        GtkWidget      *page,
                        MooCommandData *data)
 {
-    MooGladeXML *xml;
-    GtkTextView *textview;
+    LuaPageXml *xml;
     GtkTextBuffer *buffer;
     const char *code;
 
-    xml = g_object_get_data (G_OBJECT (page), "moo-glade-xml");
-    textview = moo_glade_xml_get_widget (xml, "textview");
-    buffer = gtk_text_view_get_buffer (textview);
+    xml = lua_page_xml_get (page);
+    g_return_if_fail (xml != NULL);
+
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (xml->textview));
 
     code = moo_command_data_get_code (data);
     gtk_text_buffer_set_text (buffer, code ? code : "", -1);
@@ -205,17 +197,15 @@ lua_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
                        GtkWidget      *page,
                        MooCommandData *data)
 {
-    MooGladeXML *xml;
-    GtkTextView *textview;
+    LuaPageXml *xml;
     const char *code;
     char *new_code;
     gboolean changed = FALSE;
 
-    xml = g_object_get_data (G_OBJECT (page), "moo-glade-xml");
-    textview = moo_glade_xml_get_widget (xml, "textview");
-    g_assert (GTK_IS_TEXT_VIEW (textview));
+    xml = lua_page_xml_get (page);
+    g_return_val_if_fail (xml != NULL, FALSE);
 
-    new_code = moo_text_view_get_text (textview);
+    new_code = moo_text_view_get_text (xml->textview);
     code = moo_command_data_get_code (data);
 
     if (!_moo_str_equal (code, new_code))

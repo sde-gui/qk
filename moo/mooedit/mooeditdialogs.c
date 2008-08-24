@@ -14,15 +14,14 @@
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditprefs.h"
-#include "mootextfind-glade.h"
 #include "mooedit/mooeditfileops.h"
-#include "mooeditsavemult-glade.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moostock.h"
-#include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooencodings.h"
+#include "mootextfind-prompt-gxml.h"
+#include "mooeditsavemult-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gregex.h>
 #include <string.h>
@@ -299,15 +298,13 @@ files_treeview_init (GtkTreeView *treeview, GtkWidget *dialog, GSList  *docs)
 
 
 static GSList *
-files_treeview_get_to_save (GtkWidget *treeview)
+files_treeview_get_to_save (GtkTreeView *treeview)
 {
     GtkTreeIter iter;
     GtkTreeModel *model;
     GSList *list = NULL;
 
-    g_return_val_if_fail (GTK_IS_TREE_VIEW (treeview), NULL);
-
-    model = gtk_tree_view_get_model (GTK_TREE_VIEW (treeview));
+    model = gtk_tree_view_get_model (treeview);
     g_return_val_if_fail (model != NULL, NULL);
 
     gtk_tree_model_get_iter_first (model, &iter);
@@ -338,11 +335,11 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
                                         GSList **to_save)
 {
     GSList *l;
-    GtkWidget *dialog, *label, *treeview;
+    GtkWidget *dialog;
     char *msg, *question;
     int response;
     MooSaveChangesDialogResponse retval;
-    MooGladeXML *xml;
+    SaveMultDialogXml *xml;
 
     g_return_val_if_fail (docs != NULL, MOO_SAVE_CHANGES_RESPONSE_CANCEL);
     g_return_val_if_fail (docs->next != NULL, MOO_SAVE_CHANGES_RESPONSE_CANCEL);
@@ -351,9 +348,8 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
     for (l = docs; l != NULL; l = l->next)
         g_return_val_if_fail (MOO_IS_EDIT (l->data), MOO_SAVE_CHANGES_RESPONSE_CANCEL);
 
-    xml = moo_glade_xml_new_from_buf (mooeditsavemult_glade_xml, -1,
-                                      "dialog", GETTEXT_PACKAGE, NULL);
-    dialog = moo_glade_xml_get_widget (xml, "dialog");
+    xml = save_mult_dialog_xml_new ();
+    dialog = GTK_WIDGET (xml->SaveMultDialog);
 
     moo_window_set_parent (dialog, docs->data);
 
@@ -370,7 +366,6 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
                                              GTK_RESPONSE_NO,
                                              GTK_RESPONSE_CANCEL, -1);
 
-    label = moo_glade_xml_get_widget (xml, "label");
     question = g_strdup_printf (dngettext (GETTEXT_PACKAGE,
                                            /* Translators: number of documents here is always greater than one, so
                                               ignore singular form (which is simply copy of the plural here) */
@@ -382,10 +377,9 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
                                 g_slist_length (docs));
     msg = g_markup_printf_escaped ("<span weight=\"bold\" size=\"larger\">%s</span>",
                                    question);
-    gtk_label_set_markup (GTK_LABEL (label), msg);
+    gtk_label_set_markup (xml->label, msg);
 
-    treeview = moo_glade_xml_get_widget (xml, "treeview");
-    files_treeview_init (GTK_TREE_VIEW (treeview), dialog, docs);
+    files_treeview_init (xml->treeview, dialog, docs);
 
     response = gtk_dialog_run (GTK_DIALOG (dialog));
 
@@ -395,7 +389,7 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
             retval = MOO_SAVE_CHANGES_RESPONSE_DONT_SAVE;
             break;
         case GTK_RESPONSE_YES:
-            *to_save = files_treeview_get_to_save (treeview);
+            *to_save = files_treeview_get_to_save (xml->treeview);
             retval = MOO_SAVE_CHANGES_RESPONSE_SAVE;
             break;
         default:
@@ -405,7 +399,6 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
     g_free (question);
     g_free (msg);
     gtk_widget_destroy (dialog);
-    g_object_unref (xml);
     return retval;
 }
 
@@ -719,19 +712,11 @@ _moo_text_regex_error_dialog (GtkWidget  *parent,
 }
 
 
-GtkWidget*
+GtkWidget *
 _moo_text_prompt_on_replace_dialog (GtkWidget *parent)
 {
-    GtkWidget *dialog;
-    MooGladeXML *xml;
-
-    xml = moo_glade_xml_new_from_buf (mootextfind_glade_xml, -1,
-                                      "prompt_on_replace_dialog",
-                                      GETTEXT_PACKAGE, NULL);
-    dialog = moo_glade_xml_get_widget (xml, "prompt_on_replace_dialog");
-    g_object_unref (xml);
-
-    moo_window_set_parent (dialog, parent);
-
-    return dialog;
+    FindPromptDialogXml *xml;
+    xml = find_prompt_dialog_xml_new ();
+    moo_window_set_parent (GTK_WIDGET (xml->FindPromptDialog), parent);
+    return GTK_WIDGET (xml->FindPromptDialog);
 }

@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <glade-interface>
-  <requires-version lib="gtk+" version="2.12"/>
   <widget class="GtkWindow" id="window2">
     <child>
       <widget class="GtkVBox" id="page">

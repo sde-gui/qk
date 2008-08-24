@@ -25,9 +25,11 @@ endif
 #
 
 GLADE_FILES +=					\
-	plugins/moofileselector-new-file.glade	\
-	plugins/moofileselector-save-as.glade	\
 	plugins/moofileselector-prefs.glade
+
+GLADE2_FILES +=					\
+	plugins/moofileselector-new-file.glade	\
+	plugins/moofileselector-save-as.glade
 
 mooeditplugins_sources +=			\
 	plugins/moofileselector-prefs.c		\
@@ -43,7 +45,7 @@ mooeditplugins_sources +=			\
 	plugins/moofilelist.c			\
 	plugins/moofind.c
 
-GLADE_FILES +=					\
+GLADE2_FILES +=					\
 	plugins/moofind.glade			\
 	plugins/moogrep.glade
 

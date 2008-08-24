@@ -15,7 +15,6 @@
 #endif
 
 #define MOOEDIT_COMPILATION
-#include "moostatusbar-glade.h"
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooedit-accels.h"
 #include "mooedit/mooeditor-private.h"
@@ -34,11 +33,11 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moocompat.h"
-#include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooaction-private.h"
 #include "mooutils/moofiledialog.h"
 #include "mooutils/mooencodings.h"
+#include "moostatusbar-gxml.h"
 #include <string.h>
 #include <gtk/gtk.h>
 #include <math.h>
@@ -2994,27 +2993,21 @@ update_statusbar (MooEditWindow *window)
 static void
 create_statusbar (MooEditWindow *window)
 {
-    MooGladeXML *xml;
-    GtkWidget *frame;
+    EditorStatusbarXml *xml;
 
-    xml = moo_glade_xml_new_from_buf (moostatusbar_glade_xml, -1,
-                                      "frame", GETTEXT_PACKAGE, NULL);
-    frame = moo_glade_xml_get_widget (xml, "frame");
-    g_return_if_fail (frame != NULL);
+    xml = editor_statusbar_xml_new ();
 
     gtk_container_add_with_properties (GTK_CONTAINER (MOO_WINDOW (window)->status_area),
-                                       frame,
+                                       GTK_WIDGET (xml->EditorStatusbar),
                                        "pack-type", GTK_PACK_END,
                                        "expand", FALSE,
                                        "fill", FALSE,
                                        NULL);
 
-    window->priv->cursor_label = moo_glade_xml_get_widget (xml, "cursor");
-    window->priv->chars_label = moo_glade_xml_get_widget (xml, "chars");
-    window->priv->insert_label = moo_glade_xml_get_widget (xml, "insert");
-    window->priv->info = moo_glade_xml_get_widget (xml, "info");
-
-    g_object_unref (xml);
+    window->priv->cursor_label = xml->cursor;
+    window->priv->chars_label = xml->chars;
+    window->priv->insert_label = xml->insert;
+    window->priv->info = GTK_WIDGET (xml->info);
 }
 
 

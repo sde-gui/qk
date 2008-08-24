@@ -21,6 +21,7 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
+#include "mooutils/mooglade.h"
 #include <cairo-pdf.h>
 
 MOO_DEBUG_INIT(printing, TRUE)

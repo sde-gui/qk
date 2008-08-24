@@ -1,11 +1,10 @@
 <?xml version="1.0"?>
 <glade-interface>
-  <requires-version lib="gtk+" version="2.12"/>
   <widget class="GtkWindow" id="window5">
     <property name="visible">True</property>
     <property name="title">window2</property>
     <child>
-      <widget class="GtkVBox" id="unx_page">
+      <widget class="GtkVBox" id="ExePage">
         <property name="visible">True</property>
         <child>
           <widget class="GtkTable" id="table1">
@@ -13,7 +12,18 @@
             <property name="n_rows">3</property>
             <property name="n_columns">2</property>
             <child>
-              <widget class="GtkComboBox" id="filter">
+              <widget class="GtkLabel" id="label14">
+                <property name="visible">True</property>
+                <property name="xalign">1</property>
+                <property name="label" translatable="yes">Input:</property>
+              </widget>
+              <packing>
+                <property name="x_options">GTK_FILL</property>
+                <property name="y_options"></property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkComboBox" id="input">
                 <property name="visible">True</property>
                 <property name="items">None
 Something
@@ -22,21 +32,19 @@ Something
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
-                <property name="top_attach">2</property>
-                <property name="bottom_attach">3</property>
                 <property name="x_options">GTK_FILL</property>
                 <property name="y_options">GTK_FILL</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkLabel" id="label16">
+              <widget class="GtkLabel" id="label15">
                 <property name="visible">True</property>
                 <property name="xalign">1</property>
-                <property name="label" translatable="yes">Filter:</property>
+                <property name="label" translatable="yes">Output:</property>
               </widget>
               <packing>
-                <property name="top_attach">2</property>
-                <property name="bottom_attach">3</property>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
                 <property name="x_options">GTK_FILL</property>
                 <property name="y_options"></property>
               </packing>
@@ -58,20 +66,20 @@ Something
               </packing>
             </child>
             <child>
-              <widget class="GtkLabel" id="label15">
+              <widget class="GtkLabel" id="label16">
                 <property name="visible">True</property>
                 <property name="xalign">1</property>
-                <property name="label" translatable="yes">Output:</property>
+                <property name="label" translatable="yes">Filter:</property>
               </widget>
               <packing>
-                <property name="top_attach">1</property>
-                <property name="bottom_attach">2</property>
+                <property name="top_attach">2</property>
+                <property name="bottom_attach">3</property>
                 <property name="x_options">GTK_FILL</property>
                 <property name="y_options"></property>
               </packing>
             </child>
             <child>
-              <widget class="GtkComboBox" id="input">
+              <widget class="GtkComboBox" id="filter">
                 <property name="visible">True</property>
                 <property name="items">None
 Something
@@ -80,19 +88,10 @@ Something
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
+                <property name="top_attach">2</property>
+                <property name="bottom_attach">3</property>
                 <property name="x_options">GTK_FILL</property>
                 <property name="y_options">GTK_FILL</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkLabel" id="label14">
-                <property name="visible">True</property>
-                <property name="xalign">1</property>
-                <property name="label" translatable="yes">Input:</property>
-              </widget>
-              <packing>
-                <property name="x_options">GTK_FILL</property>
-                <property name="y_options"></property>
               </packing>
             </child>
           </widget>

@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <glade-interface>
-  <requires-version lib="gtk+" version="2.12"/>
-  <widget class="GtkDialog" id="save_untitled_dialog">
+  <widget class="GtkDialog" id="SaveAsDialog">
     <property name="title" translatable="yes">Save As</property>
     <property name="window_position">GTK_WIN_POS_MOUSE</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>

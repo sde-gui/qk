@@ -16,9 +16,8 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-file.h"
 #include "mooutils/mooutils-debug.h"
-#include "moologwindow-glade.h"
-#include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
+#include "moologwindow-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gmappedfile.h>
 #include <glib/gstdio.h>
@@ -655,16 +654,15 @@ static GtkWidget    *moo_log_window_get_widget  (void);
 static MooLogWindow*
 moo_log_window_new (void)
 {
-    MooGladeXML *xml;
     MooLogWindow *log;
     PangoFontDescription *font;
+    LogWindowXml *xml;
 
-    xml = moo_glade_xml_new_from_buf (moologwindow_glade_xml, -1,
-                                      NULL, GETTEXT_PACKAGE, NULL);
+    xml = log_window_xml_new ();
     log = g_new (MooLogWindow, 1);
 
-    log->window = moo_glade_xml_get_widget (xml, "window");
-    log->textview = moo_glade_xml_get_widget (xml, "textview");
+    log->window = GTK_WIDGET (xml->LogWindow);
+    log->textview = xml->textview;
 
     g_signal_connect (log->window, "delete-event",
                       G_CALLBACK (gtk_widget_hide_on_delete), NULL);

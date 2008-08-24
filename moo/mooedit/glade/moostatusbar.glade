@@ -1,10 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--*- mode: xml -*-->
+<?xml version="1.0"?>
 <glade-interface>
   <widget class="GtkWindow" id="window1">
     <child>
-      <widget class="GtkFrame" id="frame">
+      <widget class="GtkFrame" id="EditorStatusbar">
         <property name="visible">True</property>
         <property name="label_xalign">0</property>
         <child>

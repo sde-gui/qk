@@ -18,13 +18,12 @@
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootextbuffer.h"
-#include "mooeditprogress-glade.h"
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooedit/mooeditor-private.h"
 #include "marshals.h"
-#include "mooutils/mooglade.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooeditprogress-gxml.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -1804,23 +1803,19 @@ progress_cancel_clicked (MooEdit *doc)
 static gboolean
 show_progress (MooEdit *edit)
 {
-    MooGladeXML *xml;
-    GtkButton *cancel;
+    ProgressDialogXml *xml;
 
     edit->priv->progress_timeout = 0;
 
     g_return_val_if_fail (!edit->priv->progress, FALSE);
 
-    xml = moo_glade_xml_new_from_buf (mooeditprogress_glade_xml, -1,
-                                      "eventbox", GETTEXT_PACKAGE, NULL);
-    g_return_val_if_fail (xml != NULL, FALSE);
+    xml = progress_dialog_xml_new ();
 
-    edit->priv->progress = moo_glade_xml_get_widget (xml, "eventbox");
-    edit->priv->progressbar = moo_glade_xml_get_widget (xml, "progressbar");
+    edit->priv->progress = GTK_WIDGET (xml->ProgressDialog);
+    edit->priv->progressbar = GTK_WIDGET (xml->progressbar);
     g_assert (GTK_IS_WIDGET (edit->priv->progressbar));
 
-    cancel = moo_glade_xml_get_widget (xml, "cancel");
-    g_signal_connect_swapped (cancel, "clicked",
+    g_signal_connect_swapped (xml->cancel, "clicked",
                               G_CALLBACK (progress_cancel_clicked),
                               MOO_EDIT (edit));
 
@@ -1836,7 +1831,6 @@ show_progress (MooEdit *edit)
                               (GSourceFunc) pulse_progress,
                               edit);
 
-    g_object_unref (xml);
     return FALSE;
 }
 

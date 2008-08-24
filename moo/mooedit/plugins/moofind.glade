@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <glade-interface>
-  <requires-version lib="gtk+" version="2.12"/>
-  <widget class="GtkDialog" id="find_dialog">
+  <widget class="GtkDialog" id="Find">
     <property name="title">Find File</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
     <child internal-child="vbox">

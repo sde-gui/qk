@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <glade-interface>
-  <requires-version lib="gtk+" version="2.12"/>
   <widget class="GtkDialog" id="dialog">
     <property name="title" translatable="yes" context="yes" comments="Translators: do not translate the part before |">Dialog title|About</property>
     <property name="resizable">False</property>

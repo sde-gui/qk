@@ -18,7 +18,6 @@
 #define MOO_PRINT_PREVIEW_H
 
 #include <mooedit/mootextprint.h>
-#include <mooutils/mooglade.h>
 
 G_BEGIN_DECLS
 

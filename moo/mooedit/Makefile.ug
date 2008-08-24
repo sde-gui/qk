@@ -127,17 +127,20 @@ GLADE_FILES =				\
 	glade/mooeditprefs-view.glade	\
 	glade/mooeditprefs-file.glade	\
 	glade/mooeditprefs-langs.glade	\
+	glade/moopluginprefs.glade	\
+	glade/mooedittools-main.glade	\
+	glade/mooprintpreview.glade	\
+	glade/mooedittools-command.glade
+
+GLADE2_FILES =				\
 	glade/mooeditprogress.glade	\
 	glade/mooeditsavemult.glade	\
-	glade/moopluginprefs.glade	\
 	glade/mooprint.glade		\
 	glade/mootextfind.glade		\
+	glade/mootextfind-prompt.glade	\
 	glade/mootextgotoline.glade	\
 	glade/mooquicksearch.glade	\
 	glade/moostatusbar.glade	\
-	glade/mooprintpreview.glade	\
-	glade/mooedittools-main.glade	\
-	glade/mooedittools-command.glade\
 	glade/mooedittools-exe.glade	\
 	glade/mooedittools-lua.glade
 

@@ -11,8 +11,6 @@
  */
 
 #include "mooedit/mootextfind.h"
-#include "mootextfind-glade.h"
-#include "mootextgotoline-glade.h"
 #include "mooedit/mootextview.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mootextsearch-private.h"
@@ -23,6 +21,8 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/moohelp.h"
+#include "mootextfind-gxml.h"
+#include "mootextgotoline-gxml.h"
 #include "help-sections.h"
 #include <gtk/gtk.h>
 #include <glib/gprintf.h>
@@ -122,30 +122,22 @@ moo_find_class_init (MooFindClass *klass)
 static void
 moo_find_init (MooFind *find)
 {
-    GtkWidget *vbox;
     MooCombo *search, *replace;
 
-    if (!(find->xml = moo_glade_xml_new_from_buf (mootextfind_glade_xml, -1, "vbox",
-                                                  GETTEXT_PACKAGE, NULL)))
-    {
-        g_object_unref (find->xml);
-        find->xml = NULL;
-        g_return_if_reached ();
-    }
+    find->xml = moo_find_box_xml_new ();
+    g_return_if_fail (find->xml != NULL);
 
-    vbox = moo_glade_xml_get_widget (find->xml, "vbox");
-
-    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(find)->vbox), vbox);
+    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(find)->vbox),
+                       GTK_WIDGET (find->xml->MooFindBox));
     gtk_dialog_set_has_separator (GTK_DIALOG (find), FALSE);
 
-    search = moo_glade_xml_get_widget (find->xml, "search_entry");
-    replace = moo_glade_xml_get_widget (find->xml, "replace_entry");
-
+    search = MOO_COMBO (find->xml->search_entry);
+    replace = MOO_COMBO (find->xml->replace_entry);
     moo_entry_set_use_special_chars_menu (MOO_ENTRY (search->entry), TRUE);
     moo_entry_set_use_special_chars_menu (MOO_ENTRY (replace->entry), TRUE);
 
-    moo_history_combo_set_list (MOO_HISTORY_COMBO (search), search_history);
-    moo_history_combo_set_list (MOO_HISTORY_COMBO (replace), replace_history);
+    moo_history_combo_set_list (find->xml->search_entry, search_history);
+    moo_history_combo_set_list (find->xml->replace_entry, replace_history);
 }
 
 
@@ -175,11 +167,9 @@ moo_find_constructor (GType           type,
         title = "Find";
     }
 
-    gtk_widget_set_sensitive (moo_glade_xml_get_widget (find->xml, "backwards"), !use_replace);
-    g_object_set (moo_glade_xml_get_widget (find->xml, "replace_frame"),
-                  "visible", use_replace, NULL);
-    g_object_set (moo_glade_xml_get_widget (find->xml, "dont_prompt"),
-                  "visible", use_replace, NULL);
+    gtk_widget_set_sensitive (GTK_WIDGET (find->xml->backwards), !use_replace);
+    g_object_set (find->xml->replace_frame, "visible", use_replace, NULL);
+    g_object_set (find->xml->dont_prompt, "visible", use_replace, NULL);
 
     gtk_window_set_title (GTK_WINDOW (find), title);
     gtk_dialog_add_buttons (GTK_DIALOG (find),
@@ -373,7 +363,6 @@ moo_find_setup (MooFind        *find,
 {
     GtkTextBuffer *buffer;
     GtkTextIter sel_start, sel_end;
-    MooCombo *search_entry, *replace_entry;
     char *search_term;
     gboolean has_selection;
 
@@ -383,15 +372,13 @@ moo_find_setup (MooFind        *find,
     moo_window_set_parent (GTK_WIDGET (find), GTK_WIDGET (view));
 
     buffer = gtk_text_view_get_buffer (view);
-    search_entry = moo_glade_xml_get_widget (find->xml, "search_entry");
-    replace_entry = moo_glade_xml_get_widget (find->xml, "replace_entry");
 
     search_term = get_search_term (view, TRUE, NULL, NULL);
 
     if (search_term && *search_term)
-        gtk_entry_set_text (GTK_ENTRY (search_entry->entry), search_term);
+        gtk_entry_set_text (GTK_ENTRY (find->xml->search_entry), search_term);
     else if (last_search)
-        gtk_entry_set_text (GTK_ENTRY (search_entry->entry), last_search);
+        gtk_entry_set_text (GTK_ENTRY (find->xml->search_entry), last_search);
 
     if (find->replace)
     {
@@ -402,7 +389,7 @@ moo_find_setup (MooFind        *find,
             replace_with = freeme = moo_history_list_get_last_item (replace_history);
 
         if (replace_with)
-            gtk_entry_set_text (GTK_ENTRY (replace_entry->entry), replace_with);
+            gtk_entry_set_text (GTK_ENTRY (find->xml->replace_entry), replace_with);
 
         g_free (freeme);
     }
@@ -410,15 +397,15 @@ moo_find_setup (MooFind        *find,
     has_selection = gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end);
 
     if (!has_selection)
-        gtk_widget_set_sensitive (moo_glade_xml_get_widget (find->xml, "selected"), FALSE);
+        gtk_widget_set_sensitive (GTK_WIDGET (find->xml->selected), FALSE);
 
     if (find->replace && has_selection &&
         gtk_text_iter_get_line (&sel_start) != gtk_text_iter_get_line (&sel_end))
-            gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "selected"), TRUE);
+            gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (find->xml->selected), TRUE);
     else
-        gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "selected"), FALSE);
+        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (find->xml->selected), FALSE);
 
-    moo_entry_clear_undo (MOO_ENTRY (search_entry->entry));
+    moo_entry_clear_undo (MOO_ENTRY (find->xml->search_entry));
 
     moo_find_set_flags (find, last_search_flags);
 
@@ -462,11 +449,7 @@ moo_find_run (MooFind        *find,
               MooFindMsgFunc  msg_func,
               gpointer        data)
 {
-    MooCombo *search_entry, *replace_entry;
     g_return_val_if_fail (MOO_IS_FIND (find), FALSE);
-
-    search_entry = moo_glade_xml_get_widget (find->xml, "search_entry");
-    replace_entry = moo_glade_xml_get_widget (find->xml, "replace_entry");
 
     REGEX_FREE (find->regex);
 
@@ -478,8 +461,8 @@ moo_find_run (MooFind        *find,
         if (gtk_dialog_run (GTK_DIALOG (find)) != GTK_RESPONSE_OK)
             return FALSE;
 
-        search_for = moo_combo_entry_get_text (search_entry);
-        replace_with = moo_combo_entry_get_text (replace_entry);
+        search_for = moo_combo_entry_get_text (MOO_COMBO (find->xml->search_entry));
+        replace_with = moo_combo_entry_get_text (MOO_COMBO (find->xml->replace_entry));
 
         if (!search_for[0])
         {
@@ -551,25 +534,25 @@ moo_find_get_flags (MooFind *find)
 
     g_return_val_if_fail (MOO_IS_FIND (find), 0);
 
-    if (gtk_toggle_button_get_active (moo_glade_xml_get_widget (find->xml, "regex")))
+    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (find->xml->regex)))
         flags |= MOO_FIND_REGEX;
-    if (gtk_toggle_button_get_active (moo_glade_xml_get_widget (find->xml, "repl_literal")))
+    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (find->xml->repl_literal)))
         flags |= MOO_FIND_REPL_LITERAL;
-    if (gtk_toggle_button_get_active (moo_glade_xml_get_widget (find->xml, "whole_words")))
+    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (find->xml->whole_words)))
         flags |= MOO_FIND_WHOLE_WORDS;
-    if (gtk_toggle_button_get_active (moo_glade_xml_get_widget (find->xml, "from_cursor")))
+    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (find->xml->from_cursor)))
         flags |= MOO_FIND_FROM_CURSOR;
-    if (gtk_toggle_button_get_active (moo_glade_xml_get_widget (find->xml, "backwards")))
+    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (find->xml->backwards)))
         flags |= MOO_FIND_BACKWARDS;
-    if (gtk_toggle_button_get_active (moo_glade_xml_get_widget (find->xml, "selected")))
+    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (find->xml->selected)))
         flags |= MOO_FIND_IN_SELECTED;
-    if (gtk_toggle_button_get_active (moo_glade_xml_get_widget (find->xml, "dont_prompt")))
+    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (find->xml->dont_prompt)))
         flags |= MOO_FIND_DONT_PROMPT;
 
     if (!(flags & MOO_FIND_REGEX))
         flags |= MOO_FIND_REPL_LITERAL;
 
-    if (!gtk_toggle_button_get_active (moo_glade_xml_get_widget (find->xml, "case_sensitive")))
+    if (!gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (find->xml->case_sensitive)))
         flags |= MOO_FIND_CASELESS;
 
     return flags;
@@ -582,22 +565,22 @@ moo_find_set_flags (MooFind        *find,
 {
     g_return_if_fail (MOO_IS_FIND (find));
 
-    gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "regex"),
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (find->xml->regex),
                                   (flags & MOO_FIND_REGEX) ? TRUE : FALSE);
-    if ((flags & MOO_FIND_REPL_LITERAL) && (flags & MOO_FIND_REGEX))
-        gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "repl_literal"), TRUE);
-    else
-        gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "repl_literal"), FALSE);
-    gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "whole_words"),
+
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (find->xml->repl_literal),
+                                  (flags & MOO_FIND_REPL_LITERAL) && (flags & MOO_FIND_REGEX));
+
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (find->xml->whole_words),
                                   (flags & MOO_FIND_WHOLE_WORDS) ? TRUE : FALSE);
-    gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "from_cursor"),
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (find->xml->from_cursor),
                                   (flags & MOO_FIND_FROM_CURSOR) ? TRUE : FALSE);
-    gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "backwards"),
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (find->xml->backwards),
                                   (flags & MOO_FIND_BACKWARDS) ? TRUE : FALSE);
-    gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "dont_prompt"),
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (find->xml->dont_prompt),
                                   (flags & MOO_FIND_DONT_PROMPT) ? TRUE : FALSE);
 
-    gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "case_sensitive"),
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (find->xml->case_sensitive),
                                   (flags & MOO_FIND_CASELESS) ? FALSE : TRUE);
 }
 
@@ -605,10 +588,8 @@ moo_find_set_flags (MooFind        *find,
 static char *
 moo_find_get_text (MooFind *find)
 {
-    MooCombo *entry;
     g_return_val_if_fail (MOO_IS_FIND (find), NULL);
-    entry = moo_glade_xml_get_widget (find->xml, "search_entry");
-    return g_strdup (moo_combo_entry_get_text (entry));
+    return g_strdup (moo_combo_entry_get_text (MOO_COMBO (find->xml->search_entry)));
 }
 
 
@@ -623,10 +604,8 @@ moo_find_get_regex (MooFind *find)
 static char *
 moo_find_get_replacement (MooFind *find)
 {
-    MooCombo *entry;
     g_return_val_if_fail (MOO_IS_FIND (find), NULL);
-    entry = moo_glade_xml_get_widget (find->xml, "replace_entry");
-    return g_strdup (moo_combo_entry_get_text (entry));
+    return g_strdup (moo_combo_entry_get_text (MOO_COMBO (find->xml->replace_entry)));
 }
 
 
@@ -1337,26 +1316,21 @@ update_scale_value (GtkSpinButton  *spin,
 void
 moo_text_view_run_goto_line (GtkTextView *view)
 {
-    GtkWidget *dialog;
+    GtkDialog *dialog;
     GtkTextBuffer *buffer;
     int line_count, line;
     GtkTextIter iter;
-    GtkRange *scale;
-    GtkSpinButton *spin;
-    MooGladeXML *xml;
+    GotoLineDialogXml *xml;
 
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
 
     buffer = gtk_text_view_get_buffer (view);
     line_count = gtk_text_buffer_get_line_count (buffer);
 
-    xml = moo_glade_xml_new_from_buf (mootextgotoline_glade_xml, -1,
-                                      NULL, GETTEXT_PACKAGE, NULL);
-    g_return_if_fail (xml != NULL);
+    xml = goto_line_dialog_xml_new ();
+    dialog = xml->GotoLineDialog;
 
-    dialog = moo_glade_xml_get_widget (xml, "dialog");
-
-    gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
+    gtk_dialog_set_alternative_button_order (dialog,
                                              GTK_RESPONSE_OK,
                                              GTK_RESPONSE_CANCEL,
                                              -1);
@@ -1365,31 +1339,27 @@ moo_text_view_run_goto_line (GtkTextView *view)
                                       gtk_text_buffer_get_insert (buffer));
     line = gtk_text_iter_get_line (&iter);
 
-    scale = moo_glade_xml_get_widget (xml, "scale");
-    gtk_range_set_range (scale, 1, line_count + 1);
-    gtk_range_set_value (scale, line + 1);
+    gtk_range_set_range (GTK_RANGE (xml->scale), 1, line_count + 1);
+    gtk_range_set_value (GTK_RANGE (xml->scale), line + 1);
 
-    spin = moo_glade_xml_get_widget (xml, "spin");
-    gtk_entry_set_activates_default (GTK_ENTRY (spin), TRUE);
-    gtk_spin_button_set_range (spin, 1, line_count);
-    gtk_spin_button_set_value (spin, line + 1);
-    gtk_editable_select_region (GTK_EDITABLE (spin), 0, -1);
+    gtk_entry_set_activates_default (GTK_ENTRY (xml->spin), TRUE);
+    gtk_spin_button_set_range (xml->spin, 1, line_count);
+    gtk_spin_button_set_value (xml->spin, line + 1);
+    gtk_editable_select_region (GTK_EDITABLE (xml->spin), 0, -1);
 
-    g_signal_connect (scale, "value-changed", G_CALLBACK (update_spin_value), spin);
-    g_signal_connect (spin, "value-changed", G_CALLBACK (update_scale_value), scale);
+    g_signal_connect (xml->scale, "value-changed", G_CALLBACK (update_spin_value), xml->spin);
+    g_signal_connect (xml->spin, "value-changed", G_CALLBACK (update_scale_value), xml->scale);
 
-    moo_window_set_parent (dialog, GTK_WIDGET (view));
+    moo_window_set_parent (GTK_WIDGET (dialog), GTK_WIDGET (view));
 
-    g_object_unref (xml);
-
-    if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
+    if (gtk_dialog_run (dialog) != GTK_RESPONSE_OK)
     {
-        gtk_widget_destroy (dialog);
+        gtk_widget_destroy (GTK_WIDGET (dialog));
         return;
     }
 
-    line = gtk_spin_button_get_value (spin) - 1;
-    gtk_widget_destroy (dialog);
+    line = gtk_spin_button_get_value (xml->spin) - 1;
+    gtk_widget_destroy (GTK_WIDGET (dialog));
 
     if (MOO_IS_TEXT_VIEW (view))
     {

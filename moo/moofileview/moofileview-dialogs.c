@@ -14,13 +14,13 @@
 #include "moofileview/moofileview-dialogs.h"
 #include "moofileview/moofilesystem.h"
 #include "moofileview/moofile-private.h"
-#include "moofileprops-glade.h"
-#include "moocreatefolder-glade.h"
-#include "moofileview-drop-glade.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
+#include "moofileprops-gxml.h"
+#include "moocreatefolder-gxml.h"
+#include "moofileview-drop-gxml.h"
 #include <time.h>
 #include <string.h>
 #include <gtk/gtk.h>
@@ -51,18 +51,12 @@ _moo_file_props_dialog_class_init (MooFilePropsDialogClass *klass)
 static void
 _moo_file_props_dialog_init (MooFilePropsDialog *dialog)
 {
-    if (!(dialog->xml = moo_glade_xml_new_from_buf (moofileprops_glade_xml, -1, "notebook",
-                                                    GETTEXT_PACKAGE, NULL)))
-    {
-        g_object_unref (dialog->xml);
-        dialog->xml = NULL;
-        g_return_if_reached ();
-    }
+    dialog->xml = moo_file_props_xml_new ();
 
-    dialog->notebook = moo_glade_xml_get_widget (dialog->xml, "notebook");
-    dialog->icon = moo_glade_xml_get_widget (dialog->xml, "icon");
-    dialog->entry = moo_glade_xml_get_widget (dialog->xml, "entry");
-    dialog->table = moo_glade_xml_get_widget (dialog->xml, "table");
+    dialog->notebook = GTK_WIDGET (dialog->xml->MooFileProps);
+    dialog->icon = GTK_WIDGET (dialog->xml->icon);
+    dialog->entry = GTK_WIDGET (dialog->xml->entry);
+    dialog->table = GTK_WIDGET (dialog->xml->table);
 
     gtk_container_add (GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), dialog->notebook);
     gtk_dialog_set_has_separator (GTK_DIALOG (dialog), FALSE);
@@ -318,36 +312,31 @@ char*
 _moo_file_view_create_folder_dialog (GtkWidget  *parent,
                                      MooFolder  *folder)
 {
-    MooGladeXML *xml;
-    GtkWidget *dialog, *entry, *label;
+    CreateFolderXml *xml;
+    GtkWidget *dialog;
     char *text, *path, *new_folder_name = NULL;
 
     g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
 
-    xml = moo_glade_xml_new_from_buf (moocreatefolder_glade_xml, -1, NULL,
-                                      GETTEXT_PACKAGE, NULL);
-
-    dialog = moo_glade_xml_get_widget (xml, "dialog");
-    g_return_val_if_fail (dialog != NULL, NULL);
+    xml = create_folder_xml_new ();
+    dialog = GTK_WIDGET (xml->CreateFolder);
 
     moo_window_set_parent (dialog, parent);
 
-    label = moo_glade_xml_get_widget (xml, "label");
     path = g_filename_display_name (_moo_folder_get_path (folder));
     text = g_strdup_printf ("Create new folder in %s", path);
-    gtk_label_set_text (GTK_LABEL (label), text);
+    gtk_label_set_text (xml->label, text);
     g_free (path);
     g_free (text);
 
-    entry = moo_glade_xml_get_widget (xml, "entry");
-    gtk_entry_set_text (GTK_ENTRY (entry), "New Folder");
-    moo_entry_clear_undo (MOO_ENTRY (entry));
+    gtk_entry_set_text (GTK_ENTRY (xml->entry), "New Folder");
+    moo_entry_clear_undo (xml->entry);
     gtk_widget_show_all (dialog);
-    gtk_widget_grab_focus (entry);
-    gtk_editable_select_region (GTK_EDITABLE (entry), 0, -1);
+    gtk_widget_grab_focus (GTK_WIDGET (xml->entry));
+    gtk_editable_select_region (GTK_EDITABLE (xml->entry), 0, -1);
 
     if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
-        new_folder_name = g_strdup (gtk_entry_get_text (GTK_ENTRY (entry)));
+        new_folder_name = g_strdup (gtk_entry_get_text (GTK_ENTRY (xml->entry)));
     else
         new_folder_name = NULL;
 
@@ -420,22 +409,19 @@ char *
 _moo_file_view_save_drop_dialog (GtkWidget  *parent,
                                  const char *dirname)
 {
-    MooGladeXML *xml;
-    GtkWidget *dialog, *button;
+    DropXml *xml;
+    GtkWidget *dialog;
     GtkEntry *entry;
     char *start_name, *fullname = NULL;
 
     g_return_val_if_fail (dirname != NULL, NULL);
 
-    xml = moo_glade_xml_new_from_buf (moofileview_drop_glade_xml, -1, NULL,
-                                      GETTEXT_PACKAGE, NULL);
-
-    dialog = moo_glade_xml_get_widget (xml, "save_drop_dialog");
-    g_return_val_if_fail (dialog != NULL, NULL);
+    xml = drop_xml_new ();
+    dialog = GTK_WIDGET (xml->Drop);
 
     moo_position_window_at_pointer (dialog, parent);
 
-    entry = moo_glade_xml_get_widget (xml, "entry");
+    entry = GTK_ENTRY (xml->entry);
 
     start_name = find_available_clip_name (dirname);
     gtk_entry_set_text (entry, start_name);
@@ -444,8 +430,7 @@ _moo_file_view_save_drop_dialog (GtkWidget  *parent,
     gtk_widget_show_all (dialog);
     gtk_widget_grab_focus (GTK_WIDGET (entry));
 
-    button = moo_glade_xml_get_widget (xml, "ok_button");
-    moo_bind_bool_property (button, "sensitive", entry, "empty", TRUE);
+    moo_bind_bool_property (xml->ok_button, "sensitive", entry, "empty", TRUE);
 
     while (TRUE)
     {

@@ -15,15 +15,14 @@
 #endif
 #include "mooedit/moocommand-exe.h"
 #include "mooedit/mooeditor.h"
-#include "mooedittools-exe-glade.h"
 #include "mooedit/moocmdview.h"
 #include "mooutils/mooi18n.h"
-#include "mooutils/mooglade.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/moospawn.h"
 #include "mooutils/mootype-macros.h"
+#include "mooedittools-exe-gxml.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -1044,28 +1043,21 @@ set_filter_combo (GtkComboBox *combo,
 static GtkWidget *
 unx_factory_create_widget (G_GNUC_UNUSED MooCommandFactory *factory)
 {
-    GtkWidget *page;
-    MooGladeXML *xml;
-    MooTextView *textview;
+    ExePageXml *xml;
 
     /* Translators: these are kinds of input for a shell command, do not translate the part before | */
     const char *input_names[] = {N_("Input|None"), N_("Input|Selected lines"), N_("Input|Selection"), N_("Input|Whole document")};
 
-    xml = moo_glade_xml_new_from_buf (mooedittools_exe_glade_xml, -1,
-                                      "unx_page", GETTEXT_PACKAGE, NULL);
-    page = moo_glade_xml_get_widget (xml, "unx_page");
-    g_return_val_if_fail (page != NULL, NULL);
+    xml = exe_page_xml_new ();
 
-    textview = moo_glade_xml_get_widget (xml, "textview");
-    moo_text_view_set_font_from_string (textview, "Monospace");
-    moo_text_view_set_lang_by_id (textview, "sh");
+    moo_text_view_set_font_from_string (xml->textview, "Monospace");
+    moo_text_view_set_lang_by_id (xml->textview, "sh");
 
-    init_combo (moo_glade_xml_get_widget (xml, "input"), input_names, G_N_ELEMENTS (input_names));
-    init_combo (moo_glade_xml_get_widget (xml, "output"), output_names, G_N_ELEMENTS (output_names));
-    init_filter_combo (moo_glade_xml_get_widget (xml, "filter"));
+    init_combo (xml->input, input_names, G_N_ELEMENTS (input_names));
+    init_combo (xml->output, output_names, G_N_ELEMENTS (output_names));
+    init_filter_combo (xml->filter);
 
-    g_object_set_data_full (G_OBJECT (page), "moo-glade-xml", xml, g_object_unref);
-    return page;
+    return GTK_WIDGET (xml->ExePage);
 }
 
 
@@ -1074,31 +1066,28 @@ unx_factory_load_data (G_GNUC_UNUSED MooCommandFactory *factory,
                        GtkWidget      *page,
                        MooCommandData *data)
 {
-    MooGladeXML *xml;
-    GtkTextView *textview;
     GtkTextBuffer *buffer;
     const char *cmd_line;
     int index;
+    ExePageXml *xml;
 
     g_return_if_fail (data != NULL);
 
-    xml = g_object_get_data (G_OBJECT (page), "moo-glade-xml");
+    xml = exe_page_xml_get (page);
     g_return_if_fail (xml != NULL);
 
-    textview = moo_glade_xml_get_widget (xml, "textview");
-    buffer = gtk_text_view_get_buffer (textview);
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (xml->textview));
 
     cmd_line = moo_command_data_get_code (data);
     gtk_text_buffer_set_text (buffer, cmd_line ? cmd_line : "", -1);
 
     parse_input (moo_command_data_get (data, KEY_INPUT), &index);
-    gtk_combo_box_set_active (moo_glade_xml_get_widget (xml, "input"), index);
+    gtk_combo_box_set_active (xml->input, index);
 
     parse_output (moo_command_data_get (data, KEY_OUTPUT), &index);
-    gtk_combo_box_set_active (moo_glade_xml_get_widget (xml, "output"), index);
+    gtk_combo_box_set_active (xml->output, index);
 
-    set_filter_combo (moo_glade_xml_get_widget (xml, "filter"),
-                      moo_command_data_get (data, KEY_FILTER));
+    set_filter_combo (xml->filter, moo_command_data_get (data, KEY_FILTER));
 }
 
 
@@ -1107,19 +1096,17 @@ unx_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
                        GtkWidget      *page,
                        MooCommandData *data)
 {
-    MooGladeXML *xml;
-    GtkTextView *textview;
+    ExePageXml *xml;
     const char *cmd_line;
     char *new_cmd_line;
     gboolean changed = FALSE;
     int index, old_index;
     const char *input_strings[4] = {"none", "lines", "selection", "doc"};
 
-    xml = g_object_get_data (G_OBJECT (page), "moo-glade-xml");
-    textview = moo_glade_xml_get_widget (xml, "textview");
-    g_assert (GTK_IS_TEXT_VIEW (textview));
+    xml = exe_page_xml_get (page);
+    g_return_val_if_fail (xml != NULL, FALSE);
 
-    new_cmd_line = moo_text_view_get_text (textview);
+    new_cmd_line = moo_text_view_get_text (xml->textview);
     cmd_line = moo_command_data_get_code (data);
 
     if (!_moo_str_equal (cmd_line, new_cmd_line))
@@ -1128,7 +1115,7 @@ unx_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
         changed = TRUE;
     }
 
-    index = gtk_combo_box_get_active (moo_glade_xml_get_widget (xml, "input"));
+    index = gtk_combo_box_get_active (xml->input);
     parse_input (moo_command_data_get (data, KEY_INPUT), &old_index);
     g_assert (0 <= index && index < MOO_COMMAND_EXE_MAX_INPUT);
     if (index != old_index)
@@ -1137,7 +1124,7 @@ unx_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
         changed = TRUE;
     }
 
-    index = gtk_combo_box_get_active (moo_glade_xml_get_widget (xml, "output"));
+    index = gtk_combo_box_get_active (xml->output);
     parse_output (moo_command_data_get (data, KEY_OUTPUT), &old_index);
     g_assert (0 <= index && index < MOO_COMMAND_EXE_MAX_OUTPUT);
     if (index != old_index)
@@ -1150,7 +1137,7 @@ unx_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
     {
         const char *old_filter;
         char *new_filter = NULL;
-        GtkComboBox *combo = moo_glade_xml_get_widget (xml, "filter");
+        GtkComboBox *combo = xml->filter;
         GtkTreeIter iter;
 
         if (gtk_combo_box_get_active_iter (combo, &iter))

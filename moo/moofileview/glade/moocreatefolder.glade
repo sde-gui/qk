@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <glade-interface>
-  <requires-version lib="gtk+" version="2.12"/>
-  <widget class="GtkDialog" id="dialog">
+  <widget class="GtkDialog" id="CreateFolder">
     <property name="title" translatable="yes">Create Folder</property>
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
