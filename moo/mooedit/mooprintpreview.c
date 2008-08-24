@@ -17,7 +17,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooprintpreview.h"
 #include "mooedit/mootextprint-private.h"
-#include "mooprintpreview-glade.h"
+#include "glade/mooprintpreview-glade.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"

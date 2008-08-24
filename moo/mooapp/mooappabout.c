@@ -10,7 +10,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooappabout-glade.h"
+#include "glade/mooappabout-glade.h"
 #include "mooappabout.h"
 #include "mooapp.h"
 #include "mooapp-credits.h"

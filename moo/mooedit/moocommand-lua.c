@@ -18,7 +18,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
-#include "mooedittools-lua-gxml.h"
+#include "glade/mooedittools-lua-gxml.h"
 #include "moolua/moolua.h"
 #include <string.h>
 

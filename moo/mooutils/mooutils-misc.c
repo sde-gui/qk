@@ -17,7 +17,7 @@
 #include "mooutils/mooutils-file.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooi18n.h"
-#include "moologwindow-gxml.h"
+#include "glade/moologwindow-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gmappedfile.h>
 #include <glib/gstdio.h>

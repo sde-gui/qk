@@ -37,7 +37,7 @@
 #include "mooutils/mooaction-private.h"
 #include "mooutils/moofiledialog.h"
 #include "mooutils/mooencodings.h"
-#include "moostatusbar-gxml.h"
+#include "glade/moostatusbar-gxml.h"
 #include <string.h>
 #include <gtk/gtk.h>
 #include <math.h>

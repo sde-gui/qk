@@ -26,7 +26,7 @@
 #include "mooutils/mooeditops.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/mooi18n.h"
-#include "mooquicksearch-gxml.h"
+#include "glade/mooquicksearch-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gregex.h>
 #include <gdk/gdkkeysyms.h>

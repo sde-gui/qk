@@ -16,7 +16,7 @@
 
 #include "mooedit/mooplugin.h"
 #include "mooedit/mooplugin-loader.h"
-#include "moopluginprefs-glade.h"
+#include "glade/moopluginprefs-glade.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moostock.h"

@@ -14,7 +14,7 @@
 #include "marshals.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
-#include "mooaccelbutton-gxml.h"
+#include "glade/mooaccelbutton-gxml.h"
 #include <gtk/gtkaccelgroup.h>
 #include <gtk/gtkdialog.h>
 #include <gtk/gtklabel.h>

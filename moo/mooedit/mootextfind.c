@@ -21,8 +21,8 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/moohelp.h"
-#include "mootextfind-gxml.h"
-#include "mootextgotoline-gxml.h"
+#include "glade/mootextfind-gxml.h"
+#include "glade/mootextgotoline-gxml.h"
 #include "help-sections.h"
 #include <gtk/gtk.h>
 #include <glib/gprintf.h>

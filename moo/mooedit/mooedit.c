@@ -23,7 +23,7 @@
 #include "marshals.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
-#include "mooeditprogress-gxml.h"
+#include "glade/mooeditprogress-gxml.h"
 #include <string.h>
 #include <stdlib.h>
 

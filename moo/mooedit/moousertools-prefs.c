@@ -12,8 +12,8 @@
 
 #include "mooedit/moousertools-prefs.h"
 #include "mooedit/moousertools.h"
-#include "mooedittools-command-glade.h"
-#include "mooedittools-main-glade.h"
+#include "glade/mooedittools-command-glade.h"
+#include "glade/mooedittools-main-glade.h"
 #include "mooedit/moocommand.h"
 #include "mooedit/moocommanddisplay.h"
 #include "mooutils/mooprefsdialogpage.h"

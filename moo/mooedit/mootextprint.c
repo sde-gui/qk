@@ -21,7 +21,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
-#include "mooprint-gxml.h"
+#include "glade/mooprint-gxml.h"
 #include <sys/types.h>
 #include <time.h>
 #include <errno.h>
