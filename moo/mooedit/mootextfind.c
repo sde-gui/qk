@@ -376,9 +376,11 @@ moo_find_setup (MooFind        *find,
     search_term = get_search_term (view, TRUE, NULL, NULL);
 
     if (search_term && *search_term)
-        gtk_entry_set_text (GTK_ENTRY (find->xml->search_entry), search_term);
+        gtk_entry_set_text (GTK_ENTRY (MOO_COMBO (find->xml->search_entry)->entry),
+                            search_term);
     else if (last_search)
-        gtk_entry_set_text (GTK_ENTRY (find->xml->search_entry), last_search);
+        gtk_entry_set_text (GTK_ENTRY (MOO_COMBO (find->xml->search_entry)->entry),
+                            last_search);
 
     if (find->replace)
     {
@@ -389,7 +391,8 @@ moo_find_setup (MooFind        *find,
             replace_with = freeme = moo_history_list_get_last_item (replace_history);
 
         if (replace_with)
-            gtk_entry_set_text (GTK_ENTRY (find->xml->replace_entry), replace_with);
+            gtk_entry_set_text (GTK_ENTRY (MOO_COMBO (find->xml->replace_entry)->entry),
+                                replace_with);
 
         g_free (freeme);
     }
@@ -405,7 +408,7 @@ moo_find_setup (MooFind        *find,
     else
         gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (find->xml->selected), FALSE);
 
-    moo_entry_clear_undo (MOO_ENTRY (find->xml->search_entry));
+    moo_entry_clear_undo (MOO_ENTRY (MOO_COMBO (find->xml->search_entry)->entry));
 
     moo_find_set_flags (find, last_search_flags);
 
