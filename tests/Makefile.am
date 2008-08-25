@@ -62,7 +62,7 @@ endif
 
 ldflags = -export-dynamic $(PYTHON_EXTRA_LDFLAGS)
 include ../moo/moo-comps.mk
-ldadd = $(moo_sublibs) $(MOO_LIBS)
+ldadd = $(moo_app_ldadd)
 
 # if MOO_OS_MINGW
 # ldflags += -mwindows
