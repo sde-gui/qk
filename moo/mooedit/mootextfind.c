@@ -237,7 +237,6 @@ moo_find_finalize (GObject *object)
 {
     MooFind *find = MOO_FIND (object);
 
-    g_object_unref (find->xml);
     REGEX_FREE (find->regex);
 
     G_OBJECT_CLASS(moo_find_parent_class)->finalize (object);

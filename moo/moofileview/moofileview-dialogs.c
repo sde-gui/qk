@@ -268,7 +268,6 @@ moo_file_props_dialog_destroy (GtkObject *object)
 
     if (dialog->xml)
     {
-        g_object_unref (dialog->xml);
         if (dialog->file)
             _moo_file_unref (dialog->file);
         if (dialog->folder)
@@ -340,7 +339,6 @@ _moo_file_view_create_folder_dialog (GtkWidget  *parent,
     else
         new_folder_name = NULL;
 
-    g_object_unref (xml);
     gtk_widget_destroy (dialog);
     return new_folder_name;
 }
@@ -478,7 +476,6 @@ _moo_file_view_save_drop_dialog (GtkWidget  *parent,
     }
 
 out:
-    g_object_unref (xml);
     gtk_widget_destroy (dialog);
     g_free (start_name);
     return fullname;
