@@ -14,11 +14,11 @@ VS_VERSION_INFO VERSIONINFO
     BEGIN
       BLOCK "040904B0"
       BEGIN
-        VALUE "CompanyName", "Yevgen Muntyan"
+        VALUE "CompanyName", "http://mooedit.sourceforge.net/"
         VALUE "FileDescription", "libmoo"
         VALUE "FileVersion", "@MOO_VERSION_UNQUOTED@.0"
         VALUE "InternalName", "libmoo-@MOO_VERSION_UNQUOTED@"
-        VALUE "LegalCopyright", "(C) 2004-2008 by Yevgen Muntyan <muntyan@math.tamu.edu>"
+        VALUE "LegalCopyright", "(C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>"
         VALUE "OriginalFilename", "libmoo.dll"
         VALUE "ProductName", "libmoo"
         VALUE "ProductVersion", @MOO_VERSION@

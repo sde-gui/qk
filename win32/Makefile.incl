@@ -1,0 +1,106 @@
+WIN_CONFIG = base
+WIN_DISTDIR = medit-$(VERSION)
+WIN_INSTALL = true
+
+ALT_WIN_CONFIG = python
+ALT_WIN_DISTDIR = medit-python-$(VERSION)
+ALT_WIN_INSTALL = false
+
+#################################################################################
+
+WIN_CLEAN_FILES = $(zip_files) $(installer) $(nsi_files) win32/medit.nsi
+WIN_CLEAN_DIRS = $(win_distdir) $(win_tmp_instdir)
+
+GTK_BIN = BIN/gtk
+PYTHON_BIN = BIN/python
+
+zip_files = $(zip) $(zip_dir)
+zip_dir = $(WIN_DISTDIR)
+zip = $(zip_dir).zip
+
+installer = $(WIN_DISTDIR).exe
+
+win_distdir = medit-$(WIN_CONFIG)
+win_tmp_instdir = win-tmp-instdir
+
+win-tmp-instdir-tgt:
+	if [ $(WIN_INSTALL) != $(ALT_WIN_INSTALL) -o ! -d $(win_tmp_instdir) ]; then \
+	  rm -fr $(win_tmp_instdir); \
+	  make install-strip DESTDIR=`pwd`/$(win_tmp_instdir); \
+	  find $(win_tmp_instdir) -name '*.dll.a' -o -name '*.la' | xargs rm; \
+	fi
+
+win-distdir:
+	make win-tmp-instdir-tgt
+	rm -fr $(win_distdir)
+	for sd in bin etc lib share; do \
+	  mkdir -p $(win_distdir)/$$sd; \
+	done
+	cp -R $(win_tmp_instdir)$(bindir)/* $(win_distdir)/bin/
+	cp -R $(win_tmp_instdir)$(libdir)/* $(win_distdir)/lib/
+	cp -R $(win_tmp_instdir)$(datadir)/doc $(win_distdir)/share/
+	cp -R $(win_tmp_instdir)$(datadir)/moo $(win_distdir)/share/
+	abs_gtk_dir=`cd $(GTK_BIN) && pwd`; \
+	for sd in bin etc lib share; do \
+	  ln -s $$abs_gtk_dir/$$sd/* $(win_distdir)/$$sd; \
+	done
+	if [ $(WIN_CONFIG) = $(ALT_WIN_CONFIG) ]; then \
+	  abs_python_dir=`cd $(PYTHON_BIN) && pwd`; \
+	  for sd in bin share; do \
+	    ln -s $$abs_python_dir/$$sd/* $(win_distdir)/$$sd; \
+	  done; \
+	fi
+
+win-clean:
+	rm -fr $(WIN_CLEAN_DIRS)
+	rm -f $(WIN_CLEAN_FILES)
+	if [ $(WIN_CONFIG) != $(ALT_WIN_CONFIG) ]; then \
+	  make win-clean WIN_CONFIG=$(ALT_WIN_CONFIG) \
+			 WIN_DISTDIR=$(ALT_WIN_DISTDIR); \
+	fi
+
+
+medit-$(WIN_CONFIG).nsi: win32/medit.nsi.in $(top_builddir)/config.status
+	$(SHELL) ./config.status --file=win32/medit.nsi || exit 1
+	sed -e 's/@MEDIT_INSTALLER_NAME@/$(installer)/' \
+	    -e 's/@UNINSTALLER_FILE_LIST@/medit-$(WIN_CONFIG)-unlist.nsh/' \
+	    -e 's/@WIN_DISTDIR@/$(win_distdir)/' \
+	    win32/medit.nsi > $@.tmp && mv $@.tmp $@
+
+medit-$(WIN_CONFIG)-unlist.nsh: win32/gen-file-list
+	$(srcdir)/win32/gen-file-list $(win_distdir) > $@.tmp && mv $@.tmp $@
+
+nsi_files = medit-$(WIN_CONFIG).nsi medit-$(WIN_CONFIG)-unlist.nsh
+
+$(installer): medit-$(WIN_CONFIG).nsi win-distdir medit-$(WIN_CONFIG)-unlist.nsh
+	makensis medit-$(WIN_CONFIG).nsi
+
+win-installer:
+	rm -f $(installer) && make $(installer)
+win-installer-python:
+	make win-installer WIN_CONFIG=$(ALT_WIN_CONFIG) WIN_DISTDIR=$(ALT_WIN_DISTDIR)
+win-installers:
+	make win-tmp-instdir-tgt
+	make win-installer WIN_INSTALL=$(ALT_WIN_INSTALL)
+	make win-installer-python WIN_INSTALL=$(ALT_WIN_INSTALL)
+
+
+$(zip): win-distdir
+	rm -f $(zip) $(zip_dir)
+	ln -s $(win_distdir) $(zip_dir)
+	zip -r -9 $(zip) $(zip_dir)
+	rm -f $(zip_dir)
+
+win-zip:
+	rm -f $(zip) && make $(zip)
+win-zip-python:
+	make win-zip WIN_CONFIG=$(ALT_WIN_CONFIG) WIN_DISTDIR=$(ALT_WIN_DISTDIR)
+win-zips:
+	make win-tmp-instdir-tgt
+	make win-zip WIN_INSTALL=$(ALT_WIN_INSTALL)
+	make win-zip-python WIN_INSTALL=$(ALT_WIN_INSTALL)
+
+win-dist:
+	make win-tmp-instdir-tgt
+	make win-zips WIN_INSTALL=$(ALT_WIN_INSTALL)
+	make win-installers WIN_INSTALL=$(ALT_WIN_INSTALL)

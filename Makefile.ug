@@ -72,3 +72,5 @@ win-test-stuff:
 	cp moo/.libs/libmoo.dll test-stuff/ && \
 	cp -r $(srcdir)/tests/data/* test-stuff/test-data/ && \
 	cp tests/.libs/run-tests.exe test-stuff/
+
+include win32/Makefile.incl

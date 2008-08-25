@@ -154,14 +154,6 @@ pluginlib_LTLIBRARIES = moo.la
 
 plugin_DATA = moopython/pymoo.ini
 
-install-data-hook:
-	rm -f $(DESTDIR)$(libdir)/libmoo.la
-	rm -f $(DESTDIR)$(libdir)/libmoo.dll.a
-	rm -f $(DESTDIR)$(plugindir)/pymoo.la
-	rm -f $(DESTDIR)$(plugindir)/pymoo.dll.a
-	rm -f $(DESTDIR)$(pluginlibdir)/moo.la
-	rm -f $(DESTDIR)$(pluginlibdir)/moo.dll.a
-
 pymoo_la_SOURCES =
 pymoo_la_LDFLAGS += $(pymoo_la_ldflags) $(PYTHON_LDFLAGS) $(PYTHON_EXTRA_LDFLAGS)
 pymoo_la_LIBADD = moopython/libpymoo.la libmoo.la $(MOO_LIBS) $(PYTHON_LIBS) $(PYTHON_EXTRA_LIBS)
