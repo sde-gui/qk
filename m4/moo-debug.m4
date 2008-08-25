@@ -1,41 +1,11 @@
-# _MOO_AC_CHECK_COMPILER_OPTIONS(var,options,lang)
-AC_DEFUN([__MOO_AC_CHECK_COMPILER_OPTIONS],[
-  AC_LANG_SAVE
-  AC_LANG_PUSH($3)
-  for opt in $2; do
-#     AC_MSG_CHECKING(whether $3 compiler accepts $opt)
-    save_CFLAGS="$CFLAGS"
-    save_CXXFLAGS="$CXXFLAGS"
-    CFLAGS="$CFLAGS $opt"
-    CXXFLAGS="$CXXFLAGS $opt"
-#     AC_TRY_COMPILE([],[],[$1="$[]$1 $opt"; AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)])
-    AC_TRY_COMPILE([],[],[$1="$[]$1 $opt";],[:])
-    CFLAGS="$save_CFLAGS"
-    CXXFLAGS="$save_CXXFLAGS"
-  done
-  AC_LANG_POP($3)
-])
-
 # _MOO_AC_CHECK_COMPILER_OPTIONS(var,options)
 AC_DEFUN([_MOO_AC_CHECK_COMPILER_OPTIONS],[
-  __MOO_AC_CHECK_COMPILER_OPTIONS([$1],[$2],[C])
+  MOO_AC_CC_OPT([$1],[$2])
 ])
 
 # _MOO_AC_CHECK_COMPILER_OPTIONS(var,options)
 AC_DEFUN([_MOO_AC_CHECK_CPP_COMPILER_OPTIONS],[
-m4_ifdef([MOO_USE_CPP_DEFINE],[__MOO_AC_CHECK_COMPILER_OPTIONS([$1],[$2],[C++])])
-])
-
-AC_DEFUN([MOO_COMPILER],[
-# icc pretends to be gcc or configure thinks it's gcc, but icc doesn't
-# error on unknown options, so just don't try gcc options with icc
-MOO_ICC=false
-MOO_GCC=false
-if test "$CC" = "icc"; then
-  MOO_ICC=true
-elif test "x$GCC" = "xyes"; then
-  MOO_GCC=true
-fi
+m4_ifdef([MOO_USE_CPP_DEFINE],[MOO_AC_CXX_OPT([$1],[$2])])
 ])
 
 ##############################################################################
