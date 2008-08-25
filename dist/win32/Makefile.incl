@@ -8,7 +8,7 @@ ALT_WIN_INSTALL = false
 
 #################################################################################
 
-WIN_CLEAN_FILES = $(zip_files) $(installer) $(nsi_files) win32/medit.nsi
+WIN_CLEAN_FILES = $(zip_files) $(installer) $(nsi_files) dist/win32/medit.nsi
 WIN_CLEAN_DIRS = $(win_distdir) $(win_tmp_instdir)
 
 GTK_BIN = BIN/gtk
@@ -36,6 +36,7 @@ win-distdir:
 	for sd in bin etc lib share; do \
 	  mkdir -p $(win_distdir)/$$sd; \
 	done
+	cp -R $(srcdir)/COPYING.GPL $(win_distdir)/COPYING
 	cp -R $(win_tmp_instdir)$(bindir)/* $(win_distdir)/bin/
 	cp -R $(win_tmp_instdir)$(libdir)/* $(win_distdir)/lib/
 	cp -R $(win_tmp_instdir)$(datadir)/doc $(win_distdir)/share/
@@ -60,15 +61,15 @@ win-clean:
 	fi
 
 
-medit-$(WIN_CONFIG).nsi: win32/medit.nsi.in $(top_builddir)/config.status
-	$(SHELL) ./config.status --file=win32/medit.nsi || exit 1
+medit-$(WIN_CONFIG).nsi: dist/win32/medit.nsi.in $(top_builddir)/config.status
+	$(SHELL) ./config.status --file=dist/win32/medit.nsi || exit 1
 	sed -e 's/@MEDIT_INSTALLER_NAME@/$(installer)/' \
 	    -e 's/@UNINSTALLER_FILE_LIST@/medit-$(WIN_CONFIG)-unlist.nsh/' \
 	    -e 's/@WIN_DISTDIR@/$(win_distdir)/' \
-	    win32/medit.nsi > $@.tmp && mv $@.tmp $@
+	    dist/win32/medit.nsi > $@.tmp && mv $@.tmp $@
 
-medit-$(WIN_CONFIG)-unlist.nsh: win32/gen-file-list
-	$(srcdir)/win32/gen-file-list $(win_distdir) > $@.tmp && mv $@.tmp $@
+medit-$(WIN_CONFIG)-unlist.nsh: dist/win32/gen-file-list
+	$(srcdir)/dist/win32/gen-file-list $(win_distdir) > $@.tmp && mv $@.tmp $@
 
 nsi_files = medit-$(WIN_CONFIG).nsi medit-$(WIN_CONFIG)-unlist.nsh
 

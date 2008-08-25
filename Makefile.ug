@@ -73,4 +73,4 @@ win-test-stuff:
 	cp -r $(srcdir)/tests/data/* test-stuff/test-data/ && \
 	cp tests/.libs/run-tests.exe test-stuff/
 
-include win32/Makefile.incl
+include dist/win32/Makefile.incl
