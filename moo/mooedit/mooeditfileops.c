@@ -759,13 +759,16 @@ do_save_local (MooEdit        *edit,
         if ((*error)->domain != G_CONVERT_ERROR ||
             _moo_encodings_equal (encoding, MOO_ENCODING_UTF8))
         {
-            g_clear_error (error);
+            *retval = FALSE;
+            return FALSE;
+        }
 
-            if (!do_write (edit, filename, MOO_ENCODING_UTF8, error))
-            {
-                *retval = FALSE;
-                return FALSE;
-            }
+        g_clear_error (error);
+
+        if (!do_write (edit, filename, MOO_ENCODING_UTF8, error))
+        {
+            *retval = FALSE;
+            return FALSE;
         }
 
         *retval = FALSE;
