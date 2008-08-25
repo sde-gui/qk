@@ -37,7 +37,6 @@ MOO_AM_MK
 #
 AC_CONFIG_FILES([
 Makefile
-config.py
 doc/Makefile
 moo/Makefile
 moo/mooapp/Makefile
