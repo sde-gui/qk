@@ -1130,7 +1130,6 @@ widget_new (MooGladeXML    *xml,
                 id = freeme;
                 class_name = colon + 1;
 
-                g_message ("'%s' => '%s'", id, class_name);
                 type = get_type_by_name (class_name);
 
                 if (!type)
