@@ -14,17 +14,14 @@
 #define MOO_EDIT_DIALOGS_H
 
 #include "mooedit/mooedit.h"
-#include "mooutils/moofiltermgr.h"
 #include "mooutils/moodialogs.h"
 
 G_BEGIN_DECLS
 
 
 MooEditFileInfo *_moo_edit_save_as_dialog           (MooEdit        *edit,
-                                                     MooFilterMgr   *mgr,
                                                      const char     *display_basename);
 GSList          *_moo_edit_open_dialog              (GtkWidget      *widget,
-                                                     MooFilterMgr   *mgr,
                                                      MooEdit        *current_doc);
 
 MooSaveChangesDialogResponse

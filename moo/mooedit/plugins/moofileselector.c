@@ -1258,7 +1258,6 @@ file_selector_plugin_attach (MooPlugin     *mplugin,
 
     /* it attaches itself to window */
     filesel = g_object_new (MOO_TYPE_FILE_SELECTOR,
-                            "filter-mgr", moo_editor_get_filter_mgr (editor),
                             "bookmark-mgr", plugin->bookmark_mgr,
                             "window", window,
                             NULL);

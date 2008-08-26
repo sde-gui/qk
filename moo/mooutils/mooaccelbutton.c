@@ -15,9 +15,6 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
 #include "glade/mooaccelbutton-gxml.h"
-#include <gtk/gtkaccelgroup.h>
-#include <gtk/gtkdialog.h>
-#include <gtk/gtklabel.h>
 #include <gdk/gdkkeysyms.h>
 
 

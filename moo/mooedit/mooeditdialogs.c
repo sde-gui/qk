@@ -37,9 +37,8 @@ open_dialog_created (G_GNUC_UNUSED MooFileDialog *fd,
 }
 
 GSList *
-_moo_edit_open_dialog (GtkWidget      *widget,
-                       MooFilterMgr   *mgr,
-                       MooEdit        *current_doc)
+_moo_edit_open_dialog (GtkWidget *widget,
+                       MooEdit   *current_doc)
 {
     MooFileDialog *dialog;
     const char *start_dir = NULL;
@@ -73,8 +72,7 @@ _moo_edit_open_dialog (GtkWidget      *widget,
     g_signal_connect (dialog, "dialog-created", G_CALLBACK (open_dialog_created), NULL);
     moo_file_dialog_set_help_id (dialog, "dialog-open");
 
-    if (mgr)
-        moo_file_dialog_set_filter_mgr (dialog, mgr, "MooEdit");
+    moo_file_dialog_set_filter_mgr_id (dialog, "MooEdit");
 
     if (!moo_file_dialog_run (dialog))
         goto out;
@@ -104,9 +102,8 @@ out:
 
 
 MooEditFileInfo *
-_moo_edit_save_as_dialog (MooEdit        *edit,
-                          MooFilterMgr   *mgr,
-                          const char     *display_basename)
+_moo_edit_save_as_dialog (MooEdit    *edit,
+                          const char *display_basename)
 {
     const char *start = NULL;
     const char *filename = NULL;
@@ -140,8 +137,7 @@ _moo_edit_save_as_dialog (MooEdit        *edit,
     moo_file_dialog_set_encoding (dialog, moo_edit_get_encoding (edit));
     moo_file_dialog_set_help_id (dialog, "dialog-save");
 
-    if (mgr)
-        moo_file_dialog_set_filter_mgr (dialog, mgr, "MooEdit");
+    moo_file_dialog_set_filter_mgr_id (dialog, "MooEdit");
 
     if (!moo_file_dialog_run (dialog))
     {

@@ -112,7 +112,6 @@ struct _MooEditorPrivate {
     char            *app_name;
     MooUIXML        *doc_ui_xml;
     MooUIXML        *ui_xml;
-    MooFilterMgr    *filter_mgr;
     MdHistoryMgr    *history;
     MooLangMgr      *lang_mgr;
     MooFileWatch    *file_watch;
@@ -304,8 +303,6 @@ moo_editor_init (MooEditor *editor)
                               G_CALLBACK (moo_editor_apply_prefs),
                               editor);
 
-    editor->priv->filter_mgr = moo_filter_mgr_new ();
-
     editor->priv->history = g_object_new (MD_TYPE_HISTORY_MGR,
                                           "name", "Editor",
                                           NULL);
@@ -442,8 +439,6 @@ moo_editor_finalize (GObject *object)
 
     if (editor->priv->ui_xml)
         g_object_unref (editor->priv->ui_xml);
-    if (editor->priv->filter_mgr)
-        g_object_unref (editor->priv->filter_mgr);
     if (editor->priv->history)
         g_object_unref (editor->priv->history);
     g_object_unref (editor->priv->lang_mgr);
@@ -703,14 +698,6 @@ moo_editor_get_app_name (MooEditor *editor)
         return g_get_prgname ();
     else
         return editor->priv->app_name;
-}
-
-
-MooFilterMgr *
-moo_editor_get_filter_mgr (MooEditor *editor)
-{
-    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
-    return editor->priv->filter_mgr;
 }
 
 
@@ -1354,7 +1341,7 @@ moo_editor_open (MooEditor      *editor,
     {
         MooEdit *active = window ? moo_edit_window_get_active_doc (window) : NULL;
 
-        files = _moo_edit_open_dialog (parent, editor->priv->filter_mgr, active);
+        files = _moo_edit_open_dialog (parent, active);
 
         if (!files)
             return FALSE;
@@ -2447,8 +2434,7 @@ _moo_editor_save_as (MooEditor      *editor,
 
     if (!filename)
     {
-        file_info = _moo_edit_save_as_dialog (doc, editor->priv->filter_mgr,
-                                              moo_edit_get_display_basename (doc));
+        file_info = _moo_edit_save_as_dialog (doc, moo_edit_get_display_basename (doc));
 
         if (!file_info)
             goto out;

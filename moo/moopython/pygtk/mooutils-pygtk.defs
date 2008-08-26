@@ -563,6 +563,11 @@
   (return-type "MooFilterMgr*")
 )
 
+(define-function filter_mgr_default
+  (c-name "moo_filter_mgr_default")
+  (return-type "MooFilterMgr*")
+)
+
 (define-method init_filter_combo
   (of-object "MooFilterMgr")
   (c-name "moo_filter_mgr_init_filter_combo")
@@ -2339,12 +2344,11 @@
 )
 )
 
-(define-method set_filter_mgr
+(define-method set_filter_mgr_id
   (of-object "MooFileDialog")
-  (c-name "moo_file_dialog_set_filter_mgr")
+  (c-name "moo_file_dialog_set_filter_mgr_id")
   (return-type "none")
   (parameters
-    '("MooFilterMgr*" "mgr")
     '("const-char*" "id")
   )
 )

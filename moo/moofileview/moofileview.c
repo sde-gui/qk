@@ -180,8 +180,6 @@ static gboolean     moo_file_view_key_press     (MooFileView    *fileview,
 static gboolean     moo_file_view_popup_menu    (GtkWidget      *widget);
 static void         moo_file_view_unrealize     (GtkWidget      *widget);
 
-static void         moo_file_view_set_filter_mgr    (MooFileView    *fileview,
-                                                     MooFilterMgr   *mgr);
 static void         moo_file_view_set_bookmark_mgr  (MooFileView    *fileview,
                                                      MooBookmarkMgr *mgr);
 
@@ -437,7 +435,6 @@ enum {
     PROP_0,
     PROP_CURRENT_DIRECTORY,
     PROP_HOME_DIRECTORY,
-    PROP_FILTER_MGR,
     PROP_BOOKMARK_MGR,
     PROP_SORT_CASE_SENSITIVE,
     PROP_SORT_FOLDERS_FIRST,
@@ -533,14 +530,6 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                              "home-directory",
                                              NULL,
                                              G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_FILTER_MGR,
-                                     g_param_spec_object ("filter-mgr",
-                                             "filter-mgr",
-                                             "filter-mgr",
-                                             MOO_TYPE_FILTER_MGR,
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_BOOKMARK_MGR,
@@ -1341,6 +1330,7 @@ init_gui (MooFileView *fileview)
     filter_combo = create_filter_combo (fileview);
     gtk_widget_show (filter_combo);
     gtk_box_pack_start (box, filter_combo, FALSE, FALSE, 0);
+    init_filter_combo (fileview);
 
     switch (fileview->priv->view_type)
     {
@@ -2271,10 +2261,6 @@ moo_file_view_set_property (GObject        *object,
             g_object_notify (object, "home-directory");
             break;
 
-        case PROP_FILTER_MGR:
-            moo_file_view_set_filter_mgr (fileview, g_value_get_object (value));
-            break;
-
         case PROP_BOOKMARK_MGR:
             moo_file_view_set_bookmark_mgr (fileview, g_value_get_object (value));
             break;
@@ -2336,10 +2322,6 @@ moo_file_view_get_property (GObject        *object,
 
         case PROP_HOME_DIRECTORY:
             g_value_set_string (value, moo_file_view_get_home_dir (fileview));
-            break;
-
-        case PROP_FILTER_MGR:
-            g_value_set_object (value, fileview->priv->filter_mgr);
             break;
 
         case PROP_BOOKMARK_MGR:
@@ -2840,31 +2822,6 @@ _moo_file_view_set_sort_folders_first (MooFileView *fileview,
  */
 
 static void
-moo_file_view_set_filter_mgr (MooFileView    *fileview,
-                              MooFilterMgr   *mgr)
-{
-    if (!mgr)
-    {
-        mgr = moo_filter_mgr_new ();
-        moo_file_view_set_filter_mgr (fileview, mgr);
-        g_object_unref (mgr);
-        g_object_notify (G_OBJECT (fileview), "filter-mgr");
-        return;
-    }
-
-    if (mgr == fileview->priv->filter_mgr)
-        return;
-
-    if (fileview->priv->filter_mgr)
-        g_object_unref (fileview->priv->filter_mgr);
-    fileview->priv->filter_mgr = g_object_ref (mgr);
-
-    init_filter_combo (fileview);
-    g_object_notify (G_OBJECT (fileview), "filter-mgr");
-}
-
-
-static void
 block_filter_signals (MooFileView *fileview)
 {
     g_signal_handlers_block_by_func (fileview->priv->filter_combo,
@@ -2896,8 +2853,11 @@ unblock_filter_signals (MooFileView *fileview)
 static void
 init_filter_combo (MooFileView *fileview)
 {
-    MooFilterMgr *mgr = fileview->priv->filter_mgr;
+    MooFilterMgr *mgr;
     GtkFileFilter *filter;
+
+    mgr = moo_filter_mgr_default ();
+    fileview->priv->filter_mgr = g_object_ref (mgr);
 
     block_filter_signals (fileview);
 

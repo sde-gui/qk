@@ -16,6 +16,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/moohelp.h"
+#include "mooutils/moofiltermgr.h"
 #include "marshals.h"
 #include <gtk/gtk.h>
 #include <string.h>
@@ -28,7 +29,6 @@ struct MooFileDialogPrivate {
     char *name;
     MooFileDialogType type;
     GtkWidget *parent;
-    MooFilterMgr *filter_mgr;
     char *filter_mgr_id;
     gboolean enable_encodings;
 
@@ -57,7 +57,6 @@ enum {
     PROP_NAME,
     PROP_TYPE,
     PROP_PARENT,
-    PROP_FILTER_MGR,
     PROP_FILTER_MGR_ID,
     PROP_ENABLE_ENCODINGS
 };
@@ -133,15 +132,6 @@ moo_file_dialog_set_property (GObject        *object,
             g_object_notify (object, "parent");
             break;
 
-        case PROP_FILTER_MGR:
-            if (dialog->priv->filter_mgr)
-                g_object_unref (dialog->priv->filter_mgr);
-            dialog->priv->filter_mgr = g_value_get_object (value);
-            if (dialog->priv->filter_mgr)
-                g_object_ref (dialog->priv->filter_mgr);
-            g_object_notify (object, "filter-mgr");
-            break;
-
         case PROP_FILTER_MGR_ID:
             g_free (dialog->priv->filter_mgr_id);
             dialog->priv->filter_mgr_id = g_value_dup_string (value);
@@ -194,10 +184,6 @@ moo_file_dialog_get_property (GObject        *object,
             g_value_set_object (value, dialog->priv->parent);
             break;
 
-        case PROP_FILTER_MGR:
-            g_value_set_object (value, dialog->priv->filter_mgr);
-            break;
-
         case PROP_FILTER_MGR_ID:
             g_value_set_string (value, dialog->priv->filter_mgr_id);
             break;
@@ -235,9 +221,6 @@ moo_file_dialog_finalize (GObject *object)
     g_free (dialog->priv->help_id);
     g_free (dialog->priv->size_prefs_key);
     string_slist_free (dialog->priv->uris);
-
-    if (dialog->priv->filter_mgr)
-        g_object_unref (dialog->priv->filter_mgr);
 
     if (dialog->priv->check_name_func_data_notify)
         dialog->priv->check_name_func_data_notify (dialog->priv->check_name_func_data);
@@ -295,10 +278,6 @@ moo_file_dialog_class_init (MooFileDialogClass *klass)
         g_param_spec_enum ("type", "type", "type",
                            MOO_TYPE_FILE_DIALOG_TYPE, MOO_FILE_DIALOG_OPEN,
                            G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class, PROP_FILTER_MGR,
-        g_param_spec_object ("filter-mgr", "filter-mgr", "filter-mgr",
-                             MOO_TYPE_FILTER_MGR, G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PROP_FILTER_MGR_ID,
         g_param_spec_string ("filter-mgr-id", "filter-mgr-id", "filter-mgr-id",
@@ -422,15 +401,15 @@ moo_file_dialog_create_widget (MooFileDialog *dialog)
 
     gtk_dialog_set_default_response (GTK_DIALOG (widget), GTK_RESPONSE_OK);
 
-    if (dialog->priv->filter_mgr || dialog->priv->enable_encodings)
+    if (dialog->priv->filter_mgr_id || dialog->priv->enable_encodings)
     {
         extra_box = gtk_hbox_new (FALSE, 0);
         gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (widget), extra_box);
         gtk_widget_show (extra_box);
     }
 
-    if (dialog->priv->filter_mgr)
-        moo_filter_mgr_attach (dialog->priv->filter_mgr,
+    if (dialog->priv->filter_mgr_id)
+        moo_filter_mgr_attach (moo_filter_mgr_default (),
                                GTK_FILE_CHOOSER (widget), extra_box,
                                dialog->priv->filter_mgr_id);
 
@@ -883,13 +862,11 @@ moo_file_dialog_new (MooFileDialogType type,
 
 
 void
-moo_file_dialog_set_filter_mgr (MooFileDialog  *dialog,
-                                MooFilterMgr   *mgr,
-                                const char     *id)
+moo_file_dialog_set_filter_mgr_id (MooFileDialog *dialog,
+                                   const char    *id)
 {
     g_return_if_fail (MOO_IS_FILE_DIALOG (dialog));
-    g_return_if_fail (!mgr || MOO_IS_FILTER_MGR (mgr));
-    g_object_set (dialog, "filter-mgr", mgr, "filter-mgr-id", id, NULL);
+    g_object_set (dialog, "filter-mgr-id", id, NULL);
 }
 
 

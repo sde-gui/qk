@@ -14,7 +14,6 @@
 #define MOO_FILE_DIALOG_H
 
 #include <gtk/gtkwidget.h>
-#include <mooutils/moofiltermgr.h>
 
 G_BEGIN_DECLS
 
@@ -68,8 +67,7 @@ MooFileDialog  *moo_file_dialog_new                     (MooFileDialogType type,
                                                          const char     *title,
                                                          const char     *start_dir,
                                                          const char     *start_name);
-void            moo_file_dialog_set_filter_mgr          (MooFileDialog  *dialog,
-                                                         MooFilterMgr   *mgr,
+void            moo_file_dialog_set_filter_mgr_id       (MooFileDialog  *dialog,
                                                          const char     *id);
 
 gboolean        moo_file_dialog_run                     (MooFileDialog  *dialog);

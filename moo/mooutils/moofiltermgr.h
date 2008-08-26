@@ -46,6 +46,7 @@ struct _MooFilterMgrClass
 GType            moo_filter_mgr_get_type            (void) G_GNUC_CONST;
 
 MooFilterMgr    *moo_filter_mgr_new                 (void);
+MooFilterMgr    *moo_filter_mgr_default             (void);
 
 void             moo_filter_mgr_init_filter_combo   (MooFilterMgr   *mgr,
                                                      GtkComboBox    *combo,

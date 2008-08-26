@@ -153,10 +153,19 @@ moo_filter_mgr_finalize (GObject *object)
 }
 
 
-MooFilterMgr*
+MooFilterMgr *
 moo_filter_mgr_new (void)
 {
     return g_object_new (MOO_TYPE_FILTER_MGR, NULL);
+}
+
+MooFilterMgr *
+moo_filter_mgr_default (void)
+{
+    static MooFilterMgr *instance;
+    if (!instance)
+        instance = moo_filter_mgr_new ();
+    return instance;
 }
 
 
