@@ -46,7 +46,6 @@ moo/moolua/Makefile
 moo/moopython/Makefile
 moo/moopython/plugins/Makefile
 moo/moopython/plugins/pyproject/Makefile
-moo/moopython/pygtk/Makefile
 moo/mooutils/Makefile
 moo/mooutils/newgtk/Makefile
 moo/mooutils/pcre/Makefile
