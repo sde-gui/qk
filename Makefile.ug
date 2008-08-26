@@ -64,7 +64,12 @@ DISTCLEANFILES +=		\
 distuninstallcheck_listfiles = find . -type f -print | grep -v share/mime/ | grep -v share/icons/hicolor
 
 snapshot:
-	$(MAKE) dist && mv $(PACKAGE)-$(VERSION).tar.bz2 $(PACKAGE)-`date +%F-%H-%M`.tar.bz2
+	if [ -d $(top_srcdir)/.hg ]; then \
+	  suffix=r`hg tip --template '{rev}'`; \
+	else \
+	  suffix=`date +%F-%H-%M`; \
+	fi; \
+	$(MAKE) dist && mv $(PACKAGE)-$(VERSION).tar.bz2 $(PACKAGE)-"$$suffix".tar.bz2
 
 win-test-stuff:
 	$(MAKE) all && mkdir -p test-stuff/test-data && \
