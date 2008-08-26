@@ -94,7 +94,7 @@ _moo_utils_mod_init (void)
     {
         PyObject *fake_mod, *code;
 
-        code = Py_CompileString (MOO_UTILS_PY, "moo/utils.py", Py_file_input);
+        code = Py_CompileString (MOOUTILS_PY, "moo/utils.py", Py_file_input);
 
         if (!code)
             return FALSE;

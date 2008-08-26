@@ -38,7 +38,7 @@ _moo_app_mod_init (void)
     {
         PyObject *fake_mod, *code;
 
-        code = Py_CompileString (MOO_APP_PY, "moo/app.py", Py_file_input);
+        code = Py_CompileString (MOOAPP_PY, "moo/app.py", Py_file_input);
 
         if (!code)
             return FALSE;

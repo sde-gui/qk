@@ -40,7 +40,7 @@ _moo_edit_mod_init (void)
     {
         PyObject *fake_mod, *code;
 
-        code = Py_CompileString (MOO_EDIT_PY, "moo/edit.py", Py_file_input);
+        code = Py_CompileString (MOOEDIT_PY, "moo/edit.py", Py_file_input);
 
         if (!code)
             return FALSE;

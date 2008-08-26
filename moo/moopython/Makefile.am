@@ -1,4 +1,4 @@
-SUBDIRS = plugins pygtk .
+SUBDIRS = plugins .
 
 libmoomod_la_sources =		\
 	moo-mod.c		\
@@ -25,10 +25,11 @@ libmoopython_la_sources =	\
 	moopython-loader.c	\
 	moopython-utils.h	\
 	moopython-utils.c
+nodist_libmoopython_la_sources =
 
 if !MOO_BUILD_MOO_MODULE
-libmoopython_la_libadd =	\
-	pygtk/libmoopygtk.la
+libmoopython_la_sources += $(moopygtk_sources)
+nodist_libmoopython_la_sources += $(nodist_moopygtk_sources)
 endif
 
 noinst_LTLIBRARIES =
@@ -59,15 +60,21 @@ noinst_LTLIBRARIES += libmoomod.la libpymoo.la
 endif !MOO_OS_UNIX
 
 AM_CFLAGS =			\
+	-I$(srcdir)/pygtk	\
+	-Ipygtk			\
 	$(MOO_CFLAGS)		\
 	$(PYTHON_INCLUDES)	\
 	$(PYGTK_CFLAGS)		\
+	$(MOO_W_NO_UNUSED)	\
 	$(MOO_W_NO_WRITE_STRINGS)
 
 AM_CXXFLAGS =			\
+	-I$(srcdir)/pygtk	\
+	-Ipygtk			\
 	$(MOO_CXXFLAGS)		\
 	$(PYTHON_INCLUDES)	\
 	$(PYGTK_CFLAGS)		\
+	$(MOO_W_NO_UNUSED)	\
 	$(MOO_W_NO_WRITE_STRINGS)
 
 if MOO_OS_MINGW
@@ -75,13 +82,15 @@ AM_CFLAGS += -DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
 AM_CXXFLAGS += -DMOO_PYTHON_MODULE_DLL_NAME=\"pymoo.dll\"
 endif
 
-libmoomod_la_SOURCES = $(libmoomod_la_sources)
-libmoomod_la_LIBADD = pygtk/libmoopygtk.la $(libmoomod_la_libadd)
+libmoomod_la_SOURCES = $(libmoomod_la_sources) $(moopygtk_sources)
+nodist_libmoomod_la_SOURCES = $(nodist_moopygtk_sources)
+libmoomod_la_LIBADD =
 
 libpymoo_la_SOURCES = $(libpymoo_la_sources)
 
 libmoopython_la_SOURCES = $(libmoopython_la_sources)
-libmoopython_la_LIBADD = $(libmoopython_la_libadd) $(PYTHON_LIBS) $(PYTHON_EXTRA_LIBS)
+nodist_libmoopython_la_SOURCES = $(nodist_libmoopython_la_sources)
+libmoopython_la_LIBADD = $(PYTHON_LIBS) $(PYTHON_EXTRA_LIBS)
 libmoopython_la_LDFLAGS = $(PYTHON_LDFLAGS) $(PYTHON_EXTRA_LDFLAGS)
 
 EXTRA_DIST =				\
@@ -106,3 +115,5 @@ EXTRA_DIST =				\
 	codegen/override.py		\
 	codegen/reversewrapper.py	\
 	codegen/scmexpr.py
+
+include pygtk/Makefile.incl
