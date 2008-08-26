@@ -533,7 +533,7 @@ _wrap_moo_prefs_new_key (G_GNUC_UNUSED PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "sOOO:prefs_new_key", &key,
                            &py_type, &py_default, &py_prefs_type))
         return NULL;
-    if (pyg_enum_get_value (MOO_TYPE_DATA_DIR_TYPE, py_prefs_type, &prefs_type) != 0)
+    if (pyg_enum_get_value (MOO_TYPE_PREFS_TYPE, py_prefs_type, &prefs_type) != 0)
         return NULL;
     if (!(type = pyg_type_from_object (py_type)))
         return NULL;
