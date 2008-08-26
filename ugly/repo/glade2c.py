@@ -90,6 +90,7 @@ def find_root(dom, root_name):
 def write_file(gxml, params, out):
     tmpl1 = """\
 #include <mooutils/mooglade.h>
+#include <gtk/gtk.h>
 
 const char %(glade_xml)s[] =
 """
