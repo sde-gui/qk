@@ -125,6 +125,15 @@ moo_lang_mgr_new (void)
     return g_object_new (MOO_TYPE_LANG_MGR, NULL);
 }
 
+MooLangMgr *
+moo_lang_mgr_default (void)
+{
+    static MooLangMgr *instance;
+    if (!instance)
+        instance = moo_lang_mgr_new ();
+    return instance;
+}
+
 
 static LangInfo *
 lang_info_new (void)

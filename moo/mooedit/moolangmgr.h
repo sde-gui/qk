@@ -30,6 +30,7 @@ typedef struct _MooLangMgr MooLangMgr;
 GType           moo_lang_mgr_get_type               (void) G_GNUC_CONST;
 
 MooLangMgr     *moo_lang_mgr_new                    (void);
+MooLangMgr     *moo_lang_mgr_default                (void);
 
 MooLang        *moo_lang_mgr_get_lang               (MooLangMgr     *mgr,
                                                      const char     *lang_id);

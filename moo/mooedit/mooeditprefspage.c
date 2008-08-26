@@ -43,8 +43,7 @@ static gboolean moo_edit_prefs_page_help    (GtkWidget          *widget);
 static void     prefs_page_apply_lang_prefs (PrefsPage          *page);
 static void     apply_filter_settings       (PrefsPage          *page);
 
-static void     scheme_combo_init           (GtkComboBox        *combo,
-                                             MooEditor          *editor);
+static void     scheme_combo_init           (GtkComboBox        *combo);
 static void     scheme_combo_data_func      (GtkCellLayout      *layout,
                                              GtkCellRenderer    *cell,
                                              GtkTreeModel       *model,
@@ -62,7 +61,7 @@ static void     lang_combo_init             (GtkComboBox        *combo,
 
 static void     filter_treeview_init        (MooGladeXML        *xml);
 
-static GtkTreeModel *create_lang_model      (MooEditor          *editor);
+static GtkTreeModel *create_lang_model      (void);
 
 static void     save_encoding_combo_init    (MooGladeXML        *xml);
 static void     save_encoding_combo_apply   (MooGladeXML        *xml);
@@ -206,7 +205,7 @@ moo_edit_prefs_page_new (MooEditor *editor)
     gtk_container_add (GTK_CONTAINER (prefs_page), GTK_WIDGET (data->notebook));
 
     data->editor = g_object_ref (editor);
-    data->lang_mgr = g_object_ref (moo_editor_get_lang_mgr (editor));
+    data->lang_mgr = g_object_ref (moo_lang_mgr_default ());
 
     for (i = 0; i < G_N_ELEMENTS (prefs_pages); i++)
     {
@@ -230,7 +229,7 @@ moo_edit_prefs_page_new (MooEditor *editor)
                                   gtk_label_new (_(info->label)));
 
         page->editor = g_object_ref (editor);
-        page->lang_mgr = g_object_ref (moo_editor_get_lang_mgr (editor));
+        page->lang_mgr = g_object_ref (moo_lang_mgr_default ());
 
         data->n_pages++;
     }
@@ -293,7 +292,7 @@ page_view_init (PrefsPage *page)
     g_return_if_fail (scheme != NULL);
 
     scheme_combo = moo_glade_xml_get_widget (page->page->xml, "color_scheme_combo");
-    scheme_combo_init (scheme_combo, page->editor);
+    scheme_combo_init (scheme_combo);
 
     scheme_combo_set_scheme (scheme_combo, scheme);
 }
@@ -349,15 +348,14 @@ page_langs_apply (PrefsPage *page)
 
 
 static void
-scheme_combo_init (GtkComboBox *combo,
-                   MooEditor   *editor)
+scheme_combo_init (GtkComboBox *combo)
 {
     GtkListStore *store;
     MooLangMgr *mgr;
     GSList *list, *l;
     GtkCellRenderer *cell;
 
-    mgr = moo_editor_get_lang_mgr (editor);
+    mgr = moo_lang_mgr_default ();
     list = moo_lang_mgr_list_schemes (mgr);
     g_return_if_fail (list != NULL);
 
@@ -422,7 +420,7 @@ page_get_lang_model (PrefsPage *page)
 
     if (!model)
     {
-        model = create_lang_model (page->editor);
+        model = create_lang_model ();
         g_object_set_data_full (G_OBJECT (page->master), "moo-lang-model",
                                 model, g_object_unref);
     }
@@ -581,7 +579,7 @@ lang_cmp (MooLang *lang1,
 }
 
 static GtkTreeModel *
-create_lang_model (MooEditor *editor)
+create_lang_model (void)
 {
     GtkTreeStore *store;
     MooLangMgr *mgr;
@@ -590,7 +588,7 @@ create_lang_model (MooEditor *editor)
     const char *config;
     char *ext, *mime;
 
-    mgr = moo_editor_get_lang_mgr (editor);
+    mgr = moo_lang_mgr_default ();
     langs = g_slist_sort (moo_lang_mgr_get_available_langs (mgr), (GCompareFunc) lang_cmp);
     sections = moo_lang_mgr_get_sections (mgr);
 
@@ -947,7 +945,7 @@ prefs_page_apply_lang_prefs (PrefsPage *page)
     model = page_get_lang_model (page);
     g_return_if_fail (model != NULL);
 
-    mgr = moo_editor_get_lang_mgr (page->editor);
+    mgr = moo_lang_mgr_default ();
     gtk_tree_model_foreach (model, (GtkTreeModelForeachFunc) apply_one_lang, mgr);
     _moo_lang_mgr_save_config (mgr);
     _moo_edit_update_lang_config ();

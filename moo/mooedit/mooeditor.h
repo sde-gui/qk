@@ -14,7 +14,6 @@
 #define MOO_EDITOR_H
 
 #include <mooedit/mooeditwindow.h>
-#include <mooedit/moolangmgr.h>
 #include <mooutils/moouixml.h>
 
 G_BEGIN_DECLS
@@ -128,8 +127,6 @@ MooUIXML        *moo_editor_get_doc_ui_xml  (MooEditor      *editor);
 
 MooEditor       *moo_edit_window_get_editor (MooEditWindow  *window);
 MooEditor       *moo_edit_get_editor        (MooEdit        *doc);
-
-MooLangMgr      *moo_editor_get_lang_mgr    (MooEditor      *editor);
 
 void             moo_editor_set_window_type (MooEditor      *editor,
                                              GType           type);

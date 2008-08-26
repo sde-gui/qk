@@ -20,6 +20,7 @@
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooedit/mooeditor-private.h"
+#include "mooedit/moolangmgr.h"
 #include "marshals.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
@@ -891,7 +892,7 @@ parse_emacs_mode_string (MooEdit *edit,
 
     g_strstrip (string);
 
-    mgr = moo_editor_get_lang_mgr (edit->priv->editor);
+    mgr = moo_lang_mgr_default ();
 
     if (_moo_lang_mgr_find_lang (mgr, string))
         set_emacs_var (edit, "mode", string);
@@ -1029,8 +1030,9 @@ moo_edit_set_lang (MooEdit *edit,
     if (old_lang != lang)
     {
         moo_text_view_set_lang (MOO_TEXT_VIEW (edit), lang);
-        _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor),
-                                     edit->config, _moo_lang_id (lang));
+        _moo_lang_mgr_update_config (moo_lang_mgr_default (),
+                                     edit->config,
+                                     _moo_lang_id (lang));
         _moo_edit_update_config_from_global (edit);
         g_object_notify (G_OBJECT (edit), "has-comments");
     }
@@ -1041,7 +1043,7 @@ static void
 moo_edit_apply_lang_config (MooEdit *edit)
 {
     const char *lang_id = moo_edit_config_get_string (edit->config, "lang");
-    MooLangMgr *mgr = moo_editor_get_lang_mgr (edit->priv->editor);
+    MooLangMgr *mgr = moo_lang_mgr_default ();
     MooLang *lang = lang_id ? _moo_lang_mgr_find_lang (mgr, lang_id) : NULL;
     moo_edit_set_lang (edit, lang);
 }
@@ -1121,7 +1123,7 @@ _moo_edit_update_lang_config (void)
     for (l = _moo_edit_instances; l != NULL; l = l->next)
     {
         MooEdit *edit = l->data;
-        _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor), edit->config,
+        _moo_lang_mgr_update_config (moo_lang_mgr_default (), edit->config,
                                      _moo_lang_id (moo_text_view_get_lang (MOO_TEXT_VIEW (edit))));
     }
 }
@@ -1145,7 +1147,7 @@ moo_edit_filename_changed (MooEdit    *edit,
 
     if (filename)
     {
-        MooLangMgr *mgr = moo_editor_get_lang_mgr (edit->priv->editor);
+        MooLangMgr *mgr = moo_lang_mgr_default ();
         lang = moo_lang_mgr_get_lang_for_file (mgr, filename);
         lang_id = lang ? _moo_lang_id (lang) : NULL;
         filter_config = _moo_edit_filter_settings_get_for_file (filename);
@@ -1169,8 +1171,9 @@ moo_edit_filename_changed (MooEdit    *edit,
 
     if (!lang_changed)
     {
-        _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor),
-                                     edit->config, _moo_lang_id (lang));
+        _moo_lang_mgr_update_config (moo_lang_mgr_default (),
+                                     edit->config,
+                                     _moo_lang_id (lang));
         _moo_edit_update_config_from_global (edit);
     }
 

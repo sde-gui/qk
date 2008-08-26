@@ -16,6 +16,7 @@
 #include "mooedit/moocommand.h"
 #include "mooedit/mookeyfile.h"
 #include "mooedit/mooeditprefs.h"
+#include "mooedit/moolangmgr.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moomarkup.h"
@@ -375,7 +376,7 @@ get_tag (MooLineView *view,
         MooTextStyle *style = NULL;
 
         tag = moo_line_view_create_tag (view, name, NULL);
-        lang_mgr = moo_editor_get_lang_mgr (moo_editor_instance ());
+        lang_mgr = moo_lang_mgr_default ();
         scheme = moo_lang_mgr_get_active_scheme (lang_mgr);
 
         if (scheme)

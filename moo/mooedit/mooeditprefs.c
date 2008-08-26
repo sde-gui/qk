@@ -17,6 +17,7 @@
 #include "mooedit/mootextview-private.h"
 #include "mooedit/mooedit-enums.h"
 #include "mooedit/mootextbuffer.h"
+#include "mooedit/moolangmgr.h"
 #include "mooutils/mooencodings.h"
 #include <string.h>
 
@@ -218,7 +219,7 @@ _moo_edit_apply_prefs (MooEdit *edit)
     _moo_text_view_set_line_numbers_font (MOO_TEXT_VIEW (edit),
                                           get_string (MOO_EDIT_PREFS_LINE_NUMBERS_FONT));
 
-    mgr = moo_editor_get_lang_mgr (edit->priv->editor);
+    mgr = moo_lang_mgr_default ();
     scheme = moo_lang_mgr_get_active_scheme (mgr);
 
     if (scheme)

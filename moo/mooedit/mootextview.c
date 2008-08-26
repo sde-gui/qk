@@ -20,6 +20,7 @@
 #include "mooedit/mooedit-enums.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootextbox.h"
+#include "mooedit/moolangmgr.h"
 #include "marshals.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooundo.h"
@@ -2740,7 +2741,7 @@ moo_text_view_set_lang_by_id (MooTextView *view,
     editor = moo_editor_instance ();
     g_return_if_fail (editor != NULL);
 
-    mgr = moo_editor_get_lang_mgr (editor);
+    mgr = moo_lang_mgr_default ();
     lang = moo_lang_mgr_get_lang (mgr, lang_id);
     scheme = moo_lang_mgr_get_active_scheme (mgr);
 

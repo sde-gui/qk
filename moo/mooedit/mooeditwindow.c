@@ -26,6 +26,7 @@
 #include "mooedit/moocmdview.h"
 #include "mooedit/mooeditaction.h"
 #include "mooedit/mooedit-bookmarks.h"
+#include "mooedit/moolangmgr.h"
 #include "mooutils/moonotebook.h"
 #include "mooutils/moostock.h"
 #include "marshals.h"
@@ -3049,14 +3050,14 @@ lang_item_activated (MooEditWindow *window,
 
 
 static GtkAction*
-create_lang_action (MooEditWindow      *window)
+create_lang_action (MooEditWindow *window)
 {
     GtkAction *action;
     MooMenuMgr *menu_mgr;
     MooLangMgr *lang_mgr;
     GSList *langs, *sections, *l;
 
-    lang_mgr = moo_editor_get_lang_mgr (window->priv->editor);
+    lang_mgr = moo_lang_mgr_default ();
 
     /* TODO display names, etc. */
     sections = moo_lang_mgr_get_sections (lang_mgr);

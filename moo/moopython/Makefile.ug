@@ -93,7 +93,7 @@ nodist_libmoopython_la_SOURCES = $(nodist_libmoopython_la_sources)
 libmoopython_la_LIBADD = $(PYTHON_LIBS) $(PYTHON_EXTRA_LIBS)
 libmoopython_la_LDFLAGS = $(PYTHON_LDFLAGS) $(PYTHON_EXTRA_LDFLAGS)
 
-EXTRA_DIST =				\
+EXTRA_DIST +=				\
 	moo-mod.c			\
 	moopython-mod.c			\
 	moopython-builtin.h		\

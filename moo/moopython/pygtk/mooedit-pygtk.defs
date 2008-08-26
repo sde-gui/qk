@@ -634,6 +634,11 @@
   (return-type "MooLangMgr*")
 )
 
+(define-function lang_mgr_default
+  (c-name "moo_lang_mgr_default")
+  (return-type "MooLangMgr*")
+)
+
 (define-method get_available_langs
   (of-object "MooLangMgr")
   (c-name "moo_lang_mgr_get_available_langs")

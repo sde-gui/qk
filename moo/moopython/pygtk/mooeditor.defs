@@ -248,12 +248,6 @@
   (return-type "MooEditor*")
 )
 
-(define-method get_lang_mgr
-  (of-object "MooEditor")
-  (c-name "moo_editor_get_lang_mgr")
-  (return-type "MooLangMgr*")
-)
-
 (define-method set_window_type
   (of-object "MooEditor")
   (c-name "moo_editor_set_window_type")

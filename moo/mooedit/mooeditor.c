@@ -298,7 +298,7 @@ moo_editor_init (MooEditor *editor)
     moo_ui_xml_add_ui_from_string (editor->priv->doc_ui_xml,
                                    mooedit_ui_xml, -1);
 
-    editor->priv->lang_mgr = moo_lang_mgr_new ();
+    editor->priv->lang_mgr = g_object_ref (moo_lang_mgr_default ());
     g_signal_connect_swapped (editor->priv->lang_mgr, "loaded",
                               G_CALLBACK (moo_editor_apply_prefs),
                               editor);
@@ -2510,14 +2510,6 @@ moo_editor_get_doc (MooEditor      *editor,
     window_list_find_file (editor, filename, &doc);
 
     return doc;
-}
-
-
-MooLangMgr*
-moo_editor_get_lang_mgr (MooEditor *editor)
-{
-    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
-    return editor->priv->lang_mgr;
 }
 
 

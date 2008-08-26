@@ -6,14 +6,13 @@ moopygtk_sources =				\
 	pygtk/mooutils-mod.h			\
 	pygtk/moo-mod.h
 
-BUILT_SOURCES =					\
+BUILT_SOURCES +=				\
 	pygtk/mooapp-mod.h			\
 	pygtk/mooedit-mod.h			\
 	pygtk/mooutils-mod.h			\
 	pygtk/moo-mod.h
 
 nodist_moopygtk_sources =
-CLEANFILES =
 
 mooedit_defs_files =				\
 	pygtk/mooeditor.defs			\
@@ -118,6 +117,11 @@ pygtk/%-mod.h: $(srcdir)/pygtk/%-mod.py $(PY2H)
 	mkdir -p pygtk
 	$(SHELL) $(PY2H) `echo $* | tr '[a-z]' '[A-Z]'`_PY $(srcdir)/pygtk/$*-mod.py > $@.tmp && \
 	mv $@.tmp $@
+
+UGLY_SUBDIRS += pygtk
+
+mooeditor.lo mooplugin.lo moocommand.lo: mooedit-pygtk.lo ; @true
+moopaned.lo moofileview.lo: mooutils-pygtk.lo ; @true
 
 # noinst_LTLIBRARIES += libmoopygtk.la
 #
