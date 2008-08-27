@@ -343,26 +343,36 @@ moo_ctags_doc_plugin_update (MooCtagsDocPlugin *plugin)
 {
     MooEdit *doc;
     char *filename;
-    GSList *list = NULL;
-    MooCtagsLanguage *ctags_lang;
-    MooLang *lang;
 
     plugin->priv->update_idle = 0;
 
     gtk_tree_store_clear (plugin->priv->store);
 
-    doc = MOO_DOC_PLUGIN(plugin)->doc;
+    doc = MOO_DOC_PLUGIN (plugin)->doc;
+
     filename = moo_edit_get_filename (doc);
-    lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
-    ctags_lang = _moo_ctags_language_find_for_name (_moo_lang_id (lang));
 
-    if (filename && ctags_lang && (list = moo_ctags_parse_file (filename, ctags_lang->opts)))
-        process_entries (plugin, list, ctags_lang);
-    else if(filename && (list = moo_ctags_parse_file (filename, NULL)))
-        process_entries (plugin, list, NULL);
+    if (filename && !g_file_test (filename, G_FILE_TEST_EXISTS))
+    {
+        g_free (filename);
+        filename = NULL;
+    }
 
-    g_slist_foreach (list, (GFunc) _moo_ctags_entry_unref, NULL);
-    g_slist_free (list);
+    if (filename)
+    {
+        GSList *list = NULL;
+        MooLang *lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
+        MooCtagsLanguage *ctags_lang = _moo_ctags_language_find_for_name (_moo_lang_id (lang));
+
+        if (ctags_lang && (list = moo_ctags_parse_file (filename, ctags_lang->opts)))
+            process_entries (plugin, list, ctags_lang);
+        else if ((list = moo_ctags_parse_file (filename, NULL)))
+            process_entries (plugin, list, NULL);
+
+        g_slist_foreach (list, (GFunc) _moo_ctags_entry_unref, NULL);
+        g_slist_free (list);
+    }
+
     g_free (filename);
     return FALSE;
 }
