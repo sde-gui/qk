@@ -27,18 +27,18 @@ G_BEGIN_DECLS
 #define MOO_IS_EDIT_WINDOW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_WINDOW))
 #define MOO_EDIT_WINDOW_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_WINDOW, MooEditWindowClass))
 
-typedef struct _MooEditWindow           MooEditWindow;
-typedef struct _MooEditWindowPrivate    MooEditWindowPrivate;
-typedef struct _MooEditWindowClass      MooEditWindowClass;
+typedef struct MooEditWindow        MooEditWindow;
+typedef struct MooEditWindowPrivate MooEditWindowPrivate;
+typedef struct MooEditWindowClass   MooEditWindowClass;
 
-struct _MooEditWindow
+struct MooEditWindow
 {
     MooWindow               parent;
     MooEditWindowPrivate   *priv;
     MooBigPaned            *paned;
 };
 
-struct _MooEditWindowClass
+struct MooEditWindowClass
 {
     MooWindowClass          parent_class;
 

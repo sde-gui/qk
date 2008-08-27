@@ -72,7 +72,7 @@ typedef struct {
 static GHashTable *action_checks; /* char* -> ActionCheck* */
 static GSList *windows;
 
-struct _MooEditWindowPrivate {
+struct MooEditWindowPrivate {
     MooEditor *editor;
 
     guint statusbar_idle;
