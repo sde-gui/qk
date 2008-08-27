@@ -1068,9 +1068,9 @@ MOO_PLUGIN_DEFINE_INFO (find,
                         "Yevgen Muntyan <muntyan@tamu.edu>",
                         MOO_VERSION, NULL)
 MOO_WIN_PLUGIN_DEFINE (Find, find)
-MOO_PLUGIN_DEFINE_FULL (Find, find,
-                        NULL, NULL, NULL, NULL, NULL,
-                        find_window_plugin_get_type (), 0)
+MOO_PLUGIN_DEFINE (Find, find,
+                   NULL, NULL, NULL, NULL, NULL,
+                   find_window_plugin_get_type (), 0)
 
 
 gboolean

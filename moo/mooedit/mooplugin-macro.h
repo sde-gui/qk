@@ -35,6 +35,7 @@ static const MooPluginInfo plugin_name__##_plugin_info =                    \
 
 
 #define MOO_PLUGIN_DEFINE_FULL(Name__,name__,                               \
+                               class_init_code__,instance_init_code__,      \
                                attach_win__,detach_win__,                   \
                                attach_doc__,detach_doc__,                   \
                                prefs_page_func__,                           \
@@ -60,6 +61,10 @@ name__##_plugin_class_init (MooPluginClass *klass)                          \
     klass->attach_doc = attach_doc__;                                       \
     klass->detach_doc = detach_doc__;                                       \
     klass->create_prefs_page = prefs_page_func__;                           \
+                                                                            \
+    {                                                                       \
+        class_init_code__ ;                                                 \
+    }                                                                       \
 }                                                                           \
                                                                             \
 static void                                                                 \
@@ -67,6 +72,10 @@ name__##_plugin_instance_init (MooPlugin *plugin)                           \
 {                                                                           \
     plugin->win_plugin_type = WIN_PLUGIN_TYPE__;                            \
     plugin->doc_plugin_type = DOC_PLUGIN_TYPE__;                            \
+                                                                            \
+    {                                                                       \
+        instance_init_code__ ;                                              \
+    }                                                                       \
 }                                                                           \
                                                                             \
 static GType name__##_plugin_get_type (void) G_GNUC_CONST;                  \
@@ -92,12 +101,24 @@ name__##_plugin_get_type (void)                                             \
         };                                                                  \
                                                                             \
         type__ = g_type_register_static (MOO_TYPE_PLUGIN,                   \
-                                         #Name__ "Plugin", &info__, 0);     \
+                                         #Name__ "Plugin", &info__,         \
+                                         (GTypeFlags) 0);                   \
     }                                                                       \
                                                                             \
     return type__;                                                          \
 }
 
+#define MOO_PLUGIN_DEFINE(Name__,name__,                                    \
+                          attach_win__,detach_win__,                        \
+                          attach_doc__,detach_doc__,                        \
+                          prefs_page_func__,                                \
+                          WIN_PLUGIN_TYPE__,DOC_PLUGIN_TYPE__)              \
+MOO_PLUGIN_DEFINE_FULL(Name__,name__,                                       \
+                       {},{},                                               \
+                       attach_win__,detach_win__,                           \
+                       attach_doc__,detach_doc__,                           \
+                       prefs_page_func__,                                   \
+                       WIN_PLUGIN_TYPE__,DOC_PLUGIN_TYPE__)
 
 #define MOO_WIN_PLUGIN_DEFINE(Name__,name__)                                    \
                                                                                 \
@@ -140,7 +161,8 @@ name__##_window_plugin_get_type (void)                                          
         };                                                                      \
                                                                                 \
         type__ = g_type_register_static (MOO_TYPE_WIN_PLUGIN,                   \
-                                         #Name__ "WindowPlugin",&info__, 0);    \
+                                         #Name__ "WindowPlugin",&info__,        \
+                                         (GTypeFlags) 0);                       \
     }                                                                           \
                                                                                 \
     return type__;                                                              \
@@ -188,7 +210,8 @@ name__##_doc_plugin_get_type (void)                                         \
         };                                                                  \
                                                                             \
         type__ = g_type_register_static (MOO_TYPE_DOC_PLUGIN,               \
-                                         #Name__ "DocPlugin", &info__, 0);  \
+                                         #Name__ "DocPlugin", &info__,      \
+                                         (GTypeFlags) 0);                   \
     }                                                                       \
                                                                             \
     return type__;                                                          \

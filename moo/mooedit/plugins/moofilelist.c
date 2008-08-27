@@ -2403,9 +2403,9 @@ MOO_PLUGIN_DEFINE_INFO (file_list,
                         "Yevgen Muntyan <muntyan@tamu.edu>",
                         MOO_VERSION, NULL)
 MOO_WIN_PLUGIN_DEFINE (FileList, file_list)
-MOO_PLUGIN_DEFINE_FULL (FileList, file_list,
-                        NULL, NULL, NULL, NULL, NULL,
-                        file_list_window_plugin_get_type (), 0)
+MOO_PLUGIN_DEFINE (FileList, file_list,
+                   NULL, NULL, NULL, NULL, NULL,
+                   file_list_window_plugin_get_type (), 0)
 
 
 gboolean

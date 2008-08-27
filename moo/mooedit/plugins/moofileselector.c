@@ -1294,11 +1294,11 @@ MOO_PLUGIN_DEFINE_INFO (file_selector,
                         N_("File selector pane for editor window"),
                         "Yevgen Muntyan <muntyan@tamu.edu>",
                         MOO_VERSION, NULL)
-MOO_PLUGIN_DEFINE_FULL (FileSelector, file_selector,
-                        file_selector_plugin_attach, file_selector_plugin_detach,
-                        NULL, NULL,
-                        _moo_file_selector_prefs_page,
-                        0, 0)
+MOO_PLUGIN_DEFINE (FileSelector, file_selector,
+                   file_selector_plugin_attach, file_selector_plugin_detach,
+                   NULL, NULL,
+                   _moo_file_selector_prefs_page,
+                   0, 0)
 
 
 static gpointer

@@ -158,10 +158,10 @@ MOO_PLUGIN_DEFINE_INFO (ctags, "Ctags", "Shows functions in the open document",
                         "Christian Dywan <christian@twotoasts.de>",
                         MOO_VERSION, NULL)
 MOO_WIN_PLUGIN_DEFINE (Ctags, ctags)
-MOO_PLUGIN_DEFINE_FULL (Ctags, ctags,
-                        NULL, NULL, NULL, NULL, NULL,
-                        ctags_window_plugin_get_type (),
-                        MOO_TYPE_CTAGS_DOC_PLUGIN)
+MOO_PLUGIN_DEFINE (Ctags, ctags,
+                   NULL, NULL, NULL, NULL, NULL,
+                   ctags_window_plugin_get_type (),
+                   MOO_TYPE_CTAGS_DOC_PLUGIN)
 
 gboolean
 _moo_ctags_plugin_init (void)
