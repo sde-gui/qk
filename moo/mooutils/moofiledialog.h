@@ -18,8 +18,6 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_FILE_DIALOG_TYPE         (moo_file_dialog_type_get_type ())
-
 #define MOO_TYPE_FILE_DIALOG              (moo_file_dialog_get_type ())
 #define MOO_FILE_DIALOG(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FILE_DIALOG, MooFileDialog))
 #define MOO_FILE_DIALOG_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FILE_DIALOG, MooFileDialogClass))
@@ -49,9 +47,6 @@ struct MooFileDialog
 struct MooFileDialogClass
 {
     GObjectClass parent_class;
-
-    void (*dialog_created) (MooFileDialog *fd,
-                            GtkWidget     *widget);
 };
 
 typedef char *(*MooFileDialogCheckNameFunc) (MooFileDialog *dialog,
@@ -59,7 +54,6 @@ typedef char *(*MooFileDialogCheckNameFunc) (MooFileDialog *dialog,
                                              gpointer       data);
 
 GType           moo_file_dialog_get_type                (void) G_GNUC_CONST;
-GType           moo_file_dialog_type_get_type           (void) G_GNUC_CONST;
 
 MooFileDialog  *moo_file_dialog_new                     (MooFileDialogType type,
                                                          GtkWidget      *parent,

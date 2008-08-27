@@ -17,6 +17,7 @@
 #include "mooutils/mooencodings.h"
 #include "mooutils/moohelp.h"
 #include "mooutils/moofiltermgr.h"
+#include "mooutils/mooutils-enums.h"
 #include "marshals.h"
 #include <gtk/gtk.h>
 #include <string.h>
@@ -60,13 +61,6 @@ enum {
     PROP_FILTER_MGR_ID,
     PROP_ENABLE_ENCODINGS
 };
-
-enum {
-    DIALOG_CREATED,
-    LAST_SIGNAL
-};
-
-static guint signals[LAST_SIGNAL];
 
 static char *
 get_string_maybe_stock (const char *string)
@@ -282,16 +276,6 @@ moo_file_dialog_class_init (MooFileDialogClass *klass)
     g_object_class_install_property (gobject_class, PROP_FILTER_MGR_ID,
         g_param_spec_string ("filter-mgr-id", "filter-mgr-id", "filter-mgr-id",
                              NULL, G_PARAM_READWRITE));
-
-    signals[DIALOG_CREATED] =
-        g_signal_new ("dialog-created",
-                      G_TYPE_FROM_CLASS (klass),
-                      G_SIGNAL_RUN_LAST,
-                      G_STRUCT_OFFSET (MooFileDialogClass, dialog_created),
-                      NULL, NULL,
-                      _moo_marshal_VOID__OBJECT,
-                      G_TYPE_NONE, 1,
-                      GTK_TYPE_DIALOG);
 }
 
 
@@ -423,11 +407,9 @@ moo_file_dialog_create_widget (MooFileDialog *dialog)
                             FALSE, FALSE, 0);
 
     if (dialog->priv->size_prefs_key)
-        _moo_window_set_remember_size (GTK_WINDOW (widget), dialog->priv->size_prefs_key, FALSE);
+        _moo_window_set_remember_size (GTK_WINDOW (widget), dialog->priv->size_prefs_key, TRUE);
     if (dialog->priv->parent)
         moo_window_set_parent (widget, dialog->priv->parent);
-
-    g_signal_emit (dialog, signals[DIALOG_CREATED], 0, widget);
 
     return widget;
 }
@@ -810,26 +792,6 @@ moo_file_dialogp (GtkWidget          *parent,
     }
 
     return filename;
-}
-
-
-GType moo_file_dialog_type_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-    {
-        static const GEnumValue values[] = {
-            { MOO_FILE_DIALOG_OPEN, (char*) "MOO_FILE_DIALOG_OPEN", (char*) "open" },
-            { MOO_FILE_DIALOG_OPEN_ANY, (char*) "MOO_FILE_DIALOG_OPEN_ANY", (char*) "open-any" },
-            { MOO_FILE_DIALOG_SAVE, (char*) "MOO_FILE_DIALOG_SAVE", (char*) "save" },
-            { MOO_FILE_DIALOG_OPEN_DIR, (char*) "MOO_FILE_DIALOG_OPEN_DIR", (char*) "open-dir" },
-            { 0, NULL, NULL }
-        };
-        type = g_enum_register_static ("MooFileDialogType", values);
-    }
-
-    return type;
 }
 
 

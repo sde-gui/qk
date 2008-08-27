@@ -27,15 +27,6 @@
 #include <string.h>
 
 
-static void
-open_dialog_created (G_GNUC_UNUSED MooFileDialog *fd,
-                     GtkWidget *widget)
-{
-    _moo_window_set_remember_size (GTK_WINDOW (widget),
-                                   moo_edit_setting (MOO_EDIT_PREFS_DIALOG_OPEN),
-                                   TRUE);
-}
-
 GSList *
 _moo_edit_open_dialog (GtkWidget *widget,
                        MooEdit   *current_doc)
@@ -69,8 +60,8 @@ _moo_edit_open_dialog (GtkWidget *widget,
                                   TRUE, GTK_STOCK_OPEN, start_dir,
                                   NULL);
     g_object_set (dialog, "enable-encodings", TRUE, NULL);
-    g_signal_connect (dialog, "dialog-created", G_CALLBACK (open_dialog_created), NULL);
     moo_file_dialog_set_help_id (dialog, "dialog-open");
+    moo_file_dialog_set_remember_size (dialog, moo_edit_setting (MOO_EDIT_PREFS_DIALOG_OPEN));
 
     moo_file_dialog_set_filter_mgr_id (dialog, "MooEdit");
 
