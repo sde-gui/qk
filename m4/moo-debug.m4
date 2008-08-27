@@ -1,11 +1,11 @@
 # _MOO_AC_CHECK_COMPILER_OPTIONS(var,options)
 AC_DEFUN([_MOO_AC_CHECK_COMPILER_OPTIONS],[
-  MOO_AC_CC_OPT([$1],[$2])
+  MOO_AC_CC_OPT([$1],[$2],[$3])
 ])
 
 # _MOO_AC_CHECK_COMPILER_OPTIONS(var,options)
 AC_DEFUN([_MOO_AC_CHECK_CPP_COMPILER_OPTIONS],[
-m4_ifdef([MOO_USE_CPP_DEFINE],[MOO_AC_CXX_OPT([$1],[$2])])
+m4_ifdef([MOO_USE_CPP_DEFINE],[MOO_AC_CXX_OPT([$1],[$2],[$3])])
 ])
 
 ##############################################################################
@@ -76,7 +76,7 @@ if test "x$_moo_all_warnings" = "xyes"; then
 -Wdisabled-optimization -Wendif-labels -Wstrict-prototypes dnl
 -Wno-format-y2k -Wno-inline -Wno-missing-field-initializers])
     _MOO_AC_CHECK_CPP_COMPILER_OPTIONS(MOO_DEBUG_CXXFLAGS,
-[-W -Wall -Wpointer-arith -Wcast-align -Wsign-compare -Wreturn-type dnl
+[-W -Wall -Weffc++ -Wpointer-arith -Wcast-align -Wsign-compare -Wreturn-type dnl
 -Wwrite-strings -Wmissing-noreturn -Wmissing-format-attribute dnl
 -Wdisabled-optimization -Wendif-labels dnl
 -Wno-format-y2k -Wno-inline -Wno-missing-field-initializers])
