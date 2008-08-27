@@ -1720,26 +1720,6 @@ moo_save_config_file (const char   *filename,
 }
 
 
-GType
-moo_data_dir_type_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-    {
-        static const GEnumValue values[] = {
-            { MOO_DATA_SHARE, (char*) "MOO_DATA_SHARE", (char*) "share" },
-            { MOO_DATA_LIB, (char*) "MOO_DATA_LIB", (char*) "lib" },
-            { 0, NULL, NULL }
-        };
-
-        type = g_enum_register_static ("MooDataDirType", values);
-    }
-
-    return type;
-}
-
-
 void
 _moo_widget_set_tooltip (GtkWidget  *widget,
                          const char *tip)

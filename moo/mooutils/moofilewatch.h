@@ -23,7 +23,6 @@ G_BEGIN_DECLS
 
 #define MOO_TYPE_FILE_WATCH         (moo_file_watch_get_type ())
 #define MOO_TYPE_FILE_EVENT         (moo_file_event_get_type ())
-#define MOO_TYPE_FILE_EVENT_CODE    (moo_file_event_code_get_type ())
 
 typedef enum {
     MOO_FILE_EVENT_CHANGED,
@@ -49,7 +48,6 @@ typedef void (*MooFileWatchCallback) (MooFileWatch *watch,
 
 GType           moo_file_watch_get_type             (void) G_GNUC_CONST;
 GType           moo_file_event_get_type             (void) G_GNUC_CONST;
-GType           moo_file_event_code_get_type        (void) G_GNUC_CONST;
 
 /* FAMOpen */
 MooFileWatch   *moo_file_watch_new                  (GError        **error);

@@ -120,6 +120,8 @@ mooutils_sources =			\
 	mooundo.c			\
 	mooundo.h			\
 	mooutils-debug.h		\
+	mooutils-enums.c		\
+	mooutils-enums.h		\
 	mooutils-file.h			\
 	mooutils-fli.c			\
 	mooutils-fs.c			\
@@ -227,3 +229,12 @@ include xdgmime/Makefile.incl
 
 MODULE = libmooutils
 UGLY_LIBS =
+
+ENUM_MODULE = mooutils
+ENUM_PREFIX = MOO
+ENUM_HDRS =				\
+	moofiledialog.h			\
+	moofilewatch.h			\
+	mooprefs.h			\
+	moouixml.h			\
+	mooutils-misc.h

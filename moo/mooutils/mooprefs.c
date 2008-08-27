@@ -1708,45 +1708,6 @@ moo_prefs_set_flags (const char     *key,
 }
 
 
-GType
-moo_prefs_match_type_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-    {
-        static const GFlagsValue values[] = {
-            { MOO_PREFS_MATCH_KEY, (char*)"MOO_PREFS_MATCH_KEY", (char*)"match-key" },
-            { MOO_PREFS_MATCH_PREFIX, (char*)"MOO_PREFS_MATCH_PREFIX", (char*)"match-prefix" },
-            { MOO_PREFS_MATCH_REGEX, (char*)"MOO_PREFS_MATCH_REGEX", (char*)"match-regex" },
-            { 0, NULL, NULL }
-        };
-        type = g_flags_register_static ("MooPrefsMatchType", values);
-    }
-
-    return type;
-}
-
-
-GType
-moo_prefs_type_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-    {
-        static const GEnumValue values[] = {
-            { MOO_PREFS_RC, (char*)"MOO_PREFS_RC", (char*)"rc" },
-            { MOO_PREFS_STATE, (char*)"MOO_PREFS_STATE", (char*)"state" },
-            { 0, NULL, NULL }
-        };
-        type = g_enum_register_static ("MooPrefsType", values);
-    }
-
-    return type;
-}
-
-
 #if 0
 static void
 add_key (const char  *key,

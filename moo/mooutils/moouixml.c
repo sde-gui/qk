@@ -2575,24 +2575,3 @@ moo_ui_node_get_type (void)
 
     return type;
 }
-
-
-GType
-moo_ui_widget_type_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-    {
-        static const GEnumValue values[] = {
-            { MOO_UI_MENUBAR, (char*) "MOO_UI_MENUBAR", (char*) "menubar" },
-            { MOO_UI_MENU, (char*) "MOO_UI_MENU", (char*) "menu" },
-            { MOO_UI_TOOLBAR, (char*) "MOO_UI_TOOLBAR", (char*) "toolbar" },
-            { 0, NULL, NULL }
-        };
-
-        type = g_enum_register_static ("MooUIWidgetType", values);
-    }
-
-    return type;
-}

@@ -80,7 +80,6 @@ typedef enum {
 
 
 #define MOO_TYPE_UI_NODE             (moo_ui_node_get_type ())
-#define MOO_TYPE_UI_WIDGET_TYPE      (moo_ui_widget_type_get_type ())
 
 #define MOO_TYPE_UI_XML              (moo_ui_xml_get_type ())
 #define MOO_UI_XML(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_UI_XML, MooUIXML))
@@ -108,7 +107,6 @@ struct _MooUIXMLClass
 
 GType       moo_ui_xml_get_type             (void) G_GNUC_CONST;
 GType       moo_ui_node_get_type            (void) G_GNUC_CONST;
-GType       moo_ui_widget_type_get_type     (void) G_GNUC_CONST;
 
 MooUIXML   *moo_ui_xml_new                  (void);
 

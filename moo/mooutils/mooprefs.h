@@ -28,10 +28,6 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_PREFS_TYPE         (moo_prefs_type_get_type ())
-#define MOO_TYPE_PREFS_MATCH_TYPE   (moo_prefs_match_type_get_type ())
-
-
 typedef enum {
     MOO_PREFS_RC,
     MOO_PREFS_STATE
@@ -43,9 +39,6 @@ typedef enum {
     MOO_PREFS_MATCH_REGEX     = 1 << 2
 } MooPrefsMatchType;
 
-
-GType           moo_prefs_type_get_type (void) G_GNUC_CONST;
-GType           moo_prefs_match_type_get_type (void) G_GNUC_CONST;
 
 gboolean        moo_prefs_load          (char          **sys_files,
                                          const char     *file_rc,

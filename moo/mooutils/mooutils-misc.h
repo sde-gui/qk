@@ -47,14 +47,10 @@ void        moo_segfault                    (void);
 void        moo_disable_win32_error_message (void);
 void        moo_enable_win32_error_message  (void);
 
-#define MOO_TYPE_DATA_DIR_TYPE              (moo_data_dir_type_get_type ())
-
 typedef enum {
     MOO_DATA_SHARE,
     MOO_DATA_LIB
 } MooDataDirType;
-
-GType       moo_data_dir_type_get_type      (void) G_GNUC_CONST;
 
 void       _moo_set_app_instance_name       (const char     *name);
 void       _moo_set_user_data_dir           (const char     *path);

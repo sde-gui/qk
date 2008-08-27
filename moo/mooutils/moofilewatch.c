@@ -343,27 +343,6 @@ moo_file_event_get_type (void)
 }
 
 
-GType
-moo_file_event_code_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-    {
-        static const GEnumValue values[] = {
-            { MOO_FILE_EVENT_CHANGED, (char*) "MOO_FILE_EVENT_CHANGED", (char*) "changed"},
-            { MOO_FILE_EVENT_DELETED, (char*) "MOO_FILE_EVENT_DELETED", (char*) "deleted"},
-            { MOO_FILE_EVENT_ERROR, (char*) "MOO_FILE_EVENT_ERROR", (char*) "error"},
-            { 0, NULL, NULL }
-        };
-
-        type = g_enum_register_static ("MooFileEventCode", values);
-    }
-
-    return type;
-}
-
-
 gboolean
 moo_file_watch_close (MooFileWatch   *watch,
                       GError        **error)
