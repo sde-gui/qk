@@ -71,8 +71,9 @@ AC_DEFUN([MOO_COMPONENTS],[
   fi
   AM_CONDITIONAL(MOO_BUILD_CTAGS, test "x$MOO_BUILD_CTAGS" = xyes)
 
+  MOO_ENABLE_PROJECT=no
   AC_ARG_ENABLE(project,
     AC_HELP_STRING(--enable-project, [enable project plugin (default = NO)]),
-    [:],[enable_project=no])
-  AM_CONDITIONAL(MOO_ENABLE_PROJECT, test "x$enable_project" = xyes)
+    [MOO_ENABLE_PROJECT=$enable_project])
+  AM_CONDITIONAL(MOO_ENABLE_PROJECT, test "x$MOO_ENABLE_PROJECT" = xyes)
 ])

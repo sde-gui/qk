@@ -15,9 +15,8 @@ MOO_AC_PO_GSV
 
 AC_PROG_CC
 
-dnl m4_define(MOO_USE_CPP_DEFINE, 1)
+# m4_define(MOO_USE_CPP_DEFINE, 1)
 m4_ifdef([MOO_USE_CPP_DEFINE],[AC_PROG_CXX],[m4_define([_LT_AC_TAGCONFIG],[])])
-AM_CONDITIONAL([MOO_USE_CPP],[test x[]MOO_USE_CPP_DEFINE = "x1"])
 
 AC_DISABLE_STATIC
 AC_LIBTOOL_WIN32_DLL
@@ -30,6 +29,8 @@ MOO_COMPONENTS([app,edit,term],[])
 MOO_AC_SET_DIRS
 MOO_AC_PRIV_FLAGS
 MOO_AM_MK
+
+# AM_CONDITIONAL([MOO_USE_CPP],[test x$MOO_ENABLE_PROJECT = xyes])
 
 
 ################################################################################
