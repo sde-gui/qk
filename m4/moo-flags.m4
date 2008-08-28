@@ -54,9 +54,11 @@ AC_DEFUN_ONCE([MOO_AC_PRIV_FLAGS],[
 
   MOO_CXXFLAGS="$MOO_CFLAGS"
 
-#   if $MOO_GCC; then
+  if $MOO_GCC; then
+    _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_CFLAGS,[-fno-strict-aliasing],[verbose])
+    _MOO_AC_CHECK_CPP_COMPILER_OPTIONS(MOO_CXXFLAGS,[-fno-strict-aliasing],[verbose])
 #     _MOO_AC_CHECK_CPP_COMPILER_OPTIONS(MOO_CXXFLAGS,[-fno-exceptions],[verbose])
-#   fi
+  fi
 
   MOO_CXXFLAGS="$MOO_CXXFLAGS $MOO_DEBUG_CXXFLAGS"
   MOO_CFLAGS="$MOO_CFLAGS $MOO_DEBUG_CFLAGS"

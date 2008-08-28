@@ -99,16 +99,6 @@ AC_SUBST(_moo_WNAME)
 m4_undefine([_moo_WNAME])
 ])
 
-if $MOO_GCC; then
-  if test x$MOO_DEBUG_ENABLED = "xyes"; then
-    _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS,[-fstrict-aliasing -Wstrict-aliasing])
-    _MOO_AC_CHECK_CPP_COMPILER_OPTIONS(MOO_DEBUG_CXXFLAGS,[-fstrict-aliasing -Wstrict-aliasing])
-  else
-    _MOO_AC_CHECK_COMPILER_OPTIONS(MOO_DEBUG_CFLAGS,[-fno-strict-aliasing])
-    _MOO_AC_CHECK_CPP_COMPILER_OPTIONS(MOO_DEBUG_CXXFLAGS,[-fno-strict-aliasing])
-  fi
-fi
-
 if test "x$MOO_DEBUG_ENABLED" = "xyes"; then
 _moo_debug_flags="-DG_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED dnl
 -DGDK_DISABLE_DEPRECATED -DENABLE_DEBUG -DENABLE_PROFILE dnl
