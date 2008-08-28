@@ -95,22 +95,22 @@
   (gtype-id "MOO_TYPE_EDIT_ACTION")
 )
 
-; (define-object TextCompletion
-;   (in-module "Moo")
-;   (parent "GObject")
-;   (c-name "MooTextCompletion")
-;   (gtype-id "MOO_TYPE_TEXT_COMPLETION")
-; )
+(define-object TextCompletion
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooTextCompletion")
+  (gtype-id "MOO_TYPE_TEXT_COMPLETION")
+)
 
-; (define-object TextPopup
-;   (in-module "Moo")
-;   (parent "GObject")
-;   (c-name "MooTextPopup")
-;   (gtype-id "MOO_TYPE_TEXT_POPUP")
-;   (fields
-;     '("GtkTreeViewColumn*" "column")
-;   )
-; )
+(define-object TextPopup
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooTextPopup")
+  (gtype-id "MOO_TYPE_TEXT_POPUP")
+  (fields
+    '("GtkTreeViewColumn*" "column")
+  )
+)
 
 (define-object TextStyleScheme
   (in-module "Moo")
@@ -1428,249 +1428,249 @@
 )
 
 
-; ;; From moo/mooedit/mootextcompletion.h
-;
-; (define-virtual try_complete
-;   (of-object "MooTextCompletion")
-;   (return-type "none")
-;   (parameters
-;     '("gboolean" "automatic")
-;   )
-; )
-;
-; (define-virtual finish
-;   (of-object "MooTextCompletion")
-;   (return-type "none")
-; )
-;
-; (define-virtual update
-;   (of-object "MooTextCompletion")
-;   (return-type "none")
-; )
-;
-; (define-virtual complete
-;   (of-object "MooTextCompletion")
-;   (return-type "none")
-;   (parameters
-;     '("GtkTreeModel*" "model")
-;     '("GtkTreeIter*" "iter")
-;   )
-; )
-;
-; (define-virtual populate
-;   (of-object "MooTextCompletion")
-;   (return-type "none")
-;   (parameters
-;     '("GtkTreeModel*" "model")
-;     '("GtkTextIter*" "cursor")
-;     '("const-char*" "text")
-;   )
-; )
-;
-; (define-method try_complete
-;   (of-object "MooTextCompletion")
-;   (c-name "moo_text_completion_try_complete")
-;   (return-type "none")
-;   (parameters
-;     '("gboolean" "automatic")
-;   )
-; )
-;
-; (define-method hide
-;   (of-object "MooTextCompletion")
-;   (c-name "moo_text_completion_hide")
-;   (return-type "none")
-; )
-;
-; (define-method show
-;   (of-object "MooTextCompletion")
-;   (c-name "moo_text_completion_show")
-;   (return-type "none")
-; )
-;
-; (define-method set_doc
-;   (of-object "MooTextCompletion")
-;   (c-name "moo_text_completion_set_doc")
-;   (return-type "none")
-;   (parameters
-;     '("GtkTextView*" "doc")
-;   )
-; )
-;
-; (define-method get_doc
-;   (of-object "MooTextCompletion")
-;   (c-name "moo_text_completion_get_doc")
-;   (return-type "GtkTextView*")
-; )
-;
-; (define-method get_buffer
-;   (of-object "MooTextCompletion")
-;   (c-name "moo_text_completion_get_buffer")
-;   (return-type "GtkTextBuffer*")
-; )
-;
-; (define-method set_region
-;   (of-object "MooTextCompletion")
-;   (c-name "moo_text_completion_set_region")
-;   (return-type "none")
-;   (parameters
-;     '("const-GtkTextIter*" "start")
-;     '("const-GtkTextIter*" "end")
-;   )
-; )
-;
-; (define-method get_region
-;   (of-object "MooTextCompletion")
-;   (c-name "moo_text_completion_get_region")
-;   (return-type "gboolean")
-;   (parameters
-;     '("GtkTextIter*" "start")
-;     '("GtkTextIter*" "end")
-;   )
-; )
-;
-; (define-method set_model
-;   (of-object "MooTextCompletion")
-;   (c-name "moo_text_completion_set_model")
-;   (return-type "none")
-;   (parameters
-;     '("GtkTreeModel*" "model")
-;   )
-; )
-;
-; (define-method get_model
-;   (of-object "MooTextCompletion")
-;   (c-name "moo_text_completion_get_model")
-;   (return-type "GtkTreeModel*")
-; )
-;
-; (define-method set_text_column
-;   (of-object "MooTextCompletion")
-;   (c-name "moo_text_completion_set_text_column")
-;   (return-type "none")
-;   (parameters
-;     '("int" "column")
-;   )
-; )
-;
-; (define-method set_text_func
-;   (of-object "MooTextCompletion")
-;   (c-name "moo_text_completion_set_text_func")
-;   (return-type "none")
-;   (parameters
-;     '("MooTextCompletionTextFunc" "func")
-;     '("gpointer" "data")
-;     '("GDestroyNotify" "notify")
-;   )
-; )
-;
-; (define-method get_popup
-;   (of-object "MooTextCompletion")
-;   (c-name "moo_text_completion_get_popup")
-;   (return-type "MooTextPopup*")
-; )
+;; From moo/mooedit/mootextcompletion.h
+
+(define-virtual try_complete
+  (of-object "MooTextCompletion")
+  (return-type "none")
+  (parameters
+    '("gboolean" "automatic")
+  )
+)
+
+(define-virtual finish
+  (of-object "MooTextCompletion")
+  (return-type "none")
+)
+
+(define-virtual update
+  (of-object "MooTextCompletion")
+  (return-type "none")
+)
+
+(define-virtual complete
+  (of-object "MooTextCompletion")
+  (return-type "none")
+  (parameters
+    '("GtkTreeModel*" "model")
+    '("GtkTreeIter*" "iter")
+  )
+)
+
+(define-virtual populate
+  (of-object "MooTextCompletion")
+  (return-type "none")
+  (parameters
+    '("GtkTreeModel*" "model")
+    '("GtkTextIter*" "cursor")
+    '("const-char*" "text")
+  )
+)
+
+(define-method try_complete
+  (of-object "MooTextCompletion")
+  (c-name "moo_text_completion_try_complete")
+  (return-type "none")
+  (parameters
+    '("gboolean" "automatic")
+  )
+)
+
+(define-method hide
+  (of-object "MooTextCompletion")
+  (c-name "moo_text_completion_hide")
+  (return-type "none")
+)
+
+(define-method show
+  (of-object "MooTextCompletion")
+  (c-name "moo_text_completion_show")
+  (return-type "none")
+)
+
+(define-method set_doc
+  (of-object "MooTextCompletion")
+  (c-name "moo_text_completion_set_doc")
+  (return-type "none")
+  (parameters
+    '("GtkTextView*" "doc")
+  )
+)
+
+(define-method get_doc
+  (of-object "MooTextCompletion")
+  (c-name "moo_text_completion_get_doc")
+  (return-type "GtkTextView*")
+)
+
+(define-method get_buffer
+  (of-object "MooTextCompletion")
+  (c-name "moo_text_completion_get_buffer")
+  (return-type "GtkTextBuffer*")
+)
+
+(define-method set_region
+  (of-object "MooTextCompletion")
+  (c-name "moo_text_completion_set_region")
+  (return-type "none")
+  (parameters
+    '("const-GtkTextIter*" "start")
+    '("const-GtkTextIter*" "end")
+  )
+)
+
+(define-method get_region
+  (of-object "MooTextCompletion")
+  (c-name "moo_text_completion_get_region")
+  (return-type "gboolean")
+  (parameters
+    '("GtkTextIter*" "start")
+    '("GtkTextIter*" "end")
+  )
+)
+
+(define-method set_model
+  (of-object "MooTextCompletion")
+  (c-name "moo_text_completion_set_model")
+  (return-type "none")
+  (parameters
+    '("GtkTreeModel*" "model")
+  )
+)
+
+(define-method get_model
+  (of-object "MooTextCompletion")
+  (c-name "moo_text_completion_get_model")
+  (return-type "GtkTreeModel*")
+)
+
+(define-method set_text_column
+  (of-object "MooTextCompletion")
+  (c-name "moo_text_completion_set_text_column")
+  (return-type "none")
+  (parameters
+    '("int" "column")
+  )
+)
+
+(define-method set_text_func
+  (of-object "MooTextCompletion")
+  (c-name "moo_text_completion_set_text_func")
+  (return-type "none")
+  (parameters
+    '("MooTextCompletionTextFunc" "func")
+    '("gpointer" "data")
+    '("GDestroyNotify" "notify")
+  )
+)
+
+(define-method get_popup
+  (of-object "MooTextCompletion")
+  (c-name "moo_text_completion_get_popup")
+  (return-type "MooTextPopup*")
+)
 
 
-; ;; From moo/mooedit/mootextpopup.h
-;
-; (define-function moo_text_popup_new
-;   (c-name "moo_text_popup_new")
-;   (is-constructor-of "MooTextPopup")
-;   (return-type "MooTextPopup*")
-;   (properties
-;     '("doc" (optional))
-;   )
-; )
-;
-; (define-method set_doc
-;   (of-object "MooTextPopup")
-;   (c-name "moo_text_popup_set_doc")
-;   (return-type "none")
-;   (parameters
-;     '("GtkTextView*" "doc")
-;   )
-; )
-;
-; (define-method get_doc
-;   (of-object "MooTextPopup")
-;   (c-name "moo_text_popup_get_doc")
-;   (return-type "GtkTextView*")
-; )
-;
-; (define-method set_model
-;   (of-object "MooTextPopup")
-;   (c-name "moo_text_popup_set_model")
-;   (return-type "none")
-;   (parameters
-;     '("GtkTreeModel*" "model")
-;   )
-; )
-;
-; (define-method get_model
-;   (of-object "MooTextPopup")
-;   (c-name "moo_text_popup_get_model")
-;   (return-type "GtkTreeModel*")
-; )
-;
-; (define-method show
-;   (of-object "MooTextPopup")
-;   (c-name "moo_text_popup_show")
-;   (return-type "gboolean")
-;   (parameters
-;     '("const-GtkTextIter*" "where")
-;   )
-; )
-;
-; (define-method update
-;   (of-object "MooTextPopup")
-;   (c-name "moo_text_popup_update")
-;   (return-type "none")
-; )
-;
-; (define-method activate
-;   (of-object "MooTextPopup")
-;   (c-name "moo_text_popup_activate")
-;   (return-type "none")
-; )
-;
-; (define-method hide
-;   (of-object "MooTextPopup")
-;   (c-name "moo_text_popup_hide")
-;   (return-type "none")
-; )
-;
-; (define-method get_position
-;   (of-object "MooTextPopup")
-;   (c-name "moo_text_popup_get_position")
-;   (return-type "gboolean")
-;   (parameters
-;     '("GtkTextIter*" "iter")
-;   )
-; )
-;
-; (define-method set_position
-;   (of-object "MooTextPopup")
-;   (c-name "moo_text_popup_set_position")
-;   (return-type "void")
-;   (parameters
-;     '("const-GtkTextIter*" "iter")
-;   )
-; )
-;
-; (define-method get_selected
-;   (of-object "MooTextPopup")
-;   (c-name "moo_text_popup_get_selected")
-;   (return-type "gboolean")
-;   (parameters
-;     '("GtkTreeIter*" "iter")
-;   )
-; )
-;
-; (define-method select
-;   (of-object "MooTextPopup")
-;   (c-name "moo_text_popup_select")
-;   (return-type "void")
-;   (parameters
-;     '("GtkTreeIter*" "iter")
-;   )
-; )
+;; From moo/mooedit/mootextpopup.h
+
+(define-function moo_text_popup_new
+  (c-name "moo_text_popup_new")
+  (is-constructor-of "MooTextPopup")
+  (return-type "MooTextPopup*")
+  (properties
+    '("doc" (optional))
+  )
+)
+
+(define-method set_doc
+  (of-object "MooTextPopup")
+  (c-name "moo_text_popup_set_doc")
+  (return-type "none")
+  (parameters
+    '("GtkTextView*" "doc")
+  )
+)
+
+(define-method get_doc
+  (of-object "MooTextPopup")
+  (c-name "moo_text_popup_get_doc")
+  (return-type "GtkTextView*")
+)
+
+(define-method set_model
+  (of-object "MooTextPopup")
+  (c-name "moo_text_popup_set_model")
+  (return-type "none")
+  (parameters
+    '("GtkTreeModel*" "model")
+  )
+)
+
+(define-method get_model
+  (of-object "MooTextPopup")
+  (c-name "moo_text_popup_get_model")
+  (return-type "GtkTreeModel*")
+)
+
+(define-method show
+  (of-object "MooTextPopup")
+  (c-name "moo_text_popup_show")
+  (return-type "gboolean")
+  (parameters
+    '("const-GtkTextIter*" "where")
+  )
+)
+
+(define-method update
+  (of-object "MooTextPopup")
+  (c-name "moo_text_popup_update")
+  (return-type "none")
+)
+
+(define-method activate
+  (of-object "MooTextPopup")
+  (c-name "moo_text_popup_activate")
+  (return-type "none")
+)
+
+(define-method hide
+  (of-object "MooTextPopup")
+  (c-name "moo_text_popup_hide")
+  (return-type "none")
+)
+
+(define-method get_position
+  (of-object "MooTextPopup")
+  (c-name "moo_text_popup_get_position")
+  (return-type "gboolean")
+  (parameters
+    '("GtkTextIter*" "iter")
+  )
+)
+
+(define-method set_position
+  (of-object "MooTextPopup")
+  (c-name "moo_text_popup_set_position")
+  (return-type "void")
+  (parameters
+    '("const-GtkTextIter*" "iter")
+  )
+)
+
+(define-method get_selected
+  (of-object "MooTextPopup")
+  (c-name "moo_text_popup_get_selected")
+  (return-type "gboolean")
+  (parameters
+    '("GtkTreeIter*" "iter")
+  )
+)
+
+(define-method select
+  (of-object "MooTextPopup")
+  (c-name "moo_text_popup_select")
+  (return-type "void")
+  (parameters
+    '("GtkTreeIter*" "iter")
+  )
+)

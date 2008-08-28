@@ -30,6 +30,8 @@ headers
 #include "mooedit/mootextiter.h"
 #include "mooedit/mootextstylescheme.h"
 #include "mooedit/mootextview.h"
+#include "mooedit/mootextpopup.h"
+#include "mooedit/mootextcompletion.h"
 #include "mooedit/mooedit-enums.h"
 #include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
