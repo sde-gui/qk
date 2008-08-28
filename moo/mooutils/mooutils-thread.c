@@ -14,6 +14,7 @@
 #include "mooutils/mooutils-thread.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
+#include "mooutils/mootype-macros.h"
 
 #include <stdio.h>
 #include <errno.h>
@@ -371,4 +372,173 @@ _moo_message_async (const char *format,
         init_message_queue ();
         _moo_event_queue_push (message_event_id, msg, g_free);
     }
+}
+
+
+struct MooAsyncJob {
+    GObject base;
+
+    MooAsyncJobCallback callback;
+    gpointer data;
+    GDestroyNotify data_notify;
+
+    GThread *thread;
+    GMutex *mutex;
+    guint cancelled : 1;
+};
+
+typedef struct {
+    GObjectClass base_class;
+} MooAsyncJobClass;
+
+MOO_DEFINE_TYPE_STATIC (MooAsyncJob, moo_async_job, G_TYPE_OBJECT)
+
+static void
+moo_async_job_dispose (GObject *object)
+{
+    MooAsyncJob *job = (MooAsyncJob*) object;
+
+    if (job->data_notify)
+    {
+        GDestroyNotify notify = job->data_notify;
+        job->data_notify = NULL;
+        notify (job->data);
+        job->data = NULL;
+    }
+
+    g_assert (!job->thread);
+
+    if (job->mutex)
+    {
+        g_mutex_free (job->mutex);
+        job->mutex = NULL;
+    }
+
+    G_OBJECT_CLASS (moo_async_job_parent_class)->dispose (object);
+}
+
+static void
+moo_async_job_class_init (MooAsyncJobClass *klass)
+{
+    G_OBJECT_CLASS (klass)->dispose = moo_async_job_dispose;
+}
+
+static void
+moo_async_job_init (MooAsyncJob *job)
+{
+    job->callback = NULL;
+    job->data = NULL;
+    job->data_notify = NULL;
+
+    job->thread = NULL;
+    job->mutex = g_mutex_new ();
+    job->cancelled = FALSE;
+}
+
+MooAsyncJob *
+moo_async_job_new (MooAsyncJobCallback callback,
+                   gpointer            data,
+                   GDestroyNotify      data_notify)
+{
+    MooAsyncJob *job;
+
+    g_return_val_if_fail (callback != NULL, NULL);
+
+    job = g_object_new (moo_async_job_get_type (), NULL);
+    job->callback = callback;
+    job->data = data;
+    job->data_notify = data_notify;
+
+    return job;
+}
+
+static gpointer
+moo_async_job_thread_func (MooAsyncJob *job)
+{
+    gboolean proceed = TRUE;
+
+    while (proceed)
+    {
+        g_mutex_lock (job->mutex);
+
+        if (job->cancelled)
+        {
+            _moo_print_async ("%s: job cancelled\n", G_STRFUNC);
+            g_mutex_unlock (job->mutex);
+            break;
+        }
+
+        g_mutex_unlock (job->mutex);
+
+        proceed = job->callback (job->data);
+
+        if (!proceed)
+            _moo_print_async ("%s: job finished\n", G_STRFUNC);
+
+        if (proceed)
+            g_usleep (1000);
+    }
+
+    g_mutex_lock (job->mutex);
+
+    if (job->data_notify)
+    {
+        GDestroyNotify notify = job->data_notify;
+        job->data_notify = NULL;
+        notify (job->data);
+    }
+
+    job->thread = NULL;
+
+    g_mutex_unlock (job->mutex);
+
+    g_object_unref (job);
+    return NULL;
+}
+
+void
+moo_async_job_start (MooAsyncJob *job)
+{
+    GError *error = NULL;
+
+    g_return_if_fail (job != NULL);
+    g_return_if_fail (job->thread == NULL);
+
+    g_mutex_lock (job->mutex);
+
+    job->thread = g_thread_create ((GThreadFunc) moo_async_job_thread_func,
+                                   g_object_ref (job),
+                                   FALSE, &error);
+    if (!job->thread)
+    {
+        g_critical ("%s: could not start thread: %s", G_STRLOC, error->message);
+        g_error_free (error);
+        goto out;
+    }
+
+out:
+    g_mutex_unlock (job->mutex);
+}
+
+void
+moo_async_job_cancel (MooAsyncJob *job)
+{
+    g_return_if_fail (job != NULL);
+    g_mutex_lock (job->mutex);
+    job->cancelled = TRUE;
+    g_mutex_unlock (job->mutex);
+}
+
+void
+moo_async_job_ref (MooAsyncJob *job)
+{
+    g_return_if_fail (job != NULL);
+    g_object_ref (job);
+}
+
+void
+moo_async_job_unref (MooAsyncJob *job)
+{
+    g_return_if_fail (job != NULL);
+    g_object_unref (job);
 }

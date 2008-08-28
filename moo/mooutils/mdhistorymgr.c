@@ -20,6 +20,7 @@
 #include "mooutils/mooutils-treeview.h"
 #include "mooutils/moomarkup.h"
 #include "mooutils/mooprefs.h"
+#include "mooutils/mooutils-thread.h"
 #include "marshals.h"
 #include <stdarg.h>
 
@@ -1157,6 +1158,56 @@ create_tree_view (void)
     return tree_view;
 }
 
+// typedef struct {
+//     GtkWidget *tree_view;
+//     GtkListStore *store;
+//     GQueue *files;
+//     GList *link;
+// } Data;
+//
+// typedef struct {
+//     GdkPixbuf *pixbuf;
+//     char *display_basename;
+//     char *display_name;
+//     char *uri;
+// } Entry;
+
+// static gboolean
+// thread_func (gpointer user_data)
+// {
+//     Data *data = user_data;
+//     int i;
+//
+//     for (i = 0; i < 100 && data->link != data->files->tail; ++i, data->link = data->link->next)
+//     {
+//         MdHistoryItem *item = data->link->data;
+//         char *display_name, *display_basename;
+//         GdkPixbuf *pixbuf;
+//         GtkTreeIter iter;
+//
+//         display_basename = uri_get_basename (item->uri);
+//         display_name = uri_get_display_name (item->uri);
+//
+//         gdk_threads_enter ();
+//         /* XXX */
+//         pixbuf = _moo_get_icon_for_path (display_name, data->tree_view, GTK_ICON_SIZE_MENU);
+//         gdk_threads_leave ();
+//
+//         gtk_list_store_append (data->store, &iter);
+//         gtk_list_store_set (data->store, &iter,
+//                             COLUMN_PIXBUF, pixbuf,
+//                             COLUMN_NAME, display_basename,
+//                             COLUMN_TOOLTIP, display_name,
+//                             COLUMN_URI, md_history_item_get_uri (item),
+//                             -1);
+//
+//         g_free (display_basename);
+//         g_free (display_name);
+//     }
+//
+//     return data->link != data->files->tail;
+// }
+
 static void
 populate_tree_view (MdHistoryMgr *mgr,
                     GtkWidget    *tree_view)
@@ -1169,6 +1220,17 @@ populate_tree_view (MdHistoryMgr *mgr,
 
     model = gtk_tree_view_get_model (GTK_TREE_VIEW (tree_view));
     store = GTK_LIST_STORE (model);
+
+//     {
+//         Data *data = g_new0 (Data, 1);
+//         data->tree_view = tree_view;
+//         data->store = store;
+//         data->files = mgr->priv->files;
+//         data->link = mgr->priv->files->head;
+//         MooAsyncJob *job = moo_async_job_new (thread_func, data, g_free);
+//         moo_async_job_start (job);
+//         moo_async_job_unref (job);
+//     }
 
     for (l = mgr->priv->files->head; l != NULL; l = l->next)
     {

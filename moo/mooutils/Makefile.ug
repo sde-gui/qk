@@ -29,6 +29,7 @@ thread_sources =			\
 	mooutils-thread.h
 
 mooutils_sources =			\
+	$(thread_sources)		\
 	mdhistorymgr.c			\
 	mdhistorymgr.h			\
 	moo-environ.h			\
@@ -147,11 +148,7 @@ mooutils_sources =			\
 moopython.lo: mooutils-fli.lo
 
 if MOO_OS_MINGW
-mooutils_sources += $(thread_sources) $(win32_sources)
-else
-if MOO_ENABLE_TESTS
-mooutils_sources += $(thread_sources)
-endif
+mooutils_sources += $(win32_sources)
 endif
 if MOO_ENABLE_UNIT_TESTS
 mooutils_sources += $(test_sources)
@@ -160,7 +157,6 @@ endif
 EXTRA_DIST +=				\
 	moo-intltool-merge		\
 	py2h.sh				\
-	$(thread_sources)		\
 	$(win32_sources)		\
 	$(test_sources)			\
 	moowin32/mingw/fnmatch.h	\

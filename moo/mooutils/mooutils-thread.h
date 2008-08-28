@@ -21,6 +21,16 @@ G_BEGIN_DECLS
 typedef void (*MooEventQueueCallback)   (GList   *events,
                                          gpointer data);
 
+typedef struct MooAsyncJob MooAsyncJob;
+typedef gboolean (*MooAsyncJobCallback) (gpointer data);
+
+MooAsyncJob *moo_async_job_new          (MooAsyncJobCallback    callback,
+                                         gpointer               data,
+                                         GDestroyNotify         data_notify);
+void         moo_async_job_start        (MooAsyncJob           *job);
+void         moo_async_job_cancel       (MooAsyncJob           *job);
+void         moo_async_job_ref          (MooAsyncJob           *job);
+void         moo_async_job_unref        (MooAsyncJob           *job);
 
 guint       _moo_event_queue_connect    (MooEventQueueCallback  callback,
                                          gpointer               data,
