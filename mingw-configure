@@ -129,7 +129,7 @@ export AR="${MINGW_TOOL_PREFIX}ar"
 export RANLIB="${MINGW_TOOL_PREFIX}ranlib"
 export STRIP="${MINGW_TOOL_PREFIX}strip"
 
-export LDFLAGS="-L$GTK_PREFIX/lib -mwindows $LDFLAGS"
+export LDFLAGS="-L$GTK_PREFIX/lib $LDFLAGS"
 export CPPFLAGS="-I$GTK_PREFIX/include $CPPFLAGS"
 export CFLAGS="-I$GTK_PREFIX/include -mms-bitfields -march=i686 ${CFLAGS:-"-O2"}"
 export CXXFLAGS="-I$GTK_PREFIX/include -mms-bitfields -march=i686 ${CXXFLAGS:-"-O2"}"

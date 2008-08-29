@@ -29,6 +29,10 @@ medit_SOURCES += main.c
 # medit_SOURCES += main.c
 # endif
 
+if MOO_OS_MINGW
+medit_LDFLAGS += -mwindows
+endif
+
 medit_LDFLAGS += -export-dynamic
 include ../moo/moo-comps.mk
 medit_LDADD = $(moo_app_ldadd)
