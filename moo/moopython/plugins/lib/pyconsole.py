@@ -2,7 +2,7 @@
 #
 #   pyconsole.py
 #
-#   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
+#   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@tamu.edu>
 #   Portions of code by Geoffrey French.
 #
 #   This program is free software; you can redistribute it and/or modify

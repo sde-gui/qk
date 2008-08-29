@@ -7,5 +7,5 @@ version=@MOO_MODULE_MAJOR_VERSION@.@MOO_MODULE_MINOR_VERSION@
 id=Python
 _name=Python
 _description=Python support
-author=Yevgen Muntyan <muntyan@math.tamu.edu>
+author=Yevgen Muntyan <muntyan@tamu.edu>
 version=@MOO_VERSION_UNQUOTED@
