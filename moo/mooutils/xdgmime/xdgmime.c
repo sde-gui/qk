@@ -612,6 +612,17 @@ xdg_mime_shutdown (void)
       n_caches = 0;
     }
 
+  if (icon_list)
+    {
+      _xdg_mime_icon_list_free (icon_list);
+      icon_list = NULL;
+    }
+  if (generic_icon_list)
+    {
+      _xdg_mime_icon_list_free (generic_icon_list);
+      generic_icon_list = NULL;
+    }
+
   for (list = callback_list; list; list = list->next)
     (list->callback) (list->data);
 
