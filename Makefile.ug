@@ -72,9 +72,10 @@ snapshot:
 	$(MAKE) dist && mv $(PACKAGE)-$(VERSION).tar.bz2 $(PACKAGE)-"$$suffix".tar.bz2
 
 win-test-stuff:
-	$(MAKE) all && mkdir -p test-stuff/test-data && \
-	cp moo/.libs/libmoo.dll test-stuff/ && \
-	cp -r $(srcdir)/tests/data/* test-stuff/test-data/ && \
+	$(MAKE) all
+	mkdir -p test-stuff/test-data
+	cp moo/.libs/libmoo.dll test-stuff/
+	cp -r $(srcdir)/tests/data/* test-stuff/test-data/
 	cp tests/.libs/run-tests.exe test-stuff/
 
 include dist/win32/Makefile.incl

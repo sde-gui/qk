@@ -1,3 +1,8 @@
+WIN_TEST = false
+mime_dir = /usr/share/mime
+
+#################################################################################
+
 WIN_CONFIG = base
 WIN_DISTDIR = medit-$(VERSION)
 WIN_INSTALL = true
@@ -24,7 +29,7 @@ win_distdir = medit-$(WIN_CONFIG)
 win_tmp_instdir = win-tmp-instdir
 
 win-tmp-instdir-tgt:
-	if [ $(WIN_INSTALL) != $(ALT_WIN_INSTALL) -o ! -d $(win_tmp_instdir) ]; then \
+	if ! $(WIN_TEST) && [ $(WIN_INSTALL) != $(ALT_WIN_INSTALL) -o ! -d $(win_tmp_instdir) ]; then \
 	  rm -fr $(win_tmp_instdir); \
 	  make install-strip DESTDIR=`pwd`/$(win_tmp_instdir); \
 	  find $(win_tmp_instdir) -name '*.dll.a' -o -name '*.la' | xargs rm; \
@@ -33,7 +38,7 @@ win-tmp-instdir-tgt:
 win-distdir:
 	make win-tmp-instdir-tgt
 	rm -fr $(win_distdir)
-	for sd in bin etc lib share; do \
+	for sd in bin etc lib share/mime; do \
 	  mkdir -p $(win_distdir)/$$sd; \
 	done
 	cp -R $(srcdir)/COPYING.GPL $(win_distdir)/COPYING
@@ -41,6 +46,10 @@ win-distdir:
 	cp -R $(win_tmp_instdir)$(libdir)/* $(win_distdir)/lib/
 	cp -R $(win_tmp_instdir)$(datadir)/doc $(win_distdir)/share/
 	cp -R $(win_tmp_instdir)$(datadir)/moo $(win_distdir)/share/
+	mkdir -p $(win_tmp_instdir)$(datadir)/mime/packages
+	cp $(mime_dir)/packages/freedesktop.org.xml $(win_tmp_instdir)$(datadir)/mime/packages/
+	update-mime-database $(win_tmp_instdir)$(datadir)/mime/
+	cp $(win_tmp_instdir)$(datadir)/mime/*.cache $(win_distdir)/share/mime/
 	abs_gtk_dir=`cd $(GTK_BIN) && pwd`; \
 	for sd in bin etc lib share; do \
 	  ln -s $$abs_gtk_dir/$$sd/* $(win_distdir)/$$sd; \
