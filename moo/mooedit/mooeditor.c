@@ -104,6 +104,15 @@ typedef struct {
 
 static void          message_free           (Message        *message);
 
+typedef enum {
+    OPEN_SINGLE         = 1 << 0,
+    ALLOW_EMPTY_WINDOW  = 1 << 1,
+    SINGLE_WINDOW       = 1 << 2,
+    SAVE_BACKUPS        = 1 << 3,
+    STRIP_WHITESPACE    = 1 << 4,
+    EMBEDDED            = 1 << 5,
+    AUTOSAVE            = 1 << 6
+} MooEditorOptions;
 
 struct _MooEditorPrivate {
     GSList          *messages;
@@ -115,22 +124,15 @@ struct _MooEditorPrivate {
     MdHistoryMgr    *history;
     MooLangMgr      *lang_mgr;
     MooFileWatch    *file_watch;
-    gboolean         open_single;
-    gboolean         allow_empty_window;
-    gboolean         single_window;
+    MooEditorOptions opts;
 
     MooEdit         *focused_doc;
-
-    gboolean         save_backups;
-    gboolean         strip_whitespace;
-    gboolean         silent;
 
     GType            window_type;
     GType            doc_type;
 
     char            *default_lang;
 
-    gboolean         autosave;
     guint            autosave_interval;
 };
 
@@ -153,10 +155,10 @@ enum {
     PROP_SINGLE_WINDOW,
     PROP_SAVE_BACKUPS,
     PROP_STRIP_WHITESPACE,
-    PROP_SILENT,
     PROP_AUTOSAVE,
     PROP_AUTOSAVE_INTERVAL,
-    PROP_FOCUSED_DOC
+    PROP_FOCUSED_DOC,
+    PROP_EMBEDDED
 };
 
 enum {
@@ -170,6 +172,24 @@ static guint signals[LAST_SIGNAL];
 /* MOO_TYPE_EDITOR */
 G_DEFINE_TYPE (MooEditor, moo_editor, G_TYPE_OBJECT)
 
+
+inline static gboolean test_flag(MooEditor *editor, MooEditorOptions flag)
+{
+    return (editor->priv->opts & flag) != 0;
+}
+
+inline static gboolean is_embedded(MooEditor *editor)
+{
+    return test_flag(editor, EMBEDDED);
+}
+
+inline static void set_flag(MooEditor *editor, MooEditorOptions flag, gboolean set_or_not)
+{
+    if (set_or_not)
+        editor->priv->opts |= flag;
+    else
+        editor->priv->opts &= ~flag;
+}
 
 static void
 moo_editor_class_init (MooEditorClass *klass)
@@ -189,77 +209,41 @@ moo_editor_class_init (MooEditorClass *klass)
 
     g_type_class_add_private (klass, sizeof (MooEditorPrivate));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_OPEN_SINGLE_FILE_INSTANCE,
-                                     g_param_spec_boolean ("open-single-file-instance",
-                                             "open-single-file-instance",
-                                             "open-single-file-instance",
-                                             TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+    g_object_class_install_property (gobject_class, PROP_OPEN_SINGLE_FILE_INSTANCE,
+        g_param_spec_boolean ("open-single-file-instance", "open-single-file-instance", "open-single-file-instance",
+                              TRUE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_ALLOW_EMPTY_WINDOW,
-                                     g_param_spec_boolean ("allow-empty-window",
-                                             "allow-empty-window",
-                                             "allow-empty-window",
-                                             FALSE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+    g_object_class_install_property (gobject_class, PROP_ALLOW_EMPTY_WINDOW,
+        g_param_spec_boolean ("allow-empty-window", "allow-empty-window", "allow-empty-window",
+                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_SINGLE_WINDOW,
-                                     g_param_spec_boolean ("single-window",
-                                             "single-window",
-                                             "single-window",
-                                             FALSE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+    g_object_class_install_property (gobject_class, PROP_SINGLE_WINDOW,
+        g_param_spec_boolean ("single-window", "single-window", "single-window",
+                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_SAVE_BACKUPS,
-                                     g_param_spec_boolean ("save-backups",
-                                             "save-backups",
-                                             "save-backups",
-                                             FALSE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+    g_object_class_install_property (gobject_class, PROP_SAVE_BACKUPS,
+        g_param_spec_boolean ("save-backups", "save-backups", "save-backups",
+                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_STRIP_WHITESPACE,
-                                     g_param_spec_boolean ("strip-whitespace",
-                                             "strip-whitespace",
-                                             "strip-whitespace",
-                                             FALSE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+    g_object_class_install_property (gobject_class, PROP_STRIP_WHITESPACE,
+        g_param_spec_boolean ("strip-whitespace", "strip-whitespace", "strip-whitespace",
+                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_SILENT,
-                                     g_param_spec_boolean ("silent",
-                                             "silent",
-                                             "silent",
-                                             FALSE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+    g_object_class_install_property (gobject_class, PROP_AUTOSAVE,
+        g_param_spec_boolean ("autosave", "autosave", "autosave",
+                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_AUTOSAVE,
-                                     g_param_spec_boolean ("autosave",
-                                             "autosave",
-                                             "autosave",
-                                             FALSE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+    g_object_class_install_property (gobject_class, PROP_AUTOSAVE_INTERVAL,
+        g_param_spec_uint ("autosave-interval", "autosave-interval", "autosave-interval",
+                           1, 1000, 5, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_AUTOSAVE_INTERVAL,
-                                     g_param_spec_uint ("autosave-interval",
-                                             "autosave-interval",
-                                             "autosave-interval",
-                                             1, 1000, 5,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+    g_object_class_install_property (gobject_class, PROP_FOCUSED_DOC,
+        g_param_spec_object ("focused-doc", "focused-doc", "focused-doc",
+                             MOO_TYPE_EDIT, G_PARAM_READABLE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_FOCUSED_DOC,
-                                     g_param_spec_object ("focused-doc",
-                                             "focused-doc",
-                                             "focused-doc",
-                                             MOO_TYPE_EDIT,
-                                             G_PARAM_READABLE));
+    g_object_class_install_property (gobject_class, PROP_EMBEDDED,
+        g_param_spec_boolean ("embedded", "embedded", "embedded",
+                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     signals[CLOSE_WINDOW] =
             g_signal_new ("close-window",
@@ -303,9 +287,11 @@ moo_editor_init (MooEditor *editor)
                               G_CALLBACK (moo_editor_apply_prefs),
                               editor);
 
-    editor->priv->history = g_object_new (MD_TYPE_HISTORY_MGR,
-                                          "name", "Editor",
-                                          NULL);
+    editor->priv->history = NULL;
+    if (!is_embedded (editor))
+        editor->priv->history = g_object_new (MD_TYPE_HISTORY_MGR,
+                                              "name", "Editor",
+                                              NULL);
 
     editor->priv->windows = NULL;
     editor->priv->windowless = window_info_new (NULL);
@@ -328,13 +314,11 @@ moo_editor_set_property (GObject        *object,
 
     switch (prop_id) {
         case PROP_OPEN_SINGLE_FILE_INSTANCE:
-            editor->priv->open_single = g_value_get_boolean (value);
-            g_object_notify (object, "open-single-file-instance");
+            set_flag (editor, OPEN_SINGLE, g_value_get_boolean (value));
             break;
 
         case PROP_ALLOW_EMPTY_WINDOW:
-            editor->priv->allow_empty_window = g_value_get_boolean (value);
-            g_object_notify (object, "allow-empty-window");
+            set_flag (editor, ALLOW_EMPTY_WINDOW, g_value_get_boolean (value));
             break;
 
         case PROP_SINGLE_WINDOW:
@@ -342,23 +326,19 @@ moo_editor_set_property (GObject        *object,
             break;
 
         case PROP_SAVE_BACKUPS:
-            editor->priv->save_backups = g_value_get_boolean (value);
-            g_object_notify (object, "save-backups");
+            set_flag (editor, SAVE_BACKUPS, g_value_get_boolean (value));
             break;
 
         case PROP_STRIP_WHITESPACE:
-            editor->priv->strip_whitespace = g_value_get_boolean (value);
-            g_object_notify (object, "strip-whitespace");
+            set_flag (editor, STRIP_WHITESPACE, g_value_get_boolean (value));
             break;
 
-        case PROP_SILENT:
-            editor->priv->silent = g_value_get_boolean (value);
-            g_object_notify (object, "silent");
+        case PROP_EMBEDDED:
+            set_flag (editor, EMBEDDED, g_value_get_boolean (value));
             break;
 
         case PROP_AUTOSAVE:
-            editor->priv->autosave = g_value_get_boolean (value);
-            g_object_notify (object, "autosave");
+            set_flag (editor, AUTOSAVE, g_value_get_boolean (value));
             do {
                 static int c = 1;
                 if (!c++)
@@ -368,7 +348,6 @@ moo_editor_set_property (GObject        *object,
 
         case PROP_AUTOSAVE_INTERVAL:
             editor->priv->autosave_interval = g_value_get_uint (value);
-            g_object_notify (object, "autosave-interval");
             break;
 
         default:
@@ -388,31 +367,31 @@ moo_editor_get_property (GObject        *object,
 
     switch (prop_id) {
         case PROP_OPEN_SINGLE_FILE_INSTANCE:
-            g_value_set_boolean (value, editor->priv->open_single);
+            g_value_set_boolean (value, test_flag (editor, OPEN_SINGLE));
             break;
 
         case PROP_ALLOW_EMPTY_WINDOW:
-            g_value_set_boolean (value, editor->priv->allow_empty_window);
+            g_value_set_boolean (value, test_flag (editor, ALLOW_EMPTY_WINDOW));
             break;
 
         case PROP_SINGLE_WINDOW:
-            g_value_set_boolean (value, editor->priv->single_window);
+            g_value_set_boolean (value, test_flag (editor, SINGLE_WINDOW));
             break;
 
         case PROP_SAVE_BACKUPS:
-            g_value_set_boolean (value, editor->priv->save_backups);
+            g_value_set_boolean (value, test_flag (editor, SAVE_BACKUPS));
             break;
 
         case PROP_STRIP_WHITESPACE:
-            g_value_set_boolean (value, editor->priv->strip_whitespace);
+            g_value_set_boolean (value, test_flag (editor, STRIP_WHITESPACE));
             break;
 
-        case PROP_SILENT:
-            g_value_set_boolean (value, editor->priv->silent);
+        case PROP_EMBEDDED:
+            g_value_set_boolean (value, test_flag (editor, EMBEDDED));
             break;
 
         case PROP_AUTOSAVE:
-            g_value_set_boolean (value, editor->priv->autosave);
+            g_value_set_boolean (value, test_flag (editor, AUTOSAVE));
             break;
 
         case PROP_AUTOSAVE_INTERVAL:
@@ -558,12 +537,14 @@ _moo_editor_get_file_watch (MooEditor *editor)
 }
 
 
-MooEditor*
-moo_editor_create_instance (void)
+MooEditor *
+moo_editor_create_instance (gboolean embedded)
 {
     if (!editor_instance)
     {
-        editor_instance = g_object_new (MOO_TYPE_EDITOR, NULL);
+        editor_instance = g_object_new (MOO_TYPE_EDITOR,
+                                        "embedded", embedded,
+                                        NULL);
         g_object_add_weak_pointer (editor_instance, &editor_instance);
     }
     else
@@ -603,7 +584,7 @@ set_single_window (MooEditor      *editor,
                    gboolean        single)
 {
     /* XXX move documents to some window if several windows open? */
-    editor->priv->single_window = single;
+    set_flag (editor, SINGLE_WINDOW, single);
 
     if (single)
         remove_new_window_action ();
@@ -939,10 +920,13 @@ static void
 add_recent_file (MooEditor  *editor,
                  const char *filename)
 {
-    char *uri = g_filename_to_uri (filename, NULL, NULL);
-    if (uri)
-        md_history_mgr_add_uri (editor->priv->history, uri);
-    g_free (uri);
+    if (!is_embedded (editor))
+    {
+        char *uri = g_filename_to_uri (filename, NULL, NULL);
+        if (uri)
+            md_history_mgr_add_uri (editor->priv->history, uri);
+        g_free (uri);
+    }
 }
 
 static void
@@ -1103,7 +1087,7 @@ moo_editor_new_window (MooEditor *editor)
 
     window = create_window (editor);
 
-    if (!editor->priv->allow_empty_window)
+    if (!test_flag (editor, ALLOW_EMPTY_WINDOW))
     {
         doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
         _moo_edit_window_insert_doc (window, doc, -1);
@@ -1362,7 +1346,8 @@ moo_editor_open (MooEditor      *editor,
         if (!window)
             window = moo_editor_get_active_window (editor);
 
-        if (moo_editor_load_file (editor, window, parent, info, editor->priv->silent, TRUE, -1, &doc))
+        if (moo_editor_load_file (editor, window, parent, info,
+                                  is_embedded (editor), TRUE, -1, &doc))
             parent = GTK_WIDGET (doc);
 
         if (doc)
@@ -1684,7 +1669,7 @@ moo_editor_close_docs (MooEditor      *editor,
     {
         if (info->window &&
             !moo_edit_window_num_docs (info->window) &&
-             !editor->priv->allow_empty_window)
+            !test_flag (editor, ALLOW_EMPTY_WINDOW))
         {
             MooEdit *doc = g_object_new (get_doc_type (editor),
                                          "editor", editor, NULL);
@@ -2167,7 +2152,8 @@ moo_editor_open_file_line (MooEditor      *editor,
 
     info = moo_edit_file_info_new (filename, NULL);
     moo_editor_load_file (editor, window, NULL, info,
-                          editor->priv->silent, TRUE, line, &doc);
+                          is_embedded (editor),
+                          TRUE, line, &doc);
 
     /* XXX */
     moo_editor_set_active_doc (editor, doc);
@@ -2277,11 +2263,11 @@ _moo_editor_reload (MooEditor      *editor,
     /* XXX */
     g_return_if_fail (!moo_edit_is_untitled (doc));
 
-    if (!editor->priv->silent &&
-         !MOO_EDIT_IS_CLEAN (doc) &&
-         MOO_EDIT_IS_MODIFIED (doc) &&
-         !_moo_edit_reload_modified_dialog (doc))
-                return;
+    if (!is_embedded (editor) &&
+        !MOO_EDIT_IS_CLEAN (doc) &&
+        MOO_EDIT_IS_MODIFIED (doc) &&
+        !_moo_edit_reload_modified_dialog (doc))
+            return;
 
     moo_text_view_get_cursor (MOO_TEXT_VIEW (doc), &iter);
     cursor_line = gtk_text_iter_get_line (&iter);
@@ -2289,7 +2275,7 @@ _moo_editor_reload (MooEditor      *editor,
 
     if (!_moo_edit_reload_file (doc, encoding, &error_here))
     {
-        if (!editor->priv->silent)
+        if (!is_embedded (editor))
         {
             _moo_edit_reload_error_dialog (doc, error_here);
             g_error_free (error_here);
@@ -2314,7 +2300,7 @@ moo_editor_get_save_flags (MooEditor *editor)
 {
     MooEditSaveFlags flags = 0;
 
-    if (editor->priv->save_backups)
+    if (test_flag (editor, SAVE_BACKUPS))
         flags |= MOO_EDIT_SAVE_BACKUP;
 
     return flags;
@@ -2375,14 +2361,14 @@ _moo_editor_save (MooEditor      *editor,
     filename = moo_edit_get_filename (doc);
     encoding = g_strdup (moo_edit_get_encoding (doc));
 
-    if (!editor->priv->silent &&
-         (moo_edit_get_status (doc) & MOO_EDIT_MODIFIED_ON_DISK) &&
-         !_moo_edit_overwrite_modified_dialog (doc))
+    if (!is_embedded (editor) &&
+        (moo_edit_get_status (doc) & MOO_EDIT_MODIFIED_ON_DISK) &&
+        !_moo_edit_overwrite_modified_dialog (doc))
             goto out;
 
     if (!do_save (editor, doc, filename, encoding, &error_here))
     {
-        if (!editor->priv->silent)
+        if (!is_embedded (editor))
         {
             gboolean saved_utf8 = error_here->domain == MOO_EDIT_FILE_ERROR &&
                                   error_here->code == MOO_EDIT_FILE_ERROR_ENCODING;
@@ -2446,7 +2432,7 @@ _moo_editor_save_as (MooEditor      *editor,
 
     if (!do_save (editor, doc, file_info->filename, file_info->encoding, &error_here))
     {
-        if (!editor->priv->silent)
+        if (!is_embedded (editor))
         {
             gboolean saved_utf8 = error_here->domain == MOO_EDIT_FILE_ERROR &&
                                   error_here->code == MOO_EDIT_FILE_ERROR_ENCODING;

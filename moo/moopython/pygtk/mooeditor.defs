@@ -12,7 +12,11 @@
 (define-function create_editor_instance
   (c-name "moo_editor_create_instance")
   (return-type "MooEditor*")
-  (docstring "editor_instance() -> Editor - returns instance of moo.edit.Editor.\n"
+  (caller-owns-return #t)
+  (parameters
+    '("gboolean" "embedded" (default "TRUE"))
+  )
+  (docstring "create_editor_instance() -> Editor - returns instance of moo.edit.Editor.\n"
              "\n"
              "Creates new instance if it doesn't exist yet.")
 )

@@ -403,20 +403,6 @@ _wrap_moo_edit_class_remove_action (G_GNUC_UNUSED PyObject *self, PyObject *args
     return_None;
 }
 %%
-override moo_editor_create_instance noargs
-static PyObject *
-_wrap_moo_editor_create_instance (void)
-{
-    MooEditor *editor;
-    PyObject *ret;
-
-    editor = moo_editor_create_instance();
-    ret = pygobject_new (G_OBJECT (editor));
-
-    g_object_unref (editor);
-    return ret;
-}
-%%
 override moo_lang_mgr_get_available_langs noargs
 static PyObject *
 _wrap_moo_lang_mgr_get_available_langs (PyGObject *self)

@@ -587,7 +587,7 @@ init_plugins (MooApp *app)
 static void
 moo_app_init_editor (MooApp *app)
 {
-    app->priv->editor = moo_editor_create_instance ();
+    app->priv->editor = moo_editor_create_instance (FALSE);
 
     g_signal_connect_swapped (app->priv->editor, "close-window",
                               G_CALLBACK (close_editor_window), app);
