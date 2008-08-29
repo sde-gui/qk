@@ -8,7 +8,7 @@ APPNAME APPVERSION Manual
 
 %% 'entities'
 %! Postproc: APPNAME    medit
-%! Postproc: APPVERSION 0.9.4
+%! Postproc: APPVERSION 0.9.5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%

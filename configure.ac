@@ -2,7 +2,7 @@
 #   moo/configure.ac
 #
 
-AC_INIT([medit],[0.9.4],[muntyan@tamu.edu],[medit])
+AC_INIT([medit],[0.9.5],[muntyan@tamu.edu],[medit])
 AM_INIT_AUTOMAKE([foreign])
 AC_CANONICAL_HOST
 
