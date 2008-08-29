@@ -93,3 +93,5 @@ moo/mooutils/moostock.c
 moo/mooutils/moowindow.c
 moo/mooutils/newgtk/glib-2.14/glib/gregex.c
 moo/mooutils/newgtk/glib-2.8/glib/gmappedfile.c
+moo/mooedit/plugins/completion/completion-plugin.c
+moo/mooedit/plugins/completion/completion.glade
