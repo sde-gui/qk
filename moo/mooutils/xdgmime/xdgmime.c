@@ -26,7 +26,7 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"
 #endif
 
 #include "xdgmime.h"
@@ -600,6 +600,18 @@ xdg_mime_shutdown (void)
       _xdg_mime_parent_list_free (parent_list);
       parent_list = NULL;
     }
+
+  if (icon_list)
+    {
+      _xdg_mime_icon_list_free (icon_list);
+      icon_list = NULL;
+    }
+
+  if (generic_icon_list)
+    {
+      _xdg_mime_icon_list_free (generic_icon_list);
+      generic_icon_list = NULL;
+    }
   
   if (_xdg_mime_caches)
     {
@@ -610,17 +622,6 @@ xdg_mime_shutdown (void)
       free (_xdg_mime_caches);
       _xdg_mime_caches = NULL;
       n_caches = 0;
-    }
-
-  if (icon_list)
-    {
-      _xdg_mime_icon_list_free (icon_list);
-      icon_list = NULL;
-    }
-  if (generic_icon_list)
-    {
-      _xdg_mime_icon_list_free (generic_icon_list);
-      generic_icon_list = NULL;
     }
 
   for (list = callback_list; list; list = list->next)
@@ -646,12 +647,12 @@ _xdg_mime_unalias_mime_type (const char *mime_type)
   const char *lookup;
 
   if (_xdg_mime_caches)
-    return xdg_mime_intern_mime_type (_xdg_mime_cache_unalias_mime_type (mime_type));
+    return _xdg_mime_cache_unalias_mime_type (mime_type);
 
   if ((lookup = _xdg_mime_alias_list_lookup (alias_list, mime_type)) != NULL)
-    return xdg_mime_intern_mime_type (lookup);
+    return lookup;
 
-  return xdg_mime_intern_mime_type (mime_type);
+  return mime_type;
 }
 
 const char *
@@ -659,7 +660,7 @@ xdg_mime_unalias_mime_type (const char *mime_type)
 {
   xdg_mime_init ();
 
-  return _xdg_mime_unalias_mime_type (mime_type);
+  return xdg_mime_intern_mime_type (_xdg_mime_unalias_mime_type (mime_type));
 }
 
 int
@@ -885,7 +886,7 @@ xdg_mime_get_icon (const char *mime)
   icon = _xdg_mime_icon_list_lookup (icon_list, mime);
 
   if (!icon)
-    icon = xdg_mime_get_generic_icon (mime);
+    icon = xdg_mime_intern_mime_type (xdg_mime_get_generic_icon (mime));
 
   return xdg_mime_intern_mime_type (icon);
 }
