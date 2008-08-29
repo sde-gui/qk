@@ -4,13 +4,13 @@ import os
 import sys
 import subprocess
 
-files = subprocess.Popen(['hg', 'log', '-r', 'tip', '--template', '{files}'], 
+files = subprocess.Popen(['hg', 'log', '-r', 'tip', '--template', '{files}'],
                          stdout=subprocess.PIPE).communicate()[0].split()
 
 status = 0
 
 for name in files:
-    if not os.path.exists(name) or name.startswith('winbuild/'):
+    if not os.path.exists(name) or name in ['dist/mac/medit.icns']:
         continue
     f = open(name, 'rb')
     if '\r' in f.read():

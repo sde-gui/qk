@@ -79,3 +79,4 @@ win-test-stuff:
 	cp tests/.libs/run-tests.exe test-stuff/
 
 include dist/win32/Makefile.incl
+include dist/mac/Makefile.incl
