@@ -260,6 +260,7 @@ _moo_win32_lame_parse_cmd_line (const char  *cmd_line,
 
 
 #ifndef HAVE_GETTIMEOFDAY
+#include <mooutils/moowin32/ms/sys/time.h>
 int
 _moo_win32_gettimeofday (struct timeval *tp,
                          G_GNUC_UNUSED gpointer tzp)
@@ -302,7 +303,7 @@ _moo_win32_fnmatch (const char *pattern,
 
 #ifdef MOO_ENABLE_UNIT_TESTS
 
-#include <moo-tests.h>
+#include <mooutils/mooutils-tests.h>
 
 static void
 test_parse_cmd_line_one (const char  *cmd_line,

@@ -2,6 +2,7 @@
 #include <moolua/moolua-tests.h>
 #include <mooutils/mooutils-tests.h>
 #include <gtk/gtk.h>
+#include <stdio.h>
 
 static void
 add_tests (void)
@@ -73,7 +74,11 @@ main (int argc, char *argv[])
 
 #ifdef __WIN32__
     if (!g_getenv ("WINESERVER"))
+    {
+        printf ("Done, press Enter...");
+        fflush (stdout);
         getchar ();
+    }
 #endif
 
     return moo_test_get_result () ? 0 : 1;

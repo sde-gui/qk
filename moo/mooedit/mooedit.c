@@ -2007,7 +2007,7 @@ test_suite_init (G_GNUC_UNUSED gpointer data)
         return FALSE;
     }
 
-    moo_editor_create_instance ();
+    moo_editor_create_instance (FALSE);
     return TRUE;
 }
 
