@@ -41,6 +41,7 @@ struct MdHistoryMgrPrivate {
 
     GQueue *files;
     GHashTable *hash;
+    guint loaded : 1;
 };
 
 typedef struct {
@@ -152,6 +153,10 @@ md_history_mgr_init (MdHistoryMgr *mgr)
     mgr->priv = G_TYPE_INSTANCE_GET_PRIVATE (mgr, MD_TYPE_HISTORY_MGR, MdHistoryMgrPrivate);
     mgr->priv->filename = NULL;
     mgr->priv->basename = NULL;
+    mgr->priv->files = g_queue_new ();
+    mgr->priv->hash = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                             g_free, NULL);
+    mgr->priv->loaded = FALSE;
 }
 
 static GObject *
@@ -464,9 +469,7 @@ load_file (MdHistoryMgr *mgr)
     const char *version;
     GError *error = NULL;
 
-    mgr->priv->files = g_queue_new ();
-    mgr->priv->hash = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                             g_free, NULL);
+    mgr->priv->loaded = TRUE;
 
     filename = get_filename (mgr);
     g_return_if_fail (filename != NULL);
@@ -571,7 +574,7 @@ parse_update_item (MooMarkupDoc   *xml,
 static void
 ensure_files (MdHistoryMgr *mgr)
 {
-    if (!mgr->priv->files)
+    if (!mgr->priv->loaded)
         load_file (mgr);
 }
 
@@ -710,6 +713,8 @@ md_history_mgr_add_file_real (MdHistoryMgr  *mgr,
     g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
     g_return_if_fail (item != NULL);
 
+    ensure_files (mgr);
+
     uri = md_history_item_get_uri (item);
     link = g_hash_table_lookup (mgr->priv->hash, uri);
 
@@ -767,6 +772,8 @@ md_history_mgr_update_file_real (MdHistoryMgr  *mgr,
     g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
     g_return_if_fail (file != NULL);
 
+    ensure_files (mgr);
+
     uri = md_history_item_get_uri (file);
     link = g_hash_table_lookup (mgr->priv->hash, uri);
 
@@ -805,6 +812,8 @@ md_history_mgr_find_uri (MdHistoryMgr *mgr,
     g_return_val_if_fail (MD_IS_HISTORY_MGR (mgr), NULL);
     g_return_val_if_fail (uri != NULL, NULL);
 
+    ensure_files (mgr);
+
     link = g_hash_table_lookup (mgr->priv->hash, uri);
 
     return link ? link->data : NULL;
@@ -819,6 +828,8 @@ md_history_mgr_remove_uri_real (MdHistoryMgr *mgr,
 
     g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
     g_return_if_fail (uri != NULL);
+
+    ensure_files (mgr);
 
     link = g_hash_table_lookup (mgr->priv->hash, uri);
 
