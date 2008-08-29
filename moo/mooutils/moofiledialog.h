@@ -65,9 +65,9 @@ void            moo_file_dialog_set_filter_mgr_id       (MooFileDialog  *dialog,
                                                          const char     *id);
 
 gboolean        moo_file_dialog_run                     (MooFileDialog  *dialog);
-const char     *moo_file_dialog_get_filename            (MooFileDialog  *dialog);
+char           *moo_file_dialog_get_filename            (MooFileDialog  *dialog);
 char          **moo_file_dialog_get_filenames           (MooFileDialog  *dialog);
-const char     *moo_file_dialog_get_uri                 (MooFileDialog  *dialog);
+char           *moo_file_dialog_get_uri                 (MooFileDialog  *dialog);
 char          **moo_file_dialog_get_uris                (MooFileDialog  *dialog);
 
 void            moo_file_dialog_set_current_folder_uri  (MooFileDialog  *dialog,

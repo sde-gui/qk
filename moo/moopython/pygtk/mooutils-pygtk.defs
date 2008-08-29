@@ -2362,7 +2362,7 @@
 (define-method get_filename
   (of-object "MooFileDialog")
   (c-name "moo_file_dialog_get_filename")
-  (return-type "const-char*")
+  (return-type "char*")
 )
 
 (define-method get_filenames
@@ -2374,7 +2374,7 @@
 (define-method get_uri
   (of-object "MooFileDialog")
   (c-name "moo_file_dialog_get_uri")
-  (return-type "const-char*")
+  (return-type "char*")
 )
 
 (define-method get_uris

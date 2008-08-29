@@ -97,7 +97,7 @@ _moo_edit_save_as_dialog (MooEdit    *edit,
                           const char *display_basename)
 {
     const char *start = NULL;
-    const char *filename = NULL;
+    char *filename = NULL;
     char *freeme = NULL;
     const char *encoding;
     char *new_start;
@@ -146,6 +146,7 @@ _moo_edit_save_as_dialog (MooEdit    *edit,
     moo_prefs_set_filename (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), new_start);
     g_free (new_start);
 
+    g_free (filename);
     g_object_unref (dialog);
     g_free (freeme);
     return file_info;

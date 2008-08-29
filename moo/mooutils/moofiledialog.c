@@ -333,7 +333,7 @@ moo_file_dialog (GtkWidget  *parent,
     moo_file_dialog_run (dialog);
 
     g_free (filename);
-    filename = g_strdup (moo_file_dialog_get_filename (dialog));
+    filename = moo_file_dialog_get_filename (dialog);
 
     g_object_unref (dialog);
     return filename;
@@ -718,7 +718,7 @@ moo_file_dialog_set_extra_widget (MooFileDialog *dialog,
 }
 
 
-const char *
+char *
 moo_file_dialog_get_filename (MooFileDialog *dialog)
 {
     g_return_val_if_fail (MOO_IS_FILE_DIALOG (dialog), NULL);
@@ -726,11 +726,11 @@ moo_file_dialog_get_filename (MooFileDialog *dialog)
         g_filename_from_uri (dialog->priv->uri, NULL, NULL) : NULL;
 }
 
-const char *
+char *
 moo_file_dialog_get_uri (MooFileDialog *dialog)
 {
     g_return_val_if_fail (MOO_IS_FILE_DIALOG (dialog), NULL);
-    return dialog->priv->uri;
+    return g_strdup (dialog->priv->uri);
 }
 
 char **
