@@ -1,5 +1,6 @@
 from mprj.config._xml import XML, XMLGroup, XMLItem
 import moo
+import os
 
 class Session(object):
     def __init__(self, data=None):
@@ -20,11 +21,12 @@ class Session(object):
 
     def attach(self, window):
         editor = moo.edit.editor_instance()
-        saved_silent = editor.get_property("silent")
-        editor.set_property("silent", True)
+#         saved_silent = editor.get_property("silent")
+#         editor.set_property("silent", True)
         for doc in self.__docs:
-            editor.open_file(window, None, doc)
-        editor.set_property("silent", saved_silent)
+            if os.path.exists(doc):
+                editor.open_file(window, None, doc)
+#         editor.set_property("silent", saved_silent)
         if self.__active is not None:
             doc = window.get_nth_doc(self.__active)
             if doc:
