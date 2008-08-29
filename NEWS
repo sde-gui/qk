@@ -1,5 +1,36 @@
 2008-02-10  Yevgen Muntyan  <muntyan@math.tamu.edu>
 
+    * === Released 0.9.4 ===
+
+    Corrected a brain dead logic error which led to data loss:
+    medit did not report a proper error when it could not convert
+    content to requested encoding (e.g. when trying to save text
+    with accented characters in ASCII). Thanks to LoneFox.
+
+    Updated and corrected documentation.
+    Fixed recent files menu where underscore in filenames showed
+    up as mnemonics underline.
+    Added recent files dialog.
+    Fixed saving session on logout.
+    Made open-dialog-follows-doc option apply to Save As too.
+    Much improved Mac OS X port (which requires much improved Mac OS X
+    Gtk port from SVN).
+    Once again fixed document tab icon appearance.
+    Made tilde expansion work in Find in Files dialog.
+    Fixed bug in Preferences dialog caused by a buggy Ubuntu Gtk patch.
+    Worked around freezing when editing a document with very long lines.
+    Added Open With Default Application to file selector menu.
+    Made ctags plugin not try to run ctags on a non-existent file.
+    User data files on windows are now stored in <User>/Application Data
+    instead of the home folder, medit will move old files on startup.
+    Fixed win32 bug with saving session file.
+    Lot of lang files were improved.
+
+    Added Dutch translation by Kris Van Bruwaene.
+    Updated German translation by Christian Dywan.
+
+2008-02-10  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
     * === Released 0.9.3 ===
 
     Fixed double-click glitch in the file selector.
