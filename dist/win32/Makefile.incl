@@ -42,7 +42,8 @@ win-distdir:
 	for sd in bin etc lib share/mime; do \
 	  mkdir -p $(win_distdir)/$$sd; \
 	done
-	cp -R $(srcdir)/COPYING.GPL $(win_distdir)/COPYING
+	cp $(srcdir)/COPYING.GPL $(win_distdir)/COPYING
+	cp $(srcdir)/README $(srcdir)/NEWS $(win_distdir)/
 	cp -R $(win_tmp_instdir)$(bindir)/* $(win_distdir)/bin/
 	cp -R $(win_tmp_instdir)$(libdir)/* $(win_distdir)/lib/
 	cp -R $(win_tmp_instdir)$(datadir)/doc $(win_distdir)/share/
