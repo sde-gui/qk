@@ -311,6 +311,8 @@ _moo_rename_file (const char *path,
                   const char *new_path,
                   GError    **error)
 {
+    // Do not break this for directories!
+
     g_return_val_if_fail (path != NULL, FALSE);
     g_return_val_if_fail (new_path != NULL, FALSE);
 
@@ -1588,7 +1590,7 @@ moo_local_file_writer_new (const char  *filename,
         goto out;
     }
 
-    temp_filename = g_strdup_printf ("%s/.cfg-tmp-XXXXXX", dirname);
+    temp_filename = g_strdup_printf ("%s" G_DIR_SEPARATOR_S ".cfg-tmp-XXXXXX", dirname);
     errno = 0;
     fd = g_mkstemp (temp_filename);
 
@@ -1751,6 +1753,9 @@ moo_local_file_writer_close (MooFileWriter *fwriter,
             g_free (bak_file);
         }
 
+#ifdef __WIN32__
+        _moo_unlink (writer->filename);
+#endif
         _moo_rename_file (writer->temp_filename,
                           writer->filename,
                           &writer->error);
@@ -1969,6 +1974,7 @@ test_moo_file_writer (void)
         TEST_ASSERT (g_file_test (bak_filename, G_FILE_TEST_EXISTS));
         TEST_ASSERT (check_file_contents (filename, "First line" LE "Second line #2" LE "Third" LE));
         TEST_ASSERT (check_file_contents (bak_filename, "first line" LE "second line #2" LE "third" LE));
+        TEST_ASSERT (!same_content (bak_filename, filename));
     }
 
     TEST_ASSERT (_moo_remove_dir (my_dir, TRUE, NULL));
