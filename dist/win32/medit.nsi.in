@@ -27,7 +27,6 @@
 !insertmacro MUI_PAGE_DIRECTORY
 ; Start menu page
 var ICONS_GROUP
-!define MUI_STARTMENUPAGE_NODISABLE
 !define MUI_STARTMENUPAGE_DEFAULTFOLDER "medit"
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT "${PRODUCT_UNINST_ROOT_KEY}"
 !define MUI_STARTMENUPAGE_REGISTRY_KEY "${PRODUCT_UNINST_KEY}"
@@ -37,6 +36,7 @@ var ICONS_GROUP
 !insertmacro MUI_PAGE_INSTFILES
 ; Finish page
 !define MUI_FINISHPAGE_RUN "$INSTDIR\bin\medit.exe"
+!define MUI_FINISHPAGE_RUN_NOTCHECKED
 !insertmacro MUI_PAGE_FINISH
 
 ; Uninstaller pages
@@ -65,6 +65,7 @@ Section "medit" SEC01
   CreateDirectory "$SMPROGRAMS\$ICONS_GROUP"
   CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\medit.lnk" "$INSTDIR\bin\medit.exe"
   CreateShortCut "$INSTDIR\medit.lnk" "$INSTDIR\bin\medit.exe"
+  CreateShortCut "$INSTDIR\medit-debug.lnk" "$INSTDIR\bin\medit.exe" "--debug=all --log-file=log.txt"
 
   ; CreateShortCut "$DESKTOP\medit.lnk" "$INSTDIR\bin\medit.exe"
   ; CreateShortCut "$QUICKLAUNCH\medit.lnk" "$INSTDIR\bin\medit.exe"
@@ -110,6 +111,7 @@ Section Uninstall
  ; Delete "$INSTDIR\${PRODUCT_NAME}.url"
  Delete "$INSTDIR\uninst.exe"
  Delete "$INSTDIR\medit.lnk"
+ Delete "$INSTDIR\medit-debug.lnk"
 
  !include "@UNINSTALLER_FILE_LIST@"
  ; Delete "$INSTDIR\medit.exe"

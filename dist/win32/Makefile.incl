@@ -16,8 +16,9 @@ ALT_WIN_INSTALL = false
 WIN_CLEAN_FILES = $(zip_files) $(installer) $(nsi_files) dist/win32/medit.nsi
 WIN_CLEAN_DIRS = $(win_distdir) $(win_tmp_instdir)
 
-GTK_BIN = BIN/gtk
-PYTHON_BIN = BIN/python
+WIN_BIN_ROOT = BIN
+WIN_BIN_COMPS = grep gtk xml
+WIN_PYTHON_BIN_COMPS = python
 
 zip_files = $(zip) $(zip_dir)
 zip_dir = $(WIN_DISTDIR)
@@ -29,7 +30,7 @@ win_distdir = medit-$(WIN_CONFIG)
 win_tmp_instdir = win-tmp-instdir
 
 win-tmp-instdir-tgt:
-	if ! $(WIN_TEST) && [ $(WIN_INSTALL) != $(ALT_WIN_INSTALL) -o ! -d $(win_tmp_instdir) ]; then \
+	if [ ! -d $(win_tmp_instdir) ] || (! $(WIN_TEST) && [ $(WIN_INSTALL) != $(ALT_WIN_INSTALL) ]); then \
 	  rm -fr $(win_tmp_instdir); \
 	  make install-strip DESTDIR=`pwd`/$(win_tmp_instdir); \
 	  find $(win_tmp_instdir) -name '*.dll.a' -o -name '*.la' | xargs rm; \
@@ -50,16 +51,22 @@ win-distdir:
 	cp $(mime_dir)/packages/freedesktop.org.xml $(win_tmp_instdir)$(datadir)/mime/packages/
 	update-mime-database $(win_tmp_instdir)$(datadir)/mime/
 	cp $(win_tmp_instdir)$(datadir)/mime/*.cache $(win_distdir)/share/mime/
-	abs_gtk_dir=`cd $(GTK_BIN) && pwd`; \
-	for sd in bin etc lib share; do \
-	  ln -s $$abs_gtk_dir/$$sd/* $(win_distdir)/$$sd; \
-	done
-	if [ $(WIN_CONFIG) = $(ALT_WIN_CONFIG) ]; then \
-	  abs_python_dir=`cd $(PYTHON_BIN) && pwd`; \
-	  for sd in bin share; do \
-	    ln -s $$abs_python_dir/$$sd/* $(win_distdir)/$$sd; \
-	  done; \
-	fi
+	(abs_win_distdir=`cd $(win_distdir) && pwd`; \
+	 cd $(WIN_BIN_ROOT) || exit 1; \
+	 abs_dist_bin_dir=`pwd`; \
+	 comps="$(WIN_BIN_COMPS)"; \
+	 if [ $(WIN_CONFIG) = $(ALT_WIN_CONFIG) ]; then \
+	   comps="$$comps $(WIN_PYTHON_BIN_COMPS)"; \
+	 fi; \
+	 for sd in $$comps; do \
+	   (cd $$sd || exit 1; \
+	    for ssd in `ls`; do \
+	      echo ln -s $$abs_dist_bin_dir/$$sd/$$ssd/* $$abs_win_distdir/$$ssd/; \
+	      ln -s $$abs_dist_bin_dir/$$sd/$$ssd/* $$abs_win_distdir/$$ssd/ || exit 1; \
+	    done; \
+	   ) || exit 1; \
+	 done; \
+	)
 
 win-clean:
 	rm -fr $(WIN_CLEAN_DIRS)
