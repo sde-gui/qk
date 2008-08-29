@@ -2490,6 +2490,13 @@ moo_text_view_draw_trailing_spaces (GtkTextView       *text_view,
                                     const GtkTextIter *end)
 {
     GtkTextIter iter = *start;
+    GtkTextIter cursor;
+    int cursor_line;
+    int line;
+
+    line = gtk_text_iter_get_line (&iter);
+    moo_text_view_get_cursor (MOO_TEXT_VIEW (text_view), &cursor);
+    cursor_line = gtk_text_iter_get_line (&cursor);
 
     do
     {
@@ -2499,6 +2506,10 @@ moo_text_view_draw_trailing_spaces (GtkTextView       *text_view,
         while (!gtk_text_iter_starts_line (&iter))
         {
             gunichar c;
+
+            if (line == cursor_line && gtk_text_iter_compare (&iter, &cursor) <= 0)
+                break;
+
             gtk_text_iter_backward_char (&iter);
             c = gtk_text_iter_get_char (&iter);
 
@@ -2509,6 +2520,7 @@ moo_text_view_draw_trailing_spaces (GtkTextView       *text_view,
         }
 
         gtk_text_iter_forward_line (&iter);
+        line += 1;
     }
     while (gtk_text_iter_compare (&iter, end) < 0);
 }
