@@ -369,6 +369,14 @@ main (int argc, char *argv[])
     gdk_threads_init ();
     gdk_threads_enter ();
 
+    if (medit_opts.log_file || medit_opts.log_window)
+    {
+        if (medit_opts.log_file)
+            moo_set_log_func_file (medit_opts.log_file);
+        else
+            moo_set_log_func_window (TRUE);
+    }
+
     app = MOO_APP (g_object_new (medit_app_get_type (),
                                  "run-input", run_input,
                                  "use-session", medit_opts.use_session,
@@ -380,14 +388,6 @@ main (int argc, char *argv[])
         gdk_notify_startup_complete ();
         g_object_unref (app);
         exit (EXIT_FAILURE);
-    }
-
-    if (medit_opts.log_file || medit_opts.log_window)
-    {
-        if (medit_opts.log_file)
-            moo_set_log_func_file (medit_opts.log_file);
-        else
-            moo_set_log_func_window (TRUE);
     }
 
     if (medit_opts.project_mode)
