@@ -526,10 +526,6 @@ run_sync (const char  *base_cmd_line,
     char **real_env;
     char *cmd_line;
 
-#ifdef __WIN32__
-    flags |= G_SPAWN_WIN32_HIDDEN_CONSOLE;
-#endif
-
     g_return_val_if_fail (base_cmd_line != NULL, FALSE);
 
     cmd_line = make_cmd (base_cmd_line, input);
@@ -601,8 +597,7 @@ static gboolean
 run_async (const char     *cmd_line,
            const char     *working_dir,
            char          **envp,
-           MooEditWindow  *window,
-           G_GNUC_UNUSED gboolean want_console)
+           MooEditWindow  *window)
 {
     GError *error = NULL;
     gboolean result = FALSE;
@@ -613,11 +608,6 @@ run_async (const char     *cmd_line,
 
     if (!cmd_line)
         return FALSE;
-
-#ifdef __WIN32__
-    if (!want_console)
-        flags |= G_SPAWN_WIN32_HIDDEN_CONSOLE;
-#endif
 
     if (window && gtk_widget_has_screen (GTK_WIDGET (window)))
         screen = gtk_widget_get_screen (GTK_WIDGET (window));
@@ -662,7 +652,7 @@ _moo_edit_run_async (const char     *cmd_line,
     if (!working_dir || !working_dir[0])
         working_dir = freeme = get_working_dir_for_doc (window, doc);
 
-    run_async (cmd_line, working_dir, envp, window, FALSE);
+    run_async (cmd_line, working_dir, envp, window);
 
     g_free (freeme);
 }
@@ -671,8 +661,7 @@ static gboolean
 run_command_async (MooCommandExe     *cmd,
                    MooCommandContext *ctx,
                    const char        *working_dir,
-                   char             **envp,
-                   gboolean           want_console)
+                   char             **envp)
 {
     gboolean result;
     char *cmd_line;
@@ -684,7 +673,7 @@ run_command_async (MooCommandExe     *cmd,
         return FALSE;
 
     window = moo_command_context_get_window (ctx);
-    result = run_async (cmd_line, working_dir, envp, window, want_console);
+    result = run_async (cmd_line, working_dir, envp, window);
 
     g_free (cmd_line);
     return result;
@@ -712,11 +701,11 @@ moo_command_exe_run (MooCommand        *cmd_base,
             run_command (cmd, ctx, working_dir, envp, NULL, FALSE);
             goto out;
         case MOO_COMMAND_EXE_OUTPUT_NONE_ASYNC:
-            run_command_async (cmd, ctx, working_dir, envp, FALSE);
+            run_command_async (cmd, ctx, working_dir, envp);
             goto out;
 #ifdef __WIN32__
         case MOO_COMMAND_EXE_OUTPUT_CONSOLE:
-            run_command_async (cmd, ctx, working_dir, envp, TRUE);
+            run_command_async (cmd, ctx, working_dir, envp);
             goto out;
 #endif
         default:

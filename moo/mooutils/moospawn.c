@@ -520,10 +520,6 @@ moo_cmd_run_command (MooCmd     *cmd,
     g_return_val_if_fail (!cmd->priv->running, FALSE);
 
 #ifdef __WIN32__
-#define G_SPAWN_WIN32_HIDDEN_CONSOLE (1 << 7)
-    if (!(cmd_flags & MOO_CMD_OPEN_CONSOLE))
-        flags |= G_SPAWN_WIN32_HIDDEN_CONSOLE;
-
     if (cmd_flags & MOO_CMD_OPEN_CONSOLE)
     {
         outp = NULL;
