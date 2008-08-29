@@ -1527,6 +1527,25 @@ moo_app_create_prefs_dialog (MooApp *app)
 }
 
 
+static void
+try_move_user_data_dir (const char *old_dir,
+                        const char *new_dir)
+{
+    if (!g_file_test (new_dir, G_FILE_TEST_EXISTS) &&
+        g_file_test (old_dir, G_FILE_TEST_EXISTS))
+    {
+        GError *error = NULL;
+
+        g_message ("Moving directory '%s' to '%s'", old_dir, new_dir);
+
+        if (!_moo_rename_file (old_dir, new_dir, &error))
+        {
+            g_critical ("%s: %s", G_STRLOC, error->message);
+            _moo_set_user_data_dir (old_dir);
+        }
+    }
+}
+
 #ifndef __WIN32__
 static void
 move_rc_files (MooApp *app)
@@ -1541,12 +1560,7 @@ move_rc_files (MooApp *app)
 
     /* do not be too clever here, there are way too many possible errors */
 
-    if (!g_file_test (new_dir, G_FILE_TEST_EXISTS) &&
-        g_file_test (old_dir, G_FILE_TEST_EXISTS) &&
-        _moo_rename (old_dir, new_dir) != 0)
-    {
-        _moo_set_user_data_dir (old_dir);
-    }
+    try_move_user_data_dir (old_dir, new_dir);
 
     {
         char *new_file;
@@ -1611,6 +1625,17 @@ move_rc_files (MooApp *app)
 }
 #endif
 
+#ifdef __WIN32__
+static void
+move_user_data_dir (void)
+{
+    char *old_dir = g_build_filename (g_get_home_dir (), g_get_prgname (), NULL);
+    char *new_dir = moo_get_user_data_dir ();
+    try_move_user_data_dir (old_dir, new_dir);
+    g_free (new_dir);
+    g_free (old_dir);
+}
+#endif
 
 static char **
 get_rc_files (void)
@@ -1650,9 +1675,13 @@ moo_app_load_prefs (MooApp *app)
     move_rc_files (app);
 #else
     app->priv->rc_files[MOO_PREFS_RC] =
-        g_strdup_printf ("%s/" TMPL_RC_FILE, g_get_user_config_dir (), g_get_prgname ());
+        g_strdup_printf ("%s\\" TMPL_RC_FILE, g_get_user_config_dir (), g_get_prgname ());
     app->priv->rc_files[MOO_PREFS_STATE] =
-        g_strdup_printf ("%s/" TMPL_STATE_FILE, g_get_user_config_dir (), g_get_prgname ());
+        g_strdup_printf ("%s\\" TMPL_STATE_FILE, g_get_user_config_dir (), g_get_prgname ());
+#endif
+
+#ifdef __WIN32__
+    move_user_data_dir ();
 #endif
 
     sys_files = get_rc_files ();

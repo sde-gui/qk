@@ -890,12 +890,12 @@ print_func_file (const char *string)
 
     if (!moo_log_file_written)
     {
-        file = fopen (moo_log_file, "wb+");
+        file = fopen (moo_log_file, "w+");
         moo_log_file_written = TRUE;
     }
     else
     {
-        file = fopen (moo_log_file, "ab+");
+        file = fopen (moo_log_file, "a+");
     }
 
     if (file)
@@ -1272,7 +1272,7 @@ moo_cleanup (void)
 static char *
 moo_get_user_cache_dir (void)
 {
-    return g_strdup_printf ("%s/%s", g_get_user_cache_dir (), moo_get_prgname ());
+    return g_build_filename (g_get_user_cache_dir (), moo_get_prgname (), NULL);
 }
 
 char *
@@ -1283,10 +1283,14 @@ moo_get_user_data_dir (void)
     if (!moo_user_data_dir)
     {
 #ifdef __WIN32__
-        moo_user_data_dir = g_build_filename (g_get_home_dir (), moo_get_prgname (), NULL);
+        const char *basedir = g_get_user_config_dir ();
 #else
-        moo_user_data_dir = g_strdup_printf ("%s/%s", g_get_user_data_dir (), moo_get_prgname ());
+        const char *basedir = g_get_user_data_dir ();
 #endif
+
+        moo_user_data_dir = g_build_filename (basedir,
+                                              moo_get_prgname (),
+                                              NULL);
     }
 
     G_UNLOCK (moo_user_data_dir);
