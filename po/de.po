@@ -283,8 +283,8 @@ msgstr ""
 "ausprobiert werden. 'LOCALE' bedeutet Kodierung der aktuellen Lokalisierung."
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:2
-msgid "Dialogs"
-msgstr "Dialoge"
+msgid "<b>Dialogs</b>"
+msgstr "<b>Dialoge</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:3
 msgid "Enable session support"
@@ -303,8 +303,8 @@ msgid "Ensure trailing newline"
 msgstr "Abschließenden Zeilenumbruch erzwingen"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
-msgid "Loading"
-msgstr "Laden"
+msgid "<b>Loading</b>"
+msgstr "<b>Laden</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
 msgid "Make backups"
@@ -319,20 +319,20 @@ msgid "Remove trailing spaces"
 msgstr "Abschließende Leerzeichen entfernen"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
-msgid "Saving"
-msgstr "Speichern"
+msgid "<b>Saving</b>"
+msgstr "<b>Speichern</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:12
-msgid "Sessions"
-msgstr "Sitzungen"
+msgid "<b>Sessions</b>"
+msgstr "<b>Sitzungen</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:1
 msgid "Backspace key unindents"
 msgstr "Mit Rücktaste Einrückung entfernen"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:2
-msgid "Default language:"
-msgstr "Standardsprache"
+msgid "<b>Default language</b>"
+msgstr "<b>Standardsprache</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:3
 msgid "Do not use tabs for indentation"
@@ -347,13 +347,13 @@ msgid "Indent width, spaces:"
 msgstr "Einzugsweite in Leerzeichen:"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
-msgid "Keyboard"
-msgstr "Tastatur"
+msgid "<b>Keyboard</b>"
+msgstr "<b>Tastatur</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:7
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
-msgid "Misc"
-msgstr "Sonstiges"
+msgid "<b>Misc</b>"
+msgstr "<b>Sonstiges</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
 msgid "Smart Home and End"
@@ -373,12 +373,12 @@ msgid "Extensions:"
 msgstr "Erweiterungen:"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:2
-msgid "File filters"
-msgstr "Dateifilter"
+msgid "<b>File filters</b>"
+msgstr "<b>Dateifilter</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:3
-msgid "Language-specific options"
-msgstr "Sprachspezifische Optionen"
+msgid "<b>Language-specific options</b>"
+msgstr "<b>Sprachspezifische Optionen</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:4
 msgid "Language:"
@@ -416,8 +416,8 @@ msgid "Enable text wrapping"
 msgstr "Zeilenumbrüche aktivieren"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:7
-msgid "Font and colors"
-msgstr "Schrift und Farben"
+msgid "<b>Font and colors</b>"
+msgstr "<b>Schrift und Farben</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:8
 msgid "Font:"
@@ -436,8 +436,8 @@ msgid "Highlight mismatching brackets"
 msgstr "Falsch platzierte Klammern hervorheben"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
-msgid "Highlighting"
-msgstr "Hervorhebung:"
+msgid "<b>Highlighting</b>"
+msgstr "<b>Hervorhebung</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
 msgid "Show line numbers"
@@ -452,8 +452,8 @@ msgid "Show trailing spaces"
 msgstr "Abschließende Leerzeichen anzeigen"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:17
-msgid "Text wrapping"
-msgstr "Textumbruch"
+msgid "<b>Text wrapping</b>"
+msgstr "<b>Textumbruch</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:18
 msgid "Use default theme font"

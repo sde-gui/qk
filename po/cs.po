@@ -285,8 +285,8 @@ msgstr ""
 "nastavení v systému."
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:2
-msgid "Dialogs"
-msgstr "Dialogy"
+msgid "<b>Dialogs</b>"
+msgstr "<b>Dialogy</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:3
 msgid "Enable session support"
@@ -305,8 +305,8 @@ msgid "Ensure trailing newline"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
-msgid "Loading"
-msgstr "Načítání"
+msgid "<b>Loading</b>"
+msgstr "<b>Načítání</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
 msgid "Make backups"
@@ -321,20 +321,20 @@ msgid "Remove trailing spaces"
 msgstr "Odstranit mezery na koncích řádků"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
-msgid "Saving"
-msgstr "Ukládání"
+msgid "<b>Saving</b>"
+msgstr "<b>Ukládání</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:12
-msgid "Sessions"
-msgstr "Sezení"
+msgid "<b>Sessions</b>"
+msgstr "<b>Sezení</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:1
 msgid "Backspace key unindents"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:2
-msgid "Default language:"
-msgstr "Přednastavený jazyk:"
+msgid "<b>Default language</b>"
+msgstr "<b>Přednastavený jazyk</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:3
 msgid "Do not use tabs for indentation"
@@ -345,17 +345,17 @@ msgid "Enable auto indentation"
 msgstr "Povolit automatické odsazování"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:5
-msgid "Indent width, spaces:"
-msgstr "Šířka odsazení v mezerách:"
+msgid "Indent width:"
+msgstr "Šířka odsazení:"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
-msgid "Keyboard"
-msgstr "Klávesnice"
+msgid "<b>Keyboard</b>"
+msgstr "<b>Klávesnice</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:7
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
-msgid "Misc"
-msgstr "Různé"
+msgid "<b>Misc</b>"
+msgstr "<b>Různé</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
 msgid "Smart Home and End"
@@ -375,12 +375,12 @@ msgid "Extensions:"
 msgstr "Přípony:"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:2
-msgid "File filters"
-msgstr "Filtry souborů"
+msgid "<b>File filters</b>"
+msgstr "<b>Filtry souborů</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:3
-msgid "Language-specific options"
-msgstr "Nastavení jazyků"
+msgid "<b>Language-specific options</b>"
+msgstr "<b>Nastavení jazyků</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:4
 msgid "Language:"
@@ -418,8 +418,8 @@ msgid "Enable text wrapping"
 msgstr "Povolit zalamování textu"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:7
-msgid "Font and colors"
-msgstr "Písmo a barvy"
+msgid "<b>Font and colors</b>"
+msgstr "<b>Písmo a barvy</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:8
 msgid "Font:"
@@ -438,8 +438,8 @@ msgid "Highlight mismatching brackets"
 msgstr "Zvýrazňovat chybné závorky"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
-msgid "Highlighting"
-msgstr "Zvýrazňování"
+msgid "<b>Highlighting</b>"
+msgstr "<b>Zvýrazňování</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
 msgid "Show line numbers"
@@ -454,8 +454,8 @@ msgid "Show trailing spaces"
 msgstr "Zobrazit mezery na koncích řádků"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:17
-msgid "Text wrapping"
-msgstr "Zalamování textu"
+msgid "<b>Text wrapping</b>"
+msgstr "<b>Zalamování textu</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:18
 msgid "Use default theme font"

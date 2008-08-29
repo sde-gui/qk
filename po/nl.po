@@ -283,8 +283,8 @@ msgstr ""
 "geprobeerd worden. 'LOCALE' is de codering van de huidige lokalisering."
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:2
-msgid "Dialogs"
-msgstr "Dialogen"
+msgid "<b>Dialogs</b>"
+msgstr "<b>Dialogen</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:3
 msgid "Enable session support"
@@ -303,8 +303,8 @@ msgid "Ensure trailing newline"
 msgstr "Plaats nieuwe regel aan het einde"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
-msgid "Loading"
-msgstr "Laden"
+msgid "<b>Loading</b>"
+msgstr "<b>Laden</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
 msgid "Make backups"
@@ -319,20 +319,20 @@ msgid "Remove trailing spaces"
 msgstr "Spaties aan regeleinde verwijderen"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
-msgid "Saving"
-msgstr "Opslaan"
+msgid "<b>Saving</b>"
+msgstr "<b>Opslaan</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:12
-msgid "Sessions"
-msgstr "Sessies"
+msgid "<b>Sessions</b>"
+msgstr "<b>Sessies</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:1
 msgid "Backspace key unindents"
 msgstr "Backspace ontdoet inspringen"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:2
-msgid "Default language:"
-msgstr "Standaardtaal"
+msgid "<b>Default language</b>"
+msgstr "<b>Standaardtaal</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:3
 msgid "Do not use tabs for indentation"
@@ -343,17 +343,17 @@ msgid "Enable auto indentation"
 msgstr "Activeer automatisch inspringen"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:5
-msgid "Indent width, spaces:"
-msgstr "Inspringbreedte in spaties:"
+msgid "Indent width:"
+msgstr "Inspringbreedte:"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
-msgid "Keyboard"
-msgstr "Toetsenbord"
+msgid "<b>Keyboard</b>"
+msgstr "<b>Toetsenbord</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:7
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
-msgid "Misc"
-msgstr "Varia"
+msgid "<b>Misc</b>"
+msgstr "<b>Varia</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
 msgid "Smart Home and End"
@@ -373,12 +373,12 @@ msgid "Extensions:"
 msgstr "Extensies:"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:2
-msgid "File filters"
-msgstr "Bestandsfilter"
+msgid "<b>File filters</b>"
+msgstr "<b>Bestandsfilter</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:3
-msgid "Language-specific options"
-msgstr "Taalspecifieke opties"
+msgid "<b>Language-specific options</b>"
+msgstr "<b>Taalspecifieke opties</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:4
 msgid "Language:"
@@ -416,8 +416,8 @@ msgid "Enable text wrapping"
 msgstr "Activeer tekstomloop"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:7
-msgid "Font and colors"
-msgstr "Lettertypen en kleuren"
+msgid "<b>Font and colors</b>"
+msgstr "<b>Lettertypen en kleuren</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:8
 msgid "Font:"
@@ -436,8 +436,8 @@ msgid "Highlight mismatching brackets"
 msgstr "Fout geplaatste haakjes aanduiden"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
-msgid "Highlighting"
-msgstr "Aanduiding"
+msgid "<b>Highlighting</b>"
+msgstr "<b>Aanduiding</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
 msgid "Show line numbers"
@@ -452,8 +452,8 @@ msgid "Show trailing spaces"
 msgstr "Toon afsluitende spaties"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:17
-msgid "Text wrapping"
-msgstr "Tekstomloop"
+msgid "<b>Text wrapping</b>"
+msgstr "<b>Tekstomloop</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:18
 msgid "Use default theme font"

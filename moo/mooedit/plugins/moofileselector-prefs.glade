@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--*- mode: xml -*-->
+<?xml version="1.0"?>
 <glade-interface>
   <widget class="GtkWindow" id="window1">
     <property name="visible">True</property>
@@ -14,12 +12,16 @@
             <child>
               <widget class="GtkHPaned" id="hpaned1">
                 <property name="visible">True</property>
+                <property name="border_width">6</property>
                 <child>
                   <widget class="GtkVBox" id="vbox2">
                     <property name="visible">True</property>
+                    <property name="border_width">6</property>
+                    <property name="spacing">6</property>
                     <child>
                       <widget class="GtkScrolledWindow" id="scrolledwindow1">
                         <property name="visible">True</property>
+                        <property name="can_focus">False</property>
                         <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                         <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                         <property name="shadow_type">GTK_SHADOW_IN</property>
@@ -36,11 +38,13 @@
                       <widget class="GtkHBox" id="hbox2">
                         <property name="visible">True</property>
                         <property name="border_width">3</property>
+                        <property name="spacing">6</property>
                         <child>
                           <widget class="GtkButton" id="new">
                             <property name="visible">True</property>
-                            <property name="focus_on_click">False</property>
                             <property name="tooltip" translatable="yes">New</property>
+                            <property name="focus_on_click">False</property>
+                            <property name="response_id">0</property>
                             <child>
                               <widget class="GtkImage" id="image3">
                                 <property name="visible">True</property>
@@ -56,8 +60,9 @@
                         <child>
                           <widget class="GtkButton" id="delete">
                             <property name="visible">True</property>
-                            <property name="focus_on_click">False</property>
                             <property name="tooltip" translatable="yes">Delete</property>
+                            <property name="focus_on_click">False</property>
+                            <property name="response_id">0</property>
                             <child>
                               <widget class="GtkImage" id="image4">
                                 <property name="visible">True</property>
@@ -75,8 +80,9 @@
                         <child>
                           <widget class="GtkButton" id="up">
                             <property name="visible">True</property>
-                            <property name="focus_on_click">False</property>
                             <property name="tooltip" translatable="yes">Move up</property>
+                            <property name="focus_on_click">False</property>
+                            <property name="response_id">0</property>
                             <child>
                               <widget class="GtkImage" id="image1">
                                 <property name="visible">True</property>
@@ -94,8 +100,9 @@
                         <child>
                           <widget class="GtkButton" id="down">
                             <property name="visible">True</property>
-                            <property name="focus_on_click">False</property>
                             <property name="tooltip" translatable="yes">Move down</property>
+                            <property name="focus_on_click">False</property>
+                            <property name="response_id">0</property>
                             <child>
                               <widget class="GtkImage" id="image2">
                                 <property name="visible">True</property>
@@ -126,97 +133,29 @@
                 <child>
                   <widget class="GtkVBox" id="vbox3">
                     <property name="visible">True</property>
+                    <property name="border_width">6</property>
                     <child>
                       <widget class="GtkTable" id="table">
                         <property name="visible">True</property>
                         <property name="n_rows">4</property>
                         <property name="n_columns">2</property>
+                        <property name="column_spacing">6</property>
+                        <property name="row_spacing">6</property>
                         <child>
-                          <widget class="GtkEntry" id="mimetypes">
+                          <widget class="GtkEventBox" id="eventbox4">
                             <property name="visible">True</property>
-                            <property name="activates_default">True</property>
                             <property name="tooltip" translatable="yes">Semicolon-separated list of mime types, e.g. 'text/*;application/x-glade'</property>
+                            <child>
+                              <widget class="GtkLabel" id="label6">
+                                <property name="visible">True</property>
+                                <property name="xalign">1</property>
+                                <property name="label" translatable="yes">Mime types:</property>
+                              </widget>
+                            </child>
                           </widget>
                           <packing>
-                            <property name="left_attach">1</property>
-                            <property name="right_attach">2</property>
                             <property name="top_attach">3</property>
                             <property name="bottom_attach">4</property>
-                            <property name="y_options"></property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkEntry" id="extensions">
-                            <property name="visible">True</property>
-                            <property name="activates_default">True</property>
-                            <property name="tooltip" translatable="yes">Semicolon-separated list of file globs, e.g. '*.txt;foo.*;*bar*'</property>
-                          </widget>
-                          <packing>
-                            <property name="left_attach">1</property>
-                            <property name="right_attach">2</property>
-                            <property name="top_attach">2</property>
-                            <property name="bottom_attach">3</property>
-                            <property name="y_options"></property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkEntry" id="command">
-                            <property name="visible">True</property>
-                            <property name="activates_default">True</property>
-                            <property name="tooltip" translatable="yes">Shell command to open the file: '%f' is replaced with file path, e.g. 'foobar %f'</property>
-                          </widget>
-                          <packing>
-                            <property name="left_attach">1</property>
-                            <property name="right_attach">2</property>
-                            <property name="top_attach">1</property>
-                            <property name="bottom_attach">2</property>
-                            <property name="y_options"></property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkEntry" id="label">
-                            <property name="visible">True</property>
-                            <property name="activates_default">True</property>
-                            <property name="tooltip" translatable="yes">Menu item label</property>
-                          </widget>
-                          <packing>
-                            <property name="left_attach">1</property>
-                            <property name="right_attach">2</property>
-                            <property name="y_options"></property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkEventBox" id="eventbox1">
-                            <property name="visible">True</property>
-                            <property name="tooltip" translatable="yes">Menu item label</property>
-                            <child>
-                              <widget class="GtkLabel" id="label4">
-                                <property name="visible">True</property>
-                                <property name="xalign">1</property>
-                                <property name="label" translatable="yes">Name:</property>
-                              </widget>
-                            </child>
-                          </widget>
-                          <packing>
-                            <property name="x_options">GTK_FILL</property>
-                            <property name="y_options"></property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkEventBox" id="eventbox2">
-                            <property name="visible">True</property>
-                            <property name="tooltip" translatable="yes">Shell command to open the file: '%f' is replaced with file path, e.g. 'foobar %f'</property>
-                            <child>
-                              <widget class="GtkLabel" id="label2">
-                                <property name="visible">True</property>
-                                <property name="xalign">1</property>
-                                <property name="label" translatable="yes">Command:</property>
-                              </widget>
-                            </child>
-                          </widget>
-                          <packing>
-                            <property name="top_attach">1</property>
-                            <property name="bottom_attach">2</property>
                             <property name="x_options">GTK_FILL</property>
                             <property name="y_options"></property>
                           </packing>
@@ -241,21 +180,92 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkEventBox" id="eventbox4">
+                          <widget class="GtkEventBox" id="eventbox2">
                             <property name="visible">True</property>
-                            <property name="tooltip" translatable="yes">Semicolon-separated list of mime types, e.g. 'text/*;application/x-glade'</property>
+                            <property name="tooltip" translatable="yes">Shell command to open the file: '%f' is replaced with file path, e.g. 'foobar %f'</property>
                             <child>
-                              <widget class="GtkLabel" id="label6">
+                              <widget class="GtkLabel" id="label2">
                                 <property name="visible">True</property>
                                 <property name="xalign">1</property>
-                                <property name="label" translatable="yes">Mime types:</property>
+                                <property name="label" translatable="yes">Command:</property>
                               </widget>
                             </child>
                           </widget>
                           <packing>
+                            <property name="top_attach">1</property>
+                            <property name="bottom_attach">2</property>
+                            <property name="x_options">GTK_FILL</property>
+                            <property name="y_options"></property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkEventBox" id="eventbox1">
+                            <property name="visible">True</property>
+                            <property name="tooltip" translatable="yes">Menu item label</property>
+                            <child>
+                              <widget class="GtkLabel" id="label4">
+                                <property name="visible">True</property>
+                                <property name="xalign">1</property>
+                                <property name="label" translatable="yes">Name:</property>
+                              </widget>
+                            </child>
+                          </widget>
+                          <packing>
+                            <property name="x_options">GTK_FILL</property>
+                            <property name="y_options"></property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkEntry" id="label">
+                            <property name="visible">True</property>
+                            <property name="tooltip" translatable="yes">Menu item label</property>
+                            <property name="activates_default">True</property>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">1</property>
+                            <property name="right_attach">2</property>
+                            <property name="y_options"></property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkEntry" id="command">
+                            <property name="visible">True</property>
+                            <property name="tooltip" translatable="yes">Shell command to open the file: '%f' is replaced with file path, e.g. 'foobar %f'</property>
+                            <property name="activates_default">True</property>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">1</property>
+                            <property name="right_attach">2</property>
+                            <property name="top_attach">1</property>
+                            <property name="bottom_attach">2</property>
+                            <property name="y_options"></property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkEntry" id="extensions">
+                            <property name="visible">True</property>
+                            <property name="tooltip" translatable="yes">Semicolon-separated list of file globs, e.g. '*.txt;foo.*;*bar*'</property>
+                            <property name="activates_default">True</property>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">1</property>
+                            <property name="right_attach">2</property>
+                            <property name="top_attach">2</property>
+                            <property name="bottom_attach">3</property>
+                            <property name="y_options"></property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkEntry" id="mimetypes">
+                            <property name="visible">True</property>
+                            <property name="tooltip" translatable="yes">Semicolon-separated list of mime types, e.g. 'text/*;application/x-glade'</property>
+                            <property name="activates_default">True</property>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">1</property>
+                            <property name="right_attach">2</property>
                             <property name="top_attach">3</property>
                             <property name="bottom_attach">4</property>
-                            <property name="x_options">GTK_FILL</property>
                             <property name="y_options"></property>
                           </packing>
                         </child>
@@ -263,13 +273,11 @@
                     </child>
                   </widget>
                   <packing>
+                    <property name="resize">True</property>
                     <property name="shrink">False</property>
                   </packing>
                 </child>
               </widget>
-              <packing>
-                <property name="tab_expand">False</property>
-              </packing>
             </child>
             <child>
               <widget class="GtkLabel" id="label55">
@@ -277,9 +285,8 @@
                 <property name="label" translatable="yes">Open With</property>
               </widget>
               <packing>
-                <property name="type">tab</property>
-                <property name="tab_expand">False</property>
                 <property name="tab_fill">False</property>
+                <property name="type">tab</property>
               </packing>
             </child>
           </widget>

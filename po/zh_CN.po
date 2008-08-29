@@ -280,8 +280,8 @@ msgid ""
 msgstr "打开文件时尝试使用的编码列表,\"LOCALE\"为本地默认编码"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:2
-msgid "Dialogs"
-msgstr "对话"
+msgid "<b>Dialogs</b>"
+msgstr "<b>对话</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:3
 msgid "Enable session support"
@@ -300,8 +300,8 @@ msgid "Ensure trailing newline"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
-msgid "Loading"
-msgstr "加载中"
+msgid "<b>Loading</b>"
+msgstr "<b>加载中</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
 msgid "Make backups"
@@ -316,20 +316,20 @@ msgid "Remove trailing spaces"
 msgstr "删除行末空格"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
-msgid "Saving"
-msgstr "保存"
+msgid "<b>Saving</b>"
+msgstr "<b>保存</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:12
-msgid "Sessions"
-msgstr "会话"
+msgid "<b>Sessions</b>"
+msgstr "<b>会话</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:1
 msgid "Backspace key unindents"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:2
-msgid "Default language:"
-msgstr "默认代码:"
+msgid "<b>Default language</b>"
+msgstr "<b>默认代码</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:3
 msgid "Do not use tabs for indentation"
@@ -344,13 +344,13 @@ msgid "Indent width, spaces:"
 msgstr "缩进空格数:"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
-msgid "Keyboard"
-msgstr "键盘"
+msgid "<b>Keyboard</b>"
+msgstr "<b>键盘</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:7
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
-msgid "Misc"
-msgstr "其它"
+msgid "<b>Misc</b>"
+msgstr "<b>其它</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
 msgid "Smart Home and End"
@@ -370,12 +370,12 @@ msgid "Extensions:"
 msgstr "扩展:"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:2
-msgid "File filters"
-msgstr "文件类型"
+msgid "<b>File filters</b>"
+msgstr "<b>文件类型</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:3
-msgid "Language-specific options"
-msgstr "代码特定选项"
+msgid "<b>Language-specific options</b>"
+msgstr "<b>代码特定选项</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:4
 msgid "Language:"
@@ -413,8 +413,8 @@ msgid "Enable text wrapping"
 msgstr "启用换行"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:7
-msgid "Font and colors"
-msgstr "字体和颜色"
+msgid "<b>Font and colors</b>"
+msgstr "<b>字体和颜色</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:8
 msgid "Font:"
@@ -433,8 +433,8 @@ msgid "Highlight mismatching brackets"
 msgstr "高亮显示无匹配括号"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
-msgid "Highlighting"
-msgstr "高亮显示"
+msgid "<b>Highlighting</b>"
+msgstr "<b>高亮显示</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
 msgid "Show line numbers"
@@ -449,8 +449,8 @@ msgid "Show trailing spaces"
 msgstr "显示行末空格"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:17
-msgid "Text wrapping"
-msgstr "文本换行"
+msgid "<b>Text wrapping</b>"
+msgstr "<b>文本换行</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:18
 msgid "Use default theme font"

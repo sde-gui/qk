@@ -267,6 +267,22 @@ page_general_init (PrefsPage *page)
 
     lang = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG));
     default_lang_combo_set_lang (default_lang_combo, lang);
+
+    {
+        MooTextStyleScheme *scheme;
+        GtkComboBox *scheme_combo;
+
+        g_object_set (moo_glade_xml_get_widget (page->page->xml, "fontbutton"),
+                      "monospace", TRUE, NULL);
+
+        scheme = moo_lang_mgr_get_active_scheme (page->lang_mgr);
+        g_return_if_fail (scheme != NULL);
+
+        scheme_combo = moo_glade_xml_get_widget (page->page->xml, "color_scheme_combo");
+        scheme_combo_init (scheme_combo);
+
+        scheme_combo_set_scheme (scheme_combo, scheme);
+    }
 }
 
 static void
@@ -276,36 +292,26 @@ page_general_apply (PrefsPage *page)
     lang = page_get_default_lang (page);
     moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG), lang);
     g_free (lang);
+
+    {
+        MooTextStyleScheme *scheme;
+        scheme = page_get_scheme (page);
+        g_return_if_fail (scheme != NULL);
+        moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_COLOR_SCHEME),
+                              moo_text_style_scheme_get_id (scheme));
+        g_object_unref (scheme);
+    }
 }
 
 
 static void
-page_view_init (PrefsPage *page)
+page_view_init (G_GNUC_UNUSED PrefsPage *page)
 {
-    MooTextStyleScheme *scheme;
-    GtkComboBox *scheme_combo;
-
-    g_object_set (moo_glade_xml_get_widget (page->page->xml, "fontbutton"),
-                  "monospace", TRUE, NULL);
-
-    scheme = moo_lang_mgr_get_active_scheme (page->lang_mgr);
-    g_return_if_fail (scheme != NULL);
-
-    scheme_combo = moo_glade_xml_get_widget (page->page->xml, "color_scheme_combo");
-    scheme_combo_init (scheme_combo);
-
-    scheme_combo_set_scheme (scheme_combo, scheme);
 }
 
 static void
-page_view_apply (PrefsPage *page)
+page_view_apply (G_GNUC_UNUSED PrefsPage *page)
 {
-    MooTextStyleScheme *scheme;
-    scheme = page_get_scheme (page);
-    g_return_if_fail (scheme != NULL);
-    moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_COLOR_SCHEME),
-                          moo_text_style_scheme_get_id (scheme));
-    g_object_unref (scheme);
 }
 
 

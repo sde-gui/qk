@@ -285,8 +285,8 @@ msgstr ""
 "означает использовать кодировку текущей локали."
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:2
-msgid "Dialogs"
-msgstr ""
+msgid "<b>Dialogs</b>"
+msgstr "<b>Диалоги</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:3
 msgid "Enable session support"
@@ -305,8 +305,8 @@ msgid "Ensure trailing newline"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
-msgid "Loading"
-msgstr "Открытие"
+msgid "<b>Loading</b>"
+msgstr "<b>Открытие</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
 msgid "Make backups"
@@ -321,11 +321,11 @@ msgid "Remove trailing spaces"
 msgstr "Удалять пробелы в конце строки"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
-msgid "Saving"
-msgstr "Сохранение"
+msgid "<b>Saving</b>"
+msgstr "<b>Сохранение</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:12
-msgid "Sessions"
+msgid "<b>Sessions</b>"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:1
@@ -333,8 +333,8 @@ msgid "Backspace key unindents"
 msgstr "Клавиша Backspace удаляет отступ"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:2
-msgid "Default language:"
-msgstr "Язык по умолчанию:"
+msgid "<b>Default language</b>"
+msgstr "<b>Язык по умолчанию</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:3
 msgid "Do not use tabs for indentation"
@@ -345,17 +345,17 @@ msgid "Enable auto indentation"
 msgstr "Включить автоматические отступы"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:5
-msgid "Indent width, spaces:"
-msgstr "Ширина отступа, в пробелах:"
+msgid "Indent width:"
+msgstr "Ширина отступа:"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
-msgid "Keyboard"
-msgstr "Клавиатура"
+msgid "<b>Keyboard</b>"
+msgstr "<b>Клавиатура</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:7
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
-msgid "Misc"
-msgstr "Прочее"
+msgid "<b>Misc</b>"
+msgstr "<b>Прочее</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
 msgid "Smart Home and End"
@@ -366,7 +366,7 @@ msgid "Tab key indents"
 msgstr "Клавиша Tab создаёт отступ"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:10
-msgid "Visual tab width:"
+msgid "Tab width:"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:1
@@ -375,12 +375,12 @@ msgid "Extensions:"
 msgstr "Расширения:"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:2
-msgid "File filters"
-msgstr "Фильтры файлов"
+msgid "<b>File filters</b>"
+msgstr "<b>Фильтры файлов</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:3
-msgid "Language-specific options"
-msgstr "Языковые настройки"
+msgid "<b>Language-specific options</b>"
+msgstr "<b>Языковые настройки</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:4
 msgid "Language:"
@@ -418,8 +418,8 @@ msgid "Enable text wrapping"
 msgstr "Включить перенос текста"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:7
-msgid "Font and colors"
-msgstr "Шрифт и цвета"
+msgid "<b>Font and colors</b>"
+msgstr "<b>Шрифт и цвета</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:8
 msgid "Font:"
@@ -438,8 +438,8 @@ msgid "Highlight mismatching brackets"
 msgstr "Подсвечивать несовпадающие скобки"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
-msgid "Highlighting"
-msgstr "Подсветка"
+msgid "<b>Highlighting</b>"
+msgstr "<b>Подсветка</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
 msgid "Show line numbers"
@@ -454,8 +454,8 @@ msgid "Show trailing spaces"
 msgstr "Отображать пробелы в конце строки"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:17
-msgid "Text wrapping"
-msgstr "Перенос текста"
+msgid "<b>Text wrapping</b>"
+msgstr "<b>Перенос текста</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:18
 msgid "Use default theme font"
