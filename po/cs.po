@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-08-29 04:28-0500\n"
+"POT-Creation-Date: 2008-08-30 13:25-0500\n"
 "PO-Revision-Date: 2007-11-10 22:45+0100\n"
 "Last-Translator: Vlastimil Ott <vlastimil@e-ott.info>\n"
 "Language-Team:  <cs@li.org>\n"
@@ -115,55 +115,50 @@ msgstr "Textový editor"
 msgid "medit"
 msgstr "medit"
 
-#. Credits button label in About dialog
-#: ../moo/mooapp/glade/mooappabout.glade.h:2
-msgid "C_redits"
-msgstr "C_redits"
-
 #. Translators: do not translate the part before |
-#: ../moo/mooapp/glade/mooappabout.glade.h:4
-msgid "Dialog title|About"
-msgstr "O programu"
-
-#. Translators: do not translate the part before |
-#: ../moo/mooapp/glade/mooappabout.glade.h:6
+#: ../moo/mooapp/glade/mooappabout-credits.glade.h:2
 msgid "Dialog title|Credits"
 msgstr "Zásluhy"
 
-#. Translators: do not translate the part before |
-#: ../moo/mooapp/glade/mooappabout.glade.h:8
-msgid "Dialog title|License"
-msgstr "Licence"
-
-#. System Info dialog title, do not translate the part before the |
-#: ../moo/mooapp/glade/mooappabout.glade.h:10
-msgid "Dialog title|System Info"
-msgstr "Systémové informace"
-
 #. Tab label in Credits dialog
-#: ../moo/mooapp/glade/mooappabout.glade.h:12
+#: ../moo/mooapp/glade/mooappabout-credits.glade.h:4
 msgid "Thanks"
 msgstr "Díky"
 
 #. Tab label in Credits dialog
-#: ../moo/mooapp/glade/mooappabout.glade.h:14
+#: ../moo/mooapp/glade/mooappabout-credits.glade.h:6
 msgid "Translated by"
 msgstr "Přeložili"
 
 #. Tab label in Credits dialog
-#: ../moo/mooapp/glade/mooappabout.glade.h:16
+#: ../moo/mooapp/glade/mooappabout-credits.glade.h:8
 msgid "Written by"
 msgstr "Napsal"
 
+#. Credits button label in About dialog
+#: ../moo/mooapp/glade/mooappabout-dialog.glade.h:2
+msgid "C_redits"
+msgstr "C_redits"
+
+#. Translators: do not translate the part before |
+#: ../moo/mooapp/glade/mooappabout-dialog.glade.h:4
+msgid "Dialog title|About"
+msgstr "O programu"
+
 #. License button label in About dialog
-#: ../moo/mooapp/glade/mooappabout.glade.h:18
+#: ../moo/mooapp/glade/mooappabout-dialog.glade.h:6
 msgid "_License"
 msgstr "_License"
+
+#. Translators: do not translate the part before |
+#: ../moo/mooapp/glade/mooappabout-license.glade.h:2
+msgid "Dialog title|License"
+msgstr "Licence"
 
 #. Translators: this goes into About box, under Translated by tab,
 #. do not ignore it, markup isn't always used. It should be something
 #. like "Some Guy <someguy@domain.net>", with lines separated by \n
-#: ../moo/mooapp/mooappabout.c:56
+#: ../moo/mooapp/mooappabout.c:55
 msgid "translator-credits"
 msgstr "Vlastimil Ott <vlastimil@e-ott.info>"
 
@@ -171,19 +166,14 @@ msgstr "Vlastimil Ott <vlastimil@e-ott.info>"
 #. this must be valid html markup, e.g.
 #. "Some Guy <a href=\"mailto:someguy@domain.net\">&lt;someguy@domain.net&gt;</a>"
 #. Lines must be separated by <br>, like "First guy<br>Second Guy"
-#: ../moo/mooapp/mooappabout.c:61
+#: ../moo/mooapp/mooappabout.c:60
 msgid "translator-credits-markup"
 msgstr ""
 "Vlastimil Ott <a href=\"mailto:vlastimil@e-ott.info\">&lt;vlastimil@e-ott."
 "info&gt;</a>"
 
-#. menu item label
-#: ../moo/mooapp/mooapp.c:1055
-msgid "System Info"
-msgstr "Systémové informace"
-
 #. Prefs dialog title, like "medit Preferences"
-#: ../moo/mooapp/mooapp.c:1512
+#: ../moo/mooapp/mooapp.c:1505
 #, c-format
 msgid "%s Preferences"
 msgstr ""
@@ -277,23 +267,63 @@ msgstr "Žádný"
 msgid "Filter|Python"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:1
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:1
+msgid "<b>Default language</b>"
+msgstr "<b>Přednastavený jazyk</b>"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:2
 msgid "<b>Dialogs</b>"
 msgstr "<b>Dialogy</b>"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:2
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:3
+msgid "<b>File filters</b>"
+msgstr "<b>Filtry souborů</b>"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:4
+msgid "<b>Font and colors</b>"
+msgstr "<b>Písmo a barvy</b>"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:5
+msgid "<b>Highlighting</b>"
+msgstr "<b>Zvýrazňování</b>"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:6
+msgid "<b>Keyboard</b>"
+msgstr "<b>Klávesnice</b>"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:7
+msgid "<b>Language-specific options</b>"
+msgstr "<b>Nastavení jazyků</b>"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:8
 msgid "<b>Loading</b>"
 msgstr "<b>Načítání</b>"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:3
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:9
+msgid "<b>Misc</b>"
+msgstr "<b>Různé</b>"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:10
 msgid "<b>Saving</b>"
 msgstr "<b>Ukládání</b>"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:4
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:11
 msgid "<b>Sessions</b>"
 msgstr "<b>Sezení</b>"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:5
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:12
+msgid "<b>Text wrapping</b>"
+msgstr "<b>Zalamování textu</b>"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:13
+msgid "Backspace key unindents"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:14
+msgid "Color scheme:"
+msgstr "Barevné schéma:"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:15
 msgid ""
 "Comma-separated list of encodings to try when opening a file. 'LOCALE' means "
 "current locale encoding."
@@ -301,202 +331,130 @@ msgstr ""
 "Čárkami oddělený seznam kódování pro otevírání souboru. 'LOCALE' znamená "
 "nastavení v systému."
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:6
-msgid "Enable session support"
-msgstr "Zapnout podporu sezení"
-
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
-msgid "Encoding for new files:"
-msgstr "Kódování nových souborů:"
-
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
-msgid "Encodings to autodetect:"
-msgstr "Detekovat kódování:"
-
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:9
-msgid "Ensure trailing newline"
-msgstr ""
-
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:10
-msgid "Make backups"
-msgstr "Vytvářet zálohy"
-
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
-msgid "Open and Save As dialogs show current document folder"
-msgstr ""
-
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:12
-msgid "Remove trailing spaces"
-msgstr "Odstranit mezery na koncích řádků"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:1
-msgid "<b>Default language</b>"
-msgstr "<b>Přednastavený jazyk</b>"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:2
-msgid "<b>Font and colors</b>"
-msgstr "<b>Písmo a barvy</b>"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:3
-msgid "<b>Keyboard</b>"
-msgstr "<b>Klávesnice</b>"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:4
-msgid "Backspace key unindents"
-msgstr ""
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:5
-msgid "Color scheme:"
-msgstr "Barevné schéma:"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
-msgid "Do not use tabs for indentation"
-msgstr ""
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:7
-msgid "Enable auto indentation"
-msgstr "Povolit automatické odsazování"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
-msgid "Font:"
-msgstr "Písmo:"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:9
-msgid "Indent width:"
-msgstr "Šířka odsazení:"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:10
-msgid "Smart Home and End"
-msgstr "Chytré Home a End"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:11
-msgid "Tab key indents"
-msgstr ""
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:12
-msgid "Tab width:"
-msgstr ""
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:13
-msgid "Use default theme font"
-msgstr "Použít písmo tématu prostředí"
-
-#: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:1
-msgid "<b>File filters</b>"
-msgstr "<b>Filtry souborů</b>"
-
-#: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:2
-msgid "<b>Language-specific options</b>"
-msgstr "<b>Nastavení jazyků</b>"
-
-#: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:3
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:3
-msgid "Extensions:"
-msgstr "Přípony:"
-
-#: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:4
-msgid "Language:"
-msgstr "Jazyk:"
-
-#: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:5
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:5
-msgid "Mime types:"
-msgstr "MIME typy:"
-
-#: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:6
-#: ../moo/mooedit/glade/mooedittools-command.glade.h:8
-msgid "Options:"
-msgstr "Volby:"
-
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:1
-msgid "<b>Highlighting</b>"
-msgstr "<b>Zvýrazňování</b>"
-
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:2
-msgid "<b>Misc</b>"
-msgstr "<b>Různé</b>"
-
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:3
-msgid "<b>Text wrapping</b>"
-msgstr "<b>Zalamování textu</b>"
-
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:4
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:16
 msgid "Do not split words"
 msgstr "Nerozdělovat slova"
 
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:17
+msgid "Do not use tabs for indentation"
+msgstr ""
+
 #. Part of the phrase "Draw right margin at column [XX]"
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:6
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:19
 msgid "Draw right margin"
 msgstr "Zobrazit pravý okraj"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:7
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:20
+msgid "Enable auto indentation"
+msgstr "Povolit automatické odsazování"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:21
+msgid "Enable session support"
+msgstr "Zapnout podporu sezení"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:22
 msgid "Enable syntax highlighting"
 msgstr "Povolit zvýrazňování syntaxe"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:8
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:23
 msgid "Enable text wrapping"
 msgstr "Povolit zalamování textu"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:9
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:24
+msgid "Encoding for new files:"
+msgstr "Kódování nových souborů:"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:25
+msgid "Encodings to autodetect:"
+msgstr "Detekovat kódování:"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:26
+msgid "Ensure trailing newline"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:27
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:4
+msgid "Extensions:"
+msgstr "Přípony:"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:28
+msgid "Font:"
+msgstr "Písmo:"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:29
 msgid "Highlight current line"
 msgstr "Zvýrazňovat aktuální řádek"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:10
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:30
 msgid "Highlight matching brackets"
 msgstr "Zvýrazňovat párové závorky"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:11
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:31
 msgid "Highlight mismatching brackets"
 msgstr "Zvýrazňovat chybné závorky"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:32
+msgid "Indent width:"
+msgstr "Šířka odsazení:"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:33
+msgid "Language:"
+msgstr "Jazyk:"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:34
+msgid "Make backups"
+msgstr "Vytvářet zálohy"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:35
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:6
+msgid "Mime types:"
+msgstr "MIME typy:"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:36
+msgid "Open and Save As dialogs show current document folder"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:37
+#: ../moo/mooedit/glade/moousertools.glade.h:9
+msgid "Options:"
+msgstr "Volby:"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:38
+msgid "Remove trailing spaces"
+msgstr "Odstranit mezery na koncích řádků"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:39
 msgid "Show line numbers"
 msgstr "Zobrazit čísla řádek"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:40
 msgid "Show tabs"
 msgstr "Zobrazit tabelátory"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:41
 msgid "Show trailing spaces"
 msgstr "Zobrazit mezery na koncích řádků"
 
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:42
+msgid "Smart Home and End"
+msgstr "Chytré Home a End"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:43
+msgid "Tab key indents"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:44
+msgid "Tab width:"
+msgstr ""
+
 #. Part of the phrase "Draw right margin at column [XX]"
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:16
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:46
 msgid "at column"
 msgstr "na řádku"
 
 #: ../moo/mooedit/glade/mooeditsavemult.glade.h:1
 msgid "Select the documents you want to save:"
 msgstr "Vyberte dokumenty, které chcete uložit:"
-
-#: ../moo/mooedit/glade/mooedittools-command.glade.h:1
-msgid "Command type:"
-msgstr "Typ příkazu:"
-
-#: ../moo/mooedit/glade/mooedittools-command.glade.h:2
-msgid "Delete item"
-msgstr "Smazat položku"
-
-#: ../moo/mooedit/glade/mooedittools-command.glade.h:3
-msgid "Enabled"
-msgstr "Povoleno"
-
-#: ../moo/mooedit/glade/mooedittools-command.glade.h:4
-msgid "Files:"
-msgstr "Soubory:"
-
-#: ../moo/mooedit/glade/mooedittools-command.glade.h:5
-msgid "Move item down"
-msgstr "Přesunout položku níže"
-
-#: ../moo/mooedit/glade/mooedittools-command.glade.h:6
-msgid "Move item up"
-msgstr "Přesunout položku výše"
-
-#: ../moo/mooedit/glade/mooedittools-command.glade.h:7
-msgid "New item"
-msgstr "Nová položka"
 
 #: ../moo/mooedit/glade/mooedittools-exe.glade.h:1
 msgid "Filter:"
@@ -509,14 +467,6 @@ msgstr "Vstup:"
 #: ../moo/mooedit/glade/mooedittools-exe.glade.h:3
 msgid "Output:"
 msgstr "Výstup:"
-
-#: ../moo/mooedit/glade/mooedittools-main.glade.h:1
-msgid "Context menu"
-msgstr "Kontextová nabídka"
-
-#: ../moo/mooedit/glade/mooedittools-main.glade.h:2
-msgid "Tools menu"
-msgstr "Nabídka nástrojů"
 
 #: ../moo/mooedit/glade/moopluginprefs.glade.h:1
 msgid "<b>Author:</b>"
@@ -689,6 +639,42 @@ msgstr "Přejít na řádek"
 msgid "Go to line:"
 msgstr "Přejít na řádek:"
 
+#: ../moo/mooedit/glade/moousertools.glade.h:1
+msgid "Command type:"
+msgstr "Typ příkazu:"
+
+#: ../moo/mooedit/glade/moousertools.glade.h:2
+msgid "Context menu"
+msgstr "Kontextová nabídka"
+
+#: ../moo/mooedit/glade/moousertools.glade.h:3
+msgid "Delete item"
+msgstr "Smazat položku"
+
+#: ../moo/mooedit/glade/moousertools.glade.h:4
+msgid "Enabled"
+msgstr "Povoleno"
+
+#: ../moo/mooedit/glade/moousertools.glade.h:5
+msgid "Files:"
+msgstr "Soubory:"
+
+#: ../moo/mooedit/glade/moousertools.glade.h:6
+msgid "Move item down"
+msgstr "Přesunout položku níže"
+
+#: ../moo/mooedit/glade/moousertools.glade.h:7
+msgid "Move item up"
+msgstr "Přesunout položku výše"
+
+#: ../moo/mooedit/glade/moousertools.glade.h:8
+msgid "New item"
+msgstr "Nová položka"
+
+#: ../moo/mooedit/glade/moousertools.glade.h:10
+msgid "Tools menu"
+msgstr "Nabídka nástrojů"
+
 #. menu item label
 #: ../moo/mooedit/medit.xml.h:2
 msgid "Pa_nes"
@@ -774,7 +760,7 @@ msgstr "Skript Lua"
 
 #. Translators: number of documents here is always greater than one, so
 #. ignore singular form (which is simply copy of the plural here)
-#: ../moo/mooedit/mooeditdialogs.c:359
+#: ../moo/mooedit/mooeditdialogs.c:360
 #, c-format
 msgid ""
 "There are %u documents with unsaved changes. Save changes before closing?"
@@ -784,7 +770,7 @@ msgstr[0] "%u neuložené dokumenty. Uložit změny před jejich uzavřením?"
 msgstr[1] "%u neuložených dokumentů. Uložit změny před jejich uzavřením?"
 
 #. Could not save file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:413
+#: ../moo/mooedit/mooeditdialogs.c:414
 #, c-format
 msgid ""
 "Could not save file\n"
@@ -793,12 +779,12 @@ msgstr ""
 "Soubor nelze uložit\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:415
+#: ../moo/mooedit/mooeditdialogs.c:416
 msgid "Could not save file"
 msgstr "Soubor nelze uložit"
 
 #. Error saving file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:441
+#: ../moo/mooedit/mooeditdialogs.c:442
 #, c-format
 msgid ""
 "Error saving file\n"
@@ -807,11 +793,11 @@ msgstr ""
 "Chyba při ukládání souboru\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:443
+#: ../moo/mooedit/mooeditdialogs.c:444
 msgid "Error saving file"
 msgstr "Chyba při ukládání souboru"
 
-#: ../moo/mooedit/mooeditdialogs.c:445
+#: ../moo/mooedit/mooeditdialogs.c:446
 #, c-format
 msgid ""
 "Could not convert file to requested character encoding %s. File was saved in "
@@ -821,7 +807,7 @@ msgstr ""
 "kódování UTF-8."
 
 #. Could not open file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:475
+#: ../moo/mooedit/mooeditdialogs.c:476
 #, c-format
 msgid ""
 "Could not open file\n"
@@ -830,11 +816,11 @@ msgstr ""
 "Nelze otevřít soubor\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:477
+#: ../moo/mooedit/mooeditdialogs.c:478
 msgid "Could not open file"
 msgstr "Soubor nelze otevřít"
 
-#: ../moo/mooedit/mooeditdialogs.c:483
+#: ../moo/mooedit/mooeditdialogs.c:484
 #, c-format
 msgid ""
 "Could not open file using character encoding %s. The file may be binary or "
@@ -843,7 +829,7 @@ msgstr ""
 "Soubor nelze otevřít v kódování %s. Je možná binární nebo je nesprávně "
 "zadané kódování."
 
-#: ../moo/mooedit/mooeditdialogs.c:487
+#: ../moo/mooedit/mooeditdialogs.c:488
 #, c-format
 msgid ""
 "Could not detect file character encoding. Please make sure the file is not "
@@ -853,7 +839,7 @@ msgstr ""
 "zkuste vybrat kódování v dialogu Otevřít."
 
 #. Could not reload file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:522
+#: ../moo/mooedit/mooeditdialogs.c:523
 #, c-format
 msgid ""
 "Could not reload file\n"
@@ -862,25 +848,25 @@ msgstr ""
 "Nelze znovu načíst soubor\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:582
+#: ../moo/mooedit/mooeditdialogs.c:583
 #, c-format
 msgid "Discard changes in file '%s'?"
 msgstr "Zahodit změny v souboru '%s'?"
 
-#: ../moo/mooedit/mooeditdialogs.c:584
+#: ../moo/mooedit/mooeditdialogs.c:585
 msgid "If you reload the document, changes will be discarded"
 msgstr "Pokud dokument znovu načtete, přijdete o všechny změny"
 
-#: ../moo/mooedit/mooeditdialogs.c:585 ../moo/mooedit/mooeditwindow.c:382
+#: ../moo/mooedit/mooeditdialogs.c:586 ../moo/mooedit/mooeditwindow.c:382
 msgid "_Reload"
 msgstr "Z_novu načíst"
 
-#: ../moo/mooedit/mooeditdialogs.c:606
+#: ../moo/mooedit/mooeditdialogs.c:607
 #, c-format
 msgid "Overwrite modified file '%s'?"
 msgstr "Přepsat změněný soubor '%s'?"
 
-#: ../moo/mooedit/mooeditdialogs.c:607
+#: ../moo/mooedit/mooeditdialogs.c:608
 #, c-format
 msgid ""
 "File '%s' was modified on disk by another process. If you save it, changes "
@@ -889,11 +875,11 @@ msgstr ""
 "Soubor '%s' byl na disku změněn jiným programem. Pokud jej uložíte, změny na "
 "disku se přepíší."
 
-#: ../moo/mooedit/mooeditdialogs.c:609
+#: ../moo/mooedit/mooeditdialogs.c:610
 msgid "Over_write"
 msgstr "Přep_sat"
 
-#: ../moo/mooedit/mooeditdialogs.c:630
+#: ../moo/mooedit/mooeditdialogs.c:631
 msgid ""
 "Beginning of document reached.\n"
 "Continue from the end?"
@@ -901,7 +887,7 @@ msgstr ""
 "Dosaženo začátku dokumentu.\n"
 "Pokračovat od jeho konce?"
 
-#: ../moo/mooedit/mooeditdialogs.c:633
+#: ../moo/mooedit/mooeditdialogs.c:634
 msgid ""
 "End of document reached.\n"
 "Continue from the beginning?"
@@ -921,7 +907,7 @@ msgid "encodings_list"
 msgstr ""
 
 #: ../moo/mooedit/mooeditfileops.c:1226
-#: ../moo/mooedit/plugins/moofileselector.c:517
+#: ../moo/mooedit/plugins/moofileselector.c:516
 msgid "Untitled"
 msgstr "Nepojmenovaný"
 
@@ -946,23 +932,25 @@ msgstr "Otevřít nové okno editoru"
 msgid "Open Recent"
 msgstr "Otevřít nedávný"
 
-#: ../moo/mooedit/mooeditprefspage.c:185
-#: ../moo/moofileview/glade/moofileprops.glade.h:1
-msgid "General"
-msgstr "Obecné"
+#: ../moo/mooedit/mooeditprefspage.c:190
+msgid "PreferencesPage|General"
+msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:186
-#: ../moo/moofileview/moofileview.xml.h:3
-msgid "View"
-msgstr "Zobrazení"
+#: ../moo/mooedit/mooeditprefspage.c:224
+msgid "PreferencesPage|Filters"
+msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:187
-msgid "Loading and saving"
-msgstr "Načítání a ukládání"
+#: ../moo/mooedit/mooeditprefspage.c:271
+msgid "PreferencesPage|View"
+msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:188
-msgid "Languages and files"
-msgstr "Jazyky a soubory"
+#: ../moo/mooedit/mooeditprefspage.c:315
+msgid "PreferencesPage|File"
+msgstr ""
+
+#: ../moo/mooedit/mooeditprefspage.c:368
+msgid "PreferencesPage|Langs"
+msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:365
 msgid "Create new document"
@@ -1238,6 +1226,10 @@ msgstr "_Jazyk"
 msgid "Language|None"
 msgstr ""
 
+#: ../moo/mooedit/mooplugin.c:1470
+msgid "Plugins"
+msgstr ""
+
 #: ../moo/mooedit/mootextfind.c:471
 msgid "No search term entered"
 msgstr "Nebyl zadán výraz k hledání"
@@ -1274,7 +1266,7 @@ msgid_plural "%u replacements made"
 msgstr[0] "%u výskyty nahrazeny"
 msgstr[1] "%u výskytů nahrazeny"
 
-#: ../moo/mooedit/moousertools.c:328 ../moo/mooedit/moousertools-prefs.c:414
+#: ../moo/mooedit/moousertools.c:328 ../moo/mooedit/moousertools-prefs.c:408
 msgid "Tools"
 msgstr "Nástroje"
 
@@ -1292,18 +1284,18 @@ msgstr ""
 msgid "List of files"
 msgstr ""
 
-#: ../moo/mooedit/plugins/moofileselector.c:395
+#: ../moo/mooedit/plugins/moofileselector.c:394
 #, c-format
 msgid "Create file in folder '%s':"
 msgstr "Vytvořit soubor v adresáři '%s':"
 
-#: ../moo/mooedit/plugins/moofileselector.c:450
+#: ../moo/mooedit/plugins/moofileselector.c:449
 #, c-format
 msgid "Could not create file '%s'"
 msgstr "Nelze vytvořit soubor '%s'"
 
-#: ../moo/mooedit/plugins/moofileselector.c:451
-#: ../moo/mooedit/plugins/moofileselector.c:811
+#: ../moo/mooedit/plugins/moofileselector.c:450
+#: ../moo/mooedit/plugins/moofileselector.c:810
 #, c-format
 msgid ""
 "Could not convert '%s' to filename encoding. Please consider simpler name, "
@@ -1312,113 +1304,117 @@ msgstr ""
 "Nelze zkonvertovat '%s' do kódování jména souboru. Použijte prosím "
 "jednodušší jméno, třeba soubor.bla nebo podobné"
 
-#: ../moo/mooedit/plugins/moofileselector.c:466
+#: ../moo/mooedit/plugins/moofileselector.c:465
 #, c-format
 msgid "File '%s' already exists"
 msgstr "Soubor '%s' už existuje"
 
-#: ../moo/mooedit/plugins/moofileselector.c:607
+#: ../moo/mooedit/plugins/moofileselector.c:606
 msgid "Go to current document directory"
 msgstr "Přejít do adresáře dokumentu"
 
+#: ../moo/mooedit/plugins/moofileselector.c:618
 #: ../moo/mooedit/plugins/moofileselector.c:619
-#: ../moo/mooedit/plugins/moofileselector.c:620
 msgid "New File..."
 msgstr "Nový soubor..."
 
+#: ../moo/mooedit/plugins/moofileselector.c:641
 #: ../moo/mooedit/plugins/moofileselector.c:642
-#: ../moo/mooedit/plugins/moofileselector.c:643
-#: ../moo/mooedit/plugins/moofileselector.c:1293
+#: ../moo/mooedit/plugins/moofileselector.c:1292
 #: ../moo/mooedit/plugins/moofileselector-prefs.c:68
 #: ../moo/moofileview/moofileview.c:1106
 msgid "File Selector"
 msgstr "Výběr souborů"
 
-#: ../moo/mooedit/plugins/moofileselector.c:810
+#: ../moo/mooedit/plugins/moofileselector.c:809
 #, c-format
 msgid "Could not save file as '%s'"
 msgstr "Soubor nelze uložit jako '%s'"
 
-#: ../moo/mooedit/plugins/moofileselector.c:893
-#: ../moo/mooedit/plugins/moofileselector.c:918
-#: ../moo/mooedit/plugins/moofileselector-save-as.glade.h:1
+#: ../moo/mooedit/plugins/moofileselector.c:892
+#: ../moo/mooedit/plugins/moofileselector.c:917
+#: ../moo/mooedit/plugins/moofileselector.glade.h:2
 #: ../moo/moofileview/glade/moofileview-drop.glade.h:1
 msgid "Save As"
 msgstr "Uložit jako"
 
-#: ../moo/mooedit/plugins/moofileselector.c:938
+#: ../moo/mooedit/plugins/moofileselector.c:937
 msgid "Save Copy As"
 msgstr "Uložit kopii jako"
 
-#: ../moo/mooedit/plugins/moofileselector.c:962
+#: ../moo/mooedit/plugins/moofileselector.c:961
 msgid "Rename To"
 msgstr "Přejmenovat na"
 
-#: ../moo/mooedit/plugins/moofileselector.c:1119
+#: ../moo/mooedit/plugins/moofileselector.c:1118
 msgid "Move Here"
 msgstr "Přesunout sem"
 
-#: ../moo/mooedit/plugins/moofileselector.c:1120
+#: ../moo/mooedit/plugins/moofileselector.c:1119
 msgid "Move/Rename..."
 msgstr "Přesunout/Přejmenovat..."
 
-#: ../moo/mooedit/plugins/moofileselector.c:1128
+#: ../moo/mooedit/plugins/moofileselector.c:1127
 msgid "Save Here"
 msgstr "Uložit zde"
 
-#: ../moo/mooedit/plugins/moofileselector.c:1129
+#: ../moo/mooedit/plugins/moofileselector.c:1128
 msgid "Save As..."
 msgstr "Uložit jako..."
 
-#: ../moo/mooedit/plugins/moofileselector.c:1137 ../moo/mooutils/moostock.c:44
+#: ../moo/mooedit/plugins/moofileselector.c:1136 ../moo/mooutils/moostock.c:44
 msgid "Save Copy"
 msgstr "Uložit kopii"
 
-#: ../moo/mooedit/plugins/moofileselector.c:1138
+#: ../moo/mooedit/plugins/moofileselector.c:1137
 msgid "Save Copy As..."
 msgstr "Uložit kopii jako..."
 
-#: ../moo/mooedit/plugins/moofileselector.c:1294
+#: ../moo/mooedit/plugins/moofileselector.c:1293
 msgid "File selector pane for editor window"
 msgstr "Panel výběru souborů pro okno editoru"
 
-#: ../moo/mooedit/plugins/moofileselector-new-file.glade.h:1
+#: ../moo/mooedit/plugins/moofileselector.glade.h:1
 msgid "Create File"
 msgstr "Vytvořit soubor"
 
+#: ../moo/mooedit/plugins/moofileselector.glade.h:3
+msgid "Save as"
+msgstr "Uložit jako"
+
 #: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:1
+msgid "<b>Open With</b>"
+msgstr "<b>Otevřít pomocí</b>"
+
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:2
 msgid "Command:"
 msgstr "Příkaz:"
 
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:2
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:3
 #: ../moo/moofileview/glade/moobookmark-editor.glade.h:4
 msgid "Delete"
 msgstr "Smazat"
 
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:4
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:5
 msgid "Menu item label"
 msgstr "Jméno položky v menu"
 
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:6
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:7
 msgid "Move down"
 msgstr "Posunout dolů"
 
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:7
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:8
 msgid "Move up"
 msgstr "Posunout nahoru"
 
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:8
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:9
 msgid "Name:"
 msgstr "Jméno:"
 
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:9
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:10
 #: ../moo/moofileview/glade/moobookmark-editor.glade.h:8
 msgid "New"
 msgstr "Nový"
-
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:10
-msgid "Open With"
-msgstr "Otevřít pomocí"
 
 #: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:11
 msgid "Semicolon-separated list of file globs, e.g. '*.txt;foo.*;*bar*'"
@@ -1438,10 +1434,6 @@ msgid ""
 msgstr ""
 "Příkaz shellu pro otevření souboru: '%f' je nahrazeno cestou k souboru, "
 "např. 'prikaz %f'"
-
-#: ../moo/mooedit/plugins/moofileselector-save-as.glade.h:2
-msgid "Save as"
-msgstr "Uložit jako"
 
 #: ../moo/mooedit/plugins/moofind.c:183
 msgid "Search Results"
@@ -1542,6 +1534,10 @@ msgstr "Cesta:"
 msgid "Create Folder"
 msgstr "Vytvořit adresář"
 
+#: ../moo/moofileview/glade/moofileprops.glade.h:1
+msgid "General"
+msgstr "Obecné"
+
 #: ../moo/moofileview/moofileview.c:1115
 msgid "Go to parent folder"
 msgstr "Přejít do rodičovského adresáře"
@@ -1582,6 +1578,10 @@ msgstr ""
 msgid "Open _With"
 msgstr "Otevřít po_mocí"
 
+#: ../moo/moofileview/moofileview.xml.h:3
+msgid "View"
+msgstr "Zobrazení"
+
 #: ../moo/moopython/plugins/medit/runpython.py:28
 msgid "Python Output"
 msgstr "Výstupu Pythonu"
@@ -1616,31 +1616,31 @@ msgid "Terminal plugin"
 msgstr "Plugin pro terminál"
 
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:1
-msgid "Configure Shortcuts"
-msgstr "Nastavit klávesové zkratky"
-
-#: ../moo/mooutils/glade/mooaccelprefs.glade.h:2
 msgid "Default key:"
 msgstr "Předvolená klávesa:"
 
-#: ../moo/mooutils/glade/mooaccelprefs.glade.h:3
+#: ../moo/mooutils/glade/mooaccelprefs.glade.h:2
 msgid "Shortcut for selected action"
 msgstr "Klávesová zkratka pro vybranou akci"
 
 #. Translators: do not translate the part before |
-#: ../moo/mooutils/glade/mooaccelprefs.glade.h:5
+#: ../moo/mooutils/glade/mooaccelprefs.glade.h:4
 msgid "Shortcut|Custom"
 msgstr "Uživatelské"
 
 #. Translators: do not translate the part before |
-#: ../moo/mooutils/glade/mooaccelprefs.glade.h:7
+#: ../moo/mooutils/glade/mooaccelprefs.glade.h:6
 msgid "Shortcut|Default"
 msgstr "Default"
 
 #. Translators: do not translate the part before |
-#: ../moo/mooutils/glade/mooaccelprefs.glade.h:9
+#: ../moo/mooutils/glade/mooaccelprefs.glade.h:8
 msgid "Shortcut|None"
 msgstr "Žádné"
+
+#: ../moo/mooutils/mooaccelprefs.c:696
+msgid "Configure Shortcuts"
+msgstr "Nastavit klávesové zkratky"
 
 #: ../moo/mooutils/moodialogs.c:344
 #, c-format
@@ -1972,6 +1972,21 @@ msgstr ""
 #: ../moo/mooutils/moowindow.c:1013
 msgid "Toolbar _Style"
 msgstr "Styl nástrojové lišty"
+
+#~ msgid "Dialog title|System Info"
+#~ msgstr "Systémové informace"
+
+#~ msgid "System Info"
+#~ msgstr "Systémové informace"
+
+#~ msgid "Use default theme font"
+#~ msgstr "Použít písmo tématu prostředí"
+
+#~ msgid "Loading and saving"
+#~ msgstr "Načítání a ukládání"
+
+#~ msgid "Languages and files"
+#~ msgstr "Jazyky a soubory"
 
 #~ msgid "medit is a text editor"
 #~ msgstr "medit je textový editor"

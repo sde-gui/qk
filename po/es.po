@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-08-29 04:28-0500\n"
+"POT-Creation-Date: 2008-08-30 13:25-0500\n"
 "PO-Revision-Date: 2007-07-29 11:03-0600\n"
 "Last-Translator: Arnau Sanchez <arnau@ehas.org>\n"
 "MIME-Version: 1.0\n"
@@ -113,55 +113,50 @@ msgstr "Editor de texto"
 msgid "medit"
 msgstr "medit"
 
-#. Credits button label in About dialog
-#: ../moo/mooapp/glade/mooappabout.glade.h:2
-msgid "C_redits"
-msgstr "C_réditos"
-
 #. Translators: do not translate the part before |
-#: ../moo/mooapp/glade/mooappabout.glade.h:4
-msgid "Dialog title|About"
-msgstr "Acerca de"
-
-#. Translators: do not translate the part before |
-#: ../moo/mooapp/glade/mooappabout.glade.h:6
+#: ../moo/mooapp/glade/mooappabout-credits.glade.h:2
 msgid "Dialog title|Credits"
 msgstr "Créditos"
 
-#. Translators: do not translate the part before |
-#: ../moo/mooapp/glade/mooappabout.glade.h:8
-msgid "Dialog title|License"
-msgstr "Licencia"
-
-#. System Info dialog title, do not translate the part before the |
-#: ../moo/mooapp/glade/mooappabout.glade.h:10
-msgid "Dialog title|System Info"
-msgstr "Información de sistema"
-
 #. Tab label in Credits dialog
-#: ../moo/mooapp/glade/mooappabout.glade.h:12
+#: ../moo/mooapp/glade/mooappabout-credits.glade.h:4
 msgid "Thanks"
 msgstr "Agradecimientos"
 
 #. Tab label in Credits dialog
-#: ../moo/mooapp/glade/mooappabout.glade.h:14
+#: ../moo/mooapp/glade/mooappabout-credits.glade.h:6
 msgid "Translated by"
 msgstr "Traducido por"
 
 #. Tab label in Credits dialog
-#: ../moo/mooapp/glade/mooappabout.glade.h:16
+#: ../moo/mooapp/glade/mooappabout-credits.glade.h:8
 msgid "Written by"
 msgstr "Escrito por"
 
+#. Credits button label in About dialog
+#: ../moo/mooapp/glade/mooappabout-dialog.glade.h:2
+msgid "C_redits"
+msgstr "C_réditos"
+
+#. Translators: do not translate the part before |
+#: ../moo/mooapp/glade/mooappabout-dialog.glade.h:4
+msgid "Dialog title|About"
+msgstr "Acerca de"
+
 #. License button label in About dialog
-#: ../moo/mooapp/glade/mooappabout.glade.h:18
+#: ../moo/mooapp/glade/mooappabout-dialog.glade.h:6
 msgid "_License"
 msgstr "_Licencia"
+
+#. Translators: do not translate the part before |
+#: ../moo/mooapp/glade/mooappabout-license.glade.h:2
+msgid "Dialog title|License"
+msgstr "Licencia"
 
 #. Translators: this goes into About box, under Translated by tab,
 #. do not ignore it, markup isn't always used. It should be something
 #. like "Some Guy <someguy@domain.net>", with lines separated by \n
-#: ../moo/mooapp/mooappabout.c:56
+#: ../moo/mooapp/mooappabout.c:55
 msgid "translator-credits"
 msgstr "Arnau Sanchez <arnau@ehas.org>"
 
@@ -169,18 +164,13 @@ msgstr "Arnau Sanchez <arnau@ehas.org>"
 #. this must be valid html markup, e.g.
 #. "Some Guy <a href=\"mailto:someguy@domain.net\">&lt;someguy@domain.net&gt;</a>"
 #. Lines must be separated by <br>, like "First guy<br>Second Guy"
-#: ../moo/mooapp/mooappabout.c:61
+#: ../moo/mooapp/mooappabout.c:60
 msgid "translator-credits-markup"
 msgstr ""
 "Arnau Sanchez <a href=\"mailto:arnau@ehas.org\">&lt;arnau@ehas.org&gt;</a>"
 
-#. menu item label
-#: ../moo/mooapp/mooapp.c:1055
-msgid "System Info"
-msgstr "Información de sistema"
-
 #. Prefs dialog title, like "medit Preferences"
-#: ../moo/mooapp/mooapp.c:1512
+#: ../moo/mooapp/mooapp.c:1505
 #, c-format
 msgid "%s Preferences"
 msgstr ""
@@ -274,23 +264,63 @@ msgstr "Ninguno"
 msgid "Filter|Python"
 msgstr ""
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:1
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:1
+msgid "<b>Default language</b>"
+msgstr "<b>Resaltado por omisión</b>"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:2
 msgid "<b>Dialogs</b>"
 msgstr "<b>Diálogos</b>"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:2
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:3
+msgid "<b>File filters</b>"
+msgstr "<b>Filtros de archivo</b>"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:4
+msgid "<b>Font and colors</b>"
+msgstr "<b>Tipografías y colores</b>"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:5
+msgid "<b>Highlighting</b>"
+msgstr "<b>Resaltado</b>"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:6
+msgid "<b>Keyboard</b>"
+msgstr "<b>Teclado</b>"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:7
+msgid "<b>Language-specific options</b>"
+msgstr "<b>Opciones específicas del modo resaltado</b>"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:8
 msgid "<b>Loading</b>"
 msgstr "<b>Cargando</b>"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:3
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:9
+msgid "<b>Misc</b>"
+msgstr "<b>Miscelánea</b>"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:10
 msgid "<b>Saving</b>"
 msgstr "<b>Guardando</b>"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:4
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:11
 msgid "<b>Sessions</b>"
 msgstr "<b>Sesiones</b>"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:5
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:12
+msgid "<b>Text wrapping</b>"
+msgstr "<b>Ajuste de texto</b>"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:13
+msgid "Backspace key unindents"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:14
+msgid "Color scheme:"
+msgstr "Configuración de color:"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:15
 msgid ""
 "Comma-separated list of encodings to try when opening a file. 'LOCALE' means "
 "current locale encoding."
@@ -298,202 +328,130 @@ msgstr ""
 "Lista de codificaciones separadas por coma que se prueban al abrir un "
 "archivo. 'LOCALE' significa la codificación regional actual"
 
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:6
-msgid "Enable session support"
-msgstr "Activa soporte de sesión"
-
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
-msgid "Encoding for new files:"
-msgstr "Codificación para archivos nuevos:"
-
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
-msgid "Encodings to autodetect:"
-msgstr "Codificaciones a auto-detectar"
-
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:9
-msgid "Ensure trailing newline"
-msgstr ""
-
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:10
-msgid "Make backups"
-msgstr "Hacer copia de seguridad"
-
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
-msgid "Open and Save As dialogs show current document folder"
-msgstr ""
-
-#: ../moo/mooedit/glade/mooeditprefs-file.glade.h:12
-msgid "Remove trailing spaces"
-msgstr "Borrar espacios finales"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:1
-msgid "<b>Default language</b>"
-msgstr "<b>Resaltado por omisión</b>"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:2
-msgid "<b>Font and colors</b>"
-msgstr "<b>Tipografías y colores</b>"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:3
-msgid "<b>Keyboard</b>"
-msgstr "<b>Teclado</b>"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:4
-msgid "Backspace key unindents"
-msgstr ""
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:5
-msgid "Color scheme:"
-msgstr "Configuración de color:"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:6
-msgid "Do not use tabs for indentation"
-msgstr ""
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:7
-msgid "Enable auto indentation"
-msgstr "Activar la indentación automática"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:8
-msgid "Font:"
-msgstr "Tipografía:"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:9
-msgid "Indent width:"
-msgstr "Indentación:"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:10
-msgid "Smart Home and End"
-msgstr "Teclas de Inicio y Fin inteligentes"
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:11
-msgid "Tab key indents"
-msgstr ""
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:12
-msgid "Tab width:"
-msgstr ""
-
-#: ../moo/mooedit/glade/mooeditprefs-general.glade.h:13
-msgid "Use default theme font"
-msgstr "Usar la tipografía por defecto del tema"
-
-#: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:1
-msgid "<b>File filters</b>"
-msgstr "<b>Filtros de archivo</b>"
-
-#: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:2
-msgid "<b>Language-specific options</b>"
-msgstr "<b>Opciones específicas del modo resaltado</b>"
-
-#: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:3
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:3
-msgid "Extensions:"
-msgstr "Extensiones:"
-
-#: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:4
-msgid "Language:"
-msgstr "Modo resaltado:"
-
-#: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:5
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:5
-msgid "Mime types:"
-msgstr "Tipos Mime:"
-
-#: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:6
-#: ../moo/mooedit/glade/mooedittools-command.glade.h:8
-msgid "Options:"
-msgstr "Opciones:"
-
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:1
-msgid "<b>Highlighting</b>"
-msgstr "<b>Resaltado</b>"
-
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:2
-msgid "<b>Misc</b>"
-msgstr "<b>Miscelánea</b>"
-
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:3
-msgid "<b>Text wrapping</b>"
-msgstr "<b>Ajuste de texto</b>"
-
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:4
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:16
 msgid "Do not split words"
 msgstr "No separar las palabras"
 
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:17
+msgid "Do not use tabs for indentation"
+msgstr ""
+
 #. Part of the phrase "Draw right margin at column [XX]"
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:6
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:19
 msgid "Draw right margin"
 msgstr "Mostrar margen derecho"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:7
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:20
+msgid "Enable auto indentation"
+msgstr "Activar la indentación automática"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:21
+msgid "Enable session support"
+msgstr "Activa soporte de sesión"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:22
 msgid "Enable syntax highlighting"
 msgstr "Activar resaltado de sintaxis"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:8
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:23
 msgid "Enable text wrapping"
 msgstr "Activar ajuste de texto"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:9
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:24
+msgid "Encoding for new files:"
+msgstr "Codificación para archivos nuevos:"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:25
+msgid "Encodings to autodetect:"
+msgstr "Codificaciones a auto-detectar"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:26
+msgid "Ensure trailing newline"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:27
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:4
+msgid "Extensions:"
+msgstr "Extensiones:"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:28
+msgid "Font:"
+msgstr "Tipografía:"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:29
 msgid "Highlight current line"
 msgstr "Resaltar línea actual"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:10
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:30
 msgid "Highlight matching brackets"
 msgstr "Resaltar pareja de llaves"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:11
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:31
 msgid "Highlight mismatching brackets"
 msgstr "Resalta llaves desparejadas"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:12
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:32
+msgid "Indent width:"
+msgstr "Indentación:"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:33
+msgid "Language:"
+msgstr "Modo resaltado:"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:34
+msgid "Make backups"
+msgstr "Hacer copia de seguridad"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:35
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:6
+msgid "Mime types:"
+msgstr "Tipos Mime:"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:36
+msgid "Open and Save As dialogs show current document folder"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:37
+#: ../moo/mooedit/glade/moousertools.glade.h:9
+msgid "Options:"
+msgstr "Opciones:"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:38
+msgid "Remove trailing spaces"
+msgstr "Borrar espacios finales"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:39
 msgid "Show line numbers"
 msgstr "Mostrar números de línea"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:40
 msgid "Show tabs"
 msgstr "Mostrar tabulaciones"
 
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:41
 msgid "Show trailing spaces"
 msgstr "Mostrar espacios de fin de línea"
 
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:42
+msgid "Smart Home and End"
+msgstr "Teclas de Inicio y Fin inteligentes"
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:43
+msgid "Tab key indents"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:44
+msgid "Tab width:"
+msgstr ""
+
 #. Part of the phrase "Draw right margin at column [XX]"
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:16
+#: ../moo/mooedit/glade/mooeditprefs.glade.h:46
 msgid "at column"
 msgstr "en la columna"
 
 #: ../moo/mooedit/glade/mooeditsavemult.glade.h:1
 msgid "Select the documents you want to save:"
 msgstr "Selecciona los documentos que quiera guardar:"
-
-#: ../moo/mooedit/glade/mooedittools-command.glade.h:1
-msgid "Command type:"
-msgstr "Tipo de comando:"
-
-#: ../moo/mooedit/glade/mooedittools-command.glade.h:2
-msgid "Delete item"
-msgstr "Borra elemento"
-
-#: ../moo/mooedit/glade/mooedittools-command.glade.h:3
-msgid "Enabled"
-msgstr "Activo"
-
-#: ../moo/mooedit/glade/mooedittools-command.glade.h:4
-msgid "Files:"
-msgstr "Archivos:"
-
-#: ../moo/mooedit/glade/mooedittools-command.glade.h:5
-msgid "Move item down"
-msgstr "Mueve un elemento hacia abajo"
-
-#: ../moo/mooedit/glade/mooedittools-command.glade.h:6
-msgid "Move item up"
-msgstr "Mueve un elemento hacia arriba"
-
-#: ../moo/mooedit/glade/mooedittools-command.glade.h:7
-msgid "New item"
-msgstr "Nuevo elemento"
 
 #: ../moo/mooedit/glade/mooedittools-exe.glade.h:1
 msgid "Filter:"
@@ -506,14 +464,6 @@ msgstr "Entrada:"
 #: ../moo/mooedit/glade/mooedittools-exe.glade.h:3
 msgid "Output:"
 msgstr "Salida:"
-
-#: ../moo/mooedit/glade/mooedittools-main.glade.h:1
-msgid "Context menu"
-msgstr "Menú contextual"
-
-#: ../moo/mooedit/glade/mooedittools-main.glade.h:2
-msgid "Tools menu"
-msgstr "Menú de herramientas"
 
 #: ../moo/mooedit/glade/moopluginprefs.glade.h:1
 msgid "<b>Author:</b>"
@@ -686,6 +636,42 @@ msgstr "Ir a la línea"
 msgid "Go to line:"
 msgstr "Ir a la línea:"
 
+#: ../moo/mooedit/glade/moousertools.glade.h:1
+msgid "Command type:"
+msgstr "Tipo de comando:"
+
+#: ../moo/mooedit/glade/moousertools.glade.h:2
+msgid "Context menu"
+msgstr "Menú contextual"
+
+#: ../moo/mooedit/glade/moousertools.glade.h:3
+msgid "Delete item"
+msgstr "Borra elemento"
+
+#: ../moo/mooedit/glade/moousertools.glade.h:4
+msgid "Enabled"
+msgstr "Activo"
+
+#: ../moo/mooedit/glade/moousertools.glade.h:5
+msgid "Files:"
+msgstr "Archivos:"
+
+#: ../moo/mooedit/glade/moousertools.glade.h:6
+msgid "Move item down"
+msgstr "Mueve un elemento hacia abajo"
+
+#: ../moo/mooedit/glade/moousertools.glade.h:7
+msgid "Move item up"
+msgstr "Mueve un elemento hacia arriba"
+
+#: ../moo/mooedit/glade/moousertools.glade.h:8
+msgid "New item"
+msgstr "Nuevo elemento"
+
+#: ../moo/mooedit/glade/moousertools.glade.h:10
+msgid "Tools menu"
+msgstr "Menú de herramientas"
+
 #. menu item label
 #: ../moo/mooedit/medit.xml.h:2
 msgid "Pa_nes"
@@ -771,7 +757,7 @@ msgstr "Script Lua"
 
 #. Translators: number of documents here is always greater than one, so
 #. ignore singular form (which is simply copy of the plural here)
-#: ../moo/mooedit/mooeditdialogs.c:359
+#: ../moo/mooedit/mooeditdialogs.c:360
 #, c-format
 msgid ""
 "There are %u documents with unsaved changes. Save changes before closing?"
@@ -785,7 +771,7 @@ msgstr[1] ""
 "cerrar?"
 
 #. Could not save file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:413
+#: ../moo/mooedit/mooeditdialogs.c:414
 #, c-format
 msgid ""
 "Could not save file\n"
@@ -794,12 +780,12 @@ msgstr ""
 "No se pudo guardar el archivo\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:415
+#: ../moo/mooedit/mooeditdialogs.c:416
 msgid "Could not save file"
 msgstr "No se pudo guardar el archivo"
 
 #. Error saving file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:441
+#: ../moo/mooedit/mooeditdialogs.c:442
 #, c-format
 msgid ""
 "Error saving file\n"
@@ -808,11 +794,11 @@ msgstr ""
 "Error guardando el archivo\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:443
+#: ../moo/mooedit/mooeditdialogs.c:444
 msgid "Error saving file"
 msgstr "Error guardando el archivo"
 
-#: ../moo/mooedit/mooeditdialogs.c:445
+#: ../moo/mooedit/mooeditdialogs.c:446
 #, c-format
 msgid ""
 "Could not convert file to requested character encoding %s. File was saved in "
@@ -822,7 +808,7 @@ msgstr ""
 "El fichero ha sido guardado en codificación UTF-8"
 
 #. Could not open file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:475
+#: ../moo/mooedit/mooeditdialogs.c:476
 #, c-format
 msgid ""
 "Could not open file\n"
@@ -831,11 +817,11 @@ msgstr ""
 "No se pudo abrir el archivo\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:477
+#: ../moo/mooedit/mooeditdialogs.c:478
 msgid "Could not open file"
 msgstr "No se pudo abrir el archivo"
 
-#: ../moo/mooedit/mooeditdialogs.c:483
+#: ../moo/mooedit/mooeditdialogs.c:484
 #, c-format
 msgid ""
 "Could not open file using character encoding %s. The file may be binary or "
@@ -844,7 +830,7 @@ msgstr ""
 "No se pudo abrir el archivo usando la codificación de caracteres %s.  El "
 "archivo puede ser binario o la codificación especificada ser incorrecto."
 
-#: ../moo/mooedit/mooeditdialogs.c:487
+#: ../moo/mooedit/mooeditdialogs.c:488
 #, c-format
 msgid ""
 "Could not detect file character encoding. Please make sure the file is not "
@@ -854,7 +840,7 @@ msgstr ""
 "el archivo no es binario y selecciona una codificación en el diálog Abrir."
 
 #. Could not reload file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:522
+#: ../moo/mooedit/mooeditdialogs.c:523
 #, c-format
 msgid ""
 "Could not reload file\n"
@@ -863,25 +849,25 @@ msgstr ""
 "No se pudo recargar el archivo\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:582
+#: ../moo/mooedit/mooeditdialogs.c:583
 #, c-format
 msgid "Discard changes in file '%s'?"
 msgstr "¿Quiere desechar las modificaciones del archivo '%s'?"
 
-#: ../moo/mooedit/mooeditdialogs.c:584
+#: ../moo/mooedit/mooeditdialogs.c:585
 msgid "If you reload the document, changes will be discarded"
 msgstr "Si recarga el documento, los cambios se perderán para siempre"
 
-#: ../moo/mooedit/mooeditdialogs.c:585 ../moo/mooedit/mooeditwindow.c:382
+#: ../moo/mooedit/mooeditdialogs.c:586 ../moo/mooedit/mooeditwindow.c:382
 msgid "_Reload"
 msgstr "_Recargar"
 
-#: ../moo/mooedit/mooeditdialogs.c:606
+#: ../moo/mooedit/mooeditdialogs.c:607
 #, c-format
 msgid "Overwrite modified file '%s'?"
 msgstr "¿Quiere reemplazar el archivo modificado '%s'?"
 
-#: ../moo/mooedit/mooeditdialogs.c:607
+#: ../moo/mooedit/mooeditdialogs.c:608
 #, c-format
 msgid ""
 "File '%s' was modified on disk by another process. If you save it, changes "
@@ -890,11 +876,11 @@ msgstr ""
 "El archivo '%s' fue modificado por otro proceso. Si lo sava, los cambios en "
 "disco se perderán."
 
-#: ../moo/mooedit/mooeditdialogs.c:609
+#: ../moo/mooedit/mooeditdialogs.c:610
 msgid "Over_write"
 msgstr "_Reemplazar"
 
-#: ../moo/mooedit/mooeditdialogs.c:630
+#: ../moo/mooedit/mooeditdialogs.c:631
 msgid ""
 "Beginning of document reached.\n"
 "Continue from the end?"
@@ -902,7 +888,7 @@ msgstr ""
 "Se alcanzó el principio del documento.\n"
 "¿Se continúa desde el final?"
 
-#: ../moo/mooedit/mooeditdialogs.c:633
+#: ../moo/mooedit/mooeditdialogs.c:634
 msgid ""
 "End of document reached.\n"
 "Continue from the beginning?"
@@ -922,7 +908,7 @@ msgid "encodings_list"
 msgstr "encodings_list"
 
 #: ../moo/mooedit/mooeditfileops.c:1226
-#: ../moo/mooedit/plugins/moofileselector.c:517
+#: ../moo/mooedit/plugins/moofileselector.c:516
 msgid "Untitled"
 msgstr "Sin título"
 
@@ -947,23 +933,25 @@ msgstr "Abrir nueva ventana del editor"
 msgid "Open Recent"
 msgstr "Abrir recientes"
 
-#: ../moo/mooedit/mooeditprefspage.c:185
-#: ../moo/moofileview/glade/moofileprops.glade.h:1
-msgid "General"
-msgstr "General"
+#: ../moo/mooedit/mooeditprefspage.c:190
+msgid "PreferencesPage|General"
+msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:186
-#: ../moo/moofileview/moofileview.xml.h:3
-msgid "View"
-msgstr "Vista"
+#: ../moo/mooedit/mooeditprefspage.c:224
+msgid "PreferencesPage|Filters"
+msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:187
-msgid "Loading and saving"
-msgstr "Cargar y salvar"
+#: ../moo/mooedit/mooeditprefspage.c:271
+msgid "PreferencesPage|View"
+msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:188
-msgid "Languages and files"
-msgstr "Tipos de archivos"
+#: ../moo/mooedit/mooeditprefspage.c:315
+msgid "PreferencesPage|File"
+msgstr ""
+
+#: ../moo/mooedit/mooeditprefspage.c:368
+msgid "PreferencesPage|Langs"
+msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:365
 msgid "Create new document"
@@ -1240,6 +1228,10 @@ msgstr "_Resaltado"
 msgid "Language|None"
 msgstr ""
 
+#: ../moo/mooedit/mooplugin.c:1470
+msgid "Plugins"
+msgstr ""
+
 #: ../moo/mooedit/mootextfind.c:471
 msgid "No search term entered"
 msgstr "Frase no encontrada"
@@ -1278,7 +1270,7 @@ msgid_plural "%u replacements made"
 msgstr[0] "Se hizo %u reemplazo"
 msgstr[1] "Se hicieron %u reemplazos"
 
-#: ../moo/mooedit/moousertools.c:328 ../moo/mooedit/moousertools-prefs.c:414
+#: ../moo/mooedit/moousertools.c:328 ../moo/mooedit/moousertools-prefs.c:408
 msgid "Tools"
 msgstr "Herramientas"
 
@@ -1296,18 +1288,18 @@ msgstr ""
 msgid "List of files"
 msgstr ""
 
-#: ../moo/mooedit/plugins/moofileselector.c:395
+#: ../moo/mooedit/plugins/moofileselector.c:394
 #, c-format
 msgid "Create file in folder '%s':"
 msgstr "Crear archivo en directorio '%s':"
 
-#: ../moo/mooedit/plugins/moofileselector.c:450
+#: ../moo/mooedit/plugins/moofileselector.c:449
 #, c-format
 msgid "Could not create file '%s'"
 msgstr "No se pudo crear el archivo '%s'"
 
-#: ../moo/mooedit/plugins/moofileselector.c:451
-#: ../moo/mooedit/plugins/moofileselector.c:811
+#: ../moo/mooedit/plugins/moofileselector.c:450
+#: ../moo/mooedit/plugins/moofileselector.c:810
 #, c-format
 msgid ""
 "Could not convert '%s' to filename encoding. Please consider simpler name, "
@@ -1316,113 +1308,117 @@ msgstr ""
 "No se pudo converir '%s' en la codificación pedida. Pruebe un numbre más "
 "simple como hola.txt o txt.hola"
 
-#: ../moo/mooedit/plugins/moofileselector.c:466
+#: ../moo/mooedit/plugins/moofileselector.c:465
 #, c-format
 msgid "File '%s' already exists"
 msgstr "El archivo '%s' ya existe"
 
-#: ../moo/mooedit/plugins/moofileselector.c:607
+#: ../moo/mooedit/plugins/moofileselector.c:606
 msgid "Go to current document directory"
 msgstr "IR al directorio del documento actual"
 
+#: ../moo/mooedit/plugins/moofileselector.c:618
 #: ../moo/mooedit/plugins/moofileselector.c:619
-#: ../moo/mooedit/plugins/moofileselector.c:620
 msgid "New File..."
 msgstr "Nuevo archivo..."
 
+#: ../moo/mooedit/plugins/moofileselector.c:641
 #: ../moo/mooedit/plugins/moofileselector.c:642
-#: ../moo/mooedit/plugins/moofileselector.c:643
-#: ../moo/mooedit/plugins/moofileselector.c:1293
+#: ../moo/mooedit/plugins/moofileselector.c:1292
 #: ../moo/mooedit/plugins/moofileselector-prefs.c:68
 #: ../moo/moofileview/moofileview.c:1106
 msgid "File Selector"
 msgstr "Selector de archivos"
 
-#: ../moo/mooedit/plugins/moofileselector.c:810
+#: ../moo/mooedit/plugins/moofileselector.c:809
 #, c-format
 msgid "Could not save file as '%s'"
 msgstr "No se pudo guardar el archivo como '%s'"
 
-#: ../moo/mooedit/plugins/moofileselector.c:893
-#: ../moo/mooedit/plugins/moofileselector.c:918
-#: ../moo/mooedit/plugins/moofileselector-save-as.glade.h:1
+#: ../moo/mooedit/plugins/moofileselector.c:892
+#: ../moo/mooedit/plugins/moofileselector.c:917
+#: ../moo/mooedit/plugins/moofileselector.glade.h:2
 #: ../moo/moofileview/glade/moofileview-drop.glade.h:1
 msgid "Save As"
 msgstr "Guardar como"
 
-#: ../moo/mooedit/plugins/moofileselector.c:938
+#: ../moo/mooedit/plugins/moofileselector.c:937
 msgid "Save Copy As"
 msgstr "Salvar copia como"
 
-#: ../moo/mooedit/plugins/moofileselector.c:962
+#: ../moo/mooedit/plugins/moofileselector.c:961
 msgid "Rename To"
 msgstr "Renombrar como"
 
-#: ../moo/mooedit/plugins/moofileselector.c:1119
+#: ../moo/mooedit/plugins/moofileselector.c:1118
 msgid "Move Here"
 msgstr "Mover aquí"
 
-#: ../moo/mooedit/plugins/moofileselector.c:1120
+#: ../moo/mooedit/plugins/moofileselector.c:1119
 msgid "Move/Rename..."
 msgstr "Mover/Renombrar..."
 
-#: ../moo/mooedit/plugins/moofileselector.c:1128
+#: ../moo/mooedit/plugins/moofileselector.c:1127
 msgid "Save Here"
 msgstr "Guardar aquí"
 
-#: ../moo/mooedit/plugins/moofileselector.c:1129
+#: ../moo/mooedit/plugins/moofileselector.c:1128
 msgid "Save As..."
 msgstr "Salvar como..."
 
-#: ../moo/mooedit/plugins/moofileselector.c:1137 ../moo/mooutils/moostock.c:44
+#: ../moo/mooedit/plugins/moofileselector.c:1136 ../moo/mooutils/moostock.c:44
 msgid "Save Copy"
 msgstr "Salvar copia"
 
-#: ../moo/mooedit/plugins/moofileselector.c:1138
+#: ../moo/mooedit/plugins/moofileselector.c:1137
 msgid "Save Copy As..."
 msgstr "Salvar copia como..."
 
-#: ../moo/mooedit/plugins/moofileselector.c:1294
+#: ../moo/mooedit/plugins/moofileselector.c:1293
 msgid "File selector pane for editor window"
 msgstr "Panel de selección de archivo en la ventana del editor"
 
-#: ../moo/mooedit/plugins/moofileselector-new-file.glade.h:1
+#: ../moo/mooedit/plugins/moofileselector.glade.h:1
 msgid "Create File"
 msgstr "Crear archivo"
 
+#: ../moo/mooedit/plugins/moofileselector.glade.h:3
+msgid "Save as"
+msgstr "Salvar como"
+
 #: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:1
+msgid "<b>Open With</b>"
+msgstr "<b>Abrir con</b>"
+
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:2
 msgid "Command:"
 msgstr "Comando:"
 
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:2
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:3
 #: ../moo/moofileview/glade/moobookmark-editor.glade.h:4
 msgid "Delete"
 msgstr "Borrar"
 
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:4
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:5
 msgid "Menu item label"
 msgstr "Etiqueta de elemento de menú"
 
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:6
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:7
 msgid "Move down"
 msgstr "Abajo"
 
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:7
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:8
 msgid "Move up"
 msgstr "Arriba"
 
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:8
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:9
 msgid "Name:"
 msgstr "Nombre:"
 
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:9
+#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:10
 #: ../moo/moofileview/glade/moobookmark-editor.glade.h:8
 msgid "New"
 msgstr "Nuevo"
-
-#: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:10
-msgid "Open With"
-msgstr "Abrir con"
 
 #: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:11
 msgid "Semicolon-separated list of file globs, e.g. '*.txt;foo.*;*bar*'"
@@ -1445,10 +1441,6 @@ msgid ""
 msgstr ""
 "Comando de terminal para abrir el archivo: '%f' se reemplaza por la ruta del "
 "archivo, por ejemplo 'hola %f'"
-
-#: ../moo/mooedit/plugins/moofileselector-save-as.glade.h:2
-msgid "Save as"
-msgstr "Salvar como"
 
 #: ../moo/mooedit/plugins/moofind.c:183
 msgid "Search Results"
@@ -1549,6 +1541,10 @@ msgstr "Ruta:"
 msgid "Create Folder"
 msgstr "Crear directorio"
 
+#: ../moo/moofileview/glade/moofileprops.glade.h:1
+msgid "General"
+msgstr "General"
+
 #: ../moo/moofileview/moofileview.c:1115
 msgid "Go to parent folder"
 msgstr "Ir al directorio padre"
@@ -1589,6 +1585,10 @@ msgstr ""
 msgid "Open _With"
 msgstr "Abrir _con"
 
+#: ../moo/moofileview/moofileview.xml.h:3
+msgid "View"
+msgstr "Vista"
+
 #: ../moo/moopython/plugins/medit/runpython.py:28
 msgid "Python Output"
 msgstr "Salida de Python"
@@ -1623,31 +1623,31 @@ msgid "Terminal plugin"
 msgstr "Plugin de terminal"
 
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:1
-msgid "Configure Shortcuts"
-msgstr "Combinaciones de teclas"
-
-#: ../moo/mooutils/glade/mooaccelprefs.glade.h:2
 msgid "Default key:"
 msgstr "Combinación por omisión:"
 
-#: ../moo/mooutils/glade/mooaccelprefs.glade.h:3
+#: ../moo/mooutils/glade/mooaccelprefs.glade.h:2
 msgid "Shortcut for selected action"
 msgstr "Combinación para la acción seleccionada"
 
 #. Translators: do not translate the part before |
-#: ../moo/mooutils/glade/mooaccelprefs.glade.h:5
+#: ../moo/mooutils/glade/mooaccelprefs.glade.h:4
 msgid "Shortcut|Custom"
 msgstr "Propia"
 
 #. Translators: do not translate the part before |
-#: ../moo/mooutils/glade/mooaccelprefs.glade.h:7
+#: ../moo/mooutils/glade/mooaccelprefs.glade.h:6
 msgid "Shortcut|Default"
 msgstr "Por omisión"
 
 #. Translators: do not translate the part before |
-#: ../moo/mooutils/glade/mooaccelprefs.glade.h:9
+#: ../moo/mooutils/glade/mooaccelprefs.glade.h:8
 msgid "Shortcut|None"
 msgstr "Ninguna"
+
+#: ../moo/mooutils/mooaccelprefs.c:696
+msgid "Configure Shortcuts"
+msgstr "Combinaciones de teclas"
 
 #: ../moo/mooutils/moodialogs.c:344
 #, c-format
@@ -1979,6 +1979,21 @@ msgstr ""
 #: ../moo/mooutils/moowindow.c:1013
 msgid "Toolbar _Style"
 msgstr "_Estilo de barra de herramientas"
+
+#~ msgid "Dialog title|System Info"
+#~ msgstr "Información de sistema"
+
+#~ msgid "System Info"
+#~ msgstr "Información de sistema"
+
+#~ msgid "Use default theme font"
+#~ msgstr "Usar la tipografía por defecto del tema"
+
+#~ msgid "Loading and saving"
+#~ msgstr "Cargar y salvar"
+
+#~ msgid "Languages and files"
+#~ msgstr "Tipos de archivos"
 
 #~ msgid "medit is a text editor"
 #~ msgstr "medit es un editor de texto"

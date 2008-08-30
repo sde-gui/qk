@@ -383,23 +383,14 @@
 
 ;; From mooeditprefs.h
 
-(define-function moo_edit_prefs_page_new
-  (c-name "moo_edit_prefs_page_new")
-  (is-constructor-of "MooEditPrefsPage")
-  (return-type "GtkWidget*")
-  (parameters
-    '("MooEditor*" "editor")
-  )
-)
-
-(define-function moo_edit_colors_prefs_page_new
-  (c-name "moo_edit_colors_prefs_page_new")
-  (is-constructor-of "MooEditColorsPrefsPage")
-  (return-type "GtkWidget*")
-  (parameters
-    '("MooEditor*" "editor")
-  )
-)
+; (define-function moo_edit_prefs_page_new
+;   (c-name "moo_edit_prefs_page_new")
+;   (is-constructor-of "MooEditPrefsPage")
+;   (return-type "GtkWidget*")
+;   (parameters
+;     '("MooEditor*" "editor")
+;   )
+; )
 
 (define-function moo_edit_setting
   (c-name "moo_edit_setting")

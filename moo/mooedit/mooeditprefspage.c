@@ -14,10 +14,6 @@
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditor-private.h"
 #include "mooedit/mooeditprefs.h"
-#include "glade/mooeditprefs-general-glade.h"
-#include "glade/mooeditprefs-view-glade.h"
-#include "glade/mooeditprefs-file-glade.h"
-#include "glade/mooeditprefs-langs-glade.h"
 #include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooutils/mooprefsdialog.h"
@@ -29,6 +25,7 @@
 #include "mooutils/mooencodings.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/moohelp.h"
+#include "glade/mooeditprefs-gxml.h"
 #include "help-sections.h"
 #include <string.h>
 
@@ -36,12 +33,8 @@
 typedef struct PrefsPage PrefsPage;
 
 
-static void     moo_edit_prefs_page_init    (MooPrefsDialogPage *page);
-static void     moo_edit_prefs_page_apply   (MooPrefsDialogPage *page);
-static gboolean moo_edit_prefs_page_help    (GtkWidget          *widget);
-
-static void     prefs_page_apply_lang_prefs (PrefsPage          *page);
-static void     apply_filter_settings       (PrefsPage          *page);
+static void     prefs_page_apply_lang_prefs (MooPrefsPage       *page);
+static void     apply_filter_settings       (PrefsFiltersXml    *gxml);
 
 static void     scheme_combo_init           (GtkComboBox        *combo);
 static void     scheme_combo_data_func      (GtkCellLayout      *layout,
@@ -52,196 +45,100 @@ static void     scheme_combo_set_scheme     (GtkComboBox        *combo,
                                              MooTextStyleScheme *scheme);
 
 static void     default_lang_combo_init     (GtkComboBox        *combo,
-                                             PrefsPage          *page);
+                                             MooPrefsPage       *page);
 static void     default_lang_combo_set_lang (GtkComboBox        *combo,
                                              const char         *id);
 
 static void     lang_combo_init             (GtkComboBox        *combo,
-                                             PrefsPage          *page);
+                                             MooPrefsPage       *page,
+                                             PrefsLangsXml      *gxml);
 
-static void     filter_treeview_init        (MooGladeXML        *xml);
+static void     filter_treeview_init        (PrefsFiltersXml    *gxml);
 
 static GtkTreeModel *create_lang_model      (void);
 
-static void     save_encoding_combo_init    (MooGladeXML        *xml);
-static void     save_encoding_combo_apply   (MooGladeXML        *xml);
+static void     save_encoding_combo_init    (PrefsFileXml       *gxml);
+static void     save_encoding_combo_apply   (PrefsFileXml       *gxml);
 
-static GtkTreeModel *page_get_lang_model    (PrefsPage          *page);
-static MooTextStyleScheme *page_get_scheme  (PrefsPage          *page);
-static char    *page_get_default_lang       (PrefsPage          *page);
-
-static void     page_general_init           (PrefsPage          *page);
-static void     page_general_apply          (PrefsPage          *page);
-static void     page_view_init              (PrefsPage          *page);
-static void     page_view_apply             (PrefsPage          *page);
-static void     page_file_init              (PrefsPage          *page);
-static void     page_file_apply             (PrefsPage          *page);
-static void     page_langs_init             (PrefsPage          *page);
-static void     page_langs_apply            (PrefsPage          *page);
-
-
-typedef struct {
-    const char *label;
-    const char *ui;
-    void (*init) (PrefsPage *page);
-    void (*apply) (PrefsPage *page);
-} PrefsPageInfo;
-
-struct PrefsPage {
-    MooEditor *editor;
-    MooLangMgr *lang_mgr;
-    MooPrefsDialogPage *master;
-    MooPrefsDialogPage *page;
-    gboolean initialized;
-    void (*init) (PrefsPage *page);
-    void (*apply) (PrefsPage *page);
-};
-
-typedef struct {
-    MooEditor *editor;
-    MooLangMgr *lang_mgr;
-    PrefsPage **pages;
-    guint n_pages;
-    GtkNotebook *notebook;
-} PrefsPageData;
+static GtkTreeModel *page_get_lang_model    (MooPrefsPage       *page);
+static MooTextStyleScheme *page_get_scheme  (PrefsGeneralXml    *gxml);
+static char    *page_get_default_lang       (PrefsLangsXml      *gxml);
 
 
 static void
-prefs_page_data_free (PrefsPageData *data)
+add_page (GtkWidget *page,
+          GtkWidget *notebook,
+          GtkWidget *subpage)
 {
-    guint i;
-
-    for (i = 0; i < data->n_pages; ++i)
-    {
-        PrefsPage *page = data->pages[i];
-        g_object_unref (page->editor);
-        g_object_unref (page->lang_mgr);
-        g_free (page);
-    }
-
-    g_object_unref (data->editor);
-    g_object_unref (data->lang_mgr);
-    g_free (data->pages);
-    g_free (data);
-}
-
-static void
-init_page (PrefsPageData *data,
-           guint          page_num)
-{
-    PrefsPage *page;
-
-    g_return_if_fail (page_num < data->n_pages);
-
-    page = data->pages[page_num];
-
-    if (!page->initialized)
-    {
-        page->initialized = TRUE;
-
-        g_signal_emit_by_name (page->page, "init");
-
-        if (page->init)
-            page->init (page);
-    }
-}
-
-static void
-notebook_switch_page (G_GNUC_UNUSED GtkNotebook *notebook,
-                      G_GNUC_UNUSED GtkNotebookPage *nb_page,
-                      guint               page_num,
-                      MooPrefsDialogPage *prefs_page)
-{
-    PrefsPageData *data;
-
-    data = g_object_get_data (G_OBJECT (prefs_page), "prefs-page-data");
-    g_return_if_fail (data != NULL);
-
-    init_page (data, page_num);
-}
-
-static void
-moo_edit_prefs_page_destroy (GtkWidget *page)
-{
-    PrefsPageData *data;
-
-    data = g_object_get_data (G_OBJECT (page), "prefs-page-data");
-
-    if (data)
-    {
-        g_signal_handlers_disconnect_by_func (data->notebook, (gpointer) notebook_switch_page, page);
-        g_object_set_data (G_OBJECT (page), "prefs-page-data", NULL);
-    }
+    GtkWidget *label = gtk_label_new (MOO_PREFS_PAGE (subpage)->label);
+    gtk_widget_show (subpage);
+    gtk_notebook_append_page (GTK_NOTEBOOK (notebook), subpage, label);
+    moo_prefs_page_add_page (MOO_PREFS_PAGE (page), MOO_PREFS_PAGE (subpage));
 }
 
 GtkWidget *
 moo_edit_prefs_page_new (MooEditor *editor)
 {
-    GtkWidget *prefs_page;
-    PrefsPageData *data;
-    guint i;
+    GtkWidget *page, *notebook;
 
-    const PrefsPageInfo prefs_pages[] = {
-        { N_("General"), mooeditprefs_general_glade_xml, page_general_init, page_general_apply },
-        { N_("View"), mooeditprefs_view_glade_xml, page_view_init, page_view_apply },
-        { N_("Loading and saving"), mooeditprefs_file_glade_xml, page_file_init, page_file_apply },
-        { N_("Languages and files"), mooeditprefs_langs_glade_xml, page_langs_init, page_langs_apply }
-    };
+    page = moo_prefs_page_new ("Editor", GTK_STOCK_EDIT);
+    notebook = gtk_notebook_new ();
+    gtk_container_add (GTK_CONTAINER (page), notebook);
+    gtk_widget_show_all (page);
+
+    add_page (page, notebook, moo_edit_prefs_page_new_1 (editor));
+    add_page (page, notebook, moo_edit_prefs_page_new_2 (editor));
+    add_page (page, notebook, moo_edit_prefs_page_new_3 (editor));
+    add_page (page, notebook, moo_edit_prefs_page_new_4 (editor));
+
+    return page;
+}
+
+
+static GtkWidget *
+prefs_page_new (MooEditor          *editor,
+                const char         *label,
+                const char         *stock_id,
+                MooPrefsPageInitUi  init_ui,
+                MooPrefsPageInit    init,
+                MooPrefsPageApply   apply)
+{
+    GtkWidget *prefs_page;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
 
     _moo_edit_init_config ();
 
-    prefs_page = moo_prefs_dialog_page_new ("Editor", GTK_STOCK_EDIT);
-    moo_help_set_func (prefs_page, moo_edit_prefs_page_help);
-
-    data = g_new0 (PrefsPageData, 1);
-    data->pages = g_new0 (PrefsPage*, G_N_ELEMENTS (prefs_pages));
-    g_object_set_data_full (G_OBJECT (prefs_page), "prefs-page-data", data,
-                            (GDestroyNotify) prefs_page_data_free);
-
-    data->notebook = GTK_NOTEBOOK (gtk_notebook_new ());
-    gtk_widget_show (GTK_WIDGET (data->notebook));
-    gtk_container_add (GTK_CONTAINER (prefs_page), GTK_WIDGET (data->notebook));
-
-    data->editor = g_object_ref (editor);
-    data->lang_mgr = g_object_ref (moo_lang_mgr_default ());
-
-    for (i = 0; i < G_N_ELEMENTS (prefs_pages); i++)
-    {
-        PrefsPage *page;
-        const PrefsPageInfo *info;
-
-        info = &prefs_pages[i];
-        page = g_new0 (PrefsPage, 1);
-        page->init = info->init;
-        page->apply = info->apply;
-        page->master = MOO_PREFS_DIALOG_PAGE (prefs_page);
-        data->pages[data->n_pages] = page;
-
-        page->page =
-            moo_prefs_dialog_page_new_from_xml (NULL, NULL, NULL,
-                                                info->ui, "page",
-                                                MOO_EDIT_PREFS_PREFIX);
-
-        gtk_notebook_append_page (data->notebook,
-                                  GTK_WIDGET (page->page),
-                                  gtk_label_new (_(info->label)));
-
-        page->editor = g_object_ref (editor);
-        page->lang_mgr = g_object_ref (moo_lang_mgr_default ());
-
-        data->n_pages++;
-    }
-
-    g_signal_connect (data->notebook, "switch-page", G_CALLBACK (notebook_switch_page), prefs_page);
-    g_signal_connect (prefs_page, "init", G_CALLBACK (moo_edit_prefs_page_init), NULL);
-    g_signal_connect (prefs_page, "apply", G_CALLBACK (moo_edit_prefs_page_apply), NULL);
-    g_signal_connect (prefs_page, "destroy", G_CALLBACK (moo_edit_prefs_page_destroy), NULL);
+    prefs_page = moo_prefs_page_new (label, stock_id);
+    moo_prefs_page_set_callbacks (MOO_PREFS_PAGE (prefs_page),
+                                  init_ui, init, apply);
 
     return prefs_page;
 }
 
+#define BIND_SETTING(wid,setting) \
+    moo_prefs_page_bind_setting (page, GTK_WIDGET (gxml->wid), \
+                                 moo_edit_setting (setting))
+#define BIND_SENSITIVE(btn, wid) \
+    moo_bind_sensitive (GTK_WIDGET (gxml->btn), GTK_WIDGET (gxml->wid), FALSE)
+
+static void
+page_general_init_ui (MooPrefsPage *page)
+{
+    PrefsGeneralXml *gxml;
+
+    gxml = prefs_general_xml_new_with_root (GTK_WIDGET (page));
+    g_object_set_data (G_OBJECT (page), "moo-edit-prefs-page-xml", gxml);
+
+    BIND_SETTING (smarthome, MOO_EDIT_PREFS_SMART_HOME_END);
+    BIND_SETTING (enable_auto_indent, MOO_EDIT_PREFS_AUTO_INDENT);
+    BIND_SETTING (usespaces, MOO_EDIT_PREFS_SPACES_NO_TABS);
+    BIND_SETTING (backspace_indents, MOO_EDIT_PREFS_BACKSPACE_INDENTS);
+    BIND_SETTING (tab_indents, MOO_EDIT_PREFS_TAB_INDENTS);
+    BIND_SETTING (tab_width, MOO_EDIT_PREFS_TAB_WIDTH);
+    BIND_SETTING (indent_width, MOO_EDIT_PREFS_INDENT_WIDTH);
+    BIND_SETTING (fontbutton, MOO_EDIT_PREFS_FONT);
+}
 
 static void
 tab_width_changed (GtkSpinButton *tab_width,
@@ -252,104 +149,227 @@ tab_width_changed (GtkSpinButton *tab_width,
 }
 
 static void
-page_general_init (PrefsPage *page)
+page_general_init (MooPrefsPage *page)
 {
-    GtkWidget *tab_width, *indent_width;
-    GtkComboBox *default_lang_combo;
+    PrefsGeneralXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
+
+    g_signal_connect (gxml->tab_width, "value-changed",
+                      G_CALLBACK (tab_width_changed),
+                      gxml->indent_width);
+
+    {
+        MooTextStyleScheme *scheme;
+
+        g_object_set (gxml->fontbutton, "monospace", TRUE, NULL);
+
+        scheme = moo_lang_mgr_get_active_scheme (moo_lang_mgr_default ());
+        g_return_if_fail (scheme != NULL);
+
+        scheme_combo_init (gxml->color_scheme_combo);
+        scheme_combo_set_scheme (gxml->color_scheme_combo, scheme);
+    }
+}
+
+static void
+page_general_apply (MooPrefsPage *page)
+{
+    MooTextStyleScheme *scheme;
+    PrefsGeneralXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
+
+    scheme = page_get_scheme (gxml);
+    g_return_if_fail (scheme != NULL);
+    moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_COLOR_SCHEME),
+                          moo_text_style_scheme_get_id (scheme));
+    g_object_unref (scheme);
+}
+
+GtkWidget *
+moo_edit_prefs_page_new_1 (MooEditor *editor)
+{
+    return prefs_page_new (editor,
+                           Q_("PreferencesPage|General"),
+                           GTK_STOCK_EDIT,
+                           page_general_init_ui,
+                           page_general_init,
+                           page_general_apply);
+}
+
+
+static void
+page_filters_init_ui (MooPrefsPage *page)
+{
+    PrefsFiltersXml *gxml;
+    gxml = prefs_filters_xml_new_with_root (GTK_WIDGET (page));
+    g_object_set_data (G_OBJECT (page), "moo-edit-prefs-page-xml", gxml);
+}
+
+static void
+page_filters_init (MooPrefsPage *page)
+{
+    PrefsFiltersXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
+    filter_treeview_init (gxml);
+}
+
+static void
+page_filters_apply (MooPrefsPage *page)
+{
+    PrefsFiltersXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
+    apply_filter_settings (gxml);
+}
+
+GtkWidget *
+moo_edit_prefs_page_new_5 (MooEditor *editor)
+{
+    return prefs_page_new (editor,
+                           Q_("PreferencesPage|Filters"),
+                           GTK_STOCK_EDIT,
+                           page_filters_init_ui,
+                           page_filters_init,
+                           page_filters_apply);
+}
+
+
+static void
+page_view_init_ui (MooPrefsPage *page)
+{
+    PrefsViewXml *gxml;
+
+    gxml = prefs_view_xml_new_with_root (GTK_WIDGET (page));
+    g_object_set_data (G_OBJECT (page), "moo-edit-prefs-page-xml", gxml);
+
+    BIND_SENSITIVE (enable_wrapping, dont_split_words);
+    BIND_SENSITIVE (draw_rigth_margin, right_margin_box);
+    BIND_SETTING (enable_wrapping, MOO_EDIT_PREFS_WRAP_ENABLE);
+    BIND_SETTING (dont_split_words, MOO_EDIT_PREFS_WRAP_WORDS);
+    BIND_SETTING (check_enable_highlighting, MOO_EDIT_PREFS_ENABLE_HIGHLIGHTING);
+    BIND_SETTING (check_highlight_matching_brackets, MOO_EDIT_PREFS_HIGHLIGHT_MATCHING);
+    BIND_SETTING (check_highlight_mismatching_brackets, MOO_EDIT_PREFS_HIGHLIGHT_MISMATCHING);
+    BIND_SETTING (check_highlight_current_line, MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE);
+    BIND_SETTING (show_line_numbers, MOO_EDIT_PREFS_SHOW_LINE_NUMBERS);
+    BIND_SETTING (check_show_tabs, MOO_EDIT_PREFS_SHOW_TABS);
+    BIND_SETTING (check_show_trailing_spaces, MOO_EDIT_PREFS_SHOW_TRAILING_SPACES);
+    BIND_SETTING (draw_rigth_margin, MOO_EDIT_PREFS_DRAW_RIGHT_MARGIN);
+    BIND_SETTING (spin_right_margin_offset, MOO_EDIT_PREFS_RIGHT_MARGIN_OFFSET);
+}
+
+static void
+page_view_init (MooPrefsPage *page)
+{
+    G_GNUC_UNUSED PrefsViewXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
+}
+
+static void
+page_view_apply (MooPrefsPage *page)
+{
+    G_GNUC_UNUSED PrefsViewXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
+}
+
+GtkWidget *
+moo_edit_prefs_page_new_2 (MooEditor *editor)
+{
+    return prefs_page_new (editor,
+                           Q_("PreferencesPage|View"),
+                           GTK_STOCK_EDIT,
+                           page_view_init_ui,
+                           page_view_init,
+                           page_view_apply);
+}
+
+
+static void
+page_file_init_ui (MooPrefsPage *page)
+{
+    PrefsFileXml *gxml;
+
+    gxml = prefs_file_xml_new_with_root (GTK_WIDGET (page));
+    g_object_set_data (G_OBJECT (page), "moo-edit-prefs-page-xml", gxml);
+
+    BIND_SETTING (entry_encodings, MOO_EDIT_PREFS_ENCODINGS);
+    BIND_SETTING (check_strip, MOO_EDIT_PREFS_STRIP);
+    BIND_SETTING (check_add_newline, MOO_EDIT_PREFS_ADD_NEWLINE);
+    BIND_SETTING (check_make_backups, MOO_EDIT_PREFS_MAKE_BACKUPS);
+    BIND_SETTING (check_save_session, MOO_EDIT_PREFS_SAVE_SESSION);
+    BIND_SETTING (check_open_dialog_follows_doc, MOO_EDIT_PREFS_DIALOGS_OPEN_FOLLOWS_DOC);
+}
+
+static void
+page_file_init (MooPrefsPage *page)
+{
+    PrefsFileXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
+
+    save_encoding_combo_init (gxml);
+}
+
+static void
+page_file_apply (MooPrefsPage *page)
+{
+    PrefsFileXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
+
+    save_encoding_combo_apply (gxml);
+}
+
+GtkWidget *
+moo_edit_prefs_page_new_3 (MooEditor *editor)
+{
+    return prefs_page_new (editor,
+                           Q_("PreferencesPage|File"),
+                           GTK_STOCK_EDIT,
+                           page_file_init_ui,
+                           page_file_init,
+                           page_file_apply);
+}
+
+
+static void
+page_langs_init_ui (MooPrefsPage *page)
+{
+    PrefsLangsXml *gxml;
+    gxml = prefs_langs_xml_new_with_root (GTK_WIDGET (page));
+    g_object_set_data (G_OBJECT (page), "moo-edit-prefs-page-xml", gxml);
+}
+
+static void
+page_langs_init (MooPrefsPage *page)
+{
+    PrefsLangsXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
+    MooTreeHelper *helper;
     const char *lang;
 
-    tab_width = moo_glade_xml_get_widget (page->page->xml, "tab_width");
-    indent_width = moo_glade_xml_get_widget (page->page->xml, "indent_width");
-    g_signal_connect (tab_width, "value-changed", G_CALLBACK (tab_width_changed), indent_width);
+    moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_LANGS_AND_FILTERS);
 
-    default_lang_combo = moo_glade_xml_get_widget (page->page->xml, "default_lang_combo");
-    default_lang_combo_init (default_lang_combo, page);
+    lang_combo_init (gxml->lang_combo, page, gxml);
 
+    helper = g_object_get_data (G_OBJECT (page), "moo-tree-helper");
+    _moo_tree_helper_update_widgets (helper);
+
+    default_lang_combo_init (gxml->default_lang_combo, page);
     lang = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG));
-    default_lang_combo_set_lang (default_lang_combo, lang);
-
-    {
-        MooTextStyleScheme *scheme;
-        GtkComboBox *scheme_combo;
-
-        g_object_set (moo_glade_xml_get_widget (page->page->xml, "fontbutton"),
-                      "monospace", TRUE, NULL);
-
-        scheme = moo_lang_mgr_get_active_scheme (page->lang_mgr);
-        g_return_if_fail (scheme != NULL);
-
-        scheme_combo = moo_glade_xml_get_widget (page->page->xml, "color_scheme_combo");
-        scheme_combo_init (scheme_combo);
-
-        scheme_combo_set_scheme (scheme_combo, scheme);
-    }
+    default_lang_combo_set_lang (gxml->default_lang_combo, lang);
 }
 
 static void
-page_general_apply (PrefsPage *page)
+page_langs_apply (MooPrefsPage *page)
 {
     char *lang;
-    lang = page_get_default_lang (page);
-    moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG), lang);
-    g_free (lang);
+    PrefsLangsXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
 
-    {
-        MooTextStyleScheme *scheme;
-        scheme = page_get_scheme (page);
-        g_return_if_fail (scheme != NULL);
-        moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_COLOR_SCHEME),
-                              moo_text_style_scheme_get_id (scheme));
-        g_object_unref (scheme);
-    }
-}
-
-
-static void
-page_view_init (G_GNUC_UNUSED PrefsPage *page)
-{
-}
-
-static void
-page_view_apply (G_GNUC_UNUSED PrefsPage *page)
-{
-}
-
-
-static void
-page_file_init (PrefsPage *page)
-{
-    save_encoding_combo_init (page->page->xml);
-}
-
-static void
-page_file_apply (PrefsPage *page)
-{
-    save_encoding_combo_apply (page->page->xml);
-}
-
-
-static void
-page_langs_init (PrefsPage *page)
-{
-    GtkComboBox *lang_combo;
-    MooTreeHelper *helper;
-
-    moo_help_set_id (GTK_WIDGET (page->page), HELP_SECTION_PREFS_LANGS_AND_FILTERS);
-
-    lang_combo = moo_glade_xml_get_widget (page->page->xml, "lang_combo");
-    lang_combo_init (lang_combo, page);
-
-    filter_treeview_init (page->page->xml);
-
-    helper = g_object_get_data (G_OBJECT (page->page), "moo-tree-helper");
-    _moo_tree_helper_update_widgets (helper);
-}
-
-static void
-page_langs_apply (PrefsPage *page)
-{
     prefs_page_apply_lang_prefs (page);
-    apply_filter_settings (page);
+
+    lang = page_get_default_lang (gxml);
+    moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG), lang);
+
+    g_free (lang);
+}
+
+GtkWidget *
+moo_edit_prefs_page_new_4 (MooEditor *editor)
+{
+    return prefs_page_new (editor,
+                           Q_("PreferencesPage|Langs"),
+                           GTK_STOCK_EDIT,
+                           page_langs_init_ui,
+                           page_langs_init,
+                           page_langs_apply);
 }
 
 
@@ -403,31 +423,17 @@ scheme_combo_data_func (G_GNUC_UNUSED GtkCellLayout *layout,
 }
 
 
-static void
-moo_edit_prefs_page_init (MooPrefsDialogPage *page)
-{
-    PrefsPageData *data;
-    int current_page;
-
-    data = g_object_get_data (G_OBJECT (page), "prefs-page-data");
-    g_return_if_fail (data != NULL);
-
-    current_page = gtk_notebook_get_current_page (data->notebook);
-    init_page (data, current_page);
-}
-
-
 static GtkTreeModel *
-page_get_lang_model (PrefsPage *page)
+page_get_lang_model (MooPrefsPage *page)
 {
     GtkTreeModel *model;
 
-    model = g_object_get_data (G_OBJECT (page->master), "moo-lang-model");
+    model = g_object_get_data (G_OBJECT (page), "moo-lang-model");
 
     if (!model)
     {
         model = create_lang_model ();
-        g_object_set_data_full (G_OBJECT (page->master), "moo-lang-model",
+        g_object_set_data_full (G_OBJECT (page), "moo-lang-model",
                                 model, g_object_unref);
     }
 
@@ -463,52 +469,22 @@ scheme_combo_set_scheme (GtkComboBox        *combo,
 
 
 static MooTextStyleScheme *
-page_get_scheme (PrefsPage *page)
+page_get_scheme (PrefsGeneralXml *gxml)
 {
     GtkTreeModel *model;
     GtkTreeIter iter;
     MooTextStyleScheme *scheme = NULL;
-    GtkComboBox *combo;
 
-    combo = moo_glade_xml_get_widget (page->page->xml, "color_scheme_combo");
-    g_return_val_if_fail (combo != NULL, NULL);
-
-    if (!gtk_combo_box_get_active_iter (combo, &iter))
+    if (!gtk_combo_box_get_active_iter (gxml->color_scheme_combo, &iter))
     {
         g_critical ("%s: oops", G_STRLOC);
         return NULL;
     }
 
-    model = gtk_combo_box_get_model (combo);
+    model = gtk_combo_box_get_model (gxml->color_scheme_combo);
     gtk_tree_model_get (model, &iter, 0, &scheme, -1);
 
     return scheme;
-}
-
-
-static void
-moo_edit_prefs_page_apply (MooPrefsDialogPage *page)
-{
-    PrefsPageData *data;
-    guint i;
-
-    data = g_object_get_data (G_OBJECT (page), "prefs-page-data");
-    g_return_if_fail (data != NULL);
-
-    for (i = 0; i < data->n_pages; ++i)
-    {
-        PrefsPage *prefs_page = data->pages[i];
-
-        if (prefs_page->initialized)
-        {
-            g_signal_emit_by_name (prefs_page->page, "apply");
-
-            if (prefs_page->apply)
-                prefs_page->apply (prefs_page);
-        }
-    }
-
-    moo_editor_apply_prefs (data->editor);
 }
 
 
@@ -605,7 +581,8 @@ create_lang_model (void)
     config = _moo_lang_mgr_get_config (mgr, MOO_LANG_NONE);
     ext = list_to_string (_moo_lang_mgr_get_globs (mgr, NULL), TRUE);
     mime = list_to_string (_moo_lang_mgr_get_mime_types (mgr, NULL), TRUE);
-    gtk_tree_store_set (store, &iter, COLUMN_ID, MOO_LANG_NONE,
+    gtk_tree_store_set (store, &iter,
+                        COLUMN_ID, MOO_LANG_NONE,
                         COLUMN_NAME, "None",
                         COLUMN_CONFIG, config,
                         COLUMN_MIMETYPES, mime,
@@ -691,8 +668,8 @@ set_sensitive (G_GNUC_UNUSED GtkCellLayout *cell_layout,
 }
 
 static void
-default_lang_combo_init (GtkComboBox *combo,
-                         PrefsPage   *page)
+default_lang_combo_init (GtkComboBox  *combo,
+                         MooPrefsPage *page)
 {
     GtkTreeModel *model;
     GtkCellRenderer *cell;
@@ -771,23 +748,19 @@ default_lang_combo_set_lang (GtkComboBox *combo,
 
 
 static char *
-page_get_default_lang (PrefsPage *page)
+page_get_default_lang (PrefsLangsXml *gxml)
 {
     GtkTreeModel *model;
     GtkTreeIter iter;
     char *lang = NULL;
-    GtkComboBox *combo;
 
-    combo = moo_glade_xml_get_widget (page->page->xml, "default_lang_combo");
-    g_return_val_if_fail (combo != NULL, NULL);
-
-    if (!gtk_combo_box_get_active_iter (combo, &iter))
+    if (!gtk_combo_box_get_active_iter (gxml->default_lang_combo, &iter))
     {
         g_critical ("%s: oops", G_STRLOC);
         return NULL;
     }
 
-    model = gtk_combo_box_get_model (combo);
+    model = gtk_combo_box_get_model (gxml->default_lang_combo);
     gtk_tree_model_get (model, &iter, COLUMN_ID, &lang, -1);
 
     return lang;
@@ -799,22 +772,15 @@ page_get_default_lang (PrefsPage *page)
  */
 
 static void
-helper_update_widgets (PrefsPage          *page,
+helper_update_widgets (PrefsLangsXml      *gxml,
                        GtkTreeModel       *model,
                        G_GNUC_UNUSED GtkTreePath *path,
                        GtkTreeIter        *iter)
 {
-    GtkEntry *extensions, *mimetypes, *config;
-    GtkWidget *label_mimetypes;
     MooLang *lang = NULL;
     char *ext = NULL, *mime = NULL, *id = NULL, *conf = NULL;
 
     g_return_if_fail (iter != NULL);
-
-    extensions = moo_glade_xml_get_widget (page->page->xml, "extensions");
-    mimetypes = moo_glade_xml_get_widget (page->page->xml, "mimetypes");
-    label_mimetypes = moo_glade_xml_get_widget (page->page->xml, "label_mimetypes");
-    config = moo_glade_xml_get_widget (page->page->xml, "config");
 
     gtk_tree_model_get (model, iter,
                         COLUMN_LANG, &lang,
@@ -825,11 +791,11 @@ helper_update_widgets (PrefsPage          *page,
                         -1);
     g_return_if_fail (id != NULL);
 
-    gtk_entry_set_text (extensions, ext ? ext : "");
-    gtk_entry_set_text (mimetypes, mime ? mime : "");
-    gtk_entry_set_text (config, conf ? conf : "");
-    gtk_widget_set_sensitive (GTK_WIDGET (mimetypes), lang != NULL);
-    gtk_widget_set_sensitive (label_mimetypes, lang != NULL);
+    gtk_entry_set_text (gxml->extensions, ext ? ext : "");
+    gtk_entry_set_text (gxml->mimetypes, mime ? mime : "");
+    gtk_entry_set_text (gxml->config, conf ? conf : "");
+    gtk_widget_set_sensitive (GTK_WIDGET (gxml->mimetypes), lang != NULL);
+    gtk_widget_set_sensitive (GTK_WIDGET (gxml->label_mimetypes), lang != NULL);
 
     if (lang)
         g_object_unref (lang);
@@ -842,20 +808,16 @@ helper_update_widgets (PrefsPage          *page,
 
 
 static void
-helper_update_model (PrefsPage          *page,
+helper_update_model (PrefsLangsXml      *gxml,
                      GtkTreeModel       *model,
                      G_GNUC_UNUSED GtkTreePath *path,
                      GtkTreeIter        *iter)
 {
-    GtkEntry *extensions, *mimetypes, *config;
     const char *ext, *mime, *conf;
 
-    extensions = moo_glade_xml_get_widget (page->page->xml, "extensions");
-    ext = gtk_entry_get_text (extensions);
-    mimetypes = moo_glade_xml_get_widget (page->page->xml, "mimetypes");
-    mime = gtk_entry_get_text (mimetypes);
-    config = moo_glade_xml_get_widget (page->page->xml, "config");
-    conf = gtk_entry_get_text (config);
+    ext = gtk_entry_get_text (gxml->extensions);
+    mime = gtk_entry_get_text (gxml->mimetypes);
+    conf = gtk_entry_get_text (gxml->config);
 
     gtk_tree_store_set (GTK_TREE_STORE (model), iter,
                         COLUMN_MIMETYPES, mime,
@@ -865,8 +827,9 @@ helper_update_model (PrefsPage          *page,
 
 
 static void
-lang_combo_init (GtkComboBox *combo,
-                 PrefsPage   *page)
+lang_combo_init (GtkComboBox   *combo,
+                 MooPrefsPage  *page,
+                 PrefsLangsXml *gxml)
 {
     GtkTreeModel *model;
     GtkCellRenderer *cell;
@@ -891,12 +854,12 @@ lang_combo_init (GtkComboBox *combo,
     helper = _moo_tree_helper_new (GTK_WIDGET (combo), NULL, NULL, NULL, NULL);
     g_return_if_fail (helper != NULL);
 
-    g_object_set_data_full (G_OBJECT (page->page), "moo-tree-helper",
+    g_object_set_data_full (G_OBJECT (page), "moo-tree-helper",
                             helper, g_object_unref);
     g_signal_connect_swapped (helper, "update-widgets",
-                              G_CALLBACK (helper_update_widgets), page);
+                              G_CALLBACK (helper_update_widgets), gxml);
     g_signal_connect_swapped (helper, "update-model",
-                              G_CALLBACK (helper_update_model), page);
+                              G_CALLBACK (helper_update_model), gxml);
     _moo_tree_helper_update_widgets (helper);
 }
 
@@ -939,13 +902,13 @@ apply_one_lang (GtkTreeModel *model,
 
 
 static void
-prefs_page_apply_lang_prefs (PrefsPage *page)
+prefs_page_apply_lang_prefs (MooPrefsPage *page)
 {
     GtkTreeModel *model;
     MooTreeHelper *helper;
     MooLangMgr *mgr;
 
-    helper = g_object_get_data (G_OBJECT (page->page), "moo-tree-helper");
+    helper = g_object_get_data (G_OBJECT (page), "moo-tree-helper");
     _moo_tree_helper_update_model (helper, NULL, NULL);
 
     model = page_get_lang_model (page);
@@ -1073,29 +1036,27 @@ create_filter_cell (GtkTreeView  *treeview,
 
 
 static void
-filter_treeview_init (MooGladeXML *xml)
+filter_treeview_init (PrefsFiltersXml *gxml)
 {
-    GtkTreeView *filter_treeview;
     GtkListStore *store;
     MooTreeHelper *helper;
 
-    filter_treeview = moo_glade_xml_get_widget (xml, "filter_treeview");
-    g_return_if_fail (filter_treeview != NULL);
-
     store = gtk_list_store_new (FILTER_NUM_COLUMNS, G_TYPE_STRING, G_TYPE_STRING);
     populate_filter_settings_store (store);
-    gtk_tree_view_set_model (filter_treeview, GTK_TREE_MODEL (store));
+    gtk_tree_view_set_model (gxml->filter_treeview, GTK_TREE_MODEL (store));
 
-    create_filter_cell (filter_treeview, store, "Filter", FILTER_COLUMN_FILTER);
-    create_filter_cell (filter_treeview, store, "Options", FILTER_COLUMN_CONFIG);
+    create_filter_cell (gxml->filter_treeview, store, "Filter", FILTER_COLUMN_FILTER);
+    create_filter_cell (gxml->filter_treeview, store, "Options", FILTER_COLUMN_CONFIG);
 
-    helper = _moo_tree_helper_new (GTK_WIDGET (filter_treeview),
-                                   moo_glade_xml_get_widget (xml, "new_filter_setting"),
-                                   moo_glade_xml_get_widget (xml, "delete_filter_setting"),
-                                   moo_glade_xml_get_widget (xml, "filter_setting_up"),
-                                   moo_glade_xml_get_widget (xml, "filter_setting_down"));
-    g_object_set_data_full (G_OBJECT (filter_treeview), "tree-helper", helper, g_object_unref);
+    helper = _moo_tree_helper_new (GTK_WIDGET (gxml->filter_treeview),
+                                   GTK_WIDGET (gxml->new_filter_setting),
+                                   GTK_WIDGET (gxml->delete_filter_setting),
+                                   GTK_WIDGET (gxml->filter_setting_up),
+                                   GTK_WIDGET (gxml->filter_setting_down));
+    g_object_set_data_full (G_OBJECT (gxml->filter_treeview), "tree-helper", helper, g_object_unref);
     g_object_set_data (G_OBJECT (store), "tree-helper", helper);
+
+    _moo_tree_helper_update_widgets (helper);
 
     g_object_unref (store);
 }
@@ -1121,16 +1082,12 @@ prepend_filter_and_config (GtkTreeModel *model,
 }
 
 static void
-apply_filter_settings (PrefsPage *page)
+apply_filter_settings (PrefsFiltersXml *gxml)
 {
-    GtkTreeView *filter_treeview;
     GSList *strings = NULL;
     GtkTreeModel *model;
 
-    filter_treeview = moo_glade_xml_get_widget (page->page->xml, "filter_treeview");
-    g_return_if_fail (filter_treeview != NULL);
-
-    model = gtk_tree_view_get_model (filter_treeview);
+    model = gtk_tree_view_get_model (gxml->filter_treeview);
 
     if (!filter_store_get_modified (model))
         return;
@@ -1153,50 +1110,22 @@ apply_filter_settings (PrefsPage *page)
  */
 
 static void
-save_encoding_combo_init (MooGladeXML *xml)
+save_encoding_combo_init (PrefsFileXml *gxml)
 {
-    GtkComboBox *combo;
     const char *enc;
-
-    combo = moo_glade_xml_get_widget (xml, "encoding_save");
-    g_return_if_fail (combo != NULL);
-
-    _moo_encodings_combo_init (combo, MOO_ENCODING_COMBO_SAVE, TRUE);
+    _moo_encodings_combo_init (GTK_COMBO_BOX (gxml->encoding_save),
+                               MOO_ENCODING_COMBO_SAVE, TRUE);
     enc = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_ENCODING_SAVE));
-    _moo_encodings_combo_set_enc (combo, enc, MOO_ENCODING_COMBO_SAVE);
+    _moo_encodings_combo_set_enc (GTK_COMBO_BOX (gxml->encoding_save),
+                                  enc, MOO_ENCODING_COMBO_SAVE);
 }
 
 
 static void
-save_encoding_combo_apply (MooGladeXML *xml)
+save_encoding_combo_apply (PrefsFileXml *gxml)
 {
-    GtkComboBox *combo;
     const char *enc;
-
-    combo = moo_glade_xml_get_widget (xml, "encoding_save");
-    g_return_if_fail (combo != NULL);
-
-    enc = _moo_encodings_combo_get_enc (combo, MOO_ENCODING_COMBO_SAVE);
+    enc = _moo_encodings_combo_get_enc (GTK_COMBO_BOX (gxml->encoding_save),
+                                        MOO_ENCODING_COMBO_SAVE);
     moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_ENCODING_SAVE), enc);
-}
-
-
-/**************************************************************************/
-/* Help
- */
-
-static gboolean
-moo_edit_prefs_page_help (GtkWidget *widget)
-{
-    PrefsPageData *data;
-    int index;
-    GtkWidget *current_page = NULL;
-
-    data = g_object_get_data (G_OBJECT (widget), "prefs-page-data");
-    g_return_val_if_fail (data != NULL, FALSE);
-
-    if ((index = gtk_notebook_get_current_page (data->notebook)) >= 0)
-        current_page = gtk_notebook_get_nth_page (data->notebook, index);
-
-    return current_page && moo_help_open (current_page);
 }

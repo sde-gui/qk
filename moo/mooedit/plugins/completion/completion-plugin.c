@@ -184,7 +184,7 @@ cmpl_plugin_deinit (CmplPlugin *plugin)
 static GtkWidget *
 cmpl_plugin_prefs_page (G_GNUC_UNUSED CmplPlugin *plugin)
 {
-    MooPrefsDialogPage *page;
+    MooPrefsPage *page;
     MooGladeXML *xml;
 
     xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);

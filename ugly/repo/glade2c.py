@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import os.path
 import sys
 import getopt
 import xml.dom
@@ -84,7 +85,7 @@ def walk_node(node, walk_siblings, func, *args):
         node = node.nextSibling
     return None
 
-def find_root(dom, root_name):
+def find_roots(dom, root_name):
     def check_node(node, name):
         if node.tagName != "widget":
             return None
@@ -92,19 +93,26 @@ def find_root(dom, root_name):
             return node
         if node.getAttribute("id") == name:
             return node
-    return walk_node(dom.documentElement.firstChild, True,
-                     check_node, root_name)
+    roots = []
+    for toplevel in dom.documentElement.childNodes:
+        root = walk_node(toplevel, False, check_node, root_name)
+        if root:
+            roots.append(root)
+    return roots
 
-def write_file(gxml, params, out):
-    tmpl = """\
+def write_file(gxml, params, out, xml_buf_name, first_widget):
+    tmpl_start = """\
 #include <mooutils/mooglade.h>
 #include <mooutils/mooi18n.h>
 #include <gtk/gtk.h>
 
-const char %(glade_xml)s[] =
+static const char %(glade_xml)s[] =
 %(glade_xml_content)s
 ;
 
+"""
+
+    tmpl = """\
 typedef struct %(XmlStruct)s %(XmlStruct)s;
 
 struct %(XmlStruct)s {
@@ -192,7 +200,9 @@ G_GNUC_UNUSED static %(XmlStruct)s *
 
     buf = StringIO.StringIO()
     for w in gxml.widgets:
-        print >> buf, '    xml->%s = moo_glade_xml_get_widget (xml->xml, "%s");' % (w.name, w.real_name)
+        print >> buf, """\
+    xml->%(struct_mem)s = moo_glade_xml_get_widget (xml->xml, "%(glade_name)s");
+    g_assert (xml->%(struct_mem)s != NULL);""" % { 'struct_mem': w.name, 'glade_name': w.real_name }
     glade_xml_widgets_defs = buf.getvalue()
     buf.close()
 
@@ -218,44 +228,61 @@ G_GNUC_UNUSED static %(XmlStruct)s *
         'glade_xml_widgets_map': glade_xml_widgets_map,
     }
 
+    if xml_buf_name:
+        dic['glade_xml'] = xml_buf_name
+
+    if first_widget:
+        out.write(tmpl_start % dic)
     out.write(tmpl % dic)
 
-def convert_buffer(buf, params, output):
+def convert_buffer(buf, params, output, filename):
     dom = minidom.parseString(buf)
-    root = find_root(dom, params.root)
-    assert root is not None
-    params.root = root.getAttribute('id')
-    gxml = GladeXml(root, buf, params)
-
-    if not params.StructName:
-        params.StructName = gxml.rootName + 'Xml'
-    if not params.struct_name:
-        def S2s(name):
-            ret = ''
-            for i in range(len(name)):
-                c = name[i]
-                if i == 0:
-                    ret += c.lower()
-                elif c.istitle() and not name[i-1].istitle():
-                    ret += '_' + c.lower()
-                else:
-                    ret += c
-            return ret
-        params.struct_name = S2s(params.StructName)
-
+    roots = find_roots(dom, params.root)
+    assert roots
     close_output = False
-    if output is None:
-        output = sys.stdout
-    elif isinstance(output, str) or isinstance(output, unicode):
-        output = open(output, 'w')
-        close_output = True
-    write_file(gxml, params, output)
+
+    xml_buf_name = None
+    if len(roots) > 1:
+        xml_buf_name = os.path.basename(filename).replace('-', '_').replace('.glade', '_glade_xml')
+
+    first_widget = True
+    has_StructName = params.StructName is not None
+    has_struct_name = params.StructName is not None
+    for root in roots:
+        params.root = root.getAttribute('id')
+        gxml = GladeXml(root, buf, params)
+
+        if not has_StructName:
+            params.StructName = gxml.rootName + 'Xml'
+        if not has_struct_name:
+            def S2s(name):
+                ret = ''
+                for i in range(len(name)):
+                    c = name[i]
+                    if i == 0:
+                        ret += c.lower()
+                    elif c.istitle() and not name[i-1].istitle():
+                        ret += '_' + c.lower()
+                    else:
+                        ret += c
+                return ret
+            params.struct_name = S2s(params.StructName)
+
+        if output is None:
+            output = sys.stdout
+        elif isinstance(output, str) or isinstance(output, unicode):
+            output = open(output, 'w')
+            close_output = True
+
+        write_file(gxml, params, output, xml_buf_name, first_widget)
+        first_widget = False
+
     if close_output:
         output.close()
 
 def convert_file(filename, params, output):
     f = open(filename)
-    ret = convert_buffer(f.read(), params, output)
+    ret = convert_buffer(f.read(), params, output, filename)
     f.close()
     return ret
 

@@ -20,11 +20,15 @@ G_BEGIN_DECLS
 
 #define MOO_EDIT_PREFS_PREFIX "Editor"
 
-GtkWidget  *moo_edit_prefs_page_new         (MooEditor      *editor);
-GtkWidget  *moo_edit_colors_prefs_page_new  (MooEditor      *editor);
+GtkWidget  *moo_edit_prefs_page_new     (MooEditor  *editor);
+GtkWidget  *moo_edit_prefs_page_new_1   (MooEditor  *editor);
+GtkWidget  *moo_edit_prefs_page_new_2   (MooEditor  *editor);
+GtkWidget  *moo_edit_prefs_page_new_3   (MooEditor  *editor);
+GtkWidget  *moo_edit_prefs_page_new_4   (MooEditor  *editor);
+GtkWidget  *moo_edit_prefs_page_new_5   (MooEditor  *editor);
 
 /* defined in mooeditprefs.c */
-const char *moo_edit_setting                (const char     *setting_name);
+const char *moo_edit_setting            (const char *setting_name);
 
 #define MOO_EDIT_PREFS_TITLE_FORMAT             "window_title"
 #define MOO_EDIT_PREFS_TITLE_FORMAT_NO_DOC      "window_title_no_doc"

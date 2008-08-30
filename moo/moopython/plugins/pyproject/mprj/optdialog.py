@@ -40,9 +40,9 @@ def _init_page(page, page_id, config, glade_file):
     return page
 
 
-class ConfigPage(moo.utils.PrefsDialogPage):
+class ConfigPage(moo.utils.PrefsPage):
     def __init__(self, page_id, config, glade_file):
-        moo.utils.PrefsDialogPage.__init__(self)
+        moo.utils.PrefsPage.__init__(self)
         _init_page(self, page_id, config, glade_file)
 
     def do_init(self):

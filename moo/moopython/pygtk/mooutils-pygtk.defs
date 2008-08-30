@@ -70,20 +70,11 @@
   (gtype-id "MOO_TYPE_PREFS_DIALOG")
 )
 
-(define-object PrefsDialogPage
+(define-object PrefsPage
   (in-module "Moo")
   (parent "GtkVBox")
-  (c-name "MooPrefsDialogPage")
-  (gtype-id "MOO_TYPE_PREFS_DIALOG_PAGE")
-  (fields
-    '("char*" "label")
-    '("GdkPixbuf*" "icon")
-    '("char*" "icon_stock_id")
-;     '("GSList*" "widgets")
-    '("gboolean" "auto_apply")
-;;     xml may not be wrapped
-;;     '("MooGladeXML*" "xml")
-  )
+  (c-name "MooPrefsPage")
+  (gtype-id "MOO_TYPE_PREFS_PAGE")
 )
 
 (define-object Window
@@ -1231,12 +1222,12 @@
 
 
 
-;; From ../mooutils/mooprefsdialogpage.h
+;; From ../mooutils/mooprefspage.h
 
 (ifndef pygtk-2.6
-(define-function moo_prefs_dialog_page_new
-  (c-name "moo_prefs_dialog_page_new")
-  (is-constructor-of "MooPrefsDialogPage")
+(define-function moo_prefs_page_new
+  (c-name "moo_prefs_page_new")
+  (is-constructor-of "MooPrefsPage")
   (return-type "GtkWidget*")
   (properties
     '("label" (optional))
@@ -1245,45 +1236,19 @@
 )
 )
 
-(define-function prefs_dialog_page_new_from_xml
-  (c-name "moo_prefs_dialog_page_new_from_xml")
-  (return-type "MooPrefsDialogPage*")
-  (parameters
-    '("const-char*" "label")
-    '("const-char*" "icon_stock_id" (null-ok) (default "NULL"))
-    '("MooGladeXML*" "xml" (null-ok) (default "NULL"))
-    '("const-char*" "buffer")
-    '("const-char*" "page_id")
-    '("const-char*" "prefs_root" (null-ok) (default "NULL"))
-  )
-)
-
-(define-method fill_from_xml
-  (of-object "MooPrefsDialogPage")
-  (c-name "moo_prefs_dialog_page_fill_from_xml")
-  (return-type "gboolean")
-  (parameters
-    '("MooGladeXML*" "xml" (null-ok) (default "NULL"))
-    '("const-char*" "buffer")
-    '("const-char*" "page_id")
-    '("const-char*" "prefs_root" (null-ok) (default "NULL"))
-  )
-)
-
 (define-method bind_setting
-  (of-object "MooPrefsDialogPage")
-  (c-name "moo_prefs_dialog_page_bind_setting")
+  (of-object "MooPrefsPage")
+  (c-name "moo_prefs_page_bind_setting")
   (return-type "none")
   (parameters
     '("GtkWidget*" "widget")
     '("const-char*" "setting")
-    '("GtkToggleButton*" "set_or_not")
   )
 )
 
 ; (define-method bind_radio_setting
-;   (of-object "MooPrefsDialogPage")
-;   (c-name "moo_prefs_dialog_page_bind_radio_setting")
+;   (of-object "MooPrefsPage")
+;   (c-name "moo_prefs_page_bind_radio_setting")
 ;   (return-type "none")
 ;   (parameters
 ;     '("const-char*" "setting")
@@ -1293,12 +1258,12 @@
 ; )
 
 (define-virtual init
-  (of-object "MooPrefsDialogPage")
+  (of-object "MooPrefsPage")
   (return-type "none")
 )
 
 (define-virtual apply
-  (of-object "MooPrefsDialogPage")
+  (of-object "MooPrefsPage")
   (return-type "none")
 )
 

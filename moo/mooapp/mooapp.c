@@ -1507,7 +1507,11 @@ moo_app_create_prefs_dialog (MooApp *app)
     g_free (title);
 
 #ifdef MOO_BUILD_EDIT
-    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new (moo_app_get_editor (app)));
+    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_1 (moo_app_get_editor (app)));
+    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_2 (moo_app_get_editor (app)));
+    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_3 (moo_app_get_editor (app)));
+    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_4 (moo_app_get_editor (app)));
+    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_5 (moo_app_get_editor (app)));
     moo_prefs_dialog_append_page (dialog, moo_user_tools_prefs_page_new ());
     moo_plugin_attach_prefs (GTK_WIDGET (dialog));
 #endif

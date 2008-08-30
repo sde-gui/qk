@@ -131,17 +131,10 @@ ENUM_HDRS =				\
 	mootextsearch.h			\
 	mootextview.h
 
-GLADE_FILES =				\
-	glade/mooeditprefs-general.glade\
-	glade/mooeditprefs-view.glade	\
-	glade/mooeditprefs-file.glade	\
-	glade/mooeditprefs-langs.glade	\
-	glade/moopluginprefs.glade	\
-	glade/mooedittools-main.glade	\
-	glade/mooprintpreview.glade	\
-	glade/mooedittools-command.glade
-
 GLADE2_FILES =				\
+	glade/mooprintpreview.glade	\
+	glade/moopluginprefs.glade	\
+	glade/mooeditprefs.glade	\
 	glade/mooeditprogress.glade	\
 	glade/mooeditsavemult.glade	\
 	glade/mooprint.glade		\
@@ -151,7 +144,8 @@ GLADE2_FILES =				\
 	glade/mooquicksearch.glade	\
 	glade/moostatusbar.glade	\
 	glade/mooedittools-exe.glade	\
-	glade/mooedittools-lua.glade
+	glade/mooedittools-lua.glade	\
+	glade/moousertools.glade
 
 MOO_UI_FILES = medit.xml mooedit.xml
 

@@ -27,8 +27,7 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/mooi18n.h"
-#include "plugins/moofileselector-save-as-gxml.h"
-#include "plugins/moofileselector-new-file-gxml.h"
+#include "plugins/moofileselector-gxml.h"
 #include "mooutils/moohelp.h"
 #include "help-sections.h"
 #include <gmodule.h>

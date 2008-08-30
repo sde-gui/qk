@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <glade-interface>
+  <requires-version lib="gtk+" version="2.12"/>
   <widget class="GtkWindow" id="window1">
     <property name="visible">True</property>
     <property name="title">window1</property>
     <child>
-      <widget class="GtkVBox" id="page">
+      <widget class="GtkVBox" id="PrefsPage">
         <property name="visible">True</property>
-        <property name="border_width">6</property>
+        <property name="border_width">12</property>
         <property name="spacing">6</property>
         <child>
           <widget class="GtkScrolledWindow" id="scrolledwindow1">

@@ -108,8 +108,8 @@ mooutils_sources =			\
 	mooprefs.h			\
 	mooprefsdialog.c		\
 	mooprefsdialog.h		\
-	mooprefsdialogpage.c		\
-	mooprefsdialogpage.h		\
+	mooprefspage.c			\
+	mooprefspage.h			\
 	moopython.h			\
 	moospawn.c			\
 	moospawn.h			\
@@ -172,7 +172,7 @@ EXTRA_DIST +=				\
 	pixmaps/keepontop.png
 
 GLADE2_FILES =				\
-	glade/mooaccelprefs.glade
+	glade/mooaccelprefs.glade	\
 	glade/mooaccelbutton.glade	\
 	glade/moologwindow.glade
 

@@ -28,7 +28,7 @@
 
 
 typedef struct {
-    MooPrefsDialogPage base;
+    MooPrefsPage base;
 
     GtkAction *current_action;
     GtkTreeRowReference *current_row;
@@ -42,11 +42,11 @@ typedef struct {
     GHashTable *groups;     /* char* -> GtkTreeRowReference* */
 } MooAccelPrefsPage;
 
-typedef MooPrefsDialogPageClass MooAccelPrefsPageClass;
+typedef MooPrefsPageClass MooAccelPrefsPageClass;
 
 #define MOO_TYPE_ACCEL_PREFS_PAGE    (_moo_accel_prefs_page_get_type ())
 #define MOO_ACCEL_PREFS_PAGE(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_ACCEL_PREFS_PAGE, MooAccelPrefsPage))
-MOO_DEFINE_TYPE_STATIC (MooAccelPrefsPage, _moo_accel_prefs_page, MOO_TYPE_PREFS_DIALOG_PAGE)
+MOO_DEFINE_TYPE_STATIC (MooAccelPrefsPage, _moo_accel_prefs_page, MOO_TYPE_PREFS_PAGE)
 
 
 typedef enum {
@@ -69,8 +69,8 @@ enum {
 };
 
 
-static void moo_accel_prefs_page_init   (MooPrefsDialogPage *page);
-static void moo_accel_prefs_page_apply  (MooPrefsDialogPage *page);
+static void moo_accel_prefs_page_init   (MooPrefsPage       *page);
+static void moo_accel_prefs_page_apply  (MooPrefsPage       *page);
 static void tree_selection_changed      (MooAccelPrefsPage  *page);
 static void accel_set                   (MooAccelPrefsPage  *page);
 static void shortcut_none_toggled       (MooAccelPrefsPage  *page);
@@ -115,8 +115,8 @@ static void
 _moo_accel_prefs_page_class_init (MooAccelPrefsPageClass *klass)
 {
     G_OBJECT_CLASS (klass)->finalize = _moo_accel_prefs_page_finalize;
-    MOO_PREFS_DIALOG_PAGE_CLASS (klass)->init = moo_accel_prefs_page_init;
-    MOO_PREFS_DIALOG_PAGE_CLASS (klass)->apply = moo_accel_prefs_page_apply;
+    MOO_PREFS_PAGE_CLASS (klass)->init = moo_accel_prefs_page_init;
+    MOO_PREFS_PAGE_CLASS (klass)->apply = moo_accel_prefs_page_apply;
 }
 
 
@@ -265,7 +265,7 @@ apply_one (GtkAction *action,
 }
 
 static void
-moo_accel_prefs_page_apply (MooPrefsDialogPage *prefs_page)
+moo_accel_prefs_page_apply (MooPrefsPage *prefs_page)
 {
     MooAccelPrefsPage *page = MOO_ACCEL_PREFS_PAGE (prefs_page);
     g_hash_table_foreach (page->changed, (GHFunc) apply_one, NULL);
@@ -352,7 +352,7 @@ add_row (GtkActionGroup    *group,
 
 
 static void
-moo_accel_prefs_page_init (MooPrefsDialogPage *prefs_page)
+moo_accel_prefs_page_init (MooPrefsPage *prefs_page)
 {
     guint i;
     MooAccelPrefsPage *page = MOO_ACCEL_PREFS_PAGE (prefs_page);

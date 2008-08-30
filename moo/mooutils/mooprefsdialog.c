@@ -47,7 +47,7 @@ static void setup_pages_list                (MooPrefsDialog *dialog);
 static void pages_list_selection_changed    (MooPrefsDialog *dialog,
                                              GtkTreeSelection *selection);
 
-static void init_page                       (MooPrefsDialogPage *page);
+static void init_page                       (MooPrefsPage   *page);
 
 static gboolean moo_prefs_dialog_help       (GtkWidget      *widget);
 
@@ -218,7 +218,7 @@ setup_pages_list (MooPrefsDialog *dialog)
                                         GDK_TYPE_PIXBUF,
                                         G_TYPE_STRING,
                                         G_TYPE_STRING,
-                                        MOO_TYPE_PREFS_DIALOG_PAGE);
+                                        MOO_TYPE_PREFS_PAGE);
     tree = gtk_tree_view_new_with_model (GTK_TREE_MODEL (dialog->store));
     gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (tree), FALSE);
     gtk_tree_view_set_enable_search (GTK_TREE_VIEW (tree), FALSE);
@@ -259,7 +259,7 @@ pages_list_selection_changed (MooPrefsDialog *dialog,
 
     if (gtk_tree_selection_get_selected (selection, &model, &iter))
     {
-        MooPrefsDialogPage *page = NULL;
+        MooPrefsPage *page = NULL;
         gtk_tree_model_get (model, &iter, PAGE_COLUMN, &page, -1);
         g_return_if_fail (page != NULL);
 
@@ -282,13 +282,13 @@ pages_list_selection_changed (MooPrefsDialog *dialog,
 
 
 static gboolean
-page_initialized (MooPrefsDialogPage *page)
+page_initialized (MooPrefsPage *page)
 {
     return g_object_get_data (G_OBJECT (page), "moo-prefs-dialog-page-initialized") != NULL;
 }
 
 static void
-init_page (MooPrefsDialogPage *page)
+init_page (MooPrefsPage *page)
 {
     if (!g_object_get_data (G_OBJECT (page), "moo-prefs-dialog-page-initialized"))
     {
@@ -432,7 +432,7 @@ moo_prefs_dialog_apply (MooPrefsDialog *dialog)
 
     while (list)
     {
-        MooPrefsDialogPage *page = list->data;
+        MooPrefsPage *page = list->data;
 
         if (!(GTK_OBJECT_FLAGS (page) & GTK_IN_DESTRUCTION) &&
             page->auto_apply &&
@@ -465,7 +465,7 @@ moo_prefs_dialog_insert_page (MooPrefsDialog     *dialog,
     GtkTreePath *path = NULL;
 
     g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
-    g_return_if_fail (MOO_IS_PREFS_DIALOG_PAGE (page));
+    g_return_if_fail (MOO_IS_PREFS_PAGE (page));
     g_return_if_fail (page->parent == NULL);
 
     if (position < 0)
@@ -519,7 +519,7 @@ moo_prefs_dialog_remove_page (MooPrefsDialog     *dialog,
     GtkTreeIter iter;
 
     g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
-    g_return_if_fail (MOO_IS_PREFS_DIALOG_PAGE (page));
+    g_return_if_fail (MOO_IS_PREFS_PAGE (page));
 
     ref = g_object_get_data (G_OBJECT (page), "moo-prefs-dialog-row");
     g_return_if_fail (ref && gtk_tree_row_reference_valid (ref));

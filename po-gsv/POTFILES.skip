@@ -1,7 +1,10 @@
 build/
 medit/main.c
 medit/medit.desktop.in
+moo/mooapp/glade/mooappabout-credits.glade
+moo/mooapp/glade/mooappabout-dialog.glade
 moo/mooapp/glade/mooappabout.glade
+moo/mooapp/glade/mooappabout-license.glade
 moo/mooapp/mooappabout.c
 moo/mooapp/mooapp.c
 moo/mooapp/moohtml.c
@@ -10,6 +13,7 @@ moo/mooapp/smclient/eggsmclient.c
 moo/mooedit/filters.xml
 moo/mooedit/glade/mooeditprefs-file.glade
 moo/mooedit/glade/mooeditprefs-general.glade
+moo/mooedit/glade/mooeditprefs.glade
 moo/mooedit/glade/mooeditprefs-langs.glade
 moo/mooedit/glade/mooeditprefs-view.glade
 moo/mooedit/glade/mooeditsavemult.glade
@@ -24,6 +28,7 @@ moo/mooedit/glade/mooquicksearch.glade
 moo/mooedit/glade/mootextfind.glade
 moo/mooedit/glade/mootextfind-prompt.glade
 moo/mooedit/glade/mootextgotoline.glade
+moo/mooedit/glade/moousertools.glade
 moo/mooedit/gtksourceview/gtksourcecontextengine-mangled.c
 moo/mooedit/gtksourceview/gtksourcelanguagemanager-mangled.c
 moo/mooedit/gtksourceview/gtksourcelanguage-mangled.c
@@ -40,9 +45,12 @@ moo/mooedit/mooeditfileops.c
 moo/mooedit/mooeditor.c
 moo/mooedit/mooeditprefspage.c
 moo/mooedit/mooeditwindow.c
+moo/mooedit/mooplugin.c
 moo/mooedit/mootextfind.c
 moo/mooedit/moousertools.c
 moo/mooedit/moousertools-prefs.c
+moo/mooedit/plugins/completion/completion.glade
+moo/mooedit/plugins/completion/completion-plugin.c
 moo/mooedit/plugins/moofilelist.c
 moo/mooedit/plugins/moofileselector.c
 moo/mooedit/plugins/moofileselector.glade
@@ -81,6 +89,7 @@ moo/moopython/plugins/python.py
 moo/moopython/plugins/terminal.ini.desktop.in.in
 moo/moopython/plugins/terminal.py
 moo/mooutils/glade/mooaccelprefs.glade
+moo/mooutils/mooaccelprefs.c
 moo/mooutils/moocompat.c
 moo/mooutils/moodialogs.c
 moo/mooutils/mooencodings.c
@@ -93,5 +102,3 @@ moo/mooutils/moostock.c
 moo/mooutils/moowindow.c
 moo/mooutils/newgtk/glib-2.14/glib/gregex.c
 moo/mooutils/newgtk/glib-2.8/glib/gmappedfile.c
-moo/mooedit/plugins/completion/completion-plugin.c
-moo/mooedit/plugins/completion/completion.glade

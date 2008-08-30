@@ -11,7 +11,7 @@
  */
 
 #include "moofileselector.h"
-#include "mooutils/mooprefsdialogpage.h"
+#include "mooutils/mooprefspage.h"
 #include "mooutils/mooutils-treeview.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/moostock.h"
@@ -65,7 +65,7 @@ _moo_file_selector_prefs_page (MooPlugin *plugin)
     MooTreeHelper *helper;
     PrefsPageXml *gxml;
 
-    page = moo_prefs_dialog_page_new (_("File Selector"), MOO_STOCK_FILE_SELECTOR);
+    page = moo_prefs_page_new (_("File Selector"), MOO_STOCK_FILE_SELECTOR);
     gxml = prefs_page_xml_new_with_root (page);
 
     g_signal_connect_swapped (page, "apply", G_CALLBACK (prefs_page_apply), gxml);

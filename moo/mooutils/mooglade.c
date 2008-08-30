@@ -2275,7 +2275,7 @@ moo_glade_xml_parse_markup (MooGladeXML  *xml,
         else if (strcmp (elm->name, "requires") == 0 ||
                  strcmp (elm->name, "requires-version") == 0)
         {
-            g_message ("%s: ignoring '%s'", G_STRLOC, elm->name);
+//             g_message ("%s: ignoring '%s'", G_STRLOC, elm->name);
         }
         else
         {
@@ -2625,7 +2625,7 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("MooCombo", MOO_TYPE_COMBO);
     REGISTER_TYPE ("MooHistoryCombo", MOO_TYPE_HISTORY_COMBO);
     REGISTER_TYPE ("MooEntry", MOO_TYPE_ENTRY);
-    REGISTER_TYPE ("MooPrefsDialogPage", MOO_TYPE_PREFS_DIALOG_PAGE);
+    REGISTER_TYPE ("MooPrefsPage", MOO_TYPE_PREFS_PAGE);
     REGISTER_TYPE ("MooAccelButton", MOO_TYPE_ACCEL_BUTTON);
 
     REGISTER_TYPE ("GtkAboutDialog", GTK_TYPE_ABOUT_DIALOG);

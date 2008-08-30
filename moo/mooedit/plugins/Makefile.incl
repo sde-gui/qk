@@ -27,9 +27,8 @@ endif
 #
 
 GLADE2_FILES +=					\
-	plugins/moofileselector-prefs.glade
-	plugins/moofileselector-new-file.glade	\
-	plugins/moofileselector-save-as.glade
+	plugins/moofileselector-prefs.glade	\
+	plugins/moofileselector.glade
 
 mooeditplugins_sources +=			\
 	plugins/moofileselector-prefs.c		\

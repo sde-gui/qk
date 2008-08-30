@@ -17,11 +17,11 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooprintpreview.h"
 #include "mooedit/mootextprint-private.h"
-#include "glade/mooprintpreview-glade.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooglade.h"
+#include "glade/mooprintpreview-gxml.h"
 #include <cairo-pdf.h>
 
 MOO_DEBUG_INIT(printing, TRUE)
@@ -46,10 +46,8 @@ struct _MooPrintPreviewPrivate {
     GtkPrintContext *context;
     GtkPrintOperationPreview *gtk_preview;
 
-    MooGladeXML *xml;
+    PrintPreviewXml *gxml;
     GtkEntry *entry;
-    GtkWidget *darea;
-    GtkScrolledWindow *swin;
 
     GPtrArray *pages;
     guint n_pages;
@@ -89,10 +87,7 @@ _moo_print_preview_init (MooPrintPreview *preview)
     preview->priv->op = NULL;
     preview->priv->gtk_preview = NULL;
 
-    preview->priv->xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    moo_glade_xml_fill_widget (preview->priv->xml, GTK_WIDGET (preview),
-                               mooprintpreview_glade_xml, -1,
-                               "dialog", NULL);
+    preview->priv->gxml = print_preview_xml_new_with_root (GTK_WIDGET (preview));
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (preview),
                                              GTK_RESPONSE_APPLY,
                                              GTK_RESPONSE_CLOSE,
@@ -101,8 +96,6 @@ _moo_print_preview_init (MooPrintPreview *preview)
     preview->priv->context = NULL;
     preview->priv->gtk_preview = NULL;
     preview->priv->entry = NULL;
-    preview->priv->darea = NULL;
-    preview->priv->swin = NULL;
     preview->priv->pages = NULL;
     preview->priv->n_pages = 0;
     preview->priv->current_page = G_MAXUINT;
@@ -125,7 +118,6 @@ moo_print_preview_finalize (GObject *object)
     g_object_unref (preview->priv->op);
     g_object_unref (preview->priv->gtk_preview);
     g_object_unref (preview->priv->context);
-    g_object_unref (preview->priv->xml);
 
     if (preview->priv->pages)
     {
@@ -297,11 +289,11 @@ moo_print_preview_set_page (MooPrintPreview *preview,
         return;
 
     preview->priv->current_page = n;
-    gtk_widget_queue_draw (preview->priv->darea);
+    gtk_widget_queue_draw (GTK_WIDGET (preview->priv->gxml->darea));
 
-    gtk_widget_set_sensitive (moo_glade_xml_get_widget (preview->priv->xml, "next"),
+    gtk_widget_set_sensitive (GTK_WIDGET (preview->priv->gxml->next),
                               n + 1 < preview->priv->n_pages);
-    gtk_widget_set_sensitive (moo_glade_xml_get_widget (preview->priv->xml, "prev"),
+    gtk_widget_set_sensitive (GTK_WIDGET (preview->priv->gxml->prev),
                               n > 0);
 
     text = g_strdup_printf ("%u", n + 1);
@@ -349,28 +341,29 @@ moo_print_preview_set_zoom (MooPrintPreview *preview,
 
     if (preview->priv->zoom_to_fit)
     {
-        gtk_scrolled_window_set_policy (preview->priv->swin, GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+        gtk_scrolled_window_set_policy (preview->priv->gxml->swin,
+                                        GTK_POLICY_NEVER, GTK_POLICY_NEVER);
 
         calc_size (&preview->priv->screen_page_width,
                    &preview->priv->screen_page_height,
-                   preview->priv->darea->allocation.width,
-                   preview->priv->darea->allocation.height,
+                   GTK_WIDGET (preview->priv->gxml->darea)->allocation.width,
+                   GTK_WIDGET (preview->priv->gxml->darea)->allocation.height,
                    preview->priv->page_width,
                    preview->priv->page_height);
 
-        gtk_widget_set_size_request (preview->priv->darea, -1, -1);
+        gtk_widget_set_size_request (GTK_WIDGET (preview->priv->gxml->darea), -1, -1);
     }
     else
     {
-        gtk_scrolled_window_set_policy (preview->priv->swin, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+        gtk_scrolled_window_set_policy (preview->priv->gxml->swin, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
         preview->priv->screen_page_width = zoom_factors[zoom] * preview->priv->page_width;
         preview->priv->screen_page_height = zoom_factors[zoom] * preview->priv->page_height;
-        gtk_widget_set_size_request (preview->priv->darea,
+        gtk_widget_set_size_request (GTK_WIDGET (preview->priv->gxml->darea),
                                      preview->priv->screen_page_width,
                                      preview->priv->screen_page_height);
     }
 
-    gtk_widget_queue_draw (preview->priv->darea);
+    gtk_widget_queue_draw (GTK_WIDGET (preview->priv->gxml->darea));
 
     if (zoom_to_fit)
         moo_dmsg ("zoom_to_fit");
@@ -384,8 +377,8 @@ size_allocate (MooPrintPreview *preview)
     if (preview->priv->zoom_to_fit)
         calc_size (&preview->priv->screen_page_width,
                    &preview->priv->screen_page_height,
-                   preview->priv->darea->allocation.width,
-                   preview->priv->darea->allocation.height,
+                   GTK_WIDGET (preview->priv->gxml->darea)->allocation.width,
+                   GTK_WIDGET (preview->priv->gxml->darea)->allocation.height,
                    preview->priv->page_width,
                    preview->priv->page_height);
 }
@@ -562,39 +555,33 @@ entry_activated (MooPrintPreview *preview)
 void
 _moo_print_preview_start (MooPrintPreview *preview)
 {
-    GtkToolItem *entry_item;
-    MooGladeXML *xml;
-    GtkWidget *box;
     GtkPageSetup *setup;
     char *text;
+    PageEntryXml *gxml;
 
-    g_signal_connect_swapped (moo_glade_xml_get_widget (preview->priv->xml, "zoom_100"),
-                              "clicked", G_CALLBACK (zoom_100_clicked), preview);
-    g_signal_connect_swapped (moo_glade_xml_get_widget (preview->priv->xml, "zoom_to_fit"),
-                              "clicked", G_CALLBACK (zoom_to_fit_clicked), preview);
-    g_signal_connect_swapped (moo_glade_xml_get_widget (preview->priv->xml, "zoom_in"),
-                              "clicked", G_CALLBACK (zoom_in_clicked), preview);
-    g_signal_connect_swapped (moo_glade_xml_get_widget (preview->priv->xml, "zoom_out"),
-                              "clicked", G_CALLBACK (zoom_out_clicked), preview);
-    g_signal_connect_swapped (moo_glade_xml_get_widget (preview->priv->xml, "next"),
-                              "clicked", G_CALLBACK (next_clicked), preview);
-    g_signal_connect_swapped (moo_glade_xml_get_widget (preview->priv->xml, "prev"),
-                              "clicked", G_CALLBACK (prev_clicked), preview);
+    g_signal_connect_swapped (preview->priv->gxml->zoom_normal, "clicked",
+                              G_CALLBACK (zoom_100_clicked), preview);
+    g_signal_connect_swapped (preview->priv->gxml->zoom_to_fit, "clicked",
+                              G_CALLBACK (zoom_to_fit_clicked), preview);
+    g_signal_connect_swapped (preview->priv->gxml->zoom_in, "clicked",
+                              G_CALLBACK (zoom_in_clicked), preview);
+    g_signal_connect_swapped (preview->priv->gxml->zoom_out, "clicked",
+                              G_CALLBACK (zoom_out_clicked), preview);
+    g_signal_connect_swapped (preview->priv->gxml->next, "clicked",
+                              G_CALLBACK (next_clicked), preview);
+    g_signal_connect_swapped (preview->priv->gxml->prev, "clicked",
+                              G_CALLBACK (prev_clicked), preview);
 
-    preview->priv->swin = moo_glade_xml_get_widget (preview->priv->xml, "swin");
-    preview->priv->darea = moo_glade_xml_get_widget (preview->priv->xml, "darea");
-    g_signal_connect_swapped (preview->priv->darea, "expose-event",
+    g_signal_connect_swapped (preview->priv->gxml->darea, "expose-event",
                               G_CALLBACK (expose_event), preview);
-    g_signal_connect_swapped (preview->priv->darea, "size-allocate",
+    g_signal_connect_swapped (preview->priv->gxml->darea, "size-allocate",
                               G_CALLBACK (size_allocate), preview);
 
-    entry_item = moo_glade_xml_get_widget (preview->priv->xml, "entry_item");
-    xml = moo_glade_xml_new_from_buf (mooprintpreview_glade_xml, -1,
-                                      "entry_hbox", GETTEXT_PACKAGE, NULL);
-    box = moo_glade_xml_get_widget (xml, "entry_hbox");
-    gtk_container_add (GTK_CONTAINER (entry_item), box);
+    gxml = page_entry_xml_new ();
+    gtk_container_add (GTK_CONTAINER (preview->priv->gxml->entry_item),
+                       GTK_WIDGET (gxml->PageEntry));
 
-    preview->priv->entry = moo_glade_xml_get_widget (xml, "entry");
+    preview->priv->entry = gxml->entry;
     g_signal_connect_swapped (preview->priv->entry, "activate", G_CALLBACK (entry_activated), preview);
 
     setup = gtk_print_context_get_page_setup (preview->priv->context);
@@ -617,10 +604,8 @@ _moo_print_preview_start (MooPrintPreview *preview)
     moo_print_preview_set_zoom (preview, FALSE, ZOOM_100);
 
     text = g_strdup_printf ("of %u", preview->priv->n_pages);
-    gtk_label_set_text (moo_glade_xml_get_widget (xml, "label"), text);
+    gtk_label_set_text (gxml->label, text);
     g_free (text);
-
-    g_object_unref (xml);
 }
 
 
