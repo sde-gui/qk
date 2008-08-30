@@ -12,7 +12,6 @@
 
 #include "mooutils/mooaccelprefs.h"
 #include "mooutils/mooaccel.h"
-#include "glade/mooaccelprefs-glade.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/mooaccelbutton.h"
 #include "mooutils/mooglade.h"
@@ -22,6 +21,7 @@
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooactiongroup.h"
 #include "mooutils/mootype-macros.h"
+#include "glade/mooaccelprefs-gxml.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
@@ -33,15 +33,9 @@ typedef struct {
     GtkAction *current_action;
     GtkTreeRowReference *current_row;
 
-    GtkWidget *shortcut_frame;
-    GtkTreeView *treeview;
+    AccelPrefsPageXml *gxml;
     GtkTreeSelection *selection;
     GtkTreeStore *store;
-    GtkToggleButton *shortcut_default;
-    GtkToggleButton *shortcut_none;
-    GtkToggleButton *shortcut_custom;
-    MooAccelButton *shortcut;
-    GtkLabel *default_label;
 
     GHashTable *changed;    /* Gtkction* -> Shortcut* */
     GPtrArray *actions;     /* GtkActionGroup* */
@@ -129,44 +123,44 @@ _moo_accel_prefs_page_class_init (MooAccelPrefsPageClass *klass)
 static void
 row_activated (MooAccelPrefsPage *page)
 {
-    if (GTK_WIDGET_IS_SENSITIVE (page->shortcut))
-        gtk_button_clicked (GTK_BUTTON (page->shortcut));
+    if (GTK_WIDGET_IS_SENSITIVE (page->gxml->shortcut))
+        gtk_button_clicked (GTK_BUTTON (page->gxml->shortcut));
 }
 
 
 static void
 block_accel_set (MooAccelPrefsPage *page)
 {
-    g_signal_handlers_block_matched (page->shortcut, G_SIGNAL_MATCH_FUNC,
+    g_signal_handlers_block_matched (page->gxml->shortcut, G_SIGNAL_MATCH_FUNC,
                                      0, 0, 0, (gpointer) accel_set, 0);
 }
 
 static void
 unblock_accel_set (MooAccelPrefsPage *page)
 {
-    g_signal_handlers_unblock_matched (page->shortcut, G_SIGNAL_MATCH_FUNC,
+    g_signal_handlers_unblock_matched (page->gxml->shortcut, G_SIGNAL_MATCH_FUNC,
                                        0, 0, 0, (gpointer) accel_set, 0);
 }
 
 static void
 block_radio (MooAccelPrefsPage *page)
 {
-    g_signal_handlers_block_matched (page->shortcut_none, G_SIGNAL_MATCH_FUNC,
+    g_signal_handlers_block_matched (page->gxml->shortcut_none, G_SIGNAL_MATCH_FUNC,
                                      0, 0, 0, (gpointer) shortcut_none_toggled, 0);
-    g_signal_handlers_block_matched (page->shortcut_default, G_SIGNAL_MATCH_FUNC,
+    g_signal_handlers_block_matched (page->gxml->shortcut_default, G_SIGNAL_MATCH_FUNC,
                                      0, 0, 0, (gpointer) shortcut_default_toggled, 0);
-    g_signal_handlers_block_matched (page->shortcut_custom, G_SIGNAL_MATCH_FUNC,
+    g_signal_handlers_block_matched (page->gxml->shortcut_custom, G_SIGNAL_MATCH_FUNC,
                                      0, 0, 0, (gpointer) shortcut_custom_toggled, 0);
 }
 
 static void
 unblock_radio (MooAccelPrefsPage *page)
 {
-    g_signal_handlers_unblock_matched (page->shortcut_none, G_SIGNAL_MATCH_FUNC,
+    g_signal_handlers_unblock_matched (page->gxml->shortcut_none, G_SIGNAL_MATCH_FUNC,
                                        0, 0, 0, (gpointer) shortcut_none_toggled, 0);
-    g_signal_handlers_unblock_matched (page->shortcut_default, G_SIGNAL_MATCH_FUNC,
+    g_signal_handlers_unblock_matched (page->gxml->shortcut_default, G_SIGNAL_MATCH_FUNC,
                                        0, 0, 0, (gpointer) shortcut_default_toggled, 0);
-    g_signal_handlers_unblock_matched (page->shortcut_custom, G_SIGNAL_MATCH_FUNC,
+    g_signal_handlers_unblock_matched (page->gxml->shortcut_custom, G_SIGNAL_MATCH_FUNC,
                                        0, 0, 0, (gpointer) shortcut_custom_toggled, 0);
 }
 
@@ -176,7 +170,6 @@ _moo_accel_prefs_page_init (MooAccelPrefsPage *page)
 {
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;
-    MooGladeXML *xml;
 
     page->changed = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL,
                                            (GDestroyNotify) shortcut_free);
@@ -185,66 +178,53 @@ _moo_accel_prefs_page_init (MooAccelPrefsPage *page)
                                           (GDestroyNotify) g_free,
                                           (GDestroyNotify) gtk_tree_row_reference_free);
 
-    xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-    moo_glade_xml_fill_widget (xml, GTK_WIDGET (page),
-                               mooaccelprefs_glade_xml, -1,
-                               "page", NULL);
+    page->gxml = accel_prefs_page_xml_new_with_root (GTK_WIDGET (page));
     g_object_set (page, "label", "Shortcuts", "icon-stock-id", MOO_STOCK_KEYBOARD, NULL);
 
-    page->treeview = moo_glade_xml_get_widget (xml, "treeview");
-    gtk_tree_view_set_search_column (page->treeview, 0);
+    gtk_tree_view_set_search_column (page->gxml->treeview, 0);
 
-    g_signal_connect_swapped (page->treeview, "row-activated",
+    g_signal_connect_swapped (page->gxml->treeview, "row-activated",
                               G_CALLBACK (row_activated),
                               page);
-
-    page->shortcut_frame = moo_glade_xml_get_widget (xml, "shortcut_frame");
-    page->shortcut_default = moo_glade_xml_get_widget (xml, "shortcut_default");
-    page->shortcut_none = moo_glade_xml_get_widget (xml, "shortcut_none");
-    page->shortcut_custom = moo_glade_xml_get_widget (xml, "shortcut_custom");
-    page->shortcut = moo_glade_xml_get_widget (xml, "shortcut");
-    page->default_label = moo_glade_xml_get_widget (xml, "default_label");
-
-    g_object_unref (xml);
 
     page->store = gtk_tree_store_new (N_COLUMNS,
                                       G_TYPE_STRING,
                                       GTK_TYPE_ACTION,
                                       G_TYPE_STRING);
-    gtk_tree_view_set_model (page->treeview, GTK_TREE_MODEL (page->store));
+    gtk_tree_view_set_model (page->gxml->treeview, GTK_TREE_MODEL (page->store));
     g_object_unref (page->store);
 
     renderer = gtk_cell_renderer_text_new ();
     column = gtk_tree_view_column_new_with_attributes ("Action", renderer,
                                                        "text", COLUMN_ACTION_NAME,
                                                        NULL);
-    gtk_tree_view_append_column (page->treeview, column);
+    gtk_tree_view_append_column (page->gxml->treeview, column);
     gtk_tree_view_column_set_sort_column_id (column, COLUMN_ACTION_NAME);
 
     renderer = gtk_cell_renderer_text_new ();
     column = gtk_tree_view_column_new_with_attributes ("Shortcut", renderer,
                                                        "text", COLUMN_ACCEL,
                                                        NULL);
-    gtk_tree_view_append_column (page->treeview, column);
+    gtk_tree_view_append_column (page->gxml->treeview, column);
     gtk_tree_view_column_set_sort_column_id (column, COLUMN_ACCEL);
 
-    page->selection = gtk_tree_view_get_selection (page->treeview);
+    page->selection = gtk_tree_view_get_selection (page->gxml->treeview);
     gtk_tree_selection_set_mode (page->selection, GTK_SELECTION_SINGLE);
 
     g_signal_connect_swapped (page->selection, "changed",
                               G_CALLBACK (tree_selection_changed),
                               page);
 
-    g_signal_connect_swapped (page->shortcut, "accel-set",
+    g_signal_connect_swapped (page->gxml->shortcut, "accel-set",
                               G_CALLBACK (accel_set),
                               page);
-    g_signal_connect_swapped (page->shortcut_none, "toggled",
+    g_signal_connect_swapped (page->gxml->shortcut_none, "toggled",
                               G_CALLBACK (shortcut_none_toggled),
                               page);
-    g_signal_connect_swapped (page->shortcut_default, "toggled",
+    g_signal_connect_swapped (page->gxml->shortcut_default, "toggled",
                               G_CALLBACK (shortcut_default_toggled),
                               page);
-    g_signal_connect_swapped (page->shortcut_custom, "toggled",
+    g_signal_connect_swapped (page->gxml->shortcut_custom, "toggled",
                               G_CALLBACK (shortcut_custom_toggled),
                               page);
 }
@@ -392,7 +372,7 @@ moo_accel_prefs_page_init (MooPrefsDialogPage *prefs_page)
     gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (page->store),
                                           COLUMN_ACTION_NAME,
                                           GTK_SORT_ASCENDING);
-    gtk_tree_view_expand_all (page->treeview);
+    gtk_tree_view_expand_all (page->gxml->treeview);
     tree_selection_changed (page);
 }
 
@@ -406,7 +386,7 @@ tree_selection_changed (MooAccelPrefsPage *page)
     GtkTreePath *path;
     char *default_label;
     const char *default_accel, *new_accel = "";
-    GtkToggleButton *new_button = NULL;
+    GtkRadioButton *new_button = NULL;
     Shortcut *shortcut;
 
     if (gtk_tree_selection_get_selected (page->selection, NULL, &iter))
@@ -423,8 +403,8 @@ tree_selection_changed (MooAccelPrefsPage *page)
 
     if (!selected_action)
     {
-        gtk_label_set_text (page->default_label, "");
-        gtk_widget_set_sensitive (page->shortcut_frame, FALSE);
+        gtk_label_set_text (page->gxml->default_label, "");
+        gtk_widget_set_sensitive (GTK_WIDGET (page->gxml->shortcut_frame), FALSE);
         return;
     }
 
@@ -432,15 +412,15 @@ tree_selection_changed (MooAccelPrefsPage *page)
     page->current_row = gtk_tree_row_reference_new (GTK_TREE_MODEL (page->store), path);
     gtk_tree_path_free (path);
 
-    gtk_widget_set_sensitive (page->shortcut_frame, TRUE);
+    gtk_widget_set_sensitive (GTK_WIDGET (page->gxml->shortcut_frame), TRUE);
 
     default_accel = _moo_get_default_accel (_moo_action_get_accel_path (action));
     default_label = _moo_get_accel_label (default_accel);
 
     if (!default_label || !default_label[0])
-        gtk_label_set_text (page->default_label, "None");
+        gtk_label_set_text (page->gxml->default_label, "None");
     else
-        gtk_label_set_text (page->default_label, default_label);
+        gtk_label_set_text (page->gxml->default_label, default_label);
 
     block_radio (page);
     block_accel_set (page);
@@ -452,17 +432,17 @@ tree_selection_changed (MooAccelPrefsPage *page)
         switch (shortcut->choice)
         {
             case NONE:
-                new_button = page->shortcut_none;
+                new_button = page->gxml->shortcut_none;
                 new_accel = NULL;
                 break;
 
             case DEFAULT:
-                new_button = page->shortcut_default;
+                new_button = page->gxml->shortcut_default;
                 new_accel = default_accel;
                 break;
 
             case CUSTOM:
-                new_button = page->shortcut_custom;
+                new_button = page->gxml->shortcut_custom;
                 new_accel = shortcut->accel;
                 break;
 
@@ -476,23 +456,23 @@ tree_selection_changed (MooAccelPrefsPage *page)
 
         if (!strcmp (accel, default_accel))
         {
-            new_button = page->shortcut_default;
+            new_button = page->gxml->shortcut_default;
             new_accel = default_accel;
         }
         else if (!accel[0])
         {
-            new_button = page->shortcut_none;
+            new_button = page->gxml->shortcut_none;
             new_accel = NULL;
         }
         else
         {
-            new_button = page->shortcut_custom;
+            new_button = page->gxml->shortcut_custom;
             new_accel = accel;
         }
     }
 
-    gtk_toggle_button_set_active (new_button, TRUE);
-    _moo_accel_button_set_accel (page->shortcut, new_accel);
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (new_button), TRUE);
+    _moo_accel_button_set_accel (page->gxml->shortcut, new_accel);
 
     unblock_radio (page);
     unblock_accel_set (page);
@@ -513,7 +493,7 @@ accel_set (MooAccelPrefsPage *page)
     g_return_if_fail (page->current_row != NULL && page->current_action != NULL);
 
     block_radio (page);
-    gtk_toggle_button_set_active (page->shortcut_custom, TRUE);
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page->gxml->shortcut_custom), TRUE);
     unblock_radio (page);
 
     path = gtk_tree_row_reference_get_path (page->current_row);
@@ -525,8 +505,8 @@ accel_set (MooAccelPrefsPage *page)
     }
     gtk_tree_path_free (path);
 
-    accel = _moo_accel_button_get_accel (page->shortcut);
-    label = gtk_button_get_label (GTK_BUTTON (page->shortcut));
+    accel = _moo_accel_button_get_accel (page->gxml->shortcut);
+    label = gtk_button_get_label (GTK_BUTTON (page->gxml->shortcut));
     gtk_tree_store_set (page->store, &iter, COLUMN_ACCEL, label, -1);
 
     if (accel && accel[0])
@@ -548,7 +528,7 @@ shortcut_none_toggled (MooAccelPrefsPage *page)
 
     g_return_if_fail (page->current_row != NULL && page->current_action != NULL);
 
-    if (!gtk_toggle_button_get_active (page->shortcut_none))
+    if (!gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (page->gxml->shortcut_none)))
         return;
 
     path = gtk_tree_row_reference_get_path (page->current_row);
@@ -565,7 +545,7 @@ shortcut_none_toggled (MooAccelPrefsPage *page)
                          page->current_action,
                          shortcut_new (NONE, ""));
     block_accel_set (page);
-    _moo_accel_button_set_accel (page->shortcut, "");
+    _moo_accel_button_set_accel (page->gxml->shortcut, "");
     unblock_accel_set (page);
 }
 
@@ -580,7 +560,7 @@ shortcut_default_toggled (MooAccelPrefsPage *page)
 
     g_return_if_fail (page->current_row != NULL && page->current_action != NULL);
 
-    if (!gtk_toggle_button_get_active (page->shortcut_default))
+    if (!gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (page->gxml->shortcut_default)))
         return;
 
     path = gtk_tree_row_reference_get_path (page->current_row);
@@ -622,7 +602,7 @@ shortcut_default_toggled (MooAccelPrefsPage *page)
     current_shortcut->accel = g_strdup (default_accel);
 
     block_accel_set (page);
-    _moo_accel_button_set_accel (page->shortcut, default_accel);
+    _moo_accel_button_set_accel (page->gxml->shortcut, default_accel);
     unblock_accel_set (page);
 }
 
@@ -636,7 +616,7 @@ shortcut_custom_toggled (MooAccelPrefsPage *page)
 
     g_return_if_fail (page->current_row != NULL && page->current_action != NULL);
 
-    if (!gtk_toggle_button_get_active (page->shortcut_custom))
+    if (!gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (page->gxml->shortcut_custom)))
         return;
 
     path = gtk_tree_row_reference_get_path (page->current_row);
@@ -655,18 +635,18 @@ shortcut_custom_toggled (MooAccelPrefsPage *page)
     if (shortcut)
     {
         block_accel_set (page);
-        _moo_accel_button_set_accel (page->shortcut, shortcut->accel);
+        _moo_accel_button_set_accel (page->gxml->shortcut, shortcut->accel);
         unblock_accel_set (page);
 
         gtk_tree_store_set (page->store, &iter, COLUMN_ACCEL,
-                            gtk_button_get_label (GTK_BUTTON (page->shortcut)),
+                            gtk_button_get_label (GTK_BUTTON (page->gxml->shortcut)),
                             -1);
 
         shortcut->choice = CUSTOM;
     }
     else
     {
-        gtk_button_clicked (GTK_BUTTON (page->shortcut));
+        gtk_button_clicked (GTK_BUTTON (page->gxml->shortcut));
     }
 }
 
@@ -711,26 +691,21 @@ static GtkWidget*
 _moo_accel_prefs_dialog_new (MooActionCollection *collection)
 {
     MooAccelPrefsPage *page;
-    GtkWidget *dialog, *page_holder;
-    MooGladeXML *xml;
+    GtkWidget *dialog;
 
-    xml = moo_glade_xml_new_from_buf (mooaccelprefs_glade_xml, -1,
-                                      "dialog", GETTEXT_PACKAGE, NULL);
-    g_return_val_if_fail (xml != NULL, NULL);
-
-    dialog = moo_glade_xml_get_widget (xml, "dialog");
-
-    page = _moo_accel_prefs_page_new (collection);
-    gtk_widget_show (GTK_WIDGET (page));
-    page_holder = moo_glade_xml_get_widget (xml, "page_holder");
-    gtk_container_add (GTK_CONTAINER (page_holder), GTK_WIDGET (page));
-
-    g_object_unref (xml);
-
+    dialog = gtk_dialog_new_with_buttons (_("Configure Shortcuts"), NULL, 0,
+                                          GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                          GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                          NULL);
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
                                              GTK_RESPONSE_OK,
                                              GTK_RESPONSE_CANCEL,
                                              -1);
+    gtk_window_set_default_size (GTK_WINDOW (dialog), -1, 400);
+
+    page = _moo_accel_prefs_page_new (collection);
+    gtk_widget_show (GTK_WIDGET (page));
+    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), GTK_WIDGET (page), TRUE, TRUE, 0);
 
     g_signal_connect_swapped (dialog, "response",
                               G_CALLBACK (dialog_response), page);

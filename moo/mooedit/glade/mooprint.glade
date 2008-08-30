@@ -82,7 +82,6 @@
                 <child>
                   <widget class="GtkCheckButton" id="ellipsize">
                     <property name="visible">True</property>
-                    <property name="moo_sensitive">!wrap</property>
                     <property name="label" translatable="yes">Ellipsize long lines</property>
                     <property name="use_underline">True</property>
                     <property name="response_id">0</property>
@@ -188,7 +187,6 @@
                             <child>
                               <widget class="GtkAlignment" id="header_alignment">
                                 <property name="visible">True</property>
-                                <property name="moo_sensitive">print_header</property>
                                 <child>
                                   <widget class="GtkVBox" id="vbox2">
                                     <property name="visible">True</property>
@@ -353,7 +351,6 @@
                             <child>
                               <widget class="GtkAlignment" id="footer_alignment">
                                 <property name="visible">True</property>
-                                <property name="moo_sensitive">print_header</property>
                                 <child>
                                   <widget class="GtkVBox" id="vbox8">
                                     <property name="visible">True</property>

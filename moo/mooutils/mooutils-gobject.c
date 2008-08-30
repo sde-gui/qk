@@ -1771,17 +1771,13 @@ _moo_sync_bool_property (gpointer            slave,
 
 
 void
-moo_bind_sensitive (GtkWidget          *btn,
-                    GtkWidget         **dependent,
-                    int                 num_dependent,
-                    gboolean            invert)
+moo_bind_sensitive (GtkWidget *btn,
+                    GtkWidget *dependent,
+                    gboolean   invert)
 {
-    int i;
-
     g_return_if_fail (G_IS_OBJECT (btn));
-
-    for (i = 0; i < num_dependent; ++i)
-        moo_bind_bool_property (dependent[i], "sensitive", btn, "active", invert);
+    g_return_if_fail (G_IS_OBJECT (dependent));
+    moo_bind_bool_property (dependent, "sensitive", btn, "active", invert);
 }
 
 

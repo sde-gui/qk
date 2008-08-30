@@ -412,7 +412,7 @@ set_moo_sensitive (MooGladeXML *xml,
     btn = moo_glade_xml_get_widget (xml, value);
     g_return_if_fail (GTK_IS_TOGGLE_BUTTON (btn));
 
-    moo_bind_sensitive (btn, &widget, 1, invert);
+    moo_bind_sensitive (btn, widget, invert);
 }
 
 
@@ -468,7 +468,7 @@ connect_special_signal (MooGladeXML    *xml,
                            G_STRLOC, signal->object);
         }
 
-        moo_bind_sensitive (btn, &node->widget, 1, invert);
+        moo_bind_sensitive (btn, node->widget, invert);
 
         return TRUE;
     }

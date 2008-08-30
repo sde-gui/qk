@@ -119,8 +119,7 @@ MooObjectWatch *_moo_object_watch_alloc (gsize                size,
     ((Type_*) _moo_object_watch_alloc (sizeof (Type_), klass_, src_, tgt_, notify_, data_))
 
 void        moo_bind_sensitive      (GtkWidget          *toggle_btn,
-                                     GtkWidget         **dependent,
-                                     int                 num_dependent,
+                                     GtkWidget          *dependent,
                                      gboolean            invert);
 
 guint       moo_bind_bool_property  (gpointer            target,

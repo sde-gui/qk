@@ -737,27 +737,6 @@ _wrap_moo_file_dialog (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *k
     return_None;
 }
 %%
-override moo_bind_sensitive kwargs
-static PyObject *
-_wrap_moo_bind_sensitive (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
-{
-    static char *kwlist[] = { "toggle_btn", "dependent", "invert", NULL };
-    PyGObject *toggle_btn, *dependent;
-    int invert = FALSE;
-    GtkWidget *widget;
-
-    if (!PyArg_ParseTupleAndKeywords (args, kwargs, "O!O!|i:moo_bind_sensitive", kwlist,
-                                      &PyGtkWidget_Type, &toggle_btn,
-                                      &PyGtkWidget_Type, &dependent,
-                                      &invert))
-        return NULL;
-
-    widget = GTK_WIDGET (dependent->obj);
-    moo_bind_sensitive (GTK_WIDGET (toggle_btn->obj), &widget, 1, invert);
-
-    return_None;
-}
-%%
 override-slot MooGladeXML.tp_getattr
 static PyObject *
 _wrap_moo_glade_xml_tp_getattr (PyObject *self, char *attr)

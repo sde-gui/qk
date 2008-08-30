@@ -26,10 +26,8 @@ endif
 # fileselector
 #
 
-GLADE_FILES +=					\
-	plugins/moofileselector-prefs.glade
-
 GLADE2_FILES +=					\
+	plugins/moofileselector-prefs.glade
 	plugins/moofileselector-new-file.glade	\
 	plugins/moofileselector-save-as.glade
 

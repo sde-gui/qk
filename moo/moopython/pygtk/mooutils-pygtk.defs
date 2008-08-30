@@ -1770,8 +1770,7 @@
   (parameters
     '("GtkWidget*" "toggle_btn")
     '("GtkWidget*" "dependent")
-    '("int" "num_dependent")
-    '("gboolean" "invert")
+    '("gboolean" "invert" (default "FALSE"))
   )
 )
 

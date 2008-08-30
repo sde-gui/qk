@@ -1050,13 +1050,6 @@ install_common_actions (void)
                                  "closure-callback", moo_app_help,
                                  NULL);
 
-    moo_window_class_new_action (klass, "SystemInfo", NULL,
-                                 /* menu item label */
-                                 "label", _("System Info"),
-                                 "no-accel", TRUE,
-                                 "closure-callback", moo_app_system_info_dialog,
-                                 NULL);
-
     moo_window_class_new_action (klass, "Quit", NULL,
                                  "display-name", GTK_STOCK_QUIT,
                                  "label", GTK_STOCK_QUIT,

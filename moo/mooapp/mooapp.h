@@ -77,7 +77,6 @@ MooEditor       *moo_app_get_editor             (MooApp     *app);
 void             moo_app_prefs_dialog           (GtkWidget  *parent);
 void             moo_app_about_dialog           (GtkWidget  *parent);
 
-void             moo_app_system_info_dialog     (GtkWidget  *parent);
 char            *moo_app_get_system_info        (MooApp     *app);
 
 MooUIXML        *moo_app_get_ui_xml             (MooApp     *app);

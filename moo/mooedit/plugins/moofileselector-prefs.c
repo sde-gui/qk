@@ -11,13 +11,13 @@
  */
 
 #include "moofileselector.h"
-#include "plugins/moofileselector-prefs-glade.h"
 #include "mooutils/mooprefsdialogpage.h"
 #include "mooutils/mooutils-treeview.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moohelp.h"
 #include "help-sections.h"
+#include "plugins/moofileselector-prefs-gxml.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -31,8 +31,8 @@ enum {
 };
 
 
-static void     prefs_page_apply        (MooGladeXML    *xml);
-static void     prefs_page_init         (MooGladeXML    *xml);
+static void     prefs_page_apply        (PrefsPageXml   *gxml);
+static void     prefs_page_init         (PrefsPageXml   *gxml);
 
 static gboolean helper_new_row          (MooTreeHelper  *helper,
                                          GtkTreeModel   *model,
@@ -44,7 +44,7 @@ static gboolean helper_move_row         (MooTreeHelper  *helper,
                                          GtkTreeModel   *model,
                                          GtkTreePath    *old_path,
                                          GtkTreePath    *new_path);
-static void     helper_update_widgets   (MooGladeXML    *xml,
+static void     helper_update_widgets   (PrefsPageXml   *gxml,
                                          GtkTreeModel   *model,
                                          GtkTreePath    *path,
                                          GtkTreeIter    *iter);
@@ -52,31 +52,28 @@ static void     helper_update_model     (MooTreeHelper  *helper,
                                          GtkTreeModel   *model,
                                          GtkTreePath    *path,
                                          GtkTreeIter    *iter,
-                                         MooGladeXML    *xml);
+                                         PrefsPageXml   *gxml);
 
 
 GtkWidget *
 _moo_file_selector_prefs_page (MooPlugin *plugin)
 {
-    MooPrefsDialogPage *page;
-    GtkWidget *treeview;
+    GtkWidget *page;
     GtkTreeViewColumn *column;
     GtkCellRenderer *cell;
     GtkListStore *store;
     MooTreeHelper *helper;
+    PrefsPageXml *gxml;
 
-    page = moo_prefs_dialog_page_new_from_xml (_("File Selector"), MOO_STOCK_FILE_SELECTOR,
-                                               NULL, moofileselector_prefs_glade_xml,
-                                               "page", NULL);
+    page = moo_prefs_dialog_page_new (_("File Selector"), MOO_STOCK_FILE_SELECTOR);
+    gxml = prefs_page_xml_new_with_root (page);
 
-    g_signal_connect_swapped (page, "apply", G_CALLBACK (prefs_page_apply), page->xml);
-    g_signal_connect_swapped (page, "init", G_CALLBACK (prefs_page_init), page->xml);
+    g_signal_connect_swapped (page, "apply", G_CALLBACK (prefs_page_apply), gxml);
+    g_signal_connect_swapped (page, "init", G_CALLBACK (prefs_page_init), gxml);
     moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_FILE_SELECTOR);
 
-    treeview = moo_glade_xml_get_widget (page->xml, "treeview");
-
     column = gtk_tree_view_column_new ();
-    gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), column);
+    gtk_tree_view_append_column (gxml->treeview, column);
 
     cell = gtk_cell_renderer_text_new ();
     gtk_tree_view_column_pack_start (column, cell, TRUE);
@@ -84,27 +81,27 @@ _moo_file_selector_prefs_page (MooPlugin *plugin)
 
     store = gtk_list_store_new (N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING,
                                 G_TYPE_STRING, G_TYPE_STRING);
-    gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (store));
+    gtk_tree_view_set_model (gxml->treeview, GTK_TREE_MODEL (store));
     g_object_unref (store);
 
-    helper = _moo_tree_helper_new (treeview,
-                                   moo_glade_xml_get_widget (page->xml, "new"),
-                                   moo_glade_xml_get_widget (page->xml, "delete"),
-                                   moo_glade_xml_get_widget (page->xml, "up"),
-                                   moo_glade_xml_get_widget (page->xml, "down"));
+    helper = _moo_tree_helper_new (GTK_WIDGET (gxml->treeview),
+                                   GTK_WIDGET (gxml->new_),
+                                   GTK_WIDGET (gxml->delete_),
+                                   GTK_WIDGET (gxml->up),
+                                   GTK_WIDGET (gxml->down));
 
     g_signal_connect (helper, "new-row", G_CALLBACK (helper_new_row), NULL);
     g_signal_connect (helper, "delete-row", G_CALLBACK (helper_delete_row), NULL);
     g_signal_connect (helper, "move-row", G_CALLBACK (helper_move_row), NULL);
     g_signal_connect_swapped (helper, "update-widgets",
                               G_CALLBACK (helper_update_widgets),
-                              page->xml);
+                              gxml);
     g_signal_connect (helper, "update-model",
                       G_CALLBACK (helper_update_model),
-                      page->xml);
-    g_object_set_data_full (G_OBJECT (page->xml), "moo-tree-helper", helper, g_object_unref);
+                      gxml);
+    g_object_set_data_full (G_OBJECT (gxml->xml), "moo-tree-helper", helper, g_object_unref);
 
-    g_object_set_data (G_OBJECT (page->xml), "moo-file-selector-plugin", plugin);
+    g_object_set_data (G_OBJECT (gxml->xml), "moo-file-selector-plugin", plugin);
     return GTK_WIDGET (page);
 }
 
@@ -197,15 +194,14 @@ save_store (MooTreeHelper *helper,
 
 
 static void
-prefs_page_apply (MooGladeXML *xml)
+prefs_page_apply (PrefsPageXml *gxml)
 {
-    GtkTreeView *treeview = moo_glade_xml_get_widget (xml, "treeview");
-    gpointer store = gtk_tree_view_get_model (treeview);
-    MooTreeHelper *helper = g_object_get_data (G_OBJECT (xml), "moo-tree-helper");
+    gpointer store = gtk_tree_view_get_model (gxml->treeview);
+    MooTreeHelper *helper = g_object_get_data (G_OBJECT (gxml->xml), "moo-tree-helper");
 
     _moo_tree_helper_update_model (helper, NULL, NULL);
     save_store (helper, store);
-    _moo_file_selector_update_tools (g_object_get_data (G_OBJECT (xml), "moo-file-selector-plugin"));
+    _moo_file_selector_update_tools (g_object_get_data (G_OBJECT (gxml->xml), "moo-file-selector-plugin"));
 }
 
 
@@ -266,14 +262,13 @@ populate_store (GtkListStore *store)
 
 
 static void
-prefs_page_init (MooGladeXML *xml)
+prefs_page_init (PrefsPageXml *gxml)
 {
-    GtkWidget *treeview = moo_glade_xml_get_widget (xml, "treeview");
-    gpointer store = gtk_tree_view_get_model (GTK_TREE_VIEW (treeview));
+    gpointer store = gtk_tree_view_get_model (gxml->treeview);
     populate_store (store);
-    _moo_tree_view_select_first (GTK_TREE_VIEW (treeview));
-    _moo_tree_helper_update_widgets (g_object_get_data (G_OBJECT (xml), "moo-tree-helper"));
-    _moo_tree_helper_set_modified (g_object_get_data (G_OBJECT (xml), "moo-tree-helper"), FALSE);
+    _moo_tree_view_select_first (gxml->treeview);
+    _moo_tree_helper_update_widgets (g_object_get_data (G_OBJECT (gxml->xml), "moo-tree-helper"));
+    _moo_tree_helper_set_modified (g_object_get_data (G_OBJECT (gxml->xml), "moo-tree-helper"), FALSE);
 }
 
 
@@ -343,10 +338,10 @@ helper_move_row (MooTreeHelper  *helper,
 
 
 static void
-helper_update_widgets (MooGladeXML    *xml,
-                       GtkTreeModel   *model,
+helper_update_widgets (PrefsPageXml *gxml,
+                       GtkTreeModel *model,
                        G_GNUC_UNUSED GtkTreePath *path,
-                       GtkTreeIter    *iter)
+                       GtkTreeIter  *iter)
 {
     char *label = NULL, *command = NULL, *extensions = NULL, *mimetypes = NULL;
     gboolean sensitive = FALSE;
@@ -360,15 +355,11 @@ helper_update_widgets (MooGladeXML    *xml,
                             COLUMN_MIMETYPES, &mimetypes, -1);
     }
 
-    gtk_entry_set_text (moo_glade_xml_get_widget (xml, "label"),
-                        label ? label : "");
-    gtk_entry_set_text (moo_glade_xml_get_widget (xml, "command"),
-                        command ? command : "");
-    gtk_entry_set_text (moo_glade_xml_get_widget (xml, "extensions"),
-                        extensions ? extensions : "");
-    gtk_entry_set_text (moo_glade_xml_get_widget (xml, "mimetypes"),
-                        mimetypes ? mimetypes : "");
-    gtk_widget_set_sensitive (moo_glade_xml_get_widget (xml, "table"), sensitive);
+    gtk_entry_set_text (gxml->label, label ? label : "");
+    gtk_entry_set_text (gxml->command, command ? command : "");
+    gtk_entry_set_text (gxml->extensions, extensions ? extensions : "");
+    gtk_entry_set_text (gxml->mimetypes, mimetypes ? mimetypes : "");
+    gtk_widget_set_sensitive (GTK_WIDGET (gxml->table), sensitive);
 
     g_free (label);
     g_free (command);
@@ -378,18 +369,18 @@ helper_update_widgets (MooGladeXML    *xml,
 
 
 static void
-helper_update_model (MooTreeHelper  *helper,
+helper_update_model (MooTreeHelper *helper,
                      G_GNUC_UNUSED GtkTreeModel *model,
                      G_GNUC_UNUSED GtkTreePath *path,
-                     GtkTreeIter    *iter,
-                     MooGladeXML    *xml)
+                     GtkTreeIter   *iter,
+                     PrefsPageXml  *gxml)
 {
     const char *label, *command, *extensions, *mimetypes;
 
-    label = gtk_entry_get_text (moo_glade_xml_get_widget (xml, "label"));
-    command = gtk_entry_get_text (moo_glade_xml_get_widget (xml, "command"));
-    extensions = gtk_entry_get_text (moo_glade_xml_get_widget (xml, "extensions"));
-    mimetypes = gtk_entry_get_text (moo_glade_xml_get_widget (xml, "mimetypes"));
+    label = gtk_entry_get_text (gxml->label);
+    command = gtk_entry_get_text (gxml->command);
+    extensions = gtk_entry_get_text (gxml->extensions);
+    mimetypes = gtk_entry_get_text (gxml->mimetypes);
 
     _moo_tree_helper_set (helper, iter,
                           COLUMN_LABEL, label[0] ? label : NULL,

@@ -10,7 +10,6 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "glade/mooappabout-glade.h"
 #include "mooappabout.h"
 #include "mooapp.h"
 #include "mooapp-credits.h"
@@ -24,6 +23,9 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/moohelp.h"
 #include "help-sections.h"
+#include "glade/mooappabout-dialog-gxml.h"
+#include "glade/mooappabout-license-gxml.h"
+#include "glade/mooappabout-credits-gxml.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
@@ -34,7 +36,6 @@
 
 static gpointer about_dialog;
 static gpointer credits_dialog;
-static gpointer system_info_dialog;
 
 
 #ifndef MOO_USE_XML
@@ -44,11 +45,9 @@ static gpointer system_info_dialog;
 #endif
 
 static void
-set_translator_credits (MooGladeXML *xml)
+set_translator_credits (CreditsDialogXml *gxml)
 {
-    GtkWidget *notebook, *page;
     const char *credits, *credits_markup;
-    GtkTextView *view;
 
     /* Translators: this goes into About box, under Translated by tab,
        do not ignore it, markup isn't always used. It should be something
@@ -62,21 +61,18 @@ set_translator_credits (MooGladeXML *xml)
 
     if (!strcmp (credits, "translator-credits"))
     {
-        notebook = moo_glade_xml_get_widget (xml, "notebook");
-        page = gtk_notebook_get_nth_page (GTK_NOTEBOOK (notebook), 2);
-        gtk_widget_hide (page);
+        gtk_widget_hide (GTK_WIDGET (gxml->page_translator_credits));
         return;
     }
 
-    view = moo_glade_xml_get_widget (xml, "translated_by");
-
 #if defined(MOO_USE_XML) && !defined(__WIN32__)
     if (strcmp (credits_markup, "translator-credits-markup") != 0)
-        _moo_html_load_memory (view, credits_markup, -1, NULL, NULL);
+        _moo_html_load_memory (GTK_TEXT_VIEW (gxml->translated_by),
+                               credits_markup, -1, NULL, NULL);
     else
 #endif
     {
-        GtkTextBuffer *buffer = gtk_text_view_get_buffer (view);
+        GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (gxml->translated_by));
         gtk_text_buffer_insert_at_cursor (buffer, credits, -1);
     }
 }
@@ -84,9 +80,7 @@ set_translator_credits (MooGladeXML *xml)
 static void
 show_credits (void)
 {
-    MooGladeXML *xml;
-    GtkTextView *written_by;
-    GtkTextView *thanks;
+    CreditsDialogXml *gxml;
     GtkTextBuffer *buffer;
 
     if (credits_dialog)
@@ -98,33 +92,30 @@ show_credits (void)
     }
 
     moo_glade_xml_register_type (MOO_TYPE_HTML);
-    xml = moo_glade_xml_new_from_buf (mooappabout_glade_xml, -1, "credits",
-                                      GETTEXT_PACKAGE, NULL);
+    gxml = credits_dialog_xml_new ();
 
-    credits_dialog = moo_glade_xml_get_widget (xml, "credits");
+    credits_dialog = gxml->CreditsDialog;
     g_return_if_fail (credits_dialog != NULL);
     g_object_add_weak_pointer (G_OBJECT (credits_dialog), &credits_dialog);
     g_signal_connect (credits_dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
 
-    written_by = moo_glade_xml_get_widget (xml, "written_by");
 #if defined(MOO_USE_XML) && !defined(__WIN32__)
-    _moo_html_load_memory (written_by,
+    _moo_html_load_memory (GTK_TEXT_VIEW (gxml->written_by),
                            "Yevgen Muntyan <a href=\"mailto://muntyan@tamu.edu\">"
                                     "&lt;muntyan@tamu.edu&gt;</a>",
                            -1, NULL, NULL);
 #else
     /* XXX */
     {
-        buffer = gtk_text_view_get_buffer (written_by);
+        buffer = gtk_text_view_get_buffer (gxml->written_by);
         gtk_text_buffer_insert_at_cursor (buffer,
                                           "Yevgen Muntyan <muntyan@tamu.edu>", -1);
     }
 #endif
 
-    set_translator_credits (xml);
+    set_translator_credits (gxml);
 
-    thanks = moo_glade_xml_get_widget (xml, "thanks");
-    buffer = gtk_text_view_get_buffer (thanks);
+    buffer = gtk_text_view_get_buffer (gxml->thanks);
     gtk_text_buffer_insert_at_cursor (buffer, MOO_APP_CREDITS, -1);
 
     if (about_dialog)
@@ -161,59 +152,44 @@ about_dialog_key_press (GtkWidget   *dialog,
 static GtkWidget *
 create_about_dialog (void)
 {
-    MooGladeXML *xml;
-    GtkWidget *dialog, *logo, *button;
+    AboutDialogXml *gxml;
+    GtkWidget *dialog;
     char *markup;
-    GtkLabel *label;
-    MooLinkLabel *url;
     GtkStockItem dummy;
 
     moo_glade_xml_register_type (MOO_TYPE_LINK_LABEL);
-    xml = moo_glade_xml_new_from_buf (mooappabout_glade_xml, -1, "dialog",
-                                      GETTEXT_PACKAGE, NULL);
-    g_return_val_if_fail (xml != NULL, NULL);
+    gxml = about_dialog_xml_new ();
 
-    dialog = moo_glade_xml_get_widget (xml, "dialog");
+    dialog = GTK_WIDGET (gxml->AboutDialog);
     g_signal_connect (dialog, "key-press-event", G_CALLBACK (about_dialog_key_press), NULL);
 
     g_object_add_weak_pointer (G_OBJECT (dialog), &about_dialog);
     g_signal_connect (dialog, "delete-event", G_CALLBACK (gtk_widget_hide_on_delete), NULL);
 
-    label = moo_glade_xml_get_widget (xml, "name");
     markup = g_strdup_printf ("<span size=\"xx-large\"><b>%s-%s</b></span>",
                               MOO_APP_FULL_NAME, MOO_APP_VERSION);
-    gtk_label_set_markup (label, markup);
+    gtk_label_set_markup (gxml->name, markup);
     g_free (markup);
 
-    label = moo_glade_xml_get_widget (xml, "description");
-    gtk_label_set_text (label, MOO_APP_DESCRIPTION);
+    gtk_label_set_text (gxml->description, MOO_APP_DESCRIPTION);
 
-    label = moo_glade_xml_get_widget (xml, "copyright");
     markup = g_strdup_printf ("<small>%s</small>", copyright);
-    gtk_label_set_markup (label, markup);
+    gtk_label_set_markup (gxml->copyright, markup);
     g_free (markup);
 
-    url = moo_glade_xml_get_widget (xml, "url");
-    _moo_link_label_set_url (url, MOO_APP_WEBSITE);
-    _moo_link_label_set_text (url, MOO_APP_WEBSITE_LABEL);
-
-    logo = moo_glade_xml_get_widget (xml, "logo");
+    _moo_link_label_set_url (gxml->url, MOO_APP_WEBSITE);
+    _moo_link_label_set_text (gxml->url, MOO_APP_WEBSITE_LABEL);
 
     if (gtk_stock_lookup (MOO_APP_LOGO, &dummy))
-        gtk_image_set_from_stock (GTK_IMAGE (logo), MOO_APP_LOGO,
+        gtk_image_set_from_stock (gxml->logo, MOO_APP_LOGO,
                                   GTK_ICON_SIZE_DIALOG);
     else
-        gtk_image_set_from_icon_name (GTK_IMAGE (logo), MOO_APP_LOGO,
+        gtk_image_set_from_icon_name (gxml->logo, MOO_APP_LOGO,
                                       GTK_ICON_SIZE_DIALOG);
 
-    button = moo_glade_xml_get_widget (xml, "credits_button");
-    g_signal_connect (button, "clicked", G_CALLBACK (show_credits), NULL);
-    button = moo_glade_xml_get_widget (xml, "license_button");
-    g_signal_connect (button, "clicked", G_CALLBACK (license_clicked), NULL);
-    button = moo_glade_xml_get_widget (xml, "close_button");
-    g_signal_connect_swapped (button, "clicked", G_CALLBACK (gtk_widget_hide), dialog);
-
-    g_object_unref (xml);
+    g_signal_connect (gxml->credits_button, "clicked", G_CALLBACK (show_credits), NULL);
+    g_signal_connect (gxml->license_button, "clicked", G_CALLBACK (license_clicked), NULL);
+    g_signal_connect_swapped (gxml->close_button, "clicked", G_CALLBACK (gtk_widget_hide), dialog);
 
     return dialog;
 }
@@ -232,33 +208,6 @@ moo_app_about_dialog (GtkWidget *parent)
         moo_window_set_parent (about_dialog, parent);
 
     gtk_window_present (GTK_WINDOW (about_dialog));
-}
-
-
-static void
-create_system_info_dialog (void)
-{
-    MooGladeXML *xml;
-    GtkTextView *textview;
-    GtkTextBuffer *buffer;
-    char *text;
-
-    if (system_info_dialog != NULL)
-        return;
-
-    xml = moo_glade_xml_new_from_buf (mooappabout_glade_xml, -1,
-                                      "system", GETTEXT_PACKAGE, NULL);
-
-    system_info_dialog = moo_glade_xml_get_widget (xml, "system");
-    g_return_if_fail (system_info_dialog != NULL);
-    g_object_add_weak_pointer (G_OBJECT (system_info_dialog), &system_info_dialog);
-    g_signal_connect (system_info_dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
-
-    textview = moo_glade_xml_get_widget (xml, "textview");
-    buffer = gtk_text_view_get_buffer (textview);
-    text = moo_app_get_system_info (moo_app_get_instance ());
-    gtk_text_buffer_set_text (buffer, text, -1);
-    g_free (text);
 }
 
 
@@ -349,19 +298,4 @@ moo_app_get_system_info (MooApp *app)
 #endif
 
     return g_string_free (text, FALSE);
-}
-
-
-void
-moo_app_system_info_dialog (GtkWidget *parent)
-{
-    create_system_info_dialog ();
-
-    if (parent)
-        parent = gtk_widget_get_toplevel (parent);
-
-    if (parent && GTK_IS_WINDOW (parent))
-        moo_window_set_parent (system_info_dialog, parent);
-
-    gtk_window_present (GTK_WINDOW (system_info_dialog));
 }

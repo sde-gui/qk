@@ -4,6 +4,7 @@ import sys
 import getopt
 import xml.dom
 import xml.dom.minidom as minidom
+import StringIO
 
 def name_is_nice(name):
     return name[-1:] not in "0123456789"
@@ -26,8 +27,11 @@ class GladeXml(object):
 
         assert root is not None
         self.root = root
-        self.rootName = root.getAttribute("id")
         self.buffer = buffer
+
+        self.rootName = root.getAttribute("id")
+        if ':' in self.rootName:
+            self.rootName, real_class_name = self.rootName.split(':')
 
         self.widgets = []
         def check_node(node):
@@ -44,11 +48,15 @@ class GladeXml(object):
             return None
         walk_node(root, False, check_node)
 
-    def print_buffer(self, out):
+    def format_buffer(self):
+        out = StringIO.StringIO()
         for l in self.buffer.splitlines():
             out.write('"')
             out.write(l.replace('\\', '\\\\').replace('"', '\\"'))
             out.write('"\n')
+        ret = out.getvalue()
+        out.close()
+        return ret
 
 class ConvertParams(object):
     def __init__(self):
@@ -88,23 +96,20 @@ def find_root(dom, root_name):
                      check_node, root_name)
 
 def write_file(gxml, params, out):
-    tmpl1 = """\
+    tmpl = """\
 #include <mooutils/mooglade.h>
+#include <mooutils/mooi18n.h>
 #include <gtk/gtk.h>
 
 const char %(glade_xml)s[] =
-"""
-
-    tmpl2 = """\
+%(glade_xml_content)s
 ;
 
 typedef struct %(XmlStruct)s %(XmlStruct)s;
 
 struct %(XmlStruct)s {
     MooGladeXML *xml;
-"""
-
-    tmpl3 = """\
+%(glade_xml_widgets_decl)s
 };
 
 static void
@@ -124,14 +129,25 @@ G_GNUC_UNUSED static %(XmlStruct)s *
 }
 
 static void
+_%(xml_struct)s_finish_build (%(XmlStruct)s *xml)
+{
+%(glade_xml_widgets_defs)s
+    g_object_set_data_full (G_OBJECT (xml->%(root)s), "moo-generated-glade-xml",
+                            xml, (GDestroyNotify) _%(xml_struct)s_free);
+}
+
+static void
 %(xml_struct)s_build (%(XmlStruct)s *xml)
 {
     moo_glade_xml_parse_memory (xml->xml, %(glade_xml)s, -1, "%(root)s", NULL);
-"""
+    _%(xml_struct)s_finish_build (xml);
+}
 
-    tmpl4 = """\
-    g_object_set_data_full (G_OBJECT (xml->%(root)s), "moo-generated-glade-xml",
-                            xml, (GDestroyNotify) _%(xml_struct)s_free);
+static void
+%(xml_struct)s_fill (%(XmlStruct)s *xml, GtkWidget *root)
+{
+    moo_glade_xml_fill_widget (xml->xml, root, %(glade_xml)s, -1, "%(root)s", NULL);
+    _%(xml_struct)s_finish_build (xml);
 }
 
 static %(XmlStruct)s *
@@ -139,9 +155,7 @@ static %(XmlStruct)s *
 {
     %(XmlStruct)s *xml = g_new0 (%(XmlStruct)s, 1);
     xml->xml = moo_glade_xml_new_empty (GETTEXT_PACKAGE);
-"""
-
-    tmpl5 = """\
+%(glade_xml_widgets_map)s
     return xml;
 }
 
@@ -152,21 +166,19 @@ G_GNUC_UNUSED static %(XmlStruct)s *
     %(xml_struct)s_build (xml);
     return xml;
 }
+
+G_GNUC_UNUSED static %(XmlStruct)s *
+%(xml_struct)s_new_with_root (GtkWidget *root)
+{
+    %(XmlStruct)s *xml = %(xml_struct)s_new_empty ();
+    %(xml_struct)s_fill (xml, root);
+    return xml;
+}
 """
 
-    dic = {
-        'glade_xml': '_' + params.struct_name + '_glade_xml',
-        'root': gxml.rootName,
-        'XmlStruct': params.StructName,
-        'xml_struct': params.struct_name,
-    }
-
-    out.write(tmpl1 % dic)
-    gxml.print_buffer(out)
-    out.write(tmpl2 % dic)
-
+    buf = StringIO.StringIO()
     if gxml.widgets:
-        print >> out, ''
+        print >> buf, ''
         for w in gxml.widgets:
             name = w.name
             ct = params.id_map.get(name)
@@ -174,24 +186,39 @@ G_GNUC_UNUSED static %(XmlStruct)s *
                 class_name = w.class_name
             else:
                 class_name = ct[0]
-            print >> out, '    %s *%s;' % (class_name, name)
+            print >> buf, '    %s *%s;' % (class_name, name)
+    glade_xml_widgets_decl = buf.getvalue()
+    buf.close()
 
-    out.write(tmpl3 % dic)
-
+    buf = StringIO.StringIO()
     for w in gxml.widgets:
-        print >> out, '    xml->%s = moo_glade_xml_get_widget (xml->xml, "%s");' % (w.name, w.real_name)
+        print >> buf, '    xml->%s = moo_glade_xml_get_widget (xml->xml, "%s");' % (w.name, w.real_name)
+    glade_xml_widgets_defs = buf.getvalue()
+    buf.close()
 
-    out.write(tmpl4 % dic)
-
+    buf = StringIO.StringIO()
     for id in params.id_map:
         ct = params.id_map.get(id)
         if ct[1]:
             type_name = ct[1]
         else:
             type_name = 'g_type_from_name ("%s")' % (ct[0],)
-        print >> out, '    moo_glade_xml_map_id (xml->xml, "%s", %s);' % (id, type_name)
+        print >> buf, '    moo_glade_xml_map_id (xml->xml, "%s", %s);' % (id, type_name)
+    glade_xml_widgets_map = buf.getvalue()
+    buf.close()
 
-    out.write(tmpl5 % dic)
+    dic = {
+        'glade_xml': '_' + params.struct_name + '_glade_xml',
+        'glade_xml_content': gxml.format_buffer(),
+        'root': gxml.rootName,
+        'XmlStruct': params.StructName,
+        'xml_struct': params.struct_name,
+        'glade_xml_widgets_decl': glade_xml_widgets_decl,
+        'glade_xml_widgets_defs': glade_xml_widgets_defs,
+        'glade_xml_widgets_map': glade_xml_widgets_map,
+    }
+
+    out.write(tmpl % dic)
 
 def convert_buffer(buf, params, output):
     dom = minidom.parseString(buf)
@@ -201,7 +228,7 @@ def convert_buffer(buf, params, output):
     gxml = GladeXml(root, buf, params)
 
     if not params.StructName:
-        params.StructName = params.root + 'Xml'
+        params.StructName = gxml.rootName + 'Xml'
     if not params.struct_name:
         def S2s(name):
             ret = ''

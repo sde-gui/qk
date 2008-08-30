@@ -16,7 +16,10 @@ libmooapp_SOURCES_ = $(mooapp_sources)
 
 BUILT_SOURCES += mooapp-credits.h
 
-GLADE_FILES = glade/mooappabout.glade
+GLADE2_FILES =				\
+	glade/mooappabout-dialog.glade	\
+	glade/mooappabout-license.glade	\
+	glade/mooappabout-credits.glade
 
 AM_CFLAGS_ = $(MOO_CFLAGS)
 AM_CXXFLAGS_ = $(MOO_CXXFLAGS)

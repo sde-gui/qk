@@ -171,10 +171,8 @@ EXTRA_DIST +=				\
 	pixmaps/attach.png		\
 	pixmaps/keepontop.png
 
-GLADE_FILES =				\
-	glade/mooaccelprefs.glade
-
 GLADE2_FILES =				\
+	glade/mooaccelprefs.glade
 	glade/mooaccelbutton.glade	\
 	glade/moologwindow.glade
 

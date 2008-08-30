@@ -1911,14 +1911,14 @@ static GtkWidget *
 moo_print_operation_create_custom_widget (G_GNUC_UNUSED GtkPrintOperation *operation)
 {
     PrintWidgetXml *xml;
-    GtkWidget *font, *line_numbers_hbox;
 
     xml = print_widget_xml_new ();
 
-    font = GTK_WIDGET (xml->font);
-    moo_bind_sensitive (GTK_WIDGET (xml->use_custom_font), &font, 1, FALSE);
-    line_numbers_hbox = GTK_WIDGET (xml->line_numbers_hbox);
-    moo_bind_sensitive (GTK_WIDGET (xml->line_numbers), &line_numbers_hbox, 1, FALSE);
+    moo_bind_sensitive (GTK_WIDGET (xml->wrap), GTK_WIDGET (xml->ellipsize), TRUE);
+    moo_bind_sensitive (GTK_WIDGET (xml->print_header), GTK_WIDGET (xml->header_alignment), FALSE);
+    moo_bind_sensitive (GTK_WIDGET (xml->print_footer), GTK_WIDGET (xml->footer_alignment), FALSE);
+    moo_bind_sensitive (GTK_WIDGET (xml->use_custom_font), GTK_WIDGET (xml->font), FALSE);
+    moo_bind_sensitive (GTK_WIDGET (xml->line_numbers), GTK_WIDGET (xml->line_numbers_hbox), FALSE);
 
     set_options (xml);
     return GTK_WIDGET (xml->PrintWidget);
