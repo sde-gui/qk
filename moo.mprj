@@ -9,6 +9,12 @@
    <build_dir>build/debug</build_dir>
    <configure>
     <args>--enable-debug --enable-all-warnings --enable-project --prefix=${PREFIX:-/usr/local}</args>
+    <vars>
+     <var name="CC">gcc-4.2</var>
+     <var name="CFLAGS">-g</var>
+     <var name="CXX">g++-4.2</var>
+     <var name="CXXFLAGS">-g</var>
+    </vars>
    </configure>
   </debug>
   <gtk-2.6>

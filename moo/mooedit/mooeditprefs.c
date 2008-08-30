@@ -127,7 +127,6 @@ _moo_edit_init_prefs (void)
     NEW_KEY_BOOL (MOO_EDIT_PREFS_SHOW_LINE_NUMBERS, FALSE);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_SHOW_TABS, FALSE);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_SHOW_TRAILING_SPACES, FALSE);
-    NEW_KEY_BOOL (MOO_EDIT_PREFS_USE_DEFAULT_FONT, FALSE);
     NEW_KEY_STRING (MOO_EDIT_PREFS_FONT, "Monospace");
     NEW_KEY_FLAGS (MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS,
                    MOO_TYPE_TEXT_SEARCH_FLAGS,
@@ -210,12 +209,8 @@ _moo_edit_apply_prefs (MooEdit *edit)
                   "backspace-indents", get_bool (MOO_EDIT_PREFS_BACKSPACE_INDENTS),
                   NULL);
 
-    if (get_bool (MOO_EDIT_PREFS_USE_DEFAULT_FONT))
-        moo_text_view_set_font_from_string (MOO_TEXT_VIEW (edit), NULL);
-    else
-        moo_text_view_set_font_from_string (MOO_TEXT_VIEW (edit),
-                                            get_string (MOO_EDIT_PREFS_FONT));
-
+    moo_text_view_set_font_from_string (MOO_TEXT_VIEW (edit),
+                                        get_string (MOO_EDIT_PREFS_FONT));
     _moo_text_view_set_line_numbers_font (MOO_TEXT_VIEW (edit),
                                           get_string (MOO_EDIT_PREFS_LINE_NUMBERS_FONT));
 
