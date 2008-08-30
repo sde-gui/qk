@@ -187,6 +187,7 @@ GtkWidget *
 moo_edit_prefs_page_new_1 (MooEditor *editor)
 {
     return prefs_page_new (editor,
+                           /* Translators: this one is temporary, don't translate */
                            Q_("PreferencesPage|General"),
                            GTK_STOCK_EDIT,
                            page_general_init_ui,
@@ -221,6 +222,7 @@ GtkWidget *
 moo_edit_prefs_page_new_5 (MooEditor *editor)
 {
     return prefs_page_new (editor,
+                           /* Translators: this one is temporary, don't translate */
                            Q_("PreferencesPage|Filters"),
                            GTK_STOCK_EDIT,
                            page_filters_init_ui,
@@ -268,6 +270,7 @@ GtkWidget *
 moo_edit_prefs_page_new_2 (MooEditor *editor)
 {
     return prefs_page_new (editor,
+                           /* Translators: this one is temporary, don't translate */
                            Q_("PreferencesPage|View"),
                            GTK_STOCK_EDIT,
                            page_view_init_ui,
@@ -312,6 +315,7 @@ GtkWidget *
 moo_edit_prefs_page_new_3 (MooEditor *editor)
 {
     return prefs_page_new (editor,
+                           /* Translators: this one is temporary, don't translate */
                            Q_("PreferencesPage|File"),
                            GTK_STOCK_EDIT,
                            page_file_init_ui,
@@ -365,6 +369,7 @@ GtkWidget *
 moo_edit_prefs_page_new_4 (MooEditor *editor)
 {
     return prefs_page_new (editor,
+                           /* Translators: this one is temporary, don't translate */
                            Q_("PreferencesPage|Langs"),
                            GTK_STOCK_EDIT,
                            page_langs_init_ui,
