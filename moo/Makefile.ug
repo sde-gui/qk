@@ -64,10 +64,8 @@ noinst_LTLIBRARIES =
 ############################################################################
 # libmoo
 #
-if !MOO_OS_CYGWIN
 if MOO_INSTALL_LIB
 lib_LTLIBRARIES += libmoo.la
-endif
 endif
 
 nodist_libmoo_la_SOURCES =

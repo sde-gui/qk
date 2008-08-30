@@ -4,7 +4,7 @@
 noinst_LTLIBRARIES =
 noinst_LIBRARIES =
 
-if MOO_INSTALL_LIB
+if MOO_BUILD_SHARED_LIB
 noinst_LTLIBRARIES += @MODULE@.la
 else
 noinst_LIBRARIES += @MODULE@.a

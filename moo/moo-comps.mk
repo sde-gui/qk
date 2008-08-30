@@ -2,7 +2,7 @@
 
 moo_app_ldadd =
 
-if MOO_INSTALL_LIB
+if MOO_BUILD_SHARED_LIB
 
 moo_app_ldadd += $(top_builddir)/moo/libmoo.la
 

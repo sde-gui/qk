@@ -134,12 +134,10 @@ AC_DEFUN([_MOO_AC_CHECK_PYTHON_UNIX],[
 #
 AC_DEFUN([MOO_AC_CHECK_PYTHON],[
 AC_MSG_NOTICE([checking for headers and libs required to compile python extensions])
-    AC_REQUIRE([MOO_AC_CHECK_OS])
-    if test x$MOO_OS_CYGWIN != xyes; then
-        if test x$MOO_OS_MINGW = xyes; then
-          MOO_AM_PYTHON_DEVEL_CROSS_MINGW([$2],[$3])
-        else
-          _MOO_AC_CHECK_PYTHON_UNIX([$1],[$2],[$3])
-        fi
-    fi
+  AC_REQUIRE([MOO_AC_CHECK_OS])
+  if test x$MOO_OS_MINGW = xyes; then
+    MOO_AM_PYTHON_DEVEL_CROSS_MINGW([$2],[$3])
+  else
+    _MOO_AC_CHECK_PYTHON_UNIX([$1],[$2],[$3])
+  fi
 ])

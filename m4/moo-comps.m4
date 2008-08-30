@@ -20,12 +20,6 @@ AC_DEFUN([MOO_COMPONENTS],[
     AC_HELP_STRING([--with-moo[]comp], [enable moo[]comp component (default = NO)]),
     [if test "x$withval" = "xyes"; then build_moo[]comp=true; else build_moo[]comp=false; fi])])
 
-  if test "x$MOO_OS_CYGWIN" = "xyes"; then
-    build_mooutils=false
-    build_mooedit=false
-    build_mooapp=false
-  fi
-
   if $build_mooapp; then build_mooedit=true; fi
   if $build_mooedit; then build_mooutils=true; fi
 
@@ -62,8 +56,10 @@ AC_DEFUN([MOO_COMPONENTS],[
     AC_HELP_STRING(--enable-ctags-plugin, [enable ctags plugin (default = YES)]),
     [:],[enable_ctags_plugin=yes])
 
-  if test "x$MOO_BUILD_CTAGS" != xno -a "x$MOO_OS_CYGWIN" != "xyes" -a \
-          "x$MOO_OS_MINGW" != "xyes" -a "x$enable_ctags_plugin" = "xyes"; then
+  if test "x$MOO_BUILD_CTAGS" != "xno" -a \
+          "x$MOO_OS_MINGW" != "xyes" -a \
+          "x$enable_ctags_plugin" = "xyes";
+  then
     MOO_BUILD_CTAGS=yes
     AC_DEFINE(MOO_BUILD_CTAGS, [1], [build ctags plugin])
   else

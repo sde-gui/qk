@@ -54,9 +54,7 @@ BUILT_SOURCES = pyapp.py
 
 if MOO_BUILD_UTILS
 if !MOO_BUILD_EDIT
-if !MOO_OS_CYGWIN
 noinst_PROGRAMS += testfileview
-endif
 endif
 endif
 

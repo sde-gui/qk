@@ -16,10 +16,6 @@ AC_DEFUN_ONCE([MOO_AC_I18N],[
 
   _moo_enable_nls=yes
 
-  if test "x$MOO_OS_CYGWIN" = "xyes"; then
-    _moo_enable_nls=no
-  fi
-
   m4_if([$2],[no],[
     _moo_enable_nls=no
   ],[

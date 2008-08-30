@@ -48,10 +48,8 @@ AC_DEFUN([_MOO_AC_CHECK_PYGTK_REAL],[
 # checks pygtk stuff
 #
 AC_DEFUN([_MOO_AC_CHECK_PYGTK],[
-    AC_REQUIRE([MOO_AC_CHECK_OS])
-    if test "x$MOO_OS_CYGWIN" != "xyes"; then
-      _MOO_AC_CHECK_PYGTK_REAL([$1],[$2])
-    fi
+  AC_REQUIRE([MOO_AC_CHECK_OS])
+  _MOO_AC_CHECK_PYGTK_REAL([$1],[$2])
 ])
 
 
@@ -76,10 +74,6 @@ AC_DEFUN_ONCE([MOO_AC_PYTHON],[
       _moo_python_version="$with_python"
     fi
   ])
-
-  if test "x$MOO_OS_CYGWIN" = "xyes"; then
-    MOO_USE_PYTHON=false
-  fi
 
   if $MOO_USE_PYTHON; then
     MOO_USE_PYTHON=false
