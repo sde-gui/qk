@@ -1415,6 +1415,147 @@ _moo_glob_match_simple (const char *pattern,
 
 
 /************************************************************************/
+/* MooFileReader
+ */
+
+typedef struct MooFileReaderClass MooFileReaderClass;
+
+struct MooFileReader {
+    GObject base;
+    FILE *file;
+};
+
+struct MooFileReaderClass {
+    GObjectClass base_class;
+};
+
+#define MOO_TYPE_FILE_READER            (moo_file_reader_get_type ())
+#define MOO_FILE_READER(object)         (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FILE_READER, MooFileReader))
+#define MOO_FILE_READER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FILE_READER, MooFileReaderClass))
+#define MOO_IS_FILE_READER(object)      (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_FILE_READER))
+#define MOO_IS_FILE_READER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FILE_READER))
+#define MOO_FILE_READER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FILE_READER, MooFileReaderClass))
+
+MOO_DEFINE_TYPE_STATIC (MooFileReader, moo_file_reader, G_TYPE_OBJECT)
+
+static void
+moo_file_reader_init (MooFileReader *reader)
+{
+    reader->file = NULL;
+}
+
+static void
+moo_file_reader_close_file (MooFileReader *reader)
+{
+    if (reader->file)
+    {
+        fclose (reader->file);
+        reader->file = NULL;
+    }
+}
+
+static void
+moo_file_reader_dispose (GObject *object)
+{
+    MooFileReader *reader = MOO_FILE_READER (object);
+    moo_file_reader_close_file (reader);
+    G_OBJECT_CLASS (moo_file_reader_parent_class)->dispose (object);
+}
+
+static void
+moo_file_reader_class_init (MooFileReaderClass *klass)
+{
+    G_OBJECT_CLASS (klass)->dispose = moo_file_reader_dispose;
+}
+
+void
+moo_file_reader_close (MooFileReader *reader)
+{
+    g_return_if_fail (MOO_IS_FILE_READER (reader));
+    moo_file_reader_close_file (reader);
+    g_object_unref (reader);
+}
+
+static MooFileReader *
+moo_file_reader_new_real (const char  *filename,
+                          gboolean     binary,
+                          GError     **error)
+{
+    const char *mode = binary ? "rb" : "r";
+    FILE *file;
+    MooFileReader *reader;
+
+    g_return_val_if_fail (filename != NULL, NULL);
+    g_return_val_if_fail (!error || !*error, NULL);
+
+    errno = 0;
+    if (!(file = g_fopen (filename, mode)))
+    {
+        int err = errno;
+        g_set_error (error, MOO_FILE_ERROR,
+                     _moo_file_error_from_errno (err),
+                     "Could not open '%s': %s", filename,
+                     g_strerror (err));
+        return NULL;
+    }
+
+    reader = g_object_new (MOO_TYPE_FILE_READER, NULL);
+    reader->file = file;
+
+    return reader;
+}
+
+MooFileReader *
+moo_file_reader_new (const char  *filename,
+                     GError     **error)
+{
+    return moo_file_reader_new_real (filename, TRUE, error);
+}
+
+MooFileReader *
+moo_text_reader_new (const char  *filename,
+                     GError     **error)
+{
+    return moo_file_reader_new_real (filename, FALSE, error);
+}
+
+gboolean
+moo_file_reader_read (MooFileReader  *reader,
+                      char           *buf,
+                      gsize           buf_size,
+                      gsize          *size_read_p,
+                      GError        **error)
+{
+    gsize size_read;
+
+    g_return_val_if_fail (MOO_IS_FILE_READER (reader), FALSE);
+    g_return_val_if_fail (size_read_p != NULL, FALSE);
+    g_return_val_if_fail (!error || !*error, FALSE);
+    g_return_val_if_fail (reader->file != NULL, FALSE);
+    g_return_val_if_fail (buf_size == 0 || buf != NULL, FALSE);
+
+    if (buf_size == 0)
+        return TRUE;
+
+    errno = 0;
+    size_read = fread (buf, 1, buf_size, reader->file);
+
+    if (size_read != buf_size && ferror (reader->file))
+    {
+        int err = errno;
+        g_set_error (error, MOO_FILE_ERROR,
+                     _moo_file_error_from_errno (err),
+                     "error reading file: %s",
+                     g_strerror (err));
+        return FALSE;
+    }
+
+    *size_read_p = size_read;
+    return TRUE;
+}
+
+
+/************************************************************************/
 /* MooFileWriter
  */
 

@@ -18,6 +18,19 @@
 G_BEGIN_DECLS
 
 
+typedef struct MooFileReader MooFileReader;
+
+MooFileReader  *moo_file_reader_new             (const char     *filename,
+                                                 GError        **error);
+MooFileReader  *moo_text_reader_new             (const char     *filename,
+                                                 GError        **error);
+gboolean        moo_file_reader_read            (MooFileReader  *reader,
+                                                 char           *buf,
+                                                 gsize           buf_size,
+                                                 gsize          *size_read,
+                                                 GError        **error);
+void            moo_file_reader_close           (MooFileReader  *reader);
+
 typedef struct MooFileWriter MooFileWriter;
 
 MooFileWriter  *moo_file_writer_new             (const char     *filename,
