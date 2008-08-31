@@ -1,7 +1,7 @@
 /*
  *   moomarkup.c
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -31,27 +31,14 @@ moo_markup_doc_get_type (void)
     return type;
 }
 
-
-typedef void (*markup_start_element_func)   (GMarkupParseContext    *context,
-                                             const gchar            *element_name,
-                                             const gchar           **attribute_names,
-                                             const gchar           **attribute_values,
-                                             gpointer                user_data,
-                                             GError                **error);
-typedef void (*markup_end_element_func)     (GMarkupParseContext    *context,
-                                             const gchar            *element_name,
-                                             gpointer                user_data,
-                                             GError                **error);
-typedef void (*markup_text_func)            (GMarkupParseContext    *context,
-                                             const gchar            *text,
-                                             gsize                   text_len,
-                                             gpointer                user_data,
-                                             GError                **error);
-typedef void (*markup_passthrough_func)     (GMarkupParseContext    *context,
-                                             const gchar            *passthrough_text,
-                                             gsize                   text_len,
-                                             gpointer                user_data,
-                                             GError                **error);
+GQuark
+moo_parse_error_quark (void)
+{
+    static GQuark q;
+    if (G_UNLIKELY (!q))
+        q = g_quark_from_static_string ("moo-parse-error");
+    return q;
+}
 
 typedef struct {
     MooMarkupDoc   *doc;
@@ -173,10 +160,10 @@ markup_parse_memory (const char     *buffer,
                      G_GNUC_UNUSED const char *filename,
                      GError        **error)
 {
-    GMarkupParser parser = { (markup_start_element_func) start_element,
-                             (markup_end_element_func) end_element,
-                             (markup_text_func) text,
-                             (markup_passthrough_func) passthrough,
+    GMarkupParser parser = { (MooMarkupStartElementFunc) start_element,
+                             (MooMarkupEndElementFunc) end_element,
+                             (MooMarkupTextFunc) text,
+                             (MooMarkupPassthroughFunc) passthrough,
                              NULL};
 
     ParserState state;
@@ -222,6 +209,8 @@ moo_markup_parse_file (const char     *filename,
     gsize len;
 
     g_return_val_if_fail (filename != NULL, NULL);
+
+    /* XXX use moo_parse_markup_file here */
 
     if (!g_file_get_contents (filename, &content, &len, error))
         return NULL;
@@ -1317,4 +1306,53 @@ MOO_MARKUP_COMMENT_CHECK_CAST (gpointer n)
     g_return_val_if_fail (n != NULL, NULL);
     g_return_val_if_fail (node->type == MOO_MARKUP_COMMENT_NODE, NULL);
     return (MooMarkupComment*) n;
+}
+
+
+gboolean
+moo_parse_markup_file (const char         *filename,
+                       const GMarkupParser *parser,
+                       gpointer            data,
+                       GError            **error)
+{
+    GMarkupParseContext *ctx;
+    MooFileReader *reader;
+    char buf[1024];
+    gsize size;
+    gboolean seen_error = FALSE;
+
+    g_return_val_if_fail (filename != NULL, FALSE);
+    g_return_val_if_fail (parser != NULL, FALSE);
+    g_return_val_if_fail (!error || !*error, FALSE);
+
+    if (!(reader = moo_text_reader_new (filename, error)))
+        return FALSE;
+
+    ctx = g_markup_parse_context_new (parser, 0, data, NULL);
+
+    while (TRUE)
+    {
+        if (!moo_file_reader_read (reader, buf, sizeof buf, &size, error))
+        {
+            seen_error = TRUE;
+            break;
+        }
+
+        if (!size)
+            break;
+
+        if (!g_markup_parse_context_parse (ctx, buf, size, error))
+        {
+            seen_error = TRUE;
+            break;
+        }
+    }
+
+    if (!seen_error && !g_markup_parse_context_end_parse (ctx, error))
+        seen_error = TRUE;
+
+    g_markup_parse_context_free (ctx);
+    moo_file_reader_close (reader);
+
+    return !seen_error;
 }

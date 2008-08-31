@@ -1,7 +1,7 @@
 /*
  *   moomarkup.h
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,12 @@ G_BEGIN_DECLS
 
 #define MOO_TYPE_MARKUP_DOC (moo_markup_doc_get_type())
 
+#define MOO_PARSE_ERROR (moo_parse_error_quark ())
+
+enum {
+    MOO_PARSE_ERROR_INVALID_CONTENT
+};
+
 typedef enum {
     MOO_MARKUP_DOC_NODE,
     MOO_MARKUP_ELEMENT_NODE,
@@ -33,6 +39,26 @@ typedef struct _MooMarkupElement MooMarkupElement;
 typedef struct _MooMarkupText MooMarkupText;
 typedef struct _MooMarkupText MooMarkupComment;
 
+typedef void (*MooMarkupStartElementFunc)   (GMarkupParseContext    *context,
+                                             const gchar            *element_name,
+                                             const gchar           **attribute_names,
+                                             const gchar           **attribute_values,
+                                             gpointer                user_data,
+                                             GError                **error);
+typedef void (*MooMarkupEndElementFunc)     (GMarkupParseContext    *context,
+                                             const gchar            *element_name,
+                                             gpointer                user_data,
+                                             GError                **error);
+typedef void (*MooMarkupTextFunc)           (GMarkupParseContext    *context,
+                                             const gchar            *text,
+                                             gsize                   text_len,
+                                             gpointer                user_data,
+                                             GError                **error);
+typedef void (*MooMarkupPassthroughFunc)    (GMarkupParseContext    *context,
+                                             const gchar            *passthrough_text,
+                                             gsize                   text_len,
+                                             gpointer                user_data,
+                                             GError                **error);
 
 #if 0 && defined(ENABLE_DEBUG)
 #define MOO_MARKUP_NODE(n)      (MOO_MARKUP_NODE_CHECK_CAST(n))
@@ -114,13 +140,14 @@ struct _MooMarkupText {
 };
 
 
-GType               moo_markup_doc_get_type         (void);
+GType               moo_markup_doc_get_type         (void) G_GNUC_CONST;
+GQuark              moo_parse_error_quark           (void) G_GNUC_CONST;
 
-MooMarkupNode      *MOO_MARKUP_NODE_CHECK_CAST     (gpointer node);
-MooMarkupDoc       *MOO_MARKUP_DOC_CHECK_CAST      (gpointer node);
-MooMarkupElement   *MOO_MARKUP_ELEMENT_CHECK_CAST  (gpointer node);
-MooMarkupText      *MOO_MARKUP_TEXT_CHECK_CAST     (gpointer node);
-MooMarkupComment   *MOO_MARKUP_COMMENT_CHECK_CAST  (gpointer node);
+MooMarkupNode      *MOO_MARKUP_NODE_CHECK_CAST      (gpointer node);
+MooMarkupDoc       *MOO_MARKUP_DOC_CHECK_CAST       (gpointer node);
+MooMarkupElement   *MOO_MARKUP_ELEMENT_CHECK_CAST   (gpointer node);
+MooMarkupText      *MOO_MARKUP_TEXT_CHECK_CAST      (gpointer node);
+MooMarkupComment   *MOO_MARKUP_COMMENT_CHECK_CAST   (gpointer node);
 
 MooMarkupDoc       *moo_markup_doc_new              (const char         *name);
 
@@ -179,6 +206,11 @@ MooMarkupNode      *moo_markup_create_element       (MooMarkupNode      *parent,
 MooMarkupNode      *moo_markup_create_text_element  (MooMarkupNode      *parent,
                                                      const char         *path,
                                                      const char         *content);
+
+gboolean            moo_parse_markup_file           (const char         *filename,
+                                                     const GMarkupParser *parser,
+                                                     gpointer            data,
+                                                     GError            **error);
 
 void                _moo_markup_set_modified        (MooMarkupDoc       *doc,
                                                      gboolean            modified);
