@@ -32,6 +32,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/mooencodings.h"
 #include <glib/gbase64.h>
 #include <string.h>
 #include <stdlib.h>
@@ -1601,10 +1602,19 @@ do_close_doc (MooEditor *editor,
     if ((uri = moo_edit_get_uri (doc)))
     {
         MdHistoryItem *item;
+        int line;
+        const char *enc;
+
         item = md_history_item_new (uri, NULL);
-        _moo_edit_history_item_set_line (item,
-                                         moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc)));
-        _moo_edit_history_item_set_encoding (item, moo_edit_get_encoding (doc));
+
+        line = moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc));
+        if (line != 0)
+            _moo_edit_history_item_set_line (item, line);
+
+        enc = moo_edit_get_encoding (doc);
+        if (enc && !_moo_encodings_equal (enc, MOO_ENCODING_UTF8))
+            _moo_edit_history_item_set_encoding (item, enc);
+
         md_history_mgr_update_file (editor->priv->history, item);
         md_history_item_free (item);
         g_free (uri);
