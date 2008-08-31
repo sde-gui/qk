@@ -284,8 +284,8 @@ project_mode (const char *file)
     moo_plugin_set_enabled (plugin, TRUE);
 }
 
-int
-main (int argc, char *argv[])
+static int
+medit_main (int argc, char *argv[])
 {
     MooApp *app = NULL;
     MooEditor *editor;
@@ -308,6 +308,10 @@ main (int argc, char *argv[])
 
 #if 0
     gdk_window_set_debug_updates (TRUE);
+#endif
+
+#if 0
+    g_idle_add_full (G_PRIORITY_HIGH, (GSourceFunc) exit, NULL, NULL);
 #endif
 
     if (medit_opts.new_app || medit_opts.project_mode)
@@ -419,6 +423,11 @@ main (int argc, char *argv[])
     return retval;
 }
 
+int
+main (int argc, char *argv[])
+{
+    return medit_main (argc, argv);
+}
 
 #if defined(__WIN32__) && !defined(__GNUC__)
 
