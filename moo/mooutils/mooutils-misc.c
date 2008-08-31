@@ -1501,56 +1501,6 @@ moo_get_locale_dir (void)
 }
 
 
-/* For xdgmime: should not contain duplicates */
-const char* const *
-_moo_get_shared_data_dirs (void)
-{
-    static char **data_dirs = NULL;
-    G_LOCK_DEFINE_STATIC(data_dirs);
-
-    G_LOCK (data_dirs);
-
-    if (!data_dirs)
-    {
-        guint i, n_dirs;
-        GSList *dirs = NULL;
-        const char* const *sys_dirs;
-
-        sys_dirs = g_get_system_data_dirs ();
-
-#ifndef __WIN32__
-        dirs = g_slist_prepend (NULL, _moo_normalize_file_path (g_get_user_data_dir ()));
-#endif
-
-        for (i = 0; sys_dirs[i] && sys_dirs[i][0]; ++i)
-        {
-            char *norm = _moo_normalize_file_path (sys_dirs[i]);
-
-            if (norm && !g_slist_find_custom (dirs, norm, (GCompareFunc) strcmp))
-                dirs = g_slist_prepend (dirs, norm);
-            else
-                g_free (norm);
-        }
-
-        dirs = g_slist_reverse (dirs);
-        n_dirs = g_slist_length (dirs);
-        data_dirs = g_new (char*, n_dirs + 1);
-
-        for (i = 0; i < n_dirs; ++i)
-        {
-            data_dirs[i] = dirs->data;
-            dirs = g_slist_delete_link (dirs, dirs);
-        }
-
-        data_dirs[n_dirs] = NULL;
-    }
-
-    G_UNLOCK (data_dirs);
-
-    return (const char* const*) data_dirs;
-}
-
-
 char **
 moo_get_data_subdirs (const char    *subdir,
                       MooDataDirType type,

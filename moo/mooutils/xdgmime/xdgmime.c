@@ -91,16 +91,6 @@ struct XdgCallbackList
   XdgMimeDestroy   destroy;
 };
 
-static const char *
-xdg_mime_intern_mime_type (const char *mime_type)
-{
-  if (!mime_type || mime_type == XDG_MIME_TYPE_UNKNOWN ||
-      !strcmp (mime_type, XDG_MIME_TYPE_UNKNOWN))
-    return XDG_MIME_TYPE_UNKNOWN;
-  else
-    return _moo_intern_string (mime_type);
-}
-
 /* Function called by xdg_run_command_on_dirs.  If it returns TRUE, further
  * directories aren't looked at */
 typedef int (*XdgDirectoryFunc) (const char *directory,
@@ -234,7 +224,7 @@ xdg_run_command_on_dirs (XdgDirectoryFunc  func,
   const char* const *dirs;
   const char* const *p;
 
-  dirs = _moo_get_shared_data_dirs ();
+  dirs = _moo_get_mime_data_dirs ();
 
   for (p = dirs; p && *p; ++p)
     if (func (*p, user_data))
@@ -416,12 +406,12 @@ xdg_mime_get_mime_type_for_data (const void *data,
   xdg_mime_init ();
 
   if (_xdg_mime_caches)
-    return xdg_mime_intern_mime_type (_xdg_mime_cache_get_mime_type_for_data (data, len, result_prio));
+    return _xdg_mime_cache_get_mime_type_for_data (data, len, result_prio);
 
   mime_type = _xdg_mime_magic_lookup_data (global_magic, data, len, result_prio, NULL, 0);
 
   if (mime_type)
-    return xdg_mime_intern_mime_type (mime_type);
+    return mime_type;
 
   return XDG_MIME_TYPE_UNKNOWN;
 }
@@ -451,13 +441,13 @@ xdg_mime_get_mime_type_for_file (const char  *file_name,
   xdg_mime_init ();
 
   if (_xdg_mime_caches)
-    return xdg_mime_intern_mime_type (_xdg_mime_cache_get_mime_type_for_file (file_name, statbuf));
+    return _xdg_mime_cache_get_mime_type_for_file (file_name, statbuf);
 
   base_name = _xdg_get_base_name (file_name);
   n = _xdg_glob_hash_lookup_file_name (global_hash, base_name, mime_types, 5);
 
   if (n == 1)
-    return xdg_mime_intern_mime_type (mime_types[0]);
+    return mime_types[0];
 
   if (!statbuf)
     {
@@ -504,7 +494,7 @@ xdg_mime_get_mime_type_for_file (const char  *file_name,
   fclose (file);
 
   if (mime_type)
-    return xdg_mime_intern_mime_type (mime_type);
+    return mime_type;
 
   return XDG_MIME_TYPE_UNKNOWN;
 }
@@ -517,10 +507,10 @@ xdg_mime_get_mime_type_from_file_name (const char *file_name)
   xdg_mime_init ();
 
   if (_xdg_mime_caches)
-    return xdg_mime_intern_mime_type (_xdg_mime_cache_get_mime_type_from_file_name (file_name));
+    return _xdg_mime_cache_get_mime_type_from_file_name (file_name);
 
   if (_xdg_glob_hash_lookup_file_name (global_hash, file_name, &mime_type, 1))
-    return xdg_mime_intern_mime_type (mime_type);
+    return mime_type;
   else
     return XDG_MIME_TYPE_UNKNOWN;
 }
@@ -660,7 +650,7 @@ xdg_mime_unalias_mime_type (const char *mime_type)
 {
   xdg_mime_init ();
 
-  return xdg_mime_intern_mime_type (_xdg_mime_unalias_mime_type (mime_type));
+  return _xdg_mime_unalias_mime_type (mime_type);
 }
 
 int
@@ -881,14 +871,14 @@ xdg_mime_get_icon (const char *mime)
   xdg_mime_init ();
   
   if (_xdg_mime_caches)
-    return xdg_mime_intern_mime_type (_xdg_mime_cache_get_icon (mime));
+    return _xdg_mime_cache_get_icon (mime);
 
   icon = _xdg_mime_icon_list_lookup (icon_list, mime);
 
   if (!icon)
-    icon = xdg_mime_intern_mime_type (xdg_mime_get_generic_icon (mime));
+    icon = xdg_mime_get_generic_icon (mime);
 
-  return xdg_mime_intern_mime_type (icon);
+  return icon;
 }
 
 const char *
@@ -897,7 +887,7 @@ xdg_mime_get_generic_icon (const char *mime)
   xdg_mime_init ();
   
   if (_xdg_mime_caches)
-    return xdg_mime_intern_mime_type (_xdg_mime_cache_get_generic_icon (mime));
+    return _xdg_mime_cache_get_generic_icon (mime);
 
-  return xdg_mime_intern_mime_type (_xdg_mime_icon_list_lookup (generic_icon_list, mime));
+  return _xdg_mime_icon_list_lookup (generic_icon_list, mime);
 }

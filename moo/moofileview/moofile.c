@@ -21,13 +21,13 @@
 #define MOO_FILE_VIEW_COMPILATION
 #include "moofileview/moofilesystem.h"
 #include "moofileview/moofile-private.h"
-#include "moofileview/moofileicons.h"
+#include "mooutils/moofileicon.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/moocompat.h"
 #include "marshals.h"
-#include "mooutils/xdgmime/xdgmime.h"
+#include "mooutils/moo-mime.h"
 #include <glib/gstdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -46,8 +46,6 @@
 
 MOO_DEBUG_INIT(file, FALSE)
 
-#define MIME_TYPE_UNKNOWN xdg_mime_type_unknown
-
 #define NORMAL_PRIORITY         G_PRIORITY_DEFAULT_IDLE
 #define NORMAL_TIMEOUT          0.04
 #define BACKGROUND_PRIORITY     G_PRIORITY_LOW
@@ -59,15 +57,8 @@ G_STMT_START {              \
     g_timer_stop (timer);   \
 } G_STMT_END
 
-static MooIconType   _get_folder_icon           (const char     *path);
-static MooIconEmblem _get_icon_flags            (const MooFile  *file);
-
-static GdkPixbuf    *render_icon                (const MooFile  *file,
-                                                 GtkWidget      *widget,
-                                                 GtkIconSize     size);
-static GdkPixbuf    *render_icon_for_path       (const char     *path,
-                                                 GtkWidget      *widget,
-                                                 GtkIconSize     size);
+static MooIconType      get_folder_icon (const char     *path);
+static MooIconEmblem    get_icon_flags  (const MooFile  *file);
 
 #define MAKE_PATH(dirname,file) g_build_filename (dirname, file->name, NULL)
 
@@ -76,13 +67,13 @@ void
 _moo_file_find_mime_type (MooFile    *file,
                           const char *path)
 {
-    file->mime_type = xdg_mime_get_mime_type_for_file (path, file->statbuf);
+    file->mime_type = moo_get_mime_type_for_file (path, file->statbuf);
 
     if (!file->mime_type || !file->mime_type[0])
     {
         /* this should not happen */
         _moo_message ("%s: oops, %s", G_STRLOC, file->display_name);
-        file->mime_type = MIME_TYPE_UNKNOWN;
+        file->mime_type = MOO_MIME_TYPE_UNKNOWN;
     }
 
     file->flags |= MOO_FILE_HAS_MIME_TYPE;
@@ -526,19 +517,15 @@ _moo_file_get_icon (const MooFile  *file,
                     GtkWidget      *widget,
                     GtkIconSize     size)
 {
+    MooFileIcon icon = {0};
+
     g_return_val_if_fail (file != NULL, NULL);
     g_return_val_if_fail (GTK_IS_WIDGET (widget), NULL);
-    return render_icon (file, widget, size);
-}
 
-
-GdkPixbuf *
-_moo_get_icon_for_path (const char     *path,
-                        GtkWidget      *widget,
-                        GtkIconSize     size)
-{
-    g_return_val_if_fail (GTK_IS_WIDGET (widget), NULL);
-    return render_icon_for_path (path, widget, size);
+    icon.mime_type = file->mime_type;
+    icon.type = file->icon;
+    icon.emblem = get_icon_flags (file);
+    return moo_file_icon_get_pixbuf (&icon, widget, size);
 }
 
 
@@ -634,43 +621,6 @@ _moo_file_info_get_type (void)
 }
 
 
-static GdkPixbuf *
-render_icon (const MooFile  *file,
-             GtkWidget      *widget,
-             GtkIconSize     size)
-{
-    GdkPixbuf *pixbuf = _moo_get_icon (widget, file->icon, file->mime_type,
-                                       _get_icon_flags (file), size);
-    g_assert (pixbuf != NULL);
-    return pixbuf;
-}
-
-
-static GdkPixbuf *
-render_icon_for_path (const char     *path,
-                      GtkWidget      *widget,
-                      GtkIconSize     size)
-{
-    const char *mime_type = MIME_TYPE_UNKNOWN;
-
-#ifndef __WIN32__
-    if (path)
-    {
-        mime_type = xdg_mime_get_mime_type_for_file (path, NULL);
-
-        if (!mime_type || !mime_type[0])
-            mime_type = MIME_TYPE_UNKNOWN;
-    }
-#else
-#ifdef __GNUC__
-#warning "Implement render_icon_for_path()"
-#endif
-#endif
-
-    return _moo_get_icon (widget, MOO_ICON_MIME, mime_type, 0, size);
-}
-
-
 guint8
 _moo_file_get_icon_type (MooFile    *file,
                          const char *dirname)
@@ -684,7 +634,7 @@ _moo_file_get_icon_type (MooFile    *file,
     if (MOO_FILE_IS_DIR (file))
     {
         char *path = MAKE_PATH (dirname, file);
-        MooIconType icon = _get_folder_icon (path);
+        MooIconType icon = get_folder_icon (path);
         g_free (path);
         return icon;
     }
@@ -716,7 +666,7 @@ _moo_file_icon_blank (void)
 
 
 static MooIconType
-_get_folder_icon (const char *path)
+get_folder_icon (const char *path)
 {
     static const char *home_path = NULL;
     static char *desktop_path = NULL;
@@ -750,7 +700,7 @@ _get_folder_icon (const char *path)
 
 
 static MooIconEmblem
-_get_icon_flags (const MooFile *file)
+get_icon_flags (const MooFile *file)
 {
     return
 #if 0

@@ -9,8 +9,6 @@ moofileview_sources =		\
 	moofile-private.h	\
 	moofileentry.c		\
 	moofileentry.h		\
-	moofileicons.c		\
-	moofileicons.h		\
 	moofilesystem.c		\
 	moofilesystem.h		\
 	moofileview.c		\
@@ -33,18 +31,6 @@ moofileview_sources =		\
 	mooiconview.h		\
 	mootreeview.c		\
 	mootreeview.h
-
-moofileview_pixmaps =		\
-	symlink.png		\
-	symlink-small.png
-BUILT_SOURCES += moofileicons-symlink.h
-CLEANFILES += moofileicons-symlink.h
-EXTRA_DIST += $(moofileview_pixmaps)
-
-moofileicons-symlink.h: $(moofileview_pixmaps)
-	gdk-pixbuf-csource --static --build-list	\
-		SYMLINK_ARROW $(srcdir)/symlink.png	\
-		SYMLINK_ARROW_SMALL $(srcdir)/symlink-small.png > $@.tmp && mv $@.tmp $@
 
 GLADE2_FILES =				\
 	glade/moofileview-drop.glade	\

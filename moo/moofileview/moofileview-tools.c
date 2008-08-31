@@ -23,7 +23,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooi18n.h"
-#include "mooutils/xdgmime/xdgmime.h"
+#include "mooutils/moo-mime.h"
 #include <string.h>
 
 
@@ -325,11 +325,11 @@ action_check_one (ToolAction *action,
     mime = _moo_file_get_mime_type (file);
     g_return_val_if_fail (mime != NULL, FALSE);
 
-    if (mime == XDG_MIME_TYPE_UNKNOWN)
+    if (mime == MOO_MIME_TYPE_UNKNOWN)
         return FALSE;
 
     for (l = action->mimetypes; l != NULL; l = l->next)
-        if (xdg_mime_mime_type_subclass (mime, l->data))
+        if (moo_mime_type_is_subclass (mime, l->data))
             return TRUE;
 
     return FALSE;

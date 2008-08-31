@@ -21,7 +21,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooprefs.h"
 #include "marshals.h"
-#include "mooutils/xdgmime/xdgmime.h"
+#include "mooutils/moo-mime.h"
 #include <string.h>
 
 #define LANGUAGE_DIR            "language-specs"
@@ -406,11 +406,9 @@ moo_lang_mgr_get_lang_for_file (MooLangMgr *mgr,
     if (lang)
         return lang;
 
-    /* XXX: xdgmime wants utf8-encoded filename here. is it a problem? */
-    /* It's a big problem! */
-    mime_type = xdg_mime_get_mime_type_for_file (filename, NULL);
+    mime_type = moo_get_mime_type_for_file (filename, NULL);
 
-    if (mime_type != XDG_MIME_TYPE_UNKNOWN)
+    if (mime_type != MOO_MIME_TYPE_UNKNOWN)
         lang = get_lang_for_mime_type (mgr, mime_type);
 
     if (lang)
@@ -440,12 +438,9 @@ get_lang_for_filename (MooLangMgr *mgr,
     if (lang)
         return lang;
 
-    /* XXX: xdgmime wants utf8-encoded filename here. is it a problem? */
-    /* It's a big problem! */
+    mime_type = moo_get_mime_type_for_filename (filename);
 
-    mime_type = xdg_mime_get_mime_type_from_file_name (filename);
-
-    if (mime_type != XDG_MIME_TYPE_UNKNOWN)
+    if (mime_type != MOO_MIME_TYPE_UNKNOWN)
         lang = get_lang_for_mime_type (mgr, mime_type);
 
     if (lang)
@@ -464,7 +459,7 @@ static int
 check_mime_subclass (const char *base,
                      const char *mime)
 {
-    return !xdg_mime_mime_type_subclass (mime, base);
+    return !moo_mime_type_is_subclass (mime, base);
 }
 
 

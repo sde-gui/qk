@@ -88,8 +88,6 @@ char       *moo_tempnam                     (void);
 void        moo_cleanup                     (void);
 
 const char *moo_get_locale_dir              (void);
-const char *const *_moo_get_shared_data_dirs (void);
-
 
 void        moo_selection_data_set_pointer  (GtkSelectionData *data,
                                              GdkAtom         type,
@@ -179,13 +177,15 @@ gboolean    _moo_regex_escape               (const char *string,
 
 
 #if GLIB_CHECK_VERSION(2,10,0)
-#define moo_new            g_slice_new
-#define moo_new0           g_slice_new0
-#define moo_free           g_slice_free
+#define moo_new                 g_slice_new
+#define moo_new0                g_slice_new0
+#define moo_free                g_slice_free
+#define moo_slice_dup           g_slice_dup
 #else
-#define moo_new(type)      g_new (type, 1)
-#define moo_new0(type)     g_new0 (type, 1)
-#define moo_free(type,mem) g_free (mem)
+#define moo_new(type)           g_new (type, 1)
+#define moo_new0(type)          g_new0 (type, 1)
+#define moo_free(type,mem)      g_free (mem)
+#define moo_slice_dup(type,mem) ((type*) g_memdup (mem, sizeof (type)))
 #endif
 
 #if GLIB_CHECK_VERSION(2,10,0)

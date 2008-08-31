@@ -84,7 +84,7 @@ const char    *_xdg_get_base_name (const char    *file_name);
 
 #include <string.h>
 #include <errno.h>
-#include "mooutils/mooutils-misc.h"
+#include "mooutils/moo-mime.h"
 
 #ifdef G_OS_WIN32
 #define HAVE_MMAP 1

@@ -21,7 +21,7 @@
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/mooeditprefs.h"
-#include "moofileview/moofile.h"
+#include "mooutils/moofileicon.h"
 #include "mooutils/moofilewatch.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/mooi18n.h"
@@ -1291,5 +1291,5 @@ _moo_edit_get_icon (MooEdit     *doc,
                     GtkWidget   *widget,
                     GtkIconSize  size)
 {
-    return _moo_get_icon_for_path (doc->priv->filename, widget, size);
+    return moo_get_icon_for_file (doc->priv->filename, widget, size);
 }

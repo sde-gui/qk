@@ -1,7 +1,7 @@
 /*
- *   moofileicons.c
+ *   moofileicon.c
  *
- *   Copyright (C) 2004-2007 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -10,18 +10,76 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include "moofileview/moofileicons.h"
-#include "moofileicons-symlink.h"
+#include "mooutils/moofileicon.h"
+#include "mooutils/moo-mime.h"
+#include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/moostock.h"
-#include "mooutils/xdgmime/xdgmime.h"
+#include "moofileicon-symlink.h"
+#include <glib/gstdio.h>
 #include <gtk/gtk.h>
+#include <sys/stat.h>
 #include <string.h>
+
+void
+moo_file_icon_for_file (MooFileIcon *icon,
+                        const char  *path)
+{
+    const char *mime_type = NULL;
+
+    g_return_if_fail (icon != NULL);
+
+#ifndef __WIN32__
+    if (path)
+        mime_type = moo_get_mime_type_for_file (path, NULL);
+#else
+#ifdef __GNUC__
+#warning "Implement render_icon_for_path()"
+#endif
+#endif
+
+    if (!mime_type || !mime_type[0])
+        mime_type = MOO_MIME_TYPE_UNKNOWN;
+
+    icon->mime_type = mime_type;
+    icon->type = MOO_ICON_MIME;
+    icon->emblem = 0;
+}
+
+GdkPixbuf *
+moo_get_icon_for_file (const char  *path,
+                       GtkWidget   *widget,
+                       GtkIconSize  size)
+{
+    MooFileIcon icon = {0};
+    moo_file_icon_for_file (&icon, path);
+    return moo_file_icon_get_pixbuf (&icon, widget, size);
+}
+
+MooFileIcon *
+moo_file_icon_new (void)
+{
+    return moo_new (MooFileIcon);
+}
+
+MooFileIcon *
+moo_file_icon_copy (MooFileIcon *icon)
+{
+    return icon ? moo_slice_dup (MooFileIcon, icon) : NULL;
+}
+
+void
+moo_file_icon_free (MooFileIcon *icon)
+{
+    if (icon)
+        moo_free (MooFileIcon, icon);
+}
+
+
+/********************************************************************/
+/* Icon cache
+ */
 
 #define MOO_ICON_EMBLEM_LEN 2
 
@@ -248,72 +306,6 @@ moo_icon_cache_get_for_screen (GdkScreen   *screen,
     }
 
     return cache;
-}
-
-
-GdkPixbuf *
-_moo_get_icon (GtkWidget      *widget,
-               MooIconType     type,
-               const char     *mime_type,
-               MooIconEmblem   emblem,
-               GtkIconSize     size)
-{
-    GdkScreen *screen;
-    GdkPixbuf *pixbuf;
-    GdkPixbuf *original;
-    MooIconCache *cache;
-
-    g_return_val_if_fail (GTK_IS_WIDGET (widget), NULL);
-    g_return_val_if_fail (type < MOO_ICON_INVALID, NULL);
-    g_return_val_if_fail (type != MOO_ICON_MIME || mime_type != NULL, NULL);
-    g_return_val_if_fail (emblem < MOO_ICON_EMBLEM_LEN, NULL);
-
-    if (type != MOO_ICON_MIME)
-        mime_type = NULL;
-
-    if (gtk_widget_has_screen (widget))
-        screen = gtk_widget_get_screen (widget);
-    else
-        screen = gdk_screen_get_default ();
-
-    cache = moo_icon_cache_get_for_screen (screen, size);
-    g_return_val_if_fail (cache != NULL, NULL);
-
-    pixbuf = moo_icon_cache_get (cache, type, mime_type, emblem);
-
-    if (pixbuf)
-        return pixbuf;
-
-    original = NULL;
-
-    if (emblem)
-        original = moo_icon_cache_get (cache, type, mime_type, 0);
-
-    if (!original)
-    {
-        if (mime_type)
-            original = create_mime_icon (widget, mime_type, size);
-        else
-            original = create_special_icon (widget, type, size);
-
-        if (!original)
-            original = create_fallback_icon (widget, size);
-
-        g_return_val_if_fail (original != NULL, NULL);
-
-        moo_icon_cache_set (cache, type, mime_type, 0, original);
-        g_object_unref (original);
-    }
-
-    if (!emblem)
-        return original;
-
-    pixbuf = add_emblem (original, emblem, size);
-    g_return_val_if_fail (pixbuf != NULL, NULL);
-    moo_icon_cache_set (cache, type, mime_type, emblem, pixbuf);
-    g_object_unref (pixbuf);
-
-    return pixbuf;
 }
 
 
@@ -687,7 +679,7 @@ create_mime_icon (GtkWidget    *widget,
     icon_theme = gtk_icon_theme_get_for_screen (screen);
     pixels_from_icon_size (screen, size, NULL, &pixel_size);
 
-    if (!strcmp (mime_type, XDG_MIME_TYPE_UNKNOWN))
+    if (!strcmp (mime_type, MOO_MIME_TYPE_UNKNOWN))
     {
         pixbuf = get_named_icon (icon_theme, "unknown", pixel_size);
 
@@ -715,11 +707,11 @@ create_mime_icon (GtkWidget    *widget,
 
     if (!pixbuf)
     {
-        char **parent_types = xdg_mime_list_mime_parents (mime_type);
+        const char **parent_types = moo_mime_type_list_parents (mime_type);
 
         if (parent_types && parent_types[0])
         {
-            char **p;
+            const char **p;
 
             for (p = parent_types; *p && !pixbuf; ++p)
             {
@@ -741,6 +733,73 @@ create_mime_icon (GtkWidget    *widget,
 
     if (!pixbuf)
         pixbuf = create_special_icon (widget, MOO_ICON_FILE, size);
+
+    return pixbuf;
+}
+
+GdkPixbuf *
+moo_file_icon_get_pixbuf (MooFileIcon *icon,
+                          GtkWidget   *widget,
+                          GtkIconSize  size)
+{
+    GdkScreen *screen;
+    GdkPixbuf *pixbuf;
+    GdkPixbuf *original;
+    MooIconCache *cache;
+    const char *mime_type;
+
+    g_return_val_if_fail (icon != NULL, NULL);
+    g_return_val_if_fail (!widget || GTK_IS_WIDGET (widget), NULL);
+    g_return_val_if_fail (icon->type < MOO_ICON_INVALID, NULL);
+    g_return_val_if_fail (icon->type != MOO_ICON_MIME || icon->mime_type != NULL, NULL);
+    g_return_val_if_fail (icon->emblem < MOO_ICON_EMBLEM_LEN, NULL);
+
+    if (icon->type != MOO_ICON_MIME)
+        mime_type = NULL;
+    else
+        mime_type = icon->mime_type;
+
+    if (widget && gtk_widget_has_screen (widget))
+        screen = gtk_widget_get_screen (widget);
+    else
+        screen = gdk_screen_get_default ();
+
+    cache = moo_icon_cache_get_for_screen (screen, size);
+    g_return_val_if_fail (cache != NULL, NULL);
+
+    pixbuf = moo_icon_cache_get (cache, icon->type, mime_type, icon->emblem);
+
+    if (pixbuf)
+        return pixbuf;
+
+    original = NULL;
+
+    if (icon->emblem)
+        original = moo_icon_cache_get (cache, icon->type, mime_type, 0);
+
+    if (!original)
+    {
+        if (mime_type)
+            original = create_mime_icon (widget, mime_type, size);
+        else
+            original = create_special_icon (widget, icon->type, size);
+
+        if (!original)
+            original = create_fallback_icon (widget, size);
+
+        g_return_val_if_fail (original != NULL, NULL);
+
+        moo_icon_cache_set (cache, icon->type, mime_type, 0, original);
+        g_object_unref (original);
+    }
+
+    if (!icon->emblem)
+        return original;
+
+    pixbuf = add_emblem (original, icon->emblem, size);
+    g_return_val_if_fail (pixbuf != NULL, NULL);
+    moo_icon_cache_set (cache, icon->type, mime_type, icon->emblem, pixbuf);
+    g_object_unref (pixbuf);
 
     return pixbuf;
 }

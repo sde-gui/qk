@@ -56,13 +56,7 @@ typedef enum {
 
 gboolean     _moo_file_test             (const MooFile  *file,
                                          MooFileInfo     test);
-
 const char  *_moo_file_get_mime_type    (const MooFile  *file);
-
-GdkPixbuf   *_moo_get_icon_for_path     (const char     *path,
-                                         GtkWidget      *widget,
-                                         GtkIconSize     size);
-
 const char  *_moo_file_display_name     (const MooFile  *file);
 
 

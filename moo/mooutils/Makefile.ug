@@ -74,6 +74,8 @@ mooutils_sources =			\
 	mooentry.h			\
 	moofiledialog.c			\
 	moofiledialog.h			\
+	moofileicon.c			\
+	moofileicon.h			\
 	moofilewatch.c			\
 	moofilewatch.h			\
 	moofiltermgr.c			\
@@ -98,6 +100,8 @@ mooutils_sources =			\
 	moomenumgr.h			\
 	moomenutoolbutton.c		\
 	moomenutoolbutton.h		\
+	moo-mime.c			\
+	moo-mime.h			\
 	moonotebook.c			\
 	moonotebook.h			\
 	moopane.c			\
@@ -232,3 +236,15 @@ ENUM_HDRS =				\
 	mooprefs.h			\
 	moouixml.h			\
 	mooutils-misc.h
+
+file_pixmaps =				\
+	pixmaps/symlink.png		\
+	pixmaps/symlink-small.png
+BUILT_SOURCES += moofileicon-symlink.h
+CLEANFILES += moofileicon-symlink.h
+EXTRA_DIST += $(file_pixmaps)
+
+moofileicon-symlink.h: $(file_pixmaps)
+	gdk-pixbuf-csource --static --build-list	\
+		SYMLINK_ARROW $(srcdir)/pixmaps/symlink.png	\
+		SYMLINK_ARROW_SMALL $(srcdir)/pixmaps/symlink-small.png > $@.tmp && mv $@.tmp $@

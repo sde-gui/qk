@@ -27,6 +27,7 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/moo-mime.h"
 #include "plugins/moofileselector-gxml.h"
 #include "mooutils/moohelp.h"
 #include "help-sections.h"
@@ -37,8 +38,6 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
-
-#include <mooutils/xdgmime/xdgmime.h>
 
 #ifndef MOO_VERSION
 #define MOO_VERSION NULL
@@ -291,7 +290,7 @@ moo_file_selector_activate (MooFileView    *fileview,
     }
 
     {
-        const char *mime_type = xdg_mime_get_mime_type_for_file (path, &statbuf);
+        const char *mime_type = moo_get_mime_type_for_file (path, &statbuf);
 
         if (!strcmp (mime_type, "application/x-trash"))
         {
@@ -302,14 +301,14 @@ moo_file_selector_activate (MooFileView    *fileview,
                 if (g_str_has_suffix (path, bak_suffixes[i]))
                 {
                     char *tmp = g_strndup (path, strlen (path) - strlen (bak_suffixes[i]));
-                    mime_type = xdg_mime_get_mime_type_from_file_name (tmp);
+                    mime_type = moo_get_mime_type_for_filename (tmp);
                     g_free (tmp);
                     break;
                 }
         }
 
         is_text = !strcmp (mime_type, "application/octet-stream") ||
-                   xdg_mime_mime_type_subclass (mime_type, "text/plain");
+                   moo_mime_type_is_subclass (mime_type, "text/plain");
         is_exe = !strcmp (mime_type, "application/x-executable");
     }
 

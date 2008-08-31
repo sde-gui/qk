@@ -36,12 +36,13 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooi18n.h"
-#include "mooutils/xdgmime/xdgmime.h"
+#include "mooutils/moo-mime.h"
 #include "mooutils/moohelp.h"
 #include <glib/gmappedfile.h>
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+#include <stdlib.h>
 
 #ifdef GDK_WINDOWING_QUARTZ
 #include <ige-mac-dock.h>
@@ -937,7 +938,7 @@ static void
 moo_app_cleanup (void)
 {
     _moo_app_input_shutdown ();
-    xdg_mime_shutdown ();
+    moo_mime_shutdown ();
     moo_cleanup ();
 }
 
