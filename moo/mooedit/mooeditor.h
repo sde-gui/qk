@@ -140,6 +140,7 @@ gboolean         moo_editor_save_copy       (MooEditor      *editor,
                                              GError        **error);
 
 void             moo_editor_apply_prefs     (MooEditor      *editor);
+void             moo_editor_queue_apply_prefs (MooEditor    *editor);
 
 void            _moo_editor_load_session    (MooEditor      *editor,
                                              MooMarkupNode  *xml);

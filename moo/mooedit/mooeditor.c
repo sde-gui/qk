@@ -134,6 +134,8 @@ struct _MooEditorPrivate {
 
     char            *default_lang;
 
+    guint            prefs_idle;
+
     guint            autosave_interval;
 };
 
@@ -453,6 +455,9 @@ moo_editor_finalize (GObject *object)
 
     g_slist_foreach (editor->priv->messages, (GFunc) message_free, NULL);
     g_slist_free (editor->priv->messages);
+
+    if (editor->priv->prefs_idle)
+        g_source_remove (editor->priv->prefs_idle);
 
     G_OBJECT_CLASS (moo_editor_parent_class)->finalize (object);
 }
@@ -2539,6 +2544,25 @@ set_default_lang (MooEditor  *editor,
 }
 
 
+static gboolean
+moo_editor_apply_prefs_in_idle (MooEditor *editor)
+{
+    editor->priv->prefs_idle = 0;
+    moo_editor_apply_prefs (editor);
+    return FALSE;
+}
+
+void
+moo_editor_queue_apply_prefs (MooEditor *editor)
+{
+    g_return_if_fail (MOO_IS_EDITOR (editor));
+    if (!editor->priv->prefs_idle)
+        editor->priv->prefs_idle =
+            moo_idle_add_full (G_PRIORITY_HIGH,
+                               (GSourceFunc) moo_editor_apply_prefs_in_idle,
+                               editor, NULL);
+}
+
 void
 moo_editor_apply_prefs (MooEditor *editor)
 {
@@ -2546,6 +2570,12 @@ moo_editor_apply_prefs (MooEditor *editor)
     gboolean autosave, backups;
     int autosave_interval;
     const char *color_scheme, *default_lang;
+
+    if (editor->priv->prefs_idle)
+    {
+        g_source_remove (editor->priv->prefs_idle);
+        editor->priv->prefs_idle = 0;
+    }
 
     _moo_edit_window_update_title ();
     _moo_edit_window_set_use_tabs ();

@@ -113,6 +113,10 @@ prefs_page_new (MooEditor          *editor,
     moo_prefs_page_set_callbacks (MOO_PREFS_PAGE (prefs_page),
                                   init_ui, init, apply);
 
+    g_signal_connect_swapped (prefs_page, "apply",
+                              G_CALLBACK (moo_editor_queue_apply_prefs),
+                              editor);
+
     return prefs_page;
 }
 
