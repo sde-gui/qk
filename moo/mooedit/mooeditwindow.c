@@ -877,7 +877,8 @@ static void     moo_edit_window_get_property(GObject        *object,
             g_value_set_boolean (value, doc && !moo_edit_is_untitled (doc));
             break;
         case PROP_HAS_OPEN_DOCUMENT:
-            g_value_set_boolean (value, ACTIVE_DOC (window) != NULL);
+            g_value_set_boolean (value, window->priv->notebook != NULL &&
+                                        moo_notebook_get_n_pages (window->priv->notebook) != 0);
             break;
         case PROP_HAS_COMMENTS:
             doc = ACTIVE_DOC (window);
