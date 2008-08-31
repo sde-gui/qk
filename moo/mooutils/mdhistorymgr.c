@@ -10,8 +10,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mdhistorymgr.h"
-#include "moofileview/moofile.h"
+#include "mooutils/mdhistorymgr.h"
+#include "mooutils/moofileicon.h"
 #include "mooutils/mooapp-ipc.h"
 #include "mooutils/moofilewatch.h"
 #include "mooutils/mooutils-misc.h"
@@ -25,6 +25,7 @@
 #include <stdarg.h>
 
 #define N_MENU_ITEMS 10
+#define MAX_ITEM_NUMBER 5000
 
 #define IPC_ID "MdHistoryMgr"
 
@@ -53,6 +54,7 @@ typedef struct {
 struct MdHistoryItem {
     char *uri;
     GData *data;
+    MooFileIcon *icon;
 };
 
 typedef enum {
@@ -89,6 +91,7 @@ static void         md_history_item_format      (MdHistoryItem  *item,
                                                  GString        *buffer);
 static gboolean     md_history_item_equal       (MdHistoryItem  *item1,
                                                  MdHistoryItem  *item2);
+static MooFileIcon *md_history_item_get_icon    (MdHistoryItem  *item);
 static char        *uri_get_basename            (const char     *uri);
 static char        *uri_get_display_name        (const char     *uri);
 
@@ -752,6 +755,10 @@ md_history_mgr_add_file_real (MdHistoryMgr  *mgr,
         if (mgr->priv->files->length == 1)
             g_object_notify (G_OBJECT (mgr), "empty");
     }
+
+    if (mgr->priv->files->length > MAX_ITEM_NUMBER)
+        md_history_mgr_remove_uri (mgr,
+            md_history_item_get_uri (mgr->priv->files->tail->data));
 }
 
 void
@@ -1064,8 +1071,9 @@ populate_menu (MdHistoryMgr *mgr,
         gtk_menu_shell_insert (GTK_MENU_SHELL (menu), item, i);
 
         /* XXX */
-        pixbuf = _moo_get_icon_for_path (display_name, GTK_WIDGET (item),
-                                         GTK_ICON_SIZE_MENU);
+        pixbuf = moo_file_icon_get_pixbuf (md_history_item_get_icon (hist_item),
+                                           GTK_WIDGET (item),
+                                           GTK_ICON_SIZE_MENU);
         image = gtk_image_new_from_pixbuf (pixbuf);
         gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item), image);
 
@@ -1169,55 +1177,87 @@ create_tree_view (void)
     return tree_view;
 }
 
-// typedef struct {
-//     GtkWidget *tree_view;
-//     GtkListStore *store;
-//     GQueue *files;
-//     GList *link;
-// } Data;
-//
-// typedef struct {
-//     GdkPixbuf *pixbuf;
-//     char *display_basename;
-//     char *display_name;
-//     char *uri;
-// } Entry;
+#define FIRST_CHUNK_SIZE 100
+#define CHUNK_SIZE 100
+#define LOADING_TIMEOUT 40
+#define LOADING_PRIORITY G_PRIORITY_DEFAULT_IDLE
 
-// static gboolean
-// thread_func (gpointer user_data)
-// {
-//     Data *data = user_data;
-//     int i;
-//
-//     for (i = 0; i < 100 && data->link != data->files->tail; ++i, data->link = data->link->next)
-//     {
-//         MdHistoryItem *item = data->link->data;
-//         char *display_name, *display_basename;
-//         GdkPixbuf *pixbuf;
-//         GtkTreeIter iter;
-//
-//         display_basename = uri_get_basename (item->uri);
-//         display_name = uri_get_display_name (item->uri);
-//
-//         gdk_threads_enter ();
-//         /* XXX */
-//         pixbuf = _moo_get_icon_for_path (display_name, data->tree_view, GTK_ICON_SIZE_MENU);
-//         gdk_threads_leave ();
-//
-//         gtk_list_store_append (data->store, &iter);
-//         gtk_list_store_set (data->store, &iter,
-//                             COLUMN_PIXBUF, pixbuf,
-//                             COLUMN_NAME, display_basename,
-//                             COLUMN_TOOLTIP, display_name,
-//                             COLUMN_URI, md_history_item_get_uri (item),
-//                             -1);
-//
-//         g_free (display_basename);
-//         g_free (display_name);
-//     }
-//
-//     return data->link != data->files->tail;
-// }
+typedef struct {
+    GSList *items;
+    guint idle;
+    GtkWidget *tree_view;
+    GtkListStore *store;
+} IdleLoader;
+
+static void
+cancel_idle_loading (GtkWidget *tree_view)
+{
+    g_object_set_data (G_OBJECT (tree_view),
+                       "md-history-mgr-idle-loader",
+                       NULL);
+}
+
+static void
+idle_loader_free (IdleLoader *data)
+{
+    if (data->idle)
+        g_source_remove (data->idle);
+    g_slist_foreach (data->items, (GFunc) md_history_item_free, NULL);
+    g_slist_free (data->items);
+    g_free (data);
+}
+
+static void
+add_entry (MdHistoryItem *item,
+           GtkListStore  *store,
+           GtkWidget     *tree_view)
+{
+    char *display_name, *display_basename;
+    GdkPixbuf *pixbuf;
+    GtkTreeIter iter;
+
+    display_basename = uri_get_basename (item->uri);
+    display_name = uri_get_display_name (item->uri);
+    pixbuf = moo_file_icon_get_pixbuf (md_history_item_get_icon (item),
+                                       tree_view, GTK_ICON_SIZE_MENU);
+
+    gtk_list_store_append (store, &iter);
+    gtk_list_store_set (store, &iter,
+                        COLUMN_PIXBUF, pixbuf,
+                        COLUMN_NAME, display_basename,
+                        COLUMN_TOOLTIP, display_name,
+                        COLUMN_URI, md_history_item_get_uri (item),
+                        -1);
+
+    g_free (display_basename);
+    g_free (display_name);
+}
+
+static gboolean
+idle_loader (IdleLoader *data)
+{
+    int count;
+
+    for (count = 0; data->items != NULL && count < CHUNK_SIZE; count++)
+    {
+        add_entry (data->items->data, data->store, data->tree_view);
+        md_history_item_free (data->items->data);
+        data->items = g_slist_delete_link (data->items, data->items);
+    }
+
+    if (!data->items)
+    {
+        data->idle = 0;
+        g_object_set_data (G_OBJECT (data->tree_view),
+                           "md-history-mgr-idle-loader",
+                           NULL);
+        return FALSE;
+    }
+    else
+    {
+        return TRUE;
+    }
+}
 
 static void
 populate_tree_view (MdHistoryMgr *mgr,
@@ -1226,46 +1266,43 @@ populate_tree_view (MdHistoryMgr *mgr,
     GtkListStore *store;
     GtkTreeModel *model;
     GList *l;
+    int count;
 
     ensure_files (mgr);
+
+    cancel_idle_loading (tree_view);
 
     model = gtk_tree_view_get_model (GTK_TREE_VIEW (tree_view));
     store = GTK_LIST_STORE (model);
 
-//     {
-//         Data *data = g_new0 (Data, 1);
-//         data->tree_view = tree_view;
-//         data->store = store;
-//         data->files = mgr->priv->files;
-//         data->link = mgr->priv->files->head;
-//         MooAsyncJob *job = moo_async_job_new (thread_func, data, g_free);
-//         moo_async_job_start (job);
-//         moo_async_job_unref (job);
-//     }
-
-    for (l = mgr->priv->files->head; l != NULL; l = l->next)
+    for (l = mgr->priv->files->head, count = 0;
+         l != NULL && count < FIRST_CHUNK_SIZE;
+         l = l->next, count++)
     {
-        MdHistoryItem *item = l->data;
-        char *display_name, *display_basename;
-        GdkPixbuf *pixbuf;
-        GtkTreeIter iter;
+        add_entry (l->data, store, tree_view);
+    }
 
-        display_basename = uri_get_basename (item->uri);
-        display_name = uri_get_display_name (item->uri);
+    if (l != NULL)
+    {
+        IdleLoader *data = g_new0 (IdleLoader, 1);
 
-        /* XXX */
-        pixbuf = _moo_get_icon_for_path (display_name, tree_view, GTK_ICON_SIZE_MENU);
+        while (l != NULL)
+        {
+            data->items = g_slist_prepend (data->items, md_history_item_copy (l->data));
+            l = l->next;
+        }
 
-        gtk_list_store_append (store, &iter);
-        gtk_list_store_set (store, &iter,
-                            COLUMN_PIXBUF, pixbuf,
-                            COLUMN_NAME, display_basename,
-                            COLUMN_TOOLTIP, display_name,
-                            COLUMN_URI, md_history_item_get_uri (item),
-                            -1);
+        data->items = g_slist_reverse (data->items);
+        data->idle = g_timeout_add_full (LOADING_PRIORITY,
+                                         LOADING_TIMEOUT,
+                                         (GSourceFunc) idle_loader,
+                                         data, NULL);
+        data->tree_view = tree_view;
+        data->store = store;
 
-        g_free (display_basename);
-        g_free (display_name);
+        g_object_set_data_full (G_OBJECT (tree_view),
+                                "md-history-mgr-idle-loader", data,
+                                (GDestroyNotify) idle_loader_free);
     }
 }
 
@@ -1400,6 +1437,7 @@ md_history_item_free (MdHistoryItem *item)
     {
         g_free (item->uri);
         g_datalist_clear (&item->data);
+        moo_file_icon_free (item->icon);
         moo_free (MdHistoryItem, item);
     }
 }
@@ -1410,6 +1448,7 @@ md_history_item_new_uri (const char *uri)
     MdHistoryItem *item = moo_new (MdHistoryItem);
     item->uri = g_strdup (uri);
     item->data = NULL;
+    item->icon = NULL;
     return item;
 }
 
@@ -1468,6 +1507,7 @@ md_history_item_copy (MdHistoryItem *item)
 
     copy = md_history_item_new_uri (item->uri);
     g_datalist_foreach (&item->data, (GDataForeachFunc) copy_data, copy);
+    copy->icon = moo_file_icon_copy (item->icon);
 
     return copy;
 }
@@ -1548,6 +1588,25 @@ md_history_item_get_uri (MdHistoryItem *item)
 {
     g_return_val_if_fail (item != NULL, NULL);
     return item->uri;
+}
+
+static MooFileIcon *
+md_history_item_get_icon (MdHistoryItem *item)
+{
+    g_return_val_if_fail (item != NULL, NULL);
+
+    if (!item->icon)
+    {
+        char *display_name;
+
+        item->icon = moo_file_icon_new ();
+
+        display_name = uri_get_display_name (item->uri);
+        /* XXX */
+        moo_file_icon_for_file (item->icon, display_name);
+    }
+
+    return item->icon;
 }
 
 static void
