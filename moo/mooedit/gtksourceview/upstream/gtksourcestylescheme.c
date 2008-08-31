@@ -574,7 +574,41 @@ _gtk_source_style_scheme_get_current_line_color (GtkSourceStyleScheme *scheme,
 }
 
 static void
-set_text_style (GtkWidget      *widget,
+set_rc_style_color (GtkRcStyle     *rc_style,
+		    GtkRcFlags      component,
+		    GtkStateType    state,
+		    const GdkColor *color)
+{
+	if (color)
+	{
+		switch (component)
+		{
+			case GTK_RC_FG:
+				rc_style->fg[state] = *color;
+				break;
+			case GTK_RC_BG:
+				rc_style->bg[state] = *color;
+				break;
+			case GTK_RC_TEXT:
+				rc_style->text[state] = *color;
+				break;
+			case GTK_RC_BASE:
+				rc_style->base[state] = *color;
+				break;
+			default:
+				g_assert_not_reached();
+		}
+
+		rc_style->color_flags[state] |= component;
+	}
+	else
+	{
+		rc_style->color_flags[state] &= ~component;
+	}
+}
+
+static void
+set_text_style (GtkRcStyle     *rc_style,
 		GtkSourceStyle *style,
 		GtkStateType    state)
 {
@@ -586,18 +620,18 @@ set_text_style (GtkWidget      *widget,
 	else
 		color_ptr = NULL;
 
-	gtk_widget_modify_base (widget, state, color_ptr);
+	set_rc_style_color (rc_style, GTK_RC_BASE, state, color_ptr);
 
 	if (get_color (style, TRUE, &color))
 		color_ptr = &color;
 	else
 		color_ptr = NULL;
 
-	gtk_widget_modify_text (widget, state, color_ptr);
+	set_rc_style_color (rc_style, GTK_RC_TEXT, state, color_ptr);
 }
 
 static void
-set_line_numbers_style (GtkWidget      *widget,
+set_line_numbers_style (GtkRcStyle     *rc_style,
 			GtkSourceStyle *style)
 {
 	gint i;
@@ -613,8 +647,8 @@ set_line_numbers_style (GtkWidget      *widget,
 
 	for (i = 0; i < 5; ++i)
 	{
-		gtk_widget_modify_fg (widget, i, fg_ptr);
-		gtk_widget_modify_bg (widget, i, bg_ptr);
+		set_rc_style_color (rc_style, GTK_RC_FG, i, fg_ptr);
+		set_rc_style_color (rc_style, GTK_RC_BG, i, bg_ptr);
 	}
 }
 
@@ -648,28 +682,30 @@ set_cursor_colors (GtkWidget      *widget,
 	if (strcmp (widget_name, gtk_widget_get_name (widget)) != 0)
 		gtk_widget_set_name (widget, widget_name);
 
-	g_object_set_data (G_OBJECT (widget),
-			   "gtk-source-view-cursor-color-set",
-			   GINT_TO_POINTER (TRUE));
-
 	g_free (rc_string);
 	g_free (widget_name);
 #else
 	gtk_widget_modify_cursor (widget, primary, secondary);
 #endif
+
+	g_object_set_data (G_OBJECT (widget),
+			   "gtk-source-view-cursor-color-set",
+			   GINT_TO_POINTER (TRUE));
 }
 
 static void
 unset_cursor_colors (GtkWidget *widget)
 {
-#if !GTK_CHECK_VERSION(2,11,3)
 	if (g_object_get_data (G_OBJECT (widget), "gtk-source-view-cursor-color-set") != NULL)
+	{
+#if !GTK_CHECK_VERSION(2,11,3)
 		set_cursor_colors (widget,
 				   &widget->style->text[GTK_STATE_NORMAL],
 				   &widget->style->text_aa[GTK_STATE_NORMAL]);
 #else
-	gtk_widget_modify_cursor (widget, NULL, NULL);
+		gtk_widget_modify_cursor (widget, NULL, NULL);
 #endif
+	}
 }
 
 static void
@@ -714,8 +750,12 @@ void
 _gtk_source_style_scheme_apply (GtkSourceStyleScheme *scheme,
 				GtkWidget            *widget)
 {
+	GtkRcStyle *rc_style;
+
 	g_return_if_fail (!scheme || GTK_IS_SOURCE_STYLE_SCHEME (scheme));
 	g_return_if_fail (GTK_IS_WIDGET (widget));
+
+	rc_style = gtk_widget_get_modifier_style (widget);
 
 	if (scheme != NULL)
 	{
@@ -724,20 +764,20 @@ _gtk_source_style_scheme_apply (GtkSourceStyleScheme *scheme,
 		gtk_widget_ensure_style (widget);
 
 		style = gtk_source_style_scheme_get_style (scheme, STYLE_TEXT);
-		set_text_style (widget, style, GTK_STATE_NORMAL);
-		set_text_style (widget, style, GTK_STATE_PRELIGHT);
-		set_text_style (widget, style, GTK_STATE_INSENSITIVE);
+		set_text_style (rc_style, style, GTK_STATE_NORMAL);
+		set_text_style (rc_style, style, GTK_STATE_PRELIGHT);
+		set_text_style (rc_style, style, GTK_STATE_INSENSITIVE);
 
 		style = gtk_source_style_scheme_get_style (scheme, STYLE_SELECTED);
-		set_text_style (widget, style, GTK_STATE_SELECTED);
+		set_text_style (rc_style, style, GTK_STATE_SELECTED);
 
 		style2 = gtk_source_style_scheme_get_style (scheme, STYLE_SELECTED_UNFOCUSED);
 		if (style2 == NULL)
 			style2 = style;
-		set_text_style (widget, style2, GTK_STATE_ACTIVE);
+		set_text_style (rc_style, style2, GTK_STATE_ACTIVE);
 
 		style = gtk_source_style_scheme_get_style (scheme, STYLE_LINE_NUMBERS);
-		set_line_numbers_style (widget, style);
+		set_line_numbers_style (rc_style, style);
 
 		style = gtk_source_style_scheme_get_style (scheme, STYLE_CURSOR);
 		style2 = gtk_source_style_scheme_get_style (scheme, STYLE_SECONDARY_CURSOR);
@@ -745,14 +785,16 @@ _gtk_source_style_scheme_apply (GtkSourceStyleScheme *scheme,
 	}
 	else
 	{
-		set_text_style (widget, NULL, GTK_STATE_NORMAL);
-		set_text_style (widget, NULL, GTK_STATE_ACTIVE);
-		set_text_style (widget, NULL, GTK_STATE_PRELIGHT);
-		set_text_style (widget, NULL, GTK_STATE_INSENSITIVE);
-		set_text_style (widget, NULL, GTK_STATE_SELECTED);
-		set_line_numbers_style (widget, NULL);
+		set_text_style (rc_style, NULL, GTK_STATE_NORMAL);
+		set_text_style (rc_style, NULL, GTK_STATE_ACTIVE);
+		set_text_style (rc_style, NULL, GTK_STATE_PRELIGHT);
+		set_text_style (rc_style, NULL, GTK_STATE_INSENSITIVE);
+		set_text_style (rc_style, NULL, GTK_STATE_SELECTED);
+		set_line_numbers_style (rc_style, NULL);
 		unset_cursor_colors (widget);
 	}
+
+	gtk_widget_modify_style (widget, rc_style);
 }
 
 /* --- PARSER ---------------------------------------------------------------- */

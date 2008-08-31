@@ -113,3 +113,6 @@ gtksourceview/%-mangled.c: gtksourceview/upstream/%.c gtksourceview/upstream/man
 gtksourceview/%-mangled.h: gtksourceview/upstream/%.h gtksourceview/upstream/mangle.sh
 	@mkdir -p gtksourceview
 	$(SHELL) $(srcdir)/gtksourceview/upstream/mangle.sh $(srcdir)/gtksourceview/upstream/$*.h > $@.tmp && mv $@.tmp $@
+
+UGLY_SUBDIRS += gtksourceview gtksourceview/upstream
+%.lo: %-mangled.lo ; @true
