@@ -330,8 +330,7 @@ get_filename (MdHistoryMgr *mgr)
 #define PROP_VALUE "value"
 #define PROP_TYPE "type"
 
-#define ELEMENT_RECENT_ITEMS "recent-items"
-#define ELEMENT_ITEM         "item"
+#define ELM_RECENT_ITEMS "recent-items"
 
 static void
 add_file (MdHistoryMgr  *mgr,
@@ -429,7 +428,7 @@ load_legacy (MdHistoryMgr *mgr)
     xml = moo_prefs_get_markup (MOO_PREFS_STATE);
     g_return_if_fail (xml != NULL);
 
-    root_path = g_strdup_printf ("%s/" ELEMENT_RECENT_ITEMS, mgr->priv->name);
+    root_path = g_strdup_printf ("%s/" ELM_RECENT_ITEMS, mgr->priv->name);
     root = moo_markup_get_element (MOO_MARKUP_NODE (xml), root_path);
     g_free (root_path);
 
@@ -444,7 +443,7 @@ load_legacy (MdHistoryMgr *mgr)
         if (!MOO_MARKUP_IS_ELEMENT (node))
             continue;
 
-        if (!strcmp (node->name, ELEMENT_ITEM))
+        if (!strcmp (node->name, ELM_ITEM))
         {
             const char *filename = moo_markup_get_content (node);
             uri = g_filename_to_uri (filename, NULL, NULL);
@@ -462,14 +461,259 @@ load_legacy (MdHistoryMgr *mgr)
     moo_markup_delete_node (root);
 }
 
+typedef enum {
+    ELEMENT_NONE = 0,
+    ELEMENT_ROOT,
+    ELEMENT_ITEM,
+    ELEMENT_DATA
+} Element;
+
+typedef struct {
+    gboolean seen_root;
+    Element element;
+    MdHistoryItem *item;
+    MdHistoryMgr *mgr;
+} ParserData;
+
+static void
+start_element_root (const gchar  *element_name,
+                    const gchar **attribute_names,
+                    const gchar **attribute_values,
+                    ParserData   *data,
+                    GError      **error)
+{
+    gboolean seen_version = FALSE;
+    const char **p, **v;
+
+    if (data->seen_root)
+    {
+        g_set_error (error, MOO_PARSE_ERROR,
+                     MOO_PARSE_ERROR_INVALID_CONTENT,
+                     "invalid element '%s'", element_name);
+        return;
+    }
+
+    if (strcmp (element_name, ELM_ROOT) != 0)
+    {
+        g_set_error (error, MOO_PARSE_ERROR,
+                     MOO_PARSE_ERROR_INVALID_CONTENT,
+                     "invalid element '%s'", element_name);
+        return;
+    }
+
+    for (p = attribute_names, v = attribute_values; p && *p; p++, v++)
+    {
+        if (seen_version || strcmp (*p, PROP_VERSION) != 0)
+        {
+            g_set_error (error, MOO_PARSE_ERROR,
+                         MOO_PARSE_ERROR_INVALID_CONTENT,
+                         "invalid attribute '%s'", *p);
+            return;
+        }
+
+        if (strcmp (*v, PROP_VERSION_VALUE) != 0)
+        {
+            g_set_error (error, MOO_PARSE_ERROR,
+                         MOO_PARSE_ERROR_INVALID_CONTENT,
+                         "invalid version value '%s'", *v);
+            return;
+        }
+
+        seen_version = TRUE;
+    }
+
+    if (!seen_version)
+    {
+        g_set_error (error, MOO_PARSE_ERROR,
+                     MOO_PARSE_ERROR_INVALID_CONTENT,
+                     "version attribute missing");
+        return;
+    }
+
+    data->seen_root = TRUE;
+    data->element = ELEMENT_ROOT;
+}
+
+static void
+start_element_item (const gchar  *element_name,
+                    const gchar **attribute_names,
+                    const gchar **attribute_values,
+                    ParserData   *data,
+                    GError      **error)
+{
+    MdHistoryItem *item = NULL;
+    const char **p, **v;
+
+    if (strcmp (element_name, ELM_ITEM) != 0)
+    {
+        g_set_error (error, MOO_PARSE_ERROR,
+                     MOO_PARSE_ERROR_INVALID_CONTENT,
+                     "invalid element '%s'",
+                     element_name);
+        return;
+    }
+
+    data->element = ELEMENT_ITEM;
+
+    for (p = attribute_names, v = attribute_values; p && *p; p++, v++)
+    {
+        if (strcmp (*p, PROP_URI) != 0)
+        {
+            g_set_error (error, MOO_PARSE_ERROR,
+                         MOO_PARSE_ERROR_INVALID_CONTENT,
+                         "invalid attribute '%s'", *v);
+            return;
+        }
+
+        if (item != NULL)
+        {
+            g_set_error (error, MOO_PARSE_ERROR,
+                         MOO_PARSE_ERROR_INVALID_CONTENT,
+                         "duplicate attribute '%s'", *v);
+            return;
+        }
+
+        item = md_history_item_new (*v, NULL);
+        g_return_if_fail (item != NULL);
+    }
+
+    if (!item)
+    {
+        g_set_error (error, MOO_PARSE_ERROR,
+                     MOO_PARSE_ERROR_INVALID_CONTENT,
+                     "missing attribute '%s'", PROP_URI);
+        return;
+    }
+
+    data->item = item;
+}
+
+static void
+start_element_data (const gchar  *element_name,
+                    const gchar **attribute_names,
+                    const gchar **attribute_values,
+                    ParserData   *data,
+                    GError      **error)
+{
+    const char **p, **v;
+    const char *key = NULL;
+    const char *value = NULL;
+
+    g_return_if_fail (data->item != NULL);
+
+    if (strcmp (element_name, ELM_DATA) != 0)
+    {
+        g_set_error (error, MOO_PARSE_ERROR,
+                     MOO_PARSE_ERROR_INVALID_CONTENT,
+                     "invalid element '%s'",
+                     element_name);
+        return;
+    }
+
+    data->element = ELEMENT_DATA;
+
+    for (p = attribute_names, v = attribute_values; p && *p; p++, v++)
+    {
+        if (strcmp (*p, PROP_KEY) == 0)
+        {
+            key = *v;
+        }
+        else if (strcmp (*p, PROP_VALUE) == 0)
+        {
+            value = *v;
+        }
+        else
+        {
+            g_set_error (error, MOO_PARSE_ERROR,
+                         MOO_PARSE_ERROR_INVALID_CONTENT,
+                         "invalid attribute '%s'", *v);
+            return;
+        }
+    }
+
+    if (!key || !key[0])
+    {
+        g_set_error (error, MOO_PARSE_ERROR,
+                     MOO_PARSE_ERROR_INVALID_CONTENT,
+                     "missing attribute '%s'", PROP_KEY);
+        return;
+    }
+
+    if (!value)
+    {
+        g_set_error (error, MOO_PARSE_ERROR,
+                     MOO_PARSE_ERROR_INVALID_CONTENT,
+                     "missing attribute '%s'", PROP_VALUE);
+        return;
+    }
+
+    md_history_item_set (data->item, key, value);
+}
+
+static void
+parser_start_element (G_GNUC_UNUSED GMarkupParseContext *context,
+                      const gchar         *element_name,
+                      const gchar        **attribute_names,
+                      const gchar        **attribute_values,
+                      ParserData          *data,
+                      GError             **error)
+{
+    switch (data->element)
+    {
+        case ELEMENT_NONE:
+            start_element_root (element_name, attribute_names,
+                                attribute_values, data, error);
+            break;
+        case ELEMENT_ROOT:
+            start_element_item (element_name, attribute_names,
+                                attribute_values, data, error);
+            break;
+        case ELEMENT_ITEM:
+            start_element_data (element_name, attribute_names,
+                                attribute_values, data, error);
+            break;
+        case ELEMENT_DATA:
+            g_set_error (error, MOO_PARSE_ERROR,
+                         MOO_PARSE_ERROR_INVALID_CONTENT,
+                         "invalid element '%s'", element_name);
+            break;
+    }
+}
+
+static void
+parser_end_element (G_GNUC_UNUSED GMarkupParseContext *context,
+                    G_GNUC_UNUSED const gchar *element_name,
+                    ParserData *data,
+                    G_GNUC_UNUSED GError **error)
+{
+    switch (data->element)
+    {
+        case ELEMENT_ROOT:
+            data->element = ELEMENT_NONE;
+            break;
+        case ELEMENT_ITEM:
+            data->element = ELEMENT_ROOT;
+            if (data->item)
+            {
+                add_file (data->mgr, data->item);
+                data->item = NULL;
+            }
+            break;
+        case ELEMENT_DATA:
+            data->element = ELEMENT_ITEM;
+            break;
+        case ELEMENT_NONE:
+            g_assert_not_reached ();
+            break;
+    }
+}
+
 static void
 load_file (MdHistoryMgr *mgr)
 {
-    /* XXX: use GMarkupParser */
-    MooMarkupDoc *doc;
-    MooMarkupNode *root, *child;
     const char *filename;
-    const char *version;
+    GMarkupParser parser = {0};
+    ParserData data = {0};
     GError *error = NULL;
 
     mgr->priv->loaded = TRUE;
@@ -483,44 +727,24 @@ load_file (MdHistoryMgr *mgr)
         return;
     }
 
-    doc = moo_markup_parse_file (filename, &error);
+    parser.start_element = (MooMarkupStartElementFunc) parser_start_element;
+    parser.end_element = (MooMarkupEndElementFunc) parser_end_element;
 
-    if (!doc)
+    data.seen_root = FALSE;
+    data.element = ELEMENT_NONE;
+    data.item = NULL;
+    data.mgr = mgr;
+
+    if (!moo_parse_markup_file (filename, &parser, &data, &error))
     {
-        g_critical ("%s: could not open file '%s': %s",
-                    G_STRLOC, filename, error ? error->message : "");
+        g_critical ("%s: could not load file '%s': %s",
+                    G_STRLOC, filename,
+                    error ? error->message : "");
         g_error_free (error);
-        return;
     }
 
-    if (!(root = moo_markup_get_root_element (doc, ELM_ROOT)))
-    {
-        g_critical ("%s: in file '%s': missing element %s",
-                    G_STRLOC, filename, ELM_ROOT);
-        moo_markup_doc_unref (doc);
-        return;
-    }
-
-    if (!(version = moo_markup_get_prop (root, PROP_VERSION)) ||
-        strcmp (version, PROP_VERSION_VALUE) != 0)
-    {
-        g_critical ("%s: in file '%s': invalid version value '%s'",
-                    G_STRLOC, filename, version ? version : "(null)");
-        moo_markup_doc_unref (doc);
-        return;
-    }
-
-    for (child = root->children; child != NULL; child = child->next)
-    {
-        if (MOO_MARKUP_IS_ELEMENT (child))
-        {
-            MdHistoryItem *item;
-            if (parse_element (filename, child, &item))
-                add_file (mgr, item);
-        }
-    }
-
-    moo_markup_doc_unref (doc);
+    if (data.item)
+        md_history_item_free (data.item);
 }
 
 static gboolean
