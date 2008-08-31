@@ -610,29 +610,41 @@ set_rc_style_color (GtkRcStyle     *rc_style,
 static void
 set_text_style (GtkRcStyle     *rc_style,
 		GtkSourceStyle *style,
-		GtkStateType    state)
+		GtkStateType    state,
+		gboolean       *need_set_style)
 {
 	GdkColor color;
 	GdkColor *color_ptr;
 
 	if (get_color (style, FALSE, &color))
+	{
 		color_ptr = &color;
+		*need_set_style = TRUE;
+	}
 	else
+	{
 		color_ptr = NULL;
+	}
 
 	set_rc_style_color (rc_style, GTK_RC_BASE, state, color_ptr);
 
 	if (get_color (style, TRUE, &color))
+	{
 		color_ptr = &color;
+		*need_set_style = TRUE;
+	}
 	else
+	{
 		color_ptr = NULL;
+	}
 
 	set_rc_style_color (rc_style, GTK_RC_TEXT, state, color_ptr);
 }
 
 static void
 set_line_numbers_style (GtkRcStyle     *rc_style,
-			GtkSourceStyle *style)
+			GtkSourceStyle *style,
+			gboolean       *need_set_style)
 {
 	gint i;
 	GdkColor *fg_ptr = NULL;
@@ -641,9 +653,16 @@ set_line_numbers_style (GtkRcStyle     *rc_style,
 	GdkColor bg;
 
 	if (get_color (style, TRUE, &fg))
+	{
 		fg_ptr = &fg;
+		*need_set_style = TRUE;
+	}
+
 	if (get_color (style, FALSE, &bg))
+	{
 		bg_ptr = &bg;
+		*need_set_style = TRUE;
+	}
 
 	for (i = 0; i < 5; ++i)
 	{
@@ -751,6 +770,7 @@ _gtk_source_style_scheme_apply (GtkSourceStyleScheme *scheme,
 				GtkWidget            *widget)
 {
 	GtkRcStyle *rc_style;
+	gboolean need_set_style = FALSE;
 
 	g_return_if_fail (!scheme || GTK_IS_SOURCE_STYLE_SCHEME (scheme));
 	g_return_if_fail (GTK_IS_WIDGET (widget));
@@ -764,20 +784,20 @@ _gtk_source_style_scheme_apply (GtkSourceStyleScheme *scheme,
 		gtk_widget_ensure_style (widget);
 
 		style = gtk_source_style_scheme_get_style (scheme, STYLE_TEXT);
-		set_text_style (rc_style, style, GTK_STATE_NORMAL);
-		set_text_style (rc_style, style, GTK_STATE_PRELIGHT);
-		set_text_style (rc_style, style, GTK_STATE_INSENSITIVE);
+		set_text_style (rc_style, style, GTK_STATE_NORMAL, &need_set_style);
+		set_text_style (rc_style, style, GTK_STATE_PRELIGHT, &need_set_style);
+		set_text_style (rc_style, style, GTK_STATE_INSENSITIVE, &need_set_style);
 
 		style = gtk_source_style_scheme_get_style (scheme, STYLE_SELECTED);
-		set_text_style (rc_style, style, GTK_STATE_SELECTED);
+		set_text_style (rc_style, style, GTK_STATE_SELECTED, &need_set_style);
 
 		style2 = gtk_source_style_scheme_get_style (scheme, STYLE_SELECTED_UNFOCUSED);
 		if (style2 == NULL)
 			style2 = style;
-		set_text_style (rc_style, style2, GTK_STATE_ACTIVE);
+		set_text_style (rc_style, style2, GTK_STATE_ACTIVE, &need_set_style);
 
 		style = gtk_source_style_scheme_get_style (scheme, STYLE_LINE_NUMBERS);
-		set_line_numbers_style (rc_style, style);
+		set_line_numbers_style (rc_style, style, &need_set_style);
 
 		style = gtk_source_style_scheme_get_style (scheme, STYLE_CURSOR);
 		style2 = gtk_source_style_scheme_get_style (scheme, STYLE_SECONDARY_CURSOR);
@@ -785,16 +805,23 @@ _gtk_source_style_scheme_apply (GtkSourceStyleScheme *scheme,
 	}
 	else
 	{
-		set_text_style (rc_style, NULL, GTK_STATE_NORMAL);
-		set_text_style (rc_style, NULL, GTK_STATE_ACTIVE);
-		set_text_style (rc_style, NULL, GTK_STATE_PRELIGHT);
-		set_text_style (rc_style, NULL, GTK_STATE_INSENSITIVE);
-		set_text_style (rc_style, NULL, GTK_STATE_SELECTED);
-		set_line_numbers_style (rc_style, NULL);
+		set_text_style (rc_style, NULL, GTK_STATE_NORMAL, &need_set_style);
+		set_text_style (rc_style, NULL, GTK_STATE_ACTIVE, &need_set_style);
+		set_text_style (rc_style, NULL, GTK_STATE_PRELIGHT, &need_set_style);
+		set_text_style (rc_style, NULL, GTK_STATE_INSENSITIVE, &need_set_style);
+		set_text_style (rc_style, NULL, GTK_STATE_SELECTED, &need_set_style);
+		set_line_numbers_style (rc_style, NULL, &need_set_style);
 		unset_cursor_colors (widget);
 	}
 
-	gtk_widget_modify_style (widget, rc_style);
+	if (need_set_style ||
+	    g_object_get_data (G_OBJECT (widget), "gtk-source-view-text-style-set") != NULL)
+	{
+		g_object_set_data (G_OBJECT (widget),
+				   "gtk-source-view-text-style-set",
+				   GINT_TO_POINTER (TRUE));
+		gtk_widget_modify_style (widget, rc_style);
+	}
 }
 
 /* --- PARSER ---------------------------------------------------------------- */
