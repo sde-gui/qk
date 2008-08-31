@@ -714,6 +714,64 @@ gtk_unit_get_type (void)
 #endif /* !GTK_CHECK_VERSION(2,10,0) */
 
 
+#if !GTK_CHECK_VERSION(2,12,0)
+
+static void
+set_cursor_colors (GtkWidget      *widget,
+		   const GdkColor *primary,
+		   const GdkColor *secondary)
+{
+    char *rc_string;
+    char *widget_name;
+
+    widget_name = g_strdup_printf ("gtk-source-view-%p", (gpointer) widget);
+
+    rc_string = g_strdup_printf (
+    	"style \"%p\"\n"
+    	"{\n"
+    	"   GtkWidget::cursor-color = \"#%02x%02x%02x\"\n"
+    	"   GtkWidget::secondary-cursor-color = \"#%02x%02x%02x\"\n"
+    	"}\n"
+    	"widget \"*.%s\" style \"%p\"\n",
+    	(gpointer) widget,
+    	primary->red >> 8, primary->green >> 8, primary->blue >> 8,
+    	secondary->red >> 8, secondary->green >> 8, secondary->blue >> 8,
+    	widget_name,
+    	(gpointer) widget
+    );
+
+    gtk_rc_parse_string (rc_string);
+
+    if (strcmp (widget_name, gtk_widget_get_name (widget)) != 0)
+    	gtk_widget_set_name (widget, widget_name);
+
+    g_free (rc_string);
+    g_free (widget_name);
+}
+
+void
+gtk_widget_modify_cursor (GtkWidget *widget,
+                          GdkColor  *primary,
+                          GdkColor  *secondary)
+{
+    char *rc_string;
+    char *widget_name;
+
+    g_return_if_fail (GTK_IS_WIDGET (widget));
+    g_return_if_fail (!primary || secondary);
+
+    if (!primary)
+    {
+        primary = &widget->style->text[GTK_STATE_NORMAL],
+        secondary = &widget->style->text_aa[GTK_STATE_NORMAL];
+    }
+
+    set_cursor_colors (widget, primary, secondary);
+}
+
+#endif /* !GTK_CHECK_VERSION(2,12,0) */
+
+
 #if !GLIB_CHECK_VERSION(2,14,0)
 
 void

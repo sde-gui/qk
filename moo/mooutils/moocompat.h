@@ -84,6 +84,11 @@ GdkAtom gdk_atom_intern_static_string (const char *atom_name);
 #define GTK_STOCK_DISCARD  "gtk-discard"
 #endif
 
+#define gtk_widget_modify_cursor _moo_gtk_widget_modify_cursor
+void gtk_widget_modify_cursor (GtkWidget *widget,
+                               GdkColor  *primary,
+                               GdkColor  *secondary);
+
 #endif /* !GTK_CHECK_VERSION(2,10,0) */
 
 
