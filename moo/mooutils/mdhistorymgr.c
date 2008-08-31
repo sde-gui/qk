@@ -103,7 +103,7 @@ static void         ipc_notify_add_file         (MdHistoryMgr   *mgr,
 static void         ipc_notify_update_file      (MdHistoryMgr   *mgr,
                                                  MdHistoryItem  *item);
 static void         ipc_notify_remove_file      (MdHistoryMgr   *mgr,
-                                                 const char     *uri);
+                                                 MdHistoryItem  *item);
 
 G_DEFINE_TYPE (MdHistoryMgr, md_history_mgr, G_TYPE_OBJECT)
 
@@ -832,6 +832,7 @@ md_history_mgr_remove_uri_real (MdHistoryMgr *mgr,
                                 gboolean      notify)
 {
     GList *link;
+    MdHistoryItem *item;
 
     g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
     g_return_if_fail (uri != NULL);
@@ -843,8 +844,9 @@ md_history_mgr_remove_uri_real (MdHistoryMgr *mgr,
     if (!link)
         return;
 
+    item = link->data;
+
     g_hash_table_remove (mgr->priv->hash, uri);
-    md_history_item_free (link->data);
     g_queue_delete_link (mgr->priv->files, link);
 
     g_signal_emit (mgr, signals[CHANGED], 0);
@@ -852,11 +854,13 @@ md_history_mgr_remove_uri_real (MdHistoryMgr *mgr,
     if (notify)
     {
         schedule_save (mgr);
-        ipc_notify_remove_file (mgr, uri);
+        ipc_notify_remove_file (mgr, item);
     }
 
     if (mgr->priv->files->length == 0)
         g_object_notify (G_OBJECT (mgr), "empty");
+
+    md_history_item_free (item);
 }
 
 void
@@ -942,12 +946,10 @@ ipc_notify_update_file (MdHistoryMgr  *mgr,
 }
 
 static void
-ipc_notify_remove_file (MdHistoryMgr *mgr,
-                        const char   *uri)
+ipc_notify_remove_file (MdHistoryMgr  *mgr,
+                        MdHistoryItem *item)
 {
-    MdHistoryItem *item = md_history_item_new (uri, NULL);
     ipc_notify (mgr, item, UPDATE_ITEM_REMOVE);
-    md_history_item_free (item);
 }
 
 
