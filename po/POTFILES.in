@@ -52,9 +52,10 @@ moo/moofileview/moofileview-tools.c
 moo/moofileview/moofileview.xml
 moo/moopython/plugins/medit/runpython.py
 moo/moopython/plugins/pycmd.py
-moo/moopython/plugins/python.ini.desktop.in.in
+[type: gettext/ini]moo/moopython/plugins/terminal.ini.in.in
+[type: gettext/ini]moo/moopython/plugins/pycmd.ini.in.in
+[type: gettext/ini]moo/moopython/plugins/python.ini.in.in
 moo/moopython/plugins/python.py
-moo/moopython/plugins/terminal.ini.desktop.in.in
 moo/moopython/plugins/terminal.py
 moo/mooutils/glade/mooaccelprefs.glade
 moo/mooutils/glade/moologwindow.glade

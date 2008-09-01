@@ -1,11 +1,7 @@
-EXTRA_DIST =
-CLEANFILES =
-
-ini_desktop_in_in_files = project-plugin.ini.desktop.in.in
-include ../../../../mk/ini-desktop.mk
+INI_IN_IN_FILES = project-plugin.ini.in.in
 
 inidir = ${MOO_PLUGINS_DIR}
-ini_DATA = $(ini_desktop_files)
+ini_DATA = $(INI_FILES)
 
 plugindir = $(inidir)/project
 nobase_plugin_DATA =			\

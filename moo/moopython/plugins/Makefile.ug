@@ -8,13 +8,10 @@ endif
 moopython_pluginsdir = ${MOO_PLUGINS_DIR}
 plugins_libdir = ${MOO_PLUGINS_DIR}/lib
 
-EXTRA_DIST =
-CLEANFILES =
-ini_desktop_in_in_files =		\
-	terminal.ini.desktop.in.in	\
-	python.ini.desktop.in.in	\
-	pycmd.ini.desktop.in.in
-include ../../../mk/ini-desktop.mk
+INI_IN_IN_FILES =			\
+	terminal.ini.in.in		\
+	python.ini.in.in		\
+	pycmd.ini.in.in
 
 plugins =			\
 	terminal.py		\
@@ -22,7 +19,7 @@ plugins =			\
 	pycmd.py
 
 moopython_plugins_DATA =	\
-	$(ini_desktop_files)	\
+	$(INI_FILES)		\
 	$(plugins)
 
 plugins_lib_DATA =		\
