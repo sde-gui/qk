@@ -26,6 +26,7 @@ headers
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooaction.h"
 #include "mooutils/mooactionbase.h"
+#include "mooutils/moofontsel.h"
 #include "mooutils/mooutils-enums.h"
 #include "moofileview/moofileview.h"
 #include "moopython/moopython-utils.h"
