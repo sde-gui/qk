@@ -22,6 +22,7 @@
 #define HELP_SECTION_DIALOG_FIND "dialog-find"
 #define HELP_SECTION_PREFS_DIALOG "prefs-dialog"
 #define HELP_SECTION_PREFS_PLUGINS "prefs-plugins"
+#define HELP_SECTION_PREFS_ACCELS "prefs-accels"
 #define HELP_SECTION_PREFS_FILE_SELECTOR "prefs-file-selector"
 #define HELP_SECTION_DIALOG_FIND_IN_FILES "dialog-find-in-files"
 #define HELP_SECTION_DIALOG_FIND_FILE "dialog-find-file"

@@ -42,6 +42,7 @@ APPNAME APPVERSION Manual
 @comment{@@dialog-find@@}
 @comment{@@prefs-dialog@@}
 @comment{@@prefs-plugins@@}
+@comment{@@prefs-accels@@}
 @comment{@@prefs-file-selector@@}
 @comment{@@dialog-find-in-files@@}
 @comment{@@dialog-find-file@@}

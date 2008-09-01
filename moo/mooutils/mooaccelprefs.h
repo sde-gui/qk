@@ -18,8 +18,8 @@
 G_BEGIN_DECLS
 
 
-void    _moo_accel_prefs_dialog_run (MooActionCollection    *coll,
-                                     GtkWidget              *parent);
+gboolean _moo_accel_prefs_dialog_run (MooActionCollection *coll,
+                                      GtkWidget           *parent);
 
 
 G_END_DECLS

@@ -18,16 +18,23 @@
 G_BEGIN_DECLS
 
 
-void         _moo_accel_register            (const char *accel_path,
-                                             const char *default_accel);
+void         _moo_accel_register            (const char     *accel_path,
+                                             const char     *default_accel);
 
-const char  *_moo_get_accel                 (const char *accel_path);
-const char  *_moo_get_default_accel         (const char *accel_path);
+const char  *_moo_get_accel                 (const char     *accel_path);
+const char  *_moo_get_default_accel         (const char     *accel_path);
 
-void         _moo_modify_accel              (const char *accel_path,
-                                             const char *new_accel);
+void         _moo_modify_accel              (const char     *accel_path,
+                                             const char     *new_accel);
 
-char        *_moo_get_accel_label           (const char *accel);
+gboolean     _moo_accel_prefs_get_global    (const char     *accel_path);
+void         _moo_accel_prefs_set_global    (const char     *accel_path,
+                                             gboolean        global);
+
+char        *_moo_get_accel_label           (const char     *accel);
+gboolean     _moo_accel_parse               (const char     *accel,
+                                             guint          *key,
+                                             GdkModifierType *mods);
 
 void          moo_accel_translate_event     (GtkWidget       *widget,
                                              GdkEventKey     *event,

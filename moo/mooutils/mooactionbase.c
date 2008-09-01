@@ -13,6 +13,7 @@
 #include "mooutils/mooactionbase-private.h"
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooactiongroup.h"
+#include "mooutils/mooaccel.h"
 #include "marshals.h"
 #include <gtk/gtk.h>
 #include <string.h>
@@ -93,45 +94,35 @@ void
 _moo_action_base_init_class (GObjectClass *klass)
 {
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_DISPLAY_NAME,
-                                     g_param_spec_string ("display-name", "display-name", "display-name",
-                                                          NULL,
-                                                          G_PARAM_READWRITE));
+        g_param_spec_string ("display-name", "display-name", "display-name",
+                             NULL, G_PARAM_READWRITE));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_ACCEL,
-                                     g_param_spec_string ("accel", "accel", "accel",
-                                                          NULL,
-                                                          G_PARAM_READWRITE));
+        g_param_spec_string ("accel", "accel", "accel",
+                             NULL, G_PARAM_READWRITE));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_CONNECT_ACCEL,
-                                     g_param_spec_boolean ("connect-accel", "connect-accel", "connect-accel",
-                                                           FALSE,
-                                                           G_PARAM_READWRITE));
+        g_param_spec_boolean ("connect-accel", "connect-accel", "connect-accel",
+                              FALSE, G_PARAM_READWRITE));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_NO_ACCEL,
-                                     g_param_spec_boolean ("no-accel", "no-accel", "no-accel",
-                                                           FALSE,
-                                                           G_PARAM_READWRITE));
+        g_param_spec_boolean ("no-accel", "no-accel", "no-accel",
+                              FALSE, G_PARAM_READWRITE));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_ACCEL_EDITABLE,
-                                     g_param_spec_boolean ("accel-editable", "accel-editable", "accel-editable",
-                                                           TRUE,
-                                                           G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+        g_param_spec_boolean ("accel-editable", "accel-editable", "accel-editable",
+                              TRUE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_FORCE_ACCEL_LABEL,
-                                     g_param_spec_boolean ("force-accel-label", "force-accel-label", "force-accel-label",
-                                                           FALSE,
-                                                           G_PARAM_READWRITE));
+        g_param_spec_boolean ("force-accel-label", "force-accel-label", "force-accel-label",
+                              FALSE, G_PARAM_READWRITE));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_DEAD,
-                                     g_param_spec_boolean ("dead", "dead", "dead",
-                                                           FALSE,
-                                                           G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+        g_param_spec_boolean ("dead", "dead", "dead",
+                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_ACTIVE,
-                                     g_param_spec_boolean ("active", "active", "active",
-                                                           TRUE,
-                                                           G_PARAM_WRITABLE));
+        g_param_spec_boolean ("active", "active", "active",
+                              TRUE, G_PARAM_WRITABLE));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_HAS_SUBMENU,
-                                     g_param_spec_boolean ("has-submenu", "has-submenu", "has-submenu",
-                                                           FALSE,
-                                                           G_PARAM_READWRITE));
+        g_param_spec_boolean ("has-submenu", "has-submenu", "has-submenu",
+                              FALSE, G_PARAM_READWRITE));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_USE_UNDERLINE,
-                                     g_param_spec_boolean ("use-underline", "use-underline", "use-underline",
-                                                           TRUE,
-                                                           G_PARAM_READWRITE));
+        g_param_spec_boolean ("use-underline", "use-underline", "use-underline",
+                              TRUE, G_PARAM_READWRITE));
 
     g_object_class_override_property (klass,
                                       MOO_ACTION_BASE_PROP_LABEL,

@@ -60,14 +60,22 @@ struct _MooWindowPrivate {
     char *name;
     char *id;
 
+    GSList *global_accels;
+    guint update_accels_idle;
+
     GtkWidget *eo_widget;
     GtkWidget *default_eo_widget;
     GtkWidget *uo_widget;
     GtkWidget *default_uo_widget;
 
-    guint global_accels : 1;
+    guint global_accels_mode : 1;
 };
 
+typedef struct {
+    guint keyval;
+    GdkModifierType modifiers;
+    GtkAction *action;
+} AccelEntry;
 
 static const char *setting (MooWindow *window, const char *s)
 {
@@ -147,6 +155,9 @@ static void         moo_window_action_delete            (MooWindow      *window)
 static void         moo_window_action_select_all        (MooWindow      *window);
 static void         moo_window_action_undo              (MooWindow      *window);
 static void         moo_window_action_redo              (MooWindow      *window);
+
+static void         accel_entry_free                    (AccelEntry     *entry);
+static void         accels_changed                      (MooWindow      *window);
 
 
 enum {
@@ -458,6 +469,8 @@ moo_window_constructor (GType                  type,
 
     moo_window_update_ui (window);
 
+    accels_changed (window);
+
     g_type_class_unref (klass);
     return object;
 }
@@ -547,6 +560,13 @@ moo_window_dispose (GObject *object)
             g_object_unref (window->priv->actions);
         }
 
+        g_slist_foreach (window->priv->global_accels,
+                         (GFunc) accel_entry_free, NULL);
+        g_slist_free (window->priv->global_accels);
+
+        if (window->priv->update_accels_idle)
+            g_source_remove (window->priv->update_accels_idle);
+
         g_free (window->priv->name);
         g_free (window->priv->id);
         g_free (window->priv->menubar_ui_name);
@@ -577,16 +597,123 @@ moo_window_delete_event (GtkWidget      *widget,
 }
 
 
+static AccelEntry *
+accel_entry_new (guint            key,
+                 GdkModifierType  mods,
+                 GtkAction       *action)
+{
+    AccelEntry *entry = moo_new0 (AccelEntry);
+    entry->keyval = key;
+    entry->modifiers = mods;
+    entry->action = g_object_ref (action);
+    return entry;
+}
+
+static void
+accel_entry_free (AccelEntry *entry)
+{
+    if (entry)
+    {
+        g_object_unref (entry->action);
+        moo_free (AccelEntry, entry);
+    }
+}
+
+static gboolean
+update_accels (MooWindow *window)
+{
+    const GSList *l;
+
+    window->priv->update_accels_idle = 0;
+
+    g_slist_foreach (window->priv->global_accels, (GFunc) accel_entry_free, NULL);
+    g_slist_free (window->priv->global_accels);
+    window->priv->global_accels = NULL;
+
+    for (l = moo_action_collection_get_groups (window->priv->actions); l != NULL; l = l->next)
+    {
+        GtkActionGroup *group = l->data;
+        GList *actions;
+
+        actions = gtk_action_group_list_actions (group);
+
+        while (actions != NULL)
+        {
+            GtkAction *action = actions->data;
+
+            if (MOO_IS_ACTION (action) &&
+                !_moo_action_get_no_accel (action) &&
+                _moo_accel_prefs_get_global (gtk_action_get_accel_path (action)))
+            {
+                char *accel = NULL;
+                guint key;
+                GdkModifierType mods;
+
+                g_object_get (action, "accel", &accel, NULL);
+
+                if (accel && accel[0] && _moo_accel_parse (accel, &key, &mods))
+                {
+                    AccelEntry *entry = accel_entry_new (key, mods, action);
+                    window->priv->global_accels =
+                        g_slist_prepend (window->priv->global_accels, entry);
+                }
+
+                g_free (accel);
+            }
+
+            actions = g_list_delete_link (actions, actions);
+        }
+    }
+
+    return FALSE;
+}
+
+static void
+accels_changed (MooWindow *window)
+{
+    if (!window->priv->update_accels_idle)
+        window->priv->update_accels_idle =
+            moo_idle_add ((GSourceFunc) update_accels, window);
+}
+
+static gboolean
+activate_global_accel (MooWindow   *window,
+                       GdkEventKey *event)
+{
+    guint keyval;
+    GdkModifierType mods;
+    GSList *l;
+
+    if (!window->priv->global_accels)
+        return FALSE;
+
+    moo_accel_translate_event (GTK_WIDGET (window), event, &keyval, &mods);
+
+    for (l = window->priv->global_accels; l != NULL; l = l->next)
+    {
+        AccelEntry *entry = l->data;
+
+        if (entry->keyval == keyval && entry->modifiers == mods)
+        {
+            gtk_action_activate (entry->action);
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 static gboolean
 moo_window_key_press_event (GtkWidget   *widget,
                             GdkEventKey *event)
 {
     MooWindow *window = MOO_WINDOW (widget);
 
-    if (window->priv->global_accels)
+    if (window->priv->global_accels_mode)
         return GTK_WIDGET_CLASS (moo_window_parent_class)->key_press_event (widget, event);
     else
-        return gtk_window_propagate_key_event (GTK_WINDOW (widget), event) ||
+        return activate_global_accel (window, event) ||
+               gtk_window_propagate_key_event (GTK_WINDOW (widget), event) ||
                gtk_window_activate_key (GTK_WINDOW (widget), event) ||
                /* GtkWindowClass would call two guys above again and then chain up
                 * to the parent, so it's a shortcut */
@@ -599,7 +726,7 @@ moo_window_set_global_accels (MooWindow *window,
                               gboolean   global)
 {
     g_return_if_fail (MOO_IS_WINDOW (window));
-    window->priv->global_accels = global != 0;
+    window->priv->global_accels_mode = global != 0;
 }
 
 
@@ -917,8 +1044,9 @@ moo_window_update_ui (MooWindow *window)
 static void
 moo_window_shortcuts_prefs_dialog (MooWindow *window)
 {
-    _moo_accel_prefs_dialog_run (moo_window_get_actions (window),
-                                 GTK_WIDGET (window));
+    if (_moo_accel_prefs_dialog_run (moo_window_get_actions (window),
+                                     GTK_WIDGET (window)))
+        accels_changed (window);
 }
 
 
@@ -1695,6 +1823,8 @@ moo_window_add_action (MooWindow  *window,
 
         if (_moo_action_get_connect_accel (action))
             gtk_action_connect_accelerator (action);
+
+        accels_changed (window);
 
         g_free (accel_path);
     }

@@ -311,7 +311,7 @@ medit_main (int argc, char *argv[])
 #endif
 
 #if 0
-    g_idle_add_full (G_PRIORITY_HIGH, (GSourceFunc) exit, NULL, NULL);
+    g_idle_add_full (G_PRIORITY_LOW, (GSourceFunc) exit, NULL, NULL);
 #endif
 
     if (medit_opts.new_app || medit_opts.project_mode)

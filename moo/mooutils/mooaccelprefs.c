@@ -21,7 +21,9 @@
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooactiongroup.h"
 #include "mooutils/mootype-macros.h"
+#include "mooutils/moohelp.h"
 #include "glade/mooaccelprefs-gxml.h"
+#include "help-sections.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
@@ -65,6 +67,7 @@ enum {
     COLUMN_ACTION_NAME,
     COLUMN_ACTION,
     COLUMN_ACCEL,
+    COLUMN_GLOBAL,
     N_COLUMNS
 };
 
@@ -77,8 +80,12 @@ static void shortcut_none_toggled       (MooAccelPrefsPage  *page);
 static void shortcut_default_toggled    (MooAccelPrefsPage  *page);
 static void shortcut_custom_toggled     (MooAccelPrefsPage  *page);
 
-
-
+static void global_cell_data_func       (GtkTreeViewColumn  *column,
+                                         GtkCellRenderer    *cell,
+                                         GtkTreeModel       *model,
+                                         GtkTreeIter        *iter);
+static void global_cell_toggled         (GtkTreeStore       *store,
+                                         char               *path_string);
 
 static Shortcut *
 shortcut_new (ChoiceType  choice,
@@ -166,6 +173,56 @@ unblock_radio (MooAccelPrefsPage *page)
 
 
 static void
+global_cell_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
+                       GtkCellRenderer    *cell,
+                       GtkTreeModel       *model,
+                       GtkTreeIter        *iter)
+{
+    GtkAction *action = NULL;
+    char *accel = NULL;
+
+    gtk_tree_model_get (model, iter,
+                        COLUMN_ACTION, &action,
+                        COLUMN_ACCEL, &accel,
+                        -1);
+
+    if (action)
+        g_object_set (cell,
+                      "visible", TRUE,
+                      "sensitive", accel && accel[0],
+                      "activatable", accel && accel[0],
+                      NULL);
+    else
+        g_object_set (cell,
+                      "visible", FALSE,
+                      NULL);
+
+    if (action)
+        g_object_unref (action);
+    g_free (accel);
+}
+
+static void
+global_cell_toggled (GtkTreeStore *store,
+                     char         *path_string)
+{
+    GtkTreePath *path;
+    GtkTreeIter iter;
+
+    path = gtk_tree_path_new_from_string (path_string);
+
+    if (gtk_tree_model_get_iter (GTK_TREE_MODEL (store), &iter, path))
+    {
+        gboolean value;
+        gtk_tree_model_get (GTK_TREE_MODEL (store), &iter, COLUMN_GLOBAL, &value, -1);
+        gtk_tree_store_set (store, &iter, COLUMN_GLOBAL, !value, -1);
+    }
+
+    gtk_tree_path_free (path);
+}
+
+
+static void
 _moo_accel_prefs_page_init (MooAccelPrefsPage *page)
 {
     GtkCellRenderer *renderer;
@@ -190,7 +247,8 @@ _moo_accel_prefs_page_init (MooAccelPrefsPage *page)
     page->store = gtk_tree_store_new (N_COLUMNS,
                                       G_TYPE_STRING,
                                       GTK_TYPE_ACTION,
-                                      G_TYPE_STRING);
+                                      G_TYPE_STRING,
+                                      G_TYPE_BOOLEAN);
     gtk_tree_view_set_model (page->gxml->treeview, GTK_TREE_MODEL (page->store));
     g_object_unref (page->store);
 
@@ -207,6 +265,19 @@ _moo_accel_prefs_page_init (MooAccelPrefsPage *page)
                                                        NULL);
     gtk_tree_view_append_column (page->gxml->treeview, column);
     gtk_tree_view_column_set_sort_column_id (column, COLUMN_ACCEL);
+
+    renderer = gtk_cell_renderer_toggle_new ();
+    column = gtk_tree_view_column_new_with_attributes ("Global", renderer,
+                                                       "active", COLUMN_GLOBAL,
+                                                       NULL);
+    gtk_tree_view_append_column (page->gxml->treeview, column);
+    gtk_tree_view_column_set_sort_column_id (column, COLUMN_GLOBAL);
+    gtk_tree_view_column_set_cell_data_func (column, renderer,
+                                             (GtkTreeCellDataFunc) global_cell_data_func,
+                                             NULL, NULL);
+    g_signal_connect_swapped (renderer, "toggled",
+                              G_CALLBACK (global_cell_toggled),
+                              page->store);
 
     page->selection = gtk_tree_view_get_selection (page->gxml->treeview);
     gtk_tree_selection_set_mode (page->selection, GTK_SELECTION_SINGLE);
@@ -264,12 +335,37 @@ apply_one (GtkAction *action,
     _moo_modify_accel (accel_path, new_accel);
 }
 
+static gboolean
+apply_global (GtkTreeModel *model,
+              G_GNUC_UNUSED GtkTreePath *path,
+              GtkTreeIter  *iter)
+{
+    GtkAction *action = NULL;
+    gboolean global = FALSE;
+
+    gtk_tree_model_get (model, iter,
+                        COLUMN_ACTION, &action,
+                        COLUMN_GLOBAL, &global,
+                        -1);
+
+    if (action)
+    {
+        _moo_accel_prefs_set_global (_moo_action_get_accel_path (action), global);
+        g_object_unref (action);
+    }
+
+    return FALSE;
+}
+
 static void
 moo_accel_prefs_page_apply (MooPrefsPage *prefs_page)
 {
     MooAccelPrefsPage *page = MOO_ACCEL_PREFS_PAGE (prefs_page);
     g_hash_table_foreach (page->changed, (GHFunc) apply_one, NULL);
     g_hash_table_foreach_remove (page->changed, (GHRFunc) gtk_true, NULL);
+    gtk_tree_model_foreach (GTK_TREE_MODEL (page->store),
+                            (GtkTreeModelForeachFunc) apply_global,
+                            NULL);
 }
 
 
@@ -291,6 +387,7 @@ add_row (GtkActionGroup    *group,
     const char *name;
     GtkTreeIter iter;
     GtkTreeRowReference *row;
+    gboolean global;
 
     if (_moo_action_get_no_accel (action) || !_moo_action_get_accel_editable (action))
         return FALSE;
@@ -339,11 +436,13 @@ add_row (GtkActionGroup    *group,
 
     accel = get_accel_label_for_path (_moo_action_get_accel_path (action));
     name = _moo_action_get_display_name (action);
+    global = _moo_accel_prefs_get_global (gtk_action_get_accel_path (action));
 
     gtk_tree_store_set (page->store, &iter,
                         COLUMN_ACTION_NAME, name,
                         COLUMN_ACTION, action,
                         COLUMN_ACCEL, accel,
+                        COLUMN_GLOBAL, global,
                         -1);
     g_free (accel);
 
@@ -687,13 +786,14 @@ _moo_accel_prefs_page_new (MooActionCollection *collection)
 }
 
 
-static GtkWidget*
+static GtkWidget *
 _moo_accel_prefs_dialog_new (MooActionCollection *collection)
 {
     MooAccelPrefsPage *page;
     GtkWidget *dialog;
 
     dialog = gtk_dialog_new_with_buttons (_("Configure Shortcuts"), NULL, 0,
+                                          GTK_STOCK_HELP, GTK_RESPONSE_HELP,
                                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                           GTK_STOCK_OK, GTK_RESPONSE_OK,
                                           NULL);
@@ -707,29 +807,31 @@ _moo_accel_prefs_dialog_new (MooActionCollection *collection)
     gtk_widget_show (GTK_WIDGET (page));
     gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), GTK_WIDGET (page), TRUE, TRUE, 0);
 
+    moo_help_set_id (dialog, HELP_SECTION_PREFS_ACCELS);
+    moo_help_connect_keys (dialog);
+
     g_signal_connect_swapped (dialog, "response",
-                              G_CALLBACK (dialog_response), page);
+                              G_CALLBACK (dialog_response),
+                              page);
     g_signal_emit_by_name (page, "init", NULL);
 
     return dialog;
 }
 
 
-void
+gboolean
 _moo_accel_prefs_dialog_run (MooActionCollection *collection,
                              GtkWidget           *parent)
 {
-    GtkWidget *dialog = _moo_accel_prefs_dialog_new (collection);
+    GtkWidget *dialog;
+    int response;
 
+    dialog = _moo_accel_prefs_dialog_new (collection);
     moo_window_set_parent (dialog, parent);
 
-    while (TRUE)
-    {
-        int response = gtk_dialog_run (GTK_DIALOG (dialog));
-
-        if (response != GTK_RESPONSE_REJECT)
-            break;
-    }
+    while ((response = gtk_dialog_run (GTK_DIALOG (dialog))) == GTK_RESPONSE_HELP)
+        moo_help_open (dialog);
 
     gtk_widget_destroy (dialog);
+    return response == GTK_RESPONSE_OK;
 }

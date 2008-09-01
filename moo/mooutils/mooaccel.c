@@ -37,9 +37,6 @@ static const char   *prefs_get_accel        (const char         *accel_path);
 static void          prefs_set_accel        (const char         *accel_path,
                                              const char         *accel);
 
-static gboolean      parse_accel            (const char         *accel,
-                                             guint              *key,
-                                             GdkModifierType    *mods);
 static void          my_gtk_accelerator_parse (const char       *accel,
                                              guint              *key,
                                              GdkModifierType    *mods);
@@ -96,7 +93,8 @@ accel_map_changed (G_GNUC_UNUSED GtkAccelMap *map,
 
 
 static char *
-accel_path_to_prefs_key (const char *accel_path)
+accel_path_to_prefs_key (const char *accel_path,
+                         gboolean    global)
 {
     if (accel_path && accel_path[0] == '<')
     {
@@ -108,7 +106,10 @@ accel_path_to_prefs_key (const char *accel_path)
     if (!accel_path || !accel_path[0])
         return NULL;
 
-    return g_strdup_printf (MOO_ACCEL_PREFS_KEY "/%s", accel_path);
+    if (global)
+        return g_strdup_printf (MOO_ACCEL_PREFS_KEY "/%s:global", accel_path);
+    else
+        return g_strdup_printf (MOO_ACCEL_PREFS_KEY "/%s", accel_path);
 }
 
 
@@ -120,11 +121,55 @@ prefs_set_accel (const char *accel_path,
 
     g_return_if_fail (accel != NULL);
 
-    key = accel_path_to_prefs_key (accel_path);
+    key = accel_path_to_prefs_key (accel_path, FALSE);
     g_return_if_fail (key != NULL);
 
     g_return_if_fail (moo_prefs_key_registered (key));
     moo_prefs_set_string (key, accel);
+
+    g_free (key);
+}
+
+
+gboolean
+_moo_accel_prefs_get_global (const char *accel_path)
+{
+    char *key;
+    gboolean retval;
+
+    g_return_val_if_fail (accel_path != NULL, FALSE);
+
+    key = accel_path_to_prefs_key (accel_path, TRUE);
+    g_return_val_if_fail (key != NULL, FALSE);
+
+    /* XXX fix prefs for this */
+    moo_prefs_new_key_bool (key, FALSE);
+    retval = moo_prefs_get_bool (key);
+
+    g_free (key);
+    return retval;
+}
+
+void
+_moo_accel_prefs_set_global (const char *accel_path,
+                             gboolean    global)
+{
+    char *key;
+
+    g_return_if_fail (accel_path != NULL);
+
+    key = accel_path_to_prefs_key (accel_path, TRUE);
+    g_return_if_fail (key != NULL);
+
+    if (moo_prefs_key_registered (key))
+    {
+        moo_prefs_set_bool (key, global);
+    }
+    else if (global)
+    {
+        moo_prefs_new_key_bool (key, FALSE);
+        moo_prefs_set_bool (key, global);
+    }
 
     g_free (key);
 }
@@ -138,7 +183,7 @@ prefs_new_accel (const char *accel_path,
 
     g_return_if_fail (accel_path != NULL && default_accel != NULL);
 
-    key = accel_path_to_prefs_key (accel_path);
+    key = accel_path_to_prefs_key (accel_path, FALSE);
     g_return_if_fail (key != NULL);
 
     if (!moo_prefs_key_registered (key))
@@ -154,7 +199,7 @@ prefs_get_accel (const char *accel_path)
     const char *accel;
     char *key;
 
-    key = accel_path_to_prefs_key (accel_path);
+    key = accel_path_to_prefs_key (accel_path, FALSE);
     g_return_val_if_fail (key != NULL, NULL);
 
     accel = moo_prefs_get_string (key);
@@ -591,10 +636,10 @@ out:
 }
 
 
-static gboolean
-parse_accel (const char      *accel,
-             guint           *keyval,
-             GdkModifierType *modifiers)
+gboolean
+_moo_accel_parse (const char      *accel,
+                  guint           *keyval,
+                  GdkModifierType *modifiers)
 {
     guint key = 0;
     guint len;
@@ -642,7 +687,7 @@ _moo_accel_normalize (const char *accel)
     if (!accel || !accel[0])
         return NULL;
 
-    if (parse_accel (accel, &key, &mods))
+    if (_moo_accel_parse (accel, &key, &mods))
     {
         return gtk_accelerator_name (key, mods);
     }
