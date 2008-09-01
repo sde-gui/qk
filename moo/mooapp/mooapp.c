@@ -1046,7 +1046,7 @@ install_common_actions (void)
 
     moo_window_class_new_action (klass, "Help", NULL,
                                  "label", GTK_STOCK_HELP,
-                                 "accel", MOO_APP_ACCEL_HELP,
+                                 "default-accel", MOO_APP_ACCEL_HELP,
                                  "stock-id", GTK_STOCK_HELP,
                                  "closure-callback", moo_app_help,
                                  NULL);
@@ -1056,7 +1056,7 @@ install_common_actions (void)
                                  "label", GTK_STOCK_QUIT,
                                  "tooltip", GTK_STOCK_QUIT,
                                  "stock-id", GTK_STOCK_QUIT,
-                                 "accel", MOO_APP_ACCEL_QUIT,
+                                 "default-accel", MOO_APP_ACCEL_QUIT,
                                  "closure-callback", moo_app_quit,
                                  "closure-proxy-func", moo_app_get_instance,
                                  NULL);

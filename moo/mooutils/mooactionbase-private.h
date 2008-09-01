@@ -22,7 +22,7 @@ G_BEGIN_DECLS
 #define MOO_ACTION_BASE_PROPS(prefix)               \
     prefix##_PROP_0,                                \
     prefix##_PROP_DISPLAY_NAME,                     \
-    prefix##_PROP_ACCEL,                            \
+    prefix##_PROP_DEFAULT_ACCEL,                    \
     prefix##_PROP_CONNECT_ACCEL,                    \
     prefix##_PROP_NO_ACCEL,                         \
     prefix##_PROP_ACCEL_EDITABLE,                   \
@@ -38,7 +38,7 @@ G_BEGIN_DECLS
 
 #define MOO_ACTION_BASE_SET_GET_PROPERTY(prefix,func)   \
     case prefix##_PROP_DISPLAY_NAME:                    \
-    case prefix##_PROP_ACCEL:                           \
+    case prefix##_PROP_DEFAULT_ACCEL:                   \
     case prefix##_PROP_CONNECT_ACCEL:                   \
     case prefix##_PROP_NO_ACCEL:                        \
     case prefix##_PROP_ACCEL_EDITABLE:                  \

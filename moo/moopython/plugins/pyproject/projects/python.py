@@ -53,7 +53,7 @@ class PyProject(SimpleProject):
         for c in commands:
             self.add_action("PyProject" + c[0],
                             display_name=c[1], label=c[1],
-                            stock_id=c[2], accel=c[3],
+                            stock_id=c[2], default_accel=c[3],
                             callback=PyProject.DoCmd(self, c[4]))
 
         editor = moo.edit.editor_instance()

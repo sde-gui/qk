@@ -331,7 +331,7 @@ load_tool (MooUserToolInfo *info)
                                          "action-type::", MOO_TYPE_TOOL_ACTION,
                                          "display-name", name,
                                          "label", info->name,
-                                         "accel", info->accel,
+                                         "default-accel", info->accel,
                                          "command", cmd,
                                          NULL);
 
@@ -348,7 +348,7 @@ load_tool (MooUserToolInfo *info)
                                        "action-type::", MOO_TYPE_TOOL_ACTION,
                                        "display-name", name,
                                        "label", info->name,
-                                       "accel", info->accel,
+                                       "default-accel", info->accel,
                                        "command", cmd,
                                        "file-filter", info->filter,
                                        NULL);

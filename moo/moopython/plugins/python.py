@@ -41,7 +41,7 @@ class Plugin(moo.edit.Plugin):
                                           display_name=_("Run File"),
                                           label=_("Run File"),
                                           stock_id=moo.utils.STOCK_EXECUTE,
-                                          accel="<shift>F9",
+                                          default_accel="<shift>F9",
                                           callback=self.run_file)
         moo.edit.window_set_action_filter("RunFile", moo.edit.ACTION_CHECK_SENSITIVE, "langs:python")
         xml.add_item(self.ui_merge_id, "ToolsMenu",

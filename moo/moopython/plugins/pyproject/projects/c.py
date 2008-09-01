@@ -67,7 +67,7 @@ class CProject(SimpleProject):
         for c in commands:
             self.add_action("CProject" + c[0],
                             display_name=c[1], label=c[1],
-                            stock_id=c[2], accel=c[3],
+                            stock_id=c[2], default_accel=c[3],
                             callback=CProject.DoCmd(self, c[4]))
         self.add_action("CProjectBuildConfiguration",
                         factory=_BuildConfigurationAction(self))

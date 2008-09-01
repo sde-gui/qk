@@ -32,45 +32,35 @@ static void
 class_init (gpointer g_iface)
 {
     g_object_interface_install_property (g_iface,
-                                         g_param_spec_string ("display-name", "display-name", "display-name",
-                                                              NULL,
-                                                              G_PARAM_READWRITE));
+        g_param_spec_string ("display-name", "display-name", "display-name",
+                             NULL, G_PARAM_READWRITE));
     g_object_interface_install_property (g_iface,
-                                         g_param_spec_string ("accel", "accel", "accel",
-                                                              NULL,
-                                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+        g_param_spec_string ("default-accel", "default-accel", "default-accel",
+                             NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
     g_object_interface_install_property (g_iface,
-                                         g_param_spec_boolean ("connect-accel", "connect-accel", "connect-accel",
-                                                               FALSE,
-                                                               G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+        g_param_spec_boolean ("connect-accel", "connect-accel", "connect-accel",
+                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
     g_object_interface_install_property (g_iface,
-                                         g_param_spec_boolean ("no-accel", "no-accel", "no-accel",
-                                                               FALSE,
-                                                               G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+        g_param_spec_boolean ("no-accel", "no-accel", "no-accel",
+                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
     g_object_interface_install_property (g_iface,
-                                         g_param_spec_boolean ("force-accel-label", "force-accel-label", "force-accel-label",
-                                                               FALSE,
-                                                               G_PARAM_READWRITE));
+        g_param_spec_boolean ("force-accel-label", "force-accel-label", "force-accel-label",
+                              FALSE, G_PARAM_READWRITE));
     g_object_interface_install_property (g_iface,
-                                         g_param_spec_boolean ("accel-editable", "accel-editable", "accel-editable",
-                                                               TRUE,
-                                                               G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+        g_param_spec_boolean ("accel-editable", "accel-editable", "accel-editable",
+                              TRUE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
     g_object_interface_install_property (g_iface,
-                                         g_param_spec_boolean ("dead", "dead", "dead",
-                                                               FALSE,
-                                                               G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+        g_param_spec_boolean ("dead", "dead", "dead",
+                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
     g_object_interface_install_property (g_iface,
-                                         g_param_spec_boolean ("active", "active", "active",
-                                                               TRUE,
-                                                               G_PARAM_WRITABLE));
+        g_param_spec_boolean ("active", "active", "active",
+                              TRUE, G_PARAM_WRITABLE));
     g_object_interface_install_property (g_iface,
-                                         g_param_spec_boolean ("has-submenu", "has-submenu", "has-submenu",
-                                                               FALSE,
-                                                               G_PARAM_READWRITE));
+        g_param_spec_boolean ("has-submenu", "has-submenu", "has-submenu",
+                              FALSE, G_PARAM_READWRITE));
     g_object_interface_install_property (g_iface,
-                                         g_param_spec_boolean ("use-underline", "use-underline", "use-underline",
-                                                               TRUE,
-                                                               G_PARAM_READWRITE));
+        g_param_spec_boolean ("use-underline", "use-underline", "use-underline",
+                              TRUE, G_PARAM_READWRITE));
 
     g_signal_new ("connect-proxy",
                   MOO_TYPE_ACTION_BASE,
@@ -96,8 +86,8 @@ _moo_action_base_init_class (GObjectClass *klass)
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_DISPLAY_NAME,
         g_param_spec_string ("display-name", "display-name", "display-name",
                              NULL, G_PARAM_READWRITE));
-    g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_ACCEL,
-        g_param_spec_string ("accel", "accel", "accel",
+    g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_DEFAULT_ACCEL,
+        g_param_spec_string ("default-accel", "default-accel", "default-accel",
                              NULL, G_PARAM_READWRITE));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_CONNECT_ACCEL,
         g_param_spec_boolean ("connect-accel", "connect-accel", "connect-accel",
@@ -251,26 +241,26 @@ _moo_action_get_display_name (gpointer action)
 
 
 static void
-moo_action_base_set_accel (MooActionBase *ab,
-                           const char    *accel)
+moo_action_base_set_default_accel (MooActionBase *ab,
+                                   const char    *accel)
 {
     g_return_if_fail (MOO_IS_ACTION_BASE (ab));
 
     if (accel && !accel[0])
         accel = NULL;
 
-    set_string (ab, "moo-action-accel", accel);
-    g_object_notify (G_OBJECT (ab), "accel");
+    set_string (ab, "moo-action-default-accel", accel);
+    g_object_notify (G_OBJECT (ab), "default-accel");
 }
 
 static const char *
-moo_action_base_get_accel (MooActionBase *ab)
+moo_action_base_get_default_accel (MooActionBase *ab)
 {
     const char *accel;
 
     g_return_val_if_fail (MOO_IS_ACTION_BASE (ab), "");
 
-    accel = get_string (ab, "moo-action-accel");
+    accel = get_string (ab, "moo-action-default-accel");
 
     if (!accel)
         accel = "";
@@ -472,8 +462,8 @@ _moo_action_base_set_property (GObject      *object,
         case MOO_ACTION_BASE_PROP_DISPLAY_NAME:
             moo_action_base_set_display_name (ab, g_value_get_string (value));
             break;
-        case MOO_ACTION_BASE_PROP_ACCEL:
-            moo_action_base_set_accel (ab, g_value_get_string (value));
+        case MOO_ACTION_BASE_PROP_DEFAULT_ACCEL:
+            moo_action_base_set_default_accel (ab, g_value_get_string (value));
             break;
         case MOO_ACTION_BASE_PROP_CONNECT_ACCEL:
             moo_action_base_set_connect_accel (ab, g_value_get_boolean (value));
@@ -525,8 +515,8 @@ _moo_action_base_get_property (GObject    *object,
         case MOO_ACTION_BASE_PROP_DISPLAY_NAME:
             g_value_set_string (value, _moo_action_get_display_name (ab));
             break;
-        case MOO_ACTION_BASE_PROP_ACCEL:
-            g_value_set_string (value, moo_action_base_get_accel (ab));
+        case MOO_ACTION_BASE_PROP_DEFAULT_ACCEL:
+            g_value_set_string (value, moo_action_base_get_default_accel (ab));
             break;
         case MOO_ACTION_BASE_PROP_CONNECT_ACCEL:
             g_value_set_boolean (value, _moo_action_get_connect_accel (ab));
@@ -628,7 +618,7 @@ const char *
 _moo_action_get_default_accel (gpointer action)
 {
     g_return_val_if_fail (MOO_IS_ACTION_BASE (action), "");
-    return moo_action_base_get_accel (action);
+    return moo_action_base_get_default_accel (action);
 }
 
 

@@ -127,7 +127,7 @@ cmpl_plugin_init (CmplPlugin *plugin)
                                  "display-name", _("Complete Word"),
                                  "label", _("Complete Word"),
                                  "tooltip", _("Complete Word"),
-                                 "accel", MOO_EDIT_ACCEL_COMPLETE,
+                                 "default-accel", MOO_EDIT_ACCEL_COMPLETE,
                                  "closure-callback", completion_callback,
                                  "condition::sensitive", "has-open-document",
                                  NULL);

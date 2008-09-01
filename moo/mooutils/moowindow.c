@@ -260,7 +260,7 @@ moo_window_class_init (MooWindowClass *klass)
                                  "label", GTK_STOCK_CUT,
                                  "tooltip", GTK_STOCK_CUT,
                                  "stock-id", GTK_STOCK_CUT,
-                                 "accel", MOO_ACCEL_CUT,
+                                 "default-accel", MOO_ACCEL_CUT,
                                  "closure-callback", moo_window_action_cut,
                                  "condition::sensitive", "can-cut",
                                  NULL);
@@ -270,7 +270,7 @@ moo_window_class_init (MooWindowClass *klass)
                                  "label", GTK_STOCK_COPY,
                                  "tooltip", GTK_STOCK_COPY,
                                  "stock-id", GTK_STOCK_COPY,
-                                 "accel", MOO_ACCEL_COPY,
+                                 "default-accel", MOO_ACCEL_COPY,
                                  "closure-callback", moo_window_action_copy,
                                  "condition::sensitive", "can-copy",
                                  NULL);
@@ -280,7 +280,7 @@ moo_window_class_init (MooWindowClass *klass)
                                  "label", GTK_STOCK_PASTE,
                                  "tooltip", GTK_STOCK_PASTE,
                                  "stock-id", GTK_STOCK_PASTE,
-                                 "accel", MOO_ACCEL_PASTE,
+                                 "default-accel", MOO_ACCEL_PASTE,
                                  "closure-callback", moo_window_action_paste,
                                  "condition::sensitive", "can-paste",
                                  NULL);
@@ -299,7 +299,7 @@ moo_window_class_init (MooWindowClass *klass)
                                  "label", GTK_STOCK_SELECT_ALL,
                                  "tooltip", GTK_STOCK_SELECT_ALL,
                                  "stock-id", GTK_STOCK_SELECT_ALL,
-                                 "accel", MOO_ACCEL_SELECT_ALL,
+                                 "default-accel", MOO_ACCEL_SELECT_ALL,
                                  "closure-callback", moo_window_action_select_all,
                                  "condition::sensitive", "can-select-all",
                                  NULL);
@@ -309,7 +309,7 @@ moo_window_class_init (MooWindowClass *klass)
                                  "label", GTK_STOCK_UNDO,
                                  "tooltip", GTK_STOCK_UNDO,
                                  "stock-id", GTK_STOCK_UNDO,
-                                 "accel", MOO_ACCEL_UNDO,
+                                 "default-accel", MOO_ACCEL_UNDO,
                                  "closure-callback", moo_window_action_undo,
                                  "condition::sensitive", "can-undo",
                                  NULL);
@@ -319,7 +319,7 @@ moo_window_class_init (MooWindowClass *klass)
                                  "label", GTK_STOCK_REDO,
                                  "tooltip", GTK_STOCK_REDO,
                                  "stock-id", GTK_STOCK_REDO,
-                                 "accel", MOO_ACCEL_REDO,
+                                 "default-accel", MOO_ACCEL_REDO,
                                  "closure-callback", moo_window_action_redo,
                                  "condition::sensitive", "can-redo",
                                  NULL);
