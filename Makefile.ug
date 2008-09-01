@@ -9,8 +9,7 @@ EXTRA_DIST +=			\
 	THANKS			\
 	intltool-extract.in	\
 	intltool-merge.in	\
-	intltool-update.in	\
-	mk/ini-desktop.mk
+	intltool-update.in
 
 @MOO_PO_SUBDIRS_RULE@
 @MOO_PO_SUBDIRS_RULE2@

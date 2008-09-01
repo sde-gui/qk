@@ -46,6 +46,8 @@ syntax: regexp
 ^moo/mooedit/Makefile\.am
 ^moo/mooedit/plugins/Makefile\.am
 ^moo/moopython/Makefile\.am
+^moo/moopython/plugins/Makefile\.am
+^moo/moopython/plugins/pyproject/Makefile\.am
 ^moo/moofileview/Makefile\.am
 ^moo/moolua/Makefile\.am
 ^moo/mooapp/Makefile\.am
