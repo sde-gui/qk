@@ -922,7 +922,7 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
     <context id="pod-escape">
       <include>
         <context>
-          <start>[IBCLEFSXZ]&lt;(?!&lt;)</start><end>(?&lt;!&gt;)&gt;</end>
+          <start>[IBCLEFSXZ]&lt;(?!&lt;)</start><end>&gt;</end>
           <include>
             <context sub-pattern="0" where="start" style-ref="pod-escape"/>
             <context sub-pattern="0" where="end" style-ref="pod-escape"/>
