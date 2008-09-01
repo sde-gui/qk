@@ -640,16 +640,19 @@ update_accels (MooWindow *window)
         while (actions != NULL)
         {
             GtkAction *action = actions->data;
+            const char *accel_path = NULL;
 
             if (MOO_IS_ACTION (action) &&
-                !_moo_action_get_no_accel (action) &&
-                _moo_accel_prefs_get_global (gtk_action_get_accel_path (action)))
+                !_moo_action_get_no_accel (action))
+                    accel_path = gtk_action_get_accel_path (action);
+
+            if (accel_path && _moo_accel_prefs_get_global (accel_path))
             {
-                char *accel = NULL;
+                const char *accel;
                 guint key;
                 GdkModifierType mods;
 
-                g_object_get (action, "accel", &accel, NULL);
+                accel = _moo_get_accel (accel_path);
 
                 if (accel && accel[0] && _moo_accel_parse (accel, &key, &mods))
                 {
@@ -657,8 +660,6 @@ update_accels (MooWindow *window)
                     window->priv->global_accels =
                         g_slist_prepend (window->priv->global_accels, entry);
                 }
-
-                g_free (accel);
             }
 
             actions = g_list_delete_link (actions, actions);
