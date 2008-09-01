@@ -16,6 +16,7 @@
 #include <Python.h>
 #define NO_IMPORT_PYGOBJECT
 #include "pygobject.h"
+#include <string.h>
 
 #include "moopython/moopython-loader.h"
 #include "mooutils/mooutils-misc.h"
@@ -131,6 +132,32 @@ do_load_file (const char *path)
 
     if (!mod)
     {
+        if (PyErr_ExceptionMatches (PyExc_Exception))
+        {
+            PyObject *type, *value, *traceback;
+            PyObject *r;
+            char *s;
+
+            PyErr_Fetch (&type, &value, &traceback);
+            PyErr_NormalizeException (&type, &value, &traceback);
+            r = PyObject_Repr (value);
+            s = r ? PyString_AsString (r) : NULL;
+
+            if (s && strcmp (s, "PluginWontLoad") == 0)
+            {
+                Py_XDECREF (r);
+                Py_XDECREF (type);
+                Py_XDECREF (value);
+                Py_XDECREF (traceback);
+                goto out;
+            }
+
+            Py_XDECREF (r);
+
+            PyErr_Restore(type, value, traceback);
+        }
+
+        g_warning ("error when loading file '%s'", path);
         PyErr_Print ();
         goto out;
     }

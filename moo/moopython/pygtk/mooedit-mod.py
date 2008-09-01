@@ -21,6 +21,13 @@ from _moo_edit import *
 def edit_class_add_action(cls, action_id, action_class):
     _edit._edit_class_add_action(cls, action_id, action_class)
 
+class _PluginWontLoad(Exception):
+    def __repr__(self):
+        return 'PluginWontLoad'
+
+def cancel_plugin_loading():
+    raise _PluginWontLoad()
+
 #class _UIInfo(object):
     #def __init__(self, parent, action, name=None, index=-1):
         #self.parent = parent
