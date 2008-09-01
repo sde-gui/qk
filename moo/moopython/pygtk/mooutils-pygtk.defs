@@ -726,9 +726,10 @@
   )
 )
 
-(define-function moo_glade_xml_new
+(define-function glade_xml_new_from_file
   (c-name "moo_glade_xml_new")
   (return-type "MooGladeXML*")
+  (caller-owns-return #t)
   (parameters
     '("const-char*" "file")
     '("const-char*" "root" (null-ok) (default "NULL"))
@@ -737,9 +738,10 @@
   )
 )
 
-(define-function moo_glade_xml_new_from_buf
+(define-function glade_xml_new_from_buf
   (c-name "moo_glade_xml_new_from_buf")
   (return-type "MooGladeXML*")
+  (caller-owns-return #t)
   (parameters
     '("const-char*" "buffer")
     '("int" "size" (null-ok) (default "-1"))
@@ -2282,10 +2284,19 @@
 ;; mooutils/mooi18n.h
 
 (define-function gettext
-  (c-name "moo_gettext")
+  (c-name "_")
   (return-type "const-char*")
   (parameters
     '("const-char*" "string")
+  )
+)
+
+(define-function dgettext
+  (c-name "D_")
+  (return-type "const-char*")
+  (parameters
+    '("const-char*" "string")
+    '("const-char*" "domain")
   )
 )
 

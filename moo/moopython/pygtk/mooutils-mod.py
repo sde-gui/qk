@@ -5,6 +5,7 @@ import gobject as _gobject
 from __moo_utils__ import *
 
 _ = gettext
+D_ = dgettext
 
 def N_(string):
     return string
