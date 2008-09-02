@@ -285,6 +285,7 @@ moo_overwrite_file_dialog (GtkWidget  *parent,
     GtkWidget *dialog, *button, *toplevel = NULL;
 
     g_return_val_if_fail (display_name != NULL, FALSE);
+    g_return_val_if_fail (display_dirname != NULL, FALSE);
 
     if (parent)
         parent = gtk_widget_get_toplevel (parent);

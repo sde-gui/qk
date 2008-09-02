@@ -433,6 +433,16 @@
   )
 )
 
+(define-function overwrite_file_dialog
+  (c-name "moo_overwrite_file_dialog")
+  (return-type "gboolean")
+  (parameters
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("const-char*" "display_name")
+    '("const-char*" "display_dirname")
+  )
+)
+
 (define-function error_dialog
   (c-name "moo_error_dialog")
   (return-type "none")
