@@ -1,9 +1,24 @@
 build/
 
-moo/mooedit/gtksourceview/upstream/
+moo/mooedit/gtksourceview/
 moo/mooedit/langs/
 moo/mooedit/plugins/completion/
 moo/moopython/plugins/pyproject/
 moo/mooutils/newgtk/
 
 moo/mooutils/moocompat.c
+
+moo/mooedit/gtksourceview/gtksourcecontextengine-mangled.c
+moo/mooedit/gtksourceview/gtksourcelanguage-mangled.c
+moo/mooedit/gtksourceview/gtksourcelanguage-parser-2-mangled.c
+moo/mooedit/gtksourceview/gtksourcelanguagemanager-mangled.c
+moo/mooedit/gtksourceview/gtksourcestyle-mangled.c
+moo/mooedit/gtksourceview/gtksourcestylescheme-mangled.c
+moo/mooedit/gtksourceview/gtksourcestyleschememanager-mangled.c
+moo/mooedit/gtksourceview/gtksourcecontextengine-mangled.c
+moo/mooedit/gtksourceview/gtksourcelanguage-mangled.c
+moo/mooedit/gtksourceview/gtksourcelanguage-parser-2-mangled.c
+moo/mooedit/gtksourceview/gtksourcelanguagemanager-mangled.c
+moo/mooedit/gtksourceview/gtksourcestyle-mangled.c
+moo/mooedit/gtksourceview/gtksourcestylescheme-mangled.c
+moo/mooedit/gtksourceview/gtksourcestyleschememanager-mangled.c
