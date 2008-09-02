@@ -7,6 +7,8 @@ plugindir = $(inidir)/project
 nobase_plugin_DATA =			\
 	project-plugin.py		\
 	mprj/__init__.py		\
+	mprj/factory.py			\
+	mprj/factory.glade		\
 	mprj/manager.py			\
 	mprj/project.py			\
 	mprj/optdialog.py		\

@@ -224,6 +224,35 @@ class CConfig(SimpleConfig):
                               self.get_build_dir(topdir))
 
 
+factory_template = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<medit-project version="1.0" type="C" name="%(project_name)s">
+ <active>debug</active>
+ <configurations>
+  <debug>
+   <build_dir>build/debug</build_dir>
+   <configure>
+    <args>--enable-debug</args>
+    <vars>
+     <var name="CFLAGS">-g</var>
+     <var name="CXXFLAGS">-g</var>
+    </vars>
+   </configure>
+  </debug>
+  <optimized>
+   <build_dir>build/optimized</build_dir>
+   <configure>
+    <vars>
+     <var name="CFLAGS">-g -O2</var>
+     <var name="CXXFLAGS">-g -O2</var>
+    </vars>
+   </configure>
+  </optimized>
+ </configurations>
+</medit-project>
+"""
+
+
 _sample_file = """
     <medit-project name="moo" type="C" version="2.0">
       <commands>

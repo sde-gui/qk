@@ -93,11 +93,12 @@ class SimpleProject(Project):
     def load_session(self):
         try:
             file = self.get_session_file()
-            if not os.path.exists(file):
-                return
-            session = Session(file)
-            session.attach(self.window)
-            self.__file_selector_dir = session.get_file_selector_dir()
+            if os.path.exists(file):
+                session = Session(file)
+                session.attach(self.window)
+                self.__file_selector_dir = session.get_file_selector_dir()
+            else:
+                self.__file_selector_dir = self.topdir
             self.__setup_file_selector()
         except:
             print_error()

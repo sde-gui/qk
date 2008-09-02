@@ -78,6 +78,8 @@ def format_error(error=None):
     else:
         return "".join(traceback.format_exception(*sys.exc_info()))
 
+def prefs_key(name):
+    return 'MProject/' + name
 
 if __name__ == '__main__':
     print expand_command(['$(builddir)', 'make $(base).o'],

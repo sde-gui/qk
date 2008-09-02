@@ -4,6 +4,8 @@ import os, os.path
 import gobject
 from mprj.config import File
 from mprj.simple import SimpleProject
+import mprj.utils
+import mprj.factory
 from mprj.utils import print_error, format_error
 from moo.utils import _, N_
 
@@ -60,6 +62,11 @@ class Manager(object):
         editor.set_property("allow-empty-window", True)
         editor.set_property("single-window", True)
 
+        moo.utils.window_class_add_action(moo.edit.EditWindow, "NewProject",
+                                          display_name=_("New Project"),
+                                          label=_("New Project..."),
+                                          stock_id=moo.utils.STOCK_NEW_PROJECT,
+                                          callback=self.new_project_cb)
         moo.utils.window_class_add_action(moo.edit.EditWindow, "OpenProject",
                                           display_name=_("Open Project"),
                                           label=_("Open Project"),
@@ -92,6 +99,7 @@ class Manager(object):
         xml.insert_markup_after(self.merge_id, "Editor/Menubar",
                                 "View", """
                                 <item name="Project" _label="%s">
+                                  <item action="NewProject"/>
                                   <item action="OpenProject"/>
                                   <item action="OpenRecentProject"/>
                                   <separator/>
@@ -105,10 +113,9 @@ class Manager(object):
 
     def deinit(self):
         self.close_project(True)
-        moo.utils.window_class_remove_action(moo.edit.EditWindow, "OpenProject")
-        moo.utils.window_class_remove_action(moo.edit.EditWindow, "CloseProject")
-        moo.utils.window_class_remove_action(moo.edit.EditWindow, "ProjectOptions")
-        moo.utils.window_class_remove_action(moo.edit.EditWindow, "OpenRecentProject")
+        for a in ["NewProject", "OpenProject", "CloseProject",
+                  "ProjectOptions", "OpenRecentProject"]:
+            moo.utils.window_class_remove_action(moo.edit.EditWindow, a)
         editor = moo.edit.editor_instance()
         editor.get_ui_xml().remove_ui(self.merge_id)
         self.merge_id = 0
@@ -157,6 +164,12 @@ class Manager(object):
         self.__set_title_prefix(None)
         self.window = None
 
+    def new_project_cb(self, window):
+        try:
+            self.new_project(window)
+        except Exception, e:
+            mprj.utils.oops(window, e)
+
     def open_project_cb(self, window):
         filename = moo.utils.file_dialogp(parent=window, title=_("Open Project"),
                                           prefs_key="Plugins/Project/last_dir")
@@ -169,7 +182,6 @@ class Manager(object):
             self.bad_project(window, filename, e)
 
     def bad_project(self, parent, filename, error):
-        print_error(error)
         moo.utils.error_dialog(parent, _("Could not open project '%s'") % (filename,), str(error))
 
     def fixme(self, parent, msg):
@@ -190,6 +202,17 @@ class Manager(object):
                 moo.utils.prefs_set_string("Plugins/Project/last", None)
         else:
             self.fixme(window, "disable Close Project command")
+
+
+    """ new_project """
+    def new_project(self, window):
+        if not self.close_project(False):
+            return
+        filename = mprj.factory.new_project(self.project_types.projects.values(), window)
+        if filename:
+            self.open_project(window, filename)
+            if self.project:
+                self.project.options_dialog(window)
 
 
     """ open_project """

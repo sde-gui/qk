@@ -14,6 +14,7 @@ from mprj.simple import SimpleProject
 from mprj.utils import print_error
 from moo.utils import _, N_
 
+import cproj.config
 from cproj.config import CConfig
 from cproj.parser import parse_make_error
 from cproj.optdialog import Dialog as OptionsDialog
@@ -39,6 +40,8 @@ _CMD_INSTALL     = 'install'
 
 class CProject(SimpleProject):
     __config__ = CConfig
+    __factory_name__ = "C"
+    __factory_template__ = cproj.config.factory_template
 
     class DoCmd(object):
         def __init__(self, obj, *args):
