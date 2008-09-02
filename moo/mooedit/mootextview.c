@@ -2497,6 +2497,7 @@ moo_text_view_draw_trailing_spaces (GtkTextView       *text_view,
     line = gtk_text_iter_get_line (&iter);
     moo_text_view_get_cursor (MOO_TEXT_VIEW (text_view), &cursor);
     cursor_line = gtk_text_iter_get_line (&cursor);
+    cursor_line = -1; /* FIXME */
 
     do
     {
