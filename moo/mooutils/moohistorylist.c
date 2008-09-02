@@ -441,6 +441,7 @@ moo_history_list_add_full (MooHistoryList *list,
     Item *new_entry;
     GtkTreeIter iter;
     int index;
+    gboolean was_empty;
 
     g_return_if_fail (MOO_IS_HISTORY_LIST (list));
     g_return_if_fail (entry != NULL);
@@ -448,6 +449,8 @@ moo_history_list_add_full (MooHistoryList *list,
 
     if (!list->priv->allow_empty && !entry[0])
         return;
+
+    was_empty = moo_history_list_is_empty (list);
 
     _moo_history_list_load (list);
 
@@ -490,7 +493,9 @@ moo_history_list_add_full (MooHistoryList *list,
     list_save_recent (list);
 
     g_signal_emit (list, signals[CHANGED], 0);
-    g_object_notify (G_OBJECT (list), "empty");
+
+    if (was_empty)
+        g_object_notify (G_OBJECT (list), "empty");
 
     moo_history_item_free (new_entry);
 }
@@ -555,6 +560,9 @@ moo_history_list_remove (MooHistoryList *list,
     }
 
     list_save_recent (list);
+
+    if (moo_history_list_is_empty (list))
+        g_object_notify (G_OBJECT (list), "empty");
 
     moo_history_item_free (item);
     return;
