@@ -117,8 +117,9 @@ class SimpleProject(Project):
             tmp = open(tmpname, "w")
             tmp.write(self.config.format())
             tmp.close()
-            shutil.copymode(self.filename, tmpname)
-            shutil.move(self.filename, self.filename + '.bak')
+            if os.path.exists(self.filename):
+                shutil.copymode(self.filename, tmpname)
+                shutil.move(self.filename, self.filename + '.bak')
             shutil.move(tmpname, self.filename)
         except:
             print_error()

@@ -39,9 +39,9 @@ class Dialog(moo.utils.PrefsDialog):
         moo.utils.PrefsDialog.do_apply(self)
         self.project.config.copy_from(self.config_copy)
         self.project.save_config()
-        print '============================='
-        print self.project.config.dump_xml()
-        print '============================='
+#         print '============================='
+#         print self.project.config.dump_xml()
+#         print '============================='
 
 gobject.type_register(RunOptionsPage)
 gobject.type_register(Dialog)

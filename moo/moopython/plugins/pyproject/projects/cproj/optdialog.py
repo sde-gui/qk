@@ -19,14 +19,14 @@ from cproj.config import *
 
 class ConfigsPage(mprj.optdialog.ConfigPage):
     __label__ = _('Configurations')
-    __types__ = {'build_dir' : Entry,
-                 'args' : Entry,
-                 'vars' : DictView}
+    __types__ = {'config_build_dir' : Entry,
+                 'config_args' : Entry,
+                 'config_vars' : DictView}
 
     def load_config(self, config):
-        self.xml.w_build_dir.set_setting(config['build_dir'])
-        self.xml.w_args.set_setting(config.configure['args'])
-        self.xml.w_vars.set_dict(config.configure['vars'])
+        self.xml.w_config_build_dir.set_setting(config['build_dir'])
+        self.xml.w_config_args.set_setting(config.configure['args'])
+        self.xml.w_config_vars.set_dict(config.configure['vars'])
 
     def combo_changed(self, *whatever):
         self.do_apply()
@@ -101,8 +101,10 @@ class BuildCommandsPage(mprj.optdialog.ConfigPage):
 
     def do_init(self):
         mprj.optdialog.ConfigPage.do_init(self)
-        self.xml.w_commands.set_items(self.config.commands.items())
+        self.xml.w_commands.set_group(self.config.commands)
 
+    def do_apply(self):
+        mprj.optdialog.ConfigPage.do_apply(self)
 
 class Dialog(mprj.optdialog.Dialog):
     def __init__(self, project):
@@ -112,6 +114,17 @@ class Dialog(mprj.optdialog.Dialog):
         self.append_page(ConfigsPage('page_configs', self.config_copy, glade_file))
         self.append_page(RunOptionsPage('page_run', self.config_copy, glade_file))
         self.append_page(BuildCommandsPage('page_commands', self.config_copy, glade_file))
+
+    def do_apply(self):
+#         print '--------------------------------'
+#         print self.config_copy.commands.compile
+#         print '--------------------------------'
+        mprj.optdialog.Dialog.do_apply(self)
+#         print '--------------------------------'
+#         print self.config_copy.commands.compile
+#         print '--------------------------------'
+#         print self.project.config.commands.compile
+#         print '--------------------------------'
 
 
 gobject.type_register(ConfigsPage)
@@ -127,7 +140,7 @@ if __name__ == '__main__':
     from c import CProject
 
     editor = moo.edit.create_editor_instance()
-    config_file = File(_sample_file, '/tmp/fake/file')
+    config_file = File(_sample_file, '/tmp/test-file.mprj')
     config = CConfig(config_file)
     project = CProject(None, config, config_file)
     dialog = Dialog(project)

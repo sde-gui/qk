@@ -104,18 +104,23 @@ class Item(object):
     __class_attributes__ = {
         '__item_name__' : 'name',
         '__item_description__' : 'description',
-        '__item_cell_type__' : 'cell_type',
+        '__item_cell_types__' : 'cell_types',
         '__item_visible__' : 'visible',
     }
 
-    def __init__(self, id, name=None, description=None, visible=None, cell_type=None):
+    def __init__(self, id, name=None, description=None, visible=None, cell_types=None):
         object.__init__(self)
         self.__id = id
 
         attrs = getattr(type(self), '__item_attributes__')
 
-        if cell_type is None and attrs.has_key('cell_type'):
-            cell_type = attrs['cell_type']
+        if not cell_types and attrs.has_key('cell_types'):
+            cell_types = attrs['cell_types']
+            if not isinstance(cell_types, list) and \
+               not isinstance(cell_types, tuple):
+                    cell_types = [cell_types]
+        if not cell_types:
+            cell_types = []
 
         if name is None:
             if attrs.has_key('name'):
@@ -135,21 +140,25 @@ class Item(object):
             else:
                 visible = True
 
+        self.__config_cells = []
         self.__name = name
         self.__description = description
         self.__visible = visible
-        self.__cell_type = cell_type
+        self.__cell_types = cell_types
 
     def set_name(self, name): self.__name = name
     def set_description(self, description): self.__description = description
     def set_visible(self, visible): self.__visible = visible
-    def set_cell_type(self, cell_type): self.__cell_type = cell_type
+    def set_cell_types(self, cell_types): self.__cell_types = cell_types
 
     def get_id(self): return self.__id
     def get_name(self): return self.__name
     def get_description(self): return self.__description
     def get_visible(self): return self.__visible
-    def get_cell_type(self): return self.__cell_type
+    def get_cell_types(self): return self.__cell_types
+
+    def set_config_cells(self, cells): self.__config_cells = cells
+    def get_config_cells(self): return self.__config_cells
 
     def load(self, node): raise NotImplementedError()
     def save(self): raise NotImplementedError()

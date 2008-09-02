@@ -8,7 +8,7 @@ def _cmp_nodes(n1, n2):
     return (n1.name < n2.name and -1) or (n1.name > n2.name and 1) or 0
 
 class String(Setting):
-    __item_cell_type__ = CellText
+    __item_cell_types__ = CellText
 
     def transform_value(self, value):
         if value is None or isinstance(value, str):
@@ -25,6 +25,8 @@ class String(Setting):
 Filename = String
 
 class Command(Setting):
+    __item_cell_types__ = [CellTextN(1), CellTextN(0)]
+
     def copy_from(self, other):
         return Setting.copy_from(self, other)
 
@@ -48,7 +50,7 @@ class Command(Setting):
 
 class Bool(Setting):
     __item_data_type__ = bool
-    __item_cell_type__ = CellToggle
+    __item_cell_types__ = CellToggle
 
     def get_bool(self):
         return self.get_value()
@@ -58,7 +60,7 @@ class Bool(Setting):
 
 class Int(Setting):
     __item_data_type__ = int
-    __item_cell_type__ = CellText
+    __item_cell_types__ = CellText
 
     def get_int(self):
         return self.get_value()

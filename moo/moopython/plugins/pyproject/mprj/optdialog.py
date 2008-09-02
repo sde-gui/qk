@@ -64,6 +64,8 @@ class Dialog(moo.utils.PrefsDialog):
         self.project.config.copy_from(self.config_copy)
         self.project.save_config()
 #         print '============================='
+#         print self.config_copy.dump_xml()
+#         print '============================='
 #         print self.project.config.dump_xml()
 #         print '============================='
 

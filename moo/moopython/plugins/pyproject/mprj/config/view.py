@@ -4,9 +4,6 @@ if __name__ == '__main__':
     dir = os.path.dirname(__file__)
     sys.path.insert(0, os.path.join(dir, '../..'))
 
-__all__ = ['Column', 'View', 'CellText', 'CellToggle',
-           'DictView', 'GroupView', 'Entry']
-
 """ configview.py: TreeView column and cell renderers for settings """
 
 import gtk
@@ -20,13 +17,11 @@ import mprj.config
 
 """ TreeView column containing settings """
 class Column(gtk.TreeViewColumn):
-    def __init__(self, group, column, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         gtk.TreeViewColumn.__init__(self, *args, **kwargs)
 
-        self.__column = column
+        self.__column = 0
         self.__cells = {}
-
-        self.__add_group(group)
 
     def __add_group(self, group):
         for item in group:
@@ -35,21 +30,29 @@ class Column(gtk.TreeViewColumn):
             else:
                 self.__create_cell(item)
 
+    def set_group(self, group):
+        self.__add_group(group)
+
     def __create_cell(self, item):
         if not item.get_visible():
             return
-        cell_type = item.get_cell_type()
-        if self.__cells.has_key(cell_type):
-            return
-        cell = gobject.new(item.get_cell_type(), xalign=0)
-        cell._set_column(self.__column)
-        self.pack_start(cell)
-        self.set_cell_data_func(cell, cell.cell_data_func, self.__column)
-        self.__cells[cell_type] = cell
+        cell_types = item.get_cell_types()
+        key = '+'.join([str(ct) for ct in cell_types])
+        cells = self.__cells.get(key, [])
+        if not self.__cells.has_key(key):
+            for ct in cell_types:
+                cell = gobject.new(ct, xalign=0)
+                cell._set_column(self.__column)
+                self.pack_start(cell)
+                self.set_cell_data_func(cell, cell.cell_data_func, self.__column)
+                cells.append(cell)
+            self.__cells[key] = cells
+        item.set_config_cells(cells)
 
     def set_model(self, model):
         for k in self.__cells:
-            self.__cells[k]._set_model(model)
+            for c in self.__cells[k]:
+                c._set_model(model)
 
 
 """ TreeView containing settings """
@@ -271,22 +274,19 @@ class GroupView(gtk.TreeView):
         self.append_column(self.column_name)
         self.column_name.set_cell_data_func(self.cell_name, self.name_data_func)
 
-        self.column_value = gtk.TreeViewColumn()
+        self.column_value = Column()
         self.column_value.set_resizable(True)
-        self.cell_value = gtk.CellRendererText()
-        self.column_value.pack_start(self.cell_value, False)
         self.append_column(self.column_value)
-        self.column_value.set_cell_data_func(self.cell_value, self.value_data_func)
-        self.cell_value.connect('edited', self.value_edited)
 
         self.hidden_column = gtk.TreeViewColumn()
         self.hidden_column.set_visible(False)
         self.append_column(self.hidden_column)
 
     def set_group(self, group):
-        self.set_items(group.items())
+        self.column_value.set_group(group)
+        self.__set_items(group.items())
 
-    def set_items(self, items):
+    def __set_items(self, items):
         need_tree = False
         for i in items:
             if i.get_visible() and isinstance(i, mprj.config.Group):
@@ -310,27 +310,28 @@ class GroupView(gtk.TreeView):
                     new_parent = store.get_path(iter)
                     append(store, item.items(), new_parent)
         append(store, items, None)
+        self.column_value.set_model(store)
 
     def name_data_func(self, column, cell, model, iter):
         item = model.get_value(iter, 0)
         cell.set_property('text', item.get_name())
 
-    def value_data_func(self, column, cell, model, iter):
-        item = model.get_value(iter, 0)
-        if isinstance(item, mprj.config.Group):
-            cell.set_property('text', None)
-            cell.set_property('editable', False)
-        else:
-            cell.set_property('text', item.get_value())
-            cell.set_property('editable', True)
+#     def value_data_func(self, column, cell, model, iter):
+#         item = model.get_value(iter, 0)
+#         if isinstance(item, mprj.config.Group):
+#             cell.set_property('text', None)
+#             cell.set_property('editable', False)
+#         else:
+#             cell.set_property('text', item.get_value())
+#             cell.set_property('editable', True)
 
-    def value_edited(self, cell, path, text):
-        model = self.get_model()
-        iter = model.get_iter(path)
-        if iter is None:
-            return
-        item = model.get_value(iter, 0)
-        item.set_string(text)
+#     def value_edited(self, cell, path, text):
+#         model = self.get_model()
+#         iter = model.get_iter(path)
+#         if iter is None:
+#             return
+#         item = model.get_value(iter, 0)
+#         item.set_string(text)
 
     def apply(self):
         pass
@@ -360,12 +361,12 @@ gobject.type_register(Entry)
 
 """ _CellMeta: metaclass for all settings cell renderers """
 def _cell_data_func(dummy, column, cell, model, iter, index):
-    data = model.get_value(iter, index)
-    if data.get_cell_type() != type(cell):
+    item = model.get_value(iter, index)
+    if not cell in item.get_config_cells():
         cell.set_property('visible', False)
     else:
         cell.set_property('visible', True)
-        cell.set_data(data)
+        cell.set_data(item)
 
 def _set_private(clsname, obj, attr, value):
     setattr(obj, "_%s%s" % (clsname, attr), value)
@@ -402,6 +403,25 @@ class CellText(gtk.CellRendererText):
         model = self.__model
         setting = model.get_value(model.get_iter(path), self.__column)
         setting.set_string(text)
+
+
+def CellTextN(idx):
+    """ CellText: text renderer """
+    class CellTextN(gtk.CellRendererText):
+        __metaclass__ = _CellMeta
+
+        def set_data(self, data):
+            self.set_property('text', data.get_value()[idx])
+            self.set_property('editable', data.get_editable())
+
+        def do_edited(self, path, text):
+            model = self.__model
+            setting = model.get_value(model.get_iter(path), self.__column)
+            value = list(setting.get_value())
+            value[idx] = text
+            setting.set_value(value)
+
+    return CellTextN
 
 
 """ CellToggle: toggle renderer """
