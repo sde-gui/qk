@@ -28,9 +28,13 @@ def _create_node(elm_name, attr_name, name, string):
 
 def _save_instance(elm_name, attr_name, name, obj):
     if isinstance(obj, Item):
+        nodes = obj.save()
         if elm_name is not None:
-            raise NotImplementedError()
-        return obj.save()
+            if len(nodes) != 1:
+                raise NotImplementedError()
+            nodes[0].name = elm_name
+            nodes[0].set_attr(attr_name, name)
+        return nodes
     if obj is None:
         return [_create_node(elm_name, attr_name, name, None)]
     else:
@@ -95,8 +99,8 @@ def Dict(typ, **kwargs):
 
         def __setitem__(self, key, value):
             if not _check_type(value, Dict.__elm_type__):
-#                 print 'value: ', value
-#                 print '__elm_type__: ', Dict.__elm_type__
+                print 'value: ', value
+                print '__elm_type__: ', Dict.__elm_type__
                 raise TypeError('value %s is invalid for %s' % (value, self))
             self.__items[key] = value
 
@@ -136,6 +140,15 @@ def Dict(typ, **kwargs):
                         changed = True
 
             return changed
+
+        def rename(self, old_key, new_key):
+            item = self[old_key]
+            if self.has_key(new_key):
+                raise KeyError('key %s already exists' % (new_key,))
+            self.__items[new_key] = item
+            del self.__items[old_key]
+            assert item.get_id() == old_key
+            item.set_id(new_key)
 
         def load(self, node):
             for c in node.children():

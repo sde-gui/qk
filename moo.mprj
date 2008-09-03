@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<medit-project version="1.0" type="C" name="moo">
+<medit-project version="2.0" type="C" name="moo">
  <active>debug</active>
  <configurations>
-  <darwin>
+  <configuration name="darwin">
    <build_dir>build/darwin</build_dir>
-  </darwin>
-  <debug>
+  </configuration>
+  <configuration name="debug">
    <build_dir>build/debug</build_dir>
    <configure>
     <args>--enable-debug --enable-all-warnings --enable-project --prefix=${PREFIX:-/usr/local}</args>
@@ -16,23 +16,23 @@
      <var name="CXXFLAGS">-g</var>
     </vars>
    </configure>
-  </debug>
-  <gtk-2.6>
+  </configuration>
+  <configuration name="gtk-2.6">
    <build_dir>/home/muntyan/projects/gtk-2.6/moo</build_dir>
    <configure>
     <args>--enable-debug --enable-all-warnings --prefix=$PREFIX --enable-unit-tests --enable-project</args>
    </configure>
-  </gtk-2.6>
-  <gtk-cvs>
+  </configuration>
+  <configuration name="gtk-cvs">
    <build_dir>/home/muntyan/projects/gtk/build/moo</build_dir>
    <configure>
     <args>--enable-debug --enable-all-warnings --prefix=$PREFIX --enable-unit-tests --enable-project</args>
    </configure>
-  </gtk-cvs>
-  <mingw>
+  </configuration>
+  <configuration name="mingw">
    <build_dir>build/mingw</build_dir>
-  </mingw>
-  <optimized>
+  </configuration>
+  <configuration name="optimized">
    <build_dir>build/optimized</build_dir>
    <configure>
     <args>--enable-all-warnings</args>
@@ -41,8 +41,8 @@
      <var name="OBJCFLAGS">-O2 -g</var>
     </vars>
    </configure>
-  </optimized>
-  <test>
+  </configuration>
+  <configuration name="test">
    <build_dir>build/test</build_dir>
    <configure>
     <args>--enable-debug=full --enable-all-warnings --prefix=/usr/local/test --disable-nls</args>
@@ -51,7 +51,7 @@
      <var name="OBJCFLAGS">-g</var>
     </vars>
    </configure>
-  </test>
+  </configuration>
  </configurations>
  <run>
   <args>--app-name foobar --project-mode</args>

@@ -119,7 +119,7 @@ class BuildConfiguration(Group):
         return Group.copy_from(self, other)
 
     def load(self, node):
-        self.name = node.name
+        self.name = node.get_attr('name')
         Group.load(self, node)
 
 
@@ -127,7 +127,7 @@ class CConfig(SimpleConfig):
     __items__ = {
         'run' : RunOptions,
         'make' : MakeOptions,
-        'configurations' : Dict(BuildConfiguration),
+        'configurations' : Dict(BuildConfiguration, xml_elm_name='configuration'),
         'active' : String,
         'commands' : Commands
     }
@@ -154,12 +154,35 @@ class CConfig(SimpleConfig):
     def get_active_conf(self):
         if len(self.configurations) == 0:
             raise RuntimeError("no configurations")
-        if not self.active:
-            self.active = 'default'
         if not self.configurations.has_key(self.active):
             return self.configurations.items()[0][1]
         else:
             return self.configurations[self.active]
+
+    def add_conf(self, name, old_name=None):
+        if self.configurations.has_key(name):
+            raise KeyError("configuration %s already exists" % (name,))
+        if old_name and not self.configurations.has_key(old_name):
+            raise KeyError("no configuration %s" % (old_name,))
+        c = BuildConfiguration(name, _do_create_instance=True)
+        if old_name:
+            c.copy_from(self.configurations[old_name])
+        c.name = name
+        self.configurations[name] = c
+        return c
+
+    def rename_conf(self, old_name, new_name):
+        self.configurations.rename(old_name, new_name)
+        self.configurations[new_name].name = new_name
+
+    def delete_conf(self, name):
+        was_active = (name == self.active)
+        del self.configurations[name]
+        if was_active:
+            if len(self.configurations) != 0:
+                self.active = self.configurations.keys()[0]
+            else:
+                self.active = None
 
     def expand_env(self, vars):
         string = ''

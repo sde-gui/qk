@@ -13,7 +13,8 @@ import moo
 from moo.utils import _
 
 from mprj.project import Project
-from mprj.config import Config, Dict
+from mprj.config import Config, Dict, Group
+from mprj.config.view import *
 from mprj.settings import Filename
 from mprj.utils import print_error
 from mprj.session import Session
@@ -21,9 +22,15 @@ import mprj.optdialog
 import mprj.utils
 
 
+class GeneralSettings(Group):
+    __items__ = {
+        'vars' : Dict(str, name=_('Variables'), xml_elm_name='var'),
+    }
+    __item_name__ = _('General settings')
+
 class SimpleConfig(Config):
     __items__ = {
-        'vars' : Dict(str, name=_('Environment variables')),
+        'general': GeneralSettings
     }
 
 
@@ -115,8 +122,9 @@ class SimpleProject(Project):
                                    'Could not save file %s: %s' % (file, str(e)))
 
     def save_config(self):
+        content = self.config.format()
         try:
-            mprj.utils.save_file(self.filename, self.config.format())
+            mprj.utils.save_file(self.filename, content)
         except Exception, e:
             moo.utils.error_dialog(self.window, 'Could not save project file',
                                    'Could not save file %s: %s' % (self.filename, str(e)))
@@ -131,7 +139,7 @@ class SimpleProject(Project):
 
 class ConfigPage(mprj.optdialog.ConfigPage):
     __label__ = _("General")
-    __types__ = {}
+    __types__ = {'vars': DictView, 'name': Entry}
 
     def __init__(self, config):
         mprj.optdialog.ConfigPage.__init__(self, "page", config,
@@ -139,6 +147,7 @@ class ConfigPage(mprj.optdialog.ConfigPage):
 
     def do_init(self):
         mprj.optdialog.ConfigPage.do_init(self)
+        self.xml.w_vars.set_dict(self.config.general.vars)
 
     def do_apply(self):
         mprj.optdialog.ConfigPage.do_apply(self)
@@ -152,10 +161,12 @@ if __name__ == '__main__':
 
     s1 = """
     <medit-project name="moo" type="Simple" version="2.0">
-      <vars>
-        <foo>bar</foo>
-        <blah>bom</blah>
-      </vars>
+      <general>
+        <vars>
+          <foo>bar</foo>
+          <blah>bom</blah>
+        </vars>
+      </general>
     </medit-project>
     """
 

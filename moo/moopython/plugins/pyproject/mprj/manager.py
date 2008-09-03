@@ -10,9 +10,6 @@ from mprj.utils import print_error, format_error
 from moo.utils import _, N_
 
 
-PROJECT_VERSION = "1.0"
-
-
 moo.utils.prefs_new_key('Plugins/Project/last', str, None, moo.utils.PREFS_STATE)
 moo.utils.prefs_new_key('Plugins/Project/last_dir', str, None, moo.utils.PREFS_STATE)
 # moo.utils.prefs_new_key_string('Plugins/Project/last', None)
@@ -153,7 +150,8 @@ class Manager(object):
                 try:
                     self.open_project(self.window, project)
                 except Exception, e:
-                    print_error(e)
+                    self.bad_project(self.window, project, e)
+                    self.recent_list.remove(project)
 
     def __set_title_prefix(self, prefix):
         editor = moo.edit.editor_instance()
@@ -224,6 +222,11 @@ class Manager(object):
         file = File(f.read())
         f.close()
 
+        if file.version != mprj.project_version:
+            moo.utils.error_dialog(window, _("Could not open project '%s'") % (filename,), 
+                                   _("Invalid project version %s") % (file.version,))
+	    return
+
         file.path = filename
         project_type = self.project_types.get(file.project_type)
         config_type = getattr(project_type, '__config__')
@@ -248,10 +251,17 @@ class Manager(object):
         if not self.project:
             return True
 
-        if not self.project.close() and not force:
-            return False
+        try:
+            if not self.project.close() and not force:
+                return False
+        except Exception, e:
+            mprj.utils.oops(self.window, e)
 
-        self.project.unload()
+        try:
+            self.project.unload()
+        except Exception, e:
+            mprj.utils.oops(self.window, e)
+
         self.project = None
 
         if self.window:
@@ -276,9 +286,9 @@ class Manager(object):
                 print "File %s doesn't define __project_type__ attribute" % (path,)
             elif not dic.has_key('__project_version__'):
                 print "File %s doesn't define __project_version__ attribute" % (path,)
-            elif dic['__project_version__'] != PROJECT_VERSION:
+            elif dic['__project_version__'] != mprj.project_version:
                 print "In file %s: version %s does not match current version %s" % (
-                        path, dic['__project_version__'], PROJECT_VERSION)
+                        path, dic['__project_version__'], mprj.project_version)
             else:
                 self.project_types.add(dic['__project_type__'], dic['__project__'])
         except Exception, e:

@@ -143,12 +143,13 @@ class DictView(gtk.TreeView):
         store = gtk.ListStore(object)
         self.set_model(store)
 
-        keys = dct.keys()
-        keys.sort()
-        for key in keys:
-            store.append([[key, dct[key]]])
+        if dct is not None:
+            keys = dct.keys()
+            keys.sort()
+            for key in keys:
+                store.append([[key, dct[key]]])
 
-        store.append([[None, None]])
+            store.append([[None, None]])
 
     def name_data_func(self, column, cell, model, iter):
         data = model.get_value(iter, 0)
@@ -344,8 +345,10 @@ class Entry(gtk.Entry):
 
     def set_setting(self, setting):
         self.setting = setting
-        if setting.get_value() is not None:
-            self.set_text(setting.get_value())
+        if setting is not None:
+            self.set_text(setting.get_value() or "")
+        else:
+            self.set_text("")
 
     def apply(self):
         if self.setting is not None:

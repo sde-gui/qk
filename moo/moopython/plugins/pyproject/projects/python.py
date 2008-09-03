@@ -133,4 +133,4 @@ class PyProject(SimpleProject):
 
 __project__ = PyProject
 __project_type__ = "Python"
-__project_version__ = "1.0"
+__project_version__ = "2.0"

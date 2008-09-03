@@ -13,6 +13,7 @@ import moo
 from moo.utils import _
 
 import mprj.optdialog
+import mprj.simple
 from mprj.config.view import *
 from cproj.config import *
 
@@ -24,16 +25,23 @@ class ConfigsPage(mprj.optdialog.ConfigPage):
                  'config_vars' : DictView}
 
     def load_config(self, config):
-        self.xml.w_config_build_dir.set_setting(config['build_dir'])
-        self.xml.w_config_args.set_setting(config.configure['args'])
-        self.xml.w_config_vars.set_dict(config.configure['vars'])
+        if config is not None:
+            self.xml.w_config_build_dir.set_setting(config['build_dir'])
+            self.xml.w_config_args.set_setting(config.configure['args'])
+            self.xml.w_config_vars.set_dict(config.configure['vars'])
+        else:
+            self.xml.w_config_build_dir.set_setting(None)
+            self.xml.w_config_args.set_setting(None)
+            self.xml.w_config_vars.set_dict(None)
 
     def combo_changed(self, *whatever):
         self.do_apply()
         combo = self.xml.w_configuration
         iter = combo.get_active_iter()
-        store = combo.get_model()
-        config = store.get_value(iter, 1)
+        config = None
+        if iter is not None:
+            store = combo.get_model()
+            config = store.get_value(iter, 1)
         self.load_config(config)
 
     def init_combo(self):
@@ -46,7 +54,7 @@ class ConfigsPage(mprj.optdialog.ConfigPage):
 
         active = (0,)
         configurations = self.config.configurations
-        for name in configurations:
+        for name in sorted(configurations.keys()):
             c = configurations[name]
             iter = store.append([c.name, c])
             if c is self.config.get_active_conf():
@@ -55,10 +63,77 @@ class ConfigsPage(mprj.optdialog.ConfigPage):
 
         combo.connect('changed', self.combo_changed)
 
+    def update_buttons(self):
+        self.xml.w_delete_configuration.set_sensitive(len(self.config.configurations) > 1)
+
+    def rename_config_cb(self, *whatever):
+        combo = self.xml.w_configuration
+        iter = combo.get_active_iter()
+        store = combo.get_model()
+        config = store.get_value(iter, 1)
+
+        name = config.name
+        new_name = mprj.utils.entry_dialog(parent=self,
+                                           label=_("Enter new name"),
+                                           entry_content=name,
+                                           title=_("Enter new name"))
+
+        if not new_name or new_name == name:
+            return
+
+        if self.config.configurations.has_key(new_name):
+            mprj.utils.error_dialog(parent=self, text=_("Configuration '%s' already exists") % (new_name))
+            return
+
+        was_active = self.config.active == name
+        self.config.rename_conf(name, new_name)
+        store.set_value(iter, 0, new_name)
+        if was_active:
+            self.config.active = new_name
+
+    def add_config_cb(self, *whatever):
+        name = mprj.utils.entry_dialog(parent=self,
+                                       label=_("Enter configuration name"),
+                                       title=_("Enter configuration name"))
+
+        if not name:
+            return
+
+        if self.config.configurations.has_key(name):
+            mprj.utils.error_dialog(parent=self, text=_("Configuration '%s' already exists") % (name))
+            return
+
+        new_conf = self.config.add_conf(name)
+
+        combo = self.xml.w_configuration
+        store = combo.get_model()
+        iter = store.append([name, new_conf])
+        combo.set_active_iter(iter)
+
+    def delete_config_cb(self, *whatever):
+        combo = self.xml.w_configuration
+        iter = combo.get_active_iter()
+        store = combo.get_model()
+        config = store.get_value(iter, 1)
+
+        do_delete = mprj.utils.question_dialog(parent=self,
+                                               text=_("Delete configuration %s?" % (config.name,)),
+                                               default_ok=False)
+
+        if do_delete:
+            self.config.delete_conf(config.name)
+            store.remove(iter)
+            combo.set_active(0)
+            self.update_buttons()
+
     def do_init(self):
         mprj.optdialog.ConfigPage.do_init(self)
         self.init_combo()
         self.combo_changed()
+        self.xml.w_add_configuration.connect('clicked', self.add_config_cb)
+        self.xml.w_rename_configuration.connect('clicked', self.rename_config_cb)
+        self.xml.w_delete_configuration.connect('clicked', self.delete_config_cb)
+        self.update_buttons()
 
 
 class RunOptionsPage(mprj.optdialog.ConfigPage):
@@ -110,7 +185,7 @@ class Dialog(mprj.optdialog.Dialog):
     def __init__(self, project):
         mprj.optdialog.Dialog.__init__(self, project)
         glade_file = os.path.join(os.path.dirname(__file__), 'options.glade')
-#         self.append_page(mprj.simple.ConfigPage(self.config_copy))
+        self.append_page(mprj.simple.ConfigPage(self.config_copy))
         self.append_page(ConfigsPage('page_configs', self.config_copy, glade_file))
         self.append_page(RunOptionsPage('page_run', self.config_copy, glade_file))
         self.append_page(BuildCommandsPage('page_commands', self.config_copy, glade_file))
@@ -120,6 +195,7 @@ class Dialog(mprj.optdialog.Dialog):
 #         print self.config_copy.commands.compile
 #         print '--------------------------------'
         mprj.optdialog.Dialog.do_apply(self)
+        self.project.apply_config()
 #         print '--------------------------------'
 #         print self.config_copy.commands.compile
 #         print '--------------------------------'

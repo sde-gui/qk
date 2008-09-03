@@ -146,6 +146,7 @@ class Item(object):
         self.__visible = visible
         self.__cell_types = cell_types
 
+    def set_id(self, new_id): self.__id = new_id
     def set_name(self, name): self.__name = name
     def set_description(self, description): self.__description = description
     def set_visible(self, visible): self.__visible = visible

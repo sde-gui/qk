@@ -2,6 +2,7 @@ import moo
 import traceback
 import sys
 import os
+import gtk
 import re
 import tempfile
 import shutil
@@ -79,6 +80,46 @@ def format_error(error=None):
             "".join(traceback.format_exception(*sys.exc_info()))
     else:
         return "".join(traceback.format_exception(*sys.exc_info()))
+
+
+def entry_dialog(parent=None, label=None, entry_content=None, title=None):
+    glade_file = os.path.join(os.path.dirname(__file__), "utils.glade")
+    xml = moo.utils.glade_xml_new_from_file(glade_file, root='entry_dialog',
+                                            domain=moo.utils.GETTEXT_PACKAGE)
+    xml.w_entry_dialog.set_title(title)
+    if parent:
+        parent = parent.get_toplevel()
+        xml.w_entry_dialog.set_transient_for(parent)
+    if label:
+        xml.w_label.set_text(label)
+    else:
+        xml.w_label.hide()
+    if entry_content:
+        xml.w_entry.set_text(entry_content)
+
+    retval = None
+    if xml.w_entry_dialog.run() == gtk.RESPONSE_OK:
+        retval = xml.w_entry.get_text()
+
+    xml.w_entry_dialog.destroy()
+    return retval
+
+def error_dialog(text, secondary_text=None, parent=None):
+    moo.utils.error_dialog(parent, text, secondary_text)
+
+def question_dialog(text, secondary_text=None, default_ok=False, parent=None):
+    if parent:
+        parent = parent.get_toplevel()
+    dlg = gtk.MessageDialog(parent, 0, gtk.MESSAGE_QUESTION, gtk.BUTTONS_OK_CANCEL)
+    dlg.set_property('text', text)
+    dlg.set_property('secondary_text', secondary_text)
+    if default_ok:
+        dlg.set_default_response(gtk.RESPONSE_OK)
+    else:
+        dlg.set_default_response(gtk.RESPONSE_CANCEL)
+    response = dlg.run()
+    dlg.destroy()
+    return response == gtk.RESPONSE_OK
 
 def prefs_key(name):
     return 'MProject/' + name
