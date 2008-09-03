@@ -3,6 +3,8 @@ import traceback
 import sys
 import os
 import re
+import tempfile
+import shutil
 
 def _expand(command, dic):
     if isinstance(command, str) or isinstance(command, unicode):
@@ -80,6 +82,67 @@ def format_error(error=None):
 
 def prefs_key(name):
     return 'MProject/' + name
+
+def save_file(filename, contents):
+    f = FileSaver(filename)
+    f.write(contents)
+    f.close()
+
+class FileSaver(object):
+    def __init__(self, filename):
+        object.__init__(self)
+
+        self.tmp_file = None
+        self.tmp_name = None
+        self.filename = None
+        self.closed = True
+
+        basename = os.path.basename(filename)
+        dirname = os.path.dirname(filename)
+        tmp_fd, tmp_name = tempfile.mkstemp('', '.' + basename + '-', dirname, True)
+        self.tmp_file = os.fdopen(tmp_fd, 'w')
+        self.tmp_name = tmp_name
+        self.filename = filename
+        self.closed = False
+
+    def close(self):
+        if not self.closed:
+            self.closed = True
+            try:
+                self.tmp_file.close()
+                shutil.move(self.tmp_name, self.filename)
+            except Exception, e:
+                self.__cleanup()
+                raise e
+
+    def __cleanup(self):
+        if self.tmp_file:
+            try:
+                self.tmp_file.close()
+            except:
+                pass
+        if self.tmp_name:
+            try:
+                os.remove(self.tmp_name)
+            except:
+                pass
+
+    def flush(self):
+        return self.tmp_file.flush()
+    def fileno(self):
+        return self.tmp_file.fileno()
+    def isatty(self):
+        return False
+    def seek(self, offset, whence = 0):
+        return self.tmp_file.seek(offset, whence)
+    def tell(self):
+        return self.tmp_file.tell()
+    def truncate(self, size = 0):
+        return self.tmp_file.truncate(size)
+    def write(self, string):
+        return self.tmp_file.write(string)
+    def writelines(self, sequence):
+        return self.tmp_file.writelines(sequence)
 
 if __name__ == '__main__':
     print expand_command(['$(builddir)', 'make $(base).o'],

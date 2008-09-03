@@ -17,6 +17,7 @@ import mprj.utils
 from mprj.simple import SimpleProject
 from mprj.utils import print_error
 
+import pyproj.config
 from pyproj.config import PyConfig
 from pyproj.optdialog import Dialog as OptionsDialog
 
@@ -31,6 +32,8 @@ _CMD_EXECUTE_FILE = 'execute_file'
 
 class PyProject(SimpleProject):
     __config__ = PyConfig
+    __factory_name__ = "Python"
+    __factory_template__ = pyproj.config.factory_template
 
     class DoCmd(object):
         def __init__(self, proj, *args):

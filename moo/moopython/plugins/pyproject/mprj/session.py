@@ -1,6 +1,7 @@
 from mprj.config._xml import XML, XMLGroup, XMLItem
 import moo
 import os
+import mprj.utils
 
 class Session(object):
     def __init__(self, data=None):
@@ -33,10 +34,7 @@ class Session(object):
                 window.set_active_doc(doc)
 
     def save(self, filename):
-        string = self.__format()
-        f = open(filename, "w+")
-        f.write(string)
-        f.close()
+        mprj.utils.save_file(filename, self.__format())
 
     def get_file_selector_dir(self):
         return self.__file_selector_dir

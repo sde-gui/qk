@@ -7,7 +7,7 @@ if __name__ == '__main__':
 
 import gobject
 import os.path
-import shutil
+import tempfile
 
 import moo
 from moo.utils import _
@@ -18,6 +18,7 @@ from mprj.settings import Filename
 from mprj.utils import print_error
 from mprj.session import Session
 import mprj.optdialog
+import mprj.utils
 
 
 class SimpleConfig(Config):
@@ -109,21 +110,16 @@ class SimpleProject(Project):
             session = Session(self.window)
             session.set_file_selector_dir(self.__file_selector_dir)
             session.save(file)
-        except:
-            print_error()
+        except Exception, e:
+            moo.utils.error_dialog(self.window, 'Could not save session',
+                                   'Could not save file %s: %s' % (file, str(e)))
 
     def save_config(self):
         try:
-            tmpname = os.path.join(os.path.dirname(self.filename), '.' + os.path.basename(self.filename) + '.tmp')
-            tmp = open(tmpname, "w")
-            tmp.write(self.config.format())
-            tmp.close()
-            if os.path.exists(self.filename):
-                shutil.copymode(self.filename, tmpname)
-                shutil.move(self.filename, self.filename + '.bak')
-            shutil.move(tmpname, self.filename)
-        except:
-            print_error()
+            mprj.utils.save_file(self.filename, self.config.format())
+        except Exception, e:
+            moo.utils.error_dialog(self.window, 'Could not save project file',
+                                   'Could not save file %s: %s' % (self.filename, str(e)))
 
     def options_dialog(self, window):
         dialog = self.create_options_dialog()
