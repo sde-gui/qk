@@ -41,12 +41,9 @@ medit_RC_IN_FILE = medit.rc.in
 
 EXTRA_DIST += medit.desktop.in
 
-@MOO_INTLTOOL_DESKTOP_RULE@
 DESKTOP_IN_FILES = medit.desktop.in
-DESKTOP_FILES =$(DESKTOP_IN_FILES:.desktop.in=.desktop)
 desktopdir = $(datadir)/applications
 desktop_DATA = $(DESKTOP_FILES)
-DISTCLEANFILES += $(DESKTOP_FILES)
 
 pixmapsdir = $(datadir)/pixmaps
 pixmaps_DATA = ../moo/mooutils/pixmaps/medit.png
@@ -57,12 +54,12 @@ update_icon_cache = gtk-update-icon-cache -f -t $(DESTDIR)$(datadir)/icons/hicol
 
 if MOO_ENABLE_GENERATED_FILES
 install-data-hook:
-	if echo "Updating icon cache" && $(update_icon_cache); then		\
+	@if echo "Updating icon cache" && $(update_icon_cache); then		\
 		echo "Done.";							\
 	else									\
 		echo "*** GTK icon cache not updated. After install, run this:";\
 		echo $(update_icon_cache);					\
 	fi
 uninstall-hook:
-	if echo "Updating icon cache" && $(update_icon_cache); then echo "Done."; else echo "Failed."; fi
+	@if echo "Updating icon cache" && $(update_icon_cache); then echo "Done."; else echo "Failed."; fi
 endif
