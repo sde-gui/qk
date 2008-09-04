@@ -1,0 +1,11 @@
+[Desktop Entry]
+_Name=medit
+_Comment=Text editor
+Exec=medit --project %F
+Terminal=false
+Type=Application
+StartupNotify=true
+MimeType=application/x-medit-project;
+Icon=medit
+Categories=Development;
+# Hidden=true

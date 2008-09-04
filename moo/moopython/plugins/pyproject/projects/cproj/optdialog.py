@@ -185,7 +185,7 @@ class Dialog(mprj.optdialog.Dialog):
     def __init__(self, project):
         mprj.optdialog.Dialog.__init__(self, project)
         glade_file = os.path.join(os.path.dirname(__file__), 'options.glade')
-        self.append_page(mprj.simple.ConfigPage(self.config_copy))
+#         self.append_page(mprj.simple.ConfigPage(self.config_copy))
         self.append_page(ConfigsPage('page_configs', self.config_copy, glade_file))
         self.append_page(RunOptionsPage('page_run', self.config_copy, glade_file))
         self.append_page(BuildCommandsPage('page_commands', self.config_copy, glade_file))

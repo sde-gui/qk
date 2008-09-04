@@ -61,13 +61,7 @@ packagesdir = $(mimedir)/packages
 packages_DATA = medit-mprj.xml
 EXTRA_DIST += medit-mprj.xml.in
 
-hicolor = $(datadir)/icons/hicolor
-install-data-local:
-	  $(INSTALL_DATA) "$(top_srcdir)/moo/mooutils/pixmaps/medit.png" \
-	    "$(DESTDIR)$(hicolor)/48x48/mimetypes/application-x-medit-project.png"
-
 update_mime = update-mime-database $(DESTDIR)${mimedir}
-update_icon_cache = gtk-update-icon-cache -f -t $(DESTDIR)$(datadir)/icons/hicolor
 
 if MOO_ENABLE_GENERATED_FILES
 install-data-hook:
@@ -82,16 +76,9 @@ install-data-hook:
 		echo $(update_mime);						\
 		echo "*** ";							\
 	fi
-	@if echo "Updating icon cache" && $(update_icon_cache); then		\
-		echo "Done.";							\
-	else									\
-		echo "*** GTK icon cache not updated. After install, run this:";\
-		echo $(update_icon_cache);					\
-	fi
 uninstall-hook:
 	@echo "Updating mime database" && \
 	    echo $(update_mime) && \
 	    $(update_mime) && \
 	    echo "Done."
-	@if echo "Updating icon cache" && $(update_icon_cache); then echo "Done."; else echo "Failed."; fi
 endif

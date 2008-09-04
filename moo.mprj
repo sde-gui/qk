@@ -2,9 +2,6 @@
 <medit-project version="2.0" type="C" name="moo">
  <active>debug</active>
  <configurations>
-  <configuration name="darwin">
-   <build_dir>build/darwin</build_dir>
-  </configuration>
   <configuration name="debug">
    <build_dir>build/debug</build_dir>
    <configure>
@@ -31,6 +28,9 @@
   </configuration>
   <configuration name="mingw">
    <build_dir>build/mingw</build_dir>
+   <configure>
+    <args/>
+   </configure>
   </configuration>
   <configuration name="optimized">
    <build_dir>build/optimized</build_dir>
