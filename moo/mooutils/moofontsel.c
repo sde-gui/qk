@@ -1,3 +1,7 @@
+/*
+ * gtkfontsel.* copied and modified to allow choosing monospace fonts
+ */
+
 /* GTK - The GIMP Toolkit
  * Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald
  *
@@ -27,10 +31,6 @@
  * file for a list of people on the GTK+ Team.  See the ChangeLog
  * files for a list of changes.  These files are distributed with
  * GTK+ at ftp://ftp.gtk.org/pub/gtk/.
- */
-
-/*
- * gtkfontsel.* copied and modified to allow choosing monospace fonts
  */
 
 #ifdef HAVE_CONFIG_H

@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 #
-#   pyconsole.py
+#  pyconsole.py
 #
-#   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@tamu.edu>
-#   Portions of code by Geoffrey French.
+#  Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>
+#  Thanks to Geoffrey French for ideas.
 #
-#   This program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU Lesser General Public version 2.1 as
-#   published by the Free Software Foundation.
+#  This file is part of medit.  medit is free software; you can
+#  redistribute it and/or modify it under the terms of the
+#  GNU Lesser General Public License as published by the
+#  Free Software Foundation; either version 2.1 of the License,
+#  or (at your option) any later version.
 #
-#   See COPYING file that comes with this distribution for full text
-#   of the license.
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with medit.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This module 'runs' python interpreter in a TextView widget.
