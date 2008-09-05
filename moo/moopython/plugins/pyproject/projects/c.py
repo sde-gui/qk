@@ -206,6 +206,7 @@ class CProject(SimpleProject):
         pane.output.clear()
         window.paned.present_pane(pane)
         pane.output.run_command(command, working_dir)
+        pane.output.add_filter_dirs([self.topdir])
         return True
 
     def exec_command(self, window, cmd):
