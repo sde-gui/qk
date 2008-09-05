@@ -193,6 +193,20 @@ find_file_in_dir (const char *file,
 }
 
 static char *
+find_file_in_dirs (const char         *file,
+                   const char * const *dirs)
+{
+    for ( ; file && dirs && *dirs; ++dirs)
+    {
+        char *path = find_file_in_dir (file, *dirs);
+        if (path)
+            return path;
+    }
+
+    return NULL;
+}
+
+static char *
 find_file (const char           *file,
            MooOutputFilterRegex *filter)
 {
@@ -205,7 +219,7 @@ find_file (const char           *file,
         real_file = find_file_in_dir (file, filter->priv->dir_stack->data);
 
     if (!real_file)
-        real_file = find_file_in_dir (file, moo_output_filter_get_active_dir (MOO_OUTPUT_FILTER (filter)));
+        real_file = find_file_in_dirs (file, moo_output_filter_get_active_dirs (MOO_OUTPUT_FILTER (filter)));
 
     if (!real_file)
         real_file = g_strdup (file);

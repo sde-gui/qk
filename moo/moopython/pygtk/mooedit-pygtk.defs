@@ -189,6 +189,15 @@
   )
 )
 
+(define-method add_filter_dirs
+  (of-object "MooCmdView")
+  (c-name "moo_cmd_view_add_filter_dirs")
+  (return-type "none")
+  (parameters
+    '("strv" "dirs")
+  )
+)
+
 (define-method abort
   (of-object "MooCmdView")
   (c-name "moo_cmd_view_abort")

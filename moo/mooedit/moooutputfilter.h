@@ -85,10 +85,10 @@ gboolean         moo_output_filter_cmd_exit         (MooOutputFilter    *filter,
 
 void             moo_output_filter_set_active_file  (MooOutputFilter    *filter,
                                                      const char         *path);
-void             moo_output_filter_set_active_dir   (MooOutputFilter    *filter,
-                                                     const char         *path);
+void             moo_output_filter_add_active_dirs  (MooOutputFilter    *filter,
+                                                     char              **dirs);
 const char      *moo_output_filter_get_active_file  (MooOutputFilter    *filter);
-const char      *moo_output_filter_get_active_dir   (MooOutputFilter    *filter);
+const char*const*moo_output_filter_get_active_dirs  (MooOutputFilter    *filter);
 void             moo_output_filter_set_window       (MooOutputFilter    *filter,
                                                      gpointer            window);
 

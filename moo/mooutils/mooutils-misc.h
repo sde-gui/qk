@@ -141,6 +141,17 @@ moo_assign_string (char       **where,
 
 #define MOO_ASSIGN_STRING(where, value) moo_assign_string (&(where), (value))
 
+static inline void
+moo_assign_strv (char ***where,
+                 char  **value)
+{
+    char **tmp = *where;
+    *where = g_strdupv (value);
+    g_strfreev (tmp);
+}
+
+#define MOO_ASSIGN_STRV(where, value) moo_assign_strv (&(where), (value))
+
 const char *_moo_get_pid_string             (void);
 
 const char *_moo_intern_string              (const char     *string);

@@ -372,6 +372,15 @@
   )
 )
 
+(define-method add_active_dirs
+  (of-object "MooOutputFilter")
+  (c-name "moo_output_filter_add_active_dirs")
+  (return-type "none")
+  (parameters
+    '("strv" "dirs")
+  )
+)
+
 (define-method cmd_exit
   (of-object "MooOutputFilter")
   (c-name "moo_output_filter_cmd_exit")
