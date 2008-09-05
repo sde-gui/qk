@@ -6,10 +6,7 @@ EXTRA_DIST +=			\
 	COPYING.GPL		\
 	COPYING			\
 	LICENSE			\
-	THANKS			\
-	intltool-extract.in	\
-	intltool-merge.in	\
-	intltool-update.in
+	THANKS
 
 @MOO_PO_SUBDIRS_RULE@
 @MOO_PO_SUBDIRS_RULE2@
