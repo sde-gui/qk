@@ -23,6 +23,11 @@ if test ! -e "$outdir"; then
   exit 1
 fi
 
+txt2tags --version >/dev/null 2>/dev/null || {
+  echo "*** WARNING: txt2tags has not been found, docs will not be regenerated ***" >&2
+  exit 0
+}
+
 generate () {
   $T2T --outfile=$2 $1 || exit 1
   (cd "$outdir" && $SPLITY -index $SPLITY_INDEX -page $SPLITY_PAGE $2) || exit 1

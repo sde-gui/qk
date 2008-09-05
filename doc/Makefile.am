@@ -30,7 +30,7 @@ stamp-help: $(t2t_sources) makedocs
 	rm -fr help && \
 	$(mkdir_p) help && \
 	$(srcdir)/makedocs $(srcdir)/medit.t2t && \
-	echo stamp > stamp-help
+	echo `date` > stamp-help
 
 medit.lo: build-docs
 prefs.lo: build-docs
