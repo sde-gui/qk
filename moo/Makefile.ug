@@ -96,8 +96,8 @@ libmoo_la_SOURCES =
 BUILT_SOURCES += mooutils/marshals.c marshals.list
 CLEANFILES += mooutils/marshals.c marshals.list
 mooutils/marshals.c: marshals.list
-	glib-genmarshal --prefix=_moo_marshal --header marshals.list > $@.tmp && \
-	glib-genmarshal --prefix=_moo_marshal --body marshals.list >> $@.tmp && \
+	$(GLIB_GENMARSHAL) --prefix=_moo_marshal --header marshals.list > $@.tmp && \
+	$(GLIB_GENMARSHAL) --prefix=_moo_marshal --body marshals.list >> $@.tmp && \
 	mv $@.tmp $@
 marshals.list: $(marshals)
 	( cat $(marshals) | uniq ) > marshals.list.tmp && mv marshals.list.tmp marshals.list
@@ -106,7 +106,7 @@ BUILT_SOURCES += $(sub_marshals_h)
 CLEANFILES += $(sub_marshals_h)
 EXTRA_DIST += mooutils/marshals.list mooapp/marshals.list moofileview/marshals.list mooedit/marshals.list
 %/marshals.h: $(srcdir)/%/marshals.list
-	glib-genmarshal --prefix=_moo_marshal --header $(srcdir)/$*/marshals.list > $@.tmp && \
+	$(GLIB_GENMARSHAL) --prefix=_moo_marshal --header $(srcdir)/$*/marshals.list > $@.tmp && \
 	mv $@.tmp $@
 
 

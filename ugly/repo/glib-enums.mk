@@ -14,7 +14,7 @@ CLEANFILES += $(ugly_stamp_enum_hfile) $(ugly_stamp_enum_cfile)
 
 $(ugly_stamp_enum_hfile): $(ENUM_HDRS) Makefile
 	( HGUARD=`echo $(ugly_enum_hfile) | tr '[a-z.\-]' '[A-Z__]'` && cd $(srcdir) && \
-	  glib-mkenums --fhead "#ifndef $$HGUARD\n#define $$HGUARD\n\n#include <glib-object.h>\n" \
+	  $(GLIB_MKENUMS) --fhead "#ifndef $$HGUARD\n#define $$HGUARD\n\n#include <glib-object.h>\n" \
 	               --fhead "\nG_BEGIN_DECLS\n\n\n" \
 	               --fprod "/* enumerations from @filename@ */\n" \
 	               --vhead "GType @enum_name@_get_type (void) G_GNUC_CONST;\n#define $(ugly_enum_prefix)_TYPE_@ENUMSHORT@ (@enum_name@_get_type())\n\n" \
@@ -24,7 +24,7 @@ $(ugly_stamp_enum_hfile): $(ENUM_HDRS) Makefile
 	&& rm -f $(ugly_enum_hfile).tmp \
 	&& echo timestamp > $(@F)
 $(ugly_stamp_enum_cfile): $(ENUM_HDRS) Makefile
-	( cd $(srcdir) && glib-mkenums \
+	( cd $(srcdir) && $(GLIB_MKENUMS) \
 			--fhead "#include \"$(ugly_enum_hfile)\"\n\n" \
 			--fprod "#include \"@filename@\"\n\n" \
 			--vhead "GType\n@enum_name@_get_type (void)\n{\n    static GType etype;\n    if (G_UNLIKELY (!etype))\n    {\n        static const G@Type@Value values[] = {" \

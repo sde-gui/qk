@@ -17,8 +17,23 @@ AC_DEFUN_ONCE([MOO_AM_RC_MK],[
   fi
 ])
 
+dnl _MOO_AC_CHECK_TOOL(variable,program)
+AC_DEFUN([_MOO_AC_CHECK_TOOL],[
+  AC_ARG_VAR([$1], [$2 program])
+  AC_PATH_PROG([$1], [$2], [])
+  AM_CONDITIONAL([HAVE_$1],[ test "x$2" != "x" ])
+])
+
+AC_DEFUN_ONCE([MOO_AC_CHECK_TOOLS],[
+  _MOO_AC_CHECK_TOOL([GDK_PIXBUF_CSOURCE], [gdk-pixbuf-csource])
+  _MOO_AC_CHECK_TOOL([GLIB_GENMARSHAL], [glib-genmarshal])
+  _MOO_AC_CHECK_TOOL([GLIB_MKENUMS], [glib-mkenums])
+  _MOO_AC_CHECK_TOOL([TXT2TAGS], [txt2tags])
+])
+
 AC_DEFUN_ONCE([MOO_AM_MK],[
   AC_REQUIRE([MOO_AC_I18N])
   MOO_AM_MIME_MK
   MOO_AM_RC_MK
+  MOO_AC_CHECK_TOOLS
 ])

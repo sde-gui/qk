@@ -23,13 +23,13 @@ help-sections.h: stamp-help
 build-docs: stamp-help
 
 medit.1: man-medit.t2t
-	txt2tags --target=man --outfile=$(srcdir)/medit.1 $(srcdir)/man-medit.t2t
+	$(TXT2TAGS) --target=man --outfile=$(srcdir)/medit.1 $(srcdir)/man-medit.t2t
 
 stamp-help: $(t2t_sources) makedocs
 	cd $(srcdir) && \
 	rm -fr help && \
 	$(mkdir_p) help && \
-	$(srcdir)/makedocs $(srcdir)/medit.t2t && \
+	TXT2TAGS=$(TXT2TAGS) $(srcdir)/makedocs $(srcdir)/medit.t2t && \
 	echo `date` > stamp-help
 
 medit.lo: build-docs

@@ -191,7 +191,7 @@ mooutils_pixmaps =			\
 CLEANFILES += stock-moo.h stock-medit.h
 BUILT_SOURCES += stock-moo.h stock-medit.h
 stock-moo.h: $(mooutils_pixmaps)
-	gdk-pixbuf-csource --static --build-list			\
+	$(GDK_PIXBUF_CSOURCE) --static --build-list			\
 		MOO_HIDE_ICON $(srcdir)/pixmaps/hide.png		\
 		MOO_CLOSE_ICON $(srcdir)/pixmaps/close.png		\
 		MOO_STICKY_ICON $(srcdir)/pixmaps/sticky.png		\
@@ -200,7 +200,7 @@ stock-moo.h: $(mooutils_pixmaps)
 		MOO_KEEP_ON_TOP_ICON $(srcdir)/pixmaps/keepontop.png	\
 			> $@.tmp && mv $@.tmp $@
 stock-medit.h: pixmaps/medit.png
-	gdk-pixbuf-csource --static --build-list			\
+	$(GDK_PIXBUF_CSOURCE) --static --build-list			\
 		MEDIT_ICON $(srcdir)/pixmaps/medit.png			\
 			> $@.tmp && mv $@.tmp $@
 
@@ -245,6 +245,6 @@ CLEANFILES += moofileicon-symlink.h
 EXTRA_DIST += $(file_pixmaps)
 
 moofileicon-symlink.h: $(file_pixmaps)
-	gdk-pixbuf-csource --static --build-list	\
+	$(GDK_PIXBUF_CSOURCE) --static --build-list	\
 		SYMLINK_ARROW $(srcdir)/pixmaps/symlink.png	\
 		SYMLINK_ARROW_SMALL $(srcdir)/pixmaps/symlink-small.png > $@.tmp && mv $@.tmp $@

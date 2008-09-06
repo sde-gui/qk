@@ -8,7 +8,10 @@ infile="$1"
 outfile="$thisdir"/`basename $infile .t2t`.html
 outdir="$thisdir/help"
 
-T2T=txt2tags
+if [ -z "$TXT2TAGS" ]; then
+  TXT2TAGS=txt2tags
+fi
+
 SPLITY="perl -I$srcdir $srcdir/splity/splity.pl"
 SPLITY_INDEX="$srcdir/splity/index-template.html"
 SPLITY_PAGE="$srcdir/splity/page-template.html"
@@ -23,13 +26,13 @@ if test ! -e "$outdir"; then
   exit 1
 fi
 
-txt2tags --version >/dev/null 2>/dev/null || {
+$TXT2TAGS --version >/dev/null 2>/dev/null || {
   echo "*** WARNING: txt2tags has not been found, docs will not be regenerated ***" >&2
   exit 0
 }
 
 generate () {
-  $T2T --outfile=$2 $1 || exit 1
+  $TXT2TAGS --outfile=$2 $1 || exit 1
   (cd "$outdir" && $SPLITY -index $SPLITY_INDEX -page $SPLITY_PAGE $2) || exit 1
 }
 
