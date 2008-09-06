@@ -8,6 +8,18 @@ infile="$1"
 outfile="$thisdir"/`basename $infile .t2t`.html
 outdir="$thisdir/help"
 
+shift
+stamp="$1"
+shift
+rm -f stamp-help.tmp
+for arg; do
+  if [ ! -f "$arg" ]; then
+    echo "OOPS" >&2
+  else
+    (cd $srcdir && md5sum "$arg") >> stamp-help.tmp
+  fi
+done
+
 if [ -z "$TXT2TAGS" ]; then
   TXT2TAGS=txt2tags
 fi
@@ -52,3 +64,10 @@ write_sections $outfile help-sections.h.tmp || exit 1
 cmp -s help-sections.h.tmp help-sections.h || cp help-sections.h.tmp help-sections.h || exit 1
 rm -f help-sections.h.tmp
 rm $outfile || exit 1
+
+if cmp -s stamp-help.tmp "$stamp"; then
+  touch "$stamp" || exit 1
+else
+  mv stamp-help.tmp "$stamp" || exit 1
+fi
+rm -f stamp-help.tmp

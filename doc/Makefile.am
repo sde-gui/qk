@@ -25,12 +25,13 @@ build-docs: stamp-help
 medit.1: man-medit.t2t
 	$(TXT2TAGS) --target=man --outfile=$(srcdir)/medit.1 $(srcdir)/man-medit.t2t
 
-stamp-help: $(t2t_sources) makedocs
+stamp_help_deps = $(t2t_sources) makedocs
+stamp-help: $(stamp_help_deps)
 	cd $(srcdir) && \
 	rm -fr help && \
 	$(mkdir_p) help && \
-	TXT2TAGS=$(TXT2TAGS) $(srcdir)/makedocs $(srcdir)/medit.t2t && \
-	echo `date` > stamp-help
+	TXT2TAGS=$(TXT2TAGS) $(srcdir)/makedocs $(srcdir)/medit.t2t \
+		$(srcdir)/stamp-help $(stamp_help_deps)
 
 medit.lo: build-docs
 prefs.lo: build-docs
