@@ -33,11 +33,6 @@ AC_DEFUN_ONCE([MOO_AC_PRIV_FLAGS],[
   fi
 
   MOO_CFLAGS="$MOO_CFLAGS $MOO_PCRE_CFLAGS -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\""
-
-  if test "x$GLIB_2_16" = xyes; then
-    PKG_CHECK_MODULES(GIO,[gio-2.0],[:],[:])
-  fi
-
   MOO_LIBS="$MOO_LIBS $GTK_LIBS $GTHREAD_LIBS $GIO_LIBS $MOO_PCRE_LIBS -lm"
 
   if test "x$build_mooedit" != "xno"; then

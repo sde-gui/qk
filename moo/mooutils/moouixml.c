@@ -19,6 +19,7 @@
 #include "mooutils/moomenutoolbutton.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/moomenu.h"
 #include "mooutils/mootype-macros.h"
 #include <gtk/gtk.h>
 #include <string.h>
@@ -2004,7 +2005,7 @@ create_menu_shell (MooUIXML       *xml,
     }
     else
     {
-        toplevel->widget = gtk_menu_new ();
+        toplevel->widget = moo_menu_new ();
         gtk_menu_set_accel_group (GTK_MENU (toplevel->widget),
                                   toplevel->accel_group);
     }

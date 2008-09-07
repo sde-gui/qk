@@ -31,6 +31,10 @@
 #include <shellapi.h>
 #endif
 
+#ifdef MOO_USE_GIO
+#include <gio/gio.h>
+#endif
+
 #if 0 && MOO_DEBUG_ENABLED
 #define DEBUG_MESSAGE g_message
 #else
@@ -75,7 +79,7 @@ static MooFolder   *get_parent_folder       (MooFileSystem  *fs,
                                              MooFileFlags    flags);
 static gboolean     delete_file             (MooFileSystem  *fs,
                                              const char     *path,
-                                             gboolean        recursive,
+                                             MooDeleteFileFlags flags,
                                              GError        **error);
 
 static gboolean     move_file_unix          (MooFileSystem  *fs,
@@ -336,14 +340,14 @@ _moo_file_system_create_folder (MooFileSystem  *fs,
 
 
 gboolean
-_moo_file_system_delete_file (MooFileSystem  *fs,
-                              const char     *path,
-                              gboolean        recursive,
-                              GError        **error)
+_moo_file_system_delete_file (MooFileSystem       *fs,
+                              const char          *path,
+                              MooDeleteFileFlags   flags,
+                              GError             **error)
 {
     g_return_val_if_fail (MOO_IS_FILE_SYSTEM (fs), FALSE);
     g_return_val_if_fail (path != NULL, FALSE);
-    return MOO_FILE_SYSTEM_GET_CLASS(fs)->delete_file (fs, path, recursive, error);
+    return MOO_FILE_SYSTEM_GET_CLASS(fs)->delete_file (fs, path, flags, error);
 }
 
 
@@ -725,17 +729,35 @@ delete_file_win32 (const char     *path,
 
 static gboolean
 delete_file (G_GNUC_UNUSED MooFileSystem *fs,
-             const char     *path,
-             gboolean        recursive,
-             GError        **error)
+             const char          *path,
+             MooDeleteFileFlags   flags,
+             GError             **error)
 {
     gboolean isdir;
 
     g_return_val_if_fail (path != NULL, FALSE);
     g_return_val_if_fail (_moo_path_is_absolute (path), FALSE);
+    g_return_val_if_fail (!error || !*error, FALSE);
+
+    if (flags & MOO_DELETE_TO_TRASH)
+#if !defined(MOO_USE_GIO)
+    {
+        g_set_error (error, MOO_FILE_ERROR,
+                     MOO_FILE_ERROR_NOT_IMPLEMENTED,
+                     "Moving files to trash is not implemented");
+        return FALSE;
+    }
+#else
+    {
+        GFile *file = g_file_new_for_path (path);
+        gboolean retval = g_file_trash (file, NULL, error);
+        g_object_unref (file);
+        return retval;
+    }
+#endif
 
 #if defined(__WIN32__) && 0
-    return delete_file_win32 (path, recursive, error);
+    return delete_file_win32 (path, (flags & MOO_DELETE_RECURSIVE) != 0, error);
 #endif
 
     if (g_file_test (path, G_FILE_TEST_IS_SYMLINK))
@@ -744,7 +766,7 @@ delete_file (G_GNUC_UNUSED MooFileSystem *fs,
         isdir = g_file_test (path, G_FILE_TEST_IS_DIR);
 
     if (isdir)
-        return _moo_remove_dir (path, recursive, error);
+        return _moo_remove_dir (path, (flags & MOO_DELETE_RECURSIVE) != 0, error);
 
     if (_moo_remove (path))
     {

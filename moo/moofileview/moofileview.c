@@ -86,17 +86,17 @@ static GtkTargetEntry dest_targets[] = {
 };
 
 
-typedef struct _History History;
-typedef struct _Typeahead Typeahead;
-typedef struct _Clipboard Clipboard;
+typedef struct History History;
+typedef struct Typeahead Typeahead;
+typedef struct Clipboard Clipboard;
 
-struct _Clipboard {
+struct Clipboard {
     MooFolder *folder;
     GList *files;
     gboolean cut;
 };
 
-struct _MooFileViewPrivate {
+struct MooFileViewPrivate {
     GtkTreeModel    *model;
     GtkTreeModel    *filter_model;
     MooFolder       *current_dir;
@@ -299,6 +299,8 @@ static void     file_view_activate_filename (MooFileView *fileview,
 
 static void     file_added                  (MooFileView    *fileview);
 
+static void     file_view_delete_selected_cb(GtkAction      *action,
+                                             MooFileView    *fileview);
 static void     file_view_delete_selected   (MooFileView    *fileview);
 static void     file_view_create_folder     (MooFileView    *fileview);
 static void     file_view_properties_dialog (MooFileView    *fileview);
@@ -1165,14 +1167,13 @@ init_actions (MooFileView *fileview)
 
     action = moo_action_group_add_action (group, "Delete",
                                           "label", _("Delete..."),
-                                          "tooltip", _("Delete..."),
+                                          "tooltip", _("Delete selected files"),
                                           "stock-id", GTK_STOCK_DELETE,
                                           "default-accel", MOO_FILE_VIEW_ACCEL_DELETE,
                                           "force-accel-label", TRUE,
-                                          "closure-object", fileview,
-                                          "closure-callback", file_view_delete_selected,
                                           NULL);
     moo_bind_bool_property (action, "sensitive", fileview, "has-selection", FALSE);
+    g_signal_connect (action, "activate", G_CALLBACK (file_view_delete_selected_cb), fileview);
 
     action = moo_action_group_add_action (group, "ShowHiddenFiles",
                                           "action-type::", MOO_TYPE_TOGGLE_ACTION,
@@ -2028,7 +2029,7 @@ file_list_row_activated (MooFileView    *fileview,
 }
 
 
-struct _History {
+struct History {
     GSList *back;
     GSList *fwd;
     char *current;
@@ -3100,15 +3101,81 @@ file_view_get_selected_files (MooFileView *fileview)
 }
 
 
-static void
-file_view_delete_selected (MooFileView *fileview)
+static gboolean
+ask_delete_files (MooFileView *fileview,
+                  GList       *files,
+                  gboolean     trash)
 {
-    GError *error = NULL;
-    GList *files, *l;
     gboolean one;
-    char *message;
+    char *primary = NULL;
+    char *secondary = NULL;
     GtkWidget *dialog;
     int response;
+
+    one = (files->next == NULL);
+
+    if (trash)
+    {
+        if (one)
+        {
+            if (MOO_FILE_IS_DIR (files->data) && !MOO_FILE_IS_LINK (files->data))
+                primary = g_strdup_printf (_("Move folder %s to Trash?"),
+                                           _moo_file_display_name (files->data));
+            else
+                primary = g_strdup_printf (_("Move file %s to Trash?"),
+                                           _moo_file_display_name (files->data));
+        }
+        else
+        {
+            primary = g_strdup (_("Move selected files to Trash?"));
+        }
+    }
+    else
+    {
+        if (one)
+        {
+            if (MOO_FILE_IS_DIR (files->data) && !MOO_FILE_IS_LINK (files->data))
+                primary = g_strdup_printf (_("Delete folder %s and all its content?"),
+                                           _moo_file_display_name (files->data));
+            else
+                primary = g_strdup_printf (_("Delete file %s?"),
+                                           _moo_file_display_name (files->data));
+        }
+        else
+        {
+            primary = g_strdup (_("Delete selected files?"));
+        }
+    }
+
+    dialog = gtk_message_dialog_new (NULL,
+                                     GTK_DIALOG_MODAL,
+                                     GTK_MESSAGE_WARNING,
+                                     GTK_BUTTONS_NONE,
+                                     "%s", primary);
+
+    if (secondary)
+        gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
+                                                  "%s", secondary);
+
+    moo_window_set_parent (dialog, GTK_WIDGET (fileview));
+    gtk_dialog_add_buttons (GTK_DIALOG (dialog),
+                            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                            GTK_STOCK_DELETE, GTK_RESPONSE_OK, NULL);
+    gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
+
+    response = gtk_dialog_run (GTK_DIALOG (dialog));
+    gtk_widget_destroy (dialog);
+
+    g_free (secondary);
+    g_free (primary);
+    return response == GTK_RESPONSE_OK;
+}
+
+static void
+file_view_do_delete_selected (MooFileView *fileview,
+                              gboolean     trash)
+{
+    GList *files, *l;
 
     if (!fileview->priv->current_dir)
         return;
@@ -3118,78 +3185,104 @@ file_view_delete_selected (MooFileView *fileview)
     if (!files)
         return;
 
-    one = (files->next == NULL);
-
-    if (one)
-    {
-        if (MOO_FILE_IS_DIR (files->data) && !MOO_FILE_IS_LINK (files->data))
-            message = g_strdup_printf ("Delete folder %s and all its content?",
-                                       _moo_file_display_name (files->data));
-        else
-            message = g_strdup_printf ("Delete file %s?",
-                                       _moo_file_display_name (files->data));
-    }
-    else
-    {
-        message = g_strdup ("Delete selected files?");
-    }
-
-    dialog = gtk_message_dialog_new (NULL,
-                                     GTK_DIALOG_MODAL,
-                                     GTK_MESSAGE_WARNING,
-                                     GTK_BUTTONS_NONE,
-                                     "%s", message);
-    moo_window_set_parent (dialog, GTK_WIDGET (fileview));
-
-    gtk_dialog_add_buttons (GTK_DIALOG (dialog),
-                            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                            GTK_STOCK_DELETE, GTK_RESPONSE_OK, NULL);
-    gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
-
-    response = gtk_dialog_run (GTK_DIALOG (dialog));
-    gtk_widget_destroy (dialog);
-
-    if (response == GTK_RESPONSE_OK)
+    if (ask_delete_files (fileview, files, trash))
     {
         for (l = files; l != NULL; l = l->next)
         {
             char *path = g_build_filename (_moo_folder_get_path (fileview->priv->current_dir),
                                            _moo_file_name (l->data), NULL);
+            MooDeleteFileFlags flags = MOO_DELETE_RECURSIVE;
+            GError *error = NULL;
 
-            if (!_moo_file_system_delete_file (fileview->priv->file_system, path, TRUE, &error))
+            if (trash)
+                flags |= MOO_DELETE_TO_TRASH;
+
+            if (!_moo_file_system_delete_file (fileview->priv->file_system, path, flags, &error))
             {
-                dialog = gtk_message_dialog_new (NULL,
-                                                 GTK_DIALOG_MODAL,
-                                                 GTK_MESSAGE_ERROR,
-                                                 GTK_BUTTONS_NONE,
-                                                 "Could not delete %s '%s'",
-                                                 MOO_FILE_IS_DIR (l->data) ? "folder" : "file",
-                                                 path);
+                char *text;
+                char *path_utf8;
 
-                moo_window_set_parent (dialog, GTK_WIDGET (fileview));
+                path_utf8 = g_filename_display_name (path);
 
-                if (error)
-                {
-                    gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
-                                                              "%s", error->message);
-                    g_error_free (error);
-                    error = NULL;
-                }
+                if (MOO_FILE_IS_DIR (l->data))
+                    text = g_strdup_printf (_("Could not delete folder %s"),
+                                            path_utf8);
+                else
+                    text = g_strdup_printf (_("Could not delete file %s"),
+                                            path_utf8);
 
-                gtk_dialog_add_buttons (GTK_DIALOG (dialog),
-                                        GTK_STOCK_CLOSE, GTK_RESPONSE_CANCEL, NULL);
-                gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
-                gtk_dialog_run (GTK_DIALOG (dialog));
-                gtk_widget_destroy (dialog);
+                moo_error_dialog (GTK_WIDGET (fileview), text,
+                                  error ? error->message : NULL);
+
+                g_free (path_utf8);
+                g_free (text);
             }
 
             g_free (path);
+            if (error)
+                g_error_free (error);
         }
     }
 
     g_list_foreach (files, (GFunc) _moo_file_unref, NULL);
     g_list_free (files);
-    g_free (message);
+}
+
+static void
+file_view_delete_selected (MooFileView *fileview)
+{
+    gboolean trash = TRUE;
+    GdkModifierType mods = _moo_get_modifiers (GTK_WIDGET (fileview));
+    if (mods & GDK_SHIFT_MASK)
+        trash = FALSE;
+    file_view_do_delete_selected (fileview, trash);
+}
+
+static void
+file_view_delete_selected_cb (GtkAction   *action,
+                              MooFileView *fileview)
+{
+    gboolean trash = FALSE;
+    if (g_object_get_data (G_OBJECT (action), "moo-file-view-trash-selected"))
+        trash = TRUE;
+    file_view_do_delete_selected (fileview, trash);
+}
+
+static void
+update_delete_action (MooFileView *fileview,
+                      GtkWidget   *menu)
+{
+    gboolean trash = FALSE;
+    GtkAction *action;
+    GdkModifierType mods;
+
+    action = moo_action_collection_get_action (fileview->priv->actions, "Delete");
+    g_return_if_fail (action != NULL);
+
+    if (menu)
+        mods = _moo_get_modifiers (menu);
+    else
+        mods = _moo_get_modifiers (GTK_WIDGET (fileview));
+
+    if (!(mods & GDK_SHIFT_MASK))
+        trash = TRUE;
+
+    if (trash)
+        g_object_set (action,
+                      "label", _("Move to Trash..."),
+                      "tooltip", _("Move selected files to Trash"),
+                      "stock-id", GTK_STOCK_DELETE,
+                      NULL);
+    else
+        g_object_set (action,
+                      "label", _("Delete..."),
+                      "tooltip", _("Delete selected files"),
+                      "stock-id", GTK_STOCK_DELETE,
+                      NULL);
+
+    g_object_set_data (G_OBJECT (action),
+                       "moo-file-view-trash-selected",
+                       GINT_TO_POINTER (trash));
 }
 
 
@@ -3355,6 +3448,12 @@ do_popup (MooFileView    *fileview,
                                      fileview->priv->actions,
                                      NULL);
     MOO_OBJECT_REF_SINK (menu);
+#ifdef MOO_USE_GIO
+    g_signal_connect_swapped (menu, "alternate-toggled",
+                              G_CALLBACK (update_delete_action),
+                              fileview);
+    update_delete_action (fileview, NULL);
+#endif
 
     _moo_file_view_tools_check (fileview);
     g_signal_emit (fileview, signals[POPULATE_POPUP], 0, files, menu);
@@ -4506,7 +4605,7 @@ looks_like_path (const char *text)
 /* Typeahead
  */
 
-struct _Typeahead {
+struct Typeahead {
     MooFileView *fileview;
     GtkEntry *entry;
     GString *matched_prefix;

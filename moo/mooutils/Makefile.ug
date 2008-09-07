@@ -94,6 +94,8 @@ mooutils_sources =			\
 	mooi18n.h			\
 	moomarkup.c			\
 	moomarkup.h			\
+	moomenu.c			\
+	moomenu.h			\
 	moomenuaction.c			\
 	moomenuaction.h			\
 	moomenumgr.c			\

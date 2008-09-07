@@ -21,16 +21,16 @@
 #define MOO_FILE_VIEW_IMPL_H
 
 
-typedef struct _MooFileViewPrivate  MooFileViewPrivate;
+typedef struct MooFileViewPrivate MooFileViewPrivate;
 
-struct _MooFileView
+struct MooFileView
 {
     GtkVBox vbox;
     GtkWidget *toolbar;
     MooFileViewPrivate *priv;
 };
 
-struct _MooFileViewClass
+struct MooFileViewClass
 {
     GtkVBoxClass vbox_class;
 

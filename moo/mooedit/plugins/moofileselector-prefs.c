@@ -73,7 +73,7 @@ _moo_file_selector_prefs_page (MooPlugin *plugin)
 
     g_signal_connect_swapped (page, "apply", G_CALLBACK (prefs_page_apply), gxml);
     g_signal_connect_swapped (page, "init", G_CALLBACK (prefs_page_init), gxml);
-    moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_FILE_SELECTOR);
+    moo_help_set_id (page, HELP_SECTION_PREFS_FILE_SELECTOR);
 
     column = gtk_tree_view_column_new ();
     gtk_tree_view_append_column (gxml->treeview, column);

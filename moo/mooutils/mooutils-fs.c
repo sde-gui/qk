@@ -23,8 +23,10 @@
 #include "mooutils/mooutils-mem.h"
 #include "mooutils/mootype-macros.h"
 #include "mooutils/moocompat.h"
+#include "mooutils/mooi18n.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
@@ -113,7 +115,7 @@ rm_fr (const char *path,
                        NULL, NULL, NULL, &child_err, &status, &error_here))
     {
         g_set_error (error, MOO_FILE_ERROR, MOO_FILE_ERROR_FAILED,
-                     "Could not run 'rm' command: %s",
+                     _("Could not run 'rm' command: %s"),
                      error_here->message);
         g_error_free (error_here);
         g_strfreev (argv);
@@ -124,10 +126,14 @@ rm_fr (const char *path,
 
     if (!WIFEXITED (status) || WEXITSTATUS (status))
     {
+        if (child_err && strlen (child_err) > 5000)
+            strcpy (child_err + 4997, "...");
+
         g_set_error (error, MOO_FILE_ERROR,
                      MOO_FILE_ERROR_FAILED,
-                     "'rm' command failed: %s",
+                     _("'rm' command failed: %s"),
                      child_err ? child_err : "");
+
         g_free (child_err);
         return FALSE;
     }
@@ -175,7 +181,7 @@ rm_r (const char *path,
                 success = FALSE;
                 g_set_error (error, MOO_FILE_ERROR,
                              _moo_file_error_from_errno (err),
-                             "Could not remove '%s': %s", file_path,
+                             _("Could not remove %s: %s"), file_path,
                              g_strerror (err));
             }
         }
@@ -195,7 +201,7 @@ rm_r (const char *path,
             success = FALSE;
             g_set_error (error, MOO_FILE_ERROR,
                          _moo_file_error_from_errno (err),
-                         "Could not remove '%s': %s", path,
+                         _("Could not remove %s: %s"), path,
                          g_strerror (err));
         }
     }
@@ -222,7 +228,7 @@ _moo_remove_dir (const char *path,
             char *path_utf8 = g_filename_display_name (path);
             g_set_error (error, MOO_FILE_ERROR,
                          _moo_file_error_from_errno (err),
-                         "Could not remove '%s': %s",
+                         _("Could not remove %s: %s"),
                          path_utf8, g_strerror (err));
             g_free (path_utf8);
             return FALSE;
@@ -267,7 +273,7 @@ _moo_create_dir (const char *path,
         g_set_error (error,
                      MOO_FILE_ERROR,
                      _moo_file_error_from_errno (err_code),
-                     "Could not create directory '%s': %s",
+                     _("Could not create folder %s: %s"),
                      utf8_path, g_strerror (err_code));
 
         g_free (utf8_path);
@@ -286,7 +292,7 @@ _moo_create_dir (const char *path,
             g_set_error (error,
                          MOO_FILE_ERROR,
                          _moo_file_error_from_errno (err_code),
-                         "Could not create directory '%s': %s",
+                         _("Could not create folder %s: %s"),
                          utf8_path, g_strerror (err_code));
 
             g_free (utf8_path);
@@ -302,7 +308,7 @@ _moo_create_dir (const char *path,
     utf8_path = g_filename_display_name (path);
     g_set_error (error, MOO_FILE_ERROR,
                  MOO_FILE_ERROR_ALREADY_EXISTS,
-                 "Could not create directory '%s': %s",
+                 _("Could not create folder %s: %s"),
                  utf8_path, g_strerror (EEXIST));
     g_free (utf8_path);
 
@@ -331,7 +337,7 @@ _moo_rename_file (const char *path,
         g_set_error (error,
                      MOO_FILE_ERROR,
                      _moo_file_error_from_errno (err_code),
-                     "Could not rename file '%s' to '%s': %s",
+                     _("Could not rename file %s to %s: %s"),
                      utf8_path, utf8_new_path, g_strerror (err_code));
 
         g_free (utf8_path);
@@ -1486,7 +1492,7 @@ moo_file_reader_new_real (const char  *filename,
         int err = errno;
         g_set_error (error, MOO_FILE_ERROR,
                      _moo_file_error_from_errno (err),
-                     "Could not open '%s': %s", filename,
+                     _("Could not open %s: %s"), filename,
                      g_strerror (err));
         return NULL;
     }
@@ -1717,7 +1723,7 @@ moo_local_file_writer_new (const char  *filename,
         char *display_name = g_filename_display_name (dirname);
         g_set_error (error, G_FILE_ERROR,
                      g_file_error_from_errno (err),
-                     "could not create directory '%s': %s",
+                     _("Could not create folder %s: %s"),
                      display_name, g_strerror (err));
         g_free (display_name);
         goto out;
@@ -1733,7 +1739,7 @@ moo_local_file_writer_new (const char  *filename,
         char *display_name = g_filename_display_name (temp_filename);
         g_set_error (error, G_FILE_ERROR,
                      g_file_error_from_errno (err),
-                     "could not create temporary file '%s': %s",
+                     _("Could not create temporary file %s: %s"),
                      display_name, g_strerror (err));
         g_free (display_name);
         goto out;
@@ -1747,7 +1753,7 @@ moo_local_file_writer_new (const char  *filename,
         char *display_name = g_filename_display_name (temp_filename);
         g_set_error (error, G_FILE_ERROR,
                      g_file_error_from_errno (err),
-                     "could not create temporary file '%s': %s",
+                     _("Could not create temporary file %s: %s"),
                      display_name, g_strerror (err));
         g_free (display_name);
         g_unlink (temp_filename);

@@ -45,6 +45,11 @@ typedef struct _MooFileSystem         MooFileSystem;
 typedef struct _MooFileSystemPrivate  MooFileSystemPrivate;
 typedef struct _MooFileSystemClass    MooFileSystemClass;
 
+typedef enum {
+    MOO_DELETE_RECURSIVE = 1 << 0,
+    MOO_DELETE_TO_TRASH  = 1 << 1
+} MooDeleteFileFlags;
+
 struct _MooFileSystem
 {
     GObject         parent;
@@ -78,7 +83,7 @@ struct _MooFileSystemClass
                                      GError        **error);
     gboolean    (*delete_file)      (MooFileSystem  *fs,
                                      const char     *path,
-                                     gboolean        recursive,
+                                     MooDeleteFileFlags flags,
                                      GError        **error);
     gboolean    (*move_file)        (MooFileSystem  *fs,
                                      const char     *old_path,
@@ -115,7 +120,7 @@ gboolean     _moo_file_system_create_folder     (MooFileSystem  *fs,
                                                  GError        **error);
 gboolean     _moo_file_system_delete_file       (MooFileSystem  *fs,
                                                  const char     *path,
-                                                 gboolean        recursive,
+                                                 MooDeleteFileFlags flags,
                                                  GError        **error);
 gboolean     _moo_file_system_move_file         (MooFileSystem  *fs,
                                                  const char     *old_path,

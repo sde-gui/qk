@@ -31,6 +31,7 @@
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/moo-mime.h"
+#include "mooutils/moomenu.h"
 #include "plugins/moofileselector-gxml.h"
 #include "mooutils/moohelp.h"
 #include "help-sections.h"
@@ -1059,28 +1060,15 @@ create_menu_item (MooFileSelector *filesel,
     return item;
 }
 
-static gboolean
-menu_key_event (GtkWidget   *menu,
-                GdkEventKey *event)
+static void
+alternate_toggled (GtkWidget *menu)
 {
     GdkModifierType mask;
     gboolean alternate;
     GSList *items, *l;
 
-    switch (event->keyval)
-    {
-        case GDK_Shift_L:
-        case GDK_Shift_R:
-        case GDK_Control_L:
-        case GDK_Control_R:
-            break;
-
-        default:
-            return FALSE;
-    }
-
     mask = _moo_get_modifiers (menu);
-    alternate = (mask & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) != 0;
+    alternate = (mask & GDK_SHIFT_MASK) != 0;
 
     items = g_object_get_data (G_OBJECT (menu), "moo-menu-items");
 
@@ -1098,8 +1086,6 @@ menu_key_event (GtkWidget   *menu,
                            GINT_TO_POINTER (alternate));
         _moo_menu_item_set_label (item, label, FALSE);
     }
-
-    return FALSE;
 }
 
 static GtkWidget *
@@ -1110,10 +1096,8 @@ create_drop_doc_menu (MooFileSelector *filesel,
     GtkWidget *menu, *item;
     GSList *items = NULL;
 
-    menu = gtk_menu_new ();
-
-    g_signal_connect (menu, "key-press-event", G_CALLBACK (menu_key_event), NULL);
-    g_signal_connect (menu, "key-release-event", G_CALLBACK (menu_key_event), NULL);
+    menu = moo_menu_new ();
+    g_signal_connect (menu, "alternate-toggled", G_CALLBACK (alternate_toggled), NULL);
 
     item = create_menu_item (filesel, doc, destdir,
                              MOO_STOCK_FILE_MOVE,
