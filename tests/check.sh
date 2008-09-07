@@ -1,42 +1,51 @@
 #! /bin/sh
 
-tipurl=http://mooedit.sourceforge.net/hg/hg.cgi/moo/archive/tip.tar.bz2
+moo_repo=/home/muntyan/projects/moo
 
 tmpdir=
 
 go_to_tmp() {
   if [ -z "$tmpdir" ]; then
-    tmpdir="`mktemp`"
+    tmpdir="`mktemp -t medit-test-tmp.XXXXXXXX`"
+    echo "rm -f $tmpdir"
     rm -f "$tmpdir" || exit 1
     echo "mkdir $tmpdir"
     mkdir "$tmpdir" || exit 1
+    echo "cd $tmpdir"
     cd "$tmpdir"
   fi
 }
 
 check_hg() {
   go_to_tmp
-  wget $tipurl || exit 1
-  tar xjf tip.tar.bz2 || exit 1
-  cd moo-* || exit 1
+
+  echo hg clone $moo_repo moo
+  hg clone $moo_repo moo || exit 1
+  echo cd moo
+  cd moo || exit 1
 
   ./autogen.sh || { echo "autogen.sh failed in $tmpdir"; exit 1; }
   ./configure || { echo "configure failed in $tmpdir"; exit 1; }
   make || { echo "make failed in $tmpdir"; exit 1; }
   make distcheck || { echo "make distcheck failed in $tmpdir"; exit 1; }
 
-  cd ..
+  cd ../..
   rm -r $tmpdir
   tmpdir=
 }
 
 usage() {
-  echo "Usage: $0 check_hg"
+  echo "Usage: $0 hg"
 }
+
+if [ -z "$1" ]; then
+  usage
+  exit 1
+fi
 
 for arg; do
   case "$arg" in
-    check_hg)
+    hg)
       check_hg || exit 1
       ;;
     --help)
