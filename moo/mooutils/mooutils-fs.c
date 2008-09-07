@@ -51,6 +51,7 @@
 
 #define BROKEN_NAME "<" "????" ">"
 
+MOO_DEFINE_QUARK (moo-file-error-quark, _moo_file_error_quark)
 
 /* XXX fix this */
 gboolean
@@ -339,18 +340,6 @@ _moo_rename_file (const char *path,
     }
 
     return TRUE;
-}
-
-
-GQuark
-_moo_file_error_quark (void)
-{
-    static GQuark quark = 0;
-
-    if (quark == 0)
-        quark = g_quark_from_static_string ("moo-file-error-quark");
-
-    return quark;
 }
 
 

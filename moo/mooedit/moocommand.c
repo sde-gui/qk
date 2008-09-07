@@ -25,6 +25,7 @@
 #include "mooedit/mooedit-enums.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mootype-macros.h"
 #include "mooedit/moocommand-exe.h"
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
@@ -39,6 +40,7 @@
 G_DEFINE_TYPE (MooCommand, moo_command, G_TYPE_OBJECT)
 G_DEFINE_TYPE (MooCommandFactory, moo_command_factory, G_TYPE_OBJECT)
 G_DEFINE_TYPE (MooCommandContext, moo_command_context, G_TYPE_OBJECT)
+MOO_DEFINE_BOXED_TYPE_R (MooCommandData, moo_command_data)
 
 enum {
     CTX_PROP_0,
@@ -1336,20 +1338,6 @@ moo_command_data_get_code (MooCommandData *data)
 {
     g_return_val_if_fail (data != NULL, NULL);
     return data->code;
-}
-
-
-GType
-moo_command_data_get_type (void)
-{
-    static GType type;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooCommandData",
-                                             (GBoxedCopyFunc) moo_command_data_ref,
-                                             (GBoxedFreeFunc) moo_command_data_unref);
-
-    return type;
 }
 
 

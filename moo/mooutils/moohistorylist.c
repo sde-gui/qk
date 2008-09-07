@@ -16,6 +16,7 @@
 #include "marshals.h"
 #include "mooutils/moohistorylist.h"
 #include "mooutils/mooprefs.h"
+#include "mooutils/mootype-macros.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -45,6 +46,8 @@ struct _MooHistoryListPrivate {
     gpointer compare_data;
     gboolean allow_empty;
 };
+
+MOO_DEFINE_BOXED_TYPE_C (MooHistoryItem, moo_history_item)
 
 static GHashTable *named_lists;
 
@@ -727,20 +730,6 @@ moo_history_list_get (const char *user_id)
     }
 
     return list;
-}
-
-
-GType
-moo_history_item_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooHistoryItem",
-                                             (GBoxedCopyFunc) moo_history_item_copy,
-                                             (GBoxedFreeFunc) moo_history_item_free);
-
-    return type;
 }
 
 

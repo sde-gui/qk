@@ -80,4 +80,72 @@ type_name##_get_type (void)                                                     
     MOO_DEFINE_TYPE_STATIC_WITH_CODE (TypeName, type_name, TYPE_PARENT, {})
 
 
+#define MOO_DEFINE_BOXED_TYPE__(TypeName,type_name,copy_func,free_func)                     \
+{                                                                                           \
+    static GType g_define_type_id;                                                          \
+                                                                                            \
+    if (G_UNLIKELY (!g_define_type_id))                                                     \
+        g_define_type_id =                                                                  \
+            g_boxed_type_register_static (#TypeName,                                        \
+                                          (GBoxedCopyFunc) copy_func,                       \
+                                          (GBoxedFreeFunc) free_func);                      \
+                                                                                            \
+    return g_define_type_id;                                                                \
+}
+
+#define MOO_DEFINE_BOXED_TYPE(TypeName,type_name,copy_func,free_func)                       \
+GType type_name##_get_type (void)                                                           \
+    MOO_DEFINE_BOXED_TYPE__(TypeName,type_name,copy_func,free_func)
+
+#define MOO_DEFINE_BOXED_TYPE_C(TypeName,type_name) \
+    MOO_DEFINE_BOXED_TYPE(TypeName,type_name,type_name##_copy,type_name##_free)
+
+#define MOO_DEFINE_BOXED_TYPE_R(TypeName,type_name) \
+    MOO_DEFINE_BOXED_TYPE(TypeName,type_name,type_name##_ref,type_name##_unref)
+
+#define MOO_DEFINE_BOXED_TYPE_STATIC(TypeName,type_name,copy_func,free_func)                \
+static GType type_name##_get_type (void) G_GNUC_CONST;                                      \
+static GType type_name##_get_type (void)                                                    \
+    MOO_DEFINE_BOXED_TYPE__(TypeName,type_name,copy_func,free_func)
+
+#define MOO_DEFINE_BOXED_TYPE_STATIC_C(TypeName,type_name) \
+    MOO_DEFINE_BOXED_TYPE_STATIC(TypeName,type_name,type_name##_copy,type_name##_free)
+
+#define MOO_DEFINE_BOXED_TYPE_STATIC_R(TypeName,type_name) \
+    MOO_DEFINE_BOXED_TYPE_STATIC(TypeName,type_name,type_name##_ref,type_name##_unref)
+
+
+#define MOO_DEFINE_POINTER_TYPE(TypeName,type_name)                                         \
+GType type_name##_get_type (void)                                                           \
+{                                                                                           \
+    static GType g_define_type_id;                                                          \
+                                                                                            \
+    if (G_UNLIKELY (!g_define_type_id))                                                     \
+        g_define_type_id =                                                                  \
+            g_pointer_type_register_static (#TypeName);                                     \
+                                                                                            \
+    return g_define_type_id;                                                                \
+}
+
+
+#define MOO_DEFINE_QUARK__(QuarkName)                                                       \
+{                                                                                           \
+    static GQuark q;                                                                        \
+                                                                                            \
+    if (G_UNLIKELY (!q))                                                                    \
+        q = g_quark_from_static_string (#QuarkName);                                        \
+                                                                                            \
+    return q;                                                                               \
+}
+
+#define MOO_DEFINE_QUARK(QuarkName,quark_func)                                              \
+GQuark quark_func (void)                                                                    \
+    MOO_DEFINE_QUARK__(QuarkName)
+
+#define MOO_DEFINE_QUARK_STATIC(QuarkName,quark_func)                                       \
+static GQuark quark_func (void) G_GNUC_CONST;                                               \
+static GQuark quark_func (void)                                                             \
+    MOO_DEFINE_QUARK__(QuarkName)
+
+
 #endif /* MOO_TYPE_MACROS_H */

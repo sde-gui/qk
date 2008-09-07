@@ -28,8 +28,6 @@ G_BEGIN_DECLS
 
 
 #define MOO_TYPE_FILE               (_moo_file_get_type ())
-#define MOO_TYPE_FILE_INFO          (_moo_file_info_get_type ())
-#define MOO_TYPE_FILE_FLAGS         (_moo_file_flags_get_type ())
 
 #ifdef __WIN32__
 /* FILETIME */
@@ -60,8 +58,6 @@ struct _MooFile
 
 
 GType        _moo_file_get_type         (void) G_GNUC_CONST;
-GType        _moo_file_flags_get_type   (void) G_GNUC_CONST;
-GType        _moo_file_info_get_type    (void) G_GNUC_CONST;
 
 MooFile     *_moo_file_new              (const char     *dirname,
                                          const char     *basename);

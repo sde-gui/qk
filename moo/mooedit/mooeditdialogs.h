@@ -16,8 +16,8 @@
 #ifndef MOO_EDIT_DIALOGS_H
 #define MOO_EDIT_DIALOGS_H
 
-#include "mooedit/mooedit.h"
 #include "mooutils/moodialogs.h"
+#include "mooedit/mooedit.h"
 
 G_BEGIN_DECLS
 

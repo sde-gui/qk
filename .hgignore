@@ -3,6 +3,7 @@ syntax: glob
 build/
 autom4te.cache/
 
+*-old
 *.orig
 *.rej
 *.bak

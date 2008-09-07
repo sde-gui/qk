@@ -55,20 +55,18 @@ typedef enum
 #define MOO_EDIT_IS_CLEAN(edit)     (moo_edit_get_status (edit) & MOO_EDIT_CLEAN)
 #define MOO_EDIT_IS_BUSY(edit)      (moo_edit_get_state (edit) != MOO_EDIT_STATE_NORMAL)
 
-typedef struct _MooEditFileInfo MooEditFileInfo;
-typedef struct _MooEdit         MooEdit;
-typedef struct _MooEditPrivate  MooEditPrivate;
-typedef struct _MooEditClass    MooEditClass;
+typedef struct MooEdit         MooEdit;
+typedef struct MooEditPrivate  MooEditPrivate;
+typedef struct MooEditClass    MooEditClass;
 
-
-struct _MooEdit
+struct MooEdit
 {
     MooTextView parent;
     MooEditConfig *config;
     MooEditPrivate *priv;
 };
 
-struct _MooEditClass
+struct MooEditClass
 {
     MooTextViewClass parent_class;
 
@@ -111,11 +109,6 @@ MooEditStatus    moo_edit_get_status            (MooEdit        *edit);
 void             moo_edit_status_changed        (MooEdit        *edit);
 MooEditState     moo_edit_get_state             (MooEdit        *edit);
 
-MooEditFileInfo *moo_edit_file_info_new         (const char     *filename,
-                                                 const char     *encoding);
-MooEditFileInfo *moo_edit_file_info_copy        (const MooEditFileInfo *info);
-void             moo_edit_file_info_free        (MooEditFileInfo       *info);
-
 gboolean         moo_edit_close                 (MooEdit        *edit,
                                                  gboolean        ask_confirm);
 gboolean         moo_edit_save                  (MooEdit        *edit,
@@ -131,6 +124,12 @@ gboolean         moo_edit_save_copy             (MooEdit        *edit,
 
 void             moo_edit_comment               (MooEdit        *edit);
 void             moo_edit_uncomment             (MooEdit        *edit);
+
+typedef struct MooEditFileInfo MooEditFileInfo;
+MooEditFileInfo *moo_edit_file_info_new         (const char         *filename,
+                                                 const char         *encoding);
+MooEditFileInfo *moo_edit_file_info_copy        (MooEditFileInfo    *info);
+void             moo_edit_file_info_free        (MooEditFileInfo    *info);
 
 
 G_END_DECLS

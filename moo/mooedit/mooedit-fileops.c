@@ -1,5 +1,5 @@
 /*
- *   mooeditfileops.c
+ *   mooedit-fileops.c
  *
  *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>
  *
@@ -20,7 +20,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditor-private.h"
-#include "mooedit/mooeditfileops.h"
+#include "mooedit/mooedit-fileops.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/mooeditprefs.h"
@@ -28,6 +28,7 @@
 #include "mooutils/moofilewatch.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/mootype-macros.h"
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -48,6 +49,8 @@
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif
+
+MOO_DEFINE_QUARK (MooEditFileErrorQuark, _moo_edit_file_error_quark)
 
 static GSList *UNTITLED = NULL;
 static GHashTable *UNTITLED_NO = NULL;
@@ -80,18 +83,6 @@ static gboolean moo_edit_save_copy_local    (MooEdit        *edit,
                                              GError        **error);
 static char    *_moo_edit_filename_to_utf8  (const char     *filename);
 static void     _moo_edit_start_file_watch  (MooEdit        *edit);
-
-
-GQuark
-_moo_edit_file_error_quark (void)
-{
-    static GQuark q;
-
-    if (!q)
-        q = g_quark_from_static_string ("MooEditFileErrorQuark");
-
-    return q;
-}
 
 
 static const char *

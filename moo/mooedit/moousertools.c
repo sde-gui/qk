@@ -71,16 +71,6 @@ typedef struct {
 
 typedef MooEditActionClass MooToolActionClass;
 
-MOO_DEFINE_TYPE_STATIC (MooToolAction, _moo_tool_action, MOO_TYPE_EDIT_ACTION)
-#define MOO_TYPE_TOOL_ACTION    (_moo_tool_action_get_type())
-#define MOO_IS_TOOL_ACTION(obj) (G_TYPE_CHECK_INSTANCE_TYPE (obj, MOO_TYPE_TOOL_ACTION))
-#define MOO_TOOL_ACTION(obj)    (G_TYPE_CHECK_INSTANCE_CAST (obj, MOO_TYPE_TOOL_ACTION, MooToolAction))
-
-
-static const char *FILENAMES[N_TOOLS] = {"menu.cfg", "context.cfg"};
-static ToolStore *tools_stores[N_TOOLS];
-
-
 static MooCommandContext   *create_command_context  (gpointer        window,
                                                      gpointer        doc);
 static MooUserToolInfo     *_moo_user_tool_info_ref (MooUserToolInfo *info);
@@ -88,6 +78,14 @@ static void                 add_info                (MooUserToolInfo *info,
                                                      GSList        **list,
                                                      GHashTable     *ids);
 
+MOO_DEFINE_BOXED_TYPE_R (MooUserToolInfo, _moo_user_tool_info)
+MOO_DEFINE_TYPE_STATIC (MooToolAction, _moo_tool_action, MOO_TYPE_EDIT_ACTION)
+#define MOO_TYPE_TOOL_ACTION    (_moo_tool_action_get_type())
+#define MOO_IS_TOOL_ACTION(obj) (G_TYPE_CHECK_INSTANCE_TYPE (obj, MOO_TYPE_TOOL_ACTION))
+#define MOO_TOOL_ACTION(obj)    (G_TYPE_CHECK_INSTANCE_CAST (obj, MOO_TYPE_TOOL_ACTION, MooToolAction))
+
+static const char *FILENAMES[N_TOOLS] = {"menu.cfg", "context.cfg"};
+static ToolStore *tools_stores[N_TOOLS];
 
 static void
 unload_user_tools (int type)
@@ -1133,20 +1131,6 @@ _moo_user_tool_info_unref (MooUserToolInfo *info)
         moo_command_data_unref (info->cmd_data);
 
     g_free (info);
-}
-
-
-GType
-_moo_user_tool_info_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooUserToolInfo",
-                                             (GBoxedCopyFunc) _moo_user_tool_info_ref,
-                                             (GBoxedFreeFunc) _moo_user_tool_info_unref);
-
-    return type;
 }
 
 

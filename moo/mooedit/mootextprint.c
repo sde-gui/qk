@@ -24,6 +24,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
+#include "mooutils/mootype-macros.h"
 #include "glade/mooprint-gxml.h"
 #include <sys/types.h>
 #include <time.h>
@@ -263,7 +264,7 @@ moo_print_settings_new_default (void)
 
 
 static MooPrintSettings *
-moo_print_settings_copy (MooPrintSettings *settings)
+_moo_print_settings_copy (MooPrintSettings *settings)
 {
     MooPrintSettings *copy;
 
@@ -279,9 +280,8 @@ moo_print_settings_copy (MooPrintSettings *settings)
     return copy;
 }
 
-
 static void
-moo_print_settings_free (MooPrintSettings *settings)
+_moo_print_settings_free (MooPrintSettings *settings)
 {
     if (settings)
     {
@@ -293,19 +293,7 @@ moo_print_settings_free (MooPrintSettings *settings)
     }
 }
 
-
-GType
-_moo_print_settings_get_type (void)
-{
-    static GType t = 0;
-
-    if (G_UNLIKELY (!t))
-        t = g_boxed_type_register_static ("MooPrintSettings",
-                                          (GBoxedCopyFunc) moo_print_settings_copy,
-                                          (GBoxedFreeFunc) moo_print_settings_free);
-
-    return t;
-}
+MOO_DEFINE_BOXED_TYPE_C (MooPrintSettings, _moo_print_settings)
 
 
 static void
@@ -316,10 +304,10 @@ moo_print_operation_set_settings (MooPrintOperation *op,
 
     if (op->priv->settings != settings)
     {
-        moo_print_settings_free (op->priv->settings);
+        _moo_print_settings_free (op->priv->settings);
 
         if (settings)
-            op->priv->settings = moo_print_settings_copy (settings);
+            op->priv->settings = _moo_print_settings_copy (settings);
         else
             op->priv->settings = moo_print_settings_new_default ();
 
@@ -341,7 +329,7 @@ moo_print_operation_finalize (GObject *object)
     if (op->priv->buffer)
         g_object_unref (op->priv->buffer);
 
-    moo_print_settings_free (op->priv->settings);
+    _moo_print_settings_free (op->priv->settings);
     g_free (op->priv->filename);
     g_free (op->priv->basename);
     g_free (op->priv->tm);
@@ -1630,7 +1618,7 @@ moo_print_operation_load_prefs (MooPrintOperation *op)
 {
     MooPrintSettings *settings = get_settings_from_prefs ();
     moo_print_operation_set_settings (op, settings);
-    moo_print_settings_free (settings);
+    _moo_print_settings_free (settings);
 }
 
 

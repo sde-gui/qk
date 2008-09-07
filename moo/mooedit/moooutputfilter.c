@@ -18,6 +18,7 @@
 #include "marshals.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mootype-macros.h"
 #include <string.h>
 
 
@@ -290,7 +291,6 @@ moo_file_line_data_new (const char *file,
     return data;
 }
 
-
 static MooFileLineData *
 moo_file_line_data_copy (MooFileLineData *data)
 {
@@ -305,7 +305,6 @@ moo_file_line_data_copy (MooFileLineData *data)
     return copy;
 }
 
-
 void
 moo_file_line_data_free (MooFileLineData *data)
 {
@@ -316,19 +315,7 @@ moo_file_line_data_free (MooFileLineData *data)
     }
 }
 
-
-GType
-moo_file_line_data_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooFileLineData",
-                                             (GBoxedCopyFunc) moo_file_line_data_copy,
-                                             (GBoxedFreeFunc) moo_file_line_data_free);
-
-    return type;
-}
+MOO_DEFINE_BOXED_TYPE_C (MooFileLineData, moo_file_line_data)
 
 
 const char *

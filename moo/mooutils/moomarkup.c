@@ -17,37 +17,18 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mootype-macros.h"
 #include <string.h>
 #include <glib.h>
 
-
-GType
-moo_markup_doc_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooMarkupDoc",
-                                             (GBoxedCopyFunc) moo_markup_doc_ref,
-                                             (GBoxedFreeFunc) moo_markup_doc_unref);
-
-    return type;
-}
-
-GQuark
-moo_parse_error_quark (void)
-{
-    static GQuark q;
-    if (G_UNLIKELY (!q))
-        q = g_quark_from_static_string ("moo-parse-error");
-    return q;
-}
 
 typedef struct {
     MooMarkupDoc   *doc;
     MooMarkupNode  *current;
 } ParserState;
 
+MOO_DEFINE_BOXED_TYPE_R (MooMarkupDoc, moo_markup_doc)
+MOO_DEFINE_QUARK (moo-parse-error, moo_parse_error_quark)
 
 static MooMarkupDoc     *moo_markup_doc_new_priv    (const char         *name);
 static void              moo_markup_doc_set_name    (MooMarkupDoc       *doc,

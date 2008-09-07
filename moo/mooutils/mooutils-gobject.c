@@ -15,6 +15,7 @@
 
 #include "mooutils/mooutils-gobject-private.h"
 #include "mooutils/mooclosure.h"
+#include "mooutils/mootype-macros.h"
 #include <gobject/gvaluecollector.h>
 #include <string.h>
 #include <errno.h>
@@ -1993,7 +1994,6 @@ _moo_ptr_ref (MooPtr *ptr)
     return ptr;
 }
 
-
 static void
 _moo_ptr_unref (MooPtr *ptr)
 {
@@ -2005,6 +2005,7 @@ _moo_ptr_unref (MooPtr *ptr)
     }
 }
 
+MOO_DEFINE_BOXED_TYPE_R (MooPtr, _moo_ptr)
 
 static MooPtr *
 _moo_ptr_new (gpointer        data,
@@ -2021,20 +2022,6 @@ _moo_ptr_new (gpointer        data,
     ptr->ref_count = 1;
 
     return ptr;
-}
-
-
-GType
-_moo_ptr_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooPtr",
-                                             (GBoxedCopyFunc) _moo_ptr_ref,
-                                             (GBoxedFreeFunc) _moo_ptr_unref);
-
-    return type;
 }
 
 
@@ -2057,19 +2044,7 @@ _moo_data_unref (MooData *data)
     }
 }
 
-
-GType
-_moo_data_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooData",
-                                             (GBoxedCopyFunc) _moo_data_ref,
-                                             (GBoxedFreeFunc) _moo_data_unref);
-
-    return type;
-}
+MOO_DEFINE_BOXED_TYPE_R (MooData, _moo_data)
 
 
 static void

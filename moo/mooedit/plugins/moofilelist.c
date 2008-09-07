@@ -162,6 +162,7 @@ static gboolean drag_dest_row_drop_possible     (GtkTreeDragDest    *drag_dest,
                                                  GtkTreePath        *dest_path,
                                                  GtkSelectionData   *selection_data);
 
+MOO_DEFINE_BOXED_TYPE_STATIC_R (MooFileListItem, item)
 MOO_DEFINE_TYPE_STATIC_WITH_CODE (FileList, file_list, GTK_TYPE_TREE_STORE,
                                   G_IMPLEMENT_INTERFACE (GTK_TYPE_TREE_DRAG_SOURCE,
                                                          file_list_drag_source_iface_init)
@@ -434,19 +435,6 @@ item_unref (Item *item)
                 break;
         }
     }
-}
-
-static GType
-item_get_type (void)
-{
-    static GType type;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooFileListItem",
-                                             (GBoxedCopyFunc) item_ref,
-                                             (GBoxedFreeFunc) item_unref);
-
-    return type;
 }
 
 

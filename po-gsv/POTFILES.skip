@@ -14,7 +14,7 @@ moo/mooedit/moocommand-exe.c
 moo/mooedit/moocommand-lua.c
 moo/mooedit/mooeditaction-factory.c
 moo/mooedit/mooeditdialogs.c
-moo/mooedit/mooeditfileops.c
+moo/mooedit/mooedit-fileops.c
 moo/mooedit/mooeditor.c
 moo/mooedit/mooeditprefspage.c
 moo/mooedit/mooeditwindow.c

@@ -16,6 +16,7 @@
 #include "mooedit/mookeyfile.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mootype-macros.h"
 #include <string.h>
 
 
@@ -46,6 +47,12 @@ typedef struct {
 } Parser;
 
 #define CHAR_IS_SPACE(c__) ((c__) == ' ' || (c__) == '\t')
+
+#define MOO_KEY_FILE_ERROR (moo_key_file_error_quark ())
+MOO_DEFINE_QUARK_STATIC (moo-key-file-error, moo_key_file_error_quark)
+
+MOO_DEFINE_BOXED_TYPE_R (MooKeyFile, moo_key_file)
+MOO_DEFINE_POINTER_TYPE (MooKeyFileItem, moo_key_file_item)
 
 static gboolean          moo_key_file_parse_file    (MooKeyFile         *key_file,
                                                      const char         *filename,
@@ -84,9 +91,6 @@ static guint             get_indent                 (const char         *line,
 static gboolean          line_is_blank              (const char         *line,
                                                      gsize               line_len,
                                                      guint              *indent);
-
-#define MOO_KEY_FILE_ERROR            (moo_key_file_error_quark ())
-static GQuark            moo_key_file_error_quark   (void) G_GNUC_CONST;
 
 
 static void
@@ -787,39 +791,6 @@ moo_key_file_item_set_content (MooKeyFileItem *item,
 {
     g_return_if_fail (item != NULL);
     key_file_item_take_content (item, g_strdup (content));
-}
-
-
-GType
-moo_key_file_get_type (void)
-{
-    static GType type;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooKeyFile",
-                                             (GBoxedCopyFunc) moo_key_file_ref,
-                                             (GBoxedFreeFunc) moo_key_file_unref);
-
-    return type;
-}
-
-
-GType
-moo_key_file_item_get_type (void)
-{
-    static GType type;
-
-    if (G_UNLIKELY (!type))
-        type = g_pointer_type_register_static ("MooKeyFileItem");
-
-    return type;
-}
-
-
-static GQuark
-moo_key_file_error_quark (void)
-{
-    return g_quark_from_static_string ("moo-key-file-error");
 }
 
 

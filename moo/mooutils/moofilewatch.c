@@ -44,6 +44,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-mem.h"
 #include "mooutils/moofilewatch.h"
+#include "mooutils/mootype-macros.h"
 #include "marshals.h"
 #include "mooutils/mooutils-thread.h"
 
@@ -102,9 +103,6 @@ struct _MooFileWatch {
     guint alive : 1;
 };
 
-
-#define MOO_FILE_WATCH_ERROR (moo_file_watch_error_quark ())
-
 typedef enum
 {
     MOO_FILE_WATCH_ERROR_CLOSED,
@@ -118,8 +116,10 @@ typedef enum
     MOO_FILE_WATCH_ERROR_ACCESS_DENIED
 } MooFileWatchError;
 
-static GQuark moo_file_watch_error_quark (void);
+MOO_DEFINE_BOXED_TYPE_R (MooFileWatch, moo_file_watch)
 
+#define MOO_FILE_WATCH_ERROR (moo_file_watch_error_quark ())
+MOO_DEFINE_QUARK_STATIC (moo-file-watch-error, moo_file_watch_error_quark)
 
 #ifdef MOO_USE_FAM
 static gboolean watch_fam_start             (MooFileWatch   *watch,
@@ -265,30 +265,6 @@ moo_file_watch_new (GError **error)
 }
 
 
-GType
-moo_file_watch_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooFileWatch",
-                                             (GBoxedCopyFunc) moo_file_watch_ref,
-                                             (GBoxedFreeFunc) moo_file_watch_unref);
-
-    return type;
-}
-
-
-static GQuark
-moo_file_watch_error_quark (void)
-{
-    static GQuark quark = 0;
-    if (G_UNLIKELY (!quark))
-        quark = g_quark_from_static_string ("moo-file-watch-error");
-    return quark;
-}
-
-
 static MooFileEvent *
 moo_file_event_new (const char      *filename,
                     guint            monitor_id,
@@ -332,18 +308,7 @@ moo_file_event_free (MooFileEvent *event)
     }
 }
 
-GType
-moo_file_event_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooFileEvent",
-                                             (GBoxedCopyFunc) moo_file_event_copy,
-                                             (GBoxedFreeFunc) moo_file_event_free);
-
-    return type;
-}
+MOO_DEFINE_BOXED_TYPE_C (MooFileEvent, moo_file_event)
 
 
 gboolean

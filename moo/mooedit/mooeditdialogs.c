@@ -17,7 +17,7 @@
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditprefs.h"
-#include "mooedit/mooeditfileops.h"
+#include "mooedit/mooedit-fileops.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moostock.h"

@@ -17,6 +17,7 @@
 #include "mooedit/mooedit-lua.h"
 #include "mooedit/mooeditor.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mootype-macros.h"
 #include <string.h>
 #include <glib/gprintf.h>
 #include <gtk/gtk.h>
@@ -26,18 +27,11 @@
 /* GObject
  */
 
+MOO_DEFINE_QUARK_STATIC (moo-lua-type, lua_type_quark)
+
 #ifdef MOO_ENABLE_UNIT_TESTS
 static int object_count;
 #endif
-
-static GQuark
-lua_type_quark (void)
-{
-    static GQuark q;
-    if (G_UNLIKELY (!q))
-        q = g_quark_from_static_string ("moo-lua-type");
-    return q;
-}
 
 static GObject **
 check_gobject (lua_State *L)

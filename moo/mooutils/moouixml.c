@@ -19,6 +19,7 @@
 #include "mooutils/moomenutoolbutton.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/mootype-macros.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -80,6 +81,8 @@ typedef enum {
 
 #define TOPLEVEL_QUARK (toplevel_quark ())
 #define NODE_QUARK (node_quark ())
+MOO_DEFINE_QUARK_STATIC (moo-ui-xml-toplevel, toplevel_quark)
+MOO_DEFINE_QUARK_STATIC (moo-ui-xml-node, node_quark)
 
 #define SLIST_FOREACH(list,var)                     \
 G_STMT_START {                                      \
@@ -140,9 +143,6 @@ static Toplevel *toplevel_new           (Node           *node,
 static void     toplevel_free           (Toplevel       *toplevel);
 static GtkWidget *toplevel_get_widget   (Toplevel       *toplevel,
                                          Node           *node);
-
-static GQuark   toplevel_quark          (void);
-static GQuark   node_quark              (void);
 
 static void     xml_add_item_widget     (MooUIXML       *xml,
                                          GtkWidget      *widget);
@@ -1454,23 +1454,6 @@ toplevel_free (Toplevel *toplevel)
         g_hash_table_destroy (toplevel->children);
         g_free (toplevel);
     }
-}
-
-
-static GQuark toplevel_quark (void)
-{
-    static GQuark q = 0;
-    if (!q)
-        q = g_quark_from_static_string ("moo-ui-xml-toplevel");
-    return q;
-}
-
-static GQuark node_quark (void)
-{
-    static GQuark q = 0;
-    if (!q)
-        q = g_quark_from_static_string ("moo-ui-xml-node");
-    return q;
 }
 
 

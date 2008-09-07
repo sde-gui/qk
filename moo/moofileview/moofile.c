@@ -27,6 +27,7 @@
 #include "mooutils/moofileicon.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mootype-macros.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/moocompat.h"
 #include "marshals.h"
@@ -63,8 +64,9 @@ G_STMT_START {              \
 static MooIconType      get_folder_icon (const char     *path);
 static MooIconEmblem    get_icon_flags  (const MooFile  *file);
 
-#define MAKE_PATH(dirname,file) g_build_filename (dirname, file->name, NULL)
+MOO_DEFINE_BOXED_TYPE_R (MooFile, _moo_file)
 
+#define MAKE_PATH(dirname,file) g_build_filename (dirname, file->name, NULL)
 
 void
 _moo_file_find_mime_type (MooFile    *file,
@@ -568,60 +570,6 @@ _moo_file_get_stat (const MooFile *file)
 }
 #endif
 #endif
-
-
-GType
-_moo_file_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooFile",
-                                             (GBoxedCopyFunc) _moo_file_ref,
-                                             (GBoxedFreeFunc) _moo_file_unref);
-
-    return type;
-}
-
-
-GType
-_moo_file_flags_get_type (void)
-{
-    static GType type = 0;
-
-    static const GFlagsValue values[] = {
-        { MOO_FILE_HAS_MIME_TYPE, (char*)"MOO_FILE_HAS_MIME_TYPE", (char*)"has-mime-type" },
-        { MOO_FILE_HAS_ICON, (char*)"MOO_FILE_HAS_ICON", (char*)"has-icon" },
-        { MOO_FILE_HAS_STAT, (char*)"MOO_FILE_HAS_STAT", (char*)"has-stat" },
-        { MOO_FILE_ALL_FLAGS, (char*)"MOO_FILE_ALL_FLAGS", (char*)"all-flags" },
-        { 0, NULL, NULL }
-    };
-
-    if (G_UNLIKELY (!type))
-        type = g_flags_register_static ("MooFileFlags", values);
-
-    return type;
-}
-
-
-GType
-_moo_file_info_get_type (void)
-{
-    static GType type = 0;
-
-    static const GFlagsValue values[] = {
-        { MOO_FILE_INFO_EXISTS, (char*)"MOO_FILE_INFO_EXISTS", (char*)"exists" },
-        { MOO_FILE_INFO_IS_DIR, (char*)"MOO_FILE_INFO_IS_DIR", (char*)"is-folder" },
-        { MOO_FILE_INFO_IS_HIDDEN, (char*)"MOO_FILE_INFO_IS_HIDDEN", (char*)"is-hidden" },
-        { MOO_FILE_INFO_IS_LINK, (char*)"MOO_FILE_INFO_IS_LINK", (char*)"is-link" },
-        { 0, NULL, NULL }
-    };
-
-    if (G_UNLIKELY (!type))
-        type = g_flags_register_static ("MooFileInfo", values);
-
-    return type;
-}
 
 
 guint8

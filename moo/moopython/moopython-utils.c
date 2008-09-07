@@ -19,9 +19,11 @@
 #endif
 #include "moopython/moopython-utils.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mootype-macros.h"
 #define NO_IMPORT_PYGOBJECT
 #include "pygobject.h"
 
+MOO_DEFINE_BOXED_TYPE_R (MooPyObject, _moo_py_object)
 
 PyObject *
 _moo_strv_to_pyobject (char **strv)
@@ -268,20 +270,6 @@ void
 _moo_py_object_unref (PyObject *obj)
 {
     Py_XDECREF (obj);
-}
-
-
-GType
-_moo_py_object_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooPyObject",
-                                             (GBoxedCopyFunc) _moo_py_object_ref,
-                                             (GBoxedFreeFunc) _moo_py_object_unref);
-
-    return type;
 }
 
 

@@ -27,6 +27,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-mem.h"
 #include "mooutils/mooeditops.h"
+#include "mooutils/mootype-macros.h"
 #include <gtk/gtk.h>
 #include <gobject/gvaluecollector.h>
 
@@ -1210,9 +1211,12 @@ get_toolbar_style (MooWindow *window)
 /* Actions
  */
 
-#define MOO_WINDOW_NAME_QUARK        (get_quark__(0))
-#define MOO_WINDOW_ID_QUARK          (get_quark__(1))
-#define MOO_WINDOW_ACTIONS_QUARK_    (get_quark__(2))
+#define MOO_WINDOW_NAME_QUARK (moo_window_name_quark ())
+MOO_DEFINE_QUARK_STATIC (moo-window-name, moo_window_name_quark)
+#define MOO_WINDOW_ID_QUARK (moo_window_id_quark ())
+MOO_DEFINE_QUARK_STATIC (moo-window-id, moo_window_id_quark)
+#define MOO_WINDOW_ACTIONS_QUARK (moo_window_actions_quark ())
+MOO_DEFINE_QUARK_STATIC (moo-window-actions, moo_window_actions_quark)
 
 typedef struct {
     GHashTable *groups; /* name -> display_name */
@@ -1233,24 +1237,6 @@ typedef struct {
     char **conditions;
     ClosureInfo *closure;
 } ActionInfo;
-
-
-static GQuark
-get_quark__ (guint n)
-{
-    static GQuark q[3];
-
-    g_assert (n < 3);
-
-    if (!q[0])
-    {
-        q[0] = g_quark_from_static_string ("moo-window-name");
-        q[1] = g_quark_from_static_string ("moo-window-id");
-        q[2] = g_quark_from_static_string ("moo-window-actions");
-    }
-
-    return q[n];
-}
 
 
 static ActionInfo*
@@ -1308,19 +1294,19 @@ action_store_new (void)
 static ActionStore *
 type_get_store (GType type)
 {
-    return g_type_get_qdata (type, MOO_WINDOW_ACTIONS_QUARK_);
+    return g_type_get_qdata (type, MOO_WINDOW_ACTIONS_QUARK);
 }
 
 
 static ActionStore *
 type_ensure_store (GType type)
 {
-    ActionStore *store = g_type_get_qdata (type, MOO_WINDOW_ACTIONS_QUARK_);
+    ActionStore *store = g_type_get_qdata (type, MOO_WINDOW_ACTIONS_QUARK);
 
     if (!store)
     {
         store = action_store_new ();
-        g_type_set_qdata (type, MOO_WINDOW_ACTIONS_QUARK_, store);
+        g_type_set_qdata (type, MOO_WINDOW_ACTIONS_QUARK, store);
     }
 
     return store;

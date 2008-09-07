@@ -27,6 +27,7 @@
 #include "marshals.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mootype-macros.h"
 #include "glade/mooeditprogress-gxml.h"
 #include <string.h>
 #include <stdlib.h>
@@ -37,7 +38,6 @@
 
 
 GSList *_moo_edit_instances = NULL;
-
 
 static GObject *moo_edit_constructor        (GType                  type,
                                              guint                  n_construct_properties,
@@ -113,7 +113,7 @@ enum {
     PROP_ENCODING
 };
 
-/* MOO_TYPE_EDIT */
+MOO_DEFINE_BOXED_TYPE_C (MooEditFileInfo, moo_edit_file_info)
 G_DEFINE_TYPE (MooEdit, moo_edit, MOO_TYPE_TEXT_VIEW)
 
 
@@ -473,40 +473,6 @@ _moo_edit_set_status (MooEdit        *edit,
 #endif
 
 
-MooEditFileInfo*
-moo_edit_file_info_new (const char *filename,
-                        const char *encoding)
-{
-    MooEditFileInfo *info = g_new0 (MooEditFileInfo, 1);
-    info->filename = g_strdup (filename);
-    info->encoding = g_strdup (encoding);
-    return info;
-}
-
-
-MooEditFileInfo*
-moo_edit_file_info_copy (const MooEditFileInfo *info)
-{
-    MooEditFileInfo *copy;
-    g_return_val_if_fail (info != NULL, NULL);
-    copy = g_new (MooEditFileInfo, 1);
-    copy->encoding = g_strdup (info->encoding);
-    copy->filename = g_strdup (info->filename);
-    return copy;
-}
-
-void
-moo_edit_file_info_free (MooEditFileInfo *info)
-{
-    if (info)
-    {
-        g_free (info->encoding);
-        g_free (info->filename);
-        g_free (info);
-    }
-}
-
-
 gboolean
 moo_edit_is_empty (MooEdit *edit)
 {
@@ -641,15 +607,31 @@ moo_edit_focus_out (GtkWidget     *widget,
 }
 
 
-GType
-moo_edit_file_info_get_type (void)
+MooEditFileInfo *
+moo_edit_file_info_new (const char *filename,
+                        const char *encoding)
 {
-    static GType type = 0;
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooEditFileInfo",
-                                             (GBoxedCopyFunc) moo_edit_file_info_copy,
-                                             (GBoxedFreeFunc) moo_edit_file_info_free);
-    return type;
+    MooEditFileInfo *info = g_new0 (MooEditFileInfo, 1);
+    info->filename = g_strdup (filename);
+    info->encoding = g_strdup (encoding);
+    return info;
+}
+
+MooEditFileInfo *
+moo_edit_file_info_copy (MooEditFileInfo *info)
+{
+    return info ? moo_edit_file_info_new (info->filename, info->encoding) : NULL;
+}
+
+void
+moo_edit_file_info_free (MooEditFileInfo *info)
+{
+    if (info)
+    {
+        g_free (info->encoding);
+        g_free (info->filename);
+        g_free (info);
+    }
 }
 
 

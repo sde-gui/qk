@@ -127,7 +127,7 @@ GdkPixbuf   *_moo_edit_get_icon                 (MooEdit        *edit,
 
 #define MOO_EDIT_IS_UNTITLED(edit) (!(edit)->priv->filename)
 
-struct _MooEditFileInfo {
+struct MooEditFileInfo {
     char *filename;
     char *encoding;
 };
@@ -140,7 +140,7 @@ typedef enum {
     MOO_EDIT_LINE_END_MIX
 } MooEditLineEndType;
 
-struct _MooEditPrivate {
+struct MooEditPrivate {
     MooEditor *editor;
 
     gulong modified_changed_handler_id;

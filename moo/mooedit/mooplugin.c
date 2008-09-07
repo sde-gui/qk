@@ -26,6 +26,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/moohelp.h"
+#include "mooutils/mootype-macros.h"
 #include "help-sections.h"
 #include <string.h>
 #include <gmodule.h>
@@ -52,6 +53,8 @@ static PluginStore *plugin_store = NULL;
 #define MOO_PLUGIN_QUARK plugin_store->plugin_quark
 #define MOO_PLUGIN_METHS_QUARK plugin_store->meths_quark
 
+MOO_DEFINE_BOXED_TYPE_C (MooPluginInfo, moo_plugin_info)
+MOO_DEFINE_BOXED_TYPE_C (MooPluginParams, moo_plugin_params)
 
 static void     plugin_store_init       (void);
 static void     plugin_store_add        (MooPlugin      *plugin);
@@ -1199,34 +1202,6 @@ void
 moo_plugin_params_free (MooPluginParams *params)
 {
     g_free (params);
-}
-
-
-GType
-moo_plugin_info_get_type (void)
-{
-    static GType type;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooPluginInfo",
-                                             (GBoxedCopyFunc) moo_plugin_info_copy,
-                                             (GBoxedFreeFunc) moo_plugin_info_free);
-
-    return type;
-}
-
-
-GType
-moo_plugin_params_get_type (void)
-{
-    static GType type;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooPluginParams",
-                                             (GBoxedCopyFunc) moo_plugin_params_copy,
-                                             (GBoxedFreeFunc) moo_plugin_params_free);
-
-    return type;
 }
 
 

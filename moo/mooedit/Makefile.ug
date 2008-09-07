@@ -38,8 +38,8 @@ libmooedit_SOURCES_ =			\
 	mooeditdialogs.h		\
 	mooedit-enums.c			\
 	mooedit-enums.h			\
-	mooeditfileops.c		\
-	mooeditfileops.h		\
+	mooedit-fileops.c		\
+	mooedit-fileops.h		\
 	mooeditfiltersettings.c		\
 	mooeditfiltersettings.h		\
 	mooedit.h			\

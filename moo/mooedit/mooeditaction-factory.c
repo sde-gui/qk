@@ -22,6 +22,7 @@
 #include "mooutils/mooactionbase.h"
 #include "mooutils/moomenuaction.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/mootype-macros.h"
 #include "mooutils/moocompat.h"
 #include <string.h>
 #include <gobject/gvaluecollector.h>
@@ -49,24 +50,13 @@ static void append_special_char_menuitems       (GtkMenuShell       *menu,
                                                  GtkTextView        *view);
 
 
-#define MOO_EDIT_ACTIONS_QUARK (moo_edit_get_actions_quark ())
+#define MOO_EDIT_ACTIONS_QUARK (moo_edit_actions_quark ())
+MOO_DEFINE_QUARK_STATIC (moo-edit-actions, moo_edit_actions_quark)
 
 typedef struct {
     MooActionFactory *action;
     char **conditions;
 } ActionInfo;
-
-
-static GQuark
-moo_edit_get_actions_quark (void)
-{
-    static GQuark q;
-
-    if (!q)
-        q = g_quark_from_static_string ("moo-edit-actions");
-
-    return q;
-}
 
 
 static ActionInfo*

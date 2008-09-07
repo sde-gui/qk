@@ -14,7 +14,11 @@
  */
 
 #include "mooutils/mooclosure.h"
+#include "mooutils/mootype-macros.h"
 #include "marshals.h"
+
+
+MOO_DEFINE_BOXED_TYPE_R (MooClosure, moo_closure)
 
 
 MooClosure*
@@ -114,20 +118,6 @@ moo_closure_invalidate (MooClosure *closure)
             closure->destroy = (MooClosureDestroy) 0xdeadbeef;
         }
     }
-}
-
-
-GType
-moo_closure_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooClosure",
-                                             (GBoxedCopyFunc) moo_closure_ref,
-                                             (GBoxedFreeFunc) moo_closure_unref);
-
-    return type;
 }
 
 

@@ -25,6 +25,7 @@
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moostock.h"
+#include "mooutils/mootype-macros.h"
 #include "glade/moobookmark-editor-gxml.h"
 #include <string.h>
 #include <errno.h>
@@ -66,7 +67,7 @@ static gboolean mgr_update_menus            (MooBookmarkMgr *mgr);
 static MooBookmark *_moo_bookmark_copy      (MooBookmark    *bookmark);
 
 
-/* MOO_TYPE_BOOKMARK_MGR */
+MOO_DEFINE_BOXED_TYPE_C (MooBookmark, _moo_bookmark)
 G_DEFINE_TYPE (MooBookmarkMgr, _moo_bookmark_mgr, G_TYPE_OBJECT)
 
 enum {
@@ -266,18 +267,6 @@ _moo_bookmark_free (MooBookmark *bookmark)
             g_object_unref (bookmark->pixbuf);
         g_free (bookmark);
     }
-}
-
-
-GType
-_moo_bookmark_get_type (void)
-{
-    static GType type = 0;
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooBookmark",
-                                             (GBoxedCopyFunc) _moo_bookmark_copy,
-                                             (GBoxedFreeFunc) _moo_bookmark_free);
-    return type;
 }
 
 

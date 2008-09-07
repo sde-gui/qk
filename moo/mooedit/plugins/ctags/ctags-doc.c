@@ -19,6 +19,7 @@
 #include "ctags-view.h"
 #include "readtags.h"
 #include <mooutils/mooutils-misc.h>
+#include <mooutils/mootype-macros.h>
 #include <gtk/gtk.h>
 #include <string.h>
 #ifdef HAVE_UNISTD_H
@@ -27,6 +28,7 @@
 #include <stdlib.h>
 
 
+MOO_DEFINE_BOXED_TYPE_R (MooCtagsEntry, _moo_ctags_entry)
 G_DEFINE_TYPE (MooCtagsDocPlugin, _moo_ctags_doc_plugin, MOO_TYPE_DOC_PLUGIN)
 
 struct _MooCtagsDocPluginPrivate
@@ -378,20 +380,6 @@ moo_ctags_doc_plugin_update (MooCtagsDocPlugin *plugin)
 
     g_free (filename);
     return FALSE;
-}
-
-
-GType
-_moo_ctags_entry_get_type (void)
-{
-    static GType type;
-
-    if (G_UNLIKELY (!type))
-        type = g_boxed_type_register_static ("MooCtagsEntry",
-                                             (GBoxedCopyFunc) _moo_ctags_entry_ref,
-                                             (GBoxedFreeFunc) _moo_ctags_entry_unref);
-
-    return type;
 }
 
 

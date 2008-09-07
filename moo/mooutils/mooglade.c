@@ -33,20 +33,20 @@
 #include "mooutils/mooentry.h"
 #include "mooutils/mooaccelbutton.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/mootype-macros.h"
 #include <gtk/gtk.h>
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
-
-G_DEFINE_TYPE (MooGladeXML, moo_glade_xml, G_TYPE_OBJECT)
 
 typedef enum {
     MOO_GLADE_XML_ERROR_FAILED
 } MooGladeXMLError;
 
 #define MOO_GLADE_XML_ERROR (moo_glade_xml_error_quark ())
-static GQuark moo_glade_xml_error_quark (void) G_GNUC_CONST;
+MOO_DEFINE_QUARK_STATIC (moo-glade-xml-error, moo_glade_xml_error_quark)
 
+G_DEFINE_TYPE (MooGladeXML, moo_glade_xml, G_TYPE_OBJECT)
 
 #define FOREACH_ELM_START(parent,elm)                           \
 G_STMT_START {                                                  \
@@ -2599,13 +2599,6 @@ static void
 func_data_pair_free (FuncDataPair *pair)
 {
     g_free (pair);
-}
-
-
-static GQuark
-moo_glade_xml_error_quark (void)
-{
-    return g_quark_from_static_string ("moo-glade-xml-error");
 }
 
 
