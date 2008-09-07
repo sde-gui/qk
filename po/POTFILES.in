@@ -52,9 +52,6 @@ moo/moofileview/moofileview-tools.c
 moo/moofileview/moofileview.xml
 moo/moopython/plugins/medit/runpython.py
 moo/moopython/plugins/pycmd.py
-[type: gettext/ini]moo/moopython/plugins/terminal.ini.in.in
-[type: gettext/ini]moo/moopython/plugins/pycmd.ini.in.in
-[type: gettext/ini]moo/moopython/plugins/python.ini.in.in
 moo/moopython/plugins/python.py
 moo/moopython/plugins/terminal.py
 moo/mooutils/glade/mooaccelprefs.glade
@@ -68,4 +65,8 @@ moo/mooutils/moofontsel.c
 moo/mooutils/moohelp.c
 moo/mooutils/moopane.c
 moo/mooutils/moostock.c
+moo/mooutils/mooutils-fs.c
 moo/mooutils/moowindow.c
+[type: gettext/ini]moo/moopython/plugins/pycmd.ini.in.in
+[type: gettext/ini]moo/moopython/plugins/python.ini.in.in
+[type: gettext/ini]moo/moopython/plugins/terminal.ini.in.in

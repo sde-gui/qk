@@ -213,8 +213,8 @@ class ColorScheme(object):
         if self.colors is not None:
             term.set_colors(self.colors[0], self.colors[1], self.colors[2:10])
 
+# Color schemes shamelessly stolen from Konsole, the best terminal emulator out there
 color_schemes = [ColorScheme(cs[0], cs[1]) for cs in [
-    # Color schemes shamelessly stolen from Konsole, the best terminal emulator out there
     [_("Default"), None],
     [_("Black on White"),
         ['#000000', '#ffffff', '#000000', '#b21818', '#18b218', '#b26818', '#1818b2', '#b218b2', '#18b2b2', '#b2b2b2',
