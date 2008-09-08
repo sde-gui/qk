@@ -29,19 +29,19 @@ G_BEGIN_DECLS
 #define MOO_IS_EDITOR_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDITOR))
 #define MOO_EDITOR_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDITOR, MooEditorClass))
 
-typedef struct _MooEditor               MooEditor;
-typedef struct _MooEditorPrivate        MooEditorPrivate;
-typedef struct _MooEditorClass          MooEditorClass;
+typedef struct MooEditor        MooEditor;
+typedef struct MooEditorPrivate MooEditorPrivate;
+typedef struct MooEditorClass   MooEditorClass;
 
-struct _MooEditor
+struct MooEditor
 {
-    GObject                 parent;
-    MooEditorPrivate       *priv;
+    GObject base;
+    MooEditorPrivate *priv;
 };
 
-struct _MooEditorClass
+struct MooEditorClass
 {
-    GObjectClass parent_class;
+    GObjectClass base_class;
 
     gboolean (*close_window) (MooEditor     *editor,
                               MooEditWindow *window,

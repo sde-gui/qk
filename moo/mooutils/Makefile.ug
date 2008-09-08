@@ -92,6 +92,7 @@ mooutils_sources =			\
 	moohistorylist.h		\
 	mooi18n.c			\
 	mooi18n.h			\
+	moolist.h			\
 	moomarkup.c			\
 	moomarkup.h			\
 	moomenu.c			\
