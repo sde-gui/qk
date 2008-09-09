@@ -89,6 +89,8 @@ struct _MooPanedPrivate {
     GdkCursorType handle_cursor_type;
 
     guint        enable_detaching : 1;
+
+    guint        forall_bottom_to_top : 1;
 };
 
 
@@ -361,6 +363,10 @@ moo_paned_init (MooPaned *paned)
                                                MooPanedPrivate);
 
     paned->button_box = NULL;
+
+    /* TRUE means default and broken tooltips,
+     * FALSE mean inverted order and working tooltips */
+    paned->priv->forall_bottom_to_top = FALSE;
 
     paned->priv->pane_position = -1;
     paned->priv->handle_window = NULL;
@@ -1396,6 +1402,19 @@ moo_paned_unmap (GtkWidget *widget)
 
 
 static void
+forall_internals (MooPaned    *paned,
+                  GtkCallback  callback,
+                  gpointer     callback_data)
+{
+    GSList *l;
+
+    callback (paned->button_box, callback_data);
+
+    for (l = paned->priv->panes; l != NULL; l = l->next)
+        callback (_moo_pane_get_frame (l->data), callback_data);
+}
+
+static void
 moo_paned_forall (GtkContainer   *container,
                   gboolean        include_internals,
                   GtkCallback     callback,
@@ -1403,18 +1422,15 @@ moo_paned_forall (GtkContainer   *container,
 {
     MooPaned *paned = MOO_PANED (container);
     GtkBin *bin = GTK_BIN (container);
-    GSList *l;
+
+    if (!paned->priv->forall_bottom_to_top && include_internals)
+        forall_internals (paned, callback, callback_data);
 
     if (bin->child)
         callback (bin->child, callback_data);
 
-    if (include_internals)
-    {
-        callback (paned->button_box, callback_data);
-
-        for (l = paned->priv->panes; l != NULL; l = l->next)
-            callback (_moo_pane_get_frame (l->data), callback_data);
-    }
+    if (paned->priv->forall_bottom_to_top && include_internals)
+        forall_internals (paned, callback, callback_data);
 }
 
 
