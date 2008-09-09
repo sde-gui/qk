@@ -365,7 +365,8 @@ moo_paned_init (MooPaned *paned)
     paned->button_box = NULL;
 
     /* TRUE means default and broken tooltips,
-     * FALSE mean inverted order and working tooltips */
+     * FALSE mean inverted order and working tooltips
+     * http://bugzilla.gnome.org/show_bug.cgi?id=550345 */
     paned->priv->forall_bottom_to_top = FALSE;
 
     paned->priv->pane_position = -1;
