@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-09-09 21:25-0500\n"
+"POT-Creation-Date: 2008-09-09 21:33-0500\n"
 "PO-Revision-Date: 2008-08-17\n"
 "Last-Translator: Kris Van Bruwaene <krvbr@yahoo.co.uk>\n"
 "MIME-Version: 1.0\n"
@@ -42,7 +42,7 @@ msgstr "PID"
 #. command line option --app-name=NAME
 #: ../medit/main.c:114
 msgid "Set instance name to NAME if it's not already running"
-msgstr "Stel instantienaam op NAAM als ze niet al draait"
+msgstr "Stel instantienaam op NAAM tenzij ze al draait"
 
 #. command line option --app-name=NAME
 #: ../medit/main.c:115
@@ -173,7 +173,7 @@ msgstr ""
 #: ../moo/mooapp/mooapp.c:1509
 #, c-format
 msgid "%s Preferences"
-msgstr ""
+msgstr "%s Voorkeuren"
 
 #. Output filter for shell commands
 #: ../moo/mooedit/filters.xml.h:2
@@ -183,7 +183,7 @@ msgstr ""
 #. Output filter for shell commands
 #: ../moo/mooedit/filters.xml.h:4
 msgid "Filter|Default"
-msgstr "Normaal"
+msgstr "Standaard"
 
 #. Output filter for shell commands
 #: ../moo/mooedit/filters.xml.h:6
@@ -383,7 +383,7 @@ msgstr "Inspringen met tabtoets"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:44
 msgid "Tab width:"
-msgstr ""
+msgstr "Tabbreedte:"
 
 #. Part of the phrase "Draw right margin at column [XX]"
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:46
@@ -1169,7 +1169,7 @@ msgstr "_Taal"
 #. Menu item in the Language menu
 #: ../moo/mooedit/mooeditwindow.c:3078
 msgid "Language|None"
-msgstr ""
+msgstr "Geen"
 
 #: ../moo/mooedit/mooplugin.c:1448
 msgid "Plugins"
@@ -1496,7 +1496,7 @@ msgstr "Wissen..."
 
 #: ../moo/moofileview/moofileview.c:1170 ../moo/moofileview/moofileview.c:3279
 msgid "Delete selected files"
-msgstr ""
+msgstr "Wis gekozen bestanden"
 
 #: ../moo/moofileview/moofileview.c:1180 ../moo/moofileview/moofileview.c:1181
 msgid "Show Hidden Files"
@@ -1512,7 +1512,7 @@ msgstr "Hoofdlettergevoelig Rangschikken"
 
 #: ../moo/moofileview/moofileview.c:1203 ../moo/moofileview/moofileview.c:1204
 msgid "Show Folders First"
-msgstr ""
+msgstr "Toon Mappen Eerst"
 
 #: ../moo/moofileview/moofileview.c:1229 ../moo/moofileview/moofileview.c:1230
 msgid "Add Bookmark"
@@ -1530,47 +1530,47 @@ msgstr ""
 #: ../moo/moofileview/moofileview.c:3125
 #, c-format
 msgid "Move file %s to Trash?"
-msgstr ""
+msgstr "Bestand %s naar Vuilnisbak?"
 
 #: ../moo/moofileview/moofileview.c:3130
 msgid "Move selected files to Trash?"
-msgstr ""
+msgstr "Gekozen bestanden naar Vuilnisbak?"
 
 #: ../moo/moofileview/moofileview.c:3138
 #, c-format
 msgid "Delete folder %s and all its content?"
-msgstr ""
+msgstr "Map %s en alle inhoud wissen?"
 
 #: ../moo/moofileview/moofileview.c:3141
 #, c-format
 msgid "Delete file %s?"
-msgstr ""
+msgstr "Bestand %s wissen?"
 
 #: ../moo/moofileview/moofileview.c:3146
 msgid "Delete selected files?"
-msgstr ""
+msgstr "Gekozen bestanden wissen?"
 
 #: ../moo/moofileview/moofileview.c:3208
 #, c-format
 msgid "Could not delete folder %s"
-msgstr ""
+msgstr "Kon map %s niet wissen"
 
 #: ../moo/moofileview/moofileview.c:3211
 #, c-format
 msgid "Could not delete file %s"
-msgstr ""
+msgstr "Kon bestand %s niet wissen"
 
 #: ../moo/moofileview/moofileview.c:3272
 msgid "Move to Trash..."
-msgstr ""
+msgstr "Naar Vuilnisbak..."
 
 #: ../moo/moofileview/moofileview.c:3273
 msgid "Move selected files to Trash"
-msgstr ""
+msgstr "Gekozen bestanden naar Vuilnisbak"
 
 #: ../moo/moofileview/moofileview-tools.c:291
 msgid "Open with|Default Application"
-msgstr ""
+msgstr "Open with|Standaardtoepassing"
 
 #: ../moo/moofileview/moofileview.xml.h:2
 msgid "Open _With"
@@ -1603,31 +1603,31 @@ msgstr "Console"
 
 #: ../moo/moopython/plugins/terminal.py:218
 msgid "Default"
-msgstr ""
+msgstr "Standaard"
 
 #: ../moo/moopython/plugins/terminal.py:219
 msgid "Black on White"
-msgstr ""
+msgstr "Zwart op Wit"
 
 #: ../moo/moopython/plugins/terminal.py:222
 msgid "Black on Light Yellow"
-msgstr ""
+msgstr "Zwart op Lichtgeel"
 
 #: ../moo/moopython/plugins/terminal.py:225
 msgid "Marble"
-msgstr ""
+msgstr "Marmer"
 
 #: ../moo/moopython/plugins/terminal.py:228
 msgid "Green on Black"
-msgstr ""
+msgstr "Groen op Zwart"
 
 #: ../moo/moopython/plugins/terminal.py:231
 msgid "Paper, Light"
-msgstr ""
+msgstr "Papier, Licht"
 
 #: ../moo/moopython/plugins/terminal.py:234
 msgid "Paper"
-msgstr ""
+msgstr "Papier"
 
 #: ../moo/moopython/plugins/terminal.py:237
 msgid "Linux Colors"
@@ -1963,42 +1963,46 @@ msgstr "_Nieuwe map"
 msgid "New _Window"
 msgstr "Nieuw _Venster"
 
-#: ../moo/mooutils/mooutils-fs.c:118
+#. This is error message in file selector when rm
+#. fails for some strange reason
+#: ../moo/mooutils/mooutils-fs.c:120
 #, c-format
 msgid "Could not run 'rm' command: %s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-fs.c:134
+#. This is error message in file selector when rm
+#. fails to delete a file or folder
+#: ../moo/mooutils/mooutils-fs.c:138
 #, c-format
 msgid "'rm' command failed: %s"
-msgstr ""
+msgstr "'rm' opdracht mislukt"
 
-#: ../moo/mooutils/mooutils-fs.c:184 ../moo/mooutils/mooutils-fs.c:204
-#: ../moo/mooutils/mooutils-fs.c:231
+#: ../moo/mooutils/mooutils-fs.c:188 ../moo/mooutils/mooutils-fs.c:208
+#: ../moo/mooutils/mooutils-fs.c:235
 #, c-format
 msgid "Could not remove %s: %s"
-msgstr ""
+msgstr "Kon %s niet verwijderen: %s"
 
-#: ../moo/mooutils/mooutils-fs.c:276 ../moo/mooutils/mooutils-fs.c:295
-#: ../moo/mooutils/mooutils-fs.c:311 ../moo/mooutils/mooutils-fs.c:1726
+#: ../moo/mooutils/mooutils-fs.c:280 ../moo/mooutils/mooutils-fs.c:299
+#: ../moo/mooutils/mooutils-fs.c:315 ../moo/mooutils/mooutils-fs.c:1730
 #, c-format
 msgid "Could not create folder %s: %s"
-msgstr ""
+msgstr "Kon map %s niet aanmaken: %s"
 
-#: ../moo/mooutils/mooutils-fs.c:340
+#: ../moo/mooutils/mooutils-fs.c:344
 #, c-format
 msgid "Could not rename file %s to %s: %s"
-msgstr ""
+msgstr "Kon bestand %s niet hernoemen tot %s: %s"
 
-#: ../moo/mooutils/mooutils-fs.c:1495
+#: ../moo/mooutils/mooutils-fs.c:1499
 #, c-format
 msgid "Could not open %s: %s"
-msgstr ""
+msgstr "Kon %s niet openen: %s"
 
-#: ../moo/mooutils/mooutils-fs.c:1742 ../moo/mooutils/mooutils-fs.c:1756
+#: ../moo/mooutils/mooutils-fs.c:1746 ../moo/mooutils/mooutils-fs.c:1760
 #, c-format
 msgid "Could not create temporary file %s: %s"
-msgstr ""
+msgstr "Kon tijdelijk bestand %s niet aanmaken: %s"
 
 #: ../moo/mooutils/moowindow.c:231
 msgid "Configure _Shortcuts..."
@@ -2047,6 +2051,41 @@ msgstr "Pythonondersteuning"
 #: ../moo/moopython/plugins/terminal.ini.in.in.h:2
 msgid "Terminal plugin"
 msgstr "Consoleplugin"
+
+#~ msgid "Unrecognized desktop file Version '%s'"
+#~ msgstr "Onbekende Versie '%s' van bureaubladbestand"
+
+#~ msgid "Starting %s"
+#~ msgstr "%s aan het opstarten"
+
+#~ msgid "Application does not accept documents on command line"
+#~ msgstr "Toepassing aanvaardt geen documenten in opdrachtregel"
+
+#~ msgid "Unrecognized launch option: %d"
+#~ msgstr "Onbekende startoptie: %d"
+
+#~ msgid "Can't pass document URIs to a 'Type=Link' desktop entry"
+#~ msgstr ""
+#~ "Kan geen documenten-URI's doorgeven aan een bureaublad-item met "
+#~ "'Type=Link'"
+
+#~ msgid "Not a launchable item"
+#~ msgstr "Geen startbaar item"
+
+#~ msgid "Disable connection to session manager"
+#~ msgstr "Belet verbinding met sessiebeheer"
+
+#~ msgid "Specify file containing saved configuration"
+#~ msgstr "Geef bestand met opgeslagen configuratie"
+
+#~ msgid "Specify session management ID"
+#~ msgstr "Geef ID voor sessiebeheer"
+
+#~ msgid "Session Management Options"
+#~ msgstr "Opties voor Sessiebeheer"
+
+#~ msgid "Show Session Management options"
+#~ msgstr "Toon Opties voor Sessiebeheer"
 
 #~ msgid "Dialog title|System Info"
 #~ msgstr "Systeeminfo"
