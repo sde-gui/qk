@@ -147,7 +147,6 @@ mooutils_sources =			\
 	moowindow.h			\
 	stock-file-24.h			\
 	stock-file-selector-24.h	\
-	stock-medit.h			\
 	stock-select-all-16.h		\
 	stock-select-all-24.h		\
 	stock-terminal-24.h
@@ -191,8 +190,8 @@ mooutils_pixmaps =			\
 	$(srcdir)/pixmaps/keepontop.png	\
 	$(srcdir)/pixmaps/sticky.png
 
-CLEANFILES += stock-moo.h stock-medit.h
-BUILT_SOURCES += stock-moo.h stock-medit.h
+CLEANFILES += stock-moo.h
+BUILT_SOURCES += stock-moo.h
 stock-moo.h: $(mooutils_pixmaps)
 	$(GDK_PIXBUF_CSOURCE) --static --build-list			\
 		MOO_HIDE_ICON $(srcdir)/pixmaps/hide.png		\
@@ -201,10 +200,6 @@ stock-moo.h: $(mooutils_pixmaps)
 		MOO_DETACH_ICON $(srcdir)/pixmaps/detach.png		\
 		MOO_ATTACH_ICON $(srcdir)/pixmaps/attach.png		\
 		MOO_KEEP_ON_TOP_ICON $(srcdir)/pixmaps/keepontop.png	\
-			> $@.tmp && mv $@.tmp $@
-stock-medit.h: pixmaps/medit.png
-	$(GDK_PIXBUF_CSOURCE) --static --build-list			\
-		MEDIT_ICON $(srcdir)/pixmaps/medit.png			\
 			> $@.tmp && mv $@.tmp $@
 
 libmooutils_SOURCES_ = $(mooutils_sources)

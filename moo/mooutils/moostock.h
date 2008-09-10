@@ -22,7 +22,6 @@
 G_BEGIN_DECLS
 
 
-#define MOO_STOCK_MEDIT                 "moo-medit"
 #define MOO_STOCK_TERMINAL              "moo-terminal"
 #define MOO_STOCK_KEYBOARD              GTK_STOCK_SELECT_FONT
 #define MOO_STOCK_MENU                  GTK_STOCK_INDEX

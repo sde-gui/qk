@@ -18,7 +18,6 @@
 #include "mooutils/stock-terminal-24.h"
 #include "mooutils/stock-file-selector-24.h"
 #include "mooutils/stock-file-24.h"
-#include "stock-medit.h"
 #include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
 #include <string.h>
@@ -222,8 +221,6 @@ _moo_stock_init (void)
     add_icon_name (factory, MOO_STOCK_FOLDER, "folder");
 
     add_icon (factory, MOO_STOCK_TERMINAL, "terminal", 24, MOO_GNOME_TERMINAL_ICON);
-
-    add_icon (factory, MOO_STOCK_MEDIT, "medit", 24, MEDIT_ICON);
 
 #if !GTK_CHECK_VERSION(2,10,0)
     add_icon2 (factory, GTK_STOCK_SELECT_ALL, "edit-select-all",

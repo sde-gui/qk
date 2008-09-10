@@ -59,7 +59,7 @@ def main(argv):
                       website="http://mooedit.sourceforge.net/",
                       website_label="http://mooedit.sourceforge.net/",
                       default_ui=ui,
-                      logo=moo.utils.STOCK_MEDIT)
+                      logo="medit")
 
     if (not new_instance and app.send_files(files)) or not app.init():
         gtk.gdk.notify_startup_complete()

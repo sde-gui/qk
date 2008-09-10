@@ -238,7 +238,7 @@ get_unused_bookmark_no (MooEdit *edit)
 {
     guint i;
     const GSList *list;
-    char used[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    char used[10] = {0};
 
     list = moo_edit_list_bookmarks (edit);
 
