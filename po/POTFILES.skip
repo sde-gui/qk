@@ -1,5 +1,6 @@
 build/
 
+moo/mooapp/smclient/
 moo/mooedit/gtksourceview/
 moo/mooedit/langs/
 moo/mooedit/plugins/completion/

@@ -6,8 +6,6 @@ moo/mooapp/glade/mooappabout-license.glade
 moo/mooapp/mooappabout.c
 moo/mooapp/mooapp.c
 moo/mooapp/moohtml.c
-moo/mooapp/smclient/eggdesktopfile.c
-moo/mooapp/smclient/eggsmclient.c
 moo/mooedit/filters.xml
 moo/mooedit/glade/mooeditprefs.glade
 moo/mooedit/glade/mooeditprogress.glade

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-09-07 11:07-0500\n"
+"POT-Creation-Date: 2008-09-09 21:25-0500\n"
 "PO-Revision-Date: 2008-08-17\n"
 "Last-Translator: Kris Van Bruwaene <krvbr@yahoo.co.uk>\n"
 "MIME-Version: 1.0\n"
@@ -85,7 +85,7 @@ msgid "Execute python file in an existing instance"
 msgstr "Voer pythonbestand uit in bestaande instantie"
 
 #. command line option --exec-file FILE
-#: ../medit/main.c:138 ../moo/mooapp/smclient/eggsmclient.c:188
+#: ../medit/main.c:138
 msgid "FILE"
 msgstr "BESTAND"
 
@@ -173,65 +173,6 @@ msgstr ""
 #: ../moo/mooapp/mooapp.c:1509
 #, c-format
 msgid "%s Preferences"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggdesktopfile.c:141
-#, c-format
-msgid "File is not a valid .desktop file"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggdesktopfile.c:163
-#, c-format
-msgid "Unrecognized desktop file Version '%s'"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggdesktopfile.c:870
-#, c-format
-msgid "Starting %s"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggdesktopfile.c:1004
-#, c-format
-msgid "Application does not accept documents on command line"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggdesktopfile.c:1072
-#, c-format
-msgid "Unrecognized launch option: %d"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggdesktopfile.c:1274
-#, c-format
-msgid "Can't pass document URIs to a 'Type=Link' desktop entry"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggdesktopfile.c:1293
-#, c-format
-msgid "Not a launchable item"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggsmclient.c:185
-msgid "Disable connection to session manager"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggsmclient.c:188
-msgid "Specify file containing saved configuration"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggsmclient.c:191
-msgid "Specify session management ID"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggsmclient.c:191
-msgid "ID"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggsmclient.c:227
-msgid "Session Management Options"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggsmclient.c:228
-msgid "Show Session Management options"
 msgstr ""
 
 #. Output filter for shell commands
@@ -915,19 +856,19 @@ msgstr "Naamloos"
 msgid "Untitled %d"
 msgstr "Naamloos %d"
 
-#: ../moo/mooedit/mooeditor.c:270
+#: ../moo/mooedit/mooeditor.c:250
 msgid "Open Recent Files Dialog"
 msgstr "Open Dialoog Laatste Bestanden"
 
-#: ../moo/mooedit/mooeditor.c:271
+#: ../moo/mooedit/mooeditor.c:251
 msgid "Open Recent|_More..."
 msgstr "_Meer..."
 
-#: ../moo/mooedit/mooeditor.c:618
+#: ../moo/mooedit/mooeditor.c:537
 msgid "Open new editor window"
 msgstr "Open nieuw editorvenster"
 
-#: ../moo/mooedit/mooeditor.c:1011
+#: ../moo/mooedit/mooeditor.c:928
 msgid "Open Recent"
 msgstr "Laatst Geopend"
 
