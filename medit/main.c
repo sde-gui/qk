@@ -89,6 +89,7 @@ parse_use_session (const char *option_name,
     else
     {
         g_set_error (error, G_OPTION_ERROR, G_OPTION_ERROR_BAD_VALUE,
+                     /* error message for wrong commmand line */
                      _("Invalid value '%s' for option %s"), value, option_name);
         return FALSE;
     }
@@ -96,34 +97,34 @@ parse_use_session (const char *option_name,
 
 static GOptionEntry medit_options[] = {
     { "new-app", 'n', 0, G_OPTION_ARG_NONE, &medit_opts.new_app,
-            /* command line option --new-app */ N_("Run new instance of application"), NULL },
+            /* help message for command line option --new-app */ N_("Run new instance of application"), NULL },
 
 #if !GLIB_CHECK_VERSION(2,8,0)
 #define G_OPTION_FLAG_OPTIONAL_ARG 0
 #endif
     { "use-session", 's', G_OPTION_FLAG_OPTIONAL_ARG, G_OPTION_ARG_CALLBACK, (void*) parse_use_session,
-            /* command line option --use-session */ N_("Load and save session"), "yes|no" },
+            /* help message for command line option --use-session */ N_("Load and save session"), "yes|no" },
 #if !GLIB_CHECK_VERSION(2,8,0)
 #undef G_OPTION_FLAG_OPTIONAL_ARG
 #endif
 
     { "pid", 0, 0, G_OPTION_ARG_INT, &medit_opts.pid,
-            /* command line option --pid=PID */ N_("Use existing instance with process id PID"),
-            /* command line option --pid=PID */ N_("PID") },
+            /* help message for command line option --pid=PID */ N_("Use existing instance with process id PID"),
+            /* "PID" part in "--pid=PID" */ N_("PID") },
     { "app-name", 0, 0, G_OPTION_ARG_STRING, &medit_opts.app_name,
-            /* command line option --app-name=NAME */ N_("Set instance name to NAME if it's not already running"),
-            /* command line option --app-name=NAME */ N_("NAME") },
+            /* help message for command line option --app-name=NAME */ N_("Set instance name to NAME if it's not already running"),
+            /* "NAME" part in "--app-name=NAME" */ N_("NAME") },
     { "new-window", 'w', 0, G_OPTION_ARG_NONE, &medit_opts.new_window,
-            /* command line option --new-window */ N_("Open file(s) in a new window"), NULL },
+            /* help message for command line option --new-window */ N_("Open file(s) in a new window"), NULL },
     { "new-tab", 't', 0, G_OPTION_ARG_NONE, &medit_opts.new_tab,
-            /* command line option --new-tab */ N_("Open file(s) in a new tab"), NULL },
+            /* help message for command line option --new-tab */ N_("Open file(s) in a new tab"), NULL },
     { "project", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_FILENAME, &medit_opts.project,
             "Open project file FILE", "FILE" },
     { "project-mode", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.project_mode,
             "IDE mode", NULL },
     { "line", 'l', 0, G_OPTION_ARG_INT, &medit_opts.line,
-            /* command line option --line=LINE */ N_("Open file and position cursor on line LINE"),
-            /* command line option --line=LINE */ N_("LINE") },
+            /* help message for command line option --line=LINE */ N_("Open file and position cursor on line LINE"),
+            /* "LINE" part in --line=LINE */ N_("LINE") },
     { "log-window", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.log_window,
             "Show debug output", NULL },
     { "log-file", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_FILENAME, &medit_opts.log_file,
@@ -131,15 +132,15 @@ static GOptionEntry medit_options[] = {
     { "debug", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_STRING, &medit_opts.debug,
             "Run in debug mode", NULL },
     { "exec", 0, 0, G_OPTION_ARG_STRING, &medit_opts.exec_string,
-            /* command line option --exec CODE */ N_("Execute python code in an existing instance"),
-            /* command line option --exec CODE */ N_("CODE") },
+            /* help message for command line option --exec CODE */ N_("Execute python code in an existing instance"),
+            /* "CODE" part in --exec CODE */ N_("CODE") },
     { "exec-file", 0, 0, G_OPTION_ARG_FILENAME, &medit_opts.exec_file,
-            /* command line option --exec-file FILE */ N_("Execute python file in an existing instance"),
-            /* command line option --exec-file FILE */ N_("FILE") },
+            /* help message for command line option --exec-file FILE */ N_("Execute python file in an existing instance"),
+            /* "FILE" part in --exec-file FILE */ N_("FILE") },
     { "version", 0, 0, G_OPTION_ARG_NONE, &medit_opts.show_version,
-            /* command line option --version */ N_("Show version information and exit"), NULL },
+            /* help message for command line option --version */ N_("Show version information and exit"), NULL },
     { G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &medit_opts.files,
-            NULL, /* command line: medit [OPTION...] [FILES] */ N_("FILES") },
+            NULL, /* "FILES" part in "medit [OPTION...] [FILES]" */ N_("FILES") },
     { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
 };
 
@@ -154,6 +155,7 @@ post_parse_func (void)
 
     if (medit_opts.pid > 0 && medit_opts.app_name)
     {
+        /* error message for wrong commmand line */
         g_printerr (_("%s and %s options may not be used simultaneously\n"),
                     "--app-name", "--pid");
         exit (EXIT_FAILURE);
@@ -161,6 +163,7 @@ post_parse_func (void)
 
     if (medit_opts.exec_string && medit_opts.exec_file)
     {
+        /* error message for wrong commmand line */
         g_printerr (_("%s and %s options may not be used simultaneously\n"),
                     "--exec", "--exec-file");
         exit (EXIT_FAILURE);

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-09-09 21:35-0500\n"
+"POT-Creation-Date: 2008-09-09 22:40-0500\n"
 "PO-Revision-Date: 2007-11-10 22:45+0100\n"
 "Last-Translator: Vlastimil Ott <vlastimil@e-ott.info>\n"
 "Language-Team:  <cs@li.org>\n"
@@ -17,92 +17,94 @@ msgstr ""
 "Plural-Forms:  nplurals=2; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 "X-Generator: KBabel 1.11.4\n"
 
-#: ../medit/main.c:92
+#. error message for wrong commmand line
+#: ../medit/main.c:93
 #, c-format
 msgid "Invalid value '%s' for option %s"
 msgstr ""
 
-#. command line option --new-app
-#: ../medit/main.c:99
+#. help message for command line option --new-app
+#: ../medit/main.c:100
 msgid "Run new instance of application"
 msgstr ""
 
-#. command line option --use-session
-#: ../medit/main.c:105
+#. help message for command line option --use-session
+#: ../medit/main.c:106
 msgid "Load and save session"
 msgstr ""
 
-#. command line option --pid=PID
-#: ../medit/main.c:111
+#. help message for command line option --pid=PID
+#: ../medit/main.c:112
 msgid "Use existing instance with process id PID"
 msgstr ""
 
-#. command line option --pid=PID
-#: ../medit/main.c:112
+#. "PID" part in "--pid=PID"
+#: ../medit/main.c:113
 msgid "PID"
 msgstr ""
 
-#. command line option --app-name=NAME
-#: ../medit/main.c:114
+#. help message for command line option --app-name=NAME
+#: ../medit/main.c:115
 msgid "Set instance name to NAME if it's not already running"
 msgstr ""
 
-#. command line option --app-name=NAME
-#: ../medit/main.c:115
+#. "NAME" part in "--app-name=NAME"
+#: ../medit/main.c:116
 msgid "NAME"
 msgstr ""
 
-#. command line option --new-window
-#: ../medit/main.c:117
+#. help message for command line option --new-window
+#: ../medit/main.c:118
 msgid "Open file(s) in a new window"
 msgstr ""
 
-#. command line option --new-tab
-#: ../medit/main.c:119
+#. help message for command line option --new-tab
+#: ../medit/main.c:120
 msgid "Open file(s) in a new tab"
 msgstr ""
 
-#. command line option --line=LINE
-#: ../medit/main.c:125
+#. help message for command line option --line=LINE
+#: ../medit/main.c:126
 msgid "Open file and position cursor on line LINE"
 msgstr ""
 
-#. command line option --line=LINE
-#: ../medit/main.c:126
+#. "LINE" part in --line=LINE
+#: ../medit/main.c:127
 msgid "LINE"
 msgstr ""
 
-#. command line option --exec CODE
-#: ../medit/main.c:134
+#. help message for command line option --exec CODE
+#: ../medit/main.c:135
 msgid "Execute python code in an existing instance"
 msgstr ""
 
-#. command line option --exec CODE
-#: ../medit/main.c:135
+#. "CODE" part in --exec CODE
+#: ../medit/main.c:136
 msgid "CODE"
 msgstr ""
 
-#. command line option --exec-file FILE
-#: ../medit/main.c:137
+#. help message for command line option --exec-file FILE
+#: ../medit/main.c:138
 msgid "Execute python file in an existing instance"
 msgstr ""
 
-#. command line option --exec-file FILE
-#: ../medit/main.c:138
+#. "FILE" part in --exec-file FILE
+#: ../medit/main.c:139
 msgid "FILE"
 msgstr ""
 
-#. command line option --version
-#: ../medit/main.c:140
+#. help message for command line option --version
+#: ../medit/main.c:141
 msgid "Show version information and exit"
 msgstr ""
 
-#. command line: medit [OPTION...] [FILES]
-#: ../medit/main.c:142
+#. "FILES" part in "medit [OPTION...] [FILES]"
+#: ../medit/main.c:143
 msgid "FILES"
 msgstr ""
 
-#: ../medit/main.c:157 ../medit/main.c:164
+#. error message for wrong commmand line
+#: ../medit/main.c:159 ../medit/main.c:167
 #, c-format
 msgid "%s and %s options may not be used simultaneously\n"
 msgstr ""
@@ -110,10 +112,6 @@ msgstr ""
 #: ../medit/medit.desktop.in.h:1
 msgid "Text editor"
 msgstr "Textový editor"
-
-#: ../medit/medit.desktop.in.h:2
-msgid "medit"
-msgstr "medit"
 
 #. Translators: do not translate the part before |
 #: ../moo/mooapp/glade/mooappabout-credits.glade.h:2
@@ -2049,6 +2047,9 @@ msgstr "Podpora Pythonu"
 #: ../moo/moopython/plugins/terminal.ini.in.in.h:2
 msgid "Terminal plugin"
 msgstr "Plugin pro terminál"
+
+#~ msgid "medit"
+#~ msgstr "medit"
 
 #~ msgid "Dialog title|System Info"
 #~ msgstr "Systémové informace"

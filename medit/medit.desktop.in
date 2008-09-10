@@ -1,5 +1,5 @@
 [Desktop Entry]
-_Name=medit
+Name=medit
 _Comment=Text editor
 Exec=medit %F
 Terminal=false
