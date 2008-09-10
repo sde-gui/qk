@@ -115,6 +115,8 @@ rm_fr (const char *path,
                        NULL, NULL, NULL, &child_err, &status, &error_here))
     {
         g_set_error (error, MOO_FILE_ERROR, MOO_FILE_ERROR_FAILED,
+                     /* This is error message in file selector when rm
+                        fails for some strange reason */
                      _("Could not run 'rm' command: %s"),
                      error_here->message);
         g_error_free (error_here);
@@ -131,6 +133,8 @@ rm_fr (const char *path,
 
         g_set_error (error, MOO_FILE_ERROR,
                      MOO_FILE_ERROR_FAILED,
+                     /* This is error message in file selector when rm
+                        fails to delete a file or folder */
                      _("'rm' command failed: %s"),
                      child_err ? child_err : "");
 

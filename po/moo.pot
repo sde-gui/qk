@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-09-09 21:25-0500\n"
+"POT-Creation-Date: 2008-09-09 21:35-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1932,39 +1932,43 @@ msgstr ""
 msgid "New _Window"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-fs.c:118
+#. This is error message in file selector when rm
+#. fails for some strange reason
+#: ../moo/mooutils/mooutils-fs.c:120
 #, c-format
 msgid "Could not run 'rm' command: %s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-fs.c:134
+#. This is error message in file selector when rm
+#. fails to delete a file or folder
+#: ../moo/mooutils/mooutils-fs.c:138
 #, c-format
 msgid "'rm' command failed: %s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-fs.c:184 ../moo/mooutils/mooutils-fs.c:204
-#: ../moo/mooutils/mooutils-fs.c:231
+#: ../moo/mooutils/mooutils-fs.c:188 ../moo/mooutils/mooutils-fs.c:208
+#: ../moo/mooutils/mooutils-fs.c:235
 #, c-format
 msgid "Could not remove %s: %s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-fs.c:276 ../moo/mooutils/mooutils-fs.c:295
-#: ../moo/mooutils/mooutils-fs.c:311 ../moo/mooutils/mooutils-fs.c:1726
+#: ../moo/mooutils/mooutils-fs.c:280 ../moo/mooutils/mooutils-fs.c:299
+#: ../moo/mooutils/mooutils-fs.c:315 ../moo/mooutils/mooutils-fs.c:1730
 #, c-format
 msgid "Could not create folder %s: %s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-fs.c:340
+#: ../moo/mooutils/mooutils-fs.c:344
 #, c-format
 msgid "Could not rename file %s to %s: %s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-fs.c:1495
+#: ../moo/mooutils/mooutils-fs.c:1499
 #, c-format
 msgid "Could not open %s: %s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-fs.c:1742 ../moo/mooutils/mooutils-fs.c:1756
+#: ../moo/mooutils/mooutils-fs.c:1746 ../moo/mooutils/mooutils-fs.c:1760
 #, c-format
 msgid "Could not create temporary file %s: %s"
 msgstr ""
