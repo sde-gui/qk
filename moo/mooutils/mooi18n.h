@@ -22,12 +22,16 @@
 #ifdef ENABLE_NLS
 
 #include <libintl.h>
+#include <string.h>
 
 #define _(String) moo_gettext (String)
 #define Q_(String) g_strip_context ((String), moo_gettext (String))
 #define N_(String) (String)
 #define D_(String,Domain) dgettext (Domain, String)
 #define QD_(String,Domain) g_strip_context ((String), D_ (String, Domain))
+#define C_(Context,String) moo_pgettext (Context "\004" String, strlen (Context) + 1)
+#define NC_(Context,String) (String)
+#define DC_(Context,String,Domain) moo_dpgettext (Domain, Context "\004" String, strlen (Context) + 1)
 
 #else /* !ENABLE_NLS */
 
@@ -38,11 +42,17 @@
 #undef ngettext
 #undef bindtextdomain
 #undef bind_textdomain_codeset
+
 #define _(String) (String)
 #define N_(String) (String)
 #define Q_(String) g_strip_context ((String), (String))
 #define D_(String,Domain) (String)
 #define QD_(String,Domain) g_strip_context ((String), (String))
+
+#define C_(Context,String) (String)
+#define NC_(Context,String) (String)
+#define DC_(Context,String,Domain) (String)
+
 #define textdomain(String) (String)
 #define gettext(String) (String)
 #define dgettext(Domain,String) (String)
@@ -58,6 +68,9 @@
 G_BEGIN_DECLS
 
 const char *moo_gettext (const char *string) G_GNUC_FORMAT (1);
+const char *moo_pgettext (const char *msgctxtid, gsize msgidoffset) G_GNUC_FORMAT (1);
+const char *moo_pgettext2 (const char *context, const char *msgctxtid) G_GNUC_FORMAT (2);
+const char *moo_dpgettext (const char *domain, const char *msgctxtid, gsize msgidoffset) G_GNUC_FORMAT (2);
 const char *_moo_gsv_gettext (const char *string) G_GNUC_FORMAT (1);
 char *_moo_gsv_dgettext (const char *domain, const char *string) G_GNUC_FORMAT (2);
 

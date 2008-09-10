@@ -15,6 +15,7 @@
 
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moocompat.h"
 #include <glib.h>
 
 
@@ -47,6 +48,53 @@ moo_gettext (const char *string)
 #else /* !ENABLE_NLS */
     return string;
 #endif /* !ENABLE_NLS */
+}
+
+const char *
+moo_pgettext (const char *msgctxtid, gsize msgidoffset)
+{
+#ifdef ENABLE_NLS
+    g_return_val_if_fail (msgctxtid != NULL, NULL);
+    init_gettext ();
+    return moo_dpgettext (GETTEXT_PACKAGE, msgctxtid, msgidoffset);
+#else /* !ENABLE_NLS */
+    return msgctxtid;
+#endif /* !ENABLE_NLS */
+}
+
+const char *
+moo_pgettext2 (const char *context, const char *msgctxtid)
+{
+#ifdef ENABLE_NLS
+    char *tmp;
+    const char *translation;
+
+    g_return_val_if_fail (msgctxtid != NULL, NULL);
+    init_gettext ();
+
+    tmp = g_strjoin (context, "\004", msgctxtid, NULL);
+    translation = dgettext (GETTEXT_PACKAGE, tmp);
+
+    if (translation == tmp)
+        translation = msgctxtid;
+
+    g_free (tmp);
+    return translation;
+#else /* !ENABLE_NLS */
+    return msgctxtid;
+#endif /* !ENABLE_NLS */
+}
+
+const char *
+moo_dpgettext (const char *domain, const char *msgctxtid, gsize msgidoffset)
+{
+    g_return_val_if_fail (domain != NULL, NULL);
+    g_return_val_if_fail (msgctxtid != NULL, NULL);
+#ifdef ENABLE_NLS
+    return g_dpgettext (GETTEXT_PACKAGE, msgctxtid, msgidoffset);
+#else
+    return msgctxtid + msgidoffset;
+#endif
 }
 
 const char *

@@ -109,6 +109,16 @@ void g_string_append_vprintf (GString    *string,
 #endif /* !GLIB_CHECK_VERSION(2,14,0) */
 
 
+#if !GLIB_CHECK_VERSION(2,16,0)
+
+#define g_dpgettext _moo_compat_g_dpgettext
+const char *g_dpgettext (const char *domain,
+                         const char *msgctxtid,
+                         gsize       msgidoffset);
+
+#endif /* !GLIB_CHECK_VERSION(2,16,0) */
+
+
 G_END_DECLS
 
 #endif /* MOOUTILS_COMPAT_H */

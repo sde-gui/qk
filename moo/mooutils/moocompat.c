@@ -797,3 +797,47 @@ g_string_append_vprintf (GString    *string,
 }
 
 #endif /* !GLIB_CHECK_VERSION(2,14,0) */
+
+
+#if !GLIB_CHECK_VERSION(2,16,0)
+
+#include <libintl.h>
+
+const char *
+g_dpgettext (const char *domain,
+             const char *msgctxtid,
+             gsize       msgidoffset)
+{
+    const char *translation;
+
+    translation = dgettext (domain, msgctxtid);
+
+    if (translation == msgctxtid)
+    {
+        const char *sep;
+
+        if (msgidoffset > 0)
+            return msgctxtid + msgidoffset;
+
+        sep = strchr (msgctxtid, '|');
+
+        if (sep)
+        {
+            /* try with '\004' instead of '|', in case
+            * xgettext -kQ_:1g was used
+            */
+            gchar *tmp = g_alloca (strlen (msgctxtid) + 1);
+            strcpy (tmp, msgctxtid);
+            tmp[sep - msgctxtid] = '\004';
+
+            translation = dgettext (domain, tmp);
+
+            if (translation == tmp)
+                return sep + 1;
+        }
+    }
+
+    return translation;
+}
+
+#endif /* !GLIB_CHECK_VERSION(2,16,0) */
