@@ -46,6 +46,7 @@
 #include "mooutils/mooactionfactory.h"
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooeditops.h"
+#include "mooutils/mooatom.h"
 #include "marshals.h"
 #include "mooutils/mooi18n.h"
 #include <gdk/gdkkeysyms.h>
@@ -75,7 +76,8 @@ enum {
     TARGET_TEXT = 2
 };
 
-static GdkAtom moo_file_view_clipboard;
+#define CLIPBOARD_ATOM (moo_file_view_clipboard_atom ())
+MOO_DEFINE_ATOM (MOO_FILE_VIEW_CLIPBOARD, moo_file_view_clipboard)
 
 static GtkTargetEntry source_targets[] = {
     {(char*) "text/uri-list", 0, TARGET_URI_LIST}
@@ -488,8 +490,6 @@ moo_file_view_class_init (MooFileViewClass *klass)
     GtkObjectClass *gtkobject_class = GTK_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     GtkBindingSet *binding_set;
-
-    moo_file_view_clipboard = gdk_atom_intern ("MOO_FILE_VIEW_CLIPBOARD", FALSE);
 
     gobject_class->finalize = moo_file_view_finalize;
     gobject_class->set_property = moo_file_view_set_property;
@@ -2609,7 +2609,7 @@ get_clipboard_cb (G_GNUC_UNUSED GtkClipboard *clipboard,
     {
         case CB_TARGET_CLIPBOARD:
             moo_selection_data_set_pointer (selection_data,
-                                            moo_file_view_clipboard,
+                                            CLIPBOARD_ATOM,
                                             fileview);
             break;
 
@@ -2693,7 +2693,7 @@ file_view_paste_clipboard (MooFileView *fileview)
     clipboard = gtk_widget_get_clipboard (GTK_WIDGET (fileview),
                                           GDK_SELECTION_CLIPBOARD);
 
-    data = gtk_clipboard_wait_for_contents (clipboard, moo_file_view_clipboard);
+    data = gtk_clipboard_wait_for_contents (clipboard, CLIPBOARD_ATOM);
 
     if (data)
     {
@@ -2702,7 +2702,7 @@ file_view_paste_clipboard (MooFileView *fileview)
         GList *filenames, *l;
         const char *destdir;
 
-        remote = moo_selection_data_get_pointer (data, moo_file_view_clipboard);
+        remote = moo_selection_data_get_pointer (data, CLIPBOARD_ATOM);
         g_return_if_fail (remote != NULL);
 
         cb = remote->priv->clipboard;
@@ -2742,7 +2742,7 @@ file_view_paste_clipboard (MooFileView *fileview)
         goto out;
     }
 
-    data = gtk_clipboard_wait_for_contents (clipboard, gdk_atom_intern ("text/uri-list", FALSE));
+    data = gtk_clipboard_wait_for_contents (clipboard, moo_atom_uri_list ());
 
     if (data)
     {
@@ -5324,7 +5324,7 @@ moo_file_view_drop_data_received (MooFileView    *fileview,
     gboolean success = FALSE;
     gboolean delete = FALSE;
 
-    if (data->target == gdk_atom_intern ("text/uri-list", FALSE))
+    if (data->target == moo_atom_uri_list ())
     {
         char **uris = gtk_selection_data_get_uris (data);
 

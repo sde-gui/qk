@@ -30,6 +30,7 @@
 #include "mooutils/mooeditops.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/mooatom.h"
 #include "glade/mooquicksearch-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gregex.h>
@@ -55,7 +56,8 @@ static const GtkTargetEntry text_view_target_table[] = {
     { (char*)"GTK_TEXT_BUFFER_CONTENTS", GTK_TARGET_SAME_APP, 0 }
 };
 
-static GdkAtom moo_text_view_atom;
+#define MOO_TEXT_VIEW_ATOM (moo_text_view_atom ())
+MOO_DEFINE_ATOM (MOO_TEXT_VIEW, moo_text_view)
 
 static void     undo_ops_iface_init         (MooUndoOpsIface    *iface);
 static GObject *moo_text_view_constructor   (GType               type,
@@ -265,8 +267,6 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
 
     ref_class = g_type_class_ref (MOO_TYPE_INDENTER);
     g_type_class_unref (ref_class);
-
-    moo_text_view_atom = gdk_atom_intern ("MOO_TEXT_VIEW", FALSE);
 
     gobject_class->set_property = moo_text_view_set_property;
     gobject_class->get_property = moo_text_view_get_property;
@@ -1851,9 +1851,7 @@ clipboard_get_selection (G_GNUC_UNUSED GtkClipboard *clipboard,
 
     if (info == TARGET_MOO_TEXT_VIEW)
     {
-        moo_selection_data_set_pointer (selection_data,
-                                        gdk_atom_intern ("MOO_TEXT_VIEW", FALSE),
-                                        data);
+        moo_selection_data_set_pointer (selection_data, MOO_TEXT_VIEW_ATOM, data);
     }
     else if (gtk_text_buffer_get_selection_bounds (get_buffer (view), &start, &end))
     {
@@ -1935,9 +1933,7 @@ get_clipboard (G_GNUC_UNUSED GtkClipboard *clipboard,
     MooTextViewClipboard *contents = data;
 
     if (info == TARGET_MOO_TEXT_VIEW)
-        moo_selection_data_set_pointer (selection_data,
-                                        gdk_atom_intern ("MOO_TEXT_VIEW", FALSE),
-                                        contents->view);
+        moo_selection_data_set_pointer (selection_data, MOO_TEXT_VIEW_ATOM, contents->view);
     else
         gtk_selection_data_set_text (selection_data, contents->text, -1);
 }
@@ -2088,13 +2084,13 @@ moo_text_view_paste_clipboard (GtkTextView *text_view)
 
     gtk_text_buffer_begin_user_action (buffer);
 
-    if (gtk_clipboard_wait_is_target_available (clipboard, moo_text_view_atom))
+    if (gtk_clipboard_wait_is_target_available (clipboard, MOO_TEXT_VIEW_ATOM))
     {
         MooTextView *source;
         GtkSelectionData *data;
 
-        if ((data = gtk_clipboard_wait_for_contents (clipboard, moo_text_view_atom)) &&
-             (source = moo_selection_data_get_pointer (data, moo_text_view_atom)))
+        if ((data = gtk_clipboard_wait_for_contents (clipboard, MOO_TEXT_VIEW_ATOM)) &&
+             (source = moo_selection_data_get_pointer (data, MOO_TEXT_VIEW_ATOM)))
         {
             need_paste_text = FALSE;
             paste_moo_text_view_content (text_view, source);

@@ -34,6 +34,7 @@
 #include "mooutils/moomenu.h"
 #include "plugins/moofileselector-gxml.h"
 #include "mooutils/moohelp.h"
+#include "mooutils/mooatom.h"
 #include "help-sections.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
@@ -65,8 +66,6 @@ enum {
     TARGET_URI_LIST = 2
 };
 
-static GdkAtom moo_edit_tab_atom;
-
 static GtkTargetEntry targets[] = {
     { (char*) "MOO_EDIT_TAB", GTK_TARGET_SAME_APP, TARGET_MOO_EDIT_TAB },
     { (char*) "text/uri-list", 0, TARGET_URI_LIST }
@@ -76,6 +75,8 @@ static GtkTargetEntry targets[] = {
 
 G_DEFINE_TYPE (MooFileSelector, _moo_file_selector, MOO_TYPE_FILE_VIEW)
 
+#define MOO_EDIT_TAB_ATOM (moo_edit_tab_atom ())
+MOO_DEFINE_ATOM (MOO_EDIT_TAB, moo_edit_tab)
 
 enum {
     PROP_0,
@@ -143,8 +144,6 @@ _moo_file_selector_class_init (MooFileSelectorClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     MooFileViewClass *fileview_class = MOO_FILE_VIEW_CLASS (klass);
 
-    moo_edit_tab_atom = gdk_atom_intern ("MOO_EDIT_TAB", FALSE);
-
     gobject_class->set_property = moo_file_selector_set_property;
     gobject_class->get_property = moo_file_selector_get_property;
     gobject_class->constructor = moo_file_selector_constructor;
@@ -178,7 +177,7 @@ static void
 _moo_file_selector_init (MooFileSelector *filesel)
 {
     filesel->targets = gtk_target_list_new (targets, G_N_ELEMENTS (targets));
-    _moo_file_view_add_target (MOO_FILE_VIEW (filesel), moo_edit_tab_atom,
+    _moo_file_view_add_target (MOO_FILE_VIEW (filesel), MOO_EDIT_TAB_ATOM,
                                GTK_TARGET_SAME_APP, TARGET_MOO_EDIT_TAB);
 
     moo_help_set_id (GTK_WIDGET (filesel), HELP_SECTION_FILE_SELECTOR);
@@ -670,13 +669,13 @@ moo_file_selector_drop (MooFileView    *fileview,
     filesel->waiting_for_tab = FALSE;
     target = gtk_drag_dest_find_target (widget, context, filesel->targets);
 
-    if (target != moo_edit_tab_atom)
+    if (target != MOO_EDIT_TAB_ATOM)
         return MOO_FILE_VIEW_CLASS(_moo_file_selector_parent_class)->
                 drop (fileview, path, widget, context, x, y, time);
 
     filesel->waiting_for_tab = TRUE;
 
-    gtk_drag_get_data (widget, context, moo_edit_tab_atom, time);
+    gtk_drag_get_data (widget, context, MOO_EDIT_TAB_ATOM, time);
 
     return TRUE;
 }
@@ -710,7 +709,7 @@ moo_file_selector_drop_data_received (MooFileView *fileview,
         goto error;
     }
 
-    doc = moo_selection_data_get_pointer (data, moo_edit_tab_atom);
+    doc = moo_selection_data_get_pointer (data, MOO_EDIT_TAB_ATOM);
 
     if (!MOO_IS_EDIT (doc))
     {

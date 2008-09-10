@@ -20,6 +20,7 @@
 #include "mooutils/mooutils-file.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/mooatom.h"
 #include "glade/moologwindow-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gmappedfile.h>
@@ -2118,6 +2119,12 @@ _moo_intern_string (const char *string)
         return original;
     }
 #endif
+}
+
+GdkAtom
+moo_atom_uri_list (void)
+{
+    MOO_DEFINE_ATOM_ (text/uri-list)
 }
 
 

@@ -28,6 +28,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
+#include "mooutils/mooatom.h"
 #include "glade/mooeditprogress-gxml.h"
 #include <string.h>
 #include <stdlib.h>
@@ -1230,7 +1231,7 @@ find_uri_atom (GdkDragContext *context)
     GList *targets;
     GdkAtom atom;
 
-    atom = gdk_atom_intern ("text/uri-list", FALSE);
+    atom = moo_atom_uri_list ();
     targets = context->targets;
 
     while (targets)

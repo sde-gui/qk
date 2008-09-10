@@ -55,6 +55,7 @@ mooutils_sources =			\
 	mooapp-ipc.h			\
 	mooappinput.c			\
 	mooappinput.h			\
+	mooatom.h			\
 	moobigpaned.c			\
 	moobigpaned.h			\
 	mooclosure.c			\

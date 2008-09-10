@@ -41,6 +41,7 @@
 #include "mooutils/mooaction-private.h"
 #include "mooutils/moofiledialog.h"
 #include "mooutils/mooencodings.h"
+#include "mooutils/mooatom.h"
 #include "glade/moostatusbar-gxml.h"
 #include <string.h>
 #include <gtk/gtk.h>
@@ -107,8 +108,8 @@ enum {
     TARGET_URI_LIST = 2
 };
 
-static GdkAtom moo_edit_tab_atom;
-static GdkAtom text_uri_atom;
+#define MOO_EDIT_TAB_ATOM (moo_edit_tab_atom ())
+MOO_DEFINE_ATOM (MOO_EDIT_TAB, moo_edit_tab)
 
 static GtkTargetEntry dest_targets[] = {
     {(char*) "MOO_EDIT_TAB", GTK_TARGET_SAME_APP, TARGET_MOO_EDIT_TAB},
@@ -303,9 +304,6 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
     gobject_class->get_property = moo_edit_window_get_property;
     gtkobject_class->destroy = moo_edit_window_destroy;
     window_class->close = moo_edit_window_close;
-
-    moo_edit_tab_atom = gdk_atom_intern ("MOO_EDIT_TAB", FALSE);
-    text_uri_atom = gdk_atom_intern ("text/uri-list", FALSE);
 
     g_type_class_add_private (klass, sizeof (MooEditWindowPrivate));
 
@@ -2459,10 +2457,10 @@ tab_icon_start_drag (GtkWidget      *evbox,
     targets = gtk_target_list_new (NULL, 0);
 
     gtk_target_list_add (targets,
-                         gdk_atom_intern ("text/uri-list", FALSE),
+                         moo_atom_uri_list (),
                          0, TARGET_URI_LIST);
     gtk_target_list_add (targets,
-                         gdk_atom_intern ("MOO_EDIT_TAB", FALSE),
+                         MOO_EDIT_TAB_ATOM,
                          GTK_TARGET_SAME_APP,
                          TARGET_MOO_EDIT_TAB);
 
@@ -2554,9 +2552,7 @@ tab_icon_drag_data_get (GtkWidget      *evbox,
 
     if (info == TARGET_MOO_EDIT_TAB)
     {
-        moo_selection_data_set_pointer (data,
-                                        gdk_atom_intern ("MOO_EDIT_TAB", FALSE),
-                                        edit);
+        moo_selection_data_set_pointer (data, MOO_EDIT_TAB_ATOM, edit);
     }
     else if (info == TARGET_URI_LIST)
     {
@@ -3848,8 +3844,8 @@ notebook_drag_motion (GtkWidget          *widget,
     if (target == GDK_NONE)
         return FALSE;
 
-    if (target == moo_edit_tab_atom)
-        gtk_drag_get_data (widget, context, moo_edit_tab_atom, time);
+    if (target == MOO_EDIT_TAB_ATOM)
+        gtk_drag_get_data (widget, context, MOO_EDIT_TAB_ATOM, time);
     else
         gdk_drag_status (context, context->suggested_action, time);
 
@@ -3900,10 +3896,10 @@ notebook_drag_data_recv (GtkWidget          *widget,
     {
         g_object_set_data (G_OBJECT (widget), "moo-edit-window-drop", NULL);
 
-        if (data->target == moo_edit_tab_atom)
+        if (data->target == MOO_EDIT_TAB_ATOM)
         {
             GtkWidget *toplevel;
-            MooEdit *doc = moo_selection_data_get_pointer (data, moo_edit_tab_atom);
+            MooEdit *doc = moo_selection_data_get_pointer (data, MOO_EDIT_TAB_ATOM);
 
             if (!doc)
                 goto out;
@@ -3915,7 +3911,7 @@ notebook_drag_data_recv (GtkWidget          *widget,
 
             goto out;
         }
-        else if (data->target == text_uri_atom)
+        else if (data->target == moo_atom_uri_list ())
         {
             char **uris;
             char **u;
@@ -3973,7 +3969,7 @@ notebook_drag_data_recv (GtkWidget          *widget,
         if (info == TARGET_MOO_EDIT_TAB)
         {
             GtkWidget *toplevel;
-            MooEdit *doc = moo_selection_data_get_pointer (data, moo_edit_tab_atom);
+            MooEdit *doc = moo_selection_data_get_pointer (data, MOO_EDIT_TAB_ATOM);
 
             if (!doc)
             {
