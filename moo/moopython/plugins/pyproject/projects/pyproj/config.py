@@ -40,12 +40,12 @@ class PyConfig(SimpleConfig):
         return ro.exe, ro.args, top_dir
 
 factory_template = """\
-<medit-project name="%(project_name)s" type="Python" version="1.0">
+<medit-project name="%(project_name)s" type="Python" version="2.0">
 </medit-project>
 """
 
 _sample_file = """
-    <medit-project name="foo" type="Python" version="1.0">
+    <medit-project name="foo" type="Python" version="2.0">
       <run>
         <exe>foo.py</exe>
         <args>--blah</args>
