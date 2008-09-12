@@ -3454,7 +3454,7 @@ draw_left_margin (MooTextView    *view,
             gtk_paint_layout (GTK_WIDGET (view)->style,
                               event->window,
                               GTK_WIDGET_STATE (view),
-                              TRUE, &event->area,
+                              FALSE, &event->area,
                               GTK_WIDGET(view), NULL,
                               x, y, layout);
         }
