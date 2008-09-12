@@ -59,7 +59,7 @@ static MooLang *get_lang_for_mime_type  (MooLangMgr *mgr,
                                          const char *mime_type);
 
 
-G_DEFINE_TYPE (MooLangMgr, moo_lang_mgr, GTK_TYPE_SOURCE_LANGUAGE_MANAGER)
+G_DEFINE_TYPE (MooLangMgr, moo_lang_mgr, G_TYPE_OBJECT)
 
 
 static void
@@ -75,8 +75,9 @@ moo_lang_mgr_init (MooLangMgr *mgr)
     mgr->config = g_hash_table_new_full (g_str_hash, g_str_equal,
                                          g_free, g_free);
 
+    mgr->lang_mgr = gtk_source_language_manager_new ();
     dirs = moo_get_data_subdirs (LANGUAGE_DIR, MOO_DATA_SHARE, &n_dirs);
-    g_object_set (mgr, "search-path", dirs, NULL);
+    g_object_set (mgr->lang_mgr, "search-path", dirs, NULL);
     mgr->style_mgr = gtk_source_style_scheme_manager_new ();
     gtk_source_style_scheme_manager_set_search_path (mgr->style_mgr, dirs);
 
@@ -93,6 +94,7 @@ moo_lang_mgr_dispose (GObject *object)
 
     if (mgr->langs)
     {
+        g_object_unref (mgr->lang_mgr);
         g_object_unref (mgr->style_mgr);
         g_hash_table_destroy (mgr->langs);
         g_hash_table_destroy (mgr->config);
@@ -524,7 +526,7 @@ read_langs (MooLangMgr *mgr)
     mgr->got_langs = TRUE;
 
 #ifdef MOO_USE_XML
-    ids = gtk_source_language_manager_get_language_ids (GTK_SOURCE_LANGUAGE_MANAGER (mgr));
+    ids = gtk_source_language_manager_get_language_ids (mgr->lang_mgr);
 #endif
 
     get_lang_info (mgr, MOO_LANG_NONE, TRUE);
@@ -536,7 +538,7 @@ read_langs (MooLangMgr *mgr)
         GtkSourceLanguage *lang;
 
         id = *ids;
-        lang = gtk_source_language_manager_get_language (GTK_SOURCE_LANGUAGE_MANAGER (mgr), id);
+        lang = gtk_source_language_manager_get_language (mgr->lang_mgr, id);
 
         info = get_lang_info (mgr, id, TRUE);
         info->lang = g_object_ref (lang);
@@ -759,7 +761,7 @@ moo_lang_mgr_get_sections (MooLangMgr *mgr)
     read_langs (mgr);
 
 #ifdef MOO_USE_XML
-    ids = gtk_source_language_manager_get_language_ids (GTK_SOURCE_LANGUAGE_MANAGER (mgr));
+    ids = gtk_source_language_manager_get_language_ids (mgr->lang_mgr);
 #endif
 
     while (ids && *ids)
@@ -769,7 +771,7 @@ moo_lang_mgr_get_sections (MooLangMgr *mgr)
         const char *id;
 
         id = *ids;
-        lang = gtk_source_language_manager_get_language (GTK_SOURCE_LANGUAGE_MANAGER (mgr), id);
+        lang = gtk_source_language_manager_get_language (mgr->lang_mgr, id);
         section = _moo_lang_get_section (MOO_LANG (lang));
 
         if (section && !g_slist_find_custom (sections, section, (GCompareFunc) strcmp))
@@ -793,13 +795,13 @@ moo_lang_mgr_get_available_langs (MooLangMgr *mgr)
     read_langs (mgr);
 
 #ifdef MOO_USE_XML
-    ids = gtk_source_language_manager_get_language_ids (GTK_SOURCE_LANGUAGE_MANAGER (mgr));
+    ids = gtk_source_language_manager_get_language_ids (mgr->lang_mgr);
 #endif
 
     while (ids && *ids)
     {
         GtkSourceLanguage *lang;
-        lang = gtk_source_language_manager_get_language (GTK_SOURCE_LANGUAGE_MANAGER (mgr), *ids);
+        lang = gtk_source_language_manager_get_language (mgr->lang_mgr, *ids);
         if (lang)
             list = g_slist_prepend (list, g_object_ref (lang));
         ids++;
