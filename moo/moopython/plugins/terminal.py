@@ -41,6 +41,7 @@ class Terminal(vte.Terminal):
         cs_name = moo.utils.prefs_get_string(COLOR_SCHEME_KEY)
         cs = find_color_scheme(cs_name)
         self.set_color_scheme(cs)
+        self.set_allow_bold(False)
 
         font_name = moo.utils.prefs_get_string(FONT_KEY)
         if font_name:
@@ -209,9 +210,8 @@ class ColorScheme(object):
             self.colors = [gtk.gdk.color_parse(c) for c in colors]
 
     def set_on_terminal(self, term):
-        # FIXME!
         if self.colors is not None:
-            term.set_colors(self.colors[0], self.colors[1], self.colors[2:10])
+            term.set_colors(self.colors[0], self.colors[1], self.colors[2:10] + self.colors[12:20])
         else:
             term.set_colors(term.style.text[gtk.STATE_NORMAL], term.style.base[gtk.STATE_NORMAL], [])
 
