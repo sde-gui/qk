@@ -6,8 +6,7 @@ EXTRA_DIST +=			\
 	COPYING.GPL		\
 	COPYING			\
 	LICENSE			\
-	THANKS			\
-	gen-revision-m4
+	THANKS
 
 @MOO_PO_SUBDIRS_RULE@
 @MOO_PO_SUBDIRS_RULE2@
@@ -47,20 +46,6 @@ moo-config-dirs.h.stamp: Makefile
 BUILT_SOURCES += moo-config-dirs.h.stamp
 CLEANFILES += moo-config-dirs.h.stamp moo-config-dirs.h
 
-moo-version.h: moo-version.h.stamp
-moo-version.h.stamp: Makefile
-	{ echo '#define MOO_VERSION "$(MOO_VERSION_UNQUOTED)"'; \
-	  echo '#define MOO_MAJOR_VERSION $(MOO_MAJOR_VERSION)'; \
-	  echo '#define MOO_MINOR_VERSION $(MOO_MINOR_VERSION)'; \
-	  echo '#define MOO_MICRO_VERSION $(MOO_MICRO_VERSION)'; \
-	} | sed '/""/d' > moo-version.h.tmp || exit 1
-	cmp -s moo-version.h moo-version.h.tmp || \
-	    mv moo-version.h.tmp moo-version.h || exit 1
-	rm -f moo-version.h.tmp
-	echo stamp > moo-version.h.stamp
-BUILT_SOURCES += moo-version.h.stamp
-CLEANFILES += moo-version.h.stamp moo-version.h
-
 ACLOCAL_AMFLAGS = -I m4 -I ugly/m4
 
 DISTCLEANFILES +=		\
@@ -73,6 +58,14 @@ DISTCLEANFILES +=		\
 
 # DISTCHECK_CONFIGURE_FLAGS = --enable-unit-tests
 distuninstallcheck_listfiles = find . -type f -print | grep -v share/mime/ | grep -v share/icons/hicolor
+
+snapshot:
+	if [ -d $(top_srcdir)/.hg ]; then \
+	  suffix=r`hg tip --template '{rev}'`; \
+	else \
+	  suffix=`date +%F-%H-%M`; \
+	fi; \
+	$(MAKE) dist && mv $(PACKAGE)-$(VERSION).tar.bz2 $(PACKAGE)-"$$suffix".tar.bz2
 
 win-test-stuff:
 	$(MAKE) all
