@@ -15,6 +15,7 @@ Makefile.in
 .moo.mprj.session
 a.out
 aclocal.m4
+revision.m4
 compile
 config.guess
 config.h.in

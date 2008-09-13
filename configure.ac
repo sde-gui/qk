@@ -3,12 +3,16 @@
 #
 
 # keep version in sync with doc/medit.t2t
-AC_INIT([medit],[0.9.5],[muntyan@tamu.edu],[medit])
+m4_define([moo_version], [0.9.5])
+m4_include(revision.m4)
+m4_ifndef([moo_version_detail], [m4_define([moo_version_detail],[])])
+
+AC_INIT([medit],[moo_version[]moo_version_detail],[muntyan@tamu.edu],[medit])
 AM_INIT_AUTOMAKE([foreign])
 AC_CANONICAL_HOST
 
 AC_CONFIG_HEADERS(config.h)
-MOO_DEFINE_VERSIONS(moo, AC_PACKAGE_VERSION)
+MOO_DEFINE_VERSIONS(moo,[moo_version],[moo_version_detail])
 MOO_DEFINE_MODULE_VERSIONS(1,0)
 
 MOO_AC_I18N(moo)

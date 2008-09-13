@@ -17,7 +17,7 @@ VS_VERSION_INFO VERSIONINFO
       BEGIN
         VALUE "CompanyName", "http://mooedit.sourceforge.net/"
         VALUE "FileDescription", "medit text editor"
-        VALUE "FileVersion", "@MOO_VERSION_UNQUOTED@.0"
+        VALUE "FileVersion", @MOO_VERSION@
         VALUE "InternalName", "medit-@MOO_VERSION_UNQUOTED@"
         VALUE "LegalCopyright", "(C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>"
         VALUE "OriginalFilename", "medit.exe"

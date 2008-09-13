@@ -1,0 +1,11 @@
+#! /bin/sh
+
+if [ -z "$node" ]; then
+  node=`hg log -r tip --template {node} 2>/dev/null`
+fi
+
+node=`echo $node | head -c 12`
+
+cat > revision.m4 << _EOFEOF
+m4_define([moo_version_detail], [.$node])
+_EOFEOF

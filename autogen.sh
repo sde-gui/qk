@@ -26,6 +26,11 @@ AUTOCONF=${AUTOCONF:-autoconf}
 LIBTOOLIZE=${LIBTOOLIZE:-libtoolize}
 UGLY=${UGLY:-./ugly/ugly}
 
+if [ -x gen-revision-m4 ]; then
+  echo ./gen-revision-m4
+  ./gen-revision-m4 || exit $?
+fi
+
 if [ -f Makefile.ug ]; then
   echo $UGLY
   $UGLY || exit $?

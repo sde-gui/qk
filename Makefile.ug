@@ -6,7 +6,8 @@ EXTRA_DIST +=			\
 	COPYING.GPL		\
 	COPYING			\
 	LICENSE			\
-	THANKS
+	THANKS			\
+	gen-revision-m4
 
 @MOO_PO_SUBDIRS_RULE@
 @MOO_PO_SUBDIRS_RULE2@
@@ -58,14 +59,6 @@ DISTCLEANFILES +=		\
 
 # DISTCHECK_CONFIGURE_FLAGS = --enable-unit-tests
 distuninstallcheck_listfiles = find . -type f -print | grep -v share/mime/ | grep -v share/icons/hicolor
-
-snapshot:
-	if [ -d $(top_srcdir)/.hg ]; then \
-	  suffix=r`hg tip --template '{rev}'`; \
-	else \
-	  suffix=`date +%F-%H-%M`; \
-	fi; \
-	$(MAKE) dist && mv $(PACKAGE)-$(VERSION).tar.bz2 $(PACKAGE)-"$$suffix".tar.bz2
 
 win-test-stuff:
 	$(MAKE) all

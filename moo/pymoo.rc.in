@@ -16,7 +16,7 @@ VS_VERSION_INFO VERSIONINFO
       BEGIN
         VALUE "CompanyName", "http://mooedit.sourceforge.net/"
         VALUE "FileDescription", "python plugin for medit"
-        VALUE "FileVersion", "@MOO_VERSION_UNQUOTED@.0"
+        VALUE "FileVersion", @MOO_VERSION@
         VALUE "InternalName", "pymoo-@MOO_VERSION_UNQUOTED@"
         VALUE "LegalCopyright", "(C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>"
         VALUE "OriginalFilename", "pymoo.dll"

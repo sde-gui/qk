@@ -9,18 +9,18 @@ $1[]_MICRO_VERSION=`echo "$2" | $SED 's/[[^.]][[^.]]*.[[^.]][[^.]]*.\(.*\)/\1/'`
 ])
 
 ##############################################################################
-# MOO_DEFINE_VERSIONS(pkg,version)
+# MOO_DEFINE_VERSIONS(pkg,version,detail)
 #
 AC_DEFUN([MOO_DEFINE_VERSIONS],[
 _MOO_SPLIT_VERSION([m4_toupper($1)], [$2])
-m4_toupper($1)_VERSION=\"$2\"
-m4_toupper($1)_VERSION_UNQUOTED=$2
+m4_toupper($1)_VERSION=\"[$2][$3]\"
+m4_toupper($1)_VERSION_UNQUOTED=[$2][$3]
+AC_DEFINE(m4_toupper($1)_VERSION, ["$2" "$3"], [$1 version])
 AC_SUBST(m4_toupper($1)_VERSION)
 AC_SUBST(m4_toupper($1)_VERSION_UNQUOTED)
 AC_SUBST(m4_toupper($1)_MAJOR_VERSION)
 AC_SUBST(m4_toupper($1)_MINOR_VERSION)
 AC_SUBST(m4_toupper($1)_MICRO_VERSION)
-AC_DEFINE(m4_toupper($1)_VERSION, ["$2"], [$1 version])
 AC_DEFINE_UNQUOTED(m4_toupper($1)_MAJOR_VERSION, [$[]m4_toupper($1)_MAJOR_VERSION], [$1 major version])
 AC_DEFINE_UNQUOTED(m4_toupper($1)_MINOR_VERSION, [$[]m4_toupper($1)_MINOR_VERSION], [$1 minor version])
 AC_DEFINE_UNQUOTED(m4_toupper($1)_MICRO_VERSION, [$[]m4_toupper($1)_MICRO_VERSION], [$1 micro version])
