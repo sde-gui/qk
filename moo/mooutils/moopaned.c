@@ -2229,7 +2229,7 @@ _moo_paned_insert_pane (MooPaned *paned,
                         MooPane  *pane,
                         int       position)
 {
-    GtkWidget *handle;
+    GtkWidget *handle, *small_handle;
 
     g_return_if_fail (MOO_IS_PANED (paned));
     g_return_if_fail (MOO_IS_PANE (pane));
@@ -2255,14 +2255,14 @@ _moo_paned_insert_pane (MooPaned *paned,
     g_signal_connect (_moo_pane_get_button (pane), "toggled",
                       G_CALLBACK (pane_button_toggled), paned);
 
-    handle = _moo_pane_get_handle (pane);
+    _moo_pane_get_handle (pane, &handle, &small_handle);
     g_signal_connect (handle, "button-press-event",
                       G_CALLBACK (handle_button_press), paned);
     g_signal_connect (handle, "button-release-event",
                       G_CALLBACK (handle_button_release), paned);
     g_signal_connect (handle, "motion-notify-event",
                       G_CALLBACK (handle_motion), paned);
-    g_signal_connect (handle, "expose-event",
+    g_signal_connect (small_handle, "expose-event",
                       G_CALLBACK (handle_expose), paned);
 
     gtk_widget_show (paned->button_box);
@@ -2313,6 +2313,7 @@ gboolean
 moo_paned_remove_pane (MooPaned  *paned,
                        GtkWidget *pane_widget)
 {
+    GtkWidget *handle, *small_handle;
     MooPane *pane;
     int index;
 
@@ -2350,20 +2351,21 @@ moo_paned_remove_pane (MooPaned  *paned,
                                           (gpointer) pane_button_toggled,
                                           paned);
 
-    g_signal_handlers_disconnect_by_func (_moo_pane_get_handle (pane),
+    _moo_pane_get_handle (pane, &handle, &small_handle);
+    g_signal_handlers_disconnect_by_func (handle,
                                           (gpointer) handle_button_press,
                                           paned);
-    g_signal_handlers_disconnect_by_func (_moo_pane_get_handle (pane),
+    g_signal_handlers_disconnect_by_func (handle,
                                           (gpointer) handle_button_release,
                                           paned);
-    g_signal_handlers_disconnect_by_func (_moo_pane_get_handle (pane),
+    g_signal_handlers_disconnect_by_func (handle,
                                           (gpointer) handle_motion,
                                           paned);
-    g_signal_handlers_disconnect_by_func (_moo_pane_get_handle (pane),
-                                          (gpointer) handle_expose,
-                                          paned);
-    g_signal_handlers_disconnect_by_func (_moo_pane_get_handle (pane),
+    g_signal_handlers_disconnect_by_func (handle,
                                           (gpointer) handle_realize,
+                                          paned);
+    g_signal_handlers_disconnect_by_func (small_handle,
+                                          (gpointer) handle_expose,
                                           paned);
 
     gtk_container_remove (GTK_CONTAINER (paned->button_box), _moo_pane_get_button (pane));
@@ -3170,7 +3172,7 @@ handle_expose (GtkWidget      *widget,
                       "moo-pane-handle",
                       0,
                       (widget->allocation.height - height) / 2,
-                      widget->allocation.width,
+                      MIN (widget->allocation.width, 20),
                       height,
                       GTK_ORIENTATION_HORIZONTAL);
     return TRUE;

@@ -2726,7 +2726,7 @@ remove_pane_action (MooEditWindow *window,
     g_free (action_id);
 }
 
-static gboolean
+static MooPane *
 moo_edit_window_add_pane_full (MooEditWindow  *window,
                                const char     *user_id,
                                GtkWidget      *widget,
@@ -2736,12 +2736,12 @@ moo_edit_window_add_pane_full (MooEditWindow  *window,
 {
     MooPane *pane;
 
-    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
-    g_return_val_if_fail (user_id != NULL, FALSE);
-    g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
-    g_return_val_if_fail (label != NULL, FALSE);
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
+    g_return_val_if_fail (user_id != NULL, NULL);
+    g_return_val_if_fail (GTK_IS_WIDGET (widget), NULL);
+    g_return_val_if_fail (label != NULL, NULL);
 
-    g_return_val_if_fail (moo_edit_window_get_pane (window, user_id) == NULL, FALSE);
+    g_return_val_if_fail (moo_edit_window_get_pane (window, user_id) == NULL, NULL);
 
     MOO_OBJECT_REF_SINK (widget);
 
@@ -2756,10 +2756,10 @@ moo_edit_window_add_pane_full (MooEditWindow  *window,
     }
 
     g_object_unref (widget);
-    return pane != NULL;
+    return pane;
 }
 
-gboolean
+MooPane *
 moo_edit_window_add_pane (MooEditWindow  *window,
                           const char     *user_id,
                           GtkWidget      *widget,

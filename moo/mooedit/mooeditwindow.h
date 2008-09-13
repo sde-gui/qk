@@ -93,7 +93,7 @@ void         moo_edit_window_set_title_prefix       (MooEditWindow  *window,
                                                      const char     *prefix);
 
 /* sinks widget */
-gboolean     moo_edit_window_add_pane               (MooEditWindow  *window,
+MooPane     *moo_edit_window_add_pane               (MooEditWindow  *window,
                                                      const char     *user_id,
                                                      GtkWidget      *widget,
                                                      MooPaneLabel   *label,

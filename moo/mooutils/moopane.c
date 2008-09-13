@@ -92,7 +92,7 @@ _moo_window_set_icon_from_stock (GtkWindow  *window,
 #endif
 
 
-struct _MooPane {
+struct MooPane {
     GtkObject base;
 
     char         *id;
@@ -103,12 +103,18 @@ struct _MooPane {
     MooPaneLabel *label;
     GtkWidget    *frame;
     GtkWidget    *handle;
+    GtkWidget    *small_handle;
     GtkWidget    *button;
     GtkWidget    *label_widget;
     GtkWidget    *icon_widget;
     GtkWidget    *sticky_button;
     GtkWidget    *detach_button;
     GtkWidget    *close_button;
+
+    GtkWidget    *frame_label_embedded;
+    GtkWidget    *frame_label_window;
+    char         *frame_label_text;
+    gboolean      frame_label_markup;
 
     /* XXX weak pointer */
     gpointer      focus_child;
@@ -129,7 +135,7 @@ struct _MooPane {
     guint         params_changed_blocked : 1;
 };
 
-struct _MooPaneClass {
+struct MooPaneClass {
     GtkObjectClass base_class;
     gboolean (*remove) (MooPane *pane);
 };
@@ -385,6 +391,7 @@ moo_pane_init (MooPane *pane)
     pane->child_holder = NULL;
     pane->frame = NULL;
     pane->handle = NULL;
+    pane->small_handle = NULL;
     pane->button = NULL;
     pane->label_widget = NULL;
     pane->icon_widget = NULL;
@@ -538,6 +545,51 @@ update_sticky_button (MooPane *pane)
 }
 
 
+void
+moo_pane_set_frame_markup (MooPane    *pane,
+                           const char *text)
+{
+    char *tmp;
+
+    g_return_if_fail (MOO_IS_PANE (pane));
+
+    if (!text)
+    {
+        moo_pane_set_frame_text (pane, NULL);
+        return;
+    }
+
+    tmp = pane->frame_label_text;
+    pane->frame_label_text = g_strdup (text);
+    pane->frame_label_markup = TRUE;
+    g_free (tmp);
+
+    if (pane->frame_label_embedded)
+        gtk_label_set_markup (GTK_LABEL (pane->frame_label_embedded), text);
+    if (pane->frame_label_window)
+        gtk_label_set_markup (GTK_LABEL (pane->frame_label_window), text);
+}
+
+void
+moo_pane_set_frame_text (MooPane    *pane,
+                         const char *text)
+{
+    char *tmp;
+
+    g_return_if_fail (MOO_IS_PANE (pane));
+
+    tmp = pane->frame_label_text;
+    pane->frame_label_text = g_strdup (text);
+    pane->frame_label_markup = FALSE;
+    g_free (tmp);
+
+    if (pane->frame_label_embedded)
+        gtk_label_set_text (GTK_LABEL (pane->frame_label_embedded), text);
+    if (pane->frame_label_window)
+        gtk_label_set_text (GTK_LABEL (pane->frame_label_window), text);
+}
+
+
 static GtkWidget *
 create_button (MooPane      *pane,
                GtkWidget    *toolbar,
@@ -573,6 +625,7 @@ create_frame_widget (MooPane        *pane,
                      gboolean        embedded)
 {
     GtkWidget *vbox, *toolbar, *separator, *handle, *table, *child_holder;
+    GtkWidget *handle_hbox, *frame_label;
 
     vbox = gtk_vbox_new (FALSE, 0);
     gtk_widget_show (vbox);
@@ -583,6 +636,29 @@ create_frame_widget (MooPane        *pane,
     gtk_widget_show (handle);
     gtk_box_pack_start (GTK_BOX (toolbar), handle, TRUE, TRUE, 3);
     pane->handle = handle;
+
+    handle_hbox = gtk_hbox_new (FALSE, 0);
+    gtk_widget_show (handle_hbox);
+    gtk_container_add (GTK_CONTAINER (pane->handle), handle_hbox);
+
+    frame_label = gtk_label_new (NULL);
+    gtk_widget_show (frame_label);
+    gtk_box_pack_start (GTK_BOX (handle_hbox), frame_label, TRUE, TRUE, 0);
+    gtk_misc_set_alignment (GTK_MISC (frame_label), .0, .5);
+    gtk_misc_set_padding (GTK_MISC (frame_label), 6, 0);
+    gtk_label_set_ellipsize (GTK_LABEL (frame_label), PANGO_ELLIPSIZE_END);
+    if (pane->frame_label_markup)
+        gtk_label_set_markup (GTK_LABEL (frame_label), pane->frame_label_text);
+    else
+        gtk_label_set_text (GTK_LABEL (frame_label), pane->frame_label_text);
+    if (embedded)
+        pane->frame_label_embedded = frame_label;
+    else
+        pane->frame_label_window = frame_label;
+
+    pane->small_handle = gtk_event_box_new ();
+    gtk_widget_show (pane->small_handle);
+    gtk_box_pack_start (GTK_BOX (handle_hbox), pane->small_handle, TRUE, TRUE, 0);
 
     if (embedded)
     {
@@ -1046,11 +1122,14 @@ _moo_pane_get_button (MooPane *pane)
     return pane->button;
 }
 
-GtkWidget *
-_moo_pane_get_handle (MooPane *pane)
+void
+_moo_pane_get_handle (MooPane    *pane,
+                      GtkWidget **big,
+                      GtkWidget **small)
 {
-    g_return_val_if_fail (MOO_IS_PANE (pane), NULL);
-    return pane->handle;
+    g_return_if_fail (MOO_IS_PANE (pane));
+    *big = pane->handle;
+    *small = pane->small_handle;
 }
 
 GtkWidget *
@@ -1124,6 +1203,7 @@ _moo_pane_unparent (MooPane *pane)
         pane->child_holder = NULL;
         pane->frame = NULL;
         pane->handle = NULL;
+        pane->small_handle = NULL;
         pane->button = NULL;
         pane->label_widget = NULL;
         pane->icon_widget = NULL;
@@ -1250,6 +1330,8 @@ create_pane_window (MooPane *pane)
 #endif
 
     set_pane_window_icon_and_title (pane);
+    gtk_window_set_type_hint (GTK_WINDOW (pane->window),
+                              GDK_WINDOW_TYPE_HINT_UTILITY);
 
     switch (_moo_paned_get_position (pane->parent))
     {

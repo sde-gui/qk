@@ -458,7 +458,7 @@
 (define-method add_pane
   (of-object "MooEditWindow")
   (c-name "moo_edit_window_add_pane")
-  (return-type "gboolean")
+  (return-type "MooPane*")
   (parameters
     '("const-char*" "user_id")
     '("GtkWidget*" "widget")

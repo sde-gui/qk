@@ -460,6 +460,24 @@
   (return-type "MooPaneLabel*")
 )
 
+(define-method set_frame_markup
+  (of-object "MooPane")
+  (c-name "moo_pane_set_frame_markup")
+  (return-type "none")
+  (parameters
+    '("const-char*" "markup" (null-ok))
+  )
+)
+
+(define-method set_frame_text
+  (of-object "MooPane")
+  (c-name "moo_pane_set_frame_text")
+  (return-type "none")
+  (parameters
+    '("const-char*" "text" (null-ok))
+  )
+)
+
 (define-method set_params
   (of-object "MooPane")
   (c-name "moo_pane_set_params")

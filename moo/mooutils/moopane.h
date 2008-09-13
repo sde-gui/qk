@@ -31,19 +31,19 @@ G_BEGIN_DECLS
 #define MOO_TYPE_PANE_LABEL         (moo_pane_label_get_type ())
 #define MOO_TYPE_PANE_PARAMS        (moo_pane_params_get_type ())
 
-typedef struct _MooPane          MooPane;
-typedef struct _MooPaneClass     MooPaneClass;
-typedef struct _MooPaneLabel     MooPaneLabel;
-typedef struct _MooPaneParams    MooPaneParams;
+typedef struct MooPane          MooPane;
+typedef struct MooPaneClass     MooPaneClass;
+typedef struct MooPaneLabel     MooPaneLabel;
+typedef struct MooPaneParams    MooPaneParams;
 
-struct _MooPaneLabel {
+struct MooPaneLabel {
     char *icon_stock_id;
     GdkPixbuf *icon_pixbuf;
     char *label;
     char *window_title;
 };
 
-struct _MooPaneParams
+struct MooPaneParams
 {
     GdkRectangle window_position;
     guint detached : 1;
@@ -62,6 +62,10 @@ void            moo_pane_set_label          (MooPane        *pane,
                                              MooPaneLabel   *label);
 /* result must be freed with moo_pane_label_free() */
 MooPaneLabel   *moo_pane_get_label          (MooPane        *pane);
+void            moo_pane_set_frame_markup   (MooPane        *pane,
+                                             const char     *markup);
+void            moo_pane_set_frame_text     (MooPane        *pane,
+                                             const char     *text);
 void            moo_pane_set_params         (MooPane        *pane,
                                              MooPaneParams  *params);
 /* result must be freed with moo_pane_params_free() */
@@ -108,7 +112,9 @@ GtkWidget      *_moo_pane_get_frame         (MooPane        *pane);
 void            _moo_pane_update_focus_child (MooPane       *pane);
 GtkWidget      *_moo_pane_get_focus_child   (MooPane        *pane);
 GtkWidget      *_moo_pane_get_button        (MooPane        *pane);
-GtkWidget      *_moo_pane_get_handle        (MooPane        *pane);
+void            _moo_pane_get_handle        (MooPane        *pane,
+                                             GtkWidget     **big,
+                                             GtkWidget     **small);
 GtkWidget      *_moo_pane_get_window        (MooPane        *pane);
 
 void            _moo_pane_params_changed    (MooPane        *pane);
