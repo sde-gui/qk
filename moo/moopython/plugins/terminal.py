@@ -212,6 +212,8 @@ class ColorScheme(object):
         # FIXME!
         if self.colors is not None:
             term.set_colors(self.colors[0], self.colors[1], self.colors[2:10])
+        else:
+            term.set_colors(term.style.text[gtk.STATE_NORMAL], term.style.base[gtk.STATE_NORMAL], [])
 
 # Color schemes shamelessly stolen from Konsole, the best terminal emulator out there
 color_schemes = [ColorScheme(cs[0], cs[1]) for cs in [
