@@ -14,11 +14,8 @@
  */
 
 #include <Python.h>
-
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
-
+#include "moo-version.h"
 #include "moo-mod.h"
 #include "moopython/pygtk/moo-pygtk.h"
 #include "moopython/moopython-utils.h"

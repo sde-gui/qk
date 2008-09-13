@@ -14,6 +14,7 @@
  */
 
 #include <config.h>
+#include "moo-version.h"
 #include "mooapp/mooapp.h"
 #include "mooedit/mooplugin.h"
 #include "moopython/moopython-builtin.h"

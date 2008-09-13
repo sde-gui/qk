@@ -15,6 +15,7 @@
  */
 
 #include "config.h"
+#include "moo-version.h"
 #include "mooedit/mooplugin-macro.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooedit/mooeditwindow.h"
