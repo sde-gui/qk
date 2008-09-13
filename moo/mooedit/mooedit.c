@@ -1672,7 +1672,7 @@ void
 _moo_edit_do_popup (MooEdit        *edit,
                     GdkEventButton *event)
 {
-    MooUIXML *xml;
+    MooUiXml *xml;
     MooEditWindow *window;
     GtkMenu *menu;
 

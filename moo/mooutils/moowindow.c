@@ -59,7 +59,7 @@ struct _MooWindowPrivate {
 
     gboolean statusbar_visible;
 
-    MooUIXML *ui_xml;
+    MooUiXml *ui_xml;
     MooActionCollection *actions;
     char *name;
     char *id;
@@ -961,7 +961,7 @@ moo_window_get_property (GObject      *object,
 static void
 moo_window_update_toolbar (MooWindow *window)
 {
-    MooUIXML *xml;
+    MooUiXml *xml;
     GtkToolbarStyle style;
     char *ui_name;
     MooActionCollection *actions;
@@ -975,7 +975,7 @@ moo_window_update_toolbar (MooWindow *window)
 
     if (window->toolbar)
     {
-        MooUIXML *old_xml;
+        MooUiXml *old_xml;
         char *old_name;
 
         old_xml = g_object_get_data (G_OBJECT (window->toolbar), "moo-window-ui-xml");
@@ -1014,7 +1014,7 @@ moo_window_update_toolbar (MooWindow *window)
 static void
 moo_window_update_menubar (MooWindow *window)
 {
-    MooUIXML *xml;
+    MooUiXml *xml;
     char *ui_name;
     MooActionCollection *actions;
 
@@ -1027,7 +1027,7 @@ moo_window_update_menubar (MooWindow *window)
 
     if (window->menubar)
     {
-        MooUIXML *old_xml;
+        MooUiXml *old_xml;
         char *old_name;
 
         old_xml = g_object_get_data (G_OBJECT (window->menubar), "moo-window-ui-xml");
@@ -1677,7 +1677,7 @@ moo_window_class_remove_group (MooWindowClass *klass,
 }
 
 
-MooUIXML*
+MooUiXml*
 moo_window_get_ui_xml (MooWindow          *window)
 {
     g_return_val_if_fail (MOO_IS_WINDOW (window), NULL);
@@ -1687,7 +1687,7 @@ moo_window_get_ui_xml (MooWindow          *window)
 
 void
 moo_window_set_ui_xml (MooWindow          *window,
-                       MooUIXML           *xml)
+                       MooUiXml           *xml)
 {
     g_return_if_fail (MOO_IS_WINDOW (window));
     g_return_if_fail (!xml || MOO_IS_UI_XML (xml));

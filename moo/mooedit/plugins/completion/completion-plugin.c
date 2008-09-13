@@ -118,7 +118,7 @@ cmpl_plugin_init (CmplPlugin *plugin)
 {
     MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     MooEditor *editor = moo_editor_instance ();
-    MooUIXML *xml = moo_editor_get_ui_xml (editor);
+    MooUiXml *xml = moo_editor_get_ui_xml (editor);
 
     g_return_val_if_fail (klass != NULL, FALSE);
     g_return_val_if_fail (editor != NULL, FALSE);
@@ -163,7 +163,7 @@ cmpl_plugin_deinit (CmplPlugin *plugin)
 {
     MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     MooEditor *editor = moo_editor_instance ();
-    MooUIXML *xml = moo_editor_get_ui_xml (editor);
+    MooUiXml *xml = moo_editor_get_ui_xml (editor);
 
     _cmpl_plugin_clear (plugin);
 

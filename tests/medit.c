@@ -26,7 +26,7 @@ int main (int argc, char **argv)
     char *rcfile, *user_dir;
     MooEditor *editor;
     MooEditWindow *win;
-    MooUIXML *xml;
+    MooUiXml *xml;
     MooLangTable *lang_table;
 
     gtk_init (&argc, &argv);

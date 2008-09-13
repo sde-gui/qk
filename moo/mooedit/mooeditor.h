@@ -123,10 +123,10 @@ void             moo_editor_set_app_name    (MooEditor      *editor,
                                              const char     *name);
 const char      *moo_editor_get_app_name    (MooEditor      *editor);
 
-MooUIXML        *moo_editor_get_ui_xml      (MooEditor      *editor);
+MooUiXml        *moo_editor_get_ui_xml      (MooEditor      *editor);
 void             moo_editor_set_ui_xml      (MooEditor      *editor,
-                                             MooUIXML       *xml);
-MooUIXML        *moo_editor_get_doc_ui_xml  (MooEditor      *editor);
+                                             MooUiXml       *xml);
+MooUiXml        *moo_editor_get_doc_ui_xml  (MooEditor      *editor);
 
 MooEditor       *moo_edit_window_get_editor (MooEditWindow  *window);
 MooEditor       *moo_edit_get_editor        (MooEdit        *doc);

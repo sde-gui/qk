@@ -53,7 +53,7 @@ static const char *NODE_TYPE_NAME[] = {
     "MOO_UI_NODE_PLACEHOLDER"
 };
 
-struct _MooUIXMLPrivate {
+struct MooUiXmlPrivate {
     Node *ui;
     GSList *toplevels;  /* Toplevel* */
     guint last_merge_id;
@@ -100,10 +100,10 @@ typedef gboolean (*NodeForeachFunc) (Node       *node,
 
 static void     moo_ui_xml_finalize     (GObject        *object);
 
-static void     xml_add_markup          (MooUIXML       *xml,
+static void     xml_add_markup          (MooUiXml       *xml,
                                          MooMarkupNode  *mnode);
 
-static void     update_widgets          (MooUIXML       *xml,
+static void     update_widgets          (MooUiXml       *xml,
                                          UpdateType      type,
                                          Node           *node);
 
@@ -119,7 +119,7 @@ static gboolean item_check              (Node           *node);
 static gboolean widget_check            (Node           *node);
 static gboolean container_check         (Node           *node);
 
-static Merge   *lookup_merge            (MooUIXML       *xml,
+static Merge   *lookup_merge            (MooUiXml       *xml,
                                          guint           id);
 
 static Node    *node_new                (NodeType        type,
@@ -145,33 +145,33 @@ static void     toplevel_free           (Toplevel       *toplevel);
 static GtkWidget *toplevel_get_widget   (Toplevel       *toplevel,
                                          Node           *node);
 
-static void     xml_add_item_widget     (MooUIXML       *xml,
+static void     xml_add_item_widget     (MooUiXml       *xml,
                                          GtkWidget      *widget);
-static void     xml_add_widget          (MooUIXML       *xml,
+static void     xml_add_widget          (MooUiXml       *xml,
                                          GtkWidget      *widget,
                                          Toplevel       *toplevel,
                                          Node           *node);
-static void     xml_remove_widget       (MooUIXML       *xml,
+static void     xml_remove_widget       (MooUiXml       *xml,
                                          GtkWidget      *widget);
-static void     xml_delete_toplevel     (MooUIXML       *xml,
+static void     xml_delete_toplevel     (MooUiXml       *xml,
                                          Toplevel       *toplevel);
-static void     xml_connect_toplevel    (MooUIXML       *xml,
+static void     xml_connect_toplevel    (MooUiXml       *xml,
                                          Toplevel       *toplevel);
 
-static gboolean create_menu_separator   (MooUIXML       *xml,
+static gboolean create_menu_separator   (MooUiXml       *xml,
                                          Toplevel       *toplevel,
                                          GtkMenuShell   *menu,
                                          Node           *node,
                                          int             index);
-static void     create_menu_item        (MooUIXML       *xml,
+static void     create_menu_item        (MooUiXml       *xml,
                                          Toplevel       *toplevel,
                                          GtkMenuShell   *menu,
                                          Node           *node,
                                          int             index);
-static gboolean create_menu_shell       (MooUIXML       *xml,
+static gboolean create_menu_shell       (MooUiXml       *xml,
                                          Toplevel       *toplevel,
                                          MooUIWidgetType type);
-static gboolean fill_menu_shell         (MooUIXML       *xml,
+static gboolean fill_menu_shell         (MooUiXml       *xml,
                                          Toplevel       *toplevel,
                                          Node           *menu_node,
                                          GtkMenuShell   *menu);
@@ -182,33 +182,33 @@ static void     check_empty             (Node           *parent,
                                          GtkWidget      *widget,
                                          Toplevel       *toplevel);
 
-static gboolean create_tool_separator   (MooUIXML       *xml,
+static gboolean create_tool_separator   (MooUiXml       *xml,
                                          Toplevel       *toplevel,
                                          GtkToolbar     *toolbar,
                                          Node           *node,
                                          int             index);
-static gboolean create_tool_item        (MooUIXML       *xml,
+static gboolean create_tool_item        (MooUiXml       *xml,
                                          Toplevel       *toplevel,
                                          GtkToolbar     *toolbar,
                                          Node           *node,
                                          int             index);
-static gboolean fill_toolbar            (MooUIXML       *xml,
+static gboolean fill_toolbar            (MooUiXml       *xml,
                                          Toplevel       *toplevel,
                                          Node           *toolbar_node,
                                          GtkToolbar     *toolbar);
-static gboolean create_toolbar          (MooUIXML       *xml,
+static gboolean create_toolbar          (MooUiXml       *xml,
                                          Toplevel       *toplevel);
 
-static MooUINode *moo_ui_xml_find_node  (MooUIXML       *xml,
+static MooUINode *moo_ui_xml_find_node  (MooUiXml       *xml,
                                          const char     *path_or_placeholder);
 
 
 /* MOO_TYPE_UI_XML */
-G_DEFINE_TYPE (MooUIXML, moo_ui_xml, G_TYPE_OBJECT)
+G_DEFINE_TYPE (MooUiXml, moo_ui_xml, G_TYPE_OBJECT)
 
 
 static void
-moo_ui_xml_class_init (MooUIXMLClass *klass)
+moo_ui_xml_class_init (MooUiXmlClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
@@ -249,14 +249,14 @@ node_new (NodeType type, const char *name)
 
 
 static void
-moo_ui_xml_init (MooUIXML *xml)
+moo_ui_xml_init (MooUiXml *xml)
 {
-    xml->priv = g_new0 (MooUIXMLPrivate, 1);
+    xml->priv = g_new0 (MooUiXmlPrivate, 1);
     xml->priv->ui = node_new (CONTAINER, "ui");
 }
 
 
-MooUIXML*
+MooUiXml*
 moo_ui_xml_new (void)
 {
     return g_object_new (MOO_TYPE_UI_XML, NULL);
@@ -604,7 +604,7 @@ node_free (Node *node)
 
 
 void
-moo_ui_xml_add_ui_from_string (MooUIXML       *xml,
+moo_ui_xml_add_ui_from_string (MooUiXml       *xml,
                                const char     *buffer,
                                gssize          length)
 {
@@ -792,7 +792,7 @@ container_check (Node *node)
 
 
 static void
-xml_add_markup (MooUIXML       *xml,
+xml_add_markup (MooUiXml       *xml,
                 MooMarkupNode  *mnode)
 {
     Node *node = parse_markup (mnode);
@@ -840,7 +840,7 @@ xml_add_markup (MooUIXML       *xml,
 
 
 guint
-moo_ui_xml_new_merge_id (MooUIXML *xml)
+moo_ui_xml_new_merge_id (MooUiXml *xml)
 {
     Merge *merge;
 
@@ -858,7 +858,7 @@ moo_ui_xml_new_merge_id (MooUIXML *xml)
 
 
 static Merge*
-lookup_merge (MooUIXML *xml,
+lookup_merge (MooUiXml *xml,
               guint     merge_id)
 {
     GSList *l;
@@ -875,7 +875,7 @@ lookup_merge (MooUIXML *xml,
 
 
 MooUINode*
-moo_ui_xml_add_item (MooUIXML       *xml,
+moo_ui_xml_add_item (MooUiXml       *xml,
                      guint           merge_id,
                      const char     *parent_path,
                      const char     *name,
@@ -923,7 +923,7 @@ moo_ui_xml_add_item (MooUIXML       *xml,
 
 
 void
-moo_ui_xml_insert (MooUIXML       *xml,
+moo_ui_xml_insert (MooUiXml       *xml,
                    guint           merge_id,
                    MooUINode      *parent,
                    int             position,
@@ -1028,7 +1028,7 @@ moo_ui_xml_insert (MooUIXML       *xml,
 
 
 void
-moo_ui_xml_insert_after (MooUIXML       *xml,
+moo_ui_xml_insert_after (MooUiXml       *xml,
                          guint           merge_id,
                          MooUINode      *parent,
                          MooUINode      *after,
@@ -1053,7 +1053,7 @@ moo_ui_xml_insert_after (MooUIXML       *xml,
 
 
 void
-moo_ui_xml_insert_before (MooUIXML       *xml,
+moo_ui_xml_insert_before (MooUiXml       *xml,
                           guint           merge_id,
                           MooUINode      *parent,
                           MooUINode      *before,
@@ -1078,7 +1078,7 @@ moo_ui_xml_insert_before (MooUIXML       *xml,
 
 
 void
-moo_ui_xml_insert_markup_after (MooUIXML       *xml,
+moo_ui_xml_insert_markup_after (MooUiXml       *xml,
                                 guint           merge_id,
                                 const char     *parent_path,
                                 const char     *after_name,
@@ -1110,7 +1110,7 @@ moo_ui_xml_insert_markup_after (MooUIXML       *xml,
 
 
 void
-moo_ui_xml_insert_markup_before (MooUIXML       *xml,
+moo_ui_xml_insert_markup_before (MooUiXml       *xml,
                                  guint           merge_id,
                                  const char     *parent_path,
                                  const char     *before_name,
@@ -1142,7 +1142,7 @@ moo_ui_xml_insert_markup_before (MooUIXML       *xml,
 
 
 void
-moo_ui_xml_insert_markup (MooUIXML       *xml,
+moo_ui_xml_insert_markup (MooUiXml       *xml,
                           guint           merge_id,
                           const char     *parent_path,
                           int             position,
@@ -1185,7 +1185,7 @@ node_is_ancestor (Node           *node,
 
 
 void
-moo_ui_xml_remove_ui (MooUIXML       *xml,
+moo_ui_xml_remove_ui (MooUiXml       *xml,
                       guint           merge_id)
 {
     Merge *merge;
@@ -1210,7 +1210,7 @@ moo_ui_xml_remove_ui (MooUIXML       *xml,
 
 
 void
-moo_ui_xml_remove_node (MooUIXML       *xml,
+moo_ui_xml_remove_node (MooUiXml       *xml,
                         MooUINode      *node)
 {
     Node *parent;
@@ -1289,7 +1289,7 @@ merge_remove_node (Merge          *merge,
 
 
 MooUINode *
-moo_ui_xml_get_node (MooUIXML       *xml,
+moo_ui_xml_get_node (MooUiXml       *xml,
                      const char     *path)
 {
     g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
@@ -1300,7 +1300,7 @@ moo_ui_xml_get_node (MooUIXML       *xml,
 
 
 static MooUINode *
-moo_ui_xml_find_node (MooUIXML       *xml,
+moo_ui_xml_find_node (MooUiXml       *xml,
                       const char     *path)
 {
     MooUINode *node;
@@ -1339,7 +1339,7 @@ find_placeholder_func (Node    *node,
 }
 
 MooUINode*
-moo_ui_xml_find_placeholder (MooUIXML       *xml,
+moo_ui_xml_find_placeholder (MooUiXml       *xml,
                              const char     *name)
 {
     struct {
@@ -1476,7 +1476,7 @@ get_effective_parent (Node *node)
 static void
 visibility_notify (GtkWidget *widget,
                    G_GNUC_UNUSED gpointer whatever,
-                   MooUIXML  *xml)
+                   MooUiXml  *xml)
 {
     Toplevel *toplevel;
     Node *node;
@@ -1498,7 +1498,7 @@ visibility_notify (GtkWidget *widget,
 }
 
 static void
-xml_add_item_widget (MooUIXML       *xml,
+xml_add_item_widget (MooUiXml       *xml,
                      GtkWidget      *widget)
 {
     g_signal_connect (widget, "notify::visible",
@@ -1508,7 +1508,7 @@ xml_add_item_widget (MooUIXML       *xml,
 
 static void
 widget_destroyed (GtkWidget *widget,
-                  MooUIXML  *xml)
+                  MooUiXml  *xml)
 {
     g_return_if_fail (GTK_IS_WIDGET (widget));
     g_return_if_fail (MOO_IS_UI_XML (xml));
@@ -1517,7 +1517,7 @@ widget_destroyed (GtkWidget *widget,
 
 
 static void
-xml_remove_widget (MooUIXML  *xml,
+xml_remove_widget (MooUiXml  *xml,
                    GtkWidget *widget)
 {
     Toplevel *toplevel;
@@ -1545,7 +1545,7 @@ xml_remove_widget (MooUIXML  *xml,
 
 
 static void
-xml_add_widget (MooUIXML  *xml,
+xml_add_widget (MooUiXml  *xml,
                 GtkWidget *widget,
                 Toplevel  *toplevel,
                 Node      *node)
@@ -1577,7 +1577,7 @@ hash_table_list_values (GHashTable *hash_table)
 
 static void
 toplevel_destroyed (GtkWidget *widget,
-                    MooUIXML  *xml)
+                    MooUiXml  *xml)
 {
     Toplevel *toplevel;
 
@@ -1593,7 +1593,7 @@ toplevel_destroyed (GtkWidget *widget,
 
 
 static void
-xml_delete_toplevel (MooUIXML *xml,
+xml_delete_toplevel (MooUiXml *xml,
                      Toplevel *toplevel)
 {
     GSList *children, *l;
@@ -1620,7 +1620,7 @@ xml_delete_toplevel (MooUIXML *xml,
 
 
 static void
-xml_connect_toplevel (MooUIXML  *xml,
+xml_connect_toplevel (MooUiXml  *xml,
                       Toplevel  *toplevel)
 {
     g_signal_connect (toplevel->widget, "destroy",
@@ -1632,7 +1632,7 @@ xml_connect_toplevel (MooUIXML  *xml,
 
 
 static gboolean
-create_menu_separator (MooUIXML       *xml,
+create_menu_separator (MooUiXml       *xml,
                        Toplevel       *toplevel,
                        GtkMenuShell   *menu,
                        Node           *node,
@@ -1671,7 +1671,7 @@ static gboolean node_is_empty (Node *node)
 
 
 static void
-create_menu_item (MooUIXML       *xml,
+create_menu_item (MooUiXml       *xml,
                   Toplevel       *toplevel,
                   GtkMenuShell   *menu,
                   Node           *node,
@@ -1953,7 +1953,7 @@ check_separators (Node           *parent,
 
 
 static gboolean
-fill_menu_shell (MooUIXML       *xml,
+fill_menu_shell (MooUiXml       *xml,
                  Toplevel       *toplevel,
                  Node           *menu_node,
                  GtkMenuShell   *menu)
@@ -1991,7 +1991,7 @@ fill_menu_shell (MooUIXML       *xml,
 
 
 static gboolean
-create_menu_shell (MooUIXML       *xml,
+create_menu_shell (MooUiXml       *xml,
                    Toplevel       *toplevel,
                    MooUIWidgetType type)
 {
@@ -2019,7 +2019,7 @@ create_menu_shell (MooUIXML       *xml,
 
 
 static gboolean
-create_tool_separator (MooUIXML       *xml,
+create_tool_separator (MooUiXml       *xml,
                        Toplevel       *toplevel,
                        GtkToolbar     *toolbar,
                        Node           *node,
@@ -2061,7 +2061,7 @@ menu_tool_button_get_menu (GtkWidget *button)
 
 
 static gboolean
-create_tool_item (MooUIXML       *xml,
+create_tool_item (MooUiXml       *xml,
                   Toplevel       *toplevel,
                   GtkToolbar     *toolbar,
                   Node           *node,
@@ -2160,7 +2160,7 @@ create_tool_item (MooUIXML       *xml,
 
 
 static gboolean
-fill_toolbar (MooUIXML       *xml,
+fill_toolbar (MooUiXml       *xml,
               Toplevel       *toplevel,
               Node           *toolbar_node,
               GtkToolbar     *toolbar)
@@ -2202,7 +2202,7 @@ fill_toolbar (MooUIXML       *xml,
 
 
 static gboolean
-create_toolbar (MooUIXML       *xml,
+create_toolbar (MooUiXml       *xml,
                 Toplevel       *toplevel)
 {
     g_return_val_if_fail (toplevel != NULL, FALSE);
@@ -2220,7 +2220,7 @@ create_toolbar (MooUIXML       *xml,
 
 
 gpointer
-moo_ui_xml_create_widget (MooUIXML            *xml,
+moo_ui_xml_create_widget (MooUiXml            *xml,
                           MooUIWidgetType      type,
                           const char          *path,
                           MooActionCollection *actions,
@@ -2281,7 +2281,7 @@ moo_ui_xml_create_widget (MooUIXML            *xml,
 
 
 GtkWidget*
-moo_ui_xml_get_widget (MooUIXML       *xml,
+moo_ui_xml_get_widget (MooUiXml       *xml,
                        GtkWidget      *widget,
                        const char     *path)
 {
@@ -2330,7 +2330,7 @@ effective_index (Node *parent,
 
 
 static void
-toplevel_add_node (MooUIXML *xml,
+toplevel_add_node (MooUiXml *xml,
                    Toplevel *toplevel,
                    Node     *node)
 {
@@ -2450,7 +2450,7 @@ toplevel_add_node (MooUIXML *xml,
 
 
 static void
-toplevel_remove_node (G_GNUC_UNUSED MooUIXML *xml,
+toplevel_remove_node (G_GNUC_UNUSED MooUiXml *xml,
                       Toplevel *toplevel,
                       Node     *node)
 {
@@ -2467,7 +2467,7 @@ toplevel_remove_node (G_GNUC_UNUSED MooUIXML *xml,
 
 
 static void
-update_widgets (MooUIXML       *xml,
+update_widgets (MooUiXml       *xml,
                 UpdateType      type,
                 Node           *node)
 {
@@ -2510,7 +2510,7 @@ update_widgets (MooUIXML       *xml,
 static void
 moo_ui_xml_finalize (GObject *object)
 {
-    MooUIXML *xml = MOO_UI_XML (object);
+    MooUiXml *xml = MOO_UI_XML (object);
 
     SLIST_FOREACH (xml->priv->toplevels, t)
     {

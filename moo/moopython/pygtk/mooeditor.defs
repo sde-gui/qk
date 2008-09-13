@@ -228,7 +228,7 @@
 (define-method get_ui_xml
   (of-object "MooEditor")
   (c-name "moo_editor_get_ui_xml")
-  (return-type "MooUIXML*")
+  (return-type "MooUiXml*")
 )
 
 (define-method set_ui_xml
@@ -236,14 +236,14 @@
   (c-name "moo_editor_set_ui_xml")
   (return-type "none")
   (parameters
-    '("MooUIXML*" "xml" (null-ok))
+    '("MooUiXml*" "xml" (null-ok))
   )
 )
 
 (define-method get_doc_ui_xml
   (of-object "MooEditor")
   (c-name "moo_editor_get_doc_ui_xml")
-  (return-type "MooUIXML*")
+  (return-type "MooUiXml*")
 )
 
 (define-method get_editor

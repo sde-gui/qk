@@ -241,7 +241,7 @@ find_plugin_init (FindPlugin *plugin)
 {
     MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     MooEditor *editor = moo_editor_instance ();
-    MooUIXML *xml = moo_editor_get_ui_xml (editor);
+    MooUiXml *xml = moo_editor_get_ui_xml (editor);
 
     g_return_val_if_fail (klass != NULL, FALSE);
     g_return_val_if_fail (editor != NULL, FALSE);
@@ -288,7 +288,7 @@ find_plugin_deinit (FindPlugin *plugin)
 {
     MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     MooEditor *editor = moo_editor_instance ();
-    MooUIXML *xml = moo_editor_get_ui_xml (editor);
+    MooUiXml *xml = moo_editor_get_ui_xml (editor);
 
     moo_window_class_remove_action (klass, "FindInFiles");
 #ifndef __WIN32__

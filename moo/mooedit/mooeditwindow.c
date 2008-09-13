@@ -90,7 +90,7 @@ struct MooEditWindowPrivate {
     char *title_format;
     char *title_format_no_doc;
 
-    MooUIXML *xml;
+    MooUiXml *xml;
     guint doc_list_merge_id;
     guint doc_list_update_idle;
 
@@ -2668,7 +2668,7 @@ add_pane_action (MooEditWindow *window,
     char *action_id;
     MooWindowClass *klass;
     GtkAction *action;
-    MooUIXML *xml;
+    MooUiXml *xml;
 
     action_id = make_show_pane_action_id (user_id);
     klass = g_type_class_peek (MOO_TYPE_EDIT_WINDOW);
@@ -3592,7 +3592,7 @@ compare_doc_list_actions (gpointer a1,
 static gboolean
 do_update_doc_list (MooEditWindow *window)
 {
-    MooUIXML *xml;
+    MooUiXml *xml;
     GSList *actions = NULL, *docs;
     GSList *group = NULL;
     MooUINode *ph;

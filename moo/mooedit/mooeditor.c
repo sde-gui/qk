@@ -68,8 +68,8 @@ struct MooEditorPrivate {
     WindowInfo      *windowless;
     WindowList      *windows; /* WindowInfo* */
     char            *app_name;
-    MooUIXML        *doc_ui_xml;
-    MooUIXML        *ui_xml;
+    MooUiXml        *doc_ui_xml;
+    MooUiXml        *ui_xml;
     MdHistoryMgr    *history;
     MooLangMgr      *lang_mgr;
     MooFileWatch    *file_watch;
@@ -611,7 +611,7 @@ moo_editor_get_app_name (MooEditor *editor)
 }
 
 
-MooUIXML *
+MooUiXml *
 moo_editor_get_ui_xml (MooEditor *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
@@ -626,7 +626,7 @@ moo_editor_get_ui_xml (MooEditor *editor)
 }
 
 
-MooUIXML *
+MooUiXml *
 moo_editor_get_doc_ui_xml (MooEditor *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
@@ -636,7 +636,7 @@ moo_editor_get_doc_ui_xml (MooEditor *editor)
 
 void
 moo_editor_set_ui_xml (MooEditor      *editor,
-                       MooUIXML       *xml)
+                       MooUiXml       *xml)
 {
     WindowList *l;
 

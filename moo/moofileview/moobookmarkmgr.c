@@ -437,7 +437,7 @@ moo_bookmark_mgr_save (MooBookmarkMgr *mgr)
 
 struct _UserInfo {
     GObject *user;
-    MooUIXML *xml;
+    MooUiXml *xml;
     MooActionCollection *actions;
     char *path;
     guint user_id;
@@ -448,7 +448,7 @@ struct _UserInfo {
 static UserInfo*
 user_info_new (GObject             *user,
                MooActionCollection *actions,
-               MooUIXML            *xml,
+               MooUiXml            *xml,
                const char          *path,
                guint                user_id)
 {
@@ -613,7 +613,7 @@ void
 _moo_bookmark_mgr_add_user (MooBookmarkMgr *mgr,
                             gpointer        user,
                             MooActionCollection *actions,
-                            MooUIXML       *xml,
+                            MooUiXml       *xml,
                             const char     *path)
 {
     UserInfo *info;

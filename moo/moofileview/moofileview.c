@@ -146,7 +146,7 @@ struct MooFileViewPrivate {
     guint            show_two_dots : 1;
 
     MooActionCollection *actions;
-    MooUIXML        *ui_xml;
+    MooUiXml        *ui_xml;
     gboolean         has_selection;
 
     gpointer         props_dialog;
@@ -1283,7 +1283,7 @@ init_actions (MooFileView *fileview)
 }
 
 
-MooUIXML*
+MooUiXml*
 moo_file_view_get_ui_xml (MooFileView *fileview)
 {
     g_return_val_if_fail (MOO_IS_FILE_VIEW (fileview), NULL);

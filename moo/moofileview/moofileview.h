@@ -37,7 +37,7 @@ gboolean                moo_file_view_chdir         (MooFileView    *fileview,
                                                      const char     *dir,
                                                      GError        **error);
 
-MooUIXML               *moo_file_view_get_ui_xml    (MooFileView    *fileview);
+MooUiXml               *moo_file_view_get_ui_xml    (MooFileView    *fileview);
 MooActionCollection    *moo_file_view_get_actions   (MooFileView    *fileview);
 
 

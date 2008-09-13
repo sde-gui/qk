@@ -57,7 +57,7 @@
 (define-method get_ui_xml
   (of-object "MooApp")
   (c-name "moo_app_get_ui_xml")
-  (return-type "MooUIXML*")
+  (return-type "MooUiXml*")
 )
 
 (define-method set_ui_xml
@@ -65,7 +65,7 @@
   (c-name "moo_app_set_ui_xml")
   (return-type "none")
   (parameters
-    '("MooUIXML*" "xml")
+    '("MooUiXml*" "xml")
   )
 )
 

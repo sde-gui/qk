@@ -60,7 +60,7 @@ typedef struct {
 
 typedef struct {
     char *id;
-    MooUIXML *xml;
+    MooUiXml *xml;
     guint merge_id;
 } ToolInfo;
 

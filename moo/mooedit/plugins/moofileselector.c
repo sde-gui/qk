@@ -583,7 +583,7 @@ moo_file_selector_constructor (GType           type,
                                GObjectConstructParam *props)
 {
     MooPaneLabel *label;
-    MooUIXML *xml;
+    MooUiXml *xml;
     MooFileSelector *filesel;
     MooFileView *fileview;
     GObject *object;

@@ -32,7 +32,7 @@ import gtk.Window as PyGtkWindow_Type
 import gtk.Widget as PyGtkWidget_Type
 import gtk.TextView as PyGtkTextView_Type
 import gobject.GObject as PyGObject_Type
-import moo.utils.UIXML as PyMooUIXML_Type
+import moo.utils.UiXml as PyMooUiXml_Type
 %%
 ignore-glob
   *_get_type

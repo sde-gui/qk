@@ -156,10 +156,10 @@
   (gtype-id "MOO_TYPE_MENU_ACTION")
 )
 
-(define-object UIXML
+(define-object UiXml
   (in-module "Moo")
   (parent "GObject")
-  (c-name "MooUIXML")
+  (c-name "MooUiXml")
   (gtype-id "MOO_TYPE_UI_XML")
 )
 
@@ -1433,7 +1433,7 @@
 (define-method get_ui_xml
   (of-object "MooWindow")
   (c-name "moo_window_get_ui_xml")
-  (return-type "MooUIXML*")
+  (return-type "MooUiXml*")
 )
 
 (define-method set_ui_xml
@@ -1441,7 +1441,7 @@
   (c-name "moo_window_set_ui_xml")
   (return-type "none")
   (parameters
-    '("MooUIXML*" "xml")
+    '("MooUiXml*" "xml")
   )
 )
 
@@ -1466,11 +1466,11 @@
 (define-function moo_ui_xml_new
   (c-name "moo_ui_xml_new")
   (is-constructor-of "MooUiXml")
-  (return-type "MooUIXML*")
+  (return-type "MooUiXml*")
 )
 
 (define-method add_ui_from_string
-  (of-object "MooUIXML")
+  (of-object "MooUiXml")
   (c-name "moo_ui_xml_add_ui_from_string")
   (return-type "none")
   (parameters
@@ -1480,7 +1480,7 @@
 )
 
 (define-method get_node
-  (of-object "MooUIXML")
+  (of-object "MooUiXml")
   (c-name "moo_ui_xml_get_node")
   (return-type "MooUINode*")
   (parameters
@@ -1489,7 +1489,7 @@
 )
 
 (define-method find_placeholder
-  (of-object "MooUIXML")
+  (of-object "MooUiXml")
   (c-name "moo_ui_xml_find_placeholder")
   (return-type "MooUINode*")
   (parameters
@@ -1513,7 +1513,7 @@
 )
 
 (define-method create_widget
-  (of-object "MooUIXML")
+  (of-object "MooUiXml")
   (c-name "moo_ui_xml_create_widget")
   (return-type "GtkWidget*")
   (parameters
@@ -1525,13 +1525,13 @@
 )
 
 (define-method new_merge_id
-  (of-object "MooUIXML")
+  (of-object "MooUiXml")
   (c-name "moo_ui_xml_new_merge_id")
   (return-type "guint")
 )
 
 (define-method add_item
-  (of-object "MooUIXML")
+  (of-object "MooUiXml")
   (c-name "moo_ui_xml_add_item")
   (return-type "MooUINode*")
   (parameters
@@ -1544,7 +1544,7 @@
 )
 
 (define-method insert_after
-  (of-object "MooUIXML")
+  (of-object "MooUiXml")
   (c-name "moo_ui_xml_insert_after")
   (return-type "none")
   (parameters
@@ -1556,7 +1556,7 @@
 )
 
 (define-method insert_before
-  (of-object "MooUIXML")
+  (of-object "MooUiXml")
   (c-name "moo_ui_xml_insert_before")
   (return-type "none")
   (parameters
@@ -1568,7 +1568,7 @@
 )
 
 (define-method insert
-  (of-object "MooUIXML")
+  (of-object "MooUiXml")
   (c-name "moo_ui_xml_insert")
   (return-type "none")
   (parameters
@@ -1580,7 +1580,7 @@
 )
 
 (define-method insert_markup_after
-  (of-object "MooUIXML")
+  (of-object "MooUiXml")
   (c-name "moo_ui_xml_insert_markup_after")
   (return-type "none")
   (parameters
@@ -1592,7 +1592,7 @@
 )
 
 (define-method insert_markup_before
-  (of-object "MooUIXML")
+  (of-object "MooUiXml")
   (c-name "moo_ui_xml_insert_markup_before")
   (return-type "none")
   (parameters
@@ -1604,7 +1604,7 @@
 )
 
 (define-method insert_markup
-  (of-object "MooUIXML")
+  (of-object "MooUiXml")
   (c-name "moo_ui_xml_insert_markup")
   (return-type "none")
   (parameters
@@ -1616,7 +1616,7 @@
 )
 
 (define-method remove_ui
-  (of-object "MooUIXML")
+  (of-object "MooUiXml")
   (c-name "moo_ui_xml_remove_ui")
   (return-type "none")
   (parameters
@@ -1625,7 +1625,7 @@
 )
 
 (define-method remove_node
-  (of-object "MooUIXML")
+  (of-object "MooUiXml")
   (c-name "moo_ui_xml_remove_node")
   (return-type "none")
   (parameters

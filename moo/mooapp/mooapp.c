@@ -99,7 +99,7 @@ struct _MooAppPrivate {
     char       *session_file;
     MooMarkupDoc *session;
 
-    MooUIXML   *ui_xml;
+    MooUiXml   *ui_xml;
     const char *default_ui;
     guint       quit_handler_id;
 
@@ -611,7 +611,7 @@ moo_app_init_editor (MooApp *app)
 static void
 moo_app_init_ui (MooApp *app)
 {
-    MooUIXML *xml = NULL;
+    MooUiXml *xml = NULL;
     char **files;
     guint n_files, i;
 
@@ -1079,7 +1079,7 @@ install_editor_actions (void)
 }
 
 
-MooUIXML *
+MooUiXml *
 moo_app_get_ui_xml (MooApp *app)
 {
     g_return_val_if_fail (MOO_IS_APP (app), NULL);
@@ -1103,7 +1103,7 @@ moo_app_get_ui_xml (MooApp *app)
 
 void
 moo_app_set_ui_xml (MooApp     *app,
-                    MooUIXML   *xml)
+                    MooUiXml   *xml)
 {
     g_return_if_fail (MOO_IS_APP (app));
 
